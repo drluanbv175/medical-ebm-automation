@@ -61,7 +61,7 @@ không bị trôi/sai khi sửa về sau.
 | 4.A3 | Xác nhận trước khi gửi email thật (notify-test/set-email) + bỏ email hardcode. `[tdd:skip:cli-io]` | có bước [y/N]; dùng settings.alert_email_to | - | cc:done |
 | 4.A4 | Bắt lỗi nút "Cập nhật ngay" trên dashboard (không lộ traceback). `[tdd:skip:ui]` | try/except + st.error thân thiện | - | cc:done |
 | 4.A5 | Chống CSV/Excel formula injection + xóa dead code. `[tdd:required]` | test escape `=+-@`; pytest xanh | - | cc:done (CSV guard + xóa _safe_search; gộp _clean → 4.D2) |
-| 4.B1 | Cột `is_mock`/`source_mode` cho EvidenceItem + map trong normalize + banner dashboard + lọc báo cáo. `[tdd:required]` | test mock không lẫn live; banner hiện | - | cc:todo |
+| 4.B1 | Cột `is_mock` cho EvidenceItem + map trong normalize + migration + banner dashboard + loại mock khỏi actionable (live). `[tdd:required]` | test mock không lẫn live; banner hiện | - | cc:done |
 | 4.C1 | Regulatory-alert không tự lên Tier A từ 1 keyword. `[tdd:required]` **[duyệt]** | test FDA-1-dòng không actionable; pytest xanh | - | blocked (chờ duyệt) |
 | 4.C2 | Bỏ heuristic cứng (large_sample token, official_org substring) + dedup version-aware. `[tdd:required]` **[duyệt]** | test dương-tính-giả biến mất | - | blocked (chờ duyệt) |
 | 4.D1 | Batch dịch máy + phân trang/tìm kiếm dashboard. `[tdd:skip:ui]` | dịch 1 call/abstract; có ô tìm + giới hạn hàng | - | cc:todo |

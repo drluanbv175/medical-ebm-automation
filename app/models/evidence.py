@@ -80,6 +80,9 @@ class EvidenceItem(Base):
     api_endpoint: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_primary_record: Mapped[bool] = mapped_column(Boolean, default=True)
     dedup_key: Mapped[Optional[str]] = mapped_column(String(255), index=True, nullable=True)
+    # Truy vết chế độ nguồn: True nếu bản ghi đến từ dữ liệu MOCK/demo (KHÔNG dùng lâm sàng).
+    # Ngăn dữ liệu minh họa lẫn vào khuyến cáo thật khi DB từng chạy mock rồi chạy live.
+    is_mock: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
 
     # Theo dõi "mới" theo lần chạy: run_id khi bản ghi LẦN ĐẦU xuất hiện và lần gần nhất.
     # Đây là cơ sở để xác định "cái gì mới tuần này".

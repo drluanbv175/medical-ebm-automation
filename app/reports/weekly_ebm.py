@@ -35,11 +35,20 @@ def _row(r: EvidenceItem, new_run_ids=None) -> Dict:
         "safety_signal": r.safety_signal, "doi": r.doi, "pmid": r.pmid,
         "nct_id": r.nct_id, "url": r.url, "publication_date": r.publication_date,
         "authors": r.authors, "synthesis": syn,
+        "is_mock": bool(getattr(r, "is_mock", False)),
     }
 
 
-def build_weekly_data(new_window_days: int = 7) -> Dict:
-    """Tổng hợp dữ liệu cho 9 phần báo cáo tuần (kèm đánh dấu 'mới')."""
+def build_weekly_data(new_window_days: int = 7, exclude_mock=None) -> Dict:
+    """Tổng hợp dữ liệu cho 9 phần báo cáo tuần (kèm đánh dấu 'mới').
+
+    exclude_mock: None = tự suy (live thì loại mock, demo thì giữ). Ở chế độ DEMO
+    (USE_MOCK_SOURCES=true) giữ mock vì cả báo cáo là minh họa + đã có banner DEMO;
+    ở chế độ LIVE loại các bản ghi mock còn sót để không lẫn vào khuyến cáo thật.
+    """
+    from app.config import settings
+    if exclude_mock is None:
+        exclude_mock = not settings.use_mock_sources
     from app.services import run_state
     new_run_ids = run_state.recent_run_ids(days=new_window_days)
     with session_scope() as s:
@@ -57,10 +66,15 @@ def build_weekly_data(new_window_days: int = 7) -> Dict:
     for row in rows:
         by_area.setdefault(row["clinical_area"], []).append(row)
 
-    actionable = [r for r in rows if r["is_actionable"]]
-    not_yet = [r for r in rows if r["classification"] in ("watch_only", "need_full_text")]
+    # LIÊM CHÍNH: ở chế độ LIVE, bản ghi mock/demo KHÔNG được trình bày như khuyến cáo thật.
+    def _keep(r):
+        return (not exclude_mock) or (not r["is_mock"])
+    actionable = [r for r in rows if r["is_actionable"] and _keep(r)]
+    not_yet = [r for r in rows
+               if r["classification"] in ("watch_only", "need_full_text") and _keep(r)]
     excluded = [r for r in rows if r["classification"] == "excluded"]
     new_items = [r for r in rows if r["is_new"]]
+    mock_count = sum(1 for r in rows if r["is_mock"])
 
     return {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
@@ -75,10 +89,12 @@ def build_weekly_data(new_window_days: int = 7) -> Dict:
         "not_yet_change": not_yet,
         "excluded": excluded,
         "references": [r for r in rows if r["classification"] != "excluded"],
+        "mock_count": mock_count,
         "counts": {
             "total": len(rows), "new": len(new_items), "actionable": len(actionable),
             "not_yet": len(not_yet), "excluded": len(excluded),
             "drug_safety": len(drug_rows), "antibiotics": len(antibiotic_rows),
+            "mock": mock_count,
         },
     }
 

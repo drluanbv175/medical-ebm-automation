@@ -49,6 +49,8 @@ def normalize(record: RawRecord) -> Dict:
         "official_grade": record.official_grade,
         "ingest_query": record.ingest_query,
         "api_endpoint": record.api_endpoint,
+        # Truy vết mock: cờ raw["_mock"] (do _fixtures gắn) -> cột is_mock.
+        "is_mock": bool((getattr(record, "raw", None) or {}).get("_mock", False)),
     }
 
 

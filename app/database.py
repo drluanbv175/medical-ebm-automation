@@ -72,6 +72,7 @@ def _ensure_columns() -> None:
     needed = [
         ("evidence_items", "first_seen_run_id", "INTEGER"),
         ("evidence_items", "last_run_id", "INTEGER"),
+        ("evidence_items", "is_mock", "BOOLEAN DEFAULT 0"),
     ]
     with engine.begin() as conn:
         for table, column, sqltype in needed:

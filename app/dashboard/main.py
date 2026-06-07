@@ -487,6 +487,17 @@ with st.sidebar.expander("📊 Xuất Excel / CSV / BibTeX"):
 if not has_data:
     st.warning("Chưa có dữ liệu. Bấm **Nạp dữ liệu mẫu (seed)** ở thanh bên trái để bắt đầu.")
 
+# Banner LIÊM CHÍNH: cảnh báo chế độ DEMO hoặc dữ liệu mock lẫn vào dữ liệu thật.
+with session_scope() as _s_mock:
+    _mock_n = _s_mock.query(EvidenceItem).filter(EvidenceItem.is_mock.is_(True)).count()
+if settings.use_mock_sources:
+    st.warning("⚠️ **CHẾ ĐỘ DEMO (USE_MOCK_SOURCES=true)** — dữ liệu hiển thị là MINH HỌA, "
+               "KHÔNG dùng cho quyết định lâm sàng. Đặt `USE_MOCK_SOURCES=false` trong `.env` "
+               "để quét nguồn thật.")
+elif _mock_n:
+    st.warning(f"⚠️ DB có **{_mock_n} bản ghi DEMO** lẫn dữ liệu thật — đã LOẠI khỏi danh sách "
+               "khuyến cáo (actionable) trong báo cáo tuần. Cân nhắc làm sạch nếu cần.")
+
 tabs = st.tabs([
     "1. Executive", "2. Weekly EBM", "3. Drug Safety", "4. Antibiotics",
     "5. Guidelines", "6. Research", "7. Clinical Scores", "8. Source Log", "9. Change Log",
