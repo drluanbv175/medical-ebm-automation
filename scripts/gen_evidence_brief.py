@@ -59,9 +59,41 @@ def build() -> str:
     return "\n".join(lines)
 
 
+def write_docx(path: Path) -> None:
+    """Xuất bản Word (.docx) — định dạng có heading + nhãn in đậm, tiện in/chia sẻ."""
+    from docx import Document
+    by_area: dict[str, list[dict]] = defaultdict(list)
+    for s in VERIFIED_SCORES:
+        by_area[s.get("clinical_area") or "Khác"].append(s)
+    doc = Document()
+    doc.add_heading("Tổng hợp chứng cứ — thang điểm lâm sàng (RAG, có trích dẫn)", level=0)
+    doc.add_paragraph(f"{len(VERIFIED_SCORES)} thang điểm đã xác minh công thức + nguồn. "
+                      "🆕 = cập nhật theo guideline 2024–2026. Mỗi mục neo vào nguồn gốc (không bịa).")
+    doc.add_paragraph("⚠️ Công cụ HỖ TRỢ, KHÔNG thay phán đoán lâm sàng. Kiểm chứng nguồn gốc "
+                      "+ đối chiếu bối cảnh bệnh nhân trước khi áp dụng.")
+    fields = [("Tình huống", "clinical_situation"), ("Ngưỡng hành động", "action_thresholds"),
+              ("Diễn giải", "interpretation"), ("Lưu ý/giới hạn", "limitations"),
+              ("Nguồn", "source"), ("Guideline", "guideline_reference")]
+    for area in sorted(by_area):
+        doc.add_heading(area, level=1)
+        for s in sorted(by_area[area], key=lambda x: x["score_name"]):
+            flag = " 🆕" if s["score_id"] in UPDATED else ""
+            doc.add_heading(s["score_name"] + flag, level=2)
+            for label, key in fields:
+                if s.get(key):
+                    p = doc.add_paragraph(style="List Bullet")
+                    p.add_run(f"{label}: ").bold = True
+                    p.add_run(str(s[key]))
+    doc.save(str(path))
+
+
 if __name__ == "__main__":
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(build(), encoding="utf-8")
     n_updated = sum(1 for s in VERIFIED_SCORES if s["score_id"] in UPDATED)
     print(f"✅ Đã sinh {OUT.relative_to(ROOT)}")
+    if "--docx" in sys.argv:
+        docx_path = OUT.with_suffix(".docx")
+        write_docx(docx_path)
+        print(f"✅ Đã sinh {docx_path.relative_to(ROOT)}")
     print(f"   {len(VERIFIED_SCORES)} thang điểm ({n_updated} đã cập nhật), mỗi mục có nguồn.")

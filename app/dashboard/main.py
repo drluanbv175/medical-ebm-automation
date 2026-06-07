@@ -502,7 +502,7 @@ elif _mock_n:
 tabs = st.tabs([
     "1. Executive", "2. Weekly EBM", "3. Drug Safety", "4. Antibiotics",
     "5. Guidelines", "6. Research", "7. Clinical Scores", "8. Source Log", "9. Change Log",
-    "📱 10. TikTok",
+    "📱 10. TikTok", "📚 11. Tổng hợp RAG",
 ])
 
 # --- Tab 1: Executive -----------------------------------------------------
@@ -1021,3 +1021,28 @@ with tabs[9]:
                                        file_name=f"{it['slug']}.mp4", mime="video/mp4",
                                        key=f"dlv_{it['slug']}")
                 st.caption(f"📂 Thư mục: {folder}")
+
+
+# --- Tab 11: Tổng hợp chứng cứ (RAG, có trích dẫn) ------------------------
+with tabs[10]:
+    st.header("📚 Tổng hợp chứng cứ (RAG — có trích dẫn)")
+    st.caption("Mỗi thang điểm neo vào nguồn gốc + guideline (không bịa). 🆕 = cập nhật 2024–2026. "
+               "Công cụ HỖ TRỢ, không thay phán đoán lâm sàng.")
+    _brief = ROOT / "evidence" / "reviews" / "tong-hop-chung-cu-thang-diem-2026.md"
+    if not _brief.exists():
+        st.info("Chưa có bản tổng hợp. Chạy: `python scripts/gen_evidence_brief.py`")
+    else:
+        _md = _brief.read_text(encoding="utf-8")
+        _q = st.text_input("🔎 Tìm thang điểm / chuyên khoa / từ khóa",
+                           placeholder="vd: CHA2DS2, FIB-4, kháng đông, sepsis…", key="rag_q")
+        _parts = _md.split("\n### ")
+        if _q.strip():
+            _ql = _q.strip().lower()
+            _blocks = ["### " + b for b in _parts[1:] if _ql in b.lower()]
+            st.caption(f"{len(_blocks)} thang điểm khớp “{_q}”.")
+            st.markdown(_parts[0] + "\n" + "\n".join(_blocks) if _blocks
+                        else "Không có thang điểm nào khớp.")
+        else:
+            st.markdown(_md)
+        st.download_button("⬇️ Tải bản .md", _md, file_name=_brief.name,
+                           mime="text/markdown", key="dl_rag_md")
