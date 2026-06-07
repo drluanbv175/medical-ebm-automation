@@ -21,5 +21,8 @@ data/tiktok/20*
 # Harness runtime artifacts
 .claude/state/
 .claude/logs/
+.claude/sessions/
+.claude/worktrees/
 .claude/settings.local.json
 state.db
+out/
