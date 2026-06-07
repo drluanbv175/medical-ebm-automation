@@ -161,6 +161,11 @@ class Settings:
         default_factory=lambda: _get_float("HTTP_BACKOFF_FACTOR", 1.5)
     )
     http_cache_ttl: int = field(default_factory=lambda: _get_int("HTTP_CACHE_TTL", 86400))
+    # Giãn cách tối thiểu giữa 2 request CÙNG host (giây) — tôn trọng etiquette NCBI
+    # (~3 req/s không key). Đặt 0 để tắt.
+    http_min_interval: float = field(
+        default_factory=lambda: _get_float("HTTP_MIN_INTERVAL", 0.34)
+    )
 
     # Đường dẫn dữ liệu
     data_dir: Path = field(default_factory=lambda: BASE_DIR / "data")

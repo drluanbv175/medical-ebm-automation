@@ -9,6 +9,7 @@ import json
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 
 import requests
 
@@ -19,6 +20,23 @@ logger = get_logger(__name__)
 
 _CACHE_DIR = settings.raw_dir / "_http_cache"
 _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+# Thời điểm request gần nhất theo host, để giãn cách chủ động (NCBI etiquette).
+_last_request_at: Dict[str, float] = {}
+
+
+def _throttle(url: str, min_interval: float) -> None:
+    """Ngủ vừa đủ để 2 request cùng host cách nhau >= min_interval giây."""
+    if min_interval <= 0:
+        return
+    host = urlparse(url).netloc
+    last = _last_request_at.get(host)
+    now = time.monotonic()
+    if last is not None:
+        elapsed = now - last
+        if elapsed < min_interval:
+            time.sleep(min_interval - elapsed)
+    _last_request_at[host] = time.monotonic()
 
 
 def _cache_key(method: str, url: str, params: Optional[Dict[str, Any]]) -> str:
@@ -61,6 +79,7 @@ class HttpClient:
         self,
         default_headers: Optional[Dict[str, str]] = None,
         cache_ttl: Optional[int] = None,
+        min_interval: Optional[float] = None,
     ) -> None:
         self.session = requests.Session()
         if default_headers:
@@ -70,6 +89,7 @@ class HttpClient:
             f"medical-ebm-automation/0.1 (mailto:{settings.ncbi_email or settings.openalex_email or 'unknown'})",
         )
         self.cache_ttl = settings.http_cache_ttl if cache_ttl is None else cache_ttl
+        self.min_interval = settings.http_min_interval if min_interval is None else min_interval
 
     def get_json(
         self,
@@ -106,6 +126,7 @@ class HttpClient:
         last_exc: Optional[Exception] = None
         while attempt <= settings.http_max_retries:
             try:
+                _throttle(url, self.min_interval)
                 resp = self.session.request(
                     method, url, params=params, timeout=settings.http_timeout
                 )

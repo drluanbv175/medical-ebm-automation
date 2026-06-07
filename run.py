@@ -76,6 +76,15 @@ def main() -> int:
 
     elif cmd == "notify-test":
         # Gửi thử cảnh báo NGAY (force) để kiểm tra SMTP/webhook, kể cả khi không có mục mới.
+        from app.config import settings as _s
+        _to = _s.alert_email_to or "(ALERT_EMAIL_TO chưa đặt)"
+        _ans = input(
+            f"⚠️  Sẽ GỬI email/webhook THẬT tới {_to} (kể cả khi không có mục mới). "
+            "Tiếp tục? [y/N] "
+        ).strip().lower()
+        if _ans != "y":
+            print("Đã hủy.")
+            return 0
         from app.main import cmd_notify
         _print(cmd_notify(days=30, force=True))
 
@@ -102,7 +111,8 @@ def main() -> int:
             lines.append(f"SMTP_PASSWORD={pw}")
         env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         print("\n✅ Đã lưu App Password vào .env (an toàn, được .gitignore bảo vệ).")
-        print("📧 Đang gửi email thử về bsluanbv175@gmail.com ...\n")
+        from app.config import settings as _s
+        print(f"📧 Đang gửi email thử về {_s.alert_email_to or '(ALERT_EMAIL_TO chưa đặt trong .env)'} ...\n")
         from app.main import cmd_notify
         res = cmd_notify(days=30, force=True)
         em = res.get("email", {})

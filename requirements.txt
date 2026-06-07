@@ -3,6 +3,7 @@ python-dotenv>=1.0.1
 SQLAlchemy>=2.0.30
 requests>=2.32.0
 pydantic>=2.7.0
+defusedxml>=0.7.1   # parse XML an toàn (chống XXE/billion-laughs) cho pubmed/rss
 
 # Scheduler
 APScheduler>=3.10.4

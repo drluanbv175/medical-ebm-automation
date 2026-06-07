@@ -52,6 +52,24 @@ không bị trôi/sai khi sửa về sau.
 
 ---
 
+## Phase 4: Hoàn thiện toàn diện (audit-driven)
+
+| Task | Nội dung | DoD | Depends | Status |
+|------|----------|-----|---------|--------|
+| 4.A1 | XXE: dùng `defusedxml` cho parse XML (pubmed, rss). `[tdd:required]` | test parse XML an toàn; pytest xanh | - | cc:done |
+| 4.A2 | Rate-limit chủ động theo host trong HttpClient (NCBI etiquette). `[tdd:required]` | test throttle; pytest xanh | - | cc:done |
+| 4.A3 | Xác nhận trước khi gửi email thật (notify-test/set-email) + bỏ email hardcode. `[tdd:skip:cli-io]` | có bước [y/N]; dùng settings.alert_email_to | - | cc:done |
+| 4.A4 | Bắt lỗi nút "Cập nhật ngay" trên dashboard (không lộ traceback). `[tdd:skip:ui]` | try/except + st.error thân thiện | - | cc:done |
+| 4.A5 | Chống CSV/Excel formula injection + xóa dead code. `[tdd:required]` | test escape `=+-@`; pytest xanh | - | cc:done (CSV guard + xóa _safe_search; gộp _clean → 4.D2) |
+| 4.B1 | Cột `is_mock`/`source_mode` cho EvidenceItem + map trong normalize + banner dashboard + lọc báo cáo. `[tdd:required]` | test mock không lẫn live; banner hiện | - | cc:todo |
+| 4.C1 | Regulatory-alert không tự lên Tier A từ 1 keyword. `[tdd:required]` **[duyệt]** | test FDA-1-dòng không actionable; pytest xanh | - | blocked (chờ duyệt) |
+| 4.C2 | Bỏ heuristic cứng (large_sample token, official_org substring) + dedup version-aware. `[tdd:required]` **[duyệt]** | test dương-tính-giả biến mất | - | blocked (chờ duyệt) |
+| 4.D1 | Batch dịch máy + phân trang/tìm kiếm dashboard. `[tdd:skip:ui]` | dịch 1 call/abstract; có ô tìm + giới hạn hàng | - | cc:todo |
+| 4.D2 | Tách business logic khỏi dashboard → services (evidence query, chọn câu, lọc kháng sinh). `[tdd:required]` | logic có test; dashboard chỉ gọi | - | cc:todo |
+| 4.D3 | Thêm test cho notify/exporters/dashboard-logic. `[tdd:required]` | test mới xanh | 4.D2 | cc:todo |
+
+---
+
 ## In Progress
 
 (none)

@@ -121,12 +121,3 @@ def _fetch(client, query: str, area: str, max_results: int,
                query=f"[{area}] {query}", record_count=len(records),
                status=status, error_message=err, mode=mode)
     return records, log
-
-
-# Tương thích ngược: vài nơi/test có thể gọi _safe_search cũ.
-def _safe_search(client, query: str, area: str, max_results: int,
-                 since_date: Optional[str] = None) -> List[RawRecord]:
-    records, log = _fetch(client, query, area, max_results, since_date)
-    with session_scope() as s:
-        s.add(SourceLog(**log))
-    return records

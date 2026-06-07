@@ -18,6 +18,17 @@ def _stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d")
 
 
+def _safe_cell(value):
+    """Chống formula injection: ô bắt đầu bằng = + - @ (hoặc tab/CR) bị thêm ' phía trước.
+
+    Excel/Sheets có thể THỰC THI ô bắt đầu bằng các ký tự này như công thức khi mở file
+    do hệ thống sinh từ dữ liệu nguồn ngoài (title/query/error). Prefix ' để vô hiệu hóa.
+    """
+    if isinstance(value, str) and value and value[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + value
+    return value
+
+
 def export_dashboard_excel() -> Path:
     """Xuất Dashboard_Master_EBM_YYYYMMDD.xlsx với nhiều sheet."""
     from openpyxl import Workbook
@@ -31,16 +42,18 @@ def export_dashboard_excel() -> Path:
     with session_scope() as s:
         for r in s.query(EvidenceItem).filter(
                 EvidenceItem.is_primary_record.is_(True)).all():
-            ws.append([r.id, r.clinical_area, r.title, r.journal_or_organization,
-                       r.study_type, r.evidence_quality_score, r.practice_change_score,
-                       r.reliability_tier, r.operational_evidence_level,
-                       r.classification, r.is_actionable, r.doi, r.pmid, r.nct_id, r.url])
+            ws.append([_safe_cell(x) for x in
+                       [r.id, r.clinical_area, r.title, r.journal_or_organization,
+                        r.study_type, r.evidence_quality_score, r.practice_change_score,
+                        r.reliability_tier, r.operational_evidence_level,
+                        r.classification, r.is_actionable, r.doi, r.pmid, r.nct_id, r.url]])
 
         ws2 = wb.create_sheet("SourceLog")
         ws2.append(["run_at", "source", "query", "record_count", "status", "mode"])
         for sl in s.query(SourceLog).order_by(SourceLog.run_at.desc()).limit(500).all():
-            ws2.append([str(sl.run_at), sl.source, sl.query, sl.record_count,
-                        sl.status, sl.mode])
+            ws2.append([_safe_cell(x) for x in
+                        [str(sl.run_at), sl.source, sl.query, sl.record_count,
+                         sl.status, sl.mode]])
 
     path = settings.exports_dir / f"Dashboard_Master_EBM_{_stamp()}.xlsx"
     wb.save(str(path))
@@ -60,7 +73,7 @@ def export_research_tracker_excel() -> Path:
     ws.append(cols)
     with session_scope() as s:
         for p in s.query(ResearchProject).all():
-            ws.append([getattr(p, c) for c in cols])
+            ws.append([_safe_cell(getattr(p, c)) for c in cols])
     path = settings.exports_dir / f"Research_Tracker_{_stamp()}.xlsx"
     wb.save(str(path))
     logger.info("Đã xuất Research Tracker: %s", path)
@@ -74,8 +87,9 @@ def export_source_log_csv() -> Path:
         w.writerow(["run_at", "source", "api_endpoint", "query", "record_count",
                     "status", "mode", "error_message"])
         for sl in s.query(SourceLog).order_by(SourceLog.run_at.desc()).all():
-            w.writerow([sl.run_at, sl.source, sl.api_endpoint, sl.query,
-                        sl.record_count, sl.status, sl.mode, sl.error_message])
+            w.writerow([_safe_cell(x) for x in
+                        [sl.run_at, sl.source, sl.api_endpoint, sl.query,
+                         sl.record_count, sl.status, sl.mode, sl.error_message]])
     logger.info("Đã xuất Source Log CSV: %s", path)
     return path
 

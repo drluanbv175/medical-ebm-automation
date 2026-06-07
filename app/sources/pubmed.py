@@ -9,6 +9,8 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from typing import List, Optional
 
+from defusedxml.ElementTree import fromstring as _safe_fromstring  # chống XXE/billion-laughs
+
 from app.config import settings
 from app.sources._fixtures import mock_records_for
 from app.sources.base import RawRecord, SourceClient
@@ -81,9 +83,9 @@ class PubMedClient(SourceClient):
                       query: str) -> List[RawRecord]:
         records: List[RawRecord] = []
         try:
-            root = ET.fromstring(xml_text)
-        except ET.ParseError as exc:
-            logger.warning("[pubmed] parse XML lỗi: %s", exc)
+            root = _safe_fromstring(xml_text)
+        except (ET.ParseError, ValueError) as exc:
+            logger.warning("[pubmed] parse XML lỗi/không an toàn: %s", exc)
             return records
         for art in root.findall(".//PubmedArticle"):
             pmid = art.findtext(".//PMID")

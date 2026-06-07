@@ -422,15 +422,25 @@ st.sidebar.markdown("### ▶️ Hành động")
 if st.sidebar.button("🔄 Cập nhật ngay (nguồn THẬT + email)",
                      type="primary", use_container_width=True):
     from app.main import cmd_live_update
-    with st.spinner("Đang quét nguồn thật (PubMed/FDA/MHRA…) – có thể vài phút. "
-                    "Sẽ tự gửi email nếu có mục mới…"):
-        res = cmd_live_update()
-    p = res.get("pipeline", {})
-    notify = res.get("notify", {}) or {}
-    st.sidebar.success(
-        f"✅ Xong: {p.get('new_items', 0)} mục MỚI / {p.get('total', 0)} bản ghi. "
-        f"Email: {notify.get('email', {}).get('status', '—')}")
-    st.rerun()
+    _ok = False
+    try:
+        with st.spinner("Đang quét nguồn thật (PubMed/FDA/MHRA…) – có thể vài phút. "
+                        "Sẽ tự gửi email nếu có mục mới…"):
+            res = cmd_live_update()
+        p = res.get("pipeline", {})
+        notify = res.get("notify", {}) or {}
+        st.sidebar.success(
+            f"✅ Xong: {p.get('new_items', 0)} mục MỚI / {p.get('total', 0)} bản ghi. "
+            f"Email: {notify.get('email', {}).get('status', '—')}")
+        _ok = True
+    except Exception as exc:  # noqa: BLE001 - hiển thị lỗi thân thiện thay vì traceback
+        from app.utils.logging_config import get_logger
+        get_logger(__name__).exception("Lỗi cập nhật trực tiếp từ dashboard")
+        st.sidebar.error(
+            f"❌ Cập nhật thất bại: {exc}\n\n"
+            "Kiểm tra kết nối mạng và cấu hình email (.env) rồi thử lại.")
+    if _ok:
+        st.rerun()
 
 c_a, c_b = st.sidebar.columns(2)
 if c_a.button("🌱 Dữ liệu mẫu", use_container_width=True,

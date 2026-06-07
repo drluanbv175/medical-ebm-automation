@@ -13,6 +13,8 @@ from datetime import datetime
 from email.utils import parsedate_to_datetime
 from typing import List, Optional
 
+from defusedxml.ElementTree import fromstring as _safe_fromstring  # chống XXE/billion-laughs
+
 from app.sources._fixtures import MOCK_FEED_ITEMS
 from app.sources.base import RawRecord, SourceClient
 from app.sources.classify_meta import infer_study_type
@@ -97,9 +99,9 @@ class RSSFeedClient(SourceClient):
     def _parse(self, xml_text: str, max_results: int,
                since_date: Optional[str]) -> List[RawRecord]:
         try:
-            root = ET.fromstring(xml_text)
-        except ET.ParseError as exc:
-            logger.warning("[%s] parse XML lỗi: %s", self.name, exc)
+            root = _safe_fromstring(xml_text)
+        except (ET.ParseError, ValueError) as exc:
+            logger.warning("[%s] parse XML lỗi/không an toàn: %s", self.name, exc)
             return []
         # Thu thập cả <item> (RSS) và <entry> (Atom)
         entries = [e for e in root.iter() if _localname(e.tag) in ("item", "entry")]
