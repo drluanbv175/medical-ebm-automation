@@ -39,7 +39,7 @@ không bị trôi/sai khi sửa về sau.
 
 | Task | Nội dung | DoD | Depends | Status |
 |------|----------|-----|---------|--------|
-| 2.1 | Quyết định xử lý `score_id` đã đổi tên (`cha2ds2_vasc`, `meld_na`): giữ id + alias hiển thị hay đổi id. Ghi quyết định, **không phá khóa DB**. `[tdd:skip:decision-doc]` | Quyết định ghi vào `docs/RA_SOAT_THANG_DIEM_2026-06.md` (hoặc spec); seed vẫn chạy, không mất dữ liệu cũ | 1.1, 1.4 | cc:todo |
+| 2.1 | Quyết định xử lý `score_id` đã đổi tên (`cha2ds2_vasc`, `meld_na`): giữ id + alias hiển thị hay đổi id. Ghi quyết định, **không phá khóa DB**. `[tdd:skip:decision-doc]` | Quyết định ghi vào `docs/RA_SOAT_THANG_DIEM_2026-06.md` (hoặc spec); seed vẫn chạy, không mất dữ liệu cũ | 1.1, 1.4 | blocked (chờ chuyên khoa quyết; không tự quyết để tránh dữ liệu không tin cậy) |
 | 2.2 | Cập nhật Change Log + thêm mục **chờ bác sĩ chuyên khoa ký xác nhận** (doc mục D.1) vào tài liệu. `[tdd:skip:docs-only]` | Doc cập nhật, có dòng sign-off; README trỏ tới quy trình cập nhật | 2.1 | cc:todo |
 
 ---
