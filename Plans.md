@@ -28,7 +28,7 @@ không bị trôi/sai khi sửa về sau.
 
 | Task | Nội dung | DoD | Depends | Status |
 |------|----------|-----|---------|--------|
-| 1.1 | Test khóa **6 thang đã cập nhật**: CHA2DS2-VA (max 8, ngưỡng ≥2 không phân biệt giới), FIB-4 (<1.3 MASLD/AASLD 2023), qSOFA (SSC 2021 *mạnh chống* sàng lọc đơn lẻ), MELD 3.0 (chuẩn từ 2023), GOLD ABE 2025 (eos ≥300 cho ICS), ASCVD PCE + cảnh báo PREVENT 2023. `[tdd:required]` | `tests/test_clinical_scores_updates.py` PASS; mỗi test FAIL nếu cụm từ/ngưỡng tương ứng bị xóa khỏi `verified.py` | 0.1 | cc:todo |
+| 1.1 | Test khóa **6 thang đã cập nhật**: CHA2DS2-VA (max 8, ngưỡng ≥2 không phân biệt giới), FIB-4 (<1.3 MASLD/AASLD 2023), qSOFA (SSC 2021 *mạnh chống* sàng lọc đơn lẻ), MELD 3.0 (chuẩn từ 2023), GOLD ABE 2025 (eos ≥300 cho ICS), ASCVD PCE + cảnh báo PREVENT 2023. `[tdd:required]` | `tests/test_clinical_scores_updates.py` PASS; mỗi test FAIL nếu cụm từ/ngưỡng tương ứng bị xóa khỏi `verified.py` | 0.1 | cc:done (12 test, APPROVE) |
 | 1.2 | Test khóa **GAD-7 = USPSTF 2023 mức B** (sàng lọc lo âu người lớn ≤64). `[tdd:required]` | Test PASS, FAIL nếu mất tham chiếu USPSTF 2023 | 0.1 | cc:todo |
 | 1.3 | Đảm bảo `seed_verified_scores()` ghi **ChangeLogEntry** cho mỗi thang được cập nhật. `[tdd:required]` | Test xác nhận có change-log entry sau khi cập nhật score; không trùng lặp khi chạy lại | 0.1 | cc:todo |
 | 1.4 | Test **liêm chính danh mục**: số `verified` = 32 và `needs_verification` = 16 (theo doc), và không `needs_verification` nào có công thức. `[tdd:required]` | Test PASS phản ánh đúng số liệu doc; nếu lệch → cập nhật doc hoặc code cho khớp | 0.1 | cc:todo |
