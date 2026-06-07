@@ -10,6 +10,7 @@ Bản ghi mốc kiểm thử để theo dõi độ trôi (regression) của bộ
 | 2026-06-07 | Task 0.2: thiết lập lint baseline (ruff) | 114 passed (test không đổi) | `ruff.toml` (E,F,W,I; py39; line=100). **Baseline lint: 189 cảnh báo** (131 E501, 39 I001, 10 F401, 6 E702, 3 khác). Chưa sửa — sửa là task riêng để review an toàn. |
 | 2026-06-07 | Task 3.1: dọn lint về 0 | **114 passed** (không đổi) | Lỗi thực đã sửa (import/biến thừa, semicolon, tên `l`→`line`, bẻ dòng chuỗi). E501: line=120 + per-file-ignore file dữ liệu/template (`verified.py`, `_fixtures.py`, `package.py`). `ruff check` = **0 lỗi**; reviewer APPROVE (6/6 điểm tương đương ngữ nghĩa). |
 | 2026-06-07 | Phase 4 — hoàn thiện toàn diện (audit-driven, 4 nhóm) | **114 → 142 passed** | A: XXE/defusedxml, rate-limit NCBI, confirm gửi email, bắt lỗi UI, CSV-injection. B: cột is_mock + banner + loại mock khỏi actionable (live). C (đã duyệt): regulatory không tự Tier A, bỏ heuristic cứng, dedup theo năm. D: batch dịch + tìm kiếm/giới hạn hàng, tách is_antibiotic, +smoke test. +28 test; reviewer APPROVE từng nhóm; ruff 0. Tách toàn bộ dashboard monolith: HOÃN (rủi ro). |
+| 2026-06-07 | Re-score 2199 bản ghi chính theo luật Nhóm C (`scripts/rescore.py --apply`) | n/a (dữ liệu) | DB đã backup vào `data/archive/`. Actionable **56 → 49** (7 cảnh báo regulatory chuyển sang need_full_text); need_full_text 211→218. watch_only/excluded không đổi. |
 
 ## Cách tái lập baseline
 
