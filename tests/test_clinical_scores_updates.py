@@ -69,8 +69,13 @@ def test_ascvd_prevent_caveat_2023():
     _assert_pins("ascvd_pce", ["PREVENT", "2023"])
 
 
+def test_gad7_uspstf_2023_grade_b():
+    # USPSTF 2023: khuyến cáo MỚI mức B sàng lọc rối loạn lo âu ở người lớn ≤64
+    _assert_pins("gad7", ["USPSTF 2023", "mức B", "lo âu"])
+
+
 @pytest.mark.parametrize("score_id", ["cha2ds2_vasc", "fib4", "qsofa",
-                                      "meld_na", "gold_abe", "ascvd_pce"])
+                                      "meld_na", "gold_abe", "ascvd_pce", "gad7"])
 def test_updated_scores_have_source_and_guideline(score_id):
     # Liêm chính: mỗi thang đã cập nhật phải còn nguồn + guideline_reference
     e = _entry(score_id)
