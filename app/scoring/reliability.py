@@ -24,8 +24,10 @@ def reliability_tier(item: Dict, evidence_q: float, practice_c: float) -> str:
     if item.get("reason_for_exclusion"):
         return "D"
 
-    # A: nguồn rất mạnh + tiềm năng đổi thực hành cao
-    strong_source = study_type in ("guideline", "regulatory_alert", "systematic_review", "rct")
+    # A: nguồn rất mạnh + tiềm năng đổi thực hành cao.
+    # regulatory_alert KHÔNG nằm đây: cảnh báo cơ quan quản lý cần đọc toàn văn (tối đa Tier B),
+    # tránh 1 tin feed ngắn tự lên "actionable".
+    strong_source = study_type in ("guideline", "systematic_review", "rct")
     if strong_source and evidence_q >= 75 and practice_c >= 60:
         return "A"
 

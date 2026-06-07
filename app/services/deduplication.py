@@ -21,7 +21,8 @@ def _key_for(item: Dict) -> Optional[str]:
             return f"{field}:{str(item[field]).lower()}"
     if (item.get("study_type") or "") == "guideline":
         org = (item.get("journal_or_organization") or "").lower()
-        ver = (item.get("guideline_version") or "").lower()
+        # Phiên bản; nếu không có thì dùng NĂM để 2 guideline cùng tên khác năm không bị gộp.
+        ver = (item.get("guideline_version") or "").lower() or (item.get("publication_date") or "")[:4]
         if org:
             return f"guideline:{org}:{normalized_title_key(item.get('title', ''))}:{ver}"
     return None
@@ -34,6 +35,22 @@ def _title_similar(a: str, b: str) -> bool:
     if ka == kb:
         return True
     return SequenceMatcher(None, ka, kb).ratio() >= TITLE_SIMILARITY_THRESHOLD
+
+
+def _same_version(a: Dict, b: Dict) -> bool:
+    """False nếu 2 mục khác NĂM xuất bản hoặc khác guideline_version -> KHÔNG gộp.
+
+    Tránh gộp nhầm ESC 2020 với ESC 2024, hay 2 RCT title gần giống nhưng khác phiên bản.
+    """
+    ya = (a.get("publication_date") or "")[:4]
+    yb = (b.get("publication_date") or "")[:4]
+    if ya and yb and ya != yb:
+        return False
+    va = (a.get("guideline_version") or "").strip().lower()
+    vb = (b.get("guideline_version") or "").strip().lower()
+    if va and vb and va != vb:
+        return False
+    return True
 
 
 def deduplicate(items: List[Dict]) -> Tuple[List[int], List[Tuple[int, int, str]]]:
@@ -57,7 +74,8 @@ def deduplicate(items: List[Dict]) -> Tuple[List[int], List[Tuple[int, int, str]
             reason = key.split(":", 1)[0]
         else:
             for p in primary_positions:
-                if _title_similar(items[p].get("title", ""), item.get("title", "")):
+                if (_title_similar(items[p].get("title", ""), item.get("title", ""))
+                        and _same_version(items[p], item)):
                     matched, reason = p, "title_similarity"
                     break
 

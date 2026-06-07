@@ -7,6 +7,7 @@ Hàm trả về (score, breakdown) để giải thích minh bạch.
 """
 from __future__ import annotations
 
+import re
 from typing import Dict, Tuple
 
 # Điểm nền theo loại thiết kế (study_type chuẩn hóa).
@@ -26,7 +27,9 @@ DESIGN_BASE = {
     "preprint": 10,
     "animal_invitro": 5,
     "pharmacovigilance_signal": 30,
-    "regulatory_alert": 80,  # cảnh báo cơ quan quản lý: độ tin cậy nguồn cao
+    # Cảnh báo cơ quan quản lý: NGUỒN đáng tin nhưng 1 tin feed ngắn KHÔNG phải chứng cứ
+    # chất lượng cao. Để 60 (≤ ngưỡng Tier A) → mặc định cần đọc toàn văn trước khi hành động.
+    "regulatory_alert": 60,
 }
 
 
@@ -54,8 +57,11 @@ def evidence_quality_score(item: Dict) -> Tuple[float, Dict[str, float]]:
     elif any(k in text for k in surrogate):
         breakdown["surrogate_outcome"] = -5
 
-    # Cỡ mẫu lớn (heuristic theo số trong abstract)
-    if any(k in text for k in ("large", "thousands", "n=6", "n = 6", "6609", "10,", "multinational")):
+    # Cỡ mẫu lớn: bắt cỡ mẫu THẬT (n = <số> ≥ 1000), không dùng token cứng dễ dương tính giả.
+    _n = re.search(r"\bn\s*=\s*(\d[\d,]{2,})", text)
+    _big_n = bool(_n and int(_n.group(1).replace(",", "")) >= 1000)
+    if _big_n or any(k in text for k in ("multicenter trial", "large multinational",
+                                         "multinational cohort", "thousands of patients")):
         breakdown["large_sample"] = 3
 
     # Guideline chính thức / GRADE

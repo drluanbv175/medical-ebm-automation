@@ -9,7 +9,12 @@ Khi không đủ tín hiệu -> trả None để pipeline xử lý thận trọn
 """
 from __future__ import annotations
 
+import re
 from typing import Optional
+
+# Viết tắt ngắn dễ trùng từ tiếng Anh thông thường (who/Canada/vaccine...). Các tín hiệu này
+# CHỈ khớp trong trường journal/organization, không khớp trong tiêu đề/tác giả.
+_AMBIGUOUS_ORG_SIGNALS = {"who", "ada", "acc", "esc", "es", "acr", "ema", "easl", "gold", "cdc"}
 
 # Server preprint phổ biến (loại khỏi phần thay đổi thực hành).
 _PREPRINT = ("medrxiv", "biorxiv", "ssrn", "preprint", "preprints.org",
@@ -96,9 +101,17 @@ def infer_study_type(title: Optional[str], document_type: Optional[str] = None,
 
 def detect_official_org(title: Optional[str], journal: Optional[str] = None,
                         authors: Optional[str] = None) -> Optional[str]:
-    """Nhận diện tổ chức/tạp chí chính thống. Trả tên chuẩn hoặc None."""
-    blob = " ".join(x for x in (journal, title, authors) if x).lower()
+    """Nhận diện tổ chức/tạp chí chính thống. Trả tên chuẩn hoặc None.
+
+    Khớp theo RANH GIỚI TỪ để 'who' không trúng 'patients who', 'acc' không trúng
+    'vaccine'. Viết tắt dễ nhầm chỉ khớp trong trường journal/organization.
+    """
+    journal_blob = (journal or "").lower()
+    full_blob = " ".join(x for x in (journal, title, authors) if x).lower()
     for signal, name in OFFICIAL_ORG_SIGNALS.items():
-        if isinstance(name, str) and signal in blob:
+        if not isinstance(name, str):
+            continue
+        blob = journal_blob if signal in _AMBIGUOUS_ORG_SIGNALS else full_blob
+        if re.search(rf"(?<![a-z0-9]){re.escape(signal)}(?![a-z0-9])", blob):
             return name
     return None
