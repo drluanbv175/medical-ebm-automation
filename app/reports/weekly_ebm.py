@@ -100,9 +100,8 @@ def build_weekly_data(new_window_days: int = 7, exclude_mock=None) -> Dict:
 
 
 def _is_antibiotic(r: EvidenceItem) -> bool:
-    text = " ".join(str(x or "") for x in (r.title, r.abstract, " ".join(r.keywords or []))).lower()
-    return any(k in text for k in ("antibiotic", "antimicrobial", "stewardship",
-                                   "kháng sinh", "aware", "pneumonia"))
+    from app.services.filtering import is_antibiotic_text
+    return is_antibiotic_text(r.title, r.abstract, " ".join(r.keywords or []))
 
 
 # --------------------------------------------------------------------------

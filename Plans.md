@@ -64,9 +64,9 @@ không bị trôi/sai khi sửa về sau.
 | 4.B1 | Cột `is_mock` cho EvidenceItem + map trong normalize + migration + banner dashboard + loại mock khỏi actionable (live). `[tdd:required]` | test mock không lẫn live; banner hiện | - | cc:done |
 | 4.C1 | Regulatory-alert không tự lên Tier A từ 1 keyword. `[tdd:required]` **[đã duyệt]** | test FDA-1-dòng không actionable; pytest xanh | - | cc:done |
 | 4.C2 | Bỏ heuristic cứng (large_sample token, official_org substring) + dedup version-aware. `[tdd:required]` **[đã duyệt]** | test dương-tính-giả biến mất | - | cc:done |
-| 4.D1 | Batch dịch máy + phân trang/tìm kiếm dashboard. `[tdd:skip:ui]` | dịch 1 call/abstract; có ô tìm + giới hạn hàng | - | cc:todo |
-| 4.D2 | Tách business logic khỏi dashboard → services (evidence query, chọn câu, lọc kháng sinh). `[tdd:required]` | logic có test; dashboard chỉ gọi | - | cc:todo |
-| 4.D3 | Thêm test cho notify/exporters/dashboard-logic. `[tdd:required]` | test mới xanh | 4.D2 | cc:todo |
+| 4.D1 | Batch dịch máy + phân trang/tìm kiếm dashboard. `[tdd:skip:ui]` | dịch batch/cell; ô tìm + giới hạn 300 hàng | - | cc:done |
+| 4.D2 | Tách logic kháng sinh dùng chung (is_antibiotic_text) + dùng ở report & dashboard. `[tdd:required]` | logic có test; hết trùng lặp | - | cc:done (tách is_antibiotic; tách toàn bộ monolith → HOÃN, rủi ro cao trên app đang chạy) |
+| 4.D3 | Thêm test cho notify/exporters/antibiotic/translate-batch. `[tdd:required]` | test mới xanh | 4.D2 | cc:done |
 
 ---
 

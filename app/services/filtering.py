@@ -15,6 +15,16 @@ EXCLUDED_STUDY_TYPES = {
 }
 EXCLUDE_KEYWORDS = ("advertisement", "press release", "quảng cáo", "company pr")
 
+# Từ khóa nhận diện chủ đề kháng sinh (dùng CHUNG cho báo cáo + dashboard, tránh trùng lặp).
+ANTIBIOTIC_KEYWORDS = ("antibiotic", "antimicrobial", "stewardship",
+                       "kháng sinh", "aware", "pneumonia")
+
+
+def is_antibiotic_text(*parts) -> bool:
+    """True nếu bất kỳ phần văn bản nào (title/abstract/keywords/source) chứa từ khóa kháng sinh."""
+    text = " ".join(str(p or "") for p in parts).lower()
+    return any(k in text for k in ANTIBIOTIC_KEYWORDS)
+
 
 def classify(item: Dict) -> Tuple[str, bool, str, str]:
     """Trả về (classification, is_actionable, actionable_reason, reason_for_exclusion)."""

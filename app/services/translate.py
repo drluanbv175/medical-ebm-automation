@@ -88,3 +88,42 @@ def translate_vi(text: str) -> Optional[str]:
     except Exception as exc:  # pragma: no cover - phụ thuộc mạng
         logger.warning("Dịch ->VI lỗi (offline?): %s", exc)
         return None
+
+
+def translate_vi_batch(texts):
+    """Dịch nhiều câu trong MỘT lượt gọi mạng (giảm độ trễ khi mở 1 abstract).
+
+    Trả list cùng độ dài; phần tử None nếu là tiếng Việt sẵn / rỗng / lỗi. Tận dụng
+    cache từng câu (câu đã dịch không gọi lại). Câu tiếng Việt/rỗng không tốn lượt gọi.
+    """
+    global _cache
+    texts = list(texts)
+    results = [None] * len(texts)
+    if _cache is None:
+        _cache = _load_cache()
+    to_fetch = []  # (index, text, key)
+    for i, t in enumerate(texts):
+        if not t or not t.strip() or _looks_vietnamese(t):
+            continue
+        key = hashlib.sha1(t.encode("utf-8")).hexdigest()
+        if key in _cache:
+            results[i] = _cache[key]
+        else:
+            to_fetch.append((i, t, key))
+    if not to_fetch:
+        return results
+    try:
+        from deep_translator import GoogleTranslator
+        tr = GoogleTranslator(source="auto", target="vi")
+        out = tr.translate_batch([t[:4500] for _, t, _ in to_fetch])
+        changed = False
+        for (i, _t, key), vi in zip(to_fetch, out or []):
+            if vi and not _is_degenerate(vi):
+                results[i] = vi
+                _cache[key] = vi
+                changed = True
+        if changed:
+            _save_cache(_cache)
+    except Exception as exc:  # pragma: no cover - phụ thuộc mạng
+        logger.warning("Dịch batch ->VI lỗi (offline?): %s", exc)
+    return results

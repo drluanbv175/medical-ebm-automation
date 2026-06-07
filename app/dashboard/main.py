@@ -307,9 +307,10 @@ def render_clinical_application(d: dict) -> None:
     # ===== 2) 🧬 CHI TIẾT THEO PICO / NỘI DUNG CHÍNH (trích nguyên văn) =====
     def _cell(items):
         """Mỗi câu = 1 gạch đầu dòng: tiếng Việt (thường) + nguyên văn EN (nghiêng) dưới."""
+        from app.services.translate import translate_vi_batch
+        vis = translate_vi_batch(list(items))  # dịch cả cụm trong 1 lượt gọi mạng (nhanh hơn)
         blocks = []
-        for s in items:
-            vi = _tr_vi(s)
+        for s, vi in zip(items, vis):
             en = _html.escape(s)
             if vi and _html.escape(vi) != en:
                 blocks.append(f'<div class="qrow"><div class="vi">{_html.escape(vi)}</div>'
@@ -560,16 +561,25 @@ with tabs[1]:
     with session_scope() as s:
         rows = _evidence_rows(s)
     if rows:
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns([2, 2, 1])
         areas = ["(Tất cả)"] + sorted({r["clinical_area"] for r in rows if r["clinical_area"]})
         pick = col1.selectbox("Lọc theo chuyên khoa", areas)
-        only_new = col2.checkbox("🆕 Chỉ hiện tài liệu mới (7 ngày)", value=False)
-        visible = [r for r in rows
-                   if (pick == "(Tất cả)" or r["clinical_area"] == pick)
-                   and (not only_new or r["is_new"])]
-
-        st.caption(f"👉 **Bấm vào một hàng** để xem chi tiết áp dụng lâm sàng bên dưới. "
-                   f"({len(visible)} tài liệu)")
+        kw = col2.text_input("🔎 Tìm trong tiêu đề/nguồn",
+                             placeholder="vd: atrial fibrillation, statin…")
+        only_new = col3.checkbox("🆕 Mới (7 ngày)", value=False)
+        kw_l = kw.strip().lower()
+        filtered = [r for r in rows
+                    if (pick == "(Tất cả)" or r["clinical_area"] == pick)
+                    and (not only_new or r["is_new"])
+                    and (not kw_l
+                         or kw_l in (str(r["title"]) + " " + str(r["source"] or "")).lower())]
+        ROW_LIMIT = 300
+        visible = filtered[:ROW_LIMIT]
+        _more = len(filtered) - len(visible)
+        st.caption("👉 **Bấm vào một hàng** để xem chi tiết áp dụng lâm sàng bên dưới. "
+                   f"({len(filtered)} tài liệu"
+                   + (f"; hiện {ROW_LIMIT} mục đầu — hãy tìm/lọc để thu hẹp" if _more > 0 else "")
+                   + ")")
         disp = pd.DataFrame([{
             "🆕": "🆕" if r["is_new"] else "",
             "Chuyên khoa": r["clinical_area"] or "—",
@@ -624,10 +634,8 @@ with tabs[3]:
     st.header("Kháng sinh / Antibiotic Stewardship")
     with session_scope() as s:
         rows = _evidence_rows(s)
-    ab = [r for r in rows if r["title"] and any(
-        k in (r["title"] + str(r.get("source", ""))).lower()
-        for k in ("antibiotic", "antimicrobial", "stewardship", "kháng sinh",
-                  "pneumonia", "aware"))]
+    from app.services.filtering import is_antibiotic_text
+    ab = [r for r in rows if r["title"] and is_antibiotic_text(r["title"], r.get("source", ""))]
     if ab:
         disp = pd.DataFrame([{
             "Tiêu đề": r["title"], "Nguồn": r["source"] or "",

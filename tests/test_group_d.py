@@ -1,0 +1,60 @@
+"""Nhóm D — test cho logic tách ra + smoke test các luồng chưa có test."""
+from __future__ import annotations
+
+import hashlib
+
+# ---- D2: phân loại kháng sinh dùng chung ----
+
+def test_is_antibiotic_text_positive_negative():
+    from app.services.filtering import is_antibiotic_text
+    assert is_antibiotic_text("Antibiotic stewardship in CAP") is True
+    assert is_antibiotic_text("Quản lý kháng sinh ngoại trú") is True
+    assert is_antibiotic_text("Community-acquired pneumonia", "") is True
+    assert is_antibiotic_text("Statin for primary prevention") is False
+    assert is_antibiotic_text(None, "", []) is False
+
+
+# ---- D1: dịch batch (không gọi mạng trong test) ----
+
+def test_translate_batch_skips_vietnamese_and_empty():
+    from app.services import translate
+    out = translate.translate_vi_batch(["", "Đây là tiếng Việt rồi"])
+    assert out == [None, None]
+
+
+def test_translate_batch_uses_cache_without_network():
+    from app.services import translate
+    key = hashlib.sha1("Hello world".encode("utf-8")).hexdigest()
+    translate._cache = {key: "Xin chào thế giới"}
+    out = translate.translate_vi_batch(["Hello world"])
+    assert out == ["Xin chào thế giới"]
+
+
+# ---- D3: smoke test exporters ----
+
+def test_exporters_produce_files():
+    from app.clinical_scores import seed_clinical_scores, seed_verified_scores
+    from app.reports.exporters import (
+        export_dashboard_excel,
+        export_research_tracker_excel,
+        export_source_log_csv,
+        export_zotero_bibtex,
+    )
+    seed_clinical_scores()
+    seed_verified_scores()
+    for fn in (export_dashboard_excel, export_research_tracker_excel,
+               export_source_log_csv, export_zotero_bibtex):
+        path = fn()
+        assert path.exists(), f"{fn.__name__} không tạo được file"
+        assert path.stat().st_size >= 0
+
+
+# ---- D3: smoke test notify (không gửi thật — conftest đã tắt mọi kênh) ----
+
+def test_notify_does_not_send_when_unconfigured():
+    from app.services.notify import notify_high_priority_new
+    res = notify_high_priority_new(days=7)
+    assert isinstance(res, dict)
+    assert "email" in res
+    # conftest ép ENABLE_EMAIL_ALERTS=false + xóa SMTP -> phải skipped, KHÔNG sent.
+    assert res["email"].get("status") != "sent"
