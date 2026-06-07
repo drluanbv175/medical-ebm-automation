@@ -11,6 +11,7 @@
 | # | Tiêu đề | Loại | Tổ chức | Năm | Đường dẫn | Trạng thái | Thang điểm liên quan |
 |---|---------|------|---------|-----|-----------|-----------|----------------------|
 | 1 | Rà soát đối chiếu 30 thang điểm lâm sàng 2026-06 | review (nội bộ) | medical-ebm-automation | 2026 | `../docs/RA_SOAT_THANG_DIEM_2026-06.md` | ✅ đã có | (tất cả) |
+| 1b | Tổng hợp chứng cứ 32 thang điểm (RAG, có trích dẫn) | review (nội bộ, tự sinh) | medical-ebm-automation | 2026 | `reviews/tong-hop-chung-cu-thang-diem-2026.md` | ✅ đã có | (tất cả 32) |
 | 2 | ESC 2024 AF Guideline (AF-CARE, CHA2DS2-VA) | guideline | ESC | 2024 | `guidelines/esc_af_2024.pdf` | ⬜ cần thả PDF | cha2ds2_vasc, has_bled |
 | 3 | AASLD MASLD Practice Guidance (FIB-4 <1.3) | guideline | AASLD | 2023 | `guidelines/aasld_masld_2023.pdf` | ⬜ cần thả PDF | fib4 |
 | 4 | GOLD Report (ABE; eosinophil ≥300 cho ICS) | guideline | GOLD | 2025 | `guidelines/gold_2025.pdf` | ⬜ cần thả PDF | gold_abe |
