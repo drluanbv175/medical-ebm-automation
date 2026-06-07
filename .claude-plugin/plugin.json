@@ -1,0 +1,8 @@
+{
+  "name": "medical-ebm-automation",
+  "version": "0.1.0",
+  "description": "Pipeline EBM + research tracker + dashboard 9 tab (Python/Streamlit)",
+  "skills": [
+    "./skills/"
+  ]
+}

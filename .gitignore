@@ -1,0 +1,25 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+*.db
+data/raw/*
+data/processed/*
+data/reports/*
+data/exports/*
+data/archive/*
+data/tiktok/20*
+!data/tiktok/queue.txt
+!data/**/.gitkeep
+.DS_Store
+.streamlit/
+.env.bak.*
+
+# Harness runtime artifacts
+.claude/state/
+.claude/logs/
+.claude/settings.local.json
+state.db

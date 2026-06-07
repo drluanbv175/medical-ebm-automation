@@ -1,0 +1,16 @@
+{# Template Jinja2 tham chiếu cho báo cáo tuần.
+   Mặc định hệ thống render bằng app/reports/weekly_ebm.py:render_markdown().
+   Template này để mở rộng/tùy biến nếu muốn dùng Jinja2 trực tiếp. #}
+# Báo cáo Cập nhật EBM Hằng tuần
+
+*Tạo lúc: {{ generated_at }}*
+
+## 1. Tóm tắt điều hành
+Tổng: {{ counts.total }} | Actionable: {{ counts.actionable }} | Chưa đổi TH: {{ counts.not_yet }} | Bị loại: {{ counts.excluded }}
+
+{% for area, rows in by_area.items() %}
+## {{ area }}
+{% for r in rows %}
+- {{ r.title }} — {{ r.source }} ({{ r.reliability_tier }})
+{% endfor %}
+{% endfor %}

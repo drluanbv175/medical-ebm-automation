@@ -1,0 +1,29 @@
+# Core
+python-dotenv>=1.0.1
+SQLAlchemy>=2.0.30
+requests>=2.32.0
+pydantic>=2.7.0
+
+# Scheduler
+APScheduler>=3.10.4
+
+# Dashboard
+streamlit>=1.36.0
+pandas>=2.2.0
+plotly>=5.22.0
+
+# Reports / export
+Jinja2>=3.1.4
+deep-translator>=1.11.4
+python-docx>=1.1.2
+openpyxl>=3.1.5
+markdown>=3.6
+
+# Sinh ảnh slideshow TikTok (photo mode)
+Pillow>=10.0.0
+# Ghép video TikTok (kèm sẵn ffmpeg tĩnh; giọng đọc dùng macOS `say`)
+imageio-ffmpeg>=0.4.9
+
+# Testing
+pytest>=8.2.0
+responses>=0.25.0
