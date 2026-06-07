@@ -1,0 +1,10 @@
+# Ruff lint baseline (task 0.2).
+# Cấu hình tối thiểu để `ruff check` chạy được. KHÔNG sửa lỗi hàng loạt ở bước này.
+# Mở rộng rule dần ở các task sau, mỗi lần kèm sửa + test.
+target-version = "py39"
+line-length = 100
+extend-exclude = ["data", ".venv", "venv", "out", ".claude", "templates"]
+
+[lint]
+# Bộ rule khởi đầu, an toàn: lỗi cú pháp/logic (F), pycodestyle (E,W), sắp xếp import (I).
+select = ["E", "F", "W", "I"]

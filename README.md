@@ -290,7 +290,7 @@ Kết quả in DOI/PMID thật + điểm chứng cứ + phân loại (preprint t
 
 ## Thang điểm đã xác minh
 
-**30 công cụ** có **công thức + cut-off + nguồn gốc** (`update_status=verified`) — xem
+**32 công cụ** có **công thức + cut-off + nguồn gốc** (`update_status=verified`) — xem
 `app/clinical_scores/verified.py`:
 - Tim mạch: CHA2DS2-VASc, HAS-BLED, Wells DVT/PE, NYHA, TIMI, ASCVD-PCE, SCORE2
 - Hô hấp: CURB-65, PERC, NEWS2, GOLD ABE
@@ -302,6 +302,11 @@ Kết quả in DOI/PMID thật + điểm chứng cứ + phân loại (preprint t
 > tự nhập hệ số tay** mà ghi rõ phải dùng calculator chính thức + nêu ngưỡng & nguồn.
 > Các công cụ còn lại để `needs_verification` (chưa điền công thức, **không bịa**). Khi
 > guideline đổi cách dùng → ghi vào change log.
+>
+> 📋 **Quy trình cập nhật + trạng thái chờ chuyên khoa ký xác nhận:** xem
+> [docs/RA_SOAT_THANG_DIEM_2026-06.md](docs/RA_SOAT_THANG_DIEM_2026-06.md) (mục E–F)
+> và change log ở [docs/TEST_BASELINE.md](docs/TEST_BASELINE.md). Các cập nhật guideline
+> 2024–2026 được **khóa bằng test** (`tests/test_clinical_scores_updates.py`).
 
 ## Kiểm thử
 

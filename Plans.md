@@ -20,7 +20,7 @@ không bị trôi/sai khi sửa về sau.
 | Task | Nội dung | DoD | Depends | Status |
 |------|----------|-----|---------|--------|
 | 0.1 | Tạo venv **ngoài OneDrive** (`~/.ebm-venv`), cài `requirements.txt`, chạy `pytest` lấy baseline xanh/đỏ. `[tdd:skip:env-setup]` | `pytest` chạy được; ghi lại số test pass/fail hiện tại vào change log | - | cc:done (95 passed) |
-| 0.2 | Thêm baseline lint (ruff) nếu repo chưa có cấu hình; chỉ cấu hình, không sửa lỗi hàng loạt. `[tdd:skip:tooling-setup]` | `ruff check` chạy được, có file cấu hình; (hoặc ghi `Spec skip reason` nếu quyết định chưa dùng) | 0.1 | cc:todo |
+| 0.2 | Thêm baseline lint (ruff) nếu repo chưa có cấu hình; chỉ cấu hình, không sửa lỗi hàng loạt. `[tdd:skip:tooling-setup]` | `ruff check` chạy được, có file cấu hình; (hoặc ghi `Spec skip reason` nếu quyết định chưa dùng) | 0.1 | cc:done (ruff.toml, baseline 189) |
 
 ---
 
@@ -39,8 +39,8 @@ không bị trôi/sai khi sửa về sau.
 
 | Task | Nội dung | DoD | Depends | Status |
 |------|----------|-----|---------|--------|
-| 2.1 | Quyết định xử lý `score_id` đã đổi tên (`cha2ds2_vasc`, `meld_na`): giữ id + alias hiển thị hay đổi id. Ghi quyết định, **không phá khóa DB**. `[tdd:skip:decision-doc]` | Quyết định ghi vào `docs/RA_SOAT_THANG_DIEM_2026-06.md` (hoặc spec); seed vẫn chạy, không mất dữ liệu cũ | 1.1, 1.4 | blocked (chờ chuyên khoa quyết; không tự quyết để tránh dữ liệu không tin cậy) |
-| 2.2 | Cập nhật Change Log + thêm mục **chờ bác sĩ chuyên khoa ký xác nhận** (doc mục D.1) vào tài liệu. `[tdd:skip:docs-only]` | Doc cập nhật, có dòng sign-off; README trỏ tới quy trình cập nhật | 2.1 | cc:todo |
+| 2.1 | Quyết định xử lý `score_id` đã đổi tên (`cha2ds2_vasc`, `meld_na`): giữ id + alias hiển thị hay đổi id. Ghi quyết định, **không phá khóa DB**. `[tdd:skip:decision-doc]` | Quyết định ghi vào `docs/RA_SOAT_THANG_DIEM_2026-06.md` (hoặc spec); seed vẫn chạy, không mất dữ liệu cũ | 1.1, 1.4 | cc:done (kỹ thuật: mục E; lâm sàng → mục F chờ chuyên khoa) |
+| 2.2 | Cập nhật Change Log + thêm mục **chờ bác sĩ chuyên khoa ký xác nhận** (doc mục D.1) vào tài liệu. `[tdd:skip:docs-only]` | Doc cập nhật, có dòng sign-off; README trỏ tới quy trình cập nhật | 2.1 | cc:done |
 
 ---
 

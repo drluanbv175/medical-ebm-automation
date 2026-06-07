@@ -86,3 +86,38 @@ không bịa).
 1. Một bác sĩ chuyên khoa nên **ký xác nhận** danh mục này theo phác đồ địa phương trước khi
    dùng tại giường (đặc biệt các mục đã cập nhật/bổ sung).
 2. Mỗi khi hội chuyên ngành ra bản mới → cập nhật và ghi vào Change Log.
+
+---
+
+## E. QUYẾT ĐỊNH KỸ THUẬT VỀ ĐỊNH DANH (task 2.1)
+
+> Phạm vi: chỉ là quyết định **kỹ thuật/dữ liệu**, KHÔNG phải phán quyết lâm sàng.
+> Câu hỏi lâm sàng "VASc và VA là một hay hai thang" được chuyển cho chuyên khoa (mục F).
+
+- **`score_id` là khóa định danh ổn định trong DB.** KHÔNG đổi tên `cha2ds2_vasc` và
+  `meld_na`, vì đổi id sẽ mồ côi dữ liệu cũ và mất lịch sử change log. Tên mới
+  (CHA2DS2-VA, MELD 3.0) đã được mang ở **tên hiển thị** (`score_name`).
+- **Trùng `cha2ds2_va`:** catalog hiện có một skeleton `cha2ds2_va` (ESC 2024, bỏ giới)
+  nằm cạnh entry đã verified `cha2ds2_vasc`. **Giữ nguyên trạng an toàn:** `cha2ds2_va`
+  ở `needs_verification` — đây là cách hệ thống báo "chưa xác minh, đừng tin", đúng
+  nguyên tắc không bịa dữ liệu. **Không gộp, không xóa, không tự điền công thức** cho tới
+  khi chuyên khoa quyết (mục F, item số 3).
+- Hệ quả: `needs_verification` vẫn = 16; không thay đổi code; test khóa số liệu giữ nguyên.
+
+## F. TRẠNG THÁI XÁC NHẬN & QUY TRÌNH CẬP NHẬT (task 2.2)
+
+**Chờ chuyên khoa ký xác nhận** (bắt buộc trước khi dùng tại giường):
+
+- [ ] Xác nhận danh mục theo phác đồ cơ sở (đặc biệt 6 thang đã cập nhật ở mục A + Beers/STOPP-START).
+  - Người xác nhận: ______________  Chuyên khoa: ______________
+  - Ngày: ____________  Chữ ký: ______________
+- [ ] **Quyết định mục E:** `cha2ds2_va` (ESC 2024, bỏ giới, tối đa 8) là **thang riêng** cần
+  verify độc lập, hay là **trùng** với `cha2ds2_vasc` và nên gỡ bỏ? → chuyên khoa chọn, sau đó
+  cập nhật code + test + doc theo quy trình dưới.
+
+**Quy trình cập nhật khi có guideline mới hoặc khi chuyên khoa quyết:**
+
+1. Sửa nội dung trong `app/clinical_scores/verified.py` (kèm `source` + `guideline_reference`).
+2. Thêm/sửa **test khóa** trong `tests/test_clinical_scores_updates.py` (và `_integrity.py` nếu đổi số đếm).
+3. Ghi Change Log: `docs/TEST_BASELINE.md` + mục này.
+4. Chạy `pytest` (phải xanh) → commit.

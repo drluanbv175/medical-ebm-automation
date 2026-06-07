@@ -27,3 +27,6 @@ imageio-ffmpeg>=0.4.9
 # Testing
 pytest>=8.2.0
 responses>=0.25.0
+
+# Lint (dev) — cấu hình ở ruff.toml
+ruff>=0.15.0
