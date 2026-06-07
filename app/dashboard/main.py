@@ -4,11 +4,10 @@ Chạy: python run.py dashboard  (hoặc: streamlit run app/dashboard/app.py)
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
 import html as _html  # noqa: E402
 import re as _re  # noqa: E402
+import sys
+from pathlib import Path
 
 # Cho phép chạy trực tiếp bằng `streamlit run app/dashboard/main.py`
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -20,14 +19,26 @@ import streamlit as st  # noqa: E402
 
 from app.config import settings  # noqa: E402
 from app.database import init_db, session_scope  # noqa: E402
-from app.models import (ChangeLogEntry, ClinicalScore, EvidenceItem,  # noqa: E402
-                        ResearchProject, SourceLog)
-from app.reports import (build_alert_data, export_alert_digest,  # noqa: E402
-                         export_antibiotic_report, export_dashboard_excel,
-                         export_drug_safety_report, export_research_tracker_excel,
-                         export_source_log_csv, export_weekly_ebm_html,
-                         export_weekly_ebm_markdown, export_zotero_bibtex,
-                         render_alert_markdown)
+from app.models import (  # noqa: E402
+    ChangeLogEntry,
+    ClinicalScore,
+    EvidenceItem,
+    ResearchProject,
+    SourceLog,
+)
+from app.reports import (  # noqa: E402
+    build_alert_data,
+    export_alert_digest,
+    export_antibiotic_report,
+    export_dashboard_excel,
+    export_drug_safety_report,
+    export_research_tracker_excel,
+    export_source_log_csv,
+    export_weekly_ebm_html,
+    export_weekly_ebm_markdown,
+    export_zotero_bibtex,
+    render_alert_markdown,
+)
 from app.services.pipeline import run_pipeline  # noqa: E402
 from app.utils.seed import seed_all  # noqa: E402
 from app.utils.text import clean_text  # noqa: E402
@@ -211,9 +222,15 @@ def render_clinical_application(d: dict) -> None:
 
     # Làm sạch abstract (gỡ thẻ XML, giải mã &ge;->≥) + TRÍCH nguyên văn (không bịa)
     abstract = clean_text(d.get("abstract")) or ""
-    from app.services.extraction import (extract_clinical_points, extract_conclusion,
-                                         extract_pico, label_for, ordered_categories,
-                                         pico_display_order, pico_label)
+    from app.services.extraction import (
+        extract_clinical_points,
+        extract_conclusion,
+        extract_pico,
+        label_for,
+        ordered_categories,
+        pico_display_order,
+        pico_label,
+    )
     pico = extract_pico(abstract)
     clin = extract_clinical_points(abstract)
     concl = extract_conclusion(abstract)
@@ -432,8 +449,11 @@ st.sidebar.divider()
 st.sidebar.subheader("📄 Báo cáo")
 if st.sidebar.button("🔃 Tạo lại tất cả báo cáo", use_container_width=True):
     with st.spinner("Đang tạo báo cáo..."):
-        export_weekly_ebm_markdown(); export_weekly_ebm_html()
-        export_alert_digest(); export_drug_safety_report(); export_antibiotic_report()
+        export_weekly_ebm_markdown()
+        export_weekly_ebm_html()
+        export_alert_digest()
+        export_drug_safety_report()
+        export_antibiotic_report()
     st.sidebar.success("Đã tạo báo cáo mới.")
 
 for _label, _pat in [("🔔 Bản tin cảnh báo (Mới)", "Alert_Digest_*.html"),
@@ -448,8 +468,10 @@ for _label, _pat in [("🔔 Bản tin cảnh báo (Mới)", "Alert_Digest_*.html
 
 with st.sidebar.expander("📊 Xuất Excel / CSV / BibTeX"):
     if st.button("Xuất tất cả bảng dữ liệu", use_container_width=True):
-        export_dashboard_excel(); export_research_tracker_excel()
-        export_source_log_csv(); export_zotero_bibtex()
+        export_dashboard_excel()
+        export_research_tracker_excel()
+        export_source_log_csv()
+        export_zotero_bibtex()
         st.success("Đã xuất vào data/exports")
 
 if not has_data:
@@ -691,6 +713,7 @@ with tabs[6]:
     st.divider()
     st.subheader("📚 45 thang điểm lâm sàng thiết yếu 2026 (tài liệu đầy đủ)")
     import streamlit.components.v1 as _components
+
     from app.clinical_scores import reference_import as _refimp
 
     ref = _refimp.load_reference()
@@ -789,6 +812,7 @@ with tabs[8]:
 # --- Tab 10: TikTok -------------------------------------------------------
 with tabs[9]:
     import json as _json
+
     from app.social import package as _tt
 
     st.header("📱 Nội dung TikTok (cập nhật chứng cứ)")
@@ -847,7 +871,12 @@ with tabs[9]:
                                  placeholder="VD: 3 điều cần biết về huyết áp tại nhà")
         m_area = mc2.selectbox("Chuyên khoa (chọn doodle)", _area_opts, key="m_area")
         m_content = st.text_area("Nội dung", key="m_content", height=220,
-                                 placeholder="Vì sao đo huyết áp tại nhà?\nPhản ánh đúng huyết áp thường ngày\nTránh tăng huyết áp áo choàng trắng\n\nĐo thế nào cho đúng?\nNgồi nghỉ 5 phút trước khi đo\nĐo 2 lần, cách nhau 1-2 phút")
+                                 placeholder="Vì sao đo huyết áp tại nhà?\n"
+                                 "Phản ánh đúng huyết áp thường ngày\n"
+                                 "Tránh tăng huyết áp áo choàng trắng\n\n"
+                                 "Đo thế nào cho đúng?\n"
+                                 "Ngồi nghỉ 5 phút trước khi đo\n"
+                                 "Đo 2 lần, cách nhau 1-2 phút")
         mcc1, mcc2 = st.columns([3, 2])
         m_source = mcc1.text_input("Nguồn (tuỳ chọn)", key="m_source",
                                    placeholder="VD: Khuyến cáo ESC 2024")

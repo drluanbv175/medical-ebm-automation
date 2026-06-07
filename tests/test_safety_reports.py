@@ -1,6 +1,10 @@
 """Test báo cáo An toàn thuốc & Kháng sinh tuần."""
-from app.reports.safety_reports import (build_antibiotic_data, build_drug_safety_data,
-                                        render_antibiotic_md, render_drug_safety_md)
+from app.reports.safety_reports import (
+    build_antibiotic_data,
+    build_drug_safety_data,
+    render_antibiotic_md,
+    render_drug_safety_md,
+)
 from app.services.pipeline import run_pipeline
 
 

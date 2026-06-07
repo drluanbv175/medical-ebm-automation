@@ -9,14 +9,14 @@ dung vào safety_signal. Guideline: suy study_type từ tiêu đề (classify_me
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime
 from email.utils import parsedate_to_datetime
 from typing import List, Optional
 
+from app.sources._fixtures import MOCK_FEED_ITEMS
 from app.sources.base import RawRecord, SourceClient
 from app.sources.classify_meta import infer_study_type
 from app.sources.feeds import FeedConfig
-from app.sources._fixtures import MOCK_FEED_ITEMS
 from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
 
@@ -76,7 +76,8 @@ class RSSFeedClient(SourceClient):
         ua = ("Mozilla/5.0 (compatible; medical-ebm-automation/0.1; "
               "RSS reader; +https://example.org/bot)")
         self.http = HttpClient(default_headers={"User-Agent": ua,
-                                                "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*"},
+                                                "Accept": "application/rss+xml, application/atom+xml, "
+                                                "application/xml, text/xml, */*"},
                                cache_ttl=3600)
 
     def search(self, query: str = "", clinical_area: Optional[str] = None,

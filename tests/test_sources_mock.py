@@ -1,7 +1,7 @@
 """Test API client hoạt động ở chế độ mock (không gọi mạng thật)."""
-from app.sources.pubmed import PubMedClient
 from app.sources.crossref import CrossrefClient
 from app.sources.openfda import OpenFDAClient
+from app.sources.pubmed import PubMedClient
 
 
 def test_pubmed_mock_returns_records():

@@ -12,8 +12,15 @@ NGUYÊN TẮC LIÊM CHÍNH (bắt buộc, kế thừa từ pipeline):
   chưa kết luận" và KHÔNG đăng mặc định.
 - Mỗi bài luôn có dòng nguồn truy vết + khuyến cáo "tham khảo, không thay khám bệnh".
 """
-from app.social.content import (build_manual_post, build_post,  # noqa: F401
-                                eligible_for_post, POST_DISCLAIMER)
-from app.social.package import (create_manual_video,  # noqa: F401
-                                generate_manual_post, generate_tiktok_batch,
-                                preview_manual)
+from app.social.content import (  # noqa: F401
+                                POST_DISCLAIMER,
+                                build_manual_post,
+                                build_post,
+                                eligible_for_post,
+)
+from app.social.package import (  # noqa: F401
+                                create_manual_video,
+                                generate_manual_post,
+                                generate_tiktok_batch,
+                                preview_manual,
+)

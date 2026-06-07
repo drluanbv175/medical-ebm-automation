@@ -6,12 +6,12 @@ from typing import List
 
 from app.config import settings
 from app.sources.base import SourceClient
-from app.sources.pubmed import PubMedClient
-from app.sources.europepmc import EuropePMCClient
-from app.sources.crossref import CrossrefClient
 from app.sources.clinicaltrials import ClinicalTrialsClient
-from app.sources.openfda import OpenFDAClient
+from app.sources.crossref import CrossrefClient
+from app.sources.europepmc import EuropePMCClient
 from app.sources.openalex import OpenAlexClient
+from app.sources.openfda import OpenFDAClient
+from app.sources.pubmed import PubMedClient
 from app.sources.semantic_scholar import SemanticScholarClient
 from app.sources.unpaywall import UnpaywallClient
 

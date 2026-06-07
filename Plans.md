@@ -44,6 +44,14 @@ không bị trôi/sai khi sửa về sau.
 
 ---
 
+## Phase 3: Dọn lint
+
+| Task | Nội dung | DoD | Depends | Status |
+|------|----------|-----|---------|--------|
+| 3.1 | Sửa lint baseline theo NHÓM an toàn: (a) auto-fix imports/f-string, (b) lỗi logic (F841/E702/E741), (c) E501. Chạy test sau mỗi nhóm. `[tdd:skip:lint-cleanup]` | `ruff check` = 0 lỗi; `pytest` vẫn 114 passed | 0.2 | cc:done (ruff 0, reviewer APPROVE) |
+
+---
+
 ## In Progress
 
 (none)

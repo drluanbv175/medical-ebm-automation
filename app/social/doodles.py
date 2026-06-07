@@ -323,7 +323,8 @@ def doodles_for(area: str, title: str, n: int = 3) -> List[str]:
         if any(k in text for k in kws):
             _add(name)
     if not picked:
-        _add("clipboard"); _add("lightbulb")
+        _add("clipboard")
+        _add("lightbulb")
     return picked[:n]
 
 

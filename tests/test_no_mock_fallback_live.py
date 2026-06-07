@@ -3,13 +3,13 @@ không được bịa dữ liệu mock vào kết quả thật. Demo (use_mock=T
 """
 import pytest
 
-from app.sources.pubmed import PubMedClient
-from app.sources.europepmc import EuropePMCClient
-from app.sources.crossref import CrossrefClient
-from app.sources.openalex import OpenAlexClient
 from app.sources.clinicaltrials import ClinicalTrialsClient
-from app.sources.rss_feed import RSSFeedClient
+from app.sources.crossref import CrossrefClient
+from app.sources.europepmc import EuropePMCClient
 from app.sources.feeds import GUIDELINE_FEEDS
+from app.sources.openalex import OpenAlexClient
+from app.sources.pubmed import PubMedClient
+from app.sources.rss_feed import RSSFeedClient
 
 
 def _boom(*a, **k):

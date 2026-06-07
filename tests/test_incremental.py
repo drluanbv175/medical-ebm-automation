@@ -1,6 +1,6 @@
 """Test cơ chế 'mới tuần này': watermark, đánh dấu mới, idempotent, bản tin cảnh báo."""
 from app.database import session_scope
-from app.models import EvidenceItem, PipelineRun
+from app.models import EvidenceItem
 from app.reports.alert_digest import build_alert_data, render_alert_markdown
 from app.services import run_state
 from app.services.pipeline import run_pipeline

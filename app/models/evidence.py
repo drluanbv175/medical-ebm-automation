@@ -61,7 +61,8 @@ class EvidenceItem(Base):
     practice_change_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     reliability_tier: Mapped[Optional[str]] = mapped_column(String(4), index=True, nullable=True)  # A|B|C|D
     operational_evidence_level: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)   # High|Moderate|Low
-    official_grade: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)               # GRADE chính thức nếu có
+    # GRADE chính thức nếu có
+    official_grade: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
 
     # Phân loại hành động
     is_actionable: Mapped[bool] = mapped_column(Boolean, default=False, index=True)

@@ -94,8 +94,8 @@ def main() -> int:
             print("    Hãy chạy lại lệnh và dán đúng chuỗi từ https://myaccount.google.com/apppasswords")
             return 1
         lines = env_path.read_text(encoding="utf-8").splitlines()
-        for i, l in enumerate(lines):
-            if l.startswith("SMTP_PASSWORD="):
+        for i, line in enumerate(lines):
+            if line.startswith("SMTP_PASSWORD="):
                 lines[i] = f"SMTP_PASSWORD={pw}"
                 break
         else:

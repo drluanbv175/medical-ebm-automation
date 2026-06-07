@@ -5,15 +5,18 @@ Mỗi job đều an toàn với dữ liệu cũ (pipeline chỉ thêm/cập nh�
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 from app.config import settings
 from app.database import init_db, session_scope
 from app.models import ChangeLogEntry
-from app.reports import (export_alert_digest, export_antibiotic_report,
-                         export_dashboard_excel, export_drug_safety_report,
-                         export_source_log_csv, export_weekly_ebm_html,
-                         export_weekly_ebm_markdown)
+from app.reports import (
+    export_alert_digest,
+    export_antibiotic_report,
+    export_dashboard_excel,
+    export_drug_safety_report,
+    export_source_log_csv,
+    export_weekly_ebm_html,
+    export_weekly_ebm_markdown,
+)
 from app.services.notify import notify_high_priority_new
 from app.services.pipeline import run_pipeline
 from app.utils.logging_config import get_logger
@@ -44,7 +47,7 @@ def job_weekly() -> None:
     logger.info("[job_weekly] bắt đầu")
     run_pipeline(max_results_per_query=10)
     md = export_weekly_ebm_markdown()
-    html = export_weekly_ebm_html()
+    export_weekly_ebm_html()
     alert = export_alert_digest(days=7)
     drug = export_drug_safety_report()
     antibiotic = export_antibiotic_report()

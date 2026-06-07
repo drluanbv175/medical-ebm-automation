@@ -9,8 +9,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List
 
-from sqlalchemy import or_
-
 from app.config import settings
 from app.database import session_scope
 from app.models import EvidenceItem
@@ -118,7 +116,7 @@ def _ref_str(r: Dict) -> str:
 def render_markdown(data: Dict) -> str:
     c = data["counts"]
     lines: List[str] = []
-    lines.append(f"# Báo cáo Cập nhật EBM Hằng tuần\n")
+    lines.append("# Báo cáo Cập nhật EBM Hằng tuần\n")
     lines.append(f"*Tạo lúc: {data['generated_at']} – Ngôn ngữ: {settings.report_language}*\n")
     lines.append("> ⚠️ Hệ thống không bịa dữ liệu. Mỗi mục đều có nguồn truy vết. "
                  "Preprint/FAERS/nghiên cứu nhỏ KHÔNG dùng để thay đổi thực hành.\n")
@@ -213,7 +211,8 @@ def render_markdown(data: Dict) -> str:
         for r in data["not_yet_change"]:
             syn = r["synthesis"]
             lines.append(f"- **{r['title'][:90]}** ({r['clinical_area']})")
-            lines.append(f"  - Lý do chưa đủ: {syn.get('ly_do_chua_doi_thuc_hanh', '') or r.get('reason_for_exclusion', '')}")
+            _reason = syn.get('ly_do_chua_doi_thuc_hanh', '') or r.get('reason_for_exclusion', '')
+            lines.append(f"  - Lý do chưa đủ: {_reason}")
             lines.append(f"  - Cần chờ: toàn văn/guideline/RCT/phân tích an toàn. Nguồn: {_ref_str(r)}")
     else:
         lines.append("*Không có mục nào ở trạng thái chờ.*")

@@ -21,6 +21,7 @@ _ROW_GAP_MERGE = 16       # gộp các dòng mực cách nhau < ngưỡng px th�
 def _bg_array():
     """Nền bảng trắng (giấy + li + khung) trùng khít với _wb_canvas của render."""
     import numpy as np
+
     from app.social.render import _wb_canvas
     img, _ = _wb_canvas()
     return np.asarray(img.convert("RGB"))

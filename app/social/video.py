@@ -91,6 +91,7 @@ def _edge_synth(text: str, out_mp3: Path) -> bool:
         return False
     try:
         import asyncio
+
         import edge_tts
 
         async def _run():
@@ -231,6 +232,7 @@ def _animated_segment(ff: str, image: Path, audio: Optional[Path], dur: float,
                       out_mp4: Path, fps: int = 25) -> bool:
     """1 slide -> đoạn mp4 với HIỆU ỨNG VẼ TAY (bơm frame numpy vào ffmpeg)."""
     import numpy as np
+
     from app.social import animate
 
     dur = max(dur, MIN_SLIDE_SEC)

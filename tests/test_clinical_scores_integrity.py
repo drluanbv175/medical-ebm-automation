@@ -10,8 +10,7 @@ chất BẤT BIẾN nên không phụ thuộc thứ tự chạy.
 """
 from __future__ import annotations
 
-from app.clinical_scores import (seed_clinical_scores, seed_verified_scores,
-                                 VERIFIED_SCORES)
+from app.clinical_scores import VERIFIED_SCORES, seed_clinical_scores, seed_verified_scores
 from app.database import session_scope
 from app.models import ChangeLogEntry, ClinicalScore
 

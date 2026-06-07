@@ -9,7 +9,7 @@ Hai khái niệm bổ trợ nhau:
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Set
+from typing import Optional, Set
 
 from app.database import session_scope
 from app.models import PipelineRun

@@ -103,6 +103,7 @@ def test_doodles_mapping_by_area_and_keyword():
 
 def test_doodles_registry_all_drawable():
     from PIL import Image, ImageDraw
+
     from app.social import doodles as dd
     img = Image.new("RGB", (200, 200), (255, 255, 255))
     d = ImageDraw.Draw(img)
@@ -140,6 +141,7 @@ def test_build_manual_post_empty_is_none():
 # --- Hiệu ứng vẽ tay (draw-on) ---------------------------------------------
 def test_animate_detects_content_band():
     import numpy as np
+
     from app.social import animate
     bg = np.full((animate.H, animate.W, 3), 250, np.uint8)
     final = bg.copy()
@@ -151,7 +153,7 @@ def test_animate_detects_content_band():
 
 
 def test_speak_clean_and_narration_pauses():
-    from app.social.video import _speak_clean, _sentence, default_narrations
+    from app.social.video import _sentence, _speak_clean, default_narrations
     assert _speak_clean("135/85 mmHg") == "135 trên 85 mmHg"
     assert _speak_clean("An toàn / Thận trọng") == "An toàn và Thận trọng"
     assert _sentence("Xin chào")[-1] == "."        # tự thêm dấu để ngắt nghỉ
@@ -181,7 +183,6 @@ def test_animate_frame_count_and_shape(tmp_path):
     if not render.whiteboard_available():
         import pytest
         pytest.skip("Không có font whiteboard")
-    import numpy as np
     from PIL import Image
     arr = animate._bg_array().copy()
     arr[400:470, 120:600] = 30  # 1 khối mực giả

@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from app.sources.base import RawRecord, SourceClient
 from app.sources._fixtures import MOCK_DRUG_SAFETY, mock_records_for
+from app.sources.base import RawRecord, SourceClient
 from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
 

@@ -20,13 +20,13 @@ import re
 import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from app.config import settings
 from app.reports.weekly_ebm import build_weekly_data
-from app.social.content import build_manual_post, build_post, render_caption
 from app.social import render as render_mod
 from app.social import video as video_mod
+from app.social.content import build_manual_post, build_post, render_caption
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)

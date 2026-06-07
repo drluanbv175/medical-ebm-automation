@@ -44,8 +44,14 @@ def get_session_factory():
 def init_db() -> None:
     """Tạo bảng nếu chưa tồn tại + migration nhẹ. An toàn khi gọi lại nhiều lần."""
     # import để đăng ký model vào metadata
-    from app.models import (evidence, research, clinical_score, changelog,  # noqa: F401
-                            source_log, pipeline_run)
+    from app.models import (  # noqa: F401
+        changelog,
+        clinical_score,
+        evidence,
+        pipeline_run,
+        research,
+        source_log,
+    )
 
     Base.metadata.create_all(get_engine())
     _ensure_columns()

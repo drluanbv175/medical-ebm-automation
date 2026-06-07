@@ -1,6 +1,10 @@
 """Test scoring: evidence quality, practice change, reliability, operational level."""
-from app.scoring import (evidence_quality_score, operational_evidence_level,
-                         practice_change_score, reliability_tier)
+from app.scoring import (
+    evidence_quality_score,
+    operational_evidence_level,
+    practice_change_score,
+    reliability_tier,
+)
 
 
 def test_guideline_scores_high():

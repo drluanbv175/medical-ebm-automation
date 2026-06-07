@@ -7,14 +7,21 @@ from __future__ import annotations
 from typing import Dict
 
 from app.database import init_db
-from app.reports import (export_alert_digest, export_antibiotic_report,
-                         export_dashboard_excel, export_drug_safety_report,
-                         export_research_tracker_excel, export_source_log_csv,
-                         export_weekly_ebm_docx, export_weekly_ebm_html,
-                         export_weekly_ebm_markdown, export_zotero_bibtex)
-from app.services.pipeline import run_pipeline, score_item
+from app.reports import (
+    export_alert_digest,
+    export_antibiotic_report,
+    export_dashboard_excel,
+    export_drug_safety_report,
+    export_research_tracker_excel,
+    export_source_log_csv,
+    export_weekly_ebm_docx,
+    export_weekly_ebm_html,
+    export_weekly_ebm_markdown,
+    export_zotero_bibtex,
+)
 from app.services.filtering import classify
 from app.services.normalization import normalize
+from app.services.pipeline import run_pipeline, score_item
 from app.utils.logging_config import get_logger
 from app.utils.seed import seed_all
 
@@ -130,9 +137,15 @@ _SOURCE_MAP = {}
 def _build_source_map():
     if _SOURCE_MAP:
         return _SOURCE_MAP
-    from app.sources import (ClinicalTrialsClient, CrossrefClient, EuropePMCClient,
-                             OpenAlexClient, OpenFDAClient, PubMedClient,
-                             SemanticScholarClient)
+    from app.sources import (
+        ClinicalTrialsClient,
+        CrossrefClient,
+        EuropePMCClient,
+        OpenAlexClient,
+        OpenFDAClient,
+        PubMedClient,
+        SemanticScholarClient,
+    )
     _SOURCE_MAP.update({
         "pubmed": PubMedClient, "europepmc": EuropePMCClient,
         "crossref": CrossrefClient, "clinicaltrials": ClinicalTrialsClient,

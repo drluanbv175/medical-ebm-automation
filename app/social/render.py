@@ -482,5 +482,6 @@ def _wb_doodle(img, name, cx, cy, size, color):
     if not name:
         return
     from PIL import ImageDraw
+
     from app.social import doodles as _dd
     _dd.draw(ImageDraw.Draw(img), name, cx, cy, size, color, w=6)

@@ -4,8 +4,8 @@ from __future__ import annotations
 from typing import List, Optional
 
 from app.config import settings
-from app.sources.base import RawRecord, SourceClient
 from app.sources._fixtures import mock_records_for
+from app.sources.base import RawRecord, SourceClient
 from app.sources.classify_meta import infer_study_type
 from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger

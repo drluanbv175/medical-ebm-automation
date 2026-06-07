@@ -1,7 +1,11 @@
 """Test module nghiên cứu: dossier, checklist, gợi ý thống kê."""
 from app.research import add_project
-from app.research.checklists import (ACCEPTANCE_CHECKLIST, ETHICS_SUBMISSION_CHECKLIST,
-                                     stats_suggestions, variable_framework)
+from app.research.checklists import (
+    ACCEPTANCE_CHECKLIST,
+    ETHICS_SUBMISSION_CHECKLIST,
+    stats_suggestions,
+    variable_framework,
+)
 from app.research.dossier import build_dossier_markdown
 
 

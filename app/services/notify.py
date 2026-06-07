@@ -8,7 +8,6 @@ Nguyên tắc an toàn:
 """
 from __future__ import annotations
 
-import json
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
@@ -17,7 +16,6 @@ from typing import Dict, List
 
 from app.config import settings
 from app.reports.alert_digest import build_alert_data, render_alert_markdown
-from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)

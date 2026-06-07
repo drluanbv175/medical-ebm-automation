@@ -9,17 +9,21 @@ import json
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
+from app.config import settings
 from app.database import session_scope
 from app.models import ChangeLogEntry, DuplicateLink, EvidenceItem
-from app.scoring import (evidence_quality_score, operational_evidence_level,
-                         practice_change_score, reliability_tier)
+from app.scoring import (
+    evidence_quality_score,
+    operational_evidence_level,
+    practice_change_score,
+    reliability_tier,
+)
+from app.services import run_state
 from app.services.deduplication import deduplicate
 from app.services.filtering import classify
 from app.services.ingestion import ingest_all
 from app.services.normalization import normalize
-from app.services import run_state
 from app.services.synthesis import synthesize
-from app.config import settings
 from app.sources.base import RawRecord
 from app.utils.logging_config import get_logger
 

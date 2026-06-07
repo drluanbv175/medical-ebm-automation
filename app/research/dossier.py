@@ -19,10 +19,18 @@ from typing import Dict, List, Optional
 from app.config import settings
 from app.database import session_scope
 from app.models import ResearchProject
-from app.research.checklists import (ACCEPTANCE_CHECKLIST, ETHICS_SUBMISSION_CHECKLIST,
-                                     stats_suggestions, variable_framework)
-from app.scoring import (evidence_quality_score, operational_evidence_level,
-                         practice_change_score, reliability_tier)
+from app.research.checklists import (
+    ACCEPTANCE_CHECKLIST,
+    ETHICS_SUBMISSION_CHECKLIST,
+    stats_suggestions,
+    variable_framework,
+)
+from app.scoring import (
+    evidence_quality_score,
+    operational_evidence_level,
+    practice_change_score,
+    reliability_tier,
+)
 from app.services.filtering import classify
 from app.services.normalization import normalize
 from app.sources import get_enabled_sources
