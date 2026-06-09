@@ -36,6 +36,15 @@
 | 23 | ADA Standards of Care; IDF (FINDRISC) | guideline | ADA; IDF | — | `guidelines/ada_idf.pdf` | ⬜ cần thả PDF | findrisc |
 | 24 | RCP NEWS2; NICE NG51 sepsis | guideline | RCP; NICE | 2017 | `guidelines/news2_rcp.pdf` | ⬜ cần thả PDF | news2 |
 
+## Thư viện thật của bác sĩ (đọc-tại-chỗ) — `external-library/`
+Ngoài danh mục curate ở trên, toàn bộ **thư viện y văn thật** (~3.354 tài liệu: guideline, sách,
+slide hội nghị, review, thư viện EndNote — đã tổ chức theo thư mục chuyên khoa ở gốc OneDrive) đã
+được lập danh mục TỰ ĐỘNG để RAG tra cứu mà **không copy file gốc** (bản quyền):
+- `external-library/CATALOG.md` — bảng tra theo chuyên khoa (Tim mạch 378 · Thần kinh 203 · Nội tiết 102 · Hô hấp 99 · Tiêu hóa-Gan 82…).
+- `external-library/catalog.json` — dữ liệu máy-đọc (tái sinh; không commit).
+- Sinh lại: `python3 scripts/build_library_catalog.py --today YYYY-MM-DD`.
+- Ưu tiên khi mâu thuẫn: **protocol cục bộ > guideline (#2–24) > external-library > suy luận mô hình.**
+
 ## Hướng dẫn nhanh
 - **Thả tài liệu**: lưu PDF/markdown vào `evidence/<loại>/`, đổi cột Trạng thái thành `✅ đã có`.
 - **Protocol cục bộ** (phác đồ khoa/viện của bạn) đặt ở `evidence/protocols/` — ưu tiên cao nhất khi mâu thuẫn.
