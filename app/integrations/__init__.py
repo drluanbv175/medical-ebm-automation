@@ -11,6 +11,10 @@ from app.integrations.ambient_scribe import (
     transcribe,
     transcript_to_soap,
 )
+from app.integrations.drug_interactions import (
+    DrugInteractionError,
+    DrugSafetyChecker,
+)
 from app.integrations.fhir_client import (
     FhirClient,
     FhirError,
@@ -24,4 +28,6 @@ __all__ = [
     # Ambient scribe (5.2)
     "AmbientError", "SoapNote", "Transcript", "scrub_pii", "transcribe",
     "build_soap_prompt", "parse_soap", "transcript_to_soap", "from_audio", "blank_soap",
+    # Drug interaction screen (1.3)
+    "DrugSafetyChecker", "DrugInteractionError",
 ]
