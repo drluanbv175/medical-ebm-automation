@@ -73,6 +73,8 @@ def _ensure_columns() -> None:
         ("evidence_items", "first_seen_run_id", "INTEGER"),
         ("evidence_items", "last_run_id", "INTEGER"),
         ("evidence_items", "is_mock", "BOOLEAN DEFAULT 0"),
+        ("clinical_scores", "pmid", "VARCHAR(16)"),
+        ("clinical_scores", "doi", "VARCHAR(128)"),
     ]
     with engine.begin() as conn:
         for table, column, sqltype in needed:

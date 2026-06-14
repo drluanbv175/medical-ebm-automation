@@ -6,20 +6,22 @@ Fidelity · Ethics · Scalability). Phân biệt: ✅ đạt(thiết kế) · �
 ## Đã ĐO (số thật)
 | Ngày | Tiêu chí | Kết quả | Cách đo |
 |------|----------|---------|---------|
-| 2026-06-07 | **3.1 Citation Accuracy** | **100%** ID phân giải đúng (2/2 DOI qua Crossref); **nhưng độ phủ ID chỉ 6%** (2/32 thang có PMID/DOI) | Crossref API + quét `verified.py.source` |
+| 2026-06-07 | **3.1 Citation Accuracy** | **100%** ID phân giải đúng (2/2 DOI qua Crossref); ~~độ phủ ID chỉ 6%~~ → **đã vá** (xem 2026-06-14) | Crossref API + quét `verified.py.source` |
+| 2026-06-14 | **3.1 Độ phủ trích dẫn** | **6% → 90.6%** (29/32 thang có PMID/DOI đã xác minh PubMed/Crossref; 3 thang còn lại = báo cáo RCP/sách NYHA/báo cáo GOLD → KHÔNG tồn tại định danh, không bịa). Spot-check 6 mục trực tiếp PubMed = khớp 100% | 3 agent `thu-thu-tai-lieu` + PubMed E-utils + spot-check; cột `clinical_scores.pmid/doi`; 6 test |
 | 2026-06-07 | **3.3 Recency** | ✅ Đạt — kéo được ESC 2024 AF theo yêu cầu (web thời gian thực) | WebSearch live |
 | 2026-06-07 | **2.2 FHIR R4** | ✅ Đạt — `app/integrations/fhir_client.py`: kết nối HAPI R4 sandbox (4.0.1), đọc Patient/MedicationRequest, khử PHI, **chặn ghi mặc định**; 6 test offline xanh | Live smoke + pytest |
 | 2026-06-14 | **5.2 Ambient STT→SOAP** | ✅ Đạt (khung hạ tầng) — `app/integrations/ambient_scribe.py`: audio→STT (faster-whisper cục bộ, miễn phí) → **khử PII 2 lớp** → bản nháp SOAP nối skill `giao-tiep-quyet-dinh-soap`; cổng đồng thuận; KHÔNG lưu audio/transcript; 14 test offline xanh; demo end-to-end (stub STT+LLM) dựng SOAP có placeholder + safety-netting + disclaimer | pytest + demo |
 
-**Phát hiện vá được ngay:** 30/32 thang điểm `verified` thiếu PMID/DOI trong `source` → cần enrich
-để trích dẫn tự verify được (nâng độ phủ 6% → cao).
+**~~Phát hiện vá được ngay~~ → ĐÃ VÁ (2026-06-14):** đã enrich PMID/DOI cho 29/32 thang `verified`
+(cột mới `clinical_scores.pmid/doi` + `_VERIFIED_IDS` trong `verified.py`; helper `citation_links()`
+sinh URL tự kiểm; độ phủ 6% → 90.6%). 3 thang còn lại không có định danh do là báo cáo/sách.
 
 ## Chương trình Phase 5 (3 workstream người dùng chọn)
 1. **ĐO thực nghiệm Trụ 1 & 3** — bộ eval: 100 MCQ (ảo giác, cần answer-key + chuyên gia),
    20 ca/5 cấp cứu (red-flag sensitivity), cặp thuốc kinh điển (Rx), 50 trích dẫn.
    *Cần:* `ANTHROPIC_API_KEY` (chấm câu trả lời agent) + bộ dữ liệu có nguồn (không bịa).
-2. **Vá điểm yếu thiết kế** — (a) enrich PMID/DOI cho 32 thang (3.1); (b) tích hợp CSDL/ API
-   tương tác thuốc cho Rx checker (1.3); (c) bộ test adversarial PII (4.1).
+2. **Vá điểm yếu thiết kế** — (a) ✅ enrich PMID/DOI cho 32 thang (3.1, 6%→90.6%);
+   (b) tích hợp CSDL/API tương tác thuốc cho Rx checker (1.3); (c) bộ test adversarial PII (4.1).
 3. **Xây hạ tầng** — (a) ✅ FHIR R4 client + test với HAPI public sandbox (2.2);
    (b) ✅ ambient STT→SOAP nối skill `giao-tiep-quyet-dinh-soap` (5.2). *Đã xong khung; còn (c) đa phương thức 2.3.*
 

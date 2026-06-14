@@ -36,6 +36,10 @@ class ClinicalScore(Base):
     limitations: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     contraindications_or_cautions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     source: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # Định danh nguồn gốc ĐÃ XÁC MINH (PubMed/Crossref) — để trích dẫn tự kiểm chứng được.
+    # null hợp lệ khi nguồn là báo cáo thể chế/sách không có định danh (NEWS2, NYHA, GOLD…).
+    pmid: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
+    doi: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     guideline_reference: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     last_reviewed_date: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
     # verified | needs_verification | updated

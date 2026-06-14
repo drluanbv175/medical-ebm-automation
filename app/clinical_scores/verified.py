@@ -11,7 +11,7 @@ Nếu bạn không chắc một cut-off, hãy để "needs_verification" (xem ca
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from app.database import session_scope
 from app.models import ChangeLogEntry, ClinicalScore
@@ -673,6 +673,54 @@ VERIFIED_SCORES: List[Dict] = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# PMID/DOI NGUỒN GỐC — ĐÃ XÁC MINH qua PubMed E-utilities + Crossref (2026-06-14):
+# đối chiếu tác giả·năm·tạp chí·volume·trang KHỚP citation; spot-check 6 mục trực tiếp PubMed.
+# `None` = nguồn là BÁO CÁO THỂ CHẾ/SÁCH không có định danh (đã xác nhận = 0 kết quả PubMed/
+# Crossref) → KHÔNG bịa. Đây là độ phủ trích dẫn tự kiểm chứng (CAFÉ-S Trụ 3.1).
+# ---------------------------------------------------------------------------
+_VERIFIED_IDS: Dict[str, Dict[str, Optional[str]]] = {
+    "curb65":          {"pmid": "12728155", "doi": "10.1136/thorax.58.5.377"},
+    "cha2ds2_vasc":    {"pmid": "19762550", "doi": "10.1378/chest.09-1584"},
+    "has_bled":        {"pmid": "20299623", "doi": "10.1378/chest.10-0134"},
+    "wells_dvt":       {"pmid": "14507948", "doi": "10.1056/NEJMoa023153"},
+    "wells_pe":        {"pmid": "10744147", "doi": None},  # Thromb Haemost 2000 — không đăng ký DOI
+    "perc":            {"pmid": "15304025", "doi": "10.1111/j.1538-7836.2004.00790.x"},
+    "qsofa":           {"pmid": "26903338", "doi": "10.1001/jama.2016.0287"},
+    "fib4":            {"pmid": "16729309", "doi": "10.1002/hep.21178"},
+    "apri":            {"pmid": "12883497", "doi": "10.1053/jhep.2003.50346"},
+    "child_pugh":      {"pmid": "4541913", "doi": "10.1002/bjs.1800600817"},
+    "phq9":            {"pmid": "11556941", "doi": "10.1046/j.1525-1497.2001.016009606.x"},
+    "gad7":            {"pmid": "16717171", "doi": "10.1001/archinte.166.10.1092"},
+    "centor_mcisaac":  {"pmid": "9475915", "doi": None},  # CMAJ 1998 — không đăng ký DOI
+    "anion_gap":       {"pmid": "17699401", "doi": "10.2215/CJN.03020906"},
+    "news2":           {"pmid": None, "doi": None},        # Báo cáo RCP — không có PMID/DOI
+    "nyha":            {"pmid": None, "doi": None},        # Sách NYHA 1994 — không có PMID/DOI
+    "gold_abe":        {"pmid": None, "doi": None},        # Báo cáo GOLD — không có PMID/DOI
+    "ckd_epi":         {"pmid": "34554658", "doi": "10.1056/NEJMoa2102953"},
+    "kdigo_grid":      {"pmid": None, "doi": "10.1016/j.kint.2023.10.018"},  # KDIGO 2024 (supplement, không PMID riêng)
+    "blatchford":      {"pmid": "11073021", "doi": "10.1016/S0140-6736(00)02816-6"},
+    "meld_na":         {"pmid": "18768945", "doi": "10.1056/NEJMoa0801209"},
+    "maddrey_df":      {"pmid": "352788", "doi": "10.1016/0016-5085(78)90401-8"},
+    "frail_scale":     {"pmid": "22836700", "doi": "10.1007/s12603-012-0084-2"},
+    "audit_c":         {"pmid": "9738608", "doi": "10.1001/archinte.158.16.1789"},
+    "findrisc":        {"pmid": "12610029", "doi": "10.2337/diacare.26.3.725"},
+    "homa_ir":         {"pmid": "3899825", "doi": "10.1007/BF00280883"},
+    "timi":            {"pmid": "10938172", "doi": "10.1001/jama.284.7.835"},
+    "ascvd_pce":       {"pmid": "24222018", "doi": "10.1161/01.cir.0000437741.48606.98"},
+    "score2":          {"pmid": "34120177", "doi": "10.1093/eurheartj/ehab309"},
+    "beers":           {"pmid": "37139824", "doi": "10.1111/jgs.18372"},
+    "stopp_start":     {"pmid": "37256475", "doi": "10.1007/s41999-023-00777-y"},
+    "score2_diabetes": {"pmid": "37247330", "doi": "10.1093/eurheartj/ehad260"},
+}
+
+# Gán PMID/DOI đã xác minh vào từng thang (một nguồn sự thật — tránh sửa tay 32 chỗ).
+for _score in VERIFIED_SCORES:
+    _ids = _VERIFIED_IDS.get(_score["score_id"], {})
+    _score.setdefault("pmid", _ids.get("pmid"))
+    _score.setdefault("doi", _ids.get("doi"))
+
+
 def seed_verified_scores() -> Dict[str, int]:
     """Nâng cấp các thang điểm từ skeleton -> verified (hoặc thêm mới nếu chưa có).
 
@@ -703,3 +751,28 @@ def seed_verified_scores() -> Dict[str, int]:
                 inserted += 1
     logger.info("Verified scores: cập nhật %d, thêm mới %d.", updated, inserted)
     return {"updated": updated, "inserted": inserted}
+
+
+def citation_links(score: Dict) -> Dict[str, Optional[str]]:
+    """Sinh URL TỰ KIỂM CHỨNG từ pmid/doi của một thang điểm (để dashboard/báo cáo dẫn nguồn).
+
+    Trả {'pubmed': url|None, 'doi': url|None}. Không gọi mạng — chỉ dựng URL chuẩn.
+    """
+    pmid = score.get("pmid")
+    doi = score.get("doi")
+    return {
+        "pubmed": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else None,
+        "doi": f"https://doi.org/{doi}" if doi else None,
+    }
+
+
+def identifier_coverage() -> Dict[str, float]:
+    """Độ phủ định danh tự kiểm chứng (CAFÉ-S 3.1): bao nhiêu thang có PMID hoặc DOI."""
+    total = len(VERIFIED_SCORES)
+    with_id = sum(1 for s in VERIFIED_SCORES if s.get("pmid") or s.get("doi"))
+    with_pmid = sum(1 for s in VERIFIED_SCORES if s.get("pmid"))
+    with_doi = sum(1 for s in VERIFIED_SCORES if s.get("doi"))
+    return {
+        "total": total, "with_identifier": with_id, "with_pmid": with_pmid,
+        "with_doi": with_doi, "coverage_pct": round(100.0 * with_id / total, 1) if total else 0.0,
+    }
