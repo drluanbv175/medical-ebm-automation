@@ -1,8 +1,13 @@
 # Công cụ tích hợp CAFÉ-S — hướng dẫn dùng cho bác sĩ
 
 5 module ở `app/integrations/` đóng các trụ CAFÉ-S (kết nối dữ liệu chuẩn + đa phương thức +
-an toàn thuốc). Gọi qua **một cửa duy nhất**:
+an toàn thuốc). Có **2 cách dùng**:
 
+**Cách 1 — Dashboard bấm-chạy (dễ nhất):** bấm đúp `Mở Công cụ tích hợp.command`
+(hoặc `streamlit run app/dashboard/integrations_panel.py`). Trang 5 tab: tương tác thuốc ·
+ambient SOAP · đọc ảnh · FHIR R4 · trích dẫn thang điểm — nhập/tải lên rồi bấm, không cần gõ lệnh.
+
+**Cách 2 — Dòng lệnh (CLI), một cửa:**
 ```bash
 python -m app.integrations.cli list          # xem tất cả công cụ
 ```
