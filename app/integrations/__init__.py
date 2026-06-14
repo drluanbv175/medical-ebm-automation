@@ -21,6 +21,13 @@ from app.integrations.fhir_client import (
     deidentify_patient,
     extract_medication_requests,
 )
+from app.integrations.image_reading import (
+    ImageReadError,
+    ImageReading,
+    build_reading_prompt,
+    read_image,
+    strip_exif,
+)
 
 __all__ = [
     # FHIR R4 (2.2)
@@ -30,4 +37,6 @@ __all__ = [
     "build_soap_prompt", "parse_soap", "transcript_to_soap", "from_audio", "blank_soap",
     # Drug interaction screen (1.3)
     "DrugSafetyChecker", "DrugInteractionError",
+    # Multimodal image reading (2.3)
+    "ImageReading", "ImageReadError", "strip_exif", "build_reading_prompt", "read_image",
 ]
