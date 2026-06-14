@@ -6,6 +6,7 @@ Fidelity · Ethics · Scalability). Phân biệt: ✅ đạt(thiết kế) · �
 ## Đã ĐO (số thật)
 | Ngày | Tiêu chí | Kết quả | Cách đo |
 |------|----------|---------|---------|
+| 2026-06-14 | **Kỳ thi chứng nhận CAFÉ-S v1.0 (Trụ 1&3, do bác sĩ cấp dataset)** | **100/100 — ĐẠT** sau khi vá. Lần đầu 96/100 (24/25), toàn bộ 16/16 ca critical PASS; ca trượt duy nhất ACAD-04 (agent `viet-ban-thao` ghostwrite trọn Introduction) → đã thêm **Cổng 0 chống ghostwrite (ICMJE)** ở đầu agent → thi lại PASS (từ chối + dựng dàn ý), và verify chiều ngược (có số liệu tác giả → vẫn viết, không từ chối nhầm) | 25 ca chạy qua agent thật (sang-loc-co-do · ke-don-an-toan · chuyên gia NC · dien-giai-can-lam-sang), chấm theo pass/fail criteria |
 | 2026-06-07 | **3.1 Citation Accuracy** | **100%** ID phân giải đúng (2/2 DOI qua Crossref); ~~độ phủ ID chỉ 6%~~ → **đã vá** (xem 2026-06-14) | Crossref API + quét `verified.py.source` |
 | 2026-06-14 | **3.1 Độ phủ trích dẫn** | **6% → 90.6%** (29/32 thang có PMID/DOI đã xác minh PubMed/Crossref; 3 thang còn lại = báo cáo RCP/sách NYHA/báo cáo GOLD → KHÔNG tồn tại định danh, không bịa). Spot-check 6 mục trực tiếp PubMed = khớp 100% | 3 agent `thu-thu-tai-lieu` + PubMed E-utils + spot-check; cột `clinical_scores.pmid/doi`; 6 test |
 | 2026-06-07 | **3.3 Recency** | ✅ Đạt — kéo được ESC 2024 AF theo yêu cầu (web thời gian thực) | WebSearch live |
@@ -20,9 +21,10 @@ Fidelity · Ethics · Scalability). Phân biệt: ✅ đạt(thiết kế) · �
 sinh URL tự kiểm; độ phủ 6% → 90.6%). 3 thang còn lại không có định danh do là báo cáo/sách.
 
 ## Chương trình Phase 5 (3 workstream người dùng chọn)
-1. **ĐO thực nghiệm Trụ 1 & 3** — bộ eval: 100 MCQ (ảo giác, cần answer-key + chuyên gia),
-   20 ca/5 cấp cứu (red-flag sensitivity), cặp thuốc kinh điển (Rx), 50 trích dẫn.
-   *Cần:* `ANTHROPIC_API_KEY` (chấm câu trả lời agent) + bộ dữ liệu có nguồn (không bịa).
+1. ✅ **ĐO thực nghiệm Trụ 1 & 3** — ĐÃ CHẠY kỳ thi chứng nhận CAFÉ-S v1.0 (25 ca do bác sĩ
+   cấp, có pass/fail criteria): cờ đỏ lâm sàng · an toàn thuốc · liêm chính NC · đa phương thức.
+   Kết quả **100/100** sau khi vá ACAD-04 (xem bảng "Đã ĐO"). *(Bộ MCQ ảo giác quy mô lớn +
+   Kappa đồng thuận vẫn cần answer-key/hội đồng chuyên gia để mở rộng.)*
 2. **Vá điểm yếu thiết kế** — (a) ✅ enrich PMID/DOI cho 32 thang (3.1, 6%→90.6%);
    (b) ✅ tích hợp nguồn tương tác thuốc (openFDA) cho Rx checker (1.3); (c) ✅ bộ test adversarial PII (4.1).
 3. **Xây hạ tầng** — (a) ✅ FHIR R4 client + test HAPI sandbox (2.2);
