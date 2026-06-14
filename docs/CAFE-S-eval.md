@@ -8,6 +8,7 @@ Fidelity · Ethics · Scalability). Phân biệt: ✅ đạt(thiết kế) · �
 |------|----------|---------|---------|
 | 2026-06-07 | **3.1 Citation Accuracy** | **100%** ID phân giải đúng (2/2 DOI qua Crossref); **nhưng độ phủ ID chỉ 6%** (2/32 thang có PMID/DOI) | Crossref API + quét `verified.py.source` |
 | 2026-06-07 | **3.3 Recency** | ✅ Đạt — kéo được ESC 2024 AF theo yêu cầu (web thời gian thực) | WebSearch live |
+| 2026-06-07 | **2.2 FHIR R4** | ✅ Đạt — `app/integrations/fhir_client.py`: kết nối HAPI R4 sandbox (4.0.1), đọc Patient/MedicationRequest, khử PHI, **chặn ghi mặc định**; 6 test offline xanh | Live smoke + pytest |
 
 **Phát hiện vá được ngay:** 30/32 thang điểm `verified` thiếu PMID/DOI trong `source` → cần enrich
 để trích dẫn tự verify được (nâng độ phủ 6% → cao).
