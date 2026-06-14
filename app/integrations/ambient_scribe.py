@@ -58,33 +58,44 @@ _VN_UPPER = ("A-ZÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊ�
 # Một "từ" tên riêng: bắt đầu bằng chữ hoa, theo sau là chữ cái (kể cả dấu).
 _NAME_WORD = rf"[{_VN_UPPER}][^\W\d_]+"
 
+# Một "từ" tên riêng: chữ hoa đầu + (tùy chọn) chữ thường theo sau (bắt cả tên 1 chữ cái viết tắt).
+_NAME_WORD2 = rf"[{_VN_UPPER}][^\W\d_]*"
+
 # Từ khóa dẫn tới TÊN bệnh nhân (bắt theo ngữ cảnh — tiếng Việt không có NER sẵn).
 _NAME_CUE = re.compile(
     r"(?P<cue>họ\s+và\s+tên|họ\s+tên|bệnh\s+nhân\s+tên|tên\s+bệnh\s+nhân|"
-    r"tên\s+(?:là|cháu|con|em|bác|cô|chú|anh|chị)|tôi\s+(?:tên|là))"
-    rf"(?P<sep>\s*(?:là|:)?\s*)(?P<name>(?:{_NAME_WORD}\s*){{1,4}})",
+    r"người\s+bệnh\s+tên|tên\s+người\s+bệnh|bn\s+tên|tên\s+bn|"
+    r"tên\s+(?:là|cháu|con|em|bác|cô|chú|anh|chị|ông|bà|cụ)|tôi\s+(?:tên|là))"
+    rf"(?P<sep>\s*(?:là|:)?\s*)(?P<name>(?:{_NAME_WORD2}\s*){{1,4}})",
     re.IGNORECASE,
 )
 
-# Cấu trúc định danh (không phụ thuộc ngữ cảnh).
+# Cấu trúc định danh (không phụ thuộc ngữ cảnh). Thứ tự QUAN TRỌNG: nhóm-ID trước phone,
+# phone trước ngày & ID liền (tránh "ăn" nhầm nhau).
 _PII_PATTERNS: List[Tuple[str, re.Pattern]] = [
     ("email", re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")),
-    # Số điện thoại VN: +84/0 + 8–10 chữ số.
-    ("phone", re.compile(r"(?<!\d)(?:\+?84|0)\d{8,10}(?!\d)")),
+    # CMND/CCCD/BHYT viết theo nhóm 3-3-3(-3) có khoảng trắng/chấm/gạch.
+    ("id_grouped", re.compile(r"(?<!\d)\d{3}[\s.\-]\d{3}[\s.\-]\d{3}(?:[\s.\-]\d{1,3})?(?!\d)")),
+    # Số điện thoại VN: +84/0 + 8–10 chữ số, CHO PHÉP khoảng trắng/chấm/gạch xen giữa.
+    ("phone", re.compile(r"(?<![\w+])(?:\+?84|0)(?:[\s.\-]?\d){8,10}(?![\w])")),
+    # Ngày ĐẦY ĐỦ (dd/mm/yyyy, yyyy-mm-dd…) — PHI theo HIPAA safe-harbor (chi tiết hơn năm).
+    # 2 nhóm ngày-tháng-năm nên KHÔNG đụng tỷ số lâm sàng kiểu 140/90.
+    ("date", re.compile(r"(?<!\d)(?:\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}|\d{4}[/\-]\d{1,2}[/\-]\d{1,2})(?!\d)")),
     # Chuỗi ≥9 chữ số liền: CMND(9)/CCCD(12)/thẻ BHYT/mã HS… → ẩn.
     ("id_number", re.compile(r"(?<!\d)\d{9,}(?!\d)")),
-    # Ngày sinh theo ngữ cảnh "sinh ... dd/mm/yyyy" hoặc "sinh năm yyyy".
-    ("dob", re.compile(r"(sinh(?:\s+(?:năm|ngày))?\s*:?\s*)"
-                       r"(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4})", re.IGNORECASE)),
+    # Năm sinh theo ngữ cảnh "sinh năm yyyy" (ngày đầy đủ đã do 'date' xử lý).
+    ("dob_year", re.compile(r"(sinh(?:\s+năm)?\s*:?\s*)(\d{4})(?!\d)", re.IGNORECASE)),
 ]
 
 
 def scrub_pii(text: str) -> Tuple[str, int]:
-    """Khử định danh best-effort khỏi transcript: email, SĐT, số CMND/CCCD/BHYT, ngày sinh, TÊN.
+    """Khử định danh best-effort khỏi transcript: email · SĐT · CMND/CCCD/BHYT · ngày · năm sinh · TÊN.
 
     Trả về ``(văn_bản_đã_ẩn, số_lần_ẩn)``. Đây là phòng thủ LỚP 1 (cùng với prompt buộc LLM
-    dùng placeholder + bác sĩ rà cuối) — KHÔNG bảo đảm tuyệt đối; tên không theo "từ khóa dẫn"
-    có thể lọt → bác sĩ phải kiểm. Triết lý: thà ẩn dư còn hơn lộ.
+    dùng placeholder + bác sĩ rà cuối) — KHÔNG bảo đảm tuyệt đối. Triết lý: thà ẩn dư còn hơn lộ.
+
+    GIỚI HẠN ĐÃ BIẾT (bác sĩ phải kiểm): tên KHÔNG đi sau "từ khóa dẫn" (vd nằm đầu câu thoại)
+    có thể lọt; địa chỉ chữ; tỷ số/đơn vị giống ngày. Đầu ra SOAP vẫn dùng placeholder + người duyệt.
     """
     n = 0
     out = text
@@ -96,8 +107,8 @@ def scrub_pii(text: str) -> Tuple[str, int]:
     out, c = _NAME_CUE.subn(_mask_name, out)
     n += c
 
-    for _label, pat in _PII_PATTERNS:
-        if _label == "dob":
+    for label, pat in _PII_PATTERNS:
+        if label == "dob_year":
             out, c = pat.subn(lambda m: f"{m.group(1)}{REDACTED}", out)
         else:
             out, c = pat.subn(REDACTED, out)
