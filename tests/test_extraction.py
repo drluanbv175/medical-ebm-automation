@@ -64,6 +64,23 @@ def test_conclusion_empty():
     assert extract_conclusion(None) == []
 
 
+def test_extract_effect_parses_ratio_and_ci():
+    from app.services.extraction import extract_effect
+    e = extract_effect("empagliflozin reduced risk (hazard ratio 0.72; 95% CI 0.64 to 0.82)")
+    assert e and e["measure"] == "HR" and e["hr"] == 0.72
+    assert e["lo"] == 0.64 and e["hi"] == 0.82 and e["text"] == "HR 0.72 (0.64–0.82)"
+    e2 = extract_effect("reduction 51% (RR = 0.49, 95% CI: 0.46-0.52) vs no CXR")
+    assert e2 and e2["measure"] == "RR" and e2["hr"] == 0.49
+
+
+def test_extract_effect_none_when_no_number():
+    from app.services.extraction import extract_effect
+    assert extract_effect("This guideline recommends screening for CKD.") is None
+    assert extract_effect("") is None
+    # giá trị vô lý (điểm ngoài CI) -> loại
+    assert extract_effect("HR 5.0 (95% CI 0.1-0.2)") is None
+
+
 def test_pico_extraction():
     from app.services.extraction import extract_pico
     a = ("This trial enrolled 6609 patients with chronic kidney disease. "

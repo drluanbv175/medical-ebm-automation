@@ -198,3 +198,52 @@ def pico_label(cat: str) -> str:
 
 def pico_display_order() -> List[str]:
     return _PICO_DISPLAY
+
+
+# ===========================================================================
+# TRÍCH HIỆU SỐ CÓ CẤU TRÚC (HR/RR/OR + 95% CI) — số liệu NGUYÊN VĂN từ nguồn.
+# Mục tiêu: hiển thị số gọn + forest plot (thay vì nhồi câu dài vào ô monospace).
+# CHỈ trích con số có sẵn trong nguồn; KHÔNG tự tính/bịa.
+# ===========================================================================
+_MEASURE_MAP = {
+    "hr": "HR", "hazard ratio": "HR", "ahr": "aHR", "adjusted hazard ratio": "aHR",
+    "rr": "RR", "risk ratio": "RR", "relative risk": "RR",
+    "or": "OR", "odds ratio": "OR", "aor": "aOR", "adjusted odds ratio": "aOR",
+}
+_NUM = r"([0-9]+(?:[.,][0-9]+)?)"
+_EFFECT_RE = re.compile(
+    r"\b(adjusted hazard ratio|adjusted odds ratio|hazard ratio|risk ratio|relative risk|"
+    r"odds ratio|aHR|aOR|HR|RR|OR)\b"
+    r"[^0-9]{0,12}?" + _NUM +                                  # ước lượng điểm
+    r".{0,45}?(?:95\s*%?\s*(?:CI|confidence interval)|CI)[^0-9]{0,8}?"
+    + _NUM + r"\s*(?:to|[-–—]|,)\s*" + _NUM,                   # cận dưới – cận trên
+    re.IGNORECASE)
+
+
+def _f(x):
+    try:
+        return float(str(x).replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def extract_effect(text: str):
+    """Trả về {measure,hr,lo,hi,ci,text} nếu nguồn nêu rõ HR/RR/OR + 95% CI; None nếu không.
+
+    `hr` là ước lượng ĐIỂM (dùng cho mọi loại tỷ số để khớp template forest). Số liệu
+    lấy ĐÚNG nguồn (không tính lại). Lọc giá trị vô lý (cận dưới ≤ điểm ≤ cận trên).
+    """
+    if not text:
+        return None
+    m = _EFFECT_RE.search(text)
+    if not m:
+        return None
+    measure = _MEASURE_MAP.get(m.group(1).lower(), m.group(1).upper())
+    pt, lo, hi = _f(m.group(2)), _f(m.group(3)), _f(m.group(4))
+    if None in (pt, lo, hi):
+        return None
+    if not (0 < lo <= hi) or not (lo <= pt <= hi) or not (0.001 <= pt <= 1000):
+        return None
+    ci = f"{m.group(3).replace(',', '.')}–{m.group(4).replace(',', '.')}"
+    return {"measure": measure, "hr": pt, "lo": lo, "hi": hi, "ci": ci,
+            "text": f"{measure} {m.group(2).replace(',', '.')} ({ci})"}

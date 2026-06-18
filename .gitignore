@@ -24,12 +24,21 @@ data/tiktok/20*
 .claude/sessions/
 .claude/worktrees/
 .claude/settings.local.json
+.claude/agent-memory/
+.claude/launch.json
+**/.claude/state/
+**/.claude/sessions/
+**/.claude/logs/
 state.db
 out/
 
 # Export tái sinh từ scripts/gen_evidence_brief.py
 evidence/reviews/*.docx
 evidence/reviews/*.pdf
+
+# Chỉ mục dashboard sinh tự động; bản dùng chung nằm trong ../EBM-Dashboards/.
+/evidence-library.html
+/library.json
 
 # Danh mục thư viện thật — JSON lớn (~2MB), tái sinh bằng scripts/build_library_catalog.py.
 # Giữ CATALOG.md (duyệt được) trong git; bỏ JSON máy-đọc.

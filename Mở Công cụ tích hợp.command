@@ -6,5 +6,9 @@ echo "================================================"
 echo "  Đang mở CÔNG CỤ TÍCH HỢP CAFÉ-S trong trình duyệt..."
 echo "  (GIỮ cửa sổ này mở khi đang dùng. Đóng để tắt.)"
 echo "================================================"
-source "$HOME/.ebm-venv/bin/activate" 2>/dev/null
-arch -arm64 streamlit run app/dashboard/integrations_panel.py
+if [ -x "$HOME/.ebm-venv/bin/python" ]; then
+  PY="$HOME/.ebm-venv/bin/python"
+else
+  PY="$(command -v python3 || command -v python)"
+fi
+"$PY" -m streamlit run app/dashboard/integrations_panel.py

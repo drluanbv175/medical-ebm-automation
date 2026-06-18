@@ -44,6 +44,6 @@ start is missed" để bù khi máy vừa bật trễ.)
 - Nhật ký nằm ở `medical-ebm-automation\data\archive\windows_daily.log`.
 
 ## Lưu ý
-- Windows dùng môi trường Python RIÊNG ở `C:\ebm-venv` (ngoài OneDrive) — đúng cách,
+- Windows dùng môi trường Python RIÊNG ở `%USERPROFILE%\.ebm-venv` (ngoài OneDrive) — đúng cách,
   không bị lỗi do đồng bộ đám mây. (Máy Mac dùng `~/.ebm-venv`, cũng ngoài OneDrive.)
 - Nếu gặp lỗi, mở file `windows_daily.log`, copy đoạn lỗi gửi cho trợ lý để được chỉ cách sửa.

@@ -20,10 +20,12 @@ This file contains only Claude Code-specific instructions.
 
 ## 0. Project Context
 
-- **Stack**: Python / Streamlit — pipeline EBM + research tracker + dashboard 9 tab.
+- **Workspace mặc định dùng chung**: mở Claude Code tại `C:\Users\Admin\OneDrive\Claude AI` rồi vào `medical-ebm-automation/`; trên Mac mở thư mục OneDrive tương ứng chứa `Claude AI`.
+- **Stack**: Python / Streamlit — pipeline EBM + research tracker + dashboard 12 tab, Evidence Workbench, EBM_MASTER hub, evidence RAG.
 - **Run app**: `python run.py` (or "Mở Dashboard.command").
-- **Tests**: `pytest` (see `tests/`).
-- **Secrets**: live in `.env` (git-ignored and read-blocked via `harness.toml`). Never commit or print them.
+- **Tests**: `python -m compileall -q app scripts tests`; chạy thêm `pytest` và `ruff check` khi venv đã có dev dependencies.
+- **Agent source of truth**: sửa `.claude/agents/*.md` ở thư mục gốc OneDrive; không sửa tay `.Codex/agents/*.toml` hoặc `.codex/agents/*.toml`. Sau khi sửa/thêm agent, chạy sync ở thư mục gốc.
+- **Secrets**: live in `.env` outside OneDrive, symlinked into the repo if needed. Never commit or print them.
 
 ---
 
@@ -60,14 +62,23 @@ chore:    maintenance
 git status -sb
 cat Plans.md
 head -50 AGENTS.md
+python ../tools/audit_ebm_system.py
+python ../tools/sync_agents_to_codex.py --check
 ```
 
 ### At Completion
 ```bash
+python -m compileall -q app scripts tests
+python ../tools/sync_agents_to_codex.py --check
+python ../tools/audit_ebm_system.py
+# If dev dependencies are installed:
 pytest
+ruff check
 git add -A
 git commit -m "feat: [change summary]"
 ```
+
+If `pytest` or `ruff` is unavailable, report that explicitly and do not create a virtualenv inside OneDrive. Use `%USERPROFILE%\.ebm-venv` on Windows or `~/.ebm-venv` on macOS/Linux.
 
 ---
 

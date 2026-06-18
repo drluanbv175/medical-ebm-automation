@@ -75,9 +75,16 @@ def cmd_live_update(max_results_per_query: int = 8) -> Dict:
     # Gửi cảnh báo nếu có mục mới ưu tiên cao (tự bỏ qua nếu chưa cấu hình email/webhook).
     from app.services.notify import notify_high_priority_new
     notify = notify_high_priority_new(days=7)
+    # Dịch trước (cache) nội dung dashboard -> bác sĩ mở Dark Analyst là hiện NGAY (việt hoá đủ).
+    try:
+        from app.reports.evidence_workbench import prewarm_translations
+        warmed = prewarm_translations(per_area=10)
+    except Exception:  # pragma: no cover
+        warmed = 0
     return {"mode": "live", "pipeline": stats,
             "new_this_run": stats.get("new_items"),
-            "new_in_digest": alert["total_new"], "notify": notify, "reports": reports}
+            "new_in_digest": alert["total_new"], "notify": notify, "reports": reports,
+            "prewarmed_topics": warmed}
 
 
 def cmd_alert(days: int = 7) -> Dict:

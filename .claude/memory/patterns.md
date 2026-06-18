@@ -5,26 +5,42 @@
 
 ---
 
-## P1: Ép `arch -arm64` trong mọi launcher (Apple Silicon)
+## P1: Launcher phải tự suy đường dẫn trong OneDrive và ưu tiên venv
 
 **Date**: 2026-06-07
-**Tags**: #pattern #macos #arm64 #gotcha
+**Updated**: 2026-06-18
+**Tags**: #pattern #macos #windows #onedrive #launcher #gotcha
 **Observation ID**: memory/project-medical-ebm-automation.md
 
 ### Problem
-App GUI/launchd hay khởi chạy Python ở x86_64 (Rosetta) trong khi numpy/pandas cài bản arm64 → lỗi `incompatible architecture (have arm64, need x86_64)` (hiện ra dưới dạng "import numpy from source directory").
+Launcher GUI/launchd dễ gãy khi hardcode đường dẫn OneDrive của một máy (`/Users/.../Claude AI/...`) hoặc ép `arch -arm64` trên môi trường không cần/không có lệnh đó. Trước đây việc ép `arch -arm64` giúp tránh lỗi Rosetta trên một máy Apple Silicon, nhưng khi đồng bộ Mac↔Windows/Codex↔Claude Code thì hardcode này làm giảm tính di động.
 
 ### Solution
-Ép `arch -arm64` trong MỌI launcher: app launcher, `Mở Dashboard.command`, `scripts/daily_update.sh`.
+Launcher nằm trong repo phải tự suy `PROJ` từ vị trí file:
+
+```bash
+PROJ="$(cd "$(dirname "$0")/.." && pwd)"
+```
+
+Ưu tiên Python của venv ngoài OneDrive nếu có, rồi fallback sang `python3/python`:
+
+```bash
+PY="$HOME/.ebm-venv/bin/python"
+if [ ! -x "$PY" ]; then
+  PY="$(command -v python3 || command -v python)"
+fi
+```
+
+Gọi bằng `"$PY" ...`. Chỉ ép `arch -arm64` khi đã xác nhận launcher chạy dưới Rosetta trên riêng máy đó; không đưa hardcode này vào launcher dùng chung.
 
 ### Application Conditions
-Mọi entry point GUI/launchd/script trên máy Apple Silicon.
+Mọi entry point GUI/launchd/script nằm trong `medical-ebm-automation/` và được đồng bộ qua OneDrive.
 
 ### Non-Application Conditions
-Chạy trực tiếp từ Terminal (đã là arm64) — nên dễ tưởng nhầm "đã ổn".
+Script cá nhân chỉ dùng trên một máy có thể có wrapper riêng, nhưng không commit hardcode máy cá nhân vào repo.
 
 ### Notes
-Chạy từ Terminal arm64 không lỗi → đừng kết luận đã fix khi mới test ở Terminal. Phải test qua chính launcher GUI/launchd.
+Nếu gặp lỗi kiến trúc numpy/pandas trên Mac Apple Silicon, xử lý ở venv/cách mở terminal trước; chỉ thêm `arch -arm64` vào wrapper cá nhân khi thật sự cần.
 
 ---
 

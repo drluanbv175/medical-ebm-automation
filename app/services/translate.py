@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from typing import Dict, Optional
 
 from app.config import settings
@@ -90,11 +91,14 @@ def translate_vi(text: str) -> Optional[str]:
         return None
 
 
-def translate_vi_batch(texts):
+def translate_vi_batch(texts, cache_only: bool = False):
     """Dịch nhiều câu trong MỘT lượt gọi mạng (giảm độ trễ khi mở 1 abstract).
 
     Trả list cùng độ dài; phần tử None nếu là tiếng Việt sẵn / rỗng / lỗi. Tận dụng
     cache từng câu (câu đã dịch không gọi lại). Câu tiếng Việt/rỗng không tốn lượt gọi.
+
+    cache_only=True: CHỈ lấy từ cache, KHÔNG gọi mạng (hiển thị tức thì; câu chưa dịch
+    trả None để giao diện fallback nguyên văn). Dùng cho chế độ tự-hiện không chờ.
     """
     global _cache
     texts = list(texts)
@@ -110,20 +114,57 @@ def translate_vi_batch(texts):
             results[i] = _cache[key]
         else:
             to_fetch.append((i, t, key))
-    if not to_fetch:
+    if not to_fetch or cache_only:
         return results
     try:
         from deep_translator import GoogleTranslator
-        tr = GoogleTranslator(source="auto", target="vi")
-        out = tr.translate_batch([t[:4500] for _, t, _ in to_fetch])
-        changed = False
-        for (i, _t, key), vi in zip(to_fetch, out or []):
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Không có deep_translator: %s", exc)
+        return results
+    tr = GoogleTranslator(source="auto", target="vi")
+
+    def _one(text):
+        """Dịch 1 câu, có thử lại — để KHÔNG bỏ sót khi gộp lệch dòng."""
+        for _ in range(2):
+            try:
+                vi = tr.translate(text[:4500])
+                return vi if (vi and not _is_degenerate(vi)) else None
+            except Exception:  # pragma: no cover - mạng/giới hạn
+                continue
+        return None
+
+    changed = False
+    # NHANH: gộp nhiều câu (mỗi câu 1 dòng) -> dịch 1 LƯỢT/khối ~4000 ký tự rồi tách lại.
+    # An toàn: nếu số dòng trả về KHÔNG khớp -> rơi về dịch từng câu (tránh lệch nội dung).
+    groups, cur, cur_len = [], [], 0
+    for tup in to_fetch:
+        ln = len(tup[1]) + 1
+        if cur and cur_len + ln > 4000:
+            groups.append(cur)
+            cur, cur_len = [], 0
+        cur.append(tup)
+        cur_len += ln
+    if cur:
+        groups.append(cur)
+
+    for group in groups:
+        srcs = [re.sub(r"\s+", " ", t).strip() for _, t, _ in group]
+        joined = "\n".join(srcs)
+        out_joined = None
+        try:
+            out_joined = tr.translate(joined)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("Gộp dịch lỗi (%s) -> dịch từng câu.", exc)
+        lines = [s.strip() for s in (out_joined or "").split("\n") if s.strip()] if out_joined else []
+        if out_joined and len(lines) == len(group):
+            pairs = zip(group, lines)
+        else:                                   # lệch dòng -> dịch lẻ để khớp đúng
+            pairs = ((g, _one(g[1])) for g in group)
+        for (i, _t, key), vi in pairs:
             if vi and not _is_degenerate(vi):
                 results[i] = vi
                 _cache[key] = vi
                 changed = True
-        if changed:
-            _save_cache(_cache)
-    except Exception as exc:  # pragma: no cover - phụ thuộc mạng
-        logger.warning("Dịch batch ->VI lỗi (offline?): %s", exc)
+    if changed:
+        _save_cache(_cache)
     return results

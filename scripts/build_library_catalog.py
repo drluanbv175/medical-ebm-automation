@@ -17,11 +17,11 @@ Cách dùng:
     evidence/external-library/catalog.json   — dữ liệu đầy đủ
     evidence/external-library/CATALOG.md     — bảng cho người đọc, nhóm theo chuyên khoa
 """
+import argparse
+import json
 import os
 import re
 import sys
-import json
-import argparse
 
 CLINICAL_EXT = {".pdf", ".docx", ".doc", ".pptx", ".ppt", ".md"}
 
@@ -36,25 +36,74 @@ EXCLUDE_DIRS = {
 
 # Chuyên khoa: (nhãn, các từ khóa nhận diện trong tên file, không phân biệt hoa thường)
 SPECIALTY = [
-    ("Tim mạch", ["tim mach", "cardio", " esc ", "heart", "suy tim", "nhoi mau", "nmct", "tha ", "huyet ap", "rung nhi", "af ", "acs", "lipid", "cholesterol", "statin", "zofenopril", "antiplatelet", "anticoagul"]),
-    ("Thần kinh", ["than kinh", "neuro", "dot quy", "stroke", "dong kinh", "parkinson", "chong mat", "sa sut tri tue", "dementia"]),
-    ("Nội tiết - ĐTĐ", ["dai thao duong", "diabetes", "dtd", "noi tiet", "tuyen giap", "thyroid", "insulin", "hba1c", "dsf"]),
-    ("Thận - Tiết niệu", ["than man", "ckd", "kdigo", "than nhan tao", "loc mau", "than-", "creatinin"]),
+    (
+        "Tim mạch",
+        [
+            "tim mach", "cardio", " esc ", "heart", "suy tim", "nhoi mau", "nmct", "tha ",
+            "huyet ap", "rung nhi", "af ", "acs", "lipid", "cholesterol", "statin",
+            "zofenopril", "antiplatelet", "anticoagul",
+        ],
+    ),
+    (
+        "Thần kinh",
+        ["than kinh", "neuro", "dot quy", "stroke", "dong kinh", "parkinson", "chong mat",
+         "sa sut tri tue", "dementia"],
+    ),
+    (
+        "Nội tiết - ĐTĐ",
+        ["dai thao duong", "diabetes", "dtd", "noi tiet", "tuyen giap", "thyroid", "insulin",
+         "hba1c", "dsf"],
+    ),
+    (
+        "Thận - Tiết niệu",
+        ["than man", "ckd", "kdigo", "than nhan tao", "loc mau", "than-", "creatinin"],
+    ),
     ("Hô hấp", ["ho hap", "copd", "gold", "hen", "asthma", "phoi", "viem phoi", "pneumonia"]),
-    ("Tiêu hóa - Gan mật", ["tieu hoa", "gan ", "gan-", "hepat", "aasld", "easl", "xo gan", "cirrho", "viem gan", "masld", "nafld"]),
-    ("Cơ xương khớp", ["co xuong", "khop", "rheum", "gout", "loang xuong", "osteoporo", "viem khop"]),
-    ("Nhiễm - Kháng sinh", ["nhiem khuan", "khang sinh", "antibiotic", "idsa", "sepsis", "nhiem trung", "vaccine", "aware"]),
-    ("Da liễu", ["da lieu", "atopic", "dermatit", "eczema", "chàm", "cham", "phat ban", "vay nen", "psoriasis"]),
-    ("Lão khoa - Đa bệnh", ["lao khoa", "nguoi cao tuoi", "geriatr", "beers", "stopp", "da thuoc", "frailty", "polypharmacy"]),
+    (
+        "Tiêu hóa - Gan mật",
+        ["tieu hoa", "gan ", "gan-", "hepat", "aasld", "easl", "xo gan", "cirrho", "viem gan",
+         "masld", "nafld"],
+    ),
+    (
+        "Cơ xương khớp",
+        ["co xuong", "khop", "rheum", "gout", "loang xuong", "osteoporo", "viem khop"],
+    ),
+    (
+        "Nhiễm - Kháng sinh",
+        ["nhiem khuan", "khang sinh", "antibiotic", "idsa", "sepsis", "nhiem trung",
+         "vaccine", "aware"],
+    ),
+    (
+        "Da liễu",
+        ["da lieu", "atopic", "dermatit", "eczema", "chàm", "cham", "phat ban", "vay nen",
+         "psoriasis"],
+    ),
+    (
+        "Lão khoa - Đa bệnh",
+        ["lao khoa", "nguoi cao tuoi", "geriatr", "beers", "stopp", "da thuoc", "frailty",
+         "polypharmacy"],
+    ),
     ("Cấp cứu - HSCC", ["cap cuu", "emergency", "hoi suc", "icu", "cpr"]),
     ("Dinh dưỡng", ["dinh duong", "nutrition", "nutri"]),
-    ("Chẩn đoán hình ảnh", ["imaging", "x quang", "x-quang", "ct ", "mri", "sieu am", "anatomy", "radiolog", "/cls/", "cdha"]),
-    ("Nội tổng quát / khác", ["bates", "physical examination", "mayo", "harrison", "noi khoa", "kham benh", "noi chung"]),
+    (
+        "Chẩn đoán hình ảnh",
+        ["imaging", "x quang", "x-quang", "ct ", "mri", "sieu am", "anatomy", "radiolog",
+         "/cls/", "cdha"],
+    ),
+    (
+        "Nội tổng quát / khác",
+        ["bates", "physical examination", "mayo", "harrison", "noi khoa", "kham benh",
+         "noi chung"],
+    ),
 ]
 
 # Loại tài liệu
 DOC_TYPE = [
-    ("guideline", ["guideline", "khuyen cao", "huong dan", "recommendation", "standard", "consensus", "policy", "kdigo", "gold", " esc ", "aha", "idsa", "aasld", "uspstf", "nice"]),
+    (
+        "guideline",
+        ["guideline", "khuyen cao", "huong dan", "recommendation", "standard", "consensus",
+         "policy", "kdigo", "gold", " esc ", "aha", "idsa", "aasld", "uspstf", "nice"],
+    ),
     ("textbook/sách", ["textbook", "concise", "pocket guide", "handbook", "edition", "atlas", "sach"]),
     ("slide/báo cáo HN", ["bao cao", "hoi nghi", "hoi thao", "hnkh", "seminar", "slide", ".pptx", ".ppt"]),
     ("review/tổng quan", ["review", "tong quan", "meta", "systematic"]),
@@ -106,7 +155,7 @@ def main():
 
     here = os.path.dirname(os.path.abspath(__file__))               # .../medical-ebm-automation/scripts
     repo = os.path.dirname(here)                                    # .../medical-ebm-automation
-    onedrive_root = os.path.dirname(os.path.dirname(repo))          # .../OneDrive-Personal(2)
+    onedrive_root = os.path.dirname(os.path.dirname(repo))          # .../<OneDrive root>
     root = args.root or onedrive_root
     out = args.out or os.path.join(repo, "evidence", "external-library")
     os.makedirs(out, exist_ok=True)

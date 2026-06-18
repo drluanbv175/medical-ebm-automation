@@ -1,7 +1,7 @@
 # Danh mục thư viện y văn thật (đọc-tại-chỗ) — cho clinical-evidence-rag
 
 > Sinh tự động bởi `scripts/build_library_catalog.py` · ngày: 2026-06-09
-> Gốc quét: `/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)`
+> Gốc quét: thư mục OneDrive chứa `Claude AI` (đường dẫn phụ thuộc từng máy)
 > **3354 tài liệu lâm sàng** (đã loại 49 file hành chính).
 >
 > Đây là danh mục THAM CHIẾU: file gốc nằm nguyên ở OneDrive, không copy vào repo (bản quyền).

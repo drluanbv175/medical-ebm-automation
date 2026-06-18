@@ -1,6 +1,6 @@
-"""Streamlit dashboard điều hành – 9 tab theo đề bài.
+"""Streamlit dashboard điều hành – 12 tab theo đề bài.
 
-Chạy: python run.py dashboard  (hoặc: streamlit run app/dashboard/app.py)
+Chạy: python run.py dashboard  (hoặc: python -m streamlit run app/dashboard/main.py)
 """
 from __future__ import annotations
 
@@ -45,28 +45,95 @@ from app.utils.text import clean_text  # noqa: E402
 
 st.set_page_config(page_title="Medical EBM Automation", layout="wide")
 
-# --- Thu gọn khung giao diện cho dễ nhìn (giảm khoảng trống, nhỏ cỡ chữ số liệu) ---
+# --- HỆ THỐNG THIẾT KẾ "Evidence Workbench" (nền sáng, nhấn teal/blue) ----------
 st.markdown("""
 <style>
-  /* Thu hẹp lề (GIỮ đủ lề trên để hàng tab không bị thanh tiêu đề che) */
-  .block-container { padding-top: 3.5rem; padding-bottom: 1rem;
-                     padding-left: 2rem; padding-right: 2rem; max-width: 1500px; }
-  /* Hàng tab nổi rõ, không dính sát mép trên */
+  /* DÙNG FONT MẶC ĐỊNH của Streamlit (hiển thị tiếng Việt chuẩn) — KHÔNG nạp font ngoài. */
+  :root{
+    --ink:#0f172a; --ink2:#334155; --muted:#64748b; --line:#e2e8f0; --line2:#cbd5e1;
+    --bg:#f4f7fb; --surface:#ffffff; --surface2:#f8fafc;
+    --primary:#0e7490; --primary2:#0891b2; --accent:#2563eb;
+    --apply:#16a34a; --consider:#ca8a04; --notyet:#ea580c; --danger:#dc2626;
+    --shadow:0 1px 2px rgba(15,23,42,.04),0 2px 8px rgba(15,23,42,.06);
+  }
+  .stApp { background:var(--bg); }
+  .block-container { padding-top: 3.2rem; padding-bottom: 1.2rem;
+                     padding-left: 2rem; padding-right: 2rem; max-width: 1520px; }
+
+  /* ---------- TABS (kiểu pill, nhấn teal) ---------- */
   div[data-testid="stTabs"] { position: relative; z-index: 1; }
-  button[data-baseweb="tab"] { font-size: .9rem; }
-  /* Ô số liệu (st.metric) gọn lại */
-  div[data-testid="stMetric"] { padding: 6px 8px; background: #f7f9fc;
-                                 border: 1px solid #eaeef3; border-radius: 8px; }
-  div[data-testid="stMetricValue"] { font-size: 1.45rem; }
-  div[data-testid="stMetricLabel"] p { font-size: .72rem; color: #5b6573; }
-  /* Tiêu đề mục nhỏ lại một chút */
-  h1 { font-size: 1.6rem !important; }
-  h2 { font-size: 1.25rem !important; }
-  h3 { font-size: 1.05rem !important; }
-  h4 { font-size: 1rem !important; margin: .5rem 0 .15rem !important;
-       color: #14305c; font-weight: 700; }
+  div[data-testid="stTabs"] [data-baseweb="tab-list"]{
+    gap:2px; background:var(--surface); padding:5px; border-radius:12px;
+    border:1px solid var(--line); box-shadow:var(--shadow); flex-wrap:wrap; }
+  button[data-baseweb="tab"]{ font-size:.86rem; font-weight:600; color:var(--muted);
+    border-radius:8px; padding:6px 12px; }
+  button[data-baseweb="tab"]:hover{ background:var(--surface2); color:var(--ink2); }
+  button[data-baseweb="tab"][aria-selected="true"]{
+    background:linear-gradient(135deg,var(--primary),var(--primary2)); color:#fff; }
+  div[data-testid="stTabs"] [data-baseweb="tab-highlight"],
+  div[data-testid="stTabs"] [data-baseweb="tab-border"]{ display:none; }
+
+  /* ---------- METRIC -> THẺ KPI ---------- */
+  div[data-testid="stMetric"]{ background:var(--surface); padding:12px 14px 11px;
+    border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow);
+    position:relative; overflow:hidden; transition:transform .12s,box-shadow .12s; }
+  div[data-testid="stMetric"]:hover{ transform:translateY(-2px);
+    box-shadow:0 4px 14px rgba(15,23,42,.10); }
+  div[data-testid="stMetric"]::before{ content:""; position:absolute; left:0; top:0;
+    bottom:0; width:4px; background:linear-gradient(180deg,var(--primary),var(--accent)); }
+  div[data-testid="stMetricValue"]{ font-size:1.7rem; font-weight:800; color:var(--ink);
+    font-variant-numeric:tabular-nums; letter-spacing:-.5px; }
+  div[data-testid="stMetricLabel"] p{ font-size:.7rem; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.4px; }
+
+  /* ---------- TIÊU ĐỀ ---------- */
+  h1{ font-size:1.55rem !important; font-weight:800; letter-spacing:-.4px; }
+  h2{ font-size:1.2rem !important; font-weight:700; color:var(--ink);
+      padding-left:11px; border-left:4px solid var(--primary); margin:.3rem 0 .6rem; }
+  h3{ font-size:1.02rem !important; font-weight:700; color:var(--ink2); }
+  h4{ font-size:1rem !important; margin:.5rem 0 .15rem !important;
+      color:var(--primary); font-weight:700; }
+
+  /* ---------- NÚT ---------- */
+  div[data-testid="stButton"] button{ border-radius:9px; font-weight:600;
+    border:1px solid var(--line); transition:.12s; }
+  div[data-testid="stButton"] button:hover{ border-color:var(--primary2);
+    box-shadow:var(--shadow); }
+  div[data-testid="stButton"] button[kind="primary"]{
+    background:linear-gradient(135deg,var(--primary),var(--primary2));
+    border:0; box-shadow:0 2px 8px rgba(14,116,144,.30); }
+
+  /* ---------- SIDEBAR ---------- */
+  section[data-testid="stSidebar"]{ background:var(--surface);
+    border-right:1px solid var(--line); }
+  section[data-testid="stSidebar"] .block-container{ padding-top:1.2rem; }
+
+  /* ---------- ALERT / EXPANDER / DATAFRAME mềm mại ---------- */
+  div[data-testid="stAlert"]{ border-radius:10px; border:1px solid var(--line);
+    box-shadow:var(--shadow); }
+  details[data-testid="stExpander"], div[data-testid="stExpander"]{
+    border:1px solid var(--line) !important; border-radius:11px !important;
+    box-shadow:var(--shadow); background:var(--surface); }
+  div[data-testid="stDataFrame"]{ border:1px solid var(--line); border-radius:11px;
+    overflow:hidden; box-shadow:var(--shadow); }
+
+  /* ---------- KPI STRIP (thẻ chỉ số có màu ngữ nghĩa) ---------- */
+  .kpi-strip{ display:grid; grid-template-columns:repeat(4,1fr); gap:11px; margin:.2rem 0 .4rem; }
+  @media(min-width:1200px){ .kpi-strip{ grid-template-columns:repeat(8,1fr); } }
+  .kpi{ background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:11px 13px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+    transition:transform .12s,box-shadow .12s; }
+  .kpi:hover{ transform:translateY(-2px); box-shadow:0 4px 14px rgba(15,23,42,.10); }
+  .kpi::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:var(--c,#0e7490); }
+  .kpi .kl{ font-size:.66rem; font-weight:700; color:var(--muted); text-transform:uppercase;
+    letter-spacing:.4px; display:flex; align-items:center; gap:5px; }
+  .kpi .kv{ font-size:1.7rem; font-weight:800; color:var(--ink); letter-spacing:-.5px;
+    font-variant-numeric:tabular-nums; line-height:1.15; margin-top:2px; }
+  .kpi .kv.c{ color:var(--c,#0f172a); }
+
   /* Giảm khoảng cách dọc giữa các khối */
-  div[data-testid="stVerticalBlock"] { gap: .4rem; }
+  div[data-testid="stVerticalBlock"] { gap: .45rem; }
   /* Blockquote (câu trích) gọn, ít khoảng trắng */
   blockquote { margin: .1rem 0 !important; padding: .05rem .7rem !important;
                border-left: 3px solid #cfd8e3 !important; }
@@ -381,15 +448,143 @@ def render_clinical_application(d: dict) -> None:
                "GRADE chính thức.) ⚠️ Luôn đọc nguồn gốc & dùng phán đoán lâm sàng của bạn.")
 
 
+def _open_path_in_browser(path) -> bool:
+    """Mở file HTML bằng trình duyệt mặc định trên máy (server = máy bác sĩ)."""
+    try:
+        import subprocess as _sp
+        import sys as _sys
+        if _sys.platform == "darwin":
+            _sp.Popen(["open", str(path)])
+        elif _sys.platform.startswith("win"):
+            import os as _os
+            _os.startfile(str(path))  # type: ignore[attr-defined]
+        else:
+            _sp.Popen(["xdg-open", str(path)])
+        return True
+    except Exception:
+        return False
+
+
+def render_item_dark(item_id: int, key_prefix: str, detail=None, height=780) -> None:
+    """Hiển thị item đã chọn theo mẫu DARK ANALYST (nền tối, 3 cột) — theo skill /dark-analyst.
+
+    Có nút mở toàn màn hình + tải; kèm lựa chọn xem 'Thẻ chi tiết (sáng)' khi cần đọc text.
+    """
+    import streamlit.components.v1 as _comp
+
+    from app.reports.evidence_workbench import OUT_DIR as _OUT
+    from app.reports.evidence_workbench import render_item_dashboard
+    view = st.radio("Kiểu hiển thị", ["🌑 Dark Analyst", "📄 Thẻ chi tiết (sáng)"],
+                    horizontal=True, key=f"{key_prefix}_view", label_visibility="collapsed")
+    if view.startswith("🌑"):
+        with st.spinner("Đang dựng Dark Analyst (việt hoá + thẩm định)…"):
+            html = render_item_dashboard(item_id, dark=True, vi=True)
+        if not html:
+            st.warning("Không dựng được Dark Analyst cho item này — xem thẻ chi tiết.")
+            d = detail or _evidence_detail(item_id)
+            if d:
+                render_clinical_application(d)
+            return
+        b1, b2 = st.columns(2)
+        if b1.button("🌐 Mở toàn màn hình (trình duyệt)", key=f"{key_prefix}_open"):
+            _OUT.mkdir(parents=True, exist_ok=True)
+            fp = _OUT / f"_view_DarkAnalyst_item_{item_id}.html"
+            fp.write_text(html, encoding="utf-8")
+            st.success("Đã mở trong trình duyệt." if _open_path_in_browser(fp)
+                       else f"Mở thủ công: {fp}")
+        b2.download_button("⬇️ Tải .html", html, key=f"{key_prefix}_dl",
+                           file_name=f"DarkAnalyst_item_{item_id}.html", mime="text/html")
+        _comp.html(html, height=height, scrolling=True)
+    else:
+        d = detail or _evidence_detail(item_id)
+        if d:
+            with st.container(border=True):
+                render_clinical_application(d)
+
+
+@st.cache_data(show_spinner=False)
+def _dark_dashboard_html(ids_tuple, topic, vi=True):
+    """Dựng (cache) HTML Dark Analyst nhiều item. vi=True: dịch ĐẦY ĐỦ (gộp 1 lượt, nhanh,
+    rồi cache). vi=False: giữ nguyên văn tiếng Anh (xem nhanh). Cache theo (ids, topic, vi)."""
+    from app.reports.evidence_workbench import render_dashboard_for_ids
+    return render_dashboard_for_ids(list(ids_tuple), question=topic, dark=True, vi=vi,
+                                    verify_pmids=False, cache_only=False)
+
+
+def _dark_view(html, key, n_shown, n_total, height=880):
+    """Khối hiển thị chung: nút mở toàn màn hình + tải + nhúng iframe."""
+    import streamlit.components.v1 as _comp
+    if not html:
+        st.warning("Không dựng được dashboard cho nhóm này.")
+        return
+    bo, bd = st.columns(2)
+    if bo.button("🌐 Mở toàn màn hình", key=f"{key}_open"):
+        from app.reports.evidence_workbench import OUT_DIR as _O
+        _O.mkdir(parents=True, exist_ok=True)
+        fp = _O / f"_view_DarkAnalyst_{key}.html"
+        fp.write_text(html, encoding="utf-8")
+        st.success("Đã mở trong trình duyệt." if _open_path_in_browser(fp)
+                   else f"Mở thủ công: {fp}")
+    bd.download_button("⬇️ Tải .html", html, key=f"{key}_dl",
+                       file_name=f"DarkAnalyst_{key}.html", mime="text/html")
+    st.caption(f"Hiển thị {n_shown}/{n_total} · **bấm item trong bảng tối** để mở panel "
+               "thẩm định bên phải. **Mở toàn màn hình** để xem trọn 3 cột.")
+    _comp.html(html, height=height, scrolling=True)
+
+
+def render_dark_tab(rows, topic, key, default_n=10, height=880):
+    """TỰ HIỆN nhóm chứng cứ dưới dạng Dark Analyst 3 cột, ĐÃ VIỆT HOÁ ĐẦY ĐỦ (mặc định).
+
+    Lần đầu dịch (gộp 1 lượt, nhanh) rồi cache → các lần sau tức thì. Tick 'Xem tiếng Anh'
+    để bỏ dịch (xem ngay).
+    """
+    if not rows:
+        st.info("Không có item cho mục này.")
+        return
+    c1, c2 = st.columns([1.2, 2.6])
+    min_n, max_n = (1 if len(rows) < 5 else 5), min(40, len(rows))
+    n = c1.slider("Số item", min_n, max_n, min(default_n, max_n), key=f"{key}_n")
+    en = c2.checkbox("Xem nhanh tiếng Anh (không dịch)", value=False, key=f"{key}_en")
+    use = rows[:n]
+    ids = tuple(r["id"] for r in use)
+    with st.spinner("Đang việt hoá & dựng Dark Analyst (lần đầu vài giây, sau tức thì)…"
+                    if not en else "Đang dựng…"):
+        html = _dark_dashboard_html(ids, topic, vi=not en)
+    _dark_view(html, key, len(use), len(rows), height)
+
+
+@st.cache_data(show_spinner=False)
+def _scores_dark_html(names_tuple, topic, vi=True):
+    """Dựng (cache) Dark Analyst cho các thang điểm theo tên (việt hoá đầy đủ mặc định)."""
+    from app.reports.evidence_workbench import render_scores_for_names
+    return render_scores_for_names(list(names_tuple), topic=topic, dark=True, vi=vi,
+                                   cache_only=False)
+
+
+def render_scores_dark(names, topic, key, default_n=15, height=880):
+    """TỰ HIỆN các thang điểm dưới dạng Dark Analyst (khung 'Thang điểm'), đã việt hoá."""
+    if not names:
+        st.info("Chưa có công cụ.")
+        return
+    c1, c2 = st.columns([1.2, 2.6])
+    min_n, max_n = (1 if len(names) < 5 else 5), min(40, len(names))
+    n = c1.slider("Số công cụ", min_n, max_n, min(default_n, max_n), key=f"{key}_n")
+    en = c2.checkbox("Xem nhanh tiếng Anh (không dịch)", value=False, key=f"{key}_en")
+    use = tuple(names[:n])
+    with st.spinner("Đang việt hoá & dựng…" if not en else "Đang dựng…"):
+        html = _scores_dark_html(use, topic, vi=not en)
+    _dark_view(html, key, len(use), len(names), height)
+
+
 def render_clickable_evidence(rows, disp, key, column_config=None, height=360,
                               hint="⬆️ **Bấm vào một hàng** ở bảng trên để xem chi tiết "
-                                   "(PICO / nội dung chính + định hướng áp dụng lâm sàng)."):
-    """Bảng chứng cứ bấm-được: click 1 hàng → hiện thẻ chi tiết bên dưới.
+                                   "theo mẫu Dark Analyst (nền tối, 3 cột)."):
+    """Bảng chứng cứ bấm-được: click 1 hàng → hiện DARK ANALYST của item đó bên dưới.
 
     `rows`: list dict có khóa 'id' (theo _evidence_rows); `disp`: DataFrame hiển thị
     (cùng thứ tự với rows). Dùng chung cho các tab Drug Safety / Antibiotics / Guidelines.
     """
-    st.caption("👉 **Bấm vào một hàng** để xem chi tiết áp dụng lâm sàng bên dưới.")
+    st.caption("👉 **Bấm vào một hàng** → xem chi tiết theo mẫu **Dark Analyst** bên dưới.")
     event = st.dataframe(
         disp, hide_index=True, width="stretch", height=height,
         on_select="rerun", selection_mode="single-row", key=key,
@@ -397,10 +592,7 @@ def render_clickable_evidence(rows, disp, key, column_config=None, height=360,
     sel = event.selection.rows if (event and getattr(event, "selection", None)) else []
     st.divider()
     if sel:
-        detail = _evidence_detail(rows[sel[0]]["id"])
-        if detail:
-            with st.container(border=True):
-                render_clinical_application(detail)
+        render_item_dark(rows[sel[0]]["id"], key_prefix=key)
     else:
         st.info(hint)
 
@@ -502,7 +694,7 @@ elif _mock_n:
 tabs = st.tabs([
     "1. Executive", "2. Weekly EBM", "3. Drug Safety", "4. Antibiotics",
     "5. Guidelines", "6. Research", "7. Clinical Scores", "8. Source Log", "9. Change Log",
-    "📱 10. TikTok", "📚 11. Tổng hợp RAG",
+    "📱 10. TikTok", "📚 11. Tổng hợp RAG", "🧭 12. Evidence Workbench",
 ])
 
 # --- Tab 1: Executive -----------------------------------------------------
@@ -536,24 +728,45 @@ with tabs[0]:
     need_ft = [r for r in rows if r["classification"] == "need_full_text"]
     actionable = [r for r in rows if r["actionable"]]
     drug = [r for r in rows if r["safety_signal"]]
-    # 8 chỉ số gọn trên 1 hàng (tự xuống dòng khi màn hình hẹp)
-    cols = st.columns(8)
-    metrics = [
-        ("Lượt quét", n_sources), ("Bản ghi", total_scanned),
-        ("Record chính", len(rows)), ("Bị loại", len(excluded)),
-        ("Cần toàn văn", len(need_ft)), ("Actionable", len(actionable)),
-        ("Cảnh báo thuốc", len(drug)), ("Guideline", n_guideline),
+    # 8 thẻ KPI có MÀU NGỮ NGHĨA (đồng bộ palette Evidence Workbench)
+    _kpis = [
+        ("🔎 Lượt quét", n_sources, "#0e7490"), ("🗂️ Bản ghi", total_scanned, "#2563eb"),
+        ("📄 Record chính", len(rows), "#0891b2"), ("🚫 Bị loại", len(excluded), "#94a3b8"),
+        ("📖 Cần toàn văn", len(need_ft), "#ca8a04"), ("✅ Actionable", len(actionable), "#16a34a"),
+        ("⚠️ Cảnh báo thuốc", len(drug), "#dc2626"), ("📋 Guideline", n_guideline, "#059669"),
     ]
-    for col, (label, val) in zip(cols, metrics):
-        col.metric(label, val)
+    st.markdown(
+        '<div class="kpi-strip">'
+        + "".join(f'<div class="kpi" style="--c:{c}">'
+                  f'<div class="kl">{lbl}</div>'
+                  f'<div class="kv c">{val:,}</div></div>' for lbl, val, c in _kpis)
+        + '</div>', unsafe_allow_html=True)
 
     if rows:
         df = pd.DataFrame(rows)
         st.subheader("Phân bố theo chuyên khoa")
-        # Biểu đồ ngang, thấp gọn — nhãn chuyên khoa dễ đọc, không bị xoay dọc
-        by_area = df.groupby("clinical_area").size().sort_values()
-        st.bar_chart(by_area, horizontal=True, height=max(180, 26 * len(by_area)),
-                     use_container_width=True)
+        # Biểu đồ ngang có nhãn số, màu thương hiệu (Altair) — đẹp & dễ đọc.
+        import altair as alt
+        by_area = (df.groupby("clinical_area").size().reset_index(name="n")
+                   .rename(columns={"clinical_area": "area"}))
+        by_area = by_area[by_area["area"].notna() & (by_area["area"] != "")]
+        base = alt.Chart(by_area).encode(
+            y=alt.Y("area:N", sort="-x", title=None,
+                    axis=alt.Axis(labelFontSize=12, labelColor="#334155", labelLimit=180)),
+            x=alt.X("n:Q", title=None, axis=alt.Axis(grid=True, gridColor="#eef2f7")))
+        bars = base.mark_bar(height=16, cornerRadiusEnd=5,
+                             color=alt.Gradient(
+                                 gradient="linear",
+                                 stops=[alt.GradientStop(color="#0e7490", offset=0),
+                                        alt.GradientStop(color="#2563eb", offset=1)],
+                                 x1=0, x2=1, y1=0, y2=0))
+        labels = base.mark_text(align="left", dx=4, fontSize=11, fontWeight="bold",
+                                color="#0f172a").encode(text="n:Q")
+        chart = (bars + labels).properties(
+            height=max(200, 30 * len(by_area)),
+            padding={"left": 4, "right": 24, "top": 2, "bottom": 2}
+        ).configure_view(strokeWidth=0)
+        st.altair_chart(chart, use_container_width=True)
 
 # --- Tab 2: Weekly EBM ----------------------------------------------------
 with tabs[1]:
@@ -573,41 +786,10 @@ with tabs[1]:
                     and (not only_new or r["is_new"])
                     and (not kw_l
                          or kw_l in (str(r["title"]) + " " + str(r["source"] or "")).lower())]
-        ROW_LIMIT = 300
-        visible = filtered[:ROW_LIMIT]
-        _more = len(filtered) - len(visible)
-        st.caption("👉 **Bấm vào một hàng** để xem chi tiết áp dụng lâm sàng bên dưới. "
-                   f"({len(filtered)} tài liệu"
-                   + (f"; hiện {ROW_LIMIT} mục đầu — hãy tìm/lọc để thu hẹp" if _more > 0 else "")
-                   + ")")
-        disp = pd.DataFrame([{
-            "🆕": "🆕" if r["is_new"] else "",
-            "Chuyên khoa": r["clinical_area"] or "—",
-            "Tiêu đề": r["title"],
-            "Nguồn": r["source"] or "",
-            "Loại": r["study_type"] or "",
-            "Mức CC": str(r["evidence_level"] or ""),
-            "PC": r["practice_change"],
-            "Tier": r["tier"] or "",
-            "Phân loại": r["classification"] or "",
-        } for r in visible])
-        event = st.dataframe(
-            disp, hide_index=True, width="stretch", height=400,
-            on_select="rerun", selection_mode="single-row",
-            column_config={
-                "Tiêu đề": st.column_config.TextColumn("Tiêu đề", width="large"),
-                "🆕": st.column_config.TextColumn("🆕", width="small"),
-            })
-        sel = event.selection.rows if (event and getattr(event, "selection", None)) else []
-        st.divider()
-        if sel:
-            detail = _evidence_detail(visible[sel[0]]["id"])
-            if detail:
-                with st.container(border=True):
-                    render_clinical_application(detail)
-        else:
-            st.info("⬆️ Bấm vào một hàng ở bảng trên để xem **tóm tắt cấu trúc áp dụng lâm sàng** "
-                    "+ điểm chính trích từ abstract (kèm dịch tiếng Việt).")
+        st.caption(f"📊 {len(filtered)} tài liệu khớp lọc → hiển thị dạng **Dark Analyst** "
+                   "(bấm item trong bảng tối để mở panel thẩm định). Lọc/tìm ở trên để thu hẹp.")
+        _topic = "EBM tuần" if pick == "(Tất cả)" else f"EBM tuần — {pick}"
+        render_dark_tab(filtered, topic=_topic, key="dark_weekly", default_n=15)
     else:
         st.info("Chưa có dữ liệu EBM.")
 
@@ -617,17 +799,7 @@ with tabs[2]:
     st.caption("⚠️ FAERS chỉ là tín hiệu báo cáo tự phát — KHÔNG kết luận nhân quả.")
     with session_scope() as s:
         rows = [r for r in _evidence_rows(s) if r["safety_signal"]]
-    if rows:
-        disp = pd.DataFrame([{
-            "Tiêu đề": r["title"], "Nguồn": r["source"] or "",
-            "Tín hiệu an toàn": clean_text(r["safety_signal"]) or "",
-            "Tier": r["tier"] or "", "Link": r["url"] or "",
-        } for r in rows])
-        render_clickable_evidence(
-            rows, disp, key="tbl_drug",
-            column_config={"Tiêu đề": st.column_config.TextColumn("Tiêu đề", width="large")})
-    else:
-        st.info("Không có cảnh báo an toàn thuốc.")
+    render_dark_tab(rows, topic="An toàn thuốc", key="dark_drug")
 
 # --- Tab 4: Antibiotics ---------------------------------------------------
 with tabs[3]:
@@ -636,36 +808,15 @@ with tabs[3]:
         rows = _evidence_rows(s)
     from app.services.filtering import is_antibiotic_text
     ab = [r for r in rows if r["title"] and is_antibiotic_text(r["title"], r.get("source", ""))]
-    if ab:
-        disp = pd.DataFrame([{
-            "Tiêu đề": r["title"], "Nguồn": r["source"] or "",
-            "Mức CC": str(r["evidence_level"] or ""), "Tier": r["tier"] or "",
-            "Link": r["url"] or "",
-        } for r in ab])
-        render_clickable_evidence(
-            ab, disp, key="tbl_ab",
-            column_config={"Tiêu đề": st.column_config.TextColumn("Tiêu đề", width="large")})
-        st.caption("Không cổ vũ lạm dụng kháng sinh; cân nhắc phân loại WHO AWaRe.")
-    else:
-        st.info("Không có cập nhật kháng sinh.")
+    st.caption("Không cổ vũ lạm dụng kháng sinh; cân nhắc phân loại WHO AWaRe.")
+    render_dark_tab(ab, topic="Kháng sinh / Antibiotic Stewardship", key="dark_ab")
 
 # --- Tab 5: Guidelines ----------------------------------------------------
 with tabs[4]:
     st.header("Guideline mới / cập nhật")
     with session_scope() as s:
         rows = [r for r in _evidence_rows(s, study_type="guideline")]
-    if rows:
-        disp = pd.DataFrame([{
-            "Tổ chức/Nguồn": r["source"] or "", "Tên guideline": r["title"],
-            "Mức CC": str(r["evidence_level"] or ""), "Tier": r["tier"] or "",
-            "Link": r["url"] or "",
-        } for r in rows])
-        render_clickable_evidence(
-            rows, disp, key="tbl_guide",
-            column_config={"Tên guideline": st.column_config.TextColumn("Tên guideline",
-                                                                        width="large")})
-    else:
-        st.info("Chưa có guideline trong DB.")
+    render_dark_tab(rows, topic="Guideline mới / cập nhật", key="dark_guide")
 
 # --- Tab 6: Research ------------------------------------------------------
 with tabs[5]:
@@ -715,6 +866,14 @@ with tabs[6]:
     cB.metric("Đã xác minh công thức + nguồn", len(verified))
     st.caption("Công cụ `needs_verification` CHƯA có công thức xác minh — không dùng làm khuyến cáo.")
     if scores:
+        # --- TỰ HIỆN Dark Analyst cho thang điểm (khung Thang điểm: tình huống/cách tính/ngưỡng/diễn giải) ---
+        st.markdown("#### 🌑 Dark Analyst — thang điểm lâm sàng")
+        _sc_all = st.checkbox("Gồm cả công cụ chưa xác minh", value=False, key="sc_dark_all")
+        _names = [s["score_name"] for s in scores
+                  if _sc_all or s["status"] == "verified"]
+        render_scores_dark(_names, topic="Thang điểm / công cụ lâm sàng", key="dark_scores")
+        st.divider()
+        st.markdown("#### 📑 Danh mục dạng bảng")
         only_verified = st.checkbox("Chỉ hiện công cụ đã xác minh", value=False)
         df = pd.DataFrame(scores)
         if only_verified:
@@ -1046,3 +1205,90 @@ with tabs[10]:
             st.markdown(_md)
         st.download_button("⬇️ Tải bản .md", _md, file_name=_brief.name,
                            mime="text/markdown", key="dl_rag_md")
+
+# --- Tab 12: Evidence Workbench (theo skill cap-nhat-chung-cu-y-khoa) -------
+with tabs[11]:
+    st.header("🧭 Evidence Workbench — Dashboard cập nhật theo vấn đề")
+    st.caption("Tạo **Web Dashboard độc lập** theo mẫu MẶC ĐỊNH *Evidence Workbench* "
+               "(3 cột: bộ lọc · Clinical Quick View + bảng item · panel thẩm định) cho MỘT "
+               "chuyên khoa/vấn đề — đúng cấu trúc skill `cap-nhat-chung-cu-y-khoa`. "
+               "Chỉ gồm chứng cứ ĐÃ XÁC MINH (PMID/DOI), trích nguyên văn, kèm disclaimer.")
+    from app.reports.evidence_workbench import OUT_DIR as _EW_OUT
+    with session_scope() as s:
+        _areas = sorted({a[0] for a in s.query(EvidenceItem.clinical_area)
+                         .filter(EvidenceItem.is_primary_record.is_(True))
+                         .filter((EvidenceItem.pmid.isnot(None)) | (EvidenceItem.doi.isnot(None)))
+                         .distinct().all() if a[0]})
+    import streamlit.components.v1 as _ew_components
+
+    def _open_in_browser(path):
+        """Mở file HTML bằng trình duyệt mặc định trên máy (server = máy bác sĩ)."""
+        try:
+            import subprocess as _sp
+            import sys as _sys
+            if _sys.platform == "darwin":
+                _sp.Popen(["open", str(path)])
+            elif _sys.platform.startswith("win"):
+                import os as _os
+                _os.startfile(str(path))  # type: ignore[attr-defined]
+            else:
+                _sp.Popen(["xdg-open", str(path)])
+            return True
+        except Exception:
+            return False
+
+    def _embed(path, height=820):
+        """Nhúng dashboard NGAY trong app + nút mở trình duyệt + tải."""
+        html_txt = Path(path).read_text(encoding="utf-8")
+        b1, b2 = st.columns(2)
+        if b1.button("🌐 Mở trong trình duyệt (toàn màn hình)", key=f"openb_{path.name}"):
+            st.success("Đã mở trong trình duyệt." if _open_in_browser(path)
+                       else "Không mở được — dùng đường dẫn bên dưới.")
+        b2.download_button("⬇️ Tải .html", html_txt, file_name=path.name,
+                           mime="text/html", key=f"dl_{path.name}")
+        _ew_components.html(html_txt, height=height, scrolling=True)
+
+    if not _areas:
+        st.info("Chưa có chứng cứ truy nguyên (PMID/DOI). Bấm **Cập nhật ngay** để quét nguồn thật.")
+    else:
+        cc1, cc2, cc3 = st.columns([2, 1, 1])
+        _area = cc1.selectbox("Chuyên khoa / vấn đề", _areas, key="ew_area")
+        _limit = cc2.slider("Số item tối đa", 5, 30, 15, key="ew_limit")
+        _online = cc3.checkbox("Xác minh PMID online", value=True, key="ew_online",
+                               help="Kiểm tra mỗi PMID phân giải đúng trên PubMed (chống trích dẫn ảo)")
+        st.caption("ℹ️ Nội dung được **dịch máy sang tiếng Việt (tham khảo)**; references giữ nguyên văn + "
+                   "PMID/DOI để truy nguyên. Luôn đối chiếu nguồn gốc.")
+        if st.button("🛠️ Tạo + việt hoá + cổng liêm chính + MỞ tại app", type="primary", key="ew_go"):
+            from app.reports.evidence_workbench import export_and_publish
+            with st.spinner("Đang xuất, dịch tiếng Việt, xác minh PMID & chạy cổng liêm chính…"):
+                res = export_and_publish(area=_area, limit=_limit, online=_online)
+            if not res.get("path"):
+                st.error(res.get("gate_log") or "Không tạo được dashboard.")
+            else:
+                p = res["path"]
+                st.session_state["ew_last"] = str(p)
+                (st.success if res["gate_pass"] else st.warning)(
+                    f"{'✅ Cổng liêm chính PASS' if res['gate_pass'] else '⚠️ Cổng FAIL — xem log'} · "
+                    f"{p.name}")
+                with st.expander("📋 Nhật ký cổng liêm chính"):
+                    st.code(res.get("gate_log") or "", language="text")
+        # Hiển thị (nhúng) dashboard vừa/đang chọn NGAY trong app
+        _last = st.session_state.get("ew_last")
+        if _last and Path(_last).exists():
+            st.markdown(f"#### 👁️ Xem trực tiếp: `{Path(_last).name}`")
+            _embed(Path(_last))
+
+        # Danh sách dashboard EW đã tạo — chọn để mở ngay
+        st.divider()
+        st.subheader("📂 Các Evidence Workbench đã tạo")
+        _files = sorted(_EW_OUT.glob("WebDashboard_EBM_*.html"),
+                        key=lambda x: x.stat().st_mtime, reverse=True)[:30]
+        if _files:
+            _pick = st.selectbox("Chọn dashboard để mở ngay tại app", [f.name for f in _files],
+                                 key="ew_pick")
+            if st.button("👁️ Mở dashboard đã chọn", key="ew_open_existing"):
+                st.session_state["ew_last"] = str(_EW_OUT / _pick)
+                st.rerun()
+            st.caption(f"Thư mục: {_EW_OUT} (đồng bộ OneDrive Mac↔Windows).")
+        else:
+            st.caption("Chưa có dashboard nào.")

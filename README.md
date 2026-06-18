@@ -16,7 +16,7 @@ Hệ thống tự động hoá phục vụ bác sĩ lâm sàng ngoại trú và 
 - Chuẩn hoá, loại trùng, **chấm điểm chứng cứ** và **phân tầng độ tin cậy** bằng luật minh bạch.
 - Tách rõ phần **actionable** (đáng thay đổi thực hành) và phần **chưa đủ bằng chứng**.
 - Sinh **báo cáo EBM tuần** (Markdown/HTML/Word), xuất Excel/CSV/BibTeX.
-- **Dashboard web** 9 tab + **scheduler** chạy định kỳ.
+- **Dashboard web** 12 tab + **scheduler** chạy định kỳ.
 - Lưu **lịch sử cập nhật** (raw, processed, change log) – không mất dữ liệu cũ.
 
 ## 2. Cài đặt
@@ -37,7 +37,7 @@ python3 -m venv ~/.ebm-venv
 # Mỗi lần chạy: kích hoạt venv rồi vào thư mục dự án
 source ~/.ebm-venv/bin/activate
 cd "<đường-dẫn>/medical-ebm-automation"
-# (Windows: tạo venv tại C:\ebm-venv — xem docs/HUONG_DAN_WINDOWS.md)
+# (Windows: tạo venv tại %USERPROFILE%\.ebm-venv — xem docs/HUONG_DAN_WINDOWS.md)
 ```
 
 ## 3. Cấu hình `.env`
@@ -77,11 +77,12 @@ python run.py dashboard      # mở dashboard tại http://localhost:8501
 
 ```bash
 python run.py dashboard
-# hoặc: streamlit run app/dashboard/app.py
+# hoặc: python -m streamlit run app/dashboard/main.py
 ```
 
-Dashboard có 9 tab: Executive, Weekly EBM, Drug Safety, Antibiotics, Guidelines,
-Research, Clinical Scores, Source Log, Change Log. Nút bên trái cho phép **seed**,
+Dashboard có 12 tab: Executive, Weekly EBM, Drug Safety, Antibiotics, Guidelines,
+Research, Clinical Scores, Source Log, Change Log, TikTok, Tổng hợp RAG, Evidence Workbench.
+Nút bên trái cho phép **seed**,
 **chạy lại pipeline**, và **xuất báo cáo**.
 
 ## 6. Chạy cập nhật tuần
@@ -311,7 +312,7 @@ Kết quả in DOI/PMID thật + điểm chứng cứ + phân loại (preprint t
 ## Kiểm thử
 
 ```bash
-pytest -q      # 49 test: scoring, dedup, filtering, mock+live classify, pipeline/DB,
+pytest -q      # 226 test: scoring, dedup, filtering, mock+live classify, pipeline/DB,
                # reports, clinical scores (verified), drug safety/antibiotic,
                # research dossier/checklists/stats, incremental "mới tuần này",
                # RSS feed parsing + gửi cảnh báo

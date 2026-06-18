@@ -7,5 +7,7 @@ REM ============================================================
 chcp 65001 >nul
 cd /d "%~dp0.."
 echo ===== %date% %time% : BAT DAU cap nhat >> "data\archive\windows_daily.log"
-C:\ebm-venv\Scripts\python.exe run.py live-update >> "data\archive\windows_daily.log" 2>&1
+set "PY=%USERPROFILE%\.ebm-venv\Scripts\python.exe"
+if not exist "%PY%" set "PY=python"
+"%PY%" run.py live-update >> "data\archive\windows_daily.log" 2>&1
 echo ===== %date% %time% : KET THUC (ma thoat %errorlevel%) >> "data\archive\windows_daily.log"
