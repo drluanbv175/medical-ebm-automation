@@ -2,10 +2,12 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { PatientTable } from "@/components/PatientTable";
+import { buildCommandCenterSnapshot } from "@/lib/care-orchestrator";
 import { dashboardStats, patients } from "@/lib/seed-data";
 
 export default function HomePage() {
   const stats = dashboardStats();
+  const commandCenter = buildCommandCenterSnapshot(patients);
   const priority = patients.filter((patient) => patient.suggestedRiskLevel !== "GREEN").slice(0, 8);
 
   return (
@@ -17,6 +19,9 @@ export default function HomePage() {
           <>
             <Link className="button" href="/patients">
               Tim nguoi benh
+            </Link>
+            <Link className="button" href="/command-center">
+              Dieu phoi tu dong
             </Link>
             <Link className="button secondary" href="/login">
               Doi vai tro demo
@@ -32,8 +37,8 @@ export default function HomePage() {
       <section className="grid cols-4" style={{ marginTop: 16 }}>
         <StatCard label="Nguoi benh demo" value={stats.total} />
         <StatCard label="Nguy co do" value={stats.red} tone="red" />
-        <StatCard label="Can duyet care plan" value={stats.pendingCarePlans} tone="yellow" />
-        <StatCard label="Qua han tai kham" value={stats.overdue} tone="yellow" />
+        <StatCard label="Care gaps mo" value={commandCenter.activeCareGaps} tone="yellow" />
+        <StatCard label="Can xu ly khan" value={commandCenter.urgentCareGaps} tone="red" />
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>

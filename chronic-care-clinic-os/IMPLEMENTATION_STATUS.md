@@ -12,9 +12,11 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - RBAC expanded to Super Admin, Clinic Admin, Physician, Nurse, Care Coordinator, Receptionist, Pharmacist, Quality Manager, Read-only Auditor and Patient Portal User.
 - Backend guard domain code for permission and organization/site isolation.
 - Automation contract and 12 core automation rule definitions.
+- Care orchestration engine that converts risk, abnormal labs, medication review needs, missed follow-up, post-discharge status and care-plan approval gaps into a prioritized command-center queue.
+- `/command-center` page for cross-role chronic care coordination with SLA, assigned role, safety communication gate and physician-confirmation requirement.
 - MVP-01 workflow definition and `/mvp-01` page.
 - Production blockers, MVP-01 acceptance test, demo guide, limitations and signoff templates.
-- Offline tests updated and passing for docs/schema/RBAC/safety/automation/MVP-01.
+- Offline tests updated and passing for docs/schema/RBAC/safety/automation/MVP-01/command-center.
 
 ## Da co tu dot truoc
 
@@ -28,6 +30,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 ## Dang hoan thanh
 
 - Thin vertical slice MVP-01 at UI/domain level.
+- Command Center is deterministic and demo-data backed; it still needs persistent task writeback before production use.
 - Backend RBAC is modeled but not wired to every route/action.
 - Audit immutability is documented and domain-guarded, but not persistent end-to-end.
 - Care plan version history is modeled but not wired to write workflow.

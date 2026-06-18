@@ -156,6 +156,7 @@ test("all requested route families have implementation pages", () => {
   const pages = listFiles("app").filter((file) => file.endsWith("page.tsx"));
   for (const route of [
     "mvp-01/page.tsx",
+    "command-center/page.tsx",
     "login/page.tsx",
     "dashboard/doctor/page.tsx",
     "dashboard/nurse/page.tsx",
@@ -204,6 +205,20 @@ test("automation rules define the 12 required core automations", () => {
   assert.match(automation, /isPatientCommunicationAllowed/);
   assert.match(automation, /hasApprovedTemplate && hasConsent/);
   assert.doesNotMatch(automation, /SEND_TREATMENT_MESSAGE/);
+});
+
+test("command center orchestrates care gaps without unsafe treatment automation", () => {
+  const orchestrator = read("lib/care-orchestrator.ts");
+  const commandCenterPage = read("app/command-center/page.tsx");
+  assert.match(orchestrator, /buildCommandCenterSnapshot/);
+  assert.match(orchestrator, /buildCareGaps/);
+  assert.match(orchestrator, /requiresPhysicianConfirmation: true/);
+  assert.match(orchestrator, /isPatientCommunicationAllowed/);
+  assert.match(orchestrator, /patientCommunicationAllowed: false/);
+  assert.match(orchestrator, /khong tu dong thay doi dieu tri/i);
+  assert.match(commandCenterPage, /Dieu phoi tu dong benh man/);
+  assert.match(commandCenterPage, /Khong gui tin nhan tu dong/);
+  assert.doesNotMatch(orchestrator, /PRESCRIBE|AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE/);
 });
 
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {

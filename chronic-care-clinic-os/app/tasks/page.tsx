@@ -1,11 +1,12 @@
 import { PageHeader } from "@/components/PageHeader";
+import { buildCommandCenterSnapshot } from "@/lib/care-orchestrator";
 import { patients } from "@/lib/seed-data";
 
 export default function TasksPage() {
-  const tasks = patients.flatMap((patient) => patient.tasks.map((task) => ({ patient, task })));
+  const snapshot = buildCommandCenterSnapshot(patients);
   return (
     <>
-      <PageHeader eyebrow="Care coordination tasks" title="Task qua han va task nguy co" />
+      <PageHeader eyebrow="Care coordination tasks" title="Task tu dong va viec can dieu phoi" />
       <section className="panel">
         <table className="table">
           <thead>
@@ -19,14 +20,14 @@ export default function TasksPage() {
             </tr>
           </thead>
           <tbody>
-            {tasks.map(({ patient, task }) => (
-              <tr key={task.id}>
-                <td>{patient.fullName}</td>
-                <td>{task.taskType}</td>
-                <td>{task.priority}</td>
-                <td>{task.dueDate}</td>
-                <td>{task.assignedTo}</td>
-                <td>{task.notes}</td>
+            {snapshot.queue.map((gap) => (
+              <tr key={gap.id}>
+                <td>{gap.patientName}</td>
+                <td>{gap.title}</td>
+                <td>{gap.priority}</td>
+                <td>{gap.dueDate}</td>
+                <td>{gap.assignedRole}</td>
+                <td>{gap.recommendedAction}</td>
               </tr>
             ))}
           </tbody>
