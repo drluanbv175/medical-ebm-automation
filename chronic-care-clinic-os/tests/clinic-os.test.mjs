@@ -50,6 +50,7 @@ test("supplemental architecture and security docs exist", () => {
     "docs/architecture/AUTOMATION_SAFETY_MODEL.md",
     "docs/architecture/INTEGRATION_STRATEGY.md",
     "docs/architecture/PRODUCTION_READINESS_CHECKLIST.md",
+    "docs/deployment/sync-mac-windows-claude-code.md",
     "security/THREAT_MODEL.md",
     "security/SECURITY_TEST_CASES.md",
     "security/INCIDENT_RESPONSE_PLAYBOOK.md",
@@ -205,6 +206,16 @@ test("automation rules define the 12 required core automations", () => {
   assert.match(automation, /isPatientCommunicationAllowed/);
   assert.match(automation, /hasApprovedTemplate && hasConsent/);
   assert.doesNotMatch(automation, /SEND_TREATMENT_MESSAGE/);
+});
+
+test("cross-platform sync workflow is pinned and documented", () => {
+  assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
+  assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
+  assert.match(read("scripts/sync-check.mjs"), /No git remote configured/);
+  assert.match(read("docs/deployment/sync-mac-windows-claude-code.md"), /Windows, MacBook and Claude Code/);
+  assert.match(read("../.gitattributes"), /\* text=auto eol=lf/);
+  assert.match(read("../.gitignore"), /\*\*\/node_modules\//);
+  assert.match(read(".gitignore"), /\.pnpm-store\//);
 });
 
 test("command center orchestrates care gaps without unsafe treatment automation", () => {

@@ -11,10 +11,10 @@ May hien tai can Node.js 20+ va PostgreSQL 15+.
 ```bash
 cd chronic-care-clinic-os
 cp .env.example .env
-npm install
-npx prisma migrate dev --name init_chronic_care
-npm run seed
-npm run dev
+pnpm install
+pnpm prisma:migrate
+pnpm seed
+pnpm dev
 ```
 
 Mo `http://localhost:3000`.
@@ -28,13 +28,21 @@ docker compose up --build
 ## Test
 
 ```bash
-npm test
+pnpm test
 ```
 
-Trong moi truong chua cai npm, co the chay test offline bang Node bundled neu co:
+Trong moi truong chua cai pnpm, co the chay test offline bang Node bundled neu co:
 
 ```bash
 node --test tests/*.test.mjs
+```
+
+## Sync across Windows, macOS and Claude Code
+
+See `docs/deployment/sync-mac-windows-claude-code.md`.
+
+```bash
+pnpm sync:check
 ```
 
 ## Demo roles

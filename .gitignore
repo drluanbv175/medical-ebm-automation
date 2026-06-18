@@ -5,6 +5,12 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+**/node_modules/
+**/.next/
+**/.pnpm-store/
+**/coverage/
+**/dist/
+**/*.tsbuildinfo
 *.db
 data/raw/*
 data/processed/*
