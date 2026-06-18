@@ -1,0 +1,740 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Sex {
+  Female
+  Male
+  Other
+}
+
+enum PatientStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum RiskLevel {
+  GREEN
+  YELLOW
+  RED
+}
+
+enum CarePlanStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+model User {
+  id           String     @id @default(cuid())
+  organizationId String?
+  clinicSiteId String?
+  name         String
+  email        String     @unique
+  passwordHash String?
+  status       String     @default("ACTIVE")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  userRoles    UserRole[]
+  auditLogs    AuditLog[]
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  clinicSite   ClinicSite?   @relation(fields: [clinicSiteId], references: [id])
+}
+
+model Role {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String
+  userRoles   UserRole[]
+  permissions RolePermission[]
+}
+
+model Organization {
+  id          String       @id @default(cuid())
+  name        String
+  status      String       @default("ACTIVE")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  clinicSites ClinicSite[]
+  users       User[]
+  patients    Patient[]
+}
+
+model ClinicSite {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  address        String?
+  status         String       @default("ACTIVE")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  users          User[]
+  patients       Patient[]
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  description String
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  expiresAt   DateTime
+  mfaVerified Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model UserRole {
+  id     String @id @default(cuid())
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+model Patient {
+  id                   String                 @id @default(cuid())
+  organizationId       String?
+  clinicSiteId         String?
+  medicalRecordNumber  String                 @unique
+  fullName             String
+  dateOfBirth          DateTime
+  sex                  Sex
+  phone                String
+  email                String?
+  address              String
+  emergencyContact     String
+  primaryCaregiver     String?
+  occupation           String?
+  insuranceInformation String?
+  consentStatus        String
+  consentDate          DateTime?
+  status               PatientStatus          @default(ACTIVE)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  conditions           ChronicCondition[]
+  medications          Medication[]
+  vitalSigns           VitalSign[]
+  laboratoryResults    LaboratoryResult[]
+  appointments         Appointment[]
+  visitNotes           VisitNote[]
+  carePlans            CarePlan[]
+  tasks                CareCoordinationTask[]
+  communicationLogs    CommunicationLog[]
+  referrals            Referral[]
+  handouts             PatientHandout[]
+  versionHistory       VersionHistory[]
+  consents             PatientConsent[]
+  identifiers          PatientIdentifier[]
+  contacts             PatientContact[]
+  enrollments          CareProgramEnrollment[]
+  riskAssessments      CareRiskAssessment[]
+  medicationReconciliations MedicationReconciliation[]
+  laboratoryReviews    LaboratoryReview[]
+  safetyAlerts         SafetyAlert[]
+  incidentReports      IncidentReport[]
+  organization         Organization?          @relation(fields: [organizationId], references: [id])
+  clinicSite           ClinicSite?            @relation(fields: [clinicSiteId], references: [id])
+}
+
+model PatientConsent {
+  id          String   @id @default(cuid())
+  patientId   String
+  consentType String
+  status      String
+  signedAt    DateTime?
+  expiresAt   DateTime?
+  source      String?
+  patient     Patient  @relation(fields: [patientId], references: [id])
+}
+
+model PatientIdentifier {
+  id             String  @id @default(cuid())
+  patientId      String
+  identifierType String
+  value          String
+  issuer         String?
+  isPrimary      Boolean @default(false)
+  patient        Patient @relation(fields: [patientId], references: [id])
+
+  @@unique([identifierType, value])
+}
+
+model PatientContact {
+  id           String  @id @default(cuid())
+  patientId    String
+  contactType  String
+  name         String
+  relationship String?
+  phone        String?
+  address      String?
+  isEmergency  Boolean @default(false)
+  patient      Patient @relation(fields: [patientId], references: [id])
+}
+
+model CareProgramEnrollment {
+  id                String    @id @default(cuid())
+  patientId          String
+  programCode        String
+  enrolledDate       DateTime
+  status             String
+  riskLevel          RiskLevel
+  primaryPhysicianId String?
+  careCoordinatorId  String?
+  nextReviewDate     DateTime?
+  dischargeDate      DateTime?
+  dischargeReason    String?
+  patient            Patient   @relation(fields: [patientId], references: [id])
+}
+
+model CareRiskAssessment {
+  id               String    @id @default(cuid())
+  patientId         String
+  assessmentDate    DateTime
+  riskLevel         RiskLevel
+  riskFactors       Json
+  suggestedActions  Json
+  confirmedBy       String?
+  confirmedAt       DateTime?
+  reviewDueDate     DateTime?
+  version           String
+  patient           Patient   @relation(fields: [patientId], references: [id])
+}
+
+model ChronicCondition {
+  id            String   @id @default(cuid())
+  patientId     String
+  conditionCode String
+  conditionName String
+  diagnosedDate DateTime?
+  status        String
+  severity      String
+  complications String?
+  notes         String?
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  patient       Patient  @relation(fields: [patientId], references: [id])
+}
+
+model Medication {
+  id                   String    @id @default(cuid())
+  patientId            String
+  drugName             String
+  genericName          String
+  dose                 String
+  route                String
+  frequency            String
+  indication           String?
+  startDate            DateTime?
+  stopDate             DateTime?
+  prescribingProvider  String?
+  adherenceStatus      String
+  adverseEffects       String?
+  allergyOrIntolerance String?
+  isActive             Boolean   @default(true)
+  medicationClass      String?
+  category             String    @default("PRESCRIPTION")
+  lastReconciledAt     DateTime?
+  lastReconciledBy     String?
+  patient              Patient   @relation(fields: [patientId], references: [id])
+}
+
+model VitalSign {
+  id                    String   @id @default(cuid())
+  patientId             String
+  visitId               String?
+  systolicBp            Int
+  diastolicBp           Int
+  heartRate             Int?
+  respiratoryRate       Int?
+  temperature           Float?
+  spo2                  Int?
+  weightKg              Float?
+  heightCm              Float?
+  bmi                   Float?
+  waistCircumferenceCm  Float?
+  painScore             Int?
+  measuredBy            String
+  measuredAt            DateTime @default(now())
+  patient               Patient  @relation(fields: [patientId], references: [id])
+}
+
+model LaboratoryResult {
+  id             String    @id @default(cuid())
+  patientId      String
+  testCode       String
+  testName       String
+  resultValue    String
+  unit           String
+  referenceRange String?
+  abnormalFlag   String
+  collectedDate  DateTime?
+  reportedDate   DateTime?
+  source         String
+  reviewStatus   String
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  patient        Patient   @relation(fields: [patientId], references: [id])
+}
+
+model CarePlan {
+  id                        String     @id @default(cuid())
+  patientId                 String
+  createdBy                 String
+  approvedBy                String?
+  status                    CarePlanStatus @default(DRAFT)
+  riskLevel                 RiskLevel
+  mainProblems              Json
+  goals                     CareGoal[]
+  versions                  CarePlanVersion[]
+  medicationPlan            String
+  lifestylePlan             String
+  monitoringPlan            String
+  laboratoryPlan            String
+  referralPlan              String
+  redFlagPlan               String
+  nextFollowUpDate          DateTime?
+  patientEducationMaterials Json?
+  createdAt                 DateTime   @default(now())
+  updatedAt                 DateTime   @updatedAt
+  patient                   Patient    @relation(fields: [patientId], references: [id])
+}
+
+model CarePlanVersion {
+  id           String   @id @default(cuid())
+  carePlanId   String
+  version      Int
+  snapshot     Json
+  changeReason String?
+  createdBy    String
+  reviewedBy   String?
+  approvedBy   String?
+  approvedAt   DateTime?
+  createdAt    DateTime @default(now())
+  carePlan      CarePlan @relation(fields: [carePlanId], references: [id])
+
+  @@unique([carePlanId, version])
+}
+
+model CareGoal {
+  id            String    @id @default(cuid())
+  carePlanId    String
+  goalDomain    String
+  goalName      String
+  baselineValue String?
+  targetValue   String?
+  targetUnit    String?
+  targetDate    DateTime?
+  status        String
+  reviewDate    DateTime?
+  notes         String?
+  carePlan      CarePlan  @relation(fields: [carePlanId], references: [id])
+}
+
+model Appointment {
+  id              String    @id @default(cuid())
+  patientId       String
+  appointmentType String
+  scheduledAt     DateTime
+  durationMinutes Int       @default(30)
+  providerId      String?
+  status          String
+  reason          String?
+  riskFlag        RiskLevel
+  preVisitTasks   Json?
+  postVisitTasks  Json?
+  reminderStatus  String
+  checkedInAt     DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  noShowReason    String?
+  patient         Patient   @relation(fields: [patientId], references: [id])
+}
+
+model VisitNote {
+  id                   String    @id @default(cuid())
+  patientId            String
+  appointmentId        String?
+  providerId           String
+  chiefComplaint       String?
+  subjective           String?
+  objective            String?
+  assessment           String?
+  plan                 String?
+  riskLevel            RiskLevel?
+  redFlags             Json?
+  diagnoses            Json?
+  medicationChanges    Json?
+  orders               Json?
+  referrals            Json?
+  followUpInstructions String?
+  signedAt             DateTime?
+  lockedAt             DateTime?
+  patient              Patient   @relation(fields: [patientId], references: [id])
+}
+
+model CareCoordinationTask {
+  id          String    @id @default(cuid())
+  patientId   String
+  assignedTo  String
+  taskType    String
+  priority    String
+  status      String
+  dueDate     DateTime?
+  completedAt DateTime?
+  notes       String?
+  createdBy   String
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  escalations TaskEscalation[]
+}
+
+model TaskEscalation {
+  id          String   @id @default(cuid())
+  taskId      String
+  reason      String
+  escalatedTo String
+  status      String
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+  task        CareCoordinationTask @relation(fields: [taskId], references: [id])
+}
+
+model CommunicationLog {
+  id                      String    @id @default(cuid())
+  patientId               String
+  communicationChannel    String
+  messageType             String
+  templateId              String?
+  contentSummary          String
+  sentBy                  String
+  sentAt                  DateTime?
+  deliveryStatus          String
+  responseStatus          String?
+  requiresClinicianReview Boolean   @default(false)
+  reviewedBy              String?
+  patient                 Patient   @relation(fields: [patientId], references: [id])
+}
+
+model Referral {
+  id              String    @id @default(cuid())
+  patientId       String
+  referralType    String
+  destination     String
+  specialty       String
+  reason          String
+  urgency         String
+  clinicalSummary String?
+  attachments     Json?
+  status          String
+  createdBy       String
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+  patient         Patient   @relation(fields: [patientId], references: [id])
+}
+
+model QualityMetric {
+  id                String   @id @default(cuid())
+  metricName        String
+  metricCategory    String
+  numerator         Int
+  denominator       Int
+  resultValue       Float
+  measurementPeriod String
+  owner             String
+  notes             String?
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  actionType String
+  entityType String
+  entityId   String
+  beforeData Json?
+  afterData  Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id])
+}
+
+model ClinicalRule {
+  id                                String   @id @default(cuid())
+  ruleName                          String   @unique
+  ruleDescription                   String
+  severity                          RiskLevel
+  suggestedAction                   String
+  requiresPhysicianConfirmation     Boolean  @default(true)
+  version                           String
+  effectiveDate                     DateTime
+  reviewDate                        DateTime
+  approvedBy                        String
+  createdAt                         DateTime @default(now())
+  updatedAt                         DateTime @updatedAt
+  purpose                           String?
+  scope                             String?
+  referenceSource                   String?
+  status                            String   @default("DRAFT")
+  limitationNotes                   String?
+  versions                          ClinicalRuleVersion[]
+  approvals                         ClinicalRuleApproval[]
+}
+
+model ClinicalRuleVersion {
+  id              String       @id @default(cuid())
+  clinicalRuleId  String
+  version         String
+  ruleDefinition  Json
+  createdBy       String
+  createdAt       DateTime     @default(now())
+  status          String       @default("DRAFT")
+  clinicalRule    ClinicalRule @relation(fields: [clinicalRuleId], references: [id])
+}
+
+model ClinicalRuleApproval {
+  id             String       @id @default(cuid())
+  clinicalRuleId String
+  version        String
+  approvedBy     String
+  approvedAt     DateTime
+  decision       String
+  notes          String?
+  clinicalRule   ClinicalRule @relation(fields: [clinicalRuleId], references: [id])
+}
+
+model AutomationRule {
+  id                   String   @id
+  ruleName             String
+  description          String
+  priority             String
+  triggerType          String
+  eligibilityLogic     Json
+  exclusionLogic       Json?
+  assignedRole         String
+  approvalRequired     Boolean  @default(false)
+  notificationTemplate String?
+  escalationLogic      Json?
+  isActive             Boolean  @default(false)
+  version              String
+  approvedBy           String?
+  effectiveDate        DateTime?
+  reviewDate           DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model MedicationReconciliation {
+  id             String   @id @default(cuid())
+  patientId      String
+  performedBy    String
+  status         String
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  findings       Json
+  createdAt      DateTime @default(now())
+  patient        Patient  @relation(fields: [patientId], references: [id])
+}
+
+model LaboratoryReview {
+  id                 String   @id @default(cuid())
+  patientId           String
+  laboratoryResultId  String?
+  reviewStatus        String
+  reviewedBy          String?
+  reviewedAt          DateTime?
+  notes               String?
+  patient             Patient  @relation(fields: [patientId], references: [id])
+}
+
+model EducationMaterial {
+  id          String   @id @default(cuid())
+  title       String
+  topic       String
+  content     Json
+  status      String   @default("DRAFT")
+  versions    EducationMaterialVersion[]
+  approvals   EducationMaterialApproval[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EducationMaterialVersion {
+  id                  String            @id @default(cuid())
+  educationMaterialId  String
+  version             String
+  content             Json
+  createdBy           String
+  createdAt           DateTime          @default(now())
+  educationMaterial   EducationMaterial @relation(fields: [educationMaterialId], references: [id])
+}
+
+model EducationMaterialApproval {
+  id                  String            @id @default(cuid())
+  educationMaterialId  String
+  approvedBy          String
+  approvedAt          DateTime
+  decision            String
+  notes               String?
+  educationMaterial   EducationMaterial @relation(fields: [educationMaterialId], references: [id])
+}
+
+model SafetyAlert {
+  id          String   @id @default(cuid())
+  patientId   String?
+  alertType   String
+  severity    RiskLevel
+  message     String
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+  patient     Patient? @relation(fields: [patientId], references: [id])
+  reviews     SafetyAlertReview[]
+}
+
+model SafetyAlertReview {
+  id            String      @id @default(cuid())
+  safetyAlertId String
+  reviewedBy    String
+  reviewedAt    DateTime
+  decision      String
+  notes         String?
+  safetyAlert   SafetyAlert @relation(fields: [safetyAlertId], references: [id])
+}
+
+model IncidentReport {
+  id          String   @id @default(cuid())
+  patientId   String?
+  incidentType String
+  severity    String
+  description String
+  status      String   @default("OPEN")
+  reportedBy  String
+  createdAt   DateTime @default(now())
+  patient     Patient? @relation(fields: [patientId], references: [id])
+  reviews     IncidentReview[]
+}
+
+model IncidentReview {
+  id              String         @id @default(cuid())
+  incidentReportId String
+  reviewedBy      String
+  reviewedAt      DateTime
+  decision        String
+  correctiveAction String?
+  incidentReport  IncidentReport @relation(fields: [incidentReportId], references: [id])
+}
+
+model ClinicalContent {
+  id          String   @id @default(cuid())
+  title       String
+  contentType String
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  versions    ClinicalContentVersion[]
+  approvals   ClinicalContentApproval[]
+}
+
+model ClinicalContentVersion {
+  id                String          @id @default(cuid())
+  clinicalContentId String
+  version           String
+  content           Json
+  createdBy         String
+  createdAt         DateTime        @default(now())
+  clinicalContent   ClinicalContent @relation(fields: [clinicalContentId], references: [id])
+}
+
+model ClinicalContentApproval {
+  id                String          @id @default(cuid())
+  clinicalContentId String
+  approvedBy        String
+  approvedAt        DateTime
+  decision          String
+  notes             String?
+  clinicalContent   ClinicalContent @relation(fields: [clinicalContentId], references: [id])
+}
+
+model QualityMetricDefinition {
+  id          String   @id @default(cuid())
+  metricName  String   @unique
+  description String
+  numeratorDefinition String
+  denominatorDefinition String
+  owner       String
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  scope       String
+  updatedBy   String
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+model PatientHandout {
+  id            String    @id @default(cuid())
+  patientId     String
+  templateName  String
+  content       Json
+  status        String
+  createdBy     String
+  approvedBy    String?
+  approvedAt    DateTime?
+  printedAt     DateTime?
+  patient       Patient   @relation(fields: [patientId], references: [id])
+}
+
+model AIDraft {
+  id          String    @id @default(cuid())
+  patientId   String?
+  draftType   String
+  content     String
+  source      String?
+  status      String
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  feedback    String?
+  createdAt   DateTime  @default(now())
+}
+
+model VersionHistory {
+  id          String   @id @default(cuid())
+  patientId   String?
+  entityType  String
+  entityId    String
+  version     Int
+  changedBy   String
+  changeReason String?
+  snapshot    Json
+  createdAt   DateTime @default(now())
+  patient     Patient? @relation(fields: [patientId], references: [id])
+}

@@ -1,0 +1,14 @@
+selected_pack: hypertension_adult_outpatient
+pack_version: "2026.1-draft"
+environment: review
+physician_approval_required: true
+approval_record_path: docs/system-v7/PHASE_2C_HYPERTENSION_SELECTION_RECORD.json
+clinical_release_allowed: false
+patient_facing_output_allowed: false
+shadow_mode_only: true
+approval_status: pending
+allowed_packs:
+  - hypertension_adult_outpatient
+  - adult_asthma_outpatient
+  - type_2_diabetes_outpatient
+notes: "Pack selected by physician/user request; real-pack build remains blocked until approval record status is approved."

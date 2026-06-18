@@ -1,0 +1,13 @@
+{
+  "source": "app.clinical_content.phase_2c_vignettes.phase_2c_minimum_vignettes",
+  "total": 30,
+  "distribution": {
+    "routine": 10,
+    "missing_data": 8,
+    "red_flag_referral": 5,
+    "medication_risk": 4,
+    "evidence_conflict_or_source_unavailable": 3
+  },
+  "pii": false,
+  "llm_free_output_dependency": false
+}

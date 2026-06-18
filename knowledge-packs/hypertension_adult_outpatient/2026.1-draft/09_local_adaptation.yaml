@@ -1,0 +1,16 @@
+local_adaptation_status: draft_review_only
+items:
+  availability_of_medicine: needs_local_formulary_review
+  availability_of_monitoring: needs_unit_confirmation
+  availability_of_laboratory_testing: needs_unit_confirmation
+  outpatient_feasibility: likely_feasible_but_requires_local_workflow_review
+  renal_function_monitoring_feasibility: needs_unit_confirmation
+  pregnancy_or_reproductive_consideration: refer_to_specific_pathway
+  local_resource_constraint: needs_unit_confirmation
+  referral_requirement: emergency_or_urgent_referral_for_red_flags
+  internal_policy_requirement: needs_unit_confirmation
+not_allowed:
+  - changing_original_certainty
+  - changing_guideline_meaning
+  - converting_consider_to_must
+  - treating_implementation_barrier_as_ineffectiveness

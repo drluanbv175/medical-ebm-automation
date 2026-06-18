@@ -1,0 +1,77 @@
+{
+  "pack_id": "hypertension_adult_outpatient",
+  "version": "2026.1-draft",
+  "environment": "review",
+  "claims": [
+    {
+      "claim_id": "htn_claim_scope_and_diagnosis",
+      "evidence_id": "ev_nice_ng136_2026",
+      "topic": "hypertension_adult_outpatient",
+      "population": "Adults in outpatient setting",
+      "clinical_question": "How should adult outpatient hypertension be diagnosed and reviewed?",
+      "recommendation_text_draft": "Use guideline-based measurement/diagnostic workflow and red-flag screen before draft management.",
+      "source_type": "guideline",
+      "source_url": "https://www.nice.org.uk/guidance/ng136",
+      "pmid_or_doi_if_available": "",
+      "organization": "NICE",
+      "publication_or_version_date": "2019-08-28; last updated 2026-02-26",
+      "claim_location": "Overview recommendations categories and update lines",
+      "certainty_original": "not_regraded_by_pack",
+      "verification_status": "SOURCE_UNAVAILABLE",
+      "freshness_status": "current_on_source_page",
+      "local_applicability_status": "needs_local_review",
+      "approval_status": "pending",
+      "release": "blocked"
+    },
+    {
+      "claim_id": "htn_claim_pharmacologic_framework",
+      "evidence_id": "ev_who_htn_2021",
+      "topic": "hypertension_adult_outpatient",
+      "population": "Adult non-pregnant patients appropriately diagnosed with hypertension",
+      "clinical_question": "What is the evidence-based framework for pharmacological treatment decisions?",
+      "recommendation_text_draft": "Use WHO pharmacological treatment guideline as a source framework; do not generate drug dose or prescription.",
+      "source_type": "guideline",
+      "source_url": "https://www.who.int/publications/i/item/9789240033986",
+      "pmid_or_doi_if_available": "ISBN 978-92-4-003398-6",
+      "organization": "WHO",
+      "publication_or_version_date": "2021-08-24",
+      "claim_location": "WHO overview lines describing target population and recommendation domains",
+      "certainty_original": "GRADE used by WHO; not regraded by pack",
+      "verification_status": "SOURCE_UNAVAILABLE",
+      "freshness_status": "needs_live_verification",
+      "local_applicability_status": "needs_local_review",
+      "approval_status": "pending",
+      "release": "blocked"
+    },
+    {
+      "claim_id": "htn_claim_conflict_queue",
+      "evidence_id": "ev_acc_aha_2025_hub",
+      "topic": "hypertension_adult_outpatient",
+      "population": "Adults",
+      "clinical_question": "How should differences between international guidelines be handled?",
+      "recommendation_text_draft": "Create conflict record when international guidelines differ; do not choose automatically.",
+      "source_type": "guideline_hub",
+      "source_url": "https://www.acc.org/Guidelines/Hubs/High-Blood-Pressure",
+      "pmid_or_doi_if_available": "",
+      "organization": "ACC/AHA and partners",
+      "publication_or_version_date": "2025-08-14 hub entry",
+      "claim_location": "ACC guideline hub lines 160-166",
+      "certainty_original": "not_regraded_by_pack",
+      "verification_status": "SOURCE_UNAVAILABLE",
+      "freshness_status": "needs_live_verification",
+      "local_applicability_status": "needs_local_review",
+      "approval_status": "pending",
+      "release": "blocked"
+    }
+  ],
+  "conflict_records": [
+    {
+      "conflict_id": "htn_conflict_international_thresholds",
+      "sources": ["WHO 2021", "NICE NG136", "ACC/AHA 2025 hub"],
+      "status": "review_queue",
+      "reason": "International guideline definitions, treatment thresholds, and targets may differ by population/context; pack must not auto-select."
+    }
+  ],
+  "release_allowed": false,
+  "disclaimer": "DRAFT REVIEW-ONLY. Cần bác sĩ kiểm chứng trước khi áp dụng lâm sàng."
+}

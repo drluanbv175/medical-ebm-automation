@@ -1,0 +1,16 @@
+{
+  "approval_id": "phase_2c_htn_pack_2026_1_draft",
+  "pack_id": "hypertension_adult_outpatient",
+  "version": "2026.1-draft",
+  "environment": "review",
+  "status": "pending",
+  "reviewer_role_required": "physician_or_system_owner",
+  "clinical_release_allowed": false,
+  "shadow_mode_only": true,
+  "patient_facing_output_allowed": false,
+  "emr_write_allowed": false,
+  "pii_present": false,
+  "approval_scope": "Draft/review-only pack preparation only; not approved for clinical release.",
+  "created_at": "2026-06-18",
+  "notes": "Approval must be explicitly changed to approved by authorized reviewer before real-pack shadow pilot GO can be considered."
+}

@@ -1,0 +1,16 @@
+medication_safety_required: true
+rules:
+  - rule_id: htn_med_no_prescription
+    description: "Pathway không sinh đơn, liều, hoặc thay thuốc."
+    gate: BLOCK_PRESCRIPTION_GENERATION
+  - rule_id: htn_med_current_medications_required
+    description: "Nếu recommendation liên quan thuốc, cần danh sách thuốc hiện dùng không định danh."
+    gate: WAITING_FOR_INPUT
+  - rule_id: htn_med_kidney_context
+    description: "Cần bối cảnh chức năng thận nếu bác sĩ cân nhắc thuốc ảnh hưởng thận/điện giải."
+    gate: PHYSICIAN_REVIEW_REQUIRED
+  - rule_id: htn_med_pregnancy
+    description: "Thai kỳ/nghi thai kỳ là pathway riêng; không xử trí theo pack ngoại trú ổn định này."
+    gate: STOP_OUTPATIENT_PATHWAY
+openfda_validation_status: SOURCE_UNAVAILABLE
+release: blocked

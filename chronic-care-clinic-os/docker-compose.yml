@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: clinic_os
+      POSTGRES_USER: clinic_os
+      POSTGRES_PASSWORD: clinic_os
+    ports:
+      - "5432:5432"
+    volumes:
+      - clinic_os_pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://clinic_os:clinic_os@postgres:5432/clinic_os?schema=public
+      AUTH_SECRET: change-me-before-production
+      AI_DRAFTS_ENABLED: "false"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+
+volumes:
+  clinic_os_pgdata:

@@ -1,0 +1,24 @@
+{
+  "pack_id": "hypertension_adult_outpatient",
+  "version": "2026.1-draft",
+  "environment": "review",
+  "manual_source_import_status": "not_started",
+  "live_adapter_import_status": "SOURCE_UNAVAILABLE",
+  "entries": [],
+  "required_before_source_imported": [
+    "source_file",
+    "source_origin_url",
+    "organization",
+    "source_type",
+    "title",
+    "version",
+    "publication_date",
+    "imported_by",
+    "import_date",
+    "sha256",
+    "page_count_or_html_snapshot",
+    "copyright_or_access_note"
+  ],
+  "release_allowed": false,
+  "disclaimer": "DRAFT REVIEW-ONLY. Cần bác sĩ kiểm chứng trước khi áp dụng lâm sàng."
+}

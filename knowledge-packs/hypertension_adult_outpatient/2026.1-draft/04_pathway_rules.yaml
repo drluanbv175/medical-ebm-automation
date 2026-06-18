@@ -1,0 +1,30 @@
+pathway_id: hypertension_adult_outpatient_review_only
+pathway_version: 2026.1-draft
+entry_criteria:
+  - adult
+  - outpatient
+  - stable
+  - suspected_or_confirmed_hypertension
+hard_gates:
+  missing_required_input: WAITING_FOR_INPUT
+  red_flag_present: STOP_OUTPATIENT_PATHWAY
+  evidence_not_verified: BLOCK_RECOMMENDATION_RELEASE
+  approval_missing: REVIEW_ONLY
+  medication_related: MEDICATION_SAFETY_REQUIRED
+decision_nodes:
+  - node_id: confirm_scope
+    action: verify_adult_outpatient_stable_context
+  - node_id: red_flag_screen
+    action: stop_and_refer_if_red_flag
+  - node_id: data_sufficiency
+    action: wait_for_input_if_required_fields_missing
+  - node_id: evidence_gate
+    action: block_release_unless_claim_verified_or_physician_exception
+  - node_id: draft_summary
+    action: create_review_only_draft_for_physician
+not_allowed:
+  - prescription_generation
+  - medication_dose_generation
+  - patient_instruction_send
+  - emr_write
+  - auto_apply

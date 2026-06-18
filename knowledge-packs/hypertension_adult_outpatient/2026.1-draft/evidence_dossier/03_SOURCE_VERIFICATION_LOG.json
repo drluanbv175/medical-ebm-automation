@@ -1,0 +1,42 @@
+{
+  "pack_id": "hypertension_adult_outpatient",
+  "version": "2026.1-draft",
+  "environment": "review",
+  "claim_verification_summary": {
+    "total_claims": 3,
+    "verified_claims": 0,
+    "source_unavailable_claims": 3,
+    "needs_physician_review_claims": 3,
+    "release_ready_claims": 0
+  },
+  "entries": [
+    {
+      "claim_id": "htn_claim_scope_and_diagnosis",
+      "source_id": "ev_nice_ng136_2026",
+      "verification_status": "SOURCE_UNAVAILABLE",
+      "verification_method": "",
+      "verified_by": "",
+      "verified_at": "",
+      "audit_event": "not_created"
+    },
+    {
+      "claim_id": "htn_claim_pharmacologic_framework",
+      "source_id": "ev_who_htn_2021",
+      "verification_status": "SOURCE_UNAVAILABLE",
+      "verification_method": "",
+      "verified_by": "",
+      "verified_at": "",
+      "audit_event": "not_created"
+    },
+    {
+      "claim_id": "htn_claim_conflict_queue",
+      "source_id": "ev_acc_aha_2025_hub",
+      "verification_status": "SOURCE_UNAVAILABLE",
+      "verification_method": "",
+      "verified_by": "",
+      "verified_at": "",
+      "audit_event": "not_created"
+    }
+  ],
+  "release_allowed": false
+}

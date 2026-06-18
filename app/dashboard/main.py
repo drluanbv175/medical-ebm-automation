@@ -695,6 +695,7 @@ tabs = st.tabs([
     "1. Executive", "2. Weekly EBM", "3. Drug Safety", "4. Antibiotics",
     "5. Guidelines", "6. Research", "7. Clinical Scores", "8. Source Log", "9. Change Log",
     "📱 10. TikTok", "📚 11. Tổng hợp RAG", "🧭 12. Evidence Workbench",
+    "🛡️ 13. V7 Shadow Read-only", "🫀 14. Chronic Care Shadow Pilot",
 ])
 
 # --- Tab 1: Executive -----------------------------------------------------
@@ -1292,3 +1293,13 @@ with tabs[11]:
             st.caption(f"Thư mục: {_EW_OUT} (đồng bộ OneDrive Mac↔Windows).")
         else:
             st.caption("Chưa có dashboard nào.")
+
+with tabs[12]:
+    from app.dashboard.v7_readonly import render_v7_readonly_dashboard
+
+    render_v7_readonly_dashboard(st)
+
+with tabs[13]:
+    from app.chronic_care.dashboard import render_chronic_care_shadow_dashboard
+
+    render_chronic_care_shadow_dashboard(st)

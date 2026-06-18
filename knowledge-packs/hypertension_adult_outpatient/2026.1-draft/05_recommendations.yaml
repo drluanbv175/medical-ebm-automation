@@ -1,0 +1,37 @@
+recommendations:
+  - claim_id: htn_claim_scope_and_diagnosis
+    evidence_id: ev_nice_ng136_2026
+    recommendation_text_draft: "Đánh giá và xử trí tăng huyết áp người lớn ngoại trú cần bắt đầu bằng đo/hồ sơ huyết áp phù hợp, xác nhận bối cảnh ổn định, và loại trừ red flags trước khi tạo draft quản lý."
+    source_type: guideline
+    approval_status: pending
+    verification_status: SOURCE_UNAVAILABLE
+    release: blocked
+  - claim_id: htn_claim_lifestyle_and_risk
+    evidence_id: ev_nice_ng136_2026
+    recommendation_text_draft: "Draft review nên bao gồm đánh giá yếu tố nguy cơ tim mạch, tổn thương cơ quan đích và tư vấn lối sống theo guideline, nhưng không tự thay thế quyết định bác sĩ."
+    source_type: guideline
+    approval_status: pending
+    verification_status: SOURCE_UNAVAILABLE
+    release: blocked
+  - claim_id: htn_claim_pharmacologic_framework
+    evidence_id: ev_who_htn_2021
+    recommendation_text_draft: "Nếu bác sĩ cân nhắc điều trị thuốc, draft chỉ được nêu khung cần đối chiếu guideline chính thức về ngưỡng khởi trị, mục tiêu theo dõi và lựa chọn thuốc; không sinh liều hoặc đơn thuốc."
+    source_type: guideline
+    approval_status: pending
+    verification_status: SOURCE_UNAVAILABLE
+    release: blocked
+  - claim_id: htn_claim_follow_up_monitoring
+    evidence_id: ev_who_htn_2021
+    recommendation_text_draft: "Theo dõi ngoại trú cần có kế hoạch tái đánh giá huyết áp, dung nạp, an toàn thuốc và chỉ dấu cần chuyển tuyến; mọi lịch cụ thể phải do bác sĩ duyệt."
+    source_type: guideline
+    approval_status: pending
+    verification_status: SOURCE_UNAVAILABLE
+    release: blocked
+  - claim_id: htn_claim_conflict_queue
+    evidence_id: ev_acc_aha_2025_hub
+    recommendation_text_draft: "Khi các guideline quốc tế khác nhau về định nghĩa/ngưỡng/mục tiêu, pack phải ghi conflict record và đưa vào review queue, không tự chọn một nguồn làm chuẩn áp dụng."
+    source_type: guideline_hub
+    approval_status: pending
+    verification_status: SOURCE_UNAVAILABLE
+    release: blocked
+disclaimer: "DRAFT REVIEW-ONLY. Cần bác sĩ kiểm chứng trước khi áp dụng lâm sàng."

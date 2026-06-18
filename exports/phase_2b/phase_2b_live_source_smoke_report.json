@@ -1,0 +1,165 @@
+{
+  "generated_at": "2026-06-18T11:57:01.005172+00:00",
+  "policy": "unavailable_or_timeout_must_not_be_verified",
+  "results": [
+    {
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "reasons": [
+        "Online/source adapter unavailable; không được tự xác minh"
+      ],
+      "safe": true,
+      "source": "pubmed",
+      "status": "SOURCE_UNAVAILABLE"
+    },
+    {
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "reasons": [
+        "Online/source adapter unavailable; không được tự xác minh"
+      ],
+      "safe": true,
+      "source": "europepmc",
+      "status": "SOURCE_UNAVAILABLE"
+    },
+    {
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "reasons": [
+        "Online/source adapter unavailable; không được tự xác minh"
+      ],
+      "safe": true,
+      "source": "crossref",
+      "status": "SOURCE_UNAVAILABLE"
+    },
+    {
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "reasons": [
+        "Online/source adapter unavailable; không được tự xác minh"
+      ],
+      "safe": true,
+      "source": "openalex",
+      "status": "SOURCE_UNAVAILABLE"
+    },
+    {
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "reasons": [
+        "Online/source adapter unavailable; không được tự xác minh"
+      ],
+      "safe": true,
+      "source": "semantic_scholar",
+      "status": "SOURCE_UNAVAILABLE"
+    },
+    {
+      "failure_reason": "",
+      "health_status": "ok",
+      "reasons": [
+        "title_match",
+        "author_or_org_match",
+        "guideline_version_present",
+        "not_stale"
+      ],
+      "safe": true,
+      "source": "guideline_rss",
+      "status": "NEEDS_PHYSICIAN_REVIEW"
+    },
+    {
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "reasons": [
+        "Online/source adapter unavailable; không được tự xác minh"
+      ],
+      "safe": true,
+      "source": "openfda",
+      "status": "SOURCE_UNAVAILABLE"
+    }
+  ],
+  "source_health": [
+    {
+      "cache_policy": "ttl_24h_no_verified_when_expired",
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "last_failure_at": "2026-06-18T11:57:00.995792+00:00",
+      "last_success_at": null,
+      "rate_limit_policy": "respect_429_retry_after",
+      "retry_policy": "http_client_exponential_backoff",
+      "source_name": "pubmed",
+      "source_type_supported": "article|guideline",
+      "timeout": 15.0
+    },
+    {
+      "cache_policy": "ttl_24h_no_verified_when_expired",
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "last_failure_at": "2026-06-18T11:57:00.997794+00:00",
+      "last_success_at": null,
+      "rate_limit_policy": "respect_429_retry_after",
+      "retry_policy": "http_client_exponential_backoff",
+      "source_name": "europepmc",
+      "source_type_supported": "article|preprint",
+      "timeout": 15.0
+    },
+    {
+      "cache_policy": "ttl_24h_no_verified_when_expired",
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "last_failure_at": "2026-06-18T11:57:00.999860+00:00",
+      "last_success_at": null,
+      "rate_limit_policy": "respect_429_retry_after",
+      "retry_policy": "http_client_exponential_backoff",
+      "source_name": "crossref",
+      "source_type_supported": "article|book|proceeding",
+      "timeout": 15.0
+    },
+    {
+      "cache_policy": "ttl_24h_no_verified_when_expired",
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "last_failure_at": "2026-06-18T11:57:01.001581+00:00",
+      "last_success_at": null,
+      "rate_limit_policy": "respect_429_retry_after",
+      "retry_policy": "http_client_exponential_backoff",
+      "source_name": "openalex",
+      "source_type_supported": "article|preprint|book",
+      "timeout": 15.0
+    },
+    {
+      "cache_policy": "ttl_24h_no_verified_when_expired",
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "last_failure_at": "2026-06-18T11:57:01.003271+00:00",
+      "last_success_at": null,
+      "rate_limit_policy": "respect_429_retry_after",
+      "retry_policy": "http_client_exponential_backoff",
+      "source_name": "semantic_scholar",
+      "source_type_supported": "article|preprint",
+      "timeout": 15.0
+    },
+    {
+      "cache_policy": "ttl_24h_no_verified_when_expired",
+      "failure_reason": "",
+      "health_status": "ok",
+      "last_failure_at": null,
+      "last_success_at": "2026-06-18T11:57:01.003469+00:00",
+      "rate_limit_policy": "respect_429_retry_after",
+      "retry_policy": "http_client_exponential_backoff",
+      "source_name": "guideline_rss",
+      "source_type_supported": "guideline|rss",
+      "timeout": 15.0
+    },
+    {
+      "cache_policy": "ttl_24h_no_verified_when_expired",
+      "failure_reason": "RuntimeError",
+      "health_status": "unavailable",
+      "last_failure_at": "2026-06-18T11:57:01.005164+00:00",
+      "last_success_at": null,
+      "rate_limit_policy": "respect_429_retry_after",
+      "retry_policy": "http_client_exponential_backoff",
+      "source_name": "openfda",
+      "source_type_supported": "drug_safety",
+      "timeout": 15.0
+    }
+  ]
+}
