@@ -40,6 +40,7 @@ node scripts/sync-check.mjs
 - `lib/workflow-actions.ts`: defines preview-only server-action contracts for care plan approval and handout release.
 - `lib/audit-ledger.ts`: builds and validates an append-only hash-chain audit ledger preview.
 - `lib/backend-guard.ts` and `lib/rbac.ts`: authorize workflow actions by permission and organization/site scope.
+- `lib/write-action-registry.ts`: tracks guarded preview actions, UI placeholders and production-blocked exports.
 
 ## Pages wired to those modules
 
@@ -63,7 +64,7 @@ node scripts/sync-check.mjs
 
 1. Implement persistent append-only AuditLog storage using the same sequence/previousHash/eventHash contract.
 2. Implement real server actions behind `approveCarePlanVersionAction` and `releaseApprovedPatientHandoutAction` only after persistent audit tests exist.
-3. Extend the same backend guard pattern to every remaining write-oriented button and future server action.
+3. Work down `writeActionRegistry`: replace each `UI_PLACEHOLDER` with guarded workflow action contracts and keep exports blocked until de-identification/audit is implemented.
 4. Add A5 PDF generation only after approved-template and consent gates remain covered by tests.
 5. Configure a private Git remote so Windows, MacBook and Claude Code synchronize through Git, not only OneDrive.
 

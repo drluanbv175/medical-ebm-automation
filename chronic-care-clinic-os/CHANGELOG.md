@@ -12,6 +12,7 @@
 - Them workflow action contracts preview-only cho ky duyet care plan va phat hanh loi dan, lam cau noi cho server actions co audit/persistence sau nay.
 - Them audit ledger hash-chain preview cho `/admin/audit` de khoa bat bien append-only truoc khi wire server actions that.
 - Noi workflow action contracts voi RBAC/backend guard de khoa role, permission va organization/site scope truoc khi ghi that.
+- Them write action registry tren `/admin/settings` de theo doi nut/luong ghi nao da guard, placeholder hoac bi chan production.
 - Cap nhat trang tong quan va task page dung hang doi dieu phoi tu dong.
 - Them test khoa chan an toan: khong tu dong dieu tri, khong gui tin nhan dieu tri va moi gap lam sang can bac si xac nhan.
 

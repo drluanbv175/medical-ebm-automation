@@ -215,6 +215,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
   assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/audit\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/admin\/settings\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/handouts\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
@@ -225,6 +226,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/backend-guard\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/rbac\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/write-action-registry\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/visit-prep\.ts/);
   assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
   assert.match(read("scripts/sync-check.mjs"), /Claude Code handoff manifest is present/);
@@ -367,6 +369,23 @@ test("audit ledger is append-only and hash chained", () => {
   assert.match(auditPage, /Ledger integrity/);
   assert.match(auditPage, /Normal UI cannot update or delete audit log rows/);
   assert.doesNotMatch(ledger, /DELETE_AUDIT_LOG|UPDATE_AUDIT_LOG/);
+});
+
+test("write action registry tracks guarded and blocked write surfaces", () => {
+  const registry = read("lib/write-action-registry.ts");
+  const settings = read("app/admin/settings/page.tsx");
+  assert.match(registry, /writeActionRegistry/);
+  assert.match(registry, /summarizeWriteActionRegistry/);
+  assert.match(registry, /unsafeWriteActions/);
+  assert.match(registry, /GUARDED_PREVIEW/);
+  assert.match(registry, /UI_PLACEHOLDER/);
+  assert.match(registry, /BLOCKED_FOR_PRODUCTION/);
+  assert.match(registry, /approveCarePlanVersionAction/);
+  assert.match(registry, /releaseApprovedPatientHandoutAction/);
+  assert.match(registry, /persistent audit va RBAC scope guard/);
+  assert.match(settings, /Write action readiness/);
+  assert.match(settings, /Production ready/);
+  assert.match(settings, /chua duoc phep production/);
 });
 
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {
