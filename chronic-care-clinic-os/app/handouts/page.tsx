@@ -3,11 +3,18 @@ import { StatusBadge } from "@/components/Badge";
 import { WorkflowChecklist } from "@/components/WorkflowChecklist";
 import { buildPatientEducationReleasePackage, buildPatientEducationReleaseQueue } from "@/lib/patient-education";
 import { patients } from "@/lib/seed-data";
+import { previewReleasePatientHandoutAction } from "@/lib/workflow-actions";
 
 export default function HandoutsPage() {
   const patient = patients.find((item) => item.carePlan.status === "APPROVED") ?? patients[0];
   const releasePackage = buildPatientEducationReleasePackage(patient);
   const queue = buildPatientEducationReleaseQueue(patients);
+  const releaseAction = previewReleasePatientHandoutAction(releasePackage, {
+    actorName: "DD Tran Lan",
+    actorRole: "NURSE",
+    confirmationChecked: true,
+    reason: "Demo preview hop dong server action cho phat hanh loi dan A5."
+  });
   return (
     <>
       <PageHeader
@@ -67,6 +74,12 @@ export default function HandoutsPage() {
           <p>Can bo sung dieu kien: {queue.filter((item) => !item.printAllowed).length}</p>
           <p>Audit preview: {releasePackage.auditPreview.summary}</p>
           <p>Template review date: {releasePackage.template.reviewDate}</p>
+          <h3>Server action preview</h3>
+          <p>
+            <StatusBadge>{releaseAction.status}</StatusBadge> {releaseAction.serverActionName}
+          </p>
+          <p>Persistence: {releaseAction.persistenceMode}</p>
+          <p>{releaseAction.safetyBoundary}</p>
         </div>
       </section>
       <article className="handout">

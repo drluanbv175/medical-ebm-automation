@@ -10,6 +10,7 @@
     "lib/care-plan-approval.ts",
     "lib/care-plan-draft.ts",
     "lib/patient-education.ts",
+    "lib/workflow-actions.ts",
     "lib/audit.ts",
     "lib/care-orchestrator.ts",
     "lib/program-registry.ts",

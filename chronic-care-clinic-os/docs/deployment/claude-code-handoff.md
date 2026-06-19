@@ -37,6 +37,7 @@ node scripts/sync-check.mjs
 - `lib/care-plan-draft.ts`: creates physician-approved care plan drafts without treatment automation.
 - `lib/care-plan-approval.ts`: creates preview-only approval packages with signoff gates, CarePlanVersion metadata and AuditLog preview.
 - `lib/patient-education.ts`: gates A5 patient education handouts by approved template, approved care plan and consent.
+- `lib/workflow-actions.ts`: defines preview-only server-action contracts for care plan approval and handout release.
 
 ## Pages wired to those modules
 
@@ -58,7 +59,7 @@ node scripts/sync-check.mjs
 
 ## Recommended next tasks
 
-1. Add server-action shaped domain contracts for care plan approval and handout approval, still preview-only unless persistence is implemented.
+1. Implement real server actions behind `approveCarePlanVersionAction` and `releaseApprovedPatientHandoutAction` only after persistence and append-only audit tests exist.
 2. Add persistent audit append-only tests before wiring any write action.
 3. Add role checks to all write-oriented buttons and future server actions.
 4. Add A5 PDF generation only after approved-template and consent gates remain covered by tests.

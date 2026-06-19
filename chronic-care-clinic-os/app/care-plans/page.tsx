@@ -5,6 +5,7 @@ import { WorkflowChecklist } from "@/components/WorkflowChecklist";
 import { buildCarePlanApprovalQueue } from "@/lib/care-plan-approval";
 import { buildCarePlanDraftQueue } from "@/lib/care-plan-draft";
 import { patients } from "@/lib/seed-data";
+import { previewApproveCarePlanAction } from "@/lib/workflow-actions";
 
 export default function CarePlansPage() {
   const drafts = buildCarePlanDraftQueue(patients);
@@ -12,6 +13,14 @@ export default function CarePlansPage() {
   const focusDraft = drafts[0];
   const focusApproval =
     approvalPackages.find((approvalPackage) => approvalPackage.patientId === focusDraft?.patientId) ?? approvalPackages[0];
+  const focusApprovalAction = focusApproval
+    ? previewApproveCarePlanAction(focusApproval, {
+        actorName: "BS Nguyen Minh",
+        actorRole: "PHYSICIAN",
+        confirmationChecked: true,
+        reason: "Demo preview hop dong server action cho ky duyet care plan."
+      })
+    : null;
 
   return (
     <>
@@ -99,6 +108,16 @@ export default function CarePlansPage() {
             </p>
             <p>Che do ghi: {focusApproval.writebackMode}</p>
             <p>Audit preview: {focusApproval.auditPreview.summary}</p>
+            {focusApprovalAction ? (
+              <>
+                <h3>Server action preview</h3>
+                <p>
+                  <StatusBadge>{focusApprovalAction.status}</StatusBadge> {focusApprovalAction.serverActionName}
+                </p>
+                <p>Persistence: {focusApprovalAction.persistenceMode}</p>
+                <p>{focusApprovalAction.safetyBoundary}</p>
+              </>
+            ) : null}
             <h3>Huong dan ky duyet</h3>
             {focusApproval.signoffInstructions.map((instruction) => (
               <p key={instruction}>{instruction}</p>
