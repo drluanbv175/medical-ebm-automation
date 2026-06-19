@@ -18,13 +18,21 @@ export type WorkflowActionInput = {
 
 export type AppointmentDraftInput = Pick<Appointment, "appointmentType" | "scheduledAt" | "providerName" | "reason" | "riskFlag">;
 
+export type EducationTemplateDraftInput = {
+  title: string;
+  conditionKeywords: string[];
+  sections: string[];
+  sourceNote: string;
+};
+
 export type WorkflowActionPreview = {
   actionName:
     | "approveCarePlanVersion"
     | "releaseApprovedPatientHandout"
     | "claimOverdueFollowUpTask"
     | "createCareAppointment"
-    | "createCarePlanDraft";
+    | "createCarePlanDraft"
+    | "createEducationTemplateDraft";
   serverActionName: string;
   status: "READY_FOR_SERVER_ACTION" | "BLOCKED";
   allowed: boolean;
@@ -280,6 +288,54 @@ export function previewCreateCarePlanDraftAction(
   };
 }
 
+export function previewCreateEducationTemplateDraftAction(
+  templateDraft: EducationTemplateDraftInput,
+  input: WorkflowActionInput,
+  today = "2026-06-19"
+): WorkflowActionPreview {
+  const backendGuard = authorizeWorkflowAction(input, "clinical_rules.manage");
+  const blockedReasons = [
+    ...requireRole(input.actorRole, ["CLINIC_ADMIN", "PHYSICIAN"], "Chi admin phong kham hoac bac si moi duoc tao template draft."),
+    ...requireBackendGuard(backendGuard),
+    ...requireConfirmation(input, "Nguoi thuc hien phai xac nhan template draft can hoi dong/bac si duyet rieng."),
+    ...(templateDraft.title.trim() ? [] : ["Template title khong duoc trong."]),
+    ...(templateDraft.conditionKeywords.length > 0 ? [] : ["Template can it nhat mot condition keyword."]),
+    ...(templateDraft.sections.length > 0 ? [] : ["Template can it nhat mot noi dung section."]),
+    ...(templateDraft.sourceNote.trim() ? [] : ["Template can ghi nguon/SOP noi bo de review."])
+  ];
+  const allowed = blockedReasons.length === 0;
+
+  return {
+    actionName: "createEducationTemplateDraft",
+    serverActionName: "createEducationTemplateDraftAction",
+    status: allowed ? "READY_FOR_SERVER_ACTION" : "BLOCKED",
+    allowed,
+    persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED",
+    blockedReasons,
+    backendGuard,
+    auditPreview: buildAuditPreview({
+      id: `audit-action-template-draft-${slugify(templateDraft.title)}-${today}`,
+      actorName: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "EducationMaterial",
+      entityId: `education-template-draft-${slugify(templateDraft.title)}-${today}`,
+      summary: allowed
+        ? "Preview tao education template draft; chua ghi DB production va chua duoc dung voi nguoi benh."
+        : "Chan preview tao education template draft do thieu role, scope, xac nhan hoac noi dung review."
+    }),
+    requiredServerSideGuards: [
+      "Re-read actor role and clinic scope inside server action.",
+      "Call authorizeBackendAction with clinical_rules.manage and active same-organization/session permission.",
+      "Create EducationMaterial draft and append-only AuditLog in one transaction.",
+      "Require separate EducationMaterialApproval before template can be printed or sent.",
+      "Reject free-text medication changes, diagnoses or treatment directives in patient-facing sections."
+    ],
+    safetyBoundary:
+      "Preview nay chi tao template draft, khong phe duyet noi dung, khong dung cho nguoi benh va khong gui thong diep dieu tri."
+  };
+}
+
 function authorizeWorkflowAction(input: WorkflowActionInput, permission: Permission): GuardDecision {
   return authorizeBackendAction(input.accessContext, permission, input.resourceScope);
 }
@@ -300,6 +356,13 @@ function requireConfirmation(input: WorkflowActionInput, message: string): strin
 
 function requireFutureAppointment(scheduledAt: string, today: string): string[] {
   return scheduledAt.slice(0, 10) >= today ? [] : ["Ngay hen khong duoc nam trong qua khu."];
+}
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "untitled";
 }
 
 function buildAuditPreview(input: {
