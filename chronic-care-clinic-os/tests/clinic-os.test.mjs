@@ -214,6 +214,7 @@ test("automation rules define the 12 required core automations", () => {
 test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
   assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
+  assert.match(read("tsconfig.check.json"), /app\/admin\/audit\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/handouts\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
@@ -221,6 +222,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-draft\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/patient-education\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/workflow-actions\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/visit-prep\.ts/);
   assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
   assert.match(read("scripts/sync-check.mjs"), /Claude Code handoff manifest is present/);
@@ -342,6 +344,21 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   assert.match(carePlansPage, /Server action preview/);
   assert.match(handoutsPage, /Server action preview/);
   assert.doesNotMatch(actions, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
+});
+
+test("audit ledger is append-only and hash chained", () => {
+  const ledger = read("lib/audit-ledger.ts");
+  const auditPage = read("app/admin/audit/page.tsx");
+  assert.match(ledger, /buildAuditLedger/);
+  assert.match(ledger, /appendAuditEventPreview/);
+  assert.match(ledger, /validateAuditLedger/);
+  assert.match(ledger, /immutableAfterAppend: true/);
+  assert.match(ledger, /previousHash/);
+  assert.match(ledger, /eventHash/);
+  assert.match(ledger, /Audit ledger is append-only and hash chain is intact/);
+  assert.match(auditPage, /Ledger integrity/);
+  assert.match(auditPage, /Normal UI cannot update or delete audit log rows/);
+  assert.doesNotMatch(ledger, /DELETE_AUDIT_LOG|UPDATE_AUDIT_LOG/);
 });
 
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {

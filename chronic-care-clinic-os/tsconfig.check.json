@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "include": [
     "app/command-center/page.tsx",
+    "app/admin/audit/page.tsx",
     "app/care-plans/page.tsx",
     "app/handouts/page.tsx",
     "app/patients/[id]/page.tsx",
@@ -11,6 +12,7 @@
     "lib/care-plan-draft.ts",
     "lib/patient-education.ts",
     "lib/workflow-actions.ts",
+    "lib/audit-ledger.ts",
     "lib/audit.ts",
     "lib/care-orchestrator.ts",
     "lib/program-registry.ts",

@@ -20,6 +20,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Preview-only care plan approval package with signoff gates, CarePlanVersion metadata and AuditLog preview before persistent writeback exists.
 - Patient education release package and `/handouts` gate for approved templates, approved care plans, consent and audit preview before A5 print/release.
 - Preview-only workflow action contracts for future care plan approval and handout release server actions.
+- Append-only audit ledger preview with deterministic hash chain and `/admin/audit` integrity view.
 - Claude Code handoff manifest and sync-check guard so Windows, MacBook, Codex and Claude Code share the same current scope.
 - MVP-01 workflow definition and `/mvp-01` page.
 - Production blockers, MVP-01 acceptance test, demo guide, limitations and signoff templates.
@@ -39,7 +40,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Thin vertical slice MVP-01 at UI/domain level.
 - Command Center and Program Registry are deterministic and demo-data backed; they still need persistent task writeback before production use.
 - Backend RBAC is modeled but not wired to every route/action.
-- Audit immutability is documented and domain-guarded, but not persistent end-to-end.
+- Audit immutability is documented, domain-guarded and hash-chain previewed, but not persistent end-to-end.
 - Care plan version history is modeled but not wired to write workflow.
 - Care plan draft, approval package, education release package and workflow action contracts are deterministic and demo-data backed; final approval/writeback still needs server actions, persistent audit logging and immutable version creation.
 - Rule/content approval workflow is modeled but not fully executable.

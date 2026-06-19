@@ -38,6 +38,7 @@ node scripts/sync-check.mjs
 - `lib/care-plan-approval.ts`: creates preview-only approval packages with signoff gates, CarePlanVersion metadata and AuditLog preview.
 - `lib/patient-education.ts`: gates A5 patient education handouts by approved template, approved care plan and consent.
 - `lib/workflow-actions.ts`: defines preview-only server-action contracts for care plan approval and handout release.
+- `lib/audit-ledger.ts`: builds and validates an append-only hash-chain audit ledger preview.
 
 ## Pages wired to those modules
 
@@ -59,8 +60,8 @@ node scripts/sync-check.mjs
 
 ## Recommended next tasks
 
-1. Implement real server actions behind `approveCarePlanVersionAction` and `releaseApprovedPatientHandoutAction` only after persistence and append-only audit tests exist.
-2. Add persistent audit append-only tests before wiring any write action.
+1. Implement persistent append-only AuditLog storage using the same sequence/previousHash/eventHash contract.
+2. Implement real server actions behind `approveCarePlanVersionAction` and `releaseApprovedPatientHandoutAction` only after persistent audit tests exist.
 3. Add role checks to all write-oriented buttons and future server actions.
 4. Add A5 PDF generation only after approved-template and consent gates remain covered by tests.
 5. Configure a private Git remote so Windows, MacBook and Claude Code synchronize through Git, not only OneDrive.
