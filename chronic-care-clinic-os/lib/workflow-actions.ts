@@ -1,5 +1,6 @@
 import type { AuditEvent } from "./audit";
 import { authorizeBackendAction, type GuardDecision } from "./backend-guard";
+import type { CareGap } from "./care-orchestrator";
 import type { CarePlanApprovalPackage } from "./care-plan-approval";
 import type { PatientEducationReleasePackage } from "./patient-education";
 import type { AccessContext, Permission, ResourceScope } from "./rbac";
@@ -15,7 +16,7 @@ export type WorkflowActionInput = {
 };
 
 export type WorkflowActionPreview = {
-  actionName: "approveCarePlanVersion" | "releaseApprovedPatientHandout";
+  actionName: "approveCarePlanVersion" | "releaseApprovedPatientHandout" | "claimOverdueFollowUpTask";
   serverActionName: string;
   status: "READY_FOR_SERVER_ACTION" | "BLOCKED";
   allowed: boolean;
@@ -120,6 +121,56 @@ export function previewReleasePatientHandoutAction(
     ],
     safetyBoundary:
       "Preview nay khong tu dong in/gui, khong them loi dan dieu tri tu do va khong thay the tu van/cap cuu."
+  };
+}
+
+export function previewClaimOverdueFollowUpTaskAction(
+  gap: CareGap,
+  input: WorkflowActionInput,
+  today = "2026-06-19"
+): WorkflowActionPreview {
+  const backendGuard = authorizeWorkflowAction(input, "task.manage");
+  const blockedReasons = [
+    ...requireRole(
+      input.actorRole,
+      ["CARE_COORDINATOR", "NURSE_COORDINATOR"],
+      "Chi care coordinator hoac dieu duong dieu phoi moi duoc nhan task goi nhac."
+    ),
+    ...requireBackendGuard(backendGuard),
+    ...requireConfirmation(input, "Nguoi thuc hien phai xac nhan dung kich ban da duyet va khong gui thong diep dieu tri."),
+    ...(gap.category !== "FOLLOW_UP" ? ["Chi duoc nhan task FOLLOW_UP trong action nay."] : []),
+    ...(gap.patientCommunicationAllowed ? [] : ["Chua du dieu kien lien he nguoi benh bang template/consent."])
+  ];
+  const allowed = blockedReasons.length === 0;
+
+  return {
+    actionName: "claimOverdueFollowUpTask",
+    serverActionName: "claimOverdueFollowUpTaskAction",
+    status: allowed ? "READY_FOR_SERVER_ACTION" : "BLOCKED",
+    allowed,
+    persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED",
+    blockedReasons,
+    backendGuard,
+    auditPreview: buildAuditPreview({
+      id: `audit-action-claim-task-${gap.patientId}-${today}`,
+      actorName: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "UPDATE",
+      entityType: "CareCoordinationTask",
+      entityId: gap.id,
+      summary: allowed
+        ? "Preview nhan task goi nhac tai kham qua han; chua ghi DB production."
+        : "Chan preview nhan task do thieu role, scope, consent/template hoac sai loai gap."
+    }),
+    requiredServerSideGuards: [
+      "Re-read care gap/task and patient consent inside server action.",
+      "Call authorizeBackendAction with task.manage and active same-organization/session permission.",
+      "Create or update CareCoordinationTask and append-only AuditLog in one transaction.",
+      "Use only approved reminder template; do not include treatment advice.",
+      "Escalate to PHYSICIAN if contact fails or red flag is reported."
+    ],
+    safetyBoundary:
+      "Preview nay khong tu dong goi/gui tin nhan, khong dua loi khuyen dieu tri va khong thay doi care plan."
   };
 }
 

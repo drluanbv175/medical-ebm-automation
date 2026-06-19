@@ -35,6 +35,15 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "Da co workflow action contract, RBAC guard va audit preview; chua ghi DB."
   ),
   guarded(
+    "overdue-claim-call-task",
+    "Nhan task goi nhac qua han",
+    "/overdue",
+    "task.manage",
+    "CARE_COORDINATOR",
+    "claimOverdueFollowUpTaskAction",
+    "Da co workflow action contract, RBAC guard va audit preview; chua ghi DB hoac gui tin nhan."
+  ),
+  guarded(
     "handout-release",
     "Phe duyet/phat hanh loi dan A5",
     "/handouts",
@@ -45,7 +54,6 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
   ),
   placeholder("patient-register", "Dang ky nguoi benh", "/patients", "patient.register", "RECEPTIONIST"),
   placeholder("appointment-create", "Tao hen", "/appointments", "task.manage", "CARE_COORDINATOR"),
-  placeholder("overdue-claim-call-task", "Nhan task goi nhac qua han", "/overdue", "task.manage", "CARE_COORDINATOR"),
   placeholder("patient-care-plan-draft", "Tao care plan draft tu ho so nguoi benh", "/patients/[id]", "care_plan.version", "PHYSICIAN"),
   placeholder("template-draft", "Tao template loi dan draft", "/admin/templates", "clinical_rules.manage", "CLINIC_ADMIN"),
   placeholder("clinical-rule-draft", "Tao clinical rule draft", "/admin/rules", "clinical_rules.manage", "CLINIC_ADMIN"),

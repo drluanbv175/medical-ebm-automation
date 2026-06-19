@@ -218,6 +218,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /app\/admin\/settings\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/handouts\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/overdue\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-approval\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-draft\.ts/);
@@ -339,11 +340,14 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   const handoutsPage = read("app/handouts/page.tsx");
   assert.match(actions, /previewApproveCarePlanAction/);
   assert.match(actions, /previewReleasePatientHandoutAction/);
+  assert.match(actions, /previewClaimOverdueFollowUpTaskAction/);
   assert.match(actions, /approveCarePlanVersionAction/);
   assert.match(actions, /releaseApprovedPatientHandoutAction/);
+  assert.match(actions, /claimOverdueFollowUpTaskAction/);
   assert.match(actions, /authorizeBackendAction/);
   assert.match(actions, /care_plan\.approve/);
   assert.match(actions, /handout\.approve/);
+  assert.match(actions, /task\.manage/);
   assert.match(actions, /PREVIEW_ONLY_NOT_PERSISTED/);
   assert.match(actions, /Create immutable CarePlanVersion and append-only AuditLog in one transaction/);
   assert.match(actions, /Do not send patient messages automatically/);
@@ -374,6 +378,7 @@ test("audit ledger is append-only and hash chained", () => {
 test("write action registry tracks guarded and blocked write surfaces", () => {
   const registry = read("lib/write-action-registry.ts");
   const settings = read("app/admin/settings/page.tsx");
+  const overdue = read("app/overdue/page.tsx");
   assert.match(registry, /writeActionRegistry/);
   assert.match(registry, /summarizeWriteActionRegistry/);
   assert.match(registry, /unsafeWriteActions/);
@@ -382,10 +387,13 @@ test("write action registry tracks guarded and blocked write surfaces", () => {
   assert.match(registry, /BLOCKED_FOR_PRODUCTION/);
   assert.match(registry, /approveCarePlanVersionAction/);
   assert.match(registry, /releaseApprovedPatientHandoutAction/);
+  assert.match(registry, /claimOverdueFollowUpTaskAction/);
   assert.match(registry, /persistent audit va RBAC scope guard/);
   assert.match(settings, /Write action readiness/);
   assert.match(settings, /Production ready/);
   assert.match(settings, /chua duoc phep production/);
+  assert.match(overdue, /Task claim preview/);
+  assert.match(overdue, /Backend guard/);
 });
 
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {
