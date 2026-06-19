@@ -1,9 +1,28 @@
-import { RiskBadge } from "@/components/Badge";
+import { RiskBadge, StatusBadge } from "@/components/Badge";
 import { PageHeader } from "@/components/PageHeader";
 import { patients } from "@/lib/seed-data";
+import { previewCreateCareAppointmentAction } from "@/lib/workflow-actions";
 
 export default function AppointmentsPage() {
   const appointments = patients.map((patient) => ({ patient, appointment: patient.appointments[0] }));
+  const appointmentAction = previewCreateCareAppointmentAction(
+    patients[0],
+    {
+      appointmentType: "FOLLOW_UP",
+      scheduledAt: "2026-07-18T09:00:00+07:00",
+      providerName: "BS Nguyen Minh",
+      reason: "Tai kham dieu phoi benh man",
+      riskFlag: patients[0].suggestedRiskLevel
+    },
+    {
+      actorName: "DP Tran Mai",
+      actorRole: "CARE_COORDINATOR",
+      accessContext: { role: "CARE_COORDINATOR", organizationId: "org-demo", clinicSiteId: "site-demo" },
+      resourceScope: { organizationId: "org-demo", clinicSiteId: "site-demo" },
+      confirmationChecked: true,
+      reason: "Demo preview hop dong server action cho tao hen tai kham."
+    }
+  );
   return (
     <>
       <PageHeader
@@ -17,6 +36,13 @@ export default function AppointmentsPage() {
         }
       />
       <section className="panel">
+        <h2>Create appointment preview</h2>
+        <p>
+          <StatusBadge>{appointmentAction.status}</StatusBadge> {appointmentAction.serverActionName}
+        </p>
+        <p>Backend guard: {appointmentAction.backendGuard.reason}</p>
+        <p>Persistence: {appointmentAction.persistenceMode}</p>
+        <p>{appointmentAction.safetyBoundary}</p>
         <table className="table">
           <thead>
             <tr>

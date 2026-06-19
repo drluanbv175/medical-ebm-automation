@@ -216,6 +216,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/audit\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/settings\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/appointments\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/handouts\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/overdue\/page\.tsx/);
@@ -336,23 +337,29 @@ test("patient education package uses approved templates without auto messaging",
 
 test("workflow action contracts stay preview-only until persistence exists", () => {
   const actions = read("lib/workflow-actions.ts");
+  const appointmentsPage = read("app/appointments/page.tsx");
   const carePlansPage = read("app/care-plans/page.tsx");
   const handoutsPage = read("app/handouts/page.tsx");
   assert.match(actions, /previewApproveCarePlanAction/);
   assert.match(actions, /previewReleasePatientHandoutAction/);
   assert.match(actions, /previewClaimOverdueFollowUpTaskAction/);
+  assert.match(actions, /previewCreateCareAppointmentAction/);
   assert.match(actions, /approveCarePlanVersionAction/);
   assert.match(actions, /releaseApprovedPatientHandoutAction/);
   assert.match(actions, /claimOverdueFollowUpTaskAction/);
+  assert.match(actions, /createCareAppointmentAction/);
   assert.match(actions, /authorizeBackendAction/);
   assert.match(actions, /care_plan\.approve/);
   assert.match(actions, /handout\.approve/);
   assert.match(actions, /task\.manage/);
   assert.match(actions, /PREVIEW_ONLY_NOT_PERSISTED/);
+  assert.match(actions, /Ngay hen khong duoc nam trong qua khu/);
   assert.match(actions, /Create immutable CarePlanVersion and append-only AuditLog in one transaction/);
   assert.match(actions, /Do not send patient messages automatically/);
   assert.match(actions, /backendGuard/);
   assert.match(actions, /khong ghi DB, khong tao don thuoc/i);
+  assert.match(appointmentsPage, /Create appointment preview/);
+  assert.match(appointmentsPage, /Backend guard/);
   assert.match(carePlansPage, /Server action preview/);
   assert.match(carePlansPage, /Backend guard/);
   assert.match(handoutsPage, /Server action preview/);
@@ -388,6 +395,7 @@ test("write action registry tracks guarded and blocked write surfaces", () => {
   assert.match(registry, /approveCarePlanVersionAction/);
   assert.match(registry, /releaseApprovedPatientHandoutAction/);
   assert.match(registry, /claimOverdueFollowUpTaskAction/);
+  assert.match(registry, /createCareAppointmentAction/);
   assert.match(registry, /persistent audit va RBAC scope guard/);
   assert.match(settings, /Write action readiness/);
   assert.match(settings, /Production ready/);

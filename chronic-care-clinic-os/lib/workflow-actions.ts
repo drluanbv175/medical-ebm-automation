@@ -4,7 +4,7 @@ import type { CareGap } from "./care-orchestrator";
 import type { CarePlanApprovalPackage } from "./care-plan-approval";
 import type { PatientEducationReleasePackage } from "./patient-education";
 import type { AccessContext, Permission, ResourceScope } from "./rbac";
-import type { Role } from "./types";
+import type { Appointment, Patient, Role } from "./types";
 
 export type WorkflowActionInput = {
   actorName: string;
@@ -15,8 +15,14 @@ export type WorkflowActionInput = {
   reason: string;
 };
 
+export type AppointmentDraftInput = Pick<Appointment, "appointmentType" | "scheduledAt" | "providerName" | "reason" | "riskFlag">;
+
 export type WorkflowActionPreview = {
-  actionName: "approveCarePlanVersion" | "releaseApprovedPatientHandout" | "claimOverdueFollowUpTask";
+  actionName:
+    | "approveCarePlanVersion"
+    | "releaseApprovedPatientHandout"
+    | "claimOverdueFollowUpTask"
+    | "createCareAppointment";
   serverActionName: string;
   status: "READY_FOR_SERVER_ACTION" | "BLOCKED";
   allowed: boolean;
@@ -174,6 +180,57 @@ export function previewClaimOverdueFollowUpTaskAction(
   };
 }
 
+export function previewCreateCareAppointmentAction(
+  patient: Patient,
+  appointmentDraft: AppointmentDraftInput,
+  input: WorkflowActionInput,
+  today = "2026-06-19"
+): WorkflowActionPreview {
+  const backendGuard = authorizeWorkflowAction(input, "task.manage");
+  const blockedReasons = [
+    ...requireRole(
+      input.actorRole,
+      ["CARE_COORDINATOR", "NURSE_COORDINATOR"],
+      "Chi care coordinator hoac dieu duong dieu phoi moi duoc tao hen dieu phoi."
+    ),
+    ...requireBackendGuard(backendGuard),
+    ...requireConfirmation(input, "Nguoi thuc hien phai xac nhan day la lich hen dieu phoi, khong phai chi dinh dieu tri."),
+    ...requireFutureAppointment(appointmentDraft.scheduledAt, today),
+    ...(patient.status !== "ACTIVE" ? [`Nguoi benh hien tai la ${patient.status}, khong duoc tao hen moi.`] : [])
+  ];
+  const allowed = blockedReasons.length === 0;
+
+  return {
+    actionName: "createCareAppointment",
+    serverActionName: "createCareAppointmentAction",
+    status: allowed ? "READY_FOR_SERVER_ACTION" : "BLOCKED",
+    allowed,
+    persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED",
+    blockedReasons,
+    backendGuard,
+    auditPreview: buildAuditPreview({
+      id: `audit-action-appointment-${patient.id}-${today}`,
+      actorName: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "Appointment",
+      entityId: `appointment-preview-${patient.id}-${appointmentDraft.scheduledAt.slice(0, 10)}`,
+      summary: allowed
+        ? "Preview tao lich hen dieu phoi benh man; chua ghi DB production."
+        : "Chan preview tao lich hen do thieu role, scope, xac nhan hoac ngay hen khong hop le."
+    }),
+    requiredServerSideGuards: [
+      "Re-read patient status and active care plan inside server action.",
+      "Call authorizeBackendAction with task.manage and active same-organization/session permission.",
+      "Create Appointment and append-only AuditLog in one transaction.",
+      "Reject appointment dates in the past and overlapping provider slots.",
+      "Do not create medication, lab or treatment instructions from this action."
+    ],
+    safetyBoundary:
+      "Preview nay chi tao lich hen dieu phoi, khong tu dong chan doan, khong chi dinh xet nghiem/thuoc va khong gui tin nhan dieu tri."
+  };
+}
+
 function authorizeWorkflowAction(input: WorkflowActionInput, permission: Permission): GuardDecision {
   return authorizeBackendAction(input.accessContext, permission, input.resourceScope);
 }
@@ -190,6 +247,10 @@ function requireConfirmation(input: WorkflowActionInput, message: string): strin
   if (!input.confirmationChecked) return [message];
   if (!input.reason.trim()) return ["Can ghi ly do/ghi chu thao tac truoc khi tao preview action."];
   return [];
+}
+
+function requireFutureAppointment(scheduledAt: string, today: string): string[] {
+  return scheduledAt.slice(0, 10) >= today ? [] : ["Ngay hen khong duoc nam trong qua khu."];
 }
 
 function buildAuditPreview(input: {

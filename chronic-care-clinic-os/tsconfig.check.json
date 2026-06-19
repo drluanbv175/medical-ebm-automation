@@ -4,6 +4,7 @@
     "app/command-center/page.tsx",
     "app/admin/audit/page.tsx",
     "app/admin/settings/page.tsx",
+    "app/appointments/page.tsx",
     "app/care-plans/page.tsx",
     "app/handouts/page.tsx",
     "app/overdue/page.tsx",
