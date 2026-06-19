@@ -15,6 +15,7 @@
 - Them write action registry tren `/admin/settings` de theo doi nut/luong ghi nao da guard, placeholder hoac bi chan production.
 - Chuyen action `/overdue` nhan task goi nhac sang guarded preview contract voi RBAC, consent/template gate va audit preview.
 - Chuyen action `/appointments` tao hen sang guarded preview contract voi RBAC, audit preview va chan ngay hen qua khu.
+- Chuyen action tao care plan draft trong `/patients/[id]` sang guarded preview contract voi RBAC, audit preview va yeu cau bac si phe duyet rieng.
 - Cap nhat trang tong quan va task page dung hang doi dieu phoi tu dong.
 - Them test khoa chan an toan: khong tu dong dieu tri, khong gui tin nhan dieu tri va moi gap lam sang can bac si xac nhan.
 

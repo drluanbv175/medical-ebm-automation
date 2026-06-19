@@ -2,15 +2,26 @@ import { notFound } from "next/navigation";
 import { RiskBadge, StatusBadge } from "@/components/Badge";
 import { PageHeader } from "@/components/PageHeader";
 import { WorkflowChecklist } from "@/components/WorkflowChecklist";
+import { buildCarePlanDraft } from "@/lib/care-plan-draft";
 import { assessRisk } from "@/lib/clinical-safety";
 import { getPatient } from "@/lib/seed-data";
 import { buildVisitPrepPacket } from "@/lib/visit-prep";
+import { previewCreateCarePlanDraftAction } from "@/lib/workflow-actions";
 
 export default function PatientDetailPage({ params }: { params: { id: string } }) {
   const patient = getPatient(params.id);
   if (!patient) notFound();
   const assessment = assessRisk(patient);
   const prepPacket = buildVisitPrepPacket(patient);
+  const carePlanDraft = buildCarePlanDraft(patient);
+  const draftAction = previewCreateCarePlanDraftAction(patient, carePlanDraft, {
+    actorName: "BS Nguyen Minh",
+    actorRole: "PHYSICIAN",
+    accessContext: { role: "PHYSICIAN", organizationId: "org-demo", clinicSiteId: "site-demo" },
+    resourceScope: { organizationId: "org-demo", clinicSiteId: "site-demo" },
+    confirmationChecked: true,
+    reason: "Demo preview hop dong server action cho tao care plan draft."
+  });
 
   return (
     <>
@@ -109,6 +120,13 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
           <p>Van de chinh: {patient.carePlan.mainProblems.join(", ")}</p>
           <p>Ngay tai kham: {patient.carePlan.nextFollowUpDate}</p>
           <p>{patient.carePlan.redFlagPlan}</p>
+          <h3>Draft action preview</h3>
+          <p>
+            <StatusBadge>{draftAction.status}</StatusBadge> {draftAction.serverActionName}
+          </p>
+          <p>Backend guard: {draftAction.backendGuard.reason}</p>
+          <p>Persistence: {draftAction.persistenceMode}</p>
+          <p>{draftAction.safetyBoundary}</p>
         </div>
       </section>
 

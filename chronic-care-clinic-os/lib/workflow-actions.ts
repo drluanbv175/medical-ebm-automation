@@ -2,6 +2,7 @@ import type { AuditEvent } from "./audit";
 import { authorizeBackendAction, type GuardDecision } from "./backend-guard";
 import type { CareGap } from "./care-orchestrator";
 import type { CarePlanApprovalPackage } from "./care-plan-approval";
+import type { CarePlanDraft } from "./care-plan-draft";
 import type { PatientEducationReleasePackage } from "./patient-education";
 import type { AccessContext, Permission, ResourceScope } from "./rbac";
 import type { Appointment, Patient, Role } from "./types";
@@ -22,7 +23,8 @@ export type WorkflowActionPreview = {
     | "approveCarePlanVersion"
     | "releaseApprovedPatientHandout"
     | "claimOverdueFollowUpTask"
-    | "createCareAppointment";
+    | "createCareAppointment"
+    | "createCarePlanDraft";
   serverActionName: string;
   status: "READY_FOR_SERVER_ACTION" | "BLOCKED";
   allowed: boolean;
@@ -228,6 +230,53 @@ export function previewCreateCareAppointmentAction(
     ],
     safetyBoundary:
       "Preview nay chi tao lich hen dieu phoi, khong tu dong chan doan, khong chi dinh xet nghiem/thuoc va khong gui tin nhan dieu tri."
+  };
+}
+
+export function previewCreateCarePlanDraftAction(
+  patient: Patient,
+  draft: CarePlanDraft,
+  input: WorkflowActionInput,
+  today = "2026-06-19"
+): WorkflowActionPreview {
+  const backendGuard = authorizeWorkflowAction(input, "care_plan.version");
+  const blockedReasons = [
+    ...requireRole(input.actorRole, ["PHYSICIAN"], "Chi bac si moi duoc tao care plan draft lam sang."),
+    ...requireBackendGuard(backendGuard),
+    ...requireConfirmation(input, "Bac si phai xac nhan draft chi la ban nhap va can ky duyet rieng."),
+    ...(patient.status !== "ACTIVE" ? [`Nguoi benh hien tai la ${patient.status}, khong duoc tao draft moi.`] : []),
+    ...(draft.requiresPhysicianApproval ? [] : ["Care plan draft phai bat buoc bac si phe duyet."])
+  ];
+  const allowed = blockedReasons.length === 0;
+
+  return {
+    actionName: "createCarePlanDraft",
+    serverActionName: "createCarePlanDraftAction",
+    status: allowed ? "READY_FOR_SERVER_ACTION" : "BLOCKED",
+    allowed,
+    persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED",
+    blockedReasons,
+    backendGuard,
+    auditPreview: buildAuditPreview({
+      id: `audit-action-care-plan-draft-${patient.id}-${today}`,
+      actorName: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "AIDraft",
+      entityId: draft.draftId,
+      summary: allowed
+        ? "Preview tao care plan draft can bac si duyet; chua ghi DB production."
+        : "Chan preview tao care plan draft do thieu role, scope, xac nhan hoac trang thai nguoi benh."
+    }),
+    requiredServerSideGuards: [
+      "Re-read patient, current care plan, care gaps and risk state inside server action.",
+      "Call authorizeBackendAction with care_plan.version and active same-organization/session permission.",
+      "Create AIDraft/CarePlanVersion draft and append-only AuditLog in one transaction.",
+      "Mark draft as requiring physician approval before any print, message or care-plan writeback.",
+      "Never create prescriptions, medication changes or treatment messages from this action."
+    ],
+    safetyBoundary:
+      "Preview nay chi tao ban nhap care plan, khong ky duyet, khong ke don, khong thay doi dieu tri va khong gui thong diep dieu tri."
   };
 }
 
