@@ -79,7 +79,15 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "releaseApprovedPatientHandoutAction",
     "Da co workflow action contract, RBAC guard, consent/template gate va audit preview; chua ghi DB."
   ),
-  placeholder("patient-register", "Dang ky nguoi benh", "/patients", "patient.register", "RECEPTIONIST"),
+  guarded(
+    "patient-register",
+    "Dang ky nguoi benh",
+    "/patients",
+    "patient.register",
+    "RECEPTIONIST",
+    "registerPatientAction",
+    "Da co workflow action contract, RBAC guard, consent check va audit preview; chua ghi DB hoac mo lien he tu dong."
+  ),
   placeholder("clinical-rule-draft", "Tao clinical rule draft", "/admin/rules", "clinical_rules.manage", "CLINIC_ADMIN"),
   placeholder("user-invite", "Moi nguoi dung", "/admin/users", "user.manage", "CLINIC_ADMIN"),
   blocked("quality-export-csv", "Xuat CSV chat luong", "/dashboard/quality", "export.aggregate", "QUALITY_MANAGER"),

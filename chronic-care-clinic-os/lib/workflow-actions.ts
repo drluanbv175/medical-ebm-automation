@@ -25,6 +25,16 @@ export type EducationTemplateDraftInput = {
   sourceNote: string;
 };
 
+export type PatientRegistrationDraftInput = {
+  fullName: string;
+  dateOfBirth: string;
+  sex: Patient["sex"];
+  phone: string;
+  consentStatus: Patient["consentStatus"];
+  intakeReason: string;
+  chronicProgramCandidates: string[];
+};
+
 export type WorkflowActionPreview = {
   actionName:
     | "approveCarePlanVersion"
@@ -32,7 +42,8 @@ export type WorkflowActionPreview = {
     | "claimOverdueFollowUpTask"
     | "createCareAppointment"
     | "createCarePlanDraft"
-    | "createEducationTemplateDraft";
+    | "createEducationTemplateDraft"
+    | "registerPatient";
   serverActionName: string;
   status: "READY_FOR_SERVER_ACTION" | "BLOCKED";
   allowed: boolean;
@@ -336,6 +347,63 @@ export function previewCreateEducationTemplateDraftAction(
   };
 }
 
+export function previewRegisterPatientAction(
+  registrationDraft: PatientRegistrationDraftInput,
+  input: WorkflowActionInput,
+  today = "2026-06-19"
+): WorkflowActionPreview {
+  const backendGuard = authorizeWorkflowAction(input, "patient.register");
+  const blockedReasons = [
+    ...requireRole(
+      input.actorRole,
+      ["RECEPTIONIST", "NURSE", "NURSE_COORDINATOR", "PHYSICIAN", "CLINIC_ADMIN"],
+      "Chi nhan su tiep don, dieu duong, bac si hoac admin phong kham moi duoc dang ky nguoi benh."
+    ),
+    ...requireBackendGuard(backendGuard),
+    ...requireConfirmation(input, "Nguoi thuc hien phai xac nhan da kiem tra dinh danh, consent va site tiep nhan."),
+    ...(registrationDraft.fullName.trim() ? [] : ["Ho ten nguoi benh khong duoc trong."]),
+    ...requireIsoDate(registrationDraft.dateOfBirth, "Ngay sinh"),
+    ...(registrationDraft.phone.trim() ? [] : ["So dien thoai lien he khong duoc trong."]),
+    ...(registrationDraft.intakeReason.trim() ? [] : ["Can ghi ly do dang ky/nguon tiep nhan."]),
+    ...(registrationDraft.chronicProgramCandidates.length > 0 ? [] : ["Can chon it nhat mot chuong trinh benh man can sang loc."]),
+    ...(registrationDraft.consentStatus === "DECLINED"
+      ? ["Consent dang DECLINED; khong duoc dua vao workflow benh man hoac lien he chu dong."]
+      : [])
+  ];
+  const allowed = blockedReasons.length === 0;
+  const draftId = `patient-registration-${slugify(registrationDraft.fullName)}-${today}`;
+
+  return {
+    actionName: "registerPatient",
+    serverActionName: "registerPatientAction",
+    status: allowed ? "READY_FOR_SERVER_ACTION" : "BLOCKED",
+    allowed,
+    persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED",
+    blockedReasons,
+    backendGuard,
+    auditPreview: buildAuditPreview({
+      id: `audit-action-${draftId}`,
+      actorName: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "Patient",
+      entityId: draftId,
+      summary: allowed
+        ? "Preview dang ky nguoi benh moi; chua ghi DB production va chua mo lien he tu dong."
+        : "Chan preview dang ky nguoi benh do thieu role, scope, consent hoac thong tin bat buoc."
+    }),
+    requiredServerSideGuards: [
+      "Re-check identity fields, duplicate MRN/contact and active clinic scope inside server action.",
+      "Call authorizeBackendAction with patient.register and active same-organization/session permission.",
+      "Create Patient, PatientIdentifier/PatientContact, consent record and append-only AuditLog in one transaction.",
+      "Require signed consent before any patient communication, portal invite or chronic-care outreach.",
+      "Do not create diagnoses, medications, care plans, lab orders or treatment messages from registration."
+    ],
+    safetyBoundary:
+      "Preview nay chi dang ky ho so hanh chinh ban dau, khong chan doan, khong ke don, khong tao care plan va khong gui tin nhan tu dong."
+  };
+}
+
 function authorizeWorkflowAction(input: WorkflowActionInput, permission: Permission): GuardDecision {
   return authorizeBackendAction(input.accessContext, permission, input.resourceScope);
 }
@@ -356,6 +424,10 @@ function requireConfirmation(input: WorkflowActionInput, message: string): strin
 
 function requireFutureAppointment(scheduledAt: string, today: string): string[] {
   return scheduledAt.slice(0, 10) >= today ? [] : ["Ngay hen khong duoc nam trong qua khu."];
+}
+
+function requireIsoDate(value: string, label: string): string[] {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? [] : [`${label} phai theo dinh dang YYYY-MM-DD.`];
 }
 
 function slugify(value: string): string {

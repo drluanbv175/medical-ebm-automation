@@ -9,6 +9,7 @@
     "app/care-plans/page.tsx",
     "app/handouts/page.tsx",
     "app/overdue/page.tsx",
+    "app/patients/page.tsx",
     "app/patients/[id]/page.tsx",
     "app/programs/page.tsx",
     "app/visits/prep/page.tsx",

@@ -221,6 +221,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/handouts\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/overdue\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/patients\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-approval\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-draft\.ts/);
@@ -341,23 +342,27 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   const appointmentsPage = read("app/appointments/page.tsx");
   const carePlansPage = read("app/care-plans/page.tsx");
   const handoutsPage = read("app/handouts/page.tsx");
+  const patientsPage = read("app/patients/page.tsx");
   assert.match(actions, /previewApproveCarePlanAction/);
   assert.match(actions, /previewReleasePatientHandoutAction/);
   assert.match(actions, /previewClaimOverdueFollowUpTaskAction/);
   assert.match(actions, /previewCreateCareAppointmentAction/);
   assert.match(actions, /previewCreateCarePlanDraftAction/);
   assert.match(actions, /previewCreateEducationTemplateDraftAction/);
+  assert.match(actions, /previewRegisterPatientAction/);
   assert.match(actions, /approveCarePlanVersionAction/);
   assert.match(actions, /releaseApprovedPatientHandoutAction/);
   assert.match(actions, /claimOverdueFollowUpTaskAction/);
   assert.match(actions, /createCareAppointmentAction/);
   assert.match(actions, /createCarePlanDraftAction/);
   assert.match(actions, /createEducationTemplateDraftAction/);
+  assert.match(actions, /registerPatientAction/);
   assert.match(actions, /authorizeBackendAction/);
   assert.match(actions, /care_plan\.approve/);
   assert.match(actions, /handout\.approve/);
   assert.match(actions, /care_plan\.version/);
   assert.match(actions, /clinical_rules\.manage/);
+  assert.match(actions, /patient\.register/);
   assert.match(actions, /task\.manage/);
   assert.match(actions, /PREVIEW_ONLY_NOT_PERSISTED/);
   assert.match(actions, /Ngay hen khong duoc nam trong qua khu/);
@@ -365,6 +370,8 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   assert.match(actions, /Do not send patient messages automatically/);
   assert.match(actions, /Never create prescriptions, medication changes or treatment messages/);
   assert.match(actions, /Require separate EducationMaterialApproval before template can be printed or sent/);
+  assert.match(actions, /Require signed consent before any patient communication/);
+  assert.match(actions, /Do not create diagnoses, medications, care plans, lab orders or treatment messages from registration/);
   assert.match(actions, /backendGuard/);
   assert.match(actions, /khong ghi DB, khong tao don thuoc/i);
   assert.match(appointmentsPage, /Create appointment preview/);
@@ -373,6 +380,8 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   assert.match(carePlansPage, /Backend guard/);
   assert.match(handoutsPage, /Server action preview/);
   assert.match(handoutsPage, /Backend guard/);
+  assert.match(patientsPage, /Patient registration preview/);
+  assert.match(patientsPage, /Backend guard/);
   assert.doesNotMatch(actions, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
 });
 
@@ -407,6 +416,7 @@ test("write action registry tracks guarded and blocked write surfaces", () => {
   assert.match(registry, /createCareAppointmentAction/);
   assert.match(registry, /createCarePlanDraftAction/);
   assert.match(registry, /createEducationTemplateDraftAction/);
+  assert.match(registry, /registerPatientAction/);
   assert.match(registry, /persistent audit va RBAC scope guard/);
   assert.match(settings, /Write action readiness/);
   assert.match(settings, /Production ready/);

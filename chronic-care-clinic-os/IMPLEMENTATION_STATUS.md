@@ -27,6 +27,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - `/appointments` create-appointment action now has preview-only workflow contract with RBAC guard, future-date guard and audit preview.
 - `/patients/[id]` care-plan-draft action now has preview-only workflow contract with RBAC guard and explicit separate physician-approval requirement.
 - `/admin/templates` education-template-draft action now has preview-only workflow contract with RBAC guard and separate approval requirement before patient use.
+- `/patients` patient-registration action now has preview-only workflow contract with RBAC guard, consent gate and audit preview before persistent writeback.
 - Claude Code handoff manifest and sync-check guard so Windows, MacBook, Codex and Claude Code share the same current scope.
 - MVP-01 workflow definition and `/mvp-01` page.
 - Production blockers, MVP-01 acceptance test, demo guide, limitations and signoff templates.

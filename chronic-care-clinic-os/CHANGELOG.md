@@ -17,6 +17,7 @@
 - Chuyen action `/appointments` tao hen sang guarded preview contract voi RBAC, audit preview va chan ngay hen qua khu.
 - Chuyen action tao care plan draft trong `/patients/[id]` sang guarded preview contract voi RBAC, audit preview va yeu cau bac si phe duyet rieng.
 - Chuyen action tao education template draft trong `/admin/templates` sang guarded preview contract voi RBAC, audit preview va approval rieng truoc khi dung.
+- Chuyen action dang ky nguoi benh trong `/patients` sang guarded preview contract voi RBAC, consent gate va audit preview; chua ghi DB production.
 - Cap nhat trang tong quan va task page dung hang doi dieu phoi tu dong.
 - Them test khoa chan an toan: khong tu dong dieu tri, khong gui tin nhan dieu tri va moi gap lam sang can bac si xac nhan.
 
