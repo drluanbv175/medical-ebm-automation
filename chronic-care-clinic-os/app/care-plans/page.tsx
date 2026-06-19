@@ -17,6 +17,8 @@ export default function CarePlansPage() {
     ? previewApproveCarePlanAction(focusApproval, {
         actorName: "BS Nguyen Minh",
         actorRole: "PHYSICIAN",
+        accessContext: { role: "PHYSICIAN", organizationId: "org-demo", clinicSiteId: "site-demo" },
+        resourceScope: { organizationId: "org-demo", clinicSiteId: "site-demo" },
         confirmationChecked: true,
         reason: "Demo preview hop dong server action cho ky duyet care plan."
       })
@@ -115,6 +117,7 @@ export default function CarePlansPage() {
                   <StatusBadge>{focusApprovalAction.status}</StatusBadge> {focusApprovalAction.serverActionName}
                 </p>
                 <p>Persistence: {focusApprovalAction.persistenceMode}</p>
+                <p>Backend guard: {focusApprovalAction.backendGuard.reason}</p>
                 <p>{focusApprovalAction.safetyBoundary}</p>
               </>
             ) : null}

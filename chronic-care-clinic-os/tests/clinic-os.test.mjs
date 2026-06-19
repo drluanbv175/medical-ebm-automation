@@ -223,6 +223,8 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/patient-education\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/workflow-actions\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/backend-guard\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/rbac\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/visit-prep\.ts/);
   assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
   assert.match(read("scripts/sync-check.mjs"), /Claude Code handoff manifest is present/);
@@ -337,12 +339,18 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   assert.match(actions, /previewReleasePatientHandoutAction/);
   assert.match(actions, /approveCarePlanVersionAction/);
   assert.match(actions, /releaseApprovedPatientHandoutAction/);
+  assert.match(actions, /authorizeBackendAction/);
+  assert.match(actions, /care_plan\.approve/);
+  assert.match(actions, /handout\.approve/);
   assert.match(actions, /PREVIEW_ONLY_NOT_PERSISTED/);
   assert.match(actions, /Create immutable CarePlanVersion and append-only AuditLog in one transaction/);
   assert.match(actions, /Do not send patient messages automatically/);
+  assert.match(actions, /backendGuard/);
   assert.match(actions, /khong ghi DB, khong tao don thuoc/i);
   assert.match(carePlansPage, /Server action preview/);
+  assert.match(carePlansPage, /Backend guard/);
   assert.match(handoutsPage, /Server action preview/);
+  assert.match(handoutsPage, /Backend guard/);
   assert.doesNotMatch(actions, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
 });
 

@@ -1,11 +1,15 @@
 import type { AuditEvent } from "./audit";
+import { authorizeBackendAction, type GuardDecision } from "./backend-guard";
 import type { CarePlanApprovalPackage } from "./care-plan-approval";
 import type { PatientEducationReleasePackage } from "./patient-education";
+import type { AccessContext, Permission, ResourceScope } from "./rbac";
 import type { Role } from "./types";
 
 export type WorkflowActionInput = {
   actorName: string;
   actorRole: Role;
+  accessContext: AccessContext;
+  resourceScope: ResourceScope;
   confirmationChecked: boolean;
   reason: string;
 };
@@ -17,6 +21,7 @@ export type WorkflowActionPreview = {
   allowed: boolean;
   persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED";
   blockedReasons: string[];
+  backendGuard: GuardDecision;
   auditPreview: AuditEvent;
   requiredServerSideGuards: string[];
   safetyBoundary: string;
@@ -27,8 +32,10 @@ export function previewApproveCarePlanAction(
   input: WorkflowActionInput,
   today = "2026-06-19"
 ): WorkflowActionPreview {
+  const backendGuard = authorizeWorkflowAction(input, "care_plan.approve");
   const blockedReasons = [
     ...requireRole(input.actorRole, ["PHYSICIAN"], "Chi bac si moi duoc ky duyet care plan."),
+    ...requireBackendGuard(backendGuard),
     ...requireConfirmation(input, "Bac si phai tich xac nhan da xem risk, lab, thuoc, muc tieu va safety-net."),
     ...approvalPackage.blockedReasons,
     ...(!approvalPackage.approvalActionAllowed ? ["Approval package chua san sang de ky duyet."] : [])
@@ -42,6 +49,7 @@ export function previewApproveCarePlanAction(
     allowed,
     persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED",
     blockedReasons,
+    backendGuard,
     auditPreview: buildAuditPreview({
       id: `audit-action-care-plan-${approvalPackage.patientId}-${today}`,
       actorName: input.actorName,
@@ -55,7 +63,7 @@ export function previewApproveCarePlanAction(
     }),
     requiredServerSideGuards: [
       "Re-read patient, draft, approval gates and current care plan inside server action.",
-      "Require PHYSICIAN role and active same-organization/session permission.",
+      "Call authorizeBackendAction with care_plan.approve and active same-organization/session permission.",
       "Create immutable CarePlanVersion and append-only AuditLog in one transaction.",
       "Reject stale draft/version ids and any blocked approval gate.",
       "Never create medication changes or patient messages from this action."
@@ -70,12 +78,14 @@ export function previewReleasePatientHandoutAction(
   input: WorkflowActionInput,
   today = "2026-06-19"
 ): WorkflowActionPreview {
+  const backendGuard = authorizeWorkflowAction(input, "handout.approve");
   const blockedReasons = [
     ...requireRole(
       input.actorRole,
-      ["PHYSICIAN", "NURSE"],
-      "Chi bac si hoac dieu duong moi duoc phat hanh loi dan da duyet."
+      ["PHYSICIAN"],
+      "Chi bac si moi duoc phe duyet phat hanh loi dan trong contract hien tai."
     ),
+    ...requireBackendGuard(backendGuard),
     ...requireConfirmation(input, "Nguoi thuc hien phai xac nhan template, care plan va consent hop le."),
     ...releasePackage.blockedReasons,
     ...(!releasePackage.printAllowed ? ["Release package chua san sang de in/phat hanh."] : [])
@@ -89,6 +99,7 @@ export function previewReleasePatientHandoutAction(
     allowed,
     persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED",
     blockedReasons,
+    backendGuard,
     auditPreview: buildAuditPreview({
       id: `audit-action-handout-${releasePackage.patientId}-${today}`,
       actorName: input.actorName,
@@ -102,7 +113,7 @@ export function previewReleasePatientHandoutAction(
     }),
     requiredServerSideGuards: [
       "Re-read template approval, care plan status and patient consent inside server action.",
-      "Require PHYSICIAN or NURSE role with site-level access.",
+      "Call authorizeBackendAction with handout.approve and active same-organization/session permission.",
       "Create PatientHandout and append-only AuditLog in one transaction.",
       "Use only approved template content and reject free-text treatment instructions.",
       "Do not send patient messages automatically; queue communication only through approved template workflow."
@@ -112,8 +123,16 @@ export function previewReleasePatientHandoutAction(
   };
 }
 
+function authorizeWorkflowAction(input: WorkflowActionInput, permission: Permission): GuardDecision {
+  return authorizeBackendAction(input.accessContext, permission, input.resourceScope);
+}
+
 function requireRole(actorRole: Role, allowedRoles: Role[], message: string): string[] {
   return allowedRoles.includes(actorRole) ? [] : [message];
+}
+
+function requireBackendGuard(decision: GuardDecision): string[] {
+  return decision.allowed ? [] : [decision.reason];
 }
 
 function requireConfirmation(input: WorkflowActionInput, message: string): string[] {

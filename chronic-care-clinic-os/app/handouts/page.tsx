@@ -10,8 +10,10 @@ export default function HandoutsPage() {
   const releasePackage = buildPatientEducationReleasePackage(patient);
   const queue = buildPatientEducationReleaseQueue(patients);
   const releaseAction = previewReleasePatientHandoutAction(releasePackage, {
-    actorName: "DD Tran Lan",
-    actorRole: "NURSE",
+    actorName: "BS Nguyen Minh",
+    actorRole: "PHYSICIAN",
+    accessContext: { role: "PHYSICIAN", organizationId: "org-demo", clinicSiteId: "site-demo" },
+    resourceScope: { organizationId: "org-demo", clinicSiteId: "site-demo" },
     confirmationChecked: true,
     reason: "Demo preview hop dong server action cho phat hanh loi dan A5."
   });
@@ -79,6 +81,7 @@ export default function HandoutsPage() {
             <StatusBadge>{releaseAction.status}</StatusBadge> {releaseAction.serverActionName}
           </p>
           <p>Persistence: {releaseAction.persistenceMode}</p>
+          <p>Backend guard: {releaseAction.backendGuard.reason}</p>
           <p>{releaseAction.safetyBoundary}</p>
         </div>
       </section>
