@@ -1,10 +1,25 @@
 import { PageHeader } from "@/components/PageHeader";
 import { demoAuditEvents } from "@/lib/audit";
 import { buildAuditLedger, validateAuditLedger } from "@/lib/audit-ledger";
+import { buildPersistentAuditWritePlan, validatePersistentAuditWritePlan } from "@/lib/audit-storage-contract";
 
 export default function AuditPage() {
   const ledger = buildAuditLedger(demoAuditEvents);
   const validation = validateAuditLedger(ledger);
+  const persistentWritePlan = buildPersistentAuditWritePlan(ledger, {
+    userId: "user-demo-admin",
+    actor: "Admin Phong Kham",
+    actorRole: "CLINIC_ADMIN",
+    actionType: "CREATE",
+    entityType: "UserInvite",
+    entityId: "user-invite-care-coordinator-demo",
+    summary: "Preview persistent append-only AuditLog insert for guarded server action.",
+    afterData: { serverActionName: "inviteUserAction", persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED" },
+    ipAddress: "127.0.0.1",
+    userAgent: "demo-browser",
+    createdAt: "2026-06-19T00:00:00+07:00"
+  });
+  const persistentValidation = validatePersistentAuditWritePlan(ledger, persistentWritePlan);
 
   return (
     <>
@@ -31,8 +46,18 @@ export default function AuditPage() {
         </div>
         <div className="panel">
           <h2>Next write guard</h2>
-          <p>Server actions must append AuditLog in the same transaction as clinical writes.</p>
+          <p>{persistentValidation.reason}</p>
+          <p>Mode: {persistentWritePlan.mode}</p>
+          <p>Policy: {persistentWritePlan.mutationPolicy}</p>
         </div>
+      </section>
+      <section className="panel" style={{ marginBottom: 16 }}>
+        <h2>Persistent AuditLog write plan</h2>
+        <p>Server actions must append AuditLog in the same transaction as clinical writes.</p>
+        <p>
+          Next sequence: {persistentWritePlan.auditLogRecord.sequence} / previousHash: {persistentWritePlan.expectedPreviousHash}
+        </p>
+        <p>eventHash: {persistentWritePlan.auditLogRecord.eventHash}</p>
       </section>
       <section className="panel">
         <table className="table">

@@ -22,6 +22,7 @@ RBAC duoc dinh nghia tai `lib/rbac.ts` va `ROLE_MATRIX.md`. Moi hanh dong produc
 ## Audit
 
 Moi hanh dong xem, sua, duyet, xuat, luu tru hoac huy kich hoat can ghi `AuditLog`.
+Moi write action production phai ghi business row va `AuditLog` trong cung transaction, voi `sequence`, `previousHash`, `eventHash` va policy insert-only.
 
 ## Data deletion
 

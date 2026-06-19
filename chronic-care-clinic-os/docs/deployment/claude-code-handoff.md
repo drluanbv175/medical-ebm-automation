@@ -46,6 +46,7 @@ node scripts/sync-check.mjs
 - `/admin/rules`: clinical rule draft workflow now uses `createClinicalRuleDraftAction` preview with `clinical_rules.manage` guard and approval-before-active boundary.
 - `/admin/users`: user invite workflow now uses `inviteUserAction` preview with `user.manage` guard and no-email/no-account-activation boundary.
 - `lib/audit-ledger.ts`: builds and validates an append-only hash-chain audit ledger preview.
+- `lib/audit-storage-contract.ts`: defines persistent AuditLog insert-only write plans with sequence/previousHash/eventHash and same-transaction requirements.
 - `lib/backend-guard.ts` and `lib/rbac.ts`: authorize workflow actions by permission and organization/site scope.
 - `lib/write-action-registry.ts`: tracks guarded preview actions, UI placeholders and production-blocked exports.
 
@@ -72,9 +73,9 @@ node scripts/sync-check.mjs
 
 ## Recommended next tasks
 
-1. Implement persistent append-only AuditLog storage using the same sequence/previousHash/eventHash contract.
-2. Implement real server actions behind `approveCarePlanVersionAction` and `releaseApprovedPatientHandoutAction` only after persistent audit tests exist.
-3. Start persistent append-only AuditLog tests before turning any preview contract into a real server action.
+1. Add reviewed Prisma migration/tests for the AuditLog sequence/previousHash/eventHash fields.
+2. Implement real server actions behind `approveCarePlanVersionAction` and `releaseApprovedPatientHandoutAction` using `buildPersistentAuditWritePlan`.
+3. Keep every server action preview-only until the AuditLog insert and business write commit atomically in tests.
 4. Add A5 PDF generation only after approved-template and consent gates remain covered by tests.
 5. Configure a private Git remote so Windows, MacBook and Claude Code synchronize through Git, not only OneDrive.
 

@@ -21,6 +21,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Patient education release package and `/handouts` gate for approved templates, approved care plans, consent and audit preview before A5 print/release.
 - Preview-only workflow action contracts for future care plan approval and handout release server actions.
 - Append-only audit ledger preview with deterministic hash chain and `/admin/audit` integrity view.
+- Persistent AuditLog write contract with sequence/previousHash/eventHash, insert-only policy and same-transaction business write requirement.
 - Workflow action contracts now call RBAC/backend guard for role, permission and organization/site scope before any future write.
 - Write action registry and `/admin/settings` readiness view identify guarded preview actions, UI placeholders and production-blocked exports.
 - `/overdue` claim-call-task action now has preview-only workflow contract with RBAC guard, reminder-template boundary and audit preview.
@@ -49,7 +50,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Thin vertical slice MVP-01 at UI/domain level.
 - Command Center and Program Registry are deterministic and demo-data backed; they still need persistent task writeback before production use.
 - Backend RBAC is modeled and wired to workflow action contracts; write action registry has guarded-preview contracts for UI write actions and keeps production-blocked exports separate.
-- Audit immutability is documented, domain-guarded and hash-chain previewed, but not persistent end-to-end.
+- Audit immutability is documented, domain-guarded, hash-chain previewed and has a persistent write contract; it still needs real database migrations/server-action wiring.
 - Care plan version history is modeled but not wired to write workflow.
 - Care plan draft, approval package, education release package and workflow action contracts are deterministic and demo-data backed; final approval/writeback still needs server actions, persistent audit logging and immutable version creation.
 - Rule/content approval workflow is modeled but not fully executable.

@@ -479,8 +479,14 @@ model AuditLog {
   afterData  Json?
   ipAddress  String?
   userAgent  String?
+  sequence   Int      @unique
+  previousHash String
+  eventHash  String   @unique
+  immutableAfterAppend Boolean @default(true)
   createdAt  DateTime @default(now())
   user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
 }
 
 model ClinicalRule {

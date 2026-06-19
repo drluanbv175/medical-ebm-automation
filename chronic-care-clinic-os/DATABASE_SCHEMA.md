@@ -42,6 +42,7 @@ Nguon schema executable nam tai `prisma/schema.prisma`.
 - Moi entity lam sang co `createdAt`, `updatedAt` khi phu hop.
 - Khong hard delete ho so lam sang; dung `status`, `archivedAt` hoac version history.
 - AuditLog luu `beforeData` va `afterData` dang JSON, co `ipAddress` va `userAgent`.
+- AuditLog bat buoc co `sequence`, `previousHash`, `eventHash` va `immutableAfterAppend` de ho tro append-only hash chain.
 - Cac truong nhay cam chi hien thi cho role co quyen.
 - Demo seed la du lieu gia lap, khong phai nguoi that.
 - CareRiskAssessment khong duoc xem la final neu thieu `confirmedBy`.

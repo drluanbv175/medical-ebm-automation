@@ -11,6 +11,7 @@
 - Them patient education release package cho `/handouts`, chi cho in loi dan khi template da duyet, care plan APPROVED va consent hop le.
 - Them workflow action contracts preview-only cho ky duyet care plan va phat hanh loi dan, lam cau noi cho server actions co audit/persistence sau nay.
 - Them audit ledger hash-chain preview cho `/admin/audit` de khoa bat bien append-only truoc khi wire server actions that.
+- Them persistent AuditLog write contract voi sequence/previousHash/eventHash, insert-only policy va yeu cau transaction chung voi business write.
 - Noi workflow action contracts voi RBAC/backend guard de khoa role, permission va organization/site scope truoc khi ghi that.
 - Them write action registry tren `/admin/settings` de theo doi nut/luong ghi nao da guard, placeholder hoac bi chan production.
 - Chuyen action `/overdue` nhan task goi nhac sang guarded preview contract voi RBAC, consent/template gate va audit preview.

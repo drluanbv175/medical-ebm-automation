@@ -116,6 +116,10 @@ test("Prisma schema contains core clinical and governance models", () => {
   ]) {
     assert.ok(schema.includes(`model ${model} {`), `${model} model missing`);
   }
+  assert.match(schema, /sequence\s+Int\s+@unique/);
+  assert.match(schema, /previousHash\s+String/);
+  assert.match(schema, /eventHash\s+String\s+@unique/);
+  assert.match(schema, /immutableAfterAppend\s+Boolean\s+@default\(true\)/);
 });
 
 test("demo seed covers 50 fake patients and required scenarios", () => {
@@ -231,6 +235,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/patient-education\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/workflow-actions\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/audit-storage-contract\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/backend-guard\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/rbac\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/write-action-registry\.ts/);
@@ -405,6 +410,7 @@ test("workflow action contracts stay preview-only until persistence exists", () 
 
 test("audit ledger is append-only and hash chained", () => {
   const ledger = read("lib/audit-ledger.ts");
+  const storage = read("lib/audit-storage-contract.ts");
   const auditPage = read("app/admin/audit/page.tsx");
   assert.match(ledger, /buildAuditLedger/);
   assert.match(ledger, /appendAuditEventPreview/);
@@ -413,7 +419,16 @@ test("audit ledger is append-only and hash chained", () => {
   assert.match(ledger, /previousHash/);
   assert.match(ledger, /eventHash/);
   assert.match(ledger, /Audit ledger is append-only and hash chain is intact/);
+  assert.match(storage, /buildPersistentAuditWritePlan/);
+  assert.match(storage, /validatePersistentAuditWritePlan/);
+  assert.match(storage, /PERSISTENT_APPEND_ONLY/);
+  assert.match(storage, /INSERT_ONLY_NO_UPDATE_NO_DELETE/);
+  assert.match(storage, /Commit the business write and AuditLog insert atomically/);
+  assert.match(storage, /Read the latest AuditLog row ordered by sequence inside the same database transaction/);
+  assert.match(storage, /Reject UPDATE_AUDIT_LOG and DELETE_AUDIT_LOG paths/);
   assert.match(auditPage, /Ledger integrity/);
+  assert.match(auditPage, /Persistent AuditLog write plan/);
+  assert.match(auditPage, /Next sequence/);
   assert.match(auditPage, /Normal UI cannot update or delete audit log rows/);
   assert.doesNotMatch(ledger, /DELETE_AUDIT_LOG|UPDATE_AUDIT_LOG/);
 });

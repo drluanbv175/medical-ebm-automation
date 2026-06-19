@@ -17,7 +17,7 @@ This system is not production-ready and must not be used with real patient data 
 
 - Organization/site isolation is modeled but not enforced end-to-end.
 - Backup/restore procedure not tested.
-- Audit log persistence and immutability not implemented.
+- Audit log persistence contract is modeled, but reviewed migration/runtime immutability enforcement is not implemented.
 - No formal data retention/archive policy.
 - No UAT with de-identified workflow data.
 
