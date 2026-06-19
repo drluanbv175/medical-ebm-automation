@@ -8,6 +8,7 @@ export const navItems = [
   { href: "/dashboard/quality", label: "Chat luong" },
   { href: "/patients", label: "Nguoi benh" },
   { href: "/appointments", label: "Hen" },
+  { href: "/visits/prep", label: "Chuan bi kham" },
   { href: "/visits/initial", label: "Kham lan dau" },
   { href: "/visits/follow-up", label: "Tai kham" },
   { href: "/medications", label: "Thuoc" },

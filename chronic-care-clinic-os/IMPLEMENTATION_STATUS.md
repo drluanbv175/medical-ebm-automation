@@ -15,6 +15,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Care orchestration engine that converts risk, abnormal labs, medication review needs, missed follow-up, post-discharge status and care-plan approval gaps into a prioritized command-center queue.
 - `/command-center` page for cross-role chronic care coordination with SLA, assigned role, safety communication gate and physician-confirmation requirement.
 - Chronic care program registry for hypertension, type 2 diabetes, dyslipidemia, CKD, heart failure/post-discharge and polypharmacy, with `/programs` population view and monitoring-gap detection.
+- Pre-visit packet generator and `/visits/prep` page for nurse/physician preparation, medication questions, lab review prompts and safety boundaries before visits.
 - MVP-01 workflow definition and `/mvp-01` page.
 - Production blockers, MVP-01 acceptance test, demo guide, limitations and signoff templates.
 - Offline tests updated and passing for docs/schema/RBAC/safety/automation/MVP-01/command-center.

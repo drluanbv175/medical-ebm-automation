@@ -166,6 +166,7 @@ test("all requested route families have implementation pages", () => {
     "patients/page.tsx",
     "patients/[id]/page.tsx",
     "appointments/page.tsx",
+    "visits/prep/page.tsx",
     "visits/initial/page.tsx",
     "visits/follow-up/page.tsx",
     "care-plans/page.tsx",
@@ -213,6 +214,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
   assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
   assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /lib\/visit-prep\.ts/);
   assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
   assert.match(read("scripts/sync-check.mjs"), /No git remote configured/);
   assert.match(read("docs/deployment/sync-mac-windows-claude-code.md"), /Windows, MacBook and Claude Code/);
@@ -248,6 +250,19 @@ test("program registry tracks chronic disease monitoring without prescribing", (
   assert.match(registry, /ProgramMonitorStatus/);
   assert.match(page, /Chuong trinh quan ly benh man/);
   assert.doesNotMatch(registry, /ke don|prescribe|AUTO_PRESCRIBE/i);
+});
+
+test("pre-visit packet prepares visits without treatment automation", () => {
+  const prep = read("lib/visit-prep.ts");
+  const page = read("app/visits/prep/page.tsx");
+  const patientDetail = read("app/patients/[id]/page.tsx");
+  assert.match(prep, /buildVisitPrepPacket/);
+  assert.match(prep, /buildVisitPrepQueue/);
+  assert.match(prep, /safetyBoundary/);
+  assert.match(prep, /Khong tu chan doan/);
+  assert.match(page, /Chuan bi truoc buoi kham/);
+  assert.match(patientDetail, /Packet truoc kham/);
+  assert.doesNotMatch(prep, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
 });
 
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {

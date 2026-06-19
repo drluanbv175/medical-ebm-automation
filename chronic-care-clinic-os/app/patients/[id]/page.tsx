@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import { RiskBadge, StatusBadge } from "@/components/Badge";
 import { PageHeader } from "@/components/PageHeader";
+import { WorkflowChecklist } from "@/components/WorkflowChecklist";
 import { assessRisk } from "@/lib/clinical-safety";
 import { getPatient } from "@/lib/seed-data";
+import { buildVisitPrepPacket } from "@/lib/visit-prep";
 
 export default function PatientDetailPage({ params }: { params: { id: string } }) {
   const patient = getPatient(params.id);
   if (!patient) notFound();
   const assessment = assessRisk(patient);
+  const prepPacket = buildVisitPrepPacket(patient);
 
   return (
     <>
@@ -54,6 +57,31 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
               <RiskBadge level={rule.severity} /> {rule.ruleDescription}
             </p>
           ))}
+        </div>
+      </section>
+
+      <section className="grid cols-2" style={{ marginTop: 16 }}>
+        <div className="panel">
+          <h2>Packet truoc kham</h2>
+          <WorkflowChecklist
+            steps={prepPacket.checklist.map((item) => ({
+              label: item.label,
+              done: item.done,
+              note: `${item.ownerRole} - ${item.note}`
+            }))}
+          />
+        </div>
+        <div className="panel">
+          <h2>Can xem truoc khi gap bac si</h2>
+          {prepPacket.clinicianReviewItems.length === 0 ? (
+            <p>Khong co muc uu tien bac si trong demo.</p>
+          ) : (
+            prepPacket.clinicianReviewItems.slice(0, 5).map((item) => (
+              <p key={item.id}>
+                <StatusBadge>{item.priority}</StatusBadge> {item.title}
+              </p>
+            ))
+          )}
         </div>
       </section>
 
