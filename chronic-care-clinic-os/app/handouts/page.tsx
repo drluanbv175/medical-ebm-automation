@@ -1,8 +1,13 @@
 import { PageHeader } from "@/components/PageHeader";
+import { StatusBadge } from "@/components/Badge";
+import { WorkflowChecklist } from "@/components/WorkflowChecklist";
+import { buildPatientEducationReleasePackage, buildPatientEducationReleaseQueue } from "@/lib/patient-education";
 import { patients } from "@/lib/seed-data";
 
 export default function HandoutsPage() {
   const patient = patients.find((item) => item.carePlan.status === "APPROVED") ?? patients[0];
+  const releasePackage = buildPatientEducationReleasePackage(patient);
+  const queue = buildPatientEducationReleaseQueue(patients);
   return (
     <>
       <PageHeader
@@ -22,6 +27,48 @@ export default function HandoutsPage() {
           </>
         }
       />
+      <section className="grid cols-2" style={{ marginBottom: 16 }}>
+        <div className="panel">
+          <h2>Dieu kien phat hanh</h2>
+          <p>
+            Trang thai: <StatusBadge>{releasePackage.releaseStatus}</StatusBadge>
+          </p>
+          <p>{releasePackage.safetyBoundary}</p>
+          <WorkflowChecklist
+            steps={[
+              {
+                label: "Template giao duc da duyet",
+                done: releasePackage.template.status === "APPROVED",
+                note: `${releasePackage.template.title} - ${releasePackage.template.version}`
+              },
+              {
+                label: "Care plan da APPROVED",
+                done: patient.carePlan.status === "APPROVED",
+                note: patient.carePlan.status
+              },
+              {
+                label: "Consent giao tiep hop le",
+                done: patient.consentStatus === "SIGNED",
+                note: patient.consentStatus
+              },
+              {
+                label: "Dieu kien giao tiep bang template",
+                done: releasePackage.patientMessageAllowed,
+                note: releasePackage.patientMessageAllowed
+                  ? "Du dieu kien template/consent; demo van khong tu dong gui"
+                  : "Chi in/preview trong demo"
+              }
+            ]}
+          />
+        </div>
+        <div className="panel">
+          <h2>Hang doi loi dan</h2>
+          <p>San sang in: {queue.filter((item) => item.printAllowed).length}</p>
+          <p>Can bo sung dieu kien: {queue.filter((item) => !item.printAllowed).length}</p>
+          <p>Audit preview: {releasePackage.auditPreview.summary}</p>
+          <p>Template review date: {releasePackage.template.reviewDate}</p>
+        </div>
+      </section>
       <article className="handout">
         <h2>Loi dan sau kham</h2>
         <p>
@@ -48,6 +95,9 @@ export default function HandoutsPage() {
         <p>
           <strong>Ngay tai kham:</strong> {patient.carePlan.nextFollowUpDate}
         </p>
+        {releasePackage.handoutSections.slice(4).map((section) => (
+          <p key={section}>{section}</p>
+        ))}
         <div className="danger-box">
           Khi co dau nguc cap, kho tho cap, dau than kinh khu tru, ngat, lu lan, ha duong huyet nang, non/dau bung/roi loan y thuc
           hoac bat ky trieu chung nguy hiem: can lien he co so y te phu hop hoac cap cuu theo danh gia chuyen mon.

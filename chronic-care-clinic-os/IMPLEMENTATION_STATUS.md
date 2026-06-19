@@ -18,6 +18,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Pre-visit packet generator and `/visits/prep` page for nurse/physician preparation, medication questions, lab review prompts and safety boundaries before visits.
 - Physician-approved care plan draft generator and `/care-plans` workspace for post-visit goals, monitoring plan, medication review, labs, referrals, patient education and safety-netting without automatic treatment changes.
 - Preview-only care plan approval package with signoff gates, CarePlanVersion metadata and AuditLog preview before persistent writeback exists.
+- Patient education release package and `/handouts` gate for approved templates, approved care plans, consent and audit preview before A5 print/release.
 - MVP-01 workflow definition and `/mvp-01` page.
 - Production blockers, MVP-01 acceptance test, demo guide, limitations and signoff templates.
 - Offline tests updated and passing for docs/schema/RBAC/safety/automation/MVP-01/command-center.
@@ -38,7 +39,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Backend RBAC is modeled but not wired to every route/action.
 - Audit immutability is documented and domain-guarded, but not persistent end-to-end.
 - Care plan version history is modeled but not wired to write workflow.
-- Care plan draft and approval package are deterministic and demo-data backed; final approval/writeback still needs server actions, persistent audit logging and immutable version creation.
+- Care plan draft, approval package and education release package are deterministic and demo-data backed; final approval/writeback still needs server actions, persistent audit logging and immutable version creation.
 - Rule/content approval workflow is modeled but not fully executable.
 
 ## Chua hoan thanh

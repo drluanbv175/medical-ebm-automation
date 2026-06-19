@@ -8,6 +8,7 @@
 - Them pre-visit packet va trang `/visits/prep` de chuan bi checklist truoc kham, lab/thuoc can xem va cau hoi dieu duong.
 - Them care plan draft workspace tren `/care-plans` de tao ban nhap sau kham can bac si duyet, gom muc tieu, monitor, lab, thuoc, chuyen tuyen, loi dan va safety-netting.
 - Them care plan approval package preview-only de kiem tra gate phe duyet, tao CarePlanVersion preview va AuditLog preview truoc khi co server action ghi that.
+- Them patient education release package cho `/handouts`, chi cho in loi dan khi template da duyet, care plan APPROVED va consent hop le.
 - Cap nhat trang tong quan va task page dung hang doi dieu phoi tu dong.
 - Them test khoa chan an toan: khong tu dong dieu tri, khong gui tin nhan dieu tri va moi gap lam sang can bac si xac nhan.
 

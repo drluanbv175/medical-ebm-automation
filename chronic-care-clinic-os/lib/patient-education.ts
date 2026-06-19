@@ -1,0 +1,169 @@
+import { isPatientCommunicationAllowed } from "./automation";
+import type { AuditEvent } from "./audit";
+import type { Patient } from "./types";
+
+export type EducationTemplate = {
+  templateId: string;
+  title: string;
+  conditionKeywords: string[];
+  version: string;
+  status: "APPROVED" | "DRAFT" | "RETIRED";
+  approvedBy: string;
+  approvedAt: string;
+  reviewDate: string;
+  sections: string[];
+};
+
+export type PatientEducationReleasePackage = {
+  packageId: string;
+  patientId: string;
+  patientName: string;
+  medicalRecordNumber: string;
+  template: EducationTemplate;
+  releaseStatus: "READY_TO_PRINT_APPROVED_HANDOUT" | "BLOCKED_REQUIRES_APPROVAL_OR_CONSENT";
+  printAllowed: boolean;
+  patientMessageAllowed: boolean;
+  blockedReasons: string[];
+  handoutSections: string[];
+  auditPreview: AuditEvent;
+  safetyBoundary: string;
+};
+
+export const educationTemplates: EducationTemplate[] = [
+  {
+    templateId: "edu-htn-2026-06",
+    title: "Tang huyet ap",
+    conditionKeywords: ["Hypertension"],
+    version: "2026.06",
+    status: "APPROVED",
+    approvedBy: "Clinical education board",
+    approvedAt: "2026-06-18T10:00:00+07:00",
+    reviewDate: "2026-09-18",
+    sections: [
+      "Do huyet ap theo huong dan da duoc bac si xac nhan va ghi lai de mang khi tai kham.",
+      "Dung thuoc theo don dang co; khong tu y them, bot hoac doi lieu.",
+      "Can danh gia y te truc tiep ngay neu dau nguc cap, kho tho cap, yeu liet, ngat hoac lu lan."
+    ]
+  },
+  {
+    templateId: "edu-dm-2026-06",
+    title: "Dai thao duong type 2",
+    conditionKeywords: ["Type 2 Diabetes"],
+    version: "2026.06",
+    status: "APPROVED",
+    approvedBy: "Clinical education board",
+    approvedAt: "2026-06-18T10:00:00+07:00",
+    reviewDate: "2026-09-18",
+    sections: [
+      "Theo doi duong huyet tai nha neu da duoc huong dan va mang so ghi khi tai kham.",
+      "Duy tri an uong, van dong va dung thuoc theo ke hoach da duoc bac si phe duyet.",
+      "Can lien he y te phu hop neu ha duong huyet nang, non/roi loan y thuc hoac dau hieu nguy hiem."
+    ]
+  },
+  {
+    templateId: "edu-ckd-2026-06",
+    title: "Benh than man",
+    conditionKeywords: ["Chronic Kidney Disease"],
+    version: "2026.06",
+    status: "APPROVED",
+    approvedBy: "Clinical education board",
+    approvedAt: "2026-06-18T10:00:00+07:00",
+    reviewDate: "2026-09-18",
+    sections: [
+      "Lam xet nghiem va tai kham theo lich da co trong care plan duoc phe duyet.",
+      "Thong bao voi bac si/duoc si tat ca thuoc OTC, thao duoc va thuc pham bo sung dang dung.",
+      "Khong tu y dung them thuoc giam dau/khuyen mai neu chua duoc nhan vien y te phu hop xac nhan."
+    ]
+  },
+  {
+    templateId: "edu-post-discharge-2026-06",
+    title: "Sau xuat vien",
+    conditionKeywords: ["Heart Failure", "Coronary Artery Disease"],
+    version: "2026.06",
+    status: "APPROVED",
+    approvedBy: "Clinical education board",
+    approvedAt: "2026-06-18T10:00:00+07:00",
+    reviewDate: "2026-09-18",
+    sections: [
+      "Mang giay ra vien, don thuoc va cac ket qua xet nghiem/hinh anh khi tai kham.",
+      "Doi chieu thuoc sau xuat vien voi dieu duong/duoc si truoc khi chot care plan moi.",
+      "Can danh gia ngay neu kho tho tang, dau nguc, phu nhanh, ngat, lu lan hoac trieu chung nang len."
+    ]
+  }
+];
+
+export function buildPatientEducationReleasePackage(
+  patient: Patient,
+  today = "2026-06-19"
+): PatientEducationReleasePackage {
+  const template = selectEducationTemplate(patient);
+  const hasApprovedTemplate = template.status === "APPROVED";
+  const hasApprovedCarePlan = patient.carePlan.status === "APPROVED";
+  const hasConsent = patient.consentStatus === "SIGNED";
+  const blockedReasons = [
+    ...(!hasApprovedTemplate ? ["Template chua duoc phe duyet."] : []),
+    ...(!hasApprovedCarePlan ? [`Care plan hien tai la ${patient.carePlan.status}, chua duoc APPROVED.`] : []),
+    ...(!hasConsent ? [`Consent hien tai la ${patient.consentStatus}.`] : [])
+  ];
+  const printAllowed = blockedReasons.length === 0;
+  const patientMessageAllowed = isPatientCommunicationAllowed("APPROVED_EDUCATION_READY", hasApprovedTemplate, hasConsent);
+
+  return {
+    packageId: `education-${patient.id}-${template.templateId}-${today}`,
+    patientId: patient.id,
+    patientName: patient.fullName,
+    medicalRecordNumber: patient.medicalRecordNumber,
+    template,
+    releaseStatus: printAllowed ? "READY_TO_PRINT_APPROVED_HANDOUT" : "BLOCKED_REQUIRES_APPROVAL_OR_CONSENT",
+    printAllowed,
+    patientMessageAllowed: printAllowed && patientMessageAllowed,
+    blockedReasons,
+    handoutSections: buildHandoutSections(patient, template),
+    auditPreview: {
+      id: `audit-education-preview-${patient.id}-${today}`,
+      actor: "SYSTEM_PREVIEW",
+      actorRole: "READ_ONLY_AUDITOR",
+      actionType: "CREATE",
+      entityType: "PatientHandout",
+      entityId: patient.id,
+      summary: printAllowed
+        ? "Tao preview loi dan A5 tu template da duyet; chua ghi production."
+        : "Chan phat hanh loi dan vi thieu phe duyet care plan, template hoac consent.",
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    safetyBoundary:
+      "Goi loi dan chi dung template da duyet, khong tu dong gui cho nguoi benh va khong thay the don thuoc/chan doan/cap cuu."
+  };
+}
+
+export function buildPatientEducationReleaseQueue(
+  patients: Patient[],
+  today = "2026-06-19"
+): PatientEducationReleasePackage[] {
+  return patients
+    .map((patient) => buildPatientEducationReleasePackage(patient, today))
+    .sort(
+      (a, b) =>
+        Number(b.printAllowed) - Number(a.printAllowed) ||
+        b.blockedReasons.length - a.blockedReasons.length
+    );
+}
+
+function selectEducationTemplate(patient: Patient): EducationTemplate {
+  return (
+    educationTemplates.find((template) =>
+      patient.conditions.some((condition) => template.conditionKeywords.includes(condition.conditionName))
+    ) ?? educationTemplates[0]
+  );
+}
+
+function buildHandoutSections(patient: Patient, template: EducationTemplate): string[] {
+  return [
+    `Nguoi benh: ${patient.fullName} (${patient.medicalRecordNumber}).`,
+    `Benh man trong ho so: ${patient.conditions.map((condition) => condition.conditionName).join(", ")}.`,
+    `Template: ${template.title}, version ${template.version}, duyet boi ${template.approvedBy}.`,
+    `Ngay tai kham: ${patient.carePlan.nextFollowUpDate ?? "can bac si xac nhan"}.`,
+    ...template.sections,
+    "Neu co trieu chung nguy hiem, can lien he co so y te phu hop hoac cap cuu theo danh gia chuyen mon."
+  ];
+}

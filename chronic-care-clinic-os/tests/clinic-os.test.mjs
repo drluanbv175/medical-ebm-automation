@@ -214,9 +214,11 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
   assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/handouts\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-approval\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-draft\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/patient-education\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/visit-prep\.ts/);
   assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
   assert.match(read("scripts/sync-check.mjs"), /No git remote configured/);
@@ -299,6 +301,23 @@ test("care plan approval package is preview-only with version and audit guardrai
   assert.match(page, /Version va audit preview/);
   assert.match(page, /gate bi chan/);
   assert.doesNotMatch(approval, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
+});
+
+test("patient education package uses approved templates without auto messaging", () => {
+  const education = read("lib/patient-education.ts");
+  const page = read("app/handouts/page.tsx");
+  assert.match(education, /educationTemplates/);
+  assert.match(education, /buildPatientEducationReleasePackage/);
+  assert.match(education, /buildPatientEducationReleaseQueue/);
+  assert.match(education, /READY_TO_PRINT_APPROVED_HANDOUT/);
+  assert.match(education, /BLOCKED_REQUIRES_APPROVAL_OR_CONSENT/);
+  assert.match(education, /isPatientCommunicationAllowed/);
+  assert.match(education, /PatientHandout/);
+  assert.match(education, /khong tu dong gui cho nguoi benh/i);
+  assert.match(page, /Dieu kien phat hanh/);
+  assert.match(page, /Hang doi loi dan/);
+  assert.match(page, /demo van khong tu dong gui/);
+  assert.doesNotMatch(education, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
 });
 
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {
