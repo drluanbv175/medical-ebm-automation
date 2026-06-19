@@ -2,12 +2,16 @@ import Link from "next/link";
 import { StatusBadge } from "@/components/Badge";
 import { PageHeader } from "@/components/PageHeader";
 import { WorkflowChecklist } from "@/components/WorkflowChecklist";
+import { buildCarePlanApprovalQueue } from "@/lib/care-plan-approval";
 import { buildCarePlanDraftQueue } from "@/lib/care-plan-draft";
 import { patients } from "@/lib/seed-data";
 
 export default function CarePlansPage() {
   const drafts = buildCarePlanDraftQueue(patients);
+  const approvalPackages = buildCarePlanApprovalQueue(patients);
   const focusDraft = drafts[0];
+  const focusApproval =
+    approvalPackages.find((approvalPackage) => approvalPackage.patientId === focusDraft?.patientId) ?? approvalPackages[0];
 
   return (
     <>
@@ -72,6 +76,37 @@ export default function CarePlansPage() {
         </>
       ) : null}
 
+      {focusApproval ? (
+        <section className="grid cols-2" style={{ marginTop: 16 }}>
+          <div className="panel">
+            <h2>Goi phe duyet</h2>
+            <p>
+              Trang thai: <StatusBadge>{focusApproval.gateStatus}</StatusBadge>
+            </p>
+            <p>{focusApproval.safetyBoundary}</p>
+            <WorkflowChecklist
+              steps={focusApproval.gates.map((gate) => ({
+                label: gate.label,
+                done: gate.status === "PASS",
+                note: `${gate.ownerRole} - ${gate.evidence}`
+              }))}
+            />
+          </div>
+          <div className="panel">
+            <h2>Version va audit preview</h2>
+            <p>
+              Version du kien: <strong>{focusApproval.versionPreview.versionId}</strong>
+            </p>
+            <p>Che do ghi: {focusApproval.writebackMode}</p>
+            <p>Audit preview: {focusApproval.auditPreview.summary}</p>
+            <h3>Huong dan ky duyet</h3>
+            {focusApproval.signoffInstructions.map((instruction) => (
+              <p key={instruction}>{instruction}</p>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="panel">
         <h2>Danh sach care plan</h2>
         <table className="table">
@@ -83,11 +118,13 @@ export default function CarePlansPage() {
               <th>Trang thai</th>
               <th>Tai kham</th>
               <th>Draft gaps</th>
+              <th>Phe duyet</th>
             </tr>
           </thead>
           <tbody>
             {patients.map((patient) => {
               const draft = drafts.find((item) => item.patientId === patient.id);
+              const approvalPackage = approvalPackages.find((item) => item.patientId === patient.id);
               return (
                 <tr key={patient.carePlan.id}>
                   <td>{patient.fullName}</td>
@@ -98,6 +135,16 @@ export default function CarePlansPage() {
                   </td>
                   <td>{patient.carePlan.nextFollowUpDate}</td>
                   <td>{draft ? draft.sourceGapIds.length : 0}</td>
+                  <td>
+                    {approvalPackage ? (
+                      <>
+                        <StatusBadge>{approvalPackage.gateStatus}</StatusBadge>
+                        <div className="eyebrow">{approvalPackage.blockedReasons.length} gate bi chan</div>
+                      </>
+                    ) : (
+                      "Khong co draft"
+                    )}
+                  </td>
                 </tr>
               );
             })}

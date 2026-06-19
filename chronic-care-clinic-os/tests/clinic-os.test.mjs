@@ -215,6 +215,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /lib\/care-plan-approval\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-draft\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/visit-prep\.ts/);
   assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
@@ -281,6 +282,23 @@ test("care plan draft workspace requires physician approval before use", () => {
   assert.match(page, /Draft uu tien/);
   assert.match(page, /Checklist phe duyet/);
   assert.doesNotMatch(draft, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
+});
+
+test("care plan approval package is preview-only with version and audit guardrails", () => {
+  const approval = read("lib/care-plan-approval.ts");
+  const page = read("app/care-plans/page.tsx");
+  assert.match(approval, /buildCarePlanApprovalPackage/);
+  assert.match(approval, /buildCarePlanApprovalQueue/);
+  assert.match(approval, /READY_FOR_PHYSICIAN_SIGNOFF/);
+  assert.match(approval, /BLOCKED_REQUIRES_DIRECT_REVIEW/);
+  assert.match(approval, /CarePlanVersion/);
+  assert.match(approval, /AuditEvent/);
+  assert.match(approval, /PREVIEW_ONLY_REQUIRES_SERVER_ACTION_AND_AUDIT/);
+  assert.match(approval, /khong ghi DB, khong ky thay bac si/i);
+  assert.match(page, /Goi phe duyet/);
+  assert.match(page, /Version va audit preview/);
+  assert.match(page, /gate bi chan/);
+  assert.doesNotMatch(approval, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
 });
 
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {

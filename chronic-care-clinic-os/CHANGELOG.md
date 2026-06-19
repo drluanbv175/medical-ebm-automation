@@ -7,6 +7,7 @@
 - Them chronic care program registry va trang `/programs` de theo doi bao phu chuong trinh, monitor sap den han/qua han/thieu du lieu.
 - Them pre-visit packet va trang `/visits/prep` de chuan bi checklist truoc kham, lab/thuoc can xem va cau hoi dieu duong.
 - Them care plan draft workspace tren `/care-plans` de tao ban nhap sau kham can bac si duyet, gom muc tieu, monitor, lab, thuoc, chuyen tuyen, loi dan va safety-netting.
+- Them care plan approval package preview-only de kiem tra gate phe duyet, tao CarePlanVersion preview va AuditLog preview truoc khi co server action ghi that.
 - Cap nhat trang tong quan va task page dung hang doi dieu phoi tu dong.
 - Them test khoa chan an toan: khong tu dong dieu tri, khong gui tin nhan dieu tri va moi gap lam sang can bac si xac nhan.
 
