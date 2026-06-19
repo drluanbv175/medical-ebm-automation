@@ -2,9 +2,11 @@
   "extends": "./tsconfig.json",
   "include": [
     "app/command-center/page.tsx",
+    "app/care-plans/page.tsx",
     "app/patients/[id]/page.tsx",
     "app/programs/page.tsx",
     "app/visits/prep/page.tsx",
+    "lib/care-plan-draft.ts",
     "lib/care-orchestrator.ts",
     "lib/program-registry.ts",
     "lib/visit-prep.ts",

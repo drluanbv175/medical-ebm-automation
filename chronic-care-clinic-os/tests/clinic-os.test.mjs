@@ -213,7 +213,9 @@ test("automation rules define the 12 required core automations", () => {
 test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
   assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
+  assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /lib\/care-plan-draft\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/visit-prep\.ts/);
   assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
   assert.match(read("scripts/sync-check.mjs"), /No git remote configured/);
@@ -263,6 +265,22 @@ test("pre-visit packet prepares visits without treatment automation", () => {
   assert.match(page, /Chuan bi truoc buoi kham/);
   assert.match(patientDetail, /Packet truoc kham/);
   assert.doesNotMatch(prep, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
+});
+
+test("care plan draft workspace requires physician approval before use", () => {
+  const draft = read("lib/care-plan-draft.ts");
+  const page = read("app/care-plans/page.tsx");
+  assert.match(draft, /buildCarePlanDraft/);
+  assert.match(draft, /buildCarePlanDraftQueue/);
+  assert.match(draft, /DRAFT_REQUIRES_PHYSICIAN_APPROVAL/);
+  assert.match(draft, /requiresPhysicianApproval: true/);
+  assert.match(draft, /approvalChecklist/);
+  assert.match(draft, /Khong tu dong de xuat them\/bot\/doi thuoc/);
+  assert.match(draft, /khong tu chan doan, khong tu ke don, khong tu thay doi dieu tri/i);
+  assert.match(page, /Ke hoach cham soc can bac si duyet/);
+  assert.match(page, /Draft uu tien/);
+  assert.match(page, /Checklist phe duyet/);
+  assert.doesNotMatch(draft, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
 });
 
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {
