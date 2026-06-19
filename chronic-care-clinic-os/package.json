@@ -9,8 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "node --test tests/*.test.mjs",
+    "typecheck:app": "tsc -p tsconfig.check.json --noEmit",
     "sync:check": "node scripts/sync-check.mjs",
-    "check": "node --test tests/*.test.mjs && node scripts/sync-check.mjs",
+    "check": "node --test tests/*.test.mjs && tsc -p tsconfig.check.json --noEmit && node scripts/sync-check.mjs",
     "seed": "prisma db seed",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"

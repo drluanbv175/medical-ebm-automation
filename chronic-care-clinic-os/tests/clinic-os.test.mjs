@@ -158,6 +158,7 @@ test("all requested route families have implementation pages", () => {
   for (const route of [
     "mvp-01/page.tsx",
     "command-center/page.tsx",
+    "programs/page.tsx",
     "login/page.tsx",
     "dashboard/doctor/page.tsx",
     "dashboard/nurse/page.tsx",
@@ -210,6 +211,8 @@ test("automation rules define the 12 required core automations", () => {
 
 test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
+  assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
+  assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
   assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
   assert.match(read("scripts/sync-check.mjs"), /No git remote configured/);
   assert.match(read("docs/deployment/sync-mac-windows-claude-code.md"), /Windows, MacBook and Claude Code/);
@@ -223,6 +226,8 @@ test("command center orchestrates care gaps without unsafe treatment automation"
   const commandCenterPage = read("app/command-center/page.tsx");
   assert.match(orchestrator, /buildCommandCenterSnapshot/);
   assert.match(orchestrator, /buildCareGaps/);
+  assert.match(orchestrator, /PROGRAM_MONITORING/);
+  assert.match(orchestrator, /reviewProgramEnrollments/);
   assert.match(orchestrator, /requiresPhysicianConfirmation: true/);
   assert.match(orchestrator, /isPatientCommunicationAllowed/);
   assert.match(orchestrator, /patientCommunicationAllowed: false/);
@@ -230,6 +235,19 @@ test("command center orchestrates care gaps without unsafe treatment automation"
   assert.match(commandCenterPage, /Dieu phoi tu dong benh man/);
   assert.match(commandCenterPage, /Khong gui tin nhan tu dong/);
   assert.doesNotMatch(orchestrator, /PRESCRIBE|AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE/);
+});
+
+test("program registry tracks chronic disease monitoring without prescribing", () => {
+  const registry = read("lib/program-registry.ts");
+  const page = read("app/programs/page.tsx");
+  for (const program of ["HYPERTENSION", "TYPE_2_DIABETES", "DYSLIPIDEMIA", "CKD", "HEART_FAILURE", "POLYPHARMACY"]) {
+    assert.match(registry, new RegExp(program), `${program} missing`);
+  }
+  assert.match(registry, /buildProgramRegistrySnapshot/);
+  assert.match(registry, /reviewProgramEnrollments/);
+  assert.match(registry, /ProgramMonitorStatus/);
+  assert.match(page, /Chuong trinh quan ly benh man/);
+  assert.doesNotMatch(registry, /ke don|prescribe|AUTO_PRESCRIBE/i);
 });
 
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {

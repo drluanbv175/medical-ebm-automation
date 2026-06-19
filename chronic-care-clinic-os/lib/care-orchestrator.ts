@@ -1,5 +1,6 @@
 import { assessRisk, hasDuplicateMedicationClass } from "./clinical-safety";
 import { isPatientCommunicationAllowed } from "./automation";
+import { reviewProgramEnrollments } from "./program-registry";
 import type { Patient, RiskLevel, Role } from "./types";
 
 export type CareGapCategory =
@@ -10,7 +11,8 @@ export type CareGapCategory =
   | "CARE_PLAN"
   | "EDUCATION"
   | "POST_DISCHARGE"
-  | "ADHERENCE";
+  | "ADHERENCE"
+  | "PROGRAM_MONITORING";
 
 export type CareGapPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
@@ -48,6 +50,7 @@ export type CommandCenterSnapshot = {
   labReviewQueue: number;
   medicationReviewQueue: number;
   followUpRecoveryQueue: number;
+  programMonitoringQueue: number;
   queue: CareGap[];
 };
 
@@ -82,6 +85,7 @@ export function buildCommandCenterSnapshot(patients: Patient[], today = "2026-06
     labReviewQueue: queue.filter((gap) => gap.category === "LAB_REVIEW").length,
     medicationReviewQueue: queue.filter((gap) => gap.category === "MEDICATION").length,
     followUpRecoveryQueue: queue.filter((gap) => gap.category === "FOLLOW_UP").length,
+    programMonitoringQueue: queue.filter((gap) => gap.category === "PROGRAM_MONITORING").length,
     queue
   };
 }
@@ -212,6 +216,25 @@ export function buildCareGaps(patient: Patient, today = "2026-06-19"): CareGap[]
         sourceRules: ["AUTO-011"]
       })
     );
+  }
+
+  for (const review of reviewProgramEnrollments(patient, today)) {
+    for (const monitor of review.monitors.filter((item) => item.status !== "CURRENT")) {
+      gaps.push(
+        careGap(patient, {
+          category: "PROGRAM_MONITORING",
+          priority: monitor.status === "OVERDUE" || monitor.status === "MISSING" ? "MEDIUM" : "LOW",
+          riskLevel: review.riskLevel,
+          assignedRole: monitor.assignedRole,
+          dueDate: monitor.dueDate ?? today,
+          title: `${review.programName}: ${monitor.label}`,
+          reason: `${monitor.reason} Trang thai: ${monitor.status}.`,
+          recommendedAction: "Bo sung du lieu theo doi hoac len lich theo SOP; neu thay doi quyet dinh lam sang thi can bac si xac nhan.",
+          patientCommunicationAllowed: false,
+          sourceRules: [`PROGRAM-${review.programId}`, monitor.monitorId]
+        })
+      );
+    }
   }
 
   return deduplicateGaps(gaps).sort(compareCareGaps);

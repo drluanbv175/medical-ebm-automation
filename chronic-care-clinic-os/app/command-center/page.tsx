@@ -41,7 +41,7 @@ export default function CommandCenterPage() {
         <StatCard label="Duyet care plan" value={snapshot.carePlanApprovalQueue} />
         <StatCard label="Lab can review" value={snapshot.labReviewQueue} />
         <StatCard label="Ra soat thuoc" value={snapshot.medicationReviewQueue} />
-        <StatCard label="Khoi phuc tai kham" value={snapshot.followUpRecoveryQueue} />
+        <StatCard label="Theo doi chuong trinh" value={snapshot.programMonitoringQueue} />
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>

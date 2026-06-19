@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "app/command-center/page.tsx",
+    "app/programs/page.tsx",
+    "lib/care-orchestrator.ts",
+    "lib/program-registry.ts",
+    "lib/seed-data.ts",
+    "lib/types.ts",
+    "lib/clinical-safety.ts",
+    "lib/automation.ts",
+    "components/Badge.tsx",
+    "components/PageHeader.tsx",
+    "components/StatCard.tsx"
+  ],
+  "exclude": ["prisma"]
+}

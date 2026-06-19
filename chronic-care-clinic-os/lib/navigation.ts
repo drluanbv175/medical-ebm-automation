@@ -1,6 +1,7 @@
 export const navItems = [
   { href: "/", label: "Tong quan" },
   { href: "/command-center", label: "Dieu phoi" },
+  { href: "/programs", label: "Chuong trinh" },
   { href: "/mvp-01", label: "MVP-01" },
   { href: "/dashboard/doctor", label: "Bac si" },
   { href: "/dashboard/nurse", label: "Dieu duong" },
