@@ -72,11 +72,18 @@ không bị trôi/sai khi sửa về sau.
 
 ## In Progress
 
-(none)
+| Task | Noi dung | DoD | Depends | Status |
+|------|----------|-----|---------|--------|
+| CCOS-05 | Chronic Care Clinic OS handoff cho Claude Code: cap nhat `CLAUDE.md`, tao handoff manifest, va bat `sync-check` kiem tra scope hien tai. `[tdd:required]` | Claude Code doc tro toi `chronic-care-clinic-os`; `pnpm sync:check`, offline tests va typecheck xanh; commit scoped | CCOS-04 | cc:done |
 
 ## Completed
 
 - [x] Harness initialized for project `pm:approved` (2026-06-07)
+- [x] CCOS-01 Command Center + care orchestration queue `cc:done`
+- [x] CCOS-02 Program registry + pre-visit packet `cc:done`
+- [x] CCOS-03 Care plan draft + approval guardrails `cc:done`
+- [x] CCOS-04 Approved patient education handout gate `cc:done`
+- [x] CCOS-05 Claude Code handoff + sync guard `cc:done`
 
 ## Archive
 
@@ -99,6 +106,6 @@ TDD tags: `[tdd:required]` = viết test thất bại trước; `[tdd:skip:<lý 
 
 ## Last Update
 
-- **Updated at**: 2026-06-07
-- **Last session owner**: Claude Code
+- **Updated at**: 2026-06-19
+- **Last session owner**: Codex
 - **Branch**: main

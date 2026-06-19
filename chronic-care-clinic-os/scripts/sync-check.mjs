@@ -50,6 +50,18 @@ else fail("AGENTS.md is missing");
 if (existsSync(join(repoRoot, "CLAUDE.md"))) pass("CLAUDE.md is present");
 else fail("CLAUDE.md is missing");
 
+if (fileIncludes("CLAUDE.md", "Current Active Subproject: Chronic Care Clinic OS")) {
+  pass("CLAUDE.md points Claude Code to Chronic Care Clinic OS");
+} else {
+  fail("CLAUDE.md does not point Claude Code to Chronic Care Clinic OS");
+}
+
+if (fileIncludes("chronic-care-clinic-os/docs/deployment/claude-code-handoff.md", "Safety boundaries that must stay true")) {
+  pass("Claude Code handoff manifest is present");
+} else {
+  fail("Claude Code handoff manifest is missing");
+}
+
 if (existsSync(join(appRoot, "pnpm-lock.yaml"))) pass("pnpm-lock.yaml pins app dependencies");
 else fail("pnpm-lock.yaml is missing");
 

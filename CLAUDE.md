@@ -29,6 +29,32 @@ This file contains only Claude Code-specific instructions.
 
 ---
 
+## 0.1 Current Active Subproject: Chronic Care Clinic OS
+
+- **Folder**: `chronic-care-clinic-os`
+- **Stack**: Next.js / TypeScript / Prisma schema / deterministic demo data.
+- **Purpose**: chronic disease care coordination, not a legal EMR replacement and not production-ready.
+- **Read before work**: `chronic-care-clinic-os/IMPLEMENTATION_STATUS.md` and `chronic-care-clinic-os/docs/deployment/claude-code-handoff.md`.
+- **Core check**:
+
+```bash
+cd chronic-care-clinic-os
+pnpm test
+pnpm typecheck:app
+pnpm sync:check
+```
+
+- **If pnpm is unavailable**:
+
+```bash
+node --test tests/*.test.mjs
+node node_modules/typescript/bin/tsc -p tsconfig.check.json --noEmit
+node scripts/sync-check.mjs
+```
+
+- **Current completed modules**: care orchestration, program registry, pre-visit packets, care-plan drafts, care-plan approval guardrails and approved patient education handouts.
+- **Required safety invariant**: no automatic diagnosis, no automatic prescribing, no automatic treatment-message sending, physician confirmation for clinical decisions, and consent plus approved template before patient communication.
+
 ## 1. Claude Code Scope
 
 ### Work You Own

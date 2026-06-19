@@ -50,6 +50,7 @@ test("supplemental architecture and security docs exist", () => {
     "docs/architecture/AUTOMATION_SAFETY_MODEL.md",
     "docs/architecture/INTEGRATION_STRATEGY.md",
     "docs/architecture/PRODUCTION_READINESS_CHECKLIST.md",
+    "docs/deployment/claude-code-handoff.md",
     "docs/deployment/sync-mac-windows-claude-code.md",
     "security/THREAT_MODEL.md",
     "security/SECURITY_TEST_CASES.md",
@@ -221,6 +222,11 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/patient-education\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/visit-prep\.ts/);
   assert.match(read("scripts/sync-check.mjs"), /pnpm-lock\.yaml pins app dependencies/);
+  assert.match(read("scripts/sync-check.mjs"), /Claude Code handoff manifest is present/);
+  assert.match(read("scripts/sync-check.mjs"), /CLAUDE\.md points Claude Code to Chronic Care Clinic OS/);
+  assert.match(read("docs/deployment/claude-code-handoff.md"), /Safety boundaries that must stay true/);
+  assert.match(read("docs/deployment/claude-code-handoff.md"), /Recommended next tasks/);
+  assert.match(read("../CLAUDE.md"), /Current Active Subproject: Chronic Care Clinic OS/);
   assert.match(read("scripts/sync-check.mjs"), /No git remote configured/);
   assert.match(read("docs/deployment/sync-mac-windows-claude-code.md"), /Windows, MacBook and Claude Code/);
   assert.match(read("../.gitattributes"), /\* text=auto eol=lf/);

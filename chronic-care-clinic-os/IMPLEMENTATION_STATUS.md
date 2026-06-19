@@ -19,6 +19,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Physician-approved care plan draft generator and `/care-plans` workspace for post-visit goals, monitoring plan, medication review, labs, referrals, patient education and safety-netting without automatic treatment changes.
 - Preview-only care plan approval package with signoff gates, CarePlanVersion metadata and AuditLog preview before persistent writeback exists.
 - Patient education release package and `/handouts` gate for approved templates, approved care plans, consent and audit preview before A5 print/release.
+- Claude Code handoff manifest and sync-check guard so Windows, MacBook, Codex and Claude Code share the same current scope.
 - MVP-01 workflow definition and `/mvp-01` page.
 - Production blockers, MVP-01 acceptance test, demo guide, limitations and signoff templates.
 - Offline tests updated and passing for docs/schema/RBAC/safety/automation/MVP-01/command-center.
