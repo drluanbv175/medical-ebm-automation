@@ -54,6 +54,7 @@ export const rolePermissions: Record<Role, Permission[]> = {
     "task.manage",
     "quality.view",
     "audit.view",
+    "clinical_rules.manage",
     "automation.manage",
     "backend.read",
     "backend.write"
@@ -68,6 +69,7 @@ export const rolePermissions: Record<Role, Permission[]> = {
     "care_plan.approve",
     "care_plan.version",
     "task.manage",
+    "clinical_rules.manage",
     "handout.approve",
     "safety_alert.review",
     "backend.read",

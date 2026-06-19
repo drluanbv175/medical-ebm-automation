@@ -5,7 +5,7 @@ import type { CarePlanApprovalPackage } from "./care-plan-approval";
 import type { CarePlanDraft } from "./care-plan-draft";
 import type { PatientEducationReleasePackage } from "./patient-education";
 import type { AccessContext, Permission, ResourceScope } from "./rbac";
-import type { Appointment, Patient, Role } from "./types";
+import type { Appointment, ClinicalRule, Patient, Role } from "./types";
 
 export type WorkflowActionInput = {
   actorName: string;
@@ -35,6 +35,31 @@ export type PatientRegistrationDraftInput = {
   chronicProgramCandidates: string[];
 };
 
+export type ClinicalRuleDraftInput = Pick<
+  ClinicalRule,
+  | "ruleName"
+  | "ruleDescription"
+  | "purpose"
+  | "scope"
+  | "referenceSource"
+  | "severity"
+  | "suggestedAction"
+  | "requiresPhysicianConfirmation"
+  | "version"
+  | "effectiveDate"
+  | "reviewDate"
+  | "limitationNotes"
+>;
+
+export type UserInviteDraftInput = {
+  name: string;
+  email: string;
+  role: Exclude<Role, "SUPER_ADMIN" | "PATIENT" | "PATIENT_PORTAL_USER">;
+  organizationId: string;
+  clinicSiteId: string;
+  invitationReason: string;
+};
+
 export type WorkflowActionPreview = {
   actionName:
     | "approveCarePlanVersion"
@@ -43,7 +68,9 @@ export type WorkflowActionPreview = {
     | "createCareAppointment"
     | "createCarePlanDraft"
     | "createEducationTemplateDraft"
-    | "registerPatient";
+    | "registerPatient"
+    | "createClinicalRuleDraft"
+    | "inviteUser";
   serverActionName: string;
   status: "READY_FOR_SERVER_ACTION" | "BLOCKED";
   allowed: boolean;
@@ -404,6 +431,109 @@ export function previewRegisterPatientAction(
   };
 }
 
+export function previewCreateClinicalRuleDraftAction(
+  ruleDraft: ClinicalRuleDraftInput,
+  input: WorkflowActionInput,
+  today = "2026-06-19"
+): WorkflowActionPreview {
+  const backendGuard = authorizeWorkflowAction(input, "clinical_rules.manage");
+  const blockedReasons = [
+    ...requireRole(input.actorRole, ["CLINIC_ADMIN", "PHYSICIAN"], "Chi admin phong kham hoac bac si moi duoc tao clinical rule draft."),
+    ...requireBackendGuard(backendGuard),
+    ...requireConfirmation(input, "Nguoi thuc hien phai xac nhan rule draft can hoi dong/bac si duyet rieng truoc khi active."),
+    ...(ruleDraft.ruleName.trim() ? [] : ["Ten rule khong duoc trong."]),
+    ...(ruleDraft.ruleDescription.trim() ? [] : ["Mo ta rule khong duoc trong."]),
+    ...(ruleDraft.suggestedAction.trim() ? [] : ["Suggested action khong duoc trong."]),
+    ...(ruleDraft.referenceSource?.trim() ? [] : ["Can ghi nguon guideline/SOP noi bo de review."]),
+    ...(ruleDraft.requiresPhysicianConfirmation ? [] : ["Clinical rule draft phai bat buoc bac si xac nhan khi ap dung."]),
+    ...requireIsoDate(ruleDraft.effectiveDate, "Ngay hieu luc du kien"),
+    ...requireIsoDate(ruleDraft.reviewDate, "Ngay review"),
+    ...requireReviewAfterEffectiveDate(ruleDraft.effectiveDate, ruleDraft.reviewDate)
+  ];
+  const allowed = blockedReasons.length === 0;
+  const draftId = `clinical-rule-draft-${slugify(ruleDraft.ruleName)}-${today}`;
+
+  return {
+    actionName: "createClinicalRuleDraft",
+    serverActionName: "createClinicalRuleDraftAction",
+    status: allowed ? "READY_FOR_SERVER_ACTION" : "BLOCKED",
+    allowed,
+    persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED",
+    blockedReasons,
+    backendGuard,
+    auditPreview: buildAuditPreview({
+      id: `audit-action-${draftId}`,
+      actorName: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "ClinicalRule",
+      entityId: draftId,
+      summary: allowed
+        ? "Preview tao ClinicalRule draft; chua ghi DB production va chua active rule engine."
+        : "Chan preview tao ClinicalRule draft do thieu role, scope, xac nhan hoac noi dung review."
+    }),
+    requiredServerSideGuards: [
+      "Re-read actor role, clinic scope and latest active rule versions inside server action.",
+      "Call authorizeBackendAction with clinical_rules.manage and active same-organization/session permission.",
+      "Create ClinicalRuleVersion draft and append-only AuditLog in one transaction.",
+      "Require separate ClinicalRuleApproval before rule can become active or affect risk scoring.",
+      "Reject rules that remove physician confirmation, create diagnoses, prescribe, order labs or send treatment messages."
+    ],
+    safetyBoundary:
+      "Preview nay chi tao clinical rule draft, khong kich hoat rule engine, khong tu chan doan, khong ke don va khong thay doi muc nguy co that."
+  };
+}
+
+export function previewInviteUserAction(
+  inviteDraft: UserInviteDraftInput,
+  input: WorkflowActionInput,
+  today = "2026-06-19"
+): WorkflowActionPreview {
+  const backendGuard = authorizeWorkflowAction(input, "user.manage");
+  const blockedReasons = [
+    ...requireRole(input.actorRole, ["SUPER_ADMIN", "CLINIC_ADMIN"], "Chi super admin hoac clinic admin moi duoc moi nguoi dung noi bo."),
+    ...requireBackendGuard(backendGuard),
+    ...requireConfirmation(input, "Nguoi thuc hien phai xac nhan vai tro, site va ly do moi nguoi dung."),
+    ...(inviteDraft.name.trim() ? [] : ["Ten nguoi dung khong duoc trong."]),
+    ...requireEmail(inviteDraft.email),
+    ...(inviteDraft.organizationId === input.resourceScope.organizationId ? [] : ["Invite phai nam trong cung organization scope."]),
+    ...(inviteDraft.clinicSiteId === input.resourceScope.clinicSiteId ? [] : ["Invite phai nam trong cung clinic site scope."]),
+    ...(inviteDraft.invitationReason.trim() ? [] : ["Can ghi ly do moi nguoi dung."])
+  ];
+  const allowed = blockedReasons.length === 0;
+  const draftId = `user-invite-${slugify(inviteDraft.email)}-${today}`;
+
+  return {
+    actionName: "inviteUser",
+    serverActionName: "inviteUserAction",
+    status: allowed ? "READY_FOR_SERVER_ACTION" : "BLOCKED",
+    allowed,
+    persistenceMode: "PREVIEW_ONLY_NOT_PERSISTED",
+    blockedReasons,
+    backendGuard,
+    auditPreview: buildAuditPreview({
+      id: `audit-action-${draftId}`,
+      actorName: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "UserInvite",
+      entityId: draftId,
+      summary: allowed
+        ? "Preview moi nguoi dung noi bo; chua ghi DB production va chua gui email moi."
+        : "Chan preview moi nguoi dung do thieu role, scope, email hoac ly do."
+    }),
+    requiredServerSideGuards: [
+      "Re-check active organization, clinic site, duplicate email and inviter session inside server action.",
+      "Call authorizeBackendAction with user.manage and active same-organization/session permission.",
+      "Create User invitation, scoped UserRole assignment and append-only AuditLog in one transaction.",
+      "Reject privilege escalation, SUPER_ADMIN invites, patient-account invites and cross-site role assignment.",
+      "Do not create passwords, sessions, MFA state or send invite email until mail delivery is explicitly approved."
+    ],
+    safetyBoundary:
+      "Preview nay chi tao loi moi noi bo, khong tao tai khoan dang nhap hoat dong, khong gui email that va khong cap quyen vuot scope."
+  };
+}
+
 function authorizeWorkflowAction(input: WorkflowActionInput, permission: Permission): GuardDecision {
   return authorizeBackendAction(input.accessContext, permission, input.resourceScope);
 }
@@ -428,6 +558,15 @@ function requireFutureAppointment(scheduledAt: string, today: string): string[] 
 
 function requireIsoDate(value: string, label: string): string[] {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? [] : [`${label} phai theo dinh dang YYYY-MM-DD.`];
+}
+
+function requireReviewAfterEffectiveDate(effectiveDate: string, reviewDate: string): string[] {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(effectiveDate) || !/^\d{4}-\d{2}-\d{2}$/.test(reviewDate)) return [];
+  return reviewDate > effectiveDate ? [] : ["Ngay review phai sau ngay hieu luc du kien."];
+}
+
+function requireEmail(value: string): string[] {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? [] : ["Email moi nguoi dung khong hop le."];
 }
 
 function slugify(value: string): string {

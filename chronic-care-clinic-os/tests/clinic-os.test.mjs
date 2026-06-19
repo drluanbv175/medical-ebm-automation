@@ -147,6 +147,7 @@ test("RBAC denies receptionist clinical-note style access", () => {
   const rbac = read("lib/rbac.ts");
   assert.match(rbac, /RECEPTIONIST: \["patient.register", "patient.view_admin"/);
   assert.doesNotMatch(rbac, /RECEPTIONIST:[^\n]+patient\.view_clinical/);
+  assert.match(rbac, /clinical_rules\.manage/);
   for (const role of ["CLINIC_ADMIN", "NURSE", "CARE_COORDINATOR", "READ_ONLY_AUDITOR", "PATIENT_PORTAL_USER"]) {
     assert.match(rbac, new RegExp(`${role}:`), `${role} missing`);
   }
@@ -215,8 +216,10 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
   assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/audit\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/admin\/rules\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/settings\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/templates\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/admin\/users\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/appointments\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/handouts\/page\.tsx/);
@@ -340,6 +343,8 @@ test("patient education package uses approved templates without auto messaging",
 test("workflow action contracts stay preview-only until persistence exists", () => {
   const actions = read("lib/workflow-actions.ts");
   const appointmentsPage = read("app/appointments/page.tsx");
+  const adminRulesPage = read("app/admin/rules/page.tsx");
+  const adminUsersPage = read("app/admin/users/page.tsx");
   const carePlansPage = read("app/care-plans/page.tsx");
   const handoutsPage = read("app/handouts/page.tsx");
   const patientsPage = read("app/patients/page.tsx");
@@ -350,6 +355,8 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   assert.match(actions, /previewCreateCarePlanDraftAction/);
   assert.match(actions, /previewCreateEducationTemplateDraftAction/);
   assert.match(actions, /previewRegisterPatientAction/);
+  assert.match(actions, /previewCreateClinicalRuleDraftAction/);
+  assert.match(actions, /previewInviteUserAction/);
   assert.match(actions, /approveCarePlanVersionAction/);
   assert.match(actions, /releaseApprovedPatientHandoutAction/);
   assert.match(actions, /claimOverdueFollowUpTaskAction/);
@@ -357,12 +364,15 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   assert.match(actions, /createCarePlanDraftAction/);
   assert.match(actions, /createEducationTemplateDraftAction/);
   assert.match(actions, /registerPatientAction/);
+  assert.match(actions, /createClinicalRuleDraftAction/);
+  assert.match(actions, /inviteUserAction/);
   assert.match(actions, /authorizeBackendAction/);
   assert.match(actions, /care_plan\.approve/);
   assert.match(actions, /handout\.approve/);
   assert.match(actions, /care_plan\.version/);
   assert.match(actions, /clinical_rules\.manage/);
   assert.match(actions, /patient\.register/);
+  assert.match(actions, /user\.manage/);
   assert.match(actions, /task\.manage/);
   assert.match(actions, /PREVIEW_ONLY_NOT_PERSISTED/);
   assert.match(actions, /Ngay hen khong duoc nam trong qua khu/);
@@ -372,8 +382,16 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   assert.match(actions, /Require separate EducationMaterialApproval before template can be printed or sent/);
   assert.match(actions, /Require signed consent before any patient communication/);
   assert.match(actions, /Do not create diagnoses, medications, care plans, lab orders or treatment messages from registration/);
+  assert.match(actions, /Require separate ClinicalRuleApproval before rule can become active or affect risk scoring/);
+  assert.match(actions, /Reject rules that remove physician confirmation, create diagnoses, prescribe, order labs or send treatment messages/);
+  assert.match(actions, /Reject privilege escalation, SUPER_ADMIN invites, patient-account invites and cross-site role assignment/);
+  assert.match(actions, /Do not create passwords, sessions, MFA state or send invite email until mail delivery is explicitly approved/);
   assert.match(actions, /backendGuard/);
   assert.match(actions, /khong ghi DB, khong tao don thuoc/i);
+  assert.match(adminRulesPage, /Clinical rule draft preview/);
+  assert.match(adminRulesPage, /Backend guard/);
+  assert.match(adminUsersPage, /User invite preview/);
+  assert.match(adminUsersPage, /Backend guard/);
   assert.match(appointmentsPage, /Create appointment preview/);
   assert.match(appointmentsPage, /Backend guard/);
   assert.match(carePlansPage, /Server action preview/);
@@ -417,6 +435,8 @@ test("write action registry tracks guarded and blocked write surfaces", () => {
   assert.match(registry, /createCarePlanDraftAction/);
   assert.match(registry, /createEducationTemplateDraftAction/);
   assert.match(registry, /registerPatientAction/);
+  assert.match(registry, /createClinicalRuleDraftAction/);
+  assert.match(registry, /inviteUserAction/);
   assert.match(registry, /persistent audit va RBAC scope guard/);
   assert.match(settings, /Write action readiness/);
   assert.match(settings, /Production ready/);

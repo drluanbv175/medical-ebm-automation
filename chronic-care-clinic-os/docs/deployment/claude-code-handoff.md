@@ -43,6 +43,8 @@ node scripts/sync-check.mjs
 - `/patients/[id]`: care plan draft workflow now uses `createCarePlanDraftAction` preview with `care_plan.version` guard.
 - `/admin/templates`: education template draft workflow now uses `createEducationTemplateDraftAction` preview with `clinical_rules.manage` guard.
 - `/patients`: patient registration workflow now uses `registerPatientAction` preview with `patient.register` guard and consent gate.
+- `/admin/rules`: clinical rule draft workflow now uses `createClinicalRuleDraftAction` preview with `clinical_rules.manage` guard and approval-before-active boundary.
+- `/admin/users`: user invite workflow now uses `inviteUserAction` preview with `user.manage` guard and no-email/no-account-activation boundary.
 - `lib/audit-ledger.ts`: builds and validates an append-only hash-chain audit ledger preview.
 - `lib/backend-guard.ts` and `lib/rbac.ts`: authorize workflow actions by permission and organization/site scope.
 - `lib/write-action-registry.ts`: tracks guarded preview actions, UI placeholders and production-blocked exports.
@@ -56,6 +58,8 @@ node scripts/sync-check.mjs
 - `/handouts`
 - `/patients`
 - `/patients/[id]`
+- `/admin/rules`
+- `/admin/users`
 
 ## Safety boundaries that must stay true
 
@@ -70,7 +74,7 @@ node scripts/sync-check.mjs
 
 1. Implement persistent append-only AuditLog storage using the same sequence/previousHash/eventHash contract.
 2. Implement real server actions behind `approveCarePlanVersionAction` and `releaseApprovedPatientHandoutAction` only after persistent audit tests exist.
-3. Work down remaining `UI_PLACEHOLDER` items in `writeActionRegistry`: clinical rule draft and user invite.
+3. Start persistent append-only AuditLog tests before turning any preview contract into a real server action.
 4. Add A5 PDF generation only after approved-template and consent gates remain covered by tests.
 5. Configure a private Git remote so Windows, MacBook and Claude Code synchronize through Git, not only OneDrive.
 

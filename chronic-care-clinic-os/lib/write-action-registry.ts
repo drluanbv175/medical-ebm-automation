@@ -88,8 +88,24 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "registerPatientAction",
     "Da co workflow action contract, RBAC guard, consent check va audit preview; chua ghi DB hoac mo lien he tu dong."
   ),
-  placeholder("clinical-rule-draft", "Tao clinical rule draft", "/admin/rules", "clinical_rules.manage", "CLINIC_ADMIN"),
-  placeholder("user-invite", "Moi nguoi dung", "/admin/users", "user.manage", "CLINIC_ADMIN"),
+  guarded(
+    "clinical-rule-draft",
+    "Tao clinical rule draft",
+    "/admin/rules",
+    "clinical_rules.manage",
+    "CLINIC_ADMIN",
+    "createClinicalRuleDraftAction",
+    "Da co workflow action contract, RBAC guard, audit preview va approval rieng truoc khi active rule engine."
+  ),
+  guarded(
+    "user-invite",
+    "Moi nguoi dung",
+    "/admin/users",
+    "user.manage",
+    "CLINIC_ADMIN",
+    "inviteUserAction",
+    "Da co workflow action contract, RBAC guard, audit preview va scope guard; chua ghi DB hoac gui email."
+  ),
   blocked("quality-export-csv", "Xuat CSV chat luong", "/dashboard/quality", "export.aggregate", "QUALITY_MANAGER"),
   blocked("audit-export", "Xuat audit log", "/admin/audit", "audit.view", "READ_ONLY_AUDITOR")
 ];

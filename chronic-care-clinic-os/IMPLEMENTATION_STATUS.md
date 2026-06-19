@@ -28,6 +28,8 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - `/patients/[id]` care-plan-draft action now has preview-only workflow contract with RBAC guard and explicit separate physician-approval requirement.
 - `/admin/templates` education-template-draft action now has preview-only workflow contract with RBAC guard and separate approval requirement before patient use.
 - `/patients` patient-registration action now has preview-only workflow contract with RBAC guard, consent gate and audit preview before persistent writeback.
+- `/admin/rules` clinical-rule-draft action now has preview-only workflow contract with RBAC guard and separate approval requirement before rule-engine activation.
+- `/admin/users` user-invite action now has preview-only workflow contract with RBAC guard, scope guard and audit preview before account/email creation.
 - Claude Code handoff manifest and sync-check guard so Windows, MacBook, Codex and Claude Code share the same current scope.
 - MVP-01 workflow definition and `/mvp-01` page.
 - Production blockers, MVP-01 acceptance test, demo guide, limitations and signoff templates.
@@ -46,7 +48,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 
 - Thin vertical slice MVP-01 at UI/domain level.
 - Command Center and Program Registry are deterministic and demo-data backed; they still need persistent task writeback before production use.
-- Backend RBAC is modeled and wired to workflow action contracts; write action registry tracks remaining routes/actions not yet guarded.
+- Backend RBAC is modeled and wired to workflow action contracts; write action registry has guarded-preview contracts for UI write actions and keeps production-blocked exports separate.
 - Audit immutability is documented, domain-guarded and hash-chain previewed, but not persistent end-to-end.
 - Care plan version history is modeled but not wired to write workflow.
 - Care plan draft, approval package, education release package and workflow action contracts are deterministic and demo-data backed; final approval/writeback still needs server actions, persistent audit logging and immutable version creation.
