@@ -18,7 +18,6 @@ def default_v7_dashboard_sections() -> List[DashboardSection]:
         DashboardSection("claim_registry", "Claim Registry", "claim_traceability"),
         DashboardSection("safety_queue", "Safety Queue", "red_flag_review"),
         DashboardSection("approval_center", "Approval Center", "physician_review"),
-        DashboardSection("research_os", "ResearchOS", "sap_and_data_lock"),
         DashboardSection("chatgpt_bridge", "ChatGPT Bridge", "export_manifest"),
         DashboardSection("hypertension_pack_approval", "Hypertension Pack Approval Status", "approval_record"),
         DashboardSection("evidence_dossier", "Evidence Dossier Status", "evidence_dossier_complete"),

@@ -8,7 +8,6 @@ from app.clinical_content.shadow_pilot import (
     select_pilot_pathways,
     synthetic_pilot_workflow,
 )
-from app.research_os.pilot import ResearchPilotGateInput, ResearchTraceabilityChain, evaluate_researchos_pilot
 from app.safety.red_team import evaluate_red_team_suite, phase_2b_required_red_team_scenarios
 
 
@@ -69,44 +68,6 @@ def test_pilot_pathway_falls_back_to_synthetic_workflow_when_no_pack_eligible():
     assert select_pilot_pathways([]) == []
     fallback = synthetic_pilot_workflow()
     assert fallback.eligible
-
-
-def test_researchos_pilot_traceability_and_gate_logic():
-    chain = ResearchTraceabilityChain(
-        title="Đánh giá sự hài lòng của người bệnh ngoại trú tại Khoa Khám bệnh C1a",
-        research_questions=["Mức hài lòng là bao nhiêu?"],
-        objectives=["Mô tả mức hài lòng"],
-        primary_outcomes=["Satisfaction score"],
-        secondary_outcomes=["Domain scores"],
-        variables=["sat_total"],
-        questionnaire_items=["q1"],
-        data_fields=["sat_total"],
-        data_dictionary_id="dict_v1",
-        sap_id="sap_v1",
-        syntax_version="syntax_v1",
-        expected_tables=["table1"],
-        results_placeholder="No raw data in pilot",
-        discussion_boundaries="Metadata-only pilot",
-    )
-    gates = ResearchPilotGateInput(
-        protocol_complete=True,
-        instrument_consistent=True,
-        dictionary_consistent=True,
-        sap_locked=True,
-        data_locked=True,
-        syntax_versioned=True,
-        expected_tables_aligned=True,
-        reporting_checklist_ready=True,
-        outcomes_have_variables=True,
-        tables_within_sap=True,
-        dataset_status_clear=True,
-    )
-    report = evaluate_researchos_pilot(chain, gates)
-
-    assert report.traceability_passed
-    assert report.gates_passed
-    assert report.analysis_ready
-    assert report.allowed_content["raw_dataset"] is False
 
 
 def test_phase_2b_red_team_suite_has_zero_non_negotiable_failures():
