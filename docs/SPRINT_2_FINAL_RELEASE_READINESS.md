@@ -230,3 +230,31 @@ Before beginning Sprint 3, the following should be addressed:
 
 *Generated: 2026-06-21 | Sprint 2 Final Release Readiness Assessment*  
 *Authorized by: Product Owner — Sprint 2 Scope Containment Workflow*
+
+---
+
+## Post-Merge Verification (added 2026-06-21)
+
+**HEAD at time of post-merge verification:** `65b891b`  
+(docs(sprint2): add scope containment verification and final release readiness report)
+
+### Gate Summary
+
+| Gate | Result |
+|---|---|
+| Branch = main, HEAD = 65b891b, tree clean | ✅ PASS |
+| Research OS excluded (B1–B6) | ✅ PASS |
+| Sprint 2 scope — 6/6 items present | ✅ PASS |
+| Clinical safety (no PII, no HIS, demo labels active) | ✅ CONFIRMED |
+| ruff lint | ✅ ALL CHECKS PASSED |
+| pytest full suite | ✅ **311 / 311 PASSED** |
+| mypy | ⚠️ 79 errors (28 files) — pre-production technical debt |
+| pip-audit | ⚠️ 36 vulnerabilities (pillow HIGH) — upgrade Sprint 3 |
+| Secret scan | ✅ No hardcoded secrets |
+| E2E / a11y | N/A — not in scope for Sprint 2 |
+
+Technical debt TD-01 through TD-08 logged — xem `docs/SPRINT_2_POST_MERGE_RELEASE_VERIFICATION.md` Part H.
+
+**Post-Merge Verdict: ✅ SPRINT 2 CLOSED**
+
+*Post-merge verification: 2026-06-21 | Claude (Cowork automation)*
