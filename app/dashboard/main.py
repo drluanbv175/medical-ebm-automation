@@ -850,6 +850,10 @@ with tabs[5]:
     else:
         st.info("Chưa có đề tài. Seed dữ liệu mẫu để xem ví dụ.")
 
+    # --- ResearchOS: công cụ G0–G9 (in-memory, không cần database) ----------
+    from app.dashboard._research_os_panel import render_research_os_panel
+    render_research_os_panel()
+
 # --- Tab 7: Clinical Scores -----------------------------------------------
 with tabs[6]:
     st.header("Thang điểm / công cụ lâm sàng")

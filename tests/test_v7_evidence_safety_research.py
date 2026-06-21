@@ -9,7 +9,10 @@ from app.research_os.data_lock import lock_dataset
 from app.research_os.data_quality_firewall import run_quality_firewall
 from app.research_os.design_router import route_design
 from app.research_os.protocol_compiler import compile_protocol
-from app.research_os.reporting_guideline_mapper import reporting_guideline_for_design
+from app.research_os.reporting_guideline_mapper import (
+    reporting_guideline_for_design,
+    reporting_guidelines_all,
+)
 from app.research_os.reproducibility_runner import compare_result_hash
 from app.research_os.sap_engine import StatisticalAnalysisPlan, lock_sap
 from app.research_os.study_traceability_matrix import TraceabilityRow, validate_traceability
@@ -116,3 +119,66 @@ def test_research_os_gates_design_protocol_sap_and_data_lock():
     firewall = run_quality_firewall({"has_pii": False, "missing_rate": 0.05, "data_dictionary": True})
     assert firewall.passed
     assert compare_result_hash("abc", "abc").passed
+
+
+# ── CONSORT Semantic Regression Tests (Sprint 2 scope containment gate) ─────
+# Added: 2026-06-21  Reason: verify that the CONSORT 2010 → CONSORT rename
+# does not silently destroy version metadata and does not regress other guidelines.
+
+
+def test_consort_canonical_code_is_versionless():
+    """Canonical code cho RCT phải là 'CONSORT' (không chứa year pin).
+
+    Design decision: mapper dùng canonical name; version được tra tại EQUATOR.
+    Nếu test này fail → có ai đã đưa year trở lại → phải đồng bộ lại test
+    test_research_os_gates_design_protocol_sap_and_data_lock (dùng == 'CONSORT').
+    """
+    result = reporting_guideline_for_design("randomized_controlled_trial")
+    assert result == "CONSORT", (
+        f"Expected 'CONSORT' (versionless canonical), got {result!r}. "
+        "Nếu thêm version vào đây, phải cập nhật tất cả assertion == 'CONSORT'."
+    )
+
+
+def test_consort_full_info_provides_version_guidance():
+    """reporting_guidelines_all() phải cung cấp đủ thông tin cho user tìm version.
+
+    Vì canonical code không chứa year, metadata (note + equator_url) là con đường
+    duy nhất hướng dẫn version → phải không được rỗng.
+    """
+    info = reporting_guidelines_all("randomized_controlled_trial")
+    assert info["primary"] == "CONSORT"
+    # note hoặc equator_url phải có để hướng dẫn version check
+    has_version_guidance = bool(info.get("note")) or bool(info.get("equator_url"))
+    assert has_version_guidance, (
+        "reporting_guidelines_all() thiếu note/equator_url → user không biết version nào dùng."
+    )
+    # supplementary không được mất (SPIRIT 2013 vẫn phải ở đây)
+    supps = info.get("supplementary", [])
+    assert any("SPIRIT" in s for s in supps), (
+        "Supplementary của RCT phải chứa SPIRIT 2013 — bị mất sau lần edit?"
+    )
+
+
+def test_mapper_other_guidelines_unaffected_by_consort_rename():
+    """Rename CONSORT 2010 → CONSORT không được làm hỏng mapping của các guideline khác.
+
+    Regression: kiểm tra toàn bộ 8 thiết kế còn lại vẫn trả đúng code gốc.
+    """
+    expected = {
+        "cohort": "STROBE",
+        "cross_sectional": "STROBE",
+        "case_control": "STROBE",
+        "diagnostic_accuracy": "STARD",
+        "systematic_review": "PRISMA",
+        "prediction_model": "TRIPOD",
+        "qualitative": "COREQ",
+        "case_report": "CARE",
+        "economic_evaluation": "CHEERS",
+        "quality_improvement": "SQUIRE",
+    }
+    for design, expected_prefix in expected.items():
+        result = reporting_guideline_for_design(design)
+        assert expected_prefix in result, (
+            f"Design '{design}': expected prefix '{expected_prefix}', got {result!r}."
+        )

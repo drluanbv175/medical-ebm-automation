@@ -14,6 +14,7 @@ Cách dùng:
     python run.py workbench [chuyên_khoa] [--online]  # xuất Evidence Workbench + cổng liêm chính
     python run.py safety          # xuất báo cáo An toàn thuốc + Kháng sinh tuần
     python run.py dossier <project_id>   # xuất Hồ sơ nghiên cứu (đề cương + tài liệu nền + checklist)
+    python run.py research-os [route <câu hỏi>]  # ResearchOS: định tuyến thiết kế, cổng G0–G9
     python run.py zotero-push     # đẩy tài liệu actionable vào Zotero (cần cấu hình)
     python run.py test-live [nguồn] [từ khoá]   # gọi 1 nguồn API THẬT để kiểm chứng
     python run.py tiktok [N]      # sinh N gói nội dung TikTok (slideshow+caption) từ kho
@@ -211,6 +212,49 @@ def main() -> int:
         path = export_research_dossier(sys.argv[2])
         _print({"dossier": str(path) if path else None,
                 "note": None if path else "Không tìm thấy đề tài"})
+
+    elif cmd == "research-os":
+        # ResearchOS CLI: định tuyến thiết kế, cổng G0–G9, guideline mapper.
+        # Dùng: python run.py research-os
+        #        python run.py research-os route "Xây dựng mô hình dự báo nguy cơ tim mạch"
+        from app.research_os.design_router import route_design, route_design_with_confidence
+        from app.research_os.reporting_guideline_mapper import (
+            reporting_guideline_for_design as reporting_guideline,
+            reporting_guidelines_all,
+        )
+        from app.research_os.causal_inference import design_allows_causal, causal_design_warning
+
+        subcmd = sys.argv[2] if len(sys.argv) > 2 else "info"
+
+        if subcmd == "route" and len(sys.argv) > 3:
+            question = " ".join(sys.argv[3:])
+            design, conf = route_design_with_confidence(question)
+            guideline = reporting_guideline(design)
+            info = reporting_guidelines_all(design)
+            _print({
+                "question": question,
+                "design": design,
+                "confidence": conf,
+                "primary_guideline": guideline,
+                "supplementary": info.get("supplementary", []),
+                "equator_url": info.get("equator_url", ""),
+                "causal_inference_allowed": design_allows_causal(design),
+                "causal_warning": causal_design_warning(design) or None,
+            })
+        else:
+            # Info: in danh sách module + capabilities
+            from app.research_os import __all__ as _all
+            _print({
+                "module": "app.research_os",
+                "description": "ResearchOS — G0–G9 quality gates, SAP engine, design router, "
+                               "reporting guideline mapper, traceability matrix, "
+                               "causal inference guards, data lock.",
+                "exported_symbols": list(_all),
+                "usage": {
+                    "route_design": "python run.py research-os route '<câu hỏi PICO>'",
+                    "dashboard": "Mở Dashboard → Tab 6 Research → mục ResearchOS Tools",
+                },
+            })
 
     elif cmd == "zotero-push":
         from app.database import init_db
