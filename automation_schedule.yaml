@@ -1,0 +1,44 @@
+# automation_schedule.yaml — Lịch job OFFLINE (V4.3.2, Phase G).
+# Đây là CẤU HÌNH mô tả; KHÔNG tự chạy. Người vận hành gọi script tương ứng
+# (cron/launchd/thủ công). KHÔNG API/network/eHospital/email/submission.
+# Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE.
+
+meta:
+  qualification: "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE"
+  offline_only: true
+  forbidden: ["api", "network", "ehospital", "email", "chat", "submission", "release"]
+
+jobs:
+  - id: daily_integrity_check
+    schedule: "0 7 * * *"          # gợi ý cron (người vận hành tự đặt)
+    script: scripts/run_daily_integrity_check.sh
+    actions:
+      - manifest_hash_verify
+      - registry_verify
+      - git_status
+      - test_collect_only
+      - detect_untracked_critical_files
+    fail_action: report_only        # KHÔNG tự sửa, KHÔNG tự gửi đi
+
+  - id: weekly_offline_quality_check
+    schedule: "0 8 * * 1"
+    script: scripts/run_weekly_offline_quality_check.sh
+    actions:
+      - run_deterministic_offline_test_suite
+      - check_dashboard_data
+      - check_review_queue_stale_items
+      - check_drafts_missing_human_review_required
+      - check_artifacts_missing_agent_source_hash
+    fail_action: report_only
+
+  - id: on_demand_project_run
+    schedule: on_demand
+    script: scripts/run_project_synthetic.sh
+    input: research_project_request.yaml
+    actions: [intake_validate, route_workflow, generate_drafts, quality_gates, enqueue_review]
+
+  - id: on_demand_project_qa
+    schedule: on_demand
+    script: scripts/run_project_quality_check.sh
+    input: research_project_request.yaml
+    actions: [run_GR1_to_GR10, produce_quality_report]
