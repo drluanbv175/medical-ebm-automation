@@ -1,0 +1,55 @@
+name: offline-ci-hermetic
+
+# V4.2.1 — Hermetic OFFLINE control-plane CI.
+# Chạy deterministic offline tests với network bị chặn và KHÔNG có API key.
+# Fail nếu phát hiện API key hoặc runtime live bị khởi tạo.
+# Qualification GIỮ NGUYÊN: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE.
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-hermetic-tests:
+    runs-on: ubuntu-latest
+    env:
+      # Bật chế độ hermetic; KHÔNG khai báo ANTHROPIC_API_KEY/OPENAI_API_KEY.
+      MRAQ_OFFLINE_CI: "1"
+      USE_MOCK_SOURCES: "true"
+      # eHospital connector DISABLED — không bật synthetic flag trong CI.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fail-closed — cấm API key trong môi trường CI offline
+        run: |
+          if [ -n "${ANTHROPIC_API_KEY:-}" ] || [ -n "${OPENAI_API_KEY:-}" ]; then
+            echo "OFFLINE CI HERMETIC VIOLATION: API key được set." >&2
+            exit 2
+          fi
+          echo "OK — no API key present."
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run hermetic offline tests (network blocked)
+        run: bash scripts/run_offline_ci.sh
+
+      - name: Upload offline CI results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-ci-results
+          path: results/
