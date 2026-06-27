@@ -28,9 +28,16 @@ from app.utils.text import clean_text
 
 # Mẫu chuẩn + thư mục xuất (chung OneDrive, đồng bộ Mac↔Windows)
 _ROOT = BASE_DIR.parent
-TEMPLATE = _ROOT / "dashboard_mockups" / "templates" / "evidence-workbench-template.html"
-DARK_TEMPLATE = _ROOT / "dashboard_mockups" / "templates" / "dark-analyst-template.html"
-OUT_DIR = _ROOT / "EBM-Dashboards"
+# V4.3.2.1 (reproducibility): ưu tiên template VENDORED trong repo (để `git archive`
+# tự-chứa); fallback OneDrive-root khi chạy ngoài archive. CHỈ path resolution —
+# KHÔNG đổi render logic.
+def _tpl(name: str) -> Path:
+    in_repo = BASE_DIR / "dashboard_mockups" / "templates" / name
+    return in_repo if in_repo.exists() else (_ROOT / "dashboard_mockups" / "templates" / name)
+
+TEMPLATE = _tpl("evidence-workbench-template.html")
+DARK_TEMPLATE = _tpl("dark-analyst-template.html")
+OUT_DIR = _ROOT / "EBM-Dashboards"   # thư mục XUẤT (không đọc nguồn trong test)
 _DATA_END = "/* ▲▲▲  HẾT KHỐI DATA  ▲▲▲ */"
 
 _DESIGN = {

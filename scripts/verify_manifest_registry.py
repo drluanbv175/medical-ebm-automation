@@ -28,9 +28,14 @@ def main() -> int:
     print("== V4.3 manifest + registry verify (offline) ==")
 
     mb = pathlib.Path(SCOPE_A_MANIFEST_PATH)
-    in_repo = "medical-ebm-automation/runtime/manifests" in str(mb).replace("\\", "/")
-    print(f"manifest_path_in_repo={in_repo} :: {str(mb).split('Claude AI/')[-1]}")
-    ok = ok and in_repo and "MRAQ100_AUDIT" not in str(mb)
+    mb_norm = str(mb).replace("\\", "/")
+    # V4.3.2.1: archive-agnostic — manifest phải nằm DƯỚI repo tại
+    # runtime/manifests/agent_source_manifest.csv và KHÔNG ở MRAQ100_AUDIT (ngoài repo).
+    # KHÔNG hard-code tên thư mục repo (để fresh-archive giải nén vào dir bất kỳ vẫn đúng).
+    in_repo = (mb_norm.endswith("runtime/manifests/agent_source_manifest.csv")
+               and "MRAQ100_AUDIT" not in mb_norm)
+    print(f"manifest_path_in_repo={in_repo} :: .../{'/'.join(mb_norm.split('/')[-3:])}")
+    ok = ok and in_repo
 
     if not mb.exists():
         print("FAIL: manifest missing"); return 1

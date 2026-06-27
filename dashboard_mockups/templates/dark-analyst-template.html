@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="vi">
+<!--
+==================================================================================
+  TEMPLATE CHUẨN — "DARK ANALYST"  (Mẫu MẶC ĐỊNH mới cho Dashboard lâm sàng EBM)
+  Dùng cho: skill cap-nhat-chung-cu-y-khoa và mọi tác vụ tạo Web Dashboard lâm sàng.
+----------------------------------------------------------------------------------
+  CÁCH DÙNG (chỉ sửa 1 chỗ): thay khối hằng số DATA = {...} ở cuối <script> bằng
+  nội dung đã XÁC MINH. KHÔNG cần đụng HTML/CSS/engine. Chrome (tiêu đề, PICO chips,
+  KPI, verdict, Quick View) TỰ SINH từ DATA.
+
+  SCHEMA (DÙNG CHUNG với evidence-workbench-template.html — 1 DATA chạy được cả hai):
+    meta:    { eyebrow, question, pico:{P,I,C,O}, updated }
+    summary: { conclusion, doNow:[…], dontDo:[…], redFlags:[…] }     // Clinical Quick View
+    items:   [ {
+      id:'ITEM-01', title, source, org, dateVersion, pmid?, doi?, url?,
+      design:'Guideline'|'Meta'|'RCT'|'Cohort'|'Consensus',
+      population,
+      pico:{ P:[txt,'match'|'mis'], I:[…], C:[…], O:[…] },
+      frame?:'PICO'|'PECO'|'Chẩn đoán'|'Tiên lượng'|…,            // khung câu hỏi (mặc định PICO)
+      frameLabels?:{P,I,C,O},                                     // đổi nhãn 4 ô khi không-PICO
+      effect?:{ measure,hr,lo,hi,ci,favors },                     // CHỈ khi có tỷ số (HR/RR/OR) → forest
+      effectText?:'RD -1,84%/năm…',                              // hiệu số phi-tỷ-số dạng chữ (đúng nguồn)
+      gradeSource, gradeLevel:'high'|'mod'|'low'|'vlow'|'na',
+      decision:'apply'|'consider'|'notyet',
+      groups:['cao-tuoi','ckd','gan','dtd','tim-mach','da-thuoc'],
+      action, monitoring, vn, references:[…], flag?, safety?,
+      rob?:{ 'Ngẫu nhiên hóa':'l'|'s'|'h', … }                    // CHỈ cho RCT; bỏ trống cho guideline
+    } ]
+    etd?: { problem, desirable, undesirable, certainty, values, balance, resources, equity,   // GRADE Evidence-to-Decision (tùy chọn, cấp câu hỏi)
+            acceptability, feasibility, recommendation, strength:'strong'|'conditional' }      // desirable/undesirable/certainty TỪ chứng cứ; còn lại = đánh giá vận hành
+
+  LIÊM CHÍNH: số liệu trích ĐÚNG nguồn; giữ nguyên grading (gradeLevel:'na' nếu nguồn
+  không phân hạng); RoB 2 chỉ chấm cho RCT; kèm PMID/DOI; disclaimer cố định; KHÔNG PII.
+==================================================================================
+-->
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard EBM · Dark Analyst</title>
+<style>
+  :root{
+    --bg:#0b1120; --bg-2:#0f172a; --surface:#111a2e; --surface-2:#16213b; --surface-3:#1c2942;
+    --ink:#e7edf6; --ink-2:#aebbd0; --muted:#7689a6; --faint:#56688a;
+    --line:#1e2c46; --line-2:#2a3b5c;
+    --cyan:#22d3ee; --blue:#60a5fa; --violet:#a78bfa; --teal:#2dd4bf; --pink:#f472b6; --green:#34d399; --amber:#fbbf24; --orange:#fb923c; --red:#f87171;
+    --g-high:#34d399; --g-mod:#fbbf24; --g-low:#fb923c; --g-vlow:#f87171; --g-na:#7689a6;
+    --apply:#34d399; --consider:#fbbf24; --notyet:#fb923c; --danger:#f87171;
+    --mono:ui-monospace,"SF Mono","Menlo","Consolas",monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:12.5px;-webkit-font-smoothing:antialiased}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:10px}::-webkit-scrollbar-track{background:transparent}
+  a{color:var(--cyan);text-decoration:none}
+  .app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+  .top{display:flex;align-items:center;gap:14px;padding:9px 16px;background:var(--bg-2);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;white-space:nowrap}
+  .brand .logo{width:25px;height:25px;border-radius:7px;background:linear-gradient(135deg,var(--cyan),var(--violet));color:#06121f;display:grid;place-items:center;font-size:14px;font-weight:800}
+  .brand .tag{font-size:9.5px;font-weight:700;color:var(--cyan);border:1px solid var(--line-2);border-radius:5px;padding:2px 6px;letter-spacing:.4px}
+  .cmd{flex:1;display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line-2);border-radius:9px;padding:7px 11px}
+  .cmd .pr{color:var(--cyan);font-family:var(--mono);font-weight:700}
+  .cmd input{flex:1;background:transparent;border:0;outline:none;color:var(--ink);font-family:var(--mono);font-size:12.5px}
+  .cmd .kbd{font-family:var(--mono);font-size:10px;color:var(--muted);border:1px solid var(--line-2);border-radius:4px;padding:1px 6px}
+  .top .st{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);white-space:nowrap}
+  .top .st .pulse{width:7px;height:7px;border-radius:50%;background:var(--g-high);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:p 2s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(52,211,153,.5)}70%{box-shadow:0 0 0 6px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+
+  .qbar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--bg-2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .qbar .lab{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-right:2px}
+  .ptok{display:inline-flex;align-items:center;gap:6px;font-size:11px;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:3px 9px;font-family:var(--mono)}
+  .ptok b{font-size:9px;color:#06121f;border-radius:3px;padding:1px 5px;font-weight:800}
+  .ptok.p b{background:var(--cyan)}.ptok.i b{background:var(--blue)}.ptok.c b{background:var(--muted)}.ptok.o b{background:var(--teal)}
+  .fchip{font-size:10.5px;color:var(--ink-2);background:var(--surface);border:1px solid var(--line-2);border-radius:20px;padding:3px 11px;cursor:pointer;user-select:none;white-space:nowrap}
+  .fchip:hover{border-color:var(--cyan)}
+  .fchip.on{background:rgba(34,211,238,.14);border-color:var(--cyan);color:var(--cyan);font-weight:700}
+  .fchip .ct{font-family:var(--mono);font-size:9px;opacity:.8;margin-left:3px}
+
+  .kpis{display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg-2);border-bottom:1px solid var(--line)}
+  .kp{padding:9px 14px;border-right:1px solid var(--line)}
+  .kp:last-child{border-right:0}
+  .kp .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+  .kp .v{font-size:19px;font-weight:800;font-family:var(--mono);margin-top:1px}
+  .kp .v.cy{color:var(--cyan)}.kp .v.gr{color:var(--g-high)}.kp .v.am{color:var(--amber)}.kp .v.or{color:var(--orange)}.kp .v.vi{color:var(--violet)}
+
+  /* GRADE Evidence-to-Decision */
+  .etd{background:var(--bg-2);border-bottom:1px solid var(--line);padding:9px 16px}
+  .etd .eh{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--violet);margin-bottom:7px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  /* EtD thu gọn mặc định (bấm để mở) — tránh chiếm chiều cao đầu trang */
+  .etd-d>summary{cursor:pointer;list-style:none;user-select:none;margin-bottom:0}
+  .etd-d>summary::-webkit-details-marker{display:none}
+  .etd-d>summary::before{content:"▸ ";color:var(--cyan);font-weight:800}
+  .etd-d[open]>summary::before{content:"▾ "}
+  .etd-d[open]>summary{margin-bottom:7px}
+  .etd-d>summary .note{font-weight:600;color:var(--faint);text-transform:none;letter-spacing:0;font-size:10px}
+  .etd .eh .note{font-weight:600;color:var(--faint);text-transform:none;letter-spacing:0;font-size:10px}
+  .etd-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line)}
+  .etd-c{background:var(--bg-2);padding:7px 10px}
+  .etd-c .l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:700;display:flex;gap:5px;align-items:center}
+  .etd-c .l .src{font-size:8px;color:var(--teal);border:1px solid var(--line-2);border-radius:3px;padding:0 3px;text-transform:none}
+  .etd-c .l .op{font-size:8px;color:var(--amber);border:1px solid var(--line-2);border-radius:3px;padding:0 3px;text-transform:none}
+  .etd-c .v{font-size:11px;color:var(--ink-2);line-height:1.4;margin-top:3px}
+  .etd-rec{margin-top:9px;background:linear-gradient(135deg,rgba(52,211,153,.1),rgba(167,139,250,.1));border:1px solid var(--line-2);border-radius:10px;padding:9px 12px}
+  .etd-rec .rh{font-size:10px;font-weight:800;color:var(--g-high);text-transform:uppercase;letter-spacing:.5px;display:flex;gap:8px;align-items:center;margin-bottom:4px}
+  .etd-rec .rh .str{font-size:9px;color:#06121f;background:var(--g-high);border-radius:4px;padding:1px 7px}
+  .etd-rec .rv{font-size:12px;color:var(--ink);line-height:1.5}
+
+  /* Clinical Quick View band */
+  .qv{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  .qvc{background:var(--bg-2);padding:9px 14px}
+  .qvc .h{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .qvc.concl .h{color:var(--cyan)} .qvc.do .h{color:var(--apply)} .qvc.dont .h{color:var(--notyet)} .qvc.flag .h{color:var(--danger)}
+  .qvc p{font-size:11px;color:var(--ink-2);line-height:1.45}
+  .qvc ul{list-style:none;display:flex;flex-direction:column;gap:3px}
+  .qvc li{font-size:10.5px;color:var(--ink-2);display:flex;gap:6px;line-height:1.4}
+  .qvc li::before{content:"▪";color:var(--faint);flex-shrink:0}
+  .qvc.flag li::before{content:"⚑";color:var(--danger)}
+
+  .main{flex:1;overflow:auto;padding:0 0 40px}
+  .lead{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:11px;color:var(--muted)}
+  .lead .verdict{margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--g-high);border-radius:20px;padding:4px 12px;font-weight:700;font-size:11px}
+
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+  thead th{position:sticky;top:0;background:var(--bg-2);text-align:left;padding:8px 14px;font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line-2);border-top:1px solid var(--line);z-index:3;white-space:nowrap}
+  tbody tr.main-row{border-bottom:1px solid var(--line);cursor:pointer}
+  tbody tr.main-row:hover{background:var(--surface)}
+  tbody tr.main-row.open{background:var(--surface-2)}
+  tbody td{padding:9px 14px;vertical-align:middle}
+  .twist{color:var(--faint);transition:transform .15s;display:inline-block;width:12px}
+  tr.open .twist{transform:rotate(90deg);color:var(--cyan)}
+  .ttl{font-weight:600;color:var(--ink);line-height:1.3;max-width:430px}
+  .ttl .sub{font-weight:400;color:var(--muted);font-size:10.5px;margin-top:2px}
+  .pmid{font-family:var(--mono);color:var(--cyan);font-size:10px}
+  .idtag{font-family:var(--mono);color:var(--faint);font-size:9px}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:6px;border:1px solid transparent;white-space:nowrap}
+  .badge .d{width:6px;height:6px;border-radius:50%}
+  .b-rct{background:rgba(96,165,250,.12);color:var(--blue);border-color:rgba(96,165,250,.25)}.b-rct .d{background:var(--blue)}
+  .b-meta{background:rgba(167,139,250,.12);color:var(--violet);border-color:rgba(167,139,250,.25)}.b-meta .d{background:var(--violet)}
+  .b-guide{background:rgba(45,212,191,.12);color:var(--teal);border-color:rgba(45,212,191,.25)}.b-guide .d{background:var(--teal)}
+  .b-cohort{background:rgba(34,211,238,.12);color:var(--cyan);border-color:rgba(34,211,238,.25)}.b-cohort .d{background:var(--cyan)}
+  .b-consensus{background:rgba(244,114,182,.12);color:var(--pink);border-color:rgba(244,114,182,.25)}.b-consensus .d{background:var(--pink)}
+
+  .dec{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:800;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .dec .d{width:6px;height:6px;border-radius:50%}
+  .d-apply{background:rgba(52,211,153,.14);color:var(--apply)}.d-apply .d{background:var(--apply)}
+  .d-consider{background:rgba(251,191,36,.14);color:var(--consider)}.d-consider .d{background:var(--consider)}
+  .d-notyet{background:rgba(251,146,60,.14);color:var(--notyet)}.d-notyet .d{background:var(--notyet)}
+
+  .grade{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:800;padding:2px 9px;border-radius:20px}
+  .grade .pips{display:flex;gap:2px}.grade .pip{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.25}.grade .pip.on{opacity:1}
+  .g-high{background:rgba(52,211,153,.13);color:var(--g-high)}.g-mod{background:rgba(251,191,36,.13);color:var(--g-mod)}.g-low{background:rgba(251,146,60,.13);color:var(--g-low)}.g-vlow{background:rgba(248,113,113,.13);color:var(--g-vlow)}.g-na{background:var(--surface-3);color:var(--g-na)}
+
+  .effect{font-family:var(--mono);font-weight:700}.effect.fav{color:var(--g-high)}.effect.harm{color:var(--g-vlow)}.effect.ns{color:var(--ink-2)}
+  .ci{color:var(--faint);font-family:var(--mono);font-size:10px}
+  .flag{font-size:9px;font-weight:700;color:var(--g-low);border:1px solid rgba(251,146,60,.35);background:rgba(251,146,60,.1);border-radius:4px;padding:1px 5px;margin-left:6px}
+  .robmini{display:flex;gap:3px}.robmini i{width:11px;height:11px;border-radius:50%}
+  .rl{background:var(--g-high)}.rs{background:var(--g-mod)}.rh{background:var(--g-vlow)}
+
+  tr.exp td{padding:0;background:var(--bg-2);border-bottom:1px solid var(--line-2)}
+  .exp-in{display:grid;grid-template-columns:1.1fr 1fr 1.2fr;gap:0;border-top:1px solid var(--line)}
+  .exp-col{padding:14px 16px;border-right:1px solid var(--line)}
+  .exp-col:last-child{border-right:0}
+  .exp-col h5{font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--cyan);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .pico-r{display:grid;grid-template-columns:34px 1fr;gap:8px;margin-bottom:7px;font-size:11.5px;align-items:start}
+  .pico-r .k{font-size:8.5px;font-weight:800;color:#06121f;border-radius:4px;text-align:center;padding:2px 3px;white-space:nowrap;overflow:hidden}
+  .pico-r .kP{background:var(--cyan)}.pico-r .kI{background:var(--blue)}.pico-r .kC{background:var(--muted)}.pico-r .kO{background:var(--teal)}
+  .pico-r .v{color:var(--ink-2)}.pico-r .v .ok{color:var(--g-high);font-size:10px;font-weight:700}.pico-r .v .no{color:var(--g-low);font-size:10px;font-weight:700}
+  .kv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .kv .c{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+  .kv .c .l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+  .kv .c .n{font-size:14px;font-weight:800;font-family:var(--mono);margin-top:2px;line-height:1.25}
+  .kv .c .n.gr{color:var(--g-high)}.kv .c .n.cy{color:var(--cyan)}
+  .kv .c .x{font-size:9.5px;color:var(--faint);margin-top:1px}
+  .robfull{display:flex;flex-direction:column;gap:6px}
+  .robfull .r{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--ink-2)}
+  .robfull .r i{width:14px;height:14px;border-radius:50%;display:inline-grid;place-items:center;font-size:8px;font-weight:800;color:#06121f}
+  .kvline{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .kvline .r{display:grid;grid-template-columns:78px 1fr;gap:9px;font-size:11.5px;align-items:start}
+  .kvline .r .k{color:var(--muted);font-weight:700;font-size:10px}
+  .kvline .r .v{color:var(--ink-2);line-height:1.5}
+  .apply{background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border:1px solid var(--line-2);border-radius:10px;padding:11px;font-size:11.5px;color:var(--ink-2);line-height:1.55}
+  .apply .h{font-size:10px;font-weight:800;color:var(--cyan);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .safety{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:10px;font-size:11px;color:var(--ink-2);line-height:1.5;margin-top:10px}
+  .safety .h{font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+  .srcs{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+  .srcs a{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;background:var(--surface);border:1px solid var(--line-2);border-radius:7px;padding:5px 10px;color:var(--ink-2)}
+  .srcs a:hover{border-color:var(--cyan)}
+  .srcs a .t{font-family:var(--mono);font-size:9px;color:#06121f;border-radius:3px;padding:1px 5px;font-weight:800}
+  .srcs a .t.pm{background:var(--g-high)}.srcs a .t.doi{background:var(--blue)}.srcs a .t.url{background:var(--ink-2)}
+  .reflist{font-size:10.5px;color:var(--ink-2);line-height:1.5;display:flex;flex-direction:column;gap:5px;margin-top:10px}
+  .reflist .r{padding-left:13px;text-indent:-13px}
+  .empty{padding:34px;text-align:center;color:var(--muted)}
+
+  .disclaimer{display:flex;align-items:center;gap:10px;padding:8px 16px;background:rgba(251,191,36,.08);border-top:1px solid rgba(251,191,36,.25);font-size:11px;color:var(--g-mod)}
+  .disclaimer b{font-weight:800;color:#fcd34d}
+  .disclaimer .upd{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--amber)}
+
+  /* ===================== RESPONSIVE — cân đối khi màn hẹp ===================== */
+  @media (max-width:1180px){
+    .kpis{grid-template-columns:repeat(4,1fr)}
+    .kpis .kp{border-top:1px solid var(--line)}
+    .etd-grid{grid-template-columns:repeat(3,1fr)}
+  }
+  @media (max-width:860px){
+    .kpis{grid-template-columns:repeat(3,1fr)}
+    .qv{grid-template-columns:repeat(2,1fr)}
+    .etd-grid{grid-template-columns:repeat(2,1fr)}
+    .exp-in{grid-template-columns:1fr}              /* chi tiết bung DỌC cho dễ đọc */
+    .exp-col{border-right:0;border-bottom:1px solid var(--line)}
+  }
+  @media (max-width:540px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .qv{grid-template-columns:1fr}
+    .etd-grid{grid-template-columns:1fr}
+    .top{flex-wrap:wrap;gap:8px}
+    .qbar{gap:6px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="logo">⊕</span> EBM Copilot <span class="tag">ANALYST</span></div>
+    <div class="cmd"><span class="pr">⌕ ebm&gt;</span><input id="q" placeholder="lọc: bệnh, thuốc, nhóm nguy cơ, nguồn, hành động…" oninput="render()"/><span class="kbd">⌘K</span></div>
+    <div class="st"><span class="pulse"></span><span id="status">—</span></div>
+  </header>
+
+  <div class="qbar" id="qbar"></div>
+  <div class="qbar" id="filters" style="border-top:0"></div>
+  <div class="kpis" id="kpis"></div>
+  <section class="qv" id="qv"></section>
+  <section class="etd" id="etd" style="display:none"></section>
+
+  <div class="main">
+    <div class="lead">
+      <span>Nhấp một hàng để mở <b style="color:var(--ink)">thẩm định chi tiết</b> · <span id="leadcount"></span></span>
+      <span class="verdict" id="verdict"></span>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:30px"></th>
+        <th>Điểm chứng cứ</th>
+        <th>Quyết định</th>
+        <th>Thiết kế</th>
+        <th>Hiệu số (đúng nguồn)</th>
+        <th>Mức chứng cứ</th>
+        <th>RoB</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <footer class="disclaimer">
+    <span>⚠</span><b>Cần bác sĩ kiểm chứng.</b> Đối chiếu toàn văn &amp; bối cảnh bệnh nhân. Không lưu PII.
+    <span class="upd" id="upd"></span>
+  </footer>
+</div>
+
+<script>
+/* =================================================================================
+   ▼▼▼  CHỈ SỬA KHỐI DATA NÀY  ▼▼▼  (ví dụ: biến chứng thần kinh ĐTĐ — đã xác minh)
+   ================================================================================= */
+const DATA = {
+  meta:{
+    eyebrow:"Cập nhật chứng cứ · vấn đề lâm sàng",
+    question:"Biến chứng thần kinh ở bệnh nhân đái tháo đường — tầm soát, dự phòng và điều trị đau",
+    pico:{P:"ĐTĐ type 1/2", I:"Tầm soát · kiểm soát ĐH · dược trị đau", C:"Không tầm soát / giữa thuốc", O:"Phòng & giảm thần kinh · giảm đau"},
+    updated:"2026-06-07"
+  },
+  etd:{
+    problem:"Bệnh thần kinh & đau do ĐTĐ rất phổ biến (~50% sau 10 năm), ảnh hưởng chất lượng sống và nguy cơ loét bàn chân — ưu tiên cao.",
+    desirable:"Tầm soát + kiểm soát đường huyết giảm tiến triển (T1 rõ: RD -1,84%/năm); 4 nhóm thuốc giảm đau hiệu lực vừa (SMD 0,44–0,95).",
+    undesirable:"Tác dụng phụ thuốc (an thần, té ngã ở người cao tuổi); hạ đường huyết nặng khi siết đường huyết tích cực; opioid lợi–hại bất lợi.",
+    certainty:"Cao cho dự phòng T1 (Cochrane) & so sánh thuốc (OPTION-DM, ADA); Trung bình cho lựa chọn nhóm (AAN Level B).",
+    values:"Người bệnh thường ưu tiên giảm đau & ít tác dụng phụ; chấp nhận thuốc uống dài hạn.",
+    balance:"Lợi ích > tác hại cho tầm soát + 1 thuốc đầu tay chọn theo bệnh đồng mắc; opioid: hại > lợi.",
+    resources:"Monofilament & amitriptyline/gabapentin rẻ (BHYT); duloxetine/pregabalin đắt hơn.",
+    equity:"Tầm soát rẻ, khả thi tuyến cơ sở → cải thiện công bằng tiếp cận.",
+    acceptability:"Cao — phù hợp thực hành ngoại trú VN.",
+    feasibility:"Cao ở tuyến cơ sở (monofilament, thuốc sẵn có); đo dẫn truyền hạn chế.",
+    recommendation:"Áp dụng: tầm soát định kỳ + tối ưu đường huyết + 1 trong 4 nhóm đầu tay (chọn theo bệnh đồng mắc/chi phí; tránh amitriptyline ở người cao tuổi); KHÔNG dùng opioid.",
+    strength:"strong"
+  },
+  summary:{
+    conclusion:"DSPN gặp ~50% sau 10 năm ĐTĐ. Tầm soát lâm sàng định kỳ; kiểm soát đường huyết để dự phòng (rõ ở type 1, khiêm tốn ở type 2); điều trị đau bằng 1 trong 4 nhóm đầu tay (TCA/SNRI/gabapentinoid/chẹn kênh natri) hiệu lực tương đương; phối hợp khi đáp ứng một phần; KHÔNG opioid.",
+    doNow:["Tầm soát DSPN: từ chẩn đoán (type 2)/5 năm sau (type 1), rồi hằng năm — monofilament 10g + rung/đau/nhiệt.","Tối ưu đường huyết để dự phòng (rõ ở type 1).","Đau DPN: chọn 1/4 nhóm đầu tay theo bệnh đồng mắc/chi phí; đổi/phối hợp khi cần."],
+    dontDo:["Không dùng opioid cho đau DPN.","Không mặc định mọi bệnh thần kinh là do ĐTĐ — loại trừ B12/suy giáp/rượu khi không điển hình.","Type 2: không siết đường huyết đơn thuần để phòng thần kinh."],
+    redFlags:["Không điển hình (không đối xứng, tiến triển nhanh, ưu thế vận động) → khám thần kinh.","Loét/nhiễm trùng/Charcot bàn chân → chăm sóc bàn chân khẩn.","Hạ HA tư thế nặng/ngất, liệt dạ dày sụt cân → tự chủ nặng, chuyển tuyến."]
+  },
+  items:[
+    {id:"ITEM-01", title:"Tầm soát & chẩn đoán bệnh thần kinh ngoại biên (DSPN)", source:"ADA Standards of Care 2026, Ch.12", org:"American Diabetes Association", dateVersion:"2026", pmid:"41358886", doi:"10.2337/dc26-S012",
+     design:"Guideline", population:"Mọi BN ĐTĐ type 1 & 2",
+     pico:{P:["Mọi BN ĐTĐ type 1/2","match"], I:["Monofilament 10g + rung 128Hz/đau kim/nhiệt","match"], C:["Không tầm soát hệ thống","match"], O:["Phát hiện sớm DSPN & bàn chân nguy cơ","match"]},
+     gradeSource:"Tiêu chuẩn chăm sóc ADA 2026 (hệ A/B/C/E — đối chiếu nguyên văn chương 12)", gradeLevel:"high", decision:"apply", groups:["dtd","cao-tuoi"],
+     action:"Tầm soát từ lúc chẩn đoán (type 2) / 5 năm sau (type 1), rồi hằng năm. Monofilament 10g (nguy cơ loét) + ≥1 test sợi nhỏ (đau kim/nhiệt) và sợi lớn (rung 128Hz/phản xạ gân gót). Chẩn đoán chủ yếu lâm sàng; đo dẫn truyền chỉ khi không điển hình.",
+     monitoring:"Khám bàn chân mỗi lần tái khám ở người nguy cơ; đánh giá lại hằng năm.",
+     vn:"Monofilament 10g rẻ, khả thi tuyến cơ sở — nên trang bị. [CẦN XÁC NHẬN TẠI ĐƠN VỊ] quy trình khám bàn chân.",
+     safety:"Khi đặc điểm không điển hình, tầm soát nguyên nhân khác trước khi quy cho ĐTĐ.",
+     references:["American Diabetes Association. 12. Retinopathy, Neuropathy, and Foot Care: Standards of Care in Diabetes—2026. Diabetes Care. 2026;49(Suppl 1):S261-S276. PMID 41358886."]},
+
+    {id:"ITEM-02", title:"Kiểm soát đường huyết tích cực để dự phòng bệnh thần kinh", source:"Callaghan BC, et al. Cochrane 2012", org:"Cochrane", dateVersion:"2012", pmid:"22696371", doi:"10.1002/14651858.CD007543.pub2",
+     design:"Meta", population:"ĐTĐ type 1 (n=1228) & type 2 (n=6669)",
+     pico:{P:["ĐTĐ type 1 & 2","match"], I:["Kiểm soát đường huyết tích cực","match"], C:["Kiểm soát thường quy","match"], O:["Bệnh thần kinh lâm sàng mới/năm (RD)","match"]},
+     effectText:"RD/năm: T1 -1,84% (CI -1,11→-2,56) · T2 -0,58% (NS, P=0,06)",
+     gradeSource:"Chứng cứ độ chắc chắn cao (Cochrane) cho type 1; type 2 không đạt ý nghĩa (P=0,06)", gradeLevel:"high", decision:"apply", groups:["dtd","tim-mach"], flag:"Khác biệt type 1/2",
+     action:"Type 1: giảm nguy cơ có ý nghĩa, RD năm hóa -1,84% (95% CI -1,11 đến -2,56). Type 2: RD -0,58% (95% CI 0,01 đến -1,17), không đạt ý nghĩa (P=0,06). Cải thiện dẫn truyền & ngưỡng rung ở cả hai.",
+     monitoring:"Kiểm soát tích cực TĂNG hạ đường huyết nặng — cá thể hóa mục tiêu HbA1c.",
+     vn:"BN VN đa số type 2: không dựa đơn thuần vào siết đường huyết để phòng thần kinh; quản lý đa yếu tố.",
+     references:["Callaghan BC, Little AA, Feldman EL, Hughes RAC. Enhanced glucose control for preventing and treating diabetic neuropathy. Cochrane Database Syst Rev. 2012;(6):CD007543. PMID 22696371."]},
+
+    {id:"ITEM-03", title:"Thuốc đầu tay điều trị đau do bệnh đa dây thần kinh ĐTĐ", source:"Price R, et al. AAN. Neurology 2022", org:"American Academy of Neurology", dateVersion:"2022", pmid:"34965987", doi:"10.1212/WNL.0000000000013038",
+     design:"Guideline", population:"Người bệnh đau do bệnh đa dây thần kinh ĐTĐ (PDN)",
+     pico:{P:["Đau do DPN","match"], I:["TCA / SNRI / gabapentinoid / chẹn kênh natri","match"], C:["Giả dược","match"], O:["Giảm đau (SMD so giả dược)","match"]},
+     effectText:"SMD: gabapentinoid 0,44 · SNRI 0,47 · chẹn Na 0,56 · TCA 0,95",
+     gradeSource:"AAN 2022 — Level B (nên cung cấp)", gradeLevel:"mod", decision:"apply", groups:["cao-tuoi","ckd","gan","da-thuoc","tim-mach"],
+     action:"AAN Level B: cung cấp 1 trong 4 nhóm, cân nhắc cả yếu tố ngoài hiệu lực (chi phí, bệnh đồng mắc, tác dụng phụ). SMD so giả dược: gabapentinoid 0,44 (0,21-0,67); SNRI 0,47 (0,34-0,60); chẹn kênh natri 0,56 (0,25-0,87); TCA 0,95 (0,15-1,8 — độ tin cậy thấp). Đổi nhóm nếu không cải thiện/không dung nạp.",
+     monitoring:"Theo dõi đáp ứng & tác dụng phụ; sàng lọc trầm cảm/giấc ngủ.",
+     vn:"Cả 4 nhóm có tại VN. Amitriptyline & gabapentin rẻ, BHYT phổ biến; duloxetine đắt hơn; pregabalin trung bình.",
+     references:["Price R, Smith D, Franklin G, et al. Oral and Topical Treatment of Painful Diabetic Polyneuropathy: AAN Practice Guideline Update Summary. Neurology. 2022;98(1):31-43. PMID 34965987."]},
+
+    {id:"ITEM-04", title:"So sánh đối đầu amitriptyline–duloxetine–pregabalin & phối hợp (OPTION-DM)", source:"Tesfaye S, et al. Lancet 2022", org:"Lancet", dateVersion:"2022", pmid:"36007534", doi:"10.1016/S0140-6736(22)01472-6",
+     design:"RCT", population:"Đau DPN, NRS ≥4; 13 trung tâm UK; n=140 ngẫu nhiên (chéo, mù đôi)",
+     pico:{P:["Đau DPN trung bình–nặng","match"], I:["Ami 75 / dulox 120 / pregab 600 mg ± phối hợp","match"], C:["So sánh chéo 3 lộ trình","match"], O:["NRS đau trung bình 7 ngày tuần cuối","match"]},
+     effectText:"3 đơn trị NRS tương đương (D-P vs A-P -0,1; 98,3% CI -0,5→0,3); phối hợp +1,0 vs 0,2",
+     gradeSource:"RCT chéo đa trung tâm, mù đôi (chất lượng cao)", gradeLevel:"high", decision:"apply", groups:["da-thuoc"],
+     rob:{"Ngẫu nhiên hóa":"l","Sai lệch can thiệp":"l","Dữ liệu thiếu":"s","Đo kết cục":"l","Báo cáo chọn lọc":"l"},
+     action:"NRS giảm 6,6 (SD 1,5) → 3,3 (1,8); 3 lộ trình tương đương. Khi đơn trị đáp ứng chưa đủ → PHỐI HỢP cải thiện thêm (giảm NRS 1,0 so 0,2) và dung nạp tốt. (RoB 2 sơ bộ — đánh giá vận hành từ tóm tắt.)",
+     monitoring:"Tác dụng phụ đặc trưng: chóng mặt (pregabalin), buồn nôn (duloxetine), khô miệng (amitriptyline).",
+     vn:"Chọn thuốc theo bệnh đồng mắc/chi phí thay vì giả định nhóm nào mạnh hơn; phối hợp khi đáp ứng một phần.",
+     references:["Tesfaye S, Sloan G, Petrie J, et al. ...(OPTION-DM): a multicentre, double-blind, randomised crossover trial. Lancet. 2022;400(10353):680-690. PMID 36007534."]},
+
+    {id:"ITEM-05", title:"KHÔNG dùng opioid để điều trị đau DPN mạn", source:"Price R, et al. AAN. Neurology 2022", org:"American Academy of Neurology", dateVersion:"2022", pmid:"34965987", doi:"10.1212/WNL.0000000000013038",
+     design:"Guideline", population:"Người bệnh đau DPN mạn",
+     pico:{P:["Đau DPN mạn","match"], I:["Opioid (kể cả dùng thường quy)","match"], C:["4 nhóm đầu tay","match"], O:["Cân bằng lợi ích – tác hại","mis"]},
+     effectText:"Khuyến cáo KHÔNG dùng",
+     gradeSource:"AAN 2022 — Level B (khuyến cáo KHÔNG dùng)", gradeLevel:"mod", decision:"notyet", groups:["da-thuoc","cao-tuoi"], flag:"Không dùng opioid",
+     action:"AAN Level B: KHÔNG dùng opioid điều trị PDN (cân nhắc tác hại & nguy cơ lệ thuộc). Nếu đang dùng → kế hoạch giảm/ngưng, chuyển nhóm đầu tay.",
+     monitoring:"Rà soát đơn đang dùng; tránh leo thang opioid cho đau mạn lành tính.",
+     vn:"Phù hợp định hướng hạn chế opioid cho đau mạn lành tính tại VN.",
+     safety:"Tránh opioid (kể cả lựa chọn thường quy) cho đau DPN mạn; ưu tiên 4 nhóm đầu tay.",
+     references:["Price R, Smith D, Franklin G, et al. Oral and Topical Treatment of Painful Diabetic Polyneuropathy: AAN Practice Guideline Update Summary. Neurology. 2022;98(1):31-43. PMID 34965987."]},
+
+    {id:"ITEM-06", title:"Bệnh thần kinh tự chủ & loại trừ nguyên nhân khác", source:"Pop-Busui R, et al. ADA Position Statement 2017", org:"American Diabetes Association", dateVersion:"2017", pmid:"27999003", doi:"10.2337/dc16-2042",
+     design:"Guideline", population:"Người bệnh ĐTĐ — DSPN & bệnh thần kinh tự chủ",
+     pico:{P:["Người bệnh ĐTĐ","match"], I:["Tầm soát/quản lý tự chủ; loại trừ nguyên nhân khác","match"], C:["—","match"], O:["Phát hiện tự chủ tim mạch/tiêu hóa/niệu-SD","match"]},
+     gradeSource:"ADA Position Statement 2017 (hệ A/B/C/E — đối chiếu nguyên văn)", gradeLevel:"mod", decision:"consider", groups:["tim-mach","cao-tuoi","da-thuoc"],
+     action:"Nghĩ tới tự chủ tim mạch (hạ HA tư thế), tiêu hóa (liệt dạ dày), niệu-sinh dục. ~10% bệnh thần kinh ở người ĐTĐ do nguyên nhân KHÁC — loại trừ thiếu B12 (nhất là metformin kéo dài), suy giáp, rượu khi không điển hình.",
+     monitoring:"Đo HA nằm/đứng tìm hạ HA tư thế; xét B12 nếu dùng metformin kéo dài có triệu chứng.",
+     vn:"Cân nhắc định lượng B12 ở BN dùng metformin lâu dài kèm triệu chứng. [CẦN XÁC NHẬN TẠI ĐƠN VỊ] khả năng xét nghiệm.",
+     references:["Pop-Busui R, Boulton AJM, Feldman EL, et al. Diabetic Neuropathy: A Position Statement by the American Diabetes Association. Diabetes Care. 2017;40(1):136-154. PMID 27999003."]}
+  ]
+};
+/* ▲▲▲  HẾT KHỐI DATA  ▲▲▲ */
+
+/* ============================ ENGINE (không cần sửa) ============================ */
+const DESIGN_META={Guideline:['b-guide','Guideline'],Meta:['b-meta','Meta'],RCT:['b-rct','RCT'],Cohort:['b-cohort','Cohort'],Consensus:['b-consensus','Đồng thuận']};
+const GRADE_META={high:['g-high','Cao',4],mod:['g-mod','TB',3],low:['g-low','Thấp',2],vlow:['g-vlow','Rất thấp',1],na:['g-na','Không phân hạng',0]};
+const DEC_META={apply:['d-apply','Áp dụng ngay'],consider:['d-consider','Cân nhắc'],notyet:['d-notyet','Chưa đủ']};
+const GROUP_META={'cao-tuoi':'Người cao tuổi','ckd':'CKD','gan':'Bệnh gan','dtd':'Đái tháo đường','tim-mach':'Tim mạch','da-thuoc':'Đa thuốc'};
+const RM={l:['rl','✓'],s:['rs','!'],h:['rh','✕']};
+let state={open:null, q:'', filter:'all'};
+
+const FMIN=0.4,FMAX=2.0;
+function lx(v){const a=Math.log(FMIN),b=Math.log(FMAX);return (Math.log(Math.min(Math.max(v,FMIN),FMAX))-a)/(b-a);}
+function forest(e,w,h){
+  if(!e||e.hr==null) return '<span style="color:var(--faint);font-size:10px">—</span>';
+  const cx=w*lx(e.hr),clo=w*lx(e.lo),chi=w*lx(e.hi),x1=w*lx(1);
+  const col=e.favors?'var(--g-high)':(e.favors===false?'var(--g-vlow)':'var(--muted)');
+  return `<svg width="${w}" height="${h}"><line x1="${x1}" y1="2" x2="${x1}" y2="${h-2}" stroke="var(--line-2)" stroke-dasharray="2 2"/><line x1="${clo}" y1="${h/2}" x2="${chi}" y2="${h/2}" stroke="${col}" stroke-width="2"/><rect x="${cx-3}" y="${h/2-3}" width="6" height="6" fill="${col}" transform="rotate(45 ${cx} ${h/2})"/></svg>`;
+}
+function effCell(e){
+  if(e.effect&&e.effect.hr!=null){const f=e.effect;return `<span class="effect ${f.favors?'fav':(f.favors===false?'harm':'ns')}">${f.hr.toFixed(2)}</span> <span class="ci">(${f.ci||''})</span>`;}
+  if(e.effectText) return `<span class="effect ns" style="font-size:10.5px">${e.effectText}</span>`;
+  return '<span class="effect ns">—</span>';
+}
+
+function renderStatic(){
+  document.title='Dashboard EBM · '+DATA.meta.question+' · Dark Analyst';
+  document.getElementById('status').textContent=DATA.items.length+' nguồn đã xác minh';
+  document.getElementById('upd').textContent='Cập nhật: '+(DATA.meta.updated||'');
+  const p=DATA.meta.pico||{};
+  document.getElementById('qbar').innerHTML=
+    `<span class="lab">PICO</span>`+
+    `<span class="ptok p"><b>P</b> ${p.P||''}</span><span class="ptok i"><b>I</b> ${p.I||''}</span>`+
+    `<span class="ptok c"><b>C</b> ${p.C||''}</span><span class="ptok o"><b>O</b> ${p.O||''}</span>`;
+  // KPI tự tính
+  const it=DATA.items, c=k=>it.filter(x=>x.decision===k).length;
+  const cd=d=>it.filter(x=>x.design===d).length;
+  const newest=it.map(x=>x.dateVersion).filter(Boolean).sort().slice(-1)[0]||'—';
+  const kp=[
+    ['Nguồn',it.length,'cy'],['Áp dụng ngay',c('apply'),'gr'],['Cân nhắc',c('consider'),'am'],['Chưa đủ',c('notyet'),'or'],
+    ['GRADE Cao',it.filter(x=>x.gradeLevel==='high').length,'gr'],['RCT+Meta',cd('RCT')+cd('Meta'),'vi'],['Mới nhất',newest,'']
+  ];
+  document.getElementById('kpis').innerHTML=kp.map(d=>`<div class="kp"><div class="l">${d[0]}</div><div class="v ${d[2]}">${d[1]}</div></div>`).join('');
+  // Quick View — LỌC PHÒNG VỆ giống bản Evidence Workbench: bỏ gạch đầu dòng nhồi abstract ngoại ngữ;
+  // "Nên làm" rỗng sau lọc → suy từ hành động item "Áp dụng ngay" (tiếng Việt thật; KHÔNG bịa).
+  const s=DATA.summary||{}, li=a=>(a||[]).map(x=>`<li>${x}</li>`).join('')||'<li style="color:var(--faint)">—</li>';
+  const _hasVi=t=>/[ăâđêôơưàáạảãằắặẳẵầấậẩẫèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗờớợởỡùúụủũừứựửữỳýỵỷỹ]/i.test(t);
+  const _foreign=t=>{t=String(t||'').trim();if(/^(conclusion|in conclusion|keywords?|background|objective|methods?|results?|findings?|introduction|aim|purpose)\b/i.test(t))return true;return t.split(/\s+/).length>=5&&!_hasVi(t);};
+  const _clean=a=>(a||[]).filter(x=>x&&!_foreign(x));
+  const _firstSentence=t=>{const m=String(t||'').split(/(?<=[.;])\s+/)[0];return (m||String(t||'')).trim();};
+  const _placeholder=t=>/^\s*\[\s*CẦN/i.test(String(t||''));
+  const _usable=t=>t&&_hasVi(t)&&!_placeholder(t);
+  let doNow=_clean(s.doNow);
+  if(doNow.length===0){
+    doNow=(DATA.items||[]).filter(e=>e.decision==='apply').map(e=>{
+      const a=_firstSentence(e.action||''); if(_usable(a)) return a;
+      const v=_firstSentence(e.vn||'');     return _usable(v)?v:'';
+    }).filter(Boolean).slice(0,4);
+  }
+  document.getElementById('qv').innerHTML=`
+    <div class="qvc concl"><div class="h">✓ Kết luận thực hành</div><p>${s.conclusion||'—'}</p></div>
+    <div class="qvc do"><div class="h">➤ Nên làm</div><ul>${li(doNow)}</ul></div>
+    <div class="qvc dont"><div class="h">⊘ Không nên / giới hạn</div><ul>${li(_clean(s.dontDo))}</ul></div>
+    <div class="qvc flag"><div class="h">⚑ Cờ đỏ / chuyển tuyến</div><ul>${li(_clean(s.redFlags))}</ul></div>`;
+  // GRADE Evidence-to-Decision (tùy chọn)
+  const etd=DATA.etd, etdEl=document.getElementById('etd');
+  if(etd){
+    const cell=(label,val,tag)=>`<div class="etd-c"><div class="l">${label}${tag==='src'?'<span class="src">nguồn</span>':tag==='op'?'<span class="op">vận hành</span>':''}</div><div class="v">${val||'—'}</div></div>`;
+    etdEl.innerHTML=`<details class="etd-d"><summary class="eh">⚖ GRADE Evidence-to-Decision <span class="note">— bấm để mở/đóng · "nguồn" = từ chứng cứ đã xác minh · "vận hành" = đánh giá của người tổng hợp</span></summary>
+      <div class="etd-grid">
+        ${cell('Vấn đề ưu tiên',etd.problem,'op')}
+        ${cell('Lợi ích mong muốn',etd.desirable,'src')}
+        ${cell('Tác hại',etd.undesirable,'src')}
+        ${cell('Độ chắc chắn',etd.certainty,'src')}
+        ${cell('Giá trị/ưu tiên BN',etd.values,'op')}
+        ${cell('Cân bằng lợi–hại',etd.balance,'op')}
+        ${cell('Nguồn lực/chi phí',etd.resources,'op')}
+        ${cell('Công bằng',etd.equity,'op')}
+        ${cell('Chấp nhận',etd.acceptability,'op')}
+        ${cell('Khả thi',etd.feasibility,'op')}
+      </div>
+      ${etd.recommendation?`<div class="etd-rec"><div class="rh">➤ Khuyến cáo (đánh giá vận hành)${etd.strength?`<span class="str">${etd.strength==='strong'?'Mạnh':'Có điều kiện'}</span>`:''}</div><div class="rv">${etd.recommendation}</div></div>`:''}</details>`;
+    etdEl.style.display='';
+  }
+  document.getElementById('verdict').textContent='✓ '+c('apply')+' áp dụng ngay · '+c('consider')+' cân nhắc · '+c('notyet')+' chưa đủ';
+  buildFilters();
+}
+function buildFilters(){
+  const it=DATA.items;
+  const nSafe=it.filter(x=>x.safety).length;
+  const chips=[['all','Tất cả',it.length],['apply','Áp dụng ngay',it.filter(x=>x.decision==='apply').length],
+    ['consider','Cân nhắc',it.filter(x=>x.decision==='consider').length],['notyet','Chưa đủ',it.filter(x=>x.decision==='notyet').length],
+    ['safety','⚑ An toàn',nSafe]];
+  document.getElementById('filters').innerHTML='<span class="lab">LỌC</span>'+chips.map(c=>`<span class="fchip ${state.filter===c[0]?'on':''}" onclick="setFilter('${c[0]}')">${c[1]}<span class="ct">${c[2]}</span></span>`).join('');
+}
+function setFilter(f){state.filter=f;render();buildFilters();}
+
+function filtered(){
+  let arr=DATA.items.slice();
+  if(state.filter==='safety') arr=arr.filter(x=>x.safety);
+  else if(state.filter!=='all') arr=arr.filter(x=>x.decision===state.filter);
+  if(state.q){const q=state.q.toLowerCase();arr=arr.filter(x=>JSON.stringify(x).toLowerCase().includes(q));}
+  return arr;
+}
+function render(){
+  state.q=document.getElementById('q').value.trim().toLowerCase();
+  const arr=filtered(),rows=[];
+  document.getElementById('leadcount').textContent=arr.length+' điểm chứng cứ';
+  arr.forEach(e=>{
+    const dm=DESIGN_META[e.design]||['b-guide',e.design||'—'],gm=GRADE_META[e.gradeLevel]||GRADE_META.na,dec=DEC_META[e.decision]||DEC_META.consider;
+    const pips=Array.from({length:4},(_,i)=>`<span class="pip ${i<gm[2]?'on':''}"></span>`).join('');
+    const robm=e.rob?Object.values(e.rob).map(r=>`<i class="${RM[r][0]}" title="${RM[r][1]}"></i>`).join(''):'<span style="color:var(--faint);font-size:10px">—</span>';
+    rows.push(`<tr class="main-row ${state.open===e.id?'open':''}" onclick="toggle('${e.id}')">
+      <td><span class="twist">▸</span></td>
+      <td><div class="ttl">${e.title}${e.flag?`<span class="flag">⚑ ${e.flag}</span>`:''}<div class="sub">${e.source} · <span class="idtag">${e.id}</span>${e.pmid?` · PMID <span class="pmid">${e.pmid}</span>`:''}</div></div></td>
+      <td><span class="dec ${dec[0]}"><span class="d"></span>${dec[1]}</span></td>
+      <td><span class="badge ${dm[0]}"><span class="d"></span>${dm[1]}</span></td>
+      <td>${effCell(e)}</td>
+      <td><span class="grade ${gm[0]}"><span class="pips">${pips}</span>${gm[1]}</span></td>
+      <td><div class="robmini">${robm}</div></td>
+    </tr>`);
+    if(state.open===e.id) rows.push(expandRow(e));
+  });
+  document.getElementById('rows').innerHTML=rows.join('')||`<tr><td colspan="7" class="empty">Không có điểm chứng cứ khớp bộ lọc.</td></tr>`;
+}
+function expandRow(e){
+  const FL=e.frameLabels||{P:'P',I:'I',C:'C',O:'O'};
+  const picoRows=['P','I','C','O'].map(k=>{const d=(e.pico||{})[k]||['—','match'];return `<div class="pico-r"><span class="k k${k}">${FL[k]||k}</span><span class="v">${d[0]} ${d[1]==='match'?'<span class="ok">✓</span>':'<span class="no">⚠</span>'}</span></div>`;}).join('');
+  const f=e.effect;
+  const robFull=e.rob?Object.keys(e.rob).map(d=>{const r=RM[e.rob[d]];return `<div class="r"><span>${d}</span><i class="${r[0]}">${r[1]}</i></div>`;}).join(''):'<div class="r" style="color:var(--faint)">RoB 2 chỉ áp dụng cho RCT — không chấm cho guideline/tổng quan.</div>';
+  const forestBox=(f&&f.hr!=null)?`<h5 style="margin-top:14px">⊞ Forest (vs ngưỡng 1.0)</h5><div style="background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:10px;text-align:center">${forest(f,200,26)}<div style="font-size:9px;color:var(--faint);margin-top:4px;font-family:var(--mono)">◄ ủng hộ điều trị · ${FMIN} — 1.0 — ${FMAX} · bất lợi ►</div></div>`:'';
+  return `<tr class="exp"><td colspan="7"><div class="exp-in">
+    <div class="exp-col">
+      <h5>◧ Đối chiếu ${e.frame||'PICO'}</h5>
+      ${picoRows}
+      ${forestBox}
+    </div>
+    <div class="exp-col">
+      <h5>∑ Số liệu & thẩm định</h5>
+      <div class="kv">
+        <div class="c"><div class="l">Hiệu số (nguồn)</div><div class="n ${(f&&f.favors)?'gr':''}">${(f&&f.hr!=null)?f.hr.toFixed(2)+' ('+(f.ci||'')+')':(e.effectText||'—')}</div></div>
+        <div class="c"><div class="l">Quần thể</div><div class="n" style="font-size:11px">${e.population||'—'}</div></div>
+      </div>
+      <div class="kvline"><div class="r"><span class="k">Grading nguồn</span><span class="v">${e.gradeSource||'Nguồn không cung cấp phân hạng'}</span></div></div>
+      <h5>◉ Nguy cơ sai lệch (RoB 2)</h5>
+      <div class="robfull">${robFull}</div>
+    </div>
+    <div class="exp-col">
+      <h5>➤ Áp dụng lâm sàng</h5>
+      <div class="apply"><div class="h">💡 Hành động</div>${e.action||'—'}</div>
+      <div class="kvline" style="margin-top:10px">
+        <div class="r"><span class="k">Monitoring</span><span class="v">${e.monitoring||'—'}</span></div>
+        <div class="r"><span class="k">Nhóm</span><span class="v">${(e.groups||[]).map(g=>GROUP_META[g]||g).join(', ')||'—'}</span></div>
+        <div class="r"><span class="k">Việt Nam</span><span class="v">${e.vn||'—'}</span></div>
+      </div>
+      ${e.safety?`<div class="safety"><div class="h">⚑ An toàn / chuyển tuyến</div>${e.safety}</div>`:''}
+      <div class="srcs">
+        ${e.pmid?`<a href="https://pubmed.ncbi.nlm.nih.gov/${e.pmid}/" target="_blank"><span class="t pm">PMID</span> ${e.pmid}</a>`:''}
+        ${e.doi?`<a href="https://doi.org/${e.doi}" target="_blank"><span class="t doi">DOI</span> mở</a>`:''}
+        ${e.url?`<a href="${e.url}" target="_blank"><span class="t url">URL</span> nguồn</a>`:''}
+      </div>
+      ${(e.references&&e.references.length)?`<div class="reflist">${e.references.map(r=>`<div class="r">${r}</div>`).join('')}</div>`:''}
+    </div>
+  </div></td></tr>`;
+}
+function toggle(id){state.open=state.open===id?null:id;render();}
+
+renderStatic();render();
+</script>
+</body>
+</html>

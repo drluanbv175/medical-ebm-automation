@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="vi">
+<!--
+==================================================================================
+  TEMPLATE CHUẨN — "EVIDENCE WORKBENCH"  (Mẫu mặc định cho Dashboard lâm sàng EBM)
+  Dùng cho: skill cap-nhat-chung-cu-y-khoa và mọi tác vụ tạo Web Dashboard lâm sàng.
+----------------------------------------------------------------------------------
+  CÁCH DÙNG (chỉ cần sửa 1 chỗ): thay khối hằng số DATA = {...} ở cuối file bằng
+  nội dung đã XÁC MINH của vấn đề lâm sàng. KHÔNG cần đụng HTML/CSS.
+
+  3 LỚP NỘI DUNG BẮT BUỘC (đã ánh xạ sẵn vào bố cục 3 cột):
+    • Lớp 1 — CLINICAL QUICK VIEW  → băng tóm tắt trên + tab mặc định + bảng item
+    • Lớp 2 — EVIDENCE DETAIL VIEW → panel phải (mở khi click một item)
+    • Lớp 3 — SAFETY / LIMITS / VN → các tab riêng
+
+  QUY TẮC LIÊM CHÍNH (theo skill):
+    • Chỉ hiển thị nội dung đã xác minh; số liệu/hiệu số trích ĐÚNG như nguồn.
+    • Giữ nguyên grading của nguồn; nếu không có ghi "Nguồn không cung cấp phân hạng".
+    • Mã item là cục bộ ITEM-01… (KHÔNG phải ID Dashboard Master).
+    • Mọi đầu ra kèm nguồn (PMID/DOI/ngày) + disclaimer "Cần bác sĩ kiểm chứng".
+    • KHÔNG lưu thông tin định danh bệnh nhân (PII).
+==================================================================================
+-->
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard EBM · [TÊN VẤN ĐỀ]</title>
+<style>
+  :root{
+    --bg:#eef1f6; --surface:#ffffff; --surface-2:#f8fafc; --surface-3:#f1f5f9;
+    --ink:#0f172a; --ink-2:#334155; --muted:#64748b; --faint:#94a3b8;
+    --line:#e2e8f0; --line-2:#cbd5e1;
+    --primary:#0e7490; --primary-2:#0891b2; --accent:#2563eb;
+    /* semantic theo quyết định thực hành */
+    --apply:#16a34a;   /* Áp dụng ngay   */
+    --consider:#ca8a04;/* Cân nhắc       */
+    --notyet:#ea580c;  /* Chưa đủ thay đổi*/
+    --danger:#dc2626;  /* Cờ đỏ          */
+    --g-high:#16a34a; --g-mod:#ca8a04; --g-low:#ea580c; --g-vlow:#dc2626;
+    --rct:#2563eb; --meta:#7c3aed; --cohort:#0891b2; --guideline:#059669; --consensus:#db2777;
+    --mono:ui-monospace,"SF Mono","Menlo","Consolas",monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    --shadow:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:10px;border:2px solid var(--surface)}
+  a{color:var(--accent);text-decoration:none}
+
+  .app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{display:flex;align-items:center;gap:14px;padding:9px 16px;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:var(--shadow);z-index:20}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:13.5px;white-space:nowrap}
+  .brand .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-size:14px}
+  /* qtitle giữ một phần bề ngang tối thiểu (flex-basis 190px) để KHÔNG bị PICO chip bóp còn ~0;
+     eyebrow + h1 đều nowrap+ellipsis → cắt gọn 1 dòng, KHÔNG bao giờ xuống dòng dọc từng chữ. */
+  .qtitle{flex:1 1 190px;min-width:96px}
+  .qtitle .lbl{font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .qtitle h1{font-size:15px;letter-spacing:-.2px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* PICO bar nhường bề ngang cho qtitle khi topbar chật (shrink mạnh), mỗi chip cắt gọn nếu quá dài */
+  .pico-bar{display:flex;align-items:center;gap:6px;flex:0 1 auto;min-width:0;overflow:hidden}
+  .pico-chip{display:flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap;min-width:0;max-width:230px;overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
+  .pico-chip b{font-size:9px;color:#fff;background:var(--primary);border-radius:4px;padding:1px 5px;letter-spacing:.3px}
+  .pico-chip.i b{background:var(--accent)} .pico-chip.c b{background:var(--muted)} .pico-chip.o b{background:#0d9488}
+  .search{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;width:230px}
+  .search input{border:0;background:transparent;outline:none;font-size:12px;flex:1;font-family:var(--sans)}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:600;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .btn:hover{background:var(--surface-3)}
+  .btn.pri{background:var(--primary);color:#fff;border-color:var(--primary)} .btn.pri:hover{background:#0b5e74}
+
+  /* ---------- CLINICAL QUICK VIEW summary band ---------- */
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  .scard{background:var(--surface);padding:10px 14px;max-height:188px;overflow:auto}
+  .scard .sh{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .scard .sh .ic{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;color:#fff;font-size:10px}
+  .scard.concl .sh{color:var(--primary)} .scard.concl .ic{background:var(--primary)}
+  .scard.do .sh{color:var(--apply)} .scard.do .ic{background:var(--apply)}
+  .scard.dont .sh{color:var(--notyet)} .scard.dont .ic{background:var(--notyet)}
+  .scard.flag .sh{color:var(--danger)} .scard.flag .ic{background:var(--danger)}
+  .scard p{font-size:12px;color:var(--ink-2);line-height:1.45}
+  .scard ul{list-style:none;display:flex;flex-direction:column;gap:3px}
+  .scard li{font-size:11.5px;color:var(--ink-2);display:flex;gap:6px;line-height:1.4}
+  .scard li::before{content:"▪";color:var(--faint);flex-shrink:0}
+  .scard.flag li::before{content:"⚑";color:var(--danger)}
+
+  /* ---------- GRADE Evidence-to-Decision ---------- */
+  .etd{background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px}
+  .etd .eh{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--meta);margin-bottom:8px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .etd .eh .note{font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0;font-size:10.5px}
+  .etd-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line)}
+  .etd-c{background:var(--surface);padding:7px 11px}
+  .etd-c .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:700;display:flex;gap:5px;align-items:center}
+  .etd-c .l .src{font-size:8.5px;color:#0d9488;border:1px solid var(--line);border-radius:3px;padding:0 4px;text-transform:none}
+  .etd-c .l .op{font-size:8.5px;color:#b45309;border:1px solid var(--line);border-radius:3px;padding:0 4px;text-transform:none}
+  .etd-c .v{font-size:11.5px;color:var(--ink-2);line-height:1.45;margin-top:3px}
+  .etd-rec{margin-top:10px;background:linear-gradient(135deg,#ecfdf5,#eff6ff);border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px}
+  .etd-rec .rh{font-size:10.5px;font-weight:700;color:var(--apply);text-transform:uppercase;letter-spacing:.5px;display:flex;gap:8px;align-items:center;margin-bottom:4px}
+  .etd-rec .rh .str{font-size:9px;color:#fff;background:var(--apply);border-radius:4px;padding:1px 8px}
+  .etd-rec .rv{font-size:12.5px;color:var(--ink);line-height:1.5}
+
+  /* ---------- KPI strip ---------- */
+  .kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  .kpi{background:var(--surface);padding:8px 14px}
+  .kpi .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+  .kpi .val{font-size:20px;font-weight:700;font-family:var(--mono);line-height:1.15}
+  .kpi .sub{font-size:10px;color:var(--faint)}
+  .kpi .val.apply{color:var(--apply)} .kpi .val.consider{color:var(--consider)} .kpi .val.notyet{color:var(--notyet)}
+
+  /* ---------- BODY ---------- */
+  /* MẶC ĐỊNH 2 cột (bộ lọc · bảng) để bảng dùng TRỌN bề ngang; cột thẩm định bên phải chỉ
+     bung ra khi bác sĩ bấm chọn 1 điểm chứng cứ (tránh mảng trắng lớn — giữ bố cục CÂN ĐỐI). */
+  .body{flex:1;display:grid;grid-template-columns:clamp(200px,15vw,236px) minmax(0,1fr);overflow:hidden;position:relative}
+  .rail,.center-scroll,.detail{overflow:auto}
+  .rail{background:var(--surface);border-right:1px solid var(--line);padding:12px 12px 28px}
+  .center{display:flex;flex-direction:column;background:var(--bg);overflow:hidden;min-width:0}
+  .detail{background:var(--surface);border-left:1px solid var(--line);position:relative}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(15,23,42,.38);z-index:40}
+  .detail-close{display:none;position:absolute;top:10px;right:12px;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-size:15px;cursor:pointer;place-items:center;z-index:6}
+  .detail-close:hover{background:var(--surface-3)}
+
+  /* facets */
+  .facet{margin-bottom:16px}
+  .facet h4{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between;font-weight:700}
+  .facet h4 .clr{color:var(--accent);cursor:pointer;font-size:10px;text-transform:none}
+  .opt{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:7px;cursor:pointer;user-select:none}
+  .opt:hover{background:var(--surface-3)} .opt.on{background:#ecfeff}
+  .opt .box{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--line-2);display:grid;place-items:center;flex-shrink:0;color:#fff;font-size:10px}
+  .opt.on .box{background:var(--primary);border-color:var(--primary)}
+  .opt .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .opt .nm{flex:1;font-size:12px;color:var(--ink-2)}
+  .opt .ct{font-size:10px;color:var(--faint);font-family:var(--mono);background:var(--surface-3);padding:1px 6px;border-radius:10px}
+  .opt.on .ct{background:#cffafe;color:#0e7490}
+
+  /* tabs */
+  .tabs{display:flex;gap:2px;padding:8px 14px 0;background:var(--surface);border-bottom:1px solid var(--line)}
+  .tab{border:0;background:transparent;padding:8px 13px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px}
+  .tab:hover{color:var(--ink)}
+  .tab.on{color:var(--primary);border-bottom-color:var(--primary)}
+  .tab .badge-n{font-size:10px;font-family:var(--mono);background:var(--surface-3);border-radius:10px;padding:0 6px}
+  .center-scroll{flex:1;padding:0 0 40px}
+  .ctoolbar{display:flex;align-items:center;gap:10px;padding:9px 16px;color:var(--muted);font-size:12px;position:sticky;top:0;background:var(--bg);z-index:4;border-bottom:1px solid var(--line)}
+  .ctoolbar b{color:var(--ink)} .ctoolbar .sp{flex:1}
+
+  /* table */
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+  thead th{position:sticky;top:39px;background:var(--surface-2);text-align:left;padding:9px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;z-index:3}
+  thead th:hover{color:var(--ink)}
+  tbody tr{cursor:pointer;border-bottom:1px solid var(--line)}
+  tbody tr:hover{background:#f0fdff}
+  tbody tr.sel{background:#ecfeff;box-shadow:inset 3px 0 0 var(--primary)}
+  tbody td{padding:11px 14px;vertical-align:top;border-bottom:1px solid var(--line)}
+  tbody td:first-child{min-width:240px}
+  tbody td:not(:first-child){white-space:nowrap}
+  .ttl{font-weight:600;color:var(--ink);line-height:1.35;display:block;max-width:520px}
+  .ttl .auth{font-weight:400;color:var(--muted);font-size:11px;margin-top:2px;display:block}
+  .pmid{font-family:var(--mono);font-size:10px;color:var(--accent)}
+  .idtag{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;white-space:nowrap}
+  .badge .d{width:7px;height:7px;border-radius:50%}
+  .b-rct{background:#eff6ff;color:var(--rct)}.b-rct .d{background:var(--rct)}
+  .b-meta{background:#f5f3ff;color:var(--meta)}.b-meta .d{background:var(--meta)}
+  .b-cohort{background:#ecfeff;color:var(--cohort)}.b-cohort .d{background:var(--cohort)}
+  .b-guideline{background:#ecfdf5;color:var(--guideline)}.b-guideline .d{background:var(--guideline)}
+  .b-consensus{background:#fdf2f8;color:var(--consensus)}.b-consensus .d{background:var(--consensus)}
+
+  .dec{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px}
+  .dec .d{width:7px;height:7px;border-radius:50%}
+  .d-apply{background:#dcfce7;color:var(--apply)}.d-apply .d{background:var(--apply)}
+  .d-consider{background:#fef9c3;color:var(--consider)}.d-consider .d{background:var(--consider)}
+  .d-notyet{background:#ffedd5;color:var(--notyet)}.d-notyet .d{background:var(--notyet)}
+
+  .grade{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+  .grade .pips{display:flex;gap:2px}.grade .pip{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.25}.grade .pip.on{opacity:1}
+  .g-high{background:#dcfce7;color:var(--g-high)}.g-mod{background:#fef9c3;color:var(--g-mod)}.g-low{background:#ffedd5;color:var(--g-low)}.g-vlow{background:#fee2e2;color:var(--g-vlow)}.g-na{background:var(--surface-3);color:var(--muted)}
+  .effect{font-family:var(--mono);font-weight:600}.effect.fav{color:var(--g-high)}.effect.harm{color:var(--g-vlow)}.effect.ns{color:var(--muted)}
+  .ci{color:var(--faint);font-size:10px;font-family:var(--mono)}
+  .mforest svg{display:block}
+  .flag-mini{display:inline-block;font-size:9px;font-weight:700;color:var(--notyet);background:#fff7ed;border:1px solid #fed7aa;border-radius:5px;padding:1px 5px;margin-top:4px}
+
+  /* generic section cards used in non-table tabs */
+  .pad{padding:14px 16px}
+  .cardlist{display:flex;flex-direction:column;gap:10px}
+  .li-card{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:var(--surface)}
+  .li-card .h{font-weight:700;font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .li-card .x{font-size:12px;color:var(--ink-2);line-height:1.5}
+  .li-card .src{font-size:10.5px;color:var(--muted);margin-top:6px}
+  .stripe{width:4px;align-self:stretch;border-radius:3px}
+  .empty{padding:40px;text-align:center;color:var(--muted)}
+
+  .vn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .vn-col h5{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:8px}
+  .needconf{display:inline-block;font-size:9.5px;font-weight:700;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:5px;padding:1px 6px}
+
+  /* verify tasks */
+  .vtask{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
+  .vtask .n{width:24px;height:24px;border-radius:7px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:800;flex-shrink:0;font-family:var(--mono)}
+  .vtask .t{font-size:12.5px;color:var(--ink);font-weight:600}
+  .vtask .g{font-size:11px;color:var(--muted);margin-top:2px}
+  .vtask .timer{margin-left:auto;font-size:10px;font-family:var(--mono);color:var(--primary);background:#ecfeff;border-radius:6px;padding:3px 8px;font-weight:700;white-space:nowrap}
+
+  /* ---------- DETAIL PANEL (Evidence Detail View) ---------- */
+  .detail .dhead{padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:3}
+  .detail .deyebrow{font-size:10px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .detail h2{font-size:14.5px;line-height:1.3}
+  .detail .dmeta{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .dsec{padding:13px 16px;border-bottom:1px solid var(--line)}
+  .dsec h3{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:9px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .picogrid{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:12px}
+  .picogrid .k{font-weight:700;color:#fff;font-size:9px;border-radius:4px;padding:2px 6px;text-align:center;align-self:start}
+  .picogrid .kP{background:var(--primary)}.picogrid .kI{background:var(--accent)}.picogrid .kC{background:var(--muted)}.picogrid .kO{background:#0d9488}
+  .picogrid .v{color:var(--ink-2)}.picogrid .v .match{color:var(--g-high);font-weight:600;font-size:10px}.picogrid .v .mis{color:var(--notyet);font-weight:600;font-size:10px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stat{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:8px 11px}
+  .stat .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+  .stat .n{font-size:17px;font-weight:700;font-family:var(--mono);margin-top:1px}
+  .stat .x{font-size:10px;color:var(--faint)}
+  .kvline{display:flex;flex-direction:column;gap:9px}
+  .kvline .r{display:grid;grid-template-columns:96px 1fr;gap:9px;font-size:12px;align-items:start}
+  .kvline .r .k{color:var(--muted);font-weight:600;font-size:11px}
+  .kvline .r .v{color:var(--ink-2)}
+  .applybox{background:linear-gradient(135deg,#ecfeff,#eff6ff);border:1px solid #bae6fd;border-radius:10px;padding:11px}
+  .applybox .ah{font-size:11px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .applybox p{font-size:12px;color:var(--ink-2);line-height:1.5}
+  .src{display:flex;flex-direction:column;gap:6px}
+  .src a{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-2);padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2)}
+  .src a:hover{border-color:var(--primary-2);background:#fff}
+  .src .tag{font-family:var(--mono);font-size:10px;color:#fff;border-radius:4px;padding:1px 5px}
+  .src .tag.doi{background:var(--accent)}.src .tag.pmid{background:var(--g-high)}.src .tag.url{background:var(--ink-2)}
+  .reflist{font-size:11px;color:var(--ink-2);line-height:1.5;display:flex;flex-direction:column;gap:5px}
+  .reflist .r{padding-left:14px;text-indent:-14px}
+
+  /* ---------- DISCLAIMER ---------- */
+  .disclaimer{display:flex;align-items:center;gap:10px;padding:8px 16px;background:#fffbeb;border-top:1px solid #fde68a;font-size:11.5px;color:#92400e}
+  .disclaimer b{font-weight:700}
+  .disclaimer .upd{margin-left:auto;color:#b45309;font-family:var(--mono);font-size:10.5px}
+  .hidden{display:none!important}
+
+  /* ===================== RESPONSIVE — cân đối khi màn hẹp ===================== */
+  /* ≤1199px: panel thẩm định thành NGĂN KÉO trượt từ phải → bảng dùng trọn bề ngang */
+  @media (max-width:1199px){
+    .body{grid-template-columns:clamp(200px,24vw,236px) minmax(0,1fr)}
+    .detail{position:fixed;top:0;right:0;bottom:0;width:min(440px,94vw);transform:translateX(102%);
+      transition:transform .26s cubic-bezier(.4,0,.2,1);box-shadow:-14px 0 44px rgba(15,23,42,.20);
+      border-left:1px solid var(--line);z-index:50}
+    .detail.open{transform:none}
+    .detail .dhead{padding-right:46px}
+    .scrim.open{display:block}
+    .detail-close{display:grid}
+  }
+  /* ≥1200px: MÀN RỘNG — cột thẩm định (cột 3) chỉ hiện khi đã CHỌN 1 điểm chứng cứ.
+     Khi chưa chọn: lưới 2 cột, bảng dùng trọn bề ngang (hết mảng trắng bên phải). */
+  @media (min-width:1200px){
+    .detail{display:none}
+    .body.show-detail{grid-template-columns:clamp(200px,15vw,236px) minmax(0,1fr) clamp(340px,26vw,430px)}
+    .body.show-detail .detail{display:block}
+    .detail-close{display:grid}
+  }
+  /* 1200–1460px: khi ĐÃ bung cột thẩm định, bề ngang vừa → ẩn cột Forest để các cột khác
+     rộng rãi (Forest vẫn xem được trong panel thẩm định bên phải) */
+  @media (min-width:1200px) and (max-width:1460px){
+    .body.show-detail table th:nth-child(4),.body.show-detail table td:nth-child(4){display:none}
+  }
+  /* ≤820px: bộ lọc thành dải ngang gọn ở trên; bảng chiếm trọn bề ngang; ẩn cột Forest */
+  @media (max-width:820px){
+    .summary{grid-template-columns:1fr 1fr}
+    .kpi-strip{grid-template-columns:repeat(3,1fr)}
+    .etd-grid{grid-template-columns:1fr 1fr}
+    .body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+    .rail{border-right:0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 22px;
+      padding:10px 14px;align-content:flex-start;max-height:34vh}
+    .rail .facet{margin-bottom:0;min-width:148px}
+    .pico-bar{display:none}
+    .search{width:160px}
+    .detail{width:100vw}
+    table th:nth-child(4),table td:nth-child(4){display:none}
+  }
+  /* ≤540px: dồn về 1–2 cột cho điện thoại */
+  @media (max-width:540px){
+    .topbar{flex-wrap:wrap;gap:8px}
+    .summary{grid-template-columns:1fr}
+    .kpi-strip{grid-template-columns:repeat(2,1fr)}
+    .etd-grid{grid-template-columns:1fr}
+    .qtitle h1{white-space:normal}
+    .search{flex:1;width:auto}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="brand"><span class="logo">⊕</span> EBM</div>
+    <div class="qtitle"><div class="lbl" id="q-eyebrow">Cập nhật chứng cứ · vấn đề lâm sàng</div><h1 id="q-title">—</h1></div>
+    <div class="pico-bar" id="pico-bar"></div>
+    <div class="search">⌕<input id="q" placeholder="Tìm: bệnh, thuốc, nhóm nguy cơ, hành động, nguồn…" oninput="render()"/></div>
+    <button class="btn" onclick="exportData('csv')">⤓ CSV</button>
+    <button class="btn" onclick="exportData('json')">⤓ JSON</button>
+  </header>
+
+  <!-- ============ CLINICAL QUICK VIEW summary band (Lớp 1) ============ -->
+  <section class="summary" id="summary"></section>
+
+  <!-- ============ GRADE Evidence-to-Decision (tùy chọn) ============ -->
+  <section class="etd" id="etd" style="display:none"></section>
+
+  <!-- ============ KPI STRIP ============ -->
+  <section class="kpi-strip" id="kpis"></section>
+
+  <!-- ============ BODY ============ -->
+  <div class="body">
+
+    <!-- LEFT RAIL facets -->
+    <aside class="rail">
+      <div class="facet"><h4>Quyết định thực hành <span class="clr" onclick="clearFacet('decision')">Xóa</span></h4><div id="f-decision"></div></div>
+      <div class="facet"><h4>Nhóm đặc biệt <span class="clr" onclick="clearFacet('group')">Xóa</span></h4><div id="f-group"></div></div>
+      <div class="facet"><h4>Loại thiết kế <span class="clr" onclick="clearFacet('design')">Xóa</span></h4><div id="f-design"></div></div>
+      <div class="facet"><h4>Mức chứng cứ <span class="clr" onclick="clearFacet('grade')">Xóa</span></h4><div id="f-grade"></div></div>
+    </aside>
+
+    <!-- CENTER -->
+    <main class="center">
+      <div class="tabs" id="tabs"></div>
+      <div class="center-scroll" id="center-scroll"></div>
+    </main>
+
+    <!-- RIGHT DETAIL (Lớp 2) — màn rộng: cột 3; màn hẹp: ngăn kéo trượt từ phải -->
+    <aside class="detail" id="detail"></aside>
+  </div>
+
+  <!-- Lớp nền mờ cho ngăn kéo (chỉ hiện khi màn hẹp) -->
+  <div class="scrim" id="scrim" onclick="closeDetail()"></div>
+
+  <!-- ============ DISCLAIMER ============ -->
+  <footer class="disclaimer">
+    <span>⚠</span><b>Cần bác sĩ kiểm chứng.</b> Đối chiếu toàn văn &amp; bối cảnh bệnh nhân cụ thể. Không lưu thông tin định danh bệnh nhân (PII).
+    <span class="upd" id="updstamp"></span>
+  </footer>
+</div>
+
+<script>
+/* =================================================================================
+   ▼▼▼  CHỈ SỬA KHỐI DATA NÀY  ▼▼▼
+   Thay bằng nội dung ĐÃ XÁC MINH của vấn đề lâm sàng. Dưới đây là VÍ DỤ MINH HOẠ
+   (SGLT2i ở suy tim EF giảm) để file hiển thị được ngay — hãy thay toàn bộ.
+
+   SCHEMA:
+   meta:    { question, eyebrow, pico:{P,I,C,O}, updated }
+   summary: { conclusion, doNow:[…], dontDo:[…], redFlags:[…] }   // Lớp 1
+   items:   [ {
+     id:'ITEM-01',                       // mã cục bộ, KHÔNG phải ID Master
+     title, source, org, dateVersion,
+     pmid?, doi?, url?,                   // ít nhất một định danh truy nguyên
+     design:'Guideline'|'Meta'|'RCT'|'Cohort'|'Consensus',
+     population,
+     pico:{ P:[txt,'match'|'mis'], I:[…], C:[…], O:[…] },
+     effect?:{ measure:'HR', hr:0.74, lo:0.65, hi:0.85, ci:'0.65–0.85', favors:true },
+                                         // chỉ điền nếu nguồn báo cáo; số trích ĐÚNG nguồn
+     gradeSource,                        // nguyên văn của nguồn, vd 'GRADE Cao' / 'Khuyến cáo I·A'
+     gradeLevel:'high'|'mod'|'low'|'vlow'|'na',  // để tô màu; 'na' nếu nguồn không cung cấp
+     decision:'apply'|'consider'|'notyet',
+     groups:['cao-tuoi','ckd','gan','dtd','tim-mach','da-thuoc'],  // nhóm đặc biệt liên quan
+     action, monitoring, vn, references:[…],
+     flag?:'nhãn cảnh báo ngắn',         // vd 'Sai dân số', 'Kết cục trung gian'
+     safety?:'nội dung an toàn/chuyển tuyến (nếu có) → hiện ở tab An toàn'
+   } ]
+   ================================================================================= */
+const DATA = {
+  meta:{
+    eyebrow:'Cập nhật chứng cứ · vấn đề lâm sàng',
+    question:'SGLT2i ở suy tim EF giảm (HFrEF) — có giảm tử vong TM & nhập viện?',
+    pico:{P:'HFrEF, EF ≤ 40%', I:'SGLT2 inhibitor', C:'Placebo / điều trị chuẩn', O:'Tử vong TM + nhập viện suy tim'},
+    updated:'2026-06-07'
+  },
+  summary:{
+    conclusion:'Thêm SGLT2i (dapagliflozin/empagliflozin) vào nền điều trị HFrEF chuẩn (ARNI/ACEi + chẹn beta + MRA) cho mọi bệnh nhân phù hợp — giảm ~25% tử vong TM & nhập viện suy tim, nhất quán giữa 2 RCT lớn và phân tích gộp.',
+    doNow:['Khởi trị SGLT2i 10 mg/ngày khi đã tối ưu nền tảng','Theo dõi eGFR, thể tích, huyết áp sau khởi trị'],
+    dontDo:['Không dùng để thay thế ARNI/chẹn beta/MRA','Không ngoại suy bằng chứng HFrEF sang HFpEF mà chưa đối chiếu DELIVER'],
+    redFlags:['Nhiễm toan ceton đái tháo đường (DKA) — ngưng thuốc, xử trí cấp','Tụt huyết áp/giảm thể tích có triệu chứng']
+  },
+  items:[
+    {id:'ITEM-01', title:'SGLT2i là trụ cột nền tảng điều trị HFrEF', source:'ESC 2021 Heart Failure Guidelines', org:'European Society of Cardiology', dateVersion:'2021', pmid:'34447992', doi:'10.1093/eurheartj/ehab368',
+     design:'Guideline', population:'HFrEF (EF ≤ 40%)',
+     pico:{P:['HFrEF','match'],I:['SGLT2i — khuyến cáo loại I, mức A','match'],C:['—','match'],O:['Giảm nhập viện & tử vong','match']},
+     gradeSource:'Khuyến cáo loại I · Mức bằng chứng A', gradeLevel:'high', decision:'apply', groups:['tim-mach','dtd'],
+     action:'Đưa SGLT2i thành 1 trong 4 trụ cột nền tảng HFrEF; khởi trị sớm song song các nhóm khác.',
+     monitoring:'eGFR & điện giải sau 1–2 tuần; thể tích/huyết áp.',
+     vn:'Có sẵn dapagliflozin/empagliflozin tại VN; cân nhắc chi phí & BHYT cho bệnh nhân.',
+     references:['McDonagh TA, et al. 2021 ESC Guidelines for HF. Eur Heart J. 2021;42(36):3599-3726. PMID 34447992.']},
+    {id:'ITEM-02', title:'Phân tích gộp DAPA-HF + EMPEROR-Reduced', source:'Zannad F, et al. Lancet 2020', org:'Lancet', dateVersion:'2020', pmid:'32877652', doi:'10.1016/S0140-6736(20)31824-9',
+     design:'Meta', population:'HFrEF gộp 2 RCT lớn (n=8474)',
+     pico:{P:['HFrEF','match'],I:['SGLT2i (dapa/empa)','match'],C:['Placebo','match'],O:['Tử vong + nhập viện suy tim','match']},
+     effect:{measure:'HR', hr:0.74, lo:0.68, hi:0.82, ci:'0.68–0.82', favors:true},
+     gradeSource:'Bằng chứng độ chắc chắn cao (SR-MA)', gradeLevel:'high', decision:'apply', groups:['tim-mach'],
+     action:'Dùng làm nguồn ước lượng hiệu quả chính khi xây phác đồ khoa.',
+     monitoring:'Theo dõi như khởi trị SGLT2i thường quy.',
+     vn:'Ước lượng gộp hỗ trợ khuyến cáo nhóm; áp dụng rộng cho HFrEF ngoại trú.',
+     references:['Zannad F, et al. SGLT2 inhibitors in HFrEF: meta-analysis. Lancet. 2020;396:819-829. PMID 32877652.']},
+    {id:'ITEM-03', title:'Dapagliflozin ở HFrEF (DAPA-HF)', source:'McMurray JJV, et al. NEJM 2019', org:'N Engl J Med', dateVersion:'2019', pmid:'31535829', doi:'10.1056/NEJMoa1911303',
+     design:'RCT', population:'HFrEF, EF ≤ 40%, NYHA II–IV (n=4744)',
+     pico:{P:['HFrEF, EF≤40%','match'],I:['Dapagliflozin 10 mg/ngày','match'],C:['Placebo + điều trị chuẩn','match'],O:['Tử vong TM + đợt cấp suy tim','match']},
+     effect:{measure:'HR', hr:0.74, lo:0.65, hi:0.85, ci:'0.65–0.85', favors:true},
+     gradeSource:'RCT đa trung tâm, nguy cơ sai lệch thấp', gradeLevel:'high', decision:'apply', groups:['tim-mach','dtd'],
+     action:'Lựa chọn dapagliflozin cho HFrEF đã tối ưu nền tảng.',
+     monitoring:'eGFR, thể tích; thận trọng DKA.',
+     vn:'Sẵn có; ưu tiên khi bệnh nhân kham được chi phí.',
+     references:['McMurray JJV, et al. Dapagliflozin in HFrEF. N Engl J Med. 2019;381:1995-2008. PMID 31535829.']},
+    {id:'ITEM-04', title:'SGLT2i ở HFrEF kèm bệnh thận mạn (chứng cứ gián tiếp)', source:'Heerspink HJL, et al. (DAPA-CKD) NEJM 2020', org:'N Engl J Med', dateVersion:'2020', pmid:'32970396', doi:'10.1056/NEJMoa2024816',
+     design:'RCT', population:'CKD ± suy tim (không chuyên HFrEF, n=4304)',
+     pico:{P:['CKD ± suy tim','mis'],I:['Dapagliflozin 10 mg','match'],C:['Placebo','match'],O:['Kết cục TM thứ phát','mis']},
+     effect:{measure:'HR', hr:0.71, lo:0.55, hi:0.92, ci:'0.55–0.92', favors:true},
+     gradeSource:'RCT; chứng cứ gián tiếp cho câu hỏi HFrEF', gradeLevel:'mod', decision:'consider', groups:['ckd','tim-mach'], flag:'Chứng cứ gián tiếp',
+     action:'Hữu ích cho HFrEF kèm CKD; ngoại suy thận trọng.',
+     monitoring:'eGFR sát hơn ở CKD; chấp nhận tụt eGFR ban đầu có hồi phục.',
+     vn:'Cân nhắc khi đồng mắc CKD; cần theo dõi chức năng thận.',
+     references:['Heerspink HJL, et al. Dapagliflozin in CKD. N Engl J Med. 2020;383:1436-1446. PMID 32970396.']},
+    {id:'ITEM-05', title:'SGLT2i cho EF > 40% (HFpEF/HFmrEF) — khác dân số câu hỏi', source:'Solomon SD, et al. (DELIVER) NEJM 2022', org:'N Engl J Med', dateVersion:'2022', pmid:'36027570', doi:'10.1056/NEJMoa2206286',
+     design:'RCT', population:'HFmrEF/HFpEF, EF > 40% (n=6263)',
+     pico:{P:['EF > 40% — KHÁC PICO (HFrEF)','mis'],I:['Dapagliflozin 10 mg','match'],C:['Placebo','match'],O:['Tử vong TM + xấu đi suy tim','match']},
+     effect:{measure:'HR', hr:0.82, lo:0.73, hi:0.92, ci:'0.73–0.92', favors:true},
+     gradeSource:'RCT; dân số không khớp câu hỏi HFrEF', gradeLevel:'mod', decision:'notyet', groups:['tim-mach'], flag:'Sai dân số (EF>40%)',
+     action:'Không dùng cho câu hỏi HFrEF; liên quan câu hỏi HFpEF/HFmrEF.',
+     monitoring:'—',
+     vn:'Để dành cho cập nhật riêng về HFpEF/HFmrEF.',
+     references:['Solomon SD, et al. Dapagliflozin in HF with mildly reduced or preserved EF. N Engl J Med. 2022;387:1089-1098. PMID 36027570.']}
+  ]
+};
+/* ▲▲▲  HẾT KHỐI DATA  ▲▲▲ */
+
+/* ============================ ENGINE (không cần sửa) ============================ */
+const DESIGN_META={Guideline:['b-guideline','Guideline'],Meta:['b-meta','Meta-analysis'],RCT:['b-rct','RCT'],Cohort:['b-cohort','Cohort'],Consensus:['b-consensus','Đồng thuận']};
+const GRADE_META={high:['g-high','Cao',4],mod:['g-mod','Trung bình',3],low:['g-low','Thấp',2],vlow:['g-vlow','Rất thấp',1],na:['g-na','Nguồn không phân hạng',0]};
+const DEC_META={apply:['d-apply','Áp dụng ngay','--apply'],consider:['d-consider','Cân nhắc chọn lọc','--consider'],notyet:['d-notyet','Chưa đủ thay đổi','--notyet']};
+const GROUP_META={'cao-tuoi':'Người cao tuổi','ckd':'CKD','gan':'Bệnh gan','dtd':'Đái tháo đường','tim-mach':'Tim mạch','da-thuoc':'Đa thuốc'};
+
+let state={selected:null, tab:'cqv', q:'', filters:{decision:new Set(),group:new Set(),design:new Set(),grade:new Set()}};
+
+/* forest helpers */
+const FMIN=0.4, FMAX=2.0;
+function lx(v){const a=Math.log(FMIN),b=Math.log(FMAX);return (Math.log(Math.min(Math.max(v,FMIN),FMAX))-a)/(b-a);}
+function miniForest(e){
+  if(!e||e.hr==null) return '<span style="color:var(--faint);font-size:10px">—</span>';
+  const W=108,H=20,cx=W*lx(e.hr),clo=W*lx(e.lo),chi=W*lx(e.hi),x1=W*lx(1);
+  const col=e.favors?'var(--g-high)':(e.favors===false?'var(--g-vlow)':'var(--muted)');
+  return `<div class="mforest"><svg width="${W}" height="${H}">
+    <line x1="${x1}" y1="2" x2="${x1}" y2="${H-2}" stroke="var(--line-2)" stroke-dasharray="2 2"/>
+    <line x1="${clo}" y1="${H/2}" x2="${chi}" y2="${H/2}" stroke="${col}" stroke-width="2"/>
+    <rect x="${cx-3}" y="${H/2-3}" width="6" height="6" fill="${col}" transform="rotate(45 ${cx} ${H/2})"/></svg></div>`;
+}
+
+/* header + summary + kpis */
+function renderStatic(){
+  document.getElementById('q-eyebrow').textContent=DATA.meta.eyebrow||'Cập nhật chứng cứ';
+  document.getElementById('q-title').textContent=DATA.meta.question;
+  document.title='Dashboard EBM · '+DATA.meta.question;
+  const p=DATA.meta.pico||{};
+  document.getElementById('pico-bar').innerHTML=
+    `<span class="pico-chip"><b>P</b> ${p.P||''}</span><span class="pico-chip i"><b>I</b> ${p.I||''}</span>`+
+    `<span class="pico-chip c"><b>C</b> ${p.C||''}</span><span class="pico-chip o"><b>O</b> ${p.O||''}</span>`;
+  document.getElementById('updstamp').textContent='Cập nhật: '+(DATA.meta.updated||'');
+  const s=DATA.summary||{};
+  // LỌC PHÒNG VỆ thẻ tóm tắt: bỏ gạch đầu dòng bị nhồi nguyên văn abstract NGOẠI NGỮ
+  // (vd "Conclusion:…", "Keywords:…") — dữ liệu rác làm vỡ thẻ. Nếu "Nên làm" rỗng sau lọc →
+  // suy từ HÀNH ĐỘNG của các item đã "Áp dụng ngay" (nội dung tiếng Việt đã xác minh trong chính
+  // dashboard này — KHÔNG bịa nội dung mới).
+  const _hasVi=t=>/[ăâđêôơưàáạảãằắặẳẵầấậẩẫèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗờớợởỡùúụủũừứựửữỳýỵỷỹ]/i.test(t);
+  const _foreign=t=>{t=String(t||'').trim();if(/^(conclusion|in conclusion|keywords?|background|objective|methods?|results?|findings?|introduction|aim|purpose)\b/i.test(t))return true;return t.split(/\s+/).length>=5&&!_hasVi(t);};
+  const _clean=a=>(a||[]).filter(x=>x&&!_foreign(x));
+  const _firstSentence=t=>{const m=String(t||'').split(/(?<=[.;])\s+/)[0];return (m||String(t||'')).trim();};
+  const _placeholder=t=>/^\s*\[\s*CẦN/i.test(String(t||''));   // nhãn "[CẦN…]" — chưa phải nội dung thật
+  const _usable=t=>t&&_hasVi(t)&&!_placeholder(t);             // câu suy ra phải là TIẾNG VIỆT thật
+  let doNow=_clean(s.doNow);
+  if(doNow.length===0){
+    // Suy "Nên làm" từ HÀNH ĐỘNG (hoặc Áp dụng VN) của item "Áp dụng ngay" — chỉ giữ câu SẠCH
+    // (không ngoại ngữ, không phải nhãn [CẦN…]). Nếu không có câu nào sạch → để "—" (KHÔNG hiện rác).
+    doNow=(DATA.items||[]).filter(e=>e.decision==='apply').map(e=>{
+      const a=_firstSentence(e.action||''); if(_usable(a)) return a;
+      const v=_firstSentence(e.vn||'');     return _usable(v)?v:'';
+    }).filter(Boolean).slice(0,4);
+  }
+  const li=a=>(a||[]).map(x=>`<li>${x}</li>`).join('')||'<li style="color:var(--faint)">—</li>';
+  document.getElementById('summary').innerHTML=`
+    <div class="scard concl"><div class="sh"><span class="ic">✓</span>Kết luận thực hành</div><p>${s.conclusion||'—'}</p></div>
+    <div class="scard do"><div class="sh"><span class="ic">➤</span>Nên làm hiện nay</div><ul>${li(doNow)}</ul></div>
+    <div class="scard dont"><div class="sh"><span class="ic">⊘</span>Không nên / giới hạn</div><ul>${li(_clean(s.dontDo))}</ul></div>
+    <div class="scard flag"><div class="sh"><span class="ic">⚑</span>Cờ đỏ / chuyển tuyến</div><ul>${li(_clean(s.redFlags))}</ul></div>`;
+  // GRADE Evidence-to-Decision: KHÔNG hiển thị ở băng đầu trang nữa (tránh ép chiều cao bảng);
+  // thay vào đó hiển thị dưới dạng TAB ở khu giữa — xem etdView().
+}
+/* GRADE Evidence-to-Decision dưới dạng nội dung tab (gọn, không chiếm chiều cao đầu trang) */
+function etdView(){
+  const etd=DATA.etd; if(!etd) return '<div class="empty">Không có khối GRADE Evidence-to-Decision cho vấn đề này.</div>';
+  const cell=(label,val,tag)=>`<div class="etd-c"><div class="l">${label}${tag==='src'?'<span class="src">nguồn</span>':tag==='op'?'<span class="op">vận hành</span>':''}</div><div class="v">${val||'—'}</div></div>`;
+  return `<div class="etd" style="border-bottom:0">
+      <div class="eh">⚖ GRADE Evidence-to-Decision <span class="note">hàng "nguồn" = từ chứng cứ đã xác minh · hàng "vận hành" = đánh giá của người tổng hợp</span></div>
+      <div class="etd-grid">
+        ${cell('Vấn đề ưu tiên',etd.problem,'op')}
+        ${cell('Lợi ích mong muốn',etd.desirable,'src')}
+        ${cell('Tác hại',etd.undesirable,'src')}
+        ${cell('Độ chắc chắn',etd.certainty,'src')}
+        ${cell('Giá trị/ưu tiên BN',etd.values,'op')}
+        ${cell('Cân bằng lợi–hại',etd.balance,'op')}
+        ${cell('Nguồn lực/chi phí',etd.resources,'op')}
+        ${cell('Công bằng',etd.equity,'op')}
+        ${cell('Chấp nhận',etd.acceptability,'op')}
+        ${cell('Khả thi',etd.feasibility,'op')}
+      </div>
+      ${etd.recommendation?`<div class="etd-rec"><div class="rh">➤ Khuyến cáo (đánh giá vận hành)${etd.strength?`<span class="str">${etd.strength==='strong'?'Mạnh':'Có điều kiện'}</span>`:''}</div><div class="rv">${etd.recommendation}</div></div>`:''}
+    </div>`;
+}
+function renderKPIs(){
+  const it=DATA.items, c=k=>it.filter(x=>x.decision===k).length;
+  const newest=it.map(x=>x.dateVersion).filter(Boolean).sort().slice(-1)[0]||'—';
+  const kp=[
+    {label:'Tổng điểm chứng cứ',val:it.length,sub:'item đã xác minh',cls:''},
+    {label:'Áp dụng ngay',val:c('apply'),sub:'đủ xác minh',cls:'apply'},
+    {label:'Cân nhắc chọn lọc',val:c('consider'),sub:'theo bối cảnh',cls:'consider'},
+    {label:'Chưa đủ thay đổi',val:c('notyet'),sub:'tín hiệu/gián tiếp',cls:'notyet'},
+    {label:'Nguồn mới nhất',val:newest,sub:'năm/phiên bản',cls:''},
+  ];
+  document.getElementById('kpis').innerHTML=kp.map(d=>`<div class="kpi"><div class="label">${d.label}</div><div class="val ${d.cls}">${d.val}</div><div class="sub">${d.sub}</div></div>`).join('');
+}
+
+/* facets */
+function buildFacets(){
+  const it=DATA.items;
+  const cnt=(fn)=>{const m={};it.forEach(x=>{const v=fn(x);(Array.isArray(v)?v:[v]).forEach(k=>{if(k!=null&&k!=='')m[k]=(m[k]||0)+1;});});return m;};
+  const dc=cnt(x=>x.decision);
+  document.getElementById('f-decision').innerHTML=Object.keys(DEC_META).filter(k=>dc[k]).map(k=>opt('decision',k,DEC_META[k][1],dc[k],`background:var(${DEC_META[k][2]})`)).join('')||emptyF();
+  const gc=cnt(x=>x.groups);
+  document.getElementById('f-group').innerHTML=Object.keys(GROUP_META).filter(k=>gc[k]).map(k=>opt('group',k,GROUP_META[k],gc[k],'background:var(--accent)')).join('')||emptyF();
+  const dsc=cnt(x=>x.design);
+  document.getElementById('f-design').innerHTML=Object.keys(DESIGN_META).filter(k=>dsc[k]).map(k=>opt('design',k,DESIGN_META[k][1],dsc[k],`background:var(--${k==='Guideline'?'guideline':k==='Meta'?'meta':k==='RCT'?'rct':k==='Cohort'?'cohort':'consensus'})`)).join('')||emptyF();
+  const grc=cnt(x=>x.gradeLevel);
+  document.getElementById('f-grade').innerHTML=Object.keys(GRADE_META).filter(k=>grc[k]).map(k=>opt('grade',k,GRADE_META[k][1],grc[k],`background:var(--g-${k==='mod'?'mod':k==='vlow'?'vlow':k==='na'?'':k})`)).join('')||emptyF();
+}
+function emptyF(){return '<div style="font-size:11px;color:var(--faint);padding:4px 7px">—</div>';}
+function opt(group,key,label,count,dotStyle){
+  const on=state.filters[group].has(key)?'on':'';
+  return `<div class="opt ${on}" onclick="toggleFacet('${group}','${key}')"><span class="box">${on?'✓':''}</span><span class="dot" style="${dotStyle}"></span><span class="nm">${label}</span><span class="ct">${count}</span></div>`;
+}
+function toggleFacet(g,k){const s=state.filters[g];s.has(k)?s.delete(k):s.add(k);buildFacets();render();}
+function clearFacet(g){state.filters[g].clear();buildFacets();render();}
+
+/* tabs */
+function renderTabs(){
+  const it=DATA.items;
+  const nSafety=it.filter(x=>x.safety).length, nNot=it.filter(x=>x.decision==='notyet').length;
+  const tabs=[['cqv','◧ Clinical Quick View',it.length]];
+  if(DATA.etd) tabs.push(['etd','⚖ GRADE EtD','']);
+  tabs.push(
+    ['safety','⚑ An toàn & chuyển tuyến',nSafety],
+    ['notyet','⊘ Chưa đủ thay đổi',nNot],
+    ['vn','★ Áp dụng tại Việt Nam',it.length],
+    ['verify','✓ Kiểm chứng thao tác',4]
+  );
+  document.getElementById('tabs').innerHTML=tabs.map(([k,l,n])=>`<button class="tab ${state.tab===k?'on':''}" onclick="setTab('${k}')">${l}${(n===''||n==null)?'':`<span class="badge-n">${n}</span>`}</button>`).join('');
+}
+function setTab(t){state.tab=t;renderTabs();renderCenter();}
+
+/* filtering */
+function filtered(){
+  let arr=DATA.items.slice();const f=state.filters;
+  if(f.decision.size)arr=arr.filter(x=>f.decision.has(x.decision));
+  if(f.group.size)arr=arr.filter(x=>(x.groups||[]).some(g=>f.group.has(g)));
+  if(f.design.size)arr=arr.filter(x=>f.design.has(x.design));
+  if(f.grade.size)arr=arr.filter(x=>f.grade.has(x.gradeLevel));
+  if(state.q){const q=state.q.toLowerCase();arr=arr.filter(x=>JSON.stringify(x).toLowerCase().includes(q));}
+  return arr;
+}
+
+/* center render */
+function render(){state.q=document.getElementById('q').value.trim().toLowerCase();renderCenter();renderDetail();}
+function renderCenter(){
+  const host=document.getElementById('center-scroll');
+  if(state.tab==='cqv') host.innerHTML=tableView(filtered());
+  else if(state.tab==='etd') host.innerHTML=etdView();
+  else if(state.tab==='safety') host.innerHTML=cardView(DATA.items.filter(x=>x.safety),'safety');
+  else if(state.tab==='notyet') host.innerHTML=cardView(DATA.items.filter(x=>x.decision==='notyet'),'notyet');
+  else if(state.tab==='vn') host.innerHTML=vnView();
+  else if(state.tab==='verify') host.innerHTML=verifyView();
+}
+function tableView(arr){
+  const rows=arr.map(e=>{
+    const dm=DESIGN_META[e.design]||['',''], gm=GRADE_META[e.gradeLevel]||GRADE_META.na, dec=DEC_META[e.decision]||DEC_META.consider;
+    const eff=e.effect?`<span class="effect ${e.effect.favors?'fav':(e.effect.favors===false?'harm':'ns')}">${e.effect.hr!=null?e.effect.hr.toFixed(2):(e.effect.measure||'')}</span> <span class="ci">${e.effect.ci?'('+e.effect.ci+')':''}</span>`:'<span class="effect ns">—</span>';
+    const pips=Array.from({length:4},(_,i)=>`<span class="pip ${i<gm[2]?'on':''}"></span>`).join('');
+    return `<tr class="${e.id===state.selected?'sel':''}" onclick="select('${e.id}')">
+      <td><span class="ttl">${e.title}<span class="auth">${e.source} · <span class="idtag">${e.id}</span>${e.pmid?` · PMID <span class="pmid">${e.pmid}</span>`:''}</span>${e.flag?`<span class="flag-mini">⚑ ${e.flag}</span>`:''}</span></td>
+      <td><span class="badge ${dm[0]}"><span class="d"></span>${dm[1]}</span></td>
+      <td>${eff}</td>
+      <td>${miniForest(e.effect)}</td>
+      <td><span class="grade ${gm[0]}"><span class="pips">${pips}</span>${gm[1]}</span></td>
+      <td><span class="dec ${dec[0]}"><span class="d"></span>${dec[1]}</span></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="6" class="empty">Không có điểm chứng cứ khớp bộ lọc</td></tr>';
+  return `<div class="ctoolbar"><span><b>${arr.length}</b> điểm chứng cứ · click để mở thẩm định</span><span class="sp"></span></div>
+    <table><thead><tr><th>Điểm chứng cứ</th><th>Thiết kế</th><th>Hiệu số (nguồn)</th><th>Forest</th><th>Mức chứng cứ</th><th>Quyết định</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function cardView(arr,kind){
+  if(!arr.length) return `<div class="empty">Không có nội dung cho mục này.</div>`;
+  return `<div class="pad"><div class="cardlist">`+arr.map(e=>{
+    const col=kind==='safety'?'var(--danger)':'var(--notyet)';
+    const txt=kind==='safety'?e.safety:(e.action+(e.flag?` <span class="flag-mini">⚑ ${e.flag}</span>`:''));
+    return `<div class="li-card" style="display:flex;gap:11px;cursor:pointer" onclick="select('${e.id}');setTab('cqv')">
+      <div class="stripe" style="background:${col}"></div>
+      <div><div class="h">${e.title}</div><div class="x">${txt}</div><div class="src">${e.source} · ${e.id}${e.pmid?' · PMID '+e.pmid:''}</div></div></div>`;
+  }).join('')+`</div></div>`;
+}
+function vnView(){
+  const apply=DATA.items.filter(x=>x.decision==='apply');
+  const conf=DATA.items.filter(x=>(x.vn||'').includes('[CẦN XÁC NHẬN'));
+  const row=e=>`<div class="li-card" style="cursor:pointer" onclick="select('${e.id}');setTab('cqv')"><div class="h" style="font-size:12.5px">${e.title}</div><div class="x">${e.vn||'—'}</div><div class="src">${e.source} · ${e.id}</div></div>`;
+  return `<div class="pad"><div class="vn-grid">
+    <div class="vn-col"><h5>✓ Triển khai ngay tại phòng khám</h5><div class="cardlist">${apply.map(row).join('')||'<div class="empty">—</div>'}</div></div>
+    <div class="vn-col"><h5>⚙ Cần đối chiếu sẵn có · chi phí · BHYT · phác đồ</h5><div class="cardlist">${DATA.items.filter(x=>x.decision==='consider').map(row).join('')||'<div class="empty">—</div>'}</div>
+      ${conf.length?`<h5 style="margin-top:14px">⚐ Cần xác nhận tại đơn vị</h5><div class="cardlist">${conf.map(row).join('')}</div>`:''}</div>
+  </div></div>`;
+}
+function verifyView(){
+  const tasks=[
+    ['1','Tìm hành động ưu tiên của vấn đề','Mở tab Clinical Quick View → cột "Quyết định = Áp dụng ngay".','≤ 30s'],
+    ['2','Tìm cờ đỏ / chuyển tuyến','Băng tóm tắt phía trên → thẻ "Cờ đỏ / chuyển tuyến".','≤ 30s'],
+    ['3','Tìm nội dung cho nhóm đặc biệt','Bộ lọc trái → "Nhóm đặc biệt" (CKD, người cao tuổi…).','≤ 30s'],
+    ['4','Mở nguồn & ngày/phiên bản','Click một điểm → panel phải → mục "Nguồn & truy xuất".','≤ 60s'],
+  ];
+  return `<div class="pad"><div class="cardlist">`+tasks.map(([n,t,g,tm])=>`<div class="vtask"><div class="n">${n}</div><div><div class="t">${t}</div><div class="g">${g}</div></div><div class="timer">${tm}</div></div>`).join('')+`</div></div>`;
+}
+
+/* detail (Lớp 2) */
+function select(id){state.selected=id;if(state.tab!=='cqv'){state.tab='cqv';renderTabs();renderCenter();}document.querySelector('.body').classList.add('show-detail');renderCenter();renderDetail();openDrawer();}
+function openDrawer(){document.getElementById('detail').classList.add('open');document.getElementById('scrim').classList.add('open');}
+/* Đóng panel thẩm định: bỏ chọn + thu cột 3 (màn rộng) + đóng ngăn kéo (màn hẹp) → bố cục cân đối lại */
+function closeDetail(){state.selected=null;document.querySelector('.body').classList.remove('show-detail');document.getElementById('detail').classList.remove('open');document.getElementById('scrim').classList.remove('open');renderCenter();renderDetail();}
+function renderDetail(){
+  const el=document.getElementById('detail');
+  const e=DATA.items.find(x=>x.id===state.selected);
+  if(!e){el.innerHTML='<div class="empty">Chọn một điểm chứng cứ để xem thẩm định chi tiết<br><span style="font-size:11px">(Evidence Detail View)</span></div>';return;}
+  const dm=DESIGN_META[e.design]||['',''], gm=GRADE_META[e.gradeLevel]||GRADE_META.na, dec=DEC_META[e.decision]||DEC_META.consider;
+  const pips=Array.from({length:4},(_,i)=>`<span class="pip ${i<gm[2]?'on':''}"></span>`).join('');
+  const FL=e.frameLabels||{P:'P',I:'I',C:'C',O:'O'};
+  const picoRows=['P','I','C','O'].map(k=>{const d=(e.pico||{})[k]||['—','match'];return `<div class="k k${k}">${FL[k]||k}</div><div class="v">${d[0]} ${d[1]==='match'?'<span class="match">✓ khớp</span>':'<span class="mis">⚠ lệch</span>'}</div>`;}).join('');
+  const eff=e.effect;
+  const statsHtml=eff?`<div class="dsec"><h3>∑ Hiệu số (đúng như nguồn báo cáo)</h3><div class="stats">
+      <div class="stat"><div class="l">${eff.measure||'Hiệu số'}</div><div class="n" style="color:${eff.favors?'var(--g-high)':'var(--ink)'}">${eff.hr!=null?eff.hr.toFixed(2):'—'}</div><div class="x">95% CI ${eff.ci||'—'}</div></div>
+      <div class="stat"><div class="l">Forest</div><div style="margin-top:6px">${miniForest(eff)}</div><div class="x">ngưỡng 1.0</div></div>
+    </div></div>`:'';
+  el.innerHTML=`
+    <div class="dhead">
+      <button class="detail-close" onclick="closeDetail()" title="Đóng">✕</button>
+      <div class="deyebrow">⊕ Evidence Detail · ${e.id}${e.frame?' · Khung '+e.frame:''}</div>
+      <h2>${e.title}</h2>
+      <div class="dmeta">
+        <span class="badge ${dm[0]}"><span class="d"></span>${dm[1]}</span>
+        <span class="grade ${gm[0]}"><span class="pips">${pips}</span>${gm[1]}</span>
+        <span class="dec ${dec[0]}"><span class="d"></span>${dec[1]}</span>
+      </div>
+    </div>
+    <div class="dsec"><h3>📄 Nguồn</h3><div class="kvline">
+      <div class="r"><span class="k">Tài liệu</span><span class="v">${e.source}</span></div>
+      <div class="r"><span class="k">Tổ chức</span><span class="v">${e.org||'—'}</span></div>
+      <div class="r"><span class="k">Ngày/phiên bản</span><span class="v">${e.dateVersion||'—'}</span></div>
+      <div class="r"><span class="k">Quần thể</span><span class="v">${e.population||'—'}</span></div>
+      <div class="r"><span class="k">Grading nguồn</span><span class="v">${e.gradeSource||'Nguồn không cung cấp phân hạng'}</span></div>
+    </div></div>
+    <div class="dsec"><h3>◧ Đối chiếu ${e.frame||'PICO'}</h3><div class="picogrid">${picoRows}</div></div>
+    ${statsHtml}
+    <div class="dsec"><h3>➤ Hành động & theo dõi</h3><div class="kvline">
+      <div class="r"><span class="k">Hành động</span><span class="v">${e.action||'—'}</span></div>
+      <div class="r"><span class="k">Monitoring</span><span class="v">${e.monitoring||'—'}</span></div>
+      <div class="r"><span class="k">Nhóm liên quan</span><span class="v">${(e.groups||[]).map(g=>GROUP_META[g]||g).join(', ')||'—'}</span></div>
+    </div></div>
+    ${e.safety?`<div class="dsec"><h3>⚑ An toàn / chuyển tuyến</h3><p style="font-size:12px;color:var(--ink-2);line-height:1.5">${e.safety}</p></div>`:''}
+    <div class="dsec"><h3>★ Áp dụng tại Việt Nam</h3><div class="applybox"><div class="ah">💡 ${dec[1]}</div><p>${e.vn||'—'}</p></div></div>
+    <div class="dsec"><h3>🔗 Nguồn & truy xuất</h3><div class="src">
+      ${e.pmid?`<a href="https://pubmed.ncbi.nlm.nih.gov/${e.pmid}/" target="_blank"><span class="tag pmid">PMID</span> ${e.pmid} · PubMed</a>`:''}
+      ${e.doi?`<a href="https://doi.org/${e.doi}" target="_blank"><span class="tag doi">DOI</span> ${e.doi}</a>`:''}
+      ${e.url?`<a href="${e.url}" target="_blank"><span class="tag url">URL</span> Mở nguồn</a>`:''}
+    </div></div>
+    ${(e.references&&e.references.length)?`<div class="dsec"><h3>📚 Tài liệu tham khảo (Vancouver/NLM)</h3><div class="reflist">${e.references.map(r=>`<div class="r">${r}</div>`).join('')}</div></div>`:''}`;
+}
+
+/* export */
+function exportData(fmt){
+  const arr=filtered();
+  if(fmt==='json'){download('dashboard-ebm.json',JSON.stringify({meta:DATA.meta,items:arr},null,2),'application/json');return;}
+  const cols=['id','title','design','decision','gradeSource','population','source','dateVersion','pmid','doi','action','monitoring','vn'];
+  const esc=v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`;
+  const rows=[cols.join(',')].concat(arr.map(e=>cols.map(c=>esc(e[c])).join(',')));
+  download('dashboard-ebm.csv','﻿'+rows.join('\n'),'text/csv');
+}
+function download(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href);}
+
+/* init */
+renderStatic();renderKPIs();buildFacets();renderTabs();render();
+</script>
+</body>
+</html>

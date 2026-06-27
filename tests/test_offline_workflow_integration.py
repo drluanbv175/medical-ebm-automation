@@ -343,11 +343,11 @@ class TestTC14UnknownFixture:
             assert fixture.fixture_id == fid
 
 
-import pathlib as _pathlib
+import pathlib as _pathlib  # noqa: F401
 
-_AGENTS_DIR_FOR_TC15 = (
-    _pathlib.Path(__file__).parent.parent.parent / ".claude" / "agents"
-)
+# V4.3.2.1: dùng AGENTS_DIR đã resolve (ưu tiên vendored in-repo) để skipif khớp
+# trạng thái có/không agent source CẢ trong archive lẫn working tree.
+from runtime.agent_registry import AGENTS_DIR as _AGENTS_DIR_FOR_TC15
 
 
 # ─── TC-15A: Bundle Runtime Only mode ────────────────────────────────────────

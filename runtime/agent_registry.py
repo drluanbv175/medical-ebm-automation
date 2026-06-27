@@ -32,7 +32,12 @@ import dataclasses
 from typing import Dict, List, Optional
 
 BASE_DIR = pathlib.Path(__file__).parent.parent  # medical-ebm-automation/
-AGENTS_DIR = BASE_DIR.parent / ".claude" / "agents"
+# V4.3.2.1 (reproducibility): ưu tiên agent source VENDORED trong repo (để
+# `git archive` tự-chứa); fallback về cây OneDrive-root khi chạy ngoài archive.
+# CHỈ là path resolution — KHÔNG đổi logic nạp/verify (vẫn hash-verify theo manifest).
+_IN_REPO_AGENTS_DIR = BASE_DIR / ".claude" / "agents"
+_PARENT_AGENTS_DIR = BASE_DIR.parent / ".claude" / "agents"
+AGENTS_DIR = _IN_REPO_AGENTS_DIR if _IN_REPO_AGENTS_DIR.exists() else _PARENT_AGENTS_DIR
 
 # V4.2.1 (GAP-009): manifest hiệu lực được đưa VÀO repo/version control.
 # Registry KHÔNG còn phụ thuộc manifest ở thư mục OneDrive ngoài repo.
