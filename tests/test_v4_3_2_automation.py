@@ -270,6 +270,47 @@ def test_22to25_end_to_end_synthetic(study_type, pid):
     assert res.quality_report["overall"] in ("PASS", "REVIEW_REQUIRED")
 
 
+# Bổ sung: parser YAML offline (không phụ thuộc PyYAML) đúng schema request
+def test_minimal_yaml_loader_offline():
+    from research_automation.project_intake import _minimal_yaml_load
+    txt = (
+        'project_id: "RS-Y"\n'
+        'study_type: "cohort"   # inline comment\n'
+        'draft_only: true\n'
+        'human_review_required: true\n'
+        '# full-line comment\n'
+        'objectives:\n  - "obj một"\n  - "obj hai"\n'
+        'PICO_or_equivalent:\n  P: "BN synthetic"\n  O: "đạt đích"\n'
+        'requested_work_packages: ["WP-01", "WP-02"]\n'
+    )
+    d = _minimal_yaml_load(txt)
+    assert d["project_id"] == "RS-Y"
+    assert d["study_type"] == "cohort"
+    assert d["draft_only"] is True and d["human_review_required"] is True
+    assert d["objectives"] == ["obj một", "obj hai"]
+    assert d["PICO_or_equivalent"] == {"P": "BN synthetic", "O": "đạt đích"}
+    assert d["requested_work_packages"] == ["WP-01", "WP-02"]
+
+
+# Bổ sung: end-to-end qua load_yaml + run (chứng minh CLI path offline)
+def test_intake_from_yaml_text_then_run():
+    from research_automation.project_intake import load_yaml
+    reset_guard_context()
+    txt = (
+        'project_id: "RS-YAML-E2E"\ntitle: "[SYNTHETIC] yaml"\n'
+        'study_type: "cross_sectional"\nresearch_domain: "tim mạch"\n'
+        'clinical_question: "Tỷ lệ đạt HA?"\n'
+        'PICO_or_equivalent:\n  P: "BN synthetic"\n  O: "đạt HA"\n'
+        'objectives:\n  - "ước lượng"\noutcomes:\n  - "tỷ lệ HA"\n'
+        'population_description_synthetic: "synthetic"\n'
+        'study_setting_synthetic: "synthetic clinic"\n'
+        'requested_work_packages: ["WP-01"]\nhuman_owner: "PI-SYNTH-01"\n'
+        'draft_only: true\nhuman_review_required: true\n'
+    )
+    res = WorkflowRunner().run(load_yaml(txt))
+    assert res.status == "CREATED" and res.artifacts
+
+
 # Bổ sung: weekly_quality_check phát hiện artifact thiếu human_review (qua artifacts registry giả)
 def test_weekly_quality_flags_bad_artifact():
     arts = ArtifactRegistry()

@@ -154,12 +154,107 @@ def run_intake(data: dict, audit_logger=None) -> IntakeResult:
 
 
 def load_yaml(text: str) -> dict:
-    """Nạp YAML request (cần PyYAML). Raise nếu thiếu thư viện."""
+    """Nạp YAML request. Dùng PyYAML nếu có; nếu không, parser tối giản OFFLINE
+    (không phụ thuộc) hỗ trợ đúng schema request: scalar/bool/int, list khối (- ),
+    list dòng [a, b], và 1 cấp dict lồng. Không network."""
     try:
         import yaml  # noqa: PLC0415
-    except ImportError as e:  # pragma: no cover
-        raise RuntimeError("PyYAML chưa cài — dùng run_intake(dict) trong test.") from e
-    return yaml.safe_load(text)
+        return yaml.safe_load(text)
+    except ImportError:
+        return _minimal_yaml_load(text)
+
+
+def _split_flow(inner: str) -> List[str]:
+    """Tách phần tử trong [a, b, "c, d"] tôn trọng dấu nháy."""
+    out, buf, inq = [], [], None
+    for ch in inner:
+        if inq:
+            buf.append(ch)
+            if ch == inq:
+                inq = None
+        elif ch in ('"', "'"):
+            inq = ch; buf.append(ch)
+        elif ch == ',':
+            out.append("".join(buf).strip()); buf = []
+        else:
+            buf.append(ch)
+    if "".join(buf).strip():
+        out.append("".join(buf).strip())
+    return out
+
+
+def _strip_inline_comment(s: str) -> str:
+    out, inq = [], None
+    for ch in s:
+        if inq:
+            out.append(ch)
+            if ch == inq:
+                inq = None
+        elif ch in ('"', "'"):
+            inq = ch; out.append(ch)
+        elif ch == "#":
+            break
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def _scalar(v: str):
+    v = v.strip()
+    if v == "":
+        return ""
+    if v.startswith("[") and v.endswith("]"):
+        inner = v[1:-1].strip()
+        return [_scalar(x) for x in _split_flow(inner)] if inner else []
+    if len(v) >= 2 and ((v[0] == '"' and v[-1] == '"') or (v[0] == "'" and v[-1] == "'")):
+        return v[1:-1]
+    low = v.lower()
+    if low == "true":
+        return True
+    if low == "false":
+        return False
+    try:
+        return int(v)
+    except ValueError:
+        return v
+
+
+def _indent(line: str) -> int:
+    return len(line) - len(line.lstrip(" "))
+
+
+def _minimal_yaml_load(text: str) -> dict:
+    """Parser subset OFFLINE cho research_project_request.yaml (1 cấp lồng + list)."""
+    # Lọc dòng có nội dung (bỏ comment nguyên dòng + dòng trống).
+    raw = [ln.rstrip() for ln in text.splitlines()]
+    lines = [ln for ln in raw if ln.strip() and not ln.lstrip().startswith("#")]
+    root: dict = {}
+    i, n = 0, len(lines)
+    while i < n:
+        line = lines[i]
+        if _indent(line) != 0 or ":" not in line:
+            i += 1; continue
+        key, _, val = line.lstrip().partition(":")
+        key = key.strip()
+        val = _strip_inline_comment(val).strip()
+        if val != "":
+            root[key] = _scalar(val)
+            i += 1
+            continue
+        # value rỗng → block list (- ) hoặc nested dict ở indent > 0
+        block_items: List = []
+        nested: dict = {}
+        i += 1
+        while i < n and _indent(lines[i]) > 0:
+            child = lines[i].strip()
+            if child.startswith("- "):
+                block_items.append(_scalar(_strip_inline_comment(child[2:])))
+            elif ":" in child:
+                ck, _, cv = child.partition(":")
+                nested[ck.strip()] = _scalar(_strip_inline_comment(cv).strip())
+            i += 1
+        root[key] = block_items if block_items else nested
+    return root
 
 
 def run_intake_yaml(path: str, audit_logger=None) -> IntakeResult:
