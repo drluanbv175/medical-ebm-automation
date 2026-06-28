@@ -1,0 +1,19 @@
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 27%]
+........................................................................ [ 36%]
+........................................................................ [ 46%]
+................................s....................................... [ 55%]
+........................................................................ [ 64%]
+........................................................................ [ 73%]
+........................................................................ [ 82%]
+............................................................ssss........ [ 92%]
+.............................................................            [100%]
+=============================== warnings summary ===============================
+../../../../../../../../Users/nguyenluan/.ebm-venv/lib/python3.9/site-packages/urllib3/__init__.py:35
+  /Users/nguyenluan/.ebm-venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/release_evidence/V4_3_4_2/results/v4_3_4_2_full_suite_junit.xml -
+776 passed, 5 skipped, 1 warning in 5.84s

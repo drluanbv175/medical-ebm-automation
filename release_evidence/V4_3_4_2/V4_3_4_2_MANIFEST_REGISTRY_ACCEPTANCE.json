@@ -1,0 +1,65 @@
+{
+  "acceptance_id": "V4.3.4.2-MRA-20260628",
+  "utc_timestamp": "2026-06-28T02:38:23Z",
+  "git_tag": "v4.3.4",
+  "git_commit": "101ca08a331605e95b15cb82a4839e0e2a799e3e",
+  "archive_sha256": "d69fe47c99aafe3036371af91d843303b25323ade80c8ad09ded118e98fde851",
+  "archive_size_bytes": 6256640,
+  "archive_files": 740,
+  "archive_method": "git archive --format=tar --prefix=medical-ebm-automation/ v4.3.4",
+  "used_only_source_inside_archive": true,
+  "parent_folder_has_claude_agents": false,
+  "no_file_copy_from_working_tree": true,
+
+  "environment": {
+    "MRAQ_OFFLINE_CI": "1",
+    "ANTHROPIC_API_KEY": "unset",
+    "OPENAI_API_KEY": "unset",
+    "EHOSPITAL_ENABLED": "unset",
+    "MRAQ_ENABLE_EHOSPITAL_SYNTHETIC_TEST": "unset"
+  },
+
+  "verifier_script": "scripts/verify_manifest_registry.py",
+  "manifest_path": "./runtime/manifests/agent_source_manifest.csv",
+  "manifest_hash": "5fc8ee58b8af201e317572e1c4fb7564da4bf99938ce840d4e1c636751550fe7",
+  "manifest_hash_matches_self_check": true,
+  "manifest_rows": 48,
+  "registry_agent_count": 48,
+  "required_agents_present": true,
+  "all_hash_verified": true,
+  "hash_mismatches": 0,
+  "missing_agent_paths": 0,
+  "verifier_exit_code": 0,
+  "manifest_verify_verdict": "PASS",
+
+  "collected": 781,
+  "passed": 776,
+  "failed": 0,
+  "skipped": 5,
+  "equation_check": "776+5=781 VERIFIED",
+  "test_exit_code": 0,
+  "full_suite_verdict": "PASS",
+
+  "network_attempts": 0,
+  "api_attempts": 0,
+  "real_pii_inputs": 0,
+  "production_connector_attempts": 0,
+
+  "security_invariants": {
+    "no_api_calls": true,
+    "no_pii": true,
+    "draft_only": true,
+    "automation_cannot_approve": true,
+    "no_external_action": true,
+    "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+    "real_research_execution": "BLOCKED",
+    "external_release_submission": "BLOCKED",
+    "live_agent_behavior": "NOT VERIFIED",
+    "api_connectivity": "NOT RUN",
+    "independent_review": "NOT ESTABLISHED",
+    "all_outputs": "DRAFT — REQUIRE HUMAN REVIEW"
+  },
+
+  "final_verdict": "PASS",
+  "attestation": "Manual acceptance record. Does not constitute ethics, PI, final, or independent approval."
+}

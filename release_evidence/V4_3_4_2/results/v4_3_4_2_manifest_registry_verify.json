@@ -1,0 +1,16 @@
+{
+  "manifest_path": "./runtime/manifests/agent_source_manifest.csv",
+  "manifest_hash": "5fc8ee58b8af201e317572e1c4fb7564da4bf99938ce840d4e1c636751550fe7",
+  "manifest_hash_matches_self_check": true,
+  "manifest_rows": 48,
+  "manifest_header_detected": true,
+  "registry_agent_count": 48,
+  "minimum_agent_count": 48,
+  "required_agents_present": true,
+  "all_hash_verified": true,
+  "hash_mismatches": 0,
+  "missing_agent_paths": 0,
+  "exit_code": 0,
+  "verifier_exit_code": 0,
+  "verdict": "PASS"
+}
