@@ -55,3 +55,15 @@ evidence/reviews/*.pdf
 # Danh mục thư viện thật — JSON lớn (~2MB), tái sinh bằng scripts/build_library_catalog.py.
 # Giữ CATALOG.md (duyệt được) trong git; bỏ JSON máy-đọc.
 evidence/external-library/catalog.json
+
+# Codex agent sync — sinh tự động từ .claude/agents/*.md; không edit tay.
+.codex/
+
+# Kết quả CI tự động sinh (daily/weekly scripts) — không commit vào git.
+# Frozen evidence (v4_3_3_*) vẫn được tracked; chỉ bỏ output chạy hàng ngày.
+results/daily_*.txt
+results/daily_*.json
+results/weekly_*.txt
+results/weekly_*.xml
+results/weekly_*.json
+results/research_studio_dashboard.html
