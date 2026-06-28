@@ -385,9 +385,10 @@ class TestT14_ExpiredRole:
         )
         result = evaluate_rbac(actor, ResearchAction.VIEW_AUDIT_LOG.value)
         assert result.decision == "BLOCK"
-        assert result.reason_code in (
-            SoDViolation.EXPIRED_ROLE.value, SoDViolation.ROLE_NOT_PERMITTED.value
-        )
+        # G-04 remediation: all-roles-expired path returns EXPIRED_ROLE specifically.
+        # active_roles()=[] triggers "if not active_roles" block in evaluate_rbac.
+        # ROLE_NOT_PERMITTED is reserved for has-active-role-but-lacks-permission scenarios.
+        assert result.reason_code == SoDViolation.EXPIRED_ROLE.value
 
 
 # ---------------------------------------------------------------------------

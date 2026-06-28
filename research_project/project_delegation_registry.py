@@ -52,6 +52,19 @@ class DelegationStatus(str, Enum):
     REJECTED = "REJECTED"
 
 
+class DelegationReasonCode(str, Enum):
+    """Mã lý do structured cho kết quả evaluate_delegation_action."""
+    DELEGATION_EXPIRED = "DELEGATION_EXPIRED"
+    DELEGATION_REVOKED = "DELEGATION_REVOKED"
+    DELEGATION_NOT_ACTIVE = "DELEGATION_NOT_ACTIVE"
+    DELEGATION_SCOPE_EXCEEDED = "DELEGATION_SCOPE_EXCEEDED"
+    DELEGATION_FORBIDDEN_AUTHORITY = "DELEGATION_FORBIDDEN_AUTHORITY"
+    DELEGATION_SELF_ASSIGNMENT = "DELEGATION_SELF_ASSIGNMENT"
+    DELEGATION_DISABLED_ACTOR = "DELEGATION_DISABLED_ACTOR"
+    DELEGATION_PERMITTED = "DELEGATION_PERMITTED"
+    DELEGATION_NOT_FOUND = "DELEGATION_NOT_FOUND"
+
+
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
@@ -131,6 +144,42 @@ class DelegationRecord:
 # ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
+
+@dataclass
+class DelegationDecision:
+    """
+    Kết quả structured của evaluate_delegation_action.
+
+    Tương tự RBACDecision nhưng cho delegation context.
+    Không phải production enforcement — là offline simulation.
+    """
+    decision: str               # "ALLOW" hoặc "BLOCK"
+    reason_code: str            # DelegationReasonCode value
+    policy_reference: str
+    delegation_id: Optional[str]
+    actor_reference: str
+    action: str
+    object_reference: str
+    effective_until_utc: Optional[str]
+    evaluated_at_utc: str
+    timestamp_utc: str
+    disclaimer: str = _DELEGATION_DISCLAIMER
+
+    def to_dict(self) -> dict:
+        return {
+            "decision": self.decision,
+            "reason_code": self.reason_code,
+            "policy_reference": self.policy_reference,
+            "delegation_id": self.delegation_id,
+            "actor_reference": self.actor_reference,
+            "action": self.action,
+            "object_reference": self.object_reference,
+            "effective_until_utc": self.effective_until_utc,
+            "evaluated_at_utc": self.evaluated_at_utc,
+            "timestamp_utc": self.timestamp_utc,
+            "disclaimer": self.disclaimer,
+        }
+
 
 class DelegationError(ValueError):
     """Raised khi delegation record vi phạm policy."""
@@ -334,6 +383,101 @@ class DelegationRegistry:
         if latest is None:
             return None
         return _record_from_dict(latest)
+
+
+# ---------------------------------------------------------------------------
+# Delegation action evaluation
+# ---------------------------------------------------------------------------
+
+def evaluate_delegation_action(
+    registry: "DelegationRegistry",
+    delegation_id: str,
+    actor_reference: str,
+    action: str,
+    object_reference: str = "UNSPECIFIED",
+    now_utc: Optional[datetime] = None,
+) -> DelegationDecision:
+    """
+    Evaluate liệu một actor có được phép thực hiện action qua một delegation không.
+
+    Trả về DelegationDecision với reason_code structured.
+    Không gọi network, không authenticate thật.
+
+    Reason codes:
+      DELEGATION_NOT_FOUND      — delegation_id không tồn tại
+      DELEGATION_REVOKED        — delegation đã bị thu hồi
+      DELEGATION_NOT_ACTIVE     — delegation chưa ACTIVE (PROPOSED/REJECTED)
+      DELEGATION_EXPIRED        — delegation đã quá effective_until_utc
+      DELEGATION_FORBIDDEN_AUTHORITY — action trong FORBIDDEN_ACTIONS_ALL_ROLES
+      DELEGATION_SCOPE_EXCEEDED — action không trong permitted_actions
+      DELEGATION_PERMITTED      — delegation hợp lệ cho action này
+    """
+    ts = _utc_now()
+    evaluated_at = ts
+
+    def _block(reason_code: DelegationReasonCode, policy_ref: str,
+               effective_until: Optional[str] = None) -> DelegationDecision:
+        return DelegationDecision(
+            decision="BLOCK",
+            reason_code=reason_code.value,
+            policy_reference=policy_ref,
+            delegation_id=delegation_id,
+            actor_reference=actor_reference,
+            action=action,
+            object_reference=object_reference,
+            effective_until_utc=effective_until,
+            evaluated_at_utc=evaluated_at,
+            timestamp_utc=ts,
+        )
+
+    record = registry._get_latest_state(delegation_id)
+    if record is None:
+        return _block(DelegationReasonCode.DELEGATION_NOT_FOUND,
+                      "DELEGATION_POLICY-NOT_FOUND")
+
+    effective_until = record.effective_until_utc
+
+    # Terminal states
+    if record.status == DelegationStatus.REVOKED.value:
+        return _block(DelegationReasonCode.DELEGATION_REVOKED,
+                      "DELEGATION_POLICY-REVOKED", effective_until)
+    if record.status == DelegationStatus.REJECTED.value:
+        return _block(DelegationReasonCode.DELEGATION_NOT_ACTIVE,
+                      "DELEGATION_POLICY-REJECTED", effective_until)
+
+    # PROPOSED not yet activated
+    if record.status == DelegationStatus.PROPOSED.value:
+        return _block(DelegationReasonCode.DELEGATION_NOT_ACTIVE,
+                      "DELEGATION_POLICY-NOT_ACTIVATED", effective_until)
+
+    # ACTIVE — check expiry
+    live_status = record.compute_status(now_utc)
+    if live_status == DelegationStatus.EXPIRED.value:
+        return _block(DelegationReasonCode.DELEGATION_EXPIRED,
+                      "DELEGATION_POLICY-EXPIRED", effective_until)
+
+    # Check forbidden authority (action in global forbidden set)
+    if action in FORBIDDEN_ACTIONS_ALL_ROLES:
+        return _block(DelegationReasonCode.DELEGATION_FORBIDDEN_AUTHORITY,
+                      "DELEGATION_POLICY-FORBIDDEN_AUTHORITY", effective_until)
+
+    # Check scope — action must be in permitted_actions
+    if action not in record.permitted_actions:
+        return _block(DelegationReasonCode.DELEGATION_SCOPE_EXCEEDED,
+                      "DELEGATION_POLICY-SCOPE_EXCEEDED", effective_until)
+
+    return DelegationDecision(
+        decision="ALLOW",
+        reason_code=DelegationReasonCode.DELEGATION_PERMITTED.value,
+        policy_reference="DELEGATION_POLICY-PERMITTED",
+        delegation_id=delegation_id,
+        actor_reference=actor_reference,
+        action=action,
+        object_reference=object_reference,
+        effective_until_utc=effective_until,
+        evaluated_at_utc=evaluated_at,
+        timestamp_utc=ts,
+    )
 
 
 # ---------------------------------------------------------------------------

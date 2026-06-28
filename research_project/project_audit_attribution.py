@@ -1,11 +1,23 @@
 """
-project_audit_attribution — R1.1 Offline Audit Attribution Simulation.
+project_audit_attribution — R1.1.2 Tamper-Evident Local Audit Ledger Simulation.
 
 Triển khai:
-  - Synthetic audit event model (17 fields theo R1.0 schema)
-  - Append-only JSONL với hash chain
-  - Tamper detection
+  - Synthetic audit event model (18 fields = 17 R1.0 fields + sequence_number)
+  - Append-only JSONL với SHA-256 hash chain
+  - Tamper detection: modified content · missing hash link · sequence discontinuity ·
+    deleted middle record · duplicate event_id · out-of-order sequence
+  - Monotonic sequence_number per ledger instance
+  - Ledger root hash (hash of concatenated event hashes)
+  - Checkpoint record
   - Marker bắt buộc: is_synthetic=True, production_valid=False
+
+PHÂN LOẠI ĐÚNG: tamper-evident local audit ledger simulation.
+KHÔNG PHẢI: WORM storage · immutable storage · regulatory-compliant retention
+             · production audit storage.
+
+PROD-AUD-01 (NOT IMPLEMENTED): Production requires external WORM-capable retention,
+  retention policy, legal hold, off-system backup, access-controlled archive,
+  and independent restore verification. Deferred to R1.3.
 
 OFFLINE · SYNTHETIC ONLY · KHÔNG API / PII / network.
 
@@ -40,6 +52,12 @@ _AUDIT_DISCLAIMER = (
 _GENESIS_HASH = "GENESIS"
 
 _INTEGRITY_METHOD = "SHA256_HASH_CHAIN_SYNTHETIC"
+
+# Production WORM dependency marker — NOT IMPLEMENTED offline
+PROD_AUD_01_WORM_DEPENDENCY = "NOT_IMPLEMENTED"
+
+# Local ledger classification — must never be called WORM
+LOCAL_LEDGER_CLASSIFICATION = "TAMPER_EVIDENT_LOCAL_SIMULATION_NOT_WORM"
 
 
 # ---------------------------------------------------------------------------
@@ -86,10 +104,11 @@ class AuditActionType(str, Enum):
 @dataclass
 class SyntheticAuditEvent:
     """
-    17-field synthetic audit event theo R1.0 schema.
+    18-field synthetic audit event (17 R1.0 fields + sequence_number).
 
     is_synthetic=True, production_valid=False bắt buộc.
     Không chứa PII, không chứa credential thật.
+    sequence_number: monotonic counter assigned by ledger (1-based).
     """
     event_id: str
     synthetic_actor_id: str
@@ -99,6 +118,8 @@ class SyntheticAuditEvent:
     object_version: str
     timestamp_utc: str
     reason: str
+    # Monotonic sequence for tamper detection
+    sequence_number: int = 0
     # Optional fields
     delegation_reference_if_any: Optional[str] = None
     before_state_hash_if_applicable: Optional[str] = None
@@ -122,6 +143,7 @@ class SyntheticAuditEvent:
     def to_dict(self) -> dict:
         return {
             "event_id": self.event_id,
+            "sequence_number": self.sequence_number,
             "synthetic_actor_id": self.synthetic_actor_id,
             "actor_role_at_event_time": self.actor_role_at_event_time,
             "delegation_reference_if_any": self.delegation_reference_if_any,
@@ -139,6 +161,7 @@ class SyntheticAuditEvent:
             "audit_event_hash": self.audit_event_hash,
             "previous_event_hash": self.previous_event_hash,
             "disclaimer": self.disclaimer,
+            "local_ledger_classification": LOCAL_LEDGER_CLASSIFICATION,
         }
 
 
@@ -159,35 +182,83 @@ def compute_event_hash(event_dict: dict) -> str:
 
 def verify_hash_chain(events: List[dict]) -> tuple[bool, List[str]]:
     """
-    Kiểm tra tính toàn vẹn của chuỗi hash chain.
+    Kiểm tra tính toàn vẹn của chuỗi hash chain (enhanced R1.1.2).
+
+    Phát hiện:
+      - modified event content (hash mismatch)
+      - missing previous_event_hash link (chain break)
+      - sequence_number discontinuity (gaps between consecutive seq nums)
+      - deleted middle record (same as sequence discontinuity)
+      - duplicate event_id
+      - out-of-order event (seq_number[i] <= seq_number[i-1])
 
     Returns: (ok, errors)
       ok=True nếu không có lỗi nào.
       errors là danh sách mô tả vi phạm tìm thấy.
+
+    Giới hạn bắt buộc phải ghi nhận:
+      Phát hiện được tamper trong JSONL file đang nắm giữ.
+      KHÔNG ngăn được replace-then-rehash toàn bộ file trên filesystem.
+      Production cần WORM/off-system backup (PROD-AUD-01, NOT IMPLEMENTED).
     """
     errors: List[str] = []
     prev_hash: Optional[str] = None
+    prev_seq: Optional[int] = None
+    seen_event_ids: dict = {}
 
     for i, ev in enumerate(events):
         event_id = ev.get("event_id", f"<idx={i}>")
         stored_hash = ev.get("audit_event_hash", "")
         stored_prev = ev.get("previous_event_hash")
+        seq_num = ev.get("sequence_number")
 
-        # 1. Recompute hash
+        # 1. Hash integrity — modified event content
         expected_hash = compute_event_hash(ev)
         if stored_hash != expected_hash:
             errors.append(
-                f"[{event_id}] audit_event_hash không khớp: "
+                f"[{event_id}] audit_event_hash không khớp (modified content): "
                 f"stored='{stored_hash[:16]}...' expected='{expected_hash[:16]}...'"
             )
 
-        # 2. Check previous_event_hash link
+        # 2. Hash chain link — missing/broken previous_event_hash
         expected_prev = prev_hash if prev_hash is not None else _GENESIS_HASH
         if stored_prev != expected_prev:
             errors.append(
-                f"[{event_id}] previous_event_hash không khớp với hash của event trước: "
+                f"[{event_id}] previous_event_hash chain break: "
                 f"stored='{str(stored_prev)[:16]}' expected='{str(expected_prev)[:16]}'"
             )
+
+        # 3. Duplicate event_id
+        if event_id in seen_event_ids:
+            errors.append(
+                f"[{event_id}] duplicate event_id: "
+                f"first seen at index={seen_event_ids[event_id]}, duplicate at index={i}"
+            )
+        else:
+            seen_event_ids[event_id] = i
+
+        # 4. Sequence number checks (if present)
+        if seq_num is not None:
+            if prev_seq is None:
+                # First event: sequence_number should be 1
+                if seq_num != 1:
+                    errors.append(
+                        f"[{event_id}] sequence_number phải bắt đầu từ 1: got {seq_num}"
+                    )
+            else:
+                # Out-of-order event
+                if seq_num <= prev_seq:
+                    errors.append(
+                        f"[{event_id}] out-of-order sequence: "
+                        f"seq={seq_num} <= prev_seq={prev_seq}"
+                    )
+                # Sequence discontinuity / deleted middle record
+                elif seq_num != prev_seq + 1:
+                    errors.append(
+                        f"[{event_id}] sequence discontinuity (possible deleted middle record): "
+                        f"prev_seq={prev_seq}, current_seq={seq_num}, expected={prev_seq + 1}"
+                    )
+            prev_seq = seq_num
 
         prev_hash = stored_hash
 
@@ -232,13 +303,14 @@ class AuditAttributionLedger:
         ts = _utc_now()
         event_id = f"AUD-{uuid.uuid4().hex[:12].upper()}"
 
-        # Lấy hash của event cuối trong ledger (nếu có)
+        # Lấy hash của event cuối + sequence number tiếp theo
         all_events = self._read_all()
         prev_hash: Optional[str]
         if all_events:
             prev_hash = all_events[-1].get("audit_event_hash", _GENESIS_HASH)
         else:
             prev_hash = _GENESIS_HASH
+        next_seq = len(all_events) + 1  # 1-based monotonic sequence
 
         event = SyntheticAuditEvent(
             event_id=event_id,
@@ -249,13 +321,14 @@ class AuditAttributionLedger:
             object_version=object_version,
             timestamp_utc=ts,
             reason=reason,
+            sequence_number=next_seq,
             delegation_reference_if_any=delegation_reference_if_any,
             before_state_hash_if_applicable=before_state_hash_if_applicable,
             after_state_hash_if_applicable=after_state_hash_if_applicable,
             previous_event_hash=prev_hash,
         )
 
-        # Tính hash sau khi previous_event_hash đã được đặt
+        # Tính hash sau khi tất cả các field (kể cả sequence_number) đã được đặt
         d = event.to_dict()
         event.audit_event_hash = compute_event_hash(d)
         d["audit_event_hash"] = event.audit_event_hash
@@ -278,6 +351,42 @@ class AuditAttributionLedger:
 
     def event_count(self) -> int:
         return len(self._read_all())
+
+    def ledger_root_hash(self) -> str:
+        """
+        Tính root hash của toàn bộ ledger = SHA-256(concat of RECOMPUTED event hashes).
+
+        Recompute (không dùng stored audit_event_hash) để phát hiện cả:
+          - content modification (recomputed hash thay đổi)
+          - hash field modification (stored hash thay đổi, nếu có)
+        Không phải WORM — replace-then-rehash toàn bộ file vẫn có thể bypass.
+        Production cần WORM/off-system backup (PROD-AUD-01, NOT IMPLEMENTED).
+        """
+        events = self._read_all()
+        concatenated = "".join(compute_event_hash(ev) for ev in events)
+        return hashlib.sha256(concatenated.encode("ascii")).hexdigest()
+
+    def create_checkpoint(self, checkpoint_reason: str = "PERIODIC") -> dict:
+        """
+        Tạo một checkpoint record ghi nhận root hash và sequence number hiện tại.
+
+        Checkpoint không phải event audit — không có synthetic_actor_id.
+        Không phải WORM checkpoint — chỉ là point-in-time snapshot cho local verification.
+        """
+        events = self._read_all()
+        root = self.ledger_root_hash()
+        cp = {
+            "checkpoint_type": "LEDGER_CHECKPOINT",
+            "checkpoint_sequence_reference": len(events),
+            "ledger_root_hash": root,
+            "event_count": len(events),
+            "checkpoint_reason": checkpoint_reason,
+            "timestamp_utc": _utc_now(),
+            "local_ledger_classification": LOCAL_LEDGER_CLASSIFICATION,
+            "production_worm_dependency": PROD_AUD_01_WORM_DEPENDENCY,
+        }
+        self._append(cp)
+        return cp
 
     # ------------------------------------------------------------------
     # Internal
