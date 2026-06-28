@@ -1,0 +1,97 @@
+{
+  "acceptance_id": "V4.3.5-FAA-20260628",
+  "version": "4.3.5",
+  "date": "2026-06-28",
+  "status": "DRAFT — REQUIRE HUMAN REVIEW",
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+
+  "archive_source": {
+    "branch": "feat/v4-3-5-evidence-intake-claim-traceability",
+    "base_tag": "v4.3.4-frozen",
+    "base_commit": "101ca08a331605e95b15cb82a4839e0e2a799e3e",
+    "head_commit": "5622a9e01066a0e7ebcfa6d5eef4c3bc943f5319",
+    "archive_sha256": "78d34ff3ca3613a075a55c84159d3a9df831b3c0d753c63d397f97df5a2a4f81"
+  },
+
+  "precondition_checks": {
+    "git_status_clean": true,
+    "manifest_registry_pass": true,
+    "collect_only_count": 802
+  },
+
+  "fresh_archive_results": {
+    "v4_3_5_suite_passed": 21,
+    "v4_3_5_suite_failed": 0,
+    "full_suite_passed": 797,
+    "full_suite_skipped": 5,
+    "full_suite_failed": 0,
+    "manifest_verify": "PASS",
+    "network_attempts": 0,
+    "api_attempts": 0,
+    "real_pii_inputs": 0,
+    "production_connector_attempts": 0
+  },
+
+  "smoke_test_commands_verified": [
+    "MRAQ_OFFLINE_CI=1 pytest tests/test_v4_3_5_evidence_claim_traceability.py -q",
+    "MRAQ_OFFLINE_CI=1 pytest --tb=short -q",
+    "python3 scripts/verify_manifest_registry.py"
+  ],
+
+  "invariant_checks": {
+    "evidence_ledger_append_only": true,
+    "claim_ledger_append_only": true,
+    "human_provided_only_enforced": true,
+    "auto_verification_forbidden": true,
+    "retracted_blocks_d_r8": true,
+    "unverified_blocks_claim": true,
+    "retracted_blocks_claim": true,
+    "verified_supports_draft_claim": true,
+    "review_queue_routes_to_evidence_citation_reviewer": true,
+    "no_fabricated_citation_metadata": true,
+    "no_source_automatically_marked_human_verified": true,
+    "d_r8_transitions_correct": true,
+    "no_final_released_submitted_artifact": true,
+    "no_pii_in_outputs": true,
+    "no_api_calls": true,
+    "no_network_calls": true,
+    "disclaimer_in_all_outputs": true
+  },
+
+  "mandatory_assertions": {
+    "no_real_research_execution": true,
+    "no_external_release_submission": true,
+    "no_api_connectivity": true,
+    "no_independent_review_established": true,
+    "reviewer_identity_not_authenticated": true,
+    "all_outputs_draft_require_human_review": true
+  },
+
+  "files_in_archive": {
+    "new_modules": [
+      "research_project/project_claim_traceability.py"
+    ],
+    "extended_modules": [
+      "research_project/project_evidence_intake.py",
+      "research_project/project_qa_runner.py",
+      "research_project/project_cli.py",
+      "research_project/__init__.py"
+    ],
+    "new_tests": [
+      "tests/test_v4_3_5_evidence_claim_traceability.py"
+    ],
+    "release_evidence": [
+      "release_evidence/V4_3_5/V4_3_5_EXECUTIVE_SUMMARY.md",
+      "release_evidence/V4_3_5/V4_3_5_TEST_REPORT.md",
+      "release_evidence/V4_3_5/V4_3_5_EVIDENCE_CLAIM_SOP.md",
+      "release_evidence/V4_3_5/V4_3_5_ATTESTATION_BOUNDARY_REPORT.md",
+      "release_evidence/V4_3_5/V4_3_5_DRY_RUN_ACCEPTANCE.json",
+      "release_evidence/V4_3_5/V4_3_5_EVIDENCE_STATE_MACHINE.md",
+      "release_evidence/V4_3_5/V4_3_5_CONTROLLED_EVIDENCE_DRY_RUN.md",
+      "release_evidence/V4_3_5/V4_3_5_FRESH_ARCHIVE_ACCEPTANCE.json",
+      "release_evidence/V4_3_5/V4_3_5_FREEZE_SUMMARY.md"
+    ]
+  },
+
+  "final_verdict": "PASS"
+}
