@@ -1,0 +1,50 @@
+{
+  "archive_record_type": "FRESH_ARCHIVE_ACCEPTANCE",
+  "phase": "R3.0",
+  "phase_name": "Ethics, Consent, Monitoring and Study Operations",
+  "date_utc": "2026-06-28",
+  "prior_phase_commit": "289c98d",
+  "suite_result": {
+    "total_passed": 1003,
+    "total_failed": 0,
+    "total_skipped": 5,
+    "new_tests_this_phase": 0,
+    "regression_failures": 0
+  },
+  "new_source_modules": [],
+  "new_test_files": [],
+  "new_evidence_files": [
+    "release_evidence/R3_0/R3_0_ETHICS_AND_IRB_REQUIREMENTS.md",
+    "release_evidence/R3_0/R3_0_INFORMED_CONSENT_FRAMEWORK.md",
+    "release_evidence/R3_0/R3_0_MONITORING_PLAN_TEMPLATE.md",
+    "release_evidence/R3_0/R3_0_STUDY_OPERATIONS_SOP.md",
+    "release_evidence/R3_0/R3_0_STUDY_ACTIVATION_GATE.md",
+    "release_evidence/R3_0/R3_0_TEST_REPORT.md",
+    "release_evidence/R3_0/R3_0_FRESH_ARCHIVE_ACCEPTANCE.json",
+    "release_evidence/R3_0/R3_0_FREEZE_SUMMARY.md"
+  ],
+  "hygiene_check": {
+    "new_source_modules_count": 0,
+    "max_allowed": 3,
+    "within_limit": true,
+    "new_test_files_count": 0,
+    "max_test_files_allowed": 2,
+    "test_files_within_limit": true,
+    "no_dashboard_created": true,
+    "no_duplicate_modules": true,
+    "no_network_calls": true,
+    "no_pii": true,
+    "no_real_research_data": true
+  },
+  "gates_status": {
+    "ethics_gate": "CLOSED — NOT OBTAINED",
+    "study_activation_gate": "CLOSED — 0 of 12 conditions met"
+  },
+  "global_invariants": {
+    "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+    "real_research_data": "BLOCKED",
+    "pii": "NONE",
+    "network_calls": "NONE"
+  },
+  "disclaimer": "Cần bác sĩ kiểm chứng. All outputs are DRAFT — REQUIRE HUMAN REVIEW."
+}
