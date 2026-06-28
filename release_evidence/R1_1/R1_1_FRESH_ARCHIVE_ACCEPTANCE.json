@@ -1,0 +1,59 @@
+{
+  "document": "R1_1_FRESH_ARCHIVE_ACCEPTANCE.json",
+  "date": "2026-06-28",
+  "phase": "R1.1",
+  "git_commit": "1ea687c",
+  "branch": "feat/r1-1-offline-rbac-synthetic-identity",
+  "archive_filename": "r1_1_fresh_archive_20260628_112421.tar.gz",
+  "archive_sha256": "0523a9667c439628b6b5d223a3b7c5984a0e7d383831c2cbebf0c0fa11853007",
+  "checks_run_inside_archive": [
+    {
+      "check": "MRAQ_OFFLINE_CI=1 pytest tests/test_r1_1_offline_rbac_synthetic_identity.py",
+      "result": "PASS",
+      "detail": "39 passed / 0 failed"
+    },
+    {
+      "check": "MRAQ_OFFLINE_CI=1 pytest (full suite)",
+      "result": "PASS",
+      "detail": "836 passed / 5 skipped / 0 failed"
+    },
+    {
+      "check": "python3 scripts/verify_manifest_registry.py",
+      "result": "PASS",
+      "detail": "all_hash_verified=True, required_4_enforced_and_present=True"
+    }
+  ],
+  "new_modules": [
+    "research_project/project_rbac_simulation.py",
+    "research_project/project_delegation_registry.py",
+    "research_project/project_audit_attribution.py"
+  ],
+  "new_tests": "tests/test_r1_1_offline_rbac_synthetic_identity.py",
+  "new_cli_commands": [
+    "rbac-simulate",
+    "delegation-register",
+    "delegation-status",
+    "audit-attribution-verify"
+  ],
+  "documentation": [
+    "release_evidence/R1_1/R1_1_OFFLINE_RBAC_AND_SYNTHETIC_IDENTITY_SOP.md",
+    "release_evidence/R1_1/R1_1_ROLE_POLICY_REFERENCE.md",
+    "release_evidence/R1_1/R1_1_DELEGATION_LIFECYCLE_SPEC.md",
+    "release_evidence/R1_1/R1_1_AUDIT_ATTRIBUTION_SIMULATION_SPEC.md",
+    "release_evidence/R1_1/R1_1_CONTROLLED_SYNTHETIC_DRY_RUN.md",
+    "release_evidence/R1_1/R1_1_TEST_REPORT.md",
+    "release_evidence/R1_1/R1_1_EXECUTIVE_SUMMARY.md"
+  ],
+  "security_invariants": {
+    "no_sso_ldap_oauth_network": true,
+    "no_real_credentials": true,
+    "no_pii": true,
+    "no_patient_data": true,
+    "synthetic_only": true,
+    "production_valid_false_on_all_audit_events": true,
+    "is_synthetic_true_on_all_actors": true,
+    "no_qualified_state_change": true
+  },
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+  "gate_r1_1_status": "OPEN — awaiting Validation Lead sign-off"
+}
