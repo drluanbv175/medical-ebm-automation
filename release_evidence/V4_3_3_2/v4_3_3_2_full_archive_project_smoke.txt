@@ -1,0 +1,92 @@
+--- 3a: researchctl project-init (canonical YAML) ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[OK] Project 'RS-XS-EXAMPLE' đã khởi tạo tại: projects/RS-XS-EXAMPLE
+     Bước tiếp: researchctl project-build --project-id RS-XS-EXAMPLE
+init_exit: 0
+
+--- 3b: researchctl project-build ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[ERROR] Unexpected: Project 'RS-XS-EXAMPLE' đã tồn tại. Dùng overwrite=True để ghi đè.
+build_exit: 0
+
+--- 3b: researchctl project-build --overwrite ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[OK] project-build 'RS-XS-EXAMPLE':
+     Tạo mới: 19 artifact
+     Bỏ qua:  0 artifact (đã tồn tại)
+     Bước tiếp: researchctl project-qa --project-id RS-XS-EXAMPLE
+build_exit: 0
+
+--- Đếm artifacts được tạo ---
+
+--- 3b-check: Xác nhận draft_only=true trong mọi artifact ---
+Artifacts có DRAFT marker: 16/19
+Artifacts có final/released (nên = 0): (none)
+
+--- 3c: researchctl project-qa ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[QA] QA RS-XS-EXAMPLE: PASS=14 FAIL=0 WARN=1 SKIP=0 → PASS
+  [✓] D-R1: Tiêu đề và mục tiêu đều có nội dung.
+  [✓] D-R2: Có 2 mục tiêu và 1 kết cục chính.
+  [✓] D-R3: study_type='cross_sectional' hợp lệ và nhất quán với PROTOCOL_DRAFT.
+  [✓] D-R4: Tiêu chí tuyển chọn có trong PROTOCOL_DRAFT; dân số synthetic đúng.
+  [✓] D-R5: CRF_DRAFT và DATA_DICTIONARY tồn tại; DD có 11 biến.
+  [✓] D-R6: SAP_DRAFT tồn tại, có lock reminder và nhất quán với loại NC.
+  [✓] D-R7: TABLE_AND_FIGURE_SHELLS tồn tại với Table 1 và Figure placeholder.
+  [!] D-R8: evidence_manifest.csv rỗng — PI phải nạp bằng chứng trước khi phát hành. [evidence_gate_state=REQUIRE_HUMAN_EVIDENCE_INPUT]
+  [✓] D-R9: Không phát hiện fabrication marker trong các artifact chính.
+  [✓] D-R10: Không phát hiện PII marker trong tất cả artifact.
+  [✓] D-R11: draft_only=True; không có 'RELEASED/FINAL/SUBMITTED' trong artifact.
+  [✓] D-R12: Không có artifact ở trạng thái STALE.
+  [✓] D-R13: Không phát hiện external action thật (instruction phủ định an toàn = PASS).
+  [✓] D-R14: TRACEABILITY_MATRIX tồn tại với 2 hàng objective.
+  [✓] D-R15: METHODS_AND_SAMPLE_SIZE (04) có ghi chú cỡ mẫu và giả định/REQUIRE_HUMAN_INPUT.
+
+[PASS] Tất cả 14 gate PASS.
+qa_exit: 0
+
+--- 3d: researchctl project-review-pack ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[QA] QA RS-XS-EXAMPLE: PASS=14 FAIL=0 WARN=1 SKIP=0 → PASS
+[OK] Review Pack tạo xong:
+     Quyết định cần đưa ra: 5
+     Ưu tiên CAO: 4
+     Bằng chứng chưa xác minh: 0
+     Xem: projects/RS-XS-EXAMPLE/13_REVIEW_PACK.md
+review-pack_exit: 0
+
+--- 3e: researchctl project-reproducibility-check ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+=== Reproducibility Check: RS-XS-EXAMPLE ===
+  [✓] 00_RESEARCH_CHARTER.md
+  [✓] 01_RESEARCH_QUESTION_AND_PICO.md
+  [✓] 02_PROTOCOL_DRAFT.md
+  [✓] 03_EVIDENCE_PLAN.md
+  [✓] 04_METHODS_AND_SAMPLE_SIZE_ASSUMPTIONS.md
+  [✓] 05_CRF_DRAFT.md
+  [✓] 06_DATA_DICTIONARY.csv
+  [✓] 07_STATISTICAL_ANALYSIS_PLAN_DRAFT.md
+  [✓] 08_TABLE_AND_FIGURE_SHELLS.md
+  [✓] 09_SYNTHETIC_ANALYSIS_READINESS.md
+  [✓] 10_REPORTING_CHECKLIST_DRAFT.md
+  [✓] 11_MANUSCRIPT_OUTLINE_DRAFT.md
+  [✓] 12_GOVERNANCE_AND_CAPA_PACK.md
+  [✓] 13_REVIEW_PACK.md
+  [✓] 14_PROJECT_TRACEABILITY_MATRIX.csv
+  [✓] 15_PROJECT_QA_REPORT.md
+  [✓] 16_CHANGE_IMPACT_REPORT.md
+  [✓] 17_DECISION_REGISTER.md
+  [✓] 18_VERSION_REGISTER.csv
+  [-] audit_log.jsonl — chưa có change records
+  [✓] evidence/evidence_manifest.csv
+
+Kết quả: 19 artifact có · 0 artifact thiếu
+Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE
+Cần bác sĩ / PI kiểm chứng. Đây là bản DRAFT tự động — KHÔNG thực thi thật.
+reproducibility_exit: 0

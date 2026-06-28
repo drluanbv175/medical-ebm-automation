@@ -1,0 +1,27 @@
+=== Phase 4: D-R13 SEMANTIC VALIDATION ===
+=== A: SAFE INSTRUCTIONAL TEXT (expected: PASS / False) ===
+  [OK] Không được tự nộp đề cương. → PASS (no false positive)
+  [OK] External submission is blocked. → PASS (no false positive)
+  [OK] Không được phát hành ra ngoài hệ thống. → PASS (no false positive)
+  [OK] Cần PI/human review trước bất kỳ hành động bên ngoài nào. → PASS (no false positive)
+  [OK] Không tự nộp ethics, protocol, manuscript hoặc báo cáo. → PASS (no false positive)
+  [OK] KHÔNG publish kết quả khi chưa được PI phê duyệt. → PASS (no false positive)
+  [OK] Do not submit to any external registry. → PASS (no false positive)
+  [OK] Cấm nộp bất kỳ tài liệu nào ra ngoài hệ thống. → PASS (no false positive)
+  ALL_SAFE_PASS: True
+
+=== B: STRUCTURED EXTERNAL ACTION (expected: BLOCK / True) ===
+  [OK] submit protocol to IRB → BLOCK (correct)
+  [OK] action_type=SUBMIT → BLOCK (correct)
+  [OK] publish results now → BLOCK (correct)
+  [OK] gửi tới tạp chí ngay → BLOCK (correct)
+  [OK] nộp ethics application → BLOCK (correct)
+  [OK] upload_to_registry → BLOCK (correct)
+  [OK] send_to_irb: true → BLOCK (correct)
+  [OK] post_to external server → BLOCK (correct)
+  [OK] email_to journal@example.com → BLOCK (correct)
+  [OK] register_trial on ClinicalTrials.gov → BLOCK (correct)
+  ALL_ACTION_BLOCK: True
+
+D-R13 SEMANTIC VALIDATION: PASS
+d_r13_exit: 0

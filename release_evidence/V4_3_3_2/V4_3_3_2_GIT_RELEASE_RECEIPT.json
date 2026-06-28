@@ -1,0 +1,28 @@
+{
+  "document": "V4_3_3_2_GIT_RELEASE_RECEIPT",
+  "note": "Git commit SHA ≠ archive SHA256. Hai giá trị này hoàn toàn khác nhau và phục vụ mục đích khác nhau.",
+
+  "git_commit": "0ce0d472f3c739806a59c2c066948fe7a11f954f",
+  "git_commit_short": "0ce0d47",
+  "git_commit_message": "chore: apply linter improvement to test_v4332_inv0_no_api_imports",
+  "git_tag_baseline": "v4.3.3.2",
+  "git_tag_frozen": "v4.3.3.2-frozen",
+  "git_branch_at_freeze": "main (merged from feat/v4-3-3-2-repository-rationalization)",
+
+  "archive_filename": "v4_3_3_2_baseline.tar",
+  "archive_sha256": "591a1a8981704b03ff5eb85d7bb380224514c58fde7be3474286790fc70beaf1",
+  "archive_size_bytes": 5980160,
+  "archive_format": "tar (git archive --prefix=medical-ebm-automation/)",
+  "archive_source_commit": "0ce0d47",
+
+  "distinction": {
+    "git_commit": "SHA1 hash của git commit object — dùng để tái tạo đúng archive",
+    "archive_sha256": "SHA256 của file .tar — dùng để xác minh toàn vẹn archive đã tải"
+  },
+
+  "verification_command": "git archive --format=tar --prefix=medical-ebm-automation/ 0ce0d47 > check.tar && shasum -a 256 check.tar",
+  "expected_archive_sha256": "591a1a8981704b03ff5eb85d7bb380224514c58fde7be3474286790fc70beaf1",
+
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+  "generated": "2026-06-28"
+}
