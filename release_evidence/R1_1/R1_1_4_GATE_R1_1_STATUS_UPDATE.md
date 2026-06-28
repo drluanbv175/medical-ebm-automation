@@ -3,7 +3,7 @@
 **Document:** R1_1_4_GATE_R1_1_STATUS_UPDATE.md  
 **Date:** 2026-06-28  
 **Phase:** R1.1.4 — Phase B  
-**Decision ID:** VL-GATE-R1.1-2026-001  
+**Decision ID:** VL-GATE-R1.1-2026-002  
 **Qualification:** NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE
 
 ---
@@ -13,12 +13,12 @@
 | Axis | Status | Evidence |
 |------|--------|---------|
 | Technical evidence | **PASS** | 867 passed / 0 failed; 44 requirements covered; G-01–G-04 remediated; manifest PASS |
-| Human governance decision | **RECORDED** | `R1_1_4_HUMAN_GOVERNANCE_DECISION_RECORD.md`; decision_id VL-GATE-R1.1-2026-001; 2026-06-28T05:22:44Z |
+| Human governance decision | **RECORDED** | `R1_1_4_HUMAN_GOVERNANCE_DECISION_RECORD.md`; decision_id VL-GATE-R1.1-2026-002; 2026-06-28T05:30:28Z |
 | Production readiness | **NOT PRODUCTION READY** | PROD-AUD-01 OPEN; SSO/MFA NOT IMPLEMENTED; local simulation only |
 
 ```
 Technical evidence status:        PASS
-Human governance decision:        RECORDED — ACCEPT_TECHNICAL_TEST_DESIGN
+Human governance decision:        RECORDED — ACCEPT_WITH_ACTIONS
 Review mode:                      SELF_REVIEW
 Reviewer independence:            NOT ESTABLISHED
 Production readiness status:      NOT PRODUCTION READY
@@ -29,14 +29,16 @@ Production readiness status:      NOT PRODUCTION READY
 ## Section 2 — GATE-R1.1 updated status
 
 ```
-GATE-R1.1: ACCEPTED
+GATE-R1.1: ACCEPTED_WITH_ACTIONS
 ```
 
 **Mapping applied:**
 
 | Human decision | GATE-R1.1 result |
 |---------------|-----------------|
-| `ACCEPT_TECHNICAL_TEST_DESIGN` | **ACCEPTED** |
+| `ACCEPT_WITH_ACTIONS` | **ACCEPTED_WITH_ACTIONS** |
+
+Gate transitions to **PASS** only after all named actions in the Action Register are completed and Dr Luân re-confirms by 2026-09-30.
 
 > **NOT VALID states (not applied):**  
 > `PRODUCTION_READY` · `RESEARCH_READY` · `ETHICS_READY` · `INDEPENDENTLY_VALIDATED`
@@ -47,21 +49,35 @@ GATE-R1.1: ACCEPTED
 
 | Field | Value |
 |-------|-------|
-| decision_id | VL-GATE-R1.1-2026-001 |
-| decision_date_utc | 2026-06-28T05:22:44Z |
+| decision_id | VL-GATE-R1.1-2026-002 |
+| Supersedes | VL-GATE-R1.1-2026-001 (ACCEPT_TECHNICAL_TEST_DESIGN) |
+| decision_date_utc | 2026-06-28T05:30:28Z |
 | decision_signed_by | Dr Luân |
 | reviewer_role | Bác sĩ điều trị, nhà nghiên cứu |
 | review_mode | SELF_REVIEW |
 | reviewer_independence | NOT ESTABLISHED |
 | baseline_commit | e806e0e |
-| decision | ACCEPT_TECHNICAL_TEST_DESIGN |
-| conditions_or_actions | N/A |
+| decision | ACCEPT_WITH_ACTIONS |
+| follow_up_owner | Dr Luân |
+| follow_up_due_date | 2026-09-30 |
 
 ---
 
-## Section 4 — Residual risks carried forward
+## Section 4 — Open actions (gate-blocking until complete)
 
-These risks are **NOT closed** by GATE-R1.1 ACCEPTED:
+| Action ID | Description | Owner | Due | Status |
+|-----------|-------------|-------|-----|--------|
+| ACT-R1-01 | PROD-AUD-01 addressed at R1.3 before production audit claim | Dr Luân | R1.3 qualification | OPEN |
+| ACT-R1-02 | Local ledger described only as tamper-evident simulation, not WORM | Dr Luân | Ongoing | OPEN |
+| ACT-R1-03 | R1.2 design-only; no SSO/MFA/real data/eHospital/EDC | Dr Luân | R1.2 completion | OPEN |
+| ACT-R1-04 | R1.3 to address WORM retention, off-system backup, restore verification | Dr Luân | R1.3 qualification | OPEN |
+| ACT-R1-05 | IQ-20 independent security pentest engaged at R1.5 | Dr Luân | R1.5 | OPEN |
+
+Full register: `R1_1_4_ACTION_AND_RESIDUAL_RISK_REGISTER.md`
+
+---
+
+## Section 5 — Residual risks carried forward
 
 | Risk | Level | Status | Target |
 |------|-------|--------|--------|
@@ -76,13 +92,13 @@ These risks are **NOT closed** by GATE-R1.1 ACCEPTED:
 
 ---
 
-## Section 5 — R-series gate ledger (updated)
+## Section 6 — R-series gate ledger (updated)
 
 | Gate | Release | Status | Updated |
 |------|---------|--------|---------|
 | GATE-R0 | R0 Blueprint | PASS (documentation) | — |
 | GATE-R1-PRE | R1.0 Blueprint | PASS (documentation) | — |
-| **GATE-R1.1** | **R1.1 Offline RBAC** | **ACCEPTED** | **2026-06-28** |
+| **GATE-R1.1** | **R1.1 Offline RBAC** | **ACCEPTED_WITH_ACTIONS** | **2026-06-28** |
 | GATE-R1.2 | SSO/MFA design | OPEN | — |
 | GATE-R1.3 | Production RBAC | OPEN | — |
 | GATE-R1.4 | Full integration | OPEN | — |
@@ -92,20 +108,21 @@ These risks are **NOT closed** by GATE-R1.1 ACCEPTED:
 
 ---
 
-## Section 6 — What GATE-R1.1 ACCEPTED means and does not mean
+## Section 7 — What GATE-R1.1 ACCEPTED_WITH_ACTIONS means and does not mean
 
 **Means:**
-- The offline RBAC/SoD/delegation/tamper-detection test design is accepted as adequate for its stated scope
-- R1.2 design-only work is authorized to begin (see `R1_1_4_R1_2_DESIGN_ONLY_AUTHORIZATION.md`)
+- The offline RBAC/SoD/delegation/tamper-detection test design is conditionally accepted
+- R1.2 design-only work is authorized to begin, subject to all 3 human-defined actions
+- Named actions in the register must be completed by 2026-09-30; Dr Luân re-confirms before GATE-R1.1 → PASS
 
 **Does NOT mean:**
 - Production access control is implemented or deployed
 - Real identity, SSO, or MFA exists
-- Research data may be accessed or processed
-- The local audit ledger is WORM-compliant
+- Research data may be accessed
+- Local audit ledger is WORM-compliant
 - PROD-AUD-01 is closed
-- Ethics/IRB approval has been granted
-- Any other GATE (R1.2 through R3) is open or close to opening
+- Ethics/IRB approval granted
+- Any downstream GATE (R1.2–R3) is affected
 
 ---
 
