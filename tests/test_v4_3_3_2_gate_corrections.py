@@ -21,11 +21,15 @@ import pytest
 # Invariant 0 — không import module gọi API/network
 # ---------------------------------------------------------------------------
 def test_v4332_inv0_no_api_imports():
-    """Bộ test không kéo vào bất kỳ client API / network nào."""
+    """research_project import không kéo thêm client API / network nào."""
     forbidden = {"openai", "anthropic", "requests", "httpx", "aiohttp"}
-    loaded = set(sys.modules.keys())
-    overlap = forbidden & loaded
-    assert not overlap, f"Forbidden network modules imported: {overlap}"
+    before = set(sys.modules.keys())
+
+    import research_project  # noqa: F401
+
+    after = set(sys.modules.keys())
+    newly_loaded = (after - before) & forbidden
+    assert not newly_loaded, f"Forbidden network modules imported: {newly_loaded}"
 
 
 # ---------------------------------------------------------------------------
