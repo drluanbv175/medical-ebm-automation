@@ -7,9 +7,9 @@
 | Phase | Status | Commit | Passed | Failed | Skipped | Gate |
 |-------|--------|--------|--------|--------|---------|------|
 | R1.1.2 (baseline) | COMPLETE | e806e0e | 867 | 0 | 5 | ACCEPTED_WITH_ACTIONS |
-| R1.2 | IN PROGRESS | — | — | — | — | OPEN |
-| R1.3 | PENDING | — | — | — | — | OPEN |
-| R2.0 | PENDING | — | — | — | — | OPEN |
+| R1.2 | COMPLETE | 4a65d82 | 896 | 0 | 5 | OPEN (ext deps) |
+| R1.3 | COMPLETE | 88661b9 | 928 | 0 | 5 | OPEN (ext deps) |
+| R2.0 | IN PROGRESS | — | — | — | — | OPEN |
 | R3.0 | PENDING | — | — | — | — | OPEN |
 | R4.0 | PENDING | — | — | — | — | OPEN |
 | R5.0 | PENDING | — | — | — | — | OPEN |
