@@ -1,0 +1,78 @@
+{
+  "document": "V4_3_3_2_FRESH_ARCHIVE_ACCEPTANCE",
+  "version": "V4.3.3.2",
+  "generated_utc": "2026-06-28T01:30:00Z",
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+
+  "archive": {
+    "commit": "30a27f71159bc0a4b7c59156a77145e9f16d9318",
+    "branch": "feat/v4-3-3-2-repository-rationalization",
+    "archive_sha256": "fc72ec3b2ba6ccd46e6be15c6bebae4282dbff9761404c83aa55bdc86b6afe5d",
+    "archive_size_bytes": 5949440,
+    "parent_commit": "58a5faa"
+  },
+
+  "environment": {
+    "python": "3.9.6",
+    "pytest": "8.4.2",
+    "platform": "macOS-26.5.1-arm64",
+    "MRAQ_OFFLINE_CI": "1"
+  },
+
+  "working_tree_run": {
+    "collected": 53,
+    "passed": 53,
+    "failed": 0,
+    "skipped": 0,
+    "exit_code": 0,
+    "log": "results/v4_3_3_2_working_tree_test_run.txt"
+  },
+
+  "hermetic_run": {
+    "extract_path": "scratchpad/v4_3_3_2_hermetic/",
+    "collected": 53,
+    "passed": 53,
+    "failed": 0,
+    "skipped": 0,
+    "exit_code": 0,
+    "log": "results/v4_3_3_2_hermetic_test_run.txt"
+  },
+
+  "safety_counters": {
+    "network_calls": 0,
+    "api_calls": 0,
+    "real_pii_items": 0,
+    "synthetic_pii_guard_cases": 3,
+    "production_connector_calls": 0
+  },
+
+  "gate_corrections": {
+    "D-R13": {
+      "issue": "False positive on safety instruction text in DRAFT templates",
+      "fix": "contains_external_action_positive() — negation-aware line scanner",
+      "tests_added": 9,
+      "verification": "test_v4332_integration_fresh_draft_dr13_no_false_positive PASSED"
+    },
+    "D-R8": {
+      "issue": "Generic WARN on empty evidence manifest — no semantic state",
+      "fix": "evidence_gate_state field in QualityGateResult; 4 typed states",
+      "tests_added": 5,
+      "verification": "test_v4332_dr8_empty_manifest_state → REQUIRE_HUMAN_EVIDENCE_INPUT PASSED"
+    }
+  },
+
+  "repo_rationalization": {
+    "deleted_bytes": 132075520,
+    "deleted_items": [".mypy_cache/", ".ruff_cache/", ".pytest_cache/", ".DS_Store (x4)"],
+    "quarantined_untouched": ["MRAQ100_AUDIT/", "templates/", "out/"],
+    "gitignore_additions": [".mypy_cache/", ".ruff_cache/", "._*", "projects/"],
+    "phase_a_documents": 3,
+    "phase_b_documents": 4
+  },
+
+  "frozen_v433_baseline_preserved": true,
+  "old_freeze_reports_unmodified": true,
+  "mraq_score_unchanged": true,
+
+  "final_verdict": "PASS — V4.3.3.2 GATE CORRECTIONS AND REPO RATIONALIZATION BASELINE FROZEN"
+}
