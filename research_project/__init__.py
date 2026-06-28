@@ -18,8 +18,11 @@ from .project_config import (
     StudyType, ArtifactID, ArtifactStatus, EvidenceStatus, GateStatus,
     QualityGateResult, ProjectChangeRecord, ProjectArtifact, ProjectConfig,
     REQUIRE_HUMAN_INPUT_MARKER, DISCLAIMER, REPORTING_STANDARD,
-    contains_pii, contains_fabrication, contains_external_action,
+    contains_pii, contains_fabrication,
+    contains_external_action, contains_external_action_positive,
     contains_real_data, validate_study_type,
+    EVIDENCE_GATE_STATE_PASS, EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
+    EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW, EVIDENCE_GATE_STATE_BLOCK,
 )
 from .project_artifact_graph import (
     get_downstream, get_direct_downstream, mark_stale, topological_build_order,
@@ -47,8 +50,11 @@ __all__ = [
     "StudyType", "ArtifactID", "ArtifactStatus", "EvidenceStatus", "GateStatus",
     "QualityGateResult", "ProjectChangeRecord", "ProjectArtifact", "ProjectConfig",
     "REQUIRE_HUMAN_INPUT_MARKER", "DISCLAIMER", "REPORTING_STANDARD",
-    "contains_pii", "contains_fabrication", "contains_external_action",
+    "contains_pii", "contains_fabrication",
+    "contains_external_action", "contains_external_action_positive",
     "contains_real_data", "validate_study_type",
+    "EVIDENCE_GATE_STATE_PASS", "EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT",
+    "EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW", "EVIDENCE_GATE_STATE_BLOCK",
     # Artifact graph
     "get_downstream", "get_direct_downstream", "mark_stale", "topological_build_order",
     # Registry

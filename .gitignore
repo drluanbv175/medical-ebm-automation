@@ -21,8 +21,14 @@ data/tiktok/20*
 !data/tiktok/queue.txt
 !data/**/.gitkeep
 .DS_Store
+._*
 .streamlit/
 .env.bak.*
+
+# V4.3.3.2 additions — cache and runtime output
+.mypy_cache/
+.ruff_cache/
+projects/
 
 # Harness runtime artifacts
 .claude/state/

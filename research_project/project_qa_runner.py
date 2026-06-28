@@ -15,8 +15,11 @@ from .project_config import (
     ArtifactID, ArtifactStatus, ARTIFACT_FILENAME, DISCLAIMER,
     REQUIRE_HUMAN_INPUT_MARKER as RHI,
     GateStatus, QualityGateResult, ProjectConfig,
-    contains_pii, contains_fabrication, contains_external_action,
+    contains_pii, contains_fabrication,
+    contains_external_action, contains_external_action_positive,
     contains_real_data, validate_study_type,
+    EVIDENCE_GATE_STATE_PASS, EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
+    EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW, EVIDENCE_GATE_STATE_BLOCK,
 )
 from .project_evidence_intake import build_evidence_intake, EvidenceStatus
 
@@ -318,24 +321,41 @@ class ProjectQARunner:
         items = intake.load_all()
 
         if not items:
-            return QualityGateResult(gid, GateStatus.WARN,
-                "evidence_manifest.csv trống — chưa có bằng chứng nào được nhập.")
+            # Manifest rỗng — PI chưa nạp bằng chứng nào, trạng thái ngữ nghĩa rõ ràng
+            return QualityGateResult(
+                gid, GateStatus.WARN,
+                "evidence_manifest.csv rỗng — PI phải nạp bằng chứng trước khi phát hành. "
+                f"[evidence_gate_state={EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT}]",
+                evidence_gate_state=EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
+            )
 
         retracted = [i for i in items if i.status == EvidenceStatus.RETRACTED]
         unverified = [i for i in items if i.status == EvidenceStatus.MANUAL_REVIEW_REQUIRED]
 
         if retracted:
-            return QualityGateResult(gid, GateStatus.FAIL,
+            return QualityGateResult(
+                gid, GateStatus.FAIL,
                 f"{len(retracted)} bằng chứng RETRACTED trong manifest — "
-                "KHÔNG dùng trong bản thảo. Cập nhật hoặc loại bỏ.",
-                details=str([r.evidence_id for r in retracted]))
+                "KHÔNG dùng trong bản thảo. Cập nhật hoặc loại bỏ. "
+                f"[evidence_gate_state={EVIDENCE_GATE_STATE_BLOCK}]",
+                details=str([r.evidence_id for r in retracted]),
+                evidence_gate_state=EVIDENCE_GATE_STATE_BLOCK,
+            )
 
         if unverified:
-            return QualityGateResult(gid, GateStatus.WARN,
-                f"{len(unverified)} bằng chứng cần MANUAL_REVIEW — PI xem xét.")
+            return QualityGateResult(
+                gid, GateStatus.WARN,
+                f"{len(unverified)} bằng chứng cần MANUAL_REVIEW — PI xem xét. "
+                f"[evidence_gate_state={EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW}]",
+                evidence_gate_state=EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW,
+            )
 
-        return QualityGateResult(gid, GateStatus.PASS,
-            f"evidence_manifest có {len(items)} mục; không có RETRACTED.")
+        return QualityGateResult(
+            gid, GateStatus.PASS,
+            f"evidence_manifest có {len(items)} mục; không có RETRACTED. "
+            f"[evidence_gate_state={EVIDENCE_GATE_STATE_PASS}]",
+            evidence_gate_state=EVIDENCE_GATE_STATE_PASS,
+        )
 
     # ------------------------------------------------------------------
     # D-R9 — Không có dấu hiệu bịa dữ liệu / kết quả
@@ -447,6 +467,11 @@ class ProjectQARunner:
     # ------------------------------------------------------------------
 
     def _dr13_no_external_action(self) -> QualityGateResult:
+        """Kiểm external action thật, bỏ qua instruction cấm/an toàn trong template.
+
+        Dùng contains_external_action_positive() — phân biệt ngữ cảnh phủ định
+        ("KHÔNG được tự nộp") với action thật ("nộp lên IRB").
+        """
         gid = "D-R13"
         violations: List[str] = []
         for art_id in ArtifactID:
@@ -457,17 +482,17 @@ class ProjectQARunner:
                 content = path.read_bytes().decode("utf-8", errors="replace")
             except Exception:
                 continue
-            if contains_external_action(content):
+            if contains_external_action_positive(content):
                 violations.append(ARTIFACT_FILENAME[art_id])
 
         if violations:
             return QualityGateResult(gid, GateStatus.FAIL,
-                f"External action marker trong: {violations}. "
+                f"External action thật trong: {violations}. "
                 "KHÔNG được tự nộp/gửi/publish artifact.",
                 details=str(violations))
 
         return QualityGateResult(gid, GateStatus.PASS,
-            "Không phát hiện external action marker.")
+            "Không phát hiện external action thật (instruction phủ định an toàn = PASS).")
 
     # ------------------------------------------------------------------
     # D-R14 — Traceability hoàn tất

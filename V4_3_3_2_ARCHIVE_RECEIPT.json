@@ -1,0 +1,44 @@
+{
+  "archive_receipt_id": "ARCH-RCPT-V4.3.3.2-20260628T005000Z",
+  "utc_timestamp": "2026-06-28T00:50:00Z",
+  "version": "V4.3.3.2",
+  "archived_items": [
+    {
+      "archive_id": "ARCH-V4332-001",
+      "type": "CACHE_DELETE_NO_ARCHIVE",
+      "paths": [".mypy_cache/", ".ruff_cache/", ".pytest_cache/", ".DS_Store (x4)"],
+      "total_size_bytes": 132075520,
+      "reason": "Whitelist cache — fully regenerable, no unique data",
+      "archive_path": "N/A — deleted only, no archive needed for regenerable cache",
+      "recovery": "Regenerate: mypy / ruff check / pytest / macOS Finder auto-creates .DS_Store"
+    }
+  ],
+  "quarantined_not_archived": [
+    {
+      "path": "MRAQ100_AUDIT/",
+      "content": "MRAQ_V4_X_SELF_REASSESSMENT.md (9409 bytes)",
+      "action": "QUARANTINE — left untouched, not deleted, not committed",
+      "human_review_required": true,
+      "reason": "Untracked audit directory; scope and content not independently verified by this run"
+    },
+    {
+      "path": "templates/",
+      "action": "QUARANTINE — not touched",
+      "human_review_required": true
+    },
+    {
+      "path": "out/",
+      "action": "QUARANTINE — not touched",
+      "human_review_required": true
+    }
+  ],
+  "frozen_evidence_preserved": [
+    "V4_3_3_EXECUTIVE_SUMMARY.md",
+    "V4_3_3_TEST_REPORT.md",
+    "V4_3_3_FRESH_ARCHIVE_ACCEPTANCE.json",
+    "V4_3_3_GIT_BASELINE_VERIFICATION.md",
+    "V4_3_3_FREEZE_SUMMARY.md",
+    "results/v4_3_3_fresh_archive_*.txt"
+  ],
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE"
+}

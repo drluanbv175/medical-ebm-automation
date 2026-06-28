@@ -36,6 +36,19 @@ _EXTERNAL_ACTION_MARKERS = (
     "submit", "nộp", "send_to_irb", "upload_to_registry", "publish",
     "post_to", "email_to", "gửi tới", "nộp ethics", "register_trial",
 )
+# Ngữ cảnh phủ định: dòng chứa marker + một trong các từ này là CẤM/CẢNH BÁO,
+# không phải hành động thật — D-R13 bỏ qua dòng này.
+_EXTERNAL_ACTION_NEGATION_CONTEXT = (
+    "không được", "không tự", "không phép", "cấm",
+    "blocked", "forbidden", "not allowed", "do not",
+    "không ", "bị chặn", "disable", "block",
+)
+
+# Trạng thái ngữ nghĩa cho D-R8 (bổ sung vào GateStatus PASS/FAIL/WARN/SKIP)
+EVIDENCE_GATE_STATE_PASS                      = "PASS"
+EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT       = "REQUIRE_HUMAN_EVIDENCE_INPUT"
+EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW      = "REQUIRE_HUMAN_REVIEW"
+EVIDENCE_GATE_STATE_BLOCK                     = "BLOCK"
 _REAL_DATA_MARKERS = (
     "real_data", "dữ liệu thật", "du lieu that", "his_data", "emr_data",
     "eHospital", "lấy dữ liệu thật", "connect_his", "import_ehr",
@@ -148,14 +161,18 @@ class QualityGateResult:
     status: GateStatus
     message: str
     details: Optional[str] = None
+    evidence_gate_state: Optional[str] = None  # D-R8 semantic state only
 
     def as_dict(self) -> dict:
-        return {
+        d = {
             "gate_id": self.gate_id,
             "status": self.status,
             "message": self.message,
             "details": self.details,
         }
+        if self.evidence_gate_state is not None:
+            d["evidence_gate_state"] = self.evidence_gate_state
+        return d
 
 
 @dataclasses.dataclass
@@ -228,8 +245,27 @@ def contains_fabrication(text: str) -> bool:
 
 
 def contains_external_action(text: str) -> bool:
+    """Trả True nếu text chứa bất kỳ action marker — dùng cho write-path guard (strict)."""
     low = text.lower()
     return any(m.lower() in low for m in _EXTERNAL_ACTION_MARKERS)
+
+
+def contains_external_action_positive(text: str) -> bool:
+    """Trả True nếu có external action THẬT (không phải instruction cấm/cảnh báo).
+
+    Duyệt từng dòng: dòng có action marker + ngữ cảnh phủ định → bỏ qua (an toàn).
+    Chỉ FAIL khi tìm thấy marker không bị phủ định → action thật cần chặn.
+    Dùng cho gate D-R13 để tránh false positive từ template safety instructions.
+    """
+    for line in text.splitlines():
+        line_low = line.lower()
+        if not any(m.lower() in line_low for m in _EXTERNAL_ACTION_MARKERS):
+            continue
+        # Dòng có marker — kiểm ngữ cảnh phủ định
+        is_negated = any(neg in line_low for neg in _EXTERNAL_ACTION_NEGATION_CONTEXT)
+        if not is_negated:
+            return True  # Action thật, không bị phủ định
+    return False
 
 
 def contains_real_data(text: str) -> bool:

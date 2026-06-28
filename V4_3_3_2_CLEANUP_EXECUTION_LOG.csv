@@ -1,0 +1,9 @@
+deleted_path,delete_reason,previous_size,safe_to_regenerate,archive_reference_if_any,timestamp_utc
+.mypy_cache/,DELETE_SAFE_CACHE — mypy type-check cache 128MB fully regenerable,128MB,true,ARCH-V4332-001,2026-06-28T00:50:00Z
+.ruff_cache/,DELETE_SAFE_CACHE — ruff lint cache 116KB fully regenerable,116KB,true,ARCH-V4332-001,2026-06-28T00:50:00Z
+.pytest_cache/,DELETE_SAFE_CACHE — pytest cache 100KB fully regenerable,100KB,true,ARCH-V4332-001,2026-06-28T00:50:00Z
+.DS_Store (root),DELETE_SAFE_CACHE — macOS Finder metadata 12292 bytes no data content,12292B,true,ARCH-V4332-001,2026-06-28T00:50:00Z
+docs/.DS_Store,DELETE_SAFE_CACHE — macOS Finder metadata 8196 bytes,8196B,true,ARCH-V4332-001,2026-06-28T00:50:00Z
+tests/evals/.DS_Store,DELETE_SAFE_CACHE — macOS Finder metadata 8196 bytes,8196B,true,ARCH-V4332-001,2026-06-28T00:50:00Z
+tests/evals/red_team/.DS_Store,DELETE_SAFE_CACHE — macOS Finder metadata 8196 bytes,8196B,true,ARCH-V4332-001,2026-06-28T00:50:00Z
+MRAQ100_AUDIT/,NOT DELETED — QUARANTINE — human review required,9409B,unknown,NONE,2026-06-28T00:50:00Z
