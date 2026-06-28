@@ -1,0 +1,129 @@
+{
+  "acceptance_version": "4.3.4.1",
+  "acceptance_date": "2026-06-28",
+  "purpose": "Fresh archive verification of v4.3.4 — two tasks: (1) verify full test suite from archive, (2) correct attestation boundary documentation",
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+
+  "baseline_candidate": {
+    "tag": "v4.3.4",
+    "commit": "101ca08a331605e95b15cb82a4839e0e2a799e3e",
+    "commit_verified": true,
+    "note": "commit matches v4.3.4 tag and v4.3.4-frozen tag"
+  },
+
+  "archive_extraction": {
+    "method": "git archive --format=tar v4.3.4",
+    "extracted_to": "/private/tmp/.../scratchpad/v4341_fresh/medical-ebm-automation",
+    "size_bytes": 6256640,
+    "files": 740,
+    "symlinks": 0,
+    "self_contained": true,
+    "archive_sha256_no_prefix_pipe": "df968469e1509447f48d74a556a0c1142442ef3cd0e9d4d2cd7b1fbc214a5789",
+    "archive_sha256_with_prefix_file": "d69fe47c99aafe3036371af91d843303b25323ade80c8ad09ded118e98fde851",
+    "sha_difference_reason": "--prefix=medical-ebm-automation/ flag changes tar path structure → different SHA256. Both represent identical source content from commit 101ca08a.",
+    "verification_command_v434": "git archive --format=tar v4.3.4 | shasum -a 256"
+  },
+
+  "environment": {
+    "platform": "darwin",
+    "python_version": "3.9.6",
+    "pytest_version": "8.4.2",
+    "MRAQ_OFFLINE_CI": "1",
+    "ANTHROPIC_API_KEY": "unset",
+    "OPENAI_API_KEY": "unset",
+    "EHOSPITAL_ENABLED": "unset",
+    "MRAQ_ENABLE_EHOSPITAL_SYNTHETIC_TEST": "unset",
+    "network": "OFFLINE (keys unset, MRAQ_OFFLINE_CI=1)"
+  },
+
+  "manifest_verify": "PASS — python3 -m compileall -q research_project/ tests/",
+  "registry_verify": {
+    "research_project_modules": 15,
+    "test_files": 69,
+    "has_project_review_operations": true,
+    "status": "PASS"
+  },
+
+  "full_test_suite": {
+    "collected": 781,
+    "passed": 776,
+    "skipped": 5,
+    "failed": 0,
+    "equation_check": "776+5=781 VERIFIED",
+    "status": "PASS"
+  },
+
+  "skip_difference_analysis": {
+    "archive_skips": 5,
+    "worktree_skips_without_ci_flag": 7,
+    "difference": 2,
+    "affected_tests": [
+      "tests/test_offline_ci_guard.py::TestHermeticOfflineCI::test_no_api_keys_present",
+      "tests/test_offline_ci_guard.py::TestHermeticOfflineCI::test_network_connect_is_blocked"
+    ],
+    "reason": "These 2 tests SKIP without MRAQ_OFFLINE_CI=1 and PASS with it set. In archive, PASS = API keys absent + network blocked. This is favorable: hermetic offline CI guard is ACTIVE.",
+    "safety_impact": "FAVORABLE — archive result is stronger than working-tree result"
+  },
+
+  "v434_specific_tests": {
+    "file": "tests/test_v4_3_4_human_review_operations.py",
+    "count": 20,
+    "passed": 20,
+    "note": "20 tests are a SUBSET of 781 collected, NOT additive",
+    "status": "PASS"
+  },
+
+  "project_smoke_results": {
+    "project_init": "OK — V4341-SMOKE-001 created",
+    "project_build": "OK — 19 artifacts created, 0 skipped",
+    "project_qa": "PASS=13 FAIL=0 WARN=2 SKIP=0 — overall PASS",
+    "project_qa_warns": [
+      "D-R2: primary_outcomes are placeholders (expected — PI must fill real outcomes)",
+      "D-R8: evidence_manifest.csv empty (expected — PI must load evidence)"
+    ],
+    "project_review_list": "OK — 19 artifacts in queue",
+    "project_review_record": "OK — review_id=RV-C56A2169C273, mode=HUMAN_REVIEW_INDEPENDENCE_NOT_ESTABLISHED",
+    "project_review_status": {
+      "total_records": 1,
+      "draft_only": true,
+      "final_released_count": 0,
+      "qualification_in_output": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE"
+    },
+    "project_revision_plan": "OK — 1 revision, 12 stale downstream",
+    "project_review_pack": "OK",
+    "project_reproducibility_check": "OK — 19/19 artifacts present"
+  },
+
+  "mandatory_assertions": {
+    "network_attempts": 0,
+    "api_attempts": 0,
+    "real_pii_inputs": 0,
+    "production_connector_attempts": 0,
+    "automation_caller_blocked": true,
+    "final_released_submitted_count": 0,
+    "external_release_blocked": true,
+    "draft_only_confirmed": true
+  },
+
+  "security_invariants_preserved": {
+    "no_api_calls": true,
+    "no_pii": true,
+    "draft_only": true,
+    "automation_cannot_approve": true,
+    "no_external_action": true,
+    "no_real_patient_data": true,
+    "no_ehospital_connection": true,
+    "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+    "real_research_execution": "BLOCKED",
+    "external_release_submission": "BLOCKED",
+    "live_agent_behavior": "NOT VERIFIED",
+    "api_connectivity": "NOT RUN",
+    "independent_review": "NOT ESTABLISHED",
+    "all_outputs": "DRAFT — REQUIRE HUMAN REVIEW"
+  },
+
+  "verdict": "PASS",
+  "verdict_note": "All mandatory assertions pass. 0 failures. Fresh archive from v4.3.4 tag fully verified.",
+  "freeze_tag_recommendation": "CREATE annotated v4.3.4-frozen at commit 101ca08a331605e95b15cb82a4839e0e2a799e3e",
+  "attestation": "Manual acceptance record. Does not constitute ethics, PI, final, or independent approval."
+}

@@ -1,0 +1,5 @@
+tests/test_reference_import.py::test_items_are_verbatim_from_source SKIPPED [ 50%]
+tests/test_v4_4_claude_api_runtime.py::TestT25fLiveApi::test_live_run_returns_fixture_output SKIPPED [ 90%]
+tests/test_v4_4_claude_api_runtime.py::TestT25fLiveApi::test_live_response_has_disclaimer SKIPPED [ 90%]
+tests/test_v4_4_claude_api_runtime.py::TestT25fLiveApi::test_live_no_pii_in_output SKIPPED [ 91%]
+tests/test_v4_4_claude_api_runtime.py::TestT25fLiveApi::test_live_policy_not_pii_blocked SKIPPED [ 91%]

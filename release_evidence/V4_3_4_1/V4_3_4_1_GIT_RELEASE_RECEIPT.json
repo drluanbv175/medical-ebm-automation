@@ -1,0 +1,63 @@
+{
+  "release_version": "4.3.4.1",
+  "release_date": "2026-06-28",
+  "purpose": "Evidence truthfulness pass + fresh archive verification of v4.3.4",
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+
+  "baseline_tag": "v4.3.4",
+  "baseline_commit": "101ca08a331605e95b15cb82a4839e0e2a799e3e",
+
+  "archive_sha256": {
+    "no_prefix_pipe": "df968469e1509447f48d74a556a0c1142442ef3cd0e9d4d2cd7b1fbc214a5789",
+    "with_prefix_file": "d69fe47c99aafe3036371af91d843303b25323ade80c8ad09ded118e98fde851",
+    "canonical_verification_command": "git archive --format=tar v4.3.4 | shasum -a 256"
+  },
+
+  "files_in_archive": 740,
+  "archive_size_bytes": 6256640,
+
+  "test_results": {
+    "collected": 781,
+    "passed": 776,
+    "skipped": 5,
+    "failed": 0,
+    "v434_specific": "20/20 PASS (subset of 781, not additive)"
+  },
+
+  "documentation_corrections_in_v4341": [
+    "V4_3_4_EXECUTIVE_SUMMARY.md — attestation boundary clarification, test count correction",
+    "V4_3_4_HUMAN_REVIEW_OPERATIONS_SOP.md — added technical limits section",
+    "V4_3_4_REVIEW_ROUTING_MATRIX.md — added role label vs authentication distinction",
+    "V4_3_4_TEST_REPORT.md — corrected '774+20' wording; 20 tests are subset not additive",
+    "V4_3_4_1_REVIEW_ATTESTATION_BOUNDARY_REPORT.md — new, defines attestation boundary"
+  ],
+
+  "new_files_in_v4341": [
+    "release_evidence/V4_3_4_1/V4_3_4_1_FRESH_ARCHIVE_ACCEPTANCE.json",
+    "release_evidence/V4_3_4_1/V4_3_4_1_GIT_RELEASE_RECEIPT.json",
+    "release_evidence/V4_3_4_1/V4_3_4_1_FULL_SUITE_TEST_REPORT.md",
+    "release_evidence/V4_3_4_1/V4_3_4_1_FREEZE_SUMMARY.md",
+    "release_evidence/V4_3_4/V4_3_4_1_REVIEW_ATTESTATION_BOUNDARY_REPORT.md"
+  ],
+
+  "no_source_code_changes": true,
+  "no_new_features": true,
+  "no_test_changes": true,
+  "scope": "Documentation corrections and archive verification only",
+
+  "freeze_tag": {
+    "name": "v4.3.4-frozen",
+    "target_commit": "101ca08a331605e95b15cb82a4839e0e2a799e3e",
+    "recommended_type": "annotated",
+    "status": "PENDING — recreate as annotated after all evidence files committed"
+  },
+
+  "security_invariants": {
+    "no_api_calls": true,
+    "no_pii": true,
+    "draft_only": true,
+    "automation_cannot_approve": true,
+    "no_external_action": true,
+    "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE"
+  }
+}

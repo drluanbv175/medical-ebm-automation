@@ -1,0 +1,9 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /private/tmp/claude-501/-Users-nguyenluan-Library-CloudStorage-OneDrive-Personal-Claude-AI/17799845-77e5-4db9-9336-87709fdaa140/scratchpad/v4341_fresh/medical-ebm-automation
+plugins: anyio-4.12.1
+collected 20 items
+
+tests/test_v4_3_4_human_review_operations.py ....................        [100%]
+
+============================== 20 passed in 0.10s ==============================

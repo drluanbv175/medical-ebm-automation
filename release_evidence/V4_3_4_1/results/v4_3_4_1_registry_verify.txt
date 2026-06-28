@@ -1,0 +1,4 @@
+=== REGISTRY VERIFY ===
+research_project modules: 15
+test files: 69
+has project_review_operations: YES

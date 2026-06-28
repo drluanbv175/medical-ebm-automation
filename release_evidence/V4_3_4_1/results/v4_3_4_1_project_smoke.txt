@@ -1,0 +1,208 @@
+=== Steps 6-14: Project Smoke ===
+--- Step 6: project-init ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[OK] Project 'V4341-SMOKE-001' đã khởi tạo tại: projects/V4341-SMOKE-001
+     Bước tiếp: researchctl project-build --project-id V4341-SMOKE-001
+--- Step 7: project-build ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[OK] project-build 'V4341-SMOKE-001':
+     Tạo mới: 19 artifact
+     Bỏ qua:  0 artifact (đã tồn tại)
+     Bước tiếp: researchctl project-qa --project-id V4341-SMOKE-001
+--- Step 8: project-qa ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[QA] QA V4341-SMOKE-001: PASS=13 FAIL=0 WARN=2 SKIP=0 → PASS
+  [✓] D-R1: Tiêu đề và mục tiêu đều có nội dung.
+  [!] D-R2: Tất cả primary_outcomes là placeholder — PI chưa điền kết cục thật.
+  [✓] D-R3: study_type='cohort' hợp lệ và nhất quán với PROTOCOL_DRAFT.
+  [✓] D-R4: Tiêu chí tuyển chọn có trong PROTOCOL_DRAFT; dân số synthetic đúng.
+  [✓] D-R5: CRF_DRAFT và DATA_DICTIONARY tồn tại; DD có 15 biến.
+  [✓] D-R6: SAP_DRAFT tồn tại, có lock reminder và nhất quán với loại NC.
+  [✓] D-R7: TABLE_AND_FIGURE_SHELLS tồn tại với Table 1 và Figure placeholder.
+  [!] D-R8: evidence_manifest.csv rỗng — PI phải nạp bằng chứng trước khi phát hành. [evidence_gate_state=REQUIRE_HUMAN_EVIDENCE_INPUT]
+  [✓] D-R9: Không phát hiện fabrication marker trong các artifact chính.
+  [✓] D-R10: Không phát hiện PII marker trong tất cả artifact.
+  [✓] D-R11: draft_only=True; không có 'RELEASED/FINAL/SUBMITTED' trong artifact.
+  [✓] D-R12: Không có artifact ở trạng thái STALE.
+  [✓] D-R13: Không phát hiện external action thật (instruction phủ định an toàn = PASS).
+  [✓] D-R14: TRACEABILITY_MATRIX tồn tại với 1 hàng objective.
+  [✓] D-R15: METHODS_AND_SAMPLE_SIZE (04) có ghi chú cỡ mẫu và giả định/REQUIRE_HUMAN_INPUT.
+
+[PASS] Tất cả 13 gate PASS.
+--- Step 9: project-review-list ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+=== REVIEW QUEUE — V4341-SMOKE-001 (19 artifact) ===
+    DRAFT-ONLY · HUMAN REVIEW REQUIRED · NO-GO
+
+  [HIGH    ] 00_RESEARCH_CHARTER
+            → Roles: PI_PROJECT_OWNER
+            → Focus: objectives, outcomes, feasibility
+            → Gate: D-R1 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [HIGH    ] 01_RESEARCH_QUESTION_AND_PICO
+            → Roles: PI_PROJECT_OWNER
+            → Focus: objectives, outcomes, feasibility
+            → Gate: D-R2 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [CRITICAL] 02_PROTOCOL_DRAFT
+            → Roles: PI_PROJECT_OWNER, METHODS_STATISTICS_REVIEWER
+            → Focus: design, population, bias, ethics readiness
+            → Gate: D-R4 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [HIGH    ] 03_EVIDENCE_PLAN
+            → Roles: EVIDENCE_CITATION_REVIEWER
+            → Focus: evidence status, verification, retraction
+            → Gate: D-R8 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [CRITICAL] 04_METHODS_AND_SAMPLE_SIZE_ASSUMPTIONS
+            → Roles: METHODS_STATISTICS_REVIEWER
+            → Focus: assumptions, confounding, missing data
+            → Gate: D-R15 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [HIGH    ] 05_CRF_DRAFT
+            → Roles: DATA_GOVERNANCE_QA_REVIEWER
+            → Focus: variables, coding, validation, provenance
+            → Gate: D-R5 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [HIGH    ] 06_DATA_DICTIONARY
+            → Roles: DATA_GOVERNANCE_QA_REVIEWER
+            → Focus: variables, coding, validation, provenance
+            → Gate: D-R5 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [CRITICAL] 07_STATISTICAL_ANALYSIS_PLAN_DRAFT
+            → Roles: METHODS_STATISTICS_REVIEWER
+            → Focus: outcome-analysis consistency
+            → Gate: D-R6 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [MEDIUM  ] 08_TABLE_AND_FIGURE_SHELLS
+            → Roles: METHODS_STATISTICS_REVIEWER
+            → Focus: outcome-analysis consistency
+            → Gate: D-R7 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [MEDIUM  ] 09_SYNTHETIC_ANALYSIS_READINESS
+            → Roles: METHODS_STATISTICS_REVIEWER
+            → Focus: synthetic data readiness, no real data
+            → Gate: D-R9 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [HIGH    ] 10_REPORTING_CHECKLIST_DRAFT
+            → Roles: PI_PROJECT_OWNER, EVIDENCE_CITATION_REVIEWER
+            → Focus: reporting standard, citations
+            → Gate: D-R11 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [MEDIUM  ] 11_MANUSCRIPT_OUTLINE_DRAFT
+            → Roles: PI_PROJECT_OWNER
+            → Focus: outline completeness, draft-only status
+            → Gate: D-R11 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [HIGH    ] 12_GOVERNANCE_AND_CAPA_PACK
+            → Roles: DATA_GOVERNANCE_QA_REVIEWER
+            → Focus: traceability, change control, audit
+            → Gate: D-R12 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [HIGH    ] 13_REVIEW_PACK
+            → Roles: PI_PROJECT_OWNER
+            → Focus: unresolved decisions and next action
+            → Gate: D-R14 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [MEDIUM  ] 14_PROJECT_TRACEABILITY_MATRIX
+            → Roles: DATA_GOVERNANCE_QA_REVIEWER
+            → Focus: traceability completeness
+            → Gate: D-R14 | Status: DRAFT [REQUIRE_HUMAN_INPUT]
+  [HIGH    ] 15_PROJECT_QA_REPORT
+            → Roles: PI_PROJECT_OWNER
+            → Focus: gate results, outstanding WARN/FAIL
+            → Gate: D-R1 | Status: DRAFT
+  [MEDIUM  ] 16_CHANGE_IMPACT_REPORT
+            → Roles: PI_PROJECT_OWNER
+            → Focus: stale artifacts, propagation
+            → Gate: D-R12 | Status: DRAFT
+  [MEDIUM  ] 17_DECISION_REGISTER
+            → Roles: PI_PROJECT_OWNER
+            → Focus: decision completeness, outstanding items
+            → Gate: D-R12 | Status: DRAFT
+  [LOW     ] 18_VERSION_REGISTER
+            → Roles: DATA_GOVERNANCE_QA_REVIEWER
+            → Focus: version sequence, no overwrite
+            → Gate: D-R12 | Status: DRAFT
+--- Step 10: project-review-record ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[OK] Review record ghi thành công:
+     review_id:    RV-C56A2169C273
+     artifact_id:  02_PROTOCOL_DRAFT
+     decision:     REVISION_REQUIRED
+     audit_event:  AE-6362A77A01
+     mode:         HUMAN_REVIEW_INDEPENDENCE_NOT_ESTABLISHED
+     [DRAFT-ONLY] Artifact vẫn là DRAFT — cần PI quyết định tiếp theo.
+
+     [NEXT] Chạy: researchctl project-revision-plan --project-id V4341-SMOKE-001
+--- Step 11: project-review-status ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+=== REVIEW STATUS — V4341-SMOKE-001 ===
+  Total review records:     1
+  Artifacts reviewed:       1
+  Revision required:        1
+  Human input required:     0
+  Accepted as draft:        0
+  Rejected draft:           0
+  Draft-only status:        True
+  Final/released artifacts: 0
+  Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE
+--- Step 12: project-revision-plan ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+=== REVISION PLAN — V4341-SMOKE-001 ===
+  1 artifact cần sửa; 12 artifact phụ thuộc cần rà soát.
+  [DRAFT-ONLY] No-overwrite policy: Artifact version cũ được bảo toàn. Tạo version mới sau khi PI sửa.
+
+  Artifacts cần sửa (1):
+    [?] 02_PROTOCOL_DRAFT vDRAFT
+      Reason: Protocol smoke test — cần PI điền criteria thật
+      Action: Điền tiêu chí thu nhận
+      Action: Xác nhận dân số nghiên cứu
+
+  Artifacts bị STALE (12):
+    - 04_METHODS_AND_SAMPLE_SIZE_ASSUMPTIONS
+    - 05_CRF_DRAFT
+    - 06_DATA_DICTIONARY
+    - 07_STATISTICAL_ANALYSIS_PLAN_DRAFT
+    - 08_TABLE_AND_FIGURE_SHELLS
+    - 09_SYNTHETIC_ANALYSIS_READINESS
+    - 10_REPORTING_CHECKLIST_DRAFT
+    - 11_MANUSCRIPT_OUTLINE_DRAFT
+    - 12_GOVERNANCE_AND_CAPA_PACK
+    - 13_REVIEW_PACK
+    - 14_PROJECT_TRACEABILITY_MATRIX
+    - 15_PROJECT_QA_REPORT
+
+  Cần bác sĩ / PI kiểm chứng. Đây là bản DRAFT tự động — KHÔNG thực thi thật.
+--- Step 13: project-review-pack ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+[QA] QA V4341-SMOKE-001: PASS=13 FAIL=0 WARN=2 SKIP=0 → PASS
+[OK] Review Pack tạo xong:
+     Quyết định cần đưa ra: 7
+     Ưu tiên CAO: 5
+     Bằng chứng chưa xác minh: 0
+     Xem: projects/V4341-SMOKE-001/13_REVIEW_PACK.md
+--- Step 14: project-reproducibility-check ---
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/runpy.py:127: RuntimeWarning: 'research_project.project_cli' found in sys.modules after import of package 'research_project', but prior to execution of 'research_project.project_cli'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+=== Reproducibility Check: V4341-SMOKE-001 ===
+  [✓] 00_RESEARCH_CHARTER.md
+  [✓] 01_RESEARCH_QUESTION_AND_PICO.md
+  [✓] 02_PROTOCOL_DRAFT.md
+  [✓] 03_EVIDENCE_PLAN.md
+  [✓] 04_METHODS_AND_SAMPLE_SIZE_ASSUMPTIONS.md
+  [✓] 05_CRF_DRAFT.md
+  [✓] 06_DATA_DICTIONARY.csv
+  [✓] 07_STATISTICAL_ANALYSIS_PLAN_DRAFT.md
+  [✓] 08_TABLE_AND_FIGURE_SHELLS.md
+  [✓] 09_SYNTHETIC_ANALYSIS_READINESS.md
+  [✓] 10_REPORTING_CHECKLIST_DRAFT.md
+  [✓] 11_MANUSCRIPT_OUTLINE_DRAFT.md
+  [✓] 12_GOVERNANCE_AND_CAPA_PACK.md
+  [✓] 13_REVIEW_PACK.md
+  [✓] 14_PROJECT_TRACEABILITY_MATRIX.csv
+  [✓] 15_PROJECT_QA_REPORT.md
+  [✓] 16_CHANGE_IMPACT_REPORT.md
+  [✓] 17_DECISION_REGISTER.md
+  [✓] 18_VERSION_REGISTER.csv
+  [-] audit_log.jsonl — chưa có change records
+  [✓] evidence/evidence_manifest.csv
+
+Kết quả: 19 artifact có · 0 artifact thiếu
+Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE
+Cần bác sĩ / PI kiểm chứng. Đây là bản DRAFT tự động — KHÔNG thực thi thật.
+=== SMOKE COMPLETE ===

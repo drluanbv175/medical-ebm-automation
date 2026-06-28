@@ -1,15 +1,20 @@
 # V4.3.4 Review Routing Matrix
 
 **Version:** 4.3.4  
-**Date:** 2026-06-28  
+**Corrected:** 2026-06-28 (V4.3.4.1 — attestation boundary clarification)  
 **Status:** DRAFT — REQUIRE HUMAN REVIEW
+
+> **Lưu ý:** Routing matrix ánh xạ artifact → role label và risk level.
+> Hệ thống **không xác thực danh tính** reviewer và **không xác minh**
+> rằng người ghi record thực sự có chuyên môn hay thẩm quyền tương ứng với role.
+> Role là **label routing** — không phải credential hay authorization.
 
 ---
 
-## Ma trận định tuyến (19 ArtifactID → Role + Risk + Gate)
+## Ma trận định tuyến (19 ArtifactID → Role label + Risk + Gate)
 
-| Artifact | Primary Role(s) | Mandatory Focus | Risk | Gate |
-|----------|----------------|-----------------|------|------|
+| Artifact | Primary Role label(s) | Mandatory Focus | Risk | Gate |
+|----------|----------------------|-----------------|------|------|
 | `00_RESEARCH_CHARTER` | PI_PROJECT_OWNER | objectives, outcomes, feasibility | HIGH | D-R1 |
 | `01_RESEARCH_QUESTION_AND_PICO` | PI_PROJECT_OWNER | objectives, outcomes, feasibility | HIGH | D-R2 |
 | `02_PROTOCOL_DRAFT` | PI_PROJECT_OWNER, METHODS_STATISTICS_REVIEWER | design, population, bias, ethics readiness | **CRITICAL** | D-R4 |
@@ -43,26 +48,27 @@
 
 ---
 
-## Phân bổ theo role
+## Giới hạn của routing matrix
 
-| Role | Artifacts |
-|------|-----------|
-| PI_PROJECT_OWNER | `00`, `01`, `02*`, `10*`, `11`, `13`, `15`, `16`, `17` |
-| METHODS_STATISTICS_REVIEWER | `02*`, `04`, `07`, `08`, `09` |
-| EVIDENCE_CITATION_REVIEWER | `03`, `10*` |
-| DATA_GOVERNANCE_QA_REVIEWER | `05`, `06`, `12`, `14`, `18` |
-
-_*Artifact có nhiều reviewer._
+| Điều routing matrix làm | Điều routing matrix KHÔNG làm |
+|------------------------|------------------------------|
+| Ánh xạ artifact → role label | Xác thực danh tính người ghi record |
+| Gợi ý mandatory focus | Xác minh chuyên môn của reviewer |
+| Đánh dấu risk level | Đảm bảo reviewer đọc artifact |
+| Chỉ định blocking gate | Kiểm tra xung đột lợi ích |
+| Hiển thị trong `project-review-list` | Ngăn người không có thẩm quyền ghi record |
 
 ---
 
 ## Nguyên tắc routing
 
-1. **CRITICAL artifacts** cần PI_PROJECT_OWNER và/hoặc METHODS_STATISTICS_REVIEWER.
-2. **Evidence artifacts** bắt buộc EVIDENCE_CITATION_REVIEWER để tránh fabricated citations.
-3. **Data/governance artifacts** bắt buộc DATA_GOVERNANCE_QA_REVIEWER để đảm bảo ALCOA+.
-4. Routing không tự approve — chỉ chỉ định ai cần review, không thay thế quyết định người thật.
+1. **CRITICAL artifacts** cần label PI_PROJECT_OWNER và/hoặc METHODS_STATISTICS_REVIEWER.
+2. **Evidence artifacts** cần label EVIDENCE_CITATION_REVIEWER.
+3. **Data/governance artifacts** cần label DATA_GOVERNANCE_QA_REVIEWER.
+4. Routing không tự approve — chỉ chỉ định label, không thay thế quyết định người thật.
+5. Role label là **gợi ý** cho người vận hành, không phải enforcement có authentication.
 
 ---
 
+*Manual review record does not constitute ethics, PI, final, or independent approval.*  
 *Cần bác sĩ / PI kiểm chứng. Đây là bản DRAFT tự động — KHÔNG thực thi thật.*
