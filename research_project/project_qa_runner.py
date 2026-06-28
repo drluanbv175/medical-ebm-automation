@@ -1,7 +1,9 @@
 """
-project_qa_runner — 15 Draft Quality Gates D-R1..D-R15 (V4.3.3).
+project_qa_runner — 15 Draft Quality Gates D-R1..D-R15 (V4.3.3/V4.3.5).
 
 Mỗi gate trả PASS / FAIL / WARN / SKIP. FAIL đỏ → artifact không được phát hành.
+D-R8 V4.3.5: nếu evidence_source_ledger.jsonl tồn tại → dùng Evidence Source Ledger
+và Claim Traceability Ledger mới; không thì dùng evidence_manifest.csv cũ (backward compat).
 OFFLINE · KHÔNG PII / API / dữ liệu thật.
 """
 
@@ -21,7 +23,14 @@ from .project_config import (
     EVIDENCE_GATE_STATE_PASS, EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
     EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW, EVIDENCE_GATE_STATE_BLOCK,
 )
-from .project_evidence_intake import build_evidence_intake, EvidenceStatus
+from .project_evidence_intake import (
+    build_evidence_intake, EvidenceStatus,
+    EvidenceSourceLedger, VerificationState,
+    EVIDENCE_SOURCE_LEDGER_FILENAME,
+)
+from .project_claim_traceability import (
+    ClaimTraceabilityLedger, ClaimStatus, CLAIM_LEDGER_FILENAME,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -307,11 +316,22 @@ class ProjectQARunner:
             "TABLE_AND_FIGURE_SHELLS tồn tại với Table 1 và Figure placeholder.")
 
     # ------------------------------------------------------------------
-    # D-R8 — Trạng thái bằng chứng (không RETRACTED trong evidence)
+    # D-R8 — Trạng thái bằng chứng (V4.3.3 manifest + V4.3.5 ledger)
     # ------------------------------------------------------------------
 
     def _dr8_evidence_status(self) -> QualityGateResult:
         gid = "D-R8"
+
+        # V4.3.5: nếu evidence_source_ledger.jsonl tồn tại → dùng logic mới
+        new_ledger_path = self._dir / EVIDENCE_SOURCE_LEDGER_FILENAME
+        if new_ledger_path.exists():
+            return self._dr8_v435_ledger(gid)
+
+        # V4.3.3 backward-compat: dùng evidence_manifest.csv cũ
+        return self._dr8_legacy_manifest(gid)
+
+    def _dr8_legacy_manifest(self, gid: str) -> QualityGateResult:
+        """D-R8 cũ: kiểm evidence_manifest.csv (backward compat V4.3.3)."""
         ev_dir = self._dir / "evidence"
         if not ev_dir.exists():
             return QualityGateResult(gid, GateStatus.SKIP,
@@ -321,7 +341,6 @@ class ProjectQARunner:
         items = intake.load_all()
 
         if not items:
-            # Manifest rỗng — PI chưa nạp bằng chứng nào, trạng thái ngữ nghĩa rõ ràng
             return QualityGateResult(
                 gid, GateStatus.WARN,
                 "evidence_manifest.csv rỗng — PI phải nạp bằng chứng trước khi phát hành. "
@@ -353,6 +372,93 @@ class ProjectQARunner:
         return QualityGateResult(
             gid, GateStatus.PASS,
             f"evidence_manifest có {len(items)} mục; không có RETRACTED. "
+            f"[evidence_gate_state={EVIDENCE_GATE_STATE_PASS}]",
+            evidence_gate_state=EVIDENCE_GATE_STATE_PASS,
+        )
+
+    def _dr8_v435_ledger(self, gid: str) -> QualityGateResult:
+        """
+        D-R8 V4.3.5: kiểm Evidence Source Ledger + Claim Traceability Ledger.
+
+        | Tình trạng                                      | Kết quả                         |
+        |-------------------------------------------------|---------------------------------|
+        | Ledger rỗng                                     | WARN REQUIRE_HUMAN_EVIDENCE_INPUT |
+        | Có source RETRACTED                             | FAIL BLOCK                      |
+        | Claim dùng UNVERIFIED/RETRACTED source          | FAIL BLOCK                      |
+        | Có source chưa verified nhưng không claim blocked | WARN REQUIRE_HUMAN_REVIEW    |
+        | Tất cả source HUMAN_VERIFIED, claims SUPPORTED  | PASS                            |
+        """
+        ev_ledger = EvidenceSourceLedger(self._dir)
+        sources = ev_ledger.read_all()
+
+        if not sources:
+            return QualityGateResult(
+                gid, GateStatus.WARN,
+                "Evidence Source Ledger rỗng — PI phải nạp evidence source trước khi tiếp tục. "
+                f"[evidence_gate_state={EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT}]",
+                evidence_gate_state=EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
+            )
+
+        retracted_sources = [
+            s for s in sources if s.verification_state == VerificationState.RETRACTED
+        ]
+        if retracted_sources:
+            return QualityGateResult(
+                gid, GateStatus.FAIL,
+                f"{len(retracted_sources)} evidence source bị RETRACTED — "
+                "không được dùng source này trong bất kỳ claim nào. "
+                f"[evidence_gate_state={EVIDENCE_GATE_STATE_BLOCK}]",
+                details=str([s.source_id for s in retracted_sources]),
+                evidence_gate_state=EVIDENCE_GATE_STATE_BLOCK,
+            )
+
+        # Kiểm Claim Traceability Ledger
+        cl_ledger_path = self._dir / CLAIM_LEDGER_FILENAME
+        if cl_ledger_path.exists():
+            cl_ledger = ClaimTraceabilityLedger(self._dir)
+            claims = cl_ledger.read_all()
+            blocked_claims = [
+                c for c in claims
+                if c.claim_status in (
+                    ClaimStatus.BLOCKED_RETRACTED_EVIDENCE,
+                    ClaimStatus.BLOCKED_UNVERIFIED_EVIDENCE,
+                )
+            ]
+            if blocked_claims:
+                reasons = "; ".join(
+                    f"{c.claim_id}: {c.claim_status.value}" for c in blocked_claims[:3]
+                )
+                return QualityGateResult(
+                    gid, GateStatus.FAIL,
+                    f"{len(blocked_claims)} claim bị BLOCK bởi evidence chưa verified hoặc bị retract. "
+                    f"[evidence_gate_state={EVIDENCE_GATE_STATE_BLOCK}] {reasons}",
+                    details=str([c.claim_id for c in blocked_claims]),
+                    evidence_gate_state=EVIDENCE_GATE_STATE_BLOCK,
+                )
+
+        unverified_sources = [
+            s for s in sources
+            if s.verification_state in (
+                VerificationState.UNVERIFIED,
+                VerificationState.REQUIRES_HUMAN_REVIEW,
+            )
+        ]
+        if unverified_sources:
+            return QualityGateResult(
+                gid, GateStatus.WARN,
+                f"{len(unverified_sources)} evidence source chưa được human verified — "
+                "reviewer phải xem xét trước khi dùng trong claim. "
+                f"[evidence_gate_state={EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW}]",
+                evidence_gate_state=EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW,
+            )
+
+        verified_count = sum(
+            1 for s in sources if s.verification_state == VerificationState.HUMAN_VERIFIED
+        )
+        return QualityGateResult(
+            gid, GateStatus.PASS,
+            f"Evidence Source Ledger: {verified_count}/{len(sources)} source HUMAN_VERIFIED; "
+            "không có RETRACTED; không có claim bị block. "
             f"[evidence_gate_state={EVIDENCE_GATE_STATE_PASS}]",
             evidence_gate_state=EVIDENCE_GATE_STATE_PASS,
         )

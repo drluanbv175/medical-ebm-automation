@@ -1,14 +1,16 @@
 """
-research_project — Per-project dossier automation (V4.3.4).
+research_project — Per-project dossier automation (V4.3.5).
 
 Package cung cấp:
-  - 13 module tự động hoá hồ sơ đề tài y khoa.
+  - 15 module tự động hoá hồ sơ đề tài y khoa (V4.3.5).
   - 19 artifact template theo loại nghiên cứu.
   - Change control engine với dependency graph.
   - 15 Draft Quality Gates (D-R1..D-R15).
   - Human Review Pack tổng hợp.
-  - CLI `researchctl` với 12 subcommand.
+  - CLI `researchctl` với 16 subcommand.
   - Human Review Operating Model (V4.3.4): 4 roles, 5 decisions, append-only ledger.
+  - Evidence Intake & Claim Traceability (V4.3.5): Evidence Source Ledger,
+    Claim Traceability Ledger, HUMAN_PROVIDED_ONLY guard, AutoVerificationForbidden.
 
 OFFLINE · SYNTHETIC ONLY · KHÔNG API / PII / dữ liệu thật.
 Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE.
@@ -33,6 +35,11 @@ from .project_registry import (
 )
 from .project_evidence_intake import (
     EvidenceItem, EvidenceIntake, EvidenceIntakeResult, build_evidence_intake,
+    # V4.3.5
+    RetrievalMode, VerificationState, EvidenceSource, EvidenceSourceLedger,
+    ForbiddenRetrievalMode, AutoVerificationForbidden, PIIInEvidenceError,
+    EVIDENCE_SOURCE_LEDGER_FILENAME,
+    add_evidence_source, get_evidence_review_queue,
 )
 from .project_methodology_planner import plan_methodology, MethodologyPlan
 from .project_crf_builder import build_crf_draft, CRFDraft
@@ -52,6 +59,11 @@ from .project_review_operations import (
     list_review_queue, record_decision, get_review_status, build_revision_plan,
     make_review_queue_item,
 )
+from .project_claim_traceability import (
+    ClaimType, ClaimStatus, ClaimRecord, ClaimTraceabilityLedger,
+    CLAIM_LEDGER_FILENAME,
+    compute_claim_status, register_claim, get_claim_audit,
+)
 from .project_cli import main as researchctl_main
 
 __all__ = [
@@ -68,8 +80,17 @@ __all__ = [
     "get_downstream", "get_direct_downstream", "mark_stale", "topological_build_order",
     # Registry
     "ProjectRegistry", "ProjectSummary", "DuplicateProjectError", "UnknownProjectError",
-    # Evidence
+    # Evidence intake (V4.3.3 legacy)
     "EvidenceItem", "EvidenceIntake", "EvidenceIntakeResult", "build_evidence_intake",
+    # Evidence Source Ledger (V4.3.5)
+    "RetrievalMode", "VerificationState", "EvidenceSource", "EvidenceSourceLedger",
+    "ForbiddenRetrievalMode", "AutoVerificationForbidden", "PIIInEvidenceError",
+    "EVIDENCE_SOURCE_LEDGER_FILENAME",
+    "add_evidence_source", "get_evidence_review_queue",
+    # Claim Traceability (V4.3.5)
+    "ClaimType", "ClaimStatus", "ClaimRecord", "ClaimTraceabilityLedger",
+    "CLAIM_LEDGER_FILENAME",
+    "compute_claim_status", "register_claim", "get_claim_audit",
     # Methodology
     "plan_methodology", "MethodologyPlan",
     # CRF / SAP / Reporting

@@ -1,5 +1,5 @@
 """
-project_cli — CLI `researchctl` với 12 subcommand (V4.3.4).
+project_cli — CLI `researchctl` với 16 subcommand (V4.3.5).
 
 Subcommands:
   project-init             Khởi tạo project từ YAML
@@ -14,6 +14,10 @@ Subcommands:
   project-review-record    Ghi quyết định review (V4.3.4)
   project-review-status    Tổng hợp trạng thái review (V4.3.4)
   project-revision-plan    Kế hoạch revision từ REVISION_REQUIRED (V4.3.4)
+  project-evidence-import  Nhập evidence source vào ledger (V4.3.5)
+  project-evidence-list    Liệt kê evidence sources + review queue (V4.3.5)
+  project-claim-register   Đăng ký claim và liên kết evidence (V4.3.5)
+  project-claim-audit      Xem audit trail của claim(s) (V4.3.5)
 
 OFFLINE · KHÔNG API / PII / dữ liệu thật. Mọi output là DRAFT.
 """
@@ -42,6 +46,14 @@ from .project_review_operations import (
     AutoReviewForbidden, ForbiddenReviewMode,
     list_review_queue, record_decision, get_review_status, build_revision_plan,
     REVIEW_ROUTING_MATRIX,
+)
+from .project_evidence_intake import (
+    VerificationState, add_evidence_source, get_evidence_review_queue,
+    EvidenceSourceLedger, PIIInEvidenceError, AutoVerificationForbidden,
+    ForbiddenRetrievalMode,
+)
+from .project_claim_traceability import (
+    ClaimType, register_claim, get_claim_audit, ClaimTraceabilityLedger,
 )
 
 # Thư mục mặc định cho projects
@@ -188,6 +200,58 @@ def _build_parser() -> argparse.ArgumentParser:
                             help="Kế hoạch revision từ REVISION_REQUIRED (V4.3.4)")
     p_rvp.add_argument("--project-id", required=True)
     p_rvp.set_defaults(func=_cmd_revision_plan)
+
+    # V4.3.5 — project-evidence-import
+    p_ei = sub.add_parser("project-evidence-import",
+                           help="Nhập evidence source vào ledger (V4.3.5)")
+    p_ei.add_argument("--project-id", required=True)
+    p_ei.add_argument("--source-type", required=True,
+                      help="Loại nguồn (vd: RCT, SYSTEMATIC_REVIEW, GUIDELINE)")
+    p_ei.add_argument("--title", required=True)
+    p_ei.add_argument("--authors", default="[REQUIRE_HUMAN_INPUT]")
+    p_ei.add_argument("--year", default="[REQUIRE_HUMAN_INPUT]")
+    p_ei.add_argument("--journal", default="[REQUIRE_HUMAN_INPUT]")
+    p_ei.add_argument("--doi", default="")
+    p_ei.add_argument("--pmid", default="")
+    p_ei.add_argument("--url", default="")
+    p_ei.add_argument("--reference", default="[REQUIRE_HUMAN_INPUT]",
+                      help="Trích dẫn đầy đủ do PI cung cấp")
+    p_ei.add_argument("--verification-state",
+                      choices=[v.value for v in VerificationState],
+                      default=VerificationState.UNVERIFIED.value)
+    p_ei.add_argument("--verification-reason", default="")
+    p_ei.add_argument("--reviewer-ref", default="EVIDENCE_CITATION_REVIEWER")
+    p_ei.set_defaults(func=_cmd_evidence_import)
+
+    # V4.3.5 — project-evidence-list
+    p_el = sub.add_parser("project-evidence-list",
+                           help="Liệt kê evidence sources và review queue (V4.3.5)")
+    p_el.add_argument("--project-id", required=True)
+    p_el.add_argument("--queue-only", action="store_true",
+                      help="Chỉ hiển thị những source cần review")
+    p_el.set_defaults(func=_cmd_evidence_list)
+
+    # V4.3.5 — project-claim-register
+    p_cr = sub.add_parser("project-claim-register",
+                           help="Đăng ký claim và liên kết evidence source (V4.3.5)")
+    p_cr.add_argument("--project-id", required=True)
+    p_cr.add_argument("--artifact-id", required=True)
+    p_cr.add_argument("--artifact-version", default="0.1.0")
+    p_cr.add_argument("--claim-text", required=True)
+    p_cr.add_argument("--claim-type",
+                      choices=[t.value for t in ClaimType],
+                      default=ClaimType.BACKGROUND.value)
+    p_cr.add_argument("--source-ids", nargs="+", default=[],
+                      help="Danh sách source_id liên kết (space-separated)")
+    p_cr.set_defaults(func=_cmd_claim_register)
+
+    # V4.3.5 — project-claim-audit
+    p_ca = sub.add_parser("project-claim-audit",
+                           help="Xem audit trail của claim(s) (V4.3.5)")
+    p_ca.add_argument("--project-id", required=True)
+    p_ca.add_argument("--claim-id", default=None,
+                      help="Lọc theo claim_id cụ thể (mặc định: tất cả)")
+    p_ca.set_defaults(func=_cmd_claim_audit)
 
     return parser
 
@@ -560,6 +624,130 @@ def _cmd_revision_plan(args: argparse.Namespace, projects_root: pathlib.Path) ->
         for a in plan["stale_artifacts"]:
             print(f"    - {a}")
     print(f"\n  {plan['disclaimer']}")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# V4.3.5 — Evidence + Claim handlers
+# ---------------------------------------------------------------------------
+
+def _cmd_evidence_import(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    registry = ProjectRegistry(projects_root)
+    config = registry.load(args.project_id)
+    project_dir = projects_root / config.project_id
+
+    v_state = VerificationState(args.verification_state)
+
+    try:
+        source = add_evidence_source(
+            project_dir=project_dir,
+            project_id=config.project_id,
+            source_type=args.source_type,
+            title=args.title,
+            authors_or_organization=args.authors,
+            publication_year=args.year,
+            journal_or_publisher=args.journal,
+            doi=args.doi,
+            pmid=args.pmid,
+            url=args.url,
+            human_provided_reference=args.reference,
+            verification_state=v_state,
+            verification_reason=args.verification_reason,
+            reviewer_reference=args.reviewer_ref,
+            automation_caller=False,
+        )
+        print(f"[OK] Evidence source đã nhập.")
+        print(f"     source_id:          {source.source_id}")
+        print(f"     verification_state: {source.verification_state.value}")
+        print(f"     claim_use_allowed:  {source.claim_use_allowed}")
+        print(f"     audit_event_id:     {source.audit_event_id}")
+        print(f"\n  DRAFT — REQUIRE HUMAN REVIEW. Reviewer identity not authenticated.")
+        return 0
+    except (PIIInEvidenceError, AutoVerificationForbidden, ForbiddenRetrievalMode) as exc:
+        print(f"[BLOCKED] {exc}", file=sys.stderr)
+        return 2
+    except Exception as exc:
+        print(f"[ERROR] {exc}", file=sys.stderr)
+        return 1
+
+
+def _cmd_evidence_list(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    registry = ProjectRegistry(projects_root)
+    config = registry.load(args.project_id)
+    project_dir = projects_root / config.project_id
+
+    if args.queue_only:
+        queue = get_evidence_review_queue(project_dir)
+        print(f"\n=== Evidence Review Queue — {config.project_id} ({len(queue)} cần xem xét) ===")
+        for item in queue:
+            print(f"\n  [{item['source_id']}] {item['title']}")
+            print(f"    state:    {item['verification_state']}")
+            print(f"    reviewer: {item['reviewer_reference']}")
+            print(f"    note:     {item['note']}")
+    else:
+        ledger = EvidenceSourceLedger(project_dir)
+        sources = ledger.read_all()
+        print(f"\n=== Evidence Sources — {config.project_id} ({len(sources)} sources) ===")
+        for s in sources:
+            print(f"\n  [{s.source_id}] {s.title[:70]}")
+            print(f"    state:         {s.verification_state.value}")
+            print(f"    claim_allowed: {s.claim_use_allowed}")
+            print(f"    created:       {s.created_at_utc}")
+
+    print(f"\n  DRAFT — REQUIRE HUMAN REVIEW. Reviewer identity not authenticated.")
+    return 0
+
+
+def _cmd_claim_register(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    registry = ProjectRegistry(projects_root)
+    config = registry.load(args.project_id)
+    project_dir = projects_root / config.project_id
+
+    c_type = ClaimType(args.claim_type)
+
+    try:
+        record = register_claim(
+            project_dir=project_dir,
+            project_id=config.project_id,
+            artifact_id=args.artifact_id,
+            artifact_version=args.artifact_version,
+            claim_text=args.claim_text,
+            claim_type=c_type,
+            linked_source_ids=args.source_ids,
+            automation_caller=False,
+        )
+        print(f"[OK] Claim đã đăng ký.")
+        print(f"     claim_id:     {record.claim_id}")
+        print(f"     claim_status: {record.claim_status.value}")
+        if record.blocking_reason:
+            print(f"     reason:       {record.blocking_reason}")
+        print(f"\n  DRAFT — REQUIRE HUMAN REVIEW. Reviewer identity not authenticated.")
+        return 0
+    except PIIInEvidenceError as exc:
+        print(f"[BLOCKED] {exc}", file=sys.stderr)
+        return 2
+    except Exception as exc:
+        print(f"[ERROR] {exc}", file=sys.stderr)
+        return 1
+
+
+def _cmd_claim_audit(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    registry = ProjectRegistry(projects_root)
+    config = registry.load(args.project_id)
+    project_dir = projects_root / config.project_id
+
+    audit = get_claim_audit(project_dir, claim_id=args.claim_id)
+    label = f"claim {args.claim_id}" if args.claim_id else "tất cả claim"
+    print(f"\n=== Claim Audit Trail — {config.project_id} ({label}) ===")
+    for entry in audit:
+        print(f"\n  [{entry['claim_id']}] artifact={entry['artifact_id']} "
+              f"type={entry['claim_type']}")
+        print(f"    status:  {entry['claim_status']}")
+        if entry.get("blocking_reason"):
+            print(f"    reason:  {entry['blocking_reason']}")
+        print(f"    sources: {entry['linked_source_ids']}")
+        print(f"    created: {entry['created_at_utc']}")
+    print(f"\n  {audit[0]['disclaimer'] if audit else 'No claims found.'}")
     return 0
 
 
