@@ -1,0 +1,39 @@
+{
+  "release_version": "4.3.4",
+  "release_date": "2026-06-28",
+  "git_commit": "101ca08a331605e95b15cb82a4839e0e2a799e3e",
+  "git_tag": "v4.3.4",
+  "freeze_tag": "v4.3.4-frozen",
+  "archive_sha256": "df968469e1509447f48d74a556a0c1142442ef3cd0e9d4d2cd7b1fbc214a5789",
+  "note": "git_commit != archive_sha256. archive_sha256 is SHA256 of `git archive --format=tar HEAD`.",
+  "verification_command": "git archive --format=tar v4.3.4-frozen | shasum -a 256",
+  "base_commit": "0ce0d47",
+  "base_tag": "v4.3.3.2-frozen",
+  "files_in_archive": 740,
+  "test_results": {
+    "v434_suite": "20/20 PASSED",
+    "full_suite": "774 PASSED, 7 SKIPPED, 0 FAILED",
+    "archive_smoke": "20/20 PASSED (MRAQ_OFFLINE_CI=1)"
+  },
+  "new_files": [
+    "research_project/project_review_operations.py",
+    "tests/test_v4_3_4_human_review_operations.py",
+    "release_evidence/V4_3_4/V4_3_4_HUMAN_REVIEW_OPERATIONS_SOP.md",
+    "release_evidence/V4_3_4/V4_3_4_REVIEW_ROUTING_MATRIX.md",
+    "release_evidence/V4_3_4/V4_3_4_CONTROLLED_TOPIC_DRY_RUN_SPEC.md",
+    "release_evidence/V4_3_4/V4_3_4_TEST_REPORT.md",
+    "release_evidence/V4_3_4/V4_3_4_EXECUTIVE_SUMMARY.md"
+  ],
+  "modified_files": [
+    "research_project/__init__.py",
+    "research_project/project_cli.py"
+  ],
+  "security_invariants": {
+    "no_api_calls": true,
+    "no_pii": true,
+    "draft_only": true,
+    "automation_cannot_approve": true,
+    "no_external_action": true,
+    "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE"
+  }
+}
