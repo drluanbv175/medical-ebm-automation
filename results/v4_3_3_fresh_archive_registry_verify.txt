@@ -1,0 +1,7 @@
+=== V4.3.3 REGISTRY VERIFY (from archive e57058f) ===
+Date: 2026-06-28T00:42:38Z
+
+.claude/agents/*.md count: 74
+runtime/agent_registry.py: FOUND
+research_project/*.py count: 14
+Result: PASS

@@ -1,0 +1,8 @@
+=== V4.3.3 MANIFEST VERIFY (from archive e57058f) ===
+Archive path: /private/tmp/claude-501/-Users-nguyenluan-Library-CloudStorage-OneDrive-Personal-Claude-AI/17799845-77e5-4db9-9336-87709fdaa140/scratchpad/v4_3_3_fresh_archive
+Date: 2026-06-28T00:42:29Z
+
+Manifest: FOUND
+Agent rows (excl header): 48
+Manifest SHA256: 5fc8ee58b8af201e317572e1c4fb7564da4bf99938ce840d4e1c636751550fe7
+Result: PASS

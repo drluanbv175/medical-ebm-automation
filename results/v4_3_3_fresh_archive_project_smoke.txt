@@ -1,0 +1,129 @@
+=== CLI SMOKE TEST — FROM ARCHIVE e57058f ===
+Date: 2026-06-28T00:44:02Z
+Archive: /private/tmp/claude-501/-Users-nguyenluan-Library-CloudStorage-OneDrive-Personal-Claude-AI/17799845-77e5-4db9-9336-87709fdaa140/scratchpad/v4_3_3_fresh_archive
+MRAQ_OFFLINE_CI=1
+
+--- project-init ---
+[OK] Project 'HERMETIC-001' đã khởi tạo tại: /private/tmp/claude-501/-Users-nguyenluan-Library-CloudStorage-OneDrive-Personal-Claude-AI/17799845-77e5-4db9-9336-87709fdaa140/scratchpad/hermetic_projects/HERMETIC-001
+     Bước tiếp: researchctl project-build --project-id HERMETIC-001
+Exit: 
+
+--- project-build ---
+[OK] project-build 'HERMETIC-001':
+     Tạo mới: 19 artifact
+     Bỏ qua:  0 artifact (đã tồn tại)
+     Bước tiếp: researchctl project-qa --project-id HERMETIC-001
+Exit: 
+
+--- project-qa ---
+
+[FAIL] 1 gate FAIL — artifact chưa đủ điều kiện phát hành.
+[QA] QA HERMETIC-001: PASS=13 FAIL=1 WARN=1 SKIP=0 → FAIL
+  [✓] D-R1: Tiêu đề và mục tiêu đều có nội dung.
+  [✓] D-R2: Có 1 mục tiêu và 1 kết cục chính.
+  [✓] D-R3: study_type='cross_sectional' hợp lệ và nhất quán với PROTOCOL_DRAFT.
+  [✓] D-R4: Tiêu chí tuyển chọn có trong PROTOCOL_DRAFT; dân số synthetic đúng.
+  [✓] D-R5: CRF_DRAFT và DATA_DICTIONARY tồn tại; DD có 11 biến.
+  [✓] D-R6: SAP_DRAFT tồn tại, có lock reminder và nhất quán với loại NC.
+  [✓] D-R7: TABLE_AND_FIGURE_SHELLS tồn tại với Table 1 và Figure placeholder.
+  [!] D-R8: evidence_manifest.csv trống — chưa có bằng chứng nào được nhập.
+  [✓] D-R9: Không phát hiện fabrication marker trong các artifact chính.
+  [✓] D-R10: Không phát hiện PII marker trong tất cả artifact.
+  [✓] D-R11: draft_only=True; không có 'RELEASED/FINAL/SUBMITTED' trong artifact.
+  [✓] D-R12: Không có artifact ở trạng thái STALE.
+  [✗] D-R13: External action marker trong: ['09_SYNTHETIC_ANALYSIS_READINESS.md', '12_GOVERNANCE_AND_CAPA_PACK.md']. KHÔNG được tự nộp/gửi/publish artifact.
+  [✓] D-R14: TRACEABILITY_MATRIX tồn tại với 1 hàng objective.
+  [✓] D-R15: METHODS_AND_SAMPLE_SIZE (04) có ghi chú cỡ mẫu và giả định/REQUIRE_HUMAN_INPUT.
+Exit: 
+
+--- project-review-pack ---
+[QA] QA HERMETIC-001: PASS=13 FAIL=1 WARN=1 SKIP=0 → FAIL
+[OK] Review Pack tạo xong:
+     Quyết định cần đưa ra: 6
+     Ưu tiên CAO: 5
+     Bằng chứng chưa xác minh: 0
+     Xem: /private/tmp/claude-501/-Users-nguyenluan-Library-CloudStorage-OneDrive-Personal-Claude-AI/17799845-77e5-4db9-9336-87709fdaa140/scratchpad/hermetic_projects/HERMETIC-001/13_REVIEW_PACK.md
+Exit: 
+
+--- project-reproducibility-check ---
+=== Reproducibility Check: HERMETIC-001 ===
+  [✓] 00_RESEARCH_CHARTER.md
+  [✓] 01_RESEARCH_QUESTION_AND_PICO.md
+  [✓] 02_PROTOCOL_DRAFT.md
+  [✓] 03_EVIDENCE_PLAN.md
+  [✓] 04_METHODS_AND_SAMPLE_SIZE_ASSUMPTIONS.md
+  [✓] 05_CRF_DRAFT.md
+  [✓] 06_DATA_DICTIONARY.csv
+  [✓] 07_STATISTICAL_ANALYSIS_PLAN_DRAFT.md
+  [✓] 08_TABLE_AND_FIGURE_SHELLS.md
+  [✓] 09_SYNTHETIC_ANALYSIS_READINESS.md
+  [✓] 10_REPORTING_CHECKLIST_DRAFT.md
+  [✓] 11_MANUSCRIPT_OUTLINE_DRAFT.md
+  [✓] 12_GOVERNANCE_AND_CAPA_PACK.md
+  [✓] 13_REVIEW_PACK.md
+  [✓] 14_PROJECT_TRACEABILITY_MATRIX.csv
+  [✓] 15_PROJECT_QA_REPORT.md
+  [✓] 16_CHANGE_IMPACT_REPORT.md
+  [✓] 17_DECISION_REGISTER.md
+  [✓] 18_VERSION_REGISTER.csv
+  [-] audit_log.jsonl — chưa có change records
+  [✓] evidence/evidence_manifest.csv
+
+Kết quả: 19 artifact có · 0 artifact thiếu
+Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE
+Cần bác sĩ / PI kiểm chứng. Đây là bản DRAFT tự động — KHÔNG thực thi thật.
+Exit: 
+
+=== SUMMARY ===
+init=[OK] Project 'HERMETIC-001' đã khởi tạo tại: /private/tmp/claude-501/-Users-nguyenluan-Library-CloudStorage-OneDrive-Personal-Claude-AI/17799845-77e5-4db9-9336-87709fdaa140/scratchpad/hermetic_projects/HERMETIC-001
+     Bước tiếp: researchctl project-build --project-id HERMETIC-001 build=[OK] project-build 'HERMETIC-001':
+     Tạo mới: 19 artifact
+     Bỏ qua:  0 artifact (đã tồn tại)
+     Bước tiếp: researchctl project-qa --project-id HERMETIC-001 qa=
+[FAIL] 1 gate FAIL — artifact chưa đủ điều kiện phát hành.
+[QA] QA HERMETIC-001: PASS=13 FAIL=1 WARN=1 SKIP=0 → FAIL
+  [✓] D-R1: Tiêu đề và mục tiêu đều có nội dung.
+  [✓] D-R2: Có 1 mục tiêu và 1 kết cục chính.
+  [✓] D-R3: study_type='cross_sectional' hợp lệ và nhất quán với PROTOCOL_DRAFT.
+  [✓] D-R4: Tiêu chí tuyển chọn có trong PROTOCOL_DRAFT; dân số synthetic đúng.
+  [✓] D-R5: CRF_DRAFT và DATA_DICTIONARY tồn tại; DD có 11 biến.
+  [✓] D-R6: SAP_DRAFT tồn tại, có lock reminder và nhất quán với loại NC.
+  [✓] D-R7: TABLE_AND_FIGURE_SHELLS tồn tại với Table 1 và Figure placeholder.
+  [!] D-R8: evidence_manifest.csv trống — chưa có bằng chứng nào được nhập.
+  [✓] D-R9: Không phát hiện fabrication marker trong các artifact chính.
+  [✓] D-R10: Không phát hiện PII marker trong tất cả artifact.
+  [✓] D-R11: draft_only=True; không có 'RELEASED/FINAL/SUBMITTED' trong artifact.
+  [✓] D-R12: Không có artifact ở trạng thái STALE.
+  [✗] D-R13: External action marker trong: ['09_SYNTHETIC_ANALYSIS_READINESS.md', '12_GOVERNANCE_AND_CAPA_PACK.md']. KHÔNG được tự nộp/gửi/publish artifact.
+  [✓] D-R14: TRACEABILITY_MATRIX tồn tại với 1 hàng objective.
+  [✓] D-R15: METHODS_AND_SAMPLE_SIZE (04) có ghi chú cỡ mẫu và giả định/REQUIRE_HUMAN_INPUT. rp=[QA] QA HERMETIC-001: PASS=13 FAIL=1 WARN=1 SKIP=0 → FAIL
+[OK] Review Pack tạo xong:
+     Quyết định cần đưa ra: 6
+     Ưu tiên CAO: 5
+     Bằng chứng chưa xác minh: 0
+     Xem: /private/tmp/claude-501/-Users-nguyenluan-Library-CloudStorage-OneDrive-Personal-Claude-AI/17799845-77e5-4db9-9336-87709fdaa140/scratchpad/hermetic_projects/HERMETIC-001/13_REVIEW_PACK.md repro==== Reproducibility Check: HERMETIC-001 ===
+  [✓] 00_RESEARCH_CHARTER.md
+  [✓] 01_RESEARCH_QUESTION_AND_PICO.md
+  [✓] 02_PROTOCOL_DRAFT.md
+  [✓] 03_EVIDENCE_PLAN.md
+  [✓] 04_METHODS_AND_SAMPLE_SIZE_ASSUMPTIONS.md
+  [✓] 05_CRF_DRAFT.md
+  [✓] 06_DATA_DICTIONARY.csv
+  [✓] 07_STATISTICAL_ANALYSIS_PLAN_DRAFT.md
+  [✓] 08_TABLE_AND_FIGURE_SHELLS.md
+  [✓] 09_SYNTHETIC_ANALYSIS_READINESS.md
+  [✓] 10_REPORTING_CHECKLIST_DRAFT.md
+  [✓] 11_MANUSCRIPT_OUTLINE_DRAFT.md
+  [✓] 12_GOVERNANCE_AND_CAPA_PACK.md
+  [✓] 13_REVIEW_PACK.md
+  [✓] 14_PROJECT_TRACEABILITY_MATRIX.csv
+  [✓] 15_PROJECT_QA_REPORT.md
+  [✓] 16_CHANGE_IMPACT_REPORT.md
+  [✓] 17_DECISION_REGISTER.md
+  [✓] 18_VERSION_REGISTER.csv
+  [-] audit_log.jsonl — chưa có change records
+  [✓] evidence/evidence_manifest.csv
+
+Kết quả: 19 artifact có · 0 artifact thiếu
+Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE
+Cần bác sĩ / PI kiểm chứng. Đây là bản DRAFT tự động — KHÔNG thực thi thật.
