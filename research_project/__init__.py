@@ -1,5 +1,5 @@
 """
-research_project — Per-project dossier automation (V4.3.3).
+research_project — Per-project dossier automation (V4.3.4).
 
 Package cung cấp:
   - 13 module tự động hoá hồ sơ đề tài y khoa.
@@ -7,7 +7,8 @@ Package cung cấp:
   - Change control engine với dependency graph.
   - 15 Draft Quality Gates (D-R1..D-R15).
   - Human Review Pack tổng hợp.
-  - CLI `researchctl` với 8 subcommand.
+  - CLI `researchctl` với 12 subcommand.
+  - Human Review Operating Model (V4.3.4): 4 roles, 5 decisions, append-only ledger.
 
 OFFLINE · SYNTHETIC ONLY · KHÔNG API / PII / dữ liệu thật.
 Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE.
@@ -43,6 +44,14 @@ from .project_change_control import (
 from .project_dossier_builder import ProjectDossierBuilder, DossierBuildResult
 from .project_qa_runner import ProjectQARunner, QARunResult, run_project_qa
 from .project_review_pack import ReviewPackBuilder, ReviewPackResult, generate_review_pack
+from .project_review_operations import (
+    ReviewRole, ReviewMode, HumanDecision, RiskLevel,
+    ReviewRecord, ReviewLedger,
+    AutoReviewForbidden, ForbiddenReviewMode,
+    REVIEW_ROUTING_MATRIX, LEDGER_FILENAME,
+    list_review_queue, record_decision, get_review_status, build_revision_plan,
+    make_review_queue_item,
+)
 from .project_cli import main as researchctl_main
 
 __all__ = [
@@ -75,6 +84,13 @@ __all__ = [
     "ProjectQARunner", "QARunResult", "run_project_qa",
     # Review pack
     "ReviewPackBuilder", "ReviewPackResult", "generate_review_pack",
+    # Review operations (V4.3.4)
+    "ReviewRole", "ReviewMode", "HumanDecision", "RiskLevel",
+    "ReviewRecord", "ReviewLedger",
+    "AutoReviewForbidden", "ForbiddenReviewMode",
+    "REVIEW_ROUTING_MATRIX", "LEDGER_FILENAME",
+    "list_review_queue", "record_decision", "get_review_status", "build_revision_plan",
+    "make_review_queue_item",
     # CLI
     "researchctl_main",
 ]

@@ -1,5 +1,5 @@
 """
-project_cli — CLI `researchctl` với 8 subcommand (V4.3.3).
+project_cli — CLI `researchctl` với 12 subcommand (V4.3.4).
 
 Subcommands:
   project-init             Khởi tạo project từ YAML
@@ -10,6 +10,10 @@ Subcommands:
   project-change-impact    Ghi nhận thay đổi field và tính impact
   project-revise           Đánh dấu artifact đã được PI cập nhật
   project-reproducibility-check  Kiểm tra tính tái lập
+  project-review-list      Liệt kê artifact cần review (V4.3.4)
+  project-review-record    Ghi quyết định review (V4.3.4)
+  project-review-status    Tổng hợp trạng thái review (V4.3.4)
+  project-revision-plan    Kế hoạch revision từ REVISION_REQUIRED (V4.3.4)
 
 OFFLINE · KHÔNG API / PII / dữ liệu thật. Mọi output là DRAFT.
 """
@@ -33,6 +37,12 @@ from .project_dossier_builder import ProjectDossierBuilder
 from .project_qa_runner import run_project_qa
 from .project_review_pack import generate_review_pack
 from .project_change_control import ChangeControlEngine, bump_version
+from .project_review_operations import (
+    ReviewRole, ReviewMode, HumanDecision,
+    AutoReviewForbidden, ForbiddenReviewMode,
+    list_review_queue, record_decision, get_review_status, build_revision_plan,
+    REVIEW_ROUTING_MATRIX,
+)
 
 # Thư mục mặc định cho projects
 DEFAULT_PROJECTS_ROOT = pathlib.Path("projects")
@@ -139,6 +149,45 @@ def _build_parser() -> argparse.ArgumentParser:
                               help="Kiểm tra tính tái lập của dossier")
     p_repro.add_argument("--project-id", required=True)
     p_repro.set_defaults(func=_cmd_repro_check)
+
+    # V4.3.4 — project-review-list
+    p_rl = sub.add_parser("project-review-list",
+                           help="Liệt kê artifact cần review (V4.3.4)")
+    p_rl.add_argument("--project-id", required=True)
+    p_rl.add_argument("--json", action="store_true", dest="json_output")
+    p_rl.set_defaults(func=_cmd_review_list)
+
+    # V4.3.4 — project-review-record
+    p_rr = sub.add_parser("project-review-record",
+                           help="Ghi quyết định review (V4.3.4) — chỉ người thật")
+    p_rr.add_argument("--project-id", required=True)
+    p_rr.add_argument("--artifact-id", required=True,
+                       help="ArtifactID (vd: 02_PROTOCOL_DRAFT)")
+    p_rr.add_argument("--decision", required=True,
+                       choices=[d.value for d in HumanDecision])
+    p_rr.add_argument("--role", required=True,
+                       choices=[r.value for r in ReviewRole],
+                       help="Vai trò reviewer")
+    p_rr.add_argument("--reason", required=True, help="Lý do quyết định")
+    p_rr.add_argument("--required-actions", default="",
+                       help="Hành động yêu cầu (phân cách bằng ;)")
+    p_rr.add_argument("--review-mode",
+                       default=ReviewMode.HUMAN_REVIEW_INDEPENDENCE_NOT_ESTABLISHED.value,
+                       choices=[m.value for m in ReviewMode])
+    p_rr.set_defaults(func=_cmd_review_record)
+
+    # V4.3.4 — project-review-status
+    p_rs = sub.add_parser("project-review-status",
+                           help="Tổng hợp trạng thái review (V4.3.4)")
+    p_rs.add_argument("--project-id", required=True)
+    p_rs.add_argument("--json", action="store_true", dest="json_output")
+    p_rs.set_defaults(func=_cmd_review_status)
+
+    # V4.3.4 — project-revision-plan
+    p_rvp = sub.add_parser("project-revision-plan",
+                            help="Kế hoạch revision từ REVISION_REQUIRED (V4.3.4)")
+    p_rvp.add_argument("--project-id", required=True)
+    p_rvp.set_defaults(func=_cmd_revision_plan)
 
     return parser
 
@@ -389,6 +438,129 @@ def _cmd_repro_check(args: argparse.Namespace, projects_root: pathlib.Path) -> i
     print(f"{DISCLAIMER}")
 
     return 0 if fail_count == 0 else 2
+
+
+# ---------------------------------------------------------------------------
+# V4.3.4 Command handlers — Human Review Operations
+# ---------------------------------------------------------------------------
+
+def _cmd_review_list(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    """Liệt kê artifact cần review — không chứa PII."""
+    registry = ProjectRegistry(projects_root)
+    config = registry.load(args.project_id)
+    project_dir = projects_root / args.project_id
+
+    items = list_review_queue(project_dir, config)
+    if args.json_output:
+        print(json.dumps(items, ensure_ascii=False, indent=2))
+    else:
+        print(f"=== REVIEW QUEUE — {args.project_id} ({len(items)} artifact) ===")
+        print(f"    DRAFT-ONLY · HUMAN REVIEW REQUIRED · NO-GO")
+        print()
+        for item in items:
+            roles = ", ".join(item["primary_roles"])
+            missing = " [REQUIRE_HUMAN_INPUT]" if item["missing_input"] else ""
+            print(f"  [{item['risk_level']:<8}] {item['artifact_id']}")
+            print(f"            → Roles: {roles}")
+            print(f"            → Focus: {item['mandatory_focus']}")
+            print(f"            → Gate: {item['blocking_gate']} | Status: {item['current_status']}{missing}")
+    return 0
+
+
+def _cmd_review_record(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    """Ghi quyết định review — chỉ người thật, không automation."""
+    registry = ProjectRegistry(projects_root)
+    config = registry.load(args.project_id)
+    project_dir = projects_root / args.project_id
+
+    try:
+        decision = HumanDecision(args.decision)
+        role = ReviewRole(args.role)
+        mode = ReviewMode(args.review_mode)
+        required_actions = [a.strip() for a in args.required_actions.split(";") if a.strip()]
+
+        record = record_decision(
+            project_dir=project_dir,
+            config=config,
+            artifact_id_str=args.artifact_id,
+            decision=decision,
+            review_role=role,
+            reason=args.reason,
+            required_actions=required_actions,
+            review_mode=mode,
+            automation_caller=False,  # CLI = người thật
+        )
+        print(f"[OK] Review record ghi thành công:")
+        print(f"     review_id:    {record.review_id}")
+        print(f"     artifact_id:  {record.artifact_id}")
+        print(f"     decision:     {record.decision.value}")
+        print(f"     audit_event:  {record.audit_event_id}")
+        print(f"     mode:         {record.review_mode.value}")
+        print(f"     [DRAFT-ONLY] Artifact vẫn là DRAFT — cần PI quyết định tiếp theo.")
+
+        if decision == HumanDecision.REVISION_REQUIRED:
+            print(f"\n     [NEXT] Chạy: researchctl project-revision-plan --project-id {args.project_id}")
+        return 0
+
+    except AutoReviewForbidden as exc:
+        print(f"[BLOCKED] {exc}", file=sys.stderr)
+        return 2
+    except ForbiddenReviewMode as exc:
+        print(f"[BLOCKED] {exc}", file=sys.stderr)
+        return 2
+    except ValueError as exc:
+        print(f"[ERROR] {exc}", file=sys.stderr)
+        return 1
+
+
+def _cmd_review_status(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    """Tổng hợp trạng thái review — không dùng 'approved final'."""
+    registry = ProjectRegistry(projects_root)
+    _ = registry.load(args.project_id)
+    project_dir = projects_root / args.project_id
+
+    status = get_review_status(project_dir)
+    if args.json_output:
+        print(json.dumps(status, ensure_ascii=False, indent=2))
+    else:
+        print(f"=== REVIEW STATUS — {args.project_id} ===")
+        print(f"  Total review records:     {status['total_review_records']}")
+        print(f"  Artifacts reviewed:       {status['total_artifacts_reviewed']}")
+        print(f"  Revision required:        {status['revision_required']}")
+        print(f"  Human input required:     {status['human_input_required']}")
+        print(f"  Accepted as draft:        {status['accepted_as_draft_internal']}")
+        print(f"  Rejected draft:           {status['rejected_draft']}")
+        print(f"  Draft-only status:        {status['draft_only_status']}")
+        print(f"  Final/released artifacts: {status['final_released_submitted_count']}")
+        print(f"  Qualification: {status['qualification']}")
+    return 0
+
+
+def _cmd_revision_plan(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    """Tạo revision plan từ REVISION_REQUIRED records."""
+    registry = ProjectRegistry(projects_root)
+    config = registry.load(args.project_id)
+    project_dir = projects_root / args.project_id
+
+    plan = build_revision_plan(project_dir, config)
+    print(f"=== REVISION PLAN — {args.project_id} ===")
+    print(f"  {plan['summary']}")
+    print(f"  [DRAFT-ONLY] No-overwrite policy: {plan['no_overwrite_policy']}")
+    if plan["revision_items"]:
+        print(f"\n  Artifacts cần sửa ({len(plan['revision_items'])}):")
+        for item in plan["revision_items"]:
+            print(f"    [{item['risk_level'] if 'risk_level' in item else '?'}]"
+                  f" {item['artifact_id']} v{item['artifact_version']}")
+            print(f"      Reason: {item['reason'][:80]}")
+            if item["required_actions"]:
+                for act in item["required_actions"]:
+                    print(f"      Action: {act}")
+    if plan["stale_artifacts"]:
+        print(f"\n  Artifacts bị STALE ({len(plan['stale_artifacts'])}):")
+        for a in plan["stale_artifacts"]:
+            print(f"    - {a}")
+    print(f"\n  {plan['disclaimer']}")
+    return 0
 
 
 # ---------------------------------------------------------------------------
