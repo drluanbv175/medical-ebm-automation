@@ -12,9 +12,9 @@
 | R2.0 | COMPLETE | 289c98d | 1003 | 0 | 5 | OPEN (ext EDC) |
 | R3.0 | COMPLETE | 228f6ce | 1003 | 0 | 5 | OPEN (ethics gate) |
 | R4.0 | COMPLETE | 830710f | 1049 | 0 | 5 | OPEN (10 HIS gaps) |
-| R5.0 | IN PROGRESS | — | — | — | — | OPEN |
-| R6.0 | IN PROGRESS | — | — | — | — | OPEN |
-| PROGRAM | PENDING | — | — | — | — | OPEN |
+| R5.0 | COMPLETE | bc52018 | 1049 | 0 | 5 | OPEN (10 qual gaps) |
+| R6.0 | COMPLETE | bc52018 | 1049 | 0 | 5 | OPEN (36 gate conds) |
+| PROGRAM | COMPLETE | TBD | 1049 | 0 | 5 | NO-GO (program) |
 
 *Updated at each phase completion.*  
 *Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE*

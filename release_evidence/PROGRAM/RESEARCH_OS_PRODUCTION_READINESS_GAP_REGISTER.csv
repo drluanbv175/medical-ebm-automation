@@ -1,0 +1,33 @@
+gap_id,category,description,phase,owner,status,blocks
+GAP-R1-01,WORM Storage,Production WORM-capable audit storage (PROD-AUD-01),R1.3,Institutional IT,OPEN — EXTERNAL,Audit trail integrity / ethics
+GAP-R1-02,Identity,Production SSO/IdP integration (PROD-SSO),R1.2,Institutional IT,OPEN — EXTERNAL,Authentication / attribution
+GAP-R1-03,Identity,Production MFA service (PROD-MFA),R1.2,Institutional IT,OPEN — EXTERNAL,Authentication / access control
+GAP-R1-04,Identity,Production session store (PROD-SESSION),R1.2,Institutional IT,OPEN — EXTERNAL,Session management
+GAP-R1-05,Storage,Off-system backup service (PROD-BACKUP),R1.3,Institutional IT,OPEN — EXTERNAL,Disaster recovery
+GAP-R2-01,EDC,Production EDC system (REDCap / Castor / Medidata),R2.0,Research team,OPEN — EXTERNAL,Real data capture
+GAP-R3-01,Ethics,Ethics/IRB approval,R3.0,Ethics committee (external),OPEN — EXTERNAL,All clinical activity
+GAP-R3-02,Registration,Trial registration (ClinicalTrials.gov / ICTRP),R3.0,Research team,OPEN — EXTERNAL,Ethics requirement
+GAP-R4-01,eHospital,eHospital/HIS read-only API endpoint,R4.0,Institutional IT,OPEN — EXTERNAL,Data extraction
+GAP-R4-02,eHospital,Service account with read-only scope,R4.0,IT + Security,OPEN — EXTERNAL,Authentication to HIS
+GAP-R4-03,eHospital,Network/VPN path to HIS,R4.0,Institutional network,OPEN — EXTERNAL,Connectivity
+GAP-R4-04,eHospital,Pseudonymization key vault (HSM),R4.0,IT + Data governance,OPEN — EXTERNAL,PII protection
+GAP-R4-05,eHospital,Data access agreement (DAA),R4.0,Legal + Research office,OPEN — EXTERNAL,Legal authorization
+GAP-R4-06,eHospital,Data transfer agreement (if cross-org),R4.0,Legal + IRB,OPEN — EXTERNAL,Cross-org data sharing
+GAP-R4-07,eHospital,DICOM extract design (future),R4.0,Future phase,OPEN — DEFERRED,Imaging data
+GAP-R4-08,eHospital,Date-shifting algorithm,R4.0,Biostatistician + Ethics,OPEN — EXTERNAL,Quasi-identifier control
+GAP-R4-09,eHospital,NLP de-identification for narrative text,R4.0,NLP engineer,OPEN — EXTERNAL,Narrative data
+GAP-R4-10,eHospital,Penetration test of boundary API,R4.0,Security team,OPEN — EXTERNAL,Security assurance
+GAP-R5-01,Qualification,Independent qualified assessor engaged,R5.0,Research office,OPEN — EXTERNAL,IQ execution
+GAP-R5-02,Qualification,Validation master plan (VMP),R5.0,Research team + Assessor,OPEN — EXTERNAL,Qualification framework
+GAP-R5-03,Qualification,IQ executed in production environment,R5.0,Independent assessor,OPEN — EXTERNAL,OQ prerequisite
+GAP-R5-04,Qualification,OQ executed in production environment,R5.0,Independent assessor,OPEN — EXTERNAL,PQ prerequisite
+GAP-R5-05,Qualification,PQ executed,R5.0,Independent assessor,OPEN — EXTERNAL,SQ prerequisite
+GAP-R5-06,Qualification,SQ / penetration test executed,R5.0,Security team,OPEN — EXTERNAL,Go-live prerequisite
+GAP-R5-07,Qualification,Formal qualification report issued,R5.0,Independent assessor,OPEN — EXTERNAL,PI sign-off
+GAP-R5-08,Qualification,PI sign-off on qualification report,R5.0,Dr Luân,OPEN — PENDING,Pilot activation
+GAP-R5-09,Qualification,Change control process established,R5.0,Research team,OPEN — PENDING,Ongoing use
+GAP-R5-10,Qualification,Periodic review schedule defined,R5.0,Research team,OPEN — PENDING,Ongoing use
+GAP-R6-01,Pilot,Ethics approval covers retrospective pilot,R6.0,Ethics committee,OPEN — EXTERNAL,Pilot activation
+GAP-R6-02,Pilot,Pilot sample size ethics-approved,R6.0,Ethics committee,OPEN — EXTERNAL,Pilot protocol
+GAP-R6-03,Pilot,Pilot monitoring plan active,R6.0,Research team,OPEN — PENDING,Data integrity
+GAP-R6-04,Pilot,Dr Luân written pilot activation approval,R6.0,Dr Luân,OPEN — PENDING,Pilot start
