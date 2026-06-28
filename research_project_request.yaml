@@ -1,6 +1,7 @@
-# research_project_request.yaml — MẪU yêu cầu nghiên cứu SYNTHETIC (V4.3.2).
+# research_project_request.yaml — MẪU yêu cầu nghiên cứu SYNTHETIC (V4.3.3).
 # OFFLINE · SYNTHETIC ONLY · KHÔNG PII / dữ liệu thật. Mọi output là DRAFT.
 # Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE.
+# Dùng với: researchctl project-init --config research_project_request.yaml
 project_id: "RS-XS-EXAMPLE"
 title: "[SYNTHETIC] Tỷ lệ kiểm soát huyết áp ngoại trú (mô phỏng)"
 study_type: "cross_sectional"      # phải thuộc template catalog
@@ -10,11 +11,27 @@ PICO_or_equivalent:
   P: "bệnh nhân THA ngoại trú (synthetic)"
   E: "đặc điểm điều trị"
   O: "đạt huyết áp mục tiêu"
+# Mục tiêu và kết cục — phân tách rõ (V4.3.3)
 objectives:
   - "Ước lượng tỷ lệ đạt HA mục tiêu"
   - "Mô tả yếu tố liên quan"
+secondary_objectives:
+  - "So sánh tỷ lệ kiểm soát HA giữa nhóm đơn trị liệu và đa trị liệu"
+primary_outcomes:
+  - "Tỷ lệ HA < mục tiêu theo guideline (synthetic)"
+secondary_outcomes:
+  - "Tỷ lệ dùng đơn trị liệu vs đa trị liệu (synthetic)"
+  - "Điểm tuân thủ MMAS-8 (synthetic)"
 outcomes:
   - "Tỷ lệ HA < mục tiêu theo guideline (synthetic)"
+# Ràng buộc nghiên cứu mở rộng (V4.3.3)
+research_constraints:
+  no_real_data: "TRUE"
+  no_pii: "TRUE"
+  no_external_submission: "TRUE"
+  no_his_emr_connection: "TRUE"
+data_mode: "NO_REAL_DATA"            # bắt buộc NO_REAL_DATA
+external_actions_forbidden: true     # bắt buộc true
 population_description_synthetic: "Quần thể synthetic, KHÔNG bệnh nhân thật, KHÔNG PII"
 study_setting_synthetic: "Phòng khám ngoại trú synthetic (không site thật)"
 requested_work_packages: ["WP-01", "WP-02", "WP-03", "WP-04", "WP-05", "WP-06", "WP-07", "WP-08", "WP-09"]
