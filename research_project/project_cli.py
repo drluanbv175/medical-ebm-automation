@@ -1,5 +1,5 @@
 """
-project_cli — CLI `researchctl` với 16 subcommand (V4.3.5).
+project_cli — CLI `researchctl` với 20 subcommand (R1.1).
 
 Subcommands:
   project-init             Khởi tạo project từ YAML
@@ -18,8 +18,12 @@ Subcommands:
   project-evidence-list    Liệt kê evidence sources + review queue (V4.3.5)
   project-claim-register   Đăng ký claim và liên kết evidence (V4.3.5)
   project-claim-audit      Xem audit trail của claim(s) (V4.3.5)
+  rbac-simulate            Mô phỏng RBAC decision cho synthetic actor (R1.1)
+  delegation-register      Tạo delegation record trong append-only registry (R1.1)
+  delegation-status        Kiểm tra status của một delegation (R1.1)
+  audit-attribution-verify Verify hash chain của audit attribution ledger (R1.1)
 
-OFFLINE · KHÔNG API / PII / dữ liệu thật. Mọi output là DRAFT.
+OFFLINE · SYNTHETIC ONLY · KHÔNG API / PII / dữ liệu thật. Mọi output là DRAFT.
 """
 
 from __future__ import annotations
@@ -252,6 +256,63 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ca.add_argument("--claim-id", default=None,
                       help="Lọc theo claim_id cụ thể (mặc định: tất cả)")
     p_ca.set_defaults(func=_cmd_claim_audit)
+
+    # R1.1 — RBAC / Delegation / Audit Attribution (synthetic, offline)
+    p_rbac = sub.add_parser(
+        "rbac-simulate",
+        help="Mô phỏng RBAC decision cho synthetic actor (R1.1 · SYNTHETIC ONLY)")
+    p_rbac.add_argument("--actor-id", required=True,
+                        help="Synthetic actor ID, ví dụ: SYN-PI-001")
+    p_rbac.add_argument("--action", required=True,
+                        help="Action cần kiểm tra, ví dụ: EDIT_DRAFT_ARTIFACT")
+    p_rbac.add_argument("--object-ref", default="UNSPECIFIED",
+                        help="Object reference (artifact ID…)")
+    p_rbac.add_argument("--review-type", default="",
+                        help="SELF_REVIEW | INDEPENDENT_REVIEW (cho RECORD_REVIEW_ATTESTATION)")
+    p_rbac.add_argument("--is-own-artifact", action="store_true",
+                        help="Actor là author của artifact đang được review")
+    p_rbac.add_argument("--is-own-source", action="store_true",
+                        help="EVIDENCE_CITATION_REVIEWER review source họ tạo")
+    p_rbac.add_argument("--has-change-auth", action="store_true",
+                        help="DATA_MANAGER có controlled-change authorization")
+    p_rbac.set_defaults(func=_cmd_rbac_simulate)
+
+    p_del = sub.add_parser(
+        "delegation-register",
+        help="Tạo delegation record trong append-only registry (R1.1 · SYNTHETIC ONLY)")
+    p_del.add_argument("--principal-id", required=True,
+                       help="Synthetic actor ID của người ủy quyền (principal)")
+    p_del.add_argument("--delegatee-id", required=True,
+                       help="Synthetic actor ID của người nhận ủy quyền")
+    p_del.add_argument("--role", required=True,
+                       help="Delegated role, ví dụ: CO_INVESTIGATOR")
+    p_del.add_argument("--actions", required=True, nargs="+",
+                       help="Danh sách permitted_actions")
+    p_del.add_argument("--from-utc", required=True,
+                       help="effective_from_utc (ISO-8601)")
+    p_del.add_argument("--until-utc", required=True,
+                       help="effective_until_utc (ISO-8601)")
+    p_del.add_argument("--reason", required=True,
+                       help="Lý do ủy quyền")
+    p_del.add_argument("--ledger", default="delegation_ledger.jsonl",
+                       help="Path tới file JSONL ledger")
+    p_del.set_defaults(func=_cmd_delegation_register)
+
+    p_dst = sub.add_parser(
+        "delegation-status",
+        help="Kiểm tra status của một delegation (R1.1)")
+    p_dst.add_argument("--delegation-id", required=True,
+                       help="Delegation ID cần kiểm tra")
+    p_dst.add_argument("--ledger", default="delegation_ledger.jsonl",
+                       help="Path tới file JSONL ledger")
+    p_dst.set_defaults(func=_cmd_delegation_status)
+
+    p_av = sub.add_parser(
+        "audit-attribution-verify",
+        help="Verify hash chain của audit attribution ledger (R1.1)")
+    p_av.add_argument("--ledger", required=True,
+                      help="Path tới audit attribution JSONL ledger")
+    p_av.set_defaults(func=_cmd_audit_attribution_verify)
 
     return parser
 
@@ -770,6 +831,135 @@ def _cmd_claim_audit(args: argparse.Namespace, projects_root: pathlib.Path) -> i
         print(f"    created: {entry['created_at_utc']}")
     print(f"\n  {audit[0]['disclaimer'] if audit else 'No claims found.'}")
     return 0
+
+
+# ---------------------------------------------------------------------------
+# R1.1 — RBAC / Delegation / Audit Attribution handlers (SYNTHETIC ONLY)
+# ---------------------------------------------------------------------------
+
+def _cmd_rbac_simulate(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    """rbac-simulate: Mô phỏng RBAC decision cho synthetic actor."""
+    from research_project.project_rbac_simulation import (
+        EvaluationContext,
+        build_default_registry,
+        evaluate_rbac,
+    )
+
+    registry = build_default_registry()
+    actor = registry.get(args.actor_id)
+    if actor is None:
+        print(f"[ERROR] Synthetic actor không tìm thấy trong registry: {args.actor_id}",
+              file=sys.stderr)
+        print("  Actors có sẵn: " + ", ".join(sorted(registry.all_actor_ids())),
+              file=sys.stderr)
+        return 1
+
+    ctx = EvaluationContext(
+        is_own_artifact=args.is_own_artifact,
+        review_type=args.review_type,
+        is_own_source=args.is_own_source,
+        has_controlled_change_authorization=args.has_change_auth,
+        object_reference=args.object_ref,
+    )
+
+    decision = evaluate_rbac(actor, args.action, ctx)
+    print(f"\n=== RBAC Simulation (R1.1 · SYNTHETIC ONLY) ===")
+    print(f"  actor:            {decision.actor_reference}")
+    print(f"  action:           {decision.action}")
+    print(f"  object:           {decision.object_reference}")
+    print(f"  decision:         {decision.decision}")
+    print(f"  reason_code:      {decision.reason_code}")
+    print(f"  policy_reference: {decision.policy_reference}")
+    print(f"  timestamp_utc:    {decision.timestamp_utc}")
+    print(f"\n  {decision.disclaimer}")
+    return 0 if decision.decision == "ALLOW" else 1
+
+
+def _cmd_delegation_register(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    """delegation-register: Tạo PROPOSED delegation trong append-only registry."""
+    from research_project.project_delegation_registry import DelegationError, DelegationRegistry
+
+    ledger_path = pathlib.Path(args.ledger)
+    registry = DelegationRegistry(ledger_path)
+
+    try:
+        record = registry.propose(
+            principal_id=args.principal_id,
+            delegatee_id=args.delegatee_id,
+            delegated_role=args.role,
+            permitted_actions=args.actions,
+            effective_from_utc=args.from_utc,
+            effective_until_utc=args.until_utc,
+            reason=args.reason,
+        )
+    except DelegationError as exc:
+        print(f"[BLOCKED] Delegation không hợp lệ: {exc}", file=sys.stderr)
+        return 2
+
+    print(f"\n=== Delegation Registered (R1.1 · SYNTHETIC ONLY) ===")
+    print(f"  delegation_id:    {record.delegation_id}")
+    print(f"  principal:        {record.principal_synthetic_actor_id}")
+    print(f"  delegatee:        {record.delegatee_synthetic_actor_id}")
+    print(f"  role:             {record.delegated_role}")
+    print(f"  status:           {record.status}")
+    print(f"  effective_from:   {record.effective_from_utc}")
+    print(f"  effective_until:  {record.effective_until_utc}")
+    print(f"  ledger:           {ledger_path}")
+    print(f"\n  {record.disclaimer}")
+    return 0
+
+
+def _cmd_delegation_status(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    """delegation-status: Kiểm tra status của một delegation."""
+    from research_project.project_delegation_registry import DelegationRegistry
+
+    ledger_path = pathlib.Path(args.ledger)
+    if not ledger_path.exists():
+        print(f"[ERROR] Ledger không tồn tại: {ledger_path}", file=sys.stderr)
+        return 1
+
+    registry = DelegationRegistry(ledger_path)
+    status = registry.get_status(args.delegation_id)
+
+    if status is None:
+        print(f"[NOT FOUND] delegation_id '{args.delegation_id}' không có trong ledger.")
+        return 1
+
+    print(f"\n=== Delegation Status (R1.1) ===")
+    print(f"  delegation_id:  {args.delegation_id}")
+    print(f"  status:         {status}")
+    print(f"  ledger:         {ledger_path}")
+    return 0
+
+
+def _cmd_audit_attribution_verify(
+    args: argparse.Namespace, projects_root: pathlib.Path
+) -> int:
+    """audit-attribution-verify: Verify hash chain của audit ledger."""
+    from research_project.project_audit_attribution import AuditAttributionLedger
+
+    ledger_path = pathlib.Path(args.ledger)
+    if not ledger_path.exists():
+        print(f"[ERROR] Ledger không tồn tại: {ledger_path}", file=sys.stderr)
+        return 1
+
+    ledger = AuditAttributionLedger(ledger_path)
+    event_count = ledger.event_count()
+    ok, errors = ledger.verify()
+
+    print(f"\n=== Audit Attribution Verify (R1.1 · SYNTHETIC ONLY) ===")
+    print(f"  ledger:       {ledger_path}")
+    print(f"  event_count:  {event_count}")
+    print(f"  result:       {'PASS' if ok else 'FAIL'}")
+    if not ok:
+        print(f"  errors ({len(errors)}):")
+        for err in errors:
+            print(f"    - {err}")
+    else:
+        print("  hash_chain:   intact")
+    print(f"\n  [R1.1] Simulated audit attribution only. "
+          f"Not a production audit trail. Not an authenticated event record.")
+    return 0 if ok else 1
 
 
 # ---------------------------------------------------------------------------
