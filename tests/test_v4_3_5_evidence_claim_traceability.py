@@ -1,7 +1,7 @@
 """
 tests/test_v4_3_5_evidence_claim_traceability.py
 
-V4.3.5 — Evidence Intake & Claim Traceability: 20 kiểm thử xác định.
+V4.3.5 — Evidence Intake & Claim Traceability: 21 kiểm thử xác định.
 
 Bất biến được kiểm thử:
   T01  HUMAN_PROVIDED_ONLY được chấp nhận
@@ -13,7 +13,8 @@ Bất biến được kiểm thử:
   T07  HUMAN_VERIFIED source → claim SUPPORTED
   T08  Không có source → REQUIRE_HUMAN_EVIDENCE_INPUT
   T09  Hỗn hợp verified/unverified → BLOCKED_UNVERIFIED_EVIDENCE
-  T10  Ledger append-only (không xóa/ghi đè record cũ)
+  T10  Evidence Ledger append-only (không xóa/ghi đè record cũ)
+  T10b Claim Ledger append-only (không xóa/ghi đè record cũ)
   T11  Evidence source không chứa PII
   T12  Claim không chứa PII
   T13  D-R8 ledger rỗng = REQUIRE_HUMAN_EVIDENCE_INPUT
@@ -344,6 +345,43 @@ def test_t10_ledger_append_only(tmp_path):
     titles = {s.title for s in sources}
     assert "Study A" in titles
     assert "Study B" in titles
+
+
+# ---------------------------------------------------------------------------
+# T10b — Claim Ledger append-only
+# ---------------------------------------------------------------------------
+
+def test_t10b_claim_ledger_append_only(tmp_path):
+    """Mỗi lần register_claim() ghi thêm dòng mới vào claim ledger; không ghi đè."""
+    project_dir = _make_project_dir(tmp_path)
+    source = _add_source(project_dir, VerificationState.HUMAN_VERIFIED)
+    register_claim(
+        project_dir=project_dir,
+        project_id=_SYNTH_PROJECT_ID,
+        artifact_id="03_EVIDENCE_PLAN",
+        artifact_version="0.1.0",
+        claim_text="First synth claim.",
+        claim_type=ClaimType.BACKGROUND,
+        linked_source_ids=[source.source_id],
+    )
+    register_claim(
+        project_dir=project_dir,
+        project_id=_SYNTH_PROJECT_ID,
+        artifact_id="03_EVIDENCE_PLAN",
+        artifact_version="0.1.0",
+        claim_text="Second synth claim.",
+        claim_type=ClaimType.METHODS,
+        linked_source_ids=[source.source_id],
+    )
+    ledger = ClaimTraceabilityLedger(project_dir)
+    records = ledger.read_all()
+    assert len(records) == 2
+    texts = {r.claim_text for r in records}
+    assert "First synth claim." in texts
+    assert "Second synth claim." in texts
+    # Kiểm tra file tồn tại và không thể delete()
+    assert not hasattr(ledger, "delete")
+    assert not hasattr(ledger, "update")
 
 
 # ---------------------------------------------------------------------------

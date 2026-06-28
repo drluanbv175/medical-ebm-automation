@@ -739,6 +739,27 @@ def _cmd_claim_audit(args: argparse.Namespace, projects_root: pathlib.Path) -> i
     audit = get_claim_audit(project_dir, claim_id=args.claim_id)
     label = f"claim {args.claim_id}" if args.claim_id else "tất cả claim"
     print(f"\n=== Claim Audit Trail — {config.project_id} ({label}) ===")
+
+    # Summary stats (toàn bộ ledger nếu không lọc 1 claim)
+    if not args.claim_id and audit:
+        from research_project.project_claim_traceability import ClaimStatus as _CS
+        claim_total = len(audit)
+        claims_supported = sum(1 for e in audit if e["claim_status"] == _CS.SUPPORTED_BY_HUMAN_VERIFIED_EVIDENCE.value)
+        claims_missing = sum(1 for e in audit if e["claim_status"] == _CS.REQUIRE_HUMAN_EVIDENCE_INPUT.value)
+        claims_unverified = sum(1 for e in audit if e["claim_status"] == _CS.BLOCKED_UNVERIFIED_EVIDENCE.value)
+        claims_retracted = sum(1 for e in audit if e["claim_status"] == _CS.BLOCKED_RETRACTED_EVIDENCE.value)
+        claims_blocked = claims_unverified + claims_retracted
+        hr_count = sum(1 for e in audit if e.get("human_review_required", False))
+        print(f"\n  Summary:")
+        print(f"    claim_total:               {claim_total}")
+        print(f"    claims_supported:          {claims_supported}")
+        print(f"    claims_missing_evidence:   {claims_missing}")
+        print(f"    claims_unverified:         {claims_unverified}")
+        print(f"    claims_retracted:          {claims_retracted}")
+        print(f"    claims_blocked:            {claims_blocked}")
+        print(f"    human_review_required:     {hr_count}")
+        print()
+
     for entry in audit:
         print(f"\n  [{entry['claim_id']}] artifact={entry['artifact_id']} "
               f"type={entry['claim_type']}")
