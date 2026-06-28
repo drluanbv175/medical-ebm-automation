@@ -14,7 +14,7 @@
 | R4.0 | COMPLETE | 830710f | 1049 | 0 | 5 | OPEN (10 HIS gaps) |
 | R5.0 | COMPLETE | bc52018 | 1049 | 0 | 5 | OPEN (10 qual gaps) |
 | R6.0 | COMPLETE | bc52018 | 1049 | 0 | 5 | OPEN (36 gate conds) |
-| PROGRAM | COMPLETE | TBD | 1049 | 0 | 5 | NO-GO (program) |
+| PROGRAM | COMPLETE | e674ee4 | 1049 | 0 | 5 | NO-GO (program) |
 
 *Updated at each phase completion.*  
 *Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE*
