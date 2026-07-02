@@ -331,7 +331,26 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         f"Với mức ý nghĩa hai phía α = {alpha}, lực thống kê 1−β = {int(power*100)}%,",
     ]
     if effect_val:
-        lines.append(f"và {effect_type} = {effect_val:.2f} (lấy từ y văn [CẦN PMID/DOI]),")
+        # SỬA: dòng "{effect_type} = {effect_val} (lấy từ y văn [CẦN PMID/DOI])"
+        # đúng cho cohort/case_control/RCT (effect_val THẬT LÀ effect size
+        # trích từ 1 bài báo cụ thể) nhưng SAI ngữ cảnh cho cross_sectional
+        # (effect_val ở đó là TỶ LỆ HIỆN MẮC GIẢ ĐỊNH p cho công thức Wilson,
+        # không phải effect size từ 1 bài báo — ghi "lấy từ y văn [CẦN PMID]"
+        # khiến bác sĩ tưởng cần trích dẫn nguồn cho con số quy ước thống kê).
+        if design_code == "cross_sectional":
+            p_used = effect_val if effect_val < 1.0 else 0.30
+            lines.append(
+                f"với tỷ lệ hiện mắc giả định p = {p_used:.2f} "
+                "([CẦN bác sĩ xác nhận — dùng p=0.50 theo quy ước thận trọng nếu "
+                "chưa có ước tính từ khảo sát tương tự tại cơ sở/khu vực; nếu có "
+                "số liệu sơ bộ/y văn gần đây, thay p bằng ước tính đó để cỡ mẫu "
+                "sát thực tế hơn]),"
+            )
+        elif design_code == "diagnostic":
+            lines.append(f"với AUC giả định = {effect_val:.2f} ([CẦN — lấy từ nghiên cứu "
+                          "chẩn đoán tương tự, ghi PMID/DOI]),")
+        else:
+            lines.append(f"và {effect_type} = {effect_val:.2f} (lấy từ y văn [CẦN PMID/DOI]),")
         lines.append(f"cần {n_per_group} người mỗi nhóm (N tổng = {n_total}).")
         lines.append(f"Tính thêm {int(dropout*100)}% bỏ cuộc dự kiến, cỡ mẫu cuối = {n_adjusted} người.")
     else:
