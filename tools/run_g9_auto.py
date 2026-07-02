@@ -1,0 +1,1311 @@
+#!/usr/bin/env python3
+"""
+run_g9_auto.py — TỰ ĐỘNG HÓA CỔNG G9: Liêm chính Tác giả (Author Integrity)
+
+Cổng cứng cuối cùng trước khi nộp bản thảo ra bên ngoài.
+Đọc tất cả checkpoints G0-G8 -> sinh GÓI LIÊM CHÍNH TÁC GIẢ (A10) gồm 8 phần:
+  Phần 1 — ICMJE Tiêu chuẩn Tác giả (4 tiêu chí, từng tác giả)
+  Phần 2 — Khai báo Xung đột Lợi ích Cuối (Final COI)
+  Phần 3 — Data Availability Statement (3 lựa chọn)
+  Phần 4 — AI Use Disclosure (COPE + Nature Portfolio guidelines 2024)
+  Phần 5 — Tuyên bố Liêm chính Nghiên cứu
+  Phần 6 — Thư gửi Tạp chí (Cover Letter Shell)
+  Phần 7 — Bản mẫu Phản hồi Phản biện (Response-to-Reviewers Template)
+  Phần 8 — Tiêu chí qua Cổng G9 (Hard Gate — cần ký)
+
+Bác sĩ / PI phải ký TOÀN BỘ trước khi nộp bài.
+KHÔNG CÓ gói này -> KHÔNG nộp bản thảo.
+
+Sử dụng:
+    python tools/run_g9_auto.py --study "MA-DE-TAI"
+    python tools/run_g9_auto.py --study "SGLT2-HFpEF-2026" --n-authors 3 --target-journal "JACC"
+"""
+
+import argparse
+import json
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+# ── Cấu hình đường dẫn ──────────────────────────────────────────────────────
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_REPO_ROOT))
+
+_TODAY = datetime.now().strftime("%d/%m/%Y")
+_YEAR  = datetime.now().strftime("%Y")
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 1. ĐỌC CHECKPOINT (hàm dùng chung)
+# ════════════════════════════════════════════════════════════════════════════
+
+
+def load_cp(path: Path) -> dict:
+    """
+    Đọc file checkpoint JSON; trả về dict rỗng nếu không tồn tại.
+    SỬA: JSON hợp lệ nhưng không phải object (vd literal "null"/mảng) từng
+    khiến hàm trả về None/list thay vì dict — các nơi gọi .get() ở downstream
+    sẽ crash AttributeError. Đồng bộ với guard đã có ở run_g8_auto.py.
+    """
+    if path.exists():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return {}
+        return data if isinstance(data, dict) else {}
+    return {}
+
+
+def collect_all_checkpoints(out_dir: Path) -> dict:
+    """Đọc tất cả checkpoints G0-G8 từ thư mục xuất."""
+    gate_files = {
+        "G0": "G0_checkpoint.json",
+        "G1": "G1_checkpoint.json",
+        "G2": "G2_checkpoint.json",
+        "G3": "G3_checkpoint.json",
+        "G4": "G4_checkpoint.json",
+        "G5": "G5_checkpoint.json",
+        "G6": "G6_checkpoint.json",
+        "G7": "G7_checkpoint.json",
+        "G8": "G8_checkpoint.json",
+    }
+    result = {}
+    for gate, fname in gate_files.items():
+        data = load_cp(out_dir / fname)
+        if data:
+            result[gate] = data
+    return result
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 2. SINH PHẦN 1 — ICMJE TIÊU CHUẨN TÁC GIẢ
+# ════════════════════════════════════════════════════════════════════════════
+
+def build_part1_icmje(n_authors: int, study: str) -> str:
+    """
+    Sinh bảng ICMJE 4 tiêu chí tác giả cho từng tác giả.
+    Cả 4 tiêu chí đều phải được đánh dấu ĐỦ mới đủ tư cách tác giả.
+    """
+    lines = [
+        "## PHẦN 1 — TIÊU CHUẨN TÁC GIẢ ICMJE (CẢ 4 TIÊU CHÍ)",
+        "",
+        "> **Căn cứ:** ICMJE Recommendations for Conduct, Reporting, Editing, and Publication",
+        "> of Scholarly Work in Medical Journals (2023 update).",
+        "> Tất cả 4 tiêu chí phải đạt ĐỦ mới là Tác giả.",
+        "> Đóng góp chỉ đáp ứng 1-2 tiêu chí -> ghi trong Lời cảm ơn (Acknowledgment).",
+        "",
+        "### Bảng Tiêu chuẩn Tác giả ICMJE",
+        "",
+        "| Tiêu chí | Mô tả | " + " | ".join(f"Tác giả {i}" for i in range(1, n_authors + 1)) + " |",
+        "|----------|-------|" + "---------|" * n_authors,
+    ]
+
+    # 4 tiêu chí ICMJE chuẩn
+    tieu_chi = [
+        ("TC1",
+         "Đóng góp đáng kể vào ÍT NHẤT MỘT trong: Xây dựng ý tưởng/thiết kế "
+         "HOẶC Thu thập dữ liệu HOẶC Phân tích/giải thích dữ liệu"),
+        ("TC2",
+         "Tham gia soạn thảo bản thảo HOẶC sửa chữa nội dung quan trọng về mặt trí tuệ"),
+        ("TC3",
+         "Phê duyệt phiên bản cuối để nộp xuất bản"),
+        ("TC4",
+         "Đồng ý chịu trách nhiệm về mọi khía cạnh của bài báo (đảm bảo điều tra "
+         "và giải quyết mọi câu hỏi về tính chính xác/trung thực của mọi phần)"),
+    ]
+
+    for code, mo_ta in tieu_chi:
+        o = " | ".join("☐ Có  ☐ Không" for _ in range(n_authors))
+        lines.append(f"| **{code}** | {mo_ta} | {o} |")
+
+    lines += ["", "### Kết luận Tư cách và Chữ ký Từng Tác giả", ""]
+
+    for i in range(1, n_authors + 1):
+        lines += [
+            f"**Tác giả {i} — [CẦN ĐIỀN HỌ TÊN ĐẦY ĐỦ + ĐƠN VỊ + EMAIL]:**",
+            f"- Đóng góp cụ thể (CRediT): [CẦN — ví dụ: Conceptualization, "
+            f"Methodology, Writing – original draft]",
+            f"- Tư cách tác giả: ☐ ĐỦ CẢ 4 tiêu chí -> LÀ TÁC GIẢ  "
+            f"☐ Không đủ -> ghi Acknowledgment",
+            f"- Chữ ký xác nhận: _______________  Ngày: ___/___/{_YEAR}",
+            "",
+        ]
+
+    # Bảng CRediT taxonomy (14 vai trò)
+    lines += [
+        "### Bảng Đóng góp CRediT (Contributor Roles Taxonomy — 14 vai trò)",
+        "",
+        "| Vai trò CRediT | " + " | ".join(f"Tác giả {i}" for i in range(1, n_authors + 1)) + " |",
+        "|----------------|" + "---------|" * n_authors,
+    ]
+
+    credit_roles = [
+        "Conceptualization", "Data curation", "Formal analysis",
+        "Funding acquisition", "Investigation", "Methodology",
+        "Project administration", "Resources", "Software",
+        "Supervision", "Validation", "Visualization",
+        "Writing – original draft", "Writing – review & editing",
+    ]
+    for role in credit_roles:
+        row = " | ".join("☐" for _ in range(n_authors))
+        lines.append(f"| {role} | {row} |")
+
+    lines += [
+        "",
+        f"*[DRAFT — Cần tất cả {n_authors} tác giả ký xác nhận trước khi nộp bài.]*",
+        "",
+        "---",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 3. SINH PHẦN 2 — KHAI BÁO XUNG ĐỘT LỢI ÍCH CUỐI (FINAL COI)
+# ════════════════════════════════════════════════════════════════════════════
+
+def build_part2_coi(n_authors: int, study: str) -> str:
+    """
+    Sinh mẫu ICMJE COI đầy đủ cho từng tác giả + tuyên bố tập thể.
+    Dựa trên ICMJE Form for Disclosure of Potential Conflicts of Interest (2021).
+    """
+    lines = [
+        "## PHẦN 2 — KHAI BÁO XUNG ĐỘT LỢI ÍCH CUỐI (FINAL COI DECLARATION)",
+        "",
+        "> **Căn cứ:** ICMJE Form for Disclosure of Potential Conflicts of Interest (2021).",
+        "> Mỗi tác giả điền riêng; khai báo trong vòng 36 tháng kể từ khi bắt đầu nghiên cứu.",
+        "> Tạp chí sẽ yêu cầu nộp form ICMJE gốc — form này là bản tóm tắt chuẩn bị sẵn.",
+        "",
+        "### A. MẪU KHAI BÁO TỪNG TÁC GIẢ (điền riêng cho mỗi người)",
+        "",
+    ]
+
+    for i in range(1, n_authors + 1):
+        lines += [
+            "```",
+            "═══════════════════════════════════════════════════════════════",
+            f"ICMJE COI DECLARATION — Tác giả {i}",
+            f"Đề tài: {study} | Ngày khai báo: {_TODAY}",
+            "═══════════════════════════════════════════════════════════════",
+            "",
+            "Họ tên tác giả: [CẦN ĐIỀN]",
+            "Đơn vị: [CẦN ĐIỀN]",
+            "Email: [CẦN ĐIỀN]",
+            "ORCID: [CẦN ĐIỀN — https://orcid.org/0000-0000-0000-0000]",
+            "",
+            "I. HOẠT ĐỘNG CÓ THÙ LAO (36 tháng gần nhất — liên quan nội dung bài)",
+            "",
+            "1a. Tư vấn chuyên môn có thù lao:",
+            "   ☐ Không có",
+            "   ☐ Có -> Tên tổ chức: ___ | Số tiền: ___",
+            "",
+            "1b. Cổ phần/cổ phiếu (không kể quỹ chỉ số):",
+            "   ☐ Không có",
+            "   ☐ Có -> Tên công ty: ___ | Loại: ___",
+            "",
+            "1c. Bằng sáng chế / đang chờ cấp / chuyển nhượng:",
+            "   ☐ Không có",
+            "   ☐ Có -> Chi tiết: ___",
+            "",
+            "1d. Thù lao cho bài nói chuyện / tham gia hội đồng chuyên gia:",
+            "   ☐ Không có",
+            "   ☐ Có -> Tên tổ chức: ___ | Số tiền: ___",
+            "",
+            "1e. Chi phí du lịch/hội nghị được tài trợ (không kể học thuật):",
+            "   ☐ Không có",
+            "   ☐ Có -> Tên tổ chức: ___ | Chi tiết: ___",
+            "",
+            "1f. Tham gia Ủy ban Cố vấn / Tư vấn Khoa học:",
+            "   ☐ Không có",
+            "   ☐ Có -> Tên tổ chức: ___ | Thời gian: ___",
+            "",
+            "II. TÀI TRỢ NGHIÊN CỨU",
+            "   Tên nhà tài trợ: [CẦN ĐIỀN — 'Không có tài trợ bên ngoài' nếu đúng]",
+            "   Số hợp đồng/tài trợ: [CẦN ĐIỀN nếu có]",
+            "   Nhà tài trợ can thiệp vào thiết kế/phân tích/quyết định công bố:",
+            "   ☐ Không  ☐ Có -> giải thích: ___",
+            "",
+            "III. XUNG ĐỘT LỢI ÍCH PHI TÀI CHÍNH",
+            "   ☐ Không có",
+            "   ☐ Có -> (quan hệ cá nhân / lợi ích học thuật / quan điểm đối nghịch): ___",
+            "",
+            "IV. CÁC MỐI QUAN HỆ LIÊN QUAN (gia đình hoặc đối tác gần)",
+            "   ☐ Không có",
+            "   ☐ Có -> Mô tả: ___",
+            "",
+            "Tôi tuyên bố các thông tin trên là đầy đủ và chính xác.",
+            "",
+            "Chữ ký: _______________",
+            f"Ngày: ___/___/{_YEAR}",
+            "═══════════════════════════════════════════════════════════════",
+            "```",
+            "",
+        ]
+
+    lines += [
+        "### B. TUYÊN BỐ TẬP THỂ (COLLECTIVE COI STATEMENT)",
+        "",
+        "*(Điền vào bản thảo, mục Declarations/Conflicts of Interest)*",
+        "",
+        "```",
+        "CONFLICTS OF INTEREST",
+        "─────────────────────────────────────────────────────",
+        "[CẦN CHỌN MỘT TRONG HAI]",
+        "",
+        "Option A (Không có COI):",
+        "  'The authors declare that they have no known competing financial",
+        "   interests or personal relationships that could have appeared to",
+        "   influence the work reported in this paper.'",
+        "",
+        "Option B (Có COI phải khai báo):",
+        "  '[Tên tác giả] reports [loại COI] from [tổ chức], outside the",
+        "   submitted work. All other authors declare no conflicts of interest.'",
+        "─────────────────────────────────────────────────────",
+        "```",
+        "",
+        f"*[DRAFT — Cần tất cả {n_authors} tác giả ký form ICMJE gốc riêng.]*",
+        "",
+        "---",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 4. SINH PHẦN 3 — DATA AVAILABILITY STATEMENT
+# ════════════════════════════════════════════════════════════════════════════
+
+def build_part3_data_availability(cps: dict, study: str) -> str:
+    """
+    Sinh 3 lựa chọn Data Availability Statement theo FAIR Principles và Luật 91/2025/QH15.
+    Bác sĩ chọn một trong ba và điền thông tin còn thiếu.
+    """
+    # Lấy số IRB từ G2 để điền vào template
+    g2 = cps.get("G2", {})
+    irb_number = g2.get("g2_irb_number") or "[CẦN SỐ IRB]"
+
+    lines = [
+        "## PHẦN 3 — DATA AVAILABILITY STATEMENT",
+        "",
+        "> **Căn cứ:** FAIR Data Principles; Luật Bảo vệ Dữ liệu Cá nhân 91/2025/QH15;",
+        "> Chính sách chia sẻ dữ liệu ICMJE (2023).",
+        "",
+        "> **[CẦN BÁC SĨ CHỌN MỘT TRONG BA LỰA CHỌN VÀ XÓA HAI LỰA CHỌN CÒN LẠI]**",
+        "",
+        "### ☐ Lựa chọn A — Chia sẻ theo yêu cầu (RECOMMENDED khi có dữ liệu cá nhân)",
+        "",
+        "```",
+        "DATA AVAILABILITY STATEMENT — Option A",
+        "─────────────────────────────────────────",
+        "The data that support the findings of this study are available from",
+        "the corresponding author upon reasonable request. Data are not publicly",
+        "available due to privacy/ethical restrictions as specified in the ethics",
+        f"approval (Approval No. {irb_number}).",
+        "Requests for data access: [CẦN — Tên tác giả liên lạc | Email]",
+        "─────────────────────────────────────────",
+        "```",
+        "",
+        "### ☐ Lựa chọn B — Dữ liệu đã lưu kho mở (khi dữ liệu ẩn danh hóa được)",
+        "",
+        "```",
+        "DATA AVAILABILITY STATEMENT — Option B",
+        "─────────────────────────────────────────",
+        "The data that support the findings of this study are openly available in",
+        "[CẦN — OSF / Zenodo / Dryad / Figshare] at [CẦN URL]",
+        "under DOI [CẦN DOI]. Dataset deposited: [CẦN NGÀY]",
+        "─────────────────────────────────────────",
+        "```",
+        "",
+        "### ☐ Lựa chọn C — Không thể chia sẻ (khi pháp luật không cho phép)",
+        "",
+        "```",
+        "DATA AVAILABILITY STATEMENT — Option C",
+        "─────────────────────────────────────────",
+        "The data that support the findings of this study are not publicly available",
+        "due to legal restrictions under Vietnamese Personal Data Protection Law",
+        "No. 91/2025/QH15 (effective July 2025) and Decree 356/2025/ND-CP.",
+        "Further inquiries can be directed to the corresponding author.",
+        "─────────────────────────────────────────",
+        "```",
+        "",
+        "**[CẦN BÁC SĨ XÁC NHẬN lựa chọn trước khi nộp bài]**",
+        "",
+        "---",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 5. SINH PHẦN 4 — AI USE DISCLOSURE
+# ════════════════════════════════════════════════════════════════════════════
+
+def build_part4_ai_disclosure(cps: dict, study: str) -> str:
+    """
+    Sinh khai báo sử dụng AI theo COPE guidelines 2024 và Nature Portfolio guidelines 2024.
+    Tự động liệt kê các cổng đã chạy EBM Copilot từ checkpoints.
+    """
+    # Mô tả từng cổng
+    gate_descriptions = {
+        "G0": "Literature search assistance — PubMed, Europe PMC (G0)",
+        "G1": "Protocol/SAP template generation (G1)",
+        "G2": "Ethics documentation assistance — IRB forms, ICF templates (G2)",
+        "G3": "Sample size calculation scripting (G3)",
+        "G4": "Statistical Analysis Plan template generation (G4)",
+        "G5": "Data collection form structuring (G5)",
+        "G6": "Analysis script generation — R/Python statistical scripts (G6)",
+        "G7": "Manuscript IMRAD skeleton generation (G7)",
+        "G8": "Submission checklist and peer review preparation (G8)",
+    }
+
+    # Lấy danh sách cổng thực sự đã chạy
+    gates_run = [
+        f"   - {desc}"
+        for g, desc in gate_descriptions.items()
+        if g in cps
+    ]
+
+    # Fallback nếu không có checkpoint nào
+    if not gates_run:
+        gates_run = [
+            "   - Literature search assistance (G0)",
+            "   - Protocol/SAP template generation (G1, G4)",
+            "   - Ethics documentation (G2)",
+            "   - Analysis script generation (G6)",
+            "   - Manuscript skeleton (G7)",
+        ]
+
+    ai_uses_str = "\n".join(gates_run)
+
+    lines = [
+        "## PHẦN 4 — KHAI BÁO SỬ DỤNG AI (COPE + Nature Portfolio 2024)",
+        "",
+        "> **Căn cứ:**",
+        "> - COPE Guidelines: Authorship and AI tools (February 2023)",
+        "> - Nature Portfolio Editorial Policies: Use of AI tools (updated 2024)",
+        "> - ICMJE Recommendations (2023): AI tools cannot be authors",
+        "> - JAMA Network / Lancet policies on AI/LLM disclosure (2024)",
+        "",
+        "### Khai báo đầy đủ (cho IRB, đơn vị, và hồ sơ nội bộ)",
+        "",
+        "```",
+        f"AI USE DISCLOSURE — {study}",
+        f"Date: {_TODAY}",
+        "─────────────────────────────────────────────────────────────",
+        "",
+        "AI TOOLS USED:",
+        "  Tool: EBM Copilot (powered by Claude, Anthropic)",
+        "  Purpose(s):",
+        ai_uses_str,
+        "",
+        "HUMAN OVERSIGHT AND VERIFICATION:",
+        "  All AI-generated content was critically reviewed and verified by",
+        "  [CẦN — tên tác giả chịu trách nhiệm kiểm tra AI output].",
+        "  Scientific interpretations, clinical judgments, and conclusions",
+        "  are entirely the responsibility of the human author team.",
+        "",
+        "AI TOOLS WERE NOT USED FOR:",
+        "  - Data collection or entry",
+        "  - Statistical analysis or results interpretation",
+        "  - Drawing scientific conclusions",
+        "  - Patient data access or clinical decision-making",
+        "",
+        "AUTHORSHIP:",
+        "  AI tools are NOT listed as authors per ICMJE guidelines (2023).",
+        "",
+        "[CẦN BÁC SĨ BỔ SUNG nếu dùng thêm công cụ AI khác]:",
+        "  ☐ ChatGPT / GPT-4 -> Mục đích: ___",
+        "  ☐ Grammarly / language editing AI -> Mục đích: ___",
+        "  ☐ AI-assisted image processing -> Phần mềm: ___",
+        "  ☐ Không dùng thêm công cụ AI nào khác",
+        "─────────────────────────────────────────────────────────────",
+        "```",
+        "",
+        "### Mẫu rút gọn (điền vào bản thảo, mục Methods hoặc Declarations)",
+        "",
+        "```",
+        "AI TOOLS:",
+        "During the preparation of this work, the authors used EBM Copilot",
+        "(Claude-based, Anthropic) for literature search assistance, protocol",
+        "template generation, and manuscript drafting support.",
+        "After using this tool, the authors reviewed and edited the content",
+        "as needed and take full responsibility for the content of the publication.",
+        "```",
+        "",
+        "---",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 6. SINH PHẦN 5 — TUYÊN BỐ LIÊM CHÍNH NGHIÊN CỨU
+# ════════════════════════════════════════════════════════════════════════════
+
+def build_part5_integrity(cps: dict, study: str) -> str:
+    """
+    Sinh tuyên bố liêm chính: không đạo văn, không chia nhỏ bài,
+    không nộp song song, không fabrication/falsification, không HARKing.
+    Tự điền ngày SAP lock từ G4, số IRB từ G2.
+    """
+    g4 = cps.get("G4", {})
+    g2 = cps.get("G2", {})
+
+    sap_lock_date = g4.get("g4_lock_date") or "[CẦN — ngày ký SAP Lock Certificate tại G4]"
+    irb_number    = g2.get("g2_irb_number") or "[CẦN SỐ IRB]"
+    irb_date      = g2.get("g2_approval_date") or "[CẦN NGÀY PHÊ DUYỆT]"
+    registration  = g2.get("g2_registration") or "[CẦN SỐ ĐĂNG KÝ ClinicalTrials.gov/PROSPERO]"
+
+    lines = [
+        "## PHẦN 5 — TUYÊN BỐ LIÊM CHÍNH NGHIÊN CỨU",
+        "",
+        "> **Căn cứ:** Committee on Publication Ethics (COPE); Singapore Statement on",
+        "> Research Integrity (2010); Bộ Y tế VN — Quy tắc đạo đức nghiên cứu.",
+        "",
+        "```",
+        "TUYÊN BỐ LIÊM CHÍNH NGHIÊN CỨU",
+        f"Đề tài: {study} | Ngày: {_TODAY}",
+        "═══════════════════════════════════════════════════════════════",
+        "",
+        "1. KIỂM TRA ĐẠO VĂN (PLAGIARISM CHECK)",
+        "   Tuyên bố: Bài báo này là sáng tạo gốc của nhóm tác giả.",
+        "   Không sao chép không trích dẫn từ bất kỳ nguồn nào.",
+        "   Công cụ kiểm tra: [CẦN — iThenticate / Turnitin / CrossCheck]",
+        "   Tỷ lệ trùng lặp: [CẦN — cần < 15% toàn bài, < 3% từng đoạn]",
+        "   Ngày kiểm tra: [CẦN]",
+        "   ☐ Đã kiểm tra và đạt ngưỡng yêu cầu",
+        "",
+        "2. KHÔNG CHIA NHỎ BÀI (NO SALAMI SLICING)",
+        f"   Tuyên bố: Đây là báo cáo ĐẦY ĐỦ và DUY NHẤT của tập dữ liệu {study}.",
+        "   ☐ Không chia tách một nghiên cứu thành nhiều bài báo nhỏ",
+        "   [CẦN BÁC SĨ XÁC NHẬN: ☐ Đây là báo cáo duy nhất từ tập dữ liệu này]",
+        "   Nếu có ấn phẩm liên quan: [CẦN — Tên | DOI | Mối liên hệ]",
+        "",
+        "3. KHÔNG NỘP SONG SONG (NO DUPLICATE SUBMISSION)",
+        "   Tuyên bố: Bài báo này CHƯA được nộp đồng thời cho tạp chí nào khác.",
+        "   ☐ Xác nhận không nộp song song",
+        "   Preprint (nếu đã đăng): [CẦN — server/DOI] hoặc ☐ Không có preprint",
+        "",
+        "4. KHÔNG GIẢ MẠO/BỊA ĐẶT (NO FABRICATION/FALSIFICATION)",
+        "   Tuyên bố: Mọi dữ liệu và kết quả từ dữ liệu THẬT đã thu thập.",
+        "   ☐ Mọi số liệu từ dữ liệu thật đã khóa DB",
+        f"   Dữ liệu gốc: Khóa tại {irb_number} (phê duyệt: {irb_date})",
+        "   Lưu trữ: [CẦN — nơi lưu dataset gốc]",
+        "",
+        "5. KHÔNG HARKING (NO HYPOTHESIZING AFTER RESULTS KNOWN)",
+        "   Tuyên bố: Câu hỏi nghiên cứu và giả thuyết đặt ra TRƯỚC khi phân tích dữ liệu.",
+        f"   SAP Lock Date: {sap_lock_date}",
+        f"   Số đăng ký nghiên cứu: {registration}",
+        "   ☐ Giả thuyết tiền nghiệm — SAP khóa trước khi xem dữ liệu",
+        "",
+        "6. PHÂN TÍCH HẬU KỲ (nếu có)",
+        "   ☐ Không có phân tích hậu kỳ (post-hoc) ngoài SAP",
+        "   ☐ Có -> [CẦN — tên phân tích | lý do | ghi nhãn post-hoc rõ trong bản thảo]",
+        "",
+        "CHỮ KÝ XÁC NHẬN LIÊM CHÍNH:",
+        f"PI / Chủ nhiệm đề tài: _______________  Ngày: ___/___/{_YEAR}",
+        f"Tác giả liên lạc: _______________  Ngày: ___/___/{_YEAR}",
+        "",
+        "[DRAFT — Tất cả tác giả phải ký xác nhận liêm chính trước khi nộp.]",
+        "═══════════════════════════════════════════════════════════════",
+        "```",
+        "",
+        "---",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 7. SINH PHẦN 6 — THƯ GỬI TẠP CHÍ (COVER LETTER SHELL)
+# ════════════════════════════════════════════════════════════════════════════
+
+def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
+    """
+    Sinh thư gửi tạp chí chuyên nghiệp.
+    Tự điền từ checkpoints: topic, design, reporting_std, registration, IRB, research gaps.
+    """
+    g0 = cps.get("G0", {})
+    g1 = cps.get("G1", {})
+    g2 = cps.get("G2", {})
+    g3 = cps.get("G3", {})
+
+    # SỬA: (1) topic không None-guard; (2) design_primary/reporting_standard
+    # đọc SAI đường dẫn — G1 lưu lồng trong "design": {...}, không phải
+    # top-level, nên luôn âm thầm rơi về placeholder "[CẦN...]" ngay cả khi
+    # G1 đã xác định rõ thiết kế thật.
+    g1_design      = g1.get("design") or {}
+    topic          = g0.get("topic") or study
+    design_primary = g1_design.get("primary") or "[CẦN THIẾT KẾ NGHIÊN CỨU từ G1]"
+    reporting_std  = g1_design.get("reporting_standard") or "[CẦN CHUẨN BÁO CÁO từ G1]"
+    registration   = g2.get("g2_registration") or "[CẦN SỐ ĐĂNG KÝ từ G2]"
+    irb_number     = g2.get("g2_irb_number") or "[CẦN SỐ IRB từ G2]"
+    n_sr  = g0.get("n_sr", 0)
+    n_rct = g0.get("n_rct", 0)
+    # SỬA: dòng "N = [CẦN — cỡ mẫu thực tế từ kết quả G6]" luôn để trống dù
+    # G3 đã tính N KẾ HOẠCH thật bằng công thức thống kê (vd 5755) — vẫn dùng
+    # nhất quán ở G4/G6/G7. KHÔNG được ghi thẳng "N=5755" như thể là N đã
+    # ENROLL thật (dễ gây hiểu lầm với tạp chí) — chỉ ghi rõ đây là N KẾ HOẠCH,
+    # N enroll thật vẫn [CẦN] chờ khóa CSDL (G5) + phân tích (G6).
+    n_planned = g3.get("n_adjusted") or g3.get("n_total") or 0
+
+    # Lấy research gaps từ G0 nếu có
+    research_gaps = g0.get("research_gaps", "")
+    if isinstance(research_gaps, list):
+        research_gaps = "; ".join(str(x) for x in research_gaps[:2])
+    if not research_gaps:
+        research_gaps = "[CẦN — mô tả khoảng trống bằng chứng từ G0]"
+
+    journal_display = target_journal or "[CẦN ĐIỀN TÊN TẠP CHÍ]"
+
+    lines = [
+        "## PHẦN 6 — THƯ GỬI TẠP CHÍ (COVER LETTER SHELL)",
+        "",
+        "> **Hướng dẫn:** Điền đầy đủ [CẦN] trước khi nộp.",
+        "> Không vượt quá 1 trang A4. Tông văn: tự tin, súc tích, học thuật.",
+        "",
+        "```",
+        f"[Tên + Địa chỉ đơn vị + Ngày: {_TODAY}]",
+        "",
+        f"Dear Editor-in-Chief of {journal_display},",
+        "",
+        "We are pleased to submit our manuscript entitled:",
+        "\"[CẦN — TIÊU ĐỀ ĐẦY ĐỦ KHÔNG QUÁ 120 KÝ TỰ]\"",
+        f"for consideration for publication in {journal_display}.",
+        "",
+        "SIGNIFICANCE AND NOVELTY:",
+        f"  {topic} represents an important clinical challenge.",
+        f"  Current evidence includes {n_sr} systematic review(s) and",
+        f"  {n_rct} randomized controlled trial(s), yet:",
+        f"  {research_gaps}",
+        "  Our study addresses this gap by [CẦN — đóng góp chính của bài].",
+        "",
+        "STUDY DESIGN:",
+        f"  We conducted a {design_primary} following {reporting_std} reporting standards.",
+        (
+            f"  N (kế hoạch, tính trước theo G3) = {n_planned}. "
+            "N thực tế enroll = [CẦN — sau khi khóa CSDL (G5) + phân tích (G6)]."
+            if n_planned > 0 else
+            "  N = [CẦN — cỡ mẫu thực tế từ kết quả G6]."
+        ),
+        f"  The study was registered at {registration}",
+        f"  and received ethical approval (IRB No. {irb_number}).",
+        "",
+        "KEY FINDINGS:",
+        "  [CẦN — 2-3 câu tóm tắt kết quả chính từ G6/G7]",
+        "  [Điền sau khi hoàn tất phân tích và có kết quả thật]",
+        "",
+        "CONTRIBUTION TO THE FIELD:",
+        "  [CẦN — ý nghĩa lâm sàng + chính sách + hướng nghiên cứu tiếp]",
+        "",
+        "MANUSCRIPT CHECKLIST:",
+        f"  ☐ Word count (excluding refs/tables): [CẦN — <= giới hạn {journal_display}]",
+        "  ☐ References: [CẦN]   ☐ Tables: [CẦN]   ☐ Figures: [CẦN]",
+        f"  ☐ {reporting_std} checklist: Attached",
+        "  ☐ Open access option: [CẦN — Yes/No + funding source]",
+        "",
+        "DECLARATIONS:",
+        "  - This manuscript has not been published and is not under consideration elsewhere.",
+        "  - All authors have approved the final version for submission.",
+        "  - Conflicts of interest: [CẦN — 'None declared' hoặc liệt kê từ Phần 2]",
+        "  - Funding: [CẦN]",
+        "  - Data availability: [CẦN — lựa chọn từ Phần 3]",
+        "",
+        "SUGGESTED REVIEWERS (khuyến nghị, không bắt buộc):",
+        "  1. [CẦN — Tên | Institution | Email | Lý do]",
+        "  2. [CẦN — Tên | Institution | Email | Lý do]",
+        "  3. [CẦN — Tên | Institution | Email | Lý do]",
+        "",
+        "EXCLUDED REVIEWERS (nếu cần):",
+        "  [CẦN — Tên | Lý do loại trừ]",
+        "",
+        "Thank you for considering our manuscript.",
+        "",
+        "Sincerely,",
+        "[CẦN — Tên Tác giả Liên lạc]",
+        "[CẦN — Chức vụ | Đơn vị | Điện thoại | Email]",
+        "[CẦN — ORCID: 0000-0000-0000-0000]",
+        "",
+        "On behalf of all authors: [CẦN — liệt kê tên tất cả đồng tác giả]",
+        "```",
+        "",
+        "---",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 8. SINH PHẦN 7 — BẢN MẪU PHẢN HỒI PHẢN BIỆN
+# ════════════════════════════════════════════════════════════════════════════
+
+def build_part7_reviewer_response(study: str, target_journal: str) -> str:
+    """
+    Sinh bản mẫu phản hồi phản biện (Response-to-Reviewers Template).
+    Cấu trúc: từng điểm reviewer -> phản hồi -> thay đổi trong bản thảo.
+    """
+    journal_display = target_journal or "[TÊN TẠP CHÍ]"
+
+    lines = [
+        "## PHẦN 7 — BẢN MẪU PHẢN HỒI PHẢN BIỆN (Response-to-Reviewers Template)",
+        "",
+        "> **Hướng dẫn sử dụng:**",
+        "> 1. Điền từng bình luận phản biện vào ô [Bình luận].",
+        "> 2. Viết phản hồi học thuật vào [Phản hồi tác giả] — súc tích, tôn trọng.",
+        "> 3. Ghi rõ thay đổi cụ thể trong bản thảo: dòng X, trang Y.",
+        "> 4. Nếu không đồng ý: lập luận học thuật có căn cứ, không phòng thủ.",
+        "",
+        "```",
+        "RESPONSE TO REVIEWERS",
+        f"Manuscript: [CẦN — mã bản thảo khi tạp chí cấp]",
+        f"Journal: {journal_display}",
+        f"Date: {_TODAY}",
+        "═══════════════════════════════════════════════════════════════",
+        "",
+        "Dear Editor and Reviewers,",
+        "",
+        "We sincerely thank the Editor and Reviewers for their thorough evaluation.",
+        "We have carefully addressed all comments. Point-by-point responses below.",
+        "Reviewer comments in regular text; responses in [RESPONSE:...];",
+        "manuscript changes in [CHANGE:...].",
+        "",
+        "═══════════════════════════════════════════════════════════════",
+        "ASSOCIATE EDITOR'S COMMENTS",
+        "═══════════════════════════════════════════════════════════════",
+        "",
+        "Comment AE-1: [CẦN — bình luận của Associate Editor nếu có]",
+        "[RESPONSE: CẦN — phản hồi tác giả]",
+        "[CHANGE: CẦN — 'No change required' hoặc 'Line X, page Y: ...']",
+        "",
+        "───────────────────────────────────────────────────────────────",
+        "REVIEWER 1 COMMENTS",
+        "───────────────────────────────────────────────────────────────",
+        "",
+        "Comment R1-1 (Major): [CẦN — bình luận chính 1 của Reviewer 1]",
+        "[RESPONSE: CẦN — phản hồi, có tài liệu tham khảo nếu cần]",
+        "[CHANGE: CẦN — 'Methods, para 3, page X, line Y: [trích đoạn sửa]']",
+        "",
+        "Comment R1-2 (Major): [CẦN]",
+        "[RESPONSE: CẦN]",
+        "[CHANGE: CẦN]",
+        "",
+        "Comment R1-3 (Minor): [CẦN — typo, phong cách...]",
+        "[RESPONSE: Thank you. We have corrected accordingly.]",
+        "[CHANGE: CẦN — 'Line X, page Y: corrected from ... to ...']",
+        "",
+        "───────────────────────────────────────────────────────────────",
+        "REVIEWER 2 COMMENTS",
+        "───────────────────────────────────────────────────────────────",
+        "",
+        "Comment R2-1 (Major): [CẦN]",
+        "[RESPONSE: CẦN]",
+        "[CHANGE: CẦN]",
+        "",
+        "Comment R2-2 (Minor): [CẦN]",
+        "[RESPONSE: CẦN]",
+        "[CHANGE: CẦN]",
+        "",
+        "[THÊM REVIEWER NẾU CÓ — copy block trên]",
+        "",
+        "═══════════════════════════════════════════════════════════════",
+        "SUMMARY OF CHANGES",
+        "═══════════════════════════════════════════════════════════════",
+        "1. [CẦN — Tóm tắt thay đổi lớn 1]",
+        "2. [CẦN — Tóm tắt thay đổi lớn 2]",
+        "3. [CẦN — Thay đổi nhỏ về ngôn ngữ/định dạng]",
+        "",
+        "We remain available to address any further concerns.",
+        "Sincerely, [CẦN — Tên Tác giả Liên lạc] | On behalf of all authors",
+        "═══════════════════════════════════════════════════════════════",
+        "```",
+        "",
+        "---",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 9. SINH PHẦN 8 — TIÊU CHÍ QUA CỔNG G9 (HARD GATE)
+# ════════════════════════════════════════════════════════════════════════════
+
+def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
+    """
+    Sinh bảng tiêu chí cứng G9.
+    Không thể tự động hóa hoàn toàn — cần chữ ký PI và xác nhận thể chế.
+    Hiển thị trạng thái cổng trước (G2, G4) từ checkpoint.
+    """
+    g4 = cps.get("G4", {})
+    g2 = cps.get("G2", {})
+    g7 = cps.get("G7", {})
+    g1 = cps.get("G1", {})
+
+    g2_status = g2.get("g2_status", "CHƯA RÕ")
+    g4_status = g4.get("g4_status", "CHƯA RÕ")
+    # SỬA (bug nghiêm trọng nhất tìm thấy ở cặp G8/G9): g2_status/g4_status
+    # chỉ có DUY NHẤT MỘT nơi ghi giá trị trong toàn bộ codebase — hardcode
+    # cứng "PENDING" (run_g2_auto.py) / "PENDING — CHỜ BÁC SĨ KÝ SAP"
+    # (run_g4_auto.py). KHÔNG CÓ script nào từng ghi "LOCKED" vào 2 field
+    # này — nghĩa là dù bác sĩ đã điền IRB thật + ký SAP thật (khiến G8 báo
+    # "PASS — ĐỦ ĐIỀU KIỆN NỘP"), G9 vẫn mãi mãi hiện "⚠ CHỜ BÁC SĨ" vì đang
+    # dựa vào field không bao giờ đổi giá trị — 2 nguồn sự thật mâu thuẫn
+    # nhau giữa G8 và G9 cho cùng 1 câu hỏi. Sửa: dùng CÙNG tín hiệu đáng
+    # tin mà G8 đã dùng — kiểm nội dung THẬT (số IRB/ngày ký SAP đã điền,
+    # không còn placeholder [CẦN]), không dựa vào field trạng thái riêng.
+    ethics_locked = bool(
+        g2.get("g2_irb_number") and "[CẦN" not in str(g2.get("g2_irb_number", ""))
+        and "[CAN" not in str(g2.get("g2_irb_number", ""))
+    )
+    sap_locked = bool(
+        (g4.get("sap_signed_date") or g4.get("sap_locked"))
+        and "[CẦN" not in str(g4.get("sap_signed_date", ""))
+    )
+
+    g2_icon = "✅" if ethics_locked else "⚠ CHỜ BÁC SĨ"
+    g4_icon = "✅" if sap_locked    else "⚠ CHỜ BÁC SĨ"
+
+    # SỬA: g1.get("reporting_standard") đọc sai đường dẫn (lồng trong
+    # "design") — nếu G7 chưa chạy, chuỗi fallback nhảy thẳng xuống "[CẦN]"
+    # dù G1 đã có chuẩn báo cáo thật.
+    reporting_std = (
+        g7.get("reporting_standard")
+        or (g1.get("design") or {}).get("reporting_standard")
+        or "[CẦN]"
+    )
+
+    lines = [
+        "## PHẦN 8 — TIÊU CHÍ QUA CỔNG G9 (HARD GATE — CẦN KÝ)",
+        "",
+        "> **Cảnh báo:** G9 là Cổng CỨNG cuối cùng. KHÔNG nộp bản thảo ra bên ngoài",
+        "> trước khi TẤT CẢ tiêu chí dưới đây được hoàn thành và có chữ ký thật.",
+        "> AI KHÔNG THỂ tự động hoàn tất cổng này — cần hành động thực của bác sĩ.",
+        "",
+        "```",
+        "TIÊU CHÍ CỔNG G9 — LIÊM CHÍNH TÁC GIẢ",
+        f"Đề tài: {study} | Kiểm tra lúc: {_TODAY}",
+        "═══════════════════════════════════════════════════════════════",
+        "",
+        "NHÓM A — LIÊM CHÍNH TÁC GIẢ (bắt buộc 100%)",
+        "─────────────────────────────────────────────",
+        f"A1. ICMJE 4 tiêu chí tác giả: Tất cả {n_authors} tác giả đủ tiêu chí",
+        f"    ☐ Chưa ký  ☐ Đã ký đầy đủ -> [CẦN ngày ký: ___/___/{_YEAR}]",
+        "",
+        f"A2. Final COI: Tất cả {n_authors} tác giả khai báo xung đột lợi ích",
+        "    ☐ Chưa nộp  ☐ Đã nộp đủ form ICMJE gốc",
+        f"    Ngày khai báo cuối: [CẦN ___/___/{_YEAR}]",
+        "",
+        "A3. Tuyên bố Liêm chính: PI ký xác nhận 5 điểm (Phần 5)",
+        f"    ☐ Chưa ký  ☐ PI đã ký  Ngày: [CẦN ___/___/{_YEAR}]",
+        "",
+        "A4. Khai báo AI đầy đủ (Phần 4) — không thiếu công cụ nào",
+        "    ☐ Chưa duyệt  ☐ Đã duyệt và xác nhận",
+        "",
+        "A5. Data Availability Statement đã chọn (Phần 3)",
+        "    ☐ Chưa chọn  ☐ Đã chọn Option [A/B/C]",
+        "",
+        "NHÓM B — TIỀN ĐỀ CỔNG TRƯỚC (phải LOCKED trước G9)",
+        "─────────────────────────────────────────────",
+        f"B1. G2 (Đạo đức) = LOCKED",
+        f"    Hiện tại: {'LOCKED (IRB thật đã điền)' if ethics_locked else g2_status}  {g2_icon}",
+        f"    Số IRB: {g2.get('g2_irb_number', '[CẦN]')}",
+        "",
+        "B2. G4 (SAP khóa) = LOCKED",
+        f"    Hiện tại: {'LOCKED (SAP đã ký thật)' if sap_locked else g4_status}  {g4_icon}",
+        f"    SAP Lock Date: {g4.get('g4_lock_date', '[CẦN]')}",
+        "",
+        "NHÓM C — CHẤT LƯỢNG BẢN THẢO",
+        "─────────────────────────────────────────────",
+        "C1. Bản thảo IMRAD (G7) đã có kết quả THẬT (không còn [CẦN KẾT QUẢ THẬT])",
+        "    ☐ Còn [CẦN]  ☐ Đã hoàn chỉnh",
+        "",
+        "C2. Tất cả PMID/DOI đã kiểm chứng toàn văn",
+        "    ☐ Chưa kiểm  ☐ Đã kiểm chứng đầy đủ",
+        "",
+        "C3. Kiểm tra đạo văn < 15%",
+        "    Tỷ lệ thực tế: [CẦN điền sau khi chạy iThenticate/Turnitin]%",
+        "    ☐ Chưa chạy  ☐ Đạt (<15%)",
+        "",
+        f"C4. Checklist báo cáo ({reporting_std}) hoàn chỉnh",
+        "    ☐ Chưa điền  ☐ Đã điền và đính kèm",
+        "",
+        "C5. Thư gửi tạp chí (Phần 6) và mẫu phản biện (Phần 7) hoàn chỉnh",
+        "    ☐ Chưa điền  ☐ Đã hoàn chỉnh",
+        "",
+        "NHÓM D — XÁC NHẬN THỂ CHẾ (nếu bắt buộc)",
+        "─────────────────────────────────────────────",
+        "D1. Trưởng đơn vị xác nhận cho phép nộp bài",
+        f"    ☐ Không cần  ☐ Cần -> ☐ Đã ký  Ngày: [CẦN ___/___/{_YEAR}]",
+        "",
+        "D2. Hội đồng xét duyệt bài trước khi nộp (nếu đơn vị yêu cầu)",
+        "    ☐ Không cần  ☐ Đã qua xét duyệt  Ngày: [CẦN]",
+        "",
+        "D3. Nhà tài trợ duyệt nội dung (nếu có hợp đồng)",
+        "    ☐ Không có tài trợ  ☐ Đã được nhà tài trợ duyệt",
+        "",
+        "═══════════════════════════════════════════════════════════════",
+        "G9 STATUS: DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ VÀ PI",
+        "",
+        "KẾT LUẬN: G9 chỉ PASSED khi TẤT CẢ ô ☐ ở NHÓM A, B, C được tích xong.",
+        f"Ngày G9 PASSED dự kiến: [CẦN ___/___/{_YEAR}]",
+        "",
+        "Chữ ký PI xác nhận G9 PASSED:",
+        f"_______________  Ngày: ___/___/{_YEAR}",
+        "═══════════════════════════════════════════════════════════════",
+        "```",
+        "",
+        "---",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 10. GUARDRAIL R1-R7 CHO G9
+# ════════════════════════════════════════════════════════════════════════════
+
+def guardrail_check_g9(artifact: str) -> dict:
+    """
+    Kiểm guardrail 7 quy tắc R1-R7 cho gói G9.
+    Trả về dict: passed (bool), errors (list), warnings (list).
+    """
+    errors, warnings = [], []
+
+    # R1 — Không PII
+    pii_patterns = [
+        r'\b(CMND|CCCD)\s*[:\-]?\s*\d{9,12}\b',
+        r'\bBN\s*\d{5,}\b',
+    ]
+    if any(re.search(p, artifact, re.IGNORECASE) for p in pii_patterns):
+        errors.append("R1 🔴 Phát hiện PII tiềm năng — kiểm tra và xóa")
+    else:
+        warnings.append("R1 ✅ Không phát hiện PII")
+
+    # R2 — Không bịa DOI/số đăng ký cụ thể ngoài ngữ cảnh [CẦN]
+    doi_match = re.search(r'\b10\.\d{4,}/\S{4,}\b', artifact)
+    if doi_match:
+        start = max(0, doi_match.start() - 50)
+        context = artifact[start:doi_match.end() + 50]
+        if "[CẦN" not in context:
+            errors.append(
+                f"R2 🔴 DOI cụ thể '{doi_match.group()}' không có nhãn [CẦN] — kiểm tra không bịa đặt"
+            )
+        else:
+            warnings.append("R2 ✅ DOI có nhãn [CẦN] đi kèm")
+    else:
+        warnings.append("R2 ✅ Không phát hiện DOI bịa đặt")
+
+    # R3 — Không tự claim G9 đã PASSED
+    if re.search(r'G9[_\s]?STATUS\s*[:=]\s*PASSED', artifact, re.IGNORECASE):
+        errors.append("R3 🔴 Không được tự claim G9 đã PASSED — cần chữ ký PI thật")
+    else:
+        warnings.append("R3 ✅ Không tự claim G9 PASSED")
+
+    # R4 — Đủ nhãn DRAFT và CHỜ
+    draft_count = artifact.count("DRAFT")
+    cho_count   = artifact.count("CHỜ")
+    if draft_count >= 3 and cho_count >= 2:
+        warnings.append(f"R4 ✅ Nhãn DRAFT ({draft_count}) và CHỜ ({cho_count}) đủ")
+    else:
+        errors.append(
+            f"R4 🔴 Thiếu nhãn DRAFT/CHỜ (DRAFT={draft_count}, CHỜ={cho_count} — cần >=3/2)"
+        )
+
+    # R5 — Đủ trường [CẦN]
+    can_count = len(re.findall(r'\[CẦN', artifact))
+    if can_count >= 15:
+        warnings.append(f"R5 ✅ {can_count} trường [CẦN...] đánh dấu rõ ràng")
+    else:
+        errors.append(
+            f"R5 🔴 Quá ít [CẦN...] ({can_count} — cần >= 15 cho gói G9 đầy đủ)"
+        )
+
+    # R6 — 8 phần đủ
+    required_sections = [
+        "PHẦN 1", "PHẦN 2", "PHẦN 3", "PHẦN 4",
+        "PHẦN 5", "PHẦN 6", "PHẦN 7", "PHẦN 8",
+    ]
+    missing = [s for s in required_sections if s not in artifact]
+    if missing:
+        errors.append(f"R6 🔴 Thiếu phần: {', '.join(missing)}")
+    else:
+        warnings.append("R6 ✅ Đủ 8 phần A10")
+
+    # R7 — Disclaimer
+    if "cần bác sĩ" in artifact.lower() and "kiểm chứng" in artifact.lower():
+        warnings.append("R7 ✅ Có disclaimer 'Cần bác sĩ kiểm chứng'")
+    else:
+        errors.append("R7 🔴 Thiếu disclaimer 'Cần bác sĩ kiểm chứng'")
+
+    return {"passed": len(errors) == 0, "errors": errors, "warnings": warnings}
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 11. XUẤT DOCX
+# ════════════════════════════════════════════════════════════════════════════
+
+def export_docx_g9(artifact_md: str, study: str, out_dir: Path) -> Optional[Path]:
+    """
+    Xuất gói A10 ra định dạng DOCX.
+    Các ô [CẦN] tô màu cam; nhãn DRAFT/CHỜ in đậm để dễ nhận biết.
+    """
+    try:
+        from docx import Document
+        from docx.shared import Pt, RGBColor
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+        doc = Document()
+
+        # Trang bìa
+        t = doc.add_heading("GÓI LIÊM CHÍNH TÁC GIẢ — A10", 0)
+        t.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        s = doc.add_paragraph(f"Đề tài: {study}")
+        s.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        d = doc.add_paragraph(
+            f"[BẢN NHÁP TỰ ĐỘNG] | {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        )
+        d.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        w = doc.add_paragraph(
+            "CẢNH BÁO: Gói này CHỈ có hiệu lực sau khi TẤT CẢ tác giả và PI ký. "
+            "Cần bác sĩ kiểm chứng toàn bộ trước khi nộp."
+        )
+        w.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        for run in w.runs:
+            run.bold = True
+            run.font.color.rgb = RGBColor(0xCC, 0x00, 0x00)
+
+        doc.add_page_break()
+
+        for line in artifact_md.split("\n"):
+            stripped = line.strip()
+            if line.startswith("# "):
+                doc.add_heading(line[2:], 1)
+            elif line.startswith("## "):
+                doc.add_heading(line[3:], 2)
+            elif line.startswith("### "):
+                doc.add_heading(line[4:], 3)
+            elif stripped in ("---", "```"):
+                pass  # bỏ qua divider và code fence
+            elif stripped.startswith("|"):
+                p = doc.add_paragraph(stripped)
+                if p.runs:
+                    p.runs[0].font.name = "Courier New"
+                    p.runs[0].font.size = Pt(8)
+            elif stripped:
+                p = doc.add_paragraph(line)
+                for run in p.runs:
+                    if "[CẦN" in run.text:
+                        run.font.color.rgb = RGBColor(0xCC, 0x44, 0x00)
+                    if "DRAFT" in run.text or "CHỜ KÝ" in run.text:
+                        run.bold = True
+
+        docx_path = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.docx"
+        doc.save(docx_path)
+        return docx_path
+
+    except ImportError:
+        print("  ⚠ python-docx chưa cài — bỏ qua DOCX (pip install python-docx)")
+        return None
+    except Exception as exc:
+        print(f"  ⚠ Lỗi khi xuất DOCX: {exc}")
+        return None
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 12. GHI CHECKPOINT G9
+# ════════════════════════════════════════════════════════════════════════════
+
+def write_g9_checkpoint(
+    study: str,
+    out_dir: Path,
+    n_authors: int,
+    target_journal: str,
+    guardrail: dict,
+    md_path: Path,
+    docx_path: Optional[Path],
+    cps: dict,
+) -> Path:
+    """Ghi G9_checkpoint.json với trạng thái DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ."""
+
+    g2_cp = cps.get("G2", {}) or {}
+    g4_cp = cps.get("G4", {}) or {}
+
+    # Danh sách việc còn lại của bác sĩ
+    pending = [
+        f"Tất cả {n_authors} tác giả ký xác nhận ICMJE 4 tiêu chí (Phần 1)",
+        f"Tất cả {n_authors} tác giả ký khai báo COI đầy đủ form ICMJE gốc (Phần 2)",
+        "PI ký Tuyên bố Liêm chính Nghiên cứu 5 điểm (Phần 5)",
+        "Chọn Data Availability Option (A, B, hoặc C) trong Phần 3",
+        "Điền và ký Thư gửi tạp chí (Phần 6)",
+        "Kiểm tra đạo văn < 15% (iThenticate / Turnitin / CrossCheck)",
+        "Xác nhận không nộp song song và không chia nhỏ bài",
+        "Duyệt AI Use Disclosure và bổ sung công cụ AI khác nếu đã dùng (Phần 4)",
+    ]
+
+    # Ưu tiên thêm blocking actions từ cổng trước nếu chưa locked
+    # SỬA (bug nghiêm trọng nhất G8/G9): g2_status/g4_status không bao giờ
+    # được bất kỳ script nào ghi thành "LOCKED" (chỉ hardcode "PENDING..."
+    # vĩnh viễn ở run_g2_auto.py/run_g4_auto.py) — dựa vào 2 field này khiến
+    # phần cảnh báo LUÔN hiện "chưa khóa" dù bác sĩ đã điền IRB/ký SAP thật,
+    # mâu thuẫn với G8 (vốn kiểm nội dung thật g2_irb_number/sap_signed_date
+    # chứ không dựa field trạng thái). Nay dùng CHUNG tín hiệu đáng tin với
+    # G8 để 2 cổng luôn đồng thuận cho cùng 1 câu hỏi.
+    ethics_locked_cp = bool(
+        g2_cp.get("g2_irb_number") and "[CẦN" not in str(g2_cp.get("g2_irb_number", ""))
+        and "[CAN" not in str(g2_cp.get("g2_irb_number", ""))
+    )
+    sap_locked_cp = bool(
+        (g4_cp.get("sap_signed_date") or g4_cp.get("sap_locked"))
+        and "[CẦN" not in str(g4_cp.get("sap_signed_date", ""))
+    )
+    if not ethics_locked_cp:
+        pending.insert(
+            0, "G2 (Đạo đức) chưa LOCKED — cần số IRB thật từ Hội đồng Đạo đức"
+        )
+    if not sap_locked_cp:
+        pending.insert(
+            0, "G4 (SAP) chưa LOCKED — cần ký SAP Lock Certificate"
+        )
+
+    cp = {
+        "gate": "G9",
+        "study": study,
+        "generated_at": datetime.now().isoformat(),
+        "g9_status": "DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ",
+        "author_integrity_status": "PENDING",
+        "ai_disclosure": "GENERATED — needs author review and verification",
+        "submission_package_ready": False,
+        "n_authors": n_authors,
+        "target_journal": target_journal or "",
+        "pending": pending,
+        "gates_read": sorted(cps.keys()),
+        "guardrail": {
+            "passed": guardrail["passed"],
+            "errors": guardrail["errors"],
+            "n_warnings": len(guardrail["warnings"]),
+        },
+        "artifacts": {
+            "A10_markdown": str(md_path),
+            "A10_docx": str(docx_path) if docx_path else None,
+        },
+        "parts_generated": [
+            "Phần 1 — ICMJE Tiêu chuẩn Tác giả (4 tiêu chí)",
+            "Phần 2 — Khai báo Xung đột Lợi ích Cuối (Final COI)",
+            "Phần 3 — Data Availability Statement (3 lựa chọn)",
+            "Phần 4 — AI Use Disclosure (COPE + Nature Portfolio 2024)",
+            "Phần 5 — Tuyên bố Liêm chính Nghiên cứu",
+            "Phần 6 — Thư gửi Tạp chí (Cover Letter Shell)",
+            "Phần 7 — Bản mẫu Phản hồi Phản biện",
+            "Phần 8 — Tiêu chí Cổng G9 (Hard Gate)",
+        ],
+        "lock_instruction": (
+            "G9 chỉ PASSED khi: (1) Tất cả tác giả ký form ICMJE; "
+            "(2) PI ký Tuyên bố Liêm chính; (3) Plagiarism check < 15%; "
+            "(4) Chọn Data Availability; (5) G2 + G4 đã LOCKED."
+        ),
+        "next_step": (
+            "Nộp bản thảo lên hệ thống nộp bài của tạp chí sau khi G9 PASSED"
+        ),
+        "disclaimer": "Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp bài.",
+    }
+
+    cp_path = out_dir / "G9_checkpoint.json"
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    return cp_path
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 13. MAIN
+# ════════════════════════════════════════════════════════════════════════════
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="G9 Auto — Tự động hóa cổng G9: Liêm chính Tác giả (Author Integrity)"
+    )
+    parser.add_argument(
+        "--study", required=True,
+        help="Mã đề tài (cùng với --study ở các cổng G0-G8)",
+    )
+    parser.add_argument(
+        "--n-authors", type=int, default=1,
+        help="Số tác giả (mặc định: 1). Sinh form COI và ICMJE cho từng người.",
+    )
+    parser.add_argument(
+        "--target-journal", default="",
+        help="Tên tạp chí mục tiêu (ví dụ: JACC / NEJM / Lancet).",
+    )
+    args = parser.parse_args()
+
+    run_date       = datetime.now().strftime("%Y-%m-%d %H:%M")
+    study          = args.study.replace(" ", "-")
+    n_authors      = max(1, args.n_authors)
+    target_journal = args.target_journal
+
+    print(f"\n{'='*65}")
+    print(f"  G9 AUTO — LIÊM CHÍNH TÁC GIẢ | {study}")
+    print(f"  Số tác giả: {n_authors} | Tạp chí: {target_journal or '(chưa xác định)'}")
+    print(f"  Thời gian: {run_date}")
+    print(f"{'='*65}\n")
+
+    # Thư mục xuất — luôn dùng đường dẫn tuyệt đối từ repo root
+    out_dir = _REPO_ROOT / "exports" / study
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # ── Bước 1: Đọc tất cả checkpoints G0-G8 ──
+    print("📂 Bước 1/6: Đọc checkpoints G0-G8...")
+    cps = collect_all_checkpoints(out_dir)
+    if cps:
+        print(f"  -> Tìm thấy checkpoints: {', '.join(sorted(cps.keys()))}")
+    else:
+        print("  -> Không tìm thấy checkpoint nào (sẽ dùng giá trị mặc định [CẦN])")
+
+    # ── Bước 2: Sinh từng phần ──
+    print(f"\n✍️  Bước 2/6: Sinh 8 phần của gói A10...")
+
+    header = "\n".join([
+        "# A10 — GÓI LIÊM CHÍNH TÁC GIẢ (AUTHOR INTEGRITY PACKAGE)",
+        f"**Mã đề tài:** {study}",
+        f"**Số tác giả:** {n_authors}",
+        f"**Tạp chí mục tiêu:** {target_journal or '[CẦN XÁC NHẬN]'}",
+        f"**Ngày tạo:** {run_date}",
+        "**Trạng thái:** DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ",
+        "",
+        "> ⚠️ **CẢNH BÁO:** Gói này CHƯA CÓ HIỆU LỰC cho đến khi TẤT CẢ tác giả ký.",
+        "> KHÔNG nộp bản thảo ra bên ngoài trước khi G9 PASSED.",
+        "> Mọi ô [CẦN...] phải được điền bởi bác sĩ/tác giả trước khi nộp.",
+        "> Cần bác sĩ kiểm chứng toàn bộ nội dung.",
+        "",
+        "---",
+        "",
+    ])
+
+    print("  -> Phần 1: ICMJE Tiêu chuẩn Tác giả")
+    part1 = build_part1_icmje(n_authors, study)
+
+    print("  -> Phần 2: Khai báo COI Cuối")
+    part2 = build_part2_coi(n_authors, study)
+
+    print("  -> Phần 3: Data Availability Statement")
+    part3 = build_part3_data_availability(cps, study)
+
+    print("  -> Phần 4: AI Use Disclosure")
+    part4 = build_part4_ai_disclosure(cps, study)
+
+    print("  -> Phần 5: Tuyên bố Liêm chính Nghiên cứu")
+    part5 = build_part5_integrity(cps, study)
+
+    print("  -> Phần 6: Cover Letter Shell")
+    part6 = build_part6_cover_letter(cps, study, target_journal)
+
+    print("  -> Phần 7: Response-to-Reviewers Template")
+    part7 = build_part7_reviewer_response(study, target_journal)
+
+    print("  -> Phần 8: Tiêu chí Cổng G9")
+    part8 = build_part8_gate_criteria(cps, n_authors, study)
+
+    # Footer tóm tắt việc còn lại
+    footer = "\n".join([
+        "---",
+        "",
+        "## TÓM TẮT VIỆC CÒN LẠI CỦA BÁC SĨ/TÁC GIẢ",
+        "",
+        "| # | Việc cần làm | Phần | Bắt buộc |",
+        "|---|-------------|------|---------|",
+        f"| 1 | Điền họ tên + CRediT roles cho tất cả {n_authors} tác giả | Phần 1 | ✅ Có |",
+        f"| 2 | Mỗi tác giả ký xác nhận 4 tiêu chí ICMJE | Phần 1 | ✅ Có |",
+        f"| 3 | Mỗi tác giả điền và ký form COI ICMJE gốc | Phần 2 | ✅ Có |",
+        "| 4 | Chọn Data Availability Option A/B/C | Phần 3 | ✅ Có |",
+        "| 5 | Duyệt và bổ sung AI Use Disclosure | Phần 4 | ✅ Có |",
+        "| 6 | PI ký Tuyên bố Liêm chính 5 điểm | Phần 5 | ✅ Có |",
+        "| 7 | Điền Cover Letter (tiêu đề bài, kết quả chính) | Phần 6 | ✅ Có |",
+        "| 8 | Chạy iThenticate/Turnitin — đạt < 15% | Phần 5 | ✅ Có |",
+        "| 9 | Điền Response-to-Reviewers khi nhận peer review | Phần 7 | Khi cần |",
+        "| 10 | Ký checklist G9 (Phần 8) khi tất cả xong | Phần 8 | ✅ Có |",
+        "",
+        "---",
+        "",
+        f"*[BẢN NHÁP TỰ ĐỘNG — DRAFT] · Cần bác sĩ kiểm chứng. · {run_date}*",
+    ])
+
+    # Ghép toàn bộ artifact
+    artifact = "\n".join([
+        header, part1, part2, part3, part4,
+        part5, part6, part7, part8, footer,
+    ])
+
+    # ── Bước 3: Lưu Markdown ──
+    print(f"\n💾 Bước 3/6: Lưu A10 Markdown...")
+    md_path = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
+    md_path.write_text(artifact, encoding="utf-8")
+    n_lines = artifact.count("\n")
+    print(f"  -> Lưu: {md_path} ({len(artifact)//1000} KB, {n_lines} dòng)")
+
+    # ── Bước 4: Guardrail ──
+    print(f"\n🛡️  Bước 4/6: Kiểm guardrail R1-R7...")
+    gr = guardrail_check_g9(artifact)
+    for msg in gr["warnings"]:
+        print(f"  {msg}")
+    for err in gr["errors"]:
+        print(f"  {err}")
+    guardrail_status = "✅ PASS" if gr["passed"] else f"⚠ {len(gr['errors'])} LỖI"
+    print(f"  -> Guardrail: {guardrail_status}")
+
+    # ── Bước 5: DOCX ──
+    print(f"\n📄 Bước 5/6: Xuất DOCX...")
+    docx_path = export_docx_g9(artifact, study, out_dir)
+    if docx_path:
+        print(f"  -> Lưu: {docx_path}")
+    else:
+        print("  -> Bỏ qua DOCX (python-docx chưa cài hoặc lỗi)")
+
+    # ── Bước 6: Checkpoint ──
+    print(f"\n📋 Bước 6/6: Ghi G9_checkpoint.json...")
+    cp_path = write_g9_checkpoint(
+        study=study,
+        out_dir=out_dir,
+        n_authors=n_authors,
+        target_journal=target_journal,
+        guardrail=gr,
+        md_path=md_path,
+        docx_path=docx_path,
+        cps=cps,
+    )
+    print(f"  -> Lưu: {cp_path}")
+
+    # ── Tóm tắt ──
+    print(f"\n{'='*65}")
+    print(f"  ✅ G9 HOÀN THÀNH — {study}")
+    print(f"{'='*65}")
+    print(f"\n  📁 Đầu ra: {out_dir}/")
+    print(f"  📝 A10 Markdown: {md_path.name}")
+    if docx_path:
+        print(f"  📄 A10 DOCX:     {docx_path.name}")
+    print(f"  📋 Checkpoint:   {cp_path.name}")
+    print(f"\n  8 PHẦN ĐÃ SINH:")
+    print(f"  Phần 1 — ICMJE Tiêu chuẩn Tác giả ({n_authors} tác giả, 4 tiêu chí + CRediT 14 vai trò)")
+    print(f"  Phần 2 — Khai báo COI Cuối ({n_authors} form + tuyên bố tập thể)")
+    print(f"  Phần 3 — Data Availability Statement (3 lựa chọn A/B/C)")
+    print(f"  Phần 4 — AI Use Disclosure (COPE + Nature Portfolio 2024)")
+    print(f"  Phần 5 — Tuyên bố Liêm chính Nghiên cứu (5 điểm)")
+    print(f"  Phần 6 — Cover Letter Shell (tạp chí: {target_journal or '[CẦN]'})")
+    print(f"  Phần 7 — Response-to-Reviewers Template")
+    print(f"  Phần 8 — Tiêu chí Cổng G9 (Hard Gate)")
+    print(f"\n  🛡️  Guardrail: {guardrail_status}")
+    print(f"  📊 Checkpoints đọc được: {', '.join(sorted(cps.keys())) or '(không có)'}")
+    print(f"\n  ⚠️  G9 STATUS: DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ")
+    print(f"  KHÔNG nộp bản thảo cho đến khi G9 PASSED.")
+    print(f"\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
+    print(f"  1. Mở file DOCX, điền TẤT CẢ [CẦN ...]")
+    print(f"  2. Tất cả {n_authors} tác giả ký ICMJE + COI (Phần 1-2)")
+    print(f"  3. PI ký Tuyên bố Liêm chính (Phần 5)")
+    print(f"  4. Chọn Data Availability A/B/C (Phần 3)")
+    print(f"  5. Chạy kiểm tra đạo văn < 15% (Phần 5)")
+    print(f"  6. Ký checklist G9 (Phần 8) -> G9 PASSED")
+    print(f"  7. Nộp bài lên hệ thống tạp chí")
+    print(f"\n  Cần bác sĩ kiểm chứng.")
+    print(f"{'='*65}\n")
+
+
+if __name__ == "__main__":
+    main()

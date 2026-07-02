@@ -1,0 +1,1043 @@
+"""
+run_g1_auto.py — TỰ ĐỘNG HÓA CỔNG G1: Thiết kế nghiên cứu + SAP skeleton
+
+Đọc G0_checkpoint.json (từ run_g0_auto.py) → sinh tự động:
+  1. Suy loại thiết kế (rule-based từ PICO type + evidence landscape)
+  2. Bảng 2-3 ứng viên thiết kế có so sánh
+  3. Kiểm soát 7 sai lệch (bias control table)
+  4. Estimand ICH E9(R1) nếu can thiệp
+  5. Trích xuất effect size ƯỚC LƯỢNG từ abstracts PubMed thật (để tính cỡ mẫu)
+  6. KHỐI THIẾT KẾ hoàn chỉnh (dán vào Protocol)
+  7. SAP skeleton 12 mục (bác sĩ điền [CẦN...])
+  8. Dummy tables 4 bảng (shell sẵn sàng)
+  9. SAP Lock Certificate (chờ bác sĩ ký → mở G4)
+  10. Guardrail R1-R7 + xuất A2 .md + .docx + G1_checkpoint.json
+
+Bác sĩ chỉ cần: xác nhận thiết kế chọn + điền effect size thật từ pilot/y văn.
+
+Sử dụng:
+    python tools/run_g1_auto.py --study "SGLT2-HFpEF-2026"         # đọc G0 checkpoint
+    python tools/run_g1_auto.py --study "NEW" --topic "..." --question-type treatment
+"""
+
+import argparse
+import json
+import os
+import re
+import sys
+import time
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+_REPO_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(_REPO_ROOT))
+
+_DEFAULT_EMAIL = "bsluanbv175@gmail.com"
+if not os.environ.get("NCBI_EMAIL"):
+    os.environ["NCBI_EMAIL"] = _DEFAULT_EMAIL
+if not os.environ.get("USE_MOCK_SOURCES"):
+    os.environ["USE_MOCK_SOURCES"] = "false"
+
+from app.sources.pubmed import PubMedClient  # noqa: E402
+
+# ════════════════════════════════════════════════════════════════════════════
+# 1. THIẾT KẾ NGHIÊN CỨU — CÁC LOẠI VÀ TIÊU CHÍ CHỌN
+# ════════════════════════════════════════════════════════════════════════════
+
+QUESTION_TYPES = {
+    "treatment":    "Can thiệp / Điều trị (RCT preferred)",
+    "diagnosis":    "Chẩn đoán (cross-sectional diagnostic accuracy)",
+    "prognosis":    "Tiên lượng (cohort)",
+    "harm":         "Tác hại / An toàn (cohort hoặc case-control)",
+    "descriptive":  "Mô tả (cross-sectional)",
+    "sr":           "Tổng hợp bằng chứng (SR/meta-analysis)",
+}
+
+REPORTING_STANDARDS = {
+    "rct":              "CONSORT 2010 (+Extension phù hợp)",
+    "cohort":           "STROBE",
+    "case_control":     "STROBE",
+    "cross_sectional":  "STROBE",
+    "sr_ma":            "PRISMA 2020",
+    "diagnostic":       "STARD 2015",
+    "prediction":       "TRIPOD+AI 2024",
+}
+
+BIAS_CONTROLS = {
+    "rct": [
+        ("Selection bias",  "Ngẫu nhiên hóa (phân tầng theo trung tâm/yếu tố tiên lượng)"),
+        ("Performance bias", "Làm mù người tham gia + can thiệp viên (nếu khả thi)"),
+        ("Detection bias",  "Làm mù người đánh giá kết cục (outcome assessor blinding)"),
+        ("Attrition bias",  "ITT analysis + tipping-point sensitivity cho mất theo dõi"),
+        ("Reporting bias",  "Đăng ký ClinicalTrials/DRKS trước + SAP lock (G4)"),
+        ("Confounding",     "Ngẫu nhiên hóa (triệt tiêu confounders đã biết + chưa biết)"),
+        ("Information bias","Định nghĩa vận hành rõ ràng + calibrate công cụ đo"),
+    ],
+    "cohort": [
+        ("Selection bias",  "Chọn mẫu đại diện; tiêu chí chọn/loại rõ ràng; matching nếu cần"),
+        ("Information bias","Định nghĩa phơi nhiễm/kết cục tiền định; blinded outcome assessment"),
+        ("Confounding",     "Đa biến + DAG; propensity score matching/weighting nếu cần"),
+        ("Attrition bias",  "Theo dõi tích cực; phân tích nhạy cảm cho mất theo dõi"),
+        ("Lead-time bias",  "Thời điểm bắt đầu theo dõi nhất quán cho mọi người tham gia"),
+        ("Reporting bias",  "Đăng ký nghiên cứu trước (quan sát) + SAP lock"),
+        ("Detection bias",  "Blinded adjudication cho endpoint có chủ quan"),
+    ],
+    "case_control": [
+        ("Selection bias",  "Chọn chứng từ dân số nguồn sinh ra ca; tỷ lệ 1:2–4"),
+        ("Information bias","Recall bias: tiền định câu hỏi; blinded interviewer; data từ hồ sơ"),
+        ("Confounding",     "Matching theo age/sex + đa biến đa chiều"),
+        ("Berkson bias",    "Tránh chọn ca+chứng từ cùng một cơ sở y tế nếu phơi nhiễm liên quan nhập viện"),
+        ("Reporting bias",  "Pre-registration nếu có + SAP lock"),
+        ("Neyman bias",     "Ca là ca mới/incident (không phải prevalent) để tránh bỏ ca tử vong sớm"),
+        ("Detection bias",  "Tiêu chí chẩn đoán rõ ràng, không phụ thuộc phơi nhiễm"),
+    ],
+    "cross_sectional": [
+        ("Selection bias",  "Sampling ngẫu nhiên hoặc liên tiếp; tránh tự chọn"),
+        ("Information bias","Đo phơi nhiễm + kết cục cùng thời điểm → không suy nhân quả"),
+        ("Confounding",     "Đa biến; hạn chế: cùng thời điểm → không loại trừ causal confounders"),
+        ("Prevalence-incidence bias", "Thiết kế chỉ ước lượng hiện mắc; bàn luận giới hạn này"),
+        ("Non-response bias", "So sánh người trả lời vs không trả lời (nếu có thể)"),
+        ("Social desirability", "Tự báo cáo → có thể underreport hành vi tiêu cực"),
+        ("Reporting bias",  "Đăng ký nghiên cứu + tiền định phân tích"),
+    ],
+    "diagnostic": [
+        ("Spectrum bias",   "Bao gồm đa dạng mức độ bệnh (nhẹ-nặng) + giống bệnh tương tự"),
+        ("Verification bias","Mọi người tham gia nhận CÙNG reference standard"),
+        ("Incorporation bias","Reference standard KHÔNG chứa thành phần của index test"),
+        ("Observer bias",   "Đọc index test mù với reference standard"),
+        ("Partial verification", "Tránh chỉ gửi dương tính để xác nhận → overestimate Se"),
+        ("Disease progression", "Index test và reference standard đo ĐỒNG THỜI"),
+        ("Reporting bias",  "STARD checklist + report tất cả ngưỡng đã thử"),
+    ],
+    "sr_ma": [
+        ("Publication bias", "Funnel plot + Egger test; search unpublished (clinicaltrials.gov)"),
+        ("Search bias",      "≥2 cơ sở dữ liệu; không giới hạn ngôn ngữ; kiểm thư xám"),
+        ("Selection bias",   "2 screener độc lập + consensus/third screener khi bất đồng"),
+        ("Extraction bias",  "2 người trích xuất độc lập; kappa inter-rater"),
+        ("Assessment bias",  "RoB 2 cho RCT; ROBINS-I cho quan sát; QUADAS-2 cho chẩn đoán"),
+        ("Heterogeneity",    "Định lượng I²/τ²; không gộp khi I² > 75% không có lý do lâm sàng"),
+        ("Reporting bias",   "PRISMA 2020 + registrátion (PROSPERO)"),
+    ],
+}
+
+# ════════════════════════════════════════════════════════════════════════════
+# 2. SUY LOẠI THIẾT KẾ (Tree-of-Thoughts)
+# ════════════════════════════════════════════════════════════════════════════
+
+def _kw_in(keywords, text):
+    """
+    Khớp từ khóa theo ranh giới token (không phải substring thô) — tránh
+    false-positive kiểu "auc" khớp nhầm bên trong 1 từ dài hơn, cùng loại
+    bug substring-match đã sửa ở G6/G7 (_score()/_TABLE1_OUTCOME_KW).
+    """
+    for kw in keywords:
+        if re.search(r'(?<![a-z0-9])' + re.escape(kw) + r'(?![a-z0-9])', text):
+            return True
+    return False
+
+
+def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
+    """
+    Suy luận loại thiết kế từ câu hỏi + bức tranh evidence từ G0.
+    Trả về: dict với primary, alternatives, rationale, internal_code, reporting
+    """
+    n_sr  = gaps.get("n_sr", 0)
+    n_rct = gaps.get("n_rct", 0)
+    topic_lower = topic.lower()
+
+    # ── Phát hiện từ khóa thiết kế tường minh trong topic ──
+    if _kw_in(["tổng quan", "systematic review", "meta-analysis", "tong quan"], topic_lower):
+        question_type = "sr"
+    elif _kw_in(["chẩn đoán", "chan doan", "độ nhạy", "do nhay", "auc", "sensitivity"], topic_lower):
+        question_type = "diagnosis"
+    elif _kw_in(["tiên lượng", "tien luong", "prognosis", "sống còn", "song con", "tử vong", "tu vong"], topic_lower):
+        question_type = "prognosis"
+    elif _kw_in(["tỷ lệ", "ty le", "prevalence", "mô tả", "mo ta", "tần suất"], topic_lower):
+        question_type = "descriptive"
+
+    if question_type == "treatment":
+        if n_rct == 0 and n_sr == 0:
+            primary = "RCT Song song (Randomized Controlled Trial)"
+            internal = "rct"
+            alt1 = "Cohort tiến cứu (nếu RCT không khả thi về đạo đức/nguồn lực)"
+            alt2 = "Pilot study / Feasibility trial (nếu chưa có dữ liệu nền)"
+            rationale = ("Không có RCT nào trên topic này → khoảng trống lớn. "
+                         "RCT song song cung cấp bằng chứng nhân quả mạnh nhất "
+                         "(Level I evidence). Ngẫu nhiên hóa kiểm soát confounders đã biết và chưa biết.")
+        elif n_rct >= 2 and n_sr == 0:
+            primary = "Systematic Review / Meta-analysis (tổng hợp các RCT hiện có)"
+            internal = "sr_ma"
+            alt1 = "RCT mới với quần thể đặc thù (Việt Nam/châu Á/nhóm chưa được nghiên cứu)"
+            alt2 = "Individual Patient Data (IPD) meta-analysis"
+            rationale = (f"Có {n_rct} RCT nhưng chưa có SR/MA → cơ hội tổng hợp định lượng. "
+                         "SR/MA cung cấp ước lượng pooled effect chính xác hơn mỗi RCT đơn lẻ.")
+        elif n_sr >= 1 and n_rct >= 3:
+            # SỬA: trước đây bất kỳ n_sr>=1 đều bị ép ra "Cohort" làm primary,
+            # kể cả khi chủ đề đã bão hòa RCT (vd statin dự phòng tim mạch có
+            # 15 RCT + 15 SR) — một quyết định sai vì lĩnh vực đã có bằng chứng
+            # nhân quả mạnh, không cần thêm cohort quan sát. Khi CẢ n_sr>=1 VÀ
+            # n_rct>=3 (lĩnh vực bão hòa cả RCT lẫn tổng hợp), không tự chọn
+            # 1 thiết kế duy nhất — liệt kê 3 khả năng theo loại khoảng trống
+            # và buộc bác sĩ xác nhận khoảng trống thật trước khi khóa thiết kế.
+            gaps_text = " ".join(str(g) for g in gaps.get("research_gaps", [])).lower()
+            population_specific = any(
+                k in gaps_text for k in
+                ["việt nam", "viet nam", "châu á", "chau a", "asian", "vietnamese",
+                 "quần thể đặc thù", "dân tộc", "khu vực"]
+            )
+            primary = ("⚠️ CẦN BÁC SĨ XÁC NHẬN KHOẢNG TRỐNG TRƯỚC KHI CHỌN THIẾT KẾ "
+                       "(lĩnh vực đã bão hòa cả RCT lẫn SR/MA)")
+            internal = "cohort"  # placeholder tạm, KHÔNG dùng để tính cỡ mẫu/CRF trước khi bác sĩ xác nhận
+            alt1 = ("Nếu khoảng trống là QUẦN THỂ ĐẶC THÙ (VN/châu Á/dân tộc — "
+                    f"{'phát hiện dấu hiệu này trong ghi chú G0' if population_specific else 'CHƯA thấy dấu hiệu này trong ghi chú G0, cần bác sĩ xác nhận'}"
+                    "): Cohort tiến cứu quần thể đặc thù (pragmatic)")
+            alt2 = ("Nếu khoảng trống là SR/MA CŨ hoặc CHƯA cập nhật RCT mới nhất: "
+                    "Systematic Review/Meta-analysis cập nhật (updated SR/MA)")
+            rationale = (
+                f"Chủ đề có {n_sr} SR/MA VÀ {n_rct} RCT — bằng chứng nhân quả (Level I) đã "
+                "khá đầy đủ. KHÔNG tự động chọn Cohort chỉ vì có SR/MA, vì lĩnh vực bão hòa "
+                "RCT thường không cần thêm quan sát mà cần: (1) SR/MA cập nhật nếu bằng chứng "
+                "cũ, (2) RCT nhắm đúng phân nhóm/khoảng trống cụ thể chưa được nghiên cứu, "
+                "hoặc (3) Cohort/pragmatic CHỈ khi khoảng trống thật sự là external validity "
+                "ở quần thể đặc thù (không phải hiệu quả điều trị nói chung). "
+                f"{'G0 gợi ý khoảng trống quần thể đặc thù — cohort có thể phù hợp.' if population_specific else 'G0 KHÔNG nêu rõ khoảng trống quần thể đặc thù — bác sĩ cần xác nhận trước khi chọn.'} "
+                "[CẦN BÁC SĨ ĐỌC LẠI research_gaps G0 VÀ CHỌN 1 TRONG 3 HƯỚNG TRÊN]"
+            )
+        elif n_sr >= 1:
+            primary = "Cohort tiến cứu (quần thể đặc thù / pragmatic)"
+            internal = "cohort"
+            alt1 = "Nghiên cứu phân tích dưới nhóm (subgroup) từ RCT/cohort đã có"
+            alt2 = "Nested case-control (nếu kết cục hiếm)"
+            rationale = (f"Chủ đề đã có {n_sr} SR/MA nhưng ít RCT gốc ({n_rct}) → bằng chứng "
+                         "nhân quả còn mỏng, cần biện minh rõ tính mới. Cohort tiến cứu tại "
+                         "Việt Nam/quần thể đặc thù có thể lấp khoảng trống về tính ngoại suy "
+                         "(external validity) của evidence hiện có.")
+        else:
+            primary = "RCT Song song hoặc Cohort tiến cứu"
+            internal = "rct"
+            alt1 = "Pilot/Feasibility study"
+            alt2 = "Registry study"
+            rationale = "Cần xem xét khả thi (F trong FINER) trước khi chọn thiết kế cuối."
+
+    elif question_type == "sr":
+        primary = "Systematic Review / Meta-analysis"
+        internal = "sr_ma"
+        alt1 = "Scoping Review (nếu câu hỏi rộng, exploratory)"
+        alt2 = "Rapid Review (nếu deadline cấp thiết)"
+        rationale = "Câu hỏi yêu cầu tổng hợp toàn bộ bằng chứng hiện có theo chuẩn PRISMA."
+
+    elif question_type == "diagnosis":
+        primary = "Nghiên cứu Cắt ngang (Độ chính xác chẩn đoán)"
+        internal = "diagnostic"
+        alt1 = "Cohort tiến cứu (nếu cần theo dõi tiến triển bệnh)"
+        alt2 = "RCT chẩn đoán (nếu so sánh chiến lược kiểm tra)"
+        rationale = ("Câu hỏi chẩn đoán: cần so index test với reference standard. "
+                     "Cắt ngang với blinded verification là thiết kế chuẩn. Báo cáo: STARD 2015.")
+
+    elif question_type == "prognosis":
+        primary = "Cohort Tiến cứu (Prospective Cohort)"
+        internal = "cohort"
+        alt1 = "Cohort Hồi cứu (nếu có dữ liệu hồ sơ bệnh án đủ chất lượng)"
+        alt2 = "Registry / Database study"
+        rationale = ("Câu hỏi tiên lượng: cần theo dõi kết cục theo thời gian. "
+                     "Cohort tiến cứu hạn chế recall bias; hồi cứu nhanh hơn nhưng "
+                     "phụ thuộc chất lượng hồ sơ.")
+
+    elif question_type == "harm":
+        primary = "Case-Control Study"
+        internal = "case_control"
+        alt1 = "Cohort hồi cứu (nếu phơi nhiễm phổ biến và hồ sơ đầy đủ)"
+        alt2 = "Self-controlled case series (SCCS) (nếu phơi nhiễm nhất thời)"
+        rationale = ("Câu hỏi tác hại: kết cục thường hiếm → case-control hiệu quả. "
+                     "Nếu phơi nhiễm phổ biến và có hồ sơ tốt → cohort hồi cứu.")
+
+    else:  # descriptive
+        primary = "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)"
+        internal = "cross_sectional"
+        alt1 = "Khảo sát dựa cộng đồng (nếu muốn ngoại suy toàn dân số)"
+        alt2 = "Registry / Audit lâm sàng (nếu muốn dữ liệu thực hành)"
+        rationale = ("Câu hỏi mô tả (tỷ lệ/đặc điểm) → cắt ngang là tiêu chuẩn. "
+                     "Không suy nhân quả từ thiết kế này.")
+
+    reporting = REPORTING_STANDARDS.get(
+        internal,
+        REPORTING_STANDARDS.get(
+            "cohort" if "cohort" in internal else "cross_sectional", "STROBE"
+        )
+    )
+
+    return {
+        "primary": primary,
+        "internal_code": internal,
+        "alternative_1": alt1,
+        "alternative_2": alt2,
+        "rationale": rationale,
+        "reporting_standard": reporting,
+        "bias_controls": BIAS_CONTROLS.get(internal, BIAS_CONTROLS["cohort"]),
+    }
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 3. TRÍCH XUẤT EFFECT SIZE ƯỚC LƯỢNG TỪ ABSTRACTS PUBMED THẬT
+# ════════════════════════════════════════════════════════════════════════════
+
+# SỬA: pattern cũ bắt buộc dấu ( hoặc [ ngay sau điểm ước lượng trước khi
+# "95% CI" xuất hiện — nhưng abstract thật thường viết dạng chấm phẩy/phẩy
+# ("HR = 0.77; 95% CI: 0.61–0.98") không có ngoặc mở ngay sau, nên regex cũ
+# KHÔNG BAO GIỜ khớp và luôn rơi vào fallback thô "NN% reduction" (không phân
+# biệt được ARR tuyệt đối hay RR tương đối, và khớp bừa trên bất kỳ số nào).
+# Regex mới chấp nhận mọi dấu phân cách thường gặp: ( [ ; , : hoặc khoảng trắng.
+_ES_PATTERNS_LABELED = [
+    (r'OR[=\s]+(\d+\.?\d*)\s*[\(\[;,:]*\s*95%\s*CI[:\s]*(\d+\.?\d*)\s*(?:[\-–]|to)\s*(\d+\.?\d*)', "OR"),
+    (r'HR[=\s]+(\d+\.?\d*)\s*[\(\[;,:]*\s*95%\s*CI[:\s]*(\d+\.?\d*)\s*(?:[\-–]|to)\s*(\d+\.?\d*)', "HR"),
+    (r'RR[=\s]+(\d+\.?\d*)\s*[\(\[;,:]*\s*95%\s*CI[:\s]*(\d+\.?\d*)\s*(?:[\-–]|to)\s*(\d+\.?\d*)', "RR"),
+    (r'hazard ratio[=\s]+(\d+\.?\d*)\s*[\(\[;,:]*\s*95%\s*CI[:\s]*(\d+\.?\d*)\s*(?:[\-–]|to)\s*(\d+\.?\d*)', "HR"),
+    (r'odds ratio[=\s]+(\d+\.?\d*)\s*[\(\[;,:]*\s*95%\s*CI[:\s]*(\d+\.?\d*)\s*(?:[\-–]|to)\s*(\d+\.?\d*)', "OR"),
+    (r'mean difference[=\s]+([\-]?\d+\.?\d*)\s*[\(\[;,:]*\s*95%\s*CI[:\s]*([\-]?\d+\.?\d*)\s*(?:[\-–]|to)\s*([\-]?\d+\.?\d*)', "MD"),
+]
+# Fallback THÔ — không có CI đi kèm, không phân biệt được ARR/RR% → luôn gắn
+# nhãn "crude" để downstream (G3) biết cần cảnh báo, KHÔNG ưu tiên bằng loại
+# đã gắn nhãn HR/OR/RR/MD ở trên.
+_ES_PATTERNS_CRUDE = [
+    (r'reduction of (\d+\.?\d*)%', "ARR%"),
+    (r'(\d+\.?\d*)% reduction', "ARR%"),
+    (r'mean difference[=\s]+([\-]?\d+\.?\d*)', "MD"),
+    (r'MD[=\s]+([\-]?\d+\.?\d*)', "MD"),
+]
+# Biên hợp lý theo loại — HR/OR/RR ngoài khoảng này gần như chắc chắn là
+# regex bắt nhầm số khác trong câu (vd cỡ mẫu, p-value), không phải effect size
+_SANITY_BOUNDS = {"HR": (0.05, 20), "OR": (0.02, 50), "RR": (0.05, 20),
+                  "MD": (-1000, 1000), "ARR%": (0.1, 100)}
+
+
+def extract_effect_sizes(articles: list) -> list[dict]:
+    """
+    Trích xuất effect size ước lượng từ abstracts PubMed thật.
+    Ưu tiên pattern CÓ NHÃN + CÓ 95%CI (đáng tin hơn) trước pattern thô;
+    mỗi kết quả gắn "quality": "labeled" hoặc "crude" để downstream
+    (hiển thị G1, tính cỡ mẫu G3) biết mà cảnh báo bác sĩ kiểm tra kỹ hơn
+    với loại "crude".
+    """
+    found = []
+    for r in articles:
+        if not r.abstract:
+            continue
+        per_article = []
+        for pattern, es_type in _ES_PATTERNS_LABELED:
+            matches = re.findall(pattern, r.abstract, re.IGNORECASE)
+            for m in matches[:2]:
+                if not (isinstance(m, tuple) and len(m) >= 3):
+                    continue
+                try:
+                    val = float(m[0])
+                    lo, hi = _SANITY_BOUNDS.get(es_type, (0.01, 100))
+                    if lo <= val <= hi:
+                        per_article.append({
+                            "type": es_type, "value": val,
+                            "ci": f"95%CI: {m[1]}–{m[2]}",
+                            "pmid": r.pmid, "title": (r.title or "")[:80],
+                            "year": r.publication_date or "?",
+                            "quality": "labeled",
+                        })
+                except (ValueError, TypeError):
+                    pass
+        # Chỉ dùng fallback thô nếu abstract này KHÔNG có pattern có nhãn nào khớp
+        if not per_article:
+            for pattern, es_type in _ES_PATTERNS_CRUDE:
+                matches = re.findall(pattern, r.abstract, re.IGNORECASE)
+                for m in matches[:1]:
+                    es_val = m if isinstance(m, str) else (m[0] if m else None)
+                    if es_val is None:
+                        continue
+                    try:
+                        val = float(es_val)
+                        lo, hi = _SANITY_BOUNDS.get(es_type, (0.01, 100))
+                        if lo <= val <= hi:
+                            per_article.append({
+                                "type": es_type, "value": val, "ci": "",
+                                "pmid": r.pmid, "title": (r.title or "")[:80],
+                                "year": r.publication_date or "?",
+                                "quality": "crude",
+                            })
+                    except (ValueError, TypeError):
+                        pass
+        found.extend(per_article)
+        # SỬA: break sớm theo len(found)>=10 xảy ra TRƯỚC sort bên dưới — nếu
+        # 10 kết quả đầu tiên đều "crude" (vd 5 bài × 2 match/bài), các bài
+        # sau đó (có thể chứa effect "labeled" đáng tin hơn) KHÔNG BAO GIỜ
+        # được trích xuất, vì vòng lặp đã break trước khi kịp đọc chúng.
+        # `articles` vốn đã giới hạn ~10 bài (search_for_effect_sizes
+        # max_results=10) nên xử lý hết toàn bộ rồi mới cắt bớt không tốn
+        # kém — bỏ break sớm, sort trước, cắt sau.
+    found.sort(key=lambda x: 0 if x["quality"] == "labeled" else 1)
+    return found[:10]
+
+
+def search_for_effect_sizes(topic: str, study_name: str, max_results: int = 10) -> list[dict]:
+    """Tìm kiếm PubMed để lấy ước lượng effect size từ SR/RCT abstracts."""
+    from app.sources.pubmed import PubMedClient
+    client = PubMedClient()
+    q = f"{topic} AND (systematic review[pt] OR meta-analysis[pt] OR randomized controlled trial[pt])"
+    print(f"  🔍 Tìm effect size từ abstracts ({q[:70]}...)...")
+    try:
+        records = client.search(q, max_results=max_results)
+        effects = extract_effect_sizes(records)
+        time.sleep(0.4)
+        return effects
+    except Exception as e:
+        print(f"     ⚠ Lỗi tìm effect size: {e}")
+        return []
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 4. SINH ARTIFACT G1 — THIẾT KẾ VÀ SAP SKELETON
+# ════════════════════════════════════════════════════════════════════════════
+
+def _bias_table(bias_list: list) -> str:
+    rows = []
+    for bias, control in bias_list:
+        rows.append(f"| {bias} | {control} |")
+    return "\n".join(rows)
+
+
+def _effect_size_section(effects: list) -> str:
+    if not effects:
+        return "  → Không trích xuất được effect size từ abstracts. [CẦN TỰ ĐỌC Y VĂN]\n"
+    lines = ["  (Tự động trích từ abstracts PubMed — cần bác sĩ kiểm chứng toàn văn)\n"]
+    for e in effects[:8]:
+        ci = f" ({e['ci']})" if e.get("ci") else ""
+        if e.get("quality") == "crude":
+            flag = "  ⚠️ [THÔ — không có 95%CI đi kèm, có thể lẫn ARR/RR, PHẢI đọc toàn văn xác nhận]"
+        else:
+            flag = ""
+        lines.append(f"  • {e['type']} = {e['value']}{ci} — PMID:{e['pmid']} ({e['year']}) {e['title'][:60]}{flag}")
+    return "\n".join(lines) + "\n"
+
+
+def generate_g1_artifact(topic: str, study_name: str, question_type: str,
+                          design: dict, effects: list, g0_gaps: dict,
+                          run_date: str) -> str:
+    bias_table = _bias_table(design["bias_controls"])
+    es_section = _effect_size_section(effects)
+    internal = design["internal_code"]
+
+    # Chọn SAP template theo thiết kế
+    if internal == "rct":
+        sap_analysis_note = ("Phân tích chính: ITT (treatment-policy estimand)\n"
+                             "Kết cục liên tục: ANCOVA (post - baseline; covariates: baseline + stratification)\n"
+                             "Kết cục nhị phân: logistic / Poisson + robust SE → RR (95%CI)\n"
+                             "Thời gian đến sự kiện: log-rank + Cox → HR (95%CI)")
+        quanso_note = "ITT / Per-Protocol / Completers (ITT là chính)"
+        epv_note = "N/A (RCT — cỡ mẫu từ power calculation)"
+    elif internal in ("cohort", "case_control"):
+        sap_analysis_note = ("Phân tích chính: Cox regression → HR (95%CI) + Kaplan-Meier\n"
+                             "Hoặc: Logistic regression → OR (95%CI) nếu kết cục nhị phân\n"
+                             "Kiểm giả định PH: Schoenfeld residuals")
+        quanso_note = "Toàn bộ người đủ tiêu chí (Complete case) / Sensitivity: MI"
+        epv_note = "EPV ≥ 10: cần N_events ≥ 10 × số biến đa biến"
+    elif internal == "cross_sectional":
+        sap_analysis_note = ("Phân tích chính: Logistic regression → OR (95%CI)\n"
+                             "Hoặc: Linear regression → β (95%CI) nếu kết cục liên tục\n"
+                             "VIF < 5 (kiểm đa cộng tuyến); Hosmer-Lemeshow (logistic)")
+        quanso_note = "Toàn bộ người đủ tiêu chí (Complete case)"
+        epv_note = "EPV ≥ 10 cho mô hình đa biến"
+    elif internal == "diagnostic":
+        sap_analysis_note = ("Phân tích chính: 2×2 table → Se, Sp, PPV, NPV, LR+, LR−\n"
+                             "ROC curve → AUC (95%CI bootstrap)\n"
+                             "Calibration: Hosmer-Lemeshow; DCA (decision curve analysis)")
+        quanso_note = "Toàn bộ người tham gia (không có nhóm so sánh can thiệp)"
+        epv_note = "EPP ≥ 10: cần N_events ≥ 10 × số predictor"
+    else:  # sr_ma
+        sap_analysis_note = ("Phân tích gộp: random-effects (DerSimonian-Laird) nếu I² > 25%\n"
+                             "Fixed-effects nếu I² < 25% và đồng nhất lâm sàng\n"
+                             "Publication bias: funnel plot + Egger test (nếu N ≥ 10 nghiên cứu)")
+        quanso_note = "Tất cả nghiên cứu đủ tiêu chí nhận vào"
+        epv_note = "N/A (SR/MA)"
+
+    # Gợi ý R packages theo thiết kế + seed tự sinh từ ngày chạy — dữ liệu
+    # (internal_code, run_date) đã có sẵn trong tay nhưng trước đây để
+    # trắng hoàn toàn thành [CẦN ẤN ĐỊNH]/[CẦN]. Đây là gợi ý kỹ thuật
+    # thuần túy (không phải quyết định lâm sàng) nên tự động hóa được —
+    # bác sĩ vẫn cần XÁC NHẬN, không phải tự nghĩ từ đầu.
+    _PACKAGE_SUGGESTIONS = {
+        "rct":            "survival, geepack, tableone",
+        "cohort":         "survival, tableone, mice",
+        "case_control":   "survival, tableone, mice",
+        "cross_sectional": "tableone, car",
+        "diagnostic":     "pROC, tableone, rmda",
+        "sr_ma":          "meta, metafor",
+    }
+    suggested_packages = _PACKAGE_SUGGESTIONS.get(internal, "tableone")
+    suggested_seed = run_date[:10].replace("-", "")
+
+    # Estimand block (chỉ cho RCT/can thiệp)
+    estimand_block = ""
+    if internal == "rct":
+        estimand_block = """
+### ESTIMAND ICH E9(R1) — Bắt buộc cho RCT
+
+```
+Dân số: [CẦN BÁC SĨ XÁC NHẬN — từ PICO P]
+Biến kết cục: [CẦN — từ PICO O, kết cục chính]
+Biến cố xen ngang: ☐ Dừng điều trị ☐ Điều trị thêm ☐ Tử vong cạnh tranh
+  Chiến lược: ☐ Treatment-policy  ☐ Composite  ☐ While-on-treatment
+              ☐ Hypothetical  ☐ Principal-stratum
+Thước đo tổng hợp: ☐ RR  ☐ OR  ☐ RD  ☐ HR  ☐ MD
+Quần thể phân tích chính: ☐ ITT (treatment-policy)  ☐ Per-protocol
+```
+"""
+
+    artifact = f"""# A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | {study_name}
+> Tạo tự động: {run_date} | Rule-based + PubMed effect size thật
+> [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
+> Cần bác sĩ kiểm chứng.
+
+---
+
+## PHẦN 1 — BẢNG THIẾT KẾ ỨNG VIÊN
+
+| Thiết kế | Phù hợp câu hỏi | Kiểm soát sai lệch | Khả thi | Lực | Chọn/Loại |
+|---|---|---|---|---|---|
+| **{design["primary"]}** | ✅ Phù hợp nhất ({QUESTION_TYPES.get(question_type, question_type)}) | Cao (xem §2) | [CẦN BÁC SĨ] | [CẦN cỡ mẫu] | **→ ƯU TIÊN** |
+| {design["alternative_1"]} | Phù hợp thay thế | Trung bình | [CẦN] | [CẦN] | Phương án 2 |
+| {design["alternative_2"]} | Phù hợp trong điều kiện đặc biệt | Thấp hơn | [CẦN] | [CẦN] | Phương án 3 |
+
+**Lý do chọn ưu tiên `{design["primary"]}`:**
+{design["rationale"]}
+
+**Chuẩn báo cáo:** {design["reporting_standard"]}
+
+---
+
+## PHẦN 2 — KIỂM SOÁT 7 SAI LỆCH CHÍNH
+
+| Sai lệch | Biện pháp kiểm soát cho `{design["primary"]}` |
+|---|---|
+{bias_table}
+
+---
+{estimand_block}
+## PHẦN 3 — EFFECT SIZE ƯỚC LƯỢNG (từ PubMed thật — dùng tính cỡ mẫu G3)
+
+> **Quan trọng:** Đây là ước lượng TỰ ĐỘNG từ abstracts.
+> Bác sĩ PHẢI đọc toàn văn để xác minh trước khi dùng tính cỡ mẫu.
+> Nếu không có nghiên cứu phù hợp → dùng pilot data hoặc MCID lâm sàng.
+
+{es_section}
+**Evidence landscape từ G0:**
+- SR/MA hiện có: {g0_gaps.get("n_sr", "N/A")}
+- RCT hiện có: {g0_gaps.get("n_rct", "N/A")}
+- Năm gần nhất: {g0_gaps.get("most_recent_year", "?")}
+- Mức độ evidence: {g0_gaps.get("evidence_level", "?")}
+
+---
+
+## PHẦN 4 — KHỐI THIẾT KẾ (dán vào §Phương pháp của Đề cương)
+
+```
+═══════════════════════════════════════════════════════════════
+KHỐI THIẾT KẾ — {study_name}
+Loại thiết kế: {design["primary"]}
+Bố trí: ☐ Song song  ☐ Bắt chéo  ☐ Factorial  ☐ Thích nghi
+Ngẫu nhiên hóa: ☐ Không  ☐ Đơn giản  ☐ Phân tầng: [theo ___]  ☐ Cụm
+Làm mù: ☐ Mở  ☐ Đơn mù  ☐ Đôi mù  ☐ Tam mù
+Estimand chính (can thiệp): [CẦN XÁC NHẬN — xem §Estimand bên trên]
+Kiểm soát biến nhiễu chính: [từ §2 Bias Control]
+Thời gian theo dõi: [CẦN BÁC SĨ XÁC NHẬN]
+Cỡ mẫu dự kiến: [CẦN → chạy run_g3_auto.py sau khi xác nhận effect size]
+Giả định effect size (nguồn): [CẦN — xem §3 hoặc pilot data]
+Chuẩn báo cáo: {design["reporting_standard"]}
+═══════════════════════════════════════════════════════════════
+```
+
+---
+
+## PHẦN 5 — SAP SKELETON (12 MỤC — bác sĩ điền [CẦN...])
+
+> SAP phải hoàn chỉnh và KHÓA TRƯỚC KHI XEM DỮ LIỆU THẬT (Cổng G4).
+> [CẦN...] = cần bác sĩ điền; mọi mục này KHÔNG thay đổi sau khi khóa.
+
+### SAP §1 — Quần thể phân tích
+```
+{quanso_note}
+Tiêu chí chọn vào: [CẦN — từ PICO P]
+Tiêu chí loại trừ: [CẦN BÁC SĨ ẤN ĐỊNH]
+Quần thể CHÍNH dùng báo cáo: [CẦN XÁC NHẬN]
+```
+
+### SAP §2 — Biến kết cục (định nghĩa vận hành)
+```
+KẾT CỤC CHÍNH (chỉ 1):
+  Tên: [CẦN — từ PICO O, kết cục chính BÁC SĨ ĐÃ ẤN ĐỊNH ở G0]
+  Định nghĩa vận hành: [CẦN — rõ ràng, đo được, cụ thể]
+  Đơn vị đo: [CẦN]
+  Thời điểm đo: [CẦN]
+  Thước đo: ☐ Liên tục  ☐ Nhị phân  ☐ Thứ tự  ☐ Thời gian đến sự kiện
+
+KẾT CỤC PHỤ (tối đa 3–5):
+  1. ___ | thời điểm: ___
+  2. ___ | thời điểm: ___
+  3. ___ | thời điểm: ___
+```
+
+### SAP §3 — Thống kê mô tả (Table 1)
+```
+Biến liên tục: kiểm phân phối → Shapiro-Wilk (n<50) hoặc histogram (n≥50)
+  Chuẩn: TB ± ĐLC  |  Lệch: Trung vị [IQR Q1–Q3]
+Biến phân loại: n (%)
+So sánh nền (Table 1): t-test/Mann-Whitney + chi²/Fisher (CHỈ MÔ TẢ, không p-value chính)
+```
+
+### SAP §4 — Phân tích chính (Mục tiêu 1)
+```
+{sap_analysis_note}
+α (hai đuôi): 0.05
+Hiệu ứng trình bày: [OR/HR/RR/MD + 95%CI] — KHÔNG chỉ p-value
+Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: {suggested_seed} [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
+```
+
+### SAP §5 — Phân tích đa biến (Mục tiêu 2 — nếu có)
+```
+Mô hình: ☐ Logistic  ☐ Linear  ☐ Cox  ☐ Mixed-effects  ☐ GEE
+Covariates (định trước — KHÔNG thêm sau khi xem dữ liệu):
+  - [CẦN BÁC SĨ LIỆT KÊ với lý do cho từng biến + DAG nếu có]
+{epv_note}
+Kiểm đa cộng tuyến: VIF < 5 cho mọi biến
+Kiểm mức phù hợp: ☐ Hosmer-Lemeshow  ☐ Calibration plot
+```
+
+### SAP §6 — Dữ liệu thiếu
+```
+Giả định: ☐ MCAR  ☐ MAR  ☐ MNAR (phân tích pattern thiếu trước khi chọn)
+  MCAR → Complete-case (báo cáo tỷ lệ thiếu)
+  MAR  → Multiple Imputation: m=20, phương pháp PMM/logistic
+  MNAR → Sensitivity (tilt parameter / pattern mixture)
+Ngưỡng chấp nhận: < [CẦN ẤN ĐỊNH]% (ví dụ: <20%)
+```
+
+### SAP §7 — Phân tích nhóm nhỏ (định trước — KHÔNG thêm sau)
+```
+Nhóm nhỏ 1: [CẦN — tiêu chí: ___] | Giả thuyết tương tác: ___
+Nhóm nhỏ 2: [CẦN]
+Kiểm định tương tác: interaction test (p < 0.05 = subgroup effect có ý nghĩa)
+Kết quả nhóm nhỏ là THĂM DÒ nếu không có giả thuyết định trước
+```
+
+### SAP §8 — Kiểm soát đa so sánh
+```
+Số kết cục phụ / nhóm / thời điểm: [CẦN ẤN ĐỊNH]
+Chiến lược:
+  ☐ Không điều chỉnh (1 kết cục chính rõ, phụ là thăm dò)
+  ☐ Bonferroni: α = 0.05 / n_so_sánh
+  ☐ Holm-Bonferroni
+  ☐ FDR Benjamini-Hochberg
+Khớp với α dùng khi tính cỡ mẫu (G3): ✓
+```
+
+### SAP §9 — Phân tích nhạy cảm
+```
+1. [CẦN — lý do: ___] → kỳ vọng: kết quả ổn định
+2. [CẦN — lý do: ___] → kỳ vọng: ___
+3. Per-protocol sensitivity (nếu ITT là chính) → kiểm tính vững chắc
+```
+
+### SAP §10 — Phần mềm và seed
+```
+Phần mềm chính: ☐ R v___  ☐ Stata v___  ☐ SPSS v___
+R packages dự kiến: {suggested_packages} [CẦN BÁC SĨ XÁC NHẬN — gợi ý theo thiết kế {internal}]
+Random seed: {suggested_seed} [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy, có thể đổi]
+Script phân tích: lưu tại exports/{study_name}/scripts/ — versioned cùng protocol
+```
+
+### SAP §11 — Dummy Tables (Shells — điền sau khi có kết quả thật)
+
+```
+BẢNG 1 — ĐẶC ĐIỂM NỀN
+| Biến | Nhóm A (n=___) | Nhóm B (n=___) | p |
+|------|----------------|----------------|---|
+| Tuổi, TB±ĐLC (năm) | | | |
+| Giới nữ, n (%) | | | |
+| [Bệnh kèm], n (%) | | | |
+| [Biến nền theo PICO P] | | | |
+| [Biến lâm sàng chính] | | | |
+
+BẢNG 2 — KẾT CỤC CHÍNH
+| Kết cục | Nhóm A (n=___) | Nhóm B (n=___) | Hiệu ứng (95%CI) | p |
+|---------|----------------|----------------|-------------------|---|
+| [Tên kết cục chính] | | | [OR/HR/MD]=___ | |
+
+BẢNG 3 — KẾT CỤC PHỤ
+| Kết cục phụ | Nhóm A | Nhóm B | Hiệu ứng (95%CI) | p |
+|-------------|--------|--------|-------------------|---|
+| [Kết cục phụ 1] | | | | |
+| [Kết cục phụ 2] | | | | |
+| [Kết cục phụ 3] | | | | |
+
+BẢNG 4 — PHÂN TÍCH ĐA BIẾN
+| Biến | OR/HR (thô) | 95%CI | OR/HR (hiệu chỉnh) | 95%CI | p |
+|------|-------------|-------|---------------------|-------|---|
+| [Can thiệp/Phơi nhiễm chính] | | | | | |
+| [Covariate 1] | | | | | |
+| [Covariate 2] | | | | | |
+```
+
+### SAP §12 — Ngưỡng ý nghĩa và power
+```
+α (hai đuôi): 0.05
+Power mục tiêu: ___% (thường 80% hoặc 90%)
+→ Khớp với tính cỡ mẫu (G3) — KHÔNG đổi sau khi chốt.
+```
+
+---
+
+## PHẦN 6 — SAP LOCK CERTIFICATE (CHỜ BÁC SĨ KÝ → MỞ G4)
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║    BIÊN BẢN KHÓA KẾ HOẠCH PHÂN TÍCH THỐNG KÊ (SAP)        ║
+╠══════════════════════════════════════════════════════════════╣
+║  Đề tài: {study_name:<54}║
+║  Phiên bản SAP: 1.0                                         ║
+║  Ngày soạn SAP: {run_date[:10]:<46}║
+║  Trạng thái dữ liệu lúc khóa: CHƯA CÓ / CHƯA XEM          ║
+║                                                              ║
+║  Kết cục chính (KHÔNG đổi sau khóa):                        ║
+║    [CẦN BÁC SĨ ĐIỀN — từ PICO O đã xác nhận ở G0]          ║
+║  Quần thể phân tích chính:                                  ║
+║    [CẦN BÁC SĨ ĐIỀN — từ SAP §1]                           ║
+║  Phương pháp phân tích chính:                               ║
+║    [CẦN BÁC SĨ ĐIỀN — từ SAP §4]                           ║
+║  α: 0.05 (hai đuôi)  |  Power: [CẦN]%                      ║
+╠══════════════════════════════════════════════════════════════╣
+║  Người xác nhận: ___ (Chủ nhiệm đề tài)                     ║
+║  Ngày khóa chính thức: [CẦN ĐIỀN + KÝ TÊN]                 ║
+║                                                              ║
+║  Chữ ký: _______________  Ngày: ___/___/20__                ║
+╠══════════════════════════════════════════════════════════════╣
+║  SAU KHI KÝ: KHÔNG đổi kết cục chính / mô hình chính.      ║
+║  Phân tích bổ sung sau khi xem dữ liệu → ghi THĂM DÒ.     ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+**→ Để mở G4:** Bác sĩ xác nhận "SAP đã khóa ngày [DD/MM/YYYY]"
+  Agent ghi: G4_STATUS=LOCKED | G4_SAP_VERSION=1.0 | G4_LOCK_DATE=[date]
+
+---
+
+## PHẦN 7 — TIÊU CHÍ QUA CỔNG G1
+
+```
+☑ Loại thiết kế đã suy luận từ PICO + evidence landscape
+☑ 2-3 thiết kế ứng viên đã so sánh
+☑ 7 sai lệch đã phân tích với biện pháp kiểm soát
+☑ SAP skeleton 12 mục đã sinh
+☑ Dummy tables 4 bảng đã tạo shell
+☑ Effect size ước lượng từ PubMed thật (xem §3)
+☐ Bác sĩ xác nhận thiết kế chọn [CHỜ BÁC SĨ]
+☐ PICO O (kết cục) điền vào SAP §2 [CHỜ BÁC SĨ]
+☐ Covariates SAP §5 liệt kê với lý do [CHỜ BÁC SĨ]
+☐ Effect size thật + cỡ mẫu → G3 (co-mau-nghien-cuu) [BƯỚC TIẾP]
+☐ SAP Lock Certificate ký → G4 [CHỜ SAU G3]
+```
+
+**Bước tiếp theo:**
+1. Bác sĩ xem §3 (effect size) → chọn ước lượng phù hợp
+2. Chạy G3: `python tools/run_g3_auto.py --study {study_name}`
+3. Sau khi có cỡ mẫu, ký SAP → mở G4
+
+---
+
+*[BẢN NHÁP TỰ ĐỘNG] — Cần bác sĩ kiểm chứng. PMID/DOI trong §3 là THẬT từ PubMed.*
+"""
+    return artifact
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 5. GUARDRAIL R1-R7 CHO G1
+# ════════════════════════════════════════════════════════════════════════════
+
+def guardrail_check_g1(artifact: str, effects: list) -> dict:
+    errors, warnings = [], []
+
+    # R1 — Effect sizes có nguồn thật (nếu có)
+    if effects:
+        warnings.append(f"R1 ✅ {len(effects)} effect size ước lượng từ PubMed thật")
+    else:
+        warnings.append("R1 ⚠ Không tìm được effect size từ abstracts — bác sĩ cần tự tìm")
+
+    # R2 — PII
+    pii_keywords = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd"]
+    for p in pii_keywords:
+        if p in artifact.lower():
+            errors.append(f"R2 🔴 PII phát hiện: '{p}'"); break
+    else:
+        warnings.append("R2 ✅ Không có PII")
+
+    # R3 — Không tự vượt cổng G4
+    if "G4_STATUS = LOCKED" in artifact or "G4=LOCKED" in artifact:
+        errors.append("R3 🔴 Không được tự ghi G4=LOCKED — cần bác sĩ ký")
+    else:
+        warnings.append("R3 ✅ Không tự vượt cổng G4")
+
+    # R4 — Không bịa effect size
+    if "[CẦN" in artifact:
+        warnings.append("R4 ✅ Các giá trị cần bác sĩ điền đã gắn nhãn [CẦN...]")
+    else:
+        errors.append("R4 🔴 Thiếu nhãn [CẦN...] cho các mục cần bác sĩ")
+
+    # R5 — Không bịa cỡ mẫu
+    # SỬA: kiểm tra "[CẦN" trên TOÀN VĂN BẢN vô nghĩa vì template có ≥40 chỗ
+    # "[CẦN" ở khắp SAP §1-§12 không liên quan gì tới câu "cỡ mẫu" — điều
+    # kiện "not in artifact" gần như KHÔNG BAO GIỜ đúng, nên nếu một dòng
+    # "cỡ mẫu = 200" bịa xuất hiện ở BẤT KỲ ĐÂU khác trong văn bản 700+ dòng,
+    # guardrail vẫn PASS oan (vì "[CẦN" luôn tồn tại ở chỗ khác). Sửa: kiểm
+    # CỤC BỘ trong cửa sổ ±80 ký tự quanh MỖI vị trí khớp "cỡ mẫu...=...\d+".
+    import re as _re
+    artifact_lower = artifact.lower()
+    unlabeled_matches = []
+    for m in _re.finditer(r'cỡ mẫu.*?=\s*\d+', artifact_lower):
+        window = artifact_lower[max(0, m.start() - 80): m.end() + 80]
+        if "[cần" not in window:
+            unlabeled_matches.append(artifact[m.start():m.end()])
+    if unlabeled_matches:
+        errors.append(
+            f"R5 🔴 Tìm thấy cỡ mẫu cụ thể KHÔNG kèm nhãn [CẦN...] gần đó "
+            f"(nghi bịa số, không phải placeholder): {unlabeled_matches[:3]}"
+        )
+    else:
+        warnings.append("R5 ✅ Mọi chỗ 'cỡ mẫu = N' đều gắn nhãn [CẦN...] cục bộ hoặc chưa điền")
+
+    # R7 — Disclaimer
+    if "cần bác sĩ kiểm chứng" not in artifact.lower():
+        errors.append("R7 🔴 Thiếu disclaimer")
+    else:
+        warnings.append("R7 ✅ Có disclaimer")
+
+    return {"passed": len(errors) == 0, "errors": errors, "warnings": warnings}
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 6. XUẤT DOCX
+# ════════════════════════════════════════════════════════════════════════════
+
+def export_docx_g1(artifact_md: str, study_name: str, out_dir: Path) -> Optional[Path]:
+    try:
+        from docx import Document
+        from docx.shared import Pt, RGBColor
+        doc = Document()
+        doc.add_heading(f"A2 — THIẾT KẾ NGHIÊN CỨU & SAP | {study_name}", 0)
+        doc.add_paragraph(f"[BẢN NHÁP TỰ ĐỘNG] | {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+        doc.add_paragraph("Cần bác sĩ kiểm chứng.")
+        doc.add_page_break()
+        for line in artifact_md.split("\n"):
+            if line.startswith("# "):
+                doc.add_heading(line[2:], 1)
+            elif line.startswith("## "):
+                doc.add_heading(line[3:], 2)
+            elif line.startswith("### "):
+                doc.add_heading(line[4:], 3)
+            elif line.strip().startswith("|"):
+                p = doc.add_paragraph(line)
+                p.style.font.name = "Courier New"
+                p.style.font.size = Pt(9)
+            elif line.strip().startswith("```") or line.strip() == "---":
+                pass
+            elif line.strip():
+                p = doc.add_paragraph(line)
+                if "[CẦN" in line:
+                    for run in p.runs:
+                        if "[CẦN" in run.text:
+                            run.font.color.rgb = RGBColor(0xCC, 0x44, 0x00)
+        docx_path = out_dir / f"G1_A2_PROTOCOL_DESIGN_{study_name}.docx"
+        doc.save(docx_path)
+        return docx_path
+    except ImportError:
+        print("  ⚠ python-docx không cài — bỏ qua DOCX")
+        return None
+    except Exception as e:
+        print(f"  ⚠ Lỗi DOCX: {e}")
+        return None
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 7. GHI CHECKPOINT G1
+# ════════════════════════════════════════════════════════════════════════════
+
+def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
+                         design: dict, effects: list, guardrail: dict,
+                         artifact_path: Path, docx_path: Optional[Path]) -> Path:
+    cp = {
+        "study": study_name, "gate": "G1",
+        "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN THIẾT KẾ + ĐIỀN PICO O VÀO SAP",
+        "generated_at": datetime.now().isoformat(),
+        "question_type": question_type,
+        "design": {
+            "primary": design["primary"],
+            "internal_code": design["internal_code"],
+            "reporting_standard": design["reporting_standard"],
+            "alternative_1": design["alternative_1"],
+        },
+        "effect_sizes_found": len(effects),
+        "effect_size_samples": effects[:3] if effects else [],
+        "guardrail": {
+            "passed": guardrail["passed"],
+            "errors": guardrail["errors"],
+        },
+        "artifacts": {
+            "A2_markdown": str(artifact_path),
+            "A2_docx": str(docx_path) if docx_path else None,
+        },
+        "pending_doctor_actions": [
+            "Xác nhận thiết kế chọn (§1)",
+            "Điền kết cục chính (SAP §2) — từ PICO O ở G0",
+            "Điền covariates (SAP §5) với lý do",
+            "Chọn effect size ước lượng từ §3 (hoặc pilot data)",
+        ],
+        "next_gate": "G2 (Đạo đức IRB) song song với G3 (Cỡ mẫu + SAP hoàn thiện)",
+        "g4_status": "PENDING — SAP chưa khóa (khóa sau G3 sau khi bác sĩ ký)",
+        "disclaimer": "Cần bác sĩ kiểm chứng.",
+    }
+    cp_path = out_dir / "G1_checkpoint.json"
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    return cp_path
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 8. MAIN
+# ════════════════════════════════════════════════════════════════════════════
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="G1 Auto — Tự động hóa cổng G1: Thiết kế nghiên cứu + SAP skeleton"
+    )
+    parser.add_argument("--study", required=True,
+                        help="Mã/tên đề tài (cùng với --study đã dùng ở G0)")
+    parser.add_argument("--topic", default=None,
+                        help="Chủ đề nghiên cứu (tuỳ chọn — nếu không có G0_checkpoint.json)")
+    parser.add_argument("--question-type", default="treatment",
+                        choices=list(QUESTION_TYPES.keys()),
+                        help="Loại câu hỏi (mặc định: treatment)")
+    parser.add_argument("--email", default=None)
+    args = parser.parse_args()
+
+    if args.email:
+        os.environ["NCBI_EMAIL"] = args.email
+
+    run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+    study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
+
+    print(f"\n{'='*65}")
+    print(f"  G1 AUTO — {study}")
+    print(f"  Thời gian: {run_date}")
+    print(f"{'='*65}\n")
+
+    # Đọc G0 checkpoint nếu có
+    out_dir = Path("exports") / study
+    out_dir.mkdir(parents=True, exist_ok=True)
+    g0_cp_path = out_dir / "G0_checkpoint.json"
+
+    g0_gaps = {}
+    topic = args.topic or study
+    question_type = args.question_type
+
+    if g0_cp_path.exists():
+        print("📂 Bước 1/7: Đọc G0 checkpoint...")
+        g0_cp = json.loads(g0_cp_path.read_text(encoding="utf-8"))
+        pm = g0_cp.get("pubmed_results", {})
+        g0_gaps["n_sr"]             = pm.get("n_sr", 0)
+        g0_gaps["n_rct"]            = pm.get("n_rct", 0)
+        g0_gaps["n_guide"]          = pm.get("n_guideline", 0)
+        g0_gaps["n_recent"]         = pm.get("n_recent", 0)
+        g0_gaps["most_recent_year"] = pm.get("most_recent_year")
+        g0_gaps["evidence_level"]   = g0_cp.get("evidence_level", "")
+        g0_gaps["research_gaps"]    = g0_cp.get("research_gaps", [])
+        g0_gaps["design_hint"]      = g0_cp.get("design_suggestion", "")
+        # Đọc topic + base_query từ G0 checkpoint (có từ run_g0_auto v2)
+        # SỬA: .get("topic", study) không có "or" bọc ngoài — nếu checkpoint
+        # có key "topic" nhưng giá trị null, .get() trả None (không dùng
+        # default), crash topic[:60] ngay dưới. Bọc "or study" như G2 đã sửa.
+        topic = args.topic or (g0_cp.get("topic") or study)
+        g0_gaps["base_query"]       = g0_cp.get("base_query", topic)
+        print(f"  → G0: {g0_gaps['n_sr']} SR | {g0_gaps['n_rct']} RCT | {g0_gaps['evidence_level']}")
+        print(f"  → Topic: {topic[:60]}")
+    else:
+        print(f"📂 Bước 1/7: Không tìm thấy G0 checkpoint tại {g0_cp_path}")
+        print(f"   Tiếp tục với --question-type={question_type}")
+
+    # Suy loại thiết kế
+    print(f"\n🔬 Bước 2/7: Suy loại thiết kế ({QUESTION_TYPES.get(question_type, question_type)})...")
+    design = infer_study_design(question_type, g0_gaps, topic)
+    print(f"  → Thiết kế ưu tiên: {design['primary']}")
+    print(f"  → Chuẩn báo cáo: {design['reporting_standard']}")
+
+    # Tìm effect size từ PubMed thật
+    print(f"\n📊 Bước 3/7: Trích xuất effect size từ abstracts PubMed...")
+    search_query = g0_gaps.get("base_query") or topic
+    effects = search_for_effect_sizes(search_query, study)
+    print(f"  → Tìm được {len(effects)} ước lượng effect size từ abstracts thật")
+    if effects:
+        for e in effects[:3]:
+            print(f"     • {e['type']}={e['value']} — PMID:{e['pmid']} ({e['year']})")
+
+    # Sinh artifact G1
+    print(f"\n✍️  Bước 4/7: Sinh artifact G1 (Design + SAP skeleton)...")
+    artifact_md = generate_g1_artifact(
+        topic, study, question_type, design, effects, g0_gaps, run_date
+    )
+    md_path = out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
+    md_path.write_text(artifact_md, encoding="utf-8")
+    print(f"  → Lưu: {md_path}")
+
+    # Guardrail
+    print(f"\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
+    guardrail = guardrail_check_g1(artifact_md, effects)
+    for msg in guardrail["warnings"]:
+        print(f"  {msg}")
+    for err in guardrail["errors"]:
+        print(f"  {err}")
+    status = "✅ PASS" if guardrail["passed"] else f"⚠ {len(guardrail['errors'])} LỖI"
+    print(f"  → Guardrail: {status}")
+
+    # Xuất DOCX
+    print(f"\n📄 Bước 6/7: Xuất DOCX...")
+    docx_path = export_docx_g1(artifact_md, study, out_dir)
+    if docx_path:
+        print(f"  → Lưu: {docx_path}")
+
+    # Checkpoint
+    print(f"\n💾 Bước 7/7: Ghi checkpoint G1...")
+    cp_path = write_g1_checkpoint(
+        study, out_dir, question_type, design, effects, guardrail, md_path, docx_path
+    )
+    print(f"  → Lưu: {cp_path}")
+
+    # Tóm tắt
+    print(f"\n{'='*65}")
+    print(f"  ✅ G1 HOÀN THÀNH — {study}")
+    print(f"{'='*65}")
+    print(f"\n  📁 Đầu ra: {out_dir}/")
+    print(f"  📝 A2 Markdown: {md_path.name}")
+    if docx_path:
+        print(f"  📄 A2 DOCX:     {docx_path.name}")
+    print(f"  🔬 Thiết kế:   {design['primary']}")
+    print(f"  📊 Effect sizes: {len(effects)} từ PubMed thật")
+    print(f"  🔴 Guardrail:  {status}")
+    print(f"\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
+    print(f"  1. Xem §1 — xác nhận thiết kế chọn")
+    print(f"  2. Xem §3 — effect size ước lượng → chọn cho G3")
+    print(f"  3. Điền §5 SAP §2 (kết cục chính) + §5 (covariates)")
+    print(f"  4. Chạy G3 (cỡ mẫu): python tools/run_g3_auto.py --study {study}")
+    print(f"  5. Sau G3: ký SAP Lock Certificate → mở G4")
+    print(f"\n  Cần bác sĩ kiểm chứng.")
+    print(f"{'='*65}\n")
+
+    return {
+        "gate": "G1", "status": status,
+        "design": design["primary"],
+        "n_effects": len(effects),
+    }
+
+
+if __name__ == "__main__":
+    main()

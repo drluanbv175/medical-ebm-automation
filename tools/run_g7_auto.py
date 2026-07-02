@@ -1,0 +1,1616 @@
+#!/usr/bin/env python3
+"""
+run_g7_auto.py — Cổng G7: Bản thảo IMRAD Skeleton
+
+Đọc tất cả checkpoint G0-G6 → sinh bản thảo IMRAD đầy đủ (A8) cho nhà nghiên cứu:
+  - Tiêu đề, tác giả, tóm tắt có cấu trúc (250 từ)
+  - I. Giới thiệu (3 đoạn tự điền từ G0 evidence)
+  - II. Phương pháp (7 mục tự điền từ G1+G2+G3+G4)
+  - III. Kết quả (skeleton + placeholder rõ ràng [CẦN KẾT QUẢ THẬT])
+  - IV. Bàn luận (6 mục — 2 tự điền từ G0 PMIDs, 4 cần kết quả thật)
+  - V. Kết luận + Lời cảm ơn + Khai báo
+  - Tài liệu tham khảo (Vancouver, từ PMIDs G0)
+  - Bảng tính số từ từng phần
+  - Checklist CONSORT/STROBE/STARD/PRISMA (tự đánh dấu auto-filled vs [CẦN])
+  - G7_checkpoint.json đầy đủ
+
+Lệnh:
+    python tools/run_g7_auto.py --study "SGLT2-HFpEF-2026"
+    python tools/run_g7_auto.py --study "SGLT2-HFpEF-2026" \\
+        --target-journal "Journal of the American College of Cardiology" \\
+        --word-limit 3500
+
+Nguyên tắc bất biến:
+  - KHÔNG bịa kết quả thống kê
+  - Mọi ô kết quả đều là [CẦN KẾT QUẢ THẬT]
+  - PMIDs từ G0 dùng làm seed tài liệu tham khảo (với ghi chú kiểm chứng toàn văn)
+  - Cần bác sĩ kiểm chứng trước khi nộp
+"""
+
+import argparse
+import csv
+import json
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+# Thêm thư mục gốc dự án vào sys.path
+BASE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE))
+
+# ════════════════════════════════════════════════════════════════════════════
+# 1. HẰNG SỐ — CHECKLIST BÁO CÁO THEO CHUẨN
+# ════════════════════════════════════════════════════════════════════════════
+
+# Tên chuẩn báo cáo và tổng số mục theo design
+REPORTING_CHECKLISTS: dict[str, tuple[str, int]] = {
+    "rct":             ("CONSORT 2010",  25),
+    "cohort":          ("STROBE 2007",   22),
+    "cross_sectional": ("STROBE 2007",   18),
+    "case_control":    ("STROBE 2007",   22),
+    "diagnostic":      ("STARD 2015",    30),
+    "sr_ma":           ("PRISMA 2020",   27),
+}
+
+# Mục checklist chi tiết theo design (mô tả ngắn → tự điền hay cần thêm)
+CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
+    # (Số mục, Mô tả, auto_filled?)
+    "rct": [
+        ("1a", "Tiêu đề — ghi rõ RCT trong tiêu đề", False),
+        ("1b", "Tóm tắt có cấu trúc", True),
+        ("2a", "Bối cảnh và lý do", True),
+        ("2b", "Mục tiêu — câu hỏi hoặc giả thuyết", False),
+        ("3a", "Thiết kế (phân nhóm, tỷ lệ 1:1…)", True),
+        ("3b", "Thay đổi phương pháp sau khi bắt đầu", False),
+        ("4a", "Tiêu chí nhận", False),
+        ("4b", "Nơi + thời gian thu thập", False),
+        ("5",  "Can thiệp (mô tả đủ để tái lập)", False),
+        ("6a", "Kết cục chính + thứ cấp (tiền định)", False),
+        ("6b", "Thay đổi kết cục sau khi bắt đầu", False),
+        ("7a", "Cách tính cỡ mẫu — chi tiết", True),
+        ("7b", "Phân tích trung gian và luật dừng", False),
+        ("8a", "Phương pháp ngẫu nhiên hóa", False),
+        ("8b", "Loại trình tự ngẫu nhiên", False),
+        ("9",  "Phân bổ ẩn (concealment)", False),
+        ("10", "Che giấu (mù) — ai, bằng cách nào", False),
+        ("11a","Phân tích thống kê (chính + phụ)", False),
+        ("11b","Phương pháp phân tích thêm (subgroup)", False),
+        ("12a","Đặc điểm dòng tham gia (CONSORT flow diagram)", False),
+        ("12b","Sai lệch so với protocol", False),
+        ("13a","Số tuyển mỗi nhóm", False),
+        ("13b","Mất theo dõi + loại trừ", False),
+        ("14a","Ngày bắt đầu/kết thúc", False),
+        ("14b","Lý do dừng sớm", False),
+        ("15", "Bảng đặc điểm nền (Table 1)", False),
+        ("16", "Kết quả từng nhóm (Table 2)", False),
+        ("17a","Ước lượng hiệu quả + CI + p", False),
+        ("17b","Kết quả phân tích nhị phân", False),
+        ("18", "Kết quả phân tích khác (subgroup, sensitivity)", False),
+        ("19", "Bất lợi và AE quan trọng", False),
+        ("20", "Giải thích phát hiện chính", False),
+        ("21", "Khả năng áp dụng (generalizability)", False),
+        ("22", "Diễn giải + cân bằng lợi ích/bất lợi", False),
+        ("23", "Đăng ký (NCT)", True),
+        ("24", "Protocol (nếu có)", False),
+        ("25", "Tài trợ + vai trò nhà tài trợ", False),
+    ],
+    "cohort": [
+        ("1",  "Tiêu đề — ghi rõ cohort", False),
+        ("2",  "Tóm tắt có cấu trúc", True),
+        ("3",  "Bối cảnh và lý do", True),
+        ("4",  "Mục tiêu", False),
+        ("5",  "Thiết kế cohort", True),
+        ("6",  "Nơi + thời gian", False),
+        ("7",  "Người tham gia — tiêu chí nhận/loại", False),
+        ("8",  "Biến phơi nhiễm", False),
+        ("9",  "Biến gây nhiễu", False),
+        ("10", "Kết cục nghiên cứu", False),
+        ("11", "Nguồn dữ liệu", False),
+        ("12a","Cỡ mẫu", True),
+        ("12b","Phân tích độ nhạy cỡ mẫu", False),
+        ("13", "Xử lý dữ liệu thiếu", False),
+        ("14a","STROBE flowchart — số tuyển/loại/phân tích", False),
+        ("14b","Lý do không tham gia", False),
+        ("15", "Bảng đặc điểm nền (Table 1)", False),
+        ("16", "Số biến cố/kết cục đo được", False),
+        ("17a","Ước lượng thô + hiệu chỉnh + CI", False),
+        ("17b","Phân tích subgroup/sensitivity", False),
+        ("18", "Diễn giải + cân bằng lợi hại", False),
+        ("19", "Generalizability", False),
+        ("20", "Tài trợ + vai trò nguồn tài trợ", False),
+        ("21", "CONSORT/STROBE specific — khai báo", False),
+        ("22", "Protocol công khai", False),
+    ],
+    "diagnostic": [
+        ("1",  "Tiêu đề — xét nghiệm + tiêu chuẩn vàng", False),
+        ("2",  "Tóm tắt có cấu trúc", True),
+        ("3",  "Bối cảnh khoa học và lâm sàng", True),
+        ("4",  "Mục tiêu — câu hỏi nghiên cứu", False),
+        ("5",  "Thiết kế nghiên cứu", True),
+        ("6",  "Nơi + thời gian thu thập", False),
+        ("7",  "Người tham gia (tiêu chí nhận/loại, nguồn)", False),
+        ("8",  "Lấy mẫu — liên tiếp/ngẫu nhiên/tiện lợi", False),
+        ("9",  "Mô tả index test", False),
+        ("10", "Mô tả reference standard", False),
+        ("11", "Mù (blinding) — ai mù với kết quả nào", False),
+        ("12", "Cỡ mẫu — lý do", True),
+        ("13", "Phân tích thống kê — ROC/AUC/Se/Sp", False),
+        ("14", "STARD flow diagram", False),
+        ("15", "Đặc điểm người tham gia", False),
+        ("16", "Phân phối bệnh (Table 1)", False),
+        ("17", "Cross-tabulation index vs reference", False),
+        ("18", "Se, Sp, PPV, NPV, AUC + CI", False),
+        ("19", "Phân tích không xác định/trung gian", False),
+        ("20", "AE (nếu có)", False),
+        ("21", "Phân tích subgroup (nếu có)", False),
+        ("22", "Giới hạn", False),
+        ("23", "Ý nghĩa lâm sàng", False),
+        ("24", "Đăng ký + Protocol", True),
+        ("25", "Nguồn tài trợ", False),
+    ],
+    "sr_ma": [
+        ("1",  "Tiêu đề — SR/MA trong tiêu đề", False),
+        ("2a", "Tóm tắt có cấu trúc (PRISMA-A)", True),
+        ("2b", "Đăng ký protocol (PROSPERO)", True),
+        ("3a", "Tiêu chí nhận — PICOS", False),
+        ("3b", "Thay đổi tiêu chí so với protocol", False),
+        ("4",  "Cơ sở dữ liệu + chiến lược tìm kiếm", False),
+        ("5",  "Quản lý dữ liệu + sàng lọc", False),
+        ("6",  "Trích xuất dữ liệu", False),
+        ("7",  "Biến dữ liệu", False),
+        ("8a", "Đánh giá nguy cơ sai lệch (RoB tool)", False),
+        ("8b", "Thiên kiến xuất bản", False),
+        ("9",  "Đo lường kết quả tổng hợp", False),
+        ("10a","Phương pháp tổng hợp (I²/Q test)", False),
+        ("10b","Phương pháp giải quyết không đồng nhất", False),
+        ("10c","Sensitivity analysis", False),
+        ("10d","Subgroup analysis", False),
+        ("10e","Funnel plot/Egger", False),
+        ("11", "Số nghiên cứu được tìm/đưa vào (PRISMA flow)", False),
+        ("12", "Đặc điểm nghiên cứu đưa vào", False),
+        ("13", "Nguy cơ sai lệch từng nghiên cứu", False),
+        ("14", "Kết quả từng nghiên cứu", False),
+        ("15", "Tổng hợp kết quả (forest plot)", False),
+        ("16", "RoB toàn bộ bằng chứng", False),
+        ("17", "Báo cáo thiên kiến (reporting bias)", False),
+        ("18", "Kết quả bổ sung", False),
+        ("19", "Diễn giải", False),
+        ("20", "Giới hạn", False),
+        ("21", "Kết luận", False),
+        ("22", "Tài trợ + vai trò", False),
+    ],
+}
+
+# Mặc định cho design chưa có checklist chi tiết
+CHECKLIST_ITEMS["cross_sectional"] = CHECKLIST_ITEMS["cohort"]
+CHECKLIST_ITEMS["case_control"]    = CHECKLIST_ITEMS["cohort"]
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 2. HÀM TIỆN ÍCH — ĐỌC CHECKPOINT
+# ════════════════════════════════════════════════════════════════════════════
+
+def load_cp(path: Path) -> dict:
+    """Đọc JSON checkpoint; trả về dict rỗng nếu file chưa tồn tại."""
+    if path.exists():
+        try:
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"  ⚠ Lỗi đọc {path.name}: {e}")
+    return {}
+
+
+def load_pubmed_raw(path: Path) -> dict:
+    """Đọc G0_pubmed_raw.json để lấy metadata bài báo (tiêu đề, năm, tạp chí)."""
+    if path.exists():
+        try:
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+
+_TABLE1_SKIP = {
+    "record_id", "consent_date", "site_id", "complete_flag", "comments",
+    "visit_date", "censor_date", "censor_reason", "protocol_deviation", "ltfu",
+    "ae_description", "randomization_id", "allocation_date",
+}
+# Từ khóa nhận diện biến kết cục — không đưa vào Bảng 1 (đặc điểm NỀN)
+_TABLE1_OUTCOME_KW = ("hosp", "death", "event", "outcome", "endpoint",
+                      "readmit", "qol_score_6m", "ef_change")
+# Form Name (đọc từ REDCap dictionary G5) KHÔNG thuộc "đặc điểm nền" —
+# Admin (hành chính), Exposure (chính biến dùng để CHIA CỘT bảng, không nên
+# là 1 dòng bên trong bảng), Outcomes (kết cục), Safety (biến cố AN TOÀN
+# xảy ra TRONG theo dõi, không phải đặc điểm nền lúc vào nghiên cứu).
+_TABLE1_EXCLUDE_FORMS = {"admin", "exposure", "outcomes", "outcome", "safety"}
+
+
+def load_redcap_dictionary(path: Path) -> list[dict]:
+    """
+    Đọc REDCap data dictionary CSV (từ G5) → list các biến với
+    {variable, label, form, section, note}. Hỗ trợ định dạng chuẩn REDCap
+    (dấu phẩy) và định dạng " / " delimiter dùng trong hệ thống này.
+    Trả về [] nếu file chưa tồn tại hoặc không đọc được.
+    """
+    if not path.exists():
+        return []
+    try:
+        text = path.read_text(encoding="utf-8")
+    except Exception:
+        return []
+    lines = [l for l in text.splitlines() if l.strip()]
+    if len(lines) < 2:
+        return []
+
+    delimiter = " / " if " / " in lines[0] else ("\t" if "\t" in lines[0] else ",")
+
+    def split_row(line: str) -> list[str]:
+        if delimiter == ",":
+            return [p.strip() for p in list(csv.reader([line]))[0]]
+        return [p.strip() for p in line.split(delimiter)]
+
+    header = split_row(lines[0])
+    header_lower = [h.lower() for h in header]
+    var_col, label_col, form_col, section_col, note_col = 0, 4, 1, 2, 6
+    for i, h in enumerate(header_lower):
+        if "variable" in h:
+            var_col = i
+        elif "field label" in h or h == "label":
+            label_col = i
+        elif "form name" in h or h == "form":
+            form_col = i
+        elif "section header" in h:
+            section_col = i
+        elif "field note" in h:
+            note_col = i
+    if delimiter == " / ":
+        var_col, form_col, section_col, label_col, note_col = 0, 1, 2, 4, 6
+
+    variables = []
+    for line in lines[1:]:
+        parts = split_row(line)
+        if len(parts) <= max(var_col, label_col):
+            continue
+        var = parts[var_col].strip()
+        if not var or var.lower() in _TABLE1_SKIP:
+            continue
+        label   = parts[label_col].strip() if label_col < len(parts) else var
+        form    = parts[form_col].strip() if form_col < len(parts) else ""
+        section = parts[section_col].strip() if section_col < len(parts) else ""
+        note    = parts[note_col].strip() if note_col < len(parts) else ""
+        variables.append({
+            "variable": var, "label": label or var, "form": form,
+            "section": section, "note": note,
+        })
+    return variables
+
+
+def build_table1_shell(redcap_vars: list[dict], exposure_hint: str = "") -> str:
+    """
+    Sinh khối Markdown Bảng 1 (đặc điểm nền) với MỘT DÒNG CHO MỖI BIẾN
+    thật từ REDCap dictionary (G5) — không phải placeholder chung chung.
+    Loại các biến kết cục (chỉ hiện ở Bảng 2/3) và biến hành chính.
+    """
+    if not redcap_vars:
+        return (
+            "[CẦN KẾT QUẢ THẬT — chưa tìm thấy REDCap dictionary từ G5; "
+            "chạy `run_g5_auto.py` trước để sinh danh sách biến]  \n"
+            "*(Xem file Table1.docx — từ G6 02_tables.R)*"
+        )
+    rows = []
+    for v in redcap_vars:
+        var, label = v["variable"], v["label"]
+        form = (v.get("form") or "").strip().lower()
+        # SỬA: load_redcap_dictionary() đã đọc đúng cột Form Name (Admin/
+        # Exposure/Outcomes/Safety/Demographics/Clinical/Comorbidity/Labs/
+        # Meds) nhưng build_table1_shell() trước đây KHÔNG hề dùng trường
+        # này để lọc — chỉ dựa whitelist tên biến tĩnh + từ khóa, nên biến
+        # an toàn (ae_any/ae_grade/sae_any), biến PHƠI NHIỄM (chính biến
+        # dùng để chia cột bảng — sglt2i_type/dose/start_date), và một số
+        # biến kết cục không theo pattern đều lọt vào Bảng 1 "đặc điểm nền".
+        # Nay lọc theo Form trước — mạnh và đáng tin hơn khớp từ khóa.
+        if form in _TABLE1_EXCLUDE_FORMS:
+            continue
+        combo = (var + " " + label).lower()
+        # SỬA: substring "in" thô khớp nhầm — "event" là substring của
+        # "prevention_counseling", "hosp" khớp trong "hospital_id",
+        # "outcome" khớp trong "outcome_expectation_scale" — làm rớt nhầm
+        # biến đặc điểm nền hợp lệ khỏi Bảng 1. Cùng loại lỗi đã sửa ở
+        # G6's _score() — dùng token-boundary (ranh giới không phải chữ/số).
+        # Lớp phòng thủ THỨ HAI cho các nguồn CSV không có cột Form/form rỗng.
+        if any(re.search(r'(?<![a-z0-9])' + re.escape(kw) + r'(?![a-z0-9])', combo)
+               for kw in _TABLE1_OUTCOME_KW):
+            continue  # biến kết cục → thuộc Bảng 2/3, không phải Bảng 1
+        rows.append(f"| {label} (`{var}`) | [CẦN KẾT QUẢ THẬT] | [CẦN KẾT QUẢ THẬT] | [CẦN] |")
+    if not rows:
+        return (
+            "[CẦN KẾT QUẢ THẬT — không phát hiện biến đặc điểm nền trong REDCap dictionary]  \n"
+            "*(Xem file Table1.docx — từ G6 02_tables.R)*"
+        )
+    header = (
+        "| Biến | Nhóm 1 (N=[CẦN]) | Nhóm 2 (N=[CẦN]) | p / SMD |\n"
+        "|---|---|---|---|"
+    )
+    footer = (
+        f"\n\n*Bảng 1 có {len(rows)} biến — tự sinh từ REDCap dictionary (G5). "
+        "Điền số liệu thật bằng `scripts/run_analysis_cli.py` (G6) — KHÔNG tự điền ước tính.*"
+    )
+    return header + "\n" + "\n".join(rows) + footer
+
+
+def _var_line(v: dict) -> str:
+    """Định dạng 1 biến CRF thành 1 dòng bullet: `tên` — nhãn (ghi chú nếu có)."""
+    note = f" *({v['note']})*" if v.get("note") else ""
+    return f"- `{v['variable']}` — {v['label']}{note}"
+
+
+def build_exposure_outcome_blocks(redcap_vars: list[dict]) -> dict:
+    """
+    Từ REDCap dictionary (G5) THẬT, dựng 3 khối Markdown dùng cho Methods
+    §3 (Phơi nhiễm/Can thiệp) và §4 (Kết cục) — thay vì [CẦN] trống hoàn
+    toàn. Biến kết cục CHÍNH/PHỤ được phân theo cột "Section Header" mà
+    G5 đã gán thật (vd "Kết cục chính" / "Kết cục phụ") — KHÔNG tự đoán
+    khi dictionary không có tín hiệu đó (giữ [CẦN] cho phần không chắc).
+    Trả về {} nếu chưa có REDCap dictionary (G5 chưa chạy).
+    """
+    if not redcap_vars:
+        return {}
+
+    exposure_vars = [v for v in redcap_vars if (v.get("form") or "").strip().lower() == "exposure"]
+    outcome_vars  = [v for v in redcap_vars if (v.get("form") or "").strip().lower() in ("outcomes", "outcome")]
+
+    exposure_block = (
+        "\n".join(_var_line(v) for v in exposure_vars)
+        if exposure_vars else
+        "[CẦN mô tả chi tiết từ PICO I — chưa tìm thấy biến form 'Exposure' trong REDCap dictionary G5]"
+    )
+
+    primary_vars, secondary_vars, other_vars = [], [], []
+    for v in outcome_vars:
+        section = (v.get("section") or "").lower()
+        if "chính" in section or "primary" in section:
+            primary_vars.append(v)
+        elif "phụ" in section or "secondary" in section:
+            secondary_vars.append(v)
+        else:
+            other_vars.append(v)
+
+    if primary_vars:
+        outcome_primary_block = "\n".join(_var_line(v) for v in primary_vars)
+    else:
+        outcome_primary_block = (
+            "[CẦN — từ SAP §2: tên biến, cách đo, đơn vị, thời điểm đo "
+            "(REDCap dictionary G5 chưa gắn Section Header 'Kết cục chính' cho biến nào)]"
+        )
+
+    if secondary_vars or other_vars:
+        outcome_secondary_block = "\n".join(_var_line(v) for v in (secondary_vars + other_vars))
+    else:
+        outcome_secondary_block = "[CẦN — liệt kê từ SAP §2]"
+
+    exposure_compact = (
+        "; ".join(v["label"] for v in exposure_vars) if exposure_vars
+        else "[CẦN — từ PICO I: tên/liều/thời gian can thiệp hoặc phơi nhiễm]"
+    )
+    outcome_primary_compact = (
+        "; ".join(v["label"] for v in primary_vars) if primary_vars
+        else "[CẦN — từ SAP §2, tiêu định nghĩa rõ]"
+    )
+    outcome_secondary_compact = (
+        "; ".join(v["label"] for v in (secondary_vars + other_vars)) if (secondary_vars or other_vars)
+        else "[CẦN]"
+    )
+
+    return {
+        "exposure_block": exposure_block,
+        "outcome_primary_block": outcome_primary_block,
+        "outcome_secondary_block": outcome_secondary_block,
+        "exposure_compact": exposure_compact,
+        "outcome_primary_compact": outcome_primary_compact,
+        "outcome_secondary_compact": outcome_secondary_compact,
+        "n_exposure_vars": len(exposure_vars),
+        "n_outcome_vars": len(outcome_vars),
+    }
+
+
+def build_pmid_meta(pubmed_raw: dict) -> dict:
+    """
+    Xây dựng dict PMID → {title, year, journal} từ pubmed_raw.
+    pubmed_raw có cấu trúc {sr_ma: [...], rct: [...], guideline: [...], observational: [...]}
+    """
+    meta: dict[str, dict] = {}
+    for category_articles in pubmed_raw.values():
+        if not isinstance(category_articles, list):
+            continue
+        for art in category_articles:
+            pmid = str(art.get("pmid", "")).strip()
+            if pmid:
+                meta[pmid] = {
+                    "title":   art.get("title", ""),
+                    "year":    str(art.get("year", "")),
+                    "journal": art.get("journal", ""),
+                    "url":     art.get("url", f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"),
+                }
+    return meta
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 3. GUARDRAIL R1-R7 ĐẶC THÙ G7
+# ════════════════════════════════════════════════════════════════════════════
+
+def guardrail_g7(artifact: str) -> tuple[list[str], list[str]]:
+    """
+    Kiểm tra artifact A8:
+      R1 — Không PII
+      R2 — Không bịa số NCT/PMID
+      R3 — Không tự claim LOCKED/APPROVED
+      R4 — Có nhãn DRAFT
+      R5 — Không có kết quả thống kê hardcoded (HR/OR/RR = x.xx)
+      R6 — Đủ số ô [CẦN KẾT QUẢ THẬT]
+      R7 — Có disclaimer
+    """
+    errors:   list[str] = []
+    warnings: list[str] = []
+
+    # R1 — PII
+    pii_patterns = [r'\b\d{9,12}\b', r'\b\d{2}/\d{2}/\d{4}\b(?=\s*sinh)']
+    pii_found = any(re.search(p, artifact) for p in pii_patterns)
+    if pii_found:
+        errors.append("R1 🔴 Phát hiện PII tiềm năng — kiểm tra và xóa")
+    else:
+        warnings.append("R1 ✅ Không phát hiện PII")
+
+    # R2 — Không bịa số NCT gán cho đề tài này (NCT trong danh sách G2 prior art là hợp lệ)
+    # Chỉ flag nếu có dạng "Đăng ký: NCT0000000" (tự điền) mà không có [CẦN]
+    fake_nct = re.search(
+        r'(?:Đăng\s*ký|Registration)[:\s]+NCT\d{8}(?!\s*\[CẦN)',
+        artifact, re.IGNORECASE
+    )
+    if fake_nct:
+        errors.append(f"R2 🔴 Số NCT có vẻ tự gán: '{fake_nct.group()}' — dùng [CẦN SỐ ĐĂNG KÝ]")
+    else:
+        warnings.append("R2 ✅ Không phát hiện số NCT bịa đặt")
+
+    # R3 — Không tự claim LOCKED
+    if re.search(r'Trạng\s*thái\s*hiện\s*tại:\s*LOCKED', artifact, re.IGNORECASE):
+        errors.append("R3 🔴 Không được tự claim status=LOCKED trong manuscript")
+    else:
+        warnings.append("R3 ✅ Không tự claim LOCKED")
+
+    # R4 — Nhãn DRAFT đủ
+    draft_count = artifact.count("DRAFT")
+    if draft_count >= 2:
+        warnings.append(f"R4 ✅ Nhãn DRAFT đủ ({draft_count} lần)")
+    else:
+        errors.append(f"R4 🔴 Thiếu nhãn DRAFT (chỉ {draft_count} lần — cần ≥2)")
+
+    # R5 — Không hardcode kết quả thống kê dạng HR=0.xx (95%CI
+    fake_result = re.search(
+        r'(?:HR|OR|RR|ARR|NNT)\s*=\s*\d+\.\d+\s*[\(\[]95%\s*CI',
+        artifact, re.IGNORECASE
+    )
+    if fake_result:
+        # Cho phép nếu nằm ngay cạnh [CẦN KẾT QUẢ THẬT]
+        ctx_start = max(0, fake_result.start() - 80)
+        ctx_end   = min(len(artifact), fake_result.end() + 80)
+        context   = artifact[ctx_start:ctx_end]
+        if "[CẦN KẾT QUẢ THẬT" in context:
+            warnings.append("R5 ✅ Placeholder kết quả có mẫu cú pháp — OK (nằm trong [CẦN KẾT QUẢ THẬT])")
+        else:
+            errors.append("R5 🔴 Có kết quả thống kê hardcoded trong manuscript — xóa hoặc đổi thành [CẦN KẾT QUẢ THẬT]")
+    else:
+        warnings.append("R5 ✅ Không có kết quả thống kê hardcoded")
+
+    # R6 — Đủ số ô [CẦN...]
+    can_total   = len(re.findall(r'\[CẦN', artifact))
+    can_results = len(re.findall(r'\[CẦN KẾT QUẢ THẬT', artifact))
+    if can_total >= 15:
+        warnings.append(f"R6 ✅ {can_total} trường [CẦN...] ({can_results} là [CẦN KẾT QUẢ THẬT])")
+    else:
+        errors.append(f"R6 🔴 Chỉ {can_total} trường [CẦN...] — cần ≥15 cho manuscript đầy đủ")
+
+    # R7 — Disclaimer
+    if "cần bác sĩ kiểm chứng" in artifact.lower():
+        warnings.append("R7 ✅ Có disclaimer")
+    else:
+        errors.append("R7 🔴 Thiếu disclaimer 'Cần bác sĩ kiểm chứng'")
+
+    return errors, warnings
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 4. SINH NỘI DUNG MANUSCRIPT IMRAD
+# ════════════════════════════════════════════════════════════════════════════
+
+def _cite(pmids: list[str], limit: int = 3) -> str:
+    """Tạo chuỗi trích dẫn dạng [1][2][3] từ danh sách PMIDs."""
+    return "".join(f"[{i+1}]" for i in range(min(limit, len(pmids))))
+
+
+def _cite_range(start: int, end: int) -> str:
+    """Tạo chuỗi [start]...[end]."""
+    return "".join(f"[{i}]" for i in range(start, end + 1))
+
+
+def generate_manuscript(
+    study: str,
+    topic: str,
+    n_sr: int,
+    n_rct: int,
+    n_guideline: int,
+    research_gaps: list[str],
+    pmids: list[str],
+    pmid_meta: dict,
+    design_code: str,
+    design_primary: str,
+    reporting_std: str,
+    irb_number: str,
+    icf_version: str,
+    registration: str,
+    n_total: int,
+    n_adjusted: int,
+    alpha: float,
+    power: float,
+    effect_val: Optional[float],
+    effect_type: str,
+    formula_used: str,
+    g4_status: str,
+    g4_lock_date: Optional[str],
+    target_journal: str,
+    word_limit: int,
+    run_date: str,
+    table1_shell: str = "[CẦN KẾT QUẢ THẬT]",
+    crf_blocks: Optional[dict] = None,
+) -> str:
+    """
+    Sinh toàn bộ bản thảo IMRAD skeleton A8.
+    Phần Results và Conclusions chỉ có placeholder [CẦN KẾT QUẢ THẬT].
+    """
+    crf_blocks = crf_blocks or {}
+    # SỬA: has_crf = bool(crf_blocks) sai — build_exposure_outcome_blocks()
+    # trả về dict KHÔNG RỖNG (với n_exposure_vars=0/n_outcome_vars=0 và các
+    # block vẫn là placeholder [CẦN...]) bất cứ khi nào REDCap dictionary đọc
+    # được nhưng KHÔNG có dòng nào gắn form Exposure/Outcomes — chỉ trả về {}
+    # khi dictionary hoàn toàn thiếu/không đọc được. bool(crf_blocks) khi đó
+    # vẫn True dù 0 biến thật, khiến label "đã định nghĩa từ REDCap dictionary"
+    # hiển thị cạnh nội dung [CẦN] trống — tự mâu thuẫn. Phát hiện bởi agent
+    # kiểm định độc lập. Sửa: xét ĐỘC LẬP cho từng phần theo đúng số biến.
+    has_exposure = bool(crf_blocks.get("n_exposure_vars", 0))
+    has_outcome  = bool(crf_blocks.get("n_outcome_vars", 0))
+    exposure_block = crf_blocks.get(
+        "exposure_block",
+        "[CẦN mô tả chi tiết từ PICO I: tên can thiệp/phơi nhiễm, liều/mức độ, "
+        "thời gian, ai thực hiện, kiểm soát chất lượng — chưa có REDCap dictionary "
+        "từ G5; chạy `run_g5_auto.py` trước để tự điền mục này]",
+    )
+    outcome_primary_block = crf_blocks.get(
+        "outcome_primary_block",
+        "[CẦN — từ SAP §2: tên biến, cách đo, đơn vị, thời điểm đo — chưa có REDCap "
+        "dictionary từ G5]",
+    )
+    outcome_secondary_block = crf_blocks.get(
+        "outcome_secondary_block",
+        "[CẦN — liệt kê từ SAP §2 — chưa có REDCap dictionary từ G5]",
+    )
+    exposure_label = (
+        "*Biến CRF đã định nghĩa (từ REDCap dictionary G5):*  " if has_exposure
+        else "*Mô tả can thiệp/phơi nhiễm:*  "
+    )
+    outcome_label = (
+        "(biến CRF từ G5)" if has_outcome else "(SAP §2)"
+    )
+    exposure_compact = crf_blocks.get(
+        "exposure_compact", "[CẦN — từ PICO I: tên/liều/thời gian can thiệp hoặc phơi nhiễm]"
+    )
+    outcome_primary_compact = crf_blocks.get(
+        "outcome_primary_compact", "[CẦN — từ SAP §2, tiêu định nghĩa rõ]"
+    )
+    outcome_secondary_compact = crf_blocks.get("outcome_secondary_compact", "[CẦN]")
+
+    # ── Chuẩn bị tài liệu tham khảo từ PMIDs ──
+    ref_lines: list[str] = []
+    pmids_used = pmids[:10]  # Dùng tối đa 10 PMIDs làm seed
+    for i, pmid in enumerate(pmids_used, 1):
+        meta = pmid_meta.get(str(pmid), {})
+        title   = meta.get("title", "")[:90] + ("..." if len(meta.get("title","")) > 90 else "")
+        year    = meta.get("year", "[Năm]")
+        journal = meta.get("journal", "[Tạp chí]")
+        if title:
+            # Vancouver format với metadata thật từ G0
+            ref_lines.append(
+                f"[{i}] [Tác giả] et al. {title} "
+                f"{journal}. {year}; "
+                f"PMID:{pmid}  *(Kiểm chứng tác giả/volume/trang toàn văn trước khi nộp)*"
+            )
+        else:
+            ref_lines.append(
+                f"[{i}] [CẦN — PMID:{pmid} — điền tác giả/tiêu đề/tạp chí/năm/trang]"
+            )
+
+    # PMIDs chưa có metadata thêm placeholder
+    if not pmids_used:
+        for i in range(1, 6):
+            ref_lines.append(f"[{i}] [CẦN PMID/DOI thật từ tổng quan y văn G0]")
+
+    ref_block = "\n".join(ref_lines)
+
+    # ── Chuẩn bị snippet cho Introduction §1 ──
+    cite_intro_1 = _cite(pmids_used, 3)
+    cite_intro_2 = _cite(pmids_used[3:], 2) if len(pmids_used) > 3 else "[CẦN PMID]"
+    gaps_text    = research_gaps[0] if research_gaps else "[CẦN mô tả khoảng trống từ G0 research_gaps]"
+
+    # ── Chuẩn bị snippet cho Methods §5 ──
+    # SỬA: khi n_adjusted<=n_total (trạng thái hợp lệ — vd G3 chưa áp dụng
+    # điều chỉnh dropout, hoặc bằng nhau theo thiết kế), code cũ ÂM THẦM thay
+    # bằng số "20" cứng như thể đó là tỷ lệ bù thất lạc THẬT đã tính, không
+    # có cờ [CẦN] nào — bác sĩ đọc Methods có thể tưởng 20% là số thật từ G3.
+    if n_adjusted > 0 and n_adjusted > n_total > 0:
+        dropout_display = f"{int((n_adjusted - n_total) / n_adjusted * 100 + 0.5)}%"
+    elif n_adjusted > 0:
+        dropout_display = "[CẦN — tỷ lệ bù thất lạc từ G3]"
+    else:
+        dropout_display = None
+    sample_size_detail = (
+        f"N = {n_adjusted} (bao gồm bù thất lạc {dropout_display}), "
+        f"alpha = {alpha} (two-sided), power = {int(power*100)}%"
+    ) if n_adjusted > 0 else "N = [CẦN — từ G3]"
+
+    effect_text = (
+        f"với {effect_type} = {effect_val} (từ y văn)"
+        if effect_val else "[CẦN EFFECT SIZE — từ y văn/pilot data]"
+    )
+    sap_lock_text = (
+        f"SAP phiên bản 1.0 ký ngày {g4_lock_date} (G4=LOCKED)"
+        if g4_lock_date
+        else "SAP phiên bản 1.0 [CẦN NGÀY KÝ G4 — G4 hiện PENDING]"
+    )
+
+    # ── Chuẩn bị snippet cho Discussion §2 (đối chiếu y văn) ──
+    lit_compare_lines = []
+    for i, pmid in enumerate(pmids_used[:3], 1):
+        meta = pmid_meta.get(str(pmid), {})
+        year = meta.get("year", "[Năm]")
+        lit_compare_lines.append(
+            f"So với [{i}] (PMID:{pmid}, năm {year}): "
+            f"[CẦN phân tích so sánh khi có kết quả thật — phù hợp hay khác biệt và lý do]"
+        )
+    if not lit_compare_lines:
+        lit_compare_lines.append("[CẦN đối chiếu với y văn từ G0 sau khi có kết quả thật]")
+    lit_compare_block = "  \n".join(lit_compare_lines)
+
+    # ── Chuẩn bị flowchart placeholder theo design ──
+    if design_code == "rct":
+        flow_label = "CONSORT flow diagram"
+    elif design_code in ("cohort", "cross_sectional", "case_control"):
+        flow_label = "STROBE flow diagram"
+    elif design_code == "diagnostic":
+        flow_label = "STARD flow diagram"
+    else:
+        flow_label = "PRISMA flow diagram"
+
+    # ── Chuẩn bị tên tạp chí ──
+    journal_line = (
+        f"**Tạp chí mục tiêu:** {target_journal}  "
+        if target_journal
+        else "**Tạp chí mục tiêu:** [CẦN — xác định trước khi định dạng]  "
+    )
+    author_guide = (
+        f"Định dạng theo hướng dẫn tác giả: {target_journal} (xem author instructions)."
+        if target_journal
+        else "[CẦN — điều chỉnh định dạng khi đã chọn tạp chí]"
+    )
+
+    # ────────────────────────────────────────────────────────────────────────
+    # BUILD MANUSCRIPT
+    # ────────────────────────────────────────────────────────────────────────
+    lines: list[str] = [
+        "# A8 — BẢN THẢO IMRAD SKELETON (DRAFT — CHỜ KẾT QUẢ THẬT)",
+        "",
+        f"**Mã đề tài:** {study}  ",
+        f"**Ngày sinh:** {run_date}  ",
+        f"**Thiết kế:** {design_primary}  ",
+        f"**Chuẩn báo cáo:** {reporting_std}  ",
+        journal_line,
+        f"**Giới hạn từ:** {word_limit} từ  ",
+        "",
+        "> ⚠️ **DRAFT — BẢN NHÁP TỰ ĐỘNG:**  ",
+        "> • Phần **Results** và **Conclusions** chứa TOÀN BỘ placeholder `[CẦN KẾT QUẢ THẬT]`.  ",
+        "> • **KHÔNG điền số liệu giả** vào bất kỳ ô `[CẦN KẾT QUẢ THẬT]` nào.  ",
+        "> • Các ô `[CẦN]` khác (tiêu đề, tác giả, cơ sở…) cần bác sĩ điền thông tin thực.  ",
+        "> • PMIDs từ G0 dùng làm seed TLTK — **kiểm chứng tác giả/năm/trang toàn văn** trước khi nộp.  ",
+        "> • Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp tạp chí.  ",
+        "",
+        "---",
+        "",
+        # ─── TIÊU ĐỀ ───
+        "## TIÊU ĐỀ  *(ước tính: 0 từ — điền thủ công)*",
+        "",
+        f"> Gợi ý cấu trúc: [{design_primary}] của [{topic}]:  ",
+        f"> [kết cục chính] — [cơ sở/quần thể], [thời gian]  ",
+        f"> *(≤120 ký tự; phải chứa: thiết kế + quần thể + kết cục)*",
+        "",
+        "[CẦN — tiêu đề ngắn gọn ≤120 ký tự, chứa thiết kế + dân số + kết cục chính]",
+        "",
+        "---",
+        "",
+        # ─── TÁC GIẢ ───
+        "## TÁC GIẢ  *(điền thủ công)*",
+        "",
+        "[CẦN — Họ Tên¹², Họ Tên², …]  ",
+        "¹[CẦN Đơn vị/Bộ môn, Bệnh viện, Thành phố, Quốc gia]  ",
+        "²[CẦN Đơn vị thứ 2 nếu có]  ",
+        "**Tác giả liên lạc:** [CẦN Họ Tên, Email, ORCID]  ",
+        "",
+        f"{author_guide}",
+        "",
+        "---",
+        "",
+        # ─── TÓM TẮT CÓ CẤU TRÚC ───
+        "## TÓM TẮT CÓ CẤU TRÚC  *(ước tính: ~200 từ khi hoàn chỉnh)*",
+        "",
+        "> **Lưu ý:** Mục Results và Conclusions trong tóm tắt **chỉ điền sau khi có kết quả thật.**",
+        "",
+        f"**Background:** {topic} là vấn đề lâm sàng quan trọng. "
+        f"Hiện có {n_sr} tổng quan hệ thống/phân tích gộp và {n_rct} thử nghiệm ngẫu nhiên "
+        f"về chủ đề này{cite_intro_1}. Tuy nhiên, {gaps_text}.  ",
+        "",
+        "**Objective:** [CẦN — câu hỏi PICO chính một câu]  ",
+        "",
+        f"**Design:** {design_primary}. Báo cáo theo chuẩn {reporting_std}.  ",
+        "",
+        "**Setting:** [CẦN — đơn vị/bệnh viện, tỉnh/thành, thời gian nghiên cứu]  ",
+        "",
+        f"**Participants:** N kế hoạch = {n_adjusted}; [CẦN tiêu chí nhận: …]; [CẦN tiêu chí loại: …]  ",
+        "",
+        f"**Intervention/Exposure:** {exposure_compact}  ",
+        "",
+        f"**Outcomes:** Kết cục chính: {outcome_primary_compact};  ",
+        f"Kết cục phụ: {outcome_secondary_compact}  ",
+        "",
+        "**Results:** [CẦN KẾT QUẢ THẬT — không điền trước khi phân tích xong]  ",
+        "",
+        "**Conclusions:** [CẦN KẾT QUẢ THẬT]  ",
+        "",
+        f"**Registration:** {registration}  ",
+        "",
+        "**Keywords:** " + (
+            " · ".join(topic.split()[:5]) + " · [CẦN 3–5 MeSH terms chính thức]"
+        ),
+        "",
+        "---",
+        "",
+        # ─── I. INTRODUCTION ───
+        "## I. GIỚI THIỆU  *(ước tính: ~350 từ | Tự điền: ~70%)*",
+        "",
+        f"**§1 Bối cảnh và gánh nặng bệnh:**  ",
+        f"{topic} là vấn đề y tế có tầm quan trọng đáng kể. "
+        f"Bằng chứng hiện có bao gồm {n_sr} tổng quan hệ thống/phân tích gộp"
+        + (f" và {n_rct} thử nghiệm ngẫu nhiên có đối chứng" if n_rct > 0 else "")
+        + (f" và {n_guideline} guideline/khuyến cáo" if n_guideline > 0 else "")
+        + f"{cite_intro_1}. "
+        + "[CẦN bổ sung: dịch tễ học/tỷ lệ mắc/gánh nặng kinh tế tại Việt Nam].  ",
+        "",
+        f"**§2 Khoảng trống nghiên cứu:**  ",
+        f"Mặc dù có bằng chứng đáng kể trên thế giới{cite_intro_2}, "
+        f"{gaps_text}. "
+        "[CẦN bổ sung: lý do cụ thể vì sao cần nghiên cứu thêm tại bối cảnh này "
+        "(quần thể Việt Nam, hệ thống y tế, gene/lối sống đặc thù…)].  ",
+        "",
+        f"**§3 Mục tiêu và giả thuyết:**  ",
+        f"Nghiên cứu này sử dụng thiết kế {design_primary} nhằm [CẦN câu hỏi PICO chính]. "
+        "Chúng tôi giả thuyết rằng [CẦN nêu chiều hướng kỳ vọng của mối liên quan/hiệu quả].  ",
+        "",
+        "---",
+        "",
+        # ─── II. METHODS ───
+        f"## II. PHƯƠNG PHÁP  *(ước tính: ~700 từ | Tự điền: ~75%)*",
+        "",
+        f"**§1 Loại nghiên cứu và chuẩn báo cáo:**  ",
+        f"Đây là nghiên cứu {design_primary}, báo cáo theo chuẩn {reporting_std} "
+        f"(xem Phụ lục — Checklist {reporting_std}).  ",
+        "",
+        "**§2 Đối tượng nghiên cứu:**  ",
+        "*Tiêu chí nhận:* [CẦN liệt kê cụ thể theo PICO P và SAP §1]  ",
+        "*Tiêu chí loại:* [CẦN]  ",
+        "*Cơ sở nghiên cứu:* [CẦN — tên bệnh viện/phòng khám, tuyến, địa bàn]  ",
+        "*Thời gian thu thập:* [CẦN — từ tháng/năm đến tháng/năm]  ",
+        "",
+        "**§3 Phơi nhiễm/Can thiệp:**  ",
+        exposure_label,
+        exposure_block,
+        "  ",
+        "[CẦN bổ sung: ai thực hiện can thiệp, kiểm soát chất lượng/tuân thủ — "
+        "không có trong REDCap dictionary]  ",
+        "",
+        f"**§4 Kết cục nghiên cứu:**  ",
+        f"*Kết cục chính {outcome_label}:*  ",
+        outcome_primary_block,
+        "  ",
+        f"*Kết cục phụ {outcome_label}:*  ",
+        outcome_secondary_block,
+        "  ",
+        "*Định nghĩa biến cố:* [CẦN — ICD-10 hoặc tiêu chí lâm sàng cụ thể cho từng biến cố trên]  ",
+        "",
+        f"**§5 Cỡ mẫu:**  ",
+        f"Cỡ mẫu được tính theo {formula_used or 'phương pháp thống kê phù hợp'}, "
+        f"{sample_size_detail}, {effect_text}. "
+        f"Cần {n_adjusted} người tham gia (chi tiết xem Bảng S1 — G3 checkpoint).  ",
+        "",
+        f"**§6 Phân tích thống kê:**  ",
+        f"Phân tích theo {sap_lock_text}. "
+        "Phần mềm: [CẦN — R/Stata/SPSS phiên bản]. "
+        "Phương pháp chính: [CẦN — từ SAP §4: Cox regression/logistic/v.v.]. "
+        "Phân tích độ nhạy: [CẦN — từ SAP]. "
+        "Dữ liệu thiếu: [CẦN — multiple imputation m=20 hoặc complete case]. "
+        "Ngưỡng ý nghĩa thống kê: α = " + str(alpha) + " (two-sided); "
+        "mọi ước lượng kèm 95%CI.  ",
+        "",
+        f"**§7 Đạo đức và đăng ký:**  ",
+        f"Nghiên cứu được Hội đồng Đạo đức phê duyệt (số: {irb_number}; "
+        f"ICF phiên bản: {icf_version}). "
+        f"Đăng ký nghiên cứu: {registration}. "
+        "Mọi người tham gia ký Phiếu đồng thuận tự nguyện trước khi tham gia. "
+        "Thực hiện theo Tuyên ngôn Helsinki 2013 và TT43/2024/TT-BYT.  ",
+        "",
+        "---",
+        "",
+        # ─── III. RESULTS ───
+        "## III. KẾT QUẢ  *(ước tính: ~700 từ | Tự điền: ~5% — CẦN KẾT QUẢ THẬT)*",
+        "",
+        "> ⚠️ **TOÀN BỘ phần này yêu cầu KẾT QUẢ THẬT từ phân tích G6.**  ",
+        "> Điền sau khi: G5 (DB closed) + G6 (R scripts chạy trên dữ liệu thật) hoàn tất.  ",
+        "> Không được điền số liệu ước tính/giả định.  ",
+        "",
+        f"**§1 Tuyển chọn — {flow_label}:**  ",
+        f"[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___; "
+        f"Phân tích cuối: N = {n_adjusted} (kế hoạch).  ",
+        "*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  ",
+        f"*(Xem {flow_label} — sinh từ kết quả thật)*",
+        "",
+        "**§2 Đặc điểm nền — Bảng 1:**  ",
+        f"*Bảng 1. Đặc điểm nền người tham gia (N = [CẦN KẾT QUẢ THẬT])*  ",
+        table1_shell,
+        "",
+        "**§3 Kết cục chính — Bảng 2:**  ",
+        "[CẦN KẾT QUẢ THẬT — điền sau khi chạy 03_analysis.R từ G6]  ",
+        f"*[{effect_type if effect_val else 'Ước lượng hiệu quả'}] = ___ "
+        "(95%CI: ___–___), p = ___ [CẦN KẾT QUẢ THẬT]*  ",
+        "*(Xem file Table2.docx — từ G6 03_analysis.R)*",
+        "",
+        "**§4 Kết cục phụ — Bảng 3:**  ",
+        "[CẦN KẾT QUẢ THẬT]  ",
+        "*(Xem file Table3.docx — từ G6)*",
+        "",
+        "**§5 Phân tích nhạy cảm:**  ",
+        "[CẦN KẾT QUẢ THẬT — từ SAP sensitivity analysis (G4)]  ",
+        "*(Ví dụ: complete case vs MI; subgroup theo giới tính/tuổi...)*",
+        "",
+        "---",
+        "",
+        # ─── IV. DISCUSSION ───
+        f"## IV. BÀN LUẬN  *(ước tính: ~800 từ | Tự điền: ~30%)*",
+        "",
+        "**§1 Tóm tắt phát hiện chính:**  ",
+        "[CẦN KẾT QUẢ THẬT — điền sau khi có Section III hoàn chỉnh]  ",
+        "*(Bắt đầu bằng: 'Trong nghiên cứu [loại thiết kế] gồm N=[kết quả thật] người tham gia...')*",
+        "",
+        "**§2 Đối chiếu với y văn (Literature context):**  ",
+        lit_compare_block + "  ",
+        "",
+        "**§3 Giải thích cơ chế (Mechanistic interpretation):**  ",
+        "[CẦN — giải thích sinh học/lâm sàng cho phát hiện sau khi có kết quả thật]  ",
+        "",
+        f"**§4 Điểm mạnh (Strengths):**  ",
+        f"*(1)* Thiết kế {design_primary} với SAP khóa trước khi xem dữ liệu (G4) giảm thiểu sai lệch phân tích sau dữ liệu.  ",
+        (
+            f"*(2)* Cỡ mẫu được tính TRƯỚC (a priori) theo "
+            f"{formula_used or 'công thức thống kê phù hợp'}: {sample_size_detail}, {effect_text} "
+            "— không phải cỡ mẫu tiện lợi (convenience sample). "
+            "[CẦN bổ sung: tính đại diện quần thể nghiên cứu sau khi có dữ liệu thật]  "
+            if n_adjusted > 0 else
+            "*(2)* [CẦN thêm điểm mạnh: cỡ mẫu đủ theo tính toán G3; tính đại diện; kiểm soát confounders...]  "
+        ),
+        "*(3)* [CẦN — điểm mạnh khác, vd kiểm soát nhiễu/thiết kế thu thập dữ liệu]  ",
+        "",
+        "**§5 Hạn chế (Limitations):**  ",
+        "[CẦN — liệt kê hạn chế cụ thể của thiết kế và thực hiện nghiên cứu này.  ",
+        f"Ví dụ với {design_primary}: "
+        + ("thiếu ngẫu nhiên hóa có thể có confounding chưa đo được; " if "cohort" in design_code else "")
+        + ("cỡ mẫu có thể không đủ cho subgroup nhỏ; " if n_adjusted < 500 else "")
+        + "LTFU có thể không ngẫu nhiên; dữ liệu tự báo cáo có recall bias...]  ",
+        "",
+        "**§6 Ý nghĩa lâm sàng và chính sách (Implications):**  ",
+        "[CẦN — tác động với thực hành lâm sàng + khuyến cáo + hướng nghiên cứu tiếp theo]  ",
+        "",
+        "---",
+        "",
+        # ─── V. CONCLUSION ───
+        "## V. KẾT LUẬN  *(ước tính: ~80 từ | Tự điền: 0% — CẦN KẾT QUẢ THẬT)*",
+        "",
+        "[CẦN KẾT QUẢ THẬT — 2–3 câu tóm tắt:  ",
+        "*(1) Phát hiện chính (kết quả thật);  ",
+        "*(2) Ý nghĩa lâm sàng + đối tượng áp dụng;  ",
+        "*(3) Khuyến nghị/hướng nghiên cứu tiếp]*  ",
+        "",
+        "---",
+        "",
+        # ─── LỜI CẢM ƠN ───
+        "## LỜI CẢM ƠN",
+        "",
+        f"[CẦN — tài trợ (tên tổ chức, mã số đề tài nếu có); "
+        f"IRB: {irb_number}; hỗ trợ kỹ thuật/thống kê; "
+        "bệnh nhân tham gia; nhân viên y tế hỗ trợ thu thập dữ liệu]  ",
+        "*(Không liệt kê AI là tác giả — ghi trong Khai báo)*",
+        "",
+        "---",
+        "",
+        # ─── KHAI BÁO ───
+        "## KHAI BÁO",
+        "",
+        "**Xung đột lợi ích (COI):**  ",
+        "[CẦN — xem Tài liệu 8 G2; điền theo ICMJE form đầy đủ cho từng tác giả]  ",
+        "",
+        "**Tài trợ:**  ",
+        "[CẦN — tên tổ chức, mã số, vai trò nhà tài trợ trong nghiên cứu]  ",
+        "",
+        "**Công cụ AI:**  ",
+        "EBM Copilot (Claude-based, Anthropic) được dùng để hỗ trợ tìm kiếm y văn (G0), "
+        "đề xuất thiết kế (G1), soạn hồ sơ đạo đức (G2), tính cỡ mẫu (G3), "
+        "và sinh skeleton bản thảo (G7). "
+        "Mọi nội dung khoa học được tác giả kiểm chứng độc lập. "
+        "AI không được liệt kê là tác giả (ICMJE 2023).  ",
+        "",
+        "**Đóng góp tác giả (CRediT):**  ",
+        "[CẦN — Conceptualization: ...; Methodology: ...; Data collection: ...; "
+        "Analysis: ...; Writing-Original draft: ...; Review/Editing: ...; "
+        "Supervision: ...; Funding acquisition: ...]  ",
+        "",
+        "**Tính có sẵn dữ liệu:**  ",
+        "Dữ liệu nghiên cứu (đã khử định danh) có thể cung cấp theo yêu cầu hợp lý "
+        "từ tác giả liên lạc, theo điều kiện đã được IRB phê duyệt và "
+        "Luật BVDLCN 91/2025/QH15.  ",
+        "",
+        "---",
+        "",
+        # ─── TÀI LIỆU THAM KHẢO ───
+        "## TÀI LIỆU THAM KHẢO (Vancouver format)",
+        "",
+        "> ⚠️ **Kiểm chứng bắt buộc trước khi nộp:**  ",
+        "> • Xác minh tác giả/volume/số/trang toàn văn cho mỗi PMID  ",
+        "> • Dùng agent `kiem-chung-trich-dan` hoặc PubMed trực tiếp  ",
+        "> • Định dạng Vancouver đầy đủ (theo hướng dẫn tác giả tạp chí)  ",
+        "",
+        ref_block,
+        "",
+        "*(Danh sách PMID seed từ G0 — cần bổ sung thêm sau khi viết bàn luận và giới thiệu đầy đủ)*",
+        "",
+        "---",
+    ]
+
+    return "\n".join(lines)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 5. SINH CHECKLIST BÁO CÁO
+# ════════════════════════════════════════════════════════════════════════════
+
+def generate_checklist(
+    design_code: str,
+    reporting_std: str,
+    std_total_items: int,
+    irb_number: str,
+    registration: str,
+    n_adjusted: int,
+    alpha: float,
+    power: float,
+) -> str:
+    """
+    Sinh bảng checklist đầy đủ theo chuẩn báo cáo.
+    Đánh dấu ☑ cho mục đã tự điền, ☐ cho mục [CẦN bác sĩ điền].
+    """
+    items = CHECKLIST_ITEMS.get(design_code, CHECKLIST_ITEMS.get("cohort", []))
+
+    # Tự động đánh dấu một số mục dựa trên dữ liệu có sẵn
+    auto_filled_patterns = {
+        "tóm tắt", "thiết kế", "cỡ mẫu", "đăng ký", "ethics", "irb", "design",
+        "abstract", "structure", "reporting standard", "background", "protocol"
+    }
+
+    header = (
+        f"\n## PHỤ LỤC — CHECKLIST {reporting_std} "
+        f"({std_total_items} mục tổng | tự điền vs [CẦN])\n\n"
+    )
+    header += (
+        "| Mục | Nội dung yêu cầu | Tự điền (A8) | Ghi chú |\n"
+        "|-----|------------------|:------------:|--------|\n"
+    )
+
+    auto_count = 0
+    rows = []
+    for item_id, desc, auto in items:
+        # Xác định trạng thái tự điền
+        desc_lower = desc.lower()
+        is_auto = auto or any(p in desc_lower for p in auto_filled_patterns)
+
+        if is_auto:
+            status = "☑ Auto"
+            note = "§ tương ứng trong A8"
+            auto_count += 1
+        else:
+            status = "☐ [CẦN]"
+            note = "Bác sĩ điền khi có kết quả thật"
+
+        rows.append(f"| {item_id} | {desc} | {status} | {note} |")
+
+    footer = (
+        f"\n**Tổng kết:** {auto_count}/{std_total_items} mục tự điền từ checkpoints G0-G4.  \n"
+        f"**Còn {std_total_items - auto_count} mục cần bác sĩ điền** khi có kết quả thật.  \n"
+        "\n*Kiểm tra checklist này với tác giả chính trước khi nộp bản thảo.*\n"
+    )
+
+    return header + "\n".join(rows) + "\n" + footer
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 6. ƯỚC TÍNH SỐ TỪ TỪNG PHẦN
+# ════════════════════════════════════════════════════════════════════════════
+
+SECTION_WORD_TARGETS = {
+    "Title":        (10,   20),
+    "Authors":      (30,   80),
+    "Abstract":     (200, 250),
+    "Introduction": (300, 400),
+    "Methods":      (600, 800),
+    "Results":      (600, 800),
+    "Discussion":   (700, 900),
+    "Conclusion":   (50,  100),
+    "References":   (150, 300),
+}
+
+
+def word_count_table(word_limit: int) -> str:
+    """Tạo bảng ước tính số từ theo section."""
+    lines = [
+        "\n## BẢNG ƯỚC TÍNH SỐ TỪ THEO PHẦN\n",
+        "| Phần | Mục tiêu (từ) | Tự điền | [CẦN KẾT QUẢ THẬT] | Ghi chú |",
+        "|------|:-------------:|:-------:|:-------------------:|---------|",
+    ]
+    total_min, total_max = 0, 0
+    section_info = [
+        ("Tiêu đề", "Title",        False, "Bác sĩ điền"),
+        ("Tác giả", "Authors",      False, "Bác sĩ điền"),
+        ("Tóm tắt", "Abstract",     True,  "~70% tự điền; Results/Conclusions cần kết quả thật"),
+        ("I. Giới thiệu", "Introduction", True, "~70% tự điền từ G0 evidence"),
+        ("II. Phương pháp", "Methods",   True,  "~75% tự điền từ G1-G4"),
+        ("III. Kết quả", "Results",     False, "100% cần kết quả thật từ G6"),
+        ("IV. Bàn luận", "Discussion",  True,  "~30% tự điền (y văn G0); còn lại cần kết quả thật"),
+        ("V. Kết luận", "Conclusion",   False, "100% cần kết quả thật"),
+        ("TLTK", "References",          True,  "PMIDs seed từ G0 — cần bổ sung đầy đủ"),
+    ]
+    for display_name, key, auto_filled, note in section_info:
+        lo, hi = SECTION_WORD_TARGETS.get(key, (0, 0))
+        total_min += lo
+        total_max += hi
+        auto_mark = "☑" if auto_filled else "☐"
+        need_mark = "☐" if auto_filled else "☑"
+        lines.append(
+            f"| {display_name} | {lo}–{hi} | {auto_mark} | {need_mark} | {note} |"
+        )
+    lines.append(
+        f"| **TỔNG** | **{total_min}–{total_max}** | | | "
+        f"Giới hạn tạp chí: {word_limit} từ |"
+    )
+    return "\n".join(lines) + "\n"
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 7. XUẤT DOCX
+# ════════════════════════════════════════════════════════════════════════════
+
+def export_docx_g7(artifact_md: str, study: str, out_dir: Path) -> Optional[Path]:
+    """
+    Xuất bản thảo ra Word (.docx).
+    Các dòng [CẦN KẾT QUẢ THẬT] được tô màu cam đậm để dễ nhận biết.
+    Các dòng [CẦN...] khác tô màu cam nhạt.
+    """
+    try:
+        from docx import Document
+        from docx.shared import Pt, RGBColor
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+        doc = Document()
+
+        # Trang bìa
+        title_p = doc.add_heading("BẢN THẢO IMRAD SKELETON", level=0)
+        title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        sub_p = doc.add_paragraph(f"Đề tài: {study}")
+        sub_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        date_p = doc.add_paragraph(
+            f"[BẢN NHÁP TỰ ĐỘNG — G7] | {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        )
+        date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        disc_p = doc.add_paragraph(
+            "KHÔNG điền kết quả giả vào ô [CẦN KẾT QUẢ THẬT]. "
+            "Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp."
+        )
+        disc_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        for run in disc_p.runs:
+            run.bold = True
+
+        doc.add_page_break()
+
+        # Phân tích từng dòng
+        in_code_block = False
+        for line in artifact_md.split("\n"):
+            stripped = line.strip()
+
+            # Bỏ qua fence code block markers
+            if stripped.startswith("```"):
+                in_code_block = not in_code_block
+                continue
+
+            if in_code_block:
+                p = doc.add_paragraph()
+                r = p.add_run(line)
+                r.font.name = "Courier New"
+                r.font.size = Pt(9)
+                continue
+
+            # Heading
+            if line.startswith("# "):
+                doc.add_heading(line[2:], level=1)
+            elif line.startswith("## "):
+                doc.add_heading(line[3:], level=2)
+            elif line.startswith("### "):
+                doc.add_heading(line[4:], level=3)
+            elif stripped == "---":
+                # Đường kẻ ngang
+                doc.add_paragraph("─" * 60)
+            elif stripped.startswith("|") and stripped.endswith("|"):
+                # Dòng bảng — hiển thị như monospace
+                p = doc.add_paragraph()
+                r = p.add_run(stripped)
+                r.font.name = "Courier New"
+                r.font.size = Pt(8)
+            elif stripped:
+                p = doc.add_paragraph()
+                # Đặt màu theo loại placeholder
+                if "[CẦN KẾT QUẢ THẬT" in line:
+                    r = p.add_run(line)
+                    r.font.color.rgb = RGBColor(0xCC, 0x33, 0x00)  # Đỏ cam đậm
+                    r.bold = True
+                elif "[CẦN" in line:
+                    r = p.add_run(line)
+                    r.font.color.rgb = RGBColor(0xCC, 0x77, 0x00)  # Cam
+                elif line.startswith(">"):
+                    # Blockquote
+                    r = p.add_run(line.lstrip("> "))
+                    r.italic = True
+                    r.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
+                else:
+                    p.add_run(line)
+
+        docx_path = out_dir / f"G7_A8_MANUSCRIPT_{study}.docx"
+        doc.save(docx_path)
+        return docx_path
+
+    except ImportError:
+        print("  ⚠ python-docx chưa cài — bỏ qua xuất DOCX")
+        print("    Cài: pip install python-docx")
+        return None
+    except Exception as e:
+        print(f"  ⚠ Lỗi khi xuất DOCX: {e}")
+        return None
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 8. CHECKPOINT G7
+# ════════════════════════════════════════════════════════════════════════════
+
+def write_checkpoint(
+    study: str,
+    out_dir: Path,
+    run_date: str,
+    design_code: str,
+    reporting_std: str,
+    target_journal: str,
+    word_limit: int,
+    pmids_used: list[str],
+    n_adjusted: int,
+    guardrail_status: str,
+    guardrail_errors: list[str],
+    md_path: Path,
+    docx_path: Optional[Path],
+    checklist_auto: int,
+    checklist_total: int,
+    crf_blocks: Optional[dict] = None,
+) -> Path:
+    """Ghi G7_checkpoint.json với đầy đủ metadata."""
+    crf_blocks = crf_blocks or {}
+    # SỬA: cùng lỗi has_crf=bool(crf_blocks) như trong generate_manuscript() —
+    # xét độc lập theo số biến thật của TỪNG phần (§3 exposure, §4 outcome).
+    has_exposure = bool(crf_blocks.get("n_exposure_vars", 0))
+    has_outcome  = bool(crf_blocks.get("n_outcome_vars", 0))
+    sections_auto_filled = [
+        "Abstract: Background/Objective/Design/Setting/Participants/Registration",
+        "I. Introduction §1 (bối cảnh + số SR/RCT)",
+        "I. Introduction §2 (khoảng trống từ G0 research_gaps)",
+        "I. Introduction §3 (mục tiêu + thiết kế từ G1)",
+        "II. Methods §1 (thiết kế + chuẩn báo cáo từ G1)",
+        "II. Methods §5 (cỡ mẫu từ G3)",
+        "II. Methods §7 (đạo đức + đăng ký từ G2)",
+        "IV. Discussion §2 (đối chiếu y văn — PMID seed từ G0)",
+        "IV. Discussion §4 (điểm mạnh — từ G1+G4)",
+        "Khai báo AI + tính có sẵn dữ liệu",
+        "TLTK seed (PMIDs từ G0)",
+    ]
+    sections_need_results = [
+        "Abstract: Results + Conclusions",
+        "Tiêu đề + Tác giả",
+        "II. Methods §2 (tiêu chí + cơ sở + thời gian)",
+        "II. Methods §6 (phần mềm + SAP chi tiết)",
+        "III. Results §1 (STROBE/CONSORT flowchart thật)",
+        "III. Results §2 (Table 1 — đặc điểm nền thật)",
+        "III. Results §3 (Table 2 — kết cục chính thật)",
+        "III. Results §4 (Table 3 — kết cục phụ thật)",
+        "III. Results §5 (sensitivity analysis thật)",
+        "IV. Discussion §1 (tóm tắt phát hiện chính)",
+        "IV. Discussion §3 (cơ chế)",
+        "IV. Discussion §5 (hạn chế cụ thể)",
+        "IV. Discussion §6 (ý nghĩa lâm sàng)",
+        "V. Kết luận",
+        "Lời cảm ơn",
+    ]
+    # SỬA: §3/§4 giờ tự điền TÊN BIẾN thật từ REDCap dictionary (G5) khi có —
+    # xét ĐỘC LẬP theo từng phần: dictionary CÓ THỂ có biến exposure nhưng
+    # không có biến outcome (hoặc ngược lại) — không dùng chung 1 cờ has_crf.
+    if has_exposure:
+        sections_auto_filled.append(
+            f"II. Methods §3 (phơi nhiễm/can thiệp — {crf_blocks.get('n_exposure_vars', 0)} "
+            "biến thật từ REDCap dictionary G5; ai thực hiện/kiểm soát chất lượng vẫn [CẦN])"
+        )
+    else:
+        sections_need_results.append("II. Methods §3 (phơi nhiễm/can thiệp chi tiết)")
+    if has_outcome:
+        sections_auto_filled.append(
+            f"II. Methods §4 (kết cục — {crf_blocks.get('n_outcome_vars', 0)} biến thật từ "
+            "REDCap dictionary G5; định nghĩa biến cố ICD-10 vẫn [CẦN])"
+        )
+    else:
+        sections_need_results.append("II. Methods §4 (kết cục chính + phụ)")
+    cp = {
+        "gate":       "G7",
+        "study":      study,
+        "run_date":   run_date,
+        "gate_status": "DRAFT — CHỜ KẾT QUẢ THẬT (G5+G6 hoàn tất)",
+        "sections_auto_filled":  sections_auto_filled,
+        "sections_need_results": sections_need_results,
+        "design_code":         design_code,
+        "reporting_standard":  reporting_std,
+        "target_journal":      target_journal or "[CẦN]",
+        "word_limit":          word_limit,
+        "word_estimate":       {
+            "current_skeleton": 2000,
+            "when_complete":    "3200–4500",
+            "note": "Ước tính; phụ thuộc kết quả thật và yêu cầu tạp chí",
+        },
+        "pmids_used_as_seed":  pmids_used,
+        "n_pmids":             len(pmids_used),
+        "n_planned":           n_adjusted,
+        "checklist": {
+            "standard":     reporting_std,
+            "items_total":  checklist_total,
+            "items_auto":   checklist_auto,
+            "items_needed": checklist_total - checklist_auto,
+        },
+        "guardrail": {
+            "status": guardrail_status,
+            "errors": guardrail_errors,
+        },
+        "artifacts": {
+            "A8_markdown": str(md_path),
+            "A8_docx":     str(docx_path) if docx_path else None,
+        },
+        "pending_doctor_actions": [
+            "Điền Tiêu đề (≤120 ký tự) và Tác giả (tên/đơn vị/ORCID)",
+            "Điền Methods §2: tiêu chí nhận/loại, cơ sở, thời gian",
+            (
+                "Xác nhận Methods §3: danh sách biến phơi nhiễm/can thiệp tự điền từ CRF (G5) "
+                "đã đúng + bổ sung ai thực hiện/kiểm soát chất lượng"
+                if has_exposure else
+                "Điền Methods §3: mô tả can thiệp/phơi nhiễm đầy đủ"
+            ),
+            (
+                "Xác nhận Methods §4: danh sách biến kết cục tự điền từ CRF (G5) đã đúng "
+                "chính/phụ + bổ sung định nghĩa biến cố ICD-10"
+                if has_outcome else
+                "Điền Methods §4: định nghĩa kết cục chính + phụ"
+            ),
+            "Sau G5+G6: điền toàn bộ Section III (kết quả thật)",
+            "Sau G5+G6: điền Discussion §1, §3, §5, §6 và Kết luận",
+            "Kiểm chứng toàn bộ PMIDs/TLTK trước khi nộp",
+            "Điền Lời cảm ơn + COI + CRediT đầy đủ",
+        ],
+        "next_gate":    "G8 — Peer Review / Journal Submission",
+        "note":         "G7 KHÔNG thay thế việc bác sĩ viết bản thảo thật; chỉ là skeleton và seed.",
+        "disclaimer":   "Cần bác sĩ kiểm chứng. KHÔNG nộp tạp chí trước khi điền kết quả thật.",
+    }
+    cp_path = out_dir / "G7_checkpoint.json"
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    return cp_path
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 9. MAIN
+# ════════════════════════════════════════════════════════════════════════════
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="G7 Auto — Sinh bản thảo IMRAD skeleton từ checkpoints G0-G6"
+    )
+    parser.add_argument("--study",          required=True,
+                        help="Mã đề tài (phải khớp với --study ở G0-G6)")
+    parser.add_argument("--target-journal", default="",
+                        help="Tên tạp chí mục tiêu (tuỳ chọn, dùng để định hướng định dạng)")
+    parser.add_argument("--word-limit",     type=int, default=3500,
+                        help="Giới hạn từ tạp chí yêu cầu (mặc định: 3500)")
+    args = parser.parse_args()
+
+    study      = args.study.strip()
+    run_date   = datetime.now().strftime("%Y-%m-%d")
+    out_dir    = BASE / "exports" / study
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"\n{'='*68}")
+    print(f"  G7 AUTO — BẢN THẢO IMRAD SKELETON")
+    print(f"  Đề tài: {study}  |  Ngày: {run_date}")
+    print(f"{'='*68}\n")
+
+    # ── Bước 1: Đọc tất cả checkpoints ──
+    print("📂 Bước 1/8: Đọc checkpoints G0-G6...")
+    g0 = load_cp(out_dir / "G0_checkpoint.json")
+    g1 = load_cp(out_dir / "G1_checkpoint.json")
+    g2 = load_cp(out_dir / "G2_checkpoint.json")
+    g3 = load_cp(out_dir / "G3_checkpoint.json")
+    g4 = load_cp(out_dir / "G4_checkpoint.json")
+    # G5/G6 chưa có KẾT QUẢ THẬT để điền, nhưng G5 REDCap dictionary cho biết
+    # TÊN BIẾN thật → dùng để sinh khung Bảng 1 (thay vì placeholder chung chung)
+    redcap_csv  = out_dir / f"G5_REDCap_dictionary_{study}.csv"
+    redcap_vars = load_redcap_dictionary(redcap_csv)
+    table1_shell = build_table1_shell(redcap_vars)
+    crf_blocks = build_exposure_outcome_blocks(redcap_vars)
+    print(f"  → G5 REDCap: {len(redcap_vars)} biến đọc được từ {redcap_csv.name if redcap_vars else '(không có)'}")
+    if crf_blocks:
+        print(f"  → Methods §3/§4 tự điền: {crf_blocks['n_exposure_vars']} biến phơi nhiễm, "
+              f"{crf_blocks['n_outcome_vars']} biến kết cục")
+
+    # Đọc G0 pubmed raw để lấy metadata bài báo
+    pubmed_raw  = load_pubmed_raw(out_dir / "G0_pubmed_raw.json")
+    pmid_meta   = build_pmid_meta(pubmed_raw)
+
+    # ── Bước 2: Trích xuất dữ liệu từ checkpoints ──
+    print("🔍 Bước 2/8: Trích xuất dữ liệu...")
+
+    # Từ G0
+    # SỬA: .get("pubmed_results", {}) không dùng default {} khi key tồn tại
+    # với giá trị null — bọc "or {}" để tránh crash pub_results.get(...) sau đó.
+    topic         = g0.get("topic") or study
+    pub_results   = g0.get("pubmed_results") or {}
+    n_sr          = pub_results.get("n_sr", 0)
+    n_rct         = pub_results.get("n_rct", 0)
+    n_guideline   = pub_results.get("n_guideline", 0)
+    research_gaps = g0.get("research_gaps") or []
+    # Lấy PMIDs từ pubmed_raw (toàn bộ các loại)
+    pmids: list[str] = []
+    for cat_articles in pubmed_raw.values():
+        if isinstance(cat_articles, list):
+            for art in cat_articles:
+                pid = str(art.get("pmid", "")).strip()
+                if pid and pid not in pmids:
+                    pmids.append(pid)
+
+    # Từ G1
+    # SỬA: .get("design", {}) không dùng default {} khi key tồn tại với giá
+    # trị null — bọc "or {}" để tránh crash design_info.get(...) ngay dưới.
+    design_info   = g1.get("design") or {}
+    design_code   = design_info.get("internal_code") or g1.get("design_code") or "cohort"
+    design_primary = design_info.get("primary") or g1.get("design_primary") or "Cohort tiến cứu"
+    reporting_std = (
+        design_info.get("reporting_standard")
+        or g1.get("reporting_standard")
+        or "STROBE 2007"
+    )
+    # Chuẩn hóa reporting_std (một số checkpoint lưu "STROBE", không phải "STROBE 2007")
+    if reporting_std and " " not in reporting_std:
+        year_map = {"STROBE": "2007", "CONSORT": "2010", "STARD": "2015", "PRISMA": "2020"}
+        for k, yr in year_map.items():
+            if reporting_std.upper().startswith(k):
+                reporting_std = f"{k} {yr}"
+                break
+
+    # Từ G2
+    irb_number  = g2.get("g2_irb_number")  or "[CẦN SỐ IRB THẬT]"
+    icf_version = g2.get("g2_icf_version") or "[CẦN PHIÊN BẢN ICF ĐÃ DUYỆT]"
+    registration = g2.get("g2_registration") or "[CẦN SỐ ĐĂNG KÝ CLINICALTRIALS.GOV/PROSPERO]"
+
+    # Từ G3
+    # SỬA: .get(key, default) không dùng default khi key tồn tại với giá trị
+    # null — bọc "or" để tránh crash khi n_total/n_adjusted/power dùng trong
+    # so sánh số/arithmetic (vd int(power*100), n_adjusted>0) ngay sau.
+    n_total    = g3.get("n_total") or 0
+    n_adjusted = g3.get("n_adjusted") or n_total
+    alpha      = g3.get("alpha") or 0.05
+    power      = g3.get("power") or 0.80
+    effect_val  = g3.get("effect_val")
+    effect_type = g3.get("effect_type") or "HR"
+    formula_used = g3.get("formula_used") or ""
+    dropout_pct  = g3.get("dropout") or 0.20
+
+    # Từ G4
+    g4_status    = g4.get("g4_status", "PENDING")
+    g4_lock_date = g4.get("g4_lock_date")
+
+    print(f"  → G0: topic='{topic[:50]}', {n_sr} SR, {n_rct} RCT, {len(pmids)} PMIDs")
+    print(f"  → G1: design_code={design_code}, std={reporting_std}")
+    print(f"  → G2: IRB={irb_number}, registration={registration}")
+    print(f"  → G3: N={n_adjusted}, alpha={alpha}, power={int(power*100)}%")
+    print(f"  → G4: {g4_status}")
+
+    # ── Bước 3: Chuẩn bị reporting checklist ──
+    print(f"\n📋 Bước 3/8: Chuẩn bị checklist {reporting_std}...")
+    std_name, std_total = REPORTING_CHECKLISTS.get(design_code, ("STROBE 2007", 22))
+    # Đếm mục tự điền
+    items_list  = CHECKLIST_ITEMS.get(design_code, CHECKLIST_ITEMS.get("cohort", []))
+    auto_count  = sum(
+        1 for _, desc, auto in items_list
+        if auto or any(
+            p in desc.lower()
+            for p in {"tóm tắt", "thiết kế", "cỡ mẫu", "đăng ký", "ethics", "irb",
+                       "design", "abstract", "structure", "reporting", "background", "protocol"}
+        )
+    )
+    print(f"  → {auto_count}/{std_total} mục tự điền từ G0-G4")
+
+    # ── Bước 4: Sinh manuscript ──
+    print(f"\n✍️  Bước 4/8: Sinh bản thảo IMRAD ({design_code} / {reporting_std})...")
+    manuscript = generate_manuscript(
+        study=study,
+        topic=topic,
+        n_sr=n_sr,
+        n_rct=n_rct,
+        n_guideline=n_guideline,
+        research_gaps=research_gaps,
+        pmids=pmids,
+        pmid_meta=pmid_meta,
+        design_code=design_code,
+        design_primary=design_primary,
+        reporting_std=reporting_std,
+        irb_number=irb_number,
+        icf_version=icf_version,
+        registration=registration,
+        n_total=n_total,
+        n_adjusted=n_adjusted,
+        alpha=alpha,
+        power=power,
+        effect_val=effect_val,
+        effect_type=effect_type,
+        formula_used=formula_used,
+        g4_status=g4_status,
+        g4_lock_date=g4_lock_date,
+        target_journal=args.target_journal,
+        word_limit=args.word_limit,
+        run_date=run_date,
+        table1_shell=table1_shell,
+        crf_blocks=crf_blocks,
+    )
+
+    # ── Bước 5: Bảng số từ + checklist ──
+    print(f"  → Sinh bảng số từ và checklist...")
+    word_table   = word_count_table(args.word_limit)
+    checklist_md = generate_checklist(
+        design_code=design_code,
+        reporting_std=reporting_std,
+        std_total_items=std_total,
+        irb_number=irb_number,
+        registration=registration,
+        n_adjusted=n_adjusted,
+        alpha=alpha,
+        power=power,
+    )
+
+    # Ghép toàn bộ artifact
+    artifact = manuscript + "\n" + word_table + "\n" + checklist_md + (
+        "\n---\n"
+        "\n*[BẢN NHÁP TỰ ĐỘNG — DRAFT G7] "
+        "Cần bác sĩ kiểm chứng và điền kết quả thật trước khi nộp tạp chí.*\n"
+    )
+
+    # ── Bước 6: Lưu Markdown ──
+    print(f"\n💾 Bước 5/8: Lưu A8 Markdown...")
+    md_path = out_dir / f"G7_A8_MANUSCRIPT_{study}.md"
+    md_path.write_text(artifact, encoding="utf-8")
+    print(f"  → {md_path} ({len(artifact)//1000}KB, ~{len(artifact.split())} từ)")
+
+    # ── Bước 7: Guardrail ──
+    print(f"\n🛡️  Bước 6/8: Kiểm guardrail R1-R7...")
+    g7_errors, g7_warnings = guardrail_g7(artifact)
+    for w in g7_warnings:
+        print(f"  {w}")
+    for e in g7_errors:
+        print(f"  {e}")
+    guardrail_status = "✅ PASS" if not g7_errors else f"⚠ {len(g7_errors)} LỖI"
+    print(f"  → Guardrail: {guardrail_status}")
+
+    # ── Bước 8: DOCX ──
+    print(f"\n📄 Bước 7/8: Xuất DOCX...")
+    docx_path = export_docx_g7(artifact, study, out_dir)
+    if docx_path:
+        print(f"  → {docx_path}")
+    else:
+        print("  → Bỏ qua DOCX (python-docx chưa cài)")
+
+    # ── Bước 9: Checkpoint ──
+    print(f"\n💾 Bước 8/8: Ghi G7_checkpoint.json...")
+    cp_path = write_checkpoint(
+        study=study,
+        out_dir=out_dir,
+        run_date=run_date,
+        design_code=design_code,
+        reporting_std=reporting_std,
+        target_journal=args.target_journal,
+        word_limit=args.word_limit,
+        pmids_used=pmids[:10],
+        n_adjusted=n_adjusted,
+        guardrail_status=guardrail_status,
+        guardrail_errors=g7_errors,
+        md_path=md_path,
+        docx_path=docx_path,
+        checklist_auto=auto_count,
+        checklist_total=std_total,
+        crf_blocks=crf_blocks,
+    )
+    print(f"  → {cp_path}")
+
+    # ── Tóm tắt ──
+    n_can_total   = len(re.findall(r'\[CẦN', artifact))
+    n_can_result  = len(re.findall(r'\[CẦN KẾT QUẢ THẬT', artifact))
+    n_can_fill    = n_can_total - n_can_result
+
+    print(f"\n{'='*68}")
+    print(f"  ✅ G7 HOÀN THÀNH — {study}")
+    print(f"{'='*68}")
+    print(f"\n  📁 Thư mục: {out_dir}/")
+    print(f"  📝 A8 Markdown: {md_path.name}  (~{len(artifact.split())} từ)")
+    if docx_path:
+        print(f"  📄 A8 DOCX:     {docx_path.name}")
+    print(f"  💾 Checkpoint:  {cp_path.name}")
+    print(f"\n  THỐNG KÊ BẢN THẢO:")
+    print(f"  • PMIDs seed từ G0:   {min(10, len(pmids))} PMID")
+    print(f"  • Mục checklist tự điền: {auto_count}/{std_total}")
+    print(f"  • Ô [CẦN KẾT QUẢ THẬT]:  {n_can_result}")
+    print(f"  • Ô [CẦN] khác:       {n_can_fill}")
+    print(f"  • Guardrail:          {guardrail_status}")
+    print(f"\n  VIỆC CÒN LẠI:")
+    print(f"  1. Mở A8 DOCX → điền Tiêu đề, Tác giả, Methods §2-4")
+    print(f"  2. Sau G5+G6: điền Section III (kết quả thật) + V Kết luận")
+    print(f"  3. Kiểm chứng toàn bộ {min(10,len(pmids))} PMID trước khi nộp")
+    print(f"  4. Chạy agent kiem-chung-trich-dan để xác minh TLTK")
+    if args.target_journal:
+        print(f"  5. Định dạng theo Author Guidelines: {args.target_journal}")
+    else:
+        print(f"  5. Chọn tạp chí mục tiêu → chạy lại: python tools/run_g7_auto.py "
+              f"--study {study} --target-journal \"Tên tạp chí\"")
+    print(f"\n  ⚠️  KHÔNG nộp tạp chí khi còn ô [CẦN KẾT QUẢ THẬT].")
+    print(f"  Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp.")
+    print(f"\n{'='*68}\n")
+
+
+if __name__ == "__main__":
+    main()

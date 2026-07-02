@@ -1,0 +1,1484 @@
+#!/usr/bin/env python3
+"""
+run_g5_auto.py — Cổng G5: Quản lý dữ liệu (Data Management Infrastructure)
+NÂNG CẤP: 55 dòng CRF theo thiết kế cụ thể, auto-gen data_cleaning.py,
+data_quality_report.py, STROBE participant flowchart.
+Mức tự động: 70%
+KHÔNG xử lý dữ liệu thật — chỉ sinh CRF, REDCap dictionary, scripts, cấu trúc.
+"""
+import argparse, json, re, sys, textwrap
+from datetime import datetime
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE))
+
+# ---------------------------------------------------------------------------
+# CRF DEFINITIONS — 55 dòng, cụ thể theo loại thiết kế
+# Mỗi tuple: (var_name, form, section, type, label, choices, note,
+#              validation_type, val_min, val_max, required, branching)
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# NHẬN DIỆN CHUYÊN KHOA THEO CHỦ ĐỀ
+# Trước bản sửa này, mọi CRF (bất kể chủ đề) đều dùng cứng field của ca
+# SGLT2-HFpEF (NYHA, LVEF, SGLT2i, nhập viện suy tim) — một đề tài về Metformin/
+# đái tháo đường vẫn ra field suy tim. Sửa: chọn "bundle" lâm sàng theo từ khóa
+# chủ đề; KHÔNG khớp bundle nào → dùng bundle GENERIC với placeholder [CẦN...]
+# thay vì bịa nội dung lâm sàng có thể sai hoàn toàn với đề tài thật.
+# ---------------------------------------------------------------------------
+_SPECIALTY_KEYWORDS = {
+    "cardiology_hf": [
+        "suy tim", "heart failure", "sglt2", "hfpef", "hfref", "lvef",
+        "ef thất trái", "tim mạch", "nhồi máu cơ tim", "nyha",
+    ],
+    "metabolic_diabetes": [
+        "đái tháo đường", "tiền đái tháo đường", "diabetes", "metformin",
+        "insulin", "hba1c", "đường huyết", "glucose", "sulfonylurea",
+        "gliptin", "glp-1", "chuyển hóa",
+    ],
+    # THÊM 2026-07-02: 6 chuyên khoa mới để giảm số đề tài rơi về "generic"
+    # một cách không cần thiết. Giữ nguyên cơ chế: không khớp từ khóa nào
+    # → vẫn "generic" (KHÔNG xóa fallback an toàn).
+    "nephrology_ckd": [
+        "bệnh thận mạn", "suy thận", "ckd", "chronic kidney disease",
+        "lọc máu", "dialysis", "egfr", "chạy thận", "thận nhân tạo",
+        "albumin niệu", "protein niệu",
+    ],
+    "pulmonology_copd_asthma": [
+        "copd", "hen phế quản", "hen suyễn", "asthma", "khó thở mạn",
+        "fev1", "bptnmt", "đợt cấp copd", "hô hấp mạn",
+    ],
+    "neurology_stroke": [
+        "đột quỵ", "stroke", "nhồi máu não", "xuất huyết não", "nihss",
+        "tai biến mạch máu não", "thiếu máu não cục bộ",
+    ],
+    "musculoskeletal_pain": [
+        "đau mạn", "đau lưng", "đau khớp", "viêm khớp", "chronic pain",
+        "osteoarthritis", "thoái hóa khớp", "đau cơ xương khớp",
+    ],
+    "psychiatry_depression_anxiety": [
+        "trầm cảm", "lo âu", "depression", "anxiety", "phq-9", "gad-7",
+        "rối loạn lo âu", "rối loạn trầm cảm",
+    ],
+    "gastroenterology": [
+        "viêm loét đại tràng", "crohn", "xơ gan", "viêm gan", "gerd",
+        "trào ngược dạ dày", "trào ngược", "viêm gan mạn", "bệnh gan mạn",
+        "bệnh viêm ruột",
+    ],
+}
+
+
+def detect_specialty(topic: str) -> str:
+    """
+    Nhận diện chuyên khoa từ chủ đề đề tài để chọn field lâm sàng phù hợp.
+    Trả về "generic" nếu không khớp từ khóa nào — KHÔNG đoán liều để tránh
+    gán nhầm field của chuyên khoa khác (vd suy tim) cho đề tài không liên quan.
+    """
+    # SỬA: substring thô "kw in t" khớp nhầm "insulin" bên trong "insulinoma"
+    # (u tụy nội tiết, KHÔNG liên quan đái tháo đường) → gán nhầm bundle
+    # metabolic_diabetes, sinh CRF hoàn toàn sai chuyên khoa mà không cảnh
+    # báo gì (specialty_is_generic_placeholder vẫn False, trông như đã nhận
+    # diện đúng). Dùng token-boundary, cùng pattern đã áp dụng ở G1/G6.
+    #
+    # SỬA 2026-07-02: logic cũ "khớp từ khóa ĐẦU TIÊN thắng" (duyệt dict theo
+    # thứ tự khai báo, return ngay khi thấy 1 từ khóa khớp) khiến 1 từ khóa
+    # dùng chung nhiều chuyên khoa (vd "sglt2" — thuốc dùng cả tim mạch lẫn
+    # thận lẫn ĐTĐ, chỉ khai trong cardiology_hf) LUÔN thắng các từ khóa đặc
+    # hiệu hơn của chuyên khoa khác xuất hiện SAU trong dict (vd đề tài về CKD
+    # có "bệnh thận mạn"+"ckd" bị gán nhầm cardiology_hf chỉ vì có nhắc
+    # "SGLT2" và cardiology_hf được duyệt trước nephrology_ckd). Phát hiện bởi
+    # agent kiểm định độc lập khi test tích hợp 6 chuyên khoa mới qua G0-G7.
+    # Sửa: tính ĐIỂM cho MỖI chuyên khoa = tổng số TỪ trong mỗi từ khóa khớp
+    # (cụm từ dài/đặc hiệu như "bệnh thận mạn" nặng hơn 1 từ khóa ngắn/dùng
+    # chung như "sglt2"), chọn chuyên khoa điểm cao nhất. Hòa điểm → giữ thứ
+    # tự khai báo trong dict làm tie-break (hành vi cũ, ổn định, không đoán).
+    t = (topic or "").lower()
+    scores: dict[str, int] = {}
+    for specialty, keywords in _SPECIALTY_KEYWORDS.items():
+        score = 0
+        for kw in keywords:
+            if re.search(r'(?<![a-zà-ỹ0-9])' + re.escape(kw) + r'(?![a-zà-ỹ0-9])', t):
+                score += len(kw.split())
+        if score > 0:
+            scores[specialty] = score
+    if not scores:
+        return "generic"
+    return max(scores.items(), key=lambda kv: kv[1])[0]
+
+
+# Nhóm biến chung (admin + nhân khẩu) — dùng cho MỌI chuyên khoa
+_BASE_ADMIN = [
+    ("record_id",     "Admin",       "Hành chính",         "text",     "Mã tham gia (duy nhất, không PII)",                    "",                                                                      "",                        "",          "",    "",    "y", ""),
+    ("consent_date",  "Admin",       "",                   "text",     "Ngày đồng thuận",                                       "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+    ("site_id",       "Admin",       "",                   "text",     "Mã cơ sở / trung tâm",                                  "",                                                                      "",                        "",          "",    "",    "y", ""),
+    ("visit_date",    "Admin",       "",                   "text",     "Ngày tái khám hiện tại",                                "",                                                                      "",                        "date_ymd",  "",    "",    "n", ""),
+    ("censor_date",   "Admin",       "",                   "text",     "Ngày kiểm duyệt (kết thúc theo dõi)",                   "",                                                                      "",                        "date_ymd",  "",    "",    "n", ""),
+    ("censor_reason", "Admin",       "",                   "dropdown", "Lý do kiểm duyệt",                                      "1, Hoàn thành theo dõi | 2, Rút đồng thuận | 3, Mất liên lạc | 4, Tử vong | 5, Khác", "",          "",          "",    "",    "n", ""),
+    ("protocol_deviation","Admin",   "",                   "radio",    "Vi phạm đề cương",                                      "0, Không | 1, Nhỏ | 2, Lớn",                                          "",                        "",          "",    "",    "n", ""),
+    ("ltfu",          "Admin",       "",                   "radio",    "Mất theo dõi (LTFU)",                                   "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
+]
+
+_BASE_DEMOGRAPHICS = [
+    ("age",           "Demographics","Nhân khẩu học",      "text",     "Tuổi (năm)",                                            "",                                                                      "",                        "integer",   "18",  "120", "y", ""),
+    ("sex",           "Demographics","",                   "radio",    "Giới tính sinh học",                                    "1, Nam | 2, Nữ | 3, Khác",                                            "",                        "",          "",    "",    "y", ""),
+    ("bmi",           "Demographics","",                   "text",     "BMI (kg/m²)",                                           "",                                                                      "",                        "number",    "10",  "60",  "n", ""),
+    ("education",     "Demographics","",                   "dropdown", "Trình độ học vấn",                                      "1, Tiểu học | 2, THCS | 3, THPT | 4, CĐ/ĐH | 5, Sau ĐH",             "",                        "",          "",    "",    "n", ""),
+    ("ethnicity",     "Demographics","",                   "dropdown", "Dân tộc",                                               "1, Kinh | 2, Hoa | 3, Khmer | 4, Khác",                               "",                        "",          "",    "",    "n", ""),
+]
+
+# Sinh hiệu — thật sự tổng quát, dùng cho MỌI chuyên khoa
+_BASE_VITALS = [
+    ("bp_sys",        "Clinical",    "Sinh hiệu nền",      "text",     "Huyết áp tâm thu (mmHg)",                               "",                                                                      "",                        "number",    "60",  "250", "y", ""),
+    ("bp_dia",        "Clinical",    "",                   "text",     "Huyết áp tâm trương (mmHg)",                            "",                                                                      "",                        "number",    "30",  "150", "y", ""),
+    ("heart_rate",    "Clinical",    "",                   "text",     "Nhịp tim (lần/phút)",                                   "",                                                                      "",                        "integer",   "30",  "250", "y", ""),
+]
+
+# CHUYÊN KHOA: Tim mạch / Suy tim — chỉ dùng khi topic khớp "cardiology_hf"
+_CARDIO_HF_CLINICAL = [
+    ("nyha",          "Clinical",    "Lâm sàng nền (Tim mạch)", "dropdown", "Phân độ NYHA",                                    "1, I | 2, II | 3, III | 4, IV",                                       "",                        "",          "",    "",    "y", ""),
+    ("lvef",          "Clinical",    "",                   "text",     "EF thất trái (%)",                                      "",                                                                      "Siêu âm tim gần nhất ≤3 tháng","number","20",  "85",  "y", ""),
+]
+
+# CHUYÊN KHOA: Chuyển hóa / Đái tháo đường — chỉ dùng khi topic khớp "metabolic_diabetes"
+_METABOLIC_CLINICAL = [
+    ("waist_circumference","Clinical","Lâm sàng nền (Chuyển hóa)","text","Vòng eo (cm)",                                       "",                                                                      "",                        "number",    "40",  "200", "n", ""),
+    ("retinopathy_screen","Clinical", "",                   "radio",    "Tầm soát bệnh võng mạc ĐTĐ",                          "0, Không có | 1, Có tổn thương",                                      "",                        "",          "",    "",    "n", ""),
+]
+
+# SỬA: trước đây _BASE_COMORBIDITIES/_BASE_LABS được gắn CỨNG vào MỌI bundle
+# kể cả "generic" — một đề tài về CBT/trầm cảm vẫn ra field rung nhĩ, COPD,
+# CKD, kali huyết thanh (audit follow-up phát hiện, cùng loại bug với CRF
+# gốc nhưng ở tầng "base" nằm ngoài dispatch theo specialty). Nay đổi tên
+# thành _CARDIOMETABOLIC_* (chỉ dùng cho bundle tim mạch/chuyển hóa — nơi
+# các bệnh nền/xét nghiệm này THẬT SỰ liên quan) và thêm _GENERIC_COMORBIDITIES/
+# _GENERIC_LABS tối giản, không giả định chuyên khoa, cho bundle generic.
+_CARDIOMETABOLIC_COMORBIDITIES = [
+    ("dm",            "Comorbidity", "Bệnh kèm",           "radio",    "Đái tháo đường",                                       "0, Không | 1, Có — týp 2 | 2, Có — týp 1",                           "",                        "",          "",    "",    "y", ""),
+    ("htn",           "Comorbidity", "",                   "radio",    "Tăng huyết áp",                                        "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("af",            "Comorbidity", "",                   "radio",    "Rung nhĩ",                                              "0, Không | 1, Cơn kịch phát | 2, Dai dẳng | 3, Vĩnh viễn",           "",                        "",          "",    "",    "y", ""),
+    ("ckd",           "Comorbidity", "",                   "dropdown", "Bệnh thận mạn (giai đoạn CKD)",                        "0, Không | 1, G1 | 2, G2 | 3, G3a | 4, G3b | 5, G4 | 6, G5",        "",                        "",          "",    "",    "y", ""),
+    ("copd",          "Comorbidity", "",                   "radio",    "BPTNMT",                                                "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("stroke",        "Comorbidity", "",                   "radio",    "Đột quỵ / TIA tiền sử",                                "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
+]
+
+# Generic — chỉ 2 bệnh nền phổ biến gần như mọi nghiên cứu người lớn đều cần
+# hỏi (không giả định chuyên khoa cụ thể); bệnh nền đặc thù khác để bác sĩ
+# tự thêm theo PICO/SAP thật của đề tài.
+_GENERIC_COMORBIDITIES = [
+    ("dm",            "Comorbidity", "Bệnh kèm",           "radio",    "Đái tháo đường",                                       "0, Không | 1, Có — týp 2 | 2, Có — týp 1",                           "",                        "",          "",    "",    "y", ""),
+    ("htn",           "Comorbidity", "",                   "radio",    "Tăng huyết áp",                                        "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("comorbid_other","Comorbidity", "",                   "notes",    "Bệnh nền khác liên quan [CẦN BÁC SĨ LIỆT KÊ theo PICO]", "",                                                                    "[CẦN — hệ thống không giả định bệnh nền đặc thù cho chuyên khoa này]", "", "", "", "n", ""),
+]
+
+# Xét nghiệm nền tim mạch/chuyển hóa — CHỈ dùng cho bundle cardiology_hf/metabolic_diabetes
+_CARDIOMETABOLIC_LABS = [
+    ("egfr",          "Labs",        "Xét nghiệm nền",     "text",     "eGFR (mL/min/1.73m²)",                                 "",                                                                      "CKD-EPI",                 "number",    "0",   "200", "y", ""),
+    ("hba1c",         "Labs",        "",                   "text",     "HbA1c (%)",                                             "",                                                                      "Chỉ điền nếu có ĐTĐ",     "number",    "4",   "15",  "n", "[dm] <> '0'"),
+    ("hgb",           "Labs",        "",                   "text",     "Hemoglobin (g/dL)",                                    "",                                                                      "",                        "number",    "3",   "20",  "n", ""),
+    ("creatinine",    "Labs",        "",                   "text",     "Creatinine huyết thanh (µmol/L)",                      "",                                                                      "",                        "number",    "20",  "2000","y", ""),
+    ("k_serum",       "Labs",        "",                   "text",     "Kali huyết thanh (mmol/L)",                            "",                                                                      "",                        "number",    "1.5", "8",   "y", ""),
+]
+
+# Generic — không giả định panel xét nghiệm cụ thể (eGFR/kali chỉ liên quan
+# nếu đề tài thật sự về thận/tim mạch); để bác sĩ tự thêm xét nghiệm liên quan.
+_GENERIC_LABS = [
+    ("labs_other",    "Labs",        "Xét nghiệm nền",     "notes",    "Xét nghiệm nền liên quan [CẦN BÁC SĨ LIỆT KÊ theo PICO]", "",                                                                  "[CẦN — hệ thống không giả định panel xét nghiệm cho chuyên khoa này]", "", "", "", "n", ""),
+]
+
+# CHUYÊN KHOA: Tim mạch / Suy tim
+_CARDIO_HF_LABS = [
+    ("nt_probnp",     "Labs",        "Xét nghiệm nền (Tim mạch)","text","NT-proBNP (pg/mL)",                                    "",                                                                      "",                        "number",    "0",   "100000","y",""),
+]
+_CARDIO_HF_MEDS = [
+    ("acei_arb",      "Meds",        "Thuốc nền (Tim mạch)", "radio",  "Đang dùng ACEi hoặc ARB",                              "0, Không | 1, ACEi | 2, ARB | 3, ARNI (sacubitril/valsartan)",       "",                        "",          "",    "",    "y", ""),
+    ("betablocker",   "Meds",        "",                   "radio",    "Đang dùng Beta-blocker",                               "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("mra",           "Meds",        "",                   "radio",    "Đang dùng MRA (spiro/eplerenone/finerenone)",           "0, Không | 1, Spironolactone | 2, Eplerenone | 3, Finerenone",        "",                        "",          "",    "",    "y", ""),
+    ("loop_diuretic", "Meds",        "",                   "radio",    "Đang dùng Lợi tiểu quai",                              "0, Không | 1, Furosemide | 2, Torasemide | 3, Khác",                  "",                        "",          "",    "",    "y", ""),
+    ("sglt2i_pre",    "Meds",        "",                   "radio",    "Đã từng dùng SGLT2i trước tuyển",                      "0, Chưa bao giờ | 1, Có — đã ngưng | 2, Có — đang dùng",             "",                        "",          "",    "",    "y", ""),
+]
+_CARDIO_HF_EXPOSURE = [
+    ("sglt2i_type",   "Exposure",    "Phơi nhiễm SGLT2i",  "dropdown", "Loại SGLT2i",                                          "1, Dapagliflozin | 2, Empagliflozin | 3, Canagliflozin | 4, Sotagliflozin | 5, Khác","", "",  "",    "",    "y", ""),
+    ("sglt2i_dose",   "Exposure",    "",                   "text",     "Liều SGLT2i (mg/ngày)",                                "",                                                                      "",                        "number",    "1",   "300", "y", "[sglt2i_type] <> ''"),
+    ("sglt2i_start_date","Exposure", "",                   "text",     "Ngày bắt đầu SGLT2i",                                  "",                                                                      "",                        "date_ymd",  "",    "",    "y", "[sglt2i_type] <> ''"),
+]
+_CARDIO_HF_OUTCOMES = [
+    ("hf_hosp_first", "Outcomes",    "Kết cục chính",      "radio",    "Nhập viện do suy tim (lần đầu)",                      "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("hf_hosp_date",  "Outcomes",    "",                   "text",     "Ngày nhập viện suy tim lần đầu",                       "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[hf_hosp_first] = '1'"),
+    ("cv_death",      "Outcomes",    "",                   "radio",    "Tử vong tim mạch",                                     "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("death_date",    "Outcomes",    "",                   "text",     "Ngày tử vong (mọi nguyên nhân)",                       "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[cv_death] = '1'"),
+    ("follow_time_months","Outcomes","",                   "text",     "Thời gian theo dõi (tháng)",                           "",                                                                      "",                        "number",    "0",   "120", "y", ""),
+    ("hf_hosp_total", "Outcomes",    "Kết cục phụ",        "text",     "Tổng số lần nhập viện suy tim",                        "",                                                                      "",                        "integer",   "0",   "50",  "n", ""),
+    ("qol_score_baseline","Outcomes","",                   "text",     "Điểm chất lượng sống nền (KCCQ hoặc SF-36)",           "",                                                                      "[CẦN CHỈ ĐỊNH THANG ĐO]", "number",    "0",   "100", "n", ""),
+    ("qol_score_6m",  "Outcomes",    "",                   "text",     "Điểm chất lượng sống lúc 6 tháng",                    "",                                                                      "",                        "number",    "0",   "100", "n", ""),
+    ("ef_change_6m",  "Outcomes",    "",                   "text",     "Thay đổi EF lúc 6 tháng (%)",                         "",                                                                      "Siêu âm tim 6 tháng",     "number",    "-50", "50",  "n", ""),
+]
+
+# CHUYÊN KHOA: Chuyển hóa / Đái tháo đường
+_METABOLIC_MEDS = [
+    ("metformin_dose","Meds",        "Thuốc nền (Chuyển hóa)","text",   "Liều Metformin (mg/ngày)",                            "",                                                                      "",                        "number",    "0",   "3000","n", ""),
+    ("insulin_type",  "Meds",        "",                   "dropdown", "Loại Insulin đang dùng",                              "0, Không dùng | 1, Nền | 2, Trộn | 3, Nền-tăng cường",                "",                        "",          "",    "",    "n", ""),
+    ("sglt2i_dm_pre", "Meds",        "",                   "radio",    "Đã từng dùng SGLT2i trước tuyển",                     "0, Chưa bao giờ | 1, Có — đã ngưng | 2, Có — đang dùng",             "",                        "",          "",    "",    "n", ""),
+]
+_METABOLIC_EXPOSURE = [
+    ("intervention_type","Exposure","Phơi nhiễm/Can thiệp (Chuyển hóa)","dropdown","Loại can thiệp/thuốc",                      "1, Metformin | 2, SGLT2i | 3, GLP-1 RA | 4, Sulfonylurea | 5, Thay đổi lối sống | 6, Khác","", "", "", "", "y", ""),
+    ("intervention_dose","Exposure","",                   "text",     "Liều (mg/ngày, nếu áp dụng)",                          "",                                                                      "",                        "number",    "0",   "3000","n", ""),
+    ("intervention_start_date","Exposure","",             "text",     "Ngày bắt đầu can thiệp/phơi nhiễm",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+]
+_METABOLIC_OUTCOMES = [
+    ("incident_t2dm", "Outcomes",    "Kết cục chính",      "radio",    "Tiến triển thành ĐTĐ týp 2 (kết cục chính)",          "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("incident_t2dm_date","Outcomes","",                  "text",     "Ngày chẩn đoán ĐTĐ týp 2",                             "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[incident_t2dm] = '1'"),
+    ("hypoglycemia_event","Outcomes","Kết cục phụ",       "radio",    "Có cơn hạ đường huyết",                                "0, Không | 1, Nhẹ | 2, Nặng (cần hỗ trợ)",                            "",                        "",          "",    "",    "n", ""),
+    ("microvascular_complication","Outcomes","",          "radio",    "Biến chứng vi mạch mới (võng mạc/thận/thần kinh)",    "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
+    ("follow_time_months","Outcomes","",                  "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
+]
+
+# ---------------------------------------------------------------------------
+# THÊM 2026-07-02 — 6 CHUYÊN KHOA MỚI (giảm số đề tài rơi về "generic" một
+# cách không cần thiết). Mỗi bundle theo ĐÚNG cấu trúc tuple 12 trường của
+# cardiology_hf/metabolic_diabetes ở trên. Field nào KHÔNG đủ tự tin về
+# thang đo/thuật ngữ chuẩn (vd Mayo score, Child-Pugh chi tiết) dùng "notes"
+# tự do kèm "[CẦN xác định — hệ thống không tự tin đủ về thang đo chuẩn]"
+# thay vì bịa công thức — cùng tinh thần "KHÔNG bịa" của bundle generic.
+# ---------------------------------------------------------------------------
+
+# CHUYÊN KHOA: Thận / Bệnh thận mạn (CKD)
+_NEPHRO_CKD_CLINICAL = [
+    ("ckd_stage_kdigo","Clinical",   "Lâm sàng nền (Thận)","dropdown", "Giai đoạn CKD (KDIGO)",                                "1, G1 (eGFR≥90) | 2, G2 (60-89) | 3, G3a (45-59) | 4, G3b (30-44) | 5, G4 (15-29) | 6, G5 (<15/lọc máu)","","","","","y", ""),
+    ("acr",            "Clinical",    "",                   "text",     "Albumin niệu/Creatinine niệu — ACR (mg/g)",           "",                                                                      "Mẫu nước tiểu bất kỳ (spot urine)","number","0", "20000","y", ""),
+    ("dialysis_status","Clinical",    "",                   "radio",    "Đang lọc máu",                                          "0, Không | 1, Chạy thận nhân tạo | 2, Lọc màng bụng",                 "",                        "",          "",    "",    "y", ""),
+]
+_NEPHRO_CKD_MEDS = [
+    ("raas_blocker",  "Meds",        "Thuốc nền (Thận)",   "radio",    "Đang dùng ức chế RAAS (ACEi/ARB)",                     "0, Không | 1, ACEi | 2, ARB",                                          "",                        "",          "",    "",    "y", ""),
+    ("sglt2i_ckd_pre","Meds",        "",                   "radio",    "Đã từng dùng SGLT2i trước tuyển",                      "0, Chưa bao giờ | 1, Có — đã ngưng | 2, Có — đang dùng",             "",                        "",          "",    "",    "n", ""),
+]
+_NEPHRO_CKD_EXPOSURE = [
+    ("ckd_intervention_type","Exposure","Phơi nhiễm/Can thiệp (Thận)","dropdown","Loại thuốc/can thiệp",                       "1, Ức chế SGLT2 | 2, ACEi/ARB (RAAS blocker) | 3, Finerenone (MRA không steroid) | 4, Khác","","","","","y",""),
+    ("ckd_intervention_dose","Exposure","",                "text",     "Liều (mg/ngày, nếu áp dụng)",                          "",                                                                      "",                        "number",    "0",   "1000","n", ""),
+    ("ckd_intervention_start_date","Exposure","",          "text",     "Ngày bắt đầu can thiệp/phơi nhiễm",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+]
+_NEPHRO_CKD_OUTCOMES = [
+    ("egfr_decline_40","Outcomes",   "Kết cục chính",      "radio",    "Tiến triển CKD (giảm eGFR ≥40% so với nền)",          "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("egfr_decline_date","Outcomes","",                    "text",     "Ngày ghi nhận giảm eGFR ≥40%",                         "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[egfr_decline_40] = '1'"),
+    ("kidney_replacement","Outcomes","Kết cục phụ",        "radio",    "Khởi đầu điều trị thay thế thận",                      "0, Không | 1, Lọc máu | 2, Ghép thận",                                "",                        "",          "",    "",    "n", ""),
+    ("renal_death",   "Outcomes",    "",                   "radio",    "Tử vong do nguyên nhân thận",                          "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
+    ("follow_time_months","Outcomes","",                   "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
+]
+
+# CHUYÊN KHOA: Hô hấp / COPD-Hen phế quản
+_PULM_COPD_CLINICAL = [
+    ("fev1_pct",      "Clinical",    "Lâm sàng nền (Hô hấp)","text",   "FEV1 (% dự đoán)",                                      "",                                                                      "Đo hô hấp ký sau test giãn phế quản","number","10","150","y", ""),
+    ("fev1_fvc_ratio","Clinical",    "",                   "text",     "Tỷ số FEV1/FVC (%)",                                    "",                                                                      "",                        "number",    "20",  "100", "y", ""),
+    ("mmrc_score",    "Clinical",    "",                   "dropdown", "Điểm khó thở mMRC",                                    "0, Độ 0 | 1, Độ 1 | 2, Độ 2 | 3, Độ 3 | 4, Độ 4",                     "",                        "",          "",    "",    "y", ""),
+    ("cat_score",     "Clinical",    "",                   "text",     "Điểm CAT (COPD Assessment Test)",                      "",                                                                      "Thang 0-40, chỉ áp dụng COPD",  "integer","0", "40",  "n", ""),
+    ("exacerbation_freq_prior","Clinical","",              "text",     "Số đợt cấp trong 12 tháng trước tuyển",                 "",                                                                      "",                        "integer",   "0",   "50",  "y", ""),
+]
+_PULM_COPD_MEDS = [
+    ("ics_use",       "Meds",        "Thuốc nền (Hô hấp)", "radio",    "Đang dùng ICS (corticosteroid hít)",                   "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("laba_use",      "Meds",        "",                   "radio",    "Đang dùng LABA",                                        "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("lama_use",      "Meds",        "",                   "radio",    "Đang dùng LAMA",                                        "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+]
+_PULM_COPD_EXPOSURE = [
+    ("pulm_intervention_type","Exposure","Phơi nhiễm/Can thiệp (Hô hấp)","dropdown","Loại thuốc/phác đồ",                     "1, ICS/LABA | 2, LABA/LAMA | 3, ICS/LABA/LAMA (bộ ba) | 4, LAMA đơn | 5, Khác","","","","","y",""),
+    ("pulm_intervention_dose","Exposure","",               "text",     "Liều (µg/liều, nếu áp dụng)",                          "",                                                                      "",                        "number",    "0",   "2000","n", ""),
+    ("pulm_intervention_start_date","Exposure","",         "text",     "Ngày bắt đầu can thiệp/phơi nhiễm",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+]
+_PULM_COPD_OUTCOMES = [
+    ("exacerbation_hosp","Outcomes","Kết cục chính",       "radio",    "Đợt cấp cần nhập viện",                                "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("exacerbation_hosp_date","Outcomes","",               "text",     "Ngày nhập viện do đợt cấp (lần đầu)",                  "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[exacerbation_hosp] = '1'"),
+    ("respiratory_death","Outcomes","",                    "radio",    "Tử vong do nguyên nhân hô hấp",                        "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
+    ("fev1_change_followup","Outcomes","Kết cục phụ",      "text",     "Thay đổi FEV1 (%) tại mốc theo dõi",                   "",                                                                      "So với nền",              "number",    "-100","100", "n", ""),
+    ("follow_time_months","Outcomes","",                   "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
+]
+
+# CHUYÊN KHOA: Thần kinh / Đột quỵ
+_NEURO_STROKE_CLINICAL = [
+    ("nihss_baseline","Clinical",    "Lâm sàng nền (Thần kinh)","text","Điểm NIHSS lúc nhập viện",                             "",                                                                      "National Institutes of Health Stroke Scale, 0-42","integer","0","42","y", ""),
+    ("stroke_type",   "Clinical",    "",                   "dropdown", "Loại đột quỵ",                                        "1, Nhồi máu não | 2, Xuất huyết não | 3, Xuất huyết dưới nhện | 4, Không xác định","","","","","y", ""),
+    ("mrs_baseline",  "Clinical",    "",                   "dropdown", "mRS nền (trước biến cố, nếu có bệnh sử đột quỵ cũ)",  "0, mRS 0 | 1, mRS 1 | 2, mRS 2 | 3, mRS 3 | 4, mRS 4 | 5, mRS 5",     "modified Rankin Scale",   "",          "",    "",    "n", ""),
+]
+_NEURO_STROKE_MEDS = [
+    ("antiplatelet",  "Meds",        "Thuốc nền (Thần kinh)","radio",  "Đang dùng kháng kết tập tiểu cầu",                     "0, Không | 1, Aspirin | 2, Clopidogrel | 3, Phối hợp kép (DAPT)",     "",                        "",          "",    "",    "y", ""),
+    ("statin_use",    "Meds",        "",                   "radio",    "Đang dùng statin",                                     "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("thrombolysis",  "Meds",        "",                   "radio",    "Đã dùng tiêu sợi huyết (rtPA)",                        "0, Không | 1, Có",                                                     "Chỉ áp dụng nhồi máu não cấp","",       "",    "",    "n", ""),
+]
+_NEURO_STROKE_EXPOSURE = [
+    ("stroke_intervention_type","Exposure","Phơi nhiễm/Can thiệp (Thần kinh)","dropdown","Loại thuốc/can thiệp",              "1, Kháng kết tập tiểu cầu | 2, Statin | 3, Tiêu sợi huyết | 4, Lấy huyết khối cơ học | 5, Khác","","","","","y",""),
+    ("stroke_intervention_dose","Exposure","",             "text",     "Liều (mg/ngày, nếu áp dụng)",                          "",                                                                      "",                        "number",    "0",   "1000","n", ""),
+    ("stroke_intervention_start_date","Exposure","",       "text",     "Ngày bắt đầu can thiệp/phơi nhiễm",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+]
+_NEURO_STROKE_OUTCOMES = [
+    ("mrs_followup",  "Outcomes",    "Kết cục chính",      "dropdown", "mRS tại mốc theo dõi (thường 90 ngày)",               "0, mRS 0 | 1, mRS 1 | 2, mRS 2 | 3, mRS 3 | 4, mRS 4 | 5, mRS 5 | 6, mRS 6 (tử vong)","","","","","y",""),
+    ("stroke_recurrence","Outcomes","",                    "radio",    "Tái phát đột quỵ",                                     "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("stroke_recurrence_date","Outcomes","",               "text",     "Ngày tái phát đột quỵ",                                "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[stroke_recurrence] = '1'"),
+    ("stroke_death",  "Outcomes",    "Kết cục phụ",        "radio",    "Tử vong (mọi nguyên nhân)",                            "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
+    ("follow_time_months","Outcomes","",                   "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
+]
+
+# CHUYÊN KHOA: Cơ xương khớp / Đau mạn
+_MSK_PAIN_CLINICAL = [
+    ("pain_nrs_baseline","Clinical", "Lâm sàng nền (Đau mạn)","text",  "Điểm đau NRS nền (0-10)",                              "",                                                                      "Numeric Rating Scale",   "integer",   "0",   "10",  "y", ""),
+    ("pain_location",  "Clinical",   "",                   "dropdown", "Vị trí đau chính",                                     "1, Lưng | 2, Cổ | 3, Khớp gối | 4, Khớp háng | 5, Đa vị trí | 6, Khác","",                       "",          "",    "",    "y", ""),
+    ("pain_duration_months","Clinical","",                 "text",     "Thời gian đau (tháng)",                                "",                                                                      "≥3 tháng theo định nghĩa đau mạn","integer","3","600","y", ""),
+]
+_MSK_PAIN_MEDS = [
+    ("analgesic_type","Meds",        "Thuốc nền (Đau mạn)","dropdown", "Loại giảm đau đang dùng",                              "0, Không dùng | 1, Paracetamol | 2, NSAID | 3, Opioid yếu | 4, Opioid mạnh | 5, Phối hợp","","","","","y", ""),
+    ("opioid_mme_per_day","Meds",    "",                   "text",     "Liều opioid quy đổi MME/ngày (nếu dùng opioid)",       "",                                                                      "Morphine Milligram Equivalent — chỉ điền nếu analgesic_type gồm opioid","number","0","2000","n","[analgesic_type] = '3' or [analgesic_type] = '4'"),
+]
+_MSK_PAIN_EXPOSURE = [
+    ("msk_intervention_type","Exposure","Phơi nhiễm/Can thiệp (Đau mạn)","dropdown","Loại can thiệp",                          "1, Thuốc giảm đau | 2, Vật lý trị liệu | 3, Can thiệp tâm lý (CBT) | 4, Phối hợp đa mô thức | 5, Khác","","","","","y",""),
+    ("msk_intervention_dose","Exposure","",                "text",     "Liều/tần suất (nếu áp dụng)",                          "",                                                                      "[CẦN GHI RÕ ĐƠN VỊ theo loại can thiệp]","text","","", "n", ""),
+    ("msk_intervention_start_date","Exposure","",          "text",     "Ngày bắt đầu can thiệp/phơi nhiễm",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+]
+_MSK_PAIN_OUTCOMES = [
+    ("pain_nrs_change","Outcomes",   "Kết cục chính",      "text",     "Thay đổi điểm đau NRS tại mốc theo dõi",               "",                                                                      "So với nền",              "number",    "-10", "10",  "y", ""),
+    ("function_score","Outcomes",    "",                   "notes",    "Điểm chức năng (vd Oswestry nếu đau lưng) [CẦN xác định — hệ thống không tự tin đủ về thang đo chuẩn cho mọi vị trí đau]", "", "[CẦN — bác sĩ chọn thang phù hợp vị trí đau: Oswestry/RMDQ cho lưng, WOMAC cho khớp gối/háng]", "", "", "", "n", ""),
+    ("opioid_dependence_signal","Outcomes","Kết cục phụ",  "radio",    "Dấu hiệu lệ thuộc/lạm dụng opioid mới xuất hiện",      "0, Không | 1, Có — cần đánh giá thêm",                                "An toàn — theo dõi sát nếu dùng opioid","","","","n", ""),
+    ("follow_time_months","Outcomes","",                   "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
+]
+
+# CHUYÊN KHOA: Tâm thần / Trầm cảm-Lo âu
+_PSYCH_DEP_ANX_CLINICAL = [
+    ("phq9_baseline", "Clinical",    "Lâm sàng nền (Tâm thần)","text",  "Điểm PHQ-9 nền",                                       "",                                                                      "Patient Health Questionnaire-9, thang 0-27","integer","0","27","y", ""),
+    ("gad7_baseline", "Clinical",    "",                   "text",     "Điểm GAD-7 nền",                                       "",                                                                      "Generalized Anxiety Disorder-7, thang 0-21","integer","0","21","n", ""),
+    ("suicidal_ideation_baseline","Clinical","",           "radio",    "Ý tưởng tự sát tại thời điểm tuyển (PHQ-9 mục 9)",     "0, Không | 1, Có — CẦN ĐÁNH GIÁ AN TOÀN NGAY",                        "An toàn — không chờ hoàn tất CRF nếu dương tính","","","","y", ""),
+]
+_PSYCH_DEP_ANX_MEDS = [
+    ("ssri_snri_use", "Meds",        "Thuốc nền (Tâm thần)","dropdown", "Đang dùng SSRI/SNRI",                                 "0, Không | 1, SSRI | 2, SNRI | 3, Khác",                              "",                        "",          "",    "",    "y", ""),
+    ("psychotherapy_use","Meds",     "",                   "radio",    "Đang có liệu pháp tâm lý",                             "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+]
+_PSYCH_DEP_ANX_EXPOSURE = [
+    ("psych_intervention_type","Exposure","Phơi nhiễm/Can thiệp (Tâm thần)","dropdown","Loại can thiệp",                       "1, SSRI | 2, SNRI | 3, Liệu pháp tâm lý (CBT/IPT) | 4, Phối hợp thuốc+tâm lý | 5, Khác","","","","","y",""),
+    ("psych_intervention_dose","Exposure","",              "text",     "Liều (mg/ngày, nếu dùng thuốc)",                       "",                                                                      "",                        "number",    "0",   "600", "n", ""),
+    ("psych_intervention_start_date","Exposure","",        "text",     "Ngày bắt đầu can thiệp/phơi nhiễm",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+]
+_PSYCH_DEP_ANX_OUTCOMES = [
+    ("phq9_response","Outcomes",     "Kết cục chính",      "radio",    "Đáp ứng điều trị (giảm ≥50% điểm PHQ-9 so với nền)",  "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("phq9_remission","Outcomes",    "",                   "radio",    "Thuyên giảm (PHQ-9 < 5 tại mốc theo dõi)",             "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
+    ("phq9_followup","Outcomes",     "",                   "text",     "Điểm PHQ-9 tại mốc theo dõi",                          "",                                                                      "",                        "integer",   "0",   "27",  "y", ""),
+    ("suicidal_ideation_new","Outcomes","Kết cục phụ (an toàn)","radio","Ý tưởng tự sát MỚI xuất hiện trong theo dõi",         "0, Không | 1, Có — CẦN XỬ TRÍ AN TOÀN NGAY",                          "Biến cố an toàn cần theo dõi sát mọi lần tái khám","","","","y", ""),
+    ("follow_time_months","Outcomes","",                   "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
+]
+
+# CHUYÊN KHOA: Tiêu hóa
+# Điểm hoạt động bệnh: KHÔNG bịa công thức chi tiết (Child-Pugh cần 5 tiêu
+# chí bilirubin/albumin/INR/báng/não gan; Mayo score cần 4 tiểu mục nội soi/
+# phân/đánh giá bác sĩ) — để field NHẬP ĐIỂM TỔNG đã tính sẵn (bác sĩ/điều
+# dưỡng tính theo thang chuẩn ở nơi khác) thay vì hệ thống tự suy ra từng
+# tiểu mục, tránh sai lệch nếu ghi nhớ nhầm ngưỡng.
+_GASTRO_CLINICAL = [
+    ("gastro_diagnosis_group","Clinical","Lâm sàng nền (Tiêu hóa)","dropdown","Nhóm chẩn đoán tiêu hóa mạn",                   "1, Viêm loét đại tràng | 2, Bệnh Crohn | 3, Xơ gan | 4, Viêm gan mạn (B/C) | 5, GERD/trào ngược | 6, Khác","","","","","y",""),
+    ("disease_activity_score","Clinical","",               "notes",    "Điểm hoạt động bệnh [CẦN xác định — hệ thống không tự tin đủ về thang đo chuẩn]", "", "[CẦN — bác sĩ chọn & ghi rõ thang: Mayo score cho viêm loét đại tràng, Child-Pugh/MELD cho xơ gan, HBV DNA/HCV RNA cho viêm gan virus]", "", "", "", "n", ""),
+    ("child_pugh_class","Clinical","",                     "dropdown", "Phân độ Child-Pugh (chỉ điền nếu xơ gan)",             "0, Không áp dụng | 1, Child A | 2, Child B | 3, Child C",             "Chỉ áp dụng nếu gastro_diagnosis_group = xơ gan","","","","n", "[gastro_diagnosis_group] = '3'"),
+]
+_GASTRO_MEDS = [
+    ("gastro_med_class","Meds",      "Thuốc nền (Tiêu hóa)","dropdown", "Nhóm thuốc điều trị nền đang dùng",                   "0, Không dùng | 1, 5-ASA | 2, Corticosteroid | 3, Ức chế miễn dịch (thiopurine/MTX) | 4, Sinh học (anti-TNF...) | 5, Ức chế bơm proton (PPI) | 6, Kháng virus viêm gan | 7, Khác","","","","","y", ""),
+]
+_GASTRO_EXPOSURE = [
+    ("gastro_intervention_type","Exposure","Phơi nhiễm/Can thiệp (Tiêu hóa)","dropdown","Loại thuốc/can thiệp",                "1, 5-ASA | 2, Corticosteroid | 3, Sinh học (biologic) | 4, PPI | 5, Kháng virus | 6, Khác","","","","","y",""),
+    ("gastro_intervention_dose","Exposure","",             "text",     "Liều (mg/ngày hoặc mg/đợt, nếu áp dụng)",              "",                                                                      "",                        "number",    "0",   "5000","n", ""),
+    ("gastro_intervention_start_date","Exposure","",       "text",     "Ngày bắt đầu can thiệp/phơi nhiễm",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+]
+_GASTRO_OUTCOMES = [
+    ("hepatic_decompensation","Outcomes","Kết cục chính",  "radio",    "Biến cố gan mất bù mới (báng/xuất huyết TM/não gan)",  "0, Không | 1, Có",                                                     "Chỉ áp dụng nhóm bệnh gan",   "",     "",    "",    "n", ""),
+    ("gi_bleeding","Outcomes",       "",                   "radio",    "Xuất huyết tiêu hóa",                                  "0, Không | 1, Có — trên | 2, Có — dưới",                              "",                        "",          "",    "",    "y", ""),
+    ("gastro_hospitalization","Outcomes","",               "radio",    "Nhập viện liên quan bệnh tiêu hóa",                    "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("gastro_hospitalization_date","Outcomes","",          "text",     "Ngày nhập viện (lần đầu liên quan)",                   "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[gastro_hospitalization] = '1'"),
+    ("follow_time_months","Outcomes","",                   "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
+]
+
+# GENERIC — dùng khi KHÔNG khớp chuyên khoa nào. KHÔNG bịa nội dung lâm sàng
+# cụ thể (vì có thể sai hoàn toàn với đề tài thật) — chỉ đặt placeholder rõ
+# ràng buộc bác sĩ phải tự định nghĩa theo PICO/SAP của chính đề tài.
+_GENERIC_EXPOSURE = [
+    ("exposure_var",  "Exposure",    "Phơi nhiễm/Can thiệp [CẦN ĐẶT TÊN THEO PICO]","text","[CẦN] Tên biến phơi nhiễm/can thiệp chính","",                                                     "[CẦN ĐỊNH NGHĨA — hệ thống không tự đoán được cho chuyên khoa này]","","","","y",""),
+    ("exposure_start_date","Exposure","",                 "text",     "Ngày bắt đầu phơi nhiễm/can thiệp",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+]
+_GENERIC_OUTCOMES = [
+    ("primary_outcome","Outcomes",   "Kết cục chính [CẦN ĐẶT TÊN THEO SAP §2]","text","[CẦN] Tên + định nghĩa kết cục chính",  "",                                                                      "[CẦN ĐỊNH NGHĨA — hệ thống không tự đoán được cho chuyên khoa này]","","","","y",""),
+    ("primary_outcome_date","Outcomes","",                "text",     "Ngày xảy ra kết cục chính",                            "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[primary_outcome] = '1'"),
+    ("follow_time_months","Outcomes","",                  "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
+]
+
+_SPECIALTY_BUNDLES = {
+    "cardiology_hf": {
+        "clinical": _CARDIO_HF_CLINICAL, "labs": _CARDIO_HF_LABS, "meds": _CARDIO_HF_MEDS,
+        "exposure": _CARDIO_HF_EXPOSURE, "outcomes": _CARDIO_HF_OUTCOMES,
+        "comorbid": _CARDIOMETABOLIC_COMORBIDITIES, "labs_base": _CARDIOMETABOLIC_LABS,
+    },
+    "metabolic_diabetes": {
+        "clinical": _METABOLIC_CLINICAL, "labs": [], "meds": _METABOLIC_MEDS,
+        "exposure": _METABOLIC_EXPOSURE, "outcomes": _METABOLIC_OUTCOMES,
+        "comorbid": _CARDIOMETABOLIC_COMORBIDITIES, "labs_base": _CARDIOMETABOLIC_LABS,
+    },
+    # THÊM 2026-07-02 — 6 bundle mới. comorbid/labs_base dùng _GENERIC_* (thay
+    # vì _CARDIOMETABOLIC_*) vì bệnh CHÍNH đang nghiên cứu của các bundle này
+    # (CKD/COPD/đột quỵ...) đã có field CHI TIẾT riêng ở "clinical" — dùng lại
+    # field "bệnh kèm" cùng tên (vd _CARDIOMETABOLIC_COMORBIDITIES có "ckd")
+    # sẽ trùng lặp gây nhầm lẫn giữa "bệnh đang nghiên cứu" và "bệnh đi kèm".
+    "nephrology_ckd": {
+        "clinical": _NEPHRO_CKD_CLINICAL, "labs": [], "meds": _NEPHRO_CKD_MEDS,
+        "exposure": _NEPHRO_CKD_EXPOSURE, "outcomes": _NEPHRO_CKD_OUTCOMES,
+        "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _CARDIOMETABOLIC_LABS,
+    },
+    "pulmonology_copd_asthma": {
+        "clinical": _PULM_COPD_CLINICAL, "labs": [], "meds": _PULM_COPD_MEDS,
+        "exposure": _PULM_COPD_EXPOSURE, "outcomes": _PULM_COPD_OUTCOMES,
+        "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _GENERIC_LABS,
+    },
+    "neurology_stroke": {
+        "clinical": _NEURO_STROKE_CLINICAL, "labs": [], "meds": _NEURO_STROKE_MEDS,
+        "exposure": _NEURO_STROKE_EXPOSURE, "outcomes": _NEURO_STROKE_OUTCOMES,
+        "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _GENERIC_LABS,
+    },
+    "musculoskeletal_pain": {
+        "clinical": _MSK_PAIN_CLINICAL, "labs": [], "meds": _MSK_PAIN_MEDS,
+        "exposure": _MSK_PAIN_EXPOSURE, "outcomes": _MSK_PAIN_OUTCOMES,
+        "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _GENERIC_LABS,
+    },
+    "psychiatry_depression_anxiety": {
+        "clinical": _PSYCH_DEP_ANX_CLINICAL, "labs": [], "meds": _PSYCH_DEP_ANX_MEDS,
+        "exposure": _PSYCH_DEP_ANX_EXPOSURE, "outcomes": _PSYCH_DEP_ANX_OUTCOMES,
+        "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _GENERIC_LABS,
+    },
+    "gastroenterology": {
+        "clinical": _GASTRO_CLINICAL, "labs": [], "meds": _GASTRO_MEDS,
+        "exposure": _GASTRO_EXPOSURE, "outcomes": _GASTRO_OUTCOMES,
+        "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _GENERIC_LABS,
+    },
+    "generic": {
+        "clinical": [], "labs": [], "meds": [],
+        "exposure": _GENERIC_EXPOSURE, "outcomes": _GENERIC_OUTCOMES,
+        "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _GENERIC_LABS,
+    },
+}
+
+_BASE_SAFETY = [
+    ("ae_any",        "Safety",      "An toàn",            "radio",    "Có biến cố bất lợi",                                   "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("ae_description","Safety",      "",                   "notes",    "Mô tả biến cố bất lợi",                                "",                                                                      "",                        "",          "",    "",    "n", "[ae_any] = '1'"),
+    ("ae_grade",      "Safety",      "",                   "dropdown", "Phân độ biến cố (CTCAE v5)",                           "1, Độ 1 (nhẹ) | 2, Độ 2 (trung bình) | 3, Độ 3 (nặng) | 4, Độ 4 (đe dọa tính mạng) | 5, Độ 5 (tử vong)", "", "", "", "", "n", "[ae_any] = '1'"),
+    ("sae_any",       "Safety",      "",                   "radio",    "Có biến cố bất lợi nghiêm trọng (SAE)",               "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("complete_flag", "Admin",       "Trạng thái phiếu",   "radio",    "Trạng thái hoàn thành phiếu",                          "0, Chưa hoàn thành | 1, Chưa xác minh | 2, Hoàn thành",              "",                        "",          "",    "",    "n", ""),
+]
+
+# RCT thêm: randomization
+_RCT_EXTRA = [
+    ("randomization_id","Randomization","Ngẫu nhiên hóa", "text",     "Mã ngẫu nhiên hóa",                                    "",                                                                      "",                        "",          "",    "",    "y", ""),
+    ("arm",           "Randomization","",                  "radio",    "Nhóm phân công",                                       "0, Đối chứng | 1, Can thiệp",                                         "",                        "",          "",    "",    "y", ""),
+    ("allocation_date","Randomization","",                 "text",     "Ngày phân bổ ngẫu nhiên",                              "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
+    ("blinding_status","Randomization","",                 "dropdown", "Tình trạng mù",                                        "1, Mở | 2, Mù đơn | 3, Mù đôi | 4, Mù ba",                          "",                        "",          "",    "",    "n", ""),
+]
+
+# Chẩn đoán thêm
+_DIAGNOSTIC_EXTRA = [
+    ("index_test_result","Diagnostic","Xét nghiệm chỉ số","text",    "Kết quả xét nghiệm chỉ số (giá trị liên tục)",          "",                                                                      "[CẦN ĐƠN VỊ]",           "number",    "",    "",    "y", ""),
+    ("reference_standard","Diagnostic","",                "radio",    "Kết quả tiêu chuẩn vàng",                              "0, Âm tính | 1, Dương tính",                                          "",                        "",          "",    "",    "y", ""),
+    ("test_date",     "Diagnostic",  "",                  "text",     "Ngày thực hiện xét nghiệm",                             "",                                                                      "",                        "date_ymd",  "",    "",    "n", ""),
+    ("positivity_cutoff","Diagnostic","",                 "text",     "Ngưỡng dương tính áp dụng",                             "",                                                                      "[CẦN XÁC ĐỊNH TRƯỚC - pre-specified]","number","", "", "y", ""),
+    ("sensitivity_confirmed","Diagnostic","",             "text",     "Độ nhạy xác nhận tại cơ sở (%)",                       "",                                                                      "",                        "number",    "0",   "100", "n", ""),
+    ("specificity_confirmed","Diagnostic","",             "text",     "Độ đặc hiệu xác nhận tại cơ sở (%)",                   "",                                                                      "",                        "number",    "0",   "100", "n", ""),
+]
+
+# SR/MA: biểu mẫu trích xuất
+_SRMA_FIELDS = [
+    ("study_id",      "Extraction",  "Trích xuất SR/MA",   "text",     "Mã nghiên cứu (Tác giả_Năm)",                         "",                                                                      "",                        "",          "",    "",    "y", ""),
+    ("first_author",  "Extraction",  "",                   "text",     "Tác giả đầu tiên",                                    "",                                                                      "",                        "",          "",    "",    "y", ""),
+    ("year",          "Extraction",  "",                   "text",     "Năm xuất bản",                                         "",                                                                      "",                        "integer",   "1980","2030","y", ""),
+    ("journal",       "Extraction",  "",                   "text",     "Tên tạp chí",                                          "",                                                                      "",                        "",          "",    "",    "y", ""),
+    ("design_type",   "Extraction",  "",                   "dropdown", "Loại thiết kế nghiên cứu",                             "1, RCT | 2, Cohort | 3, Case-control | 4, Cắt ngang | 5, Khác",       "",                        "",          "",    "",    "y", ""),
+    ("n_intervention","Extraction",  "",                   "text",     "Cỡ mẫu nhóm can thiệp/phơi nhiễm",                   "",                                                                      "",                        "integer",   "0",   "500000","n",""),
+    ("n_control",     "Extraction",  "",                   "text",     "Cỡ mẫu nhóm đối chứng",                               "",                                                                      "",                        "integer",   "0",   "500000","n",""),
+    ("effect_estimate","Extraction", "",                   "text",     "Ước lượng hiệu quả (HR/OR/RR/MD)",                    "",                                                                      "",                        "number",    "",    "",    "y", ""),
+    ("ci_lower",      "Extraction",  "",                   "text",     "Giới hạn dưới 95% CI",                                "",                                                                      "",                        "number",    "",    "",    "y", ""),
+    ("ci_upper",      "Extraction",  "",                   "text",     "Giới hạn trên 95% CI",                                "",                                                                      "",                        "number",    "",    "",    "y", ""),
+    ("rob_score",     "Extraction",  "",                   "dropdown", "Nguy cơ sai lệch",                                     "1, Thấp | 2, Một số lo ngại | 3, Cao",                                "",                        "",          "",    "",    "y", ""),
+    ("inclusion_confirmed","Extraction","",               "radio",    "Đủ tiêu chuẩn đưa vào (xác nhận 2 người)",            "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+]
+
+
+def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
+    """
+    Xây dựng CRF theo loại thiết kế + chuyên khoa nhận diện từ topic.
+    Trả về (rows, specialty) để artifact có thể báo minh bạch bundle nào
+    đã được chọn — quan trọng vì bundle "generic" cần bác sĩ tự điền exposure/
+    outcome thay vì tin nhầm rằng hệ thống đã tự xác định đúng.
+    """
+    specialty = detect_specialty(topic)
+    bundle = _SPECIALTY_BUNDLES[specialty]
+
+    if design_code == "sr_ma":
+        return _SRMA_FIELDS, specialty
+    elif design_code == "rct":
+        rows = (
+            _BASE_ADMIN + _BASE_DEMOGRAPHICS + _BASE_VITALS + bundle["clinical"]
+            + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"] + bundle["meds"]
+            + _RCT_EXTRA
+            + bundle["exposure"]   # RCT cũng có exposure (nhóm can thiệp)
+            + bundle["outcomes"]
+            + _BASE_SAFETY
+        )
+    elif design_code == "diagnostic":
+        rows = (
+            _BASE_ADMIN + _BASE_DEMOGRAPHICS + _BASE_VITALS + bundle["clinical"]
+            + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"]
+            + _DIAGNOSTIC_EXTRA
+            + _BASE_SAFETY
+        )
+    else:  # cohort, case_control, cross_sectional, mặc định
+        rows = (
+            _BASE_ADMIN + _BASE_DEMOGRAPHICS + _BASE_VITALS + bundle["clinical"]
+            + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"] + bundle["meds"]
+            + bundle["exposure"]
+            + bundle["outcomes"]
+            + _BASE_SAFETY
+        )
+    return rows, specialty
+
+
+# Validation rules tương ứng với CRF 55 dòng
+VALIDATION_RULES = [
+    ("record_id",       "text",    "Chuỗi",         "Duy nhất trong DB, không PII",              "Báo lỗi trùng ID — hệ thống REDCap tự phát hiện"),
+    ("consent_date",    "date",    "2020-01-01→hôm nay","Ngày hợp lệ, không tương lai",         "Báo lỗi ngày"),
+    ("age",             "integer", "18–120",         "Người lớn hợp lệ",                          "Báo lỗi tuổi"),
+    ("bmi",             "number",  "10–60",          "Phạm vi sinh lý",                           "Cảnh báo ngoài phạm vi"),
+    ("lvef",            "number",  "20–85",          "EF sinh lý, THẤP VÀO HFpEF nếu ≥50",       "Gắn cờ nếu <50 (không phải HFpEF)"),
+    ("bp_sys",          "number",  "60–250",         "Huyết áp tâm thu",                          "Cảnh báo ngoài phạm vi"),
+    ("bp_dia",          "number",  "30–150",         "Huyết áp tâm trương",                       "Cảnh báo ngoài phạm vi"),
+    ("heart_rate",      "integer", "30–250",         "Nhịp tim",                                  "Cảnh báo nhịp cực đoan"),
+    ("egfr",            "number",  "0–200",          "eGFR sinh lý",                              "Cảnh báo eGFR<20 (CKD nặng, LOẠI TRỪ nếu theo protocol)"),
+    ("nt_probnp",       "number",  "0–100000",       "NT-proBNP pg/mL",                           "Cảnh báo >35000 (cần xem lại)"),
+    ("hba1c",           "number",  "4–15",           "HbA1c — chỉ khi có ĐTĐ",                   "Phân nhánh: bỏ qua nếu dm=0"),
+    ("hgb",             "number",  "3–20",           "Hemoglobin g/dL",                           "Cảnh báo thiếu máu nặng (hgb<7)"),
+    ("creatinine",      "number",  "20–2000",        "Creatinine µmol/L",                         "Cảnh báo nếu >884 (eGFR có thể <15)"),
+    ("k_serum",         "number",  "1.5–8",          "Kali mmol/L",                               "Cờ ĐỎ nếu <2.5 hoặc >6 (nguy cơ tim mạch)"),
+    ("sglt2i_start_date","date",   "≥consent_date",  "Không trước ngày đồng thuận",               "Lỗi logic ngày"),
+    ("hf_hosp_date",    "date",    "≥consent_date",  "Ngày nhập viện không trước tuyển",          "Lỗi logic ngày"),
+    ("death_date",      "date",    "≥consent_date",  "Ngày tử vong không trước tuyển",            "Lỗi logic ngày; cần ≥hf_hosp_date nếu có"),
+    ("follow_time_months","number","0–120",           "Thời gian theo dõi (tháng)",                "Kiểm nhất quán vs censor_date"),
+    ("qol_score_baseline","number","0–100",          "Điểm QoL nền [CẦN CHỈ ĐỊNH THANG ĐO]",     "Kiểm phạm vi theo thang cụ thể"),
+    ("ef_change_6m",    "number",  "-50–50",         "Thay đổi EF từ nền đến 6 tháng",           "Cảnh báo thay đổi >30 (kiểm lại)"),
+    # THÊM 2026-07-02 — range-check cho biến lab/sinh hiệu quan trọng của
+    # 6 bundle chuyên khoa mới (nephrology_ckd, pulmonology_copd_asthma,
+    # neurology_stroke, musculoskeletal_pain, psychiatry_depression_anxiety).
+    ("acr",              "number",  "0–20000",       "Albumin/Creatinine niệu (ACR) mg/g",       "Cảnh báo >300 (albumin niệu nặng, macroalbumin)"),
+    ("fev1_pct",         "number",  "10–150",        "FEV1 % dự đoán",                            "Cảnh báo <30 (COPD rất nặng — GOLD 4)"),
+    ("fev1_fvc_ratio",   "number",  "20–100",        "Tỷ số FEV1/FVC (%)",                       "Cảnh báo <70 gợi ý tắc nghẽn"),
+    ("cat_score",        "integer", "0–40",          "Điểm CAT (COPD Assessment Test)",          "Cảnh báo ≥20 (ảnh hưởng nặng)"),
+    ("exacerbation_freq_prior","integer","0–50",     "Số đợt cấp COPD/hen trong 12 tháng trước", "Cảnh báo ≥2 (nguy cơ cao — nhóm E theo GOLD)"),
+    ("nihss_baseline",   "integer", "0–42",          "Điểm NIHSS lúc nhập viện",                  "Cảnh báo ≥21 (đột quỵ rất nặng)"),
+    ("pain_nrs_baseline","integer", "0–10",          "Điểm đau NRS nền",                          "Cảnh báo =10 (đau tối đa, cần xử trí ngay)"),
+    ("pain_duration_months","integer","3–600",       "Thời gian đau mạn (tháng)",                 "Kiểm giá trị <3 (không đạt định nghĩa đau mạn)"),
+    ("opioid_mme_per_day","number","0–2000",         "Liều opioid quy đổi MME/ngày",             "Cờ ĐỎ nếu ≥90 MME/ngày (ngưỡng nguy cơ cao CDC)"),
+    ("pain_nrs_change",  "number",  "-10–10",        "Thay đổi điểm đau NRS so với nền",         "Kiểm nhất quán chiều thay đổi vs đáp ứng lâm sàng"),
+    ("phq9_baseline",    "integer", "0–27",          "Điểm PHQ-9 nền",                            "Cờ ĐỎ nếu mục 9 (ý tưởng tự sát) >0 — xử trí an toàn ngay"),
+    ("gad7_baseline",    "integer", "0–21",          "Điểm GAD-7 nền",                            "Cảnh báo ≥15 (lo âu nặng)"),
+    ("phq9_followup",    "integer", "0–27",          "Điểm PHQ-9 tại mốc theo dõi",               "So sánh với phq9_baseline để tính đáp ứng/thuyên giảm"),
+]
+
+
+# ---------------------------------------------------------------------------
+# AUTO-GENERATED PYTHON SCRIPTS
+# ---------------------------------------------------------------------------
+
+def gen_data_cleaning_script(study: str, design_code: str, rows: list) -> str:
+    """Sinh data_cleaning.py đọc REDCap export và làm sạch theo CRF dictionary."""
+    col_names    = [r[0] for r in rows]
+    numeric_cols = [r[0] for r in rows if r[7] in ("number", "integer")]
+    date_cols    = [r[0] for r in rows if r[7] == "date_ymd"]
+    required_cols = [r[0] for r in rows if r[10] == "y"]
+
+    # Build range checks từ VALIDATION_RULES
+    range_lines = []
+    for vr in VALIDATION_RULES:
+        var, vtype, rng, rule, action = vr
+        if "–" in rng and var in col_names:
+            parts = rng.split("–")
+            try:
+                lo = float(parts[0].replace(",", ".").strip())
+                hi = float(parts[1].replace(",", ".").strip())
+                range_lines.append(f"    ('{var}', {lo}, {hi}),")
+            except ValueError:
+                pass
+    range_checks_str = "\n".join(range_lines) if range_lines else "    # (Thêm range check cho thiết kế này)"
+
+    # SỬA: date_pairs trước đây hardcode cứng 3 cặp riêng của bundle
+    # cardiology_hf (sglt2i_start_date/hf_hosp_date/death_date) — với đề tài
+    # KHÔNG phải cardiology_hf (metabolic_diabetes, generic), 3 cột này
+    # không tồn tại trong CRF thật, mọi cặp âm thầm bị bỏ qua
+    # ("if d1 in df.columns" false) → check_logic() thành no-op HOÀN TOÀN dù
+    # docstring tự nhận "sinh tự động từ CRF dictionary". Sửa: build cặp
+    # ĐỘNG từ chính date_cols thật của CRF — quy tắc chung "consent_date
+    # phải ≤ mọi ngày khác" áp dụng được cho MỌI chuyên khoa/thiết kế.
+    date_pairs_lines = []
+    if "consent_date" in date_cols:
+        for dcol in date_cols:
+            if dcol != "consent_date":
+                date_pairs_lines.append(f'        ("consent_date", "{dcol}"),')
+    date_pairs_str = "\n".join(date_pairs_lines) if date_pairs_lines else "        # (Không có cặp ngày nào để kiểm — CRF thiếu consent_date hoặc chỉ có 1 cột ngày)"
+
+    # Dùng plain string + replace thay vì f-string để tránh conflict brace
+    template = (
+        '#!/usr/bin/env python3\n'
+        '# -*- coding: utf-8 -*-\n'
+        '"""\n'
+        'data_cleaning.py — Lam sach du lieu REDCap cho de tai: __STUDY__\n'
+        'NANG CAP G5: sinh tu dong tu CRF dictionary (__NVAR__ bien)\n'
+        'Thiet ke: __DESIGN__\n\n'
+        'CANH BAO: Script nay chi xu ly file CSV cuc bo. KHONG gui du lieu ra ngoai.\n'
+        'Du lieu that chi xu ly tai moi truong bao mat (REDCap co so hoac server noi bo).\n\n'
+        'Cach dung:\n'
+        '    python data_cleaning.py --input data/raw/redcap_export.csv\n'
+        '"""\n'
+        'import argparse\n'
+        'import pandas as pd\n'
+        'from pathlib import Path\n'
+        'from datetime import datetime\n\n'
+        '# Danh sach bien theo CRF dictionary (sinh tu dong)\n'
+        'EXPECTED_COLUMNS = __COLS__\n\n'
+        '# Bien so can ep kieu numeric\n'
+        'NUMERIC_COLS = __NUMERIC__\n\n'
+        '# Bien ngay thang\n'
+        'DATE_COLS = __DATES__\n\n'
+        '# Bien bat buoc (required)\n'
+        'REQUIRED_COLS = __REQUIRED__\n\n'
+        '# Kiem tra pham vi (var, min, max) — sinh tu dong tu VALIDATION_RULES\n'
+        'RANGE_CHECKS = [\n'
+        '__RANGES__\n'
+        ']\n\n\n'
+        'def load_data(csv_path: str) -> pd.DataFrame:\n'
+        '    """Doc REDCap export CSV."""\n'
+        '    df = pd.read_csv(csv_path, dtype=str, encoding="utf-8-sig")\n'
+        '    print(f"[LOAD] {len(df)} dong, {len(df.columns)} cot")\n'
+        '    return df\n\n\n'
+        'def check_columns(df: pd.DataFrame) -> None:\n'
+        '    """Kiem tra cot thieu / thua so voi CRF dictionary."""\n'
+        '    missing = [c for c in EXPECTED_COLUMNS if c not in df.columns]\n'
+        '    extra   = [c for c in df.columns if c not in EXPECTED_COLUMNS]\n'
+        '    if missing:\n'
+        '        print(f"[WARN] Cot THIEU so CRF: {missing}")\n'
+        '    if extra:\n'
+        '        print(f"[INFO] Cot THEM khong trong CRF: {extra}")\n\n\n'
+        'def coerce_types(df: pd.DataFrame) -> pd.DataFrame:\n'
+        '    """Ep kieu numeric va date."""\n'
+        '    for col in NUMERIC_COLS:\n'
+        '        if col in df.columns:\n'
+        '            df[col] = pd.to_numeric(df[col], errors="coerce")\n'
+        '    for col in DATE_COLS:\n'
+        '        if col in df.columns:\n'
+        '            df[col] = pd.to_datetime(df[col], errors="coerce", format="%Y-%m-%d")\n'
+        '    return df\n\n\n'
+        'def check_missing(df: pd.DataFrame) -> pd.Series:\n'
+        '    """Tinh % thieu moi bien; in canh bao neu bien bat buoc thieu > 0."""\n'
+        '    missing_pct = (df.isnull().sum() / len(df) * 100).round(1)\n'
+        '    for varname in REQUIRED_COLS:\n'
+        '        if varname in df.columns and missing_pct.get(varname, 0) > 0:\n'
+        '            pct_val = missing_pct[varname]\n'
+        '            print(f"[WARN] Bien bat buoc \'{varname}\' thieu {pct_val:.1f}%")\n'
+        '    return missing_pct\n\n\n'
+        'def range_validation(df: pd.DataFrame) -> pd.DataFrame:\n'
+        '    """Gan co cac gia tri ngoai pham vi sinh ly."""\n'
+        '    for varname, lo, hi in RANGE_CHECKS:\n'
+        '        if varname in df.columns:\n'
+        '            flag_col = "flag_" + varname\n'
+        '            col_num = pd.to_numeric(df[varname], errors="coerce")\n'
+        '            df[flag_col] = col_num.notna() & ((col_num < lo) | (col_num > hi))\n'
+        '            n_flag = int(df[flag_col].sum())\n'
+        '            if n_flag > 0:\n'
+        '                print(f"[RANGE] {varname}: {n_flag} gia tri ngoai [{lo}, {hi}]")\n'
+        '    return df\n\n\n'
+        'def check_logic(df: pd.DataFrame) -> None:\n'
+        '    """Kiem tra logic ngay (consent <= event <= censor)."""\n'
+        '    date_pairs = [\n'
+        '__DATEPAIRS__\n'
+        '    ]\n'
+        '    for d1, d2 in date_pairs:\n'
+        '        if d1 in df.columns and d2 in df.columns:\n'
+        '            bad = df[d2].notna() & df[d1].notna() & (df[d2] < df[d1])\n'
+        '            if bad.sum() > 0:\n'
+        '                print(f"[LOGIC] {d2} truoc {d1}: {bad.sum()} dong")\n\n\n'
+        'def check_duplicates(df: pd.DataFrame) -> None:\n'
+        '    """Phat hien record_id trung."""\n'
+        '    if "record_id" in df.columns:\n'
+        '        dups = df["record_id"].duplicated(keep=False)\n'
+        '        if dups.sum() > 0:\n'
+        '            dup_ids = df.loc[dups, "record_id"].unique()\n'
+        '            print(f"[ERROR] record_id TRUNG: {dup_ids}")\n\n\n'
+        'def save_clean(df: pd.DataFrame, out_dir: Path) -> None:\n'
+        '    """Luu dataset da lam sach."""\n'
+        '    out_dir.mkdir(parents=True, exist_ok=True)\n'
+        '    out_path = out_dir / "df_clean.csv"\n'
+        '    flag_cols = [c for c in df.columns if c.startswith("flag_")]\n'
+        '    df_clean = df.drop(columns=flag_cols, errors="ignore")\n'
+        '    df_clean.to_csv(out_path, index=False, encoding="utf-8-sig")\n'
+        '    print(f"[SAVE] Dataset lam sach -> {out_path} ({len(df_clean)} dong)")\n'
+        '    if flag_cols:\n'
+        '        flag_path = out_dir / "df_flags.csv"\n'
+        '        df[["record_id"] + flag_cols].to_csv(flag_path, index=False, encoding="utf-8-sig")\n'
+        '        print(f"[SAVE] Co kiem tra -> {flag_path}")\n\n\n'
+        'def main():\n'
+        '    parser = argparse.ArgumentParser(description="Lam sach du lieu REDCap — __STUDY__")\n'
+        '    parser.add_argument("--input", required=True, help="Duong dan REDCap export CSV")\n'
+        '    parser.add_argument("--out-dir", default="data/processed",\n'
+        '                        help="Thu muc luu dataset lam sach (mac dinh: data/processed/)")\n'
+        '    args = parser.parse_args()\n\n'
+        '    print("=== data_cleaning.py — __STUDY__ ===")\n'
+        '    print(f"Thiet ke: __DESIGN__ | Thoi gian: {datetime.now().strftime(\'%Y-%m-%d %H:%M\')}")\n'
+        '    print("NHAC NHO: Chay tren moi truong bao mat noi bo, KHONG upload du lieu that len cloud.")\n'
+        '    print()\n\n'
+        '    df = load_data(args.input)\n'
+        '    check_columns(df)\n'
+        '    df = coerce_types(df)\n'
+        '    check_duplicates(df)\n'
+        '    check_missing(df)\n'
+        '    df = range_validation(df)\n'
+        '    check_logic(df)\n'
+        '    save_clean(df, Path(args.out_dir))\n\n'
+        '    print()\n'
+        '    print("=== HOAN TAT lam sach — Kiem tra canh bao tren va xu ly truoc khi phan tich ===")\n'
+        '    print("Can bac si kiem chung moi gia tri bat thuong duoc gan co.")\n\n\n'
+        'if __name__ == "__main__":\n'
+        '    main()\n'
+    )
+
+    script = (template
+              .replace("__STUDY__", study)
+              .replace("__DESIGN__", design_code)
+              .replace("__NVAR__", str(len(col_names)))
+              .replace("__COLS__", repr(col_names))
+              .replace("__NUMERIC__", repr(numeric_cols))
+              .replace("__DATES__", repr(date_cols))
+              .replace("__REQUIRED__", repr(required_cols))
+              .replace("__RANGES__", range_checks_str)
+              .replace("__DATEPAIRS__", date_pairs_str))
+    return script
+
+
+def gen_data_quality_report_script(study: str, design_code: str, rows: list) -> str:
+    """
+    Sinh data_quality_report.py đọc cleaned data và báo cáo chất lượng.
+    SỬA: trước đây RANGE_CHECKS hardcode cứng 15 biến của bundle
+    cardiology_hf (lvef, nt_probnp, k_serum...) BẤT KỂ chuyên khoa/thiết kế
+    thật — đề tài metabolic_diabetes/generic nhận script với range-check
+    cho biến KHÔNG tồn tại trong dataset của họ (âm thầm bỏ qua, "if varname
+    in df.columns" luôn false), trong khi biến THẬT của đề tài đó lại không
+    được kiểm range gì cả. Nay build RANGE_CHECKS động từ CRF thật (rows),
+    giống hệt cách gen_data_cleaning_script() đã làm.
+    """
+    col_names = [r[0] for r in rows]
+    range_lines = []
+    for vr in VALIDATION_RULES:
+        var, vtype, rng, rule, action = vr
+        if "–" in rng and var in col_names:
+            parts = rng.split("–")
+            try:
+                lo = float(parts[0].replace(",", ".").strip())
+                hi = float(parts[1].replace(",", ".").strip())
+                range_lines.append(f'    ("{var}", {lo}, {hi}),')
+            except ValueError:
+                pass
+    range_checks_str = "\n".join(range_lines) if range_lines else "    # (Chưa có range check cho thiết kế/chuyên khoa này)"
+
+    template = (
+        '#!/usr/bin/env python3\n'
+        '# -*- coding: utf-8 -*-\n'
+        '"""\n'
+        'data_quality_report.py — Bao cao chat luong du lieu cho de tai: __STUDY__\n'
+        'Doc df_clean.csv -> kiem tra N, % complete, vi pham pham vi, trung ID.\n'
+        'Sinh: data_quality_report.txt\n\n'
+        'CANH BAO: Chi chay tren moi truong bao mat noi bo voi du lieu that.\n\n'
+        'Cach dung:\n'
+        '    python data_quality_report.py --input data/processed/df_clean.csv\n'
+        '"""\n'
+        'import argparse\n'
+        'import pandas as pd\n'
+        'from pathlib import Path\n'
+        'from datetime import datetime\n\n\n'
+        'RANGE_CHECKS = [\n'
+        '__RANGES__\n'
+        ']\n\n\n'
+        'def generate_report(df: pd.DataFrame, study_name: str, design: str, out_path: Path) -> None:\n'
+        '    lines = []\n'
+        '    now = datetime.now().strftime("%Y-%m-%d %H:%M")\n'
+        '    lines += [\n'
+        '        "=" * 60,\n'
+        '        f"BAO CAO CHAT LUONG DU LIEU — {study_name}",\n'
+        '        f"Ngay sinh bao cao: {now}",\n'
+        '        f"Thiet ke: {design}",\n'
+        '        "=" * 60,\n'
+        '        "",\n'
+        '        "TONG QUAN",\n'
+        '        f"  N tong (dong): {len(df)}",\n'
+        '        f"  So bien      : {len(df.columns)}",\n'
+        '        "",\n'
+        '    ]\n\n'
+        '    if "record_id" in df.columns:\n'
+        '        n_dup = int(df["record_id"].duplicated(keep=False).sum())\n'
+        '        suffix = "  CANH BAO: CAN XU LY" if n_dup > 0 else "  OK"\n'
+        '        lines.append(f"TRUNG record_id: {n_dup} dong{suffix}")\n'
+        '    else:\n'
+        '        lines.append("TRUNG record_id: khong tim thay cot record_id")\n\n'
+        '    lines.append("")\n'
+        '    lines.append("% DU LIEU DAY DU (Completeness) theo bien:")\n'
+        '    lines.append("  " + "-" * 50)\n'
+        '    missing = (df.isnull().sum() / len(df) * 100).round(1)\n'
+        '    for varname, pct in missing.sort_values(ascending=True).items():\n'
+        '        complete = 100 - pct\n'
+        '        if pct > 30:\n'
+        '            flag_str = "  THIEU NHIEU"\n'
+        '        elif pct > 10:\n'
+        '            flag_str = "  CHU Y"\n'
+        '        else:\n'
+        '            flag_str = ""\n'
+        '        lines.append(f"  {varname:<30} {complete:5.1f}% day du{flag_str}")\n\n'
+        '    lines.append("")\n'
+        '    lines.append("VI PHAM PHAM VI SINH LY:")\n'
+        '    n_violations = 0\n'
+        '    for varname, lo, hi in RANGE_CHECKS:\n'
+        '        if varname in df.columns:\n'
+        '            col_num = pd.to_numeric(df[varname], errors="coerce")\n'
+        '            n_bad = int(((col_num < lo) | (col_num > hi)).sum())\n'
+        '            if n_bad > 0:\n'
+        '                lines.append(f"  {varname:<30} {n_bad} gia tri ngoai [{lo}, {hi}]  CANH BAO")\n'
+        '                n_violations += n_bad\n'
+        '    if n_violations == 0:\n'
+        '        lines.append("  Khong phat hien vi pham pham vi trong dataset nay.")\n\n'
+        '    lines += ["", "=" * 60, "KET LUAN:"]\n'
+        '    issues = []\n'
+        '    if "record_id" in df.columns and df["record_id"].duplicated(keep=False).sum() > 0:\n'
+        '        issues.append("Co record_id trung — can xu ly truoc khi phan tich")\n'
+        '    high_missing = missing[missing > 30]\n'
+        '    if not high_missing.empty:\n'
+        '        issues.append(f"{len(high_missing)} bien thieu >30%: {list(high_missing.index)}")\n'
+        '    if n_violations > 0:\n'
+        '        issues.append(f"{n_violations} gia tri vi pham pham vi — can kiem tra lai nguon")\n'
+        '    if issues:\n'
+        '        for idx, issue in enumerate(issues, 1):\n'
+        '            lines.append(f"  {idx}. {issue}")\n'
+        '    else:\n'
+        '        lines.append("  Khong phat hien van de chat luong nghiem trong.")\n\n'
+        '    lines += [\n'
+        '        "",\n'
+        '        "Can bac si/nha nghien cuu kiem chung bao cao nay.",\n'
+        '        "KHONG dung du lieu khi con van de chua giai quyet.",\n'
+        '        "=" * 60,\n'
+        '    ]\n'
+        '    report_text = "\\n".join(lines)\n'
+        '    out_path.write_text(report_text, encoding="utf-8")\n'
+        '    print(report_text)\n'
+        '    print(f"\\n-> Da luu bao cao: {out_path}")\n\n\n'
+        'def main():\n'
+        '    parser = argparse.ArgumentParser(description="Bao cao chat luong du lieu — __STUDY__")\n'
+        '    parser.add_argument("--input", default="data/processed/df_clean.csv",\n'
+        '                        help="Duong dan df_clean.csv")\n'
+        '    parser.add_argument("--out", default="data/processed/data_quality_report.txt",\n'
+        '                        help="Duong dan luu bao cao txt")\n'
+        '    args = parser.parse_args()\n\n'
+        '    df = pd.read_csv(args.input, encoding="utf-8-sig")\n'
+        '    generate_report(df, "__STUDY__", "__DESIGN__", Path(args.out))\n\n\n'
+        'if __name__ == "__main__":\n'
+        '    main()\n'
+    )
+    script = (template
+              .replace("__STUDY__", study)
+              .replace("__DESIGN__", design_code)
+              .replace("__RANGES__", range_checks_str))
+    return script
+
+
+# ---------------------------------------------------------------------------
+# STROBE PARTICIPANT FLOWCHART (ASCII)
+# ---------------------------------------------------------------------------
+
+def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_total: int, n_per_group: int) -> str:
+    """Sinh sơ đồ tham gia nghiên cứu dạng ASCII theo STROBE/CONSORT."""
+    is_rct = design_code == "rct"
+
+    if is_rct:
+        group_a = n_per_group
+        group_b = n_total - n_per_group
+        flowchart = f"""\
+┌─────────────────────────────────────────────────────────────────┐
+│      BIỂU ĐỒ THAM GIA NGHIÊN CỨU (CONSORT 2010 flow diagram)  │
+│                      Đề tài: {study:<30}     │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────┐
+  │  Đánh giá đủ tiêu chuẩn (Screened):     │
+  │  N = [CẦN — BÁC SĨ ĐIỀN]               │
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Loại trừ (Excluded):        │
+        │  N = [CẦN]                   │
+        │  • Không đủ TIÊU CHUẨN VÀO  │
+        │    → [CẦN nêu lý do cụ thể] │
+        │  • Từ chối tham gia: [CẦN]  │
+        │  • Lý do khác: [CẦN]        │
+        └─────────────────────────────┘
+                   │
+  ┌────────────────▼─────────────────────────┐
+  │  NGẪU NHIÊN HÓA (Randomised):           │
+  │  N = {n_adjusted} (sau điều chỉnh bỏ cuộc)  │
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────┴──────────────────┐
+        │                             │
+        ▼                             ▼
+  ┌───────────────┐           ┌───────────────┐
+  │  CAN THIỆP    │           │  ĐỐI CHỨNG    │
+  │  N = {group_a:<8}       │           │  N = {group_b:<8}       │
+  │  (SGLT2i)     │           │  (Placebo/SOC)│
+  └───────┬───────┘           └───────┬───────┘
+          │                           │
+          ▼                           ▼
+  ┌───────────────┐           ┌───────────────┐
+  │ THEO DÕI      │           │ THEO DÕI      │
+  │ Mất/ltfu:     │           │ Mất/ltfu:     │
+  │ N = [CẦN]    │           │ N = [CẦN]    │
+  └───────┬───────┘           └───────┬───────┘
+          │                           │
+          ▼                           ▼
+  ┌───────────────┐           ┌───────────────┐
+  │ PHÂN TÍCH     │           │ PHÂN TÍCH     │
+  │ N = [CẦN]    │           │ N = [CẦN]    │
+  │ (ITT/PP)      │           │ (ITT/PP)      │
+  └───────────────┘           └───────────────┘
+
+  Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
+  Cần bác sĩ kiểm chứng. KHÔNG PII.
+"""
+    else:
+        flowchart = f"""\
+┌─────────────────────────────────────────────────────────────────┐
+│        BIỂU ĐỒ THAM GIA NGHIÊN CỨU (STROBE Flowchart)         │
+│                      Đề tài: {study:<30}     │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────┐
+  │  Đánh giá đủ tiêu chuẩn (Assessed):     │
+  │  N = [CẦN — BÁC SĨ ĐIỀN từ sổ bệnh]   │
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Loại trừ (Excluded):        │
+        │  N = [CẦN]                   │
+        │  • LVEF < 50% (không HFpEF) │
+        │  • eGFR < 20 mL/min/1.73m²  │
+        │  • SGLT2i CCĐ               │
+        │  • Không đồng thuận          │
+        │  • [CẦN thêm lý do cụ thể]  │
+        └─────────────────────────────┘
+                   │
+  ┌────────────────▼─────────────────────────┐
+  │  TUYỂN VÀO (Enrolled):                   │
+  │  N = {n_adjusted} (N dự kiến + 20% dự phòng)│
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────┴──────────────────┐
+        │                             │
+        ▼                             ▼
+  ┌───────────────┐           ┌───────────────┐
+  │  CÓ PHƠI      │           │  KHÔNG PHƠI   │
+  │  NHIỄM (SGLT2i)│          │  NHIỄM        │
+  │  N ≈ {n_per_group:<8}     │           │  N ≈ {n_total - n_per_group:<8}     │
+  └───────┬───────┘           └───────┬───────┘
+          │                           │
+          ▼                           ▼
+  ┌──────────────────────────────────────────┐
+  │  THEO DÕI (Follow-up):                  │
+  │  Mất theo dõi / LTFU: N = [CẦN]        │
+  │  Lý do: [CẦN — rút ĐT/tử vong/ltfu]   │
+  └────────────────┬─────────────────────────┘
+                   │
+  ┌────────────────▼─────────────────────────┐
+  │  PHÂN TÍCH (Analysed):                   │
+  │  N = {n_adjusted} → [CẦN điều chỉnh thực tế]│
+  │  Phân tích chính: {n_total} (sau loại trừ)  │
+  └──────────────────────────────────────────┘
+
+  Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
+  Tham chiếu: STROBE 2007 (PMID: 18064739). Cần bác sĩ kiểm chứng.
+"""
+    return flowchart
+
+
+# ---------------------------------------------------------------------------
+# GUARDRAIL R1–R7
+# ---------------------------------------------------------------------------
+
+def guardrail(artifact: str) -> tuple[list, list]:
+    """Kiểm tra liêm chính R1–R7."""
+    errors, warnings = [], []
+
+    # R1 — Nguồn
+    if "PMID" in artifact or "DOI" in artifact or "STROBE" in artifact:
+        warnings.append("R1 ✅ Có tham chiếu nguồn")
+    else:
+        errors.append("R1 🔴 Thiếu tham chiếu nguồn")
+
+    # R2 — Không PII
+    # SỬA: regex SĐT chỉ bắt đầu số 08/09 — bỏ sót 03 (Viettel), 05
+    # (Vietnamobile), 07 (Mobifone) sau đợt chuyển đổi đầu số 2018.
+    pii = re.search(r'(?:CMND|CCCD|CMT)\s*\d{9,12}|0[35789]\d{8}\b', artifact, re.I)
+    if pii:
+        errors.append("R2 🔴 Phát hiện mẫu PII")
+    else:
+        warnings.append("R2 ✅ KHÔNG PII trong cấu trúc (chỉ template)")
+
+    # R3 — Không vượt cổng A/B/G
+    if "Cổng A" in artifact or "Cổng B" in artifact:
+        errors.append("R3 🔴 Vượt cổng A/B không đúng chỗ")
+    else:
+        warnings.append("R3 ✅ Không vượt cổng A/B/G")
+
+    # R4 — Nhãn DRAFT
+    n_draft = artifact.count("DRAFT")
+    if n_draft >= 1:
+        warnings.append(f"R4 ✅ Nhãn DRAFT đủ ({n_draft} lần)")
+    else:
+        errors.append("R4 🔴 Thiếu nhãn DRAFT")
+
+    # R5 — Nhãn [CẦN...]
+    can_n = len(re.findall(r'\[CẦN', artifact))
+    if can_n >= 5:
+        warnings.append(f"R5 ✅ {can_n} trường [CẦN...] đã gắn nhãn")
+    else:
+        errors.append(f"R5 🔴 Quá ít [CẦN...] ({can_n}) — cần ≥5")
+
+    # R6 — Không tự gán mức GRADE/khuyến cáo
+    # SỬA: regex cũ chỉ bắt cụm tiếng Anh — toàn bộ artifact G5 sinh bằng
+    # tiếng Việt nên "Khuyến cáo MẠNH"/"Mức độ khuyến cáo: A" không bị bắt.
+    grade_claim = re.search(
+        r'\bGRADE [A-D]\b|\b(Strong|Weak|Conditional) recommendation\b|'
+        r'(mức độ )?khuyến cáo\s*[:：]?\s*[A-D]\b|khuyến cáo (mạnh|yếu|có điều kiện)',
+        artifact, re.I)
+    if grade_claim:
+        errors.append("R6 🔴 Tự gán mức GRADE/khuyến cáo — không được phép ở G5")
+    else:
+        warnings.append("R6 ✅ Không tự gán GRADE/khuyến cáo")
+
+    # R7 — Disclaimer
+    if "Cần bác sĩ kiểm chứng" in artifact:
+        warnings.append("R7 ✅ Có disclaimer")
+    else:
+        errors.append("R7 🔴 Thiếu disclaimer 'Cần bác sĩ kiểm chứng'")
+
+    return errors, warnings
+
+
+# ---------------------------------------------------------------------------
+# GENERATE CSV
+# ---------------------------------------------------------------------------
+
+def generate_csv(study: str, out_dir: Path, rows: list) -> tuple[Path, int]:
+    """Sinh REDCap data dictionary CSV."""
+    header = ("Variable / Form Name / Section Header / Field Type / Field Label / "
+              "Choices, Calculations, OR Slider Labels / Field Note / "
+              "Text Validation Type OR Show Slider Number / "
+              "Text Validation Min / Text Validation Max / "
+              "Required Field / Branching Logic (Show field only if...)")
+    lines = [header]
+    for r in rows:
+        lines.append(" / ".join(str(x) for x in r))
+    csv_path = out_dir / f"G5_REDCap_dictionary_{study}.csv"
+    csv_path.write_text("\n".join(lines), encoding="utf-8")
+    return csv_path, len(rows)
+
+
+# ---------------------------------------------------------------------------
+# GENERATE MAIN ARTIFACT (Markdown)
+# ---------------------------------------------------------------------------
+
+_SPECIALTY_LABELS = {
+    "cardiology_hf":                 "Tim mạch / Suy tim",
+    "metabolic_diabetes":            "Chuyển hóa / Đái tháo đường",
+    "nephrology_ckd":                "Thận / Bệnh thận mạn (CKD)",
+    "pulmonology_copd_asthma":       "Hô hấp / COPD-Hen phế quản",
+    "neurology_stroke":              "Thần kinh / Đột quỵ",
+    "musculoskeletal_pain":          "Cơ xương khớp / Đau mạn",
+    "psychiatry_depression_anxiety": "Tâm thần / Trầm cảm-Lo âu",
+    "gastroenterology":              "Tiêu hóa",
+    "generic":                       "TỔNG QUÁT (không khớp chuyên khoa cụ thể)",
+}
+
+
+def generate_artifact(
+    study: str, topic: str, design_code: str,
+    n_adjusted: int, n_total: int, n_per_group: int,
+    run_date: str, rows: list, specialty: str = "generic"
+) -> str:
+    is_srma = (design_code == "sr_ma")
+    n_rows = len(rows)
+    col_names = [r[0] for r in rows]
+
+    flowchart = build_strobe_flowchart(study, design_code, n_adjusted, n_total, n_per_group)
+    specialty_label = _SPECIALTY_LABELS.get(specialty, specialty)
+
+    lines = [
+        "# A6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DRAFT)",
+        f"**Đề tài:** {topic}  ",
+        f"**Mã:** {study} | **Ngày:** {run_date} | **Thiết kế:** {design_code} | **N dự kiến:** {n_adjusted}  ",
+        f"**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC [CẦN...] VÀ XÁC NHẬN",
+        "",
+        "> ⚠️ **BẢO MẬT:** KHÔNG xử lý PII hoặc dữ liệu thật qua hệ thống này.",
+        "> Dữ liệu thật chỉ được xử lý tại môi trường bảo mật của đơn vị (REDCap, server nội bộ).",
+        "> Tham chiếu: STROBE 2007 (PMID: 18064739), CONSORT 2010, ICH-GCP E6(R2).",
+        "",
+    ]
+    if specialty == "generic":
+        lines += [
+            "> 🔴 **QUAN TRỌNG:** Hệ thống KHÔNG nhận diện được chuyên khoa cụ thể từ chủ đề "
+            "đề tài, nên các biến Phơi nhiễm/Can thiệp và Kết cục chính dưới đây CHỈ LÀ "
+            "PLACEHOLDER (`exposure_var`, `primary_outcome`) — **bác sĩ PHẢI tự đặt tên và "
+            "định nghĩa các biến này theo PICO/SAP của đề tài trước khi dùng CRF.** Các nhóm "
+            "biến khác (nhân khẩu, sinh hiệu, bệnh nền, xét nghiệm thường quy) vẫn dùng được.",
+            "",
+        ]
+    else:
+        lines += [
+            f"> ℹ️ Chuyên khoa nhận diện từ chủ đề: **{specialty_label}** — CRF dưới đây đã chọn "
+            "field lâm sàng/thuốc/kết cục phù hợp chuyên khoa này. Vẫn cần bác sĩ xác nhận từng "
+            "biến khớp đúng với PICO/SAP thực tế, đặc biệt khi đề tài có yếu tố khác biệt.",
+            "",
+        ]
+    lines += [
+        "---",
+        "",
+        "## PHẦN 1 — CẤU TRÚC CRF (Case Report Form)",
+        "",
+        f"Thiết kế: **{design_code}** | Chuyên khoa: **{specialty_label}** | "
+        f"Tổng biến CRF: **{n_rows} dòng** | N dự kiến: **{n_adjusted}**",
+        "",
+    ]
+
+    if is_srma:
+        lines += [
+            "*(SR/MA — Dùng biểu mẫu TRÍCH XUẤT thay vì CRF lâm sàng)*",
+            "",
+            "| STT | Biến | Nhóm | Loại | Nhãn |",
+            "|-----|------|------|------|------|",
+        ]
+        for i, r in enumerate(rows, 1):
+            lines.append(f"| {i} | `{r[0]}` | {r[1]} | {r[3]} | {r[4]} |")
+    else:
+        # Phân nhóm để hiển thị
+        groups_seen = {}
+        for r in rows:
+            grp = r[1]
+            if grp not in groups_seen:
+                groups_seen[grp] = []
+            groups_seen[grp].append(r)
+
+        for grp, grp_rows in groups_seen.items():
+            lines.append(f"### Nhóm: {grp} ({len(grp_rows)} biến)")
+            lines.append("")
+            lines.append("| Biến | Loại | Nhãn | Bắt buộc | Phạm vi |")
+            lines.append("|------|------|------|----------|---------|")
+            for r in grp_rows:
+                rng = f"{r[8]}–{r[9]}" if r[8] and r[9] else "—"
+                lines.append(f"| `{r[0]}` | {r[3]} | {r[4][:50]} | {'✓' if r[10]=='y' else ''} | {rng} |")
+            lines.append("")
+
+    lines += [
+        "---",
+        "",
+        "## PHẦN 2 — REDCAP DATA DICTIONARY",
+        "",
+        f"File CSV: `G5_REDCap_dictionary_{study}.csv` (**{n_rows} dòng**)",
+        f"Biến số (numeric): {len([r for r in rows if r[7] in ('number','integer')])}",
+        f"Biến ngày: {len([r for r in rows if r[7] == 'date_ymd'])}",
+        f"Biến bắt buộc: {len([r for r in rows if r[10] == 'y'])}",
+        "",
+        "Tóm tắt 10 biến đầu:",
+        "| Variable | Form | Type | Label | Bắt buộc |",
+        "|----------|------|------|-------|----------|",
+    ]
+    for r in rows[:10]:
+        lines.append(f"| `{r[0]}` | {r[1]} | {r[3]} | {r[4][:45]} | {'✓' if r[10]=='y' else ''} |")
+    lines += [
+        "| ... | ... | ... | ... | ... |",
+        f"| *(+{n_rows - 10} dòng — xem file CSV)* | | | | |",
+        "",
+        "---",
+        "",
+        "## PHẦN 3 — LUẬT KIỂM TRA DỮ LIỆU (Validation Rules)",
+        "",
+        "| Biến | Loại | Phạm vi | Quy tắc | Hành động |",
+        "|------|------|---------|---------|-----------|",
+    ]
+    for r in VALIDATION_RULES:
+        lines.append(f"| `{r[0]}` | {r[1]} | {r[2]} | {r[3]} | {r[4]} |")
+    lines += [
+        "",
+        "---",
+        "",
+        "## PHẦN 4 — SƠ ĐỒ THAM GIA NGHIÊN CỨU (STROBE/CONSORT Flowchart)",
+        "",
+        "```",
+        flowchart,
+        "```",
+        "",
+        "---",
+        "",
+        "## PHẦN 5 — SCRIPTS TỰ ĐỘNG (Sinh từ CRF Dictionary)",
+        "",
+        f"**Thư mục:** `exports/{study}/scripts/`",
+        "",
+        f"| Script | Mô tả | Đầu vào | Đầu ra |",
+        "|--------|-------|---------|--------|",
+        f"| `data_cleaning.py` | Làm sạch REDCap export; ép kiểu; kiểm range | `data/raw/redcap_export.csv` | `data/processed/df_clean.csv` |",
+        f"| `data_quality_report.py` | Báo cáo N, % complete, vi phạm, trùng ID | `data/processed/df_clean.csv` | `data_quality_report.txt` |",
+        "",
+        "Chạy theo thứ tự:",
+        "```bash",
+        f"cd exports/{study}/",
+        "python scripts/data_cleaning.py --input data/raw/redcap_export.csv",
+        "python scripts/data_quality_report.py --input data/processed/df_clean.csv",
+        "```",
+        "",
+        "---",
+        "",
+        "## PHẦN 6 — KẾ HOẠCH DỮ LIỆU THIẾU",
+        "",
+        "| Loại thiếu | Giả định | Chiến lược xử lý |",
+        "|------------|----------|-----------------|",
+        "| < 5% mỗi biến | MCAR | Complete case đủ |",
+        "| 5–30% | MAR | Multiple Imputation (m=20, package `mice`) |",
+        "| > 30% hoặc MNAR | MNAR | Pattern mixture models / Sensitivity analysis |",
+        "| [CẦN XEM XÉT THỰC TẾ từ bước thu thập] | | |",
+        "",
+        "---",
+        "",
+        "## PHẦN 7 — CẤU TRÚC GÓI TÁI LẶP",
+        "",
+        "```",
+        f"exports/{study}/",
+        f"├── data/             # KHÔNG commit — chứa dữ liệu thật",
+        f"│   ├── raw/          # dữ liệu thô từ REDCap export",
+        f"│   └── processed/    # df_clean.csv + data_quality_report.txt",
+        f"├── scripts/          # Python scripts tự động — có thể commit",
+        f"│   ├── data_cleaning.py        # làm sạch REDCap export",
+        f"│   └── data_quality_report.py  # báo cáo chất lượng",
+        f"├── output/           # bảng kết quả, hình (generate — không commit binary)",
+        f"├── docs/             # SAP, đề cương, các artifact G0-G4",
+        f"│   ├── G4_A5_SAP_FINAL_{study}.md",
+        f"│   └── G2_A3_ETHICS_PACKAGE_{study}.md",
+        f"└── README.md         # Hướng dẫn tái lặp đầy đủ",
+        "```",
+        "",
+        "**`.gitignore` bắt buộc:**",
+        "```",
+        "data/raw/",
+        "data/processed/",
+        "*.csv",
+        "*.xlsx",
+        ".env",
+        "```",
+        "",
+        "---",
+        "",
+        "## PHẦN 8 — CHECKLIST KHÓA CƠ SỞ DỮ LIỆU",
+        "",
+        "Thực hiện TRƯỚC khi chạy phân tích chính (G6):",
+        "- [ ] Tất cả data queries đã được giải quyết (trả lời đủ)",
+        "- [ ] Tỷ lệ thiếu biến chính < 5%",
+        "- [ ] Audit trail REDCap đầy đủ (không có chỉnh sửa không có lý do)",
+        "- [ ] Backup database kiểm tra thành công (restore test OK)",
+        "- [ ] Dual-entry hoặc 10% spot-check xác nhận",
+        "- [ ] Script `data_quality_report.py` chạy PASS (không có lỗi đỏ)",
+        "- [ ] Ngày khóa DB: [CẦN BÁC SĨ ĐIỀN]",
+        "- [ ] Người khóa DB (chữ ký): [CẦN]",
+        "- [ ] Người chứng kiến (chữ ký): [CẦN]",
+        "",
+        "---",
+        "",
+        "## PHẦN 9 — TIÊU CHÍ QUA CỔNG G5",
+        "",
+        "- [ ] **[CẦN BÁC SĨ]** Điền tất cả [CẦN...] trong CRF (biến phơi nhiễm/kết cục cụ thể)",
+        "- [ ] **[CẦN BÁC SĨ]** Import REDCap dictionary CSV vào REDCap cơ sở",
+        "- [ ] **[CẦN BÁC SĨ + ĐỘI NC]** Thu thập dữ liệu thật (chỉ sau G2 = LOCKED)",
+        "- [ ] **[CẦN BÁC SĨ]** Spot-check 10% phiếu CRF",
+        "- [ ] **[CẦN BÁC SĨ]** Chạy `data_cleaning.py` + `data_quality_report.py` → PASS",
+        "- [ ] **[CẦN BÁC SĨ]** Ký biên bản khóa DB",
+        "",
+        "---",
+        "",
+        "*Cần bác sĩ kiểm chứng. KHÔNG xử lý dữ liệu thật qua hệ thống này.*",
+        "*Script tự động ở PHẦN 5 chỉ chạy trên môi trường bảo mật nội bộ với dữ liệu thật.*",
+    ]
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# DOCX
+# ---------------------------------------------------------------------------
+
+def write_docx(artifact: str, path: Path) -> bool:
+    try:
+        from docx import Document
+        from docx.shared import RGBColor, Pt
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        doc = Document()
+        for line in artifact.split("\n"):
+            stripped = line.strip()
+            if not stripped:
+                doc.add_paragraph("")
+                continue
+            if line.startswith("# "):
+                doc.add_heading(line[2:], 0)
+            elif line.startswith("## "):
+                doc.add_heading(line[3:], 1)
+            elif line.startswith("### "):
+                doc.add_heading(line[4:], 2)
+            elif "[CẦN" in line:
+                p = doc.add_paragraph()
+                run = p.add_run(stripped)
+                run.font.color.rgb = RGBColor(0xCC, 0x44, 0x00)
+            elif line.startswith("|"):
+                p = doc.add_paragraph()
+                p.add_run(stripped).font.size = Pt(8)
+            elif stripped.startswith("- [ ]") or stripped.startswith("- [x]"):
+                doc.add_paragraph(stripped, style="List Bullet")
+            else:
+                doc.add_paragraph(stripped)
+        doc.save(path)
+        return True
+    except ImportError:
+        return False
+    except Exception:
+        return False
+
+
+# ---------------------------------------------------------------------------
+# MAIN
+# ---------------------------------------------------------------------------
+
+def load_cp(p) -> dict:
+    p = Path(p)
+    if p.exists():
+        with open(p, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="G5 NÂNG CẤP — Quản lý dữ liệu với 55-row CRF + Python scripts + STROBE flowchart"
+    )
+    parser.add_argument("--study", required=True, help="Mã đề tài (vd SGLT2-HFpEF-2026)")
+    args = parser.parse_args()
+
+    study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
+    out = BASE / "exports" / study
+    out.mkdir(parents=True, exist_ok=True)
+    scripts_dir = out / "scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+
+    run_date = datetime.now().strftime("%Y-%m-%d")
+
+    # Đọc checkpoints
+    g0 = load_cp(out / "G0_checkpoint.json")
+    g1 = load_cp(out / "G1_checkpoint.json")
+    g3 = load_cp(out / "G3_checkpoint.json")
+
+    # SỬA: .get(key, default) không dùng default khi key tồn tại với giá trị
+    # null — bọc "or" tránh in "None" ra artifact và tránh crash arithmetic.
+    topic       = g0.get("topic") or study
+    design_code = g1.get("design_code") or (g1.get("design") or {}).get("internal_code") or "cohort"
+    n_adjusted  = g3.get("n_adjusted") or 0
+    n_total     = (g3.get("n_total") or n_adjusted) if n_adjusted else 0
+    n_per_group = (g3.get("n_per_group") or n_total // 2) if n_total else 0
+
+    print(f"📊 G5 NÂNG CẤP — Quản lý dữ liệu: {study}")
+    print(f"  → Đề tài: {topic}")
+    print(f"  → Thiết kế: {design_code} | N={n_adjusted} (điều chỉnh) / {n_total} (cơ bản) / {n_per_group}/nhóm")
+
+    # Xây CRF theo thiết kế + chuyên khoa nhận diện từ topic (KHÔNG cứng hóa
+    # field của 1 đề tài mẫu cho mọi chủ đề khác — xem detect_specialty())
+    rows, specialty = build_redcap_rows(design_code, topic)
+    print(f"  → Chuyên khoa nhận diện: {_SPECIALTY_LABELS.get(specialty, specialty)}")
+    print(f"  → CRF: {len(rows)} dòng (thiết kế: {design_code})")
+    if specialty == "generic":
+        print("  ⚠️  Không khớp chuyên khoa cụ thể — exposure/outcome là placeholder, "
+              "bác sĩ PHẢI tự đặt tên theo PICO/SAP")
+
+    # Sinh artifact Markdown
+    artifact = generate_artifact(
+        study, topic, design_code,
+        n_adjusted, n_total, n_per_group,
+        run_date, rows, specialty
+    )
+    md = out / f"G5_A6_DATA_MGMT_{study}.md"
+    md.write_text(artifact, encoding="utf-8")
+    print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
+
+    # Sinh REDCap CSV
+    csv_path, n_vars = generate_csv(study, out, rows)
+    print(f"  → REDCap CSV: {csv_path} ({n_vars} dòng)")
+
+    # Guardrail R1–R7
+    errors, warnings = guardrail(artifact)
+    for w in warnings:
+        print(f"  {w}")
+    for e in errors:
+        print(f"  {e}")
+    status = "✅ PASS" if not errors else f"⚠ {len(errors)} LỖI"
+    print(f"  → Guardrail: {status}")
+
+    # Sinh data_cleaning.py
+    cleaning_script = gen_data_cleaning_script(study, design_code, rows)
+    cleaning_path = scripts_dir / "data_cleaning.py"
+    cleaning_path.write_text(cleaning_script, encoding="utf-8")
+    print(f"  → Script sinh: {cleaning_path}")
+
+    # Sinh data_quality_report.py
+    dqr_script = gen_data_quality_report_script(study, design_code, rows)
+    dqr_path = scripts_dir / "data_quality_report.py"
+    dqr_path.write_text(dqr_script, encoding="utf-8")
+    print(f"  → Script sinh: {dqr_path}")
+
+    # Sinh DOCX
+    docx_ok = write_docx(artifact, out / f"G5_A6_DATA_MGMT_{study}.docx")
+    print(f"  → DOCX: {'✅ lưu' if docx_ok else '⚠ bỏ qua (python-docx chưa cài)'}")
+
+    # Lưu checkpoint
+    cp = {
+        "gate":           "G5",
+        "study":          study,
+        "run_date":       run_date,
+        "version":        "2.1-topic-aware",
+        "design_code":    design_code,
+        "specialty":      specialty,
+        "specialty_is_generic_placeholder": specialty == "generic",
+        "redcap_rows":    n_vars,
+        "crf_columns":    [r[0] for r in rows],
+        "scripts_generated": [
+            str(cleaning_path.relative_to(BASE)),
+            str(dqr_path.relative_to(BASE)),
+        ],
+        "strobe_flowchart": "included_in_artifact",
+        "database_lock_status": "PENDING — dữ liệu chưa thu thập (chờ G2 LOCKED)",
+        "guardrail": status,
+        "automation_level": "70%",
+        "pending_doctor_actions": [
+            "Điền tất cả [CẦN...] trong CRF (biến phơi nhiễm/kết cục cụ thể)",
+            "Import REDCap dictionary CSV vào REDCap cơ sở",
+            "Thu thập dữ liệu thật (chỉ sau G2 = LOCKED)",
+            "Spot-check 10% phiếu CRF",
+            "Chạy data_cleaning.py + data_quality_report.py trên dữ liệu thật → PASS",
+            "Ký biên bản khóa DB",
+        ],
+    }
+    cp_path = out / "G5_checkpoint.json"
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"💾 Checkpoint: {cp_path}")
+
+    print()
+    print(f"✅ G5 NÂNG CẤP HOÀN TẤT — Mức tự động: 70%")
+    print(f"  CRF: {n_vars} dòng ({design_code}) | Guardrail: {status}")
+    print(f"  Scripts: data_cleaning.py + data_quality_report.py → {scripts_dir}")
+    print(f"  STROBE flowchart: nhúng trong artifact")
+
+
+if __name__ == "__main__":
+    main()
