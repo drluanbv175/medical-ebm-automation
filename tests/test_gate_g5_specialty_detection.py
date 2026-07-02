@@ -10,10 +10,16 @@ bộ test này (so nội dung sinh ra với chủ đề) mới bắt được lo
 import sys
 from pathlib import Path
 
+import pytest
+
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
 
-from run_g5_auto import _SPECIALTY_KEYWORDS, detect_specialty  # noqa: E402
+from run_g5_auto import (  # noqa: E402
+    _SPECIALTY_KEYWORDS,
+    detect_specialty,
+    detect_specialty_with_confidence,
+)
 
 
 ALL_SPECIALTIES = list(_SPECIALTY_KEYWORDS.keys())
@@ -104,3 +110,56 @@ class TestSpecificityScoring:
                     f"'{kw_b}' (đặc hiệu, {sp_b}) lẽ ra phải thắng '{kw_a_short}' "
                     f"(ngắn, {sp_a}) nhưng kết quả là {result!r}"
                 )
+
+
+class TestAmbiguityWarning:
+    """
+    Lớp phòng thủ thứ 2 (thêm 2026-07-02): guardrail cấu trúc không bắt được
+    lỗi phân loại chuyên khoa sai — đây là cảnh báo khi 2 chuyên khoa có điểm
+    quá gần nhau, để bác sĩ tự xác nhận thay vì tin mù quáng vào 1 lựa chọn.
+    """
+
+    @pytest.mark.parametrize(
+        "topic",
+        [
+            "Kiểm soát đường huyết ở bệnh nhân tiền đái tháo đường",
+            "Tiến triển bệnh thận mạn (CKD) giai đoạn G3-G4",
+            "Kiểm soát đợt cấp COPD ở bệnh nhân ngoại trú",
+            "Dự phòng tái phát đột quỵ nhồi máu não",
+            "Quản lý đau lưng mạn tính bằng vật lý trị liệu",
+            "Điều trị trầm cảm kèm lo âu ở người trưởng thành",
+            "Theo dõi xơ gan mất bù bằng thang Child-Pugh",
+            "Hiệu quả thuốc ức chế SGLT2 trên tái nhập viện do suy tim ở bệnh nhân HFpEF",
+        ],
+    )
+    def test_no_false_positive_on_clean_single_specialty_topics(self, topic):
+        _, runner_up, is_ambiguous = detect_specialty_with_confidence(topic)
+        assert is_ambiguous is False, (
+            f"Chủ đề rõ ràng 1 chuyên khoa nhưng bị gắn cờ mơ hồ (runner_up={runner_up!r}): {topic}"
+        )
+
+    def test_flags_genuine_dual_specialty_overlap(self):
+        """
+        Chủ đề thật sự chồng lấn 2 chuyên khoa (SGLT2i ở bệnh nhân vừa CKD vừa
+        ĐTĐ týp 2 — hợp lý lâm sàng cả 2 hướng) phải được gắn cờ mơ hồ.
+        """
+        topic = (
+            "Hiệu quả ức chế SGLT2 trong làm chậm tiến triển bệnh thận mạn "
+            "(CKD) ở bệnh nhân đái tháo đường týp 2"
+        )
+        specialty, runner_up, is_ambiguous = detect_specialty_with_confidence(topic)
+        assert specialty == "nephrology_ckd"
+        assert is_ambiguous is True
+        assert runner_up == "metabolic_diabetes"
+
+    def test_generic_topic_never_ambiguous(self):
+        assert detect_specialty_with_confidence("vitamin tổng hợp không rõ chuyên khoa") == (
+            "generic", None, False
+        )
+
+    def test_clear_winner_has_no_runner_up_reported(self):
+        _, runner_up, is_ambiguous = detect_specialty_with_confidence(
+            "Nghiên cứu về suy tim HFpEF ở người cao tuổi"
+        )
+        assert is_ambiguous is False
+        assert runner_up is None

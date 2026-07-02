@@ -93,6 +93,15 @@ def detect_specialty(topic: str) -> str:
     # (cụm từ dài/đặc hiệu như "bệnh thận mạn" nặng hơn 1 từ khóa ngắn/dùng
     # chung như "sglt2"), chọn chuyên khoa điểm cao nhất. Hòa điểm → giữ thứ
     # tự khai báo trong dict làm tie-break (hành vi cũ, ổn định, không đoán).
+    scores = _specialty_scores(topic)
+    if not scores:
+        return "generic"
+    return max(scores.items(), key=lambda kv: kv[1])[0]
+
+
+def _specialty_scores(topic: str) -> dict:
+    """Tính điểm đặc hiệu của mỗi chuyên khoa cho 1 chủ đề — dùng chung bởi
+    detect_specialty() và detect_specialty_with_confidence()."""
     t = (topic or "").lower()
     scores: dict[str, int] = {}
     for specialty, keywords in _SPECIALTY_KEYWORDS.items():
@@ -102,9 +111,39 @@ def detect_specialty(topic: str) -> str:
                 score += len(kw.split())
         if score > 0:
             scores[specialty] = score
+    return scores
+
+
+def detect_specialty_with_confidence(topic: str):
+    """
+    Như detect_specialty() nhưng trả thêm tín hiệu ĐỘ TIN CẬY của lựa chọn —
+    dùng để cảnh báo bác sĩ khi 2 chuyên khoa có điểm quá gần nhau (chủ đề
+    thật sự mơ hồ, vd vừa nhắc "suy tim" vừa nhắc "bệnh thận mạn" mà không
+    rõ trọng tâm), thay vì âm thầm chọn 1 bên theo tie-break.
+
+    THÊM 2026-07-02: guardrail cấu trúc (R1-R7) không kiểm được ĐÚNG-SAI nội
+    dung lâm sàng — bug detect_specialty() nghiêm trọng nhất phiên trước đó
+    (sglt2 lấn át bệnh thận mạn) đã PASS mọi guardrail vì đây là lỗi nội
+    dung, không phải cấu trúc. Cảnh báo này là lớp phòng thủ THỨ HAI: không
+    ngăn được lỗi phân loại sai hoàn toàn (đó là việc của thuật toán tính
+    điểm), nhưng ít nhất SOI RA những ca ranh giới mờ để bác sĩ tự xác nhận
+    thay vì tin tưởng mù quáng vào 1 lựa chọn có thể chỉ hơn đối thủ 1 điểm.
+
+    Trả về (specialty, runner_up, is_ambiguous):
+    - specialty: chuyên khoa được chọn (giống hệt detect_specialty())
+    - runner_up: chuyên khoa á quân nếu có, None nếu specialty thắng áp đảo/generic
+    - is_ambiguous: True khi runner_up đạt ≥75% điểm của specialty thắng (ranh giới mờ)
+    """
+    scores = _specialty_scores(topic)
     if not scores:
-        return "generic"
-    return max(scores.items(), key=lambda kv: kv[1])[0]
+        return "generic", None, False
+    ranked = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
+    winner, winner_score = ranked[0]
+    if len(ranked) < 2:
+        return winner, None, False
+    runner_up, runner_up_score = ranked[1]
+    is_ambiguous = runner_up_score >= winner_score * 0.75
+    return winner, (runner_up if is_ambiguous else None), is_ambiguous
 
 
 # Nhóm biến chung (admin + nhân khẩu) — dùng cho MỌI chuyên khoa
@@ -1105,7 +1144,8 @@ _SPECIALTY_LABELS = {
 def generate_artifact(
     study: str, topic: str, design_code: str,
     n_adjusted: int, n_total: int, n_per_group: int,
-    run_date: str, rows: list, specialty: str = "generic"
+    run_date: str, rows: list, specialty: str = "generic",
+    specialty_runner_up=None,
 ) -> str:
     is_srma = (design_code == "sr_ma")
     n_rows = len(rows)
@@ -1141,6 +1181,17 @@ def generate_artifact(
             "biến khớp đúng với PICO/SAP thực tế, đặc biệt khi đề tài có yếu tố khác biệt.",
             "",
         ]
+        if specialty_runner_up:
+            runner_up_label = _SPECIALTY_LABELS.get(specialty_runner_up, specialty_runner_up)
+            lines += [
+                f"> 🟡 [CẦN XÁC NHẬN CHUYÊN KHOA] Chủ đề có tín hiệu từ khóa GẦN NGANG NHAU giữa "
+                f"**{specialty_label}** (đã chọn) và **{runner_up_label}** — hệ thống chỉ chọn "
+                f"{specialty_label} vì tính điểm đặc hiệu cao hơn một chút, KHÔNG phải chắc chắn "
+                "tuyệt đối. Nếu đề tài thực ra trọng tâm là "
+                f"{runner_up_label}, hãy sửa lại chủ đề rõ hơn (thêm từ khóa đặc hiệu) rồi chạy "
+                "lại G5 — KHÔNG tự ý dùng CRF này nếu chưa xác nhận đúng chuyên khoa.",
+                "",
+            ]
     lines += [
         "---",
         "",
@@ -1402,11 +1453,21 @@ def main():
         print("  ⚠️  Không khớp chuyên khoa cụ thể — exposure/outcome là placeholder, "
               "bác sĩ PHẢI tự đặt tên theo PICO/SAP")
 
+    # THÊM 2026-07-02: guardrail cấu trúc không kiểm được đúng-sai nội dung
+    # lâm sàng (xem docstring detect_specialty_with_confidence). Tính độ tin
+    # cậy phân loại chuyên khoa — cảnh báo khi 2 chuyên khoa điểm quá gần.
+    _, specialty_runner_up, specialty_ambiguous = detect_specialty_with_confidence(topic)
+    if specialty_ambiguous:
+        print(f"  ⚠️  Chủ đề CÓ THỂ thuộc cả '{_SPECIALTY_LABELS.get(specialty, specialty)}' "
+              f"lẫn '{_SPECIALTY_LABELS.get(specialty_runner_up, specialty_runner_up)}' "
+              "(điểm nhận diện gần nhau) — bác sĩ nên xác nhận đúng trọng tâm chuyên khoa")
+
     # Sinh artifact Markdown
     artifact = generate_artifact(
         study, topic, design_code,
         n_adjusted, n_total, n_per_group,
-        run_date, rows, specialty
+        run_date, rows, specialty,
+        specialty_runner_up=specialty_runner_up,
     )
     md = out / f"G5_A6_DATA_MGMT_{study}.md"
     md.write_text(artifact, encoding="utf-8")
@@ -1450,6 +1511,8 @@ def main():
         "design_code":    design_code,
         "specialty":      specialty,
         "specialty_is_generic_placeholder": specialty == "generic",
+        "specialty_ambiguous": specialty_ambiguous,
+        "specialty_runner_up": specialty_runner_up,
         "redcap_rows":    n_vars,
         "crf_columns":    [r[0] for r in rows],
         "scripts_generated": [
