@@ -1,0 +1,200 @@
+"""Test G10 assembler + validator check_de_cuong trên bộ checkpoint FIXTURE.
+
+Không phụ thuộc mạng: dựng tay checkpoint G0-G9 tối thiểu trong thư mục tạm,
+chạy assemble(), rồi kiểm đề cương sinh ra đạt chuẩn skill. Có test đối kháng:
+- CRF caveat PHẢI nổ với đề tài generic + biến lâm sàng mặc định.
+- CRF caveat KHÔNG nổ với đề tài lâm sàng thật (chuyên khoa cụ thể).
+- Validator PHẢI bắt: PMID bịa, nhãn tự chế, thiếu mục.
+"""
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
+sys.path.insert(0, str(TOOLS_DIR))
+
+import run_g10_assemble as G10  # noqa: E402
+import check_de_cuong  # noqa: E402
+import skill_standards as S  # noqa: E402
+
+
+def _write_cross_sectional_fixture(d: Path, specialty="generic",
+                                   crf=None, pmids=None):
+    """Ghi bộ checkpoint G0-G9 tối thiểu cho đề tài cắt ngան."""
+    if crf is None:
+        crf = ["record_id", "age", "sex", "bmi", "bp_sys", "heart_rate",
+               "dm", "htn", "exposure_var", "primary_outcome"]
+    if pmids is None:
+        pmids = ["40995744", "24700992", "16003661"]
+    cps = {
+        "G0": {"study": "FIXT", "gate": "G0", "guardrail": {"passed": True},
+               "topic": "Đề tài fixture cắt ngang",
+               "pubmed_results": {"n_pmids": len(pmids)},
+               "evidence_level": "TRUNG BÌNH",
+               "research_gaps": ["Chưa có guideline"]},
+        "G1": {"study": "FIXT", "gate": "G1", "guardrail": {"passed": True},
+               "question_type": "descriptive",
+               "design": {"primary": "Nghiên cứu Cắt ngang Mô tả",
+                          "internal_code": "cross_sectional",
+                          "reporting_standard": "STROBE"}},
+        "G2": {"study": "FIXT", "gate": "G2", "guardrail": {"passed": True},
+               "g2_status": "PENDING", "risk_level": "TỐI THIỂU",
+               "irb_route": "EXPEDITED", "registration_required": "KHÔNG BẮT BUỘC",
+               "register_where": "Không cần",
+               "documents_generated": ["TL1 — Đơn IRB", "TL4 — ICF"]},
+        "G3": {"study": "FIXT", "gate": "G3", "guardrail": "✅ PASS",
+               "design_code": "cross_sectional", "alpha": 0.05, "power": 0.8,
+               "n_per_group": 385, "n_total": 385, "n_adjusted": 428,
+               "dropout": 0.1, "formula_used": "Wilson prevalence: p=0.50, e=0.05"},
+        "G4": {"study": "FIXT", "gate": "G4", "guardrail": "✅ PASS",
+               "g4_sap_version": "1.0", "g4_status": "PENDING",
+               "reporting_standard": "STROBE"},
+        "G5": {"study": "FIXT", "gate": "G5", "guardrail": "✅ PASS",
+               "specialty": specialty,
+               "specialty_is_generic_placeholder": (specialty == "generic"),
+               "redcap_rows": len(crf), "crf_columns": crf,
+               "scripts_generated": ["scripts/data_cleaning.py"],
+               "database_lock_status": "PENDING — chưa thu thập"},
+        "G6": {"study": "FIXT", "gate": "G6", "guardrail": "✅ PASS",
+               "reporting_std": "STROBE"},
+        "G7": {"study": "FIXT", "gate": "G7",
+               "guardrail": {"status": "✅ PASS", "errors": []},
+               "pmids_used_as_seed": pmids, "n_pmids": len(pmids),
+               "reporting_standard": "STROBE 2007"},
+        "G8": {"study": "FIXT", "gate": "G8", "guardrail": {"passed": True},
+               "journal_suggestions": [{"journal": "PLOS ONE", "if": 3.7,
+                                        "note": "Đa lĩnh vực"}]},
+        "G9": {"study": "FIXT", "gate": "G9", "guardrail": {"passed": True},
+               "submission_package_ready": False, "n_authors": 3},
+    }
+    for g, cp in cps.items():
+        (d / f"{g}_checkpoint.json").write_text(
+            json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+    # G0_pubmed_raw.json: nguồn PubMed THẬT — để R4 đối chiếu (raw-verified).
+    raw = {"pmids": pmids, "results": [{"pmid": p} for p in pmids]}
+    (d / "G0_pubmed_raw.json").write_text(
+        json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+
+
+@pytest.fixture
+def cross_sectional_study(tmp_path):
+    _write_cross_sectional_fixture(tmp_path)
+    return tmp_path
+
+
+class TestAssemble:
+    def test_produces_md_and_checkpoint(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        assert res["md"].exists()
+        assert res["checkpoint"].exists()
+        cp = json.loads(res["checkpoint"].read_text(encoding="utf-8"))
+        assert cp["gate"] == "G10"
+        assert cp["n_de_cuong_sections"] == 16
+
+    def test_all_16_sections_present(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        for num, title, _ in S.DE_CUONG_SECTIONS:
+            assert f"# {num}. {title}" in text, f"thiếu mục {num}. {title}"
+
+    def test_real_sample_size_pulled(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        assert "428" in text            # N điều chỉnh
+        assert "Wilson prevalence" in text
+
+    def test_gate_table_has_all_10_skill_gates(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        for sg in S.SKILL_GATES:
+            assert f"| {sg} |" in text
+
+    def test_passes_own_validator(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert report["passed"], report["errors"]
+
+
+class TestCrfIntegrityCaveat:
+    def test_caveat_fires_for_generic_with_clinical_covariates(self, tmp_path):
+        _write_cross_sectional_fixture(tmp_path, specialty="generic")
+        res = G10.assemble("FIXT", tmp_path)
+        text = res["md"].read_text(encoding="utf-8")
+        assert "CẢNH BÁO LIÊM CHÍNH DỮ LIỆU" in text
+
+    def test_caveat_suppressed_for_real_specialty(self, tmp_path):
+        _write_cross_sectional_fixture(tmp_path, specialty="cardiology_hf")
+        res = G10.assemble("FIXT", tmp_path)
+        text = res["md"].read_text(encoding="utf-8")
+        assert "CẢNH BÁO LIÊM CHÍNH DỮ LIỆU" not in text
+
+    def test_caveat_suppressed_when_no_clinical_covariates(self, tmp_path):
+        # generic nhưng CRF KHÔNG chứa biến sinh hiệu -> không nổ cảnh báo.
+        _write_cross_sectional_fixture(
+            tmp_path, specialty="generic",
+            crf=["record_id", "wait_time", "staff_attitude", "facility_score"])
+        res = G10.assemble("FIXT", tmp_path)
+        text = res["md"].read_text(encoding="utf-8")
+        assert "CẢNH BÁO LIÊM CHÍNH DỮ LIỆU" not in text
+
+
+class TestValidatorCatchesFabrication:
+    def test_catches_fabricated_pmid(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        # Chèn 1 PMID KHÔNG có trong checkpoint -> phải bị bắt.
+        text = res["md"].read_text(encoding="utf-8")
+        text += "\n\nTham khảo giả: PMID: 99999999 (bịa).\n"
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("99999999" in e for e in report["errors"])
+
+    def test_catches_invalid_status_tag(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text += "\n\nGhi chú: [CẦN LÀM NGAY LẬP TỨC] nhãn tự chế.\n"
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("R3" in e for e in report["errors"])
+
+    def test_catches_missing_section(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        # Xoá heading mục 8 (Cỡ mẫu) -> validator phải báo thiếu.
+        text = text.replace("# 8. Cỡ mẫu", "# 8888. Cỡ mẫu XXX")
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("R1" in e for e in report["errors"])
+
+    def test_clean_de_cuong_passes(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert report["passed"]
+        # PMID trong fixture đều có trong G0_pubmed_raw.json -> đối chiếu raw.
+        assert report["checks"]["R4_pmid_traceable"].startswith("PASS")
+
+    def test_seed_only_pmid_warns_not_silent_pass(self, tmp_path):
+        # Regression #1/#2: PMID chỉ ở seed (KHÔNG ở raw) phải WARN, không im lặng PASS.
+        _write_cross_sectional_fixture(tmp_path, pmids=["40995744", "24700992"])
+        # Ghi đè raw để CHỈ chứa 1/2 PMID -> PMID kia thành seed-only.
+        (tmp_path / "G0_pubmed_raw.json").write_text(
+            json.dumps({"pmids": ["40995744"], "results": [{"pmid": "40995744"}]}),
+            encoding="utf-8")
+        res = G10.assemble("FIXT", tmp_path)
+        report = check_de_cuong.validate(res["md"], tmp_path)
+        assert report["passed"]  # không fail (đề cương đã gắn nhãn cần kiểm chứng)
+        assert report["checks"]["R4_pmid_traceable"].startswith("WARN")
+        assert "24700992" in report["seed_only_pmids"]
+        assert any("seed" in w.lower() for w in report["warnings"])
+
+
+class TestNoCheckpointsRaises:
+    def test_empty_dir_raises(self, tmp_path):
+        with pytest.raises(SystemExit):
+            G10.assemble("EMPTY", tmp_path)
