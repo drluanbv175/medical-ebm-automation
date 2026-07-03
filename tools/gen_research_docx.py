@@ -205,15 +205,22 @@ class ResearchDocxGenerator:
     # ── Generators cho từng artifact ────────────────────────────────────────
 
     def generate(self, artifact_key: str, content: dict = None) -> str:
-        """Điểm vào chính — tự chọn generator theo artifact_key."""
-        if artifact_key not in ARTIFACT_MAP:
-            raise ValueError(f"Artifact '{artifact_key}' không tồn tại. "
-                             f"Dùng: {list(ARTIFACT_MAP.keys())}")
-        content = content or {}
-        code, gate, title = ARTIFACT_MAP[artifact_key]
+        """Điểm vào chính — tự chọn generator theo artifact_key.
 
-        # Gọi generator chuyên biệt nếu có, không thì dùng generic
-        generator = getattr(self, f"_gen_{artifact_key}", self._gen_generic)
+        - Khóa thuộc 20 artifact NGHIÊN CỨU chuẩn → generator chuyên biệt (hoặc generic).
+        - Khóa NGOÀI danh mục (vd khóa lâm sàng `guideline-update`, `chronic-pain`… do các
+          agent lâm sàng nhúng trong khối "Xuất Word") → KHÔNG sập: dùng mẫu CHUNG (generic)
+          + in cảnh báo (fail-soft, không im lặng) để lệnh minh họa chạy được thay vì ValueError.
+        """
+        content = content or {}
+        if artifact_key in ARTIFACT_MAP:
+            code, gate, title = ARTIFACT_MAP[artifact_key]
+            generator = getattr(self, f"_gen_{artifact_key}", self._gen_generic)
+        else:
+            print(f"⚠ Artifact '{artifact_key}' ngoài danh mục nghiên cứu chuẩn "
+                  f"→ dùng mẫu chung (generic). Danh mục hợp lệ: {list(ARTIFACT_MAP.keys())}")
+            code, gate, title = ("GX", "", artifact_key.replace("-", " ").title())
+            generator = self._gen_generic
         return generator(code, gate, title, content)
 
     def generate_all_gates(self, gate: str, content_map: dict = None):
@@ -252,8 +259,12 @@ class ResearchDocxGenerator:
             self._flag(doc, "Chủ nhiệm điền nội dung cho phần này.")
 
         self._disclaimer(doc)
-        return self._save(doc, code, list(ARTIFACT_MAP.keys())[
-            list(ARTIFACT_MAP.values()).index((code, gate, title))])
+        try:
+            key = list(ARTIFACT_MAP.keys())[
+                list(ARTIFACT_MAP.values()).index((code, gate, title))]
+        except ValueError:  # khóa ngoài 20 artifact chuẩn (vd khóa lâm sàng) → slug từ title
+            key = (title or code).replace(" ", "-").lower()
+        return self._save(doc, code, key)
 
     # ── G0a: Research Intake & Feasibility Audit ────────────────────────────
 
