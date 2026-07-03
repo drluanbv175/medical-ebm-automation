@@ -43,6 +43,9 @@ if not os.environ.get("USE_MOCK_SOURCES"):
 
 from app.sources.pubmed import PubMedClient  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # thư mục tools/
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG + study_meta dùng chung)
+
 # ════════════════════════════════════════════════════════════════════════════
 # 1. TỪ ĐIỂN VI → EN (thuật ngữ y khoa thường gặp)
 # ════════════════════════════════════════════════════════════════════════════
@@ -789,6 +792,39 @@ def main():
                               topic=args.topic, base_query=queries.get("base", ""))
     print(f"  → Lưu: {cp_path}")
 
+    # ── SEED study_meta.json (D4) — NƠI PIN durable cho cả chuỗi ──────────────
+    # G0 là cổng ĐẦU nên là nơi tự nhiên tạo file PIN. ensure_study_meta KHÔNG
+    # phá dữ liệu bác sĩ đã điền; nó tạo skeleton gate_params + cờ đời-thực để
+    # bác sĩ chỉ cần điền effect size vào đúng chỗ (đóng vòng param-loss ở re-run).
+    GC.ensure_study_meta(out_dir, seed={
+        "title": args.topic, "topic": args.topic,
+        "query_en": args.query_en, "base_query": queries.get("base", ""),
+    })
+
+    # ── HỢP ĐỒNG DỪNG: 0 PMID = GIÁ TRỊ LÕI RỖNG (không có bằng chứng thật) ────
+    # Ghi needs_input MÁY-ĐỌC-ĐƯỢC vào checkpoint (không chỉ để pipeline đoán) +
+    # exit 2. Nguyên nhân thường gặp: chủ đề tiếng Việt → PubMed (index tiếng Anh)
+    # trả 0 kết quả; cần --query-en. Hệ KHÔNG bịa PMID để "đi tiếp".
+    n_pmids = len(results["all_pmids"])
+    blocked = (n_pmids == 0)
+    if blocked:
+        try:
+            cp = json.loads(cp_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            cp = {}
+        cp["core_value"] = GC.core_value("n_pmids", 0, is_empty=True)
+        cp["needs_input"] = GC.needs_input(
+            GC.REASON_MISSING_PUBMED,
+            "G0 tìm được 0 PMID — truy vấn PubMed từ chủ đề tiếng Việt thường "
+            "KHÔNG khớp (PubMed đánh chỉ mục tiếng Anh). Cần TỪ KHÓA TIẾNG ANH.",
+            f'python tools/run_g0_auto.py --study {study} --topic "{args.topic}" '
+            '--query-en "<từ khóa tiếng Anh>"',
+            must_not_fabricate=["PMID"],
+            study_meta_patch={"query_en": "<từ khóa PubMed tiếng Anh>"},
+        )
+        cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+        print("  🚧 G0 DỪNG: 0 PMID — cần --query-en (hệ KHÔNG bịa PMID).")
+
     # Lưu JSON kết quả PubMed thô
     raw_path = out_dir / "G0_pubmed_raw.json"
     raw_results = {
@@ -826,9 +862,9 @@ def main():
     print(f"\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
 
-    return {"gate": "G0", "status": status, "out_dir": str(out_dir),
-            "n_pmids": len(results["all_pmids"]), "gaps": gaps["gaps"]}
+    # Mã thoát theo hợp đồng DỪNG: 0 PMID → BLOCKED (2); còn lại → OK (0).
+    return GC.EXIT_BLOCKED if blocked else GC.EXIT_OK
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main() or 0)

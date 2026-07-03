@@ -12,7 +12,11 @@ from datetime import datetime
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
+TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE))
+sys.path.insert(0, str(TOOLS))
+
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 # Hệ số z phổ biến
 Z_TABLE = {0.20: 0.842, 0.15: 1.036, 0.10: 1.282, 0.05: 1.645, 0.025: 1.960, 0.01: 2.326, 0.005: 2.576}
@@ -590,7 +594,50 @@ def main():
         print(f"  {w}")
     for e in errors:
         print(f"  {e}")
-    status = "✅ PASS" if not errors else f"⚠ {len(errors)} LỖI"
+
+    # ── HỢP ĐỒNG DỪNG (blocked contract) ──────────────────────────────────────
+    # Ba trạng thái RỜI NGHĨA thay cho "✅ PASS im lặng trên artifact rỗng":
+    #   1) errors R1–R7 (liêm chính) → GUARDRAIL FAIL (exit 3).
+    #   2) n_adjusted <= 0 (GIÁ TRỊ LÕI RỖNG — chưa tính được cỡ mẫu) → BLOCKED
+    #      (exit 2) + khối needs_input máy-đọc-được; KHÔNG bao giờ báo PASS.
+    #   3) n_adjusted > 0 + không lỗi R → PASS (exit 0) — đường thành công cũ.
+    # SỬA lỗi false-PASS đã xác nhận: trước đây n=0 (thiếu effect size) vẫn ghi
+    # guardrail "✅ PASS", làm cả chuỗi tưởng G3 xong rồi kẹt ở G4.
+    core = GC.core_value("n_adjusted", n_adjusted, is_empty=(n_adjusted <= 0))
+    need = None
+    if errors:
+        status = f"⚠ {len(errors)} LỖI (R1–R7)"
+        exit_code = GC.EXIT_GUARDRAIL_FAIL
+    elif core["is_empty"]:
+        status = GC.BLOCKED_GUARDRAIL_STR
+        exit_code = GC.EXIT_BLOCKED
+        cmd = (f'python tools/run_g3_auto.py --study {study} '
+               '--effect-size <giá_trị> --effect-type <HR|OR|RR|ARR%|AUC>')
+        if effect_val is None:
+            need = GC.needs_input(
+                GC.REASON_MISSING_EFFECT_SIZE,
+                "G3 chưa tính được cỡ mẫu vì THIẾU effect size. Không tìm được "
+                "ước lượng hiệu quả từ y văn G0/G1 và bác sĩ chưa cấp. Hệ KHÔNG "
+                "bịa effect size để 'đi cho hết' (liêm chính > tiến độ).",
+                cmd,
+                must_not_fabricate=["effect_size", "PMID"],
+                study_meta_patch={"gate_params": {"G3": {
+                    "effect_size": "<CẦN BÁC SĨ CẤP — kèm PMID/DOI nguồn hoặc MCID>",
+                    "effect_type": "<HR|OR|RR|ARR%|AUC>"}}},
+            )
+        else:
+            need = GC.needs_input(
+                GC.REASON_MISSING_SAMPLE_SIZE,
+                f"G3 có effect size ({effect_type}={effect_val}) nhưng tổ hợp "
+                f"thiết kế={design_code} + loại hiệu quả={effect_type} chưa có "
+                "công thức tự động (hoặc effect size ngoài miền tính hợp lệ). "
+                "Cần thống kê viên chọn công thức/tính thủ công — hệ KHÔNG bịa N.",
+                cmd,
+                must_not_fabricate=["n_adjusted"],
+            )
+    else:
+        status = "✅ PASS"
+        exit_code = GC.EXIT_OK
     print(f"  → Guardrail: {status}")
 
     print(f"📄 Bước 6/6: Xuất DOCX...")
@@ -601,15 +648,24 @@ def main():
     else:
         print(f"  ⚠ python-docx không có — bỏ qua DOCX")
 
+    # PIN durable: nếu bác sĩ cấp effect size qua CLI → ghi vào study_meta.json để
+    # CHẠY LẠI (chỉ với --study) KHÔNG mất input (đóng vòng param-loss ở re-run).
+    if args.effect_size is not None and args.effect_type:
+        GC.ensure_study_meta(out_dir, seed={"gate_params": {"G3": {
+            "effect_size": args.effect_size, "effect_type": args.effect_type,
+            "dropout": dropout, "p_event": p_event}}})
+
     cp = {
         "gate": "G3", "study": study, "run_date": run_date,
-        "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN",
+        "gate_status": ("BLOCKED — CHỜ EFFECT SIZE/CÔNG THỨC"
+                        if exit_code == GC.EXIT_BLOCKED else "DRAFT — CHỜ BÁC SĨ XÁC NHẬN"),
         "design_code": design_code, "alpha": alpha, "power": power,
         "effect_val": effect_val, "effect_type": effect_type,
         "effect_quality": effect_quality,  # "labeled" (có 95%CI) / "crude" (thô) / None (do bác sĩ cung cấp tay)
         "n_per_group": n_per_group, "n_total": n_total, "n_adjusted": n_adjusted,
         "dropout": dropout, "formula_used": formula_used, "p_event": p_event,
         "guardrail": status,
+        "core_value": core,
         "pending_doctor_actions": [
             "Xác nhận effect size (PMID/DOI từ y văn/pilot study)",
             "Xác nhận tỷ lệ bỏ cuộc dự kiến",
@@ -621,14 +677,21 @@ def main():
             if effect_quality == "crude" else []
         ),
     }
+    if need is not None:
+        cp["needs_input"] = need
     cp_path = out_dir / "G3_checkpoint.json"
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"💾 Ghi checkpoint G3...")
     print(f"  → Lưu: {cp_path}")
-    print(f"\n✅ G3 HOÀN THÀNH — {study}")
-    print(f"  N mỗi nhóm: {n_per_group}, N tổng: {n_total}, N điều chỉnh (dropout {int(dropout*100)}%): {n_adjusted}")
-    print(f"  Alpha: {alpha}, Power: {int(power*100)}%, {effect_type}: {effect_val}")
+    if exit_code == GC.EXIT_BLOCKED:
+        print(f"\n🚧 G3 DỪNG — {study} (cần input đời thực, hệ KHÔNG tự vượt)")
+        print(f"  → {GC.blocked_detail(cp)}")
+    else:
+        print(f"\n✅ G3 HOÀN THÀNH — {study}")
+        print(f"  N mỗi nhóm: {n_per_group}, N tổng: {n_total}, N điều chỉnh (dropout {int(dropout*100)}%): {n_adjusted}")
+        print(f"  Alpha: {alpha}, Power: {int(power*100)}%, {effect_type}: {effect_val}")
     print(f"  → Guardrail: {status}")
+    return exit_code
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main() or 0)

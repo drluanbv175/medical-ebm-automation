@@ -9,7 +9,11 @@ from datetime import datetime
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
+TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE))
+sys.path.insert(0, str(TOOLS))
+
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 def load_cp(path):
     if Path(path).exists():
@@ -335,12 +339,40 @@ def main():
     # với guardrail PASS im lặng — một SAP không có cỡ mẫu là vô nghĩa để
     # khóa. Nay hard-stop, không ghi artifact/checkpoint nào khi thiếu N thật.
     if not g3 or n_adjusted <= 0:
-        print(f"❌ LỖI: Chưa có cỡ mẫu hợp lệ từ G3 (n_adjusted={n_adjusted}).")
-        print(f"   → Chạy G3 trước: python tools/run_g3_auto.py --study {study} "
-              "--effect-size ... --effect-type ...")
-        print(f"   → G4 từ chối sinh SAP Final khi chưa có cỡ mẫu thật, tránh "
-              "SAP trống rỗng bị hiểu nhầm là đã hoàn tất.")
-        sys.exit(1)
+        # HỢP ĐỒNG DỪNG: trước đây exit 1 KHÔNG ghi checkpoint → pipeline nhầm là
+        # CRASH, báo "❌ failed" trống, không remediation. Nay GHI checkpoint
+        # BLOCKED + needs_input trỏ NGƯỢC về G3 (cổng chặn thật là G3 thiếu effect
+        # size), rồi exit 2 (blocked, KHÔNG phải lỗi). G4 vẫn TỪ CHỐI sinh SAP
+        # Final rỗng — chỉ khác ở chỗ DỪNG có thể hành động ngay.
+        print(f"🚧 G4 DỪNG: Chưa có cỡ mẫu hợp lệ từ G3 (n_adjusted={n_adjusted}).")
+        need = GC.needs_input(
+            GC.REASON_MISSING_SAMPLE_SIZE,
+            "G4 (khóa SAP) chưa thể sinh SAP Final vì G3 chưa cho cỡ mẫu hợp lệ "
+            f"(N={n_adjusted}). Cổng chặn thật là G3 — cần effect size để tính N.",
+            f'python tools/run_g3_auto.py --study {study} --effect-size <giá_trị> '
+            '--effect-type <HR|OR|RR|ARR%|AUC>',
+            must_not_fabricate=["n_adjusted", "effect_size", "PMID"],
+            study_meta_patch={"gate_params": {"G3": {
+                "effect_size": "<CẦN BÁC SĨ CẤP — kèm PMID/DOI hoặc MCID>",
+                "effect_type": "<HR|OR|RR|ARR%|AUC>"}}},
+        )
+        cp = {
+            "gate": "G4", "study": study, "run_date": run_date,
+            "g4_status": "BLOCKED — CHỜ CỠ MẪU TỪ G3",
+            "g4_sap_version": None, "g4_lock_date": None,
+            "n_from_g3": n_adjusted,
+            "guardrail": GC.BLOCKED_GUARDRAIL_STR,
+            "core_value": GC.core_value("n_from_g3", n_adjusted, is_empty=True),
+            "needs_input": need,
+            "pending_doctor_actions": [
+                "Cấp effect size cho G3 (PMID/DOI hoặc MCID) rồi chạy lại G3 → G4",
+            ],
+        }
+        (out / "G4_checkpoint.json").write_text(
+            json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"   → {GC.blocked_detail(cp)}")
+        print(f"   💾 Đã ghi G4_checkpoint.json (BLOCKED) để pipeline đọc remediation.")
+        raise SystemExit(GC.EXIT_BLOCKED)
 
     print(f"  → Topic: {topic[:60]}")
     print(f"  → Design: {design_code} | N={n_adjusted}")

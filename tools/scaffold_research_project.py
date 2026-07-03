@@ -695,6 +695,19 @@ def scaffold(study_name: str, base_dir: str = None, with_docx: bool = True):
     (out / "STUDY_INDEX.md").write_text("".join(index_lines), encoding="utf-8")
     print(f"  [IDX] STUDY_INDEX.md")
 
+    # ── study_meta.json — PIN durable (gate_params + cờ bằng-chứng-đời-thực) ──
+    # File này là NƠI bác sĩ pin effect size (G3), thiết kế, và các cờ đời-thực
+    # (IRB/SAP-lock/data-lock/integrity). run_pipeline đọc nó để CHẠY LẠI không
+    # mất input. Tạo non-destructive (không đè nếu bác sĩ đã điền).
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import gate_contract as _GC
+        _GC.ensure_study_meta(out, seed={"title": study_name, "topic": study_name})
+        print(f"  [META] study_meta.json (PIN gate_params + cờ đời-thực)")
+    except Exception as _e:  # noqa: BLE001
+        print(f"  [WARN] Không tạo study_meta.json: {_e}")
+
     # ── Tóm tắt ────────────────────────────────────────────────────────
     print(f"\n✅ Scaffold hoàn tất: {out}")
     print(f"   {len(created_md)} file .md  |  {len(created_docx)} file .docx")
