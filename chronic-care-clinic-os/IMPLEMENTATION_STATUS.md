@@ -22,6 +22,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Preview-only workflow action contracts for future care plan approval and handout release server actions.
 - Append-only audit ledger preview with deterministic hash chain and `/admin/audit` integrity view.
 - Persistent AuditLog write contract with sequence/previousHash/eventHash, insert-only policy and same-transaction business write requirement.
+- AuditLog hardening migration reviewed at `prisma/migrations/202606190001_audit_log_hash_chain_hardening/migration.sql`, with unique sequence/hash indexes, non-empty hash constraints, immutable-after-append constraint and UPDATE/DELETE blocking triggers.
 - Workflow action contracts now call RBAC/backend guard for role, permission and organization/site scope before any future write.
 - Write action registry and `/admin/settings` readiness view identify guarded preview actions, UI placeholders and production-blocked exports.
 - `/overdue` claim-call-task action now has preview-only workflow contract with RBAC guard, reminder-template boundary and audit preview.
@@ -58,7 +59,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 ## Chua hoan thanh
 
 - Production authentication/session/MFA/password hashing.
-- Versioned migration files generated from Prisma.
+- Full baseline Prisma migration files for every model.
 - Docker one-command run verification.
 - Database backup/restore test.
 - A5 PDF generator and test.

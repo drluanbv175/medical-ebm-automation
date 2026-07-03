@@ -433,6 +433,26 @@ test("audit ledger is append-only and hash chained", () => {
   assert.doesNotMatch(ledger, /DELETE_AUDIT_LOG|UPDATE_AUDIT_LOG/);
 });
 
+test("AuditLog migration hardens persistent hash-chain storage", () => {
+  const migrationFiles = listFiles("prisma/migrations").filter((file) => file.endsWith("migration.sql"));
+  const auditMigrationPath = migrationFiles.find((file) => file.includes("audit_log_hash_chain_hardening"));
+  assert.ok(auditMigrationPath, "AuditLog hardening migration is missing");
+
+  const migration = read(auditMigrationPath);
+  assert.match(migration, /CREATE UNIQUE INDEX IF NOT EXISTS "AuditLog_sequence_key"/);
+  assert.match(migration, /CREATE UNIQUE INDEX IF NOT EXISTS "AuditLog_eventHash_key"/);
+  assert.match(migration, /"AuditLog_sequence_positive"/);
+  assert.match(migration, /"AuditLog_previousHash_not_empty"/);
+  assert.match(migration, /"AuditLog_eventHash_not_empty"/);
+  assert.match(migration, /"AuditLog_immutable_after_append_true"/);
+  assert.match(migration, /CREATE OR REPLACE FUNCTION prevent_audit_log_mutation/);
+  assert.match(migration, /BEFORE UPDATE ON "AuditLog"/);
+  assert.match(migration, /BEFORE DELETE ON "AuditLog"/);
+  assert.match(migration, /UPDATE and DELETE are blocked/);
+  assert.match(read("DATABASE_SCHEMA.md"), /AuditLog hardening migration/);
+  assert.match(read("IMPLEMENTATION_STATUS.md"), /AuditLog hardening migration/);
+});
+
 test("write action registry tracks guarded and blocked write surfaces", () => {
   const registry = read("lib/write-action-registry.ts");
   const settings = read("app/admin/settings/page.tsx");

@@ -61,3 +61,9 @@ Production phai dung migration da review:
 ```bash
 npx prisma migrate deploy
 ```
+
+Da co AuditLog hardening migration review dau tien cho audit storage:
+
+- `prisma/migrations/202606190001_audit_log_hash_chain_hardening/migration.sql` khoa `sequence`, `previousHash`, `eventHash`, `immutableAfterAppend` va trigger chan `UPDATE`/`DELETE` tren `AuditLog`.
+
+Luu y: migration nay la hardening cho bang `AuditLog` sau baseline schema; chua thay the nhu cau tao full baseline migration cho tat ca model truoc production.
