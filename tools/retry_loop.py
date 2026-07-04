@@ -120,6 +120,15 @@ ERROR_ROUTING_TABLE: dict[str, tuple[ErrorSeverity, str]] = {
     "G4-lock":  (ErrorSeverity.WAIT_INPUT, "chờ xác nhận KHÓA SAP"),
     "G5-data":  (ErrorSeverity.WAIT_INPUT, "chờ file dữ liệu thật"),
     "G9-auth":  (ErrorSeverity.WAIT_INPUT, "chờ khai báo liêm chính"),
+    # R9-R12: THÊM 2026-07-04 để nối tools/eval/run_eval.py (chấm rule-based CAFÉ-S)
+    # vào MỘT bảng routing dùng chung — trước đây run_eval.py kiểm được các lỗi EBM
+    # đặc thù này (source_has_year/WHO AWaRe/suy nhân quả/cờ đỏ) nhưng KHÔNG có mã
+    # chuẩn để định tuyến agent sửa, buộc LLM tự suy diễn lại mỗi lần (vá khoảng
+    # trống A6 — retry_loop trước đây là thư viện không ai import).
+    "R9":       (ErrorSeverity.AUTO_FIX, "tra-cuu-chung-cu (bổ năm/phiên bản nguồn)"),
+    "R10":      (ErrorSeverity.AUTO_FIX, "ke-don-an-toan (xét WHO AWaRe khi có kháng sinh)"),
+    "R11":      (ErrorSeverity.ESCALATE_HARD, "DỪNG NGAY — suy nhân quả vượt thiết kế cắt ngang/quan sát"),
+    "R12":      (ErrorSeverity.ESCALATE_HARD, "DỪNG NGAY — thiếu cờ đỏ/safety-net bắt buộc (Q3/Q5)"),
 }
 
 
