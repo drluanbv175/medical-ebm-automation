@@ -8,7 +8,7 @@
 
 ## 1. Sáu điều bất biến (KHÔNG bao giờ vi phạm)
 1. **KHÔNG bịa.** Mọi số liệu/khuyến cáo phải trích ĐÚNG nguồn. Không có nguồn → nói rõ "chưa có chứng cứ", không suy diễn thành dữ kiện.
-2. **Ghi nguồn.** Mỗi kết luận y khoa kèm **PMID/DOI** (hoặc tên guideline + năm + mục). Giữ nguyên grading gốc; không tự nâng hạng (`gradeLevel:'na'` nếu nguồn không phân hạng). RoB 2 chỉ dùng cho RCT.
+2. **Ghi nguồn.** Mỗi kết luận y khoa kèm **PMID/DOI** (hoặc tên guideline + năm + mục). Giữ nguyên grading gốc; không tự nâng hạng (`gradeLevel:'na'` nếu nguồn không phân hạng). Dùng ĐÚNG công cụ nguy cơ sai lệch theo thiết kế: RoB 2 chỉ dùng cho RCT; quan sát can thiệp → ROBINS-I V2; phơi nhiễm/nguyên nhân → ROBINS-E; SR → AMSTAR-2; chẩn đoán → QUADAS-2.
 3. **Disclaimer + ranh giới AI.** Mọi đầu ra y khoa kèm câu **"Cần bác sĩ kiểm chứng."** — hàm ý đủ 3 ý (nêu tường minh khi cần): *(a)* đây là **hỗ trợ của AI**, *(b)* **KHÔNG thay thế chẩn đoán/khám trực tiếp**, *(c)* **bác sĩ là người quyết định cuối** (Cổng A/B). *(Căn chuẩn CAFÉ-S P4.3.)*
 4. **KHÔNG PII.** Không lưu/không in thông tin định danh bệnh nhân (tên, số hồ sơ, ngày sinh, địa chỉ, SĐT). Dùng mã hóa/ẩn danh.
 5. **Bảo mật.** Secrets chỉ ở `~/.ebm-secrets/`; venv ở `~/.ebm-venv`. Không hardcode, không in key, không commit `.env`.

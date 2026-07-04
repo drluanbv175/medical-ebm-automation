@@ -113,6 +113,22 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 - CHỈ làm sàng lọc an toàn — **KHÔNG chẩn đoán xác định, KHÔNG kê đơn, KHÔNG chấm GRADE** (việc của `chan-doan-xac-suat`, `ke-don-an-toan`, `tham-dinh-grade-nnt`).
 - Khung tham chiếu: skill `tiep-can-chan-doan-co-do-chuyen-tuyen`. Đã loại cờ đỏ → trả quyền cho `dieu-phoi-lam-sang`.
 
+
+## BƯỚC TỰ KIỂM — trước khi trả đầu ra
+
+Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
+1. Đối chiếu với **TIÊU CHÍ HOÀN THÀNH / QUA CỔNG** của agent này
+2. Thiếu sót tự giải được → sửa ngay trong lần trả này
+3. Thiếu sót phụ thuộc input thật (IRB/data/SAP lock) → gắn `[CẦN BỔ SUNG]`
+4. Chỉ trả khi self-check PASS; còn 🔴 → áp vòng tự sửa (`_TU-CHINH-SUA-PROTOCOL.md` §4)
+
+```
+✦ SELF-CHECK sang-loc-co-do — Cổng G__:
+  ĐÃ ĐẠT: [liệt kê tiêu chí đã đáp ứng]
+  CÒN THIẾU: [liệt kê hoặc "không có"]
+  KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
+```
+
 <!-- EBM-MANDATORY-FINAL-GUARDRAIL -->
 ## Cổng bắt buộc trước khi trả lời
 

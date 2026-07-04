@@ -1,6 +1,6 @@
 # CHUẨN WIRING ROUTINES ↔ ĐỘI AGENT EBM
 
-> **Nguồn sự thật DUY NHẤT** cho cách các routine uỷ thác cho đội agent (`.claude/agents/`): **7 routine VẬN HÀNH có `Scheduled/<tên>/SKILL.md` thật** (uptodate · drug-safety-daily · giam-sat-chung-cu · nckh · tu-kiem-dong-bo · **antifacts-weekly-ebm** · **tong-hop-chung-cu-hang-tuan**) + **1 META-bảo trì là ĐẶC TẢ KHÁI NIỆM, KHÔNG có thư mục `Scheduled/` và KHÔNG có job lịch** (đã RETIRE — xem dòng META bên dưới).
+> **Nguồn sự thật DUY NHẤT** cho cách các routine uỷ thác cho đội agent (`.claude/agents/`): **7 routine VẬN HÀNH có `Scheduled/<tên>/SKILL.md` thật** (uptodate · drug-safety-daily · giam-sat-chung-cu · nckh · tu-kiem-dong-bo · **antifacts-weekly-ebm** · **tong-hop-chung-cu-hang-tuan**) + **1 bản TRÙNG LẶP đang chờ hợp nhất** (`antifacts-weekly-update`, xem dòng ghi chú bên dưới) + **1 META-bảo trì là ĐẶC TẢ KHÁI NIỆM, KHÔNG có thư mục `Scheduled/` và KHÔNG có job lịch** (đã RETIRE — xem dòng META bên dưới).
 > Sửa mapping / quy tắc / lịch ở ĐÂY rồi đồng bộ xuống từng routine — KHÔNG để mỗi routine định nghĩa một kiểu.
 > Đồng bộ với: `_BAN-DO-KET-NOI.md` · `_HIEN-PHAP-LIEM-CHINH.md` · `README.md`. Tạo 2026-06-14; thêm routine META 2026-06-15.
 
@@ -16,6 +16,7 @@
 | **nckh** *(QY175)* | ad-hoc | `dieu-phoi-nghien-cuu` (gác cổng) · `viet-ban-thao` · `binh-duyet` · `quan-ly-du-lieu` · `dao-duc-dang-ky` (G2) · `thiet-ke-nghien-cuu` + `co-mau-nghien-cuu` | hồ sơ đề tài | `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md` (+ `tham-dinh-dau-ra` nếu xuất bản thảo) |
 | **tu-kiem-dong-bo** | tuần (CN) | giao thức `_TU-SUA-CHUA-PROTOCOL.md` | `nhat-ky.md` (append-only) | bộ kiểm tự động trong protocol (nội bộ — KHÔNG cần `tham-dinh-dau-ra`) |
 | **antifacts-weekly-ebm** | tuần (T2 sáng) | digest EBM **13 chuyên khoa** (PubMed 7 ngày) — quét rộng, bản tin tiếng Việt | `Antifacts.html` (chờ duyệt) | **`tham-dinh-dau-ra`** |
+| **antifacts-weekly-update** *(2026-07-04: TRÙNG LẶP `antifacts-weekly-ebm` — tên cũ hơn, `SKILL.md` nội dung y hệt, phát hiện khi thêm kiểm lớp routine vào `audit_ebm_system.py`)* | tuần (T2 sáng) | y hệt `antifacts-weekly-ebm` | `Antifacts.html` (chờ duyệt) | **`tham-dinh-dau-ra`** — **[CẦN BÁC SĨ QUYẾT]** hợp nhất 2 tên hay giữ cả hai |
 | **tong-hop-chung-cu-hang-tuan** *(Track B)* | tuần | ứng viên chứng cứ/thử nghiệm **8 bệnh mạn** (ClinicalTrials + y văn) theo skill `cap-nhat-chung-cu-y-khoa` | danh sách ứng viên (chờ thẩm định Track A) | **`tham-dinh-dau-ra`** |
 | **tiep-tuc-hoan-thien-he-thong-agent** *(META — ĐẶC TẢ, KHÔNG có `Scheduled/<tên>/SKILL.md`, KHÔNG job lịch; output đã sinh trong phiên trước)* | ~~vòng lặp ~1h30~~ **RETIRE** | KHÔNG uỷ thác agent lâm sàng; tự xây/tinh chỉnh `playbooks-lam-sang/` theo `_TEMPLATE` + xác minh `[CẦN KIỂM CHỨNG]` qua web (không bịa) + áp WIRING `.claude/` | `playbooks-lam-sang/_INDEX` · `_CHANGELOG` · `_BAO-CAO-HOAN-THIEN` | **tự kiểm bước D** (bất biến + 2 cổng A/B + không bịa/PII); KHÔNG sinh nội dung BN nên KHÔNG qua `tham-dinh-dau-ra` |
 
@@ -49,8 +50,8 @@
 | `ebm-uptodate-tuan` | `Scheduled/uptodate` | `30 19 * * 6` (T7, 19:30) | đăng ký trên Mac (gói sẵn) |
 | `ebm-tu-kiem-dong-bo` | `Scheduled/tu-kiem-dong-bo` | `10 8 * * 0` (CN, 08:10) | đăng ký trên Mac (gói sẵn) |
 | `ebm-nckh-qy175` | `Scheduled/nckh` | — (ad-hoc, chạy tay) | manual |
-| *(chưa có taskId)* | `Scheduled/antifacts-weekly-ebm` | (đề xuất: `0 7 * * 1` — T2 07:00) | **chưa đăng ký lịch native** |
-| *(chưa có taskId)* | `Scheduled/tong-hop-chung-cu-hang-tuan` | (đề xuất: tuần — Track B) | **chưa đăng ký lịch native** |
+| `ebm-antifacts-weekly` | `Scheduled/antifacts-weekly-ebm` | `0 7 * * 1` (T2, 07:00) | 2026-07-04: đặc tả task đã có ở `Scheduled/_DANG-KY-LICH-TREN-MAC.md` TASK 6 — **chờ bác sĩ đăng ký trên Mac** |
+| `ebm-tong-hop-chung-cu-tuan` | `Scheduled/tong-hop-chung-cu-hang-tuan` | `0 20 * * 0` (CN, 20:00 — đề xuất) | 2026-07-04: đặc tả task đã có ở `Scheduled/_DANG-KY-LICH-TREN-MAC.md` TASK 5 — **chờ bác sĩ đăng ký trên Mac** |
 | *(4 task trên — bản Windows)* | — | (đã tạo thử 2026-06-15) | **TẮT** (disabled, tránh chạy đôi; xóa sidebar nếu muốn) |
 | `ebm-hoan-thien-he-thong` *(META)* | ❌ KHÔNG có `Scheduled/tiep-tuc-hoan-thien-he-thong-agent/` (đặc tả khái niệm) | — (KHÔNG job lịch) | **RETIRED** — 86 playbook đã sinh trong phiên (2026-06-16); KHÔNG đăng ký /loop tự chạy |
 | ~~`ebm-cap-nhat-tuan`~~ | (cũ, trùng uptodate) | — | **tắt** (xoá qua UI) |

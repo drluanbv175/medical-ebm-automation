@@ -11,19 +11,26 @@ Bất kỳ agent nào cần khuyến cáo/guideline (`tra-cuu-chung-cu`, `tham-d
 dùng đã lỗi thời) → BÀN GIAO cho **`cap-nhat-guideline`** chạy quy trình mục 3. KHÔNG được tự kết luận
 "không có cập nhật" hay tự bịa nội dung guideline.
 
-## 2. SỔ ĐĂNG KÝ NGUỒN NEO (defined sources)
-Quét trang "guidelines/recommendations/latest" chính thức + bản ghi PubMed/DOI của bản công bố:
-| Lĩnh vực | Nguồn | Ghi chú tra |
+## 2. SỔ ĐĂNG KÝ NGUỒN NEO (defined sources) — đã kiểm domain 2026-07-04
+> **Danh mục ĐẦY ĐỦ** (hiệp hội/HTA/tạp chí đỉnh/an toàn thuốc + domain + truy cập + lưu ý): **`_CONNECTOR-CHUNG-CU.md` §1bis** (SSOT). Bảng dưới là **nguồn NEO theo chuyên khoa** để `cap-nhat-guideline` quét cập nhật. Quét trang "guidelines/recommendations/latest" chính thức + bản ghi PubMed/DOI của bản công bố. **Thứ tự: nguồn chính thống trước, PubMed đối chiếu (§2bis).**
+
+| Lĩnh vực | Nguồn chính thống (domain) | Ghi chú tra |
 |----------|-------|-------------|
-| Tim mạch | **ESC** (escardio.org/Guidelines) · **ACC/AHA** | bản mới theo năm hội nghị |
-| Đái tháo đường | **ADA** Standards of Care (diabetesjournals.org) · **EASD** | cập nhật hằng năm (tháng 1) |
-| Hô hấp | **GOLD** (goldcopd.org) · **GINA** (ginasthma.org) | bản cập nhật đầu năm |
-| Thận | **KDIGO** (kdigo.org) | theo chủ đề |
-| Dự phòng/tổng quát | **WHO · CDC · NICE · USPSTF** | |
-| Thuốc/an toàn | **FDA · EMA · MHRA · openFDA** | cảnh báo hộp đen |
-| Nhiễm khuẩn/Thấp | **IDSA · EULAR-ACR** | |
-| Việt Nam | **Bộ Y tế** (hướng dẫn chẩn đoán–điều trị) | bối cảnh hóa |
-*(Mở rộng = thêm dòng; KHÔNG thêm nguồn không chính thống.)*
+| **Tổng hợp/HTA (quét TRƯỚC)** | **Cochrane** (cochranelibrary.com — free tại VN) · **NICE** (nice.org.uk) · **USPSTF** (uspreventiveservicestaskforce.org) · **Epistemonikos** · **Europe PMC** | SR/meta + guideline aggregator |
+| Tim mạch | **ESC** (escardio.org/Guidelines) · **ACC** (acc.org/guidelines) · **AHA** (professional.heart.org) · 🇻🇳 **VNHA** (vnha.org.vn) | ACC/AHA ra bản đồng; theo năm hội nghị |
+| ĐTĐ/Nội tiết | **ADA** Standards of Care (professional.diabetes.org · Diabetes Care 2026) · **EASD** · **Endocrine Society** (endocrine.org) · **AACE** (pro.aace.com) | ADA cập nhật tháng 1 |
+| Hô hấp | **GOLD** (goldcopd.org) · **GINA** (ginasthma.org) · **ATS** (thoracic.org) · **ERS** (ersnet.org) | GOLD/GINA đầu năm |
+| Thận | **KDIGO** (kdigo.org/guidelines) | 2024 CKD · 2022 ĐTĐ-CKD |
+| Nhiễm khuẩn | **IDSA** (idsociety.org) · **WHO** (who.int) · **CDC** (cdc.gov) | kháng sinh: WHO AWaRe 2023 |
+| Thấp khớp | **EULAR** (eular.org) · **ACR** (rheumatology.org) | ACR = rheumatology.org |
+| Tiêu hóa | **ACG** (gi.org) · **AGA** (gastro.org) | ACG ≠ AGA (2 hội) |
+| Thần kinh | **AAN** (aan.com) | |
+| Ung thư | **ASCO** (asco.org) · **ESMO** (esmo.org) · **NCCN** (nccn.org — cần đăng ký free) | |
+| Tâm thần | **APA** — American Psychiatric (psychiatry.org) | KHÔNG nhầm apa.org |
+| Sản phụ khoa | **ACOG** (acog.org) | |
+| Thuốc/an toàn | **openFDA** (api.fda.gov) · **DailyMed** · **EMA** · **MHRA** · **LactMed** · **BNF** (bnf.nice.org.uk) | cảnh báo hộp đen; kê đơn → `ke-don-an-toan` |
+| **🇻🇳 Việt Nam** | **Cục KCB — kcb.vn/phac-do** (kho phác đồ **QĐ-BYT CHÍNH THỨC**) · Bộ Y tế (moh.gov.vn) | **ưu tiên kcb.vn**; trích số QĐ-BYT + ngày; bối cảnh hóa |
+*(Mở rộng = thêm dòng; KHÔNG thêm nguồn không chính thống. ⚠ **ECRI Guidelines Trust hiện OFFLINE (2026)** — dùng NICE/G-I-N/hội chuyên khoa thay.)*
 
 ## 3. QUY TRÌNH TỰ CẬP NHẬT (cap-nhat-guideline thực thi)
 1. **Quét nguồn neo** liên quan chủ đề bằng `WebFetch`/`WebSearch` trang chính thức + PubMed/Crossref cho bản công bố.

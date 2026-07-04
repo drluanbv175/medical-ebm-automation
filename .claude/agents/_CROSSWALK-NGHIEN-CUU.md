@@ -47,9 +47,9 @@ template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIA
 
 | # | File SPEC | A-code | Cổng (tên) | Agent chủ | Vai (§4) | Template | TT |
 |---|---|---|---|---|---|---|---|
-| 01 | Project_Charter.md | **A1b (đề xuất)** | G1 Thiết kế | `ke-hoach-trien-khai` (+`cau-hoi-nghien-cuu`) | PM | *cần tạo* | 🟡 |
+| 01 | Project_Charter.md | **A1b** | G1 Thiết kế | `ke-hoach-trien-khai` (+`cau-hoi-nghien-cuu`) | PM | TÀI LIỆU 1 trong `ke-hoach-trien-khai` | ✅ |
 | 02 | Research_Question_and_PICO.md | A1 | G0 Câu hỏi | `cau-hoi-nghien-cuu` | Methodologist | skill `templates/01` | ✅ |
-| 03 | Evidence_Ledger.xlsx | **A2b (đề xuất)** | G0–G1 | `tong-quan-y-van`+`trich-xuat-y-van`+`tham-dinh-phe-binh` | EBM Specialist | *cần tạo* | 🟡 |
+| 03 | Evidence_Ledger.csv | **A2b** | G0–G1 | `tong-quan-y-van`+`trich-xuat-y-van`+`tham-dinh-phe-binh` | EBM Specialist | bảng trong CHẾ ĐỘ TỰ ĐỘNG `tong-quan-y-van` | ✅ |
 | 04 | Literature_Review.md | A2 (cơ sở lý luận) | G0–G1 | `thu-thu-tai-lieu`+`tong-quan-y-van`+`khoang-trong-nghien-cuu` | EBM Specialist | skill workflow 01 | ✅ |
 | 05 | Protocol.md | A2 | G1 Thiết kế | `thiet-ke-nghien-cuu` | Methodologist | skill `templates/01` | ✅ |
 | 06 | Ethics_Package_Checklist.md | A3 · A4 | **G2 Đạo đức 🔒** | `dao-duc-dang-ky` | Ethics Coord. | skill `templates/02` | ✅ |
@@ -59,14 +59,14 @@ template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIA
 | 10 | Sample_Size_Calculation.md | A5 | G3 Cỡ mẫu | `co-mau-nghien-cuu` | Biostatistician | skill workflow 04 | ✅ |
 | 11 | Statistical_Analysis_Plan.md | A8 (+A10) | **G4 SAP 🔒** | `thiet-ke-nghien-cuu`+`phan-tich-thong-ke` | Biostatistician | skill `templates/03` | ✅ |
 | 12 | Data_Cleaning_Plan.md | A9 (DMP) | G5 | `quan-ly-du-lieu` | DM Lead | skill workflow 05 | ✅ |
-| 13 | Data_Lock_Memo.md | **A9b (đề xuất)** | G5/G6 | `quan-ly-du-lieu` | DM Lead | skill workflow 05 §5 | 🟡 |
-| 14 | Analysis_Syntax.sps | **A17b** (tách từ A17) | G6 Phân tích | `phan-tich-thong-ke` | Biostatistician | *cần skeleton .sps/.R* | 🟡 |
+| 13 | Data_Lock_Memo.md | **A9b** | G5/G6 | `quan-ly-du-lieu` | DM Lead | TÀI LIỆU 6 (G5c_DATALOCK) trong `quan-ly-du-lieu` | ✅ |
+| 14 | Analysis_Syntax.R/.sps | **A17b** | G6 Phân tích | `phan-tich-thong-ke` | Biostatistician | MODULE 1-6 trong `phan-tich-thong-ke` (R code + seed + sessionInfo) | ✅ |
 | 15 | Table_Shells.xlsx | A10 (dummy tables) | G4 | `thiet-ke-nghien-cuu`+`phan-tich-thong-ke` | Biostatistician | skill `templates/03` | ✅ |
 | 16 | IMRAD_Manuscript.md | A11 (DoD #12) | G7 Viết | `viet-ban-thao`+`hieu-dinh-song-ngu` | Writing Editor | skill workflow 06 | ✅ |
 | 17 | Reporting_Checklist.md | A11 | G7 Viết | `viet-ban-thao` | Writing Editor | `references/02` | ✅ |
-| 18 | Risk_Register.xlsx | **A13b (đề xuất)** | G1+G7 | `ke-hoach-trien-khai`(+`dao-duc-dang-ky`) | PM | *cần tạo* | 🟡 |
+| 18 | Risk_Register.csv | **A13b** | G1+G7 | `ke-hoach-trien-khai`(+`dao-duc-dang-ky`) | PM | TÀI LIỆU 5 (Risk Register sống) trong `ke-hoach-trien-khai` | ✅ |
 | 19 | Research_Integrity_Audit.md | completeness-critic + A12 + A14 | G7/G9 | `dieu-phoi-nghien-cuu`+`binh-duyet`+`kiem-chung-trich-dan` | Integrity Auditor | skill `templates/04` | ✅ |
-| 20 | Final_Readiness_Report.md | A18 (+ DoD 14 điểm) | **G9 Nghiệm thu 🔒** | `dieu-phoi-nghien-cuu`+`viet-ban-thao` | PM/Integrity | §7 dưới | 🟡 (thiếu 3 hạng) |
+| 20 | Final_Readiness_Report.md | A18 (+ DoD 14 điểm) | **G9 Nghiệm thu 🔒** | `dieu-phoi-nghien-cuu`+`viet-ban-thao` | PM/Integrity | §6 CROSSWALK + §D `_KIEM-TOAN` (3 hạng READY/PARTIALLY/NOT READY + GAP REGISTER + CAPA) | ✅ |
 
 > Ghi chú định dạng: SPEC ghi `.xlsx` cho Evidence Ledger / Data Dictionary / Table Shells / Risk
 > Register. Hệ này **offline, markdown-first** → mặc định sinh `.md` + `.csv` (mở được bằng Excel),
@@ -165,24 +165,39 @@ Projects/<ten-de-tai>/
 ├── 10_Sample_Size_Calculation.md    └── 20_Final_Readiness_Report.md
 ```
 
-> Sinh bằng generator (đề xuất `tools/scaffold_research_project.py`) — copy template, chỉ điền nội dung,
-> KHÔNG sửa tay bố cục (theo triết lý "sửa template không sửa từng file" của CLAUDE.md).
+> Sinh bằng generator `tools/scaffold_research_project.py` (đã tạo 2026-06-29) — copy template, chỉ điền nội dung,
+> KHÔNG sửa tay bố cục. Lệnh: `python tools/scaffold_research_project.py --study "<TEN-DE-TAI>"`
+> sinh đồng thời 20 file .md + 20 file .docx + STUDY_INDEX.md vào `exports/<TEN-DE-TAI>/`.
+> Xuất .docx cho từng cổng: `python tools/gen_research_docx.py --study "<TEN>" --gate G<n>` (xem `_DOCX-EXPORT-PROTOCOL.md`).
 
 ---
 
-## §8. KHOẢNG TRỐNG CÒN LẠI CẦN **SỬA AGENT** (cần chủ nhiệm duyệt + bộ sync)
+## §8. KHOẢNG TRỐNG — TRẠNG THÁI VÁ (cập nhật 2026-06-30)
 
-> File này (additive) đã giải quyết phần KHÁI NIỆM. Các vá dưới đây **chạm agent/skill đang chạy** →
-> phải: chủ nhiệm duyệt → `python tools/enforce_agent_guardrails.py` → `python tools/sync_agents_to_codex.py`
+> Sau khi sửa agent: `python tools/enforce_agent_guardrails.py` → `python tools/sync_agents_to_codex.py`
 > → `--check` → `python tools/audit_ebm_system.py`.
 
-| Mã | Vá | File chạm | Ưu tiên |
-|---|---|---|---|
-| GATE-FIX | Sửa tiêu đề dòng 18 `dieu-phoi-nghien-cuu` "dùng skill làm chuẩn" → "mượn nội dung/chuẩn báo cáo; trục cổng theo AGENT (xem `_CROSSWALK`)" + thêm bảng crosswalk vào SKILL.md | `dieu-phoi-nghien-cuu.md`, `SKILL.md`, `_SO-TRANG-THAI-CHECKPOINT.md` | High |
-| R8-PVALUE | Thêm quy tắc cứng R8 vào guardrail: "kết quả thống kê trọng yếu phải có effect size + 95% CI; **p-value ĐƠN ĐỘC → 🔴**" + 1 dòng DoD | `tham-dinh-dau-ra.md`, `_KIEM-TOAN` §0bis | Medium |
-| A-NEW | Đăng ký A-code mới (A1b Charter · A2b Evidence Ledger · A9b Lock Memo · A13b Risk Register · tách A17a/A17b) vào bảng A `_KIEM-TOAN` + "luôn kiểm" lock-memo | `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md` | Medium |
-| PM-LIVE | Mở rộng `ke-hoach-trien-khai` (khối Project Charter đầu G1 + Risk Register **sống** rà sau mỗi cổng) | `ke-hoach-trien-khai.md` | Medium |
-| QC-LOCK | Thêm bước "QC hậu-khóa" (phân phối/outlier/missing/khớp dummy) vào hàng G6 trước khi chạy SAP | `dieu-phoi-nghien-cuu.md`, `quan-ly-du-lieu.md` | Low |
-| VERDICT-3 | Thêm khung 3 hạng READY/PARTIALLY/NOT READY + tên "Gap Register + CAPA" vào completeness-critic | `_KIEM-TOAN` §0bis/§C, `dieu-phoi-nghien-cuu.md` G9 | Medium |
+| Mã | Vá | File chạm | Ưu tiên | Trạng thái |
+|---|---|---|---|---|
+| GATE-FIX | Tiêu đề §Khung G0–G9 đã đổi "dùng skill làm chuẩn" → "mượn NỘI DUNG/chuẩn báo cáo từ skill" | `dieu-phoi-nghien-cuu.md` | High | ✅ Đã áp |
+| R8-PVALUE | Quy tắc R8 "effect size + 95% CI; p-value đơn độc → 🔴" đã có trong guardrail + `_KIEM-TOAN` §0bis | `tham-dinh-dau-ra.md`, `_KIEM-TOAN` | Medium | ✅ Đã áp |
+| A-NEW | Đăng ký A-code mới (A1b · A2b · A9b · A13b · A17a/A17b) vào bảng A `_KIEM-TOAN` | `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md` | Medium | ✅ **Hoàn tất** — đã có tại dòng A1b–A17b trong §A (kiểm tra 2026-06-30) |
+| PM-LIVE | Mở rộng `ke-hoach-trien-khai` (Project Charter G1 + Risk Register sống) | `ke-hoach-trien-khai.md` | Medium | ✅ **Hoàn tất** — TÀI LIỆU 1 (A1b) + TÀI LIỆU 5 (A13b) đầy đủ (kiểm tra 2026-06-30) |
+| QC-LOCK | "QC hậu-khóa" đã có trong hàng G6→G6.5 của bảng GIAO THỨC TỰ ĐỘNG | `dieu-phoi-nghien-cuu.md` | Low | ✅ Đã áp |
+| VERDICT-3 | 3 hạng READY/PARTIALLY/NOT READY + Gap Register + CAPA đã có tại §D `_KIEM-TOAN` | `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md` §D | Medium | ✅ Đã áp |
+| **DOCX-EXPORT** | Xuất .docx tự động sau mỗi cổng G — BƯỚC 4 + gen_research_docx.py + scaffold + _DOCX-EXPORT-PROTOCOL.md | `dieu-phoi-nghien-cuu.md` + tools | **High** | ✅ **Hoàn tất 2026-06-29** |
+| **INTAKE-AUDIT** | Thêm RESEARCH INTAKE & FEASIBILITY AUDIT (10 mục §5 CROSSWALK) vào BƯỚC 0 đề tài MỚI trong orchestrator | `dieu-phoi-nghien-cuu.md` | High | ✅ **Hoàn tất 2026-06-30** — nhúng trực tiếp vào BƯỚC 0 + PHIẾU CẤP PHÁT |
+| **XGATE-SYNC** | Kiểm nhất quán chéo G3→G4 (tên biến CRF ↔ SAP ↔ dummy tables) trước khi KHÓA SAP | `dieu-phoi-nghien-cuu.md` + `thiet-ke-nghien-cuu.md` | Medium | ✅ **Hoàn tất 2026-06-30** — hàng XGATE-SYNC + thứ tự ưu tiên sửa |
+| **SELF-CORRECT** | Vòng tự sửa (≤3 lần) + auto-dispatch agent theo BẢNG AUTO-FIX | `_TU-CHINH-SUA-PROTOCOL.md` · `dieu-phoi-nghien-cuu.md` · `tham-dinh-dau-ra.md` | **High** | ✅ **Hoàn tất 2026-06-30** — file hạ tầng + BƯỚC 3 + §8 dispatch |
+| **CHAY-TOAN-BO** | Một lệnh chạy G0→G9; bác sĩ chỉ nhập 4 lần tại 4 cổng cứng; PHIẾU CẤP PHÁT phát trước | `dieu-phoi-nghien-cuu.md` | **High** | ✅ **Hoàn tất 2026-06-30** — §CHẾ ĐỘ CHAY-TOAN-BO + trình tự 4 DỪNG |
+| **PIPELINE-G7** | Auto-pull kết quả G6→G7: bảng kết quả tự chảy vào bản thảo IMRAD | `viet-ban-thao.md` | Medium | ✅ **Hoàn tất 2026-06-30** — §CHẾ ĐỘ PIPELINE với routing table + quy tắc cứng |
+| **SELF-CHECK-48** | BƯỚC TỰ KIỂM trong tất cả 48 agent — không có agent nào bỏ qua self-check trước khi trả đầu ra | Tất cả `.claude/agents/[^_]*.md` · `tools/inject_self_check.py` | **High** | ✅ **Hoàn tất 2026-06-30** — 48/48 agents; script inject tái dùng được |
+| **PYTHON-STATS** | Engine thống kê Python thật: bác sĩ cung cấp CSV/Excel → nhận Bảng 1-4 + OR/CI + mô hình đa biến ngay (không phải code template) | `medical-ebm-automation/tools/run_stats_analysis.py` · `phan-tich-thong-ke.md` §BƯỚC 0 | **High** | ✅ **Hoàn tất 2026-06-30** — scipy 1.13 + statsmodels 0.14; CLI + cuối-to-cuối đã test |
+| **RETRY-LOOP** | Vòng retry Python thực sự (for-loop 3 lần, không chỉ prompt instruction) với routing table ERROR_ROUTING_TABLE đồng bộ §2 | `medical-ebm-automation/tools/retry_loop.py` | Medium | ✅ **Hoàn tất 2026-06-30** — demo tested: PASS sau 2 retry / 3 lần gọi |
+| **AUTO-CHECKPOINT** | Ghi checkpoint tạm sau mỗi 3 output agent (không chỉ cổng PASS) — resume không mất trạng thái | `so-cai-ghi-nho.md` §3b | Medium | ✅ **Hoàn tất 2026-06-30** — format [AUTO-CP ...] + phân biệt checkpoint vs sổ cái |
+| **BLOCKED-CONTRACT** | Hợp đồng DỪNG 4-mã-thoát (0/2/3/1) + khối `needs_input` máy-đọc-được + `core_value.is_empty` chống false-PASS; G3 n=0 → BLOCKED (không PASS giả); G4 thiếu N → GHI checkpoint + exit 2 (không exit-1-trống); pipeline phân biệt 🚧 blocked vs ❌ failed + báo TRUNG THỰC cổng cứng (`skill_standards.real_world_signals`) | `tools/gate_contract.py` (mới) · `run_g3_auto.py` · `run_g4_auto.py` · `run_g0_auto.py` · `run_pipeline.py` · `dieu-phoi-nghien-cuu.md` | **High** | ✅ **Hoàn tất 2026-07-04** — +5 test `test_gate_blocked_contract.py`; full suite 1175 pass |
+| **STUDY-META-SEED** | `study_meta.json` (NƠI PIN durable: gate_params.G3 effect size + cờ đời-thực irb/sap/data/integrity) nay TỰ TẠO ở G0 + scaffold, non-destructive → đóng vòng param-loss ở re-run | `tools/gate_contract.py::ensure_study_meta` · `run_g0_auto.py` · `scaffold_research_project.py` | **High** | ✅ **Hoàn tất 2026-07-04** |
+
+> **Trạng thái tổng:** 18/18 ✅ (phiên 2026-07-04: +2 khoảng trống BLOCKED-CONTRACT·STUDY-META-SEED — vá lỗi autonomy G3→G4 false-PASS/exit-1-trống, xác nhận bằng test end-to-end)
 
 **Cần bác sĩ kiểm chứng.**

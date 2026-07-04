@@ -19,6 +19,55 @@ rồi chỉ được trả về **3 thứ** (KHÔNG xuất đoạn văn xuôi In
 
 Chỉ khi tác giả ĐÃ cung cấp nội dung/kết quả/bản nháp thì mới chuyển sang Quy trình viết (mục 3). Không vì bị thúc ("viết luôn đi", "dài 500 từ") mà bỏ qua cổng này. Mọi đoạn AI soạn giúp gắn nhãn `[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]`.
 
+## CHẾ ĐỘ TỰ ĐỘNG G7 — VIẾT BẢN THẢO (CHỈ SAU KHI TÁC GIẢ CUNG CẤP NỘI DUNG)
+
+⛔ **Điều kiện tiên quyết:** tác giả đã cung cấp luận điểm/kết quả/bản nháp riêng (xem CỔNG 0 ở trên). Chỉ sau đó agent mới chạy **tự động, không hỏi xác nhận**.
+
+## 🤖 BƯỚC 0 — G7 FULL AUTO (chạy sau khi qua CỔNG 0 — sinh khung bản thảo IMRAD)
+
+Khi đề tài đã có checkpoint G0–G6 (đặc biệt G5/G6 để lấy tên biến thật) và tác giả đã cung cấp nội dung/kết quả riêng → **chạy NGAY**:
+```bash
+python medical-ebm-automation/tools/run_g7_auto.py \
+    --study "MA-DE-TAI" \
+    [--target-journal "Tên tạp chí đích"] [--word-limit 3500]
+# Tự động: đọc checkpoint G0-G6 → dựng khung IMRAD theo chuẩn báo cáo đúng thiết kế
+#           → A12 .md + .docx + G7_checkpoint.json
+```
+Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kết cục) bằng **TÊN BIẾN THẬT** lấy từ CRF của G5 (`quan-ly-du-lieu`), thay vì chỗ trống chung chung — giảm việc tác giả phải tự tra lại tên biến khi viết Methods.
+
+| MODULE | Tác vụ |
+|--------|--------|
+| M1 | BƯỚC 0: kiểm SAP đã khóa + số phê duyệt đạo đức (thật, do tác giả cấp) + không ghostwrite |
+| M2 | Chọn chuẩn báo cáo đúng thiết kế (CONSORT 2025/STROBE/PRISMA 2020/SPIRIT 2025/STARD/TRIPOD+AI/COREQ) |
+| M3 | Bước 1: dàn ý IMRAD theo checklist chuẩn báo cáo đã chọn |
+| M4 | Bước 2: văn xuôi liền mạch (không gạch đầu dòng trong thân bài) |
+| M5 | Results: ước lượng + 95% CI; Discussion: không overclaim, không suy nhân quả vượt thiết kế |
+| M6 | 🔒 CỔNG CỨNG: giao `kiem-chung-trich-dan` kiểm TỪNG tham khảo; chỗ thiếu → `[CẦN BỔ SUNG]` |
+
+## CHẾ ĐỘ PIPELINE — AUTO-PULL TỪ KẾT QUẢ PHÂN TÍCH (CHAY-TOAN-BO / G6→G7)
+
+> Kích hoạt khi orchestrator gọi từ CHAY-TOAN-BO **sau khi G6 đã hoàn tất** và truyền kết quả từ `phan-tich-thong-ke` + `dien-giai-ket-qua`. Kết quả phân tích từ dữ liệu bác sĩ nhập = **nội dung tác giả** → CỔNG 0 anti-ghostwrite KHÔNG chặn; vẫn gắn [BẢN NHÁP AI] bắt buộc.
+
+**Điều kiện kích hoạt:** orchestrator truyền rõ kết quả G6 + G6.5 ĐÃ CÓ SỐ LIỆU THẬT (G4_STATUS=LOCKED + G5_STATUS=LOCKED).
+
+**Hành động AUTO-PULL (không cần bác sĩ nhắc):**
+
+| Nguồn (tự lấy) | Điền vào |
+|---|---|
+| Bảng 1–4 từ `phan-tich-thong-ke` MODULE 1–4 | Results — đặc điểm mẫu + kết cục + đa biến |
+| Diễn giải từ `dien-giai-ket-qua` | Discussion — đoạn diễn giải + đối chiếu y văn |
+| Cỡ mẫu thực tế (G5 Data Lock Memo) | Methods — cỡ mẫu thu được |
+| Số phê duyệt + mã đăng ký (G2, bác sĩ đã cấp) | Methods — đạo đức |
+| Chuẩn báo cáo (tự suy từ thiết kế SAP) | Methods + bảng checklist |
+
+**Quy tắc cứng trong PIPELINE:**
+- Số liệu **SAO CHÉP NGUYÊN VẸN** từ đầu ra G6 — không làm tròn/diễn đạt lại mà không gắn cờ
+- Ô bảng còn `___` (chưa chạy code) → giữ `[CẦN BỔ SUNG — chạy code R/SPSS trên dữ liệu thật]`
+- Không có trong đầu vào → `[CẦN BỔ SUNG]`, KHÔNG bịa
+- Gắn nhãn đầu bản thảo: `[BẢN NHÁP AI — TÁC GIẢ PHẢI KIỂM TRA TỪNG SỐ LIỆU TRƯỚC KHI NỘP]`
+- Tác giả phải khai báo dùng AI (ICMJE) và xác nhận số liệu trước khi nộp
+- Sau draft: tự giao `kiem-chung-trich-dan` + `binh-duyet` ngay trong cùng vòng
+
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). Trọng tâm: **KHÔNG bịa trích dẫn hay số liệu** — chỉ viết điều dữ liệu/nguồn chống đỡ được; mỗi khẳng định có nguồn kèm **PMID/DOI**; phân biệt phát hiện vs suy diễn; KHÔNG suy nhân quả vượt thiết kế; nhắc **khai báo dùng AI + trách nhiệm tác giả (ICMJE) + COI/tài trợ** theo yêu cầu tạp chí; KHÔNG PII.
 
@@ -35,7 +84,7 @@ Thông điệp chính (1 câu) · loại thiết kế (chọn chuẩn báo cáo)
   2. Đề nghị tác giả **cung cấp ý chính/kết quả** trước, rồi mới chuyển thành văn xuôi;
   3. Nếu **đã có bản nháp của tác giả** → biên tập/làm mạnh/sửa ngữ pháp/chuẩn hóa trích dẫn.
   Mọi đoạn văn xuôi AI soạn giúp phải gắn nhãn **`[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]`** + nhắc **khai báo dùng AI (ICMJE)**. Cổng cứng: không vì bị thúc mà bỏ qua.
-**Bước 1 — Dàn ý:** chốt thông điệp chính (1 câu), chọn chuẩn báo cáo (CONSORT/RCT · STROBE/quan sát · PRISMA/SR · SPIRIT/protocol · STARD/chẩn đoán · TRIPOD+AI/mô hình; định tính → COREQ/SRQR qua `nghien-cuu-dinh-tinh`), lập sườn IMRAD theo checklist chuẩn đó.
+**Bước 1 — Dàn ý:** chốt thông điệp chính (1 câu), chọn chuẩn báo cáo (CONSORT 2025/RCT · STROBE/quan sát · PRISMA 2020/SR · SPIRIT 2025/protocol · STARD/chẩn đoán · TRIPOD+AI/mô hình; định tính → COREQ/SRQR qua `nghien-cuu-dinh-tinh`), lập sườn IMRAD theo checklist chuẩn đó.
 **Bước 2 — Văn xuôi:** viết liền mạch, KHÔNG gạch đầu dòng trong thân bài.
 - **Introduction:** khoảng trống kiến thức → mục tiêu/giả thuyết.
 - **Methods:** đủ chi tiết để tái lặp; nêu phê duyệt đạo đức + mã đăng ký; tham chiếu SAP.
@@ -64,11 +113,33 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 6. Tiêu chí hoàn thành (qua cổng G7)
 **Hoàn thành khi:** thông điệp chính rõ; chuẩn báo cáo đúng thiết kế + bảng đối chiếu checklist; IMRAD văn xuôi; Results có CI; Discussion không overclaim; danh mục tham khảo đã qua `kiem-chung-trich-dan`; mục khai báo đầy đủ (tác giả xác nhận); chỗ thiếu đánh `[CẦN BỔ SUNG]`. Còn `[TRÍCH DẪN CHƯA XÁC MINH]` → CHƯA sẵn sàng nộp. **Bàn giao** `hieu-dinh-song-ngu` (nếu nộp quốc tế) → `binh-duyet`.
 
+> **Định dạng LaTeX theo venue cụ thể (2026-07-04):** dòng 101 ("xuất LaTeX/PDF/DOCX khi cần") hiện chỉ xuất bản thảo chung, KHÔNG có template riêng theo từng tạp chí. Khi đã chọn tạp chí/hội nghị/quỹ tài trợ đích cụ thể (Nature, Science, PLOS, Elsevier, NeurIPS, NSF, NIH...) — dùng skill `venue-templates` (có sẵn `.tex` thật cho 50+ venue + poster/grant) để định dạng đúng khuôn, SAU khi nội dung khoa học đã chốt ở bước này. Không dùng để thay nội dung/liêm chính đã qua cổng cứng trích dẫn ở trên.
+
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa trích dẫn/số liệu; phân biệt phát hiện vs suy diễn; nhắc khai báo AI/tác giả/COI; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --gate G7 --artifact manuscript
+```
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
+
+
+## BƯỚC TỰ KIỂM — trước khi trả đầu ra
+
+Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
+1. Đối chiếu với **TIÊU CHÍ HOÀN THÀNH / QUA CỔNG** của agent này
+2. Thiếu sót tự giải được → sửa ngay trong lần trả này
+3. Thiếu sót phụ thuộc input thật (IRB/data/SAP lock) → gắn `[CẦN BỔ SUNG]`
+4. Chỉ trả khi self-check PASS; còn 🔴 → áp vòng tự sửa (`_TU-CHINH-SUA-PROTOCOL.md` §4)
+
+```
+✦ SELF-CHECK viet-ban-thao — Cổng G__:
+  ĐÃ ĐẠT: [liệt kê tiêu chí đã đáp ứng]
+  CÒN THIẾU: [liệt kê hoặc "không có"]
+  KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
+```
 
 <!-- EBM-MANDATORY-FINAL-GUARDRAIL -->
 ## Cổng bắt buộc trước khi trả lời

@@ -23,6 +23,7 @@
    thủ chiều sâu, BỔ SUNG cho R2 (vốn chỉ chặn PII ở ĐẦU RA, chạy sau khi đã gọi). Xem `_QUAN-TRI-DU-LIEU-PII.md` §3.
 5. **Phân tầng thẩm quyền nguồn (xem §2).** Không phải connector nào cũng là nguồn TRÍCH DẪN cấp 1.
 6. **Agent chỉ ĐỀ XUẤT.** Chứng cứ kéo về là gợi ý cho bác sĩ duyệt (Cổng A/B/G) — không tự đổi thực hành.
+7. **THỨ BẬC NGUỒN — nguồn CHÍNH THỐNG trước, PubMed là lớp ĐỐI CHIẾU.** Lấy chứng cứ TỪ nguồn chính thống cấp cao (§1bis: Cochrane/HTA · hiệp hội chuyên khoa/guideline · tạp chí đỉnh); **PubMed/Europe PMC dùng để LẤY PMID/DOI + ĐỐI CHIẾU/KHỬ TRÙNG** (khi chứng cứ đã có ở nguồn chính thống, tra PubMed để xác nhận trùng + gắn định danh). Chỉ khởi động tìm PubMed **sơ cấp độc lập** khi nguồn chính thống KHÔNG phủ (khoảng trống) → khi đó ghi rõ. Thứ tự chi tiết: **§2bis**. *Bất biến: mọi mục vẫn cần **PMID/DOI** (hoặc URL guideline chính thức + năm) để verify.*
 
 ---
 
@@ -42,11 +43,66 @@
 
 ---
 
+## 1bis. NGUỒN CHÍNH THỐNG — HIỆP HỘI · GUIDELINE · HTA · TẠP CHÍ ĐỈNH (đã kiểm domain 2026-07-04)
+> **ĐÂY LÀ NƠI LẤY CHỨNG CỨ TỐT NHẤT (nguồn của record).** Truy cập qua `WebFetch`/`WebSearch` trang chính thức + REST API khi có (Cochrane/Europe PMC/openFDA/DailyMed…). **PubMed/Europe PMC dùng để lấy PMID/DOI + đối chiếu/khử trùng** (§2bis). Toàn văn guideline/tạp chí có **BẢN QUYỀN** → chỉ **TRÍCH DẪN + link + PMID/DOI**, KHÔNG cào/tái bản PDF sau tường phí (luật bản quyền `_NGUON-GUIDELINE-TU-DONG.md` §4). Website tạp chí lớn hay chặn bot (HTTP 403) → lấy metadata/định danh qua **PubMed/Crossref/Europe PMC**, đọc toàn văn khi OA/qua PMC.
+
+### (a) Tổng hợp chứng cứ & HTA — cấp cao nhất (SR/meta + aggregator guideline)
+| Nguồn | Domain chính thức | Truy cập | Vai |
+|---|---|---|---|
+| **Cochrane Library (CDSR)** | cochranelibrary.com | Tóm tắt free mọi nơi; **TOÀN VĂN free tại VN** (one-click LMIC) + green OA sau 12 tháng; CDSR có index trên PubMed | SR/meta **chuẩn vàng** — ưu tiên #1 cho câu hỏi hiệu quả |
+| **Epistemonikos** | epistemonikos.org (API: api.epistemonikos.org) | Free, có API | CSDL SR lớn nhất — tìm SR nhanh, bổ trợ Cochrane |
+| **Europe PMC** | europepmc.org (Articles REST API) | Free, API phong phú | Khám phá y văn **RỘNG HƠN PubMed** (gồm preprint + guideline); lấy toàn văn OA + định danh |
+| **NICE** (+ CKS + BNF) | nice.org.uk | Free đọc; Syndication API (đăng ký free) | Guideline + Clinical Knowledge Summaries + dược (BNF) — bối cảnh Anh, **bối cảnh hóa VN** |
+| **USPSTF** | uspreventiveservicestaskforce.org *(taskforce, không gạch nối)* | Free | Khuyến cáo **dự phòng/tầm soát** (A/B/C/D/I) — CHỈ dự phòng, không điều trị |
+| **TRIP Database** | tripdatabase.com | Free tier (search) | Cỗ máy trả lời lâm sàng gộp guideline+SR |
+| **G-I-N** Int'l Guidelines Library | g-i-n.net (thư viện: guidelines.ebmportal.com) | Một phần free | Thư viện guideline quốc tế đa chuyên khoa |
+| ⚠ ECRI Guidelines Trust | guidelines.ecri.org | **TẠM NGƯNG (offline 2026)** — kế thừa NGC (đóng 2018) | KHÔNG dùng làm nguồn sống; thay bằng NICE/G-I-N/hội chuyên khoa |
+
+### (b) Hiệp hội chuyên khoa — GUIDELINE ĐIỀU TRỊ (nguồn của record theo chuyên khoa)
+| Chuyên khoa | Hiệp hội (domain · tạp chí đăng toàn văn) | Ghi chú |
+|---|---|---|
+| **Tim mạch** | ESC (escardio.org/Guidelines · EHJ) · ACC (acc.org/guidelines · JACC) · AHA (professional.heart.org · Circulation) | ACC/AHA thường ra bản **ĐỒNG**; ESC theo năm hội nghị. **VN: Hội Tim mạch học VN (vnha.org.vn)** |
+| **ĐTĐ/Nội tiết** | ADA Standards of Care (professional.diabetes.org/standards-of-care · Diabetes Care, **bản 2026**) · EASD (easd.org · Diabetologia) · Endocrine Society (endocrine.org · JCEM) · AACE (pro.aace.com) | ADA cập nhật tháng 1 hằng năm |
+| **Thận** | KDIGO (kdigo.org/guidelines · Kidney Int) | PDF free; 2024 CKD · 2022 ĐTĐ-CKD |
+| **Hô hấp** | GOLD (goldcopd.org — COPD **2026**) · GINA (ginasthma.org — hen) · ATS (thoracic.org) · ERS (ersnet.org · ERJ) · CHEST (journal.chestnet.org) | GOLD/GINA free PDF thường niên |
+| **Nhiễm khuẩn** | IDSA (idsociety.org · CID) · WHO (who.int/publications) · CDC (cdc.gov) | Kháng sinh đối chiếu **WHO AWaRe** (mục d) |
+| **Thấp khớp** | EULAR (eular.org · ARD) · ACR (**rheumatology.org** · A&R) | ACR domain = rheumatology.org (KHÔNG phải acr.org) |
+| **Tiêu hóa** | ACG (**gi.org** · Am J Gastroenterol) · AGA (gastro.org · Gastroenterology) | ACG ≠ AGA (2 hội khác nhau); ACG = gi.org |
+| **Thần kinh** | AAN (aan.com · Neurology) | |
+| **Ung thư** | ASCO (asco.org · JCO) · ESMO (esmo.org · Annals of Oncology, OA) · NCCN (nccn.org — **cần đăng ký free**) | NCCN cấm sao chép/tái bản |
+| **Tâm thần** | APA — **American PSYCHIATRIC Assoc** (psychiatry.org · psychiatryonline.org) | KHÔNG nhầm apa.org (American Psychological Association) |
+| **Sản phụ khoa** | ACOG (acog.org · Obstetrics & Gynecology) | Nhiều bản chỉ hội viên |
+| **🇻🇳 Việt Nam** | **Cục KCB — kcb.vn/phac-do** (kho phác đồ **QĐ-BYT CHÍNH THỨC**) · Bộ Y tế moh.gov.vn (văn bản) | **Ưu tiên kcb.vn** cho phác đồ; trích **số QĐ-BYT + ngày** |
+
+### (c) Tạp chí y khoa độ tin cậy cao (toàn văn nghiên cứu gốc/đồng thuận)
+NEJM (nejm.org) · The Lancet + specialty (thelancet.com) · JAMA + JAMA Network (jamanetwork.com; **JAMA Network Open OA hoàn toàn**) · The BMJ (bmj.com — **MỌI nghiên cứu gốc open access**) · Annals of Internal Medicine (acpjournals.org) · Nature Medicine (nature.com/nm) · Circulation (ahajournals.org) · JACC (jacc.org) · Diabetes Care (diabetesjournals.org/care) · Kidney International (kidney-international.org) · Blood (ashpublications.org — **free sau 12 tháng**) · Gut (gut.bmj.com) · CHEST (journal.chestnet.org).
+> Luôn kèm **PMID/DOI**; đọc toàn văn khi OA hoặc qua PMC/Europe PMC. Bài "săn mồi" → loại (rubric Q7).
+
+### (d) An toàn thuốc / dược lý — nguồn của record cho cảnh báo kê đơn (đồng bộ `ke-don-an-toan`)
+| Nguồn | Domain | Truy cập | Vai |
+|---|---|---|---|
+| **openFDA** | open.fda.gov · api.fda.gov | Free API (key free nâng hạn) | Nhãn thuốc · biến cố bất lợi (FAERS) · thu hồi |
+| **DailyMed** | dailymed.nlm.nih.gov | Free API (SPL) | Nhãn thuốc FDA đầy đủ |
+| **Drugs@FDA** | accessdata.fda.gov/scripts/cder/daf · api.fda.gov/drug/drugsfda | Free | Thuốc đã phê duyệt (thị trường Mỹ) |
+| **EMA** | ema.europa.eu/en/medicines | Free (EPAR) | Thuốc cấp phép EU + báo cáo thẩm định |
+| **MHRA** | products.mhra.gov.uk | Free (web) | SmPC/PIL/PAR (Anh) |
+| **LactMed** | ncbi.nlm.nih.gov/books/NBK501922 | Free (E-utilities db=books) | Thuốc & cho con bú (đã rời TOXNET 2019) |
+| **WHO AWaRe 2023 + EML 23rd (2023)** | who.int/publications | Free (PDF/CSV) | Phân loại kháng sinh Access/Watch/Reserve + thuốc thiết yếu |
+| **BNF** | bnf.nice.org.uk | Free (web); đầy đủ qua MedicinesComplete (NHS/HINARI free) | Cẩm nang kê đơn Anh |
+> ⚠ Nhắc §3: cảnh báo kê đơn (tương tác/CCĐ/chỉnh liều) dựa **nhãn thuốc/openFDA/DailyMed + guideline + PMID/DOI**, **KHÔNG** dùng ChEMBL.
+
+### (e) Đăng ký thử nghiệm
+ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-trials`) · WHO ICTRP (trialsearch.who.int — gộp registry toàn cầu, web). Ghi `status`; **registry ≠ kết quả công bố**.
+
+---
+
 ## 2. PHÂN TẦNG THẨM QUYỀN NGUỒN (nối vào rubric Q7 `_CHUAN-CHAT-LUONG-MEDPALM.md` + R7)
 
-| Tầng | Connector | Được làm gì |
+| Tầng | Connector/Nguồn | Được làm gì |
 |---|---|---|
-| **Cấp 1 — TRÍCH DẪN được** | PubMed (bài bình duyệt); ClinicalTrials.gov *(có ghi `status`)*; bioRxiv/medRxiv *(có nhãn preprint "chưa bình duyệt")* | Vào bảng nguồn chính kèm PMID/DOI/NCT-ID; làm nền khuyến cáo (theo thứ bậc chứng cứ) |
+| **Cấp 0 — CHÍNH THỐNG (ưu tiên #1)** | §1bis(a)+(b): Cochrane/Epistemonikos/NICE/USPSTF + guideline **hiệp hội chuyên khoa** (ESC/ACC-AHA/ADA/KDIGO/GOLD/GINA/IDSA/EULAR-ACR/ASCO-ESMO/…) + **kcb.vn** (VN) | **NGUỒN CỦA RECORD** cho khuyến cáo; trích tên guideline + năm + mục + URL chính thức + PMID/DOI của bản công bố |
+| **Cấp 0.5 — Tạp chí đỉnh** | §1bis(c): NEJM/Lancet/JAMA/BMJ/Annals/Nature Medicine + tạp chí chuyên khoa hàng đầu | Toàn văn nghiên cứu gốc/đồng thuận; **luôn kèm PMID/DOI** (metadata qua PubMed/Crossref/Europe PMC) |
+| **Cấp 1 — Bình duyệt + ĐỐI CHIẾU** | PubMed/MEDLINE + Europe PMC (bài bình duyệt); ClinicalTrials.gov *(ghi `status`)*; bioRxiv/medRxiv *(nhãn "chưa bình duyệt")* | Lấy **PMID/DOI + đối chiếu/khử trùng** cho chứng cứ Cấp 0/0.5; tìm sơ cấp độc lập CHỈ khi Cấp 0/0.5 không phủ (khoảng trống → ghi rõ) |
 | **Chỉ KHÁM PHÁ** | Consensus | Định hướng tìm; **mọi khẳng định phải truy ngược PMID/DOI gốc** qua PubMed + `kiem-chung-trich-dan` rồi mới trích |
 | **Bối cảnh NGHIÊN CỨU (không lâm sàng)** | ChEMBL | Làm rõ cơ chế/dược lý tiền lâm sàng; **KHÔNG** làm chỗ dựa cho khuyến cáo lâm sàng/cảnh báo kê đơn |
 | **Công cụ mã hóa** | ICD-10 | Chuẩn hóa mã — không phải nguồn bằng chứng |
@@ -54,6 +110,17 @@
 **Quy tắc đọc nguồn ClinicalTrials.gov:** trial **registry record ≠ kết quả công bố**. Luôn ghi rõ
 `status` (recruiting / active / completed / results-posted). Thử nghiệm đang chạy/chưa có kết quả →
 **KHÔNG** dùng làm bằng chứng hiệu quả, chỉ ghi nhận "đang nghiên cứu"; ưu tiên ấn phẩm bình duyệt khi đã có.
+
+---
+
+## 2bis. THỨ TỰ TRA CỨU MẶC ĐỊNH (nguồn chính thống trước · PubMed là lớp đối chiếu)
+> Thao tác hóa §0.7 cho mọi agent tra cứu/thẩm định/tổng quan. **Yêu cầu bác sĩ: ưu tiên nguồn chính thống; CHỈ lấy từ PubMed khi chứng cứ TRÙNG (đối chiếu/lấy định danh).**
+1. **Kho RAG nội bộ đã curate** (`clinical-evidence-rag` trên `medical-ebm-automation/evidence/`) — nguồn đã được bác sĩ kiểm, đáng tin nhất.
+2. **Cấp 0 — nguồn CHÍNH THỐNG** (§1bis a+b): Cochrane/HTA + guideline hiệp hội chuyên khoa (+ **kcb.vn** cho VN). Đây là **nơi lấy khuyến cáo/kết luận**.
+3. **Cấp 0.5 — tạp chí đỉnh** (§1bis c): lấy toàn văn nghiên cứu gốc/đồng thuận khi cần chi tiết.
+4. **PubMed/Europe PMC — LỚP ĐỐI CHIẾU & KHỬ TRÙNG:** với mỗi chứng cứ từ bước 2–3, tra để (a) **lấy PMID/DOI** cho mọi mục (bất biến verify), và (b) **xác nhận trùng khớp** (cùng nghiên cứu/khuyến cáo, không phải 2 nguồn mâu thuẫn). **KHÔNG** dùng PubMed làm điểm khởi đầu tìm kiếm độc lập khi Cấp 0/0.5 đã trả lời.
+5. **CHỈ mở rộng tìm PubMed/Europe PMC sơ cấp độc lập** khi nguồn chính thống **KHÔNG phủ** câu hỏi (khoảng trống thật) — khi đó nêu rõ "nguồn chính thống chưa phủ → bổ sung y văn sơ cấp".
+> **Bất biến giữ nguyên:** mọi mục cần **PMID/DOI** (hoặc URL guideline chính thức + năm) để verify; nguồn thiếu → **PARTIAL** (không kết luận "không có"); **KHÔNG PII outbound**; **chỉ nguồn miễn phí** (loại Consensus upsell — §3); nguồn bậc cao mâu thuẫn → nêu mâu thuẫn, không chọn bài hợp ý.
 
 ---
 

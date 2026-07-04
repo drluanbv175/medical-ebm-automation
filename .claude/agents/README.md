@@ -1,4 +1,8 @@
-# Đội Agent EBM — 48 agent (19 Lâm sàng + 28 Nghiên cứu + 1 Guardrail dùng chung) trong MỘT thư mục
+# Đội Agent EBM — 50 agent (21 Lâm sàng + 28 Nghiên cứu + 1 Guardrail dùng chung) trong MỘT thư mục
+
+> **Cập nhật 2026-07-04 (audit đối kháng chất lượng nội dung + tính cập nhật chuẩn):** rà 48 agent bằng workflow đa tác tử có xác minh PubMed → 15 phát hiện đã kiểm chứng, đã vá tại nguồn `.claude/agents` + đồng bộ Codex. **An toàn:** `dau-man-tinh` thêm naloxone giảm hại + cảnh báo giảm liều opioid cưỡng bức→nguy cơ tự sát (CDC 2022 PMID 36327391 / FDA 2019); guardrail `tham-dinh-dau-ra` thêm **mã cứng R14** rà tương tác/CCĐ/chỉnh liều (Gurwitz JAMA 2003 PMID 12622580 / Shehab JAMA 2016 PMID 27893129). **Cập nhật chuẩn:** bản đồ nguy cơ sai lệch theo thiết kế (RoB 2 · **ROBINS-I V2 2024** · **ROBINS-E** · AMSTAR-2 · QUADAS-2) + biến thể GRADE (test/tiên lượng/ADOLOPMENT) đồng bộ `tham-dinh-grade-nnt` + 8 file; **CONSORT 2025 / SPIRIT 2025** thay 2010/2013; `kinh-te-y-te` tách **BIA→ISPOR BIA GPP II 2014** (CHEERS 2022 không bao BIA) + model validation (ISPOR-SMDM TF-7) + Second Panel; **USPSTF currency tầm soát** vào Q6. **Độ phủ:** thêm agent lâm sàng `quan-ly-khang-dong` (quản lý kháng đông trọn vòng: rung nhĩ/VTE/van tim — chọn VKA vs DOAC · chỉnh liều theo eGFR · bắc cầu quanh thủ thuật · đảo ngược khi chảy máu; lấp khoảng trống giá trị CAO NHẤT của audit) → 48→**49** (20 lâm sàng). Nút thắt còn lại (NGOÀI nội dung — cần bác sĩ/chuyên gia): đánh giá NGƯỜI κ/Likert (P3.2/P4.2) CHƯA chạy.
+
+> **Cập nhật 2026-07-04 (nâng cấp thứ bậc nguồn chứng cứ — theo yêu cầu bác sĩ):** mở rộng registry `_CONNECTOR-CHUNG-CU.md` — **§1bis** danh mục nguồn chính thống đã kiểm domain (Cochrane/NICE/USPSTF/Epistemonikos/Europe PMC + hiệp hội chuyên khoa ESC/ACC-AHA/ADA/KDIGO/GOLD/GINA/IDSA/EULAR-ACR/ASCO-ESMO/APA/ACOG + tạp chí đỉnh NEJM/Lancet/JAMA/BMJ/Annals + an toàn thuốc openFDA/DailyMed/EMA/LactMed/BNF + 🇻🇳 **kcb.vn** phác đồ QĐ-BYT). **Đảo thứ bậc (§2 Cấp 0/0.5/1 + §2bis):** nguồn chính thống là NGUỒN CỦA RECORD; **PubMed/Europe PMC thành lớp ĐỐI CHIẾU + lấy PMID/khử trùng**, chỉ tìm sơ cấp độc lập khi nguồn chính thống không phủ. Đã nối `tra-cuu-chung-cu`/`tong-quan-y-van`/`thu-thu-tai-lieu`/`_NGUON-GUIDELINE-TU-DONG`. Bất biến giữ: PMID/DOI verify · PARTIAL · không PII outbound · chỉ nguồn miễn phí. ⚠ ECRI Guidelines Trust hiện offline → NICE/G-I-N thay.
 
 > Cập nhật 2026-06-16 (đợt 2): **+3 agent lâm sàng** lấp khoảng trống bao phủ (audit 10 trục) → 45→**48** (19 LS + 28 NC + 1 guardrail): `dau-man-tinh` (đau mạn · opioid an toàn), `cham-soc-giam-nhe` (giảm nhẹ/cuối đời), `tram-cam-lo-au` (trầm cảm/lo âu — nối sàng lọc tự sát). Đã đăng ký nhánh chuyên biệt + cảnh báo "ca ngoài vùng phủ" ở `dieu-phoi-lam-sang`.
 > Cập nhật 2026-06-16: **bổ sung 7 agent** lấp khoảng trống thực hành chi tiết → 38→**45** (16 LS + 28 NC). **Lâm sàng (+4):** `khai-thac-benh-su-kham` (bệnh sử cấu trúc + khám trọng điểm — bước Hỏi–Khám), `thang-diem-nguy-co` (chọn–áp–diễn giải thang/công cụ nguy cơ đã kiểm định: CHA₂DS₂-VASc·ASCVD·Wells·CURB-65·FRAX…), `du-phong-tam-soat` (dự phòng + tầm soát theo tuổi–nguy cơ, USPSTF/tiêm chủng, cân bằng lợi–hại), `theo-doi-benh-man` (điều trị theo mục tiêu + theo dõi dài hạn bệnh mạn). **Nghiên cứu (+3):** `cong-cu-do-luong` (kiểm định PROM/thang đo — COSMIN), `kinh-te-y-te` (chi phí–hiệu quả — CHEERS 2022/ICER/PSA), `mo-hinh-tien-luong` (mô hình tiên lượng — TRIPOD+AI: hiệu chuẩn+phân biệt+validation+DCA). Đã nối đủ 2 nhạc trưởng (GIAO THỨC TỰ ĐỘNG + completeness-critic) + bảng artifact `_KIEM-TOAN` (danh mục RIÊNG) + bản đồ kết nối; không tham chiếu treo; 2 cổng A/B + guardrail giữ nguyên.
@@ -23,7 +27,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 - **LIÊM CHÍNH KHOA HỌC:** không bịa số phê duyệt/đăng ký/hành chính; không suy diễn nhân quả từ thiết kế cắt ngang/quan sát; nhắc khai báo AI + trách nhiệm tác giả (ICMJE) + COI/tài trợ + quy định tạp chí/hội đồng; chọn chuẩn báo cáo đúng thiết kế.
 
 
-## Cụm Lâm sàng (19 agent)
+## Cụm Lâm sàng (21 agent)
 | Agent | Vai trò | Gọi khi |
 |-------|---------|---------|
 | `dieu-phoi-lam-sang` | Nhạc trưởng 5 bước EBM | Nêu trọn một ca/tình huống lâm sàng |
@@ -35,8 +39,10 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 | `chan-doan-xac-suat` | Suy luận chẩn đoán theo Bayes: pretest → LR → hậu nghiệm → ngưỡng test–treat | Câu hỏi CHẨN ĐOÁN: "có nên làm xét nghiệm gì", "khả năng bệnh X", "đủ chắc để điều trị chưa" |
 | `thang-diem-nguy-co` | Chọn–áp–diễn giải **thang/công cụ nguy cơ đã kiểm định** (CHA₂DS₂-VASc·HAS-BLED·ASCVD·Wells·CURB-65·FRAX·MELD…) → điểm + nguy cơ tuyệt đối + ngưỡng (không bịa điểm/ngưỡng) | "Tính thang điểm gì", "nguy cơ … bao nhiêu %", "có cần kháng đông/statin theo nguy cơ" |
 | `tham-dinh-grade-nnt` | Chấm GRADE + NNT/NNH + EtD | Đã có nguồn, cần thẩm định |
+| `tham-dinh-do-chinh-xac-chan-doan` | **Thẩm định nghiên cứu ĐỘ CHÍNH XÁC CHẨN ĐOÁN** (QUADAS-2/QUADAS-C + GRADE-cho-test + STARD; diễn giải Se/Sp/LR/PPV-NPV kèm prevalence; sai lệch spectrum/verification/incorporation) — nhánh CHẨN ĐOÁN của bước Thẩm định | "Nghiên cứu về test này đáng tin không / Se-Sp-LR có vững không / QUADAS-2 cho bài chẩn đoán" |
 | `quyet-dinh-chung` | Cá thể hóa + quyết định chung (lợi ích–nguy cơ–bất định) | Trình bày lựa chọn cho BN cùng quyết |
 | `ke-don-an-toan` | Rà tương tác/đa thuốc/chỉnh liều/chống chỉ định | Trước khi chốt đơn |
+| `quan-ly-khang-dong` | **Quản lý kháng đông trọn vòng** (rung nhĩ không do van/VTE/van tim): cân nguy cơ huyết khối–chảy máu · chọn VKA vs DOAC theo chỉ định · nguyên tắc chỉnh liều theo eGFR–cân nặng–tuổi · bắc cầu quanh thủ thuật · đảo ngược khi chảy máu (KHÔNG bịa liều; số cụ thể qua `ke-don-an-toan`) | "Chọn kháng đông nào / liều DOAC theo eGFR / bắc cầu quanh thủ thuật / đảo ngược kháng đông / INR đích / chuyển VKA↔DOAC" |
 | `loi-dan-tuan-thu` | Lời dặn A5 + kế hoạch tuân thủ | Sau khi bác sĩ duyệt phác đồ |
 | `theo-doi-benh-man` | **Điều trị theo mục tiêu + theo dõi dài hạn** bệnh mạn: đích cá thể hóa · lịch tái khám · xét nghiệm theo dõi · tiêu chí tăng/giảm bậc · tầm soát biến chứng · ngưỡng chuyển tuyến | "Theo dõi ĐTĐ/THA/COPD thế nào", "bao lâu xét nghiệm lại", "khi nào tăng liều/đổi thuốc", "đích điều trị" |
 | `du-phong-tam-soat` | **Dự phòng (cấp 1–3) + tầm soát** theo tuổi–giới–nguy cơ (tiêm chủng·ung thư·bệnh mạn), cấp bằng chứng (USPSTF…) + cân bằng lợi–hại (quá chẩn) | "Khám sức khỏe định kỳ tầm soát gì", "tầm soát ung thư/tiêm vắc-xin theo tuổi", "dự phòng cho BN nguy cơ cao" |
@@ -54,7 +60,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 | `khoang-trong-nghien-cuu` | Đối chiếu câu hỏi với guideline + xác định research gap/novelty | Biện minh tính mới đề tài (G0/G1) |
 | `tong-quan-y-van` | Tổng quan hệ thống PRISMA | Rà soát bằng chứng cho đề tài/công bố |
 | `trich-xuat-y-van` | Trích xuất 1 bài → bảng chuẩn (PICO, hiệu ứng, RoB) | Đọc nhanh/dựng bảng trích xuất cho SR |
-| `tham-dinh-phe-binh` | Thẩm định 1 bài (đọc PDF, RoB2/ROBINS-I/QUADAS-2, GRADE) | Phê bình chất lượng một nghiên cứu |
+| `tham-dinh-phe-binh` | Thẩm định 1 bài (đọc PDF, RoB2 RCT/ROBINS-I V2 quan sát can thiệp/ROBINS-E phơi nhiễm/AMSTAR-2 SR/QUADAS-2 chẩn đoán, GRADE) | Phê bình chất lượng một nghiên cứu |
 | `thiet-ke-nghien-cuu` | Thiết kế · estimand · khóa SAP · dummy tables (trước G4) | Lập kế hoạch nghiên cứu |
 | `co-mau-nghien-cuu` | Tính CỠ MẪU/POWER (G3): nhận diện thiết kế → chọn công thức (2 tỷ lệ/2 trung bình·log-rank·Se-Sp·NI/equivalence·EPV) → effect size có nguồn → dropout/design effect → cỡ mẫu tối thiểu + khuyến nghị + bảng độ nhạy | "Cần bao nhiêu bệnh nhân / đủ lực chưa / tính cỡ mẫu" |
 | `phan-tich-thong-ke` | Phân tích theo SAP đã khóa, trên DB đã khóa (G6) | Sau khi dữ liệu khóa |
@@ -140,6 +146,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 | "Tôi có một bệnh nhân… / khám ca này" | `dieu-phoi-lam-sang` | tự chạy bước 0 cờ đỏ → 5 bước EBM |
 | "Có nguy hiểm không / khi nào chuyển viện / đừng bỏ sót gì" | `sang-loc-co-do` | bước 0, ưu tiên an toàn |
 | "Có nên làm xét nghiệm gì / khả năng bệnh X / đủ chắc để điều trị chưa" | `chan-doan-xac-suat` | Bayes + ngưỡng test–treat |
+| "Nghiên cứu về test này đáng tin không / Se-Sp-LR có vững không / QUADAS-2 cho bài chẩn đoán" | `tham-dinh-do-chinh-xac-chan-doan` | QUADAS-2/QUADAS-C + GRADE-cho-test + STARD; áp ca qua `chan-doan-xac-suat` |
 | "Đọc giúp bộ kết quả này / kết quả có nguy hiểm không / cần làm thêm XN gì" | `dien-giai-can-lam-sang` | quét giá trị nguy kịch → gom nhóm → bước kế tiếp |
 | "Cần hỏi gì–khám gì cho ca này / khai thác bệnh sử" | `khai-thac-benh-su-kham` | bước Hỏi–Khám, trước chẩn đoán |
 | "Tính thang điểm gì / nguy cơ … bao nhiêu % / cần kháng đông–statin theo nguy cơ" | `thang-diem-nguy-co` | thang đã kiểm định → điểm + nguy cơ tuyệt đối |
@@ -149,6 +156,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 | "Giảm nhẹ / cuối đời / mục tiêu chăm sóc" | `cham-soc-giam-nhe` | kiểm soát triệu chứng, goals of care |
 | "Trầm cảm / lo âu / sàng lọc tâm thần" | `tram-cam-lo-au` | sau sàng lọc tự sát (sang-loc-co-do) |
 | "Đơn này an toàn không / thuốc đánh nhau / chỉnh liều theo thận" | `ke-don-an-toan` | rà tương tác/đa thuốc/chỉnh liều |
+| "Chọn kháng đông nào / liều DOAC theo thận / bắc cầu quanh thủ thuật / đảo ngược kháng đông / INR đích" | `quan-ly-khang-dong` | khung quyết định trọn vòng; liều/tương tác qua `ke-don-an-toan`, thang qua `thang-diem-nguy-co` |
 | "Giải thích cho BN / trình bày lựa chọn cùng quyết" | `quyet-dinh-chung` | shared decision-making |
 | "Đề tài [tên]… / chạy nghiên cứu này" | `dieu-phoi-nghien-cuu` | RESUME từ sổ cái → march G0→G9 |
 | "Biến vấn đề lâm sàng thành câu hỏi nghiên cứu / PICO-PECO/FINER" | `cau-hoi-nghien-cuu` | G0 |
@@ -189,13 +197,17 @@ launchd shell KHÔNG gọi được subagent → nối qua tầng routine Claude
 | `Scheduled/nckh` (hồ sơ QY175) | cụm Nghiên cứu qua `dieu-phoi-nghien-cuu` |
 | `Scheduled/tu-kiem-dong-bo` (tự kiểm đồng bộ, đề xuất tuần) | giao thức `_TU-SUA-CHUA-PROTOCOL.md` *(đặc tả mới 2026-06-13; lịch chạy thật: [CẦN XÁC NHẬN TẠI ĐƠN VỊ])* |
 | `Scheduled/giam-sat-chung-cu` (giám sát chứng cứ nội tổng quát, đề xuất tuần/tháng) | giao thức `_GIAM-SAT-CHUNG-CU-NOI-CHUNG.md` → `cap-nhat-guideline` + `tra-cuu-chung-cu` *(lịch chạy thật: [CẦN XÁC NHẬN TẠI ĐƠN VỊ])* |
+| `Scheduled/antifacts-weekly-ebm` (digest EBM 13 chuyên khoa, tuần) | quét PubMed 7 ngày → guardrail `tham-dinh-dau-ra` → `Antifacts.html` *(chưa đăng ký lịch native)* |
+| `Scheduled/tong-hop-chung-cu-hang-tuan` (ứng viên chứng cứ 8 bệnh mạn, tuần — Track B) | skill `cap-nhat-chung-cu-y-khoa` → guardrail `tham-dinh-dau-ra` *(chưa đăng ký lịch native)* |
+
+> Tổng **7 routine vận hành** (có `Scheduled/<tên>/SKILL.md`) — nguồn sự thật: `_ROUTINE-AGENT-WIRING.md`. Đặc tả META `tiep-tuc-hoan-thien-he-thong-agent` đã RETIRE (không có folder/job). Đồng bộ với `_BAN-DO-KET-NOI.md` §8.
 
 Mỗi routine có khối **AGENT WIRING (2026-06-12)** ở cuối — cộng thêm, không sửa prompt gốc. Phiên headless không gọi được subagent → routine tự làm theo đặc tả `.claude/agents/<tên>.md` (cùng chuẩn).
 
 > **Antifacts — mặt tiền theo CHUYÊN KHOA (sản phẩm phái sinh TỰ TÍCH LŨY):** cuối vòng khép kín, `EBM_MASTER/tools/sync_all.py` dựng lại `Antifacts.html` (gốc "Claude AI") gom cập nhật chứng cứ + 45 thang điểm + công cụ NC theo chuyên khoa (`build_library.py add` làm giàu badge → `build_antifacts.py`). Tự cập nhật mỗi lần sync/định kỳ; thẻ mới ở hàng "chờ bác sĩ duyệt". Bản đồ: `_BAN-DO-KET-NOI.md` §9; có skill `antifacts` để gọi dựng+mở.
 
 ## Checklist kiểm toán bộ agent (chạy khi thêm/sửa agent)
-- [ ] **Số lượng khớp:** header README ghi đúng tổng (hiện **48** = 19 Lâm sàng + 28 Nghiên cứu + 1 Guardrail dùng chung) = số file `*.md` có `name:` (loại trừ `README.md`, `_*.md`).
+- [ ] **Số lượng khớp:** header README ghi đúng tổng (hiện **50** = 21 Lâm sàng + 28 Nghiên cứu + 1 Guardrail dùng chung) = số file `*.md` có `name:` (loại trừ `README.md`, `_*.md`).
 - [ ] **filename == name:** mỗi agent có frontmatter `name` trùng tên file (không dấu, gạch nối).
 - [ ] **description rõ "gọi khi":** mỗi `description` nêu được tình huống kích hoạt cụ thể.
 - [ ] **Không tham chiếu treo:** mọi tên agent trong backtick ở mọi file đều ứng với một file tồn tại (token còn lại phải là tên skill/tool đã biết).
