@@ -43,6 +43,9 @@ import json
 import math
 from typing import Dict, Optional
 
+import gate_contract as _gate_contract
+import normal_dist as _normal_dist
+
 
 class InterimAnalysisError(ValueError):
     """Input ngoài miền hợp lệ — công cụ TỪ CHỐI tính thay vì bịa."""
@@ -59,20 +62,18 @@ BOUNDARY_LIMITATION = (
 
 def _phi(x: float) -> float:
     """CDF chuẩn tắc — dùng scipy nếu có, xấp xỉ Abramowitz-Stegun nếu không."""
-    try:
-        from scipy.stats import norm
-        return norm.cdf(x)
-    except ImportError:
-        return 0.5 * (1 + math.erf(x / math.sqrt(2)))
+    return _normal_dist.phi(x)
 
 
 def _z_from_alpha_one_sided(alpha: float) -> float:
-    try:
-        from scipy.stats import norm
-        return norm.ppf(1 - alpha)
-    except ImportError:
-        # Xấp xỉ thô cho các mức phổ biến — cảnh báo nếu scipy vắng mặt.
-        return {0.025: 1.95996, 0.05: 1.64485, 0.005: 2.57583}.get(alpha, 1.95996)
+    """z-critical MỘT phía — vá 2026-07-04 (red-team): bản cũ dùng bảng tra 3 giá trị
+    cứng khi thiếu scipy, ÂM THẦM trả z của alpha=0.025 cho MỌI alpha khác (vd alpha=0.01
+    một phía — mức nghiêm ngặt phổ biến trong DSMB thực hành) — sai lệch alpha-spending/
+    conditional-power mà không báo lỗi. Nay dùng normal_dist.inv_phi() (đã kiểm Z-table).
+    """
+    if not (0 < alpha < 1):
+        raise InterimAnalysisError(f"alpha_one_sided={alpha} phải trong (0,1).")
+    return _normal_dist.inv_phi(1 - alpha)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -159,6 +160,9 @@ def _print(result: Dict, as_json: bool) -> None:
 
 
 def main() -> int:
+    # Vá 2026-07-04 (red-team): tránh crash UnicodeEncodeError khi in DISCLAIMER tiếng
+    # Việt trên console Windows mặc định (cp1252).
+    _gate_contract.ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description="Máy tính hỗ trợ phân tích giữa kỳ (alpha-spending/conditional power).")
     sub = ap.add_subparsers(dest="cmd", required=True)
 

@@ -46,6 +46,9 @@ import json
 import math
 from typing import Dict, Optional
 
+import gate_contract as _gate_contract
+import normal_dist as _normal_dist
+
 
 class ClinicalCalcError(ValueError):
     """Input ngoài miền hợp lệ hoặc thiếu tham số bắt buộc — KHÔNG tự điền mặc định."""
@@ -265,11 +268,15 @@ def nnt_from_or(cer: float, orr: float, or_ci_lower: Optional[float] = None,
 
 
 def _z_from_alpha(alpha: float) -> float:
-    try:
-        from scipy.stats import norm
-        return norm.ppf(1 - alpha / 2)
-    except ImportError:
-        return {0.10: 1.645, 0.05: 1.960, 0.01: 2.576}.get(alpha, 1.960)
+    """z_{alpha/2} hai phía — vá 2026-07-04 (red-team): bản cũ dùng bảng tra 3 giá trị
+    cứng khi thiếu scipy, ÂM THẦM trả z của alpha=0.05 cho MỌI alpha khác (vd 0.10/0.20
+    dùng phổ biến cho CI 90%/80%) — sai lệch khoảng tin cậy mà không báo lỗi. Nay dùng
+    normal_dist.inv_phi() (xấp xỉ Acklam đã kiểm bằng Z-table, xem test_normal_dist.py)
+    nên ĐÚNG cho MỌI alpha, không cần scipy.
+    """
+    if not (0 < alpha < 1):
+        raise ClinicalCalcError(f"alpha={alpha} phải trong (0,1).")
+    return _normal_dist.inv_phi(1 - alpha / 2)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -346,6 +353,9 @@ def _print(result: Dict, as_json: bool) -> None:
 
 
 def main() -> int:
+    # Vá 2026-07-04 (red-team): tránh crash UnicodeEncodeError khi in DISCLAIMER tiếng
+    # Việt trên console Windows mặc định (cp1252).
+    _gate_contract.ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description="Máy tính suy luận lâm sàng (Bayes/ngưỡng/NNT/GRADE).")
     sub = ap.add_subparsers(dest="cmd", required=True)
 

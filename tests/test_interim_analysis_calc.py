@@ -91,3 +91,27 @@ def test_conditional_power_rejects_t_out_of_open_range():
         IA.conditional_power(z_observed=1.5, t=1.0, alpha_one_sided=0.025)
     with pytest.raises(IA.InterimAnalysisError):
         IA.conditional_power(z_observed=1.5, t=0.0, alpha_one_sided=0.025)
+
+
+# ── Vá 2026-07-04 (red-team): _z_from_alpha_one_sided() bản cũ ÂM THẦM trả z của
+# alpha=0.025 cho MỌI alpha khác khi thiếu scipy (venv dự án hiện KHÔNG có scipy) —
+# alpha=0.01 một phía (mức DSMB nghiêm ngặt phổ biến) bị tính conditional_power sai.
+def test_conditional_power_differs_for_alpha_01_vs_025():
+    cp_025 = IA.conditional_power(z_observed=1.5, t=0.5, alpha_one_sided=0.025)["conditional_power"]
+    cp_01 = IA.conditional_power(z_observed=1.5, t=0.5, alpha_one_sided=0.01)["conditional_power"]
+    assert cp_025 != cp_01  # bug cũ: 2 giá trị này từng GIỐNG HỆT nhau
+    assert cp_01 < cp_025  # ngưỡng nghiêm ngặt hơn (alpha nhỏ hơn) -> công suất thấp hơn
+
+
+def test_z_from_alpha_one_sided_matches_known_critical_values():
+    assert IA._z_from_alpha_one_sided(0.025) == pytest.approx(1.959963985, abs=1e-6)
+    assert IA._z_from_alpha_one_sided(0.05) == pytest.approx(1.644853627, abs=1e-6)
+    assert IA._z_from_alpha_one_sided(0.01) == pytest.approx(2.326347874, abs=1e-6)
+    assert IA._z_from_alpha_one_sided(0.005) == pytest.approx(2.575829304, abs=1e-6)
+
+
+def test_alpha_spending_differs_for_alpha_02_vs_05_two_sided():
+    # alpha_two_sided=0.02 -> alpha/2=0.01 (không nằm trong bảng cứng cũ {0.025,0.05,0.005})
+    s_02 = IA.alpha_spending(t=0.5, alpha_two_sided=0.02, spending_type="obrien-fleming")
+    s_05 = IA.alpha_spending(t=0.5, alpha_two_sided=0.05, spending_type="obrien-fleming")
+    assert s_02["alpha_spent_cumulative"] != s_05["alpha_spent_cumulative"]

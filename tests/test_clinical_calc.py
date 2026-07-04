@@ -112,6 +112,34 @@ def test_nnt_from_counts_straddles_zero_with_small_n():
     assert "report" in r
 
 
+# ── Vá 2026-07-04 (red-team): _z_from_alpha() bản cũ ÂM THẦM trả z của alpha=0.05
+# cho MỌI alpha khác khi thiếu scipy (venv dự án hiện KHÔNG có scipy) — CI 90%/80%
+# dùng alpha=0.10/0.20 (rất phổ biến) bị dán nhãn sai thành CI 95%.
+def test_nnt_from_counts_alpha_90pct_gives_narrower_ci_than_95pct():
+    kwargs = dict(events_control=300, n_control=1000,
+                  events_experimental=200, n_experimental=1000)
+    r95 = CC.nnt_from_counts(alpha=0.05, **kwargs)
+    r90 = CC.nnt_from_counts(alpha=0.10, **kwargs)
+    lo95, hi95 = r95["arr_ci"]
+    lo90, hi90 = r90["arr_ci"]
+    assert (hi90 - lo90) < (hi95 - lo95)  # CI 90% phải HẸP hơn CI 95%
+    assert r90["arr_ci"] != r95["arr_ci"]  # bug cũ: 2 khoảng này từng GIỐNG HỆT nhau
+
+
+def test_z_from_alpha_matches_known_critical_values_without_scipy():
+    assert CC._z_from_alpha(0.05) == pytest.approx(1.959963985, abs=1e-6)
+    assert CC._z_from_alpha(0.10) == pytest.approx(1.644853627, abs=1e-6)
+    assert CC._z_from_alpha(0.20) == pytest.approx(1.281551566, abs=1e-6)
+    assert CC._z_from_alpha(0.01) == pytest.approx(2.575829304, abs=1e-6)
+
+
+def test_z_from_alpha_rejects_out_of_range():
+    with pytest.raises(CC.ClinicalCalcError):
+        CC._z_from_alpha(0.0)
+    with pytest.raises(CC.ClinicalCalcError):
+        CC._z_from_alpha(1.5)
+
+
 def test_nnt_from_counts_zero_point_estimate_reports_straddle_not_crash():
     # ARR=0 điểm ước lượng NHƯNG có CI (từ số liệu thô) -> luôn thẳng vào nhánh
     # "CI vắt qua 0" một cách graceful, KHÔNG crash chia-cho-0.

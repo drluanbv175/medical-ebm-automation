@@ -47,6 +47,22 @@ def test_icer_rejects_negative_wtp():
         HE.icer(cost1=100, effect1=0.8, cost2=150, effect2=0.9, wtp=-1)
 
 
+# ── Vá 2026-07-04 (red-team): delta_effect ~1e-15 (sai số làm tròn dấu phẩy động
+# tích lũy qua markov_cohort, KHÔNG phải 0 tuyệt đối) từng khiến ICER "nổ" thành số
+# vô nghĩa (~1e18) thay vì được coi là "hiệu quả bằng nhau".
+def test_icer_treats_floating_point_roundoff_as_equal_effect():
+    r = HE.icer(cost1=12000.0, effect1=8.4, cost2=15000.0, effect2=8.4 + 1.776e-15)
+    assert r["icer"] is None
+    assert "BẰNG NHAU" in r["quadrant"]
+
+
+def test_icer_still_computes_for_genuinely_different_small_effect():
+    # Chênh lệch effect NHỎ nhưng THẬT (không phải nhiễu số học) vẫn phải tính ICER.
+    r = HE.icer(cost1=12000.0, effect1=8.4, cost2=15000.0, effect2=8.401)
+    assert r["icer"] is not None
+    assert r["icer"] == pytest.approx(3000 / 0.001, rel=1e-6)
+
+
 # ── Markov cohort ────────────────────────────────────────────────────────────
 def test_markov_two_state_matches_hand_calculation():
     # Healthy/Dead, p(die)=0.1/cycle, cost=100/cycle alive, utility=1/năm alive,
@@ -89,6 +105,24 @@ def test_markov_rejects_mismatched_dimensions():
                          [1, 0], 2, 1.0, 0.0)
 
 
+# ── Vá 2026-07-04 (red-team): [-0.1, 1.0, 0.1] có TỔNG=1.0 (qua được validate cũ) dù
+# chứa xác suất ÂM -0.1 — trước đây lọt qua, khiến occupancy trạng thái ÂM (vô nghĩa
+# vật lý) lan truyền âm thầm vào total_discounted_cost/qaly.
+def test_markov_rejects_negative_element_even_when_row_sums_to_one():
+    with pytest.raises(HE.HealthEconError):
+        HE.markov_cohort(
+            ["A", "B", "C"],
+            [[-0.1, 1.0, 0.1], [0.0, 0.85, 0.15], [0.0, 0.0, 1.0]],
+            [100, 50, 0], [1, 0.5, 0], [1, 0, 0], 5, 1.0, 0.0)
+
+
+def test_markov_rejects_element_greater_than_one():
+    with pytest.raises(HE.HealthEconError):
+        HE.markov_cohort(
+            ["A", "B"], [[1.5, -0.5], [0.0, 1.0]],
+            [100, 0], [1, 0], [1, 0], 2, 1.0, 0.0)
+
+
 # ── Tornado ──────────────────────────────────────────────────────────────────
 def test_tornado_ranks_by_range_width_descending():
     r = HE.tornado_two_arm(100, 0.8, 150, 0.9,
@@ -106,6 +140,34 @@ def test_tornado_rejects_invalid_parameter_name():
 def test_tornado_rejects_zero_effect_base_case():
     with pytest.raises(HE.HealthEconError):
         HE.tornado_two_arm(100, 0.8, 150, 0.8, {"cost2": (100, 200)})
+
+
+# ── Vá 2026-07-04 (red-team): param_range bắc ngang điểm hòa effect1 (0.8) đổi góc
+# phần tư (Đông Bắc "tốn hơn+hiệu quả hơn" <-> Tây Bắc "tốn hơn+bị thống trị") —
+# trước đây range_width vẫn tính mù |ICER_cao − ICER_thấp| dù 2 số không cùng ý nghĩa.
+def test_tornado_flags_quadrant_crossing_instead_of_blind_range_width():
+    r = HE.tornado_two_arm(100, 0.8, 150, 0.9, {"effect2": (0.75, 0.95)})
+    row = r["tornado_ranked"][0]
+    assert row["parameter"] == "effect2"
+    assert row["quadrant_crossed"] is True
+    assert row["range_width"] is None
+    assert row["quadrant_at_low"] != row["quadrant_at_high"]
+
+
+def test_tornado_quadrant_crossed_param_ranked_first():
+    # Tham số đổi góc phần tư phải xếp ĐẦU (phát hiện quan trọng nhất), không phải cuối
+    # chỉ vì range_width=None.
+    r = HE.tornado_two_arm(100, 0.8, 150, 0.9,
+                           {"cost2": (100, 200), "effect2": (0.75, 0.95)})
+    assert r["tornado_ranked"][0]["parameter"] == "effect2"
+    assert r["tornado_ranked"][0]["quadrant_crossed"] is True
+
+
+def test_tornado_no_quadrant_crossing_keeps_normal_range_width():
+    r = HE.tornado_two_arm(100, 0.8, 150, 0.9, {"cost2": (100, 200)})
+    row = r["tornado_ranked"][0]
+    assert row["quadrant_crossed"] is False
+    assert row["range_width"] is not None
 
 
 # ── PSA Monte Carlo ──────────────────────────────────────────────────────────

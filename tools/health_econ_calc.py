@@ -37,6 +37,8 @@ import argparse
 import json
 from typing import Dict, List, Optional
 
+import gate_contract as _gate_contract
+
 
 class HealthEconError(ValueError):
     """Input thiếu/ngoài miền hợp lệ — KHÔNG tự bịa chi phí/utility/xác suất."""
@@ -56,7 +58,15 @@ def icer(cost1: float, effect1: float, cost2: float, effect2: float,
     delta_cost = cost2 - cost1
     delta_effect = effect2 - effect1
 
-    if delta_effect == 0:
+    # Vá 2026-07-04 (red-team): so `delta_effect == 0` TUYỆT ĐỐI bỏ lọt trường hợp RẤT
+    # THỰC TẾ khi effect1/effect2 là output của markov_cohort() (không phải số nhập
+    # tay) — sai số làm tròn dấu phẩy động tích lũy qua nhiều chu kỳ chiết khấu khiến
+    # delta_effect ~1e-15 thay vì đúng 0 tuyệt đối, khiến ICER "nổ" thành một số vô
+    # nghĩa (vd 1.69e18) mà không có cảnh báo nào. Dung sai kết hợp tuyệt đối+tương đối
+    # (chuẩn numerical practice) coi 2 hiệu quả "thực chất bằng nhau" khi sai khác nhỏ
+    # hơn ngưỡng nhiễu số học so với độ lớn của chính effect1/effect2.
+    effect_scale = max(1.0, abs(effect1), abs(effect2))
+    if abs(delta_effect) < 1e-9 * effect_scale:
         quadrant = "hiệu quả BẰNG NHAU — ICER vô định, so chi phí trực tiếp"
         icer_val = None
     elif delta_cost >= 0 and delta_effect > 0:
@@ -90,6 +100,18 @@ def icer(cost1: float, effect1: float, cost2: float, effect2: float,
 # 2. MÔ HÌNH MARKOV COHORT — chi phí/QALY chiết khấu qua nhiều chu kỳ
 # ═══════════════════════════════════════════════════════════════════════════
 
+def _validate_transition_row(row: List[float]) -> None:
+    """Vá 2026-07-04 (red-team): kiểm tổng hàng=1.0 KHÔNG đủ — một phần tử ÂM và một
+    phần tử >1 vẫn có thể cộng lại đúng 1.0 (vd [-0.1, 1.0, 0.1]), lọt qua validate cũ,
+    khiến occupancy trạng thái ÂM (vô nghĩa vật lý) lan truyền âm thầm vào chi phí/QALY.
+    Mỗi phần tử của ma trận CHUYỂN TIẾP phải là XÁC SUẤT — bắt buộc ∈[0,1]."""
+    for p in row:
+        if not (0.0 <= p <= 1.0):
+            raise HealthEconError(
+                f"Hàng chuyển tiếp {row} có phần tử {p} ngoài [0,1] — mỗi phần tử "
+                "ma trận chuyển tiếp PHẢI là xác suất hợp lệ, không chỉ tổng hàng=1.0.")
+
+
 def _parse_matrix(s: str, n: int) -> List[List[float]]:
     rows = [r for r in s.split(";") if r.strip()]
     if len(rows) != n:
@@ -102,6 +124,7 @@ def _parse_matrix(s: str, n: int) -> List[List[float]]:
         s_row = sum(vals)
         if abs(s_row - 1.0) > 1e-6:
             raise HealthEconError(f"Hàng chuyển tiếp {vals} có tổng={s_row}, phải =1.0 (xác suất).")
+        _validate_transition_row(vals)
         mat.append(vals)
     return mat
 
@@ -120,6 +143,7 @@ def markov_cohort(state_names: List[str], transition_matrix: List[List[float]],
         row_sum = sum(row)
         if abs(row_sum - 1.0) > 1e-6:
             raise HealthEconError(f"Hàng chuyển tiếp {row} có tổng={row_sum}, phải =1.0 (xác suất).")
+        _validate_transition_row(row)
     if len(costs_per_cycle) != n or len(utilities_per_cycle) != n:
         raise HealthEconError("costs_per_cycle/utilities_per_cycle phải cùng độ dài số trạng thái.")
     if len(initial_distribution) != n:
@@ -180,16 +204,33 @@ def tornado_two_arm(base_cost1: float, base_effect1: float, base_cost2: float,
         low_case[name] = lo
         high_case = dict(base)
         high_case[name] = hi
-        icer_low = icer(**low_case)["icer"]
-        icer_high = icer(**high_case)["icer"]
+        r_low = icer(**low_case)
+        r_high = icer(**high_case)
+        icer_low, icer_high = r_low["icer"], r_high["icer"]
         if icer_low is None or icer_high is None:
             continue
+        # Vá 2026-07-04 (red-team): |ICER_cao − ICER_thấp| CHỈ có ý nghĩa khi 2 đầu nằm
+        # CÙNG góc phần tư kinh tế học (dấu ICER không đơn điệu theo "tốt hơn/xấu hơn"
+        # khi đổi góc — vd góc Tây Bắc "bị thống trị" cho ICER âm với Ý NGHĨA HOÀN TOÀN
+        # KHÁC góc Đông Bắc). Một param_range hợp lý (vd theo 95%CI của RCT) hoàn toàn
+        # có thể bắc ngang điểm hòa effect và đổi góc — trước đây range_width vẫn tính
+        # mù, xếp hạng sai tham số nào "ảnh hưởng ICER nhiều nhất".
+        quadrant_crossed = r_low["quadrant"] != r_high["quadrant"]
         results.append({
             "parameter": name, "low_value": lo, "high_value": hi,
             "icer_at_low": icer_low, "icer_at_high": icer_high,
-            "range_width": abs(icer_high - icer_low),
+            "quadrant_at_low": r_low["quadrant"], "quadrant_at_high": r_high["quadrant"],
+            "quadrant_crossed": quadrant_crossed,
+            "range_width": None if quadrant_crossed else abs(icer_high - icer_low),
+            "note": ("⚠ 2 đầu nằm KHÁC góc phần tư kinh tế học — KHÔNG so sánh trực tiếp "
+                     "độ lớn ICER được; xem quadrant_at_low/quadrant_at_high, không dùng "
+                     "range_width (=None) để xếp hạng." if quadrant_crossed else ""),
         })
-    results.sort(key=lambda r: r["range_width"], reverse=True)
+    # Tham số quadrant_crossed=True xếp ĐẦU (không phải cuối) — đây thường là phát hiện
+    # LÂM SÀNG quan trọng nhất (đổi kết luận kinh tế y tế), không phải hạng thấp vì
+    # range_width=None; trong mỗi nhóm, xếp theo range_width giảm dần.
+    results.sort(key=lambda r: (not r["quadrant_crossed"],
+                                -(r["range_width"] if r["range_width"] is not None else 0)))
     return {"base_case_icer": base_icer, "tornado_ranked": results}
 
 
@@ -273,6 +314,9 @@ def _print(result: Dict, as_json: bool) -> None:
 
 
 def main() -> int:
+    # Vá 2026-07-04 (red-team): tránh crash UnicodeEncodeError khi in DISCLAIMER tiếng
+    # Việt trên console Windows mặc định (cp1252).
+    _gate_contract.ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description="Máy tính kinh tế y tế (ICER/Markov/tornado/PSA).")
     sub = ap.add_subparsers(dest="cmd", required=True)
 

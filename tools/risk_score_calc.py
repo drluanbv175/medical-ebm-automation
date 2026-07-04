@@ -53,6 +53,8 @@ import json
 import math
 from typing import Dict
 
+import gate_contract as _gate_contract
+
 
 class RiskScoreError(ValueError):
     """Input thiếu/ngoài miền hợp lệ — công cụ TỪ CHỐI tính thay vì bịa giá trị mặc định."""
@@ -70,6 +72,22 @@ def _bit(name: str, v: int) -> int:
     if v not in (0, 1):
         raise RiskScoreError(f"{name}={v} phải là 0 (không) hoặc 1 (có).")
     return v
+
+
+def _require_finite(name: str, value: float) -> float:
+    """Chặn NaN/Inf TRƯỚC khi so sánh range — vá 2026-07-04 (red-team, systemic bug):
+    so sánh `NaN < 0`/`NaN > 130` trong Python luôn trả False nên MỌI validate dạng
+    `if x < lo or x > hi: raise` bị NaN "lách qua" hoàn toàn; sau đó `max(1.0, nan)`
+    trả về 1.0 (không phải NaN, do cách so sánh nội bộ của max/min) khiến giá trị rác
+    bị âm thầm thay bằng "1.0/bình thường" — tính ra một điểm cụ thể trông hợp lệ mà
+    KHÔNG có dấu hiệu nào cho biết input gốc là dữ liệu lỗi/thiếu (parse CSV/HL7 rỗng).
+    math.isfinite() loại cả NaN VÀ ±Inf bằng MỘT lần kiểm, không phụ thuộc so sánh trực
+    tiếp — cũng chặn luôn OverflowError khi Inf lọt tới round()/log() phía sau (vd
+    meld(bilirubin=inf) từng crash bằng traceback Python thô thay vì RiskScoreError).
+    """
+    if not math.isfinite(value):
+        raise RiskScoreError(f"{name}={value} không phải số hữu hạn hợp lệ (NaN/Inf).")
+    return value
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -92,6 +110,7 @@ def cha2ds2vasc(chf: int, hypertension: int, age: int, diabetes: int,
     vascular_disease = _bit("vascular_disease", vascular_disease)
     if sex not in ("male", "female"):
         raise RiskScoreError("sex phải là 'male' hoặc 'female'.")
+    _require_finite("age", age)
     if age < 0 or age > 130:
         raise RiskScoreError(f"age={age} ngoài miền hợp lệ.")
 
@@ -134,6 +153,7 @@ def hasbled(hypertension: int, abnormal_renal: int, abnormal_liver: int, stroke:
              "drugs": drugs, "alcohol": alcohol}
     for k, v in fields.items():
         fields[k] = _bit(k, v)
+    _require_finite("age", age)
     if age < 0 or age > 130:
         raise RiskScoreError(f"age={age} ngoài miền hợp lệ.")
     elderly = 1 if age > 65 else 0
@@ -159,6 +179,7 @@ def curb65(confusion: int, urea_high: int, rr_high: int, bp_low: int, age: int) 
              "rr_high": rr_high, "bp_low": bp_low}
     for k, v in fields.items():
         fields[k] = _bit(k, v)
+    _require_finite("age", age)
     if age < 0 or age > 130:
         raise RiskScoreError(f"age={age} ngoài miền hợp lệ.")
     age_point = 1 if age >= 65 else 0
@@ -265,6 +286,9 @@ def child_pugh(bilirubin: float, albumin: float, inr: float,
     """Child-Pugh — độ nặng xơ gan. bilirubin (mg/dL), albumin (g/dL), inr.
     ascites/encephalopathy: 'none'|'mild'|'moderate_severe' (ascites) hoặc
     'none'|'grade_1_2'|'grade_3_4' (encephalopathy)."""
+    _require_finite("bilirubin", bilirubin)
+    _require_finite("albumin", albumin)
+    _require_finite("inr", inr)
     if bilirubin <= 0:
         raise RiskScoreError(f"bilirubin={bilirubin} phải dương (mg/dL).")
     if albumin <= 0:
@@ -303,6 +327,9 @@ def meld(bilirubin: float, inr: float, creatinine: float,
     Giá trị <1.0 được ép về 1.0 trước khi lấy log (quy ước OPTN, tránh log âm).
     Creatinine kẹp tại 4.0 mg/dL nếu đã lọc máu ≥2 lần/tuần qua trước (quy ước OPTN).
     Kết quả làm tròn nguyên, kẹp trong [6,40]."""
+    _require_finite("bilirubin", bilirubin)
+    _require_finite("inr", inr)
+    _require_finite("creatinine", creatinine)
     if bilirubin <= 0 or inr <= 0 or creatinine <= 0:
         raise RiskScoreError("bilirubin/inr/creatinine phải dương.")
     bili = max(1.0, bilirubin)
@@ -337,6 +364,9 @@ def _print(result: Dict, as_json: bool) -> None:
 
 
 def main() -> int:
+    # Vá 2026-07-04 (red-team): tránh crash UnicodeEncodeError khi in DISCLAIMER tiếng
+    # Việt trên console Windows mặc định (cp1252) — kể cả khi số liệu đã tính đúng.
+    _gate_contract.ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description="Máy tính thang điểm nguy cơ lâm sàng.")
     sub = ap.add_subparsers(dest="cmd", required=True)
 

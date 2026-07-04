@@ -123,6 +123,38 @@ def test_smd_rejects_small_n():
         MC.smd_from_groups(5, 2, 1, 4, 2.2, 8)
 
 
+# ── Vá 2026-07-04 (red-team): sd1=sd2=0 (SD chưa tính được bị điền tạm 0, hoặc thang
+# đo hằng số) khiến pooled_sd=0 -> trước đây crash ZeroDivisionError thô (traceback
+# Python không rõ nguyên nhân với người dùng lâm sàng) thay vì MetaCalcError rõ ràng.
+def test_smd_rejects_both_sd_zero_with_clear_error_not_raw_crash():
+    with pytest.raises(MC.MetaCalcError):
+        MC.smd_from_groups(5, 0, 10, 4, 0, 8)
+
+
+def test_smd_accepts_one_sd_zero_other_nonzero():
+    # Chỉ 1 nhóm SD=0 vẫn tính được (pooled_sd>0 nhờ nhóm còn lại).
+    r = MC.smd_from_groups(5, 0, 10, 4, 2.0, 8)
+    assert r["hedges_g"] is not None
+
+
+# ── Vá 2026-07-04 (red-team, cùng lỗi đã tìm ở clinical_calc.py/interim_analysis_calc.py):
+# _z_from_alpha() bản cũ ÂM THẦM trả z của alpha=0.05 cho MỌI alpha khác khi thiếu scipy.
+def test_z_from_alpha_matches_known_critical_values_without_scipy():
+    assert MC._z_from_alpha(0.05) == pytest.approx(1.959963985, abs=1e-6)
+    assert MC._z_from_alpha(0.10) == pytest.approx(1.644853627, abs=1e-6)
+    assert MC._z_from_alpha(0.20) == pytest.approx(1.281551566, abs=1e-6)
+
+
+def test_pool_effects_ci_width_differs_for_alpha_90_vs_95():
+    effects = [0.1, 0.2, 0.15]
+    variances = [0.01, 0.015, 0.012]
+    r95 = MC.pool_effects(effects, variances, alpha=0.05)
+    r90 = MC.pool_effects(effects, variances, alpha=0.10)
+    w95 = r95["fixed_effect"]["ci"][1] - r95["fixed_effect"]["ci"][0]
+    w90 = r90["fixed_effect"]["ci"][1] - r90["fixed_effect"]["ci"][0]
+    assert w90 < w95  # bug cũ: 2 khoảng này từng GIỐNG HỆT nhau
+
+
 def test_md_from_groups_simple_difference():
     r = MC.md_from_groups(5, 2, 30, 4, 2.2, 28)
     assert r["md"] == pytest.approx(1.0, abs=1e-9)

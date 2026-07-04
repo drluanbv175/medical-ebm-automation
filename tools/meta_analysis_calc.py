@@ -44,6 +44,9 @@ import json
 import math
 from typing import Dict, List
 
+import gate_contract as _gate_contract
+import normal_dist as _normal_dist
+
 
 class MetaCalcError(ValueError):
     """Input thiếu/ngoài miền hợp lệ — KHÔNG tự bịa để "gộp cho được"."""
@@ -120,6 +123,14 @@ def smd_from_groups(mean1: float, sd1: float, n1: int, mean2: float, sd2: float,
     for name, v in (("sd1", sd1), ("sd2", sd2)):
         if v < 0:
             raise MetaCalcError(f"{name}={v} không được âm.")
+    if sd1 == 0 and sd2 == 0:
+        # Vá 2026-07-04 (red-team): trước đây rơi thẳng vào ZeroDivisionError thô ở
+        # phép chia dưới (pooled_sd=0) — traceback Python không rõ nguyên nhân với
+        # người dùng lâm sàng, trong khi validate sd<0 ngay phía trên đã raise
+        # MetaCalcError rõ ràng cho input âm. sd1=sd2=0 (thực tế: SD chưa tính được
+        # bị điền tạm 0, hoặc thang đo hằng số) khiến Hedges' g VÔ ĐỊNH — từ chối rõ.
+        raise MetaCalcError(
+            "sd1 và sd2 đều bằng 0 — pooled SD=0, Hedges' g vô định (chia cho 0).")
     df = n1 + n2 - 2
     pooled_sd = math.sqrt(((n1 - 1) * sd1 ** 2 + (n2 - 1) * sd2 ** 2) / df)
     d = (mean1 - mean2) / pooled_sd
@@ -135,11 +146,12 @@ def smd_from_groups(mean1: float, sd1: float, n1: int, mean2: float, sd2: float,
 # ═══════════════════════════════════════════════════════════════════════════
 
 def _z_from_alpha(alpha: float) -> float:
-    try:
-        from scipy.stats import norm
-        return norm.ppf(1 - alpha / 2)
-    except ImportError:
-        return {0.10: 1.645, 0.05: 1.960, 0.01: 2.576}.get(alpha, 1.960)
+    """Vá 2026-07-04 (red-team, cùng lỗi đã tìm ở clinical_calc.py/interim_analysis_calc.py):
+    bảng tra cứu cứng khi thiếu scipy ÂM THẦM trả z của alpha=0.05 cho MỌI alpha khác
+    (vd 0.10/0.20). Nay dùng normal_dist.inv_phi() (đã kiểm Z-table) — đúng cho MỌI alpha."""
+    if not (0 < alpha < 1):
+        raise MetaCalcError(f"alpha={alpha} phải trong (0,1).")
+    return _normal_dist.inv_phi(1 - alpha / 2)
 
 
 def _t_from_alpha_df(alpha: float, df: int) -> float:
@@ -275,6 +287,10 @@ def _print(result: Dict, as_json: bool) -> None:
 
 
 def main() -> int:
+    # Vá 2026-07-04 (red-team): thiếu dòng này khiến print(DISCLAIMER) (chứa dấu tiếng
+    # Việt) crash UnicodeEncodeError trên console Windows mặc định (cp1252) — kể cả khi
+    # SỐ LIỆU đã tính đúng, script vẫn exit 1 và in traceback ngay dưới kết quả đúng.
+    _gate_contract.ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description="Máy tính phân tích gộp (meta-analysis).")
     sub = ap.add_subparsers(dest="cmd", required=True)
 

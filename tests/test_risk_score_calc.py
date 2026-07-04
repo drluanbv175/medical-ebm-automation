@@ -205,3 +205,42 @@ def test_meld_score_bounded_6_to_40():
 def test_meld_rejects_nonpositive_inputs():
     with pytest.raises(RS.RiskScoreError):
         RS.meld(bilirubin=0, inr=1.5, creatinine=1.0)
+
+
+# ── Vá 2026-07-04 (red-team, lỗi HỆ THỐNG): so sánh NaN trong Python luôn False nên
+# MỌI validate dạng `if x<lo or x>hi` từng bị NaN "lách qua"; sau đó max(1.0,nan)/
+# min() trả về giá trị KHÔNG-NaN một cách âm thầm (nuốt luôn dữ liệu rác), tính ra
+# điểm cụ thể trông hợp lệ (vd MELD=6) mà không có cờ báo lỗi nào. Nay math.isfinite()
+# chặn NaN/Inf trước mọi so sánh, cho cả 5 hàm nhận input float y sinh thực.
+def test_meld_rejects_nan_bilirubin_instead_of_silently_treating_as_normal():
+    with pytest.raises(RS.RiskScoreError):
+        RS.meld(bilirubin=float("nan"), inr=1.5, creatinine=1.0)
+
+
+def test_meld_rejects_infinite_bilirubin_instead_of_overflow_crash():
+    # Bản cũ: crash bằng OverflowError thô ở round() thay vì RiskScoreError có kiểm soát.
+    with pytest.raises(RS.RiskScoreError):
+        RS.meld(bilirubin=float("inf"), inr=1.5, creatinine=1.0)
+
+
+def test_cha2ds2vasc_rejects_nan_age_instead_of_scoring_as_young_healthy():
+    with pytest.raises(RS.RiskScoreError):
+        RS.cha2ds2vasc(chf=0, hypertension=0, age=float("nan"), diabetes=0,
+                       stroke_tia_thromboembolism=0, vascular_disease=0, sex="male")
+
+
+def test_hasbled_rejects_nan_age():
+    with pytest.raises(RS.RiskScoreError):
+        RS.hasbled(hypertension=0, abnormal_renal=0, abnormal_liver=0, stroke=0,
+                  bleeding_history=0, labile_inr=0, age=float("nan"), drugs=0, alcohol=0)
+
+
+def test_curb65_rejects_nan_age_instead_of_scoring_as_low_risk():
+    with pytest.raises(RS.RiskScoreError):
+        RS.curb65(confusion=0, urea_high=0, rr_high=0, bp_low=0, age=float("nan"))
+
+
+def test_child_pugh_rejects_nan_bilirubin():
+    with pytest.raises(RS.RiskScoreError):
+        RS.child_pugh(bilirubin=float("nan"), albumin=3.0, inr=1.5,
+                      ascites="none", encephalopathy="none")
