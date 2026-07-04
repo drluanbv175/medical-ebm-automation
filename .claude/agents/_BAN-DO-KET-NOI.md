@@ -1,4 +1,4 @@
-# BẢN ĐỒ KẾT NỐI ĐỘI AGENT EBM (48 agent)
+# BẢN ĐỒ KẾT NỐI ĐỘI AGENT EBM (50 agent: 21 lâm sàng + 28 nghiên cứu + 1 guardrail)
 
 > Tài liệu tham chiếu dùng chung. Mô tả MẠNG LƯỚI thật giữa các agent: điểm vào · luồng · điểm cuối · cầu nối · hub dùng chung.
 > **Dựng từ đồ thị cạnh THẬT** (quét tham chiếu `` `agent` `` trong từng file `.claude/agents/*.md`, 2026-06-13) — KHÔNG bịa cạnh.
