@@ -129,6 +129,10 @@ ERROR_ROUTING_TABLE: dict[str, tuple[ErrorSeverity, str]] = {
     "R10":      (ErrorSeverity.AUTO_FIX, "ke-don-an-toan (xét WHO AWaRe khi có kháng sinh)"),
     "R11":      (ErrorSeverity.ESCALATE_HARD, "DỪNG NGAY — suy nhân quả vượt thiết kế cắt ngang/quan sát"),
     "R12":      (ErrorSeverity.ESCALATE_HARD, "DỪNG NGAY — thiếu cờ đỏ/safety-net bắt buộc (Q3/Q5)"),
+    # R13: THÊM 2026-07-04 — mã hóa _CAU-HOI-AN-TOAN-BAT-BUOC.md (S1 tự sát/S2 thai kỳ)
+    # từ phán đoán LLM thuần túy (tham-dinh-dau-ra §3ter) thành check rule-based thật.
+    "R13":      (ErrorSeverity.ESCALATE_HARD,
+                 "DỪNG NGAY — thiếu câu hỏi an toàn bắt buộc (sang-loc-co-do + ke-don-an-toan hỏi lại)"),
 }
 
 
