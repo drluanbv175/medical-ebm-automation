@@ -59,7 +59,14 @@ def send_email(subject: str, body_md: str, body_html: str | None = None) -> Dict
 
 
 def send_webhook(text: str, payload_extra: Dict | None = None) -> Dict:
-    """POST tới webhook (Slack/Telegram/n8n…). 'skipped' nếu chưa cấu hình."""
+    """POST tới webhook (Slack/Telegram/n8n…). 'skipped' nếu chưa cấu hình.
+
+    CHỦ Ý dùng `requests.post()` trực tiếp, KHÔNG qua `app.utils.http.HttpClient`: HttpClient có
+    retry tự động cho lỗi tạm thời (429/5xx) — an toàn cho GET (không tác dụng phụ) nhưng NGUY
+    HIỂM cho POST không-idempotent như gửi cảnh báo: nếu server đã nhận và xử lý request nhưng
+    phản hồi bị mất/chậm, retry sẽ GỬI TRÙNG cảnh báo. Timeout=20s đã đủ để không treo vô hạn;
+    không cần thêm retry cho hàm chạy 1 lần/digest (tần suất thấp, không phải vòng lặp).
+    """
     if not settings.alert_webhook_url:
         return {"status": "skipped", "reason": "webhook_not_configured"}
     try:

@@ -8,6 +8,7 @@ TĂNG TỐC: chạy SONG SONG để rút ngắn thời gian quét.
 """
 from __future__ import annotations
 
+import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Optional, Tuple
 
@@ -23,6 +24,48 @@ logger = get_logger(__name__)
 
 # Số luồng tối đa cho RSS feed (vừa đủ nhanh, tránh 429 từ host dùng chung như bmj.com).
 _FEED_WORKERS = 4
+
+# --- Circuit-breaker cho sweep_source (một nguồn lỗi/chậm liên tục -> dừng sớm) ---
+_MAX_CONSECUTIVE_ERRORS = 3  # nguồn lỗi liên tục (vd outage/503 diện rộng) -> dừng sớm
+# Nhiều source client (vd OpenAlexClient.search) tự bắt exception mạng nội bộ và trả về [],
+# nên "status" trong log luôn "ok" dù request thật sự đã lỗi — status không dùng được làm tín
+# hiệu. Độ trễ bất thường (đã trải qua backoff của http.py, xem app/utils/http.py) là tín hiệu
+# đáng tin cậy hơn: 1 lần gọi bình thường thường <5s; 1 lần đã retry luôn mất nhiều giây hơn hẳn.
+_SLOW_QUERY_THRESHOLD_SEC = 10.0
+
+
+def sweep_source(client, areas: List[str], max_results_per_query: int,
+                  since_date: Optional[str] = None, fetch_fn=None) -> Tuple[List[RawRecord], List[dict]]:
+    """Quét 1 nguồn API qua mọi (area, query) theo CLINICAL_AREAS — tuần tự, có circuit-breaker.
+
+    Tách khỏi `ingest_all()` (trước là closure nội bộ) để test được độc lập, không cần
+    dựng toàn bộ pipeline/ThreadPoolExecutor/DB. `fetch_fn` injectable cho test (mặc định `_fetch`).
+    """
+    fetch_fn = fetch_fn or _fetch
+    recs: List[RawRecord] = []
+    logs: List[dict] = []
+    total_queries = sum(len(CLINICAL_AREAS.get(a, [])) for a in areas)
+    consecutive_errors = 0
+    for area in areas:
+        for query in CLINICAL_AREAS.get(area, []):
+            started = time.monotonic()
+            r, log = fetch_fn(client, query, area, max_results_per_query, since_date)
+            elapsed = time.monotonic() - started
+            recs.extend(r)
+            logs.append(log)
+            if log["status"] == "error" or elapsed >= _SLOW_QUERY_THRESHOLD_SEC:
+                consecutive_errors += 1
+                if consecutive_errors >= _MAX_CONSECUTIVE_ERRORS:
+                    skipped = total_queries - len(logs)
+                    logger.warning(
+                        "Nguồn %s lỗi/chậm liên tiếp %d lần (có thể đang gián đoạn) — "
+                        "bỏ qua %d truy vấn còn lại thay vì thử hết, tránh treo lâu.",
+                        client.name, consecutive_errors, skipped,
+                    )
+                    return recs, logs
+            else:
+                consecutive_errors = 0
+    return recs, logs
 
 
 def ingest_all(max_results_per_query: int = 10,
@@ -40,17 +83,6 @@ def ingest_all(max_results_per_query: int = 10,
 
     if since_date:
         logger.info("Ingestion: lọc bài MỚI kể từ %s", since_date)
-
-    # --- Tác vụ theo NGUỒN API: mỗi nguồn 1 luồng, bên trong tuần tự ---
-    def sweep_source(client) -> Tuple[List[RawRecord], List[dict]]:
-        recs: List[RawRecord] = []
-        logs: List[dict] = []
-        for area in areas:
-            for query in CLINICAL_AREAS.get(area, []):
-                r, log = _fetch(client, query, area, max_results_per_query, since_date)
-                recs.extend(r)
-                logs.append(log)
-        return recs, logs
 
     def sweep_fda(_=None) -> Tuple[List[RawRecord], List[dict]]:
         recs: List[RawRecord] = []
@@ -76,8 +108,11 @@ def ingest_all(max_results_per_query: int = 10,
     src_tasks = list(sources) + ([_FDA_SENTINEL] if settings.enable_openfda else [])
     n_src_workers = max(1, len(src_tasks))
     with ThreadPoolExecutor(max_workers=n_src_workers) as src_pool:
-        src_futs = [src_pool.submit(sweep_fda if c is _FDA_SENTINEL else sweep_source, c)
-                    for c in src_tasks]
+        src_futs = [
+            src_pool.submit(sweep_fda, c) if c is _FDA_SENTINEL
+            else src_pool.submit(sweep_source, c, areas, max_results_per_query, since_date)
+            for c in src_tasks
+        ]
         # Feed pool chạy song song trong khi nguồn API đang quét
         with ThreadPoolExecutor(max_workers=_FEED_WORKERS) as feed_pool:
             feed_futs = [feed_pool.submit(fetch_feed, fc) for fc in feed_clients]

@@ -20,11 +20,15 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from app.config import BASE_DIR
+from app.config import BASE_DIR, settings
 from app.database import session_scope
 from app.models import EvidenceItem
 from app.services.extraction import extract_clinical_points, extract_conclusion, extract_effect, extract_pico
+from app.utils.http import HttpClient
+from app.utils.logging_config import get_logger
 from app.utils.text import clean_text
+
+logger = get_logger(__name__)
 
 # Mẫu chuẩn + thư mục xuất (chung OneDrive, đồng bộ Mac↔Windows)
 _ROOT = BASE_DIR.parent
@@ -161,22 +165,38 @@ def _pico_field(pico: Dict[str, List[str]], cat: str, vi: bool = True) -> List[s
 def resolve_pmids(pmids: List[str]) -> set:
     """Xác minh 1 LẦN (batch) các PMID phân giải đúng trên PubMed (chống trích dẫn ảo).
 
-    Trả về tập PMID HỢP LỆ. Lỗi mạng -> trả về toàn bộ (không loại nhầm khi offline);
-    cổng verify_dashboard.py --online vẫn là chốt chặn cuối.
+    Trả về tập PMID PHÂN GIẢI ĐƯỢC (tồn tại trên PubMed). FAIL-CLOSED: lỗi mạng/API ->
+    trả về set RỖNG, không mặc định coi là hợp lệ. Lý do đổi từ fail-open: cổng
+    verify_dashboard.py --online vốn được kỳ vọng là "chốt chặn cuối" nhưng thực tế đã
+    để lọt PMID sai (EVID-0030) qua nhiều lần chạy — không thể tiếp tục coi nó là lưới an
+    toàn duy nhất. Lỗi được LOG rõ (không im lặng) để người vận hành biết dashboard xuất ra
+    thiếu PMID là do lỗi mạng, không phải do PMID thật sự không tồn tại.
+
+    LƯU Ý QUAN TRỌNG: hàm này chỉ xác minh PMID CÓ TỒN TẠI trên PubMed, KHÔNG xác minh
+    nội dung bài báo có đúng với chủ đề được trích dẫn hay không (PMID có thể tồn tại
+    nhưng trỏ nhầm bài — đây là nguyên nhân thật của lỗi EVID-0030, không phải lỗi mạng).
+    Đối chiếu ngữ nghĩa PMID↔nội dung vẫn cần thực hiện riêng (xem agent kiem-chung-trich-dan).
     """
     pmids = [str(p) for p in pmids if p]
     if not pmids:
         return set()
-    import urllib.request
-    url = ("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
-           "?db=pubmed&retmode=json&id=" + ",".join(pmids))
+    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
+    params = {"db": "pubmed", "retmode": "json", "id": ",".join(pmids)}
+    if settings.ncbi_email:
+        params["email"] = settings.ncbi_email
+    if settings.ncbi_api_key:
+        params["api_key"] = settings.ncbi_api_key
     try:
-        with urllib.request.urlopen(url, timeout=25) as resp:
-            j = json.loads(resp.read().decode("utf-8"))
+        j = HttpClient().get_json(url, params=params)
         res = j.get("result", {})
         return {p for p in pmids if p in res and "title" in res.get(p, {})}
-    except Exception:  # pragma: no cover - phụ thuộc mạng
-        return set(pmids)  # không xác minh được -> giữ nguyên
+    except Exception as exc:  # noqa: BLE001 - phụ thuộc mạng, đã fail-closed bên dưới
+        logger.warning(
+            "[resolve_pmids] Không xác minh được %d PMID qua PubMed (fail-closed, "
+            "coi như CHƯA xác minh — KHÔNG hiển thị trong dashboard): %s",
+            len(pmids), exc,
+        )
+        return set()
 
 
 def _item_to_data(r, idx: int, resolved: Optional[set] = None, vi: bool = True) -> Dict:

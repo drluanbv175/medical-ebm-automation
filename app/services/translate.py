@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import threading
 from typing import Dict, Optional
 
 from app.config import settings
@@ -20,6 +21,45 @@ logger = get_logger(__name__)
 
 _CACHE_PATH = settings.processed_dir / "_translations_vi.json"
 _cache: Optional[Dict[str, str]] = None
+
+# deep_translator.GoogleTranslator gọi requests.get() KHÔNG set timeout (xác nhận bằng cách đọc
+# source deep_translator/google.py) -> có thể treo VÔ HẠN nếu server không phản hồi. Thư viện
+# ngoài không cho cấu hình timeout, nên bọc bằng thread daemon + Event — cách áp timeout cứng
+# lên 1 lệnh gọi không hỗ trợ timeout sẵn, MÀ KHÔNG làm treo tiến trình cha nếu thread con kẹt.
+_TRANSLATE_TIMEOUT_SEC = 15.0
+
+
+def _call_with_timeout(fn, *args, timeout: float = _TRANSLATE_TIMEOUT_SEC):
+    """Gọi fn(*args) với timeout cứng. Trả None nếu timeout/lỗi (không ném lỗi ra ngoài).
+
+    QUAN TRỌNG — bài học từ 1 lần tự làm treo cả tiến trình khi viết hàm này: KHÔNG dùng
+    `ThreadPoolExecutor` (kể cả với `shutdown(wait=False)`) — thread nó tạo ra mặc định
+    KHÔNG PHẢI daemon, nên dù `future.result(timeout=...)` trả về đúng hạn, CẢ TIẾN TRÌNH
+    PYTHON (vd pytest) vẫn không thoát được vì còn 1 thread non-daemon "mồ côi" đang chạy
+    ngầm (interpreter chỉ thoát khi MỌI thread non-daemon đã xong). Phải dùng
+    `threading.Thread(daemon=True)` trực tiếp: thread daemon bị interpreter bỏ mặc khi
+    thoát, không chặn tiến trình cha dù bản thân nó không bao giờ tự kết thúc.
+    """
+    result: list = [None]
+    error: list = [None]
+
+    def _runner():
+        try:
+            result[0] = fn(*args)
+        except Exception as exc:  # pragma: no cover - phụ thuộc mạng
+            error[0] = exc
+
+    t = threading.Thread(target=_runner, daemon=True)
+    t.start()
+    t.join(timeout=timeout)
+    if t.is_alive():
+        logger.warning("Dịch máy timeout sau %.0fs -> bỏ qua câu này (server không phản hồi).",
+                        timeout)
+        return None
+    if error[0] is not None:
+        logger.warning("Dịch máy lỗi: %s", error[0])
+        return None
+    return result[0]
 
 _VN_MARKS = set("ăâđêôơưĂÂĐÊÔƠƯàáạảãằắặẳẵầấậẩẫèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗ"
                 "ờớợởỡùúụủũừứựửữỳýỵỷỹ")
@@ -78,7 +118,8 @@ def translate_vi(text: str) -> Optional[str]:
     try:
         from deep_translator import GoogleTranslator
         # auto: tự nhận ngôn ngữ nguồn (Anh hoặc Trung...) -> dịch sạch hơn so với ép 'en'
-        vi = GoogleTranslator(source="auto", target="vi").translate(text[:4500])
+        tr = GoogleTranslator(source="auto", target="vi")
+        vi = _call_with_timeout(tr.translate, text[:4500])
         if vi and _is_degenerate(vi):
             logger.warning("Bản dịch máy bị lặp/lỗi -> bỏ, fallback nguyên văn.")
             return None
@@ -124,13 +165,13 @@ def translate_vi_batch(texts, cache_only: bool = False):
     tr = GoogleTranslator(source="auto", target="vi")
 
     def _one(text):
-        """Dịch 1 câu, có thử lại — để KHÔNG bỏ sót khi gộp lệch dòng."""
+        """Dịch 1 câu, có thử lại — để KHÔNG bỏ sót khi gộp lệch dòng. Mỗi lần thử đều có
+        timeout cứng (_call_with_timeout) nên tối đa 2 lần * _TRANSLATE_TIMEOUT_SEC, không
+        bao giờ treo vô hạn dù deep_translator không hỗ trợ timeout riêng."""
         for _ in range(2):
-            try:
-                vi = tr.translate(text[:4500])
-                return vi if (vi and not _is_degenerate(vi)) else None
-            except Exception:  # pragma: no cover - mạng/giới hạn
-                continue
+            vi = _call_with_timeout(tr.translate, text[:4500])
+            if vi is not None:
+                return vi if not _is_degenerate(vi) else None
         return None
 
     changed = False
@@ -150,11 +191,10 @@ def translate_vi_batch(texts, cache_only: bool = False):
     for group in groups:
         srcs = [re.sub(r"\s+", " ", t).strip() for _, t, _ in group]
         joined = "\n".join(srcs)
-        out_joined = None
-        try:
-            out_joined = tr.translate(joined)
-        except Exception as exc:  # pragma: no cover
-            logger.warning("Gộp dịch lỗi (%s) -> dịch từng câu.", exc)
+        # Khối gộp dài hơn 1 câu đơn -> cho thêm thời gian tương ứng, tránh timeout giả do
+        # văn bản dài cần lâu hơn để dịch xong dù server vẫn đang phản hồi bình thường.
+        out_joined = _call_with_timeout(tr.translate, joined,
+                                         timeout=_TRANSLATE_TIMEOUT_SEC * 2)
         lines = [s.strip() for s in (out_joined or "").split("\n") if s.strip()] if out_joined else []
         if out_joined and len(lines) == len(group):
             pairs = zip(group, lines)

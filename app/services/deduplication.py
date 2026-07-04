@@ -34,7 +34,15 @@ def _title_similar(a: str, b: str) -> bool:
         return False
     if ka == kb:
         return True
-    return SequenceMatcher(None, ka, kb).ratio() >= TITLE_SIMILARITY_THRESHOLD
+    # real_quick_ratio()/quick_ratio() là CHẶN TRÊN toán học của ratio() thật (Ratcliff-Obershelp),
+    # rẻ hơn nhiều bậc độ lớn. Loại sớm các cặp chắc chắn dưới ngưỡng mà không đổi kết quả cuối,
+    # tránh chạy ratio() đầy đủ cho mọi cặp (vốn là nguồn gây chậm khi so N bản ghi mới với N primary).
+    sm = SequenceMatcher(None, ka, kb)
+    if sm.real_quick_ratio() < TITLE_SIMILARITY_THRESHOLD:
+        return False
+    if sm.quick_ratio() < TITLE_SIMILARITY_THRESHOLD:
+        return False
+    return sm.ratio() >= TITLE_SIMILARITY_THRESHOLD
 
 
 def _same_version(a: Dict, b: Dict) -> bool:
@@ -74,8 +82,10 @@ def deduplicate(items: List[Dict]) -> Tuple[List[int], List[Tuple[int, int, str]
             reason = key.split(":", 1)[0]
         else:
             for p in primary_positions:
-                if (_title_similar(items[p].get("title", ""), item.get("title", ""))
-                        and _same_version(items[p], item)):
+                # _same_version trước vì rẻ hơn (so sánh 4 ký tự năm) — loại sớm phần lớn cặp
+                # trước khi chạy _title_similar (tốn kém hơn dù đã có bộ lọc quick_ratio).
+                if (_same_version(items[p], item)
+                        and _title_similar(items[p].get("title", ""), item.get("title", ""))):
                     matched, reason = p, "title_similarity"
                     break
 

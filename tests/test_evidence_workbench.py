@@ -47,6 +47,53 @@ def test_unresolved_pmid_dropped_but_doi_kept():
     assert it["doi"]                 # vẫn còn DOI -> truy nguyên được
 
 
+class _FakeHttpEsummaryOK:
+    """Giả lập HttpClient trả JSON esummary hợp lệ cho các PMID trong `valid_pmids`."""
+
+    def __init__(self, valid_pmids):
+        self.valid_pmids = set(valid_pmids)
+
+    def get_json(self, url, params=None, use_cache=True):
+        ids = (params or {}).get("id", "").split(",")
+        result = {}
+        for pid in ids:
+            if pid in self.valid_pmids:
+                result[pid] = {"title": "Some Title"}
+        return {"result": result}
+
+
+class _FakeHttpNetworkError:
+    """Giả lập HttpClient lỗi mạng (hết retry) trên MỌI lần gọi."""
+
+    def get_json(self, url, params=None, use_cache=True):
+        raise RuntimeError("Gọi API thất bại sau 4 lần: " + url)
+
+
+def test_resolve_pmids_returns_only_pmids_confirmed_by_pubmed(monkeypatch):
+    monkeypatch.setattr(ew, "HttpClient", lambda: _FakeHttpEsummaryOK({"36331190"}))
+    assert ew.resolve_pmids(["36331190", "99999999"]) == {"36331190"}
+
+
+def test_resolve_pmids_fails_closed_on_network_error(monkeypatch):
+    """FAIL-CLOSED: lỗi mạng phải trả set RỖNG — KHÔNG mặc định coi mọi PMID là hợp lệ.
+
+    Regression test cho lỗi liêm chính đã sửa: bản cũ `except Exception: return set(pmids)`
+    khiến dashboard hiển thị PMID CHƯA XÁC MINH như thể đã được xác minh khi mạng lỗi/hết
+    retry — đúng loại lỗi góp phần để lọt PMID sai (EVID-0030) qua nhiều lần xuất dashboard.
+    """
+    monkeypatch.setattr(ew, "HttpClient", _FakeHttpNetworkError)
+    resolved = ew.resolve_pmids(["36331190", "12345678"])
+    assert resolved == set()
+
+
+def test_resolve_pmids_empty_input_returns_empty_set_without_network_call(monkeypatch):
+    def _boom():
+        raise AssertionError("Không được gọi HttpClient khi danh sách PMID rỗng")
+    monkeypatch.setattr(ew, "HttpClient", _boom)
+    assert ew.resolve_pmids([]) == set()
+    assert ew.resolve_pmids([None, ""]) == set()
+
+
 def test_render_passes_integrity_gate_fields():
     """HTML render phải có disclaimer + gradeLevel/decision hợp lệ + định danh."""
     rows = [_fake_row()]

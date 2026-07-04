@@ -122,7 +122,17 @@ class HttpClient:
                 logger.debug("Cache hit: %s", url)
                 return cached["json"] if want == "json" else cached["text"]
 
+        # 4xx vĩnh viễn: retry vô ích, bỏ ngay lần đầu.
+        _PERMANENT_STATUS = (400, 401, 403, 404, 410)
+        # Lỗi tạm thời (429 rate-limit, 500/502/503/504 server) — chỉ thử lại 1 lần rồi bỏ.
+        # Quan trọng khi ingestion gọi HÀNG CHỤC query liên tiếp tới cùng một nguồn (vd 45 query
+        # theo CLINICAL_AREAS): nếu nguồn đó đang lỗi/quá tải, retry đủ http_max_retries cho MỖI
+        # query sẽ nhân số phút chờ lên hàng chục lần (từng gây treo thật ở OpenAlex 503 và BMJ 429).
+        _RETRYABLE_STATUS = (429, 500, 502, 503, 504)
+        _MAX_RETRYABLE_RETRIES = 1
+
         attempt = 0
+        attempt_retryable = 0
         last_exc: Optional[Exception] = None
         while attempt <= settings.http_max_retries:
             try:
@@ -130,28 +140,45 @@ class HttpClient:
                 resp = self.session.request(
                     method, url, params=params, timeout=settings.http_timeout
                 )
-                # Rate limit / lỗi tạm thời → backoff
-                if resp.status_code in (429, 500, 502, 503, 504):
-                    wait = self._backoff_wait(attempt, resp)
-                    logger.warning(
-                        "HTTP %s từ %s, thử lại sau %.1fs (lần %d)",
-                        resp.status_code, url, wait, attempt + 1,
-                    )
-                    time.sleep(wait)
-                    attempt += 1
-                    continue
+            except requests.RequestException as exc:
+                last_exc = exc
+                wait = self._backoff_wait(attempt, None)
+                logger.warning(
+                    "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
+                    url, exc, wait, attempt + 1,
+                )
+                time.sleep(wait)
+                attempt += 1
+                continue
+
+            # Lỗi vĩnh viễn → raise ngay, KHÔNG rơi vào retry (bay thẳng ra ngoài vòng lặp).
+            if resp.status_code in _PERMANENT_STATUS:
+                logger.warning("HTTP %s (lỗi vĩnh viễn) từ %s – bỏ qua", resp.status_code, url)
+                resp.raise_for_status()
+            if resp.status_code in _RETRYABLE_STATUS and attempt_retryable >= _MAX_RETRYABLE_RETRIES:
+                logger.warning("HTTP %s từ %s — đã hết hạn mức retry, bỏ qua.", resp.status_code, url)
                 resp.raise_for_status()
 
+            # Rate limit / lỗi tạm thời → backoff có giới hạn tối đa rồi thử lại.
+            if resp.status_code in _RETRYABLE_STATUS:
+                attempt_retryable += 1
+                wait = self._backoff_wait(attempt, resp)
+                logger.warning(
+                    "HTTP %s từ %s, thử lại sau %.1fs (lần %d)",
+                    resp.status_code, url, wait, attempt + 1,
+                )
+                time.sleep(wait)
+                attempt += 1
+                continue
+
+            try:
+                resp.raise_for_status()
                 if want == "json":
                     data = resp.json()
                     payload = {"json": data, "text": None}
                 else:
                     data = resp.text
                     payload = {"json": None, "text": data}
-
-                if use_cache and self.cache_ttl != 0:
-                    _write_cache(key, payload)
-                return data
             except (requests.RequestException, ValueError) as exc:
                 last_exc = exc
                 wait = self._backoff_wait(attempt, None)
@@ -161,13 +188,20 @@ class HttpClient:
                 )
                 time.sleep(wait)
                 attempt += 1
+                continue
+
+            if use_cache and self.cache_ttl != 0:
+                _write_cache(key, payload)
+            return data
 
         raise RuntimeError(f"Gọi API thất bại sau {settings.http_max_retries} lần: {url}") from last_exc
 
     def _backoff_wait(self, attempt: int, resp: Optional[requests.Response]) -> float:
+        # Giới hạn tối đa 30s để không chặn startup quá lâu (vd BMJ Retry-After: 600)
+        _MAX_WAIT = 30.0
         if resp is not None and "Retry-After" in resp.headers:
             try:
-                return float(resp.headers["Retry-After"])
+                return min(float(resp.headers["Retry-After"]), _MAX_WAIT)
             except ValueError:
                 pass
-        return settings.http_backoff_factor * (2 ** attempt)
+        return min(settings.http_backoff_factor * (2 ** attempt), _MAX_WAIT)

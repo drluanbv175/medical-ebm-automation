@@ -13,6 +13,10 @@ streamlit>=1.36.0
 pandas>=2.2.0
 plotly>=5.22.0
 
+# Statistical analysis (run_stats_analysis.py)
+scipy>=1.13.0
+statsmodels>=0.14.0
+
 # Reports / export
 Jinja2>=3.1.4
 deep-translator>=1.11.4

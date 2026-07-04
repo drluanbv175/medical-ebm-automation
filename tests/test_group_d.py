@@ -30,6 +30,32 @@ def test_translate_batch_uses_cache_without_network():
     assert out == ["Xin chào thế giới"]
 
 
+def test_call_with_timeout_returns_none_instead_of_hanging():
+    """Regression: deep_translator.GoogleTranslator gọi requests.get() KHÔNG có timeout riêng
+    (xác nhận đọc source deep_translator/google.py) -> có thể treo vô hạn nếu server không phản
+    hồi. _call_with_timeout phải cắt sau _TRANSLATE_TIMEOUT_SEC, KHÔNG được để test tự treo."""
+    import time as _time
+
+    from app.services import translate
+
+    def _hangs_forever(_arg):
+        _time.sleep(3600)  # mô phỏng call không bao giờ trả lời (không thật sự chờ hết 1h)
+        return "should never reach here"
+
+    started = _time.monotonic()
+    result = translate._call_with_timeout(_hangs_forever, "x", timeout=0.2)
+    elapsed = _time.monotonic() - started
+
+    assert result is None
+    assert elapsed < 2.0, f"Phải cắt ở ~0.2s (timeout), nhưng mất {elapsed:.2f}s"
+
+
+def test_call_with_timeout_returns_result_on_success():
+    from app.services import translate
+    result = translate._call_with_timeout(lambda x: x.upper(), "hello", timeout=5.0)
+    assert result == "HELLO"
+
+
 # ---- D3: smoke test exporters ----
 
 def test_exporters_produce_files():

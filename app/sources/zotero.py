@@ -37,6 +37,12 @@ class ZoteroClient:
         """Đẩy danh sách item (định dạng Zotero) vào thư viện.
 
         items: list dict theo schema item Zotero (itemType, title, DOI, tags...).
+
+        CHỦ Ý dùng `requests.post()` trực tiếp thay vì `self.http` (HttpClient, vốn đã dùng cho
+        các lệnh GET khác của client này): retry tự động của HttpClient an toàn cho GET nhưng
+        NGUY HIỂM cho POST tạo item không-idempotent — nếu Zotero đã nhận & tạo item nhưng phản
+        hồi bị mất, retry sẽ TẠO TRÙNG item trong thư viện. timeout=settings.http_timeout đã đủ
+        để không treo vô hạn.
         """
         if not self.enabled:
             logger.info("[zotero] chưa bật/chưa cấu hình – bỏ qua push %d item.", len(items))
