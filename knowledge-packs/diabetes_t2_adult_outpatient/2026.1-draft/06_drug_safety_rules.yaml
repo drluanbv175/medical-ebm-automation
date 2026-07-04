@@ -1,0 +1,57 @@
+drug_safety_rules:
+  - rule_id: dm2_metformin_renal_dose
+    drug: "Metformin"
+    condition: "eGFR thấp"
+    rule: |
+      eGFR ≥ 60: dùng bình thường
+      eGFR 45-59: dùng thận trọng, kiểm tra creatinine mỗi 3-6 tháng
+      eGFR 30-44: giảm liều 50%, theo dõi chặt
+      eGFR < 30: CHỐNG CHỈ ĐỊNH
+      Ngưng tạm thời khi: nhập viện, phẫu thuật, dùng thuốc cản quang
+    priority: HIGH
+    source: "ADA 2025; FDA label Metformin"
+
+  - rule_id: dm2_sglt2i_renal_threshold
+    drug: "SGLT2i (empagliflozin, dapagliflozin, canagliflozin)"
+    condition: "eGFR thấp"
+    rule: |
+      Empagliflozin/Canagliflozin: không khởi đầu nếu eGFR < 30; có thể tiếp tục đến eGFR 20 (lợi thận)
+      Dapagliflozin: có thể dùng đến eGFR 25 (CKD indication)
+      Khi eGFR < 45: hiệu quả hạ đường huyết giảm, nhưng lợi tim-thận vẫn có
+      KHÔNG dùng nếu eGFR < 20
+    priority: HIGH
+    source: "KDIGO 2022; ADA 2025; FDA labels"
+
+  - rule_id: dm2_sulfonylurea_hypoglycemia
+    drug: "Sulfonylurea (glibenclamide, glimepiride, gliclazide)"
+    condition: "Nguy cơ hạ đường huyết"
+    rule: |
+      Tránh glibenclamide ở người cao tuổi — nguy cơ hạ đường huyết kéo dài
+      Ưu tiên gliclazide MR hoặc glimepiride nếu phải dùng SU
+      Giảm liều khi eGFR < 45
+      Cảnh báo: không ăn, hoạt động thể lực tăng, uống rượu → nguy cơ hạ đường huyết
+    priority: MEDIUM
+    source: "ADA 2025; AGS Beers Criteria 2023"
+
+  - rule_id: dm2_dpp4i_heart_failure
+    drug: "DPP-4i (saxagliptin, alogliptin)"
+    condition: "Suy tim"
+    rule: |
+      Saxagliptin và alogliptin: tăng nguy cơ nhập viện suy tim trong thử nghiệm SAVOR-TIMI và EXAMINE
+      Không ưu tiên ở bệnh nhân ĐTĐ có suy tim
+      Sitagliptin (TECOS): không tăng nguy cơ SUT, an toàn hơn trong nhóm DPP-4i
+    priority: MEDIUM
+    source: "ADA 2025; FDA Drug Safety Communication"
+
+  - rule_id: dm2_insulin_storage
+    drug: "Insulin"
+    condition: "Bảo quản và kỹ thuật tiêm"
+    rule: |
+      Insulin chưa mở: bảo quản 2-8°C (ngăn mát tủ lạnh), không đông lạnh
+      Insulin đang dùng: có thể để nhiệt độ phòng ≤ 30°C trong 28-30 ngày tùy loại
+      Vị trí tiêm: xoay vòng, không tiêm vào vùng xơ chai
+      Tự theo dõi đường huyết: bắt buộc khi dùng insulin
+    priority: MEDIUM
+    source: "ADA 2025"
+
+disclaimer: "DRAFT. Liều và quyết định dùng thuốc cuối cùng thuộc về bác sĩ điều trị."

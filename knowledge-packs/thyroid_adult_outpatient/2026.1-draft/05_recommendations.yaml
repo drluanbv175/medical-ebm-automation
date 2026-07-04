@@ -1,0 +1,67 @@
+recommendations:
+  - claim_id: thyroid_hypothyroidism_diagnosis
+    guideline: "ATA Hypothyroidism Guidelines 2014 (updated 2023 ETA/ATA consensus); ETA 2023"
+    recommendation_text_draft: |
+      Chẩn đoán và phân loại suy giáp:
+      - Suy giáp rõ: TSH > 10 mIU/L + FT4 thấp → điều trị không cần bàn luận
+      - Suy giáp dưới lâm sàng: TSH 4-10 mIU/L + FT4 bình thường
+        → Điều trị khi: TSH > 10; hoặc có triệu chứng + kháng thể anti-TPO dương; hoặc phụ nữ muốn có thai
+        → Theo dõi khi: TSH 4-7, không triệu chứng, không kháng thể — đo lại mỗi 6-12 tháng
+    evidence_grade: "Grade A"
+    approval_status: pending
+
+  - claim_id: thyroid_levothyroxine_dosing
+    guideline: "ATA 2014; ETA 2023"
+    recommendation_text_draft: |
+      Levothyroxine (LT4) — điều trị chuẩn suy giáp:
+      - Liều bắt đầu: 1.6 µg/kg/ngày (cân nặng lý tưởng) × 50-75% ở người cao tuổi
+      - Người cao tuổi (≥ 65): 25-50 µg/ngày khởi đầu, tăng dần mỗi 4-6 tuần
+      - Người cao tuổi + bệnh tim mạch: 12.5-25 µg khởi đầu, tăng rất chậm
+      - Mục tiêu TSH:
+        • Người trưởng thành: 0.5-2.5 mIU/L
+        • Người cao tuổi ≥ 65: có thể chấp nhận TSH 1-4 mIU/L
+        • Phụ nữ có thai (tam cá nguyệt 1): TSH < 2.5 mIU/L
+      Đo TSH 6-8 tuần sau mỗi lần điều chỉnh liều.
+    evidence_grade: "Grade A"
+    approval_status: pending
+
+  - claim_id: thyroid_hyperthyroidism_graves
+    guideline: "ATA Hyperthyroidism Guidelines 2016; ETA 2022"
+    recommendation_text_draft: |
+      Cường giáp — Bệnh Graves (nguyên nhân thường gặp nhất):
+      Xác nhận: TSH thấp + FT4/FT3 cao + kháng thể TRAb dương tính
+      Ba lựa chọn điều trị lâu dài (không có lựa chọn duy nhất tốt nhất):
+      1. Thuốc kháng giáp (thionamide): PTU hoặc methimazole 12-18 tháng (tỷ lệ lui bệnh ~40-60%)
+      2. Radioiodine (I-131): điều trị triệt để, thường dẫn đến suy giáp vĩnh viễn
+      3. Phẫu thuật cắt tuyến giáp (thyroidectomy)
+      Quyết định phụ thuộc: tuổi, kế hoạch mang thai, kích thước tuyến giáp, bướu giáp có nhân, exophthalmos.
+    evidence_grade: "Grade B"
+    approval_status: pending
+
+  - claim_id: thyroid_methimazole_atu
+    guideline: "ATA 2016"
+    recommendation_text_draft: |
+      Methimazole — ưu tiên hơn PTU cho hầu hết bệnh nhân cường giáp:
+      - Liều khởi đầu Graves nhẹ-trung bình: 10-20 mg/ngày (1 lần/ngày)
+      - Graves nặng: 30-40 mg/ngày (chia 2-3 lần)
+      - Giảm liều dần khi TSH bình thường hóa; duy trì TSH trong giới hạn bình thường
+      - PTU ưu tiên khi: 3 tháng đầu thai kỳ (methimazole gây dị tật bẩm sinh); cơn bão giáp (ức chế chuyển T4→T3); dị ứng methimazole mức độ nhẹ
+    evidence_grade: "Grade B"
+    approval_status: pending
+
+  - claim_id: thyroid_monitoring
+    guideline: "ATA 2014/2016"
+    recommendation_text_draft: |
+      Theo dõi suy giáp điều trị ổn định:
+      - Ổn định: TSH mỗi 12 tháng
+      - Thay đổi liều: TSH sau 6-8 tuần
+      - Thay đổi nhu cầu LT4: mang thai, sau phẫu thuật GI, bắt đầu thuốc tương tác
+      
+      Theo dõi cường giáp điều trị thionamide:
+      - FT4 + TSH sau 4-6 tuần khi khởi trị; TSH có thể còn thấp nhiều tuần
+      - Công thức máu: ban đầu mỗi 3-4 tuần (theo dõi WBC) — nhưng NHẮC BỆNH NHÂN: sốt + đau họng → ngưng thuốc NGAY, xét nghiệm khẩn
+      - Chức năng gan: ALT/AST mỗi 4-6 tuần (đặc biệt PTU — nguy cơ độc gan)
+    evidence_grade: "Grade B"
+    approval_status: pending
+
+disclaimer: "DRAFT REVIEW-ONLY. Quyết định radioiodine và phẫu thuật cần tham khảo nội tiết/ngoại khoa."

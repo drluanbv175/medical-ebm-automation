@@ -1,0 +1,35 @@
+drug_safety_rules:
+  - drug: "Alendronate, Risedronate (bisphosphonate uống)"
+    rules:
+      - "CÁCH UỐNG: sáng sớm, bụng đói, với 200-250 mL nước lọc (không sữa, không nước trái cây)"
+      - "Đứng hoặc ngồi thẳng ≥ 30 phút sau uống — KHÔNG nằm (nguy cơ viêm thực quản nghiêm trọng)"
+      - "Chống chỉ định: hẹp thực quản, nằm liệt giường, không thể ngồi thẳng 30 phút, hạ canxi máu"
+      - "eGFR < 30-35: TRÁNH DÙNG bisphosphonate uống; xem xét denosumab sau tham khảo chuyên gia"
+      - "Viêm thực quản, loét thực quản: NGƯNG NGAY nếu có triệu chứng khó nuốt, đau sau xương ức"
+      - "ONJ: khám nha trước khi bắt đầu; báo nha sĩ đang dùng bisphosphonate trước mọi thủ thuật xương hàm"
+      - "Atypical femur fracture: đau đùi/háng mạn tính → X-quang hai bên → gửi chuyên gia xem xét ngưng thuốc"
+
+  - drug: "Zoledronic acid (Aclasta) 5 mg IV/năm"
+    rules:
+      - "Hydrate trước: uống đủ nước, không dùng khi mất nước"
+      - "eGFR < 35: CHỐNG CHỈ ĐỊNH"
+      - "Acute phase reaction: sốt, đau cơ, đau khớp trong 3 ngày đầu — paracetamol/NSAIDs nếu cần; giảm sau lần 2"
+      - "ONJ và atypical fracture: tương tự bisphosphonate uống"
+      - "Hạ canxi máu sau tiêm: đảm bảo vitamin D đủ trước khi truyền; theo dõi canxi"
+
+  - drug: "Denosumab (Prolia) 60 mg SC mỗi 6 tháng"
+    rules:
+      - "TUYỆT ĐỐI không ngưng đột ngột — rebound fracture đa cột sống có thể xảy ra 12-24 tháng sau liều cuối"
+      - "Trước khi ngưng: luôn chuẩn bị bisphosphonate thay thế"
+      - "Hạ canxi: kiểm tra canxi/25-OH-vitD trước mỗi liều; bổ sung vitamin D 800-1000 IU/ngày trước và trong điều trị"
+      - "eGFR < 15: thận trọng — hạ canxi nặng hơn"
+      - "ONJ: khám nha và vệ sinh răng miệng trước khi bắt đầu"
+      - "Nhiễm trùng nghiêm trọng (cellulitis, viêm nội tâm mạc): tăng nhẹ nguy cơ — theo dõi"
+
+  - drug: "Calcium carbonate / Calcium citrate"
+    rules:
+      - "Calcium carbonate: uống kèm bữa ăn (cần acid dạ dày để hấp thụ); Calcium citrate: có thể uống lúc đói"
+      - "Không uống > 500 mg/lần (hấp thụ kém hơn liều cao hơn)"
+      - "Sỏi thận calcium: tiền sử sỏi thận → ưu tiên canxi từ thực phẩm, không bổ sung thêm"
+      - "Thiazide + canxi liều cao: nguy cơ tăng canxi máu — theo dõi"
+      - "Tương tác: giảm hấp thụ bisphosphonate, levothyroxine, quinolone, tetracycline — uống cách xa ≥ 2h"

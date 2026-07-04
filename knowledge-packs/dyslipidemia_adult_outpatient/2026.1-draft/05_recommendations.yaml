@@ -1,0 +1,76 @@
+recommendations:
+  # PHÂN TẦNG NGUY CƠ (ESC/EAS 2024)
+  - claim_id: dyslip_risk_stratification
+    guideline: "ESC/EAS Guidelines for Dyslipidaemias 2024 (Eur Heart J 2024)"
+    recommendation_text_draft: |
+      Phân tầng nguy cơ tim mạch 10 năm (SCORE2 hoặc tương đương):
+      - Nguy cơ rất cao: bệnh tim mạch xơ vữa đã thiết lập, ĐTĐ type 2 có tổn thương cơ quan, CKD nặng,
+        hoặc LDL-C ≥ 4.9 mmol/L, hoặc SCORE2 ≥ 10%
+      - Nguy cơ cao: SCORE2 5-9%, ĐTĐ không có tổn thương cơ quan, CKD vừa
+      - Nguy cơ vừa: SCORE2 2.5-4.9%
+      - Nguy cơ thấp: SCORE2 < 2.5%
+    evidence_grade: "I A"
+    approval_status: pending
+
+  # MỤC TIÊU LDL-C
+  - claim_id: dyslip_ldl_targets
+    guideline: "ESC/EAS 2024"
+    recommendation_text_draft: |
+      Mục tiêu LDL-C theo phân tầng nguy cơ:
+      - Nguy cơ rất cao: LDL-C < 1.4 mmol/L (55 mg/dL) VÀ giảm ≥ 50% từ baseline
+      - Nguy cơ cao: LDL-C < 1.8 mmol/L (70 mg/dL) VÀ giảm ≥ 50%
+      - Nguy cơ vừa: LDL-C < 2.6 mmol/L (100 mg/dL)
+      - Nguy cơ thấp: LDL-C < 3.0 mmol/L (116 mg/dL)
+      Non-HDL-C mục tiêu = LDL-C mục tiêu + 0.8 mmol/L
+    evidence_grade: "I A"
+    approval_status: pending
+
+  # STATIN — LIỆU PHÁP NỀN
+  - claim_id: dyslip_statin_therapy
+    guideline: "ESC/EAS 2024"
+    recommendation_text_draft: |
+      Statin cường độ cao ưu tiên ở nguy cơ cao/rất cao:
+      - Atorvastatin 40-80 mg/ngày: giảm LDL-C 46-55%
+      - Rosuvastatin 20-40 mg/ngày: giảm LDL-C 52-55%
+      Statin cường độ vừa khi không dung nạp liều cao:
+      - Atorvastatin 10-20 mg, Rosuvastatin 5-10 mg, Simvastatin 20-40 mg
+      Theo dõi: AST/ALT và CK trước khi bắt đầu; CK khi có đau cơ.
+    evidence_grade: "I A"
+    approval_status: pending
+
+  # EZETIMIBE — THÊM VÀO KHI KHÔNG ĐẠT MỤC TIÊU VỚI STATIN
+  - claim_id: dyslip_ezetimibe_addon
+    guideline: "ESC/EAS 2024; IMPROVE-IT trial"
+    recommendation_text_draft: |
+      Ezetimibe 10 mg/ngày thêm vào statin khi không đạt mục tiêu LDL-C:
+      - Giảm thêm LDL-C ~20-25%
+      - Phối hợp statin + ezetimibe: giảm biến cố CV trong IMPROVE-IT (simvastatin+ezetimibe)
+      - Dung nạp tốt, ít tương tác thuốc
+    evidence_grade: "I B"
+    approval_status: pending
+
+  # PCSK9 INHIBITORS — NGUY CƠ RẤT CAO KHÔNG ĐẠT MỤC TIÊU
+  - claim_id: dyslip_pcsk9i
+    guideline: "ESC/EAS 2024; FOURIER, ODYSSEY trials"
+    recommendation_text_draft: |
+      PCSK9i (evolocumab, alirocumab) khi không đạt mục tiêu với statin + ezetimibe ở nguy cơ rất cao:
+      - Giảm LDL-C thêm 50-60%
+      - Giảm MACE trong FOURIER và ODYSSEY OUTCOMES
+      - Tiêm dưới da mỗi 2-4 tuần
+      Lưu ý: chi phí cao; cần phê duyệt bảo hiểm ở Việt Nam [CẦN XÁC NHẬN TẠI ĐƠN VỊ]
+    evidence_grade: "I A"
+    approval_status: pending
+
+  # THEO DÕI
+  - claim_id: dyslip_monitoring
+    guideline: "ESC/EAS 2024"
+    recommendation_text_draft: |
+      Lịch theo dõi sau khi bắt đầu statin:
+      - Lipid đầy đủ sau 6-8 tuần để đánh giá đáp ứng
+      - AST/ALT: sau 8-12 tuần; không cần thường quy nếu không có triệu chứng
+      - CK: chỉ khi có đau cơ
+      Khi đạt mục tiêu: theo dõi lipid mỗi 6-12 tháng
+    evidence_grade: "I C"
+    approval_status: pending
+
+disclaimer: "DRAFT REVIEW-ONLY. Quyết định điều trị cuối cùng thuộc về bác sĩ điều trị."

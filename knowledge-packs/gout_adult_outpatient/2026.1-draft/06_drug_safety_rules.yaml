@@ -1,0 +1,38 @@
+drug_safety_rules:
+  - drug: "Allopurinol"
+    rules:
+      - "HLA-B*5801: bắt buộc test ở người Hán/Việt/Hàn/Thái trước khi bắt đầu — dương tính → TUYỆT ĐỐI TRÁNH"
+      - "Quá mẫn allopurinol (AHS): phát ban trong 8 tuần đầu — ngưng ngay, không tái dùng"
+      - "KHÔNG dùng khi cơn gout cấp đang tiến triển — bắt đầu hoặc tiếp tục sau khi hết cơn"
+      - "eGFR < 30: không giới hạn liều tối đa cứng nhắc, nhưng tăng liều chậm hơn (mỗi 4-6 tuần)"
+      - "Tương tác: azathioprine/mercaptopurine — NGUY CỬ ĐỌC TỬ: allopurinol ức chế XO làm tăng độc tính x10; phải giảm liều AZA 75%"
+      - "Tương tác: ampicillin/amoxicillin — tăng nguy cơ phát ban (không phải AHS nhưng dễ nhầm)"
+      - "Warfarin: tăng INR khi dùng chung — theo dõi INR sát"
+
+  - drug: "Febuxostat"
+    rules:
+      - "Không cần điều chỉnh liều theo thận (lợi thế khi eGFR 15-30)"
+      - "Tim mạch: CARES trial cho thấy tăng tử vong tim mạch so allopurinol ở bệnh nhân có ASCVD — không phải lựa chọn đầu tay ở bệnh nhân bệnh tim mạch"
+      - "FDA: dùng chỉ khi không dung nạp allopurinol"
+      - "Chống chỉ định: dùng đồng thời azathioprine hoặc mercaptopurine"
+
+  - drug: "Colchicine"
+    rules:
+      - "eGFR < 30: liều tối đa 0.5 mg/ngày, không dùng >1 chu kỳ/2 tuần"
+      - "Tương tác NGUY HIỂM: clarithromycin + colchicine → độc tính nghiêm trọng (suy tủy, cơ) — TRÁNH phối hợp"
+      - "Tương tác: cyclosporin, verapamil, diltiazem, itraconazole — tăng nồng độ colchicine"
+      - "Độc tính: tiêu chảy, nôn, bệnh cơ (yếu cơ, tăng CK)"
+      - "Người cao tuổi: giảm liều; thận trọng khi dùng statin chung (nguy cơ bệnh cơ)"
+
+  - drug: "NSAIDs (indomethacin, naproxen) trong cơn gout cấp"
+    rules:
+      - "KHÔNG DÙNG khi eGFR < 30, loét dạ dày hoạt động, suy tim mất bù, dùng warfarin/DOAC"
+      - "Nguy cơ AKI khi dùng kèm ACEi + lợi tiểu (triple whammy)"
+      - "Thời gian: 3-5 ngày — không dùng kéo dài"
+      - "Phối hợp PPI nếu dùng > 3 ngày ở người cao tuổi hoặc tiền sử loét"
+
+  - drug: "Probenecid (thuốc tăng bài tiết urate)"
+    rules:
+      - "Không dùng khi eGFR < 50 — không hiệu quả"
+      - "Không dùng khi tiền sử sỏi thận do urate"
+      - "Tăng nước tiểu đủ nước (> 2L/ngày) để tránh sỏi"

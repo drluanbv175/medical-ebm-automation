@@ -1,0 +1,100 @@
+drug_safety_rules:
+  pack_id: dyslipidemia_adult_outpatient
+  version: 2026.1-draft
+  status: draft_review_only
+  source_references:
+    - "ESC/EAS Guidelines for the Management of Dyslipidaemias 2019 (doi: 10.1093/eurheartj/ehz455)"
+    - "ACC/AHA 2018 Guideline on Management of Blood Cholesterol"
+    - "WHO AWaRe: statins not classified; context-dependent"
+
+  statins:
+    class_notes: "Cơ chế ức chế HMG-CoA reductase. Giảm LDL-C 30-55% tuỳ loại và liều. Nền tảng phòng ngừa tim mạch cả tiên phát và thứ phát."
+    safety_rules:
+      - rule_id: stat_001
+        drug: "Tất cả statins"
+        rule: "Đo CK baseline và ALT trước khi bắt đầu nếu có yếu tố nguy cơ myopathy (tuổi > 70, suy thận, suy giáp, dùng fibrate, dùng immunosuppressants)"
+        rationale: "Phát hiện myopathy tiền điều trị, không dùng routine cho tất cả bệnh nhân (ESC/EAS 2019)"
+      - rule_id: stat_002
+        drug: "Simvastatin, Lovastatin"
+        rule: "TRÁNH kết hợp với: clarithromycin, itraconazole, ketoconazole, HIV protease inhibitors, nefazodone, ciclosporin, danazol — tất cả ức chế CYP3A4 mạnh → tăng nồng độ statin → nguy cơ myopathy/rhabdomyolysis"
+        severity: CRITICAL
+        rationale: "CYP3A4-mediated interaction. Nên chuyển sang pravastatin hoặc rosuvastatin (ít chuyển hóa qua CYP3A4 hơn) khi cần dùng các thuốc trên."
+      - rule_id: stat_003
+        drug: "Simvastatin"
+        rule: "Liều tối đa 20 mg khi dùng đồng thời amlodipine hoặc amiodarone. Liều tối đa 10 mg khi dùng diltiazem hoặc verapamil."
+        severity: HIGH
+        rationale: "FDA dose limitation để phòng myopathy. Cân nhắc đổi sang atorvastatin hoặc rosuvastatin."
+      - rule_id: stat_004
+        drug: "Gemfibrozil + bất kỳ statin nào"
+        rule: "TRÁNH kết hợp gemfibrozil với statin — tăng nguy cơ myopathy/rhabdomyolysis đáng kể (gemfibrozil ức chế glucuronidation của statin)"
+        severity: CRITICAL
+        rationale: "Nếu cần fibrate + statin, dùng fenofibrate thay vì gemfibrozil (an toàn hơn khi phối hợp)."
+      - rule_id: stat_005
+        drug: "Rosuvastatin"
+        rule: "Liều khởi đầu 5 mg ở người châu Á (bao gồm người Việt), người cao tuổi > 70 tuổi, eGFR < 60 mL/min/1.73m². Liều tối đa 20 mg nếu eGFR < 30."
+        severity: HIGH
+        rationale: "Châu Á có nồng độ rosuvastatin trong máu cao hơn 2x so với da trắng ở cùng liều (pharmacogenomics SLCO1B1). Giảm nguy cơ myopathy."
+      - rule_id: stat_006
+        drug: "Tất cả statins"
+        rule: "ALT/AST tăng > 3x ULN dai dẳng (kiểm tra lại sau 4-6 tuần) → ngừng statin. Tăng transaminase nhẹ < 3x ULN thường thoáng qua, không cần ngừng."
+        rationale: "Statin-induced DILI nghiêm trọng rất hiếm (< 0.001%). Tăng enzyme nhẹ thường không tiến triển."
+      - rule_id: stat_007
+        drug: "Tất cả statins"
+        rule: "Statin không chống chỉ định trong suy thận nhẹ-trung bình. Rosuvastatin và simvastatin cần giảm liều khi eGFR < 30. Atorvastatin không cần chỉnh liều theo thận."
+        rationale: "Atorvastatin được đào thải chủ yếu qua gan, an toàn trong CKD."
+
+  ezetimibe:
+    class_notes: "Ức chế hấp thu cholesterol tại ruột non (receptor NPC1L1). Giảm LDL-C thêm 15-20% khi phối hợp với statin. Dung nạp tốt."
+    safety_rules:
+      - rule_id: eze_001
+        drug: "Ezetimibe"
+        rule: "Không cần chỉnh liều trong suy thận hoặc suy gan nhẹ-trung bình. Chống chỉ định suy gan nặng khi phối hợp với statin."
+        severity: MODERATE
+      - rule_id: eze_002
+        drug: "Ezetimibe"
+        rule: "Giảm hấp thu ezetimibe khi dùng đồng thời cholestyramine (bile acid sequestrants) — uống ezetimibe ít nhất 2h trước hoặc 4h sau."
+        severity: LOW
+
+  fibrates:
+    class_notes: "PPAR-α agonist — giảm TG 30-50%, tăng HDL-C 10-20%. Chỉ định chính: tăng TG nặng, không phải phòng ngừa tim mạch (thiếu bằng chứng đủ mạnh so với statin)."
+    safety_rules:
+      - rule_id: fib_001
+        drug: "Fenofibrate"
+        rule: "Giảm liều khi eGFR 15-60: dùng 67 mg/ngày hoặc liều thấp nhất có thể. Chống chỉ định eGFR < 15 mL/min/1.73m² hoặc bệnh thận nặng."
+        severity: HIGH
+        rationale: "Fibrate đào thải qua thận. Tích lũy gây tăng creatinine giả và nguy cơ myopathy."
+      - rule_id: fib_002
+        drug: "Fenofibrate + statin"
+        rule: "Có thể phối hợp fenofibrate + statin nếu cần (safer hơn gemfibrozil + statin). Theo dõi triệu chứng myopathy và CK nếu có yếu tố nguy cơ."
+        severity: MODERATE
+      - rule_id: fib_003
+        drug: "Fibrates + warfarin"
+        rule: "Fibrate tăng tác dụng chống đông của warfarin (cạnh tranh gắn protein huyết tương). Kiểm tra INR sau 1-2 tuần khi bắt đầu hoặc ngừng fibrate."
+        severity: HIGH
+
+  pcsk9_inhibitors:
+    class_notes: "Evolocumab, alirocumab — kháng thể đơn dòng ức chế PCSK9. Giảm LDL-C 50-60% thêm trên nền statin. Tiêm dưới da mỗi 2-4 tuần. Bằng chứng: FOURIER (evolocumab), ODYSSEY OUTCOMES (alirocumab)."
+    safety_rules:
+      - rule_id: pcsk9_001
+        drug: "Evolocumab, Alirocumab"
+        rule: "Chỉ định khi: LDL-C vẫn ≥ 1.8 mmol/L (70 mg/dL) ở bệnh nhân nguy cơ rất cao dù đã dùng statin liều tối đa + ezetimibe, HOẶC không dung nạp statin với nguy cơ cao, HOẶC FH."
+        rationale: "ESC/EAS 2019: PCSK9i chỉ add-on sau khi tối ưu statin ± ezetimibe. Chi phí cao, chỉ định cần chặt chẽ."
+      - rule_id: pcsk9_002
+        drug: "Evolocumab, Alirocumab"
+        rule: "Không cần chỉnh liều trong suy thận hoặc suy gan nhẹ-trung bình. Dữ liệu hạn chế cho eGFR < 15 và suy gan nặng."
+        severity: LOW
+
+  monitoring_schedule:
+    notes: "Lịch theo dõi chỉ áp dụng khi đã có chỉ định điều trị và bác sĩ phụ trách — không tự áp dụng."
+    items:
+      - timepoint: "Baseline trước điều trị"
+        tests: ["Lipid profile", "ALT/AST", "CK (nếu nguy cơ myopathy)", "creatinine/eGFR", "glucose/HbA1c", "TSH (nếu chưa làm)"]
+      - timepoint: "4-12 tuần sau khởi trị hoặc thay đổi liều"
+        tests: ["Lipid profile", "ALT/AST"]
+        notes: "Đánh giá đáp ứng và dung nạp"
+      - timepoint: "Hàng năm khi ổn định"
+        tests: ["Lipid profile", "ALT/AST"]
+        notes: "CK chỉ khi có triệu chứng myopathy"
+      - timepoint: "Khi có triệu chứng mới (đau cơ, mệt, vàng da)"
+        tests: ["CK", "ALT/AST", "creatinine", "myoglobin niệu nếu nghi rhabdomyolysis"]
+        notes: "Không chờ lịch hẹn thường quy"

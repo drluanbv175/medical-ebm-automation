@@ -1,0 +1,66 @@
+recommendations:
+  - claim_id: gout_ult_indication
+    guideline: "ACR Gout Guidelines 2024 (Arthritis Care Res 2024)"
+    recommendation_text_draft: |
+      Chỉ định điều trị hạ acid uric (ULT — Urate-Lowering Therapy):
+      - STRONGLY RECOMMENDED: ≥ 2 cơn gout cấp/năm; tophi; X-quang có tổn thương khớp do gout; CKD G3 trở lên + gout
+      - CONDITIONAL: cơn gout đầu tiên nếu acid uric > 540 µmol/L (9 mg/dL), hoặc sỏi thận do urate
+      KHÔNG dùng ULT trong cơn gout cấp — bắt đầu sau khi cơn thuyên giảm ≥ 2-4 tuần.
+    evidence_grade: "Strong recommendation"
+    approval_status: pending
+
+  - claim_id: gout_urate_target
+    guideline: "ACR 2024; EULAR 2022"
+    recommendation_text_draft: |
+      Mục tiêu acid uric (SUA) khi điều trị ULT:
+      - Mục tiêu chung: SUA < 360 µmol/L (6 mg/dL)
+      - Gout nặng (tophi nhiều, khớp tổn thương, cơn cấp thường xuyên): SUA < 300 µmol/L (5 mg/dL)
+      Đo SUA định kỳ mỗi 3-6 tháng để điều chỉnh liều allopurinol.
+    evidence_grade: "Strong recommendation"
+    approval_status: pending
+
+  - claim_id: gout_allopurinol
+    guideline: "ACR 2024; EULAR 2022"
+    recommendation_text_draft: |
+      Allopurinol — lựa chọn đầu tay ULT:
+      - Khởi đầu liều THẤP: 50-100 mg/ngày, tăng 50-100 mg mỗi 2-4 tuần
+      - Mục tiêu: đạt SUA < 360 µmol/L; liều thường 200-600 mg/ngày
+      - eGFR 30-60: khởi đầu 50 mg/ngày; tăng thận trọng hơn
+      - Không giới hạn liều tối đa theo eGFR (quan niệm cũ) — TIẾP TỤC tăng liều nếu cần đạt mục tiêu
+      - HLA-B*5801: test ở người Đông Nam Á/Hán/Hàn trước khi bắt đầu — nguy cơ SJS/TEN cao
+    evidence_grade: "Strong recommendation"
+    approval_status: pending
+
+  - claim_id: gout_acute_flare_management
+    guideline: "ACR 2024"
+    recommendation_text_draft: |
+      Điều trị cơn gout cấp (không phải ULT):
+      - Colchicine liều thấp (ưu tiên): 1 mg ngay → 0.5 mg sau 1h → 0.5 mg x2/ngày (< 48h từ khi khởi phát)
+      - NSAIDs (indomethacin, naproxen, diclofenac): đủ liều, đủ ngắn (3-5 ngày)
+      - Corticosteroid (uống/tiêm): khi không dùng được colchicine/NSAIDs; prednisolone 30-40 mg x5 ngày
+      - Không phối hợp NSAIDs + colchicine liều đầy đủ — không tăng hiệu quả, tăng độc tính
+    evidence_grade: "Strong recommendation"
+    approval_status: pending
+
+  - claim_id: gout_prophylaxis
+    guideline: "ACR 2024"
+    recommendation_text_draft: |
+      Dự phòng cơn gout khi khởi đầu ULT (tránh mobilization flares):
+      - Colchicine 0.5 mg x1-2/ngày trong ≥ 3-6 tháng sau khi đạt SUA mục tiêu
+      - Nếu không dùng được colchicine: NSAIDs liều thấp hoặc prednisolone 5 mg/ngày
+      - Không ngưng ULT khi có cơn gout cấp trong thời gian dùng allopurinol
+    evidence_grade: "Strong recommendation"
+    approval_status: pending
+
+  - claim_id: gout_lifestyle
+    guideline: "ACR 2024; EULAR 2022"
+    recommendation_text_draft: |
+      Thay đổi lối sống (hỗ trợ, không thay thế ULT):
+      - Tránh: nội tạng động vật, hải sản nhiều purine, bia, rượu nặng, fructose cao
+      - Khuyến khích: sữa ít béo, uống đủ nước, giảm cân nếu thừa cân
+      - Xem xét đổi thuốc lợi tiểu (thiazide, loop) → losartan, amlodipine (hạ acid uric)
+      - KHÔNG dùng aspirin liều thấp để hạ acid uric — không hiệu quả, nhưng KHÔNG ngưng nếu đang dùng vì tim mạch
+    evidence_grade: "Conditional"
+    approval_status: pending
+
+disclaimer: "DRAFT REVIEW-ONLY. Test HLA-B*5801 trước allopurinol ở bệnh nhân người Kinh/Đông Nam Á."

@@ -1,0 +1,24 @@
+red_flags:
+  - id: rf_septic_arthritis
+    name: "Viêm khớp nhiễm khuẩn — không thể phân biệt lâm sàng với cơn gout cấp"
+    triggers: ["sốt cao > 38.5°C + khớp sưng đỏ cực kỳ nóng", "bệnh nhân suy giảm miễn dịch", "mới phẫu thuật khớp", "không đáp ứng colchicine/NSAIDs trong 24-48h"]
+    action: "CHỌC DỊCh KHỚP khẩn cấp — cấy dịch, soi tinh thể; xét nhập viện dùng kháng sinh IV"
+    priority: CRITICAL
+
+  - id: rf_allopurinol_hypersensitivity
+    name: "Hội chứng quá mẫn allopurinol (AHS) / SJS/TEN"
+    triggers: ["phát ban da lan toả khi đang dùng allopurinol", "loét niêm mạc miệng/mắt", "sốt + bong da"]
+    action: "NGƯNG ALLOPURINOL NGAY, CHUYỂN CẤP CỨU — SJS/TEN đe doạ tính mạng"
+    priority: CRITICAL
+
+  - id: rf_tophus_infection
+    name: "Tophi bội nhiễm"
+    triggers: ["tophi chảy mủ", "đau tăng đột ngột + sốt tại vùng tophi"]
+    action: "Kháng sinh, xem xét nhập viện, tham vấn ngoại khoa"
+    priority: HIGH
+
+  - id: rf_urate_nephropathy_acute
+    name: "Bệnh thận do urate cấp"
+    triggers: ["creatinine tăng nhanh + tiểu ít + acid uric rất cao (> 900 µmol/L)"]
+    action: "Nhập viện — nguy cơ AKI do lắng đọng urate ống thận"
+    priority: HIGH

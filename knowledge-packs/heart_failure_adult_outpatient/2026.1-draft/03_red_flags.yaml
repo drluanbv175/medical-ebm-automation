@@ -1,0 +1,30 @@
+red_flags:
+  - id: rf_acute_decompensation
+    name: "Mất bù cấp tính"
+    triggers: ["khó thở tăng đột ngột", "phù tăng nhanh", "SpO2 < 90%", "không nằm được", "ran ẩm toàn phổi"]
+    action: "CHUYỂN CẤP CỨU NGAY"
+    priority: CRITICAL
+
+  - id: rf_cardiogenic_shock
+    name: "Sốc tim"
+    triggers: ["HA tâm thu < 90 mmHg", "lạnh đầu chi", "lơ mơ", "thiểu niệu"]
+    action: "CHUYỂN CẤP CỨU NGAY — Sốc tim"
+    priority: CRITICAL
+
+  - id: rf_rapid_af
+    name: "Rung nhĩ nhanh gây mất bù"
+    triggers: ["nhịp tim > 120/phút kèm khó thở tăng", "hồi hộp đánh trống ngực mới xuất hiện"]
+    action: "Đánh giá kiểm soát nhịp/tần số, xem xét nhập viện"
+    priority: HIGH
+
+  - id: rf_hyperkalemia
+    name: "Tăng kali máu nguy hiểm"
+    triggers: ["kali > 5.5 mmol/L khi dùng ACEi/ARB/MRA", "yếu cơ, loạn nhịp"]
+    action: "Ngưng MRA/ACEi tạm thời, ECG khẩn, xét nhập viện"
+    priority: HIGH
+
+  - id: rf_renal_deterioration
+    name: "Suy thận tiến triển nhanh"
+    triggers: ["creatinine tăng > 50% baseline trong 2-4 tuần", "kali > 5.5", "phù tăng kháng trị"]
+    action: "Xem xét giảm liều lợi tiểu, tạm ngưng ACEi/ARB, nhập viện nếu nặng"
+    priority: HIGH

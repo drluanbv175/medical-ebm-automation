@@ -1,0 +1,70 @@
+recommendations:
+  - claim_id: ckd_staging
+    guideline: "KDIGO CKD 2024 Update (Kidney Int Suppl 2024)"
+    recommendation_text_draft: |
+      Phân loại CKD: kết hợp GFR và albumin niệu (ACR):
+      - G1-G5 theo eGFR (ml/min/1.73m²): ≥90 / 60-89 / 45-59 / 30-44 / 15-29 / <15
+      - A1-A3 theo ACR (mg/g): <30 / 30-300 / >300
+      Mã màu nguy cơ (xanh/vàng/cam/đỏ): xác định tần suất theo dõi và ngưỡng chuyển tuyến.
+      Chẩn đoán CKD cần ≥ 2 lần đo cách nhau > 3 tháng.
+    evidence_grade: "Không phân loại (khuyến cáo thực hành tốt)"
+    approval_status: pending
+
+  - claim_id: ckd_bp_target
+    guideline: "KDIGO 2024; SPRINT-CKD subgroup; Hypertension guidelines"
+    recommendation_text_draft: |
+      Huyết áp mục tiêu ở CKD:
+      - Mục tiêu chung: HA tâm thu < 120 mmHg (nếu dung nạp) theo KDIGO 2024
+      - CKD kèm đái tháo đường: < 130/80 mmHg
+      - ACEi hoặc ARB: ưu tiên ở CKD kèm đái tháo đường hoặc protein niệu > 300 mg/g
+      Lưu ý: hạ HA xuống thấp nhanh có thể gây AKI — tăng dần, theo dõi creatinine.
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: ckd_sglt2i_kidney_protection
+    guideline: "KDIGO 2024; DAPA-CKD; CREDENCE; EMPA-KIDNEY"
+    recommendation_text_draft: |
+      SGLT2i bảo vệ thận (KDIGO 2024 — ưu tiên cao):
+      - Dapagliflozin 10 mg/ngày hoặc empagliflozin 10 mg/ngày
+      - Chỉ định: CKD (eGFR ≥ 20) bất kể có đái tháo đường hay không
+      - Giảm tiến triển thận mạn và tử vong thận/tim
+      - Giảm eGFR cấp tính (hemodilution) 3-5 ml ban đầu — chấp nhận được, KHÔNG ngưng
+      - Không dùng khi eGFR < 20 ml/min/1.73m²
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: ckd_raas_blockade
+    guideline: "KDIGO 2024"
+    recommendation_text_draft: |
+      Ức chế RAAS (ACEi/ARB) ở CKD protein niệu:
+      - ACEi hoặc ARB đơn trị: giảm protein niệu và làm chậm tiến triển thận
+      - KHÔNG phối hợp ACEi + ARB (dual RAAS blockade) — tăng AKI và tăng kali không an toàn
+      - Khởi trị eGFR ≥ 30; có thể tiếp tục đến eGFR 15-20 nếu đã ổn định
+      - Ngưng khi AKI cấp (vomiting, tiêu chảy nặng, phẫu thuật, thuốc cản quang)
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: ckd_anemia_management
+    guideline: "KDIGO Anemia 2024"
+    recommendation_text_draft: |
+      Thiếu máu trong CKD:
+      - Xét nghiệm: công thức máu + sắt (ferritin, TSAT) + B12/folate trước khi quyết định
+      - Bổ sung sắt nếu TSAT < 30% hoặc ferritin < 200 ng/mL (đường uống hoặc IV)
+      - ESA (erythropoietin): khi Hgb < 10 g/dL sau bổ sung sắt, mục tiêu Hgb 10-11.5 g/dL
+      - KHÔNG để Hgb > 13 g/dL với ESA — tăng nguy cơ đột quỵ và huyết khối
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: ckd_monitoring
+    guideline: "KDIGO 2024"
+    recommendation_text_draft: |
+      Theo dõi định kỳ theo giai đoạn CKD:
+      - G1-G2: mỗi 12 tháng (eGFR, ACR, điện giải, HA)
+      - G3a-G3b: mỗi 6 tháng
+      - G4: mỗi 3-4 tháng; chuẩn bị RRT
+      - G5 non-dialysis: mỗi 1-3 tháng; chuyên gia thận
+      Đánh giá thêm: phospho, PTH, 25-OH vitamin D từ G3b
+    evidence_grade: "Best practice"
+    approval_status: pending
+
+disclaimer: "DRAFT REVIEW-ONLY. Điều trị CKD cần bác sĩ thận học tư vấn."
