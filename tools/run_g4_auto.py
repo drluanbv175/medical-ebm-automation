@@ -299,6 +299,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--study", required=True)
     args = parser.parse_args()
+    GC.ensure_utf8_stdout()
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
     out = BASE / "exports" / study
     out.mkdir(parents=True, exist_ok=True)

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -187,9 +188,14 @@ def _read_guardrail(out_dir: Path, gate: str) -> Optional[bool]:
 
 def _run_gate_once(cmd: List[str], out_dir: Path) -> Dict[str, object]:
     """Chạy 1 lần; trả dict{exit_code, stdout_tail, stderr_tail}."""
+    # Ép UTF-8 cho CỔNG CON: nhiều cổng in emoji (🚧/✅/🔒) → console/pipe cp1252
+    # trên Windows ném UnicodeEncodeError làm chết cổng dù logic đúng. Truyền env
+    # UTF-8 + decode UTF-8 để chạy được KHÔNG cần đặt PYTHONUTF8 tay.
+    child_env = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
     try:
         proc = subprocess.run(cmd, cwd=str(BASE), capture_output=True,
-                              text=True, timeout=600)
+                              text=True, timeout=600, env=child_env,
+                              encoding="utf-8", errors="replace")
         return {
             "exit_code": proc.returncode,
             "stdout_tail": "\n".join(proc.stdout.splitlines()[-6:]),
@@ -502,6 +508,7 @@ def main() -> int:
                     help="Chỉ kiểm freshness, không chạy cổng nào")
     args = ap.parse_args()
 
+    GC.ensure_utf8_stdout()  # chạy được trên console Windows mặc định (cp1252)
     print(f"🎼 Nhạc trưởng chuỗi cổng — đề tài: {args.study}")
     report = orchestrate(args.study, args.topic, args.max_attempts,
                          args.from_gate, args.check_only)

@@ -25,8 +25,27 @@ Module này chỉ dùng thư viện chuẩn (không phụ thuộc ngoài) để 
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
+
+
+def ensure_utf8_stdout() -> None:
+    """Ép stdout/stderr về UTF-8 để KHÔNG crash trên console Windows mặc định (cp1252).
+
+    Sửa lỗi portability THẬT (đã xác nhận): các cổng in emoji (🚧/✅/🔒) → console
+    cp1252 ném UnicodeEncodeError, làm chết script dù logic đúng. Trước đây phải đặt
+    PYTHONUTF8=1 tay. Gọi hàm này ở đầu mỗi entry-point để chạy được ngay cả khi
+    quên biến môi trường. An toàn/không tác dụng phụ nếu stdout đã UTF-8 hoặc không
+    hỗ trợ reconfigure (vd bị pipe/redirect).
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            enc = (getattr(stream, "encoding", "") or "").lower()
+            if enc and "utf" not in enc and hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError, AttributeError):
+            pass
 
 # ── Bốn mã thoát rời nghĩa ───────────────────────────────────────────────────
 EXIT_OK = 0

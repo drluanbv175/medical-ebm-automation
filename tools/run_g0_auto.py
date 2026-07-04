@@ -727,6 +727,7 @@ def main():
     parser.add_argument("--email", default=None,
                         help="Email NCBI (mặc định: từ NCBI_EMAIL trong .env)")
     args = parser.parse_args()
+    GC.ensure_utf8_stdout()
 
     # Ghi đè email nếu có
     if args.email:

@@ -413,6 +413,7 @@ def main():
     parser.add_argument("--dropout", type=float, default=0.20)
     parser.add_argument("--p-event", type=float, default=0.30, help="Tỷ lệ biến cố tổng thể (log-rank)")
     args = parser.parse_args()
+    GC.ensure_utf8_stdout()
 
     study = args.study
     out_dir = BASE / "exports" / study
