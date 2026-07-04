@@ -137,6 +137,49 @@ def _kw_in(keywords, text):
     return False
 
 
+_DESIGN_LABEL = {
+    "cross_sectional": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)",
+    "cohort": "Nghiên cứu Đoàn hệ (Cohort)",
+    "case_control": "Nghiên cứu Bệnh-Chứng (Case-control)",
+    "rct": "Thử nghiệm Ngẫu nhiên Đối chứng (RCT)",
+    "diagnostic": "Nghiên cứu Độ chính xác Chẩn đoán",
+    "sr_ma": "Tổng quan Hệ thống / Phân tích gộp",
+}
+
+
+def _read_pinned_design(out_dir) -> str:
+    """Đọc study_meta.json['design_code'] (hoặc gate_params.G1.design). '' nếu không có."""
+    import json as _json
+    from pathlib import Path as _Path
+    p = _Path(out_dir) / "study_meta.json"
+    if not p.exists():
+        return ""
+    try:
+        meta = _json.loads(p.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        return ""
+    pin = meta.get("design_code") or (meta.get("gate_params", {}).get("G1", {}) or {}).get("design")
+    return str(pin).strip().lower() if pin else ""
+
+
+def _apply_design_pin(design: dict, pinned: str) -> dict:
+    """Ghi đè thiết kế bằng giá trị bác sĩ pin; giữ nguyên các trường khác."""
+    d = dict(design)
+    d["internal_code"] = pinned
+    d["primary"] = _DESIGN_LABEL.get(pinned, f"Thiết kế: {pinned}")
+    try:
+        import sys as _sys
+        from pathlib import Path as _Path
+        _sys.path.insert(0, str(_Path(__file__).resolve().parent))
+        import skill_standards as _S
+        d["reporting_standard"] = _S.reporting_standards_for(pinned)["primary"]
+    except Exception:  # noqa: BLE001
+        pass
+    d["rationale"] = ("Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định "
+                      "thật, ưu tiên hơn suy luận tự động). " + str(design.get("rationale", "")))
+    return d
+
+
 def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     """
     Suy luận loại thiết kế từ câu hỏi + bức tranh evidence từ G0.
@@ -153,7 +196,12 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
         question_type = "diagnosis"
     elif _kw_in(["tiên lượng", "tien luong", "prognosis", "sống còn", "song con", "tử vong", "tu vong"], topic_lower):
         question_type = "prognosis"
-    elif _kw_in(["tỷ lệ", "ty le", "prevalence", "mô tả", "mo ta", "tần suất"], topic_lower):
+    elif _kw_in(["tỷ lệ", "ty le", "prevalence", "mô tả", "mo ta", "tần suất",
+                 # Nghiên cứu dịch vụ y tế/khảo sát: hài lòng, khảo sát, thực trạng
+                 # → cắt ngang mô tả (trước đây rơi vào nhánh evidence -> cohort sai).
+                 "hài lòng", "hai long", "satisfaction", "khảo sát", "khao sat",
+                 "survey", "thực trạng", "thuc trang", "kiến thức thái độ",
+                 "kap", "chất lượng dịch vụ", "chat luong dich vu"], topic_lower):
         question_type = "descriptive"
 
     if question_type == "treatment":
@@ -968,6 +1016,16 @@ def main():
     # Suy loại thiết kế
     print(f"\n🔬 Bước 2/7: Suy loại thiết kế ({QUESTION_TYPES.get(question_type, question_type)})...")
     design = infer_study_design(question_type, g0_gaps, topic)
+
+    # PIN THIẾT KẾ (bác sĩ xác nhận, durable) — study_meta.json['design_code']
+    # ghi đè suy luận tự động để CHẠY LẠI KHÔNG DRIFT (vd đề tài hài lòng phải là
+    # cross_sectional, không để rơi về placeholder 'cohort'). Đây là quyết định
+    # THẬT của bác sĩ, hệ tôn trọng — không tự đổi.
+    pinned = _read_pinned_design(out_dir)
+    if pinned:
+        design = _apply_design_pin(design, pinned)
+        print(f"  → 📌 Dùng THIẾT KẾ PIN từ study_meta.json: {pinned}")
+
     print(f"  → Thiết kế ưu tiên: {design['primary']}")
     print(f"  → Chuẩn báo cáo: {design['reporting_standard']}")
 

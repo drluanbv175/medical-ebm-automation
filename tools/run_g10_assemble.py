@@ -590,6 +590,17 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
         print("  ⚠ python-docx chưa cài — bỏ qua .docx (vẫn có .md).")
         docx_path = None
 
+    # Chạy guardrail check_de_cuong NGAY để ghi kết quả vào checkpoint (cho
+    # orchestrator/đọc máy thấy G10 pass/fail thật, không phải 'no_guardrail').
+    guardrail = {"passed": None, "checks": {}, "errors": [], "warnings": []}
+    try:
+        import check_de_cuong
+        rep = check_de_cuong.validate(md_path, out_dir)
+        guardrail = {"passed": rep["passed"], "checks": rep["checks"],
+                     "errors": rep["errors"], "warnings": rep["warnings"]}
+    except ImportError:
+        pass
+
     # Checkpoint G10.
     gate_states = {sg: S.skill_gate_state(sg, cps, meta) for sg in S.SKILL_GATES}
     readiness = S.readiness_report(cps, meta)
@@ -599,6 +610,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
         "study": study,
         "generated_at": datetime.now().isoformat(),
         "gate_status": "DỰ THẢO — đề cương thống nhất đã lắp ráp",
+        "guardrail": guardrail,
         "checkpoints_present": present,
         "checkpoints_missing": [g for g in cps if not cps[g]],
         "real_world_signals": signals,
