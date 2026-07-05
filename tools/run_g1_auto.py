@@ -147,6 +147,144 @@ _DESIGN_LABEL = {
 }
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# 1bis. MÔ-ĐUN CHUYÊN BIỆT (điều kiện, cộng thêm — KHÔNG thay đổi thiết kế chính)
+# ════════════════════════════════════════════════════════════════════════════
+# Bổ sung 2026-07-05: 4 agent chuyên biệt (cong-cu-do-luong, mo-hinh-tien-luong,
+# kinh-te-y-te, nghien-cuu-dinh-tinh) đã có trong bản đồ đội (README.md,
+# dieu-phoi-nghien-cuu.md) và trong control-plane dry-run tools/orchestrator/
+# nhưng CHƯA từng nối vào automation THẬT của G1 — đề tài cần 1 trong 4 năng
+# lực này trước đây không được nhắc gì trong A2. Từ khóa CỐ Ý cụ thể/nhiều-từ
+# (không dùng từ đơn chung chung như "tiên lượng"/"auc" đã dùng cho
+# infer_study_design ở trên) để tránh bắt nhầm đề tài tiên lượng/chẩn đoán
+# thông thường thành "đang xây mô hình/công cụ mới".
+SPECIALIST_MODULE_KEYWORDS: dict[str, list[str]] = {
+    "prom_tool": [
+        "xây dựng thang đo", "phát triển thang đo", "phát triển bộ câu hỏi",
+        "phát triển bộ công cụ", "kiểm định thang đo", "kiểm định bộ câu hỏi",
+        "dịch thuật thích nghi văn hóa", "thích nghi văn hóa", "cronbach",
+        "phân tích nhân tố khám phá", "phân tích nhân tố khẳng định",
+        "cosmin", "prom", "patient-reported outcome",
+    ],
+    "prognostic_model": [
+        "mô hình tiên lượng", "mô hình dự báo", "mô hình dự đoán", "nomogram",
+        "prediction model", "predictive model", "xây dựng thang điểm nguy cơ",
+        "phát triển thang điểm nguy cơ", "tripod",
+    ],
+    "economic": [
+        "chi phí hiệu quả", "chi phí-hiệu quả", "cost-effectiveness",
+        "cost effectiveness", "kinh tế y tế", "chi phí thỏa dụng",
+        "cost-utility", "icer", "qaly", "tác động ngân sách", "budget impact",
+        "phân tích chi phí", "cheers",
+    ],
+    "qualitative": [
+        "nghiên cứu định tính", "phỏng vấn sâu", "nhóm tập trung",
+        "focus group", "in-depth interview", "grounded theory",
+        "phenomenology", "hiện tượng học", "phân tích chủ đề",
+        "thematic analysis", "coreq", "srqr",
+    ],
+}
+
+_SPECIALIST_MODULE_LABEL = {
+    "prom_tool": "Kiểm định công cụ đo lường (COSMIN)",
+    "prognostic_model": "Mô hình tiên lượng/dự báo (TRIPOD+AI)",
+    "economic": "Phân tích kinh tế y tế (CHEERS 2022)",
+    "qualitative": "Nghiên cứu định tính/hỗn hợp (COREQ/SRQR)",
+}
+
+
+def detect_specialist_modules(topic: str) -> list[str]:
+    """Phát hiện tín hiệu ĐỘC LẬP (không loại trừ lẫn nhau — 1 đề tài có thể
+    cần nhiều mô-đun cùng lúc, khác với infer_study_design vốn chọn 1 thiết
+    kế chính). Trả về list rỗng nếu không phát hiện tín hiệu nào."""
+    topic_lower = topic.lower()
+    return [
+        module for module, keywords in SPECIALIST_MODULE_KEYWORDS.items()
+        if _kw_in(keywords, topic_lower)
+    ]
+
+
+def _specialist_module_section(module: str) -> str:
+    if module == "prom_tool":
+        return f"""### MÔ-ĐUN — {_SPECIALIST_MODULE_LABEL[module]}
+> Phát hiện tín hiệu: đề tài có cấu phần xây dựng/kiểm định thang đo/bộ câu hỏi (PROM).
+
+- Thiết kế item + miền nội dung: [CẦN nhóm nghiên cứu xác định + item pool]
+- Độ giá trị nội dung (content validity): [CẦN hội đồng chuyên gia + hệ số CVI]
+- Độ giá trị cấu trúc: ☐ EFA  ☐ CFA — [CẦN cỡ mẫu đủ, thường ≥5–10 người/item]
+- Dịch thuật & thích nghi văn hóa (nếu công cụ gốc nước ngoài): forward–back translation + hội đồng chuyên gia [CẦN]
+- Độ tin cậy: Cronbach's α (nội tại, ngưỡng thường ≥0.70) [CẦN] · Test–retest ICC [CẦN khoảng thời gian lặp lại]
+- Độ giá trị hội tụ/phân biệt: [CẦN công cụ tham chiếu đã kiểm định]
+- Độ đáp ứng & MCID (nếu đo thay đổi theo thời gian): [CẦN]
+- Sai số đo (SEM/SDC), floor/ceiling effect: [CẦN]
+- Chuẩn báo cáo: COSMIN Reporting Guideline.
+- → Cân nhắc mời agent `cong-cu-do-luong` hỗ trợ chi tiết từng bước.
+"""
+    if module == "prognostic_model":
+        return f"""### MÔ-ĐUN — {_SPECIALIST_MODULE_LABEL[module]}
+> Phát hiện tín hiệu: đề tài xây dựng/kiểm định mô hình tiên lượng-dự báo mới.
+
+- Ứng viên dự báo (candidate predictors): [CẦN lý luận lâm sàng/y văn — KHÔNG data-dredging]
+- EPV/EPP đủ: [CẦN tính theo số biến dự kiến — quy tắc thường dùng ≥10 sự kiện/biến]
+- Xử lý dữ liệu thiếu: ☐ Multiple imputation [CẦN phương pháp cụ thể]
+- Hiệu chuẩn (calibration): calibration plot + calibration-in-the-large/slope [CẦN]
+- Phân biệt (discrimination): C-statistic/AUC (95%CI) [CẦN]
+- Kiểm định: ☐ Nội (bootstrap/cross-validation)  ☐ Ngoại (quần thể độc lập) [CẦN]
+- Decision Curve Analysis (DCA): [CẦN nếu mục tiêu hỗ trợ quyết định lâm sàng]
+- Trình bày mô hình: điểm số/nomogram [CẦN]
+- Nếu THẨM ĐỊNH mô hình có sẵn (không xây mới): dùng PROBAST thay vì mục trên.
+- Chuẩn báo cáo: TRIPOD+AI 2024.
+- → Cân nhắc mời agent `mo-hinh-tien-luong` hỗ trợ chi tiết từng bước.
+"""
+    if module == "economic":
+        return f"""### MÔ-ĐUN — {_SPECIALIST_MODULE_LABEL[module]}
+> Phát hiện tín hiệu: đề tài có cấu phần chi phí–hiệu quả/kinh tế y tế.
+
+- Góc nhìn phân tích: ☐ Xã hội  ☐ Người chi trả (BHYT)  ☐ Bệnh viện [CẦN XÁC NHẬN]
+- Khung thời gian + tỷ lệ chiết khấu: [CẦN]
+- Nhận diện–đo lường–định giá chi phí: [CẦN nguồn đơn giá thật — KHÔNG bịa]
+- Thước đo hiệu quả: ☐ QALY (CUA)  ☐ Đơn vị lâm sàng (CEA)  ☐ Tiền tệ (CBA) [CẦN]
+- ICER + ngưỡng sẵn lòng chi trả: [CẦN ngưỡng theo bối cảnh VN — có nguồn]
+- Phân tích độ nhạy: ☐ Một chiều  ☐ Xác suất (PSA) + đường cong CEAC [CẦN]
+- Nếu là **Phân tích tác động ngân sách (BIA)**: dùng ISPOR BIA GPP II 2014 RIÊNG — CHEERS 2022 KHÔNG bao BIA.
+- Chuẩn báo cáo: CHEERS 2022 (CEA/CUA/CBA).
+- → Cân nhắc mời agent `kinh-te-y-te` hỗ trợ chi tiết từng bước.
+"""
+    # qualitative
+    return f"""### MÔ-ĐUN — {_SPECIALIST_MODULE_LABEL[module]}
+> Phát hiện tín hiệu: đề tài có cấu phần định tính hoặc hỗn hợp (mixed-methods).
+
+- Cách tiếp cận: ☐ Hiện tượng học  ☐ Lý thuyết nền (grounded theory)
+  ☐ Phân tích nội dung/chủ đề  ☐ Nghiên cứu trường hợp [CẦN]
+- Lấy mẫu có chủ đích + tiêu chí bão hòa dữ liệu: [CẦN]
+- Bộ câu hỏi phỏng vấn/nhóm tiêu điểm: [CẦN soạn + thử nghiệm trước]
+- Phương pháp mã hóa/phân tích: ☐ Thematic  ☐ Framework analysis [CẦN]
+- Độ tin cậy (trustworthiness): credibility/transferability/dependability/
+  confirmability [CẦN biện pháp cụ thể cho từng tiêu chí]
+- Nếu HỖN HỢP (mixed-methods): thiết kế tích hợp ☐ Hội tụ
+  ☐ Giải thích tuần tự  ☐ Khám phá tuần tự + điểm tích hợp [CẦN]
+- Chuẩn báo cáo: COREQ (phỏng vấn/nhóm tiêu điểm) hoặc SRQR (tổng quát).
+- → Cân nhắc mời agent `nghien-cuu-dinh-tinh` hỗ trợ chi tiết từng bước.
+"""
+
+
+def specialist_modules_block(modules: list[str]) -> str:
+    """Ghép các mô-đun chuyên biệt được phát hiện thành 1 khối markdown.
+    Trả về chuỗi RỖNG nếu không phát hiện tín hiệu nào (không thêm mục thừa)."""
+    if not modules:
+        return ""
+    sections = "\n".join(_specialist_module_section(m) for m in modules)
+    return f"""
+---
+
+## PHẦN 8 — MÔ-ĐUN CHUYÊN BIỆT (phát hiện tín hiệu — cộng thêm, KHÔNG thay đổi thiết kế chính ở §1)
+
+> Đề tài có tín hiệu cần {len(modules)} năng lực chuyên biệt ngoài khung thiết kế/SAP chuẩn ở trên.
+> Đây là bổ sung PHƯƠNG PHÁP LUẬN — không thay cho §1–§7, chạy song song.
+
+{sections}"""
+
+
 def _read_pinned_design(out_dir) -> str:
     """Đọc study_meta.json['design_code'] (hoặc gate_params.G1.design). '' nếu không có."""
     import json as _json
@@ -469,6 +607,8 @@ def generate_g1_artifact(topic: str, study_name: str, question_type: str,
     bias_table = _bias_table(design["bias_controls"])
     es_section = _effect_size_section(effects)
     internal = design["internal_code"]
+    specialist_modules = detect_specialist_modules(topic)
+    specialist_block = specialist_modules_block(specialist_modules)
 
     # Chọn SAP template theo thiết kế
     if internal == "rct":
@@ -793,7 +933,7 @@ Power mục tiêu: ___% (thường 80% hoặc 90%)
 1. Bác sĩ xem §3 (effect size) → chọn ước lượng phù hợp
 2. Chạy G3: `python tools/run_g3_auto.py --study {study_name}`
 3. Sau khi có cỡ mẫu, ký SAP → mở G4
-
+{specialist_block}
 ---
 
 *[BẢN NHÁP TỰ ĐỘNG] — Cần bác sĩ kiểm chứng. PMID/DOI trong §3 là THẬT từ PubMed.*
@@ -914,7 +1054,8 @@ def export_docx_g1(artifact_md: str, study_name: str, out_dir: Path) -> Optional
 
 def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
                          design: dict, effects: list, guardrail: dict,
-                         artifact_path: Path, docx_path: Optional[Path]) -> Path:
+                         artifact_path: Path, docx_path: Optional[Path],
+                         specialist_modules: Optional[list[str]] = None) -> Path:
     cp = {
         "study": study_name, "gate": "G1",
         "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN THIẾT KẾ + ĐIỀN PICO O VÀO SAP",
@@ -926,6 +1067,7 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
             "reporting_standard": design["reporting_standard"],
             "alternative_1": design["alternative_1"],
         },
+        "specialist_modules": specialist_modules or [],
         "effect_sizes_found": len(effects),
         "effect_size_samples": effects[:3] if effects else [],
         "guardrail": {
@@ -1046,6 +1188,10 @@ def main():
     md_path = out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
     md_path.write_text(artifact_md, encoding="utf-8")
     print(f"  → Lưu: {md_path}")
+    detected_modules = detect_specialist_modules(topic)
+    if detected_modules:
+        labels = ", ".join(_SPECIALIST_MODULE_LABEL[m] for m in detected_modules)
+        print(f"  → 🧩 Mô-đun chuyên biệt phát hiện: {labels}")
 
     # Guardrail
     print(f"\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
@@ -1065,8 +1211,10 @@ def main():
 
     # Checkpoint
     print(f"\n💾 Bước 7/7: Ghi checkpoint G1...")
+    specialist_modules = detect_specialist_modules(topic)
     cp_path = write_g1_checkpoint(
-        study, out_dir, question_type, design, effects, guardrail, md_path, docx_path
+        study, out_dir, question_type, design, effects, guardrail, md_path, docx_path,
+        specialist_modules=specialist_modules,
     )
     print(f"  → Lưu: {cp_path}")
 
