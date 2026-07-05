@@ -49,8 +49,8 @@ Bệnh mạn cần theo dõi · mức kiểm soát hiện tại (nếu có: HbA1
 | Bệnh mạn | Guideline neo (đối chiếu phiên bản hiện hành) |
 |---|---|
 | Đái tháo đường type 2 | ADA *Standards of Care* (cập nhật hằng năm) · BYT |
-| Tăng huyết áp | ACC/AHA 2017 hoặc ESC/ESH (bản hiện hành) · BYT |
-| Rối loạn lipid máu | ACC/AHA 2018 hoặc ESC/EAS 2019 (bản hiện hành) |
+| Tăng huyết áp | **2025 AHA/ACC** (Circulation 2025, DOI:10.1161/CIR.0000000000001356) hoặc **2024 ESC** (Eur Heart J 2024) — đã thay bản 2017/ESC cũ, xem chi tiết + PMID ở `playbooks-lam-sang/tang-huyet-ap.md` · BYT |
+| Rối loạn lipid máu | ACC/AHA hoặc ESC/EAS (bản hiện hành — đối chiếu năm ban hành mới nhất tại thời điểm dùng, KHÔNG neo cứng một năm cũ) |
 | Bệnh thận mạn (± ĐTĐ) | KDIGO (CKD / ĐTĐ-CKD, bản hiện hành) |
 | COPD | GOLD (cập nhật hằng năm) |
 | Hen | GINA (cập nhật hằng năm) |
