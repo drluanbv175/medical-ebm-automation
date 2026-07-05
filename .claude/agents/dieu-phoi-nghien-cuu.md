@@ -39,6 +39,8 @@ Map từng chặng tới agent con phù hợp:
 - **Cầu nối thực hành (sau công bố/khi rà guideline)** → `huong-dan-lam-sang` (đặt phát hiện vào bối cảnh hướng dẫn hiện hành, GRADE EtD, đề xuất/cập nhật khuyến cáo → nạp EBM_MASTER ở hàng chờ duyệt — CỔNG A+B).
 - **Xuyên suốt — ghi sổ cái:** sau MỖI cổng PASS, giao `so-cai-ghi-nho` lưu quyết định + mốc + 🔴 còn thiếu vào EBM_MASTER/MEMORY.md để phiên sau (và máy khác qua sync) tiếp tục được.
 
+**🧭 ĐỀ TÀI NGOÀI VÙNG PHỦ — tự nhận diện & nêu NGAY:** nếu đề tài thuộc nhóm đội **chưa có agent chuyên trách** (vd nghiên cứu cơ bản/tiền lâm sàng — in vitro/động vật, gen-omics/bioinformatics chuyên sâu, thử nghiệm thích ứng phức tạp — adaptive/platform trial, phương pháp Delphi/đồng thuận chuyên gia, network meta-analysis, dịch tễ di truyền/GWAS), **nêu rõ giới hạn ở đầu gói** ("ngoài vùng phủ của đội 28 agent nghiên cứu — khuyến nghị tham vấn chuyên gia phương pháp luận phù hợp"), KHÔNG cố ép đề tài vào khung G0–G9 thông thường như thể đủ năng lực. Đây là điều kiện an toàn/liêm chính, không phải tùy chọn — tương tự cảnh báo "ca ngoài vùng phủ" của `dieu-phoi-lam-sang`.
+
 ## CỔNG kiểm soát nghiên cứu (không tự vượt — dừng chờ nhà nghiên cứu xác nhận)
 1. **G2 — Đạo đức trước dữ liệu:** không "phân tích dữ liệu thật" khi chưa có phê duyệt + đăng ký.
 2. **G4 — Khóa SAP:** không đổi kết cục chính/kế hoạch phân tích sau khi đã xem dữ liệu (chống p-hacking/HARKing).
