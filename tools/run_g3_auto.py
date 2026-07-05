@@ -665,6 +665,7 @@ def main():
         "effect_quality": effect_quality,  # "labeled" (có 95%CI) / "crude" (thô) / None (do bác sĩ cung cấp tay)
         "n_per_group": n_per_group, "n_total": n_total, "n_adjusted": n_adjusted,
         "dropout": dropout, "formula_used": formula_used, "p_event": p_event,
+        "p0": args.p0,  # lưu tỷ lệ biến cố nhóm chứng → chạy lại KHÔNG mất (fix param recovery)
         "guardrail": status,
         "core_value": core,
         "pending_doctor_actions": [

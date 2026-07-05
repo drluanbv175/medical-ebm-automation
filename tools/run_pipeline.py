@@ -112,6 +112,7 @@ def _recover_params(gate: str, out_dir: Path, meta: dict) -> List[str]:
         et = mp.get("effect_type", cp.get("effect_type"))
         dr = mp.get("dropout", cp.get("dropout"))
         pe = mp.get("p_event", cp.get("p_event"))
+        p0 = mp.get("p0", cp.get("p0"))   # tỷ lệ biến cố nhóm chứng (chạy lại không mất)
         al = mp.get("alpha", cp.get("alpha"))
         pw = mp.get("power", cp.get("power"))
         if ev is not None:
@@ -122,6 +123,8 @@ def _recover_params(gate: str, out_dir: Path, meta: dict) -> List[str]:
             args += ["--dropout", str(dr)]
         if pe is not None:
             args += ["--p-event", str(pe)]
+        if p0 is not None:
+            args += ["--p0", str(p0)]
         if al is not None:
             args += ["--alpha", str(al)]
         if pw is not None:

@@ -32,7 +32,7 @@ GATE_ORDER = [f"G{i}" for i in range(11)]  # G0..G10
 GATE_DEPS: Dict[str, List[str]] = {
     "G0": [],
     "G1": ["G0"],
-    "G2": ["G0", "G1"],
+    "G2": ["G0", "G1", "G3"],   # + G3: G2 (đạo đức/ICF) nhúng cỡ mẫu N từ G3
     "G3": ["G0", "G1"],
     "G4": ["G3"],
     "G5": ["G0", "G1", "G3"],
