@@ -15,6 +15,7 @@ import json
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -66,20 +67,32 @@ def _run(script: str, extra_args: list[str] | None = None) -> subprocess.Complet
     )
 
 
+def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
+    """rmtree bền hơn trên Windows/OneDrive: xóa có thể "thành công" trong khi
+    thư mục chưa thực sự biến mất do khóa file/độ trễ đồng bộ — retry ngắn
+    tránh crash mkdir(exist_ok=False) ngay sau (cùng lớp bug đã vá ở
+    test_gate_blocked_contract.py 2026-07-05)."""
+    for _ in range(attempts):
+        if not d.exists():
+            return
+        shutil.rmtree(d, ignore_errors=True)
+        if not d.exists():
+            return
+        time.sleep(delay_s)
+
+
 @pytest.fixture
 def smoke_study():
     """Tạo G0 checkpoint giả lập, dọn dẹp exports/PYTEST-SMOKE-COHORT/ khi xong."""
-    if STUDY_DIR.exists():
-        shutil.rmtree(STUDY_DIR)
-    STUDY_DIR.mkdir(parents=True)
+    _rmtree_retry(STUDY_DIR)
+    STUDY_DIR.mkdir(parents=True, exist_ok=True)
     (STUDY_DIR / "G0_checkpoint.json").write_text(
         json.dumps(FIXTURE_G0_CHECKPOINT, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     try:
         yield STUDY
     finally:
-        if STUDY_DIR.exists():
-            shutil.rmtree(STUDY_DIR)
+        _rmtree_retry(STUDY_DIR)
 
 
 @pytest.mark.slow
