@@ -1,7 +1,7 @@
 # BẢN ĐỒ KẾT NỐI ĐỘI AGENT EBM (50 agent: 21 lâm sàng + 28 nghiên cứu + 1 guardrail)
 
 > Tài liệu tham chiếu dùng chung. Mô tả MẠNG LƯỚI thật giữa các agent: điểm vào · luồng · điểm cuối · cầu nối · hub dùng chung.
-> **Dựng từ đồ thị cạnh THẬT** (quét tham chiếu `` `agent` `` trong từng file `.claude/agents/*.md`, 2026-06-13) — KHÔNG bịa cạnh.
+> **Dựng từ đồ thị cạnh THẬT** (quét tham chiếu `` `agent` `` trong từng file `.claude/agents/*.md`, 2026-06-13; **tái quét 2026-07-05** sau 2 đợt thêm agent 48→50) — KHÔNG bịa cạnh.
 > Đồng bộ với `README.md`, `dieu-phoi-lam-sang.md`, `dieu-phoi-nghien-cuu.md`, `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`.
 > *Lưu ý:* đây là **bản đồ định tuyến cấp prompt** (agent gợi ý chuyển tiếp; nhạc trưởng điều phối). Không có agent nào tự thực thi bước của agent khác ngoài cơ chế điều phối.
 
@@ -10,15 +10,15 @@
 ## 1. ĐIỂM VÀO (router / nhạc trưởng)
 | Router | Kích hoạt khi | Phủ (out-degree) |
 |---|---|---|
-| **`dieu-phoi-lam-sang`** | nêu một CA/tình huống lâm sàng | 19 agent lâm sàng |
-| **`dieu-phoi-nghien-cuu`** | nêu một ĐỀ TÀI/câu hỏi nghiên cứu | 27 agent NC (= 28 agent NC − chính router) |
+| **`dieu-phoi-lam-sang`** | nêu một CA/tình huống lâm sàng | 23 agent con (lâm sàng + node dùng chung) |
+| **`dieu-phoi-nghien-cuu`** | nêu một ĐỀ TÀI/câu hỏi nghiên cứu | 29 agent con (= 30 tham chiếu thật − 1 cầu nối chéo sang `dieu-phoi-lam-sang`) |
 
-**Đọc cột out-degree:** mỗi router là MỘT điểm vào của hệ — `dieu-phoi-lam-sang` trỏ tới **19 agent lâm sàng + guardrail** (out=20), `dieu-phoi-nghien-cuu` trỏ tới **27 agent nghiên cứu + guardrail** (out=28) (đây là out-degree của TỪNG router, không phải tổng đội). Có **HAI node được CẢ HAI router trỏ tới** (đếm ở cả hai cột): cầu nối `huong-dan-lam-sang` và guardrail `tham-dinh-dau-ra`. 20 + 28 = 48 đã **đếm trùng 2 node dùng chung**; trừ trùng còn **46 agent con duy nhất**. Cộng 2 router ⇒ **48 agent** toàn đội. Hai router phủ **46/46** agent con — không có agent mồ côi.
+**Đọc cột out-degree (tái quét 2026-07-05):** mỗi router là MỘT điểm vào của hệ — `dieu-phoi-lam-sang` trỏ tới **23 agent con**, `dieu-phoi-nghien-cuu` trỏ tới **29 agent con** (đã loại 1 cầu nối chéo router→router sang `dieu-phoi-lam-sang`, không tính là "agent con"; đây là out-degree của TỪNG router, không phải tổng đội). Có **BỐN node được CẢ HAI router trỏ tới** (đếm ở cả hai cột): `huong-dan-lam-sang` · `tham-dinh-dau-ra` · `so-cai-ghi-nho` · `tham-dinh-grade-nnt` (tăng từ 2→4 node dùng chung so với lần quét 2026-06-13 — `so-cai-ghi-nho`/`tham-dinh-grade-nnt` nay được cả hai nhạc trưởng gọi). 23 + 29 = 52 đã **đếm trùng 4 node dùng chung**; trừ trùng còn **48 agent con duy nhất**. Cộng 2 router ⇒ **50 agent** toàn đội. Hai router phủ **48/48** agent con — không có agent mồ côi.
 
 ## 1bis. CHỐT KIỂM ĐẦU RA — GUARDRAIL DÙNG CHUNG (in-degree = 2, out-degree = 0)
 | Node | In-degree | Vai trò |
 |---|---|---|
-| **`tham-dinh-dau-ra`** | 2 (cả hai router) + 5 routine lâm sàng | Thẩm định đầu ra ĐỘC LẬP ở **bước cuối** mỗi nhạc trưởng/routine lâm sàng → ĐẠT/TRẢ-VỀ-SỬA theo **2 lớp rubric**: Lớp 1 LIÊM CHÍNH R1–R7 (mọi gói) + Lớp 2 CHẤT LƯỢNG Med-PaLM Q1–Q7 (gói lâm sàng — `_CHUAN-CHAT-LUONG-MEDPALM.md`); CẤM phát hành khi còn lỗi đỏ ở bất kỳ lớp nào; Q2/Q5 đỏ → chuyển bác sĩ. Node dùng chung (như `huong-dan-lam-sang`), đếm 1 lần trong tổng 48. Cơ chế & giới hạn: `_KIEM-DUYET-DOC-LAP.md`. |
+| **`tham-dinh-dau-ra`** | 2 (cả hai router) + 5 routine lâm sàng | Thẩm định đầu ra ĐỘC LẬP ở **bước cuối** mỗi nhạc trưởng/routine lâm sàng → ĐẠT/TRẢ-VỀ-SỬA theo **2 lớp rubric**: Lớp 1 LIÊM CHÍNH R1–R7 (mọi gói) + Lớp 2 CHẤT LƯỢNG Med-PaLM Q1–Q7 (gói lâm sàng — `_CHUAN-CHAT-LUONG-MEDPALM.md`); CẤM phát hành khi còn lỗi đỏ ở bất kỳ lớp nào; Q2/Q5 đỏ → chuyển bác sĩ. Node dùng chung (như `huong-dan-lam-sang`), đếm 1 lần trong tổng 50. Cơ chế & giới hạn: `_KIEM-DUYET-DOC-LAP.md`. |
 
 ## 2. ĐIỂM CUỐI (leaf — out-degree = 0, theo thiết kế)
 | Agent | In-degree | Vai trò |
@@ -48,8 +48,8 @@
   3. THẨM ĐỊNH     → tham-dinh-grade-nnt
   4. ÁP DỤNG 🔒A   → thang-diem-nguy-co + ke-don-an-toan + quyet-dinh-chung  (khuyến nghị có điều kiện)
   5. THEO DÕI 🔒B  → loi-dan-tuan-thu + theo-doi-benh-man (mạn) + du-phong-tam-soat → ket-qua-hoc-tap + cap-nhat-guideline
-  (nhánh chẩn đoán: chan-doan-xac-suat + thang-diem-nguy-co ; diễn giải CLS: dien-giai-can-lam-sang ; cầu thực hành: huong-dan-lam-sang)
-  (nhánh chuyên biệt: đau mạn → dau-man-tinh ; giảm nhẹ/cuối đời → cham-soc-giam-nhe ; trầm cảm/lo âu → tram-cam-lo-au [sau sàng lọc tự sát])
+  (nhánh chẩn đoán: chan-doan-xac-suat + thang-diem-nguy-co + tham-dinh-do-chinh-xac-chan-doan (thẩm định nghiên cứu độ chính xác test) ; diễn giải CLS: dien-giai-can-lam-sang ; cầu thực hành: huong-dan-lam-sang)
+  (nhánh chuyên biệt: đau mạn → dau-man-tinh ; giảm nhẹ/cuối đời → cham-soc-giam-nhe ; trầm cảm/lo âu → tram-cam-lo-au [sau sàng lọc tự sát] ; kháng đông trọn vòng → quan-ly-khang-dong [liều/tương tác vẫn qua ke-don-an-toan])
 ```
 Hub chẩn đoán `chan-doan-xac-suat` ↔ `khai-thac-benh-su-kham` ↔ `sang-loc-co-do` ↔ `pico-lam-sang` ↔ `thang-diem-nguy-co` ↔ `tham-dinh-grade-nnt`.
 
