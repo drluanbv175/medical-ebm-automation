@@ -17,6 +17,7 @@ sys.path.insert(0, str(TOOLS_DIR))
 from run_g3_auto import (  # noqa: E402
     InvalidEffectSizeError,
     n_auc,
+    n_continuous_md,
     n_log_rank,
     n_prevalence,
     n_two_proportion,
@@ -137,3 +138,48 @@ class TestNPrevalence:
             n_prevalence(0.0)
         with pytest.raises(InvalidEffectSizeError):
             n_prevalence(1.0)
+
+
+class TestNContinuousMD:
+    """Cỡ mẫu 2 nhóm độc lập, kết cục LIÊN TỤC (Mean Difference) — thêm
+    2026-07-06 sau khi chạy thật G0→G10 trên 1 đề tài RCT mới (đau khớp gối)
+    phát hiện design=rct/cohort + effect_type=MD KHÔNG có công thức tự động,
+    dù đây là loại kết cục PHỔ BIẾN NHẤT cho thử nghiệm về triệu chứng."""
+
+    def test_large_effect_d_1_0(self):
+        """SD=MD=1 (Cohen's d=1.0, effect lớn) → n=16/nhóm, khớp bảng chuẩn Cohen/Machin."""
+        assert n_continuous_md(md=1.0, sd=1.0, alpha=0.05, power=0.80) == 16
+
+    def test_medium_effect_d_0_5(self):
+        """SD=1, MD=0.5 (d=0.5, effect vừa) → n≈63/nhóm, khớp bảng chuẩn Cohen (n=64)."""
+        n = n_continuous_md(md=0.5, sd=1.0, alpha=0.05, power=0.80)
+        assert 60 <= n <= 66
+
+    def test_symmetric_direction(self):
+        """MD âm (giảm) và MD dương (tăng) cùng độ lớn phải cho CÙNG N."""
+        n_pos = n_continuous_md(md=1.5, sd=1.8, alpha=0.05, power=0.80)
+        n_neg = n_continuous_md(md=-1.5, sd=1.8, alpha=0.05, power=0.80)
+        assert n_pos == n_neg
+
+    def test_rejects_zero_or_negative_sd(self):
+        with pytest.raises(InvalidEffectSizeError):
+            n_continuous_md(md=1.0, sd=0)
+        with pytest.raises(InvalidEffectSizeError):
+            n_continuous_md(md=1.0, sd=-2.0)
+
+    def test_rejects_zero_md(self):
+        """MD=0 nghĩa là không có hiệu quả để phát hiện — không có N hữu hạn hợp lý."""
+        with pytest.raises(InvalidEffectSizeError):
+            n_continuous_md(md=0.0, sd=1.8)
+
+    def test_matches_real_rct_scenario_knee_oa(self):
+        """
+        Kịch bản thật dùng để chạy G0→G10 (2026-07-06): MD=1.5 (thang đau
+        NRS 0-10), SD≈1.82 suy từ 95%CI của Gohir 2021 JAMA Netw Open
+        (PMID 33620447, DOI 10.1001/jamanetworkopen.2021.0012): SE_diff =
+        (2.2-0.8)/(2×1.96) ≈0.357; SD = SE_diff/sqrt(1/48+1/57) ≈1.82
+        (giả định phương sai bằng nhau 2 nhóm, n=48/57 theo bài báo).
+        Xác nhận N ra số hữu hạn hợp lý cho một RCT triệu chứng cỡ vừa.
+        """
+        n = n_continuous_md(md=1.5, sd=1.82, alpha=0.05, power=0.80)
+        assert 10 <= n <= 40

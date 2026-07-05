@@ -112,6 +112,30 @@ def n_auc(auc, alpha=0.05, power=0.80):
         sigma2 = 0.05
     return math.ceil((za + zb) ** 2 * sigma2 / (auc - 0.5) ** 2)
 
+def n_continuous_md(md, sd, alpha=0.05, power=0.80):
+    """
+    Cỡ mẫu so sánh HAI TRUNG BÌNH độc lập (kết cục LIÊN TỤC — vd thang đau
+    NRS/VAS, WOMAC, chất lượng sống), 2 nhóm cỡ bằng nhau, giả định phương
+    sai bằng nhau (Machin/Campbell/Fayers — công thức chuẩn dùng trong PASS/
+    G*Power cho superiority trial kết cục liên tục):
+        n mỗi nhóm = 2 × (SD/MD)² × (zα/2 + zβ)²
+    THÊM 2026-07-06: trước đây design RCT/cohort + effect_type=MD (kết cục
+    liên tục) KHÔNG có công thức tự động nào — rơi vào nhánh "chưa có công
+    thức", dù đây là loại kết cục PHỔ BIẾN NHẤT cho thử nghiệm về triệu chứng
+    (đau, chức năng, chất lượng sống). Phát hiện qua chạy thật G0→G10 trên
+    một đề tài RCT mới (đau khớp gối, kết cục NRS liên tục).
+    """
+    if sd is None or sd <= 0:
+        raise InvalidEffectSizeError(f"SD phải dương, nhận được SD={sd}")
+    if md is None or abs(md) < 1e-9:
+        raise InvalidEffectSizeError(
+            f"MD={md} bằng 0 (không có hiệu quả để phát hiện) — cần chênh lệch "
+            "trung bình thực tế khác 0."
+        )
+    za = z(alpha / 2)
+    zb = z(1 - power)
+    return math.ceil(2 * (sd / abs(md)) ** 2 * (za + zb) ** 2)
+
 def extract_best_effect(effect_samples):
     """
     Trích xuất ước lượng hiệu quả tốt nhất từ danh sách G1.
@@ -144,7 +168,7 @@ def extract_best_effect(effect_samples):
                     return float(val), "ARR%", want_quality
     return None, None, None
 
-def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_event=0.30, p0=0.30):
+def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_event=0.30, p0=0.30, sd=None):
     """Bảng phân tích độ nhạy: power × effect_size → N."""
     powers = [0.70, 0.80, 0.90]
     mults = [0.80, 1.00, 1.20]  # -20%, cơ sở, +20%
@@ -154,12 +178,14 @@ def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_eve
         for m in mults:
             ev = effect_val * m
             try:
+                if effect_type == "MD" and design_code in ("rct", "cohort") and sd:
+                    n = n_continuous_md(ev, sd, alpha, pwr) * 2
                 # SỬA: nhánh cũ "elif design_code in ('cohort',):" không kiểm
                 # effect_type nên bắt luôn cả ARR% của cohort, đẩy giá trị %
                 # (vd 11.2) vào n_log_rank() như thể là HR — ra N vô nghĩa
                 # (N=4) mà không có cờ [CẦN] hay lỗi nào. Sửa: kiểm effect_type
                 # TRƯỚC design_code, đồng bộ với logic thật trong main().
-                if effect_type == "ARR%" and design_code in ("rct", "cohort", "case_control"):
+                elif effect_type == "ARR%" and design_code in ("rct", "cohort", "case_control"):
                     p1, p2 = p0, p0 - ev / 100
                     if p2 <= 0: p2 = 0.05
                     n = n_two_proportion(p1, p2, alpha, pwr) * 2
@@ -194,7 +220,7 @@ def load_checkpoint(path):
             return json.load(f)
     return {}
 
-def guardrail_check(artifact, n_adjusted, effect_val):
+def guardrail_check(artifact, n_adjusted, effect_val, missing_sd=False):
     """Kiểm guardrail R1-R7 cho G3."""
     errors, warnings = [], []
     # R1 — Không bịa PMID
@@ -242,13 +268,17 @@ def guardrail_check(artifact, n_adjusted, effect_val):
     # design/effect chưa có công thức bị fabricate N=100/200 và vẫn PASS lặng
     # lẽ; nay N=0 hợp lệ nhưng PHẢI hiện rõ để bác sĩ biết cần tính thủ công)
     if effect_val and n_adjusted == 0:
-        warnings.append("R8 ⚠️ N=0 — công thức tự động chưa hỗ trợ tổ hợp design/effect này, "
-                         "cần bác sĩ/thống kê viên tính thủ công (xem formula_used)")
+        if missing_sd:
+            warnings.append("R8 ⚠️ N=0 — có MD nhưng THIẾU SD (độ lệch chuẩn), "
+                             "cần bác sĩ/thống kê viên cấp SD từ pilot/y văn (xem formula_used)")
+        else:
+            warnings.append("R8 ⚠️ N=0 — công thức tự động chưa hỗ trợ tổ hợp design/effect này, "
+                             "cần bác sĩ/thống kê viên tính thủ công (xem formula_used)")
     return errors, warnings
 
 def generate_artifact(study, topic, design_code, design_primary, alpha, power, effect_val, effect_type,
                       n_per_group, n_total, n_adjusted, dropout, formula_used, sens_rows, sens_mults,
-                      p_event, run_date):
+                      p_event, run_date, sd=None):
     """Sinh A4 — Kế hoạch cỡ mẫu."""
     study_safe = study.replace(" ", "-")
     lines = [
@@ -273,6 +303,11 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         ]
         if design_code in ("cohort", "rct") and effect_type == "HR":
             lines.append(f"| Tỷ lệ biến cố nền | {p_event*100:.0f}% | [CẦN XÁC NHẬN — từ y văn/pilot] |")
+        if design_code in ("cohort", "rct") and effect_type == "MD":
+            if sd is not None and sd > 0:
+                lines.append(f"| Độ lệch chuẩn (SD) kết cục | {sd:.2f} | [CẦN XÁC NHẬN — từ y văn/pilot] |")
+            else:
+                lines.append("| Độ lệch chuẩn (SD) kết cục | **[CẦN BÁC SĨ ẤN ĐỊNH]** | Không thể tự trích từ abstract |")
     else:
         lines += [
             "| Effect size | **[CẦN BÁC SĨ ẤN ĐỊNH]** | Không tìm được từ G0 |",
@@ -412,6 +447,8 @@ def main():
     parser.add_argument("--p0", type=float, default=0.30, help="Tỷ lệ biến cố nhóm chứng")
     parser.add_argument("--dropout", type=float, default=0.20)
     parser.add_argument("--p-event", type=float, default=0.30, help="Tỷ lệ biến cố tổng thể (log-rank)")
+    parser.add_argument("--sd", type=float, default=None,
+                         help="Độ lệch chuẩn kết cục liên tục (bắt buộc khi --effect-type MD)")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
 
@@ -485,6 +522,7 @@ def main():
     n_per_group, n_total, n_adjusted = 0, 0, 0
     formula_used = ""
     sens_rows, sens_mults = [], [0.80, 1.00, 1.20]
+    missing_sd = False  # THÊM: cờ riêng cho ca "có MD nhưng thiếu SD" — khác "chưa có công thức"
 
     if effect_val:
         try:
@@ -522,6 +560,29 @@ def main():
                 n_total = n_per_group * 2
                 n_adjusted = math.ceil(n_total / (1 - dropout))
                 formula_used = f"Schoenfeld log-rank: d={n_events} biến cố"
+            elif design_code in ("rct", "cohort") and effect_type == "MD":
+                # THÊM 2026-07-06: kết cục LIÊN TỤC (đau/chức năng/chất lượng
+                # sống) — loại kết cục PHỔ BIẾN NHẤT cho RCT triệu chứng,
+                # trước đây KHÔNG có công thức nào (rơi vào nhánh else, N=0
+                # với thông báo chung chung "chưa có công thức"). MD cần thêm
+                # SD (độ lệch chuẩn) mà HR/OR/RR/ARR% không cần — SD KHÔNG có
+                # sẵn trong G0/G1 (không trích được từ abstract một cách đáng
+                # tin), nên PHẢI do bác sĩ/thống kê viên cấp qua --sd, hệ
+                # KHÔNG bịa SD để "cho ra số".
+                if args.sd is None or args.sd <= 0:
+                    missing_sd = True
+                    n_per_group = n_total = n_adjusted = 0
+                    formula_used = (f"[CẦN — có MD={effect_val:.2f} (kết cục liên tục) nhưng THIẾU SD "
+                                     "(độ lệch chuẩn) để tính cỡ mẫu. Bác sĩ/thống kê viên cấp qua "
+                                     "--sd <giá_trị> (lấy từ pilot/y văn cùng kết cục, ghi rõ nguồn "
+                                     "PMID/DOI) — hệ KHÔNG bịa SD.]")
+                    print(f"  ⚠️  Có MD={effect_val} nhưng THIẾU --sd — KHÔNG bịa SD, cần bác sĩ cấp")
+                else:
+                    n_per_group = n_continuous_md(effect_val, args.sd, alpha, power)
+                    n_total = n_per_group * 2
+                    n_adjusted = math.ceil(n_total / (1 - dropout))
+                    formula_used = (f"Two-sample continuous (Machin/Campbell/Fayers): "
+                                     f"n=2×(SD/MD)²×(zα/2+zβ)² với MD={effect_val:.2f}, SD={args.sd:.2f}")
             elif design_code in ("rct", "cohort", "case_control") and effect_type == "ARR%":
                 # SỬA: trước đây "cohort + ARR%" (tổ hợp THỰC TẾ THƯỜNG GẶP —
                 # đã xảy ra đúng với ca SGLT2-HFpEF trong phiên này) rơi vào
@@ -567,7 +628,7 @@ def main():
                 print(f"  ⚠️  Không có công thức tự động cho design={design_code} + "
                       f"effect_type={effect_type} — KHÔNG bịa số, cần bác sĩ tính thủ công")
             if n_total:
-                sens_rows, sens_mults = sensitivity_table(design_code, n_total, effect_val, effect_type, alpha, p_event, args.p0)
+                sens_rows, sens_mults = sensitivity_table(design_code, n_total, effect_val, effect_type, alpha, p_event, args.p0, args.sd)
                 print(f"  → N mỗi nhóm: {n_per_group}, N tổng: {n_total}, N điều chỉnh: {n_adjusted}")
         except InvalidEffectSizeError as e:
             print(f"❌ LỖI EFFECT SIZE: {e}")
@@ -583,14 +644,14 @@ def main():
     artifact = generate_artifact(
         study, topic, design_code, design_primary, alpha, power,
         effect_val, effect_type, n_per_group, n_total, n_adjusted,
-        dropout, formula_used, sens_rows, sens_mults, p_event, run_date
+        dropout, formula_used, sens_rows, sens_mults, p_event, run_date, args.sd
     )
     md_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md"
     md_path.write_text(artifact, encoding="utf-8")
     print(f"  → Lưu: {md_path} ({len(artifact)//1000}KB)")
 
     print(f"🛡️  Bước 5/6: Kiểm guardrail R1-R7...")
-    errors, warnings = guardrail_check(artifact, n_adjusted, effect_val)
+    errors, warnings = guardrail_check(artifact, n_adjusted, effect_val, missing_sd)
     for w in warnings:
         print(f"  {w}")
     for e in errors:
@@ -626,6 +687,23 @@ def main():
                     "effect_size": "<CẦN BÁC SĨ CẤP — kèm PMID/DOI nguồn hoặc MCID>",
                     "effect_type": "<HR|OR|RR|ARR%|AUC>"}}},
             )
+        elif missing_sd:
+            # THÊM 2026-07-06: phân biệt "có MD nhưng thiếu SD" (CÓ công thức,
+            # chỉ thiếu 1 tham số) với "tổ hợp chưa có công thức tự động" —
+            # thông báo chung chung ở nhánh else phía dưới sẽ SAI (nói "chưa
+            # có công thức" trong khi thật ra có, chỉ thiếu SD).
+            need = GC.needs_input(
+                GC.REASON_MISSING_EFFECT_SIZE,
+                f"G3 có MD={effect_val:.2f} (kết cục liên tục) nhưng THIẾU SD "
+                "(độ lệch chuẩn) để tính cỡ mẫu. Hệ KHÔNG bịa SD — bác sĩ/thống "
+                "kê viên cần cấp SD từ pilot/y văn cùng kết cục (ghi nguồn "
+                "PMID/DOI hoặc MCID).",
+                f'python tools/run_g3_auto.py --study {study} --effect-size {effect_val} '
+                '--effect-type MD --sd <giá_trị>',
+                must_not_fabricate=["sd"],
+                study_meta_patch={"gate_params": {"G3": {
+                    "sd": "<CẦN BÁC SĨ CẤP — kèm PMID/DOI nguồn hoặc MCID>"}}},
+            )
         else:
             need = GC.needs_input(
                 GC.REASON_MISSING_SAMPLE_SIZE,
@@ -652,9 +730,11 @@ def main():
     # PIN durable: nếu bác sĩ cấp effect size qua CLI → ghi vào study_meta.json để
     # CHẠY LẠI (chỉ với --study) KHÔNG mất input (đóng vòng param-loss ở re-run).
     if args.effect_size is not None and args.effect_type:
-        GC.ensure_study_meta(out_dir, seed={"gate_params": {"G3": {
-            "effect_size": args.effect_size, "effect_type": args.effect_type,
-            "dropout": dropout, "p_event": p_event}}})
+        seed_g3 = {"effect_size": args.effect_size, "effect_type": args.effect_type,
+                   "dropout": dropout, "p_event": p_event}
+        if args.sd is not None:
+            seed_g3["sd"] = args.sd
+        GC.ensure_study_meta(out_dir, seed={"gate_params": {"G3": seed_g3}})
 
     cp = {
         "gate": "G3", "study": study, "run_date": run_date,
@@ -666,6 +746,7 @@ def main():
         "n_per_group": n_per_group, "n_total": n_total, "n_adjusted": n_adjusted,
         "dropout": dropout, "formula_used": formula_used, "p_event": p_event,
         "p0": args.p0,  # lưu tỷ lệ biến cố nhóm chứng → chạy lại KHÔNG mất (fix param recovery)
+        "sd": args.sd,  # lưu SD kết cục liên tục (effect_type=MD) → chạy lại KHÔNG mất
         "guardrail": status,
         "core_value": core,
         "pending_doctor_actions": [

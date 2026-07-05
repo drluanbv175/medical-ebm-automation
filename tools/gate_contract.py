@@ -133,6 +133,7 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         "effect_type": None,          # HR/OR/RR/ARR%/AUC/MD
         "dropout": None,              # vd 0.15
         "p_event": None,              # tỷ lệ biến cố nền (log-rank)
+        "sd": None,                   # độ lệch chuẩn kết cục liên tục (bắt buộc khi effect_type=MD)
     },
 }
 
@@ -163,15 +164,36 @@ def ensure_study_meta(out_dir: Path, *, seed: Optional[Dict[str, Any]] = None,
     changed = False
 
     # 1) Seed (title/topic/query_en/design_code…) — chỉ điền khi THIẾU/để trống.
-    for k, v in (seed or {}).items():
-        if v is None:
-            meta.setdefault(k, None)
-            if k not in meta:
-                changed = True
-            continue
-        if not meta.get(k):
-            meta[k] = v
-            changed = True
+    # SỬA 2026-07-06: seed lồng nhau (vd {"gate_params": {"G3": {...}}}) trước
+    # đây KHÔNG BAO GIỜ được merge một khi khóa cấp 1 ("gate_params") đã tồn
+    # tại — "if not meta.get(k)" coi cả dict con (dù rỗng bên trong) là "đã có
+    # giá trị" nên bỏ qua toàn bộ, làm mọi lệnh persist effect_size/SD/dropout
+    # từ run_g3_auto.py (gọi SAU khi G0 đã tạo skeleton gate_params) thành
+    # KHÔNG-LÀM-GÌ âm thầm — phát hiện qua chạy thật G0→G10 trên đề tài mới.
+    # Nay đệ quy vào dict con, chỉ điền SUB-KEY còn thiếu/rỗng, giữ nguyên
+    # đúng nguyên tắc "không đè giá trị bác sĩ đã điền" nhưng ở MỌI cấp độ.
+    def _fill_recursive(dst: Dict[str, Any], src: Dict[str, Any]) -> bool:
+        did_change = False
+        for kk, vv in src.items():
+            if isinstance(vv, dict):
+                if not isinstance(dst.get(kk), dict):
+                    dst[kk] = {}
+                    did_change = True
+                if _fill_recursive(dst[kk], vv):
+                    did_change = True
+                continue
+            if vv is None:
+                if kk not in dst:
+                    dst[kk] = None
+                    did_change = True
+                continue
+            if not dst.get(kk):
+                dst[kk] = vv
+                did_change = True
+        return did_change
+
+    if _fill_recursive(meta, seed or {}):
+        changed = True
 
     # 2) Cờ bằng-chứng-đời-thực — chỉ thêm nếu key chưa tồn tại (giữ nguyên nếu bác sĩ đã bật).
     for k, v in _META_DEFAULTS.items():
