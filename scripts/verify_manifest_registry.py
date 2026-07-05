@@ -3,8 +3,8 @@
 verify_manifest_registry — Self-check manifest in-repo + verify registry
 FULL_SCOPE_A (V4.3, A5/A6). Offline, deterministic, không network.
 
-Exit 0 nếu: manifest self-check khớp, 48 agent, tất cả hash-verified,
-đủ 4 required agent. Ngược lại exit 1.
+Exit 0 nếu: manifest self-check khớp, >= MINIMUM_AGENT_COUNT agent, tất cả
+hash-verified, đủ 4 required agent. Ngược lại exit 1.
 """
 from __future__ import annotations
 

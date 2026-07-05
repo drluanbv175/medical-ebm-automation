@@ -21,6 +21,7 @@ import json
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -64,17 +65,29 @@ def _load(study_dir: Path, gate: str) -> dict:
     return json.loads((study_dir / f"{gate}_checkpoint.json").read_text(encoding="utf-8"))
 
 
+def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
+    """rmtree bền hơn trên Windows/OneDrive: xóa có thể "thành công im lặng"
+    (ignore_errors=True) trong khi thư mục chưa thực sự biến mất do khóa file/
+    độ trễ đồng bộ — retry ngắn tránh crash mkdir(exist_ok=False) ở lần sau."""
+    for _ in range(attempts):
+        if not d.exists():
+            return
+        shutil.rmtree(d, ignore_errors=True)
+        if not d.exists():
+            return
+        time.sleep(delay_s)
+
+
 @pytest.fixture
 def study_dir(request):
     name = f"PYTEST-BLOCK-{request.node.name[-24:].replace('[', '').replace(']', '')}"
     d = REPO_ROOT / "exports" / name
-    if d.exists():
-        shutil.rmtree(d, ignore_errors=True)
-    d.mkdir(parents=True)
+    _rmtree_retry(d)
+    d.mkdir(parents=True, exist_ok=True)
     try:
         yield d
     finally:
-        shutil.rmtree(d, ignore_errors=True)
+        _rmtree_retry(d)
 
 
 # ── 1. G3 THIẾU effect size → BLOCKED graceful, KHÔNG false-PASS ─────────────
