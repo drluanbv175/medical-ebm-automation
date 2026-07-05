@@ -46,12 +46,14 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 
 # Self-check: SHA-256 của CHÍNH file manifest in-repo (chống sửa lén manifest).
 # Cập nhật giá trị này khi tái sinh manifest có chủ đích (baseline đã khóa V4.2.1).
-# Tái sinh 2026-07-05: 48→50 agent (thêm quan-ly-khang-dong,
-# tham-dinh-do-chinh-xac-chan-doan) + nội dung agent khác đã cập nhật hợp lệ
-# (xem sync/memory) → chạy `scripts/regenerate_agent_manifest.py --write` rồi
-# dán giá trị self-check mới vào đây.
+# Tái sinh 2026-07-05 (lần 2): nội dung theo-doi-benh-man.md cập nhật guideline
+# THA/lipid (2017/2018/2019 → 2025 AHA/ACC + bản hiện hành) → hash trôi lại dù
+# số agent (50) không đổi. BÀI HỌC: manifest phải tái sinh sau MỌI lần sửa NỘI
+# DUNG agent, không chỉ khi số lượng đổi → chạy
+# `scripts/regenerate_agent_manifest.py --write` rồi dán giá trị self-check mới
+# vào đây MỖI LẦN sync agent .md đã sửa sang medical-ebm-automation/.claude/agents/.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "a76a5d1c36a7a0b82bbf408b4a766e6cce7b428342dc4d4610ffb57063fa73cc"
+    "c235dbe8ca873dd571475f5066cb2bdc43854c9afdff854fbcc176826e22f318"
 )
 
 MINIMUM_AGENT_COUNT = 50
