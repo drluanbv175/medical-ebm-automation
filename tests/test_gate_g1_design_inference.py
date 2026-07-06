@@ -17,7 +17,7 @@ from pathlib import Path
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
 
-from run_g1_auto import infer_study_design  # noqa: E402
+from run_g1_auto import check_topic_design_consistency, infer_study_design  # noqa: E402
 
 # Evidence landscape KHÔNG bão hòa — tình huống phổ biến, không phải hiếm gặp
 # (bão hòa RCT/SR có thể che giấu bug vì trùng hợp rơi đúng nhánh cần).
@@ -84,3 +84,43 @@ class TestExplicitQuestionTypeStillHonored:
     def test_explicit_harm_without_keyword_in_topic(self):
         d = infer_study_design("harm", _GAPS, "Tác dụng phụ của một loại thuốc mới")
         assert d["internal_code"] == "case_control"
+
+
+class TestGuardrailTopicDesignConsistency:
+    """R6 (guardrail_check_g1): đối chiếu ngược từ khóa thiết kế trong topic
+    với design_code CUỐI CÙNG — lớp phòng thủ thứ 2, độc lập với việc
+    infer_study_design() có bắt đúng từ khóa hay không (bắt được cả trường
+    hợp bác sĩ pin tay sai qua study_meta.json). Thêm 2026-07-06."""
+
+    def test_warns_when_case_control_topic_but_cohort_chosen(self):
+        """Mô phỏng CHÍNH bug lịch sử: topic ghi rõ bệnh-chứng nhưng
+        design_code cuối cùng lại là cohort."""
+        warns = check_topic_design_consistency(
+            "Yếu tố nguy cơ nhiễm khuẩn vết mổ sau phẫu thuật thay khớp háng: nghiên cứu bệnh-chứng",
+            "cohort",
+        )
+        assert len(warns) == 1
+        assert "case_control" in warns[0]
+
+    def test_no_warning_when_design_matches_keyword(self):
+        warns = check_topic_design_consistency(
+            "Yếu tố nguy cơ nhiễm khuẩn vết mổ sau phẫu thuật thay khớp háng: nghiên cứu bệnh-chứng",
+            "case_control",
+        )
+        assert warns == []
+
+    def test_no_warning_when_topic_has_no_explicit_keyword(self):
+        """Topic RCT thông thường không có từ khóa đặc thù nào → không cảnh
+        báo giả (tránh làm phiền bác sĩ với warning vô căn cứ)."""
+        warns = check_topic_design_consistency(
+            "Hiệu quả metformin trong kiểm soát đường huyết ở bệnh nhân tiền đái tháo đường",
+            "rct",
+        )
+        assert warns == []
+
+    def test_warns_for_systematic_review_mismatch(self):
+        warns = check_topic_design_consistency(
+            "Tổng quan hệ thống về statin và biến cố tim mạch", "cohort",
+        )
+        assert len(warns) == 1
+        assert "sr_ma" in warns[0]

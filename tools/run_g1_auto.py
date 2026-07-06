@@ -318,6 +318,65 @@ def _apply_design_pin(design: dict, pinned: str) -> dict:
     return d
 
 
+# Bộ từ khóa khai báo thiết kế TƯỜNG MINH trong topic — DÙNG CHUNG giữa suy
+# luận thiết kế (infer_study_design) và guardrail đối chiếu ngược
+# (check_topic_design_consistency ở guardrail_check_g1), để 1 chỗ sửa không
+# lệch pha với chỗ kia (đúng lớp bug case-control/harm đã xảy ra thật, sửa
+# 2026-07-06 — 4/5 nhánh có keyword-detect, riêng "harm" ban đầu bị bỏ sót).
+DESIGN_KEYWORD_HINTS = {
+    "sr": ["tổng quan", "systematic review", "meta-analysis", "tong quan"],
+    "diagnosis": ["chẩn đoán", "chan doan", "độ nhạy", "do nhay", "auc", "sensitivity"],
+    "prognosis": ["tiên lượng", "tien luong", "prognosis", "sống còn", "song con",
+                  "tử vong", "tu vong"],
+    # Chỉ khớp cụm từ TƯỜNG MINH khai báo thiết kế (không dùng "yếu tố nguy cơ"
+    # đơn lẻ — cụm này quá chung, cũng xuất hiện ở nhiều đề tài cohort).
+    "harm": ["bệnh-chứng", "bệnh chứng", "benh-chung", "benh chung",
+             "case-control", "case control", "ca-chứng", "ca chứng",
+             "nested case-control", "nested case control"],
+    "descriptive": ["tỷ lệ", "ty le", "prevalence", "mô tả", "mo ta", "tần suất",
+                    # Nghiên cứu dịch vụ y tế/khảo sát: hài lòng, khảo sát, thực
+                    # trạng → cắt ngang mô tả (trước rơi vào nhánh evidence->cohort sai).
+                    "hài lòng", "hai long", "satisfaction", "khảo sát", "khao sat",
+                    "survey", "thực trạng", "thuc trang", "kiến thức thái độ",
+                    "kap", "chất lượng dịch vụ", "chat luong dich vu"],
+}
+
+# question_type (từ khóa phát hiện) → internal_code KỲ VỌNG tương ứng, dùng
+# cho guardrail đối chiếu ngược (không dùng để suy luận — suy luận vẫn qua
+# infer_study_design, có logic chọn giữa case_control/cohort tùy ngữ cảnh).
+_KEYWORD_TO_EXPECTED_INTERNAL = {
+    "sr": "sr_ma",
+    "diagnosis": "diagnostic",
+    "prognosis": "cohort",
+    "harm": "case_control",
+    "descriptive": "cross_sectional",
+}
+
+
+def check_topic_design_consistency(topic: str, chosen_internal_code: str) -> list:
+    """
+    Đối chiếu từ khóa thiết kế TƯỜNG MINH trong tên đề tài với design_code đã
+    chọn CUỐI CÙNG (sau mọi override/pin) — bắt các ca thiết kế bị suy nhầm dù
+    topic đã khai rõ, ngay cả khi nguyên nhân không phải thiếu keyword-detect
+    (vd bác sĩ pin sai tay, hoặc future bug tương tự). Trả về list cảnh báo
+    (KHÔNG phải lỗi cứng — bác sĩ có thể có lý do chính đáng chọn khác, guardrail
+    chỉ nhắc xác nhận, không tự chặn). Thêm 2026-07-06 sau kiểm định đối kháng
+    vòng 2 (khuyến nghị độc lập từ 2 cụm kiểm toán khác nhau).
+    """
+    topic_lower = topic.lower()
+    warns = []
+    for qtype, kws in DESIGN_KEYWORD_HINTS.items():
+        if _kw_in(kws, topic_lower):
+            expected = _KEYWORD_TO_EXPECTED_INTERNAL[qtype]
+            if chosen_internal_code != expected:
+                warns.append(
+                    f"R6 ⚠️ Tên đề tài có từ khóa gợi ý thiết kế '{expected}' nhưng "
+                    f"design_code đã chọn là '{chosen_internal_code}' — bác sĩ xác nhận "
+                    "đây đúng ý định, hay cần pin lại qua study_meta.json['design_code']."
+                )
+    return warns
+
+
 def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     """
     Suy luận loại thiết kế từ câu hỏi + bức tranh evidence từ G0.
@@ -328,30 +387,15 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     topic_lower = topic.lower()
 
     # ── Phát hiện từ khóa thiết kế tường minh trong topic ──
-    if _kw_in(["tổng quan", "systematic review", "meta-analysis", "tong quan"], topic_lower):
+    if _kw_in(DESIGN_KEYWORD_HINTS["sr"], topic_lower):
         question_type = "sr"
-    elif _kw_in(["chẩn đoán", "chan doan", "độ nhạy", "do nhay", "auc", "sensitivity"], topic_lower):
+    elif _kw_in(DESIGN_KEYWORD_HINTS["diagnosis"], topic_lower):
         question_type = "diagnosis"
-    elif _kw_in(["tiên lượng", "tien luong", "prognosis", "sống còn", "song con", "tử vong", "tu vong"], topic_lower):
+    elif _kw_in(DESIGN_KEYWORD_HINTS["prognosis"], topic_lower):
         question_type = "prognosis"
-    # THÊM 2026-07-06: 4 nhánh sr/diagnosis/prognosis/descriptive đều có phát
-    # hiện từ khóa tường minh, riêng "harm" (case-control) thì KHÔNG — phát
-    # hiện qua chạy thật G0→G10 trên đề tài case-control mới (bệnh nhiễm
-    # khuẩn vết mổ) khiến thiết kế bị suy nhầm thành cohort xuyên suốt cả
-    # chuỗi (G3 dùng sai công thức Schoenfeld thay vì two-proportion đã có
-    # sẵn cho case-control, G7 viết Methods/STROBE checklist sai thiết kế).
-    # Chỉ khớp cụm từ TƯỜNG MINH khai báo thiết kế (không dùng "yếu tố nguy
-    # cơ" đơn lẻ — cụm này quá chung, cũng xuất hiện ở nhiều đề tài cohort).
-    elif _kw_in(["bệnh-chứng", "bệnh chứng", "benh-chung", "benh chung",
-                 "case-control", "case control", "ca-chứng", "ca chứng",
-                 "nested case-control", "nested case control"], topic_lower):
+    elif _kw_in(DESIGN_KEYWORD_HINTS["harm"], topic_lower):
         question_type = "harm"
-    elif _kw_in(["tỷ lệ", "ty le", "prevalence", "mô tả", "mo ta", "tần suất",
-                 # Nghiên cứu dịch vụ y tế/khảo sát: hài lòng, khảo sát, thực trạng
-                 # → cắt ngang mô tả (trước đây rơi vào nhánh evidence -> cohort sai).
-                 "hài lòng", "hai long", "satisfaction", "khảo sát", "khao sat",
-                 "survey", "thực trạng", "thuc trang", "kiến thức thái độ",
-                 "kap", "chất lượng dịch vụ", "chat luong dich vu"], topic_lower):
+    elif _kw_in(DESIGN_KEYWORD_HINTS["descriptive"], topic_lower):
         question_type = "descriptive"
 
     if question_type == "treatment":
@@ -957,7 +1001,7 @@ Power mục tiêu: ___% (thường 80% hoặc 90%)
 # 5. GUARDRAIL R1-R7 CHO G1
 # ════════════════════════════════════════════════════════════════════════════
 
-def guardrail_check_g1(artifact: str, effects: list) -> dict:
+def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_code: str = "") -> dict:
     errors, warnings = [], []
 
     # R1 — Effect sizes có nguồn thật (nếu có)
@@ -1013,6 +1057,17 @@ def guardrail_check_g1(artifact: str, effects: list) -> dict:
         errors.append("R7 🔴 Thiếu disclaimer")
     else:
         warnings.append("R7 ✅ Có disclaimer")
+
+    # R6 — Đối chiếu từ khóa thiết kế tường minh trong topic vs design_code đã
+    # chọn CUỐI CÙNG. Cảnh báo (KHÔNG chặn cứng — không dùng errors) vì có thể
+    # bác sĩ có lý do chính đáng khác thiết kế "hiển nhiên" theo từ khóa. Thêm
+    # 2026-07-06 (khuyến nghị độc lập từ 2 cụm kiểm định đối kháng vòng 2).
+    if topic and internal_code:
+        consistency_warns = check_topic_design_consistency(topic, internal_code)
+        if consistency_warns:
+            warnings.extend(consistency_warns)
+        else:
+            warnings.append("R6 ✅ design_code khớp từ khóa thiết kế trong tên đề tài (nếu có)")
 
     return {"passed": len(errors) == 0, "errors": errors, "warnings": warnings}
 
@@ -1207,7 +1262,7 @@ def main():
 
     # Guardrail
     print(f"\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
-    guardrail = guardrail_check_g1(artifact_md, effects)
+    guardrail = guardrail_check_g1(artifact_md, effects, topic, design.get("internal_code", ""))
     for msg in guardrail["warnings"]:
         print(f"  {msg}")
     for err in guardrail["errors"]:
