@@ -1215,7 +1215,12 @@ def guardrail_g8(artifact: str, pipeline: dict) -> dict:
         warnings.append("R4 [OK] Khong tu gan GRADE")
 
     # R5 -- Khong co ket qua hardcoded
-    fake = re.search(r'(?:HR|OR|RR)\s*=\s*0\.\d+\s*\(95%CI', artifact)
+    # SUA 2026-07-06: them MD/AUC/beta vao alternation (truoc day chi HR|OR|RR)
+    # va cho phep gia tri AM + >=1 (\-?\d+\.\d+ thay vi 0\.\d+) — MD (chenh lech
+    # trung binh) co the am hoac lon hon 1, HR/OR/RR cung co the >1; regex cu bo
+    # sot ca hai truong hop (false negative khi ban thao bi dien cung MD=... hoac
+    # HR=2.5... ma quen danh dau [CAN]). Phat hien qua kiem dinh doi khang vong 2.
+    fake = re.search(r'(?:HR|OR|RR|MD|AUC|beta)\s*=\s*-?\d+\.\d+\s*\(95%CI', artifact)
     if fake:
         ctx = artifact[max(0, fake.start()-50):fake.end()+50]
         if "[CAN KET QUA THAT" not in ctx and "[CẦN KẾT" not in ctx:

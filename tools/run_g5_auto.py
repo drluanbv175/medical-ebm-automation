@@ -1439,6 +1439,7 @@ def main():
     n_adjusted  = g3.get("n_adjusted") or 0
     n_total     = (g3.get("n_total") or n_adjusted) if n_adjusted else 0
     n_per_group = (g3.get("n_per_group") or n_total // 2) if n_total else 0
+    g3_effect_type = g3.get("effect_type")  # THÊM 2026-07-06: để đối chiếu loại kết cục vs CRF
 
     print(f"📊 G5 NÂNG CẤP — Quản lý dữ liệu: {study}")
     print(f"  → Đề tài: {topic}")
@@ -1452,6 +1453,19 @@ def main():
     if specialty == "generic":
         print("  ⚠️  Không khớp chuyên khoa cụ thể — exposure/outcome là placeholder, "
               "bác sĩ PHẢI tự đặt tên theo PICO/SAP")
+
+    # THÊM 2026-07-06: CRF chọn field kết cục theo TỪ KHÓA CHỦ ĐỀ (bundle chuyên
+    # khoa), KHÔNG theo loại biến kết cục thật. Với effect_type=MD (kết cục LIÊN
+    # TỤC — đau NRS, HbA1c, chất lượng sống…), phần lớn bundle lại đặt field kết
+    # cục chính kiểu nhị phân/biến cố (radio + ngày) → CRF SAI loại biến. Guardrail
+    # cấu trúc KHÔNG bắt được (chỉ kiểm placeholder/PII/disclaimer). Cảnh báo để
+    # bác sĩ không bị đánh lừa rằng CRF đã đúng — KHÔNG tự đổi field (an toàn:
+    # chỉ nhắc, việc đổi thuộc bác sĩ). Kiểm định đối kháng vòng 2.
+    if g3_effect_type == "MD" and specialty != "musculoskeletal_pain":
+        print("  ⚠️  effect_type=MD (kết cục LIÊN TỤC theo G3) nhưng bundle "
+              f"'{_SPECIALTY_LABELS.get(specialty, specialty)}' mặc định field kết cục chính "
+              "kiểu NHỊ PHÂN/biến cố — bác sĩ PHẢI thay bằng field số (liên tục) đo lường "
+              "trực tiếp kết cục (vd điểm đau, nồng độ, thang chất lượng sống) trước khi dùng CRF.")
 
     # THÊM 2026-07-02: guardrail cấu trúc không kiểm được đúng-sai nội dung
     # lâm sàng (xem docstring detect_specialty_with_confidence). Tính độ tin

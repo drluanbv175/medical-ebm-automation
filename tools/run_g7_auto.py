@@ -669,6 +669,20 @@ def generate_manuscript(
         else "SAP phiên bản 1.0 [CẦN NGÀY KÝ G4 — G4 hiện PENDING]"
     )
 
+    # THÊM 2026-07-06: gợi ý phương pháp thống kê §6 ĐỘNG theo effect_type (đã
+    # biết tại thời điểm G7 chạy) thay vì luôn gợi ý cứng "Cox regression/
+    # logistic" — với effect_type=MD (kết cục liên tục) mà gợi ý Cox/logistic
+    # là sai hướng, dễ khiến bác sĩ đọc lướt chọn nhầm. Vẫn giữ trong [CẦN]
+    # (không tự điền chắc) vì nguồn chính thức là SAP §4 do bác sĩ khóa.
+    _method_hint = {
+        "MD": "t-test/ANCOVA/hồi quy tuyến tính (kết cục liên tục)",
+        "HR": "Cox proportional hazards regression (kết cục thời gian-đến-biến cố)",
+        "OR": "logistic regression (kết cục nhị phân)",
+        "RR": "log-binomial/Poisson regression (kết cục nhị phân)",
+        "ARR%": "so sánh hai tỷ lệ + hồi quy nhị phân",
+        "AUC": "phân tích ROC/AUC (độ chính xác chẩn đoán)",
+    }.get(effect_type, "phương pháp thống kê phù hợp thiết kế")
+
     # ── Chuẩn bị snippet cho Discussion §2 (đối chiếu y văn) ──
     lit_compare_lines = []
     for i, pmid in enumerate(pmids_used[:3], 1):
@@ -843,7 +857,7 @@ def generate_manuscript(
         f"**§6 Phân tích thống kê:**  ",
         f"Phân tích theo {sap_lock_text}. "
         "Phần mềm: [CẦN — R/Stata/SPSS phiên bản]. "
-        "Phương pháp chính: [CẦN — từ SAP §4: Cox regression/logistic/v.v.]. "
+        f"Phương pháp chính: [CẦN — từ SAP §4; theo effect_type={effect_type} gợi ý: {_method_hint}]. "
         "Phân tích độ nhạy: [CẦN — từ SAP]. "
         "Dữ liệu thiếu: [CẦN — multiple imputation m=20 hoặc complete case]. "
         "Ngưỡng ý nghĩa thống kê: α = " + str(alpha) + " (two-sided); "

@@ -1251,13 +1251,18 @@ if __name__ == "__main__":
 '''
 
 
-def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str = "cohort") -> str:
+def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str = "cohort",
+                          effect_type: str = "HR") -> str:
     """
     Sinh run_analysis_cli.py — Python CLI đầy đủ.
     Dùng raw template + .replace() để tránh xung đột f-string.
     SỬA: trước đây dùng CHUNG _RUN_CLI_TEMPLATE (Cox/HR) cho MỌI design_code —
     case-control không có trục thời gian-đến-biến-cố hợp lệ, sai phương pháp
     thống kê hoàn toàn. Nay tách riêng _CASE_CONTROL_CLI_TEMPLATE (logistic/OR).
+    THÊM 2026-07-06: kết cục LIÊN TỤC (effect_type=MD) — CLI Cox/HR sai phương
+    pháp cho biến liên tục. Chưa có template CLI liên tục riêng, nên gắn CẢNH
+    BÁO ĐẦU FILE để bác sĩ KHÔNG chạy nhầm Cox trên kết cục liên tục (script R
+    03_analysis.R đã có nhánh t-test/ANCOVA đúng — dùng bản đó cho MD).
     """
     exposure      = v["exposure"]
     outcome       = v["outcome"]
@@ -1266,7 +1271,7 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
     covars_default = ",".join(covars) if covars else "age,sex,dm,htn"
     covars_display = ", ".join(covars) if covars else "age, sex, dm, htn"
     template = _CASE_CONTROL_CLI_TEMPLATE if design_code == "case_control" else _RUN_CLI_TEMPLATE
-    return (
+    code = (
         template
         .replace("__STUDY__",         study)
         .replace("__EXPOSURE__",      exposure)
@@ -1275,6 +1280,22 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
         .replace("__COVARS_DEFAULT__", covars_default)
         .replace("__COVARS_DISPLAY__", covars_display)
     )
+    if effect_type == "MD":
+        warn = (
+            "# ⚠️  [CẦN CHÚ Ý — KẾT CỤC LIÊN TỤC (effect_type=MD)]\n"
+            "# Template CLI này dùng Cox/HR (kết cục thời gian-đến-biến-cố) — SAI\n"
+            "# phương pháp cho kết cục LIÊN TỤC (đau NRS, HbA1c, chất lượng sống…).\n"
+            "# Dùng script R kèm theo (03_analysis.R nhánh t-test/ANCOVA/lm) làm\n"
+            "# phân tích chính; KHÔNG chạy Cox bên dưới cho biến liên tục.\n"
+            "# (Phiên bản CLI Python cho kết cục liên tục sẽ bổ sung sau.)\n\n"
+        )
+        # Chèn sau dòng shebang nếu có, để cảnh báo nổi bật ngay đầu file.
+        if code.startswith("#!"):
+            first_nl = code.index("\n") + 1
+            code = code[:first_nl] + warn + code[first_nl:]
+        else:
+            code = warn + code
+    return code
 
 
 
@@ -1895,8 +1916,16 @@ def generate_artifact(study, topic, design_code, reporting_std,
     det_log   = "\n".join(f"  - {l}" for l in v["detection_log"])
 
     analysis_name_map = {
-        "rct":             "ITT + PP — GLM/LM/Cox (theo loại kết cục)",
-        "cohort":          "Cox proportional hazards + Kaplan-Meier",
+        # SỬA 2026-07-06: nhãn 'rct' cũ ("GLM/LM/Cox theo loại kết cục") NGỤ Ý
+        # hệ tự chọn phương pháp theo kết cục, nhưng script thật chỉ luôn sinh
+        # Cox — overclaim. Nay nhãn ĐỘNG theo effect_type để trung thực với
+        # script THẬT sinh ra bên dưới (kiểm định đối kháng vòng 2).
+        "rct":             ("ITT + PP — t-test/ANCOVA/hồi quy tuyến tính (MD, kết cục liên tục)"
+                            if effect_type == "MD"
+                            else "ITT + PP — Cox proportional hazards (kết cục thời gian-đến-biến cố)"),
+        "cohort":          ("Hồi quy tuyến tính/ANCOVA (MD, kết cục liên tục)"
+                            if effect_type == "MD"
+                            else "Cox proportional hazards + Kaplan-Meier"),
         "cross_sectional": "Logistic regression (OR 95%CI) / Linear regression (β 95%CI)",
         "case_control":    "Conditional logistic regression (OR 95%CI)",
         "diagnostic":      "ROC/AUC + Calibration + DCA",
@@ -2110,7 +2139,7 @@ def main():
 
     # ─── Sinh Python CLI analysis ───
     print("\n  🐍 Sinh run_analysis_cli.py (Python CLI đầy đủ)...")
-    cli_code = make_run_analysis_cli(v, n_adjusted, study, design_code)
+    cli_code = make_run_analysis_cli(v, n_adjusted, study, design_code, effect_type)
     cli_path = scripts_dir / "run_analysis_cli.py"
     cli_path.write_text(cli_code, encoding="utf-8")
     generated_paths.append(str(cli_path))
@@ -2207,6 +2236,13 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
     # trục "thời gian đến biến cố" hợp lệ. Mâu thuẫn nội tại: TABLE_SHELLS
     # và analysis_name_map đều ghi đúng "Conditional logistic (OR)" cho
     # case_control, nhưng script R thực tế lại dạy Cox/HR — nay tách riêng.
+    # THÊM 2026-07-06: kết cục LIÊN TỤC (effect_type=MD) cho rct/cohort — trước
+    # đây LUÔN nhận script Cox/Surv (sai phương pháp thống kê cho biến liên tục
+    # như đau NRS/HbA1c/chất lượng sống). Ưu tiên effect_type TRƯỚC design_code
+    # khi =MD, giống cách G3 đã làm ở sensitivity_table. Kiểm định đối kháng
+    # vòng 2 xác nhận đây là bug thiếu sót (bug of omission) thật.
+    if effect_type == "MD" and design_code in ("rct", "cohort"):
+        return _r03_continuous_md_with_vars(v, design_code)
     if design_code == "cohort":
         return make_r03_cohort(v, n_adjusted, alpha, power, effect_val, effect_type)
     elif design_code == "case_control":
@@ -2218,6 +2254,40 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
         return _r03_cross_with_vars(v)
     else:
         return make_r03_cohort(v, n_adjusted, alpha, power, effect_val, effect_type)
+
+
+def _r03_continuous_md_with_vars(v: dict, design_code: str = "rct") -> str:
+    """Script phân tích kết cục LIÊN TỤC (Mean Difference) — t-test/ANCOVA/lm.
+
+    Dùng cho RCT/cohort có kết cục liên tục (đau NRS, HbA1c, chất lượng sống…),
+    KHÔNG dùng Cox/log-rank (không có trục thời gian-đến-biến-cố). Chuẩn: ANCOVA
+    hiệu chỉnh giá trị nền (baseline) — mạnh hơn t-test đơn thuần khi có đo lường
+    trước-sau. Thêm 2026-07-06 (kiểm định đối kháng vòng 2)."""
+    exposure = v["exposure"]
+    outcome  = v["outcome"]
+    covars   = v["covariates"]
+    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi"
+    label = "RCT" if design_code == "rct" else "Cohort"
+    return f"""\
+# 03_analysis.R — {label} kết cục LIÊN TỤC (t-test/ANCOVA → Chênh lệch trung bình MD)
+# Biến: nhóm/phơi nhiễm={exposure} | kết cục liên tục={outcome}
+# Kết cục LIÊN TỤC (vd đau NRS, HbA1c, chất lượng sống) — KHÔNG dùng Cox/log-rank
+# (không có trục thời gian-đến-biến-cố). Chuẩn: so sánh trung bình 2 nhóm; nếu có
+# đo baseline thì ANCOVA (hiệu chỉnh giá trị nền) mạnh hơn t-test đơn thuần.
+source(here::here("scripts", "00_setup.R"))
+# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
+
+# (1) So sánh trung bình thô — t-test 2 nhóm độc lập (giả định phương sai bằng nhau):
+# t_res <- t.test({outcome} ~ {exposure}, data=df, var.equal=TRUE)
+# print(t_res)   # ước lượng chênh lệch trung bình (MD) + 95%CI
+
+# (2) ANCOVA hiệu chỉnh baseline + đồng biến (KHUYẾN NGHỊ nếu có {outcome}_baseline):
+# lm_adj <- lm({outcome} ~ {exposure} + {outcome}_baseline + {cov_fml}, data=df)
+# broom::tidy(lm_adj, conf.int=TRUE) %>% filter(term=="{exposure}")   # MD hiệu chỉnh + 95%CI
+# (Nếu KHÔNG có baseline: bỏ {outcome}_baseline khỏi công thức trên.)
+
+message("03_analysis.R ({label}, kết cục liên tục MD) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
+"""
 
 
 def _r03_case_control_with_vars(v: dict) -> str:
