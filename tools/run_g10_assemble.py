@@ -38,6 +38,7 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — 4 mã thoát)
 import skill_standards as S  # noqa: E402
 
 TAG_BS = S.STATUS_TAGS["CAN_BO_SUNG"]              # [CẦN BỔ SUNG]
@@ -660,7 +661,13 @@ def main() -> int:
             check_de_cuong.print_report(report)
             if not report["passed"]:
                 print("  ⚠ Đề cương CHƯA đạt guardrail skill — xem lỗi ở trên.")
-                return 1
+                # SỬA 2026-07-06: trước đây return 1 (= GC.EXIT_CRASH) khiến
+                # run_pipeline.py coi lỗi nội dung TẤT ĐỊNH (vd nhãn sai chuẩn)
+                # là lỗi TẠM THỜI đáng thử lại — retry vô ích (nội dung không
+                # đổi giữa các lần chạy), lãng phí 1 lượt thử rồi mới báo failed
+                # mơ hồ. Dùng đúng mã GUARDRAIL_FAIL để pipeline DỪNG ngay,
+                # không retry, và báo đúng bản chất lỗi (khớp quy ước G0-G9).
+                return GC.EXIT_GUARDRAIL_FAIL
         except ImportError:
             print("  ⚠ check_de_cuong.py chưa có — bỏ qua tự kiểm.")
 

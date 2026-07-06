@@ -38,6 +38,16 @@ import skill_standards as S  # noqa: E402
 
 # Nhãn "trông giống marker": mở ngoặc vuông + bắt đầu bằng các từ khoá này.
 _MARKER_WORD_RE = re.compile(r"\[\s*(CẦN|ĐÃ|DỰ THẢO|CHƯA)\b[^\]]*\]")
+# THÊM 2026-07-06: "[CẦN — giải thích tự do]" (CẦN + em-dash + văn bản) là quy
+# ước CHÚ THÍCH TỰ DO đã dùng phổ biến (118+ chỗ) khắp G0-G9 — KHÁC với 6 nhãn
+# TRẠNG THÁI cố định của S.VALID_STATUS_TAGS (vd "[CẦN BỔ SUNG]"). R3 trước đây
+# coi CẢ HAI loại là "nhãn" và chỉ chấp nhận 6 nhãn cố định, nên MỌI chú thích
+# tự do (rất phổ biến, hợp lệ, không phải "nhãn tự chế sai chuẩn" mà R3 muốn
+# bắt) đều bị báo lỗi — phát hiện qua chạy thật G0→G10 thiết kế chẩn đoán
+# (n_auc's formula_used message) khiến G10 CRASH thật lần đầu tiên đề tài loại
+# này chạy hết pipeline. Chỉ "CẦN —" dùng quy ước này (grep xác nhận ĐÃ/DỰ
+# THẢO/CHƯA không có biến thể em-dash tự do nào trong codebase).
+_FREEFORM_CAN_RE = re.compile(r"^\[CẦN\s+—\s+.+\]$")
 # PMID trong văn bản: 'PMID: 12345' hoặc '[PMID:12345]' hoặc 'PMID 12345'.
 _PMID_RE = re.compile(r"PMID[:\s]*?(\d{5,9})")
 # Mẫu số liệu KẾT QUẢ (chỉ xuất hiện ở phần kết quả, KHÔNG phải tham số thiết kế).
@@ -150,8 +160,11 @@ def validate(md_path, out_dir) -> Dict:
     bad_tags = set()
     for m in _MARKER_WORD_RE.finditer(text):
         tag = m.group(0).strip()
-        if not S.is_valid_status_tag(tag):
-            bad_tags.add(tag)
+        if S.is_valid_status_tag(tag):
+            continue
+        if _FREEFORM_CAN_RE.match(tag):
+            continue
+        bad_tags.add(tag)
     if bad_tags:
         errors.append("R3 NHÃN KHÔNG HỢP LỆ (không thuộc bộ nhãn skill): "
                       + "; ".join(sorted(bad_tags)[:10]))

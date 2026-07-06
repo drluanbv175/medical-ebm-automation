@@ -162,6 +162,36 @@ class TestValidatorCatchesFabrication:
         assert not report["passed"]
         assert any("R3" in e for e in report["errors"])
 
+    def test_freeform_can_caveat_not_flagged_as_invalid_tag(self, cross_sectional_study):
+        """Bug thật (2026-07-06, phát hiện qua chạy G0→G10 thiết kế chẩn đoán
+        lần đầu): mẫu "[CẦN — giải thích tự do]" (có em-dash) là quy ước chú
+        thích ĐÃ DÙNG PHỔ BIẾN khắp G0-G9 (vd n_auc() trong G3), KHÔNG phải
+        nhãn trạng thái tự chế sai chuẩn — R3 trước đây coi cả hai là một,
+        khiến G10 CRASH thật (exit=1) lần đầu tiên một đề tài chẩn đoán chạy
+        hết pipeline. Câu chữ THẬT lấy nguyên văn từ tools/run_g3_auto.py."""
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text += (
+            "\n\n[CẦN — các phần mềm khác nhau (PASS/MedCalc/nQuery) có thể "
+            "cho N hơi khác do giả định phương sai khác nhau; nếu cỡ mẫu "
+            "của nghiên cứu phụ thuộc chủ yếu vào con số này, nên nhờ "
+            "thống kê viên đối chiếu lại bằng phần mềm chuyên dụng.]\n"
+        )
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert report["checks"]["R3_valid_tags"] == "PASS"
+
+    def test_still_catches_short_invented_tag_without_em_dash(self, cross_sectional_study):
+        """Đối chứng: nhãn tự chế NGẮN không có em-dash (không phải chú thích
+        tự do) vẫn phải bị bắt — tránh sửa quá tay làm R3 mất tác dụng."""
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text += "\n\n[CẦN GẤP RÚT XỬ LÝ]\n"
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("R3" in e for e in report["errors"])
+
     def test_catches_missing_section(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
