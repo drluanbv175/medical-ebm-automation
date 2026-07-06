@@ -18,16 +18,41 @@ sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
-# Hệ số z phổ biến
-Z_TABLE = {0.20: 0.842, 0.15: 1.036, 0.10: 1.282, 0.05: 1.645, 0.025: 1.960, 0.01: 2.326, 0.005: 2.576}
+# Hệ số z phổ biến (6 chữ số thập phân — khớp scipy.stats.norm.ppf để tránh
+# lệch 1 đơn vị ở biên math.ceil() khi phải dùng bảng dự phòng không scipy)
+Z_TABLE = {
+    0.20: 0.841621,
+    0.15: 1.036433,
+    0.10: 1.281552,
+    0.05: 1.644854,
+    0.025: 1.959964,
+    0.01: 2.326348,
+    0.005: 2.575829,
+}
 
 def z(p):
-    """Tính z-score từ xác suất một phía."""
+    """
+    Tính z-score từ xác suất một phía.
+    SỬA 2026-07-06: khi không có scipy, tra Z_TABLE bằng key float thô
+    (vd `1 - power`) sai lệch do sai số dấu phẩy động — `1 - 0.80` cho
+    ra 0.19999999999999996, không khớp khóa 0.20 → âm thầm rơi về mặc
+    định 1.960 (sai gần gấp đôi cho power=80%), làm MỌI cỡ mẫu tính ra
+    lớn gấp ~2 lần giá trị đúng. Nay làm tròn khóa trước khi tra, và
+    báo lỗi rõ ràng thay vì âm thầm dùng giá trị mặc định sai khi thiếu
+    scipy lẫn giá trị trong bảng.
+    """
     try:
         from scipy.stats import norm
         return norm.ppf(1 - p)
     except ImportError:
-        return Z_TABLE.get(p, 1.960)
+        key = round(p, 4)
+        if key not in Z_TABLE:
+            raise InvalidEffectSizeError(
+                f"Không có scipy và p={p} (làm tròn {key}) không có trong Z_TABLE dự phòng "
+                "— cài `pip install scipy` hoặc bổ sung giá trị vào Z_TABLE; "
+                "không tự ý dùng z mặc định vì sẽ làm sai cỡ mẫu."
+            )
+        return Z_TABLE[key]
 
 def n_two_proportion(p1, p2, alpha=0.05, power=0.80):
     """Cỡ mẫu so sánh hai tỷ lệ (two-sided)."""
@@ -216,7 +241,7 @@ def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_eve
 def load_checkpoint(path):
     """Đọc checkpoint JSON nếu tồn tại."""
     if Path(path).exists():
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
     return {}
 
