@@ -334,6 +334,18 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
         question_type = "diagnosis"
     elif _kw_in(["tiên lượng", "tien luong", "prognosis", "sống còn", "song con", "tử vong", "tu vong"], topic_lower):
         question_type = "prognosis"
+    # THÊM 2026-07-06: 4 nhánh sr/diagnosis/prognosis/descriptive đều có phát
+    # hiện từ khóa tường minh, riêng "harm" (case-control) thì KHÔNG — phát
+    # hiện qua chạy thật G0→G10 trên đề tài case-control mới (bệnh nhiễm
+    # khuẩn vết mổ) khiến thiết kế bị suy nhầm thành cohort xuyên suốt cả
+    # chuỗi (G3 dùng sai công thức Schoenfeld thay vì two-proportion đã có
+    # sẵn cho case-control, G7 viết Methods/STROBE checklist sai thiết kế).
+    # Chỉ khớp cụm từ TƯỜNG MINH khai báo thiết kế (không dùng "yếu tố nguy
+    # cơ" đơn lẻ — cụm này quá chung, cũng xuất hiện ở nhiều đề tài cohort).
+    elif _kw_in(["bệnh-chứng", "bệnh chứng", "benh-chung", "benh chung",
+                 "case-control", "case control", "ca-chứng", "ca chứng",
+                 "nested case-control", "nested case control"], topic_lower):
+        question_type = "harm"
     elif _kw_in(["tỷ lệ", "ty le", "prevalence", "mô tả", "mo ta", "tần suất",
                  # Nghiên cứu dịch vụ y tế/khảo sát: hài lòng, khảo sát, thực trạng
                  # → cắt ngang mô tả (trước đây rơi vào nhánh evidence -> cohort sai).

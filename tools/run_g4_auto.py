@@ -17,7 +17,7 @@ import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 def load_cp(path):
     if Path(path).exists():
-        with open(path) as f: return json.load(f)
+        with open(path, encoding="utf-8") as f: return json.load(f)
     return {}
 
 def guardrail(artifact):
@@ -84,7 +84,7 @@ def guardrail(artifact):
     return errors, warnings
 
 def generate(study, topic, design_code, design_primary, reporting_std,
-             n_adjusted, alpha, power, effect_val, effect_type, run_date):
+             n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None):
     sap_sections = {
         "rct": ("Nhóm can thiệp vs nhóm chứng", "Intention-to-treat (ITT), Per-protocol (PP)", "t-test hoặc Mann-Whitney; logistic/log-rank"),
         "cohort": ("Nhóm phơi nhiễm vs không phơi nhiễm", "Phân tích đầy đủ (complete case + MI)", "Cox regression; logistic regression"),
@@ -212,6 +212,13 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         f"- **Power:** {int(power*100)}%  ",
         f"- **Cỡ mẫu:** N = {n_adjusted}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  ",
         f"- **Effect size dự kiến:** {effect_type} = {effect_val:.2f}  " if effect_val else "- **Effect size:** [CẦN từ G3]  ",
+    ] + (
+        # THÊM 2026-07-06: SD bị RỚT khi truyền G3→G4 (phát hiện qua kiểm định
+        # đối kháng vòng 2) — bác sĩ ký SAP mà không thấy tham số bắt buộc để
+        # tái tạo/kiểm chứng cỡ mẫu kết cục liên tục (effect_type=MD).
+        [f"- **Độ lệch chuẩn (SD) kết cục:** {sd:.2f}  " if sd else "- **SD kết cục:** [CẦN từ G3 — bắt buộc khi effect_type=MD]  "]
+        if effect_type == "MD" else []
+    ) + [
         "",
         "---",
         "",
@@ -237,6 +244,12 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         f"║ Cỡ mẫu   : N = {str(n_adjusted):<45} ║" if n_adjusted else "║ Cỡ mẫu   : [CẦN từ G3]                                      ║",
         f"║ Alpha     : {alpha}                                            ║",
         f"║ Power     : {int(power*100)}%                                            ║",
+    ] + (
+        # THÊM 2026-07-06: giữ nguyên tinh thần vá ở §12 — SD bắt buộc để tái
+        # tạo/kiểm chứng cỡ mẫu kết cục liên tục, không được rớt ở chứng chỉ ký.
+        [f"║ SD kết cục: {sd:<48.2f} ║" if sd else "║ SD kết cục: [CẦN từ G3 — bắt buộc khi effect_type=MD]       ║"]
+        if effect_type == "MD" else []
+    ) + [
         "║ KQ chính  : [CẦN BÁC SĨ ĐIỀN — từ SAP §2]                 ║",
         "║ Phân tích : [CẦN BÁC SĨ ĐIỀN — quần thể phân tích]        ║",
         "╠══════════════════════════════════════════════════════════════╣",
@@ -335,6 +348,7 @@ def main():
     power = g3.get("power") or 0.80
     effect_val = g3.get("effect_val")
     effect_type = g3.get("effect_type") or "HR"
+    sd = g3.get("sd")  # THÊM 2026-07-06: SD kết cục liên tục (effect_type=MD), từng bị rớt khi truyền G3→G4
 
     # SỬA: trước đây N=0 (G3 chưa chạy/chưa tính được) vẫn cho SAP hoàn tất
     # với guardrail PASS im lặng — một SAP không có cỡ mẫu là vô nghĩa để
@@ -379,7 +393,7 @@ def main():
     print(f"  → Design: {design_code} | N={n_adjusted}")
 
     artifact = generate(study, topic, design_code, design_primary, reporting_std,
-                        n_adjusted, alpha, power, effect_val, effect_type, run_date)
+                        n_adjusted, alpha, power, effect_val, effect_type, run_date, sd)
     md = out / f"G4_A5_SAP_FINAL_{study}.md"
     md.write_text(artifact, encoding="utf-8")
     print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
