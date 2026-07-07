@@ -715,7 +715,45 @@ def parse_args():
     p.add_argument("--time",       default="__TIME__",        help="Tên cột thời gian (số)")
     p.add_argument("--covariates", default="__COVARS_DEFAULT__", help="Covariates (dấu phẩy)")
     p.add_argument("--output-dir", default=".")
+    p.add_argument("--i-confirm-sap-locked", action="store_true",
+                    help="Ghi đè kiểm tra G4/G5 checkpoint khi không tìm thấy file checkpoint "
+                         "nhưng SAP+DB thực tế đã khóa. KHÔNG dùng để né việc chưa khóa thật.")
     return p.parse_args()
+
+
+def _check_sap_db_locked(i_confirm: bool) -> None:
+    """2026-07-07: script sinh từ template được PHÉP tồn tại trước khi có dữ liệu thật
+    (sinh sớm ở G6 FULL AUTO), nhưng phải TỰ CHẶN chạy thật nếu G4 (SAP)/G5 (khóa DB)
+    chưa LOCKED — không dựa hoàn toàn vào việc người chạy tự nhớ."""
+    import json as _json
+    import re as _re
+
+    def _is_locked(status):
+        s = str(status or "").strip().upper()
+        if _re.search(r'(UN|CH[ƯU]A|KH[ÔO]NG|NOT)\s*LOCKED', s):
+            return False
+        return bool(_re.match(r'^LOCKED\b', s))
+
+    def _load_cp(gate):
+        p = Path("exports") / "__STUDY__" / f"{gate}_checkpoint.json"
+        if p.exists():
+            try:
+                return _json.loads(p.read_text(encoding="utf-8"))
+            except (ValueError, OSError):
+                return {}
+        return {}
+
+    g4 = _load_cp("G4")
+    g5 = _load_cp("G5")
+    g4_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
+    g5_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
+    if not (g4_locked and g5_locked) and not i_confirm:
+        print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED cho đề tài __STUDY__.")
+        print(f"   G4_checkpoint: {'✅ LOCKED' if g4_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print(f"   G5_checkpoint: {'✅ LOCKED' if g5_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print("   Không chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
+        print("   Nếu SAP+DB THỰC TẾ đã khóa nhưng thiếu checkpoint, thêm --i-confirm-sap-locked.")
+        sys.exit(1)
 
 
 def fmt_pval(p):
@@ -911,6 +949,7 @@ def export_docx(tbl1, cox_res, km_path, out_path, study_name, exposure, outcome,
 
 def main():
     args = parse_args()
+    _check_sap_db_locked(args.i_confirm_sap_locked)
     data_path  = Path(args.data)
     out_dir    = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1030,7 +1069,43 @@ def parse_args():
     p.add_argument("--matched",    action="store_true",
                    help="Nếu case-control CÓ bắt cặp (matched) — cảnh báo dùng conditional logistic thay vì thường")
     p.add_argument("--output-dir", default=".")
+    p.add_argument("--i-confirm-sap-locked", action="store_true",
+                    help="Ghi đè kiểm tra G4/G5 checkpoint khi không tìm thấy file checkpoint "
+                         "nhưng SAP+DB thực tế đã khóa. KHÔNG dùng để né việc chưa khóa thật.")
     return p.parse_args()
+
+
+def _check_sap_db_locked(i_confirm: bool) -> None:
+    """2026-07-07: tự chặn chạy thật nếu G4 (SAP)/G5 (khóa DB) chưa LOCKED."""
+    import json as _json
+    import re as _re
+
+    def _is_locked(status):
+        s = str(status or "").strip().upper()
+        if _re.search(r'(UN|CH[ƯU]A|KH[ÔO]NG|NOT)\s*LOCKED', s):
+            return False
+        return bool(_re.match(r'^LOCKED\b', s))
+
+    def _load_cp(gate):
+        p = Path("exports") / "__STUDY__" / f"{gate}_checkpoint.json"
+        if p.exists():
+            try:
+                return _json.loads(p.read_text(encoding="utf-8"))
+            except (ValueError, OSError):
+                return {}
+        return {}
+
+    g4 = _load_cp("G4")
+    g5 = _load_cp("G5")
+    g4_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
+    g5_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
+    if not (g4_locked and g5_locked) and not i_confirm:
+        print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED cho đề tài __STUDY__.")
+        print(f"   G4_checkpoint: {'✅ LOCKED' if g4_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print(f"   G5_checkpoint: {'✅ LOCKED' if g5_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print("   Không chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
+        print("   Nếu SAP+DB THỰC TẾ đã khóa nhưng thiếu checkpoint, thêm --i-confirm-sap-locked.")
+        sys.exit(1)
 
 
 def fmt_pval(p):
@@ -1199,6 +1274,7 @@ def export_docx(tbl1, lr_res, out_path, study_name, exposure, outcome, matched):
 
 def main():
     args = parse_args()
+    _check_sap_db_locked(args.i_confirm_sap_locked)
     data_path  = Path(args.data)
     out_dir    = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

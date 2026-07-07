@@ -133,6 +133,12 @@ ERROR_ROUTING_TABLE: dict[str, tuple[ErrorSeverity, str]] = {
     # từ phán đoán LLM thuần túy (tham-dinh-dau-ra §3ter) thành check rule-based thật.
     "R13":      (ErrorSeverity.ESCALATE_HARD,
                  "DỪNG NGAY — thiếu câu hỏi an toàn bắt buộc (sang-loc-co-do + ke-don-an-toan hỏi lại)"),
+    # R14: THÊM 2026-07-07 — tham-dinh-dau-ra.md §3/§8 định nghĩa R14 (an toàn kê đơn:
+    # tương tác/CCĐ/chỉnh liều) là HARD-RED đối xứng R12/R13, nhưng bảng này trước đây
+    # THIẾU entry cho R14 → classify_error() fallback về AUTO_FIX/"agent-goc" thay vì
+    # ESCALATE_HARD, ngược hẳn hành vi tài liệu mô tả (phát hiện qua audit đối kháng).
+    "R14":      (ErrorSeverity.ESCALATE_HARD,
+                 "DỪNG NGAY — thiếu rà an toàn kê đơn (tương tác/CCĐ/chỉnh liều) → ke-don-an-toan"),
 }
 
 

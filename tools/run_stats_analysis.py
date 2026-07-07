@@ -437,6 +437,27 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
 # 8. ĐIỂM VÀO CHÍNH (CLI)
 # ════════════════════════════════════════════════════════════════════════════
 
+def _is_locked(status) -> bool:
+    """Kiểm tra trạng thái đã LOCKED chính xác (không khớp nhầm "CHƯA LOCKED"/"UNLOCKED").
+    Cùng logic với run_g6_auto.py — giữ đồng bộ nếu sửa 1 trong 2 chỗ."""
+    import re
+    s = str(status or "").strip().upper()
+    if re.search(r'(UN|CH[ƯU]A|KH[ÔO]NG|NOT)\s*LOCKED', s):
+        return False
+    return bool(re.match(r'^LOCKED\b', s))
+
+
+def _load_checkpoint(study: str, gate: str) -> dict:
+    p = Path("exports") / study / f"{gate}_checkpoint.json"
+    if p.exists():
+        try:
+            with open(p, encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return {}
+    return {}
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Phân tích thống kê tự động từ file dữ liệu thật"
@@ -452,7 +473,28 @@ def main():
     parser.add_argument("--study", default="STUDY", help="Tên đề tài (dùng đặt tên file đầu ra)")
     parser.add_argument("--gate", default="G6", help="Cổng phân tích (mặc định: G6)")
     parser.add_argument("--vars", default="", help="Biến cho Bảng 1 (mặc định: tất cả)")
+    parser.add_argument("--i-confirm-sap-locked", action="store_true",
+                        help="Ghi đè kiểm tra G4/G5 checkpoint khi không có file checkpoint "
+                             "(vd chạy thủ công ngoài pipeline) nhưng SAP+DB thực tế đã khóa. "
+                             "KHÔNG dùng để né việc chưa khóa thật.")
     args = parser.parse_args()
+
+    # 2026-07-07: cổng kỹ thuật chặn chạy phân tích thật khi G4 (SAP)/G5 (DB) chưa khóa —
+    # trước đây script này không kiểm tra gì, chỉ agent tự nhớ nhắc (đã xảy ra rủi ro
+    # data dredging/p-hacking nếu SAP còn nháp). Không có checkpoint + không có cờ
+    # --i-confirm-sap-locked → coi như CHƯA khóa, từ chối chạy.
+    g4_cp = _load_checkpoint(args.study, "G4")
+    g5_cp = _load_checkpoint(args.study, "G5")
+    g4_locked = _is_locked(g4_cp.get("g4_status", g4_cp.get("G4_STATUS")))
+    g5_locked = _is_locked(g5_cp.get("g5_status", g5_cp.get("G5_STATUS")))
+    if not (g4_locked and g5_locked) and not args.i_confirm_sap_locked:
+        print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED.")
+        print(f"   G4_checkpoint: {'✅ LOCKED' if g4_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print(f"   G5_checkpoint: {'✅ LOCKED' if g5_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print("   Không thể chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
+        print("   Nếu SAP+DB THỰC TẾ đã khóa nhưng thiếu file checkpoint (vd chạy ngoài pipeline),")
+        print("   thêm cờ --i-confirm-sap-locked sau khi tự xác nhận chắc chắn.")
+        sys.exit(1)
 
     # 1. Tải dữ liệu
     df = load_data(args.data)

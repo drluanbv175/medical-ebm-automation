@@ -928,9 +928,34 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list) -> 
 # STROBE PARTICIPANT FLOWCHART (ASCII)
 # ---------------------------------------------------------------------------
 
-def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_total: int, n_per_group: int) -> str:
+# 2026-07-07: nhãn phơi nhiễm + tiêu chí loại trừ minh họa cho sơ đồ STROBE —
+# CHỈ có nội dung cụ thể cho cardiology_hf (bundle gốc); mọi chuyên khoa khác
+# dùng placeholder [CẦN] rõ ràng, KHÔNG bịa nội dung lâm sàng của chuyên khoa
+# khác (cùng triết lý với _GENERIC_EXPOSURE/_GENERIC_OUTCOMES ở trên — trước
+# đây hàm này hardcode nội dung cardiology_hf cho MỌI chuyên khoa).
+_STROBE_EXPOSURE_LABEL = {
+    "cardiology_hf": "SGLT2i",
+}
+_STROBE_EXCLUSION_LINES = {
+    "cardiology_hf": [
+        "  │  • LVEF < 50% (không HFpEF) │",
+        "  │  • eGFR < 20 mL/min/1.73m²  │",
+        "  │  • SGLT2i CCĐ               │",
+    ],
+}
+_STROBE_EXPOSURE_LABEL_RCT = {
+    "cardiology_hf": "(SGLT2i)",
+}
+
+
+def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_total: int, n_per_group: int, specialty: str = "generic") -> str:
     """Sinh sơ đồ tham gia nghiên cứu dạng ASCII theo STROBE/CONSORT."""
     is_rct = design_code == "rct"
+    exposure_label = _STROBE_EXPOSURE_LABEL.get(specialty, "[CẦN — tên biến phơi nhiễm/can thiệp theo PICO]")
+    exposure_label_rct = _STROBE_EXPOSURE_LABEL_RCT.get(specialty, "([CẦN — tên can thiệp])")
+    exclusion_lines = "\n".join(_STROBE_EXCLUSION_LINES.get(specialty, [
+        "  │  • [CẦN — tiêu chí loại trừ theo PICO/SAP thật]  │",
+    ]))
 
     if is_rct:
         group_a = n_per_group
@@ -966,7 +991,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   ┌───────────────┐           ┌───────────────┐
   │  CAN THIỆP    │           │  ĐỐI CHỨNG    │
   │  N = {group_a:<8}       │           │  N = {group_b:<8}       │
-  │  (SGLT2i)     │           │  (Placebo/SOC)│
+  │  {exposure_label_rct:<11}   │           │  (Placebo/SOC)│
   └───────┬───────┘           └───────┬───────┘
           │                           │
           ▼                           ▼
@@ -1001,9 +1026,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
         ┌──────────▼──────────────────┐
         │  Loại trừ (Excluded):        │
         │  N = [CẦN]                   │
-        │  • LVEF < 50% (không HFpEF) │
-        │  • eGFR < 20 mL/min/1.73m²  │
-        │  • SGLT2i CCĐ               │
+{exclusion_lines}
         │  • Không đồng thuận          │
         │  • [CẦN thêm lý do cụ thể]  │
         └─────────────────────────────┘
@@ -1018,7 +1041,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
         ▼                             ▼
   ┌───────────────┐           ┌───────────────┐
   │  CÓ PHƠI      │           │  KHÔNG PHƠI   │
-  │  NHIỄM (SGLT2i)│          │  NHIỄM        │
+  │  NHIỄM {exposure_label:<8}│          │  NHIỄM        │
   │  N ≈ {n_per_group:<8}     │           │  N ≈ {n_total - n_per_group:<8}     │
   └───────┬───────┘           └───────┬───────┘
           │                           │
@@ -1151,7 +1174,7 @@ def generate_artifact(
     n_rows = len(rows)
     col_names = [r[0] for r in rows]
 
-    flowchart = build_strobe_flowchart(study, design_code, n_adjusted, n_total, n_per_group)
+    flowchart = build_strobe_flowchart(study, design_code, n_adjusted, n_total, n_per_group, specialty)
     specialty_label = _SPECIALTY_LABELS.get(specialty, specialty)
 
     lines = [
