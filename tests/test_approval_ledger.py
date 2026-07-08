@@ -3,7 +3,6 @@ Tests cho ApprovalLedger — Phase 3 Offline Controlled-System.
 Không có API call, không PII, hoàn toàn deterministic.
 """
 
-import pytest
 from runtime.approval_ledger import ApprovalLedger
 from runtime.schemas import ApprovalDecisionEnum
 
@@ -40,6 +39,52 @@ class TestApprovalLedgerBlock:
         success, reason = ledger.add_approval(record, created_by_agent=True)
         assert not success
         assert reason == "AGENT_CREATED_APPROVAL_BLOCKED"
+
+    def test_creator_reviewer_same_agent_blocked(self):
+        ledger = ApprovalLedger()
+        record = ApprovalLedger.make_human_approval(
+            gate_id="GATE_A",
+            reviewer_role="GUARDRAIL_REVIEWER",
+            reviewer_ref="REVIEWER-AGENT-TRACE",
+            scope="Clinical output packet review",
+            evidence_content="Draft clinical packet hash source",
+            artifact_creator_agent="tham-dinh-dau-ra",
+            reviewer_agent="tham-dinh-dau-ra",
+        )
+        success, reason = ledger.add_approval(record)
+        assert not success
+        assert reason == "SELF_REVIEW_BLOCKED"
+        assert ledger.count() == 0
+
+    def test_creator_reviewer_different_agents_allowed(self):
+        ledger = ApprovalLedger()
+        record = ApprovalLedger.make_human_approval(
+            gate_id="GATE_A",
+            reviewer_role="GUARDRAIL_REVIEWER",
+            reviewer_ref="REVIEWER-AGENT-TRACE",
+            scope="Clinical output packet review",
+            evidence_content="Draft clinical packet hash source",
+            artifact_creator_agent="dieu-phoi-lam-sang",
+            reviewer_agent="tham-dinh-dau-ra",
+        )
+        success, reason = ledger.add_approval(record)
+        assert success
+        assert reason == "ADDED"
+
+    def test_self_review_audit_detects_imported_legacy_violation(self):
+        ledger = ApprovalLedger()
+        record = ApprovalLedger.make_human_approval(
+            gate_id="GATE_B",
+            reviewer_role="LEGACY_IMPORT_REVIEWER",
+            reviewer_ref="LEGACY-TRACE",
+            scope="Imported legacy approval trace",
+            evidence_content="Legacy approval content",
+            artifact_creator_agent="tham-dinh-dau-ra",
+            reviewer_agent="tham-dinh-dau-ra",
+        )
+        ledger._records.append(record)
+        assert ledger.has_self_review_violations()
+        assert ledger.self_review_violations() == [record]
 
 
 class TestApprovalLedgerValidApproval:

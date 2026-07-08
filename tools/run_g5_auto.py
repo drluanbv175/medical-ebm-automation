@@ -1453,6 +1453,7 @@ def main():
     # Đọc checkpoints
     g0 = load_cp(out / "G0_checkpoint.json")
     g1 = load_cp(out / "G1_checkpoint.json")
+    g2 = load_cp(out / "G2_checkpoint.json")
     g3 = load_cp(out / "G3_checkpoint.json")
 
     # SỬA: .get(key, default) không dùng default khi key tồn tại với giá trị
@@ -1467,6 +1468,17 @@ def main():
     print(f"📊 G5 NÂNG CẤP — Quản lý dữ liệu: {study}")
     print(f"  → Đề tài: {topic}")
     print(f"  → Thiết kế: {design_code} | N={n_adjusted} (điều chỉnh) / {n_total} (cơ bản) / {n_per_group}/nhóm")
+
+    # THÊM 2026-07-08: G5 chỉ soạn CRF/kế hoạch quản lý dữ liệu (được phép làm
+    # song song/trước khi G2 LOCKED — CRF thường phải nộp kèm hồ sơ IRB). KHÔNG
+    # chặn cứng bước này, chỉ hiển thị rõ trạng thái G2 để bác sĩ không nhầm là
+    # đã được phép THU THẬP dữ liệu thật (việc đó vẫn chờ G2 LOCKED — xem G6).
+    g2_status_raw = str(g2.get("g2_status") or "PENDING")
+    g2_locked = bool(re.match(r'^LOCKED\b', g2_status_raw.strip().upper())) and \
+        not re.search(r'(UN|CH[ƯU]A|KH[ÔO]NG|NOT)\s*LOCKED', g2_status_raw.strip().upper())
+    if not g2_locked:
+        print(f"  ⚠️  G2 (IRB) chưa LOCKED ({g2_status_raw}) — được phép soạn CRF/kế hoạch dữ liệu "
+              "ngay bây giờ, nhưng KHÔNG được thu thập dữ liệu thật cho tới khi G2 LOCKED.")
 
     # Xây CRF theo thiết kế + chuyên khoa nhận diện từ topic (KHÔNG cứng hóa
     # field của 1 đề tài mẫu cho mọi chủ đề khác — xem detect_specialty())

@@ -50,6 +50,7 @@ class RunResult:
     artifacts: list = dataclasses.field(default_factory=list)
     review_items: list = dataclasses.field(default_factory=list)
     quality_report: Optional[dict] = None
+    preflight_report: Optional[object] = None
 
 
 class WorkflowRunner:
@@ -125,7 +126,8 @@ class WorkflowRunner:
                 self.run_registry.close(rec, "BLOCKED", proj_result.block_reason)
                 return RunResult("BLOCK", pid, run_id, proj_result.block_reason,
                                  project=project,
-                                 artifacts=self.artifacts.for_project(pid))
+                                 artifacts=self.artifacts.for_project(pid),
+                                 preflight_report=proj_result.preflight_report)
 
             # ── 7. Template + quality gates + review queue ────────────────────
             review_items = []
@@ -159,6 +161,7 @@ class WorkflowRunner:
             self.idempotency.record(pid, rhash, run_id)
             return RunResult("CREATED", pid, run_id, None, project=project,
                              artifacts=self.artifacts.for_project(pid),
-                             review_items=review_items, quality_report=qr.to_dict())
+                             review_items=review_items, quality_report=qr.to_dict(),
+                             preflight_report=proj_result.preflight_report)
         finally:
             self.work_queue.release(pid, run_id)

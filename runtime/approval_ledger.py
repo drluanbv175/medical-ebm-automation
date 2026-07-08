@@ -5,11 +5,13 @@ Không lưu PII trong ledger.
 """
 
 from __future__ import annotations
+
 import hashlib
 import json
 from datetime import datetime, timezone
 from typing import Optional
-from .schemas import ApprovalRecord, ApprovalDecisionEnum
+
+from .schemas import ApprovalDecisionEnum, ApprovalRecord
 
 
 class ApprovalLedger:
@@ -36,6 +38,13 @@ class ApprovalLedger:
         """
         if created_by_agent or record._created_by_agent:
             return False, "AGENT_CREATED_APPROVAL_BLOCKED"
+
+        if (
+            record.artifact_creator_agent
+            and record.reviewer_agent
+            and record.artifact_creator_agent == record.reviewer_agent
+        ):
+            return False, "SELF_REVIEW_BLOCKED"
 
         # Kiểm tra evidence hash không rỗng
         if not record.evidence_hash or record.evidence_hash in ("", "none", "N/A"):
@@ -84,6 +93,18 @@ class ApprovalLedger:
         recs = [r for r in self._records if r.gate_id == gate_id]
         return bool(recs) and all(getattr(r, "is_synthetic", False) for r in recs)
 
+    def self_review_violations(self) -> list[ApprovalRecord]:
+        """Các record vi phạm độc lập reviewer/creator nếu import từ nguồn cũ."""
+        return [
+            r for r in self._records
+            if r.artifact_creator_agent
+            and r.reviewer_agent
+            and r.artifact_creator_agent == r.reviewer_agent
+        ]
+
+    def has_self_review_violations(self) -> bool:
+        return bool(self.self_review_violations())
+
     def has_ethics_approval(self) -> bool:
         return self.check_has_approval("G2") is not None
 
@@ -125,6 +146,8 @@ class ApprovalLedger:
                 "evidence_hash": r.evidence_hash,
                 "timestamp_utc": r.timestamp_utc,
                 "supersedes": r.supersedes,
+                "artifact_creator_agent": r.artifact_creator_agent,
+                "reviewer_agent": r.reviewer_agent,
                 "is_synthetic": getattr(r, "is_synthetic", False),
             }
         return json.dumps(
@@ -144,6 +167,8 @@ class ApprovalLedger:
         evidence_content: str,
         decision: ApprovalDecisionEnum = ApprovalDecisionEnum.APPROVED,
         supersedes: Optional[str] = None,
+        artifact_creator_agent: Optional[str] = None,
+        reviewer_agent: Optional[str] = None,
     ) -> ApprovalRecord:
         """
         Factory dùng trong tests để tạo human approval hợp lệ.
@@ -164,6 +189,8 @@ class ApprovalLedger:
             evidence_hash=evidence_hash,
             timestamp_utc=timestamp,
             supersedes=supersedes,
+            artifact_creator_agent=artifact_creator_agent,
+            reviewer_agent=reviewer_agent,
             _created_by_agent=False,
             is_synthetic=False,
         )
@@ -176,6 +203,8 @@ class ApprovalLedger:
         reviewer_role: str = "SYNTHETIC_TECHNICAL_FIXTURE",
         reviewer_ref: str = "MRAQ_HARNESS_NOT_A_PERSON",
         decision: ApprovalDecisionEnum = ApprovalDecisionEnum.APPROVED,
+        artifact_creator_agent: Optional[str] = None,
+        reviewer_agent: Optional[str] = None,
     ) -> ApprovalRecord:
         """
         V4.3: tạo approval MÔ PHỎNG có marker cấu trúc ``is_synthetic=True``.
@@ -188,6 +217,8 @@ class ApprovalLedger:
         rec = ApprovalLedger.make_human_approval(
             gate_id=gate_id, reviewer_role=reviewer_role, reviewer_ref=reviewer_ref,
             scope=scope, evidence_content=evidence_content, decision=decision,
+            artifact_creator_agent=artifact_creator_agent,
+            reviewer_agent=reviewer_agent,
         )
         rec.is_synthetic = True
         return rec

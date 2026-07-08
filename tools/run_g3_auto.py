@@ -303,7 +303,7 @@ def guardrail_check(artifact, n_adjusted, effect_val, missing_sd=False):
 
 def generate_artifact(study, topic, design_code, design_primary, alpha, power, effect_val, effect_type,
                       n_per_group, n_total, n_adjusted, dropout, formula_used, sens_rows, sens_mults,
-                      p_event, run_date, sd=None):
+                      p_event, run_date, sd=None, design_ambiguous=False):
     """Sinh A4 — Kế hoạch cỡ mẫu."""
     study_safe = study.replace(" ", "-")
     lines = [
@@ -358,6 +358,15 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
             "",
             f"**KẾT LUẬN:** Nghiên cứu cần tuyển **{n_adjusted} người tham gia** (chia đều {n_per_group} mỗi nhóm).",
         ]
+        if design_ambiguous:
+            lines += [
+                "",
+                f"> ⚠️ **[CẦN BÁC SĨ XÁC NHẬN THIẾT KẾ TRƯỚC KHI DÙNG N NÀY]** — G1 gán thiết kế "
+                f"`{design_code}` làm PLACEHOLDER TẠM (lĩnh vực đã bão hòa cả RCT lẫn SR/MA, bác sĩ "
+                "CHƯA xác nhận khoảng trống thật — xem G1 A2 §khoảng trống). N ở trên tính đúng công "
+                f"thức cho thiết kế `{design_code}` NHƯNG có thể phải tính LẠI nếu bác sĩ chọn thiết kế "
+                "khác (SR/MA cập nhật không cần cỡ mẫu kiểu này, hoặc RCT nhắm phân nhóm cụ thể).",
+            ]
     else:
         lines += [
             "**⚠ Chưa tính được** — bác sĩ cần cung cấp effect size.",
@@ -500,6 +509,11 @@ def main():
     topic = (g0_cp.get("topic") or study)
     design_code = g1_cp.get("design", {}).get("internal_code") or "cohort"
     design_primary = g1_cp.get("design", {}).get("primary") or "Cohort tiến cứu"
+    # THÊM 2026-07-08: G1 gắn cờ ambiguous=True khi "cohort" chỉ là placeholder
+    # tạm (lĩnh vực bão hòa RCT+SR, bác sĩ CHƯA xác nhận khoảng trống thật) —
+    # N tính ra dưới đây vẫn là số thật theo công thức, nhưng PHẢI cảnh báo
+    # NGAY cạnh giá trị N rằng thiết kế nền chưa được xác nhận (CRIT-06).
+    design_ambiguous = bool(g1_cp.get("design", {}).get("ambiguous", False))
     effect_samples = g1_cp.get("effect_size_samples", [])
     print(f"  → Topic: {topic[:60]}")
     print(f"  → Design: {design_code} | {design_primary}")
@@ -691,7 +705,8 @@ def main():
     artifact = generate_artifact(
         study, topic, design_code, design_primary, alpha, power,
         effect_val, effect_type, n_per_group, n_total, n_adjusted,
-        dropout, formula_used, sens_rows, sens_mults, p_event, run_date, args.sd
+        dropout, formula_used, sens_rows, sens_mults, p_event, run_date, args.sd,
+        design_ambiguous=design_ambiguous,
     )
     md_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md"
     md_path.write_text(artifact, encoding="utf-8")
@@ -787,7 +802,7 @@ def main():
         "gate": "G3", "study": study, "run_date": run_date,
         "gate_status": ("BLOCKED — CHỜ EFFECT SIZE/CÔNG THỨC"
                         if exit_code == GC.EXIT_BLOCKED else "DRAFT — CHỜ BÁC SĨ XÁC NHẬN"),
-        "design_code": design_code, "alpha": alpha, "power": power,
+        "design_code": design_code, "design_ambiguous": design_ambiguous, "alpha": alpha, "power": power,
         "effect_val": effect_val, "effect_type": effect_type,
         "effect_quality": effect_quality,  # "labeled" (có 95%CI) / "crude" (thô) / None (do bác sĩ cung cấp tay)
         "n_per_group": n_per_group, "n_total": n_total, "n_adjusted": n_adjusted,

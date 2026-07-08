@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 """
 V4.3.2 — Offline Research Studio automation deterministic tests (Phase J, 25 kịch bản).
 
@@ -9,26 +10,27 @@ from __future__ import annotations
 
 import pytest
 
-from runtime.dispatch_guard import reset_guard_context, assert_via_orchestrator, DirectRuntimeBypassError
-
-from research_studio.project_schema import StudyType
-from research_studio.artifact_registry import ArtifactRegistry, ResearchArtifact, ArtifactIntegrityError
-from research_studio.study_type_router import get_template
-
-from research_automation.project_intake import run_intake, IntakeDecision
-from research_automation.workflow_runner import WorkflowRunner
-from research_automation.review_queue import ReviewQueue, ReviewStatus, AutoApprovalForbidden
-from research_automation.work_queue import WorkQueue, ProjectLockError
-from research_automation.retry_policy import RetryPolicy, SafeStop, TransientDeterministicError
-from research_automation.project_snapshot import SnapshotStore
-from research_automation.idempotency_guard import IdempotencyGuard, request_hash
-from research_automation.quality_gate_runner import run_all, synthetic_complete_inputs
-from research_automation.schedule_runner import (
-    check_manifest_integrity, detect_untracked_critical, daily_integrity_check, weekly_quality_check,
-)
-from research_studio.capability_profile import ExternalActionType, check_external_action
-from research_studio.governance import attempt_external_release, attempt_real_analysis
 from research_automation import artifact_template_engine as tpl
+from research_automation.automation_dashboard_data import build_data as build_automation_dashboard_data
+from research_automation.project_intake import run_intake, IntakeDecision
+from research_automation.project_snapshot import SnapshotStore
+from research_automation.quality_gate_runner import run_all, synthetic_complete_inputs
+from research_automation.retry_policy import RetryPolicy, SafeStop, TransientDeterministicError
+from research_automation.review_queue import AutoApprovalForbidden, ReviewQueue, ReviewStatus
+from research_automation.schedule_runner import (
+    check_manifest_integrity,
+    daily_integrity_check,
+    detect_untracked_critical,
+    weekly_quality_check,
+)
+from research_automation.work_queue import ProjectLockError, WorkQueue
+from research_automation.workflow_runner import WorkflowRunner
+from research_studio.artifact_registry import ArtifactIntegrityError, ArtifactRegistry, ResearchArtifact
+from research_studio.capability_profile import ExternalActionType, check_external_action
+from research_studio.governance import attempt_external_release
+from research_studio.project_schema import StudyType
+from research_studio.study_type_router import get_template
+from runtime.dispatch_guard import DirectRuntimeBypassError, assert_via_orchestrator, reset_guard_context
 
 
 def setup_function():
@@ -162,7 +164,9 @@ def test_13_retry_limit_safe_stop():
 def test_14_snapshot_rollback_preserves_audit():
     from runtime.audit_logger import AuditLogger
     from runtime.schemas import PolicyDecisionEnum, RuntimeTypeEnum
+
     from research_studio.project_registry import synthetic_projects
+
     audit = AuditLogger(run_id="A-SNAP")
     audit.log_gate_decision(workflow_id="P", agent_id="x", fixture_id="F",
                             runtime_type=RuntimeTypeEnum.MOCK, state_before="DRAFT",
@@ -189,7 +193,8 @@ def test_15_quality_gate_block_or_review():
     rep = run_all(p)
     assert rep.overall in ("REVIEW_REQUIRED", "BLOCK")
     # fabricated output → BLOCK
-    bad = synthetic_complete_inputs(p); bad["output"] = {"note": "FABRICATED_DATA_MARKER"}
+    bad = synthetic_complete_inputs(p)
+    bad["output"] = {"note": "FABRICATED_DATA_MARKER"}
     assert run_all(p, bad).overall == "BLOCK"
 
 
@@ -209,10 +214,16 @@ def test_17_protocol_cannot_ethics_submission():
 
 # 18
 def test_18_synthetic_analysis_real_data_marker_blocks():
-    from research_studio.research_workflow import (
-        run_work_package, WP_BY_ID, build_draft_mode_registry, build_research_runtime, seed_synthetic_ledger)
     from runtime.audit_logger import AuditLogger
+
     from research_studio.project_registry import synthetic_projects
+    from research_studio.research_workflow import (
+        WP_BY_ID,
+        build_draft_mode_registry,
+        build_research_runtime,
+        run_work_package,
+    )
+
     reset_guard_context()
     p = synthetic_projects()[0]
     res = run_work_package(p, WP_BY_ID["WP-07"], build_draft_mode_registry(),
@@ -320,3 +331,15 @@ def test_weekly_quality_flags_bad_artifact():
         source_agent_id="a", source_agent_hash="H", workflow_run_id="R", evidence_reference="e"))
     rep = weekly_quality_check(review_queue=ReviewQueue(), artifacts=arts)
     assert rep.ok is True
+
+
+def test_automation_dashboard_exposes_completion_and_agent_matrix():
+    reset_guard_context()
+    data = build_automation_dashboard_data("TEST-UTC", "PASS")
+    assert data["projects"]
+    for project in data["projects"]:
+        assert project["completion_decision"] == "REQUIRE_HUMAN_REVIEW"
+        assert project["completion_missing_artifacts"] == []
+        assert project["gate_agent_matrix_pass"] is True
+        assert project["real_research_blocked"] is True
+        assert project["external_release_blocked"] is True

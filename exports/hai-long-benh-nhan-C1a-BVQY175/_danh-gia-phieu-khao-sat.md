@@ -51,3 +51,16 @@ Bác sĩ đã xác nhận (2026-07-06) Khoa C1a không cần phân biệt quân 
 Bộ câu hỏi được thiết kế khá chỉn chu (đặc biệt là việc tách riêng mục hài lòng chung G1 khỏi các lĩnh vực chi tiết — một quyết định thiết kế tốt hơn giả định ban đầu của đề cương). Các điểm 3.1–3.2 là gợi ý chỉnh sửa nhỏ, không bắt buộc; 3.3–3.4 là lưu ý về cách báo cáo/quản trị dữ liệu, đã được phản ánh vào đề cương; 3.5 đã xác nhận với bác sĩ. Không phát hiện lỗi nghiêm trọng nào cần dừng lại để sửa trước khi tiếp tục.
 
 **Cần bác sĩ kiểm chứng.**
+
+---
+
+## 5. Cập nhật 2026-07-07 — sau vòng phản biện độc lập (9 vấn đề P0)
+
+Các đề xuất 3.1–3.2 ở trên **đã được áp dụng trực tiếp** vào Phụ lục C của đề cương (không còn là "cân nhắc"): mục 1 Phần 1 mở rộng thành ba mức (tự điền/người nhà ghi hộ nguyên văn/điều tra viên ghi hộ nguyên văn — biến `mode_tra_loi`); mục 10 Phần 1 đổi lựa chọn (4) thành "Chủ động chọn khám với một bác sĩ/chuyên khoa cụ thể theo yêu cầu riêng".
+
+Phản biện độc lập nêu thêm các điểm KHÔNG có trong đánh giá gốc ở trên, cũng đã áp dụng vào Phụ lục C:
+- **C8** đổi từ "Kỹ năng thực hiện các y lệnh, thủ thuật" sang "Sự cẩn thận, nhẹ nhàng và tôn trọng sự riêng tư của nhân viên khi thực hiện thủ thuật/y lệnh" — người bệnh không quan sát/đánh giá được kỹ năng chuyên môn kỹ thuật.
+- **A3, A4, C8, D2, D3** thêm khả năng mã 7 "Không sử dụng dịch vụ này" — trước đây các mục này ngầm định ai cũng áp dụng được, gộp chung "không áp dụng" với "không trả lời" vào một mã 9 duy nhất (nay tách ba mã 7/8/9 — mục 4.5.2, 4.6.1 đề cương).
+- Phần 5 (xác nhận đồng thuận) đã được **bỏ hẳn khỏi phiếu khảo sát này** — phiếu nay chỉ còn 4 phần; đồng thuận là một tài liệu ICF riêng (Phụ lục B).
+
+Đây vẫn là **bản đưa vào hội đồng chuyên gia + cognitive interview + pilot** (mục 4.5.1 đề cương), chưa phải phiên bản khóa cuối — các chỉnh sửa câu chữ ở trên là điểm khởi đầu cho vòng kiểm định đó, không phải kết luận cuối cùng.

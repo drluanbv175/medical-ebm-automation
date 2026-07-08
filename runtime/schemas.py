@@ -5,10 +5,10 @@ KHÔNG PII, KHÔNG API.
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Any
-
+from typing import Optional
 
 # ─── Enums ────────────────────────────────────────────────────────────────────
 
@@ -111,6 +111,8 @@ class ApprovalRecord:
     evidence_hash: str
     timestamp_utc: str
     supersedes: Optional[str] = None
+    artifact_creator_agent: Optional[str] = None
+    reviewer_agent: Optional[str] = None
     _created_by_agent: bool = False    # internal — Agent-created bị block
     # V4.3: marker CẤU TRÚC (không chỉ free-text) — True = approval mô phỏng,
     # TUYỆT ĐỐI không phải phê duyệt người. Hiển thị trong export + truy vấn được.

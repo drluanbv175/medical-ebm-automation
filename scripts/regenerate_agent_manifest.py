@@ -66,7 +66,12 @@ def main() -> int:
           f"(hiện quét được {len(rows)}).")
 
     if args.write:
-        SCOPE_A_MANIFEST_PATH.write_text(content, encoding="utf-8", newline="\n")
+        # SỬA 2026-07-08: Path.write_text() chỉ nhận tham số newline= từ Python
+        # 3.10 — venv dự án đang chạy 3.9 (xem ~/.ebm-venv) nên crash TypeError.
+        # Dùng open() (luôn hỗ trợ newline=) để giữ đúng ý định gốc: ép LF, tránh
+        # Python tự dịch "\n"→os.linesep (sẽ ra CRLF trên Windows, vỡ .gitattributes).
+        with open(SCOPE_A_MANIFEST_PATH, "w", encoding="utf-8", newline="\n") as f:
+            f.write(content)
         print(f"ĐÃ GHI: {SCOPE_A_MANIFEST_PATH}")
     else:
         print("(chế độ xem trước — thêm --write để ghi thật)")

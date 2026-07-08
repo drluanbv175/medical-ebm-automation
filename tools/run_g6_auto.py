@@ -718,10 +718,13 @@ def parse_args():
     p.add_argument("--i-confirm-sap-locked", action="store_true",
                     help="Ghi đè kiểm tra G4/G5 checkpoint khi không tìm thấy file checkpoint "
                          "nhưng SAP+DB thực tế đã khóa. KHÔNG dùng để né việc chưa khóa thật.")
+    p.add_argument("--i-confirm-irb-approved", action="store_true",
+                    help="Ghi đè kiểm tra G2 checkpoint khi không tìm thấy file checkpoint "
+                         "nhưng IRB thực tế đã phê duyệt. KHÔNG dùng để né việc chưa phê duyệt thật.")
     return p.parse_args()
 
 
-def _check_sap_db_locked(i_confirm: bool) -> None:
+def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> None:
     """2026-07-07: script sinh từ template được PHÉP tồn tại trước khi có dữ liệu thật
     (sinh sớm ở G6 FULL AUTO), nhưng phải TỰ CHẶN chạy thật nếu G4 (SAP)/G5 (khóa DB)
     chưa LOCKED — không dựa hoàn toàn vào việc người chạy tự nhớ."""
@@ -743,11 +746,19 @@ def _check_sap_db_locked(i_confirm: bool) -> None:
                 return {}
         return {}
 
+    g2 = _load_cp("G2")
     g4 = _load_cp("G4")
     g5 = _load_cp("G5")
+    g2_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
     g4_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
     g5_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
-    if not (g4_locked and g5_locked) and not i_confirm:
+    if not g2_locked and not i_confirm_irb:
+        print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED cho đề tài __STUDY__.")
+        print(f"   G2_checkpoint: {'✅ LOCKED' if g2_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print("   Không chạy phân tích xác nhận trên dữ liệu thu thập khi chưa có phê duyệt đạo đức thật.")
+        print("   Nếu IRB THỰC TẾ đã phê duyệt nhưng thiếu checkpoint, thêm --i-confirm-irb-approved.")
+        sys.exit(1)
+    if not (g4_locked and g5_locked) and not i_confirm_sap:
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED cho đề tài __STUDY__.")
         print(f"   G4_checkpoint: {'✅ LOCKED' if g4_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
         print(f"   G5_checkpoint: {'✅ LOCKED' if g5_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
@@ -949,7 +960,7 @@ def export_docx(tbl1, cox_res, km_path, out_path, study_name, exposure, outcome,
 
 def main():
     args = parse_args()
-    _check_sap_db_locked(args.i_confirm_sap_locked)
+    _check_sap_db_locked(args.i_confirm_sap_locked, args.i_confirm_irb_approved)
     data_path  = Path(args.data)
     out_dir    = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1072,10 +1083,13 @@ def parse_args():
     p.add_argument("--i-confirm-sap-locked", action="store_true",
                     help="Ghi đè kiểm tra G4/G5 checkpoint khi không tìm thấy file checkpoint "
                          "nhưng SAP+DB thực tế đã khóa. KHÔNG dùng để né việc chưa khóa thật.")
+    p.add_argument("--i-confirm-irb-approved", action="store_true",
+                    help="Ghi đè kiểm tra G2 checkpoint khi không tìm thấy file checkpoint "
+                         "nhưng IRB thực tế đã phê duyệt. KHÔNG dùng để né việc chưa phê duyệt thật.")
     return p.parse_args()
 
 
-def _check_sap_db_locked(i_confirm: bool) -> None:
+def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> None:
     """2026-07-07: tự chặn chạy thật nếu G4 (SAP)/G5 (khóa DB) chưa LOCKED."""
     import json as _json
     import re as _re
@@ -1095,11 +1109,19 @@ def _check_sap_db_locked(i_confirm: bool) -> None:
                 return {}
         return {}
 
+    g2 = _load_cp("G2")
     g4 = _load_cp("G4")
     g5 = _load_cp("G5")
+    g2_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
     g4_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
     g5_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
-    if not (g4_locked and g5_locked) and not i_confirm:
+    if not g2_locked and not i_confirm_irb:
+        print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED cho đề tài __STUDY__.")
+        print(f"   G2_checkpoint: {'✅ LOCKED' if g2_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print("   Không chạy phân tích xác nhận trên dữ liệu thu thập khi chưa có phê duyệt đạo đức thật.")
+        print("   Nếu IRB THỰC TẾ đã phê duyệt nhưng thiếu checkpoint, thêm --i-confirm-irb-approved.")
+        sys.exit(1)
+    if not (g4_locked and g5_locked) and not i_confirm_sap:
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED cho đề tài __STUDY__.")
         print(f"   G4_checkpoint: {'✅ LOCKED' if g4_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
         print(f"   G5_checkpoint: {'✅ LOCKED' if g5_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
@@ -1274,7 +1296,7 @@ def export_docx(tbl1, lr_res, out_path, study_name, exposure, outcome, matched):
 
 def main():
     args = parse_args()
-    _check_sap_db_locked(args.i_confirm_sap_locked)
+    _check_sap_db_locked(args.i_confirm_sap_locked, args.i_confirm_irb_approved)
     data_path  = Path(args.data)
     out_dir    = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

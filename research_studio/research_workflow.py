@@ -39,13 +39,14 @@ from .project_schema import (
     ResearchProject,
     ResearchWorkflowState,
     ReviewStatus,
-    StudyType,
 )
 from .research_quality_checks import (
     ResearchGateDecision,
     safety_gates_on_output,
     worst_decision,
 )
+from .research_preflight import ResearchPreflightReport, evaluate_research_preflight
+from .study_type_router import get_template
 
 # Nhãn synthetic approval — KHÔNG phải người thật (chỉ test plumbing).
 SYNTHETIC_REVIEWER_ROLE = "SYNTHETIC_TECHNICAL_FIXTURE"
@@ -207,6 +208,8 @@ def seed_synthetic_ledger() -> ApprovalLedger:
             evidence_content=f"SYNTHETIC-EVIDENCE-{gate}",
             reviewer_role=SYNTHETIC_REVIEWER_ROLE, reviewer_ref=SYNTHETIC_REVIEWER_REF,
             decision=ApprovalDecisionEnum.APPROVED,
+            artifact_creator_agent="research-studio-synthetic-fixture",
+            reviewer_agent="technical-harness-reviewer",
         )
         ledger.add_approval(rec, created_by_agent=False)
     return ledger
@@ -293,6 +296,30 @@ def run_work_package(
         gate_approvals_synthetic=False,   # mức A KHÔNG dùng approval cổng nào
     )
     artifacts.register(artifact)  # fail-closed nếu thiếu hash
+
+    if wp.wp_id == "WP-08":
+        template = get_template(project.study_type)
+        reporting_artifact = ResearchArtifact(
+            artifact_id=f"{project.project_id}:REPORTING_CHECKLIST_DRAFT",
+            project_id=project.project_id,
+            artifact_type="REPORTING_CHECKLIST_DRAFT",
+            artifact_version="0.1-draft",
+            source_agent_id=wp.lead_agent,
+            source_agent_hash=ctx.agent_source_hash,
+            workflow_run_id=ctx.run_id,
+            evidence_reference=(result.audit_event.run_id if result.audit_event else "NO_AUDIT"),
+            review_status=ReviewStatus.PENDING_HUMAN_REVIEW,
+            draft_only=True,
+            human_review_required=True,
+            content_summary=(
+                f"{template.reporting_checklist} reporting checklist shell "
+                f"for {project.study_type.value} (synthetic, DRAFT_CREATION)"
+            ),
+            governance_level="DRAFT_CREATION",
+            gate_approvals_synthetic=False,
+        )
+        artifacts.register(reporting_artifact)
+
     return WPRunResult(wp.wp_id, project.project_id, result, gates, decision, artifact)
 
 
@@ -313,6 +340,7 @@ class ProjectRunResult:
     artifacts: List[ResearchArtifact]
     blocked: bool
     block_reason: Optional[str] = None
+    preflight_report: Optional[ResearchPreflightReport] = None
 
 
 def run_project(
@@ -328,6 +356,24 @@ def run_project(
     G2/G4/G9. Không seed synthetic approval trong luồng draft.
     """
     registry = registry or build_draft_mode_registry()
+    full_registry = build_research_registry()
+    preflight = evaluate_research_preflight(
+        project,
+        full_registry=full_registry,
+        draft_registry=registry,
+    )
+    if preflight.decision == ResearchGateDecision.BLOCK:
+        project.workflow_state = DraftWorkflowState.BLOCKED
+        return ProjectRunResult(
+            project_id=project.project_id,
+            wp_results=[],
+            final_state=DraftWorkflowState.BLOCKED,
+            artifacts=[],
+            blocked=True,
+            block_reason="PREFLIGHT_BLOCK:" + ",".join(preflight.reason_codes),
+            preflight_report=preflight,
+        )
+
     ledger = ApprovalLedger()                       # RỖNG — draft không cần cổng
     runtime = build_research_runtime()
     audit_logger = AuditLogger(run_id=f"AUDIT-{project.project_id}")
@@ -345,7 +391,8 @@ def run_project(
             return ProjectRunResult(project.project_id, results,
                                     DraftWorkflowState.BLOCKED,
                                     artifacts.for_project(project.project_id),
-                                    blocked=True, block_reason=r.reason_code)
+                                    blocked=True, block_reason=r.reason_code,
+                                    preflight_report=preflight)
         # advance state qua state machine (WP-01 ở INTAKE = state khởi đầu, bỏ qua)
         if wp.research_state != DraftWorkflowState.INTAKE:
             t = sm.request(wp.research_state)
@@ -354,7 +401,8 @@ def run_project(
                 return ProjectRunResult(project.project_id, results,
                                         DraftWorkflowState.BLOCKED,
                                         artifacts.for_project(project.project_id),
-                                        blocked=True, block_reason=t.reason_code)
+                                        blocked=True, block_reason=t.reason_code,
+                                        preflight_report=preflight)
         project.workflow_state = sm.state
         field = _STATUS_FIELD_BY_WP.get(wp.wp_id)
         if field:
@@ -364,4 +412,5 @@ def run_project(
     project.workflow_state = sm.state
     return ProjectRunResult(project.project_id, results,
                             sm.state,
-                            artifacts.for_project(project.project_id), blocked=False)
+                            artifacts.for_project(project.project_id), blocked=False,
+                            preflight_report=preflight)

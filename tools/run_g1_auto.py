@@ -385,6 +385,13 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     n_sr  = gaps.get("n_sr", 0)
     n_rct = gaps.get("n_rct", 0)
     topic_lower = topic.lower()
+    # THÊM 2026-07-08: nhánh bão hòa RCT+SR dưới đây gán internal_code="cohort"
+    # làm PLACEHOLDER TẠM (bác sĩ CHƯA xác nhận khoảng trống thật) — nhưng
+    # run_g3_auto.py vẫn đọc thẳng "cohort" này và tính N THẬT, không có cờ
+    # nào phân biệt với "cohort" đã bác sĩ xác nhận thật. Cờ `ambiguous` lan
+    # xuống G3/G10 để buộc cảnh báo NGAY cạnh giá trị N (khoảng trống liêm
+    # chính phát hiện qua kiểm định đối kháng, 2026-07-08).
+    ambiguous = False
 
     # ── Phát hiện từ khóa thiết kế tường minh trong topic ──
     if _kw_in(DESIGN_KEYWORD_HINTS["sr"], topic_lower):
@@ -431,6 +438,7 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
             primary = ("⚠️ CẦN BÁC SĨ XÁC NHẬN KHOẢNG TRỐNG TRƯỚC KHI CHỌN THIẾT KẾ "
                        "(lĩnh vực đã bão hòa cả RCT lẫn SR/MA)")
             internal = "cohort"  # placeholder tạm, KHÔNG dùng để tính cỡ mẫu/CRF trước khi bác sĩ xác nhận
+            ambiguous = True
             alt1 = ("Nếu khoảng trống là QUẦN THỂ ĐẶC THÙ (VN/châu Á/dân tộc — "
                     f"{'phát hiện dấu hiệu này trong ghi chú G0' if population_specific else 'CHƯA thấy dấu hiệu này trong ghi chú G0, cần bác sĩ xác nhận'}"
                     "): Cohort tiến cứu quần thể đặc thù (pragmatic)")
@@ -517,6 +525,7 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
         "rationale": rationale,
         "reporting_standard": reporting,
         "bias_controls": BIAS_CONTROLS.get(internal, BIAS_CONTROLS["cohort"]),
+        "ambiguous": ambiguous,
     }
 
 
@@ -1133,6 +1142,7 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
             "internal_code": design["internal_code"],
             "reporting_standard": design["reporting_standard"],
             "alternative_1": design["alternative_1"],
+            "ambiguous": design.get("ambiguous", False),
         },
         "specialist_modules": specialist_modules or [],
         "effect_sizes_found": len(effects),

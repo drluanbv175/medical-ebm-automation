@@ -189,7 +189,7 @@ Do nhóm nghiên cứu tự ấn định (tương thích khái niệm với tiê
 
 ### 4.4.1. Cỡ mẫu
 
-**Cỡ mẫu nghiên cứu là 1000, do Hội đồng ấn định.** Con số này được biện minh về mặt phương pháp như sau. Vì kết cục phân tích chính của Mục tiêu 2 là điểm hài lòng chung dạng liên tục (mục 4.5.2), phần lớn lập luận cỡ mẫu cho Mục tiêu 2 dưới đây được trình bày theo **số tham số (bậc tự do) của mô hình**, chứ không theo "số biến"; mỗi biến hạng mục có *k* mức đóng góp (*k* − 1) tham số, mỗi biến liên tục đóng góp 1 tham số, và mỗi số hạng tương tác đóng góp thêm tham số.
+**Cỡ mẫu nghiên cứu là 1000, do Hội đồng ấn định.** Con số này được biện minh về mặt phương pháp như sau. Kết cục phân tích chính của Mục tiêu 2 là G1 — một biến **thứ hạng (ordinal) 5 mức**, phân tích bằng **hồi quy logistic thứ tự proportional odds** (mục 4.5.2, 4.10); phần lớn lập luận cỡ mẫu cho Mục tiêu 2 dưới đây được trình bày theo **số tham số (bậc tự do) của mô hình**, chứ không theo "số biến"; mỗi biến hạng mục có *k* mức đóng góp (*k* − 1) tham số, mỗi biến liên tục đóng góp 1 tham số, và mỗi số hạng tương tác đóng góp thêm tham số.
 
 **Cỡ mẫu tối thiểu cho Mục tiêu 1 (ước lượng một tỷ lệ theo độ chính xác)** áp dụng công thức của Lwanga & Lemeshow (WHO, 1991):
 
@@ -199,11 +199,13 @@ với Z₁₋α/₂ = 1,96 (α = 0,05 hai đuôi), tỷ lệ hài lòng kỳ v�
 
 n₀ = 1,96² × 0,50 × 0,50 / 0,05² = 384,16 → **n₁ = 385** (chưa bù không trả lời). Dự phòng tỷ lệ không trả lời/phiếu lỗi 15%, cỡ mẫu cho riêng Mục tiêu 1 ≈ 385 / (1 − 0,15) ≈ **453**.
 
-**Cỡ mẫu tối thiểu cho Mục tiêu 2.** Vì kết cục phân tích chính là biến liên tục (điểm hài lòng chung), quy tắc chi phối là quy tắc cho **hồi quy tuyến tính đa biến**: để kiểm định từng hệ số cần tối thiểu khoảng *n* ≥ 104 + *p* (với *p* là tổng số tham số dự báo trong mô hình),[19] hoặc theo quy tắc thận trọng ~15–20 quan sát trên mỗi tham số. Đây là quy tắc kinh nghiệm giả định hiệu ứng cỡ trung bình (medium effect size); quy tắc này không thay thế biện minh cỡ mẫu chính thức bằng mô phỏng. Với tổng số tham số dự kiến *p* của mô hình chính ước khoảng 15–25 (tùy danh mục biến và số hạng tương tác được chốt ở SAP), cả hai quy tắc đều cho cỡ mẫu tối thiểu thấp hơn nhiều so với n = 1000.
+**Cỡ mẫu tối thiểu cho Mục tiêu 2 — mô hình chính (hồi quy logistic thứ tự proportional odds trên G1).** Chưa có một công thức đơn giản, được đồng thuận rộng rãi cho cỡ mẫu của hồi quy logistic thứ tự (khác với hồi quy tuyến tính hay logistic nhị phân). Quy tắc thực dụng được đề tài áp dụng là **mở rộng quy tắc events-per-parameter (EPV ≥ 10) của hồi quy logistic nhị phân**[12] sang mô hình thứ tự, theo hướng dẫn practical của Bender & Grouven về hồi quy logistic thứ tự trong nghiên cứu y học:[20] coi mô hình proportional odds như một họ các so sánh nhị phân lồng nhau tại từng ranh giới cắt (cut-point) giữa các mức của G1, và ràng buộc chặt nhất rơi vào **mức ít gặp nhất trong 5 mức của G1** (nhiều khả năng là mức 1 "Rất không hài lòng", do hiệu ứng trần điểm dự kiến — mục 4.8). Với tổng số tham số dự kiến *p* của mô hình chính ước khoảng 15–25 (tùy danh mục biến và không có số hạng tương tác định trước — mục 4.6.2, 4.10), quy tắc EPV ≥ 10 áp cho mức ít gặp nhất đòi hỏi khoảng 150–250 quan sát ở đúng mức đó; đây là ràng buộc cần được rà lại bằng dữ liệu mô tả thật (Bảng 5.2) ngay khi có, và là một trong các lý do khiến n = 1000 (thay vì n tối thiểu theo lý thuyết) là một biên độ an toàn hợp lý cho outcome thứ hạng có khả năng lệch phân bố.
 
-Kết cục nhị phân "hài lòng/chưa hài lòng" chỉ là kết cục thứ cấp/mô tả (mục 4.5.2). Trong trường hợp thực hiện hồi quy logistic cho kết cục thứ cấp này, quy tắc áp dụng là tối thiểu ~10 biến cố trên mỗi tham số (events-per-parameter ≥ 10).[12] Cần lưu ý một nghịch lý phương pháp: khi tỷ lệ hài lòng cao (theo y văn ngoại trú Việt Nam thường 73–85%),[2] nhóm "chưa hài lòng" nhỏ, khiến ràng buộc events-per-parameter trở nên chặt hơn. Với giả định tỷ lệ "chưa hài lòng" ≈ 15% (hài lòng ≈ 85%), mô hình khoảng 8–10 tham số cần khoảng 534–667 đối tượng; nếu hài lòng ≈ 90% (chưa hài lòng ≈ 10%) và mô hình khoảng 10 tham số thì cần khoảng 1000.
+**Cỡ mẫu cho phân tích nhạy cảm (hồi quy tuyến tính robust HC3 trên G1 coi là liên tục).** Phân tích nhạy cảm dùng hồi quy tuyến tính đa biến (mục 4.10) áp quy tắc kinh điển cho hồi quy tuyến tính: để kiểm định từng hệ số cần tối thiểu khoảng *n* ≥ 104 + *p* (với *p* là tổng số tham số dự báo trong mô hình),[19] hoặc theo quy tắc thận trọng ~15–20 quan sát trên mỗi tham số. Đây là quy tắc kinh nghiệm giả định hiệu ứng cỡ trung bình (medium effect size); quy tắc này không thay thế biện minh cỡ mẫu chính thức bằng mô phỏng. Với *p* ước khoảng 15–25, quy tắc này cho cỡ mẫu tối thiểu thấp hơn nhiều so với n = 1000 — đây là phân tích nhạy cảm, không phải mô hình chi phối quyết định cỡ mẫu.
 
-**Kết luận về cỡ mẫu:** Với n phân tích mục tiêu là 1.000, nghiên cứu có độ chính xác tốt cho Mục tiêu 1. Đối với hồi quy tuyến tính của outcome liên tục (kết cục chính), số tham số của mô hình chính được giới hạn theo danh mục biến định trước và tính khả thi thực tế. Đối với hồi quy logistic thứ cấp, số tham số chỉ được xác định sau khi biết số trường hợp chưa hài lòng; nếu số biến cố không đủ, phân tích logistic đa biến sẽ không thực hiện hoặc sẽ rút gọn theo kế hoạch đã khóa. Ở n = 1000, độ chính xác của ước lượng tỷ lệ (Mục tiêu 1) đạt nửa rộng khoảng tin cậy 95% ≈ ±3,1% (khi p = 0,5) – chặt hơn mức thường quy ±5%.
+Kết cục nhị phân "hài lòng/chưa hài lòng" chỉ là kết cục thứ cấp/mô tả (mục 4.5.2). Trong trường hợp thực hiện hồi quy logistic nhị phân cho kết cục thứ cấp này, quy tắc áp dụng cũng là tối thiểu ~10 biến cố trên mỗi tham số (events-per-parameter ≥ 10).[12] Cần lưu ý một nghịch lý phương pháp: khi tỷ lệ hài lòng cao (theo y văn ngoại trú Việt Nam thường 73–85%),[2] nhóm "chưa hài lòng" nhỏ, khiến ràng buộc events-per-parameter trở nên chặt hơn. Với giả định tỷ lệ "chưa hài lòng" ≈ 15% (hài lòng ≈ 85%), mô hình khoảng 8–10 tham số cần khoảng 534–667 đối tượng; nếu hài lòng ≈ 90% (chưa hài lòng ≈ 10%) và mô hình khoảng 10 tham số thì cần khoảng 1000.
+
+**Kết luận về cỡ mẫu:** Với n phân tích mục tiêu là 1.000, nghiên cứu có độ chính xác tốt cho Mục tiêu 1. Đối với mô hình chính (logistic thứ tự trên outcome G1), số tham số được giới hạn theo danh mục biến định trước và tính khả thi thực tế, và ràng buộc chặt nhất là số quan sát ở mức ít gặp nhất của G1 (rà lại bằng dữ liệu mô tả thật ngay khi có). Đối với hồi quy logistic nhị phân thứ cấp, số tham số chỉ được xác định sau khi biết số trường hợp chưa hài lòng; nếu số biến cố không đủ, phân tích logistic đa biến sẽ không thực hiện hoặc sẽ rút gọn theo kế hoạch đã khóa. Ở n = 1000, độ chính xác của ước lượng tỷ lệ (Mục tiêu 1) đạt nửa rộng khoảng tin cậy 95% ≈ ±3,1% (khi p = 0,5) – chặt hơn mức thường quy ±5%.
 
 Bảng độ nhạy dưới đây minh họa các giả định chi phối cỡ mẫu để làm rõ vì sao n = 1000 là dư an toàn.
 
@@ -229,7 +231,7 @@ Toàn bộ tính toán được thực hiện bằng Python (scipy.stats, statsm
 
 ### 4.4.2. Phương pháp chọn mẫu
 
-Áp dụng **chọn mẫu hệ thống** (systematic sampling) trên dòng người bệnh hoàn tất lượt khám tại Khoa C1a. Khoa có dòng người bệnh liên tục và có số thứ tự khám, tạo thành một khung mẫu động tự nhiên phù hợp với chọn mẫu hệ thống, đồng thời loại bỏ được nguồn sai lệch lớn nhất và khó kiểm soát nhất ở khảo sát hài lòng phòng khám – việc điều tra viên "tự chọn" đối tượng dễ tính.
+Áp dụng **chọn mẫu hệ thống PHÂN TẦNG** (stratified systematic sampling) trên dòng người bệnh hoàn tất lượt khám tại Khoa C1a, phân tầng theo **ngày trong tuần × khung giờ khám**. Khoa có dòng người bệnh liên tục và có số thứ tự khám, tạo thành một khung mẫu động tự nhiên phù hợp với chọn mẫu hệ thống, đồng thời loại bỏ được nguồn sai lệch lớn nhất và khó kiểm soát nhất ở khảo sát hài lòng phòng khám – việc điều tra viên "tự chọn" đối tượng dễ tính.
 
 *Bảng 4.2b. Tham số quy đổi cỡ mẫu cần tiếp cận.*
 
@@ -237,12 +239,17 @@ Toàn bộ tính toán được thực hiện bằng Python (scipy.stats, statsm
 |---|---|
 | Cỡ mẫu cần phân tích | 1000 |
 | Tỷ lệ không đáp ứng/phiếu lỗi dự kiến | 15% |
-| Số người cần mời tối thiểu | 1177 (= 1000 / 0,85) |
-| Số làm tròn nên tiếp cận | 1180–1250 |
+| Số người cần mời tối thiểu (n cần mời, toàn kỳ) | 1177 (= 1000 / 0,85) |
+| Số làm tròn nên tiếp cận (toàn kỳ) | 1180–1250 |
 
-- **Bước nhảy k** = (số người **cần mời**, đã cộng dự phòng không đáp ứng, ước tính theo bảng trên) ÷ (tổng số người bệnh đủ điều kiện dự kiến trong kỳ) — **không phải** tổng lượt khám chia cho 1000; lưu lượng khám/kỳ và số người đủ điều kiện dự kiến là số vận hành, ấn định trong kế hoạch triển khai;
-- **Điểm khởi đầu ngẫu nhiên** trong khoảng [1, k] (bốc số/bảng số ngẫu nhiên);
-- **Phủ đều khung giờ và ngày trong tuần** để tránh dồn vào giờ cao điểm.
+**Công thức bước nhảy theo tầng (đã sửa hướng công thức so với bản trước, đối chiếu phản biện độc lập 07/07/2026).** Với mỗi tầng *h* = (ngày trong tuần) × (khung giờ khám, mục 4.6.2: sáng sớm/cuối sáng/đầu chiều/cuối chiều):
+
+- **N_h** = số người bệnh **đủ điều kiện dự kiến** trong tầng *h* (ước lượng từ lưu lượng khám lịch sử của Khoa C1a — số vận hành, ấn định trong kế hoạch triển khai);
+- **n_h** = số người **cần mời** trong tầng *h*, phân bổ theo tỷ lệ lưu lượng của tầng đó trên tổng số cần mời toàn kỳ (1180–1250, xem bảng trên);
+- **Bước nhảy k_h = N_h / n_h** — số đủ điều kiện dự kiến **chia cho** số cần mời (không phải chiều ngược lại). Bước nhảy chỉ vận hành được khi **k_h ≥ 1**; nếu một tầng có N_h < n_h (lưu lượng tầng thấp hơn số cần mời được phân bổ), tầng đó được khảo sát **toàn bộ** người đủ điều kiện (k_h = 1, không bỏ sót ai) và phần thiếu hụt còn lại được phân bổ lại cho các tầng khác còn dư lưu lượng;
+- **Điểm khởi đầu ngẫu nhiên** riêng cho từng tầng, trong khoảng [1, k_h] (bốc số/bảng số ngẫu nhiên).
+
+Bảng tính N_h/n_h/k_h theo từng tầng cụ thể (dựa trên số liệu lưu lượng thực tế của Khoa C1a) được lập thành **SOP chọn mẫu** vận hành, hoàn tất và kiểm tra qua dry-run (xem dưới) **trước khi** thu thập chính thức.
 
 **Sổ nhật ký chọn mẫu và tỷ lệ đáp ứng.** Điều tra viên ghi **sổ nhật ký** số người được mời, số đồng ý và số từ chối để tính và mô tả tỷ lệ đáp ứng (STROBE mục 13).
 
@@ -250,21 +257,24 @@ Toàn bộ tính toán được thực hiện bằng Python (scipy.stats, statsm
 
 **Chống trùng.** Mỗi người bệnh chỉ tham gia **một lần** trong cả kỳ thu thập. Trước khi phát phiếu, điều tra viên hỏi nhanh người bệnh "đã tham gia khảo sát này trong đợt chưa"; nếu đã tham gia thì bỏ qua và chuyển sang người kế tiếp đủ tiêu chuẩn.
 
-**Bảo đảm tính khả thi của chọn mẫu hệ thống — tập huấn và phân công.** Để chọn mẫu hệ thống chạy được khi phòng khám đông, phân công **một người chuyên trách theo dõi số thứ tự dòng người bệnh** (đếm và xác định đúng người thứ *k*), **không kiêm nhiệm** việc phát/thu phiếu; việc phát phiếu và hỗ trợ đọc do điều tra viên khác đảm nhận. Toàn bộ điều tra viên được **tập huấn chuẩn hóa** theo kịch bản mời và quy tắc bước *k*/thay thế/chống trùng, và có một **buổi dry-run quy trình** (chọn mẫu, mời tham gia, phát–thu phiếu, quản hòm phiếu và ghép dữ liệu thời gian chờ) ngay tại khu vực khảo sát **trước ngày thu thập chính thức**, để rà quy trình đếm, mời và quản hòm phiếu trong điều kiện lưu lượng thực. Dry-run này diễn tập quy trình chọn mẫu/phát–thu phiếu; đây là bộ câu hỏi tự xây dựng (mục 4.5.1) nên khác với việc dùng nguyên trạng một thang chuẩn quốc gia, đề tài cần đối chiếu độ rõ ràng/dễ hiểu của câu chữ trong đợt dry-run (không chỉ diễn tập vận hành) và mô tả đặc tính đo lường trong mẫu chính thức (Cronbach's α theo lĩnh vực, floor/ceiling, phân tích nhân tố khám phá — mục 4.5.3). Nếu dry-run có người bệnh thật và thu thập câu trả lời thật, việc này chỉ được thực hiện **sau khi** có phê duyệt đạo đức hoặc theo quyết định của Hội đồng.
+**Bảo đảm tính khả thi của chọn mẫu hệ thống — tập huấn và phân công.** Để chọn mẫu hệ thống phân tầng chạy được khi phòng khám đông, phân công **một người chuyên trách theo dõi số thứ tự dòng người bệnh trong từng tầng** (đếm và xác định đúng người thứ *k_h*), **không kiêm nhiệm** việc phát/thu phiếu; việc phát phiếu và hỗ trợ đọc do điều tra viên khác đảm nhận. Toàn bộ điều tra viên được **tập huấn chuẩn hóa** theo kịch bản mời và quy tắc bước *k_h*/thay thế/chống trùng.
 
-**Ngưỡng chuyển đổi định trước sang phương án dự phòng (chọn theo cụm thời gian).** Phương án dự phòng được **quy định trước**, không phải ứng biến tùy ý. Quy tắc kích hoạt cụ thể: **nếu điều tra viên không thể xác định/tiếp cận đúng người thứ *k* trong 2 khung giờ liên tiếp, hoặc lưu lượng vượt quá khả năng theo dõi thủ công**, thì chuyển sang **chọn mẫu theo cụm thời gian** (khảo sát toàn bộ người bệnh hoàn tất khám trong các khung giờ được bốc ngẫu nhiên) cho phần còn lại của kỳ thu thập — cách này vẫn khách quan hơn chọn thuận tiện. Thời điểm và lý do chuyển đổi (nếu xảy ra) được ghi vào sổ nhật ký và **khai báo minh bạch như một hạn chế trong báo cáo** (STROBE mục 9). Nếu vì ràng buộc thực địa buộc phải dùng chọn thuận tiện, điều này cũng được khai báo minh bạch như một hạn chế. **Nếu phương án dự phòng này được kích hoạt, phân tích PHẢI tính đến design effect/hiệu ứng cụm** (không xử lý dữ liệu như chọn mẫu hệ thống cá thể thông thường) — bổ sung phân tích có xét cụm (ví dụ sai số chuẩn cụm hoặc mô hình hỗn hợp) nếu áp dụng; quy tắc này được nhắc lại và chi tiết hóa tại SAP (Phụ lục A).
+**Dry-run là CỔNG QUYẾT ĐỊNH tính khả thi (feasibility gate), không phải chỉ diễn tập vận hành.** Một buổi dry-run quy trình đầy đủ (chọn mẫu phân tầng, mời tham gia, phát–thu phiếu, quản hòm phiếu và ghép dữ liệu thời gian chờ) được tổ chức tại khu vực khảo sát **trước ngày thu thập chính thức**, trong điều kiện lưu lượng thực, với hai vai trò: (a) kiểm tra tính khả thi vận hành của việc xác định đúng người thứ *k_h* theo từng tầng; và (b) vì đây là bộ câu hỏi tự xây dựng (mục 4.5.1, gắn với pha phát triển công cụ ở mục 4.5.3/4.9), đối chiếu độ rõ ràng/dễ hiểu của câu chữ.
+
+**Nếu dry-run cho thấy chọn mẫu hệ thống phân tầng KHÔNG khả thi** (điều tra viên không xác định/tiếp cận đúng được người thứ *k_h* ở phần lớn các tầng đã thử, hoặc lưu lượng vượt xa khả năng theo dõi thủ công): đề tài **DỪNG trước khi thu thập chính thức**. Đề tài **không** tự động/âm thầm chuyển sang một thiết kế lấy mẫu khác ngay giữa lúc đang thu thập chính thức — vì đổi thiết kế giữa chừng sẽ làm thay đổi design effect, cỡ mẫu hiệu quả và mô hình phân tích đã khóa, phá vỡ tính nhất quán của SAP. Thay vào đó, nhóm nghiên cứu: (1) sửa SOP chọn mẫu và/hoặc trình Hội đồng sửa đổi đề cương chính thức (ví dụ đổi hẳn toàn bộ thiết kế sang chọn mẫu cụm theo khung giờ được bốc ngẫu nhiên, có tính đến design effect ngay từ khâu cỡ mẫu và SAP — không phải một "phương án dự phòng" áp dụng cho riêng phần dữ liệu còn lại); (2) thực hiện lại một buổi dry-run mới theo SOP đã sửa; (3) chỉ bắt đầu (hoặc tiếp tục) thu thập chính thức khi dry-run mới xác nhận khả thi, với một thiết kế lấy mẫu DUY NHẤT áp dụng cho toàn bộ kỳ thu thập. Nếu dry-run có người bệnh thật và thu thập câu trả lời thật, việc này chỉ được thực hiện **sau khi** có phê duyệt đạo đức hoặc theo quyết định của Hội đồng.
 
 ## 4.5. Công cụ đo lường
 
 ### 4.5.1. Công cụ nền
 
-Công cụ thu thập là **"Phiếu khảo sát ý kiến người bệnh ngoại trú"** — một bộ câu hỏi **do nhóm nghiên cứu tự xây dựng riêng cho đề tài này**, KHÔNG phải bản sao nguyên vẹn của Mẫu số 2 (Quyết định 56/QĐ-BYT 2024). Đây là một phiếu duy nhất, gồm 5 phần:
+Công cụ thu thập là **"Phiếu khảo sát ý kiến người bệnh ngoại trú"** — một bộ câu hỏi **do nhóm nghiên cứu tự xây dựng riêng cho đề tài này**, KHÔNG phải bản sao nguyên vẹn của Mẫu số 2 (Quyết định 56/QĐ-BYT 2024). Phiếu gồm **bốn phần** (đối chiếu phản biện độc lập 07/07/2026 — P0-9: đã bỏ phần xác nhận đồng thuận ra khỏi phiếu, chuyển thành tài liệu ICF riêng ở Phụ lục B, mục 4.11):
 
-- **Phần 1 — Thông tin chung** (14 mục): người trả lời phiếu (`DoiTuongTraLoi`), tuổi, giới tính, học vấn, nghề nghiệp, tình trạng hôn nhân, nơi cư trú, thu nhập hộ gia đình, tình trạng thẻ BHYT, lý do khám lần này, số lần khám 12 tháng qua, khoảng cách nhà–viện, phương tiện di chuyển, nguồn thông tin biết đến viện.
+- **Phần 1 — Thông tin chung** (14 mục): cách hoàn thành phiếu (`mode_tra_loi`), tuổi, giới tính, học vấn, nghề nghiệp, tình trạng hôn nhân, nơi cư trú, thu nhập hộ gia đình, tình trạng thẻ BHYT, lý do khám lần này, số lần khám 12 tháng qua, khoảng cách nhà–viện, phương tiện di chuyển, nguồn thông tin biết đến viện.
 - **Phần 2 — Đánh giá mức độ hài lòng theo lĩnh vực**, thang Likert 5 mức (1 = Rất không hài lòng … 5 = Rất hài lòng), **6 lĩnh vực, 30 mục**: **A. Khả năng tiếp cận dịch vụ** (A1–A6); **B. Cơ sở vật chất và phương tiện phục vụ** (B1–B8); **C. Thái độ ứng xử và năng lực chuyên môn của nhân viên y tế** (C1–C10); **D. Minh bạch thông tin và thủ tục khám bệnh** (D1–D3); **E. Kết quả cung cấp dịch vụ** (E1–E2); **F. Chi phí dịch vụ** (F1).
 - **Phần 3 — Đánh giá sự hài lòng chung** (1 mục, **G1**): một mục hỏi **trực tiếp, độc lập** với các lĩnh vực A–F — "Nói chung, Ông/Bà hài lòng ở mức độ nào với tất cả các dịch vụ đã nhận được tại Khoa Khám bệnh trong lần khám này?".
 - **Phần 4 — Ý kiến đóng góp khác** (1 mục mở).
-- **Phần 5 — Xác nhận đồng ý tham gia nghiên cứu**: tick xác nhận đã hiểu thông tin nghiên cứu, chữ ký/điểm chỉ và ngày; mục "họ và tên người tham gia (hoặc mã số phiếu)" cho phép ghi mã số phiếu thay tên để giữ ẩn danh (xem thêm mục 4.11).
+
+Phiếu chỉ mang một **mã nghiên cứu** (không phải số thứ tự khám công khai), không có mục tên/chữ ký/xác nhận đồng thuận nào. Đồng thuận tham gia là một **tài liệu giấy riêng, độc lập** (ICF — Phụ lục B), không phải một phần của phiếu khảo sát này (mục 4.11).
 
 Toàn văn đầy đủ của bộ câu hỏi (từng lĩnh vực, từng mục, đúng số thứ tự A1–F1/G1) được đính kèm ở **Phụ lục C**; không còn khoảng trống chờ bổ sung toàn văn công cụ như các bản trước.
 
@@ -272,21 +282,28 @@ Toàn văn đầy đủ của bộ câu hỏi (từng lĩnh vực, từng mục,
 
 **Vì là bộ câu hỏi tự xây dựng (không phải thang chuẩn quốc gia dùng nguyên trạng), đề tài áp dụng đầy đủ hơn quy trình mô tả đặc tính đo lường trong mẫu (mục 4.5.3)** so với trường hợp dùng nguyên văn một thang đã được kiểm định sẵn.
 
-**Nguồn gốc xây dựng bộ câu hỏi — mục cần chủ nhiệm bổ sung tư liệu:** đề cương này mô tả đúng cấu trúc/nội dung thật của bộ câu hỏi (lấy từ file phiếu đã hoàn chỉnh và codebook do chủ nhiệm cung cấp), nhưng **chưa có tư liệu về quy trình xây dựng** (tham khảo tài liệu/chuyên gia góp ý nội dung nào, có pretest/thử nghiệm nhận thức trên một nhóm nhỏ người bệnh trước khi hoàn thiện phiếu hay không). Đây là chi tiết cần bổ sung cho phần giá trị nội dung (content validity) ở mục 4.5.3 — xem `_checklist-noi-bo.md`.
+**Nguồn gốc xây dựng bộ câu hỏi và pha phát triển công cụ (đã khóa — đối chiếu phản biện độc lập 07/07/2026).** Đề cương này mô tả đúng cấu trúc/nội dung thật của bộ câu hỏi (lấy từ file phiếu đã hoàn chỉnh và codebook do chủ nhiệm cung cấp; toàn văn ở Phụ lục C). Vì đây là bộ câu hỏi **tự xây dựng, sử dụng lần đầu tiên** (không phải một thang chuẩn quốc gia dùng nguyên trạng), đề tài **KHÔNG** dùng Cronbach's α/EFA trên mẫu chính (mục 4.5.3) làm bằng chứng giá trị nội dung duy nhất — một pha phát triển và kiểm định công cụ đầy đủ được thực hiện **TRƯỚC khi thu thập mẫu chính n = 1000**, gồm bốn bước bắt buộc theo trình tự:
+
+1. **Bảng truy xuất nguồn gốc từng item (item-traceability table)**: với mỗi mục trong 30 mục A–F + G1, ghi rõ nguồn gốc (tương thích khái niệm với lĩnh vực nào của Mẫu số 2 — mục 3.2.1; hay là mục bổ sung riêng của đề tài, ví dụ lĩnh vực F chi phí) và lý do đưa vào phiếu. Tài liệu này do chủ nhiệm/nhóm nghiên cứu lập, lưu trong hồ sơ nội bộ.
+2. **Hội đồng chuyên gia và chỉ số giá trị nội dung**: mời **tối thiểu 5–7 chuyên gia** (lâm sàng/quản lý chất lượng bệnh viện/phương pháp nghiên cứu) chấm từng item theo thang liên quan 4 điểm, tính **I-CVI (item-level content validity index) ≥ 0,78** và **S-CVI/Ave (scale-level, trung bình I-CVI) ≥ 0,90** theo phương pháp Polit & Beck.[15] Item không đạt ngưỡng được sửa hoặc loại trước bước kế tiếp.
+3. **Cognitive interview**: phỏng vấn nhận thức (think-aloud/probing) trên **10–15 người bệnh** thuộc quần thể đích (khám ngoại trú theo yêu cầu), để kiểm tra người trả lời hiểu đúng câu chữ, đúng ý định đo lường của từng item (đặc biệt các item vừa sửa ở Phụ lục C: C8, D2, D3, mục 10 Phần 1) và ước lượng lại thời lượng điền phiếu thật.
+4. **Pilot thực địa**: khảo sát thử trên một mẫu nhỏ (đề xuất **n ≈ 50–100**, độc lập với mẫu chính n = 1000, không gộp vào phân tích chính) tại chính Khoa C1a, dùng để rà một lần nữa độ rõ ràng câu chữ trong điều kiện thực và ước lượng sơ bộ phân bố điểm/tỷ lệ sàn-trần.
+
+Chỉ sau khi hoàn tất cả bốn bước và **khóa phiên bản cuối (vFinal)** của bộ câu hỏi, nhóm nghiên cứu mới bắt đầu thu thập mẫu chính n = 1000 với phiên bản đã khóa (không sửa câu chữ giữa chừng mẫu chính). Bốn bước này là một **giai đoạn chính thức của quy trình nghiên cứu** (mục 4.9) và của tiến độ (mục 6.2), diễn ra sau phê duyệt đạo đức cho toàn bộ đề cương (bước 2–4 có tiếp xúc người bệnh nên cần nằm trong phạm vi được Hội đồng phê duyệt), trước khi tuyển người tham gia cho mẫu chính. Bằng chứng bắt buộc trước khi công bố kết quả: bảng truy xuất item, biên bản hội đồng chuyên gia kèm I-CVI/S-CVI, biên bản cognitive interview, báo cáo pilot, và bản vFinal có mã phiên bản + ngày khóa.
 
 ### 4.5.2. Cách tính điểm và định nghĩa "hài lòng"
 
 Bộ câu hỏi có sẵn hai cách đo "hài lòng chung", cả hai đều đã được đặc tả trong bộ biến/codebook nghiên cứu; đề tài khóa vai trò của từng cách như sau — quyết định này **phải khóa trong SAP (Phụ lục A) trước khi thu thập số liệu**:
 
-- **Điểm miền** (`A_Mean`…`F_Mean`) = trung bình các mục hợp lệ thuộc lĩnh vực đó (giữ thang 1–5); chỉ tính khi **≥ 80% mục của lĩnh vực hợp lệ** (dưới ngưỡng này, lĩnh vực coi là thiếu — mục 4.10). Lưu ý: lĩnh vực **F chỉ có 1 mục (F1)** nên `F_Mean` = F1, là một **chỉ số đơn mục** (không phải một "thang đo" có thể tính độ nhất quán nội tại); lĩnh vực **E chỉ có 2 mục** nên Cronbach's α của E kém ổn định, cần diễn giải thận trọng (mục 4.5.3).
-- **Kết cục chính (liên tục, đã khóa)** = **G1 — mục hài lòng chung, hỏi trực tiếp** (biến `SHLNBChung_TrucTiep` trong codebook), giữ nguyên thang 1–5, **không** tính bằng cách lấy trung bình của các lĩnh vực A–F. Lý do khóa G1 làm kết cục chính: (a) đây là mục do chính bộ câu hỏi thiết kế riêng để đo trực tiếp mức hài lòng tổng thể, tách bạch khỏi các lĩnh vực chi tiết; (b) tránh **thiên lệch phần-toàn thể (part-whole bias)** — lĩnh vực A (A1–A4) hỏi trực tiếp về mức hài lòng với các loại thời gian chờ, trong khi biến phơi nhiễm chính của Mục tiêu 2 cũng là thời gian chờ (mục 4.6.3); nếu dùng trung bình A–F làm kết cục, hồi quy của "thời gian chờ" lên "hài lòng" sẽ một phần mang tính vòng tròn (thời gian chờ vừa là phơi nhiễm vừa góp phần cấu thành điểm kết cục); dùng G1 loại bỏ hoàn toàn nguy cơ này ở phân tích chính, thay vì chỉ xử lý bằng phân tích nhạy cảm có điều kiện như bản trước. Kết cục chính được phân tích bằng **hồi quy tuyến tính đa biến** (báo hệ số β kèm khoảng tin cậy 95%).
-- **Điểm tính toán tổng hợp (`SHLNBChung_TinhToan`)** = trung bình cộng của toàn bộ 30 mục hợp lệ thuộc sáu lĩnh vực A–F (loại trừ mã thiếu = 9). Đây là **kết cục đối chiếu/thứ cấp**, dùng để (i) kiểm tra giá trị hội tụ với G1 (tương quan Pearson/Spearman giữa G1 và `SHLNBChung_TinhToan` — báo cáo ở Bảng 5.5) và (ii) làm phân tích nhạy cảm độ vững của kết luận chính. **Không** dùng `SHLNBChung_TinhToan` làm kết cục chính.
+- **Điểm miền** (`A_Mean`…`F_Mean`) = trung bình các mục **có điểm hợp lệ (1–5)** thuộc lĩnh vực đó (giữ thang 1–5); mẫu số là **số mục ÁP DỤNG cho người trả lời đó** trong lĩnh vực — loại trừ mục mang mã **7 = không áp dụng/không sử dụng dịch vụ này** khỏi cả tử số và mẫu số ngay từ đầu (không dùng mẫu số cố định bằng tổng số mục danh nghĩa của lĩnh vực, mục 4.6.1 nêu chi tiết ba mã thiếu 7/8/9). Chỉ tính điểm miền khi **≥ 80% số mục ÁP DỤNG của lĩnh vực đó có điểm hợp lệ** (dưới ngưỡng này, lĩnh vực coi là thiếu — mục 4.10); mã **8 = không biết/không nhớ** và mã **9 = không trả lời/từ chối** đều được loại khỏi tử số và tính là "thiếu" khi áp dụng ngưỡng 80% này. Lưu ý: lĩnh vực **F chỉ có 1 mục (F1)** nên `F_Mean` = F1, là một **chỉ số đơn mục** (không phải một "thang đo" có thể tính độ nhất quán nội tại); lĩnh vực **E chỉ có 2 mục** nên Cronbach's α của E kém ổn định, cần diễn giải thận trọng (mục 4.5.3).
+- **Kết cục chính (thứ hạng/ordinal, đã khóa)** = **G1 — mục hài lòng chung, hỏi trực tiếp** (biến `SHLNBChung_TrucTiep` trong codebook), giữ nguyên thang thứ hạng 1–5, **không** tính bằng cách lấy trung bình của các lĩnh vực A–F. Lý do khóa G1 làm kết cục chính: (a) đây là mục do chính bộ câu hỏi thiết kế riêng để đo trực tiếp mức hài lòng tổng thể, tách bạch khỏi các lĩnh vực chi tiết; (b) tránh **thiên lệch phần-toàn thể (part-whole bias)** — lĩnh vực A (A1–A4) hỏi trực tiếp về mức hài lòng với các loại thời gian chờ, trong khi biến phơi nhiễm chính của Mục tiêu 2 cũng là thời gian chờ (mục 4.6.3); nếu dùng trung bình A–F làm kết cục, hồi quy của "thời gian chờ" lên "hài lòng" sẽ một phần mang tính vòng tròn (thời gian chờ vừa là phơi nhiễm vừa góp phần cấu thành điểm kết cục); dùng G1 loại bỏ hoàn toàn nguy cơ này ở phân tích chính, thay vì chỉ xử lý bằng phân tích nhạy cảm có điều kiện như bản trước. **G1 là biến thứ hạng 5 mức với khả năng hiệu ứng trần điểm (mục 4.8)**, nên kết cục chính được phân tích bằng **hồi quy logistic thứ tự (ordinal/proportional odds) đa biến** — báo tỷ số chênh chung hiệu chỉnh (adjusted common odds ratio) kèm khoảng tin cậy 95% cho mỗi mức phơi nhiễm tăng thêm (mục 4.10); giả định proportional odds được kiểm định trước khi diễn giải hệ số như một tỷ số chênh chung duy nhất. **Không** gọi G1 là biến liên tục trong mô hình chính. Hồi quy tuyến tính đa biến robust HC3 trên G1 (coi là liên tục) được giữ lại làm **phân tích nhạy cảm** (Bảng 5.5), không phải mô hình chi phối kết luận chính.
+- **Điểm tính toán tổng hợp (`SHLNBChung_TinhToan`)** = trung bình cộng của toàn bộ mục **có điểm hợp lệ (1–5)** trong 30 mục thuộc sáu lĩnh vực A–F (loại trừ mã 7 = không áp dụng, mã 8 = không biết, mã 9 = từ chối/không trả lời — mục 4.6.1). Đây là **kết cục đối chiếu/thứ cấp**, dùng để (i) kiểm tra giá trị hội tụ với G1 (tương quan Pearson/Spearman giữa G1 và `SHLNBChung_TinhToan` — báo cáo ở Bảng 5.5) và (ii) làm phân tích nhạy cảm độ vững của kết luận chính. **Không** dùng `SHLNBChung_TinhToan` làm kết cục chính.
 - **Kết cục nhị phân thứ cấp "hài lòng/chưa hài lòng"** (biến `SHLNBChung_NhiPhan`) được định nghĩa **từ chính G1**: hài lòng = G1 đạt từ 4/5 trở lên. Vì đây là MỘT mục đơn (không phải trung bình nhiều mục), ngưỡng "G1 ≥ 4" tương đương với việc chọn mức 4 hoặc 5 trên chính mục đó (top-two-box của G1) — khác với bản trước (khi kết cục dựa trên trung bình nhiều mục, ngưỡng trung bình ≥ 4 KHÔNG tương đương top-two-box của từng mục con). Ngưỡng này được ấn định trước và khóa tại SAP (Phụ lục A), không đổi sau khi nhìn dữ liệu.
-- Loại trừ khỏi mọi điểm tổng hợp: câu hành chính (Phần 1), câu hỏi mở (Phần 4), câu xác nhận đồng thuận (Phần 5).
+- Loại trừ khỏi mọi điểm tổng hợp: câu hành chính (Phần 1), câu hỏi mở (Phần 4). *(Phiếu khảo sát không còn phần xác nhận đồng thuận — đó là tài liệu ICF riêng, Phụ lục B.)*
 
 ### 4.5.3. Mô tả đặc tính đo lường trong mẫu
 
-Vì đây là bộ câu hỏi **tự xây dựng, sử dụng lần đầu** (không phải thang chuẩn quốc gia dùng nguyên trạng — xem đối chiếu với ngoại lệ "downscope" của agent `cong-cu-do-luong`), đề tài mô tả đặc tính đo lường trong mẫu C1a đầy đủ hơn mức tối thiểu, gồm bốn nội dung:
+Vì đây là bộ câu hỏi **tự xây dựng, sử dụng lần đầu** (không phải thang chuẩn quốc gia dùng nguyên trạng), đề tài mô tả đặc tính đo lường trong mẫu C1a đầy đủ hơn mức tối thiểu, gồm bốn nội dung:
 
 (i) **Mô tả phân bố điểm** của từng lĩnh vực, của G1 và của `SHLNBChung_TinhToan` (trung bình ± SD, trung vị [IQR], độ lệch/độ nhọn, biểu đồ phân bố);
 
@@ -294,13 +311,13 @@ Vì đây là bộ câu hỏi **tự xây dựng, sử dụng lần đầu** (kh
 
 (iii) **Tỷ lệ hiệu ứng sàn/trần (floor/ceiling)** của mỗi lĩnh vực và của G1 (phần trăm đạt điểm cực tiểu/cực đại);
 
-(iv) **Giá trị cấu trúc (structural validity)** bằng **phân tích nhân tố khám phá (EFA)** trên 30 mục lĩnh vực A–F, để kiểm tra thực nghiệm cấu trúc sáu lĩnh vực giả định (thay vì chỉ giả định); n = 1000 vượt xa ngưỡng kinh nghiệm tối thiểu cho EFA (khoảng 5–10 quan sát/mục, tức ≥ 150–300 cho 30 mục) nên khả thi.
+(iv) **Giá trị cấu trúc (structural validity)** bằng **phân tích nhân tố khám phá (EFA)** trên **29 mục thứ hạng thuộc năm lĩnh vực A–E** (loại **F1** khỏi EFA vì lĩnh vực F chỉ có một mục — không phải một cấu trúc đa mục để phân tích nhân tố; F1 tiếp tục được báo cáo riêng như một chỉ số đơn mục, mục 4.5.2), để kiểm tra thực nghiệm cấu trúc lĩnh vực giả định (thay vì chỉ giả định). Vì các mục là thứ hạng (Likert), EFA dùng **ma trận tương quan polychoric** (không dùng Pearson trên dữ liệu thứ hạng), xác định số nhân tố bằng **parallel analysis** (không chỉ dùng tiêu chí Kaiser/eigenvalue > 1), và phép xoay **xiên (oblique, ví dụ promax/oblimin)** vì các lĩnh vực hài lòng được kỳ vọng có tương quan với nhau, không trực giao. n = 1000 vượt xa ngưỡng kinh nghiệm tối thiểu cho EFA (khoảng 5–10 quan sát/mục, tức ≥ 145–290 cho 29 mục) nên khả thi. **EFA đơn thuần không thay thế cho việc tuyên bố công cụ "đã được chuẩn hóa"** — kết quả EFA chỉ là một bằng chứng cấu trúc bổ sung cho pha phát triển công cụ (mục 4.5.1); nếu về sau nhóm nghiên cứu muốn xác nhận cấu trúc một cách chặt chẽ hơn, cần thiết kế **split-sample EFA/CFA** (chia mẫu ngẫu nhiên, EFA trên một nửa rồi CFA xác nhận trên nửa còn lại) hoặc một nghiên cứu kiểm định riêng — ngoài phạm vi bắt buộc của đề tài này.
 
-Quy trình kiểm định đầy đủ hơn theo COSMIN[13] (ngưỡng "đạt" neo theo tiêu chí Terwee[14] và chỉ số giá trị nội dung của Polit & Beck[15]) — gồm cả **giá trị nội dung** (content validity: tài liệu về quy trình xây dựng mục, xem mục 4.5.1) — cần được chủ nhiệm bổ sung tư liệu trước khi nộp Hội đồng. Test–retest/ICC, SEM/SDC, known-groups và MCID **không** thuộc kế hoạch của đề tài này (đòi hỏi thiết kế đo lặp lại, ngoài phạm vi một khảo sát cắt ngang một lần đo); nếu về sau nhóm nghiên cứu sửa đổi/mở rộng bộ câu hỏi cho các nghiên cứu tiếp theo, quy trình dịch chuẩn/kiểm định lại đầy đủ là bắt buộc trước khi dùng phần được thêm/được sửa.
+Quy trình kiểm định đầy đủ hơn theo COSMIN[13] (ngưỡng "đạt" neo theo tiêu chí Terwee[14] và chỉ số giá trị nội dung của Polit & Beck[15]) — gồm cả **giá trị nội dung** (content validity), thực hiện qua pha phát triển công cụ bốn bước đã khóa ở mục 4.5.1 (bảng truy xuất item, hội đồng chuyên gia I-CVI/S-CVI, cognitive interview, pilot) — **trước** khi thu thập mẫu chính, không phải bằng chứng bổ sung sau. Test–retest/ICC, SEM/SDC, known-groups và MCID **không** thuộc kế hoạch của đề tài này (đòi hỏi thiết kế đo lặp lại, ngoài phạm vi một khảo sát cắt ngang một lần đo); nếu về sau nhóm nghiên cứu sửa đổi/mở rộng bộ câu hỏi cho các nghiên cứu tiếp theo, quy trình dịch chuẩn/kiểm định lại đầy đủ là bắt buộc trước khi dùng phần được thêm/được sửa.
 
 ## 4.6. Biến số nghiên cứu
 
-Bộ biến số của phiếu khảo sát **không có ô tên, căn cước công dân, số thẻ bảo hiểm y tế, số điện thoại hay địa chỉ**. Đề tài đo trải nghiệm dịch vụ, không đo bệnh lý, nên không thu thập biến bệnh nền/lâm sàng/cận lâm sàng; cũng không có biến sống còn hay biến cố an toàn. Riêng trường `MaSoBenhNhan` (mã hồ sơ bệnh án, dùng nội bộ để đối soát/chống trùng khi nhập liệu) là một ngoại lệ cần kiểm soát chặt — xem quy tắc tách trường này khỏi bộ dữ liệu phân tích ở mục 6.5 (DMP). Bộ biến số dưới đây khớp với 63 trường của codebook nghiên cứu (`.sav`) do nhóm nghiên cứu đã dựng sẵn cho phiếu khảo sát này.
+Bộ biến số của phiếu khảo sát **không có ô tên, căn cước công dân, số thẻ bảo hiểm y tế, số điện thoại hay địa chỉ**. Đề tài đo trải nghiệm dịch vụ, không đo bệnh lý, nên không thu thập biến bệnh nền/lâm sàng/cận lâm sàng; cũng không có biến sống còn hay biến cố an toàn. **Trường `MaSoBenhNhan` (mã hồ sơ bệnh án) đã được rút hoàn toàn khỏi bộ dữ liệu và hệ thống nhập liệu của nhóm nghiên cứu** (đối chiếu phản biện độc lập 07/07/2026 — siết chặt hơn thiết kế trước, khi trường này còn tạm thời nằm trong codebook nội bộ trước khi tách): việc đối soát/chống trùng đối tượng dùng `MaSoBenhNhan` **do Phòng CNTT/QLCL bệnh viện thực hiện riêng, ngoài phạm vi hệ thống của nhóm nghiên cứu** (mục 6.5); nhóm nghiên cứu chỉ nhận và chỉ nhập `ID` (mã số phiếu) làm định danh duy nhất. Bộ biến số dưới đây khớp với 63 trường của codebook nghiên cứu (`.sav`) do nhóm nghiên cứu đã dựng sẵn cho phiếu khảo sát này; `MaSoBenhNhan` từng có trong bản codebook nội bộ ban đầu nhưng **không** còn nằm trong bộ dữ liệu/hệ thống mà nhóm nghiên cứu vận hành.
 
 ### 4.6.1. Biến kết cục (phụ thuộc)
 
@@ -308,12 +325,12 @@ Bộ biến số của phiếu khảo sát **không có ô tên, căn cước c�
 
 | Tên biến | Nhãn | Loại đo | Cách đo/mã hóa |
 |---|---|---|---|
-| `A1`…`A6`, `B1`…`B8`, `C1`…`C10`, `D1`…`D3`, `E1`,`E2`, `F1` | Điểm từng mục theo lĩnh vực (30 mục, Phần 2 phiếu) | Thứ hạng (Likert) | Điểm 1–5; nhập trực tiếp; mã thiếu/không áp dụng = 9 (loại khỏi tính điểm miền) |
-| `A_Mean`…`F_Mean` | Điểm trung bình lĩnh vực | Liên tục (phái sinh) | = trung bình các mục hợp lệ của lĩnh vực (bỏ qua mã 9); chỉ tính khi ≥ 80% mục của lĩnh vực hợp lệ. `F_Mean` = F1 (lĩnh vực có 1 mục — chỉ số đơn mục, không phải thang đo); `E_Mean` từ 2 mục — diễn giải thận trọng (mục 4.5.3) |
-| `G1` (= `SHLNBChung_TrucTiep`) | Hài lòng chung — hỏi trực tiếp, Phần 3 (**kết cục chính MT1 & MT2**) | Thứ hạng (Likert 1–5), dùng liên tục trong hồi quy | Điểm 1–5, nhập trực tiếp, không tính từ lĩnh vực khác |
-| `SHLNBChung_TinhToan` | Điểm hài lòng chung tính toán (kết cục **đối chiếu/thứ cấp**) | Liên tục (phái sinh) | = trung bình cộng 30 mục hợp lệ A1–F1 (bỏ qua mã 9); dùng đối chiếu hội tụ với G1 và làm phân tích nhạy cảm — **không** phải kết cục chính |
+| `A1`…`A6`, `B1`…`B8`, `C1`…`C10`, `D1`…`D3`, `E1`,`E2`, `F1` | Điểm từng mục theo lĩnh vực (30 mục, Phần 2 phiếu) | Thứ hạng (Likert) | Điểm 1–5, nhập trực tiếp. Ba mã thiếu **tách riêng** (đối chiếu phản biện độc lập 07/07/2026 — không còn gộp chung một mã 9): **7 = không áp dụng/không sử dụng dịch vụ này** (chỉ hợp lệ ở các mục điều kiện: A3, A4 — cận lâm sàng; D2 — giải thích chi phí nếu có thắc mắc; D3 — hướng dẫn dùng thuốc; C8 — thủ thuật/y lệnh, xem Phụ lục C.5); **8 = không biết/không nhớ**; **9 = không trả lời/từ chối**. Cả ba đều loại khỏi tử số khi tính điểm miền; riêng mã 7 còn loại khỏi mẫu số (mục 4.5.2) |
+| `A_Mean`…`F_Mean` | Điểm trung bình lĩnh vực | Liên tục (phái sinh) | = trung bình các mục có điểm hợp lệ 1–5 của lĩnh vực (loại mã 7/8/9); mẫu số = số mục ÁP DỤNG (đã loại mã 7); chỉ tính khi ≥ 80% mục áp dụng của lĩnh vực có điểm hợp lệ (mục 4.5.2). `F_Mean` = F1 (lĩnh vực có 1 mục — chỉ số đơn mục, không phải thang đo); `E_Mean` từ 2 mục — diễn giải thận trọng (mục 4.5.3) |
+| `G1` (= `SHLNBChung_TrucTiep`) | Hài lòng chung — hỏi trực tiếp, Phần 3 (**kết cục chính MT1 & MT2**) | Thứ hạng (Likert 1–5); giữ **thứ hạng** trong mô hình chính (logistic thứ tự); coi **liên tục** chỉ trong phân tích nhạy cảm (hồi quy tuyến tính) | Điểm 1–5, nhập trực tiếp, không tính từ lĩnh vực khác |
+| `SHLNBChung_TinhToan` | Điểm hài lòng chung tính toán (kết cục **đối chiếu/thứ cấp**) | Liên tục (phái sinh) | = trung bình cộng các mục có điểm hợp lệ trong 30 mục A1–F1 (loại mã 7/8/9); dùng đối chiếu hội tụ với G1 và làm phân tích nhạy cảm — **không** phải kết cục chính |
 | `SHLNBChung_NhiPhan` | Tình trạng hài lòng chung (kết cục **thứ cấp/mô tả**) | Nhị phân | 1 = Hài lòng (G1 ≥ 4/5) · 0 = Chưa hài lòng; định nghĩa **từ G1** (không phải từ điểm trung bình lĩnh vực); ngưỡng cố định khóa ở SAP |
-| `Ykiendonggop` | Ý kiến đóng góp mở (Phần 4) | Định tính (văn bản tự do) | Tổng hợp mô tả/theo chủ đề, không lượng hóa vào kết cục |
+| `Ykiendonggop` | Ý kiến đóng góp mở (Phần 4) | Định tính (văn bản tự do) | Mã hóa chủ đề bằng hai người độc lập + hòa giải bất đồng (mục 4.10); tổng hợp mô tả/theo chủ đề kèm trích dẫn đã khử định danh, không lượng hóa vào kết cục |
 | `PhieuHopLe` | Đánh giá phiếu hợp lệ sau kiểm tra dữ liệu | Nhị phân/danh định | Áp dụng tiêu chuẩn loại trừ "phiếu khuyết dữ liệu vượt ngưỡng" (mục 4.3.2, 4.9) |
 
 Các biến phái sinh (`A_Mean`…`F_Mean`, `SHLNBChung_TinhToan`, `SHLNBChung_NhiPhan`) được dựng bằng trường tính toán (calc field) từ 30 mục A1–F1, không nhập tay.
@@ -333,21 +350,21 @@ Các biến phái sinh (`A_Mean`…`F_Mean`, `SHLNBChung_TinhToan`, `SHLNBChung_
 | | `KhoangCachNhaBV` | Khoảng cách nhà–viện | Thứ hạng | 1=<5 km · 2=5–10 km · 3=>10 km |
 | | `ThuNhapHoGD` | Thu nhập hộ gia đình/tháng | Thứ hạng | 1=<5 triệu · 2=5–<10 triệu · 3=10–<20 triệu · 4=≥20 triệu |
 | Chi trả & lượt khám | `CoBHYT` | Có thẻ BHYT còn hiệu lực | Nhị phân | 1=Có · 2=Không (thay cho biến "hình thức chi trả" đa mức của bản trước — phiếu thật chỉ hỏi nhị phân) |
-| | `LyDoKham` (+ `LyDoKhamkhac`) | Lý do khám lần này | Danh định | 1=Khám lần đầu · 2=Tái khám theo lịch hẹn · 3=Khám sức khỏe định kỳ · 4=Khám theo yêu cầu chuyên khoa · 5=Khác (thay cho biến nhị phân "lần đầu/tái khám" của bản trước; xem lưu ý chỉnh sửa mục 3.2 file `_danh-gia-phieu-khao-sat.md`) |
+| | `LyDoKham` (+ `LyDoKhamkhac`) | Lý do khám lần này | Danh định | 1=Khám lần đầu · 2=Tái khám theo lịch hẹn · 3=Khám sức khỏe định kỳ · 4=Chủ động chọn khám với một bác sĩ/chuyên khoa cụ thể theo yêu cầu riêng · 5=Khác (mục 4 đã làm rõ so với "khám theo yêu cầu chuyên khoa" — Phụ lục C) |
 | | `SoLanKham12Thang` | Số lần khám tại khoa trong 12 tháng qua | Thứ hạng | 1=0 lần · 2=1–2 lần · 3=≥3 lần (biến mô tả/thăm dò) |
 | Di chuyển & kênh tiếp cận (mô tả/thăm dò) | `PhuongTienDiChuyen` (+ khác) | Phương tiện di chuyển | Danh định | 6 danh mục (xe máy · ô tô · xe buýt · taxi/công nghệ · xe khách/dịch vụ · khác) |
 | | `NguonThongTinbv` (+ khác) | Nguồn thông tin biết đến viện | Danh định | 6 danh mục (người thân giới thiệu · tự tìm hiểu Internet · NVYT nơi khác giới thiệu · đã từng khám trước · truyền thông · khác) |
-| Vận hành phiếu | `DoiTuongTraLoi` | Người trả lời phiếu | Danh định | 1=Bản thân người bệnh · 2=Bản thân trả lời, người nhà/người chăm sóc hỗ trợ ghi phiếu (dùng cho phân tích nhạy cảm loại phiếu được hỗ trợ ghi; xem đề xuất bổ sung lựa chọn "điều tra viên hỗ trợ" ở `_danh-gia-phieu-khao-sat.md` mục 3.1) |
+| Vận hành phiếu | `mode_tra_loi` | Cách hoàn thành phiếu | Danh định | 1=Tự điền · 2=Người nhà/người chăm sóc ghi hộ đúng nguyên văn lời người bệnh · 3=Điều tra viên ghi hộ đúng nguyên văn lời người bệnh (ba mức tách riêng, đối chiếu phản biện độc lập 07/07/2026 — khác hàm ý sai lệch: người nhà có thể vô tình trả lời thay theo ý mình, điều tra viên được tập huấn trung lập). **Nghiêm cấm proxy response** (người khác trả lời THAY người bệnh) ở cả ba mức; dùng cho phân tích nhạy cảm loại trừ phiếu có hỗ trợ (mục 4.10) |
 | | `ID` | Mã số phiếu | Danh định | Mã nghiên cứu, không phải số thứ tự khám công khai |
-| | `MaSoBenhNhan` | Mã hồ sơ bệnh án | — | **Chỉ dùng nội bộ đối soát/chống trùng lúc nhập liệu; PHẢI tách khỏi bộ dữ liệu bàn giao phân tích trước khi khóa dữ liệu** (mục 6.5) |
+| | `MaSoBenhNhan` | Mã hồ sơ bệnh án | — | **KHÔNG thuộc bộ dữ liệu/hệ thống của nhóm nghiên cứu** — đối soát/chống trùng đối tượng do Phòng CNTT/QLCL bệnh viện thực hiện riêng, ngoài quy trình nhập liệu của nhóm nghiên cứu (mục 6.5) |
 | Vận hành khám — **liên kết ngoài phiếu qua `ID`** (nguồn HIS/đăng ký khám, không phải câu hỏi trên phiếu) | `thoigian_cho` | Thời gian chờ khám | Liên tục | phút; nguồn đo ưu tiên mốc HIS/eHospital (định nghĩa ở mục 4.6.3) — **exposure chính** |
 | | `khunggio_kham` | Khung giờ khám | Danh định/thứ hạng | 1=Sáng sớm · 2=Cuối sáng · 3=Đầu chiều · 4=Cuối chiều (**bắt buộc** — lý do dưới bảng) |
 | | `ngay_trong_tuan` | Ngày trong tuần khám | Danh định/thứ hạng | 1=Thứ Hai … 7=Chủ Nhật (**bắt buộc**) |
-| | `chuyenkhoa` | Chuyên khoa/phòng khám nội bộ C1a | Danh định | danh mục nội bộ (khóa mã hóa ở SAP — cần xác nhận C1a có phân biệt được theo chuyên khoa hay không, `_checklist-noi-bo.md`) |
+| | `chuyenkhoa` | Chuyên khoa/phòng khám nội bộ C1a | Danh định | danh mục nội bộ — **[CẦN CHỦ NHIỆM XÁC NHẬN]** Khoa C1a có vận hành phân biệt được theo chuyên khoa/phòng khám hay không; nếu không, biến này bị loại khỏi tập forced-in và mô hình chính hiệu chỉnh còn lại các biến đã khóa (khóa mã hóa cuối cùng ở SAP) |
 | | `co_cls` | Có làm cận lâm sàng | Danh định | 1=Có · 0=Không (biến mô tả/thăm dò, không hiệu chỉnh trong mô hình chính) |
 | | `so_quay_buoc` | Số bước/quầy phải qua | Rời rạc | số quầy (biến thăm dò/tùy chọn) |
 
-**Hai lớp dữ liệu và cách ghép nối.** Các biến ở nhóm "Vận hành khám" **không nằm trên phiếu khảo sát** — đây là dữ liệu vận hành lấy từ HIS/đăng ký khám, ghép vào bộ dữ liệu phiếu (63 biến ở trên) bằng `ID` (mã số phiếu) theo đúng cơ chế khử định danh có kiểm soát mô tả ở mục 4.6.3. Bộ dữ liệu phân tích cuối cùng của Mục tiêu 2 là kết quả **JOIN** hai lớp này theo `ID`, sau khi đã tách `MaSoBenhNhan` khỏi lớp phiếu.
+**Hai lớp dữ liệu và cách ghép nối.** Các biến ở nhóm "Vận hành khám" **không nằm trên phiếu khảo sát** — đây là dữ liệu vận hành lấy từ HIS/đăng ký khám, ghép vào bộ dữ liệu phiếu (63 biến ở trên) bằng `ID` (mã số phiếu) theo đúng cơ chế khử định danh có kiểm soát mô tả ở mục 4.6.3. Bộ dữ liệu phân tích cuối cùng của Mục tiêu 2 là kết quả **JOIN** hai lớp này theo `ID`; `MaSoBenhNhan` không xuất hiện ở bất kỳ bước nào của việc ghép nối này (chỉ tồn tại trong hệ thống riêng của Phòng CNTT/QLCL bệnh viện, mục 6.5).
 
 Các biến hành chính khác về vận hành phiếu (ngày khảo sát, mã điều tra viên, kênh thu thập) được quản lý riêng, **không** phải thông tin định danh cá nhân.
 
@@ -391,7 +408,7 @@ Khảo sát hài lòng đặc biệt dễ bị **thiên kiến chiều lòng/mon
 | Điều tra viên độc lập, ngoài Khoa C1a | Người thu thập không phải bác sĩ/điều dưỡng đang khám cho người bệnh đó; ưu tiên nhân sự trung lập ngoài khoa được tập huấn | Courtesy bias với người vừa phục vụ mình |
 | Tách thời điểm/không gian đo khỏi buồng khám | Điền sau khi rời buồng khám, tại khu vực chờ ra về | Lo ngại ảnh hưởng lần khám sau |
 | Nhấn mạnh khuyết danh và không ảnh hưởng điều trị | Câu mở đầu phiếu cam kết ẩn danh, tự nguyện, không ảnh hưởng quyền lợi | Giảm động cơ trả lời "làm hài lòng" |
-| Hỗ trợ đọc phiếu trung lập | Với người khó tự điền, người hỗ trợ đọc và ghi trung lập, không gợi ý đáp án; phiếu ghi nhận qua biến `DoiTuongTraLoi` là bản thân người bệnh tự trả lời hay có người nhà/người chăm sóc hỗ trợ ghi phiếu (mục 4.6.2). Đề xuất bổ sung một lựa chọn riêng cho trường hợp điều tra viên hỗ trợ đọc (khác về hàm ý sai lệch so với người nhà hỗ trợ) — xem `_danh-gia-phieu-khao-sat.md` mục 3.1 | Giữ độ bao phủ mà không tái nhập courtesy bias |
+| Hỗ trợ đọc phiếu trung lập | Với người khó tự điền, người hỗ trợ **ghi hộ đúng nguyên văn** lời người bệnh, không gợi ý/diễn giải đáp án và không trả lời thay; phiếu ghi nhận qua biến `mode_tra_loi` phân biệt ba mức: tự điền, người nhà ghi hộ nguyên văn, điều tra viên ghi hộ nguyên văn (mục 4.6.2) — **nghiêm cấm proxy response** ở cả ba mức | Giữ độ bao phủ mà không tái nhập courtesy bias |
 
 ## 4.8. Sai số và biện pháp khống chế sai số
 
@@ -413,17 +430,20 @@ Ngoài cơ chế kiểm soát thiên kiến chiều lòng đã trình bày ở m
 
 Nghiên cứu được tiến hành theo trình tự các bước sau, tổng hợp từ các quyết định đã trình bày ở các mục tương ứng:
 
-1. **Chuẩn bị** — đăng ký nghiên cứu công khai (mục 4.11, 6.2), hoàn tất hồ sơ đạo đức (mục 4.11), khóa Kế hoạch phân tích thống kê SAP (Phụ lục A), in Phiếu khảo sát ý kiến người bệnh ngoại trú hoàn chỉnh (Phần 1–5, Phụ lục C), tập huấn điều tra viên và tổ chức dry-run quy trình (mục 4.4.2).
-2. **Tiếp cận đối tượng** — điều tra viên chuyên trách xác định người bệnh thứ *k* theo chọn mẫu hệ thống trong dòng người bệnh đã hoàn tất khám (mục 4.4.2).
-3. **Sàng lọc** — đối chiếu tiêu chuẩn chọn vào/loại trừ (mục 4.3.1, 4.3.2); kiểm tra chống trùng.
-4. **Mời tham gia, giải thích và lấy đồng thuận** — trình bày thông tin nghiên cứu (đầu phiếu và/hoặc Phụ lục B); người tham gia tick/ký tên và ghi ngày ở **Phần 5** của chính phiếu khảo sát, **ưu tiên ghi mã số phiếu thay cho họ tên** để giữ ẩn danh (mục 4.11, Phụ lục B).
-5. **Tự điền phiếu ẩn danh** — người bệnh tự điền Phần 1–4 tại khu vực chờ, tách khỏi buồng khám (mục 4.7); ghi nhận `DoiTuongTraLoi` (bản thân/người nhà hỗ trợ ghi phiếu).
-6. **Thu phiếu và tách Phần 5** — bỏ phiếu khảo sát vào hòm phiếu kín; **ngay khi làm sạch/nhập liệu, tách rời trang/phần chứa Phần 5 (đồng thuận) khỏi Phần 1–4 (nội dung trả lời)**, lưu Phần 5 với quyền truy cập hạn chế, tách biệt khỏi bộ dữ liệu phân tích, để không thể liên kết danh tính người đồng thuận với câu trả lời khảo sát cụ thể của họ; điều tra viên ghi nhận vào sổ nhật ký chọn mẫu (mục 4.4.2).
-7. **Ghép nối thời gian chờ (nếu dùng nguồn HIS)** — nhân sự được ủy quyền của Phòng CNTT/QLCL bệnh viện đối chiếu mã nghiên cứu với mốc thời gian HIS qua bảng ghép tạm thời, chỉ bàn giao biến phái sinh (thời gian chờ, phút) cho nhóm nghiên cứu; hủy bảng ghép trong vòng 30 ngày, có nhật ký hủy (mục 4.6.3).
-8. **Giám sát chất lượng** — kiểm tra ngẫu nhiên phiếu và tuân thủ quy trình chọn mẫu (mục 6.1).
-9. **Nhập liệu và làm sạch** — nhập theo CRF/data dictionary, nhập đôi 100% số phiếu, áp dụng luật kiểm tra range/logic (mục 6.5 — DMP).
-10. **Khóa cơ sở dữ liệu** — chỉ sau khi hoàn tất làm sạch và đối chiếu với sổ nhật ký chọn mẫu.
-11. **Phân tích** — chỉ tiến hành sau khi cả SAP và dữ liệu đã được khóa, theo đúng kế hoạch phân tích tại mục 4.10.
+1. **Chuẩn bị pháp lý/hành chính** — đăng ký nghiên cứu công khai (mục 4.11, 6.2), hoàn tất hồ sơ đạo đức cho **toàn bộ** đề cương — bao gồm cả pha phát triển công cụ (bước 2 dưới đây) lẫn mẫu chính, vì cognitive interview/pilot có tiếp xúc người bệnh (mục 4.11), khóa Kế hoạch phân tích thống kê SAP (Phụ lục A).
+2. **Pha phát triển & kiểm định công cụ (bắt buộc, trước mẫu chính)** — bảng truy xuất nguồn gốc item, hội đồng chuyên gia (I-CVI/S-CVI), cognitive interview 10–15 người bệnh, pilot thực địa (n ≈ 50–100, tách biệt mẫu chính), khóa phiên bản cuối **vFinal** của Phiếu khảo sát (mục 4.5.1, Phụ lục C).
+3. **Chuẩn bị vận hành mẫu chính** — in **hai tài liệu tách biệt** với bản vFinal: (a) Bản thông tin & Đồng thuận (ICF, Phụ lục B, có tên/chữ ký) và (b) Phiếu khảo sát (Phần 1–4, Phụ lục C, chỉ mã nghiên cứu — **không còn Phần 5**); tập huấn điều tra viên và tổ chức dry-run quy trình chọn mẫu phân tầng + phát/thu hai tài liệu (mục 4.4.2).
+4. **Tiếp cận đối tượng** — điều tra viên chuyên trách xác định người bệnh thứ *k_h* theo chọn mẫu hệ thống phân tầng trong dòng người bệnh đã hoàn tất khám (mục 4.4.2).
+5. **Sàng lọc** — đối chiếu tiêu chuẩn chọn vào/loại trừ (mục 4.3.1, 4.3.2); kiểm tra chống trùng.
+6. **Mời tham gia, giải thích và lấy đồng thuận trên tài liệu ICF RIÊNG** — trình bày thông tin nghiên cứu (Phụ lục B); nếu đồng ý, người tham gia ký tên/điểm chỉ và ghi ngày **trên chính tài liệu ICF** (không phải trên phiếu khảo sát); ICF được thu và lưu **riêng, có kiểm soát truy cập**, tách biệt vật lý khỏi phiếu khảo sát ngay từ đầu (mục 4.11, Phụ lục B) — không phải tách sau khi thu như thiết kế trước.
+7. **Phát phiếu khảo sát riêng (chỉ sau khi đã có ICF ký)** — điều tra viên phát phiếu khảo sát (chỉ mang mã nghiên cứu, không tên/chữ ký) cho người đã ký ICF; hai tài liệu **không** dùng chung một mã định danh có thể đối chiếu ngược, và không lập bảng ghép giữa ICF và mã nghiên cứu của phiếu khảo sát — đây là điểm khác biệt cốt lõi so với thiết kế "một phiếu, tách sau" của bản trước (mục 4.11).
+8. **Tự điền phiếu khảo sát ẩn danh** — người bệnh tự điền Phần 1–4 tại khu vực chờ, tách khỏi buồng khám (mục 4.7); ghi nhận `mode_tra_loi` (tự điền/người nhà ghi hộ nguyên văn/điều tra viên ghi hộ nguyên văn — **nghiêm cấm proxy response**, mục 4.6.2).
+9. **Thu hai tài liệu theo hai kênh riêng** — phiếu khảo sát bỏ vào hòm phiếu kín (chỉ mã nghiên cứu, không có thông tin định danh); ICF thu và lưu theo quy trình riêng của mục 6 (không đi qua hòm phiếu khảo sát); điều tra viên ghi nhận vào sổ nhật ký chọn mẫu (mục 4.4.2).
+10. **Ghép nối thời gian chờ (nếu dùng nguồn HIS)** — nhân sự được ủy quyền của Phòng CNTT/QLCL bệnh viện đối chiếu mã nghiên cứu (của phiếu khảo sát) với mốc thời gian HIS qua bảng ghép tạm thời riêng (không liên quan ICF), chỉ bàn giao biến phái sinh (thời gian chờ, phút) cho nhóm nghiên cứu; hủy bảng ghép trong vòng 30 ngày, có nhật ký hủy (mục 4.6.3).
+11. **Giám sát chất lượng** — kiểm tra ngẫu nhiên phiếu và tuân thủ quy trình chọn mẫu (mục 6.1).
+12. **Nhập liệu và làm sạch** — nhập **phiếu khảo sát** theo CRF/data dictionary, nhập đôi 100% số phiếu, áp dụng luật kiểm tra range/logic (mục 6.5 — DMP); ICF **không** được nhập vào hệ thống dữ liệu phân tích dưới bất kỳ hình thức nào.
+13. **Khóa cơ sở dữ liệu** — chỉ sau khi hoàn tất làm sạch và đối chiếu với sổ nhật ký chọn mẫu.
+14. **Phân tích** — chỉ tiến hành sau khi cả SAP và dữ liệu đã được khóa, theo đúng kế hoạch phân tích tại mục 4.10.
 
 ## 4.10. Xử lý và phân tích số liệu
 
@@ -433,19 +453,25 @@ Kế hoạch phân tích được trình bày tóm tắt dưới đây và chi t
 
 **Mục tiêu 1 (mô tả).** Trình bày cả trung bình ± SD và trung vị [IQR] của điểm hài lòng; kiểm tra phân bố phần dư nhằm đánh giá độ phù hợp mô tả (trực quan bằng histogram/Q-Q plot kết hợp độ lệch/độ nhọn), không dùng để thay đổi kết cục chính. Ước lượng **tỷ lệ hài lòng chung và theo từng lĩnh vực kèm khoảng tin cậy 95% theo phương pháp Wilson score** (chính xác hơn Wald khi tỷ lệ gần 0 hoặc 1); tỷ lệ hài lòng dùng ngưỡng cố định ≥ 4/5. Báo phần trăm đạt điểm sàn/trần mỗi lĩnh vực.
 
-**Mục tiêu 2 (phân tích).** Bước đơn biến sàng lọc và báo cáo thô (cho biến hạng mục: χ²/Fisher exact nếu dùng kết cục nhị phân, hoặc t-test/ANOVA/Mann–Whitney trên điểm liên tục; cho biến liên tục: tương quan Pearson/Spearman), sau đó **hồi quy tuyến tính đa biến trên G1 (hài lòng chung, hỏi trực tiếp)** báo **hệ số β hiệu chỉnh kèm khoảng tin cậy 95%** làm phân tích chính. Mô hình chính được khóa như sau: outcome = G1 (mục 4.5.2); exposure = thời gian chờ theo mốc HIS, báo hiệu ứng theo **mỗi 15 phút chờ thêm** (không phải mỗi 1 phút); mô hình = hồi quy tuyến tính đa biến, sai số chuẩn **robust HC3**; kiểm tra phi tuyến bằng **restricted cubic spline 3 nút** hoặc phân tích nhạy cảm theo phân vị của thời gian chờ. **Không** đổi outcome/mô hình chỉ vì Shapiro–Wilk p < 0,05; trình bày cả trung bình ± SD và trung vị [IQR], kiểm tra phân bố phần dư chỉ nhằm đánh giá độ phù hợp mô hình, không dùng để đổi outcome chính.
+**Mục tiêu 2 (phân tích).** Bước đơn biến sàng lọc và báo cáo thô (cho biến hạng mục: χ²/Fisher exact nếu dùng kết cục nhị phân thứ cấp, hoặc kiểm định xu hướng/Mann–Whitney/Kruskal–Wallis trên G1 thứ hạng; cho biến liên tục: tương quan Spearman), sau đó **hồi quy logistic thứ tự (ordinal/proportional odds) đa biến trên G1 (hài lòng chung, hỏi trực tiếp, thứ hạng 1–5)** báo **tỷ số chênh chung hiệu chỉnh (adjusted common odds ratio, cOR) kèm khoảng tin cậy 95%** làm phân tích chính. Mô hình chính được khóa như sau: outcome = G1 (mục 4.5.2, thứ hạng — **không** coi là liên tục trong mô hình chính); exposure = thời gian chờ theo mốc HIS, báo hiệu ứng theo **mỗi 15 phút chờ thêm** (không phải mỗi 1 phút); mô hình = hồi quy logistic thứ tự proportional odds đa biến; kiểm tra phi tuyến của exposure liên tục bằng **restricted cubic spline 3 nút** hoặc phân tích nhạy cảm theo phân vị của thời gian chờ.
+
+**Kiểm định giả định proportional odds** (ví dụ kiểm định Brant hoặc so sánh log-likelihood với mô hình không ràng buộc theo từng ranh giới cắt) trước khi diễn giải cOR như một tỷ số chênh chung duy nhất qua mọi ranh giới cắt của G1. **Nếu vi phạm giả định**, chuyển sang **partial proportional odds** (chỉ ràng buộc song song cho các biến thỏa giả định, thả lỏng cho biến vi phạm) hoặc **generalized ordered logit**, báo cáo rõ biến nào vi phạm và hệ số theo từng ranh giới cắt cho biến đó.[20]
+
+**Phân tích nhạy cảm bằng hồi quy tuyến tính đa biến** trên G1 coi là liên tục, sai số chuẩn **robust HC3**, báo hệ số β kèm khoảng tin cậy 95% (Bảng 5.5) — đây là phân tích nhạy cảm, **không** phải mô hình chi phối kết luận chính; trình bày cả trung bình ± SD và trung vị [IQR] của G1, kiểm tra phân bố phần dư của mô hình tuyến tính chỉ nhằm đánh giá độ phù hợp của phân tích nhạy cảm, **không** dùng để đổi outcome/mô hình chính (kể cả khi Shapiro–Wilk p < 0,05).
 
 **Phân tích thứ cấp/mô tả:** hồi quy logistic đa biến trên kết cục nhị phân "hài lòng" (`SHLNBChung_NhiPhan`, từ G1 ≥ 4/5) báo **OR hiệu chỉnh (aOR) kèm khoảng tin cậy 95%**. **Điều kiện kích hoạt:** hồi quy logistic thứ cấp chỉ thực hiện khi số trường hợp chưa hài lòng đủ tối thiểu 10 biến cố trên mỗi tham số của mô hình đã định trước. Nếu không đạt, chỉ báo cáo tỷ lệ, khoảng tin cậy 95% và phân tích mô tả; không chạy mô hình Firth để tạo ra ước lượng không ổn định (Firth giải quyết separation về mặt tính toán, không giải quyết thiếu thông tin khoa học). AUC không thuộc kế hoạch phân tích thứ cấp này (AUC phù hợp mục tiêu dự báo, không phải mục tiêu phân tích yếu tố liên quan).
 
 **Phân tích đối chiếu hội tụ (bổ sung):** tương quan Pearson/Spearman giữa G1 và `SHLNBChung_TinhToan` (trung bình 30 mục A1–F1), báo cáo ở Bảng 5.5, để minh họa mức độ hội tụ giữa mục hỏi trực tiếp và điểm tổng hợp theo lĩnh vực; đây là phân tích mô tả/thăm dò, không thay thế mô hình chính.
 
-**Chọn biến.** Ba nhóm biến được khóa rõ (chi tiết và DAG ở Phụ lục A, Phụ lục D): (a) **Exposure chính** = thời gian chờ; (b) **Biến điều chỉnh bắt buộc** = tuổi, giới, nơi cư trú, BHYT, lý do khám, chuyên khoa, khung giờ, ngày trong tuần; (c) **Biến thăm dò** = học vấn, nghề nghiệp, thu nhập hộ gia đình, khoảng cách nhà–viện, phương tiện di chuyển, nguồn thông tin biết đến viện, số quầy (nếu đủ điều kiện), cận lâm sàng — chỉ dùng ngưỡng đơn biến p < 0,20 cho nhóm thăm dò này, gắn nhãn "exploratory", **không** dùng ngưỡng này để chọn biến vào mô hình chính. Không dùng stepwise tự động làm phân tích chính; trần số tham số theo quy tắc cỡ mẫu tương ứng (mục 4.4.1). **Không có số hạng tương tác định trước** ở phiên bản hiện tại (số hạng thời gian chờ × đối tượng quân/dân đã gỡ bỏ — mục 4.6.2); mọi phân tích tương tác khác là thăm dò, gắn nhãn "exploratory". Kiểm định giả định: với hồi quy tuyến tính gồm phân bố phần dư, đồng nhất phương sai (dùng sai số chuẩn robust HC3 nếu vi phạm), đa cộng tuyến (VIF) và điểm ảnh hưởng; với hồi quy logistic thứ cấp (khi đủ điều kiện kích hoạt) gồm đa cộng tuyến (VIF), tuyến tính của log-odds, hiệu chuẩn (calibration), áp hồi quy Firth nếu xảy ra separation **và** đủ thông tin khoa học để ước lượng ổn định.[17] Xử lý dữ liệu thiếu định trước như dưới đây.
+**Chọn biến.** Ba nhóm biến được khóa rõ (chi tiết và DAG ở Phụ lục A, Phụ lục D): (a) **Exposure chính** = thời gian chờ; (b) **Biến điều chỉnh bắt buộc** = tuổi, giới, nơi cư trú, BHYT, lý do khám, chuyên khoa, khung giờ, ngày trong tuần; (c) **Biến thăm dò** = học vấn, nghề nghiệp, thu nhập hộ gia đình, khoảng cách nhà–viện, phương tiện di chuyển, nguồn thông tin biết đến viện, số quầy (nếu đủ điều kiện), cận lâm sàng — chỉ dùng ngưỡng đơn biến p < 0,20 cho nhóm thăm dò này, gắn nhãn "exploratory", **không** dùng ngưỡng này để chọn biến vào mô hình chính. Không dùng stepwise tự động làm phân tích chính; trần số tham số theo quy tắc cỡ mẫu tương ứng (mục 4.4.1). **Không có số hạng tương tác định trước** ở phiên bản hiện tại (số hạng thời gian chờ × đối tượng quân/dân đã gỡ bỏ — mục 4.6.2); mọi phân tích tương tác khác là thăm dò, gắn nhãn "exploratory". Kiểm định giả định: với mô hình chính (logistic thứ tự proportional odds trên G1) gồm **kiểm định proportional odds** (Brant hoặc so sánh log-likelihood theo ranh giới cắt — chuyển partial proportional odds/generalized ordered logit nếu vi phạm[20]), đa cộng tuyến (VIF/GVIF), phi tuyến của exposure liên tục (restricted cubic spline/phân vị), và hiệu chuẩn; với phân tích nhạy cảm tuyến tính gồm phân bố phần dư, đồng nhất phương sai (dùng sai số chuẩn robust HC3 nếu vi phạm), đa cộng tuyến (VIF) và điểm ảnh hưởng; với hồi quy logistic nhị phân thứ cấp (khi đủ điều kiện kích hoạt) gồm đa cộng tuyến (VIF), tuyến tính của log-odds, hiệu chuẩn (calibration), áp hồi quy Firth nếu xảy ra separation **và** đủ thông tin khoa học để ước lượng ổn định.[17] Xử lý dữ liệu thiếu định trước như dưới đây.
 
 **Đa so sánh.** Không áp hiệu chỉnh FDR/Holm cho bảng đơn biến (Bảng 5.3): bảng đơn biến không phải nơi kết luận khoa học chính; áp FDR cho p đơn biến vừa phức tạp vừa không giải quyết sai lệch mô hình. Kết luận dựa vào effect size, khoảng tin cậy 95%, tính nhất quán và mô hình chính. Nguyên tắc chung của SAP vẫn giữ "cấm p đơn độc".
 
 **Điểm miền và dữ liệu thiếu.** Điểm một lĩnh vực chỉ được tính khi **≥ 80% số mục của lĩnh vực đó hợp lệ**; nếu tỷ lệ mục hợp lệ dưới 80% thì lĩnh vực được coi là thiếu. Phân tích **chính là complete-case khi tỷ lệ thiếu rất thấp (< 5%)**. Mô tả tỷ lệ và mẫu hình dữ liệu thiếu theo biến, so sánh đặc điểm giữa nhóm có và không có dữ liệu thiếu; đánh giá tính hợp lý của giả định MAR dựa trên bối cảnh thu thập. Không thể xác định chắc chắn cơ chế MAR/MNAR chỉ bằng dữ liệu quan sát. **Đa trọng imputation (MICE) theo quy tắc Rubin[18]** chỉ áp dụng cho biến nền/phơi nhiễm khi giả định MAR là hợp lý và tỷ lệ thiếu ở biến đó đáng kể; outcome phải được đưa vào mô hình nội suy như một predictor (không tự nội suy trực tiếp outcome); m ≥ 20. **Không** áp MICE cho biến kết cục; **không** nội suy trung bình cơ học (mean substitution) cho toàn phiếu.
 
-**Phần mềm:** ghi rõ phần mềm và phiên bản (đề xuất R ≥ 4.3 hoặc Stata ≥ 18) cùng danh mục gói để đảm bảo tái lập; phần mềm cuối được chốt và khóa tại SAP.
+**Mã hóa câu hỏi mở (`Ykiendonggop`, Phần 4).** Quy trình định trước (bổ sung đối chiếu phản biện độc lập 07/07/2026): **hai người mã hóa độc lập** đọc toàn bộ nội dung mở, xây dựng codebook chủ đề theo hướng quy nạp (từ dữ liệu, không áp khung có sẵn), gán mã độc lập rồi **hòa giải bất đồng** bằng thảo luận (ghi lại lý do quyết định cuối cùng khi hai người bất đồng); báo cáo bằng bảng tần suất chủ đề kèm **trích dẫn minh họa đã khử định danh** (không giữ chi tiết có thể nhận diện người trả lời). Đây là phân tích mô tả/bổ trợ, không lượng hóa vào kết cục chính hay phụ.
+
+**Phần mềm (đã khóa — đối chiếu phản biện độc lập 07/07/2026, không để "hoặc" ngang hàng):** **R ≥ 4.3**, gói `stats`/`car`/`rms`/`logistf`/`mice`/`MASS`/`ordinal`/`brant`/`VGAM` (mục A.1). R được chọn vì có sẵn toàn bộ gói cần cho mô hình chính (logistic thứ tự + kiểm proportional odds + partial proportional odds) miễn phí, không phụ thuộc giấy phép. Nếu đơn vị đã có sẵn giấy phép Stata ≥ 18 và muốn dùng thay thế, đây là một sửa đổi SAP chính thức trước khi khóa (mục A.6), không phải một lựa chọn "hoặc" còn để ngỏ trong bản nộp.
 
 ## 4.11. Đạo đức nghiên cứu
 
@@ -453,13 +479,13 @@ Toàn bộ hồ sơ đạo đức của đề tài là **bản trình Hội đ�
 
 Đây là nghiên cứu quan sát, không can thiệp, khảo sát ẩn danh và tự điền, **mức nguy cơ tối thiểu**. Nghiên cứu tuân thủ Tuyên ngôn Helsinki (WMA, bản sửa đổi 2024), hướng dẫn CIOMS 2016, và các quy định của Việt Nam: Thông tư 43/2024/TT-BYT (về tổ chức và hoạt động của Hội đồng đạo đức trong nghiên cứu y sinh học, hiệu lực 01/02/2025), Luật Khám bệnh, chữa bệnh 15/2023/QH15 (quyền chấp nhận/từ chối tham gia nghiên cứu), và Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 cùng Nghị định 356/2025/NĐ-CP (hiệu lực 01/01/2026).
 
-**Đăng ký nghiên cứu.** Nghiên cứu **sẽ được đăng ký công khai** (ví dụ WHO ICTRP hoặc cổng đăng ký trong nước phù hợp) **trước khi tuyển người tham gia đầu tiên**, để phù hợp yêu cầu của Tuyên ngôn Helsinki (bản sửa đổi 2024) về đăng ký công khai cho mọi nghiên cứu y học có người tham gia. Mã đăng ký để trống …………… *(bổ sung khi có)*.
+**Đăng ký nghiên cứu (đã khóa tên nền tảng — đối chiếu phản biện độc lập 07/07/2026).** Nghiên cứu **sẽ được đăng ký công khai trên OSF Registries** (Open Science Framework, registries.osf.io) **trước khi tuyển người tham gia đầu tiên**, để phù hợp yêu cầu của Tuyên ngôn Helsinki (bản sửa đổi 2024) về đăng ký công khai cho mọi nghiên cứu y học có người tham gia. **WHO ICTRP không phải nơi đăng ký trực tiếp** — đây là cổng tổng hợp/tìm kiếm dữ liệu từ các registry sơ cấp thành viên mạng lưới WHO, không phải một registry mà một nghiên cứu quan sát có thể tự đăng ký vào; vì đề tài là quan sát thuần túy (không can thiệp) và hiện chưa có registry sơ cấp trong nước phù hợp loại hình này, **OSF Registries** là lựa chọn cụ thể, khả thi, miễn phí, được cộng đồng nghiên cứu quan sát/khoa học xã hội dùng rộng rãi cho tiền đăng ký. Mã đăng ký để trống …………… *(bổ sung khi có)*.
 
 Các nguyên tắc bảo vệ người tham gia:
 - **Tự nguyện:** tham gia hoàn toàn tự nguyện; từ chối hoặc dừng giữa chừng không ảnh hưởng đến việc khám chữa bệnh và mọi quyền lợi.
-- **Đồng thuận:** áp dụng **đồng thuận có tick/ký và ghi ngày ở Phần 5 của chính phiếu khảo sát**. Người tham gia đọc thông tin nghiên cứu (đầu phiếu và/hoặc Bản thông tin chi tiết, Phụ lục B), sau đó tick/ký tên và ghi ngày ở Phần 5; **ưu tiên ghi mã số phiếu thay cho họ tên đầy đủ** để giữ ẩn danh (phiếu cho phép cả hai lựa chọn). Ngay khi thu phiếu, trang/mục Phần 5 được **tách khỏi Phần 1–4** trước khi nhập liệu, lưu với quyền truy cập hạn chế, tách biệt khỏi bộ dữ liệu phân tích, để hạn chế tối đa khả năng liên kết danh tính người đồng thuận với câu trả lời khảo sát cụ thể của họ (chi tiết ở Phụ lục B).
-- **Quyền rút lui:** người tham gia có thể dừng **trước khi nộp phiếu khảo sát**. Sau khi Phần 5 đã được tách khỏi Phần 1–4 và phiếu đã bỏ vào hòm, không còn khả năng truy xuất để rút lại một phiếu cụ thể theo tên; điều này được nêu rõ trong thông tin nghiên cứu.
-- **Ẩn danh nội dung khảo sát và không PII:** Phần 1–4 của phiếu khảo sát không thu thập tên, số hồ sơ, căn cước công dân, số thẻ bảo hiểm y tế, số điện thoại hay địa chỉ; dữ liệu mã hóa, lưu trữ an toàn, chỉ nhóm nghiên cứu truy cập; kết quả công bố dưới dạng số liệu tổng hợp.
+- **Đồng thuận — hai tài liệu tách biệt hoàn toàn (đã khóa, đối chiếu phản biện độc lập 07/07/2026 — thay mô hình lai "tách sau khi thu" của bản trước):** đề tài dùng **Bản thông tin & Đồng thuận (ICF, Phụ lục B) là một tài liệu giấy RIÊNG, độc lập** với phiếu khảo sát — không phải Phần 5 của phiếu khảo sát nữa. Người tham gia đọc ICF, rồi ký tên/điểm chỉ và ghi ngày **trên chính ICF**; ICF được thu và lưu riêng, có kiểm soát truy cập, **không** dùng chung một mã định danh có thể đối chiếu ngược với phiếu khảo sát (không lập bảng ghép ICF ↔ mã nghiên cứu của phiếu). Phiếu khảo sát chỉ được phát cho người **đã ký ICF**, chỉ mang mã nghiên cứu, không tên/không chữ ký (Phụ lục C). Đây là sự tách biệt **thật** ngay từ khi thiết kế tài liệu, không phải một cơ chế "tách sau khi thu chung một phiếu" (chi tiết quy trình phát/thu ở mục 4.9).
+- **Quyền rút lui:** người tham gia có thể dừng **trước khi nộp phiếu khảo sát**. Vì phiếu khảo sát không mang thông tin định danh và không liên kết ngược được với ICF cụ thể, sau khi đã bỏ phiếu khảo sát vào hòm, không còn khả năng truy xuất để rút lại một phiếu cụ thể theo tên; điều này được nêu rõ trong ICF. Người tham gia vẫn có thể rút quyền sử dụng dữ liệu đã ký ICF nếu liên hệ trước khi phiếu khảo sát được nộp/bỏ hòm.
+- **Ẩn danh nội dung khảo sát, giả danh có kiểm soát ở khâu ghép nối:** phiếu khảo sát (Phần 1–4) không thu thập tên, số hồ sơ, căn cước công dân, số thẻ bảo hiểm y tế, số điện thoại hay địa chỉ — nội dung khảo sát là **ẩn danh thật**. Riêng khâu ghép mốc thời gian chờ từ HIS (mục 4.6.3) dùng mã nghiên cứu + bảng ghép tạm thời do Phòng CNTT/QLCL giữ — đây là **giả danh có kiểm soát (controlled pseudonymization)/khử định danh trước phân tích**, không phải "ẩn danh tuyệt đối", và thuật ngữ này chỉ áp dụng cho bước ghép nối đó, không mở rộng thành một tuyên bố "toàn bộ quy trình ẩn danh tuyệt đối". Dữ liệu mã hóa, lưu trữ an toàn, chỉ nhóm nghiên cứu truy cập; kết quả công bố dưới dạng số liệu tổng hợp.
 
 Đây là nghiên cứu quan sát thuần túy, nhà nghiên cứu không phân bổ can thiệp, nên theo định nghĩa thử nghiệm lâm sàng của WHO/ICMJE **không thuộc diện đăng ký thử nghiệm lâm sàng bắt buộc theo nghĩa can thiệp** (đề tài **không đăng ký như một thử nghiệm can thiệp**); tuy nhiên, đề tài vẫn thực hiện **đăng ký công khai trước khi tuyển người tham gia đầu tiên** như đã nêu ở trên, theo yêu cầu đăng ký công khai của Tuyên ngôn Helsinki (2024) áp dụng cho mọi nghiên cứu y học có người tham gia, không riêng thử nghiệm can thiệp.
 
@@ -492,7 +518,7 @@ Kết quả sẽ được trình bày theo bộ bảng dưới đây. Đây là 
 | Có làm cận lâm sàng (từ dữ liệu vận hành) | Có / Không | — (—%) |
 | Khung giờ khám (từ dữ liệu vận hành) | Sáng sớm / Cuối sáng / Đầu chiều / Cuối chiều | — (—%) |
 | Ngày trong tuần khám (từ dữ liệu vận hành) | Thứ Hai … Chủ Nhật | — (—%) |
-| Người trả lời phiếu (DoiTuongTraLoi) | Bản thân / Người nhà hỗ trợ ghi phiếu | — (—%) |
+| Cách hoàn thành phiếu (mode_tra_loi) | Tự điền / Người nhà ghi hộ / Điều tra viên ghi hộ | — (—%) |
 | Phiếu hợp lệ (PhieuHopLe) | Hợp lệ / Không hợp lệ (loại khỏi phân tích) | — (—%) |
 
 ### Bảng 5.2. Mức độ hài lòng theo lĩnh vực và chung (Mục tiêu 1) (n = 1000)
@@ -528,9 +554,9 @@ Kết quả sẽ được trình bày theo bộ bảng dưới đây. Đây là 
 
 *Đơn biến theo loại biến: với kết cục liên tục dùng t-test/ANOVA/tương quan; với kết cục nhị phân thứ cấp dùng χ² (Fisher exact nếu ô kỳ vọng < 5). Thời gian chờ giữ dạng liên tục trong mô hình (không nhị phân hóa theo trung vị). Cấm p đơn độc – luôn kèm hiệu ứng + KTC 95%. Bảng đơn biến không áp hiệu chỉnh đa so sánh (FDR/Holm) — không phải nơi kết luận khoa học chính (mục 4.10); kết luận dựa vào mô hình đa biến chính, effect size và KTC 95%.*
 
-### Bảng 5.4. Mô hình đa biến CHÍNH — hồi quy tuyến tính yếu tố liên quan hài lòng chung G1 (Mục tiêu 2) (n = 1000)
+### Bảng 5.4. Mô hình đa biến CHÍNH — hồi quy logistic thứ tự (proportional odds) yếu tố liên quan hài lòng chung G1 (Mục tiêu 2) (n = 1000)
 
-| Biến độc lập (đã khóa) | Phân nhóm (ref) | β | KTC 95% | p |
+| Biến độc lập (đã khóa) | Phân nhóm (ref) | cOR (tỷ số chênh chung hiệu chỉnh) | KTC 95% | p |
 |---|---|---|---|---|
 | Tuổi | liên tục | — | (—; —) | 0,00X |
 | Giới | [ref] | — | (—; —) | 0,00X |
@@ -542,7 +568,7 @@ Kết quả sẽ được trình bày theo bộ bảng dưới đây. Đây là 
 | Khung giờ khám | [nhóm] | — | (—; —) | 0,00X |
 | Ngày trong tuần | [nhóm] | — | (—; —) | 0,00X |
 
-*Kết cục = G1 (mục 4.5.2). Sai số chuẩn robust HC3. R² hiệu chỉnh = —; kiểm giả định: phân bố phần dư, đồng nhất phương sai, kiểm phi tuyến (restricted cubic spline 3 nút hoặc phân tích theo phân vị), VIF max = —; n đưa vào mô hình = — (complete-case)/MI m = —.*
+*Kết cục = G1, thứ hạng 1–5 (mục 4.5.2). Kiểm định proportional odds: [Brant χ² = —, p = — / thỏa mãn hay vi phạm]; nếu vi phạm, bảng thay bằng hệ số partial proportional odds theo từng ranh giới cắt cho biến vi phạm.[20] Pseudo-R² (McFadden) = —; kiểm phi tuyến của thời gian chờ (restricted cubic spline 3 nút hoặc phân tích theo phân vị), VIF/GVIF max = —; n đưa vào mô hình = — (complete-case)/MI m = —. Kết quả hồi quy tuyến tính tương ứng (phân tích nhạy cảm) ở Bảng 5.5.*
 
 ### Bảng 5.4b (phân tích thứ cấp/mô tả — kết cục nhị phân SHLNBChung_NhiPhan, từ G1 ≥4/5, CHỈ thực hiện nếu đủ điều kiện kích hoạt). Đa biến hồi quy logistic
 
@@ -556,14 +582,16 @@ Kết quả sẽ được trình bày theo bộ bảng dưới đây. Đây là 
 
 ### Bảng 5.5. Phân tích nhạy cảm (tóm tắt độ vững) (n = 1000)
 
-| Kịch bản nhạy cảm | Hiệu ứng chính (β/aOR) | KTC 95% | Kết luận độ vững |
+| Kịch bản nhạy cảm | Hiệu ứng (cOR/β/aOR/r) | KTC 95% | Kết luận độ vững |
 |---|---|---|---|
-| Chính (tuyến tính, complete-case) | — | (—; —) | — |
-| Đa trọng imputation (MICE, m = —; biến nền/phơi nhiễm) | — | (—; —) | — |
-| Kết cục nhị phân ≥4/5 (logistic) | — | (—; —) | — |
-| Logistic Firth (nếu separation) | — | (—; —) | — |
-| Có/không điểm ảnh hưởng lớn | — | (—; —) | — |
-| Đối chiếu hội tụ: tương quan G1 vs SHLNBChung_TinhToan (r Pearson/Spearman) | — | (—; —) | — |
+| Hồi quy tuyến tính robust HC3 (G1 coi liên tục, complete-case) | β = — | (—; —) | So sánh chiều/độ lớn hiệu ứng với mô hình chính (Bảng 5.4) |
+| Đa trọng imputation (MICE ordinal logistic, m = —; biến nền/phơi nhiễm) | cOR = — | (—; —) | — |
+| Partial proportional odds/generalized ordered logit (chỉ nếu Bảng 5.4 vi phạm proportional odds) | hệ số theo ranh giới cắt | (—; —) | — |
+| Kết cục nhị phân ≥4/5 (logistic nhị phân thứ cấp, nếu đủ điều kiện kích hoạt) | aOR = — | (—; —) | — |
+| Logistic Firth (nếu separation ở kết cục nhị phân thứ cấp) | aOR = — | (—; —) | — |
+| Có/không điểm ảnh hưởng lớn | cOR = — | (—; —) | — |
+| Loại trừ phiếu có hỗ trợ ghi (mode_tra_loi = 2/3), chỉ giữ tự điền | cOR = — | (—; —) | — |
+| Đối chiếu hội tụ: tương quan G1 vs SHLNBChung_TinhToan (r Pearson/Spearman) | r = — | (—; —) | — |
 
 ### Sơ đồ luồng tham gia (STROBE flow diagram — dạng bảng/văn bản)
 
@@ -607,16 +635,17 @@ Quy ước mốc: **T0 = ngày Hội đồng Đạo đức/lãnh đạo BVQY 175
 |---|---|---|---|
 | 1 | Chốt câu hỏi và khoảng trống | Đã xong | — |
 | 2 | Chốt thiết kế và kế hoạch triển khai | Đang | — |
-| 3 | Tính cỡ mẫu và bước k | Song song/sau (2) | Lưu lượng khám |
-| 4 | Đặc tả biến + CRF + Phiếu khảo sát ý kiến người bệnh ngoại trú (toàn văn đã có, Phụ lục C) + dry-run quy trình | Sau (2) | Thu thập chính chờ phê duyệt đạo đức |
+| 3 | Tính cỡ mẫu và bảng N_h/n_h/k_h theo tầng ngày×khung giờ (mục 4.4.2) | Song song/sau (2) | Lưu lượng khám lịch sử theo tầng |
+| 4 | Đặc tả biến + CRF + Phiếu khảo sát bản dự thảo đưa vào hội đồng chuyên gia (Phụ lục C) + Bản thông tin & Đồng thuận ICF riêng (Phụ lục B) | Sau (2) | Thu thập chính chờ phê duyệt đạo đức |
 | 5 | **Đăng ký nghiên cứu công khai (cổng, trước người tham gia đầu tiên)** | Trước T0 | Mã đăng ký để trống, bổ sung khi có |
-| 6 | **Hồ sơ đạo đức → phê duyệt (cổng cứng, = T0)** | Sau khi đủ hồ sơ | Đề cương + phiếu + ICF + đăng ký nghiên cứu hoàn chỉnh |
-| 7 | **Khóa SAP (cổng cứng)** | Sau (6), trước khi chạm dữ liệu | Phải xong trước phân tích |
-| 8 | **Thu thập dữ liệu tại C1a** | T0 trở đi | Không bắt đầu trước phê duyệt đạo đức; phủ đều khung giờ/ngày |
-| 9 | Nhập liệu, làm sạch, khóa dữ liệu | Cuốn chiếu/sau thu thập | Khóa dữ liệu trước phân tích |
-| 10 | Phân tích (mô tả + hồi quy) | Sau khóa dữ liệu | Chỉ sau khi SAP và dữ liệu đã khóa |
-| 11 | Viết bản thảo (STROBE) | Sau phân tích | — |
-| 12 | Nghiệm thu/công bố | Sau bản thảo | Liêm chính tác giả/COI/khai báo AI |
+| 6 | **Hồ sơ đạo đức → phê duyệt (cổng cứng, = T0)** — phạm vi phê duyệt bao gồm CẢ pha phát triển công cụ (# 7 dưới) lẫn mẫu chính | Sau khi đủ hồ sơ | Đề cương + phiếu dự thảo + ICF + đăng ký nghiên cứu hoàn chỉnh |
+| 7 | **Pha phát triển & kiểm định công cụ** — bảng truy xuất item, hội đồng chuyên gia (I-CVI/S-CVI), cognitive interview 10–15 người bệnh, pilot thực địa n ≈ 50–100, khóa **vFinal** (mục 4.5.1) | Sau T0, trước thu thập chính | Nằm trong phạm vi phê duyệt đạo đức ở (6); dry-run vận hành/chọn mẫu (mục 4.4.2) thực hiện cùng giai đoạn này với bản vFinal |
+| 8 | **Khóa SAP (cổng cứng)** | Sau (6)+(7), trước khi chạm dữ liệu mẫu chính | Phải xong trước phân tích |
+| 9 | **Thu thập dữ liệu mẫu chính tại C1a (n = 1000, bộ câu hỏi vFinal)** | Sau (7) | Không bắt đầu trước phê duyệt đạo đức và trước khi khóa vFinal; phủ đều khung giờ/ngày theo tầng |
+| 10 | Nhập liệu, làm sạch, khóa dữ liệu | Cuốn chiếu/sau thu thập | Khóa dữ liệu trước phân tích |
+| 11 | Phân tích (mô tả + hồi quy logistic thứ tự) | Sau khóa dữ liệu | Chỉ sau khi SAP và dữ liệu đã khóa |
+| 12 | Viết bản thảo (STROBE) | Sau phân tích | — |
+| 13 | Nghiệm thu/công bố | Sau bản thảo | Liêm chính tác giả/COI/khai báo AI |
 
 Hai ràng buộc bất biến: (a) thu thập không được bắt đầu trước khi hoàn tất phê duyệt đạo đức; (b) phân tích không được bắt đầu trước khi cả SAP và dữ liệu đã được khóa. Vi phạm là lỗi liêm chính, không chỉ là lỗi tiến độ.
 
@@ -630,8 +659,9 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 
 | Nhóm chi | Số lượng | Đơn giá | Thành tiền |
 |---|---|---|---|
-| In phiếu khảo sát (bộ câu hỏi tự xây dựng, Phần 1–5 + dự phòng) | ≈ 1000 × (1 + hao/từ chối) | …………… | …………… |
-| In Bản thông tin nghiên cứu bổ sung (Phụ lục B) | ≈ số đối tượng tiếp cận | …………… | …………… |
+| In Phiếu khảo sát vFinal (Phần 1–4, chỉ mã nghiên cứu, Phụ lục C) + dự phòng | ≈ 1000 × (1 + hao/từ chối) | …………… | …………… |
+| In Bản thông tin & Đồng thuận ICF riêng (có tên/chữ ký, Phụ lục B) — **tài liệu độc lập, in số lượng ngang phiếu khảo sát** | ≈ số đối tượng tiếp cận (1180–1250) | …………… | …………… |
+| Chi phí pha phát triển công cụ: thù lao hội đồng chuyên gia (I-CVI/S-CVI), cognitive interview 10–15 người bệnh, pilot thực địa n ≈ 50–100 (mục 4.5.1, 4.9) | 1 đợt | …………… | …………… |
 | Thù lao điều tra viên phát/thu phiếu | số điều tra viên × số công | …………… | …………… |
 | Thù lao giám sát chất lượng (QC) | số công QC | …………… | …………… |
 | Công nhập liệu (nhập đôi 100% số phiếu, đã khóa ở DMP) | số phiếu × 2 lần nhập | …………… | …………… |
@@ -650,10 +680,10 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 |---|---|---|---|---|
 | R1 | Tỷ lệ từ chối cao → mẫu thiếu đại diện, kéo dài thu thập | Cao | Phiếu ngắn, ẩn danh, giải thích không ảnh hưởng quyền lợi; ghi sổ nhật ký từ chối | Nới khung thời gian/bổ sung điều tra viên; kịch bản mời chuẩn hóa |
 | R2 | Thiếu điều tra viên/nghỉ giữa chừng | TB–Cao | Tuyển dự phòng; tập huấn dư | Điều điều tra viên dự phòng; tài liệu tập huấn chuẩn |
-| R3 | Biến động lưu lượng theo mùa | TB | Ước lưu lượng theo mùa; phương án hệ thống theo cụm thời gian | Kéo dài kỳ thu thập để phủ đủ mùa |
+| R3 | Biến động lưu lượng theo mùa | TB | Ước lưu lượng theo mùa khi lập bảng N_h/n_h/k_h theo tầng (mục 4.4.2) | Kéo dài kỳ thu thập để phủ đủ mùa; nếu dry-run cho thấy chọn mẫu hệ thống phân tầng không khả thi, DỪNG và sửa SOP/đề cương chính thức (mục 4.4.2 — không phải một "phương án dự phòng" kích hoạt âm thầm) |
 | R4 | Thiên kiến chiều lòng/ceiling effect | Cao | Tự điền ẩn danh + hòm phiếu kín + điều tra viên độc lập ngoài khoa + tách buồng khám | Phân tích nhạy cảm; báo tỷ lệ đáp ứng |
 | R5 | Chờ phê duyệt đạo đức lâu → trượt tiến độ | Cao | Chuẩn bị hồ sơ đầy đủ sớm; chạy song song chuẩn bị phiếu/CRF | Dời T0, cập nhật tiến độ; checklist hồ sơ trước khi nộp |
-| R6 | Rò rỉ PII/vi phạm ẩn danh | Cao (hậu quả) | Phần 1–4 không ô định danh; hòm kín; tách Phần 5 (đồng thuận) khỏi bộ dữ liệu phân tích; `MaSoBenhNhan` tách khỏi bộ dữ liệu bàn giao thống kê (mục 6.5); khử định danh có kiểm soát khi trích mốc HIS (mã nghiên cứu + bảng ghép tạm thời do CNTT/QLCL giữ, hủy trong 30 ngày) | Kiểm tra phiếu/bộ dữ liệu không chứa PII trước khi bàn giao phân tích |
+| R6 | Rò rỉ PII/vi phạm ẩn danh | Cao (hậu quả) | Phiếu khảo sát (Phần 1–4) không ô định danh; hòm kín; ICF là tài liệu riêng, tách biệt vật lý ngay từ đầu (không phải tách sau khi thu, mục 4.11); `MaSoBenhNhan` không thuộc hệ thống của nhóm nghiên cứu ở bất kỳ bước nào (mục 6.5); khử định danh có kiểm soát khi trích mốc HIS (mã nghiên cứu + bảng ghép tạm thời do CNTT/QLCL giữ, hủy trong 30 ngày) | Kiểm tra phiếu/bộ dữ liệu không chứa PII trước khi bàn giao phân tích |
 | R7 | Số biến cố không đủ tham số cho mô hình logistic thứ cấp | Thấp (n=1000 đã dư) | Giới hạn số tham số mô hình; khóa danh mục biến ở SAP; kết cục chính là liên tục | Gộp/giảm biến theo SAP nếu tỷ lệ chưa hài lòng rất thấp |
 | R8 | Dữ liệu thiếu/phiếu bỏ trống | TB | Phiếu rõ; nhắc hoàn tất; theo dõi tỷ lệ thiếu; ngưỡng ≥ 80% mục/miền | Xử lý thiếu theo SAP (định trước) |
 | R9 | Trùng đối tượng (khám nhiều lần) | Thấp–TB | Quy tắc chống trùng (chỉ tham gia một lần trong kỳ; hỏi nhanh trước khi phát phiếu) | Loại bản ghi trùng khi làm sạch |
@@ -671,7 +701,7 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
   - Người nhập liệu: chỉ nhập, không xem kết quả phân tích.
   - Giám sát chất lượng (QC): xem để đối chiếu, không sửa.
   - Nhà thống kê: chỉ xem dữ liệu đã khóa, không sửa.
-- **Tách `MaSoBenhNhan` trước khi bàn giao phân tích (đã khóa):** trường `MaSoBenhNhan` (mã hồ sơ bệnh án) trong bộ dữ liệu phiếu chỉ dùng cho đối soát/chống trùng trong giai đoạn nhập liệu–làm sạch; **trước khi khóa cơ sở dữ liệu**, trường này phải được xóa/tách khỏi bộ dữ liệu bàn giao cho nhà thống kê, chỉ giữ lại `ID` (mã số phiếu) làm định danh duy nhất trong bộ dữ liệu phân tích.
+- **`MaSoBenhNhan` không thuộc hệ thống của nhóm nghiên cứu (đã khóa, siết chặt hơn thiết kế trước — đối chiếu phản biện độc lập 07/07/2026):** trường `MaSoBenhNhan` (mã hồ sơ bệnh án) **không** được nhập vào REDCap/EpiData hay bất kỳ hệ thống nhập liệu nào của nhóm nghiên cứu, dưới bất kỳ hình thức nào — kể cả tạm thời. Việc đối soát/chống trùng đối tượng dùng `MaSoBenhNhan` do **Phòng CNTT/QLCL bệnh viện thực hiện hoàn toàn riêng biệt**, ngoài phạm vi hệ thống dữ liệu của nhóm nghiên cứu; nhóm nghiên cứu chỉ nhận và chỉ nhập `ID` (mã số phiếu) làm định danh duy nhất trong toàn bộ vòng đời dữ liệu (thu thập → nhập liệu → phân tích).
 - **Lưu file:** trên ổ đĩa mã hóa AES-256 tại đơn vị, do thư ký/điều phối nghiên cứu quản lý (tên cụ thể **[CẦN CHỦ NHIỆM ẤN ĐỊNH]**).
 - **Mã hóa:** theo chuẩn CNTT bệnh viện áp dụng — **[CẦN CNTT BỆNH VIỆN XÁC NHẬN phương pháp/chuẩn cụ thể]**.
 - **Thời hạn lưu:** dữ liệu (giấy và điện tử) được lưu tối thiểu **05 năm** sau nghiệm thu/công bố, hoặc theo quy định lưu trữ của đơn vị nếu dài hơn.
@@ -685,7 +715,7 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 
 # 7. TÀI LIỆU THAM KHẢO
 
-*Định dạng Vancouver. Toàn bộ 19 tài liệu có PMID/DOI đã được đối chiếu với PubMed (tiêu đề · tạp chí · năm · DOI · tác giả đầu; mục [19] bổ sung ở vòng rà soát phương pháp gần nhất); bảng đối chiếu nguồn (PMID/DOI – nội dung trích – vị trí) được lưu trong hồ sơ nội bộ của đề tài.*
+*Định dạng Vancouver. Toàn bộ 20 tài liệu có PMID (kèm DOI khi xác minh được) đã được đối chiếu với PubMed (tiêu đề · tạp chí · năm · tác giả đầu; mục [19] bổ sung ở vòng rà soát phương pháp gần nhất, mục [20] bổ sung ở vòng phản biện độc lập 07/07/2026 — cả hai đã xác minh qua PubMed E-utilities trước khi thêm vào danh mục); bảng đối chiếu nguồn (PMID/DOI – nội dung trích – vị trí) được lưu trong hồ sơ nội bộ của đề tài.*
 
 1. Thach Phuong N, Vu Hoang P, Mac Dang T, et al. Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities. Hosp Top. 2021;101(2):73-83. doi:10.1080/00185868.2021.1969871. PMID: 34445940.
 2. Quyen BTT, Ha NT, Van Minh H. Outpatient satisfaction with primary health care services in Vietnam: Multilevel analysis results from The Vietnam Health Facilities Assessment 2015. Health Psychol Open. 2021;8(1):20551029211015117. doi:10.1177/20551029211015117. PMID: 34017606.
@@ -706,6 +736,7 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 17. Heinze G, Schemper M. A solution to the problem of separation in logistic regression. Stat Med. 2002;21(16):2409-19. doi:10.1002/sim.1047. PMID: 12210625.
 18. Karahalios A, Baglietto L, Carlin JB, et al. A review of the reporting and handling of missing data in cohort studies with repeated assessment of exposure measures. BMC Med Res Methodol. 2012;12:96. doi:10.1186/1471-2288-12-96. PMID: 22784200.
 19. Green SB. How Many Subjects Does It Take To Do A Regression Analysis. Multivariate Behavioral Research. 1991;26(3):499-510. doi:10.1207/s15327906mbr2603_7. PMID: 26776715.
+20. Bender R, Grouven U. Ordinal logistic regression in medical research. J R Coll Physicians Lond. 1997;31(5):546-551. PMID: 9429194.
 
 **Văn bản pháp quy và thang đo (không có PMID/DOI):**
 
@@ -732,16 +763,16 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 - Phân biệt định trước (pre-specified) và thăm dò (exploratory).
 - Làm tròn: tỷ lệ 1 chữ số thập phân; điểm Likert 2 chữ số; β/OR 2 chữ số kèm KTC 95%; p báo trị số thực đến 3 chữ số (không viết "p < 0,05" trơ).
 - Cố định seed cho các thủ tục ngẫu nhiên (MI, bootstrap); lưu script để tái lập.
-- Phần mềm: R ≥ 4.3 với stats/car/rms/logistf/mice, hoặc Stata ≥ 18 (chốt và khóa phần mềm cuối tại đây).
+- Phần mềm (**đã khóa** = R, mục 4.10): **R ≥ 4.3** với `stats`/`car`/`rms`/`logistf`/`mice` cho các mô hình phụ trợ, cùng `MASS::polr`/`rms::orm`/`ordinal::clm` cho hồi quy logistic thứ tự (mô hình chính), `brant`/`VGAM`/`ordinal` cho kiểm định và mở rộng proportional odds (partial proportional odds/generalized ordered logit khi vi phạm).
 
 ## A.2. Mục tiêu 1 (mô tả)
 - Trình bày cả trung bình ± SD và trung vị [IQR] của điểm hài lòng; kiểm tra phân bố phần dư bằng trực quan (histogram, Q-Q plot) + độ lệch/độ nhọn chỉ nhằm đánh giá độ phù hợp mô tả, không dùng để đổi outcome chính; Shapiro–Wilk chỉ tham khảo.
 - Tỷ lệ hài lòng chung và theo lĩnh vực (ngưỡng cố định ≥ 4/5) kèm KTC 95% Wilson score.
 - Báo % đạt điểm sàn/trần mỗi lĩnh vực; nếu > 15% (ngưỡng Terwee[14]) → ghi là hạn chế đo lường, ưu tiên trung vị [IQR] + phân tích nhạy cảm.
-- Đặc tính đo lường trong mẫu: Cronbach's α theo lĩnh vực cho A, B, C, D (≥ 3 mục); lĩnh vực E (2 mục) báo α kèm cảnh báo khoảng tin cậy rộng; lĩnh vực F (1 mục) không tính α (chỉ số đơn mục); phân tích nhân tố khám phá (EFA) trên 30 mục A–F để kiểm tra cấu trúc lĩnh vực (mục 4.5.3).
+- Đặc tính đo lường trong mẫu: Cronbach's α theo lĩnh vực cho A, B, C, D (≥ 3 mục); lĩnh vực E (2 mục) báo α kèm cảnh báo khoảng tin cậy rộng; lĩnh vực F (1 mục) không tính α (chỉ số đơn mục). Phân tích nhân tố khám phá (EFA) trên **29 mục A–E** (loại F1 — chỉ số đơn mục, không đưa vào EFA): ma trận tương quan **polychoric**, số nhân tố xác định bằng **parallel analysis**, xoay **xiên (oblique)**; EFA là bằng chứng bổ sung cho pha phát triển công cụ, không tự thân chứng minh công cụ "đã chuẩn hóa" (mục 4.5.3).
 
 ## A.3. Mục tiêu 2 (phân tích)
-- **Kết cục chính:** `G1` (hài lòng chung, hỏi trực tiếp, liên tục) → **hồi quy tuyến tính đa biến**, sai số chuẩn **robust HC3**, báo β + KTC 95%. Exposure chính (thời gian chờ) báo hiệu ứng theo **mỗi 15 phút**. Kiểm phi tuyến bằng **restricted cubic spline 3 nút** hoặc phân tích nhạy cảm theo phân vị. **Không** đổi outcome/mô hình chỉ vì Shapiro–Wilk p < 0,05.
+- **Kết cục chính:** `G1` (hài lòng chung, hỏi trực tiếp, **thứ hạng 1–5**) → **hồi quy logistic thứ tự (ordinal/proportional odds) đa biến**, báo **tỷ số chênh chung hiệu chỉnh (cOR)** + KTC 95%. Exposure chính (thời gian chờ) báo hiệu ứng theo **mỗi 15 phút**. Kiểm phi tuyến của exposure bằng **restricted cubic spline 3 nút** hoặc phân tích nhạy cảm theo phân vị. **Kiểm định giả định proportional odds** (Brant/so sánh log-likelihood theo ranh giới cắt) trước khi diễn giải cOR như một tỷ số chênh chung duy nhất; **nếu vi phạm** → **partial proportional odds**/**generalized ordered logit**, báo hệ số theo từng ranh giới cắt cho (các) biến vi phạm.[20] **Phân tích nhạy cảm:** hồi quy tuyến tính đa biến trên G1 (coi liên tục), sai số chuẩn **robust HC3**, báo β + KTC 95% (Bảng 5.5) — không phải mô hình chi phối kết luận; **không** đổi outcome/mô hình chính chỉ vì Shapiro–Wilk p < 0,05 của phân tích nhạy cảm này.
 - **Phân tích đối chiếu hội tụ:** tương quan Pearson/Spearman giữa `G1` và `SHLNBChung_TinhToan` (trung bình 30 mục A1–F1) — mô tả/thăm dò, không thay thế mô hình chính (Bảng 5.5).
 - **Phân tích thứ cấp/mô tả:** `SHLNBChung_NhiPhan` (từ G1, ngưỡng cố định ≥ 4/5) → hồi quy logistic đa biến, báo aOR + KTC 95%, **CHỈ khi** số trường hợp chưa hài lòng đủ tối thiểu 10 biến cố/tham số của mô hình đã định trước; nếu không đạt, chỉ báo tỷ lệ + KTC 95% (mô tả), không chạy Firth để tạo ước lượng không ổn định. **Không** dùng ngưỡng theo trung vị mẫu. AUC không thuộc kế hoạch phân tích thứ cấp.
 - **Đơn biến:** với kết cục liên tục dùng t-test/ANOVA hoặc tương quan Pearson/Spearman; với kết cục nhị phân thứ cấp dùng χ²/Fisher exact; luôn kèm hiệu ứng + KTC 95%. **Không** áp hiệu chỉnh đa so sánh (FDR/Holm) cho bảng đơn biến (xem A.3 mục "Đa so sánh" bên dưới).
@@ -751,9 +782,10 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
   3. **Biến thăm dò (exploratory):** học vấn, nghề nghiệp, thu nhập hộ gia đình, khoảng cách nhà–viện, phương tiện di chuyển, nguồn thông tin biết đến viện, số quầy (nếu đủ điều kiện), cận lâm sàng — ngưỡng đơn biến p < 0,20 **chỉ** áp dụng để chọn vào nhóm thăm dò này, gắn nhãn "exploratory"; **không** dùng ngưỡng p < 0,20 để quyết định biến vào mô hình chính.
   - **Không** stepwise tự động làm phân tích chính; trần số tham số theo quy tắc cỡ mẫu (n ≥ 104 + p cho tuyến tính[19]; ≥ 10 biến cố/tham số cho logistic thứ cấp[12]); không hiệu chỉnh biến trung gian/collider (`co_cls`, `so_quay_buoc` sau khám — xem Phụ lục D).
 - **Nhiễu và tương tác:** đưa đồng thời tập biến điều chỉnh bắt buộc định trước. **Không có số hạng tương tác định trước** ở phiên bản hiện tại (số hạng thời gian chờ × đối tượng quân/dân đã gỡ bỏ — mục 4.6.2); mọi phân tích tương tác khác là thăm dò.
-- **Kiểm định giả định (tuyến tính, mô hình chính):** phân bố phần dư; đồng nhất phương sai (dùng sai số chuẩn robust HC3 nếu vi phạm); phi tuyến (restricted cubic spline 3 nút/phân tích theo phân vị); đa cộng tuyến (VIF > 10 → xử lý); điểm ảnh hưởng (Cook's distance, không loại tùy tiện).
-- **Kiểm định giả định (logistic, thứ cấp — chỉ khi đủ điều kiện kích hoạt):** VIF/GVIF; tuyến tính log-odds (Box–Tidwell); hiệu chuẩn (calibration plot); **Firth** chỉ áp dụng nếu separation VÀ đủ thông tin khoa học để ước lượng ổn định.[17] AUC không thuộc kế hoạch phân tích này.
-- **Dữ liệu thiếu:** điểm một lĩnh vực chỉ tính khi **≥ 80% mục của lĩnh vực hợp lệ** (dưới 80% → lĩnh vực thiếu). Mô tả tỷ lệ và mẫu hình dữ liệu thiếu theo biến, so sánh đặc điểm giữa nhóm có/không có dữ liệu thiếu; đánh giá tính hợp lý của giả định MAR dựa trên bối cảnh thu thập — **không thể xác định chắc chắn cơ chế MAR/MNAR chỉ bằng dữ liệu quan sát**. Phân tích chính là **complete-case khi tỷ lệ thiếu rất thấp (< 5%)**. **MICE (m ≥ 20, quy tắc Rubin[18])** chỉ dùng cho biến nền/phơi nhiễm khi MAR hợp lý và tỷ lệ thiếu đáng kể; **outcome phải được đưa vào mô hình nội suy như một predictor** (không tự nội suy trực tiếp outcome); **không** áp MICE cho biến kết cục; **không** dùng mean substitution/LOCF.
+- **Kiểm định giả định (logistic thứ tự, mô hình CHÍNH):** **proportional odds** (Brant hoặc so sánh log-likelihood theo ranh giới cắt) — vi phạm → partial proportional odds/generalized ordered logit, báo hệ số riêng cho biến vi phạm[20]; đa cộng tuyến (VIF/GVIF > 10 → xử lý); phi tuyến của exposure liên tục (restricted cubic spline 3 nút/phân tích theo phân vị); hiệu chuẩn.
+- **Kiểm định giả định (tuyến tính, PHÂN TÍCH NHẠY CẢM):** phân bố phần dư; đồng nhất phương sai (dùng sai số chuẩn robust HC3 nếu vi phạm); phi tuyến (restricted cubic spline 3 nút/phân tích theo phân vị); đa cộng tuyến (VIF > 10 → xử lý); điểm ảnh hưởng (Cook's distance, không loại tùy tiện).
+- **Kiểm định giả định (logistic nhị phân, thứ cấp — chỉ khi đủ điều kiện kích hoạt):** VIF/GVIF; tuyến tính log-odds (Box–Tidwell); hiệu chuẩn (calibration plot); **Firth** chỉ áp dụng nếu separation VÀ đủ thông tin khoa học để ước lượng ổn định.[17] AUC không thuộc kế hoạch phân tích này.
+- **Dữ liệu thiếu:** ba mã tách riêng — **7 = không áp dụng/không sử dụng dịch vụ này** (loại khỏi cả tử số và mẫu số khi tính điểm miền), **8 = không biết/không nhớ**, **9 = không trả lời/từ chối** (cả hai loại khỏi tử số, tính là "thiếu"). Điểm một lĩnh vực chỉ tính khi **≥ 80% mục ÁP DỤNG của lĩnh vực có điểm hợp lệ** (mẫu số đã loại mã 7; dưới 80% → lĩnh vực thiếu, mục 4.5.2). Mô tả tỷ lệ và mẫu hình dữ liệu thiếu theo biến, so sánh đặc điểm giữa nhóm có/không có dữ liệu thiếu; đánh giá tính hợp lý của giả định MAR dựa trên bối cảnh thu thập — **không thể xác định chắc chắn cơ chế MAR/MNAR chỉ bằng dữ liệu quan sát**. Phân tích chính là **complete-case khi tỷ lệ thiếu rất thấp (< 5%)**. **MICE (m ≥ 20, quy tắc Rubin[18])** chỉ dùng cho biến nền/phơi nhiễm khi MAR hợp lý và tỷ lệ thiếu đáng kể; **outcome phải được đưa vào mô hình nội suy như một predictor** (không tự nội suy trực tiếp outcome); **không** áp MICE cho biến kết cục; **không** dùng mean substitution/LOCF.
 - **Đa so sánh:** **không** áp FDR/Holm cho bảng đơn biến (Bảng 5.3); kết luận dựa vào mô hình đa biến chính, effect size và KTC 95%. Nguyên tắc chung vẫn là "cấm p đơn độc" (A.1).
 - **Nếu phương án dự phòng chọn mẫu cụm thời gian được kích hoạt (mục 4.4.2):** bổ sung phân tích có xét đến design effect/hiệu ứng cụm (ví dụ sai số chuẩn cụm hoặc mô hình hỗn hợp theo cụm khung giờ) thay vì xử lý như chọn mẫu hệ thống cá thể thông thường.
 
@@ -761,7 +793,8 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 - **Không có phân nhóm định trước** ở phiên bản hiện tại (phân nhóm theo đối tượng quân/dân của bản trước đã gỡ bỏ — mục 4.6.2, quyết định 2026-07-06). Mọi phân tích phân nhóm là thăm dò, gắn nhãn "exploratory"; nếu chủ nhiệm/nhà thống kê muốn thêm một phân nhóm định trước trước khi khóa SAP, phải bổ sung tại đây kèm lý do (DAG) trước khi mở dữ liệu.
 
 ## A.5. Phân tích nhạy cảm (định trước)
-- Complete-case (chính) vs MICE cho biến nền/phơi nhiễm; kết cục nhị phân ≥ 4/5 (logistic) song song với kết cục liên tục (tuyến tính); logistic thường vs Firth; có/không điểm ảnh hưởng; mô hình đầy đủ vs rút gọn nếu số tham số eo hẹp.
+- Complete-case (chính) vs MICE cho biến nền/phơi nhiễm; hồi quy tuyến tính (G1 coi liên tục) song song với mô hình chính (logistic thứ tự); partial proportional odds/generalized ordered logit nếu vi phạm proportional odds; kết cục nhị phân ≥ 4/5 (logistic) song song; logistic thường vs Firth; có/không điểm ảnh hưởng; mô hình đầy đủ vs rút gọn nếu số tham số eo hẹp.
+- **Loại trừ phiếu có hỗ trợ ghi** (`mode_tra_loi` = 2 hoặc 3 — người nhà/điều tra viên ghi hộ) khỏi mô hình chính, chạy lại trên tập chỉ gồm phiếu tự điền (`mode_tra_loi` = 1), so sánh chiều/độ lớn cOR với mô hình đầy đủ (đối chiếu phản biện độc lập 07/07/2026 — mục 4.6.2).
 
 ## A.6. Danh mục phải ấn định trước khi khóa SAP (cổng cứng)
 
@@ -776,14 +809,16 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 7. Phần mềm cuối và phiên bản.
 8. Nếu phương án dự phòng chọn mẫu cụm thời gian được kích hoạt: phương pháp phân tích có xét cụm cụ thể (sai số chuẩn cụm/mô hình hỗn hợp).
 
-*(Kết cục chính là điểm liên tục với hồi quy tuyến tính robust HC3, kết cục nhị phân dùng ngưỡng cố định ≥ 4/5 với điều kiện kích hoạt theo số biến cố/tham số — cả hai đã được ấn định ở thân đề cương, không còn để ngỏ.)*
+*(Kết cục chính là G1 thứ hạng với hồi quy logistic thứ tự proportional odds (kiểm proportional odds; partial proportional odds/generalized ordered logit nếu vi phạm), hồi quy tuyến tính robust HC3 chỉ là phân tích nhạy cảm; kết cục nhị phân thứ cấp dùng ngưỡng cố định ≥ 4/5 với điều kiện kích hoạt theo số biến cố/tham số — cả ba đã được ấn định ở thân đề cương, không còn để ngỏ.)*
 
 ---
 
-# PHỤ LỤC B. PHIẾU THÔNG TIN VÀ ĐỒNG THUẬN THAM GIA (ICF – TIẾNG VIỆT) — *[DỰ THẢO v1.0, chờ Hội đồng phê duyệt]*
+# PHỤ LỤC B. BẢN THÔNG TIN & ĐỒNG THUẬN THAM GIA (ICF – TIẾNG VIỆT) — *[DỰ THẢO v1.0, chờ Hội đồng phê duyệt]*
+
+> **TÀI LIỆU GIẤY RIÊNG, ĐỘC LẬP với Phiếu khảo sát (Phụ lục C)** — đối chiếu phản biện độc lập 07/07/2026 (P0-9): đây **không còn** là "Phần 5 của phiếu khảo sát" như thiết kế trước, mà là một tờ ICF in riêng, có tên/chữ ký, thu và lưu tách biệt vật lý ngay từ đầu. Phiếu khảo sát (Phụ lục C) chỉ mang mã nghiên cứu, không tên/chữ ký, và không dùng chung một mã định danh với ICF này — không có bảng ghép nối hai tài liệu theo từng cá nhân cụ thể (mục 4.9, 4.11).
 
 **Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm C1, Bệnh viện Quân y 175.
-**Mã nghiên cứu:** …………… *(bổ sung khi có phê duyệt)*.
+**Số thứ tự ICF:** …………… *(đánh số độc lập với mã nghiên cứu của phiếu khảo sát — không phải cùng một mã)*.
 
 Kính chào Quý Ông/Bà,
 
@@ -791,51 +826,51 @@ Chúng tôi trân trọng mời Ông/Bà tham gia một khảo sát ngắn về 
 
 **1. Mục đích.** Khảo sát nhằm tìm hiểu mức độ hài lòng của người bệnh và các yếu tố liên quan, để Khoa/Bệnh viện cải tiến chất lượng phục vụ. Nghiên cứu do Khoa Khám bệnh C1a – Trung tâm C1 – Bệnh viện Quân y 175 thực hiện.
 
-**2. Quy trình.** Nếu đồng ý, Ông/Bà tự điền Phần 1–4 của phiếu khảo sát (thông tin chung, đánh giá hài lòng theo lĩnh vực, hài lòng chung, ý kiến đóng góp — khoảng …… phút) sau khi hoàn tất lượt khám, tick/ký xác nhận đồng ý ở Phần 5, rồi bỏ vào hòm phiếu kín. Chỉ tham gia một lần. Không có thủ thuật hay xét nghiệm nào thêm. Để tính thời gian chờ khám, một bộ phận được ủy quyền của bệnh viện có thể sử dụng mã tạm (mã nghiên cứu) để trích xuất duy nhất khoảng thời gian chờ từ hệ thống thông tin bệnh viện (HIS/eHospital); nhóm nghiên cứu chỉ nhận dữ liệu đã khử định danh và không nhận thông tin bệnh án hoặc thông tin nhận diện cá nhân (chi tiết ở mục 3 dưới đây).
+**2. Quy trình.** Nếu đồng ý, Ông/Bà ký/điểm chỉ vào chính tờ Bản thông tin & Đồng thuận này, sau đó nhận **một phiếu khảo sát riêng** (chỉ mang mã nghiên cứu, không có tên/chữ ký của Ông/Bà) để tự điền (thông tin chung, đánh giá hài lòng theo lĩnh vực, hài lòng chung, ý kiến đóng góp — khoảng …… phút) sau khi hoàn tất lượt khám, rồi bỏ phiếu khảo sát vào hòm phiếu kín. Tờ Bản thông tin & Đồng thuận đã ký được thu và lưu riêng ngay tại chỗ, không đi cùng phiếu khảo sát. Chỉ tham gia một lần. Không có thủ thuật hay xét nghiệm nào thêm. Để tính thời gian chờ khám, một bộ phận được ủy quyền của bệnh viện có thể sử dụng mã nghiên cứu (của phiếu khảo sát) để trích xuất duy nhất khoảng thời gian chờ từ hệ thống thông tin bệnh viện (HIS/eHospital); nhóm nghiên cứu chỉ nhận dữ liệu đã khử định danh và không nhận thông tin bệnh án hoặc thông tin nhận diện cá nhân (chi tiết ở mục 3 dưới đây).
 
-**3. Tính ẩn danh.** Phiếu khảo sát **không** hỏi tên, số hồ sơ, số căn cước, số thẻ bảo hiểm y tế, số điện thoại hay địa chỉ. Phiếu khảo sát không thu thập thông tin định danh trực tiếp. Để tính thời gian chờ, một bộ phận được ủy quyền của bệnh viện có thể sử dụng mã tạm thời để trích xuất duy nhất thời gian chờ từ hệ thống thông tin bệnh viện; nhóm nghiên cứu chỉ nhận dữ liệu đã khử định danh và không nhận thông tin bệnh án hoặc thông tin nhận diện cá nhân.
+**3. Về việc bảo mật danh tính.** Phiếu khảo sát mà Ông/Bà điền **không** hỏi tên, số hồ sơ, số căn cước, số thẻ bảo hiểm y tế, số điện thoại hay địa chỉ — nội dung trả lời của Ông/Bà là **ẩn danh**. Tên/chữ ký của Ông/Bà chỉ xuất hiện trên chính tờ Bản thông tin & Đồng thuận này (lưu riêng, có kiểm soát truy cập), **không** xuất hiện trên phiếu khảo sát, và không có cách nào để nhóm nghiên cứu đối chiếu ngược từ câu trả lời cụ thể trên phiếu khảo sát về tên của Ông/Bà. Để tính thời gian chờ, một bộ phận được ủy quyền của bệnh viện có thể sử dụng mã nghiên cứu (không phải tên) để trích xuất duy nhất thời gian chờ từ hệ thống thông tin bệnh viện — đây là dữ liệu đã **khử định danh có kiểm soát**, nhóm nghiên cứu không nhận thông tin bệnh án hoặc thông tin nhận diện cá nhân.
 
-**4. Rủi ro và bất tiện.** Rủi ro rất thấp. Nguy cơ chính là cảm giác không thoải mái khi đánh giá dịch vụ hoặc lo ngại về bảo mật (ví dụ lo phê bình ảnh hưởng việc khám, lo ý kiến tiêu cực bị nhân viên biết). Nguy cơ được giảm bằng điều tra viên không thuộc Khoa C1a, hòm phiếu kín, ưu tiên ghi mã số phiếu thay tên ở Phần 5, tách Phần 5 khỏi nội dung trả lời ngay khi thu phiếu, và báo cáo số liệu tổng hợp. Ông/Bà có thể bỏ trống bất kỳ câu nào hoặc dừng bất cứ lúc nào.
+**4. Rủi ro và bất tiện.** Rủi ro rất thấp. Nguy cơ chính là cảm giác không thoải mái khi đánh giá dịch vụ hoặc lo ngại về bảo mật (ví dụ lo phê bình ảnh hưởng việc khám, lo ý kiến tiêu cực bị nhân viên biết). Nguy cơ được giảm bằng điều tra viên không thuộc Khoa C1a, hòm phiếu kín, phiếu khảo sát tách biệt hoàn toàn khỏi tờ đồng thuận có tên ngay từ đầu, và báo cáo số liệu tổng hợp. Ông/Bà có thể bỏ trống bất kỳ câu nào hoặc dừng bất cứ lúc nào.
 
 **5. Lợi ích.** Không có lợi ích cá nhân trực tiếp. Ý kiến của Ông/Bà giúp Khoa/Bệnh viện phục vụ tốt hơn.
 
 **6. Bảo mật.** Dữ liệu được giữ kín, mã hóa và lưu trữ an toàn theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15. Chỉ nhóm nghiên cứu được truy cập. Kết quả công bố dưới dạng số liệu tổng hợp, không nêu danh tính bất kỳ ai.
 
-**7. Quyền tự nguyện và không ảnh hưởng chăm sóc.** Tham gia là hoàn toàn tự nguyện. Nếu Ông/Bà không tham gia hoặc dừng giữa chừng, việc khám chữa bệnh và mọi quyền lợi của Ông/Bà tại Bệnh viện không bị ảnh hưởng (Luật Khám bệnh, chữa bệnh 15/2023/QH15). Ông/Bà có thể dừng trước khi nộp phiếu khảo sát. Vì Phần 5 (đồng thuận) được tách khỏi Phần 1–4 (nội dung trả lời) ngay khi thu phiếu và phiếu khảo sát ưu tiên dùng mã số phiếu thay tên, nên sau khi đã bỏ phiếu khảo sát vào hòm sẽ không thể rút lại phiếu cụ thể của Ông/Bà.
+**7. Quyền tự nguyện và không ảnh hưởng chăm sóc.** Tham gia là hoàn toàn tự nguyện. Nếu Ông/Bà không tham gia hoặc dừng giữa chừng, việc khám chữa bệnh và mọi quyền lợi của Ông/Bà tại Bệnh viện không bị ảnh hưởng (Luật Khám bệnh, chữa bệnh 15/2023/QH15). Ông/Bà có thể dừng **trước khi nộp phiếu khảo sát**. Vì phiếu khảo sát không mang thông tin định danh và không liên kết ngược được với tờ đồng thuận này, sau khi đã bỏ phiếu khảo sát vào hòm sẽ không thể rút lại riêng phiếu trả lời cụ thể của Ông/Bà; Ông/Bà vẫn có thể liên hệ để rút quyền sử dụng thông tin đã ký trên chính tờ này nếu thực hiện trước thời điểm đó.
 
 **8. Thông tin liên hệ.** Chủ nhiệm đề tài: …………… – Điện thoại/Email: ……………. Thắc mắc/khiếu nại về quyền của người tham gia: Hội đồng Đạo đức BVQY 175: …………….
 
 ---
 
-**XÁC NHẬN ĐỒNG Ý THAM GIA (= Phần 5 của phiếu khảo sát thật, không phải một tờ rời riêng)**
+**XÁC NHẬN ĐỒNG Ý THAM GIA**
 
 Tôi đã đọc/được giải thích và hiểu thông tin trong Bản thông tin nghiên cứu nêu trên. Tôi hiểu rõ mục đích, quy trình, rủi ro/bất tiện, lợi ích, tính bảo mật, quyền tự nguyện và quyền rút lui, và tôi đồng ý tự nguyện tham gia nghiên cứu.
 
-Họ và tên người tham gia **(hoặc mã số phiếu — ưu tiên ghi mã số phiếu để giữ ẩn danh tối đa)**: ……………………………
+Họ và tên người tham gia: ……………………………
 
 ☐ Tôi đồng ý tham gia nghiên cứu.
 
-Chữ ký/Điểm chỉ tay (hoặc tick xác nhận): ……………………
+Chữ ký/Điểm chỉ tay: ……………………
 
 Ngày: ……… / ……… / ………
 
-*Lưu ý vận hành: phiếu khảo sát thật gộp mục xác nhận đồng thuận này ngay trong Phần 5 của CÙNG một phiếu (không phải tờ rời riêng như bản đề cương trước giả định). Để vẫn đạt tinh thần "tách rời" (không thể liên kết danh tính với câu trả lời), quy trình vận hành yêu cầu: (a) ưu tiên ghi mã số phiếu thay họ tên; (b) ngay khi thu phiếu/trước khi nhập liệu, TÁCH trang/mục Phần 5 khỏi Phần 1–4 và lưu với quyền truy cập hạn chế, tách biệt khỏi bộ dữ liệu phân tích (mục 4.7, 4.9, 4.11).*
+Tên/chữ ký người giải thích/thu thập số liệu: ……………………
 
 ---
 
-*ICF này đối chiếu đủ 8 yếu tố thông tin của Helsinki/CIOMS: mục đích, quy trình, rủi ro/bất tiện, lợi ích, bảo mật, tự nguyện và không ảnh hưởng chăm sóc/rút lui, liên hệ, ẩn danh/xử lý dữ liệu. Cơ chế đồng thuận là tick/ký và ghi ngày ở Phần 5 của phiếu khảo sát thật (không phải đồng thuận ngụ ý qua hành vi nộp phiếu).*
+*ICF này đối chiếu đủ 8 yếu tố thông tin của Helsinki/CIOMS: mục đích, quy trình, rủi ro/bất tiện, lợi ích, bảo mật, tự nguyện và không ảnh hưởng chăm sóc/rút lui, liên hệ, ẩn danh/xử lý dữ liệu. Đây là một tài liệu giấy độc lập, thu và lưu tách biệt vật lý khỏi phiếu khảo sát ngay từ đầu — không phải đồng thuận ngụ ý qua hành vi nộp phiếu, và không phải một phần của phiếu khảo sát.*
 
 ---
 
-# PHỤ LỤC C. BỘ CÔNG CỤ — TOÀN VĂN "PHIẾU KHẢO SÁT Ý KIẾN NGƯỜI BỆNH NGOẠI TRÚ"
+# PHỤ LỤC C. BỘ CÔNG CỤ — TOÀN VĂN "PHIẾU KHẢO SÁT Ý KIẾN NGƯỜI BỆNH NGOẠI TRÚ" — *[DỰ THẢO v_pilot — CHỜ HỘI ĐỒNG CHUYÊN GIA + COGNITIVE INTERVIEW + PILOT, xem mục 4.5.1/4.5.3/4.9 — CHƯA PHẢI vFinal]*
 
-Đây là bộ câu hỏi **tự xây dựng** cho đề tài này (không phải Mẫu số 2 — xem so sánh ở mục 3.2.1, 4.5.1). Toàn văn dưới đây lấy nguyên từ bản phiếu "hoàn chỉnh, có số thứ tự phiếu" do chủ nhiệm cung cấp (2026-07-06); không có nội dung nào được suy đoán hay dựng thay.
+Đây là bộ câu hỏi **tự xây dựng** cho đề tài này (không phải Mẫu số 2 — xem so sánh ở mục 3.2.1, 4.5.1). Bản gốc lấy từ phiếu "hoàn chỉnh, có số thứ tự phiếu" do chủ nhiệm cung cấp (2026-07-06); không có nội dung nào được suy đoán hay dựng thay. **Toàn văn dưới đây đã qua một vòng chỉnh sửa item theo phản biện độc lập 07/07/2026** (tách mã thiếu 7/8/9, thêm nhánh "không áp dụng", đổi C8 sang hành vi quan sát được, làm rõ mục 10 Phần 1, mở rộng mục 1 Phần 1 thành ba mức, bỏ Phần 5 ra khỏi phiếu — chuyển thành tài liệu đồng thuận riêng ở Phụ lục B, mục 4.11) — đây vẫn là **bản đưa vào hội đồng chuyên gia + cognitive interview + pilot** (mục 4.5.1), **chưa** phải phiên bản khóa cuối (vFinal); phiên bản khóa cuối chỉ chốt sau khi hoàn tất pha phát triển công cụ.
 
-**Trang bìa/đầu phiếu:** tên đề tài, đơn vị thực hiện, chủ nhiệm nghiên cứu, người liên hệ, điện thoại/email, tình trạng phê duyệt đạo đức, số thứ tự phiếu; đoạn giới thiệu mục đích/tự nguyện/bảo mật/thời gian ước tính (15–20 phút).
+**Trang bìa/đầu phiếu:** tên đề tài, đơn vị thực hiện, chủ nhiệm nghiên cứu, người liên hệ, điện thoại/email, tình trạng phê duyệt đạo đức, số thứ tự phiếu; đoạn giới thiệu mục đích/tự nguyện/bảo mật/thời gian ước tính (15–20 phút). **Không** còn mục xác nhận đồng thuận trên phiếu này — đồng thuận là tài liệu riêng (Phụ lục B, mục 4.11).
 
 ## C.1. Phần 1 — Thông tin chung của người bệnh/người trả lời (14 mục)
 
-1. Ai là người trực tiếp trả lời phiếu: (1) Bản thân người bệnh · (2) Bản thân trả lời, người nhà/người chăm sóc hỗ trợ ghi phiếu.
+1. Phiếu này được hoàn thành như thế nào (biến `mode_tra_loi`, mục 4.6.2): (1) Người bệnh tự điền · (2) Người nhà/người chăm sóc **ghi lại đúng nguyên văn** lời người bệnh trả lời (không phải người nhà tự trả lời thay) · (3) Điều tra viên **ghi lại đúng nguyên văn** lời người bệnh trả lời (không phải điều tra viên diễn giải/gợi ý đáp án). **Nghiêm cấm** người khác trả lời THAY người bệnh (proxy response) ở cả ba trường hợp.
 2. Tuổi (năm).
 3. Giới tính: (1) Nam · (2) Nữ.
 4. Trình độ học vấn cao nhất: (1) Mù chữ/chưa đi học · (2) Tiểu học · (3) THCS · (4) THPT · (5) Trung cấp/Cao đẳng · (6) Đại học · (7) Sau đại học.
@@ -844,7 +879,7 @@ Ngày: ……… / ……… / ………
 7. Nơi cư trú chính: (1) Thành thị · (2) Nông thôn.
 8. Thu nhập trung bình hàng tháng của hộ gia đình: (1) Dưới 5 triệu · (2) 5–<10 triệu · (3) 10–<20 triệu · (4) ≥20 triệu VNĐ.
 9. Có thẻ BHYT không: (1) Có · (2) Không.
-10. Lý do chính đến khám lần này: (1) Khám bệnh lần đầu · (2) Tái khám theo lịch hẹn · (3) Khám sức khỏe định kỳ/tổng quát · (4) Khám theo yêu cầu chuyên khoa · (5) Khác (ghi rõ).
+10. Lý do chính đến khám lần này: (1) Khám bệnh lần đầu · (2) Tái khám theo lịch hẹn · (3) Khám sức khỏe định kỳ/tổng quát · (4) Chủ động chọn khám với một bác sĩ/chuyên khoa cụ thể theo yêu cầu riêng (khác lần đầu/tái khám/định kỳ thông thường) · (5) Khác (ghi rõ).
 11. Trong 12 tháng qua (không tính lần này), số lần đã khám tại Khoa: (1) 0 lần · (2) 1–2 lần · (3) ≥3 lần.
 12. Khoảng cách ước lượng từ nhà đến bệnh viện: (1) Dưới 5 km · (2) 5–10 km · (3) Trên 10 km.
 13. Phương tiện di chuyển chính: (1) Xe máy tự đi/người nhà đưa · (2) Ô tô cá nhân/người nhà đưa đón · (3) Xe buýt/phương tiện công cộng · (4) Taxi/xe công nghệ · (5) Xe khách/xe dịch vụ/xe hợp đồng · (6) Khác (ghi rõ).
@@ -853,16 +888,16 @@ Ngày: ……… / ……… / ………
 ## C.2. Phần 2 — Đánh giá mức độ hài lòng theo lĩnh vực (30 mục, Likert 5 mức: 1 = Rất không hài lòng … 5 = Rất hài lòng)
 
 **A. Khả năng tiếp cận dịch vụ (6 mục)**
-A1. Thời gian chờ đợi để làm thủ tục đăng ký khám. A2. Thời gian chờ đợi để được vào gặp bác sĩ khám. A3. Thời gian chờ đợi để thực hiện các dịch vụ cận lâm sàng. A4. Thời gian chờ đợi để nhận kết quả cận lâm sàng. A5. Sự dễ dàng và thuận tiện của thủ tục đăng ký khám bệnh. A6. Sự rõ ràng và đầy đủ của việc được hướng dẫn về quy trình khám bệnh.
+A1. Thời gian chờ đợi để làm thủ tục đăng ký khám. A2. Thời gian chờ đợi để được vào gặp bác sĩ khám. A3. Thời gian chờ đợi để thực hiện các dịch vụ cận lâm sàng **(mục 7 = "Không sử dụng dịch vụ này" nếu không có chỉ định cận lâm sàng)**. A4. Thời gian chờ đợi để nhận kết quả cận lâm sàng **(mục 7 = "Không sử dụng dịch vụ này" nếu không có chỉ định cận lâm sàng)**. A5. Sự dễ dàng và thuận tiện của thủ tục đăng ký khám bệnh. A6. Sự rõ ràng và đầy đủ của việc được hướng dẫn về quy trình khám bệnh.
 
 **B. Cơ sở vật chất và phương tiện phục vụ (8 mục)**
 B1. Sự sạch sẽ, vệ sinh của khu vực chờ khám. B2. Sự sạch sẽ, vệ sinh của phòng khám bác sĩ. B3. Sự sạch sẽ, vệ sinh của nhà vệ sinh dành cho người bệnh. B4. Sự đầy đủ và tiện nghi của ghế ngồi chờ. B5. Điều kiện không khí tại khu vực chờ. B6. Sự sẵn có của nước uống phục vụ người bệnh. B7. Sự rõ ràng, dễ thấy của biển báo, sơ đồ chỉ dẫn trong khoa. B8. Cảm nhận về sự hiện đại, đầy đủ của trang thiết bị y tế được sử dụng.
 
 **C. Thái độ ứng xử và năng lực chuyên môn của nhân viên y tế (10 mục)**
-C1. Thái độ ân cần, tôn trọng, lịch sự của bác sĩ. C2. Sự giải thích của bác sĩ về tình trạng bệnh. C3. Sự giải thích của bác sĩ về phương pháp điều trị/xét nghiệm. C4. Thời gian bác sĩ dành để khám và tư vấn. C5. Sự tin tưởng vào năng lực chuyên môn của bác sĩ. C6. Thái độ niềm nở, nhiệt tình, sẵn sàng giúp đỡ của điều dưỡng/kỹ thuật viên/NVYT khác. C7. Sự hướng dẫn rõ ràng, cụ thể về các thủ tục. C8. Kỹ năng thực hiện các y lệnh, thủ thuật (nếu có). C9. Thái độ lịch sự, thân thiện của nhân viên bảo vệ/hướng dẫn/tiếp đón. C10. Sự sẵn sàng chỉ dẫn, giúp đỡ khi cần.
+C1. Thái độ ân cần, tôn trọng, lịch sự của bác sĩ. C2. Sự giải thích của bác sĩ về tình trạng bệnh. C3. Sự giải thích của bác sĩ về phương pháp điều trị/xét nghiệm. C4. Thời gian bác sĩ dành để khám và tư vấn. C5. Sự tin tưởng vào năng lực chuyên môn của bác sĩ. **C6. Thái độ niềm nở, nhiệt tình, sẵn sàng giúp đỡ của điều dưỡng/kỹ thuật viên/NVYT khác** *(⚠️ ĐÁNH DẤU đối chiếu phản biện độc lập 07/07/2026 — item gộp nhiều vai trò nhân viên khác nhau (multi-barreled item), CHƯA tách; xem đề xuất tách cụ thể ở Phụ lục C.5, BẮT BUỘC hội đồng chuyên gia quyết định trước khi khóa vFinal — mục 4.5.1)*. C7. Sự hướng dẫn rõ ràng, cụ thể về các thủ tục. **C8. Sự cẩn thận, nhẹ nhàng và tôn trọng sự riêng tư của nhân viên khi thực hiện thủ thuật/y lệnh (nếu có)** *(đối chiếu phản biện độc lập 07/07/2026: đổi từ "kỹ năng thực hiện y lệnh, thủ thuật" — người bệnh không quan sát/đánh giá được kỹ năng chuyên môn kỹ thuật, nhưng có thể quan sát được sự cẩn thận/nhẹ nhàng/tôn trọng riêng tư; mục 7 = "Không sử dụng dịch vụ này" nếu không có thủ thuật/y lệnh nào được thực hiện)*. **C9. Thái độ lịch sự, thân thiện của nhân viên bảo vệ/hướng dẫn/tiếp đón** *(⚠️ ĐÁNH DẤU cùng lý do như C6 — gộp vai trò bảo vệ với vai trò hướng dẫn/tiếp đón, xem Phụ lục C.5)*. C10. Sự sẵn sàng chỉ dẫn, giúp đỡ khi cần.
 
 **D. Minh bạch thông tin và thủ tục khám bệnh (3 mục)**
-D1. Sự công khai, rõ ràng về giá các dịch vụ y tế. D2. Sự giải thích về các khoản chi phí phải trả (nếu có thắc mắc). D3. Sự hướng dẫn rõ ràng, đầy đủ về cách sử dụng thuốc.
+D1. Sự công khai, rõ ràng về giá các dịch vụ y tế. D2. Sự giải thích về các khoản chi phí phải trả **(mục 7 = "Không sử dụng dịch vụ này" nếu không có thắc mắc/không cần hỏi)**. D3. Sự hướng dẫn rõ ràng, đầy đủ về cách sử dụng thuốc **(mục 7 = "Không sử dụng dịch vụ này" nếu không được kê/cấp thuốc lần này)**.
 
 **E. Kết quả cung cấp dịch vụ (2 mục)**
 E1. Mức độ đáp ứng nhu cầu khám chữa bệnh. E2. Sự tin tưởng vào kết quả chẩn đoán và điều trị tại khoa.
@@ -876,17 +911,17 @@ G1. "Nói chung, Ông/Bà hài lòng ở mức độ nào với tất cả các 
 
 ## C.4. Phần 4 — Ý kiến đóng góp khác (1 mục mở)
 
-Câu hỏi mở, thu thập góp ý tự do của người bệnh; tổng hợp mô tả/theo chủ đề (biến `Ykiendonggop`), không lượng hóa vào kết cục.
+Câu hỏi mở, thu thập góp ý tự do của người bệnh; tổng hợp mô tả/theo chủ đề (biến `Ykiendonggop`), không lượng hóa vào kết cục. Quy trình mã hóa nội dung mở ở mục 4.10.
 
-## C.5. Phần 5 — Xác nhận đồng ý tham gia nghiên cứu
+**Phiếu khảo sát kết thúc ở Phần 4.** *(Đối chiếu phản biện độc lập 07/07/2026 — P0-9: đã bỏ hẳn "Phần 5 — Xác nhận đồng ý tham gia nghiên cứu" ra khỏi phiếu khảo sát.)* Phiếu khảo sát **không còn** mục tick/ký/họ tên/mã số phiếu nào để xác nhận đồng thuận — phiếu chỉ mang một **mã nghiên cứu** (không phải số thứ tự khám công khai) để phục vụ ghép nối thời gian chờ (mục 4.6.3). Đồng thuận tham gia nay là **MỘT TÀI LIỆU RIÊNG, TÁCH BIỆT HOÀN TOÀN** khỏi phiếu khảo sát — xem Phụ lục B; quy trình phát hai tài liệu và thu phiếu riêng ở mục 4.7, 4.9, 4.11.
 
-Bốn mục tick xác nhận đã hiểu thông tin nghiên cứu (mục đích/nội dung/quyền lợi/bất tiện/quyền từ chối-rút lui, đã có cơ hội đặt câu hỏi); mục chọn "Đồng ý/Không đồng ý tham gia"; họ tên (hoặc mã số phiếu); chữ ký/điểm chỉ người tham gia + ngày khảo sát; tên/chức danh người giải thích-thu thập số liệu + chữ ký. Xem cách vận hành tách Phần 5 khỏi Phần 1–4 ở Phụ lục B và mục 4.7/4.9/4.11.
+## C.5. Ghi chú kỹ thuật
 
-## C.6. Ghi chú kỹ thuật
-
-- Mã thiếu/không áp dụng trong Phần 2 = 9 (loại khỏi tính điểm miền, mục 4.5.2, 4.10).
-- Biến `MaSoBenhNhan` (mã hồ sơ bệnh án) không xuất hiện trên bản in phiếu giấy nhưng có trong codebook nhập liệu nội bộ — chỉ dùng đối soát/chống trùng, phải tách khỏi bộ dữ liệu phân tích trước khi khóa dữ liệu (mục 6.5).
-- Đánh giá tự xây dựng nêu ở mục 4.5.3: đề xuất chỉnh sửa nhỏ (bổ sung lựa chọn "điều tra viên hỗ trợ đọc" ở mục 1 Phần 1; làm rõ lựa chọn "khám theo yêu cầu chuyên khoa" ở mục 10 Phần 1) được trình bày đầy đủ tại `_danh-gia-phieu-khao-sat.md` (hồ sơ nội bộ).
+- **Ba mã thiếu tách riêng** trong Phần 2 (đối chiếu phản biện độc lập 07/07/2026 — không còn gộp chung một mã 9): **7 = không áp dụng/không sử dụng dịch vụ này** (chỉ hợp lệ ở A3, A4, C8, D2, D3 — xem ghi chú tại từng mục ở C.2); **8 = không biết/không nhớ**; **9 = không trả lời/từ chối**. Cách loại khỏi tính điểm miền ở mục 4.5.2, 4.10.
+- Biến `MaSoBenhNhan` (mã hồ sơ bệnh án) **không** xuất hiện trên bản in phiếu giấy và **không** được nhập vào hệ thống nhập liệu của nhóm nghiên cứu dưới bất kỳ hình thức nào — đối soát/chống trùng lúc thu thập do Phòng CNTT/QLCL bệnh viện thực hiện riêng, ngoài quy trình nhập liệu của nhóm nghiên cứu (mục 4.6.3, 6.5).
+- Biến `mode_tra_loi` (C.1 mục 1) ghi nhận cách hoàn thành phiếu (tự điền/người nhà ghi hộ nguyên văn/điều tra viên ghi hộ nguyên văn); dùng cho phân tích nhạy cảm loại bỏ phiếu có hỗ trợ (mục 4.10).
+- **C6 và C9 gộp nhiều vai trò nhân viên khác nhau trong cùng một mục (multi-barreled item)** — đối chiếu phản biện độc lập 07/07/2026, yêu cầu con "tách vai trò nhân viên" của P0-6 **chưa xử lý** (khác C8/D2/D3/mục 10/mục 1 đã sửa trực tiếp): C6 gộp "điều dưỡng" + "kỹ thuật viên/NVYT khác"; C9 gộp "bảo vệ" + "hướng dẫn/tiếp đón" — một người bệnh có thể hài lòng với vai trò này nhưng không hài lòng với vai trò kia, làm mất thông tin và khó diễn giải. **Không tự ý tách item ngay trong bản đề cương này**, vì việc tách sẽ tăng số mục (30 → tối đa 32) và cần bổ sung biến mới vào codebook `.sav` 63 biến thật do chủ nhiệm đã dựng sẵn (một tài liệu ngoài phạm vi chỉnh sửa của đề cương) — đây là quyết định thuộc hội đồng chuyên gia ở pha phát triển công cụ (mục 4.5.1), không phải một sửa lỗi câu chữ đơn thuần. **Đề xuất khởi điểm cho hội đồng chuyên gia** (chưa khóa): tách C6 thành "C6a. Thái độ niềm nở, nhiệt tình của điều dưỡng" + "C6b. Thái độ niềm nở, nhiệt tình của kỹ thuật viên/NVYT khác"; tách C9 thành "C9a. Thái độ lịch sự, thân thiện của nhân viên bảo vệ" + "C9b. Thái độ lịch sự, thân thiện của nhân viên hướng dẫn/tiếp đón". Nếu hội đồng chuyên gia thông qua đề xuất này, chủ nhiệm cần: (a) cập nhật codebook `.sav` thêm 2 biến mới (65 biến); (b) cập nhật lại mọi chỗ trong đề cương ghi "30 mục"/"10 mục lĩnh vực C" thành 32/12; (c) in lại phiếu.
+- Đây vẫn là **bản đưa vào hội đồng chuyên gia + cognitive interview + pilot** (mục 4.5.1) — chưa phải vFinal; các chỉnh sửa item ở trên (C8, D2/D3 mục 7, mục 10 Phần 1, mục 1 Phần 1) là điểm khởi đầu cho vòng kiểm định đó; C6/C9 là quyết định còn treo, nêu trên, chưa phải kết luận cuối cùng về câu chữ.
 
 ---
 
@@ -898,12 +933,13 @@ Trình bày dưới dạng mô tả luồng mũi tên bằng văn bản (không 
 
 **D.2. Outcome chính:** hài lòng chung (`G1`, hỏi trực tiếp — mục 4.5.2). `SHLNBChung_TinhToan` (trung bình A1–F1) chỉ dùng đối chiếu hội tụ, không phải outcome của DAG này.
 
-**D.3. Đường nhiễu cần hiệu chỉnh (forced-in):**
-- Tuổi, giới, học vấn, nơi cư trú → có thẻ BHYT → thời gian chờ → hài lòng (đường nhiễu qua BHYT).
-- Tuổi, giới, học vấn, nơi cư trú → thời gian chờ → hài lòng (đường nhiễu trực tiếp).
-- Tuổi, giới, học vấn, nơi cư trú → hài lòng (đường nhiễu trực tiếp tới outcome, không qua thời gian chờ).
-- Lý do khám (lần đầu/tái khám/định kỳ/theo yêu cầu chuyên khoa) → kỳ vọng → hài lòng; đồng thời lý do khám có thể liên quan thời gian chờ (người tái khám quen quy trình hơn) → cả hai nhánh đều là lý do hiệu chỉnh `LyDoKham`.
-- Chuyên khoa khám, khung giờ khám, ngày trong tuần → thời gian chờ (khác nhau theo tải bệnh nhân từng khung giờ/chuyên khoa) → hài lòng; đồng thời các biến này có thể liên quan hài lòng qua kênh khác (ví dụ nhân sự trực theo ca) → hiệu chỉnh trực tiếp các biến này.
+**D.3. Đường nhiễu (đối chiếu phản biện độc lập 07/07/2026 — tách rõ biến FORCED-IN khỏi biến nhiễu hợp lý nhưng chủ động giữ ở tầng thăm dò, để DAG và tập hiệu chỉnh của mô hình chính thống nhất — mục 4.10, A.3):**
+- Tuổi, giới, nơi cư trú → có thẻ BHYT → thời gian chờ → hài lòng (đường nhiễu qua BHYT) — **forced-in**.
+- Tuổi, giới, nơi cư trú → thời gian chờ → hài lòng (đường nhiễu trực tiếp) — **forced-in**.
+- Tuổi, giới, nơi cư trú → hài lòng (đường nhiễu trực tiếp tới outcome, không qua thời gian chờ) — **forced-in**.
+- **Học vấn → thời gian chờ → hài lòng, và học vấn → hài lòng (trực tiếp)** — về lý thuyết là một đường nhiễu hợp lý (tương tự tuổi/giới/nơi cư trú), nhưng đề tài **chủ động giữ học vấn ở tầng biến thăm dò** (không đưa vào tập forced-in của mô hình chính) vì lý do parsimony: số tham số của mô hình chính đã ở mức 15–25 trên n = 1000 (mục 4.4.1), và học vấn có 7 mức (6 bậc tự do) sẽ làm tăng đáng kể số tham số. Đây là một đánh đổi có ý thức, được nêu rõ ở DAG này thay vì âm thầm bỏ sót; nếu sau khi mô tả dữ liệu thật cho thấy học vấn có liên quan mạnh và số tham số còn dư địa, chủ nhiệm/nhà thống kê có thể bổ sung học vấn vào forced-in **trước khi khóa SAP** (không phải sau khi xem kết quả).
+- Lý do khám (lần đầu/tái khám/định kỳ/theo yêu cầu chuyên khoa) → kỳ vọng → hài lòng; đồng thời lý do khám có thể liên quan thời gian chờ (người tái khám quen quy trình hơn) → cả hai nhánh đều là lý do hiệu chỉnh `LyDoKham` — **forced-in**.
+- Chuyên khoa khám, khung giờ khám, ngày trong tuần → thời gian chờ (khác nhau theo tải bệnh nhân từng khung giờ/chuyên khoa) → hài lòng; đồng thời các biến này có thể liên quan hài lòng qua kênh khác (ví dụ nhân sự trực theo ca) → hiệu chỉnh trực tiếp các biến này — **forced-in**.
 
 *(Đã gỡ bỏ nhánh "đối tượng quân nhân/thân nhân/dân sự" và số hạng tương tác thời gian chờ × đối tượng — quyết định 2026-07-06, mục 4.6.2: phiếu khảo sát và codebook thật không thu thập biến này.)*
 
@@ -911,10 +947,8 @@ Trình bày dưới dạng mô tả luồng mũi tên bằng văn bản (không 
 - `co_cls` (có làm cận lâm sàng): thường xảy ra **sau** khi gặp bác sĩ, là hậu quả/đồng thời của quy trình khám chứ không phải biến xảy ra trước thời gian chờ; không hiệu chỉnh trong mô hình chính; chỉ dùng cho phân tích mô tả/thăm dò về trải nghiệm toàn bộ lượt khám.
 - `so_quay_buoc` khi phát sinh **sau** khi vào khám (ví dụ quay lại đóng thêm phí sau khi có chỉ định cận lâm sàng): là hậu quả của quy trình khám, không hiệu chỉnh trong mô hình chính. Nếu toàn bộ các lượt quay đều xảy ra **trước** khi vào khám, biến này được coi là biến trước exposure và có thể xem xét đưa vào phân tích thăm dò; nếu có quay sau khám thì loại khỏi mô hình thời gian chờ trước khám.
 
-**D.5. Diễn giải:** mô hình chính chỉ hiệu chỉnh các biến ở mục D.3 (nhiễu định trước theo DAG); không hiệu chỉnh các biến ở mục D.4 (hậu quả của exposure/biến trung gian tiềm năng), để tránh làm suy giảm hoặc bóp méo hiệu ứng ước lượng của thời gian chờ lên hài lòng.
+**D.5. Diễn giải:** mô hình chính chỉ hiệu chỉnh các biến ở mục D.3 (nhiễu định trước theo DAG); không hiệu chỉnh các biến ở mục D.4 (hậu quả của exposure/biến trung gian tiềm năng), để tránh làm suy giảm hoặc bóp méo **mối liên quan hiệu chỉnh** ước lượng được giữa thời gian chờ và hài lòng (không dùng ngôn ngữ nhân quả "hiệu ứng của thời gian chờ" — đối chiếu mục 4.10, phù hợp thiết kế cắt ngang không suy diễn nhân quả).
 
 ---
 
 *Đề cương này là bản trình Hội đồng; mọi mã phê duyệt và số liệu vận hành để trống cho tới khi có thật. Nghiên cứu ẩn danh về nội dung phiếu khảo sát, không thu thập thông tin định danh cá nhân trên phiếu khảo sát; cơ chế khử định danh có kiểm soát cho biến thời gian chờ được mô tả ở mục 4.6.3 và 6.5. Danh mục tài liệu tham khảo đã được đối chiếu với PubMed và được kiểm chứng trích dẫn (xác minh từng PMID/DOI/số hiệu văn bản, đối chiếu nội dung trích) trước khi nộp.*
-
-**Cần bác sĩ kiểm chứng.**

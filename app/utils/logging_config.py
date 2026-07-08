@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import logging
+import tempfile
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 from app.config import settings
 
@@ -29,9 +31,17 @@ def setup_logging(level: int = logging.INFO) -> None:
     console.setFormatter(fmt)
     root.addHandler(console)
 
-    file_handler = RotatingFileHandler(
-        log_file, maxBytes=2_000_000, backupCount=5, encoding="utf-8"
-    )
+    try:
+        file_handler = RotatingFileHandler(
+            log_file, maxBytes=2_000_000, backupCount=5, encoding="utf-8"
+        )
+    except OSError:
+        fallback_dir = Path(tempfile.gettempdir()) / "medical-ebm-automation"
+        fallback_dir.mkdir(parents=True, exist_ok=True)
+        file_handler = RotatingFileHandler(
+            fallback_dir / "app.log", maxBytes=2_000_000, backupCount=5,
+            encoding="utf-8"
+        )
     file_handler.setFormatter(fmt)
     root.addHandler(file_handler)
 

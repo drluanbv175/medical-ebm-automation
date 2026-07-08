@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """
 dashboard — Sinh research_studio_dashboard.html (offline, self-contained).
 
@@ -6,34 +7,47 @@ Dùng: python -m research_studio.dashboard <output.html> [utc_timestamp]
 """
 from __future__ import annotations
 
-import html
 import json
 import sys
 from typing import Optional
 
+from runtime.approval_ledger import ApprovalLedger
+from runtime.audit_logger import AuditLogger
 from runtime.dispatch_guard import reset_guard_context
 
+from . import QUALIFICATION, STUDIO_BANNER
 from .artifact_registry import ArtifactRegistry
 from .project_registry import seeded_registry
-from .project_schema import StudyType
-from .research_workflow import run_project, run_work_package, WP_BY_ID, \
-    build_draft_mode_registry, build_research_runtime
-from runtime.approval_ledger import ApprovalLedger
-from .research_quality_checks import ResearchGateDecision
+from .research_completion_gates import evaluate_research_completion
+from .research_workflow import (
+    WP_BY_ID,
+    build_draft_mode_registry,
+    build_research_registry,
+    build_research_runtime,
+    run_project,
+    run_work_package,
+)
 from .study_type_router import get_template
-from runtime.audit_logger import AuditLogger
-from . import QUALIFICATION, STUDIO_BANNER
 
 
 def _build_data(utc: str) -> dict:
     reg = seeded_registry()
     projects = []
     shared_registry = build_draft_mode_registry()   # V4.3.1: draft-mode (no G2/G4/G9)
+    full_registry = build_research_registry()
     for p in reg.all():
         reset_guard_context()
         arts = ArtifactRegistry()
         res = run_project(p, registry=shared_registry, artifacts=arts)
         template = get_template(p.study_type)
+        reporting = {"sections_addressed": template.required_sections}
+        completion = evaluate_research_completion(
+            p,
+            res.artifacts,
+            reporting=reporting,
+            full_registry=full_registry,
+            draft_registry=shared_registry,
+        )
         produced = set(arts.types_for_project(p.project_id))
         missing = [t for t in template.minimum_artifact_set if t not in produced]
         projects.append({
@@ -43,6 +57,15 @@ def _build_data(utc: str) -> dict:
             "reporting_checklist": template.reporting_checklist,
             "workflow_state": res.final_state.value,
             "blocked": res.blocked,
+            "preflight_decision": (
+                res.preflight_report.decision.value if res.preflight_report else "UNKNOWN"
+            ),
+            "preflight_reason_codes": (
+                res.preflight_report.reason_codes if res.preflight_report else []
+            ),
+            "preflight_review_items": (
+                res.preflight_report.review_items[:12] if res.preflight_report else []
+            ),
             "artifacts": [{
                 "type": a.artifact_type, "agent": a.source_agent_id,
                 "hash12": (a.source_agent_hash or "")[:12],
@@ -53,6 +76,16 @@ def _build_data(utc: str) -> dict:
             } for a in res.artifacts],
             "artifact_readiness": f"{len(produced)}/{len(template.minimum_artifact_set)} min-set",
             "missing_components": missing,
+            "completion_decision": completion.decision.value,
+            "completion_reason_codes": completion.reason_codes,
+            "completion_missing_artifacts": completion.missing_artifacts,
+            "completion_required_artifacts": completion.required_artifacts,
+            "real_research_blocked": completion.real_research_blocked,
+            "external_release_blocked": completion.external_release_blocked,
+            "gate_agent_matrix_pass": not any(
+                reason.startswith("GATE_AGENT_MATRIX:")
+                for reason in completion.reason_codes
+            ),
             "gate_status": "ALL PASS (synthetic)" if not res.blocked else "BLOCKED",
             "review_required": True,
         })
@@ -116,7 +149,6 @@ def _build_data(utc: str) -> dict:
 
 
 def render_html(data: dict) -> str:
-    payload = html.escape(json.dumps(data, ensure_ascii=False), quote=False)
     return _HTML_TEMPLATE.replace("/*__DATA__*/", json.dumps(data, ensure_ascii=False))
 
 
@@ -197,6 +229,9 @@ $("#projects").innerHTML = DATA.projects.map(p=>{
     <div style="margin:6px 0">${pill('state: '+p.workflow_state,'p-state')} ${pill(p.gate_status,gcls)} ${pill('checklist: '+p.reporting_checklist,'p-state')}</div>
     <div class="muted">Artifact readiness: <b>${p.artifact_readiness}</b> · review required: <b>${p.review_required}</b></div>
     <div class="muted">Missing min-set: ${miss}</div>
+    <div class="muted">Completion gate: <b>${p.completion_decision}</b> · agent matrix pass: <b>${p.gate_agent_matrix_pass}</b> · real research blocked: <b>${p.real_research_blocked}</b> · release blocked: <b>${p.external_release_blocked}</b></div>
+    <div class="muted">Completion missing: ${p.completion_missing_artifacts.length ? p.completion_missing_artifacts.join(", ") : "—"}</div>
+    <div class="muted">Completion reasons: ${p.completion_reason_codes.join("; ")}</div>
     <table><thead><tr><th>Artifact</th><th>Agent</th><th>Hash</th><th>Review</th></tr></thead><tbody>${rows}</tbody></table>
   </div>`;
 }).join("");

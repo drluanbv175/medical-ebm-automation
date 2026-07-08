@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 """
 V4.3 — Offline Research Studio deterministic tests (20 kịch bản Phase G).
 
@@ -10,33 +11,46 @@ from __future__ import annotations
 
 import pytest
 
-from runtime.agent_registry import AgentRegistry, RegistryMode
 from runtime.approval_ledger import ApprovalLedger
 from runtime.audit_logger import AuditLogger
 from runtime.dispatch_guard import (
-    reset_guard_context,
-    assert_via_orchestrator,
     DirectRuntimeBypassError,
-)
-from runtime.mock_agent_runtime import MockAgentRuntime
-
-from research_studio.project_registry import seeded_registry, ProjectRegistry
-from research_studio.project_schema import (
-    ResearchProject, StudyType, ResearchWorkflowState, ReviewStatus,
-    validate_project, is_valid,
-)
-from research_studio.study_type_router import (
-    get_template, all_templates, reporting_checklist_for,
-)
-from research_studio.artifact_registry import (
-    ArtifactRegistry, ResearchArtifact, ArtifactIntegrityError,
+    assert_via_orchestrator,
+    reset_guard_context,
 )
 from research_studio import research_quality_checks as q
+from research_studio.artifact_registry import (
+    ArtifactIntegrityError,
+    ArtifactRegistry,
+    ResearchArtifact,
+)
+from research_studio.dashboard import _build_data
+from research_studio.gate_agent_matrix import build_gate_agent_matrix
+from research_studio.project_schema import (
+    ResearchProject,
+    ResearchWorkflowState,
+    ReviewStatus,
+    StudyType,
+    is_valid,
+    validate_project,
+)
+from research_studio.research_completion_gates import evaluate_research_completion
+from research_studio.research_preflight import evaluate_research_preflight
 from research_studio.research_quality_checks import ResearchGateDecision
 from research_studio.research_workflow import (
-    WORK_PACKAGES, WP_BY_ID, run_project, run_work_package,
-    build_research_registry, build_research_runtime, seed_synthetic_ledger,
-    RESEARCH_FIXTURE_CATALOG,
+    WORK_PACKAGES,
+    WP_BY_ID,
+    build_draft_mode_registry,
+    build_research_registry,
+    build_research_runtime,
+    run_project,
+    run_work_package,
+    seed_synthetic_ledger,
+)
+from research_studio.study_type_router import (
+    all_templates,
+    get_template,
+    reporting_checklist_for,
 )
 
 
@@ -65,12 +79,44 @@ def _project(study_type=StudyType.CROSS_SECTIONAL, pid="RS-T-001"):
 # 1 — schema validation
 def test_01_schema_validation():
     assert is_valid(_project())
-    bad = _project(); bad.objectives = []
+    bad = _project()
+    bad.objectives = []
     assert "MISSING_OBJECTIVES" in validate_project(bad)
-    bad2 = _project(); bad2.draft_only = False
+    bad2 = _project()
+    bad2.draft_only = False
     assert "DRAFT_ONLY_MUST_BE_TRUE" in validate_project(bad2)
-    bad3 = _project(); bad3.principal_investigator = "Nguyễn Văn A"
+    bad3 = _project()
+    bad3.principal_investigator = "Nguyễn Văn A"
     assert "PI_LOOKS_LIKE_REAL_NAME_USE_SYNTHETIC_ID" in validate_project(bad3)
+
+
+def test_research_preflight_passes_valid_project_and_lists_review_items():
+    p = _project(study_type=StudyType.RCT, pid="RS-T-PREFLIGHT")
+    report = evaluate_research_preflight(
+        p,
+        full_registry=build_research_registry(),
+        draft_registry=build_draft_mode_registry(),
+    )
+
+    assert report.decision == ResearchGateDecision.PASS
+    assert report.reporting_checklist == "CONSORT"
+    assert "PROTOCOL_DRAFT" in report.minimum_artifact_set
+    assert any(item.startswith("REPORTING_SECTION_REQUIRED:") for item in report.review_items)
+    assert any(item.startswith("HUMAN_REVIEW_REQUIRED:") for item in report.review_items)
+
+
+def test_research_preflight_blocks_missing_core_pico_before_artifacts():
+    p = _project(study_type=StudyType.COHORT, pid="RS-T-PREFLIGHT-BLOCK")
+    p.pico_or_equivalent = {"E": "exposure only"}
+
+    res = run_project(p)
+
+    assert res.blocked is True
+    assert res.artifacts == []
+    assert res.preflight_report is not None
+    assert res.preflight_report.decision == ResearchGateDecision.BLOCK
+    assert any(reason.startswith("PICO_CORE_MISSING:") for reason in res.preflight_report.reason_codes)
+    assert res.block_reason.startswith("PREFLIGHT_BLOCK:")
 
 
 # 2 — study-type routing
@@ -226,8 +272,11 @@ def test_16to19_happy_path_workflows(study_type, pid):
     p = _project(study_type=study_type, pid=pid)
     res = run_project(p)
     assert res.blocked is False
+    assert res.preflight_report is not None
+    assert res.preflight_report.decision == ResearchGateDecision.PASS
     assert res.final_state == ResearchWorkflowState.DRAFT_COMPLETE
-    assert len(res.artifacts) == len(WORK_PACKAGES)
+    assert len(res.artifacts) == len(WORK_PACKAGES) + 1
+    assert "REPORTING_CHECKLIST_DRAFT" in {a.artifact_type for a in res.artifacts}
     for a in res.artifacts:
         assert a.is_traceable()
         assert a.source_agent_hash
@@ -273,17 +322,20 @@ def test_gr8_fabrication_gate_direct():
 
 # Synthetic approval có MARKER CẤU TRÚC (is_synthetic), không chỉ free-text.
 def test_synthetic_approvals_structurally_marked():
-    from runtime.approval_ledger import ApprovalLedger
     ledger = seed_synthetic_ledger()
     syn = ledger.synthetic_approvals()
     assert len(syn) == 5, "G2/G4/G9/GATE_A/GATE_B"
     assert all(r.is_synthetic for r in syn)
     assert ledger.has_synthetic_approvals() is True
     assert ledger.has_only_synthetic_for("G4") is True
+    assert ledger.has_self_review_violations() is False
+    assert all(r.artifact_creator_agent == "research-studio-synthetic-fixture" for r in syn)
+    assert all(r.reviewer_agent == "technical-harness-reviewer" for r in syn)
     # export phơi bày is_synthetic + nhãn NOT-A-PERSON
     js = ledger.export_json()
     assert '"is_synthetic": true' in js
     assert "MRAQ_HARNESS_NOT_A_PERSON" in js
+    assert "research-studio-synthetic-fixture" in js
     # phê duyệt người THẬT (factory khác) KHÔNG bị gắn synthetic
     human = ApprovalLedger.make_human_approval(
         gate_id="G2", reviewer_role="IRB_CHAIR", reviewer_ref="REF",
@@ -300,3 +352,88 @@ def test_artifact_is_draft_creation_no_gate_approval():
     assert all(a.governance_level == "DRAFT_CREATION" for a in res.artifacts)
     assert all(a.gate_approvals_synthetic is False for a in res.artifacts)
     assert all(a.draft_only and a.human_review_required for a in res.artifacts)
+
+
+def test_research_completion_gate_requires_human_review_after_structural_completion():
+    reset_guard_context()
+    p = _project(study_type=StudyType.RCT, pid="RS-T-COMPLETE")
+    res = run_project(p)
+    reporting = {"sections_addressed": get_template(p.study_type).required_sections}
+    report = evaluate_research_completion(p, res.artifacts, reporting=reporting)
+
+    assert report.decision == ResearchGateDecision.REQUIRE_HUMAN_REVIEW
+    assert report.missing_artifacts == []
+    assert report.reporting_checklist == "CONSORT"
+    assert report.real_research_blocked is True
+    assert report.external_release_blocked is True
+    assert "HUMAN_REVIEW_REQUIRED_BEFORE_REAL_USE" in report.reason_codes
+
+
+def test_research_completion_gate_blocks_missing_required_artifact():
+    reset_guard_context()
+    p = _project(study_type=StudyType.SYSTEMATIC_REVIEW, pid="RS-T-INCOMPLETE")
+    res = run_project(p)
+    artifacts = [
+        a for a in res.artifacts
+        if a.artifact_type != "EVIDENCE_PLAN_DRAFT"
+    ]
+    reporting = {"sections_addressed": get_template(p.study_type).required_sections}
+    report = evaluate_research_completion(p, artifacts, reporting=reporting)
+
+    assert report.decision == ResearchGateDecision.BLOCK
+    assert "EVIDENCE_PLAN_DRAFT" in report.missing_artifacts
+    assert any(reason.startswith("MISSING_REQUIRED_ARTIFACTS") for reason in report.reason_codes)
+
+
+def test_dashboard_exposes_research_completion_gate_status():
+    reset_guard_context()
+    data = _build_data("TEST-UTC")
+    assert data["projects"]
+    for project in data["projects"]:
+        assert project["completion_decision"] == ResearchGateDecision.REQUIRE_HUMAN_REVIEW.value
+        assert project["preflight_decision"] == ResearchGateDecision.PASS.value
+        assert project["preflight_reason_codes"] == []
+        assert project["preflight_review_items"]
+        assert project["completion_missing_artifacts"] == []
+        assert project["gate_agent_matrix_pass"] is True
+        assert project["real_research_blocked"] is True
+        assert project["external_release_blocked"] is True
+        assert "HUMAN_REVIEW_REQUIRED_BEFORE_REAL_USE" in project["completion_reason_codes"]
+
+
+def test_gate_agent_matrix_validates_agents_hashes_and_artifacts():
+    reset_guard_context()
+    p = _project(study_type=StudyType.RCT, pid="RS-T-MATRIX")
+    res = run_project(p)
+    matrix = build_gate_agent_matrix(
+        full_registry=build_research_registry(),
+        draft_registry=build_draft_mode_registry(),
+        artifacts=res.artifacts,
+        project_id=p.project_id,
+    )
+
+    assert matrix.decision == ResearchGateDecision.PASS
+    assert len(matrix.rows) == len(WORK_PACKAGES)
+    assert all(row.lead_hash12 for row in matrix.rows)
+    assert all(row.supporting_missing == [] for row in matrix.rows)
+    assert all(row.artifact_present for row in matrix.rows)
+    assert any("REPORTING_CHECKLIST_DRAFT" in row.extra_artifacts_present for row in matrix.rows)
+
+
+def test_gate_agent_matrix_blocks_when_gate_artifact_missing():
+    reset_guard_context()
+    p = _project(study_type=StudyType.RCT, pid="RS-T-MATRIX-BLOCK")
+    res = run_project(p)
+    artifacts = [
+        artifact for artifact in res.artifacts
+        if artifact.artifact_type != "SAP_DRAFT"
+    ]
+    matrix = build_gate_agent_matrix(
+        full_registry=build_research_registry(),
+        draft_registry=build_draft_mode_registry(),
+        artifacts=artifacts,
+        project_id=p.project_id,
+    )
+
+    assert matrix.decision == ResearchGateDecision.BLOCK
+    assert any("EXPECTED_ARTIFACT_MISSING:SAP_DRAFT" in r for r in matrix.reason_codes)

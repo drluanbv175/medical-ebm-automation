@@ -1,3 +1,4 @@
+# ruff: noqa: E501, I001
 """
 automation_dashboard_data — Dữ liệu + render dashboard offline (V4.3.2, Phase I).
 
@@ -10,13 +11,14 @@ AN TOÀN: DATA 100% synthetic do repo kiểm soát; dashboard tĩnh, không inpu
 
 from __future__ import annotations
 
-import html
 import json
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from runtime.dispatch_guard import reset_guard_context
 
 from research_studio.project_registry import synthetic_projects
+from research_studio.research_completion_gates import evaluate_research_completion
+from research_studio.research_workflow import build_draft_mode_registry, build_research_registry
 from research_studio.study_type_router import get_template
 
 from . import QUALIFICATION, AUTOMATION_BANNER
@@ -42,17 +44,34 @@ def _request_from_project(p) -> dict:
 
 def build_data(utc: str = "STATIC-OFFLINE", test_status: str = "UNKNOWN") -> dict:
     runner = WorkflowRunner()
+    full_registry = build_research_registry()
+    draft_registry = build_draft_mode_registry()
     projects_data: List[dict] = []
     for p in synthetic_projects():
         reset_guard_context()
         res = runner.run(_request_from_project(p))
-        tmpl = get_template(p.study_type)
+        project = res.project or p
+        tmpl = get_template(project.study_type)
+        reporting = {"sections_addressed": tmpl.required_sections}
+        completion = evaluate_research_completion(
+            project,
+            res.artifacts,
+            reporting=reporting,
+            full_registry=full_registry,
+            draft_registry=draft_registry,
+        )
         projects_data.append({
-            "project_id": p.project_id, "title": p.title,
-            "study_type": p.study_type.value,
+            "project_id": project.project_id, "title": project.title,
+            "study_type": project.study_type.value,
             "reporting_checklist": tmpl.reporting_checklist,
-            "workflow_state": p.workflow_state.value,
+            "workflow_state": project.workflow_state.value,
             "status": res.status,
+            "preflight_decision": (
+                res.preflight_report.decision.value if res.preflight_report else "UNKNOWN"
+            ),
+            "preflight_reason_codes": (
+                res.preflight_report.reason_codes if res.preflight_report else []
+            ),
             "wp_completion": f"{len(res.artifacts)}/{len(tmpl.minimum_artifact_set)} min-set",
             "artifacts": [{"type": a.artifact_type, "version": a.artifact_version,
                            "agent": a.source_agent_id,
@@ -61,6 +80,15 @@ def build_data(utc: str = "STATIC-OFFLINE", test_status: str = "UNKNOWN") -> dic
                            "review_status": a.review_status.value}
                           for a in res.artifacts],
             "gate_overall": (res.quality_report or {}).get("overall", "n/a"),
+            "completion_decision": completion.decision.value,
+            "completion_missing_artifacts": completion.missing_artifacts,
+            "completion_reason_codes": completion.reason_codes,
+            "gate_agent_matrix_pass": not any(
+                reason.startswith("GATE_AGENT_MATRIX:")
+                for reason in completion.reason_codes
+            ),
+            "real_research_blocked": completion.real_research_blocked,
+            "external_release_blocked": completion.external_release_blocked,
             "review_required": True,
         })
 
@@ -165,7 +193,8 @@ $("#projects").innerHTML=DATA.projects.map(p=>{
  return `<div class="card"><h3>${p.project_id} ${pill(p.study_type,'p-state')}</h3>
   <div class="muted">${p.title}</div>
   <div style="margin:6px 0">${pill('state: '+p.workflow_state,'p-state')} ${pill('run: '+p.status,p.status==='CREATED'?'p-pass':'p-warn')} ${pill('gates: '+p.gate_overall,p.gate_overall==='PASS'?'p-pass':'p-warn')} ${pill(p.reporting_checklist,'p-state')}</div>
-  <div class="muted">WP completion: <b>${p.wp_completion}</b> · review required: <b>${p.review_required}</b></div>
+  <div class="muted">WP completion: <b>${p.wp_completion}</b> · completion: <b>${p.completion_decision}</b> · agent matrix: <b>${p.gate_agent_matrix_pass}</b></div>
+  <div class="muted">Missing completion artifacts: ${p.completion_missing_artifacts.length ? p.completion_missing_artifacts.join(", ") : "—"} · real blocked: <b>${p.real_research_blocked}</b> · release blocked: <b>${p.external_release_blocked}</b></div>
   <table><thead><tr><th>Artifact</th><th>Ver</th><th>Agent</th><th>Review</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }).join("");
 $("#reviewq tbody").innerHTML=DATA.review_queue.map(r=>`<tr><td><code>${r.review_id}</code></td><td>${r.artifact_id}</td><td>${pill(r.status,'p-warn')}</td><td>${r.role}</td><td>${r.missing}</td></tr>`).join("");
