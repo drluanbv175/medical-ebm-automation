@@ -119,6 +119,51 @@ def test_research_preflight_blocks_missing_core_pico_before_artifacts():
     assert res.block_reason.startswith("PREFLIGHT_BLOCK:")
 
 
+@pytest.mark.parametrize("field,payload", [
+    # PII hư cấu (KHÔNG người thật) đặt vào TỪNG field văn bản tự do.
+    ("clinical_question", "BN Nguyễn Văn Bình, SĐT 0987654321 có tuân thủ thuốc không?"),
+    ("title", "[SYNTHETIC] Khảo sát — BN Trần Thị Bích, CCCD 079185001234"),
+    ("research_domain", "Nội tiết, liên hệ bn@hospital.vn"),
+])
+def test_research_preflight_blocks_pii_in_free_text_fields(field, payload):
+    """Defense-in-depth: preflight PHẢI tự chặn PII trong field tự do dù caller
+    gọi thẳng run_project() (bỏ qua project_intake)."""
+    p = _project(study_type=StudyType.CROSS_SECTIONAL, pid="RS-T-PII")
+    setattr(p, field, payload)
+
+    res = run_project(p)
+
+    assert res.blocked is True
+    assert res.artifacts == []
+    assert res.preflight_report.decision == ResearchGateDecision.BLOCK
+    assert any(r.startswith("PII_DETECTED:") for r in res.preflight_report.reason_codes)
+
+
+def test_research_preflight_blocks_production_connector_marker():
+    """Marker connector production (EMR/HIS/PACS/LIVE_DATABASE…) trong nội dung
+    đề tài → BLOCK ngay ở preflight."""
+    p = _project(study_type=StudyType.CROSS_SECTIONAL, pid="RS-T-CONN")
+    p.pico_or_equivalent = {"P": "kéo từ EHOSPITAL_CONNECT", "O": "y"}
+
+    res = run_project(p)
+
+    assert res.blocked is True
+    assert any(r.startswith("PRODUCTION_CONNECTOR:") for r in res.preflight_report.reason_codes)
+
+
+def test_research_preflight_clean_synthetic_project_still_passes():
+    """Không dương-tính-giả: đề tài synthetic sạch vẫn PASS sau khi thêm quét PII."""
+    p = _project(study_type=StudyType.RCT, pid="RS-T-CLEAN")
+    report = evaluate_research_preflight(
+        p,
+        full_registry=build_research_registry(),
+        draft_registry=build_draft_mode_registry(),
+    )
+    assert report.decision == ResearchGateDecision.PASS
+    assert not any(r.startswith(("PII_DETECTED", "PRODUCTION_CONNECTOR", "RAW_DATA_WRITE"))
+                   for r in report.reason_codes)
+
+
 # 2 — study-type routing
 def test_02_study_type_routing():
     assert len(all_templates()) == 7

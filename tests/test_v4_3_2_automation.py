@@ -246,6 +246,41 @@ def test_19_review_queue_cannot_auto_approve():
     assert rq.by_status(ReviewStatus.HUMAN_APPROVED_DRAFT)
 
 
+def test_19b_human_decision_rejects_synthetic_ref_and_self_review():
+    """Defense-in-depth: human_decision từ chối ref phi-người (bot/synthetic/agent)
+    và self-review (người duyệt trùng người sinh artifact); vẫn nhận người thật."""
+    rq = ReviewQueue()
+
+    def _fresh_item():
+        return rq.add(project_id="P", artifact_id="A", review_reason="r",
+                      blocking_gate=None, required_human_role="PI",
+                      missing_information=[], risks=[], audit_event_id="e")
+
+    # 1) ref phi-người (bot/synthetic/script/AI-agent) → chặn theo TOKEN
+    for bad_ref in ("QA-Bot-42", "PI-SYNTH-01", "script-final-signoff",
+                    "tham-dinh-dau-ra-agent", "AUTO-approver", "Claude",
+                    "GPT-4o", "ci-runner", ""):
+        it = _fresh_item()
+        with pytest.raises(AutoApprovalForbidden):
+            rq.human_decision(it.review_id, ReviewStatus.HUMAN_APPROVED_DRAFT, bad_ref)
+        assert it.status == ReviewStatus.PENDING_REVIEW  # không đổi trạng thái
+
+    # 2) self-review → chặn (người duyệt trùng người sinh)
+    it = _fresh_item()
+    with pytest.raises(AutoApprovalForbidden):
+        rq.human_decision(it.review_id, ReviewStatus.HUMAN_APPROVED_DRAFT,
+                          "Dr.Minh", generator_ref="Dr.Minh")
+    assert it.status == ReviewStatus.PENDING_REVIEW
+
+    # 3) người thật khác người sinh → PASS (kể cả tên chứa chuỗi con "bot"/"auto"
+    #    KHÔNG-phải-token, vd "Abbott" — chống dương-tính-giả khớp substring)
+    for good_ref in ("Dr.RealHuman", "Dr.Abbott", "Robotham"):
+        it = _fresh_item()
+        rq.human_decision(it.review_id, ReviewStatus.HUMAN_APPROVED_DRAFT,
+                          good_ref, generator_ref="Dr.OtherAuthor")
+        assert it.status == ReviewStatus.HUMAN_APPROVED_DRAFT
+
+
 # 20
 def test_20_daily_integrity_detects_manifest_mismatch():
     rep = check_manifest_integrity(expected_sha="0" * 64)
