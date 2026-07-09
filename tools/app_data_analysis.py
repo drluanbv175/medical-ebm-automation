@@ -73,7 +73,7 @@ def table1(df, group_col=None, cont_cols=None, cat_cols=None):
                 else:
                     _, p = stats.f_oneway(*vals_list)
                 row.append(f"{p:.3f}")
-            except: row.append("—")
+            except ValueError: row.append("—")
         else:
             v = df[col].dropna()
             row.append(f"{v.mean():.2f}±{v.std():.2f}")
@@ -90,7 +90,7 @@ def table1(df, group_col=None, cont_cols=None, cat_cols=None):
                 ct = pd.crosstab(df[group_col], df[col])
                 _, p, _, _ = stats.chi2_contingency(ct)
                 row.append(f"{p:.3f}")
-            except: row.append("—")
+            except ValueError: row.append("—")
         else:
             row.append(f"{len(vals)} ({100*len(vals)/len(df):.1f}%)")
         rows.append(row)
@@ -190,7 +190,7 @@ def run_roc(df, test_col, reference_col):
             idx = rng.integers(0, len(dff2), len(dff2))
             try:
                 boot_aucs.append(roc_auc_score(dff2["y"].iloc[idx], dff2["score"].iloc[idx]))
-            except: pass
+            except ValueError: pass  # mẫu bootstrap chỉ có 1 lớp — AUC không xác định, bỏ qua lần này
         ci_lo, ci_hi = np.percentile(boot_aucs, [2.5, 97.5])
         # Best cutoff (Youden)
         youden = tpr - fpr
