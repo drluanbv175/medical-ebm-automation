@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import dataclasses
 import enum
-from typing import List, Optional
+from typing import List
 
 
 class GovernanceLevel(str, enum.Enum):
@@ -113,14 +113,17 @@ class DraftStateMachine:
         if target == DraftWorkflowState.BLOCKED:
             self._state = target
             t = DraftTransition(prior.value, req_name, "ALLOWED", "MOVED_TO_BLOCKED")
-            self.history.append(t); return t
+            self.history.append(t)
+            return t
         if prior == DraftWorkflowState.BLOCKED:
             t = DraftTransition(prior.value, req_name, "BLOCKED", "ALREADY_BLOCKED")
-            self.history.append(t); return t
+            self.history.append(t)
+            return t
         if _DRAFT_INDEX[target] != _DRAFT_INDEX[prior] + 1:
             t = DraftTransition(prior.value, req_name, "BLOCKED",
                                 f"INVALID_DRAFT_TRANSITION:{prior.value}->{req_name}")
-            self.history.append(t); return t
+            self.history.append(t)
+            return t
 
         self._state = target
         t = DraftTransition(prior.value, req_name, "ALLOWED", "OK")

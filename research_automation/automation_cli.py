@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
-import sys
 from typing import List, Optional
 
 
@@ -32,7 +31,7 @@ def cmd_run_project(args) -> int:
 
 
 def cmd_project_qa(args) -> int:
-    from .project_intake import load_yaml, run_intake, IntakeDecision
+    from .project_intake import IntakeDecision, load_yaml, run_intake
     from .quality_gate_runner import run_all
     with open(args.request, "r", encoding="utf-8") as f:
         data = load_yaml(f.read())
@@ -83,10 +82,16 @@ def build_parser() -> argparse.ArgumentParser:
                                 description="Offline Research Studio automation (V4.3.2)")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    s = sub.add_parser("run-project"); s.add_argument("request"); s.set_defaults(fn=cmd_run_project)
-    s = sub.add_parser("project-qa"); s.add_argument("request"); s.set_defaults(fn=cmd_project_qa)
-    s = sub.add_parser("daily-integrity"); s.set_defaults(fn=cmd_daily_integrity)
-    s = sub.add_parser("weekly-quality"); s.set_defaults(fn=cmd_weekly_quality)
+    s = sub.add_parser("run-project")
+    s.add_argument("request")
+    s.set_defaults(fn=cmd_run_project)
+    s = sub.add_parser("project-qa")
+    s.add_argument("request")
+    s.set_defaults(fn=cmd_project_qa)
+    s = sub.add_parser("daily-integrity")
+    s.set_defaults(fn=cmd_daily_integrity)
+    s = sub.add_parser("weekly-quality")
+    s.set_defaults(fn=cmd_weekly_quality)
     s = sub.add_parser("dashboard")
     s.add_argument("--out", default="research_studio_dashboard.html")
     s.add_argument("--utc", default="STATIC-OFFLINE")

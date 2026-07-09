@@ -596,9 +596,9 @@ def test_t20_reproducibility_check_still_passes(tmp_path):
     # Kiểm tra toàn bộ có thể import
     from research_project import (
         RetrievalMode, VerificationState, EvidenceSource,
-        ClaimType, ClaimStatus,
+        ClaimType, ClaimStatus, ClaimRecord,
         ForbiddenRetrievalMode, AutoVerificationForbidden,
-        compute_claim_status, register_claim,
+        compute_claim_status, register_claim, get_claim_audit,
     )
 
     # Kiểm tra FORBIDDEN_RETRIEVAL_MODES đúng tập

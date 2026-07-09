@@ -40,12 +40,12 @@ from .project_schema import (
     ResearchWorkflowState,
     ReviewStatus,
 )
+from .research_preflight import ResearchPreflightReport, evaluate_research_preflight
 from .research_quality_checks import (
     ResearchGateDecision,
     safety_gates_on_output,
     worst_decision,
 )
-from .research_preflight import ResearchPreflightReport, evaluate_research_preflight
 from .study_type_router import get_template
 
 # Nhãn synthetic approval — KHÔNG phải người thật (chỉ test plumbing).

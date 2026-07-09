@@ -8,7 +8,7 @@ agent source đã hash-verify và lần chạy orchestrator). Mọi artifact dra
 from __future__ import annotations
 
 import dataclasses
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from .project_schema import ReviewStatus
 

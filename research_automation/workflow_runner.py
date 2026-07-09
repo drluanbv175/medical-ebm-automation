@@ -11,23 +11,22 @@ KHÔNG gọi MockAgentRuntime trực tiếp (chỉ qua orchestrator). OFFLINE ·
 from __future__ import annotations
 
 import dataclasses
-from typing import Dict, List, Optional
-
-from runtime.audit_logger import AuditLogger
+from typing import Optional
 
 from research_studio.artifact_registry import ArtifactRegistry
 from research_studio.project_schema import ResearchProject
-from research_studio.research_workflow import build_draft_mode_registry, run_project, WORK_PACKAGES
+from research_studio.research_workflow import build_draft_mode_registry, run_project
+from runtime.audit_logger import AuditLogger
 
 from . import artifact_template_engine as tpl
 from .idempotency_guard import IdempotencyGuard, request_hash
-from .project_intake import run_intake, IntakeDecision
+from .project_intake import IntakeDecision, run_intake
 from .project_snapshot import SnapshotStore
 from .quality_gate_runner import run_all as run_quality
 from .retry_policy import RetryPolicy, SafeStop
 from .review_queue import ReviewQueue, ReviewStatus
 from .run_registry import RunRegistry
-from .work_queue import WorkQueue, ProjectLockError
+from .work_queue import ProjectLockError, WorkQueue
 
 # Vai trò người review gợi ý theo artifact (KHÔNG phải approval tự động).
 _REVIEW_ROLE = {

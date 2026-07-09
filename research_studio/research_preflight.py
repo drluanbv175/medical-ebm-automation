@@ -11,9 +11,19 @@ from __future__ import annotations
 import dataclasses
 from typing import List
 
+from runtime.data_boundary import DataBoundary
+
 from .project_schema import ResearchProject, StudyType, validate_project
 from .research_quality_checks import ResearchGateDecision, gr1_question_objectives
 from .study_type_router import get_template
+
+# Phòng thủ theo lớp (defense-in-depth): quét PII / real-data / production
+# connector NGAY tại cổng preflight, không chỉ ở research_automation.project_intake.
+# Lý do: run_project()/evaluate_research_preflight() có thể được gọi TRỰC TIẾP
+# (bỏ qua intake) — nếu preflight không tự bảo vệ, một caller mới bất kỳ sẽ đưa
+# nội dung PII/dữ liệu thật vào pipeline. Guard này khiến cổng vào tự thực thi
+# đúng lời cam kết ở docstring ("không dùng dữ liệu thật"). OFFLINE, không network.
+_boundary = DataBoundary()
 
 
 _CORE_KEYS_BY_STUDY_TYPE = {
@@ -69,6 +79,36 @@ def _missing_keys(project: ResearchProject, keys: tuple[str, ...]) -> list[str]:
     return [key for key in keys if key.lower() not in present]
 
 
+def _scan_unsafe_content(project: ResearchProject) -> list[str]:
+    """Quét các field VĂN BẢN TỰ DO của đề tài tìm PII / dữ liệu thật / connector
+    production. Trả danh sách reason_code (rỗng = sạch). Đây là lưới an toàn THỨ HAI
+    độc lập với project_intake — bảo đảm dù gọi thẳng preflight vẫn không lọt PII.
+    KHÔNG log nội dung quét (tránh rò); chỉ trả mã lý do đã rút gọn.
+    """
+    # Chỉ gom field ngữ nghĩa tự do — nơi dữ liệu bệnh nhân thật có thể rò. KHÔNG
+    # gom project_id/enum trạng thái (định danh cấu trúc, dễ trùng chuỗi số vô hại).
+    scannable = {
+        "title": project.title,
+        "research_domain": project.research_domain,
+        "clinical_question": project.clinical_question,
+        "principal_investigator": project.principal_investigator,
+        "pico_or_equivalent": project.pico_or_equivalent,
+        "objectives": project.objectives,
+        "outcomes": project.outcomes,
+    }
+    reasons: list[str] = []
+    pii, pii_reason = _boundary.check_pii_in_output(scannable)
+    if pii:
+        reasons.append(f"PII_DETECTED:{pii_reason}")
+    conn, conn_reason = _boundary.check_production_connector(scannable)
+    if conn:
+        reasons.append(f"PRODUCTION_CONNECTOR:{conn_reason}")
+    raw, raw_reason = _boundary.check_raw_data_write(scannable)
+    if raw:
+        reasons.append(f"RAW_DATA_WRITE:{raw_reason}")
+    return reasons
+
+
 def evaluate_research_preflight(
     project: ResearchProject,
     *,
@@ -88,6 +128,9 @@ def evaluate_research_preflight(
 
     schema_issues = validate_project(project)
     reasons.extend(f"SCHEMA:{issue}" for issue in schema_issues)
+
+    # Lưới an toàn THỨ HAI (defense-in-depth): PII / dữ liệu thật / connector.
+    reasons.extend(_scan_unsafe_content(project))
 
     q_gate = gr1_question_objectives(project)
     if q_gate.decision == ResearchGateDecision.BLOCK:

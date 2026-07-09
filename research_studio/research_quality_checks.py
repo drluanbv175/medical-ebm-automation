@@ -10,11 +10,11 @@ from __future__ import annotations
 
 import dataclasses
 import enum
-from typing import List, Optional
+from typing import List
 
 from runtime.data_boundary import DataBoundary
 
-from .project_schema import ResearchProject, StudyType
+from .project_schema import ResearchProject
 from .study_type_router import get_template
 
 _boundary = DataBoundary()
@@ -179,11 +179,8 @@ def gr10_human_review(artifact_like) -> GateResult:
     """artifact_like có .human_review_required và .review_status (hoặc dict)."""
     if isinstance(artifact_like, dict):
         hrr = artifact_like.get("human_review_required", False)
-        status = artifact_like.get("review_status", "")
     else:
         hrr = getattr(artifact_like, "human_review_required", False)
-        status = getattr(getattr(artifact_like, "review_status", None), "value",
-                         getattr(artifact_like, "review_status", ""))
     if not hrr:
         return _block("G-R10", "HUMAN_REVIEW_FLAG_MISSING")
     return _ok("G-R10", "PENDING_HUMAN_REVIEW")

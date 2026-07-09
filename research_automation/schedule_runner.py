@@ -11,11 +11,15 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import pathlib
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from runtime.agent_registry import (
-    AgentRegistry, RegistryMode, SCOPE_A_MANIFEST_PATH,
-    MANIFEST_SELF_CHECK_SHA256, REQUIRED_AGENTS, MINIMUM_AGENT_COUNT,
+    MANIFEST_SELF_CHECK_SHA256,
+    MINIMUM_AGENT_COUNT,
+    REQUIRED_AGENTS,
+    SCOPE_A_MANIFEST_PATH,
+    AgentRegistry,
+    RegistryMode,
 )
 
 # Tiền tố "source quan trọng" — untracked ở đây là cảnh báo.
@@ -49,7 +53,8 @@ def check_manifest_integrity(expected_sha: Optional[str] = None) -> JobReport:
         findings.append(f"MANIFEST_HASH_MISMATCH:{actual[:12]}!={expected[:12]}")
     in_repo = "medical-ebm-automation/runtime/manifests" in str(mb).replace("\\", "/")
     if not in_repo:
-        ok = False; findings.append("MANIFEST_NOT_IN_REPO")
+        ok = False
+        findings.append("MANIFEST_NOT_IN_REPO")
     return JobReport("manifest_integrity", ok, findings,
                      {"actual_sha": actual, "expected_sha": expected})
 
@@ -62,13 +67,17 @@ def check_registry() -> JobReport:
     except Exception as e:  # noqa: BLE001
         return JobReport("registry", False, [f"REGISTRY_LOAD_FAIL:{type(e).__name__}"], {})
     if reg.count() < MINIMUM_AGENT_COUNT:
-        ok = False; findings.append(f"AGENT_COUNT_LOW:{reg.count()}")
+        ok = False
+        findings.append(f"AGENT_COUNT_LOW:{reg.count()}")
     if not all(e.hash_verified for e in reg.all_agents()):
-        ok = False; findings.append("AGENT_HASH_UNVERIFIED")
+        ok = False
+        findings.append("AGENT_HASH_UNVERIFIED")
     if not _REQUIRED_4.issubset(set(REQUIRED_AGENTS)):
-        ok = False; findings.append("REQUIRED_AGENTS_INCOMPLETE")
+        ok = False
+        findings.append("REQUIRED_AGENTS_INCOMPLETE")
     if not all(reg.get(a) for a in _REQUIRED_4):
-        ok = False; findings.append("REQUIRED_AGENT_MISSING")
+        ok = False
+        findings.append("REQUIRED_AGENT_MISSING")
     return JobReport("registry", ok, findings, {"count": reg.count()})
 
 

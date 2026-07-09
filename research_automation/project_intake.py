@@ -9,14 +9,15 @@ outcomes → REQUIRE_HUMAN_INPUT (không tạo project). OFFLINE · deterministi
 from __future__ import annotations
 
 import dataclasses
-from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import List, Optional
 
-from runtime.data_boundary import DataBoundary
-from research_studio.project_schema import (
-    ResearchProject, StudyType, validate_project,
-)
 from research_studio.capability_profile import detect_external_action
+from research_studio.project_schema import (
+    ResearchProject,
+    StudyType,
+    validate_project,
+)
+from runtime.data_boundary import DataBoundary
 
 _boundary = DataBoundary()
 
@@ -173,9 +174,11 @@ def _split_flow(inner: str) -> List[str]:
             if ch == inq:
                 inq = None
         elif ch in ('"', "'"):
-            inq = ch; buf.append(ch)
+            inq = ch
+            buf.append(ch)
         elif ch == ',':
-            out.append("".join(buf).strip()); buf = []
+            out.append("".join(buf).strip())
+            buf = []
         else:
             buf.append(ch)
     if "".join(buf).strip():
@@ -191,7 +194,8 @@ def _strip_inline_comment(s: str) -> str:
             if ch == inq:
                 inq = None
         elif ch in ('"', "'"):
-            inq = ch; out.append(ch)
+            inq = ch
+            out.append(ch)
         elif ch == "#":
             break
         else:
@@ -233,7 +237,8 @@ def _minimal_yaml_load(text: str) -> dict:
     while i < n:
         line = lines[i]
         if _indent(line) != 0 or ":" not in line:
-            i += 1; continue
+            i += 1
+            continue
         key, _, val = line.lstrip().partition(":")
         key = key.strip()
         val = _strip_inline_comment(val).strip()
