@@ -159,6 +159,39 @@ def test_case_control_template_requires_ledger_and_not_or():
         "để qua cổng, bỏ qua hoàn toàn cơ chế mật mã.")
 
 
+import re as _re_module
+
+
+def _ledger_approved_gate_ids(code: str) -> set[str]:
+    """Trích các gate_id được truyền vào _ledger_approved(...) trong code sinh ra
+    — bất kể xuống dòng/thụt lề cụ thể thế nào (tránh test giòn theo whitespace)."""
+    return set(_re_module.findall(r'_ledger_approved\(\s*"([A-Z0-9]+)"', code))
+
+
+def test_cohort_cox_template_g2_also_requires_ledger():
+    """T6 — vá 2026-07-09 (rà lại G2/G9 sau vòng G4/G5): G2 dùng CHUNG hàm
+    _check_sap_db_locked với G4/G5 trong CÙNG template này, nhưng bị bỏ sót ở vòng
+    vá trước — chỉ G4/G5 được nối _ledger_approved, G2 vẫn chỉ kiểm text tự do.
+    Khóa lại: G2 giờ cũng phải gọi _ledger_approved("G2", ...)."""
+    G6 = _cli_module()
+    code = G6.make_run_analysis_cli(_V, 60, "TEST-STUDY", "cohort", "HR")
+    gate_ids = _ledger_approved_gate_ids(code)
+    assert "G2" in gate_ids, (
+        f"Template cohort/Cox: G2 vẫn thiếu _ledger_approved (chỉ thấy {gate_ids}) — "
+        f"hồi quy về khoảng trống đã tìm thấy trong vòng rà G2/G9.")
+    assert {"G2", "G4", "G5"} <= gate_ids
+
+
+def test_case_control_template_g2_also_requires_ledger():
+    """T7 — cùng phát hiện T6, áp cho template case-control."""
+    G6 = _cli_module()
+    code = G6.make_run_analysis_cli(_V, 60, "TEST-STUDY", "case_control", "OR")
+    gate_ids = _ledger_approved_gate_ids(code)
+    assert "G2" in gate_ids, (
+        f"Template case-control: G2 vẫn thiếu _ledger_approved (chỉ thấy {gate_ids}).")
+    assert {"G2", "G4", "G5"} <= gate_ids
+
+
 def test_tampered_artifact_after_approval_still_blocked():
     """T3 — artifact bị sửa SAU khi duyệt (hash lệch) → vẫn phải CHẶN, chứng minh
     ràng buộc mật mã hoạt động thật, không chỉ kiểm 'có bản ghi nào đó'."""

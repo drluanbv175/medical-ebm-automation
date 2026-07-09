@@ -771,19 +771,27 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
     g2 = _load_cp("G2")
     g4 = _load_cp("G4")
     g5 = _load_cp("G5")
-    g2_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
+    g2_checkpoint_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
     g4_checkpoint_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
     g5_checkpoint_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
+    # Vá 2026-07-09 (rà lại G2/G9 sau vòng vá G4/G5 — cùng lỗ hổng nằm NGAY CẠNH
+    # code vừa sửa: G2 dùng CHUNG hàm này để chặn cùng hành động nguy hiểm (chạy
+    # phân tích thật) nhưng bị bỏ sót, chỉ G4/G5 được nối _ledger_approved trước đó).
+    g2_ledger_ok = _ledger_approved(
+        "G2", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
     g4_ledger_ok = _ledger_approved(
         "G4", Path("exports") / "__STUDY__" / "G4_A5_SAP_FINAL___STUDY__.md")
     g5_ledger_ok = _ledger_approved(
         "G5", Path("exports") / "__STUDY__" / "G5_checkpoint.json")
+    g2_locked = g2_checkpoint_locked and g2_ledger_ok
     g4_locked = g4_checkpoint_locked and g4_ledger_ok
     g5_locked = g5_checkpoint_locked and g5_ledger_ok
     if not g2_locked and not i_confirm_irb:
-        print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED cho đề tài __STUDY__.")
-        print(f"   G2_checkpoint: {'✅ LOCKED' if g2_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
+        print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+              f"  |  approval_ledger: {'✅ khớp hash' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu thu thập khi chưa có phê duyệt đạo đức thật.")
+        print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng tools/approve_gate.py.")
         print("   Nếu IRB THỰC TẾ đã phê duyệt nhưng thiếu checkpoint, thêm --i-confirm-irb-approved.")
         sys.exit(1)
     if not (g4_locked and g5_locked) and not i_confirm_sap:
@@ -1178,23 +1186,30 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
     g2 = _load_cp("G2")
     g4 = _load_cp("G4")
     g5 = _load_cp("G5")
-    g2_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
+    g2_checkpoint_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
     g4_checkpoint_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
     g5_checkpoint_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
     # Vá 2026-07-09 (kiểm định đối kháng): trước đây `or` — checkpoint text KHỚP
     # LOCKED một mình đã đủ, làm _ledger_approved() chỉ là đường TẮT thêm, không
     # phải rào thay thế. Đổi sang `and` — bắt buộc CẢ HAI, không hồi quy lại lỗ
     # hổng "sửa tay 1 dòng JSON là qua cổng" mà cơ chế ledger được xây ra để chặn.
+    # Vá thêm cùng ngày (rà lại G2/G9): G2 dùng CHUNG hàm này với G4/G5 nhưng bị
+    # bỏ sót ở lượt vá G4/G5 trước đó — giờ nối nốt.
+    g2_ledger_ok = _ledger_approved(
+        "G2", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
     g4_ledger_ok = _ledger_approved(
         "G4", Path("exports") / "__STUDY__" / "G4_A5_SAP_FINAL___STUDY__.md")
     g5_ledger_ok = _ledger_approved(
         "G5", Path("exports") / "__STUDY__" / "G5_checkpoint.json")
+    g2_locked = g2_checkpoint_locked and g2_ledger_ok
     g4_locked = g4_checkpoint_locked and g4_ledger_ok
     g5_locked = g5_checkpoint_locked and g5_ledger_ok
     if not g2_locked and not i_confirm_irb:
-        print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED cho đề tài __STUDY__.")
-        print(f"   G2_checkpoint: {'✅ LOCKED' if g2_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
+        print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+              f"  |  approval_ledger: {'✅ khớp hash' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu thu thập khi chưa có phê duyệt đạo đức thật.")
+        print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng tools/approve_gate.py.")
         print("   Nếu IRB THỰC TẾ đã phê duyệt nhưng thiếu checkpoint, thêm --i-confirm-irb-approved.")
         sys.exit(1)
     if not (g4_locked and g5_locked) and not i_confirm_sap:
