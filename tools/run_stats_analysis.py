@@ -458,6 +458,40 @@ def _load_checkpoint(study: str, gate: str) -> dict:
     return {}
 
 
+def _ledger_approved(study: str, gate_id: str, artifact_path: Path) -> bool:
+    """Vá 2026-07-09 (kiểm định đối kháng độc lập — phát hiện qua audit guardrail):
+    TRƯỚC ĐÂY hàm này không tồn tại — _is_locked() (chỉ đọc 1 trường text tự do
+    trong checkpoint JSON) là điều kiện DUY NHẤT để cho chạy phân tích thật. Bất kỳ
+    ai/agent nào tự tay ghi {"g4_status": "LOCKED"} vào G4_checkpoint.json là script
+    này tin ngay, dù chưa từng có phê duyệt thật nào — chính lỗ hổng mà cơ chế
+    ApprovalLedger cryptographic-binding (BL-06, 2026-07-08) được xây ra để chặn,
+    nhưng chưa từng được nối vào đây. Hàm này đóng khoảng trống đó: True CHỈ khi có
+    phê duyệt THẬT (không synthetic, không agent tự tạo — 2 điều kiện đã có sẵn ở
+    ApprovalLedger.add_approval()) cho đúng gate_id, VÀ evidence_hash khớp NỘI DUNG
+    HIỆN TẠI của artifact_path (nếu artifact bị sửa sau khi duyệt, hash lệch → coi
+    như CHƯA duyệt). Đọc thô JSON (không import runtime.approval_ledger) để nhất
+    quán với cách 2 template CLI nhúng của run_g6_auto.py đã làm — 1 trong 2 nơi ở
+    đó (case-control) đã có hàm y hệt, cohort/Cox thì thiếu — cả 3 nơi giờ đồng bộ."""
+    import hashlib
+    ledger_p = Path("exports") / study / "approval_ledger.json"
+    if not ledger_p.exists() or not artifact_path.exists():
+        return False
+    try:
+        records = json.loads(ledger_p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return False
+    matches = [r for r in records if r.get("gate_id") == gate_id
+               and r.get("decision") == "APPROVED" and not r.get("is_synthetic")]
+    if not matches:
+        return False
+    latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]
+    try:
+        actual_hash = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    except OSError:
+        return False
+    return actual_hash == latest.get("evidence_hash")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Phân tích thống kê tự động từ file dữ liệu thật"
@@ -483,15 +517,30 @@ def main():
     # trước đây script này không kiểm tra gì, chỉ agent tự nhớ nhắc (đã xảy ra rủi ro
     # data dredging/p-hacking nếu SAP còn nháp). Không có checkpoint + không có cờ
     # --i-confirm-sap-locked → coi như CHƯA khóa, từ chối chạy.
+    #
+    # Vá 2026-07-09 (kiểm định đối kháng — checkpoint text tự do vẫn có thể bị sửa tay):
+    # BẮT BUỘC CẢ HAI — checkpoint nói LOCKED VÀ có phê duyệt thật khớp hash trong
+    # approval_ledger.json (_ledger_approved) — không còn chỉ dựa vào 1 trường text.
     g4_cp = _load_checkpoint(args.study, "G4")
     g5_cp = _load_checkpoint(args.study, "G5")
-    g4_locked = _is_locked(g4_cp.get("g4_status", g4_cp.get("G4_STATUS")))
-    g5_locked = _is_locked(g5_cp.get("g5_status", g5_cp.get("G5_STATUS")))
+    g4_checkpoint_locked = _is_locked(g4_cp.get("g4_status", g4_cp.get("G4_STATUS")))
+    g5_checkpoint_locked = _is_locked(g5_cp.get("g5_status", g5_cp.get("G5_STATUS")))
+    g4_ledger_ok = _ledger_approved(
+        args.study, "G4", Path("exports") / args.study / f"G4_A5_SAP_FINAL_{args.study}.md")
+    g5_ledger_ok = _ledger_approved(
+        args.study, "G5", Path("exports") / args.study / "G5_checkpoint.json")
+    g4_locked = g4_checkpoint_locked and g4_ledger_ok
+    g5_locked = g5_checkpoint_locked and g5_ledger_ok
     if not (g4_locked and g5_locked) and not args.i_confirm_sap_locked:
-        print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED.")
-        print(f"   G4_checkpoint: {'✅ LOCKED' if g4_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
-        print(f"   G5_checkpoint: {'✅ LOCKED' if g5_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
+        print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật.")
+        print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+              f"  |  approval_ledger: {'✅ khớp hash' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
+        print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+              f"  |  approval_ledger: {'✅ khớp hash' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không thể chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
+        print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng:")
+        print(f"     python tools/approve_gate.py --study \"{args.study}\" --gate G4 "
+              f"--artifact exports/{args.study}/G4_A5_SAP_FINAL_{args.study}.md ...")
         print("   Nếu SAP+DB THỰC TẾ đã khóa nhưng thiếu file checkpoint (vd chạy ngoài pipeline),")
         print("   thêm cờ --i-confirm-sap-locked sau khi tự xác nhận chắc chắn.")
         sys.exit(1)
