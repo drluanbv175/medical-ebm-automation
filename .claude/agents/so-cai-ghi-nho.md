@@ -17,6 +17,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận trạng th�
 | M3 | Append vào sổ cái + cập nhật chỉ mục (ALCOA+ append-only) |
 | M4 | Nếu dashboard → verify + build_library + sync_all (3 bước tuần tự) |
 | M5 | Xuất khối KHÔI PHỤC NHANH (cổng G hiện tại + quyết định + 🔴 + agent kế) |
+| M6 | **Ghi LESSONS ledger (Tầng 2 học bền)** — khi `tham-dinh-dau-ra` (hoặc bác sĩ) bắt lỗi TIER 0/1 theo `_RUBRIC-EVALUATE-CUNG-QA-GATE.md`: append 1 dòng JSON đúng schema vào `LEDGER_LESSONS.jsonl` (gốc dự án). Xem chi tiết §3b |
 
 **Khối KHÔI PHỤC NHANH (template điền sẵn):**
 ```
@@ -67,13 +68,46 @@ Trạng thái/quyết định cần ghi (từ `dieu-phoi-nghien-cuu` hoặc agen
 
 > Auto-checkpoint = tốc độ (nội phiên). Sổ cái = kiểm toán (liên phiên). Hai cơ chế bổ trợ nhau.
 
+## 3c. TẦNG 2 — GHI LESSONS LEDGER (học bền, chống tái phạm) — vá 2026-07-08
+
+> **Bối cảnh vá:** `tham-dinh-dau-ra.md`, `dieu-phoi-lam-sang.md`, `_CAU-HOI-AN-TOAN-BAT-BUOC.md` từ
+> lâu đã nhắc "báo so-cai-ghi-nho ghi lỗi + rule để học bền (Tầng 2)" nhưng CHÍNH agent này (tức
+> file bạn đang đọc) chưa từng định nghĩa cơ chế đó bằng tên riêng, định dạng riêng, đường dẫn riêng
+> — khảo sát `observability/SIGNALS_2026-07-08.md` xác nhận đây là khoảng hở thật (3 file khác giả
+> định có, bản thân agent này chưa từng làm). Mục này ĐÓNG khoảng hở đó.
+
+**Kích hoạt:** ngay khi `tham-dinh-dau-ra` (hoặc bất kỳ cổng QA nào) trả **AUTO-FAIL** hoặc
+**RETURN-FOR-FIX** theo `_RUBRIC-EVALUATE-CUNG-QA-GATE.md`, HOẶC bác sĩ tự tay chỉ ra một lỗi.
+
+**Quy trình:**
+1. Xác định `ma_loi` — tra taxonomy ở `_LESSONS-LEDGER-TAXONOMY.md` §2; nếu chỉ có mã R từ
+   guardrail (vd "R4"), tra bảng đối chiếu §2b của file đó để ra mã ledger tương ứng (vd `GRD-SELF`).
+2. **Kiểm tái phạm trước khi ghi:** đọc `LEDGER_LESSONS.jsonl`, lọc các dòng có cùng `ma_loi` —
+   nếu đã có ≥1 mục cùng mã → mục MỚI này tăng tín hiệu tái phạm (ghi rõ trong `mo_ta`: "TÁI PHẠM,
+   lần thứ N — xem LSN-<mã cũ>"); nếu là mã lần đầu → ghi bình thường.
+3. **Append** (KHÔNG sửa/xóa dòng cũ) 1 dòng JSON đúng schema `_LESSONS-LEDGER-TAXONOMY.md` §3 vào
+   `LEDGER_LESSONS.jsonl` (gốc dự án). PII-free tuyệt đối — quét lại trước khi ghi (dùng lại BƯỚC 0
+   M1 ở trên).
+4. Nếu biết `quy_tac_rut_ra` + nơi cần `ghi_nguoc_vao` ngay → điền luôn, `trang_thai: da-ghi-nguoc`.
+   Nếu chưa rõ (vd cần bác sĩ quyết cách sửa gốc) → để trống 2 trường đó, `trang_thai: moi` — PHẢI
+   quay lại điền sau khi có quyết định, không để mục "mồ côi" vĩnh viễn.
+5. Nếu `so_lan_tai_pham` ở mã này đã ≥3 (qua đếm ở bước 2) → gắn cờ đề xuất **đề bạt thành cổng
+   cứng** trong `_RUBRIC-EVALUATE-CUNG-QA-GATE.md` (chờ bác sĩ duyệt — KHÔNG tự nâng tier).
+
+**Không kích hoạt khi:** lỗi thuần định dạng đã tự sửa ngay trong cùng lượt trả lời (vd thiếu 1 dấu
+`[CẦN...]` được agent gốc tự bổ sung trước khi bàn giao) — chỉ ghi khi lỗi đã THẬT SỰ bị cổng QA
+chặn lại hoặc bác sĩ phải tự chỉ ra.
+
 ---
 
 **Cái gì được ghi (và ghi vào đâu):**
 1. **Quyết định chốt cứng** (câu hỏi, mục tiêu, kết cục chính, thiết kế, SAP đã khóa, tạp chí đích) → kèm **ngày + lý do + ai quyết** vào sổ cái đề tài.
 2. **Mốc cổng G0–G9:** cổng nào PASS, ngày nào, sản phẩm bàn giao, còn 🔴 gì.
-3. **Bài học/feedback** qua phiên → bộ nhớ bền `MEMORY.md` (1 fact/1 file + dòng chỉ mục).
+3. **Bài học/feedback** qua phiên → bộ nhớ bền `MEMORY.md` (1 fact/1 file + dòng chỉ mục). Đây là
+   bộ nhớ của TRỢ LÝ (sở thích bác sĩ, cách làm việc) — **khác** mục 5 (sổ lỗi của HỆ).
 4. **Liên kết hub:** dashboard/sản phẩm phái sinh → đồng bộ `EBM_MASTER/` qua `sync_all.py` (idempotent, tự dedup; bước cuối tự dựng lại **Antifacts** — mặt tiền theo chuyên khoa tích lũy: `_BAN-DO-KET-NOI.md` §9), KHÔNG tự "áp dụng ngay".
+5. **Lỗi bị cổng QA bắt (TIER 0/1)** → append `LEDGER_LESSONS.jsonl` theo §3c — mã lỗi có kiểm soát,
+   đếm được tái phạm; đây là cơ chế "Tầng 2 học bền" mà các agent khác nhắc tới.
 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
@@ -126,9 +160,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

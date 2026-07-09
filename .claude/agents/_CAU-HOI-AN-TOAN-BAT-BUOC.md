@@ -25,4 +25,6 @@
 ## Liên kết
 - Quy tắc gốc: bộ nhớ `feedback-mat-ngu-sang-loc-tu-sat`.
 - Guardrail 2 lớp: `tham-dinh-dau-ra.md` (Q3/Q5) + `_CHUAN-CHAT-LUONG-MEDPALM.md`.
-- Học bền (Tầng 2): `so-cai-ghi-nho` ghi lỗi + rule vào EBM_MASTER/MEMORY khi guardrail bắt được lỗi loại này.
+- Học bền (Tầng 2): `so-cai-ghi-nho` append `LEDGER_LESSONS.jsonl` mã `CLIN-SAFETYQ` khi guardrail
+  bắt được lỗi loại này (cơ chế cụ thể: `_LESSONS-LEDGER-TAXONOMY.md` §2 + `so-cai-ghi-nho.md` §3c,
+  vá 2026-07-08).

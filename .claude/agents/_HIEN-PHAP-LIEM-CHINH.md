@@ -14,7 +14,7 @@
 5. **Bảo mật.** Secrets chỉ ở `~/.ebm-secrets/`; venv ở `~/.ebm-venv`. Không hardcode, không in key, không commit `.env`.
 6. **Append-only + backup.** Trước khi ghi sổ cái/DB phải backup; chỉ thêm, không xóa lịch sử.
 
-> **Thao tác hóa để chốt kiểm:** 6 điều bất biến này được guardrail `tham-dinh-dau-ra` soi thành **checklist 7 mục R1–R7** (R1 nguồn·không bịa ← điều 1+2 · R2 PII ← điều 4 · R3 cổng A/B/G ← §2 · R4 không tự gán mức + R5 tách 2 trục certainty/strength ← điều 2 · R6 nhãn [CẦN…] ← §5 · R7 disclaimer ← điều 3). Gói lâm sàng qua THÊM Lớp 2 Q1–Q7 (`_CHUAN-CHAT-LUONG-MEDPALM.md`).
+> **Thao tác hóa để chốt kiểm:** 6 điều bất biến này được guardrail `tham-dinh-dau-ra` soi thành **checklist 7 mục R1–R7** (R1 nguồn·không bịa ← điều 1+2 · R2 PII ← điều 4 · R3 cổng A/B/G ← §2 · R4 không tự gán mức + R5 tách 2 trục certainty/strength ← điều 2 · R6 nhãn [CẦN…] ← §5 · R7 disclaimer ← điều 3), **+ 2 phụ lục CÓ ĐIỀU KIỆN**: **R8** (thống kê — chỉ gói có số liệu thống kê) và **R14** (an toàn kê đơn — HARD-RED, chỉ gói CÓ khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều; 2026-07-07). Gói lâm sàng qua THÊM Lớp 2 Q1–Q7 (`_CHUAN-CHAT-LUONG-MEDPALM.md`).
 
 ## 2. Hai CỔNG bác sĩ (mức tự chủ "tối đa" vẫn phải dừng ở đây)
 Agent được tự chạy trọn các bước **cơ học**: tra cứu, chấm điểm, soạn nháp, dựng dashboard, sinh lời dặn, lập chỉ mục thư viện — KHÔNG hỏi vặt từng bước. Nhưng BẮT BUỘC dừng — đặt vào **hàng chờ "chờ bác sĩ duyệt"**, không tự thực thi — tại:

@@ -744,8 +744,8 @@ def generate_manuscript(
         "## TIÊU ĐỀ  *(ước tính: 0 từ — điền thủ công)*",
         "",
         f"> Gợi ý cấu trúc: [{design_primary}] của [{topic}]:  ",
-        f"> [kết cục chính] — [cơ sở/quần thể], [thời gian]  ",
-        f"> *(≤120 ký tự; phải chứa: thiết kế + quần thể + kết cục)*",
+        "> [kết cục chính] — [cơ sở/quần thể], [thời gian]  ",
+        "> *(≤120 ký tự; phải chứa: thiết kế + quần thể + kết cục)*",
         "",
         "[CẦN — tiêu đề ngắn gọn ≤120 ký tự, chứa thiết kế + dân số + kết cục chính]",
         "",
@@ -800,7 +800,7 @@ def generate_manuscript(
         # ─── I. INTRODUCTION ───
         "## I. GIỚI THIỆU  *(ước tính: ~350 từ | Tự điền: ~70%)*",
         "",
-        f"**§1 Bối cảnh và gánh nặng bệnh:**  ",
+        "**§1 Bối cảnh và gánh nặng bệnh:**  ",
         f"{topic} là vấn đề y tế có tầm quan trọng đáng kể. "
         f"Bằng chứng hiện có bao gồm {n_sr} tổng quan hệ thống/phân tích gộp"
         + (f" và {n_rct} thử nghiệm ngẫu nhiên có đối chứng" if n_rct > 0 else "")
@@ -808,22 +808,22 @@ def generate_manuscript(
         + f"{cite_intro_1}. "
         + "[CẦN bổ sung: dịch tễ học/tỷ lệ mắc/gánh nặng kinh tế tại Việt Nam].  ",
         "",
-        f"**§2 Khoảng trống nghiên cứu:**  ",
+        "**§2 Khoảng trống nghiên cứu:**  ",
         f"Mặc dù có bằng chứng đáng kể trên thế giới{cite_intro_2}, "
         f"{gaps_text}. "
         "[CẦN bổ sung: lý do cụ thể vì sao cần nghiên cứu thêm tại bối cảnh này "
         "(quần thể Việt Nam, hệ thống y tế, gene/lối sống đặc thù…)].  ",
         "",
-        f"**§3 Mục tiêu và giả thuyết:**  ",
+        "**§3 Mục tiêu và giả thuyết:**  ",
         f"Nghiên cứu này sử dụng thiết kế {design_primary} nhằm [CẦN câu hỏi PICO chính]. "
         "Chúng tôi giả thuyết rằng [CẦN nêu chiều hướng kỳ vọng của mối liên quan/hiệu quả].  ",
         "",
         "---",
         "",
         # ─── II. METHODS ───
-        f"## II. PHƯƠNG PHÁP  *(ước tính: ~700 từ | Tự điền: ~75%)*",
+        "## II. PHƯƠNG PHÁP  *(ước tính: ~700 từ | Tự điền: ~75%)*",
         "",
-        f"**§1 Loại nghiên cứu và chuẩn báo cáo:**  ",
+        "**§1 Loại nghiên cứu và chuẩn báo cáo:**  ",
         f"Đây là nghiên cứu {design_primary}, báo cáo theo chuẩn {reporting_std} "
         f"(xem Phụ lục — Checklist {reporting_std}).  ",
         "",
@@ -840,7 +840,7 @@ def generate_manuscript(
         "[CẦN bổ sung: ai thực hiện can thiệp, kiểm soát chất lượng/tuân thủ — "
         "không có trong REDCap dictionary]  ",
         "",
-        f"**§4 Kết cục nghiên cứu:**  ",
+        "**§4 Kết cục nghiên cứu:**  ",
         f"*Kết cục chính {outcome_label}:*  ",
         outcome_primary_block,
         "  ",
@@ -849,12 +849,12 @@ def generate_manuscript(
         "  ",
         "*Định nghĩa biến cố:* [CẦN — ICD-10 hoặc tiêu chí lâm sàng cụ thể cho từng biến cố trên]  ",
         "",
-        f"**§5 Cỡ mẫu:**  ",
+        "**§5 Cỡ mẫu:**  ",
         f"Cỡ mẫu được tính theo {formula_used or 'phương pháp thống kê phù hợp'}, "
         f"{sample_size_detail}, {effect_text}. "
         f"Cần {n_adjusted} người tham gia (chi tiết xem Bảng S1 — G3 checkpoint).  ",
         "",
-        f"**§6 Phân tích thống kê:**  ",
+        "**§6 Phân tích thống kê:**  ",
         f"Phân tích theo {sap_lock_text}. "
         "Phần mềm: [CẦN — R/Stata/SPSS phiên bản]. "
         f"Phương pháp chính: [CẦN — từ SAP §4; theo effect_type={effect_type} gợi ý: {_method_hint}]. "
@@ -863,7 +863,7 @@ def generate_manuscript(
         "Ngưỡng ý nghĩa thống kê: α = " + str(alpha) + " (two-sided); "
         "mọi ước lượng kèm 95%CI.  ",
         "",
-        f"**§7 Đạo đức và đăng ký:**  ",
+        "**§7 Đạo đức và đăng ký:**  ",
         f"Nghiên cứu được Hội đồng Đạo đức phê duyệt (số: {irb_number}; "
         f"ICF phiên bản: {icf_version}). "
         f"Đăng ký nghiên cứu: {registration}. "
@@ -886,7 +886,7 @@ def generate_manuscript(
         f"*(Xem {flow_label} — sinh từ kết quả thật)*",
         "",
         "**§2 Đặc điểm nền — Bảng 1:**  ",
-        f"*Bảng 1. Đặc điểm nền người tham gia (N = [CẦN KẾT QUẢ THẬT])*  ",
+        "*Bảng 1. Đặc điểm nền người tham gia (N = [CẦN KẾT QUẢ THẬT])*  ",
         table1_shell,
         "",
         "**§3 Kết cục chính — Bảng 2:**  ",
@@ -906,7 +906,7 @@ def generate_manuscript(
         "---",
         "",
         # ─── IV. DISCUSSION ───
-        f"## IV. BÀN LUẬN  *(ước tính: ~800 từ | Tự điền: ~30%)*",
+        "## IV. BÀN LUẬN  *(ước tính: ~800 từ | Tự điền: ~30%)*",
         "",
         "**§1 Tóm tắt phát hiện chính:**  ",
         "[CẦN KẾT QUẢ THẬT — điền sau khi có Section III hoàn chỉnh]  ",
@@ -918,7 +918,7 @@ def generate_manuscript(
         "**§3 Giải thích cơ chế (Mechanistic interpretation):**  ",
         "[CẦN — giải thích sinh học/lâm sàng cho phát hiện sau khi có kết quả thật]  ",
         "",
-        f"**§4 Điểm mạnh (Strengths):**  ",
+        "**§4 Điểm mạnh (Strengths):**  ",
         f"*(1)* Thiết kế {design_primary} với SAP khóa trước khi xem dữ liệu (G4) giảm thiểu sai lệch phân tích sau dữ liệu.  ",
         (
             f"*(2)* Cỡ mẫu được tính TRƯỚC (a priori) theo "
@@ -1383,7 +1383,7 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"\n{'='*68}")
-    print(f"  G7 AUTO — BẢN THẢO IMRAD SKELETON")
+    print("  G7 AUTO — BẢN THẢO IMRAD SKELETON")
     print(f"  Đề tài: {study}  |  Ngày: {run_date}")
     print(f"{'='*68}\n")
 
@@ -1465,7 +1465,6 @@ def main() -> None:
     effect_val  = g3.get("effect_val")
     effect_type = g3.get("effect_type") or "HR"
     formula_used = g3.get("formula_used") or ""
-    dropout_pct  = g3.get("dropout") or 0.20
 
     # Từ G4
     g4_status    = g4.get("g4_status", "PENDING")
@@ -1526,7 +1525,7 @@ def main() -> None:
     )
 
     # ── Bước 5: Bảng số từ + checklist ──
-    print(f"  → Sinh bảng số từ và checklist...")
+    print("  → Sinh bảng số từ và checklist...")
     word_table   = word_count_table(args.word_limit)
     checklist_md = generate_checklist(
         design_code=design_code,
@@ -1547,13 +1546,13 @@ def main() -> None:
     )
 
     # ── Bước 6: Lưu Markdown ──
-    print(f"\n💾 Bước 5/8: Lưu A8 Markdown...")
+    print("\n💾 Bước 5/8: Lưu A8 Markdown...")
     md_path = out_dir / f"G7_A8_MANUSCRIPT_{study}.md"
     md_path.write_text(artifact, encoding="utf-8")
     print(f"  → {md_path} ({len(artifact)//1000}KB, ~{len(artifact.split())} từ)")
 
     # ── Bước 7: Guardrail ──
-    print(f"\n🛡️  Bước 6/8: Kiểm guardrail R1-R7...")
+    print("\n🛡️  Bước 6/8: Kiểm guardrail R1-R7...")
     g7_errors, g7_warnings = guardrail_g7(artifact)
     for w in g7_warnings:
         print(f"  {w}")
@@ -1563,7 +1562,7 @@ def main() -> None:
     print(f"  → Guardrail: {guardrail_status}")
 
     # ── Bước 8: DOCX ──
-    print(f"\n📄 Bước 7/8: Xuất DOCX...")
+    print("\n📄 Bước 7/8: Xuất DOCX...")
     docx_path = export_docx_g7(artifact, study, out_dir)
     if docx_path:
         print(f"  → {docx_path}")
@@ -1571,7 +1570,7 @@ def main() -> None:
         print("  → Bỏ qua DOCX (python-docx chưa cài)")
 
     # ── Bước 9: Checkpoint ──
-    print(f"\n💾 Bước 8/8: Ghi G7_checkpoint.json...")
+    print("\n💾 Bước 8/8: Ghi G7_checkpoint.json...")
     cp_path = write_checkpoint(
         study=study,
         out_dir=out_dir,
@@ -1605,24 +1604,24 @@ def main() -> None:
     if docx_path:
         print(f"  📄 A8 DOCX:     {docx_path.name}")
     print(f"  💾 Checkpoint:  {cp_path.name}")
-    print(f"\n  THỐNG KÊ BẢN THẢO:")
+    print("\n  THỐNG KÊ BẢN THẢO:")
     print(f"  • PMIDs seed từ G0:   {min(10, len(pmids))} PMID")
     print(f"  • Mục checklist tự điền: {auto_count}/{std_total}")
     print(f"  • Ô [CẦN KẾT QUẢ THẬT]:  {n_can_result}")
     print(f"  • Ô [CẦN] khác:       {n_can_fill}")
     print(f"  • Guardrail:          {guardrail_status}")
-    print(f"\n  VIỆC CÒN LẠI:")
-    print(f"  1. Mở A8 DOCX → điền Tiêu đề, Tác giả, Methods §2-4")
-    print(f"  2. Sau G5+G6: điền Section III (kết quả thật) + V Kết luận")
+    print("\n  VIỆC CÒN LẠI:")
+    print("  1. Mở A8 DOCX → điền Tiêu đề, Tác giả, Methods §2-4")
+    print("  2. Sau G5+G6: điền Section III (kết quả thật) + V Kết luận")
     print(f"  3. Kiểm chứng toàn bộ {min(10,len(pmids))} PMID trước khi nộp")
-    print(f"  4. Chạy agent kiem-chung-trich-dan để xác minh TLTK")
+    print("  4. Chạy agent kiem-chung-trich-dan để xác minh TLTK")
     if args.target_journal:
         print(f"  5. Định dạng theo Author Guidelines: {args.target_journal}")
     else:
         print(f"  5. Chọn tạp chí mục tiêu → chạy lại: python tools/run_g7_auto.py "
               f"--study {study} --target-journal \"Tên tạp chí\"")
-    print(f"\n  ⚠️  KHÔNG nộp tạp chí khi còn ô [CẦN KẾT QUẢ THẬT].")
-    print(f"  Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp.")
+    print("\n  ⚠️  KHÔNG nộp tạp chí khi còn ô [CẦN KẾT QUẢ THẬT].")
+    print("  Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp.")
     print(f"\n{'='*68}\n")
 
 

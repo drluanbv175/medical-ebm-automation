@@ -611,12 +611,12 @@ def export_docx(artifact_md: str, study_name: str, out_dir: Path) -> Optional[Pa
     """Xuất DOCX từ artifact markdown, dùng python-docx."""
     try:
         from docx import Document
-        from docx.shared import Pt, RGBColor
+        from docx.shared import RGBColor
         from docx.enum.text import WD_ALIGN_PARAGRAPH
 
         doc = Document()
         # Tiêu đề
-        title_para = doc.add_heading(f"A1 — CÂU HỎI NGHIÊN CỨU & PICO", 0)
+        title_para = doc.add_heading("A1 — CÂU HỎI NGHIÊN CỨU & PICO", 0)
         title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
         doc.add_paragraph(f"Đề tài: {study_name}  |  [BẢN NHÁP TỰ ĐỘNG]")
         doc.add_paragraph(f"Ngày tạo: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
@@ -703,7 +703,7 @@ def write_checkpoint(study_name: str, out_dir: Path, results: dict,
         "next_gate": "G1 — Thiết kế nghiên cứu (sau khi bác sĩ xác nhận PICO)",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
-    cp_path = out_dir / f"G0_checkpoint.json"
+    cp_path = out_dir / "G0_checkpoint.json"
     cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8")
     return cp_path
 
@@ -855,12 +855,12 @@ def main():
     print(f"  🔢 PubMed:      {results['total']} bài ({gaps['n_sr']} SR | {gaps['n_rct']} RCT | {gaps['n_guide']} Guideline)")
     print(f"  📊 Evidence:    {gaps['evidence_level']}")
     print(f"  🔴 Guardrail:   {status}")
-    print(f"\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
+    print("\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
     print(f"  1. Mở {md_path.name} — đọc danh sách bài tìm được")
-    print(f"  2. Xác nhận/chỉnh PICO (§1) — đặc biệt P, O (kết cục chính)")
-    print(f"  3. Điền FINER F (Feasible) và E (Ethical)")
-    print(f"  4. Khi đồng ý → hệ thống tự kích hoạt G1 (thiet-ke-nghien-cuu)")
-    print(f"\n  Cần bác sĩ kiểm chứng.")
+    print("  2. Xác nhận/chỉnh PICO (§1) — đặc biệt P, O (kết cục chính)")
+    print("  3. Điền FINER F (Feasible) và E (Ethical)")
+    print("  4. Khi đồng ý → hệ thống tự kích hoạt G1 (thiet-ke-nghien-cuu)")
+    print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
 
     # Mã thoát theo hợp đồng DỪNG: 0 PMID → BLOCKED (2); còn lại → OK (0).

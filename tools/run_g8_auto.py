@@ -27,7 +27,11 @@ from pathlib import Path
 
 # Them thu muc goc du an vao sys.path
 BASE = Path(__file__).resolve().parent.parent
+TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE))
+sys.path.insert(0, str(TOOLS))
+
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — chỉ dùng load_study_meta)
 
 # ============================================================================
 # 1. DU LIEU CHECKLIST CHUAN BAO CAO
@@ -770,7 +774,6 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
     Nguong nop: >= 25/30.
     """
     g0 = gates.get("G0", {})
-    g1 = gates.get("G1", {})
     g2 = gates.get("G2", {})
     g4 = gates.get("G4", {})
     g5 = gates.get("G5", {})
@@ -921,7 +924,6 @@ def generate_a9_artifact(
 
     g0 = gates.get("G0", {})
     g1 = gates.get("G1", {})
-    g2 = gates.get("G2", {})
     # SỬA: 2 lỗi — (1) .get("topic", study) không dùng default khi giá trị
     # null; (2) g1.get("design_code"/"design_primary") đọc SAI đường dẫn —
     # G1 lưu lồng trong "design": {...}, không phải top-level, nên luôn âm
@@ -1421,6 +1423,16 @@ def main():
     out_dir = BASE / "exports" / study
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # THÊM 2026-07-08 (CRIT-05): gọi thẳng script (không qua run_pipeline.py)
+    # trước đây mất target_journal/impact_factor bác sĩ đã pin khi chạy lại.
+    _g8_pinned = (GC.load_study_meta(out_dir).get("gate_params") or {}).get("G8") or {}
+    if not args.target_journal and _g8_pinned.get("target_journal"):
+        args.target_journal = _g8_pinned["target_journal"]
+        print(f"  → Khôi phục target_journal='{args.target_journal}' từ study_meta.json")
+    if not args.impact_factor and _g8_pinned.get("impact_factor") is not None:
+        args.impact_factor = _g8_pinned["impact_factor"]
+        print(f"  → Khôi phục impact_factor={args.impact_factor} từ study_meta.json")
+
     print(f"\n{'='*65}")
     print(f"  G8 AUTO -- PRE-SUBMISSION REVIEW: {study}")
     print(f"  Thoi gian: {run_date}")
@@ -1478,6 +1490,18 @@ def main():
     print(f"  -> Diem: {presubmission['passed']}/30 -- {presubmission['readiness_note']}")
 
     # Xac dinh trang thai G8
+    # SUA 2026-07-08 (BL-05, phat hien qua kiem dinh doc lap): g7_ok TRUOC DAY chi
+    # kiem FILE TON TAI ("_file_exists"), khong kiem noi dung co con placeholder
+    # "[CAN KET QUA THAT]" hay khong -- nghia la co the dat IRB that + SAP ky that +
+    # G0-G7 chay xong (guardrail PASS) MA CHUA MOT DONG PHAN TICH THAT NAO chay tren
+    # du lieu that, ma g8_status/submission_readiness van bao "PASS -- DU DIEU KIEN
+    # NOP BAI" -- mau thuan truc tiep voi dinh nghia "San sang nop cong bo" cua
+    # skill_standards.py (doi hoi results_final). Them cop ket qua that qua
+    # study_meta.json["results_final"] (chi bac si tu tay bat, khong tu dong bat
+    # duoc -- dung quy uoc da co san o G7/G9/skill_standards.py).
+    _study_meta_g8 = GC.load_study_meta(out_dir)
+    results_final = bool(_study_meta_g8.get("results_final"))
+
     irb_ok = bool(
         gates["G2"].get("g2_irb_number") and
         "[CAN" not in str(gates["G2"].get("g2_irb_number", ""))
@@ -1488,9 +1512,9 @@ def main():
     g7_ok = gates["G7"].get("_file_exists", False)
     score_ok = presubmission["passed"] >= 25
 
-    if irb_ok and sap_ok and g7_ok and score_ok:
+    if irb_ok and sap_ok and g7_ok and results_final and score_ok:
         g8_status = "PASS -- DU DIEU KIEN NOP BAI (sau xac nhan bac si muc 6-10)"
-    elif irb_ok and sap_ok and g7_ok:
+    elif irb_ok and sap_ok and g7_ok and results_final:
         g8_status = f"PARTIAL -- Can them {25 - presubmission['passed']} diem tu kiem"
     else:
         missing = []
@@ -1500,6 +1524,10 @@ def main():
             missing.append("SAP ky (G4)")
         if not g7_ok:
             missing.append("Ban thao (G7)")
+        if not results_final:
+            missing.append("Ket qua phan tich THAT da xac nhan (results_final trong study_meta.json -- "
+                            "chua co nghia la ban thao con placeholder [CAN KET QUA THAT], KHONG duoc "
+                            "coi la san sang nop du diem tu kiem co cao)")
         g8_status = f"PENDING -- Can: {', '.join(missing)}"
 
     # 7. Sinh artifact A9 + guardrail
@@ -1544,7 +1572,7 @@ def main():
     if docx_path:
         print(f"  A9 DOCX:     {docx_path.name}")
     print(f"  Checkpoint:  {cp_path.name}")
-    print(f"\n  KET QUA KIEM TOAN:")
+    print("\n  KET QUA KIEM TOAN:")
     print(f"  Pipeline:   {pipeline['n_pass']}/{pipeline['n_total']} PASS ({pipeline['completeness_pct']}%)")
     print(f"  Checklist:  {reporting['checked']}/{reporting['total']} "
           f"{reporting['standard_name']} ({reporting['score_pct']}%)")
@@ -1552,13 +1580,13 @@ def main():
     print(f"  Diem/30:    {presubmission['passed']}/{presubmission['total']}")
     print(f"  Guardrail:  {guardrail['status']}")
     print(f"  G8 Status:  {g8_status}")
-    print(f"\n  VIEC CON LAI (bac si thuc hien):")
-    print(f"  1. Dien ket qua that vao Section III+V ban thao G7 (sau phan tich G5+G6)")
-    print(f"  2. Phan cong CRediT roles -- A9 Phan 5")
-    print(f"  3. Khai bao COI day du -- A9 Phan 5")
-    print(f"  4. Soan cover letter theo yeu cau tap chi dich")
-    print(f"  5. Chay plagiarism check (iThenticate/Turnitin) truoc khi nop")
-    print(f"\n  Can bac si kiem chung.")
+    print("\n  VIEC CON LAI (bac si thuc hien):")
+    print("  1. Dien ket qua that vao Section III+V ban thao G7 (sau phan tich G5+G6)")
+    print("  2. Phan cong CRediT roles -- A9 Phan 5")
+    print("  3. Khai bao COI day du -- A9 Phan 5")
+    print("  4. Soan cover letter theo yeu cau tap chi dich")
+    print("  5. Chay plagiarism check (iThenticate/Turnitin) truoc khi nop")
+    print("\n  Can bac si kiem chung.")
     print(f"{'='*65}\n")
 
 

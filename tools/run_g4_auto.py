@@ -96,7 +96,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
     pop, analysis_pop, main_method = sap_sections.get(design_code, ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]"))
 
     lines = [
-        f"# A5 — SAP FINAL + SAP LOCK CERTIFICATE (DRAFT — CHỜ BÁC SĨ KÝ)",
+        "# A5 — SAP FINAL + SAP LOCK CERTIFICATE (DRAFT — CHỜ BÁC SĨ KÝ)",
         f"**Đề tài:** {topic}  ",
         f"**Mã:** {study} | **Phiên bản SAP:** 1.0 | **Ngày sinh:** {run_date}",
         f"**Chuẩn báo cáo:** {reporting_std}",
@@ -108,21 +108,21 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
         "## PHẦN 1 — THÔNG TIN ĐỀ TÀI",
         "",
-        f"| Mục | Nội dung |",
-        f"|---|---|",
+        "| Mục | Nội dung |",
+        "|---|---|",
         f"| Tên đề tài | {topic} |",
         f"| Mã nghiên cứu | {study} |",
         f"| Thiết kế | {design_primary} |",
         f"| Chuẩn báo cáo | {reporting_std} |",
         f"| Ngày soạn SAP | {run_date} |",
-        f"| Phiên bản | 1.0 |",
+        "| Phiên bản | 1.0 |",
         "",
         "---",
         "",
         "## PHẦN 2 — LỊCH SỬ PHIÊN BẢN SAP",
         "",
-        f"| Phiên bản | Ngày | Người soạn | Thay đổi chính |",
-        f"|---|---|---|---|",
+        "| Phiên bản | Ngày | Người soạn | Thay đổi chính |",
+        "|---|---|---|---|",
         f"| 1.0 | {run_date} | [CẦN TÊN TÁC GIẢ] | Bản đầu tiên (tự động từ G1) |",
         "",
         "---",
@@ -150,7 +150,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "- Biến phân loại: n (%)  ",
         "- So sánh đặc điểm nền: t-test / Mann-Whitney / Chi-square / Fisher  ",
         "",
-        f"### §4 PHÂN TÍCH CHÍNH",
+        "### §4 PHÂN TÍCH CHÍNH",
         "",
         f"- **Phương pháp:** {main_method}  ",
         f"- **Quần thể:** {analysis_pop}  ",
@@ -206,7 +206,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "|---|---|---|---|",
         "| [CẦN KẾT QUẢ THẬT] | | | |",
         "",
-        f"### §12 ALPHA + POWER",
+        "### §12 ALPHA + POWER",
         "",
         f"- **Alpha (two-sided):** {alpha}  ",
         f"- **Power:** {int(power*100)}%  ",
@@ -386,7 +386,7 @@ def main():
         (out / "G4_checkpoint.json").write_text(
             json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"   → {GC.blocked_detail(cp)}")
-        print(f"   💾 Đã ghi G4_checkpoint.json (BLOCKED) để pipeline đọc remediation.")
+        print("   💾 Đã ghi G4_checkpoint.json (BLOCKED) để pipeline đọc remediation.")
         raise SystemExit(GC.EXIT_BLOCKED)
 
     print(f"  → Topic: {topic[:60]}")
@@ -398,7 +398,7 @@ def main():
     md.write_text(artifact, encoding="utf-8")
     print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
 
-    print(f"🛡️  Kiểm guardrail...")
+    print("🛡️  Kiểm guardrail...")
     errors, warnings = guardrail(artifact)
     for w in warnings: print(f"  {w}")
     for e in errors: print(f"  {e}")
@@ -429,7 +429,7 @@ def main():
     print(f"💾 Lưu: {cp_path}")
     print(f"\n✅ G4 HOÀN THÀNH — {study}")
     print(f"  SAP version: 1.0, N (từ G3): {n_adjusted}")
-    print(f"  G4 Status: PENDING — CHỜ BÁC SĨ KÝ SAP")
+    print("  G4 Status: PENDING — CHỜ BÁC SĨ KÝ SAP")
     print(f"  → Guardrail: {status}")
 
 if __name__ == "__main__":

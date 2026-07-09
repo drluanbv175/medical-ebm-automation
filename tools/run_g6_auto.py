@@ -13,10 +13,8 @@ import csv
 import json
 import re
 import sys
-import textwrap
 from datetime import datetime
 from pathlib import Path
-from io import StringIO
 
 # Thư mục gốc dự án
 BASE = Path(__file__).resolve().parent.parent
@@ -361,7 +359,6 @@ def make_r01_cleaning(v: dict) -> str:
     outcome   = v["outcome"]
     time_col  = v["time_col"]
     covars    = v["covariates"]
-    covar_list = ", ".join(f'"{c}"' for c in covars) if covars else '"age", "sex", "bmi", "dm", "htn"'
 
     # Danh sách mutate cho covariates phát hiện được
     mutate_lines = []
@@ -530,8 +527,8 @@ def make_r03_cohort(v: dict, n_adjusted: int, alpha: float, power: float,
         subgroup_r_lines.append(f"# Subgroup: {sg}")
         subgroup_r_lines.append(f"# cox_sub_{sg} <- survival::coxph(")
         subgroup_r_lines.append(f"#   surv_obj ~ {exposure}:{sg} + {exposure} + {sg} + {cov_formula},")
-        subgroup_r_lines.append(f"#   data = df")
-        subgroup_r_lines.append(f"# )")
+        subgroup_r_lines.append("#   data = df")
+        subgroup_r_lines.append("# )")
         subgroup_r_lines.append(f"# broom::tidy(cox_sub_{sg}, exponentiate=TRUE, conf.int=TRUE)")
     subgroup_r_block = "\n".join(subgroup_r_lines) if subgroup_r_lines else "# [Không phát hiện biến nhóm con phù hợp — xem SAP §7]"
 
@@ -1090,7 +1087,19 @@ def parse_args():
 
 
 def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> None:
-    """2026-07-07: tự chặn chạy thật nếu G4 (SAP)/G5 (khóa DB) chưa LOCKED."""
+    """2026-07-07: tự chặn chạy thật nếu G4 (SAP)/G5 (khóa DB) chưa LOCKED.
+    Vá 2026-07-08 (BL-06): trước đây "LOCKED" CHỈ là văn bản tự do trong checkpoint
+    JSON (ai đó gõ tay, hoặc cờ CLI tự khai --i-confirm-sap-locked) — KHÔNG có gì
+    ràng buộc "đã duyệt" với NỘI DUNG THẬT của SAP/dữ liệu tại thời điểm duyệt.
+    Nay kiểm THÊM (không thay thế — cộng dồn, giữ nguyên đường cũ để không phá vỡ
+    hành vi hiện có) một sổ phê duyệt mật mã thật (exports/<study>/approval_ledger.json,
+    ghi qua tools/approve_gate.py — KHÔNG do agent tự tạo được, xem
+    runtime/approval_ledger.py::add_approval chặn created_by_agent) — nếu có 1 bản
+    ghi APPROVED cho đúng gate mà evidence_hash KHỚP với nội dung HIỆN TẠI của
+    artifact đại diện, coi là khóa CHẮC CHẮN HƠN (không cần checkpoint text/cờ CLI
+    nữa). Artifact bị sửa SAU khi duyệt → hash lệch → KHÔNG còn được coi là đã duyệt
+    qua đường này (tự động rơi về đường cũ: checkpoint text hoặc cờ tự khai)."""
+    import hashlib as _hashlib
     import json as _json
     import re as _re
 
@@ -1109,12 +1118,35 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
                 return {}
         return {}
 
+    def _ledger_approved(gate_id: str, artifact_path: Path) -> bool:
+        """True nếu có phê duyệt THẬT (không synthetic, không agent-tạo) cho gate_id
+        với evidence_hash khớp NỘI DUNG HIỆN TẠI của artifact_path."""
+        ledger_p = Path("exports") / "__STUDY__" / "approval_ledger.json"
+        if not ledger_p.exists() or not artifact_path.exists():
+            return False
+        try:
+            records = _json.loads(ledger_p.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            return False
+        matches = [r for r in records if r.get("gate_id") == gate_id
+                   and r.get("decision") == "APPROVED" and not r.get("is_synthetic")]
+        if not matches:
+            return False
+        latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]
+        try:
+            actual_hash = _hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+        except OSError:
+            return False
+        return actual_hash == latest.get("evidence_hash")
+
     g2 = _load_cp("G2")
     g4 = _load_cp("G4")
     g5 = _load_cp("G5")
     g2_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
-    g4_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
-    g5_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
+    g4_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS"))) or _ledger_approved(
+        "G4", Path("exports") / "__STUDY__" / "G4_A5_SAP_FINAL___STUDY__.md")
+    g5_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS"))) or _ledger_approved(
+        "G5", Path("exports") / "__STUDY__" / "G5_checkpoint.json")
     if not g2_locked and not i_confirm_irb:
         print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED cho đề tài __STUDY__.")
         print(f"   G2_checkpoint: {'✅ LOCKED' if g2_locked else '⚠️ chưa LOCKED/không tìm thấy'}")
@@ -2032,7 +2064,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
     analysis_name = analysis_name_map.get(design_code, "[CẦN XÁC ĐỊNH THEO SAP]")
 
     lines = [
-        f"# A7 — R ANALYSIS SCRIPTS + PYTHON CLI + SAP THỰC THI (DRAFT — SKELETON)",
+        "# A7 — R ANALYSIS SCRIPTS + PYTHON CLI + SAP THỰC THI (DRAFT — SKELETON)",
         f"**Đề tài:** {topic}  ",
         f"**Mã:** {study} | **Ngày sinh:** {run_date} | **Phiên bản:** 2.0 (Nâng cấp 75%)",
         f"**Thiết kế:** {design_code} | **Chuẩn báo cáo:** {reporting_std}",
@@ -2047,8 +2079,8 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "",
         "## PHẦN 1 — BIẾN SỐ TỰ PHÁT HIỆN TỪ REDCAP DICTIONARY (G5)",
         "",
-        f"| Vai trò | Tên biến | Ghi chú |",
-        f"|---|---|---|",
+        "| Vai trò | Tên biến | Ghi chú |",
+        "|---|---|---|",
         f"| Phơi nhiễm (exposure) | `{exposure}` | Từ G5 REDCap dictionary |",
         f"| Kết cục chính (outcome) | `{outcome}` | 1=biến cố, 0=censored |",
         f"| Thời gian theo dõi | `{time_col}` | Đơn vị: tháng |",
@@ -2078,7 +2110,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "",
         "| Script | Mục đích | Biến dùng | Thư viện |",
         "|---|---|---|---|",
-        f"| `00_setup.R` | Cài packages R | — | tidyverse, survival, mice, gtsummary |",
+        "| `00_setup.R` | Cài packages R | — | tidyverse, survival, mice, gtsummary |",
         f"| `01_cleaning.R` | Làm sạch, recode biến | {exposure}, {outcome}, {time_col} | tidyverse, REDCapR |",
         f"| `02_tables.R` | Table 1 theo nhóm {exposure} | {', '.join(covars[:4]) if covars else 'age,sex,dm,htn'} | gtsummary, flextable |",
         f"| `03_analysis.R` | Cox + KM + MI (m=20) | {exposure}/{outcome}/{time_col} | survival, survminer, mice |",
@@ -2095,15 +2127,15 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "",
         "**Chạy Python CLI (khi có CSV thật):**",
         "```bash",
-        f"python scripts/run_analysis_cli.py \\",
-        f"    --data data/raw/export.csv \\",
+        "python scripts/run_analysis_cli.py \\",
+        "    --data data/raw/export.csv \\",
         f"    --exposure {exposure} \\",
         f"    --outcome {outcome} \\",
         f"    --time {time_col} \\",
         f"    --covariates {','.join(covars) if covars else 'age,sex,dm,htn'}",
         "",
-        f"python scripts/sensitivity_analysis.py \\",
-        f"    --data data/raw/export.csv",
+        "python scripts/sensitivity_analysis.py \\",
+        "    --data data/raw/export.csv",
         "```",
         "",
         "---",
@@ -2143,7 +2175,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "",
         "---",
         "",
-        f"*Cần bác sĩ kiểm chứng. Scripts với tên biến thật từ REDCap — kiểm tra trước khi chạy.*  ",
+        "*Cần bác sĩ kiểm chứng. Scripts với tên biến thật từ REDCap — kiểm tra trước khi chạy.*  ",
         f"*Mã: {study} | Sinh: {run_date} | Version: A7 v2.0 | Mức tự động: 75%*",
     ]
 
@@ -2310,18 +2342,18 @@ def main():
     print(f"\n💾 Checkpoint: {cp_path.name}")
 
     # ─── Tóm tắt ───
-    print(f"\n✅ G6 NÂNG CẤP — Mức tự động: 75%")
+    print("\n✅ G6 NÂNG CẤP — Mức tự động: 75%")
     print(f"   Đề tài    : {study}")
     print(f"   Design    : {design_code} | Chuẩn: {reporting_std}")
     print(f"   Biến      : {v['exposure']} / {v['outcome']} / {v['time_col']}")
     print(f"   Covariates: {', '.join(v['covariates']) if v['covariates'] else 'fallback'}")
     print(f"   Scripts   : {len(generated_paths)} files tại {scripts_dir}")
-    print(f"     - 4 R scripts (tên biến thật)")
-    print(f"     - run_analysis_cli.py (Python — chạy ngay khi có CSV)")
-    print(f"     - sensitivity_analysis.py (CC vs MI, subgroup, E-value)")
+    print("     - 4 R scripts (tên biến thật)")
+    print("     - run_analysis_cli.py (Python — chạy ngay khi có CSV)")
+    print("     - sensitivity_analysis.py (CC vs MI, subgroup, E-value)")
     print(f"   G4 Locked : {'✅ Đã khóa SAP' if g4_locked else '⚠️ CHƯA khóa'}")
     print(f"   Guardrail : {status}")
-    print(f"   Bước tiếp : Khóa DB (G5) → python run_analysis_cli.py --data <CSV> → G7")
+    print("   Bước tiếp : Khóa DB (G5) → python run_analysis_cli.py --data <CSV> → G7")
 
 
 def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
