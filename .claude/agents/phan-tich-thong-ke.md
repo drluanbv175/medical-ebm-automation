@@ -1,6 +1,6 @@
 ---
 name: phan-tich-thong-ke
-description: Phân tích thống kê SAU khi dữ liệu đã khóa — chạy đúng SAP đã khóa trên DB đã khóa, kiểm giả định, hồi quy/sống còn/meta-analysis, báo cáo ước lượng + 95% CI chuẩn báo cáo. Dùng ở G6. Mọi việc thiết kế/cỡ mẫu/khóa SAP thuộc về thiet-ke-nghien-cuu.
+description: Phân tích thống kê SAU khi dữ liệu đã khóa — chạy đúng SAP đã khóa trên DB đã khóa, kiểm giả định, hồi quy/sống còn/meta-analysis, báo cáo ước lượng + 95% CI chuẩn báo cáo. Dùng ở G6. Mọi việc thiết kế/khóa SAP thuộc về thiet-ke-nghien-cuu; cỡ mẫu/power thuộc về co-mau-nghien-cuu (G3).
 model: inherit
 ---
 
@@ -40,7 +40,9 @@ python medical-ebm-automation/tools/run_g6_auto.py --study "MA-DE-TAI"
 
 ## 🐍 BƯỚC 0b — PYTHON AUTO-STATS (chạy SAU — khi ĐÃ có file dữ liệu thật)
 
-**Khi bác sĩ/nhà nghiên cứu cung cấp file CSV/Excel:** chạy chính SCRIPT mà `run_g6_auto.py` ở BƯỚC 0a vừa sinh ra, TRƯỚC MODULE 1–4, để nhận kết quả thật ngay:
+**Chỉ chạy khi BƯỚC 0 đã PASS (G4_STATUS=LOCKED VÀ G5_STATUS=LOCKED) — 2026-07-07: `run_stats_analysis.py` KHÔNG tự kiểm tra trạng thái khóa (không đọc G4/G5 checkpoint), nó sẽ chạy Logit/OLS thật trên BẤT KỲ file CSV nào được đưa vào mà không có cổng kỹ thuật chặn. Nếu G4 hoặc G5 trên thực tế CHƯA khóa, KHÔNG chạy lệnh này dù có file dữ liệu thật trong tay — trả về "G4 hoặc G5 chưa khóa — không thể chạy phân tích xác nhận" giống BƯỚC 0 quy định, để tránh data dredging/p-hacking (nhìn trước dữ liệu trước khi SAP/DB thật sự khóa).**
+
+**Khi bác sĩ/nhà nghiên cứu cung cấp file CSV/Excel VÀ BƯỚC 0 đã PASS:** chạy chính SCRIPT mà `run_g6_auto.py` ở BƯỚC 0a vừa sinh ra, TRƯỚC MODULE 1–4, để nhận kết quả thật ngay:
 
 ```bash
 # Chạy từ thư mục gốc Claude AI/
@@ -320,9 +322,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

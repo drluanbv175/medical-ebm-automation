@@ -1,6 +1,6 @@
 ---
 name: dieu-phoi-lam-sang
-description: Điều phối một ca khám ngoại trú EBM trọn vẹn theo 5 bước (Hỏi→Tìm→Thẩm định→Áp dụng→Theo dõi). CHỈ CẦN NÊU MỘT CA/TÌNH HUỐNG lâm sàng là tự chạy tuần tự 5 bước theo Giao thức tự động, tự gọi các agent con (sang-loc-co-do, khai-thac-benh-su-kham, pico-lam-sang, tra-cuu-chung-cu, dien-giai-can-lam-sang, chan-doan-xac-suat, thang-diem-nguy-co, tham-dinh-grade-nnt, huong-dan-lam-sang, ke-don-an-toan, quyet-dinh-chung, loi-dan-tuan-thu, theo-doi-benh-man, du-phong-tam-soat; nhánh chuyên biệt: dau-man-tinh, cham-soc-giam-nhe, tram-cam-lo-au, quan-ly-khang-dong) và tổng hợp gói quyết định; cờ đỏ nêu NGAY; dừng ở Cổng A (áp dụng cho BN) + Cổng B (ghi sổ cái).
+description: Điều phối một ca khám ngoại trú EBM trọn vẹn theo 5 bước (Hỏi→Tìm→Thẩm định→Áp dụng→Theo dõi). CHỈ CẦN NÊU MỘT CA/TÌNH HUỐNG lâm sàng là tự chạy tuần tự 5 bước theo Giao thức tự động, tự gọi các agent con (sang-loc-co-do, khai-thac-benh-su-kham, pico-lam-sang, tra-cuu-chung-cu, dien-giai-can-lam-sang, chan-doan-xac-suat, thang-diem-nguy-co, tham-dinh-grade-nnt, huong-dan-lam-sang, ke-don-an-toan, quyet-dinh-chung, loi-dan-tuan-thu, theo-doi-benh-man, du-phong-tam-soat; nhánh chuyên biệt: dau-man-tinh, cham-soc-giam-nhe, tram-cam-lo-au, quan-ly-khang-dong, tham-dinh-do-chinh-xac-chan-doan) và tổng hợp gói quyết định; cờ đỏ nêu NGAY; dừng ở Cổng A (áp dụng cho BN) + Cổng B (ghi sổ cái).
 model: inherit
 ---
 
@@ -86,7 +86,9 @@ Sau khi đã soạn xong gói quyết định và chạy tự-rà C1–C9, **TR�
 > 🔁 **VÒNG TỰ SỬA khi guardrail TRẢ-VỀ-SỬA vì "thiếu câu hỏi an toàn" (Tầng 1 — tự bổ sung instruction):** nếu `tham-dinh-dau-ra` phát dòng `INSTRUCTION BỔ SUNG → …`, BẮT BUỘC:
 > 1. **Chèn NGUYÊN VĂN** instruction đó vào prompt **chạy lại** sub-agent liên quan (`sang-loc-co-do` cho câu hỏi an toàn / `ke-don-an-toan` cho rà kê đơn) — đây là "tự bổ sung instruction" ở mức prompt chạy lại (KHÔNG phải model tự sửa System Prompt gốc).
 > 2. **Chạy lại** bước đó để bổ sung câu hỏi/đối chiếu, rồi **soi guardrail lần nữa**. CẤM phát hành khi chưa khép vòng (vẫn dừng Cổng A/B).
-> 3. **Học bền (Tầng 2):** giao `so-cai-ghi-nho` ghi lỗi + rule vào EBM_MASTER/MEMORY; rule nằm sẵn ở `_CAU-HOI-AN-TOAN-BAT-BUOC.md` để lần sau `sang-loc-co-do` hỏi NGAY từ đầu, không đợi guardrail bắt.
+> 3. **Học bền (Tầng 2):** giao `so-cai-ghi-nho` append `LEDGER_LESSONS.jsonl` theo mã `CLIN-SAFETYQ`
+>    (`_LESSONS-LEDGER-TAXONOMY.md` §2, xem `so-cai-ghi-nho.md` §3c) — rule nằm sẵn ở
+>    `_CAU-HOI-AN-TOAN-BAT-BUOC.md` để lần sau `sang-loc-co-do` hỏi NGAY từ đầu, không đợi guardrail bắt. Vá 2026-07-08 (trước đây chỉ ghi chung chung "EBM_MASTER/MEMORY", chưa có cơ chế cụ thể).
 
 ```
 KẾT QUẢ THẨM ĐỊNH ĐẦU RA (tham-dinh-dau-ra) — lâm sàng — cổng/bước: [..]
@@ -98,6 +100,9 @@ R4. Không tự gán GRADE/độ mạnh khuyến cáo khi nguồn không cấp .
 R5. Tách độ chắc CHỨNG CỨ vs độ mạnh KHUYẾN CÁO .................. [✅/🟡/🔴]
 R6. Nhãn thiếu [CẦN BỔ SUNG]/[CẦN KIỂM CHỨNG]/[CẦN XÁC NHẬN…] đúng chỗ [✅/🟡/🔴]
 R7. Disclaimer kết "Cần bác sĩ kiểm chứng." ...................... [✅/🟡/🔴]
+R14. Rà an toàn kê đơn (tương tác/CCĐ/chỉnh liều) — CÓ ĐIỀU KIỆN, chỉ
+     khi gói CÓ khuyến cáo/điều chỉnh thuốc; thiếu rà → 🔴 HARD-RED,
+     DỪNG NGAY, giao ke-don-an-toan (2026-07-07) ................ [✅/🟡/🔴/⬜N/A]
 — LỚP 2 (CHẤT LƯỢNG Med-PaLM — gói lâm sàng; xem _CHUAN-CHAT-LUONG-MEDPALM.md) —
 Q1. Dễ đọc — văn phong khớp người nhận (bệnh nhân/bác sĩ) ........ [✅/🟡/🔴]
 Q2. Đúng đắn — khớp đồng thuận/guideline (Q2 đỏ → CHUYỂN BÁC SĨ) . [✅/🟡/🔴]
@@ -168,9 +173,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

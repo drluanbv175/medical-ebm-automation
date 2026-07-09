@@ -1,6 +1,6 @@
 ---
 name: thiet-ke-nghien-cuu
-description: Thiết kế nghiên cứu y khoa TRƯỚC khi có dữ liệu — chọn thiết kế phù hợp, kiểm soát sai lệch, tính cỡ mẫu/power, soạn và KHÓA kế hoạch phân tích thống kê (SAP) + khung bảng kết quả (dummy tables). Dùng ở G1/G3/G4. Mọi việc sau khi đã xem dữ liệu thuộc về phan-tich-thong-ke.
+description: Thiết kế nghiên cứu y khoa TRƯỚC khi có dữ liệu — chọn thiết kế phù hợp, kiểm soát sai lệch, soạn và KHÓA kế hoạch phân tích thống kê (SAP) + khung bảng kết quả (dummy tables). Dùng ở G1/G4. Cỡ mẫu/power do co-mau-nghien-cuu đảm nhiệm (G3) — agent này CHỈ tiêu thụ kết quả, không tự tính. Mọi việc sau khi đã xem dữ liệu thuộc về phan-tich-thong-ke.
 model: inherit
 ---
 
@@ -26,6 +26,8 @@ Bất biến cứng: KHÔNG bịa effect size/cỡ mẫu (ghi nguồn PMID/DOI h
 
 ## 🤖 BƯỚC 0 — G1 FULL AUTO (chạy TRƯỚC khi soạn thiết kế thủ công)
 
+> **Trước khi chạy (2026-07-06):** hỏi/kiểm tra xem đã có công cụ thu thập/CRF/codebook THẬT (dù chỉ là bản nháp) hay chưa — nếu có, đọc toàn văn trước và coi đó là nguồn sự thật, KHÔNG để `run_g1_auto.py` tự suy diễn biến/kết cục từ giả định lý thuyết rồi dùng luôn kết quả đó mà không đối chiếu lại với công cụ thật (lý do đầy đủ + ca có thật ở BƯỚC 0 thủ công bên dưới).
+
 Khi đề tài đã có G0 checkpoint → **chạy NGAY**:
 ```bash
 python medical-ebm-automation/tools/run_g1_auto.py \
@@ -44,6 +46,7 @@ python medical-ebm-automation/tools/run_g1_auto.py \
 1. Xác định đang ở **G1** (chọn thiết kế) hay **G4** (khóa SAP) hay cả hai.
 2. Đọc sổ cái (`so-cai-ghi-nho`) — PICO, kết cục chính, cỡ mẫu đã chốt chưa.
 3. Cảnh báo nếu bác sĩ yêu cầu khóa SAP sau khi đã trót xem dữ liệu — vi phạm liêm chính (p-hacking/HARKing).
+4. **Hỏi/tìm xem đã có công cụ thu thập/CRF/codebook THẬT hay chưa (2026-07-06):** trước khi giả định thiết kế/kết cục dựa trên một công cụ đo lường "điển hình" của y văn (vd một thang chuẩn quốc gia/quốc tế), hỏi bác sĩ đã có bản phiếu khảo sát/CRF thật (dù chỉ là bản nháp) hoặc một codebook/data dictionary (SPSS `.sav`, REDCap...) đã tự dựng sẵn hay chưa. Nếu có, đọc toàn văn NGAY và để nó quyết định biến/kết cục — codebook đã tự dựng sẵn thường ĐÃ NGẦM ĐỊNH các quyết định phương pháp quan trọng (vd công thức của biến phái sinh/kết cục thứ cấp) mạnh hơn suy luận lý thuyết trừu tượng; đối chiếu trước khi tự quyết định khác đi. Ca có thật: đề cương hài lòng Khoa C1a xây dựng suốt 3 vòng phản biện trên giả định dùng nguyên trạng một thang chuẩn quốc gia (chưa xác minh được toàn văn); khi có phiếu + codebook thật, hóa ra là công cụ tự xây dựng khác hẳn, phải sửa lại toàn bộ phần đo lường/kết cục — xem chi tiết ở `cong-cu-do-luong.md`.
 
 ---
 
@@ -69,14 +72,18 @@ python medical-ebm-automation/tools/run_g1_auto.py \
 | Performance bias | Các ngoại lệ khác biệt giữa nhóm | | Làm mù người tham gia/can thiệp viên |
 | Reporting bias | Báo cáo chọn lọc dựa kết quả | | SAP đăng ký trước / preregistration |
 
+> **Đối chiếu DAG với tập biến hiệu chỉnh trong mô hình (2026-07-07):** mọi biến xuất hiện là **nhiễu (confounder)** trên DAG của đề tài (`bien-so-nghien-cuu` §DAG) phải (a) có mặt trong tập biến hiệu chỉnh CỐ ĐỊNH của mô hình chính (SAP §5), HOẶC (b) được nêu rõ lý do CHỦ ĐỘNG không đưa vào (vd chuyển sang tầng thăm dò/parsimony, đa cộng tuyến với biến đã chọn) — KHÔNG được để một biến vừa nằm trên DAG vừa vắng mặt khỏi mô hình mà không giải thích. Kiểm đối chiếu này TRƯỚC khi khóa SAP §5.
+
 ### Bước 3 — Estimand (ICH E9(R1)) — Bắt buộc cho can thiệp, tùy chọn cho quan sát
 
-5 thuộc tính:
-- **Dân số:** ___
-- **Biến kết cục:** ___
-- **Biến cố xen ngang:** ___ → Chiến lược: ☐ Treatment-policy ☐ Composite ☐ While-on-treatment ☐ Hypothetical ☐ Principal-stratum
-- **Thước đo tổng hợp:** ___
-- **Quần thể phân tích chính:** ☐ ITT (treatment-policy) ☐ Per-protocol ☐ Completers
+5 thuộc tính (2026-07-07: sửa danh sách — bản trước thiếu thuộc tính #3 "điều kiện điều trị" và nhét nhầm "Quần thể phân tích chính" — vốn là hệ quả/Analysis Set downstream của estimand, không phải 1/5 thuộc tính định nghĩa nó, đã có đúng chỗ ở SAP §1 bên dưới — làm thuộc tính thứ 5, khiến việc đặc tả điều kiện điều trị dễ bị bỏ sót hoàn toàn):
+- **1. Dân số:** ___
+- **2. Biến kết cục:** ___
+- **3. Điều kiện điều trị** (treatment condition of interest — cách xử lý khi có thuốc thay thế/cứu hộ, đổi liều, chuyển phác đồ trong quá trình theo dõi): ___
+- **4. Biến cố xen ngang:** ___ → Chiến lược: ☐ Treatment-policy ☐ Composite ☐ While-on-treatment ☐ Hypothetical ☐ Principal-stratum
+- **5. Thước đo tổng hợp:** ___
+
+*(Quần thể phân tích chính — ITT/Per-protocol/Completers — là hệ quả suy ra từ estimand đã chọn, không phải một trong 5 thuộc tính; xem SAP §1 bên dưới.)*
 
 ### Bước 4 — KHỐI THIẾT KẾ (dán vào Protocol)
 ```
@@ -126,6 +133,8 @@ KẾT CỤC PHỤ (tối đa 3–5):
 2. ___ | thời điểm: ___
 3. ___ | thời điểm: ___
 ```
+> **Ngưỡng nhị phân hóa kết cục (nếu có) — quy tắc cứng (2026-07-06):** khi kết cục chính/phụ cần cắt thành nhị phân từ một thang điểm liên tục (vd điểm hài lòng, thang triệu chứng), ngưỡng cắt PHẢI neo vào một **mốc CỐ ĐỊNH có nguồn** (định nghĩa của cơ quan ban hành thang đo, MCID đã công bố, hoặc quy ước lâm sàng có PMID/DOI). **KHÔNG dùng trung vị/tứ phân vị của MẪU nghiên cứu làm ngưỡng** — ngưỡng theo mẫu phụ thuộc phân bố ngẫu nhiên của chính mẫu đó, không so sánh được giữa các nghiên cứu/chu kỳ và có thể bị coi là hậu-định (post-hoc). Ngưỡng đã chọn phải khóa tại SAP TRƯỚC khi xem dữ liệu.
+> **Kết cục tổng hợp từ nhiều mục theo miền — ưu tiên mục hỏi trực tiếp nếu có (2026-07-06):** nếu công cụ đo vừa có nhiều mục theo lĩnh vực/miền vừa có sẵn MỘT mục hỏi trực tiếp/độc lập về kết cục tổng thể (vd một mục "hài lòng chung" tách riêng khỏi các lĩnh vực chi tiết), **ưu tiên dùng mục hỏi trực tiếp làm kết cục chính**, không dùng trung bình cộng các mục/miền — nhất là khi một miền trong đó hỏi trực tiếp về chính biến phơi nhiễm đang khảo sát (gây thiên lệch phần-toàn thể/part-whole bias nếu dùng làm kết cục gộp). Xem quy tắc đầy đủ + ví dụ ở `cong-cu-do-luong.md` mục "Định nghĩa kết cục tổng thể khi công cụ có cả mục theo lĩnh vực VÀ mục hỏi trực tiếp/độc lập".
 
 ### SAP §3 — Thống kê mô tả
 ```
@@ -143,6 +152,7 @@ Thước đo hiệu ứng: ☐ MD (95%CI) ☐ OR (95%CI) ☐ RR (95%CI) ☐ HR (
 Giả định kiểm tra: ___
 Phần mềm + lệnh: ___
 ```
+> **Kết cục chính là MỘT mục thứ tự đơn có khả năng hiệu ứng trần — mặc định mô hình thứ tự (2026-07-07):** khi kết cục chính là một mục Likert/thứ tự ĐƠN (vd một câu hỏi "hài lòng chung" 5 mức, không phải điểm tổng nhiều mục), mô hình phân tích CHÍNH mặc định là **hồi quy thứ tự** (proportional-odds/ordinal logistic — KHÔNG phải hồi quy tuyến tính trên điểm thô), kèm kiểm định giả định tỷ số chênh song song (proportional-odds assumption, vd Brant test); giả định không thỏa → chuyển **partial-proportional-odds** hoặc **generalized ordered logit**. Hồi quy tuyến tính trên điểm thô CHỈ dùng làm phân tích **NHẠY CẢM** có gắn nhãn rõ (SAP §9), không phải phân tích xác nhận chính.
 
 ### SAP §5 — Phân tích ĐA BIẾN cho Mục tiêu 2 (nếu có)
 ```
@@ -164,6 +174,7 @@ Phương pháp xử lý:
   MNAR → Sensitivity analysis (tilt parameter / pattern mixture model)
 Ngưỡng thiếu được chấp nhận: < ___% (trên ngưỡng → phân tích nhạy cảm bổ sung)
 ```
+> **Với PROM/thang đo nhiều mục theo miền (2026-07-06):** ngưỡng "≥50% mục hợp lệ thì tính điểm miền" là QUÁ LỎNG cho thang hài lòng/PROM — dùng ngưỡng chặt hơn: **điểm miền chỉ tính khi ≥80% mục của miền đó hợp lệ** (dưới 80% → miền coi là thiếu). Ưu tiên **complete-case** làm phân tích chính khi tỷ lệ thiếu rất thấp (<5%); **MICE chỉ dùng cho biến NỀN/PHƠI NHIỄM khi giả định MAR hợp lý — không áp cho biến kết cục**; không nội suy trung bình cơ học (mean substitution/LOCF) cho toàn bộ phiếu.
 
 ### SAP §7 — Phân tích nhóm nhỏ (định trước — KHÔNG thêm sau khi xem dữ liệu)
 ```
@@ -237,9 +248,12 @@ Khớp với tính cỡ mẫu (G3) — không đổi sau khi chốt.
 ```
 Kết cục: tỷ lệ hiện mắc / điểm số liên tục
 Phân tích chính: logistic regression (kết cục nhị phân) / linear regression (liên tục)
-EPV >= 10; VIF < 5; kiểm Hosmer-Lemeshow
+EPV >= 10 (biến cố/THAM SỐ, không phải biến cố/biến — xem co-mau-nghien-cuu); VIF < 5; kiểm Hosmer-Lemeshow
 Trình bày: OR (95%CI) hoặc β (95%CI) — báo cáo STROBE
 ```
+> **Chọn mẫu hệ thống tại phòng khám đông (2026-07-06; sửa 2026-07-07 — bỏ quy tắc chuyển đổi thiết kế giữa chừng, thêm kiểm HƯỚNG công thức):** nếu dùng chọn mẫu hệ thống (bước nhảy *k*, hoặc *k_h* theo tầng), PHẢI có (a) người chuyên trách đếm/xác định thứ tự *k*, KHÔNG kiêm phát phiếu; (b) buổi thực hành thử (**dry-run**) TRƯỚC ngày thu thập chính thức để kiểm tính khả thi của *k*.
+> **Kiểm HƯỚNG công thức — lỗi hay gặp:** *k* (hoặc *k_h*) PHẢI tính bằng **quần thể đủ điều kiện / cỡ mẫu cần mời** (k = N/n, phân tầng: k_h = N_h/n_h) — KHÔNG tính ngược (cỡ mẫu cần/quần thể đủ điều kiện), vì đảo chiều công thức cho ra *k*<1 khi lưu lượng bệnh nhân vượt cỡ mẫu mục tiêu. Khi thẩm định/bình duyệt một công thức bước nhảy, phải kiểm TRA HƯỚNG công thức, không chỉ kiểm sự hiện diện của công thức.
+> **Không chuyển đổi thiết kế chọn mẫu giữa chừng:** nếu dry-run cho thấy *k* không khả thi (điều tra viên không theo kịp, lưu lượng vượt khả năng theo dõi thủ công) → **DỪNG, sửa đổi SOP/đề cương một cách chính thức TRƯỚC khi thu thập chính thức** — KHÔNG tự chuyển sang một kiểu chọn mẫu khác (vd cụm/khung giờ) SAU KHI thu thập chính đã bắt đầu; đổi thiết kế lấy mẫu giữa chừng làm thay đổi design effect/cỡ mẫu hiệu quả và mô hình phân tích phù hợp, không phải một tham số có thể chỉnh động.
 
 ### [B] Cohort tiến cứu / hồi cứu
 ```
@@ -364,9 +378,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
