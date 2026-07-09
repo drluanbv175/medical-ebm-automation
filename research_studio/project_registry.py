@@ -9,9 +9,7 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 
 from .project_schema import (
-    ComponentStatus,
     ResearchProject,
-    ResearchWorkflowState,
     StudyType,
     validate_project,
 )

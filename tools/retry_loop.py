@@ -141,6 +141,39 @@ ERROR_ROUTING_TABLE: dict[str, tuple[ErrorSeverity, str]] = {
                  "DỪNG NGAY — thiếu rà an toàn kê đơn (tương tác/CCĐ/chỉnh liều) → ke-don-an-toan"),
 }
 
+# ════════════════════════════════════════════════════════════════════════════
+# ÁNH XẠ R-CODE → MÃ LESSONS LEDGER (thêm 2026-07-08 — Prompt 4 wiring)
+# ════════════════════════════════════════════════════════════════════════════
+# Cầu nối 1 CHIỀU: mã R (kỹ thuật nội bộ, dùng ở ERROR_ROUTING_TABLE/CHECK_ID_TO_RCODE/
+# test_classify.py — KHÔNG đổi tên để không vỡ test suite hiện có) → mã ledger có kiểm
+# soát (dùng ở .claude/agents/_LESSONS-LEDGER-TAXONOMY.md, ghi vào LEDGER_LESSONS.jsonl
+# qua so-cai-ghi-nho.md §3c). Quyết định vận hành: xem
+# .claude/agents/_RUBRIC-EVALUATE-CUNG-QA-GATE.md §7 và
+# observability/LEDGER_RUBRIC_RECONCILIATION_2026-07-08.md cho lý do + bằng chứng.
+# R7/R8 CHỦ Ý không có mã ledger (đã bàn trong reconciliation — mức AUTO_FIX, rủi ro
+# thấp hơn nhiều so an toàn lâm sàng trực tiếp, giữ như check định dạng độc lập).
+RCODE_TO_LESSON_CODE: dict[str, str] = {
+    "R1":  "CIT-GHOST",
+    "R1b": "GAP-MISSING",
+    "R2":  "SEC-PII",
+    "R3":  "SEC-BYPASS",
+    "R4":  "GRD-SELF",
+    "R5":  "GRD-CONF",
+    "R6":  "GAP-MISSING",
+    "R9":  "SRC-STALE",
+    "R10": "DRG-ABX",
+    "R11": "INFER-CAUSAL",
+    "R12": "CLIN-REDFLAG",
+    "R13": "CLIN-SAFETYQ",
+    "R14": "DRG-INCOMPLETE",
+}
+
+
+def to_lesson_code(rcode: str) -> str | None:
+    """Tra mã ledger tương ứng với 1 mã R — trả None nếu R-code không có mã ledger
+    (vd R7/R8, chủ ý chưa đưa vào ledger — xem bảng trên)."""
+    return RCODE_TO_LESSON_CODE.get(rcode)
+
 
 def classify_error(code: str, message: str = "") -> ErrorItem:
     """Tạo ErrorItem từ error code, tra ROUTING TABLE."""

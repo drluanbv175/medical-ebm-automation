@@ -114,3 +114,10 @@ Desktop.ini
 # bị tạo nhầm bên trong runtime/pycache/ (không phải bytecode cache thật — không có
 # file .pyc nào bên trong, chỉ có cây thư mục rỗng do lỗi path tuyệt đối).
 runtime/pycache/
+
+# LESSONS ledger (2026-07-08, BL taxonomy) — sổ append-only sống ở OneDrive, không
+# cần lịch sử git riêng (giống quy ước LEDGER_HOI_TU.md ở repo gốc "Claude AI").
+# .claude/agents/_LESSONS-LEDGER-TAXONOMY.md §3 nói rõ file này KHÔNG git-track —
+# thêm rule tường minh ở đây thay vì chỉ ghi trong comment (2026-07-09).
+/LEDGER_LESSONS.jsonl
+/LEDGER_HOI_TU.md

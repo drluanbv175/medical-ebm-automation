@@ -31,7 +31,11 @@ from typing import Optional
 
 # ── Cấu hình đường dẫn ──────────────────────────────────────────────────────
 _REPO_ROOT = Path(__file__).resolve().parent.parent
+_TOOLS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_REPO_ROOT))
+sys.path.insert(0, str(_TOOLS_DIR))
+
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — chỉ dùng load_study_meta)
 
 _TODAY = datetime.now().strftime("%d/%m/%Y")
 _YEAR  = datetime.now().strftime("%Y")
@@ -125,10 +129,10 @@ def build_part1_icmje(n_authors: int, study: str) -> str:
     for i in range(1, n_authors + 1):
         lines += [
             f"**Tác giả {i} — [CẦN ĐIỀN HỌ TÊN ĐẦY ĐỦ + ĐƠN VỊ + EMAIL]:**",
-            f"- Đóng góp cụ thể (CRediT): [CẦN — ví dụ: Conceptualization, "
-            f"Methodology, Writing – original draft]",
-            f"- Tư cách tác giả: ☐ ĐỦ CẢ 4 tiêu chí -> LÀ TÁC GIẢ  "
-            f"☐ Không đủ -> ghi Acknowledgment",
+            "- Đóng góp cụ thể (CRediT): [CẦN — ví dụ: Conceptualization, "
+            "Methodology, Writing – original draft]",
+            "- Tư cách tác giả: ☐ ĐỦ CẢ 4 tiêu chí -> LÀ TÁC GIẢ  "
+            "☐ Không đủ -> ghi Acknowledgment",
             f"- Chữ ký xác nhận: _______________  Ngày: ___/___/{_YEAR}",
             "",
         ]
@@ -659,7 +663,7 @@ def build_part7_reviewer_response(study: str, target_journal: str) -> str:
         "",
         "```",
         "RESPONSE TO REVIEWERS",
-        f"Manuscript: [CẦN — mã bản thảo khi tạp chí cấp]",
+        "Manuscript: [CẦN — mã bản thảo khi tạp chí cấp]",
         f"Journal: {journal_display}",
         f"Date: {_TODAY}",
         "═══════════════════════════════════════════════════════════════",
@@ -807,7 +811,7 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         "",
         "NHÓM B — TIỀN ĐỀ CỔNG TRƯỚC (phải LOCKED trước G9)",
         "─────────────────────────────────────────────",
-        f"B1. G2 (Đạo đức) = LOCKED",
+        "B1. G2 (Đạo đức) = LOCKED",
         f"    Hiện tại: {'LOCKED (IRB thật đã điền)' if ethics_locked else g2_status}  {g2_icon}",
         f"    Số IRB: {g2.get('g2_irb_number', '[CẦN]')}",
         "",
@@ -1139,6 +1143,19 @@ def main():
 
     run_date       = datetime.now().strftime("%Y-%m-%d %H:%M")
     study          = args.study.replace(" ", "-")
+
+    # Thư mục xuất — luôn dùng đường dẫn tuyệt đối từ repo root
+    out_dir = _REPO_ROOT / "exports" / study
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # THÊM 2026-07-08 (CRIT-05): gọi thẳng script (không qua run_pipeline.py)
+    # trước đây mất n_authors/target_journal bác sĩ đã pin khi chạy lại.
+    _g9_pinned = (GC.load_study_meta(out_dir).get("gate_params") or {}).get("G9") or {}
+    if args.n_authors == 1 and _g9_pinned.get("n_authors") is not None:
+        args.n_authors = _g9_pinned["n_authors"]
+    if not args.target_journal and _g9_pinned.get("target_journal"):
+        args.target_journal = _g9_pinned["target_journal"]
+
     n_authors      = max(1, args.n_authors)
     target_journal = args.target_journal
 
@@ -1147,10 +1164,6 @@ def main():
     print(f"  Số tác giả: {n_authors} | Tạp chí: {target_journal or '(chưa xác định)'}")
     print(f"  Thời gian: {run_date}")
     print(f"{'='*65}\n")
-
-    # Thư mục xuất — luôn dùng đường dẫn tuyệt đối từ repo root
-    out_dir = _REPO_ROOT / "exports" / study
-    out_dir.mkdir(parents=True, exist_ok=True)
 
     # ── Bước 1: Đọc tất cả checkpoints G0-G8 ──
     print("📂 Bước 1/6: Đọc checkpoints G0-G8...")
@@ -1161,7 +1174,7 @@ def main():
         print("  -> Không tìm thấy checkpoint nào (sẽ dùng giá trị mặc định [CẦN])")
 
     # ── Bước 2: Sinh từng phần ──
-    print(f"\n✍️  Bước 2/6: Sinh 8 phần của gói A10...")
+    print("\n✍️  Bước 2/6: Sinh 8 phần của gói A10...")
 
     header = "\n".join([
         "# A10 — GÓI LIÊM CHÍNH TÁC GIẢ (AUTHOR INTEGRITY PACKAGE)",
@@ -1213,8 +1226,8 @@ def main():
         "| # | Việc cần làm | Phần | Bắt buộc |",
         "|---|-------------|------|---------|",
         f"| 1 | Điền họ tên + CRediT roles cho tất cả {n_authors} tác giả | Phần 1 | ✅ Có |",
-        f"| 2 | Mỗi tác giả ký xác nhận 4 tiêu chí ICMJE | Phần 1 | ✅ Có |",
-        f"| 3 | Mỗi tác giả điền và ký form COI ICMJE gốc | Phần 2 | ✅ Có |",
+        "| 2 | Mỗi tác giả ký xác nhận 4 tiêu chí ICMJE | Phần 1 | ✅ Có |",
+        "| 3 | Mỗi tác giả điền và ký form COI ICMJE gốc | Phần 2 | ✅ Có |",
         "| 4 | Chọn Data Availability Option A/B/C | Phần 3 | ✅ Có |",
         "| 5 | Duyệt và bổ sung AI Use Disclosure | Phần 4 | ✅ Có |",
         "| 6 | PI ký Tuyên bố Liêm chính 5 điểm | Phần 5 | ✅ Có |",
@@ -1235,14 +1248,14 @@ def main():
     ])
 
     # ── Bước 3: Lưu Markdown ──
-    print(f"\n💾 Bước 3/6: Lưu A10 Markdown...")
+    print("\n💾 Bước 3/6: Lưu A10 Markdown...")
     md_path = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
     md_path.write_text(artifact, encoding="utf-8")
     n_lines = artifact.count("\n")
     print(f"  -> Lưu: {md_path} ({len(artifact)//1000} KB, {n_lines} dòng)")
 
     # ── Bước 4: Guardrail ──
-    print(f"\n🛡️  Bước 4/6: Kiểm guardrail R1-R7...")
+    print("\n🛡️  Bước 4/6: Kiểm guardrail R1-R7...")
     gr = guardrail_check_g9(artifact)
     for msg in gr["warnings"]:
         print(f"  {msg}")
@@ -1252,7 +1265,7 @@ def main():
     print(f"  -> Guardrail: {guardrail_status}")
 
     # ── Bước 5: DOCX ──
-    print(f"\n📄 Bước 5/6: Xuất DOCX...")
+    print("\n📄 Bước 5/6: Xuất DOCX...")
     docx_path = export_docx_g9(artifact, study, out_dir)
     if docx_path:
         print(f"  -> Lưu: {docx_path}")
@@ -1260,7 +1273,7 @@ def main():
         print("  -> Bỏ qua DOCX (python-docx chưa cài hoặc lỗi)")
 
     # ── Bước 6: Checkpoint ──
-    print(f"\n📋 Bước 6/6: Ghi G9_checkpoint.json...")
+    print("\n📋 Bước 6/6: Ghi G9_checkpoint.json...")
     cp_path = write_g9_checkpoint(
         study=study,
         out_dir=out_dir,
@@ -1282,28 +1295,28 @@ def main():
     if docx_path:
         print(f"  📄 A10 DOCX:     {docx_path.name}")
     print(f"  📋 Checkpoint:   {cp_path.name}")
-    print(f"\n  8 PHẦN ĐÃ SINH:")
+    print("\n  8 PHẦN ĐÃ SINH:")
     print(f"  Phần 1 — ICMJE Tiêu chuẩn Tác giả ({n_authors} tác giả, 4 tiêu chí + CRediT 14 vai trò)")
     print(f"  Phần 2 — Khai báo COI Cuối ({n_authors} form + tuyên bố tập thể)")
-    print(f"  Phần 3 — Data Availability Statement (3 lựa chọn A/B/C)")
-    print(f"  Phần 4 — AI Use Disclosure (COPE + Nature Portfolio 2024)")
-    print(f"  Phần 5 — Tuyên bố Liêm chính Nghiên cứu (5 điểm)")
+    print("  Phần 3 — Data Availability Statement (3 lựa chọn A/B/C)")
+    print("  Phần 4 — AI Use Disclosure (COPE + Nature Portfolio 2024)")
+    print("  Phần 5 — Tuyên bố Liêm chính Nghiên cứu (5 điểm)")
     print(f"  Phần 6 — Cover Letter Shell (tạp chí: {target_journal or '[CẦN]'})")
-    print(f"  Phần 7 — Response-to-Reviewers Template")
-    print(f"  Phần 8 — Tiêu chí Cổng G9 (Hard Gate)")
+    print("  Phần 7 — Response-to-Reviewers Template")
+    print("  Phần 8 — Tiêu chí Cổng G9 (Hard Gate)")
     print(f"\n  🛡️  Guardrail: {guardrail_status}")
     print(f"  📊 Checkpoints đọc được: {', '.join(sorted(cps.keys())) or '(không có)'}")
-    print(f"\n  ⚠️  G9 STATUS: DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ")
-    print(f"  KHÔNG nộp bản thảo cho đến khi G9 PASSED.")
-    print(f"\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
-    print(f"  1. Mở file DOCX, điền TẤT CẢ [CẦN ...]")
+    print("\n  ⚠️  G9 STATUS: DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ")
+    print("  KHÔNG nộp bản thảo cho đến khi G9 PASSED.")
+    print("\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
+    print("  1. Mở file DOCX, điền TẤT CẢ [CẦN ...]")
     print(f"  2. Tất cả {n_authors} tác giả ký ICMJE + COI (Phần 1-2)")
-    print(f"  3. PI ký Tuyên bố Liêm chính (Phần 5)")
-    print(f"  4. Chọn Data Availability A/B/C (Phần 3)")
-    print(f"  5. Chạy kiểm tra đạo văn < 15% (Phần 5)")
-    print(f"  6. Ký checklist G9 (Phần 8) -> G9 PASSED")
-    print(f"  7. Nộp bài lên hệ thống tạp chí")
-    print(f"\n  Cần bác sĩ kiểm chứng.")
+    print("  3. PI ký Tuyên bố Liêm chính (Phần 5)")
+    print("  4. Chọn Data Availability A/B/C (Phần 3)")
+    print("  5. Chạy kiểm tra đạo văn < 15% (Phần 5)")
+    print("  6. Ký checklist G9 (Phần 8) -> G9 PASSED")
+    print("  7. Nộp bài lên hệ thống tạp chí")
+    print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
 
 

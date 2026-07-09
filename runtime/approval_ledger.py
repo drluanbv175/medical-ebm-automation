@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 from .schemas import ApprovalDecisionEnum, ApprovalRecord
@@ -155,6 +157,60 @@ class ApprovalLedger:
             indent=2,
             ensure_ascii=False,
         )
+
+    # ── Persistence (thêm 2026-07-08, BL-06) ────────────────────────────────────
+    # TRƯỚC ĐÂY: ApprovalLedger chỉ sống TRONG BỘ NHỚ (self._records) — mỗi lần
+    # research_workflow.py/dashboard.py khởi tạo `ApprovalLedger()` là một sổ RỖNG
+    # mới, không có cách nào biết "đã từng có phê duyệt thật ở lần chạy TRƯỚC" khi
+    # mỗi lần gọi `python tools/run_g4_auto.py`/`run_g5_auto.py`/`run_g6_auto.py` là
+    # MỘT TIẾN TRÌNH MỚI. Đây chính là lý do BL-06 tồn tại: "cryptographic binding"
+    # không thể hoạt động qua nhiều lần gọi CLI nếu ledger không ghi ra đĩa. Thêm
+    # to_file()/from_file() để ledger SỐNG ĐƯỢC qua nhiều lần chạy — mỗi đề tài có
+    # 1 file `exports/<study>/approval_ledger.json`, append-only, PII-free (đúng
+    # định dạng export_json() đã có, không tạo định dạng mới).
+    def to_file(self, path) -> None:
+        """Ghi ledger ra file JSON (ghi đè toàn bộ — gọi SAU khi add_approval() để
+        file luôn phản ánh đủ self._records). Không PII (export_json() đã đảm bảo)."""
+        p = Path(path)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        tmp = p.with_suffix(p.suffix + ".tmp")
+        tmp.write_text(self.export_json(), encoding="utf-8")
+        os.replace(tmp, p)  # ghi nguyên tử — tránh file nửa vời nếu crash giữa chừng
+
+    @classmethod
+    def from_file(cls, path) -> "ApprovalLedger":
+        """Nạp ledger từ file JSON (định dạng export_json()). File không tồn tại/
+        rỗng/hỏng → trả ledger RỖNG (KHÔNG raise) — vì phần lớn đề tài CHƯA có file
+        này (chưa từng được duyệt qua cơ chế crypto này), đây là trạng thái HỢP LỆ,
+        không phải lỗi. Bản ghi nạp lại có _created_by_agent=False (đã ghi ra đĩa
+        nghĩa là đã qua add_approval() thành công lúc ghi, không cho phép giả mạo
+        lại từ file — file này chỉ được ghi bởi to_file(), không phải input tự do)."""
+        ledger = cls()
+        p = Path(path)
+        if not p.exists():
+            return ledger
+        try:
+            raw = json.loads(p.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            return ledger
+        for d in raw:
+            try:
+                rec = ApprovalRecord(
+                    approval_id=d["approval_id"], gate_id=d["gate_id"],
+                    reviewer_role=d["reviewer_role"],
+                    reviewer_identity_reference=d["reviewer_identity_reference"],
+                    decision=ApprovalDecisionEnum(d["decision"]), scope=d["scope"],
+                    evidence_hash=d["evidence_hash"], timestamp_utc=d["timestamp_utc"],
+                    supersedes=d.get("supersedes"),
+                    artifact_creator_agent=d.get("artifact_creator_agent"),
+                    reviewer_agent=d.get("reviewer_agent"),
+                    _created_by_agent=False,
+                    is_synthetic=d.get("is_synthetic", False),
+                )
+            except (KeyError, ValueError):
+                continue  # dòng hỏng/thiếu trường bắt buộc — bỏ qua, không crash cả ledger
+            ledger._records.append(rec)
+        return ledger
 
     # ── Factory helpers (for tests only) ──────────────────────────────────────
 

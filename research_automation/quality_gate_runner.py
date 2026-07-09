@@ -11,8 +11,8 @@ import dataclasses
 from typing import Dict, List, Optional
 
 from research_studio import research_quality_checks as q
-from research_studio.research_quality_checks import GateResult, ResearchGateDecision
 from research_studio.project_schema import ResearchProject
+from research_studio.research_quality_checks import GateResult, ResearchGateDecision
 
 
 @dataclasses.dataclass

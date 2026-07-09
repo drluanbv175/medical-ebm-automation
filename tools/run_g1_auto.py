@@ -39,7 +39,6 @@ if not os.environ.get("NCBI_EMAIL"):
 if not os.environ.get("USE_MOCK_SOURCES"):
     os.environ["USE_MOCK_SOURCES"] = "false"
 
-from app.sources.pubmed import PubMedClient  # noqa: E402
 
 # ════════════════════════════════════════════════════════════════════════════
 # 1. THIẾT KẾ NGHIÊN CỨU — CÁC LOẠI VÀ TIÊU CHÍ CHỌN
@@ -1249,7 +1248,7 @@ def main():
     print(f"  → Chuẩn báo cáo: {design['reporting_standard']}")
 
     # Tìm effect size từ PubMed thật
-    print(f"\n📊 Bước 3/7: Trích xuất effect size từ abstracts PubMed...")
+    print("\n📊 Bước 3/7: Trích xuất effect size từ abstracts PubMed...")
     search_query = g0_gaps.get("base_query") or topic
     effects = search_for_effect_sizes(search_query, study)
     print(f"  → Tìm được {len(effects)} ước lượng effect size từ abstracts thật")
@@ -1258,7 +1257,7 @@ def main():
             print(f"     • {e['type']}={e['value']} — PMID:{e['pmid']} ({e['year']})")
 
     # Sinh artifact G1
-    print(f"\n✍️  Bước 4/7: Sinh artifact G1 (Design + SAP skeleton)...")
+    print("\n✍️  Bước 4/7: Sinh artifact G1 (Design + SAP skeleton)...")
     artifact_md = generate_g1_artifact(
         topic, study, question_type, design, effects, g0_gaps, run_date
     )
@@ -1271,7 +1270,7 @@ def main():
         print(f"  → 🧩 Mô-đun chuyên biệt phát hiện: {labels}")
 
     # Guardrail
-    print(f"\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
+    print("\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
     guardrail = guardrail_check_g1(artifact_md, effects, topic, design.get("internal_code", ""))
     for msg in guardrail["warnings"]:
         print(f"  {msg}")
@@ -1281,13 +1280,13 @@ def main():
     print(f"  → Guardrail: {status}")
 
     # Xuất DOCX
-    print(f"\n📄 Bước 6/7: Xuất DOCX...")
+    print("\n📄 Bước 6/7: Xuất DOCX...")
     docx_path = export_docx_g1(artifact_md, study, out_dir)
     if docx_path:
         print(f"  → Lưu: {docx_path}")
 
     # Checkpoint
-    print(f"\n💾 Bước 7/7: Ghi checkpoint G1...")
+    print("\n💾 Bước 7/7: Ghi checkpoint G1...")
     specialist_modules = detect_specialist_modules(topic)
     cp_path = write_g1_checkpoint(
         study, out_dir, question_type, design, effects, guardrail, md_path, docx_path,
@@ -1306,13 +1305,13 @@ def main():
     print(f"  🔬 Thiết kế:   {design['primary']}")
     print(f"  📊 Effect sizes: {len(effects)} từ PubMed thật")
     print(f"  🔴 Guardrail:  {status}")
-    print(f"\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
-    print(f"  1. Xem §1 — xác nhận thiết kế chọn")
-    print(f"  2. Xem §3 — effect size ước lượng → chọn cho G3")
-    print(f"  3. Điền §5 SAP §2 (kết cục chính) + §5 (covariates)")
+    print("\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
+    print("  1. Xem §1 — xác nhận thiết kế chọn")
+    print("  2. Xem §3 — effect size ước lượng → chọn cho G3")
+    print("  3. Điền §5 SAP §2 (kết cục chính) + §5 (covariates)")
     print(f"  4. Chạy G3 (cỡ mẫu): python tools/run_g3_auto.py --study {study}")
-    print(f"  5. Sau G3: ký SAP Lock Certificate → mở G4")
-    print(f"\n  Cần bác sĩ kiểm chứng.")
+    print("  5. Sau G3: ký SAP Lock Certificate → mở G4")
+    print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
 
     return {

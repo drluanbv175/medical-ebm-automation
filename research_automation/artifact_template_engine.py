@@ -8,9 +8,9 @@ CHỈ tạo assumption template (không tự tính). OFFLINE · deterministic ·
 
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import List
 
-from research_studio.project_schema import ResearchProject, StudyType
+from research_studio.project_schema import ResearchProject
 from research_studio.study_type_router import get_template
 
 REQUIRE_INPUT = "REQUIRE_HUMAN_INPUT"

@@ -307,7 +307,7 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
     """Sinh A4 — Kế hoạch cỡ mẫu."""
     study_safe = study.replace(" ", "-")
     lines = [
-        f"# A4 — KẾ HOẠCH CỠ MẪU (DRAFT)",
+        "# A4 — KẾ HOẠCH CỠ MẪU (DRAFT)",
         f"**Đề tài:** {topic}  ",
         f"**Mã:** {study_safe} | **Ngày sinh:** {run_date} | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN",
         "",
@@ -315,8 +315,8 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         "",
         "## PHẦN 1 — THÔNG SỐ ĐẦU VÀO",
         "",
-        f"| Thông số | Giá trị | Nguồn |",
-        f"|---|---|---|",
+        "| Thông số | Giá trị | Nguồn |",
+        "|---|---|---|",
         f"| Mức ý nghĩa (α) | {alpha} (two-sided) | Quy ước |",
         f"| Lực thống kê (1−β) | {int(power*100)}% | Quy ước |",
         f"| Tỷ lệ bỏ cuộc dự kiến | {int(dropout*100)}% | [CẦN BÁC SĨ XÁC NHẬN] |",
@@ -350,8 +350,8 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
     ]
     if effect_val:
         lines += [
-            f"| Chỉ số | Kết quả |",
-            f"|---|---|",
+            "| Chỉ số | Kết quả |",
+            "|---|---|",
             f"| N mỗi nhóm | **{n_per_group}** |",
             f"| N tổng (không dropout) | **{n_total}** |",
             f"| N điều chỉnh (dropout {int(dropout*100)}%) | **{n_adjusted}** |",
@@ -450,7 +450,7 @@ def write_docx(artifact, out_path):
     """Xuất DOCX."""
     try:
         from docx import Document
-        from docx.shared import Pt, RGBColor
+        from docx.shared import RGBColor
         doc = Document()
         doc.add_heading("A4 — KẾ HOẠCH CỠ MẪU", 0)
         for line in artifact.split("\n"):
@@ -491,8 +491,26 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
     run_date = datetime.now().strftime("%Y-%m-%d")
 
+    # THÊM 2026-07-08 (CRIT-05): trước đây chỉ run_pipeline.py (_recover_params)
+    # mới đọc lại study_meta.json['gate_params']['G3'] khi CHẠY LẠI — gọi
+    # THẲNG run_g3_auto.py --study X (không qua orchestrator) vẫn MẤT effect
+    # size/type/SD bác sĩ đã pin, rơi về extract_best_effect() từ G1 (nguồn
+    # khác hẳn). Nay G3 tự đọc study_meta trực tiếp làm fallback — chỉ điền
+    # khi CLI không truyền (None), KHÔNG bao giờ ghi đè giá trị CLI đã cho.
+    _study_meta = GC.load_study_meta(out_dir)
+    _g3_pinned = (_study_meta.get("gate_params") or {}).get("G3") or {}
+    if args.effect_size is None and _g3_pinned.get("effect_size") is not None:
+        args.effect_size = _g3_pinned["effect_size"]
+        print(f"  → Khôi phục effect_size={args.effect_size} từ study_meta.json (chạy lại không mất)")
+    if args.effect_type is None and _g3_pinned.get("effect_type"):
+        args.effect_type = _g3_pinned["effect_type"]
+        print(f"  → Khôi phục effect_type={args.effect_type} từ study_meta.json")
+    if args.sd is None and _g3_pinned.get("sd") is not None:
+        args.sd = _g3_pinned["sd"]
+        print(f"  → Khôi phục sd={args.sd} từ study_meta.json")
+
     print(f"🔢 G3 — Tính cỡ mẫu: {study}")
-    print(f"📂 Bước 1/6: Đọc checkpoints...")
+    print("📂 Bước 1/6: Đọc checkpoints...")
     g0_cp = load_checkpoint(out_dir / "G0_checkpoint.json")
     g1_cp = load_checkpoint(out_dir / "G1_checkpoint.json")
     # SỬA (2 lỗi cùng lúc):
@@ -518,7 +536,7 @@ def main():
     print(f"  → Topic: {topic[:60]}")
     print(f"  → Design: {design_code} | {design_primary}")
 
-    print(f"⚙️  Bước 2/6: Xác định tham số...")
+    print("⚙️  Bước 2/6: Xác định tham số...")
     effect_quality = None
     # SỬA: "if args.effect_size and ..." coi 0.0 là falsy (Python) — nếu bác
     # sĩ cố tình/nhầm truyền --effect-size 0.0, điều kiện này bị bỏ qua âm
@@ -533,12 +551,12 @@ def main():
         if effect_val:
             print(f"  → Effect size (từ G1/G0): {effect_type} = {effect_val:.3f} (quality={effect_quality})")
             if effect_quality == "crude":
-                print(f"  ⚠️  Effect size này là loại THÔ (không có 95%CI đi kèm khi trích "
-                      f"từ abstract) — có thể lẫn ARR%/RR%, ĐỘ TIN CẬY THẤP HƠN. "
-                      f"Khuyến nghị bác sĩ đọc toàn văn PMID xác nhận trước khi dùng "
-                      f"để khóa cỡ mẫu, hoặc cung cấp --effect-size/--effect-type thủ công.")
+                print("  ⚠️  Effect size này là loại THÔ (không có 95%CI đi kèm khi trích "
+                      "từ abstract) — có thể lẫn ARR%/RR%, ĐỘ TIN CẬY THẤP HƠN. "
+                      "Khuyến nghị bác sĩ đọc toàn văn PMID xác nhận trước khi dùng "
+                      "để khóa cỡ mẫu, hoặc cung cấp --effect-size/--effect-type thủ công.")
         else:
-            print(f"  ⚠ Không tìm được effect size — bác sĩ cần ấn định")
+            print("  ⚠ Không tìm được effect size — bác sĩ cần ấn định")
 
     alpha = args.alpha
     power = args.power
@@ -557,7 +575,7 @@ def main():
         print(f"❌ LỖI: alpha={alpha} và power={power} phải trong khoảng (0,1).")
         sys.exit(1)
 
-    print(f"🧮 Bước 3/6: Tính cỡ mẫu...")
+    print("🧮 Bước 3/6: Tính cỡ mẫu...")
     n_per_group, n_total, n_adjusted = 0, 0, 0
     formula_used = ""
     sens_rows, sens_mults = [], [0.80, 1.00, 1.20]
@@ -676,7 +694,7 @@ def main():
                     "Dùng phần mềm TSA (Copenhagen Trial Unit) hoặc metafor::power. "
                     "Bác sĩ/thống kê viên tính RIS sau bước trích xuất, KHÔNG bịa N ở đây.]"
                 )
-                print(f"  ⚠️  design=sr_ma → cần RIS/TSA (không phải công thức 1 nghiên cứu) "
+                print("  ⚠️  design=sr_ma → cần RIS/TSA (không phải công thức 1 nghiên cứu) "
                       "— KHÔNG bịa số, xem hướng dẫn trong artifact A4")
             else:
                 # SỬA: KHÔNG còn fabricate N=100/200 giả khi không khớp công
@@ -699,9 +717,9 @@ def main():
             formula_used = f"[LỖI — {e}]"
     else:
         formula_used = "[CẦN EFFECT SIZE từ bác sĩ để tính]"
-        print(f"  → N: [CẦN BÁC SĨ ẤN ĐỊNH EFFECT SIZE]")
+        print("  → N: [CẦN BÁC SĨ ẤN ĐỊNH EFFECT SIZE]")
 
-    print(f"📝 Bước 4/6: Sinh artifact A4...")
+    print("📝 Bước 4/6: Sinh artifact A4...")
     artifact = generate_artifact(
         study, topic, design_code, design_primary, alpha, power,
         effect_val, effect_type, n_per_group, n_total, n_adjusted,
@@ -712,7 +730,7 @@ def main():
     md_path.write_text(artifact, encoding="utf-8")
     print(f"  → Lưu: {md_path} ({len(artifact)//1000}KB)")
 
-    print(f"🛡️  Bước 5/6: Kiểm guardrail R1-R7...")
+    print("🛡️  Bước 5/6: Kiểm guardrail R1-R7...")
     errors, warnings = guardrail_check(artifact, n_adjusted, effect_val, missing_sd)
     for w in warnings:
         print(f"  {w}")
@@ -781,13 +799,13 @@ def main():
         exit_code = GC.EXIT_OK
     print(f"  → Guardrail: {status}")
 
-    print(f"📄 Bước 6/6: Xuất DOCX...")
+    print("📄 Bước 6/6: Xuất DOCX...")
     docx_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.docx"
     ok = write_docx(artifact, docx_path)
     if ok:
         print(f"  → Lưu: {docx_path}")
     else:
-        print(f"  ⚠ python-docx không có — bỏ qua DOCX")
+        print("  ⚠ python-docx không có — bỏ qua DOCX")
 
     # PIN durable: nếu bác sĩ cấp effect size qua CLI → ghi vào study_meta.json để
     # CHẠY LẠI (chỉ với --study) KHÔNG mất input (đóng vòng param-loss ở re-run).
@@ -826,7 +844,7 @@ def main():
         cp["needs_input"] = need
     cp_path = out_dir / "G3_checkpoint.json"
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"💾 Ghi checkpoint G3...")
+    print("💾 Ghi checkpoint G3...")
     print(f"  → Lưu: {cp_path}")
     if exit_code == GC.EXIT_BLOCKED:
         print(f"\n🚧 G3 DỪNG — {study} (cần input đời thực, hệ KHÔNG tự vượt)")

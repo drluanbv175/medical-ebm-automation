@@ -22,7 +22,6 @@ Sử dụng:
 
 import argparse
 import json
-import os
 import re
 import sys
 import time
@@ -261,7 +260,6 @@ def search_clinicaltrials(topic: str, design_code: str, max_results: int = 8) ->
             stat_mod = ps.get("statusModule", {})
             design_mod = ps.get("designModule", {})
             cond_mod = ps.get("conditionsModule", {})
-            arm_mod  = ps.get("armsInterventionsModule", {})
             enroll_m = design_mod.get("enrollmentInfo", {})
             results.append({
                 "nct_id":    id_mod.get("nctId", ""),
@@ -1096,7 +1094,7 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
         from docx.enum.text import WD_ALIGN_PARAGRAPH
         doc = Document()
         # Cover page
-        title = doc.add_heading(f"HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU", 0)
+        title = doc.add_heading("HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU", 0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
         doc.add_paragraph(f"Đề tài: {study_name}").alignment = WD_ALIGN_PARAGRAPH.CENTER
         doc.add_paragraph(f"[BẢN NHÁP TỰ ĐỘNG] | {datetime.now().strftime('%Y-%m-%d %H:%M')}").alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -1107,7 +1105,7 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
             if line.startswith("# "):
                 doc.add_heading(line[2:], 1)
             elif line.startswith("## "):
-                h = doc.add_heading(line[3:], 2)
+                doc.add_heading(line[3:], 2)
             elif line.startswith("### "):
                 doc.add_heading(line[4:], 3)
             elif stripped.startswith("```") or stripped == "---":
@@ -1285,7 +1283,7 @@ def main():
             n_adjusted = 0
 
     # ── Bước 2: Risk profile ──
-    print(f"\n⚖️  Bước 2/7: Xác định mức nguy cơ và lộ trình IRB...")
+    print("\n⚖️  Bước 2/7: Xác định mức nguy cơ và lộ trình IRB...")
     risk = get_risk_profile(design_code, design_primary)
     print(f"  → Mức nguy cơ: {risk['risk_level']}")
     print(f"  → Lộ trình IRB: {risk['irb_route']}")
@@ -1294,7 +1292,7 @@ def main():
         print(f"  {risk['_fallback_warning']}")
 
     # ── Bước 3: Tìm ClinicalTrials.gov ──
-    print(f"\n🔍 Bước 3/7: Tìm kiếm ClinicalTrials.gov (prior art)...")
+    print("\n🔍 Bước 3/7: Tìm kiếm ClinicalTrials.gov (prior art)...")
     ct_trials = search_clinicaltrials(topic, design_code)
     if ct_trials:
         print(f"  → Tìm được {len(ct_trials)} thử nghiệm tương tự:")
@@ -1304,7 +1302,7 @@ def main():
         print("  → Không tìm được thử nghiệm tương tự")
 
     # ── Bước 4: Sinh hồ sơ G2 ──
-    print(f"\n✍️  Bước 4/7: Sinh trọn bộ hồ sơ G2 (8 tài liệu)...")
+    print("\n✍️  Bước 4/7: Sinh trọn bộ hồ sơ G2 (8 tài liệu)...")
     artifact_md = generate_g2_full_package(
         topic=topic, study_name=study, design_code=design_code,
         design_primary=design_primary, reporting_std=reporting_std,
@@ -1317,7 +1315,7 @@ def main():
     print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
 
     # ── Bước 5: Guardrail ──
-    print(f"\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
+    print("\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
     guardrail = guardrail_check_g2(artifact_md)
     for msg in guardrail["warnings"]:
         print(f"  {msg}")
@@ -1333,7 +1331,7 @@ def main():
         print(f"  → Lưu: {docx_path}")
 
     # ── Bước 7: Checkpoint ──
-    print(f"\n💾 Bước 7/7: Ghi checkpoint G2...")
+    print("\n💾 Bước 7/7: Ghi checkpoint G2...")
     cp_path = write_g2_checkpoint(
         study, out_dir, design_code, risk, ct_trials, guardrail, md_path, docx_path
     )
@@ -1347,27 +1345,27 @@ def main():
     print(f"  📝 A3 Markdown: {md_path.name}")
     if docx_path:
         print(f"  📄 A3 DOCX:     {docx_path.name}")
-    print(f"\n  8 TÀI LIỆU ĐÃ SOẠN:")
-    print(f"  TL1 — Đơn xin phê duyệt IRB")
-    print(f"  TL2 — Tóm tắt đề cương (lay summary)")
+    print("\n  8 TÀI LIỆU ĐÃ SOẠN:")
+    print("  TL1 — Đơn xin phê duyệt IRB")
+    print("  TL2 — Tóm tắt đề cương (lay summary)")
     print(f"  TL3 — Bảng rủi ro–lợi ích ({risk['risk_level']})")
-    print(f"  TL4 — ICF tiếng Việt (7 mục Helsinki)")
-    print(f"  TL5 — ICF tiếng Anh")
-    print(f"  TL6 — DMP (Luật 91/2025/QH15)")
+    print("  TL4 — ICF tiếng Việt (7 mục Helsinki)")
+    print("  TL5 — ICF tiếng Anh")
+    print("  TL6 — DMP (Luật 91/2025/QH15)")
     print(f"  TL7 — Checklist nộp Hội đồng ({risk['irb_route']})")
-    print(f"  TL8 — Khai báo COI + Tài trợ + AI")
-    print(f"  + WHO 18 fields draft")
+    print("  TL8 — Khai báo COI + Tài trợ + AI")
+    print("  + WHO 18 fields draft")
     if design_code == "sr_ma":
-        print(f"  + PROSPERO registration draft")
+        print("  + PROSPERO registration draft")
     print(f"  🔍 ClinicalTrials.gov: {len(ct_trials)} thử nghiệm tương tự")
     print(f"  🔴 Guardrail: {status}")
-    print(f"\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
-    print(f"  1. Mở file DOCX, điền tất cả [CẦN BỔ SUNG]")
-    print(f"  2. Ký + Trưởng đơn vị ký → nộp Hội đồng Đạo đức")
+    print("\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
+    print("  1. Mở file DOCX, điền tất cả [CẦN BỔ SUNG]")
+    print("  2. Ký + Trưởng đơn vị ký → nộp Hội đồng Đạo đức")
     print(f"  3. Đăng ký: {risk['register_where']}")
-    print(f"  4. Nhận số IRB → cung cấp để G2=LOCKED")
+    print("  4. Nhận số IRB → cung cấp để G2=LOCKED")
     print(f"  5. Chạy G3 song song: python tools/run_g3_auto.py --study {study}")
-    print(f"\n  Cần bác sĩ kiểm chứng.")
+    print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
 
 

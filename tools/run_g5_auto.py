@@ -6,7 +6,7 @@ data_quality_report.py, STROBE participant flowchart.
 Mức tự động: 70%
 KHÔNG xử lý dữ liệu thật — chỉ sinh CRF, REDCap dictionary, scripts, cấu trúc.
 """
-import argparse, json, re, sys, textwrap
+import argparse, json, re, sys
 from datetime import datetime
 from pathlib import Path
 
@@ -1172,7 +1172,6 @@ def generate_artifact(
 ) -> str:
     is_srma = (design_code == "sr_ma")
     n_rows = len(rows)
-    col_names = [r[0] for r in rows]
 
     flowchart = build_strobe_flowchart(study, design_code, n_adjusted, n_total, n_per_group, specialty)
     specialty_label = _SPECIALTY_LABELS.get(specialty, specialty)
@@ -1181,7 +1180,7 @@ def generate_artifact(
         "# A6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DRAFT)",
         f"**Đề tài:** {topic}  ",
         f"**Mã:** {study} | **Ngày:** {run_date} | **Thiết kế:** {design_code} | **N dự kiến:** {n_adjusted}  ",
-        f"**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC [CẦN...] VÀ XÁC NHẬN",
+        "**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC [CẦN...] VÀ XÁC NHẬN",
         "",
         "> ⚠️ **BẢO MẬT:** KHÔNG xử lý PII hoặc dữ liệu thật qua hệ thống này.",
         "> Dữ liệu thật chỉ được xử lý tại môi trường bảo mật của đơn vị (REDCap, server nội bộ).",
@@ -1298,10 +1297,10 @@ def generate_artifact(
         "",
         f"**Thư mục:** `exports/{study}/scripts/`",
         "",
-        f"| Script | Mô tả | Đầu vào | Đầu ra |",
+        "| Script | Mô tả | Đầu vào | Đầu ra |",
         "|--------|-------|---------|--------|",
-        f"| `data_cleaning.py` | Làm sạch REDCap export; ép kiểu; kiểm range | `data/raw/redcap_export.csv` | `data/processed/df_clean.csv` |",
-        f"| `data_quality_report.py` | Báo cáo N, % complete, vi phạm, trùng ID | `data/processed/df_clean.csv` | `data_quality_report.txt` |",
+        "| `data_cleaning.py` | Làm sạch REDCap export; ép kiểu; kiểm range | `data/raw/redcap_export.csv` | `data/processed/df_clean.csv` |",
+        "| `data_quality_report.py` | Báo cáo N, % complete, vi phạm, trùng ID | `data/processed/df_clean.csv` | `data_quality_report.txt` |",
         "",
         "Chạy theo thứ tự:",
         "```bash",
@@ -1327,17 +1326,17 @@ def generate_artifact(
         "",
         "```",
         f"exports/{study}/",
-        f"├── data/             # KHÔNG commit — chứa dữ liệu thật",
-        f"│   ├── raw/          # dữ liệu thô từ REDCap export",
-        f"│   └── processed/    # df_clean.csv + data_quality_report.txt",
-        f"├── scripts/          # Python scripts tự động — có thể commit",
-        f"│   ├── data_cleaning.py        # làm sạch REDCap export",
-        f"│   └── data_quality_report.py  # báo cáo chất lượng",
-        f"├── output/           # bảng kết quả, hình (generate — không commit binary)",
-        f"├── docs/             # SAP, đề cương, các artifact G0-G4",
+        "├── data/             # KHÔNG commit — chứa dữ liệu thật",
+        "│   ├── raw/          # dữ liệu thô từ REDCap export",
+        "│   └── processed/    # df_clean.csv + data_quality_report.txt",
+        "├── scripts/          # Python scripts tự động — có thể commit",
+        "│   ├── data_cleaning.py        # làm sạch REDCap export",
+        "│   └── data_quality_report.py  # báo cáo chất lượng",
+        "├── output/           # bảng kết quả, hình (generate — không commit binary)",
+        "├── docs/             # SAP, đề cương, các artifact G0-G4",
         f"│   ├── G4_A5_SAP_FINAL_{study}.md",
         f"│   └── G2_A3_ETHICS_PACKAGE_{study}.md",
-        f"└── README.md         # Hướng dẫn tái lặp đầy đủ",
+        "└── README.md         # Hướng dẫn tái lặp đầy đủ",
         "```",
         "",
         "**`.gitignore` bắt buộc:**",
@@ -1391,7 +1390,6 @@ def write_docx(artifact: str, path: Path) -> bool:
     try:
         from docx import Document
         from docx.shared import RGBColor, Pt
-        from docx.enum.text import WD_ALIGN_PARAGRAPH
         doc = Document()
         for line in artifact.split("\n"):
             stripped = line.strip()
@@ -1586,10 +1584,10 @@ def main():
     print(f"💾 Checkpoint: {cp_path}")
 
     print()
-    print(f"✅ G5 NÂNG CẤP HOÀN TẤT — Mức tự động: 70%")
+    print("✅ G5 NÂNG CẤP HOÀN TẤT — Mức tự động: 70%")
     print(f"  CRF: {n_vars} dòng ({design_code}) | Guardrail: {status}")
     print(f"  Scripts: data_cleaning.py + data_quality_report.py → {scripts_dir}")
-    print(f"  STROBE flowchart: nhúng trong artifact")
+    print("  STROBE flowchart: nhúng trong artifact")
 
 
 if __name__ == "__main__":

@@ -9,11 +9,12 @@ from __future__ import annotations
 
 import dataclasses
 import enum
-from typing import List, Optional
+from typing import List
 
 # V4.3.1: state machine DRAFT là nguồn chân lý duy nhất (governance.py).
 # Giữ tên cũ ResearchWorkflowState làm alias để tương thích import.
 from .governance import DraftWorkflowState
+
 ResearchWorkflowState = DraftWorkflowState
 
 
