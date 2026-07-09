@@ -40,7 +40,7 @@ python medical-ebm-automation/tools/run_g6_auto.py --study "MA-DE-TAI"
 
 ## 🐍 BƯỚC 0b — PYTHON AUTO-STATS (chạy SAU — khi ĐÃ có file dữ liệu thật)
 
-**Chỉ chạy khi BƯỚC 0 đã PASS (G4_STATUS=LOCKED VÀ G5_STATUS=LOCKED) — 2026-07-07: `run_stats_analysis.py` KHÔNG tự kiểm tra trạng thái khóa (không đọc G4/G5 checkpoint), nó sẽ chạy Logit/OLS thật trên BẤT KỲ file CSV nào được đưa vào mà không có cổng kỹ thuật chặn. Nếu G4 hoặc G5 trên thực tế CHƯA khóa, KHÔNG chạy lệnh này dù có file dữ liệu thật trong tay — trả về "G4 hoặc G5 chưa khóa — không thể chạy phân tích xác nhận" giống BƯỚC 0 quy định, để tránh data dredging/p-hacking (nhìn trước dữ liệu trước khi SAP/DB thật sự khóa).**
+**Chỉ chạy khi BƯỚC 0 đã PASS (G4_STATUS=LOCKED VÀ G5_STATUS=LOCKED) — cập nhật 2026-07-09: `run_stats_analysis.py` NAY ĐÃ TỰ kiểm tra trạng thái khóa bằng cổng kỹ thuật — đọc G4/G5 checkpoint (`_is_locked`) VÀ đối chiếu `approval_ledger.json` khớp evidence_hash (`_ledger_approved`); thiếu một trong hai → script TỰ TỪ CHỐI chạy, trừ khi bác sĩ truyền cờ `--i-confirm-sap-locked` để tự chịu trách nhiệm ghi đè. Dù đã có cổng này, vẫn KHÔNG lạm dụng cờ ghi đè khi G4/G5 thực tế CHƯA khóa bằng phê duyệt thật — để tránh data dredging/p-hacking (nhìn trước dữ liệu trước khi SAP/DB thật sự khóa). (Trước 2026-07-09 script này KHÔNG có cổng kỹ thuật, chỉ dựa agent tự nhớ — nay đã vá.)**
 
 **Khi bác sĩ/nhà nghiên cứu cung cấp file CSV/Excel VÀ BƯỚC 0 đã PASS:** chạy chính SCRIPT mà `run_g6_auto.py` ở BƯỚC 0a vừa sinh ra, TRƯỚC MODULE 1–4, để nhận kết quả thật ngay:
 

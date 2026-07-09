@@ -1156,6 +1156,19 @@ def main():
     if not args.target_journal and _g9_pinned.get("target_journal"):
         args.target_journal = _g9_pinned["target_journal"]
 
+    # PIN durable (2026-07-09): ĐỐI XỨNG với khối ĐỌC ở trên. Vá 07-08 chỉ thêm khối
+    # đọc mà KHÔNG có khối ghi tương ứng → gate_params.G9 không bao giờ được điền,
+    # "khôi phục khi chạy lại" là no-op (phát hiện qua kiểm định hậu-kiểm 2026-07-09).
+    # Ghi giá trị bác sĩ cấp qua CLI (fill-if-missing). n_authors CHỈ pin khi >1 (1 là
+    # mặc định/sàn — pin 1 vô nghĩa và dễ khóa nhầm giá trị mặc định vào sổ).
+    _seed_g9 = {}
+    if args.n_authors and args.n_authors > 1:
+        _seed_g9["n_authors"] = args.n_authors
+    if args.target_journal:
+        _seed_g9["target_journal"] = args.target_journal
+    if _seed_g9:
+        GC.ensure_study_meta(out_dir, seed={"gate_params": {"G9": _seed_g9}})
+
     n_authors      = max(1, args.n_authors)
     target_journal = args.target_journal
 
