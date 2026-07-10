@@ -35,6 +35,10 @@ class AutomationRunRecord:
     queue_decisions: List[dict] = dataclasses.field(default_factory=list)
     reason_code: Optional[str] = None
     snapshot_id: Optional[str] = None
+    # Audit 2026-07-11: DraftStateMachine.history (research_workflow.ProjectRunResult
+    # .history) trước đây bị tính rồi bỏ — không nơi nào persist được project đã đi
+    # qua state nào/khi nào/vì sao BLOCK. Nay workflow_runner.py ghi vào đây.
+    draft_transitions: List[dict] = dataclasses.field(default_factory=list)
 
 
 class RunRegistry:

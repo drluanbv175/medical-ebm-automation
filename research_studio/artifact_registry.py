@@ -55,9 +55,18 @@ class ArtifactRegistry:
 
     def __init__(self):
         self._artifacts: List[ResearchArtifact] = []
+        self._by_id: dict = {}
 
     def register(self, artifact: ResearchArtifact) -> ResearchArtifact:
-        """Thêm artifact; raise nếu thiếu hash/bất biến vi phạm."""
+        """Thêm artifact; raise nếu thiếu hash/bất biến vi phạm.
+
+        Idempotent theo artifact_id (audit 2026-07-11): artifact_id được tạo TẤT
+        ĐỊNH từ project_id+artifact_type (research_workflow.py) — thiết kế này giả
+        định đúng MỘT artifact/cặp project_id:artifact_type. Một retry re-chạy
+        run_project() từ đầu sẽ tái tạo artifact_id giống hệt cho các WP đã đăng
+        ký ở lần thử trước; trả bản ĐÃ CÓ thay vì append trùng (kết hợp với
+        workflow_runner.py dùng registry riêng mỗi lần thử — xem _do()).
+        """
         if not artifact.source_agent_hash:
             raise ArtifactIntegrityError(
                 f"ARTIFACT_MISSING_AGENT_HASH:{artifact.artifact_id}"
@@ -74,7 +83,11 @@ class ArtifactRegistry:
             raise ArtifactIntegrityError(
                 f"ARTIFACT_NOT_TRACEABLE:{artifact.artifact_id}"
             )
+        existing = self._by_id.get(artifact.artifact_id)
+        if existing is not None:
+            return existing
         self._artifacts.append(artifact)
+        self._by_id[artifact.artifact_id] = artifact
         return artifact
 
     def for_project(self, project_id: str) -> List[ResearchArtifact]:

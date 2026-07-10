@@ -112,14 +112,27 @@ class WorkflowRunner:
                 snapshot_id=snap.snapshot_id)
 
             # ── 5–6. Route + chạy WP QUA orchestrator (retry deterministic) ───
+            # Audit 2026-07-11: mỗi lần THỬ dùng ArtifactRegistry RIÊNG (scratch),
+            # KHÔNG dùng thẳng self.artifacts xuyên các lần thử lại — artifact_id
+            # tất định (project_id:artifact_type) nên một attempt thất bại giữa
+            # chừng từng để lại artifact đã đăng ký mà attempt kế tiếp SẼ tái tạo,
+            # gây double-register khi retry "thành công" sau đó (self.artifacts là
+            # registry tích luỹ append-only xuyên suốt vòng đời WorkflowRunner).
             def _do():
                 return run_project(project, registry=self._registry(),
-                                   artifacts=self.artifacts)
+                                   artifacts=ArtifactRegistry())
             try:
                 proj_result = self.retry.run(_do).value
             except SafeStop as e:
                 self.run_registry.close(rec, "SAFE_STOP", str(e))
                 return RunResult("SAFE_STOP", pid, run_id, str(e), project=project)
+
+            # Chỉ merge kết quả của lần thử THẮNG (dù blocked giữa chừng hay thành
+            # công trọn vẹn) vào registry dùng chung — register() đã idempotent
+            # theo artifact_id nên gọi lại an toàn.
+            for art in proj_result.artifacts:
+                self.artifacts.register(art)
+            rec.draft_transitions = [dataclasses.asdict(t) for t in proj_result.history]
 
             if proj_result.blocked:
                 self.run_registry.close(rec, "BLOCKED", proj_result.block_reason)

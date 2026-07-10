@@ -26,6 +26,7 @@ from research_studio.artifact_registry import (
 )
 from research_studio.dashboard import _build_data
 from research_studio.gate_agent_matrix import build_gate_agent_matrix
+from research_studio.governance import DraftWorkflowState
 from research_studio.project_schema import (
     ResearchProject,
     ResearchWorkflowState,
@@ -578,3 +579,124 @@ def test_project_registry_add_clean_project_still_works():
 
     assert issues == []
     assert reg.get("RS-T-REG-CLEAN") is p
+
+
+# ── Audit 2026-07-11 (vòng 4): DraftStateMachine history + terminal-transition ─
+
+def test_run_project_returns_draft_transition_history():
+    """sm.history trước đây bị tính rồi bỏ (biến cục bộ, không escape run_project()).
+    Nay ProjectRunResult.history phải phản ánh TOÀN bộ chuỗi transition thật, kết
+    thúc bằng DRAFT_COMPLETE ALLOWED cho happy path."""
+    p = _project(study_type=StudyType.CROSS_SECTIONAL, pid="RS-T-HISTORY")
+    res = run_project(p)
+
+    assert res.blocked is False
+    assert len(res.history) >= len(WORK_PACKAGES)  # 1 transition/WP (trừ INTAKE) + DRAFT_COMPLETE
+    assert res.history[-1].requested == "DRAFT_COMPLETE"
+    assert res.history[-1].decision == "ALLOWED"
+    assert all(t.decision == "ALLOWED" for t in res.history)
+
+
+def test_preflight_block_routes_through_state_machine_history():
+    """Trước đây nhánh preflight-block gán project.workflow_state=BLOCKED bằng
+    attribute trực tiếp, KHÔNG qua sm.request() — res.history rỗng, không auditable.
+    Nay phải có ít nhất 1 DraftTransition ghi lại việc BLOCK."""
+    p = _project(study_type=StudyType.COHORT, pid="RS-T-PREFLIGHT-HISTORY")
+    p.pico_or_equivalent = {"E": "exposure only"}  # thiếu PICO core → preflight BLOCK
+
+    res = run_project(p)
+
+    assert res.blocked is True
+    assert len(res.history) == 1
+    assert res.history[0].requested == "BLOCKED"
+    assert res.history[0].decision == "ALLOWED"  # chuyển SANG BLOCKED luôn được phép
+    assert res.history[0].reason_code == "MOVED_TO_BLOCKED"
+
+
+def test_wp_subset_missing_final_wp_reports_blocked_not_silent_success():
+    """Audit: wp_ids bỏ WP cuối (WP-09) khiến sm.request(DRAFT_COMPLETE) bị BLOCKED
+    (thiếu 1 bước tuyến tính) nhưng trước đây hàm vẫn trả blocked=False vì kết quả
+    request() bị bỏ qua không kiểm tra. Nay phải báo blocked=True trung thực."""
+    p = _project(study_type=StudyType.CROSS_SECTIONAL, pid="RS-T-WPSUBSET")
+    subset = [wp.wp_id for wp in WORK_PACKAGES if wp.wp_id != "WP-09"]
+
+    res = run_project(p, wp_ids=subset)
+
+    assert res.blocked is True
+    assert res.final_state == DraftWorkflowState.MANUSCRIPT_DRAFT  # dừng lại đây, KHÔNG tới DRAFT_COMPLETE
+    assert res.history[-1].requested == "DRAFT_COMPLETE"
+    assert res.history[-1].decision == "BLOCKED"
+    assert "INVALID_DRAFT_TRANSITION" in res.history[-1].reason_code
+
+
+# ── Audit 2026-07-11 (vòng 4): ArtifactRegistry idempotent theo artifact_id ────
+
+def test_artifact_registry_register_idempotent_by_id():
+    """artifact_id tất định (project_id:artifact_type) — một retry re-đăng ký
+    CÙNG artifact_id phải trả bản ĐÃ CÓ, không append trùng (audit: retry không
+    idempotent, ArtifactRegistry.register() trước đây luôn append vô điều kiện)."""
+    reg = ArtifactRegistry()
+    a1 = ResearchArtifact(
+        artifact_id="RS-T-DUP:RESEARCH_BRIEF_DRAFT", project_id="RS-T-DUP",
+        artifact_type="RESEARCH_BRIEF_DRAFT", artifact_version="0.1-draft",
+        source_agent_id="cau-hoi-nghien-cuu", source_agent_hash="hash-1",
+        workflow_run_id="run-1", evidence_reference="ev-1",
+    )
+    a2 = ResearchArtifact(
+        artifact_id="RS-T-DUP:RESEARCH_BRIEF_DRAFT", project_id="RS-T-DUP",
+        artifact_type="RESEARCH_BRIEF_DRAFT", artifact_version="0.1-draft",
+        source_agent_id="cau-hoi-nghien-cuu", source_agent_hash="hash-1",
+        workflow_run_id="run-2", evidence_reference="ev-2",  # lần thử lại, run_id khác
+    )
+    r1 = reg.register(a1)
+    r2 = reg.register(a2)
+
+    assert r1 is a1
+    assert r2 is a1                       # trả bản ĐÃ CÓ, không phải a2
+    assert reg.count() == 1
+    assert reg.for_project("RS-T-DUP") == [a1]
+
+
+def test_workflow_runner_retry_does_not_double_register_artifacts():
+    """End-to-end: một attempt raise lỗi retryable SAU khi vài WP đã đăng ký
+    artifact, attempt thứ 2 chạy trọn vẹn — self.artifacts không được có bản trùng
+    (audit: _do() trước đây dùng THẲNG self.artifacts xuyên các lần thử lại)."""
+    from research_automation.retry_policy import RetryPolicy, TransientDeterministicError
+    from research_automation.workflow_runner import WorkflowRunner
+    import research_automation.workflow_runner as wr_mod
+
+    calls = {"n": 0}
+    real_run_project = wr_mod.run_project
+
+    def flaky_run_project(project, wp_ids=None, registry=None, artifacts=None):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            # Giả lập: vài WP đã đăng ký artifact vào registry SCRATCH của lần thử
+            # này trước khi lỗi retryable xảy ra giữa chừng (mô phỏng lỗi thật).
+            real_run_project(project, wp_ids=[WORK_PACKAGES[0].wp_id], registry=registry,
+                             artifacts=artifacts)
+            raise TransientDeterministicError("simulated contention")
+        return real_run_project(project, wp_ids=wp_ids, registry=registry, artifacts=artifacts)
+
+    wr_mod.run_project = flaky_run_project
+    try:
+        runner = WorkflowRunner(retry=RetryPolicy(max_attempts=3))
+        req = {
+            "project_id": "RS-T-RETRY-DEDUP", "title": "[SYNTHETIC] retry test",
+            "study_type": "cross_sectional", "research_domain": "test",
+            "clinical_question": "Q synthetic?",
+            "PICO_or_equivalent": {"P": "x", "O": "y"},
+            "objectives": ["obj1"], "outcomes": ["outcome-A"],
+            "population_description_synthetic": "synthetic",
+            "study_setting_synthetic": "synthetic clinic",
+            "requested_work_packages": [wp.wp_id for wp in WORK_PACKAGES],
+            "human_owner": "PI-SYNTH-T", "draft_only": True, "human_review_required": True,
+        }
+        res = runner.run(req)
+    finally:
+        wr_mod.run_project = real_run_project
+
+    assert calls["n"] == 2  # 1 lần lỗi + 1 lần thành công
+    assert res.status == "CREATED"
+    ids = [a.artifact_id for a in runner.artifacts.for_project("RS-T-RETRY-DEDUP")]
+    assert len(ids) == len(set(ids))  # không id nào trùng
