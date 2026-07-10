@@ -111,6 +111,15 @@ def scan_unsafe_content(project: ResearchProject) -> list[str]:
     raw, raw_reason = _boundary.check_raw_data_write(scannable)
     if raw:
         reasons.append(f"RAW_DATA_WRITE:{raw_reason}")
+    # Audit 2026-07-11: lưới THỨ HAI này từng hẹp hơn project_intake.py — thiếu
+    # marker "kết quả giả"/FABRICATED/PHANTOM/"p_value=" mà intake đã bắt (xem
+    # research_automation/project_intake.py's _FAKE_RESULT_MARKERS). Nhân bản ở
+    # đây để caller gọi thẳng preflight (bỏ qua intake) vẫn không lọt.
+    text_low = str(scannable).lower()
+    for marker in ("fabricated", "phantom", "fake result", "kết quả giả", "p_value="):
+        if marker in text_low:
+            reasons.append(f"FAKE_RESULT_PLACEHOLDER:{marker}")
+            break
     return reasons
 
 

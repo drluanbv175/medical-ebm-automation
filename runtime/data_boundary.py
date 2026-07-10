@@ -27,9 +27,12 @@ _PII_PATTERNS = [
     re.compile(r'\b(0[1-9]|[12]\d|3[01])/(0[1-9]|1[0-2])/\d{4}\b'),
 ]
 
-# Sentinels rõ ràng trong fixture
-_PII_SENTINELS = ["cccd", "cmnd", "bhyt", "patient_id", "BN00", "PII_MARKER",
-                   "ho_ten_benh_nhan", "pii_leak_marker"]
+# Sentinels rõ ràng trong fixture. "patient id"/"mã bệnh nhân"/"ma benh nhan" thêm
+# 2026-07-11: research_preflight.py's defense-in-depth scan (dùng check_pii_in_output
+# này) từng hẹp hơn project_intake.py's _PATIENT_ID_MARKERS — giờ hợp nhất về đây
+# (nguồn PII scan DUY NHẤT) để mọi caller cùng bắt được, không chỉ project_intake.
+_PII_SENTINELS = ["cccd", "cmnd", "bhyt", "patient_id", "patient id", "BN00", "PII_MARKER",
+                   "ho_ten_benh_nhan", "pii_leak_marker", "mã bệnh nhân", "ma benh nhan"]
 
 # Sentinels trong output dict keys/values
 _PRODUCTION_CONNECTOR_MARKERS = [

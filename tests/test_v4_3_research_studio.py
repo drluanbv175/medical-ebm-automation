@@ -164,6 +164,26 @@ def test_research_preflight_clean_synthetic_project_still_passes():
                    for r in report.reason_codes)
 
 
+# Audit 2026-07-11: research_preflight's own scan was narrower than project_intake's —
+# missed "mã bệnh nhân"/"patient id" (space variant) and fake-result markers that a
+# direct run_project() caller (bypassing intake) would have sailed through undetected.
+
+def test_research_preflight_blocks_vietnamese_patient_id_phrase():
+    p = _project(study_type=StudyType.CROSS_SECTIONAL, pid="RS-T-PATID-PHRASE")
+    p.clinical_question = "mã bệnh nhân BN12345 có đáp ứng điều trị không?"
+    res = run_project(p)
+    assert res.blocked is True
+    assert any(r.startswith("PII_DETECTED:") for r in res.preflight_report.reason_codes)
+
+
+def test_research_preflight_blocks_fake_result_marker():
+    p = _project(study_type=StudyType.CROSS_SECTIONAL, pid="RS-T-FAKERESULT")
+    p.title = "[SYNTHETIC] Khảo sát — kết quả p_value=0.03 đã có sẵn"
+    res = run_project(p)
+    assert res.blocked is True
+    assert any(r.startswith("FAKE_RESULT_PLACEHOLDER:") for r in res.preflight_report.reason_codes)
+
+
 # 2 — study-type routing
 def test_02_study_type_routing():
     assert len(all_templates()) == 7
