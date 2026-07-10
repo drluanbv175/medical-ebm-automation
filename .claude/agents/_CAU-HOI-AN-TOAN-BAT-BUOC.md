@@ -1,9 +1,14 @@
 # _CAU-HOI-AN-TOAN-BAT-BUOC — Bảng câu hỏi an toàn BẮT BUỘC theo bối cảnh
 
 > **Nguồn chung (single source of truth)** cho vòng tự sửa "thiếu câu hỏi an toàn".
-> Được đọc bởi: `sang-loc-co-do` (HỎI ở Bước 0) · `ke-don-an-toan` (CHẶN kê khi chưa hỏi) ·
+> Được đọc bởi (vòng thực thi chính): `sang-loc-co-do` (HỎI ở Bước 0) · `ke-don-an-toan` (CHẶN kê khi chưa hỏi) ·
 > `tham-dinh-dau-ra` (KIỂM gói đã hỏi chưa → 🔴 TRẢ-VỀ-SỬA nếu thiếu).
-> Cập nhật 2026-06-14. Mở rộng = thêm DÒNG vào bảng (không sửa cấu trúc agent).
+> Tham chiếu thêm (nhánh chuyên biệt tự nối `sang-loc-co-do`/`tham-dinh-dau-ra` + tài liệu taxonomy/rubric
+> đồng bộ CLIN-SAFETYQ từ bảng này): `dau-man-tinh` · `quan-ly-khang-dong` · `tram-cam-lo-au` ·
+> `dieu-phoi-lam-sang` · `so-cai-ghi-nho` · `_LESSONS-LEDGER-TAXONOMY.md` · `_RUBRIC-EVALUATE-CUNG-QA-GATE.md`.
+> Danh sách tay — LUÔN xác nhận bằng `grep -l _CAU-HOI-AN-TOAN-BAT-BUOC *.md` trước khi sửa dòng kích hoạt,
+> đừng chỉ tin danh sách này (đã lệch thực tế một lần, vá 2026-07-11).
+> Cập nhật 2026-07-11. Mở rộng = thêm DÒNG vào bảng (không sửa cấu trúc agent).
 
 ## Nguyên tắc
 - Khi **bệnh cảnh của ca khớp một DÒNG KÍCH HOẠT**, hệ thống PHẢI hỏi & ghi nhận **câu hỏi an toàn tương ứng** **TRƯỚC KHI kê đơn / kết luận áp dụng**.
