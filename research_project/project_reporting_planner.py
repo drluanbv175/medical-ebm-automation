@@ -7,10 +7,13 @@ OFFLINE · KHÔNG PII / API. Mọi output là DRAFT.
 from __future__ import annotations
 
 import dataclasses
-from typing import Dict, List
+from typing import List
 
 from .project_config import (
-    REQUIRE_HUMAN_INPUT_MARKER, DISCLAIMER, StudyType, REPORTING_STANDARD,
+    DISCLAIMER,
+    REPORTING_STANDARD,
+    REQUIRE_HUMAN_INPUT_MARKER,
+    StudyType,
 )
 
 
@@ -44,7 +47,7 @@ class ReportingChecklist:
         ]
         for item in self.items:
             lines.append(f"| {item.item_no} | {item.description} | {item.location} |")
-        lines += ["", f"---", f"**Disclaimer:** {DISCLAIMER}"]
+        lines += ["", "---", f"**Disclaimer:** {DISCLAIMER}"]
         return "\n".join(lines)
 
 

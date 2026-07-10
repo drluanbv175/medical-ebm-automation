@@ -6,7 +6,10 @@ data_quality_report.py, STROBE participant flowchart.
 Mức tự động: 70%
 KHÔNG xử lý dữ liệu thật — chỉ sinh CRF, REDCap dictionary, scripts, cấu trúc.
 """
-import argparse, json, re, sys
+import argparse
+import json
+import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -1389,7 +1392,7 @@ def generate_artifact(
 def write_docx(artifact: str, path: Path) -> bool:
     try:
         from docx import Document
-        from docx.shared import RGBColor, Pt
+        from docx.shared import Pt, RGBColor
         doc = Document()
         for line in artifact.split("\n"):
             stripped = line.strip()

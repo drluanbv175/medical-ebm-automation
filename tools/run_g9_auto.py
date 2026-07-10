@@ -956,8 +956,8 @@ def export_docx_g9(artifact_md: str, study: str, out_dir: Path) -> Optional[Path
     """
     try:
         from docx import Document
-        from docx.shared import Pt, RGBColor
         from docx.enum.text import WD_ALIGN_PARAGRAPH
+        from docx.shared import Pt, RGBColor
 
         doc = Document()
 

@@ -25,6 +25,7 @@ gõ tay "LOCKED" vào checkpoint, vốn không biết nội dung có bị đổi
 KHÔNG dùng để tự động hóa duyệt hàng loạt — mỗi lần gọi là một hành động có chủ ý của một người.
 """
 from __future__ import annotations
+
 import argparse
 import sys
 from pathlib import Path

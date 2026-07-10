@@ -26,7 +26,6 @@ from research_project.synthetic_edc_query import (
     QueryStatus,
 )
 
-
 # ── Fixtures ────────────────────────────────────────────────────────────────
 
 def _make_record(record_id: str = "rec-001", status: RecordStatus = RecordStatus.ACTIVE) -> SyntheticRecord:

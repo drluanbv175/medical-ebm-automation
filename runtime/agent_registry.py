@@ -25,10 +25,10 @@ Tuyên bố bắt buộc (chỉ dùng được trong FULL_SCOPE_A):
 """
 
 import csv
+import dataclasses
 import enum
 import hashlib
 import pathlib
-import dataclasses
 from typing import Dict, List, Optional
 
 BASE_DIR = pathlib.Path(__file__).parent.parent  # medical-ebm-automation/

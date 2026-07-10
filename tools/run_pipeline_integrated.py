@@ -38,12 +38,9 @@ YÊU CẦU: Đã chạy ít nhất G0 (G0_checkpoint.json phải tồn tại)
 
 import argparse
 import json
-import os
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 # Thư mục gốc
 BASE = Path(__file__).resolve().parent.parent
@@ -694,12 +691,12 @@ def main():
 
     # G0 là bắt buộc
     if "G0" not in status["gates_done"]:
-        print(f"\n[DỪNG] G0 chưa chạy — G0_checkpoint.json không tồn tại.")
+        print("\n[DỪNG] G0 chưa chạy — G0_checkpoint.json không tồn tại.")
         print(f"  Chạy: python tools/run_g0_auto.py --study \"{study_id}\" --topic \"...\"")
         sys.exit(1)
 
     # Tổng hợp đề cương 16-mục
-    print(f"\n[Đang tổng hợp đề cương 16-mục từ pipeline G0-G9...]")
+    print("\n[Đang tổng hợp đề cương 16-mục từ pipeline G0-G9...]")
     proposal_text = assemble_16_section_proposal(study_id, study_dir)
 
     # Xác định thư mục xuất
@@ -710,13 +707,13 @@ def main():
     output_file = output_dir / f"DE_CUONG_16_MUC_TICH_HOP_{study_id}_{timestamp}.md"
     output_file.write_text(proposal_text, encoding="utf-8")
 
-    print(f"\n[XONG] Đề cương 16-mục đã được tổng hợp:")
+    print("\n[XONG] Đề cương 16-mục đã được tổng hợp:")
     print(f"  → {output_file}")
-    print(f"\nBước tiếp theo:")
-    print(f"  1. Mở file và điền tất cả mục đánh dấu [CẦN...]")
-    print(f"  2. Ký xác nhận trước khi trình Hội đồng Đạo đức")
-    print(f"  3. Sau khi có số phê duyệt đạo đức, điền vào Mục 13")
-    print(f"\n[GUARDRAIL R7] Tài liệu này là DỰ THẢO — cần bác sĩ xét duyệt trước khi dùng chính thức.")
+    print("\nBước tiếp theo:")
+    print("  1. Mở file và điền tất cả mục đánh dấu [CẦN...]")
+    print("  2. Ký xác nhận trước khi trình Hội đồng Đạo đức")
+    print("  3. Sau khi có số phê duyệt đạo đức, điền vào Mục 13")
+    print("\n[GUARDRAIL R7] Tài liệu này là DỰ THẢO — cần bác sĩ xét duyệt trước khi dùng chính thức.")
 
 
 if __name__ == "__main__":

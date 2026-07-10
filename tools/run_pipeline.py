@@ -34,8 +34,8 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
-import pipeline_freshness as FRESH  # noqa: E402
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG: mã thoát + needs_input)
+import pipeline_freshness as FRESH  # noqa: E402
 
 try:
     import skill_standards as SKILL  # noqa: E402  (tín hiệu bằng-chứng-đời-thực)

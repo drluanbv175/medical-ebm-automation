@@ -49,8 +49,19 @@ from typing import List
 
 import pytest
 
+from research_project.project_audit_attribution import (
+    LOCAL_LEDGER_CLASSIFICATION,
+    PROD_AUD_01_WORM_DEPENDENCY,
+    AuditAttributionLedger,
+    compute_event_hash,
+    verify_hash_chain,
+)
+from research_project.project_delegation_registry import (
+    DelegationReasonCode,
+    DelegationRegistry,
+    evaluate_delegation_action,
+)
 from research_project.project_rbac_simulation import (
-    EvaluationContext,
     FORBIDDEN_ACTIONS_ALL_ROLES,
     ResearchAction,
     ResearchRole,
@@ -59,23 +70,6 @@ from research_project.project_rbac_simulation import (
     SyntheticActor,
     evaluate_rbac,
 )
-from research_project.project_delegation_registry import (
-    DelegationDecision,
-    DelegationError,
-    DelegationReasonCode,
-    DelegationRegistry,
-    DelegationStatus,
-    evaluate_delegation_action,
-)
-from research_project.project_audit_attribution import (
-    LOCAL_LEDGER_CLASSIFICATION,
-    PROD_AUD_01_WORM_DEPENDENCY,
-    AuditAttributionLedger,
-    SyntheticAuditEvent,
-    compute_event_hash,
-    verify_hash_chain,
-)
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

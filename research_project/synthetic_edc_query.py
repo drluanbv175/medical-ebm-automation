@@ -14,7 +14,6 @@ from typing import Dict, List, Optional
 
 from research_project.synthetic_edc_core import DISCLAIMER_EDC
 
-
 # ── Trạng thái truy vấn ───────────────────────────────────────────────────
 
 class QueryStatus(str, Enum):

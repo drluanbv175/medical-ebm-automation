@@ -2,14 +2,18 @@
 """app_data_analysis.py — Giao diện phân tích thống kê thật (Streamlit).
 Chạy: streamlit run tools/app_data_analysis.py
 """
-import io, json, re, warnings
+import io
+import json
+import warnings
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
-import streamlit as st
-import plotly.graph_objects as go
 import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
 from scipy import stats
+
 warnings.filterwarnings("ignore")
 
 BASE = Path(__file__).resolve().parent.parent
@@ -102,7 +106,7 @@ def run_cohort(df, exposure, outcome, time_col, covariates):
     results = {}
     # KM curve via lifelines
     try:
-        from lifelines import KaplanMeierFitter, CoxPHFitter
+        from lifelines import CoxPHFitter, KaplanMeierFitter
         dff = df[[exposure, outcome, time_col] + covariates].dropna()
         # KM
         km_data = {}
@@ -174,7 +178,7 @@ def run_linear(df, outcome, predictors):
     return results
 
 def run_roc(df, test_col, reference_col):
-    from sklearn.metrics import roc_curve, auc, roc_auc_score
+    from sklearn.metrics import auc, roc_auc_score, roc_curve
     results = {}
     try:
         dff = df[[test_col, reference_col]].dropna()
@@ -313,7 +317,7 @@ def plot_forest(meta_res):
         f"(95%CI {meta_res['lo']}–{meta_res['hi']}), I²={meta_res['I2']}%",
         xaxis_title=meta_res["sm"],
         yaxis=dict(tickvals=list(range(n+1)),
-                   ticktext=studies+[f"<b>Pooled (RE)</b>"],
+                   ticktext=studies+["<b>Pooled (RE)</b>"],
                    autorange="reversed"),
         height=max(300, 80*(n+2)))
     return fig
@@ -345,7 +349,6 @@ def plot_regression(res, exposure, is_or=True):
 # ─────────────────────────── XUẤT DOCX ────────────────────────────
 def export_docx(study, design, tab1_df, analysis_res):
     from docx import Document
-    from docx.shared import RGBColor, Pt, Inches
     doc = Document()
     doc.add_heading(f"Kết quả phân tích — {study}", 0)
     doc.add_paragraph(f"Thiết kế: {design} | Ngày phân tích: {pd.Timestamp.today().date()}")
@@ -499,7 +502,7 @@ with tab_t1:
             st.dataframe(t1, use_container_width=True)
             st.session_state["tab1_df"] = t1
             if group_col:
-                st.caption(f"p-value: t-test/ANOVA (biến liên tục), Chi-square (biến phân loại)")
+                st.caption("p-value: t-test/ANOVA (biến liên tục), Chi-square (biến phân loại)")
 
 # ─── Tab: Phân tích chính ───
 with tab_main:

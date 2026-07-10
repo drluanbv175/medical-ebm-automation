@@ -29,8 +29,8 @@ import argparse
 import json
 import sys
 import warnings
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -337,7 +337,7 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
 def format_table1_text(t1: dict) -> str:
     groups = t1["groups"]
     n = t1["n_per_group"]
-    header = f"BẢNG 1 — ĐẶC ĐIỂM MẪU\n" + "=" * 70
+    header = "BẢNG 1 — ĐẶC ĐIỂM MẪU\n" + "=" * 70
     header += f"\n{'Biến số':<30}" + "".join(f"{'Nhóm ' + str(g) + ' (n=' + str(n.get(g,'-')) + ')':<22}" for g in groups)
     header += f"{'p':>10}  {'Kiểm định'}"
     lines = [header, "-" * 70]
@@ -616,7 +616,7 @@ def main():
     print(f"\n{'='*60}")
     print(f"✅ HOÀN THÀNH — Đầu ra tại: {out_dir}/")
     print(f"   Dùng cho viet-ban-thao: {args.gate}_analysis_summary.json")
-    print(f"\nCần bác sĩ kiểm chứng.")
+    print("\nCần bác sĩ kiểm chứng.")
     return summary
 
 
