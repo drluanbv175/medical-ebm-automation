@@ -79,11 +79,16 @@ def _missing_keys(project: ResearchProject, keys: tuple[str, ...]) -> list[str]:
     return [key for key in keys if key.lower() not in present]
 
 
-def _scan_unsafe_content(project: ResearchProject) -> list[str]:
+def scan_unsafe_content(project: ResearchProject) -> list[str]:
     """Quét các field VĂN BẢN TỰ DO của đề tài tìm PII / dữ liệu thật / connector
-    production. Trả danh sách reason_code (rỗng = sạch). Đây là lưới an toàn THỨ HAI
-    độc lập với project_intake — bảo đảm dù gọi thẳng preflight vẫn không lọt PII.
+    production. Trả danh sách reason_code (rỗng = sạch). Đây là lưới an toàn ĐỘC
+    LẬP với project_intake — bảo đảm dù gọi thẳng preflight (hoặc bất kỳ entry
+    point nào khác trên ResearchProject) vẫn không lọt PII.
     KHÔNG log nội dung quét (tránh rò); chỉ trả mã lý do đã rút gọn.
+
+    Public — tái dùng ở mọi entry point nhận ResearchProject trực tiếp (audit
+    2026-07-10: quality_gate_runner.run_all(), artifact_template_engine.render(),
+    ProjectRegistry.add() KHÔNG tự quét, chỉ project_intake/preflight có).
     """
     # Chỉ gom field ngữ nghĩa tự do — nơi dữ liệu bệnh nhân thật có thể rò. KHÔNG
     # gom project_id/enum trạng thái (định danh cấu trúc, dễ trùng chuỗi số vô hại).
@@ -130,7 +135,7 @@ def evaluate_research_preflight(
     reasons.extend(f"SCHEMA:{issue}" for issue in schema_issues)
 
     # Lưới an toàn THỨ HAI (defense-in-depth): PII / dữ liệu thật / connector.
-    reasons.extend(_scan_unsafe_content(project))
+    reasons.extend(scan_unsafe_content(project))
 
     q_gate = gr1_question_objectives(project)
     if q_gate.decision == ResearchGateDecision.BLOCK:

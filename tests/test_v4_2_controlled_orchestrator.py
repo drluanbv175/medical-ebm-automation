@@ -246,10 +246,34 @@ class TestT19IllegalStateTransition:
             ctx,
             requested_state=WorkflowStateEnum.RELEASE_APPROVED,
         )
-        # Orchestrator succeeds, but state_transition is BLOCKED by state machine
-        if result.state_transition is not None:
-            assert result.state_transition.decision == "BLOCKED"
-            assert "INVALID_TRANSITION" in result.state_transition.reason
+        # State machine rejects the transition ...
+        assert result.state_transition is not None
+        assert result.state_transition.decision == "BLOCKED"
+        assert "INVALID_TRANSITION" in result.state_transition.reason
+        # ... and the orchestrator MUST propagate that rejection: not a silent
+        # PASS. Trước khi sửa (audit 2026-07-10): blocked=False + state_after
+        # bị gán nhầm thành state ĐÍCH dù transition thật sự bị chặn.
+        assert result.blocked is True
+        assert result.blocked_at_step == "STEP13_STATE_TRANSITION"
+        assert "STATE_TRANSITION_BLOCKED" in result.reason_code
+
+    def test_workflow_context_state_after_unchanged_on_rejected_transition(self):
+        entry = _make_entry("co-mau-nghien-cuu")
+        orch, logger = _make_orchestrator(entries=[entry])
+        ctx = _make_ctx("co-mau-nghien-cuu", fixture_id="FX-001")
+
+        result = orch.run(
+            ctx,
+            requested_state=WorkflowStateEnum.RELEASE_APPROVED,
+        )
+        # ctx.state_after phải giữ nguyên state_before (draft), KHÔNG được
+        # gán thành "release_approved" — transition đó chưa từng xảy ra thật.
+        assert result.workflow_context.state_after == WorkflowStateEnum.DRAFT.value
+        # Audit event ghi lại cũng phải khớp thực tế, không phải optimistic guess.
+        events = logger.get_events()
+        assert len(events) == 1
+        assert events[0].state_after == WorkflowStateEnum.DRAFT.value
+        assert events[0].state_before == WorkflowStateEnum.DRAFT.value
 
     def test_state_machine_history_records_block(self):
         entry = _make_entry("co-mau-nghien-cuu")

@@ -237,19 +237,44 @@ class ControlledOrchestrator:
             if not ctx.agent_source_hash:
                 return self._blocked(ctx, step, f"AGENT_HASH_MISSING_AT_AUDIT:{agent_id}")
 
-            # Log audit event
+            # Thử transition TRƯỚC khi ghi audit, để state_after phản ánh ĐÚNG
+            # kết quả thật. KHÔNG được đoán state_after lạc quan rồi ghi audit —
+            # WorkflowStateMachine có thể từ chối (state đích bất hợp lệ/thiếu
+            # gate/thiếu evidence) dù policy_decision đã PASS ở tầng dispatch.
             state_before = ctx.state_before
+            state_transition = None
+            if (
+                policy_decision == PolicyDecisionEnum.PASS
+                and requested_state is not None
+            ):
+                state_transition = self._state_machine.transition(
+                    requested_state=requested_state,
+                    authorized_by=f"ControlledOrchestrator:{run_id}",
+                    evidence_reference=f"audit_event:{self._audit_logger.run_id}",
+                    approval_ledger=self._ledger,
+                )
+            transition_rejected = (
+                state_transition is not None and state_transition.decision != "ALLOWED"
+            )
             state_after = (
-                requested_state.value if requested_state is not None
+                requested_state.value
+                if (
+                    requested_state is not None
+                    and policy_decision == PolicyDecisionEnum.PASS
+                    and not transition_rejected
+                )
                 else state_before
             )
+
+            # Log audit event — state_after ở đây LUÔN khớp trạng thái thật của
+            # WorkflowStateMachine, kể cả khi transition bị từ chối.
             audit_event = self._audit_logger.log_gate_decision(
                 workflow_id=ctx.workflow_id,
                 agent_id=agent_id,
                 fixture_id=ctx.fixture_id,
                 runtime_type=self._runtime.get_runtime_type(),
                 state_before=state_before,
-                state_after=state_after if policy_decision == PolicyDecisionEnum.PASS else state_before,
+                state_after=state_after,
                 policy_decision=policy_decision,
                 approval_reference=ctx.approval_reference,
                 output_schema_verdict=output_schema_verdict,
@@ -260,17 +285,18 @@ class ControlledOrchestrator:
             ctx.audit_event_id = audit_event.run_id
             ctx.state_after = state_after
 
-            # Transition state nếu PASS và có requested_state
-            state_transition = None
-            if (
-                policy_decision == PolicyDecisionEnum.PASS
-                and requested_state is not None
-            ):
-                state_transition = self._state_machine.transition(
-                    requested_state=requested_state,
-                    authorized_by=f"ControlledOrchestrator:{run_id}",
-                    evidence_reference=f"audit_event:{audit_event.run_id}",
-                    approval_ledger=self._ledger,
+            if transition_rejected:
+                ctx.blocked_at_control = "STEP13_STATE_TRANSITION"
+                ctx.reason_code = f"STATE_TRANSITION_BLOCKED:{state_transition.reason}"
+                return OrchestratorResult(
+                    workflow_context=ctx,
+                    blocked=True,
+                    blocked_at_step="STEP13_STATE_TRANSITION",
+                    reason_code=f"STATE_TRANSITION_BLOCKED:{state_transition.reason}",
+                    fixture_result=fixture_result,
+                    audit_event=audit_event,
+                    state_transition=state_transition,
+                    policy_decision=policy_decision,
                 )
 
             return OrchestratorResult(

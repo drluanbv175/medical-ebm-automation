@@ -11,10 +11,12 @@ from __future__ import annotations
 from typing import List
 
 from research_studio.project_schema import ResearchProject
+from research_studio.research_preflight import scan_unsafe_content
 from research_studio.study_type_router import get_template
 
 REQUIRE_INPUT = "REQUIRE_HUMAN_INPUT"
 REQUIRE_REVIEW = "REQUIRE_HUMAN_REVIEW"
+CONTENT_BLOCKED = "BLOCKED_UNSAFE_CONTENT"
 
 # 13 loại artifact (Phase E).
 TEMPLATE_TYPES: List[str] = [
@@ -45,9 +47,22 @@ def _common_disclaimer() -> dict:
 
 
 def render(artifact_type: str, project: ResearchProject) -> dict:
-    """Trả body template (dict) cho artifact_type theo project. KHÔNG bịa số liệu."""
+    """Trả body template (dict) cho artifact_type theo project. KHÔNG bịa số liệu.
+
+    Defense-in-depth (audit 2026-07-10): trên default path (workflow_runner.py),
+    project đã qua project_intake + research_preflight trước khi tới đây. Quét
+    lại ở đây để render() tự bảo vệ khi bị gọi TRỰC TIẾP (bỏ qua 2 lớp trên) —
+    không copy title/clinical_question/PICO/objectives/outcomes chưa quét vào
+    artifact body.
+    """
     if artifact_type not in TEMPLATE_TYPES:
         raise KeyError(f"UNKNOWN_TEMPLATE_TYPE:{artifact_type}")
+    unsafe_reasons = scan_unsafe_content(project)
+    if unsafe_reasons:
+        body = {"artifact_type": artifact_type, CONTENT_BLOCKED: True,
+                "unsafe_content_reasons": unsafe_reasons}
+        body["_meta"] = _common_disclaimer()
+        return body
     body = _RENDERERS[artifact_type](project)
     body["_meta"] = _common_disclaimer()
     body["artifact_type"] = artifact_type

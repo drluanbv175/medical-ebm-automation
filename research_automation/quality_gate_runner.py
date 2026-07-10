@@ -12,6 +12,7 @@ from typing import Dict, List, Optional
 
 from research_studio import research_quality_checks as q
 from research_studio.project_schema import ResearchProject
+from research_studio.research_preflight import scan_unsafe_content
 from research_studio.research_quality_checks import GateResult, ResearchGateDecision
 
 
@@ -77,6 +78,20 @@ def run_all(project: ResearchProject, inputs: Optional[Dict[str, dict]] = None) 
         q.gr10_human_review({"human_review_required": True,
                              "review_status": "PENDING_HUMAN_REVIEW"}),
     ]
+
+    # Defense-in-depth (audit 2026-07-10): G-R9 ở trên chỉ quét `output` synthetic
+    # (synthetic_complete_inputs() không hề chạm title/clinical_question/PICO/
+    # objectives/outcomes của CHÍNH project). Một caller gọi run_all() TRỰC TIẾP,
+    # bỏ qua project_intake/research_preflight (vd
+    # schedule_runner.on_demand_project_qa()), có thể đưa PII/dữ liệu thật lọt
+    # qua nếu thiếu bước quét project ở đây.
+    project_unsafe_reasons = scan_unsafe_content(project)
+    if project_unsafe_reasons:
+        results.append(GateResult(
+            "G-R9-PROJECT", ResearchGateDecision.BLOCK,
+            "PROJECT_CONTENT_UNSAFE:" + ",".join(project_unsafe_reasons),
+        ))
+
     blocks = [r.reason_code for r in results if r.decision == ResearchGateDecision.BLOCK]
     reviews = [r.reason_code for r in results
                if r.decision == ResearchGateDecision.REQUIRE_HUMAN_REVIEW]

@@ -482,3 +482,79 @@ def test_gate_agent_matrix_blocks_when_gate_artifact_missing():
 
     assert matrix.decision == ResearchGateDecision.BLOCK
     assert any("EXPECTED_ARTIFACT_MISSING:SAP_DRAFT" in r for r in matrix.reason_codes)
+
+
+# ── PII defense-in-depth: quality_gate_runner.run_all / artifact_template_engine
+# .render / ProjectRegistry.add (audit 2026-07-10) ─────────────────────────────
+# Trước khi sửa: chỉ project_intake + research_preflight tự quét PII trên
+# ResearchProject. 3 entry point dưới đây nhận thẳng ResearchProject nhưng KHÔNG
+# tự quét — một caller bỏ qua intake/preflight (vd
+# schedule_runner.on_demand_project_qa() gọi run_all() trực tiếp) có thể đưa
+# PII lọt qua. Test này xác nhận cả 3 giờ tự chặn độc lập.
+
+def test_run_all_blocks_pii_in_project_content_bypassing_intake():
+    from research_automation.quality_gate_runner import run_all
+
+    p = _project(study_type=StudyType.CROSS_SECTIONAL, pid="RS-T-QGR-PII")
+    p.clinical_question = "BN Nguyễn Văn Bình, SĐT 0987654321 có tuân thủ thuốc không?"
+
+    report = run_all(p)
+
+    assert report.overall == "BLOCK"
+    assert any(b.startswith("PROJECT_CONTENT_UNSAFE:") for b in report.blocks)
+
+
+def test_run_all_clean_project_not_affected_by_new_scan():
+    from research_automation.quality_gate_runner import run_all
+
+    p = _project(study_type=StudyType.COHORT, pid="RS-T-QGR-CLEAN")
+    report = run_all(p)
+
+    assert not any(b.startswith("PROJECT_CONTENT_UNSAFE:") for b in report.blocks)
+
+
+def test_artifact_render_blocks_pii_instead_of_copying_into_body():
+    from research_automation import artifact_template_engine as tpl
+
+    p = _project(study_type=StudyType.RCT, pid="RS-T-TPL-PII")
+    p.title = "[SYNTHETIC] Khảo sát — BN Trần Thị Bích, CCCD 079185001234"
+
+    body = tpl.render("RESEARCH_BRIEF_DRAFT", p)
+
+    assert body.get(tpl.CONTENT_BLOCKED) is True
+    assert "title" not in body  # nội dung PII KHÔNG được copy vào body
+    assert any(r.startswith("PII_DETECTED:") for r in body["unsafe_content_reasons"])
+
+
+def test_artifact_render_clean_project_unaffected():
+    from research_automation import artifact_template_engine as tpl
+
+    p = _project(study_type=StudyType.RCT, pid="RS-T-TPL-CLEAN")
+    body = tpl.render("RESEARCH_BRIEF_DRAFT", p)
+
+    assert tpl.CONTENT_BLOCKED not in body
+    assert body["title"] == p.title
+
+
+def test_project_registry_add_rejects_pii_content():
+    from research_studio.project_registry import ProjectRegistry
+
+    p = _project(study_type=StudyType.CROSS_SECTIONAL, pid="RS-T-REG-PII")
+    p.research_domain = "Nội tiết, liên hệ bn@hospital.vn"
+
+    reg = ProjectRegistry()
+    issues = reg.add(p)
+
+    assert any(i.startswith("UNSAFE_CONTENT:") for i in issues)
+    assert reg.get("RS-T-REG-PII") is None  # KHÔNG thêm vào registry
+
+
+def test_project_registry_add_clean_project_still_works():
+    from research_studio.project_registry import ProjectRegistry
+
+    p = _project(study_type=StudyType.RCT, pid="RS-T-REG-CLEAN")
+    reg = ProjectRegistry()
+    issues = reg.add(p)
+
+    assert issues == []
+    assert reg.get("RS-T-REG-CLEAN") is p

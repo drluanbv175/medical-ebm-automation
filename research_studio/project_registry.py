@@ -13,6 +13,7 @@ from .project_schema import (
     StudyType,
     validate_project,
 )
+from .research_preflight import scan_unsafe_content
 
 
 class ProjectRegistry:
@@ -22,8 +23,14 @@ class ProjectRegistry:
         self._projects: Dict[str, ResearchProject] = {}
 
     def add(self, project: ResearchProject) -> List[str]:
-        """Thêm project; trả issues (rỗng = OK). Không thêm nếu invalid."""
+        """Thêm project; trả issues (rỗng = OK). Không thêm nếu invalid.
+
+        Defense-in-depth (audit 2026-07-10): validate_project() chỉ có heuristic
+        tên PI, KHÔNG chạy DataBoundary.check_pii_in_output — quét thêm ở đây để
+        registry cũng tự bảo vệ khi được gọi trực tiếp (bỏ qua intake/preflight).
+        """
         issues = validate_project(project)
+        issues.extend(f"UNSAFE_CONTENT:{r}" for r in scan_unsafe_content(project))
         if issues:
             return issues
         if project.project_id in self._projects:
