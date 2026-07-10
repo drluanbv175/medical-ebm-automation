@@ -53,7 +53,10 @@ class RetryPolicy:
             try:
                 value = fn()
                 return RetryResult(ok=True, attempts=attempt, value=value)
-            except BaseException as exc:  # noqa: BLE001 — phân loại ngay dưới
+            except Exception as exc:  # noqa: BLE001 — phân loại ngay dưới
+                # Audit 2026-07-11: trước là "except BaseException" — bắt luôn cả
+                # KeyboardInterrupt/SystemExit, biến ngắt tiến trình thật thành
+                # SafeStop business-logic bình thường thay vì để nó lan lên đúng cách.
                 last_exc = exc
                 name = type(exc).__name__
                 if name not in self.retryable:
