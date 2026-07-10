@@ -33,7 +33,7 @@ from runtime.workflow_state_machine import WorkflowStateMachine
 
 from .artifact_registry import ArtifactRegistry, ResearchArtifact
 from .capability_profile import detect_external_action
-from .governance import DraftStateMachine, DraftWorkflowState
+from .governance import DraftStateMachine, DraftTransition, DraftWorkflowState
 from .project_schema import (
     ComponentStatus,
     ResearchProject,
@@ -341,6 +341,10 @@ class ProjectRunResult:
     blocked: bool
     block_reason: Optional[str] = None
     preflight_report: Optional[ResearchPreflightReport] = None
+    # Audit 2026-07-11: trước đây DraftStateMachine.history bị tính rồi bỏ (biến cục
+    # bộ trong run_project, không bao giờ escape) — không ai downstream dựng lại được
+    # project đã đi qua state nào/khi nào/vì sao bị BLOCK. Nay trả nguyên vẹn cho caller.
+    history: List[DraftTransition] = dataclasses.field(default_factory=list)
 
 
 def run_project(
@@ -357,12 +361,18 @@ def run_project(
     """
     registry = registry or build_draft_mode_registry()
     full_registry = build_research_registry()
+    # Audit 2026-07-11: sm tạo TRƯỚC preflight (không sau) để nhánh preflight-block
+    # cũng đi qua state machine — trước đây gán thẳng project.workflow_state=BLOCKED
+    # bằng attribute, KHÔNG qua sm.request(), không để lại DraftTransition nào (khác
+    # nhánh block giữa vòng lặp WP bên dưới, vốn CÓ đi qua sm.request()).
+    sm = DraftStateMachine(initial=DraftWorkflowState.INTAKE)
     preflight = evaluate_research_preflight(
         project,
         full_registry=full_registry,
         draft_registry=registry,
     )
     if preflight.decision == ResearchGateDecision.BLOCK:
+        sm.request(DraftWorkflowState.BLOCKED)
         project.workflow_state = DraftWorkflowState.BLOCKED
         return ProjectRunResult(
             project_id=project.project_id,
@@ -372,13 +382,13 @@ def run_project(
             blocked=True,
             block_reason="PREFLIGHT_BLOCK:" + ",".join(preflight.reason_codes),
             preflight_report=preflight,
+            history=list(sm.history),
         )
 
     ledger = ApprovalLedger()                       # RỖNG — draft không cần cổng
     runtime = build_research_runtime()
     audit_logger = AuditLogger(run_id=f"AUDIT-{project.project_id}")
     artifacts = artifacts if artifacts is not None else ArtifactRegistry()
-    sm = DraftStateMachine(initial=DraftWorkflowState.INTAKE)
 
     wps = [WP_BY_ID[w] for w in (wp_ids or [wp.wp_id for wp in WORK_PACKAGES])]
     results: List[WPRunResult] = []
@@ -392,7 +402,7 @@ def run_project(
                                     DraftWorkflowState.BLOCKED,
                                     artifacts.for_project(project.project_id),
                                     blocked=True, block_reason=r.reason_code,
-                                    preflight_report=preflight)
+                                    preflight_report=preflight, history=list(sm.history))
         # advance state qua state machine (WP-01 ở INTAKE = state khởi đầu, bỏ qua)
         if wp.research_state != DraftWorkflowState.INTAKE:
             t = sm.request(wp.research_state)
@@ -402,15 +412,25 @@ def run_project(
                                         DraftWorkflowState.BLOCKED,
                                         artifacts.for_project(project.project_id),
                                         blocked=True, block_reason=t.reason_code,
-                                        preflight_report=preflight)
+                                        preflight_report=preflight, history=list(sm.history))
         project.workflow_state = sm.state
         field = _STATUS_FIELD_BY_WP.get(wp.wp_id)
         if field:
             setattr(project, field, ComponentStatus.READY_FOR_REVIEW)
 
-    sm.request(DraftWorkflowState.DRAFT_COMPLETE)
+    # Audit 2026-07-11: kiểm tra .decision của transition cuối — trước đây gọi rồi
+    # bỏ qua kết quả; một wp_ids subset thiếu WP cuối (vd bỏ WP-09) khiến request()
+    # trả BLOCKED (không đủ 1 bước tuyến tính tới DRAFT_COMPLETE, sm._state KHÔNG đổi)
+    # nhưng hàm vẫn trả blocked=False — một run chưa hoàn tất báo cáo thành "thành công".
+    t = sm.request(DraftWorkflowState.DRAFT_COMPLETE)
     project.workflow_state = sm.state
+    if t.decision != "ALLOWED":
+        return ProjectRunResult(project.project_id, results,
+                                sm.state,
+                                artifacts.for_project(project.project_id),
+                                blocked=True, block_reason=t.reason_code,
+                                preflight_report=preflight, history=list(sm.history))
     return ProjectRunResult(project.project_id, results,
                             sm.state,
                             artifacts.for_project(project.project_id), blocked=False,
-                            preflight_report=preflight)
+                            preflight_report=preflight, history=list(sm.history))
