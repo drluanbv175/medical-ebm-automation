@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Optional
 
 from .agent_runtime import AgentRuntime
+from .data_boundary import DataBoundary
 from .schemas import (
     FixtureOutput,
     FixtureScenarioEnum,
@@ -51,7 +52,6 @@ _DISCLAIMER_SUFFIX = (
     "MRAQ 43.56/100 — development mode."
 )
 
-_PII_MARKERS = ("PII_LEAK_MARKER", "PATIENT_ID:", "HO_TEN_BENH_NHAN:", "CCCD:")
 _FABRICATED_MARKERS = ("FABRICATED", "PHANTOM")
 
 _CLINICAL_KEYWORDS = (
@@ -72,7 +72,11 @@ def _load_agent_spec(agent_id: str) -> str:
 
 
 def _pii_check(text: str) -> bool:
-    return any(m in text for m in _PII_MARKERS)
+    """Audit 2026-07-11: dùng DataBoundary (regex CCCD/CMND/SĐT/BHYT/tên VN/email/
+    ngày sinh + sentinel) thay vì 4 sentinel cứng cấp cao nhất — bỏ lọt PII thật
+    trước đây (vd tên+CCCD thật trong văn xuôi, không mang sentinel nhân tạo)."""
+    found, _reason = DataBoundary().check_pii_in_output(text)
+    return found
 
 
 def _fabricated_check(text: str) -> bool:

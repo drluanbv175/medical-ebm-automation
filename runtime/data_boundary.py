@@ -28,7 +28,8 @@ _PII_PATTERNS = [
 ]
 
 # Sentinels rõ ràng trong fixture
-_PII_SENTINELS = ["cccd", "cmnd", "bhyt", "patient_id", "BN00", "PII_MARKER"]
+_PII_SENTINELS = ["cccd", "cmnd", "bhyt", "patient_id", "BN00", "PII_MARKER",
+                   "ho_ten_benh_nhan", "pii_leak_marker"]
 
 # Sentinels trong output dict keys/values
 _PRODUCTION_CONNECTOR_MARKERS = [

@@ -237,12 +237,15 @@ class TestT11PIIInFixture:
         )
 
     def test_pii_blocked_audit_pii_verdict(self):
+        """FX-004's simulated_output nests real-shaped PII (tên + CCCD) trong list
+        (records[0]) — trước audit 2026-07-11, _has_pii() chỉ soát string cấp CAO
+        NHẤT nên bỏ lọt, pii_verdict ghi sai 'CLEAN'. Giờ PHẢI là 'BLOCKED'."""
         orch, _, logger = _build_orch("ke-don-an-toan")
         ctx = _ctx("ke-don-an-toan", fixture_id="FX-004")
         orch.run(ctx)
-        if logger.count() > 0:
-            events = logger.get_events()
-            assert any(e.pii_verdict in ("BLOCKED", "CLEAN") for e in events)
+        assert logger.count() > 0
+        events = logger.get_events()
+        assert all(e.pii_verdict == "BLOCKED" for e in events)
 
 
 # ── T12: fabricated data → BLOCK ─────────────────────────────────────────────

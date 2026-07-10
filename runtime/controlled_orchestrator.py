@@ -28,6 +28,7 @@ from .dispatch_guard import (
 from .agent_registry import AgentRegistry, AgentRegistryEntry
 from .approval_ledger import ApprovalLedger
 from .audit_logger import AuditLogger
+from .data_boundary import DataBoundary
 from .agent_runtime import AgentRuntime
 from .mock_agent_runtime import MockAgentRuntime
 from .workflow_state_machine import WorkflowStateMachine
@@ -48,16 +49,18 @@ class OrchestratorResult:
     policy_decision: Optional[PolicyDecisionEnum] = None
 
 
-# ─── PII sentinel check ───────────────────────────────────────────────────────
-
-_PII_SENTINELS = ("PII_LEAK_MARKER", "PATIENT_ID:", "HO_TEN_BENH_NHAN:")
+# ─── PII check ─────────────────────────────────────────────────────────────
+# Audit 2026-07-11: bản cũ chỉ soát string CẤP CAO NHẤT của output theo 3 sentinel
+# cứng — bỏ lọt PII thật lồng trong dict/list (vd {"records":[{"name":"Nguyễn Văn
+# A","cccd":"012345678901"}]}, đúng hình dạng rò rỉ thật). Dùng DataBoundary (đã có
+# regex CCCD/CMND/SĐT/BHYT/tên VN/email/ngày sinh + sentinel, tự JSON hoá cả cây)
+# — nguồn kiểm PII DUY NHẤT, không tự chế lại logic ở từng nơi dispatch.
 
 def _has_pii(output: dict) -> bool:
-    """Kiểm tra PII sentinel trong simulated output."""
-    for v in output.values():
-        if isinstance(v, str) and any(s in v for s in _PII_SENTINELS):
-            return True
-    return False
+    """Kiểm tra PII trong simulated output — dùng DataBoundary (regex thật,
+    quét cả cấu trúc lồng), không phải sentinel string cấp cao nhất."""
+    found, _reason = DataBoundary().check_pii_in_output(output)
+    return found
 
 
 def _has_fabricated_data(output: dict) -> bool:
@@ -102,6 +105,12 @@ class ControlledOrchestrator:
         state_machine: WorkflowStateMachine,
         audit_logger: AuditLogger,
     ):
+        # Audit 2026-07-11: claude_api_runtime.py docstring hứa "orchestrator gọi
+        # assert_offline() để CHẶN api runtime" nhưng trước đây KHÔNG hề gọi ở đâu
+        # cả — hiện chưa có call site thật nào lắp ClaudeApiRuntime vào đây, nhưng
+        # nếu có, chốt này phải chặn NGAY lúc khởi tạo (trước khi kịp dispatch),
+        # khớp bất biến "Nguyên tắc bất biến: Không gọi API" ở đầu file.
+        mock_runtime.assert_offline()
         self._registry = registry
         self._ledger = ledger
         self._runtime = mock_runtime

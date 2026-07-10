@@ -26,7 +26,7 @@ from runtime.agent_registry import (
 )
 from runtime.approval_ledger import ApprovalLedger
 from runtime.audit_logger import AuditLogger
-from runtime.controlled_orchestrator import ControlledOrchestrator
+from runtime.controlled_orchestrator import ControlledOrchestrator, _has_pii
 from runtime.dispatch_guard import reset_guard_context
 from runtime.mock_agent_runtime import MockAgentRuntime, FIXTURE_CATALOG
 from runtime.schemas import PolicyDecisionEnum, WorkflowStateEnum
@@ -352,3 +352,40 @@ class TestT21AgentHashInContext:
         ctx = _make_ctx("co-mau-nghien-cuu", fixture_id="FX-001")
         result = orch.run(ctx)
         assert result.workflow_context.is_trace_complete() is True
+
+
+# ── _has_pii: audit 2026-07-11 — phải bắt PII lồng trong dict/list, không chỉ
+# string cấp cao nhất (bug thật: bỏ lọt tên+CCCD lồng trong records[0]) ─────────
+
+class TestHasPiiCatchesNestedStructures:
+    def test_pii_nested_in_list_of_dicts_detected(self):
+        output = {"records": [{"id": "BN001", "name": "Nguyễn Văn A", "cccd": "012345678901"}],
+                  "count": 1}
+        assert _has_pii(output) is True
+
+    def test_clean_output_not_flagged(self):
+        output = {"summary": "Không phát hiện bất thường.", "count": 0}
+        assert _has_pii(output) is False
+
+
+# ── Khởi tạo với API runtime: audit 2026-07-11 — claude_api_runtime.py hứa
+# "orchestrator gọi assert_offline() để CHẶN api runtime" nhưng trước đây không
+# gọi ở đâu cả trong ControlledOrchestrator. Giờ phải chặn NGAY lúc khởi tạo.
+
+class TestConstructorBlocksLiveApiRuntime:
+    def test_claude_api_runtime_raises_at_construction(self):
+        from runtime.agent_runtime import ClaudeApiRuntime
+
+        registry = from_entries_for_testing([])
+        with pytest.raises(RuntimeError):
+            ControlledOrchestrator(
+                registry=registry,
+                ledger=ApprovalLedger(),
+                mock_runtime=ClaudeApiRuntime(api_key=""),
+                state_machine=WorkflowStateMachine(workflow_id="WF-API-GUARD"),
+                audit_logger=AuditLogger(run_id="AUDIT-API-GUARD"),
+            )
+
+    def test_mock_runtime_still_constructs_fine(self):
+        orch, _ = _make_orchestrator(entries=[])
+        assert orch is not None
