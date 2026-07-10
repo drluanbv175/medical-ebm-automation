@@ -67,3 +67,33 @@ class TestEnsureStudyMetaNestedMerge:
         assert meta["gate_params"]["G3"]["p_event"] is None
         assert meta["gate_params"]["G3"]["dropout"] is None
         assert "sd" in meta["gate_params"]["G3"]
+
+
+class TestNonSkeletonGateKeysPersist:
+    """Vá 2026-07-09: run_g8/run_g9 PIN gate_params.G8/.G9 dù các cổng này KHÔNG có
+    trong _GATE_PARAMS_SKELETON (chỉ G3). Khóa lại hợp đồng write→read mà khối 'khôi
+    phục khi chạy lại' của G8/G9 dựa vào — trước đây chỉ có ĐỌC, không có GHI nên là
+    no-op; nay phải ghi + đọc lại được."""
+
+    def test_g8_key_created_and_persists(self, tmp_path):
+        GC.ensure_study_meta(tmp_path, seed={"gate_params": {"G8": {
+            "target_journal": "JACC", "impact_factor": 24.0}}})
+        reloaded = GC.load_study_meta(tmp_path)
+        assert reloaded["gate_params"]["G8"]["target_journal"] == "JACC"
+        assert reloaded["gate_params"]["G8"]["impact_factor"] == 24.0
+        # G3 skeleton vẫn được dựng song song, không bị G8 phá.
+        assert "G3" in reloaded["gate_params"]
+
+    def test_g9_key_created_and_persists(self, tmp_path):
+        GC.ensure_study_meta(tmp_path, seed={"gate_params": {"G9": {
+            "n_authors": 4, "target_journal": "Lancet"}}})
+        reloaded = GC.load_study_meta(tmp_path)
+        assert reloaded["gate_params"]["G9"]["n_authors"] == 4
+        assert reloaded["gate_params"]["G9"]["target_journal"] == "Lancet"
+
+    def test_g8_g9_not_overwritten_on_rerun(self, tmp_path):
+        """Chạy lại với giá trị khác KHÔNG đè giá trị đã pin (fill-if-missing) —
+        đúng như read-block backfill rồi write-block ghi lại idempotent."""
+        GC.ensure_study_meta(tmp_path, seed={"gate_params": {"G9": {"n_authors": 4}}})
+        GC.ensure_study_meta(tmp_path, seed={"gate_params": {"G9": {"n_authors": 99}}})
+        assert GC.load_study_meta(tmp_path)["gate_params"]["G9"]["n_authors"] == 4

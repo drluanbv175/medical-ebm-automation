@@ -50,7 +50,20 @@ def main() -> int:
     if not artifact_path.exists():
         print(f"✗ Không thấy file artifact: {artifact_path}")
         return 1
-    evidence_content = artifact_path.read_text(encoding="utf-8", errors="replace")
+    # RÀNG BUỘC HASH VÀO ĐÚNG BYTES TRÊN ĐĨA (vá 2026-07-09): make_human_approval tính
+    # evidence_hash = sha256(evidence_content.encode("utf-8")), CÒN _ledger_approved ở
+    # run_g6/run_g9/run_stats_analysis kiểm sha256(artifact_path.read_bytes()). Hai bên
+    # CHỈ khớp khi content.encode("utf-8") == bytes gốc. read_text(errors="replace") cũ
+    # có thể thay byte hỏng bằng U+FFFD → hash lệch ÂM THẦM (bác sĩ duyệt thật mà cổng
+    # vẫn báo "chưa duyệt" — fail-closed nhưng khó hiểu, nhất là repo đồng bộ Mac↔Windows
+    # dễ dính BOM). Nay decode STRICT: file UTF-8 hợp lệ (kể cả có BOM) round-trip đúng
+    # byte; file KHÔNG phải UTF-8 → báo lỗi RÕ thay vì tạo hash lệch (fail loud > fail silent).
+    try:
+        evidence_content = artifact_path.read_bytes().decode("utf-8")
+    except UnicodeDecodeError:
+        print(f"✗ Artifact không phải UTF-8 hợp lệ, không thể ràng buộc hash an toàn: {artifact_path}")
+        print("   (Kiểm tra lại encoding file — mọi artifact pipeline phải là UTF-8 không BOM.)")
+        return 1
 
     study_dir = Path(__file__).resolve().parents[1] / "exports" / args.study
     if not study_dir.exists():

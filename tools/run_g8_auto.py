@@ -1433,6 +1433,19 @@ def main():
         args.impact_factor = _g8_pinned["impact_factor"]
         print(f"  → Khôi phục impact_factor={args.impact_factor} từ study_meta.json")
 
+    # PIN durable (2026-07-09): ĐỐI XỨNG với khối ĐỌC ở trên. Vá 07-08 chỉ thêm khối
+    # đọc mà KHÔNG có khối ghi tương ứng → không nơi nào điền gate_params.G8, nên việc
+    # "khôi phục khi chạy lại" là no-op (phát hiện qua kiểm định hậu-kiểm 2026-07-09).
+    # Nay ghi giá trị bác sĩ cấp qua CLI vào study_meta.json (fill-if-missing qua
+    # ensure_study_meta — KHÔNG đè giá trị đã có), khép vòng như G3.
+    _seed_g8 = {}
+    if args.target_journal:
+        _seed_g8["target_journal"] = args.target_journal
+    if args.impact_factor:
+        _seed_g8["impact_factor"] = args.impact_factor
+    if _seed_g8:
+        GC.ensure_study_meta(out_dir, seed={"gate_params": {"G8": _seed_g8}})
+
     print(f"\n{'='*65}")
     print(f"  G8 AUTO -- PRE-SUBMISSION REVIEW: {study}")
     print(f"  Thoi gian: {run_date}")
