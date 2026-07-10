@@ -297,7 +297,7 @@ class TestApprovalLedgerPersistence:
 
 class TestApproveGateEndToEnd:
     """BL-06 end-to-end: tools/approve_gate.py phải ghi evidence_hash KHỚP đúng cái
-    mà _ledger_approved (ở run_g6/run_g9/run_stats_analysis) sẽ kiểm — tức
+    mà _ledger_approved (ở run_g6/run_stats_analysis) sẽ kiểm — tức
     sha256(read_bytes() của artifact). Đây là hợp đồng khóa 2 đầu approve↔check;
     nếu lệch (vd text-vs-bytes), bác sĩ duyệt thật mà cổng vẫn báo 'chưa duyệt'."""
 

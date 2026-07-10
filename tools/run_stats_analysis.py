@@ -511,6 +511,9 @@ def main():
                         help="Ghi đè kiểm tra G4/G5 checkpoint khi không có file checkpoint "
                              "(vd chạy thủ công ngoài pipeline) nhưng SAP+DB thực tế đã khóa. "
                              "KHÔNG dùng để né việc chưa khóa thật.")
+    parser.add_argument("--i-confirm-irb-approved", action="store_true",
+                        help="Ghi đè kiểm tra G2 (đạo đức/IRB) khi không có file checkpoint "
+                             "nhưng IRB thực tế ĐÃ phê duyệt. KHÔNG dùng để né việc chưa duyệt thật.")
     args = parser.parse_args()
 
     # 2026-07-07: cổng kỹ thuật chặn chạy phân tích thật khi G4 (SAP)/G5 (DB) chưa khóa —
@@ -521,6 +524,28 @@ def main():
     # Vá 2026-07-09 (kiểm định đối kháng — checkpoint text tự do vẫn có thể bị sửa tay):
     # BẮT BUỘC CẢ HAI — checkpoint nói LOCKED VÀ có phê duyệt thật khớp hash trong
     # approval_ledger.json (_ledger_approved) — không còn chỉ dựa vào 1 trường text.
+    #
+    # Vá 2026-07-10 (kiểm định đối kháng đa-agent): THÊM cổng G2 (đạo đức/IRB) — trước đây
+    # script CHẠY-DỮ-LIỆU-THẬT này chỉ chặn theo G4/G5, KHÔNG hề kiểm G2, dù sibling
+    # run_g6_auto.py (vốn chỉ SINH template, không đụng dữ liệu thật) đã có cổng G2. Nghĩa là
+    # có thể chạy phân tích thật trên dữ liệu bệnh nhân THẬT mà không có cổng kỹ thuật nào
+    # xác nhận đã được Hội đồng Đạo đức phê duyệt — đúng rủi ro dùng-dữ-liệu-chưa-được-duyệt
+    # mà cơ chế approval_ledger (BL-06) sinh ra để chặn. Nay chặn cả G2 (checkpoint VÀ ledger).
+    g2_cp = _load_checkpoint(args.study, "G2")
+    g2_checkpoint_locked = _is_locked(g2_cp.get("g2_status", g2_cp.get("G2_STATUS")))
+    g2_ledger_ok = _ledger_approved(
+        args.study, "G2", Path("exports") / args.study / f"G2_A3_ETHICS_PACKAGE_{args.study}.md")
+    g2_locked = g2_checkpoint_locked and g2_ledger_ok
+    if not g2_locked and not args.i_confirm_irb_approved:
+        print("✗ DỪNG: G2 (phê duyệt đạo đức/IRB) chưa xác nhận LOCKED bằng phê duyệt thật.")
+        print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+              f"  |  approval_ledger: {'✅ khớp hash' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
+        print("   KHÔNG chạy phân tích trên dữ liệu bệnh nhân THẬT khi chưa có phê duyệt đạo đức thật.")
+        print("   Ghi phê duyệt thật bằng:")
+        print(f"     python tools/approve_gate.py --study \"{args.study}\" --gate G2 "
+              f"--artifact exports/{args.study}/G2_A3_ETHICS_PACKAGE_{args.study}.md ...")
+        print("   Nếu IRB THỰC TẾ đã phê duyệt nhưng thiếu file checkpoint, thêm --i-confirm-irb-approved.")
+        sys.exit(1)
     g4_cp = _load_checkpoint(args.study, "G4")
     g5_cp = _load_checkpoint(args.study, "G5")
     g4_checkpoint_locked = _is_locked(g4_cp.get("g4_status", g4_cp.get("G4_STATUS")))
