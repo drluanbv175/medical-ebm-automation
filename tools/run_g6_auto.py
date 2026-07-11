@@ -2374,7 +2374,8 @@ def main():
     )
     parser.add_argument("--study", required=True, help="Mã đề tài (vd: SGLT2-HFpEF-2026)")
     args = parser.parse_args()
-    study = args.study
+    # 2026-07-11: vá path traversal, khớp chuẩn sanitize đã dùng ở G0-G5.
+    study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
 
     # Đường dẫn
     out = BASE / "exports" / study

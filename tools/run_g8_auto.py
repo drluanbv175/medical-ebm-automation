@@ -1418,7 +1418,8 @@ def main():
     )
     args = parser.parse_args()
 
-    study = args.study.replace(" ", "-")
+    # 2026-07-11: vá path traversal, khớp chuẩn sanitize đã dùng ở G0-G5.
+    study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
     run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
     out_dir = BASE / "exports" / study
     out_dir.mkdir(parents=True, exist_ok=True)

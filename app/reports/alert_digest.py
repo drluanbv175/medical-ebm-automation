@@ -9,6 +9,7 @@ Nếu không có gì mới -> nói rõ "Không có cập nhật mới", KHÔNG b
 """
 from __future__ import annotations
 
+import html as html_lib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List
@@ -84,12 +85,16 @@ def build_alert_data(days: int = 7) -> Dict:
 
 
 def _bullets(rows: List[EvidenceItem]) -> List[str]:
+    # 2026-07-11: escape text nguồn NGOÀI (PubMed/RSS/openFDA) trước khi vào Markdown->HTML
+    # — chặn XSS nếu title/safety_signal chứa thẻ HTML/script.
     out = []
     for r in rows:
-        area = f" _({r.clinical_area})_" if r.clinical_area else ""
-        out.append(f"- **{r.title[:110]}**{area}\n"
+        title = html_lib.escape(r.title or "")
+        safety_signal = html_lib.escape(r.safety_signal) if r.safety_signal else ""
+        area = f" _({html_lib.escape(r.clinical_area)})_" if r.clinical_area else ""
+        out.append(f"- **{title[:110]}**{area}\n"
                    f"  - Mức: {r.operational_evidence_level or '—'} | Tier {r.reliability_tier or '—'}"
-                   f"{' | ⚠️ ' + r.safety_signal[:80] if r.safety_signal else ''}\n"
+                   f"{' | ⚠️ ' + safety_signal[:80] if safety_signal else ''}\n"
                    f"  - Nguồn: {_ref(r)}")
     return out
 

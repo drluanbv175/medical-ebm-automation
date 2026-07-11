@@ -672,7 +672,7 @@ def main():
     parser.add_argument("--status-only", action="store_true", help="Chỉ kiểm tra trạng thái pipeline, không tạo file")
     args = parser.parse_args()
 
-    study_id = args.study
+    study_id = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))  # 2026-07-11: vá path traversal
     study_dir = EXPORTS_DIR / study_id
 
     if not study_dir.exists():

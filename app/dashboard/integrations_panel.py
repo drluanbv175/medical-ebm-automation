@@ -13,6 +13,7 @@ chỉ chạy khi `streamlit run` (guard `__main__`) nên import file này trong 
 """
 from __future__ import annotations
 
+import html
 import os
 from typing import List, Tuple
 
@@ -76,10 +77,15 @@ def _tab_drug(st) -> None:
                        "(KHÔNG kết luận an toàn — cần bác sĩ kiểm chứng).")
         for w in warns:
             label, color = warning_style(w["type"])
+            # 2026-07-11: escape tên thuốc bác sĩ tự gõ + nhãn openFDA trước khi vào
+            # unsafe_allow_html — chặn XSS nếu input chứa thẻ HTML/script.
+            drugs_safe = html.escape(" + ".join(w["drugs"]))
+            detail_safe = html.escape(str(w["detail"]))
+            source_safe = html.escape(str(w["source"]))
             st.markdown(
                 f"<div style='background:{color};padding:8px 12px;border-radius:8px;margin:4px 0'>"
-                f"<b>[{label}]</b> {' + '.join(w['drugs'])}<br>{w['detail']}<br>"
-                f"<small>nguồn: {w['source']}</small></div>", unsafe_allow_html=True)
+                f"<b>[{label}]</b> {drugs_safe}<br>{detail_safe}<br>"
+                f"<small>nguồn: {source_safe}</small></div>", unsafe_allow_html=True)
         st.caption(DISCLAIMER)
 
 

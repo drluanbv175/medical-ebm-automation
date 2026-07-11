@@ -38,3 +38,30 @@ def test_app_loads_without_exception():
     assert any("CAFÉ-S" in t.value for t in at.title)
     # 5 tab phải tồn tại
     assert len(at.tabs) == 5
+
+
+def test_drug_tab_escapes_xss_payload(monkeypatch):
+    """2026-07-11 (round 19 security review): tên thuốc bác sĩ tự gõ được render thẳng
+    vào unsafe_allow_html=True không escape — tái lập + chốt vá bằng html.escape()."""
+    AppTest = pytest.importorskip("streamlit.testing.v1").AppTest
+    from app.integrations.drug_interactions import DrugSafetyChecker
+
+    payload = "<img src=x onerror=alert(document.domain)>"
+
+    def fake_screen_regimen(self, drugs):
+        return [{
+            "type": "not_found", "drugs": list(drugs), "source": "openFDA",
+            "detail": f"Không tìm thấy nhãn openFDA cho {drugs[0]} (không kết luận an toàn).",
+        }]
+
+    monkeypatch.setattr(DrugSafetyChecker, "screen_regimen", fake_screen_regimen)
+
+    path = Path(panel.__file__)
+    at = AppTest.from_file(str(path)).run(timeout=30)
+    at.tabs[0].text_area[0].set_value(payload).run()
+    at.tabs[0].button[0].click().run()
+    assert not at.exception, f"Panel render lỗi sau khi gửi payload: {at.exception}"
+
+    rendered = "\n".join(m.value for m in at.markdown)
+    assert "<img" not in rendered, "Payload XSS lọt qua chưa escape — lỗ hổng CHƯA được vá"
+    assert "&lt;img" in rendered, "Payload phải xuất hiện dạng đã escape (&lt;img...)"

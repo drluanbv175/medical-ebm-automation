@@ -5,6 +5,7 @@ truy vết cho từng mục và tách rõ phần "chưa nên thay đổi thực 
 """
 from __future__ import annotations
 
+import html as html_lib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List
@@ -17,24 +18,30 @@ from app.utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 
+def _esc(s):
+    """Escape HTML đặc biệt cho text nguồn NGOÀI (PubMed/RSS/openFDA) trước khi vào
+    Markdown->HTML — chặn XSS nếu tiêu đề/tín hiệu chứa thẻ HTML/script (2026-07-11)."""
+    return html_lib.escape(s) if isinstance(s, str) else s
+
+
 def _row(r: EvidenceItem, new_run_ids=None) -> Dict:
     syn = r.synthesis or {}
     is_new = bool(new_run_ids) and r.first_seen_run_id in new_run_ids
     return {
         "is_new": is_new,
-        "id": r.id, "clinical_area": r.clinical_area or "Khác",
-        "title": r.title, "source": r.journal_or_organization or r.source,
+        "id": r.id, "clinical_area": _esc(r.clinical_area) or "Khác",
+        "title": _esc(r.title), "source": _esc(r.journal_or_organization or r.source),
         "study_type": r.study_type, "document_type": r.document_type,
         "evidence_level": r.operational_evidence_level, "official_grade": r.official_grade,
         "evidence_quality_score": r.evidence_quality_score,
         "practice_change_score": r.practice_change_score,
         "reliability_tier": r.reliability_tier,
         "is_actionable": r.is_actionable, "classification": r.classification,
-        "actionable_reason": r.actionable_reason,
-        "reason_for_exclusion": r.reason_for_exclusion,
-        "safety_signal": r.safety_signal, "doi": r.doi, "pmid": r.pmid,
-        "nct_id": r.nct_id, "url": r.url, "publication_date": r.publication_date,
-        "authors": r.authors, "synthesis": syn,
+        "actionable_reason": _esc(r.actionable_reason),
+        "reason_for_exclusion": _esc(r.reason_for_exclusion),
+        "safety_signal": _esc(r.safety_signal), "doi": r.doi, "pmid": r.pmid,
+        "nct_id": r.nct_id, "url": _esc(r.url), "publication_date": r.publication_date,
+        "authors": _esc(r.authors), "synthesis": syn,
         "is_mock": bool(getattr(r, "is_mock", False)),
     }
 

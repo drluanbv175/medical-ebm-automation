@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -653,14 +654,16 @@ def main() -> int:
     ap.add_argument("--no-validate", action="store_true",
                     help="Bỏ qua bước tự chạy check_de_cuong.py")
     args = ap.parse_args()
+    # 2026-07-11: vá path traversal, khớp chuẩn sanitize đã dùng ở G0-G5.
+    study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
 
-    out_dir = BASE / "exports" / args.study
+    out_dir = BASE / "exports" / study
     if not out_dir.exists():
         print(f"❌ Không thấy thư mục {out_dir}")
         return 2
 
-    print(f"📦 G10 — Lắp ráp đề cương thống nhất cho: {args.study}")
-    result = assemble(args.study, out_dir)
+    print(f"📦 G10 — Lắp ráp đề cương thống nhất cho: {study}")
+    result = assemble(study, out_dir)
     print(f"  ✓ Markdown: {result['md'].relative_to(BASE)}")
     if result["docx"]:
         print(f"  ✓ Word:     {result['docx'].relative_to(BASE)}")

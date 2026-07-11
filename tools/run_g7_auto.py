@@ -1380,7 +1380,8 @@ def main() -> None:
                         help="Giới hạn từ tạp chí yêu cầu (mặc định: 3500)")
     args = parser.parse_args()
 
-    study      = args.study.strip()
+    # 2026-07-11: vá path traversal, khớp chuẩn sanitize đã dùng ở G0-G5.
+    study      = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
     run_date   = datetime.now().strftime("%Y-%m-%d")
     out_dir    = BASE / "exports" / study
     out_dir.mkdir(parents=True, exist_ok=True)

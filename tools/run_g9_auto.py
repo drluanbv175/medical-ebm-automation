@@ -1185,7 +1185,8 @@ def main():
     args = parser.parse_args()
 
     run_date       = datetime.now().strftime("%Y-%m-%d %H:%M")
-    study          = args.study.replace(" ", "-")
+    # 2026-07-11: vá path traversal, khớp chuẩn sanitize đã dùng ở G0-G5.
+    study          = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
 
     # Thư mục xuất — luôn dùng đường dẫn tuyệt đối từ repo root
     out_dir = _REPO_ROOT / "exports" / study
