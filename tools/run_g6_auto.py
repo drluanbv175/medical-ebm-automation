@@ -1276,7 +1276,7 @@ def make_table1(df, outcome, covariates):
                 pstr = fmt_pval(p)
             except Exception:
                 pstr = "n/a"
-        rows.append({"Biến": col,
+        rows.append({"Biến": _safe_cell(col),
                      f"Chứng (n={n0})": s0,
                      f"Ca (n={n1})": s1,
                      "p-value": pstr})
