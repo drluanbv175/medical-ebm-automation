@@ -1597,6 +1597,12 @@ def main():
     print("  1. Dien ket qua that vao Section III+V ban thao G7 (sau phan tich G5+G6)")
     print("  2. Phan cong CRediT roles -- A9 Phan 5")
     print("  3. Khai bao COI day du -- A9 Phan 5")
+    # Va 2026-07-11 (vong 9): truoc day exit code luon 0 du guardrail["passed"]=False --
+    # checkpoint DA ghi dung, nhung process exit code khong phan anh, nen chay truc tiep
+    # (khong qua run_pipeline.py) se tuong nham la xong. Doi xung G3/G4/G9.
+    if not guardrail["passed"]:
+        print(f"\n  !! G8 GUARDRAIL LOI ({len(guardrail['errors'])}) -- CHUA HOAN THANH -- {study}")
+        raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
     print("  4. Soan cover letter theo yeu cau tap chi dich")
     print("  5. Chay plagiarism check (iThenticate/Turnitin) truoc khi nop")
     print("\n  Can bac si kiem chung.")
