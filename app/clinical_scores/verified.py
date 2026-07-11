@@ -725,19 +725,28 @@ def seed_verified_scores() -> Dict[str, int]:
     """Nâng cấp các thang điểm từ skeleton -> verified (hoặc thêm mới nếu chưa có).
 
     Trả về {'updated': x, 'inserted': y}. Ghi change log khi đổi cách dùng.
+
+    Vá 2026-07-11 (vòng tiếp theo): `last_reviewed_date` trước đây bị ghi đè thành
+    "hôm nay" ở MỌI lần gọi (click nút/CLI/test) — kể cả reseed KHÔNG đổi gì (idempotent),
+    khiến trường này trôi dần khỏi ngày RÀ SOÁT NỘI DUNG thật (xem
+    docs/RA_SOAT_THANG_DIEM_2026-06.md, 2026-06-06). Giờ chỉ đóng dấu ngày khi có một
+    SỰ KIỆN RÀ SOÁT thật: thang vừa được NÂNG CẤP lên verified (changed_status) hoặc
+    lần đầu ghi nhận (chưa có last_reviewed_date) — reseed dữ liệu không đổi thì giữ
+    nguyên ngày cũ, không trôi theo lần script chạy.
     """
     updated = inserted = 0
     with session_scope() as s:
         for data in VERIFIED_SCORES:
             payload = dict(data)
             payload["update_status"] = "verified"
-            payload["last_reviewed_date"] = _TODAY
             obj = s.query(ClinicalScore).filter_by(score_id=data["score_id"]).first()
             if obj:
                 changed_status = obj.update_status != "verified"
                 for k, v in payload.items():
                     if hasattr(obj, k):
                         setattr(obj, k, v)
+                if changed_status or not obj.last_reviewed_date:
+                    obj.last_reviewed_date = _TODAY
                 updated += 1
                 if changed_status:
                     s.add(ChangeLogEntry(
@@ -746,6 +755,7 @@ def seed_verified_scores() -> Dict[str, int]:
                         source=data.get("source"), module="clinical_scores.verified",
                         created_by="seed_verified_scores"))
             else:
+                payload["last_reviewed_date"] = _TODAY
                 s.add(ClinicalScore(**{k: v for k, v in payload.items()
                                        if hasattr(ClinicalScore, k)}))
                 inserted += 1
