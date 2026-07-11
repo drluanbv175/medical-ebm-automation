@@ -486,7 +486,9 @@ def main():
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
 
-    study = args.study
+    # Audit 2026-07-11: G0/G1/G2 đều làm sạch --study (chặn '/', '..' ghi ra ngoài
+    # exports/) — G3 trước đây dùng thẳng args.study, lệch chuẩn với 3 cổng anh em.
+    study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
     out_dir = BASE / "exports" / study
     out_dir.mkdir(parents=True, exist_ok=True)
     run_date = datetime.now().strftime("%Y-%m-%d")
