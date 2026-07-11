@@ -1349,7 +1349,8 @@ def main():
     # ── Bước 7: Checkpoint ──
     print("\n💾 Bước 7/7: Ghi checkpoint G2...")
     cp_path = write_g2_checkpoint(
-        study, out_dir, design_code, risk, ct_trials, guardrail, md_path, docx_path
+        study, out_dir, design_code, risk, ct_trials, guardrail, md_path, docx_path,
+        design_ambiguous=design_ambiguous,
     )
     print(f"  → Lưu: {cp_path}")
 
