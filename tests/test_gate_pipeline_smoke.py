@@ -67,6 +67,32 @@ def _run(script: str, extra_args: list[str] | None = None) -> subprocess.Complet
     )
 
 
+def _read_guardrail_passed(out_dir: Path, gate: str):
+    """Đọc checkpoint gate, trả True/False/None — LOGIC Y HỆT run_pipeline.py::_read_guardrail()
+    (dùng chung để test này thật sự kiểm tra đúng cái pipeline production tin cậy, không phải
+    một tiêu chí riêng dễ hơn). Vá 2026-07-11 (vòng 8): trước đây smoke test chỉ đọc lại
+    checkpoint THẬT cho 3/9 cổng (G3/G5/G9) — 6 cổng còn lại (G1/G2/G4/G6/G7/G8) chỉ được kiểm
+    qua returncode==0 + substring chung chung trong stdout, nên guardrail LỖI thật (checkpoint
+    có 🔴/errors) không hề bị bắt nếu script không sys.exit(khác 0) khi lỗi."""
+    p = out_dir / f"{gate}_checkpoint.json"
+    if not p.exists():
+        return None
+    cp = json.loads(p.read_text(encoding="utf-8"))
+    g = cp.get("guardrail")
+    if isinstance(g, dict):
+        if "passed" in g:
+            return bool(g.get("passed"))
+        st = g.get("status")
+        if isinstance(st, str):
+            up = st.upper()
+            return ("PASS" in up) or ("✅" in st) or ("[OK]" in up)
+        return None
+    if isinstance(g, str):
+        up = g.upper()
+        return ("PASS" in up) or ("✅" in g) or ("[OK]" in up)
+    return None
+
+
 def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
     """rmtree bền hơn trên Windows/OneDrive: xóa có thể "thành công" trong khi
     thư mục chưa thực sự biến mất do khóa file/độ trễ đồng bộ — retry ngắn
@@ -102,18 +128,18 @@ def test_full_chain_g1_through_g9(smoke_study):
     trong output. Nếu 1 cổng lỗi, dừng ngay và báo lỗi rõ cổng nào.
     """
     steps = [
-        ("run_g1_auto.py", None),
-        ("run_g2_auto.py", None),
-        ("run_g3_auto.py", ["--alpha", "0.05", "--power", "0.8", "--effect-size", "0.75",
-                             "--effect-type", "HR", "--p-event", "0.3", "--dropout", "0.15"]),
-        ("run_g4_auto.py", None),
-        ("run_g5_auto.py", None),
-        ("run_g6_auto.py", None),
-        ("run_g7_auto.py", None),
-        ("run_g8_auto.py", None),
-        ("run_g9_auto.py", None),
+        ("G1", "run_g1_auto.py", None),
+        ("G2", "run_g2_auto.py", None),
+        ("G3", "run_g3_auto.py", ["--alpha", "0.05", "--power", "0.8", "--effect-size", "0.75",
+                                   "--effect-type", "HR", "--p-event", "0.3", "--dropout", "0.15"]),
+        ("G4", "run_g4_auto.py", None),
+        ("G5", "run_g5_auto.py", None),
+        ("G6", "run_g6_auto.py", None),
+        ("G7", "run_g7_auto.py", None),
+        ("G8", "run_g8_auto.py", None),
+        ("G9", "run_g9_auto.py", None),
     ]
-    for script, extra_args in steps:
+    for gate, script, extra_args in steps:
         result = _run(script, extra_args)
         assert result.returncode == 0, (
             f"{script} thoát mã {result.returncode}\n"
@@ -123,6 +149,15 @@ def test_full_chain_g1_through_g9(smoke_study):
         combined = (result.stdout + result.stderr).lower()
         assert "pass" in combined or "✅" in combined or "[ok]" in combined, (
             f"{script} không thấy dấu hiệu guardrail PASS trong output:\n{result.stdout[-2000:]}"
+        )
+        # Vá 2026-07-11: KHÔNG chỉ tin returncode/substring trong stdout — chuỗi "✅"/"pass" có
+        # thể xuất hiện ở banner in vô điều kiện dù guardrail checkpoint THẬT báo lỗi (vd script
+        # không sys.exit khác 0 khi errors không rỗng). Đọc lại checkpoint bằng ĐÚNG logic
+        # run_pipeline.py dùng để quyết định pipeline có tiếp tục hay không.
+        passed = _read_guardrail_passed(STUDY_DIR, gate)
+        assert passed is not False, (
+            f"{gate}_checkpoint.json báo guardrail LỖI (passed=False) dù {script} thoát mã 0 và "
+            f"in banner PASS — đây chính là kịch bản 'pass giả' cần bắt được:\n{result.stdout[-2000:]}"
         )
 
     # Xác nhận checkpoint cuối cùng (G9) đọc được đủ chuỗi G0-G8 trước đó.

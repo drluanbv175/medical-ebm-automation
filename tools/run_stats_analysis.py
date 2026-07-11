@@ -150,11 +150,17 @@ def _compare_continuous(a: pd.Series, b: pd.Series) -> dict:
     normal_a = detect_normality(a) if HAS_SCIPY else True
     normal_b = detect_normality(b) if HAS_SCIPY else True
     if normal_a and normal_b and HAS_SCIPY:
-        t, p = sp_stats.ttest_ind(a, b)
+        # Vá 2026-07-11 (vòng 8): trước đây ttest_ind() không truyền equal_var → mặc định
+        # equal_var=True (Student's, gộp phương sai, giả định 2 nhóm phương sai bằng nhau),
+        # NHƯNG SE dựng CI ngay dưới lại là công thức Welch's (không gộp) — 2 giả định phương
+        # sai KHÁC NHAU trong CÙNG 1 kết quả (p vs CI có thể mâu thuẫn suy luận khi n1≠n2 hoặc
+        # phương sai 2 nhóm lệch nhau). Dùng Welch's cho cả 2 — an toàn hơn, không đòi hỏi giả
+        # định phương sai bằng nhau, là mặc định khuyến nghị của thống kê hiện đại.
+        t, p = sp_stats.ttest_ind(a, b, equal_var=False)
         md = a.mean() - b.mean()
         se = np.sqrt(a.std()**2 / len(a) + b.std()**2 / len(b))
         ci = (round(md - 1.96 * se, 3), round(md + 1.96 * se, 3))
-        return {"p": round(float(p), 4), "effect": f"MD={md:.3f} (95%CI {ci[0]}–{ci[1]})", "test": "t-test"}
+        return {"p": round(float(p), 4), "effect": f"MD={md:.3f} (95%CI {ci[0]}–{ci[1]})", "test": "Welch's t-test"}
     elif HAS_SCIPY:
         u, p = sp_stats.mannwhitneyu(a, b, alternative="two-sided")
         med_diff = a.median() - b.median()
