@@ -7,6 +7,7 @@ Nguyên tắc:
 """
 from __future__ import annotations
 
+import html as html_lib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List
@@ -70,8 +71,13 @@ def build_drug_safety_data() -> Dict:
 
 
 def _row(r: EvidenceItem) -> Dict:
-    return {"title": r.title, "source": r.journal_or_organization or r.source,
-            "safety_signal": r.safety_signal, "clinical_area": r.clinical_area,
+    # 2026-07-11 (round 20 security review — gap missed in round 19's XSS pass):
+    # escape text nguồn NGOÀI (PubMed/RSS/openFDA) trước khi vào Markdown->HTML,
+    # cùng lỗ hổng/khuôn vá đã áp ở weekly_ebm.py/alert_digest.py.
+    return {"title": html_lib.escape(r.title or ""),
+            "source": html_lib.escape(r.journal_or_organization or r.source or ""),
+            "safety_signal": html_lib.escape(r.safety_signal) if r.safety_signal else None,
+            "clinical_area": html_lib.escape(r.clinical_area) if r.clinical_area else None,
             "tier": r.reliability_tier, "ref": _ref(r),
             "study_type": r.study_type}
 
