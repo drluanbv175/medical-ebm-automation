@@ -813,6 +813,16 @@ def fmt_pval(p):
     return "<0.001" if p < 0.001 else f"{p:.3f}"
 
 
+def _safe_cell(value):
+    """Chống formula injection khi ghi Excel (round 20 security review, 2026-07-12):
+    tên biến trong bộ dữ liệu (data dictionary) có thể vô tình/cố ý bắt đầu bằng
+    =/+/-/@ khiến Excel/Sheets THỰC THI như công thức khi mở file. Khớp _safe_cell()
+    đã dùng ở app/reports/exporters.py."""
+    if isinstance(value, str) and value and value[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + value
+    return value
+
+
 def make_table1(df, exposure, covariates):
     print("\n📊 Tạo Table 1...")
     grp0 = df[df[exposure] == 0]
@@ -848,7 +858,7 @@ def make_table1(df, exposure, covariates):
                 pstr = fmt_pval(p)
             except Exception:
                 pstr = "n/a"
-        rows.append({"Biến": col,
+        rows.append({"Biến": _safe_cell(col),
                      f"Nhóm 0 (n={n0})": s0,
                      f"Nhóm 1 (n={n1})": s1,
                      "p-value": pstr})
