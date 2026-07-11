@@ -59,6 +59,17 @@ def build() -> str:
     return "\n".join(lines)
 
 
+def freshness_label(path: Path = OUT) -> str:
+    """Chuỗi 'YYYY-MM-DD HH:MM' theo mtime THẬT của file đã sinh — dùng cho dòng
+    'cập nhật lần cuối' ở tab RAG trên dashboard. Không hardcode; trả về placeholder
+    rõ ràng nếu file chưa từng được sinh."""
+    if not path.exists():
+        return "chưa sinh"
+    from datetime import datetime
+
+    return datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
+
+
 def write_docx(path: Path) -> None:
     """Xuất bản Word (.docx) — định dạng có heading + nhãn in đậm, tiện in/chia sẻ."""
     from docx import Document

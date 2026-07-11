@@ -1192,6 +1192,10 @@ with tabs[10]:
     if not _brief.exists():
         st.info("Chưa có bản tổng hợp. Chạy: `python scripts/gen_evidence_brief.py`")
     else:
+        from scripts.gen_evidence_brief import freshness_label as _rag_freshness
+        st.caption(f"🕒 Cập nhật lần cuối: {_rag_freshness(_brief)} "
+                   "(tự sinh lại hằng tuần bằng scheduler, hoặc chạy tay "
+                   "`python scripts/gen_evidence_brief.py`).")
         _md = _brief.read_text(encoding="utf-8")
         _q = st.text_input("🔎 Tìm thang điểm / chuyên khoa / từ khóa",
                            placeholder="vd: CHA2DS2, FIB-4, kháng đông, sepsis…", key="rag_q")

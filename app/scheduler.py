@@ -86,6 +86,19 @@ def job_quarterly() -> None:
                 "scheduler.quarterly")
 
 
+def job_evidence_brief() -> None:
+    """Hằng tuần: sinh lại bản tổng hợp chứng cứ RAG (tab 'Tổng hợp RAG') từ thang điểm
+    verified, để tab không hiển thị dữ liệu cũ nếu app/clinical_scores/verified.py đã được
+    cập nhật nhưng chưa ai chạy tay `python scripts/gen_evidence_brief.py`. Không gọi mạng,
+    không đụng DB — chỉ đọc VERIFIED_SCORES (dữ liệu tĩnh trong code) và ghi file .md."""
+    logger.info("[job_evidence_brief] bắt đầu")
+    from scripts.gen_evidence_brief import OUT, build
+
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(build(), encoding="utf-8")
+    _log_change(f"Evidence brief RAG cập nhật: {OUT.name}", "scheduler.evidence_brief")
+
+
 def build_scheduler():
     """Tạo BlockingScheduler với các job định kỳ."""
     from apscheduler.schedulers.blocking import BlockingScheduler
@@ -97,6 +110,8 @@ def build_scheduler():
     sched.add_job(job_weekly, CronTrigger(day_of_week="mon", hour=7, minute=30), id="weekly")
     sched.add_job(job_monthly, CronTrigger(day=1, hour=8, minute=0), id="monthly")
     sched.add_job(job_quarterly, CronTrigger(month="1,4,7,10", day=1, hour=9), id="quarterly")
+    sched.add_job(job_evidence_brief, CronTrigger(day_of_week="mon", hour=7, minute=15),
+                  id="evidence_brief")
     logger.info("Scheduler sẵn sàng (TZ=%s). Nhấn Ctrl+C để dừng.", settings.timezone)
     return sched
 
