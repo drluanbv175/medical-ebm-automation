@@ -39,6 +39,9 @@ from typing import Optional
 # Thêm thư mục gốc dự án vào sys.path
 BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 # ════════════════════════════════════════════════════════════════════════════
 # 1. HẰNG SỐ — CHECKLIST BÁO CÁO THEO CHUẨN
@@ -1623,6 +1626,13 @@ def main() -> None:
     print("\n  ⚠️  KHÔNG nộp tạp chí khi còn ô [CẦN KẾT QUẢ THẬT].")
     print("  Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp.")
     print(f"\n{'='*68}\n")
+
+    # Vá 2026-07-11 (vòng 9): trước đây banner "HOÀN THÀNH" in vô điều kiện + exit code
+    # luôn 0 dù guardrail có lỗi thật — checkpoint ĐÃ ghi đúng, nhưng process exit code
+    # không phản ánh, nên chạy trực tiếp (không qua run_pipeline.py) sẽ tưởng nhầm là
+    # xong. Đối xứng cách G3/G4/G9 đã làm.
+    if g7_errors:
+        raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
 
 
 if __name__ == "__main__":

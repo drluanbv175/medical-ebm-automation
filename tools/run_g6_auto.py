@@ -19,6 +19,9 @@ from pathlib import Path
 # Thư mục gốc dự án
 BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 # ─────────────────────────────────────────────
 # PHÁT HIỆN BIẾN TỰ ĐỘNG TỪ REDCAP DICTIONARY
@@ -2533,6 +2536,13 @@ def main():
     print(f"   G4 Locked : {'✅ Đã khóa SAP' if g4_locked else '⚠️ CHƯA khóa'}")
     print(f"   Guardrail : {status}")
     print("   Bước tiếp : Khóa DB (G5) → python run_analysis_cli.py --data <CSV> → G7")
+
+    # Vá 2026-07-11 (vòng 9): trước đây banner "NÂNG CẤP" in vô điều kiện + exit code luôn
+    # 0 dù guardrail có lỗi thật — checkpoint ĐÃ ghi đúng "guardrail": status, nhưng process
+    # exit code không phản ánh, nên chạy trực tiếp (không qua run_pipeline.py) sẽ tưởng nhầm
+    # là xong. Đối xứng cách G3/G4/G9 đã làm.
+    if errors:
+        raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
 
 
 def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,

@@ -33,6 +33,9 @@ from typing import Optional
 
 _REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 _TODAY = datetime.now().strftime("%d/%m/%Y")
 _YEAR  = datetime.now().strftime("%Y")
@@ -1384,6 +1387,13 @@ def main():
     print(f"  5. Chạy G3 song song: python tools/run_g3_auto.py --study {study}")
     print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
+
+    # Vá 2026-07-11 (vòng 9): trước đây banner "HOÀN THÀNH" in vô điều kiện + exit code
+    # luôn 0 dù guardrail có lỗi thật — checkpoint ĐÃ ghi đúng, nhưng process exit code
+    # không phản ánh, nên chạy trực tiếp (không qua run_pipeline.py) sẽ tưởng nhầm là
+    # xong. Đối xứng cách G3/G4/G9 đã làm.
+    if not guardrail["passed"]:
+        raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
 
 
 if __name__ == "__main__":
