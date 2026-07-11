@@ -124,8 +124,8 @@ def test_network_exception_does_not_leak_api_key_in_log(caplog):
 
     def _raising_request(method, url, params=None, timeout=None):
         raise requests.ConnectionError(
-            f"HTTPSConnectionPool: Max retries exceeded with url: "
-            f"/entrez/eutils/esearch.fcgi?api_key=FAKESECRETKEY1234567890"
+            "HTTPSConnectionPool: Max retries exceeded with url: "
+            "/entrez/eutils/esearch.fcgi?api_key=FAKESECRETKEY1234567890"
         )
 
     client.session.request = _raising_request
