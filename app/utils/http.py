@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -17,6 +18,29 @@ from app.config import settings
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+# Audit 2026-07-11: requests tự nhúng URL ĐẦY ĐỦ (kèm query string, gồm cả api_key) vào
+# thông báo exception (HTTPError/ConnectionError…) — nếu không che, khóa API (vd
+# NCBI_API_KEY, chỉ chấp nhận qua query param theo thiết kế E-utilities, không thể chuyển
+# sang header) sẽ lọt nguyên văn vào data/archive/app.log/stdout ngay khi có lỗi mạng thật
+# (401 sai key/429 hết lượt retry/timeout) — tái hiện được: gọi HttpClient với api_key giả
+# tới NCBI thật, HTTPError trả về chứa "...&api_key=FAKESECRETKEY..." nguyên văn.
+_SENSITIVE_QUERY_RE = re.compile(r"((?:api[_-]?key)=)[^&\s]+", re.IGNORECASE)
+
+
+def _redact(text: str) -> str:
+    """Che giá trị tham số nhạy cảm trong một chuỗi URL/thông báo lỗi trước khi ghi log."""
+    return _SENSITIVE_QUERY_RE.sub(r"\1***", text)
+
+
+def _raise_for_status_redacted(resp: "requests.Response") -> None:
+    """resp.raise_for_status() nhưng che tham số nhạy cảm trong thông báo lỗi trước khi
+    exception rời khỏi HttpClient — nơi gọi (vd resolve_pmids() ở evidence_workbench.py)
+    log thẳng exc, không đi qua http.py nữa nên phải che tại nguồn."""
+    try:
+        resp.raise_for_status()
+    except requests.HTTPError as exc:
+        raise requests.HTTPError(_redact(str(exc)), response=resp) from None
 
 _CACHE_DIR = settings.raw_dir / "_http_cache"
 _CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -145,7 +169,7 @@ class HttpClient:
                 wait = self._backoff_wait(attempt, None)
                 logger.warning(
                     "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
-                    url, exc, wait, attempt + 1,
+                    url, _redact(str(exc)), wait, attempt + 1,
                 )
                 time.sleep(wait)
                 attempt += 1
@@ -154,10 +178,10 @@ class HttpClient:
             # Lỗi vĩnh viễn → raise ngay, KHÔNG rơi vào retry (bay thẳng ra ngoài vòng lặp).
             if resp.status_code in _PERMANENT_STATUS:
                 logger.warning("HTTP %s (lỗi vĩnh viễn) từ %s – bỏ qua", resp.status_code, url)
-                resp.raise_for_status()
+                _raise_for_status_redacted(resp)
             if resp.status_code in _RETRYABLE_STATUS and attempt_retryable >= _MAX_RETRYABLE_RETRIES:
                 logger.warning("HTTP %s từ %s — đã hết hạn mức retry, bỏ qua.", resp.status_code, url)
-                resp.raise_for_status()
+                _raise_for_status_redacted(resp)
 
             # Rate limit / lỗi tạm thời → backoff có giới hạn tối đa rồi thử lại.
             if resp.status_code in _RETRYABLE_STATUS:
@@ -172,7 +196,7 @@ class HttpClient:
                 continue
 
             try:
-                resp.raise_for_status()
+                _raise_for_status_redacted(resp)
                 if want == "json":
                     data = resp.json()
                     payload = {"json": data, "text": None}
@@ -184,7 +208,7 @@ class HttpClient:
                 wait = self._backoff_wait(attempt, None)
                 logger.warning(
                     "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
-                    url, exc, wait, attempt + 1,
+                    url, _redact(str(exc)), wait, attempt + 1,
                 )
                 time.sleep(wait)
                 attempt += 1
