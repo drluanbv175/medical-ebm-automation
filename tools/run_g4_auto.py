@@ -427,6 +427,14 @@ def main():
     cp_path = out / "G4_checkpoint.json"
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"💾 Lưu: {cp_path}")
+    # Vá 2026-07-11 (vòng 9): trước đây banner "HOÀN THÀNH" in vô điều kiện + exit code luôn
+    # 0 dù guardrail có lỗi thật (errors không rỗng) — checkpoint ĐÃ ghi đúng "guardrail":
+    # status ở trên, nhưng process exit code không phản ánh, nên chạy trực tiếp (không qua
+    # run_pipeline.py) sẽ tưởng nhầm là xong. Đối xứng cách G3/G9 đã làm.
+    if errors:
+        print(f"\n⚠ G4 CÓ {len(errors)} LỖI GUARDRAIL — CHƯA HOÀN THÀNH — {study}")
+        print(f"  → Guardrail: {status}")
+        raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
     print(f"\n✅ G4 HOÀN THÀNH — {study}")
     print(f"  SAP version: 1.0, N (từ G3): {n_adjusted}")
     print("  G4 Status: PENDING — CHỜ BÁC SĨ KÝ SAP")
