@@ -18,7 +18,8 @@ SỬ DỤNG:
 
 import argparse
 import json
-from datetime import datetime
+import os
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import yaml
@@ -111,7 +112,7 @@ def get_drug_alerts(pack_version_dir: Path) -> list[str]:
 def check_surveillance_updates() -> list[str]:
     """Kiểm tra kết quả surveillance gần nhất."""
     updates = []
-
+    
     # Đọc weekly quality
     wq_file = RESULTS_DIR / "weekly_quality.json"
     if wq_file.exists():
@@ -122,7 +123,7 @@ def check_surveillance_updates() -> list[str]:
                 updates.append(f"⚠️ Weekly quality: {len(findings)} phát hiện cần xem xét")
         except Exception:
             pass
-
+    
     # Đọc daily integrity
     di_file = RESULTS_DIR / "daily_integrity.json"
     if di_file.exists():
@@ -132,7 +133,7 @@ def check_surveillance_updates() -> list[str]:
                 updates.append("🔴 Daily integrity check FAIL — xem results/daily_integrity.json")
         except Exception:
             pass
-
+    
     return updates
 
 
@@ -142,33 +143,33 @@ def build_pack_section(pack_id: str, pack_dir: Path) -> str:
     version_dir = find_latest_draft(pack_dir)
     if not version_dir:
         return f"### {label}\n*Pack chưa có nội dung*\n\n"
-
+    
     scope = load_yaml_safe(version_dir / "01_scope.yaml")
     status = scope.get("status", "unknown")
     version = scope.get("version", "?")
-
+    
     recs = get_key_recommendations(version_dir)
     flags = get_red_flags(version_dir)
     drug_alerts = get_drug_alerts(version_dir)
-
+    
     lines = [f"### {label} `{version}`"]
-
+    
     if flags:
         lines.append(f"🚨 **Cờ đỏ:** {' · '.join(flags[:3])}")
-
+    
     if recs:
         lines.append("**Khuyến cáo chính:**")
         for r in recs:
             lines.append(f"- {r}")
-
+    
     if drug_alerts:
         lines.append("**Cảnh báo thuốc:**")
         for a in drug_alerts:
             lines.append(f"- ⚠️ {a}")
-
+    
     if status in ("draft_review_only", "draft"):
-        lines.append("*[DỰ THẢO — cần bác sĩ xác nhận trước khi áp dụng]*")
-
+        lines.append(f"*[DỰ THẢO — cần bác sĩ xác nhận trước khi áp dụng]*")
+    
     lines.append("")
     return "\n".join(lines)
 
@@ -184,7 +185,7 @@ def generate_brief(target_pack: str = None, preview: bool = False) -> str:
     lines = [
         f"# 🩺 BẢN TIN EBM SÁNG — {weekday}, {date_str}",
         f"> Tổng hợp tự động lúc {time_str} · EBM Copilot v4.6",
-        "> **DRAFT** — Chỉ hỗ trợ bác sĩ tra cứu, không thay thế quyết định lâm sàng",
+        f"> **DRAFT** — Chỉ hỗ trợ bác sĩ tra cứu, không thay thế quyết định lâm sàng",
         "",
     ]
 
@@ -203,9 +204,9 @@ def generate_brief(target_pack: str = None, preview: bool = False) -> str:
             pack_dir = PACKS_DIR / pack_id
             if pack_dir.exists():
                 available_packs.append(pack_id)
-
+    
     total_possible = len(PACK_PRIORITY)
-    lines.append("## 📊 TỔNG QUAN HÔM NAY")
+    lines.append(f"## 📊 TỔNG QUAN HÔM NAY")
     lines.append(f"- Knowledge packs hoạt động: **{len(available_packs)}/{total_possible}**")
     lines.append(f"- Bệnh lý chưa có pack: {', '.join([PACK_LABELS.get(p, p) for p in PACK_PRIORITY if p not in available_packs]) or 'Không'}")
     lines.append("")

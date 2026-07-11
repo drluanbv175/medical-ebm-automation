@@ -11,36 +11,26 @@ from __future__ import annotations
 
 import pytest
 
-from research_studio.artifact_registry import ArtifactRegistry
-from research_studio.capability_profile import (
-    HIGH_RISK_AGENTS,
-    ExternalActionType,
-    check_external_action,
-    detect_external_action,
-    get_profile,
-)
-from research_studio.governance import (
-    BlockedRealState,
-    DraftStateMachine,
-    DraftWorkflowState,
-    GovernanceLevel,
-    attempt_external_release,
-    attempt_real_analysis,
-    attempt_real_data_collection,
-    is_real_or_release_state,
-)
-from research_studio.project_schema import ResearchProject, StudyType
-from research_studio.research_quality_checks import ResearchGateDecision
-from research_studio.research_workflow import (
-    WP_BY_ID,
-    build_draft_mode_registry,
-    build_research_runtime,
-    run_project,
-    run_work_package,
-)
-from runtime.approval_ledger import ApprovalLedger
-from runtime.audit_logger import AuditLogger
 from runtime.dispatch_guard import reset_guard_context
+from runtime.audit_logger import AuditLogger
+from runtime.approval_ledger import ApprovalLedger
+
+from research_studio.project_schema import ResearchProject, StudyType
+from research_studio.artifact_registry import ArtifactRegistry
+from research_studio.research_workflow import (
+    WP_BY_ID, run_work_package, run_project,
+    build_draft_mode_registry, build_research_runtime,
+)
+from research_studio.research_quality_checks import ResearchGateDecision
+from research_studio.governance import (
+    DraftStateMachine, DraftWorkflowState, BlockedRealState,
+    attempt_real_data_collection, attempt_real_analysis, attempt_external_release,
+    GovernanceLevel, is_real_or_release_state,
+)
+from research_studio.capability_profile import (
+    ExternalActionType, check_external_action, get_profile,
+    HIGH_RISK_AGENTS, detect_external_action,
+)
 
 
 def setup_function():

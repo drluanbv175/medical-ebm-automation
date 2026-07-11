@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 import uuid
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 # ── Hằng số phụ thuộc chưa triển khai ─────────────────────────────────────
@@ -135,7 +135,7 @@ class SyntheticIdentityAdapter(IdentityProviderAdapterInterface):
     def authenticate(self, credential_token: str) -> AuthenticationContext:
         """Trả AuthenticationContext tổng hợp không có xác thực thật."""
         actor_id = f"synthetic_actor_{hashlib.sha256(credential_token.encode()).hexdigest()[:8]}"
-        email_hash = hashlib.sha256("synthetic@example.invalid".encode()).hexdigest()
+        email_hash = hashlib.sha256(f"synthetic@example.invalid".encode()).hexdigest()
         session_id = str(uuid.uuid4())
         return AuthenticationContext(
             actor_id=actor_id,

@@ -10,7 +10,6 @@ Tất cả tests đều verify:
 """
 import os
 import sys
-
 import pytest
 
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent.parent))
@@ -18,11 +17,11 @@ sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent.parent))
 from runtime.claude_api_runtime import (
     ClaudeApiRuntime,
     _evaluate_live_output,
-    _fabricated_check,
     _pii_check,
+    _fabricated_check,
 )
+from runtime.schemas import PolicyDecisionEnum, RuntimeTypeEnum, FixtureScenarioEnum
 from runtime.mock_agent_runtime import MockAgentRuntime
-from runtime.schemas import PolicyDecisionEnum, RuntimeTypeEnum
 
 _HAS_KEY = bool(os.environ.get("ANTHROPIC_API_KEY", ""))
 

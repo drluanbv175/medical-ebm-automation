@@ -26,13 +26,15 @@ from runtime.audit_logger import AuditLogger
 from runtime.controlled_orchestrator import ControlledOrchestrator
 from runtime.dispatch_guard import (
     DirectRuntimeBypassError,
+    DispatchGuardViolation,
     assert_via_orchestrator,
     reset_guard_context,
 )
 from runtime.mock_agent_runtime import MockAgentRuntime
-from runtime.schemas import PolicyDecisionEnum, WorkflowStateEnum
+from runtime.schemas import ApprovalDecisionEnum, PolicyDecisionEnum, WorkflowStateEnum
 from runtime.workflow_context import WorkflowContext
 from runtime.workflow_state_machine import WorkflowStateMachine
+
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 

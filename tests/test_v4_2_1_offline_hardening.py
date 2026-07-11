@@ -16,13 +16,13 @@ import pytest
 
 import runtime.agent_registry as ar
 from runtime.agent_registry import (
-    MINIMUM_AGENT_COUNT,
-    REQUIRED_AGENTS,
-    AgentManifestSelfCheckError,
     AgentRegistry,
     AgentRegistryEntry,
     AgentRegistryIntegrityError,
+    AgentManifestSelfCheckError,
     RegistryMode,
+    REQUIRED_AGENTS,
+    MINIMUM_AGENT_COUNT,
     from_entries_for_testing,
     reset_registry,
 )
@@ -34,6 +34,7 @@ from runtime.mock_agent_runtime import MockAgentRuntime
 from runtime.schemas import PolicyDecisionEnum, RuntimeTypeEnum, WorkflowStateEnum
 from runtime.workflow_context import WorkflowContext
 from runtime.workflow_state_machine import WorkflowStateMachine
+
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -183,6 +183,8 @@ def test_research_preflight_blocks_fake_result_marker():
     res = run_project(p)
     assert res.blocked is True
     assert any(r.startswith("FAKE_RESULT_PLACEHOLDER:") for r in res.preflight_report.reason_codes)
+
+
 # 2 — study-type routing
 def test_02_study_type_routing():
     assert len(all_templates()) == 7

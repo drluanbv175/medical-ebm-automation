@@ -12,8 +12,10 @@ Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE.
 
 from __future__ import annotations
 
+import pathlib
 import sys
 
+import pytest
 
 # ---------------------------------------------------------------------------
 # Invariant 0 — không import module gọi API/network
@@ -115,8 +117,8 @@ def test_v4332_dr13_empty_content():
 def test_v4332_dr8_empty_manifest_state(tmp_path):
     """Manifest rỗng → WARN + evidence_gate_state = REQUIRE_HUMAN_EVIDENCE_INPUT."""
     from research_project import (
-        EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
-        GateStatus,
+        GateStatus, EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
+        ProjectConfig, StudyType,
     )
     from research_project.project_qa_runner import ProjectQARunner
 
@@ -138,7 +140,7 @@ def test_v4332_dr8_empty_manifest_state(tmp_path):
 
 def test_v4332_dr8_retracted_state(tmp_path):
     """Bằng chứng RETRACTED → FAIL + evidence_gate_state = BLOCK."""
-    from research_project import EVIDENCE_GATE_STATE_BLOCK, GateStatus
+    from research_project import GateStatus, EVIDENCE_GATE_STATE_BLOCK, ProjectConfig
     from research_project.project_qa_runner import ProjectQARunner
 
     ev_dir = tmp_path / "evidence"
@@ -163,8 +165,7 @@ def test_v4332_dr8_retracted_state(tmp_path):
 def test_v4332_dr8_manual_review_state(tmp_path):
     """Bằng chứng MANUAL_REVIEW_REQUIRED → WARN + evidence_gate_state = REQUIRE_HUMAN_REVIEW."""
     from research_project import (
-        EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW,
-        GateStatus,
+        GateStatus, EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW, ProjectConfig,
     )
     from research_project.project_qa_runner import ProjectQARunner
 
@@ -187,7 +188,7 @@ def test_v4332_dr8_manual_review_state(tmp_path):
 
 def test_v4332_dr8_verified_state(tmp_path):
     """Tất cả VERIFIED_BY_HUMAN → PASS + evidence_gate_state = PASS."""
-    from research_project import EVIDENCE_GATE_STATE_PASS, GateStatus
+    from research_project import GateStatus, EVIDENCE_GATE_STATE_PASS, ProjectConfig
     from research_project.project_qa_runner import ProjectQARunner
 
     ev_dir = tmp_path / "evidence"
@@ -209,7 +210,7 @@ def test_v4332_dr8_verified_state(tmp_path):
 
 def test_v4332_dr8_no_evidence_dir(tmp_path):
     """Không có thư mục evidence/ → SKIP (không phải WARN)."""
-    from research_project import GateStatus
+    from research_project import GateStatus, ProjectConfig
     from research_project.project_qa_runner import ProjectQARunner
 
     cfg = _make_config()

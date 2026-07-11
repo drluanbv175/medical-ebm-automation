@@ -18,10 +18,11 @@ from typing import Dict, List, Optional, Tuple
 
 from .project_evidence_intake import (
     EvidenceSourceLedger,
-    PIIInEvidenceError,
     VerificationState,
     contains_pii,
+    PIIInEvidenceError,
 )
+
 
 # ---------------------------------------------------------------------------
 # Enums

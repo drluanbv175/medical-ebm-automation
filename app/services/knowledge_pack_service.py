@@ -358,6 +358,7 @@ def get_knowledge_pack_service(
 # ── CLI / quick check ──────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    import json
     logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
     svc = KnowledgePackService().load()
     report = svc.status_report()

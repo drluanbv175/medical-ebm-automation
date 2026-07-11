@@ -4,10 +4,7 @@ run_g4_auto.py — Cổng G4: SAP Final + SAP Lock Certificate
 Đọc G1+G3 checkpoints → SAP Final đầy đủ + chứng chỉ khóa → A5 .md + .docx + G4_checkpoint.json
 G4 là CỔNG CỨNG: bác sĩ phải ký SAP Lock Certificate mới LOCKED được.
 """
-import argparse
-import json
-import re
-import sys
+import argparse, json, re, sys
 from datetime import datetime
 from pathlib import Path
 
@@ -17,7 +14,6 @@ sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
-
 
 def load_cp(path):
     if Path(path).exists():

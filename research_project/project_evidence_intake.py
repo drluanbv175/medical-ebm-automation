@@ -18,12 +18,13 @@ import hashlib
 import io
 import json
 import pathlib
+import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .project_config import (
-    REQUIRE_HUMAN_INPUT_MARKER,
     EvidenceStatus,
+    REQUIRE_HUMAN_INPUT_MARKER,
     contains_pii,
     contains_real_data,
 )

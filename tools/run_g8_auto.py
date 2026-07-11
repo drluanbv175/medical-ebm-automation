@@ -1263,7 +1263,7 @@ def export_docx(artifact_md: str, study: str, out_dir: Path):
     """Xuat file .docx tu artifact markdown, to mau cac muc [CAN...]."""
     try:
         from docx import Document
-        from docx.shared import Pt, RGBColor
+        from docx.shared import RGBColor, Pt
 
         doc = Document()
         doc.add_heading(f"A9 -- Pre-Submission Review: {study}", 0)

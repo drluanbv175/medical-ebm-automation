@@ -18,18 +18,20 @@ Sử dụng:
 """
 
 import argparse
-from datetime import datetime
+import os
+import json
 from pathlib import Path
+from datetime import datetime
 
 # Import generator nếu có python-docx
 try:
-    from gen_research_docx import ARTIFACT_MAP, ResearchDocxGenerator
+    from gen_research_docx import ResearchDocxGenerator, ARTIFACT_MAP
     HAS_DOCX = True
 except ImportError:
     try:
         import sys
         sys.path.insert(0, str(Path(__file__).parent))
-        from gen_research_docx import ARTIFACT_MAP, ResearchDocxGenerator
+        from gen_research_docx import ResearchDocxGenerator, ARTIFACT_MAP
         HAS_DOCX = True
     except ImportError:
         HAS_DOCX = False
@@ -674,7 +676,7 @@ def scaffold(study_name: str, base_dir: str = None, with_docx: bool = True):
     index_lines += [
         "\n## Lệnh xuất .docx từng cổng\n\n",
         "```bash\n",
-        "cd medical-ebm-automation\n",
+        f"cd medical-ebm-automation\n",
         f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G0\n",
         f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G1\n",
         f"python tools/gen_research_docx.py --study \"{study_name}\" --artifact ethics\n",
@@ -691,7 +693,7 @@ def scaffold(study_name: str, base_dir: str = None, with_docx: bool = True):
         "\n> Cần bác sĩ kiểm chứng. KHÔNG PII.\n",
     ]
     (out / "STUDY_INDEX.md").write_text("".join(index_lines), encoding="utf-8")
-    print("  [IDX] STUDY_INDEX.md")
+    print(f"  [IDX] STUDY_INDEX.md")
 
     # ── study_meta.json — PIN durable (gate_params + cờ bằng-chứng-đời-thực) ──
     # File này là NƠI bác sĩ pin effect size (G3), thiết kế, và các cờ đời-thực
@@ -702,17 +704,17 @@ def scaffold(study_name: str, base_dir: str = None, with_docx: bool = True):
         _sys.path.insert(0, str(Path(__file__).resolve().parent))
         import gate_contract as _GC
         _GC.ensure_study_meta(out, seed={"title": study_name, "topic": study_name})
-        print("  [META] study_meta.json (PIN gate_params + cờ đời-thực)")
+        print(f"  [META] study_meta.json (PIN gate_params + cờ đời-thực)")
     except Exception as _e:  # noqa: BLE001
         print(f"  [WARN] Không tạo study_meta.json: {_e}")
 
     # ── Tóm tắt ────────────────────────────────────────────────────────
     print(f"\n✅ Scaffold hoàn tất: {out}")
     print(f"   {len(created_md)} file .md  |  {len(created_docx)} file .docx")
-    print("\nBước tiếp:")
-    print("  1. Mở STUDY_INDEX.md — xem trạng thái tổng")
+    print(f"\nBước tiếp:")
+    print(f"  1. Mở STUDY_INDEX.md — xem trạng thái tổng")
     print(f"  2. Chạy dieu-phoi-nghien-cuu cho đề tài '{study_name}'")
-    print("  3. Sau mỗi cổng G: chạy lệnh docx tương ứng (xem STUDY_INDEX.md)")
+    print(f"  3. Sau mỗi cổng G: chạy lệnh docx tương ứng (xem STUDY_INDEX.md)")
 
     return str(out)
 

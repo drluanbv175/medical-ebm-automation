@@ -10,50 +10,43 @@ from __future__ import annotations
 
 import json
 import pathlib
+import tempfile
+from datetime import datetime, timezone
 from typing import List
 
 import pytest
-
-from research_project.project_artifact_graph import (
-    get_downstream,
-    mark_stale,
-    topological_build_order,
-)
-from research_project.project_change_control import (
-    ChangeControlEngine,
-)
-from research_project.project_cli import main as researchctl_main
 
 # ---------------------------------------------------------------------------
 # Import tất cả module cần test
 # ---------------------------------------------------------------------------
 from research_project.project_config import (
-    REQUIRE_HUMAN_INPUT_MARKER,
-    ArtifactID,
-    ArtifactStatus,
-    EvidenceStatus,
-    GateStatus,
-    ProjectConfig,
-    StudyType,
-    contains_external_action,
-    contains_fabrication,
-    contains_pii,
-    contains_real_data,
+    StudyType, ArtifactID, ArtifactStatus, EvidenceStatus, GateStatus,
+    QualityGateResult, ProjectChangeRecord, ProjectConfig,
+    REQUIRE_HUMAN_INPUT_MARKER, DISCLAIMER,
+    contains_pii, contains_fabrication, contains_external_action,
+    contains_real_data, validate_study_type,
 )
-from research_project.project_crf_builder import build_crf_draft
-from research_project.project_dossier_builder import ProjectDossierBuilder
+from research_project.project_artifact_graph import (
+    get_downstream, get_direct_downstream, mark_stale, topological_build_order,
+)
+from research_project.project_registry import (
+    ProjectRegistry, DuplicateProjectError, UnknownProjectError,
+)
 from research_project.project_evidence_intake import (
-    EvidenceIntake,
+    EvidenceIntake, build_evidence_intake,
 )
 from research_project.project_methodology_planner import plan_methodology
-from research_project.project_qa_runner import run_project_qa
-from research_project.project_registry import (
-    DuplicateProjectError,
-    ProjectRegistry,
-    UnknownProjectError,
-)
+from research_project.project_crf_builder import build_crf_draft
+from research_project.project_sap_builder import build_sap_draft
 from research_project.project_reporting_planner import build_reporting_checklist
+from research_project.project_change_control import (
+    ChangeControlEngine, bump_version, ImmutableAuditLog,
+)
+from research_project.project_dossier_builder import ProjectDossierBuilder
+from research_project.project_qa_runner import ProjectQARunner, run_project_qa
 from research_project.project_review_pack import generate_review_pack
+from research_project.project_cli import main as researchctl_main
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -470,6 +463,7 @@ def test_29_review_pack_markdown_has_disclaimer(tmp_projects):
 def test_30_cli_project_status_lists_all(tmp_projects):
     """T30: CLI project-status liệt kê đúng số project sau khi init + build."""
     # Tạo 2 project thông qua CLI
+    import io, contextlib
 
     # project-init cần config file → dùng JSON thay vì YAML
     for pid in ["CLI-A", "CLI-B"]:
@@ -510,6 +504,7 @@ def test_30_cli_project_status_lists_all(tmp_projects):
 
 def test_invariant_no_api_import():
     """Invariant: research_project package không import anthropic/openai SDK."""
+    import research_project
     import sys
     forbidden = {"anthropic", "openai", "langchain", "requests", "httpx", "aiohttp"}
     loaded = set(sys.modules.keys())

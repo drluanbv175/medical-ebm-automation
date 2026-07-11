@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 import uuid
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 # ── Hằng số phụ thuộc chưa triển khai ─────────────────────────────────────

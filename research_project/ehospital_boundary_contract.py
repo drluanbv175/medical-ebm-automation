@@ -11,10 +11,12 @@ MỌI kết nối eHospital thật = EXTERNAL DEPENDENCY — NOT IMPLEMENTED.
 
 from __future__ import annotations
 
+import hashlib
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 
 # ── Production dependency declarations ─────────────────────────────────────
 

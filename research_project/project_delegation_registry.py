@@ -20,12 +20,13 @@ from __future__ import annotations
 import json
 import pathlib
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional
 
 from research_project.project_rbac_simulation import FORBIDDEN_ACTIONS_ALL_ROLES
+
 
 # ---------------------------------------------------------------------------
 # Invariants

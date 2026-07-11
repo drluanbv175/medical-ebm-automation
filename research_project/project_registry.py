@@ -10,13 +10,12 @@ from __future__ import annotations
 import dataclasses
 import json
 import pathlib
-from typing import Dict, List
+from datetime import datetime, timezone
+from typing import Dict, List, Optional
 
 from .project_config import (
-    ARTIFACT_FILENAME,
-    ArtifactID,
-    ArtifactStatus,
-    ProjectConfig,
+    ArtifactID, ArtifactStatus, ARTIFACT_FILENAME, ProjectConfig, StudyType,
+    validate_study_type,
 )
 
 

@@ -8,11 +8,12 @@ Mỗi fixture phải có:
 """
 
 from __future__ import annotations
-
+from datetime import datetime, timezone
 from typing import Optional
-
 from .agent_runtime import AgentRuntime
-from .schemas import FixtureOutput, FixtureScenarioEnum, PolicyDecisionEnum, RuntimeTypeEnum
+from .schemas import (
+    FixtureOutput, FixtureScenarioEnum, PolicyDecisionEnum, RuntimeTypeEnum
+)
 
 # ─── Fixture catalog ──────────────────────────────────────────────────────────
 

@@ -4,8 +4,9 @@ Không có API call, không lưu PII.
 """
 
 from __future__ import annotations
-
 import re
+from typing import Optional
+
 
 # ─── PII patterns (Vietnamese context) ────────────────────────────────────────
 

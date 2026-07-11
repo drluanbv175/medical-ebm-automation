@@ -4,9 +4,7 @@ R4.0 eHospital Read-Only Boundary Contract Tests.
 MRAQ_OFFLINE_CI=1 pytest tests/test_r4_0_ehospital_boundary.py -v
 """
 
-import hashlib
 from typing import Dict, List, Optional
-
 import pytest
 
 from research_project.ehospital_boundary_contract import (
@@ -24,6 +22,7 @@ from research_project.ehospital_boundary_contract import (
     PseudonymizedSubject,
     SyntheticEHospitalBoundary,
 )
+import hashlib
 
 TS = "2026-06-28T00:00:00Z"
 

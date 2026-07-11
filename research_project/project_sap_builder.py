@@ -9,7 +9,7 @@ from __future__ import annotations
 import dataclasses
 from typing import Dict, List
 
-from .project_config import DISCLAIMER, REQUIRE_HUMAN_INPUT_MARKER, StudyType
+from .project_config import REQUIRE_HUMAN_INPUT_MARKER, DISCLAIMER, StudyType
 
 
 @dataclasses.dataclass
@@ -34,7 +34,7 @@ class SAPDraft:
         lines = [
             f"# STATISTICAL ANALYSIS PLAN (DRAFT) — {self.study_type}",
             f"> Phiên bản: {self.version} · {RHI} · {DISCLAIMER}",
-            "> **CẢNH BÁO:** SAP phải được PI khóa TRƯỚC KHI xem dữ liệu (G4). Đây là bản DRAFT.",
+            f"> **CẢNH BÁO:** SAP phải được PI khóa TRƯỚC KHI xem dữ liệu (G4). Đây là bản DRAFT.",
             "",
         ]
         for sec in self.sections:
@@ -181,7 +181,7 @@ def _sap_sr_ma(rhi: str) -> List[SAPSection]:
 - **Phân tích subgroup định trước:** {rhi}
 - **Meta-regression:** {rhi}
 """),
-        SAPSection("SAP-5", "Publication bias", """
+        SAPSection("SAP-5", "Publication bias", f"""
 - Funnel plot + Egger's test (nếu ≥ 10 nghiên cứu).
 - Trim-and-fill nếu có bất cân xứng.
 """),

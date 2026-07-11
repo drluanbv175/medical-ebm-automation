@@ -17,8 +17,8 @@ import pytest
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
 
-import check_de_cuong  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
+import check_de_cuong  # noqa: E402
 import skill_standards as S  # noqa: E402
 
 

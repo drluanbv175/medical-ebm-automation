@@ -7,9 +7,9 @@ Mọi giá trị số/ngưỡng đều là REQUIRE_HUMAN_INPUT. OFFLINE · KHÔN
 from __future__ import annotations
 
 import dataclasses
-from typing import List
+from typing import Dict, List
 
-from .project_config import DISCLAIMER, REQUIRE_HUMAN_INPUT_MARKER, StudyType
+from .project_config import REQUIRE_HUMAN_INPUT_MARKER, StudyType, DISCLAIMER
 
 
 @dataclasses.dataclass
@@ -66,7 +66,7 @@ class CRFDraft:
                     f"| {f.field_id} | {f.field_name} | {display} | {f.unit} | {req} | {f.notes} |"
                 )
             lines.append("")
-        lines += [self.notes, "", "---", f"**Disclaimer:** {DISCLAIMER}"]
+        lines += [self.notes, "", f"---", f"**Disclaimer:** {DISCLAIMER}"]
         return "\n".join(lines)
 
 

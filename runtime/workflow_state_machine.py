@@ -4,11 +4,10 @@ Không cho phép nhảy state sai. Mọi transition cần authorization.
 """
 
 from __future__ import annotations
-
 from datetime import datetime, timezone
-
-from .approval_ledger import ApprovalLedger
+from typing import Optional
 from .schemas import WorkflowStateEnum, WorkflowTransition
+from .approval_ledger import ApprovalLedger
 
 # ─── Valid transitions ────────────────────────────────────────────────────────
 

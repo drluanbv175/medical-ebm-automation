@@ -13,16 +13,14 @@ import hashlib
 import json
 import pathlib
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from .project_artifact_graph import get_downstream
 from .project_config import (
-    ARTIFACT_FILENAME,
-    ArtifactID,
-    ArtifactStatus,
-    ProjectChangeRecord,
-    contains_pii,
+    ArtifactID, ArtifactStatus, ARTIFACT_FILENAME, ProjectChangeRecord,
+    contains_pii, scrub_pii,
 )
+from .project_artifact_graph import mark_stale, get_downstream
+
 
 # ---------------------------------------------------------------------------
 # Field → Artifact ảnh hưởng (đầu vào trực tiếp)

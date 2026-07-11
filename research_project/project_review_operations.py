@@ -23,17 +23,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
 
+from .project_config import (
+    ArtifactID, ArtifactStatus, ARTIFACT_FILENAME,
+    DISCLAIMER, REQUIRE_HUMAN_INPUT_MARKER as RHI,
+    ProjectConfig, contains_pii,
+)
 from .project_artifact_graph import get_downstream
-from .project_config import (
-    ARTIFACT_FILENAME,
-    DISCLAIMER,
-    ArtifactID,
-    ProjectConfig,
-    contains_pii,
-)
-from .project_config import (
-    REQUIRE_HUMAN_INPUT_MARKER as RHI,
-)
+
 
 # ---------------------------------------------------------------------------
 # Enums

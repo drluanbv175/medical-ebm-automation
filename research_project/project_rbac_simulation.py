@@ -18,10 +18,12 @@ Câu chữ bắt buộc:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+import uuid
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, FrozenSet, List, Optional
+from typing import Dict, FrozenSet, List, Optional, Set
+
 
 # ---------------------------------------------------------------------------
 # Invariants

@@ -9,7 +9,6 @@ Chạy: MRAQ_OFFLINE_CI=1 pytest tests/test_r1_2_identity_contract.py -v
 import importlib
 import inspect
 import sys
-
 import pytest
 
 from research_project.identity_adapter_contract import (
@@ -23,6 +22,7 @@ from research_project.identity_adapter_contract import (
     IdentityProviderAdapterInterface,
     SyntheticIdentityAdapter,
 )
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 

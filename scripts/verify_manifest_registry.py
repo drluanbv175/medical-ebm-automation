@@ -15,12 +15,8 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from runtime.agent_registry import (  # noqa: E402
-    MANIFEST_SELF_CHECK_SHA256,
-    MINIMUM_AGENT_COUNT,
-    REQUIRED_AGENTS,
-    SCOPE_A_MANIFEST_PATH,
-    AgentRegistry,
-    RegistryMode,
+    AgentRegistry, RegistryMode, SCOPE_A_MANIFEST_PATH,
+    MANIFEST_SELF_CHECK_SHA256, REQUIRED_AGENTS, MINIMUM_AGENT_COUNT,
 )
 
 REQUIRED_4 = {"dieu-phoi-nghien-cuu", "dieu-phoi-lam-sang",

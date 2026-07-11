@@ -4,13 +4,12 @@ Không log PII, không log raw prompt/response, không log raw exception.
 """
 
 from __future__ import annotations
-
 import json
+import re
 from datetime import datetime, timezone
 from typing import Optional
-
-from .data_boundary import DataBoundary
 from .schemas import AuditEvent, PolicyDecisionEnum, RuntimeTypeEnum
+from .data_boundary import DataBoundary
 
 _boundary = DataBoundary()
 

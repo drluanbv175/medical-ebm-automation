@@ -24,7 +24,7 @@ GIỚI HẠN ĐÃ BIẾT — GAP-006 (KHÔNG vá trong V4.2.1):
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .agent_registry import AgentRegistryEntry
