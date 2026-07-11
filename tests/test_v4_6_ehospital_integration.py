@@ -8,23 +8,19 @@ tự tạo SQLite tạm (synthetic) và bật cờ MRAQ_ENABLE_EHOSPITAL_SYNTHET
 trong setup; KHÔNG có test nào phụ thuộc ~/.ehospital thật (không còn skipif).
 """
 import os
+import sqlite3
 import sys
 import tempfile
-import sqlite3
 from pathlib import Path
-
-import pytest
 
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent.parent))
 
 from runtime.ehospital_connector import (
-    eHospitalConnector,
-    _find_db,
-    _PII_FIELDS,
     _EHOSPITAL_DIR,
     _ENABLE_FLAG,
+    _PII_FIELDS,
+    eHospitalConnector,
 )
-
 
 # ─── Helper: tạo DB test tạm thời ────────────────────────────────────────────
 

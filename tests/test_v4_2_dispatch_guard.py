@@ -14,20 +14,19 @@ from __future__ import annotations
 
 import pytest
 
-from runtime.agent_registry import AgentRegistryEntry, from_entries_for_testing
+from runtime.agent_registry import AgentRegistryEntry
 from runtime.dispatch_guard import (
+    DirectRuntimeBypassError,
     DispatchGuard,
     DispatchGuardViolation,
-    DirectRuntimeBypassError,
     assert_via_orchestrator,
     enter_orchestrated_context,
     exit_orchestrated_context,
-    reset_guard_context,
     is_in_orchestrated_context,
+    reset_guard_context,
 )
-from runtime.workflow_context import WorkflowContext
 from runtime.schemas import WorkflowStateEnum
-
+from runtime.workflow_context import WorkflowContext
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 

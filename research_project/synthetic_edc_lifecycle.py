@@ -11,12 +11,11 @@ from __future__ import annotations
 import hashlib
 import json
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from research_project.synthetic_edc_core import DISCLAIMER_EDC, SYNTHETIC_EDC_CLASSIFICATION
-
 
 # ── Trạng thái bản ghi ─────────────────────────────────────────────────────
 

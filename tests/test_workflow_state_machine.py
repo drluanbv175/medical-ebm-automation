@@ -3,10 +3,9 @@ Tests cho WorkflowStateMachine — Phase 3 Offline Controlled-System.
 Không có API call, không PII, hoàn toàn deterministic.
 """
 
-import pytest
-from runtime.workflow_state_machine import WorkflowStateMachine
 from runtime.approval_ledger import ApprovalLedger
 from runtime.schemas import WorkflowStateEnum
+from runtime.workflow_state_machine import WorkflowStateMachine
 
 
 def _ledger_with_ethics() -> ApprovalLedger:

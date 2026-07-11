@@ -31,31 +31,39 @@ OFFLINE · SYNTHETIC ONLY · KHÔNG API / PII.
 
 from __future__ import annotations
 
-import json
 import pathlib
 
 import pytest
 
 # Imports từ package
 from research_project import (
-    # Evidence Source Ledger (V4.3.5)
-    RetrievalMode, VerificationState, EvidenceSource, EvidenceSourceLedger,
-    ForbiddenRetrievalMode, AutoVerificationForbidden, PIIInEvidenceError,
     EVIDENCE_SOURCE_LEDGER_FILENAME,
-    add_evidence_source, get_evidence_review_queue,
+    AutoVerificationForbidden,
+    ClaimStatus,
+    ClaimTraceabilityLedger,
     # Claim Traceability (V4.3.5)
-    ClaimType, ClaimStatus, ClaimRecord, ClaimTraceabilityLedger,
-    CLAIM_LEDGER_FILENAME,
-    compute_claim_status, register_claim, get_claim_audit,
+    ClaimType,
+    EvidenceSource,
+    EvidenceSourceLedger,
+    ForbiddenRetrievalMode,
     # Config / QA
-    GateStatus, ProjectConfig, StudyType,
+    GateStatus,
+    PIIInEvidenceError,
+    ProjectConfig,
+    # Evidence Source Ledger (V4.3.5)
+    RetrievalMode,
+    StudyType,
+    VerificationState,
+    add_evidence_source,
+    compute_claim_status,
+    get_evidence_review_queue,
+    register_claim,
+)
+from research_project.project_config import (
+    EVIDENCE_GATE_STATE_BLOCK,
+    EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
 )
 from research_project.project_qa_runner import ProjectQARunner
-from research_project.project_config import (
-    EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
-    EVIDENCE_GATE_STATE_BLOCK,
-)
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -542,8 +550,8 @@ def test_t18_automation_cannot_set_human_verified(tmp_path):
 
 def test_t19_cli_has_4_new_subcommands():
     """CLI parser có đủ 4 subcommand V4.3.5; không import network/requests."""
+
     from research_project.project_cli import _build_parser
-    import sys
 
     parser = _build_parser()
     subparsers_action = None
@@ -560,9 +568,9 @@ def test_t19_cli_has_4_new_subcommands():
     assert "project-claim-audit" in commands
 
     # Không import requests / httpx / urllib trong module
+    import research_project.project_claim_traceability as ct_module
     import research_project.project_cli as cli_module
     import research_project.project_evidence_intake as ei_module
-    import research_project.project_claim_traceability as ct_module
     for mod in (cli_module, ei_module, ct_module):
         for attr in ("requests", "httpx", "urllib3"):
             assert not hasattr(mod, attr), f"Module {mod.__name__} imports {attr}"
@@ -577,7 +585,6 @@ def test_t20_reproducibility_check_still_passes(tmp_path):
     Thêm V4.3.5 modules không phá D-R13 reproducibility check.
     Kiểm tra compile sạch và import thành công.
     """
-    import importlib
     import sys
 
     # Xoá cache nếu có để test import tươi
@@ -594,12 +601,6 @@ def test_t20_reproducibility_check_still_passes(tmp_path):
             pass
 
     # Kiểm tra toàn bộ có thể import
-    from research_project import (
-        RetrievalMode, VerificationState, EvidenceSource,
-        ClaimType, ClaimStatus, ClaimRecord,
-        ForbiddenRetrievalMode, AutoVerificationForbidden,
-        compute_claim_status, register_claim, get_claim_audit,
-    )
 
     # Kiểm tra FORBIDDEN_RETRIEVAL_MODES đúng tập
     from research_project.project_evidence_intake import FORBIDDEN_RETRIEVAL_MODES

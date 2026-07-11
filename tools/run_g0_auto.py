@@ -613,6 +613,7 @@ def export_docx(artifact_md: str, study_name: str, out_dir: Path) -> Optional[Pa
         from docx import Document
         from docx.shared import RGBColor
         from docx.enum.text import WD_ALIGN_PARAGRAPH
+        from docx.shared import RGBColor
 
         doc = Document()
         # Tiêu đề

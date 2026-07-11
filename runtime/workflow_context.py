@@ -14,7 +14,9 @@ from typing import Optional
 
 
 def _utc_now() -> str:
-    return datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    # Dùng datetime nhận biết múi giờ (timezone-aware) thay cho utcnow() đã bị loại bỏ
+    # ở Python mới; chuỗi kết quả không đổi vì luôn là UTC + hậu tố "Z" cố định.
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _new_run_id() -> str:

@@ -5,16 +5,19 @@ Không có API call, không PII, hoàn toàn deterministic.
 """
 
 import pytest
-from runtime.mock_agent_runtime import MockAgentRuntime, FIXTURE_CATALOG
-from runtime.policy_gate_engine import PolicyGateEngine
-from runtime.workflow_state_machine import WorkflowStateMachine
+
+from runtime.agent_runtime import ClaudeApiRuntime, LocalModelRuntime, OpenAIApiRuntime
 from runtime.approval_ledger import ApprovalLedger
 from runtime.audit_logger import AuditLogger
-from runtime.agent_runtime import ClaudeApiRuntime, OpenAIApiRuntime, LocalModelRuntime
+from runtime.mock_agent_runtime import FIXTURE_CATALOG, MockAgentRuntime
+from runtime.policy_gate_engine import PolicyGateEngine
 from runtime.schemas import (
-    PolicyDecisionEnum, WorkflowStateEnum, GateDecisionEnum, RuntimeTypeEnum,
+    GateDecisionEnum,
+    PolicyDecisionEnum,
+    RuntimeTypeEnum,
+    WorkflowStateEnum,
 )
-
+from runtime.workflow_state_machine import WorkflowStateMachine
 
 # ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -349,7 +352,6 @@ import pathlib as _pathlib  # noqa: F401
 # trạng thái có/không agent source CẢ trong archive lẫn working tree.
 from runtime.agent_registry import AGENTS_DIR as _AGENTS_DIR_FOR_TC15
 
-
 # ─── TC-15A: Bundle Runtime Only mode ────────────────────────────────────────
 
 class TestTC15BundleRuntimeOnly:
@@ -375,7 +377,7 @@ class TestTC15BundleRuntimeOnly:
 
     def test_bundle_mode_make_trace_raises(self):
         """make_trace() phải raise trong BUNDLE mode — không được claim hash binding."""
-        from runtime.agent_registry import AgentRegistry, RegistryMode, AgentRegistryDisabledError
+        from runtime.agent_registry import AgentRegistry, AgentRegistryDisabledError, RegistryMode
         registry = AgentRegistry(mode=RegistryMode.BUNDLE_RUNTIME_ONLY)
         with pytest.raises(AgentRegistryDisabledError) as exc_info:
             registry.make_trace(
@@ -421,14 +423,14 @@ class TestTC15FullScopeA:
         assert registry.mode.value == "FULL_SCOPE_A"
 
     def test_full_scope_a_count_gte_48(self):
-        from runtime.agent_registry import AgentRegistry, RegistryMode, MINIMUM_AGENT_COUNT
+        from runtime.agent_registry import MINIMUM_AGENT_COUNT, AgentRegistry, RegistryMode
         registry = AgentRegistry(mode=RegistryMode.FULL_SCOPE_A)
         assert registry.count() >= MINIMUM_AGENT_COUNT, (
             f"Expected >= {MINIMUM_AGENT_COUNT} agents, got {registry.count()}"
         )
 
     def test_required_agents_present(self):
-        from runtime.agent_registry import AgentRegistry, RegistryMode, REQUIRED_AGENTS
+        from runtime.agent_registry import REQUIRED_AGENTS, AgentRegistry, RegistryMode
         registry = AgentRegistry(mode=RegistryMode.FULL_SCOPE_A)
         for req in REQUIRED_AGENTS:
             entry = registry.get(req)
@@ -455,12 +457,12 @@ class TestTC15FullScopeA:
     def test_make_trace_full_scope_a_has_real_hash(self):
         """Trace phải có agent_source_hash thực, không phải None."""
         from runtime.agent_registry import AgentRegistry, RegistryMode
-        from runtime.mock_agent_runtime import MockAgentRuntime
-        from runtime.policy_gate_engine import PolicyGateEngine
         from runtime.approval_ledger import ApprovalLedger
         from runtime.audit_logger import AuditLogger
-        from runtime.workflow_state_machine import WorkflowStateMachine
+        from runtime.mock_agent_runtime import MockAgentRuntime
+        from runtime.policy_gate_engine import PolicyGateEngine
         from runtime.schemas import RuntimeTypeEnum, WorkflowStateEnum
+        from runtime.workflow_state_machine import WorkflowStateMachine
 
         registry = AgentRegistry(mode=RegistryMode.FULL_SCOPE_A)
         runtime = MockAgentRuntime()

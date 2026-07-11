@@ -17,16 +17,16 @@ Gọi từ agent dieu-phoi-nghien-cuu sau mỗi cổng G:
 """
 
 import argparse
-import os
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 
 try:
     from docx import Document
-    from docx.shared import Pt, RGBColor, Cm, Inches
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.oxml.ns import qn
+    from docx.shared import Cm, Inches, Pt, RGBColor
     HAS_DOCX = True
 except ImportError:
     HAS_DOCX = False
