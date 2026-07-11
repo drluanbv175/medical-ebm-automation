@@ -1242,11 +1242,17 @@ def main():
         print(f"  → G0: topic='{topic[:50]}', {n_sr} SR, {n_rct} RCT")
 
     g1_cp_path = out_dir / "G1_checkpoint.json"
+    design_ambiguous = False
     if g1_cp_path.exists():
         g1 = json.loads(g1_cp_path.read_text(encoding="utf-8"))
         design_code_raw    = g1.get("design", {}).get("internal_code")
         design_primary_raw = g1.get("design", {}).get("primary")
         reporting_std_raw  = g1.get("design", {}).get("reporting_standard")
+        # Audit 2026-07-11: G1 gán design_code làm PLACEHOLDER TẠM khi lĩnh vực bão hòa
+        # cả RCT lẫn SR/MA (bác sĩ CHƯA xác nhận), gắn cờ "ambiguous" trong checkpoint —
+        # G3 đã đọc cờ này và cảnh báo (2026-07-08); G2 trước đây KHÔNG đọc, nên phân
+        # loại rủi ro/lộ trình IRB có thể chạy trên thiết kế chưa xác nhận mà không ai biết.
+        design_ambiguous = bool(g1.get("design", {}).get("ambiguous", False))
         # SỬA: dict.get(key, default) chỉ dùng default khi KHÔNG có key —
         # nếu checkpoint có key nhưng giá trị là null (JSON "null"/Python
         # None — thường gặp khi ghi checkpoint dở dang/lỗi), .get() vẫn trả
