@@ -1139,7 +1139,8 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
 
 def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
                          risk: dict, ct_trials: list, guardrail: dict,
-                         artifact_path: Path, docx_path: Optional[Path]) -> Path:
+                         artifact_path: Path, docx_path: Optional[Path],
+                         design_ambiguous: bool = False) -> Path:
     cp = {
         "study": study_name, "gate": "G2",
         "gate_status": "DRAFT — CHỜ BÁC SĨ NỘP IRB VÀ NHẬN SỐ PHÊ DUYỆT",
@@ -1149,6 +1150,10 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
         "g2_approval_date": None,
         "g2_icf_version": None,
         "g2_registration": None,
+        # Audit 2026-07-11: truyền tiếp cờ "thiết kế chưa xác nhận" từ G1 (đã có ở G3
+        # từ 2026-07-08) — để G4/G9 hoặc bác sĩ đọc checkpoint biết mức nguy cơ/lộ
+        # trình IRB ở trên có thể cần tính lại nếu thiết kế đổi.
+        "design_ambiguous": design_ambiguous,
         "design_code": design_code,
         "risk_level": risk["risk_level"],
         "irb_route": risk["irb_route"],
@@ -1296,6 +1301,11 @@ def main():
     print(f"  → Đăng ký: {risk['registration']}")
     if risk.get("_fallback_warning"):
         print(f"  {risk['_fallback_warning']}")
+    if design_ambiguous:
+        print(f"  ⚠️  [CẦN BÁC SĨ XÁC NHẬN THIẾT KẾ TRƯỚC KHI DÙNG] — G1 gán `{design_code}` "
+              "làm PLACEHOLDER TẠM (lĩnh vực bão hòa cả RCT lẫn SR/MA, bác sĩ CHƯA xác nhận "
+              "— xem G1 A2 §khoảng trống). Mức nguy cơ/lộ trình IRB/loại đăng ký ở trên có "
+              "thể phải tính LẠI nếu bác sĩ chọn thiết kế khác.")
 
     # ── Bước 3: Tìm ClinicalTrials.gov ──
     print("\n🔍 Bước 3/7: Tìm kiếm ClinicalTrials.gov (prior art)...")
