@@ -192,6 +192,31 @@ def test_case_control_template_g2_also_requires_ledger():
     assert {"G2", "G4", "G5"} <= gate_ids
 
 
+def test_cohort_sensitivity_template_requires_ledger_gate():
+    """Audit 2026-07-11: make_sensitivity_analysis() (cohort/Cox — chạy hồi quy
+    Cox THẬT trên CSV thật, giống hệt make_run_analysis_cli) TRƯỚC vòng vá này
+    KHÔNG có cổng nào — không _check_sap_db_locked, không _ledger_approved. Khóa
+    lại: phải có đủ G2+G4+G5 qua _ledger_approved, giống template CLI chính."""
+    G6 = _cli_module()
+    code = G6.make_sensitivity_analysis(_V, "TEST-STUDY", "cohort")
+    assert "_check_sap_db_locked" in code, (
+        "Template sensitivity cohort/Cox vẫn thiếu cổng G2/G4/G5 — chạy hồi quy "
+        "thật trên dữ liệu thật mà không kiểm gì.")
+    gate_ids = _ledger_approved_gate_ids(code)
+    assert {"G2", "G4", "G5"} <= gate_ids, (
+        f"Template sensitivity cohort/Cox thiếu gate trong _ledger_approved (chỉ thấy {gate_ids}).")
+
+
+def test_case_control_sensitivity_template_requires_ledger_gate():
+    """Cùng phát hiện trên, áp cho template sensitivity case-control (logistic/OR)."""
+    G6 = _cli_module()
+    code = G6.make_sensitivity_analysis(_V, "TEST-STUDY", "case_control")
+    assert "_check_sap_db_locked" in code
+    gate_ids = _ledger_approved_gate_ids(code)
+    assert {"G2", "G4", "G5"} <= gate_ids, (
+        f"Template sensitivity case-control thiếu gate trong _ledger_approved (chỉ thấy {gate_ids}).")
+
+
 def test_tampered_artifact_after_approval_still_blocked():
     """T3 — artifact bị sửa SAU khi duyệt (hash lệch) → vẫn phải CHẶN, chứng minh
     ràng buộc mật mã hoạt động thật, không chỉ kiểm 'có bản ghi nào đó'."""

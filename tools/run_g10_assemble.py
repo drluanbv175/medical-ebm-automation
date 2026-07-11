@@ -474,13 +474,27 @@ def build_gate_table(cps, meta=None) -> str:
     return "\n".join(lines)
 
 
-def build_readiness(cps, meta=None) -> str:
+def build_readiness(cps, meta=None, study: str = "<tên>") -> str:
     lines = ["# Kết luận trạng thái sẵn sàng\n",
              "| Mốc | Kết luận | Điều kiện / Chặn bởi |",
              "|---|---|---|"]
     for r in S.readiness_report(cps, meta):
         lines.append(f"| {r['moc']} | {r['dat']} | {r['chi_tiet']} |")
     lines.append("")
+    # Audit 2026-07-11: nhãn "ĐẠT (khoá — có bằng chứng thật)" ở trên dựa trên
+    # real_world_signals() — nguồn tín hiệu là checkpoint tự khai báo hoặc
+    # study_meta.json do bác sĩ tự ghi, KHÔNG phải xác minh mật mã ledger (cơ chế
+    # đó — approval_ledger.json + hash artifact — chỉ mới nối vào run_g6/run_g9/
+    # run_stats_analysis.py, KHÔNG chạy trong bảng này). "Bằng chứng thật" ở đây
+    # nghĩa là "khác artifact rỗng/placeholder", KHÔNG phải "đã qua cổng mật mã".
+    lines.append(
+        "> ⚠️ **Về độ tin cậy của cột \"Kết luận\":** nhãn \"khoá — có bằng chứng "
+        "thật\" dựa trên nội dung checkpoint/`study_meta.json` bác sĩ tự khai, "
+        "KHÔNG phải xác minh mật mã ledger (`approval_ledger.json` — cơ chế đó chỉ "
+        "chạy khi thật sự phân tích dữ liệu, qua `tools/approve_gate.py`). Trước "
+        f"khi nộp bài, xác nhận riêng bằng `python3 tools/run_g9_auto.py --study "
+        f"{study}` — cổng G9 có kiểm ledger thật.\n"
+    )
     return "\n".join(lines)
 
 
@@ -559,7 +573,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     parts.append("")
     # Bảng trạng thái + kết luận sẵn sàng đặt ĐẦU để bác sĩ thấy bức tranh thật.
     parts.append(build_gate_table(cps, meta))
-    parts.append(build_readiness(cps, meta))
+    parts.append(build_readiness(cps, meta, study=study))
     parts.append("---\n")
     # 16 mục đề cương.
     for builder in SECTION_BUILDERS:

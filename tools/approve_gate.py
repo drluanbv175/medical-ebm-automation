@@ -18,10 +18,10 @@ Dùng:
 
 Sau khi chạy: exports/<tên>/approval_ledger.json có thêm 1 dòng phê duyệt, evidence_hash =
 SHA256 của ĐÚNG nội dung file --artifact TẠI THỜI ĐIỂM CHẠY LỆNH NÀY. Nếu artifact bị sửa SAU
-khi duyệt, lần kiểm tiếp theo (run_g6_auto.py/run_stats_analysis.py — các script THỰC SỰ nối
-_ledger_approved) sẽ thấy hash KHÔNG khớp → không
-còn được coi là "đã khóa" nữa — đây chính là ý nghĩa "ràng buộc mật mã" (khác hoàn toàn so với
-gõ tay "LOCKED" vào checkpoint, vốn không biết nội dung có bị đổi sau đó hay không).
+khi duyệt, lần kiểm tiếp theo (run_g6_auto.py/run_g9_auto.py/run_stats_analysis.py — các script
+THỰC SỰ nối _ledger_approved, cập nhật 2026-07-11: G9 trước đó THIẾU, nay đã nối) sẽ thấy hash
+KHÔNG khớp → không còn được coi là "đã khóa" nữa — đây chính là ý nghĩa "ràng buộc mật mã" (khác
+hoàn toàn so với gõ tay "LOCKED" vào checkpoint, vốn không biết nội dung có bị đổi sau đó hay không).
 
 KHÔNG dùng để tự động hóa duyệt hàng loạt — mỗi lần gọi là một hành động có chủ ý của một người.
 """

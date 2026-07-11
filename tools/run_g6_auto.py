@@ -1566,11 +1566,11 @@ _SENSITIVITY_TEMPLATE = (
     "        return actual_hash == latest.get(\'evidence_hash\')\n"
     "    g2 = _load_cp(\'G2\'); g4 = _load_cp(\'G4\'); g5 = _load_cp(\'G5\')\n"
     "    g2_locked = _is_locked(g2.get(\'g2_status\', g2.get(\'G2_STATUS\'))) and _ledger_approved(\n"
-    "        \'G2\', _Path(\'exports\') / \'__STUDY__\' / \'G2_A3_ETHICS_PACKAGE___STUDY__.md\')\n"
+    "        \"G2\", _Path(\'exports\') / \'__STUDY__\' / \'G2_A3_ETHICS_PACKAGE___STUDY__.md\')\n"
     "    g4_locked = _is_locked(g4.get(\'g4_status\', g4.get(\'G4_STATUS\'))) and _ledger_approved(\n"
-    "        \'G4\', _Path(\'exports\') / \'__STUDY__\' / \'G4_A5_SAP_FINAL___STUDY__.md\')\n"
+    "        \"G4\", _Path(\'exports\') / \'__STUDY__\' / \'G4_A5_SAP_FINAL___STUDY__.md\')\n"
     "    g5_locked = _is_locked(g5.get(\'g5_status\', g5.get(\'G5_STATUS\'))) and _ledger_approved(\n"
-    "        \'G5\', _Path(\'exports\') / \'__STUDY__\' / \'G5_checkpoint.json\')\n"
+    "        \"G5\", _Path(\'exports\') / \'__STUDY__\' / \'G5_checkpoint.json\')\n"
     "    if not g2_locked and not i_confirm_irb:\n"
     "        raise SystemExit(\'DUNG: G2 (phe duyet dao duc/IRB) chua xac nhan LOCKED bang phe duyet that. \'\n"
     "                         \'Neu IRB THUC TE da phe duyet nhung thieu checkpoint, them --i-confirm-irb-approved.\')\n"
@@ -1748,6 +1748,66 @@ def fmt_pval(p):
     return '<0.001' if p < 0.001 else f'{p:.3f}'
 
 
+def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
+    # Audit 2026-07-11: script nay chay hoi quy logistic THAT tren du lieu CSV THAT
+    # (giong het run_case_control_cli.py) nhung truoc day KHONG co cong nao ca -
+    # sao chep dung cung co che _ledger_approved da co o CLI template chinh.
+    import hashlib as _hashlib
+    import json as _json
+    import re as _re
+    from pathlib import Path as _Path
+
+    def _is_locked(status):
+        s = str(status or '').strip().upper()
+        if _re.search(r'(UN|CH[ƯU]A|KH[ÔO]NG|NOT)\s*LOCKED', s):
+            return False
+        return bool(_re.match(r'^LOCKED\b', s))
+
+    def _load_cp(gate):
+        p = _Path('exports') / '__STUDY__' / f'{gate}_checkpoint.json'
+        if p.exists():
+            try:
+                return _json.loads(p.read_text(encoding='utf-8'))
+            except (ValueError, OSError):
+                return {}
+        return {}
+
+    def _ledger_approved(gate_id, artifact_path):
+        ledger_p = _Path('exports') / '__STUDY__' / 'approval_ledger.json'
+        if not ledger_p.exists() or not artifact_path.exists():
+            return False
+        try:
+            records = _json.loads(ledger_p.read_text(encoding='utf-8'))
+        except (ValueError, OSError):
+            return False
+        matches = [r for r in records if r.get('gate_id') == gate_id
+                   and r.get('decision') == 'APPROVED' and not r.get('is_synthetic')]
+        if not matches:
+            return False
+        latest = sorted(matches, key=lambda r: r.get('timestamp_utc', ''))[-1]
+        try:
+            actual_hash = _hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+        except OSError:
+            return False
+        return actual_hash == latest.get('evidence_hash')
+
+    g2 = _load_cp('G2')
+    g4 = _load_cp('G4')
+    g5 = _load_cp('G5')
+    g2_locked = _is_locked(g2.get('g2_status', g2.get('G2_STATUS'))) and _ledger_approved(
+        "G2", _Path('exports') / '__STUDY__' / 'G2_A3_ETHICS_PACKAGE___STUDY__.md')
+    g4_locked = _is_locked(g4.get('g4_status', g4.get('G4_STATUS'))) and _ledger_approved(
+        "G4", _Path('exports') / '__STUDY__' / 'G4_A5_SAP_FINAL___STUDY__.md')
+    g5_locked = _is_locked(g5.get('g5_status', g5.get('G5_STATUS'))) and _ledger_approved(
+        "G5", _Path('exports') / '__STUDY__' / 'G5_checkpoint.json')
+    if not g2_locked and not i_confirm_irb:
+        raise SystemExit('DUNG: G2 (phe duyet dao duc/IRB) chua xac nhan LOCKED bang phe duyet that. '
+                          'Neu IRB THUC TE da phe duyet nhung thieu checkpoint, them --i-confirm-irb-approved.')
+    if not (g4_locked and g5_locked) and not i_confirm_sap:
+        raise SystemExit('DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that. '
+                          'Neu SAP+DB THUC TE da khoa nhung thieu checkpoint, them --i-confirm-sap-locked.')
+
+
 def run_logistic_sub(df, outcome, exposure, avail):
     cols = [outcome, exposure] + avail
     df2 = df[[c for c in cols if c in df.columns]].dropna().astype(float)
@@ -1780,7 +1840,10 @@ def main():
     parser.add_argument('--outcome-prevalence', type=float, default=None,
                          help='Ty le ca trong QUAN THE NGUON (khong phai trong mau) -- de tinh E-value dung neu outcome pho bien')
     parser.add_argument('--output-dir', default='.')
+    parser.add_argument('--i-confirm-sap-locked', action='store_true')
+    parser.add_argument('--i-confirm-irb-approved', action='store_true')
     args = parser.parse_args()
+    _check_sap_db_locked(args.i_confirm_sap_locked, args.i_confirm_irb_approved)
     exposure = args.exposure
     outcome = args.outcome
     covariates = [c.strip() for c in args.covariates.split(',') if c.strip()]

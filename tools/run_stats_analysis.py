@@ -9,10 +9,11 @@ Sử dụng:
         --covariates age,sex,bmi \\
         --study "TEN-DE-TAI" --gate G6
 
-    # Ví dụ phân tích sống còn:
-    python tools/run_stats_analysis.py \\
-        --data data.xlsx --time fu_months --event died \\
-        --group arm --study "SURVIVAL-STUDY" --gate G6
+CHƯA hỗ trợ phân tích sống còn/time-to-event (Cox/Kaplan-Meier) — script này chỉ so sánh
+2 nhóm nhị phân/liên tục. Không có cờ --time/--event nào trong argparse của script này; một
+lệnh dùng 2 cờ đó sẽ lỗi ngay. Với thiết kế cohort/HR cần Cox+KM thật, dùng script CLI do
+run_g6_auto.py sinh ra (exports/<study>/run_analysis_cli.py — dùng lifelines CoxPHFitter/
+KaplanMeierFitter thật, cùng cổng G2/G4/G5 như script này).
 
 Đầu ra (tự động vào exports/<study>/):
     G6_table1_descriptive.txt     — Bảng 1 đặc điểm mẫu
@@ -288,8 +289,19 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
     predictors = [group_col] + available_covs
     data = df[[outcome_col] + predictors].dropna()
 
-    if len(data) < len(predictors) * 10:
-        return {"warning": f"Cỡ mẫu {len(data)} có thể không đủ EPV cho {len(predictors)} biến dự báo."}
+    # Audit 2026-07-11: EPV (Events-Per-Variable, Peduzzi 1996) cho hồi quy LOGISTIC
+    # phải tính theo SỐ BIẾN CỐ (nhóm hiếm hơn của outcome nhị phân), không phải tổng
+    # N — trước đây dùng chung len(data) cho cả 2 nhánh binary/liên tục, âm thầm
+    # KHÔNG bảo vệ được trường hợp N lớn nhưng biến cố hiếm (vd 500 dòng, 25 biến cố).
+    if outcome_type == "binary":
+        y_raw = data[outcome_col]
+        n_events = int(min((y_raw == y_raw.unique()[0]).sum(), (y_raw != y_raw.unique()[0]).sum())) \
+            if y_raw.nunique() == 2 else len(data)
+        if n_events < len(predictors) * 10:
+            return {"warning": f"Số biến cố (nhóm hiếm hơn) {n_events} có thể không đủ EPV "
+                                f"cho {len(predictors)} biến dự báo (cần ≥10 biến cố/biến — Peduzzi 1996)."}
+    elif len(data) < len(predictors) * 10:
+        return {"warning": f"Cỡ mẫu {len(data)} có thể không đủ cho {len(predictors)} biến dự báo."}
 
     X = pd.get_dummies(data[predictors], drop_first=True)
     X = sm.add_constant(X)

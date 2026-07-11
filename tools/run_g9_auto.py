@@ -37,6 +37,36 @@ sys.path.insert(0, str(_TOOLS_DIR))
 
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — chỉ dùng load_study_meta)
 
+
+def _ledger_approved(study: str, gate_id: str, artifact_path: Path) -> bool:
+    """Audit 2026-07-11: G9 là cổng cứng CUỐI CÙNG trước nộp bài nhưng trước đây
+    KHÔNG có xác minh mật mã ledger nào — ethics_locked/sap_locked chỉ kiểm
+    checkpoint text tự do (g2_irb_number/sap_signed_date không placeholder), y hệt
+    lỗ hổng đã vá ở run_stats_analysis.py/run_g6_auto.py (BL-06, 2026-07-08/09):
+    ai/agent nào tự tay điền số IRB/ngày ký SAP vào checkpoint là qua cổng, dù chưa
+    từng có phê duyệt thật. Sao chép ĐÚNG hàm đã dùng ở 2 nơi kia — True CHỈ khi có
+    phê duyệt THẬT (không synthetic, không agent tự tạo) cho gate_id, VÀ evidence_hash
+    khớp NỘI DUNG HIỆN TẠI của artifact_path (artifact bị sửa sau duyệt → hash lệch
+    → coi như CHƯA duyệt)."""
+    import hashlib
+    ledger_p = _REPO_ROOT / "exports" / study / "approval_ledger.json"
+    if not ledger_p.exists() or not artifact_path.exists():
+        return False
+    try:
+        records = json.loads(ledger_p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return False
+    matches = [r for r in records if r.get("gate_id") == gate_id
+               and r.get("decision") == "APPROVED" and not r.get("is_synthetic")]
+    if not matches:
+        return False
+    latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]
+    try:
+        actual_hash = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    except OSError:
+        return False
+    return actual_hash == latest.get("evidence_hash")
+
 _TODAY = datetime.now().strftime("%d/%m/%Y")
 _YEAR  = datetime.now().strftime("%Y")
 
@@ -758,14 +788,21 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
     # nhau giữa G8 và G9 cho cùng 1 câu hỏi. Sửa: dùng CÙNG tín hiệu đáng
     # tin mà G8 đã dùng — kiểm nội dung THẬT (số IRB/ngày ký SAP đã điền,
     # không còn placeholder [CẦN]), không dựa vào field trạng thái riêng.
-    ethics_locked = bool(
+    ethics_locked_text = bool(
         g2.get("g2_irb_number") and "[CẦN" not in str(g2.get("g2_irb_number", ""))
         and "[CAN" not in str(g2.get("g2_irb_number", ""))
     )
-    sap_locked = bool(
+    sap_locked_text = bool(
         (g4.get("sap_signed_date") or g4.get("sap_locked"))
         and "[CẦN" not in str(g4.get("sap_signed_date", ""))
     )
+    # Audit 2026-07-11: checkpoint text một mình không còn đủ — cần thêm phê duyệt
+    # thật khớp hash trong approval_ledger.json (cùng chuẩn run_stats_analysis.py/
+    # run_g6_auto.py), vì đây là cổng cứng CUỐI CÙNG trước nộp bài ra ngoài.
+    ethics_locked = ethics_locked_text and _ledger_approved(
+        study, "G2", _REPO_ROOT / "exports" / study / f"G2_A3_ETHICS_PACKAGE_{study}.md")
+    sap_locked = sap_locked_text and _ledger_approved(
+        study, "G4", _REPO_ROOT / "exports" / study / f"G4_A5_SAP_FINAL_{study}.md")
 
     g2_icon = "✅" if ethics_locked else "⚠ CHỜ BÁC SĨ"
     g4_icon = "✅" if sap_locked    else "⚠ CHỜ BÁC SĨ"
@@ -1055,14 +1092,20 @@ def write_g9_checkpoint(
     # mâu thuẫn với G8 (vốn kiểm nội dung thật g2_irb_number/sap_signed_date
     # chứ không dựa field trạng thái). Nay dùng CHUNG tín hiệu đáng tin với
     # G8 để 2 cổng luôn đồng thuận cho cùng 1 câu hỏi.
-    ethics_locked_cp = bool(
+    ethics_locked_cp_text = bool(
         g2_cp.get("g2_irb_number") and "[CẦN" not in str(g2_cp.get("g2_irb_number", ""))
         and "[CAN" not in str(g2_cp.get("g2_irb_number", ""))
     )
-    sap_locked_cp = bool(
+    sap_locked_cp_text = bool(
         (g4_cp.get("sap_signed_date") or g4_cp.get("sap_locked"))
         and "[CẦN" not in str(g4_cp.get("sap_signed_date", ""))
     )
+    # Audit 2026-07-11: cùng cổng ledger đã thêm ở build_part8_gate_criteria() —
+    # checkpoint viết ra phải phản ánh ĐÚNG trạng thái đã kiểm mật mã, không chỉ text.
+    ethics_locked_cp = ethics_locked_cp_text and _ledger_approved(
+        study, "G2", _REPO_ROOT / "exports" / study / f"G2_A3_ETHICS_PACKAGE_{study}.md")
+    sap_locked_cp = sap_locked_cp_text and _ledger_approved(
+        study, "G4", _REPO_ROOT / "exports" / study / f"G4_A5_SAP_FINAL_{study}.md")
     if not ethics_locked_cp:
         pending.insert(
             0, "G2 (Đạo đức) chưa LOCKED — cần số IRB thật từ Hội đồng Đạo đức"
