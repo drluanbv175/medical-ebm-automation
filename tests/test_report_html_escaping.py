@@ -53,3 +53,35 @@ def test_alert_digest_bullets_escapes_external_text():
     rendered = "\n".join(out)
     assert "<img" not in rendered
     assert "&lt;img" in rendered
+
+
+def test_safety_reports_row_escapes_external_text():
+    """2026-07-11 (round 20): safety_reports.py có CÙNG khuôn _row()/_md_table() như
+    weekly_ebm.py nhưng bị bỏ sót ở round 19 — vá + chốt bằng test riêng."""
+    from app.reports.safety_reports import _row
+
+    row = _row(_fake_evidence_item())
+    assert "<img" not in row["title"]
+    assert "&lt;img" in row["title"]
+    assert "<img" not in row["safety_signal"]
+    assert "&lt;img" in row["safety_signal"]
+
+
+def test_safety_reports_md_output_has_no_raw_tag():
+    from app.reports.safety_reports import render_drug_safety_md
+
+    data = {
+        "generated_at": "2026-07-11 00:00 UTC",
+        "regulatory": [], "signals": [],
+        "counts": {"regulatory": 0, "signals": 0},
+    }
+    # Bơm 1 item nguy hiểm qua đường build_drug_safety_data thật là phức tạp (cần DB) —
+    # kiểm trực tiếp qua _row() (đã test ở trên) + render_drug_safety_md với dữ liệu
+    # đã escape sẵn để chốt đường ống render không tự làm lộ lại.
+    from app.reports.safety_reports import _row
+    row = _row(_fake_evidence_item())
+    data["signals"] = [row]
+    data["counts"]["signals"] = 1
+    md = render_drug_safety_md(data)
+    assert "<img" not in md
+    assert "&lt;img" in md
