@@ -105,10 +105,10 @@ def test_json_parse_failure_after_2xx_does_not_leak_api_key_in_log(caplog):
             raise ValueError(f"Expecting value: line 1 column 1 (url={self.url})")
 
     client = HttpClient(cache_ttl=0, min_interval=0)
-    client.session = _ScriptedSession([
-        _BadJsonResponse(200, _leaked_url()),
-        _BadJsonResponse(200, _leaked_url()),
-    ])
+    client.session = _ScriptedSession([])
+    client.session.request = lambda method, url, params=None, timeout=None: _BadJsonResponse(
+        200, _leaked_url()
+    )
     with caplog.at_level(logging.WARNING):
         with pytest.raises(RuntimeError):
             client.get_json("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
