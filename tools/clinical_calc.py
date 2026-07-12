@@ -284,7 +284,15 @@ def _z_from_alpha(alpha: float) -> float:
 # ═══════════════════════════════════════════════════════════════════════════
 
 _GRADE_LABELS = {4: "Cao (High)", 3: "Trung bình (Moderate)", 2: "Thấp (Low)", 1: "Rất thấp (Very low)"}
-_START_LEVEL = {"rct": 4, "observational": 2}
+# "dta" = độ chính xác chẩn đoán (diagnostic test accuracy) — 2026-07-12: thêm mức khởi điểm
+# thiếu (rà kiến trúc phát hiện tham-dinh-do-chinh-xac-chan-doan.md kỳ vọng GRADE-cho-test
+# nhưng công cụ này trước đó CHỈ có "rct"/"observational"). Bắt đầu CAO (4), KHÔNG PHẢI thấp
+# như observational thường — đã xác minh qua PubMed TRƯỚC khi thêm (không suy đoán): nghiên
+# cứu cắt ngang/đoàn hệ so sánh trực tiếp index test với reference standard "start as high
+# certainty" (Schünemann HJ et al. "GRADE guidelines: 21 part 1. Study design, risk of bias,
+# and indirectness in rating the certainty across a body of evidence for test accuracy."
+# J Clin Epidemiol 2020;122:129-141. PMID:32060007 DOI:10.1016/j.jclinepi.2019.12.020).
+_START_LEVEL = {"rct": 4, "observational": 2, "dta": 4}
 
 
 def grade_rating(design: str, risk_of_bias: int = 0, inconsistency: int = 0,
