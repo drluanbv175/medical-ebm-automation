@@ -225,3 +225,42 @@ def test_grade_rejects_invalid_design():
 def test_grade_rejects_out_of_range_domain_severity():
     with pytest.raises(CC.ClinicalCalcError):
         CC.grade_rating(design="rct", risk_of_bias=3)
+
+
+# ── GRADE-DTA (2026-07-12, task_5a25a9c7) — độ chính xác chẩn đoán ─────────
+# Bắt đầu CAO (như RCT), xác minh qua PubMed TRƯỚC khi code (Schünemann et al.
+# J Clin Epidemiol 2020;122:129-141, PMID:32060007) — KHÔNG suy đoán từ "observational".
+
+def test_grade_dta_starts_high_like_rct_not_low_like_observational():
+    r = CC.grade_rating(design="dta")
+    assert r["start_level"] == 4
+    assert r["start_label"].startswith("Cao")
+    assert r["final_level"] == 4
+
+
+def test_grade_dta_downgraded_by_quadas2_risk_of_bias():
+    # risk_of_bias ở đây được chấm bằng QUADAS-2 (không phải RoB 2) — cùng thang 0/1/2.
+    r = CC.grade_rating(design="dta", risk_of_bias=1)
+    assert r["final_level"] == 3
+    assert "QUADAS-2" in r["note"]
+
+
+def test_grade_dta_downgraded_by_indirectness_and_imprecision():
+    r = CC.grade_rating(design="dta", indirectness=1, imprecision=2)
+    assert r["final_level"] == 1  # 4 - 1 - 2 = 1
+
+
+def test_grade_dta_has_no_observational_upgrade_factors():
+    # GRADE-DTA không định nghĩa large_effect/dose_response/confounding — truyền vào
+    # không được cộng thêm điểm (khác observational, nơi các yếu tố này CÓ áp dụng).
+    r = CC.grade_rating(design="dta", large_effect=2, dose_response=1,
+                        plausible_confounding_reduces_effect=1)
+    assert r["total_upgrade"] == 0
+    assert r["final_level"] == 4  # vẫn kẹp ở trần 4, không vượt
+    assert r["domains"]["large_effect"] != 2
+
+
+def test_grade_dta_accepted_by_cli_design_choices():
+    # Hồi quy: trước bản vá, "dta" không có trong _START_LEVEL -> ClinicalCalcError.
+    r = CC.grade_rating(design="DTA")  # cũng kiểm chuẩn hóa hoa/thường
+    assert r["design"] == "dta"
