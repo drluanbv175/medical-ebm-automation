@@ -11,7 +11,8 @@ import clinical_checkpoint as CC  # noqa: E402
 
 def _block(case="CA-001", cong="A", ngay="2026-07-04", loai="lâm sàng",
            san_pham="Khuyến nghị điều trị THA", con_lai="(không)",
-           buoc_ke="Chờ bác sĩ áp dụng", agent="so-cai-ghi-nho"):
+           buoc_ke="Chờ bác sĩ áp dụng", agent="so-cai-ghi-nho",
+           guardrail="ĐẠT"):
     return (
         f"## CHECKPOINT [{ngay}] — đề tài/ca: {case}\n"
         f"- cong_vua_qua:   {cong}\n"
@@ -21,6 +22,7 @@ def _block(case="CA-001", cong="A", ngay="2026-07-04", loai="lâm sàng",
         f"- danh_muc_🔴_con_lai: {con_lai}\n"
         f"- buoc_ke:        {buoc_ke}\n"
         f"- agent_ghi:      {agent}\n"
+        f"- guardrail_dau_ra: {guardrail}\n"
     )
 
 
@@ -112,6 +114,33 @@ def test_validate_non_gate_entry_with_red_items_is_not_violation():
                                              con_lai="chờ dữ liệu thô"))
     violations = CC.validate_entries(entries)
     assert not any(v.code == "GATE_WITH_OUTSTANDING_RED_ITEMS" for v in violations)
+
+
+def test_validate_gate_a_without_guardrail_verdict_is_violation():
+    # 2026-07-12: guardrail phải THẬT SỰ chạy và ĐẠT trước khi coi Cổng A/B là xong —
+    # trường rỗng/thiếu bị chặn, không còn chỉ là quy ước cấp prompt.
+    entries = CC.parse_checkpoint_log(_block(cong="A", guardrail=""))
+    violations = CC.validate_entries(entries)
+    assert any(v.code == "GATE_WITHOUT_GUARDRAIL_VERDICT" for v in violations)
+
+
+def test_validate_gate_a_with_guardrail_not_dat_is_violation():
+    entries = CC.parse_checkpoint_log(_block(cong="A", guardrail="TRẢ-VỀ-SỬA"))
+    violations = CC.validate_entries(entries)
+    assert any(v.code == "GATE_WITHOUT_GUARDRAIL_VERDICT" for v in violations)
+
+
+def test_validate_gate_a_with_guardrail_dat_is_clean():
+    entries = CC.parse_checkpoint_log(_block(cong="A", guardrail="ĐẠT"))
+    violations = CC.validate_entries(entries)
+    assert not any(v.code == "GATE_WITHOUT_GUARDRAIL_VERDICT" for v in violations)
+
+
+def test_validate_non_gate_entry_without_guardrail_is_not_violation():
+    # G-cổng nghiên cứu trung gian (không phải A/B) không bắt buộc guardrail_dau_ra.
+    entries = CC.parse_checkpoint_log(_block(cong="G3", loai="nghiên cứu", guardrail=""))
+    violations = CC.validate_entries(entries)
+    assert not any(v.code == "GATE_WITHOUT_GUARDRAIL_VERDICT" for v in violations)
 
 
 def test_validate_gate_b_before_gate_a_same_case_is_violation():

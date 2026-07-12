@@ -52,6 +52,15 @@ _FIELD_PATTERNS = {
 }
 REQUIRED_FIELDS = tuple(_FIELD_PATTERNS.keys())
 
+# 2026-07-12 (rà kiến trúc đội agent — vá "guardrail chỉ là quy ước prompt, không có cổng
+# kỹ thuật"): trường TÙY CHỌN riêng (KHÔNG vào _FIELD_PATTERNS/REQUIRED_FIELDS — không phá
+# vỡ các khối G0-G9 cũ chưa có trường này) — chỉ BẮT BUỘC kiểm khi khối là Cổng A/B (is_gate_
+# entry), đúng đúng lúc `tham-dinh-dau-ra.md` tự nhận PHẢI chạy trước khi trả bác sĩ. Trước
+# bản vá này, việc guardrail có thật sự chạy hay không hoàn toàn phụ thuộc quy ước cấp prompt
+# ("CẤM phát hành khi chưa ĐẠT") — không có gate kỹ thuật nào ép buộc, tự thừa nhận trong
+# _KIEM-DUYET-DOC-LAP.md.
+_GUARDRAIL_FIELD_RE = re.compile(r"-\s*guardrail_dau_ra:\s*(.+)")
+
 _EMPTY_TOKENS = {"", "(không)", "(khong)", "không", "khong", "none", "n/a", "-"}
 _VALID_TASK_TYPES = {"lâm sàng", "lam sang", "nghiên cứu", "nghien cuu"}
 _VALID_GATE_RE = re.compile(r"^(?:G\d{1,2}|A|B)$", re.I)
@@ -79,6 +88,7 @@ class CheckpointEntry:
     agent_ghi: str
     raw_block: str
     missing_fields: list = field(default_factory=list)
+    guardrail_dau_ra: str = ""
 
     @property
     def has_outstanding_red_items(self) -> bool:
@@ -87,6 +97,10 @@ class CheckpointEntry:
     @property
     def is_gate_entry(self) -> bool:
         return self.cong_vua_qua.strip().upper() in ("A", "B")
+
+    @property
+    def guardrail_passed(self) -> bool:
+        return self.guardrail_dau_ra.strip().upper().startswith("ĐẠT")
 
 
 @dataclass
@@ -124,11 +138,13 @@ def parse_checkpoint_log(text: str) -> list[CheckpointEntry]:
             else:
                 fields_found[name] = ""
                 missing.append(name)
+        gm = _GUARDRAIL_FIELD_RE.search(block)
         entries.append(CheckpointEntry(
             index=i,
             case_label=h.group("case").strip(),
             raw_block=h.group(0) + "\n" + block,
             missing_fields=missing,
+            guardrail_dau_ra=gm.group(1).strip() if gm else "",
             **fields_found,
         ))
     return entries
@@ -176,6 +192,18 @@ def validate_entries(entries: list[CheckpointEntry]) -> list[Violation]:
                 "GATE_WITH_OUTSTANDING_RED_ITEMS", e.index, e.case_label,
                 f"Cổng {e.cong_vua_qua.strip().upper()} được ghi ĐÃ QUA nhưng "
                 f"danh_muc_🔴_con_lai vẫn còn: {e.danh_muc_do_con_lai!r}"))
+
+        # 2026-07-12: Cổng A/B = thời điểm gói sắp/đã trả cho bác sĩ — tham-dinh-dau-ra.md
+        # tự định nghĩa PHẢI chạy "trước khi trả kết quả cho bác sĩ". Trước bản vá này không
+        # có gì ép buộc điều này ngoài quy ước cấp prompt; nay khối Cổng A/B THIẾU hoặc chưa
+        # ĐẠT trường guardrail_dau_ra bị máy kiểm chặn, cùng cơ chế với GATE_WITH_OUTSTANDING_
+        # RED_ITEMS ở trên (không phải trường bắt buộc schema chung — G0-G9 không cần).
+        if e.is_gate_entry and not e.guardrail_passed:
+            violations.append(Violation(
+                "GATE_WITHOUT_GUARDRAIL_VERDICT", e.index, e.case_label,
+                f"Cổng {e.cong_vua_qua.strip().upper()} được ghi nhưng trường "
+                f"guardrail_dau_ra thiếu/chưa ĐẠT ({e.guardrail_dau_ra!r}) — "
+                "tham-dinh-dau-ra PHẢI chạy và ĐẠT trước khi trả gói cho bác sĩ."))
 
         pii = _scan_pii(e.raw_block)
         if pii:
