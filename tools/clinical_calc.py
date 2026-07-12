@@ -308,11 +308,18 @@ def grade_rating(design: str, risk_of_bias: int = 0, inconsistency: int = 0,
     2=rất nghiêm trọng (hạ 2 bậc). Yếu tố nâng bậc (chỉ áp observational): 0=không có,
     1=có (nâng 1 bậc), large_effect có thể =2 (hiệu ứng RẤT lớn, nâng 2 bậc).
 
+    design="dta" (2026-07-12, task_5a25a9c7): độ chính xác chẩn đoán (diagnostic test
+    accuracy) — nghiên cứu cắt ngang/đoàn hệ so sánh trực tiếp index test với reference
+    standard. Bắt đầu CAO (giống RCT — xác minh PMID:32060007, KHÔNG suy đoán), hạ bậc
+    theo CÙNG 5 domain nhưng risk_of_bias chấm bằng QUADAS-2 (không phải RoB 2). KHÔNG
+    áp yếu tố nâng bậc observational (large_effect/dose_response/confounding) — nguồn
+    GRADE-DTA không định nghĩa các yếu tố này cho thiết kế DTA.
+
     Kết quả kẹp trong [1,4] (Rất thấp…Cao) — không thể âm/vượt trần dù cộng dồn nhiều yếu tố.
     """
     design = design.lower().strip()
     if design not in _START_LEVEL:
-        raise ClinicalCalcError(f"design='{design}' phải là 'rct' hoặc 'observational'.")
+        raise ClinicalCalcError(f"design='{design}' phải là 'rct', 'observational' hoặc 'dta'.")
     for name, v in (("risk_of_bias", risk_of_bias), ("inconsistency", inconsistency),
                     ("indirectness", indirectness), ("imprecision", imprecision),
                     ("publication_bias", publication_bias)):
