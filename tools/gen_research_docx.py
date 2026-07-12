@@ -6,13 +6,20 @@ Sử dụng:
     python tools/gen_research_docx.py --study "TEN-DE-TAI" --gate G1 --artifact protocol
     python tools/gen_research_docx.py --list   # liệt kê tất cả artifact
 
-Quy ước đặt tên file đầu ra:
-    exports/<TEN-DE-TAI>/<gate>_<artifact>_<TEN-DE-TAI>.docx
-    Ví dụ: exports/PCOS-MET-2026/G0a_Intake_Feasibility_Audit_PCOS-MET-2026.docx
+Quy ước đặt tên file đầu ra (2026-07-12: sửa ví dụ — khớp đúng _save(), trước đây ví dụ
+tự mâu thuẫn với code thật):
+    exports/<TEN-DE-TAI>/<artifact_code>_<ARTIFACT_KEY_HOA>_<TEN-DE-TAI>.docx
+    Ví dụ: exports/PCOS-MET-2026/G0a_INTAKE_PCOS-MET-2026.docx
 
-Gọi từ agent dieu-phoi-nghien-cuu sau mỗi cổng G:
+⚠ Đây là công cụ SOẠN THẢO/SCAFFOLD 20 artifact theo SPEC gốc — KHÔNG dùng thay cho
+`run_g2_auto.py`/`run_g4_auto.py` khi cần artifact G2 (đạo đức)/G4 (SAP) qua cổng khóa
+chống p-hacking thật (`run_g6_auto.py::_ledger_approved` chỉ đọc file .md do 2 script đó
+sinh, tên khác với công cụ này — xem cảnh báo trong _gen_ethics/_gen_sap; task_a5fde306).
+
+Gọi từ agent dieu-phoi-nghien-cuu sau mỗi cổng G (2026-07-12: sửa ví dụ — __init__
+KHÔNG nhận tham số `gate`, trước đây ví dụ gọi sai chữ ký thật):
     from tools.gen_research_docx import ResearchDocxGenerator
-    gen = ResearchDocxGenerator(study_name="...", gate="G0")
+    gen = ResearchDocxGenerator(study_name="...")
     gen.generate("intake", content={...})
 """
 
