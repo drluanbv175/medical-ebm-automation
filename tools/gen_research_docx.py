@@ -540,6 +540,19 @@ class ResearchDocxGenerator:
             "⚠ ĐÂY LÀ KẾ HOẠCH PHÂN TÍCH ĐÃ KHÓA (PRE-SPECIFIED). "
             "KHÔNG sửa đổi sau khi bắt đầu xem dữ liệu thật.",
             bold=True, color=self.RED, size=12)
+        # 2026-07-12 (rà kiến trúc — task_a5fde306): cùng lý do như _gen_ethics — file
+        # NÀY KHÔNG phải artifact được cổng khóa chống p-hacking (run_g6_auto.py::
+        # _ledger_approved) đọc/hash. Cổng đó CHỈ đọc exports/<study>/G4_A5_SAP_FINAL_
+        # <study>.md do run_g4_auto.py sinh. KHÔNG đổi tên .docx ở đây để "khớp" — nguy
+        # cơ ghi đè nhầm bản SAP thật (đã khóa) bằng bản DỰ THẢO của công cụ này.
+        self._p(doc,
+            "⚠ Đây là bản DỰ THẢO scaffold (gen_research_docx.py) — KHÔNG phải artifact "
+            "chính thức mà cổng khóa chống p-hacking (run_g6_auto.py) đọc để xác nhận G4 "
+            "đã LOCKED. Artifact chính thức là exports/<đề tài>/G4_A5_SAP_FINAL_<đề tài>.md "
+            "do `python tools/run_g4_auto.py` sinh, được `tools/approve_gate.py` hash để "
+            "ghi vào approval_ledger.json. Dùng file này để soạn thảo/tham khảo, KHÔNG dùng "
+            "thay cho artifact do run_g4_auto.py sinh khi cần qua cổng G4.",
+            bold=True, color=self.ORANGE, size=11)
         doc.add_paragraph("")
 
         sections = [
