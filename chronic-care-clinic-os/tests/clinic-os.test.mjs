@@ -489,3 +489,18 @@ test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => 
   assert.match(mvp, /requiresAudit: true/);
   assert.doesNotMatch(mvp, /COPD|Asthma|Telehealth/);
 });
+
+test("AI_DRAFTS_ENABLED has a real code-level circuit breaker, not just a doc promise", () => {
+  // 2026-07-12 audit: .env.example declared AI_DRAFTS_ENABLED=false and PRODUCTION_BLOCKERS.md
+  // promised "AI must remain disabled," but no code anywhere read the flag — true only because no
+  // AI call site existed yet. Locks in the fix: a guard module any future call site must invoke.
+  const guard = read("lib/ai-guard.ts");
+  const blockers = read("PRODUCTION_BLOCKERS.md");
+  const envExample = read(".env.example");
+  assert.match(guard, /export function assertAiDraftsEnabled/);
+  assert.match(guard, /export function isAiDraftsEnabled/);
+  assert.match(guard, /AI_DRAFTS_ENABLED/);
+  assert.match(guard, /throw new Error/);
+  assert.match(envExample, /AI_DRAFTS_ENABLED="false"/);
+  assert.match(blockers, /lib\/ai-guard\.ts::assertAiDraftsEnabled/);
+});

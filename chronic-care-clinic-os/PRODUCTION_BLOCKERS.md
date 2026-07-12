@@ -39,4 +39,4 @@ This system is not production-ready and must not be used with real patient data 
 
 ## AI blocker
 
-- AI must remain disabled until MVP-01 is stable, privacy controls are verified and human review workflow is implemented.
+- AI must remain disabled until MVP-01 is stable, privacy controls are verified and human review workflow is implemented. (2026-07-12: `lib/ai-guard.ts::assertAiDraftsEnabled()` added as a code-level circuit breaker — any future AI call site must call it first. Still open: this only enforces the flag once a call site exists; the governance/privacy/review-workflow prerequisites above are unaffected.)
