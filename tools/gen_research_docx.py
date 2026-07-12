@@ -582,6 +582,20 @@ class ResearchDocxGenerator:
             "Phê duyệt IRB thật phải do Hội đồng đạo đức bệnh viện cấp — "
             "AI KHÔNG tự phê duyệt.",
             bold=True, color=self.RED, size=12)
+        # 2026-07-12 (rà kiến trúc — task_a5fde306): file NÀY KHÔNG phải artifact được
+        # cổng khóa chống p-hacking (run_g6_auto.py::_ledger_approved) đọc/hash — cổng đó
+        # CHỈ đọc exports/<study>/G2_A3_ETHICS_PACKAGE_<study>.md do run_g2_auto.py sinh.
+        # Không đổi tên file .docx ở đây để khớp — làm vậy có nguy cơ ghi đè NHẦM lên
+        # bản .docx thật (nếu run_g2_auto.py đã chạy trước) bằng bản DỰ THẢO/placeholder
+        # của công cụ này. Thay vào đó cảnh báo rõ để không ai nhầm đây là artifact CHÍNH.
+        self._p(doc,
+            "⚠ Đây là bản DỰ THẢO scaffold (gen_research_docx.py) — KHÔNG phải artifact "
+            "chính thức mà cổng khóa chống p-hacking (run_g6_auto.py) đọc để xác nhận G2 "
+            "đã LOCKED. Artifact chính thức là exports/<đề tài>/G2_A3_ETHICS_PACKAGE_"
+            "<đề tài>.md do `python tools/run_g2_auto.py` sinh, được `tools/approve_gate.py` "
+            "hash để ghi vào approval_ledger.json. Dùng file này để soạn thảo/tham khảo, "
+            "KHÔNG dùng thay cho artifact do run_g2_auto.py sinh khi cần qua cổng G2.",
+            bold=True, color=self.ORANGE, size=11)
         doc.add_paragraph("")
 
         self._h(doc, "1. Thông tin đề tài")
