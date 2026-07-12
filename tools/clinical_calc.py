@@ -409,7 +409,7 @@ def main() -> int:
     n.add_argument("--json", action="store_true")
 
     g = sub.add_parser("grade", help="Xếp hạng GRADE (thuật toán chính thức)")
-    g.add_argument("--design", required=True, choices=["rct", "observational"])
+    g.add_argument("--design", required=True, choices=["rct", "observational", "dta"])
     g.add_argument("--rob", type=int, default=0, dest="risk_of_bias")
     g.add_argument("--inconsistency", type=int, default=0)
     g.add_argument("--indirectness", type=int, default=0)
