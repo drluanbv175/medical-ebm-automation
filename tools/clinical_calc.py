@@ -336,6 +336,7 @@ def grade_rating(design: str, risk_of_bias: int = 0, inconsistency: int = 0,
     if design == "observational":
         upgrade = large_effect + dose_response + plausible_confounding_reduces_effect
     final = max(1, min(4, start - downgrade + upgrade))
+    _na_upgrade = f"N/A (chỉ observational áp dụng, không phải '{design}')"
     return {
         "design": design, "start_level": start, "start_label": _GRADE_LABELS[start],
         "total_downgrade": downgrade, "total_upgrade": upgrade,
@@ -344,13 +345,15 @@ def grade_rating(design: str, risk_of_bias: int = 0, inconsistency: int = 0,
             "risk_of_bias": risk_of_bias, "inconsistency": inconsistency,
             "indirectness": indirectness, "imprecision": imprecision,
             "publication_bias": publication_bias,
-            "large_effect": large_effect if design == "observational" else "N/A (chỉ RCT không áp dụng)",
-            "dose_response": dose_response if design == "observational" else "N/A",
+            "large_effect": large_effect if design == "observational" else _na_upgrade,
+            "dose_response": dose_response if design == "observational" else _na_upgrade,
             "plausible_confounding_reduces_effect":
-                plausible_confounding_reduces_effect if design == "observational" else "N/A",
+                plausible_confounding_reduces_effect if design == "observational" else _na_upgrade,
         },
-        "note": "Kết quả TỔNG HỢP từ đánh giá domain do bác sĩ/nguồn cung cấp theo thuật "
-                "toán chính thức GRADE — công cụ KHÔNG tự chấm risk-of-bias/inconsistency.",
+        "note": ("Kết quả TỔNG HỢP từ đánh giá domain do bác sĩ/nguồn cung cấp theo thuật "
+                 "toán chính thức GRADE — công cụ KHÔNG tự chấm risk-of-bias/inconsistency."
+                 + (" Với design='dta': risk_of_bias chấm bằng QUADAS-2 (không phải RoB 2)."
+                    if design == "dta" else "")),
     }
 
 
