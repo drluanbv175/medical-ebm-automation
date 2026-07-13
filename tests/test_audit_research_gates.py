@@ -31,6 +31,9 @@ def test_new_study_points_to_g0_with_topic_command(tmp_path):
     g0 = report["pipeline_gates"][0]
     assert g0["status"] == ARG.STATUS_MISSING
     assert "run_g0_auto.py" in g0["next_action"]
+    assert g0["release_contract"]["verdict"] == ARG.RELEASE_AUTO_ACTION
+    assert g0["release_contract"]["can_release_to_next_gate"] is False
+    assert g0["release_contract"]["responsible_actor"] == "agent"
     assert "Tỷ lệ kiểm soát huyết áp" in g0["next_action"]
 
 
@@ -44,6 +47,9 @@ def test_hard_gate_draft_requires_real_irb_signal(tmp_path):
     assert g2["real_signal"]["key"] == "irb_approved"
     assert g2["real_signal"]["present"] is False
     assert "IRB" in g2["next_action"]
+    assert g2["release_contract"]["verdict"] == ARG.RELEASE_HUMAN_EVIDENCE
+    assert g2["release_contract"]["prevents_downstream"] is True
+    assert g2["release_contract"]["responsible_actor"] == "human_pi_or_irb"
 
 
 def test_hard_gate_locks_when_meta_signal_is_present(tmp_path):
@@ -55,6 +61,7 @@ def test_hard_gate_locks_when_meta_signal_is_present(tmp_path):
 
     assert g2["status"] == ARG.STATUS_LOCKED
     assert g2["real_signal"]["present"] is True
+    assert g2["release_contract"]["verdict"] == ARG.RELEASE_LOCKED
 
 
 def test_gate_requirement_manifest_detects_artifact_and_metadata(tmp_path):
@@ -138,6 +145,7 @@ def test_action_queue_routes_new_study_to_agent_g0(tmp_path):
     assert report["resume_contract"]["mode"] == "AUTO_RUN_ALLOWED"
     assert report["resume_contract"]["can_auto_resume"] is True
     assert report["resume_contract"]["next_command"] == first["next_action"]
+    assert report["gate_release_summary"]["first_blocking_gate"]["gate"] == "G0"
 
 
 def test_action_queue_marks_dependency_blocks_as_human_evidence(tmp_path):
@@ -191,6 +199,7 @@ def test_next_agent_action_does_not_skip_human_gate_blocker(tmp_path):
     assert report["resume_contract"]["can_auto_resume"] is False
     assert report["resume_contract"]["human_blocker"]["gate"] == "G2"
     assert report["resume_contract"]["next_command"] is None
+    assert report["gate_release_summary"]["first_blocking_gate"]["gate"] == "G2"
 
 
 def test_blocked_needs_input_surfaces_remediation_command(tmp_path):
@@ -273,6 +282,10 @@ def test_write_reports_and_updates_study_meta(tmp_path):
     assert (
         meta["research_gate_automation"]["resume_contract"]
         == report["resume_contract"]
+    )
+    assert (
+        meta["research_gate_automation"]["gate_release_summary"]
+        == report["gate_release_summary"]
     )
     queue_payload = json.loads(
         (tmp_path / ARG.ACTION_QUEUE_JSON).read_text(encoding="utf-8")

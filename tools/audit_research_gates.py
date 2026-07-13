@@ -45,6 +45,13 @@ STATUS_GUARDRAIL_FAIL = "GUARDRAIL_FAIL"
 STATUS_NEEDS_REAL = "DRAFT_NEEDS_REAL_INPUT"
 STATUS_UNKNOWN = "UNKNOWN"
 
+RELEASE_LOCKED = "LOCKED_REAL_EVIDENCE"
+RELEASE_DRAFT_READY = "DRAFT_READY_FOR_NEXT_GATE"
+RELEASE_AUTO_ACTION = "AUTO_ACTION_REQUIRED"
+RELEASE_HUMAN_EVIDENCE = "HUMAN_EVIDENCE_REQUIRED"
+RELEASE_REPAIR = "REPAIR_REQUIRED"
+RELEASE_UNKNOWN = "UNKNOWN_REVIEW_REQUIRED"
+
 REAL_SIGNAL_LABELS = {
     "irb_approved": "phê duyệt IRB/EC thật",
     "sap_locked": "SAP đã ký khóa trước khi xem dữ liệu",
@@ -861,6 +868,12 @@ def _gate_action_actor(row: Dict[str, Any], blocked_by: List[str]) -> str:
     return "agent"
 
 
+def _gate_release_actor(row: Dict[str, Any], blockers: List[str]) -> str:
+    if row.get("status") == STATUS_GUARDRAIL_FAIL:
+        return "agent_with_human_review"
+    return _gate_action_actor(row, blockers)
+
+
 def _gate_action_reason(row: Dict[str, Any]) -> Optional[str]:
     status = row.get("status")
     if status == STATUS_MISSING:
@@ -882,6 +895,98 @@ def _gate_action_reason(row: Dict[str, Any]) -> Optional[str]:
     if status == STATUS_UNKNOWN:
         return "Không đọc được trạng thái guardrail rõ ràng."
     return None
+
+
+def _gate_release_contract(row: Dict[str, Any]) -> Dict[str, Any]:
+    blockers = _gate_blocked_by(row)
+    dependency_missing = (row.get("dependency_readiness") or {}).get("missing_required") or []
+    artifact_missing = (row.get("artifact_readiness") or {}).get("missing_required") or []
+    metadata_missing = (row.get("metadata_readiness") or {}).get("missing_required") or []
+    stale_or_orphan = bool(row.get("stale") or row.get("orphan"))
+    status = row.get("status")
+
+    if status == STATUS_LOCKED:
+        verdict = RELEASE_LOCKED
+        can_release = not dependency_missing and not artifact_missing and not metadata_missing and not stale_or_orphan
+        prevents_downstream = not can_release
+    elif status == STATUS_GUARDRAIL_FAIL:
+        verdict = RELEASE_REPAIR
+        can_release = False
+        prevents_downstream = True
+    elif status in {STATUS_BLOCKED, STATUS_NEEDS_REAL} or dependency_missing or blockers:
+        verdict = RELEASE_HUMAN_EVIDENCE
+        can_release = False
+        prevents_downstream = True
+    elif status == STATUS_MISSING or artifact_missing or metadata_missing or stale_or_orphan:
+        verdict = RELEASE_AUTO_ACTION if row.get("can_auto_run") else RELEASE_HUMAN_EVIDENCE
+        can_release = False
+        prevents_downstream = True
+    elif status == STATUS_READY:
+        verdict = RELEASE_DRAFT_READY
+        can_release = True
+        prevents_downstream = False
+    else:
+        verdict = RELEASE_UNKNOWN
+        can_release = False
+        prevents_downstream = True
+
+    missing_domains: List[str] = []
+    if dependency_missing or blockers:
+        missing_domains.append("dependency_or_real_signal")
+    if artifact_missing:
+        missing_domains.append("artifact")
+    if metadata_missing:
+        missing_domains.append("metadata")
+    if stale_or_orphan:
+        missing_domains.append("freshness")
+    if status == STATUS_GUARDRAIL_FAIL:
+        missing_domains.append("guardrail")
+    if status == STATUS_BLOCKED:
+        missing_domains.append("blocked_contract")
+
+    return {
+        "gate": row["gate"],
+        "verdict": verdict,
+        "can_release_to_next_gate": can_release,
+        "prevents_downstream": prevents_downstream,
+        "responsible_actor": _gate_release_actor(row, blockers),
+        "missing_domains": sorted(dict.fromkeys(missing_domains)),
+        "blockers": blockers,
+        "next_action": row["next_action"],
+        "safety_rule": (
+            "Không chuyển cổng downstream nếu can_release_to_next_gate=false; "
+            "audit lại sau khi xử lý blocker."
+        ),
+    }
+
+
+def _attach_release_contracts(rows: List[Dict[str, Any]]) -> None:
+    for row in rows:
+        row["release_contract"] = _gate_release_contract(row)
+
+
+def _release_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    counts: Dict[str, int] = {}
+    blockers: List[Dict[str, Any]] = []
+    for row in rows:
+        contract = row["release_contract"]
+        verdict = contract["verdict"]
+        counts[verdict] = counts.get(verdict, 0) + 1
+        if contract["prevents_downstream"]:
+            blockers.append({
+                "gate": row["gate"],
+                "verdict": verdict,
+                "responsible_actor": contract["responsible_actor"],
+                "blockers": contract["blockers"],
+                "missing_domains": contract["missing_domains"],
+                "next_action": contract["next_action"],
+            })
+    return {
+        "counts": counts,
+        "blocking_gate_count": len(blockers),
+        "first_blocking_gate": blockers[0] if blockers else None,
+        "blocking_gates": blockers,
+    }
 
 
 def _build_action_queue(report: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -1004,12 +1109,31 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         f"- Resume mode: `{report['resume_contract']['mode']}`",
         f"- Can auto resume: `{report['resume_contract']['can_auto_resume']}`",
         f"- Resume command: `{report['resume_contract']['next_command'] or 'NONE'}`",
+        f"- Release blockers: {report['gate_release_summary']['blocking_gate_count']}",
+        "",
+        "## Gate Release Contracts",
+        "",
+        "| Gate | Verdict | Can Release | Prevents Downstream | Actor | Missing Domains | Blockers | Next Action |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for row in report["pipeline_gates"]:
+        contract = row["release_contract"]
+        lines.append(
+            f"| {cell(row['gate'])} | {cell(contract['verdict'])} | "
+            f"{cell(contract['can_release_to_next_gate'])} | "
+            f"{cell(contract['prevents_downstream'])} | "
+            f"{cell(contract['responsible_actor'])} | "
+            f"{cell(', '.join(contract['missing_domains']))} | "
+            f"{cell(', '.join(contract['blockers']))} | "
+            f"{cell(contract['next_action'])} |"
+        )
+    lines.extend([
         "",
         "## Action Queue",
         "",
         "| Priority | Source | Gate/Step | Actor | Auto Run | Blocked By | Reason | Next Action |",
         "|---|---|---|---|---|---|---|---|",
-    ]
+    ])
     for item in report.get("action_queue") or []:
         blocked_by = ", ".join(item.get("blocked_by") or [])
         gate_or_step = item.get("gate") or item.get("step") or ""
@@ -1139,6 +1263,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any],
         "next_agent_action": report.get("next_agent_action"),
         "action_queue_size": len(report.get("action_queue") or []),
         "resume_contract": report["resume_contract"],
+        "gate_release_summary": report["gate_release_summary"],
         "json": str(json_path.relative_to(out_dir)),
         "markdown": str(md_path.relative_to(out_dir)),
         "action_queue_json": str(queue_path.relative_to(out_dir)),
@@ -1167,6 +1292,7 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         _classify_gate(gate, study_id, out_dir, topic, meta, cps, signals, freshness)
         for gate in PIPELINE_GATES
     ]
+    _attach_release_contracts(pipeline_rows)
     hard_stop_count = sum(
         1 for row in pipeline_rows
         if row["status"] in {STATUS_BLOCKED, STATUS_GUARDRAIL_FAIL, STATUS_NEEDS_REAL}
@@ -1203,6 +1329,7 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         "freshness": freshness,
         "real_world_signals": signals,
         "pipeline_gates": pipeline_rows,
+        "gate_release_summary": _release_summary(pipeline_rows),
         "data_pipeline": data_pipeline,
         "skill_gates": _skill_gate_rows(cps, meta),
         "readiness": S.readiness_report(cps, meta),
@@ -1244,6 +1371,7 @@ def print_summary(report: Dict[str, Any]) -> None:
     print(f"action_queue_size={len(report.get('action_queue') or [])}")
     print(f"resume_mode={report['resume_contract']['mode']}")
     print(f"can_auto_resume={report['resume_contract']['can_auto_resume']}")
+    print(f"release_blocking_gate_count={report['gate_release_summary']['blocking_gate_count']}")
     for row in report["pipeline_gates"]:
         if row["gate"] == report.get("current_actionable_gate"):
             print(f"next_action={row['next_action']}")
