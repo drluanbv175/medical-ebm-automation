@@ -295,6 +295,42 @@ class TestValidatorCatchesFabrication:
         assert not report["passed"]
         assert any("Báo cáo phản biện ba vai trò" in e for e in report["errors"])
 
+    def test_catches_false_technical_completion_claim(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text += "\n\nKết luận điều hành: HOÀN THÀNH KỸ THUẬT.\n"
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("R10" in e for e in report["errors"])
+        assert any("irb_approved" in e for e in report["errors"])
+
+    def test_allows_explicit_not_completed_status(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text += "\n\nKết luận điều hành: CHƯA HOÀN THÀNH KỸ THUẬT.\n"
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert report["passed"], report["errors"]
+
+    def test_allows_completion_claim_when_all_real_world_signals_exist(self, cross_sectional_study):
+        meta = {
+            "irb_approved": True,
+            "sap_lock_date": "2026-07-13",
+            "data_lock_date": "2026-07-14",
+            "results_final": True,
+            "integrity_signed": True,
+        }
+        (cross_sectional_study / "study_meta.json").write_text(
+            json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text += "\n\nKết luận điều hành: HOÀN THÀNH KỸ THUẬT.\n"
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert report["passed"], report["errors"]
+        assert report["checks"]["R10_no_false_completion"].startswith("PASS")
+
     def test_clean_de_cuong_passes(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)
         report = check_de_cuong.validate(res["md"], cross_sectional_study)

@@ -21,8 +21,10 @@ R8. Có ma trận tuân thủ tiêu chuẩn quốc tế: reporting checklist đ�
 R9. Có bảng kiểm hoàn thành kỹ thuật: khóa phạm vi, phân biệt nguồn thông tin,
     đủ 10 bước, đủ bộ 16 đầu ra, kiểm định cuối và quy tắc chỉ ghi HOÀN THÀNH
     KỸ THUẬT khi mọi lỗi nghiêm trọng đã xử lý.
+R10. Không tự tuyên bố “HOÀN THÀNH KỸ THUẬT” nếu chưa có đủ tín hiệu đời thực:
+     IRB thật, SAP khóa, dữ liệu khóa, kết quả thật, gói liêm chính ký.
 
-Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R9 = ĐỎ
+Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R10 = ĐỎ
 (passed=False). R6 = cảnh báo (không chặn, vì một số tham số giả định hợp lệ).
 
 Dùng: python3 tools/check_de_cuong.py --study <MÃ>   (hoặc import validate()).
@@ -85,6 +87,32 @@ _TECHNICAL_COMPLETION_TERMS = (
     "Cấu trúc báo cáo cuối",
     "HOÀN THÀNH KỸ THUẬT",
 )
+_COMPLETION_CLAIM_RE = re.compile(
+    r"(?im)^\s*(?:[-*]\s*)?"
+    r"(?:kết luận[^:\n]{0,80}|trạng thái[^:\n]{0,80}|verdict|final status|decision)"
+    r"\s*[:：-]\s*(?!CHƯA\b)(?:ĐÃ\s*)?HOÀN THÀNH KỸ THUẬT\b"
+)
+_COMPLETION_REQUIRED_SIGNALS = (
+    "irb_approved", "sap_locked", "db_locked", "results_final", "integrity_signed",
+)
+
+
+def _load_json(path: Path) -> Dict:
+    try:
+        if path.exists():
+            return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return {}
+
+
+def _load_checkpoints(out_dir: Path) -> Dict[str, Dict]:
+    cps: Dict[str, Dict] = {}
+    for g in range(11):
+        p = out_dir / f"G{g}_checkpoint.json"
+        if p.exists():
+            cps[f"G{g}"] = _load_json(p)
+    return cps
 
 
 def _raw_pmids(out_dir: Path) -> Set[str]:
@@ -333,6 +361,26 @@ def validate(md_path, out_dir) -> Dict:
     else:
         checks["R9_technical_completion"] = (
             "PASS (10 bước + 16 đầu ra + kiểm định cuối + quy tắc hoàn thành)")
+
+    # R10 — chống tự tuyên bố hoàn thành kỹ thuật khi cổng đời thực chưa đủ.
+    completion_claims = [m.group(0).strip() for m in _COMPLETION_CLAIM_RE.finditer(text)]
+    cps = _load_checkpoints(out_dir)
+    meta = _load_json(out_dir / "study_meta.json")
+    signals = S.real_world_signals(cps, meta)
+    missing_signals = [s for s in _COMPLETION_REQUIRED_SIGNALS if not signals.get(s)]
+    if completion_claims and missing_signals:
+        errors.append(
+            "R10 TỰ TUYÊN BỐ HOÀN THÀNH KỸ THUẬT khi thiếu tín hiệu đời thực: "
+            + ", ".join(missing_signals)
+            + ". Chỉ được ghi 'CHƯA HOÀN THÀNH KỸ THUẬT' hoặc mô tả điều kiện còn thiếu.")
+        checks["R10_no_false_completion"] = (
+            f"FAIL ({len(completion_claims)} tuyên bố, thiếu {len(missing_signals)} tín hiệu)")
+    elif completion_claims:
+        checks["R10_no_false_completion"] = (
+            "PASS (có tuyên bố hoàn thành và đủ tín hiệu đời thực)")
+    else:
+        checks["R10_no_false_completion"] = (
+            "PASS (không tự tuyên bố hoàn thành kỹ thuật)")
 
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,
