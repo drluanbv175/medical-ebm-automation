@@ -25,10 +25,10 @@ Tuyên bố bắt buộc (chỉ dùng được trong FULL_SCOPE_A):
 """
 
 import csv
+import dataclasses
 import enum
 import hashlib
 import pathlib
-import dataclasses
 from typing import Dict, List, Optional
 
 BASE_DIR = pathlib.Path(__file__).parent.parent  # medical-ebm-automation/
@@ -53,7 +53,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # `scripts/regenerate_agent_manifest.py --write` rồi dán giá trị self-check mới
 # vào đây MỖI LẦN sync agent .md đã sửa sang medical-ebm-automation/.claude/agents/.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "2061099c9e6bb8ded8bf2757653aa8776cf5d450fdc0baea0f5142d450c04d75"
+    "7cb40cb00a259a4e43b1e5cefd5ec5746cc13d22ce6465091e684ba3219c72da"
 )
 
 MINIMUM_AGENT_COUNT = 50

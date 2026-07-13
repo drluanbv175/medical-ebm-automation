@@ -716,17 +716,24 @@ def _first_actionable_gate(rows: List[Dict[str, Any]]) -> Optional[str]:
 
 def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
     path = out_dir / REPORT_MD
+
+    def cell(value: Any) -> str:
+        text = "" if value is None else str(value)
+        return text.replace("|", "\\|").replace("\n", "<br>")
+
     lines = [
         f"# Gate Automation Report — {report['study']}",
         "",
         f"- Generated: {report['generated_at']}",
         f"- Current actionable gate: `{report.get('current_actionable_gate') or 'NONE'}`",
         f"- Freshness: {'PASS' if report['freshness']['fresh'] else 'STALE'}",
+        f"- Missing required artifacts: {report['artifact_issue_count']}",
+        f"- Missing required metadata: {report['metadata_issue_count']}",
         "",
         "## Pipeline Gates",
         "",
-        "| Gate | Status | Guardrail | Real Signal | Stale | Next Action |",
-        "|---|---|---|---|---|---|",
+        "| Gate | Mode | Status | Artifact | Metadata | Guardrail | Real Signal | Stale | Next Action |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for row in report["pipeline_gates"]:
         real = row.get("real_signal")
@@ -734,11 +741,41 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
             real_text = f"{real['key']}={real['present']}"
         else:
             real_text = ""
-        lines.append(
-            f"| {row['gate']} | {row['status']} | {row.get('guardrail')} | "
-            f"{real_text} | {row.get('stale') or row.get('orphan')} | "
-            f"{row['next_action']} |"
+        artifact_text = (
+            f"{row['artifact_readiness']['status']} "
+            f"({row['artifact_readiness']['missing_required_count']} missing)"
         )
+        metadata_text = (
+            f"{row['metadata_readiness']['status']} "
+            f"({row['metadata_readiness']['missing_required_count']} missing)"
+        )
+        lines.append(
+            f"| {cell(row['gate'])} | {cell(row['automation_profile']['mode'])} | "
+            f"{cell(row['status'])} | {cell(artifact_text)} | {cell(metadata_text)} | "
+            f"{cell(row.get('guardrail'))} | {cell(real_text)} | "
+            f"{cell(row.get('stale') or row.get('orphan'))} | "
+            f"{cell(row['next_action'])} |"
+        )
+    lines.extend([
+        "",
+        "## Gate Requirement Details",
+        "",
+        "| Gate | Requirement Type | Key | Required | Present | Matches / Fields |",
+        "|---|---|---|---|---|---|",
+    ])
+    for row in report["pipeline_gates"]:
+        for item in row["artifact_readiness"]["items"]:
+            matches = ", ".join(item.get("matches") or item.get("patterns") or [])
+            lines.append(
+                f"| {cell(row['gate'])} | artifact | {cell(item['key'])} | "
+                f"{cell(item['required'])} | {cell(item['present'])} | {cell(matches)} |"
+            )
+        for item in row["metadata_readiness"]["items"]:
+            fields = ", ".join(item.get("present_fields") or item.get("fields") or [])
+            lines.append(
+                f"| {cell(row['gate'])} | metadata | {cell(item['key'])} | "
+                f"{cell(item['required'])} | {cell(item['present'])} | {cell(fields)} |"
+            )
     lines.extend([
         "",
         "## Data Pipeline",
@@ -748,8 +785,8 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
     ])
     for row in report["data_pipeline"]:
         lines.append(
-            f"| {row['step']} | {row['status']} | {row.get('artifact') or ''} | "
-            f"{row['next_action']} |"
+            f"| {cell(row['step'])} | {cell(row['status'])} | "
+            f"{cell(row.get('artifact') or '')} | {cell(row['next_action'])} |"
         )
     lines.extend([
         "",
@@ -760,8 +797,8 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
     ])
     for row in report["skill_gates"]:
         lines.append(
-            f"| {row['gate']} | {row['name']} | {row['state']} | "
-            f"{row['required_product']} | {row['pipeline_sources']} |"
+            f"| {cell(row['gate'])} | {cell(row['name'])} | {cell(row['state'])} | "
+            f"{cell(row['required_product'])} | {cell(row['pipeline_sources'])} |"
         )
     lines.extend([
         "",
@@ -789,6 +826,8 @@ def _update_meta(out_dir: Path, report: Dict[str, Any],
         "generated_at": report["generated_at"],
         "fresh": report["freshness"]["fresh"],
         "hard_stop_count": report["hard_stop_count"],
+        "artifact_issue_count": report["artifact_issue_count"],
+        "metadata_issue_count": report["metadata_issue_count"],
         "note": "Audit điều hướng; không thay thế phê duyệt IRB/SAP/data lock/liêm chính thật.",
     }
     (out_dir / "study_meta.json").write_text(
@@ -812,10 +851,22 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         1 for row in pipeline_rows
         if row["status"] in {STATUS_BLOCKED, STATUS_GUARDRAIL_FAIL, STATUS_NEEDS_REAL}
     )
+    artifact_issue_count = sum(
+        row["artifact_readiness"]["missing_required_count"] for row in pipeline_rows
+    )
+    metadata_issue_count = sum(
+        row["metadata_readiness"]["missing_required_count"] for row in pipeline_rows
+    )
     current_gate = _first_actionable_gate(pipeline_rows)
     overall = (
         "PASS_READY_OR_DRAFTS"
-        if hard_stop_count == 0 and current_gate is None and freshness["fresh"]
+        if (
+            hard_stop_count == 0
+            and artifact_issue_count == 0
+            and metadata_issue_count == 0
+            and current_gate is None
+            and freshness["fresh"]
+        )
         else "ACTION_REQUIRED"
     )
     report: Dict[str, Any] = {
@@ -831,9 +882,12 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         "skill_gates": _skill_gate_rows(cps, meta),
         "readiness": S.readiness_report(cps, meta),
         "hard_stop_count": hard_stop_count,
+        "artifact_issue_count": artifact_issue_count,
+        "metadata_issue_count": metadata_issue_count,
         "rules": [
             "Không tự vượt cổng IRB/SAP/data-lock/liêm chính.",
             "Checkpoint guardrail pass chỉ là draft nếu thiếu tín hiệu đời-thực.",
+            "Checkpoint pass vẫn cần artifact/metadata bắt buộc để tự động tái lập.",
             "Data pipeline phải qua intake -> cleaning -> data lock trước phân tích chính.",
         ],
     }
@@ -849,6 +903,8 @@ def print_summary(report: Dict[str, Any]) -> None:
     print(f"study={report['study']}")
     print(f"current_actionable_gate={report.get('current_actionable_gate') or 'NONE'}")
     print(f"hard_stop_count={report['hard_stop_count']}")
+    print(f"artifact_issue_count={report['artifact_issue_count']}")
+    print(f"metadata_issue_count={report['metadata_issue_count']}")
     for row in report["pipeline_gates"]:
         if row["gate"] == report.get("current_actionable_gate"):
             print(f"next_action={row['next_action']}")
