@@ -727,10 +727,23 @@ def parse_args():
 def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> None:
     """2026-07-07: script sinh từ template được PHÉP tồn tại trước khi có dữ liệu thật
     (sinh sớm ở G6 FULL AUTO), nhưng phải TỰ CHẶN chạy thật nếu G4 (SAP)/G5 (khóa DB)
-    chưa LOCKED — không dựa hoàn toàn vào việc người chạy tự nhớ."""
+    chưa LOCKED — không dựa hoàn toàn vào việc người chạy tự nhớ.
+
+    Vá 2026-07-12 (audit toàn diện cổng G0-G9 — kiểm định đối kháng xác nhận bypass
+    THẬT): trước đây --i-confirm-sap-locked/--i-confirm-irb-approved bỏ qua TOÀN BỘ
+    kiểm tra kể cả ledger — một cờ tự khai trần, không xác minh gì, đủ để chạy phân
+    tích trên dữ liệu bịa. Nay cờ CHỈ còn tác dụng thay thế checkpoint-file (đúng ý
+    nghĩa gốc "checkpoint mất nhưng SAP/IRB thật đã xong") — ledger_approved() (xác
+    minh chữ ký thật, xem gate_contract.py) LUÔN LUÔN bắt buộc, không cờ nào bỏ qua
+    được. Đồng thời gọi qua gate_contract.ledger_approved() dùng chung thay vì hàm
+    _ledger_approved() cục bộ (trước đây có 5 bản sao gần-giống-nhau rải khắp hệ
+    thống — sửa 1 nơi từng quên 3 nơi khác, đúng lỗi đã xảy ra thật ở chỗ khác)."""
     import hashlib as _hashlib
     import json as _json
     import re as _re
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
+    import gate_contract as _GC
 
     def _is_locked(status):
         s = str(status or "").strip().upper()
@@ -747,65 +760,39 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
                 return {}
         return {}
 
-    def _ledger_approved(gate_id: str, artifact_path: Path) -> bool:
-        """Vá 2026-07-09 (kiểm định đối kháng — cùng cơ chế đã thêm ở template
-        case-control bên dưới, trước đây CHỈ template đó có, template cohort/Cox này
-        THIẾU nên checkpoint text tự do vẫn là điều kiện DUY NHẤT). True CHỈ khi có
-        phê duyệt THẬT (không synthetic, không agent tự tạo) cho gate_id, VÀ
-        evidence_hash khớp NỘI DUNG HIỆN TẠI của artifact_path."""
-        ledger_p = Path("exports") / "__STUDY__" / "approval_ledger.json"
-        if not ledger_p.exists() or not artifact_path.exists():
-            return False
-        try:
-            records = _json.loads(ledger_p.read_text(encoding="utf-8"))
-        except (ValueError, OSError):
-            return False
-        matches = [r for r in records if r.get("gate_id") == gate_id
-                   and r.get("decision") == "APPROVED" and not r.get("is_synthetic")]
-        if not matches:
-            return False
-        latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]
-        try:
-            actual_hash = _hashlib.sha256(artifact_path.read_bytes()).hexdigest()
-        except OSError:
-            return False
-        return actual_hash == latest.get("evidence_hash")
-
     g2 = _load_cp("G2")
     g4 = _load_cp("G4")
     g5 = _load_cp("G5")
     g2_checkpoint_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
     g4_checkpoint_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
     g5_checkpoint_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
-    # Vá 2026-07-09 (rà lại G2/G9 sau vòng vá G4/G5 — cùng lỗ hổng nằm NGAY CẠNH
-    # code vừa sửa: G2 dùng CHUNG hàm này để chặn cùng hành động nguy hiểm (chạy
-    # phân tích thật) nhưng bị bỏ sót, chỉ G4/G5 được nối _ledger_approved trước đó).
-    g2_ledger_ok = _ledger_approved(
-        "G2", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
-    g4_ledger_ok = _ledger_approved(
-        "G4", Path("exports") / "__STUDY__" / "G4_A5_SAP_FINAL___STUDY__.md")
-    g5_ledger_ok = _ledger_approved(
-        "G5", Path("exports") / "__STUDY__" / "G5_checkpoint.json")
-    g2_locked = g2_checkpoint_locked and g2_ledger_ok
-    g4_locked = g4_checkpoint_locked and g4_ledger_ok
-    g5_locked = g5_checkpoint_locked and g5_ledger_ok
-    if not g2_locked and not i_confirm_irb:
+    g2_ledger_ok = _GC.ledger_approved(
+        "G2", "__STUDY__", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
+    g4_ledger_ok = _GC.ledger_approved(
+        "G4", "__STUDY__", Path("exports") / "__STUDY__" / "G4_A5_SAP_FINAL___STUDY__.md")
+    g5_ledger_ok = _GC.ledger_approved(
+        "G5", "__STUDY__", Path("exports") / "__STUDY__" / "G5_checkpoint.json")
+    # Cờ --i-confirm-* CHỈ thay thế checkpoint-file, KHÔNG BAO GIỜ thay thế ledger_ok.
+    g2_locked = (g2_checkpoint_locked or i_confirm_irb) and g2_ledger_ok
+    g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
+    g5_locked = (g5_checkpoint_locked or i_confirm_sap) and g5_ledger_ok
+    if not g2_locked:
         print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
         print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger: {'✅ khớp hash' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu thu thập khi chưa có phê duyệt đạo đức thật.")
-        print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng tools/approve_gate.py.")
-        print("   Nếu IRB THỰC TẾ đã phê duyệt nhưng thiếu checkpoint, thêm --i-confirm-irb-approved.")
+        print("   Cần bác sĩ TỰ TAY ghi phê duyệt thật bằng tools/approve_gate.py (không nhờ agent chạy hộ).")
+        print("   --i-confirm-irb-approved chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
         sys.exit(1)
-    if not (g4_locked and g5_locked) and not i_confirm_sap:
+    if not (g4_locked and g5_locked):
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
         print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger: {'✅ khớp hash' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger: {'✅ khớp hash' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
-        print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng tools/approve_gate.py.")
-        print("   Nếu SAP+DB THỰC TẾ đã khóa nhưng thiếu checkpoint, thêm --i-confirm-sap-locked.")
+        print("   Cần bác sĩ TỰ TAY ghi phê duyệt thật bằng tools/approve_gate.py (không nhờ agent chạy hộ).")
+        print("   --i-confirm-sap-locked chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
         sys.exit(1)
 
 
@@ -1148,17 +1135,22 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
     được, xem runtime/approval_ledger.py::add_approval chặn created_by_agent) —
     evidence_hash khớp NỘI DUNG HIỆN TẠI của artifact đại diện chứng minh chưa bị
     sửa sau khi duyệt.
-    Vá 2026-07-09 (kiểm định đối kháng — sửa lỗi của chính vá 07-08): bản vá đầu
-    dùng "cộng dồn" (checkpoint text HOẶC ledger, một trong hai đủ) — nghĩa là
-    checkpoint text tự do MỘT MÌNH vẫn đủ để qua cổng, ledger chỉ là lối tắt thêm,
-    không phải rào thay thế; ai đó gõ tay "LOCKED" vào checkpoint JSON vẫn bỏ qua
-    được toàn bộ cơ chế mật mã. Nay BẮT BUỘC CẢ HAI: checkpoint nói LOCKED VÀ có
-    bản ghi ledger APPROVED khớp hash cho đúng gate — thiếu 1 trong 2 → coi như
-    CHƯA khóa (trừ khi dùng cờ --i-confirm-sap-locked/--i-confirm-irb-approved để
-    tự chịu trách nhiệm ghi đè thủ công)."""
+
+    Vá 2026-07-12 (audit toàn diện cổng G0-G9 — kiểm định đối kháng xác nhận bypass
+    THẬT): trước đây --i-confirm-sap-locked/--i-confirm-irb-approved bỏ qua TOÀN BỘ
+    kiểm tra kể cả ledger — một cờ tự khai trần, không xác minh gì, đủ để chạy phân
+    tích trên dữ liệu bịa. Nay cờ CHỈ còn tác dụng thay thế checkpoint-file (đúng ý
+    nghĩa gốc "checkpoint mất nhưng SAP/IRB thật đã xong") — ledger_approved() (xác
+    minh chữ ký thật, xem gate_contract.py) LUÔN LUÔN bắt buộc, không cờ nào bỏ qua
+    được. Đồng thời gọi qua gate_contract.ledger_approved() dùng chung thay vì hàm
+    _ledger_approved() cục bộ (trước đây có 5 bản sao gần-giống-nhau rải khắp hệ
+    thống — sửa 1 nơi từng quên 3 nơi khác, đúng lỗi đã xảy ra thật ở chỗ khác)."""
     import hashlib as _hashlib
     import json as _json
     import re as _re
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
+    import gate_contract as _GC
 
     def _is_locked(status):
         s = str(status or "").strip().upper()
@@ -1175,65 +1167,39 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
                 return {}
         return {}
 
-    def _ledger_approved(gate_id: str, artifact_path: Path) -> bool:
-        """True nếu có phê duyệt THẬT (không synthetic, không agent-tạo) cho gate_id
-        với evidence_hash khớp NỘI DUNG HIỆN TẠI của artifact_path."""
-        ledger_p = Path("exports") / "__STUDY__" / "approval_ledger.json"
-        if not ledger_p.exists() or not artifact_path.exists():
-            return False
-        try:
-            records = _json.loads(ledger_p.read_text(encoding="utf-8"))
-        except (ValueError, OSError):
-            return False
-        matches = [r for r in records if r.get("gate_id") == gate_id
-                   and r.get("decision") == "APPROVED" and not r.get("is_synthetic")]
-        if not matches:
-            return False
-        latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]
-        try:
-            actual_hash = _hashlib.sha256(artifact_path.read_bytes()).hexdigest()
-        except OSError:
-            return False
-        return actual_hash == latest.get("evidence_hash")
-
     g2 = _load_cp("G2")
     g4 = _load_cp("G4")
     g5 = _load_cp("G5")
     g2_checkpoint_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
     g4_checkpoint_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
     g5_checkpoint_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
-    # Vá 2026-07-09 (kiểm định đối kháng): trước đây `or` — checkpoint text KHỚP
-    # LOCKED một mình đã đủ, làm _ledger_approved() chỉ là đường TẮT thêm, không
-    # phải rào thay thế. Đổi sang `and` — bắt buộc CẢ HAI, không hồi quy lại lỗ
-    # hổng "sửa tay 1 dòng JSON là qua cổng" mà cơ chế ledger được xây ra để chặn.
-    # Vá thêm cùng ngày (rà lại G2/G9): G2 dùng CHUNG hàm này với G4/G5 nhưng bị
-    # bỏ sót ở lượt vá G4/G5 trước đó — giờ nối nốt.
-    g2_ledger_ok = _ledger_approved(
-        "G2", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
-    g4_ledger_ok = _ledger_approved(
-        "G4", Path("exports") / "__STUDY__" / "G4_A5_SAP_FINAL___STUDY__.md")
-    g5_ledger_ok = _ledger_approved(
-        "G5", Path("exports") / "__STUDY__" / "G5_checkpoint.json")
-    g2_locked = g2_checkpoint_locked and g2_ledger_ok
-    g4_locked = g4_checkpoint_locked and g4_ledger_ok
-    g5_locked = g5_checkpoint_locked and g5_ledger_ok
-    if not g2_locked and not i_confirm_irb:
+    g2_ledger_ok = _GC.ledger_approved(
+        "G2", "__STUDY__", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
+    g4_ledger_ok = _GC.ledger_approved(
+        "G4", "__STUDY__", Path("exports") / "__STUDY__" / "G4_A5_SAP_FINAL___STUDY__.md")
+    g5_ledger_ok = _GC.ledger_approved(
+        "G5", "__STUDY__", Path("exports") / "__STUDY__" / "G5_checkpoint.json")
+    # Cờ --i-confirm-* CHỈ thay thế checkpoint-file, KHÔNG BAO GIỜ thay thế ledger_ok.
+    g2_locked = (g2_checkpoint_locked or i_confirm_irb) and g2_ledger_ok
+    g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
+    g5_locked = (g5_checkpoint_locked or i_confirm_sap) and g5_ledger_ok
+    if not g2_locked:
         print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
         print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger: {'✅ khớp hash' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu thu thập khi chưa có phê duyệt đạo đức thật.")
-        print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng tools/approve_gate.py.")
-        print("   Nếu IRB THỰC TẾ đã phê duyệt nhưng thiếu checkpoint, thêm --i-confirm-irb-approved.")
+        print("   Cần bác sĩ TỰ TAY ghi phê duyệt thật bằng tools/approve_gate.py (không nhờ agent chạy hộ).")
+        print("   --i-confirm-irb-approved chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
         sys.exit(1)
-    if not (g4_locked and g5_locked) and not i_confirm_sap:
+    if not (g4_locked and g5_locked):
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
         print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger: {'✅ khớp hash' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger: {'✅ khớp hash' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
-        print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng tools/approve_gate.py.")
-        print("   Nếu SAP+DB THỰC TẾ đã khóa nhưng thiếu checkpoint, thêm --i-confirm-sap-locked.")
+        print("   Cần bác sĩ TỰ TAY ghi phê duyệt thật bằng tools/approve_gate.py (không nhờ agent chạy hộ).")
+        print("   --i-confirm-sap-locked chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
         sys.exit(1)
 
 
@@ -1553,9 +1519,13 @@ _SENSITIVITY_TEMPLATE = (
     "def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):\n"
     "    # Audit 2026-07-11: script nay chay hoi quy Cox THAT tren du lieu CSV THAT\n"
     "    # (giong het run_analysis_cli.py) nhung truoc day KHONG co cong nao ca -\n"
-    "    # sao chep dung cung co che _ledger_approved da co o CLI template chinh.\n"
-    "    import hashlib as _hashlib, json as _json, re as _re\n"
+    "    # sao chep dung cung co che ledger_approved da co o CLI template chinh.\n"
+    "    # Va 2026-07-12 (audit toan dien): co --i-confirm-* truoc day bo qua CA\n"
+    "    # ledger check -- nay co CHI thay the checkpoint-file, ledger LUON bat buoc.\n"
+    "    import hashlib as _hashlib, json as _json, re as _re, sys as _sys\n"
     "    from pathlib import Path as _Path\n"
+    "    _sys.path.insert(0, str(_Path(__file__).resolve().parents[3] / 'tools'))\n"
+    "    import gate_contract as _GC\n"
     "    def _is_locked(status):\n"
     "        s = str(status or \'\').strip().upper()\n"
     "        if _re.search(r'(UN|CH[ƯU]A|KH[ÔO]NG|NOT)\\s*LOCKED', s):\n"
@@ -1569,37 +1539,25 @@ _SENSITIVITY_TEMPLATE = (
     "            except (ValueError, OSError):\n"
     "                return {}\n"
     "        return {}\n"
-    "    def _ledger_approved(gate_id, artifact_path):\n"
-    "        ledger_p = _Path(\'exports\') / \'__STUDY__\' / \'approval_ledger.json\'\n"
-    "        if not ledger_p.exists() or not artifact_path.exists():\n"
-    "            return False\n"
-    "        try:\n"
-    "            records = _json.loads(ledger_p.read_text(encoding=\'utf-8\'))\n"
-    "        except (ValueError, OSError):\n"
-    "            return False\n"
-    "        matches = [r for r in records if r.get(\'gate_id\') == gate_id\n"
-    "                   and r.get(\'decision\') == \'APPROVED\' and not r.get(\'is_synthetic\')]\n"
-    "        if not matches:\n"
-    "            return False\n"
-    "        latest = sorted(matches, key=lambda r: r.get(\'timestamp_utc\', \'\'))[-1]\n"
-    "        try:\n"
-    "            actual_hash = _hashlib.sha256(artifact_path.read_bytes()).hexdigest()\n"
-    "        except OSError:\n"
-    "            return False\n"
-    "        return actual_hash == latest.get(\'evidence_hash\')\n"
     "    g2 = _load_cp(\'G2\'); g4 = _load_cp(\'G4\'); g5 = _load_cp(\'G5\')\n"
-    "    g2_locked = _is_locked(g2.get(\'g2_status\', g2.get(\'G2_STATUS\'))) and _ledger_approved(\n"
-    "        \"G2\", _Path(\'exports\') / \'__STUDY__\' / \'G2_A3_ETHICS_PACKAGE___STUDY__.md\')\n"
-    "    g4_locked = _is_locked(g4.get(\'g4_status\', g4.get(\'G4_STATUS\'))) and _ledger_approved(\n"
-    "        \"G4\", _Path(\'exports\') / \'__STUDY__\' / \'G4_A5_SAP_FINAL___STUDY__.md\')\n"
-    "    g5_locked = _is_locked(g5.get(\'g5_status\', g5.get(\'G5_STATUS\'))) and _ledger_approved(\n"
-    "        \"G5\", _Path(\'exports\') / \'__STUDY__\' / \'G5_checkpoint.json\')\n"
-    "    if not g2_locked and not i_confirm_irb:\n"
-    "        raise SystemExit(\'DUNG: G2 (phe duyet dao duc/IRB) chua xac nhan LOCKED bang phe duyet that. \'\n"
-    "                         \'Neu IRB THUC TE da phe duyet nhung thieu checkpoint, them --i-confirm-irb-approved.\')\n"
-    "    if not (g4_locked and g5_locked) and not i_confirm_sap:\n"
-    "        raise SystemExit(\'DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that. \'\n"
-    "                         \'Neu SAP+DB THUC TE da khoa nhung thieu checkpoint, them --i-confirm-sap-locked.\')\n"
+    "    g2_cp = _is_locked(g2.get(\'g2_status\', g2.get(\'G2_STATUS\')))\n"
+    "    g4_cp = _is_locked(g4.get(\'g4_status\', g4.get(\'G4_STATUS\')))\n"
+    "    g5_cp = _is_locked(g5.get(\'g5_status\', g5.get(\'G5_STATUS\')))\n"
+    "    g2_ledger = _GC.ledger_approved(\n"
+    "        \"G2\", \"__STUDY__\", _Path(\'exports\') / \'__STUDY__\' / \'G2_A3_ETHICS_PACKAGE___STUDY__.md\')\n"
+    "    g4_ledger = _GC.ledger_approved(\n"
+    "        \"G4\", \"__STUDY__\", _Path(\'exports\') / \'__STUDY__\' / \'G4_A5_SAP_FINAL___STUDY__.md\')\n"
+    "    g5_ledger = _GC.ledger_approved(\n"
+    "        \"G5\", \"__STUDY__\", _Path(\'exports\') / \'__STUDY__\' / \'G5_checkpoint.json\')\n"
+    "    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger\n"
+    "    g4_locked = (g4_cp or i_confirm_sap) and g4_ledger\n"
+    "    g5_locked = (g5_cp or i_confirm_sap) and g5_ledger\n"
+    "    if not g2_locked:\n"
+    "        raise SystemExit(\'DUNG: G2 (phe duyet dao duc/IRB) chua xac nhan LOCKED bang phe duyet that (chu ky). \'\n"
+    "                         \'--i-confirm-irb-approved chi thay checkpoint-file, KHONG thay duoc ledger.\')\n"
+    "    if not (g4_locked and g5_locked):\n"
+    "        raise SystemExit(\'DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that (chu ky). \'\n"
+    "                         \'--i-confirm-sap-locked chi thay checkpoint-file, KHONG thay duoc ledger.\')\n"
     "\n"
     "def run_cox_sub(df, time_col, outcome, exposure, avail):\n"
     "    cols = [time_col, outcome, exposure]+avail\n"
@@ -1774,11 +1732,16 @@ def fmt_pval(p):
 def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
     # Audit 2026-07-11: script nay chay hoi quy logistic THAT tren du lieu CSV THAT
     # (giong het run_case_control_cli.py) nhung truoc day KHONG co cong nao ca -
-    # sao chep dung cung co che _ledger_approved da co o CLI template chinh.
+    # sao chep dung cung co che ledger_approved da co o CLI template chinh.
+    # Va 2026-07-12 (audit toan dien): --i-confirm-* truoc day bo qua CA ledger
+    # check -- nay co CHI thay the checkpoint-file, ledger LUON bat buoc.
     import hashlib as _hashlib
     import json as _json
     import re as _re
+    import sys as _sys
     from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[3] / "tools"))
+    import gate_contract as _GC
 
     def _is_locked(status):
         s = str(status or '').strip().upper()
@@ -1795,40 +1758,27 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
                 return {}
         return {}
 
-    def _ledger_approved(gate_id, artifact_path):
-        ledger_p = _Path('exports') / '__STUDY__' / 'approval_ledger.json'
-        if not ledger_p.exists() or not artifact_path.exists():
-            return False
-        try:
-            records = _json.loads(ledger_p.read_text(encoding='utf-8'))
-        except (ValueError, OSError):
-            return False
-        matches = [r for r in records if r.get('gate_id') == gate_id
-                   and r.get('decision') == 'APPROVED' and not r.get('is_synthetic')]
-        if not matches:
-            return False
-        latest = sorted(matches, key=lambda r: r.get('timestamp_utc', ''))[-1]
-        try:
-            actual_hash = _hashlib.sha256(artifact_path.read_bytes()).hexdigest()
-        except OSError:
-            return False
-        return actual_hash == latest.get('evidence_hash')
-
     g2 = _load_cp('G2')
     g4 = _load_cp('G4')
     g5 = _load_cp('G5')
-    g2_locked = _is_locked(g2.get('g2_status', g2.get('G2_STATUS'))) and _ledger_approved(
-        "G2", _Path('exports') / '__STUDY__' / 'G2_A3_ETHICS_PACKAGE___STUDY__.md')
-    g4_locked = _is_locked(g4.get('g4_status', g4.get('G4_STATUS'))) and _ledger_approved(
-        "G4", _Path('exports') / '__STUDY__' / 'G4_A5_SAP_FINAL___STUDY__.md')
-    g5_locked = _is_locked(g5.get('g5_status', g5.get('G5_STATUS'))) and _ledger_approved(
-        "G5", _Path('exports') / '__STUDY__' / 'G5_checkpoint.json')
-    if not g2_locked and not i_confirm_irb:
-        raise SystemExit('DUNG: G2 (phe duyet dao duc/IRB) chua xac nhan LOCKED bang phe duyet that. '
-                          'Neu IRB THUC TE da phe duyet nhung thieu checkpoint, them --i-confirm-irb-approved.')
-    if not (g4_locked and g5_locked) and not i_confirm_sap:
-        raise SystemExit('DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that. '
-                          'Neu SAP+DB THUC TE da khoa nhung thieu checkpoint, them --i-confirm-sap-locked.')
+    g2_cp = _is_locked(g2.get('g2_status', g2.get('G2_STATUS')))
+    g4_cp = _is_locked(g4.get('g4_status', g4.get('G4_STATUS')))
+    g5_cp = _is_locked(g5.get('g5_status', g5.get('G5_STATUS')))
+    g2_ledger = _GC.ledger_approved(
+        "G2", "__STUDY__", _Path('exports') / '__STUDY__' / 'G2_A3_ETHICS_PACKAGE___STUDY__.md')
+    g4_ledger = _GC.ledger_approved(
+        "G4", "__STUDY__", _Path('exports') / '__STUDY__' / 'G4_A5_SAP_FINAL___STUDY__.md')
+    g5_ledger = _GC.ledger_approved(
+        "G5", "__STUDY__", _Path('exports') / '__STUDY__' / 'G5_checkpoint.json')
+    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger
+    g4_locked = (g4_cp or i_confirm_sap) and g4_ledger
+    g5_locked = (g5_cp or i_confirm_sap) and g5_ledger
+    if not g2_locked:
+        raise SystemExit('DUNG: G2 (phe duyet dao duc/IRB) chua xac nhan LOCKED bang phe duyet that (chu ky). '
+                          '--i-confirm-irb-approved chi thay checkpoint-file, KHONG thay duoc ledger.')
+    if not (g4_locked and g5_locked):
+        raise SystemExit('DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that (chu ky). '
+                          '--i-confirm-sap-locked chi thay checkpoint-file, KHONG thay duoc ledger.')
 
 
 def run_logistic_sub(df, outcome, exposure, avail):

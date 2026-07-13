@@ -151,6 +151,7 @@ class ApprovalLedger:
                 "artifact_creator_agent": r.artifact_creator_agent,
                 "reviewer_agent": r.reviewer_agent,
                 "is_synthetic": getattr(r, "is_synthetic", False),
+                "approver_signature": getattr(r, "approver_signature", None),
             }
         return json.dumps(
             [record_to_dict(r) for r in self._records],
@@ -206,6 +207,7 @@ class ApprovalLedger:
                     reviewer_agent=d.get("reviewer_agent"),
                     _created_by_agent=False,
                     is_synthetic=d.get("is_synthetic", False),
+                    approver_signature=d.get("approver_signature"),
                 )
             except (KeyError, ValueError):
                 continue  # dòng hỏng/thiếu trường bắt buộc — bỏ qua, không crash cả ledger
@@ -225,13 +227,22 @@ class ApprovalLedger:
         supersedes: Optional[str] = None,
         artifact_creator_agent: Optional[str] = None,
         reviewer_agent: Optional[str] = None,
+        approver_signature: Optional[str] = None,
+        timestamp_utc: Optional[str] = None,
     ) -> ApprovalRecord:
         """
         Factory dùng trong tests để tạo human approval hợp lệ.
         Tự tính evidence_hash từ evidence_content.
+
+        approver_signature/timestamp_utc (thêm 2026-07-12): chữ ký HMAC cần biết
+        evidence_hash+timestamp TRƯỚC khi ký (xem tools/gate_contract.py::
+        sign_approval) — caller tự chọn timestamp_utc, ký trước, rồi truyền cả
+        hai giá trị vào đây; factory chỉ LƯU, không tự ký (giữ runtime/ độc lập
+        tools/, xem tools/approve_gate.py cho quy trình ký thật đầu-cuối).
+        timestamp_utc bỏ trống → factory tự sinh như trước (đường test cũ).
         """
         evidence_hash = hashlib.sha256(evidence_content.encode()).hexdigest()
-        timestamp = datetime.now(timezone.utc).isoformat()
+        timestamp = timestamp_utc or datetime.now(timezone.utc).isoformat()
         approval_id = hashlib.sha256(
             f"{gate_id}:{reviewer_ref}:{timestamp}".encode()
         ).hexdigest()[:16]
@@ -249,6 +260,7 @@ class ApprovalLedger:
             reviewer_agent=reviewer_agent,
             _created_by_agent=False,
             is_synthetic=False,
+            approver_signature=approver_signature,
         )
 
     @staticmethod

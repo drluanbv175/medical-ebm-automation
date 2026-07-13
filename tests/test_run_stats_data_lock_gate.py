@@ -14,7 +14,34 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 PYTHON = sys.executable
 
 sys.path.insert(0, str(TOOLS_DIR))
+sys.path.insert(0, str(REPO_ROOT))
 import lock_analysis_dataset as LAD  # noqa: E402
+from runtime.approval_ledger import ApprovalLedger  # noqa: E402
+
+
+def _approve_g2_g4_g5(study: str) -> None:
+    """Vá 2026-07-12 (audit toàn diện cổng G0-G9): run_stats_analysis.py giờ LUÔN
+    đòi phê duyệt ledger THẬT cho G2/G4/G5 — --i-confirm-* chỉ còn thay thế
+    checkpoint-file bị mất, không thay được ledger nữa (đóng bypass đã kiểm định
+    đối kháng xác nhận là thật). Test file này quan tâm cổng DATA LOCK (downstream
+    của G2/G4/G5), nên tạo phê duyệt thật ở đây để tới được phần đang test."""
+    study_dir = REPO_ROOT / "exports" / study
+    ledger_path = study_dir / "approval_ledger.json"
+    ledger = ApprovalLedger.from_file(ledger_path)
+    for gate_id, artifact_rel, content in (
+        ("G2", f"G2_A3_ETHICS_PACKAGE_{study}.md", "Ethics package test content"),
+        ("G4", f"G4_A5_SAP_FINAL_{study}.md", "SAP final test content"),
+        ("G5", "G5_checkpoint.json", "G5 checkpoint test content"),
+    ):
+        artifact = study_dir / artifact_rel
+        artifact.write_text(content, encoding="utf-8")
+        record = ApprovalLedger.make_human_approval(
+            gate_id=gate_id, reviewer_role="PI", reviewer_ref=f"TEST-{gate_id}",
+            scope="test", evidence_content=content,
+        )
+        ok, reason = ledger.add_approval(record)
+        assert ok, reason
+    ledger.to_file(ledger_path)
 
 
 def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
@@ -74,6 +101,7 @@ def _lock_study(study: str, tmp_path: Path) -> Path:
         confirm_sap_locked=True,
     )
     assert manifest["status"] == LAD.LOCKED_STATUS
+    _approve_g2_g4_g5(study)
     return REPO_ROOT / "exports" / study / manifest["locked_dataset_path"]
 
 

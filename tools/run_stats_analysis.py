@@ -36,6 +36,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import gate_contract as GC  # noqa: E402
+
 warnings.filterwarnings("ignore")
 
 # ── Kiểm tra thư viện tuỳ chọn ──────────────────────────────────────────────
@@ -503,35 +506,16 @@ def _load_checkpoint(study: str, gate: str) -> dict:
 def _ledger_approved(study: str, gate_id: str, artifact_path: Path) -> bool:
     """Vá 2026-07-09 (kiểm định đối kháng độc lập — phát hiện qua audit guardrail):
     TRƯỚC ĐÂY hàm này không tồn tại — _is_locked() (chỉ đọc 1 trường text tự do
-    trong checkpoint JSON) là điều kiện DUY NHẤT để cho chạy phân tích thật. Bất kỳ
-    ai/agent nào tự tay ghi {"g4_status": "LOCKED"} vào G4_checkpoint.json là script
-    này tin ngay, dù chưa từng có phê duyệt thật nào — chính lỗ hổng mà cơ chế
-    ApprovalLedger cryptographic-binding (BL-06, 2026-07-08) được xây ra để chặn,
-    nhưng chưa từng được nối vào đây. Hàm này đóng khoảng trống đó: True CHỈ khi có
-    phê duyệt THẬT (không synthetic, không agent tự tạo — 2 điều kiện đã có sẵn ở
-    ApprovalLedger.add_approval()) cho đúng gate_id, VÀ evidence_hash khớp NỘI DUNG
-    HIỆN TẠI của artifact_path (nếu artifact bị sửa sau khi duyệt, hash lệch → coi
-    như CHƯA duyệt). Đọc thô JSON (không import runtime.approval_ledger) để nhất
-    quán với cách 2 template CLI nhúng của run_g6_auto.py đã làm — 1 trong 2 nơi ở
-    đó (case-control) đã có hàm y hệt, cohort/Cox thì thiếu — cả 3 nơi giờ đồng bộ."""
-    import hashlib
-    ledger_p = Path("exports") / study / "approval_ledger.json"
-    if not ledger_p.exists() or not artifact_path.exists():
-        return False
-    try:
-        records = json.loads(ledger_p.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return False
-    matches = [r for r in records if r.get("gate_id") == gate_id
-               and r.get("decision") == "APPROVED" and not r.get("is_synthetic")]
-    if not matches:
-        return False
-    latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]
-    try:
-        actual_hash = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
-    except OSError:
-        return False
-    return actual_hash == latest.get("evidence_hash")
+    trong checkpoint JSON) là điều kiện DUY NHẤT để cho chạy phân tích thật.
+
+    Vá 2026-07-12 (audit toàn diện cổng G0-G9): ủy quyền cho gate_contract.
+    ledger_approved() — nơi DUY NHẤT còn giữ logic hash+not-synthetic+not-agent
+    (trước đây có 6 bản sao gần-giống-nhau rải khắp hệ thống, kể cả script THẬT
+    chạy dữ liệu bệnh nhân này — sửa 1 nơi từng quên 5 nơi khác). Đồng thời có
+    thêm xác minh CHỮ KÝ actor thật (HMAC, xem gate_contract.py) nếu máy đã thiết
+    lập khóa ký — script này chạy TRỰC TIẾP trên dữ liệu thật nên đây là nơi
+    QUAN TRỌNG NHẤT để có chữ ký thật, không chỉ hash+cờ tự khai."""
+    return GC.ledger_approved(gate_id, study, artifact_path)
 
 
 def _sha256_file(path: Path) -> str:
@@ -654,20 +638,26 @@ def main():
     # có thể chạy phân tích thật trên dữ liệu bệnh nhân THẬT mà không có cổng kỹ thuật nào
     # xác nhận đã được Hội đồng Đạo đức phê duyệt — đúng rủi ro dùng-dữ-liệu-chưa-được-duyệt
     # mà cơ chế approval_ledger (BL-06) sinh ra để chặn. Nay chặn cả G2 (checkpoint VÀ ledger).
+    # Vá 2026-07-12 (audit toàn diện): --i-confirm-* trước đây bỏ qua TOÀN BỘ kiểm
+    # tra kể cả ledger — cờ tự khai trần, không xác minh gì, đủ để chạy phân tích
+    # trên dữ liệu bệnh nhân THẬT không có phê duyệt nào (kiểm định đối kháng xác
+    # nhận bypass này thật). Nay cờ CHỈ thay thế checkpoint-file (đúng ý nghĩa gốc
+    # "checkpoint mất nhưng phê duyệt thật đã có") — ledger_approved() LUÔN bắt
+    # buộc, không cờ nào bỏ qua được.
     g2_cp = _load_checkpoint(args.study, "G2")
     g2_checkpoint_locked = _is_locked(g2_cp.get("g2_status", g2_cp.get("G2_STATUS")))
     g2_ledger_ok = _ledger_approved(
         args.study, "G2", Path("exports") / args.study / f"G2_A3_ETHICS_PACKAGE_{args.study}.md")
-    g2_locked = g2_checkpoint_locked and g2_ledger_ok
-    if not g2_locked and not args.i_confirm_irb_approved:
+    g2_locked = (g2_checkpoint_locked or args.i_confirm_irb_approved) and g2_ledger_ok
+    if not g2_locked:
         print("✗ DỪNG: G2 (phê duyệt đạo đức/IRB) chưa xác nhận LOCKED bằng phê duyệt thật.")
         print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger: {'✅ khớp hash' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   KHÔNG chạy phân tích trên dữ liệu bệnh nhân THẬT khi chưa có phê duyệt đạo đức thật.")
-        print("   Ghi phê duyệt thật bằng:")
+        print("   Ghi phê duyệt thật bằng (bác sĩ TỰ TAY chạy, không nhờ agent):")
         print(f"     python tools/approve_gate.py --study \"{args.study}\" --gate G2 "
               f"--artifact exports/{args.study}/G2_A3_ETHICS_PACKAGE_{args.study}.md ...")
-        print("   Nếu IRB THỰC TẾ đã phê duyệt nhưng thiếu file checkpoint, thêm --i-confirm-irb-approved.")
+        print("   --i-confirm-irb-approved chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
         sys.exit(1)
     g4_cp = _load_checkpoint(args.study, "G4")
     g5_cp = _load_checkpoint(args.study, "G5")
@@ -677,20 +667,19 @@ def main():
         args.study, "G4", Path("exports") / args.study / f"G4_A5_SAP_FINAL_{args.study}.md")
     g5_ledger_ok = _ledger_approved(
         args.study, "G5", Path("exports") / args.study / "G5_checkpoint.json")
-    g4_locked = g4_checkpoint_locked and g4_ledger_ok
-    g5_locked = g5_checkpoint_locked and g5_ledger_ok
-    if not (g4_locked and g5_locked) and not args.i_confirm_sap_locked:
+    g4_locked = (g4_checkpoint_locked or args.i_confirm_sap_locked) and g4_ledger_ok
+    g5_locked = (g5_checkpoint_locked or args.i_confirm_sap_locked) and g5_ledger_ok
+    if not (g4_locked and g5_locked):
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật.")
         print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger: {'✅ khớp hash' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger: {'✅ khớp hash' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không thể chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
         print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng:")
         print(f"     python tools/approve_gate.py --study \"{args.study}\" --gate G4 "
               f"--artifact exports/{args.study}/G4_A5_SAP_FINAL_{args.study}.md ...")
-        print("   Nếu SAP+DB THỰC TẾ đã khóa nhưng thiếu file checkpoint (vd chạy ngoài pipeline),")
-        print("   thêm cờ --i-confirm-sap-locked sau khi tự xác nhận chắc chắn.")
+        print("   --i-confirm-sap-locked chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
         sys.exit(1)
 
     data_lock_manifest = _require_locked_analysis_dataset(args.study, args.data)

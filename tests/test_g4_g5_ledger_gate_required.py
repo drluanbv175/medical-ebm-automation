@@ -163,9 +163,12 @@ import re as _re_module
 
 
 def _ledger_approved_gate_ids(code: str) -> set[str]:
-    """Trích các gate_id được truyền vào _ledger_approved(...) trong code sinh ra
-    — bất kể xuống dòng/thụt lề cụ thể thế nào (tránh test giòn theo whitespace)."""
-    return set(_re_module.findall(r'_ledger_approved\(\s*"([A-Z0-9]+)"', code))
+    """Trích các gate_id được truyền vào _ledger_approved(...)/_GC.ledger_approved(...)
+    trong code sinh ra — bất kể xuống dòng/thụt lề cụ thể thế nào (tránh test giòn
+    theo whitespace). Vá 2026-07-12: 4 template giờ gọi qua gate_contract.ledger_approved()
+    dùng chung thay vì hàm cục bộ — regex nới để bắt cả 2 dạng gọi."""
+    return set(_re_module.findall(
+        r'(?:_ledger_approved|_GC\.ledger_approved)\(\s*"([A-Z0-9]+)"', code))
 
 
 def test_cohort_cox_template_g2_also_requires_ledger():

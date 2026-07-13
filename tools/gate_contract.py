@@ -24,7 +24,10 @@ Module này chỉ dùng thư viện chuẩn (không phụ thuộc ngoài) để 
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
@@ -234,3 +237,123 @@ def load_study_meta(out_dir: Path) -> Dict[str, Any]:
         return data if isinstance(data, dict) else {}
     except (json.JSONDecodeError, OSError):
         return {}
+
+
+# ── Chữ ký actor thật cho approval_ledger — vá 2026-07-12 (audit cổng G0-G9) ───
+# Bối cảnh: tools/approve_gate.py trước đây LUÔN gọi add_approval(created_by_agent=False)
+# bất kể ai thực sự gõ lệnh — script không có cách nào phân biệt "bác sĩ tự tay chạy"
+# với "agent tự chạy thay". Kiểm định đối kháng xác nhận: agent tự gọi approve_gate.py
+# (reviewer_ref tự đặt) tạo ra bản ghi ledger KHÔNG THỂ PHÂN BIỆT với phê duyệt bác sĩ
+# thật, rồi chạy trót lọt toàn bộ phân tích thống kê — không có bác sĩ nào tham gia.
+#
+# Cơ chế: một khóa bí mật ngẫu nhiên, đặt NGOÀI OneDrive tại ~/.ebm-secrets/ (đúng quy
+# ước sẵn có của dự án cho mọi secret), do BÁC SĨ tự tạo MỘT LẦN bằng
+# tools/setup_gate_approval_key.py (script này PHẢI được bác sĩ tự chạy — nếu agent
+# chạy hộ, agent sẽ biết khóa và tính năng mất tác dụng; xem docstring script đó).
+# approve_gate.py dùng khóa này để ký HMAC-SHA256 mỗi phê duyệt; ledger_approved() ở
+# dưới xác minh LẠI chữ ký bằng ĐÚNG khóa đó trước khi coi một cổng là đã khóa thật.
+#
+# GIỚI HẠN THẬT (ghi rõ, không giấu): agent (Claude Code) trong phiên này có quyền đọc
+# toàn bộ filesystem qua Bash — về mặt kỹ thuật agent VẪN CÓ THỂ tự đọc file khóa nếu cố
+# tình làm vậy. Cơ chế này không phải bảo mật chống-agent-cố-ý-phá, mà là: (1) biến việc
+# tự-phê-duyệt từ "mặc định âm thầm, không ai biết" thành "hành vi lệch chuẩn rõ ràng,
+# phải chủ động đọc một file bí mật có tên/vị trí tường minh" — vi phạm ngay có thể phát
+# hiện qua audit; (2) khi khóa CHƯA từng bị agent đụng tới (bác sĩ tự thiết lập, không
+# nhờ agent), chữ ký hợp lệ là bằng chứng đủ mạnh rằng một người có quyền truy cập máy
+# tính (không nhất thiết chạy qua agent) đã ký. Đây là cải thiện thật so với hiện trạng
+# (hardcode luôn =False), không phải tuyên bố "không thể vượt qua".
+_SIGNING_KEY_ENV = "EBM_GATE_KEY_PATH"  # override vị trí khóa — dùng cho test, KHÔNG dùng vận hành thật
+_DEFAULT_KEY_PATH = Path.home() / ".ebm-secrets" / "gate_approval_key"
+
+
+def signing_key_path() -> Path:
+    """Đường dẫn file khóa ký — mặc định ~/.ebm-secrets/gate_approval_key, có thể ghi đè
+    bằng biến môi trường EBM_GATE_KEY_PATH (chỉ dùng cho test có kiểm soát)."""
+    override = os.environ.get(_SIGNING_KEY_ENV)
+    return Path(override) if override else _DEFAULT_KEY_PATH
+
+
+def _load_signing_key() -> Optional[str]:
+    """Đọc khóa ký từ đĩa — None nếu chưa thiết lập (BÁC SĨ chưa chạy
+    setup_gate_approval_key.py) hoặc file rỗng/không đọc được."""
+    p = signing_key_path()
+    try:
+        key = p.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return key or None
+
+
+def signing_key_configured() -> bool:
+    """True nếu máy này đã có khóa ký (bất kể nội dung cụ thể)."""
+    return _load_signing_key() is not None
+
+
+def _signature_payload(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str) -> bytes:
+    return f"{gate_id}:{study}:{evidence_hash}:{timestamp_utc}".encode("utf-8")
+
+
+def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str) -> Optional[str]:
+    """Ký HMAC-SHA256 một phê duyệt bằng khóa cục bộ. Trả None nếu CHƯA có khóa
+    (approve_gate.py khi đó vẫn ghi phê duyệt nhưng CẢNH BÁO rõ — không chặn cứng,
+    để không phá vỡ các đề tài/test đã có từ trước khi cơ chế này tồn tại)."""
+    key = _load_signing_key()
+    if not key:
+        return None
+    mac = hmac.new(key.encode("utf-8"), _signature_payload(gate_id, study, evidence_hash, timestamp_utc),
+                    hashlib.sha256)
+    return mac.hexdigest()
+
+
+def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
+    """Xác minh LẠI chữ ký của một bản ghi ledger bằng khóa cục bộ hiện tại.
+    False nếu: chưa có khóa trên máy này, bản ghi chưa từng được ký, hoặc chữ ký
+    không khớp (khóa khác / nội dung bị sửa)."""
+    key = _load_signing_key()
+    sig = record.get("approver_signature")
+    if not key or not sig:
+        return False
+    expected = hmac.new(
+        key.encode("utf-8"),
+        _signature_payload(record.get("gate_id", ""), study,
+                            record.get("evidence_hash", ""), record.get("timestamp_utc", "")),
+        hashlib.sha256,
+    ).hexdigest()
+    return hmac.compare_digest(expected, sig)
+
+
+def ledger_approved(gate_id: str, study: str, artifact_path: Path,
+                    repo_root: Optional[Path] = None) -> bool:
+    """CHỐT KIỂM DUY NHẤT nên dùng ở mọi nơi cần biết "cổng gate_id đã được bác sĩ
+    duyệt THẬT chưa" — thay cho 5 bản sao gần-giống-nhau từng rải rác ở
+    run_g6_auto.py (×4 template) và run_g9_auto.py trước 2026-07-12 (chính cách
+    trùng lặp này từng gây lỗi thật ở nơi khác trong hệ thống — sửa 1 chỗ quên 3
+    chỗ). True CHỈ khi ĐỦ CẢ BỐN: (1) có bản ghi APPROVED không synthetic cho
+    gate_id, (2) không phải agent tạo, (3) evidence_hash khớp NỘI DUNG HIỆN TẠI
+    của artifact_path (sửa file sau duyệt → coi như chưa duyệt), (4) NẾU máy này
+    đã cấu hình khóa ký (signing_key_configured()) — chữ ký PHẢI khớp; nếu máy
+    CHƯA từng thiết lập khóa, hạ về kiểm tra cũ (1)-(3) để không phá đề tài/test
+    có từ trước khi có chữ ký (rely_on_signature=False được ghi rõ qua giá trị
+    trả về của signing_key_configured(), gọi riêng nếu cần phân biệt 2 trường hợp)."""
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    ledger_p = root / "exports" / study / "approval_ledger.json"
+    if not ledger_p.exists() or not Path(artifact_path).exists():
+        return False
+    try:
+        records = json.loads(ledger_p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return False
+    matches = [r for r in records if r.get("gate_id") == gate_id
+               and r.get("decision") == "APPROVED" and not r.get("is_synthetic")]
+    if not matches:
+        return False
+    latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]
+    try:
+        actual_hash = hashlib.sha256(Path(artifact_path).read_bytes()).hexdigest()
+    except OSError:
+        return False
+    if actual_hash != latest.get("evidence_hash"):
+        return False
+    if signing_key_configured():
+        return verify_approval_signature(latest, study)
+    return True

@@ -117,6 +117,11 @@ class ApprovalRecord:
     # V4.3: marker CẤU TRÚC (không chỉ free-text) — True = approval mô phỏng,
     # TUYỆT ĐỐI không phải phê duyệt người. Hiển thị trong export + truy vấn được.
     is_synthetic: bool = False
+    # Vá 2026-07-12 (audit cổng G0-G9): chữ ký HMAC-SHA256 do tools/gate_contract.py
+    # ::sign_approval() tính, dùng khóa cục bộ ~/.ebm-secrets/gate_approval_key —
+    # None nếu máy chưa thiết lập khóa (tương thích ngược, không phá đề tài cũ).
+    # verify_approval_signature() xác minh lại trước khi coi một cổng là khóa thật.
+    approver_signature: Optional[str] = None
 
 
 @dataclass

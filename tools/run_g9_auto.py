@@ -42,30 +42,15 @@ def _ledger_approved(study: str, gate_id: str, artifact_path: Path) -> bool:
     """Audit 2026-07-11: G9 là cổng cứng CUỐI CÙNG trước nộp bài nhưng trước đây
     KHÔNG có xác minh mật mã ledger nào — ethics_locked/sap_locked chỉ kiểm
     checkpoint text tự do (g2_irb_number/sap_signed_date không placeholder), y hệt
-    lỗ hổng đã vá ở run_stats_analysis.py/run_g6_auto.py (BL-06, 2026-07-08/09):
-    ai/agent nào tự tay điền số IRB/ngày ký SAP vào checkpoint là qua cổng, dù chưa
-    từng có phê duyệt thật. Sao chép ĐÚNG hàm đã dùng ở 2 nơi kia — True CHỈ khi có
-    phê duyệt THẬT (không synthetic, không agent tự tạo) cho gate_id, VÀ evidence_hash
-    khớp NỘI DUNG HIỆN TẠI của artifact_path (artifact bị sửa sau duyệt → hash lệch
-    → coi như CHƯA duyệt)."""
-    import hashlib
-    ledger_p = _REPO_ROOT / "exports" / study / "approval_ledger.json"
-    if not ledger_p.exists() or not artifact_path.exists():
-        return False
-    try:
-        records = json.loads(ledger_p.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return False
-    matches = [r for r in records if r.get("gate_id") == gate_id
-               and r.get("decision") == "APPROVED" and not r.get("is_synthetic")]
-    if not matches:
-        return False
-    latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]
-    try:
-        actual_hash = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
-    except OSError:
-        return False
-    return actual_hash == latest.get("evidence_hash")
+    lỗ hổng đã vá ở run_stats_analysis.py/run_g6_auto.py (BL-06, 2026-07-08/09).
+
+    Vá 2026-07-12 (audit toàn diện cổng G0-G9): trước đây hàm này TỰ CÓ một bản
+    sao của cùng logic hash+not-synthetic+not-agent (1 trong 5 bản sao gần-giống-
+    nhau rải khắp hệ thống — sửa 1 nơi từng quên 3 nơi khác). Nay ủy quyền cho
+    gate_contract.ledger_approved() — nơi DUY NHẤT còn giữ logic này, đồng thời
+    có thêm xác minh CHỮ KÝ actor thật (HMAC, xem gate_contract.py) nếu máy đã
+    thiết lập khóa ký."""
+    return GC.ledger_approved(gate_id, study, artifact_path, repo_root=_REPO_ROOT)
 
 _TODAY = datetime.now().strftime("%d/%m/%Y")
 _YEAR  = datetime.now().strftime("%Y")

@@ -1151,6 +1151,10 @@ def main() -> int:
     ap.add_argument("--study", required=True, help="Mã đề tài")
     ap.add_argument("--no-validate", action="store_true",
                     help="Bỏ qua bước tự chạy check_de_cuong.py")
+    ap.add_argument("--i-know-g9-not-signed", action="store_true",
+                    help="Vẫn lắp ráp dù G9 (liêm chính tác giả) chưa có phê duyệt "
+                         "thật — CHỈ dùng để xem trước bản NHÁP, KHÔNG dùng bản xuất "
+                         "ra khi cờ này bật để nộp bài.")
     args = ap.parse_args()
     # 2026-07-11: vá path traversal, khớp chuẩn sanitize đã dùng ở G0-G5.
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
@@ -1185,6 +1189,22 @@ def main() -> int:
                 return GC.EXIT_GUARDRAIL_FAIL
         except ImportError:
             print("  ⚠ check_de_cuong.py chưa có — bỏ qua tự kiểm.")
+
+    # Vá 2026-07-12 (audit toàn diện cổng G0-G9): G10 là bước lắp ráp CUỐI trước khi
+    # tài liệu này có thể bị hiểu nhầm là "sẵn sàng nộp" — nhưng G9 (liêm chính tác
+    # giả, cổng cứng cuối cùng) trước đây KHÔNG có chốt chặn nào ở đây, chỉ tự in
+    # trạng thái "DRAFT" trong văn bản (dễ bị bỏ qua). Nay xác minh THẬT qua ledger
+    # (chữ ký, xem gate_contract.py) — vẫn XUẤT file (bác sĩ có thể cần xem nháp),
+    # nhưng KHÔNG báo "sẵn sàng"/exit 0 nếu G9 chưa thật sự có phê duyệt.
+    g9_artifact = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
+    g9_signed = GC.ledger_approved("G9", study, g9_artifact, repo_root=BASE)
+    if not g9_signed and not args.i_know_g9_not_signed:
+        print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: G9 (liêm chính tác giả) chưa có phê duyệt")
+        print("   THẬT trong approval_ledger.json (chạy tools/approve_gate.py --gate G9,")
+        print("   TỰ TAY bởi bác sĩ/PI, không nhờ agent). Tài liệu đã xuất Ở TRÊN chỉ là")
+        print("   BẢN NHÁP để rà soát — KHÔNG dùng để nộp tạp chí/hội đồng khi ở trạng")
+        print("   thái này. Nếu chỉ muốn xem trước, thêm --i-know-g9-not-signed.")
+        return GC.EXIT_BLOCKED
 
     print("\n✅ Xong. Cần bác sĩ kiểm chứng.")
     return 0
