@@ -123,6 +123,69 @@ def test_data_pipeline_steps_block_until_real_irb_and_sap_signals(tmp_path):
     assert data_lock["blocked_by"] == []
 
 
+def test_action_queue_routes_new_study_to_agent_g0(tmp_path):
+    report = ARG.audit_gates(
+        "AUTO-QUEUE", out_dir=tmp_path, topic="Tỷ lệ kiểm soát huyết áp", write=False
+    )
+
+    first = report["action_queue"][0]
+    assert first["source"] == "gate"
+    assert first["gate"] == "G0"
+    assert first["actor"] == "agent"
+    assert first["can_auto_run"] is True
+    assert "run_g0_auto.py" in first["next_action"]
+    assert report["next_agent_action"] == first
+
+
+def test_action_queue_marks_dependency_blocks_as_human_evidence(tmp_path):
+    _cp(tmp_path, "G6", {})
+    (tmp_path / "G6_A7_ANALYSIS_SCRIPTS_AUTO.md").write_text(
+        "analysis syntax", encoding="utf-8"
+    )
+    _write_json(tmp_path / "study_meta.json", {"irb_approved": True})
+
+    report = ARG.audit_gates("AUTO-QUEUE-DEPS", out_dir=tmp_path, write=False)
+    g6_item = next(
+        item for item in report["action_queue"]
+        if item["source"] == "gate" and item.get("gate") == "G6"
+    )
+
+    assert g6_item["actor"] == "human_pi_or_data_manager"
+    assert g6_item["can_auto_run"] is False
+    assert "SAP đã ký khóa trước khi xem dữ liệu" in g6_item["blocked_by"]
+    assert "dataset phân tích đã khóa" in g6_item["blocked_by"]
+
+
+def test_action_queue_includes_blocked_data_steps_until_irb(tmp_path):
+    report = ARG.audit_gates("AUTO-QUEUE-DATA", out_dir=tmp_path, write=False)
+    intake_item = next(
+        item for item in report["action_queue"]
+        if item["source"] == "data_pipeline" and item.get("step") == "intake"
+    )
+
+    assert intake_item["actor"] == "human_pi_or_irb"
+    assert intake_item["can_auto_run"] is False
+    assert "phê duyệt IRB/EC thật" in intake_item["blocked_by"]
+
+
+def test_next_agent_action_does_not_skip_human_gate_blocker(tmp_path):
+    _cp(tmp_path, "G0", {})
+    _cp(tmp_path, "G1", {})
+    _cp(tmp_path, "G2", {"g2_irb_number": "[CẦN BỔ SUNG]"})
+    _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
+    (tmp_path / "G0_A1_PICO_FINER_AUTO.md").write_text("PICO", encoding="utf-8")
+    (tmp_path / "G1_A2_PROTOCOL_DESIGN_AUTO.md").write_text(
+        "design rationale", encoding="utf-8"
+    )
+    (tmp_path / "G2_A3_ETHICS_PACKAGE_AUTO.md").write_text("ethics", encoding="utf-8")
+
+    report = ARG.audit_gates("AUTO-HUMAN-BLOCK", out_dir=tmp_path, write=False)
+
+    assert report["action_queue"][0]["gate"] == "G2"
+    assert report["action_queue"][0]["can_auto_run"] is False
+    assert report["next_agent_action"] is None
+
+
 def test_blocked_needs_input_surfaces_remediation_command(tmp_path):
     _cp(
         tmp_path,
@@ -190,4 +253,11 @@ def test_write_reports_and_updates_study_meta(tmp_path):
     assert (
         meta["research_gate_automation"]["metadata_issue_count"]
         == report["metadata_issue_count"]
+    )
+    assert meta["research_gate_automation"]["action_queue_size"] == len(
+        report["action_queue"]
+    )
+    assert (
+        meta["research_gate_automation"]["next_agent_action"]
+        == report["next_agent_action"]
     )

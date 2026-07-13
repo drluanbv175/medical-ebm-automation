@@ -820,6 +820,122 @@ def _first_actionable_gate(rows: List[Dict[str, Any]]) -> Optional[str]:
     return actionable[0][0]["gate"]
 
 
+def _gate_blocked_by(row: Dict[str, Any]) -> List[str]:
+    blocked_by: List[str] = []
+    real = row.get("real_signal")
+    if isinstance(real, dict) and not real.get("present"):
+        blocked_by.append(real.get("label") or real.get("key") or "real signal")
+    for item in (row.get("dependency_readiness") or {}).get("items") or []:
+        if item.get("missing_signals"):
+            blocked_by.extend(item.get("missing_labels") or item["missing_signals"])
+    return sorted(dict.fromkeys(str(item) for item in blocked_by if item))
+
+
+def _row_has_actionable_requirement(row: Dict[str, Any]) -> bool:
+    return any((
+        (row.get("dependency_readiness") or {}).get("missing_required_count"),
+        (row.get("artifact_readiness") or {}).get("missing_required_count"),
+        (row.get("metadata_readiness") or {}).get("missing_required_count"),
+        row.get("stale"),
+        row.get("orphan"),
+    ))
+
+
+def _gate_action_actor(row: Dict[str, Any], blocked_by: List[str]) -> str:
+    status = row.get("status")
+    if status == STATUS_MISSING:
+        return "agent"
+    if blocked_by or status == STATUS_NEEDS_REAL:
+        if row.get("gate") in {"G2", "G4", "G9"}:
+            return "human_pi_or_irb"
+        if row.get("gate") == "G6":
+            return "human_pi_or_data_manager"
+        return "human_pi_or_study_team"
+    if status == STATUS_BLOCKED:
+        return "human_pi_or_study_team"
+    if status == STATUS_GUARDRAIL_FAIL:
+        return "agent_with_human_review"
+    if (row.get("metadata_readiness") or {}).get("missing_required_count"):
+        return "human_pi_or_study_team"
+    return "agent"
+
+
+def _gate_action_reason(row: Dict[str, Any]) -> Optional[str]:
+    status = row.get("status")
+    if status == STATUS_MISSING:
+        return "Thiếu checkpoint cổng."
+    if status == STATUS_BLOCKED:
+        return "Checkpoint báo needs_input/blocked contract."
+    if status == STATUS_GUARDRAIL_FAIL:
+        return "Guardrail cổng không đạt."
+    if status == STATUS_NEEDS_REAL:
+        return "Cổng cứng đã có draft nhưng thiếu bằng chứng thật."
+    if (row.get("dependency_readiness") or {}).get("missing_required_count"):
+        return "Thiếu điều kiện tiền kiểm đời thực."
+    if (row.get("artifact_readiness") or {}).get("missing_required_count"):
+        return "Thiếu artifact bắt buộc để tái lập hồ sơ."
+    if (row.get("metadata_readiness") or {}).get("missing_required_count"):
+        return "Thiếu metadata bắt buộc trong study_meta.json."
+    if row.get("stale") or row.get("orphan"):
+        return "Checkpoint stale/orphan so với chuỗi hiện tại."
+    if status == STATUS_UNKNOWN:
+        return "Không đọc được trạng thái guardrail rõ ràng."
+    return None
+
+
+def _build_action_queue(report: Dict[str, Any]) -> List[Dict[str, Any]]:
+    queue: List[Dict[str, Any]] = []
+    for index, row in enumerate(report["pipeline_gates"]):
+        reason = _gate_action_reason(row)
+        if not reason and not _row_has_actionable_requirement(row):
+            continue
+        blocked_by = _gate_blocked_by(row)
+        actor = _gate_action_actor(row, blocked_by)
+        can_auto_run = bool(row.get("can_auto_run")) and not blocked_by and actor.startswith("agent")
+        queue.append({
+            "id": f"gate:{row['gate']}",
+            "source": "gate",
+            "gate": row["gate"],
+            "label": row["label"],
+            "priority": index * 10,
+            "actor": actor,
+            "automation_level": "AUTO_RUN_ALLOWED" if can_auto_run else "HUMAN_EVIDENCE_REQUIRED",
+            "can_auto_run": can_auto_run,
+            "status": row["status"],
+            "blocked_by": blocked_by,
+            "reason": reason or "Yêu cầu bổ sung để tăng tự động hóa.",
+            "next_action": row["next_action"],
+        })
+
+    base_priority = len(PIPELINE_GATES) * 10
+    for offset, row in enumerate(report["data_pipeline"]):
+        if row.get("can_run") and row.get("status") not in {"MISSING", "OPTIONAL_OR_PENDING"}:
+            continue
+        blocked_by = list(row.get("blocked_by") or [])
+        can_auto_run = bool(row.get("can_run")) and not blocked_by
+        actor = "agent" if can_auto_run else "human_pi_or_irb"
+        queue.append({
+            "id": f"data:{row['step']}",
+            "source": "data_pipeline",
+            "step": row["step"],
+            "label": row["step"],
+            "priority": base_priority + offset,
+            "actor": actor,
+            "automation_level": "AUTO_RUN_ALLOWED" if can_auto_run else "HUMAN_EVIDENCE_REQUIRED",
+            "can_auto_run": can_auto_run,
+            "status": row["status"],
+            "blocked_by": blocked_by,
+            "reason": (
+                "Dữ liệu thật đang bị chặn bởi điều kiện tiền kiểm."
+                if blocked_by else "Có thể chạy bước dữ liệu tiếp theo khi đã có file đầu vào thật."
+            ),
+            "next_action": row["next_action"],
+        })
+
+    queue.sort(key=lambda item: (item["priority"], 0 if item["can_auto_run"] else 1))
+    return queue
+
+
 def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
     path = out_dir / REPORT_MD
 
@@ -836,12 +952,29 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         f"- Missing required dependencies: {report['dependency_issue_count']}",
         f"- Missing required artifacts: {report['artifact_issue_count']}",
         f"- Missing required metadata: {report['metadata_issue_count']}",
+        f"- Action queue items: {len(report.get('action_queue') or [])}",
+        f"- Next agent action: `{(report.get('next_agent_action') or {}).get('id', 'NONE')}`",
+        "",
+        "## Action Queue",
+        "",
+        "| Priority | Source | Gate/Step | Actor | Auto Run | Blocked By | Reason | Next Action |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for item in report.get("action_queue") or []:
+        blocked_by = ", ".join(item.get("blocked_by") or [])
+        gate_or_step = item.get("gate") or item.get("step") or ""
+        lines.append(
+            f"| {cell(item['priority'])} | {cell(item['source'])} | {cell(gate_or_step)} | "
+            f"{cell(item['actor'])} | {cell(item['can_auto_run'])} | "
+            f"{cell(blocked_by)} | {cell(item['reason'])} | {cell(item['next_action'])} |"
+        )
+    lines.extend([
         "",
         "## Pipeline Gates",
         "",
         "| Gate | Mode | Status | Dependency | Artifact | Metadata | Guardrail | Real Signal | Stale | Next Action |",
         "|---|---|---|---|---|---|---|---|---|---|",
-    ]
+    ])
     for row in report["pipeline_gates"]:
         real = row.get("real_signal")
         if isinstance(real, dict):
@@ -940,6 +1073,8 @@ def _update_meta(out_dir: Path, report: Dict[str, Any],
     meta["research_gate_automation"] = {
         "status": report["overall_status"],
         "current_actionable_gate": report.get("current_actionable_gate"),
+        "next_agent_action": report.get("next_agent_action"),
+        "action_queue_size": len(report.get("action_queue") or []),
         "json": str(json_path.relative_to(out_dir)),
         "markdown": str(md_path.relative_to(out_dir)),
         "generated_at": report["generated_at"],
@@ -981,6 +1116,7 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         row["metadata_readiness"]["missing_required_count"] for row in pipeline_rows
     )
     current_gate = _first_actionable_gate(pipeline_rows)
+    data_pipeline = _data_pipeline(meta, study_id, signals)
     overall = (
         "PASS_READY_OR_DRAFTS"
         if (
@@ -1002,7 +1138,7 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         "freshness": freshness,
         "real_world_signals": signals,
         "pipeline_gates": pipeline_rows,
-        "data_pipeline": _data_pipeline(meta, study_id, signals),
+        "data_pipeline": data_pipeline,
         "skill_gates": _skill_gate_rows(cps, meta),
         "readiness": S.readiness_report(cps, meta),
         "hard_stop_count": hard_stop_count,
@@ -1017,6 +1153,12 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
             "Data pipeline phải qua intake -> cleaning -> data lock trước phân tích chính.",
         ],
     }
+    action_queue = _build_action_queue(report)
+    report["action_queue"] = action_queue
+    first_action = action_queue[0] if action_queue else None
+    report["next_agent_action"] = (
+        first_action if first_action and first_action.get("can_auto_run") else None
+    )
     if write:
         json_path = _write_json(out_dir, report)
         md_path = _write_markdown(out_dir, report)
@@ -1032,10 +1174,14 @@ def print_summary(report: Dict[str, Any]) -> None:
     print(f"dependency_issue_count={report['dependency_issue_count']}")
     print(f"artifact_issue_count={report['artifact_issue_count']}")
     print(f"metadata_issue_count={report['metadata_issue_count']}")
+    print(f"action_queue_size={len(report.get('action_queue') or [])}")
     for row in report["pipeline_gates"]:
         if row["gate"] == report.get("current_actionable_gate"):
             print(f"next_action={row['next_action']}")
             break
+    next_agent = report.get("next_agent_action")
+    if next_agent:
+        print(f"next_agent_action={next_agent['next_action']}")
     print("Cần bác sĩ kiểm chứng.")
 
 
