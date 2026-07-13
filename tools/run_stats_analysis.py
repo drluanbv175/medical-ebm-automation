@@ -82,11 +82,21 @@ def load_data(path: str) -> pd.DataFrame:
 # ════════════════════════════════════════════════════════════════════════════
 
 def detect_var_type(series: pd.Series) -> str:
-    """Trả về 'binary' | 'continuous' | 'categorical'."""
+    """Trả về 'binary' | 'continuous' | 'categorical'.
+
+    Vá 2026-07-14: "series.dtype == object" không còn đúng trên pandas 3.x —
+    cột chuỗi đọc từ CSV giờ có dtype "str" mới (StringDtype/"str"), không
+    phải "object" nữa. Điều kiện cũ khiến cột định danh dạng chữ (vd
+    "record_id" = "S001") bị xếp nhầm thành "continuous" rồi crash khi gọi
+    scipy.stats.shapiro trên dữ liệu chuỗi. Dùng pandas.api.types.is_numeric_dtype
+    — dtype-agnostic, đúng cho mọi phiên bản pandas (object/str/category/bool/
+    Int64 nullable…) — thay vì so sánh dtype cụ thể."""
     n_unique = series.dropna().nunique()
     if n_unique == 2:
         return "binary"
-    if n_unique <= 10 and (series.dtype == object or n_unique < series.dropna().count() * 0.05):
+    if not pd.api.types.is_numeric_dtype(series):
+        return "categorical"
+    if n_unique <= 10 and n_unique < series.dropna().count() * 0.05:
         return "categorical"
     return "continuous"
 
@@ -229,7 +239,12 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list) -> dict:
             for g in groups:
                 s = grp_data[g].dropna()
                 if vtype == "binary":
-                    n1 = int((s == s.dropna().unique().max()).sum())
+                    # Vá 2026-07-14: .unique() trả về ExtensionArray (vd ArrowStringArray
+                    # cho dtype "str" mới của pandas 3.x khi cột nhị phân là chữ, "Yes"/"No")
+                    # — các ExtensionArray này không có .max(). dùng max() builtin (dựa vào
+                    # __iter__/so sánh, hoạt động với mọi loại mảng: ndarray/IntegerArray/
+                    # ArrowStringArray/Categorical…) thay vì gọi .max() trực tiếp trên mảng.
+                    n1 = int((s == max(s.dropna().unique())).sum())
                     row[f"grp_{g}"] = f"{n1} ({n1/len(s)*100:.1f}%)"
                 else:
                     counts = s.value_counts()
