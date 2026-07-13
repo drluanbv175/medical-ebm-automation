@@ -18,8 +18,11 @@ R7. Có danh mục bảng/hình chuẩn xuất bản: tối thiểu Bảng 1, B�
     và checklist caption/trục/đơn vị/n/95%CI để nối SAP → bản thảo.
 R8. Có ma trận tuân thủ tiêu chuẩn quốc tế: reporting checklist đúng thiết kế
     (CONSORT/STROBE/...), ICH-GCP/IRB khi áp dụng, SAP, minh bạch và tái lập.
+R9. Có bảng kiểm hoàn thành kỹ thuật: khóa phạm vi, phân biệt nguồn thông tin,
+    đủ 10 bước, đủ bộ 16 đầu ra, kiểm định cuối và quy tắc chỉ ghi HOÀN THÀNH
+    KỸ THUẬT khi mọi lỗi nghiêm trọng đã xử lý.
 
-Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7, R8 = ĐỎ
+Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R9 = ĐỎ
 (passed=False). R6 = cảnh báo (không chặn, vì một số tham số giả định hợp lệ).
 
 Dùng: python3 tools/check_de_cuong.py --study <MÃ>   (hoặc import validate()).
@@ -72,6 +75,15 @@ _COMPLIANCE_REQUIRED_TERMS = (
     "CONSORT", "STROBE", "ICH-GCP", "GCP", "IRB", "SAP",
     "data availability", "code availability", "COI", "AI disclosure",
     "minh bạch", "tái lập",
+)
+_TECHNICAL_COMPLETION_TERMS = (
+    "Nội dung đã được khóa",
+    "Phân biệt nguồn thông tin",
+    "Quy trình 10 bước",
+    "Bộ đầu ra bắt buộc",
+    "Kiểm định cuối trước khi ký",
+    "Cấu trúc báo cáo cuối",
+    "HOÀN THÀNH KỸ THUẬT",
 )
 
 
@@ -276,6 +288,51 @@ def validate(md_path, out_dir) -> Dict:
     else:
         checks["R8_international_compliance"] = (
             "PASS (reporting + ICH-GCP/IRB + SAP + transparency + reproducibility)")
+
+    # R9 — bảng kiểm hoàn thành kỹ thuật theo đặc tả vận hành.
+    has_completion_section = re.search(
+        r"^#\s*Bảng kiểm hoàn thành kỹ thuật\b", text, re.MULTILINE)
+    missing_completion_terms = [
+        term for term in _TECHNICAL_COMPLETION_TERMS
+        if term.lower() not in lowered
+    ]
+    missing_steps = [
+        step_id for step_id, _name, _criterion in S.RESEARCH_COMPLETION_STEPS
+        if not re.search(rf"\|\s*{re.escape(step_id)}\s*\|", text)
+    ]
+    missing_outputs = [
+        item for item in S.RESEARCH_OUTPUT_PACKAGE_ITEMS
+        if item.lower() not in lowered
+    ]
+    missing_final_checks = [
+        item for item in S.FINAL_TECHNICAL_CHECKS
+        if item.lower() not in lowered
+    ]
+    if not has_completion_section:
+        errors.append("R9 THIẾU mục 'Bảng kiểm hoàn thành kỹ thuật'.")
+        checks["R9_technical_completion"] = "FAIL (thiếu bảng kiểm)"
+    elif missing_completion_terms:
+        errors.append("R9 BẢNG KIỂM HOÀN THÀNH thiếu mục bắt buộc: "
+                      + ", ".join(missing_completion_terms))
+        checks["R9_technical_completion"] = (
+            f"FAIL (thiếu {len(missing_completion_terms)} mục lõi)")
+    elif missing_steps:
+        errors.append("R9 THIẾU bước quy trình: " + ", ".join(missing_steps))
+        checks["R9_technical_completion"] = (
+            f"FAIL (thiếu {len(missing_steps)} bước)")
+    elif missing_outputs:
+        errors.append("R9 THIẾU tài liệu đầu ra bắt buộc: "
+                      + "; ".join(missing_outputs[:5]))
+        checks["R9_technical_completion"] = (
+            f"FAIL (thiếu {len(missing_outputs)} đầu ra)")
+    elif missing_final_checks:
+        errors.append("R9 THIẾU câu hỏi kiểm định cuối: "
+                      + "; ".join(missing_final_checks[:5]))
+        checks["R9_technical_completion"] = (
+            f"FAIL (thiếu {len(missing_final_checks)} kiểm định)")
+    else:
+        checks["R9_technical_completion"] = (
+            "PASS (10 bước + 16 đầu ra + kiểm định cuối + quy tắc hoàn thành)")
 
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,

@@ -197,6 +197,83 @@ INTERNATIONAL_COMPLIANCE_CORE: Tuple[Tuple[str, str, str], ...] = (
      "Script, session info/requirements, README tái chạy, hash artifact, không chỉnh tay kết quả."),
 )
 
+# Bảng kiểm hoàn thành kỹ thuật theo đặc tả "Codex hoàn thiện nghiên cứu y khoa":
+# chỉ được ghi HOÀN THÀNH KỸ THUẬT khi không còn lỗi nghiêm trọng và mọi quyết
+# định cần chủ nhiệm/IRB/thống kê viên đã có bằng chứng thật.
+RESEARCH_COMPLETION_STEPS: Tuple[Tuple[str, str, str], ...] = (
+    ("B1", "Tiếp nhận và khóa phạm vi",
+     "Tên đề tài, mục tiêu, câu hỏi, giả thuyết, thiết kế đã khóa; không tự ý đổi."),
+    ("B2", "Kiểm tra tính khả thi",
+     "FINER, tuyển mẫu, đo lường, nhân lực/kinh phí/thời gian, nguy cơ IRB."),
+    ("B3", "Kiểm tra câu hỏi và thiết kế",
+     "PICO/PECO/PICOT, mục tiêu, giả thuyết, thiết kế, kết luận dự kiến nhất quán."),
+    ("B4", "Hoàn thiện phương pháp",
+     "Đối tượng, chọn mẫu, cỡ mẫu, biến số, công cụ, QC, dữ liệu thiếu, bảo mật."),
+    ("B5", "Hoàn thiện phân tích thống kê",
+     "SAP trước dữ liệu, mô tả/đơn biến/đa biến, giả định, nhiễu, 95% CI, ý nghĩa lâm sàng."),
+    ("B6", "Kiểm tra đạo đức",
+     "Nguy cơ-lợi ích, consent, rút lui, bảo mật, nhóm dễ tổn thương, COI, liêm chính."),
+    ("B7", "Kiểm tra tính nhất quán",
+     "Ma trận mục tiêu-câu hỏi-biến-công cụ-phân tích-bảng-kết luận; không vượt thiết kế."),
+    ("B8", "Phản biện độc lập",
+     "Ba phản biện: phương pháp, thống kê, lâm sàng/đạo đức; quyết định và sửa cụ thể."),
+    ("B9", "Tạo bộ đầu ra hoàn chỉnh",
+     "Bộ hồ sơ đủ để hội đồng khoa học/đạo đức, triển khai, phân tích, báo cáo, công bố."),
+    ("B10", "Kiểm định cuối",
+     "Chỉ HOÀN THÀNH KỸ THUẬT khi mọi lỗi nghiêm trọng đã xử lý hoặc được chủ nhiệm quyết định."),
+)
+
+RESEARCH_OUTPUT_PACKAGE_ITEMS: Tuple[str, ...] = (
+    "Tóm tắt nghiên cứu",
+    "Đề cương nghiên cứu hoàn chỉnh",
+    "Thuyết minh nghiên cứu hoàn chỉnh",
+    "Tổng quan tài liệu có trích dẫn",
+    "Bảng biến số và định nghĩa hoạt động",
+    "Phiếu thu thập số liệu/bảng hỏi",
+    "Hướng dẫn sử dụng phiếu",
+    "Kế hoạch phân tích thống kê",
+    "Kế hoạch quản lý dữ liệu",
+    "Hồ sơ đạo đức nghiên cứu",
+    "Bảng kiểm báo cáo theo hướng dẫn phù hợp",
+    "Báo cáo phản biện ba vai trò",
+    "Danh mục vấn đề còn tồn tại",
+    "Nhật ký thay đổi phiên bản",
+    "Danh mục tài liệu tham khảo đã kiểm tra",
+    "Bản cuối cùng sẵn sàng để nhà nghiên cứu thẩm định",
+)
+
+FINAL_TECHNICAL_CHECKS: Tuple[str, ...] = (
+    "Mục tiêu đã được đo lường đầy đủ",
+    "Thiết kế trả lời được câu hỏi nghiên cứu",
+    "Cỡ mẫu có cơ sở",
+    "Biến số có định nghĩa rõ ràng",
+    "Phiếu thu thập số liệu đầy đủ",
+    "Phân tích thống kê phù hợp",
+    "Sai lệch và nhiễu được kiểm soát",
+    "Không còn nguy cơ vi phạm đạo đức nghiêm trọng",
+    "Tài liệu tham khảo xác thực",
+    "Các tài liệu thống nhất với nhau",
+    "Nghiên cứu có thể tái lập",
+    "Kết luận không vượt quá dữ liệu/thiết kế",
+)
+
+FINAL_REPORT_SECTIONS: Tuple[str, ...] = (
+    "Kết luận điều hành",
+    "Trạng thái nghiên cứu",
+    "Các nội dung đã đạt",
+    "Các lỗi nghiêm trọng",
+    "Các lỗi quan trọng",
+    "Các đề xuất sửa đổi",
+    "Bảng ma trận truy xuất",
+    "Kế hoạch phân tích",
+    "Đánh giá đạo đức",
+    "Báo cáo phản biện",
+    "Bảng kiểm cuối",
+    "Danh sách tài liệu cần người dùng xác nhận",
+    "Danh sách tệp đầu ra",
+    "Nhật ký phiên bản",
+)
+
 
 def de_cuong_section_titles() -> List[str]:
     """Trả về danh sách 16 tiêu đề mục chính (dùng cho validator đối chiếu)."""

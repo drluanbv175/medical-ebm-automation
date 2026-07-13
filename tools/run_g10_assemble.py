@@ -572,6 +572,83 @@ def build_international_compliance(cps, meta=None) -> str:
     return "\n".join(lines)
 
 
+def build_final_technical_completion(cps, meta=None) -> str:
+    """Bảng kiểm cuối trước khi tuyên bố hoàn thành kỹ thuật."""
+    lines = [
+        "# Bảng kiểm hoàn thành kỹ thuật\n",
+        "Bảng này triển khai quy trình 10 bước để bộ hồ sơ nghiên cứu có thể được "
+        "trình hội đồng khoa học/đạo đức, triển khai, phân tích, báo cáo, viết "
+        "bài và tái lập bởi nhóm khác. Mọi mục chưa có bằng chứng thật giữ nhãn "
+        f"{TAG_BS}/{TAG_DV}/{TAG_DRAFT}; hệ thống KHÔNG tự tuyên bố hoàn tất.\n",
+        "## Nội dung đã được khóa\n",
+        "| Nội dung | Trạng thái | Ghi chú chống tự ý thay đổi |",
+        "|---|---|---|",
+    ]
+    locked_items = [
+        ("Tên đề tài", _g(cps.get("G0"), "topic", default=meta.get("title", TAG_BS))),
+        ("Mục tiêu", meta.get("aim", TAG_BS)),
+        ("Câu hỏi nghiên cứu/giả thuyết", meta.get("research_question", TAG_BS)),
+        ("Thiết kế nghiên cứu", _g(cps.get("G1"), "design", "primary", default=TAG_BS)),
+        ("Kết cục chính", meta.get("primary_outcome", TAG_BS)),
+    ]
+    for item, value in locked_items:
+        lines.append(
+            f"| {item} | {value} | Không tự ý thay đổi; nếu lỗi nghiêm trọng thì "
+            "phải xin chủ nhiệm xác nhận trước. |")
+
+    lines.extend([
+        "",
+        "## Phân biệt nguồn thông tin",
+        "| Loại thông tin | Quy ước trong đầu ra |",
+        "|---|---|",
+        "| Người dùng cung cấp | Ghi là [ĐÃ CUNG CẤP] hoặc trích nguyên văn có bối cảnh |",
+        "| Tài liệu/y văn | Gắn PMID/DOI/URL hoặc cờ cần kiểm chứng nguồn |",
+        "| Suy luận chuyên môn | Nêu rõ là suy luận, không thay thế quyết định của chủ nhiệm |",
+        "| AI đề xuất | Gắn nhãn dự thảo/cần xác nhận, không ghi như sự thật đã duyệt |",
+        "",
+        "## Quy trình 10 bước",
+        "| Bước | Nội dung kiểm | Điều kiện đạt tối thiểu |",
+        "|---|---|---|",
+    ])
+    for step_id, name, criterion in S.RESEARCH_COMPLETION_STEPS:
+        lines.append(f"| {step_id} | {name} | {criterion} |")
+
+    lines.extend([
+        "",
+        "## Bộ đầu ra bắt buộc",
+        "| # | Tài liệu đầu ra | Trạng thái mặc định |",
+        "|---|---|---|",
+    ])
+    for i, item in enumerate(S.RESEARCH_OUTPUT_PACKAGE_ITEMS, 1):
+        lines.append(f"| {i} | {item} | {TAG_BS} hoặc đường dẫn artifact thật |")
+
+    lines.extend([
+        "",
+        "## Kiểm định cuối trước khi ký",
+        "| # | Câu hỏi kiểm định | Trạng thái |",
+        "|---|---|---|",
+    ])
+    for i, item in enumerate(S.FINAL_TECHNICAL_CHECKS, 1):
+        lines.append(f"| {i} | {item}? | {TAG_BS} |")
+
+    lines.extend([
+        "",
+        "## Cấu trúc báo cáo cuối",
+        "| # | Mục báo cáo cuối |",
+        "|---|---|",
+    ])
+    for i, item in enumerate(S.FINAL_REPORT_SECTIONS, 1):
+        lines.append(f"| {i} | {item} |")
+
+    lines.append(
+        "\n**Quy tắc kết luận:** chỉ ghi **HOÀN THÀNH KỸ THUẬT** khi tất cả vấn "
+        "đề nghiêm trọng đã được xử lý, mọi cổng cứng có bằng chứng thật, và chủ "
+        "nhiệm nghiên cứu đã thẩm định. Nếu chưa đạt, phải ghi rõ chưa đạt ở đâu, "
+        "nguyên nhân, cần sửa gì, ai quyết định và điều kiện chuyển trạng thái.\n"
+    )
+    return "\n".join(lines)
+
+
 def build_legal_refs() -> str:
     lines = ["# Khung pháp lý & tiêu chuẩn tham chiếu\n",
              "| Văn bản/Tiêu chuẩn | Phiên bản | Lĩnh vực | Cờ |",
@@ -645,10 +722,11 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     for builder in SECTION_BUILDERS:
         parts.append(builder(cps, meta))
         parts.append("")
-    # Phụ lục + danh mục hình/bảng + tuân thủ quốc tế + pháp lý.
+    # Phụ lục + danh mục hình/bảng + tuân thủ quốc tế + kiểm hoàn thành + pháp lý.
     parts.append(build_phuluc())
     parts.append(build_display_items(cps, meta))
     parts.append(build_international_compliance(cps, meta))
+    parts.append(build_final_technical_completion(cps, meta))
     parts.append(build_legal_refs())
     parts.append(
         "\n---\n\n> **Disclaimer:** Tài liệu do hệ thống hỗ trợ lắp ráp; dữ liệu "

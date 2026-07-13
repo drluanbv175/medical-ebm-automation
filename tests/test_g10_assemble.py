@@ -133,6 +133,22 @@ class TestAssemble:
         ):
             assert term in text
 
+    def test_final_technical_completion_checklist_has_10_steps_and_outputs(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        assert "# Bảng kiểm hoàn thành kỹ thuật" in text
+        for step_id, _name, _criterion in S.RESEARCH_COMPLETION_STEPS:
+            assert f"| {step_id} |" in text
+        for item in S.RESEARCH_OUTPUT_PACKAGE_ITEMS:
+            assert item in text
+        for term in (
+            "Nội dung đã được khóa",
+            "Phân biệt nguồn thông tin",
+            "Kiểm định cuối trước khi ký",
+            "HOÀN THÀNH KỸ THUẬT",
+        ):
+            assert term in text
+
     def test_passes_own_validator(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
@@ -259,6 +275,25 @@ class TestValidatorCatchesFabrication:
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("ICH-GCP" in e for e in report["errors"])
+
+    def test_catches_missing_final_technical_completion_checklist(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text = text.replace("# Bảng kiểm hoàn thành kỹ thuật",
+                            "# Bảng kiểm bị đổi tên")
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("R9" in e for e in report["errors"])
+
+    def test_catches_missing_required_output_document(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text = text.replace("Báo cáo phản biện ba vai trò", "Báo cáo phản biện")
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("Báo cáo phản biện ba vai trò" in e for e in report["errors"])
 
     def test_clean_de_cuong_passes(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)
