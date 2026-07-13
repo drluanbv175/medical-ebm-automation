@@ -306,6 +306,7 @@ def sec_congcu(cps, meta) -> str:
 def sec_quantri_dulieu(cps, meta) -> str:
     lock = _g(cps["G5"], "database_lock_status", default=TAG_BS)
     intake = (meta or {}).get("real_data_intake") or {}
+    data_lock = (meta or {}).get("real_data_lock") or {}
     if intake:
         intake_txt = (
             f"**Dữ liệu thật đã nhập:** trạng thái `{intake.get('status', TAG_BS)}`; "
@@ -321,10 +322,37 @@ def sec_quantri_dulieu(cps, meta) -> str:
             "`python3 tools/import_real_dataset.py --study <MÃ> --data <file.csv>` "
             "để quét PII, copy raw read-only và tạo manifest trước G6.\n\n"
         )
+    if data_lock and data_lock.get("status") == "LOCKED_FOR_ANALYSIS":
+        data_lock_txt = (
+            f"**Dữ liệu phân tích đã khóa:** file "
+            f"`{data_lock.get('locked_dataset_path') or TAG_BS}`; ngày khóa "
+            f"{data_lock.get('lock_date') or TAG_BS}; người xác nhận "
+            f"{data_lock.get('approved_by') or TAG_BS}; SAP version "
+            f"{data_lock.get('sap_version') or TAG_BS}; SHA-256 "
+            f"`{data_lock.get('sha256') or TAG_BS}`; memo "
+            f"`{data_lock.get('memo', 'DATA_LOCK_memo.md')}`.\n\n"
+        )
+    elif data_lock:
+        data_lock_txt = (
+            f"**Dữ liệu phân tích đã khóa:** CHƯA ĐẠT — trạng thái "
+            f"`{data_lock.get('status', TAG_BS)}`; blockers: "
+            f"{', '.join(data_lock.get('blockers') or [TAG_BS])}; xem "
+            f"`{data_lock.get('memo', 'DATA_LOCK_memo.md')}`.\n\n"
+        )
+    else:
+        data_lock_txt = (
+            f"**Dữ liệu phân tích đã khóa:** {TAG_BS} — sau khi làm sạch trên bản "
+            "sao, dùng `python3 tools/lock_analysis_dataset.py --study <MÃ> "
+            "--clean-data <df_clean.csv> --query-log <query_log.csv> --lock-date "
+            "<YYYY-MM-DD> --approved-by <PI> --sap-version <x.y> "
+            "--confirm-deidentified --confirm-clean-copy --confirm-no-open-query "
+            "--confirm-sap-locked`.\n\n"
+        )
     return (
         "# 10. Quản trị dữ liệu và bảo mật\n\n"
         f"**Trạng thái khoá cơ sở dữ liệu (tự động từ G5):** {lock}.\n\n"
         f"{intake_txt}"
+        f"{data_lock_txt}"
         "**Nguyên tắc:** khử định danh, không lưu PII, tuân thủ Luật Bảo vệ dữ "
         f"liệu cá nhân 91/2025/QH15 {S.TAG_CAN_KIEM_CHUNG_NGUON}; nhật ký truy vấn "
         "dữ liệu; làm sạch trên BẢN SAO, không sửa dữ liệu gốc; kế hoạch dữ liệu "
