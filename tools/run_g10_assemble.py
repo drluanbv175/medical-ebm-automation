@@ -507,6 +507,74 @@ def build_phuluc() -> str:
     return "\n".join(lines)
 
 
+def build_traceability_matrix(cps, meta=None) -> str:
+    """Ma trận mục tiêu-biến-công cụ-phân tích-bảng để kiểm đồng bộ hồ sơ."""
+    meta = meta or {}
+    design = _g(cps.get("G1"), "design", "primary", default=TAG_BS)
+    question_type = _g(cps.get("G1"), "question_type", default=TAG_BS)
+    sap_version = _g(cps.get("G4"), "g4_sap_version", default=TAG_BS)
+    sap_status = _g(cps.get("G4"), "g4_status", default=TAG_BS)
+    crf = _g(cps.get("G5"), "crf_columns", default=[]) or []
+    specialty = _g(cps.get("G5"), "specialty", default=TAG_BS)
+    crf_source = (
+        f"CRF/REDCap G5 ({len(crf)} biến; chuyên khoa `{specialty}`)"
+        if crf else TAG_BS
+    )
+    primary_outcome = meta.get("primary_outcome")
+    if not primary_outcome and "primary_outcome" in crf:
+        primary_outcome = "`primary_outcome`"
+    primary_outcome = primary_outcome or TAG_BS
+    exposure = meta.get("exposure") or meta.get("main_predictor")
+    if not exposure and "exposure_var" in crf:
+        exposure = "`exposure_var`"
+    exposure = exposure or TAG_BS
+    aim = meta.get("aim") or TAG_BS
+    research_question = meta.get("research_question") or f"Loại câu hỏi: {question_type}"
+    objectives = meta.get("objectives") or []
+
+    lines = [
+        "# Ma trận truy xuất mục tiêu-biến-công cụ-phân tích-bảng\n",
+        "Ma trận này là cầu nối bắt buộc giữa đề cương, CRF/codebook, SAP, bảng/hình "
+        "và bản thảo. Nếu một mục tiêu không có biến, công cụ, phân tích định trước "
+        "hoặc bảng/hình tương ứng thì chưa được kết luận ở báo cáo cuối.\n",
+        "| Mục tiêu/câu hỏi | Biến/kết cục | Công cụ/nguồn dữ liệu | "
+        "Phân tích định trước | Bảng/hình đầu ra | Cổng nguồn |",
+        "|---|---|---|---|---|---|",
+        f"| Mục tiêu chung: {aim}; câu hỏi: {research_question} | Kết cục chính: "
+        f"{primary_outcome}; phơi nhiễm/yếu tố chính: {exposure} | {crf_source} | "
+        f"Thiết kế {design}; SAP version {sap_version} ({sap_status}); mô tả + "
+        "ước lượng chính kèm 95% CI/KTC 95%, không p-value đơn độc | Bảng 1, "
+        "Bảng 2, Hình 1, Hình 2 | G0/G1/G4/G5 |",
+    ]
+
+    if objectives:
+        for idx, objective in enumerate(objectives, 1):
+            lines.append(
+                f"| Mục tiêu cụ thể {idx}: {objective} | {TAG_BS} — biến/kết cục "
+                "tương ứng cần map trong codebook | CRF/codebook + nguồn đo tương ứng | "
+                "Phân tích định trước trong SAP; nếu thăm dò phải ghi rõ exploratory | "
+                f"Bảng/Hình tương ứng mục tiêu {idx} | G4/G5/G7 |"
+            )
+    else:
+        lines.append(
+            f"| Mục tiêu cụ thể | {TAG_BS} — chưa có danh sách mục tiêu cụ thể đã khóa | "
+            f"{TAG_BS} | {TAG_BS} — chưa thể chốt phân tích theo từng mục tiêu | "
+            f"{TAG_BS} | G0/G4/G5 |"
+        )
+
+    lines.extend([
+        "",
+        "## Quy tắc truy xuất khi viết báo cáo/bài báo",
+        "- Mỗi câu kết luận trong Results/Discussion phải truy ngược được tới một hàng của ma trận này.",
+        "- Không thêm phân tích/bảng/hình ngoài SAP mà không ghi deviation hoặc exploratory.",
+        "- Nếu đổi mục tiêu, biến chính, công cụ hoặc phân tích: cập nhật protocol/SAP, "
+        "nhật ký thay đổi và xin xác nhận chủ nhiệm/IRB khi cần.",
+        f"- {TAG_BS}: Bác sĩ/chủ nhiệm cần hoàn thiện mapping chi tiết cho từng biến "
+        "sau khi codebook và SAP được khóa.\n",
+    ])
+    return "\n".join(lines)
+
+
 def build_display_items(cps, meta=None) -> str:
     """Danh mục bảng/hình tối thiểu, nối SAP -> manuscript -> submission."""
     code = S.canonical_design_code(_design_code(cps))
@@ -890,6 +958,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
         parts.append("")
     # Phụ lục + danh mục hình/bảng + tuân thủ quốc tế + kiểm hoàn thành + pháp lý.
     parts.append(build_phuluc())
+    parts.append(build_traceability_matrix(cps, meta))
     parts.append(build_display_items(cps, meta))
     parts.append(build_international_compliance(cps, meta))
     parts.append(build_final_technical_completion(cps, meta))

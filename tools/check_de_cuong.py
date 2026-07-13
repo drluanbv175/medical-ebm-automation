@@ -27,8 +27,10 @@ R11. Có danh sách thông tin còn thiếu và quyết định cần xác nhậ
      đời thực còn thiếu phải có ảnh hưởng, phương án an toàn và người quyết định.
 R12. Có kiểm soát phiên bản và lịch sử thay đổi: phiên bản, ngày cập nhật, nguồn
      thay đổi và người phê duyệt/chủ nhiệm phải hiện rõ trong đầu ra chính.
+R13. Có ma trận truy xuất mục tiêu-biến-công cụ-phân tích-bảng để đồng bộ
+     protocol, CRF/codebook, SAP, bảng/hình và kết luận.
 
-Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R12 = ĐỎ
+Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R13 = ĐỎ
 (passed=False). R6 = cảnh báo (không chặn, vì một số tham số giả định hợp lệ).
 
 Dùng: python3 tools/check_de_cuong.py --study <MÃ>   (hoặc import validate()).
@@ -108,6 +110,14 @@ _DOCUMENT_CONTROL_REQUIRED_TERMS = (
     "Nguồn thay đổi",
     "Người phê duyệt/chủ nhiệm",
     "Nhật ký thay đổi",
+)
+_TRACEABILITY_REQUIRED_TERMS = (
+    "Mục tiêu/câu hỏi",
+    "Biến/kết cục",
+    "Công cụ/nguồn dữ liệu",
+    "Phân tích định trước",
+    "Bảng/hình đầu ra",
+    "Cổng nguồn",
 )
 
 
@@ -444,6 +454,43 @@ def validate(md_path, out_dir) -> Dict:
     else:
         checks["R12_document_control"] = (
             "PASS (phiên bản/ngày/nguồn thay đổi/người duyệt/nhật ký hiện rõ)")
+
+    # R13 — đồng bộ mục tiêu -> biến/công cụ -> phân tích -> bảng/hình -> kết luận.
+    has_traceability_section = re.search(
+        r"^#\s*Ma trận truy xuất mục tiêu-biến-công cụ-phân tích-bảng\b",
+        text, re.MULTILINE)
+    traceability_text = ""
+    if has_traceability_section:
+        after_heading = text[has_traceability_section.end():]
+        next_section = re.search(r"^#\s+", after_heading, re.MULTILINE)
+        traceability_text = (
+            after_heading[:next_section.start()] if next_section else after_heading
+        )
+    traceability_header = ""
+    if traceability_text:
+        header_match = re.search(
+            r"^\|\s*Mục tiêu/câu hỏi\s*\|.*$",
+            traceability_text,
+            re.MULTILINE,
+        )
+        traceability_header = header_match.group(0) if header_match else ""
+    traceability_header_lowered = traceability_header.lower()
+    missing_traceability_terms = [
+        term for term in _TRACEABILITY_REQUIRED_TERMS
+        if term.lower() not in traceability_header_lowered
+    ]
+    if not has_traceability_section:
+        errors.append(
+            "R13 THIẾU mục 'Ma trận truy xuất mục tiêu-biến-công cụ-phân tích-bảng'.")
+        checks["R13_traceability_matrix"] = "FAIL (thiếu ma trận truy xuất)"
+    elif missing_traceability_terms:
+        errors.append("R13 MA TRẬN TRUY XUẤT thiếu thuật ngữ bắt buộc: "
+                      + ", ".join(missing_traceability_terms))
+        checks["R13_traceability_matrix"] = (
+            f"FAIL (thiếu {len(missing_traceability_terms)} thuật ngữ)")
+    else:
+        checks["R13_traceability_matrix"] = (
+            "PASS (mục tiêu-biến-công cụ-phân tích-bảng được nối trong một ma trận)")
 
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,
