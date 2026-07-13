@@ -65,6 +65,349 @@ PIPELINE_GATE_LABELS = {
     "G10": "Lắp ráp đề cương thống nhất",
 }
 
+GATE_AUTOMATION_PROFILES: Dict[str, Dict[str, str]] = {
+    "G0": {
+        "mode": "AUTO_DRAFT",
+        "auto": "Tự dựng concept, PICO/FINER và seed y văn có truy nguyên.",
+        "doctor_input": "Chủ đề thật và query tiếng Anh nếu PubMed không khớp.",
+    },
+    "G1": {
+        "mode": "AUTO_DRAFT_WITH_DESIGN_PIN",
+        "auto": "Tự suy thiết kế, chuẩn báo cáo và protocol/design rationale.",
+        "doctor_input": "Pin design_code nếu chủ nhiệm đã quyết định thiết kế.",
+    },
+    "G2": {
+        "mode": "AUTO_DRAFT_HARD_STOP",
+        "auto": "Tự soạn hồ sơ đạo đức, consent, risk và registration plan.",
+        "doctor_input": "Phê duyệt IRB/EC thật; hệ không tự bật.",
+    },
+    "G3": {
+        "mode": "AUTO_DRAFT_NEEDS_REAL_PARAMETER",
+        "auto": "Tự tính cỡ mẫu khi có effect size/giả định hợp lệ.",
+        "doctor_input": "Effect size/MCID/tỷ lệ nền có nguồn thật để pin tái chạy.",
+    },
+    "G4": {
+        "mode": "AUTO_DRAFT_HARD_STOP",
+        "auto": "Tự soạn SAP và shell tables.",
+        "doctor_input": "Chữ ký khóa SAP thật trước khi xem dữ liệu.",
+    },
+    "G5": {
+        "mode": "AUTO_DRAFT_DATA_TOOLS",
+        "auto": "Tự sinh DMP, CRF/REDCap dictionary, SOP và script QC.",
+        "doctor_input": "Xác nhận công cụ/pilot/SOP tại đơn vị.",
+    },
+    "G6": {
+        "mode": "DATA_PIPELINE_HARD_STOP",
+        "auto": "Tự rà intake, làm sạch, query log và điều kiện khóa dữ liệu.",
+        "doctor_input": "Dataset đã khử định danh, query đã đóng và data lock thật.",
+    },
+    "G7": {
+        "mode": "AUTO_DRAFT_FROM_LOCKED_ANALYSIS",
+        "auto": "Tự dựng output/analysis report theo SAP khi đã đủ dữ liệu khóa.",
+        "doctor_input": "Kết quả thật đã được thống kê viên/chủ nhiệm xác nhận.",
+    },
+    "G8": {
+        "mode": "AUTO_DRAFT_REPORTING",
+        "auto": "Tự soạn bản thảo/checklist theo chuẩn báo cáo phù hợp thiết kế.",
+        "doctor_input": "Rà nội dung, số liệu, bảng/hình và phản biện độc lập.",
+    },
+    "G9": {
+        "mode": "AUTO_DRAFT_HARD_STOP",
+        "auto": "Tự gom COI, funding, authorship, AI/data disclosure.",
+        "doctor_input": "Chữ ký liêm chính thật của chủ nhiệm/tác giả.",
+    },
+    "G10": {
+        "mode": "AUTO_ASSEMBLE",
+        "auto": "Tự lắp ráp đề cương/bộ hồ sơ thống nhất và readiness package.",
+        "doctor_input": "Chủ nhiệm duyệt bản cuối trước nộp/sử dụng.",
+    },
+}
+
+GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
+    "G0": [
+        {
+            "key": "pico_finer",
+            "label": "Concept note + PICO/FINER",
+            "patterns": ["G0_A1_PICO_FINER_*.md", "02_Research_Question_and_PICO.md"],
+            "required": True,
+        },
+        {
+            "key": "pubmed_seed",
+            "label": "PubMed/evidence seed",
+            "patterns": ["G0_pubmed_raw.json", "03_Evidence_Ledger.md"],
+            "required": False,
+        },
+    ],
+    "G1": [
+        {
+            "key": "design_protocol",
+            "label": "Design rationale/protocol",
+            "patterns": ["G1_A2_PROTOCOL_DESIGN_*.md", "05_Protocol.md"],
+            "required": True,
+        },
+        {
+            "key": "project_charter",
+            "label": "Project charter",
+            "patterns": ["01_Project_Charter.md", "G1b_CHARTER_*.docx"],
+            "required": False,
+        },
+    ],
+    "G2": [
+        {
+            "key": "ethics_package",
+            "label": "IRB/ethics package + ICF",
+            "patterns": ["G2_A3_ETHICS_PACKAGE_*.md", "06_Ethics_Package_Checklist.md"],
+            "required": True,
+        },
+    ],
+    "G3": [
+        {
+            "key": "sample_size",
+            "label": "Sample size/power",
+            "patterns": ["G3_A4_SAMPLE_SIZE_*.md", "10_Sample_Size_Calculation.md"],
+            "required": True,
+        },
+        {
+            "key": "variables_crf",
+            "label": "Variables/CRF scaffold",
+            "patterns": ["09_Data_Dictionary.md", "07_CRF_or_Questionnaire.md"],
+            "required": False,
+        },
+    ],
+    "G4": [
+        {
+            "key": "sap",
+            "label": "SAP + shell tables",
+            "patterns": ["G4_A5_SAP_FINAL_*.md", "11_Statistical_Analysis_Plan.md"],
+            "required": True,
+        },
+        {
+            "key": "table_shells",
+            "label": "Dummy/shell tables",
+            "patterns": ["15_Table_Shells.md", "G4_SAP_*.docx"],
+            "required": False,
+        },
+    ],
+    "G5": [
+        {
+            "key": "data_management",
+            "label": "DMP/SOP data management",
+            "patterns": ["G5_A6_DATA_MGMT_*.md", "08_SOP_Data_Collection.md"],
+            "required": True,
+        },
+        {
+            "key": "redcap_dictionary",
+            "label": "CRF/REDCap dictionary",
+            "patterns": ["G5_REDCap_dictionary_*.csv", "09_Data_Dictionary.md"],
+            "required": True,
+        },
+        {
+            "key": "cleaning_plan",
+            "label": "Data cleaning plan",
+            "patterns": ["12_Data_Cleaning_Plan.md"],
+            "required": False,
+        },
+    ],
+    "G6": [
+        {
+            "key": "analysis_scripts",
+            "label": "Analysis scripts/syntax",
+            "patterns": ["G6_A7_ANALYSIS_SCRIPTS_*.md", "14_Analysis_Syntax.md"],
+            "required": True,
+        },
+        {
+            "key": "data_lock_memo",
+            "label": "Data lock memo",
+            "patterns": ["13_Data_Lock_Memo.md", "DATA_LOCK_manifest.json"],
+            "required": False,
+        },
+    ],
+    "G7": [
+        {
+            "key": "manuscript",
+            "label": "IMRAD manuscript/report",
+            "patterns": ["G7_A8_MANUSCRIPT_*.md", "16_IMRAD_Manuscript.md"],
+            "required": True,
+        },
+    ],
+    "G8": [
+        {
+            "key": "presubmission",
+            "label": "Presubmission/peer-review package",
+            "patterns": ["G8_A9_PRESUBMISSION_*.md", "17_Reporting_Checklist.md"],
+            "required": True,
+        },
+    ],
+    "G9": [
+        {
+            "key": "author_integrity",
+            "label": "Author integrity/COI/AI disclosure",
+            "patterns": ["G9_A10_AUTHOR_INTEGRITY_*.md", "19_Research_Integrity_Audit.md"],
+            "required": True,
+        },
+        {
+            "key": "final_readiness",
+            "label": "Final readiness report",
+            "patterns": ["20_Final_Readiness_Report.md"],
+            "required": False,
+        },
+    ],
+    "G10": [
+        {
+            "key": "assembled_protocol",
+            "label": "Đề cương/bộ hồ sơ thống nhất",
+            "patterns": ["DE_CUONG_THONG_NHAT_*.md", "20_Final_Readiness_Report.md"],
+            "required": True,
+        },
+    ],
+}
+
+GATE_METADATA_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
+    "G0": [
+        {
+            "key": "topic_or_title",
+            "label": "Tên/chủ đề đề tài",
+            "fields": ["topic", "title"],
+            "required": True,
+        },
+        {
+            "key": "query_en",
+            "label": "Từ khóa PubMed tiếng Anh",
+            "fields": ["query_en", "base_query"],
+            "required": False,
+        },
+    ],
+    "G1": [
+        {
+            "key": "design_code_pin",
+            "label": "Thiết kế đã pin trong study_meta",
+            "fields": ["design_code", "gate_params.G1.design"],
+            "required": False,
+        },
+    ],
+    "G3": [
+        {
+            "key": "effect_size_pin",
+            "label": "Effect size/MCID/tỷ lệ nền đã pin để tái chạy",
+            "fields": ["gate_params.G3.effect_size", "gate_params.G3.p_event"],
+            "required": True,
+        },
+    ],
+    "G8": [
+        {
+            "key": "target_journal",
+            "label": "Tạp chí đích để tối ưu checklist",
+            "fields": ["gate_params.G8.target_journal"],
+            "required": False,
+        },
+    ],
+    "G9": [
+        {
+            "key": "authorship_plan",
+            "label": "Số tác giả/tạp chí đích để sinh gói liêm chính",
+            "fields": ["gate_params.G9.n_authors", "gate_params.G9.target_journal"],
+            "required": False,
+        },
+    ],
+}
+
+_PLACEHOLDER_TOKENS = (
+    "[CẦN", "CẦN ", "TBD", "N/A", "NONE", "NULL", "PENDING", "CHƯA",
+    "DỰ THẢO", "DRAFT", "PLACEHOLDER", "XXX", "...", "CHỜ",
+)
+
+
+def _present_value(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return True
+    if isinstance(value, (list, tuple, set, dict)):
+        return bool(value)
+    text = str(value).strip()
+    if not text:
+        return False
+    up = text.upper()
+    return not any(token in up for token in _PLACEHOLDER_TOKENS)
+
+
+def _meta_get(meta: Dict[str, Any], dotted: str) -> Any:
+    current: Any = meta
+    for part in dotted.split("."):
+        if not isinstance(current, dict) or part not in current:
+            return None
+        current = current[part]
+    return current
+
+
+def _relative_matches(out_dir: Path, patterns: List[str]) -> List[str]:
+    matches: List[str] = []
+    for pattern in patterns:
+        for path in out_dir.glob(pattern):
+            if path.is_file():
+                matches.append(str(path.relative_to(out_dir)))
+    return sorted(dict.fromkeys(matches))
+
+
+def _summarize_items(items: List[Dict[str, Any]]) -> Dict[str, Any]:
+    missing_required = [
+        item["key"] for item in items
+        if item.get("required") and not item.get("present")
+    ]
+    present = [item["key"] for item in items if item.get("present")]
+    return {
+        "status": "PASS" if not missing_required else "MISSING_REQUIRED",
+        "missing_required": missing_required,
+        "missing_required_count": len(missing_required),
+        "present": present,
+        "present_count": len(present),
+        "items": items,
+    }
+
+
+def _artifact_readiness(gate: str, out_dir: Path) -> Dict[str, Any]:
+    items: List[Dict[str, Any]] = []
+    for requirement in GATE_ARTIFACT_REQUIREMENTS.get(gate, []):
+        patterns = list(requirement.get("patterns") or [])
+        matches = _relative_matches(out_dir, patterns)
+        items.append({
+            "key": requirement["key"],
+            "label": requirement["label"],
+            "required": bool(requirement.get("required")),
+            "patterns": patterns,
+            "present": bool(matches),
+            "matches": matches,
+        })
+    return _summarize_items(items)
+
+
+def _metadata_readiness(gate: str, meta: Dict[str, Any]) -> Dict[str, Any]:
+    items: List[Dict[str, Any]] = []
+    for requirement in GATE_METADATA_REQUIREMENTS.get(gate, []):
+        fields = list(requirement.get("fields") or [])
+        present_fields = [
+            field for field in fields if _present_value(_meta_get(meta, field))
+        ]
+        items.append({
+            "key": requirement["key"],
+            "label": requirement["label"],
+            "required": bool(requirement.get("required")),
+            "fields": fields,
+            "present": bool(present_fields),
+            "present_fields": present_fields,
+        })
+    return _summarize_items(items)
+
+
+def _gate_extras(gate: str, out_dir: Path, meta: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "automation_profile": GATE_AUTOMATION_PROFILES[gate],
+        "artifact_readiness": _artifact_readiness(gate, out_dir),
+        "metadata_readiness": _metadata_readiness(gate, meta),
+    }
+
 
 def _load_json(path: Path) -> Dict[str, Any]:
     if not path.exists():
@@ -152,11 +495,40 @@ def _blocked_action(cp: Dict[str, Any], fallback: str) -> str:
     return command or fallback
 
 
+def _requirement_action(gate: str, default_command: str,
+                        extras: Dict[str, Any]) -> Optional[str]:
+    artifact_missing = extras["artifact_readiness"]["missing_required"]
+    metadata_missing = extras["metadata_readiness"]["missing_required"]
+    if artifact_missing:
+        return (
+            "Thiếu artifact bắt buộc "
+            f"({', '.join(artifact_missing)}); chạy/sinh lại cổng: {default_command}"
+        )
+    if metadata_missing:
+        fields = []
+        for item in extras["metadata_readiness"]["items"]:
+            if item["key"] in metadata_missing:
+                fields.extend(item.get("fields") or [])
+        return (
+            "Thiếu metadata bắt buộc trong study_meta.json "
+            f"({', '.join(fields) or ', '.join(metadata_missing)}); "
+            f"sau đó chạy lại: {default_command}"
+        )
+    profile = extras.get("automation_profile") or {}
+    if gate in {"G3", "G8", "G9"}:
+        return (
+            "Có thể tăng tự động bằng cách pin thêm input trong study_meta.json: "
+            f"{profile.get('doctor_input', '')}"
+        )
+    return None
+
+
 def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
                    meta: Dict[str, Any], cps: Dict[str, Dict[str, Any]],
                    signals: Dict[str, bool],
                    freshness: Dict[str, Any]) -> Dict[str, Any]:
     cp = cps.get(gate)
+    extras = _gate_extras(gate, out_dir, meta)
     guardrail = _read_guardrail(cp)
     checkpoint_path = out_dir / f"{gate}_checkpoint.json"
     stale = gate in set(freshness.get("stale_gates") or [])
@@ -175,6 +547,7 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
             "orphan": orphan,
             "can_auto_run": gate not in REAL_SIGNAL_BY_PIPELINE_GATE,
             "next_action": default_command,
+            **extras,
         }
 
     if GC.is_blocked(cp):
@@ -189,6 +562,7 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
             "orphan": orphan,
             "can_auto_run": False,
             "next_action": _blocked_action(cp, default_command),
+            **extras,
         }
 
     if guardrail is False:
@@ -203,11 +577,13 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
             "orphan": orphan,
             "can_auto_run": True,
             "next_action": f"Rà guardrail rồi chạy lại: {default_command}",
+            **extras,
         }
 
     if gate in REAL_SIGNAL_BY_PIPELINE_GATE:
         signal_key, signal_label = REAL_SIGNAL_BY_PIPELINE_GATE[gate]
         locked = bool(signals.get(signal_key))
+        requirement_action = _requirement_action(gate, default_command, extras)
         return {
             "gate": gate,
             "label": PIPELINE_GATE_LABELS[gate],
@@ -222,9 +598,14 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
             "stale": stale,
             "orphan": orphan,
             "can_auto_run": False if not locked else True,
-            "next_action": "Không cần hành động." if locked else _real_action(gate, study),
+            "next_action": (
+                requirement_action or "Không cần hành động."
+                if locked else _real_action(gate, study)
+            ),
+            **extras,
         }
 
+    requirement_action = _requirement_action(gate, default_command, extras)
     return {
         "gate": gate,
         "label": PIPELINE_GATE_LABELS[gate],
@@ -237,8 +618,9 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
         "can_auto_run": True,
         "next_action": (
             f"Checkpoint stale/orphan; chạy lại: {default_command}"
-            if stale or orphan else "Không cần hành động."
+            if stale or orphan else requirement_action or "Không cần hành động."
         ),
+        **extras,
     }
 
 
@@ -313,14 +695,23 @@ def _first_actionable_gate(rows: List[Dict[str, Any]]) -> Optional[str]:
         STATUS_NEEDS_REAL: 3,
         STATUS_UNKNOWN: 4,
     }
-    actionable = [
-        row for row in rows
-        if row["status"] in priority or row.get("stale") or row.get("orphan")
-    ]
+    def action_priority(row: Dict[str, Any]) -> Optional[int]:
+        if row["status"] in priority:
+            return priority[row["status"]]
+        if (row.get("artifact_readiness") or {}).get("missing_required_count"):
+            return 2
+        if (row.get("metadata_readiness") or {}).get("missing_required_count"):
+            return 3
+        if row.get("stale") or row.get("orphan"):
+            return 4
+        return None
+
+    actionable = [(row, action_priority(row)) for row in rows]
+    actionable = [(row, prio) for row, prio in actionable if prio is not None]
     if not actionable:
         return None
-    actionable.sort(key=lambda item: (priority.get(item["status"], 5), PIPELINE_GATES.index(item["gate"])))
-    return actionable[0]["gate"]
+    actionable.sort(key=lambda item: (item[1], PIPELINE_GATES.index(item[0]["gate"])))
+    return actionable[0][0]["gate"]
 
 
 def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
