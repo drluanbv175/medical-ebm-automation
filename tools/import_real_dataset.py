@@ -318,7 +318,7 @@ def import_dataset(study: str, data_path: Path, *,
             "Nếu cần tái định danh có kiểm soát, chạy "
             "tools/pseudonymize_research_dataset.py để tạo mã giả và bảng ánh xạ bảo vệ riêng.",
             "Bản raw trong 02_raw_readonly là chỉ đọc.",
-            "Chỉ làm sạch trên bản sao bằng script/query log.",
+            "Chỉ làm sạch trên bản sao bằng tools/clean_research_dataset.py hoặc script có query log.",
             "Không phân tích chính cho tới khi có lock memo và data_lock_date thật.",
         ],
         "remediation": {
@@ -329,6 +329,10 @@ def import_dataset(study: str, data_path: Path, *,
             "pseudonymize_command": (
                 f"python3 tools/pseudonymize_research_dataset.py --study {study_id} "
                 "--data <file.csv> --then-import"
+            ),
+            "cleaning_command_after_ready_intake": (
+                f"python3 tools/clean_research_dataset.py --study {study_id} "
+                "--data <raw_readonly.csv> --dictionary <data_dictionary.json>"
             ),
             "note": "Không đưa file còn PII vào exports/raw; chỉ nhập bản đã khử định danh.",
         },
@@ -368,7 +372,7 @@ def main() -> int:
     print(f"rows={manifest['row_count']} columns={manifest['column_count']}")
     if manifest["pii_scan"]["passed"]:
         print(f"raw_readonly={manifest['raw_readonly_path']}")
-        print("Tiếp theo: chạy script làm sạch trên bản sao; chưa phân tích chính khi chưa khóa DB.")
+        print("Tiếp theo: chạy tools/clean_research_dataset.py trên bản sao; chưa phân tích chính khi chưa khóa DB.")
         return 0
     print("BLOCKED: phát hiện nguy cơ PII/định dạng không an toàn; xem DATA_INTAKE_manifest.json.")
     print(

@@ -308,6 +308,7 @@ def sec_quantri_dulieu(cps, meta) -> str:
     pseudo = (meta or {}).get("real_data_pseudonymization") or {}
     deid = (meta or {}).get("real_data_deidentification") or {}
     intake = (meta or {}).get("real_data_intake") or {}
+    cleaning = (meta or {}).get("real_data_cleaning") or {}
     data_lock = (meta or {}).get("real_data_lock") or {}
     if pseudo:
         pseudo_txt = (
@@ -357,6 +358,23 @@ def sec_quantri_dulieu(cps, meta) -> str:
             "`python3 tools/import_real_dataset.py --study <MÃ> --data <file.csv>` "
             "để quét PII, copy raw read-only và tạo manifest trước G6.\n\n"
         )
+    if cleaning:
+        cleaning_txt = (
+            f"**Làm sạch dữ liệu trên bản sao:** trạng thái "
+            f"`{cleaning.get('status', TAG_BS)}`; clean dataset "
+            f"`{cleaning.get('clean_dataset_path') or TAG_BS}`; query log "
+            f"`{cleaning.get('query_log') or TAG_BS}`; report "
+            f"`{cleaning.get('report', 'DATA_CLEANING_report.json')}`; "
+            f"query mở={cleaning.get('open_query_count', TAG_BS)}. "
+            "Chỉ được khóa dữ liệu khi query mở = 0.\n\n"
+        )
+    else:
+        cleaning_txt = (
+            "**Làm sạch dữ liệu trên bản sao:** sau intake, chạy "
+            "`python3 tools/clean_research_dataset.py --study <MÃ> --data "
+            "<raw_readonly.csv> --dictionary <data_dictionary.json>` để tạo "
+            "`df_clean`, `DATA_CLEANING_report.json` và query log trước khi khóa.\n\n"
+        )
     if data_lock and data_lock.get("status") == "LOCKED_FOR_ANALYSIS":
         data_lock_txt = (
             f"**Dữ liệu phân tích đã khóa:** file "
@@ -389,6 +407,7 @@ def sec_quantri_dulieu(cps, meta) -> str:
         f"{pseudo_txt}"
         f"{deid_txt}"
         f"{intake_txt}"
+        f"{cleaning_txt}"
         f"{data_lock_txt}"
         "**Nguyên tắc:** khử định danh, không lưu PII, tuân thủ Luật Bảo vệ dữ "
         f"liệu cá nhân 91/2025/QH15 {S.TAG_CAN_KIEM_CHUNG_NGUON}; nhật ký truy vấn "
