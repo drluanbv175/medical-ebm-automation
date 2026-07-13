@@ -85,6 +85,44 @@ def test_ready_checkpoint_missing_required_artifact_is_actionable(tmp_path):
     assert "Thiếu artifact bắt buộc" in g0["next_action"]
 
 
+def test_dependency_readiness_surfaces_missing_analysis_locks(tmp_path):
+    _cp(tmp_path, "G6", {})
+    (tmp_path / "G6_A7_ANALYSIS_SCRIPTS_AUTO.md").write_text(
+        "analysis syntax", encoding="utf-8"
+    )
+    _write_json(tmp_path / "study_meta.json", {"irb_approved": True})
+
+    report = ARG.audit_gates("AUTO-DEPS", out_dir=tmp_path, write=False)
+    g6 = next(row for row in report["pipeline_gates"] if row["gate"] == "G6")
+
+    assert report["dependency_issue_count"] > 0
+    assert g6["dependency_readiness"]["status"] == "MISSING_REQUIRED"
+    assert "sap_locked" in g6["dependency_readiness"]["items"][0]["missing_signals"]
+    assert "db_locked" in g6["dependency_readiness"]["items"][0]["missing_signals"]
+    assert "điều kiện tiền kiểm" in g6["next_action"]
+
+
+def test_data_pipeline_steps_block_until_real_irb_and_sap_signals(tmp_path):
+    report = ARG.audit_gates("AUTO-DATA-DEPS", out_dir=tmp_path, write=False)
+    intake = next(row for row in report["data_pipeline"] if row["step"] == "intake")
+    data_lock = next(row for row in report["data_pipeline"] if row["step"] == "data_lock")
+
+    assert intake["can_run"] is False
+    assert "phê duyệt IRB/EC thật" in intake["blocked_by"]
+    assert data_lock["can_run"] is False
+    assert "SAP đã ký khóa trước khi xem dữ liệu" in data_lock["blocked_by"]
+
+    _write_json(
+        tmp_path / "study_meta.json",
+        {"irb_approved": True, "sap_lock_date": "2026-07-13"},
+    )
+    report = ARG.audit_gates("AUTO-DATA-DEPS", out_dir=tmp_path, write=False)
+    data_lock = next(row for row in report["data_pipeline"] if row["step"] == "data_lock")
+
+    assert data_lock["can_run"] is True
+    assert data_lock["blocked_by"] == []
+
+
 def test_blocked_needs_input_surfaces_remediation_command(tmp_path):
     _cp(
         tmp_path,
@@ -141,6 +179,10 @@ def test_write_reports_and_updates_study_meta(tmp_path):
     assert meta["research_gate_automation"]["json"] == ARG.REPORT_JSON
     assert meta["research_gate_automation"]["markdown"] == ARG.REPORT_MD
     assert meta["research_gate_automation"]["current_actionable_gate"] == report["current_actionable_gate"]
+    assert (
+        meta["research_gate_automation"]["dependency_issue_count"]
+        == report["dependency_issue_count"]
+    )
     assert (
         meta["research_gate_automation"]["artifact_issue_count"]
         == report["artifact_issue_count"]

@@ -44,6 +44,14 @@ STATUS_GUARDRAIL_FAIL = "GUARDRAIL_FAIL"
 STATUS_NEEDS_REAL = "DRAFT_NEEDS_REAL_INPUT"
 STATUS_UNKNOWN = "UNKNOWN"
 
+REAL_SIGNAL_LABELS = {
+    "irb_approved": "phê duyệt IRB/EC thật",
+    "sap_locked": "SAP đã ký khóa trước khi xem dữ liệu",
+    "db_locked": "dataset phân tích đã khóa",
+    "results_final": "kết quả phân tích thật đã được xác nhận",
+    "integrity_signed": "COI/tài trợ/đóng góp/khai báo AI đã ký",
+}
+
 REAL_SIGNAL_BY_PIPELINE_GATE: Dict[str, Tuple[str, str]] = {
     "G2": ("irb_approved", "phê duyệt IRB thật"),
     "G4": ("sap_locked", "SAP đã ký khóa trước khi xem dữ liệu"),
@@ -311,6 +319,56 @@ GATE_METADATA_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
+GATE_DEPENDENCY_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
+    "G5": [
+        {
+            "key": "irb_before_real_data_workflow",
+            "label": "Không chạm/nhập/làm sạch dữ liệu thật trước IRB",
+            "signals": ["irb_approved"],
+            "required": False,
+        },
+    ],
+    "G6": [
+        {
+            "key": "analysis_preconditions",
+            "label": "Phân tích chính cần IRB + SAP lock + data lock",
+            "signals": ["irb_approved", "sap_locked", "db_locked"],
+            "required": True,
+        },
+    ],
+    "G7": [
+        {
+            "key": "confirmed_results_for_report",
+            "label": "Bản thảo/báo cáo kết quả cần kết quả phân tích thật",
+            "signals": ["results_final"],
+            "required": True,
+        },
+    ],
+    "G8": [
+        {
+            "key": "confirmed_results_for_internal_review",
+            "label": "Bình duyệt nội bộ bản kết quả cần kết quả thật đã xác nhận",
+            "signals": ["results_final"],
+            "required": True,
+        },
+    ],
+    "G9": [
+        {
+            "key": "publication_preconditions",
+            "label": "Công bố/nghiệm thu cần kết quả thật + gói liêm chính",
+            "signals": ["results_final", "integrity_signed"],
+            "required": True,
+        },
+    ],
+}
+
+DATA_PIPELINE_DEPENDENCIES: Dict[str, List[str]] = {
+    "deidentify_or_pseudonymize": ["irb_approved"],
+    "intake": ["irb_approved"],
+    "cleaning": ["irb_approved"],
+    "data_lock": ["irb_approved", "sap_locked"],
+}
+
 _PLACEHOLDER_TOKENS = (
     "[CẦN", "CẦN ", "TBD", "N/A", "NONE", "NULL", "PENDING", "CHƯA",
     "DỰ THẢO", "DRAFT", "PLACEHOLDER", "XXX", "...", "CHỜ",
@@ -401,11 +459,30 @@ def _metadata_readiness(gate: str, meta: Dict[str, Any]) -> Dict[str, Any]:
     return _summarize_items(items)
 
 
-def _gate_extras(gate: str, out_dir: Path, meta: Dict[str, Any]) -> Dict[str, Any]:
+def _dependency_readiness(gate: str, signals: Dict[str, bool]) -> Dict[str, Any]:
+    items: List[Dict[str, Any]] = []
+    for requirement in GATE_DEPENDENCY_REQUIREMENTS.get(gate, []):
+        required_signals = list(requirement.get("signals") or [])
+        missing = [sig for sig in required_signals if not signals.get(sig)]
+        items.append({
+            "key": requirement["key"],
+            "label": requirement["label"],
+            "required": bool(requirement.get("required")),
+            "signals": required_signals,
+            "present": not missing,
+            "missing_signals": missing,
+            "missing_labels": [REAL_SIGNAL_LABELS.get(sig, sig) for sig in missing],
+        })
+    return _summarize_items(items)
+
+
+def _gate_extras(gate: str, out_dir: Path, meta: Dict[str, Any],
+                 signals: Dict[str, bool]) -> Dict[str, Any]:
     return {
         "automation_profile": GATE_AUTOMATION_PROFILES[gate],
         "artifact_readiness": _artifact_readiness(gate, out_dir),
         "metadata_readiness": _metadata_readiness(gate, meta),
+        "dependency_readiness": _dependency_readiness(gate, signals),
     }
 
 
@@ -497,8 +574,19 @@ def _blocked_action(cp: Dict[str, Any], fallback: str) -> str:
 
 def _requirement_action(gate: str, default_command: str,
                         extras: Dict[str, Any]) -> Optional[str]:
+    dependency_missing = extras["dependency_readiness"]["missing_required"]
     artifact_missing = extras["artifact_readiness"]["missing_required"]
     metadata_missing = extras["metadata_readiness"]["missing_required"]
+    if dependency_missing:
+        labels: List[str] = []
+        for item in extras["dependency_readiness"]["items"]:
+            if item["key"] in dependency_missing:
+                labels.extend(item.get("missing_labels") or [])
+        return (
+            "Bị chặn bởi điều kiện tiền kiểm "
+            f"({', '.join(labels) or ', '.join(dependency_missing)}); "
+            "không tự vượt cổng cứng, xử lý bằng chứng thật trước."
+        )
     if artifact_missing:
         return (
             "Thiếu artifact bắt buộc "
@@ -528,7 +616,7 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
                    signals: Dict[str, bool],
                    freshness: Dict[str, Any]) -> Dict[str, Any]:
     cp = cps.get(gate)
-    extras = _gate_extras(gate, out_dir, meta)
+    extras = _gate_extras(gate, out_dir, meta, signals)
     guardrail = _read_guardrail(cp)
     checkpoint_path = out_dir / f"{gate}_checkpoint.json"
     stale = gate in set(freshness.get("stale_gates") or [])
@@ -599,8 +687,8 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
             "orphan": orphan,
             "can_auto_run": False if not locked else True,
             "next_action": (
-                requirement_action or "Không cần hành động."
-                if locked else _real_action(gate, study)
+                (requirement_action or "Không cần hành động.")
+                if locked else (requirement_action or _real_action(gate, study))
             ),
             **extras,
         }
@@ -624,7 +712,19 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
     }
 
 
-def _data_pipeline(meta: Dict[str, Any], study: str) -> List[Dict[str, Any]]:
+def _data_step_dependencies(step: str, signals: Dict[str, bool]) -> Dict[str, Any]:
+    required_signals = DATA_PIPELINE_DEPENDENCIES.get(step, [])
+    missing = [sig for sig in required_signals if not signals.get(sig)]
+    return {
+        "required_signals": required_signals,
+        "missing_signals": missing,
+        "blocked_by": [REAL_SIGNAL_LABELS.get(sig, sig) for sig in missing],
+        "can_run": not missing,
+    }
+
+
+def _data_pipeline(meta: Dict[str, Any], study: str,
+                   signals: Dict[str, bool]) -> List[Dict[str, Any]]:
     deid = meta.get("real_data_deidentification") or {}
     pseudo = meta.get("real_data_pseudonymization") or {}
     intake = meta.get("real_data_intake") or {}
@@ -635,6 +735,7 @@ def _data_pipeline(meta: Dict[str, Any], study: str) -> List[Dict[str, Any]]:
             "step": "deidentify_or_pseudonymize",
             "status": deid.get("status") or pseudo.get("status") or "OPTIONAL_OR_PENDING",
             "artifact": deid.get("deidentified_path") or pseudo.get("pseudonymized_path"),
+            **_data_step_dependencies("deidentify_or_pseudonymize", signals),
             "next_action": (
                 f"python3 tools/deidentify_research_dataset.py --study {study} --data <file.csv> --then-import "
                 "hoặc python3 tools/pseudonymize_research_dataset.py --study "
@@ -645,6 +746,7 @@ def _data_pipeline(meta: Dict[str, Any], study: str) -> List[Dict[str, Any]]:
             "step": "intake",
             "status": intake.get("status") or "MISSING",
             "artifact": intake.get("raw_readonly_path"),
+            **_data_step_dependencies("intake", signals),
             "next_action": f"python3 tools/import_real_dataset.py --study {study} --data <deidentified.csv>",
         },
         {
@@ -652,6 +754,7 @@ def _data_pipeline(meta: Dict[str, Any], study: str) -> List[Dict[str, Any]]:
             "status": cleaning.get("status") or "MISSING",
             "artifact": cleaning.get("clean_dataset_path"),
             "open_query_count": cleaning.get("open_query_count"),
+            **_data_step_dependencies("cleaning", signals),
             "next_action": (
                 f"python3 tools/clean_research_dataset.py --study {study} "
                 "--data <raw_readonly.csv> --dictionary <data_dictionary.json>"
@@ -662,6 +765,7 @@ def _data_pipeline(meta: Dict[str, Any], study: str) -> List[Dict[str, Any]]:
             "status": lock.get("status") or "MISSING",
             "artifact": lock.get("locked_dataset_path"),
             "blockers": lock.get("blockers") or [],
+            **_data_step_dependencies("data_lock", signals),
             "next_action": (
                 f"python3 tools/lock_analysis_dataset.py --study {study} "
                 "--clean-data <df_clean.csv> --query-log <query_log.csv> "
@@ -698,19 +802,21 @@ def _first_actionable_gate(rows: List[Dict[str, Any]]) -> Optional[str]:
     def action_priority(row: Dict[str, Any]) -> Optional[int]:
         if row["status"] in priority:
             return priority[row["status"]]
-        if (row.get("artifact_readiness") or {}).get("missing_required_count"):
-            return 2
-        if (row.get("metadata_readiness") or {}).get("missing_required_count"):
-            return 3
-        if row.get("stale") or row.get("orphan"):
+        if (row.get("dependency_readiness") or {}).get("missing_required_count"):
             return 4
+        if (row.get("artifact_readiness") or {}).get("missing_required_count"):
+            return 5
+        if (row.get("metadata_readiness") or {}).get("missing_required_count"):
+            return 6
+        if row.get("stale") or row.get("orphan"):
+            return 7
         return None
 
     actionable = [(row, action_priority(row)) for row in rows]
     actionable = [(row, prio) for row, prio in actionable if prio is not None]
     if not actionable:
         return None
-    actionable.sort(key=lambda item: (item[1], PIPELINE_GATES.index(item[0]["gate"])))
+    actionable.sort(key=lambda item: (PIPELINE_GATES.index(item[0]["gate"]), item[1]))
     return actionable[0][0]["gate"]
 
 
@@ -727,13 +833,14 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         f"- Generated: {report['generated_at']}",
         f"- Current actionable gate: `{report.get('current_actionable_gate') or 'NONE'}`",
         f"- Freshness: {'PASS' if report['freshness']['fresh'] else 'STALE'}",
+        f"- Missing required dependencies: {report['dependency_issue_count']}",
         f"- Missing required artifacts: {report['artifact_issue_count']}",
         f"- Missing required metadata: {report['metadata_issue_count']}",
         "",
         "## Pipeline Gates",
         "",
-        "| Gate | Mode | Status | Artifact | Metadata | Guardrail | Real Signal | Stale | Next Action |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| Gate | Mode | Status | Dependency | Artifact | Metadata | Guardrail | Real Signal | Stale | Next Action |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for row in report["pipeline_gates"]:
         real = row.get("real_signal")
@@ -749,10 +856,14 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
             f"{row['metadata_readiness']['status']} "
             f"({row['metadata_readiness']['missing_required_count']} missing)"
         )
+        dependency_text = (
+            f"{row['dependency_readiness']['status']} "
+            f"({row['dependency_readiness']['missing_required_count']} missing)"
+        )
         lines.append(
             f"| {cell(row['gate'])} | {cell(row['automation_profile']['mode'])} | "
-            f"{cell(row['status'])} | {cell(artifact_text)} | {cell(metadata_text)} | "
-            f"{cell(row.get('guardrail'))} | {cell(real_text)} | "
+            f"{cell(row['status'])} | {cell(dependency_text)} | "
+            f"{cell(artifact_text)} | {cell(metadata_text)} | {cell(row.get('guardrail'))} | {cell(real_text)} | "
             f"{cell(row.get('stale') or row.get('orphan'))} | "
             f"{cell(row['next_action'])} |"
         )
@@ -764,6 +875,12 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         "|---|---|---|---|---|---|",
     ])
     for row in report["pipeline_gates"]:
+        for item in row["dependency_readiness"]["items"]:
+            labels = ", ".join(item.get("missing_labels") or item.get("signals") or [])
+            lines.append(
+                f"| {cell(row['gate'])} | dependency | {cell(item['key'])} | "
+                f"{cell(item['required'])} | {cell(item['present'])} | {cell(labels)} |"
+            )
         for item in row["artifact_readiness"]["items"]:
             matches = ", ".join(item.get("matches") or item.get("patterns") or [])
             lines.append(
@@ -780,12 +897,14 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         "",
         "## Data Pipeline",
         "",
-        "| Step | Status | Artifact | Next Action |",
-        "|---|---|---|---|",
+        "| Step | Status | Can Run | Blocked By | Artifact | Next Action |",
+        "|---|---|---|---|---|---|",
     ])
     for row in report["data_pipeline"]:
+        blocked_by = ", ".join(row.get("blocked_by") or [])
         lines.append(
             f"| {cell(row['step'])} | {cell(row['status'])} | "
+            f"{cell(row.get('can_run'))} | {cell(blocked_by)} | "
             f"{cell(row.get('artifact') or '')} | {cell(row['next_action'])} |"
         )
     lines.extend([
@@ -826,6 +945,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any],
         "generated_at": report["generated_at"],
         "fresh": report["freshness"]["fresh"],
         "hard_stop_count": report["hard_stop_count"],
+        "dependency_issue_count": report["dependency_issue_count"],
         "artifact_issue_count": report["artifact_issue_count"],
         "metadata_issue_count": report["metadata_issue_count"],
         "note": "Audit điều hướng; không thay thế phê duyệt IRB/SAP/data lock/liêm chính thật.",
@@ -851,6 +971,9 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         1 for row in pipeline_rows
         if row["status"] in {STATUS_BLOCKED, STATUS_GUARDRAIL_FAIL, STATUS_NEEDS_REAL}
     )
+    dependency_issue_count = sum(
+        row["dependency_readiness"]["missing_required_count"] for row in pipeline_rows
+    )
     artifact_issue_count = sum(
         row["artifact_readiness"]["missing_required_count"] for row in pipeline_rows
     )
@@ -862,6 +985,7 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         "PASS_READY_OR_DRAFTS"
         if (
             hard_stop_count == 0
+            and dependency_issue_count == 0
             and artifact_issue_count == 0
             and metadata_issue_count == 0
             and current_gate is None
@@ -878,15 +1002,17 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         "freshness": freshness,
         "real_world_signals": signals,
         "pipeline_gates": pipeline_rows,
-        "data_pipeline": _data_pipeline(meta, study_id),
+        "data_pipeline": _data_pipeline(meta, study_id, signals),
         "skill_gates": _skill_gate_rows(cps, meta),
         "readiness": S.readiness_report(cps, meta),
         "hard_stop_count": hard_stop_count,
+        "dependency_issue_count": dependency_issue_count,
         "artifact_issue_count": artifact_issue_count,
         "metadata_issue_count": metadata_issue_count,
         "rules": [
             "Không tự vượt cổng IRB/SAP/data-lock/liêm chính.",
             "Checkpoint guardrail pass chỉ là draft nếu thiếu tín hiệu đời-thực.",
+            "Cổng phân tích/báo cáo/công bố cần dependency_readiness PASS trước khi coi là sẵn sàng.",
             "Checkpoint pass vẫn cần artifact/metadata bắt buộc để tự động tái lập.",
             "Data pipeline phải qua intake -> cleaning -> data lock trước phân tích chính.",
         ],
@@ -903,6 +1029,7 @@ def print_summary(report: Dict[str, Any]) -> None:
     print(f"study={report['study']}")
     print(f"current_actionable_gate={report.get('current_actionable_gate') or 'NONE'}")
     print(f"hard_stop_count={report['hard_stop_count']}")
+    print(f"dependency_issue_count={report['dependency_issue_count']}")
     print(f"artifact_issue_count={report['artifact_issue_count']}")
     print(f"metadata_issue_count={report['metadata_issue_count']}")
     for row in report["pipeline_gates"]:
