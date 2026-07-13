@@ -34,6 +34,7 @@ import skill_standards as S  # noqa: E402
 
 REPORT_JSON = "GATE_AUTOMATION_matrix.json"
 REPORT_MD = "GATE_AUTOMATION_report.md"
+ACTION_QUEUE_JSON = "GATE_ACTION_QUEUE.json"
 PIPELINE_GATES = [f"G{i}" for i in range(11)]
 
 STATUS_LOCKED = "LOCKED_REAL_SIGNAL"
@@ -936,6 +937,52 @@ def _build_action_queue(report: Dict[str, Any]) -> List[Dict[str, Any]]:
     return queue
 
 
+def _build_resume_contract(report: Dict[str, Any]) -> Dict[str, Any]:
+    queue = report.get("action_queue") or []
+    first_action = queue[0] if queue else None
+    if first_action and first_action.get("can_auto_run"):
+        mode = "AUTO_RUN_ALLOWED"
+        can_auto_resume = True
+        next_command = first_action.get("next_action")
+        human_blocker = None
+        stop_reason = "Hành động đầu tiên trong queue được phép chạy tự động."
+    elif first_action:
+        mode = "HUMAN_GATE_REQUIRED"
+        can_auto_resume = False
+        next_command = None
+        human_blocker = first_action
+        stop_reason = (
+            "Hành động đầu tiên cần bằng chứng/quyết định người thật; "
+            "không được tự chạy downstream."
+        )
+    else:
+        mode = "NO_ACTION"
+        can_auto_resume = False
+        next_command = None
+        human_blocker = None
+        stop_reason = "Không còn hành động trong queue."
+
+    return {
+        "kind": "research_gate_resume_contract",
+        "study": report["study"],
+        "generated_at": report["generated_at"],
+        "overall_status": report["overall_status"],
+        "current_actionable_gate": report.get("current_actionable_gate"),
+        "mode": mode,
+        "can_auto_resume": can_auto_resume,
+        "next_command": next_command,
+        "first_action_id": first_action.get("id") if first_action else None,
+        "human_blocker": human_blocker,
+        "stop_reason": stop_reason,
+        "action_queue_size": len(queue),
+        "rules": [
+            "Chỉ chạy next_command khi can_auto_resume=true.",
+            "Nếu mode=HUMAN_GATE_REQUIRED, phải bổ sung bằng chứng thật rồi audit lại.",
+            "Không dùng action_queue để tự bật IRB/SAP/data-lock/liêm chính.",
+        ],
+    }
+
+
 def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
     path = out_dir / REPORT_MD
 
@@ -954,6 +1001,9 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         f"- Missing required metadata: {report['metadata_issue_count']}",
         f"- Action queue items: {len(report.get('action_queue') or [])}",
         f"- Next agent action: `{(report.get('next_agent_action') or {}).get('id', 'NONE')}`",
+        f"- Resume mode: `{report['resume_contract']['mode']}`",
+        f"- Can auto resume: `{report['resume_contract']['can_auto_resume']}`",
+        f"- Resume command: `{report['resume_contract']['next_command'] or 'NONE'}`",
         "",
         "## Action Queue",
         "",
@@ -1067,16 +1117,31 @@ def _write_json(out_dir: Path, report: Dict[str, Any]) -> Path:
     return path
 
 
+def _write_action_queue_json(out_dir: Path, report: Dict[str, Any]) -> Path:
+    path = out_dir / ACTION_QUEUE_JSON
+    payload = {
+        "kind": "research_gate_action_queue",
+        "study": report["study"],
+        "generated_at": report["generated_at"],
+        "resume_contract": report["resume_contract"],
+        "items": report.get("action_queue") or [],
+    }
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
+
+
 def _update_meta(out_dir: Path, report: Dict[str, Any],
-                 json_path: Path, md_path: Path) -> None:
+                 json_path: Path, md_path: Path, queue_path: Path) -> None:
     meta = GC.ensure_study_meta(out_dir)
     meta["research_gate_automation"] = {
         "status": report["overall_status"],
         "current_actionable_gate": report.get("current_actionable_gate"),
         "next_agent_action": report.get("next_agent_action"),
         "action_queue_size": len(report.get("action_queue") or []),
+        "resume_contract": report["resume_contract"],
         "json": str(json_path.relative_to(out_dir)),
         "markdown": str(md_path.relative_to(out_dir)),
+        "action_queue_json": str(queue_path.relative_to(out_dir)),
         "generated_at": report["generated_at"],
         "fresh": report["freshness"]["fresh"],
         "hard_stop_count": report["hard_stop_count"],
@@ -1159,10 +1224,12 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
     report["next_agent_action"] = (
         first_action if first_action and first_action.get("can_auto_run") else None
     )
+    report["resume_contract"] = _build_resume_contract(report)
     if write:
         json_path = _write_json(out_dir, report)
         md_path = _write_markdown(out_dir, report)
-        _update_meta(out_dir, report, json_path, md_path)
+        queue_path = _write_action_queue_json(out_dir, report)
+        _update_meta(out_dir, report, json_path, md_path, queue_path)
     return report
 
 
@@ -1175,6 +1242,8 @@ def print_summary(report: Dict[str, Any]) -> None:
     print(f"artifact_issue_count={report['artifact_issue_count']}")
     print(f"metadata_issue_count={report['metadata_issue_count']}")
     print(f"action_queue_size={len(report.get('action_queue') or [])}")
+    print(f"resume_mode={report['resume_contract']['mode']}")
+    print(f"can_auto_resume={report['resume_contract']['can_auto_resume']}")
     for row in report["pipeline_gates"]:
         if row["gate"] == report.get("current_actionable_gate"):
             print(f"next_action={row['next_action']}")

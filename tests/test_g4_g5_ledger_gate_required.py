@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re as _re_module
 import shutil
 import subprocess
 import sys
@@ -25,6 +26,16 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = REPO_ROOT / "tools"
 PYTHON = sys.executable
+if str(TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(TOOLS_DIR))
+
+import gate_contract as GC  # noqa: E402
+
+
+def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-g4-g5-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
 def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
@@ -48,10 +59,14 @@ def _study_dir(name: str) -> Path:
 def _write_locked_checkpoints(study_dir: Path) -> Path:
     """Ghi G4/G5 checkpoint với trạng thái LOCKED (text tự do) + 1 artifact SAP giả
     làm nội dung để hash — trả về đường dẫn artifact đó."""
+    (study_dir / "G2_checkpoint.json").write_text(
+        json.dumps({"g2_status": "LOCKED"}, ensure_ascii=False), encoding="utf-8")
     (study_dir / "G4_checkpoint.json").write_text(
         json.dumps({"g4_status": "LOCKED"}, ensure_ascii=False), encoding="utf-8")
     (study_dir / "G5_checkpoint.json").write_text(
         json.dumps({"g5_status": "LOCKED"}, ensure_ascii=False), encoding="utf-8")
+    g2_artifact = study_dir / f"G2_A3_ETHICS_PACKAGE_{study_dir.name}.md"
+    g2_artifact.write_text("ETHICS PACKAGE — nội dung đã duyệt (giả lập test)", encoding="utf-8")
     artifact = study_dir / f"G4_A5_SAP_FINAL_{study_dir.name}.md"
     artifact.write_text("SAP FINAL — nội dung đã khóa (giả lập test)", encoding="utf-8")
     return artifact
@@ -61,13 +76,16 @@ def _write_ledger_approval(study_dir: Path, gate_id: str, artifact_content: str)
     """Ghi 1 approval_ledger.json hợp lệ (không synthetic, không agent-tạo) với
     evidence_hash khớp ĐÚNG artifact_content — mô phỏng tools/approve_gate.py."""
     evidence_hash = hashlib.sha256(artifact_content.encode()).hexdigest()
+    timestamp_utc = "2026-07-09T00:00:00+00:00"
+    signature = GC.sign_approval(gate_id, study_dir.name, evidence_hash, timestamp_utc)
     record = {
         "approval_id": f"test-{gate_id}-001", "gate_id": gate_id,
         "reviewer_role": "PI", "reviewer_identity_reference": "REF-TEST-001",
         "decision": "APPROVED", "scope": "test", "evidence_hash": evidence_hash,
-        "timestamp_utc": "2026-07-09T00:00:00+00:00", "supersedes": None,
+        "timestamp_utc": timestamp_utc, "supersedes": None,
         "artifact_creator_agent": None, "reviewer_agent": None,
         "is_synthetic": False,
+        "approver_signature": signature,
     }
     ledger_path = study_dir / "approval_ledger.json"
     existing = []
@@ -99,13 +117,16 @@ def test_checkpoint_locked_without_ledger_still_blocked():
         _rmtree_retry(d)
 
 
-def test_checkpoint_locked_with_matching_ledger_passes_gate():
+def test_checkpoint_locked_with_matching_ledger_passes_gate(tmp_path, monkeypatch):
     """T2 — phê duyệt thật khớp hash → KHÔNG bị chặn ở bước cổng (không assert
     chạy phân tích thành công trọn vẹn — chỉ assert đã QUA được cổng G4/G5)."""
     study = "PYTEST-LEDGER-T2"
     d = _study_dir(study)
     try:
+        _configure_test_signing_key(tmp_path, monkeypatch)
         artifact = _write_locked_checkpoints(d)
+        g2_artifact = d / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+        _write_ledger_approval(d, "G2", g2_artifact.read_text(encoding="utf-8"))
         _write_ledger_approval(d, "G4", artifact.read_text(encoding="utf-8"))
         g5_artifact = d / "G5_checkpoint.json"
         _write_ledger_approval(d, "G5", g5_artifact.read_text(encoding="utf-8"))
@@ -157,10 +178,6 @@ def test_case_control_template_requires_ledger_and_not_or():
     assert ") or _ledger_approved(" not in code, (
         "Template vẫn dùng 'or' cũ — hồi quy về lỗ hổng checkpoint text một mình đủ "
         "để qua cổng, bỏ qua hoàn toàn cơ chế mật mã.")
-
-
-import re as _re_module
-
 
 def _ledger_approved_gate_ids(code: str) -> set[str]:
     """Trích các gate_id được truyền vào _ledger_approved(...)/_GC.ledger_approved(...)
@@ -220,14 +237,17 @@ def test_case_control_sensitivity_template_requires_ledger_gate():
         f"Template sensitivity case-control thiếu gate trong _ledger_approved (chỉ thấy {gate_ids}).")
 
 
-def test_tampered_artifact_after_approval_still_blocked():
+def test_tampered_artifact_after_approval_still_blocked(tmp_path, monkeypatch):
     """T3 — artifact bị sửa SAU khi duyệt (hash lệch) → vẫn phải CHẶN, chứng minh
     ràng buộc mật mã hoạt động thật, không chỉ kiểm 'có bản ghi nào đó'."""
     study = "PYTEST-LEDGER-T3"
     d = _study_dir(study)
     try:
+        _configure_test_signing_key(tmp_path, monkeypatch)
         artifact = _write_locked_checkpoints(d)
         # Duyệt với nội dung GỐC...
+        g2_artifact = d / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+        _write_ledger_approval(d, "G2", g2_artifact.read_text(encoding="utf-8"))
         _write_ledger_approval(d, "G4", artifact.read_text(encoding="utf-8"))
         g5_artifact = d / "G5_checkpoint.json"
         _write_ledger_approval(d, "G5", g5_artifact.read_text(encoding="utf-8"))

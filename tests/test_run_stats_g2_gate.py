@@ -9,15 +9,21 @@ dữ liệu thật mà không có cổng kỹ thuật nào xác nhận đã đư
 lại hành vi: G2 chưa duyệt → script TỪ CHỐI chạy, độc lập với G4/G5.
 """
 
+import hashlib
 import shutil
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
+_TOOLS_DIR = _REPO_ROOT / "tools"
 _SCRIPT = _REPO_ROOT / "tools" / "run_stats_analysis.py"
 
+sys.path.insert(0, str(_TOOLS_DIR))
 sys.path.insert(0, str(_REPO_ROOT))
+import gate_contract as GC  # noqa: E402
+
 from runtime.approval_ledger import ApprovalLedger  # noqa: E402
 
 
@@ -27,6 +33,12 @@ def _run(*extra, study="__g2gate_pytest__"):
          "--data", "/khong_ton_tai_9z9z.csv", *extra],
         cwd=str(_REPO_ROOT), capture_output=True, text=True,
     )
+
+
+def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-g2-gate-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
 def _write_real_approval(study: str, gate_id: str, artifact_rel: str, content: str) -> None:
@@ -39,9 +51,15 @@ def _write_real_approval(study: str, gate_id: str, artifact_rel: str, content: s
     artifact.write_text(content, encoding="utf-8")
     ledger_path = study_dir / "approval_ledger.json"
     ledger = ApprovalLedger.from_file(ledger_path)
+    timestamp_utc = datetime.now(timezone.utc).isoformat()
+    evidence_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
+    signature = GC.sign_approval(gate_id, study, evidence_hash, timestamp_utc)
+    assert signature
     record = ApprovalLedger.make_human_approval(
         gate_id=gate_id, reviewer_role="PI", reviewer_ref=f"TEST-{gate_id}",
         scope="test", evidence_content=content,
+        approver_signature=signature,
+        timestamp_utc=timestamp_utc,
     )
     ok, reason = ledger.add_approval(record)
     assert ok, reason
@@ -67,7 +85,7 @@ class TestRunStatsG2Gate:
         assert "DỪNG: G2" in res.stdout
         assert "KHÔNG thay được ledger" in res.stdout
 
-    def test_passes_g2_gate_with_real_ledger_approval(self):
+    def test_passes_g2_gate_with_real_ledger_approval(self, tmp_path, monkeypatch):
         """Phê duyệt G2 THẬT (ledger) + cờ IRB thay checkpoint-file bị mất → phải VƯỢT
         cổng G2, rồi mới thất bại ở bước khác (dữ liệu không tồn tại), không phải bị
         chặn ở G2."""
@@ -75,6 +93,7 @@ class TestRunStatsG2Gate:
         study_dir = _REPO_ROOT / "exports" / study
         shutil.rmtree(study_dir, ignore_errors=True)
         try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
             _write_real_approval(
                 study, "G2", f"G2_A3_ETHICS_PACKAGE_{study}.md", "Ethics package test content")
             res = _run("--i-confirm-sap-locked", "--i-confirm-irb-approved", study=study)

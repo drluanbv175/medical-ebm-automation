@@ -135,6 +135,9 @@ def test_action_queue_routes_new_study_to_agent_g0(tmp_path):
     assert first["can_auto_run"] is True
     assert "run_g0_auto.py" in first["next_action"]
     assert report["next_agent_action"] == first
+    assert report["resume_contract"]["mode"] == "AUTO_RUN_ALLOWED"
+    assert report["resume_contract"]["can_auto_resume"] is True
+    assert report["resume_contract"]["next_command"] == first["next_action"]
 
 
 def test_action_queue_marks_dependency_blocks_as_human_evidence(tmp_path):
@@ -184,6 +187,10 @@ def test_next_agent_action_does_not_skip_human_gate_blocker(tmp_path):
     assert report["action_queue"][0]["gate"] == "G2"
     assert report["action_queue"][0]["can_auto_run"] is False
     assert report["next_agent_action"] is None
+    assert report["resume_contract"]["mode"] == "HUMAN_GATE_REQUIRED"
+    assert report["resume_contract"]["can_auto_resume"] is False
+    assert report["resume_contract"]["human_blocker"]["gate"] == "G2"
+    assert report["resume_contract"]["next_command"] is None
 
 
 def test_blocked_needs_input_surfaces_remediation_command(tmp_path):
@@ -238,9 +245,11 @@ def test_write_reports_and_updates_study_meta(tmp_path):
 
     assert (tmp_path / ARG.REPORT_JSON).exists()
     assert (tmp_path / ARG.REPORT_MD).exists()
+    assert (tmp_path / ARG.ACTION_QUEUE_JSON).exists()
     meta = json.loads((tmp_path / "study_meta.json").read_text(encoding="utf-8"))
     assert meta["research_gate_automation"]["json"] == ARG.REPORT_JSON
     assert meta["research_gate_automation"]["markdown"] == ARG.REPORT_MD
+    assert meta["research_gate_automation"]["action_queue_json"] == ARG.ACTION_QUEUE_JSON
     assert meta["research_gate_automation"]["current_actionable_gate"] == report["current_actionable_gate"]
     assert (
         meta["research_gate_automation"]["dependency_issue_count"]
@@ -261,3 +270,12 @@ def test_write_reports_and_updates_study_meta(tmp_path):
         meta["research_gate_automation"]["next_agent_action"]
         == report["next_agent_action"]
     )
+    assert (
+        meta["research_gate_automation"]["resume_contract"]
+        == report["resume_contract"]
+    )
+    queue_payload = json.loads(
+        (tmp_path / ARG.ACTION_QUEUE_JSON).read_text(encoding="utf-8")
+    )
+    assert queue_payload["resume_contract"] == report["resume_contract"]
+    assert queue_payload["items"] == report["action_queue"]

@@ -18,7 +18,14 @@ TOOLS_DIR = REPO_ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+import gate_contract as GC  # noqa: E402
 import run_g9_auto as G9  # noqa: E402
+
+
+def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-g9-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
 def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
@@ -50,13 +57,17 @@ def _write_artifacts_and_locked_text(study: str, d: Path) -> tuple[str, str]:
 
 def _write_ledger_approval(d: Path, gate_id: str, artifact_content: str) -> None:
     evidence_hash = hashlib.sha256(artifact_content.encode()).hexdigest()
+    timestamp_utc = "2026-07-11T00:00:00+00:00"
+    signature = GC.sign_approval(gate_id, d.name, evidence_hash, timestamp_utc)
+    assert signature
     record = {
         "approval_id": f"test-{gate_id}-001", "gate_id": gate_id,
         "reviewer_role": "PI", "reviewer_identity_reference": "REF-TEST-001",
         "decision": "APPROVED", "scope": "test", "evidence_hash": evidence_hash,
-        "timestamp_utc": "2026-07-11T00:00:00+00:00", "supersedes": None,
+        "timestamp_utc": timestamp_utc, "supersedes": None,
         "artifact_creator_agent": None, "reviewer_agent": None,
         "is_synthetic": False,
+        "approver_signature": signature,
     }
     ledger_path = d / "approval_ledger.json"
     existing = json.loads(ledger_path.read_text(encoding="utf-8")) if ledger_path.exists() else []
@@ -86,11 +97,12 @@ def test_build_part8_checkpoint_text_alone_not_sufficient():
         _rmtree_retry(d)
 
 
-def test_build_part8_checkpoint_with_matching_ledger_passes():
+def test_build_part8_checkpoint_with_matching_ledger_passes(tmp_path, monkeypatch):
     """Checkpoint text + approval_ledger.json khớp hash → phải hiện '✅'."""
     study = "PYTEST-G9-T2"
     d = _study_dir(study)
     try:
+        _configure_test_signing_key(tmp_path, monkeypatch)
         g2_content, g4_content = _write_artifacts_and_locked_text(study, d)
         _write_ledger_approval(d, "G2", g2_content)
         _write_ledger_approval(d, "G4", g4_content)
@@ -120,12 +132,13 @@ def test_write_g9_checkpoint_pending_lists_gate_when_ledger_missing():
         _rmtree_retry(d)
 
 
-def test_write_g9_checkpoint_pending_clears_when_ledger_present():
+def test_write_g9_checkpoint_pending_clears_when_ledger_present(tmp_path, monkeypatch):
     """Cùng kịch bản trên nhưng CÓ ledger khớp hash → pending không còn liệt kê
     G2/G4 là 'chưa LOCKED'."""
     study = "PYTEST-G9-T4"
     d = _study_dir(study)
     try:
+        _configure_test_signing_key(tmp_path, monkeypatch)
         g2_content, g4_content = _write_artifacts_and_locked_text(study, d)
         _write_ledger_approval(d, "G2", g2_content)
         _write_ledger_approval(d, "G4", g4_content)

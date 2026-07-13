@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -7,6 +8,7 @@ import stat
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
@@ -15,8 +17,16 @@ PYTHON = sys.executable
 
 sys.path.insert(0, str(TOOLS_DIR))
 sys.path.insert(0, str(REPO_ROOT))
+import gate_contract as GC  # noqa: E402
 import lock_analysis_dataset as LAD  # noqa: E402
+
 from runtime.approval_ledger import ApprovalLedger  # noqa: E402
+
+
+def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-data-lock-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
 def _approve_g2_g4_g5(study: str) -> None:
@@ -35,9 +45,15 @@ def _approve_g2_g4_g5(study: str) -> None:
     ):
         artifact = study_dir / artifact_rel
         artifact.write_text(content, encoding="utf-8")
+        timestamp_utc = datetime.now(timezone.utc).isoformat()
+        evidence_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
+        signature = GC.sign_approval(gate_id, study, evidence_hash, timestamp_utc)
+        assert signature
         record = ApprovalLedger.make_human_approval(
             gate_id=gate_id, reviewer_role="PI", reviewer_ref=f"TEST-{gate_id}",
             scope="test", evidence_content=content,
+            approver_signature=signature,
+            timestamp_utc=timestamp_utc,
         )
         ok, reason = ledger.add_approval(record)
         assert ok, reason
@@ -125,11 +141,12 @@ def _run_stats(study: str, data_path: Path) -> subprocess.CompletedProcess:
     )
 
 
-def test_run_stats_requires_and_accepts_locked_dataset(tmp_path):
+def test_run_stats_requires_and_accepts_locked_dataset(tmp_path, monkeypatch):
     study = "PYTEST-DLOCK-OK"
     study_dir = REPO_ROOT / "exports" / study
     _rmtree_retry(study_dir)
     try:
+        _configure_test_signing_key(tmp_path, monkeypatch)
         locked_path = _lock_study(study, tmp_path)
         res = _run_stats(study, locked_path)
         assert res.returncode == 0, res.stdout + res.stderr
@@ -142,11 +159,12 @@ def test_run_stats_requires_and_accepts_locked_dataset(tmp_path):
         _rmtree_retry(study_dir)
 
 
-def test_run_stats_blocks_unlocked_data_file(tmp_path):
+def test_run_stats_blocks_unlocked_data_file(tmp_path, monkeypatch):
     study = "PYTEST-DLOCK-WRONG"
     study_dir = REPO_ROOT / "exports" / study
     _rmtree_retry(study_dir)
     try:
+        _configure_test_signing_key(tmp_path, monkeypatch)
         _lock_study(study, tmp_path)
         other = _clean_dataset(tmp_path / "other_clean.csv")
         res = _run_stats(study, other)
@@ -157,11 +175,12 @@ def test_run_stats_blocks_unlocked_data_file(tmp_path):
         _rmtree_retry(study_dir)
 
 
-def test_run_stats_blocks_locked_dataset_checksum_mismatch(tmp_path):
+def test_run_stats_blocks_locked_dataset_checksum_mismatch(tmp_path, monkeypatch):
     study = "PYTEST-DLOCK-TAMPER"
     study_dir = REPO_ROOT / "exports" / study
     _rmtree_retry(study_dir)
     try:
+        _configure_test_signing_key(tmp_path, monkeypatch)
         locked_path = _lock_study(study, tmp_path)
         os.chmod(locked_path, stat.S_IRUSR | stat.S_IWUSR)
         with locked_path.open("a", encoding="utf-8") as f:
