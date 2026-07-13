@@ -422,7 +422,11 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         if row["status"] in {STATUS_BLOCKED, STATUS_GUARDRAIL_FAIL, STATUS_NEEDS_REAL}
     )
     current_gate = _first_actionable_gate(pipeline_rows)
-    overall = "PASS_READY_OR_DRAFTS" if hard_stop_count == 0 and freshness["fresh"] else "ACTION_REQUIRED"
+    overall = (
+        "PASS_READY_OR_DRAFTS"
+        if hard_stop_count == 0 and current_gate is None and freshness["fresh"]
+        else "ACTION_REQUIRED"
+    )
     report: Dict[str, Any] = {
         "kind": "research_gate_automation_matrix",
         "study": study_id,

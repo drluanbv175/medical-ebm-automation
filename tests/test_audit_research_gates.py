@@ -1,0 +1,114 @@
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
+sys.path.insert(0, str(TOOLS_DIR))
+
+import audit_research_gates as ARG  # noqa: E402
+import gate_contract as GC  # noqa: E402
+
+
+def _write_json(path: Path, payload: dict) -> Path:
+    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+def _cp(out_dir: Path, gate: str, payload: dict) -> Path:
+    data = {"gate": gate, "guardrail": {"passed": True}}
+    data.update(payload)
+    return _write_json(out_dir / f"{gate}_checkpoint.json", data)
+
+
+def test_new_study_points_to_g0_with_topic_command(tmp_path):
+    report = ARG.audit_gates("AUTO-NEW", out_dir=tmp_path, topic="Tỷ lệ kiểm soát huyết áp", write=False)
+
+    assert report["overall_status"] == "ACTION_REQUIRED"
+    assert report["current_actionable_gate"] == "G0"
+    g0 = report["pipeline_gates"][0]
+    assert g0["status"] == ARG.STATUS_MISSING
+    assert "run_g0_auto.py" in g0["next_action"]
+    assert "Tỷ lệ kiểm soát huyết áp" in g0["next_action"]
+
+
+def test_hard_gate_draft_requires_real_irb_signal(tmp_path):
+    _cp(tmp_path, "G2", {"g2_irb_number": "[CẦN BỔ SUNG]"})
+
+    report = ARG.audit_gates("AUTO-IRB", out_dir=tmp_path, write=False)
+    g2 = next(row for row in report["pipeline_gates"] if row["gate"] == "G2")
+
+    assert g2["status"] == ARG.STATUS_NEEDS_REAL
+    assert g2["real_signal"]["key"] == "irb_approved"
+    assert g2["real_signal"]["present"] is False
+    assert "IRB" in g2["next_action"]
+
+
+def test_hard_gate_locks_when_meta_signal_is_present(tmp_path):
+    _cp(tmp_path, "G2", {"g2_irb_number": "[CẦN BỔ SUNG]"})
+    _write_json(tmp_path / "study_meta.json", {"irb_approved": True})
+
+    report = ARG.audit_gates("AUTO-IRB-LOCK", out_dir=tmp_path, write=False)
+    g2 = next(row for row in report["pipeline_gates"] if row["gate"] == "G2")
+
+    assert g2["status"] == ARG.STATUS_LOCKED
+    assert g2["real_signal"]["present"] is True
+
+
+def test_blocked_needs_input_surfaces_remediation_command(tmp_path):
+    _cp(
+        tmp_path,
+        "G3",
+        {
+            "needs_input": GC.needs_input(
+                GC.REASON_MISSING_EFFECT_SIZE,
+                "Cần effect size có nguồn thật.",
+                "python3 tools/run_g3_auto.py --study AUTO --effect-size 0.5",
+                ["effect_size"],
+            ),
+        },
+    )
+
+    report = ARG.audit_gates("AUTO-BLOCKED", out_dir=tmp_path, write=False)
+    g3 = next(row for row in report["pipeline_gates"] if row["gate"] == "G3")
+
+    assert g3["status"] == ARG.STATUS_BLOCKED
+    assert "run_g3_auto.py" in g3["next_action"]
+    assert "effect-size" in g3["next_action"]
+
+
+def test_data_pipeline_reads_cleaning_and_lock_status(tmp_path):
+    _write_json(
+        tmp_path / "study_meta.json",
+        {
+            "real_data_cleaning": {
+                "status": "CLEAN_REQUIRES_QUERY_RESOLUTION",
+                "clean_dataset_path": "03_clean_working/df_clean.csv",
+                "open_query_count": 2,
+            },
+            "real_data_lock": {
+                "status": "BLOCKED_DATA_LOCK_REQUIREMENTS",
+                "blockers": ["open_query_log"],
+            },
+        },
+    )
+
+    report = ARG.audit_gates("AUTO-DATA", out_dir=tmp_path, write=False)
+    cleaning = next(row for row in report["data_pipeline"] if row["step"] == "cleaning")
+    lock = next(row for row in report["data_pipeline"] if row["step"] == "data_lock")
+
+    assert cleaning["status"] == "CLEAN_REQUIRES_QUERY_RESOLUTION"
+    assert cleaning["open_query_count"] == 2
+    assert lock["blockers"] == ["open_query_log"]
+
+
+def test_write_reports_and_updates_study_meta(tmp_path):
+    report = ARG.audit_gates("AUTO-WRITE", out_dir=tmp_path, topic="Đề tài X", write=True)
+
+    assert (tmp_path / ARG.REPORT_JSON).exists()
+    assert (tmp_path / ARG.REPORT_MD).exists()
+    meta = json.loads((tmp_path / "study_meta.json").read_text(encoding="utf-8"))
+    assert meta["research_gate_automation"]["json"] == ARG.REPORT_JSON
+    assert meta["research_gate_automation"]["markdown"] == ARG.REPORT_MD
+    assert meta["research_gate_automation"]["current_actionable_gate"] == report["current_actionable_gate"]
