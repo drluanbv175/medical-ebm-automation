@@ -305,9 +305,27 @@ def sec_congcu(cps, meta) -> str:
 
 def sec_quantri_dulieu(cps, meta) -> str:
     lock = _g(cps["G5"], "database_lock_status", default=TAG_BS)
+    pseudo = (meta or {}).get("real_data_pseudonymization") or {}
     deid = (meta or {}).get("real_data_deidentification") or {}
     intake = (meta or {}).get("real_data_intake") or {}
     data_lock = (meta or {}).get("real_data_lock") or {}
+    if pseudo:
+        pseudo_txt = (
+            f"**Mã hóa thay thế / pseudonymization:** trạng thái "
+            f"`{pseudo.get('status', TAG_BS)}`; dataset pseudonymized "
+            f"`{pseudo.get('pseudonymized_path') or TAG_BS}`; report "
+            f"`{pseudo.get('report', 'PSEUDONYMIZATION_report.json')}`; "
+            f"bảng ánh xạ bảo vệ riêng: {pseudo.get('mapping_location', TAG_BS)}. "
+            "Lưu ý: bảng ánh xạ vẫn là PII, không đưa vào exports/repo/OneDrive.\n\n"
+        )
+    else:
+        pseudo_txt = (
+            "**Mã hóa thay thế / pseudonymization:** nếu nghiên cứu cần tái định "
+            "danh có kiểm soát, chạy `python3 tools/pseudonymize_research_dataset.py "
+            "--study <MÃ> --data <file.csv> --then-import`. Bảng ánh xạ sẽ lưu ở "
+            "`~/.ebm-secrets/ebm_pseudonymization` hoặc vault được đơn vị phê duyệt, "
+            "không nằm trong dataset phân tích.\n\n"
+        )
     if deid:
         deid_txt = (
             f"**Khử định danh tự động:** trạng thái `{deid.get('status', TAG_BS)}`; "
@@ -368,6 +386,7 @@ def sec_quantri_dulieu(cps, meta) -> str:
     return (
         "# 10. Quản trị dữ liệu và bảo mật\n\n"
         f"**Trạng thái khoá cơ sở dữ liệu (tự động từ G5):** {lock}.\n\n"
+        f"{pseudo_txt}"
         f"{deid_txt}"
         f"{intake_txt}"
         f"{data_lock_txt}"

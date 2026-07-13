@@ -96,6 +96,7 @@ S001,45,call 0912345678 before visit
     assert manifest["status"] == RDI.BLOCKED_STATUS
     issues = manifest["pii_scan"]["issues"]
     assert any(issue["type"] == "value_pii:phone_vn" for issue in issues)
+    assert "pseudonymize_research_dataset.py" in manifest["remediation"]["pseudonymize_command"]
     dumped = json.dumps(manifest, ensure_ascii=False)
     assert "0912345678" not in dumped
 

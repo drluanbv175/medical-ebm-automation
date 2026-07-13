@@ -315,6 +315,8 @@ def import_dataset(study: str, data_path: Path, *,
             "Không sửa file nguồn.",
             "Không copy dữ liệu nếu phát hiện PII.",
             "Nếu bị chặn PII, chạy tools/deidentify_research_dataset.py để tạo bản khử định danh rồi nạp lại.",
+            "Nếu cần tái định danh có kiểm soát, chạy "
+            "tools/pseudonymize_research_dataset.py để tạo mã giả và bảng ánh xạ bảo vệ riêng.",
             "Bản raw trong 02_raw_readonly là chỉ đọc.",
             "Chỉ làm sạch trên bản sao bằng script/query log.",
             "Không phân tích chính cho tới khi có lock memo và data_lock_date thật.",
@@ -322,6 +324,10 @@ def import_dataset(study: str, data_path: Path, *,
         "remediation": {
             "deidentify_command": (
                 f"python3 tools/deidentify_research_dataset.py --study {study_id} "
+                "--data <file.csv> --then-import"
+            ),
+            "pseudonymize_command": (
+                f"python3 tools/pseudonymize_research_dataset.py --study {study_id} "
                 "--data <file.csv> --then-import"
             ),
             "note": "Không đưa file còn PII vào exports/raw; chỉ nhập bản đã khử định danh.",
@@ -368,6 +374,11 @@ def main() -> int:
     print(
         "Gợi ý: chạy `python3 tools/deidentify_research_dataset.py --study "
         f"{args.study} --data {args.data} --then-import` để tạo bản khử định danh."
+    )
+    print(
+        "Hoặc nếu protocol cần tái định danh có kiểm soát: `python3 "
+        "tools/pseudonymize_research_dataset.py --study "
+        f"{args.study} --data {args.data} --then-import`."
     )
     return 2
 
