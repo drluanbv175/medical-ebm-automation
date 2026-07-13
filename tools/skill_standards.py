@@ -161,6 +161,42 @@ DISPLAY_ITEM_BY_DESIGN: Dict[str, Tuple[str, str]] = {
     ),
 }
 
+# Chuẩn tuân thủ quốc tế tối thiểu cho báo cáo/bài báo khoa học. G10 dùng bảng
+# này để sinh ma trận bắt buộc; check_de_cuong.py dùng R8 để không cho đề cương
+# PASS nếu thiếu lớp minh bạch/tái lập/ICH-GCP.
+INTERNATIONAL_REPORTING_GUIDELINES: Tuple[str, ...] = (
+    "CONSORT",
+    "STROBE",
+    "PRISMA",
+    "STARD",
+    "TRIPOD",
+    "SPIRIT",
+    "CHEERS",
+    "CARE",
+    "SQUIRE",
+)
+
+INTERNATIONAL_COMPLIANCE_CORE: Tuple[Tuple[str, str, str], ...] = (
+    ("Reporting guideline",
+     "EQUATOR map: CONSORT/STROBE/PRISMA/STARD/TRIPOD/SPIRIT/CHEERS/CARE/SQUIRE",
+     "Checklist đúng thiết kế, điền từng mục, nêu số trang/dòng trong bản thảo."),
+    ("Ethics + ICH-GCP",
+     "Helsinki, ICH-GCP E6(R3), IRB/EC approval, informed consent, trial registration khi cần",
+     "Số IRB thật, ngày duyệt, consent/waiver, đăng ký nghiên cứu; không để AI tự phê duyệt."),
+    ("Protocol + SAP",
+     "Protocol định trước, SAP khóa trước khi xem dữ liệu, mọi deviation được log",
+     "Protocol version, SAP lock certificate, amendment/deviation log, seed/phần mềm phân tích."),
+    ("Transparency",
+     "Data availability, code availability, funding, COI, AI disclosure, authorship/CRediT",
+     "Tuyên bố dữ liệu/mã nguồn, nguồn tài trợ, ICMJE COI, khai báo AI, đóng góp tác giả."),
+    ("Reliability",
+     "Nguồn truy nguyên PMID/DOI, kiểm định công cụ, QC dữ liệu, phân tích đúng SAP",
+     "Citation ledger, data dictionary, query log, lock memo, output đối chiếu với SAP."),
+    ("Reproducibility",
+     "Syntax tái lập, environment/package versions, raw-to-analysis provenance, fixed seed khi mô phỏng",
+     "Script, session info/requirements, README tái chạy, hash artifact, không chỉnh tay kết quả."),
+)
+
 
 def de_cuong_section_titles() -> List[str]:
     """Trả về danh sách 16 tiêu đề mục chính (dùng cho validator đối chiếu)."""

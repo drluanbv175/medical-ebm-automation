@@ -122,6 +122,17 @@ class TestAssemble:
         for term in ("caption", "trục", "đơn vị", "N", "95% CI"):
             assert term in text
 
+    def test_international_compliance_matrix_has_transparency_reproducibility(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        assert "# Ma trận tuân thủ tiêu chuẩn quốc tế" in text
+        for term in (
+            "CONSORT", "STROBE", "ICH-GCP", "GCP", "IRB", "SAP",
+            "data availability", "code availability", "COI", "AI disclosure",
+            "minh bạch", "tái lập",
+        ):
+            assert term in text
+
     def test_passes_own_validator(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
@@ -229,6 +240,25 @@ class TestValidatorCatchesFabrication:
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("Hình 2" in e for e in report["errors"])
+
+    def test_catches_missing_international_compliance_matrix(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text = text.replace("# Ma trận tuân thủ tiêu chuẩn quốc tế",
+                            "# Ma trận bị đổi tên")
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("R8" in e for e in report["errors"])
+
+    def test_catches_missing_ich_gcp_in_compliance_matrix(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text = text.replace("ICH-GCP", "ICH G_C_P")
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("ICH-GCP" in e for e in report["errors"])
 
     def test_clean_de_cuong_passes(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)

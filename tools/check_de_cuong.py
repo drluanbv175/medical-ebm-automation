@@ -16,8 +16,10 @@ R6. KHÔNG nhồi số liệu KẾT QUẢ vào đề cương (đề cương = tr
     (khác tham số thiết kế α/power/N).
 R7. Có danh mục bảng/hình chuẩn xuất bản: tối thiểu Bảng 1, Bảng 2, Hình 1, Hình 2
     và checklist caption/trục/đơn vị/n/95%CI để nối SAP → bản thảo.
+R8. Có ma trận tuân thủ tiêu chuẩn quốc tế: reporting checklist đúng thiết kế
+    (CONSORT/STROBE/...), ICH-GCP/IRB khi áp dụng, SAP, minh bạch và tái lập.
 
-Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5 và R7 = ĐỎ
+Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7, R8 = ĐỎ
 (passed=False). R6 = cảnh báo (không chặn, vì một số tham số giả định hợp lệ).
 
 Dùng: python3 tools/check_de_cuong.py --study <MÃ>   (hoặc import validate()).
@@ -66,6 +68,11 @@ _RESULT_PATTERNS = [
 ]
 _DISPLAY_REQUIRED_ITEMS = ("Bảng 1", "Bảng 2", "Hình 1", "Hình 2")
 _DISPLAY_REQUIRED_TERMS = ("caption", "trục", "đơn vị", "n", "95% CI")
+_COMPLIANCE_REQUIRED_TERMS = (
+    "CONSORT", "STROBE", "ICH-GCP", "GCP", "IRB", "SAP",
+    "data availability", "code availability", "COI", "AI disclosure",
+    "minh bạch", "tái lập",
+)
 
 
 def _raw_pmids(out_dir: Path) -> Set[str]:
@@ -250,6 +257,25 @@ def validate(md_path, out_dir) -> Dict:
             f"FAIL (thiếu {len(missing_terms)} tiêu chí)")
     else:
         checks["R7_display_items"] = "PASS (Bảng 1/2 + Hình 1/2 + checklist)"
+
+    # R8 — ma trận tuân thủ quốc tế và khả năng tái lập.
+    has_compliance_section = re.search(
+        r"^#\s*Ma trận tuân thủ tiêu chuẩn quốc tế\b", text, re.MULTILINE)
+    missing_compliance_terms = [
+        term for term in _COMPLIANCE_REQUIRED_TERMS
+        if term.lower() not in lowered
+    ]
+    if not has_compliance_section:
+        errors.append("R8 THIẾU mục 'Ma trận tuân thủ tiêu chuẩn quốc tế'.")
+        checks["R8_international_compliance"] = "FAIL (thiếu ma trận)"
+    elif missing_compliance_terms:
+        errors.append("R8 MA TRẬN TUÂN THỦ thiếu thuật ngữ bắt buộc: "
+                      + ", ".join(missing_compliance_terms))
+        checks["R8_international_compliance"] = (
+            f"FAIL (thiếu {len(missing_compliance_terms)} tiêu chí)")
+    else:
+        checks["R8_international_compliance"] = (
+            "PASS (reporting + ICH-GCP/IRB + SAP + transparency + reproducibility)")
 
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,

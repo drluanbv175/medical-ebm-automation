@@ -540,6 +540,38 @@ def build_display_items(cps, meta=None) -> str:
     return "\n".join(lines)
 
 
+def build_international_compliance(cps, meta=None) -> str:
+    """Ma trận tuân thủ quốc tế cho bản báo cáo/bài báo cuối cùng."""
+    code = S.canonical_design_code(_design_code(cps))
+    std = S.reporting_standards_for(code)
+    primary = std["primary"]
+    all_guidelines = ", ".join(S.INTERNATIONAL_REPORTING_GUIDELINES)
+    lines = [
+        "# Ma trận tuân thủ tiêu chuẩn quốc tế\n",
+        f"**Thiết kế chuẩn hoá:** `{code or TAG_BS}`.  ",
+        f"**Checklist chính phải điền:** {primary}.  ",
+        f"**Bộ chuẩn tham chiếu:** {all_guidelines}.\n",
+        "| Lớp chuẩn | Chuẩn/khung áp dụng | Bằng chứng đầu ra tối thiểu |",
+        "|---|---|---|",
+    ]
+    for layer, standard, evidence in S.INTERNATIONAL_COMPLIANCE_CORE:
+        lines.append(f"| {layer} | {standard} | {evidence} |")
+    lines.append(
+        "\n**Điều kiện xuất bản tối thiểu:** bản thảo chỉ được xem là sẵn sàng khi "
+        "reporting checklist đúng thiết kế đã điền, IRB/EC và consent/waiver có "
+        "bằng chứng thật, SAP đã khóa trước phân tích, dataset phân tích đã khóa, "
+        "data availability + code availability rõ ràng, COI/funding/AI disclosure "
+        "đầy đủ, và toàn bộ bảng/hình có nguồn sinh tái lập.\n"
+    )
+    lines.append(
+        f"> {TAG_DV}: GCP/ICH-GCP chỉ là điều kiện bắt buộc khi đề tài là thử nghiệm "
+        "can thiệp/clinical trial hoặc đơn vị/IRB yêu cầu; với nghiên cứu quan sát "
+        "vẫn giữ Helsinki, bảo mật dữ liệu, protocol/SAP, transparency và "
+        "reproducibility như điều kiện tối thiểu.\n"
+    )
+    return "\n".join(lines)
+
+
 def build_legal_refs() -> str:
     lines = ["# Khung pháp lý & tiêu chuẩn tham chiếu\n",
              "| Văn bản/Tiêu chuẩn | Phiên bản | Lĩnh vực | Cờ |",
@@ -613,9 +645,10 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     for builder in SECTION_BUILDERS:
         parts.append(builder(cps, meta))
         parts.append("")
-    # Phụ lục + danh mục hình/bảng + pháp lý.
+    # Phụ lục + danh mục hình/bảng + tuân thủ quốc tế + pháp lý.
     parts.append(build_phuluc())
     parts.append(build_display_items(cps, meta))
+    parts.append(build_international_compliance(cps, meta))
     parts.append(build_legal_refs())
     parts.append(
         "\n---\n\n> **Disclaimer:** Tài liệu do hệ thống hỗ trợ lắp ráp; dữ liệu "
