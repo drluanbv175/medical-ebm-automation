@@ -1,5 +1,5 @@
 """
-gen_research_docx.py — Bộ tạo file Word chuẩn hóa cho 20 artifact nghiên cứu y khoa G0→G9.
+gen_research_docx.py — Bộ tạo file Word chuẩn hóa cho bộ artifact nghiên cứu y khoa G0→G9.
 
 Sử dụng:
     python tools/gen_research_docx.py --study "TEN-DE-TAI" --gate G0 --artifact intake
@@ -11,7 +11,7 @@ tự mâu thuẫn với code thật):
     exports/<TEN-DE-TAI>/<artifact_code>_<ARTIFACT_KEY_HOA>_<TEN-DE-TAI>.docx
     Ví dụ: exports/PCOS-MET-2026/G0a_INTAKE_PCOS-MET-2026.docx
 
-⚠ Đây là công cụ SOẠN THẢO/SCAFFOLD 20 artifact theo SPEC gốc — KHÔNG dùng thay cho
+⚠ Đây là công cụ SOẠN THẢO/SCAFFOLD artifact theo SPEC gốc — KHÔNG dùng thay cho
 `run_g2_auto.py`/`run_g4_auto.py` khi cần artifact G2 (đạo đức)/G4 (SAP) qua cổng khóa
 chống p-hacking thật (`run_g6_auto.py::_ledger_approved` chỉ đọc file .md do 2 script đó
 sinh, tên khác với công cụ này — xem cảnh báo trong _gen_ethics/_gen_sap; task_a5fde306).
@@ -24,23 +24,25 @@ KHÔNG nhận tham số `gate`, trước đây ví dụ gọi sai chữ ký th�
 """
 
 import argparse
-import os
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 
 try:
     from docx import Document
-    from docx.shared import Pt, RGBColor, Cm, Inches
-    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
+    from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+    from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
+    from docx.shared import Cm, Pt, RGBColor
     HAS_DOCX = True
 except ImportError:
     HAS_DOCX = False
     print("[CẢNH BÁO] python-docx chưa cài. Chạy: pip install python-docx")
 
 
-# ── Ánh xạ 20 artifact chuẩn G0→G9 ─────────────────────────────────────────
+# ── Ánh xạ artifact chuẩn G0→G9 ────────────────────────────────────────────
 
 ARTIFACT_MAP = {
     # G0 — Câu hỏi & tính khả thi
@@ -97,6 +99,10 @@ class ResearchDocxGenerator:
     RED    = RGBColor(0x99, 0x00, 0x00)
     ORANGE = RGBColor(0xCC, 0x55, 0x00)
     GRAY   = RGBColor(0x55, 0x55, 0x55)
+    TABLE_HEADER_FILL = "D9EAF7"
+    BODY_PT = 13
+    TABLE_PT = 11
+    CONTENT_WIDTH_TWIPS = 9072  # A4 21 cm - lề trái 3 cm - lề phải 2 cm.
 
     def __init__(self, study_name: str, output_dir: str = None):
         self.study_name  = study_name
@@ -113,34 +119,97 @@ class ResearchDocxGenerator:
 
     # ── Helpers ─────────────────────────────────────────────────────────────
 
+    def _set_rfonts(self, rpr):
+        """Ép Times New Roman cho cả ascii/hAnsi/eastAsia/cs để tiếng Việt không lỗi font."""
+        rfonts = rpr.find(qn("w:rFonts"))
+        if rfonts is None:
+            rfonts = OxmlElement("w:rFonts")
+            rpr.append(rfonts)
+        for attr in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
+            rfonts.set(qn(attr), self.FONT)
+
+    def _set_style_font(self, style, size=None, bold=None, italic=None):
+        style.font.name = self.FONT
+        if size is not None:
+            style.font.size = Pt(size)
+        if bold is not None:
+            style.font.bold = bold
+        if italic is not None:
+            style.font.italic = italic
+        self._set_rfonts(style.element.get_or_add_rPr())
+
+    def _set_run_font(self, run, size=None, bold=None, italic=None, color=None):
+        run.font.name = self.FONT
+        if size is not None:
+            run.font.size = Pt(size)
+        if bold is not None:
+            run.bold = bold
+        if italic is not None:
+            run.italic = italic
+        if color:
+            run.font.color.rgb = color
+        self._set_rfonts(run._element.get_or_add_rPr())
+        return run
+
+    def _format_paragraph(self, para, *, before=0, after=8, line=1.5, align=None):
+        pf = para.paragraph_format
+        pf.space_before = Pt(before)
+        pf.space_after = Pt(after)
+        pf.line_spacing_rule = WD_LINE_SPACING.MULTIPLE
+        pf.line_spacing = line
+        if align is not None:
+            para.alignment = align
+        return para
+
+    def _add_page_number(self, paragraph):
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        self._format_paragraph(paragraph, before=0, after=0, line=1.0)
+        self._set_run_font(paragraph.add_run("Trang "), size=10, color=self.GRAY)
+        run = paragraph.add_run()
+        self._set_run_font(run, size=10, color=self.GRAY)
+        begin = OxmlElement("w:fldChar")
+        begin.set(qn("w:fldCharType"), "begin")
+        instr = OxmlElement("w:instrText")
+        instr.set(qn("xml:space"), "preserve")
+        instr.text = "PAGE"
+        separate = OxmlElement("w:fldChar")
+        separate.set(qn("w:fldCharType"), "separate")
+        end = OxmlElement("w:fldChar")
+        end.set(qn("w:fldCharType"), "end")
+        run._r.append(begin)
+        run._r.append(instr)
+        run._r.append(separate)
+        run._r.append(end)
+
     def _new_doc(self):
         doc = Document()
         for sec in doc.sections:
+            sec.page_width    = Cm(21.0)
+            sec.page_height   = Cm(29.7)
             sec.top_margin    = Cm(2.5)
             sec.bottom_margin = Cm(2.5)
             sec.left_margin   = Cm(3)
             sec.right_margin  = Cm(2)
-        sty = doc.styles["Normal"]
-        sty.font.name = self.FONT
-        sty.font.size = Pt(13)
+            self._add_page_number(sec.footer.paragraphs[0])
+        self._set_style_font(doc.styles["Normal"], size=self.BODY_PT)
+        for name, size in (("Heading 1", 14), ("Heading 2", 13), ("Heading 3", 12)):
+            if name in doc.styles:
+                self._set_style_font(doc.styles[name], size=size, bold=True)
         return doc
 
     def _h(self, doc, text, level=1, color=None):
         p = doc.add_heading(text, level=level)
+        self._format_paragraph(p, before=10 if level > 1 else 12, after=6, line=1.25)
         for r in p.runs:
-            r.font.name = self.FONT
-            r.font.color.rgb = color or self.BLUE
+            self._set_run_font(r, size=14 if level == 1 else 13 if level == 2 else 12,
+                               bold=True, color=color or self.BLUE)
         return p
 
     def _p(self, doc, text, bold=False, italic=False, color=None, size=13):
         para = doc.add_paragraph()
         run  = para.add_run(text)
-        run.font.name  = self.FONT
-        run.font.size  = Pt(size)
-        run.bold       = bold
-        run.italic     = italic
-        if color:
-            run.font.color.rgb = color
+        self._set_run_font(run, size=size, bold=bold, italic=italic, color=color)
+        self._format_paragraph(para, after=8, line=1.5, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
         return para
 
     def _flag(self, doc, text):
@@ -161,24 +230,81 @@ class ResearchDocxGenerator:
             "Cần bác sĩ kiểm chứng.",
             italic=True, color=self.RED, size=11)
 
+    def _set_cell_shading(self, cell, fill):
+        tc_pr = cell._tc.get_or_add_tcPr()
+        shd = tc_pr.find(qn("w:shd"))
+        if shd is None:
+            shd = OxmlElement("w:shd")
+            tc_pr.append(shd)
+        shd.set(qn("w:fill"), fill)
+
+    def _set_cell_margins(self, cell, margin=108):
+        tc_pr = cell._tc.get_or_add_tcPr()
+        tc_mar = tc_pr.find(qn("w:tcMar"))
+        if tc_mar is None:
+            tc_mar = OxmlElement("w:tcMar")
+            tc_pr.append(tc_mar)
+        for side in ("top", "left", "bottom", "right"):
+            node = tc_mar.find(qn(f"w:{side}"))
+            if node is None:
+                node = OxmlElement(f"w:{side}")
+                tc_mar.append(node)
+            node.set(qn("w:w"), str(margin))
+            node.set(qn("w:type"), "dxa")
+
+    def _set_cell_width(self, cell, width_twips):
+        tc_pr = cell._tc.get_or_add_tcPr()
+        tc_w = tc_pr.find(qn("w:tcW"))
+        if tc_w is None:
+            tc_w = OxmlElement("w:tcW")
+            tc_pr.append(tc_w)
+        tc_w.set(qn("w:w"), str(width_twips))
+        tc_w.set(qn("w:type"), "dxa")
+
+    def _repeat_header_row(self, row):
+        tr_pr = row._tr.get_or_add_trPr()
+        tbl_header = tr_pr.find(qn("w:tblHeader"))
+        if tbl_header is None:
+            tbl_header = OxmlElement("w:tblHeader")
+            tr_pr.append(tbl_header)
+        tbl_header.set(qn("w:val"), "true")
+
+    def _set_fixed_table_layout(self, table):
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        table.autofit = False
+        tbl_pr = table._tbl.tblPr
+        layout = tbl_pr.find(qn("w:tblLayout"))
+        if layout is None:
+            layout = OxmlElement("w:tblLayout")
+            tbl_pr.append(layout)
+        layout.set(qn("w:type"), "fixed")
+
+    def _write_cell(self, cell, text, *, bold=False, align=None, width_twips=None):
+        if width_twips is not None:
+            self._set_cell_width(cell, width_twips)
+        self._set_cell_margins(cell)
+        cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
+        p = cell.paragraphs[0]
+        p.text = ""
+        self._format_paragraph(p, before=2, after=2, line=1.15,
+                               align=align or WD_ALIGN_PARAGRAPH.JUSTIFY)
+        self._set_run_font(p.add_run(str(text)), size=self.TABLE_PT, bold=bold)
+
     def _tbl(self, doc, headers, rows):
         t = doc.add_table(rows=1 + len(rows), cols=len(headers))
         t.style = "Table Grid"
+        self._set_fixed_table_layout(t)
+        col_width = max(900, self.CONTENT_WIDTH_TWIPS // max(1, len(headers)))
+        self._repeat_header_row(t.rows[0])
         for i, h in enumerate(headers):
             c = t.rows[0].cells[i]
-            c.text = h
-            if c.paragraphs[0].runs:
-                c.paragraphs[0].runs[0].bold = True
-                c.paragraphs[0].runs[0].font.name = self.FONT
-                c.paragraphs[0].runs[0].font.size = Pt(12)
-            c.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            self._set_cell_shading(c, self.TABLE_HEADER_FILL)
+            self._write_cell(c, h, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER,
+                             width_twips=col_width)
         for ri, row in enumerate(rows):
             for ci, val in enumerate(row):
                 c = t.rows[ri + 1].cells[ci]
-                c.text = str(val)
-                if c.paragraphs[0].runs:
-                    c.paragraphs[0].runs[0].font.name = self.FONT
-                    c.paragraphs[0].runs[0].font.size = Pt(12)
+                self._write_cell(c, val, width_twips=col_width)
         return t
 
     def _header_block(self, doc, artifact_code, gate, title):
@@ -186,17 +312,18 @@ class ResearchDocxGenerator:
         # Tiêu đề chính
         tp = doc.add_paragraph()
         tp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        self._format_paragraph(tp, after=8, line=1.25, align=WD_ALIGN_PARAGRAPH.CENTER)
         tr = tp.add_run(title.upper())
-        tr.bold = True; tr.font.size = Pt(14); tr.font.name = self.FONT
-        tr.font.color.rgb = self.BLUE
+        self._set_run_font(tr, size=14, bold=True, color=self.BLUE)
 
         # Dòng phụ
         sp = doc.add_paragraph()
         sp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        self._format_paragraph(sp, after=10, line=1.25, align=WD_ALIGN_PARAGRAPH.CENTER)
         sr = sp.add_run(
             f"Đề tài: {self.study_name}  |  Artifact: {artifact_code}  |  "
             f"Cổng: {gate}  |  Ngày: {self.today}")
-        sr.font.name = self.FONT; sr.font.size = Pt(11); sr.italic = True
+        self._set_run_font(sr, size=11, italic=True)
 
         doc.add_paragraph("")
 
@@ -255,7 +382,7 @@ class ResearchDocxGenerator:
                     for item in section_body:
                         pi = doc.add_paragraph(style="List Bullet")
                         ri = pi.add_run(str(item))
-                        ri.font.name = self.FONT; ri.font.size = Pt(12)
+                        self._set_run_font(ri, size=12)
                 elif isinstance(section_body, dict):
                     rows = [[k, str(v)] for k, v in section_body.items()]
                     self._tbl(doc, ["Mục", "Nội dung"], rows)
@@ -319,7 +446,7 @@ class ResearchDocxGenerator:
         for f in flags:
             pi = doc.add_paragraph(style="List Bullet")
             ri = pi.add_run(f)
-            ri.font.name = self.FONT; ri.font.size = Pt(12)
+            self._set_run_font(ri, size=12)
 
         self._h(doc, "7. Cổng kế tiếp & việc cần chủ nhiệm cấp")
         self._p(doc, content.get("next_gate",
@@ -764,7 +891,7 @@ class ResearchDocxGenerator:
 # ── CLI ─────────────────────────────────────────────────────────────────────
 
 def list_artifacts():
-    print("\n20 ARTIFACT CHUẨN — G0 → G9\n" + "="*50)
+    print(f"\n{len(ARTIFACT_MAP)} ARTIFACT CHUẨN — G0 → G9\n" + "="*50)
     for key, (code, gate, title) in ARTIFACT_MAP.items():
         print(f"  {code:5s}  [{gate:8s}]  --artifact {key:15s}  {title}")
     print()
@@ -777,19 +904,21 @@ def main():
     parser.add_argument("--artifact", help="Loại artifact (xem --list)")
     parser.add_argument("--gate",     help="Xuất tất cả artifact của cổng G (vd: G0, G1, G3)")
     parser.add_argument("--all",      action="store_true",
-                        help="Xuất TẤT CẢ 20 artifact (scaffold)")
+                        help="Xuất TẤT CẢ artifact (scaffold)")
     parser.add_argument("--content",  help="JSON string hoặc path tới file JSON nội dung")
     parser.add_argument("--outdir",   help="Thư mục đầu ra (mặc định: exports/<study>/)")
     parser.add_argument("--list",     action="store_true", help="Liệt kê tất cả artifact")
     args = parser.parse_args()
 
     if args.list:
-        list_artifacts(); return
+        list_artifacts()
+        return
 
     if not args.study:
         parser.error("Cần --study <tên đề tài>")
     if not HAS_DOCX:
-        print("Lỗi: python-docx chưa cài. Chạy: pip install python-docx"); return
+        print("Lỗi: python-docx chưa cài. Chạy: pip install python-docx")
+        return
 
     # Đọc content nếu có
     content = {}

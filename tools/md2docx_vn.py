@@ -27,6 +27,8 @@ from typing import Dict, List, Optional
 FONT = "Times New Roman"
 BODY_PT = 13
 TABLE_PT = 11
+TABLE_HEADER_FILL = "D9EAF7"
+CONTENT_WIDTH_TWIPS = 9072  # A4 21 cm - lề trái 3 cm - lề phải 2 cm.
 
 # Regex tách inline: **đậm** / *nghiêng* / [nhãn ...]
 _INLINE_RE = re.compile(r"(\*\*.+?\*\*|\*[^*].*?\*|\[[^\]]+\])")
@@ -57,6 +59,100 @@ def _set_run_font(run, size=BODY_PT, bold=False, italic=False):
         rpr.append(rfonts)
     for attr in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
         rfonts.set(qn(attr), FONT)
+
+
+def _set_fixed_table_layout(table):
+    """Cố định layout bảng để mở bằng Word/LibreOffice không bị co giãn khó đọc."""
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    table.autofit = False
+    tbl_pr = table._tbl.tblPr
+    layout = tbl_pr.find(qn("w:tblLayout"))
+    if layout is None:
+        layout = OxmlElement("w:tblLayout")
+        tbl_pr.append(layout)
+    layout.set(qn("w:type"), "fixed")
+
+
+def _set_cell_width(cell, width_twips: int):
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    tc_pr = cell._tc.get_or_add_tcPr()
+    tc_w = tc_pr.find(qn("w:tcW"))
+    if tc_w is None:
+        tc_w = OxmlElement("w:tcW")
+        tc_pr.append(tc_w)
+    tc_w.set(qn("w:w"), str(width_twips))
+    tc_w.set(qn("w:type"), "dxa")
+
+
+def _set_cell_margins(cell, margin=108):
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    tc_pr = cell._tc.get_or_add_tcPr()
+    tc_mar = tc_pr.find(qn("w:tcMar"))
+    if tc_mar is None:
+        tc_mar = OxmlElement("w:tcMar")
+        tc_pr.append(tc_mar)
+    for side in ("top", "left", "bottom", "right"):
+        node = tc_mar.find(qn(f"w:{side}"))
+        if node is None:
+            node = OxmlElement(f"w:{side}")
+            tc_mar.append(node)
+        node.set(qn("w:w"), str(margin))
+        node.set(qn("w:type"), "dxa")
+
+
+def _set_cell_shading(cell, fill=TABLE_HEADER_FILL):
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    tc_pr = cell._tc.get_or_add_tcPr()
+    shd = tc_pr.find(qn("w:shd"))
+    if shd is None:
+        shd = OxmlElement("w:shd")
+        tc_pr.append(shd)
+    shd.set(qn("w:fill"), fill)
+
+
+def _repeat_header_row(row):
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    tr_pr = row._tr.get_or_add_trPr()
+    tbl_header = tr_pr.find(qn("w:tblHeader"))
+    if tbl_header is None:
+        tbl_header = OxmlElement("w:tblHeader")
+        tr_pr.append(tbl_header)
+    tbl_header.set(qn("w:val"), "true")
+
+
+def _add_page_number(paragraph):
+    """Thêm số trang dạng field PAGE để Word tự cập nhật khi mở tài liệu."""
+    from docx.enum.text import WD_ALIGN_PARAGRAPH as A
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    _spacing(paragraph, before=0, after=0, line=1.0, align=A.CENTER)
+    _set_run_font(paragraph.add_run("Trang "), size=10)
+    run = paragraph.add_run()
+    _set_run_font(run, size=10)
+    begin = OxmlElement("w:fldChar")
+    begin.set(qn("w:fldCharType"), "begin")
+    instr = OxmlElement("w:instrText")
+    instr.set(qn("xml:space"), "preserve")
+    instr.text = "PAGE"
+    separate = OxmlElement("w:fldChar")
+    separate.set(qn("w:fldCharType"), "separate")
+    end = OxmlElement("w:fldChar")
+    end.set(qn("w:fldCharType"), "end")
+    run._r.append(begin)
+    run._r.append(instr)
+    run._r.append(separate)
+    run._r.append(end)
 
 
 def _add_inline_runs(paragraph, text, size=BODY_PT, bold=False, italic=False):
@@ -126,20 +222,32 @@ def _parse_table(lines: List[str], start: int):
 
 
 def _add_table(doc, rows):
-    from docx.enum.table import WD_TABLE_ALIGNMENT
+    from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
+    from docx.enum.text import WD_ALIGN_PARAGRAPH as A
+
     ncols = max(len(r) for r in rows)
     table = doc.add_table(rows=len(rows), cols=ncols)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    _set_fixed_table_layout(table)
     try:
         table.style = "Table Grid"
     except KeyError:
         pass
+    col_width = max(900, CONTENT_WIDTH_TWIPS // max(1, ncols))
+    if table.rows:
+        _repeat_header_row(table.rows[0])
     for r, row in enumerate(rows):
         for c in range(ncols):
             cell = table.cell(r, c)
+            cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
+            _set_cell_width(cell, col_width)
+            _set_cell_margins(cell)
+            if r == 0:
+                _set_cell_shading(cell)
             cell.paragraphs[0].text = ""
             p = cell.paragraphs[0]
-            _spacing(p, before=2, after=2, line=1.15)
+            _spacing(p, before=2, after=2, line=1.15,
+                     align=A.CENTER if r == 0 else A.JUSTIFY)
             _add_inline_runs(p, row[c] if c < len(row) else "",
                              size=TABLE_PT, bold=(r == 0))
     return table
@@ -189,6 +297,7 @@ def _init_document(title_page: Optional[Dict]):
     sec.right_margin = Cm(2.0)
     sec.top_margin = Cm(2.5)
     sec.bottom_margin = Cm(2.5)
+    _add_page_number(sec.footer.paragraphs[0])
 
     normal = doc.styles["Normal"]
     normal.font.name = FONT
@@ -198,7 +307,8 @@ def _init_document(title_page: Optional[Dict]):
     if rfonts is None:
         rfonts = OxmlElement("w:rFonts")
         rpr.append(rfonts)
-    rfonts.set(qn("w:eastAsia"), FONT)
+    for attr in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
+        rfonts.set(qn(attr), FONT)
 
     if title_page:
         _render_title_page(doc, title_page)
