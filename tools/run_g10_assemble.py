@@ -757,8 +757,8 @@ def build_legal_refs() -> str:
 # LẮP RÁP TOÀN VĂN
 # ════════════════════════════════════════════════════════════════════════════
 
-def build_front_note(study: str, cps, meta) -> str:
-    generated = datetime.now().strftime("%Y-%m-%d %H:%M")
+def build_front_note(study: str, cps, meta, generated: str | None = None) -> str:
+    generated = generated or datetime.now().strftime("%Y-%m-%d %H:%M")
     n_pmids = _g(cps["G7"], "n_pmids", default=_g(cps["G0"], "pubmed_results",
                  "n_pmids", default="?"))
     return (
@@ -773,6 +773,75 @@ def build_front_note(study: str, cps, meta) -> str:
         "dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm "
         "chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.\n"
     )
+
+
+def build_document_control(study: str, cps, meta, generated: str | None = None) -> str:
+    """Kiểm soát phiên bản/ngày/lịch sử thay đổi cho hồ sơ chính."""
+    generated = generated or datetime.now().strftime("%Y-%m-%d %H:%M")
+    present = [g for g in [f"G{i}" for i in range(10)] if cps.get(g)]
+    version = (
+        meta.get("document_version")
+        or meta.get("protocol_version")
+        or meta.get("version")
+        or TAG_DRAFT
+    )
+    document_date = (
+        meta.get("document_date")
+        or meta.get("version_date")
+        or meta.get("updated_at")
+        or generated
+    )
+    prepared_by = meta.get("prepared_by") or meta.get("authors") or TAG_BS
+    approved_by = meta.get("approved_by") or meta.get("pi") or meta.get("principal_investigator")
+    approved_by = approved_by or TAG_BS
+    sap_version = _g(cps.get("G4"), "g4_sap_version", default=TAG_BS)
+    source = ", ".join(present) if present else TAG_BS
+
+    lines = [
+        "# Kiểm soát phiên bản và lịch sử thay đổi\n",
+        "Mục này bắt buộc cho tài liệu chính của nghiên cứu. Mọi chỉnh sửa sau khi "
+        "đã nộp Hội đồng đạo đức, khóa SAP hoặc khóa dữ liệu phải có lý do, "
+        "người phê duyệt và dấu vết phiên bản; hệ thống không tự ghi đè quyết "
+        "định đã được phê duyệt.\n",
+        "| Trường kiểm soát | Giá trị | Quy tắc an toàn |",
+        "|---|---|---|",
+        f"| Phiên bản tài liệu | {version} | Nếu thay đổi mục tiêu, thiết kế, kết cục, "
+        "SAP hoặc consent sau khi đã duyệt thì phải lập amendment. |",
+        f"| Ngày tạo/cập nhật | {document_date} | Ngày do hệ thống ghi hoặc chủ nhiệm "
+        "cung cấp; kiểm lại trước khi nộp. |",
+        f"| Nguồn thay đổi | Checkpoint {source}; SAP version {sap_version} | Chỉ dùng "
+        "nguồn có trace; không sửa tay ngoài pipeline mà không ghi nhật ký. |",
+        f"| Người soạn/cập nhật | {prepared_by} | Người thật chịu trách nhiệm rà soát. |",
+        f"| Người phê duyệt/chủ nhiệm | {approved_by} | {TAG_BS} nếu chưa có chữ ký/xác nhận. |",
+        f"| Trạng thái khóa tài liệu | {TAG_DRAFT} | Chỉ khóa khi G2/G4/G6/G9 có bằng chứng thật. |",
+        "",
+        "## Nhật ký thay đổi",
+        "| Phiên bản | Ngày | Nguồn thay đổi | Nội dung thay đổi | Người phê duyệt/chủ nhiệm |",
+        "|---|---|---|---|---|",
+        f"| {version} | {generated} | G10 assembler từ {source} | Lắp ráp đề cương thống "
+        f"nhất, bảng cổng, bảng/hình, compliance, kiểm hoàn thành và thiếu sót còn lại. | "
+        f"{approved_by} |",
+    ]
+
+    history = meta.get("change_history") or meta.get("version_history") or []
+    if isinstance(history, list):
+        for row in history:
+            if not isinstance(row, dict):
+                continue
+            row_version = row.get("version") or row.get("phien_ban") or TAG_BS
+            row_date = row.get("date") or row.get("ngay") or TAG_BS
+            row_source = row.get("source") or row.get("nguon") or "study_meta.json"
+            row_change = row.get("change") or row.get("noi_dung") or TAG_BS
+            row_approver = row.get("approver") or row.get("nguoi_duyet") or approved_by
+            lines.append(
+                f"| {row_version} | {row_date} | {row_source} | {row_change} | {row_approver} |"
+            )
+
+    lines.append(
+        "\n> Nếu không có nhật ký thay đổi, mọi đầu ra chỉ là bản nháp có kiểm soát; "
+        "không được coi là bản đã phê duyệt hoặc đã khóa.\n"
+    )
+    return "\n".join(lines)
 
 
 def title_page_dict(study: str, cps, meta) -> dict:
@@ -797,6 +866,9 @@ def title_page_dict(study: str, cps, meta) -> dict:
 def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     cps = load_checkpoints(out_dir)
     meta = load_meta(out_dir)
+    now = datetime.now()
+    generated_display = now.strftime("%Y-%m-%d %H:%M")
+    generated_iso = now.isoformat()
 
     present = [g for g in cps if cps[g]]
     if not present:
@@ -804,7 +876,9 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
                          "Chạy pipeline G0→G9 trước.")
 
     parts: List[str] = []
-    parts.append(build_front_note(study, cps, meta))
+    parts.append(build_front_note(study, cps, meta, generated=generated_display))
+    parts.append("")
+    parts.append(build_document_control(study, cps, meta, generated=generated_display))
     parts.append("")
     # Bảng trạng thái + kết luận sẵn sàng đặt ĐẦU để bác sĩ thấy bức tranh thật.
     parts.append(build_gate_table(cps, meta))
@@ -862,11 +936,27 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     checkpoint = {
         "gate": "G10",
         "study": study,
-        "generated_at": datetime.now().isoformat(),
+        "generated_at": generated_iso,
         "gate_status": "DỰ THẢO — đề cương thống nhất đã lắp ráp",
         "guardrail": guardrail,
         "checkpoints_present": present,
         "checkpoints_missing": [g for g in cps if not cps[g]],
+        "document_control": {
+            "document_version": (
+                meta.get("document_version")
+                or meta.get("protocol_version")
+                or meta.get("version")
+                or TAG_DRAFT
+            ),
+            "document_date": (
+                meta.get("document_date")
+                or meta.get("version_date")
+                or meta.get("updated_at")
+                or generated_display
+            ),
+            "requires_change_history": True,
+            "status": TAG_DRAFT,
+        },
         "real_world_signals": signals,
         "skill_gate_states": gate_states,
         "readiness": readiness,

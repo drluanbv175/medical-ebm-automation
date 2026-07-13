@@ -25,8 +25,10 @@ R10. Không tự tuyên bố “HOÀN THÀNH KỸ THUẬT” nếu chưa có đ�
      IRB thật, SAP khóa, dữ liệu khóa, kết quả thật, gói liêm chính ký.
 R11. Có danh sách thông tin còn thiếu và quyết định cần xác nhận: mỗi tín hiệu
      đời thực còn thiếu phải có ảnh hưởng, phương án an toàn và người quyết định.
+R12. Có kiểm soát phiên bản và lịch sử thay đổi: phiên bản, ngày cập nhật, nguồn
+     thay đổi và người phê duyệt/chủ nhiệm phải hiện rõ trong đầu ra chính.
 
-Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R11 = ĐỎ
+Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R12 = ĐỎ
 (passed=False). R6 = cảnh báo (không chặn, vì một số tham số giả định hợp lệ).
 
 Dùng: python3 tools/check_de_cuong.py --study <MÃ>   (hoặc import validate()).
@@ -99,6 +101,13 @@ _COMPLETION_REQUIRED_SIGNALS = (
 )
 _MISSING_INFO_REQUIRED_TERMS = (
     "Thông tin còn thiếu", "Ảnh hưởng", "Phương án an toàn", "Người quyết định",
+)
+_DOCUMENT_CONTROL_REQUIRED_TERMS = (
+    "Phiên bản tài liệu",
+    "Ngày tạo/cập nhật",
+    "Nguồn thay đổi",
+    "Người phê duyệt/chủ nhiệm",
+    "Nhật ký thay đổi",
 )
 
 
@@ -415,6 +424,26 @@ def validate(md_path, out_dir) -> Dict:
     else:
         checks["R11_missing_information"] = (
             "PASS (thiếu sót/cổng chờ được liệt kê với ảnh hưởng và phương án an toàn)")
+
+    # R12 — tài liệu chính phải có audit trail phiên bản/ngày/thay đổi.
+    has_document_control_section = re.search(
+        r"^#\s*Kiểm soát phiên bản và lịch sử thay đổi\b",
+        text, re.MULTILINE)
+    missing_document_terms = [
+        term for term in _DOCUMENT_CONTROL_REQUIRED_TERMS if term.lower() not in lowered
+    ]
+    if not has_document_control_section:
+        errors.append(
+            "R12 THIẾU mục 'Kiểm soát phiên bản và lịch sử thay đổi'.")
+        checks["R12_document_control"] = "FAIL (thiếu audit trail phiên bản)"
+    elif missing_document_terms:
+        errors.append("R12 KIỂM SOÁT PHIÊN BẢN thiếu thuật ngữ bắt buộc: "
+                      + ", ".join(missing_document_terms))
+        checks["R12_document_control"] = (
+            f"FAIL (thiếu {len(missing_document_terms)} thuật ngữ)")
+    else:
+        checks["R12_document_control"] = (
+            "PASS (phiên bản/ngày/nguồn thay đổi/người duyệt/nhật ký hiện rõ)")
 
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,
