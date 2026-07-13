@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import stat
 import sys
 from pathlib import Path
 
@@ -11,6 +10,7 @@ sys.path.insert(0, str(TOOLS_DIR))
 import import_real_dataset as RDI  # noqa: E402
 import pseudonymize_research_dataset as PSN  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
+from secure_permissions import is_owner_exclusive  # noqa: E402
 
 from tests.test_g10_assemble import _write_cross_sectional_fixture  # noqa: E402
 
@@ -21,7 +21,8 @@ def _csv(path: Path, text: str) -> Path:
 
 
 def _mode_is_private(path: Path) -> bool:
-    return stat.S_IMODE(path.stat().st_mode) & 0o077 == 0
+    """Alias mỏng cho is_owner_exclusive — POSIX+Windows đều dùng chung 1 hàm thật."""
+    return is_owner_exclusive(path)
 
 
 def test_pseudonymize_creates_clean_dataset_and_protected_mapping(tmp_path):

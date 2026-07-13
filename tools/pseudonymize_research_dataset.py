@@ -20,8 +20,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
-import stat
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -33,6 +31,7 @@ sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402
 import import_real_dataset as RDI  # noqa: E402
+from secure_permissions import lock_owner_exclusive  # noqa: E402
 
 PSEUDONYMIZED_STATUS = "PSEUDONYMIZED_READY_FOR_INTAKE"
 BLOCKED_STATUS = "BLOCKED_PSEUDONYMIZATION"
@@ -85,11 +84,11 @@ def _mapping_root_blocker(mapping_root: Path, exports_root: Path) -> Optional[st
 
 def _secure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
-    os.chmod(path, stat.S_IRWXU)
+    lock_owner_exclusive(path, writable=True)
 
 
 def _secure_file(path: Path) -> None:
-    os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
+    lock_owner_exclusive(path, writable=True)
 
 
 def _redact_value(value: Any) -> Tuple[str, List[Dict[str, str]]]:

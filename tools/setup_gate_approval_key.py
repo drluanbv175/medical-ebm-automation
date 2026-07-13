@@ -26,9 +26,14 @@ Script:
 """
 from __future__ import annotations
 import secrets
-import stat
 import sys
 from pathlib import Path
+
+BASE = Path(__file__).resolve().parents[1]
+TOOLS = BASE / "tools"
+sys.path.insert(0, str(TOOLS))
+
+from secure_permissions import lock_owner_exclusive  # noqa: E402
 
 _KEY_PATH = Path.home() / ".ebm-secrets" / "gate_approval_key"
 
@@ -48,9 +53,10 @@ def main() -> int:
     key = secrets.token_hex(32)
     _KEY_PATH.write_text(key, encoding="utf-8")
     try:
-        _KEY_PATH.chmod(stat.S_IRUSR | stat.S_IWUSR)  # 600 — chỉ chủ sở hữu
-    except OSError:
-        pass  # một số filesystem (vd exFAT) không hỗ trợ chmod — vẫn tiếp tục, không crash
+        # 600 (POSIX) / ACL owner-exclusive (Windows, qua icacls) — chỉ chủ sở hữu
+        lock_owner_exclusive(_KEY_PATH, writable=True)
+    except (OSError, RuntimeError):
+        pass  # một số filesystem (vd exFAT) hoặc thiếu icacls — vẫn tiếp tục, không crash
 
     print(f"\n✅ Đã tạo khóa mới tại: {_KEY_PATH}")
     print("   Từ giờ, mọi lần chạy tools/approve_gate.py trên MÁY NÀY sẽ tự động ký bằng")
