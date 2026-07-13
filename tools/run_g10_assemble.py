@@ -305,9 +305,26 @@ def sec_congcu(cps, meta) -> str:
 
 def sec_quantri_dulieu(cps, meta) -> str:
     lock = _g(cps["G5"], "database_lock_status", default=TAG_BS)
+    intake = (meta or {}).get("real_data_intake") or {}
+    if intake:
+        intake_txt = (
+            f"**Dữ liệu thật đã nhập:** trạng thái `{intake.get('status', TAG_BS)}`; "
+            f"file raw read-only `{intake.get('raw_readonly_path') or TAG_BS}`; "
+            f"N={intake.get('rows', TAG_BS)}, số biến={intake.get('columns', TAG_BS)}; "
+            f"SHA-256 `{intake.get('sha256') or TAG_BS}`; manifest "
+            f"`{intake.get('manifest', 'DATA_INTAKE_manifest.json')}`. "
+            "Đây mới là bước intake, chưa đồng nghĩa khóa DB.\n\n"
+        )
+    else:
+        intake_txt = (
+            f"**Dữ liệu thật đã nhập:** {TAG_BS} — dùng "
+            "`python3 tools/import_real_dataset.py --study <MÃ> --data <file.csv>` "
+            "để quét PII, copy raw read-only và tạo manifest trước G6.\n\n"
+        )
     return (
         "# 10. Quản trị dữ liệu và bảo mật\n\n"
         f"**Trạng thái khoá cơ sở dữ liệu (tự động từ G5):** {lock}.\n\n"
+        f"{intake_txt}"
         "**Nguyên tắc:** khử định danh, không lưu PII, tuân thủ Luật Bảo vệ dữ "
         f"liệu cá nhân 91/2025/QH15 {S.TAG_CAN_KIEM_CHUNG_NGUON}; nhật ký truy vấn "
         "dữ liệu; làm sạch trên BẢN SAO, không sửa dữ liệu gốc; kế hoạch dữ liệu "
