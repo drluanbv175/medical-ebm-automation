@@ -23,6 +23,7 @@ import re
 import shutil
 import stat
 import sys
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -39,19 +40,22 @@ READY_STATUS = "READY_FOR_CLEANING_NOT_LOCKED"
 
 PII_HEADER_EXACT = {
     "name", "full_name", "patient_name", "ho_ten", "ten_benh_nhan",
+    "initials", "patient_initials", "ten_viet_tat",
     "phone", "mobile", "telephone", "email", "address", "dia_chi",
-    "dob", "date_of_birth", "birth_date", "ngay_sinh",
+    "dob", "date_of_birth", "dateofbirth", "birth_date", "birthdate", "ngay_sinh",
     "cccd", "cmnd", "citizen_id", "national_id", "passport",
     "mrn", "medical_record_number", "hospital_number", "patient_id",
-    "bhyt", "insurance_number", "health_insurance_number",
+    "bhyt", "insurance_number", "health_insurance_number", "ssn",
 }
 PII_HEADER_CONTAINS = (
     "so_dien_thoai", "dien_thoai", "phone_number", "email_address",
     "home_address", "diachi", "ma_benh_an", "so_benh_an", "ma_y_te",
+    "ngaysinh", "so_cmnd", "so_cccd", "ho_va_ten", "hoten", "ten_bn",
+    "ma_benh_nhan", "ma_bn", "ma_hsba", "sdt",
 )
 VALUE_PATTERNS = {
     "email": re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I),
-    "phone_vn": re.compile(r"(?<!\d)0(?:3|5|7|8|9)\d{8}(?!\d)"),
+    "phone_vn": re.compile(r"(?<!\d)(?:\+?84|0)(?:[\s.\-]?\d){8,10}(?!\d)"),
     "cccd_cmnd": re.compile(r"(?<!\d)(?:\d{9}|\d{12})(?!\d)"),
 }
 
@@ -62,6 +66,9 @@ def _sanitize_study(study: str) -> str:
 
 def _normalize_header(name: str) -> str:
     s = name.strip().lower()
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    s = s.replace("đ", "d").replace("Đ", "D")
     s = re.sub(r"[\s\-./]+", "_", s)
     s = re.sub(r"_+", "_", s)
     return s.strip("_")
@@ -78,6 +85,20 @@ def _sha256_file(path: Path) -> str:
 def _safe_stem(path: Path) -> str:
     stem = re.sub(r"[^A-Za-z0-9_.-]+", "_", path.stem).strip("._")
     return stem or "dataset"
+
+
+def _filename_has_pii_signal(name: str) -> bool:
+    norm = _normalize_header(Path(name).stem)
+    if _header_issue(norm):
+        return True
+    return any(pattern.search(name) for pattern in VALUE_PATTERNS.values())
+
+
+def _safe_source_filename(path: Path) -> str:
+    suffix = path.suffix.lower()
+    if _filename_has_pii_signal(path.name):
+        return f"[REDACTED_SOURCE_FILENAME]{suffix}"
+    return path.name
 
 
 def _header_issue(column: str) -> Optional[str]:
@@ -272,7 +293,8 @@ def import_dataset(study: str, data_path: Path, *,
         "study": study_id,
         "status": BLOCKED_STATUS if issues else READY_STATUS,
         "imported_at": imported_at,
-        "source_filename": data_path.name,
+        "source_filename": _safe_source_filename(data_path),
+        "source_filename_redacted": _safe_source_filename(data_path) != data_path.name,
         "supported_format": suffix in SUPPORTED_SUFFIXES,
         "row_count": int(profile["rows"]),
         "column_count": len(profile["columns"]),
@@ -292,10 +314,18 @@ def import_dataset(study: str, data_path: Path, *,
         "rules": [
             "Không sửa file nguồn.",
             "Không copy dữ liệu nếu phát hiện PII.",
+            "Nếu bị chặn PII, chạy tools/deidentify_research_dataset.py để tạo bản khử định danh rồi nạp lại.",
             "Bản raw trong 02_raw_readonly là chỉ đọc.",
             "Chỉ làm sạch trên bản sao bằng script/query log.",
             "Không phân tích chính cho tới khi có lock memo và data_lock_date thật.",
         ],
+        "remediation": {
+            "deidentify_command": (
+                f"python3 tools/deidentify_research_dataset.py --study {study_id} "
+                "--data <file.csv> --then-import"
+            ),
+            "note": "Không đưa file còn PII vào exports/raw; chỉ nhập bản đã khử định danh.",
+        },
     }
 
     if not issues and data_path.exists():
@@ -335,6 +365,10 @@ def main() -> int:
         print("Tiếp theo: chạy script làm sạch trên bản sao; chưa phân tích chính khi chưa khóa DB.")
         return 0
     print("BLOCKED: phát hiện nguy cơ PII/định dạng không an toàn; xem DATA_INTAKE_manifest.json.")
+    print(
+        "Gợi ý: chạy `python3 tools/deidentify_research_dataset.py --study "
+        f"{args.study} --data {args.data} --then-import` để tạo bản khử định danh."
+    )
     return 2
 
 
