@@ -507,6 +507,39 @@ def build_phuluc() -> str:
     return "\n".join(lines)
 
 
+def build_display_items(cps, meta=None) -> str:
+    """Danh mục bảng/hình tối thiểu, nối SAP -> manuscript -> submission."""
+    code = S.canonical_design_code(_design_code(cps))
+    std = S.reporting_standards_for(code)
+    fig2_title, fig2_requirements = S.DISPLAY_ITEM_BY_DESIGN.get(
+        code or "",
+        ("Biểu đồ/đồ thị phân tích chính theo thiết kế thật",
+         "Chọn loại hình theo SAP; trục/đơn vị/n/95% CI phải đầy đủ."),
+    )
+    rows = list(S.DISPLAY_ITEM_CORE) + [
+        ("Hình 2", fig2_title, fig2_requirements),
+    ]
+    lines = [
+        "# Danh mục bảng và hình chuẩn xuất bản\n",
+        f"**Thiết kế chuẩn hoá:** `{code or TAG_BS}`.  ",
+        f"**Chuẩn báo cáo áp dụng:** {std['primary']}.\n",
+        "| Mã | Tên bảng/hình bắt buộc | Yêu cầu tối thiểu trước khi nộp |",
+        "|---|---|---|",
+    ]
+    for item_id, title, requirement in rows:
+        lines.append(f"| {item_id} | {title} | {requirement} |")
+    lines.append("")
+    lines.append("**Checklist chất lượng caption/bảng/đồ thị:**")
+    for item in S.DISPLAY_ITEM_CHECKLIST:
+        lines.append(f"- {item}")
+    lines.append(
+        f"\n> {TAG_BS}: Khi có dữ liệu thật, agent phân tích phải xuất file nguồn "
+        "cho từng bảng/hình (CSV/XLSX/PNG/SVG hoặc script) để truy vết; không dán "
+        "ảnh/bảng không có nguồn sinh.\n"
+    )
+    return "\n".join(lines)
+
+
 def build_legal_refs() -> str:
     lines = ["# Khung pháp lý & tiêu chuẩn tham chiếu\n",
              "| Văn bản/Tiêu chuẩn | Phiên bản | Lĩnh vực | Cờ |",
@@ -580,8 +613,9 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     for builder in SECTION_BUILDERS:
         parts.append(builder(cps, meta))
         parts.append("")
-    # Phụ lục + pháp lý.
+    # Phụ lục + danh mục hình/bảng + pháp lý.
     parts.append(build_phuluc())
+    parts.append(build_display_items(cps, meta))
     parts.append(build_legal_refs())
     parts.append(
         "\n---\n\n> **Disclaimer:** Tài liệu do hệ thống hỗ trợ lắp ráp; dữ liệu "

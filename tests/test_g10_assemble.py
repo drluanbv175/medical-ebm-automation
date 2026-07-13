@@ -17,8 +17,8 @@ import pytest
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
 
-import run_g10_assemble as G10  # noqa: E402
 import check_de_cuong  # noqa: E402
+import run_g10_assemble as G10  # noqa: E402
 import skill_standards as S  # noqa: E402
 
 
@@ -113,6 +113,15 @@ class TestAssemble:
         for sg in S.SKILL_GATES:
             assert f"| {sg} |" in text
 
+    def test_display_item_inventory_has_required_tables_and_figures(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        assert "# Danh mục bảng và hình chuẩn xuất bản" in text
+        for item in ("Bảng 1", "Bảng 2", "Hình 1", "Hình 2"):
+            assert f"| {item} |" in text
+        for term in ("caption", "trục", "đơn vị", "N", "95% CI"):
+            assert term in text
+
     def test_passes_own_validator(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
@@ -201,6 +210,25 @@ class TestValidatorCatchesFabrication:
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R1" in e for e in report["errors"])
+
+    def test_catches_missing_display_item_inventory(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text = text.replace("# Danh mục bảng và hình chuẩn xuất bản",
+                            "# Danh mục bị đổi tên")
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("R7" in e for e in report["errors"])
+
+    def test_catches_missing_required_figure(self, cross_sectional_study):
+        res = G10.assemble("FIXT", cross_sectional_study)
+        text = res["md"].read_text(encoding="utf-8")
+        text = text.replace("| Hình 2 |", "| Hình X |")
+        res["md"].write_text(text, encoding="utf-8")
+        report = check_de_cuong.validate(res["md"], cross_sectional_study)
+        assert not report["passed"]
+        assert any("Hình 2" in e for e in report["errors"])
 
     def test_clean_de_cuong_passes(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)

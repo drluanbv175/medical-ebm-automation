@@ -93,6 +93,74 @@ DE_CUONG_PHU_LUC: List[str] = [
     "Checklist reporting guideline",
 ]
 
+# Chuẩn tối thiểu cho bảng/hình trong đề cương và bản thảo khoa học.
+# Mỗi đề cương G10 phải có danh mục này để tránh bản thảo thiếu Table 1/flowchart/
+# biểu đồ chính hoặc thiếu caption/trục/đơn vị khi đi từ SAP sang manuscript.
+DISPLAY_ITEM_CHECKLIST: Tuple[str, ...] = (
+    "Caption tự giải thích được, nêu rõ dân số/phân nhóm/thời điểm.",
+    "Mọi bảng/hình có N/mẫu số hoặc n phân tích; nêu thiếu dữ liệu nếu có.",
+    "Bảng có đơn vị, thang đo, số chữ số thập phân và chú thích viết tắt.",
+    "Hình có nhãn trục, đơn vị, chú giải, thang đo; không dùng màu làm kênh duy nhất.",
+    "Ước lượng chính đi kèm 95% CI/KTC 95% và p-value khi phù hợp với SAP.",
+    "Không lặp cùng một thông tin chi tiết ở cả văn bản, bảng và hình.",
+)
+
+DISPLAY_ITEM_CORE: Tuple[Tuple[str, str, str], ...] = (
+    ("Bảng 1", "Đặc điểm nền/đặc điểm mẫu",
+     "N, n (%), trung bình ± ĐLC hoặc trung vị [IQR], đơn vị, thiếu dữ liệu."),
+    ("Bảng 2", "Kết cục chính/phân tích chính",
+     "Ước lượng hiệu ứng hoặc tỷ lệ chính, 95% CI/KTC 95%, p-value theo SAP."),
+    ("Hình 1", "Sơ đồ dòng người tham gia/nghiên cứu",
+     "CONSORT/STROBE/PRISMA/STARD flow; n tuyển, loại, phân tích, lý do loại."),
+)
+
+DISPLAY_ITEM_BY_DESIGN: Dict[str, Tuple[str, str]] = {
+    "cross_sectional": (
+        "Biểu đồ phân bố/kết cục chính hoặc forest plot yếu tố liên quan",
+        "Trục có đơn vị; hiển thị n/mẫu số; 95% CI cho tỷ lệ/OR/PR nếu có.",
+    ),
+    "case_control": (
+        "Forest plot OR hiệu chỉnh cho phơi nhiễm chính",
+        "OR/aOR, 95% CI, nhóm tham chiếu, biến điều chỉnh theo SAP.",
+    ),
+    "cohort": (
+        "Kaplan-Meier/forest plot HR hoặc biểu đồ nguy cơ tích lũy",
+        "Số at-risk theo mốc thời gian, HR/aHR, 95% CI, log-rank nếu phù hợp.",
+    ),
+    "rct": (
+        "Forest plot hiệu quả điều trị hoặc biểu đồ kết cục chính",
+        "ITT/PP, effect size, 95% CI, harms nếu là kết cục an toàn.",
+    ),
+    "diagnostic": (
+        "ROC curve + bảng 2x2 ở ngưỡng định trước",
+        "AUC, 95% CI, sensitivity/specificity, threshold, reference standard.",
+    ),
+    "prediction": (
+        "Calibration plot/ROC/decision curve",
+        "AUC/C-statistic, calibration slope/intercept, net benefit, 95% CI.",
+    ),
+    "systematic_review": (
+        "Forest plot kết quả gộp",
+        "Effect measure, 95% CI, I², τ², mô hình fixed/random theo protocol.",
+    ),
+    "quality_improvement": (
+        "Run chart/SPC chart theo thời gian",
+        "Trục thời gian, baseline, center line/control limits, chú thích can thiệp.",
+    ),
+    "economic": (
+        "Cost-effectiveness plane hoặc acceptability curve",
+        "Perspective, currency/year, ICER/NMB, uncertainty intervals.",
+    ),
+    "mixed_methods": (
+        "Joint display tích hợp định lượng-định tính",
+        "Nguồn dữ liệu, theme, chỉ số định lượng, inference tích hợp.",
+    ),
+    "qualitative": (
+        "Sơ đồ chủ đề/conceptual framework",
+        "Nguồn trích dẫn ẩn danh, theme/subtheme, audit trail/reflexivity.",
+    ),
+}
+
 
 def de_cuong_section_titles() -> List[str]:
     """Trả về danh sách 16 tiêu đề mục chính (dùng cho validator đối chiếu)."""

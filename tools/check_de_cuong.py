@@ -14,8 +14,10 @@ R5. Có disclaimer 'Cần bác sĩ kiểm chứng'.
 R6. KHÔNG nhồi số liệu KẾT QUẢ vào đề cương (đề cương = trước khi có dữ liệu):
     cảnh báo nếu thấy mẫu 'OR/RR/HR = <số> ... KTC 95%: <số>–<số>' với số cụ thể
     (khác tham số thiết kế α/power/N).
+R7. Có danh mục bảng/hình chuẩn xuất bản: tối thiểu Bảng 1, Bảng 2, Hình 1, Hình 2
+    và checklist caption/trục/đơn vị/n/95%CI để nối SAP → bản thảo.
 
-Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5 = ĐỎ
+Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5 và R7 = ĐỎ
 (passed=False). R6 = cảnh báo (không chặn, vì một số tham số giả định hợp lệ).
 
 Dùng: python3 tools/check_de_cuong.py --study <MÃ>   (hoặc import validate()).
@@ -62,6 +64,8 @@ _RESULT_PATTERNS = [
     # Tỷ lệ % kèm KTC/CI (kết quả tỷ lệ hiện mắc thật): '61,95% (KTC 95%: 53-70)'
     re.compile(r"\d+[.,]\d+\s*%\s*\(?\s*(?:KTC|CI|95\s*%)", re.IGNORECASE),
 ]
+_DISPLAY_REQUIRED_ITEMS = ("Bảng 1", "Bảng 2", "Hình 1", "Hình 2")
+_DISPLAY_REQUIRED_TERMS = ("caption", "trục", "đơn vị", "n", "95% CI")
 
 
 def _raw_pmids(out_dir: Path) -> Set[str]:
@@ -218,6 +222,34 @@ def validate(md_path, out_dir) -> Dict:
         checks["R6_no_results"] = f"WARN ({len(result_hits)} mẫu)"
     else:
         checks["R6_no_results"] = "PASS"
+
+    # R7 — danh mục bảng/hình và checklist trình bày đồ thị.
+    has_display_section = re.search(
+        r"^#\s*Danh mục bảng và hình chuẩn xuất bản\b", text, re.MULTILINE)
+    missing_display_items = [
+        item for item in _DISPLAY_REQUIRED_ITEMS
+        if not re.search(rf"\|\s*{re.escape(item)}\s*\|", text)
+    ]
+    lowered = text.lower()
+    missing_terms = [
+        term for term in _DISPLAY_REQUIRED_TERMS
+        if term.lower() not in lowered
+    ]
+    if not has_display_section:
+        errors.append("R7 THIẾU mục 'Danh mục bảng và hình chuẩn xuất bản'.")
+        checks["R7_display_items"] = "FAIL (thiếu mục bảng/hình)"
+    elif missing_display_items:
+        errors.append("R7 DANH MỤC BẢNG/HÌNH thiếu: "
+                      + ", ".join(missing_display_items))
+        checks["R7_display_items"] = (
+            f"FAIL (thiếu {len(missing_display_items)} mục bắt buộc)")
+    elif missing_terms:
+        errors.append("R7 CHECKLIST HÌNH/BẢNG thiếu thuật ngữ bắt buộc: "
+                      + ", ".join(missing_terms))
+        checks["R7_display_items"] = (
+            f"FAIL (thiếu {len(missing_terms)} tiêu chí)")
+    else:
+        checks["R7_display_items"] = "PASS (Bảng 1/2 + Hình 1/2 + checklist)"
 
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,
