@@ -305,8 +305,25 @@ def sec_congcu(cps, meta) -> str:
 
 def sec_quantri_dulieu(cps, meta) -> str:
     lock = _g(cps["G5"], "database_lock_status", default=TAG_BS)
+    deid = (meta or {}).get("real_data_deidentification") or {}
     intake = (meta or {}).get("real_data_intake") or {}
     data_lock = (meta or {}).get("real_data_lock") or {}
+    if deid:
+        deid_txt = (
+            f"**Khử định danh tự động:** trạng thái `{deid.get('status', TAG_BS)}`; "
+            f"file khử định danh `{deid.get('deidentified_path') or TAG_BS}`; "
+            f"report `{deid.get('report', 'DEIDENTIFICATION_report.json')}`; "
+            f"đã loại {deid.get('dropped_column_count', TAG_BS)} cột định danh và "
+            f"redact {deid.get('redacted_cell_count', TAG_BS)} ô có mẫu PII. "
+            "Report không lưu giá trị PII/bảng ánh xạ.\n\n"
+        )
+    else:
+        deid_txt = (
+            "**Khử định danh tự động:** nếu file thật còn PII hoặc intake bị chặn, "
+            "chạy `python3 tools/deidentify_research_dataset.py --study <MÃ> "
+            "--data <file.csv> --then-import` để tạo bản khử định danh, quét lại "
+            "PII và nạp vào intake an toàn.\n\n"
+        )
     if intake:
         intake_txt = (
             f"**Dữ liệu thật đã nhập:** trạng thái `{intake.get('status', TAG_BS)}`; "
@@ -351,6 +368,7 @@ def sec_quantri_dulieu(cps, meta) -> str:
     return (
         "# 10. Quản trị dữ liệu và bảo mật\n\n"
         f"**Trạng thái khoá cơ sở dữ liệu (tự động từ G5):** {lock}.\n\n"
+        f"{deid_txt}"
         f"{intake_txt}"
         f"{data_lock_txt}"
         "**Nguyên tắc:** khử định danh, không lưu PII, tuân thủ Luật Bảo vệ dữ "

@@ -66,6 +66,23 @@ S001,Nguyen Van A,45,0
     assert (out_dir / "DATA_INTAKE_manifest.json").exists()
 
 
+def test_import_blocks_accented_vietnamese_pii_header(tmp_path):
+    data = _csv(
+        tmp_path / "unsafe_accented.csv",
+        """
+record_id,Họ tên,Số điện thoại,age,primary_outcome
+S001,Nguyen Van A,0912345678,45,0
+""",
+    )
+    manifest = RDI.import_dataset("PII-ACCENT", data, exports_root=tmp_path / "exports")
+
+    assert manifest["status"] == RDI.BLOCKED_STATUS
+    issue_types = {issue["type"] for issue in manifest["pii_scan"]["issues"]}
+    assert "header_pii:ho_ten" in issue_types
+    assert "header_pii:so_dien_thoai" in issue_types
+    assert manifest["raw_readonly_path"] is None
+
+
 def test_import_blocks_direct_pii_value_without_storing_value(tmp_path):
     data = _csv(
         tmp_path / "unsafe_value.csv",
@@ -80,6 +97,24 @@ S001,45,call 0912345678 before visit
     issues = manifest["pii_scan"]["issues"]
     assert any(issue["type"] == "value_pii:phone_vn" for issue in issues)
     dumped = json.dumps(manifest, ensure_ascii=False)
+    assert "0912345678" not in dumped
+
+
+def test_blocked_intake_redacts_source_filename_with_pii_signal(tmp_path):
+    data = _csv(
+        tmp_path / "patient_0912345678.csv",
+        """
+record_id,age,notes
+S001,45,call 0912345678 before visit
+""",
+    )
+    manifest = RDI.import_dataset("PII-FILENAME", data, exports_root=tmp_path / "exports")
+
+    dumped = json.dumps(manifest, ensure_ascii=False)
+    assert manifest["status"] == RDI.BLOCKED_STATUS
+    assert manifest["source_filename"] == "[REDACTED_SOURCE_FILENAME].csv"
+    assert manifest["source_filename_redacted"] is True
+    assert "patient_0912345678.csv" not in dumped
     assert "0912345678" not in dumped
 
 
