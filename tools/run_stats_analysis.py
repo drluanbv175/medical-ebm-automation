@@ -30,8 +30,8 @@ import argparse
 import json
 import sys
 import warnings
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -48,7 +48,6 @@ except ImportError:
 
 try:
     import statsmodels.api as sm
-    import statsmodels.formula.api as smf
     HAS_STATSMODELS = True
 except ImportError:
     HAS_STATSMODELS = False
@@ -136,6 +135,23 @@ def _missing_recommendation(missing: dict, n: int) -> str:
     if max_pct < 20:
         return "Thiếu 5–20% — Xem xét Multiple Imputation (m≥20). [CẦN BIOSTATISTICIAN XÁC NHẬN]"
     return "Thiếu >20% — Sensitivity analysis best/worst case bắt buộc. [CẦN BIOSTATISTICIAN XÁC NHẬN]"
+
+
+def _json_safe(obj):
+    """Chuyển kiểu numpy/pandas sang JSON thuần để summary không crash."""
+    if isinstance(obj, dict):
+        return {str(k): _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_json_safe(v) for v in obj]
+    if isinstance(obj, tuple):
+        return [_json_safe(v) for v in obj]
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, (np.floating,)):
+        return float(obj)
+    if isinstance(obj, (np.bool_,)):
+        return bool(obj)
+    return obj
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -355,8 +371,12 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
 def format_table1_text(t1: dict) -> str:
     groups = t1["groups"]
     n = t1["n_per_group"]
-    header = f"BẢNG 1 — ĐẶC ĐIỂM MẪU\n" + "=" * 70
-    header += f"\n{'Biến số':<30}" + "".join(f"{'Nhóm ' + str(g) + ' (n=' + str(n.get(g,'-')) + ')':<22}" for g in groups)
+    header = "BẢNG 1 — ĐẶC ĐIỂM MẪU\n" + "=" * 70
+    group_headers = "".join(
+        f"{'Nhóm ' + str(g) + ' (n=' + str(n.get(g, '-')) + ')':<22}"
+        for g in groups
+    )
+    header += f"\n{'Biến số':<30}" + group_headers
     header += f"{'p':>10}  {'Kiểm định'}"
     lines = [header, "-" * 70]
     for row in t1["rows"]:
@@ -394,8 +414,12 @@ def format_outcome_text(res: dict, outcome_col: str) -> str:
 def format_multivariate_text(mv: dict) -> str:
     if "error" in mv:
         return f"HỒI QUY ĐA BIẾN: {mv['error']}\n{mv.get('note','')}"
+    if "warning" in mv:
+        return f"HỒI QUY ĐA BIẾN: {mv['warning']}\n[CẦN BIOSTATISTICIAN XÁC NHẬN]"
     lines = [f"BẢNG 4 — MÔ HÌNH ĐA BIẾN ({mv['model'].upper()})", "=" * 70]
-    lines.append(f"  n = {mv['n']} | {'AIC' if mv['model']=='logistic' else 'R²'} = {mv.get('aic', mv.get('r_squared','?'))}")
+    metric_label = "AIC" if mv["model"] == "logistic" else "R²"
+    metric_value = mv.get("aic", mv.get("r_squared", "?"))
+    lines.append(f"  n = {mv['n']} | {metric_label} = {metric_value}")
     lines.append(f"\n  {'Biến số':<28} {'OR/β hiệu chỉnh':>18}  {'95%CI':>20}  {'p':>8}")
     lines.append("  " + "-" * 60)
     for r in mv.get("results", []):
@@ -510,6 +534,87 @@ def _ledger_approved(study: str, gate_id: str, artifact_path: Path) -> bool:
     return actual_hash == latest.get("evidence_hash")
 
 
+def _sha256_file(path: Path) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _load_json(path: Path) -> dict:
+    try:
+        if path.exists():
+            data = json.loads(path.read_text(encoding="utf-8"))
+            return data if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return {}
+
+
+def _data_lock_manifest_path(study: str) -> Path:
+    study_dir = Path("exports") / study
+    meta = _load_json(study_dir / "study_meta.json")
+    rel = ((meta.get("real_data_lock") or {}).get("manifest"))
+    if rel:
+        return study_dir / rel
+    return study_dir / "DATA_LOCK_manifest.json"
+
+
+def _require_locked_analysis_dataset(study: str, data_arg: str) -> dict:
+    """Chặn phân tích chính nếu --data không phải dataset đã khóa trong manifest."""
+    study_dir = Path("exports") / study
+    manifest_path = _data_lock_manifest_path(study)
+    manifest = _load_json(manifest_path)
+    blockers = []
+    if not manifest:
+        blockers.append("missing_DATA_LOCK_manifest")
+    elif manifest.get("status") != "LOCKED_FOR_ANALYSIS":
+        blockers.append(f"manifest_status_not_locked:{manifest.get('status')}")
+    elif manifest.get("analysis_allowed") is not True:
+        blockers.append("analysis_allowed_false")
+
+    locked_rel = manifest.get("locked_dataset_path") if manifest else None
+    locked_path = study_dir / locked_rel if locked_rel else None
+    provided_path = Path(data_arg)
+    if not provided_path.exists():
+        blockers.append("provided_data_missing")
+    if not locked_path:
+        blockers.append("locked_dataset_path_missing")
+    elif not locked_path.exists():
+        blockers.append("locked_dataset_missing")
+    elif provided_path.exists() and provided_path.resolve() != locked_path.resolve():
+        blockers.append("provided_data_is_not_locked_dataset")
+
+    expected_sha = manifest.get("sha256") if manifest else None
+    if locked_path and locked_path.exists():
+        actual_sha = _sha256_file(locked_path)
+        if not expected_sha:
+            blockers.append("locked_dataset_checksum_missing")
+        elif actual_sha != expected_sha:
+            blockers.append("locked_dataset_checksum_mismatch")
+
+    if blockers:
+        print("✗ DỪNG: DATA LOCK — --data phải là dataset phân tích đã khóa.")
+        print(f"   Manifest: {manifest_path}")
+        print(f"   File --data: {data_arg}")
+        if locked_rel:
+            print(f"   Dataset khóa kỳ vọng: {locked_path}")
+        print("   Lý do:")
+        for blocker in blockers:
+            print(f"   - {blocker}")
+        print("   Khóa dữ liệu bằng:")
+        print("     python tools/lock_analysis_dataset.py --study <MÃ> --clean-data <df_clean.csv> "
+              "--query-log <query_log.csv> --lock-date <YYYY-MM-DD> --approved-by <PI> "
+              "--sap-version <x.y> --confirm-deidentified --confirm-clean-copy "
+              "--confirm-no-open-query --confirm-sap-locked")
+        sys.exit(1)
+
+    print(f"✓ DATA LOCK: dùng dataset đã khóa ({locked_rel}); checksum khớp.")
+    return manifest
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Phân tích thống kê tự động từ file dữ liệu thật"
@@ -588,6 +693,8 @@ def main():
         print("   thêm cờ --i-confirm-sap-locked sau khi tự xác nhận chắc chắn.")
         sys.exit(1)
 
+    data_lock_manifest = _require_locked_analysis_dataset(args.study, args.data)
+
     # 1. Tải dữ liệu
     df = load_data(args.data)
 
@@ -604,6 +711,14 @@ def main():
         "study": args.study, "gate": args.gate,
         "generated": datetime.now().isoformat(),
         "data_source": str(args.data),
+        "data_lock": {
+            "manifest": str(_data_lock_manifest_path(args.study)),
+            "locked_dataset_path": data_lock_manifest.get("locked_dataset_path"),
+            "sha256": data_lock_manifest.get("sha256"),
+            "lock_date": data_lock_manifest.get("lock_date"),
+            "approved_by": data_lock_manifest.get("approved_by"),
+            "sap_version": data_lock_manifest.get("sap_version"),
+        },
         "n_total": len(df),
         "disclaimer": "Cần bác sĩ kiểm chứng."
     }
@@ -654,12 +769,12 @@ def main():
 
     # 8. JSON summary (cho agent)
     json_path = prefix.parent / f"{args.gate}_analysis_summary.json"
-    json_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    json_path.write_text(json.dumps(_json_safe(summary), ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"\n{'='*60}")
     print(f"✅ HOÀN THÀNH — Đầu ra tại: {out_dir}/")
     print(f"   Dùng cho viet-ban-thao: {args.gate}_analysis_summary.json")
-    print(f"\nCần bác sĩ kiểm chứng.")
+    print("\nCần bác sĩ kiểm chứng.")
     return summary
 
 
