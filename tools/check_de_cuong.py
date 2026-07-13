@@ -23,8 +23,10 @@ R9. Có bảng kiểm hoàn thành kỹ thuật: khóa phạm vi, phân biệt n
     KỸ THUẬT khi mọi lỗi nghiêm trọng đã xử lý.
 R10. Không tự tuyên bố “HOÀN THÀNH KỸ THUẬT” nếu chưa có đủ tín hiệu đời thực:
      IRB thật, SAP khóa, dữ liệu khóa, kết quả thật, gói liêm chính ký.
+R11. Có danh sách thông tin còn thiếu và quyết định cần xác nhận: mỗi tín hiệu
+     đời thực còn thiếu phải có ảnh hưởng, phương án an toàn và người quyết định.
 
-Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R10 = ĐỎ
+Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R11 = ĐỎ
 (passed=False). R6 = cảnh báo (không chặn, vì một số tham số giả định hợp lệ).
 
 Dùng: python3 tools/check_de_cuong.py --study <MÃ>   (hoặc import validate()).
@@ -94,6 +96,9 @@ _COMPLETION_CLAIM_RE = re.compile(
 )
 _COMPLETION_REQUIRED_SIGNALS = (
     "irb_approved", "sap_locked", "db_locked", "results_final", "integrity_signed",
+)
+_MISSING_INFO_REQUIRED_TERMS = (
+    "Thông tin còn thiếu", "Ảnh hưởng", "Phương án an toàn", "Người quyết định",
 )
 
 
@@ -381,6 +386,35 @@ def validate(md_path, out_dir) -> Dict:
     else:
         checks["R10_no_false_completion"] = (
             "PASS (không tự tuyên bố hoàn thành kỹ thuật)")
+
+    # R11 — bảng thông tin còn thiếu/cần xác nhận để bác sĩ biết điểm chặn.
+    has_missing_info_section = re.search(
+        r"^#\s*Danh sách thông tin còn thiếu và quyết định cần xác nhận\b",
+        text, re.MULTILINE)
+    missing_info_terms = [
+        term for term in _MISSING_INFO_REQUIRED_TERMS if term.lower() not in lowered
+    ]
+    missing_signal_rows = [
+        s for s in missing_signals if f"`{s}`".lower() not in lowered
+    ]
+    if not has_missing_info_section:
+        errors.append(
+            "R11 THIẾU mục 'Danh sách thông tin còn thiếu và quyết định cần xác nhận'.")
+        checks["R11_missing_information"] = "FAIL (thiếu bảng thiếu sót)"
+    elif missing_info_terms:
+        errors.append("R11 BẢNG THIẾU SÓT thiếu cột/thuật ngữ bắt buộc: "
+                      + ", ".join(missing_info_terms))
+        checks["R11_missing_information"] = (
+            f"FAIL (thiếu {len(missing_info_terms)} thuật ngữ)")
+    elif missing_signal_rows:
+        errors.append(
+            "R11 BẢNG THIẾU SÓT chưa liệt kê tín hiệu đời thực còn thiếu: "
+            + ", ".join(missing_signal_rows))
+        checks["R11_missing_information"] = (
+            f"FAIL (thiếu {len(missing_signal_rows)} tín hiệu)")
+    else:
+        checks["R11_missing_information"] = (
+            "PASS (thiếu sót/cổng chờ được liệt kê với ảnh hưởng và phương án an toàn)")
 
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,

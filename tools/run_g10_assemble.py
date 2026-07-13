@@ -649,6 +649,98 @@ def build_final_technical_completion(cps, meta=None) -> str:
     return "\n".join(lines)
 
 
+def build_missing_information(cps, meta=None) -> str:
+    """Danh sách thiếu sót còn lại để bác sĩ/chủ nhiệm ra quyết định."""
+    signals = S.real_world_signals(cps, meta)
+    signal_rows = {
+        "irb_approved": (
+            "Phê duyệt Hội đồng đạo đức thật (số + ngày)",
+            "Không được triển khai thu thập dữ liệu người tham gia.",
+            "Dừng ở bản dự thảo; nộp IRB/EC và chờ phê duyệt thật.",
+            "Chủ nhiệm đề tài + Hội đồng đạo đức",
+        ),
+        "sap_locked": (
+            "SAP đã ký khóa trước khi xem dữ liệu",
+            "Nguy cơ p-hacking/chọn phân tích theo kết quả.",
+            "Chỉ soạn SAP; không mở dữ liệu/phân tích chính cho tới khi khóa.",
+            "Chủ nhiệm đề tài + thống kê viên",
+        ),
+        "db_locked": (
+            "Dữ liệu phân tích đã làm sạch và khóa",
+            "Không thể phân tích chính hoặc tái lập kết quả.",
+            "Hoàn tất query log, data dictionary, lock memo; làm sạch trên bản sao.",
+            "Data manager + chủ nhiệm đề tài",
+        ),
+        "results_final": (
+            "Kết quả phân tích thật đã được bác sĩ xác nhận",
+            "Không được viết kết quả/kết luận cuối hoặc bài báo hoàn chỉnh.",
+            "Giữ phần Results/Discussion ở nhãn [CẦN BỔ SUNG]; chỉ dùng dummy tables.",
+            "Chủ nhiệm đề tài + nhóm phân tích",
+        ),
+        "integrity_signed": (
+            "Gói liêm chính tác giả đã ký (ICMJE/COI/tài trợ/AI/CRediT)",
+            "Không đủ điều kiện nộp công bố/nghiệm thu.",
+            "Chạy G9, thu chữ ký và khai báo đầy đủ trước khi nộp.",
+            "Tất cả tác giả + chủ nhiệm đề tài",
+        ),
+    }
+    lines = [
+        "# Danh sách thông tin còn thiếu và quyết định cần xác nhận\n",
+        "Mục này gom các thiếu sót còn lại thành hành động an toàn. Nếu một thông "
+        "tin chưa có bằng chứng thật, hệ thống chỉ được giữ ở trạng thái dự thảo "
+        "hoặc chờ xác nhận; không tự điền thay chủ nhiệm/IRB/thống kê viên.\n",
+        "| Nhóm | Thông tin còn thiếu | Ảnh hưởng | Phương án an toàn | Người quyết định |",
+        "|---|---|---|---|---|",
+    ]
+
+    added = False
+    for key, (missing, impact, safe_action, owner) in signal_rows.items():
+        if not signals.get(key):
+            added = True
+            lines.append(
+                f"| Tín hiệu đời thực `{key}` | {missing} | {impact} | "
+                f"{safe_action} | {owner} |")
+
+    missing_checkpoints = [g for g in [f"G{i}" for i in range(10)] if not cps.get(g)]
+    if missing_checkpoints:
+        added = True
+        lines.append(
+            f"| Checkpoint pipeline | Thiếu {', '.join(missing_checkpoints)} | "
+            "Không đủ truy xuất G0-G9; G10 chỉ là bản lắp ráp không đầy đủ. | "
+            "Chạy lại các cổng còn thiếu hoặc ghi rõ lý do không áp dụng. | "
+            "Điều phối nghiên cứu + chủ nhiệm đề tài |")
+
+    topic = _g(cps.get("G0"), "topic", default=meta.get("title") if meta else None)
+    design = _g(cps.get("G1"), "design", "primary", default=None)
+    locked_fields = [
+        ("Tên đề tài", topic),
+        ("Mục tiêu chung", (meta or {}).get("aim")),
+        ("Câu hỏi nghiên cứu/giả thuyết", (meta or {}).get("research_question")),
+        ("Thiết kế nghiên cứu", design),
+        ("Kết cục chính", (meta or {}).get("primary_outcome")),
+    ]
+    for field, value in locked_fields:
+        if not value or str(value).startswith("[CẦN"):
+            added = True
+            lines.append(
+                f"| Khóa phạm vi | {field} chưa được cung cấp/xác nhận | "
+                "Không thể coi protocol là bản cuối; nguy cơ tài liệu mâu thuẫn. | "
+                "Bác sĩ/chủ nhiệm xác nhận bằng study_meta.json hoặc artifact đã duyệt. | "
+                "Chủ nhiệm đề tài |")
+
+    if not added:
+        lines.append(
+            "| Không còn thiếu sót cứng | Các tín hiệu bắt buộc đã có theo checkpoint/meta | "
+            "Có thể chuyển sang bước thẩm định cuối. | Vẫn cần bác sĩ kiểm chứng và ký. | "
+            "Chủ nhiệm đề tài |")
+
+    lines.append(
+        "\n> Nếu tiếp tục khi còn thiếu thông tin trong bảng này, đầu ra phải ghi "
+        "**CHƯA HOÀN THÀNH KỸ THUẬT** và không được dùng như bản nộp chính thức.\n"
+    )
+    return "\n".join(lines)
+
+
 def build_legal_refs() -> str:
     lines = ["# Khung pháp lý & tiêu chuẩn tham chiếu\n",
              "| Văn bản/Tiêu chuẩn | Phiên bản | Lĩnh vực | Cờ |",
@@ -727,6 +819,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     parts.append(build_display_items(cps, meta))
     parts.append(build_international_compliance(cps, meta))
     parts.append(build_final_technical_completion(cps, meta))
+    parts.append(build_missing_information(cps, meta))
     parts.append(build_legal_refs())
     parts.append(
         "\n---\n\n> **Disclaimer:** Tài liệu do hệ thống hỗ trợ lắp ráp; dữ liệu "
