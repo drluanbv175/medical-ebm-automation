@@ -80,13 +80,6 @@ def _safe_stem(path: Path) -> str:
     return stem or "dataset"
 
 
-def _open_text(path: Path):
-    try:
-        return path.open("r", encoding="utf-8-sig", newline="")
-    except UnicodeError:
-        return path.open("r", encoding="latin-1", newline="")
-
-
 def _header_issue(column: str) -> Optional[str]:
     norm = _normalize_header(column)
     if norm in PII_HEADER_EXACT:
@@ -101,62 +94,79 @@ def _scan_csv(path: Path, *, max_scan_rows: int = 5000) -> Dict[str, Any]:
     row_count = 0
     columns: List[str] = []
 
-    try:
-        with _open_text(path) as f:
-            sample = f.read(4096)
-            f.seek(0)
-            try:
-                dialect = csv.Sniffer().sniff(sample)
-            except csv.Error:
-                dialect = csv.excel
-            reader = csv.DictReader(f, dialect=dialect)
-            columns = list(reader.fieldnames or [])
-            if not columns:
-                issues.append({
-                    "severity": "blocker",
-                    "type": "empty_header",
-                    "column": None,
-                    "detail": "CSV không có header.",
-                })
-                return {"rows": 0, "columns": [], "issues": issues}
-
-            for col in columns:
-                reason = _header_issue(col)
-                if reason:
+    last_decode_error: Optional[UnicodeDecodeError] = None
+    for encoding in ("utf-8-sig", "latin-1"):
+        try:
+            with path.open("r", encoding=encoding, newline="") as f:
+                sample = f.read(4096)
+                f.seek(0)
+                try:
+                    dialect = csv.Sniffer().sniff(sample)
+                except csv.Error:
+                    dialect = csv.excel
+                reader = csv.DictReader(f, dialect=dialect)
+                columns = list(reader.fieldnames or [])
+                if not columns:
                     issues.append({
                         "severity": "blocker",
-                        "type": reason,
-                        "column": col,
-                        "detail": "Tên cột gợi ý định danh trực tiếp/nhạy cảm.",
+                        "type": "empty_header",
+                        "column": None,
+                        "detail": "CSV không có header.",
                     })
+                    return {"rows": 0, "columns": [], "issues": issues}
 
-            for row in reader:
-                row_count += 1
-                if row_count > max_scan_rows:
-                    continue
-                for col, value in (row or {}).items():
-                    text = str(value or "").strip()
-                    if not text:
+                for col in columns:
+                    reason = _header_issue(col)
+                    if reason:
+                        issues.append({
+                            "severity": "blocker",
+                            "type": reason,
+                            "column": col,
+                            "detail": "Tên cột gợi ý định danh trực tiếp/nhạy cảm.",
+                        })
+
+                for row in reader:
+                    row_count += 1
+                    if row_count > max_scan_rows:
                         continue
-                    for label, pattern in VALUE_PATTERNS.items():
-                        if pattern.search(text):
-                            issues.append({
-                                "severity": "blocker",
-                                "type": f"value_pii:{label}",
-                                "column": col,
-                                "row": row_count,
-                                "detail": (
-                                    "Giá trị khớp mẫu PII; không lưu giá trị trong manifest."
-                                ),
-                            })
-    except OSError as exc:
+                    for col, value in (row or {}).items():
+                        text = str(value or "").strip()
+                        if not text:
+                            continue
+                        for label, pattern in VALUE_PATTERNS.items():
+                            if pattern.search(text):
+                                issues.append({
+                                    "severity": "blocker",
+                                    "type": f"value_pii:{label}",
+                                    "column": col,
+                                    "row": row_count,
+                                    "detail": (
+                                        "Giá trị khớp mẫu PII; không lưu giá trị trong manifest."
+                                    ),
+                                })
+                return {"rows": row_count, "columns": columns, "issues": issues}
+        except UnicodeDecodeError as exc:
+            last_decode_error = exc
+            row_count = 0
+            columns = []
+            issues = []
+            continue
+        except OSError as exc:
+            issues.append({
+                "severity": "blocker",
+                "type": "read_error",
+                "column": None,
+                "detail": f"Không đọc được file: {exc}",
+            })
+            return {"rows": row_count, "columns": columns, "issues": issues}
+
+    if last_decode_error:
         issues.append({
             "severity": "blocker",
-            "type": "read_error",
+            "type": "decode_error",
             "column": None,
-            "detail": f"Không đọc được file: {exc}",
+            "detail": "Không đọc được CSV bằng UTF-8/Latin-1; hãy xuất lại CSV UTF-8.",
         })
-
     return {"rows": row_count, "columns": columns, "issues": issues}
 
 
