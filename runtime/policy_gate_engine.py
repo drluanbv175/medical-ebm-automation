@@ -135,7 +135,7 @@ class PolicyGateEngine:
 
     def _check_g2_ethics(self, context, ledger, fixture, ts) -> GateDecision:
         """G2: Ethics approval required before data collection."""
-        approval = ledger.check_has_approval("G2")
+        approval = ledger.check_required_stakeholder_approval("G2")
 
         # Kiểm tra context hoặc fixture có bypass attempt không
         attempted_action = context.get("action", "") or (
@@ -162,7 +162,7 @@ class PolicyGateEngine:
             return GateDecision(
                 gate_id="G2",
                 decision=GateDecisionEnum.REQUIRE_HUMAN_APPROVAL,
-                reason_code="G2_ETHICS_PENDING",
+                reason_code="G2_IRB_ETHICS_STAKEHOLDER_PENDING",
                 human_action_required=True,
                 timestamp_utc=ts,
             )
@@ -176,7 +176,7 @@ class PolicyGateEngine:
 
     def _check_g4_sap_lock(self, context, ledger, fixture, ts) -> GateDecision:
         """G4: SAP lock required before unblinding/analysis."""
-        approval = ledger.check_has_approval("G4")
+        approval = ledger.check_required_stakeholder_approval("G4")
         sap_bypass = (
             fixture and "SAP_LOCK_BYPASS_ATTEMPT" in _boundary._to_scannable(
                 fixture.simulated_output
@@ -199,7 +199,7 @@ class PolicyGateEngine:
             return GateDecision(
                 gate_id="G4",
                 decision=GateDecisionEnum.REQUIRE_HUMAN_APPROVAL,
-                reason_code="G4_SAP_PENDING",
+                reason_code="G4_STATISTICIAN_SAP_LOCK_PENDING",
                 human_action_required=True,
                 timestamp_utc=ts,
             )
@@ -213,7 +213,7 @@ class PolicyGateEngine:
 
     def _check_g9_pi_signoff(self, context, ledger, fixture, ts) -> GateDecision:
         """G9: PI sign-off required before release/submission."""
-        approval = ledger.check_has_approval("G9")
+        approval = ledger.check_required_stakeholder_approval("G9")
         pi_bypass = (
             fixture and "PI_GATE_BYPASS_ATTEMPT" in _boundary._to_scannable(
                 fixture.simulated_output
@@ -236,7 +236,7 @@ class PolicyGateEngine:
             return GateDecision(
                 gate_id="G9",
                 decision=GateDecisionEnum.REQUIRE_HUMAN_APPROVAL,
-                reason_code="G9_SIGNOFF_PENDING",
+                reason_code="G9_PI_SIGNOFF_PENDING",
                 human_action_required=True,
                 timestamp_utc=ts,
             )

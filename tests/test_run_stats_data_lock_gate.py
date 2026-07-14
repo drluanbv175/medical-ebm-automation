@@ -43,6 +43,11 @@ def _approve_g2_g4_g5(study: str) -> None:
         ("G4", f"G4_A5_SAP_FINAL_{study}.md", "SAP final test content"),
         ("G5", "G5_checkpoint.json", "G5 checkpoint test content"),
     ):
+        role_by_gate = {
+            "G2": "IRB_ETHICS_COMMITTEE",
+            "G4": "METHODS_STATISTICS_REVIEWER",
+            "G5": "DATA_GOVERNANCE_QA_REVIEWER",
+        }
         artifact = study_dir / artifact_rel
         artifact.write_text(content, encoding="utf-8")
         timestamp_utc = datetime.now(timezone.utc).isoformat()
@@ -50,7 +55,9 @@ def _approve_g2_g4_g5(study: str) -> None:
         signature = GC.sign_approval(gate_id, study, evidence_hash, timestamp_utc)
         assert signature
         record = ApprovalLedger.make_human_approval(
-            gate_id=gate_id, reviewer_role="PI", reviewer_ref=f"TEST-{gate_id}",
+            gate_id=gate_id,
+            reviewer_role=role_by_gate[gate_id],
+            reviewer_ref=f"TEST-{gate_id}",
             scope="test", evidence_content=content,
             approver_signature=signature,
             timestamp_utc=timestamp_utc,

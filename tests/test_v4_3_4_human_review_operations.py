@@ -85,14 +85,16 @@ def _populate_project_dir(project_dir: pathlib.Path, config: ProjectConfig) -> N
 
 
 # ---------------------------------------------------------------------------
-# T01 — ReviewRole có đúng 4 giá trị
+# T01 — ReviewRole có đúng 6 giá trị
 # ---------------------------------------------------------------------------
 
-def test_t01_review_role_has_4_values():
+def test_t01_review_role_has_6_values():
     values = [r.value for r in ReviewRole]
-    assert len(values) == 4
+    assert len(values) == 6
     assert "PI_PROJECT_OWNER" in values
+    assert "IRB_ETHICS_COMMITTEE" in values
     assert "METHODS_STATISTICS_REVIEWER" in values
+    assert "INDEPENDENT_PEER_REVIEWER" in values
     assert "EVIDENCE_CITATION_REVIEWER" in values
     assert "DATA_GOVERNANCE_QA_REVIEWER" in values
 
@@ -189,7 +191,6 @@ def test_t04_review_record_13_fields():
 def test_t05_forbidden_review_mode_rejected():
     with tempfile.TemporaryDirectory() as tmp:
         project_dir = pathlib.Path(tmp)
-        config = _make_config()
         ledger = ReviewLedger(project_dir)
 
         forbidden_mode_str = "INDEPENDENT_REVIEW_APPROVED"
@@ -270,6 +271,8 @@ def test_t09_protocol_draft_critical_risk():
     assert risk == RiskLevel.CRITICAL
     assert ReviewRole.PI_PROJECT_OWNER in roles
     assert ReviewRole.METHODS_STATISTICS_REVIEWER in roles
+    assert ReviewRole.IRB_ETHICS_COMMITTEE in roles
+    assert "IRB" in focus or "ethics" in focus
 
 
 # ---------------------------------------------------------------------------
@@ -441,6 +444,15 @@ def test_t18_make_review_queue_item_structure():
     assert item["draft_only"] is True
     assert item["human_review_required"] is True
     assert len(item["primary_roles"]) >= 1
+    assert ReviewRole.IRB_ETHICS_COMMITTEE.value in item["primary_roles"]
+
+    review_pack = make_review_queue_item(
+        project_id="SYNTH-001",
+        artifact_id=ArtifactID.REVIEW_PACK,
+        reason="Gói phản biện cần phản biện độc lập",
+    )
+    assert review_pack["auto_approve"] is False
+    assert ReviewRole.INDEPENDENT_PEER_REVIEWER.value in review_pack["primary_roles"]
 
 
 # ---------------------------------------------------------------------------

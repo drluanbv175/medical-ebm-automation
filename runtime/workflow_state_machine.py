@@ -113,15 +113,17 @@ class WorkflowStateMachine:
         # 2. Kiểm tra required gate
         required_gate = REQUIRED_GATE_FOR_TRANSITION.get(requested_state)
         if required_gate:
-            approval = approval_ledger.check_has_approval(required_gate)
+            approval = approval_ledger.check_required_stakeholder_approval(required_gate)
             if approval is None:
+                status = approval_ledger.stakeholder_gate_status(required_gate)
+                suffix = status.get("reason") or "MISSING_REQUIRED_STAKEHOLDER"
                 t = WorkflowTransition(
                     prior_state=prior_state,
                     requested_state=requested_state,
                     authorized_by=authorized_by,
                     evidence_reference=evidence_reference,
                     decision="BLOCKED",
-                    reason=f"GATE_NOT_APPROVED:{required_gate}",
+                    reason=f"GATE_NOT_APPROVED:{required_gate}:{suffix}",
                     timestamp_utc=ts,
                 )
                 self._history.append(t)

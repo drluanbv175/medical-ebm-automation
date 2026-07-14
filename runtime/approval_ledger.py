@@ -15,6 +15,79 @@ from typing import Optional
 
 from .schemas import ApprovalDecisionEnum, ApprovalRecord
 
+STAKEHOLDER_ROLE_ALIASES: dict[str, set[str]] = {
+    "PI": {
+        "PI",
+        "PI_PROJECT_OWNER",
+        "PRINCIPAL_INVESTIGATOR",
+        "CHU_NHIEM_DE_TAI",
+        "CHU_NHIEM_NGHIEN_CUU",
+        "NGHIEN_CUU_VIEN_CHINH",
+        "CHỦ_NHIỆM_ĐỀ_TÀI",
+        "CHỦ_NHIỆM_NGHIÊN_CỨU",
+        "NGHIÊN_CỨU_VIÊN_CHÍNH",
+    },
+    "IRB": {
+        "IRB",
+        "IRB_CHAIR",
+        "IRB_MEMBER",
+        "IRB_ETHICS_COMMITTEE",
+        "ETHICS_COMMITTEE",
+        "HOI_DONG_DAO_DUC",
+        "HOI_DONG_Y_DUC",
+        "HỘI_ĐỒNG_ĐẠO_ĐỨC",
+        "HỘI_ĐỒNG_Y_ĐỨC",
+    },
+    "STATISTICIAN": {
+        "STATISTICIAN",
+        "BIOSTATISTICIAN",
+        "METHODS_STATISTICS_REVIEWER",
+        "THONG_KE_VIEN",
+        "CHUYEN_GIA_THONG_KE",
+        "PHUONG_PHAP_THONG_KE",
+        "THỐNG_KÊ_VIÊN",
+        "CHUYÊN_GIA_THỐNG_KÊ",
+        "PHƯƠNG_PHÁP_THỐNG_KÊ",
+    },
+    "INDEPENDENT_PEER_REVIEWER": {
+        "INDEPENDENT_PEER_REVIEWER",
+        "PEER_REVIEWER",
+        "EXTERNAL_REVIEWER",
+        "PHAN_BIEN_DOC_LAP",
+        "PHAN_BIEN",
+        "PHẢN_BIỆN_ĐỘC_LẬP",
+        "PHẢN_BIỆN",
+    },
+}
+
+GATE_REQUIRED_STAKEHOLDERS: dict[str, str] = {
+    "G2": "IRB",
+    "G4": "STATISTICIAN",
+    "G9": "PI",
+}
+
+
+def normalize_reviewer_role(role: str) -> str:
+    """Chuẩn hóa role để so khớp alias, không lưu/thao tác PII."""
+    return (
+        (role or "")
+        .strip()
+        .upper()
+        .replace("-", "_")
+        .replace(" ", "_")
+        .replace("/", "_")
+    )
+
+
+def reviewer_role_satisfies_stakeholder(role: str, stakeholder: str) -> bool:
+    """Role có thuộc nhóm stakeholder bắt buộc không."""
+    aliases = STAKEHOLDER_ROLE_ALIASES.get(normalize_reviewer_role(stakeholder), set())
+    return normalize_reviewer_role(role) in aliases
+
+
+def required_stakeholder_for_gate(gate_id: str) -> Optional[str]:
+    return GATE_REQUIRED_STAKEHOLDERS.get((gate_id or "").strip().upper())
+
 
 class ApprovalLedger:
     """
@@ -77,6 +150,70 @@ class ApprovalLedger:
         # Trả record mới nhất (timestamp_utc sort lexicographic — ISO 8601)
         return sorted(matching, key=lambda r: r.timestamp_utc)[-1]
 
+    def check_required_stakeholder_approval(
+        self,
+        gate_id: str,
+        decision: ApprovalDecisionEnum = ApprovalDecisionEnum.APPROVED,
+    ) -> Optional[ApprovalRecord]:
+        """
+        Trả approval mới nhất cho gate nếu đúng stakeholder bắt buộc.
+
+        G2 cần IRB/ethics committee, G4 cần thống kê/phương pháp, G9 cần PI.
+        Approval synthetic, agent-created hoặc self-review không được tính là
+        phê duyệt stakeholder thật. Cổng không có cấu hình stakeholder rơi về
+        check_has_approval() để giữ tương thích.
+        """
+        stakeholder = required_stakeholder_for_gate(gate_id)
+        if not stakeholder:
+            return self.check_has_approval(gate_id, decision=decision)
+        matching = [
+            r for r in self._records
+            if r.gate_id == gate_id
+            and r.decision == decision
+            and not getattr(r, "is_synthetic", False)
+            and not getattr(r, "_created_by_agent", False)
+            and not (
+                r.artifact_creator_agent
+                and r.reviewer_agent
+                and r.artifact_creator_agent == r.reviewer_agent
+            )
+            and reviewer_role_satisfies_stakeholder(r.reviewer_role, stakeholder)
+        ]
+        if not matching:
+            return None
+        return sorted(matching, key=lambda r: r.timestamp_utc)[-1]
+
+    def stakeholder_gate_status(self, gate_id: str) -> dict:
+        """Tóm tắt trạng thái cổng theo stakeholder thật, dùng cho audit/verifier."""
+        stakeholder = required_stakeholder_for_gate(gate_id)
+        approval = self.check_required_stakeholder_approval(gate_id)
+        if approval is not None:
+            return {
+                "gate_id": gate_id,
+                "required_stakeholder": stakeholder,
+                "satisfied": True,
+                "reason": "OK",
+                "approval_id": approval.approval_id,
+                "reviewer_role": approval.reviewer_role,
+            }
+        if stakeholder:
+            return {
+                "gate_id": gate_id,
+                "required_stakeholder": stakeholder,
+                "satisfied": False,
+                "reason": f"MISSING_REQUIRED_STAKEHOLDER:{stakeholder}",
+                "approval_id": None,
+                "reviewer_role": None,
+            }
+        return {
+            "gate_id": gate_id,
+            "required_stakeholder": None,
+            "satisfied": self.check_has_approval(gate_id) is not None,
+            "reason": "NO_STAKEHOLDER_REQUIREMENT",
+            "approval_id": None,
+            "reviewer_role": None,
+        }
+
     def get_all_approvals(self) -> list[ApprovalRecord]:
         return list(self._records)
 
@@ -108,14 +245,14 @@ class ApprovalLedger:
         return bool(self.self_review_violations())
 
     def has_ethics_approval(self) -> bool:
-        return self.check_has_approval("G2") is not None
+        return self.check_required_stakeholder_approval("G2") is not None
 
     def has_sap_lock(self) -> bool:
-        return self.check_has_approval("G4") is not None
+        return self.check_required_stakeholder_approval("G4") is not None
 
     def has_pi_signoff(self) -> bool:
         """G9 = author integrity PI sign-off."""
-        return self.check_has_approval("G9") is not None
+        return self.check_required_stakeholder_approval("G9") is not None
 
     def has_gate_a(self) -> bool:
         """GATE_A = cổng áp dụng lâm sàng (dieu-phoi-lam-sang)."""

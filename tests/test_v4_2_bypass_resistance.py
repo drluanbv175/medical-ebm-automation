@@ -68,13 +68,15 @@ def _make_synthetic_approval(gate_id: str):
     SYNTHETIC_TECHNICAL_APPROVAL_FIXTURE — tạo approval dán nhãn rõ ràng.
     reviewer_role = SYNTHETIC_TEST_FIXTURE → KHÔNG phải người thật.
     """
-    return ApprovalLedger.make_human_approval(
+    record = ApprovalLedger.make_human_approval(
         gate_id=gate_id,
         reviewer_role=SYNTHETIC_FIXTURE_LABEL,
         reviewer_ref="OFFLINE_TEST_HARNESS",
         scope=f"{gate_id}_SYNTHETIC_TEST",
         evidence_content=f"SYNTHETIC_FIXTURE_EVIDENCE_FOR_{gate_id}",
     )
+    record.is_synthetic = True
+    return record
 
 
 def setup_function():
@@ -191,13 +193,14 @@ class TestT22SyntheticNotHuman:
         assert success is True
         assert reason == "ADDED"
 
-    def test_synthetic_approval_makes_gate_pass_in_test_only(self):
-        # In test context: synthetic approval satisfies gate check for plumbing test
-        # This proves gate plumbing works WITHOUT claiming real ethics approval
+    def test_synthetic_approval_does_not_make_gate_pass(self):
+        # V4.3+: synthetic approvals can be stored for audit fixtures, but never
+        # satisfy stakeholder gate checks used for real workflow release.
         ledger = ApprovalLedger()
         record = _make_synthetic_approval("G2")
         ledger.add_approval(record, created_by_agent=False)
-        assert ledger.has_ethics_approval() is True
+        assert ledger.check_has_approval("G2") is record
+        assert ledger.has_ethics_approval() is False
 
     def test_agent_created_approval_is_blocked_by_ledger(self):
         # Prove: an Agent cannot create its own approval to bypass gates

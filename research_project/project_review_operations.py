@@ -1,8 +1,9 @@
 """
 project_review_operations — Human Review Operating Model (V4.3.4).
 
-Roles: PI_PROJECT_OWNER · METHODS_STATISTICS_REVIEWER ·
-       EVIDENCE_CITATION_REVIEWER · DATA_GOVERNANCE_QA_REVIEWER
+Roles: PI_PROJECT_OWNER · IRB_ETHICS_COMMITTEE · METHODS_STATISTICS_REVIEWER ·
+       INDEPENDENT_PEER_REVIEWER · EVIDENCE_CITATION_REVIEWER ·
+       DATA_GOVERNANCE_QA_REVIEWER
 Modes: SELF_REVIEW · HUMAN_REVIEW_INDEPENDENCE_NOT_ESTABLISHED
 Decisions: REQUEST_HUMAN_INPUT · REVISION_REQUIRED ·
            ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE · REJECT_DRAFT · ARCHIVE_DRAFT
@@ -41,7 +42,9 @@ from .project_config import (
 
 class ReviewRole(str, enum.Enum):
     PI_PROJECT_OWNER              = "PI_PROJECT_OWNER"
+    IRB_ETHICS_COMMITTEE          = "IRB_ETHICS_COMMITTEE"
     METHODS_STATISTICS_REVIEWER   = "METHODS_STATISTICS_REVIEWER"
+    INDEPENDENT_PEER_REVIEWER     = "INDEPENDENT_PEER_REVIEWER"
     EVIDENCE_CITATION_REVIEWER    = "EVIDENCE_CITATION_REVIEWER"
     DATA_GOVERNANCE_QA_REVIEWER   = "DATA_GOVERNANCE_QA_REVIEWER"
 
@@ -134,8 +137,12 @@ REVIEW_ROUTING_MATRIX: _ROUTING = {
         RiskLevel.HIGH, "D-R2",
     ),
     ArtifactID.PROTOCOL_DRAFT: (
-        [ReviewRole.PI_PROJECT_OWNER, ReviewRole.METHODS_STATISTICS_REVIEWER],
-        "design, population, bias, ethics readiness",
+        [
+            ReviewRole.PI_PROJECT_OWNER,
+            ReviewRole.METHODS_STATISTICS_REVIEWER,
+            ReviewRole.IRB_ETHICS_COMMITTEE,
+        ],
+        "design, population, bias, IRB/ethics readiness",
         RiskLevel.CRITICAL, "D-R4",
     ),
     ArtifactID.EVIDENCE_PLAN: (
@@ -174,13 +181,17 @@ REVIEW_ROUTING_MATRIX: _ROUTING = {
         RiskLevel.MEDIUM, "D-R9",
     ),
     ArtifactID.REPORTING_CHECKLIST_DRAFT: (
-        [ReviewRole.PI_PROJECT_OWNER, ReviewRole.EVIDENCE_CITATION_REVIEWER],
-        "reporting standard, citations",
+        [
+            ReviewRole.PI_PROJECT_OWNER,
+            ReviewRole.EVIDENCE_CITATION_REVIEWER,
+            ReviewRole.INDEPENDENT_PEER_REVIEWER,
+        ],
+        "reporting standard, citations, independent critique",
         RiskLevel.HIGH, "D-R11",
     ),
     ArtifactID.MANUSCRIPT_OUTLINE_DRAFT: (
-        [ReviewRole.PI_PROJECT_OWNER],
-        "outline completeness, draft-only status",
+        [ReviewRole.PI_PROJECT_OWNER, ReviewRole.INDEPENDENT_PEER_REVIEWER],
+        "outline completeness, independent critique, draft-only status",
         RiskLevel.MEDIUM, "D-R11",
     ),
     ArtifactID.GOVERNANCE_AND_CAPA_PACK: (
@@ -189,8 +200,8 @@ REVIEW_ROUTING_MATRIX: _ROUTING = {
         RiskLevel.HIGH, "D-R12",
     ),
     ArtifactID.REVIEW_PACK: (
-        [ReviewRole.PI_PROJECT_OWNER],
-        "unresolved decisions and next action",
+        [ReviewRole.PI_PROJECT_OWNER, ReviewRole.INDEPENDENT_PEER_REVIEWER],
+        "unresolved decisions, independent critique, next action",
         RiskLevel.HIGH, "D-R14",
     ),
     ArtifactID.PROJECT_TRACEABILITY_MATRIX: (

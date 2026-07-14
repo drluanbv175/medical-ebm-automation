@@ -48,9 +48,14 @@ def state_machine():
 
 def _make_approval(gate_id: str) -> ApprovalLedger:
     ledger = ApprovalLedger()
+    role_by_gate = {
+        "G2": "IRB_ETHICS_COMMITTEE",
+        "G4": "METHODS_STATISTICS_REVIEWER",
+        "G9": "PI_PROJECT_OWNER",
+    }
     record = ApprovalLedger.make_human_approval(
         gate_id=gate_id,
-        reviewer_role="TEST",
+        reviewer_role=role_by_gate.get(gate_id, "TEST"),
         reviewer_ref=f"TEST-{gate_id}",
         scope=f"Scope {gate_id}",
         evidence_content=f"Evidence for {gate_id}",
@@ -200,7 +205,7 @@ class TestTC08PiiBlocked:
         decision = engine.evaluate_fixture(fixture, empty_ledger)
         assert decision == PolicyDecisionEnum.PII_BLOCKED
         # Log với note giả lập có PII
-        event = logger.log_gate_decision(
+        logger.log_gate_decision(
             workflow_id="WF-PII-001",
             agent_id="quan-ly-du-lieu",
             fixture_id="FX-004",
@@ -226,7 +231,7 @@ class TestTC09ValidStateTransitions:
         ledger = ApprovalLedger()
         for gate_id, reviewer, ref, content in [
             ("G2", "IRB", "IRB-FULL-001", "Ethics approval"),
-            ("G4", "PI", "PI-SAP-001", "SAP locked"),
+            ("G4", "METHODS_STATISTICS_REVIEWER", "STAT-SAP-001", "SAP locked"),
         ]:
             record = ApprovalLedger.make_human_approval(
                 gate_id=gate_id,
@@ -346,11 +351,11 @@ class TestTC14UnknownFixture:
             assert fixture.fixture_id == fid
 
 
-import pathlib as _pathlib  # noqa: F401
+import pathlib as _pathlib  # noqa: E402,F401
 
 # V4.3.2.1: dùng AGENTS_DIR đã resolve (ưu tiên vendored in-repo) để skipif khớp
 # trạng thái có/không agent source CẢ trong archive lẫn working tree.
-from runtime.agent_registry import AGENTS_DIR as _AGENTS_DIR_FOR_TC15
+from runtime.agent_registry import AGENTS_DIR as _AGENTS_DIR_FOR_TC15  # noqa: E402
 
 # ─── TC-15A: Bundle Runtime Only mode ────────────────────────────────────────
 

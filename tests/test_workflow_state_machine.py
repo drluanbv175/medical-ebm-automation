@@ -25,8 +25,8 @@ def _ledger_with_ethics_and_sap() -> ApprovalLedger:
     ledger = _ledger_with_ethics()
     record = ApprovalLedger.make_human_approval(
         gate_id="G4",
-        reviewer_role="PI",
-        reviewer_ref="PI-SAP-LOCK-001",
+        reviewer_role="METHODS_STATISTICS_REVIEWER",
+        reviewer_ref="STAT-SAP-LOCK-001",
         scope="SAP lock",
         evidence_content="SAP signed and locked",
     )

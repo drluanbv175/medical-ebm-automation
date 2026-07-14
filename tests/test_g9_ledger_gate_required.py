@@ -60,9 +60,15 @@ def _write_ledger_approval(d: Path, gate_id: str, artifact_content: str) -> None
     timestamp_utc = "2026-07-11T00:00:00+00:00"
     signature = GC.sign_approval(gate_id, d.name, evidence_hash, timestamp_utc)
     assert signature
+    role_by_gate = {
+        "G2": "IRB_ETHICS_COMMITTEE",
+        "G4": "METHODS_STATISTICS_REVIEWER",
+        "G9": "PI_PROJECT_OWNER",
+    }
     record = {
         "approval_id": f"test-{gate_id}-001", "gate_id": gate_id,
-        "reviewer_role": "PI", "reviewer_identity_reference": "REF-TEST-001",
+        "reviewer_role": role_by_gate.get(gate_id, "PI_PROJECT_OWNER"),
+        "reviewer_identity_reference": "REF-TEST-001",
         "decision": "APPROVED", "scope": "test", "evidence_hash": evidence_hash,
         "timestamp_utc": timestamp_utc, "supersedes": None,
         "artifact_creator_agent": None, "reviewer_agent": None,

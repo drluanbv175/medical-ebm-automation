@@ -19,9 +19,14 @@ def _empty_ledger() -> ApprovalLedger:
 
 def _ledger_with(gate_id: str) -> ApprovalLedger:
     ledger = ApprovalLedger()
+    role_by_gate = {
+        "G2": "IRB_ETHICS_COMMITTEE",
+        "G4": "METHODS_STATISTICS_REVIEWER",
+        "G9": "PI_PROJECT_OWNER",
+    }
     record = ApprovalLedger.make_human_approval(
         gate_id=gate_id,
-        reviewer_role="TEST_REVIEWER",
+        reviewer_role=role_by_gate.get(gate_id, "TEST_REVIEWER"),
         reviewer_ref=f"REF-{gate_id}-TEST",
         scope=f"Test scope for {gate_id}",
         evidence_content=f"Evidence content for {gate_id}",
@@ -46,6 +51,21 @@ class TestG2EthicsGate:
         decision = engine.check_gate("G2", {}, ledger, None)
         assert decision.decision == GateDecisionEnum.ALLOW
 
+    def test_g2_rejects_wrong_stakeholder_role(self):
+        engine = _engine()
+        ledger = ApprovalLedger()
+        record = ApprovalLedger.make_human_approval(
+            gate_id="G2",
+            reviewer_role="PI_PROJECT_OWNER",
+            reviewer_ref="REF-G2-WRONG-ROLE",
+            scope="Wrong role fixture",
+            evidence_content="Ethics content",
+        )
+        ledger.add_approval(record)
+        decision = engine.check_gate("G2", {}, ledger, None)
+        assert decision.decision == GateDecisionEnum.REQUIRE_HUMAN_APPROVAL
+        assert "IRB" in decision.reason_code
+
     def test_g2_requires_human_when_pending(self):
         engine = _engine()
         decision = engine.check_gate("G2", {}, _empty_ledger(), None)
@@ -68,6 +88,21 @@ class TestG4SapGate:
         ledger = _ledger_with("G4")
         decision = engine.check_gate("G4", {}, ledger, None)
         assert decision.decision == GateDecisionEnum.ALLOW
+
+    def test_g4_rejects_pi_only_when_statistician_missing(self):
+        engine = _engine()
+        ledger = ApprovalLedger()
+        record = ApprovalLedger.make_human_approval(
+            gate_id="G4",
+            reviewer_role="PI",
+            reviewer_ref="REF-G4-PI-ONLY",
+            scope="PI-only SAP fixture",
+            evidence_content="SAP content",
+        )
+        ledger.add_approval(record)
+        decision = engine.check_gate("G4", {}, ledger, None)
+        assert decision.decision == GateDecisionEnum.REQUIRE_HUMAN_APPROVAL
+        assert "STATISTICIAN" in decision.reason_code
 
 
 class TestG9PIGate:

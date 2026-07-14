@@ -28,7 +28,12 @@ hoàn toàn bằng kỹ thuật trong một hệ mà agent có quyền đọc to
 Dùng:
     python3 tools/approve_gate.py --study <tên> --gate G4 \\
         --artifact exports/<tên>/G4_A5_SAP_FINAL_<tên>.md \\
-        --reviewer-role "Chủ nhiệm đề tài" --reviewer-ref "<mã/tên viết tắt, KHÔNG PII đầy đủ>"
+        --reviewer-role "METHODS_STATISTICS_REVIEWER" --reviewer-ref "<mã/tên viết tắt, KHÔNG PII đầy đủ>"
+
+Role bắt buộc theo cổng:
+    G2  → IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE
+    G4  → METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN
+    G9  → PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
 
 Sau khi chạy: exports/<tên>/approval_ledger.json có thêm 1 dòng phê duyệt, evidence_hash =
 SHA256 của ĐÚNG nội dung file --artifact TẠI THỜI ĐIỂM CHẠY LỆNH NÀY. Nếu artifact bị sửa SAU
@@ -69,6 +74,11 @@ def main() -> int:
     artifact_path = Path(args.artifact)
     if not artifact_path.exists():
         print(f"✗ Không thấy file artifact: {artifact_path}")
+        return 1
+    if not GC.reviewer_role_satisfies_gate(args.gate, args.reviewer_role):
+        print(f"✗ Role người duyệt không đúng stakeholder bắt buộc cho {args.gate}.")
+        print(f"   {args.gate} cần: {GC.required_reviewer_role_hint(args.gate)}")
+        print("   Không ghi ledger để tránh cổng có approval nhưng sai thẩm quyền.")
         return 1
     # RÀNG BUỘC HASH VÀO ĐÚNG BYTES TRÊN ĐĨA (vá 2026-07-09): make_human_approval tính
     # evidence_hash = sha256(evidence_content.encode("utf-8")), CÒN _ledger_approved ở

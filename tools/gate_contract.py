@@ -265,6 +265,82 @@ def load_study_meta(out_dir: Path) -> Dict[str, Any]:
 _SIGNING_KEY_ENV = "EBM_GATE_KEY_PATH"  # override vị trí khóa — dùng cho test, KHÔNG dùng vận hành thật
 _DEFAULT_KEY_PATH = Path.home() / ".ebm-secrets" / "gate_approval_key"
 
+_STAKEHOLDER_ROLE_ALIASES: Dict[str, set[str]] = {
+    "PI": {
+        "PI",
+        "PI_PROJECT_OWNER",
+        "PRINCIPAL_INVESTIGATOR",
+        "CHU_NHIEM_DE_TAI",
+        "CHU_NHIEM_NGHIEN_CUU",
+        "NGHIEN_CUU_VIEN_CHINH",
+        "CHỦ_NHIỆM_ĐỀ_TÀI",
+        "CHỦ_NHIỆM_NGHIÊN_CỨU",
+        "NGHIÊN_CỨU_VIÊN_CHÍNH",
+    },
+    "IRB": {
+        "IRB",
+        "IRB_CHAIR",
+        "IRB_MEMBER",
+        "IRB_ETHICS_COMMITTEE",
+        "ETHICS_COMMITTEE",
+        "HOI_DONG_DAO_DUC",
+        "HOI_DONG_Y_DUC",
+        "HỘI_ĐỒNG_ĐẠO_ĐỨC",
+        "HỘI_ĐỒNG_Y_ĐỨC",
+    },
+    "STATISTICIAN": {
+        "STATISTICIAN",
+        "BIOSTATISTICIAN",
+        "METHODS_STATISTICS_REVIEWER",
+        "THONG_KE_VIEN",
+        "CHUYEN_GIA_THONG_KE",
+        "PHUONG_PHAP_THONG_KE",
+        "THỐNG_KÊ_VIÊN",
+        "CHUYÊN_GIA_THỐNG_KÊ",
+        "PHƯƠNG_PHÁP_THỐNG_KÊ",
+    },
+}
+
+_GATE_REQUIRED_STAKEHOLDERS: Dict[str, str] = {
+    "G2": "IRB",
+    "G4": "STATISTICIAN",
+    "G9": "PI",
+}
+
+
+def _normalize_role(role: str) -> str:
+    return (
+        (role or "")
+        .strip()
+        .upper()
+        .replace("-", "_")
+        .replace(" ", "_")
+        .replace("/", "_")
+    )
+
+
+def reviewer_role_satisfies_gate(gate_id: str, reviewer_role: str) -> bool:
+    """Role người duyệt có đúng stakeholder bắt buộc cho cổng không.
+
+    Cổng chưa có stakeholder requirement (vd G5/Gate A/B) trả True để giữ tương
+    thích. G2/G4/G9 fail-closed nếu role sai nhóm: IRB, thống kê/phương pháp, PI.
+    """
+    required = _GATE_REQUIRED_STAKEHOLDERS.get(_normalize_role(gate_id))
+    if not required:
+        return True
+    return _normalize_role(reviewer_role) in _STAKEHOLDER_ROLE_ALIASES[required]
+
+
+def required_reviewer_role_hint(gate_id: str) -> str:
+    required = _GATE_REQUIRED_STAKEHOLDERS.get(_normalize_role(gate_id))
+    if required == "IRB":
+        return "IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE"
+    if required == "STATISTICIAN":
+        return "METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN"
+    if required == "PI":
+        return "PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR"
+    return "không yêu cầu nhóm role riêng"
+
 
 def signing_key_path() -> Path:
     """Đường dẫn file khóa ký — mặc định ~/.ebm-secrets/gate_approval_key, có thể ghi đè
@@ -344,7 +420,8 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
     except (json.JSONDecodeError, OSError):
         return False
     matches = [r for r in records if r.get("gate_id") == gate_id
-               and r.get("decision") == "APPROVED" and not r.get("is_synthetic")]
+               and r.get("decision") == "APPROVED" and not r.get("is_synthetic")
+               and reviewer_role_satisfies_gate(gate_id, r.get("reviewer_role", ""))]
     if not matches:
         return False
     latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]

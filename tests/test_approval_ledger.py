@@ -140,6 +140,62 @@ class TestApprovalLedgerValidApproval:
         assert not ledger.has_pi_signoff()
 
 
+class TestApprovalLedgerStakeholderRoles:
+    """Cổng G2/G4/G9 cần đúng stakeholder, không chỉ có record APPROVED."""
+
+    def _add(self, ledger: ApprovalLedger, gate_id: str, role: str):
+        record = ApprovalLedger.make_human_approval(
+            gate_id=gate_id,
+            reviewer_role=role,
+            reviewer_ref=f"REF-{gate_id}-{role}",
+            scope=f"Stakeholder test {gate_id}",
+            evidence_content=f"Evidence {gate_id} {role}",
+        )
+        ok, reason = ledger.add_approval(record)
+        assert ok, reason
+        return record
+
+    def test_g2_requires_irb_or_ethics_role(self):
+        ledger = ApprovalLedger()
+        self._add(ledger, "G2", "PI_PROJECT_OWNER")
+        assert not ledger.has_ethics_approval()
+        status = ledger.stakeholder_gate_status("G2")
+        assert status["satisfied"] is False
+        assert status["required_stakeholder"] == "IRB"
+
+        self._add(ledger, "G2", "IRB_ETHICS_COMMITTEE")
+        assert ledger.has_ethics_approval()
+
+    def test_g4_requires_statistician_role(self):
+        ledger = ApprovalLedger()
+        self._add(ledger, "G4", "PI")
+        assert not ledger.has_sap_lock()
+
+        self._add(ledger, "G4", "BIOSTATISTICIAN")
+        assert ledger.has_sap_lock()
+
+    def test_g9_requires_pi_role(self):
+        ledger = ApprovalLedger()
+        self._add(ledger, "G9", "INDEPENDENT_PEER_REVIEWER")
+        assert not ledger.has_pi_signoff()
+
+        self._add(ledger, "G9", "PRINCIPAL_INVESTIGATOR")
+        assert ledger.has_pi_signoff()
+
+    def test_synthetic_stakeholder_approval_does_not_satisfy_gate(self):
+        ledger = ApprovalLedger()
+        syn = ApprovalLedger.make_synthetic_approval(
+            gate_id="G2",
+            scope="Synthetic IRB fixture",
+            evidence_content="Synthetic ethics content",
+            reviewer_role="IRB_ETHICS_COMMITTEE",
+            reviewer_ref="IRB-SYNTHETIC",
+        )
+        ledger._records.append(syn)
+        assert ledger.check_has_approval("G2") is syn
+        assert not ledger.has_ethics_approval()
+
+
 class TestApprovalLedgerDuplicate:
     """Duplicate approval_id bị block."""
 
@@ -327,7 +383,8 @@ class TestApproveGateEndToEnd:
                             encoding="utf-8")
         res = self._run("--study", self._STUDY, "--gate", "G4",
                         "--artifact", str(artifact),
-                        "--reviewer-role", "Chủ nhiệm đề tài", "--reviewer-ref", "PI-01")
+                        "--reviewer-role", "METHODS_STATISTICS_REVIEWER",
+                        "--reviewer-ref", "STAT-01")
         assert res.returncode == 0, f"stderr={res.stderr}\nstdout={res.stdout}"
 
         ledger_file = study_dir / "approval_ledger.json"
@@ -347,6 +404,15 @@ class TestApproveGateEndToEnd:
                         "--artifact", str(study_dir / "khong-ton-tai.md"),
                         "--reviewer-role", "PI", "--reviewer-ref", "PI-01")
         assert res.returncode != 0
+
+    def test_approve_gate_rejects_wrong_reviewer_role_for_g4(self, study_dir):
+        artifact = study_dir / "G4_A5_SAP_FINAL.md"
+        artifact.write_text("# SAP đã khóa\nNội dung test.", encoding="utf-8")
+        res = self._run("--study", self._STUDY, "--gate", "G4",
+                        "--artifact", str(artifact),
+                        "--reviewer-role", "PI", "--reviewer-ref", "PI-01")
+        assert res.returncode != 0
+        assert "METHODS_STATISTICS_REVIEWER" in res.stdout
 
     def test_approve_gate_missing_study_dir_exits_nonzero(self, tmp_path):
         # Đề tài chưa có thư mục exports/<study> → từ chối (không tự tạo phê duyệt khống).

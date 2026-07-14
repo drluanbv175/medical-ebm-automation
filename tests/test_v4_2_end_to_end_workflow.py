@@ -15,8 +15,8 @@ Tests T06–T15, T23–T24:
   T23 — happy path: all gates pass, FX-001 → PASS, trace complete
   T24 — full chain traceable: run_id → audit_event_id → context
 
-SYNTHETIC_TECHNICAL_APPROVAL_FIXTURE dùng để test gate plumbing.
-KHÔNG thay thế approval của người thật.
+OFFLINE_ROLE_APPROVAL_FIXTURE dùng để test gate plumbing với role đúng nhóm.
+KHÔNG thay thế approval của người thật trong vận hành thực.
 KHÔNG gọi API. KHÔNG PII. Qualification: NO-GO — MRAQ 43.56/100.
 """
 
@@ -34,7 +34,7 @@ from runtime.workflow_state_machine import WorkflowStateMachine
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-SYNTHETIC_FIXTURE_LABEL = "SYNTHETIC_TECHNICAL_APPROVAL_FIXTURE"
+OFFLINE_ROLE_APPROVAL_FIXTURE = "OFFLINE_ROLE_APPROVAL_FIXTURE"
 
 
 def _make_entry(
@@ -54,9 +54,14 @@ def _make_entry(
 
 
 def _make_synthetic_approval(gate_id: str):
+    role_by_gate = {
+        "G2": "IRB_ETHICS_COMMITTEE",
+        "G4": "METHODS_STATISTICS_REVIEWER",
+        "G9": "PI_PROJECT_OWNER",
+    }
     return ApprovalLedger.make_human_approval(
         gate_id=gate_id,
-        reviewer_role=SYNTHETIC_FIXTURE_LABEL,
+        reviewer_role=role_by_gate.get(gate_id, OFFLINE_ROLE_APPROVAL_FIXTURE),
         reviewer_ref="OFFLINE_TEST_HARNESS",
         scope=f"{gate_id}_SYNTHETIC_TEST",
         evidence_content=f"SYNTHETIC_EVIDENCE_{gate_id}",

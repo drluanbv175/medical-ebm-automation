@@ -55,8 +55,15 @@ def _write_real_approval(study: str, gate_id: str, artifact_rel: str, content: s
     evidence_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
     signature = GC.sign_approval(gate_id, study, evidence_hash, timestamp_utc)
     assert signature
+    role_by_gate = {
+        "G2": "IRB_ETHICS_COMMITTEE",
+        "G4": "METHODS_STATISTICS_REVIEWER",
+        "G9": "PI_PROJECT_OWNER",
+    }
     record = ApprovalLedger.make_human_approval(
-        gate_id=gate_id, reviewer_role="PI", reviewer_ref=f"TEST-{gate_id}",
+        gate_id=gate_id,
+        reviewer_role=role_by_gate.get(gate_id, "PI_PROJECT_OWNER"),
+        reviewer_ref=f"TEST-{gate_id}",
         scope="test", evidence_content=content,
         approver_signature=signature,
         timestamp_utc=timestamp_utc,
