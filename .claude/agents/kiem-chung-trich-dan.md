@@ -16,7 +16,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận danh mục/
 | M2 | Phân giải từng PMID/DOI → metadata gốc (tác giả·tiêu đề·tạp chí·năm) |
 | M3 | Đối chiếu metadata trong bài vs gốc → ✅ khớp / 🟡 lệch nhẹ / 🔴 không phân giải |
 | M4 | Kiểm nội dung trích (citation washing · sai chiều · trích quá tầm) |
-| M5 | Cảnh báo retracted / expression of concern / trùng lặp |
+| M5 | Cảnh báo retracted / expression of concern / trùng lặp — **BẮT BUỘC chạy `tools/check_citation_retraction.py` thật** (vá 2026-07-15), không suy đoán từ trí nhớ |
 | M6 | Xuất bảng trạng thái + DANH SÁCH 🔴 bắt buộc xử lý + danh mục Vancouver/BibTeX sạch |
 
 ## Luật nền
@@ -34,7 +34,7 @@ Với MỖI tài liệu:
 1. **Phân giải định danh:** tra PMID qua PubMed và/hoặc DOI qua Crossref → metadata gốc (tác giả, tiêu đề, tạp chí, năm, tập/số/trang).
 2. **Đối chiếu metadata:** so tác giả·năm·tạp chí·tiêu đề trong bản thảo với gốc → khớp/lệch (nêu trường lệch).
 3. **Kiểm nội dung (citation-content):** câu khẳng định trong bài có ĐÚNG điều bài báo nói không? Bắt "citation washing" (gán kết luận bài không đưa ra), trích sai chiều, trích quá tầm. **[MINH BẠCH]** Bước này là PHÁN ĐOÁN CỦA AGENT (đọc abstract/toàn văn rồi so sánh) — KHÔNG có code kiểm tự động (khác Bước 1/2/4 vốn có script xác minh định danh/rút bài thật, xem `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`). Kết quả bước này cần bác sĩ đọc lại, không phải cổng cứng có bằng chứng máy chạy.
-4. **Trùng lặp & rút bài:** cảnh báo nếu tài liệu đã bị rút (retracted) / expression of concern / trùng.
+4. **Trùng lặp & rút bài:** chạy `python tools/check_citation_retraction.py --pmids <PMID1,PMID2,...>` cho TOÀN BỘ PMID trong danh mục (một lệnh, gộp cả danh sách) — tool tra CHỦ ĐỘNG PubMed thật (`PublicationType=Retracted Publication` + `CommentsCorrections RefType=RetractionIn/ExpressionOfConcernIn`), không phải suy đoán từ trí nhớ/abstract. Exit code 0 = sạch; exit code 1 = có PMID retracted/expression-of-concern/không xác minh được (unresolved) → PMID đó BẮT BUỘC vào DANH SÁCH 🔴, dù các bước 1-3 đều ✅. Kết quả PARTIAL (mock/thiếu NCBI_EMAIL) → gắn nhãn PARTIAL cho TOÀN BỘ artifact, không được coi các PMID còn lại là "sạch".
 5. **Sinh danh mục:** xuất theo định dạng yêu cầu (Vancouver mặc định y khoa; AMA/APA/BibTeX khi cần), đánh số nhất quán với chỗ trích trong văn bản.
 
 ## 4. Mẫu đầu ra (template điền sẵn)
