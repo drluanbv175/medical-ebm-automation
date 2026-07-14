@@ -24,12 +24,18 @@ CODE NHÚNG trong chuỗi template mà run_g6_auto.py ghi ra exports/<study>/run
 — cùng công thức/quy ước đã dùng ở run_g6_auto.py::run_cox/plot_km, qua ĐÚNG cổng data-lock
 này (không phải một script riêng biệt ít được kiểm hơn).
 
+Multiple imputation (vá 2026-07-15): khi biến outcome/group/covariates có dữ liệu thiếu, script
+TỰ CHẠY MI thật (statsmodels MICEData/MICE, m=20 mặc định, --n-imputations để đổi) song song với
+complete-case — trước đây "MI" trong sensitivity_analysis.py (template do run_g6_auto.py sinh)
+chỉ là mean-impute tự khai không phải MI thật.
+
 Đầu ra (tự động vào exports/<study>/):
     G6_table1_descriptive.txt     — Bảng 1 đặc điểm mẫu
     G6_table2_main_outcome.txt    — Kết cục chính (OR/MD + 95%CI) — thiết kế nhị phân/liên tục
     G6_table3_survival.txt        — Cox PH (HR + 95%CI) — thiết kế sống còn (--time/--event)
     G6_km_curve.png               — Đường cong Kaplan-Meier (nếu có matplotlib) — thiết kế sống còn
-    G6_table4_multivariate.txt    — Mô hình đa biến — thiết kế nhị phân/liên tục
+    G6_table4_multivariate.txt    — Mô hình đa biến (complete-case) — thiết kế nhị phân/liên tục
+    G6_table5_multiple_imputation.txt — MI thật (đối chiếu complete-case) — khi có dữ liệu thiếu
     G6_missing_data_summary.txt   — Tóm tắt dữ liệu thiếu
     G6_analysis_summary.json      — JSON dùng cho agent viet-ban-thao
     G6_analysis_syntax.R          — Script R tái lặp kết quả
@@ -408,6 +414,97 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# 6a. MULTIPLE IMPUTATION (thay complete-case khi có dữ liệu thiếu) — vá 2026-07-15
+# ════════════════════════════════════════════════════════════════════════════
+
+def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str,
+                               covariates: list, outcome_type: str = "auto",
+                               n_imputations: int = 20) -> dict:
+    """Multiple imputation THẬT (statsmodels MICEData+MICE, m=n_imputations mặc
+    định 20, pooling theo luật Rubin qua MICEResults) — vá 2026-07-15. Trước đây
+    "MI" trong exports/<study>/sensitivity_analysis.py (template do run_g6_auto.py
+    sinh ra) chỉ là mean-impute tự khai KHÔNG PHẢI MI thật ("MI-demo (mean-impute;
+    R mice m=20 for real)") — MI thật (mice m=20, method pmm) CHỈ tồn tại trong R
+    template, bị comment `#` chờ dữ liệu thật. Hàm này thực thi MI thật bằng
+    Python, không cần rời sang R.
+
+    Chỉ chạy khi CÓ dữ liệu thiếu trong chính các biến phân tích (khác
+    analyze_missingness() vốn quét TOÀN dataset kể cả biến chỉ dùng cho Bảng 1)
+    — trả {"skipped": True, ...} nếu không, để main() không tạo output thừa.
+
+    Đổi tên cột sang định danh an toàn (v0, v1, …) trước khi đưa vào
+    MICEData/công thức Patsy — xác nhận bằng test thật: MICEData tự dựng công
+    thức nội bộ theo TÊN CỘT GỐC lúc impute từng biến, và patsy.dmatrices ném
+    SyntaxError ngay nếu tên cột có khoảng trắng/dấu gạch ngang (rất thường gặp
+    trong CSV thật, vd "blood pressure"). Kết quả map ngược lại tên gốc trước
+    khi trả về — bác sĩ không thấy tên nội bộ v0/v1 bao giờ."""
+    if not HAS_STATSMODELS:
+        return {
+            "error": "statsmodels chưa cài. Chạy: pip install statsmodels",
+            "note": "[CẦN BỔ SUNG — multiple imputation cần statsmodels]",
+        }
+    from statsmodels.imputation.mice import MICE, MICEData
+
+    if outcome_type == "auto":
+        outcome_type = detect_var_type(df[outcome_col])
+    available_covs = [c for c in covariates if c in df.columns]
+    predictors = [group_col] + available_covs
+    analysis_cols = [outcome_col] + predictors
+    sub = df[analysis_cols].copy()
+
+    n_total = len(sub)
+    n_complete = int(sub.notna().all(axis=1).sum())
+    n_missing_rows = n_total - n_complete
+    if n_missing_rows == 0:
+        return {
+            "skipped": True,
+            "reason": f"Không có dữ liệu thiếu trong {len(analysis_cols)} biến phân tích "
+                      f"({', '.join(analysis_cols)}) — MI không cần thiết, complete-case "
+                      f"đã dùng toàn bộ {n_total} quan sát.",
+        }
+
+    safe_map = {c: f"v{i}" for i, c in enumerate(analysis_cols)}
+    rev_map = {v: k for k, v in safe_map.items()}
+    sub_safe = sub.rename(columns=safe_map)
+    formula = f"{safe_map[outcome_col]} ~ " + " + ".join(safe_map[p] for p in predictors)
+    model_class = sm.Logit if outcome_type == "binary" else sm.OLS
+    fit_kwds = {"disp": 0} if outcome_type == "binary" else None
+
+    try:
+        imp = MICEData(sub_safe)
+        mice = MICE(formula, model_class, imp, fit_kwds=fit_kwds)
+        res = mice.fit(n_imputations=n_imputations, n_burnin=10)
+    except Exception as e:
+        return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — MI không hội tụ]"}
+
+    ci = res.conf_int()
+    results = []
+    for i, safe_name in enumerate(res.model.exog_names):
+        if safe_name == "Intercept":
+            continue
+        var = rev_map.get(safe_name, safe_name)
+        est = float(res.params[i])
+        lo, hi = float(ci[i][0]), float(ci[i][1])
+        p = round(float(res.pvalues[i]), 4)
+        if outcome_type == "binary":
+            results.append({"variable": var, "OR_adj": round(float(np.exp(est)), 3),
+                             "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)],
+                             "p": p})
+        else:
+            results.append({"variable": var, "beta": round(est, 4),
+                             "CI_95": [round(lo, 4), round(hi, 4)], "p": p})
+
+    return {
+        "model": "logistic_mi" if outcome_type == "binary" else "linear_mi",
+        "n_imputations": n_imputations,
+        "n_total": n_total, "n_complete_case": n_complete,
+        "n_missing_rows": n_missing_rows,
+        "pct_missing_rows": round(n_missing_rows / n_total * 100, 1),
+        "results": results,
+    }
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # 6b. PHÂN TÍCH SỐNG CÒN (Cox PH + Kaplan-Meier) — vá 2026-07-15
 # ════════════════════════════════════════════════════════════════════════════
 # Trước đây Cox/KM thật (lifelines) chỉ tồn tại nhúng trong chuỗi template mà
@@ -608,6 +705,36 @@ def format_multivariate_text(mv: dict) -> str:
         star = " *" if p < 0.05 else ""
         lines.append(f"  {r['variable'][:28]:<28} {est:>18}  {ci_str:>20}  {p:>8}{star}")
     lines.append("\n* p < 0.05")
+    return "\n".join(lines)
+
+
+def format_mi_text(mi: dict, mv: dict = None) -> str:
+    """mv (kết quả complete-case của multivariate_model(), nếu có) được đặt cạnh
+    MI để bác sĩ thấy trực tiếp mức chênh — đúng mục đích sensitivity analysis
+    (không chỉ chạy MI rồi báo số, mà cho thấy MI đổi kết luận đến đâu)."""
+    if mi.get("skipped"):
+        return f"MULTIPLE IMPUTATION: {mi['reason']}"
+    if "error" in mi:
+        return f"MULTIPLE IMPUTATION: {mi['error']}\n{mi.get('note', '')}"
+    lines = [f"BẢNG 5 — MULTIPLE IMPUTATION ({mi['model'].upper()}, m={mi['n_imputations']})", "=" * 70]
+    lines.append(f"  Complete-case: n = {mi['n_complete_case']}/{mi['n_total']} "
+                 f"({mi['n_missing_rows']} hàng thiếu, {mi['pct_missing_rows']}%)")
+    lines.append(f"\n  {'Biến số':<22} {'OR/β (MI)':>14}  {'95%CI (MI)':>18}  {'p':>7}   {'so complete-case'}")
+    lines.append("  " + "-" * 90)
+    mv_lookup = {r["variable"]: r for r in (mv.get("results", []) if mv else [])}
+    for r in mi.get("results", []):
+        est = r.get("OR_adj", r.get("beta", "?"))
+        ci = r["CI_95"]
+        p = r["p"]
+        star = "*" if p < 0.05 else " "
+        cc = mv_lookup.get(r["variable"])
+        cc_str = ""
+        if cc:
+            cc_est = cc.get("OR_adj", cc.get("beta", "?"))
+            cc_str = f"{cc_est} ({cc['CI_95'][0]}–{cc['CI_95'][1]}, p={cc['p']})"
+        lines.append(f"  {r['variable'][:20]:<22} {est:>14}  {ci[0]}–{ci[1]:<10}  {p:>6}{star}   {cc_str}")
+    lines.append("\n* p < 0.05 (MI). So sánh với complete-case để đánh giá độ nhạy với giả định thiếu dữ liệu.")
+    lines.append("[BÁC SĨ KIỂM TRA: MI dùng statsmodels MICEData/MICE, pooling theo luật Rubin]")
     return "\n".join(lines)
 
 
@@ -862,6 +989,9 @@ def main():
                                         "cùng --time, vá 2026-07-15)")
     parser.add_argument("--covariates", default="",
                         help="Danh sách biến hiệu chỉnh, phân cách bằng dấu phẩy")
+    parser.add_argument("--n-imputations", type=int, default=20,
+                        help="Số bộ dữ liệu impute (m) cho multiple imputation khi biến phân "
+                             "tích có dữ liệu thiếu — mặc định 20 (vá 2026-07-15)")
     parser.add_argument("--outcome-type", default="auto",
                         choices=["auto", "binary", "continuous"],
                         help="Loại kết cục (mặc định: tự phát hiện)")
@@ -1010,6 +1140,21 @@ def main():
         (prefix.parent / f"{args.gate}_table4_multivariate.txt").write_text(mv_txt, encoding="utf-8")
         summary["multivariate"] = mv
         print(f"✓ Mô hình đa biến: {mv.get('model','?')} ({mv.get('n','?')} quan sát)")
+
+        # 6a. Multiple imputation (chỉ khi biến phân tích có dữ liệu thiếu) — vá 2026-07-15
+        mi = multiple_imputation_model(df, args.outcome, args.group, covariates,
+                                        args.outcome_type, args.n_imputations)
+        summary["multiple_imputation"] = mi
+        if mi.get("skipped"):
+            print(f"ℹ️  Multiple imputation: bỏ qua ({mi['reason']})")
+        elif "error" in mi:
+            print(f"✗ Multiple imputation: {mi['error']}")
+        else:
+            mi_txt = format_mi_text(mi, mv)
+            (prefix.parent / f"{args.gate}_table5_multiple_imputation.txt").write_text(
+                mi_txt, encoding="utf-8")
+            print(f"✓ Multiple imputation (m={mi['n_imputations']}): "
+                  f"{mi['n_missing_rows']}/{mi['n_total']} hàng thiếu được impute")
 
         # 7. Script R tái lặp
         r_script = generate_r_script(args.study, args.gate, args.outcome,
