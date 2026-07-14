@@ -22,7 +22,7 @@ import json
 import pathlib
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from .project_artifact_graph import get_downstream
 from .project_config import (
@@ -243,6 +243,38 @@ REVIEW_ROUTING_MATRIX: _ROUTING = {
         RiskLevel.LOW, "D-R12",
     ),
 }
+
+
+CONTROLLED_REVIEW_MILESTONES: Tuple[Dict[str, Any], ...] = (
+    {
+        "milestone_id": "protocol_irb_control",
+        "label": "Protocol + ethics control",
+        "artifact_ids": [ArtifactID.PROTOCOL_DRAFT],
+        "approval_gate_id": "G2",
+        "required_stakeholder": "IRB",
+        "purpose": "Protocol chỉ được chuyển bước khi đủ PI + thống kê/phương pháp + IRB review và có G2.",
+    },
+    {
+        "milestone_id": "sap_statistics_control",
+        "label": "SAP + statistics control",
+        "artifact_ids": [ArtifactID.METHODS_AND_SAMPLE_SIZE, ArtifactID.SAP_DRAFT],
+        "approval_gate_id": "G4",
+        "required_stakeholder": "STATISTICIAN",
+        "purpose": "Phân tích chính chỉ được mở khi cỡ mẫu/SAP được thống kê viên review và G4 khóa SAP.",
+    },
+    {
+        "milestone_id": "manuscript_peer_pi_control",
+        "label": "Manuscript + peer review + PI control",
+        "artifact_ids": [
+            ArtifactID.REPORTING_CHECKLIST_DRAFT,
+            ArtifactID.MANUSCRIPT_OUTLINE_DRAFT,
+            ArtifactID.REVIEW_PACK,
+        ],
+        "approval_gate_id": "G9",
+        "required_stakeholder": "PI",
+        "purpose": "Gói báo cáo/công bố chỉ được chuyển bước khi đủ phản biện độc lập + PI và có G9.",
+    },
+)
 
 
 # ---------------------------------------------------------------------------
@@ -629,6 +661,155 @@ def get_review_status(project_dir: pathlib.Path) -> dict:
         "human_review_required": True,
         "final_released_submitted_count": 0,
         "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+        "disclaimer": DISCLAIMER,
+    }
+
+
+def _approval_gate_status(approval_ledger: Any, gate_id: str) -> dict:
+    """Đọc trạng thái stakeholder approval theo duck-typing, fail-closed nếu thiếu ledger."""
+    if approval_ledger is None:
+        return {
+            "gate_id": gate_id,
+            "satisfied": False,
+            "reason": "APPROVAL_LEDGER_REQUIRED",
+            "required_stakeholder": None,
+            "approval_id": None,
+            "reviewer_role": None,
+        }
+    if not hasattr(approval_ledger, "stakeholder_gate_status"):
+        return {
+            "gate_id": gate_id,
+            "satisfied": False,
+            "reason": "APPROVAL_LEDGER_INTERFACE_MISSING",
+            "required_stakeholder": None,
+            "approval_id": None,
+            "reviewer_role": None,
+        }
+    status = approval_ledger.stakeholder_gate_status(gate_id)
+    return {
+        "gate_id": gate_id,
+        "satisfied": bool(status.get("satisfied")),
+        "reason": status.get("reason") or "UNKNOWN",
+        "required_stakeholder": status.get("required_stakeholder"),
+        "approval_id": status.get("approval_id"),
+        "reviewer_role": status.get("reviewer_role"),
+    }
+
+
+def _artifact_control_status(
+    project_dir: pathlib.Path,
+    artifact_id: ArtifactID,
+    records: List[ReviewRecord],
+) -> dict:
+    """Trạng thái một artifact trong milestone kiểm soát, không lộ reviewer_ref."""
+    fname = ARTIFACT_FILENAME.get(artifact_id, "")
+    fpath = project_dir / fname
+    snapshot = _review_snapshot(artifact_id, records)
+    exists = bool(fname) and fpath.exists()
+    ready = (
+        exists
+        and snapshot["current_status"] == "ACCEPTED_DRAFT"
+        and snapshot["complete_required_review"] is True
+    )
+    blockers = []
+    if not exists:
+        blockers.append(f"missing_artifact_file:{artifact_id.value}")
+    if snapshot["missing_roles"]:
+        blockers.append(
+            "missing_review_roles:"
+            + artifact_id.value
+            + ":"
+            + ",".join(snapshot["missing_roles"])
+        )
+    if snapshot["blocking_roles"]:
+        blockers.append(
+            "blocking_review_roles:"
+            + artifact_id.value
+            + ":"
+            + ",".join(snapshot["blocking_roles"])
+        )
+    if snapshot["current_status"] not in {"ACCEPTED_DRAFT", "PARTIAL_REVIEW", "DRAFT"}:
+        blockers.append(f"artifact_review_status:{artifact_id.value}:{snapshot['current_status']}")
+    return {
+        "artifact_id": artifact_id.value,
+        "artifact_file": fname,
+        "exists": exists,
+        "ready": ready,
+        "current_status": snapshot["current_status"],
+        "required_roles": snapshot["required_roles"],
+        "accepted_roles": snapshot["accepted_roles"],
+        "missing_roles": snapshot["missing_roles"],
+        "blocking_roles": snapshot["blocking_roles"],
+        "role_decisions": snapshot["role_decisions"],
+        "blockers": blockers,
+    }
+
+
+def get_controlled_review_readiness(
+    project_dir: pathlib.Path,
+    approval_ledger: Any = None,
+) -> dict:
+    """
+    Tổng hợp readiness có kiểm soát cho PI/IRB/thống kê/phản biện.
+
+    Hàm này kết nối hai lớp: review ledger theo artifact/role và approval ledger
+    theo stakeholder gate G2/G4/G9. Thiếu một trong hai lớp sẽ BLOCKED.
+    """
+    records = ReviewLedger(project_dir).read_all()
+    milestones = []
+    for milestone in CONTROLLED_REVIEW_MILESTONES:
+        artifact_statuses = [
+            _artifact_control_status(project_dir, artifact_id, records)
+            for artifact_id in milestone["artifact_ids"]
+        ]
+        approval_status = _approval_gate_status(
+            approval_ledger,
+            milestone["approval_gate_id"],
+        )
+        blockers = []
+        for artifact_status in artifact_statuses:
+            blockers.extend(artifact_status["blockers"])
+        if not approval_status["satisfied"]:
+            blockers.append(
+                "stakeholder_approval_missing:"
+                + milestone["approval_gate_id"]
+                + ":"
+                + milestone["required_stakeholder"]
+                + ":"
+                + approval_status["reason"]
+            )
+        ready = (
+            all(item["ready"] for item in artifact_statuses)
+            and approval_status["satisfied"] is True
+        )
+        milestones.append({
+            "milestone_id": milestone["milestone_id"],
+            "label": milestone["label"],
+            "purpose": milestone["purpose"],
+            "approval_gate_id": milestone["approval_gate_id"],
+            "required_stakeholder": milestone["required_stakeholder"],
+            "ready": ready,
+            "artifact_statuses": artifact_statuses,
+            "approval_status": approval_status,
+            "blockers": blockers,
+        })
+
+    overall_ready = all(item["ready"] for item in milestones)
+    return {
+        "overall_status": "PASS" if overall_ready else "BLOCKED",
+        "can_advance_controlled_workflow": overall_ready,
+        "milestone_ready_count": sum(1 for item in milestones if item["ready"]),
+        "milestone_total": len(milestones),
+        "milestones": milestones,
+        "blocking_count": sum(len(item["blockers"]) for item in milestones),
+        "draft_only_status": True,
+        "human_review_required": True,
+        "final_released_submitted_count": 0,
+        "qualification": (
+            "CONTROLLED-READY-FOR-NEXT-INTERNAL-STAGE"
+            if overall_ready
+            else "BLOCKED — MISSING CONTROLLED STAKEHOLDER REVIEW"
+        ),
         "disclaimer": DISCLAIMER,
     }
 

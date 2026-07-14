@@ -74,6 +74,7 @@ from .project_review_operations import (
     ReviewRole,
     UnauthorizedReviewRole,
     build_revision_plan,
+    get_controlled_review_readiness,
     get_review_status,
     list_review_queue,
     record_decision,
@@ -226,6 +227,20 @@ def _build_parser() -> argparse.ArgumentParser:
                             help="Kế hoạch revision từ REVISION_REQUIRED (V4.3.4)")
     p_rvp.add_argument("--project-id", required=True)
     p_rvp.set_defaults(func=_cmd_revision_plan)
+
+    # V4.3.4 — project-controlled-readiness
+    p_cr = sub.add_parser(
+        "project-controlled-readiness",
+        help="Kiểm PI/IRB/thống kê/phản biện trước khi chuyển bước",
+    )
+    p_cr.add_argument("--project-id", required=True)
+    p_cr.add_argument(
+        "--approval-ledger",
+        default="",
+        help="Đường dẫn approval_ledger.json; mặc định dùng file trong thư mục project",
+    )
+    p_cr.add_argument("--json", action="store_true", dest="json_output")
+    p_cr.set_defaults(func=_cmd_controlled_readiness)
 
     # V4.3.5 — project-evidence-import
     p_ei = sub.add_parser("project-evidence-import",
@@ -719,6 +734,41 @@ def _cmd_revision_plan(args: argparse.Namespace, projects_root: pathlib.Path) ->
             print(f"    - {a}")
     print(f"\n  {plan['disclaimer']}")
     return 0
+
+
+def _cmd_controlled_readiness(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
+    """Kiểm milestone có kiểm soát: review roles + approval stakeholder G2/G4/G9."""
+    from runtime.approval_ledger import ApprovalLedger
+
+    registry = ProjectRegistry(projects_root)
+    _ = registry.load(args.project_id)
+    project_dir = projects_root / args.project_id
+    ledger_path = (
+        pathlib.Path(args.approval_ledger)
+        if args.approval_ledger
+        else project_dir / "approval_ledger.json"
+    )
+    approval_ledger = ApprovalLedger.from_file(ledger_path)
+    readiness = get_controlled_review_readiness(
+        project_dir,
+        approval_ledger=approval_ledger,
+    )
+    if args.json_output:
+        print(json.dumps(readiness, ensure_ascii=False, indent=2))
+    else:
+        print(f"=== CONTROLLED READINESS — {args.project_id} ===")
+        print(f"  Overall: {readiness['overall_status']}")
+        print(f"  Milestones: {readiness['milestone_ready_count']}/{readiness['milestone_total']}")
+        print(f"  Approval ledger: {ledger_path}")
+        for milestone in readiness["milestones"]:
+            status = "PASS" if milestone["ready"] else "BLOCKED"
+            print(f"\n  [{status}] {milestone['milestone_id']}")
+            print(f"    Gate: {milestone['approval_gate_id']} · {milestone['required_stakeholder']}")
+            if milestone["blockers"]:
+                for blocker in milestone["blockers"]:
+                    print(f"    Blocker: {blocker}")
+        print(f"\n  {readiness['disclaimer']}")
+    return 0 if readiness["overall_status"] == "PASS" else 2
 
 
 # ---------------------------------------------------------------------------

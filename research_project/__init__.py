@@ -93,6 +93,7 @@ from .project_registry import (
 )
 from .project_reporting_planner import ReportingChecklist, build_reporting_checklist
 from .project_review_operations import (
+    CONTROLLED_REVIEW_MILESTONES,
     LEDGER_FILENAME,
     REVIEW_ROUTING_MATRIX,
     AutoReviewForbidden,
@@ -107,6 +108,7 @@ from .project_review_operations import (
     RiskLevel,
     UnauthorizedReviewRole,
     build_revision_plan,
+    get_controlled_review_readiness,
     get_review_status,
     list_review_queue,
     make_review_queue_item,
@@ -160,9 +162,9 @@ __all__ = [
     "ReviewRecord", "ReviewLedger",
     "AutoReviewForbidden", "ForbiddenReviewMode", "UnauthorizedReviewRole",
     "MissingReviewActorReference", "PIIInReviewRecord",
-    "REVIEW_ROUTING_MATRIX", "LEDGER_FILENAME",
+    "REVIEW_ROUTING_MATRIX", "CONTROLLED_REVIEW_MILESTONES", "LEDGER_FILENAME",
     "list_review_queue", "record_decision", "get_review_status", "build_revision_plan",
-    "make_review_queue_item", "required_roles_for_artifact",
+    "get_controlled_review_readiness", "make_review_queue_item", "required_roles_for_artifact",
     # CLI
     "researchctl_main",
 ]

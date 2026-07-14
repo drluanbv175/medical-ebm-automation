@@ -47,6 +47,7 @@ from research_project.project_review_operations import (
     _make_audit_event_id,
     _make_review_id,
     build_revision_plan,
+    get_controlled_review_readiness,
     get_review_status,
     list_review_queue,
     make_review_queue_item,
@@ -92,6 +93,25 @@ def _reviewer_ref(role="PI") -> str:
     """Mã giả định danh reviewer dùng trong fixture synthetic, không chứa PII."""
     value = role.value if isinstance(role, ReviewRole) else str(role)
     return f"REF-{value}-001"
+
+
+def _accept_required_reviews(
+    project_dir: pathlib.Path,
+    config: ProjectConfig,
+    artifact_id: ArtifactID,
+) -> None:
+    """Ghi ACCEPT_DRAFT cho đủ mọi role được route tới artifact."""
+    for role in required_roles_for_artifact(artifact_id):
+        record_decision(
+            project_dir,
+            config,
+            artifact_id_str=artifact_id.value,
+            decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
+            review_role=role,
+            reason=f"{role.value} synthetic acceptance for controlled readiness.",
+            reviewer_ref=_reviewer_ref(role),
+            automation_caller=False,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -422,6 +442,94 @@ def test_t10e_record_decision_blocks_pii_in_review_record():
 
 
 # ---------------------------------------------------------------------------
+# T10F — Review đầy đủ nhưng thiếu approval stakeholder vẫn bị BLOCKED
+# ---------------------------------------------------------------------------
+
+def test_t10f_controlled_readiness_requires_stakeholder_approval_ledger():
+    with tempfile.TemporaryDirectory() as tmp:
+        project_dir = pathlib.Path(tmp)
+        config = _make_config()
+        _populate_project_dir(project_dir, config)
+        for artifact_id in (
+            ArtifactID.PROTOCOL_DRAFT,
+            ArtifactID.METHODS_AND_SAMPLE_SIZE,
+            ArtifactID.SAP_DRAFT,
+            ArtifactID.REPORTING_CHECKLIST_DRAFT,
+            ArtifactID.MANUSCRIPT_OUTLINE_DRAFT,
+            ArtifactID.REVIEW_PACK,
+        ):
+            _accept_required_reviews(project_dir, config, artifact_id)
+
+        readiness = get_controlled_review_readiness(project_dir)
+
+        assert readiness["overall_status"] == "BLOCKED"
+        assert readiness["can_advance_controlled_workflow"] is False
+        assert readiness["milestone_ready_count"] == 0
+        assert readiness["final_released_submitted_count"] == 0
+        blockers = json.dumps(readiness["milestones"])
+        assert "APPROVAL_LEDGER_REQUIRED" in blockers
+        assert "stakeholder_approval_missing:G2:IRB" in blockers
+        assert "stakeholder_approval_missing:G4:STATISTICIAN" in blockers
+        assert "stakeholder_approval_missing:G9:PI" in blockers
+
+
+# ---------------------------------------------------------------------------
+# T10G — Đủ review role + đủ G2/G4/G9 stakeholder thì readiness PASS kỹ thuật
+# ---------------------------------------------------------------------------
+
+def test_t10g_controlled_readiness_passes_with_reviews_and_stakeholder_approvals():
+    from runtime.approval_ledger import ApprovalLedger
+
+    with tempfile.TemporaryDirectory() as tmp:
+        project_dir = pathlib.Path(tmp)
+        config = _make_config()
+        _populate_project_dir(project_dir, config)
+        for artifact_id in (
+            ArtifactID.PROTOCOL_DRAFT,
+            ArtifactID.METHODS_AND_SAMPLE_SIZE,
+            ArtifactID.SAP_DRAFT,
+            ArtifactID.REPORTING_CHECKLIST_DRAFT,
+            ArtifactID.MANUSCRIPT_OUTLINE_DRAFT,
+            ArtifactID.REVIEW_PACK,
+        ):
+            _accept_required_reviews(project_dir, config, artifact_id)
+
+        approval_ledger = ApprovalLedger()
+        for gate_id, role in (
+            ("G2", "IRB_ETHICS_COMMITTEE"),
+            ("G4", "METHODS_STATISTICS_REVIEWER"),
+            ("G9", "PI_PROJECT_OWNER"),
+        ):
+            ok, reason = approval_ledger.add_approval(
+                ApprovalLedger.make_human_approval(
+                    gate_id=gate_id,
+                    reviewer_role=role,
+                    reviewer_ref=f"REF-{gate_id}-{role}",
+                    scope=f"Controlled readiness fixture {gate_id}",
+                    evidence_content=f"Synthetic evidence for {gate_id}",
+                )
+            )
+            assert ok, reason
+
+        readiness = get_controlled_review_readiness(
+            project_dir,
+            approval_ledger=approval_ledger,
+        )
+
+        assert readiness["overall_status"] == "PASS"
+        assert readiness["can_advance_controlled_workflow"] is True
+        assert readiness["milestone_ready_count"] == readiness["milestone_total"] == 3
+        assert readiness["blocking_count"] == 0
+        manuscript = next(
+            item for item in readiness["milestones"]
+            if item["milestone_id"] == "manuscript_peer_pi_control"
+        )
+        peer_roles = json.dumps(manuscript["artifact_statuses"])
+        assert ReviewRole.INDEPENDENT_PEER_REVIEWER.value in peer_roles
+        assert manuscript["approval_status"]["required_stakeholder"] == "PI"
+
+
+# ---------------------------------------------------------------------------
 # T11 — ReviewLedger.read_all() trả list rỗng khi chưa có file
 # ---------------------------------------------------------------------------
 
@@ -612,10 +720,10 @@ def test_t19_id_prefixes():
 
 
 # ---------------------------------------------------------------------------
-# T20 — CLI parser có đủ 4 subcommand V4.3.4
+# T20 — CLI parser có đủ subcommand V4.3.4
 # ---------------------------------------------------------------------------
 
-def test_t20_cli_has_4_new_subcommands():
+def test_t20_cli_has_v4_3_4_subcommands():
     from research_project.project_cli import _build_parser
     parser = _build_parser()
 
@@ -631,3 +739,4 @@ def test_t20_cli_has_4_new_subcommands():
     assert "project-review-record" in subcommand_names
     assert "project-review-status" in subcommand_names
     assert "project-revision-plan" in subcommand_names
+    assert "project-controlled-readiness" in subcommand_names
