@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
+
+import pytest
 
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
@@ -122,6 +125,130 @@ record_id,ho_ten,age
     assert report["status"] == PSN.BLOCKED_STATUS
     assert report["blocker"] == "mapping_root_inside_exports"
     assert not (exports_root / "PSN-BLOCK" / "mapping").exists()
+
+
+def test_retention_set_when_months_and_owner_both_given(tmp_path):
+    raw = _csv(tmp_path / "raw.csv", "record_id,ho_ten,age\n001,Nguyen Van A,45\n")
+    mapping_root = tmp_path / "protected_mapping"
+
+    report = PSN.pseudonymize_dataset(
+        "PSN-RETENTION-SET",
+        raw,
+        exports_root=tmp_path / "exports",
+        mapping_root=mapping_root,
+        retention_months=24,
+        retention_owner="PI - BS. Nguyen Van Test",
+    )
+
+    assert report["status"] == PSN.PSEUDONYMIZED_STATUS
+    assert report["retention_status"] == PSN.RETENTION_STATUS_SET
+    assert report["retention_months"] == 24
+    assert report["retention_until"] is not None
+
+    created_dt = datetime.fromisoformat(report["created_at"])
+    expected_until = PSN._add_months(created_dt, 24).isoformat(timespec="seconds")
+    assert report["retention_until"] == expected_until
+
+    mapping_dir = mapping_root / "PSN-RETENTION-SET" / RDI._sha256_file(raw)[:12]
+    manifest = json.loads((mapping_dir / PSN.MAPPING_MANIFEST_NAME).read_text(encoding="utf-8"))
+    policy = manifest["retention_policy"]
+    assert policy["retention_status"] == PSN.RETENTION_STATUS_SET
+    assert policy["retention_months"] == 24
+    assert policy["retention_owner"] == "PI - BS. Nguyen Van Test"
+    assert policy["retention_until"] == expected_until
+
+
+def test_retention_unset_flagged_when_not_provided(tmp_path):
+    raw = _csv(tmp_path / "raw.csv", "record_id,ho_ten,age\n001,Nguyen Van A,45\n")
+    mapping_root = tmp_path / "protected_mapping"
+
+    report = PSN.pseudonymize_dataset(
+        "PSN-RETENTION-UNSET",
+        raw,
+        exports_root=tmp_path / "exports",
+        mapping_root=mapping_root,
+    )
+
+    assert report["status"] == PSN.PSEUDONYMIZED_STATUS
+    assert report["retention_status"] == PSN.RETENTION_UNSET_MARKER
+    assert report["retention_months"] is None
+    assert report["retention_until"] is None
+
+    mapping_dir = mapping_root / "PSN-RETENTION-UNSET" / RDI._sha256_file(raw)[:12]
+    manifest = json.loads((mapping_dir / PSN.MAPPING_MANIFEST_NAME).read_text(encoding="utf-8"))
+    assert manifest["retention_policy"]["retention_status"] == PSN.RETENTION_UNSET_MARKER
+    assert manifest["retention_policy"]["retention_owner"] is None
+
+
+def test_retention_partial_input_treated_as_unset_with_issue_note(tmp_path):
+    raw = _csv(tmp_path / "raw.csv", "record_id,ho_ten,age\n001,Nguyen Van A,45\n")
+    mapping_root = tmp_path / "protected_mapping"
+
+    report = PSN.pseudonymize_dataset(
+        "PSN-RETENTION-PARTIAL",
+        raw,
+        exports_root=tmp_path / "exports",
+        mapping_root=mapping_root,
+        retention_months=12,
+        retention_owner=None,
+    )
+
+    assert report["retention_status"] == PSN.RETENTION_UNSET_MARKER
+    mapping_dir = mapping_root / "PSN-RETENTION-PARTIAL" / RDI._sha256_file(raw)[:12]
+    manifest = json.loads((mapping_dir / PSN.MAPPING_MANIFEST_NAME).read_text(encoding="utf-8"))
+    assert manifest["retention_policy"]["input_issue"] is not None
+
+
+def test_retention_owner_never_leaks_into_public_report_or_meta(tmp_path):
+    raw = _csv(tmp_path / "raw.csv", "record_id,ho_ten,age\n001,Nguyen Van A,45\n")
+    mapping_root = tmp_path / "protected_mapping"
+    secret_owner = "PI - BS. Tran Thi Vi Du Bi Mat"
+
+    report = PSN.pseudonymize_dataset(
+        "PSN-RETENTION-NOLEAK",
+        raw,
+        exports_root=tmp_path / "exports",
+        mapping_root=mapping_root,
+        retention_months=6,
+        retention_owner=secret_owner,
+    )
+
+    out_dir = tmp_path / "exports" / "PSN-RETENTION-NOLEAK"
+    report_json = (out_dir / PSN.REPORT_NAME).read_text(encoding="utf-8")
+    meta_json = (out_dir / "study_meta.json").read_text(encoding="utf-8")
+    assert secret_owner not in report_json
+    assert secret_owner not in meta_json
+    assert report["retention_status"] == PSN.RETENTION_STATUS_SET
+
+    mapping_dir = mapping_root / "PSN-RETENTION-NOLEAK" / RDI._sha256_file(raw)[:12]
+    manifest_json = (mapping_dir / PSN.MAPPING_MANIFEST_NAME).read_text(encoding="utf-8")
+    assert secret_owner in manifest_json
+
+
+def test_add_months_handles_year_rollover_and_day_clamping():
+    assert PSN._add_months(datetime(2026, 1, 31), 1) == datetime(2026, 2, 28)
+    assert PSN._add_months(datetime(2026, 12, 15), 2) == datetime(2027, 2, 15)
+    assert PSN._add_months(datetime(2026, 5, 10), 0) == datetime(2026, 5, 10)
+
+
+def test_cli_rejects_non_positive_retention_months(tmp_path, capsys):
+    raw = _csv(tmp_path / "raw.csv", "record_id,ho_ten,age\n001,Nguyen Van A,45\n")
+    argv = [
+        "pseudonymize_research_dataset.py",
+        "--study", "PSN-CLI-BADMONTHS",
+        "--data", str(raw),
+        "--retention-months", "0",
+        "--retention-owner", "PI",
+    ]
+    old_argv = sys.argv
+    sys.argv = argv
+    try:
+        with pytest.raises(SystemExit) as exc:
+            PSN.main()
+        assert exc.value.code == 2
+    finally:
+        sys.argv = old_argv
+    assert "--retention-months" in capsys.readouterr().err
 
 
 def test_g10_mentions_pseudonymization_mapping_policy(tmp_path):

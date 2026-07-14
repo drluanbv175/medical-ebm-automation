@@ -89,7 +89,10 @@ class TestG4SapGate:
         decision = engine.check_gate("G4", {}, ledger, None)
         assert decision.decision == GateDecisionEnum.ALLOW
 
-    def test_g4_rejects_pi_only_when_statistician_missing(self):
+    def test_g4_allows_pi_only_approval(self):
+        """Vá 2026-07-15: G4 chấp nhận CẢ thống kê viên LẪN PI tự ký (khớp
+        gate_contract.py 2026-07-14 + doctrine thiet-ke-nghien-cuu.md — bác sĩ đơn lẻ
+        thường tự đóng vai trò thống kê cho đề tài của mình)."""
         engine = _engine()
         ledger = ApprovalLedger()
         record = ApprovalLedger.make_human_approval(
@@ -97,6 +100,21 @@ class TestG4SapGate:
             reviewer_role="PI",
             reviewer_ref="REF-G4-PI-ONLY",
             scope="PI-only SAP fixture",
+            evidence_content="SAP content",
+        )
+        ledger.add_approval(record)
+        decision = engine.check_gate("G4", {}, ledger, None)
+        assert decision.decision == GateDecisionEnum.ALLOW
+        assert "G4" in decision.reason_code
+
+    def test_g4_rejects_unrelated_role(self):
+        engine = _engine()
+        ledger = ApprovalLedger()
+        record = ApprovalLedger.make_human_approval(
+            gate_id="G4",
+            reviewer_role="IRB_ETHICS_COMMITTEE",
+            reviewer_ref="REF-G4-WRONG-ROLE",
+            scope="Wrong-role SAP fixture",
             evidence_content="SAP content",
         )
         ledger.add_approval(record)

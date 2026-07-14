@@ -166,11 +166,18 @@ class TestApprovalLedgerStakeholderRoles:
         self._add(ledger, "G2", "IRB_ETHICS_COMMITTEE")
         assert ledger.has_ethics_approval()
 
-    def test_g4_requires_statistician_role(self):
+    def test_g4_requires_statistician_or_pi_role(self):
+        """Vá 2026-07-15: G4 chấp nhận CẢ thống kê viên LẪN PI tự ký (khớp
+        gate_contract.py, doctrine thiet-ke-nghien-cuu.md) — IRB vẫn KHÔNG thỏa."""
         ledger = ApprovalLedger()
-        self._add(ledger, "G4", "PI")
+        self._add(ledger, "G4", "IRB_ETHICS_COMMITTEE")
         assert not ledger.has_sap_lock()
 
+        self._add(ledger, "G4", "PI")
+        assert ledger.has_sap_lock()
+
+    def test_g4_accepts_statistician_role_alone_too(self):
+        ledger = ApprovalLedger()
         self._add(ledger, "G4", "BIOSTATISTICIAN")
         assert ledger.has_sap_lock()
 

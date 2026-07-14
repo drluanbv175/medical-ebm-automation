@@ -1,0 +1,151 @@
+# requirements.lock.txt — khóa PHIÊN BẢN CHÍNH XÁC đã kiểm chứng (vá 2026-07-15,
+# Ngày 6 lộ trình 7 ngày, xem reports/LO_TRINH_7_NGAY_NGHIEN_CUU_Y_KHOA_2026-07-14.md).
+#
+# KHÁC requirements.txt: file đó khai biên độ (>=x.y) cho người phát triển; file NÀY
+# là ảnh chụp `pip freeze` của venv đã chạy đủ 1683 test (0 fail, 17 skip) + audit PASS,
+# dùng để cài lại ĐÚNG một môi trường đã xác minh — không tự ý lấy bản mới hơn.
+#
+# Môi trường xác minh: Python 3.9.6 (~/.ebm-venv trên macOS). requirements.txt khuyến
+# nghị 3.11+/3.12 (nợ kỹ thuật đã ghi nhận — venv thật đang chạy 3.9.6). Nâng cấp Python
+# KHÔNG nằm trong phạm vi vá hygiene này (xem DEPENDENCY_AUDIT — mọi bản vá CVE của các
+# thư viện trực tiếp trong requirements.txt đều yêu cầu Python >=3.10, nên bị chặn bởi
+# đúng nợ kỹ thuật này; chi tiết trong reports/DEPENDENCY_AUDIT_2026-07-15.md).
+#
+# Cách tạo lại (SAU khi đã pytest xanh trên venv đang dùng):
+#   source ~/.ebm-venv/bin/activate && pip freeze > requirements.lock.txt
+#
+# Cách cài lại y hệt môi trường đã xác minh (vd máy mới / CI):
+#   pip install -r requirements.lock.txt
+#
+# Không sửa tay file này — luôn sinh lại bằng `pip freeze` để đảm bảo khớp thật với
+# venv đã chạy test, không phải liệt kê tay dễ lệch.
+
+aiohappyeyeballs==2.6.1
+aiohttp==3.13.5
+aiosignal==1.4.0
+altair==5.5.0
+annotated-types==0.7.0
+anthropic==0.106.0
+anyio==4.12.1
+APScheduler==3.11.2
+async-timeout==5.0.1
+attrs==26.1.0
+autograd==1.8.0
+autograd-gamma==0.5.0
+beautifulsoup4==4.14.3
+blinker==1.9.0
+boolean.py==5.0
+CacheControl==0.14.3
+cachetools==6.2.6
+certifi==2026.5.20
+charset-normalizer==3.4.7
+click==8.1.8
+contourpy==1.3.0
+cycler==0.12.1
+cyclonedx-python-lib==9.1.0
+deep-translator==1.11.4
+defusedxml==0.7.1
+distro==1.9.0
+docstring_parser==0.18.0
+edge-tts==7.2.8
+et_xmlfile==2.0.0
+exceptiongroup==1.3.1
+filelock==3.19.1
+Flask==3.1.3
+fonttools==4.60.2
+formulaic==1.2.2
+frozenlist==1.8.0
+gitdb==4.0.12
+GitPython==3.1.50
+h11==0.16.0
+htmldocx==0.0.6
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.18
+imageio-ffmpeg==0.6.0
+importlib_metadata==8.7.1
+importlib_resources==6.5.2
+iniconfig==2.1.0
+interface-meta==1.3.0
+itsdangerous==2.2.0
+Jinja2==3.1.6
+jiter==0.15.0
+joblib==1.5.3
+jsonschema==4.25.1
+jsonschema-specifications==2025.9.1
+kiwisolver==1.4.7
+librt==0.11.0
+license-expression==30.4.4
+lifelines==0.30.0
+lxml==6.1.1
+Markdown==3.9
+markdown-it-py==3.0.0
+MarkupSafe==3.0.3
+matplotlib==3.9.4
+mdurl==0.1.2
+msgpack==1.1.2
+multidict==6.7.1
+mypy==1.19.1
+mypy_extensions==1.1.0
+narwhals==2.21.0
+numpy==2.0.2
+openpyxl==3.1.5
+packageurl-python==0.17.6
+packaging==25.0
+pandas==2.3.3
+pathspec==1.1.1
+patsy==1.0.2
+pillow==11.3.0
+pip-api==0.0.34
+pip-requirements-parser==32.0.1
+pip_audit==2.9.0
+platformdirs==4.4.0
+plotly==6.8.0
+pluggy==1.6.0
+propcache==0.4.1
+protobuf==6.33.6
+py-serializable==2.1.0
+pyarrow==21.0.0
+pydantic==2.13.4
+pydantic_core==2.46.4
+pydeck==0.9.2
+Pygments==2.20.0
+pyparsing==3.3.2
+pytest==8.4.2
+python-dateutil==2.9.0.post0
+python-docx==1.2.0
+python-dotenv==1.2.1
+pytz==2026.2
+PyYAML==6.0.3
+referencing==0.36.2
+requests==2.32.5
+responses==0.26.1
+rich==15.0.0
+rpds-py==0.27.1
+ruff==0.15.16
+scikit-learn==1.6.1
+scipy==1.13.1
+seaborn==0.13.2
+six==1.17.0
+smmap==5.0.3
+sniffio==1.3.1
+sortedcontainers==2.4.0
+soupsieve==2.8.4
+SQLAlchemy==2.0.50
+statsmodels==0.14.6
+streamlit==1.50.0
+tabulate==0.9.0
+tenacity==9.1.2
+threadpoolctl==3.6.0
+toml==0.10.2
+tomli==2.4.1
+tornado==6.5.6
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+tzdata==2026.2
+tzlocal==5.3.1
+urllib3==2.6.3
+Werkzeug==3.1.8
+wrapt==2.2.2
+yarl==1.22.0
+zipp==3.23.1

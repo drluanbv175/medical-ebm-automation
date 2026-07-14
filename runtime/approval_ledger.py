@@ -66,6 +66,23 @@ GATE_REQUIRED_STAKEHOLDERS: dict[str, str] = {
     "G9": "PI",
 }
 
+# Vá 2026-07-15 (Ngày 6 lộ trình 7 ngày — "audit toàn hệ" phát hiện lệch với
+# tools/gate_contract.py): cổng G4 đã được nới nhận CẢ PI tự ký từ 2026-07-14 (khớp
+# doctrine thiet-ke-nghien-cuu.md — bác sĩ đơn lẻ thường tự đóng vai trò thống kê cho
+# đề tài của mình), nhưng bản sao role-mapping RIÊNG trong file này (song song với
+# gate_contract.py, không dùng chung) chưa được cập nhật theo — khiến
+# ApprovalLedger.has_sap_lock()/stakeholder_gate_status() báo sai "G4 chưa đủ" dù PI đã
+# tự ký hợp lệ. KHÔNG ảnh hưởng cổng THẬT: tools/approve_gate.py + run_g4_auto.py chỉ
+# dùng gate_contract.reviewer_role_satisfies_gate()/ledger_approved() cho quyết định
+# (xác nhận qua grep — ApprovalLedger chỉ dùng để ghi/đọc lại record), chỉ ảnh hưởng
+# lớp kiểm/audit (verify_controlled_research_automation.py). Tách thành dict PHỤ thay
+# vì đổi GATE_REQUIRED_STAKEHOLDERS sang tuple để KHÔNG đổi kiểu trả về của
+# required_stakeholder_for_gate() — research_project/ và test_v4_3_4_... nối chuỗi/so
+# sánh == trên field "required_stakeholder", đổi sang tuple sẽ vỡ các chỗ đó.
+GATE_ADDITIONAL_STAKEHOLDERS: dict[str, tuple[str, ...]] = {
+    "G4": ("PI",),
+}
+
 
 def normalize_reviewer_role(role: str) -> str:
     """Chuẩn hóa role để so khớp alias, không lưu/thao tác PII."""
@@ -87,6 +104,15 @@ def reviewer_role_satisfies_stakeholder(role: str, stakeholder: str) -> bool:
 
 def required_stakeholder_for_gate(gate_id: str) -> Optional[str]:
     return GATE_REQUIRED_STAKEHOLDERS.get((gate_id or "").strip().upper())
+
+
+def _allowed_stakeholders_for_gate(gate_id: str) -> tuple[str, ...]:
+    """Mọi nhóm stakeholder được CHẤP NHẬN cho gate_id — nhóm chính (nhãn hiển thị,
+    xem required_stakeholder_for_gate) CỘNG nhóm phụ (GATE_ADDITIONAL_STAKEHOLDERS,
+    vd G4 nhận thêm PI)."""
+    primary = required_stakeholder_for_gate(gate_id)
+    extra = GATE_ADDITIONAL_STAKEHOLDERS.get((gate_id or "").strip().upper(), ())
+    return ((primary,) if primary else ()) + extra
 
 
 class ApprovalLedger:
@@ -158,13 +184,14 @@ class ApprovalLedger:
         """
         Trả approval mới nhất cho gate nếu đúng stakeholder bắt buộc.
 
-        G2 cần IRB/ethics committee, G4 cần thống kê/phương pháp, G9 cần PI.
-        Approval synthetic, agent-created hoặc self-review không được tính là
-        phê duyệt stakeholder thật. Cổng không có cấu hình stakeholder rơi về
-        check_has_approval() để giữ tương thích.
+        G2 cần IRB/ethics committee, G4 cần thống kê/phương pháp HOẶC PI tự ký
+        (GATE_ADDITIONAL_STAKEHOLDERS, vá 2026-07-15), G9 cần PI. Approval synthetic,
+        agent-created hoặc self-review không được tính là phê duyệt stakeholder thật.
+        Cổng không có cấu hình stakeholder rơi về check_has_approval() để giữ tương
+        thích.
         """
-        stakeholder = required_stakeholder_for_gate(gate_id)
-        if not stakeholder:
+        allowed_stakeholders = _allowed_stakeholders_for_gate(gate_id)
+        if not allowed_stakeholders:
             return self.check_has_approval(gate_id, decision=decision)
         matching = [
             r for r in self._records
@@ -177,7 +204,10 @@ class ApprovalLedger:
                 and r.reviewer_agent
                 and r.artifact_creator_agent == r.reviewer_agent
             )
-            and reviewer_role_satisfies_stakeholder(r.reviewer_role, stakeholder)
+            and any(
+                reviewer_role_satisfies_stakeholder(r.reviewer_role, s)
+                for s in allowed_stakeholders
+            )
         ]
         if not matching:
             return None

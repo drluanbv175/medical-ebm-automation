@@ -10,14 +10,21 @@ Công cụ này tạo 2 lớp tách biệt:
 Pseudonymization KHÔNG phải anonymization tuyệt đối vì còn bảng ánh xạ. Chỉ dùng
 khi protocol/IRB/data management plan cho phép tái định danh có kiểm soát.
 
+Retention bảng ánh xạ (vá 2026-07-15): `--retention-months`/`--retention-owner` ghi
+hạn lưu + người chịu trách nhiệm xóa vào mapping_manifest (protected). Không bắt buộc
+để công cụ vẫn chạy được cho pilot/synthetic, nhưng thiếu thì report công khai gắn cờ
+`retention_status="[CẦN PI/DMP ẤN ĐỊNH]"` — cần điền trước khi dùng cho dữ liệu THẬT.
+
 Ví dụ:
   python3 tools/pseudonymize_research_dataset.py --study KKB-HAI-LONG-2026 \\
-    --data raw_export.csv --then-import
+    --data raw_export.csv --then-import \\
+    --retention-months 24 --retention-owner "PI - BS. Nguyen Van A"
 """
 
 from __future__ import annotations
 
 import argparse
+import calendar
 import csv
 import json
 import sys
@@ -40,6 +47,14 @@ REPORT_NAME = "PSEUDONYMIZATION_report.json"
 MAPPING_MANIFEST_NAME = "PSEUDONYMIZATION_mapping_manifest.json"
 LINKAGE_MAP_NAME = "linkage_map.csv"
 REDACTION_MAP_NAME = "redaction_map.csv"
+
+# Retention bảng ánh xạ (vá 2026-07-15, Ngày 6 lộ trình 7 ngày — P1-08 trong
+# reports/AUTOMATION_GAP_REGISTER_RESEARCH_CLINICAL_EBM_2026-07-14.md: bảng ánh xạ đã
+# tách quyền/custody vật lý ngoài repo, chỉ còn thiếu CHÍNH SÁCH hạn lưu). Không tự ấn
+# định con số — phải do PI/protocol/DMP cung cấp, giống quy ước "[CẦN ... ẤN ĐỊNH]" đã
+# dùng ở agent ke-hoach-trien-khai cho đơn giá/định mức.
+RETENTION_UNSET_MARKER = "[CẦN PI/DMP ẤN ĐỊNH]"
+RETENTION_STATUS_SET = "SET"
 
 
 def _default_mapping_root() -> Path:
@@ -70,6 +85,58 @@ def _is_relative_to(path: Path, base: Path) -> bool:
 
 def _is_onedrive_path(path: Path) -> bool:
     return any("onedrive" in part.lower() for part in path.expanduser().parts)
+
+
+def _add_months(dt: datetime, months: int) -> datetime:
+    """Cộng `months` tháng vào `dt`, kẹp ngày về cuối tháng đích nếu tháng đích ngắn
+    hơn (vd 31/1 + 1 tháng -> 28 hoặc 29/2). Thuần stdlib, không cần thêm dependency
+    chỉ để cộng tháng."""
+    month_index = dt.month - 1 + months
+    year = dt.year + month_index // 12
+    month = month_index % 12 + 1
+    day = min(dt.day, calendar.monthrange(year, month)[1])
+    return dt.replace(year=year, month=month, day=day)
+
+
+def _resolve_retention_policy(
+    created_dt: datetime,
+    retention_months: Optional[int],
+    retention_owner: Optional[str],
+) -> Dict[str, Any]:
+    """Tính khối chính sách retention cho bảng ánh xạ pseudonymization.
+
+    Cả `retention_months` LẪN `retention_owner` phải có mới coi là đã ấn định — chỉ
+    cung cấp một trong hai bị coi là CHƯA ấn định (tránh trạng thái nửa vời: có hạn lưu
+    mà không ai chịu trách nhiệm xóa, hoặc ngược lại), kèm ghi chú vì sao.
+    """
+    owner = (retention_owner or "").strip() or None
+    months = retention_months if retention_months and retention_months > 0 else None
+    is_set = months is not None and owner is not None
+
+    issue = None
+    if (months is not None) != (owner is not None):
+        issue = (
+            "Chỉ cung cấp một trong hai (retention_months hoặc retention_owner) — "
+            "coi như CHƯA ấn định, cần cả hai."
+        )
+
+    retention_until = (
+        _add_months(created_dt, months).isoformat(timespec="seconds") if is_set else None
+    )
+
+    return {
+        "retention_status": RETENTION_STATUS_SET if is_set else RETENTION_UNSET_MARKER,
+        "retention_months": months if is_set else None,
+        "retention_owner": owner if is_set else None,
+        "retention_until": retention_until,
+        "input_issue": issue,
+        "note": (
+            "Bảng ánh xạ PHẢI có hạn lưu + người chịu trách nhiệm xóa được ấn định "
+            "trong protocol/DMP trước khi dùng cho dữ liệu THẬT (không phải synthetic). "
+            "Khi tới retention_until, người phụ trách xóa THỦ CÔNG — công cụ này không "
+            "tự động xóa bảng ánh xạ."
+        ),
+    }
 
 
 def _mapping_root_blocker(mapping_root: Path, exports_root: Path) -> Optional[str]:
@@ -256,6 +323,8 @@ def _update_meta(out_dir: Path, report: Dict[str, Any], report_path: Path) -> No
         "protected_mapping_created": report.get("protected_mapping_created"),
         "mapping_location": "[PROTECTED_EXTERNAL_ROOT]",
         "intake_status": (report.get("then_import") or {}).get("status"),
+        "retention_status": report.get("retention_status"),
+        "retention_until": report.get("retention_until"),
         "note": (
             "Pseudonymization còn bảng ánh xạ; bảng ánh xạ là PII và không nằm "
             "trong exports/repo/OneDrive."
@@ -271,8 +340,15 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
                          mapping_root: Optional[Path] = None,
                          then_import: bool = False,
                          max_scan_rows: int = 5000,
-                         id_prefix: str = "PSN") -> Dict[str, Any]:
-    """Tạo dataset pseudonymized và bảng ánh xạ bảo vệ riêng."""
+                         id_prefix: str = "PSN",
+                         retention_months: Optional[int] = None,
+                         retention_owner: Optional[str] = None) -> Dict[str, Any]:
+    """Tạo dataset pseudonymized và bảng ánh xạ bảo vệ riêng.
+
+    `retention_months`/`retention_owner`: hạn lưu bảng ánh xạ + người chịu trách nhiệm
+    xóa khi hết hạn — do PI/protocol/DMP ấn định, KHÔNG có mặc định tự chọn. Thiếu một
+    trong hai bị coi là chưa ấn định (xem `_resolve_retention_policy`).
+    """
     study_id = RDI._sanitize_study(study)
     data_path = Path(data_path)
     exports_root = Path(exports_root) if exports_root else BASE / "exports"
@@ -280,7 +356,9 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
     out_dir = exports_root / study_id
     output_path = Path(output_path) if output_path else _default_output_path(
         study_id, data_path, exports_root)
-    created_at = datetime.now().isoformat(timespec="seconds")
+    created_dt = datetime.now()
+    created_at = created_dt.isoformat(timespec="seconds")
+    retention_policy = _resolve_retention_policy(created_dt, retention_months, retention_owner)
     source_hash = RDI._sha256_file(data_path) if data_path.exists() else "missing"
     mapping_dir = mapping_root / study_id / source_hash[:12]
 
@@ -348,6 +426,7 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
         "redaction_rows": process.get("redaction_rows") or 0,
         "file_permission_policy": "directory=700; files=600",
         "storage_policy": "Bảng ánh xạ là PII; lưu ngoài repo/OneDrive hoặc vault đã phê duyệt.",
+        "retention_policy": retention_policy,
     }
     if blocker is None:
         _write_mapping_manifest(mapping_dir, mapping_manifest)
@@ -380,12 +459,20 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
         "mapping_manifest": MAPPING_MANIFEST_NAME if protected_mapping_created else None,
         "output_pii_scan": output_scan,
         "blocker": blocker,
+        # Chỉ lộ TRẠNG THÁI + NGÀY (không nhạy cảm) ra report công khai — tên/vai trò
+        # người chịu trách nhiệm xóa CHỈ nằm trong mapping_manifest (protected,
+        # ~/.ebm-secrets, chmod 600), theo đúng nguyên tắc report công khai của file này
+        # (vd mapping_location cũng bị redact thành placeholder, xem trên).
+        "retention_status": retention_policy["retention_status"],
+        "retention_months": retention_policy["retention_months"],
+        "retention_until": retention_policy["retention_until"],
         "rules": [
             "Không sửa file nguồn.",
             "Dataset phân tích không chứa PII trực tiếp.",
             "Bảng ánh xạ là PII và không được commit/sync cloud công khai.",
             "Pseudonymization cần được mô tả trong protocol/IRB/DMP.",
             "Dataset pseudonymized vẫn phải qua intake và khóa dữ liệu trước phân tích.",
+            "Bảng ánh xạ cần hạn lưu + người chịu trách nhiệm xóa (retention_status).",
         ],
     }
 
@@ -430,7 +517,19 @@ def main() -> int:
     parser.add_argument("--then-import", action="store_true",
                         help="Sau khi pseudonymize, nạp ngay dataset sạch qua intake")
     parser.add_argument("--max-scan-rows", type=int, default=5000)
+    parser.add_argument(
+        "--retention-months", type=int, default=None,
+        help="Số tháng lưu bảng ánh xạ trước khi phải xóa — do PI/protocol/DMP ấn "
+             "định, không có mặc định tự chọn. Phải đi kèm --retention-owner.",
+    )
+    parser.add_argument(
+        "--retention-owner", default=None,
+        help="Người/vai trò chịu trách nhiệm xóa bảng ánh xạ khi hết hạn lưu — do PI "
+             "ấn định. Phải đi kèm --retention-months.",
+    )
     args = parser.parse_args()
+    if args.retention_months is not None and args.retention_months <= 0:
+        parser.error("--retention-months phải > 0")
 
     report = pseudonymize_dataset(
         args.study,
@@ -440,6 +539,8 @@ def main() -> int:
         then_import=args.then_import,
         max_scan_rows=args.max_scan_rows,
         id_prefix=args.id_prefix,
+        retention_months=args.retention_months,
+        retention_owner=args.retention_owner,
     )
     print(f"PSEUDONYMIZATION: {report['status']}")
     print(
@@ -449,6 +550,11 @@ def main() -> int:
             redacted=report["redacted_cell_count"],
         )
     )
+    # Chỉ in TRẠNG THÁI + ngày — không in tên/vai trò người phụ trách ra stdout (có thể
+    # bị log/capture ngoài ý muốn), đúng nguyên tắc "report công khai không lộ chi tiết
+    # vận hành" đã áp dụng cho mapping_location.
+    print(f"retention: {report['retention_status']}"
+          + (f" (đến {report['retention_until']})" if report['retention_until'] else ""))
     if report["status"] == PSEUDONYMIZED_STATUS:
         print(f"pseudonymized_path={report['pseudonymized_path']}")
         print("protected_mapping=[PROTECTED_EXTERNAL_ROOT]")
