@@ -406,13 +406,27 @@ class TestApproveGateEndToEnd:
         assert res.returncode != 0
 
     def test_approve_gate_rejects_wrong_reviewer_role_for_g4(self, study_dir):
+        """G4 nới chấp nhận PI từ 2026-07-14 (khớp doctrine "Chủ nhiệm đề tài" tự
+        ký khi không có thống kê viên riêng — xem thiet-ke-nghien-cuu.md) — vai
+        KHÔNG liên quan tới G4 (vd IRB) vẫn phải bị từ chối."""
+        artifact = study_dir / "G4_A5_SAP_FINAL.md"
+        artifact.write_text("# SAP đã khóa\nNội dung test.", encoding="utf-8")
+        res = self._run("--study", self._STUDY, "--gate", "G4",
+                        "--artifact", str(artifact),
+                        "--reviewer-role", "IRB", "--reviewer-ref", "IRB-01")
+        assert res.returncode != 0
+        assert "METHODS_STATISTICS_REVIEWER" in res.stdout
+
+    def test_approve_gate_accepts_pi_role_for_g4(self, study_dir):
+        """Vá 2026-07-14: G4 giờ chấp nhận CẢ PI, không chỉ STATISTICIAN — trước
+        đó bác sĩ tự ký khóa SAP đúng theo hướng dẫn doctrine vẫn bị từ chối vì
+        code fail-closed chỉ chấp nhận thống kê viên (lệch code/doctrine thật)."""
         artifact = study_dir / "G4_A5_SAP_FINAL.md"
         artifact.write_text("# SAP đã khóa\nNội dung test.", encoding="utf-8")
         res = self._run("--study", self._STUDY, "--gate", "G4",
                         "--artifact", str(artifact),
                         "--reviewer-role", "PI", "--reviewer-ref", "PI-01")
-        assert res.returncode != 0
-        assert "METHODS_STATISTICS_REVIEWER" in res.stdout
+        assert res.returncode == 0, f"stderr={res.stderr}\nstdout={res.stdout}"
 
     def test_approve_gate_missing_study_dir_exits_nonzero(self, tmp_path):
         # Đề tài chưa có thư mục exports/<study> → từ chối (không tự tạo phê duyệt khống).

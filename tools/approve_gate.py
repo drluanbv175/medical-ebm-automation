@@ -30,9 +30,14 @@ Dùng:
         --artifact exports/<tên>/G4_A5_SAP_FINAL_<tên>.md \\
         --reviewer-role "METHODS_STATISTICS_REVIEWER" --reviewer-ref "<mã/tên viết tắt, KHÔNG PII đầy đủ>"
 
-Role bắt buộc theo cổng:
+Role bắt buộc theo cổng (vá 2026-07-14 — nâng cấp kiểm soát PI/IRB/thống kê viên/
+phản biện; G4 nới thêm PI vì doctrine hướng dẫn "Chủ nhiệm đề tài" tự ký khóa SAP
+khi không có thống kê viên riêng; G8 mới thêm — trước đây bình duyệt không có cổng
+cứng nào):
     G2  → IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE
     G4  → METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN
+          HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
+    G8  → PHAN_BIEN / PEER_REVIEWER / EXTERNAL_REVIEWER (bình duyệt độc lập)
     G9  → PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
 
 Sau khi chạy: exports/<tên>/approval_ledger.json có thêm 1 dòng phê duyệt, evidence_hash =
@@ -62,7 +67,7 @@ from runtime.schemas import ApprovalDecisionEnum
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("Dùng:")[0])
     ap.add_argument("--study", required=True, help="Tên đề tài (khớp thư mục exports/<tên>)")
-    ap.add_argument("--gate", required=True, choices=["G2", "G4", "G5", "G9", "GATE_A", "GATE_B"])
+    ap.add_argument("--gate", required=True, choices=["G2", "G4", "G5", "G8", "G9", "GATE_A", "GATE_B"])
     ap.add_argument("--artifact", required=True, help="File đại diện cho nội dung được duyệt (SAP/checkpoint/...)")
     ap.add_argument("--reviewer-role", required=True, help='vd "Chủ nhiệm đề tài", "Nghiên cứu viên chính"')
     ap.add_argument("--reviewer-ref", required=True,

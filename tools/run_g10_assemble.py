@@ -1155,6 +1155,10 @@ def main() -> int:
                     help="Vẫn lắp ráp dù G9 (liêm chính tác giả) chưa có phê duyệt "
                          "thật — CHỈ dùng để xem trước bản NHÁP, KHÔNG dùng bản xuất "
                          "ra khi cờ này bật để nộp bài.")
+    ap.add_argument("--i-know-g8-not-signed", action="store_true",
+                    help="Vẫn lắp ráp dù G8 (bình duyệt độc lập) chưa có phê duyệt "
+                         "thật — CHỈ dùng để xem trước bản NHÁP, KHÔNG dùng bản xuất "
+                         "ra khi cờ này bật để nộp bài.")
     args = ap.parse_args()
     # 2026-07-11: vá path traversal, khớp chuẩn sanitize đã dùng ở G0-G5.
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
@@ -1189,6 +1193,21 @@ def main() -> int:
                 return GC.EXIT_GUARDRAIL_FAIL
         except ImportError:
             print("  ⚠ check_de_cuong.py chưa có — bỏ qua tự kiểm.")
+
+    # Vá 2026-07-14 (nâng cấp kiểm soát PI/IRB/thống kê viên/phản biện): G8 (bình
+    # duyệt độc lập) trước đây KHÔNG có cổng cứng nào — không nằm trong --gate choices
+    # của approve_gate.py, không yêu cầu role, không gì chặn nếu bác sĩ bỏ qua bình
+    # duyệt mà march thẳng tới G9. Theo doctrine (dieu-phoi-nghien-cuu.md), G8 diễn ra
+    # TRƯỚC G9 — nay xác minh THẬT qua ledger tại đây, cùng chỗ với chốt G9 bên dưới.
+    g8_artifact = out_dir / f"G8_A9_PRESUBMISSION_{study}.md"
+    g8_signed = GC.ledger_approved("G8", study, g8_artifact, repo_root=BASE)
+    if not g8_signed and not args.i_know_g8_not_signed:
+        print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: G8 (bình duyệt độc lập) chưa có phê duyệt")
+        print("   THẬT trong approval_ledger.json (chạy tools/approve_gate.py --gate G8,")
+        print("   TỰ TAY bởi người phản biện, không nhờ agent). Tài liệu đã xuất Ở TRÊN")
+        print("   chỉ là BẢN NHÁP để rà soát — KHÔNG dùng để nộp khi ở trạng thái này.")
+        print("   Nếu chỉ muốn xem trước, thêm --i-know-g8-not-signed.")
+        return GC.EXIT_BLOCKED
 
     # Vá 2026-07-12 (audit toàn diện cổng G0-G9): G10 là bước lắp ráp CUỐI trước khi
     # tài liệu này có thể bị hiểu nhầm là "sẵn sàng nộp" — nhưng G9 (liêm chính tác

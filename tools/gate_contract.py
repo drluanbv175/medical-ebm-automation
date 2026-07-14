@@ -30,7 +30,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, Tuple
 
 
 def ensure_utf8_stdout() -> None:
@@ -299,12 +299,30 @@ _STAKEHOLDER_ROLE_ALIASES: Dict[str, set[str]] = {
         "CHUYÊN_GIA_THỐNG_KÊ",
         "PHƯƠNG_PHÁP_THỐNG_KÊ",
     },
+    "INDEPENDENT_PEER_REVIEWER": {
+        "INDEPENDENT_PEER_REVIEWER",
+        "PEER_REVIEWER",
+        "EXTERNAL_REVIEWER",
+        "PHAN_BIEN_DOC_LAP",
+        "PHAN_BIEN",
+        "PHẢN_BIỆN_ĐỘC_LẬP",
+        "PHẢN_BIỆN",
+    },
 }
 
-_GATE_REQUIRED_STAKEHOLDERS: Dict[str, str] = {
-    "G2": "IRB",
-    "G4": "STATISTICIAN",
-    "G9": "PI",
+# Vá 2026-07-14 (nâng cấp kiểm soát PI/IRB/thống kê viên/phản biện): mỗi cổng có thể
+# chấp nhận NHIỀU nhóm stakeholder (tuple), không chỉ một — vd G4 (khóa SAP) trước đây
+# fail-closed CHỈ chấp nhận STATISTICIAN, nhưng doctrine (thiet-ke-nghien-cuu.md) lại
+# hướng dẫn "Chủ nhiệm đề tài" (PI) tự ký, khiến bác sĩ làm đúng theo tài liệu vẫn bị
+# approve_gate.py từ chối — lệch thật giữa code và doctrine, phát hiện qua audit
+# 2026-07-14. Nới G4 chấp nhận CẢ STATISTICIAN lẫn PI (khớp thực tế: bác sĩ đơn lẻ
+# thường tự đóng vai trò thống kê cho đề tài của mình). G8 (bình duyệt/phản biện) mới
+# thêm — trước đây hoàn toàn không có yêu cầu role/cổng cứng nào.
+_GATE_REQUIRED_STAKEHOLDERS: Dict[str, Tuple[str, ...]] = {
+    "G2": ("IRB",),
+    "G4": ("STATISTICIAN", "PI"),
+    "G8": ("INDEPENDENT_PEER_REVIEWER",),
+    "G9": ("PI",),
 }
 
 
@@ -323,23 +341,29 @@ def reviewer_role_satisfies_gate(gate_id: str, reviewer_role: str) -> bool:
     """Role người duyệt có đúng stakeholder bắt buộc cho cổng không.
 
     Cổng chưa có stakeholder requirement (vd G5/Gate A/B) trả True để giữ tương
-    thích. G2/G4/G9 fail-closed nếu role sai nhóm: IRB, thống kê/phương pháp, PI.
+    thích. G2/G4/G8/G9 fail-closed nếu role không thuộc BẤT KỲ nhóm nào được phép:
+    IRB · thống kê/phương pháp HOẶC PI (G4) · phản biện độc lập (G8) · PI (G9).
     """
-    required = _GATE_REQUIRED_STAKEHOLDERS.get(_normalize_role(gate_id))
-    if not required:
+    required_groups = _GATE_REQUIRED_STAKEHOLDERS.get(_normalize_role(gate_id))
+    if not required_groups:
         return True
-    return _normalize_role(reviewer_role) in _STAKEHOLDER_ROLE_ALIASES[required]
+    normalized = _normalize_role(reviewer_role)
+    return any(normalized in _STAKEHOLDER_ROLE_ALIASES[group] for group in required_groups)
+
+
+_ROLE_HINT_TEXT: Dict[str, str] = {
+    "IRB": "IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE",
+    "STATISTICIAN": "METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN",
+    "PI": "PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR",
+    "INDEPENDENT_PEER_REVIEWER": "PHAN_BIEN / PEER_REVIEWER / EXTERNAL_REVIEWER",
+}
 
 
 def required_reviewer_role_hint(gate_id: str) -> str:
-    required = _GATE_REQUIRED_STAKEHOLDERS.get(_normalize_role(gate_id))
-    if required == "IRB":
-        return "IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE"
-    if required == "STATISTICIAN":
-        return "METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN"
-    if required == "PI":
-        return "PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR"
-    return "không yêu cầu nhóm role riêng"
+    required_groups = _GATE_REQUIRED_STAKEHOLDERS.get(_normalize_role(gate_id))
+    if not required_groups:
+        return "không yêu cầu nhóm role riêng"
+    return " HOẶC ".join(_ROLE_HINT_TEXT[group] for group in required_groups)
 
 
 def signing_key_path() -> Path:
@@ -404,11 +428,14 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
     duyệt THẬT chưa" — thay cho 5 bản sao gần-giống-nhau từng rải rác ở
     run_g6_auto.py (×4 template) và run_g9_auto.py trước 2026-07-12 (chính cách
     trùng lặp này từng gây lỗi thật ở nơi khác trong hệ thống — sửa 1 chỗ quên 3
-    chỗ). True CHỈ khi ĐỦ CẢ BỐN: (1) có bản ghi APPROVED không synthetic cho
-    gate_id, (2) không phải agent tạo, (3) evidence_hash khớp NỘI DUNG HIỆN TẠI
-    của artifact_path (sửa file sau duyệt → coi như chưa duyệt), (4) NẾU máy này
-    đã cấu hình khóa ký (signing_key_configured()) — chữ ký PHẢI khớp; nếu máy
-    CHƯA từng thiết lập khóa, hạ về kiểm tra cũ (1)-(3) để không phá đề tài/test
+    chỗ). True CHỈ khi ĐỦ CẢ NĂM: (1) có bản ghi APPROVED không synthetic cho
+    gate_id, (2) không phải agent tạo, (3) reviewer_role của bản ghi thuộc ĐÚNG
+    nhóm stakeholder bắt buộc cho gate_id nếu có (xem _GATE_REQUIRED_STAKEHOLDERS
+    — vá 2026-07-14, trước đó role chỉ được ép ở approve_gate.py lúc TẠO bản ghi,
+    không được xác minh lại ở đây lúc DÙNG), (4) evidence_hash khớp NỘI DUNG HIỆN
+    TẠI của artifact_path (sửa file sau duyệt → coi như chưa duyệt), (5) NẾU máy
+    này đã cấu hình khóa ký (signing_key_configured()) — chữ ký PHẢI khớp; nếu máy
+    CHƯA từng thiết lập khóa, hạ về kiểm tra cũ (1)-(4) để không phá đề tài/test
     có từ trước khi có chữ ký (rely_on_signature=False được ghi rõ qua giá trị
     trả về của signing_key_configured(), gọi riêng nếu cần phân biệt 2 trường hợp)."""
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
