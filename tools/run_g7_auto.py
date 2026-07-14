@@ -20,6 +20,14 @@ Lệnh:
         --target-journal "Journal of the American College of Cardiology" \\
         --word-limit 3500
 
+DOCX (vá 2026-07-15): xuất qua md2docx_vn.markdown_to_docx() — bảng Word THẬT
+(không phải khối chữ monospace), cùng cỗ máy render đã dùng cho G10/gen_research_
+docx.py. --target-journal khớp đúng tên (không phân biệt hoa/thường/dấu) với 1
+trong các hồ sơ định dạng thật (font/lề/cách dòng) ở md2docx_vn.JOURNAL_PROFILES
+("BMJ Open", "Tạp chí Y học Việt Nam") — tên khác vẫn được chèn vào nội dung như
+trước, chỉ không đổi định dạng. Hồ sơ là VÍ DỤ, bác sĩ PHẢI đối chiếu lại hướng
+dẫn tác giả hiện hành của tạp chí đích trước khi nộp.
+
 Nguyên tắc bất biến:
   - KHÔNG bịa kết quả thống kê
   - Mọi ô kết quả đều là [CẦN KẾT QUẢ THẬT]
@@ -1128,100 +1136,56 @@ def word_count_table(word_limit: int) -> str:
 # 7. XUẤT DOCX
 # ════════════════════════════════════════════════════════════════════════════
 
-def export_docx_g7(artifact_md: str, study: str, out_dir: Path) -> Optional[Path]:
+def export_docx_g7(artifact_md: str, study: str, out_dir: Path,
+                   target_journal: str = "") -> Optional[Path]:
     """
-    Xuất bản thảo ra Word (.docx).
-    Các dòng [CẦN KẾT QUẢ THẬT] được tô màu cam đậm để dễ nhận biết.
-    Các dòng [CẦN...] khác tô màu cam nhạt.
+    Xuất bản thảo ra Word (.docx) — vá 2026-07-15 (Ngày 5 lộ trình 7 ngày). Trước
+    đây hàm này TỰ VIẾT một bộ render markdown->docx RIÊNG: bảng markdown bị hiển
+    thị như KHỐI CHỮ MONOSPACE (không phải bảng Word thật), và --target-journal
+    chỉ chèn TÊN tạp chí dạng chữ vào nội dung — không đổi font/lề/cách dòng thật,
+    mọi bản thảo ra CÙNG MỘT định dạng "luận văn VN" bất kể nộp tạp chí nào.
+
+    Nay dùng lại `md2docx_vn.markdown_to_docx()` — CÙNG cỗ máy render bảng Word
+    thật đã dùng cho G10 (assembler) và gen_research_docx.py (test_research_docx_
+    formatting.py khoá hình thức: font tiếng Việt + `<w:tblLayout type="fixed">` +
+    tô header + padding ô + số trang) — cộng hồ sơ định dạng thật theo
+    --target-journal (`resolve_journal_profile()`, xem md2docx_vn.py — hồ sơ VÍ DỤ,
+    bác sĩ PHẢI đối chiếu lại hướng dẫn tác giả hiện hành trước khi nộp).
+
+    Phân biệt màu [CẦN KẾT QUẢ THẬT] (đỏ đậm) vs [CẦN...] khác (cam) mà bản cũ tự
+    làm riêng nay chuyển vào md2docx_vn.py (dùng chung, không mất tính năng).
     """
     try:
-        from docx import Document
-        from docx.enum.text import WD_ALIGN_PARAGRAPH
-        from docx.shared import Pt, RGBColor
-
-        doc = Document()
-
-        # Trang bìa
-        title_p = doc.add_heading("BẢN THẢO IMRAD SKELETON", level=0)
-        title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-        sub_p = doc.add_paragraph(f"Đề tài: {study}")
-        sub_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-        date_p = doc.add_paragraph(
-            f"[BẢN NHÁP TỰ ĐỘNG — G7] | {datetime.now().strftime('%Y-%m-%d %H:%M')}"
-        )
-        date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-        disc_p = doc.add_paragraph(
-            "KHÔNG điền kết quả giả vào ô [CẦN KẾT QUẢ THẬT]. "
-            "Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp."
-        )
-        disc_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        for run in disc_p.runs:
-            run.bold = True
-
-        doc.add_page_break()
-
-        # Phân tích từng dòng
-        in_code_block = False
-        for line in artifact_md.split("\n"):
-            stripped = line.strip()
-
-            # Bỏ qua fence code block markers
-            if stripped.startswith("```"):
-                in_code_block = not in_code_block
-                continue
-
-            if in_code_block:
-                p = doc.add_paragraph()
-                r = p.add_run(line)
-                r.font.name = "Courier New"
-                r.font.size = Pt(9)
-                continue
-
-            # Heading
-            if line.startswith("# "):
-                doc.add_heading(line[2:], level=1)
-            elif line.startswith("## "):
-                doc.add_heading(line[3:], level=2)
-            elif line.startswith("### "):
-                doc.add_heading(line[4:], level=3)
-            elif stripped == "---":
-                # Đường kẻ ngang
-                doc.add_paragraph("─" * 60)
-            elif stripped.startswith("|") and stripped.endswith("|"):
-                # Dòng bảng — hiển thị như monospace
-                p = doc.add_paragraph()
-                r = p.add_run(stripped)
-                r.font.name = "Courier New"
-                r.font.size = Pt(8)
-            elif stripped:
-                p = doc.add_paragraph()
-                # Đặt màu theo loại placeholder
-                if "[CẦN KẾT QUẢ THẬT" in line:
-                    r = p.add_run(line)
-                    r.font.color.rgb = RGBColor(0xCC, 0x33, 0x00)  # Đỏ cam đậm
-                    r.bold = True
-                elif "[CẦN" in line:
-                    r = p.add_run(line)
-                    r.font.color.rgb = RGBColor(0xCC, 0x77, 0x00)  # Cam
-                elif line.startswith(">"):
-                    # Blockquote
-                    r = p.add_run(line.lstrip("> "))
-                    r.italic = True
-                    r.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
-                else:
-                    p.add_run(line)
-
-        docx_path = out_dir / f"G7_A8_MANUSCRIPT_{study}.docx"
-        doc.save(docx_path)
-        return docx_path
-
+        import md2docx_vn as M2D
     except ImportError:
         print("  ⚠ python-docx chưa cài — bỏ qua xuất DOCX")
         print("    Cài: pip install python-docx")
         return None
+
+    journal_profile = M2D.resolve_journal_profile(target_journal)
+    if target_journal and not journal_profile:
+        known = ", ".join(p["label"] for p in M2D.JOURNAL_PROFILES.values())
+        print(f"  ℹ️  Chưa có hồ sơ định dạng riêng cho \"{target_journal}\" — dùng mặc định.")
+        print(f"     Hồ sơ đã biết: {known}")
+    elif journal_profile:
+        print(f"  ℹ️  Định dạng theo hồ sơ: {journal_profile['label']}")
+        print(f"     {journal_profile['source_note']}")
+
+    title_page = {
+        "doc_type": "BẢN THẢO IMRAD SKELETON",
+        "title": f"Đề tài: {study}",
+        "meta_lines": [
+            f"[BẢN NHÁP TỰ ĐỘNG — G7] | {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+            "**KHÔNG điền kết quả giả vào ô [CẦN KẾT QUẢ THẬT]. "
+            "Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp.**",
+        ],
+    }
+
+    try:
+        docx_path = out_dir / f"G7_A8_MANUSCRIPT_{study}.docx"
+        M2D.markdown_to_docx(artifact_md, docx_path, title_page=title_page,
+                             journal_profile=journal_profile)
+        return docx_path
     except Exception as e:
         print(f"  ⚠ Lỗi khi xuất DOCX: {e}")
         return None
@@ -1375,7 +1339,11 @@ def main() -> None:
     parser.add_argument("--study",          required=True,
                         help="Mã đề tài (phải khớp với --study ở G0-G6)")
     parser.add_argument("--target-journal", default="",
-                        help="Tên tạp chí mục tiêu (tuỳ chọn, dùng để định hướng định dạng)")
+                        help="Tên tạp chí mục tiêu (tuỳ chọn). Khớp đúng tên (không phân biệt "
+                             "hoa/thường/dấu) với hồ sơ định dạng DOCX thật (font/lề/cách dòng) — "
+                             "vá 2026-07-15, xem md2docx_vn.JOURNAL_PROFILES. Hiện có: \"BMJ Open\", "
+                             "\"Tạp chí Y học Việt Nam\". Tên khác → vẫn chèn vào nội dung, dùng "
+                             "định dạng mặc định (chuẩn luận văn VN).")
     parser.add_argument("--word-limit",     type=int, default=3500,
                         help="Giới hạn từ tạp chí yêu cầu (mặc định: 3500)")
     args = parser.parse_args()
@@ -1567,7 +1535,7 @@ def main() -> None:
 
     # ── Bước 8: DOCX ──
     print("\n📄 Bước 7/8: Xuất DOCX...")
-    docx_path = export_docx_g7(artifact, study, out_dir)
+    docx_path = export_docx_g7(artifact, study, out_dir, target_journal=args.target_journal)
     if docx_path:
         print(f"  → {docx_path}")
     else:

@@ -21,6 +21,7 @@ API chính:
 from __future__ import annotations
 
 import re
+import unicodedata
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -30,10 +31,105 @@ TABLE_PT = 11
 TABLE_HEADER_FILL = "D9EAF7"
 CONTENT_WIDTH_TWIPS = 9072  # A4 21 cm - lề trái 3 cm - lề phải 2 cm.
 
+# ── Hồ sơ định dạng theo tạp chí đích — vá 2026-07-15 (Ngày 5 lộ trình 7 ngày) ──
+# Trước đây --target-journal (run_g7_auto.py) chỉ chèn TÊN tạp chí dạng chữ vào
+# nội dung, không đổi font/lề/cách dòng thật — mọi bản thảo ra cùng 1 định dạng
+# "chuẩn luận văn VN" bất kể nộp đâu. _DEFAULT_PROFILE giữ NGUYÊN hành vi cũ (mọi
+# caller không truyền journal_profile — gen_research_docx.py, G10 — không đổi gì).
+#
+# QUAN TRỌNG — đây là hồ sơ VÍ DỤ, không phải cam kết đã xác minh 100% với từng
+# tạp chí: 2 con số của BMJ Open (12pt, cách dòng đôi) xác minh qua trang hướng
+# dẫn tác giả 2026-07-15 ("standard formatting: 12-point font, double-spaced");
+# phần còn lại (lề, khổ trang, font họ) theo quy ước học thuật chung, CHƯA xác
+# minh riêng cho từng tạp chí. Hồ sơ VN tổng hợp quy ước phổ biến (A4/Times New
+# Roman/≥12pt/cách dòng 1.5/lề Normal), KHÔNG gắn với 1 trang hướng dẫn cụ thể
+# đã xác minh. BẮT BUỘC bác sĩ đối chiếu lại hướng dẫn tác giả HIỆN HÀNH của
+# tạp chí đích trước khi nộp — xem source_note từng hồ sơ.
+_DEFAULT_PROFILE: Dict = {
+    "key": "default_vn_thesis",
+    "label": "Mặc định (chuẩn luận văn/đề cương VN)",
+    "font": FONT, "body_pt": BODY_PT, "body_line_spacing": 1.5,
+    "page_width_cm": 21.0, "page_height_cm": 29.7,
+    "left_margin_cm": 3.0, "right_margin_cm": 2.0,
+    "top_margin_cm": 2.5, "bottom_margin_cm": 2.5,
+    "source_note": "Định dạng gốc của công cụ này (gáy trái rộng cho đóng bìa luận văn/đề cương) — "
+                   "không đổi khi không truyền journal_profile.",
+}
+
+JOURNAL_PROFILES: Dict[str, Dict] = {
+    "tap_chi_y_hoc_viet_nam": {
+        "key": "tap_chi_y_hoc_viet_nam",
+        "label": "Tạp chí Y học Việt Nam",
+        "match": ("tạp chí y học việt nam", "tap chi y hoc viet nam", "vietnam medical journal",
+                  "vmj"),
+        "font": "Times New Roman", "body_pt": 12, "body_line_spacing": 1.5,
+        "page_width_cm": 21.0, "page_height_cm": 29.7,
+        "left_margin_cm": 2.54, "right_margin_cm": 2.54,
+        "top_margin_cm": 2.54, "bottom_margin_cm": 2.54,
+        "source_note": "Hồ sơ VÍ DỤ tổng hợp quy ước phổ biến của tạp chí y khoa Việt Nam (A4, "
+                       "Times New Roman, cỡ chữ ≥12, cách dòng 1.5, lề 'Normal' ~2.54cm) — CHƯA "
+                       "xác minh riêng với 1 trang hướng dẫn tác giả cụ thể. BẮT BUỘC bác sĩ đối "
+                       "chiếu lại hướng dẫn tác giả hiện hành trước khi nộp.",
+    },
+    "bmj_open": {
+        "key": "bmj_open",
+        "label": "BMJ Open",
+        "match": ("bmj open",),
+        "font": "Times New Roman", "body_pt": 12, "body_line_spacing": 2.0,
+        "page_width_cm": 21.0, "page_height_cm": 29.7,
+        "left_margin_cm": 2.54, "right_margin_cm": 2.54,
+        "top_margin_cm": 2.54, "bottom_margin_cm": 2.54,
+        "source_note": "Cỡ chữ 12pt + cách dòng đôi XÁC MINH qua hướng dẫn tác giả BMJ Open "
+                       "2026-07-15 ('standard formatting: 12-point font, double-spaced', "
+                       "bmjopen.bmj.com/pages/authors — tham chiếu qua tìm kiếm do trang chặn "
+                       "fetch trực tiếp). Font họ/lề/khổ trang CHƯA xác minh riêng (BMJ Open chấp "
+                       "nhận .doc/.docx/.rtf/.pdf, không nêu font họ bắt buộc) — dùng quy ước học "
+                       "thuật chung (Times New Roman, lề 1 inch). Tham khảo: KHÔNG ép kiểu trích "
+                       "dẫn nộp ban đầu (BMJ Open nhận bất kỳ style nào, tự định dạng lại nếu được "
+                       "chấp nhận) — vẫn dùng Vancouver mặc định của hệ này.",
+    },
+}
+
+
+def _normalize_match_text(s: str) -> str:
+    """Bỏ dấu tiếng Việt + hạ chữ thường để khớp tên tạp chí không phân biệt có/
+    không gõ dấu (vd "Tạp chí Y học Việt Nam" khớp "tap chi y hoc viet nam")."""
+    s = unicodedata.normalize("NFD", s.lower())
+    return "".join(c for c in s if unicodedata.category(c) != "Mn").strip()
+
+
+def resolve_journal_profile(target_journal: Optional[str]) -> Optional[Dict]:
+    """Khớp tên tạp chí đích (--target-journal) với hồ sơ định dạng đã biết —
+    khớp CHÍNH XÁC sau khi chuẩn hoá dấu/hoa-thường (không khớp mờ/gần đúng),
+    CỐ Ý để tên tạp chí gõ sai chính tả rơi về _DEFAULT_PROFILE thay vì âm thầm
+    áp nhầm định dạng của một tạp chí khác. Không khớp được → None."""
+    if not target_journal or not target_journal.strip():
+        return None
+    needle = _normalize_match_text(target_journal)
+    for profile in JOURNAL_PROFILES.values():
+        if any(_normalize_match_text(m) == needle for m in profile["match"]):
+            return profile
+    return None
+
+
+_active_profile: Dict = dict(_DEFAULT_PROFILE)
+
+
+def _set_active_profile(profile: Optional[Dict]) -> None:
+    global _active_profile
+    _active_profile = dict(profile) if profile else dict(_DEFAULT_PROFILE)
+
 # Regex tách inline: **đậm** / *nghiêng* / [nhãn ...]
 _INLINE_RE = re.compile(r"(\*\*.+?\*\*|\*[^*].*?\*|\[[^\]]+\])")
 # Nhãn cần tô nổi bật (đầu chuỗi trong ngoặc vuông).
 _HIGHLIGHT_PREFIXES = ("CẦN", "ĐÃ", "DỰ THẢO", "CHƯA", "KHOÁ", "KHÓA")
+# Vá 2026-07-15: "[CẦN KẾT QUẢ THẬT...]" tô đỏ đậm hơn — mức khẩn cấp cao nhất
+# (ô chờ SỐ LIỆU THẬT, tuyệt đối không được điền giả), khác các nhãn [CẦN...]
+# khác (cam nhạt hơn) — giữ đúng phân biệt màu mà export_docx_g7() (run_g7_auto.py)
+# từng tự làm riêng trước khi hợp nhất vào bộ render dùng chung này.
+_URGENT_FLAG_SUBSTRING = "KẾT QUẢ THẬT"
+_FLAG_COLOR_URGENT = (0xCC, 0x33, 0x00)   # đỏ cam đậm
+_FLAG_COLOR_NORMAL = (0xCC, 0x77, 0x00)   # cam
 
 
 def _looks_like_flag(bracket_text: str) -> bool:
@@ -42,23 +138,37 @@ def _looks_like_flag(bracket_text: str) -> bool:
     return any(inner.startswith(p) for p in _HIGHLIGHT_PREFIXES)
 
 
-def _set_run_font(run, size=BODY_PT, bold=False, italic=False):
-    """Ép font Times New Roman (kể cả eastAsia) cho 1 run."""
+def _flag_color(bracket_text: str):
+    """Màu RGB (tuple 3 số) cho 1 nhãn [CẦN...]/[ĐÃ...]/... — đỏ đậm hơn nếu là
+    "[CẦN KẾT QUẢ THẬT...]" (ô chờ số liệu thật), cam nhạt hơn cho nhãn khác."""
+    inner = bracket_text.strip("[]").strip().upper()
+    return _FLAG_COLOR_URGENT if _URGENT_FLAG_SUBSTRING in inner else _FLAG_COLOR_NORMAL
+
+
+def _set_run_font(run, size=None, bold=False, italic=False, color=None):
+    """Ép font (kể cả eastAsia) cho 1 run — đọc từ _active_profile (vá 2026-07-15,
+    xem resolve_journal_profile). size=None -> cỡ thân bài của hồ sơ đang áp.
+    color: tuple (R,G,B) tuỳ chọn (vd _FLAG_COLOR_URGENT)."""
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
-    from docx.shared import Pt
+    from docx.shared import Pt, RGBColor
 
-    run.font.name = FONT
+    font_name = _active_profile["font"]
+    if size is None:
+        size = _active_profile["body_pt"]
+    run.font.name = font_name
     run.font.size = Pt(size)
     run.font.bold = bold
     run.font.italic = italic
+    if color is not None:
+        run.font.color.rgb = RGBColor(*color)
     rpr = run._element.get_or_add_rPr()
     rfonts = rpr.find(qn("w:rFonts"))
     if rfonts is None:
         rfonts = OxmlElement("w:rFonts")
         rpr.append(rfonts)
     for attr in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
-        rfonts.set(qn(attr), FONT)
+        rfonts.set(qn(attr), font_name)
 
 
 def _set_fixed_table_layout(table):
@@ -155,15 +265,17 @@ def _add_page_number(paragraph):
     run._r.append(end)
 
 
-def _add_inline_runs(paragraph, text, size=BODY_PT, bold=False, italic=False):
-    """Thêm run vào paragraph, xử lý **đậm**/*nghiêng*/[nhãn] (nhãn -> đậm+nghiêng)."""
+def _add_inline_runs(paragraph, text, size=None, bold=False, italic=False):
+    """Thêm run vào paragraph, xử lý **đậm**/*nghiêng*/[nhãn] (nhãn -> đậm+nghiêng).
+    size=None -> _set_run_font tự lấy cỡ thân bài của hồ sơ đang áp (vá 2026-07-15)."""
     for part in _INLINE_RE.split(text):
         if not part:
             continue
         if part.startswith("**") and part.endswith("**") and len(part) > 4:
             _set_run_font(paragraph.add_run(part[2:-2]), size, bold=True, italic=italic)
         elif part.startswith("[") and part.endswith("]") and _looks_like_flag(part):
-            _set_run_font(paragraph.add_run(part), size, bold=True, italic=True)
+            _set_run_font(paragraph.add_run(part), size, bold=True, italic=True,
+                         color=_flag_color(part))
         elif part.startswith("*") and part.endswith("*") and len(part) > 2:
             _set_run_font(paragraph.add_run(part[1:-1]), size, bold=bold, italic=True)
         else:
@@ -283,51 +395,61 @@ def _render_title_page(doc, tp: Dict):
     _page_break(doc)
 
 
-def _init_document(title_page: Optional[Dict]):
+def _init_document(title_page: Optional[Dict], profile: Optional[Dict] = None):
+    """profile=None -> _DEFAULT_PROFILE (hành vi gốc, gáy trái rộng cho đóng bìa
+    luận văn VN) — mọi caller cũ (gen_research_docx.py, G10) không đổi gì."""
     from docx import Document
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
     from docx.shared import Cm
 
+    _set_active_profile(profile)
+    p = _active_profile
+
     doc = Document()
     sec = doc.sections[0]
-    sec.page_width = Cm(21.0)
-    sec.page_height = Cm(29.7)
-    sec.left_margin = Cm(3.0)     # gáy trái rộng theo chuẩn luận văn VN
-    sec.right_margin = Cm(2.0)
-    sec.top_margin = Cm(2.5)
-    sec.bottom_margin = Cm(2.5)
+    sec.page_width = Cm(p["page_width_cm"])
+    sec.page_height = Cm(p["page_height_cm"])
+    sec.left_margin = Cm(p["left_margin_cm"])
+    sec.right_margin = Cm(p["right_margin_cm"])
+    sec.top_margin = Cm(p["top_margin_cm"])
+    sec.bottom_margin = Cm(p["bottom_margin_cm"])
     _add_page_number(sec.footer.paragraphs[0])
 
     normal = doc.styles["Normal"]
-    normal.font.name = FONT
-    normal.font.size = _pt(BODY_PT)
+    normal.font.name = p["font"]
+    normal.font.size = _pt(p["body_pt"])
     rpr = normal.element.get_or_add_rPr()
     rfonts = rpr.find(qn("w:rFonts"))
     if rfonts is None:
         rfonts = OxmlElement("w:rFonts")
         rpr.append(rfonts)
     for attr in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
-        rfonts.set(qn(attr), FONT)
+        rfonts.set(qn(attr), p["font"])
 
     if title_page:
         _render_title_page(doc, title_page)
     return doc
 
 
-def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None):
+def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
+                     journal_profile: Optional[Dict] = None):
     """Chuyển chuỗi Markdown -> .docx. Trả về Path đã lưu.
 
     md_text: nội dung markdown (KHÔNG gồm trang bìa — trang bìa qua title_page).
     out_path: đường dẫn .docx.
     title_page: dict tuỳ chọn (org_lines, doc_type, title, meta_lines, place_year).
+    journal_profile: dict tuỳ chọn từ JOURNAL_PROFILES/resolve_journal_profile()
+        (vá 2026-07-15) — None (mặc định) giữ NGUYÊN hành vi gốc (chuẩn luận văn
+        VN). Đổi font/cỡ chữ thân bài/cách dòng/lề/khổ trang theo hồ sơ.
     """
     from docx.enum.text import WD_ALIGN_PARAGRAPH as A
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
 
     out_path = Path(out_path)
-    doc = _init_document(title_page)
+    doc = _init_document(title_page, profile=journal_profile)
+    body_line = _active_profile["body_line_spacing"]
     lines = md_text.split("\n")
 
     i = 0
@@ -355,7 +477,7 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None):
         if stripped.startswith("### "):
             p = doc.add_paragraph()
             _spacing(p, before=10, after=6, line=1.3)
-            _set_run_font(p.add_run(_strip_md(stripped[4:])), BODY_PT, bold=True, italic=True)
+            _set_run_font(p.add_run(_strip_md(stripped[4:])), bold=True, italic=True)
             i += 1
             continue
 
@@ -385,28 +507,28 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None):
         if stripped.startswith("$$"):
             p = doc.add_paragraph()
             _spacing(p, before=6, after=6, line=1.3, align=A.CENTER)
-            _set_run_font(p.add_run(_clean_formula(stripped)), BODY_PT, italic=True)
+            _set_run_font(p.add_run(_clean_formula(stripped)), italic=True)
             i += 1
             continue
 
         m = re.match(r"^(\d+)\.\s+(.*)$", stripped)
         if m:
             p = doc.add_paragraph(style="List Number")
-            _spacing(p, after=6, line=1.5, align=A.JUSTIFY)
+            _spacing(p, after=6, line=body_line, align=A.JUSTIFY)
             _add_inline_runs(p, m.group(2))
             i += 1
             continue
 
         if stripped.startswith("- ") or stripped.startswith("* "):
             p = doc.add_paragraph(style="List Bullet")
-            _spacing(p, after=4, line=1.5, align=A.JUSTIFY)
+            _spacing(p, after=4, line=body_line, align=A.JUSTIFY)
             _add_inline_runs(p, stripped[2:])
             i += 1
             continue
 
         # Đoạn văn thường.
         p = doc.add_paragraph()
-        _spacing(p, after=8, line=1.5, align=A.JUSTIFY)
+        _spacing(p, after=8, line=body_line, align=A.JUSTIFY)
         _add_inline_runs(p, stripped)
         i += 1
 
@@ -414,10 +536,12 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None):
     return out_path
 
 
-def convert_markdown_file(md_path, out_path, title_page: Optional[Dict] = None):
+def convert_markdown_file(md_path, out_path, title_page: Optional[Dict] = None,
+                          journal_profile: Optional[Dict] = None):
     """Đọc file .md rồi chuyển sang .docx. Trả về Path đã lưu."""
     md_text = Path(md_path).read_text(encoding="utf-8")
-    return markdown_to_docx(md_text, out_path, title_page=title_page)
+    return markdown_to_docx(md_text, out_path, title_page=title_page,
+                            journal_profile=journal_profile)
 
 
 if __name__ == "__main__":
