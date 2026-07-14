@@ -38,7 +38,7 @@ def scan_pii(df):
     for col in df.columns:
         if any(k in col.lower() for k in PII_COL_KEYWORDS):
             issues.append(f"Tên cột nghi PII: **{col}**")
-    for col in df.select_dtypes(include="object").columns:
+    for col in df.select_dtypes(include=["object", "str"]).columns:
         sample = df[col].dropna().astype(str).head(50)
         for pat, label in PII_VALUE_PATTERNS:
             if sample.str.contains(pat, regex=True).any():
@@ -52,7 +52,7 @@ def table1(df, group_col=None, cont_cols=None, cat_cols=None):
     if cont_cols is None:
         cont_cols = [c for c in df.select_dtypes(include=np.number).columns if c != group_col]
     if cat_cols is None:
-        cat_cols = [c for c in df.select_dtypes(include=["object","category"]).columns if c != group_col]
+        cat_cols = [c for c in df.select_dtypes(include=["object","str","category"]).columns if c != group_col]
 
     if group_col and group_col in df.columns:
         groups = df[group_col].dropna().unique()
@@ -491,8 +491,8 @@ with tab_t1:
     if group_col == "-- Không phân nhóm --": group_col = None
     num_cols  = st.multiselect("Biến liên tục (TB±SD)", df.select_dtypes(np.number).columns.tolist(),
                                default=df.select_dtypes(np.number).columns.tolist()[:5])
-    cat_cols  = st.multiselect("Biến phân loại (n,%)",  df.select_dtypes(["object","category"]).columns.tolist(),
-                               default=df.select_dtypes(["object","category"]).columns.tolist()[:3])
+    cat_cols  = st.multiselect("Biến phân loại (n,%)",  df.select_dtypes(["object","str","category"]).columns.tolist(),
+                               default=df.select_dtypes(["object","str","category"]).columns.tolist()[:3])
     if st.button("Tạo Bảng 1"):
         with st.spinner("Đang tạo Bảng 1..."):
             t1 = table1(df, group_col, num_cols, cat_cols)
