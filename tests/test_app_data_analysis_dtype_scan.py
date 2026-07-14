@@ -9,14 +9,14 @@ trọng nhất là PII scan (`scan_pii`, dòng ~41) sẽ bỏ sót toàn bộ c�
 
 `app_data_analysis.py` là Streamlit script (chạy `st.set_page_config()` và tham chiếu
 biến `df` từ file uploader ở top-level) nên KHÔNG thể import trực tiếp trong pytest.
-Test này (a) kiểm tra mã nguồn không còn pattern `include="object"` cụt (không kèm
-`"str"`) để chặn hồi quy, và (b) xác nhận bằng thực nghiệm rằng pattern đã vá
-(`include=["object","str"]` / `include=["object","str","category"]`) chọn đúng cột
-chuỗi + category, không phát cảnh báo `Pandas4Warning`.
+Test này (a) kiểm tra mã nguồn không còn pattern `select_dtypes` dễ vỡ cho cột chuỗi
+và (b) xác nhận helper thuần `text_like_columns()` chọn đúng cột chuỗi + category,
+không phát cảnh báo `Pandas4Warning`.
 """
 from __future__ import annotations
 
 import re
+import sys
 import warnings
 from pathlib import Path
 
@@ -26,6 +26,10 @@ import pytest
 APP_PATH = (
     Path(__file__).resolve().parent.parent / "tools" / "app_data_analysis.py"
 )
+TOOLS_DIR = APP_PATH.parent
+
+sys.path.insert(0, str(TOOLS_DIR))
+from dataframe_dtype_utils import text_like_columns  # noqa: E402
 
 
 def _source() -> str:
@@ -34,8 +38,8 @@ def _source() -> str:
 
 def test_no_bare_object_select_dtypes_regression():
     """Chặn hồi quy: không còn `select_dtypes(include="object")` hay
-    `select_dtypes(["object","category"])`/`select_dtypes(include=["object","category"])`
-    thiếu `"str"` — các pattern này bỏ sót cột dtype `str` mới của pandas 3.x."""
+    `select_dtypes(["object","category"])`/`select_dtypes(include=["object","str"])`
+    cho cột văn bản — các pattern này cảnh báo hoặc lỗi tùy pandas version."""
     src = _source()
     bare_include_object = re.findall(r'select_dtypes\(\s*include\s*=\s*"object"\s*\)', src)
     assert not bare_include_object, (
@@ -47,10 +51,17 @@ def test_no_bare_object_select_dtypes_regression():
     assert not bare_object_category, (
         f"Tìm thấy select_dtypes([...\"object\",\"category\"]) thiếu 'str': {bare_object_category}"
     )
+    fragile_text_select = re.findall(
+        r'select_dtypes\([^)]*(?:"object"|"str"|"category")[^)]*\)', src
+    )
+    assert not fragile_text_select, (
+        f"Tìm thấy select_dtypes cho cột văn bản/phân loại dễ vỡ: {fragile_text_select}"
+    )
+    assert "text_like_columns" in src
 
 
 def test_patched_select_dtypes_pattern_catches_str_and_category_columns():
-    """Thực nghiệm: pattern đã vá bắt đúng cột str + category, không cảnh báo Pandas4Warning."""
+    """Thực nghiệm: helper dtype bắt đúng cột str/object + category, không cảnh báo."""
     df = pd.DataFrame(
         {
             "ten_chuoi": ["a", "b", "c"],
@@ -64,8 +75,8 @@ def test_patched_select_dtypes_pattern_catches_str_and_category_columns():
 
     with warnings.catch_warnings():
         warnings.simplefilter("error")  # bất kỳ warning nào (kể cả Pandas4Warning) → lỗi
-        pii_cols = df.select_dtypes(include=["object", "str"]).columns.tolist()
-        cat_cols = df.select_dtypes(include=["object", "str", "category"]).columns.tolist()
+        pii_cols = text_like_columns(df)
+        cat_cols = text_like_columns(df, include_category=True)
 
     assert "ten_chuoi" in pii_cols, "select_dtypes vá phải bắt được cột dtype str cho PII scan"
     assert "ten_chuoi" in cat_cols and "nhom" in cat_cols, (
