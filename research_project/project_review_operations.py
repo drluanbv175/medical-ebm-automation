@@ -90,6 +90,14 @@ class UnauthorizedReviewRole(ValueError):
     """Role không được route cho artifact nên không được ghi review decision."""
 
 
+class MissingReviewActorReference(ValueError):
+    """Thiếu mã định danh giả của người/đơn vị review."""
+
+
+class PIIInReviewRecord(ValueError):
+    """Review ledger không được chứa PII trong reviewer_ref/reason/actions."""
+
+
 # ---------------------------------------------------------------------------
 # ReviewRecord
 # ---------------------------------------------------------------------------
@@ -102,6 +110,7 @@ class ReviewRecord:
     artifact_id: str
     artifact_version: str
     review_role: ReviewRole
+    reviewer_identity_reference: str
     review_mode: ReviewMode
     decision: HumanDecision
     reason: str
@@ -260,6 +269,20 @@ class ReviewLedger:
             raise ForbiddenReviewMode(
                 f"ReviewMode '{record.review_mode}' bị cấm trong V4.3.4."
             )
+        reviewer_ref = (record.reviewer_identity_reference or "").strip()
+        if reviewer_ref in ("", "none", "N/A", "NA", "[REQUIRE_HUMAN_INPUT]"):
+            raise MissingReviewActorReference(
+                "Cần reviewer_identity_reference dạng mã giả danh, không dùng tên thật/PII."
+            )
+        pii_payload = {
+            "reviewer_identity_reference": record.reviewer_identity_reference,
+            "reason": record.reason,
+            "required_actions": record.required_actions,
+        }
+        if contains_pii(json.dumps(pii_payload, ensure_ascii=False)):
+            raise PIIInReviewRecord(
+                "Review record chứa PII. Hãy dùng mã giả danh và mô tả không định danh."
+            )
         # Guard: ACCEPT_DRAFT không thay đổi draft_only semantics
         # (không cần action ở đây — chỉ record việc chấp nhận DRAFT cho stage tiếp theo)
         with open(self._path, "a", encoding="utf-8") as f:
@@ -281,6 +304,10 @@ class ReviewLedger:
                     artifact_id=d["artifact_id"],
                     artifact_version=d["artifact_version"],
                     review_role=ReviewRole(d["review_role"]),
+                    reviewer_identity_reference=d.get(
+                        "reviewer_identity_reference",
+                        "LEGACY_REVIEWER_REF_MISSING",
+                    ),
                     review_mode=ReviewMode(d["review_mode"]),
                     decision=HumanDecision(d["decision"]),
                     reason=d["reason"],
@@ -466,6 +493,7 @@ def record_decision(
     decision: HumanDecision,
     review_role: ReviewRole,
     reason: str,
+    reviewer_ref: str,
     required_actions: Optional[List[str]] = None,
     review_mode: ReviewMode = ReviewMode.HUMAN_REVIEW_INDEPENDENCE_NOT_ESTABLISHED,
     automation_caller: bool = False,
@@ -512,6 +540,7 @@ def record_decision(
         artifact_id=artifact_id_str,
         artifact_version=version,
         review_role=review_role,
+        reviewer_identity_reference=reviewer_ref,
         review_mode=review_mode,
         decision=decision,
         reason=reason,

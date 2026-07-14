@@ -68,6 +68,8 @@ from .project_review_operations import (
     AutoReviewForbidden,
     ForbiddenReviewMode,
     HumanDecision,
+    MissingReviewActorReference,
+    PIIInReviewRecord,
     ReviewMode,
     ReviewRole,
     UnauthorizedReviewRole,
@@ -202,6 +204,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rr.add_argument("--role", required=True,
                        choices=[r.value for r in ReviewRole],
                        help="Vai trò reviewer")
+    p_rr.add_argument("--reviewer-ref", required=True,
+                       help="Mã định danh giả của reviewer/đơn vị review — KHÔNG tên thật/PII")
     p_rr.add_argument("--reason", required=True, help="Lý do quyết định")
     p_rr.add_argument("--required-actions", default="",
                        help="Hành động yêu cầu (phân cách bằng ;)")
@@ -631,6 +635,7 @@ def _cmd_review_record(args: argparse.Namespace, projects_root: pathlib.Path) ->
             decision=decision,
             review_role=role,
             reason=args.reason,
+            reviewer_ref=args.reviewer_ref,
             required_actions=required_actions,
             review_mode=mode,
             automation_caller=False,  # CLI = người thật
@@ -654,6 +659,9 @@ def _cmd_review_record(args: argparse.Namespace, projects_root: pathlib.Path) ->
         print(f"[BLOCKED] {exc}", file=sys.stderr)
         return 2
     except UnauthorizedReviewRole as exc:
+        print(f"[BLOCKED] {exc}", file=sys.stderr)
+        return 2
+    except (MissingReviewActorReference, PIIInReviewRecord) as exc:
         print(f"[BLOCKED] {exc}", file=sys.stderr)
         return 2
     except ValueError as exc:

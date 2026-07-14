@@ -1,5 +1,5 @@
 """
-test_v4_3_4_human_review_operations.py — 20 deterministic tests (V4.3.4).
+test_v4_3_4_human_review_operations.py — deterministic tests (V4.3.4).
 
 Kiểm tra Human Review Operating Model:
 - Enums và routing matrix đúng
@@ -36,6 +36,8 @@ from research_project.project_review_operations import (
     AutoReviewForbidden,
     ForbiddenReviewMode,
     HumanDecision,
+    MissingReviewActorReference,
+    PIIInReviewRecord,
     ReviewLedger,
     ReviewMode,
     ReviewRecord,
@@ -86,6 +88,12 @@ def _populate_project_dir(project_dir: pathlib.Path, config: ProjectConfig) -> N
         )
 
 
+def _reviewer_ref(role="PI") -> str:
+    """Mã giả định danh reviewer dùng trong fixture synthetic, không chứa PII."""
+    value = role.value if isinstance(role, ReviewRole) else str(role)
+    return f"REF-{value}-001"
+
+
 # ---------------------------------------------------------------------------
 # T01 — ReviewRole có đúng 6 giá trị
 # ---------------------------------------------------------------------------
@@ -117,6 +125,7 @@ def test_t02_automation_caller_blocked():
                 decision=HumanDecision.REVISION_REQUIRED,
                 review_role=ReviewRole.PI_PROJECT_OWNER,
                 reason="test automation block",
+                reviewer_ref=_reviewer_ref(ReviewRole.PI_PROJECT_OWNER),
                 automation_caller=True,
             )
 
@@ -137,6 +146,7 @@ def test_t03_ledger_append_only():
             decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
             review_role=ReviewRole.PI_PROJECT_OWNER,
             reason="First acceptance",
+            reviewer_ref=_reviewer_ref(ReviewRole.PI_PROJECT_OWNER),
             automation_caller=False,
         )
         r2 = record_decision(
@@ -145,6 +155,7 @@ def test_t03_ledger_append_only():
             decision=HumanDecision.REVISION_REQUIRED,
             review_role=ReviewRole.PI_PROJECT_OWNER,
             reason="Actually needs revision",
+            reviewer_ref=_reviewer_ref(ReviewRole.PI_PROJECT_OWNER),
             automation_caller=False,
         )
 
@@ -157,10 +168,10 @@ def test_t03_ledger_append_only():
 
 
 # ---------------------------------------------------------------------------
-# T04 — record_decision trả ReviewRecord đúng 13 trường
+# T04 — record_decision trả ReviewRecord đúng cấu trúc
 # ---------------------------------------------------------------------------
 
-def test_t04_review_record_13_fields():
+def test_t04_review_record_fields():
     with tempfile.TemporaryDirectory() as tmp:
         project_dir = pathlib.Path(tmp)
         config = _make_config()
@@ -171,12 +182,14 @@ def test_t04_review_record_13_fields():
             review_role=ReviewRole.METHODS_STATISTICS_REVIEWER,
             reason="Cần PI xác nhận assumptions",
             required_actions=["Điền effect size", "Xác nhận alpha=0.05"],
+            reviewer_ref=_reviewer_ref(ReviewRole.METHODS_STATISTICS_REVIEWER),
             automation_caller=False,
         )
         assert rec.review_id.startswith("RV-")
         assert rec.project_id == "SYNTH-TEST-001"
         assert rec.artifact_id == ArtifactID.SAP_DRAFT.value
         assert rec.review_role == ReviewRole.METHODS_STATISTICS_REVIEWER
+        assert rec.reviewer_identity_reference == _reviewer_ref(ReviewRole.METHODS_STATISTICS_REVIEWER)
         assert rec.review_mode == ReviewMode.HUMAN_REVIEW_INDEPENDENCE_NOT_ESTABLISHED
         assert rec.decision == HumanDecision.REQUEST_HUMAN_INPUT
         assert len(rec.required_actions) == 2
@@ -203,6 +216,7 @@ def test_t05_forbidden_review_mode_rejected():
             artifact_id="00_RESEARCH_CHARTER",
             artifact_version="0.1.0",
             review_role=ReviewRole.PI_PROJECT_OWNER,
+            reviewer_identity_reference=_reviewer_ref(ReviewRole.PI_PROJECT_OWNER),
             review_mode=ReviewMode.SELF_REVIEW,  # placeholder
             decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
             reason="forced test",
@@ -302,6 +316,7 @@ def test_t10b_record_decision_blocks_unrouted_role():
                 decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
                 review_role=ReviewRole.PI_PROJECT_OWNER,
                 reason="PI không được thay thống kê viên cho SAP",
+                reviewer_ref=_reviewer_ref(ReviewRole.PI_PROJECT_OWNER),
                 automation_caller=False,
             )
         assert ReviewLedger(project_dir).read_all() == []
@@ -328,6 +343,7 @@ def test_t10c_protocol_requires_pi_irb_and_statistician_acceptance():
             decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
             review_role=ReviewRole.PI_PROJECT_OWNER,
             reason="PI chấp nhận draft nội bộ",
+            reviewer_ref=_reviewer_ref(ReviewRole.PI_PROJECT_OWNER),
             automation_caller=False,
         )
         protocol_item = next(
@@ -346,6 +362,7 @@ def test_t10c_protocol_requires_pi_irb_and_statistician_acceptance():
                 decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
                 review_role=role,
                 reason=f"{role.value} chấp nhận draft nội bộ",
+                reviewer_ref=_reviewer_ref(role),
                 automation_caller=False,
             )
 
@@ -359,6 +376,49 @@ def test_t10c_protocol_requires_pi_irb_and_statistician_acceptance():
         status = get_review_status(project_dir)
         assert status["accepted_as_draft_internal"] == 1
         assert status["partial_review"] == 0
+
+
+# ---------------------------------------------------------------------------
+# T10D — Thiếu mã reviewer giả danh bị chặn trước khi ghi ledger
+# ---------------------------------------------------------------------------
+
+def test_t10d_record_decision_requires_reviewer_reference():
+    with tempfile.TemporaryDirectory() as tmp:
+        project_dir = pathlib.Path(tmp)
+        config = _make_config()
+        with pytest.raises(MissingReviewActorReference):
+            record_decision(
+                project_dir, config,
+                artifact_id_str=ArtifactID.RESEARCH_CHARTER.value,
+                decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
+                review_role=ReviewRole.PI_PROJECT_OWNER,
+                reason="Thiếu mã reviewer phải bị chặn.",
+                reviewer_ref="",
+                automation_caller=False,
+            )
+        assert ReviewLedger(project_dir).read_all() == []
+
+
+# ---------------------------------------------------------------------------
+# T10E — PII trong reviewer/reason/actions bị chặn trước khi ghi ledger
+# ---------------------------------------------------------------------------
+
+def test_t10e_record_decision_blocks_pii_in_review_record():
+    with tempfile.TemporaryDirectory() as tmp:
+        project_dir = pathlib.Path(tmp)
+        config = _make_config()
+        with pytest.raises(PIIInReviewRecord):
+            record_decision(
+                project_dir, config,
+                artifact_id_str=ArtifactID.SAP_DRAFT.value,
+                decision=HumanDecision.REVISION_REQUIRED,
+                review_role=ReviewRole.METHODS_STATISTICS_REVIEWER,
+                reason="Cần xóa email trong phần mô tả trước khi duyệt.",
+                required_actions=["Không đưa họ tên hoặc patient_id vào sổ review."],
+                reviewer_ref=_reviewer_ref(ReviewRole.METHODS_STATISTICS_REVIEWER),
+                automation_caller=False,
+            )
+        assert ReviewLedger(project_dir).read_all() == []
 
 
 # ---------------------------------------------------------------------------
@@ -385,17 +445,23 @@ def test_t12_review_status_counters():
                         artifact_id_str=ArtifactID.RESEARCH_CHARTER.value,
                         decision=HumanDecision.REVISION_REQUIRED,
                         review_role=ReviewRole.PI_PROJECT_OWNER,
-                        reason="needs revision", automation_caller=False)
+                        reason="needs revision",
+                        reviewer_ref=_reviewer_ref(ReviewRole.PI_PROJECT_OWNER),
+                        automation_caller=False)
         record_decision(project_dir, config,
                         artifact_id_str=ArtifactID.SAP_DRAFT.value,
                         decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
                         review_role=ReviewRole.METHODS_STATISTICS_REVIEWER,
-                        reason="ok", automation_caller=False)
+                        reason="ok",
+                        reviewer_ref=_reviewer_ref(ReviewRole.METHODS_STATISTICS_REVIEWER),
+                        automation_caller=False)
         record_decision(project_dir, config,
                         artifact_id_str=ArtifactID.EVIDENCE_PLAN.value,
                         decision=HumanDecision.REQUEST_HUMAN_INPUT,
                         review_role=ReviewRole.EVIDENCE_CITATION_REVIEWER,
-                        reason="missing evidence", automation_caller=False)
+                        reason="missing evidence",
+                        reviewer_ref=_reviewer_ref(ReviewRole.EVIDENCE_CITATION_REVIEWER),
+                        automation_caller=False)
 
         status = get_review_status(project_dir)
         assert status["total_review_records"] == 3
@@ -447,6 +513,7 @@ def test_t15_revision_plan_marks_downstream_stale():
                         decision=HumanDecision.REVISION_REQUIRED,
                         review_role=ReviewRole.PI_PROJECT_OWNER,
                         reason="PICO cần làm lại",
+                        reviewer_ref=_reviewer_ref(ReviewRole.PI_PROJECT_OWNER),
                         automation_caller=False)
 
         plan = build_revision_plan(project_dir, config)
@@ -473,6 +540,7 @@ def test_t16_ledger_roundtrip_json():
             review_role=ReviewRole.DATA_GOVERNANCE_QA_REVIEWER,
             reason="Biến số cần chuẩn hóa",
             required_actions=["Đặt lại codebook", "Gắn LOINC"],
+            reviewer_ref=_reviewer_ref(ReviewRole.DATA_GOVERNANCE_QA_REVIEWER),
             automation_caller=False,
         )
 
@@ -483,6 +551,7 @@ def test_t16_ledger_roundtrip_json():
         assert restored.review_id == original.review_id
         assert restored.decision == HumanDecision.REVISION_REQUIRED
         assert restored.review_role == ReviewRole.DATA_GOVERNANCE_QA_REVIEWER
+        assert restored.reviewer_identity_reference == _reviewer_ref(ReviewRole.DATA_GOVERNANCE_QA_REVIEWER)
         assert len(restored.required_actions) == 2
 
 
