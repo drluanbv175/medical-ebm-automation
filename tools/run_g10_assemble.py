@@ -1145,6 +1145,35 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
             "body_md": body_md, "cps": cps}
 
 
+def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
+    """Cổng A12 (kiem-chung-trich-dan) — trước 2026-07-15, run_g7_auto.py chỉ IN
+    RA một dòng nhắc bác sĩ tự chạy agent kiểm trích dẫn (không gì ép buộc); đề
+    tài có thể march thẳng G7→G8→G9→G10 mà chưa ai xác minh PMID/DOI có thật/
+    đúng nội dung — đúng lỗ hổng "citation ma" mà A12 được thiết kế để chặn
+    (doctrine đã gọi A12 là artifact "dễ sót", xem dieu-phoi-nghien-cuu.md).
+
+    Đây KHÔNG dùng cơ chế approval_ledger/chữ ký như G2/G4/G8/G9 (những cổng đó
+    cần MỘT NGƯỜI CÓ VAI TRÒ THẬT ký) — kiểm chứng trích dẫn là việc của AGENT
+    (phán đoán LLM đọc abstract/toàn văn, xem module M3 trong kiem-chung-trich-dan.md),
+    không phải chữ ký con người, nên chỉ cần xác minh ARTIFACT tồn tại + "sạch"
+    (không PARTIAL, không còn 🔴 chưa xử lý) — khớp đúng bản chất của bước này.
+
+    Trả (ok, lý_do_chặn) — lý_do_chặn rỗng khi ok=True.
+    """
+    p = out_dir / f"A12_CITATION_VERIFICATION_{study}.md"
+    if not p.exists():
+        return False, "chưa chạy agent `kiem-chung-trich-dan` (thiếu artifact A12)"
+    try:
+        text = p.read_text(encoding="utf-8")
+    except OSError:
+        return False, "không đọc được artifact A12"
+    if "PARTIAL" in text:
+        return False, "artifact A12 ở trạng thái PARTIAL (connector PubMed/Crossref không sẵn lúc kiểm)"
+    if "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN" not in text:
+        return False, "artifact A12 chưa có dòng xác nhận sạch (còn 🔴 chưa xử lý hoặc chưa hoàn tất)"
+    return True, ""
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="G10 — Lắp ráp đề cương thống nhất từ checkpoint G0-G9.")
@@ -1159,6 +1188,11 @@ def main() -> int:
                     help="Vẫn lắp ráp dù G8 (bình duyệt độc lập) chưa có phê duyệt "
                          "thật — CHỈ dùng để xem trước bản NHÁP, KHÔNG dùng bản xuất "
                          "ra khi cờ này bật để nộp bài.")
+    ap.add_argument("--i-know-citations-not-verified", action="store_true",
+                    help="Vẫn lắp ráp dù trích dẫn (cổng A12, agent "
+                         "`kiem-chung-trich-dan`) chưa được xác minh sạch — CHỈ dùng "
+                         "để xem trước bản NHÁP, KHÔNG dùng bản xuất ra khi cờ này "
+                         "bật để nộp bài.")
     args = ap.parse_args()
     # 2026-07-11: vá path traversal, khớp chuẩn sanitize đã dùng ở G0-G5.
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
@@ -1193,6 +1227,21 @@ def main() -> int:
                 return GC.EXIT_GUARDRAIL_FAIL
         except ImportError:
             print("  ⚠ check_de_cuong.py chưa có — bỏ qua tự kiểm.")
+
+    # Vá 2026-07-15 (Ngày 1 lộ trình 7 ngày — reports/LO_TRINH_7_NGAY_NGHIEN_CUU_Y_KHOA
+    # _2026-07-14.md): trích dẫn (cổng A12, agent `kiem-chung-trich-dan`) trước đây
+    # CHỈ được in ra như một dòng nhắc ở cuối run_g7_auto.py — không gì ép buộc bác sĩ
+    # thực sự chạy trước khi march tiếp G8→G9→G10. Nay xác minh THẬT artifact A12 tồn
+    # tại + sạch trước khi cho lắp ráp gói sẵn sàng nộp — kiểm TRƯỚC G8 vì phản biện
+    # độc lập không nên đọc một bản thảo còn trích dẫn chưa xác minh.
+    citation_ok, citation_reason = citation_verification_ok(study, out_dir)
+    if not citation_ok and not args.i_know_citations_not_verified:
+        print(f"\n🚧 CHƯA SẴN SÀNG NỘP BÀI: Trích dẫn (cổng A12) {citation_reason}.")
+        print("   Chạy agent `kiem-chung-trich-dan` TRƯỚC (xác minh PMID/DOI thật +")
+        print("   đúng nội dung) — agent tự ghi kết quả vào file A12 nêu trên. Tài")
+        print("   liệu đã xuất Ở TRÊN chỉ là BẢN NHÁP — KHÔNG dùng để nộp khi ở trạng")
+        print("   thái này. Nếu chỉ muốn xem trước, thêm --i-know-citations-not-verified.")
+        return GC.EXIT_BLOCKED
 
     # Vá 2026-07-14 (nâng cấp kiểm soát PI/IRB/thống kê viên/phản biện): G8 (bình
     # duyệt độc lập) trước đây KHÔNG có cổng cứng nào — không nằm trong --gate choices

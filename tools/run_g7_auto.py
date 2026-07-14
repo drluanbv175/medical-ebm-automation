@@ -1618,7 +1618,9 @@ def main() -> None:
     print("  1. Mở A8 DOCX → điền Tiêu đề, Tác giả, Methods §2-4")
     print("  2. Sau G5+G6: điền Section III (kết quả thật) + V Kết luận")
     print(f"  3. Kiểm chứng toàn bộ {min(10,len(pmids))} PMID trước khi nộp")
-    print("  4. Chạy agent kiem-chung-trich-dan để xác minh TLTK")
+    print("  4. Chạy agent kiem-chung-trich-dan để xác minh TLTK — BẮT BUỘC (vá 2026-07-15):")
+    print(f"     agent phải ghi kết quả vào {out_dir.name}/A12_CITATION_VERIFICATION_{study}.md,")
+    print("     nếu không run_g10_assemble.py sẽ CHẶN (EXIT_BLOCKED) trước khi cho nộp.")
     if args.target_journal:
         print(f"  5. Định dạng theo Author Guidelines: {args.target_journal}")
     else:

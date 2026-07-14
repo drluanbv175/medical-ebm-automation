@@ -48,6 +48,27 @@ Danh mục tham khảo sạch (định dạng đích): ____
 ```
 Kết: **"Cần bác sĩ kiểm chứng."**
 
+## 4b. Khi kiểm cho MỘT đề tài trong pipeline G0-G9 — LƯU artifact A12 (bắt buộc, vá 2026-07-15)
+
+Nếu đang kiểm trích dẫn cho một bản thảo thuộc đề tài đã có thư mục `exports/<study>/`
+(tức là đề tài đang chạy qua `dieu-phoi-nghien-cuu`/pipeline G0-G9, không phải một câu hỏi
+kiểm trích dẫn rời rạc), **BẮT BUỘC ghi kết quả ra file** `exports/<study>/A12_CITATION_VERIFICATION_<study>.md`
+— trước đây bước này chỉ được `run_g7_auto.py` IN RA một dòng nhắc, không có gì ép buộc,
+nên đề tài có thể "sẵn sàng nộp" (G10) mà chưa ai thật sự chạy cổng A12. `tools/run_g10_assemble.py`
+nay đọc LẠI đúng file này trước khi cho lắp gói nộp — thiếu file, còn PARTIAL, hoặc còn 🔴
+chưa xử lý đều bị chặn (`EXIT_BLOCKED`).
+
+File PHẢI chứa, theo đúng chữ (để máy đọc được, không diễn giải khác đi):
+- Bảng trạng thái từng trích dẫn (mẫu ở mục 4).
+- **Đúng một trong ba** dòng kết luận:
+  - Sạch hoàn toàn (không còn 🔴 nào chưa xử lý): `KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴`
+  - Còn 🔴 chưa xử lý: `KẾT QUẢ CỔNG A12: CÒN 🔴 CHƯA XỬ LÝ — CHƯA ĐẠT`
+  - Connector lỗi lúc kiểm: giữ nguyên nhãn `⚠ PARTIAL` đã có ở mục 4 (không được viết dòng "ĐÃ XÁC MINH" khi đang PARTIAL).
+- Dòng disclaimer "Cần bác sĩ kiểm chứng." như thường lệ.
+
+**KHÔNG được** tự viết dòng "ĐÃ XÁC MINH TOÀN BỘ" khi trong bảng vẫn còn ít nhất một 🔴 chưa
+xử lý, hoặc khi PARTIAL — đây chính là chỗ liêm chính có thể bị phá nếu agent vội kết luận.
+
 ## 5. Ví dụ minh họa (ẩn danh, KHÔNG PII)
 > *Đầu vào:* bản thảo có 20 tham khảo. → Phân giải từng PMID/DOI, 17 ✅, 2 🟡 (năm/tập lệch), 1 🔴 không tra ra (nghi ma) + 1 phát hiện citation washing (gán kết luận bài không có). Lập DANH SÁCH 🔴 bắt buộc xử lý, xuất danh mục Vancouver sạch cho phần đã xác minh. *Không tự bịa trích dẫn thay thế.*
 
