@@ -9,10 +9,12 @@ OFFLINE · KHÔNG API / PII / dữ liệu thật. Mọi output là DRAFT.
 from __future__ import annotations
 
 import dataclasses
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from .project_config import (
-    REQUIRE_HUMAN_INPUT_MARKER, StudyType, REPORTING_STANDARD,
+    REPORTING_STANDARD,
+    REQUIRE_HUMAN_INPUT_MARKER,
+    StudyType,
 )
 
 # ---------------------------------------------------------------------------

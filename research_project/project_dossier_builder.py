@@ -9,22 +9,29 @@ from __future__ import annotations
 
 import dataclasses
 import pathlib
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
+from typing import List
 
-from .project_config import (
-    ArtifactID, ArtifactStatus, ARTIFACT_FILENAME, DISCLAIMER,
-    REQUIRE_HUMAN_INPUT_MARKER as RHI,
-    ProjectConfig, StudyType, validate_study_type, contains_pii,
-    contains_fabrication, contains_real_data, contains_external_action,
-)
-from .project_registry import ProjectRegistry
-from .project_methodology_planner import plan_methodology
-from .project_crf_builder import build_crf_draft
-from .project_sap_builder import build_sap_draft
-from .project_reporting_planner import build_reporting_checklist
 from .project_artifact_graph import topological_build_order
-
+from .project_config import (
+    ARTIFACT_FILENAME,
+    DISCLAIMER,
+    ArtifactID,
+    ArtifactStatus,
+    ProjectConfig,
+    StudyType,
+    contains_fabrication,
+    contains_pii,
+    contains_real_data,
+    validate_study_type,
+)
+from .project_config import (
+    REQUIRE_HUMAN_INPUT_MARKER as RHI,
+)
+from .project_crf_builder import build_crf_draft
+from .project_methodology_planner import plan_methodology
+from .project_registry import ProjectRegistry
+from .project_reporting_planner import build_reporting_checklist
+from .project_sap_builder import build_sap_draft
 
 # ---------------------------------------------------------------------------
 # Result dataclass
@@ -203,16 +210,16 @@ class ProjectDossierBuilder:
             *[f"- {o}" for o in (cfg.secondary_objectives or [f"{RHI}"])],
             "",
             "## Ràng buộc nghiên cứu",
-            f"- Mọi kết quả tự động là DRAFT — Không thực thi thật",
-            f"- Không PII, không dữ liệu bệnh nhân thật",
+            "- Mọi kết quả tự động là DRAFT — Không thực thi thật",
+            "- Không PII, không dữ liệu bệnh nhân thật",
             f"- External actions FORBIDDEN: {cfg.external_actions_forbidden}",
             *[f"- {k}: {v}" for k, v in (cfg.research_constraints or {}).items()],
             "",
             "## Bất biến",
-            f"- `NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE`",
-            f"- Qualification: DRAFT_ONLY",
+            "- `NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE`",
+            "- Qualification: DRAFT_ONLY",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------
@@ -220,18 +227,17 @@ class ProjectDossierBuilder:
     # ------------------------------------------------------------------
 
     def _build_01_pico(self, cfg: ProjectConfig, st: StudyType) -> str:
-        from .project_config import REPORTING_STANDARD
         pico_label = "PICO" if st not in (StudyType.SR_MA, StudyType.QUALITATIVE) else "PICO/PECO"
         return "\n".join([
             f"# RESEARCH QUESTION AND {pico_label} — {cfg.title}",
             f"> **DRAFT** — {DISCLAIMER}",
             "",
-            f"## Câu hỏi nghiên cứu",
+            "## Câu hỏi nghiên cứu",
             f"{RHI}: Nêu câu hỏi nghiên cứu rõ ràng, cụ thể, đo lường được.",
             "",
             f"## {pico_label}",
-            f"| Thành phần | Mô tả |",
-            f"|------------|-------|",
+            "| Thành phần | Mô tả |",
+            "|------------|-------|",
             f"| **P** — Population | {RHI}: Mô tả dân số mục tiêu (synthetic) |",
             f"| **I/E** — Intervention/Exposure | {RHI} |",
             f"| **C** — Comparison | {RHI} (nếu có) |",
@@ -247,7 +253,7 @@ class ProjectDossierBuilder:
             "## Giả thuyết",
             f"{RHI}: Nêu giả thuyết null và đối lập; chiều kiểm định (1-sided/2-sided).",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------
@@ -292,13 +298,13 @@ class ProjectDossierBuilder:
             mplan.analysis_approach_note,
             "",
             "## 8. Cân nhắc đạo đức",
-            f"- Đây là đề tài **SYNTHETIC** — không có bệnh nhân thật, không thu thập dữ liệu thật.",
+            "- Đây là đề tài **SYNTHETIC** — không có bệnh nhân thật, không thu thập dữ liệu thật.",
             f"- {RHI}: Nếu chuyển sang thực thi thật, cần G2 (IRB approval) trước khi tiếp tục.",
             "",
             "## 9. Thời gian thực hiện",
             f"- {RHI}: Timeline dự kiến các cột mốc G0–G9.",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------
@@ -318,18 +324,18 @@ class ProjectDossierBuilder:
             f"- **Ngôn ngữ:** {RHI}",
             "",
             "## Loại bằng chứng ưu tiên",
-            f"- SR/MA · RCT · Cohort · CSDL thuốc · Guideline",
+            "- SR/MA · RCT · Cohort · CSDL thuốc · Guideline",
             f"- Ưu tiên bằng chứng mạnh nhất theo GRADE: {RHI}",
             "",
             "## Quản lý bằng chứng",
             "- Mọi bằng chứng nhập qua `EvidenceIntake.add_evidence()` — KHÔNG tự suy luận DOI/PMID.",
-            f"- Xem `evidence/evidence_manifest.csv` để theo dõi trạng thái.",
-            f"- Bằng chứng phải đạt VERIFIED_BY_HUMAN trước khi đưa vào bản thảo.",
+            "- Xem `evidence/evidence_manifest.csv` để theo dõi trạng thái.",
+            "- Bằng chứng phải đạt VERIFIED_BY_HUMAN trước khi đưa vào bản thảo.",
             "",
             "## Tài liệu hiện đang quản lý",
             f"- Xem `evidence/evidence_manifest.csv` · {RHI}: PI thêm bằng chứng vào đây",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------
@@ -383,17 +389,17 @@ class ProjectDossierBuilder:
             "",
             "## Table 1 — Đặc điểm nền",
             f"| Biến | {RHI}: Nhóm 1 | {RHI}: Nhóm 2 | p-value |",
-            f"|------|-------------|-------------|---------|",
+            "|------|-------------|-------------|---------|",
             f"| {RHI} | — | — | — |",
             "",
             "## Table 2 — Kết quả kết cục chính",
             f"| Kết cục | {RHI}: Nhóm 1 | {RHI}: Nhóm 2 | Effect estimate (95% CI) | p |",
-            f"|---------|-------------|-------------|--------------------------|---|",
+            "|---------|-------------|-------------|--------------------------|---|",
             f"| {RHI} | — | — | {RHI} | — |",
             "",
             "## Table 3 — Phân tích phụ / Subgroup",
             f"| Subgroup | {RHI} | {RHI} | Interaction p |",
-            f"|----------|-------|-------|---------------|",
+            "|----------|-------|-------|---------------|",
             f"| {RHI} | — | — | — |",
             "",
             "## Figure 1 — {RHI}: Mô tả hình dự kiến",
@@ -402,10 +408,10 @@ class ProjectDossierBuilder:
             "## Figure 2 — {RHI}",
             f"{RHI}",
             "",
-            f"> Ghi chú: Mọi ô '—' cần PI điền sau khi có dữ liệu THẬT (nếu thực thi). "
-            f"Bản này là shell — KHÔNG có số thật.",
+            "> Ghi chú: Mọi ô '—' cần PI điền sau khi có dữ liệu THẬT (nếu thực thi). "
+            "Bản này là shell — KHÔNG có số thật.",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------
@@ -429,11 +435,11 @@ class ProjectDossierBuilder:
             f"**SYNTHETIC_ANALYSIS_READY:** {RHI} (PI điền: Có/Chưa/Chờ)",
             "",
             "## Điều kiện KHÔNG được thực hiện (bất biến)",
-            f"- KHÔNG thu thập dữ liệu bệnh nhân thật",
-            f"- KHÔNG kết nối HIS/EMR/eHospital",
-            f"- KHÔNG tự nộp báo cáo hay phân tích thật",
+            "- KHÔNG thu thập dữ liệu bệnh nhân thật",
+            "- KHÔNG kết nối HIS/EMR/eHospital",
+            "- KHÔNG tự nộp báo cáo hay phân tích thật",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------
@@ -471,12 +477,12 @@ class ProjectDossierBuilder:
             f"1. Thiết kế và dân số: {RHI}",
             f"2. Biến số và đo lường: {RHI}",
             f"3. Cỡ mẫu: {RHI}",
-            f"4. Phân tích thống kê: Xem SAP (07)",
+            "4. Phân tích thống kê: Xem SAP (07)",
             f"5. Cân nhắc đạo đức: {RHI}",
             "",
             "## Results",
             f"{RHI}: Điền sau khi có dữ liệu thật và phân tích hoàn tất (KHÔNG điền số bịa).",
-            f"Tham chiếu Table 1–3 và Figure 1–2 (xem 08_TABLE_AND_FIGURE_SHELLS).",
+            "Tham chiếu Table 1–3 và Figure 1–2 (xem 08_TABLE_AND_FIGURE_SHELLS).",
             "",
             "## Discussion",
             f"1. Kết quả chính và so sánh y văn: {RHI}",
@@ -491,7 +497,7 @@ class ProjectDossierBuilder:
             "## References",
             f"{RHI}: Dùng Vancouver/AMA; mọi PMID/DOI cần xác minh trước khi đưa vào.",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------
@@ -504,35 +510,35 @@ class ProjectDossierBuilder:
             f"> **DRAFT** — {DISCLAIMER}",
             "",
             "## Cổng quản trị (Governance Gates)",
-            f"| Cổng | Mô tả | Trạng thái |",
-            f"|------|-------|------------|",
+            "| Cổng | Mô tả | Trạng thái |",
+            "|------|-------|------------|",
             f"| G0 | Câu hỏi nghiên cứu rõ ràng | {RHI} |",
             f"| G1 | Thiết kế đã chọn | {RHI} |",
-            f"| G2 | **[CỨNG] Đạo đức / IRB** | BLOCKED — cần approval thật |",
+            "| G2 | **[CỨNG] Đạo đức / IRB** | BLOCKED — cần approval thật |",
             f"| G3 | Cỡ mẫu đã xác nhận | {RHI} |",
-            f"| G4 | **[CỨNG] SAP đã khóa** | BLOCKED — cần PI ký |",
-            f"| G5 | Dữ liệu đã khóa | BLOCKED — không thu thập dữ liệu thật |",
-            f"| G6 | Phân tích hoàn tất | BLOCKED — không phân tích thật |",
+            "| G4 | **[CỨNG] SAP đã khóa** | BLOCKED — cần PI ký |",
+            "| G5 | Dữ liệu đã khóa | BLOCKED — không thu thập dữ liệu thật |",
+            "| G6 | Phân tích hoàn tất | BLOCKED — không phân tích thật |",
             f"| G7 | Bản thảo sẵn sàng | {RHI} |",
             f"| G8 | Bình duyệt nội bộ | {RHI} |",
-            f"| G9 | **[CỨNG] Nộp / Phát hành** | BLOCKED — không tự nộp |",
+            "| G9 | **[CỨNG] Nộp / Phát hành** | BLOCKED — không tự nộp |",
             "",
             "## CAPA (Corrective and Preventive Actions)",
-            f"| CAPA ID | Vấn đề | Hành động | Người chịu trách nhiệm | Hạn |",
-            f"|---------|--------|-----------|----------------------|-----|",
+            "| CAPA ID | Vấn đề | Hành động | Người chịu trách nhiệm | Hạn |",
+            "|---------|--------|-----------|----------------------|-----|",
             f"| CAPA-001 | {RHI} | {RHI} | {RHI} | {RHI} |",
             "",
             "## Khai báo xung đột lợi ích",
             f"{RHI}: PI và đồng tác giả khai báo COI theo mẫu ICMJE.",
             "",
             "## Phân công vai trò (không tên thật)",
-            f"| Vai trò | Pseudonym | Trách nhiệm |",
-            f"|---------|-----------|------------|",
+            "| Vai trò | Pseudonym | Trách nhiệm |",
+            "|---------|-----------|------------|",
             f"| PI | {cfg.human_owner} | {RHI} |",
             f"| Thu thập dữ liệu | {RHI} | {RHI} |",
             f"| Phân tích thống kê | {RHI} | {RHI} |",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------
@@ -543,7 +549,7 @@ class ProjectDossierBuilder:
         return "\n".join([
             f"# REVIEW PACK — {cfg.title}",
             f"> **DRAFT** — {DISCLAIMER}",
-            f"> **[Dành cho PI/Người phê duyệt]** — Đây là gói tổng hợp cho phiên review.",
+            "> **[Dành cho PI/Người phê duyệt]** — Đây là gói tổng hợp cho phiên review.",
             "",
             "## Tóm tắt đề tài",
             f"- Project: `{cfg.project_id}`",
@@ -569,11 +575,11 @@ class ProjectDossierBuilder:
             f"- Mất theo dõi: {RHI}",
             "",
             "## Quyết định cần PI đưa ra",
-            f"| # | Quyết định | Deadline | Ghi chú |",
-            f"|---|-----------|----------|---------|",
+            "| # | Quyết định | Deadline | Ghi chú |",
+            "|---|-----------|----------|---------|",
             f"| 1 | {RHI} | {RHI} | {RHI} |",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------
@@ -599,12 +605,12 @@ class ProjectDossierBuilder:
     def _build_15_qa_placeholder(self, cfg: ProjectConfig, st: StudyType) -> str:
         return "\n".join([
             f"# PROJECT QA REPORT — {cfg.title}",
-            f"> **DRAFT** — Chưa chạy QA. Dùng `researchctl project-qa` để tạo báo cáo.",
+            "> **DRAFT** — Chưa chạy QA. Dùng `researchctl project-qa` để tạo báo cáo.",
             f"> {DISCLAIMER}",
             "",
             f"Chạy QA bằng: `python -m research_project.project_cli project-qa --project-id {cfg.project_id}`",
             "",
-            f"---", f"**Disclaimer:** {DISCLAIMER}",
+            "---", f"**Disclaimer:** {DISCLAIMER}",
         ])
 
     # ------------------------------------------------------------------

@@ -7,6 +7,7 @@ Chạy: MRAQ_OFFLINE_CI=1 pytest tests/test_r1_3_audit_retention_contract.py -v
 """
 
 import inspect
+
 import pytest
 
 from research_project.audit_retention_contract import (
@@ -19,10 +20,9 @@ from research_project.audit_retention_contract import (
     PROVIDER_NAME_FAKE,
     FakeWormRetentionAdapter,
     RetentionPolicy,
-    WriteReceipt,
     WormRetentionProviderInterface,
+    WriteReceipt,
 )
-
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 

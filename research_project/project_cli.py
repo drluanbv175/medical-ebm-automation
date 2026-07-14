@@ -35,30 +35,47 @@ import sys
 from datetime import datetime, timezone
 from typing import List, Optional
 
+from .project_change_control import ChangeControlEngine
+from .project_claim_traceability import (
+    ClaimType,
+    get_claim_audit,
+    register_claim,
+)
 from .project_config import (
-    ArtifactID, ArtifactStatus, ARTIFACT_FILENAME, DISCLAIMER,
-    ProjectConfig, validate_study_type,
+    ARTIFACT_FILENAME,
+    DISCLAIMER,
+    ArtifactID,
+    ArtifactStatus,
+    ProjectConfig,
+    validate_study_type,
+)
+from .project_config import (
     REQUIRE_HUMAN_INPUT_MARKER as RHI,
 )
-from .project_registry import ProjectRegistry, UnknownProjectError
 from .project_dossier_builder import ProjectDossierBuilder
-from .project_qa_runner import run_project_qa
-from .project_review_pack import generate_review_pack
-from .project_change_control import ChangeControlEngine, bump_version
-from .project_review_operations import (
-    ReviewRole, ReviewMode, HumanDecision,
-    AutoReviewForbidden, ForbiddenReviewMode,
-    list_review_queue, record_decision, get_review_status, build_revision_plan,
-    REVIEW_ROUTING_MATRIX,
-)
 from .project_evidence_intake import (
-    VerificationState, add_evidence_source, get_evidence_review_queue,
-    EvidenceSourceLedger, PIIInEvidenceError, AutoVerificationForbidden,
+    AutoVerificationForbidden,
+    EvidenceSourceLedger,
     ForbiddenRetrievalMode,
+    PIIInEvidenceError,
+    VerificationState,
+    add_evidence_source,
+    get_evidence_review_queue,
 )
-from .project_claim_traceability import (
-    ClaimType, register_claim, get_claim_audit, ClaimTraceabilityLedger,
+from .project_qa_runner import run_project_qa
+from .project_registry import ProjectRegistry, UnknownProjectError
+from .project_review_operations import (
+    AutoReviewForbidden,
+    ForbiddenReviewMode,
+    HumanDecision,
+    ReviewMode,
+    ReviewRole,
+    build_revision_plan,
+    get_review_status,
+    list_review_queue,
+    record_decision,
 )
+from .project_review_pack import generate_review_pack
 
 # Thư mục mặc định cho projects
 DEFAULT_PROJECTS_ROOT = pathlib.Path("projects")
@@ -465,7 +482,7 @@ def _cmd_review_pack(args: argparse.Namespace, projects_root: pathlib.Path) -> i
         print(f"[QA] {qa_result.summary_line()}")
 
     rp = generate_review_pack(project_dir, config, qa_result, save=True)
-    print(f"[OK] Review Pack tạo xong:")
+    print("[OK] Review Pack tạo xong:")
     print(f"     Quyết định cần đưa ra: {rp.total_decisions}")
     print(f"     Ưu tiên CAO: {rp.high_urgency_count}")
     print(f"     Bằng chứng chưa xác minh: {rp.unverified_evidence}")
@@ -549,17 +566,17 @@ def _cmd_repro_check(args: argparse.Namespace, projects_root: pathlib.Path) -> i
         lines = [l for l in audit_path.read_bytes().decode().splitlines() if l.strip()]
         print(f"  [✓] audit_log.jsonl ({len(lines)} records)")
     else:
-        print(f"  [-] audit_log.jsonl — chưa có change records")
+        print("  [-] audit_log.jsonl — chưa có change records")
 
     # Evidence manifest
     ev_path = project_dir / "evidence" / "evidence_manifest.csv"
     if ev_path.exists():
-        print(f"  [✓] evidence/evidence_manifest.csv")
+        print("  [✓] evidence/evidence_manifest.csv")
     else:
-        print(f"  [-] evidence/evidence_manifest.csv — chưa có bằng chứng")
+        print("  [-] evidence/evidence_manifest.csv — chưa có bằng chứng")
 
     print(f"\nKết quả: {ok_count} artifact có · {fail_count} artifact thiếu")
-    print(f"Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE")
+    print("Qualification: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE")
     print(f"{DISCLAIMER}")
 
     return 0 if fail_count == 0 else 2
@@ -580,7 +597,7 @@ def _cmd_review_list(args: argparse.Namespace, projects_root: pathlib.Path) -> i
         print(json.dumps(items, ensure_ascii=False, indent=2))
     else:
         print(f"=== REVIEW QUEUE — {args.project_id} ({len(items)} artifact) ===")
-        print(f"    DRAFT-ONLY · HUMAN REVIEW REQUIRED · NO-GO")
+        print("    DRAFT-ONLY · HUMAN REVIEW REQUIRED · NO-GO")
         print()
         for item in items:
             roles = ", ".join(item["primary_roles"])
@@ -615,13 +632,13 @@ def _cmd_review_record(args: argparse.Namespace, projects_root: pathlib.Path) ->
             review_mode=mode,
             automation_caller=False,  # CLI = người thật
         )
-        print(f"[OK] Review record ghi thành công:")
+        print("[OK] Review record ghi thành công:")
         print(f"     review_id:    {record.review_id}")
         print(f"     artifact_id:  {record.artifact_id}")
         print(f"     decision:     {record.decision.value}")
         print(f"     audit_event:  {record.audit_event_id}")
         print(f"     mode:         {record.review_mode.value}")
-        print(f"     [DRAFT-ONLY] Artifact vẫn là DRAFT — cần PI quyết định tiếp theo.")
+        print("     [DRAFT-ONLY] Artifact vẫn là DRAFT — cần PI quyết định tiếp theo.")
 
         if decision == HumanDecision.REVISION_REQUIRED:
             print(f"\n     [NEXT] Chạy: researchctl project-revision-plan --project-id {args.project_id}")
@@ -717,12 +734,12 @@ def _cmd_evidence_import(args: argparse.Namespace, projects_root: pathlib.Path) 
             reviewer_reference=args.reviewer_ref,
             automation_caller=False,
         )
-        print(f"[OK] Evidence source đã nhập.")
+        print("[OK] Evidence source đã nhập.")
         print(f"     source_id:          {source.source_id}")
         print(f"     verification_state: {source.verification_state.value}")
         print(f"     claim_use_allowed:  {source.claim_use_allowed}")
         print(f"     audit_event_id:     {source.audit_event_id}")
-        print(f"\n  DRAFT — REQUIRE HUMAN REVIEW. Reviewer identity not authenticated.")
+        print("\n  DRAFT — REQUIRE HUMAN REVIEW. Reviewer identity not authenticated.")
         return 0
     except (PIIInEvidenceError, AutoVerificationForbidden, ForbiddenRetrievalMode) as exc:
         print(f"[BLOCKED] {exc}", file=sys.stderr)
@@ -755,7 +772,7 @@ def _cmd_evidence_list(args: argparse.Namespace, projects_root: pathlib.Path) ->
             print(f"    claim_allowed: {s.claim_use_allowed}")
             print(f"    created:       {s.created_at_utc}")
 
-    print(f"\n  DRAFT — REQUIRE HUMAN REVIEW. Reviewer identity not authenticated.")
+    print("\n  DRAFT — REQUIRE HUMAN REVIEW. Reviewer identity not authenticated.")
     return 0
 
 
@@ -777,12 +794,12 @@ def _cmd_claim_register(args: argparse.Namespace, projects_root: pathlib.Path) -
             linked_source_ids=args.source_ids,
             automation_caller=False,
         )
-        print(f"[OK] Claim đã đăng ký.")
+        print("[OK] Claim đã đăng ký.")
         print(f"     claim_id:     {record.claim_id}")
         print(f"     claim_status: {record.claim_status.value}")
         if record.blocking_reason:
             print(f"     reason:       {record.blocking_reason}")
-        print(f"\n  DRAFT — REQUIRE HUMAN REVIEW. Reviewer identity not authenticated.")
+        print("\n  DRAFT — REQUIRE HUMAN REVIEW. Reviewer identity not authenticated.")
         return 0
     except PIIInEvidenceError as exc:
         print(f"[BLOCKED] {exc}", file=sys.stderr)
@@ -811,7 +828,7 @@ def _cmd_claim_audit(args: argparse.Namespace, projects_root: pathlib.Path) -> i
         claims_retracted = sum(1 for e in audit if e["claim_status"] == _CS.BLOCKED_RETRACTED_EVIDENCE.value)
         claims_blocked = claims_unverified + claims_retracted
         hr_count = sum(1 for e in audit if e.get("human_review_required", False))
-        print(f"\n  Summary:")
+        print("\n  Summary:")
         print(f"    claim_total:               {claim_total}")
         print(f"    claims_supported:          {claims_supported}")
         print(f"    claims_missing_evidence:   {claims_missing}")
@@ -863,7 +880,7 @@ def _cmd_rbac_simulate(args: argparse.Namespace, projects_root: pathlib.Path) ->
     )
 
     decision = evaluate_rbac(actor, args.action, ctx)
-    print(f"\n=== RBAC Simulation (R1.1 · SYNTHETIC ONLY) ===")
+    print("\n=== RBAC Simulation (R1.1 · SYNTHETIC ONLY) ===")
     print(f"  actor:            {decision.actor_reference}")
     print(f"  action:           {decision.action}")
     print(f"  object:           {decision.object_reference}")
@@ -896,7 +913,7 @@ def _cmd_delegation_register(args: argparse.Namespace, projects_root: pathlib.Pa
         print(f"[BLOCKED] Delegation không hợp lệ: {exc}", file=sys.stderr)
         return 2
 
-    print(f"\n=== Delegation Registered (R1.1 · SYNTHETIC ONLY) ===")
+    print("\n=== Delegation Registered (R1.1 · SYNTHETIC ONLY) ===")
     print(f"  delegation_id:    {record.delegation_id}")
     print(f"  principal:        {record.principal_synthetic_actor_id}")
     print(f"  delegatee:        {record.delegatee_synthetic_actor_id}")
@@ -925,7 +942,7 @@ def _cmd_delegation_status(args: argparse.Namespace, projects_root: pathlib.Path
         print(f"[NOT FOUND] delegation_id '{args.delegation_id}' không có trong ledger.")
         return 1
 
-    print(f"\n=== Delegation Status (R1.1) ===")
+    print("\n=== Delegation Status (R1.1) ===")
     print(f"  delegation_id:  {args.delegation_id}")
     print(f"  status:         {status}")
     print(f"  ledger:         {ledger_path}")
@@ -947,7 +964,7 @@ def _cmd_audit_attribution_verify(
     event_count = ledger.event_count()
     ok, errors = ledger.verify()
 
-    print(f"\n=== Audit Attribution Verify (R1.1 · SYNTHETIC ONLY) ===")
+    print("\n=== Audit Attribution Verify (R1.1 · SYNTHETIC ONLY) ===")
     print(f"  ledger:       {ledger_path}")
     print(f"  event_count:  {event_count}")
     print(f"  result:       {'PASS' if ok else 'FAIL'}")
@@ -957,8 +974,8 @@ def _cmd_audit_attribution_verify(
             print(f"    - {err}")
     else:
         print("  hash_chain:   intact")
-    print(f"\n  [R1.1] Simulated audit attribution only. "
-          f"Not a production audit trail. Not an authenticated event record.")
+    print("\n  [R1.1] Simulated audit attribution only. "
+          "Not a production audit trail. Not an authenticated event record.")
     return 0 if ok else 1
 
 

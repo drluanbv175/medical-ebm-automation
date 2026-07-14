@@ -44,11 +44,16 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from research_project.project_audit_attribution import (
+    AuditAttributionLedger,
+)
+from research_project.project_delegation_registry import (
+    DelegationError,
+    DelegationRegistry,
+    DelegationStatus,
+)
 from research_project.project_rbac_simulation import (
-    ActorStatus,
     EvaluationContext,
-    FORBIDDEN_ACTIONS_ALL_ROLES,
-    RBACDecision,
     ResearchAction,
     ResearchRole,
     RoleAssignment,
@@ -59,18 +64,6 @@ from research_project.project_rbac_simulation import (
     build_default_registry,
     evaluate_rbac,
 )
-from research_project.project_delegation_registry import (
-    DelegationError,
-    DelegationRegistry,
-    DelegationStatus,
-)
-from research_project.project_audit_attribution import (
-    AuditAttributionLedger,
-    SyntheticAuditEvent,
-    compute_event_hash,
-    verify_hash_chain,
-)
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

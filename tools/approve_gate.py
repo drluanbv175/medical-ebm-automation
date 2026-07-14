@@ -40,6 +40,7 @@ checkpoint, vốn không biết nội dung có bị đổi sau đó hay không).
 KHÔNG dùng để tự động hóa duyệt hàng loạt — mỗi lần gọi là một hành động có chủ ý của một người.
 """
 from __future__ import annotations
+
 import argparse
 import sys
 from datetime import datetime, timezone
@@ -47,9 +48,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import gate_contract as GC
+
 from runtime.approval_ledger import ApprovalLedger
 from runtime.schemas import ApprovalDecisionEnum
-import gate_contract as GC
 
 
 def main() -> int:

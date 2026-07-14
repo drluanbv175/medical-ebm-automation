@@ -7,6 +7,8 @@ MRAQ_OFFLINE_CI=1 pytest tests/test_r2_0_synthetic_edc_core.py -v
 import pytest
 
 from research_project.synthetic_edc_core import (
+    PROD_EDC_DEPENDENCY,
+    SYNTHETIC_EDC_CLASSIFICATION,
     CRFVersion,
     CRFVersionRegistry,
     DataDictionary,
@@ -15,10 +17,7 @@ from research_project.synthetic_edc_core import (
     EditCheckSeverity,
     FieldDefinition,
     FieldType,
-    PROD_EDC_DEPENDENCY,
-    SYNTHETIC_EDC_CLASSIFICATION,
 )
-
 
 # ── Fixtures ───────────────────────────────────────────────────────────────
 

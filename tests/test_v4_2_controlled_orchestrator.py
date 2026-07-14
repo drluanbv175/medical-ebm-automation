@@ -28,11 +28,10 @@ from runtime.approval_ledger import ApprovalLedger
 from runtime.audit_logger import AuditLogger
 from runtime.controlled_orchestrator import ControlledOrchestrator, _has_pii
 from runtime.dispatch_guard import reset_guard_context
-from runtime.mock_agent_runtime import MockAgentRuntime, FIXTURE_CATALOG
+from runtime.mock_agent_runtime import MockAgentRuntime
 from runtime.schemas import PolicyDecisionEnum, WorkflowStateEnum
 from runtime.workflow_context import WorkflowContext
 from runtime.workflow_state_machine import WorkflowStateMachine
-
 
 # ── Fixtures & helpers ──────────────────────────────────────────────────────
 

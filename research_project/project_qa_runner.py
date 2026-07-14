@@ -11,27 +11,40 @@ from __future__ import annotations
 
 import dataclasses
 import pathlib
-from typing import Dict, List, Optional
+from typing import List
 
+from .project_claim_traceability import (
+    CLAIM_LEDGER_FILENAME,
+    ClaimStatus,
+    ClaimTraceabilityLedger,
+)
 from .project_config import (
-    ArtifactID, ArtifactStatus, ARTIFACT_FILENAME, DISCLAIMER,
+    ARTIFACT_FILENAME,
+    DISCLAIMER,
+    EVIDENCE_GATE_STATE_BLOCK,
+    EVIDENCE_GATE_STATE_PASS,
+    EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
+    EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW,
+    ArtifactID,
+    ArtifactStatus,
+    GateStatus,
+    ProjectConfig,
+    QualityGateResult,
+    contains_external_action_positive,
+    contains_fabrication,
+    contains_pii,
+    validate_study_type,
+)
+from .project_config import (
     REQUIRE_HUMAN_INPUT_MARKER as RHI,
-    GateStatus, QualityGateResult, ProjectConfig,
-    contains_pii, contains_fabrication,
-    contains_external_action, contains_external_action_positive,
-    contains_real_data, validate_study_type,
-    EVIDENCE_GATE_STATE_PASS, EVIDENCE_GATE_STATE_REQUIRE_HUMAN_INPUT,
-    EVIDENCE_GATE_STATE_REQUIRE_HUMAN_REVIEW, EVIDENCE_GATE_STATE_BLOCK,
 )
 from .project_evidence_intake import (
-    build_evidence_intake, EvidenceStatus,
-    EvidenceSourceLedger, VerificationState,
     EVIDENCE_SOURCE_LEDGER_FILENAME,
+    EvidenceSourceLedger,
+    EvidenceStatus,
+    VerificationState,
+    build_evidence_intake,
 )
-from .project_claim_traceability import (
-    ClaimTraceabilityLedger, ClaimStatus, CLAIM_LEDGER_FILENAME,
-)
-
 
 # ---------------------------------------------------------------------------
 # QA run result
@@ -66,7 +79,7 @@ class QARunResult:
         for r in self.gate_results:
             icon = {"PASS": "✅", "FAIL": "❌", "WARN": "⚠️", "SKIP": "⏭️"}.get(r.status, "?")
             lines.append(f"| {r.gate_id} | {icon} {r.status} | {r.message} |")
-        lines += ["", f"---", f"**Disclaimer:** {DISCLAIMER}"]
+        lines += ["", "---", f"**Disclaimer:** {DISCLAIMER}"]
         return "\n".join(lines)
 
     def as_dict(self) -> dict:

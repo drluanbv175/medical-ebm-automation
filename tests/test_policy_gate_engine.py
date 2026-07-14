@@ -3,10 +3,9 @@ Tests cho PolicyGateEngine — Phase 3 Offline Controlled-System.
 Không có API call, không PII, hoàn toàn deterministic.
 """
 
-import pytest
-from runtime.policy_gate_engine import PolicyGateEngine
 from runtime.approval_ledger import ApprovalLedger
 from runtime.mock_agent_runtime import FIXTURE_CATALOG
+from runtime.policy_gate_engine import PolicyGateEngine
 from runtime.schemas import GateDecisionEnum, PolicyDecisionEnum
 
 

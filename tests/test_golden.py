@@ -57,7 +57,7 @@ def test_golden_case_output_matches_expected(fixture_path):
     expected = fixture["expected_output"]
 
     if gate == "G3":
-        from run_g3_auto import n_two_proportion, n_continuous_md
+        from run_g3_auto import n_continuous_md, n_two_proportion
         fn = {"n_two_proportion": n_two_proportion, "n_continuous_md": n_continuous_md}[func_name]
         actual = fn(**fixture["input"])
         assert actual == expected["n_per_group"], (

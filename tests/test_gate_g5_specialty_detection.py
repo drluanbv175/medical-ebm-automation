@@ -21,7 +21,6 @@ from run_g5_auto import (  # noqa: E402
     detect_specialty_with_confidence,
 )
 
-
 ALL_SPECIALTIES = list(_SPECIALTY_KEYWORDS.keys())
 
 

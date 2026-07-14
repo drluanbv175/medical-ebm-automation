@@ -12,16 +12,21 @@ from __future__ import annotations
 import dataclasses
 import pathlib
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from .project_config import (
-    ArtifactID, ArtifactStatus, ARTIFACT_FILENAME, DISCLAIMER,
+    ARTIFACT_FILENAME,
+    DISCLAIMER,
+    ArtifactID,
+    ArtifactStatus,
+    GateStatus,
+    ProjectConfig,
+)
+from .project_config import (
     REQUIRE_HUMAN_INPUT_MARKER as RHI,
-    ProjectConfig, EvidenceStatus, GateStatus,
 )
 from .project_evidence_intake import build_evidence_intake
 from .project_qa_runner import QARunResult
-
 
 # ---------------------------------------------------------------------------
 # Dataclasses
@@ -111,7 +116,7 @@ class ReviewPackResult:
             "4. Xem xét artifact STALE nếu có.",
             "5. Chạy lại QA: `researchctl project-qa` sau khi cập nhật.",
             "",
-            f"---",
+            "---",
             f"**Disclaimer:** {DISCLAIMER}",
         ]
         return "\n".join(lines)

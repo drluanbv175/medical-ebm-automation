@@ -3,7 +3,6 @@ Tests cho AuditLogger — Phase 3 Offline Controlled-System.
 Không có API call, không PII, hoàn toàn deterministic.
 """
 
-import pytest
 from runtime.audit_logger import AuditLogger
 from runtime.schemas import AuditEvent, PolicyDecisionEnum, RuntimeTypeEnum
 

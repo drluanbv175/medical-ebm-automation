@@ -25,6 +25,7 @@ Script:
   - KHÔNG in khóa ra sau khi ghi (không để lại trong lịch sử terminal/log nếu tránh được).
 """
 from __future__ import annotations
+
 import secrets
 import sys
 from pathlib import Path

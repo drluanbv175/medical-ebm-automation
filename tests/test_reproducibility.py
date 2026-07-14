@@ -14,9 +14,9 @@ import json
 
 import pytest
 
-from runtime.mock_agent_runtime import MockAgentRuntime, FIXTURE_CATALOG
-from runtime.policy_gate_engine import PolicyGateEngine
 from runtime.approval_ledger import ApprovalLedger
+from runtime.mock_agent_runtime import FIXTURE_CATALOG, MockAgentRuntime
+from runtime.policy_gate_engine import PolicyGateEngine
 
 
 def _hash_output(result) -> str:
