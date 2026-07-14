@@ -16,6 +16,8 @@ plotly>=5.22.0
 # Statistical analysis (run_stats_analysis.py)
 scipy>=1.13.0
 statsmodels>=0.14.0
+lifelines>=0.30.0   # Cox PH + Kaplan-Meier cho thiết kế sống còn (--time/--event, vá 2026-07-15)
+matplotlib>=3.9.0   # tuỳ chọn — vẽ đường cong Kaplan-Meier (script vẫn chạy nếu thiếu)
 
 # Reports / export
 Jinja2>=3.1.4

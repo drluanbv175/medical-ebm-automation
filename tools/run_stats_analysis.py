@@ -1,7 +1,7 @@
 """
 run_stats_analysis.py — Phân tích thống kê tự động từ dữ liệu thật (bác sĩ chỉ cung cấp file)
 
-Sử dụng:
+Sử dụng (kết cục nhị phân/liên tục — logistic/linear regression):
     python tools/run_stats_analysis.py \\
         --data path/to/data.csv \\
         --outcome outcome_col \\
@@ -9,21 +9,33 @@ Sử dụng:
         --covariates age,sex,bmi \\
         --study "TEN-DE-TAI" --gate G6
 
-CHƯA hỗ trợ phân tích sống còn/time-to-event (Cox/Kaplan-Meier) — script này chỉ so sánh
-2 nhóm nhị phân/liên tục. Không có cờ --time/--event nào trong argparse của script này; một
-lệnh dùng 2 cờ đó sẽ lỗi ngay. Với thiết kế cohort/HR cần Cox+KM thật, dùng script CLI do
-run_g6_auto.py sinh ra (exports/<study>/run_analysis_cli.py — dùng lifelines CoxPHFitter/
-KaplanMeierFitter thật, cùng cổng G2/G4/G5 như script này).
+Sử dụng (thiết kế sống còn/time-to-event — Cox PH + Kaplan-Meier, vá 2026-07-15):
+    python tools/run_stats_analysis.py \\
+        --data path/to/data.csv \\
+        --time follow_time --event outcome_col \\
+        --group exposure_col \\
+        --covariates age,sex,bmi \\
+        --study "TEN-DE-TAI" --gate G6
+
+Trước 2026-07-15, script này KHÔNG hỗ trợ sống còn — Cox/KM thật chỉ tồn tại dưới dạng
+CODE NHÚNG trong chuỗi template mà run_g6_auto.py ghi ra exports/<study>/run_analysis_cli.py
+để bác sĩ tự chạy tay riêng, tách khỏi cổng G2/G4/G5 mà script NÀY đã có sẵn. Nay `--time`+
+`--event` kích hoạt nhánh sống còn, TỰ THỰC THI CoxPHFitter/KaplanMeierFitter thật (lifelines)
+— cùng công thức/quy ước đã dùng ở run_g6_auto.py::run_cox/plot_km, qua ĐÚNG cổng data-lock
+này (không phải một script riêng biệt ít được kiểm hơn).
 
 Đầu ra (tự động vào exports/<study>/):
     G6_table1_descriptive.txt     — Bảng 1 đặc điểm mẫu
-    G6_table2_main_outcome.txt    — Kết cục chính (OR/MD + 95%CI)
-    G6_table4_multivariate.txt    — Mô hình đa biến
+    G6_table2_main_outcome.txt    — Kết cục chính (OR/MD + 95%CI) — thiết kế nhị phân/liên tục
+    G6_table3_survival.txt        — Cox PH (HR + 95%CI) — thiết kế sống còn (--time/--event)
+    G6_km_curve.png               — Đường cong Kaplan-Meier (nếu có matplotlib) — thiết kế sống còn
+    G6_table4_multivariate.txt    — Mô hình đa biến — thiết kế nhị phân/liên tục
     G6_missing_data_summary.txt   — Tóm tắt dữ liệu thiếu
     G6_analysis_summary.json      — JSON dùng cho agent viet-ban-thao
     G6_analysis_syntax.R          — Script R tái lặp kết quả
 
-Phụ thuộc: pandas, numpy, scipy, statsmodels (pip install scipy statsmodels)
+Phụ thuộc: pandas, numpy, scipy, statsmodels (pip install scipy statsmodels); thêm lifelines
+cho thiết kế sống còn, matplotlib (tuỳ chọn) để vẽ đường cong KM.
 """
 
 import argparse
@@ -55,6 +67,19 @@ try:
 except ImportError:
     HAS_STATSMODELS = False
     print("[CẢNH BÁO] statsmodels chưa cài — hồi quy đa biến bị giới hạn. Chạy: pip install statsmodels")
+
+try:
+    import lifelines  # noqa: F401  (chỉ để kiểm sự tồn tại; import cụ thể lúc dùng)
+    HAS_LIFELINES = True
+except ImportError:
+    HAS_LIFELINES = False
+    print("[CẢNH BÁO] lifelines chưa cài — phân tích sống còn (Cox/KM) bị giới hạn. Chạy: pip install lifelines")
+
+try:
+    import matplotlib  # noqa: F401
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -383,6 +408,141 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# 6b. PHÂN TÍCH SỐNG CÒN (Cox PH + Kaplan-Meier) — vá 2026-07-15
+# ════════════════════════════════════════════════════════════════════════════
+# Trước đây Cox/KM thật (lifelines) chỉ tồn tại nhúng trong chuỗi template mà
+# run_g6_auto.py ghi ra exports/<study>/run_analysis_cli.py cho bác sĩ tự chạy
+# tay, TÁCH khỏi cổng data-lock/G2/G4/G5 của chính script này. Hai hàm dưới đây
+# PORT lại đúng công thức/tên cột đã dùng ở run_g6_auto.py::run_cox/plot_km,
+# nhưng THỰC THI THẬT tại đây — qua đúng cổng đã kiểm ở main().
+
+def survival_model(df: pd.DataFrame, time_col: str, event_col: str,
+                    group_col: str, covariates: list) -> dict:
+    """Cox proportional-hazards THẬT (lifelines.CoxPHFitter) — mô hình thô (chỉ
+    group_col) rồi hiệu chỉnh (thêm covariates nếu có). EPV (Events-Per-Variable,
+    Peduzzi 1996) tính theo SỐ BIẾN CỐ — cùng ngưỡng ≥10 biến cố/biến áp dụng cho
+    logistic ở multivariate_model()."""
+    if not HAS_LIFELINES:
+        return {
+            "error": "lifelines chưa cài. Chạy: pip install lifelines",
+            "note": "[CẦN BỔ SUNG — phân tích sống còn cần lifelines]",
+        }
+    from lifelines import CoxPHFitter
+
+    avail_covs = [c for c in covariates if c in df.columns]
+    essential = [time_col, event_col, group_col] + avail_covs
+    data = df[essential].dropna()
+    n = len(data)
+    n_events = int(data[event_col].sum())
+    n_predictors = 1 + len(avail_covs)
+
+    result = {"n": n, "n_events": n_events, "time_col": time_col,
+              "event_col": event_col, "group_col": group_col}
+    if n_events < n_predictors * 10:
+        result["epv_warning"] = (
+            f"Số biến cố {n_events} có thể không đủ EPV cho {n_predictors} biến dự "
+            f"báo (cần ≥10 biến cố/biến — Peduzzi 1996)."
+        )
+
+    def _fit(cols: list) -> dict:
+        cph = CoxPHFitter()
+        cph.fit(data[cols], duration_col=time_col, event_col=event_col)
+        s = cph.summary
+        hr = float(s.loc[group_col, "exp(coef)"])
+        ci_low = float(s.loc[group_col, "exp(coef) lower 95%"])
+        ci_up = float(s.loc[group_col, "exp(coef) upper 95%"])
+        p = float(s.loc[group_col, "p"])
+        return {
+            "HR": round(hr, 3), "CI_95": [round(ci_low, 3), round(ci_up, 3)],
+            "p": round(p, 4), "concordance": round(float(cph.concordance_index_), 4),
+        }
+
+    try:
+        result["crude"] = _fit([time_col, event_col, group_col])
+    except Exception as e:
+        result["crude_error"] = str(e)
+
+    if avail_covs:
+        try:
+            result["adjusted"] = _fit([time_col, event_col, group_col] + avail_covs)
+            result["adjusted_covariates"] = avail_covs
+        except Exception as e:
+            result["adjusted_error"] = str(e)
+
+    return result
+
+
+def kaplan_meier_summary(df: pd.DataFrame, time_col: str, event_col: str,
+                          group_col: str, out_path: Path = None) -> dict:
+    """Kaplan-Meier median survival theo nhóm + log-rank test THẬT (lifelines) —
+    cùng phép tính run_g6_auto.py::plot_km. Vẽ đường cong (PNG) nếu matplotlib có
+    sẵn và out_path được cấp — KHÔNG bắt buộc, script vẫn trả số liệu nếu thiếu."""
+    if not HAS_LIFELINES:
+        return {"error": "lifelines chưa cài. Chạy: pip install lifelines"}
+    from lifelines import KaplanMeierFitter
+    from lifelines.statistics import logrank_test
+
+    groups = sorted(df[group_col].dropna().unique())
+    per_group = {}
+    fitted = {}
+    for g in groups:
+        sub = df[df[group_col] == g][[time_col, event_col]].dropna()
+        if sub.empty:
+            continue
+        kmf = KaplanMeierFitter()
+        kmf.fit(sub[time_col], event_observed=sub[event_col], label=str(g))
+        fitted[g] = kmf
+        median = kmf.median_survival_time_
+        per_group[str(g)] = {
+            "n": len(sub),
+            "n_events": int(sub[event_col].sum()),
+            # median_survival_time_ = inf khi <50% nhóm đã có biến cố (chưa đạt
+            # trung vị) — không phải NaN; cả hai đều nghĩa "chưa xác định được".
+            "median_survival": (
+                None if pd.isna(median) or np.isinf(median) else round(float(median), 2)
+            ),
+        }
+
+    result = {"groups": per_group}
+    if len(groups) == 2:
+        g0, g1 = groups
+        s0 = df[df[group_col] == g0][[time_col, event_col]].dropna()
+        s1 = df[df[group_col] == g1][[time_col, event_col]].dropna()
+        if not s0.empty and not s1.empty:
+            lr = logrank_test(s0[time_col], s1[time_col],
+                               event_observed_A=s0[event_col], event_observed_B=s1[event_col])
+            result["logrank_p"] = round(float(lr.p_value), 4)
+
+    if out_path is not None and HAS_MATPLOTLIB and fitted:
+        try:
+            import matplotlib
+            matplotlib.use("Agg")
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(figsize=(9, 6))
+            colors = ["#2E9FDF", "#E7B800", "#66C2A5", "#FC8D62"]
+            for (g, kmf), color in zip(fitted.items(), colors):
+                kmf.plot_survival_function(ax=ax, color=color, ci_show=True)
+            if "logrank_p" in result:
+                ax.text(0.65, 0.08, f"Log-rank p = {result['logrank_p']}",
+                        transform=ax.transAxes, fontsize=11,
+                        bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
+            ax.set_xlabel("Thời gian theo dõi")
+            ax.set_ylabel("Xác suất không có biến cố")
+            ax.set_title(f"Kaplan-Meier — {group_col}")
+            ax.legend()
+            ax.set_ylim(0, 1.05)
+            ax.grid(alpha=0.3)
+            plt.tight_layout()
+            plt.savefig(out_path, dpi=300, bbox_inches="tight")
+            plt.close(fig)
+            result["plot_path"] = str(out_path)
+        except Exception as e:
+            result["plot_error"] = str(e)
+
+    return result
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # 7. ĐỊNH DẠNG ĐẦU RA CHO AGENT
 # ════════════════════════════════════════════════════════════════════════════
 
@@ -449,6 +609,80 @@ def format_multivariate_text(mv: dict) -> str:
         lines.append(f"  {r['variable'][:28]:<28} {est:>18}  {ci_str:>20}  {p:>8}{star}")
     lines.append("\n* p < 0.05")
     return "\n".join(lines)
+
+
+def format_survival_text(res: dict, km: dict = None) -> str:
+    if "error" in res:
+        return f"PHÂN TÍCH SỐNG CÒN: {res['error']}\n{res.get('note', '')}"
+    lines = [f"BẢNG 3 — PHÂN TÍCH SỐNG CÒN (Cox PH) — {res.get('group_col', '')}", "=" * 70]
+    lines.append(f"  n = {res.get('n', '?')} | Biến cố = {res.get('n_events', '?')}")
+    if res.get("epv_warning"):
+        lines.append(f"  ⚠ {res['epv_warning']} [CẦN BIOSTATISTICIAN XÁC NHẬN]")
+    if "crude_error" in res:
+        lines.append(f"  Mô hình thô: LỖI — {res['crude_error']}")
+    elif "crude" in res:
+        c = res["crude"]
+        lines.append(f"  Thô: HR = {c['HR']} (95%CI {c['CI_95'][0]}–{c['CI_95'][1]}), "
+                      f"p = {c['p']}, C-index = {c['concordance']}")
+    if "adjusted_error" in res:
+        lines.append(f"  Mô hình hiệu chỉnh: LỖI — {res['adjusted_error']}")
+    elif "adjusted" in res:
+        a = res["adjusted"]
+        covs = ", ".join(res.get("adjusted_covariates", [])[:4])
+        lines.append(f"  Hiệu chỉnh ({covs}): HR = {a['HR']} (95%CI {a['CI_95'][0]}–{a['CI_95'][1]}), "
+                      f"p = {a['p']}, C-index = {a['concordance']}")
+    if km and not km.get("error"):
+        lines.append("\n  KAPLAN-MEIER:")
+        for g, info in km.get("groups", {}).items():
+            med = info.get("median_survival")
+            med_str = f"{med}" if med is not None else "chưa đạt (>50% còn sống)"
+            lines.append(f"    Nhóm {g}: n={info['n']}, biến cố={info['n_events']}, "
+                          f"trung vị sống còn={med_str}")
+        if "logrank_p" in km:
+            lines.append(f"    Log-rank p = {km['logrank_p']}")
+        if km.get("plot_path"):
+            lines.append(f"    Đường cong: {km['plot_path']}")
+    lines.append("\n[BÁC SĨ KIỂM TRA: số liệu lấy trực tiếp từ dữ liệu thật]")
+    return "\n".join(lines)
+
+
+def _generate_r_script_survival(study: str, gate: str, time_col: str, event_col: str,
+                                 group_col: str, covariates: list) -> str:
+    """Script R tái lặp cho thiết kế sống còn (coxph, package `survival`) — KHÔNG
+    comment sẵn như bản Cox trong run_g6_auto.py's template (nơi Cox bị # vì chờ
+    dữ liệu thật/G4 SAP locked); script NÀY mô tả một phân tích ĐÃ CHẠY THẬT trên
+    dataset đã khóa (qua _require_locked_analysis_dataset ở main()), nên chạy được
+    ngay để đối chiếu độc lập."""
+    formula = " + ".join([group_col] + covariates)
+    run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+    return (
+        f"# ══════════════════════════════════════════════\n"
+        f"# Script R tái lặp (sống còn) — {study} | {gate}\n"
+        f"# Tạo tự động bởi run_stats_analysis.py\n"
+        f"# Ngày: {run_date}\n"
+        f"# ══════════════════════════════════════════════\n"
+        "set.seed(42)  # CỐ ĐỊNH SEED\n\n"
+        "library(survival); library(survminer); library(tableone); library(dplyr)\n\n"
+        "# 1. Đọc dữ liệu (thay đường dẫn)\n"
+        'data <- read.csv("data.csv")  # hoặc read.xlsx\n\n'
+        "# 2. Bảng 1\n"
+        f'vars_all <- setdiff(names(data), c("{group_col}", "{event_col}", "{time_col}"))\n'
+        f'tab1 <- CreateTableOne(vars = vars_all, strata = "{group_col}", data = data)\n'
+        "print(tab1, showAllLevels = TRUE, smd = TRUE)\n\n"
+        f'# 3. Kaplan-Meier + log-rank\n'
+        f'fit_km <- survfit(Surv({time_col}, {event_col}) ~ {group_col}, data = data)\n'
+        f'survdiff(Surv({time_col}, {event_col}) ~ {group_col}, data = data)  # log-rank p\n'
+        'ggsurvplot(fit_km, data = data, pval = TRUE, conf.int = TRUE, risk.table = TRUE)\n\n'
+        f"# 4. Cox proportional-hazards\n"
+        f"model_crude <- coxph(Surv({time_col}, {event_col}) ~ {group_col}, data = data)\n"
+        f"model_adj   <- coxph(Surv({time_col}, {event_col}) ~ {formula}, data = data)\n\n"
+        "# HR + 95%CI (không chỉ p-value)\n"
+        "exp(cbind(HR = coef(model_adj), confint(model_adj)))\n\n"
+        "# 5. Kiểm tra giả định proportional-hazards (Schoenfeld residuals)\n"
+        "cox.zph(model_adj)\n\n"
+        "# 6. Ghi session info (tái lặp)\n"
+        'sink("session_info.txt"); sessionInfo(); sink()\n'
+    )
 
 
 def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
@@ -620,7 +854,12 @@ def main():
     )
     parser.add_argument("--data", required=True, help="Đường dẫn file CSV/Excel")
     parser.add_argument("--outcome", help="Cột kết cục chính (nhị phân 0/1 hoặc liên tục)")
-    parser.add_argument("--group", help="Cột nhóm (so sánh 2 nhóm)")
+    parser.add_argument("--group", help="Cột nhóm/phơi nhiễm (so sánh 2 nhóm; cũng là biến "
+                                        "chính trong mô hình Cox khi dùng --time/--event)")
+    parser.add_argument("--time", help="Cột thời gian theo dõi (kích hoạt Cox PH/Kaplan-Meier "
+                                       "cùng --event, vá 2026-07-15) — số, cùng đơn vị mọi hàng")
+    parser.add_argument("--event", help="Cột biến cố (0/1; kích hoạt Cox PH/Kaplan-Meier "
+                                        "cùng --time, vá 2026-07-15)")
     parser.add_argument("--covariates", default="",
                         help="Danh sách biến hiệu chỉnh, phân cách bằng dấu phẩy")
     parser.add_argument("--outcome-type", default="auto",
@@ -637,6 +876,13 @@ def main():
                         help="Ghi đè kiểm tra G2 (đạo đức/IRB) khi không có file checkpoint "
                              "nhưng IRB thực tế ĐÃ phê duyệt. KHÔNG dùng để né việc chưa duyệt thật.")
     args = parser.parse_args()
+
+    if bool(args.time) != bool(args.event):
+        print("✗ DỪNG: --time và --event phải đi CÙNG NHAU (thiết kế sống còn cần cả hai).")
+        sys.exit(1)
+    if args.time and args.event and not args.group:
+        print("✗ DỪNG: Cox PH cần --group (biến phơi nhiễm/exposure chính của mô hình).")
+        sys.exit(1)
 
     # 2026-07-07: cổng kỹ thuật chặn chạy phân tích thật khi G4 (SAP)/G5 (DB) chưa khóa —
     # trước đây script này không kiểm tra gì, chỉ agent tự nhớ nhắc (đã xảy ra rủi ro
@@ -770,6 +1016,30 @@ def main():
                                       args.group, covariates, args.outcome_type)
         (prefix.parent / f"{args.gate}_analysis_syntax.R").write_text(r_script, encoding="utf-8")
         print("✓ Script R tái lặp đã tạo")
+
+    # 5b/6b/7b. Thiết kế sống còn (Cox PH + Kaplan-Meier) — vá 2026-07-15
+    if args.time and args.event:
+        missing_cols = [c for c in (args.time, args.event, args.group) if c not in df.columns]
+        if missing_cols:
+            print(f"✗ DỪNG: thiếu cột {missing_cols} trong dữ liệu cho phân tích sống còn.")
+            sys.exit(1)
+        surv = survival_model(df, args.time, args.event, args.group, covariates)
+        km_path = prefix.parent / f"{args.gate}_km_curve.png"
+        km = kaplan_meier_summary(df, args.time, args.event, args.group, out_path=km_path)
+        surv_txt = format_survival_text(surv, km)
+        (prefix.parent / f"{args.gate}_table3_survival.txt").write_text(surv_txt, encoding="utf-8")
+        summary["survival"] = surv
+        summary["kaplan_meier"] = km
+        if "crude" in surv:
+            c = surv["crude"]
+            print(f"✓ Cox PH thô: HR={c['HR']} (95%CI {c['CI_95'][0]}–{c['CI_95'][1]}), p={c['p']}")
+        elif "error" in surv:
+            print(f"✗ Cox PH: {surv['error']}")
+
+        r_script_surv = _generate_r_script_survival(
+            args.study, args.gate, args.time, args.event, args.group, covariates)
+        (prefix.parent / f"{args.gate}_survival_syntax.R").write_text(r_script_surv, encoding="utf-8")
+        print("✓ Script R (sống còn) tái lặp đã tạo")
 
     # 8. JSON summary (cho agent)
     json_path = prefix.parent / f"{args.gate}_analysis_summary.json"
