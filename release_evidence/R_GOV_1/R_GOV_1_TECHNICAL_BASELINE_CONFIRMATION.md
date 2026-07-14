@@ -103,7 +103,7 @@ This document confirms the technical baseline against which the R-GOV.1 governan
 | eHospital integration | NOT IMPLEMENTED |
 | Ethics approval | NOT GRANTED |
 | Hospital authorization | NOT GRANTED |
-| Independent qualification | NOT COMPLETED |
+| Independent qualification | NOT STARTED |
 | Real patient-data processing | BLOCKED |
 | Study activation | BLOCKED |
 | Qualification | NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE |

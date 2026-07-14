@@ -99,9 +99,17 @@ Signature: _______________________________________________
 
 ## Hold status
 
-**Current status:** ACTIVE  
-**Resolved by:** [PENDING — PI must complete]  
+**Current status:** TERMINOLOGY APPLIED — FORMAL SIGN-OFF PENDING  
+**Resolved by:** [PENDING — PI must complete formal sign-off below]  
 **Resolution date:** [PENDING]
+
+**Note (2026-07-14):** Step 2 (terminology confirmation) and step 3 (apply edit) of
+Resolution steps executed. PI confirmation was given in a Claude Code chat session, quoted
+verbatim: **"Xác nhận dùng NOT STARTED"** (= "Confirm using NOT STARTED"). Based on this,
+`R_GOV_1_TECHNICAL_BASELINE_CONFIRMATION.md` §7, row "Independent qualification", was changed
+from `NOT COMPLETED` to `NOT STARTED`. This chat confirmation is NOT a signed document. Step 4
+(formal RESOLVED marking with date + signature, below) remains blank — that step requires the
+PI's own written/signed action and is not completed by an AI agent on the PI's behalf.
 
 ---
 
