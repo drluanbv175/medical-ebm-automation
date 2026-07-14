@@ -86,6 +86,10 @@ class ForbiddenReviewMode(ValueError):
     """ReviewMode này bị cấm trong V4.3.4."""
 
 
+class UnauthorizedReviewRole(ValueError):
+    """Role không được route cho artifact nên không được ghi review decision."""
+
+
 # ---------------------------------------------------------------------------
 # ReviewRecord
 # ---------------------------------------------------------------------------
@@ -332,6 +336,88 @@ def _artifact_version(project_dir: pathlib.Path, artifact_id: ArtifactID) -> str
     return "0.1.0"
 
 
+def required_roles_for_artifact(artifact_id: ArtifactID) -> List[ReviewRole]:
+    """Danh sách role bắt buộc được phép review artifact."""
+    roles, _, _, _ = REVIEW_ROUTING_MATRIX.get(
+        artifact_id,
+        ([ReviewRole.PI_PROJECT_OWNER], "", RiskLevel.MEDIUM, "D-R1"),
+    )
+    return list(roles)
+
+
+def _review_snapshot(artifact_id: ArtifactID, records: List[ReviewRecord]) -> dict:
+    """Tóm tắt review theo từng role bắt buộc cho một artifact."""
+    required_roles = required_roles_for_artifact(artifact_id)
+    artifact_records = [r for r in records if r.artifact_id == artifact_id.value]
+    latest_by_role: Dict[ReviewRole, ReviewRecord] = {}
+    for record in artifact_records:
+        if record.review_role not in required_roles:
+            continue
+        prior = latest_by_role.get(record.review_role)
+        if prior is None or record.created_at_utc > prior.created_at_utc:
+            latest_by_role[record.review_role] = record
+
+    role_decisions = {
+        role.value: latest_by_role[role].decision.value
+        for role in required_roles
+        if role in latest_by_role
+    }
+    accepted_roles = [
+        role.value for role in required_roles
+        if latest_by_role.get(role)
+        and latest_by_role[role].decision == HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE
+    ]
+    missing_roles = [role.value for role in required_roles if role.value not in accepted_roles]
+    blocking_roles = [
+        role.value for role in required_roles
+        if latest_by_role.get(role)
+        and latest_by_role[role].decision in {
+            HumanDecision.REQUEST_HUMAN_INPUT,
+            HumanDecision.REVISION_REQUIRED,
+            HumanDecision.REJECT_DRAFT,
+        }
+    ]
+
+    if not artifact_records:
+        current_status = "DRAFT"
+    elif any(
+        latest_by_role.get(role)
+        and latest_by_role[role].decision == HumanDecision.REJECT_DRAFT
+        for role in required_roles
+    ):
+        current_status = "REJECTED_DRAFT"
+    elif any(
+        latest_by_role.get(role)
+        and latest_by_role[role].decision == HumanDecision.REVISION_REQUIRED
+        for role in required_roles
+    ):
+        current_status = "REVISION_REQUIRED"
+    elif any(
+        latest_by_role.get(role)
+        and latest_by_role[role].decision == HumanDecision.REQUEST_HUMAN_INPUT
+        for role in required_roles
+    ):
+        current_status = "AWAITING_HUMAN_INPUT"
+    elif not missing_roles:
+        current_status = "ACCEPTED_DRAFT"
+    elif accepted_roles:
+        current_status = "PARTIAL_REVIEW"
+    else:
+        current_status = "DRAFT"
+
+    newest = max(artifact_records, key=lambda r: r.created_at_utc) if artifact_records else None
+    return {
+        "required_roles": [role.value for role in required_roles],
+        "accepted_roles": accepted_roles,
+        "missing_roles": missing_roles,
+        "blocking_roles": blocking_roles,
+        "role_decisions": role_decisions,
+        "current_status": current_status,
+        "complete_required_review": not missing_roles,
+        "last_decision": newest.decision.value if newest else None,
+    }
+
+
 def list_review_queue(
     project_dir: pathlib.Path,
     config: ProjectConfig,
@@ -339,32 +425,30 @@ def list_review_queue(
     """Liệt kê artifact cần review — không chứa PII."""
     items = []
     ledger = ReviewLedger(project_dir)
-    existing_decisions = {r.artifact_id: r.decision for r in ledger.read_all()}
+    records = ledger.read_all()
 
     for art_id, (roles, focus, risk, gate) in REVIEW_ROUTING_MATRIX.items():
         fname = ARTIFACT_FILENAME.get(art_id, "")
         fpath = project_dir / fname
         if not fpath.exists():
             continue
-        # Kiểm tra status hiện tại
-        status = "DRAFT"
-        last_decision = existing_decisions.get(art_id.value, None)
-        if last_decision == HumanDecision.REVISION_REQUIRED:
-            status = "REVISION_REQUIRED"
-        elif last_decision == HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE:
-            status = "ACCEPTED_DRAFT"
-        elif last_decision == HumanDecision.REQUEST_HUMAN_INPUT:
-            status = "AWAITING_HUMAN_INPUT"
+        snapshot = _review_snapshot(art_id, records)
 
         item = {
             "artifact_id": art_id.value,
             "artifact_file": fname,
             "primary_roles": [r.value for r in roles],
+            "required_roles": snapshot["required_roles"],
+            "accepted_roles": snapshot["accepted_roles"],
+            "missing_roles": snapshot["missing_roles"],
+            "blocking_roles": snapshot["blocking_roles"],
+            "role_decisions": snapshot["role_decisions"],
+            "complete_required_review": snapshot["complete_required_review"],
             "mandatory_focus": focus,
             "risk_level": risk.value,
             "blocking_gate": gate,
-            "current_status": status,
-            "last_decision": last_decision.value if last_decision else None,
+            "current_status": snapshot["current_status"],
+            "last_decision": snapshot["last_decision"],
             "missing_input": RHI in fpath.read_text(encoding="utf-8"),
             "draft_only": True,
             "human_review_required": True,
@@ -405,9 +489,18 @@ def record_decision(
     if routing is None:
         blocking_gate = "D-R1"
         risk_level = RiskLevel.MEDIUM
+        routed_roles = [ReviewRole.PI_PROJECT_OWNER]
     else:
         blocking_gate = routing[3]
         risk_level = routing[2]
+        routed_roles = routing[0]
+
+    if review_role not in routed_roles:
+        allowed = ", ".join(role.value for role in routed_roles)
+        raise UnauthorizedReviewRole(
+            f"Role {review_role.value} không được phép review {art_id.value}. "
+            f"Role bắt buộc: {allowed}."
+        )
 
     version = _artifact_version(project_dir, art_id)
     rid = _make_review_id(config.project_id, artifact_id_str)
@@ -444,34 +537,62 @@ def get_review_status(project_dir: pathlib.Path) -> dict:
         if r.artifact_id not in latest or r.created_at_utc > latest[r.artifact_id].created_at_utc:
             latest[r.artifact_id] = r
 
+    snapshots = {}
+    for artifact_id_str in latest:
+        try:
+            artifact_id = ArtifactID(artifact_id_str)
+        except ValueError:
+            continue
+        snapshots[artifact_id_str] = _review_snapshot(artifact_id, records)
+
     draft_count = 0
     revision_count = 0
     human_input_count = 0
     accepted_draft_count = 0
     rejected_count = 0
     archived_count = 0
+    partial_review_count = 0
 
-    for r in latest.values():
-        if r.decision == HumanDecision.REQUEST_HUMAN_INPUT:
+    for artifact_id_str, r in latest.items():
+        snapshot = snapshots.get(artifact_id_str)
+        status = snapshot["current_status"] if snapshot else "DRAFT"
+        if status == "AWAITING_HUMAN_INPUT":
             human_input_count += 1
-        elif r.decision == HumanDecision.REVISION_REQUIRED:
+        elif status == "REVISION_REQUIRED":
             revision_count += 1
-        elif r.decision == HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE:
+        elif status == "ACCEPTED_DRAFT":
             accepted_draft_count += 1
-        elif r.decision == HumanDecision.REJECT_DRAFT:
+        elif status == "REJECTED_DRAFT" or r.decision == HumanDecision.REJECT_DRAFT:
             rejected_count += 1
         elif r.decision == HumanDecision.ARCHIVE_DRAFT:
             archived_count += 1
+        elif status == "PARTIAL_REVIEW":
+            partial_review_count += 1
         else:
             draft_count += 1
+
+    missing_required = [
+        {
+            "artifact_id": artifact_id_str,
+            "missing_roles": snapshot["missing_roles"],
+            "accepted_roles": snapshot["accepted_roles"],
+            "current_status": snapshot["current_status"],
+        }
+        for artifact_id_str, snapshot in sorted(snapshots.items())
+        if snapshot["missing_roles"]
+    ]
 
     return {
         "total_review_records": len(records),
         "total_artifacts_reviewed": len(latest),
         "draft_pending_review": draft_count,
+        "partial_review": partial_review_count,
         "revision_required": revision_count,
         "human_input_required": human_input_count,
         "accepted_as_draft_internal": accepted_draft_count,
+        "complete_required_review_count": accepted_draft_count,
+        "artifacts_missing_required_roles": missing_required,
+        "review_role_matrix": snapshots,
         "rejected_draft": rejected_count,
         "archived_draft": archived_count,
         # Bắt buộc: mọi artifact vẫn là DRAFT

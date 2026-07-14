@@ -70,6 +70,7 @@ from .project_review_operations import (
     HumanDecision,
     ReviewMode,
     ReviewRole,
+    UnauthorizedReviewRole,
     build_revision_plan,
     get_review_status,
     list_review_queue,
@@ -544,7 +545,7 @@ def _cmd_revise(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
 
 def _cmd_repro_check(args: argparse.Namespace, projects_root: pathlib.Path) -> int:
     registry = ProjectRegistry(projects_root)
-    config = registry.load(args.project_id)
+    registry.load(args.project_id)
     project_dir = projects_root / args.project_id
 
     print(f"=== Reproducibility Check: {args.project_id} ===")
@@ -563,7 +564,7 @@ def _cmd_repro_check(args: argparse.Namespace, projects_root: pathlib.Path) -> i
     # Audit log
     audit_path = project_dir / "audit_log.jsonl"
     if audit_path.exists():
-        lines = [l for l in audit_path.read_bytes().decode().splitlines() if l.strip()]
+        lines = [line for line in audit_path.read_bytes().decode().splitlines() if line.strip()]
         print(f"  [✓] audit_log.jsonl ({len(lines)} records)")
     else:
         print("  [-] audit_log.jsonl — chưa có change records")
@@ -601,11 +602,13 @@ def _cmd_review_list(args: argparse.Namespace, projects_root: pathlib.Path) -> i
         print()
         for item in items:
             roles = ", ".join(item["primary_roles"])
+            missing_roles = ", ".join(item.get("missing_roles", [])) or "none"
             missing = " [REQUIRE_HUMAN_INPUT]" if item["missing_input"] else ""
             print(f"  [{item['risk_level']:<8}] {item['artifact_id']}")
             print(f"            → Roles: {roles}")
             print(f"            → Focus: {item['mandatory_focus']}")
             print(f"            → Gate: {item['blocking_gate']} | Status: {item['current_status']}{missing}")
+            print(f"            → Missing review roles: {missing_roles}")
     return 0
 
 
@@ -650,6 +653,9 @@ def _cmd_review_record(args: argparse.Namespace, projects_root: pathlib.Path) ->
     except ForbiddenReviewMode as exc:
         print(f"[BLOCKED] {exc}", file=sys.stderr)
         return 2
+    except UnauthorizedReviewRole as exc:
+        print(f"[BLOCKED] {exc}", file=sys.stderr)
+        return 2
     except ValueError as exc:
         print(f"[ERROR] {exc}", file=sys.stderr)
         return 1
@@ -670,7 +676,9 @@ def _cmd_review_status(args: argparse.Namespace, projects_root: pathlib.Path) ->
         print(f"  Artifacts reviewed:       {status['total_artifacts_reviewed']}")
         print(f"  Revision required:        {status['revision_required']}")
         print(f"  Human input required:     {status['human_input_required']}")
+        print(f"  Partial review:           {status['partial_review']}")
         print(f"  Accepted as draft:        {status['accepted_as_draft_internal']}")
+        print(f"  Missing role artifacts:   {len(status['artifacts_missing_required_roles'])}")
         print(f"  Rejected draft:           {status['rejected_draft']}")
         print(f"  Draft-only status:        {status['draft_only_status']}")
         print(f"  Final/released artifacts: {status['final_released_submitted_count']}")

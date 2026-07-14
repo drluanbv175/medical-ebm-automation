@@ -103,11 +103,13 @@ from .project_review_operations import (
     ReviewRecord,
     ReviewRole,
     RiskLevel,
+    UnauthorizedReviewRole,
     build_revision_plan,
     get_review_status,
     list_review_queue,
     make_review_queue_item,
     record_decision,
+    required_roles_for_artifact,
 )
 from .project_review_pack import ReviewPackBuilder, ReviewPackResult, generate_review_pack
 from .project_sap_builder import SAPDraft, build_sap_draft
@@ -154,10 +156,10 @@ __all__ = [
     # Review operations (V4.3.4)
     "ReviewRole", "ReviewMode", "HumanDecision", "RiskLevel",
     "ReviewRecord", "ReviewLedger",
-    "AutoReviewForbidden", "ForbiddenReviewMode",
+    "AutoReviewForbidden", "ForbiddenReviewMode", "UnauthorizedReviewRole",
     "REVIEW_ROUTING_MATRIX", "LEDGER_FILENAME",
     "list_review_queue", "record_decision", "get_review_status", "build_revision_plan",
-    "make_review_queue_item",
+    "make_review_queue_item", "required_roles_for_artifact",
     # CLI
     "researchctl_main",
 ]

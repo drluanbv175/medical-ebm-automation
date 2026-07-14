@@ -41,6 +41,7 @@ from research_project.project_review_operations import (
     ReviewRecord,
     ReviewRole,
     RiskLevel,
+    UnauthorizedReviewRole,
     _make_audit_event_id,
     _make_review_id,
     build_revision_plan,
@@ -48,6 +49,7 @@ from research_project.project_review_operations import (
     list_review_queue,
     make_review_queue_item,
     record_decision,
+    required_roles_for_artifact,
 )
 
 # ---------------------------------------------------------------------------
@@ -283,6 +285,80 @@ def test_t10_sap_draft_routed_to_methods_reviewer():
     roles, _, _, gate = REVIEW_ROUTING_MATRIX[ArtifactID.SAP_DRAFT]
     assert ReviewRole.METHODS_STATISTICS_REVIEWER in roles
     assert gate == "D-R6"
+
+
+# ---------------------------------------------------------------------------
+# T10B — Sai role không được ghi review decision cho artifact
+# ---------------------------------------------------------------------------
+
+def test_t10b_record_decision_blocks_unrouted_role():
+    with tempfile.TemporaryDirectory() as tmp:
+        project_dir = pathlib.Path(tmp)
+        config = _make_config()
+        with pytest.raises(UnauthorizedReviewRole):
+            record_decision(
+                project_dir, config,
+                artifact_id_str=ArtifactID.SAP_DRAFT.value,
+                decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
+                review_role=ReviewRole.PI_PROJECT_OWNER,
+                reason="PI không được thay thống kê viên cho SAP",
+                automation_caller=False,
+            )
+        assert ReviewLedger(project_dir).read_all() == []
+
+
+# ---------------------------------------------------------------------------
+# T10C — Artifact nhiều role chỉ hoàn tất khi đủ mọi role bắt buộc
+# ---------------------------------------------------------------------------
+
+def test_t10c_protocol_requires_pi_irb_and_statistician_acceptance():
+    with tempfile.TemporaryDirectory() as tmp:
+        project_dir = pathlib.Path(tmp)
+        config = _make_config()
+        _populate_project_dir(project_dir, config)
+        assert required_roles_for_artifact(ArtifactID.PROTOCOL_DRAFT) == [
+            ReviewRole.PI_PROJECT_OWNER,
+            ReviewRole.METHODS_STATISTICS_REVIEWER,
+            ReviewRole.IRB_ETHICS_COMMITTEE,
+        ]
+
+        record_decision(
+            project_dir, config,
+            artifact_id_str=ArtifactID.PROTOCOL_DRAFT.value,
+            decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
+            review_role=ReviewRole.PI_PROJECT_OWNER,
+            reason="PI chấp nhận draft nội bộ",
+            automation_caller=False,
+        )
+        protocol_item = next(
+            item for item in list_review_queue(project_dir, config)
+            if item["artifact_id"] == ArtifactID.PROTOCOL_DRAFT.value
+        )
+        assert protocol_item["current_status"] == "PARTIAL_REVIEW"
+        assert protocol_item["complete_required_review"] is False
+        assert ReviewRole.METHODS_STATISTICS_REVIEWER.value in protocol_item["missing_roles"]
+        assert ReviewRole.IRB_ETHICS_COMMITTEE.value in protocol_item["missing_roles"]
+
+        for role in (ReviewRole.METHODS_STATISTICS_REVIEWER, ReviewRole.IRB_ETHICS_COMMITTEE):
+            record_decision(
+                project_dir, config,
+                artifact_id_str=ArtifactID.PROTOCOL_DRAFT.value,
+                decision=HumanDecision.ACCEPT_DRAFT_FOR_NEXT_INTERNAL_STAGE,
+                review_role=role,
+                reason=f"{role.value} chấp nhận draft nội bộ",
+                automation_caller=False,
+            )
+
+        protocol_item = next(
+            item for item in list_review_queue(project_dir, config)
+            if item["artifact_id"] == ArtifactID.PROTOCOL_DRAFT.value
+        )
+        assert protocol_item["current_status"] == "ACCEPTED_DRAFT"
+        assert protocol_item["complete_required_review"] is True
+        assert protocol_item["missing_roles"] == []
+        status = get_review_status(project_dir)
+        assert status["accepted_as_draft_internal"] == 1
+        assert status["partial_review"] == 0
 
 
 # ---------------------------------------------------------------------------
