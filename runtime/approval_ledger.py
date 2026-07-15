@@ -60,9 +60,20 @@ STAKEHOLDER_ROLE_ALIASES: dict[str, set[str]] = {
     },
 }
 
+# Vá 2026-07-15 (Ngày 6 lộ trình 7 ngày — vá bug thật phát hiện qua audit): G8 (bình
+# duyệt/phản biện độc lập) đã có trong tools/gate_contract.py::_GATE_REQUIRED_STAKEHOLDERS
+# từ 2026-07-14 nhưng bản sao RIÊNG trong file này (không dùng chung với gate_contract.py)
+# chưa được thêm — "bom hẹn giờ": nếu sau này ai thêm milestone G8 dùng bảng NÀY (thay vì
+# gate_contract.py), stakeholder_gate_status("G8")/check_required_stakeholder_approval("G8")
+# sẽ rơi vào nhánh NO_STAKEHOLDER_REQUIREMENT (coi bất kỳ approval APPROVED nào — kể cả
+# synthetic/self-review — là đủ), tức lọt qua đúng thứ G8 được thêm để chặn. KHÔNG ảnh
+# hưởng cổng THẬT hiện tại (tools/approve_gate.py + run_g8_auto.py chỉ dùng
+# gate_contract.reviewer_role_satisfies_gate()/ledger_approved()), chỉ ảnh hưởng lớp audit
+# đọc qua ApprovalLedger (xem test_gate_contract_approval_ledger_stakeholder_parity.py).
 GATE_REQUIRED_STAKEHOLDERS: dict[str, str] = {
     "G2": "IRB",
     "G4": "STATISTICIAN",
+    "G8": "INDEPENDENT_PEER_REVIEWER",
     "G9": "PI",
 }
 
