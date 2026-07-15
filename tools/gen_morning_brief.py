@@ -15,6 +15,7 @@ SỬ DỤNG:
     python tools/gen_morning_brief.py --preview  # chỉ xem trước, không lưu file
     python tools/gen_morning_brief.py --pack diabetes_t2_adult_outpatient  # chỉ 1 pack
 """
+from __future__ import annotations
 
 import argparse
 import json

@@ -16,6 +16,7 @@ Sử dụng:
     + STUDY_INDEX.md   (chỉ mục nội bộ, trạng thái từng file)
     + Makefile.md      (gợi ý lệnh cho từng cổng G)
 """
+from __future__ import annotations
 
 import argparse
 import json
