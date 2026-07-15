@@ -165,65 +165,63 @@ def main() -> int:
     # "./TÊN"), args.study khác tên thư mục → chữ ký sẽ lệch khi verify lại. Tên
     # canonical khớp cả 2 phía.
     study_name = study_dir.name
-    # Nạp ledger MỘT LẦN, cộng dồn mọi bản ghi trong bộ nhớ, ghi MỘT LẦN ở cuối —
-    # giảm cửa sổ read-modify-write (red-team phát hiện lost-update race khi
-    # from_file→to_file lặp nhiều lần). Lưu ý GIỚI HẠN THẬT: đây KHÔNG khóa file
-    # (fcntl/flock) nên vẫn có thể mất cập nhật nếu chạy ĐỒNG THỜI với một tiến trình
-    # duyệt khác trên CÙNG ledger — đó là hạn chế chung của ApprovalLedger, dùng
-    # chung với tools/approve_gate.py, cần vá riêng (xem báo cáo red-team).
-    ledger = ApprovalLedger.from_file(ledger_path)
+    # locked_update() khóa file độc quyền quanh TRỌN chu trình load→mutate→save
+    # (thêm 2026-07-15 sau red-team đối kháng — đóng lost-update race khi 2 tiến
+    # trình duyệt gần như đồng thời trên cùng ledger, kể cả khi tiến trình kia là
+    # tools/approve_gate.py thật). Vẫn nạp 1 lần/ghi 1 lần cho MỌI cổng trong 1
+    # lệnh gọi (giảm số lần lấy/nhả khóa), nhưng nay TRỌN khối nằm trong khóa.
     ok_count = 0
-    for gate_id in gates:
-        artifact_str = artifact_map.get(gate_id)
-        if artifact_str:
-            artifact_path = Path(artifact_str)
-            if not artifact_path.exists():
-                print(f"✗ [{gate_id}] Không thấy artifact chỉ định: {artifact_path} — bỏ qua cổng này.")
+    with ApprovalLedger.locked_update(ledger_path) as ledger:
+        for gate_id in gates:
+            artifact_str = artifact_map.get(gate_id)
+            if artifact_str:
+                artifact_path = Path(artifact_str)
+                if not artifact_path.exists():
+                    print(f"✗ [{gate_id}] Không thấy artifact chỉ định: {artifact_path} — bỏ qua cổng này.")
+                    continue
+                try:
+                    evidence_content = artifact_path.read_bytes().decode("utf-8")
+                except UnicodeDecodeError:
+                    print(f"✗ [{gate_id}] Artifact không phải UTF-8 hợp lệ: {artifact_path} — bỏ qua.")
+                    continue
+            else:
+                bypass_dir = study_dir / "_admin_synthetic_bypass"
+                bypass_dir.mkdir(parents=True, exist_ok=True)
+                artifact_path = bypass_dir / f"{gate_id}_ADMIN_BYPASS_EVIDENCE.md"
+                evidence_content = _placeholder_evidence(study_name, gate_id)
+                artifact_path.write_text(evidence_content, encoding="utf-8")
+
+            evidence_hash = hashlib.sha256(evidence_content.encode("utf-8")).hexdigest()
+            timestamp_utc = datetime.now(timezone.utc).isoformat()
+            signature = GC.sign_approval(gate_id, study_name, evidence_hash, timestamp_utc)
+
+            role = _ROLE_FOR_GATE[gate_id]
+            scope = (
+                f"[ADMIN-SYNTHETIC-BYPASS] Tự động duyệt {gate_id} qua "
+                "tools/approve_gate_synthetic_admin.py — CHỈ hợp lệ vì đề tài "
+                f"'{study_name}' đã đánh dấu study_kind=synthetic_test (KHÔNG áp dụng cho đề tài "
+                f"thật). KHÔNG PHẢI phê duyệt {GC.required_reviewer_role_hint(gate_id)} THẬT."
+            )
+
+            record = ApprovalLedger.make_human_approval(
+                gate_id=gate_id,
+                reviewer_role=role,
+                reviewer_ref=_REVIEWER_REF,
+                scope=scope,
+                evidence_content=evidence_content,
+                decision=ApprovalDecisionEnum.APPROVED,
+                approver_signature=signature,
+                timestamp_utc=timestamp_utc,
+            )
+            added, reason = ledger.add_approval(record, created_by_agent=False)
+            if not added:
+                print(f"✗ [{gate_id}] TỪ CHỐI ghi ledger: {reason}")
                 continue
-            try:
-                evidence_content = artifact_path.read_bytes().decode("utf-8")
-            except UnicodeDecodeError:
-                print(f"✗ [{gate_id}] Artifact không phải UTF-8 hợp lệ: {artifact_path} — bỏ qua.")
-                continue
-        else:
-            bypass_dir = study_dir / "_admin_synthetic_bypass"
-            bypass_dir.mkdir(parents=True, exist_ok=True)
-            artifact_path = bypass_dir / f"{gate_id}_ADMIN_BYPASS_EVIDENCE.md"
-            evidence_content = _placeholder_evidence(study_name, gate_id)
-            artifact_path.write_text(evidence_content, encoding="utf-8")
+            sig_note = "có chữ ký HMAC" if signature else "CHƯA có chữ ký (chưa thiết lập khóa cục bộ)"
+            print(f"✅ [{gate_id}] Ghi phê duyệt admin-bypass ({role}, {sig_note}) — "
+                  f"evidence_hash={record.evidence_hash[:16]}…")
+            ok_count += 1
 
-        evidence_hash = hashlib.sha256(evidence_content.encode("utf-8")).hexdigest()
-        timestamp_utc = datetime.now(timezone.utc).isoformat()
-        signature = GC.sign_approval(gate_id, study_name, evidence_hash, timestamp_utc)
-
-        role = _ROLE_FOR_GATE[gate_id]
-        scope = (
-            f"[ADMIN-SYNTHETIC-BYPASS] Tự động duyệt {gate_id} qua "
-            "tools/approve_gate_synthetic_admin.py — CHỈ hợp lệ vì đề tài "
-            f"'{study_name}' đã đánh dấu study_kind=synthetic_test (KHÔNG áp dụng cho đề tài "
-            f"thật). KHÔNG PHẢI phê duyệt {GC.required_reviewer_role_hint(gate_id)} THẬT."
-        )
-
-        record = ApprovalLedger.make_human_approval(
-            gate_id=gate_id,
-            reviewer_role=role,
-            reviewer_ref=_REVIEWER_REF,
-            scope=scope,
-            evidence_content=evidence_content,
-            decision=ApprovalDecisionEnum.APPROVED,
-            approver_signature=signature,
-            timestamp_utc=timestamp_utc,
-        )
-        added, reason = ledger.add_approval(record, created_by_agent=False)
-        if not added:
-            print(f"✗ [{gate_id}] TỪ CHỐI ghi ledger: {reason}")
-            continue
-        sig_note = "có chữ ký HMAC" if signature else "CHƯA có chữ ký (chưa thiết lập khóa cục bộ)"
-        print(f"✅ [{gate_id}] Ghi phê duyệt admin-bypass ({role}, {sig_note}) — "
-              f"evidence_hash={record.evidence_hash[:16]}…")
-        ok_count += 1
-
-    ledger.to_file(ledger_path)  # ghi MỘT LẦN sau khi cộng dồn mọi cổng
     print(f"\nHoàn tất: {ok_count}/{len(gates)} cổng đã ghi phê duyệt admin-bypass cho '{study_name}'.")
     print(f"Ledger: {ledger_path}")
     return 0 if ok_count == len(gates) else 1

@@ -6,15 +6,22 @@ Không lưu PII trong ledger.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Iterator, Optional
 
 from .schemas import ApprovalDecisionEnum, ApprovalRecord
+
+if sys.platform == "win32":
+    import msvcrt
+else:
+    import fcntl
 
 # Vá 2026-07-15 (hợp nhất bảng stakeholder — trước đây file này giữ 3 bản sao RIÊNG
 # của tools/gate_contract.py (STAKEHOLDER_ROLE_ALIASES, GATE_REQUIRED_STAKEHOLDERS,
@@ -313,6 +320,70 @@ class ApprovalLedger:
         tmp = p.with_suffix(p.suffix + ".tmp")
         tmp.write_text(self.export_json(), encoding="utf-8")
         os.replace(tmp, p)  # ghi nguyên tử — tránh file nửa vời nếu crash giữa chừng
+
+    # ── Khóa liên-tiến-trình (thêm 2026-07-15, sau red-team đối kháng) ──────────
+    # Lỗ hổng THẬT đã tái hiện được: from_file() → mutate → to_file() là read-
+    # modify-write KHÔNG khóa — 2 tiến trình gọi tools/approve_gate.py (hoặc
+    # approve_gate_synthetic_admin.py) gần như đồng thời trên CÙNG 1
+    # approval_ledger.json, tiến trình ghi SAU đè mất bản ghi tiến trình ghi
+    # TRƯỚC dù cả hai đều báo "✅ đã ghi phê duyệt" thành công — mất một phê
+    # duyệt THẬT trong im lặng. locked_update() khóa file độc quyền quanh TRỌN
+    # chu trình load→mutate→save để 2 tiến trình tự xếp hàng thay vì chồng nhau.
+    @staticmethod
+    @contextlib.contextmanager
+    def _exclusive_file_lock(lock_path: Path, timeout_s: float = 30.0) -> Iterator[None]:
+        """Khóa advisory liên-tiến-trình cross-platform (fcntl trên POSIX,
+        msvcrt trên Windows — dự án chạy cả Mac lẫn Windows, xem CLAUDE.md).
+        GIỚI HẠN THẬT: chỉ có hiệu lực GIỮA CÁC TIẾN TRÌNH TRÊN CÙNG MỘT MÁY —
+        KHÔNG bảo vệ được khi Mac và Windows cùng ghi gần như đồng thời qua
+        OneDrive (OneDrive không có khóa file phân tán thật, chỉ đồng bộ
+        "last-write-wins" giữa 2 máy) — xem lưu ý concurrent-editing đã biết
+        của dự án."""
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        fd = open(lock_path, "a+b")
+        try:
+            deadline = time.monotonic() + timeout_s
+            while True:
+                try:
+                    if sys.platform == "win32":
+                        msvcrt.locking(fd.fileno(), msvcrt.LK_NBLCK, 1)
+                    else:
+                        fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError:
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError(
+                            f"Không lấy được khóa ledger trong {timeout_s}s: {lock_path} "
+                            "— có tiến trình khác đang ghi cùng đề tài, thử lại sau."
+                        )
+                    time.sleep(0.05)
+            yield
+        finally:
+            try:
+                if sys.platform == "win32":
+                    fd.seek(0)
+                    msvcrt.locking(fd.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    fcntl.flock(fd.fileno(), fcntl.LOCK_UN)
+            finally:
+                fd.close()
+
+    @classmethod
+    @contextlib.contextmanager
+    def locked_update(cls, path) -> Iterator["ApprovalLedger"]:
+        """Chu trình load→mutate→save AN TOÀN LIÊN-TIẾN-TRÌNH — dùng thay cho
+        gọi rời from_file()/to_file(). Ví dụ:
+            with ApprovalLedger.locked_update(ledger_path) as ledger:
+                ok, reason = ledger.add_approval(record, created_by_agent=False)
+            # to_file() tự động chạy khi thoát khối with — kể cả khi add_approval
+            # thất bại (ok=False), ghi lại ĐÚNG trạng thái hiện tại, không mất gì.
+        """
+        path = Path(path)
+        lock_path = path.with_suffix(path.suffix + ".lock")
+        with cls._exclusive_file_lock(lock_path):
+            ledger = cls.from_file(path)
+            yield ledger
+            ledger.to_file(path)
 
     @classmethod
     def from_file(cls, path) -> "ApprovalLedger":

@@ -122,23 +122,25 @@ def main() -> int:
         print("   Chạy MỘT LẦN (TỰ TAY, không nhờ agent): python3 tools/setup_gate_approval_key.py")
         print("   Vẫn ghi phê duyệt (tương thích ngược) nhưng dễ giả mạo hơn phê duyệt có chữ ký.")
 
-    ledger = ApprovalLedger.from_file(ledger_path)
-    record = ApprovalLedger.make_human_approval(
-        gate_id=args.gate,
-        reviewer_role=args.reviewer_role,
-        reviewer_ref=args.reviewer_ref,
-        scope=args.scope or f"Duyệt {args.gate} cho đề tài {args.study}",
-        evidence_content=evidence_content,
-        decision=ApprovalDecisionEnum(args.decision),
-        approver_signature=signature,
-        timestamp_utc=timestamp_utc,
-    )
-    ok, reason = ledger.add_approval(record, created_by_agent=False)
+    # locked_update() khóa file độc quyền quanh load→mutate→save (thêm 2026-07-15
+    # sau red-team đối kháng — vá lost-update race khi 2 tiến trình duyệt gần như
+    # đồng thời trên cùng ledger; xem docstring ApprovalLedger.locked_update).
+    with ApprovalLedger.locked_update(ledger_path) as ledger:
+        record = ApprovalLedger.make_human_approval(
+            gate_id=args.gate,
+            reviewer_role=args.reviewer_role,
+            reviewer_ref=args.reviewer_ref,
+            scope=args.scope or f"Duyệt {args.gate} cho đề tài {args.study}",
+            evidence_content=evidence_content,
+            decision=ApprovalDecisionEnum(args.decision),
+            approver_signature=signature,
+            timestamp_utc=timestamp_utc,
+        )
+        ok, reason = ledger.add_approval(record, created_by_agent=False)
     if not ok:
         print(f"✗ TỪ CHỐI ghi phê duyệt: {reason}")
         return 1
 
-    ledger.to_file(ledger_path)
     print(f"✅ Đã ghi phê duyệt THẬT cho {args.gate} — đề tài {args.study}")
     print(f"   approval_id : {record.approval_id}")
     print(f"   evidence_hash (SHA256 của {artifact_path.name}): {record.evidence_hash[:16]}…")
