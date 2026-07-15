@@ -52,7 +52,7 @@ def test_same_input_same_policy_decision(fixture_id):
     engine = PolicyGateEngine()
     decisions = []
     for _ in range(3):
-        result = runtime.run(agent_id="repro-test", fixture_id=fixture_id, input_data={})
+        runtime.run(agent_id="repro-test", fixture_id=fixture_id, input_data={})
         ledger = ApprovalLedger()
         decision = engine.evaluate_fixture(FIXTURE_CATALOG[fixture_id], ledger)
         decisions.append(decision)

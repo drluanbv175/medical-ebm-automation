@@ -1025,7 +1025,8 @@ def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_c
     pii_keywords = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd"]
     for p in pii_keywords:
         if p in artifact.lower():
-            errors.append(f"R2 🔴 PII phát hiện: '{p}'"); break
+            errors.append(f"R2 🔴 PII phát hiện: '{p}'")
+            break
     else:
         warnings.append("R2 ✅ Không có PII")
 

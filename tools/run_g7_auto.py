@@ -253,7 +253,7 @@ def load_redcap_dictionary(path: Path) -> list[dict]:
         text = path.read_text(encoding="utf-8")
     except Exception:
         return []
-    lines = [l for l in text.splitlines() if l.strip()]
+    lines = [line for line in text.splitlines() if line.strip()]
     if len(lines) < 2:
         return []
 

@@ -1031,7 +1031,8 @@ def guardrail_check_g2(artifact: str) -> dict:
     pii_found = False
     for pat in pii_patterns:
         if re.search(pat, artifact):
-            pii_found = True; break
+            pii_found = True
+            break
     if pii_found:
         errors.append("R1 🔴 Phát hiện PII tiềm năng — kiểm tra và xóa")
     else:

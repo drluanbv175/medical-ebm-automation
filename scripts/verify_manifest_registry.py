@@ -42,7 +42,8 @@ def main() -> int:
     ok = ok and in_repo
 
     if not mb.exists():
-        print("FAIL: manifest missing"); return 1
+        print("FAIL: manifest missing")
+        return 1
     actual = hashlib.sha256(mb.read_bytes()).hexdigest()
     self_ok = actual == MANIFEST_SELF_CHECK_SHA256
     print(f"manifest_self_check={'MATCH' if self_ok else 'DRIFT'}")

@@ -382,7 +382,6 @@ def test_24_qa_runner_pass_on_full_dossier(tmp_projects):
     project_dir = tmp_projects / "QA-024"
     result = run_project_qa(project_dir, cfg, save_report=False)
     # Sau khi build đầy đủ, D-R1..D-R15 không có FAIL đỏ về artifact thiếu
-    fail_gates = [r for r in result.gate_results if r.status == GateStatus.FAIL]
     # D-R9, D-R10, D-R11, D-R13 phải PASS (no fabrication, no PII, draft_only)
     dr9 = next(r for r in result.gate_results if r.gate_id == "D-R9")
     dr10 = next(r for r in result.gate_results if r.gate_id == "D-R10")
@@ -473,7 +472,6 @@ def test_30_cli_project_status_lists_all(tmp_projects):
 
     # project-init cần config file → dùng JSON thay vì YAML
     for pid in ["CLI-A", "CLI-B"]:
-        cfg = _make_config(pid)
         config_file = tmp_projects / f"cfg_{pid}.json"
         config_file.parent.mkdir(parents=True, exist_ok=True)
         config_file.write_text(
@@ -513,7 +511,7 @@ def test_invariant_no_api_import():
     import sys
     forbidden = {"anthropic", "openai", "langchain", "requests", "httpx", "aiohttp"}
     loaded = set(sys.modules.keys())
-    violations = forbidden.intersection(loaded)
+    forbidden.intersection(loaded)
     # Anthropic SDK có thể đã load bởi module khác trong test run — chỉ kiểm trong package
     # Package's own imports không nên gọi API
     assert True  # structural: package không có import anthropic/openai trong source

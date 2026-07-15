@@ -77,7 +77,7 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
         result["detection_log"].append(f"⚠️  Không đọc được CSV: {e}")
         return result
 
-    lines = [l.rstrip("\n\r") for l in text.splitlines() if l.strip()]
+    lines = [line.rstrip("\n\r") for line in text.splitlines() if line.strip()]
     if len(lines) < 2:
         result["detection_log"].append("⚠️  CSV quá ngắn (< 2 dòng)")
         return result
@@ -206,7 +206,7 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
     # biến can thiệp có thể có (vd "intervention_type" của bundle chuyển hóa
     # mới không nằm trong bất kỳ danh sách từ khóa nào), trong khi Section
     # Header do chính G5 gắn nhãn "Phơi nhiễm..." luôn đúng theo cấu trúc CRF.
-    section_exp = [v for v, l, s in all_vars if _section_is(s, "phơi nhiễm", "exposure")]
+    section_exp = [v for v, _label, s in all_vars if _section_is(s, "phơi nhiễm", "exposure")]
     if section_exp:
         best_exp = section_exp[0]
         result["exposure"] = best_exp
@@ -232,7 +232,7 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
     # nhầm thay vì "incident_t2dm" (kết cục chính thật nhưng không khớp
     # keyword nào trong _OUTCOME_KEYWORDS).
     section_primary_out = [
-        v for v, l, s in all_vars
+        v for v, _label, s in all_vars
         if _section_is(s, "kết cục chính") and v != result["exposure"]
     ]
     if section_primary_out:
@@ -2195,7 +2195,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
     outcome   = v["outcome"]
     time_col  = v["time_col"]
     covars    = v["covariates"]
-    det_log   = "\n".join(f"  - {l}" for l in v["detection_log"])
+    det_log   = "\n".join(f"  - {line}" for line in v["detection_log"])
 
     analysis_name_map = {
         # SỬA 2026-07-06: nhãn 'rct' cũ ("GLM/LM/Cox theo loại kết cục") NGỤ Ý

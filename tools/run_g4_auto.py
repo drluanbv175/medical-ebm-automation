@@ -21,7 +21,8 @@ import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 def load_cp(path):
     if Path(path).exists():
-        with open(path, encoding="utf-8") as f: return json.load(f)
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
     return {}
 
 def guardrail(artifact):
@@ -294,13 +295,17 @@ def write_docx(artifact, path):
         from docx.shared import RGBColor
         doc = Document()
         for line in artifact.split("\n"):
-            if line.startswith("# "): doc.add_heading(line[2:], 0)
-            elif line.startswith("## "): doc.add_heading(line[3:], 1)
-            elif line.startswith("### "): doc.add_heading(line[4:], 2)
+            if line.startswith("# "):
+                doc.add_heading(line[2:], 0)
+            elif line.startswith("## "):
+                doc.add_heading(line[3:], 1)
+            elif line.startswith("### "):
+                doc.add_heading(line[4:], 2)
             elif "[CẦN" in line:
                 p = doc.add_paragraph()
                 p.add_run(line).font.color.rgb = RGBColor(0xCC, 0x44, 0x00)
-            elif line.strip(): doc.add_paragraph(line)
+            elif line.strip():
+                doc.add_paragraph(line)
         doc.save(path)
         return True
     except ImportError:
@@ -404,8 +409,10 @@ def main():
 
     print("🛡️  Kiểm guardrail...")
     errors, warnings = guardrail(artifact)
-    for w in warnings: print(f"  {w}")
-    for e in errors: print(f"  {e}")
+    for w in warnings:
+        print(f"  {w}")
+    for e in errors:
+        print(f"  {e}")
     status = "✅ PASS" if not errors else f"⚠ {len(errors)} LỖI"
     print(f"  → Guardrail: {status}")
 

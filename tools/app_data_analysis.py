@@ -67,7 +67,8 @@ def table1(df, group_col=None, cont_cols=None, cat_cols=None):
         cols_hdr = ["Biến", "Tổng (N={})".format(len(df))]
 
     for col in cont_cols:
-        if col not in df.columns: continue
+        if col not in df.columns:
+            continue
         row = [f"**{col}** (TB±SD)"]
         if groups is not None:
             vals_list = [df[df[group_col]==g][col].dropna() for g in groups]
@@ -78,14 +79,16 @@ def table1(df, group_col=None, cont_cols=None, cat_cols=None):
                 else:
                     _, p = stats.f_oneway(*vals_list)
                 row.append(f"{p:.3f}")
-            except ValueError: row.append("—")
+            except ValueError:
+                row.append("—")
         else:
             v = df[col].dropna()
             row.append(f"{v.mean():.2f}±{v.std():.2f}")
         rows.append(row)
 
     for col in cat_cols:
-        if col not in df.columns: continue
+        if col not in df.columns:
+            continue
         row = [f"**{col}** n(%)"]
         vals = df[col].dropna()
         if groups is not None:
@@ -95,7 +98,8 @@ def table1(df, group_col=None, cont_cols=None, cat_cols=None):
                 ct = pd.crosstab(df[group_col], df[col])
                 _, p, _, _ = stats.chi2_contingency(ct)
                 row.append(f"{p:.3f}")
-            except ValueError: row.append("—")
+            except ValueError:
+                row.append("—")
         else:
             row.append(f"{len(vals)} ({100*len(vals)/len(df):.1f}%)")
         rows.append(row)
@@ -195,7 +199,8 @@ def run_roc(df, test_col, reference_col):
             idx = rng.integers(0, len(dff2), len(dff2))
             try:
                 boot_aucs.append(roc_auc_score(dff2["y"].iloc[idx], dff2["score"].iloc[idx]))
-            except ValueError: pass  # mẫu bootstrap chỉ có 1 lớp — AUC không xác định, bỏ qua lần này
+            except ValueError:
+                pass  # mẫu bootstrap chỉ có 1 lớp — AUC không xác định, bỏ qua lần này
         ci_lo, ci_hi = np.percentile(boot_aucs, [2.5, 97.5])
         # Best cutoff (Youden)
         youden = tpr - fpr
@@ -302,12 +307,12 @@ def plot_forest(meta_res):
     lo  = meta_res["per_lo"]
     hi  = meta_res["per_hi"]
     fig = go.Figure()
-    for i,(s,e,l,h) in enumerate(zip(studies,eff,lo,hi)):
-        fig.add_trace(go.Scatter(x=[l,h], y=[i,i], mode="lines",
+    for i,(s,e,lo_i,hi_i) in enumerate(zip(studies,eff,lo,hi)):
+        fig.add_trace(go.Scatter(x=[lo_i,hi_i], y=[i,i], mode="lines",
             line=dict(color="steelblue",width=2), showlegend=False))
         fig.add_trace(go.Scatter(x=[e], y=[i], mode="markers",
             marker=dict(size=10,color="steelblue"), name=s, showlegend=False,
-            hovertemplate=f"{s}: {e:.3f} [{l:.3f}–{h:.3f}]"))
+            hovertemplate=f"{s}: {e:.3f} [{lo_i:.3f}–{hi_i:.3f}]"))
     n = len(studies)
     fig.add_vline(x=meta_res["pooled"], line_dash="solid", line_color="red", line_width=2)
     fig.add_vline(x=1 if meta_res["sm"] in ["OR","HR","RR"] else 0, line_dash="dash", line_color="grey")
@@ -334,12 +339,12 @@ def plot_regression(res, exposure, is_or=True):
     highs = [hi[n]    for n in names]
     colors= ["red" if pvals[n]<0.05 else "steelblue" for n in names]
     fig = go.Figure()
-    for i,(n,v,l,h,c) in enumerate(zip(names,vals,lows,highs,colors)):
-        fig.add_trace(go.Scatter(x=[l,h], y=[i,i], mode="lines",
+    for i,(n,v,lo_i,hi_i,c) in enumerate(zip(names,vals,lows,highs,colors)):
+        fig.add_trace(go.Scatter(x=[lo_i,hi_i], y=[i,i], mode="lines",
             line=dict(color=c,width=2), showlegend=False))
         fig.add_trace(go.Scatter(x=[v], y=[i], mode="markers",
             marker=dict(size=10,color=c), name=n, showlegend=False,
-            hovertemplate=f"{n}={'OR' if is_or else 'Beta'}={v:.3f} [{l:.3f}–{h:.3f}], p={pvals[n]:.3f}"))
+            hovertemplate=f"{n}={'OR' if is_or else 'Beta'}={v:.3f} [{lo_i:.3f}–{hi_i:.3f}], p={pvals[n]:.3f}"))
     fig.add_vline(x=1 if is_or else 0, line_dash="dash", line_color="grey")
     fig.update_layout(title="Biểu đồ hệ số hồi quy (với 95%CI)",
         xaxis_title="OR (95%CI)" if is_or else "Beta (95%CI)",
@@ -373,10 +378,11 @@ def export_docx(study, design, tab1_df, analysis_res):
                 lo = analysis_res["cox"]["lower"][var]
                 hi = analysis_res["cox"]["upper"][var]
                 p  = analysis_res["cox"]["p"][var]
-                doc.add_paragraph(f"  {var}: HR = {hr:.3f} (95%CI {lo:.3f}–{hi:.3f}), p = {p:.3f}")
+            doc.add_paragraph(f"  {var}: HR = {hr:.3f} (95%CI {lo:.3f}–{hi:.3f}), p = {p:.3f}")
         elif "coef" in analysis_res:
             for var,val in analysis_res["coef"].items():
-                if var == "Intercept": continue
+                if var == "Intercept":
+                    continue
                 lo = analysis_res["lower"][var]
                 hi = analysis_res["upper"][var]
                 p  = analysis_res["p"][var]
@@ -492,7 +498,8 @@ with tab_t1:
     st.subheader("Bảng 1 — Đặc điểm nền")
     cols = list(df.columns)
     group_col = st.selectbox("Biến nhóm (strata)", ["-- Không phân nhóm --"] + cols)
-    if group_col == "-- Không phân nhóm --": group_col = None
+    if group_col == "-- Không phân nhóm --":
+        group_col = None
     num_cols  = st.multiselect("Biến liên tục (TB±SD)", df.select_dtypes(np.number).columns.tolist(),
                                default=df.select_dtypes(np.number).columns.tolist()[:5])
     category_options = text_like_columns(df, include_category=True)
@@ -669,5 +676,6 @@ with tab_export:
             st.success(f"✅ Sẵn sàng tải: {fname}")
             if study != "-- Chọn --":
                 save_path = exports_dir / study / fname
-                with open(save_path,"wb") as f: f.write(buf.getvalue())
+                with open(save_path,"wb") as f:
+                    f.write(buf.getvalue())
                 st.caption(f"Cũng đã lưu vào: {save_path}")

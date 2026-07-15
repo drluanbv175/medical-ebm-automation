@@ -257,7 +257,6 @@ class ProjectQARunner:
             return QualityGateResult(gid, GateStatus.FAIL,
                 "DATA_DICTIONARY (06) không tồn tại.")
 
-        crf_content = crf_path.read_bytes().decode("utf-8", errors="replace")
         dd_content  = dd_path.read_bytes().decode("utf-8", errors="replace")
 
         # DD phải có header hợp lệ

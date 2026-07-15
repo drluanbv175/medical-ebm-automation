@@ -99,6 +99,19 @@ def job_evidence_brief() -> None:
     _log_change(f"Evidence brief RAG cập nhật: {OUT.name}", "scheduler.evidence_brief")
 
 
+def job_morning_brief() -> None:
+    """Thứ Hai-Thứ Sáu: sinh bản tin EBM sáng từ knowledge packs và surveillance offline."""
+    logger.info("[job_morning_brief] bắt đầu")
+    from tools import gen_morning_brief
+
+    brief = gen_morning_brief.generate_brief()
+    fixed_output, dated_output = gen_morning_brief.write_brief_outputs(brief)
+    _log_change(
+        f"Morning brief tạo: {fixed_output.name}; lưu trữ={dated_output.name}",
+        "scheduler.morning_brief",
+    )
+
+
 def build_scheduler():
     """Tạo BlockingScheduler với các job định kỳ."""
     from apscheduler.schedulers.blocking import BlockingScheduler
@@ -112,6 +125,11 @@ def build_scheduler():
     sched.add_job(job_quarterly, CronTrigger(month="1,4,7,10", day=1, hour=9), id="quarterly")
     sched.add_job(job_evidence_brief, CronTrigger(day_of_week="mon", hour=7, minute=15),
                   id="evidence_brief")
+    sched.add_job(
+        job_morning_brief,
+        CronTrigger(day_of_week="mon-fri", hour=6, minute=30),
+        id="morning_brief",
+    )
     logger.info("Scheduler sẵn sàng (TZ=%s). Nhấn Ctrl+C để dừng.", settings.timezone)
     return sched
 

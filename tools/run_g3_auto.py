@@ -212,7 +212,8 @@ def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_eve
                 # TRƯỚC design_code, đồng bộ với logic thật trong main().
                 elif effect_type == "ARR%" and design_code in ("rct", "cohort", "case_control"):
                     p1, p2 = p0, p0 - ev / 100
-                    if p2 <= 0: p2 = 0.05
+                    if p2 <= 0:
+                        p2 = 0.05
                     n = n_two_proportion(p1, p2, alpha, pwr) * 2
                 elif design_code == "case_control" and effect_type in ("OR", "RR", "HR"):
                     # SỬA: đồng bộ với main() — case-control dùng two-proportion

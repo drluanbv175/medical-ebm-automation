@@ -8,9 +8,10 @@ from __future__ import annotations
 from apscheduler.triggers.cron import CronTrigger
 
 import scripts.gen_evidence_brief as geb
+import tools.gen_morning_brief as gmb
 from app.database import session_scope
 from app.models import ChangeLogEntry
-from app.scheduler import build_scheduler, job_evidence_brief
+from app.scheduler import build_scheduler, job_evidence_brief, job_morning_brief
 
 
 def test_job_evidence_brief_writes_file_from_verified_scores(tmp_path, monkeypatch):
@@ -75,3 +76,46 @@ def test_build_scheduler_registers_evidence_brief_job():
     assert isinstance(job.trigger, CronTrigger)
     field_by_name = {f.name: str(f) for f in job.trigger.fields}
     assert field_by_name["day_of_week"] == "mon"
+
+
+def test_job_morning_brief_writes_daily_and_archived_files(tmp_path, monkeypatch):
+    monkeypatch.setattr(gmb, "RESULTS_DIR", tmp_path / "results")
+    monkeypatch.setattr(gmb, "EXPORTS_DIR", tmp_path / "exports" / "morning_brief")
+    monkeypatch.setattr(gmb, "generate_brief", lambda: "# Morning Brief\nCần bác sĩ kiểm chứng")
+
+    job_morning_brief()
+
+    fixed_output = tmp_path / "results" / "daily_ebm_brief.md"
+    archived = list((tmp_path / "exports" / "morning_brief").glob("EBM_SANG_*.md"))
+    assert fixed_output.read_text(encoding="utf-8").startswith("# Morning Brief")
+    assert len(archived) == 1
+    assert archived[0].read_text(encoding="utf-8") == fixed_output.read_text(encoding="utf-8")
+
+
+def test_job_morning_brief_logs_changelog_entry(tmp_path, monkeypatch):
+    monkeypatch.setattr(gmb, "RESULTS_DIR", tmp_path / "results")
+    monkeypatch.setattr(gmb, "EXPORTS_DIR", tmp_path / "exports" / "morning_brief")
+    monkeypatch.setattr(gmb, "generate_brief", lambda: "# Morning Brief\nCần bác sĩ kiểm chứng")
+
+    with session_scope() as s:
+        before = s.query(ChangeLogEntry).filter(
+            ChangeLogEntry.module == "scheduler.morning_brief").count()
+
+    job_morning_brief()
+
+    with session_scope() as s:
+        after = s.query(ChangeLogEntry).filter(
+            ChangeLogEntry.module == "scheduler.morning_brief").count()
+    assert after == before + 1
+
+
+def test_build_scheduler_registers_weekday_morning_brief_job():
+    sched = build_scheduler()
+    job = sched.get_job("morning_brief")
+    assert job is not None
+    assert job.func is job_morning_brief
+    assert isinstance(job.trigger, CronTrigger)
+    field_by_name = {f.name: str(f) for f in job.trigger.fields}
+    assert field_by_name["day_of_week"] == "mon-fri"
+    assert field_by_name["hour"] == "6"
+    assert field_by_name["minute"] == "30"

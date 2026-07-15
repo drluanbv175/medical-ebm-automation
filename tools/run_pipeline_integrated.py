@@ -265,7 +265,6 @@ def extract_g8_content(study_dir: Path) -> dict:
 def extract_g9_content(study_dir: Path) -> dict:
     """G9: Author Integrity → Mục 14 (khai báo tác giả + AI)."""
     cp = load_checkpoint(study_dir, "G9")
-    md = load_artifact_md(study_dir, "G9", "A10")
     authors = cp.get("authors", [])
     ai_disclosure = cp.get("ai_disclosure", "")
     coi = cp.get("conflict_of_interest", "Không có xung đột lợi ích [CẦN XÁC NHẬN]")

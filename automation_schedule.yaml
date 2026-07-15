@@ -9,6 +9,15 @@ meta:
   forbidden: ["api", "network", "ehospital", "email", "chat", "submission", "release"]
 
 jobs:
+  - id: weekday_morning_brief
+    schedule: "30 6 * * 1-5"       # Mon-Fri at 06:30 local time
+    script: tools/gen_morning_brief.py
+    actions:
+      - generate_daily_ebm_brief
+      - write_results_daily_ebm_brief
+      - archive_exports_morning_brief
+    fail_action: report_only
+
   - id: daily_integrity_check
     schedule: "0 7 * * *"          # gợi ý cron (người vận hành tự đặt)
     script: scripts/run_daily_integrity_check.sh

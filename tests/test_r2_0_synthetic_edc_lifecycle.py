@@ -374,7 +374,6 @@ class TestDeviationRegistry:
         assert len(mc) == 2
 
     def test_deviation_without_corrective_action_raises(self):
-        reg = DeviationRegistry()
         with pytest.raises(ValueError, match="corrective_action"):
             from research_project.synthetic_edc_query import ProtocolDeviation
             ProtocolDeviation("d1", "r1", "desc", DeviationSeverity.MINOR, "c", TS, "impact", "")

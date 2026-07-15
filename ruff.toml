@@ -20,3 +20,12 @@ select = ["E", "F", "W", "I"]
 "tests/test_phase_3a_chronic_care_*.py" = ["E501", "I001"]
 # Sinh HTML/CSS template: chuỗi style/markup dài, bẻ dòng gây rối & rủi ro.
 "app/social/package.py" = ["E501"]
+# Research automation generators contain long Vietnamese clinical/research templates.
+# Keep templates intact; enforce syntax/import/unused-variable rules separately.
+"research_project/project_crf_builder.py" = ["E501"]
+"research_project/project_reporting_planner.py" = ["E501"]
+"tools/app_data_analysis.py" = ["E501"]
+"tools/run_g*_auto.py" = ["E501"]
+"tools/run_pipeline_integrated.py" = ["E501"]
+"tools/scaffold_research_project.py" = ["E501"]
+"tests/test_r1_1_offline_rbac_synthetic_identity.py" = ["E501"]

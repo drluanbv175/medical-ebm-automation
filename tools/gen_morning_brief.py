@@ -253,6 +253,21 @@ def generate_brief(target_pack: str = None, preview: bool = False) -> str:
     return "\n".join(lines)
 
 
+def write_brief_outputs(brief: str, now: datetime | None = None) -> tuple[Path, Path]:
+    """Ghi bản tin vào file cố định hôm nay và bản lưu trữ theo ngày."""
+    run_at = now or datetime.now()
+
+    RESULTS_DIR.mkdir(exist_ok=True)
+    fixed_output = RESULTS_DIR / "daily_ebm_brief.md"
+    fixed_output.write_text(brief, encoding="utf-8")
+
+    EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    dated_output = EXPORTS_DIR / f"EBM_SANG_{run_at.strftime('%Y-%m-%d')}.md"
+    dated_output.write_text(brief, encoding="utf-8")
+
+    return fixed_output, dated_output
+
+
 def main():
     configure_unicode_console()
     parser = argparse.ArgumentParser(description="Tạo bản tin EBM buổi sáng")
@@ -265,17 +280,8 @@ def main():
     print(brief)
 
     if not args.preview:
-        # Lưu vào results/ (file cố định, ghi đè mỗi ngày)
-        RESULTS_DIR.mkdir(exist_ok=True)
-        fixed_output = RESULTS_DIR / "daily_ebm_brief.md"
-        fixed_output.write_text(brief, encoding="utf-8")
+        fixed_output, dated_output = write_brief_outputs(brief)
         print(f"\n✅ Đã lưu: {fixed_output}")
-
-        # Lưu bản lưu trữ theo ngày
-        EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
-        date_str = datetime.now().strftime("%Y-%m-%d")
-        dated_output = EXPORTS_DIR / f"EBM_SANG_{date_str}.md"
-        dated_output.write_text(brief, encoding="utf-8")
         print(f"✅ Đã lưu: {dated_output}")
 
 

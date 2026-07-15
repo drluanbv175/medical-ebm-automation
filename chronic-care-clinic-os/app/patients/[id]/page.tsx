@@ -10,7 +10,9 @@ import { previewCreateCarePlanDraftAction } from "@/lib/workflow-actions";
 
 export default function PatientDetailPage({ params }: { params: { id: string } }) {
   const patient = getPatient(params.id);
-  if (!patient) notFound();
+  if (!patient) {
+    notFound();
+  }
   const assessment = assessRisk(patient);
   const prepPacket = buildVisitPrepPacket(patient);
   const carePlanDraft = buildCarePlanDraft(patient);
