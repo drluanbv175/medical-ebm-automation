@@ -27,7 +27,6 @@ sys.path.insert(0, str(TOOLS_DIR))
 
 import kappa_blind_rating as K  # noqa: E402
 
-
 # ─── Cohen's kappa (2 người chấm) ───────────────────────────────────────────
 
 def test_cohen_kappa_hand_calculated_example():
