@@ -605,6 +605,7 @@ test("write action registry tracks guarded and blocked write surfaces", () => {
 
 test("production readiness blockers are machine-readable and surfaced in settings", () => {
   const readiness = read("lib/production-readiness.ts");
+  const route = read("app/api/admin/production-readiness/route.ts");
   const settings = read("app/admin/settings/page.tsx");
   const blockers = read("PRODUCTION_BLOCKERS.md");
   const typecheck = read("tsconfig.check.json");
@@ -621,7 +622,12 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(settings, /Open blockers/);
   assert.match(settings, /buildProductionReadinessReport/);
   assert.match(settings, /openProductionBlockers/);
+  assert.match(route, /Response\.json\(buildProductionReadinessReport/);
+  assert.match(route, /Cache-Control/);
+  assert.match(route, /no-store/);
+  assert.match(route, /X-Clinical-Production-Ready/);
   assert.match(blockers, /lib\/production-readiness\.ts/);
+  assert.match(typecheck, /app\/api\/admin\/production-readiness\/route\.ts/);
   assert.match(typecheck, /lib\/production-readiness\.ts/);
   assert.match(typecheck, /tests\/production-readiness\.behavior\.test\.ts/);
 });

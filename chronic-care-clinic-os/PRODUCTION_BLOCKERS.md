@@ -2,7 +2,7 @@
 
 This system is not production-ready and must not be used with real patient data until all blockers are cleared.
 
-Machine-readable readiness is tracked in `lib/production-readiness.ts` and surfaced in Admin Settings. Automation and CI should consume that manifest instead of parsing this Markdown file.
+Machine-readable readiness is tracked in `lib/production-readiness.ts`, exposed at `/api/admin/production-readiness`, and surfaced in Admin Settings. Automation and CI should consume that manifest instead of parsing this Markdown file.
 
 ## Security blockers
 

@@ -10,6 +10,7 @@
     "app/appointments/page.tsx",
     "app/care-plans/page.tsx",
     "app/evidence/page.tsx",
+    "app/api/admin/production-readiness/route.ts",
     "app/api/evidence/knowledge-pack/route.ts",
     "app/handouts/page.tsx",
     "app/overdue/page.tsx",
