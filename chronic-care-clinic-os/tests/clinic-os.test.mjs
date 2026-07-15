@@ -239,6 +239,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/evidence-integration\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/patient-education\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/workflow-actions\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/persistent-transaction\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-storage-contract\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/backend-guard\.ts/);
@@ -491,6 +492,26 @@ test("audit ledger is append-only and hash chained", () => {
   assert.match(auditPage, /Next sequence/);
   assert.match(auditPage, /Normal UI cannot update or delete audit log rows/);
   assert.doesNotMatch(ledger, /DELETE_AUDIT_LOG|UPDATE_AUDIT_LOG/);
+});
+
+test("persistent transaction harness rolls back business and audit writes atomically", () => {
+  const harness = read("lib/persistent-transaction.ts");
+  assert.match(harness, /runPersistentWorkflowTransactionHarness/);
+  assert.match(harness, /PersistentTransactionFailurePoint/);
+  assert.match(harness, /BEFORE_BUSINESS_WRITE/);
+  assert.match(harness, /AFTER_BUSINESS_WRITE_BEFORE_AUDIT/);
+  assert.match(harness, /AFTER_AUDIT_WRITE_BEFORE_COMMIT/);
+  assert.match(harness, /BUSINESS_WRITE_STAGED/);
+  assert.match(harness, /AUDIT_LOG_STAGED/);
+  assert.match(harness, /LEDGER_HASH_CHAIN_VALIDATED/);
+  assert.match(harness, /COMMIT_ATOMICALLY/);
+  assert.match(harness, /ROLLBACK_ATOMICALLY/);
+  assert.match(harness, /IN_MEMORY_TRANSACTION_HARNESS_ONLY/);
+  assert.match(harness, /productionCommitDisabled: true/);
+  assert.match(harness, /validateAuditLedger/);
+  assert.match(harness, /Business write is not marked atomic with AuditLog/);
+  assert.match(harness, /AuditLog write is not marked transaction-required/);
+  assert.doesNotMatch(harness, /prisma\.|fetch\(|sendMail|SMTP|UPDATE_AUDIT_LOG|DELETE_AUDIT_LOG/);
 });
 
 test("AuditLog migration hardens persistent hash-chain storage", () => {

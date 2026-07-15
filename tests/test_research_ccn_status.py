@@ -14,7 +14,6 @@ sys.path.insert(0, str(BASE / "tools"))
 
 import research_ccn_status as rccn  # noqa: E402
 
-
 # ----------------------------------------------------------------------------
 # Fixture nội dung — mô phỏng cấu trúc thật của 4 sổ nhưng với số dòng nhỏ.
 # ----------------------------------------------------------------------------
@@ -24,11 +23,18 @@ GAP-X2,Ethics,Ethics/IRB approval,R3.0,Ethics committee (external),OPEN — EXTE
 GAP-X3,Qualification,PI sign-off on qualification report,R5.0,Dr Luân,OPEN — PENDING,Pilot activation
 """
 
-FIXTURE_OPEN_DEPS_CSV = """dependency_id,dependency_name,phase_first_identified,phase_blocking,owner,status,resolution_path,last_updated
-DEP-X1,Institutional SSO provider,R1.2,R1.3,Dr Luân / IT,EXTERNAL — NOT PROVIDED,Institutional IT engagement required,2026-01-01
-DEP-X2,WORM-capable storage provider,R1.3,R1.3,Dr Luân,EXTERNAL — NOT PROVIDED,Vendor selection required (AWS S3 Object Lock / Azure WORM),2026-01-01
-DEP-X3,Ethics/IRB committee approval,R3.0,R3.0,Dr Luân,EXTERNAL — NOT PROVIDED,Formal IRB submission required; cannot self-approve,2026-01-01
-"""
+FIXTURE_OPEN_DEPS_CSV = "\n".join(
+    [
+        "dependency_id,dependency_name,phase_first_identified,phase_blocking,owner,status,"
+        "resolution_path,last_updated",
+        "DEP-X1,Institutional SSO provider,R1.2,R1.3,Dr Luân / IT,EXTERNAL — NOT PROVIDED,"
+        "Institutional IT engagement required,2026-01-01",
+        "DEP-X2,WORM-capable storage provider,R1.3,R1.3,Dr Luân,EXTERNAL — NOT PROVIDED,"
+        "Vendor selection required (AWS S3 Object Lock / Azure WORM),2026-01-01",
+        "DEP-X3,Ethics/IRB committee approval,R3.0,R3.0,Dr Luân,EXTERNAL — NOT PROVIDED,"
+        "Formal IRB submission required; cannot self-approve,2026-01-01",
+    ]
+) + "\n"
 
 FIXTURE_EXT_DEPS_MD = """# Fixture External Dependency Register
 
@@ -82,7 +88,7 @@ FIXTURE_AUTO_GAP_MD = """# Fixture Automation Gap Register
 | ID | Mảng | Vấn đề cần hoàn thiện | Hành động đề xuất | Cách kiểm chứng |
 |---|---|---|---|---|
 | P2-A1 | Orchestrator | Chưa gọi LLM-agent thật | Cắm executor thật | e2e test |
-| P2-A2 | Human evaluation | Scorecard còn caveat kappa/Likert chưa khép vòng | Thiết kế đánh giá mù bởi bác sĩ/chuyên gia | Human eval report |
+| P2-A2 | Human evaluation | Scorecard caveat | Bác sĩ/chuyên gia đánh giá mù | Human eval report |
 
 ## 10. Phụ lục — cập nhật sau lộ trình
 

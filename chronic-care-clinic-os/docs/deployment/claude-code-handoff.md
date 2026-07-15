@@ -39,6 +39,7 @@ node scripts/sync-check.mjs
 - `lib/patient-education.ts`: gates A5 patient education handouts by approved template, approved care plan and consent.
 - `lib/workflow-actions.ts`: defines preview-only server-action contracts for guarded write workflows before persistence exists.
 - `lib/workflow-actions.ts`: adds persistent write plans for all guarded write actions, using `buildPersistentAuditWritePlan` while keeping production commit disabled until atomic DB tests exist.
+- `lib/persistent-transaction.ts`: provides an in-memory transaction harness that stages business write + AuditLog together and rolls back both on injected failure before any real database adapter is enabled.
 - `/overdue`: claim-call-task workflow now uses `claimOverdueFollowUpTaskAction` preview with `task.manage` guard.
 - `/appointments`: create appointment workflow now uses `createCareAppointmentAction` preview with `task.manage` guard.
 - `/patients/[id]`: care plan draft workflow now uses `createCarePlanDraftAction` preview with `care_plan.version` guard.
@@ -75,8 +76,8 @@ node scripts/sync-check.mjs
 ## Recommended next tasks
 
 1. Add reviewed Prisma migration/tests for the AuditLog sequence/previousHash/eventHash fields.
-2. Wire guarded write actions to real database transactions only after tests prove the AuditLog insert and business write commit atomically.
-3. Add transaction-level tests for rollback on either business-write failure or AuditLog insert failure before enabling any production commit path.
+2. Replace the in-memory transaction harness with a Prisma transaction adapter only after tests prove AuditLog insert and business write commit atomically.
+3. Keep rollback tests for failure before business write, after business write before AuditLog, and after AuditLog before commit.
 4. Add A5 PDF generation only after approved-template and consent gates remain covered by tests.
 5. Configure a private Git remote so Windows, MacBook and Claude Code synchronize through Git, not only OneDrive.
 

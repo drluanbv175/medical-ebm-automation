@@ -63,7 +63,7 @@ BASE = Path(__file__).resolve().parents[1]          # medical-ebm-automation/
 WORKSPACE_ROOT = BASE.parent                          # .../OneDrive/Claude AI/
 
 sys.path.insert(0, str(BASE / "tools"))
-from gate_contract import ensure_utf8_stdout  # noqa: E402  (dùng chung: tránh UnicodeEncodeError trên console Windows cp1252)
+from gate_contract import ensure_utf8_stdout  # noqa: E402
 
 DEFAULT_GAP_REGISTER = BASE / "release_evidence" / "PROGRAM" / "RESEARCH_OS_PRODUCTION_READINESS_GAP_REGISTER.csv"
 DEFAULT_OPEN_DEPS = BASE / "release_evidence" / "PROGRAM" / "RESEARCH_OS_OPEN_DEPENDENCIES_REGISTER.csv"
@@ -467,15 +467,24 @@ def build_report(items: List[CCNItem]) -> str:
     lines.append("- GAP-REG: release_evidence/PROGRAM/RESEARCH_OS_PRODUCTION_READINESS_GAP_REGISTER.csv")
     lines.append("- OPEN-DEP: release_evidence/PROGRAM/RESEARCH_OS_OPEN_DEPENDENCIES_REGISTER.csv")
     lines.append("- EXT-DEP: release_evidence/PROGRAM/RESEARCH_OS_EXTERNAL_DEPENDENCY_REGISTER.md")
-    lines.append("- AUTO-GAP: reports/AUTOMATION_GAP_REGISTER_RESEARCH_CLINICAL_EBM_2026-07-14.md (chỉ phần P1-nghiên cứu + P2 liên quan đánh giá-người)")
+    lines.append(
+        "- AUTO-GAP: reports/AUTOMATION_GAP_REGISTER_RESEARCH_CLINICAL_EBM_2026-07-14.md "
+        "(chỉ phần P1-nghiên cứu + P2 liên quan đánh giá-người)"
+    )
     lines.append("")
     lines.append(f"## Tổng số mục còn mở: {total}")
     lines.append("")
     lines.append(f"## Đã đóng: {closed}/{total} ({pct_closed:.1f}%)")
     if closed == 0:
-        lines.append("(0 mục có trạng thái CLOSED trong 4 sổ nguồn tại thời điểm chạy — ghi đúng 0%, không suy diễn thêm.)")
+        lines.append(
+            "(0 mục có trạng thái CLOSED trong 4 sổ nguồn tại thời điểm chạy — "
+            "ghi đúng 0%, không suy diễn thêm.)"
+        )
     lines.append("")
-    lines.append("## Theo \"ai đang chờ\" (1 mục có thể khớp nhiều nhóm nếu owner ghi kiểu \"A + B\" → tổng dưới đây có thể > tổng số mục)")
+    lines.append(
+        "## Theo \"ai đang chờ\" (1 mục có thể khớp nhiều nhóm nếu owner ghi kiểu \"A + B\" "
+        "→ tổng dưới đây có thể > tổng số mục)"
+    )
     lines.append("")
     lines.append("| Nhóm | Số mục |")
     lines.append("|---|---|")
