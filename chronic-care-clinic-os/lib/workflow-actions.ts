@@ -90,9 +90,27 @@ export type WorkflowActionPreview = {
 };
 
 export type PersistentBusinessWritePlan = {
-  entityType: "CarePlanVersion" | "PatientHandout";
+  entityType:
+    | "CareCoordinationTask"
+    | "Appointment"
+    | "AIDraft"
+    | "EducationMaterial"
+    | "Patient"
+    | "ClinicalRule"
+    | "UserInvite"
+    | "CarePlanVersion"
+    | "PatientHandout";
   entityId: string;
-  operation: "INSERT_IMMUTABLE_VERSION" | "INSERT_APPROVED_HANDOUT";
+  operation:
+    | "UPSERT_CARE_COORDINATION_TASK"
+    | "INSERT_APPOINTMENT"
+    | "INSERT_CARE_PLAN_DRAFT"
+    | "INSERT_EDUCATION_TEMPLATE_DRAFT"
+    | "INSERT_PATIENT_REGISTRATION"
+    | "INSERT_CLINICAL_RULE_DRAFT"
+    | "INSERT_USER_INVITE"
+    | "INSERT_IMMUTABLE_VERSION"
+    | "INSERT_APPROVED_HANDOUT";
   requiredAtomicWithAuditLog: true;
   productionCommitDisabled: true;
   writeSet: Record<string, unknown>;
@@ -100,8 +118,17 @@ export type PersistentBusinessWritePlan = {
 };
 
 export type PersistentWorkflowActionPlan = {
-  actionName: "approveCarePlanVersion" | "releaseApprovedPatientHandout";
-  serverActionName: "approveCarePlanVersionAction" | "releaseApprovedPatientHandoutAction";
+  actionName: WorkflowActionPreview["actionName"];
+  serverActionName:
+    | "approveCarePlanVersionAction"
+    | "releaseApprovedPatientHandoutAction"
+    | "claimOverdueFollowUpTaskAction"
+    | "createCareAppointmentAction"
+    | "createCarePlanDraftAction"
+    | "createEducationTemplateDraftAction"
+    | "registerPatientAction"
+    | "createClinicalRuleDraftAction"
+    | "inviteUserAction";
   status: "READY_FOR_ATOMIC_COMMIT_WHEN_DB_WIRING_EXISTS" | "BLOCKED";
   allowed: boolean;
   persistenceMode: "PERSISTENT_PLAN_NOT_COMMITTED";
@@ -375,6 +402,63 @@ export function previewClaimOverdueFollowUpTaskAction(
   };
 }
 
+export function claimOverdueFollowUpTaskAction(
+  gap: CareGap,
+  input: WorkflowActionInput,
+  existingLedger: AuditLedgerEntry[],
+  today = "2026-06-19"
+): PersistentWorkflowActionPlan {
+  const preview = previewClaimOverdueFollowUpTaskAction(gap, input, today);
+  return buildPersistentWorkflowActionPlan({
+    actionName: "claimOverdueFollowUpTask",
+    serverActionName: "claimOverdueFollowUpTaskAction",
+    preview,
+    existingLedger,
+    auditIntent: {
+      userId: null,
+      actor: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "UPDATE",
+      entityType: "CareCoordinationTask",
+      entityId: gap.id,
+      summary: "Persistent plan nhan task goi nhac tai kham; commit/gui that van bi tat cho den khi co DB transaction test.",
+      beforeData: {
+        taskId: gap.id,
+        category: gap.category,
+        assignmentStatus: "UNCLAIMED_OR_OPEN"
+      },
+      afterData: {
+        taskId: gap.id,
+        assignedRole: gap.assignedRole,
+        dueDate: gap.dueDate,
+        communicationGate: gap.patientCommunicationAllowed ? "APPROVED_TEMPLATE_AND_CONSENT_REQUIRED" : "BLOCKED"
+      },
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    businessWritePlan: {
+      entityType: "CareCoordinationTask",
+      entityId: gap.id,
+      operation: "UPSERT_CARE_COORDINATION_TASK",
+      requiredAtomicWithAuditLog: true,
+      productionCommitDisabled: true,
+      writeSet: {
+        taskId: gap.id,
+        patientId: gap.patientId,
+        category: gap.category,
+        assignedRole: gap.assignedRole,
+        status: "CLAIMED_FOR_COORDINATION_CALL",
+        communicationMode: "APPROVED_REMINDER_TEMPLATE_ONLY"
+      },
+      forbiddenSideEffects: [
+        "NO_AUTOMATIC_CALL",
+        "NO_AUTOMATIC_PATIENT_MESSAGE",
+        "NO_TREATMENT_ADVICE",
+        "NO_CARE_PLAN_CHANGE"
+      ]
+    }
+  });
+}
+
 export function previewCreateCareAppointmentAction(
   patient: Patient,
   appointmentDraft: AppointmentDraftInput,
@@ -426,6 +510,65 @@ export function previewCreateCareAppointmentAction(
   };
 }
 
+export function createCareAppointmentAction(
+  patient: Patient,
+  appointmentDraft: AppointmentDraftInput,
+  input: WorkflowActionInput,
+  existingLedger: AuditLedgerEntry[],
+  today = "2026-06-19"
+): PersistentWorkflowActionPlan {
+  const preview = previewCreateCareAppointmentAction(patient, appointmentDraft, input, today);
+  const appointmentId = `appointment-${patient.id}-${appointmentDraft.scheduledAt.slice(0, 10)}`;
+  return buildPersistentWorkflowActionPlan({
+    actionName: "createCareAppointment",
+    serverActionName: "createCareAppointmentAction",
+    preview,
+    existingLedger,
+    auditIntent: {
+      userId: null,
+      actor: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "Appointment",
+      entityId: appointmentId,
+      summary: "Persistent plan tao lich hen dieu phoi; commit that van bi tat cho den khi co DB transaction test.",
+      beforeData: {
+        patientId: patient.id,
+        appointmentStatus: "NOT_CREATED"
+      },
+      afterData: {
+        patientId: patient.id,
+        appointmentType: appointmentDraft.appointmentType,
+        scheduledAt: appointmentDraft.scheduledAt,
+        riskFlag: appointmentDraft.riskFlag
+      },
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    businessWritePlan: {
+      entityType: "Appointment",
+      entityId: appointmentId,
+      operation: "INSERT_APPOINTMENT",
+      requiredAtomicWithAuditLog: true,
+      productionCommitDisabled: true,
+      writeSet: {
+        patientId: patient.id,
+        appointmentType: appointmentDraft.appointmentType,
+        scheduledAt: appointmentDraft.scheduledAt,
+        providerName: appointmentDraft.providerName,
+        reason: appointmentDraft.reason,
+        riskFlag: appointmentDraft.riskFlag,
+        source: "CARE_COORDINATION_WORKFLOW"
+      },
+      forbiddenSideEffects: [
+        "NO_AUTOMATIC_PATIENT_MESSAGE",
+        "NO_LAB_ORDER",
+        "NO_MEDICATION_ORDER",
+        "NO_TREATMENT_INSTRUCTION"
+      ]
+    }
+  });
+}
+
 export function previewCreateCarePlanDraftAction(
   patient: Patient,
   draft: CarePlanDraft,
@@ -471,6 +614,65 @@ export function previewCreateCarePlanDraftAction(
     safetyBoundary:
       "Preview nay chi tao ban nhap care plan, khong ky duyet, khong ke don, khong thay doi dieu tri va khong gui thong diep dieu tri."
   };
+}
+
+export function createCarePlanDraftAction(
+  patient: Patient,
+  draft: CarePlanDraft,
+  input: WorkflowActionInput,
+  existingLedger: AuditLedgerEntry[],
+  today = "2026-06-19"
+): PersistentWorkflowActionPlan {
+  const preview = previewCreateCarePlanDraftAction(patient, draft, input, today);
+  return buildPersistentWorkflowActionPlan({
+    actionName: "createCarePlanDraft",
+    serverActionName: "createCarePlanDraftAction",
+    preview,
+    existingLedger,
+    auditIntent: {
+      userId: null,
+      actor: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "AIDraft",
+      entityId: draft.draftId,
+      summary: "Persistent plan tao care plan draft can bac si phe duyet; commit that van bi tat cho den khi co DB transaction test.",
+      beforeData: {
+        patientId: patient.id,
+        draftStatus: "NOT_CREATED"
+      },
+      afterData: {
+        patientId: patient.id,
+        draftId: draft.draftId,
+        riskLevel: draft.riskLevel,
+        sourceGapCount: draft.sourceGapIds.length,
+        requiresPhysicianApproval: draft.requiresPhysicianApproval
+      },
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    businessWritePlan: {
+      entityType: "AIDraft",
+      entityId: draft.draftId,
+      operation: "INSERT_CARE_PLAN_DRAFT",
+      requiredAtomicWithAuditLog: true,
+      productionCommitDisabled: true,
+      writeSet: {
+        patientId: patient.id,
+        draftId: draft.draftId,
+        riskLevel: draft.riskLevel,
+        sourceGapIds: draft.sourceGapIds,
+        status: "DRAFT_REQUIRES_PHYSICIAN_APPROVAL",
+        requiresPhysicianApproval: true
+      },
+      forbiddenSideEffects: [
+        "NO_APPROVAL",
+        "NO_MEDICATION_CHANGE",
+        "NO_PRESCRIPTION",
+        "NO_PATIENT_MESSAGE",
+        "NO_CARE_PLAN_WRITEBACK"
+      ]
+    }
+  });
 }
 
 export function previewCreateEducationTemplateDraftAction(
@@ -519,6 +721,63 @@ export function previewCreateEducationTemplateDraftAction(
     safetyBoundary:
       "Preview nay chi tao template draft, khong phe duyet noi dung, khong dung cho nguoi benh va khong gui thong diep dieu tri."
   };
+}
+
+export function createEducationTemplateDraftAction(
+  templateDraft: EducationTemplateDraftInput,
+  input: WorkflowActionInput,
+  existingLedger: AuditLedgerEntry[],
+  today = "2026-06-19"
+): PersistentWorkflowActionPlan {
+  const preview = previewCreateEducationTemplateDraftAction(templateDraft, input, today);
+  const templateId = `education-template-draft-${slugify(templateDraft.title)}-${today}`;
+  return buildPersistentWorkflowActionPlan({
+    actionName: "createEducationTemplateDraft",
+    serverActionName: "createEducationTemplateDraftAction",
+    preview,
+    existingLedger,
+    auditIntent: {
+      userId: null,
+      actor: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "EducationMaterial",
+      entityId: templateId,
+      summary: "Persistent plan tao education template draft; commit that van bi tat cho den khi co DB transaction test.",
+      beforeData: {
+        templateId,
+        status: "NOT_CREATED"
+      },
+      afterData: {
+        templateId,
+        conditionKeywordCount: templateDraft.conditionKeywords.length,
+        sectionCount: templateDraft.sections.length,
+        status: "DRAFT_REQUIRES_CONTENT_APPROVAL"
+      },
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    businessWritePlan: {
+      entityType: "EducationMaterial",
+      entityId: templateId,
+      operation: "INSERT_EDUCATION_TEMPLATE_DRAFT",
+      requiredAtomicWithAuditLog: true,
+      productionCommitDisabled: true,
+      writeSet: {
+        templateId,
+        title: templateDraft.title,
+        conditionKeywords: templateDraft.conditionKeywords,
+        sections: templateDraft.sections,
+        sourceNote: templateDraft.sourceNote,
+        status: "DRAFT_REQUIRES_CONTENT_APPROVAL"
+      },
+      forbiddenSideEffects: [
+        "NO_TEMPLATE_APPROVAL",
+        "NO_PATIENT_USE",
+        "NO_AUTOMATIC_PRINT",
+        "NO_AUTOMATIC_PATIENT_MESSAGE"
+      ]
+    }
+  });
 }
 
 export function previewRegisterPatientAction(
@@ -578,6 +837,65 @@ export function previewRegisterPatientAction(
   };
 }
 
+export function registerPatientAction(
+  registrationDraft: PatientRegistrationDraftInput,
+  input: WorkflowActionInput,
+  existingLedger: AuditLedgerEntry[],
+  today = "2026-06-19"
+): PersistentWorkflowActionPlan {
+  const preview = previewRegisterPatientAction(registrationDraft, input, today);
+  const registrationId = `patient-registration-pending-${today}`;
+  return buildPersistentWorkflowActionPlan({
+    actionName: "registerPatient",
+    serverActionName: "registerPatientAction",
+    preview,
+    existingLedger,
+    auditIntent: {
+      userId: null,
+      actor: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "Patient",
+      entityId: registrationId,
+      summary: "Persistent plan dang ky nguoi benh; audit payload khong chua ten/phone/email va commit that van bi tat cho den khi co DB transaction test.",
+      beforeData: {
+        registrationId,
+        status: "NOT_CREATED"
+      },
+      afterData: {
+        registrationId,
+        sex: registrationDraft.sex,
+        consentStatus: registrationDraft.consentStatus,
+        chronicProgramCandidateCount: registrationDraft.chronicProgramCandidates.length,
+        piiStoredOnlyInBusinessWrite: true
+      },
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    businessWritePlan: {
+      entityType: "Patient",
+      entityId: registrationId,
+      operation: "INSERT_PATIENT_REGISTRATION",
+      requiredAtomicWithAuditLog: true,
+      productionCommitDisabled: true,
+      writeSet: {
+        registrationId,
+        identityFields: "STORE_IN_PATIENT_IDENTIFIER_AND_CONTACT_TABLES_ONLY",
+        dateOfBirth: registrationDraft.dateOfBirth,
+        sex: registrationDraft.sex,
+        consentStatus: registrationDraft.consentStatus,
+        intakeReason: registrationDraft.intakeReason,
+        chronicProgramCandidates: registrationDraft.chronicProgramCandidates
+      },
+      forbiddenSideEffects: [
+        "NO_DIAGNOSIS",
+        "NO_CARE_PLAN",
+        "NO_PATIENT_PORTAL_INVITE",
+        "NO_AUTOMATIC_OUTREACH"
+      ]
+    }
+  });
+}
+
 export function previewCreateClinicalRuleDraftAction(
   ruleDraft: ClinicalRuleDraftInput,
   input: WorkflowActionInput,
@@ -631,6 +949,73 @@ export function previewCreateClinicalRuleDraftAction(
   };
 }
 
+export function createClinicalRuleDraftAction(
+  ruleDraft: ClinicalRuleDraftInput,
+  input: WorkflowActionInput,
+  existingLedger: AuditLedgerEntry[],
+  today = "2026-06-19"
+): PersistentWorkflowActionPlan {
+  const preview = previewCreateClinicalRuleDraftAction(ruleDraft, input, today);
+  const ruleDraftId = `clinical-rule-draft-${slugify(ruleDraft.ruleName)}-${today}`;
+  return buildPersistentWorkflowActionPlan({
+    actionName: "createClinicalRuleDraft",
+    serverActionName: "createClinicalRuleDraftAction",
+    preview,
+    existingLedger,
+    auditIntent: {
+      userId: null,
+      actor: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "ClinicalRule",
+      entityId: ruleDraftId,
+      summary: "Persistent plan tao clinical rule draft; commit/active rule engine van bi tat cho den khi co DB transaction test.",
+      beforeData: {
+        ruleDraftId,
+        status: "NOT_CREATED"
+      },
+      afterData: {
+        ruleDraftId,
+        severity: ruleDraft.severity,
+        requiresPhysicianConfirmation: ruleDraft.requiresPhysicianConfirmation,
+        effectiveDate: ruleDraft.effectiveDate,
+        reviewDate: ruleDraft.reviewDate
+      },
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    businessWritePlan: {
+      entityType: "ClinicalRule",
+      entityId: ruleDraftId,
+      operation: "INSERT_CLINICAL_RULE_DRAFT",
+      requiredAtomicWithAuditLog: true,
+      productionCommitDisabled: true,
+      writeSet: {
+        ruleDraftId,
+        ruleName: ruleDraft.ruleName,
+        ruleDescription: ruleDraft.ruleDescription,
+        purpose: ruleDraft.purpose,
+        scope: ruleDraft.scope,
+        referenceSource: ruleDraft.referenceSource,
+        severity: ruleDraft.severity,
+        suggestedAction: ruleDraft.suggestedAction,
+        requiresPhysicianConfirmation: true,
+        version: ruleDraft.version,
+        effectiveDate: ruleDraft.effectiveDate,
+        reviewDate: ruleDraft.reviewDate,
+        limitationNotes: ruleDraft.limitationNotes,
+        status: "DRAFT_REQUIRES_CLINICAL_APPROVAL"
+      },
+      forbiddenSideEffects: [
+        "NO_RULE_ENGINE_ACTIVATION",
+        "NO_RISK_SCORE_CHANGE",
+        "NO_DIAGNOSIS",
+        "NO_PRESCRIPTION",
+        "NO_PATIENT_MESSAGE"
+      ]
+    }
+  });
+}
+
 export function previewInviteUserAction(
   inviteDraft: UserInviteDraftInput,
   input: WorkflowActionInput,
@@ -679,6 +1064,67 @@ export function previewInviteUserAction(
     safetyBoundary:
       "Preview nay chi tao loi moi noi bo, khong tao tai khoan dang nhap hoat dong, khong gui email that va khong cap quyen vuot scope."
   };
+}
+
+export function inviteUserAction(
+  inviteDraft: UserInviteDraftInput,
+  input: WorkflowActionInput,
+  existingLedger: AuditLedgerEntry[],
+  today = "2026-06-19"
+): PersistentWorkflowActionPlan {
+  const preview = previewInviteUserAction(inviteDraft, input, today);
+  const inviteId = `user-invite-${slugify(inviteDraft.role)}-${today}`;
+  return buildPersistentWorkflowActionPlan({
+    actionName: "inviteUser",
+    serverActionName: "inviteUserAction",
+    preview,
+    existingLedger,
+    auditIntent: {
+      userId: null,
+      actor: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "UserInvite",
+      entityId: inviteId,
+      summary: "Persistent plan moi nguoi dung noi bo; audit payload khong chua email va commit/gui that van bi tat cho den khi co DB transaction test.",
+      beforeData: {
+        inviteId,
+        status: "NOT_CREATED"
+      },
+      afterData: {
+        inviteId,
+        role: inviteDraft.role,
+        organizationId: inviteDraft.organizationId,
+        clinicSiteId: inviteDraft.clinicSiteId,
+        emailStoredOnlyInBusinessWrite: true
+      },
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    businessWritePlan: {
+      entityType: "UserInvite",
+      entityId: inviteId,
+      operation: "INSERT_USER_INVITE",
+      requiredAtomicWithAuditLog: true,
+      productionCommitDisabled: true,
+      writeSet: {
+        inviteId,
+        name: inviteDraft.name,
+        email: inviteDraft.email,
+        role: inviteDraft.role,
+        organizationId: inviteDraft.organizationId,
+        clinicSiteId: inviteDraft.clinicSiteId,
+        invitationReason: inviteDraft.invitationReason,
+        status: "DRAFT_INVITE_NOT_SENT"
+      },
+      forbiddenSideEffects: [
+        "NO_EMAIL_SEND",
+        "NO_ACTIVE_ACCOUNT",
+        "NO_PASSWORD_CREATION",
+        "NO_SESSION_CREATION",
+        "NO_PRIVILEGE_ESCALATION"
+      ]
+    }
+  });
 }
 
 function authorizeWorkflowAction(input: WorkflowActionInput, permission: Permission): GuardDecision {

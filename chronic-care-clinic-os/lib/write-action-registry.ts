@@ -41,7 +41,7 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "task.manage",
     "CARE_COORDINATOR",
     "claimOverdueFollowUpTaskAction",
-    "Da co workflow action contract, RBAC guard va audit preview; chua ghi DB hoac gui tin nhan."
+    "Da co workflow action contract, RBAC guard va persistent audit write plan; production commit/gui van disabled."
   ),
   guarded(
     "appointment-create",
@@ -50,7 +50,7 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "task.manage",
     "CARE_COORDINATOR",
     "createCareAppointmentAction",
-    "Da co workflow action contract, RBAC guard va audit preview; chua ghi DB hoac gui tin nhan."
+    "Da co workflow action contract, RBAC guard va persistent audit write plan; production commit/gui van disabled."
   ),
   guarded(
     "patient-care-plan-draft",
@@ -59,7 +59,7 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "care_plan.version",
     "PHYSICIAN",
     "createCarePlanDraftAction",
-    "Da co workflow action contract, RBAC guard va audit preview; chua ghi DB, chua ky duyet."
+    "Da co workflow action contract, RBAC guard va persistent audit write plan; production commit/approval van disabled."
   ),
   guarded(
     "template-draft",
@@ -68,7 +68,7 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "clinical_rules.manage",
     "CLINIC_ADMIN",
     "createEducationTemplateDraftAction",
-    "Da co workflow action contract, RBAC guard va audit preview; can approval rieng truoc khi dung."
+    "Da co workflow action contract, RBAC guard va persistent audit write plan; can approval rieng truoc khi dung."
   ),
   guarded(
     "handout-release",
@@ -86,7 +86,7 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "patient.register",
     "RECEPTIONIST",
     "registerPatientAction",
-    "Da co workflow action contract, RBAC guard, consent check va audit preview; chua ghi DB hoac mo lien he tu dong."
+    "Da co workflow action contract, RBAC guard, consent check va persistent audit write plan; production commit/lien he van disabled."
   ),
   guarded(
     "clinical-rule-draft",
@@ -95,7 +95,7 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "clinical_rules.manage",
     "CLINIC_ADMIN",
     "createClinicalRuleDraftAction",
-    "Da co workflow action contract, RBAC guard, audit preview va approval rieng truoc khi active rule engine."
+    "Da co workflow action contract, RBAC guard, persistent audit write plan va approval rieng truoc khi active rule engine."
   ),
   guarded(
     "user-invite",
@@ -104,7 +104,7 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "user.manage",
     "CLINIC_ADMIN",
     "inviteUserAction",
-    "Da co workflow action contract, RBAC guard, audit preview va scope guard; chua ghi DB hoac gui email."
+    "Da co workflow action contract, RBAC guard, persistent audit write plan va scope guard; production commit/email van disabled."
   ),
   blocked("quality-export-csv", "Xuat CSV chat luong", "/dashboard/quality", "export.aggregate", "QUALITY_MANAGER"),
   blocked("audit-export", "Xuat audit log", "/admin/audit", "audit.view", "READ_ONLY_AUDITOR")
