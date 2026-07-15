@@ -503,6 +503,8 @@ test("audit ledger is append-only and hash chained", () => {
 test("persistent transaction harness rolls back business and audit writes atomically", () => {
   const harness = read("lib/persistent-transaction.ts");
   const prismaContract = read("lib/prisma-transaction-contract.ts");
+  const rollbackEvidence = read("lib/prisma-rollback-evidence.ts");
+  const rollbackTemplate = JSON.parse(read("docs/templates/prisma-rollback-evidence.template.json"));
   const behaviorTest = read("tests/persistent-transaction.behavior.test.ts");
   assert.match(harness, /runPersistentWorkflowTransactionHarness/);
   assert.match(harness, /PersistentTransactionFailurePoint/);
@@ -524,6 +526,8 @@ test("persistent transaction harness rolls back business and audit writes atomic
   assert.match(behaviorTest, /Missing AuditLog write plan/);
   assert.match(behaviorTest, /prisma test database gate requires rollback evidence before adapter promotion/);
   assert.match(behaviorTest, /prisma test database gate can only unlock test adapter, never production commit/);
+  assert.match(behaviorTest, /prisma rollback evidence schema blocks malformed or incomplete reports/);
+  assert.match(behaviorTest, /prisma rollback evidence report gates only the test database adapter/);
   assert.match(prismaContract, /PRISMA_TRANSACTION_CONTRACT_ONLY/);
   assert.match(prismaContract, /buildPrismaTransactionContract/);
   assert.match(prismaContract, /validatePrismaTransactionContract/);
@@ -536,8 +540,18 @@ test("persistent transaction harness rolls back business and audit writes atomic
   assert.match(prismaContract, /Missing reviewer signoff for transaction rollback evidence/);
   assert.match(prismaContract, /AuditLog UPDATE\/DELETE must be blocked in the test database/);
   assert.match(prismaContract, /NO_AUDIT_LOG_UPDATE_OR_DELETE/);
+  assert.match(rollbackEvidence, /PRISMA_ROLLBACK_EVIDENCE_REPORT/);
+  assert.match(rollbackEvidence, /validatePrismaRollbackEvidenceReportSchema/);
+  assert.match(rollbackEvidence, /evaluatePrismaRollbackEvidenceReport/);
+  assert.match(rollbackEvidence, /AUDIT_LOG_HARDENING_MIGRATION_NAME/);
+  assert.match(rollbackEvidence, /productionCommitRequested must be false/);
+  assert.equal(rollbackTemplate.artifactKind, "PRISMA_ROLLBACK_EVIDENCE_REPORT");
+  assert.equal(rollbackTemplate.productionCommitRequested, false);
+  assert.equal(rollbackTemplate.migration.auditLogHardeningApplied, false);
+  assert.equal(rollbackTemplate.rollbackProbes.FAIL_AFTER_AUDIT_BEFORE_COMMIT.status, "NOT_RUN");
   assert.doesNotMatch(harness, /prisma\.|fetch\(|sendMail|SMTP|UPDATE_AUDIT_LOG|DELETE_AUDIT_LOG/);
   assert.doesNotMatch(prismaContract, /from ["']@prisma|new PrismaClient|prisma\./);
+  assert.doesNotMatch(rollbackEvidence, /from ["']@prisma|new PrismaClient|prisma\./);
 });
 
 test("AuditLog migration hardens persistent hash-chain storage", () => {

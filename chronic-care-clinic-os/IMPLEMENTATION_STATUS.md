@@ -26,6 +26,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - In-memory transaction harness for guarded persistent plans now stages business write and AuditLog together, validates the audit hash chain, and has behavior tests for commit plus rollback at each injected failure point before a real database adapter is allowed.
 - Disabled Prisma transaction contract now defines the required same-transaction operations and rollback cases without importing Prisma or enabling production commits.
 - Prisma test-database rollback gate now requires isolated non-production evidence, AuditLog migration proof, AuditLog mutation blocking, all rollback cases, evidence artifact and reviewer signoff before a test adapter can be promoted; production commit remains disabled.
+- Prisma rollback evidence report schema/validator and `docs/templates/prisma-rollback-evidence.template.json` now make the required test-database proof machine-checkable before adapter promotion.
 - AuditLog hardening migration reviewed at `prisma/migrations/202606190001_audit_log_hash_chain_hardening/migration.sql`, with unique sequence/hash indexes, non-empty hash constraints, immutable-after-append constraint and UPDATE/DELETE blocking triggers.
 - Workflow action contracts now call RBAC/backend guard for role, permission and organization/site scope before any future write.
 - Write action registry and `/admin/settings` readiness view identify guarded preview actions, UI placeholders and production-blocked exports.
@@ -57,7 +58,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Backend RBAC is modeled and wired to workflow action contracts; write action registry has guarded-preview contracts for UI write actions and keeps production-blocked exports separate.
 - Audit immutability is documented, domain-guarded, hash-chain previewed and has a persistent write contract; it still needs real database migrations/server-action wiring.
 - Care plan version history is modeled but not wired to write workflow.
-- Care plan draft, approval package, education release package and workflow action contracts are deterministic and demo-data backed; all guarded write actions now have persistent write plans, an in-memory atomicity harness, a disabled Prisma adapter contract and a test-database rollback evidence gate, while final approval/writeback still needs real database transaction wiring.
+- Care plan draft, approval package, education release package and workflow action contracts are deterministic and demo-data backed; all guarded write actions now have persistent write plans, an in-memory atomicity harness, a disabled Prisma adapter contract and a machine-checkable test-database rollback evidence gate, while final approval/writeback still needs real database transaction wiring.
 - Rule/content approval workflow is modeled but not fully executable.
 
 ## Chua hoan thanh

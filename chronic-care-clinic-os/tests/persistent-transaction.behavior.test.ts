@@ -12,6 +12,11 @@ import {
   evaluatePrismaTestDatabaseGate,
   validatePrismaTransactionContract
 } from "../lib/prisma-transaction-contract";
+import {
+  evaluatePrismaRollbackEvidenceReport,
+  validatePrismaRollbackEvidenceReportSchema,
+  type PrismaRollbackEvidenceReport
+} from "../lib/prisma-rollback-evidence";
 import type { PersistentBusinessWritePlan, PersistentWorkflowActionPlan, WorkflowActionPreview } from "../lib/workflow-actions";
 
 const auditWritePlan = buildPersistentAuditWritePlan([], {
@@ -201,3 +206,103 @@ test("prisma test database gate can only unlock test adapter, never production c
   assert.deepEqual(gate.blockedReasons, []);
   assert.ok(gate.requiredEvidence.includes("Rollback observed after AuditLog insert before commit"));
 });
+
+test("prisma rollback evidence schema blocks malformed or incomplete reports", () => {
+  const malformed = validatePrismaRollbackEvidenceReportSchema({
+    artifactKind: "PRISMA_ROLLBACK_EVIDENCE_REPORT",
+    artifactVersion: 1,
+    workflowActionName: "approveCarePlanVersion",
+    databaseScope: "ISOLATED_TEST_DATABASE",
+    productionDataPresent: false,
+    migration: {
+      migrationName: "202606190001_audit_log_hash_chain_hardening",
+      auditLogHardeningApplied: false
+    },
+    auditMutationProbe: {
+      updateBlocked: false,
+      deleteBlocked: false,
+      observedErrorCode: null
+    },
+    rollbackProbes: {},
+    evidenceArtifact: null,
+    reviewerSignoff: null,
+    productionCommitRequested: false
+  });
+
+  assert.equal(malformed.valid, false);
+  assert.equal(malformed.report, null);
+  assert.ok(malformed.blockedReasons.includes("rollbackProbes.FAIL_BEFORE_BUSINESS_WRITE is required."));
+});
+
+test("prisma rollback evidence report gates only the test database adapter", () => {
+  const contract = buildPrismaTransactionContract(plan);
+  const report = completeRollbackEvidenceReport();
+  const schema = validatePrismaRollbackEvidenceReportSchema(report);
+
+  assert.equal(schema.valid, true);
+  assert.ok(schema.report);
+
+  const readiness = evaluatePrismaRollbackEvidenceReport(contract, schema.report);
+
+  assert.equal(readiness.reportReady, true);
+  assert.equal(readiness.canEnableTestDatabaseAdapter, true);
+  assert.equal(readiness.canEnableProductionCommit, false);
+  assert.equal(readiness.productionCommitDisabled, true);
+  assert.deepEqual(readiness.blockedReasons, []);
+});
+
+test("prisma rollback evidence report rejects production-like data even with rollback traces", () => {
+  const contract = buildPrismaTransactionContract(plan);
+  const unsafeReport: PrismaRollbackEvidenceReport = {
+    ...completeRollbackEvidenceReport(),
+    databaseScope: "PRODUCTION_DATABASE",
+    productionDataPresent: true
+  };
+  const readiness = evaluatePrismaRollbackEvidenceReport(contract, unsafeReport);
+
+  assert.equal(readiness.reportReady, false);
+  assert.equal(readiness.canEnableTestDatabaseAdapter, false);
+  assert.equal(readiness.canEnableProductionCommit, false);
+  assert.ok(readiness.blockedReasons.includes("Evidence must come from an isolated test database only."));
+  assert.ok(readiness.blockedReasons.includes("Test database must contain no production patient data."));
+});
+
+function completeRollbackEvidenceReport(): PrismaRollbackEvidenceReport {
+  return {
+    artifactKind: "PRISMA_ROLLBACK_EVIDENCE_REPORT",
+    artifactVersion: 1,
+    workflowActionName: "approveCarePlanVersion",
+    databaseScope: "ISOLATED_TEST_DATABASE",
+    productionDataPresent: false,
+    migration: {
+      migrationName: "202606190001_audit_log_hash_chain_hardening",
+      auditLogHardeningApplied: true
+    },
+    auditMutationProbe: {
+      updateBlocked: true,
+      deleteBlocked: true,
+      observedErrorCode: "P0001"
+    },
+    rollbackProbes: {
+      FAIL_BEFORE_BUSINESS_WRITE: passedRollbackProbe(),
+      FAIL_AFTER_BUSINESS_WRITE_BEFORE_AUDIT: passedRollbackProbe(),
+      FAIL_AFTER_AUDIT_BEFORE_COMMIT: passedRollbackProbe()
+    },
+    evidenceArtifact: "reports/ccos-prisma-rollback-test.md",
+    reviewerSignoff: {
+      reviewer: "quality-manager",
+      role: "QUALITY_MANAGER",
+      signedAt: "2026-07-15T06:30:00+07:00"
+    },
+    productionCommitRequested: false
+  };
+}
+
+function passedRollbackProbe() {
+  return {
+    status: "PASSED" as const,
+    businessWriteCountAfterRollback: 0,
+    auditLogCountAfterRollback: 0,
+    observedTrace: ["BEGIN_TRANSACTION", "ROLLBACK_ATOMICALLY"]
+  };
+}

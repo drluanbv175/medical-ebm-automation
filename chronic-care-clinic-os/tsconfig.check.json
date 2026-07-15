@@ -24,6 +24,7 @@
     "lib/workflow-actions.ts",
     "lib/persistent-transaction.ts",
     "lib/prisma-transaction-contract.ts",
+    "lib/prisma-rollback-evidence.ts",
     "lib/audit-ledger.ts",
     "lib/audit-storage-contract.ts",
     "lib/audit.ts",
