@@ -1,16 +1,15 @@
-"""Chống drift giữa 2 bảng stakeholder SONG SONG — tools/gate_contract.py và
-runtime/approval_ledger.py.
+"""Khóa bất biến cấu trúc giữa tools/gate_contract.py và runtime/approval_ledger.py.
 
-Bối cảnh (vá 2026-07-15): tools/gate_contract.py::_GATE_REQUIRED_STAKEHOLDERS là
-cổng THẬT (dùng bởi tools/approve_gate.py + run_g*_auto.py). runtime/approval_ledger.py
-giữ một bản sao RIÊNG (GATE_REQUIRED_STAKEHOLDERS + GATE_ADDITIONAL_STAKEHOLDERS) — dùng
-bởi ApprovalLedger.stakeholder_gate_status()/check_required_stakeholder_approval(), lớp
-audit/verifier (KHÔNG phải cổng chặn thật, xem ghi chú trong approval_ledger.py). G8 (bình
-duyệt độc lập) được thêm vào gate_contract.py ngày 2026-07-14 nhưng bản sao trong
-approval_ledger.py bị bỏ sót cho tới 2026-07-15 — nếu không phát hiện, một gate mới thêm
-sau này rất dễ lặp lại đúng kiểu lệch này (thêm ở 1 nơi, quên nơi kia) và khiến
-ApprovalLedger coi approval synthetic/self-review là "đủ" cho gate đó (rơi vào nhánh
-NO_STAKEHOLDER_REQUIREMENT).
+Lịch sử (2026-07-14/15): 2 file từng giữ bảng stakeholder RIÊNG, lệch nhau 2 lần
+trong 24 giờ (G4 nới PI rồi quên đồng bộ; G8 thêm mới rồi quên đồng bộ) — mỗi lần
+do 1 phiên khác sửa gate_contract.py mà quên bản sao trong approval_ledger.py.
+
+Vá 2026-07-15 (hợp nhất): approval_ledger.py không còn dict tay nào — mọi giá trị
+SUY RA TRỰC TIẾP từ gate_contract.py (`STAKEHOLDER_ROLE_ALIASES = _GC._STAKEHOLDER_ROLE_ALIASES`
+v.v., xem đầu file approval_ledger.py). Về lý thuyết lệch không còn xảy ra được nữa
+"by construction". Test này giờ đóng vai trò REGRESSION GUARD: nếu sau này có ai lỡ
+tách lại thành dict tay (thay vì derive), hoặc gate_contract.py đổi hình dạng dữ
+liệu theo cách phá derivation, test sẽ đỏ ngay thay vì lặng lẽ lệch lại.
 
 Test này KHÔNG lặp lại logic role-alias (đã có tests/test_gate_contract_roles.py +
 TestApprovalLedgerStakeholderRoles trong tests/test_approval_ledger.py) — chỉ khóa lại

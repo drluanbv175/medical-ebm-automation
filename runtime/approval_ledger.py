@@ -9,89 +9,47 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
 from .schemas import ApprovalDecisionEnum, ApprovalRecord
 
-STAKEHOLDER_ROLE_ALIASES: dict[str, set[str]] = {
-    "PI": {
-        "PI",
-        "PI_PROJECT_OWNER",
-        "PRINCIPAL_INVESTIGATOR",
-        "CHU_NHIEM_DE_TAI",
-        "CHU_NHIEM_NGHIEN_CUU",
-        "NGHIEN_CUU_VIEN_CHINH",
-        "CHỦ_NHIỆM_ĐỀ_TÀI",
-        "CHỦ_NHIỆM_NGHIÊN_CỨU",
-        "NGHIÊN_CỨU_VIÊN_CHÍNH",
-    },
-    "IRB": {
-        "IRB",
-        "IRB_CHAIR",
-        "IRB_MEMBER",
-        "IRB_ETHICS_COMMITTEE",
-        "ETHICS_COMMITTEE",
-        "HOI_DONG_DAO_DUC",
-        "HOI_DONG_Y_DUC",
-        "HỘI_ĐỒNG_ĐẠO_ĐỨC",
-        "HỘI_ĐỒNG_Y_ĐỨC",
-    },
-    "STATISTICIAN": {
-        "STATISTICIAN",
-        "BIOSTATISTICIAN",
-        "METHODS_STATISTICS_REVIEWER",
-        "THONG_KE_VIEN",
-        "CHUYEN_GIA_THONG_KE",
-        "PHUONG_PHAP_THONG_KE",
-        "THỐNG_KÊ_VIÊN",
-        "CHUYÊN_GIA_THỐNG_KÊ",
-        "PHƯƠNG_PHÁP_THỐNG_KÊ",
-    },
-    "INDEPENDENT_PEER_REVIEWER": {
-        "INDEPENDENT_PEER_REVIEWER",
-        "PEER_REVIEWER",
-        "EXTERNAL_REVIEWER",
-        "PHAN_BIEN_DOC_LAP",
-        "PHAN_BIEN",
-        "PHẢN_BIỆN_ĐỘC_LẬP",
-        "PHẢN_BIỆN",
-    },
-}
+# Vá 2026-07-15 (hợp nhất bảng stakeholder — trước đây file này giữ 3 bản sao RIÊNG
+# của tools/gate_contract.py (STAKEHOLDER_ROLE_ALIASES, GATE_REQUIRED_STAKEHOLDERS,
+# GATE_ADDITIONAL_STAKEHOLDERS), và đã LỆCH THẬT 2 lần trong 24 giờ — G4 nới nhận PI
+# (2026-07-14, vá 2026-07-15) rồi G8 bị bỏ sót hoàn toàn (vá 2026-07-15, xem
+# test_gate_contract_approval_ledger_stakeholder_parity.py) — mỗi lần do 1 phiên
+# khác nhau sửa gate_contract.py mà quên bản sao ở đây. Từ nay KHÔNG còn dict tay
+# nào cả — mọi giá trị suy ra TRỰC TIẾP từ gate_contract.py (nguồn THẬT, được
+# tools/approve_gate.py + run_g*_auto.py dùng), nên không thể lệch nữa "by
+# construction" thay vì chỉ dựa vào test dò lệch. gate_contract.py cố tình chỉ dùng
+# thư viện chuẩn để 5 tool tính toán (clinical_calc.py...) bare-import được không cần
+# sys.path — chiều import ở đây (runtime/ -> tools/) không phá ràng buộc đó vì
+# approval_ledger.py luôn được import qua package đầy đủ (runtime.approval_ledger),
+# không bao giờ bare-import, nên tự thêm sys.path là an toàn. Không có nguy cơ vòng
+# lặp import: gate_contract.py không import bất kỳ thứ gì từ runtime/ (xác nhận qua
+# grep trước khi đổi).
+_TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
+if str(_TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(_TOOLS_DIR))
+import gate_contract as _GC  # noqa: E402
 
-# Vá 2026-07-15 (Ngày 6 lộ trình 7 ngày — vá bug thật phát hiện qua audit): G8 (bình
-# duyệt/phản biện độc lập) đã có trong tools/gate_contract.py::_GATE_REQUIRED_STAKEHOLDERS
-# từ 2026-07-14 nhưng bản sao RIÊNG trong file này (không dùng chung với gate_contract.py)
-# chưa được thêm — "bom hẹn giờ": nếu sau này ai thêm milestone G8 dùng bảng NÀY (thay vì
-# gate_contract.py), stakeholder_gate_status("G8")/check_required_stakeholder_approval("G8")
-# sẽ rơi vào nhánh NO_STAKEHOLDER_REQUIREMENT (coi bất kỳ approval APPROVED nào — kể cả
-# synthetic/self-review — là đủ), tức lọt qua đúng thứ G8 được thêm để chặn. KHÔNG ảnh
-# hưởng cổng THẬT hiện tại (tools/approve_gate.py + run_g8_auto.py chỉ dùng
-# gate_contract.reviewer_role_satisfies_gate()/ledger_approved()), chỉ ảnh hưởng lớp audit
-# đọc qua ApprovalLedger (xem test_gate_contract_approval_ledger_stakeholder_parity.py).
+STAKEHOLDER_ROLE_ALIASES: dict[str, set[str]] = _GC._STAKEHOLDER_ROLE_ALIASES
+
+# dict[str, str] — CHỈ nhóm CHÍNH (nhãn hiển thị), giữ nguyên kiểu trả về cũ vì
+# research_project/ và test_v4_3_4_... nối chuỗi/so sánh == trên field
+# "required_stakeholder"; đổi sang tuple sẽ vỡ các chỗ đó.
 GATE_REQUIRED_STAKEHOLDERS: dict[str, str] = {
-    "G2": "IRB",
-    "G4": "STATISTICIAN",
-    "G8": "INDEPENDENT_PEER_REVIEWER",
-    "G9": "PI",
+    gate: groups[0] for gate, groups in _GC._GATE_REQUIRED_STAKEHOLDERS.items()
 }
 
-# Vá 2026-07-15 (Ngày 6 lộ trình 7 ngày — "audit toàn hệ" phát hiện lệch với
-# tools/gate_contract.py): cổng G4 đã được nới nhận CẢ PI tự ký từ 2026-07-14 (khớp
-# doctrine thiet-ke-nghien-cuu.md — bác sĩ đơn lẻ thường tự đóng vai trò thống kê cho
-# đề tài của mình), nhưng bản sao role-mapping RIÊNG trong file này (song song với
-# gate_contract.py, không dùng chung) chưa được cập nhật theo — khiến
-# ApprovalLedger.has_sap_lock()/stakeholder_gate_status() báo sai "G4 chưa đủ" dù PI đã
-# tự ký hợp lệ. KHÔNG ảnh hưởng cổng THẬT: tools/approve_gate.py + run_g4_auto.py chỉ
-# dùng gate_contract.reviewer_role_satisfies_gate()/ledger_approved() cho quyết định
-# (xác nhận qua grep — ApprovalLedger chỉ dùng để ghi/đọc lại record), chỉ ảnh hưởng
-# lớp kiểm/audit (verify_controlled_research_automation.py). Tách thành dict PHỤ thay
-# vì đổi GATE_REQUIRED_STAKEHOLDERS sang tuple để KHÔNG đổi kiểu trả về của
-# required_stakeholder_for_gate() — research_project/ và test_v4_3_4_... nối chuỗi/so
-# sánh == trên field "required_stakeholder", đổi sang tuple sẽ vỡ các chỗ đó.
+# Nhóm PHỤ (ngoài nhóm chính) được chấp nhận cho gate đó, vd G4 nhận thêm PI.
 GATE_ADDITIONAL_STAKEHOLDERS: dict[str, tuple[str, ...]] = {
-    "G4": ("PI",),
+    gate: tuple(groups[1:])
+    for gate, groups in _GC._GATE_REQUIRED_STAKEHOLDERS.items()
+    if len(groups) > 1
 }
 
 
