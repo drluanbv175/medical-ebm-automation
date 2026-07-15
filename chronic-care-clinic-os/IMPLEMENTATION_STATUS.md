@@ -22,6 +22,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Preview-only workflow action contracts for future care plan approval and handout release server actions.
 - Append-only audit ledger preview with deterministic hash chain and `/admin/audit` integrity view.
 - Persistent AuditLog write contract with sequence/previousHash/eventHash, insert-only policy and same-transaction business write requirement.
+- Persistent write plans for care plan approval and approved handout release now use the AuditLog write contract and define the atomic business write set; production commit remains disabled until database transaction tests exist.
 - AuditLog hardening migration reviewed at `prisma/migrations/202606190001_audit_log_hash_chain_hardening/migration.sql`, with unique sequence/hash indexes, non-empty hash constraints, immutable-after-append constraint and UPDATE/DELETE blocking triggers.
 - Workflow action contracts now call RBAC/backend guard for role, permission and organization/site scope before any future write.
 - Write action registry and `/admin/settings` readiness view identify guarded preview actions, UI placeholders and production-blocked exports.
@@ -53,7 +54,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Backend RBAC is modeled and wired to workflow action contracts; write action registry has guarded-preview contracts for UI write actions and keeps production-blocked exports separate.
 - Audit immutability is documented, domain-guarded, hash-chain previewed and has a persistent write contract; it still needs real database migrations/server-action wiring.
 - Care plan version history is modeled but not wired to write workflow.
-- Care plan draft, approval package, education release package and workflow action contracts are deterministic and demo-data backed; final approval/writeback still needs server actions, persistent audit logging and immutable version creation.
+- Care plan draft, approval package, education release package and workflow action contracts are deterministic and demo-data backed; care plan approval and handout release now have persistent write plans, while final approval/writeback still needs real database transaction wiring.
 - Rule/content approval workflow is modeled but not fully executable.
 
 ## Chua hoan thanh
@@ -63,7 +64,8 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Docker one-command run verification.
 - Database backup/restore test.
 - A5 PDF generator and test.
-- API/server actions for create patient, appointment, vitals, medication reconciliation, care plan approval, handout approval and task transitions.
+- API/server actions for create patient, appointment, vitals, medication reconciliation, task transitions and remaining write paths.
+- Real database transaction wiring for care plan approval and handout approval persistent plans.
 - Real audit log persistence on every sensitive action.
 - Rate limiting, CSRF, secure headers and environment validation.
 - User acceptance testing and formal clinical/data protection signoff.

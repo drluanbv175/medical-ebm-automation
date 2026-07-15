@@ -1,4 +1,11 @@
 import type { AuditEvent } from "./audit";
+import {
+  buildPersistentAuditWritePlan,
+  validatePersistentAuditWritePlan,
+  type AuditStorageValidation,
+  type AuditStorageWritePlan
+} from "./audit-storage-contract";
+import type { AuditLedgerEntry } from "./audit-ledger";
 import { authorizeBackendAction, type GuardDecision } from "./backend-guard";
 import type { CareGap } from "./care-orchestrator";
 import type { CarePlanApprovalPackage } from "./care-plan-approval";
@@ -82,6 +89,31 @@ export type WorkflowActionPreview = {
   safetyBoundary: string;
 };
 
+export type PersistentBusinessWritePlan = {
+  entityType: "CarePlanVersion" | "PatientHandout";
+  entityId: string;
+  operation: "INSERT_IMMUTABLE_VERSION" | "INSERT_APPROVED_HANDOUT";
+  requiredAtomicWithAuditLog: true;
+  productionCommitDisabled: true;
+  writeSet: Record<string, unknown>;
+  forbiddenSideEffects: string[];
+};
+
+export type PersistentWorkflowActionPlan = {
+  actionName: "approveCarePlanVersion" | "releaseApprovedPatientHandout";
+  serverActionName: "approveCarePlanVersionAction" | "releaseApprovedPatientHandoutAction";
+  status: "READY_FOR_ATOMIC_COMMIT_WHEN_DB_WIRING_EXISTS" | "BLOCKED";
+  allowed: boolean;
+  persistenceMode: "PERSISTENT_PLAN_NOT_COMMITTED";
+  preview: WorkflowActionPreview;
+  auditWritePlan: AuditStorageWritePlan | null;
+  auditValidation: AuditStorageValidation;
+  businessWritePlan: PersistentBusinessWritePlan | null;
+  blockedReasons: string[];
+  transactionContract: string[];
+  safetyBoundary: string;
+};
+
 export function previewApproveCarePlanAction(
   approvalPackage: CarePlanApprovalPackage,
   input: WorkflowActionInput,
@@ -126,6 +158,63 @@ export function previewApproveCarePlanAction(
     safetyBoundary:
       "Preview nay khong ky thay bac si, khong ghi DB, khong tao don thuoc va khong gui thong diep dieu tri."
   };
+}
+
+export function approveCarePlanVersionAction(
+  approvalPackage: CarePlanApprovalPackage,
+  input: WorkflowActionInput,
+  existingLedger: AuditLedgerEntry[],
+  today = "2026-06-19"
+): PersistentWorkflowActionPlan {
+  const preview = previewApproveCarePlanAction(approvalPackage, input, today);
+  return buildPersistentWorkflowActionPlan({
+    actionName: "approveCarePlanVersion",
+    serverActionName: "approveCarePlanVersionAction",
+    preview,
+    existingLedger,
+    auditIntent: {
+      userId: null,
+      actor: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "APPROVE",
+      entityType: "CarePlanVersion",
+      entityId: approvalPackage.versionPreview.versionId,
+      summary: "Persistent plan ky duyet CarePlanVersion; commit that van bi tat cho den khi co DB transaction test.",
+      beforeData: {
+        carePlanId: approvalPackage.versionPreview.carePlanId,
+        draftId: approvalPackage.draftId,
+        previousStatus: "DRAFT_OR_CURRENT"
+      },
+      afterData: {
+        versionPreview: approvalPackage.versionPreview,
+        approvalGateStatus: approvalPackage.gateStatus,
+        approvedByRole: input.actorRole,
+        patientCommunicationAllowedAfterApproval: approvalPackage.patientCommunicationAllowedAfterApproval
+      },
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    businessWritePlan: {
+      entityType: "CarePlanVersion",
+      entityId: approvalPackage.versionPreview.versionId,
+      operation: "INSERT_IMMUTABLE_VERSION",
+      requiredAtomicWithAuditLog: true,
+      productionCommitDisabled: true,
+      writeSet: {
+        carePlanId: approvalPackage.versionPreview.carePlanId,
+        generatedFromDraftId: approvalPackage.versionPreview.generatedFromDraftId,
+        status: "APPROVED_AFTER_PHYSICIAN_SIGNOFF",
+        immutableAfterApproval: true,
+        effectiveDate: approvalPackage.versionPreview.effectiveDate,
+        changeSummaryCount: approvalPackage.versionPreview.changeSummary.length
+      },
+      forbiddenSideEffects: [
+        "NO_MEDICATION_CHANGE",
+        "NO_PRESCRIPTION",
+        "NO_PATIENT_MESSAGE",
+        "NO_EMR_WRITEBACK_OUTSIDE_TRANSACTION"
+      ]
+    }
+  });
 }
 
 export function previewReleasePatientHandoutAction(
@@ -176,6 +265,64 @@ export function previewReleasePatientHandoutAction(
     safetyBoundary:
       "Preview nay khong tu dong in/gui, khong them loi dan dieu tri tu do va khong thay the tu van/cap cuu."
   };
+}
+
+export function releaseApprovedPatientHandoutAction(
+  releasePackage: PatientEducationReleasePackage,
+  input: WorkflowActionInput,
+  existingLedger: AuditLedgerEntry[],
+  today = "2026-06-19"
+): PersistentWorkflowActionPlan {
+  const preview = previewReleasePatientHandoutAction(releasePackage, input, today);
+  return buildPersistentWorkflowActionPlan({
+    actionName: "releaseApprovedPatientHandout",
+    serverActionName: "releaseApprovedPatientHandoutAction",
+    preview,
+    existingLedger,
+    auditIntent: {
+      userId: null,
+      actor: input.actorName,
+      actorRole: input.actorRole,
+      actionType: "CREATE",
+      entityType: "PatientHandout",
+      entityId: releasePackage.packageId,
+      summary: "Persistent plan phat hanh PatientHandout da duyet; commit/gui that van bi tat cho den khi co DB transaction test.",
+      beforeData: {
+        patientId: releasePackage.patientId,
+        templateId: releasePackage.template.templateId,
+        releaseStatus: "NOT_RELEASED"
+      },
+      afterData: {
+        packageId: releasePackage.packageId,
+        templateId: releasePackage.template.templateId,
+        templateVersion: releasePackage.template.version,
+        releaseStatus: releasePackage.releaseStatus,
+        handoutSectionsCount: releasePackage.handoutSections.length,
+        patientMessageAllowed: releasePackage.patientMessageAllowed
+      },
+      createdAt: `${today}T00:00:00+07:00`
+    },
+    businessWritePlan: {
+      entityType: "PatientHandout",
+      entityId: releasePackage.packageId,
+      operation: "INSERT_APPROVED_HANDOUT",
+      requiredAtomicWithAuditLog: true,
+      productionCommitDisabled: true,
+      writeSet: {
+        patientId: releasePackage.patientId,
+        templateId: releasePackage.template.templateId,
+        templateVersion: releasePackage.template.version,
+        source: "APPROVED_TEMPLATE_ONLY",
+        status: "READY_TO_PRINT_APPROVED_HANDOUT"
+      },
+      forbiddenSideEffects: [
+        "NO_FREE_TEXT_TREATMENT_INSTRUCTION",
+        "NO_AUTOMATIC_PRINT",
+        "NO_AUTOMATIC_PATIENT_MESSAGE",
+        "NO_EMR_WRITEBACK_OUTSIDE_TRANSACTION"
+      ]
+    }
+  });
 }
 
 export function previewClaimOverdueFollowUpTaskAction(
@@ -536,6 +683,68 @@ export function previewInviteUserAction(
 
 function authorizeWorkflowAction(input: WorkflowActionInput, permission: Permission): GuardDecision {
   return authorizeBackendAction(input.accessContext, permission, input.resourceScope);
+}
+
+function buildPersistentWorkflowActionPlan(input: {
+  actionName: PersistentWorkflowActionPlan["actionName"];
+  serverActionName: PersistentWorkflowActionPlan["serverActionName"];
+  preview: WorkflowActionPreview;
+  existingLedger: AuditLedgerEntry[];
+  auditIntent: Parameters<typeof buildPersistentAuditWritePlan>[1];
+  businessWritePlan: PersistentBusinessWritePlan;
+}): PersistentWorkflowActionPlan {
+  if (!input.preview.allowed) {
+    return {
+      actionName: input.actionName,
+      serverActionName: input.serverActionName,
+      status: "BLOCKED",
+      allowed: false,
+      persistenceMode: "PERSISTENT_PLAN_NOT_COMMITTED",
+      preview: input.preview,
+      auditWritePlan: null,
+      auditValidation: {
+        valid: false,
+        reason: "Preview gates blocked; persistent write plan was not built.",
+        blockedReasons: input.preview.blockedReasons
+      },
+      businessWritePlan: null,
+      blockedReasons: input.preview.blockedReasons,
+      transactionContract: persistentTransactionContract(),
+      safetyBoundary:
+        "Khong ghi DB khi preview gate bi chan; khong co audit/business write rieng le."
+    };
+  }
+
+  const auditWritePlan = buildPersistentAuditWritePlan(input.existingLedger, input.auditIntent);
+  const auditValidation = validatePersistentAuditWritePlan(input.existingLedger, auditWritePlan);
+  const blockedReasons = auditValidation.valid ? [] : auditValidation.blockedReasons;
+  const allowed = blockedReasons.length === 0;
+
+  return {
+    actionName: input.actionName,
+    serverActionName: input.serverActionName,
+    status: allowed ? "READY_FOR_ATOMIC_COMMIT_WHEN_DB_WIRING_EXISTS" : "BLOCKED",
+    allowed,
+    persistenceMode: "PERSISTENT_PLAN_NOT_COMMITTED",
+    preview: input.preview,
+    auditWritePlan,
+    auditValidation,
+    businessWritePlan: allowed ? input.businessWritePlan : null,
+    blockedReasons,
+    transactionContract: persistentTransactionContract(),
+    safetyBoundary:
+      "Persistent plan nay chi mo ta write set; production commit van disabled cho den khi AuditLog insert va business write duoc test atomically."
+  };
+}
+
+function persistentTransactionContract(): string[] {
+  return [
+    "Start one database transaction and re-read all source rows with the same organization/site scope.",
+    "Apply exactly one business write and exactly one AuditLog insert inside that transaction.",
+    "Validate AuditLog sequence, previousHash and eventHash immediately before commit.",
+    "Rollback both business write and AuditLog insert if either side fails.",
+    "Do not emit patient messages, prescriptions, medication changes or external EMR writes from these actions."
+  ];
 }
 
 function requireRole(actorRole: Role, allowedRoles: Role[], message: string): string[] {

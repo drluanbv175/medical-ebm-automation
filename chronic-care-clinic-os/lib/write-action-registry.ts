@@ -32,7 +32,7 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "care_plan.approve",
     "PHYSICIAN",
     "approveCarePlanVersionAction",
-    "Da co workflow action contract, RBAC guard va audit preview; chua ghi DB."
+    "Da co workflow action contract, RBAC guard, audit preview va persistent audit write plan; production commit van disabled."
   ),
   guarded(
     "overdue-claim-call-task",
@@ -77,7 +77,7 @@ export const writeActionRegistry: WriteActionRegistryItem[] = [
     "handout.approve",
     "PHYSICIAN",
     "releaseApprovedPatientHandoutAction",
-    "Da co workflow action contract, RBAC guard, consent/template gate va audit preview; chua ghi DB."
+    "Da co workflow action contract, RBAC guard, consent/template gate va persistent audit write plan; production commit/gui van disabled."
   ),
   guarded(
     "patient-register",

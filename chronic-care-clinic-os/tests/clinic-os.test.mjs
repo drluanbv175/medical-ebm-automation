@@ -382,6 +382,8 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   const patientsPage = read("app/patients/page.tsx");
   assert.match(actions, /previewApproveCarePlanAction/);
   assert.match(actions, /previewReleasePatientHandoutAction/);
+  assert.match(actions, /export function approveCarePlanVersionAction/);
+  assert.match(actions, /export function releaseApprovedPatientHandoutAction/);
   assert.match(actions, /previewClaimOverdueFollowUpTaskAction/);
   assert.match(actions, /previewCreateCareAppointmentAction/);
   assert.match(actions, /previewCreateCarePlanDraftAction/);
@@ -391,6 +393,14 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   assert.match(actions, /previewInviteUserAction/);
   assert.match(actions, /approveCarePlanVersionAction/);
   assert.match(actions, /releaseApprovedPatientHandoutAction/);
+  assert.match(actions, /buildPersistentAuditWritePlan/);
+  assert.match(actions, /validatePersistentAuditWritePlan/);
+  assert.match(actions, /PERSISTENT_PLAN_NOT_COMMITTED/);
+  assert.match(actions, /READY_FOR_ATOMIC_COMMIT_WHEN_DB_WIRING_EXISTS/);
+  assert.match(actions, /requiredAtomicWithAuditLog: true/);
+  assert.match(actions, /productionCommitDisabled: true/);
+  assert.match(actions, /Rollback both business write and AuditLog insert if either side fails/);
+  assert.match(actions, /Do not emit patient messages, prescriptions, medication changes or external EMR writes/);
   assert.match(actions, /claimOverdueFollowUpTaskAction/);
   assert.match(actions, /createCareAppointmentAction/);
   assert.match(actions, /createCarePlanDraftAction/);
@@ -411,6 +421,8 @@ test("workflow action contracts stay preview-only until persistence exists", () 
   assert.match(actions, /Create immutable CarePlanVersion and append-only AuditLog in one transaction/);
   assert.match(actions, /Do not send patient messages automatically/);
   assert.match(actions, /Never create prescriptions, medication changes or treatment messages/);
+  assert.match(actions, /NO_MEDICATION_CHANGE/);
+  assert.match(actions, /NO_AUTOMATIC_PATIENT_MESSAGE/);
   assert.match(actions, /Require separate EducationMaterialApproval before template can be printed or sent/);
   assert.match(actions, /Require signed consent before any patient communication/);
   assert.match(actions, /Do not create diagnoses, medications, care plans, lab orders or treatment messages from registration/);
