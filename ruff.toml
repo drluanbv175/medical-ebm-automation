@@ -7,7 +7,14 @@ extend-exclude = ["data", ".venv", "venv", "out", ".claude", "templates"]
 
 [lint]
 # Bộ rule an toàn: lỗi cú pháp/logic (F), pycodestyle (E,W), sắp xếp import (I).
-select = ["E", "F", "W", "I"]
+# FA102 (KHÔNG phải FA100 — đó chỉ là gợi ý style "Optional[X] có thể viết gọn
+# X | None", không phải bug): FA102 bắt ĐÚNG lớp lỗi cú pháp PEP604 "X | None"
+# dùng TRỰC TIẾP mà thiếu "from __future__ import annotations" — với
+# target-version=py39 ở trên, rule này bắt đúng lỗi làm crash thật "TypeError:
+# unsupported operand type(s) for |" trên máy còn chạy Python 3.9 (phát hiện
+# 2026-07-15 khi 1 phiên khác viết code giả định Python 3.10+ mà không kiểm tra
+# máy Mac vẫn 3.9.6 — 2 file, đã vá, giờ rule này chặn tái diễn).
+select = ["E", "F", "W", "I", "FA102"]
 
 [lint.per-file-ignores]
 # File DỮ LIỆU/NỘI DUNG: chuỗi lâm sàng (mô tả, nguồn trích dẫn) & fixture dài là

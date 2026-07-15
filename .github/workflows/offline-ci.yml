@@ -42,7 +42,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest
+          pip install pytest ruff
+
+      - name: Lint (ruff) — bao gồm FA102 chặn cú pháp PEP604 vỡ trên Python 3.9
+        run: ruff check .
 
       - name: Run hermetic offline tests (network blocked)
         run: bash scripts/run_offline_ci.sh
