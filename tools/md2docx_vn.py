@@ -66,6 +66,10 @@ JOURNAL_PROFILES: Dict[str, Dict] = {
         "page_width_cm": 21.0, "page_height_cm": 29.7,
         "left_margin_cm": 2.54, "right_margin_cm": 2.54,
         "top_margin_cm": 2.54, "bottom_margin_cm": 2.54,
+        # Không trường nào của hồ sơ này được xác minh thật với 1 trang hướng dẫn
+        # tác giả cụ thể (xem source_note) -> verified_fields RỖNG cố ý, để
+        # _needs_verification_warning() luôn chèn cảnh báo khi hồ sơ này được áp.
+        "verified_fields": frozenset(),
         "source_note": "Hồ sơ VÍ DỤ tổng hợp quy ước phổ biến của tạp chí y khoa Việt Nam (A4, "
                        "Times New Roman, cỡ chữ ≥12, cách dòng 1.5, lề 'Normal' ~2.54cm) — CHƯA "
                        "xác minh riêng với 1 trang hướng dẫn tác giả cụ thể. BẮT BUỘC bác sĩ đối "
@@ -79,6 +83,10 @@ JOURNAL_PROFILES: Dict[str, Dict] = {
         "page_width_cm": 21.0, "page_height_cm": 29.7,
         "left_margin_cm": 2.54, "right_margin_cm": 2.54,
         "top_margin_cm": 2.54, "bottom_margin_cm": 2.54,
+        # CHỈ 2 trường này xác minh THẬT qua tìm kiếm hướng dẫn tác giả BMJ Open
+        # 2026-07-15 (xem source_note) — font/lề/khổ trang vẫn là quy ước chung,
+        # CHƯA xác minh riêng, nên KHÔNG liệt vào verified_fields.
+        "verified_fields": frozenset({"body_pt", "body_line_spacing"}),
         "source_note": "Cỡ chữ 12pt + cách dòng đôi XÁC MINH qua hướng dẫn tác giả BMJ Open "
                        "2026-07-15 ('standard formatting: 12-point font, double-spaced', "
                        "bmjopen.bmj.com/pages/authors — tham chiếu qua tìm kiếm do trang chặn "
@@ -89,6 +97,30 @@ JOURNAL_PROFILES: Dict[str, Dict] = {
                        "chấp nhận) — vẫn dùng Vancouver mặc định của hệ này.",
     },
 }
+
+# Các trường định dạng được xét khi quyết định có cần cảnh báo "CẦN XÁC MINH" hay
+# không (vá 2026-07-15, đợt 2 — chèn cảnh báo NGAY TRONG NỘI DUNG .docx). Nếu bất
+# kỳ trường nào trong danh sách này KHÔNG có mặt trong "verified_fields" của hồ sơ
+# đang áp, tài liệu xuất ra phải mang cảnh báo — thà cảnh báo thừa còn hơn im lặng
+# để bác sĩ nộp bản thảo theo số liệu chưa kiểm chứng.
+_JOURNAL_FORMAT_FIELDS = (
+    "font", "body_pt", "body_line_spacing",
+    "page_width_cm", "page_height_cm",
+    "left_margin_cm", "right_margin_cm", "top_margin_cm", "bottom_margin_cm",
+)
+
+
+def _needs_verification_warning(profile: Optional[Dict]) -> bool:
+    """True nếu hồ sơ tạp chí đang áp có ÍT NHẤT 1 trường định dạng chưa được
+    đánh dấu xác minh thật (verified_fields) -> markdown_to_docx() phải chèn
+    đoạn cảnh báo đỏ/đậm ở đầu nội dung .docx. profile=None (không áp hồ sơ
+    tạp chí nào, tức dùng _DEFAULT_PROFILE) -> False, không cảnh báo.
+    Thiếu key "verified_fields" -> coi như RỖNG (fail-safe: cảnh báo thừa còn
+    hơn bỏ sót)."""
+    if not profile:
+        return False
+    verified = profile.get("verified_fields", frozenset())
+    return any(f not in verified for f in _JOURNAL_FORMAT_FIELDS)
 
 
 def _normalize_match_text(s: str) -> str:
@@ -395,6 +427,24 @@ def _render_title_page(doc, tp: Dict):
     _page_break(doc)
 
 
+def _insert_journal_verification_warning(doc, profile: Dict) -> None:
+    """Chèn đoạn cảnh báo đỏ + đậm NGAY TRONG NỘI DUNG .docx (không chỉ log/
+    metadata) khi hồ sơ tạp chí đang áp có trường ví dụ/chưa xác minh riêng —
+    vá 2026-07-15 đợt 2. Dùng cùng màu đỏ đậm _FLAG_COLOR_URGENT đã có sẵn cho
+    nhãn [CẦN KẾT QUẢ THẬT...] để nhất quán mức khẩn cấp cao nhất."""
+    from docx.enum.text import WD_ALIGN_PARAGRAPH as A
+
+    label = profile.get("label") or profile.get("key") or "?"
+    msg = (
+        "[CẦN XÁC MINH TRƯỚC KHI NỘP] — Một số thông số định dạng của hồ sơ tạp chí "
+        f"'{label}' là ví dụ tham khảo, CHƯA được xác minh riêng với hướng dẫn tác giả "
+        "chính thức của tạp chí này. Vui lòng đối chiếu lại trước khi nộp bản thảo."
+    )
+    p = doc.add_paragraph()
+    _spacing(p, before=0, after=14, line=1.3, align=A.JUSTIFY)
+    _set_run_font(p.add_run(msg), bold=True, italic=True, color=_FLAG_COLOR_URGENT)
+
+
 def _init_document(title_page: Optional[Dict], profile: Optional[Dict] = None):
     """profile=None -> _DEFAULT_PROFILE (hành vi gốc, gáy trái rộng cho đóng bìa
     luận văn VN) — mọi caller cũ (gen_research_docx.py, G10) không đổi gì."""
@@ -441,7 +491,11 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
     title_page: dict tuỳ chọn (org_lines, doc_type, title, meta_lines, place_year).
     journal_profile: dict tuỳ chọn từ JOURNAL_PROFILES/resolve_journal_profile()
         (vá 2026-07-15) — None (mặc định) giữ NGUYÊN hành vi gốc (chuẩn luận văn
-        VN). Đổi font/cỡ chữ thân bài/cách dòng/lề/khổ trang theo hồ sơ.
+        VN). Đổi font/cỡ chữ thân bài/cách dòng/lề/khổ trang theo hồ sơ. Nếu hồ
+        sơ này có bất kỳ trường nào CHƯA nằm trong "verified_fields" (tức còn là
+        ví dụ/chưa xác minh riêng với hướng dẫn tác giả — xem
+        _needs_verification_warning()), tài liệu xuất ra sẽ có thêm 1 đoạn cảnh
+        báo đỏ/đậm "[CẦN XÁC MINH TRƯỚC KHI NỘP]" ngay đầu nội dung.
     """
     from docx.enum.text import WD_ALIGN_PARAGRAPH as A
     from docx.oxml import OxmlElement
@@ -449,6 +503,8 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
 
     out_path = Path(out_path)
     doc = _init_document(title_page, profile=journal_profile)
+    if _needs_verification_warning(journal_profile):
+        _insert_journal_verification_warning(doc, journal_profile)
     body_line = _active_profile["body_line_spacing"]
     lines = md_text.split("\n")
 

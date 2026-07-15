@@ -131,6 +131,112 @@ class TestJournalProfileFormattingReal:
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# Cảnh báo "[CẦN XÁC MINH TRƯỚC KHI NỘP]" trong NỘI DUNG .docx — vá 2026-07-15
+# đợt 2 (chỉ 2 số của BMJ Open xác minh thật; mọi trường khác — kể cả phần lớn
+# hồ sơ Tạp chí Y học Việt Nam — vẫn là "hồ sơ VÍ DỤ" chưa xác minh riêng).
+# ════════════════════════════════════════════════════════════════════════════
+
+_WARNING_TEXT = "CẦN XÁC MINH TRƯỚC KHI NỘP"
+
+
+class TestJournalVerificationWarningFunction:
+    """Kiểm trực tiếp _needs_verification_warning() — logic quyết định có cảnh
+    báo hay không, tách khỏi việc sinh .docx thật."""
+
+    def test_no_profile_no_warning(self):
+        assert M2D._needs_verification_warning(None) is False
+
+    def test_tap_chi_y_hoc_viet_nam_needs_warning(self):
+        """Không trường nào của hồ sơ này được xác minh riêng -> luôn cảnh báo."""
+        profile = M2D.JOURNAL_PROFILES["tap_chi_y_hoc_viet_nam"]
+        assert M2D._needs_verification_warning(profile) is True
+
+    def test_bmj_open_still_needs_warning_despite_2_verified_fields(self):
+        """BMJ Open chỉ xác minh thật body_pt + body_line_spacing; font/lề/khổ
+        trang còn lại vẫn là quy ước chung chưa xác minh riêng -> vẫn cảnh báo."""
+        profile = M2D.JOURNAL_PROFILES["bmj_open"]
+        assert M2D._needs_verification_warning(profile) is True
+
+    def test_fully_verified_profile_no_warning(self):
+        """Hồ sơ GIẢ ĐỊNH đã xác minh MỌI trường định dạng -> không cảnh báo
+        (tránh gây nhiễu không cần thiết khi mọi thứ đã được kiểm chứng)."""
+        fully_verified = dict(M2D.JOURNAL_PROFILES["bmj_open"])
+        fully_verified["verified_fields"] = frozenset(M2D._JOURNAL_FORMAT_FIELDS)
+        assert M2D._needs_verification_warning(fully_verified) is False
+
+    def test_missing_verified_fields_key_treated_as_unverified(self):
+        """Hồ sơ không khai báo verified_fields -> coi như RỖNG (fail-safe: thà
+        cảnh báo thừa còn hơn bỏ sót)."""
+        profile_no_key = {k: v for k, v in M2D.JOURNAL_PROFILES["bmj_open"].items()
+                          if k != "verified_fields"}
+        assert M2D._needs_verification_warning(profile_no_key) is True
+
+
+class TestJournalVerificationWarningInDocxContent:
+    """Kiểm đoạn cảnh báo THẬT xuất hiện trong document.xml (nội dung .docx),
+    không chỉ trong metadata/log — theo đúng yêu cầu chèn NGAY TRONG NỘI DUNG."""
+
+    _MD = "# Tiêu đề\n\nĐoạn thân bài kiểm tra định dạng.\n"
+
+    def test_default_profile_none_shows_no_warning(self, tmp_path):
+        out = tmp_path / "default.docx"
+        M2D.markdown_to_docx(self._MD, out)
+        assert _WARNING_TEXT not in _xml(out)
+
+    def test_unknown_journal_resolves_to_none_shows_no_warning(self, tmp_path):
+        out = tmp_path / "unknown.docx"
+        M2D.markdown_to_docx(self._MD, out,
+                             journal_profile=M2D.resolve_journal_profile("???"))
+        assert _WARNING_TEXT not in _xml(out)
+
+    def test_tap_chi_y_hoc_viet_nam_profile_shows_warning_with_journal_name(self, tmp_path):
+        out = tmp_path / "vn.docx"
+        profile = M2D.resolve_journal_profile("Tạp chí Y học Việt Nam")
+        M2D.markdown_to_docx(self._MD, out, journal_profile=profile)
+        xml = _xml(out)
+        assert _WARNING_TEXT in xml
+        assert "Tạp chí Y học Việt Nam" in xml
+        assert "CHƯA được xác minh riêng" in xml
+
+    def test_bmj_open_profile_shows_warning_despite_partial_verification(self, tmp_path):
+        out = tmp_path / "bmj.docx"
+        profile = M2D.resolve_journal_profile("BMJ Open")
+        M2D.markdown_to_docx(self._MD, out, journal_profile=profile)
+        xml = _xml(out)
+        assert _WARNING_TEXT in xml
+        assert "BMJ Open" in xml
+
+    def test_fully_verified_profile_shows_no_warning(self, tmp_path):
+        out = tmp_path / "verified.docx"
+        fully_verified = dict(M2D.JOURNAL_PROFILES["bmj_open"])
+        fully_verified["verified_fields"] = frozenset(M2D._JOURNAL_FORMAT_FIELDS)
+        M2D.markdown_to_docx(self._MD, out, journal_profile=fully_verified)
+        assert _WARNING_TEXT not in _xml(out)
+
+    def test_warning_appears_near_top_of_content_before_body_paragraph(self, tmp_path):
+        out = tmp_path / "position.docx"
+        profile = M2D.resolve_journal_profile("Tạp chí Y học Việt Nam")
+        M2D.markdown_to_docx(self._MD, out, journal_profile=profile)
+        xml = _xml(out)
+        idx_warning = xml.find(_WARNING_TEXT)
+        idx_body = xml.find("Đoạn thân bài kiểm tra")
+        assert idx_warning != -1 and idx_body != -1
+        assert idx_warning < idx_body, "Cảnh báo phải xuất hiện TRƯỚC đoạn thân bài"
+
+    def test_warning_rendered_bold_with_urgent_red_color(self, tmp_path):
+        """Dùng cùng màu đỏ đậm _FLAG_COLOR_URGENT đã có sẵn cho [CẦN KẾT QUẢ
+        THẬT...] để nhất quán mức khẩn cấp cao nhất trong tài liệu."""
+        out = tmp_path / "color.docx"
+        profile = M2D.resolve_journal_profile("BMJ Open")
+        M2D.markdown_to_docx(self._MD, out, journal_profile=profile)
+        xml = _xml(out).upper()
+        idx = xml.find(_WARNING_TEXT)
+        context = xml[max(0, idx - 400):idx]
+        assert "CC3300" in context, "Cảnh báo phải dùng màu đỏ đậm khẩn cấp nhất"
+        assert '<W:B/>' in context or '<W:B ' in context, "Cảnh báo phải in đậm"
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # export_docx_g7() — tích hợp thật, không còn monospace-table hack
 # ════════════════════════════════════════════════════════════════════════════
 
@@ -182,3 +288,16 @@ class TestExportDocxG7Integration:
         assert "TEST-G7-COVER" in xml
         assert "BẢN THẢO IMRAD SKELETON" in xml
         assert "Cần bác sĩ kiểm chứng" in xml
+
+    def test_no_journal_produces_no_verification_warning(self, tmp_path):
+        path = export_docx_g7(_SAMPLE_MANUSCRIPT_MD, "TEST-G7-NOWARN", tmp_path)
+        assert "CẦN XÁC MINH TRƯỚC KHI NỘP" not in _xml(path)
+
+    def test_known_journal_with_unverified_fields_shows_verification_warning(self, tmp_path):
+        """target_journal="BMJ Open" áp hồ sơ chỉ xác minh 2/9 trường -> cảnh báo
+        phải xuất hiện trong nội dung .docx thật xuất bởi export_docx_g7()."""
+        path = export_docx_g7(_SAMPLE_MANUSCRIPT_MD, "TEST-G7-WARN", tmp_path,
+                              target_journal="BMJ Open")
+        xml = _xml(path)
+        assert "CẦN XÁC MINH TRƯỚC KHI NỘP" in xml
+        assert "BMJ Open" in xml
