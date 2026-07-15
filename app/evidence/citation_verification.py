@@ -1,5 +1,13 @@
 """Citation verification V7 Phase 2A.
 
+CẢNH BÁO: đây KHÔNG PHẢI cơ chế retraction-check đang được dùng thật trong pipeline
+G0-G9. retraction_monitor.detect_retraction() chỉ đọc field 'retracted'/'withdrawn'
+đã có sẵn trong metadata truyền vào — KHÔNG tự tra cứu gì. Cơ chế THẬT (tự tra cứu
+PubMed E-utilities sống) nằm ở app/sources/pubmed.py::PubMedClient.check_retraction_status(),
+dùng bởi tools/check_citation_retraction.py + cổng A12 trong tools/run_g10_assemble.py.
+Module này là 1 trong 5 nhánh mồ côi đã ghi nhận trong CLAUDE.md — không xoá vì có thể
+còn dùng nội bộ/thử nghiệm, nhưng KHÔNG dùng làm cơ chế retraction-check chính thức.
+
 Verifier này nhận metadata từ adapter nguồn hiện hữu hoặc stub test. Khi source không
 khả dụng, trạng thái luôn bảo thủ (`SOURCE_UNAVAILABLE`), không tự suy đoán verified.
 """
