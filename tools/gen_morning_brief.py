@@ -18,12 +18,22 @@ SỬ DỤNG:
 
 import argparse
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 
 import yaml
 
 BASE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE))
+
+from app.services.knowledge_pack_schema import (  # noqa: E402
+    normalize_drug_safety_rules,
+    normalize_recommendations,
+    normalize_red_flags,
+)
+from app.utils.console import configure_unicode_console  # noqa: E402
+
 PACKS_DIR = BASE / "knowledge-packs"
 RESULTS_DIR = BASE / "results"
 EXPORTS_DIR = BASE / "exports" / "morning_brief"
@@ -67,7 +77,8 @@ def load_yaml_safe(path: Path) -> dict:
     if not path.exists():
         return {}
     try:
-        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        return data if isinstance(data, dict) else {}
     except Exception:
         return {}
 
@@ -75,10 +86,10 @@ def load_yaml_safe(path: Path) -> dict:
 def get_key_recommendations(pack_version_dir: Path, max_items: int = 3) -> list[str]:
     """Trích 3 khuyến cáo quan trọng nhất từ 05_recommendations.yaml."""
     data = load_yaml_safe(pack_version_dir / "05_recommendations.yaml")
-    recs = data.get("recommendations", [])
+    recs = normalize_recommendations(data)
     items = []
     for r in recs[:max_items]:
-        text = r.get("recommendation_text_draft", "")
+        text = r.get("text", "")
         if text:
             # Lấy dòng đầu tiên không rỗng
             first_line = next((ln.strip() for ln in text.splitlines() if ln.strip()), "")
@@ -90,21 +101,22 @@ def get_key_recommendations(pack_version_dir: Path, max_items: int = 3) -> list[
 def get_red_flags(pack_version_dir: Path) -> list[str]:
     """Trích danh sách cờ đỏ cần nhớ."""
     data = load_yaml_safe(pack_version_dir / "03_red_flags.yaml")
-    flags = data.get("red_flags", [])
+    flags = normalize_red_flags(data)
     return [f.get("name", "") for f in flags if f.get("priority") in ("CRITICAL", "HIGH")]
 
 
 def get_drug_alerts(pack_version_dir: Path) -> list[str]:
     """Trích cảnh báo thuốc quan trọng."""
     data = load_yaml_safe(pack_version_dir / "06_drug_safety_rules.yaml")
-    rules = data.get("drug_safety_rules", [])
+    rules = normalize_drug_safety_rules(data)
     alerts = []
     for r in rules:
-        if r.get("priority") == "HIGH":
+        if r.get("priority") in {"CRITICAL", "HIGH"}:
             drug = r.get("drug", "")
-            cond = r.get("condition", "")
+            cond = r.get("condition") or r.get("description", "")
             if drug and cond:
-                alerts.append(f"{drug} — {cond}")
+                suffix = "…" if len(cond) > 90 else ""
+                alerts.append(f"{drug} — {cond[:90]}{suffix}")
     return alerts[:2]  # Tối đa 2 cảnh báo
 
 
@@ -207,7 +219,12 @@ def generate_brief(target_pack: str = None, preview: bool = False) -> str:
     total_possible = len(PACK_PRIORITY)
     lines.append("## 📊 TỔNG QUAN HÔM NAY")
     lines.append(f"- Knowledge packs hoạt động: **{len(available_packs)}/{total_possible}**")
-    lines.append(f"- Bệnh lý chưa có pack: {', '.join([PACK_LABELS.get(p, p) for p in PACK_PRIORITY if p not in available_packs]) or 'Không'}")
+    missing_pack_labels = [
+        PACK_LABELS.get(pack_id, pack_id)
+        for pack_id in PACK_PRIORITY
+        if pack_id not in available_packs
+    ]
+    lines.append(f"- Bệnh lý chưa có pack: {', '.join(missing_pack_labels) or 'Không'}")
     lines.append("")
 
     # Nội dung từng pack
@@ -237,6 +254,7 @@ def generate_brief(target_pack: str = None, preview: bool = False) -> str:
 
 
 def main():
+    configure_unicode_console()
     parser = argparse.ArgumentParser(description="Tạo bản tin EBM buổi sáng")
     parser.add_argument("--preview", action="store_true", help="Chỉ in ra màn hình, không lưu file")
     parser.add_argument("--pack", default=None, help="Chỉ hiển thị một pack cụ thể")

@@ -60,11 +60,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gate_contract as GC
 
+from app.utils.console import configure_unicode_console
 from runtime.approval_ledger import ApprovalLedger
 from runtime.schemas import ApprovalDecisionEnum
 
 
 def main() -> int:
+    configure_unicode_console()
     ap = argparse.ArgumentParser(description=__doc__.split("Dùng:")[0])
     ap.add_argument("--study", required=True, help="Tên đề tài (khớp thư mục exports/<tên>)")
     ap.add_argument("--gate", required=True, choices=["G2", "G4", "G5", "G8", "G9", "GATE_A", "GATE_B"])

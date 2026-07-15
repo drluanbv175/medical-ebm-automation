@@ -1,8 +1,10 @@
 """Cấu hình test: dùng database SQLite tạm, bật mock sources, không gọi mạng thật."""
 import os
+import subprocess
 import tempfile
 
 os.environ.setdefault("USE_MOCK_SOURCES", "true")
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 # AN TOÀN: tắt mọi kênh gửi cảnh báo khi chạy test để KHÔNG BAO GIỜ gửi email/webhook thật.
 os.environ["ENABLE_EMAIL_ALERTS"] = "false"
 os.environ["SMTP_HOST"] = ""
@@ -42,6 +44,25 @@ if OFFLINE_CI:
 import pytest  # noqa: E402
 
 from app.database import init_db  # noqa: E402
+
+_subprocess_run = subprocess.run
+
+
+def _run_utf8_text_default(*args, **kwargs):
+    """Decode subprocess text output as UTF-8 in tests.
+
+    Many CLI scripts intentionally print Vietnamese gate messages. Windows test
+    processes default to cp1252, so `text=True` would otherwise decode UTF-8
+    child output incorrectly or crash. Keep this in the harness instead of
+    weakening production messages to ASCII.
+    """
+    if (kwargs.get("text") or kwargs.get("universal_newlines")) and "encoding" not in kwargs:
+        kwargs["encoding"] = "utf-8"
+        kwargs.setdefault("errors", "replace")
+    return _subprocess_run(*args, **kwargs)
+
+
+subprocess.run = _run_utf8_text_default
 
 
 @pytest.fixture(scope="session", autouse=True)

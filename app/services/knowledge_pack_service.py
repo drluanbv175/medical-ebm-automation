@@ -19,6 +19,12 @@ from typing import Dict, List, Optional
 
 import yaml
 
+from app.services.knowledge_pack_schema import (
+    normalize_red_flags,
+    validate_pack_version,
+)
+from app.utils.console import configure_unicode_console
+
 logger = logging.getLogger(__name__)
 
 # ── Đường dẫn mặc định ────────────────────────────────────────────────────────
@@ -136,13 +142,13 @@ def _load_pack_full(pack_dir: Path, version_dir: str = "2026.1-draft") -> Knowle
 
     # 03_red_flags.yaml
     rf_data = _load_yaml_safe(version_path / "03_red_flags.yaml")
-    for rf in rf_data.get("red_flags", []):
+    for rf in normalize_red_flags(rf_data):
         try:
             pack.red_flags.append(RedFlag(
-                red_flag_id=rf.get("red_flag_id", ""),
-                label=rf.get("label", ""),
-                gate=rf.get("gate", ""),
-                referral_level=rf.get("referral_level", ""),
+                red_flag_id=rf.get("id", ""),
+                label=rf.get("name", ""),
+                gate=rf.get("action", ""),
+                referral_level=rf.get("priority", ""),
             ))
         except Exception as exc:
             pack.load_errors.append(f"red_flag: {exc}")
@@ -329,6 +335,14 @@ class KnowledgePackService:
             ],
         }
 
+    def validate_all(self):
+        """Validate schema tất cả packs trong thư mục hiện tại."""
+        self._ensure_loaded()
+        return [
+            validate_pack_version(self._packs_dir / pack_id, self._version)
+            for pack_id in sorted(self._packs)
+        ]
+
 
 # ── Singleton ─────────────────────────────────────────────────────────────────
 
@@ -358,6 +372,7 @@ def get_knowledge_pack_service(
 # ── CLI / quick check ──────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    configure_unicode_console()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
     svc = KnowledgePackService().load()
     report = svc.status_report()
