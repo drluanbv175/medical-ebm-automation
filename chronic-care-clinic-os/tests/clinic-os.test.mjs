@@ -59,6 +59,7 @@ test("supplemental architecture and security docs exist", () => {
     "MVP_01_DEMO_GUIDE.md",
     "MVP_01_LIMITATIONS.md",
     "PRODUCTION_BLOCKERS.md",
+    "PRODUCTION_GO_LIVE_RUNBOOK.md",
     "PATIENT_COMMUNICATION_POLICY.md",
     "CLINICAL_SAFETY_SIGNOFF_TEMPLATE.md",
     "DATA_PROTECTION_SIGNOFF_TEMPLATE.md"
@@ -619,15 +620,17 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(readiness, /summarizeProductionReadiness/);
   assert.match(readiness, /buildProductionReadinessReport/);
   assert.match(readiness, /repositoryControls/);
-  assert.match(readiness, /productionReady: false/);
+  assert.match(readiness, /PRODUCTION_READY/);
+  assert.match(readiness, /ProductionEvidencePackage/);
   for (const id of ["SEC-001", "DATA-001", "CLIN-001", "OPS-001", "AI-001"]) {
     assert.match(readiness, new RegExp(id), `${id} missing`);
   }
   assert.match(settings, /Production readiness/);
   assert.match(settings, /Open blockers/);
   assert.match(settings, /buildProductionReadinessReport/);
-  assert.match(settings, /openProductionBlockers/);
-  assert.match(route, /Response\.json\(buildProductionReadinessReport/);
+  assert.match(settings, /Release decision/);
+  assert.match(route, /loadProductionEvidencePackageFromEnv/);
+  assert.match(route, /buildProductionReadinessReport/);
   assert.match(route, /buildSecureHeaders/);
   assert.match(route, /Cache-Control/);
   assert.match(route, /no-store/);
@@ -635,6 +638,7 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(blockers, /lib\/production-readiness\.ts/);
   assert.match(typecheck, /app\/api\/admin\/production-readiness\/route\.ts/);
   assert.match(typecheck, /lib\/production-readiness\.ts/);
+  assert.match(typecheck, /lib\/production-evidence-loader\.ts/);
   assert.match(typecheck, /tests\/production-readiness\.behavior\.test\.ts/);
 });
 

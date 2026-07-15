@@ -1,11 +1,11 @@
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/Badge";
-import { buildProductionReadinessReport, openProductionBlockers } from "@/lib/production-readiness";
+import { buildProductionReadinessReport } from "@/lib/production-readiness";
 import { summarizeWriteActionRegistry, unsafeWriteActions, writeActionRegistry } from "@/lib/write-action-registry";
 
 export default function SettingsPage() {
   const productionReadiness = buildProductionReadinessReport();
-  const openBlockers = openProductionBlockers();
+  const openBlockers = productionReadiness.blockers.filter((item) => item.status === "OPEN");
   const writeSummary = summarizeWriteActionRegistry();
   const unsafeActions = unsafeWriteActions();
 
@@ -37,6 +37,12 @@ export default function SettingsPage() {
         <h2>Production readiness</h2>
         <p>
           Production ready: <StatusBadge>{String(productionReadiness.summary.productionReady)}</StatusBadge>
+        </p>
+        <p>
+          Release decision: <StatusBadge>{productionReadiness.releaseDecision.status}</StatusBadge>; valid evidence:
+          {" "}{productionReadiness.evidenceSummary.validEvidenceRecords} / {productionReadiness.summary.totalBlockers};
+          signoffs: {productionReadiness.evidenceSummary.validSignoffs} / {productionReadiness.evidenceSummary.requiredSignoffs};
+          findings: {productionReadiness.findings.length}.
         </p>
         <p>
           Open blockers: {productionReadiness.summary.openBlockers} / {productionReadiness.summary.totalBlockers};

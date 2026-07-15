@@ -27,6 +27,7 @@
     "lib/prisma-transaction-contract.ts",
     "lib/prisma-rollback-evidence.ts",
     "lib/production-readiness.ts",
+    "lib/production-evidence-loader.ts",
     "lib/runtime-hardening.ts",
     "lib/audit-ledger.ts",
     "lib/audit-storage-contract.ts",

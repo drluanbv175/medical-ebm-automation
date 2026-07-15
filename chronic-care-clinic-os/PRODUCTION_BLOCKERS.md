@@ -4,6 +4,8 @@ This system is not production-ready and must not be used with real patient data 
 
 Machine-readable readiness is tracked in `lib/production-readiness.ts`, exposed at `/api/admin/production-readiness`, and surfaced in Admin Settings. Automation and CI should consume that manifest instead of parsing this Markdown file.
 
+Production can be declared only by a valid evidence package loaded through `PRODUCTION_READINESS_EVIDENCE_PATH`. The package must clear all 24 blockers and include all five signoffs. See `PRODUCTION_GO_LIVE_RUNBOOK.md`.
+
 ## Security blockers
 
 - Backend RBAC not wired to every route/action.
