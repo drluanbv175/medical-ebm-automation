@@ -154,7 +154,7 @@ ERROR_ROUTING_TABLE: dict[str, tuple[ErrorSeverity, str]] = {
 # thấp hơn nhiều so an toàn lâm sàng trực tiếp, giữ như check định dạng độc lập).
 RCODE_TO_LESSON_CODE: dict[str, str] = {
     "R1":  "CIT-GHOST",
-    "R1b": "GAP-MISSING",
+    "R1b": "GAP-LABEL-WASH",
     "R2":  "SEC-PII",
     "R3":  "SEC-BYPASS",
     "R4":  "GRD-SELF",
