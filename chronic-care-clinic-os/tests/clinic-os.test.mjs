@@ -218,7 +218,9 @@ test("automation rules define the 12 required core automations", () => {
 
 test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
-  assert.match(read("package.json"), /"typecheck:app": "tsc -p tsconfig\.check\.json --noEmit"/);
+  assert.match(read("package.json"), /"test": "python scripts\/run_node_tests\.py"/);
+  assert.match(read("package.json"), /"typecheck:app": "python scripts\/typecheck_app\.py"/);
+  assert.match(read("scripts/node_runtime.py"), /codex-primary-runtime/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/audit\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/rules\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/settings\/page\.tsx/);
@@ -226,12 +228,15 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /app\/admin\/users\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/appointments\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/evidence\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/api\/evidence\/knowledge-pack\/route\.tsx?/);
   assert.match(read("tsconfig.check.json"), /app\/handouts\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/overdue\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/patients\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/programs\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-approval\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/care-plan-draft\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/evidence-integration\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/patient-education\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/workflow-actions\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
@@ -251,6 +256,28 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("../.gitattributes"), /\* text=auto eol=lf/);
   assert.match(read("../.gitignore"), /\*\*\/node_modules\//);
   assert.match(read(".gitignore"), /\.pnpm-store\//);
+});
+
+test("evidence bridge exposes read-only knowledge pack queue without unsafe automation", () => {
+  const integration = read("lib/evidence-integration.ts");
+  const route = read("app/api/evidence/knowledge-pack/route.ts");
+  const page = read("app/evidence/page.tsx");
+  const navigation = read("lib/navigation.ts");
+
+  assert.match(integration, /buildEvidenceBridgeSnapshot/);
+  assert.match(integration, /knowledge_pack_update_queue\.json/);
+  assert.match(integration, /review_only_no_auto_apply/);
+  assert.match(integration, /humanRequired/);
+  assert.match(integration, /autoApply/);
+  assert.match(integration, /no automatic diagnosis, prescribing, patient messaging or treatment change/);
+  assert.match(route, /Response\.json\(buildEvidenceBridgeSnapshot/);
+  assert.match(route, /Cache-Control/);
+  assert.match(page, /Knowledge pack review queue/);
+  assert.match(page, /Bac si duyet truoc/);
+  assert.match(page, /Khong tu chan doan, khong tu ke don/);
+  assert.match(navigation, /href: "\/evidence"/);
+  assert.doesNotMatch(integration, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
+  assert.doesNotMatch(page, /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing/i);
 });
 
 test("command center orchestrates care gaps without unsafe treatment automation", () => {

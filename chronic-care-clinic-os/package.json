@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test tests/*.test.mjs",
+    "test": "python scripts/run_node_tests.py",
     "typecheck:app": "python scripts/typecheck_app.py",
     "sync:check": "node scripts/sync-check.mjs",
     "check": "node --test tests/*.test.mjs && tsc -p tsconfig.check.json --noEmit && node scripts/sync-check.mjs",
