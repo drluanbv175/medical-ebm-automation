@@ -24,6 +24,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Persistent AuditLog write contract with sequence/previousHash/eventHash, insert-only policy and same-transaction business write requirement.
 - Persistent write plans for all guarded write actions now use the AuditLog write contract and define the atomic business write set; production commit remains disabled until database transaction tests exist.
 - In-memory transaction harness for guarded persistent plans now stages business write and AuditLog together, validates the audit hash chain, and has behavior tests for commit plus rollback at each injected failure point before a real database adapter is allowed.
+- Disabled Prisma transaction contract now defines the required same-transaction operations and rollback cases without importing Prisma or enabling production commits.
 - AuditLog hardening migration reviewed at `prisma/migrations/202606190001_audit_log_hash_chain_hardening/migration.sql`, with unique sequence/hash indexes, non-empty hash constraints, immutable-after-append constraint and UPDATE/DELETE blocking triggers.
 - Workflow action contracts now call RBAC/backend guard for role, permission and organization/site scope before any future write.
 - Write action registry and `/admin/settings` readiness view identify guarded preview actions, UI placeholders and production-blocked exports.
@@ -55,7 +56,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Backend RBAC is modeled and wired to workflow action contracts; write action registry has guarded-preview contracts for UI write actions and keeps production-blocked exports separate.
 - Audit immutability is documented, domain-guarded, hash-chain previewed and has a persistent write contract; it still needs real database migrations/server-action wiring.
 - Care plan version history is modeled but not wired to write workflow.
-- Care plan draft, approval package, education release package and workflow action contracts are deterministic and demo-data backed; all guarded write actions now have persistent write plans and an in-memory atomicity harness, while final approval/writeback still needs real database transaction wiring.
+- Care plan draft, approval package, education release package and workflow action contracts are deterministic and demo-data backed; all guarded write actions now have persistent write plans, an in-memory atomicity harness and a disabled Prisma adapter contract, while final approval/writeback still needs real database transaction wiring.
 - Rule/content approval workflow is modeled but not fully executable.
 
 ## Chua hoan thanh
@@ -66,7 +67,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Database backup/restore test.
 - A5 PDF generator and test.
 - API/server actions for vitals, medication reconciliation and remaining write paths not yet represented by guarded workflow contracts.
-- Real Prisma transaction adapter for guarded persistent plans, reusing the current rollback harness cases for AuditLog/business-write atomicity.
+- Real Prisma transaction adapter for guarded persistent plans, satisfying the current disabled adapter contract and rollback harness cases for AuditLog/business-write atomicity.
 - Real audit log persistence on every sensitive action.
 - Rate limiting, CSRF, secure headers and environment validation.
 - User acceptance testing and formal clinical/data protection signoff.

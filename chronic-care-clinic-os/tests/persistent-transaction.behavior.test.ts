@@ -7,6 +7,10 @@ import {
   type PersistentTransactionFailurePoint,
   type PersistentTransactionState
 } from "../lib/persistent-transaction";
+import {
+  buildPrismaTransactionContract,
+  validatePrismaTransactionContract
+} from "../lib/prisma-transaction-contract";
 import type { PersistentBusinessWritePlan, PersistentWorkflowActionPlan, WorkflowActionPreview } from "../lib/workflow-actions";
 
 const auditWritePlan = buildPersistentAuditWritePlan([], {
@@ -132,4 +136,20 @@ test("persistent transaction harness blocks plans that are missing audit or busi
   assert.equal(result.state.businessRecords.length, 0);
   assert.equal(result.state.auditLedger.length, 0);
   assert.deepEqual(result.trace, ["BLOCKED_BEFORE_TRANSACTION"]);
+});
+
+test("prisma transaction contract stays disabled until real rollback tests exist", () => {
+  const contract = buildPrismaTransactionContract(plan);
+
+  assert.equal(contract.adapter, "PRISMA_TRANSACTION_CONTRACT_ONLY");
+  assert.equal(contract.productionCommitDisabled, true);
+  assert.equal(contract.sameTransactionRequired, true);
+  assert.equal(contract.businessOperation, "INSERT_IMMUTABLE_VERSION");
+  assert.equal(contract.auditEntityType, "CarePlanVersion");
+  assert.deepEqual(validatePrismaTransactionContract(contract), []);
+  assert.ok(contract.blockedReasons.includes("Real Prisma adapter is not enabled until rollback tests run against a test database."));
+  assert.ok(contract.requiredOperations.includes("APPLY_EXACTLY_ONE_BUSINESS_WRITE"));
+  assert.ok(contract.requiredOperations.includes("INSERT_EXACTLY_ONE_AUDIT_LOG_ROW"));
+  assert.ok(contract.requiredRollbackCases.includes("FAIL_AFTER_BUSINESS_WRITE_BEFORE_AUDIT"));
+  assert.ok(contract.forbiddenAdapterBehaviors.includes("NO_AUDIT_LOG_UPDATE_OR_DELETE"));
 });

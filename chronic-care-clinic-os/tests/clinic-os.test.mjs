@@ -244,6 +244,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/patient-education\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/workflow-actions\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/persistent-transaction\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/prisma-transaction-contract\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/persistent-transaction\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-storage-contract\.ts/);
@@ -501,6 +502,7 @@ test("audit ledger is append-only and hash chained", () => {
 
 test("persistent transaction harness rolls back business and audit writes atomically", () => {
   const harness = read("lib/persistent-transaction.ts");
+  const prismaContract = read("lib/prisma-transaction-contract.ts");
   const behaviorTest = read("tests/persistent-transaction.behavior.test.ts");
   assert.match(harness, /runPersistentWorkflowTransactionHarness/);
   assert.match(harness, /PersistentTransactionFailurePoint/);
@@ -520,7 +522,15 @@ test("persistent transaction harness rolls back business and audit writes atomic
   assert.match(behaviorTest, /commits business and audit writes together/);
   assert.match(behaviorTest, /rolls back without mutating input state at every failure point/);
   assert.match(behaviorTest, /Missing AuditLog write plan/);
+  assert.match(prismaContract, /PRISMA_TRANSACTION_CONTRACT_ONLY/);
+  assert.match(prismaContract, /buildPrismaTransactionContract/);
+  assert.match(prismaContract, /validatePrismaTransactionContract/);
+  assert.match(prismaContract, /APPLY_EXACTLY_ONE_BUSINESS_WRITE/);
+  assert.match(prismaContract, /INSERT_EXACTLY_ONE_AUDIT_LOG_ROW/);
+  assert.match(prismaContract, /FAIL_AFTER_BUSINESS_WRITE_BEFORE_AUDIT/);
+  assert.match(prismaContract, /NO_AUDIT_LOG_UPDATE_OR_DELETE/);
   assert.doesNotMatch(harness, /prisma\.|fetch\(|sendMail|SMTP|UPDATE_AUDIT_LOG|DELETE_AUDIT_LOG/);
+  assert.doesNotMatch(prismaContract, /from ["']@prisma|new PrismaClient|prisma\./);
 });
 
 test("AuditLog migration hardens persistent hash-chain storage", () => {

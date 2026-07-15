@@ -23,6 +23,7 @@
     "lib/patient-education.ts",
     "lib/workflow-actions.ts",
     "lib/persistent-transaction.ts",
+    "lib/prisma-transaction-contract.ts",
     "lib/audit-ledger.ts",
     "lib/audit-storage-contract.ts",
     "lib/audit.ts",
