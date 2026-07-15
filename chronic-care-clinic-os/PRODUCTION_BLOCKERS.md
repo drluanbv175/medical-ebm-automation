@@ -9,11 +9,11 @@ Machine-readable readiness is tracked in `lib/production-readiness.ts`, exposed 
 - Backend RBAC not wired to every route/action.
 - Authentication/session/MFA not implemented for production.
 - Password hashing not implemented.
-- Rate limiting and CSRF controls not implemented.
-- Secure headers not verified.
-- Environment validation not implemented.
-- No dependency lockfile or vulnerability scan.
-- No PHI redaction logger.
+- Rate limiting and CSRF contract added, but not wired to every production write route.
+- Secure headers are configured in repo, but deployment header scan/signoff is still missing.
+- Environment validation contract added, but production deployment evidence/signoff is still missing.
+- Dependency lockfile exists, but vulnerability scan evidence is still missing.
+- PHI redaction logger contract added, but de-identified UAT persistence evidence/signoff is still missing.
 
 ## Data protection blockers
 

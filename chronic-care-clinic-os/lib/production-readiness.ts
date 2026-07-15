@@ -1,3 +1,5 @@
+import { runtimeHardeningControls, type RuntimeHardeningControlEvidence } from "./runtime-hardening";
+
 export type ProductionBlockerCategory = "security" | "data_protection" | "clinical_safety" | "operations" | "ai_governance";
 
 export type ProductionBlockerStatus = "OPEN" | "CLEARED";
@@ -25,6 +27,7 @@ export type ProductionReadinessReport = {
   generatedAt: string;
   summary: ProductionReadinessSummary;
   blockers: ProductionBlocker[];
+  repositoryControls: RuntimeHardeningControlEvidence[];
   requiredSignoffs: string[];
   safetyBoundary: string;
 };
@@ -96,6 +99,7 @@ export function buildProductionReadinessReport(
     generatedAt,
     summary: summarizeProductionReadiness(blockers),
     blockers,
+    repositoryControls: runtimeHardeningControls,
     requiredSignoffs: [
       "security_owner",
       "data_protection_owner",
