@@ -1145,6 +1145,32 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
             "body_md": body_md, "cps": cps}
 
 
+_ARTIFACT_PMID_INLINE_RE = re.compile(r'PMID\s*:?\s*(\d{7,8})', re.IGNORECASE)
+
+
+def _extract_pmids_from_artifact(text: str) -> set:
+    """Trích danh sách PMID mà artifact A12 nhắc tới, để đối chiếu với receipt
+    máy-kiểm (`A12_RETRACTION_RECEIPT.json`, ghi bởi `check_citation_retraction.py`).
+
+    CHỈ lấy (a) số ngay sau chữ "PMID" và (b) ô CUỐI của mỗi dòng bảng markdown
+    khi ô đó thuần 7-8 chữ số (đúng cột "PMID/DOI đã xác minh" theo mẫu module 4
+    của `kiem-chung-trich-dan.md`) — KHÔNG quét bừa mọi dãy 7-8 chữ số trong toàn
+    văn bản, tránh dính nhầm số nằm trong DOI (vd .../S0140-6736(10)60175-4) hay
+    cỡ mẫu/năm tháng."""
+    found = set(_ARTIFACT_PMID_INLINE_RE.findall(text))
+    for line in text.splitlines():
+        line = line.strip()
+        if not (line.startswith("|") and line.endswith("|")):
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if not cells:
+            continue
+        last = cells[-1]
+        if re.fullmatch(r"\d{7,8}", last):
+            found.add(last)
+    return found
+
+
 def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
     """Cổng A12 (kiem-chung-trich-dan) — trước 2026-07-15, run_g7_auto.py chỉ IN
     RA một dòng nhắc bác sĩ tự chạy agent kiểm trích dẫn (không gì ép buộc); đề
@@ -1157,6 +1183,19 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
     (phán đoán LLM đọc abstract/toàn văn, xem module M3 trong kiem-chung-trich-dan.md),
     không phải chữ ký con người, nên chỉ cần xác minh ARTIFACT tồn tại + "sạch"
     (không PARTIAL, không còn 🔴 chưa xử lý) — khớp đúng bản chất của bước này.
+
+    LÀM CỨNG (vá 2026-07-15, P1.1 lộ trình 7 ngày): trước bản vá này, kiểm tra
+    ở trên CHỈ tin vào một CHUỖI TEXT do agent tự gõ vào artifact ("KẾT QUẢ CỔNG
+    A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN") — không có gì bảo đảm agent thật sự đã
+    CHẠY `tools/check_citation_retraction.py` trước khi gõ dòng đó (agent có thể,
+    do lỗi chứ không cần cố ý, viết dòng xác nhận rồi quên/bỏ qua bước kiểm rút
+    bài thật). Nay đọc THÊM `exports/<study>/A12_RETRACTION_RECEIPT.json` — bằng
+    chứng máy-kiểm do CHÍNH `check_citation_retraction.py --study <study>` ghi ra
+    (không phải do agent gõ tay) — và đối chiếu với danh sách PMID artifact nêu:
+    thiếu receipt, receipt hỏng, `all_clean` != true, receipt bị sửa tay (hash
+    không khớp `pmids_checked`), hoặc artifact nhắc PMID chưa từng được kiểm
+    (không có trong receipt) đều bị CHẶN — dòng text "ĐÃ XÁC MINH" một mình
+    không còn đủ để qua cổng.
 
     Trả (ok, lý_do_chặn) — lý_do_chặn rỗng khi ok=True.
     """
@@ -1171,6 +1210,49 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
         return False, "artifact A12 ở trạng thái PARTIAL (connector PubMed/Crossref không sẵn lúc kiểm)"
     if "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN" not in text:
         return False, "artifact A12 chưa có dòng xác nhận sạch (còn 🔴 chưa xử lý hoặc chưa hoàn tất)"
+
+    # Từ đây trở xuống: artifact TỰ KHAI đã sạch — bắt buộc có bằng chứng máy-kiểm
+    # thật đứng sau lời khai đó (không chỉ tin chuỗi text agent tự ghi).
+    receipt_path = out_dir / "A12_RETRACTION_RECEIPT.json"
+    if not receipt_path.exists():
+        return False, (
+            "artifact A12 tự khai \"ĐÃ XÁC MINH\" nhưng THIẾU receipt máy-kiểm "
+            "A12_RETRACTION_RECEIPT.json — chưa thấy bằng chứng đã chạy thật "
+            "`python tools/check_citation_retraction.py --pmids <...> --study "
+            f"{study}` (dòng text agent tự gõ không đủ, xem kiem-chung-trich-dan.md mục 4b)"
+        )
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False, "receipt A12_RETRACTION_RECEIPT.json hỏng/không phải JSON hợp lệ"
+    if not isinstance(receipt, dict):
+        return False, "receipt A12_RETRACTION_RECEIPT.json không đúng cấu trúc (không phải object)"
+    if receipt.get("all_clean") is not True:
+        return False, (
+            "receipt máy-kiểm A12_RETRACTION_RECEIPT.json ghi all_clean=false (còn PMID "
+            "retracted/expression-of-concern/không xác minh được) — không khớp với dòng "
+            "\"ĐÃ XÁC MINH\" mà artifact A12 tự khai"
+        )
+    checked_pmids = receipt.get("pmids_checked")
+    if not isinstance(checked_pmids, list):
+        return False, "receipt A12_RETRACTION_RECEIPT.json thiếu/sai kiểu trường pmids_checked"
+    # Đối chiếu hash — chống receipt bị sửa tay (vd thêm PMID vào pmids_checked
+    # mà không thật sự kiểm) sau khi tool đã ghi.
+    import check_citation_retraction as CCR  # noqa: E402 (nạp trễ, tránh phụ thuộc vòng lúc import module)
+    expected_hash = CCR.pmids_hash([str(x) for x in checked_pmids])
+    if receipt.get("pmids_hash") != expected_hash:
+        return False, (
+            "receipt A12_RETRACTION_RECEIPT.json có pmids_hash không khớp với "
+            "pmids_checked (nghi bị sửa tay sau khi ghi) — không đủ tin cậy để qua cổng"
+        )
+    artifact_pmids = _extract_pmids_from_artifact(text)
+    checked_set = {str(x) for x in checked_pmids}
+    missing = sorted(artifact_pmids - checked_set)
+    if missing:
+        return False, (
+            "artifact A12 nhắc tới PMID chưa có trong receipt máy-kiểm (chưa được "
+            "`check_citation_retraction.py` kiểm rút bài thật): " + ", ".join(missing)
+        )
     return True, ""
 
 

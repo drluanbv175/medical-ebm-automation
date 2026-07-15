@@ -17,7 +17,11 @@ test_verified_identifiers_online.py — test offline dưới đây dùng lại �
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import os
+import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -211,6 +215,124 @@ class TestCliMain:
         monkeypatch.setattr(sys, "argv", ["check_citation_retraction.py", "--pmids", " , ,"])
         rc = CLI.main()
         assert rc == 1
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# Làm cứng cổng A12 (vá 2026-07-15, P1.1 lộ trình 7 ngày) — receipt máy-kiểm
+# `exports/<study>/A12_RETRACTION_RECEIPT.json`, đọc lại bởi
+# `tools/run_g10_assemble.py::citation_verification_ok`. Test dưới đây dọn thư
+# mục exports/<study>/ trước và sau mỗi ca (study name tiền tố PYTEST- không
+# trùng đề tài thật).
+# ════════════════════════════════════════════════════════════════════════════
+
+def _rm_study_dir(name: str) -> Path:
+    d = REPO_ROOT / "exports" / name
+    shutil.rmtree(d, ignore_errors=True)
+    return d
+
+
+class TestPmidsHash:
+    def test_matches_sha256_of_sorted_joined_pmids(self):
+        pmids = ["23456789", "9500320", "12345678"]
+        expected = hashlib.sha256(",".join(sorted(pmids)).encode("utf-8")).hexdigest()
+        assert CLI.pmids_hash(pmids) == expected
+
+    def test_order_independent(self):
+        assert CLI.pmids_hash(["1", "2", "3"]) == CLI.pmids_hash(["3", "1", "2"])
+
+    def test_different_lists_hash_differently(self):
+        assert CLI.pmids_hash(["1", "2"]) != CLI.pmids_hash(["1", "2", "3"])
+
+
+class TestWriteRetractionReceipt:
+    def test_writes_receipt_all_clean_true(self):
+        study = "PYTEST-CCR-RECEIPT-T1"
+        d = _rm_study_dir(study)
+        try:
+            path = CLI.write_retraction_receipt(study, ["28698191"], {"28698191": {"status": "ok"}})
+            assert path == d / "A12_RETRACTION_RECEIPT.json"
+            receipt = json.loads(path.read_text(encoding="utf-8"))
+            assert receipt["study"] == study
+            assert receipt["pmids_checked"] == ["28698191"]
+            assert receipt["all_clean"] is True
+            assert receipt["pmids_hash"] == CLI.pmids_hash(["28698191"])
+            assert receipt["results"]["28698191"]["status"] == "ok"
+            assert receipt.get("checked_at_utc")
+        finally:
+            _rm_study_dir(study)
+
+    def test_writes_receipt_all_clean_false_when_retracted_and_keeps_evidence(self):
+        """all_clean=false KHÔNG được xoá bằng chứng đã chạy — receipt vẫn phải
+        tồn tại trên đĩa dù kết quả xấu (đúng yêu cầu làm cứng cổng A12)."""
+        study = "PYTEST-CCR-RECEIPT-T2"
+        _rm_study_dir(study)
+        try:
+            results = {"9500320": {"status": "retracted",
+                                    "retraction_notice": {"pmid": "20137807", "citation": "Lancet 2010"}}}
+            path = CLI.write_retraction_receipt(study, ["9500320"], results)
+            receipt = json.loads(path.read_text(encoding="utf-8"))
+            assert receipt["all_clean"] is False
+            assert receipt["results"]["9500320"]["status"] == "retracted"
+            assert path.exists()
+        finally:
+            _rm_study_dir(study)
+
+    def test_missing_pmid_in_results_defaults_to_unresolved_and_marks_not_clean(self):
+        study = "PYTEST-CCR-RECEIPT-T3"
+        _rm_study_dir(study)
+        try:
+            path = CLI.write_retraction_receipt(study, ["11112222"], {})  # results rỗng
+            receipt = json.loads(path.read_text(encoding="utf-8"))
+            assert receipt["results"]["11112222"]["status"] == "unresolved"
+            assert receipt["all_clean"] is False
+        finally:
+            _rm_study_dir(study)
+
+    def test_sanitizes_study_name_for_directory(self):
+        study_raw = "KKB Hài Lòng 2026!!"
+        expected_dir_name = re.sub(r"[^\w\-]", "_", study_raw.strip().replace(" ", "-"))
+        d = REPO_ROOT / "exports" / expected_dir_name
+        shutil.rmtree(d, ignore_errors=True)
+        try:
+            path = CLI.write_retraction_receipt(study_raw, ["1"], {"1": {"status": "ok"}})
+            assert path.parent == d
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+
+
+class TestCliMainWritesReceiptWhenStudyPassed:
+    def test_receipt_written_and_json_stdout_still_pure(self, monkeypatch, capsys):
+        """--study không được phá định dạng --json (một số script downstream có
+        thể json.loads(toàn bộ stdout)) — thông báo ghi receipt phải ra stderr."""
+        study = "PYTEST-CCR-CLI-T1"
+        d = _rm_study_dir(study)
+        try:
+            fake_results = {"1": {"status": "ok"}}
+            monkeypatch.setattr(PubMedClient, "check_retraction_status", lambda self, pmids: fake_results)
+            monkeypatch.setattr(sys, "argv",
+                                 ["check_citation_retraction.py", "--pmids", "1", "--json", "--study", study])
+            rc = CLI.main()
+            captured = capsys.readouterr()
+            assert rc == 0
+            parsed = json.loads(captured.out)
+            assert parsed["1"]["status"] == "ok"
+            assert "receipt" in captured.err.lower()
+            receipt_path = d / "A12_RETRACTION_RECEIPT.json"
+            assert receipt_path.exists()
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            assert receipt["all_clean"] is True
+        finally:
+            _rm_study_dir(study)
+
+    def test_no_receipt_written_when_study_omitted(self, monkeypatch, capsys):
+        """Hành vi mặc định (không --study) phải KHÔNG đổi — tương thích ngược."""
+        monkeypatch.setattr(PubMedClient, "check_retraction_status",
+                             lambda self, pmids: {"1": {"status": "ok"}})
+        monkeypatch.setattr(sys, "argv", ["check_citation_retraction.py", "--pmids", "1"])
+        rc = CLI.main()
+        captured = capsys.readouterr()
+        assert rc == 0
+        assert "receipt" not in captured.err.lower()
 
 
 # ════════════════════════════════════════════════════════════════════════════

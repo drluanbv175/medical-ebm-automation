@@ -27,6 +27,7 @@ TOOLS_DIR = REPO_ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+import check_citation_retraction as CCR  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
 
@@ -80,7 +81,13 @@ def _write_ledger_approval(d: Path, gate_id: str, artifact_content: str, reviewe
 def _write_clean_citation_artifact(d: Path, study: str) -> None:
     """Seed artifact A12 SẠCH (đúng contract mục 4b của kiem-chung-trich-dan.md)
     — dùng trong các test KHÔNG chủ đích kiểm cổng A12, để cô lập đúng biến
-    (G8/G9) đang test."""
+    (G8/G9) đang test.
+
+    Vá 2026-07-15 (P1.1 — làm cứng cổng A12 bằng receipt máy-kiểm): kèm luôn
+    `A12_RETRACTION_RECEIPT.json` khớp PMID trong artifact — nếu không, các test
+    G8/G9 ở trên sẽ bị citation_verification_ok() chặn nhầm (vì artifact tự
+    khai "ĐÃ XÁC MINH" nhưng thiếu bằng chứng máy-kiểm), lệch mục tiêu cô lập
+    biến của các test đó."""
     (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
         "| # | Trích dẫn trong bài | Trạng thái | Ghi chú | PMID/DOI đã xác minh |\n"
         "|---|---|---|---|---|\n"
@@ -89,6 +96,27 @@ def _write_clean_citation_artifact(d: Path, study: str) -> None:
         "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴\n"
         "Cần bác sĩ kiểm chứng.\n",
         encoding="utf-8",
+    )
+    _write_matching_retraction_receipt(d, study, ["12345678"])
+
+
+def _write_matching_retraction_receipt(
+    d: Path, study: str, pmids: list[str], all_clean: bool = True
+) -> None:
+    """Ghi `A12_RETRACTION_RECEIPT.json` giả lập ĐÚNG format do
+    `check_citation_retraction.py::write_retraction_receipt` sinh ra, khớp
+    danh sách PMID truyền vào — dùng để test citation_verification_ok() mà
+    không cần gọi PubMed thật."""
+    receipt = {
+        "study": study,
+        "checked_at_utc": "2026-07-15T00:00:00+00:00",
+        "pmids_checked": sorted(pmids),
+        "pmids_hash": CCR.pmids_hash(pmids),
+        "all_clean": all_clean,
+        "results": {p: {"status": "ok" if all_clean else "retracted"} for p in pmids},
+    }
+    (d / "A12_RETRACTION_RECEIPT.json").write_text(
+        json.dumps(receipt, ensure_ascii=False), encoding="utf-8"
     )
 
 
@@ -274,5 +302,136 @@ class TestCitationVerificationGate:
             rc = _run_main(study, ["--i-know-citations-not-verified"])
             assert rc == 0
             assert (d / f"DE_CUONG_THONG_NHAT_{study}.md").exists()
+        finally:
+            _rmtree_retry(d)
+
+
+class TestCitationRetractionReceiptGate:
+    """Làm cứng cổng A12 bằng bằng chứng máy-kiểm (vá 2026-07-15, P1.1 lộ trình
+    7 ngày) — trước bản vá này, citation_verification_ok() CHỈ tin một chuỗi
+    text agent tự gõ ("KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH..."), không có gì bảo đảm
+    agent thật sự chạy `check_citation_retraction.py`. Test dưới đây luôn seed
+    artifact A12 SẠCH về mặt text (để cô lập đúng biến receipt) + ký G8/G9 hợp
+    lệ, rồi thao túng riêng `A12_RETRACTION_RECEIPT.json`."""
+
+    def _sign_g8_g9(self, d: Path, study: str) -> None:
+        g8_content = "PRESUBMISSION REVIEW — nội dung giả lập test"
+        g9_content = "AUTHOR INTEGRITY — nội dung giả lập test"
+        (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8")
+        (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8")
+        _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
+        _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
+
+    def _write_verified_artifact(self, d: Path, study: str, pmid_rows: list[str]) -> None:
+        rows = "\n".join(
+            f"| {i} | test{i} | ✅ khớp | | {pmid} |" for i, pmid in enumerate(pmid_rows, start=1)
+        )
+        (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
+            "| # | Trích dẫn trong bài | Trạng thái | Ghi chú | PMID/DOI đã xác minh |\n"
+            "|---|---|---|---|---|\n"
+            f"{rows}\n"
+            "DANH SÁCH 🔴 BẮT BUỘC xử lý: KHÔNG CÓ\n"
+            "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴\n"
+            "Cần bác sĩ kiểm chứng.\n",
+            encoding="utf-8",
+        )
+
+    def test_blocks_when_artifact_says_verified_but_receipt_missing(self, tmp_path, monkeypatch):
+        """Chuỗi text 'ĐÃ XÁC MINH' một mình không còn đủ — thiếu receipt máy-kiểm
+        phải bị chặn, kể cả khi bảng trạng thái/dòng kết luận đều hợp lệ."""
+        study = "PYTEST-G10SUB-A12R-T1"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            self._sign_g8_g9(d, study)
+            self._write_verified_artifact(d, study, ["12345678"])
+            # CỐ Ý không ghi A12_RETRACTION_RECEIPT.json.
+            rc = _run_main(study)
+            assert rc == GC.EXIT_BLOCKED
+        finally:
+            _rmtree_retry(d)
+
+    def test_blocks_when_receipt_all_clean_false(self, tmp_path, monkeypatch):
+        """Receipt có thật nhưng ghi all_clean=false (vd agent chạy tool, thấy
+        PMID retracted, nhưng vẫn lỡ gõ dòng 'ĐÃ XÁC MINH' vào artifact) → chặn."""
+        study = "PYTEST-G10SUB-A12R-T2"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            self._sign_g8_g9(d, study)
+            self._write_verified_artifact(d, study, ["12345678"])
+            _write_matching_retraction_receipt(d, study, ["12345678"], all_clean=False)
+            rc = _run_main(study)
+            assert rc == GC.EXIT_BLOCKED
+        finally:
+            _rmtree_retry(d)
+
+    def test_blocks_when_receipt_hash_tampered(self, tmp_path, monkeypatch):
+        """pmids_hash không khớp pmids_checked (receipt bị sửa tay sau khi ghi,
+        vd thêm PMID vào danh sách mà không chạy lại tool) → chặn."""
+        study = "PYTEST-G10SUB-A12R-T3"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            self._sign_g8_g9(d, study)
+            self._write_verified_artifact(d, study, ["12345678"])
+            _write_matching_retraction_receipt(d, study, ["12345678"])
+            receipt_path = d / "A12_RETRACTION_RECEIPT.json"
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            receipt["pmids_hash"] = "0" * 64
+            receipt_path.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8")
+            rc = _run_main(study)
+            assert rc == GC.EXIT_BLOCKED
+        finally:
+            _rmtree_retry(d)
+
+    def test_blocks_when_receipt_malformed_json(self, tmp_path, monkeypatch):
+        study = "PYTEST-G10SUB-A12R-T4"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            self._sign_g8_g9(d, study)
+            self._write_verified_artifact(d, study, ["12345678"])
+            (d / "A12_RETRACTION_RECEIPT.json").write_text("{ not valid json", encoding="utf-8")
+            rc = _run_main(study)
+            assert rc == GC.EXIT_BLOCKED
+        finally:
+            _rmtree_retry(d)
+
+    def test_blocks_when_artifact_mentions_pmid_missing_from_receipt(self, tmp_path, monkeypatch):
+        """Bản thảo nhắc 2 PMID nhưng receipt chỉ kiểm 1 (vd bổ sung trích dẫn
+        SAU khi đã chạy check_citation_retraction.py, quên chạy lại) → chặn,
+        nêu rõ PMID còn thiếu."""
+        study = "PYTEST-G10SUB-A12R-T5"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            self._sign_g8_g9(d, study)
+            self._write_verified_artifact(d, study, ["12345678", "99999999"])
+            _write_matching_retraction_receipt(d, study, ["12345678"])  # thiếu 99999999
+            rc = _run_main(study)
+            assert rc == GC.EXIT_BLOCKED
+        finally:
+            _rmtree_retry(d)
+
+    def test_passes_when_receipt_matches_multiple_pmids_in_artifact(self, tmp_path, monkeypatch):
+        """Đối chứng dương: receipt sạch + khớp ĐẦY ĐỦ danh sách PMID nhiều dòng
+        trong artifact → qua cổng bình thường."""
+        study = "PYTEST-G10SUB-A12R-T6"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            self._sign_g8_g9(d, study)
+            pmids = ["12345678", "23456789"]
+            self._write_verified_artifact(d, study, pmids)
+            _write_matching_retraction_receipt(d, study, pmids)
+            rc = _run_main(study)
+            assert rc == 0
         finally:
             _rmtree_retry(d)
