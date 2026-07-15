@@ -408,6 +408,47 @@ def test_mark_refuses_study_carrying_real_institution_org_lines():
         _rmtree_retry(d)
 
 
+def test_mark_refuses_study_with_real_institution_name_in_title_but_no_org_lines():
+    """T23 — hồi quy: audit đối kháng 2026-07-15 phát hiện org_lines một mình gần
+    như vô dụng (không tool nào tự ghi field đó; ngay cả đề tài thật đầu tiên
+    trong denylist có org_lines=null dù title chứa "Bệnh viện Quân y 175"). Mở
+    rộng heuristic soi cả title/topic — test này khóa lại đúng kịch bản audit nêu:
+    title mang tên loại hình cơ sở y tế thật, org_lines để trống hoàn toàn."""
+    study = "PYTEST-ADMIN-BYPASS-T23"
+    d = _study_dir(study)
+    try:
+        (d / "study_meta.json").write_text(json.dumps({
+            "title": "Khảo sát hài lòng người bệnh tại Bệnh viện Đa khoa Tỉnh X",
+            "org_lines": None,
+        }, ensure_ascii=False), encoding="utf-8")
+        res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
+        assert res.returncode != 0
+        assert "CƠ SỞ Y TẾ THẬT" in res.stdout
+        assert "title" in res.stdout
+        meta = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
+        assert meta.get("study_kind") != "synthetic_test"
+    finally:
+        _rmtree_retry(d)
+
+
+def test_mark_allows_study_with_generic_title_and_no_institution_name():
+    """T24 — kiểm tra không dương tính giả trên tiêu đề chung chung (khớp các thư
+    mục thử nghiệm hiện có: PROBE-CASECTRL-VERIFY, TEST-DEMO-CHECK... không đề cập
+    loại hình cơ sở y tế nào trong title)."""
+    study = "PYTEST-ADMIN-BYPASS-T24"
+    d = _study_dir(study)
+    try:
+        (d / "study_meta.json").write_text(json.dumps({
+            "title": "Yếu tố nguy cơ nhiễm khuẩn vết mổ sau phẫu thuật thay khớp háng",
+        }, ensure_ascii=False), encoding="utf-8")
+        res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
+        assert res.returncode == 0
+        meta = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
+        assert meta.get("study_kind") == "synthetic_test"
+    finally:
+        _rmtree_retry(d)
+
+
 def test_admin_approve_refuses_artifact_outside_study_dir(tmp_path, monkeypatch):
     """T21 — --artifacts trỏ ra ngoài thư mục đề tài (vd file của đề tài khác) phải
     bị từ chối (defense-in-depth, tránh hash tài liệu đề tài khác vào ledger synthetic)."""

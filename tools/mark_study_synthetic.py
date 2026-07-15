@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -144,14 +145,40 @@ def main() -> int:
     # danh tính viện thật, như KKB-HAI-LONG-2026) → từ chối, kể cả khi TÊN thư mục
     # chưa kịp thêm vào REAL_STUDY_DENYLIST. Bắt được lớp "bí danh mới chưa ai kịp
     # denylist" mà danh sách tên một mình bỏ sót.
+    #
+    # MỞ RỘNG 2026-07-15 (audit đối kháng vòng 2 phát hiện): org_lines một mình gần
+    # như VÔ DỤNG trên thực tế — KHÔNG tool pipeline nào tự ghi field này, và ngay
+    # cả đề tài thật đầu tiên trong denylist (hai-long-benh-nhan-C1a-BVQY175) có
+    # org_lines=null dù title chứa nguyên văn "Bệnh viện Quân y 175". Nơi tên cơ sở
+    # y tế THẬT thực sự xuất hiện trong dữ liệu hiện có là title/topic. Soi thêm 2
+    # trường đó bằng regex tên loại hình cơ sở y tế phổ biến — cố ý RỘNG (chấp nhận
+    # false positive, dễ sửa bằng cách đổi tên đề tài) hơn là BỎ SÓT một đề tài thật.
+    _REAL_INSTITUTION_PATTERN = re.compile(
+        r"bệnh\s*viện|trung\s*tâm\s*y\s*tế|trung\s*tâm\s*khám\s*(chữa)?\s*bệnh|"
+        r"phòng\s*khám|khoa\s*khám\s*bệnh|trạm\s*y\s*tế|viện\s*quân\s*y|quân\s*y\s*viện|"
+        r"bệnh\s*xá",
+        re.IGNORECASE,
+    )
     org_lines = meta.get("org_lines")
-    if isinstance(org_lines, list) and any(str(x).strip() for x in org_lines):
-        print(f"✗ TỪ CHỐI: '{args.study}' mang danh tính CƠ SỞ Y TẾ THẬT trong study_meta.json"
-              f" (org_lines={org_lines}).")
+    has_org_lines = isinstance(org_lines, list) and any(str(x).strip() for x in org_lines)
+    title_hit = None
+    for field in ("title", "topic"):
+        val = str(meta.get(field) or "")
+        if _REAL_INSTITUTION_PATTERN.search(val):
+            title_hit = (field, val)
+            break
+    if has_org_lines or title_hit:
+        print(f"✗ TỪ CHỐI: '{args.study}' mang danh tính CƠ SỞ Y TẾ THẬT trong study_meta.json.")
+        if has_org_lines:
+            print(f"   org_lines={org_lines}")
+        if title_hit:
+            field, val = title_hit
+            print(f"   {field} chứa tên loại hình cơ sở y tế: \"{val}\"")
         print("   Một đề tài thử nghiệm đúng nghĩa không nên gắn tên bệnh viện/trung tâm thật.")
         print("   Đây có thể là đề tài thật hoặc bí danh chạy-thử dùng danh tính viện thật — nếu")
-        print("   chắc chắn là dữ liệu tổng hợp, xóa org_lines khỏi study_meta.json rồi chạy lại,")
-        print("   hoặc tạo thư mục thử nghiệm MỚI không mang danh tính thật.")
+        print("   chắc chắn là dữ liệu tổng hợp, sửa title/topic/org_lines để không còn tên loại")
+        print("   hình cơ sở y tế (vd đổi thành tên hư cấu rõ ràng), hoặc tạo thư mục thử nghiệm")
+        print("   MỚI không mang danh tính thật, rồi chạy lại.")
         return 1
 
     meta["study_kind"] = "synthetic_test"
