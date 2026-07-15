@@ -661,21 +661,43 @@ def _index_table_lines(study_slug: str, out_dir: Path) -> list:
     return lines
 
 
+def _extract_preserved_note(index_path: Path) -> str:
+    """Đọc bản STUDY_INDEX.md CŨ (nếu có) và giữ lại mọi khối ghi chú tay bắt
+    đầu bằng "> ⚠️" — vd ghi chú "đây là bản thử nghiệm, bản thật ở chỗ khác"
+    (đã xảy ra thật với KKB-HAI-LONG-2026, 2026-07-08). Không có thì trả "".
+    Tránh lặp lại lỗi: trước đây regenerate_study_index() ghi đè toàn bộ file,
+    xóa mất ghi chú tay này — phát hiện + vá cùng lúc 2026-07-15.
+    """
+    if not index_path.exists():
+        return ""
+    try:
+        text = index_path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    blocks = re.findall(r"(?:^> ⚠️.*(?:\n>.*)*\n?)", text, flags=re.MULTILINE)
+    return "\n".join(b.rstrip("\n") for b in blocks)
+
+
 def regenerate_study_index(study_name: str, out_dir: Path, study_slug: str | None = None) -> Path:
     """Sinh LẠI STUDY_INDEX.md với trạng thái THẬT (đọc checkpoint hiện có) —
     thay vì hàng cố định "🔴 Mới" chỉ đúng lúc scaffold. Gọi lại sau mỗi lần
     march (đặc biệt từ `run_g10_assemble.py`, bước capstone chạy sau mỗi lần
     tiến cổng) để chỉ mục KHÔNG bị lạc hậu so với tiến độ thật. CHỈ ĐỌC
-    checkpoint, không ghi/sửa gì khác.
+    checkpoint, không ghi/sửa gì khác. Giữ lại ghi chú tay "> ⚠️" nếu bản cũ có
+    (vd cảnh báo "đây là bản thử nghiệm").
     """
     study_slug = study_slug or study_name.replace(" ", "-")
     today = datetime.now().strftime("%Y-%m-%d")
+    out_path = out_dir / "STUDY_INDEX.md"
+    preserved_note = _extract_preserved_note(out_path)
     lines = [
         f"# STUDY INDEX — {study_name}\n",
         f"> Cập nhật: {today} · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có "
         f"(không phải cố định lúc scaffold)\n\n",
-        "## 20 File chuẩn\n\n",
     ]
+    if preserved_note:
+        lines.append(preserved_note + "\n\n")
+    lines.append("## 20 File chuẩn\n\n")
     lines += _index_table_lines(study_slug, out_dir)
     lines += [
         "\n## Lệnh xuất .docx từng cổng\n\n",
@@ -696,7 +718,6 @@ def regenerate_study_index(study_name: str, out_dir: Path, study_slug: str | Non
         "```\n",
         "\n> Cần bác sĩ kiểm chứng. KHÔNG PII.\n",
     ]
-    out_path = out_dir / "STUDY_INDEX.md"
     out_path.write_text("".join(lines), encoding="utf-8")
     return out_path
 

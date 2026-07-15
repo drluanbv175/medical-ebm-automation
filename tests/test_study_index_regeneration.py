@@ -94,3 +94,38 @@ class TestRegenerateStudyIndex:
     def test_disclaimer_present(self, tmp_path):
         p = SCAF.regenerate_study_index("DEMO", tmp_path, "DEMO")
         assert "Cần bác sĩ kiểm chứng" in p.read_text(encoding="utf-8")
+
+
+class TestPreservedNote:
+    """Regression cho bug tự gây 2026-07-15: lần đầu viết regenerate_study_index()
+    đã vô tình XÓA MẤT ghi chú tay "> ⚠️ HỢP NHẤT..." của KKB-HAI-LONG-2026/
+    STUDY_INDEX.md (cảnh báo đây là bản thử nghiệm, bản thật ở thư mục khác).
+    File đó không track git nên không phục hồi được từ lịch sử — phải thêm cơ
+    chế giữ lại ghi chú tay trước khi lỗi này lặp lại ở đề tài khác."""
+
+    def test_warning_block_survives_regeneration(self, tmp_path):
+        note = (
+            "> ⚠️ **HỢP NHẤT (2026-07-08):** thư mục này là bản THỬ NGHIỆM.\n"
+            "> Bản THẬT nằm ở nơi khác — đó mới là nguồn sự thật để nộp/dùng.\n"
+        )
+        original = f"# STUDY INDEX — X\n> Cập nhật: cũ\n\n{note}\n## 20 File chuẩn\n\n(bảng cũ)\n"
+        (tmp_path / "STUDY_INDEX.md").write_text(original, encoding="utf-8")
+
+        SCAF.regenerate_study_index("X", tmp_path, "X")
+        text = (tmp_path / "STUDY_INDEX.md").read_text(encoding="utf-8")
+        assert "HỢP NHẤT" in text
+        assert "bản THỬ NGHIỆM" in text
+        assert "nguồn sự thật để nộp/dùng" in text
+
+    def test_no_warning_block_no_crash(self, tmp_path):
+        (tmp_path / "STUDY_INDEX.md").write_text(
+            "# STUDY INDEX — Y\n> Cập nhật: cũ\n\n## 20 File chuẩn\n\n(bảng cũ)\n",
+            encoding="utf-8")
+        SCAF.regenerate_study_index("Y", tmp_path, "Y")
+        text = (tmp_path / "STUDY_INDEX.md").read_text(encoding="utf-8")
+        assert "⚠️" not in text
+
+    def test_fresh_scaffold_no_existing_file_no_crash(self, tmp_path):
+        assert not (tmp_path / "STUDY_INDEX.md").exists()
+        SCAF.regenerate_study_index("Z", tmp_path, "Z")
+        assert (tmp_path / "STUDY_INDEX.md").exists()
