@@ -145,6 +145,29 @@ def check_surveillance_updates() -> list[str]:
         except Exception:
             pass
 
+    # Hàng chờ cập nhật knowledge pack từ surveillance/evidence mới.
+    kp_queue_file = RESULTS_DIR / "knowledge_pack_update_queue.json"
+    if kp_queue_file.exists():
+        try:
+            queue = json.loads(kp_queue_file.read_text(encoding="utf-8"))
+            items = queue.get("items", []) if isinstance(queue, dict) else []
+            if items:
+                high = [item for item in items if item.get("priority") == "HIGH"]
+                pack_labels = []
+                for item in items:
+                    label = item.get("pack_label") or item.get("pack_id")
+                    if label and label not in pack_labels:
+                        pack_labels.append(label)
+                updates.append(
+                    "📥 Knowledge pack queue: "
+                    f"{len(items)} mục chờ bác sĩ duyệt"
+                    + (f" ({len(high)} ưu tiên cao)" if high else "")
+                    + f" — {', '.join(pack_labels[:4])}"
+                    + ("…" if len(pack_labels) > 4 else "")
+                )
+        except Exception:
+            pass
+
     return updates
 
 

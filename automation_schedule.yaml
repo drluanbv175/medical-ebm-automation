@@ -13,6 +13,7 @@ jobs:
     schedule: "30 6 * * 1-5"       # Mon-Fri at 06:30 local time
     script: tools/gen_morning_brief.py
     actions:
+      - refresh_knowledge_pack_update_queue
       - generate_daily_ebm_brief
       - write_results_daily_ebm_brief
       - archive_exports_morning_brief

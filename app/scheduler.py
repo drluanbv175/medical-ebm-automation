@@ -36,9 +36,12 @@ def job_daily() -> None:
     logger.info("[job_daily] bắt đầu")
     stats = run_pipeline(max_results_per_query=5, incremental=True)
     alert = export_alert_digest(days=1)
+    from app.services.knowledge_pack_surveillance import write_knowledge_pack_update_queue
+
+    queue_path = write_knowledge_pack_update_queue(days=7)
     notify = notify_high_priority_new(days=1)  # gửi nếu có mục ưu tiên cao mới
     _log_change(f"Daily scan: {stats['new_items']} mới; alert={alert['markdown'].name} "
-                f"({alert['total_new']} mục); notify={notify.get('status')}",
+                f"({alert['total_new']} mục); pack_queue={queue_path.name}; notify={notify.get('status')}",
                 "scheduler.daily")
 
 
@@ -102,8 +105,10 @@ def job_evidence_brief() -> None:
 def job_morning_brief() -> None:
     """Thứ Hai-Thứ Sáu: sinh bản tin EBM sáng từ knowledge packs và surveillance offline."""
     logger.info("[job_morning_brief] bắt đầu")
+    from app.services.knowledge_pack_surveillance import write_knowledge_pack_update_queue
     from tools import gen_morning_brief
 
+    write_knowledge_pack_update_queue(days=7)
     brief = gen_morning_brief.generate_brief()
     fixed_output, dated_output = gen_morning_brief.write_brief_outputs(brief)
     _log_change(
