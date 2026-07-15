@@ -1322,6 +1322,24 @@ def main() -> int:
         except ImportError:
             print("  ⚠ check_de_cuong.py chưa có — bỏ qua tự kiểm.")
 
+    # Vá 2026-07-15 (vòng 2): 3 chốt DỪNG dưới đây (citation/G8/G9) chỉ IN RA màn
+    # hình rồi return EXIT_BLOCKED — KHÔNG ghi khối needs_input vào G10_checkpoint.json
+    # (checkpoint đã ghi cố định ở assemble(), phía trên). Hậu quả: gate_contract.
+    # is_blocked()/blocked_detail() luôn trả None/False cho G10 — mọi công cụ đọc
+    # checkpoint để biết cổng có đang CHẶN không (vd tools/research_studies_overview.py)
+    # sẽ báo SAI một đề tài đang chặn thật ở G10 là "✅ xong". run_pipeline.py khi đó
+    # phải dò lý do qua 6 dòng cuối stdout — bản dự phòng, không phải tín hiệu có cấu
+    # trúc như mọi cổng khác. Vá bằng cách ghi needs_input đúng chuẩn TRƯỚC khi return.
+    def _mark_g10_blocked(reason_code: str, human_message: str, command: str) -> None:
+        cp = json.loads(result["checkpoint"].read_text(encoding="utf-8"))
+        cp["gate_status"] = "BLOCKED — chờ input đời-thực"
+        cp["needs_input"] = GC.needs_input(
+            reason_code, human_message, command,
+            must_not_fabricate=["approval_ledger.json", "A12_RETRACTION_RECEIPT.json"],
+        )
+        result["checkpoint"].write_text(
+            json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+
     # Vá 2026-07-15 (Ngày 1 lộ trình 7 ngày — reports/LO_TRINH_7_NGAY_NGHIEN_CUU_Y_KHOA
     # _2026-07-14.md): trích dẫn (cổng A12, agent `kiem-chung-trich-dan`) trước đây
     # CHỈ được in ra như một dòng nhắc ở cuối run_g7_auto.py — không gì ép buộc bác sĩ
@@ -1335,6 +1353,11 @@ def main() -> int:
         print("   đúng nội dung) — agent tự ghi kết quả vào file A12 nêu trên. Tài")
         print("   liệu đã xuất Ở TRÊN chỉ là BẢN NHÁP — KHÔNG dùng để nộp khi ở trạng")
         print("   thái này. Nếu chỉ muốn xem trước, thêm --i-know-citations-not-verified.")
+        _mark_g10_blocked(
+            GC.REASON_MISSING_CITATION_VERIFICATION,
+            f"Trích dẫn (cổng A12) {citation_reason}.",
+            f"python tools/check_citation_retraction.py --study {study} --pmids <...>",
+        )
         return GC.EXIT_BLOCKED
 
     # Vá 2026-07-14 (nâng cấp kiểm soát PI/IRB/thống kê viên/phản biện): G8 (bình
@@ -1350,6 +1373,12 @@ def main() -> int:
         print("   TỰ TAY bởi người phản biện, không nhờ agent). Tài liệu đã xuất Ở TRÊN")
         print("   chỉ là BẢN NHÁP để rà soát — KHÔNG dùng để nộp khi ở trạng thái này.")
         print("   Nếu chỉ muốn xem trước, thêm --i-know-g8-not-signed.")
+        _mark_g10_blocked(
+            GC.REASON_MISSING_PEER_REVIEW,
+            "G8 (bình duyệt độc lập) chưa có phê duyệt thật trong approval_ledger.json.",
+            f"python tools/approve_gate.py --study {study} --gate G8 "
+            f"--artifact {g8_artifact.name} --reviewer-role PHAN_BIEN_DOC_LAP",
+        )
         return GC.EXIT_BLOCKED
 
     # Vá 2026-07-12 (audit toàn diện cổng G0-G9): G10 là bước lắp ráp CUỐI trước khi
@@ -1366,6 +1395,12 @@ def main() -> int:
         print("   TỰ TAY bởi bác sĩ/PI, không nhờ agent). Tài liệu đã xuất Ở TRÊN chỉ là")
         print("   BẢN NHÁP để rà soát — KHÔNG dùng để nộp tạp chí/hội đồng khi ở trạng")
         print("   thái này. Nếu chỉ muốn xem trước, thêm --i-know-g9-not-signed.")
+        _mark_g10_blocked(
+            GC.REASON_MISSING_INTEGRITY,
+            "G9 (liêm chính tác giả) chưa có phê duyệt thật trong approval_ledger.json.",
+            f"python tools/approve_gate.py --study {study} --gate G9 "
+            f"--artifact {g9_artifact.name} --reviewer-role PI",
+        )
         return GC.EXIT_BLOCKED
 
     print("\n✅ Xong. Cần bác sĩ kiểm chứng.")

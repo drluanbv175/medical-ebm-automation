@@ -1,8 +1,11 @@
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/Badge";
+import { buildProductionReadinessReport, openProductionBlockers } from "@/lib/production-readiness";
 import { summarizeWriteActionRegistry, unsafeWriteActions, writeActionRegistry } from "@/lib/write-action-registry";
 
 export default function SettingsPage() {
+  const productionReadiness = buildProductionReadinessReport();
+  const openBlockers = openProductionBlockers();
   const writeSummary = summarizeWriteActionRegistry();
   const unsafeActions = unsafeWriteActions();
 
@@ -29,6 +32,42 @@ export default function SettingsPage() {
           <h2>Deployment</h2>
           <p>Local Docker Compose, san sang private server/on-premise.</p>
         </div>
+      </section>
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h2>Production readiness</h2>
+        <p>
+          Production ready: <StatusBadge>{String(productionReadiness.summary.productionReady)}</StatusBadge>
+        </p>
+        <p>
+          Open blockers: {productionReadiness.summary.openBlockers} / {productionReadiness.summary.totalBlockers};
+          security: {productionReadiness.summary.byCategory.security}; data protection: {productionReadiness.summary.byCategory.data_protection};
+          clinical safety: {productionReadiness.summary.byCategory.clinical_safety}; operations: {productionReadiness.summary.byCategory.operations};
+          AI governance: {productionReadiness.summary.byCategory.ai_governance}.
+        </p>
+        <p className="eyebrow">{productionReadiness.safetyBoundary}</p>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Blocker</th>
+              <th>Category</th>
+              <th>Owner</th>
+              <th>Evidence required</th>
+            </tr>
+          </thead>
+          <tbody>
+            {openBlockers.slice(0, 8).map((item) => (
+              <tr key={item.id}>
+                <td>{item.id}: {item.title}</td>
+                <td>{item.category}</td>
+                <td>{item.owner}</td>
+                <td>{item.evidenceRequired}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="eyebrow">
+          Showing first 8 blockers; the machine-readable manifest remains the source for automation and signoff.
+        </p>
       </section>
       <section className="panel" style={{ marginTop: 16 }}>
         <h2>Write action readiness</h2>

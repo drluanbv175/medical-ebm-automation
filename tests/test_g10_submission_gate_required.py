@@ -129,6 +129,12 @@ def _run_main(study: str, extra_args: list[str] | None = None) -> int:
         sys.argv = argv
 
 
+def _read_g10_needs_input(d: Path) -> dict:
+    cp = json.loads((d / "G10_checkpoint.json").read_text(encoding="utf-8"))
+    assert GC.is_blocked(cp)
+    return cp["needs_input"]
+
+
 class TestG8SubmissionGate:
     def test_blocks_when_g8_not_approved_even_if_g9_is(self, tmp_path, monkeypatch):
         study = "PYTEST-G10SUB-T1"
@@ -143,6 +149,7 @@ class TestG8SubmissionGate:
             _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
             rc = _run_main(study)
             assert rc == GC.EXIT_BLOCKED
+            assert _read_g10_needs_input(d)["reason_code"] == GC.REASON_MISSING_PEER_REVIEW
         finally:
             _rmtree_retry(d)
 
@@ -238,6 +245,7 @@ class TestCitationVerificationGate:
             # CỐ Ý không tạo A12 — chưa ai chạy kiem-chung-trich-dan.
             rc = _run_main(study)
             assert rc == GC.EXIT_BLOCKED
+            assert _read_g10_needs_input(d)["reason_code"] == GC.REASON_MISSING_CITATION_VERIFICATION
         finally:
             _rmtree_retry(d)
 

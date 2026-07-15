@@ -603,6 +603,29 @@ test("write action registry tracks guarded and blocked write surfaces", () => {
   assert.match(overdue, /Backend guard/);
 });
 
+test("production readiness blockers are machine-readable and surfaced in settings", () => {
+  const readiness = read("lib/production-readiness.ts");
+  const settings = read("app/admin/settings/page.tsx");
+  const blockers = read("PRODUCTION_BLOCKERS.md");
+  const typecheck = read("tsconfig.check.json");
+
+  assert.match(readiness, /chronic_care_production_readiness_report/);
+  assert.match(readiness, /productionBlockers/);
+  assert.match(readiness, /summarizeProductionReadiness/);
+  assert.match(readiness, /buildProductionReadinessReport/);
+  assert.match(readiness, /productionReady: false/);
+  for (const id of ["SEC-001", "DATA-001", "CLIN-001", "OPS-001", "AI-001"]) {
+    assert.match(readiness, new RegExp(id), `${id} missing`);
+  }
+  assert.match(settings, /Production readiness/);
+  assert.match(settings, /Open blockers/);
+  assert.match(settings, /buildProductionReadinessReport/);
+  assert.match(settings, /openProductionBlockers/);
+  assert.match(blockers, /lib\/production-readiness\.ts/);
+  assert.match(typecheck, /lib\/production-readiness\.ts/);
+  assert.match(typecheck, /tests\/production-readiness\.behavior\.test\.ts/);
+});
+
 test("MVP-01 is scoped to cardiometabolic follow-up and has audit steps", () => {
   const mvp = read("lib/mvp01.ts");
   assert.match(mvp, /Hypertension and Type 2 Diabetes Follow-up Pathway/);
