@@ -15,7 +15,13 @@ python medical-ebm-automation/tools/run_g9_auto.py \
     [--n-authors <so_tac_gia>] [--target-journal "Tên tạp chí đích"]
 # Tự động: đọc checkpoint G0-G8 → sinh bộ khai báo liêm chính ICMJE+COPE
 #           (CRediT · COI · AI · Data Availability · Ethics Statement)
-#           → A15 .md + .docx + G9_checkpoint.json
+#           → A14 .md + .docx + G9_checkpoint.json
+#           (2026-07-11: sửa "A15" — đó là mã của binh-duyet/G8 theo crosswalk; đúng
+#           mã của bộ khai báo liêm chính G9 này là A14. Script thật hiện đặt tên file
+#           "G9_A10_AUTHOR_INTEGRITY_..." — LỆCH khỏi crosswalk theo kiểu hệ thống, vì
+#           mọi run_gN_auto.py đều đánh số A-code cũ kiểu "gate N → A(N+1)" thay vì mã
+#           crosswalk hiện hành; đối chiếu nội dung file, đừng tin tên file. Xem task
+#           theo dõi sửa code: task_3ee574ed.)
 ```
 **Sau khi chạy**, đối chiếu với G9 PHẦN 1–4 bên dưới; chờ bác sĩ ký 3 xác nhận trước khi mở khóa G9 thật.
 
@@ -28,7 +34,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận yêu cầu 
 | M1 | BƯỚC 0: kiểm tiền đề G9 — bản thảo đã qua `kiem-chung-trich-dan` + `binh-duyet`; G4_STATUS=LOCKED + G5_STATUS=LOCKED; nhắc mọi khai báo chờ chủ nhiệm xác nhận |
 | M2 | Soạn BỘ KHAI BÁO LIÊM CHÍNH ICMJE+COPE: bảng CRediT 14 vai trò · khai báo COI từng tác giả · khai báo AI · Data Availability Statement · Ethics Statement |
 | M3 | Checklist Think.Check.Submit (10 điểm) + đề xuất 3 tạp chí phù hợp (chỉ mục/phạm vi/IF [CẦN KIỂM]) + checklist đóng gói nộp |
-| M4 | Soạn cover letter (5 đoạn chuẩn ICMJE) và template phản hồi phản biện (Rebuttal) điểm-theo-điểm |
+| M4 | Soạn cover letter (mẫu 5 đoạn tự đề xuất, dựa trên NỘI DUNG ICMJE khuyến nghị khai báo trong thư ngỏ — ICMJE không quy định cứng cấu trúc "5 đoạn") và template phản hồi phản biện (Rebuttal) điểm-theo-điểm |
 | M5 | ⛔ CỔNG CỨNG G9: dừng — chờ bác sĩ ký 3 xác nhận (COI · đồng thuận tác giả · không đăng kép); sau ký → ghi G9_STATUS=LOCKED + kích hoạt Final Readiness Report |
 
 ## Luật nền
@@ -39,15 +45,15 @@ Bất biến cứng: KHÔNG bịa IF/quartile · KHÔNG nộp trùng lặp nhi�
 
 ## BƯỚC 0 — KIỂM TIỀN ĐỀ G9
 
-1. Xác nhận bản thảo đã qua `kiem-chung-trich-dan` (trích dẫn xác minh) + `binh-duyet` (bình duyệt nội bộ).
+1. Xác nhận bản thảo đã qua `kiem-chung-trich-dan` + `binh-duyet` — **không chỉ kiểm tra ĐÃ CHẠY, phải kiểm tra ĐÚNG KẾT QUẢ (2026-07-07)**: `kiem-chung-trich-dan` báo **không còn 🔴, không PARTIAL** (còn 🔴/PARTIAL = trích dẫn chưa xử lý xong → chưa đạt "sẵn sàng nộp"); `binh-duyet` báo **"Kết luận tổng thể: sẵn sàng nộp"** (không còn mục "LỖI NGHIÊM TRỌNG (phải sửa trước khi nộp)" nào chưa đóng). Nếu một trong hai cổng thượng nguồn còn lỗi/PARTIAL → **DỪNG**, trả về `[CẦN QUAY LẠI SỬA]`, KHÔNG tiếp tục soạn bộ khai báo G9.
 2. Xác nhận G4_STATUS = LOCKED + G5_STATUS = LOCKED trong checkpoint.
 3. Xác nhận **mọi khai báo tác giả/COI/tài trợ/AI chờ chủ nhiệm xác nhận** — không tự khẳng định thay.
 
 ---
 
-## G9 PHẦN 1 — BỘ KHAI BÁO LIÊM CHÍNH TÁC GIẢ (ICMJE + COPE 2024)
+## G9 PHẦN 1 — BỘ KHAI BÁO LIÊM CHÍNH TÁC GIẢ (ICMJE Recommendations cập nhật 1/2024 + COPE Position Statement "Authorship and AI tools" 13/2/2023)
 
-### A. BẢNG ICMJE CRediT TAXONOMY (14 vai trò)
+### A. BẢNG CRediT TAXONOMY (14 vai trò — CASRAI/NISO ANSI Z39.104-2022, KHÔNG phải chuẩn ICMJE; dùng SONG SONG với 4 tiêu chí tác giả ICMJE bên dưới — CRediT mô tả AI LÀM GÌ, ICMJE quyết định AI LÀ tác giả)
 
 Soạn bảng điền sẵn cho đề tài — bác sĩ chỉ cần tích vai trò:
 
@@ -87,7 +93,7 @@ Không đủ 4 tiêu chí → ghi vào Lời cảm ơn, KHÔNG ghi là tác gi�
 ════════════════════════════════════════════════════════
 KHAI BÁO XUNG ĐỘT LỢI ÍCH — [Họ tên tác giả] — [Ngày]
 ════════════════════════════════════════════════════════
-(Điền riêng cho từng tác giả — 12 tháng qua tính đến ngày nộp)
+(Điền riêng cho từng tác giả — theo mẫu ICMJE Disclosure Form: quan hệ TRỰC TIẾP LIÊN QUAN đến bài — từ lúc bắt đầu thai nghén/thiết kế NC đến hiện tại, không giới hạn tháng; quan hệ CHỈ LIÊN QUAN CHỦ ĐỀ nhưng không trực tiếp tài trợ — 36 tháng qua tính đến ngày nộp)
 
 1. TÀI CHÍNH TỪ TỔ CHỨC THƯƠNG MẠI liên quan đến chủ đề bài:
    ☐ Không có
@@ -110,7 +116,7 @@ KHAI BÁO XUNG ĐỘT LỢI ÍCH — [Họ tên tác giả] — [Ngày]
 [Tạo bản riêng cho mỗi tác giả]
 ```
 
-### C. KHAI BÁO SỬ DỤNG AI (COPE 2024 + ICMJE)
+### C. KHAI BÁO SỬ DỤNG AI (COPE Position Statement "Authorship and AI tools" 13/2/2023 + ICMJE)
 
 ```
 KHAI BÁO SỬ DỤNG TRÍ TUỆ NHÂN TẠO
@@ -304,6 +310,13 @@ Trân trọng, [Tên tác giả liên hệ]
 ╚══════════════════════════════════════════════════════╝
 ```
 
+> **Cổng thật đòi ledger có chữ ký, khối trên chỉ mô tả checkpoint text tham khảo (vá
+> 2026-07-12/2026-07-14):** `tools/run_g10_assemble.py` (bước "sẵn sàng nộp bài") fail-closed
+> đòi CẢ HAI — G8 (bình duyệt độc lập, người phản biện không phải PI/tác giả tự chạy
+> `approve_gate.py --gate G8 --reviewer-role "PHAN_BIEN_DOC_LAP"`) VÀ G9 (PI tự chạy
+> `approve_gate.py --gate G9 --reviewer-role "PI"`) — thiếu 1 trong 2 vẫn báo "CHƯA SẴN
+> SÀNG NỘP BÀI". Agent KHÔNG tự chạy 2 lệnh này thay người thật.
+
 ---
 
 ## TIÊU CHÍ QUA CỔNG G9
@@ -338,9 +351,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

@@ -14,7 +14,11 @@ python medical-ebm-automation/tools/run_g8_auto.py \
     --study "MA-DE-TAI" \
     [--target-journal "Tên tạp chí đích"] [--impact-factor <so>]
 # Tự động: đọc checkpoint G0-G7 → kiểm tra toàn diện trước nộp bài
-#           → A14 .md + .docx + G8_checkpoint.json
+#           → A15 .md + .docx + G8_checkpoint.json
+#           (2026-07-11: sửa "A14" — đó là mã của nop-bai-phan-hoi/G9 theo crosswalk;
+#           đúng mã của bình duyệt nội bộ G8 này là A15. Script thật hiện đặt tên file
+#           "G8_A9_PRESUBMISSION_..." — LỆCH khỏi crosswalk theo kiểu hệ thống, giống
+#           run_g5/g6/g9_auto.py; xem task theo dõi sửa code: task_e4138631.)
 ```
 **Sau khi chạy**, đối chiếu kết quả với 3 LĂNG KÍNH bên dưới để bổ sung nhận xét phản biện chi tiết.
 
@@ -146,6 +150,13 @@ Câu hỏi kiểm tra:
 □ 7. Nhãn THĂM DÒ cho phân tích ngoài SAP có không?
      Nhận xét: ___
 
+□ 8. RÀ SOÁT VỆT CÔNG CỤ NỘI BỘ trước khi coi là sẵn sàng nộp (2026-07-07):
+     Quét toàn văn: tên file/công cụ nội bộ, hướng dẫn macro biên tập còn sót lại,
+     chữ "agent", cụm "cần chủ nhiệm bổ sung"/"checklist nội bộ" còn nằm trong thân
+     bài, hoặc lựa chọn "(A) hay (B)" còn bỏ ngỏ chưa chốt.
+     [Còn sót bất kỳ mục nào ở trên = KHÔNG sẵn sàng nộp, không phải góp ý nhỏ]
+     Phát hiện: ___
+
 LỖI LIÊM CHÍNH:
 Nghiêm trọng: ___
 Góp ý nhỏ: ___
@@ -207,12 +218,33 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact review
 
 ## TIÊU CHÍ QUA CỔNG G8
 
-**Đạt G8 khi:** 3 lăng kính đã chạy đầy đủ · lỗi nghiêm trọng tách riêng, dẫn vị trí cụ thể · checklist chuẩn báo cáo đối chiếu · trích dẫn nghi vấn đã gắn cờ giao `kiem-chung-trich-dan` · câu hỏi cho tác giả · khuyến nghị rõ ràng (accept/revise/reject).
+**Đạt G8 khi:** 3 lăng kính đã chạy đầy đủ · lỗi nghiêm trọng tách riêng, dẫn vị trí cụ thể · checklist chuẩn báo cáo đối chiếu · trích dẫn nghi vấn đã gắn cờ giao `kiem-chung-trich-dan` · câu hỏi cho tác giả · khuyến nghị rõ ràng (accept/revise/reject) · đã rà sạch vệt công cụ nội bộ (Lăng kính 3, mục 8).
 
 **Nguyên tắc mặc định nghi ngờ:** lỗi không loại trừ được → coi là CÒN TỒN TẠI cho tới khi tác giả phản bác có nguồn.
 
+## CƠ CHẾ MỞ KHÓA G8 (vá 2026-07-14 — nâng cấp kiểm soát PI/IRB/thống kê viên/phản biện)
+
+`run_g8_auto.py` (BƯỚC 0) chỉ SOẠN báo cáo bình duyệt (A9/`G8_A9_PRESUBMISSION_<tên>.md`) —
+đây là NHẬN XÉT của agent, KHÔNG phải phê duyệt thật. Trước 2026-07-14, G8 hoàn toàn KHÔNG
+có cổng cứng nào (không nằm trong `--gate` choices của `approve_gate.py`) — không gì chặn
+nếu bỏ qua bình duyệt mà march thẳng sang G9/nộp bài. Nay `tools/run_g10_assemble.py`
+(bước lắp ráp CUỐI trước "sẵn sàng nộp bài") xác minh THẬT qua `approval_ledger.json`
+(xem `tools/gate_contract.py::ledger_approved`), y hệt cơ chế G2/G4/G9.
+
+**Mở khóa thật (human side):** một người phản biện ĐỘC LẬP (không phải PI/tác giả — code
+fail-closed từ chối role PI/STATISTICIAN/IRB cho cổng này) đọc báo cáo A9 + tự đọc bản thảo,
+rồi **tự tay** chạy trong terminal riêng:
+```
+python tools/approve_gate.py --study <tên> --gate G8 \
+    --artifact exports/<tên>/G8_A9_PRESUBMISSION_<tên>.md \
+    --reviewer-role "PHAN_BIEN_DOC_LAP" --reviewer-ref "<mã/tên viết tắt>"
+```
+KHÔNG nhờ agent chạy hộ (chữ ký vẫn tạo được nhưng mất ý nghĩa "một người ngoài agent đã
+xác nhận"). Cần khóa ký đã thiết lập một lần bằng `tools/setup_gate_approval_key.py`
+(bác sĩ tự chạy — xem `dao-duc-dang-ky.md` mục tương tự cho G2).
+
 ## Ranh giới
-KHÔNG tự sửa bản thảo (→ `viet-ban-thao` sửa) · KHÔNG chạy cổng cứng trích dẫn (→ `kiem-chung-trich-dan`) · giữ vai phản biện độc lập — không "tự khen bài mình".
+KHÔNG tự sửa bản thảo (→ `viet-ban-thao` sửa) · KHÔNG chạy cổng cứng trích dẫn (→ `kiem-chung-trich-dan`) · giữ vai phản biện độc lập — không "tự khen bài mình" · KHÔNG tự chạy `tools/approve_gate.py` thay người phản biện thật.
 
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
@@ -237,9 +269,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

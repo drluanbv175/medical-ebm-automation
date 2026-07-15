@@ -16,7 +16,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận đề tài/
 | M2 | G1 — sinh 2–3 thiết kế ứng viên theo câu hỏi nghiên cứu (Tree-of-Thoughts); kiểm soát 7 sai lệch chính; xác định Estimand ICH E9(R1) cho can thiệp |
 | M3 | G1 — xuất KHỐI THIẾT KẾ hoàn chỉnh (loại · bố trí · ngẫu nhiên hóa · làm mù · estimand · cỡ mẫu từ `co-mau-nghien-cuu`) |
 | M4 | G4 — soạn SAP 12 mục: quần thể phân tích · kết cục · thống kê mô tả · phân tích chính/đa biến · dữ liệu thiếu · nhóm nhỏ · đa so sánh · nhạy cảm · phần mềm/seed · dummy tables + SAP Lock Certificate |
-| M5 | ⛔ CỔNG CỨNG G4: dừng — chờ bác sĩ ký xác nhận "SAP đã khóa ngày [DD/MM/YYYY]"; ghi G4_STATUS=LOCKED vào `so-cai-ghi-nho` sau khi bác sĩ xác nhận |
+| M5 | ⛔ CỔNG CỨNG G4: dừng — chờ bác sĩ ký xác nhận "SAP đã khóa ngày [DD/MM/YYYY]". **Ghi G4_STATUS=LOCKED vào checkpoint KHÔNG còn đủ để mở cổng thật (vá 2026-07-12, audit toàn diện — kiểm định đối kháng xác nhận agent tự ghi dòng này từng đủ để qua cổng, dù bác sĩ chưa hề duyệt).** Việc CỦA AGENT: nhắc bác sĩ **tự tay** (không nhờ agent) chạy `python tools/approve_gate.py --study <tên> --gate G4 --artifact <file SAP đã khóa> --reviewer-role "PI_PROJECT_OWNER"` trong terminal riêng — script đó tự ký bằng khóa cục bộ bác sĩ đã thiết lập (`tools/setup_gate_approval_key.py`, một lần/máy). **Role bắt buộc (vá 2026-07-14 — trước đó code CHỈ chấp nhận role thống kê viên dù tài liệu này luôn hướng dẫn "Chủ nhiệm đề tài" tự ký, khiến bác sĩ làm đúng theo hướng dẫn vẫn bị `approve_gate.py` từ chối):** `--reviewer-role` phải là `PI`/`PI_PROJECT_OWNER`/`PRINCIPAL_INVESTIGATOR`/`CHỦ_NHIỆM_ĐỀ_TÀI` (khi chủ nhiệm tự ký, trường hợp phổ biến) HOẶC `STATISTICIAN`/`BIOSTATISTICIAN`/`METHODS_STATISTICS_REVIEWER`/`THỐNG_KÊ_VIÊN` (khi có thống kê viên riêng ký). Agent CHỈ ghi lại vào `so-cai-ghi-nho` rằng đã nhắc bác sĩ chạy lệnh này — KHÔNG tự chạy hộ, KHÔNG tự coi cổng đã đóng chỉ vì đã sửa checkpoint text. |
 
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`.
@@ -338,6 +338,10 @@ Báo cáo: TRIPOD+AI (2024)
 ║  làm phân tích thăm dò POST-HOC riêng biệt         ║
 ╚══════════════════════════════════════════════════════╝
 ```
+
+> **Cổng thật đòi ledger có chữ ký (vá 2026-07-12/2026-07-14), khối trên chỉ mô tả checkpoint
+> text tham khảo:** xem M5 ở bảng đầu file — lệnh `approve_gate.py --gate G4` thật cần thêm
+> `--reviewer-role` đúng nhóm (PI/chủ nhiệm HOẶC thống kê viên, cả hai đều hợp lệ từ 2026-07-14).
 
 Xuất Word:
 ```bash
