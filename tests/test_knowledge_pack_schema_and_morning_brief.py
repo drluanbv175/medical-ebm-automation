@@ -1,3 +1,5 @@
+import json
+from datetime import datetime
 from pathlib import Path
 
 from app.services.knowledge_pack_release_gate import (
@@ -96,6 +98,8 @@ def test_morning_brief_preview_handles_all_current_packs():
     brief = gen_morning_brief.generate_brief(preview=True)
 
     assert "10/10" in brief
+    assert "Clinical release ready" in brief
+    assert "**0/10**" in brief
     assert "hypertension_adult_outpatient" not in brief
     assert "DRAFT" in brief
     assert "Metformin" in brief
@@ -110,3 +114,25 @@ def test_morning_brief_pack_filter_handles_hypertension_gate_schema():
     assert "Tăng huyết áp" in brief or "TÄƒng huyáº¿t Ã¡p" in brief
     assert "Cảnh báo thuốc" not in brief
     assert "DỰ THẢO" in brief or "Dá»° THáº¢O" in brief
+
+
+def test_morning_brief_write_outputs_include_release_manifest(tmp_path, monkeypatch):
+    monkeypatch.setattr(gen_morning_brief, "BASE", tmp_path)
+    monkeypatch.setattr(gen_morning_brief, "RESULTS_DIR", tmp_path / "results")
+    monkeypatch.setattr(gen_morning_brief, "EXPORTS_DIR", tmp_path / "exports" / "morning_brief")
+
+    fixed_output, dated_output = gen_morning_brief.write_brief_outputs(
+        "DRAFT test brief",
+        now=datetime(2026, 7, 15, 6, 30),
+    )
+    fixed_manifest = tmp_path / "results" / "daily_ebm_brief_manifest.json"
+    dated_manifest = tmp_path / "exports" / "morning_brief" / "EBM_SANG_2026-07-15_manifest.json"
+    payload = json.loads(fixed_manifest.read_text(encoding="utf-8"))
+
+    assert fixed_output.exists()
+    assert dated_output.exists()
+    assert dated_manifest.exists()
+    assert payload["kind"] == "morning_brief_run_manifest"
+    assert payload["clinical_release_allowed"] is False
+    assert payload["release_readiness"]["clinical_release_ready"] == 0
+    assert payload["release_readiness"]["total"] == 10

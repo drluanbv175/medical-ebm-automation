@@ -27,6 +27,11 @@ import yaml
 BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 
+from app.services.knowledge_pack_release_gate import (  # noqa: E402
+    assess_all_pack_release_readiness,
+    assess_pack_release_readiness,
+    summarize_release_readiness,
+)
 from app.services.knowledge_pack_schema import (  # noqa: E402
     normalize_drug_safety_rules,
     normalize_recommendations,
@@ -171,6 +176,21 @@ def check_surveillance_updates() -> list[str]:
     return updates
 
 
+def get_release_readiness_summary(target_pack: str | None = None) -> dict:
+    """Return clinical release readiness counts for packs shown in this brief."""
+    if target_pack:
+        results = [assess_pack_release_readiness(PACKS_DIR / target_pack)]
+    else:
+        results = assess_all_pack_release_readiness(PACKS_DIR)
+    summary = summarize_release_readiness(results)
+    summary["blocked_pack_ids"] = [
+        result.pack_id
+        for result in results
+        if result.schema_ok and not result.clinical_release_ready
+    ]
+    return summary
+
+
 def build_pack_section(pack_id: str, pack_dir: Path) -> str:
     """Xây một đoạn ngắn cho mỗi knowledge pack."""
     label = PACK_LABELS.get(pack_id, pack_id)
@@ -248,6 +268,12 @@ def generate_brief(target_pack: str = None, preview: bool = False) -> str:
         if pack_id not in available_packs
     ]
     lines.append(f"- Bệnh lý chưa có pack: {', '.join(missing_pack_labels) or 'Không'}")
+    release_summary = get_release_readiness_summary(target_pack)
+    lines.append(
+        "- Clinical release ready: "
+        f"**{release_summary['clinical_release_ready']}/{release_summary['total']}** "
+        "(review-only packs remain draft)"
+    )
     lines.append("")
 
     # Nội dung từng pack
@@ -287,8 +313,44 @@ def write_brief_outputs(brief: str, now: datetime | None = None) -> tuple[Path, 
     EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
     dated_output = EXPORTS_DIR / f"EBM_SANG_{run_at.strftime('%Y-%m-%d')}.md"
     dated_output.write_text(brief, encoding="utf-8")
+    write_brief_manifest(fixed_output=fixed_output, dated_output=dated_output, run_at=run_at)
 
     return fixed_output, dated_output
+
+
+def write_brief_manifest(
+    *,
+    fixed_output: Path,
+    dated_output: Path,
+    run_at: datetime,
+    target_pack: str | None = None,
+) -> tuple[Path, Path]:
+    """Write a machine-readable audit manifest for the morning brief run."""
+    release_summary = get_release_readiness_summary(target_pack)
+    manifest = {
+        "kind": "morning_brief_run_manifest",
+        "generated_at": run_at.isoformat(),
+        "target_pack": target_pack,
+        "fixed_output": _manifest_path(fixed_output),
+        "dated_output": _manifest_path(dated_output),
+        "release_readiness": release_summary,
+        "clinical_release_allowed": release_summary["clinical_release_ready"] == release_summary["total"]
+        and release_summary["total"] > 0,
+        "safety_note": "Review-only draft brief. Not a clinical release package.",
+    }
+    fixed_manifest = RESULTS_DIR / "daily_ebm_brief_manifest.json"
+    fixed_manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    dated_manifest = EXPORTS_DIR / f"EBM_SANG_{run_at.strftime('%Y-%m-%d')}_manifest.json"
+    dated_manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    return fixed_manifest, dated_manifest
+
+
+def _manifest_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(BASE))
+    except ValueError:
+        return str(path)
 
 
 def main():
