@@ -5,16 +5,21 @@
 # là ảnh chụp `pip freeze` của venv đã chạy đủ 1730 test (0 fail, 19 skip) + compileall
 # PASS, dùng để cài lại ĐÚNG một môi trường đã xác minh — không tự ý lấy bản mới hơn.
 #
-# Môi trường xác minh: Python 3.12.10 (~/.ebm-venv trên Windows). Bản lock trước đó
-# (2026-07-15, "Ngày 6" của LO_TRINH_7_NGAY_NGHIEN_CUU_Y_KHOA_2026-07-14.md) ghi nhận
-# venv chạy Python 3.9.6 và liệt kê 5 gói (python-dotenv/requests/pillow/pytest/streamlit)
-# bị pip từ chối nâng cấp vì "Requires-Python >=3.10" — venv đã được nâng lên Python
-# 3.12.10 sau đó (không rõ bởi phiên nào, phát hiện lại khi rà soát 2026-07-15), nên
-# rào cản đó KHÔNG còn đúng: cả 5 gói đó đã ở bản mới nhất/đã vá trong file này.
+# Môi trường xác minh: Python 3.12.10 (~/.ebm-venv trên Windows) VÀ Python 3.14.6
+# (~/.ebm-venv trên Mac, nâng cấp 2026-07-15 sau khi máy Mac cài Python 3.14 — không
+# có bản 3.12 khả dụng trên máy đó lúc nâng cấp). Cùng MỘT bộ phiên bản gói (file này,
+# `pip install -r requirements.lock.txt`) cài sạch và cho đúng 1812 test pass/0 fail/
+# 17 skip trên CẢ HAI (xác nhận bằng `diff` giữa 2 lần `pip freeze` — không lệch 1
+# dòng nào). Bản lock trước đó (2026-07-15, "Ngày 6") ghi nhận venv Mac từng chạy
+# Python 3.9.6 và liệt kê 5 gói bị pip từ chối nâng cấp vì "Requires-Python >=3.10" —
+# rào cản đó KHÔNG còn đúng, cả 5 gói đó đã ở bản mới nhất/đã vá trong file này.
+# venv Python 3.9.6 cũ được giữ lại (không xóa) tại ~/.ebm-venv-py39-backup-20260715
+# làm phương án dự phòng, không phải venv đang dùng.
 # reports/DEPENDENCY_AUDIT_PIP_2026-07-15.md giữ nguyên làm hồ sơ lịch sử, không sửa.
 #
 # Cách tạo lại (SAU khi đã pytest xanh trên venv đang dùng):
-#   source ~/.ebm-venv/Scripts/activate && pip freeze > requirements.lock.txt
+#   macOS/Linux: source ~/.ebm-venv/bin/activate && pip freeze > requirements.lock.txt
+#   Windows:     source ~/.ebm-venv/Scripts/activate && pip freeze > requirements.lock.txt
 #
 # Cách cài lại y hệt môi trường đã xác minh (vd máy mới / CI):
 #   pip install -r requirements.lock.txt
