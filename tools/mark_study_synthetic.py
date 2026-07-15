@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+mark_study_synthetic.py — BƯỚC 1/2 của cơ chế "admin phê duyệt toàn quyền CHỈ
+cho dữ liệu tổng hợp/thử nghiệm" (2026-07-15, theo yêu cầu bác sĩ).
+
+Bối cảnh: bác sĩ muốn có "quyền cao nhất phê duyệt mọi cổng" để kiểm thử cơ chế
+tự động hóa G0-G9, KỂ CẢ G2 (Hội đồng Đạo đức/IRB) và G8 (phản biện độc lập) —
+2 cổng mà `tools/approve_gate.py` (CLI thật) CỐ Ý không cho PI tự ký, vì đó là
+nguyên tắc liêm chính nghiên cứu cốt lõi (một PI không thể tự làm hội đồng đạo
+đức/tự phản biện chính mình). Sau khi hỏi rõ phạm vi, bác sĩ chọn: TOÀN QUYỀN
+kể cả G2/G8, nhưng CHỈ áp dụng cho đề tài tổng hợp/thử nghiệm — KHÔNG BAO GIỜ
+đề tài người thật (vd exports/hai-long-benh-nhan-C1a-BVQY175).
+
+Cơ chế 2 lớp phòng thủ (không lớp nào một mình là đủ):
+  Lớp 1 — script NÀY: đánh dấu TƯỜNG MINH, CÓ CHỦ Ý một đề tài là
+          study_meta.json["study_kind"] = "synthetic_test". Từ chối nếu đề tài
+          nằm trong gate_contract.REAL_STUDY_DENYLIST, hoặc đã có dấu hiệu tiến
+          độ THẬT (irb_approved/sap_lock_date/... đã bật, hoặc ledger đã có phê
+          duyệt G2/G8 KHÔNG-synthetic từ trước — gợi ý đây có thể là đề tài
+          đang đi qua quy trình thật, không nên gắn cờ synthetic).
+  Lớp 2 — tools/approve_gate_synthetic_admin.py: CHỈ ghi phê duyệt khi đã thấy
+          study_kind == "synthetic_test" ở lớp 1, VÀ tự kiểm tra lại
+          REAL_STUDY_DENYLIST một lần nữa (không tin lớp 1 một mình).
+
+KHÔNG đè study_kind nếu đã = "synthetic_test" (idempotent). Dùng --unmark để
+gỡ cờ (hành động AN TOÀN/giảm quyền, không cần cờ xác nhận).
+
+Dùng:
+    python3 tools/mark_study_synthetic.py --study TEST-ADMIN-BYPASS-DEMO \\
+        --i-confirm-this-is-synthetic-test-data-not-a-real-study
+
+    python3 tools/mark_study_synthetic.py --study TEST-ADMIN-BYPASS-DEMO --unmark
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import gate_contract as GC  # noqa: E402
+
+from app.utils.console import configure_unicode_console  # noqa: E402
+
+_REAL_PROGRESS_FLAGS = ("irb_approved", "sap_lock_date", "data_lock_date",
+                        "results_final", "integrity_signed")
+
+
+def _has_real_ledger_progress(ledger_path: Path) -> list:
+    """Trả danh sách gate_id đã có phê duyệt APPROVED KHÔNG-synthetic trong ledger
+    — dấu hiệu mạnh rằng đề tài đang/đã đi qua quy trình duyệt THẬT, không nên
+    gắn cờ synthetic_test (dù chỉ để thử nghiệm) vì có thể trộn lẫn 2 loại bằng
+    chứng trong cùng 1 ledger."""
+    if not ledger_path.exists():
+        return []
+    try:
+        records = json.loads(ledger_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    return sorted({
+        r.get("gate_id") for r in records
+        if r.get("decision") == "APPROVED" and not r.get("is_synthetic")
+    })
+
+
+def main() -> int:
+    configure_unicode_console()
+    ap = argparse.ArgumentParser(description=__doc__.split("Dùng:")[0])
+    ap.add_argument("--study", required=True, help="Tên đề tài (khớp thư mục exports/<tên>)")
+    ap.add_argument("--i-confirm-this-is-synthetic-test-data-not-a-real-study",
+                    dest="confirm", action="store_true",
+                    help="Bắt buộc — xác nhận tường minh đây KHÔNG PHẢI đề tài người thật")
+    ap.add_argument("--unmark", action="store_true",
+                    help="Gỡ cờ synthetic_test (hành động an toàn, không cần --i-confirm-...)")
+    args = ap.parse_args()
+
+    repo_root = Path(__file__).resolve().parents[1]
+
+    # CHỐT AN TOÀN dùng chung (gate_contract.resolve_synthetic_study_dir): giải
+    # exports/<study> thành đường dẫn CANONICAL đã resolve toàn bộ symlink/"."/"..",
+    # kiểm containment (con trực tiếp của exports/) + denylist trên tên canonical +
+    # chặn chuỗi rỗng — đóng cùng lúc 4 lỗ hổng red-team đối kháng tái hiện được
+    # 2026-07-15 (TOCTOU symlink race, thoát sandbox bằng path tuyệt đối/"../",
+    # --study rỗng, biến thể "./<tên thật>"). MỌI I/O bên dưới dùng real_dir này,
+    # KHÔNG dùng lại Path chưa resolve.
+    real_dir, err = GC.resolve_synthetic_study_dir(args.study, repo_root)
+    if err:
+        print(f"✗ TỪ CHỐI: {err}")
+        if "REAL_STUDY_DENYLIST" in err:
+            print("   Nếu đây thực sự là đề tài tổng hợp/thử nghiệm, tạo thư mục tên khác biệt rõ")
+            print("   ràng (vd tiền tố TEST-/DEMO-/SANDBOX-) thay vì gắn cờ lên tên đề tài thật.")
+        return 1
+    study_dir = real_dir
+    meta_path = study_dir / "study_meta.json"
+
+    meta = GC.load_study_meta(study_dir)
+
+    if args.unmark:
+        if meta.get("study_kind") == "synthetic_test":
+            meta.pop("study_kind", None)
+            meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"✅ Đã gỡ cờ synthetic_test khỏi '{args.study}'.")
+            print("   tools/approve_gate_synthetic_admin.py sẽ KHÔNG còn hoạt động trên đề tài này.")
+        else:
+            print(f"(Không có gì để gỡ — '{args.study}' chưa từng được đánh dấu synthetic_test.)")
+        return 0
+
+    if meta.get("study_kind") == "synthetic_test":
+        print(f"(Đã đánh dấu từ trước — '{args.study}' đã là study_kind=synthetic_test, không đổi gì.)")
+        return 0
+
+    if not args.confirm:
+        print("✗ Thiếu cờ xác nhận bắt buộc.")
+        print("   Chạy lại kèm: --i-confirm-this-is-synthetic-test-data-not-a-real-study")
+        return 1
+
+    real_flags_on = [k for k in _REAL_PROGRESS_FLAGS if meta.get(k)]
+    if real_flags_on:
+        print(f"✗ TỪ CHỐI: '{args.study}' đã có dấu hiệu tiến độ THẬT trong study_meta.json: "
+              f"{real_flags_on}")
+        print("   Một đề tài đã có irb_approved/sap_lock_date/.../integrity_signed=true KHÔNG nên")
+        print("   được gắn cờ synthetic_test — nguy cơ trộn lẫn bằng chứng thật và bằng chứng giả")
+        print("   lập trong cùng một ledger. Nếu đây thực sự là lỗi thao tác (cờ thật bị bật nhầm")
+        print("   trên đề tài thử nghiệm), sửa tay study_meta.json rồi chạy lại.")
+        return 1
+
+    ledger_path = study_dir / "approval_ledger.json"
+    real_gates = _has_real_ledger_progress(ledger_path)
+    if real_gates:
+        print(f"✗ TỪ CHỐI: '{args.study}' đã có phê duyệt THẬT (không-synthetic) trong ledger "
+              f"cho cổng: {real_gates}")
+        print("   Không gắn cờ synthetic_test lên đề tài đã có lịch sử duyệt thật — nguy cơ")
+        print("   admin-bypass sau này ghi thêm phê duyệt giả lập vào CÙNG ledger với phê duyệt")
+        print("   thật, gây khó phân biệt khi audit.")
+        return 1
+
+    # HEURISTIC BẮT BÍ DANH THEO NỘI DUNG (thêm 2026-07-15 sau red-team) — tổng
+    # quát hơn denylist theo tên: một đề tài THỬ NGHIỆM đúng nghĩa KHÔNG mang danh
+    # tính cơ sở y tế THẬT. Nếu study_meta.json có org_lines (dòng "BỆNH VIỆN…/
+    # TRUNG TÂM…") thì rất có thể đây là đề tài thật (hoặc bí danh chạy-thử dùng
+    # danh tính viện thật, như KKB-HAI-LONG-2026) → từ chối, kể cả khi TÊN thư mục
+    # chưa kịp thêm vào REAL_STUDY_DENYLIST. Bắt được lớp "bí danh mới chưa ai kịp
+    # denylist" mà danh sách tên một mình bỏ sót.
+    org_lines = meta.get("org_lines")
+    if isinstance(org_lines, list) and any(str(x).strip() for x in org_lines):
+        print(f"✗ TỪ CHỐI: '{args.study}' mang danh tính CƠ SỞ Y TẾ THẬT trong study_meta.json"
+              f" (org_lines={org_lines}).")
+        print("   Một đề tài thử nghiệm đúng nghĩa không nên gắn tên bệnh viện/trung tâm thật.")
+        print("   Đây có thể là đề tài thật hoặc bí danh chạy-thử dùng danh tính viện thật — nếu")
+        print("   chắc chắn là dữ liệu tổng hợp, xóa org_lines khỏi study_meta.json rồi chạy lại,")
+        print("   hoặc tạo thư mục thử nghiệm MỚI không mang danh tính thật.")
+        return 1
+
+    meta["study_kind"] = "synthetic_test"
+    meta["_study_kind_note"] = (
+        "[ĐÁNH DẤU 2026-07-15 qua tools/mark_study_synthetic.py] Đề tài này được xác nhận "
+        "TỔNG HỢP/THỬ NGHIỆM — dùng để kiểm thử cơ chế tự động hóa G0-G9, KHÔNG PHẢI nghiên "
+        "cứu người thật. Cờ này mở khóa tools/approve_gate_synthetic_admin.py cho đề tài này "
+        "(admin có thể tự duyệt MỌI cổng kể cả G2/G8). Gỡ bằng --unmark nếu đặt nhầm."
+    )
+    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"✅ Đã đánh dấu '{args.study}' là study_kind=synthetic_test.")
+    print(f"   Ghi vào: {meta_path}")
+    print("   ⚠️  tools/approve_gate_synthetic_admin.py giờ có thể duyệt MỌI cổng (kể cả G2/G8)")
+    print("      cho đề tài này. KHÔNG BAO GIỜ dùng cờ này cho nghiên cứu người thật.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -241,6 +241,79 @@ def load_study_meta(out_dir: Path) -> Dict[str, Any]:
         return {}
 
 
+# ── Danh sách đề tài THẬT — chặn cứng khỏi cơ chế admin-bypass synthetic ──────
+# Thêm 2026-07-15 theo yêu cầu bác sĩ: xây "quyền phê duyệt tất cả" (tools/
+# approve_gate_synthetic_admin.py) nhưng CHỈ cho dữ liệu tổng hợp/thử nghiệm,
+# KHÔNG BAO GIỜ cho nghiên cứu người thật. Đây là LỚP PHÒNG THỦ THỨ HAI — lớp
+# thứ nhất là study_meta.json["study_kind"] phải được TỰ TAY đặt = "synthetic_test"
+# qua tools/mark_study_synthetic.py (script đó cũng từ chối tự đặt cờ này lên
+# bất kỳ tên nào trong danh sách dưới đây). Nếu ai đó lỡ đặt study_kind lên một
+# đề tài THẬT (nhầm lẫn/copy-paste study_meta.json giữa các đề tài), danh sách
+# CỐ Ý KHÔNG CÓ CỜ NÀO GHI ĐÈ ĐƯỢC này vẫn chặn — không có --force/--i-confirm
+# nào bỏ qua được nó, đúng nguyên tắc "PI không thể tự làm hội đồng đạo đức của
+# chính mình" cho G2/G8.
+# BẮT BUỘC: thêm tên thư mục (khớp exports/<tên>/) vào đây NGAY khi tạo một đề
+# tài nghiên cứu NGƯỜI THẬT mới — trước khi chạy bất kỳ pipeline nào cho nó.
+REAL_STUDY_DENYLIST: frozenset = frozenset({
+    "hai-long-benh-nhan-C1a-BVQY175",
+    # KKB-HAI-LONG-2026: BÍ DANH của CÙNG đề tài thật (cùng tiêu đề/viện/PICO —
+    # "Khoa Khám bệnh C1a, Bệnh viện Quân y 175") — thư mục chạy-thử G0-G10 dùng
+    # ĐÚNG chủ đề thật làm dữ liệu; xem exports/hai-long-benh-nhan-C1a-BVQY175/
+    # _LIEN-KET-VOI-BAN-CHAY-THU-KKB.md. Thêm vào denylist 2026-07-15 sau khi
+    # red-team đối kháng phát hiện nó KHÔNG bị chặn (chạy `--study KKB-HAI-LONG-2026`
+    # trót lọt, không cần thủ thuật) — đúng loại "bí danh đề tài thật ngoài danh
+    # sách" mà denylist-theo-tên một mình không bắt được.
+    "KKB-HAI-LONG-2026",
+})
+
+
+def is_real_study_denylisted(study: str) -> bool:
+    """True nếu tên đề tài nằm trong danh sách đề tài THẬT bị chặn cứng khỏi mọi
+    cơ chế admin-bypass synthetic — kiểm tra KHÔNG phân biệt hoa/thường và bỏ
+    khoảng trắng đầu/cuối để tránh né tránh bằng biến thể chữ hoa/khoảng trắng."""
+    return (study or "").strip().casefold() in {s.casefold() for s in REAL_STUDY_DENYLIST}
+
+
+def resolve_synthetic_study_dir(study: str, repo_root: Path) -> Tuple[Optional[Path], Optional[str]]:
+    """CHỐT AN TOÀN dùng chung cho 2 tool admin-synthetic (mark_study_synthetic.py +
+    approve_gate_synthetic_admin.py). Giải exports/<study> thành MỘT đường dẫn CANONICAL
+    (đã resolve toàn bộ symlink, "."/".."), kiểm CONTAINMENT + DENYLIST, rồi trả về
+    (real_dir, None) khi hợp lệ hoặc (None, thông_điệp_lỗi) khi từ chối.
+
+    Đóng CÙNG LÚC 4 lớp lỗ hổng red-team đối kháng đã tái hiện được (2026-07-15):
+      1. TOCTOU symlink race: TRẢ VỀ đường dẫn đã resolve(strict=True) — mọi I/O sau
+         PHẢI dùng real_dir này, KHÔNG dùng lại Path chưa resolve (đi qua symlink có
+         thể bị tráo giữa lúc-kiểm và lúc-ghi). resolve() giải cả chuỗi nên real_dir
+         không còn thành phần symlink nào.
+      2. Thoát sandbox bằng --study tuyệt đối / "../" / symlink trỏ ra ngoài: ép
+         real_dir.parent PHẢI ĐÚNG exports/ (con trực tiếp), nếu không → từ chối.
+      3. --study rỗng ("" khiến exports/"" == exports/ gốc): bắt riêng đầu hàm.
+      4. Denylist: kiểm trên real_dir.name (tên CANONICAL sau resolve), không phải
+         chuỗi --study thô — bắt cả "./<tên thật>", dấu "/" cuối, "../<tên>/<tên>".
+    """
+    if not study or not str(study).strip():
+        return None, "Tên đề tài (--study) rỗng — không xác định được thư mục."
+    exports_root = (Path(repo_root) / "exports").resolve()
+    study_dir = Path(repo_root) / "exports" / study
+    try:
+        real_dir = study_dir.resolve(strict=True)
+    except (OSError, RuntimeError, ValueError):
+        return None, f"Không thấy thư mục đề tài (hoặc không giải được đường dẫn): {study_dir}"
+    if real_dir.parent != exports_root:
+        return None, (
+            f"Thư mục đề tài phải là con TRỰC TIẾP của {exports_root} — "
+            f"'{study}' giải ra '{real_dir}' (nằm ngoài). Từ chối đường dẫn tuyệt đối, "
+            "'../', chuỗi rỗng, hoặc symlink trỏ ra ngoài exports/."
+        )
+    if is_real_study_denylisted(real_dir.name):
+        return None, (
+            f"'{study}' (→ thư mục thật '{real_dir.name}') nằm trong "
+            "gate_contract.REAL_STUDY_DENYLIST — đề tài nghiên cứu người thật đã biết. "
+            "KHÔNG cờ/đường-dẫn nào bỏ qua được kiểm tra này."
+        )
+    return real_dir, None
+
+
 # ── Chữ ký actor thật cho approval_ledger — vá 2026-07-12 (audit cổng G0-G9) ───
 # Bối cảnh: tools/approve_gate.py trước đây LUÔN gọi add_approval(created_by_agent=False)
 # bất kể ai thực sự gõ lệnh — script không có cách nào phân biệt "bác sĩ tự tay chạy"
