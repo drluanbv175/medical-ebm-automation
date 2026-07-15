@@ -9,6 +9,7 @@ import {
 } from "../lib/persistent-transaction";
 import {
   buildPrismaTransactionContract,
+  evaluatePrismaTestDatabaseGate,
   validatePrismaTransactionContract
 } from "../lib/prisma-transaction-contract";
 import type { PersistentBusinessWritePlan, PersistentWorkflowActionPlan, WorkflowActionPreview } from "../lib/workflow-actions";
@@ -152,4 +153,51 @@ test("prisma transaction contract stays disabled until real rollback tests exist
   assert.ok(contract.requiredOperations.includes("INSERT_EXACTLY_ONE_AUDIT_LOG_ROW"));
   assert.ok(contract.requiredRollbackCases.includes("FAIL_AFTER_BUSINESS_WRITE_BEFORE_AUDIT"));
   assert.ok(contract.forbiddenAdapterBehaviors.includes("NO_AUDIT_LOG_UPDATE_OR_DELETE"));
+});
+
+test("prisma test database gate requires rollback evidence before adapter promotion", () => {
+  const contract = buildPrismaTransactionContract(plan);
+  const missingEvidence = evaluatePrismaTestDatabaseGate(contract, {
+    testDatabaseOnly: true,
+    noProductionData: true,
+    migrationApplied: true,
+    auditMutationBlocked: false,
+    rollbackCases: {
+      FAIL_BEFORE_BUSINESS_WRITE: true,
+      FAIL_AFTER_BUSINESS_WRITE_BEFORE_AUDIT: false,
+      FAIL_AFTER_AUDIT_BEFORE_COMMIT: false
+    },
+    evidenceArtifact: null,
+    reviewerSignoff: null
+  });
+
+  assert.equal(missingEvidence.canEnableTestDatabaseAdapter, false);
+  assert.equal(missingEvidence.canEnableProductionCommit, false);
+  assert.equal(missingEvidence.productionCommitDisabled, true);
+  assert.ok(missingEvidence.blockedReasons.includes("AuditLog UPDATE/DELETE must be blocked in the test database."));
+  assert.ok(missingEvidence.blockedReasons.includes("Missing rollback evidence after business write before AuditLog insert."));
+  assert.ok(missingEvidence.blockedReasons.includes("Missing reviewer signoff for transaction rollback evidence."));
+});
+
+test("prisma test database gate can only unlock test adapter, never production commit", () => {
+  const contract = buildPrismaTransactionContract(plan);
+  const gate = evaluatePrismaTestDatabaseGate(contract, {
+    testDatabaseOnly: true,
+    noProductionData: true,
+    migrationApplied: true,
+    auditMutationBlocked: true,
+    rollbackCases: {
+      FAIL_BEFORE_BUSINESS_WRITE: true,
+      FAIL_AFTER_BUSINESS_WRITE_BEFORE_AUDIT: true,
+      FAIL_AFTER_AUDIT_BEFORE_COMMIT: true
+    },
+    evidenceArtifact: "reports/ccos-prisma-rollback-test.md",
+    reviewerSignoff: "reviewer:quality-manager"
+  });
+
+  assert.equal(gate.canEnableTestDatabaseAdapter, true);
+  assert.equal(gate.canEnableProductionCommit, false);
+  assert.equal(gate.productionCommitDisabled, true);
+  assert.deepEqual(gate.blockedReasons, []);
+  assert.ok(gate.requiredEvidence.includes("Rollback observed after AuditLog insert before commit"));
 });

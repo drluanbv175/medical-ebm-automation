@@ -1,6 +1,6 @@
 # Claude Code handoff - Chronic Care Clinic OS
 
-Updated: 2026-06-19
+Updated: 2026-07-15
 
 ## Current focus
 
@@ -40,7 +40,7 @@ node scripts/sync-check.mjs
 - `lib/workflow-actions.ts`: defines preview-only server-action contracts for guarded write workflows before persistence exists.
 - `lib/workflow-actions.ts`: adds persistent write plans for all guarded write actions, using `buildPersistentAuditWritePlan` while keeping production commit disabled until atomic DB tests exist.
 - `lib/persistent-transaction.ts`: provides an in-memory transaction harness with behavior tests; it stages business write + AuditLog together and rolls back both on injected failure before any real database adapter is enabled.
-- `lib/prisma-transaction-contract.ts`: defines the disabled Prisma transaction adapter contract and required rollback cases without importing Prisma or enabling production commits.
+- `lib/prisma-transaction-contract.ts`: defines the disabled Prisma transaction adapter contract, required rollback cases and test-database rollback evidence gate without importing Prisma or enabling production commits.
 - `/overdue`: claim-call-task workflow now uses `claimOverdueFollowUpTaskAction` preview with `task.manage` guard.
 - `/appointments`: create appointment workflow now uses `createCareAppointmentAction` preview with `task.manage` guard.
 - `/patients/[id]`: care plan draft workflow now uses `createCarePlanDraftAction` preview with `care_plan.version` guard.
@@ -77,8 +77,8 @@ node scripts/sync-check.mjs
 ## Recommended next tasks
 
 1. Add reviewed Prisma migration/tests for the AuditLog sequence/previousHash/eventHash fields.
-2. Replace the in-memory transaction harness with the Prisma transaction adapter only after test-database rollback tests satisfy `lib/prisma-transaction-contract.ts`.
-3. Keep rollback tests for failure before business write, after business write before AuditLog, and after AuditLog before commit.
+2. Build the Prisma test-database adapter only after rollback evidence satisfies `evaluatePrismaTestDatabaseGate` in `lib/prisma-transaction-contract.ts`.
+3. Keep rollback tests for failure before business write, after business write before AuditLog, and after AuditLog before commit; production commit must remain disabled until formal signoff.
 4. Add A5 PDF generation only after approved-template and consent gates remain covered by tests.
 5. Configure a private Git remote so Windows, MacBook and Claude Code synchronize through Git, not only OneDrive.
 

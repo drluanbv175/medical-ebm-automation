@@ -28,6 +28,30 @@ export type PrismaTransactionContract = {
   auditEntityType: string | null;
 };
 
+export type PrismaRollbackEvidenceCase =
+  | "FAIL_BEFORE_BUSINESS_WRITE"
+  | "FAIL_AFTER_BUSINESS_WRITE_BEFORE_AUDIT"
+  | "FAIL_AFTER_AUDIT_BEFORE_COMMIT";
+
+export type PrismaTestDatabaseEvidence = {
+  testDatabaseOnly: boolean;
+  noProductionData: boolean;
+  migrationApplied: boolean;
+  auditMutationBlocked: boolean;
+  rollbackCases: Record<PrismaRollbackEvidenceCase, boolean>;
+  evidenceArtifact: string | null;
+  reviewerSignoff: string | null;
+};
+
+export type PrismaTestDatabaseGate = {
+  gate: "PRISMA_TEST_DATABASE_ROLLBACK_GATE";
+  canEnableTestDatabaseAdapter: boolean;
+  canEnableProductionCommit: false;
+  productionCommitDisabled: true;
+  blockedReasons: string[];
+  requiredEvidence: string[];
+};
+
 export function buildPrismaTransactionContract(plan: PersistentWorkflowActionPlan): PrismaTransactionContract {
   const blockedReasons = [
     ...(!plan.allowed ? plan.blockedReasons : []),
@@ -64,6 +88,46 @@ export function buildPrismaTransactionContract(plan: PersistentWorkflowActionPla
     ],
     businessOperation: plan.businessWritePlan?.operation ?? null,
     auditEntityType: plan.auditWritePlan?.auditLogRecord.entityType ?? null
+  };
+}
+
+export function evaluatePrismaTestDatabaseGate(
+  contract: PrismaTransactionContract,
+  evidence: PrismaTestDatabaseEvidence
+): PrismaTestDatabaseGate {
+  const contractProblems = validatePrismaTransactionContract(contract);
+  const blockedReasons = [
+    ...contractProblems,
+    ...(evidence.testDatabaseOnly ? [] : ["Evidence must come from an isolated test database only."]),
+    ...(evidence.noProductionData ? [] : ["Test database must contain no production patient data."]),
+    ...(evidence.migrationApplied ? [] : ["AuditLog migration must be applied in the test database."]),
+    ...(evidence.auditMutationBlocked ? [] : ["AuditLog UPDATE/DELETE must be blocked in the test database."]),
+    ...(evidence.rollbackCases.FAIL_BEFORE_BUSINESS_WRITE ? [] : ["Missing rollback evidence before business write."]),
+    ...(evidence.rollbackCases.FAIL_AFTER_BUSINESS_WRITE_BEFORE_AUDIT
+      ? []
+      : ["Missing rollback evidence after business write before AuditLog insert."]),
+    ...(evidence.rollbackCases.FAIL_AFTER_AUDIT_BEFORE_COMMIT
+      ? []
+      : ["Missing rollback evidence after AuditLog insert before commit."]),
+    ...(evidence.evidenceArtifact ? [] : ["Missing test evidence artifact path or report id."]),
+    ...(evidence.reviewerSignoff ? [] : ["Missing reviewer signoff for transaction rollback evidence."])
+  ];
+
+  return {
+    gate: "PRISMA_TEST_DATABASE_ROLLBACK_GATE",
+    canEnableTestDatabaseAdapter: blockedReasons.length === 0,
+    canEnableProductionCommit: false,
+    productionCommitDisabled: true,
+    blockedReasons,
+    requiredEvidence: [
+      "Isolated non-production database URL",
+      "AuditLog hardening migration applied",
+      "Rollback observed before business write",
+      "Rollback observed after business write before AuditLog insert",
+      "Rollback observed after AuditLog insert before commit",
+      "AuditLog UPDATE/DELETE blocked",
+      "Reviewer signoff and evidence artifact"
+    ]
   };
 }
 
