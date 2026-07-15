@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 """
+⚠️ ĐÃ BỊ THAY THẾ (phát hiện 2026-07-15, rà toàn diện) — KHÔNG dùng file này.
+Dùng `tools/run_g10_assemble.py --study <TEN>` thay thế: cùng mục đích (gộp
+G0-G9 thành đề cương 16-mục) nhưng là bản THẬT đang chạy — có sẵn cổng A12
+kiểm chứng trích dẫn, xuất DOCX theo hồ sơ tạp chí, guardrail check_de_cuong.py,
+và được nối vào doctrine `dieu-phoi-nghien-cuu.md` (mục "G10"). File NÀY: không
+agent/doctrine/script nào gọi tới, chưa từng sinh ra output thật (0 file
+DE_CUONG_16_MUC_TICH_HOP_* trong exports/), và từng chứa 1 đường dẫn cứng tới
+thư mục tạm của máy Mac cụ thể (đã gỡ, xem lịch sử git) — dấu hiệu rõ nó chưa
+từng chạy được trong thực tế. Giữ lại chỉ để tham chiếu lịch sử; không xóa vì
+chưa rà hết mọi chỗ có thể còn phụ thuộc gián tiếp (vd script thử nghiệm riêng
+của người dùng ngoài repo).
+
 run_pipeline_integrated.py — INTEGRATION LAYER
 Nối hệ thống Pipeline G0-G9 với Template 16-Mục (skill nghien-cuu-y-khoa-chuan-quoc-te)
 
@@ -46,7 +58,8 @@ from pathlib import Path
 # Thư mục gốc
 BASE = Path(__file__).resolve().parent.parent
 EXPORTS_DIR = BASE / "exports"
-SKILL_TEMPLATES_DIR = Path("/var/folders/t_/nspjmxbs4gdb3yw_gwqk533h0000gn/T/claude-hostloop-plugins/1289901ffda7d3a9/skills/nghien-cuu-y-khoa-chuan-quoc-te/templates")
+# (đã gỡ SKILL_TEMPLATES_DIR — hardcode đường dẫn tạm máy Mac cụ thể, KHÔNG
+#  được dùng ở đâu trong file này; xem cảnh báo deprecation ở docstring đầu file)
 
 
 # ════════════════════════════════════════════════════════════════════════════
