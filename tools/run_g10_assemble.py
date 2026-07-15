@@ -1291,6 +1291,18 @@ def main() -> int:
         print(f"  ✓ Word:     {result['docx'].relative_to(BASE)}")
     print(f"  ✓ Checkpoint: {result['checkpoint'].relative_to(BASE)}")
 
+    # Làm mới STUDY_INDEX.md theo checkpoint THẬT — trước đây chỉ sinh 1 lần lúc
+    # scaffold (mọi hàng cố định 🔴 Mới mãi mãi, kể cả sau khi march xong G10).
+    # G10 là bước capstone bắt buộc sau mỗi lần march (xem doctrine
+    # dieu-phoi-nghien-cuu.md) nên đây là chỗ tự nhiên nhất để giữ chỉ mục sống.
+    try:
+        sys.path.insert(0, str(TOOLS))
+        from scaffold_research_project import regenerate_study_index
+        idx_path = regenerate_study_index(study, out_dir)
+        print(f"  ✓ STUDY_INDEX làm mới: {idx_path.relative_to(BASE)}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"  [WARN] Không làm mới được STUDY_INDEX.md: {exc}")
+
     # Tự chạy validator.
     if not args.no_validate:
         try:

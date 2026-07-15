@@ -18,8 +18,15 @@ Sử dụng:
 """
 
 import argparse
+import json
+import re
+import sys
 from datetime import datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import gate_contract as _GC  # noqa: E402
 
 # Import generator nếu có python-docx
 try:
@@ -33,8 +40,6 @@ except ImportError:
         HAS_DOCX = True
     except ImportError:
         HAS_DOCX = False
-
-
 # ── 20 file theo §7 _CROSSWALK-NGHIEN-CUU.md ──────────────────────────────
 
 SCAFFOLD_FILES = [
@@ -614,6 +619,88 @@ Rà sau mỗi cổng G (G2, G4, G6, G9) — điền ngày cập nhật gần nh�
 ]
 
 
+def _last_gate_token(gate_field: str) -> str:
+    """Từ chuỗi cổng của 1 hàng SCAFFOLD_FILES (vd "G0-G1", "G1+G7", "G7-G9")
+    lấy cổng SAU CÙNG (số lớn nhất) — coi artifact "xong" khi cổng đó có checkpoint.
+    Chuỗi 1 cổng đơn (vd "G3") trả về chính nó."""
+    tokens = re.findall(r"G(\d+)", gate_field)
+    if not tokens:
+        return gate_field
+    return f"G{max(int(t) for t in tokens)}"
+
+
+def _row_status(gate_field: str, out_dir: Path) -> str:
+    """Trạng thái THẬT của 1 hàng STUDY_INDEX dựa trên checkpoint đã có — không
+    suy từ tên file .md/.docx (những file đó có thể là scaffold placeholder
+    chưa từng được điền lại)."""
+    gate = _last_gate_token(gate_field)
+    cp_path = out_dir / f"{gate}_checkpoint.json"
+    if not cp_path.exists():
+        return "🔴 Chưa có"
+    try:
+        cp = json.loads(cp_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return "🔴 Chưa có"
+    if _GC.is_blocked(cp):
+        return "🚧 Dự thảo — chờ input"
+    return "✅ Xong"
+
+
+def _index_table_lines(study_slug: str, out_dir: Path) -> list:
+    lines = [
+        "| # | File MD | File DOCX | Cổng | Artifact | Trạng thái |\n",
+        "|---|---------|----------|------|---------|------------|\n",
+    ]
+    for num, fname, gate, artifact_key, _title, _body in SCAFFOLD_FILES:
+        md_f = f"{num}_{fname}.md"
+        docx_f = (f"{ARTIFACT_MAP.get(artifact_key, ('', '', ''))[0]}_"
+                  f"{artifact_key.upper()}_{study_slug}.docx"
+                  if artifact_key in ARTIFACT_MAP else "—")
+        status = _row_status(gate, out_dir) if out_dir.exists() else "🔴 Chưa có"
+        lines.append(f"| {num} | {md_f} | {docx_f} | {gate} | `{artifact_key}` | {status} |\n")
+    return lines
+
+
+def regenerate_study_index(study_name: str, out_dir: Path, study_slug: str | None = None) -> Path:
+    """Sinh LẠI STUDY_INDEX.md với trạng thái THẬT (đọc checkpoint hiện có) —
+    thay vì hàng cố định "🔴 Mới" chỉ đúng lúc scaffold. Gọi lại sau mỗi lần
+    march (đặc biệt từ `run_g10_assemble.py`, bước capstone chạy sau mỗi lần
+    tiến cổng) để chỉ mục KHÔNG bị lạc hậu so với tiến độ thật. CHỈ ĐỌC
+    checkpoint, không ghi/sửa gì khác.
+    """
+    study_slug = study_slug or study_name.replace(" ", "-")
+    today = datetime.now().strftime("%Y-%m-%d")
+    lines = [
+        f"# STUDY INDEX — {study_name}\n",
+        f"> Cập nhật: {today} · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có "
+        f"(không phải cố định lúc scaffold)\n\n",
+        "## 20 File chuẩn\n\n",
+    ]
+    lines += _index_table_lines(study_slug, out_dir)
+    lines += [
+        "\n## Lệnh xuất .docx từng cổng\n\n",
+        "```bash\n",
+        "cd medical-ebm-automation\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G0\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G1\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --artifact ethics\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G3\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --artifact sap\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G5\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G6\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G7\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --artifact review\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --artifact readiness\n",
+        "# Hoặc xuất tất cả cùng lúc:\n",
+        f"python tools/gen_research_docx.py --study \"{study_name}\" --all\n",
+        "```\n",
+        "\n> Cần bác sĩ kiểm chứng. KHÔNG PII.\n",
+    ]
+    out_path = out_dir / "STUDY_INDEX.md"
+    out_path.write_text("".join(lines), encoding="utf-8")
+    return out_path
+
+
 def scaffold(study_name: str, base_dir: str = None, with_docx: bool = True):
     """Tạo thư mục và 20 file scaffold cho đề tài mới."""
     study_slug = study_name.replace(" ", "-")
@@ -657,40 +744,10 @@ def scaffold(study_name: str, base_dir: str = None, with_docx: bool = True):
             except Exception as e:
                 print(f"  [WARN] Không sinh .docx cho {artifact_key}: {e}")
 
-    # ── STUDY_INDEX.md ────────────────────────────────────────────────────
-    index_lines = [
-        f"# STUDY INDEX — {study_name}\n",
-        f"> Tạo: {today} · Trạng thái ban đầu: tất cả 🔴 (scaffold mới)\n\n",
-        "## 20 File chuẩn\n\n",
-        "| # | File MD | File DOCX | Cổng | Artifact | Trạng thái |\n",
-        "|---|---------|----------|------|---------|------------|\n",
-    ]
-    for num, fname, gate, artifact_key, title, _ in SCAFFOLD_FILES:
-        md_f  = f"{num}_{fname}.md"
-        docx_f = f"{ARTIFACT_MAP.get(artifact_key, ('', '', ''))[0]}_{artifact_key.upper()}_{study_slug}.docx" if artifact_key in ARTIFACT_MAP else "—"
-        index_lines.append(
-            f"| {num} | {md_f} | {docx_f} | {gate} | `{artifact_key}` | 🔴 Mới |\n"
-        )
-    index_lines += [
-        "\n## Lệnh xuất .docx từng cổng\n\n",
-        "```bash\n",
-        "cd medical-ebm-automation\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G0\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G1\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --artifact ethics\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G3\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --artifact sap\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G5\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G6\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --gate G7\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --artifact review\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --artifact readiness\n",
-        "# Hoặc xuất tất cả cùng lúc:\n",
-        f"python tools/gen_research_docx.py --study \"{study_name}\" --all\n",
-        "```\n",
-        "\n> Cần bác sĩ kiểm chứng. KHÔNG PII.\n",
-    ]
-    (out / "STUDY_INDEX.md").write_text("".join(index_lines), encoding="utf-8")
+    # ── STUDY_INDEX.md — trạng thái đọc THẬT từ checkpoint (rỗng lúc scaffold
+    # mới nên mọi hàng ra 🔴, y hệt hành vi cũ; nhưng dùng lại được để LÀM MỚI
+    # sau khi pipeline chạy, xem regenerate_study_index()) ──────────────────
+    regenerate_study_index(study_name, out, study_slug)
     print("  [IDX] STUDY_INDEX.md")
 
     # ── study_meta.json — PIN durable (gate_params + cờ bằng-chứng-đời-thực) ──
