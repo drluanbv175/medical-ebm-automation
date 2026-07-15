@@ -5,7 +5,9 @@ from pathlib import Path
 from app.services.knowledge_pack_release_gate import (
     assess_all_pack_release_readiness,
     assess_pack_release_readiness,
+    release_readiness_payload,
     summarize_release_readiness,
+    write_release_readiness_report,
 )
 from app.services.knowledge_pack_schema import (
     normalize_drug_safety_rules,
@@ -67,6 +69,30 @@ def test_hypertension_pack_release_gate_requires_real_approval_and_verified_mani
     assert "13_approval_record.json:approval_status_not_approved" in blockers
     assert "13_approval_record.json:next_review_due_missing" in blockers
     assert "10_evidence_manifest.json:manifest_release_allowed_false" in blockers
+
+
+def test_release_readiness_payload_is_machine_readable_and_blocks_release():
+    results = assess_all_pack_release_readiness(PACKS_DIR)
+    payload = release_readiness_payload(results, generated_at="2026-07-15T00:00:00+00:00")
+
+    assert payload["kind"] == "knowledge_pack_release_readiness_report"
+    assert payload["generated_at"] == "2026-07-15T00:00:00+00:00"
+    assert payload["summary"]["total"] == 10
+    assert payload["summary"]["clinical_release_ready"] == 0
+    assert payload["clinical_release_allowed"] is False
+    assert len(payload["packs"]) == 10
+    assert payload["blocker_counts"]["01_scope.yaml:clinical_release_allowed_false"] == 10
+
+
+def test_write_release_readiness_report_outputs_json(tmp_path):
+    output = tmp_path / "knowledge_pack_release_readiness.json"
+    path = write_release_readiness_report(packs_dir=PACKS_DIR, output_path=output)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+
+    assert path == output
+    assert payload["kind"] == "knowledge_pack_release_readiness_report"
+    assert payload["summary"]["review_ready"] == 10
+    assert payload["clinical_release_allowed"] is False
 
 
 def test_drug_safety_normalizer_supports_gate_style_rules():

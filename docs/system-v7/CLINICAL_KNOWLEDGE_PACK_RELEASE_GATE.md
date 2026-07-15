@@ -8,6 +8,8 @@ Use:
 ```bash
 python tools/validate_knowledge_packs.py
 python tools/assess_knowledge_pack_release.py
+python tools/assess_knowledge_pack_release.py --json
+python tools/assess_knowledge_pack_release.py --output results/knowledge_pack_release_readiness.json
 python tools/assess_knowledge_pack_release.py --require-clinical-release-ready
 ```
 
@@ -30,3 +32,7 @@ Clinical release remains blocked unless all of these are true:
 
 Current `2026.1-draft` packs are expected to be review-ready but
 clinical-release-blocked.
+
+Automation should consume the JSON payload, not parse CLI text. The payload kind
+is `knowledge_pack_release_readiness_report`; `clinical_release_allowed` must be
+`false` unless every pack is clinical-release-ready.

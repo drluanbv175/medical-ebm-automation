@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Mapping
 
@@ -102,6 +103,43 @@ def summarize_release_readiness(results: List[KnowledgePackReleaseReadiness]) ->
         "patient_facing_ready": sum(1 for result in results if result.patient_facing_ready),
         "blocked": sum(1 for result in results if not result.clinical_release_ready),
     }
+
+
+def release_readiness_payload(
+    results: List[KnowledgePackReleaseReadiness],
+    *,
+    generated_at: str | None = None,
+) -> Dict[str, Any]:
+    """Build a machine-readable release readiness report payload."""
+    summary = summarize_release_readiness(results)
+    blocker_counts: Dict[str, int] = {}
+    for result in results:
+        for issue in result.blockers:
+            key = f"{issue.file}:{issue.message}"
+            blocker_counts[key] = blocker_counts.get(key, 0) + 1
+    return {
+        "kind": "knowledge_pack_release_readiness_report",
+        "generated_at": generated_at or datetime.now(timezone.utc).isoformat(),
+        "summary": summary,
+        "clinical_release_allowed": summary["clinical_release_ready"] == summary["total"] and summary["total"] > 0,
+        "packs": [_release_result_payload(result) for result in results],
+        "blocker_counts": dict(sorted(blocker_counts.items())),
+        "safety_note": "Schema PASS is review-only unless clinical_release_ready is true.",
+    }
+
+
+def write_release_readiness_report(
+    *,
+    packs_dir: Path,
+    output_path: Path,
+    version_dir: str = "2026.1-draft",
+) -> Path:
+    """Write the release readiness report to JSON."""
+    results = assess_all_pack_release_readiness(packs_dir, version_dir)
+    payload = release_readiness_payload(results)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return output_path
 
 
 def _scope_release_issues(scope: Mapping[str, Any]) -> List[KnowledgePackReleaseIssue]:
@@ -201,3 +239,23 @@ def _load_json_mapping(path: Path) -> Dict[str, Any]:
 def _non_empty_text(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
+
+def _release_result_payload(result: KnowledgePackReleaseReadiness) -> Dict[str, Any]:
+    return {
+        "pack_id": result.pack_id,
+        "version_dir": result.version_dir,
+        "schema_ok": result.schema_ok,
+        "review_ready": result.review_ready,
+        "clinical_release_ready": result.clinical_release_ready,
+        "patient_facing_ready": result.patient_facing_ready,
+        "approval_record_present": result.approval_record_present,
+        "evidence_manifest_present": result.evidence_manifest_present,
+        "blockers": [
+            {
+                "file": issue.file,
+                "message": issue.message,
+                "severity": issue.severity,
+            }
+            for issue in result.blockers
+        ],
+    }
