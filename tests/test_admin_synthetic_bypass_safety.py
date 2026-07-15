@@ -48,6 +48,8 @@ import sys
 import time
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = REPO_ROOT / "tools"
 PYTHON = sys.executable
@@ -377,7 +379,12 @@ def test_mark_refuses_symlink_escaping_exports(tmp_path):
     link = REPO_ROOT / "exports" / "PYTEST-ADMIN-BYPASS-T19-LINK"
     if link.exists() or link.is_symlink():
         link.unlink()
-    link.symlink_to(outside)
+    try:
+        link.symlink_to(outside, target_is_directory=True)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows requires symlink privilege for this containment test")
+        raise
     try:
         res = _run_mark("PYTEST-ADMIN-BYPASS-T19-LINK",
                         "--i-confirm-this-is-synthetic-test-data-not-a-real-study")

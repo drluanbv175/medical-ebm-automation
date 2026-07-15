@@ -59,6 +59,7 @@ test("supplemental architecture and security docs exist", () => {
     "MVP_01_DEMO_GUIDE.md",
     "MVP_01_LIMITATIONS.md",
     "PRODUCTION_BLOCKERS.md",
+    "PATIENT_COMMUNICATION_POLICY.md",
     "CLINICAL_SAFETY_SIGNOFF_TEMPLATE.md",
     "DATA_PROTECTION_SIGNOFF_TEMPLATE.md"
   ]) {
@@ -246,6 +247,8 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/persistent-transaction\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/prisma-transaction-contract\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/persistent-transaction\.behavior\.test\.ts/);
+  assert.match(read("tsconfig.check.json"), /tests\/runtime-hardening\.behavior\.test\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/runtime-hardening\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-storage-contract\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/backend-guard\.ts/);
@@ -606,6 +609,7 @@ test("write action registry tracks guarded and blocked write surfaces", () => {
 test("production readiness blockers are machine-readable and surfaced in settings", () => {
   const readiness = read("lib/production-readiness.ts");
   const route = read("app/api/admin/production-readiness/route.ts");
+  const hardening = read("lib/runtime-hardening.ts");
   const settings = read("app/admin/settings/page.tsx");
   const blockers = read("PRODUCTION_BLOCKERS.md");
   const typecheck = read("tsconfig.check.json");
@@ -614,6 +618,7 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(readiness, /productionBlockers/);
   assert.match(readiness, /summarizeProductionReadiness/);
   assert.match(readiness, /buildProductionReadinessReport/);
+  assert.match(readiness, /repositoryControls/);
   assert.match(readiness, /productionReady: false/);
   for (const id of ["SEC-001", "DATA-001", "CLIN-001", "OPS-001", "AI-001"]) {
     assert.match(readiness, new RegExp(id), `${id} missing`);
@@ -623,9 +628,10 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(settings, /buildProductionReadinessReport/);
   assert.match(settings, /openProductionBlockers/);
   assert.match(route, /Response\.json\(buildProductionReadinessReport/);
+  assert.match(route, /buildSecureHeaders/);
   assert.match(route, /Cache-Control/);
   assert.match(route, /no-store/);
-  assert.match(route, /X-Clinical-Production-Ready/);
+  assert.match(hardening, /X-Clinical-Production-Ready/);
   assert.match(blockers, /lib\/production-readiness\.ts/);
   assert.match(typecheck, /app\/api\/admin\/production-readiness\/route\.ts/);
   assert.match(typecheck, /lib\/production-readiness\.ts/);

@@ -189,7 +189,10 @@ def main() -> int:
                 bypass_dir.mkdir(parents=True, exist_ok=True)
                 artifact_path = bypass_dir / f"{gate_id}_ADMIN_BYPASS_EVIDENCE.md"
                 evidence_content = _placeholder_evidence(study_name, gate_id)
-                artifact_path.write_text(evidence_content, encoding="utf-8")
+                # Preserve the exact bytes bound into the ledger hash. On Windows,
+                # write_text() may translate "\n" to "\r\n", which makes the
+                # on-disk hash differ from the signed evidence_content.
+                artifact_path.write_bytes(evidence_content.encode("utf-8"))
 
             evidence_hash = hashlib.sha256(evidence_content.encode("utf-8")).hexdigest()
             timestamp_utc = datetime.now(timezone.utc).isoformat()

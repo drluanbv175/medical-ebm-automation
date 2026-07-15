@@ -1,12 +1,10 @@
 import { buildProductionReadinessReport } from "@/lib/production-readiness";
+import { buildSecureHeaders } from "@/lib/runtime-hardening";
 
 export const runtime = "nodejs";
 
 export function GET() {
   return Response.json(buildProductionReadinessReport(), {
-    headers: {
-      "Cache-Control": "no-store",
-      "X-Clinical-Production-Ready": "false"
-    }
+    headers: buildSecureHeaders({ "Cache-Control": "no-store" })
   });
 }

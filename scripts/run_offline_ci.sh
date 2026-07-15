@@ -24,22 +24,29 @@ PY="${PYTHON:-python3}"
 RESULTS_DIR="${RESULTS_DIR:-results}"
 mkdir -p "$RESULTS_DIR"
 
-echo "== Step 1/3: verify manifest + registry (A5) =="
+echo "== Step 1/4: verify manifest + registry (A5) =="
 "$PY" scripts/verify_manifest_registry.py | tee "$RESULTS_DIR/manifest_registry_verify.txt"
 MR_RC=${PIPESTATUS[0]}
 if [[ "$MR_RC" -ne 0 ]]; then
   echo "FAIL: manifest/registry verify (rc=$MR_RC)" >&2; exit "$MR_RC"
 fi
 
-echo "== Step 2/3: audit/sync check (best-effort, không chặn nếu thiếu tool) =="
+echo "== Step 2/4: verify agent/gate senior governance =="
+"$PY" tools/agent_gate_governance.py | tee "$RESULTS_DIR/agent_gate_governance.txt"
+AG_RC=${PIPESTATUS[0]}
+if [[ "$AG_RC" -ne 0 ]]; then
+  echo "FAIL: agent/gate senior governance (rc=$AG_RC)" >&2; exit "$AG_RC"
+fi
+
+echo "== Step 3/4: audit/sync check (best-effort, không chặn nếu thiếu tool) =="
 if [[ -f ../tools/sync_agents_to_codex.py ]]; then
   "$PY" ../tools/sync_agents_to_codex.py --check || echo "WARN: sync check non-zero (xem log)"
 fi
 
-echo "== Step 3/3: pytest hermetic (network blocked, no API key) =="
+echo "== Step 4/4: pytest hermetic (network blocked, no API key) =="
 "$PY" -m pytest -q -p no:cacheprovider \
   --junit-xml="$RESULTS_DIR/offline_ci_junit.xml" \
   | tee "$RESULTS_DIR/offline_ci_run.txt"
-
-echo "EXIT_CODE=${PIPESTATUS[0]}"
-exit "${PIPESTATUS[0]}"
+PYTEST_RC=${PIPESTATUS[0]}
+echo "EXIT_CODE=${PYTEST_RC}"
+exit "${PYTEST_RC}"
