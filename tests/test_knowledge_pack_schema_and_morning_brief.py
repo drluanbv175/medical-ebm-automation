@@ -1,5 +1,10 @@
 from pathlib import Path
 
+from app.services.knowledge_pack_release_gate import (
+    assess_all_pack_release_readiness,
+    assess_pack_release_readiness,
+    summarize_release_readiness,
+)
 from app.services.knowledge_pack_schema import (
     normalize_drug_safety_rules,
     validate_pack_version,
@@ -34,6 +39,32 @@ def test_knowledge_pack_service_validate_all_and_red_flags_are_loaded():
     assert all(result.ok for result in results)
     assert service.status_report()["complete_packs"] == 10
     assert all(len(pack.red_flags) > 0 for pack in service.complete_packs())
+
+
+def test_current_knowledge_packs_are_review_ready_but_not_clinical_release_ready():
+    results = assess_all_pack_release_readiness(PACKS_DIR)
+    summary = summarize_release_readiness(results)
+
+    assert summary["total"] == 10
+    assert summary["schema_ok"] == 10
+    assert summary["review_ready"] == 10
+    assert summary["clinical_release_ready"] == 0
+    assert summary["patient_facing_ready"] == 0
+    assert summary["blocked"] == 10
+
+
+def test_hypertension_pack_release_gate_requires_real_approval_and_verified_manifest():
+    result = assess_pack_release_readiness(PACKS_DIR / "hypertension_adult_outpatient")
+    blockers = {f"{issue.file}:{issue.message}" for issue in result.blockers}
+
+    assert result.schema_ok is True
+    assert result.review_ready is True
+    assert result.clinical_release_ready is False
+    assert result.approval_record_present is True
+    assert result.evidence_manifest_present is True
+    assert "13_approval_record.json:approval_status_not_approved" in blockers
+    assert "13_approval_record.json:next_review_due_missing" in blockers
+    assert "10_evidence_manifest.json:manifest_release_allowed_false" in blockers
 
 
 def test_drug_safety_normalizer_supports_gate_style_rules():
