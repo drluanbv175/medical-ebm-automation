@@ -36,6 +36,7 @@
     "lib/types.ts",
     "lib/clinical-safety.ts",
     "lib/automation.ts",
+    "tests/persistent-transaction.behavior.test.ts",
     "components/Badge.tsx",
     "components/PageHeader.tsx",
     "components/StatCard.tsx"

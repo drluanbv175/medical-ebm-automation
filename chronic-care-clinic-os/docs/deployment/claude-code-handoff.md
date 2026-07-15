@@ -39,7 +39,7 @@ node scripts/sync-check.mjs
 - `lib/patient-education.ts`: gates A5 patient education handouts by approved template, approved care plan and consent.
 - `lib/workflow-actions.ts`: defines preview-only server-action contracts for guarded write workflows before persistence exists.
 - `lib/workflow-actions.ts`: adds persistent write plans for all guarded write actions, using `buildPersistentAuditWritePlan` while keeping production commit disabled until atomic DB tests exist.
-- `lib/persistent-transaction.ts`: provides an in-memory transaction harness that stages business write + AuditLog together and rolls back both on injected failure before any real database adapter is enabled.
+- `lib/persistent-transaction.ts`: provides an in-memory transaction harness with behavior tests; it stages business write + AuditLog together and rolls back both on injected failure before any real database adapter is enabled.
 - `/overdue`: claim-call-task workflow now uses `claimOverdueFollowUpTaskAction` preview with `task.manage` guard.
 - `/appointments`: create appointment workflow now uses `createCareAppointmentAction` preview with `task.manage` guard.
 - `/patients/[id]`: care plan draft workflow now uses `createCarePlanDraftAction` preview with `care_plan.version` guard.

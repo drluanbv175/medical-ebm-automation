@@ -220,6 +220,10 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("package.json"), /"sync:check": "node scripts\/sync-check\.mjs"/);
   assert.match(read("package.json"), /"test": "python scripts\/run_node_tests\.py"/);
   assert.match(read("package.json"), /"typecheck:app": "python scripts\/typecheck_app\.py"/);
+  assert.match(read("scripts/run_node_tests.py"), /\*\.test\.ts/);
+  assert.match(read("scripts/run_node_tests.py"), /TemporaryDirectory/);
+  assert.match(read("scripts/run_node_tests.py"), /str\(find_tsc\(\)\)/);
+  assert.match(read("scripts/run_node_tests.py"), /"--module",\s+"CommonJS"/);
   assert.match(read("scripts/node_runtime.py"), /codex-primary-runtime/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/audit\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/admin\/rules\/page\.tsx/);
@@ -240,6 +244,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/patient-education\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/workflow-actions\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/persistent-transaction\.ts/);
+  assert.match(read("tsconfig.check.json"), /tests\/persistent-transaction\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-storage-contract\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/backend-guard\.ts/);
@@ -496,6 +501,7 @@ test("audit ledger is append-only and hash chained", () => {
 
 test("persistent transaction harness rolls back business and audit writes atomically", () => {
   const harness = read("lib/persistent-transaction.ts");
+  const behaviorTest = read("tests/persistent-transaction.behavior.test.ts");
   assert.match(harness, /runPersistentWorkflowTransactionHarness/);
   assert.match(harness, /PersistentTransactionFailurePoint/);
   assert.match(harness, /BEFORE_BUSINESS_WRITE/);
@@ -511,6 +517,9 @@ test("persistent transaction harness rolls back business and audit writes atomic
   assert.match(harness, /validateAuditLedger/);
   assert.match(harness, /Business write is not marked atomic with AuditLog/);
   assert.match(harness, /AuditLog write is not marked transaction-required/);
+  assert.match(behaviorTest, /commits business and audit writes together/);
+  assert.match(behaviorTest, /rolls back without mutating input state at every failure point/);
+  assert.match(behaviorTest, /Missing AuditLog write plan/);
   assert.doesNotMatch(harness, /prisma\.|fetch\(|sendMail|SMTP|UPDATE_AUDIT_LOG|DELETE_AUDIT_LOG/);
 });
 

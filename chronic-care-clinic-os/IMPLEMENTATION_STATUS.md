@@ -23,7 +23,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Append-only audit ledger preview with deterministic hash chain and `/admin/audit` integrity view.
 - Persistent AuditLog write contract with sequence/previousHash/eventHash, insert-only policy and same-transaction business write requirement.
 - Persistent write plans for all guarded write actions now use the AuditLog write contract and define the atomic business write set; production commit remains disabled until database transaction tests exist.
-- In-memory transaction harness for guarded persistent plans now stages business write and AuditLog together, validates the audit hash chain, and rolls back both on injected failures before a real database adapter is allowed.
+- In-memory transaction harness for guarded persistent plans now stages business write and AuditLog together, validates the audit hash chain, and has behavior tests for commit plus rollback at each injected failure point before a real database adapter is allowed.
 - AuditLog hardening migration reviewed at `prisma/migrations/202606190001_audit_log_hash_chain_hardening/migration.sql`, with unique sequence/hash indexes, non-empty hash constraints, immutable-after-append constraint and UPDATE/DELETE blocking triggers.
 - Workflow action contracts now call RBAC/backend guard for role, permission and organization/site scope before any future write.
 - Write action registry and `/admin/settings` readiness view identify guarded preview actions, UI placeholders and production-blocked exports.
