@@ -50,6 +50,7 @@ def test_clinical_evidence_agent_standards_cover_all_required_domains() -> None:
         "EAS7",
         "EAS8",
         "EAS9",
+        "EAS10",
     }
     assert rows["EAS1"]["status"] == "PASS"
     assert rows["EAS2"]["status"] == "PASS"
@@ -60,6 +61,7 @@ def test_clinical_evidence_agent_standards_cover_all_required_domains() -> None:
     assert rows["EAS7"]["status"] == "PASS"
     assert rows["EAS8"]["status"] == "PASS"
     assert rows["EAS9"]["status"] == "PASS"
+    assert rows["EAS10"]["status"] == "PASS"
     assert all(not row["missing"] for row in rows.values())
 
 
@@ -81,6 +83,8 @@ def test_clinical_evidence_agent_standards_markdown_keeps_boundaries_visible() -
     assert "Source authority registry: `AUTHORITY_TIERED_WITH_CROSSCHECK`" in markdown
     assert "Evidence Currency Policy" in markdown
     assert "Evidence currency policy: `CURRENCY_CONTROLLED_WITH_RETRACTION_CHECK`" in markdown
+    assert "Question Frame Policy" in markdown
+    assert "Question frame policy: `FRAME_TOOL_LOCKED_BY_QUESTION_TYPE`" in markdown
     assert "Agent Gate Contract" in markdown
     assert "CEG7 Guardrail cuối và bác sĩ quyết định áp dụng" in markdown
     assert "Cần bác sĩ kiểm chứng" in markdown
@@ -128,12 +132,15 @@ def test_release_packet_contract_blocks_until_doctor_review() -> None:
         "CEG7",
     ]
     assert "doctor_review_packet" in packet["minimum_artifacts"]
+    assert "appraisal_tool_selection_audit" in packet["minimum_artifacts"]
     assert "evidence_currency_audit" in packet["minimum_artifacts"]
+    assert "effect_measure_traceability_log" in packet["minimum_artifacts"]
     assert "final_guardrail_result" in packet["minimum_artifacts"]
     assert "verify_dashboard.py <dashboard>.html --online --strict-sources" in packet[
         "required_commands"
     ]
     assert "international_standard_profile" in packet["minimum_artifacts"]
+    assert "question_frame_selection_audit" in packet["minimum_artifacts"]
     assert "source_authority_registry" in packet["minimum_artifacts"]
     assert "source_authority_tiering_rationale" in packet["minimum_artifacts"]
     assert "search_date_log" in packet["minimum_artifacts"]
@@ -144,11 +151,15 @@ def test_release_packet_contract_blocks_until_doctor_review() -> None:
     assert "SOURCE_UNVERIFIED" in packet["hard_stop_reason_codes"]
     assert "SOURCE_NOT_AUTHORITY_TIERED" in packet["hard_stop_reason_codes"]
     assert "DISCOVERY_SOURCE_USED_AS_RECORD" in packet["hard_stop_reason_codes"]
+    assert "QUESTION_FRAME_MISSING" in packet["hard_stop_reason_codes"]
+    assert "FRAME_TOOL_MISMATCH" in packet["hard_stop_reason_codes"]
+    assert "PICO_FOR_NON_INTERVENTION_WITHOUT_RATIONALE" in packet["hard_stop_reason_codes"]
     assert "SEARCH_DATE_MISSING" in packet["hard_stop_reason_codes"]
     assert "CLAIMED_LATEST_WITHOUT_FRESH_SEARCH" in packet["hard_stop_reason_codes"]
     assert "WRONG_APPRAISAL_TOOL" in packet["hard_stop_reason_codes"]
     assert "INTERNATIONAL_STANDARD_PROFILE_MISSING" in packet["hard_stop_reason_codes"]
     assert "IDENTIFIER_CROSSCHECK_MISSING" in packet["hard_stop_reason_codes"]
+    assert "EFFECT_MEASURE_NOT_SOURCE_TRACEABLE" in packet["hard_stop_reason_codes"]
     assert "RETRACTION_STATUS_UNKNOWN" in packet["hard_stop_reason_codes"]
     assert "SOURCE_RETRACTED_OR_WITHDRAWN" in packet["hard_stop_reason_codes"]
     assert "SUPERSEDED_GUIDELINE_USED_AS_CURRENT" in packet["hard_stop_reason_codes"]
@@ -261,3 +272,40 @@ def test_evidence_currency_policy_requires_fresh_search_and_retraction_checks() 
     assert "SOURCE_RETRACTED_OR_WITHDRAWN" in policy["hard_stop_codes"]
     assert "SUPERSEDED_GUIDELINE_USED_AS_CURRENT" in policy["hard_stop_codes"]
     assert "SAFETY_ALERT_WINDOW_STALE" in policy["hard_stop_codes"]
+
+
+def test_question_frame_policy_locks_frame_tool_and_effect_measure_choice() -> None:
+    mod = _load_module()
+    report = mod.evaluate_all(generated_at=FIXED_NOW)
+    policy = report["question_frame_policy"]
+
+    assert report["question_frame_policy_status"] == "FRAME_TOOL_LOCKED_BY_QUESTION_TYPE"
+    frame_map = policy["frame_map"]
+    assert frame_map["intervention"]["frame"] == "PICO(T)(S)"
+    assert "RoB 2" in frame_map["intervention"]["appraisal_tools"]
+    assert "AMSTAR 2" in frame_map["intervention"]["appraisal_tools"]
+    assert frame_map["harm_or_etiology"]["frame"] == "PECO"
+    assert "ROBINS-E" in frame_map["harm_or_etiology"]["appraisal_tools"]
+    assert frame_map["diagnostic_accuracy"]["frame"] == "PIRT"
+    assert "QUADAS-2" in frame_map["diagnostic_accuracy"]["appraisal_tools"]
+    assert "STARD" in frame_map["diagnostic_accuracy"]["reporting"]
+    assert frame_map["prognosis"]["frame"] == "PROGRESS/PICOTS"
+    assert "PROBAST" in frame_map["prognosis"]["appraisal_tools"]
+    assert frame_map["prevalence"]["frame"] == "CoCoPop"
+    assert "JBI prevalence checklist" in frame_map["prevalence"]["appraisal_tools"]
+    assert frame_map["qualitative"]["frame"] == "SPIDER"
+    assert "COREQ" in frame_map["qualitative"]["reporting"]
+    assert frame_map["service_policy"]["frame"] == "ECLIPSE"
+    assert frame_map["economic"]["frame"] == "PICO + cost/QALY"
+    assert "CHEERS" in frame_map["economic"]["reporting"]
+
+    checks = " ".join(policy["mandatory_checks"])
+    assert "Đã dùng khung [X] vì câu hỏi thuộc loại [Y]" in checks
+    assert "frame/frameLabels" in checks
+    assert "do not invent or silently calculate NNT/NNH" in checks
+    assert "QUESTION_FRAME_MISSING" in policy["hard_stop_codes"]
+    assert "FRAME_TOOL_MISMATCH" in policy["hard_stop_codes"]
+    assert "DIAGNOSTIC_ACCURACY_WITHOUT_PIRT_OR_QUADAS" in policy["hard_stop_codes"]
+    assert "PREDICTION_MODEL_WITHOUT_PROBAST_OR_TRIPOD" in policy["hard_stop_codes"]
+    assert "EFFECT_MEASURE_NOT_SOURCE_TRACEABLE" in policy["hard_stop_codes"]
+    assert "FRAME_LABELS_MISSING_IN_DASHBOARD" in policy["hard_stop_codes"]

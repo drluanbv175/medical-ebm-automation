@@ -116,6 +116,17 @@ class EvidenceCurrencyPolicy:
     doctor_review_prompts: list[str]
 
 
+@dataclass(frozen=True)
+class QuestionFramePolicy:
+    kind: str
+    status: str
+    frame_map: dict[str, dict[str, object]]
+    mandatory_checks: list[str]
+    misuse_examples: list[str]
+    hard_stop_codes: list[str]
+    doctor_review_prompts: list[str]
+
+
 def build_agent_contract() -> list[AgentGateContract]:
     """Hợp đồng vận hành tối thiểu cho mỗi lượt cập nhật chứng cứ lâm sàng."""
 
@@ -270,8 +281,11 @@ def build_release_packet_contract() -> ReleasePacketContract:
     for gate in gates:
         artifacts.extend(gate.required_artifacts)
     artifacts.extend([
+        "appraisal_tool_selection_audit",
         "evidence_currency_audit",
+        "effect_measure_traceability_log",
         "international_standard_profile",
+        "question_frame_selection_audit",
         "retraction_withdrawal_check",
         "source_authority_registry",
         "source_authority_tiering_rationale",
@@ -298,12 +312,16 @@ def build_release_packet_contract() -> ReleasePacketContract:
             "SOURCE_NOT_AUTHORITY_TIERED",
             "STRICT_SOURCE_GATE_FAILED",
             "DISCOVERY_SOURCE_USED_AS_RECORD",
+            "QUESTION_FRAME_MISSING",
+            "FRAME_TOOL_MISMATCH",
+            "PICO_FOR_NON_INTERVENTION_WITHOUT_RATIONALE",
             "SEARCH_DATE_MISSING",
             "CLAIMED_LATEST_WITHOUT_FRESH_SEARCH",
             "GRADE_SELF_ASSIGNED",
             "WRONG_APPRAISAL_TOOL",
             "INTERNATIONAL_STANDARD_PROFILE_MISSING",
             "IDENTIFIER_CROSSCHECK_MISSING",
+            "EFFECT_MEASURE_NOT_SOURCE_TRACEABLE",
             "RETRACTION_STATUS_UNKNOWN",
             "SOURCE_RETRACTED_OR_WITHDRAWN",
             "SUPERSEDED_GUIDELINE_USED_AS_CURRENT",
@@ -571,6 +589,121 @@ def build_evidence_currency_policy() -> EvidenceCurrencyPolicy:
             "Có guideline cùng chủ đề nhưng khuyến cáo khác cần nêu cả hai chiều không?",
             "Có bài bị rút/chỉnh sửa/biểu hiện quan ngại làm giảm tin cậy không?",
             "Có cần đánh dấu PARTIAL hoặc [CẦN XÁC NHẬN TẠI ĐƠN VỊ] không?",
+        ],
+    )
+
+
+def build_question_frame_policy() -> QuestionFramePolicy:
+    """Chính sách chọn khung câu hỏi và công cụ thẩm định tương ứng."""
+
+    return QuestionFramePolicy(
+        kind="clinical_ebm_question_frame_policy",
+        status="FRAME_TOOL_LOCKED_BY_QUESTION_TYPE",
+        frame_map={
+            "intervention": {
+                "frame": "PICO(T)(S)",
+                "best_design": ["RCT", "systematic review/meta-analysis"],
+                "reporting": ["CONSORT", "PRISMA 2020"],
+                "appraisal_tools": ["RoB 2", "AMSTAR 2"],
+                "effect_measures": ["RR", "OR", "HR", "ARR", "NNT", "mean difference"],
+                "dashboard_fields": ["frame", "frameLabels", "effectText", "etd"],
+            },
+            "harm_or_etiology": {
+                "frame": "PECO",
+                "best_design": ["cohort", "case-control"],
+                "reporting": ["STROBE"],
+                "appraisal_tools": ["ROBINS-E", "ROBINS-I"],
+                "effect_measures": ["RR", "OR", "HR", "NNH"],
+                "dashboard_fields": ["frame", "frameLabels", "effectText"],
+            },
+            "diagnostic_accuracy": {
+                "frame": "PIRT",
+                "best_design": ["cross-sectional diagnostic accuracy study"],
+                "reporting": ["STARD"],
+                "appraisal_tools": ["QUADAS-2", "QUADAS-C"],
+                "effect_measures": ["sensitivity", "specificity", "LR+", "LR-", "AUC"],
+                "dashboard_fields": ["frame", "frameLabels", "effectText"],
+            },
+            "prognosis": {
+                "frame": "PROGRESS/PICOTS",
+                "best_design": ["longitudinal cohort"],
+                "reporting": ["TRIPOD when prediction model", "STROBE when prognostic factor"],
+                "appraisal_tools": ["QUIPS", "PROBAST"],
+                "effect_measures": ["HR", "C-statistic", "calibration", "absolute risk"],
+                "dashboard_fields": ["frame", "frameLabels", "effectText"],
+            },
+            "prevalence": {
+                "frame": "CoCoPop",
+                "best_design": ["cross-sectional prevalence study"],
+                "reporting": ["STROBE"],
+                "appraisal_tools": ["JBI prevalence checklist"],
+                "effect_measures": ["prevalence", "95% CI"],
+                "dashboard_fields": ["frame", "frameLabels", "effectText"],
+            },
+            "qualitative": {
+                "frame": "SPIDER",
+                "best_design": ["qualitative study", "mixed methods when appropriate"],
+                "reporting": ["COREQ", "SRQR"],
+                "appraisal_tools": ["CASP qualitative checklist"],
+                "effect_measures": ["themes", "confidence in findings"],
+                "dashboard_fields": ["frame", "frameLabels"],
+            },
+            "service_policy": {
+                "frame": "ECLIPSE",
+                "best_design": ["implementation study", "service evaluation", "mixed methods"],
+                "reporting": ["SQUIRE", "StaRI when implementation"],
+                "appraisal_tools": ["AGREE II when guideline", "JBI mixed methods when applicable"],
+                "effect_measures": ["process outcome", "clinical outcome", "implementation outcome"],
+                "dashboard_fields": ["frame", "frameLabels", "effectText", "etd"],
+            },
+            "economic": {
+                "frame": "PICO + cost/QALY",
+                "best_design": ["economic evaluation alongside trial or model"],
+                "reporting": ["CHEERS"],
+                "appraisal_tools": ["CHEC", "Drummond checklist"],
+                "effect_measures": ["ICER", "cost/QALY", "budget impact"],
+                "dashboard_fields": ["frame", "frameLabels", "effectText", "etd"],
+            },
+        },
+        mandatory_checks=[
+            "State exactly: Đã dùng khung [X] vì câu hỏi thuộc loại [Y].",
+            "Select appraisal tool from frame_map before synthesis",
+            "Use PICO(T)(S) for intervention questions only unless a rationale is documented",
+            "Use PECO/ROBINS-E for harm or etiology questions",
+            "Use PIRT with QUADAS-2/STARD for diagnostic accuracy; do not use RoB 2/CONSORT",
+            "Use PROGRESS/PICOTS with QUIPS or PROBAST for prognosis or prediction",
+            "Use CoCoPop/JBI prevalence for prevalence questions",
+            "Use SPIDER with qualitative appraisal for qualitative experience questions",
+            "Use ECLIPSE for service, implementation or policy questions",
+            "Keep source-reported effect measures; do not invent or silently calculate NNT/NNH",
+            "Evidence Workbench must include frame/frameLabels for non-PICO frames",
+            "If frame or tool is uncertain, label [CẦN BỔ SUNG] and block practice-changing recommendation",
+        ],
+        misuse_examples=[
+            "Diagnostic accuracy summarized as treatment PICO without PIRT/QUADAS-2",
+            "Guideline appraisal done with RoB 2 instead of AGREE II/AGREE-REX",
+            "Prediction model reported as diagnostic test without PROBAST/TRIPOD",
+            "Harm signal interpreted as efficacy RCT without PECO/ROBINS-E",
+            "NNT/NNH invented when the source reports only relative effect without baseline risk",
+        ],
+        hard_stop_codes=[
+            "QUESTION_FRAME_MISSING",
+            "FRAME_TOOL_MISMATCH",
+            "PICO_FOR_NON_INTERVENTION_WITHOUT_RATIONALE",
+            "DIAGNOSTIC_ACCURACY_WITHOUT_PIRT_OR_QUADAS",
+            "PREDICTION_MODEL_WITHOUT_PROBAST_OR_TRIPOD",
+            "HARM_QUESTION_WITHOUT_PECO_OR_ROBINS_E",
+            "EFFECT_MEASURE_NOT_SOURCE_TRACEABLE",
+            "NNT_NNH_SELF_CALCULATED_WITHOUT_LABEL",
+            "FRAME_LABELS_MISSING_IN_DASHBOARD",
+            "QUESTION_FRAME_POLICY_MISSING",
+        ],
+        doctor_review_prompts=[
+            "Khung câu hỏi đã phản ánh đúng câu hỏi thực hành chưa?",
+            "Công cụ thẩm định có đúng với thiết kế nguồn chính không?",
+            "Hiệu số/NNT/NNH có truy nguyên trực tiếp từ nguồn hoặc được ghi là đánh giá vận hành không?",
+            "Dashboard có hiển thị đúng nhãn khung không-PICO để tránh hiểu sai không?",
+            "Có cần chuyển thành [CẦN BỔ SUNG] thay vì khuyến cáo đổi thực hành không?",
         ],
     )
 
@@ -1099,6 +1232,84 @@ def _check_evidence_currency_policy() -> StandardCheck:
     )
 
 
+def _check_question_frame_policy() -> StandardCheck:
+    policy = build_question_frame_policy()
+    text = json.dumps(asdict(policy), ensure_ascii=False)
+    required_tokens = [
+        "PICO(T)(S)",
+        "PECO",
+        "PIRT",
+        "PROGRESS/PICOTS",
+        "CoCoPop",
+        "SPIDER",
+        "ECLIPSE",
+        "QUADAS-2",
+        "STARD",
+        "QUIPS",
+        "PROBAST",
+        "ROBINS-E",
+        "JBI prevalence checklist",
+        "COREQ",
+        "SRQR",
+        "CHEERS",
+        "Đã dùng khung [X] vì câu hỏi thuộc loại [Y]",
+        "frame/frameLabels",
+        "NNT/NNH",
+        "QUESTION_FRAME_MISSING",
+        "FRAME_TOOL_MISMATCH",
+        "PICO_FOR_NON_INTERVENTION_WITHOUT_RATIONALE",
+        "DIAGNOSTIC_ACCURACY_WITHOUT_PIRT_OR_QUADAS",
+        "EFFECT_MEASURE_NOT_SOURCE_TRACEABLE",
+        "QUESTION_FRAME_POLICY_MISSING",
+    ]
+    missing = [
+        f"question_frame_policy missing token: {token}"
+        for token in required_tokens
+        if token not in text
+    ]
+    if policy.status != "FRAME_TOOL_LOCKED_BY_QUESTION_TYPE":
+        missing.append(f"unexpected policy status: {policy.status}")
+    for key in (
+        "intervention",
+        "harm_or_etiology",
+        "diagnostic_accuracy",
+        "prognosis",
+        "prevalence",
+        "qualitative",
+        "service_policy",
+        "economic",
+    ):
+        if key not in policy.frame_map:
+            missing.append(f"missing question frame mapping: {key}")
+    diagnostic_tools = policy.frame_map.get("diagnostic_accuracy", {}).get("appraisal_tools", [])
+    if "QUADAS-2" not in diagnostic_tools:
+        missing.append("diagnostic accuracy must map to QUADAS-2")
+    intervention_tools = policy.frame_map.get("intervention", {}).get("appraisal_tools", [])
+    if "RoB 2" not in intervention_tools or "AMSTAR 2" not in intervention_tools:
+        missing.append("intervention must map to RoB 2 and AMSTAR 2")
+    return StandardCheck(
+        check_id="EAS10",
+        title="Khung câu hỏi và công cụ thẩm định theo loại câu hỏi",
+        status=FAIL if missing else PASS,
+        evidence=[
+            "tools/verify_clinical_evidence_agent_standards.py:QuestionFramePolicy",
+            _rel(SKILL_ROOT / "SKILL.md"),
+            _rel(SKILL_ROOT / "references" / "02-cong-cu-tham-dinh-va-grade.md"),
+            _rel(SKILL_ROOT / "references" / "07-mo-hinh-cau-hoi-va-khung-thay-the.md"),
+            _rel(SKILL_ROOT / "templates" / "web-dashboard-evidence-workbench.html"),
+        ],
+        proves=(
+            "Agent phải chọn đúng khung câu hỏi, công cụ thẩm định, chuẩn báo cáo và thước đo "
+            "trước khi tổng hợp; khung không-PICO phải được render rõ trong Evidence Workbench."
+        ),
+        limitation=(
+            "Policy này không đọc toàn văn để tự chấm AGREE/AMSTAR/RoB; nó khóa lựa chọn khung/công cụ "
+            "để tránh dùng sai chuẩn ngay từ đầu."
+        ),
+        missing=missing,
+    )
+
+
 def evaluate_all(generated_at: str | None = None) -> dict:
     checks = [
         _check_agents(),
@@ -1110,12 +1321,14 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         _check_international_standard_profile(),
         _check_source_authority_registry(),
         _check_evidence_currency_policy(),
+        _check_question_frame_policy(),
     ]
     agent_contract = build_agent_contract()
     release_packet = build_release_packet_contract()
     international_profile = build_international_standard_profile()
     source_registry = build_source_authority_registry()
     currency_policy = build_evidence_currency_policy()
+    question_frame_policy = build_question_frame_policy()
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
     if fail_count:
@@ -1147,6 +1360,8 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         "source_authority_registry": asdict(source_registry),
         "evidence_currency_policy_status": currency_policy.status,
         "evidence_currency_policy": asdict(currency_policy),
+        "question_frame_policy_status": question_frame_policy.status,
+        "question_frame_policy": asdict(question_frame_policy),
         "checks": [asdict(check) for check in checks],
         "disclaimer": DISCLAIMER,
     }
@@ -1170,6 +1385,7 @@ def markdown_report(report: dict) -> str:
         f"- International standard profile: `{report['international_standard_profile_status']}`",
         f"- Source authority registry: `{report['source_authority_registry_status']}`",
         f"- Evidence currency policy: `{report['evidence_currency_policy_status']}`",
+        f"- Question frame policy: `{report['question_frame_policy_status']}`",
         "",
         "| Check | Status | Proves | Limitation | Missing |",
         "|---|---|---|---|---|",
@@ -1252,6 +1468,20 @@ def markdown_report(report: dict) -> str:
     ])
     for code in currency["hard_stop_codes"]:
         lines.append(f"| `{code}` |")
+    frame_policy = report["question_frame_policy"]
+    lines.extend([
+        "",
+        "## Question Frame Policy",
+        "",
+        f"- Status: `{frame_policy['status']}`",
+        f"- Question types: `{', '.join(frame_policy['frame_map'])}`",
+        f"- Mandatory checks: `{len(frame_policy['mandatory_checks'])}`",
+        "",
+        "| Frame/Tool Hard Stop |",
+        "|---|",
+    ])
+    for code in frame_policy["hard_stop_codes"]:
+        lines.append(f"| `{code}` |")
     lines.extend([
         "",
         "## Agent Gate Contract",
@@ -1303,6 +1533,7 @@ def main(argv: list[str] | None = None) -> int:
         print("international_standard_profile_status=" + report["international_standard_profile_status"])
         print("source_authority_registry_status=" + report["source_authority_registry_status"])
         print("evidence_currency_policy_status=" + report["evidence_currency_policy_status"])
+        print("question_frame_policy_status=" + report["question_frame_policy_status"])
         print("Cần bác sĩ kiểm chứng.")
     return 0 if report["fail_count"] == 0 else 1
 
