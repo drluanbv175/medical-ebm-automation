@@ -28,6 +28,28 @@ PASS = "PASS"
 HUMAN_GATE = "HUMAN_GATE"
 FAIL = "FAIL"
 PACKAGE_KIND = "personal_production_hardening_evidence_package"
+PLACEHOLDER_RE = re.compile(r"(TODO|TBD|PLACEHOLDER|REPLACE_ME|\[CẦN|\[CAN)", re.IGNORECASE)
+SAFE_PATH_KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,79}$")
+PII_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("email", re.compile(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", re.IGNORECASE)),
+    ("phone", re.compile(r"\b0\d{9,10}\b")),
+    ("national_id", re.compile(r"\b\d{12}\b")),
+)
+FORBIDDEN_PII_KEYS = {
+    "address",
+    "cccd",
+    "cmnd",
+    "date_of_birth",
+    "dob",
+    "ho_ten",
+    "medical_record_number",
+    "mrn",
+    "patient_id",
+    "patient_name",
+    "phone",
+    "phone_number",
+    "ten_benh_nhan",
+}
 REQUIRED_SIGNOFF_ROLES = [
     "security_owner",
     "data_protection_owner",
@@ -127,15 +149,55 @@ def _safe_reference(value: Any) -> bool:
     text = value.strip()
     if len(text) < 3:
         return False
-    if re.search(r"(TODO|TBD|PLACEHOLDER|REPLACE_ME|\[CẦN|\[CAN)", text, re.IGNORECASE):
+    if PLACEHOLDER_RE.search(text):
         return False
-    if re.search(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", text, re.IGNORECASE):
-        return False
-    if re.search(r"\b0\d{9,10}\b", text):
-        return False
-    if re.search(r"\b\d{12}\b", text):
+    if any(pattern.search(text) for _label, pattern in PII_PATTERNS):
         return False
     return True
+
+
+def _normalize_json_key(value: str) -> str:
+    return value.strip().lower().replace("-", "_").replace(" ", "_")
+
+
+def _safe_json_path_key(value: str) -> str:
+    if not SAFE_PATH_KEY_RE.fullmatch(value):
+        return "<key>"
+    if PLACEHOLDER_RE.search(value):
+        return "<key>"
+    if any(pattern.search(value) for _label, pattern in PII_PATTERNS):
+        return "<key>"
+    return value
+
+
+def _scan_package_text_policy(value: Any, path: str = "$") -> list[str]:
+    """Quét placeholder/PII trong toàn package mà không đưa giá trị nhạy cảm vào lỗi."""
+    findings: list[str] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            key_text = str(key)
+            key_path = f"{path}.{_safe_json_path_key(key_text)}"
+            normalized = _normalize_json_key(key_text)
+            if normalized in FORBIDDEN_PII_KEYS:
+                findings.append(f"package_text_policy:{key_path}:forbidden_pii_key")
+            if PLACEHOLDER_RE.search(key_text):
+                findings.append(f"package_text_policy:{key_path}:placeholder_key")
+            for label, pattern in PII_PATTERNS:
+                if pattern.search(key_text):
+                    findings.append(f"package_text_policy:{key_path}:pii_key_{label}")
+            findings.extend(_scan_package_text_policy(item, key_path))
+        return findings
+    if isinstance(value, list):
+        for idx, item in enumerate(value):
+            findings.extend(_scan_package_text_policy(item, f"{path}[{idx}]"))
+        return findings
+    if isinstance(value, str):
+        if PLACEHOLDER_RE.search(value):
+            findings.append(f"package_text_policy:{path}:placeholder_value")
+        for label, pattern in PII_PATTERNS:
+            if pattern.search(value):
+                findings.append(f"package_text_policy:{path}:pii_value_{label}")
+    return findings
 
 
 def build_evidence_template(generated_at: str | None = None) -> dict[str, Any]:
@@ -204,6 +266,7 @@ def validate_evidence_package(
 
     now = _parse_iso(generated_at or datetime.now(timezone.utc).isoformat(timespec="seconds"))
     errors: list[str] = []
+    errors.extend(_scan_package_text_policy(package))
     if package.get("kind") != PACKAGE_KIND:
         errors.append("package_kind_invalid")
     pkg_time = _parse_iso(str(package.get("generated_at", "")))

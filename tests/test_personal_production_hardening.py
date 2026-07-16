@@ -57,6 +57,7 @@ def _completed_evidence_package(mod):
         record["reviewed_at"] = "2026-07-15T12:00:00+00:00"
         record["artifact_refs"] = [f"evidence/domain-{record['domain_id'].lower()}-artifact-v1.json"]
         record["controls_verified"] = [f"control-{record['domain_id'].lower()}-verified-v1"]
+        record["notes"] = f"review-note-{idx:02d}-no-pii"
     for idx, signoff in enumerate(package["signoffs"], 1):
         signoff["signer_reference"] = f"signer-ref-{idx:02d}"
         signoff["signed_at"] = "2026-07-15T18:00:00+00:00"
@@ -101,3 +102,40 @@ def test_completed_evidence_package_is_external_review_ready_not_production_enab
     assert report["evidence_package_summary"]["valid"] is True
     assert report["clinical_production_allowed"] is False
     assert report["real_patient_data_allowed"] is False
+
+
+def test_evidence_package_rejects_pii_hidden_in_optional_notes() -> None:
+    mod = _load_module()
+    package = _completed_evidence_package(mod)
+    package["evidence"][0]["notes"] = "Internal note accidentally includes phone 0912345678."
+    summary = mod.validate_evidence_package(package, generated_at=FIXED_NOW)
+
+    assert summary.status == "INVALID_OR_INCOMPLETE"
+    assert summary.valid is False
+    assert any("package_text_policy:$.evidence[0].notes:pii_value_phone" in err for err in summary.errors)
+
+
+def test_evidence_package_rejects_placeholder_and_forbidden_pii_keys_anywhere() -> None:
+    mod = _load_module()
+    package = _completed_evidence_package(mod)
+    package["extra_review"] = {
+        "patient_name": "redacted",
+        "comment": "TODO fill this later",
+    }
+    summary = mod.validate_evidence_package(package, generated_at=FIXED_NOW)
+
+    assert summary.status == "INVALID_OR_INCOMPLETE"
+    assert any("package_text_policy:$.extra_review.patient_name:forbidden_pii_key" in err for err in summary.errors)
+    assert any("package_text_policy:$.extra_review.comment:placeholder_value" in err for err in summary.errors)
+
+
+def test_evidence_package_redacts_pii_from_error_paths() -> None:
+    mod = _load_module()
+    package = _completed_evidence_package(mod)
+    package["extra_review"] = {"0912345678": "safe opaque note"}
+    summary = mod.validate_evidence_package(package, generated_at=FIXED_NOW)
+    joined_errors = "\n".join(summary.errors)
+
+    assert summary.status == "INVALID_OR_INCOMPLETE"
+    assert "package_text_policy:$.extra_review.<key>:pii_key_phone" in joined_errors
+    assert "0912345678" not in joined_errors
