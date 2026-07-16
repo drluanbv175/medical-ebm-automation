@@ -158,6 +158,18 @@ test("production evidence package blocks duplicate signoff roles", () => {
   assert.ok(report.findings.some((item) => item.message.includes("Duplicate required production signoff")));
 });
 
+test("production evidence package requires distinct accountable signers across roles", () => {
+  const pkg = completeEvidencePackage();
+  pkg.signoffs[1] = {
+    ...pkg.signoffs[1],
+    signerReference: pkg.signoffs[0].signerReference
+  };
+  const report = buildProductionReadinessReport("2026-07-16T00:00:00.000Z", productionBlockers, pkg);
+
+  assert.equal(report.summary.productionReady, false);
+  assert.ok(report.findings.some((item) => item.message.includes("distinct accountable people")));
+});
+
 test("production evidence package shape validator rejects malformed package", () => {
   const warnings = validateEvidencePackageShape({
     kind: "wrong",

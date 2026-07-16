@@ -41,11 +41,16 @@ pnpm production:go-live -- \
   --release-id release-2026-07-16-001 \
   --source-commit <deployed-git-sha> \
   --operator-ref OPS_GO_LIVE_001 \
+  --admin-approver ADMIN_APPROVER_001 \
+  --change-ticket CHANGE_TICKET_2026_07_16_001 \
+  --rollback-plan operations/evidence/rollback-plan-001.json \
+  --post-deploy-checklist operations/evidence/post-deploy-checklist-001.json \
   --out /secure/path/go-live-report.json
 ```
 
-This command validates all three layers together: signed evidence package, production runtime environment variables and the emitted production readiness headers. It treats runtime warnings as blockers. The system may be called production only when this command exits `0` and writes `status = "PRODUCTION_READY"`.
-The command records the evidence package SHA-256 in the go-live report and writes a sidecar `go-live-report.json.sha256` so the final report is tamper-evident.
+This command validates four layers together: signed evidence package, evidence dossier hash, production runtime environment variables, emitted production readiness headers and admin change-control attestation. It treats runtime warnings as blockers. The system may be called production only when this command exits `0` and writes `status = "PRODUCTION_READY"`.
+The command records both evidence package SHA-256 and evidence dossier SHA-256 in the go-live report and writes a sidecar `go-live-report.json.sha256` so the final report is tamper-evident.
+The `--admin-approver` reference must be distinct from `--operator-ref`; the system blocks operator self-approval.
 
 Start from a complete template instead of writing the package by hand:
 
@@ -72,7 +77,7 @@ Store the evidence package outside source control, for example in a restricted d
       "reviewerReference": "CLINIC_ADMIN_REVIEWER_001",
       "reviewedAt": "2026-07-15T12:00:00.000Z",
       "artifactRefs": ["production-readiness/evidence/SEC-001-rbac-coverage.json"],
-      "controlsVerified": ["Route/action RBAC coverage test and reviewer signoff."],
+      "controlsVerified": ["Route/action RBAC coverage test and reviewer signoff.", "RUNTIME-RBAC-COVERAGE-001"],
       "expiresAt": "2027-07-16T00:00:00.000Z"
     }
   ],
@@ -95,6 +100,8 @@ Repeat `evidence[]` for every blocker in `lib/production-readiness.ts`, and incl
 - `physician_lead`
 - `operations_owner`
 - `ai_governance_owner`
+
+Each signoff role must use a distinct accountable signer reference. The package is blocked if one signer reference is reused across multiple production signoff roles.
 
 ## Non-Negotiable Boundaries
 

@@ -16,6 +16,7 @@ Khong duoc goi production-ready neu chua dat tat ca muc sau.
 - [ ] Environment validation.
 - [ ] No sensitive PHI in logs.
 - [ ] Evidence dossier generated with all required runtime control IDs before final go-live.
+- [ ] Dual-control admin change ticket, rollback plan and post-deploy checklist attached to final go-live.
 
 ## Data
 

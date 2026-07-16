@@ -348,6 +348,7 @@ function validateProductionSignoffs(
 ): { validRoles: Set<ProductionSignoffRole>; findings: ProductionReadinessFinding[] } {
   const validRoles = new Set<ProductionSignoffRole>();
   const seenRoles = new Set<ProductionSignoffRole>();
+  const seenSignerReferences = new Map<string, ProductionSignoffRole>();
   const findings: ProductionReadinessFinding[] = [];
   for (const signoff of signoffs) {
     const errors: string[] = [];
@@ -358,8 +359,17 @@ function validateProductionSignoffs(
     } else {
       seenRoles.add(signoff.role);
     }
-    if (!safeReference(signoff.signerReference)) {
+    const signerReferenceSafe = safeReference(signoff.signerReference);
+    if (!signerReferenceSafe) {
       errors.push(`${signoff.role} signerReference is missing, placeholder, or appears to contain PII.`);
+    } else {
+      const normalizedSignerReference = normalizeReference(signoff.signerReference);
+      const previousRole = seenSignerReferences.get(normalizedSignerReference);
+      if (previousRole && previousRole !== signoff.role) {
+        errors.push(`${signoff.role} signerReference duplicates ${previousRole}; production signoff roles require distinct accountable people.`);
+      } else {
+        seenSignerReferences.set(normalizedSignerReference, signoff.role);
+      }
     }
     if (!isValidPastOrPresentIso(signoff.signedAt, generatedAt)) {
       errors.push(`${signoff.role} signedAt must be a valid ISO timestamp not after report generation.`);
@@ -416,6 +426,10 @@ function safeReference(value: string): boolean {
     && !/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(value)
     && !/\b0\d{9,10}\b/.test(value)
     && !/\b\d{12}\b/.test(value);
+}
+
+function normalizeReference(value: string): string {
+  return value.trim().toLowerCase();
 }
 
 function safeArtifactRef(value: string): boolean {

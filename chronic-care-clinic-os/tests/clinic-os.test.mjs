@@ -638,6 +638,7 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(readiness, /repositoryControls/);
   assert.match(readiness, /PRODUCTION_READY/);
   assert.match(readiness, /ProductionEvidencePackage/);
+  assert.match(readiness, /distinct accountable people/);
   for (const id of ["SEC-001", "DATA-001", "CLIN-001", "OPS-001", "AI-001"]) {
     assert.match(readiness, new RegExp(id), `${id} missing`);
   }
@@ -668,11 +669,16 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(dossierScript, /--evidence/);
   assert.match(dossierScript, /process\.exit\(main\(\)\)/);
   assert.match(goLiveScript, /buildProductionGoLiveReport/);
+  assert.match(goLiveScript, /--admin-approver/);
+  assert.match(goLiveScript, /evidenceDossierSha256/);
   assert.match(goLiveScript, /process\.exit\(main\(\)\)/);
   assert.match(template, /buildProductionEvidenceTemplate/);
   assert.match(template, /TODO/);
   assert.match(goLive, /chronic_care_production_go_live_report/);
+  assert.match(goLive, /evidenceDossierSha256/);
+  assert.match(goLive, /operator_and_admin_approver_must_be_distinct/);
   assert.match(goLive, /runtime_env_warning/);
+  assert.match(blockers, /dual-control admin change attestation/);
   assert.match(blockers, /lib\/production-readiness\.ts/);
   assert.match(typecheck, /app\/api\/admin\/production-readiness\/route\.ts/);
   assert.match(typecheck, /lib\/production-go-live\.ts/);

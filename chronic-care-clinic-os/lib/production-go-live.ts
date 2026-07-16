@@ -14,10 +14,15 @@ export type ProductionGoLiveStatus = "BLOCKED" | "PRODUCTION_READY";
 
 export type ProductionGoLiveAttestation = {
   evidenceSha256: string | null;
+  evidenceDossierSha256: string | null;
   evidencePath: string | null;
   sourceCommitSha: string | null;
   releaseId: string | null;
   operatorReference: string | null;
+  adminApproverReference: string | null;
+  changeTicketReference: string | null;
+  rollbackPlanArtifactRef: string | null;
+  postDeploymentChecklistRef: string | null;
 };
 
 export type ProductionGoLiveReport = {
@@ -40,10 +45,15 @@ export function buildProductionGoLiveReport(
   generatedAt = new Date().toISOString(),
   attestation: ProductionGoLiveAttestation = {
     evidenceSha256: null,
+    evidenceDossierSha256: env.PRODUCTION_EVIDENCE_DOSSIER_SHA256 ?? null,
     evidencePath: null,
     sourceCommitSha: env.SOURCE_COMMIT_SHA ?? null,
     releaseId: env.PRODUCTION_RELEASE_ID ?? null,
-    operatorReference: env.PRODUCTION_OPERATOR_REF ?? null
+    operatorReference: env.PRODUCTION_OPERATOR_REF ?? null,
+    adminApproverReference: env.PRODUCTION_ADMIN_APPROVER_REF ?? null,
+    changeTicketReference: env.PRODUCTION_CHANGE_TICKET_REF ?? null,
+    rollbackPlanArtifactRef: env.PRODUCTION_ROLLBACK_PLAN_REF ?? null,
+    postDeploymentChecklistRef: env.PRODUCTION_POST_DEPLOY_CHECKLIST_REF ?? null
   }
 ): ProductionGoLiveReport {
   const readiness = buildProductionReadinessReport(generatedAt, undefined, evidencePackage);
@@ -82,8 +92,8 @@ export function buildProductionGoLiveReport(
     secureHeaders,
     emittedHeaders,
     safetyBoundary: productionReady
-      ? "Production-ready for the signed evidence scope and this validated deployment environment."
-      : "Blocked: do not use with real patient data until evidence, runtime env and production headers all pass in one go-live run."
+      ? "Production-ready for the signed evidence scope, validated deployment environment and dual-control admin change attestation."
+      : "Blocked: do not use with real patient data until evidence, dossier hash, runtime env, production headers and admin change-control all pass in one go-live run."
   };
 }
 
@@ -91,6 +101,9 @@ function validateAttestation(attestation: ProductionGoLiveAttestation): string[]
   const reasons: string[] = [];
   if (!attestation.evidenceSha256 || !/^[a-f0-9]{64}$/i.test(attestation.evidenceSha256)) {
     reasons.push("evidence_sha256_missing_or_invalid");
+  }
+  if (!attestation.evidenceDossierSha256 || !/^[a-f0-9]{64}$/i.test(attestation.evidenceDossierSha256)) {
+    reasons.push("evidence_dossier_sha256_missing_or_invalid");
   }
   if (!attestation.sourceCommitSha || !/^[a-f0-9]{7,40}$/i.test(attestation.sourceCommitSha)) {
     reasons.push("source_commit_sha_missing_or_invalid");
@@ -101,10 +114,29 @@ function validateAttestation(attestation: ProductionGoLiveAttestation): string[]
   if (!safeOpaqueReference(attestation.operatorReference)) {
     reasons.push("operator_reference_missing_or_invalid");
   }
+  if (!safeOpaqueReference(attestation.adminApproverReference)) {
+    reasons.push("admin_approver_reference_missing_or_invalid");
+  }
+  if (!safeOpaqueReference(attestation.changeTicketReference)) {
+    reasons.push("change_ticket_reference_missing_or_invalid");
+  }
+  if (!safeOpaqueReference(attestation.rollbackPlanArtifactRef)) {
+    reasons.push("rollback_plan_artifact_ref_missing_or_invalid");
+  }
+  if (!safeOpaqueReference(attestation.postDeploymentChecklistRef)) {
+    reasons.push("post_deployment_checklist_ref_missing_or_invalid");
+  }
+  if (sameReference(attestation.operatorReference, attestation.adminApproverReference)) {
+    reasons.push("operator_and_admin_approver_must_be_distinct");
+  }
   if (attestation.evidencePath && containsPlaceholder(attestation.evidencePath)) {
     reasons.push("evidence_path_placeholder");
   }
   return reasons;
+}
+
+function sameReference(left: string | null, right: string | null): boolean {
+  return Boolean(left && right && left.trim().toLowerCase() === right.trim().toLowerCase());
 }
 
 function safeOpaqueReference(value: string | null): boolean {

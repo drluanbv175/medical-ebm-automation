@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename } from "node:path";
 
+import { buildProductionEvidenceDossier } from "../lib/production-evidence-dossier";
 import { buildProductionGoLiveReport } from "../lib/production-go-live";
 import type { ProductionEvidencePackage } from "../lib/production-readiness";
 
@@ -12,6 +13,10 @@ type CliOptions = {
   releaseId: string | null;
   sourceCommitSha: string | null;
   operatorReference: string | null;
+  adminApproverReference: string | null;
+  changeTicketReference: string | null;
+  rollbackPlanArtifactRef: string | null;
+  postDeploymentChecklistRef: string | null;
   force: boolean;
   json: boolean;
 };
@@ -24,6 +29,10 @@ function parseArgs(argv: string[]): CliOptions {
     releaseId: process.env.PRODUCTION_RELEASE_ID ?? null,
     sourceCommitSha: process.env.SOURCE_COMMIT_SHA ?? null,
     operatorReference: process.env.PRODUCTION_OPERATOR_REF ?? null,
+    adminApproverReference: process.env.PRODUCTION_ADMIN_APPROVER_REF ?? null,
+    changeTicketReference: process.env.PRODUCTION_CHANGE_TICKET_REF ?? null,
+    rollbackPlanArtifactRef: process.env.PRODUCTION_ROLLBACK_PLAN_REF ?? null,
+    postDeploymentChecklistRef: process.env.PRODUCTION_POST_DEPLOY_CHECKLIST_REF ?? null,
     force: false,
     json: false
   };
@@ -59,6 +68,26 @@ function parseArgs(argv: string[]): CliOptions {
       index += 1;
       continue;
     }
+    if (arg === "--admin-approver") {
+      options.adminApproverReference = argv[index + 1] ?? null;
+      index += 1;
+      continue;
+    }
+    if (arg === "--change-ticket") {
+      options.changeTicketReference = argv[index + 1] ?? null;
+      index += 1;
+      continue;
+    }
+    if (arg === "--rollback-plan") {
+      options.rollbackPlanArtifactRef = argv[index + 1] ?? null;
+      index += 1;
+      continue;
+    }
+    if (arg === "--post-deploy-checklist") {
+      options.postDeploymentChecklistRef = argv[index + 1] ?? null;
+      index += 1;
+      continue;
+    }
     if (arg === "--force") {
       options.force = true;
       continue;
@@ -87,6 +116,11 @@ Options:
   --release-id <id>       Opaque production release identifier.
   --source-commit <sha>   Git/source commit SHA for the deployed source.
   --operator-ref <ref>    Opaque go-live operator reference, not PII.
+  --admin-approver <ref>  Distinct opaque system-admin approver reference.
+  --change-ticket <ref>   Change-control ticket reference.
+  --rollback-plan <ref>   Reviewed rollback plan artifact reference.
+  --post-deploy-checklist <ref>
+                         Post-deployment checklist artifact reference.
   --force                Overwrite --out path.
   --json                 Print full machine-readable report.
 `);
@@ -117,16 +151,24 @@ function main(): number {
     }
 
     const loadedEvidence = loadEvidencePackage(options.evidencePath);
+    const generatedAt = options.generatedAt ?? new Date().toISOString();
+    const dossier = buildProductionEvidenceDossier(loadedEvidence.package, generatedAt);
+    const dossierSha256 = hashReport(`${JSON.stringify(dossier, null, 2)}\n`);
     const report = buildProductionGoLiveReport(
       loadedEvidence.package,
       process.env,
-      options.generatedAt,
+      generatedAt,
       {
         evidenceSha256: loadedEvidence.sha256,
+        evidenceDossierSha256: dossierSha256,
         evidencePath: options.evidencePath,
         sourceCommitSha: options.sourceCommitSha,
         releaseId: options.releaseId,
-        operatorReference: options.operatorReference
+        operatorReference: options.operatorReference,
+        adminApproverReference: options.adminApproverReference,
+        changeTicketReference: options.changeTicketReference,
+        rollbackPlanArtifactRef: options.rollbackPlanArtifactRef,
+        postDeploymentChecklistRef: options.postDeploymentChecklistRef
       }
     );
 
@@ -146,6 +188,7 @@ function main(): number {
       console.log(`status=${report.status}`);
       console.log(`productionReady=${report.productionReady}`);
       console.log(`evidenceSha256=${loadedEvidence.sha256}`);
+      console.log(`evidenceDossierSha256=${dossierSha256}`);
       console.log(`reportSha256=${reportSha256}`);
       console.log(`readiness=${report.readiness.releaseDecision.status}`);
       console.log(`runtimeEnv=${report.runtimeEnvironment.status}`);

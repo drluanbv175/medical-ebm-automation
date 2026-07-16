@@ -28,15 +28,24 @@ const safeEnv = {
   ALLOWED_ORIGINS: "https://clinic.example.org",
   SOURCE_COMMIT_SHA: "abcdef1234567890",
   PRODUCTION_RELEASE_ID: "release-2026-07-16-001",
-  PRODUCTION_OPERATOR_REF: "OPS_GO_LIVE_001"
+  PRODUCTION_OPERATOR_REF: "OPS_GO_LIVE_001",
+  PRODUCTION_ADMIN_APPROVER_REF: "ADMIN_APPROVER_001",
+  PRODUCTION_CHANGE_TICKET_REF: "CHANGE_TICKET_2026_07_16_001",
+  PRODUCTION_ROLLBACK_PLAN_REF: "operations/evidence/rollback-plan-001.json",
+  PRODUCTION_POST_DEPLOY_CHECKLIST_REF: "operations/evidence/post-deploy-checklist-001.json"
 };
 
 const safeAttestation = {
   evidenceSha256: "a".repeat(64),
+  evidenceDossierSha256: "b".repeat(64),
   evidencePath: "/secure/path/production-evidence.json",
   sourceCommitSha: safeEnv.SOURCE_COMMIT_SHA,
   releaseId: safeEnv.PRODUCTION_RELEASE_ID,
-  operatorReference: safeEnv.PRODUCTION_OPERATOR_REF
+  operatorReference: safeEnv.PRODUCTION_OPERATOR_REF,
+  adminApproverReference: safeEnv.PRODUCTION_ADMIN_APPROVER_REF,
+  changeTicketReference: safeEnv.PRODUCTION_CHANGE_TICKET_REF,
+  rollbackPlanArtifactRef: safeEnv.PRODUCTION_ROLLBACK_PLAN_REF,
+  postDeploymentChecklistRef: safeEnv.PRODUCTION_POST_DEPLOY_CHECKLIST_REF
 };
 
 test("one go-live report becomes production ready only when evidence env and headers pass together", () => {
@@ -57,6 +66,7 @@ test("one go-live report becomes production ready only when evidence env and hea
   assert.equal(report.secureHeaders.allowed, true);
   assert.equal(report.emittedHeaders["X-Clinical-Production-Ready"], "true");
   assert.equal(report.attestation.evidenceSha256, "a".repeat(64));
+  assert.equal(report.attestation.evidenceDossierSha256, "b".repeat(64));
   assert.equal(report.attestation.sourceCommitSha, safeEnv.SOURCE_COMMIT_SHA);
 });
 
@@ -99,19 +109,45 @@ test("one go-live report blocks missing release attestation", () => {
     "2026-07-16T00:00:00.000Z",
     {
       evidenceSha256: null,
+      evidenceDossierSha256: null,
       evidencePath: null,
       sourceCommitSha: null,
       releaseId: null,
-      operatorReference: null
+      operatorReference: null,
+      adminApproverReference: null,
+      changeTicketReference: null,
+      rollbackPlanArtifactRef: null,
+      postDeploymentChecklistRef: null
     }
   );
 
   assert.equal(report.status, "BLOCKED");
   assert.equal(report.productionReady, false);
   assert.ok(report.blockedReasons.includes("attestation:evidence_sha256_missing_or_invalid"));
+  assert.ok(report.blockedReasons.includes("attestation:evidence_dossier_sha256_missing_or_invalid"));
   assert.ok(report.blockedReasons.includes("attestation:source_commit_sha_missing_or_invalid"));
   assert.ok(report.blockedReasons.includes("attestation:release_id_missing_or_invalid"));
   assert.ok(report.blockedReasons.includes("attestation:operator_reference_missing_or_invalid"));
+  assert.ok(report.blockedReasons.includes("attestation:admin_approver_reference_missing_or_invalid"));
+  assert.ok(report.blockedReasons.includes("attestation:change_ticket_reference_missing_or_invalid"));
+  assert.ok(report.blockedReasons.includes("attestation:rollback_plan_artifact_ref_missing_or_invalid"));
+  assert.ok(report.blockedReasons.includes("attestation:post_deployment_checklist_ref_missing_or_invalid"));
+});
+
+test("one go-live report blocks operator self-approval by system admin", () => {
+  const report = buildProductionGoLiveReport(
+    completeEvidencePackage(),
+    safeEnv,
+    "2026-07-16T00:00:00.000Z",
+    {
+      ...safeAttestation,
+      adminApproverReference: safeAttestation.operatorReference
+    }
+  );
+
+  assert.equal(report.status, "BLOCKED");
+  assert.equal(report.productionReady, false);
+  assert.ok(report.blockedReasons.includes("attestation:operator_and_admin_approver_must_be_distinct"));
 });
 
 function completeEvidencePackage(): ProductionEvidencePackage {
