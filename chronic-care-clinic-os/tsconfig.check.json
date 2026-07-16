@@ -45,6 +45,8 @@
     "tests/persistent-transaction.behavior.test.ts",
     "tests/runtime-hardening.behavior.test.ts",
     "tests/production-readiness.behavior.test.ts",
+    "scripts/verify-production-readiness.ts",
+    "types/next-shims.d.ts",
     "components/Badge.tsx",
     "components/PageHeader.tsx",
     "components/StatCard.tsx"

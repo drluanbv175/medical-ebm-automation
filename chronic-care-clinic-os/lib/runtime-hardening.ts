@@ -117,17 +117,27 @@ export function validateProductionRuntimeEnvironment(env: RuntimeEnvironment): R
   ]);
 }
 
-export function buildSecureHeaders(extra: Record<string, string> = {}): Record<string, string> {
+export function buildSecureHeaders(
+  extra: Record<string, string> = {},
+  options: { productionReady?: boolean } = {}
+): Record<string, string> {
   return {
     ...extra,
-    ...secureHeaderPolicy
+    ...secureHeaderPolicy,
+    "X-Clinical-Production-Ready": options.productionReady ? "true" : "false"
   };
 }
 
-export function validateSecureHeaders(headers: Record<string, string | undefined>): RuntimeHardeningDecision {
+export function validateSecureHeaders(
+  headers: Record<string, string | undefined>,
+  options: { productionReady?: boolean } = {}
+): RuntimeHardeningDecision {
   const blockedReasons: string[] = [];
 
   for (const [name, expected] of Object.entries(secureHeaderPolicy)) {
+    const expectedValue = name === "X-Clinical-Production-Ready"
+      ? (options.productionReady ? "true" : "false")
+      : expected;
     const actual = lookupHeader(headers, name);
     if (!actual) {
       blockedReasons.push(`missing_header:${name}`);
@@ -141,7 +151,7 @@ export function validateSecureHeaders(headers: Record<string, string | undefined
       }
       continue;
     }
-    if (actual !== expected) {
+    if (actual !== expectedValue) {
       blockedReasons.push(`header_value_mismatch:${name}`);
     }
   }

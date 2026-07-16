@@ -70,6 +70,22 @@ test("secure header policy validates API and page hardening headers", () => {
   assert.ok(broken.blockedReasons.includes("csp_missing_directive:frame-ancestors 'none'"));
 });
 
+test("clinical production readiness header follows signed production decision", () => {
+  const readyHeaders = buildSecureHeaders(
+    { "Cache-Control": "no-store" },
+    { productionReady: true }
+  );
+  const blockedHeaders = buildSecureHeaders(
+    { "Cache-Control": "no-store" },
+    { productionReady: false }
+  );
+
+  assert.equal(readyHeaders["X-Clinical-Production-Ready"], "true");
+  assert.equal(blockedHeaders["X-Clinical-Production-Ready"], "false");
+  assert.equal(validateSecureHeaders(readyHeaders, { productionReady: true }).allowed, true);
+  assert.equal(validateSecureHeaders(readyHeaders).allowed, false);
+});
+
 test("request security guard blocks unsafe writes without actor, CSRF and rate-limit evidence", () => {
   const blocked = evaluateRequestSecurityControls({
     method: "POST",

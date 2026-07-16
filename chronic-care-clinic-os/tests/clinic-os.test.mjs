@@ -614,6 +614,8 @@ test("production readiness blockers are machine-readable and surfaced in setting
   const settings = read("app/admin/settings/page.tsx");
   const blockers = read("PRODUCTION_BLOCKERS.md");
   const typecheck = read("tsconfig.check.json");
+  const pkg = read("package.json");
+  const verifyScript = read("scripts/verify-production-readiness.ts");
 
   assert.match(readiness, /chronic_care_production_readiness_report/);
   assert.match(readiness, /productionBlockers/);
@@ -631,14 +633,21 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(settings, /Release decision/);
   assert.match(route, /loadProductionEvidencePackageFromEnv/);
   assert.match(route, /buildProductionReadinessReport/);
+  assert.match(route, /productionReady: report\.summary\.productionReady/);
   assert.match(route, /buildSecureHeaders/);
   assert.match(route, /Cache-Control/);
   assert.match(route, /no-store/);
   assert.match(hardening, /X-Clinical-Production-Ready/);
+  assert.match(hardening, /options\.productionReady/);
+  assert.match(pkg, /production:verify/);
+  assert.match(verifyScript, /buildProductionReadinessReport/);
+  assert.match(verifyScript, /process\.exit\(main\(\)\)/);
   assert.match(blockers, /lib\/production-readiness\.ts/);
   assert.match(typecheck, /app\/api\/admin\/production-readiness\/route\.ts/);
   assert.match(typecheck, /lib\/production-readiness\.ts/);
   assert.match(typecheck, /lib\/production-evidence-loader\.ts/);
+  assert.match(typecheck, /scripts\/verify-production-readiness\.ts/);
+  assert.match(typecheck, /types\/next-shims\.d\.ts/);
   assert.match(typecheck, /tests\/production-readiness\.behavior\.test\.ts/);
 });
 

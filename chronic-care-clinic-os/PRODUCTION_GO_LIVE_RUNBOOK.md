@@ -15,6 +15,14 @@ The system may be called production-ready only when `/api/admin/production-readi
 
 The route reads `PRODUCTION_READINESS_EVIDENCE_PATH`. If that environment variable is missing, unreadable, malformed, incomplete, expired or missing any signoff, the route stays blocked.
 
+CI/deployment should also run the same contract with an exit code:
+
+```bash
+pnpm production:verify -- --evidence /secure/path/production-evidence.json
+```
+
+Exit code `0` means the evidence package unlocks `PRODUCTION_READY`; exit code `1` means the package is readable but still blocked; exit code `2` means the package cannot be read or the command is malformed.
+
 ## Required Evidence Package Shape
 
 Store the evidence package outside source control, for example in a restricted deployment folder:

@@ -18,6 +18,9 @@ export function GET() {
     }
   }
   return Response.json(report, {
-    headers: buildSecureHeaders({ "Cache-Control": "no-store" })
+    headers: buildSecureHeaders(
+      { "Cache-Control": "no-store" },
+      { productionReady: report.summary.productionReady }
+    )
   });
 }
