@@ -78,6 +78,20 @@ class ReleasePacketContract:
     non_goals: list[str]
 
 
+@dataclass(frozen=True)
+class InternationalStandardProfile:
+    kind: str
+    status: str
+    source_hierarchy: list[str]
+    question_frames: dict[str, str]
+    reporting_standards: dict[str, list[str]]
+    appraisal_tools: dict[str, list[str]]
+    certainty_and_decision: list[str]
+    safety_and_adaptation: list[str]
+    transparency_requirements: list[str]
+    hard_stop_misuse_codes: list[str]
+
+
 def build_agent_contract() -> list[AgentGateContract]:
     """Hợp đồng vận hành tối thiểu cho mỗi lượt cập nhật chứng cứ lâm sàng."""
 
@@ -231,6 +245,10 @@ def build_release_packet_contract() -> ReleasePacketContract:
     artifacts: list[str] = []
     for gate in gates:
         artifacts.extend(gate.required_artifacts)
+    artifacts.extend([
+        "international_standard_profile",
+        "standard_selection_rationale",
+    ])
     return ReleasePacketContract(
         kind="clinical_evidence_update_release_packet_contract",
         decision="BLOCKED_UNTIL_DOCTOR_REVIEW",
@@ -249,6 +267,8 @@ def build_release_packet_contract() -> ReleasePacketContract:
             "SOURCE_UNVERIFIED",
             "STRICT_SOURCE_GATE_FAILED",
             "GRADE_SELF_ASSIGNED",
+            "WRONG_APPRAISAL_TOOL",
+            "INTERNATIONAL_STANDARD_PROFILE_MISSING",
             "RED_FLAG_OR_CONTRAINDICATION_MISSING",
             "DRUG_SAFETY_SCAN_REQUIRED",
             "HUB_SYNC_OR_QUARANTINE_FAILED",
@@ -265,6 +285,87 @@ def build_release_packet_contract() -> ReleasePacketContract:
             "Không tự áp dụng cho bệnh nhân thật.",
             "Không thay thế bác sĩ, IRB, hội đồng thuốc, pháp chế hoặc UAT/bảo mật triển khai.",
             "Không biến dashboard vấn đề riêng lẻ thành bản ghi Master đã duyệt khi chưa có lệnh duyệt.",
+        ],
+    )
+
+
+def build_international_standard_profile() -> InternationalStandardProfile:
+    """Hồ sơ chuẩn quốc tế tối thiểu cho agent EBM lâm sàng."""
+
+    return InternationalStandardProfile(
+        kind="clinical_ebm_international_standard_profile",
+        status="MAPPED_WITH_DOCTOR_GATE",
+        source_hierarchy=[
+            "Official clinical practice guideline or regulatory safety communication",
+            "Cochrane/systematic review/meta-analysis",
+            "Large multicenter RCT",
+            "High-quality cohort/registry/RWD when directly practice-changing",
+            "Expert consensus only when stronger evidence is unavailable and clearly labeled",
+        ],
+        question_frames={
+            "intervention": "PICO(T)(S)",
+            "harm_or_etiology": "PECO",
+            "diagnostic_accuracy": "PIRT",
+            "prognosis": "PROGRESS/PICOTS",
+            "prevalence": "CoCoPop",
+            "qualitative": "SPIDER",
+            "service_policy": "ECLIPSE",
+            "economic": "PICO + cost/QALY",
+        },
+        reporting_standards={
+            "clinical_guideline": ["RIGHT", "source guideline reporting statement when available"],
+            "rct": ["CONSORT"],
+            "observational": ["STROBE"],
+            "systematic_review": ["PRISMA 2020"],
+            "diagnostic_accuracy": ["STARD"],
+            "prediction_model": ["TRIPOD", "TRIPOD+AI when applicable"],
+            "qualitative": ["COREQ", "SRQR"],
+            "economic": ["CHEERS"],
+        },
+        appraisal_tools={
+            "clinical_guideline": ["AGREE II", "AGREE-REX"],
+            "systematic_review": ["AMSTAR 2"],
+            "rct": ["RoB 2"],
+            "nonrandomized_intervention": ["ROBINS-I"],
+            "harm_or_etiology": ["ROBINS-E"],
+            "diagnostic_accuracy": ["QUADAS-2", "QUADAS-C"],
+            "prognosis": ["QUIPS"],
+            "prediction_model": ["PROBAST", "PROBAST-AI when applicable"],
+            "prevalence": ["JBI prevalence checklist"],
+        },
+        certainty_and_decision=[
+            "Keep original source grading/class/level verbatim",
+            "Do not convert other systems into GRADE unless the source does so",
+            "GRADE certainty by outcome when formally available",
+            "GRADE Evidence-to-Decision for practice-changing recommendations",
+            "GRADE for diagnostic tests when the question is test accuracy",
+            "GRADE prognosis when the question is prognosis",
+            "GRADE-ADOLOPMENT when adapting guideline recommendations",
+            "Summary of Findings for important outcomes when feasible",
+        ],
+        safety_and_adaptation=[
+            "FDA/EMA/MHRA/DailyMed/openFDA safety sources for drug safety",
+            "Beers 2023 and STOPP/START v3 as geriatric/polypharmacy reminder layer",
+            "WHO AWaRe for antibiotic stewardship when relevant",
+            "Vietnam Ministry of Health/kcb.vn and local unit constraints",
+            "[CẦN XÁC NHẬN TẠI ĐƠN VỊ] for availability, BHYT, cost, monitoring or referral constraints",
+        ],
+        transparency_requirements=[
+            "PMID/DOI/URL for each practice-changing item",
+            "Search date, source title, organization, version/date and target population",
+            "Vancouver/NLM references without raw citation markup",
+            "No PII in prompts, dashboards, derivatives or hub artifacts",
+            "Explicit label for partial/unverified evidence",
+            "Doctor review packet before any clinical use",
+        ],
+        hard_stop_misuse_codes=[
+            "WRONG_QUESTION_FRAME",
+            "WRONG_APPRAISAL_TOOL",
+            "SELF_ASSIGNED_GRADE",
+            "SOURCE_GRADING_CONVERTED_WITHOUT_AUTHORITY",
+            "EFFECT_SIZE_NOT_SOURCE_TRACEABLE",
+            "CONFLICTING_EVIDENCE_NOT_REPORTED",
+            "INTERNATIONAL_STANDARD_PROFILE_MISSING",
         ],
     )
 
@@ -583,6 +684,69 @@ def _check_doctor_gate_boundaries() -> StandardCheck:
     )
 
 
+def _check_international_standard_profile() -> StandardCheck:
+    profile = build_international_standard_profile()
+    profile_text = json.dumps(asdict(profile), ensure_ascii=False)
+    required_tokens = [
+        "RIGHT",
+        "CONSORT",
+        "STROBE",
+        "PRISMA 2020",
+        "STARD",
+        "TRIPOD",
+        "CHEERS",
+        "AGREE II",
+        "AGREE-REX",
+        "AMSTAR 2",
+        "RoB 2",
+        "ROBINS-I",
+        "ROBINS-E",
+        "QUADAS-2",
+        "QUADAS-C",
+        "QUIPS",
+        "PROBAST",
+        "GRADE Evidence-to-Decision",
+        "GRADE-ADOLOPMENT",
+        "Beers 2023",
+        "STOPP/START v3",
+        "WHO AWaRe",
+        "PMID/DOI/URL",
+        "WRONG_APPRAISAL_TOOL",
+        "SELF_ASSIGNED_GRADE",
+    ]
+    missing = [
+        f"international_standard_profile missing token: {token}"
+        for token in required_tokens
+        if token not in profile_text
+    ]
+    if profile.status != "MAPPED_WITH_DOCTOR_GATE":
+        missing.append(f"unexpected profile status: {profile.status}")
+    if "diagnostic_accuracy" not in profile.appraisal_tools:
+        missing.append("missing diagnostic_accuracy appraisal mapping")
+    if "clinical_guideline" not in profile.reporting_standards:
+        missing.append("missing clinical_guideline reporting mapping")
+    return StandardCheck(
+        check_id="EAS7",
+        title="Hồ sơ chuẩn quốc tế cho EBM lâm sàng",
+        status=FAIL if missing else PASS,
+        evidence=[
+            "tools/verify_clinical_evidence_agent_standards.py:InternationalStandardProfile",
+            _rel(SKILL_ROOT / "references" / "02-cong-cu-tham-dinh-va-grade.md"),
+            _rel(SKILL_ROOT / "references" / "07-mo-hinh-cau-hoi-va-khung-thay-the.md"),
+            _rel(SKILL_ROOT / "templates" / "web-dashboard-evidence-workbench.html"),
+        ],
+        proves=(
+            "Agent có mapping chuẩn quốc tế theo loại câu hỏi/thiết kế: báo cáo, thẩm định, "
+            "GRADE/EtD, an toàn thuốc, bản địa hóa và hard-stop khi dùng sai công cụ."
+        ),
+        limitation=(
+            "Mapping này là control-plane; mỗi nguồn thật vẫn phải được đọc/xác minh và bác sĩ duyệt "
+            "trước khi áp dụng."
+        ),
+        missing=missing,
+    )
+
+
 def evaluate_all(generated_at: str | None = None) -> dict:
     checks = [
         _check_agents(),
@@ -591,9 +755,11 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         _check_evidence_workbench_contract(),
         _check_safety_localization_and_outputs(),
         _check_doctor_gate_boundaries(),
+        _check_international_standard_profile(),
     ]
     agent_contract = build_agent_contract()
     release_packet = build_release_packet_contract()
+    international_profile = build_international_standard_profile()
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
     if fail_count:
@@ -619,6 +785,8 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         ],
         "agent_contract": [asdict(gate) for gate in agent_contract],
         "release_packet_contract": asdict(release_packet),
+        "international_standard_profile_status": international_profile.status,
+        "international_standard_profile": asdict(international_profile),
         "checks": [asdict(check) for check in checks],
         "disclaimer": DISCLAIMER,
     }
@@ -639,6 +807,7 @@ def markdown_report(report: dict) -> str:
         f"- Agent contract gates: `{report['agent_contract_gate_count']}`",
         f"- Agent contract human gates: `{', '.join(report['agent_contract_human_gate_ids'])}`",
         f"- Release packet decision: `{report['release_packet_contract']['decision']}`",
+        f"- International standard profile: `{report['international_standard_profile_status']}`",
         "",
         "| Check | Status | Proves | Limitation | Missing |",
         "|---|---|---|---|---|",
@@ -676,6 +845,22 @@ def markdown_report(report: dict) -> str:
     ])
     for reason in packet["hard_stop_reason_codes"]:
         lines.append(f"| `{reason}` |")
+    profile = report["international_standard_profile"]
+    lines.extend([
+        "",
+        "## International Standards Profile",
+        "",
+        f"- Status: `{profile['status']}`",
+        f"- Source hierarchy levels: `{len(profile['source_hierarchy'])}`",
+        f"- Question frames: `{', '.join(profile['question_frames'])}`",
+        f"- Reporting standards: `{', '.join(profile['reporting_standards'])}`",
+        f"- Appraisal tools: `{', '.join(profile['appraisal_tools'])}`",
+        "",
+        "| Misuse Hard Stop |",
+        "|---|",
+    ])
+    for code in profile["hard_stop_misuse_codes"]:
+        lines.append(f"| `{code}` |")
     lines.extend([
         "",
         "## Agent Gate Contract",
@@ -724,6 +909,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"agent_contract_gate_count={report['agent_contract_gate_count']}")
         print("agent_contract_human_gate_ids=" + ",".join(report["agent_contract_human_gate_ids"]))
         print("release_packet_decision=" + report["release_packet_contract"]["decision"])
+        print("international_standard_profile_status=" + report["international_standard_profile_status"])
         print("Cần bác sĩ kiểm chứng.")
     return 0 if report["fail_count"] == 0 else 1
 
