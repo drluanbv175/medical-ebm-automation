@@ -518,7 +518,14 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
     này đã cấu hình khóa ký (signing_key_configured()) — chữ ký PHẢI khớp; nếu máy
     CHƯA từng thiết lập khóa, hạ về kiểm tra cũ (1)-(4) để không phá đề tài/test
     có từ trước khi có chữ ký (rely_on_signature=False được ghi rõ qua giá trị
-    trả về của signing_key_configured(), gọi riêng nếu cần phân biệt 2 trường hợp)."""
+    trả về của signing_key_configured(), gọi riêng nếu cần phân biệt 2 trường hợp)
+    — TRỪ đề tài THẬT trong REAL_STUDY_DENYLIST: vá 2026-07-16 sau khi red-team đối
+    kháng tái hiện được — trên một máy CHƯA cấu hình khóa ký, approval_ledger.json
+    chỉ là JSON đọc-ghi thô (json.loads() không kiểm toàn vẹn gì), nên MỘT bản ghi
+    "APPROVED" tự bịa (không chữ ký, reviewer_ref bất kỳ) vẫn qua được (1)-(4) nếu
+    tính đúng evidence_hash — điều bất kỳ ai/agent nào cũng làm được vì hash không
+    phải bí mật. Với đề tài THẬT, KHÔNG được hạ chuẩn — coi "chưa cấu hình khóa" là
+    CHƯA DUYỆT (fail-closed) thay vì bỏ qua bước ký."""
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
     ledger_p = root / "exports" / study / "approval_ledger.json"
     if not ledger_p.exists() or not Path(artifact_path).exists():
@@ -541,4 +548,10 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
         return False
     if signing_key_configured():
         return verify_approval_signature(latest, study)
+    if is_real_study_denylisted(study):
+        # Fail-closed: đề tài THẬT không được coi là "đã duyệt" chỉ vì máy đang chạy
+        # kiểm tra chưa cấu hình khóa ký — nếu không, một bản ghi approval_ledger.json
+        # tự bịa (không chữ ký) vẫn qua được (1)-(4) bằng cách tính đúng evidence_hash,
+        # điều KHÔNG cần bí mật gì để làm.
+        return False
     return True

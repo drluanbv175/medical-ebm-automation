@@ -83,6 +83,24 @@ S001,Nguyen Van A,0912345678,45,0
     assert manifest["raw_readonly_path"] is None
 
 
+def test_import_blocks_tokenized_pii_headers_without_overblocking(tmp_path):
+    data = _csv(
+        tmp_path / "unsafe_tokenized_headers.csv",
+        """
+record_id,patient_phone,cccd_so,tuyen_giap,primary_outcome
+S001,redacted,redacted,0,1
+""",
+    )
+    manifest = RDI.import_dataset("PII-TOKEN-HDR", data, exports_root=tmp_path / "exports")
+
+    assert manifest["status"] == RDI.BLOCKED_STATUS
+    issue_types = {issue["type"] for issue in manifest["pii_scan"]["issues"]}
+    assert "header_pii:patient_phone" in issue_types
+    assert "header_pii:cccd_so" in issue_types
+    assert "header_pii:tuyen_giap" not in issue_types
+    assert manifest["raw_readonly_path"] is None
+
+
 def test_import_blocks_direct_pii_value_without_storing_value(tmp_path):
     data = _csv(
         tmp_path / "unsafe_value.csv",
@@ -99,6 +117,25 @@ S001,45,call 0912345678 before visit
     assert "pseudonymize_research_dataset.py" in manifest["remediation"]["pseudonymize_command"]
     dumped = json.dumps(manifest, ensure_ascii=False)
     assert "0912345678" not in dumped
+
+
+def test_import_blocks_formatted_phone_and_grouped_citizen_id_values(tmp_path):
+    data = _csv(
+        tmp_path / "unsafe_formatted_values.csv",
+        """
+record_id,age,notes
+S001,45,"call (090) 123 4567; CCCD 012 345 678 901"
+""",
+    )
+    manifest = RDI.import_dataset("PII-FMT-VAL", data, exports_root=tmp_path / "exports")
+
+    issues = manifest["pii_scan"]["issues"]
+    assert manifest["status"] == RDI.BLOCKED_STATUS
+    assert any(issue["type"] == "value_pii:phone_vn" for issue in issues)
+    assert any(issue["type"] == "value_pii:cccd_cmnd_grouped" for issue in issues)
+    dumped = json.dumps(manifest, ensure_ascii=False)
+    assert "(090) 123 4567" not in dumped
+    assert "012 345 678 901" not in dumped
 
 
 def test_blocked_intake_redacts_source_filename_with_pii_signal(tmp_path):
