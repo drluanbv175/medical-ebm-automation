@@ -26,10 +26,16 @@ Exit code `0` means the evidence package unlocks `PRODUCTION_READY`; exit code `
 For the final one-run go-live gate, use:
 
 ```bash
-pnpm production:go-live -- --evidence /secure/path/production-evidence.json --out /secure/path/go-live-report.json
+pnpm production:go-live -- \
+  --evidence /secure/path/production-evidence.json \
+  --release-id release-2026-07-16-001 \
+  --source-commit <deployed-git-sha> \
+  --operator-ref OPS_GO_LIVE_001 \
+  --out /secure/path/go-live-report.json
 ```
 
 This command validates all three layers together: signed evidence package, production runtime environment variables and the emitted production readiness headers. It treats runtime warnings as blockers. The system may be called production only when this command exits `0` and writes `status = "PRODUCTION_READY"`.
+The command records the evidence package SHA-256 in the go-live report and writes a sidecar `go-live-report.json.sha256` so the final report is tamper-evident.
 
 Start from a complete template instead of writing the package by hand:
 
