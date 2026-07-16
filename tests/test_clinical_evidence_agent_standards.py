@@ -31,6 +31,8 @@ def test_clinical_evidence_agent_standards_are_ready_with_doctor_gate() -> None:
     assert report["clinical_production_allowed"] is False
     assert report["real_patient_data_allowed"] is False
     assert report["auto_apply_allowed"] is False
+    assert report["agent_contract_gate_count"] == 7
+    assert report["agent_contract_human_gate_ids"] == ["CEG7"]
 
 
 def test_clinical_evidence_agent_standards_cover_all_required_domains() -> None:
@@ -58,4 +60,31 @@ def test_clinical_evidence_agent_standards_markdown_keeps_boundaries_visible() -
     assert "Doctor review required before apply: `True`" in markdown
     assert "Clinical production allowed: `False`" in markdown
     assert "Auto-apply allowed: `False`" in markdown
+    assert "Agent Gate Contract" in markdown
+    assert "CEG7 Guardrail cuối và bác sĩ quyết định áp dụng" in markdown
     assert "Cần bác sĩ kiểm chứng" in markdown
+
+
+def test_clinical_evidence_agent_contract_is_ordered_and_fail_closed() -> None:
+    mod = _load_module()
+    report = mod.evaluate_all(generated_at=FIXED_NOW)
+    contract = report["agent_contract"]
+
+    assert [gate["gate_id"] for gate in contract] == [
+        "CEG1",
+        "CEG2",
+        "CEG3",
+        "CEG4",
+        "CEG5",
+        "CEG6",
+        "CEG7",
+    ]
+    assert contract[1]["owner_agent"] == "tra-cuu-chung-cu"
+    assert "PMID/DOI/URL" in " ".join(contract[1]["fail_closed_when"])
+    assert "verify_dashboard.py --online --strict-sources" in " ".join(
+        contract[3]["automated_checks"]
+    )
+    assert "drug_safety_scan.py" in " ".join(contract[4]["automated_checks"])
+    assert contract[-1]["human_gate"] is True
+    assert contract[-1]["output_state"] == "doctor_gate_required_before_clinical_use"
+    assert "Không auto_apply" in " ".join(contract[-1]["automated_checks"])

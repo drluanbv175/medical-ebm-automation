@@ -53,6 +53,165 @@ class StandardCheck:
     human_action: str = ""
 
 
+@dataclass(frozen=True)
+class AgentGateContract:
+    gate_id: str
+    name: str
+    owner_agent: str
+    trigger: str
+    automated_checks: list[str]
+    required_artifacts: list[str]
+    fail_closed_when: list[str]
+    human_gate: bool
+    output_state: str
+
+
+def build_agent_contract() -> list[AgentGateContract]:
+    """Hợp đồng vận hành tối thiểu cho mỗi lượt cập nhật chứng cứ lâm sàng."""
+
+    return [
+        AgentGateContract(
+            gate_id="CEG1",
+            name="Đóng khung câu hỏi và phạm vi ngoại trú",
+            owner_agent="dieu-phoi-lam-sang -> cap-nhat-guideline",
+            trigger="Bác sĩ yêu cầu cập nhật chứng cứ/khuyến cáo cho một vấn đề lâm sàng.",
+            automated_checks=[
+                "Không nhận hoặc xuất PII.",
+                "Tự chọn khung PICO/PECO/PIRT/PROGRESS/CoCoPop/SPIDER/ECLIPSE phù hợp.",
+                "Gắn bối cảnh ngoại trú Việt Nam và nhóm đặc biệt liên quan.",
+            ],
+            required_artifacts=["clinical_question_frame", "scope_and_population"],
+            fail_closed_when=[
+                "Thiếu quần thể/bối cảnh làm thay đổi an toàn xử trí.",
+                "Có PII chưa được khử hoặc pseudonymize.",
+            ],
+            human_gate=False,
+            output_state="framed_request",
+        ),
+        AgentGateContract(
+            gate_id="CEG2",
+            name="Tìm nguồn chính thống và đối chiếu định danh",
+            owner_agent="tra-cuu-chung-cu",
+            trigger="Câu hỏi đã được đóng khung.",
+            automated_checks=[
+                "Ưu tiên guideline/HTA/regulatory source chính thức.",
+                "Đối chiếu PubMed/Europe PMC để lấy PMID/DOI khi có.",
+                "Gắn PARTIAL hoặc chưa xác minh khi thiếu nguồn truy nguyên.",
+                "Không bịa DOI, PMID, ngày phiên bản hoặc phân hạng.",
+            ],
+            required_artifacts=["source_table", "pmid_doi_url_index", "currency_note"],
+            fail_closed_when=[
+                "Không có PMID/DOI/URL cho điểm thực hành quan trọng.",
+                "Nguồn không khớp tiêu đề/tổ chức/ngày/quần thể.",
+                "Nguồn bị rút lại hoặc không truy nguyên được nhưng vẫn được dùng để đổi thực hành.",
+            ],
+            human_gate=False,
+            output_state="verified_sources_or_partial",
+        ),
+        AgentGateContract(
+            gate_id="CEG3",
+            name="Thẩm định và chuyển hóa thành quyết định thực hành",
+            owner_agent="cap-nhat-guideline -> huong-dan-lam-sang",
+            trigger="Nguồn đã đủ để tổng hợp.",
+            automated_checks=[
+                "Giữ nguyên grading/class/level của nguồn.",
+                "Không tự gán GRADE khi nguồn không cấp.",
+                "Tách khuyến cáo nguồn, độ chắc chắn chứng cứ và đánh giá vận hành.",
+                "Trích hiệu số đúng như nguồn báo cáo.",
+                "Nêu cả hai chiều khi chứng cứ xung đột.",
+            ],
+            required_artifacts=["practice_decision_table", "appraisal_notes", "evidence_to_decision_summary"],
+            fail_closed_when=[
+                "Không truy được grading provenance.",
+                "Hiệu số hoặc kết luận không khớp nguồn.",
+                "Có chống chỉ định/cờ đỏ quan trọng chưa được nêu.",
+            ],
+            human_gate=False,
+            output_state="review_ready_recommendations",
+        ),
+        AgentGateContract(
+            gate_id="CEG4",
+            name="Dựng Evidence Workbench và chạy cổng nguồn nghiêm ngặt",
+            owner_agent="huong-dan-lam-sang",
+            trigger="Có bảng quyết định thực hành review-ready.",
+            automated_checks=[
+                "Dùng template Evidence Workbench mặc định.",
+                "Chạy verify_dashboard.py --online --strict-sources với dashboard thật.",
+                "Có disclaimer, decision, gradeLevel và export CSV/JSON.",
+                "Không sinh ID Master hoặc Cổng A/B trong dashboard vấn đề riêng lẻ.",
+            ],
+            required_artifacts=["evidence_workbench_html", "dashboard_verify_log"],
+            fail_closed_when=[
+                "verify_dashboard fail.",
+                "Dashboard chứa PII.",
+                "Item đổi thực hành thiếu PMID/DOI/URL hoặc strict source mismatch.",
+            ],
+            human_gate=False,
+            output_state="dashboard_passed_or_blocked",
+        ),
+        AgentGateContract(
+            gate_id="CEG5",
+            name="An toàn thuốc, cờ đỏ và bản địa hóa Việt Nam",
+            owner_agent="huong-dan-lam-sang -> ke-don-an-toan-benh-man",
+            trigger="Dashboard có thuốc, nhóm đặc biệt, hoặc khuyến cáo cần triển khai tại Việt Nam.",
+            automated_checks=[
+                "Chạy drug_safety_scan.py khi có thuốc và người cao tuổi/đa thuốc.",
+                "Đối chiếu Beers/STOPP-START như lớp nhắc, không thay bác sĩ.",
+                "Đối chiếu BYT/kcb.vn hoặc registry nội bộ khi có tài liệu phù hợp.",
+                "Gắn [CẦN XÁC NHẬN TẠI ĐƠN VỊ] cho thuốc/xét nghiệm/luồng phụ thuộc nguồn lực.",
+            ],
+            required_artifacts=["safety_limits_table", "vn_localization_note", "drug_safety_log_if_applicable"],
+            fail_closed_when=[
+                "Khuyến cáo thuốc nguy cơ cao thiếu cảnh báo/monitoring.",
+                "Cờ đỏ hoặc chỉ định chuyển tuyến bị bỏ sót.",
+                "Quyết định phụ thuộc nguồn lực nhưng không gắn nhãn cần xác nhận tại đơn vị.",
+            ],
+            human_gate=False,
+            output_state="localized_safety_checked_package",
+        ),
+        AgentGateContract(
+            gate_id="CEG6",
+            name="Tích lũy thư viện, phái sinh và đồng bộ hub",
+            owner_agent="cap-nhat-guideline",
+            trigger="Dashboard đã qua cổng liêm chính.",
+            automated_checks=[
+                "Chạy build_library.py add.",
+                "Chạy make_derivatives.py để sinh tờ dặn, slide outline, kịch bản TikTok.",
+                "Chạy sync_all.py để nạp hub với quarantine cho thẻ không truy nguyên.",
+                "Sản phẩm phái sinh không chứa liều trong nội dung cho người bệnh/TikTok.",
+            ],
+            required_artifacts=["library_entry", "derivatives", "sync_all_log"],
+            fail_closed_when=[
+                "Thẻ không truy nguyên bị nạp vào evidence_cards.",
+                "Sản phẩm phái sinh có PII hoặc thiếu disclaimer.",
+                "Hub/WebApp không được đồng bộ sau khi dashboard PASS.",
+            ],
+            human_gate=False,
+            output_state="hub_synced_review_queue",
+        ),
+        AgentGateContract(
+            gate_id="CEG7",
+            name="Guardrail cuối và bác sĩ quyết định áp dụng",
+            owner_agent="tham-dinh-dau-ra -> bác sĩ",
+            trigger="Gói cập nhật đã sẵn sàng giao bác sĩ.",
+            automated_checks=[
+                "Chạy R1-R7 liêm chính và Q1-Q7 Med-PaLM.",
+                "Q2/Q5 đỏ thì chuyển bác sĩ phán định.",
+                "Không auto_apply, không real_patient_data_allowed.",
+                "Cổng A/B chỉ mở khi bác sĩ duyệt rõ ràng.",
+            ],
+            required_artifacts=["final_guardrail_result", "doctor_review_packet"],
+            fail_closed_when=[
+                "Còn lỗi đỏ ở R1-R7 hoặc Q1-Q7.",
+                "Tự nhận đã áp dụng cho bệnh nhân hoặc cập nhật Master như đã duyệt.",
+                "Thiếu dòng 'Cần bác sĩ kiểm chứng'.",
+            ],
+            human_gate=True,
+            output_state="doctor_gate_required_before_clinical_use",
+        ),
+    ]
+
+
 def _rel(path: Path) -> str:
     try:
         return str(path.relative_to(REPO))
@@ -376,6 +535,7 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         _check_safety_localization_and_outputs(),
         _check_doctor_gate_boundaries(),
     ]
+    agent_contract = build_agent_contract()
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
     if fail_count:
@@ -395,6 +555,11 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         "clinical_production_allowed": False,
         "real_patient_data_allowed": False,
         "auto_apply_allowed": False,
+        "agent_contract_gate_count": len(agent_contract),
+        "agent_contract_human_gate_ids": [
+            gate.gate_id for gate in agent_contract if gate.human_gate
+        ],
+        "agent_contract": [asdict(gate) for gate in agent_contract],
         "checks": [asdict(check) for check in checks],
         "disclaimer": DISCLAIMER,
     }
@@ -412,6 +577,8 @@ def markdown_report(report: dict) -> str:
         f"- Doctor review required before apply: `{report['doctor_review_required_before_apply']}`",
         f"- Clinical production allowed: `{report['clinical_production_allowed']}`",
         f"- Auto-apply allowed: `{report['auto_apply_allowed']}`",
+        f"- Agent contract gates: `{report['agent_contract_gate_count']}`",
+        f"- Agent contract human gates: `{', '.join(report['agent_contract_human_gate_ids'])}`",
         "",
         "| Check | Status | Proves | Limitation | Missing |",
         "|---|---|---|---|---|",
@@ -426,6 +593,25 @@ def markdown_report(report: dict) -> str:
                 proves=row["proves"],
                 limitation=row["limitation"],
                 missing=missing,
+            )
+        )
+    lines.extend([
+        "",
+        "## Agent Gate Contract",
+        "",
+        "| Gate | Owner | Human Gate | Output State | Fail-Closed When |",
+        "|---|---|---|---|---|",
+    ])
+    for gate in report["agent_contract"]:
+        fail_closed = "<br>".join(gate["fail_closed_when"])
+        lines.append(
+            "| {gate_id} {name} | {owner_agent} | {human_gate} | {output_state} | {fail_closed} |".format(
+                gate_id=gate["gate_id"],
+                name=gate["name"],
+                owner_agent=gate["owner_agent"],
+                human_gate=gate["human_gate"],
+                output_state=gate["output_state"],
+                fail_closed=fail_closed,
             )
         )
     lines.extend(["", DISCLAIMER, ""])
@@ -454,6 +640,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"doctor_review_required_before_apply={report['doctor_review_required_before_apply']}")
         print(f"clinical_production_allowed={report['clinical_production_allowed']}")
         print(f"auto_apply_allowed={report['auto_apply_allowed']}")
+        print(f"agent_contract_gate_count={report['agent_contract_gate_count']}")
+        print("agent_contract_human_gate_ids=" + ",".join(report["agent_contract_human_gate_ids"]))
         print("Cần bác sĩ kiểm chứng.")
     return 0 if report["fail_count"] == 0 else 1
 
