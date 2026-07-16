@@ -965,7 +965,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
         group_b = n_total - n_per_group
         flowchart = f"""\
 ┌─────────────────────────────────────────────────────────────────┐
-│      BIỂU ĐỒ THAM GIA NGHIÊN CỨU (CONSORT 2010 flow diagram)  │
+│      BIỂU ĐỒ THAM GIA NGHIÊN CỨU (CONSORT 2025 flow diagram)  │
 │                      Đề tài: {study:<30}     │
 └─────────────────────────────────────────────────────────────────┘
 
@@ -1187,7 +1187,7 @@ def generate_artifact(
         "",
         "> ⚠️ **BẢO MẬT:** KHÔNG xử lý PII hoặc dữ liệu thật qua hệ thống này.",
         "> Dữ liệu thật chỉ được xử lý tại môi trường bảo mật của đơn vị (REDCap, server nội bộ).",
-        "> Tham chiếu: STROBE 2007 (PMID: 18064739), CONSORT 2010, ICH-GCP E6(R2).",
+        "> Tham chiếu: STROBE 2007 (PMID: 18064739), CONSORT 2025, ICH-GCP E6(R2).",
         "",
     ]
     if specialty == "generic":

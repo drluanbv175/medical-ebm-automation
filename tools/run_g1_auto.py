@@ -58,7 +58,7 @@ QUESTION_TYPES = {
 }
 
 REPORTING_STANDARDS = {
-    "rct":              "CONSORT 2010 (+Extension phù hợp)",
+    "rct":              "CONSORT 2025 (+Extension phù hợp)",
     "cohort":           "STROBE",
     "case_control":     "STROBE",
     "cross_sectional":  "STROBE",

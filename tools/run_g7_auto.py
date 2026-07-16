@@ -57,7 +57,7 @@ import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 # Tên chuẩn báo cáo và tổng số mục theo design
 REPORTING_CHECKLISTS: dict[str, tuple[str, int]] = {
-    "rct":             ("CONSORT 2010",  25),
+    "rct":             ("CONSORT 2025",  30),
     "cohort":          ("STROBE 2007",   22),
     "cross_sectional": ("STROBE 2007",   22),
     "case_control":    ("STROBE 2007",   22),
@@ -68,44 +68,55 @@ REPORTING_CHECKLISTS: dict[str, tuple[str, int]] = {
 # Mục checklist chi tiết theo design (mô tả ngắn → tự điền hay cần thêm)
 CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
     # (Số mục, Mô tả, auto_filled?)
+    # Vá 2026-07-17 (round audit đối kháng 4, chuẩn quốc tế): danh sách CŨ (25 dòng) khá gần
+    # CONSORT 2010 thật nhưng doctrine (.claude/agents/*.md) đã tuyên bố "CONSORT 2025" ở
+    # nhiều nơi — nội dung code KHÔNG khớp nhãn. Xây lại theo ĐÚNG CONSORT 2025 (thay CONSORT
+    # 2010, công bố đồng thời BMJ/JAMA/Lancet/Nature Medicine/PLOS Medicine 4/2025 — xác minh
+    # trực tiếp PMC11996237) — 30 mục chính thức, thêm mới mục Open Science (2-5b), PPI (8),
+    # định nghĩa Harms (15), tách 21(a-d) chi tiết hơn.
     "rct": [
-        ("1a", "Tiêu đề — ghi rõ RCT trong tiêu đề", False),
-        ("1b", "Tóm tắt có cấu trúc", True),
-        ("2a", "Bối cảnh và lý do", True),
-        ("2b", "Mục tiêu — câu hỏi hoặc giả thuyết", False),
-        ("3a", "Thiết kế (phân nhóm, tỷ lệ 1:1…)", True),
-        ("3b", "Thay đổi phương pháp sau khi bắt đầu", False),
-        ("4a", "Tiêu chí nhận", False),
-        ("4b", "Nơi + thời gian thu thập", False),
-        ("5",  "Can thiệp (mô tả đủ để tái lập)", False),
-        ("6a", "Kết cục chính + thứ cấp (tiền định)", False),
-        ("6b", "Thay đổi kết cục sau khi bắt đầu", False),
-        ("7a", "Cách tính cỡ mẫu — chi tiết", True),
-        ("7b", "Phân tích trung gian và luật dừng", False),
-        ("8a", "Phương pháp ngẫu nhiên hóa", False),
-        ("8b", "Loại trình tự ngẫu nhiên", False),
-        ("9",  "Phân bổ ẩn (concealment)", False),
-        ("10", "Che giấu (mù) — ai, bằng cách nào", False),
-        ("11a","Phân tích thống kê (chính + phụ)", False),
-        ("11b","Phương pháp phân tích thêm (subgroup)", False),
-        ("12a","Đặc điểm dòng tham gia (CONSORT flow diagram)", False),
-        ("12b","Sai lệch so với protocol", False),
-        ("13a","Số tuyển mỗi nhóm", False),
-        ("13b","Mất theo dõi + loại trừ", False),
-        ("14a","Ngày bắt đầu/kết thúc", False),
-        ("14b","Lý do dừng sớm", False),
-        ("15", "Bảng đặc điểm nền (Table 1)", False),
-        ("16", "Kết quả từng nhóm (Table 2)", False),
-        ("17a","Ước lượng hiệu quả + CI + p", False),
-        ("17b","Kết quả phân tích nhị phân", False),
-        ("18", "Kết quả phân tích khác (subgroup, sensitivity)", False),
-        ("19", "Bất lợi và AE quan trọng", False),
-        ("20", "Giải thích phát hiện chính", False),
-        ("21", "Khả năng áp dụng (generalizability)", False),
-        ("22", "Diễn giải + cân bằng lợi ích/bất lợi", False),
-        ("23", "Đăng ký (NCT)", True),
-        ("24", "Protocol (nếu có)", False),
-        ("25", "Tài trợ + vai trò nhà tài trợ", False),
+        ("1a", "Tiêu đề — nhận diện là thử nghiệm ngẫu nhiên (RCT) ngay trong tiêu đề", False),
+        ("1b", "Tóm tắt có cấu trúc về thiết kế/phương pháp/kết quả/kết luận", True),
+        ("2",  "Đăng ký — tên nơi đăng ký, số đăng ký (kèm URL), ngày đăng ký", True),
+        ("3",  "Nơi công khai truy cập được đề cương nghiên cứu và kế hoạch phân tích thống kê (SAP)", False),
+        ("4",  "Nơi truy cập được dữ liệu ẩn danh, mã thống kê, tài liệu", False),
+        ("5a", "Nguồn tài trợ + hỗ trợ khác (vd cung cấp thuốc); vai trò nhà tài trợ", False),
+        ("5b", "Xung đột lợi ích tài chính và khác của các tác giả bản thảo", False),
+        ("6",  "Bối cảnh khoa học và lý do nghiên cứu", True),
+        ("7",  "Mục tiêu cụ thể liên quan lợi ích và tác hại", False),
+        ("8",  "Sự tham gia của bệnh nhân/công chúng khi xây dựng, triển khai, báo cáo nghiên cứu (nếu có)", False),
+        ("9",  "Thiết kế thử nghiệm — loại + khung (song song, factorial, tỷ lệ phân bổ…)", True),
+        ("10", "Thay đổi quan trọng trong đề cương nghiên cứu sau khi bắt đầu", False),
+        ("11", "Bối cảnh (cộng đồng/bệnh viện) và địa điểm thực hiện thử nghiệm", False),
+        ("12a","Tiêu chí nhận cho người tham gia", False),
+        ("12b","Tiêu chí nhận cho địa điểm và người thực hiện can thiệp", False),
+        ("13", "Can thiệp và nhóm so sánh — đủ chi tiết để tái lập", False),
+        ("14", "Kết cục chính/phụ định trước — chi tiết cách đo và thời điểm", False),
+        ("15", "Cách định nghĩa và đánh giá tác hại (hệ thống hay không hệ thống)", False),
+        ("16a","Xác định cỡ mẫu — gồm các giả định", True),
+        ("16b","Phân tích trung gian và quy tắc dừng (nếu có)", False),
+        ("17a","Phương pháp tạo chuỗi ngẫu nhiên + nhân sự thực hiện", False),
+        ("17b","Loại ngẫu nhiên hóa + chi tiết hạn chế (phân tầng, block…)", False),
+        ("18", "Cơ chế che giấu phân bổ (allocation concealment)", False),
+        ("19", "Nhân sự tiếp cận chuỗi phân bổ — ai tạo, ai tuyển, ai phân bổ", False),
+        ("20a","Ai được làm mù sau khi phân nhóm can thiệp", False),
+        ("20b","Phương pháp làm mù + độ tương đồng can thiệp", False),
+        ("21a","Phương pháp thống kê so sánh nhóm cho kết cục chính và phụ", False),
+        ("21b","Định nghĩa quần thể phân tích và các nhóm", False),
+        ("21c","Cách xử lý dữ liệu thiếu trong phân tích", False),
+        ("21d","Phương pháp phân tích thêm — phân biệt định trước với post hoc", False),
+        ("22a","Số người tham gia theo nhóm (phân bổ, nhận điều trị, phân tích)", False),
+        ("22b","Mất/loại trừ sau ngẫu nhiên hóa, kèm lý do", False),
+        ("23a","Ngày xác định giai đoạn tuyển và theo dõi", False),
+        ("23b","Lý do thử nghiệm kết thúc/dừng sớm (nếu có)", False),
+        ("24a","Can thiệp và so sánh như đã thực hiện thực tế", False),
+        ("24b","Chăm sóc đồng thời nhận được trong thử nghiệm cho mỗi nhóm", False),
+        ("25", "Bảng đặc điểm nhân khẩu và lâm sàng nền", False),
+        ("26", "Kết quả kết cục chính/phụ theo nhóm kèm ước lượng hiệu quả + độ chính xác", False),
+        ("27", "Mọi tác hại hoặc biến cố không mong muốn ở MỖI nhóm", False),
+        ("28", "Phân tích khác đã thực hiện — phân biệt định trước với post hoc", False),
+        ("29", "Diễn giải nhất quán với kết quả, cân bằng lợi ích và tác hại", False),
+        ("30", "Hạn chế thử nghiệm — nguồn sai lệch/độ chính xác/khả năng khái quát hóa", False),
     ],
     # Vá 2026-07-17 (round audit đối kháng 4, chuẩn quốc tế): 3 checklist STROBE dưới đây
     # (cohort/case_control/cross_sectional) được XÂY LẠI TỪ ĐẦU theo ĐÚNG 22 mục chính thức
@@ -1520,7 +1531,7 @@ def main() -> None:
     )
     # Chuẩn hóa reporting_std (một số checkpoint lưu "STROBE", không phải "STROBE 2007")
     if reporting_std and " " not in reporting_std:
-        year_map = {"STROBE": "2007", "CONSORT": "2010", "STARD": "2015", "PRISMA": "2020"}
+        year_map = {"STROBE": "2007", "CONSORT": "2025", "STARD": "2015", "PRISMA": "2020"}
         for k, yr in year_map.items():
             if reporting_std.upper().startswith(k):
                 reporting_std = f"{k} {yr}"

@@ -508,10 +508,10 @@ KHÔNG sửa kết cục chính / phương pháp sau khi đã xem dữ liệu.
 
 | Loại thiết kế | Chuẩn báo cáo |
 |--------------|---------------|
-| RCT | CONSORT 2010 (+TIDieR nếu có can thiệp phức tạp) |
+| RCT | CONSORT 2025 (+TIDieR nếu có can thiệp phức tạp) |
 | Cohort/Case-control/Cắt ngang | STROBE 2007 |
 | Tổng quan hệ thống/Meta-analysis | PRISMA 2020 |
-| Protocol | SPIRIT 2013 |
+| Protocol | SPIRIT 2025 |
 | Chẩn đoán | STARD 2015 |
 | Mô hình dự báo | TRIPOD+AI 2024 |
 | Định tính | COREQ / SRQR |
