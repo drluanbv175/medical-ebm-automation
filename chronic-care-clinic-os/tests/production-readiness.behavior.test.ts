@@ -10,6 +10,7 @@ import {
   summarizeProductionReadiness
 } from "../lib/production-readiness";
 import { validateEvidencePackageShape } from "../lib/production-evidence-loader";
+import { buildProductionEvidenceTemplate } from "../lib/production-evidence-template";
 
 test("production readiness report is machine-readable and blocks production", () => {
   const report = buildProductionReadinessReport("2026-07-15T00:00:00.000Z");
@@ -99,6 +100,33 @@ test("production evidence package stays blocked when blocker evidence is expired
   assert.equal(report.blockers[0].status, "OPEN");
   assert.ok(report.releaseDecision.blockedReasons.includes(`open_blocker:${pkg.evidence[0].blockerId}`));
   assert.ok(report.findings.some((item) => item.message.includes("evidence has expired")));
+});
+
+test("production evidence template covers all gates but cannot unlock with placeholders", () => {
+  const template = buildProductionEvidenceTemplate({
+    generatedAt: "2026-07-16T00:00:00.000Z",
+    reviewedAt: "2026-07-15T12:00:00.000Z",
+    expiresAt: "2027-07-16T00:00:00.000Z"
+  });
+  const report = buildProductionReadinessReport("2026-07-16T00:00:00.000Z", productionBlockers, template);
+
+  assert.equal(template.evidence.length, productionBlockers.length);
+  assert.equal(template.signoffs.length, requiredProductionSignoffs.length);
+  assert.equal(report.summary.productionReady, false);
+  assert.ok(report.findings.some((item) => item.message.includes("placeholder")));
+  assert.ok(report.releaseDecision.blockedReasons.some((item) => item.startsWith("open_blocker:")));
+});
+
+test("production evidence validator rejects placeholder references", () => {
+  const pkg = completeEvidencePackage();
+  pkg.evidence[0] = {
+    ...pkg.evidence[0],
+    reviewerReference: "TODO_REVIEWER"
+  };
+  const report = buildProductionReadinessReport("2026-07-16T00:00:00.000Z", productionBlockers, pkg);
+
+  assert.equal(report.summary.productionReady, false);
+  assert.ok(report.findings.some((item) => item.message.includes("placeholder")));
 });
 
 test("production evidence package shape validator rejects malformed package", () => {

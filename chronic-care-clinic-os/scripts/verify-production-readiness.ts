@@ -1,5 +1,6 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
+import { buildProductionEvidenceTemplate } from "../lib/production-evidence-template";
 import {
   buildProductionReadinessReport,
   type ProductionEvidencePackage
@@ -8,6 +9,8 @@ import {
 type CliOptions = {
   evidencePath: string | null;
   generatedAt: string | undefined;
+  initTemplatePath: string | null;
+  force: boolean;
   json: boolean;
 };
 
@@ -15,6 +18,8 @@ function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
     evidencePath: process.env.PRODUCTION_READINESS_EVIDENCE_PATH ?? null,
     generatedAt: undefined,
+    initTemplatePath: null,
+    force: false,
     json: false
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -27,6 +32,15 @@ function parseArgs(argv: string[]): CliOptions {
     if (arg === "--generated-at") {
       options.generatedAt = argv[index + 1];
       index += 1;
+      continue;
+    }
+    if (arg === "--init-template") {
+      options.initTemplatePath = argv[index + 1] ?? null;
+      index += 1;
+      continue;
+    }
+    if (arg === "--force") {
+      options.force = true;
       continue;
     }
     if (arg === "--json") {
@@ -50,6 +64,8 @@ function printHelp(): void {
 Options:
   --evidence <path>       Production evidence package JSON.
   --generated-at <iso>    Override report timestamp.
+  --init-template <path>  Write a full placeholder evidence package template.
+  --force                Overwrite template path when used with --init-template.
   --json                 Print full machine-readable report.
 `);
 }
@@ -61,6 +77,21 @@ function loadEvidencePackage(path: string): ProductionEvidencePackage {
 function main(): number {
   try {
     const options = parseArgs(process.argv.slice(2));
+    if (options.initTemplatePath) {
+      if (existsSync(options.initTemplatePath) && !options.force) {
+        console.error(`BLOCKED: template already exists: ${options.initTemplatePath}`);
+        return 2;
+      }
+      const template = buildProductionEvidenceTemplate({
+        generatedAt: options.generatedAt
+      });
+      writeFileSync(options.initTemplatePath, `${JSON.stringify(template, null, 2)}\n`, "utf-8");
+      console.log(`template=${options.initTemplatePath}`);
+      console.log(`evidence=${template.evidence.length}`);
+      console.log(`signoffs=${template.signoffs.length}`);
+      console.log("status=PLACEHOLDER_BLOCKED_UNTIL_REVIEWED");
+      return 0;
+    }
     if (!options.evidencePath) {
       console.error("BLOCKED: provide --evidence or PRODUCTION_READINESS_EVIDENCE_PATH.");
       return 2;

@@ -23,6 +23,14 @@ pnpm production:verify -- --evidence /secure/path/production-evidence.json
 
 Exit code `0` means the evidence package unlocks `PRODUCTION_READY`; exit code `1` means the package is readable but still blocked; exit code `2` means the package cannot be read or the command is malformed.
 
+Start from a complete template instead of writing the package by hand:
+
+```bash
+pnpm production:verify -- --init-template /secure/path/production-evidence-template.json
+```
+
+The template deliberately contains `TODO` placeholders. It will not pass production verification until every placeholder is replaced by reviewed evidence/signoff references.
+
 ## Required Evidence Package Shape
 
 Store the evidence package outside source control, for example in a restricted deployment folder:

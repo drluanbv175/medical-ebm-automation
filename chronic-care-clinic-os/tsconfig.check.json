@@ -28,6 +28,7 @@
     "lib/prisma-rollback-evidence.ts",
     "lib/production-readiness.ts",
     "lib/production-evidence-loader.ts",
+    "lib/production-evidence-template.ts",
     "lib/runtime-hardening.ts",
     "lib/audit-ledger.ts",
     "lib/audit-storage-contract.ts",

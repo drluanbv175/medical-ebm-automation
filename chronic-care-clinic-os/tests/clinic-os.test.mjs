@@ -616,6 +616,7 @@ test("production readiness blockers are machine-readable and surfaced in setting
   const typecheck = read("tsconfig.check.json");
   const pkg = read("package.json");
   const verifyScript = read("scripts/verify-production-readiness.ts");
+  const template = read("lib/production-evidence-template.ts");
 
   assert.match(readiness, /chronic_care_production_readiness_report/);
   assert.match(readiness, /productionBlockers/);
@@ -641,11 +642,15 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(hardening, /options\.productionReady/);
   assert.match(pkg, /production:verify/);
   assert.match(verifyScript, /buildProductionReadinessReport/);
+  assert.match(verifyScript, /--init-template/);
   assert.match(verifyScript, /process\.exit\(main\(\)\)/);
+  assert.match(template, /buildProductionEvidenceTemplate/);
+  assert.match(template, /TODO/);
   assert.match(blockers, /lib\/production-readiness\.ts/);
   assert.match(typecheck, /app\/api\/admin\/production-readiness\/route\.ts/);
   assert.match(typecheck, /lib\/production-readiness\.ts/);
   assert.match(typecheck, /lib\/production-evidence-loader\.ts/);
+  assert.match(typecheck, /lib\/production-evidence-template\.ts/);
   assert.match(typecheck, /scripts\/verify-production-readiness\.ts/);
   assert.match(typecheck, /types\/next-shims\.d\.ts/);
   assert.match(typecheck, /tests\/production-readiness\.behavior\.test\.ts/);

@@ -305,7 +305,7 @@ function validateEvidenceRecord(
     errors.push(`${record.blockerId} must be reviewed by ${blocker.owner}.`);
   }
   if (!safeReference(record.reviewerReference)) {
-    errors.push(`${record.blockerId} reviewerReference is missing or appears to contain PII.`);
+    errors.push(`${record.blockerId} reviewerReference is missing, placeholder, or appears to contain PII.`);
   }
   if (!isValidPastOrPresentIso(record.reviewedAt, generatedAt)) {
     errors.push(`${record.blockerId} reviewedAt must be a valid ISO timestamp not after report generation.`);
@@ -313,8 +313,10 @@ function validateEvidenceRecord(
   if (!Array.isArray(record.artifactRefs) || record.artifactRefs.length === 0 || record.artifactRefs.some((item) => !safeArtifactRef(item))) {
     errors.push(`${record.blockerId} requires at least one safe artifact reference.`);
   }
-  if (!Array.isArray(record.controlsVerified) || record.controlsVerified.length === 0) {
-    errors.push(`${record.blockerId} requires controlsVerified entries.`);
+  if (!Array.isArray(record.controlsVerified)
+    || record.controlsVerified.length === 0
+    || record.controlsVerified.some((item) => !safeControlEvidence(item))) {
+    errors.push(`${record.blockerId} requires non-placeholder controlsVerified entries.`);
   }
   if (record.expiresAt && !isValidFutureIso(record.expiresAt, generatedAt)) {
     errors.push(`${record.blockerId} evidence has expired or expiresAt is invalid.`);
@@ -334,10 +336,13 @@ function validateProductionSignoffs(
       errors.push(`Unknown signoff role: ${String(signoff.role)}`);
     }
     if (!safeReference(signoff.signerReference)) {
-      errors.push(`${signoff.role} signerReference is missing or appears to contain PII.`);
+      errors.push(`${signoff.role} signerReference is missing, placeholder, or appears to contain PII.`);
     }
     if (!isValidPastOrPresentIso(signoff.signedAt, generatedAt)) {
       errors.push(`${signoff.role} signedAt must be a valid ISO timestamp not after report generation.`);
+    }
+    if (containsPlaceholder(signoff.scope)) {
+      errors.push(`${signoff.role} scope must not contain placeholders.`);
     }
     if (!signoff.scope.toLowerCase().includes("production")) {
       errors.push(`${signoff.role} scope must explicitly include production.`);
@@ -384,6 +389,7 @@ function isValidFutureIso(value: string, generatedAt: string): boolean {
 function safeReference(value: string): boolean {
   return typeof value === "string"
     && value.trim().length >= 3
+    && !containsPlaceholder(value)
     && !/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(value)
     && !/\b0\d{9,10}\b/.test(value)
     && !/\b\d{12}\b/.test(value);
@@ -392,9 +398,20 @@ function safeReference(value: string): boolean {
 function safeArtifactRef(value: string): boolean {
   return typeof value === "string"
     && value.trim().length >= 3
+    && !containsPlaceholder(value)
     && !/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(value)
     && !/\b0\d{9,10}\b/.test(value)
     && !/\b\d{12}\b/.test(value);
+}
+
+function safeControlEvidence(value: string): boolean {
+  return typeof value === "string"
+    && value.trim().length >= 3
+    && !containsPlaceholder(value);
+}
+
+function containsPlaceholder(value: string): boolean {
+  return /(TODO|TBD|PLACEHOLDER|REPLACE_ME)/i.test(value);
 }
 
 function blocker(
