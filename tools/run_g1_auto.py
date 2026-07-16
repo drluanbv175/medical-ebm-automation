@@ -1151,6 +1151,13 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
             "reporting_standard": design["reporting_standard"],
             "alternative_1": design["alternative_1"],
             "ambiguous": design.get("ambiguous", False),
+            # Vá 2026-07-17 (round audit đối kháng 4, chuẩn STROBE mục 9 — Bias): bảng
+            # kiểm soát sai lệch ĐÃ tính ở đây (BIAS_CONTROLS, dùng để render bảng trong
+            # artifact A2 markdown) nhưng trước đây KHÔNG được ghi vào checkpoint — G7
+            # (đọc G1_checkpoint.json để dựng bản thảo) không có đường nào lấy lại dữ
+            # liệu này, nên mục 9 STROBE ("mô tả nỗ lực xử lý nguồn sai lệch") luôn để
+            # trống [CẦN] trong Methods dù G1 đã tính sẵn.
+            "bias_controls": design.get("bias_controls", []),
         },
         "specialist_modules": specialist_modules or [],
         "effect_sizes_found": len(effects),

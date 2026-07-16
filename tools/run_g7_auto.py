@@ -434,6 +434,22 @@ def build_table1_shell(redcap_vars: list[dict], exposure_hint: str = "") -> str:
     return header + "\n" + "\n".join(rows) + footer
 
 
+def build_bias_control_block(bias_controls: list) -> str:
+    """STROBE mục 9 (Bias) — dựng đoạn văn + bảng Methods §6b từ bias_controls đã tính ở
+    G1 (BIAS_CONTROLS theo design_code, run_g1_auto.py). Rỗng → [CẦN] như cũ (không có gì
+    để tự điền, vd checkpoint G1 cũ chưa có trường này)."""
+    if not bias_controls:
+        return "[CẦN — liệt kê nguồn sai lệch tiềm ẩn theo thiết kế + biện pháp kiểm soát tương ứng]"
+    rows = "\n".join(f"| {bias} | {control} |" for bias, control in bias_controls)
+    return (
+        "Các nguồn sai lệch tiềm ẩn theo thiết kế và biện pháp kiểm soát tương ứng "
+        "(xem thiết kế G1):  \n\n"
+        "| Nguồn sai lệch | Biện pháp kiểm soát |\n"
+        "|---|---|\n"
+        f"{rows}"
+    )
+
+
 def _var_line(v: dict) -> str:
     """Định dạng 1 biến CRF thành 1 dòng bullet: `tên` — nhãn (ghi chú nếu có)."""
     note = f" *({v['note']})*" if v.get("note") else ""
@@ -657,6 +673,7 @@ def generate_manuscript(
     run_date: str,
     table1_shell: str = "[CẦN KẾT QUẢ THẬT]",
     crf_blocks: Optional[dict] = None,
+    bias_controls: Optional[list] = None,
 ) -> str:
     """
     Sinh toàn bộ bản thảo IMRAD skeleton A8.
@@ -954,6 +971,9 @@ def generate_manuscript(
         "Dữ liệu thiếu: [CẦN — multiple imputation m=20 hoặc complete case]. "
         "Ngưỡng ý nghĩa thống kê: α = " + str(alpha) + " (two-sided); "
         "mọi ước lượng kèm 95%CI.  ",
+        "",
+        "**§6b Kiểm soát sai lệch (Bias) — STROBE mục 9:**  ",
+        build_bias_control_block(bias_controls or []),
         "",
         "**§7 Đạo đức và đăng ký:**  ",
         f"Nghiên cứu được Hội đồng Đạo đức phê duyệt (số: {irb_number}; "
@@ -1307,6 +1327,7 @@ def write_checkpoint(
         "I. Introduction §3 (mục tiêu + thiết kế từ G1)",
         "II. Methods §1 (thiết kế + chuẩn báo cáo từ G1)",
         "II. Methods §5 (cỡ mẫu từ G3)",
+        "II. Methods §6b (kiểm soát sai lệch — STROBE mục 9 — từ G1 bias_controls)",
         "II. Methods §7 (đạo đức + đăng ký từ G2)",
         "IV. Discussion §2 (đối chiếu y văn — PMID seed từ G0)",
         "IV. Discussion §4 (điểm mạnh — từ G1+G4)",
@@ -1489,6 +1510,9 @@ def main() -> None:
     design_info   = g1.get("design") or {}
     design_code   = design_info.get("internal_code") or g1.get("design_code") or "cohort"
     design_primary = design_info.get("primary") or g1.get("design_primary") or "Cohort tiến cứu"
+    # STROBE mục 9 (Bias) — bảng kiểm soát sai lệch đã tính sẵn ở G1 (BIAS_CONTROLS theo
+    # design_code), nay đọc lại từ checkpoint thay vì luôn để trống [CẦN].
+    bias_controls = design_info.get("bias_controls") or []
     reporting_std = (
         design_info.get("reporting_standard")
         or g1.get("reporting_standard")
@@ -1575,6 +1599,7 @@ def main() -> None:
         run_date=run_date,
         table1_shell=table1_shell,
         crf_blocks=crf_blocks,
+        bias_controls=bias_controls,
     )
 
     # ── Bước 5: Bảng số từ + checklist ──
