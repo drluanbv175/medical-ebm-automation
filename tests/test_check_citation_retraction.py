@@ -39,6 +39,15 @@ from app.sources.pubmed import PubMedClient  # noqa: E402
 sys.path.insert(0, str(TOOLS_DIR))
 import check_citation_retraction as CLI  # noqa: E402
 
+
+@pytest.fixture(autouse=True)
+def _pin_cli_repo_root_for_receipt_tests():
+    """Cô lập module-level REPO_ROOT nếu test khác monkeypatch tool receipt."""
+    CLI.REPO_ROOT = REPO_ROOT
+    yield
+    CLI.REPO_ROOT = REPO_ROOT
+
+
 # ── XML thật (rút gọn) — PMID 9500320, lấy trực tiếp từ efetch.fcgi 2026-07-15 ──
 _RETRACTED_XML = """<?xml version="1.0" ?>
 <PubmedArticleSet>

@@ -66,6 +66,28 @@ test("outpatient automation blocks unsafe clinical directives", () => {
   assert.ok(decision.blockedReasons.includes("unsafe_clinical_automation_directive"));
 });
 
+test("outpatient automation blocks unallowlisted patient-facing templates", () => {
+  const rule = mutateRule("AUTO-011", {
+    notificationTemplate: "patient_sms_followup"
+  });
+  const decision = evaluateOutpatientAutomationRule(rule, "2026-07-16");
+
+  assert.equal(decision.patientFacing, true);
+  assert.equal(decision.allowedAutomation, "BLOCKED");
+  assert.ok(decision.blockedReasons.includes("patient_facing_template_not_allowlisted"));
+});
+
+test("outpatient automation blocks unknown non-internal notification templates", () => {
+  const rule = mutateRule("AUTO-002", {
+    notificationTemplate: "clinic_ops_slack_webhook"
+  });
+  const decision = evaluateOutpatientAutomationRule(rule, "2026-07-16");
+
+  assert.equal(decision.patientFacing, false);
+  assert.equal(decision.allowedAutomation, "BLOCKED");
+  assert.ok(decision.blockedReasons.includes("unapproved_external_notification_template"));
+});
+
 function mutateRule(ruleId: string, patch: Partial<AutomationRule>): AutomationRule {
   const rule = automationRules.find((item) => item.ruleId === ruleId);
   assert.ok(rule, `${ruleId} missing`);

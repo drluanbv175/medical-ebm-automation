@@ -41,8 +41,11 @@ const patientFacingTemplateMap: Record<string, string> = {
   approved_patient_education_ready: "APPROVED_EDUCATION_READY"
 };
 
+const patientFacingTemplatePattern =
+  /(?:^|_)(patient|patient_portal|portal|sms|zalo|email|message_patient|nguoi_benh|benh_nhan)(?:_|$)/i;
+
 const unsafeAutomationPattern =
-  /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing|ORDER_LAB|AUTO_DIAGNOSE|tu dong ke don|tu dong chan doan|tu dong thay doi dieu tri/i;
+  /AUTO_PRESCRIBE|SEND_TREATMENT_MESSAGE|automatic prescribing|ORDER_LAB|AUTO_DIAGNOSE|SMS_PATIENT|EMAIL_PATIENT|PATIENT_PORTAL_MESSAGE|tu dong ke don|tu dong chan doan|tu dong thay doi dieu tri|gui tin nhan cho nguoi benh|nhan tin cho benh nhan/i;
 
 export function buildOutpatientAutomationControlReport(
   rules: AutomationRule[] = automationRules,
@@ -82,7 +85,7 @@ export function evaluateOutpatientAutomationRule(
 ): OutpatientAutomationRuleDecision {
   const blockedReasons: string[] = [];
   const warnings: string[] = [];
-  const patientFacingType = patientFacingTemplateMap[rule.notificationTemplate] ?? null;
+  const patientFacingType = patientFacingTemplateType(rule.notificationTemplate);
   const patientFacing = patientFacingType !== null;
 
   if (!rule.isActive) {
@@ -117,9 +120,8 @@ export function evaluateOutpatientAutomationRule(
     if (!isPatientCommunicationAllowed(patientFacingType, true, true)) {
       blockedReasons.push("patient_facing_template_not_allowlisted");
     }
-  }
-  if (!patientFacing && !rule.notificationTemplate.startsWith("internal_")) {
-    warnings.push("non_patient_template_requires_admin_review");
+  } else if (!isInternalNotificationTemplate(rule.notificationTemplate)) {
+    blockedReasons.push("unapproved_external_notification_template");
   }
 
   return {
@@ -149,6 +151,15 @@ function describeHumanGate(rule: AutomationRule, patientFacing: boolean): string
     return `${rule.assignedRole}_REVIEW_REQUIRED`;
   }
   return `${rule.assignedRole}_TASK_OWNER_REVIEW`;
+}
+
+function patientFacingTemplateType(template: string): string | null {
+  return patientFacingTemplateMap[template]
+    ?? (patientFacingTemplatePattern.test(template) ? "UNAPPROVED_PATIENT_FACING_TEMPLATE" : null);
+}
+
+function isInternalNotificationTemplate(template: string): boolean {
+  return /^internal_[a-z0-9_]+$/i.test(template);
 }
 
 function isReviewDateCurrent(reviewDate: string, generatedAt: string): boolean {
