@@ -28,6 +28,7 @@ Chạy:  python3 tools/run_g10_assemble.py --study KKB-HAI-LONG-2026
 from __future__ import annotations
 
 import argparse
+import hmac
 import json
 import re
 import sys
@@ -1245,6 +1246,32 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
             "receipt A12_RETRACTION_RECEIPT.json có pmids_hash không khớp với "
             "pmids_checked (nghi bị sửa tay sau khi ghi) — không đủ tin cậy để qua cổng"
         )
+    # Vá 2026-07-16 (round audit đối kháng 3): pmids_hash MỘT MÌNH không chống giả mạo
+    # được — công thức pmids_hash() công khai (không khóa bí mật), nên ai/agent nào
+    # cũng tự viết tay một receipt "sạch" (all_clean=true) rồi tự tính đúng hash cho
+    # khớp pmids_checked, KHÔNG cần thật sự gọi PubMed — tái hiện được bằng script độc
+    # lập. Xác minh THÊM chữ ký HMAC (cùng khóa cục bộ dùng cho phê duyệt G2/G4/G8/G9):
+    # đề tài THẬT mà máy đang chạy chưa cấu hình khóa ký, hoặc receipt thiếu/sai chữ ký
+    # → fail-closed (coi như CHƯA xác minh). Đề tài khác giữ hành vi cũ (không bắt buộc
+    # chữ ký) để không phá luồng/test synthetic có từ trước khi receipt có chữ ký.
+    receipt_signature = receipt.get("receipt_signature")
+    if GC.signing_key_configured():
+        expected_signature = GC.sign_approval(
+            "A12", study, receipt.get("pmids_hash", ""), receipt.get("checked_at_utc", "")
+        )
+        if not receipt_signature or not expected_signature or not hmac.compare_digest(
+            str(receipt_signature), str(expected_signature)
+        ):
+            return False, (
+                "receipt A12_RETRACTION_RECEIPT.json thiếu chữ ký hợp lệ hoặc chữ ký "
+                "không khớp (nghi bị giả mạo/sửa tay) — không đủ tin cậy để qua cổng"
+            )
+    elif GC.is_real_study_denylisted(study):
+        return False, (
+            "đề tài THẬT nhưng máy đang chạy CHƯA cấu hình khóa ký "
+            "(setup_gate_approval_key.py) — không thể xác minh chữ ký receipt A12, "
+            "coi như CHƯA xác minh (fail-closed), không hạ chuẩn cho đề tài thật"
+        )
     artifact_pmids = _extract_pmids_from_artifact(text)
     checked_set = {str(x) for x in checked_pmids}
     missing = sorted(artifact_pmids - checked_set)
@@ -1253,6 +1280,17 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
             "artifact A12 nhắc tới PMID chưa có trong receipt máy-kiểm (chưa được "
             "`check_citation_retraction.py` kiểm rút bài thật): " + ", ".join(missing)
         )
+    # LƯU Ý CHƯA VÁ (round audit đối kháng 3, 2026-07-16): đối chiếu ở trên CHỈ soát
+    # PMID mà artifact A12 tự nhắc tới — KHÔNG đối chiếu với PMID thật sự xuất hiện
+    # trong tài liệu lắp ráp cuối (DE_CUONG_THONG_NHAT_<study>.md, mục 16 danh mục
+    # TLTK, dựng độc lập bởi sec_tltk() từ artifact tổng-quan-y-văn/trích-xuất-y-văn
+    # upstream). Một PMID lọt vào bản thảo mà KHÔNG được artifact A12 nhắc tới sẽ
+    # không bị chặn ở đây. Thử vá bằng cách đối chiếu thêm PMID trong body_md nhưng
+    # ĐÃ LÙI LẠI: bibliography lắp ráp tự nhiên chứa nhiều PMID hợp lệ đến từ gate
+    # sớm hơn (đã được vetting ở đó) mà A12 chưa từng có ý định bao phủ — cần bác sĩ/
+    # doctrine quyết định RANH GIỚI đúng (A12 có nên bao trọn cả bibliography kế thừa
+    # hay chỉ trích dẫn MỚI trong thân bài) trước khi khóa cứng thành cổng chặn, để
+    # tránh chặn nhầm một đề tài thật đã vetting đúng ở gate khác.
     return True, ""
 
 

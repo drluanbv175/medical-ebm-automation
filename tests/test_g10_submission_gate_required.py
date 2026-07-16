@@ -107,14 +107,23 @@ def _write_matching_retraction_receipt(
     `check_citation_retraction.py::write_retraction_receipt` sinh ra, khớp
     danh sách PMID truyền vào — dùng để test citation_verification_ok() mà
     không cần gọi PubMed thật."""
+    checked_at_utc = "2026-07-15T00:00:00+00:00"
+    pmids_hash_value = CCR.pmids_hash(pmids)
     receipt = {
         "study": study,
-        "checked_at_utc": "2026-07-15T00:00:00+00:00",
+        "checked_at_utc": checked_at_utc,
         "pmids_checked": sorted(pmids),
-        "pmids_hash": CCR.pmids_hash(pmids),
+        "pmids_hash": pmids_hash_value,
         "all_clean": all_clean,
         "results": {p: {"status": "ok" if all_clean else "retracted"} for p in pmids},
     }
+    # Vá 2026-07-16: citation_verification_ok() nay đòi chữ ký HMAC trên receipt khi
+    # máy đang chạy CÓ cấu hình khóa ký (mọi test trong file này đều
+    # _configure_test_signing_key trước) — ký ĐÚNG bằng cùng hàm sign_approval() thật
+    # để fixture khớp hợp đồng thật, không phải bỏ qua kiểm tra.
+    signature = GC.sign_approval("A12", study, pmids_hash_value, checked_at_utc)
+    if signature:
+        receipt["receipt_signature"] = signature
     (d / "A12_RETRACTION_RECEIPT.json").write_text(
         json.dumps(receipt, ensure_ascii=False), encoding="utf-8"
     )

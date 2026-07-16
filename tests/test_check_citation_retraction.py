@@ -288,6 +288,42 @@ class TestWriteRetractionReceipt:
         finally:
             _rm_study_dir(study)
 
+    def test_receipt_carries_signature_when_signing_key_configured(self, tmp_path, monkeypatch):
+        """Hồi quy (vòng audit đối kháng 3, 2026-07-16): pmids_hash() một mình KHÔNG
+        chống giả mạo — công thức công khai, ai cũng tự tính khớp. Receipt giờ PHẢI
+        mang thêm chữ ký HMAC (cùng khóa cục bộ dùng cho phê duyệt G2/G4/G8/G9) khi
+        máy đang chạy có cấu hình khóa."""
+        key_path = tmp_path / "gate_approval_key"
+        key_path.write_text("pytest-ccr-key", encoding="utf-8")
+        monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+        study = "PYTEST-CCR-RECEIPT-SIG1"
+        _rm_study_dir(study)
+        try:
+            path = CLI.write_retraction_receipt(study, ["28698191"], {"28698191": {"status": "ok"}})
+            receipt = json.loads(path.read_text(encoding="utf-8"))
+            assert "receipt_signature" in receipt
+            import gate_contract as GC
+            expected = GC.sign_approval(
+                "A12", study, receipt["pmids_hash"], receipt["checked_at_utc"]
+            )
+            assert receipt["receipt_signature"] == expected
+        finally:
+            _rm_study_dir(study)
+
+    def test_receipt_has_no_signature_when_no_key_configured(self, tmp_path, monkeypatch):
+        """Đối chứng: máy chưa cấu hình khóa ký -> receipt vẫn ghi được (không crash),
+        chỉ đơn giản không có trường receipt_signature (graceful degrade — giữ hành vi
+        cũ cho môi trường chưa thiết lập khóa)."""
+        monkeypatch.setenv("EBM_GATE_KEY_PATH", str(tmp_path / "khong_ton_tai"))
+        study = "PYTEST-CCR-RECEIPT-NOSIG1"
+        _rm_study_dir(study)
+        try:
+            path = CLI.write_retraction_receipt(study, ["28698191"], {"28698191": {"status": "ok"}})
+            receipt = json.loads(path.read_text(encoding="utf-8"))
+            assert "receipt_signature" not in receipt
+        finally:
+            _rm_study_dir(study)
+
     def test_sanitizes_study_name_for_directory(self):
         study_raw = "KKB Hài Lòng 2026!!"
         expected_dir_name = re.sub(r"[^\w\-]", "_", study_raw.strip().replace(" ", "-"))

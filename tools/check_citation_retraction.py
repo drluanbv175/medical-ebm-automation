@@ -49,6 +49,9 @@ from typing import Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import gate_contract as GC  # noqa: E402  (ký receipt bằng khóa cục bộ dùng chung với G2/G4/G8/G9)
 
 from app.sources.pubmed import PubMedClient  # noqa: E402
 
@@ -94,14 +97,25 @@ def write_retraction_receipt(study_raw: str, pmids: List[str], results: Dict[str
     }
     all_clean = not any(v.get("status") in _PROBLEM_STATUSES for v in per_pmid.values())
 
+    checked_at_utc = datetime.now(timezone.utc).isoformat()
+    pmids_hash_value = pmids_hash(sorted_pmids)
     receipt = {
         "study": study,
-        "checked_at_utc": datetime.now(timezone.utc).isoformat(),
+        "checked_at_utc": checked_at_utc,
         "pmids_checked": sorted_pmids,
-        "pmids_hash": pmids_hash(sorted_pmids),
+        "pmids_hash": pmids_hash_value,
         "all_clean": all_clean,
         "results": per_pmid,
     }
+    # Ký receipt bằng khóa cục bộ (cùng cơ chế HMAC dùng cho phê duyệt G2/G4/G8/G9) —
+    # vá 2026-07-16 sau khi red-team đối kháng chỉ ra pmids_hash một mình KHÔNG chống
+    # giả mạo được: hàm pmids_hash() là CÔNG KHAI (không khóa bí mật), nên ai cũng tự
+    # viết tay một receipt "sạch" rồi tự tính đúng pmids_hash cho khớp. None nếu máy
+    # này chưa cấu hình khóa (setup_gate_approval_key.py chưa chạy) — run_g10_assemble.py
+    # sẽ fail-closed cho đề tài THẬT khi thiếu chữ ký, giữ hành vi cũ cho đề tài khác.
+    signature = GC.sign_approval("A12", study, pmids_hash_value, checked_at_utc)
+    if signature:
+        receipt["receipt_signature"] = signature
     receipt_path = out_dir / "A12_RETRACTION_RECEIPT.json"
     receipt_path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2), encoding="utf-8")
     return receipt_path
