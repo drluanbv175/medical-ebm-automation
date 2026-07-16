@@ -23,6 +23,14 @@ pnpm production:verify -- --evidence /secure/path/production-evidence.json
 
 Exit code `0` means the evidence package unlocks `PRODUCTION_READY`; exit code `1` means the package is readable but still blocked; exit code `2` means the package cannot be read or the command is malformed.
 
+Verify outpatient automation separately before go-live:
+
+```bash
+pnpm outpatient:verify -- --out /secure/path/outpatient-automation-control.json
+```
+
+This must report `SAFE_INTERNAL_AUTOMATION_READY`. It only authorizes internal tasks/checklists/queues/draft reports; it does not authorize automatic diagnosis, prescribing, treatment messages or ungated patient communication.
+
 Before final verification, build the evidence dossier. This produces a machine-readable checklist for every blocker, required repository runtime control, residual gate, artifact reference and signoff:
 
 ```bash

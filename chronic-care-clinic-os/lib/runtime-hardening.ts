@@ -138,6 +138,18 @@ export const runtimeHardeningControls: RuntimeHardeningControlEvidence[] = [
     implementationStatus: "REPO_CONTRACT_READY",
     files: ["lib/production-go-live-controls.ts", "prisma/schema.prisma", "tests/production-go-live-controls.behavior.test.ts"],
     residualGate: "Live governance tables need migration, backup and append-only audit evidence before production."
+  },
+  {
+    controlId: "RUNTIME-OUTPATIENT-AUTOMATION-001",
+    blockerIds: ["CLIN-002", "CLIN-003"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: [
+      "lib/outpatient-automation-control.ts",
+      "app/api/admin/outpatient-automation-control/route.ts",
+      "app/admin/settings/page.tsx",
+      "tests/outpatient-automation-control.behavior.test.ts"
+    ],
+    residualGate: "Clinic leadership must review automation rules, patient-facing templates, consent workflow and escalation evidence before real outpatient use."
   }
 ];
 

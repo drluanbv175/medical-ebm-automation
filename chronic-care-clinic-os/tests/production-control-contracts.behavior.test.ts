@@ -198,7 +198,8 @@ test("runtime hardening manifest exposes new production control evidence hooks",
     "RUNTIME-BACKUP-RESTORE-001",
     "RUNTIME-A5-QA-001",
     "RUNTIME-MONITORING-001",
-    "RUNTIME-INCIDENT-DRILL-001"
+    "RUNTIME-INCIDENT-DRILL-001",
+    "RUNTIME-OUTPATIENT-AUTOMATION-001"
   ]) {
     assert.ok(runtimeHardeningControls.some((item) => item.controlId === controlId), `${controlId} missing`);
   }

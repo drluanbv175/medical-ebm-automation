@@ -224,6 +224,8 @@ test("automation rules define the 12 required core automations", () => {
   assert.match(outpatientControl, /patient_facing_rule_requires_human_approval/);
   assert.match(settings, /Outpatient automation control/);
   assert.match(settings, /khong tu chan doan, khong tu ke don/);
+  assert.match(read("package.json"), /outpatient:verify/);
+  assert.match(read("scripts/verify-outpatient-automation-control.ts"), /buildOutpatientAutomationControlReport/);
   assert.doesNotMatch(automation, /SEND_TREATMENT_MESSAGE/);
 });
 
@@ -244,6 +246,7 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /app\/appointments\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/care-plans\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/evidence\/page\.tsx/);
+  assert.match(read("tsconfig.check.json"), /app\/api\/admin\/outpatient-automation-control\/route\.ts/);
   assert.match(read("tsconfig.check.json"), /app\/api\/evidence\/knowledge-pack\/route\.tsx?/);
   assert.match(read("tsconfig.check.json"), /app\/handouts\/page\.tsx/);
   assert.match(read("tsconfig.check.json"), /app\/overdue\/page\.tsx/);
@@ -628,6 +631,7 @@ test("write action registry tracks guarded and blocked write surfaces", () => {
 test("production readiness blockers are machine-readable and surfaced in settings", () => {
   const readiness = read("lib/production-readiness.ts");
   const route = read("app/api/admin/production-readiness/route.ts");
+  const outpatientRoute = read("app/api/admin/outpatient-automation-control/route.ts");
   const hardening = read("lib/runtime-hardening.ts");
   const settings = read("app/admin/settings/page.tsx");
   const blockers = read("PRODUCTION_BLOCKERS.md");
@@ -664,7 +668,11 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(route, /buildSecureHeaders/);
   assert.match(route, /Cache-Control/);
   assert.match(route, /no-store/);
+  assert.match(outpatientRoute, /buildOutpatientAutomationControlReport/);
+  assert.match(outpatientRoute, /productionReady: false/);
+  assert.match(outpatientRoute, /Cache-Control/);
   assert.match(hardening, /X-Clinical-Production-Ready/);
+  assert.match(hardening, /RUNTIME-OUTPATIENT-AUTOMATION-001/);
   assert.match(hardening, /options\.productionReady/);
   assert.match(pkg, /production:dossier/);
   assert.match(pkg, /production:verify/);
@@ -698,6 +706,7 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(typecheck, /lib\/production-evidence-template\.ts/);
   assert.match(typecheck, /scripts\/verify-production-readiness\.ts/);
   assert.match(typecheck, /scripts\/build-production-evidence-dossier\.ts/);
+  assert.match(typecheck, /scripts\/verify-outpatient-automation-control\.ts/);
   assert.match(typecheck, /types\/next-shims\.d\.ts/);
   assert.match(typecheck, /tests\/production-readiness\.behavior\.test\.ts/);
   assert.match(typecheck, /tests\/production-evidence-dossier\.behavior\.test\.ts/);

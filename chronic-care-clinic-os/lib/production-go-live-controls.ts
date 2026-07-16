@@ -48,6 +48,7 @@ export const productionRouteGuardSurfaces: RouteGuardSurface[] = [
   surface("/admin/users", "PAGE", "GUARDED_WRITE_PREVIEW", "user.manage", true, true, "user-invite"),
   surface("/admin/audit", "PAGE", "BLOCKED_EXPORT", "audit.view", true, true, "audit-export"),
   surface("/admin/settings", "PAGE", "READ_ONLY", "automation.manage", true, true),
+  surface("/api/admin/outpatient-automation-control", "API", "READ_ONLY", "automation.manage", true, true),
   surface("/api/admin/production-readiness", "API", "READ_ONLY", "backend.read", true, true),
   surface("/api/evidence/knowledge-pack", "API", "READ_ONLY", "backend.read", true, true)
 ];

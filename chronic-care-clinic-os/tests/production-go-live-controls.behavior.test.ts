@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  productionRouteGuardSurfaces,
   validateDependencyScanEvidence,
   validateDockerRunEvidence,
   validateGovernancePersistenceEvidence,
@@ -18,6 +19,7 @@ test("route guard coverage maps write surfaces to registry and blocks orphan wri
   assert.equal(result.accepted, true);
   assert.deepEqual(result.blockedReasons, []);
   assert.ok(result.controlsVerified.includes("route_inventory"));
+  assert.ok(productionRouteGuardSurfaces.some((item) => item.route === "/api/admin/outpatient-automation-control"));
 
   const orphaned = validateRouteGuardCoverage(undefined, [
     ...writeActionRegistry,
@@ -192,7 +194,8 @@ test("runtime hardening manifest exposes remaining go-live evidence hooks", () =
     "RUNTIME-PRISMA-MIGRATION-001",
     "RUNTIME-SITE-ISOLATION-001",
     "RUNTIME-DOCKER-SMOKE-001",
-    "RUNTIME-GOVERNANCE-PERSISTENCE-001"
+    "RUNTIME-GOVERNANCE-PERSISTENCE-001",
+    "RUNTIME-OUTPATIENT-AUTOMATION-001"
   ]) {
     assert.ok(runtimeHardeningControls.some((item) => item.controlId === controlId), `${controlId} missing`);
   }

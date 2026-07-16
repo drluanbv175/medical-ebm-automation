@@ -27,12 +27,13 @@ If pnpm scripts are unavailable in the Codex desktop runtime, use bundled Node o
 node --test tests/*.test.mjs
 node node_modules/typescript/bin/tsc -p tsconfig.check.json --noEmit
 node scripts/sync-check.mjs
+pnpm outpatient:verify -- --json
 ```
 
 ## Completed app modules
 
 - `lib/care-orchestrator.ts`: turns risk, labs, medication, follow-up, post-discharge and care-plan gaps into a command-center queue.
-- `lib/outpatient-automation-control.ts`: audits the 12 outpatient automation rules so only internal tasks/checklists/queues/drafts run automatically while diagnosis, prescribing, treatment messaging and unsafe patient communication remain blocked.
+- `lib/outpatient-automation-control.ts` + `/api/admin/outpatient-automation-control` + `pnpm outpatient:verify`: audits the 12 outpatient automation rules so only internal tasks/checklists/queues/drafts run automatically while diagnosis, prescribing, treatment messaging and unsafe patient communication remain blocked.
 - `lib/program-registry.ts`: tracks chronic disease program coverage and monitoring gaps.
 - `lib/visit-prep.ts`: builds pre-visit packets for nurse/physician preparation.
 - `lib/care-plan-draft.ts`: creates physician-approved care plan drafts without treatment automation.

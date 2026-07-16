@@ -28,8 +28,8 @@ Production can be declared only by a valid evidence package loaded through `PROD
 ## Clinical safety blockers
 
 - Clinical rules are draft and not formally approved.
-- Rule approval workflow not fully executable.
-- Clinical content and patient education approval not fully executable.
+- Rule approval workflow and outpatient automation control contract exist, but real clinic rule review/signoff is still missing.
+- Clinical content and patient education approval not fully executable; outpatient automation must remain limited to internal tasks/checklists/queues/drafts until template, consent and clinician review evidence are signed.
 - A5 output QA contract added, but rendered artifact review/signoff is still missing.
 - Red flag workflow not tested with real operational users.
 - No clinical safety signoff.
