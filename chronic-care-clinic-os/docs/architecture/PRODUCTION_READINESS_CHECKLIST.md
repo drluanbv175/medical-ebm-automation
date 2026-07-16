@@ -30,6 +30,7 @@ Khong duoc goi production-ready neu chua dat tat ca muc sau.
 
 - [ ] Clinical rule approval workflow.
 - [ ] Clinical content approval workflow.
+- [ ] Outpatient automation control report passes with no unsafe clinical automation directive.
 - [ ] Red flag workflow tested.
 - [ ] Care plan version history.
 - [ ] Incident response workflow.

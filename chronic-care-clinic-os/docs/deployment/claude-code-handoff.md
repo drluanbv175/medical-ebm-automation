@@ -32,6 +32,7 @@ node scripts/sync-check.mjs
 ## Completed app modules
 
 - `lib/care-orchestrator.ts`: turns risk, labs, medication, follow-up, post-discharge and care-plan gaps into a command-center queue.
+- `lib/outpatient-automation-control.ts`: audits the 12 outpatient automation rules so only internal tasks/checklists/queues/drafts run automatically while diagnosis, prescribing, treatment messaging and unsafe patient communication remain blocked.
 - `lib/program-registry.ts`: tracks chronic disease program coverage and monitoring gaps.
 - `lib/visit-prep.ts`: builds pre-visit packets for nurse/physician preparation.
 - `lib/care-plan-draft.ts`: creates physician-approved care plan drafts without treatment automation.
@@ -79,6 +80,7 @@ node scripts/sync-check.mjs
 - Do not add automatic diagnosis.
 - Do not add automatic prescribing.
 - Do not add automatic treatment-message sending.
+- Do not let outpatient automation move beyond internal tasks/checklists/queues/drafts unless the control report and human gates remain green.
 - Clinical decisions must require physician confirmation.
 - Patient communication requires approved template and consent.
 - Preview packages do not write production data until server actions, persistent audit and immutable versioning are implemented.

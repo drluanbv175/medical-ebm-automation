@@ -211,11 +211,19 @@ test("clinical boundary prevents EMR replacement and unsafe automation", () => {
 
 test("automation rules define the 12 required core automations", () => {
   const automation = read("lib/automation.ts");
+  const outpatientControl = read("lib/outpatient-automation-control.ts");
+  const settings = read("app/admin/settings/page.tsx");
   for (let index = 1; index <= 12; index += 1) {
     assert.match(automation, new RegExp(`AUTO-${String(index).padStart(3, "0")}`));
   }
   assert.match(automation, /isPatientCommunicationAllowed/);
   assert.match(automation, /hasApprovedTemplate && hasConsent/);
+  assert.match(outpatientControl, /outpatient_automation_control_report/);
+  assert.match(outpatientControl, /SAFE_INTERNAL_AUTOMATION_READY/);
+  assert.match(outpatientControl, /unsafe_clinical_automation_directive/);
+  assert.match(outpatientControl, /patient_facing_rule_requires_human_approval/);
+  assert.match(settings, /Outpatient automation control/);
+  assert.match(settings, /khong tu chan doan, khong tu ke don/);
   assert.doesNotMatch(automation, /SEND_TREATMENT_MESSAGE/);
 });
 
@@ -250,11 +258,13 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/prisma-transaction-contract\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/persistent-transaction\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/runtime-hardening\.behavior\.test\.ts/);
+  assert.match(read("tsconfig.check.json"), /tests\/outpatient-automation-control\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/production-control-contracts\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/production-go-live-controls\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/a5-output-qa\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/data-retention\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/operations-readiness\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/outpatient-automation-control\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/password-security\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/production-go-live-controls\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/runtime-hardening\.ts/);

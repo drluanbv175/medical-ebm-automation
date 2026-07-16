@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/Badge";
+import { buildOutpatientAutomationControlReport } from "@/lib/outpatient-automation-control";
 import { buildProductionEvidenceDossier } from "@/lib/production-evidence-dossier";
 import { loadProductionEvidencePackageFromEnv } from "@/lib/production-evidence-loader";
 import { summarizeWriteActionRegistry, unsafeWriteActions, writeActionRegistry } from "@/lib/write-action-registry";
@@ -9,6 +10,7 @@ export default function SettingsPage() {
   const productionEvidenceDossier = buildProductionEvidenceDossier(evidenceLoad.package);
   const productionReadiness = productionEvidenceDossier.readiness;
   const openBlockers = productionReadiness.blockers.filter((item) => item.status === "OPEN");
+  const outpatientAutomation = buildOutpatientAutomationControlReport();
   const writeSummary = summarizeWriteActionRegistry();
   const unsafeActions = unsafeWriteActions();
 
@@ -85,6 +87,41 @@ export default function SettingsPage() {
         </table>
         <p className="eyebrow">
           Showing first 8 blockers; the machine-readable manifest remains the source for automation and signoff.
+        </p>
+      </section>
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h2>Outpatient automation control</h2>
+        <p>
+          Status: <StatusBadge>{outpatientAutomation.status}</StatusBadge>; safe internal rules:
+          {" "}{outpatientAutomation.summary.safeInternalRules} / {outpatientAutomation.summary.totalRules};
+          patient communication tasks: {outpatientAutomation.summary.patientCommunicationTaskRules};
+          blocked rules: {outpatientAutomation.summary.blockedRules}.
+        </p>
+        <p className="eyebrow">{outpatientAutomation.safetyBoundary}</p>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Rule</th>
+              <th>Automation</th>
+              <th>Human gate</th>
+              <th>Owner</th>
+            </tr>
+          </thead>
+          <tbody>
+            {outpatientAutomation.decisions.slice(0, 8).map((item) => (
+              <tr key={item.ruleId}>
+                <td>{item.ruleId}: {item.ruleName}</td>
+                <td>
+                  <StatusBadge>{item.allowedAutomation}</StatusBadge>
+                </td>
+                <td>{item.humanGate}</td>
+                <td>{item.assignedRole}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="eyebrow">
+          Automation chi tao task/checklist/queue/draft; khong tu chan doan, khong tu ke don, khong tu gui noi dung dieu tri.
         </p>
       </section>
       <section className="panel" style={{ marginTop: 16 }}>
