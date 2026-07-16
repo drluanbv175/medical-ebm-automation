@@ -23,6 +23,16 @@ pnpm production:verify -- --evidence /secure/path/production-evidence.json
 
 Exit code `0` means the evidence package unlocks `PRODUCTION_READY`; exit code `1` means the package is readable but still blocked; exit code `2` means the package cannot be read or the command is malformed.
 
+Before final verification, build the evidence dossier. This produces a machine-readable checklist for every blocker, required repository runtime control, residual gate, artifact reference and signoff:
+
+```bash
+pnpm production:dossier -- \
+  --evidence /secure/path/production-evidence.json \
+  --out /secure/path/production-evidence-dossier.json
+```
+
+The dossier may say `READY_FOR_FINAL_GO_LIVE_CHECK` only when every blocker record is valid, every required repository control ID is named in `controlsVerified`, and all five signoffs are valid. It is still not a production approval by itself; it only means the package is ready to enter the final go-live command below.
+
 For the final one-run go-live gate, use:
 
 ```bash
@@ -44,6 +54,7 @@ pnpm production:verify -- --init-template /secure/path/production-evidence-templ
 ```
 
 The template deliberately contains `TODO` placeholders. It will not pass production verification until every placeholder is replaced by reviewed evidence/signoff references.
+For blockers with repository controls, keep the exact control IDs in `controlsVerified`, for example `RUNTIME-RBAC-COVERAGE-001` for `SEC-001` and `RUNTIME-DEPENDENCY-SCAN-001` for `SEC-007`.
 
 ## Required Evidence Package Shape
 

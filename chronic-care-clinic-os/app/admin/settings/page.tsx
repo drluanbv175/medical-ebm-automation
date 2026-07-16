@@ -1,10 +1,13 @@
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/Badge";
-import { buildProductionReadinessReport } from "@/lib/production-readiness";
+import { buildProductionEvidenceDossier } from "@/lib/production-evidence-dossier";
+import { loadProductionEvidencePackageFromEnv } from "@/lib/production-evidence-loader";
 import { summarizeWriteActionRegistry, unsafeWriteActions, writeActionRegistry } from "@/lib/write-action-registry";
 
 export default function SettingsPage() {
-  const productionReadiness = buildProductionReadinessReport();
+  const evidenceLoad = loadProductionEvidencePackageFromEnv();
+  const productionEvidenceDossier = buildProductionEvidenceDossier(evidenceLoad.package);
+  const productionReadiness = productionEvidenceDossier.readiness;
   const openBlockers = productionReadiness.blockers.filter((item) => item.status === "OPEN");
   const writeSummary = summarizeWriteActionRegistry();
   const unsafeActions = unsafeWriteActions();
@@ -50,6 +53,15 @@ export default function SettingsPage() {
           clinical safety: {productionReadiness.summary.byCategory.clinical_safety}; operations: {productionReadiness.summary.byCategory.operations};
           AI governance: {productionReadiness.summary.byCategory.ai_governance}.
         </p>
+        <p>
+          Evidence dossier: <StatusBadge>{productionEvidenceDossier.status}</StatusBadge>; blocker evidence:
+          {" "}{productionEvidenceDossier.summary.validBlockerEvidence} / {productionEvidenceDossier.summary.totalBlockers};
+          missing control links: {productionEvidenceDossier.summary.missingRepositoryControlLinks};
+          invalid signoffs: {productionEvidenceDossier.summary.invalidSignoffs}.
+        </p>
+        {evidenceLoad.warnings.length > 0 ? (
+          <p className="eyebrow">Evidence load warning: {evidenceLoad.warnings.join(" ")}</p>
+        ) : null}
         <p className="eyebrow">{productionReadiness.safetyBoundary}</p>
         <table className="table">
           <thead>

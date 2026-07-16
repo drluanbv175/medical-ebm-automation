@@ -11,6 +11,7 @@
     "test": "python scripts/run_node_tests.py",
     "typecheck:app": "python scripts/typecheck_app.py",
     "sync:check": "node scripts/sync-check.mjs",
+    "production:dossier": "tsx scripts/build-production-evidence-dossier.ts",
     "production:verify": "tsx scripts/verify-production-readiness.ts",
     "production:go-live": "tsx scripts/production-go-live.ts",
     "check": "node --test tests/*.test.mjs && tsc -p tsconfig.check.json --noEmit && node scripts/sync-check.mjs",

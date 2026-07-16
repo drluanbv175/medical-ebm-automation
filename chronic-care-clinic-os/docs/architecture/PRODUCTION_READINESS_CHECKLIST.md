@@ -15,6 +15,7 @@ Khong duoc goi production-ready neu chua dat tat ca muc sau.
 - [ ] Encrypted secrets.
 - [ ] Environment validation.
 - [ ] No sensitive PHI in logs.
+- [ ] Evidence dossier generated with all required runtime control IDs before final go-live.
 
 ## Data
 

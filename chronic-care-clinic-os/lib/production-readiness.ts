@@ -138,6 +138,20 @@ export const productionBlockers: ProductionBlocker[] = [
   blocker("AI-001", "ai_governance", "AI remains disabled until privacy controls and human review workflow are verified.", "AI_GOVERNANCE", "AI_DRAFTS_ENABLED gate evidence plus privacy and review workflow signoff.")
 ];
 
+export function repositoryControlsForProductionBlocker(
+  blockerId: string,
+  controls: RuntimeHardeningControlEvidence[] = runtimeHardeningControls
+): RuntimeHardeningControlEvidence[] {
+  return controls.filter((control) => control.blockerIds.includes(blockerId));
+}
+
+export function requiredRepositoryControlIdsForBlocker(
+  blockerId: string,
+  controls: RuntimeHardeningControlEvidence[] = runtimeHardeningControls
+): string[] {
+  return repositoryControlsForProductionBlocker(blockerId, controls).map((control) => control.controlId);
+}
+
 export function summarizeProductionReadiness(blockers = productionBlockers, productionReady = false): ProductionReadinessSummary {
   const byCategory = Object.fromEntries(categoryOrder.map((category) => [category, 0])) as Record<ProductionBlockerCategory, number>;
   for (const item of blockers) {
@@ -313,10 +327,14 @@ function validateEvidenceRecord(
   if (!Array.isArray(record.artifactRefs) || record.artifactRefs.length === 0 || record.artifactRefs.some((item) => !safeArtifactRef(item))) {
     errors.push(`${record.blockerId} requires at least one safe artifact reference.`);
   }
-  if (!Array.isArray(record.controlsVerified)
-    || record.controlsVerified.length === 0
-    || record.controlsVerified.some((item) => !safeControlEvidence(item))) {
+  const controlsVerified = Array.isArray(record.controlsVerified) ? record.controlsVerified : [];
+  if (controlsVerified.length === 0 || controlsVerified.some((item) => !safeControlEvidence(item))) {
     errors.push(`${record.blockerId} requires non-placeholder controlsVerified entries.`);
+  }
+  for (const controlId of requiredRepositoryControlIdsForBlocker(blocker.id)) {
+    if (!controlsVerified.includes(controlId)) {
+      errors.push(`${record.blockerId} controlsVerified must include repository control ${controlId}.`);
+    }
   }
   if (record.expiresAt && !isValidFutureIso(record.expiresAt, generatedAt)) {
     errors.push(`${record.blockerId} evidence has expired or expiresAt is invalid.`);
@@ -329,11 +347,16 @@ function validateProductionSignoffs(
   generatedAt: string
 ): { validRoles: Set<ProductionSignoffRole>; findings: ProductionReadinessFinding[] } {
   const validRoles = new Set<ProductionSignoffRole>();
+  const seenRoles = new Set<ProductionSignoffRole>();
   const findings: ProductionReadinessFinding[] = [];
   for (const signoff of signoffs) {
     const errors: string[] = [];
     if (!requiredProductionSignoffs.includes(signoff.role)) {
       errors.push(`Unknown signoff role: ${String(signoff.role)}`);
+    } else if (seenRoles.has(signoff.role)) {
+      errors.push(`Duplicate required production signoff: ${signoff.role}`);
+    } else {
+      seenRoles.add(signoff.role);
     }
     if (!safeReference(signoff.signerReference)) {
       errors.push(`${signoff.role} signerReference is missing, placeholder, or appears to contain PII.`);

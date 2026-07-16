@@ -624,12 +624,15 @@ test("production readiness blockers are machine-readable and surfaced in setting
   const typecheck = read("tsconfig.check.json");
   const pkg = read("package.json");
   const verifyScript = read("scripts/verify-production-readiness.ts");
+  const dossierScript = read("scripts/build-production-evidence-dossier.ts");
   const goLiveScript = read("scripts/production-go-live.ts");
   const template = read("lib/production-evidence-template.ts");
+  const dossier = read("lib/production-evidence-dossier.ts");
   const goLive = read("lib/production-go-live.ts");
 
   assert.match(readiness, /chronic_care_production_readiness_report/);
   assert.match(readiness, /productionBlockers/);
+  assert.match(readiness, /requiredRepositoryControlIdsForBlocker/);
   assert.match(readiness, /summarizeProductionReadiness/);
   assert.match(readiness, /buildProductionReadinessReport/);
   assert.match(readiness, /repositoryControls/);
@@ -640,8 +643,10 @@ test("production readiness blockers are machine-readable and surfaced in setting
   }
   assert.match(settings, /Production readiness/);
   assert.match(settings, /Open blockers/);
-  assert.match(settings, /buildProductionReadinessReport/);
+  assert.match(settings, /loadProductionEvidencePackageFromEnv/);
+  assert.match(settings, /buildProductionEvidenceDossier/);
   assert.match(settings, /Release decision/);
+  assert.match(settings, /Evidence dossier/);
   assert.match(route, /loadProductionEvidencePackageFromEnv/);
   assert.match(route, /buildProductionReadinessReport/);
   assert.match(route, /productionReady: report\.summary\.productionReady/);
@@ -650,11 +655,18 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(route, /no-store/);
   assert.match(hardening, /X-Clinical-Production-Ready/);
   assert.match(hardening, /options\.productionReady/);
+  assert.match(pkg, /production:dossier/);
   assert.match(pkg, /production:verify/);
   assert.match(pkg, /production:go-live/);
+  assert.match(dossier, /chronic_care_production_evidence_dossier/);
+  assert.match(dossier, /READY_FOR_FINAL_GO_LIVE_CHECK/);
+  assert.match(dossier, /missingRepositoryControlIds/);
   assert.match(verifyScript, /buildProductionReadinessReport/);
   assert.match(verifyScript, /--init-template/);
   assert.match(verifyScript, /process\.exit\(main\(\)\)/);
+  assert.match(dossierScript, /buildProductionEvidenceDossier/);
+  assert.match(dossierScript, /--evidence/);
+  assert.match(dossierScript, /process\.exit\(main\(\)\)/);
   assert.match(goLiveScript, /buildProductionGoLiveReport/);
   assert.match(goLiveScript, /process\.exit\(main\(\)\)/);
   assert.match(template, /buildProductionEvidenceTemplate/);
@@ -665,11 +677,14 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(typecheck, /app\/api\/admin\/production-readiness\/route\.ts/);
   assert.match(typecheck, /lib\/production-go-live\.ts/);
   assert.match(typecheck, /lib\/production-readiness\.ts/);
+  assert.match(typecheck, /lib\/production-evidence-dossier\.ts/);
   assert.match(typecheck, /lib\/production-evidence-loader\.ts/);
   assert.match(typecheck, /lib\/production-evidence-template\.ts/);
   assert.match(typecheck, /scripts\/verify-production-readiness\.ts/);
+  assert.match(typecheck, /scripts\/build-production-evidence-dossier\.ts/);
   assert.match(typecheck, /types\/next-shims\.d\.ts/);
   assert.match(typecheck, /tests\/production-readiness\.behavior\.test\.ts/);
+  assert.match(typecheck, /tests\/production-evidence-dossier\.behavior\.test\.ts/);
   assert.match(typecheck, /tests\/production-go-live\.behavior\.test\.ts/);
 });
 

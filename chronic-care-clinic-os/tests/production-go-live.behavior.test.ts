@@ -5,6 +5,7 @@ import { buildProductionEvidenceTemplate } from "../lib/production-evidence-temp
 import { buildProductionGoLiveReport } from "../lib/production-go-live";
 import {
   productionBlockers,
+  requiredRepositoryControlIdsForBlocker,
   requiredProductionSignoffs,
   type ProductionEvidencePackage
 } from "../lib/production-readiness";
@@ -124,7 +125,7 @@ function completeEvidencePackage(): ProductionEvidencePackage {
       reviewerReference: `${blocker.owner}_REVIEWER_001`,
       reviewedAt: "2026-07-15T12:00:00.000Z",
       artifactRefs: [`production-readiness/evidence/${blocker.id}.json`],
-      controlsVerified: [blocker.evidenceRequired],
+      controlsVerified: [blocker.evidenceRequired, ...requiredRepositoryControlIdsForBlocker(blocker.id)],
       expiresAt: "2027-07-16T00:00:00.000Z"
     })),
     signoffs: requiredProductionSignoffs.map((role) => ({

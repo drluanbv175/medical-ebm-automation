@@ -1,5 +1,6 @@
 import {
   productionBlockers,
+  requiredRepositoryControlIdsForBlocker,
   requiredProductionSignoffs,
   type ProductionEvidencePackage
 } from "./production-readiness";
@@ -29,7 +30,10 @@ export function buildProductionEvidenceTemplate(
       reviewerReference: `TODO_${blocker.owner}_REVIEWER_REF`,
       reviewedAt,
       artifactRefs: [`TODO/evidence/${blocker.id}.json`],
-      controlsVerified: [`TODO: ${blocker.evidenceRequired}`],
+      controlsVerified: [
+        `TODO: ${blocker.evidenceRequired}`,
+        ...requiredRepositoryControlIdsForBlocker(blocker.id).map((controlId) => `${controlId}: TODO reviewed artifact`)
+      ],
       expiresAt,
       notes: `TODO: attach reviewed evidence for ${blocker.id} - ${blocker.title}`
     })),

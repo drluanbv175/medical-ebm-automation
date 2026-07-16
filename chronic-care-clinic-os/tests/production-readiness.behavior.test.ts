@@ -6,6 +6,7 @@ import {
   type ProductionEvidencePackage,
   openProductionBlockers,
   productionBlockers,
+  requiredRepositoryControlIdsForBlocker,
   requiredProductionSignoffs,
   summarizeProductionReadiness
 } from "../lib/production-readiness";
@@ -129,6 +130,34 @@ test("production evidence validator rejects placeholder references", () => {
   assert.ok(report.findings.some((item) => item.message.includes("placeholder")));
 });
 
+test("production evidence package must cite repository runtime controls when they exist", () => {
+  const pkg = completeEvidencePackage();
+  const blockerId = "SEC-001";
+  const requiredControlIds = requiredRepositoryControlIdsForBlocker(blockerId);
+  assert.ok(requiredControlIds.includes("RUNTIME-RBAC-COVERAGE-001"));
+  pkg.evidence = pkg.evidence.map((record) => record.blockerId === blockerId
+    ? {
+        ...record,
+        controlsVerified: record.controlsVerified.filter((controlId) => controlId !== "RUNTIME-RBAC-COVERAGE-001")
+      }
+    : record);
+
+  const report = buildProductionReadinessReport("2026-07-16T00:00:00.000Z", productionBlockers, pkg);
+
+  assert.equal(report.summary.productionReady, false);
+  assert.ok(report.findings.some((item) => item.message.includes("RUNTIME-RBAC-COVERAGE-001")));
+  assert.ok(report.releaseDecision.blockedReasons.includes("invalid_blocker_evidence:SEC-001"));
+});
+
+test("production evidence package blocks duplicate signoff roles", () => {
+  const pkg = completeEvidencePackage();
+  pkg.signoffs.push({ ...pkg.signoffs[0], signerReference: "SECURITY_OWNER_SIGNER_002" });
+  const report = buildProductionReadinessReport("2026-07-16T00:00:00.000Z", productionBlockers, pkg);
+
+  assert.equal(report.summary.productionReady, false);
+  assert.ok(report.findings.some((item) => item.message.includes("Duplicate required production signoff")));
+});
+
 test("production evidence package shape validator rejects malformed package", () => {
   const warnings = validateEvidencePackageShape({
     kind: "wrong",
@@ -153,7 +182,7 @@ function completeEvidencePackage(): ProductionEvidencePackage {
       reviewerReference: `${blocker.owner}_REVIEWER_001`,
       reviewedAt: "2026-07-15T12:00:00.000Z",
       artifactRefs: [`production-readiness/evidence/${blocker.id}.json`],
-      controlsVerified: [blocker.evidenceRequired],
+      controlsVerified: [blocker.evidenceRequired, ...requiredRepositoryControlIdsForBlocker(blocker.id)],
       expiresAt: "2027-07-16T00:00:00.000Z"
     })),
     signoffs: requiredProductionSignoffs.map((role) => ({
