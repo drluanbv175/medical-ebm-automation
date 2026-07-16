@@ -54,6 +54,48 @@ export const runtimeHardeningControls: RuntimeHardeningControlEvidence[] = [
     implementationStatus: "REPO_CONTRACT_READY",
     files: ["lib/runtime-hardening.ts", "PATIENT_COMMUNICATION_POLICY.md", "tests/runtime-hardening.behavior.test.ts"],
     residualGate: "Clinic leadership must approve the policy before real patient communication."
+  },
+  {
+    controlId: "RUNTIME-PASSWORD-001",
+    blockerIds: ["SEC-003"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/password-security.ts", "tests/production-control-contracts.behavior.test.ts"],
+    residualGate: "Production auth/session/MFA workflow must wire this hash contract before real credentials are allowed."
+  },
+  {
+    controlId: "RUNTIME-RETENTION-001",
+    blockerIds: ["DATA-004"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/data-retention.ts", "DATA_RETENTION_POLICY.md", "tests/production-control-contracts.behavior.test.ts"],
+    residualGate: "Data protection owner must approve retention scope and archive/delete evidence."
+  },
+  {
+    controlId: "RUNTIME-BACKUP-RESTORE-001",
+    blockerIds: ["DATA-002"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/operations-readiness.ts", "docs/deployment/backup-restore.md", "tests/production-control-contracts.behavior.test.ts"],
+    residualGate: "A real staging/production restore drill report is still required before go-live."
+  },
+  {
+    controlId: "RUNTIME-A5-QA-001",
+    blockerIds: ["CLIN-004"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/a5-output-qa.ts", "app/handouts/page.tsx", "tests/production-control-contracts.behavior.test.ts"],
+    residualGate: "Rendered A5/PDF artifact must be reviewed by physician lead before patient use."
+  },
+  {
+    controlId: "RUNTIME-MONITORING-001",
+    blockerIds: ["OPS-003"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/operations-readiness.ts", "tests/production-control-contracts.behavior.test.ts"],
+    residualGate: "Deployment monitoring smoke report and on-call route evidence are still required."
+  },
+  {
+    controlId: "RUNTIME-INCIDENT-DRILL-001",
+    blockerIds: ["OPS-004"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/operations-readiness.ts", "security/INCIDENT_RESPONSE_PLAYBOOK.md", "tests/production-control-contracts.behavior.test.ts"],
+    residualGate: "Clinical safety/data protection/operations tabletop drill must be signed before go-live."
   }
 ];
 

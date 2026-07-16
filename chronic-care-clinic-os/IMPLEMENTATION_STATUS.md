@@ -40,6 +40,12 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Claude Code handoff manifest and sync-check guard so Windows, MacBook, Codex and Claude Code share the same current scope.
 - MVP-01 workflow definition and `/mvp-01` page.
 - Production blockers, MVP-01 acceptance test, demo guide, limitations and signoff templates.
+- Runtime hardening controls for environment, secure headers, CSRF/rate-limit, PHI redaction and patient communication policy.
+- Production evidence package/go-live report contracts so production can only unlock with explicit blocker evidence plus required sign-offs.
+- Password hashing contract using scrypt with salt/pepper support and timing-safe verification.
+- Data retention/archive policy contract with fail-closed legal-hold, active-care, review and audit-evidence requirements.
+- Backup/restore, monitoring smoke and incident drill evidence validators for operations readiness.
+- A5 output QA contract for rendered handout/PDF artifact review, checksum, visual QA, emergency boundary and doctor-verification disclaimer.
 - Offline tests updated and passing for docs/schema/RBAC/safety/automation/MVP-01/command-center.
 
 ## Da co tu dot truoc
@@ -71,7 +77,9 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - API/server actions for vitals, medication reconciliation and remaining write paths not yet represented by guarded workflow contracts.
 - Real Prisma transaction adapter for guarded persistent plans, satisfying the current disabled adapter contract, test-database rollback evidence gate and rollback harness cases for AuditLog/business-write atomicity.
 - Real audit log persistence on every sensitive action.
-- Rate limiting, CSRF, secure headers and environment validation.
+- Rate limiting, CSRF, secure headers and environment validation have repo contracts; still need deployment evidence and sign-off.
+- Password hashing has repo contract; still needs production auth/session/MFA wiring and review evidence.
+- Data retention/archive, backup/restore, monitoring, incident drill and A5 QA have repo contracts; still need real execution artifacts and owner sign-off.
 - User acceptance testing and formal clinical/data protection signoff.
 
 ## Ket luan production

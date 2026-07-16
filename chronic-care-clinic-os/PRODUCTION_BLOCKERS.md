@@ -10,19 +10,19 @@ Production can be declared only by a valid evidence package loaded through `PROD
 
 - Backend RBAC not wired to every route/action.
 - Authentication/session/MFA not implemented for production.
-- Password hashing not implemented.
+- Password hashing contract added, but production auth/session/MFA wiring and review evidence are still missing.
 - Rate limiting and CSRF contract added, but not wired to every production write route.
 - Secure headers are configured in repo, but deployment header scan/signoff is still missing.
 - Environment validation contract added, but production deployment evidence/signoff is still missing.
-- Dependency lockfile exists, but vulnerability scan evidence is still missing.
+- Dependency lockfile exists, but reviewed vulnerability scan evidence is still missing.
 - PHI redaction logger contract added, but de-identified UAT persistence evidence/signoff is still missing.
 
 ## Data protection blockers
 
 - Organization/site isolation is modeled but not enforced end-to-end.
-- Backup/restore procedure not tested.
-- Audit log persistence contract is modeled, but reviewed migration/runtime immutability enforcement is not implemented.
-- No formal data retention/archive policy.
+- Backup/restore evidence validator added, but a real restore drill report/signoff is still missing.
+- Audit log persistence contract and migration hardening are modeled, but runtime database evidence/signoff is still missing.
+- Data retention/archive policy contract added, but clinic/legal approval and execution evidence are still missing.
 - No UAT with de-identified workflow data.
 
 ## Clinical safety blockers
@@ -30,7 +30,7 @@ Production can be declared only by a valid evidence package loaded through `PROD
 - Clinical rules are draft and not formally approved.
 - Rule approval workflow not fully executable.
 - Clinical content and patient education approval not fully executable.
-- A5 PDF output not tested.
+- A5 output QA contract added, but rendered artifact review/signoff is still missing.
 - Red flag workflow not tested with real operational users.
 - No clinical safety signoff.
 
@@ -38,8 +38,8 @@ Production can be declared only by a valid evidence package loaded through `PROD
 
 - Docker one-command run not verified in this environment.
 - Prisma migration has schema but no generated migration folder.
-- Error logging and monitoring not configured.
-- Incident response process documented but not drilled.
+- Error logging and monitoring evidence validator added, but deployment smoke evidence/signoff is still missing.
+- Incident response process documented and drill validator added, but signed tabletop/drill evidence is still missing.
 
 ## AI blocker
 

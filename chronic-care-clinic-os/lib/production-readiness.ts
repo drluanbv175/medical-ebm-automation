@@ -110,7 +110,7 @@ export const requiredProductionSignoffs: ProductionSignoffRole[] = [
 export const productionBlockers: ProductionBlocker[] = [
   blocker("SEC-001", "security", "Backend RBAC wired to every route/action.", "CLINIC_ADMIN", "Route/action RBAC coverage test and reviewer signoff."),
   blocker("SEC-002", "security", "Production authentication, session and MFA implemented.", "CLINIC_ADMIN", "Auth threat model, MFA test evidence and session hardening review."),
-  blocker("SEC-003", "security", "Password hashing implemented.", "CLINIC_ADMIN", "Password storage review proving one-way hashing and no plaintext path."),
+  blocker("SEC-003", "security", "Password hashing implemented.", "CLINIC_ADMIN", "Password storage review proving scrypt hashing, salt/pepper handling and no plaintext path."),
   blocker("SEC-004", "security", "Rate limiting and CSRF controls implemented.", "CLINIC_ADMIN", "Abuse test evidence for write routes and forms."),
   blocker("SEC-005", "security", "Secure headers verified.", "CLINIC_ADMIN", "Header scan or deployment smoke report."),
   blocker("SEC-006", "security", "Environment validation implemented.", "CLINIC_ADMIN", "Startup gate rejects unsafe or missing production configuration."),
@@ -118,22 +118,22 @@ export const productionBlockers: ProductionBlocker[] = [
   blocker("SEC-008", "security", "PHI redaction logger implemented.", "CLINIC_ADMIN", "Logging test showing PHI/PII is redacted before persistence."),
 
   blocker("DATA-001", "data_protection", "Organization/site isolation enforced end-to-end.", "DATA_PROTECTION", "Cross-organization and cross-site denial tests."),
-  blocker("DATA-002", "data_protection", "Backup/restore procedure tested.", "DATA_PROTECTION", "Restore drill report with RPO/RTO evidence."),
+  blocker("DATA-002", "data_protection", "Backup/restore procedure tested.", "DATA_PROTECTION", "Restore drill report with checksum plus RPO/RTO evidence."),
   blocker("DATA-003", "data_protection", "Audit log immutability enforced in reviewed runtime migration.", "DATA_PROTECTION", "Migration review and runtime mutation-denial evidence."),
-  blocker("DATA-004", "data_protection", "Formal data retention/archive policy approved.", "DATA_PROTECTION", "Approved retention policy and archive/delete procedure."),
+  blocker("DATA-004", "data_protection", "Formal data retention/archive policy approved.", "DATA_PROTECTION", "Approved retention policy, legal-hold check and archive/delete procedure evidence."),
   blocker("DATA-005", "data_protection", "UAT completed with de-identified workflow data.", "DATA_PROTECTION", "UAT signoff using de-identified data only."),
 
   blocker("CLIN-001", "clinical_safety", "Clinical rules formally approved.", "PHYSICIAN_LEAD", "Signed clinical rule approval record."),
   blocker("CLIN-002", "clinical_safety", "Rule approval workflow fully executable.", "PHYSICIAN_LEAD", "End-to-end approval workflow test evidence."),
   blocker("CLIN-003", "clinical_safety", "Clinical content and patient education approval executable.", "PHYSICIAN_LEAD", "Content approval and patient education release evidence."),
-  blocker("CLIN-004", "clinical_safety", "A5 PDF output tested.", "PHYSICIAN_LEAD", "Rendered A5 output QA evidence."),
+  blocker("CLIN-004", "clinical_safety", "A5 PDF output tested.", "PHYSICIAN_LEAD", "Rendered A5/PDF output QA evidence with checksum, disclaimer and emergency boundary."),
   blocker("CLIN-005", "clinical_safety", "Red flag workflow tested with operational users.", "PHYSICIAN_LEAD", "Operational red-flag drill or UAT report."),
   blocker("CLIN-006", "clinical_safety", "Clinical safety signoff completed.", "PHYSICIAN_LEAD", "Signed clinical safety signoff."),
 
   blocker("OPS-001", "operations", "Docker one-command run verified.", "OPERATIONS", "Fresh-machine Docker run report."),
   blocker("OPS-002", "operations", "Prisma migration folder generated and reviewed.", "OPERATIONS", "Reviewed migration folder and migration smoke test."),
-  blocker("OPS-003", "operations", "Error logging and monitoring configured.", "OPERATIONS", "Monitoring and alert smoke report."),
-  blocker("OPS-004", "operations", "Incident response process drilled.", "OPERATIONS", "Incident response tabletop/drill record."),
+  blocker("OPS-003", "operations", "Error logging and monitoring configured.", "OPERATIONS", "Monitoring smoke report covering errors, audit failures, red flags and on-call route."),
+  blocker("OPS-004", "operations", "Incident response process drilled.", "OPERATIONS", "Incident response tabletop/drill record with physician, data protection and operations roles."),
 
   blocker("AI-001", "ai_governance", "AI remains disabled until privacy controls and human review workflow are verified.", "AI_GOVERNANCE", "AI_DRAFTS_ENABLED gate evidence plus privacy and review workflow signoff.")
 ];

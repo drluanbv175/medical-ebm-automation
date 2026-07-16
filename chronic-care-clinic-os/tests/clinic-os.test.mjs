@@ -61,6 +61,7 @@ test("supplemental architecture and security docs exist", () => {
     "PRODUCTION_BLOCKERS.md",
     "PRODUCTION_GO_LIVE_RUNBOOK.md",
     "PATIENT_COMMUNICATION_POLICY.md",
+    "DATA_RETENTION_POLICY.md",
     "CLINICAL_SAFETY_SIGNOFF_TEMPLATE.md",
     "DATA_PROTECTION_SIGNOFF_TEMPLATE.md"
   ]) {
@@ -249,6 +250,11 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /lib\/prisma-transaction-contract\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/persistent-transaction\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/runtime-hardening\.behavior\.test\.ts/);
+  assert.match(read("tsconfig.check.json"), /tests\/production-control-contracts\.behavior\.test\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/a5-output-qa\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/data-retention\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/operations-readiness\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/password-security\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/runtime-hardening\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-storage-contract\.ts/);
