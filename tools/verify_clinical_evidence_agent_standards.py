@@ -66,6 +66,18 @@ class AgentGateContract:
     output_state: str
 
 
+@dataclass(frozen=True)
+class ReleasePacketContract:
+    kind: str
+    decision: str
+    covered_gate_ids: list[str]
+    minimum_artifacts: list[str]
+    required_commands: list[str]
+    hard_stop_reason_codes: list[str]
+    doctor_attestations: list[str]
+    non_goals: list[str]
+
+
 def build_agent_contract() -> list[AgentGateContract]:
     """Hợp đồng vận hành tối thiểu cho mỗi lượt cập nhật chứng cứ lâm sàng."""
 
@@ -210,6 +222,51 @@ def build_agent_contract() -> list[AgentGateContract]:
             output_state="doctor_gate_required_before_clinical_use",
         ),
     ]
+
+
+def build_release_packet_contract() -> ReleasePacketContract:
+    """Gói tối thiểu phải có trước khi phát hành một cập nhật chứng cứ thật."""
+
+    gates = build_agent_contract()
+    artifacts: list[str] = []
+    for gate in gates:
+        artifacts.extend(gate.required_artifacts)
+    return ReleasePacketContract(
+        kind="clinical_evidence_update_release_packet_contract",
+        decision="BLOCKED_UNTIL_DOCTOR_REVIEW",
+        covered_gate_ids=[gate.gate_id for gate in gates],
+        minimum_artifacts=sorted(set(artifacts)),
+        required_commands=[
+            "verify_dashboard.py <dashboard>.html --online --strict-sources",
+            "drug_safety_scan.py <dashboard>.html nếu có thuốc + người cao tuổi/đa thuốc",
+            "build_library.py add <dashboard>.html",
+            "make_derivatives.py <dashboard>.html",
+            "EBM_MASTER/tools/sync_all.py",
+            "tham-dinh-dau-ra R1-R7 + Q1-Q7 trước khi giao bác sĩ",
+        ],
+        hard_stop_reason_codes=[
+            "PII_DETECTED",
+            "SOURCE_UNVERIFIED",
+            "STRICT_SOURCE_GATE_FAILED",
+            "GRADE_SELF_ASSIGNED",
+            "RED_FLAG_OR_CONTRAINDICATION_MISSING",
+            "DRUG_SAFETY_SCAN_REQUIRED",
+            "HUB_SYNC_OR_QUARANTINE_FAILED",
+            "FINAL_GUARDRAIL_RED",
+            "DOCTOR_REVIEW_MISSING",
+        ],
+        doctor_attestations=[
+            "Đã mở và kiểm nguồn chính cho các điểm có thể đổi thực hành.",
+            "Đã xác nhận tính phù hợp tại đơn vị, thuốc/xét nghiệm/chi phí/BHYT và tuyến chuyển.",
+            "Đã rà nhóm nguy cơ cao, tương tác, chống chỉ định, monitoring và cờ đỏ.",
+            "Đã quyết định rõ: chỉ lưu hàng chờ, áp dụng chọn lọc, hoặc không đổi thực hành.",
+        ],
+        non_goals=[
+            "Không tự áp dụng cho bệnh nhân thật.",
+            "Không thay thế bác sĩ, IRB, hội đồng thuốc, pháp chế hoặc UAT/bảo mật triển khai.",
+            "Không biến dashboard vấn đề riêng lẻ thành bản ghi Master đã duyệt khi chưa có lệnh duyệt.",
+        ],
+    )
 
 
 def _rel(path: Path) -> str:
@@ -536,6 +593,7 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         _check_doctor_gate_boundaries(),
     ]
     agent_contract = build_agent_contract()
+    release_packet = build_release_packet_contract()
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
     if fail_count:
@@ -560,6 +618,7 @@ def evaluate_all(generated_at: str | None = None) -> dict:
             gate.gate_id for gate in agent_contract if gate.human_gate
         ],
         "agent_contract": [asdict(gate) for gate in agent_contract],
+        "release_packet_contract": asdict(release_packet),
         "checks": [asdict(check) for check in checks],
         "disclaimer": DISCLAIMER,
     }
@@ -579,6 +638,7 @@ def markdown_report(report: dict) -> str:
         f"- Auto-apply allowed: `{report['auto_apply_allowed']}`",
         f"- Agent contract gates: `{report['agent_contract_gate_count']}`",
         f"- Agent contract human gates: `{', '.join(report['agent_contract_human_gate_ids'])}`",
+        f"- Release packet decision: `{report['release_packet_contract']['decision']}`",
         "",
         "| Check | Status | Proves | Limitation | Missing |",
         "|---|---|---|---|---|",
@@ -595,6 +655,27 @@ def markdown_report(report: dict) -> str:
                 missing=missing,
             )
         )
+    packet = report["release_packet_contract"]
+    lines.extend([
+        "",
+        "## Release Packet Contract",
+        "",
+        f"- Decision: `{packet['decision']}`",
+        f"- Covered gates: `{', '.join(packet['covered_gate_ids'])}`",
+        f"- Minimum artifacts: `{len(packet['minimum_artifacts'])}`",
+        "",
+        "| Required Command |",
+        "|---|",
+    ])
+    for command in packet["required_commands"]:
+        lines.append(f"| `{command}` |")
+    lines.extend([
+        "",
+        "| Hard Stop Reason |",
+        "|---|",
+    ])
+    for reason in packet["hard_stop_reason_codes"]:
+        lines.append(f"| `{reason}` |")
     lines.extend([
         "",
         "## Agent Gate Contract",
@@ -642,6 +723,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"auto_apply_allowed={report['auto_apply_allowed']}")
         print(f"agent_contract_gate_count={report['agent_contract_gate_count']}")
         print("agent_contract_human_gate_ids=" + ",".join(report["agent_contract_human_gate_ids"]))
+        print("release_packet_decision=" + report["release_packet_contract"]["decision"])
         print("Cần bác sĩ kiểm chứng.")
     return 0 if report["fail_count"] == 0 else 1
 

@@ -60,6 +60,8 @@ def test_clinical_evidence_agent_standards_markdown_keeps_boundaries_visible() -
     assert "Doctor review required before apply: `True`" in markdown
     assert "Clinical production allowed: `False`" in markdown
     assert "Auto-apply allowed: `False`" in markdown
+    assert "Release Packet Contract" in markdown
+    assert "Release packet decision: `BLOCKED_UNTIL_DOCTOR_REVIEW`" in markdown
     assert "Agent Gate Contract" in markdown
     assert "CEG7 Guardrail cuối và bác sĩ quyết định áp dụng" in markdown
     assert "Cần bác sĩ kiểm chứng" in markdown
@@ -88,3 +90,31 @@ def test_clinical_evidence_agent_contract_is_ordered_and_fail_closed() -> None:
     assert contract[-1]["human_gate"] is True
     assert contract[-1]["output_state"] == "doctor_gate_required_before_clinical_use"
     assert "Không auto_apply" in " ".join(contract[-1]["automated_checks"])
+
+
+def test_release_packet_contract_blocks_until_doctor_review() -> None:
+    mod = _load_module()
+    report = mod.evaluate_all(generated_at=FIXED_NOW)
+    packet = report["release_packet_contract"]
+
+    assert packet["kind"] == "clinical_evidence_update_release_packet_contract"
+    assert packet["decision"] == "BLOCKED_UNTIL_DOCTOR_REVIEW"
+    assert packet["covered_gate_ids"] == [
+        "CEG1",
+        "CEG2",
+        "CEG3",
+        "CEG4",
+        "CEG5",
+        "CEG6",
+        "CEG7",
+    ]
+    assert "doctor_review_packet" in packet["minimum_artifacts"]
+    assert "final_guardrail_result" in packet["minimum_artifacts"]
+    assert "verify_dashboard.py <dashboard>.html --online --strict-sources" in packet[
+        "required_commands"
+    ]
+    assert "PII_DETECTED" in packet["hard_stop_reason_codes"]
+    assert "SOURCE_UNVERIFIED" in packet["hard_stop_reason_codes"]
+    assert "FINAL_GUARDRAIL_RED" in packet["hard_stop_reason_codes"]
+    assert "DOCTOR_REVIEW_MISSING" in packet["hard_stop_reason_codes"]
+    assert any("Không tự áp dụng" in item for item in packet["non_goals"])
