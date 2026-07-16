@@ -46,6 +46,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Data retention/archive policy contract with fail-closed legal-hold, active-care, review and audit-evidence requirements.
 - Backup/restore, monitoring smoke and incident drill evidence validators for operations readiness.
 - A5 output QA contract for rendered handout/PDF artifact review, checksum, visual QA, emergency boundary and doctor-verification disclaimer.
+- Go-live controls for route/RBAC coverage, organization/site isolation, dependency scan evidence, Prisma migration review, Docker smoke evidence and live governance persistence.
 - Offline tests updated and passing for docs/schema/RBAC/safety/automation/MVP-01/command-center.
 
 ## Da co tu dot truoc
@@ -80,6 +81,7 @@ Chronic Care Clinic OS is a Clinical Coordination Platform. It is not a legal EM
 - Rate limiting, CSRF, secure headers and environment validation have repo contracts; still need deployment evidence and sign-off.
 - Password hashing has repo contract; still needs production auth/session/MFA wiring and review evidence.
 - Data retention/archive, backup/restore, monitoring, incident drill and A5 QA have repo contracts; still need real execution artifacts and owner sign-off.
+- Route/RBAC coverage, organization/site isolation, dependency scan, Prisma migration, Docker smoke and live governance persistence have repo contracts; still need deployed evidence and sign-off.
 - User acceptance testing and formal clinical/data protection signoff.
 
 ## Ket luan production

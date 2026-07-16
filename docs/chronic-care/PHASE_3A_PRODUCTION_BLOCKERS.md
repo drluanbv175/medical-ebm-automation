@@ -12,4 +12,4 @@
 - Chưa có clinic-approved patient communication policy/signoff; repo contract đã có nhưng chưa được cơ sở phê duyệt.
 - Chưa có training và competency assessment cho nhân sự.
 - Chưa có production migration approval.
-- Chưa có live governance persistence cho chronic-care tables.
+- Chưa có live governance persistence sign-off; repo contract đã có nhưng còn cần migration, backup và append-only audit evidence.

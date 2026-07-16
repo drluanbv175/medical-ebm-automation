@@ -59,6 +59,7 @@ node scripts/sync-check.mjs
 - `lib/operations-readiness.ts`: validates backup/restore, monitoring-smoke and incident-drill evidence without touching production data.
 - `lib/a5-output-qa.ts`: validates A5 rendered output evidence before handout/PDF release evidence can clear the blocker.
 - `lib/production-go-live.ts`: combines evidence package, runtime env, secure headers and attestation into one go-live decision.
+- `lib/production-go-live-controls.ts`: validates route/RBAC coverage, organization/site isolation, dependency scan, Prisma migration review, Docker smoke and live governance persistence evidence.
 
 ## Pages wired to those modules
 
@@ -86,7 +87,7 @@ node scripts/sync-check.mjs
 1. Add reviewed Prisma migration/tests for the AuditLog sequence/previousHash/eventHash fields.
 2. Build the Prisma test-database adapter to generate a real report matching `docs/templates/prisma-rollback-evidence.template.json`.
 3. Promote only to the test-database adapter after `validatePrismaRollbackEvidenceReportSchema` and `evaluatePrismaRollbackEvidenceReport` both pass; production commit must remain disabled until formal signoff.
-4. Attach real evidence artifacts for password hashing wiring, retention/archive, backup/restore, monitoring, incident drill and A5 QA into the production evidence package; placeholders must stay blocked.
+4. Attach real evidence artifacts for password hashing wiring, route/RBAC coverage, site isolation, dependency scan, Prisma migration review, Docker smoke, governance persistence, retention/archive, backup/restore, monitoring, incident drill and A5 QA into the production evidence package; placeholders must stay blocked.
 5. Add A5 PDF generation only after approved-template, consent and `validateA5OutputQa()` gates remain covered by tests.
 6. Configure a private Git remote so Windows, MacBook and Claude Code synchronize through Git, not only OneDrive.
 

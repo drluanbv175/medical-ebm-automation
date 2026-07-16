@@ -8,18 +8,18 @@ Production can be declared only by a valid evidence package loaded through `PROD
 
 ## Security blockers
 
-- Backend RBAC not wired to every route/action.
+- Backend RBAC route/action coverage contract added, but deployed route review/sign-off evidence is still missing.
 - Authentication/session/MFA not implemented for production.
 - Password hashing contract added, but production auth/session/MFA wiring and review evidence are still missing.
 - Rate limiting and CSRF contract added, but not wired to every production write route.
 - Secure headers are configured in repo, but deployment header scan/signoff is still missing.
 - Environment validation contract added, but production deployment evidence/signoff is still missing.
-- Dependency lockfile exists, but reviewed vulnerability scan evidence is still missing.
+- Dependency lockfile and scan evidence contract exist, but reviewed vulnerability scan sign-off is still missing.
 - PHI redaction logger contract added, but de-identified UAT persistence evidence/signoff is still missing.
 
 ## Data protection blockers
 
-- Organization/site isolation is modeled but not enforced end-to-end.
+- Organization/site isolation contract and denial tests exist, but deployed UAT/sign-off evidence is still missing.
 - Backup/restore evidence validator added, but a real restore drill report/signoff is still missing.
 - Audit log persistence contract and migration hardening are modeled, but runtime database evidence/signoff is still missing.
 - Data retention/archive policy contract added, but clinic/legal approval and execution evidence are still missing.
@@ -36,10 +36,10 @@ Production can be declared only by a valid evidence package loaded through `PROD
 
 ## Operations blockers
 
-- Docker one-command run not verified in this environment.
-- Prisma migration has schema but no generated migration folder.
+- Docker one-command run evidence contract exists, but fresh-machine/staging sign-off evidence is still missing.
+- Prisma migration review contract exists, but migration smoke/rollback sign-off evidence is still missing.
 - Error logging and monitoring evidence validator added, but deployment smoke evidence/signoff is still missing.
-- Incident response process documented and drill validator added, but signed tabletop/drill evidence is still missing.
+- Incident response process documented and drill validator added, but tabletop/drill sign-off evidence is still missing.
 
 ## AI blocker
 

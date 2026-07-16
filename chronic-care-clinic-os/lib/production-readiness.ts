@@ -108,16 +108,16 @@ export const requiredProductionSignoffs: ProductionSignoffRole[] = [
 ];
 
 export const productionBlockers: ProductionBlocker[] = [
-  blocker("SEC-001", "security", "Backend RBAC wired to every route/action.", "CLINIC_ADMIN", "Route/action RBAC coverage test and reviewer signoff."),
+  blocker("SEC-001", "security", "Backend RBAC wired to every route/action.", "CLINIC_ADMIN", "Route/action RBAC coverage inventory, deployed route review and reviewer signoff."),
   blocker("SEC-002", "security", "Production authentication, session and MFA implemented.", "CLINIC_ADMIN", "Auth threat model, MFA test evidence and session hardening review."),
   blocker("SEC-003", "security", "Password hashing implemented.", "CLINIC_ADMIN", "Password storage review proving scrypt hashing, salt/pepper handling and no plaintext path."),
   blocker("SEC-004", "security", "Rate limiting and CSRF controls implemented.", "CLINIC_ADMIN", "Abuse test evidence for write routes and forms."),
   blocker("SEC-005", "security", "Secure headers verified.", "CLINIC_ADMIN", "Header scan or deployment smoke report."),
   blocker("SEC-006", "security", "Environment validation implemented.", "CLINIC_ADMIN", "Startup gate rejects unsafe or missing production configuration."),
-  blocker("SEC-007", "security", "Dependency lockfile and vulnerability scan completed.", "CLINIC_ADMIN", "Lockfile plus vulnerability scan report reviewed."),
+  blocker("SEC-007", "security", "Dependency lockfile and vulnerability scan completed.", "CLINIC_ADMIN", "Exact lockfile hash plus reviewed vulnerability scan with zero high/critical findings."),
   blocker("SEC-008", "security", "PHI redaction logger implemented.", "CLINIC_ADMIN", "Logging test showing PHI/PII is redacted before persistence."),
 
-  blocker("DATA-001", "data_protection", "Organization/site isolation enforced end-to-end.", "DATA_PROTECTION", "Cross-organization and cross-site denial tests."),
+  blocker("DATA-001", "data_protection", "Organization/site isolation enforced end-to-end.", "DATA_PROTECTION", "Cross-organization and cross-site denial tests plus deployed/UAT signoff."),
   blocker("DATA-002", "data_protection", "Backup/restore procedure tested.", "DATA_PROTECTION", "Restore drill report with checksum plus RPO/RTO evidence."),
   blocker("DATA-003", "data_protection", "Audit log immutability enforced in reviewed runtime migration.", "DATA_PROTECTION", "Migration review and runtime mutation-denial evidence."),
   blocker("DATA-004", "data_protection", "Formal data retention/archive policy approved.", "DATA_PROTECTION", "Approved retention policy, legal-hold check and archive/delete procedure evidence."),
@@ -130,8 +130,8 @@ export const productionBlockers: ProductionBlocker[] = [
   blocker("CLIN-005", "clinical_safety", "Red flag workflow tested with operational users.", "PHYSICIAN_LEAD", "Operational red-flag drill or UAT report."),
   blocker("CLIN-006", "clinical_safety", "Clinical safety signoff completed.", "PHYSICIAN_LEAD", "Signed clinical safety signoff."),
 
-  blocker("OPS-001", "operations", "Docker one-command run verified.", "OPERATIONS", "Fresh-machine Docker run report."),
-  blocker("OPS-002", "operations", "Prisma migration folder generated and reviewed.", "OPERATIONS", "Reviewed migration folder and migration smoke test."),
+  blocker("OPS-001", "operations", "Docker one-command run verified.", "OPERATIONS", "Fresh-machine Docker run report with app/db health checks and redacted logs."),
+  blocker("OPS-002", "operations", "Prisma migration folder generated and reviewed.", "OPERATIONS", "Reviewed migration folder, SQL hash, migration smoke test and rollback plan."),
   blocker("OPS-003", "operations", "Error logging and monitoring configured.", "OPERATIONS", "Monitoring smoke report covering errors, audit failures, red flags and on-call route."),
   blocker("OPS-004", "operations", "Incident response process drilled.", "OPERATIONS", "Incident response tabletop/drill record with physician, data protection and operations roles."),
 

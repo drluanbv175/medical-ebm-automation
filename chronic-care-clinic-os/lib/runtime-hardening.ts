@@ -96,6 +96,48 @@ export const runtimeHardeningControls: RuntimeHardeningControlEvidence[] = [
     implementationStatus: "REPO_CONTRACT_READY",
     files: ["lib/operations-readiness.ts", "security/INCIDENT_RESPONSE_PLAYBOOK.md", "tests/production-control-contracts.behavior.test.ts"],
     residualGate: "Clinical safety/data protection/operations tabletop drill must be signed before go-live."
+  },
+  {
+    controlId: "RUNTIME-RBAC-COVERAGE-001",
+    blockerIds: ["SEC-001"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/production-go-live-controls.ts", "lib/write-action-registry.ts", "tests/production-go-live-controls.behavior.test.ts"],
+    residualGate: "Route/action coverage must be reviewed against the deployed build before go-live."
+  },
+  {
+    controlId: "RUNTIME-DEPENDENCY-SCAN-001",
+    blockerIds: ["SEC-007"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/production-go-live-controls.ts", "pnpm-lock.yaml", "tests/production-go-live-controls.behavior.test.ts"],
+    residualGate: "Security owner must attach a reviewed vulnerability scan artifact for the exact lockfile hash."
+  },
+  {
+    controlId: "RUNTIME-PRISMA-MIGRATION-001",
+    blockerIds: ["OPS-002"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/production-go-live-controls.ts", "prisma/migrations", "tests/production-go-live-controls.behavior.test.ts"],
+    residualGate: "Operations owner must sign migration smoke and rollback evidence before production migration."
+  },
+  {
+    controlId: "RUNTIME-SITE-ISOLATION-001",
+    blockerIds: ["DATA-001"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/production-go-live-controls.ts", "lib/backend-guard.ts", "tests/production-go-live-controls.behavior.test.ts"],
+    residualGate: "Cross-organization and cross-site denial must be verified in deployed runtime/UAT."
+  },
+  {
+    controlId: "RUNTIME-DOCKER-SMOKE-001",
+    blockerIds: ["OPS-001"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/production-go-live-controls.ts", "docker-compose.yml", "Dockerfile", "tests/production-go-live-controls.behavior.test.ts"],
+    residualGate: "Operations owner must attach fresh-machine Docker run evidence for the target environment."
+  },
+  {
+    controlId: "RUNTIME-GOVERNANCE-PERSISTENCE-001",
+    blockerIds: ["PHASE3A-LIVE-GOVERNANCE-PERSISTENCE"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/production-go-live-controls.ts", "prisma/schema.prisma", "tests/production-go-live-controls.behavior.test.ts"],
+    residualGate: "Live governance tables need migration, backup and append-only audit evidence before production."
   }
 ];
 

@@ -251,10 +251,12 @@ test("cross-platform sync workflow is pinned and documented", () => {
   assert.match(read("tsconfig.check.json"), /tests\/persistent-transaction\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/runtime-hardening\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /tests\/production-control-contracts\.behavior\.test\.ts/);
+  assert.match(read("tsconfig.check.json"), /tests\/production-go-live-controls\.behavior\.test\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/a5-output-qa\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/data-retention\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/operations-readiness\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/password-security\.ts/);
+  assert.match(read("tsconfig.check.json"), /lib\/production-go-live-controls\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/runtime-hardening\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-ledger\.ts/);
   assert.match(read("tsconfig.check.json"), /lib\/audit-storage-contract\.ts/);
