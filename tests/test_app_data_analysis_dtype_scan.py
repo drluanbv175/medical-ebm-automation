@@ -36,6 +36,44 @@ def _source() -> str:
     return APP_PATH.read_text(encoding="utf-8")
 
 
+def _load_scan_pii():
+    """Exec chỉ phần ĐỊNH NGHĨA (import/hằng số/hàm) của app_data_analysis.py, dừng TRƯỚC
+    khối UI top-level (`# ─── SIDEBAR ───`) vốn cần Streamlit script context thật (tham chiếu
+    `df`/`uploaded` ở top-level) nên không import trực tiếp được trong pytest. `scan_pii` và
+    `PII_VALUE_PATTERNS` đều được định nghĩa trước mốc đó nên vẫn lấy được hàm THẬT (không
+    phải bản chép lại) để kiểm hành vi chống hồi quy NFD Unicode."""
+    src = _source()
+    marker = "# ─────────────────────────── SIDEBAR ────────────────────────────"
+    assert marker in src, "Mốc SIDEBAR không còn — cần cập nhật điểm cắt exec cho test này"
+    head = src.split(marker, 1)[0]
+    ns: dict = {"__name__": "app_data_analysis_defs_only", "__file__": str(APP_PATH)}
+    exec(compile(head, str(APP_PATH), "exec"), ns)  # noqa: S102 - test nội bộ, nguồn tin cậy
+    return ns["scan_pii"]
+
+
+def test_scan_pii_catches_vietnamese_name_in_nfd_unicode_form():
+    """Hồi quy: mẫu 'Họ tên VN' trong PII_VALUE_PATTERNS liệt kê chữ cái có dấu ở dạng tổ hợp
+    sẵn (NFC); dữ liệu NFD (chữ nền + dấu rời — vd xuất từ một số phần mềm HIS/Excel trên
+    macOS) trước bản vá khớp trượt hoàn toàn, khiến scan_pii() báo "sạch" dù cột còn PII thật.
+    Đây là công cụ PHÂN TÍCH THỐNG KÊ THẬT (mở qua "Mở Phân tích Thống kê.command")."""
+    import unicodedata
+
+    import pandas as pd
+
+    scan_pii = _load_scan_pii()
+    name_nfc = "Nguyễn Văn An"
+    name_nfd = unicodedata.normalize("NFD", name_nfc)
+
+    df_nfc = pd.DataFrame({"ghi_chu": [f"Bệnh nhân {name_nfc} tái khám"]})
+    df_nfd = pd.DataFrame({"ghi_chu": [f"Bệnh nhân {name_nfd} tái khám"]})
+
+    issues_nfc = scan_pii(df_nfc)
+    issues_nfd = scan_pii(df_nfd)
+
+    assert any("Họ tên VN" in msg for msg in issues_nfc)
+    assert any("Họ tên VN" in msg for msg in issues_nfd)
+
+
 def test_no_bare_object_select_dtypes_regression():
     """Chặn hồi quy: không còn `select_dtypes(include="object")` hay
     `select_dtypes(["object","category"])`/`select_dtypes(include=["object","str"])`

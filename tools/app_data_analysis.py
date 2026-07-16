@@ -4,6 +4,7 @@ Chạy: streamlit run tools/app_data_analysis.py
 """
 import io
 import json
+import unicodedata
 import warnings
 from pathlib import Path
 
@@ -45,6 +46,10 @@ def scan_pii(df):
             issues.append(f"Tên cột nghi PII: **{col}**")
     for col in text_like_columns(df):
         sample = df[col].dropna().astype(str).head(50)
+        # Chuẩn hóa NFC trước khi so khớp: mẫu "Họ tên VN" liệt kê chữ cái tiếng Việt ở dạng
+        # tổ hợp sẵn (NFC); dữ liệu NFD (chữ nền + dấu rời — vd xuất từ một số phần mềm HIS/
+        # Excel trên macOS) khớp trượt hoàn toàn, khiến scan_pii() báo "sạch" dù còn PII thật.
+        sample = sample.map(lambda s: unicodedata.normalize("NFC", s))
         for pat, label in PII_VALUE_PATTERNS:
             if sample.str.contains(pat, regex=True).any():
                 issues.append(f"Cột **{col}**: phát hiện dạng {label}")

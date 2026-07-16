@@ -26,6 +26,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -1022,9 +1023,13 @@ def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_c
         warnings.append("R1 ⚠ Không tìm được effect size từ abstracts — bác sĩ cần tự tìm")
 
     # R2 — PII
+    # Chuẩn hóa NFC trước khi so khớp: pii_keywords liệt kê ở dạng tổ hợp sẵn (NFC); artifact
+    # ở dạng NFD (chữ nền + dấu rời) khớp trượt hoàn toàn, để lọt PII qua guardrail G1 mà
+    # không báo lỗi.
+    artifact_normalized = unicodedata.normalize("NFC", artifact).lower()
     pii_keywords = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd"]
     for p in pii_keywords:
-        if p in artifact.lower():
+        if p in artifact_normalized:
             errors.append(f"R2 🔴 PII phát hiện: '{p}'")
             break
     else:

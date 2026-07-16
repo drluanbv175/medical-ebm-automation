@@ -5,6 +5,8 @@ pipeline với LLM stub · disclaimer · lưới an toàn 2 lớp.
 """
 from __future__ import annotations
 
+import unicodedata
+
 import pytest
 
 from app.integrations.ambient_scribe import (
@@ -39,6 +41,21 @@ def test_scrub_pii_name_by_cue():
     assert "Nguyễn Văn An" not in clean
     assert "[ĐÃ ẨN]" in clean
     assert "đau đầu" in clean
+
+
+def test_scrub_pii_catches_name_in_nfd_unicode_form():
+    """Hồi quy: transcript dán từ macOS dictation/Notes có thể ở dạng NFD (chữ cái nền +
+    dấu tổ hợp rời) thay vì NFC (tổ hợp sẵn) mà _NAME_CUE/_PII_PATTERNS liệt kê. Trước bản vá,
+    scrub_pii() "mù" hoàn toàn với input NFD — tên bệnh nhân thật lọt nguyên vẹn vào prompt gửi
+    LLM ngoài (0 lần ẩn, không lỗi/cảnh báo)."""
+    raw_nfc = "Bệnh nhân tên Nguyễn Văn An, nam, than đau đầu."
+    raw_nfd = unicodedata.normalize("NFD", raw_nfc)
+    clean_nfc, n_nfc = scrub_pii(raw_nfc)
+    clean_nfd, n_nfd = scrub_pii(raw_nfd)
+    assert n_nfc >= 1 and n_nfd >= 1
+    assert "Nguyễn Văn An" not in clean_nfc
+    assert "Nguyễn Văn An" not in unicodedata.normalize("NFC", clean_nfd)
+    assert "[ĐÃ ẨN]" in clean_nfd
 
 
 def test_scrub_pii_keeps_clinical_numbers():

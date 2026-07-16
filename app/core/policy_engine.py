@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Mapping, Optional
 
@@ -37,7 +38,11 @@ class PolicyDecision:
 
 
 def contains_pii_text(text: str) -> bool:
-    return any(pattern.search(text or "") for pattern in (_EMAIL, _PHONE, _MRN, _DOB))
+    # Chuẩn hóa NFC trước khi so khớp: _MRN/_DOB liệt kê nhãn tiếng Việt có dấu ở dạng tổ hợp
+    # sẵn (NFC); văn bản NFD (chữ nền + dấu rời) khớp trượt và lọt qua mọi cổng dùng hàm này
+    # (export_policy.classify_export_file, shadow-pilot/red-team scan...) mà không báo lỗi.
+    normalized = unicodedata.normalize("NFC", text or "")
+    return any(pattern.search(normalized) for pattern in (_EMAIL, _PHONE, _MRN, _DOB))
 
 
 def _context_text(context: Mapping[str, Any]) -> str:

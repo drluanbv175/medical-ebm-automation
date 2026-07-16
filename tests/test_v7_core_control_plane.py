@@ -1,4 +1,5 @@
 import json
+import unicodedata
 
 import pytest
 
@@ -6,7 +7,7 @@ from app.core.approval_service import ApprovalCenter
 from app.core.audit_logger import AuditLogger
 from app.core.feature_flags import DEFAULT_FEATURE_FLAGS
 from app.core.idempotency import IdempotencyLedger, make_idempotency_key
-from app.core.policy_engine import PolicyEngine
+from app.core.policy_engine import PolicyEngine, contains_pii_text
 from app.core.release_manager import ReleaseManager
 from app.core.run_packet import Lane, new_run_packet
 from app.core.run_state_machine import InvalidTransition, RunState, transition
@@ -50,6 +51,17 @@ def test_policy_engine_blocks_pii_missing_trace_and_unapproved_release():
     assert "EBM-V7-P004" in codes
     assert "EBM-V7-P006" in codes
     assert "EBM-V7-P007" in codes
+
+
+def test_contains_pii_text_catches_nfd_unicode_form():
+    """Hồi quy: _MRN/_DOB liệt kê nhãn tiếng Việt ('hồ sơ', 'ngày sinh') ở dạng NFC; văn bản
+    NFD (chữ nền + dấu tổ hợp rời, vd dán từ macOS) trước bản vá khớp trượt hoàn toàn — bất kỳ
+    cổng nào dùng contains_pii_text() (export_policy.classify_export_file, shadow-pilot/
+    red-team scan...) sẽ không phát hiện PII dạng này."""
+    marker_nfc = "số hồ sơ: BN-000123, ngày sinh: 01/02/1980"
+    marker_nfd = unicodedata.normalize("NFD", marker_nfc)
+    assert contains_pii_text(marker_nfc) is True
+    assert contains_pii_text(marker_nfd) is True
 
 
 def test_audit_logger_scrubs_pii_like_text(tmp_path):

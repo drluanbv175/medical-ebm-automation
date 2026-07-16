@@ -9,6 +9,7 @@ tự ra quyết định lâm sàng; nó chỉ chặn phát hành thiếu kiểm 
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Any, Mapping, Sequence
 
@@ -86,8 +87,12 @@ def _walk_strings(value: Any) -> list[str]:
 def _find_pii(payload: Mapping[str, Any]) -> list[str]:
     hits: list[str] = []
     for text in _walk_strings(payload):
+        # Chuẩn hóa NFC trước khi so khớp: nhãn "số hồ sơ" trong PII_PATTERNS liệt kê ở
+        # dạng tổ hợp sẵn (NFC); văn bản NFD (chữ nền + dấu rời, vd dán từ macOS) khớp
+        # trượt và lọt qua cổng Clinical V2 Apply Gate mà không báo lỗi/cảnh báo gì.
+        normalized = unicodedata.normalize("NFC", text)
         for pattern in PII_PATTERNS:
-            if pattern.search(text):
+            if pattern.search(normalized):
                 hits.append(text[:120])
                 break
     return hits

@@ -4,6 +4,7 @@ import copy
 import json
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 from app.core.clinical_output_validator import validate_clinical_output_packet
@@ -143,6 +144,20 @@ def test_red_flag_blocks_actionable_release():
 def test_pii_blocks_actionable_release():
     packet = _approved_packet()
     packet["recommendation_summary"] += " SĐT 0912345678."
+
+    result = validate_clinical_output_packet(packet)
+
+    assert result.actionable_allowed is False
+    assert "pii_detected" in result.blockers
+
+
+def test_pii_blocks_actionable_release_even_in_nfd_unicode_form():
+    """Hồi quy: nhãn 'số hồ sơ' trong PII_PATTERNS liệt kê ở dạng NFC (tổ hợp sẵn); văn bản
+    NFD (chữ nền + dấu rời, vd dán từ macOS) trước bản vá khớp trượt hoàn toàn, cho phép
+    một gói có PII lọt qua Clinical V2 Apply Gate mà không bị chặn."""
+    packet = _approved_packet()
+    marker_nfc = " Ghi chú: số hồ sơ ABC123."
+    packet["recommendation_summary"] += unicodedata.normalize("NFD", marker_nfc)
 
     result = validate_clinical_output_packet(packet)
 

@@ -6,6 +6,7 @@ Không có API call, không lưu PII.
 from __future__ import annotations
 
 import re
+import unicodedata
 
 # ─── PII patterns (Vietnamese context) ────────────────────────────────────────
 
@@ -62,7 +63,9 @@ class DataBoundary:
         Trả (found: bool, reason: str).
         Chuyển dict → str để scan pattern.
         """
-        text = self._to_scannable(output)
+        # Chuẩn hóa NFC: _PII_PATTERNS "Họ tên VN" liệt kê chữ cái có dấu ở dạng tổ hợp sẵn
+        # (NFC) — văn bản NFD (chữ nền + dấu rời) khớp trượt hoàn toàn nếu không chuẩn hóa.
+        text = unicodedata.normalize("NFC", self._to_scannable(output))
 
         # Kiểm tra sentinel markers trước (fixtures)
         for sentinel in _PII_SENTINELS:
@@ -78,7 +81,7 @@ class DataBoundary:
 
     def scrub_pii(self, text: str) -> str:
         """Thay thế PII bằng [REDACTED] trước khi log."""
-        scrubbed = text
+        scrubbed = unicodedata.normalize("NFC", text)
         for pattern in _PII_PATTERNS:
             scrubbed = pattern.sub("[REDACTED]", scrubbed)
         for sentinel in _PII_SENTINELS:

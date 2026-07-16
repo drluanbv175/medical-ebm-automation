@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import os
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Callable, List, Optional, Tuple
 
@@ -98,7 +99,12 @@ def scrub_pii(text: str) -> Tuple[str, int]:
     có thể lọt; địa chỉ chữ; tỷ số/đơn vị giống ngày. Đầu ra SOAP vẫn dùng placeholder + người duyệt.
     """
     n = 0
-    out = text
+    # Chuẩn hóa NFC TRƯỚC khi so khớp: các regex ký tự tiếng Việt bên dưới liệt kê chữ cái
+    # có dấu ở dạng TỔ HỢP SẴN (NFC). Văn bản dán từ một số nguồn (vd dictation/Notes trên
+    # macOS) có thể ở dạng NFD (chữ cái nền + dấu tổ hợp rời) — cùng hiển thị nhưng khác
+    # chuỗi mã, khiến _NAME_CUE/_PII_PATTERNS "mù" hoàn toàn (0 lần ẩn, không lỗi/cảnh báo)
+    # và để lọt tên bệnh nhân thật ra prompt gửi LLM bên ngoài.
+    out = unicodedata.normalize("NFC", text)
 
     # Tên riêng theo ngữ cảnh: giữ lại từ khóa dẫn, chỉ ẩn phần tên.
     def _mask_name(m: re.Match) -> str:

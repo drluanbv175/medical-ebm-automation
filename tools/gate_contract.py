@@ -29,6 +29,7 @@ import hmac
 import json
 import os
 import sys
+import unicodedata
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Tuple
 
@@ -269,9 +270,14 @@ REAL_STUDY_DENYLIST: frozenset = frozenset({
 
 def is_real_study_denylisted(study: str) -> bool:
     """True nếu tên đề tài nằm trong danh sách đề tài THẬT bị chặn cứng khỏi mọi
-    cơ chế admin-bypass synthetic — kiểm tra KHÔNG phân biệt hoa/thường và bỏ
-    khoảng trắng đầu/cuối để tránh né tránh bằng biến thể chữ hoa/khoảng trắng."""
-    return (study or "").strip().casefold() in {s.casefold() for s in REAL_STUDY_DENYLIST}
+    cơ chế admin-bypass synthetic — kiểm tra KHÔNG phân biệt hoa/thường, bỏ
+    khoảng trắng đầu/cuối, và CHUẨN HÓA NFC trước khi so khớp để tránh né tránh
+    bằng biến thể chữ hoa/khoảng trắng/dạng tổ hợp Unicode (NFD vs NFC — cùng
+    hiển thị, khác chuỗi mã). Phòng thủ theo chiều sâu: REAL_STUDY_DENYLIST hôm
+    nay chỉ chứa slug thuần ASCII nên .casefold() một mình đã đủ, nhưng nếu sau
+    này có mục thêm dấu tiếng Việt thì so khớp vẫn đúng ngay từ đầu."""
+    needle = unicodedata.normalize("NFC", (study or "").strip()).casefold()
+    return needle in {unicodedata.normalize("NFC", s).casefold() for s in REAL_STUDY_DENYLIST}
 
 
 def resolve_synthetic_study_dir(study: str, repo_root: Path) -> Tuple[Optional[Path], Optional[str]]:
