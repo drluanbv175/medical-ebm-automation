@@ -105,6 +105,17 @@ class SourceAuthorityRegistry:
     hard_stop_codes: list[str]
 
 
+@dataclass(frozen=True)
+class EvidenceCurrencyPolicy:
+    kind: str
+    status: str
+    recency_windows_days: dict[str, int]
+    mandatory_checks: list[str]
+    freshness_labels: dict[str, str]
+    hard_stop_codes: list[str]
+    doctor_review_prompts: list[str]
+
+
 def build_agent_contract() -> list[AgentGateContract]:
     """Hợp đồng vận hành tối thiểu cho mỗi lượt cập nhật chứng cứ lâm sàng."""
 
@@ -259,10 +270,14 @@ def build_release_packet_contract() -> ReleasePacketContract:
     for gate in gates:
         artifacts.extend(gate.required_artifacts)
     artifacts.extend([
+        "evidence_currency_audit",
         "international_standard_profile",
+        "retraction_withdrawal_check",
         "source_authority_registry",
         "source_authority_tiering_rationale",
+        "search_date_log",
         "standard_selection_rationale",
+        "superseded_guideline_check",
     ])
     return ReleasePacketContract(
         kind="clinical_evidence_update_release_packet_contract",
@@ -283,10 +298,15 @@ def build_release_packet_contract() -> ReleasePacketContract:
             "SOURCE_NOT_AUTHORITY_TIERED",
             "STRICT_SOURCE_GATE_FAILED",
             "DISCOVERY_SOURCE_USED_AS_RECORD",
+            "SEARCH_DATE_MISSING",
+            "CLAIMED_LATEST_WITHOUT_FRESH_SEARCH",
             "GRADE_SELF_ASSIGNED",
             "WRONG_APPRAISAL_TOOL",
             "INTERNATIONAL_STANDARD_PROFILE_MISSING",
             "IDENTIFIER_CROSSCHECK_MISSING",
+            "RETRACTION_STATUS_UNKNOWN",
+            "SOURCE_RETRACTED_OR_WITHDRAWN",
+            "SUPERSEDED_GUIDELINE_USED_AS_CURRENT",
             "RED_FLAG_OR_CONTRAINDICATION_MISSING",
             "DRUG_SAFETY_SCAN_REQUIRED",
             "HUB_SYNC_OR_QUARANTINE_FAILED",
@@ -499,6 +519,58 @@ def build_source_authority_registry() -> SourceAuthorityRegistry:
             "REGULATORY_SAFETY_SOURCE_MISSING",
             "IDENTIFIER_CROSSCHECK_MISSING",
             "VIETNAM_OFFICIAL_SOURCE_OR_LOCAL_LABEL_MISSING",
+        ],
+    )
+
+
+def build_evidence_currency_policy() -> EvidenceCurrencyPolicy:
+    """Chính sách độ mới, bản thay thế và rút bài cho cập nhật chứng cứ."""
+
+    return EvidenceCurrencyPolicy(
+        kind="clinical_ebm_evidence_currency_policy",
+        status="CURRENCY_CONTROLLED_WITH_RETRACTION_CHECK",
+        recency_windows_days={
+            "drug_safety_or_regulatory_alert": 7,
+            "living_guideline_or_rapid_update": 14,
+            "clinical_guideline_or_society_statement": 90,
+            "systematic_review_or_meta_analysis": 180,
+            "practice_changing_trial_or_observational_study": 365,
+            "background_reference_only": 730,
+        },
+        mandatory_checks=[
+            "Record search date and verifier run date for every update package",
+            "Run verify_dashboard.py --online --strict-sources before release",
+            "Check official guideline page for superseded or living-update status",
+            "Check PubMed/Europe PMC/Crossref metadata for PMID/DOI match",
+            "Check retraction, withdrawal, expression-of-concern or corrigendum status",
+            "Check regulatory safety pages for new warnings when drugs are involved",
+            "Label PARTIAL when any required source family cannot be checked",
+            "Do not say latest/current/up-to-date without a fresh online check",
+        ],
+        freshness_labels={
+            "fresh": "Within the policy window and online source gate passed",
+            "stale_refresh_required": "Outside the policy window; rerun source search",
+            "partial": "A required source family could not be checked",
+            "blocked": "Retracted, withdrawn, superseded or unverified source",
+        },
+        hard_stop_codes=[
+            "SEARCH_DATE_MISSING",
+            "CLAIMED_LATEST_WITHOUT_FRESH_SEARCH",
+            "ONLINE_STRICT_SOURCE_GATE_MISSING",
+            "RETRACTION_STATUS_UNKNOWN",
+            "SOURCE_RETRACTED_OR_WITHDRAWN",
+            "EXPRESSION_OF_CONCERN_UNRESOLVED",
+            "SUPERSEDED_GUIDELINE_USED_AS_CURRENT",
+            "LIVING_GUIDELINE_STATUS_UNCHECKED",
+            "SAFETY_ALERT_WINDOW_STALE",
+            "CURRENCY_POLICY_MISSING",
+        ],
+        doctor_review_prompts=[
+            "Nguồn chính có còn là phiên bản hiện hành tại ngày tìm kiếm không?",
+            "Có cảnh báo an toàn thuốc mới hơn làm thay đổi quyết định không?",
+            "Có guideline cùng chủ đề nhưng khuyến cáo khác cần nêu cả hai chiều không?",
+            "Có bài bị rút/chỉnh sửa/biểu hiện quan ngại làm giảm tin cậy không?",
+            "Có cần đánh dấu PARTIAL hoặc [CẦN XÁC NHẬN TẠI ĐƠN VỊ] không?",
         ],
     )
 
@@ -964,6 +1036,69 @@ def _check_source_authority_registry() -> StandardCheck:
     )
 
 
+def _check_evidence_currency_policy() -> StandardCheck:
+    policy = build_evidence_currency_policy()
+    text = json.dumps(asdict(policy), ensure_ascii=False)
+    required_tokens = [
+        "drug_safety_or_regulatory_alert",
+        "living_guideline_or_rapid_update",
+        "clinical_guideline_or_society_statement",
+        "systematic_review_or_meta_analysis",
+        "practice_changing_trial_or_observational_study",
+        "verify_dashboard.py --online --strict-sources",
+        "superseded",
+        "living-update",
+        "PubMed/Europe PMC/Crossref",
+        "retraction",
+        "withdrawal",
+        "expression-of-concern",
+        "PARTIAL",
+        "latest/current/up-to-date",
+        "SEARCH_DATE_MISSING",
+        "CLAIMED_LATEST_WITHOUT_FRESH_SEARCH",
+        "ONLINE_STRICT_SOURCE_GATE_MISSING",
+        "RETRACTION_STATUS_UNKNOWN",
+        "SOURCE_RETRACTED_OR_WITHDRAWN",
+        "SUPERSEDED_GUIDELINE_USED_AS_CURRENT",
+        "SAFETY_ALERT_WINDOW_STALE",
+        "CURRENCY_POLICY_MISSING",
+    ]
+    missing = [
+        f"evidence_currency_policy missing token: {token}"
+        for token in required_tokens
+        if token not in text
+    ]
+    if policy.status != "CURRENCY_CONTROLLED_WITH_RETRACTION_CHECK":
+        missing.append(f"unexpected policy status: {policy.status}")
+    if policy.recency_windows_days["drug_safety_or_regulatory_alert"] > 7:
+        missing.append("drug safety recency window must be <= 7 days")
+    if policy.recency_windows_days["clinical_guideline_or_society_statement"] > 90:
+        missing.append("guideline recency window must be <= 90 days")
+    if "blocked" not in policy.freshness_labels:
+        missing.append("missing blocked freshness label")
+    return StandardCheck(
+        check_id="EAS9",
+        title="Chính sách độ mới, bản thay thế và rút bài",
+        status=FAIL if missing else PASS,
+        evidence=[
+            "tools/verify_clinical_evidence_agent_standards.py:EvidenceCurrencyPolicy",
+            _rel(SKILL_ROOT / "SKILL.md"),
+            _rel(SKILL_ROOT / "references" / "01-nguon-va-xac-minh.md"),
+            _rel(AGENTS / "_CONNECTOR-CHUNG-CU.md"),
+            _rel(AGENTS / "_NGUON-GUIDELINE-TU-DONG.md"),
+        ],
+        proves=(
+            "Agent có policy bắt buộc ghi ngày tìm kiếm, kiểm online strict source, kiểm rút bài, "
+            "bản guideline thay thế/living update và nhãn PARTIAL khi thiếu nguồn."
+        ),
+        limitation=(
+            "Policy này không tự truy cập mạng; nó khóa hợp đồng để dashboard thật phải chạy online gate "
+            "ngay trước khi phát hành."
+        ),
+        missing=missing,
+    )
+
+
 def evaluate_all(generated_at: str | None = None) -> dict:
     checks = [
         _check_agents(),
@@ -974,11 +1109,13 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         _check_doctor_gate_boundaries(),
         _check_international_standard_profile(),
         _check_source_authority_registry(),
+        _check_evidence_currency_policy(),
     ]
     agent_contract = build_agent_contract()
     release_packet = build_release_packet_contract()
     international_profile = build_international_standard_profile()
     source_registry = build_source_authority_registry()
+    currency_policy = build_evidence_currency_policy()
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
     if fail_count:
@@ -1008,6 +1145,8 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         "international_standard_profile": asdict(international_profile),
         "source_authority_registry_status": source_registry.status,
         "source_authority_registry": asdict(source_registry),
+        "evidence_currency_policy_status": currency_policy.status,
+        "evidence_currency_policy": asdict(currency_policy),
         "checks": [asdict(check) for check in checks],
         "disclaimer": DISCLAIMER,
     }
@@ -1030,6 +1169,7 @@ def markdown_report(report: dict) -> str:
         f"- Release packet decision: `{report['release_packet_contract']['decision']}`",
         f"- International standard profile: `{report['international_standard_profile_status']}`",
         f"- Source authority registry: `{report['source_authority_registry_status']}`",
+        f"- Evidence currency policy: `{report['evidence_currency_policy_status']}`",
         "",
         "| Check | Status | Proves | Limitation | Missing |",
         "|---|---|---|---|---|",
@@ -1098,6 +1238,20 @@ def markdown_report(report: dict) -> str:
     ])
     for code in registry["hard_stop_codes"]:
         lines.append(f"| `{code}` |")
+    currency = report["evidence_currency_policy"]
+    lines.extend([
+        "",
+        "## Evidence Currency Policy",
+        "",
+        f"- Status: `{currency['status']}`",
+        f"- Recency windows: `{', '.join(currency['recency_windows_days'])}`",
+        f"- Mandatory checks: `{len(currency['mandatory_checks'])}`",
+        "",
+        "| Currency Hard Stop |",
+        "|---|",
+    ])
+    for code in currency["hard_stop_codes"]:
+        lines.append(f"| `{code}` |")
     lines.extend([
         "",
         "## Agent Gate Contract",
@@ -1148,6 +1302,7 @@ def main(argv: list[str] | None = None) -> int:
         print("release_packet_decision=" + report["release_packet_contract"]["decision"])
         print("international_standard_profile_status=" + report["international_standard_profile_status"])
         print("source_authority_registry_status=" + report["source_authority_registry_status"])
+        print("evidence_currency_policy_status=" + report["evidence_currency_policy_status"])
         print("Cần bác sĩ kiểm chứng.")
     return 0 if report["fail_count"] == 0 else 1
 
