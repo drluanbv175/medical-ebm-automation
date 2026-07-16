@@ -38,6 +38,7 @@ import argparse
 import json
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -45,6 +46,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gate_contract as GC  # noqa: E402
 
 from app.utils.console import configure_unicode_console  # noqa: E402
+from runtime.approval_ledger import ApprovalLedger, LedgerLockInvalidated  # noqa: E402
 
 _REAL_PROGRESS_FLAGS = ("irb_approved", "sap_lock_date", "data_lock_date",
                         "results_final", "integrity_signed")
@@ -97,12 +99,43 @@ def main() -> int:
     study_dir = real_dir
     meta_path = study_dir / "study_meta.json"
 
+    # VÁ 2026-07-16 (red-team vòng 2, CONFIRMED bằng script thật): trước bản vá
+    # này, đọc→kiểm→ghi study_meta.json KHÔNG khóa — một tiến trình khác ghi
+    # irb_approved=True GIỮA LÚC script đang xử lý có thể bị ghi đè mất trắng
+    # (và chính _REAL_PROGRESS_FLAGS/_has_real_ledger_progress ở dưới cũng đọc
+    # từ snapshot cũ nên không chặn được). Khóa file độc quyền quanh TRỌN chu
+    # trình đọc→kiểm→ghi bằng CHÍNH primitive dùng cho approval_ledger.json
+    # (ApprovalLedger._exclusive_file_lock — cross-platform, đã có test riêng).
+    lock_path = meta_path.with_suffix(meta_path.suffix + ".lock")
+    try:
+        with ApprovalLedger._exclusive_file_lock(lock_path) as fd:
+            return _do_mark(study_dir, meta_path, args, fd, lock_path)
+    except (TimeoutError, LedgerLockInvalidated) as exc:
+        print(f"✗ TỪ CHỐI (khóa study_meta.json): {exc}")
+        print("   Đây là lỗi tạm thời — chạy lại chính xác lệnh này.")
+        return 1
+
+
+def _write_meta_locked(meta_path: Path, meta: dict, fd, lock_path: Path) -> None:
+    """Ghi study_meta.json — xác nhận LẠI khóa còn hợp lệ NGAY TRƯỚC khi ghi
+    (không chỉ lúc acquire), khớp mẫu vá ApprovalLedger.locked_update()
+    (2026-07-16, red-team vòng 2). Nếu bị vô hiệu hóa giữa chừng (file .lock
+    bị xóa/thay), TỪ CHỐI ghi thay vì ghi đè âm thầm."""
+    if not ApprovalLedger._lock_identity_matches(fd, lock_path):
+        raise LedgerLockInvalidated(
+            f"Khóa study_meta.json đã bị VÔ HIỆU HÓA giữa chừng (file .lock bị xóa/thay khi "
+            f"tool đang chạy) — TỪ CHỐI ghi để tránh mất cập nhật: {meta_path}. Chạy lại lệnh."
+        )
+    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _do_mark(study_dir: Path, meta_path: Path, args, fd, lock_path: Path) -> int:
     meta = GC.load_study_meta(study_dir)
 
     if args.unmark:
         if meta.get("study_kind") == "synthetic_test":
             meta.pop("study_kind", None)
-            meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+            _write_meta_locked(meta_path, meta, fd, lock_path)
             print(f"✅ Đã gỡ cờ synthetic_test khỏi '{args.study}'.")
             print("   tools/approve_gate_synthetic_admin.py sẽ KHÔNG còn hoạt động trên đề tài này.")
         else:
@@ -159,11 +192,22 @@ def main() -> int:
         r"bệnh\s*xá",
         re.IGNORECASE,
     )
+    # VÁ 2026-07-16 (red-team vòng 2, CONFIRMED end-to-end — tự duyệt được cả
+    # G2+G8 bằng title dạng NFD): regex trên so khớp CODEPOINT THÔ, còn Unicode
+    # cho phép CÙNG một chữ hiển thị giống hệt nhau ("bệnh viện") được LƯU bằng
+    # 2 dạng byte khác nhau — NFC (dấu đi liền ký tự, 1 codepoint/chữ) và NFD
+    # (dấu tổ hợp TÁCH RỜI, 2+ codepoint/chữ). macOS (môi trường dev dự án) hay
+    # sinh NFD qua một số đường nhập liệu — KHÔNG CẦN Ý ĐỒ XẤU vẫn có thể tạo ra
+    # title NFD né được regex trong khi mắt người đọc thấy giống hệt "Bệnh viện
+    # Quân y 175". Chuẩn hóa về NFC TRƯỚC khi so khớp — quy tắc chung khi so
+    # khớp chuỗi tiếng Việt/có dấu, không riêng gì heuristic này.
     org_lines = meta.get("org_lines")
-    has_org_lines = isinstance(org_lines, list) and any(str(x).strip() for x in org_lines)
+    has_org_lines = isinstance(org_lines, list) and any(
+        unicodedata.normalize("NFC", str(x)).strip() for x in org_lines
+    )
     title_hit = None
     for field in ("title", "topic"):
-        val = str(meta.get(field) or "")
+        val = unicodedata.normalize("NFC", str(meta.get(field) or ""))
         if _REAL_INSTITUTION_PATTERN.search(val):
             title_hit = (field, val)
             break
@@ -188,7 +232,7 @@ def main() -> int:
         "cứu người thật. Cờ này mở khóa tools/approve_gate_synthetic_admin.py cho đề tài này "
         "(admin có thể tự duyệt MỌI cổng kể cả G2/G8). Gỡ bằng --unmark nếu đặt nhầm."
     )
-    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    _write_meta_locked(meta_path, meta, fd, lock_path)
     print(f"✅ Đã đánh dấu '{args.study}' là study_kind=synthetic_test.")
     print(f"   Ghi vào: {meta_path}")
     print("   ⚠️  tools/approve_gate_synthetic_admin.py giờ có thể duyệt MỌI cổng (kể cả G2/G8)")

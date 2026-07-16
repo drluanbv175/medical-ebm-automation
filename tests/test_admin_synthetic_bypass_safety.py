@@ -456,6 +456,31 @@ def test_mark_allows_study_with_generic_title_and_no_institution_name():
         _rmtree_retry(d)
 
 
+def test_mark_refuses_institution_name_in_nfd_unicode_form():
+    """T25 — hồi quy red-team vòng 2 (CONFIRMED end-to-end trước khi vá: tự
+    duyệt được cả G2+G8 bằng title chứa tên viện thật ở dạng NFD). Regex ban
+    đầu so khớp CODEPOINT THÔ — cùng một chữ "Bệnh viện" hiển thị GIỐNG HỆT
+    nhau nhưng có thể lưu bằng 2 dạng byte khác nhau (NFC: dấu liền ký tự; NFD:
+    dấu tổ hợp tách rời, macOS hay sinh dạng này). Vá bằng unicodedata.normalize
+    NFC trước khi so khớp — test này khóa lại đúng kịch bản đã tái hiện được."""
+    import unicodedata
+    study = "PYTEST-ADMIN-BYPASS-T25"
+    d = _study_dir(study)
+    try:
+        nfc_title = "Khảo sát tại Bệnh viện Quân y 175"
+        nfd_title = unicodedata.normalize("NFD", nfc_title)
+        assert nfc_title != nfd_title, "fixture lỗi: chuỗi này không có gì để NFD hóa khác NFC"
+        (d / "study_meta.json").write_text(
+            json.dumps({"title": nfd_title}, ensure_ascii=False), encoding="utf-8")
+        res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
+        assert res.returncode != 0, "Title dạng NFD né được heuristic — hồi quy lỗ hổng NFD"
+        assert "CƠ SỞ Y TẾ THẬT" in res.stdout
+        meta = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
+        assert meta.get("study_kind") != "synthetic_test"
+    finally:
+        _rmtree_retry(d)
+
+
 def test_admin_approve_refuses_artifact_outside_study_dir(tmp_path, monkeypatch):
     """T21 — --artifacts trỏ ra ngoài thư mục đề tài (vd file của đề tài khác) phải
     bị từ chối (defense-in-depth, tránh hash tài liệu đề tài khác vào ledger synthetic)."""

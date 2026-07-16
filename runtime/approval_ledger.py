@@ -23,6 +23,14 @@ if sys.platform == "win32":
 else:
     import fcntl
 
+
+class LedgerLockInvalidated(RuntimeError):
+    """Raise khi khóa liên-tiến-trình của ApprovalLedger.locked_update() bị vô
+    hiệu hóa giữa chừng (file .lock bị xóa/thay trong lúc đang giữ khóa — xem
+    ApprovalLedger._exclusive_file_lock/_lock_identity_matches). Caller PHẢI
+    bắt exception này (không để traceback thô lộ ra CLI) và báo bác sĩ chạy
+    lại lệnh — đây là lỗi TẠM THỜI/hiếm, không phải lỗi cấu hình."""
+
 # Vá 2026-07-15 (hợp nhất bảng stakeholder — trước đây file này giữ 3 bản sao RIÊNG
 # của tools/gate_contract.py (STAKEHOLDER_ROLE_ALIASES, GATE_REQUIRED_STAKEHOLDERS,
 # GATE_ADDITIONAL_STAKEHOLDERS), và đã LỆCH THẬT 2 lần trong 24 giờ — G4 nới nhận PI
@@ -330,25 +338,54 @@ class ApprovalLedger:
     # duyệt THẬT trong im lặng. locked_update() khóa file độc quyền quanh TRỌN
     # chu trình load→mutate→save để 2 tiến trình tự xếp hàng thay vì chồng nhau.
     @staticmethod
+    def _lock_identity_matches(fd, lock_path: Path) -> bool:
+        """True nếu file descriptor đang giữ VẪN CHÍNH LÀ file tại lock_path lúc
+        này (so (st_dev, st_ino) — mẫu chuẩn chống flock+unlink race). False nếu
+        file đã bị xóa/thay từ dưới chân ta (unlink rồi tạo lại, hoặc xóa hẳn)."""
+        try:
+            on_disk = os.stat(lock_path)
+        except OSError:
+            return False
+        held = os.fstat(fd.fileno())
+        return (on_disk.st_dev, on_disk.st_ino) == (held.st_dev, held.st_ino)
+
+    @staticmethod
     @contextlib.contextmanager
-    def _exclusive_file_lock(lock_path: Path, timeout_s: float = 30.0) -> Iterator[None]:
+    def _exclusive_file_lock(lock_path: Path, timeout_s: float = 30.0):
         """Khóa advisory liên-tiến-trình cross-platform (fcntl trên POSIX,
         msvcrt trên Windows — dự án chạy cả Mac lẫn Windows, xem CLAUDE.md).
+        Yield chính file descriptor đang giữ khóa (KHÔNG phải None) — caller
+        (locked_update) cần fd này để tự xác minh LẠI khóa còn hợp lệ NGAY
+        TRƯỚC lúc ghi (xem lý do dưới).
+
+        VÁ 2026-07-16 (red-team vòng 2, CONFIRMED bằng script thật): bản vá đầu
+        tiên chỉ xác nhận identity NGAY SAU khi acquire — KHÔNG đủ, vì tấn công
+        thật là xóa file `.lock` TRONG LÚC tiến trình đang ở "giữa" khối with
+        (đang làm việc), không phải lúc acquire. Ở thời điểm acquire, mọi thứ
+        VẪN nhất quán; vài trăm ms sau đó file mới bị xóa+tạo lại bởi tiến trình
+        khác (inode mới) — tiến trình khác lấy khóa NGAY trên inode mới đó
+        (hợp lệ theo góc nhìn của chính nó), trong khi tiến trình đầu vẫn tưởng
+        mình đang giữ khóa "cho path đó". Kiểm 1 lần lúc acquire không bắt được
+        trường hợp này. Đây LÀ lý do `_lock_identity_matches` phải được gọi LẠI
+        bởi `locked_update` ngay trước `to_file()` — xem ở đó.
+
         GIỚI HẠN THẬT: chỉ có hiệu lực GIỮA CÁC TIẾN TRÌNH TRÊN CÙNG MỘT MÁY —
         KHÔNG bảo vệ được khi Mac và Windows cùng ghi gần như đồng thời qua
         OneDrive (OneDrive không có khóa file phân tán thật, chỉ đồng bộ
         "last-write-wins" giữa 2 máy) — xem lưu ý concurrent-editing đã biết
         của dự án."""
         lock_path.parent.mkdir(parents=True, exist_ok=True)
+        deadline = time.monotonic() + timeout_s
         fd = open(lock_path, "a+b")
+        acquired = False
         try:
-            deadline = time.monotonic() + timeout_s
             while True:
                 try:
                     if sys.platform == "win32":
                         msvcrt.locking(fd.fileno(), msvcrt.LK_NBLCK, 1)
                     else:
                         fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    acquired = True
                     break
                 except OSError:
                     if time.monotonic() >= deadline:
@@ -357,16 +394,18 @@ class ApprovalLedger:
                             "— có tiến trình khác đang ghi cùng đề tài, thử lại sau."
                         )
                     time.sleep(0.05)
-            yield
+            yield fd
         finally:
-            try:
-                if sys.platform == "win32":
-                    fd.seek(0)
-                    msvcrt.locking(fd.fileno(), msvcrt.LK_UNLCK, 1)
-                else:
-                    fcntl.flock(fd.fileno(), fcntl.LOCK_UN)
-            finally:
-                fd.close()
+            if acquired:
+                try:
+                    if sys.platform == "win32":
+                        fd.seek(0)
+                        msvcrt.locking(fd.fileno(), msvcrt.LK_UNLCK, 1)
+                    else:
+                        fcntl.flock(fd.fileno(), fcntl.LOCK_UN)
+                except OSError:
+                    pass
+            fd.close()
 
     @classmethod
     @contextlib.contextmanager
@@ -377,12 +416,27 @@ class ApprovalLedger:
                 ok, reason = ledger.add_approval(record, created_by_agent=False)
             # to_file() tự động chạy khi thoát khối with — kể cả khi add_approval
             # thất bại (ok=False), ghi lại ĐÚNG trạng thái hiện tại, không mất gì.
-        """
+
+        VÁ 2026-07-16: xác minh LẠI khóa còn hợp lệ (file .lock chưa bị ai
+        xóa/thay từ dưới chân) NGAY TRƯỚC to_file() — không chỉ lúc acquire.
+        Nếu bị vô hiệu hóa giữa chừng (tấn công/nhầm lẫn xóa file .lock trong
+        lúc khối with đang chạy), TỪ CHỐI ghi và raise LedgerLockInvalidated
+        thay vì ghi đè âm thầm lên bản đã bị tiến trình khác cập nhật — biến
+        "mất dữ liệu trong im lặng" thành "thất bại rõ ràng, gọi lại được".
+        Caller (tools/approve_gate.py, tools/approve_gate_synthetic_admin.py)
+        PHẢI bắt exception này (xem ở đó) — không được để traceback thô lộ ra."""
         path = Path(path)
         lock_path = path.with_suffix(path.suffix + ".lock")
-        with cls._exclusive_file_lock(lock_path):
+        with cls._exclusive_file_lock(lock_path) as fd:
             ledger = cls.from_file(path)
             yield ledger
+            if not cls._lock_identity_matches(fd, lock_path):
+                raise LedgerLockInvalidated(
+                    f"Khóa ledger đã bị VÔ HIỆU HÓA giữa chừng (file .lock bị xóa/thay khi "
+                    f"tool đang chạy) — TỪ CHỐI ghi để tránh lost-update: {path}. "
+                    "KHÔNG được xóa file .lock trong khi một lệnh duyệt đang chạy — flock tự "
+                    "nhả khi tiến trình kết thúc, không cần xóa tay. Chạy lại lệnh."
+                )
             ledger.to_file(path)
 
     @classmethod

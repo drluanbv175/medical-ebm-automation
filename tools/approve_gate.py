@@ -61,7 +61,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gate_contract as GC
 
 from app.utils.console import configure_unicode_console
-from runtime.approval_ledger import ApprovalLedger
+from runtime.approval_ledger import ApprovalLedger, LedgerLockInvalidated
 from runtime.schemas import ApprovalDecisionEnum
 
 
@@ -125,18 +125,26 @@ def main() -> int:
     # locked_update() khóa file độc quyền quanh load→mutate→save (thêm 2026-07-15
     # sau red-team đối kháng — vá lost-update race khi 2 tiến trình duyệt gần như
     # đồng thời trên cùng ledger; xem docstring ApprovalLedger.locked_update).
-    with ApprovalLedger.locked_update(ledger_path) as ledger:
-        record = ApprovalLedger.make_human_approval(
-            gate_id=args.gate,
-            reviewer_role=args.reviewer_role,
-            reviewer_ref=args.reviewer_ref,
-            scope=args.scope or f"Duyệt {args.gate} cho đề tài {args.study}",
-            evidence_content=evidence_content,
-            decision=ApprovalDecisionEnum(args.decision),
-            approver_signature=signature,
-            timestamp_utc=timestamp_utc,
-        )
-        ok, reason = ledger.add_approval(record, created_by_agent=False)
+    # Bắt TimeoutError/LedgerLockInvalidated (thêm 2026-07-16, red-team vòng 2) —
+    # đây là lỗi TẠM THỜI/hiếm (tiến trình khác đang giữ khóa, hoặc file .lock bị
+    # xóa/thay giữa chừng), KHÔNG để traceback thô lộ ra — báo rõ để bác sĩ chạy lại.
+    try:
+        with ApprovalLedger.locked_update(ledger_path) as ledger:
+            record = ApprovalLedger.make_human_approval(
+                gate_id=args.gate,
+                reviewer_role=args.reviewer_role,
+                reviewer_ref=args.reviewer_ref,
+                scope=args.scope or f"Duyệt {args.gate} cho đề tài {args.study}",
+                evidence_content=evidence_content,
+                decision=ApprovalDecisionEnum(args.decision),
+                approver_signature=signature,
+                timestamp_utc=timestamp_utc,
+            )
+            ok, reason = ledger.add_approval(record, created_by_agent=False)
+    except (TimeoutError, LedgerLockInvalidated) as exc:
+        print(f"✗ TỪ CHỐI ghi phê duyệt (khóa ledger): {exc}")
+        print("   Đây là lỗi tạm thời — chạy lại chính xác lệnh này.")
+        return 1
     if not ok:
         print(f"✗ TỪ CHỐI ghi phê duyệt: {reason}")
         return 1
