@@ -88,16 +88,29 @@ def _write_clean_citation_artifact(d: Path, study: str) -> None:
     G8/G9 ở trên sẽ bị citation_verification_ok() chặn nhầm (vì artifact tự
     khai "ĐÃ XÁC MINH" nhưng thiếu bằng chứng máy-kiểm), lệch mục tiêu cô lập
     biến của các test đó."""
+    pmids = _g7_seed_pmids(d) or ["12345678"]
+    rows = "\n".join(
+        f"| {i} | test{i} | ✅ khớp | | {pmid} |" for i, pmid in enumerate(pmids, start=1)
+    )
     (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
         "| # | Trích dẫn trong bài | Trạng thái | Ghi chú | PMID/DOI đã xác minh |\n"
         "|---|---|---|---|---|\n"
-        "| 1 | test | ✅ khớp | | 12345678 |\n"
+        f"{rows}\n"
         "DANH SÁCH 🔴 BẮT BUỘC xử lý: KHÔNG CÓ\n"
         "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴\n"
         "Cần bác sĩ kiểm chứng.\n",
         encoding="utf-8",
     )
-    _write_matching_retraction_receipt(d, study, ["12345678"])
+    _write_matching_retraction_receipt(d, study, pmids)
+
+
+def _g7_seed_pmids(d: Path) -> list[str]:
+    try:
+        cp = json.loads((d / "G7_checkpoint.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    values = cp.get("pmids_used_as_seed") or []
+    return [str(item) for item in values if str(item).strip()]
 
 
 def _write_matching_retraction_receipt(
@@ -360,7 +373,7 @@ class TestCitationRetractionReceiptGate:
         d = _study_dir(study)
         try:
             _configure_test_signing_key(tmp_path, monkeypatch)
-            _write_cross_sectional_fixture(d)
+            _write_cross_sectional_fixture(d, pmids=["12345678"])
             self._sign_g8_g9(d, study)
             self._write_verified_artifact(d, study, ["12345678"])
             # CỐ Ý không ghi A12_RETRACTION_RECEIPT.json.
@@ -376,7 +389,7 @@ class TestCitationRetractionReceiptGate:
         d = _study_dir(study)
         try:
             _configure_test_signing_key(tmp_path, monkeypatch)
-            _write_cross_sectional_fixture(d)
+            _write_cross_sectional_fixture(d, pmids=["12345678"])
             self._sign_g8_g9(d, study)
             self._write_verified_artifact(d, study, ["12345678"])
             _write_matching_retraction_receipt(d, study, ["12345678"], all_clean=False)
@@ -392,7 +405,7 @@ class TestCitationRetractionReceiptGate:
         d = _study_dir(study)
         try:
             _configure_test_signing_key(tmp_path, monkeypatch)
-            _write_cross_sectional_fixture(d)
+            _write_cross_sectional_fixture(d, pmids=["12345678"])
             self._sign_g8_g9(d, study)
             self._write_verified_artifact(d, study, ["12345678"])
             _write_matching_retraction_receipt(d, study, ["12345678"])
@@ -410,7 +423,7 @@ class TestCitationRetractionReceiptGate:
         d = _study_dir(study)
         try:
             _configure_test_signing_key(tmp_path, monkeypatch)
-            _write_cross_sectional_fixture(d)
+            _write_cross_sectional_fixture(d, pmids=["12345678"])
             self._sign_g8_g9(d, study)
             self._write_verified_artifact(d, study, ["12345678"])
             (d / "A12_RETRACTION_RECEIPT.json").write_text("{ not valid json", encoding="utf-8")
@@ -427,12 +440,30 @@ class TestCitationRetractionReceiptGate:
         d = _study_dir(study)
         try:
             _configure_test_signing_key(tmp_path, monkeypatch)
-            _write_cross_sectional_fixture(d)
+            _write_cross_sectional_fixture(d, pmids=["12345678", "99999999"])
             self._sign_g8_g9(d, study)
             self._write_verified_artifact(d, study, ["12345678", "99999999"])
             _write_matching_retraction_receipt(d, study, ["12345678"])  # thiếu 99999999
             rc = _run_main(study)
             assert rc == GC.EXIT_BLOCKED
+        finally:
+            _rmtree_retry(d)
+
+    def test_blocks_when_final_g10_document_mentions_pmid_missing_from_receipt(
+            self, tmp_path, monkeypatch):
+        """A12 artifact có thể tự kiểm thiếu một PMID kế thừa từ G7/TLTK cuối.
+        G10 phải chặn theo bản phát hành cuối, không chỉ theo artifact A12."""
+        study = "PYTEST-G10SUB-A12R-T7"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d, pmids=["12345678", "23456789"])
+            self._sign_g8_g9(d, study)
+            self._write_verified_artifact(d, study, ["12345678"])
+            _write_matching_retraction_receipt(d, study, ["12345678"])
+            rc = _run_main(study)
+            assert rc == GC.EXIT_BLOCKED
+            assert "bản G10 cuối" in _read_g10_needs_input(d)["human_message"]
         finally:
             _rmtree_retry(d)
 
@@ -443,9 +474,9 @@ class TestCitationRetractionReceiptGate:
         d = _study_dir(study)
         try:
             _configure_test_signing_key(tmp_path, monkeypatch)
-            _write_cross_sectional_fixture(d)
-            self._sign_g8_g9(d, study)
             pmids = ["12345678", "23456789"]
+            _write_cross_sectional_fixture(d, pmids=pmids)
+            self._sign_g8_g9(d, study)
             self._write_verified_artifact(d, study, pmids)
             _write_matching_retraction_receipt(d, study, pmids)
             rc = _run_main(study)

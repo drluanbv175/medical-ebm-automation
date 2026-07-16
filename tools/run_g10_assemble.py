@@ -1172,6 +1172,22 @@ def _extract_pmids_from_artifact(text: str) -> set:
     return found
 
 
+def _extract_pmids_from_final_document(study: str, out_dir: Path) -> set:
+    """Trích PMID xuất hiện trong bản G10 cuối nếu file đã được assemble().
+
+    G10 gọi citation_verification_ok() SAU khi ghi DE_CUONG_THONG_NHAT_<study>.md,
+    nên đây là lớp đối chiếu phát hành cuối: PMID có mặt trong tài liệu chuẩn bị
+    nộp/nghiệm thu cũng phải có trong receipt máy-kiểm A12.
+    """
+    final_doc = out_dir / f"DE_CUONG_THONG_NHAT_{study}.md"
+    if not final_doc.exists():
+        return set()
+    try:
+        return set(_ARTIFACT_PMID_INLINE_RE.findall(final_doc.read_text(encoding="utf-8")))
+    except OSError:
+        return set()
+
+
 def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
     """Cổng A12 (kiem-chung-trich-dan) — trước 2026-07-15, run_g7_auto.py chỉ IN
     RA một dòng nhắc bác sĩ tự chạy agent kiểm trích dẫn (không gì ép buộc); đề
@@ -1280,17 +1296,14 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
             "artifact A12 nhắc tới PMID chưa có trong receipt máy-kiểm (chưa được "
             "`check_citation_retraction.py` kiểm rút bài thật): " + ", ".join(missing)
         )
-    # LƯU Ý CHƯA VÁ (round audit đối kháng 3, 2026-07-16): đối chiếu ở trên CHỈ soát
-    # PMID mà artifact A12 tự nhắc tới — KHÔNG đối chiếu với PMID thật sự xuất hiện
-    # trong tài liệu lắp ráp cuối (DE_CUONG_THONG_NHAT_<study>.md, mục 16 danh mục
-    # TLTK, dựng độc lập bởi sec_tltk() từ artifact tổng-quan-y-văn/trích-xuất-y-văn
-    # upstream). Một PMID lọt vào bản thảo mà KHÔNG được artifact A12 nhắc tới sẽ
-    # không bị chặn ở đây. Thử vá bằng cách đối chiếu thêm PMID trong body_md nhưng
-    # ĐÃ LÙI LẠI: bibliography lắp ráp tự nhiên chứa nhiều PMID hợp lệ đến từ gate
-    # sớm hơn (đã được vetting ở đó) mà A12 chưa từng có ý định bao phủ — cần bác sĩ/
-    # doctrine quyết định RANH GIỚI đúng (A12 có nên bao trọn cả bibliography kế thừa
-    # hay chỉ trích dẫn MỚI trong thân bài) trước khi khóa cứng thành cổng chặn, để
-    # tránh chặn nhầm một đề tài thật đã vetting đúng ở gate khác.
+    final_doc_pmids = _extract_pmids_from_final_document(study, out_dir)
+    missing_final = sorted(final_doc_pmids - checked_set)
+    if missing_final:
+        return False, (
+            "bản G10 cuối nhắc tới PMID chưa có trong receipt máy-kiểm A12 "
+            "(chưa được `check_citation_retraction.py` kiểm rút bài trước khi phát hành): "
+            + ", ".join(missing_final)
+        )
     return True, ""
 
 
