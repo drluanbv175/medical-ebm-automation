@@ -40,7 +40,7 @@ def test_clinical_evidence_agent_standards_cover_all_required_domains() -> None:
     report = mod.evaluate_all(generated_at=FIXED_NOW)
     rows = {row["check_id"]: row for row in report["checks"]}
 
-    assert set(rows) == {"EAS1", "EAS2", "EAS3", "EAS4", "EAS5", "EAS6", "EAS7"}
+    assert set(rows) == {"EAS1", "EAS2", "EAS3", "EAS4", "EAS5", "EAS6", "EAS7", "EAS8"}
     assert rows["EAS1"]["status"] == "PASS"
     assert rows["EAS2"]["status"] == "PASS"
     assert rows["EAS3"]["status"] == "PASS"
@@ -48,6 +48,7 @@ def test_clinical_evidence_agent_standards_cover_all_required_domains() -> None:
     assert rows["EAS5"]["status"] == "PASS"
     assert rows["EAS6"]["status"] == "HUMAN_GATE"
     assert rows["EAS7"]["status"] == "PASS"
+    assert rows["EAS8"]["status"] == "PASS"
     assert all(not row["missing"] for row in rows.values())
 
 
@@ -65,6 +66,8 @@ def test_clinical_evidence_agent_standards_markdown_keeps_boundaries_visible() -
     assert "Release packet decision: `BLOCKED_UNTIL_DOCTOR_REVIEW`" in markdown
     assert "International Standards Profile" in markdown
     assert "International standard profile: `MAPPED_WITH_DOCTOR_GATE`" in markdown
+    assert "Source Authority Registry" in markdown
+    assert "Source authority registry: `AUTHORITY_TIERED_WITH_CROSSCHECK`" in markdown
     assert "Agent Gate Contract" in markdown
     assert "CEG7 Guardrail cuối và bác sĩ quyết định áp dụng" in markdown
     assert "Cần bác sĩ kiểm chứng" in markdown
@@ -117,11 +120,16 @@ def test_release_packet_contract_blocks_until_doctor_review() -> None:
         "required_commands"
     ]
     assert "international_standard_profile" in packet["minimum_artifacts"]
+    assert "source_authority_registry" in packet["minimum_artifacts"]
+    assert "source_authority_tiering_rationale" in packet["minimum_artifacts"]
     assert "standard_selection_rationale" in packet["minimum_artifacts"]
     assert "PII_DETECTED" in packet["hard_stop_reason_codes"]
     assert "SOURCE_UNVERIFIED" in packet["hard_stop_reason_codes"]
+    assert "SOURCE_NOT_AUTHORITY_TIERED" in packet["hard_stop_reason_codes"]
+    assert "DISCOVERY_SOURCE_USED_AS_RECORD" in packet["hard_stop_reason_codes"]
     assert "WRONG_APPRAISAL_TOOL" in packet["hard_stop_reason_codes"]
     assert "INTERNATIONAL_STANDARD_PROFILE_MISSING" in packet["hard_stop_reason_codes"]
+    assert "IDENTIFIER_CROSSCHECK_MISSING" in packet["hard_stop_reason_codes"]
     assert "FINAL_GUARDRAIL_RED" in packet["hard_stop_reason_codes"]
     assert "DOCTOR_REVIEW_MISSING" in packet["hard_stop_reason_codes"]
     assert any("Không tự áp dụng" in item for item in packet["non_goals"])
@@ -159,3 +167,48 @@ def test_international_standard_profile_maps_core_clinical_ebm_standards() -> No
     ]
     assert "WRONG_APPRAISAL_TOOL" in profile["hard_stop_misuse_codes"]
     assert "SELF_ASSIGNED_GRADE" in profile["hard_stop_misuse_codes"]
+
+
+def test_source_authority_registry_tiers_clinical_sources_and_blocks_misuse() -> None:
+    mod = _load_module()
+    report = mod.evaluate_all(generated_at=FIXED_NOW)
+    registry = report["source_authority_registry"]
+
+    assert report["source_authority_registry_status"] == "AUTHORITY_TIERED_WITH_CROSSCHECK"
+    tier0 = registry["source_of_record_tiers"]["tier_0_guideline_hta_regulatory"]
+    for source in [
+        "Cochrane",
+        "NICE",
+        "USPSTF",
+        "WHO",
+        "CDC",
+        "ESC",
+        "ACC",
+        "AHA",
+        "ADA",
+        "KDIGO",
+        "GOLD",
+        "GINA",
+        "IDSA",
+        "ESCMID",
+        "ASCO",
+        "ESMO",
+        "NCCN",
+        "kcb.vn/phac-do",
+    ]:
+        assert source in tier0
+    safety = registry["safety_sources"]
+    for source in ["openFDA", "DailyMed", "EMA/PRAC", "MHRA Drug Safety Update", "WHO AWaRe"]:
+        assert source in safety
+    assert "PubMed/MEDLINE" in registry["identifier_crosscheck_sources"]
+    assert "Europe PMC" in registry["identifier_crosscheck_sources"]
+    assert "Crossref" in registry["identifier_crosscheck_sources"]
+    assert "Consensus" in registry["discovery_only_sources"]
+    assert "bioRxiv/medRxiv preprint" in registry["discovery_only_sources"]
+    assert any("ChEMBL" in item for item in registry["not_for_clinical_recommendation"])
+    assert any("preprint alone" in item for item in registry["not_for_clinical_recommendation"])
+    assert "DISCOVERY_SOURCE_USED_AS_RECORD" in registry["hard_stop_codes"]
+    assert "PREPRINT_USED_TO_CHANGE_PRACTICE" in registry["hard_stop_codes"]
+    assert "TRIAL_REGISTRY_USED_AS_EFFICACY_RESULT" in registry["hard_stop_codes"]
+    assert "CHEMBL_USED_FOR_CLINICAL_RECOMMENDATION" in registry["hard_stop_codes"]
+    assert "IDENTIFIER_CROSSCHECK_MISSING" in registry["hard_stop_codes"]

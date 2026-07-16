@@ -92,6 +92,19 @@ class InternationalStandardProfile:
     hard_stop_misuse_codes: list[str]
 
 
+@dataclass(frozen=True)
+class SourceAuthorityRegistry:
+    kind: str
+    status: str
+    source_of_record_tiers: dict[str, list[str]]
+    safety_sources: list[str]
+    identifier_crosscheck_sources: list[str]
+    discovery_only_sources: list[str]
+    not_for_clinical_recommendation: list[str]
+    verification_requirements: list[str]
+    hard_stop_codes: list[str]
+
+
 def build_agent_contract() -> list[AgentGateContract]:
     """Hợp đồng vận hành tối thiểu cho mỗi lượt cập nhật chứng cứ lâm sàng."""
 
@@ -247,6 +260,8 @@ def build_release_packet_contract() -> ReleasePacketContract:
         artifacts.extend(gate.required_artifacts)
     artifacts.extend([
         "international_standard_profile",
+        "source_authority_registry",
+        "source_authority_tiering_rationale",
         "standard_selection_rationale",
     ])
     return ReleasePacketContract(
@@ -265,10 +280,13 @@ def build_release_packet_contract() -> ReleasePacketContract:
         hard_stop_reason_codes=[
             "PII_DETECTED",
             "SOURCE_UNVERIFIED",
+            "SOURCE_NOT_AUTHORITY_TIERED",
             "STRICT_SOURCE_GATE_FAILED",
+            "DISCOVERY_SOURCE_USED_AS_RECORD",
             "GRADE_SELF_ASSIGNED",
             "WRONG_APPRAISAL_TOOL",
             "INTERNATIONAL_STANDARD_PROFILE_MISSING",
+            "IDENTIFIER_CROSSCHECK_MISSING",
             "RED_FLAG_OR_CONTRAINDICATION_MISSING",
             "DRUG_SAFETY_SCAN_REQUIRED",
             "HUB_SYNC_OR_QUARANTINE_FAILED",
@@ -366,6 +384,121 @@ def build_international_standard_profile() -> InternationalStandardProfile:
             "EFFECT_SIZE_NOT_SOURCE_TRACEABLE",
             "CONFLICTING_EVIDENCE_NOT_REPORTED",
             "INTERNATIONAL_STANDARD_PROFILE_MISSING",
+        ],
+    )
+
+
+def build_source_authority_registry() -> SourceAuthorityRegistry:
+    """Registry nguồn thẩm quyền dùng để chọn nguồn của record cho cập nhật EBM."""
+
+    return SourceAuthorityRegistry(
+        kind="clinical_ebm_source_authority_registry",
+        status="AUTHORITY_TIERED_WITH_CROSSCHECK",
+        source_of_record_tiers={
+            "tier_0_guideline_hta_regulatory": [
+                "Cochrane",
+                "NICE",
+                "USPSTF",
+                "WHO",
+                "CDC",
+                "ESC",
+                "ACC",
+                "AHA",
+                "ADA",
+                "EASD",
+                "KDIGO",
+                "GOLD",
+                "GINA",
+                "ATS",
+                "ERS",
+                "IDSA",
+                "ESCMID",
+                "EULAR",
+                "ACR",
+                "ACG",
+                "AGA",
+                "AAN",
+                "ASCO",
+                "ESMO",
+                "NCCN",
+                "ACOG",
+                "kcb.vn/phac-do",
+                "moh.gov.vn",
+            ],
+            "tier_0_5_high_trust_journals": [
+                "NEJM",
+                "The Lancet",
+                "JAMA",
+                "BMJ",
+                "Annals of Internal Medicine",
+                "Nature Medicine",
+                "Circulation",
+                "JACC",
+                "Diabetes Care",
+                "Kidney International",
+                "Blood",
+                "Gut",
+                "CHEST",
+            ],
+            "tier_1_peer_reviewed_crosscheck": [
+                "PubMed/MEDLINE",
+                "Europe PMC",
+                "Crossref",
+                "ClinicalTrials.gov results record with published evidence",
+            ],
+        },
+        safety_sources=[
+            "FDA Drug Safety Communications",
+            "openFDA",
+            "DailyMed",
+            "Drugs@FDA",
+            "EMA/PRAC",
+            "MHRA Drug Safety Update",
+            "LactMed",
+            "BNF",
+            "WHO AWaRe",
+            "WHO Essential Medicines List",
+        ],
+        identifier_crosscheck_sources=[
+            "PubMed/MEDLINE",
+            "Europe PMC",
+            "Crossref",
+            "official guideline URL",
+            "official regulatory URL",
+        ],
+        discovery_only_sources=[
+            "Consensus",
+            "TRIP Database free search",
+            "ClinicalTrials.gov registry without results publication",
+            "bioRxiv/medRxiv preprint",
+        ],
+        not_for_clinical_recommendation=[
+            "ChEMBL bioactivity/ADMET data",
+            "trial registry record without peer-reviewed or posted results",
+            "preprint alone",
+            "news media",
+            "advertising or manufacturer content without official regulatory confirmation",
+            "abstract-only data when detailed management is required",
+        ],
+        verification_requirements=[
+            "Each practice-changing item has PMID/DOI or official guideline/regulatory URL",
+            "Title, organization, year/version and target population match the source",
+            "Retraction/withdrawal status checked when a paper is used",
+            "Consensus/discovery sources must be traced back to PMID/DOI before citation",
+            "ClinicalTrials.gov status is labeled; registry alone is not efficacy evidence",
+            "Preprints are labeled not peer reviewed and cannot change practice alone",
+            "Drug safety recommendations use label/regulatory/guideline evidence, not ChEMBL",
+            "Vietnam adaptation cites kcb.vn/moh.gov.vn or is labeled [CẦN XÁC NHẬN TẠI ĐƠN VỊ]",
+        ],
+        hard_stop_codes=[
+            "SOURCE_NOT_AUTHORITY_TIERED",
+            "DISCOVERY_SOURCE_USED_AS_RECORD",
+            "PREPRINT_USED_TO_CHANGE_PRACTICE",
+            "TRIAL_REGISTRY_USED_AS_EFFICACY_RESULT",
+            "CHEMBL_USED_FOR_CLINICAL_RECOMMENDATION",
+            "REGULATORY_SAFETY_SOURCE_MISSING",
+            "IDENTIFIER_CROSSCHECK_MISSING",
+            "VIETNAM_OFFICIAL_SOURCE_OR_LOCAL_LABEL_MISSING",
         ],
     )
 
@@ -747,6 +880,90 @@ def _check_international_standard_profile() -> StandardCheck:
     )
 
 
+def _check_source_authority_registry() -> StandardCheck:
+    registry = build_source_authority_registry()
+    text = json.dumps(asdict(registry), ensure_ascii=False)
+    required_tokens = [
+        "Cochrane",
+        "NICE",
+        "USPSTF",
+        "WHO",
+        "CDC",
+        "ESC",
+        "ACC",
+        "AHA",
+        "ADA",
+        "KDIGO",
+        "GOLD",
+        "GINA",
+        "IDSA",
+        "ESCMID",
+        "EULAR",
+        "ACR",
+        "ASCO",
+        "ESMO",
+        "NCCN",
+        "kcb.vn/phac-do",
+        "FDA Drug Safety Communications",
+        "openFDA",
+        "DailyMed",
+        "EMA/PRAC",
+        "MHRA",
+        "WHO AWaRe",
+        "PubMed/MEDLINE",
+        "Europe PMC",
+        "Crossref",
+        "Consensus",
+        "bioRxiv/medRxiv preprint",
+        "ChEMBL",
+        "SOURCE_NOT_AUTHORITY_TIERED",
+        "DISCOVERY_SOURCE_USED_AS_RECORD",
+        "PREPRINT_USED_TO_CHANGE_PRACTICE",
+        "TRIAL_REGISTRY_USED_AS_EFFICACY_RESULT",
+        "CHEMBL_USED_FOR_CLINICAL_RECOMMENDATION",
+        "IDENTIFIER_CROSSCHECK_MISSING",
+    ]
+    missing = [
+        f"source_authority_registry missing token: {token}"
+        for token in required_tokens
+        if token not in text
+    ]
+    if registry.status != "AUTHORITY_TIERED_WITH_CROSSCHECK":
+        missing.append(f"unexpected registry status: {registry.status}")
+    for tier in (
+        "tier_0_guideline_hta_regulatory",
+        "tier_0_5_high_trust_journals",
+        "tier_1_peer_reviewed_crosscheck",
+    ):
+        if tier not in registry.source_of_record_tiers:
+            missing.append(f"missing source tier: {tier}")
+    if "Consensus" not in registry.discovery_only_sources:
+        missing.append("Consensus must remain discovery-only")
+    if not any("ChEMBL" in item for item in registry.not_for_clinical_recommendation):
+        missing.append("ChEMBL must be blocked as clinical recommendation source")
+    return StandardCheck(
+        check_id="EAS8",
+        title="Registry nguồn thẩm quyền quốc tế",
+        status=FAIL if missing else PASS,
+        evidence=[
+            "tools/verify_clinical_evidence_agent_standards.py:SourceAuthorityRegistry",
+            _rel(AGENTS / "_CONNECTOR-CHUNG-CU.md"),
+            _rel(AGENTS / "_NGUON-GUIDELINE-TU-DONG.md"),
+            _rel(SKILL_ROOT / "references" / "01-nguon-va-xac-minh.md"),
+            _rel(SKILL_ROOT / "references" / "04-thuoc-khang-sinh-va-cong-cu.md"),
+        ],
+        proves=(
+            "Agent có registry nguồn của record, nguồn an toàn thuốc, nguồn đối chiếu định danh, "
+            "nguồn chỉ khám phá và nguồn bị cấm dùng để đổi thực hành."
+        ),
+        limitation=(
+            "Registry không tự xác minh một URL cụ thể là còn mới; dashboard thật vẫn phải chạy "
+            "`verify_dashboard.py --online --strict-sources` và bác sĩ duyệt."
+        ),
+        missing=missing,
+    )
+
+
 def evaluate_all(generated_at: str | None = None) -> dict:
     checks = [
         _check_agents(),
@@ -756,10 +973,12 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         _check_safety_localization_and_outputs(),
         _check_doctor_gate_boundaries(),
         _check_international_standard_profile(),
+        _check_source_authority_registry(),
     ]
     agent_contract = build_agent_contract()
     release_packet = build_release_packet_contract()
     international_profile = build_international_standard_profile()
+    source_registry = build_source_authority_registry()
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
     if fail_count:
@@ -787,6 +1006,8 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         "release_packet_contract": asdict(release_packet),
         "international_standard_profile_status": international_profile.status,
         "international_standard_profile": asdict(international_profile),
+        "source_authority_registry_status": source_registry.status,
+        "source_authority_registry": asdict(source_registry),
         "checks": [asdict(check) for check in checks],
         "disclaimer": DISCLAIMER,
     }
@@ -808,6 +1029,7 @@ def markdown_report(report: dict) -> str:
         f"- Agent contract human gates: `{', '.join(report['agent_contract_human_gate_ids'])}`",
         f"- Release packet decision: `{report['release_packet_contract']['decision']}`",
         f"- International standard profile: `{report['international_standard_profile_status']}`",
+        f"- Source authority registry: `{report['source_authority_registry_status']}`",
         "",
         "| Check | Status | Proves | Limitation | Missing |",
         "|---|---|---|---|---|",
@@ -861,6 +1083,21 @@ def markdown_report(report: dict) -> str:
     ])
     for code in profile["hard_stop_misuse_codes"]:
         lines.append(f"| `{code}` |")
+    registry = report["source_authority_registry"]
+    lines.extend([
+        "",
+        "## Source Authority Registry",
+        "",
+        f"- Status: `{registry['status']}`",
+        f"- Source tiers: `{', '.join(registry['source_of_record_tiers'])}`",
+        f"- Safety sources: `{len(registry['safety_sources'])}`",
+        f"- Discovery-only sources: `{', '.join(registry['discovery_only_sources'])}`",
+        "",
+        "| Source Hard Stop |",
+        "|---|",
+    ])
+    for code in registry["hard_stop_codes"]:
+        lines.append(f"| `{code}` |")
     lines.extend([
         "",
         "## Agent Gate Contract",
@@ -910,6 +1147,7 @@ def main(argv: list[str] | None = None) -> int:
         print("agent_contract_human_gate_ids=" + ",".join(report["agent_contract_human_gate_ids"]))
         print("release_packet_decision=" + report["release_packet_contract"]["decision"])
         print("international_standard_profile_status=" + report["international_standard_profile_status"])
+        print("source_authority_registry_status=" + report["source_authority_registry_status"])
         print("Cần bác sĩ kiểm chứng.")
     return 0 if report["fail_count"] == 0 else 1
 
