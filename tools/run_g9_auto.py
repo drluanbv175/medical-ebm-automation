@@ -224,9 +224,16 @@ def build_part2_coi(n_authors: int, study: str) -> str:
             "   ☐ Không có",
             "   ☐ Có -> Tên công ty: ___ | Loại: ___",
             "",
-            "1c. Bằng sáng chế / đang chờ cấp / chuyển nhượng:",
+            # Vá 2026-07-17 (round audit đối kháng 4): mục "Intellectual Property" của
+            # ICMJE Uniform Disclosure Form bao gồm CẢ patent LẪN copyright (đang chờ cấp/
+            # đã cấp/đã cấp phép/đang nhận tiền bản quyền) — trước đây chỉ hỏi "bằng sáng
+            # chế", bỏ sót copyright/licensing/royalty mà form gốc yêu cầu khai.
+            "1c. Sở hữu trí tuệ — bằng sáng chế (patent) VÀ bản quyền (copyright), bất kể",
+            "    đang chờ cấp / đã được cấp / đã cấp phép (licensed) / đang nhận tiền bản",
+            "    quyền (royalties):",
             "   ☐ Không có",
-            "   ☐ Có -> Chi tiết: ___",
+            "   ☐ Có -> Loại (patent/copyright): ___ | Trạng thái (chờ cấp/đã cấp/đã cấp "
+            "phép/đang nhận bản quyền): ___ | Chi tiết: ___",
             "",
             "1d. Thù lao cho bài nói chuyện / tham gia hội đồng chuyên gia:",
             "   ☐ Không có",
@@ -399,12 +406,18 @@ def build_part4_ai_disclosure(cps: dict, study: str) -> str:
     ai_uses_str = "\n".join(gates_run)
 
     lines = [
-        "## PHẦN 4 — KHAI BÁO SỬ DỤNG AI (COPE + Nature Portfolio 2024)",
+        "## PHẦN 4 — KHAI BÁO SỬ DỤNG AI (ICMJE Mục V + COPE + Nature Portfolio)",
         "",
         "> **Căn cứ:**",
-        "> - COPE Guidelines: Authorship and AI tools (February 2023)",
+        "> - ICMJE Recommendations, Mục V \"Use of Artificial Intelligence in Publishing\" "
+        "(cập nhật 1/2026 — thay cho vị trí AI-không-được-là-tác-giả đơn lẻ trước đây; "
+        "Mục V.A yêu cầu khai báo dùng công nghệ AI (LLM/chatbot/tạo ảnh) TẠI HAI NƠI: "
+        "cover letter VÀ mục phù hợp trong bản thảo — không khai báo có thể bị coi là "
+        "hành vi sai trái khoa học, Mục III.A/III.B).",
+        "> - COPE Guidelines: Authorship and AI tools (February 2023) — vị trí hình thức "
+        "hiện hành của COPE tại thời điểm soạn; \"Global Reporting Standard for AI "
+        "Disclosure in Research\" đang trong giai đoạn tham vấn đa bên, CHƯA thay thế.",
         "> - Nature Portfolio Editorial Policies: Use of AI tools (updated 2024)",
-        "> - ICMJE Recommendations (2023): AI tools cannot be authors",
         "> - JAMA Network / Lancet policies on AI/LLM disclosure (2024)",
         "",
         "### Khai báo đầy đủ (cho IRB, đơn vị, và hồ sơ nội bộ)",
@@ -432,7 +445,8 @@ def build_part4_ai_disclosure(cps: dict, study: str) -> str:
         "  - Patient data access or clinical decision-making",
         "",
         "AUTHORSHIP:",
-        "  AI tools are NOT listed as authors per ICMJE guidelines (2023).",
+        "  AI tools are NOT listed as authors (ICMJE Recommendations, Mục V.A — AI cannot",
+        "  meet authorship criteria and cannot be held accountable for the work).",
         "",
         "[CẦN BÁC SĨ BỔ SUNG nếu dùng thêm công cụ AI khác]:",
         "  ☐ ChatGPT / GPT-4 -> Mục đích: ___",
@@ -631,6 +645,18 @@ def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
         "  - Conflicts of interest: [CẦN — 'None declared' hoặc liệt kê từ Phần 2]",
         "  - Funding: [CẦN]",
         "  - Data availability: [CẦN — lựa chọn từ Phần 3]",
+        (
+            # ICMJE Recommendations, Section V.A "Use of AI by Authors" (cập nhật 1/2026,
+            # icmje.org/recommendations/browse/artificial-intelligence/ai-use-by-authors.html):
+            # yêu cầu khai báo việc dùng công nghệ AI (LLM/chatbot/tạo ảnh) trong quá trình
+            # tạo ra bản thảo nộp, TẠI HAI NƠI — cover letter VÀ mục phù hợp trong bản thảo.
+            # Không khai báo có thể bị coi là hành vi sai trái khoa học (mục III.A/III.B) —
+            # thêm dòng này vào cover letter (trước đây chỉ có ở Phần 4 khai báo AI riêng,
+            # KHÔNG có trong chính cover letter — vá 2026-07-17, round audit đối kháng 4).
+            "  - Use of AI-assisted technologies (LLMs/chatbots/image creators) in producing "
+            "this submission: Yes — EBM Copilot (Claude, Anthropic); chi tiết xem Phần 4 "
+            "(Khai báo sử dụng AI) đính kèm."
+        ),
         "",
         "SUGGESTED REVIEWERS (khuyến nghị, không bắt buộc):",
         "  1. [CẦN — Tên | Institution | Email | Lý do]",
