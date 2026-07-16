@@ -83,6 +83,25 @@ python3 tools/verify_personal_production_hardening.py
 python3 tools/run_controlled_automation_cycle.py
 ```
 
+Khi chuẩn bị bằng chứng production thật, sinh mẫu evidence package ngoài repo rồi
+để người thật điền/duyệt:
+
+```bash
+python3 tools/verify_personal_production_hardening.py \
+  --init-evidence-template /secure/path/personal-production-evidence.json
+```
+
+Sau khi đã có artefact, signoff và go-live attestation thật, kiểm package:
+
+```bash
+python3 tools/verify_personal_production_hardening.py \
+  --evidence /secure/path/personal-production-evidence.json
+```
+
+Gói evidence package hợp lệ chỉ có nghĩa là **đủ cấu trúc để đưa vào thẩm định
+người thật/đơn vị**. Nó không tự bật dữ liệu bệnh nhân thật, không tự thay UAT,
+không tự thay bảo mật triển khai và không tự cho phép ghi EMR/HIS.
+
 Tại thư mục gốc hệ sinh thái, chạy:
 
 ```bash

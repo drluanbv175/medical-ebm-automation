@@ -15,7 +15,7 @@ import re
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 REPO = Path(__file__).resolve().parents[1]
 ROOT = REPO.parent
@@ -27,6 +27,24 @@ SOP_DOC = REPO / "docs" / "PERSONAL_PRODUCTION_HARDENING_SOP.md"
 PASS = "PASS"
 HUMAN_GATE = "HUMAN_GATE"
 FAIL = "FAIL"
+PACKAGE_KIND = "personal_production_hardening_evidence_package"
+REQUIRED_SIGNOFF_ROLES = [
+    "security_owner",
+    "data_protection_owner",
+    "physician_lead",
+    "operations_owner",
+    "ai_governance_owner",
+    "pi_or_clinic_owner",
+]
+DOMAIN_EVIDENCE_REQUIREMENTS = {
+    "P1": ("production_owner", "Production blocker closure evidence package and signoffs."),
+    "P2": ("pi_or_clinic_owner", "Actor authentication/key custody and gate approval evidence."),
+    "P3": ("data_protection_owner", "Real-data PII, pseudonymization, mapping custody and data-lock evidence."),
+    "P4": ("pi_or_clinic_owner", "Signed personal SOP and operating boundary evidence."),
+    "P5": ("physician_lead", "Synthetic/de-identified UAT and clinical shadow pilot evidence."),
+    "P6": ("operations_owner", "Backup, restore drill, rollback and incident drill evidence."),
+    "P7": ("ai_governance_owner", "Mode separation, feature-flag and no-auto-apply evidence."),
+}
 
 DISCLAIMER = (
     "Cần bác sĩ kiểm chứng. Đây là cổng hardening kỹ thuật/offline; không thay "
@@ -43,6 +61,19 @@ class HardeningCheck:
     evidence: list[str]
     findings: list[str]
     human_action: str
+
+
+@dataclass(frozen=True)
+class EvidencePackageSummary:
+    status: str
+    provided: bool
+    valid: bool
+    evidence_records: int
+    valid_evidence_records: int
+    valid_signoffs: int
+    missing_domains: list[str]
+    missing_signoffs: list[str]
+    errors: list[str]
 
 
 def _rel(path: Path) -> str:
@@ -74,6 +105,256 @@ def _count_markdown_bullets(path: Path) -> int:
         for line in _read(path).splitlines()
         if line.strip().startswith(("- ", "* "))
     )
+
+
+def _parse_iso(value: str) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip().replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _safe_reference(value: Any) -> bool:
+    """Opaque non-PII reference: không placeholder, email, phone hoặc số định danh dài."""
+    if not isinstance(value, str):
+        return False
+    text = value.strip()
+    if len(text) < 3:
+        return False
+    if re.search(r"(TODO|TBD|PLACEHOLDER|REPLACE_ME|\[CẦN|\[CAN)", text, re.IGNORECASE):
+        return False
+    if re.search(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", text, re.IGNORECASE):
+        return False
+    if re.search(r"\b0\d{9,10}\b", text):
+        return False
+    if re.search(r"\b\d{12}\b", text):
+        return False
+    return True
+
+
+def build_evidence_template(generated_at: str | None = None) -> dict[str, Any]:
+    """Sinh mẫu evidence package; mọi placeholder cố ý làm validator fail-closed."""
+    stamp = generated_at or datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return {
+        "kind": PACKAGE_KIND,
+        "generated_at": stamp,
+        "scope": "TODO_REPLACE_WITH_SIGNED_SCOPE_NO_PII",
+        "evidence": [
+            {
+                "domain_id": domain_id,
+                "status": "TODO_REVIEW",
+                "reviewed_by_role": owner_role,
+                "reviewer_reference": f"TODO_NON_PII_REVIEWER_REF_{domain_id}",
+                "reviewed_at": "TODO_ISO8601",
+                "artifact_refs": [f"TODO/evidence/{domain_id}.json"],
+                "controls_verified": [description],
+                "notes": "TODO replace after human review. Do not include PII.",
+            }
+            for domain_id, (owner_role, description) in DOMAIN_EVIDENCE_REQUIREMENTS.items()
+        ],
+        "signoffs": [
+            {
+                "role": role,
+                "signer_reference": f"TODO_NON_PII_SIGNER_REF_{role}",
+                "signed_at": "TODO_ISO8601",
+                "scope": "TODO_REPLACE_WITH_SIGNED_SCOPE_NO_PII",
+                "artifact_refs": [f"TODO/signoffs/{role}.json"],
+            }
+            for role in REQUIRED_SIGNOFF_ROLES
+        ],
+        "go_live_attestation": {
+            "release_id": "TODO_RELEASE_ID",
+            "change_ticket_reference": "TODO_CHANGE_TICKET",
+            "rollback_plan_artifact_ref": "TODO/rollback-plan.json",
+            "post_deployment_checklist_ref": "TODO/post-deploy-checklist.json",
+            "evidence_dossier_sha256": "TODO_64_HEX_SHA256",
+            "operator_reference": "TODO_OPERATOR_REF",
+            "admin_approver_reference": "TODO_DISTINCT_ADMIN_APPROVER_REF",
+        },
+        "safety_boundary": (
+            "Template only. A structurally valid package is ready for external/human review; "
+            "it does not by itself authorize clinical production or real patient data."
+        ),
+    }
+
+
+def validate_evidence_package(
+    package: dict[str, Any] | None,
+    *,
+    generated_at: str | None = None,
+) -> EvidencePackageSummary:
+    if package is None:
+        return EvidencePackageSummary(
+            status="NOT_PROVIDED",
+            provided=False,
+            valid=False,
+            evidence_records=0,
+            valid_evidence_records=0,
+            valid_signoffs=0,
+            missing_domains=list(DOMAIN_EVIDENCE_REQUIREMENTS),
+            missing_signoffs=list(REQUIRED_SIGNOFF_ROLES),
+            errors=[],
+        )
+
+    now = _parse_iso(generated_at or datetime.now(timezone.utc).isoformat(timespec="seconds"))
+    errors: list[str] = []
+    if package.get("kind") != PACKAGE_KIND:
+        errors.append("package_kind_invalid")
+    pkg_time = _parse_iso(str(package.get("generated_at", "")))
+    if pkg_time is None:
+        errors.append("package_generated_at_invalid")
+    elif now and pkg_time > now:
+        errors.append("package_generated_at_future")
+    if not _safe_reference(str(package.get("scope", ""))):
+        errors.append("scope_missing_or_placeholder_or_pii")
+
+    evidence = package.get("evidence")
+    if not isinstance(evidence, list):
+        evidence = []
+        errors.append("evidence_must_be_list")
+    seen_domains: set[str] = set()
+    valid_domains: set[str] = set()
+    for idx, record in enumerate(evidence):
+        if not isinstance(record, dict):
+            errors.append(f"evidence[{idx}]_not_object")
+            continue
+        domain_id = str(record.get("domain_id", ""))
+        if domain_id not in DOMAIN_EVIDENCE_REQUIREMENTS:
+            errors.append(f"evidence[{idx}]_unknown_domain:{domain_id}")
+            continue
+        if domain_id in seen_domains:
+            errors.append(f"evidence_duplicate_domain:{domain_id}")
+            continue
+        seen_domains.add(domain_id)
+        required_role, _description = DOMAIN_EVIDENCE_REQUIREMENTS[domain_id]
+        record_errors: list[str] = []
+        if record.get("status") != "CLEARED":
+            record_errors.append("status_not_cleared")
+        if record.get("reviewed_by_role") != required_role:
+            record_errors.append("reviewed_by_role_invalid")
+        if not _safe_reference(record.get("reviewer_reference")):
+            record_errors.append("reviewer_reference_invalid")
+        reviewed_at = _parse_iso(str(record.get("reviewed_at", "")))
+        if reviewed_at is None:
+            record_errors.append("reviewed_at_invalid")
+        elif now and reviewed_at > now:
+            record_errors.append("reviewed_at_future")
+        artifact_refs = record.get("artifact_refs")
+        if (
+            not isinstance(artifact_refs, list)
+            or not artifact_refs
+            or not all(_safe_reference(x) for x in artifact_refs)
+        ):
+            record_errors.append("artifact_refs_invalid")
+        controls = record.get("controls_verified")
+        if not isinstance(controls, list) or not controls or not all(_safe_reference(x) for x in controls):
+            record_errors.append("controls_verified_invalid")
+        if record_errors:
+            errors.extend(f"evidence[{domain_id}]:{err}" for err in record_errors)
+        else:
+            valid_domains.add(domain_id)
+
+    missing_domains = [
+        domain_id
+        for domain_id in DOMAIN_EVIDENCE_REQUIREMENTS
+        if domain_id not in seen_domains
+    ]
+    errors.extend(f"missing_domain:{domain_id}" for domain_id in missing_domains)
+
+    signoffs = package.get("signoffs")
+    if not isinstance(signoffs, list):
+        signoffs = []
+        errors.append("signoffs_must_be_list")
+    seen_signoffs: set[str] = set()
+    valid_signoffs: set[str] = set()
+    signer_refs: dict[str, str] = {}
+    for idx, signoff in enumerate(signoffs):
+        if not isinstance(signoff, dict):
+            errors.append(f"signoff[{idx}]_not_object")
+            continue
+        role = str(signoff.get("role", ""))
+        if role not in REQUIRED_SIGNOFF_ROLES:
+            errors.append(f"signoff[{idx}]_unknown_role:{role}")
+            continue
+        if role in seen_signoffs:
+            errors.append(f"signoff_duplicate_role:{role}")
+            continue
+        seen_signoffs.add(role)
+        signoff_errors: list[str] = []
+        signer = signoff.get("signer_reference")
+        if not _safe_reference(signer):
+            signoff_errors.append("signer_reference_invalid")
+        elif str(signer).lower() in signer_refs:
+            signoff_errors.append(f"signer_reference_reused_with:{signer_refs[str(signer).lower()]}")
+        else:
+            signer_refs[str(signer).lower()] = role
+        signed_at = _parse_iso(str(signoff.get("signed_at", "")))
+        if signed_at is None:
+            signoff_errors.append("signed_at_invalid")
+        elif now and signed_at > now:
+            signoff_errors.append("signed_at_future")
+        if not _safe_reference(signoff.get("scope")):
+            signoff_errors.append("scope_invalid")
+        refs = signoff.get("artifact_refs")
+        if not isinstance(refs, list) or not refs or not all(_safe_reference(x) for x in refs):
+            signoff_errors.append("artifact_refs_invalid")
+        if signoff_errors:
+            errors.extend(f"signoff[{role}]:{err}" for err in signoff_errors)
+        else:
+            valid_signoffs.add(role)
+
+    missing_signoffs = [
+        role
+        for role in REQUIRED_SIGNOFF_ROLES
+        if role not in seen_signoffs
+    ]
+    errors.extend(f"missing_signoff:{role}" for role in missing_signoffs)
+
+    attestation = package.get("go_live_attestation")
+    if not isinstance(attestation, dict):
+        errors.append("go_live_attestation_missing")
+    else:
+        for field in (
+            "release_id",
+            "change_ticket_reference",
+            "rollback_plan_artifact_ref",
+            "post_deployment_checklist_ref",
+            "operator_reference",
+            "admin_approver_reference",
+        ):
+            if not _safe_reference(attestation.get(field)):
+                errors.append(f"go_live_attestation:{field}_invalid")
+        dossier = str(attestation.get("evidence_dossier_sha256", ""))
+        if not re.fullmatch(r"[a-f0-9]{64}", dossier, flags=re.IGNORECASE):
+            errors.append("go_live_attestation:evidence_dossier_sha256_invalid")
+        operator = str(attestation.get("operator_reference", "")).strip().lower()
+        admin = str(attestation.get("admin_approver_reference", "")).strip().lower()
+        if operator and admin and operator == admin:
+            errors.append("go_live_attestation:operator_admin_must_be_distinct")
+
+    valid = not errors
+    status = "STRUCTURALLY_COMPLETE_EXTERNAL_REVIEW_READY" if valid else "INVALID_OR_INCOMPLETE"
+    return EvidencePackageSummary(
+        status=status,
+        provided=True,
+        valid=valid,
+        evidence_records=len(evidence),
+        valid_evidence_records=len(valid_domains),
+        valid_signoffs=len(valid_signoffs),
+        missing_domains=missing_domains,
+        missing_signoffs=missing_signoffs,
+        errors=errors,
+    )
+
+
+def load_evidence_package(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _check(
@@ -398,7 +679,11 @@ def check_mode_separation() -> HardeningCheck:
     )
 
 
-def evaluate_all(generated_at: str | None = None) -> dict:
+def evaluate_all(
+    generated_at: str | None = None,
+    evidence_package: dict[str, Any] | None = None,
+    evidence_path: Path | None = None,
+) -> dict:
     checks = [
         check_production_blocker_closure(),
         check_actor_authentication(),
@@ -416,12 +701,18 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         overall = "CONTROLLED_PERSONAL_READY_WITH_HUMAN_GATES"
     else:
         overall = "CONTROLLED_PERSONAL_READY"
+    if evidence_package is None and evidence_path is not None:
+        evidence_package = load_evidence_package(evidence_path)
+    evidence_summary = validate_evidence_package(evidence_package, generated_at=generated_at)
+    if evidence_summary.provided and not evidence_summary.valid:
+        overall = "FAIL_CLOSED"
     return {
         "kind": "personal_production_hardening_report",
         "generated_at": generated_at or datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "overall_status": overall,
         "fail_count": fail_count,
         "human_gate_count": human_gate_count,
+        "evidence_package_summary": asdict(evidence_summary),
         "clinical_production_allowed": False,
         "real_patient_data_allowed": False if human_gate_count or fail_count else False,
         "checks": [asdict(item) for item in checks],
@@ -437,6 +728,7 @@ def markdown_report(report: dict) -> str:
         f"- Overall status: `{report['overall_status']}`",
         f"- Fail count: `{report['fail_count']}`",
         f"- Human gates: `{report['human_gate_count']}`",
+        f"- Evidence package: `{report['evidence_package_summary']['status']}`",
         f"- Clinical production allowed: `{report['clinical_production_allowed']}`",
         f"- Real patient data allowed: `{report['real_patient_data_allowed']}`",
         "",
@@ -449,6 +741,21 @@ def markdown_report(report: dict) -> str:
         lines.append(
             f"| {item['domain_id']} - {item['title']} | `{item['status']}` | {findings} | {action} |"
         )
+    evidence = report["evidence_package_summary"]
+    lines.extend(
+        [
+            "",
+            "## Evidence Package",
+            "",
+            f"- Status: `{evidence['status']}`",
+            f"- Valid evidence records: `{evidence['valid_evidence_records']}/{len(DOMAIN_EVIDENCE_REQUIREMENTS)}`",
+            f"- Valid signoffs: `{evidence['valid_signoffs']}/{len(REQUIRED_SIGNOFF_ROLES)}`",
+            f"- Missing domains: `{', '.join(evidence['missing_domains']) or 'none'}`",
+            f"- Missing signoffs: `{', '.join(evidence['missing_signoffs']) or 'none'}`",
+        ]
+    )
+    if evidence["errors"]:
+        lines.append(f"- Errors: `{'; '.join(evidence['errors'][:20])}`")
     lines.extend(["", report["disclaimer"], ""])
     return "\n".join(lines)
 
@@ -463,9 +770,30 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json", action="store_true", help="In toàn bộ báo cáo JSON ra stdout.")
     parser.add_argument("--no-write", action="store_true", help="Không ghi report vào reports/.")
+    parser.add_argument("--evidence", type=Path, default=None, help="Gói evidence package đã điền để kiểm schema.")
+    parser.add_argument("--init-evidence-template", type=Path, default=None, help="Ghi mẫu evidence package đầy đủ.")
+    parser.add_argument("--force", action="store_true", help="Ghi đè khi dùng --init-evidence-template.")
     args = parser.parse_args()
 
-    report = evaluate_all()
+    if args.init_evidence_template is not None:
+        if args.init_evidence_template.exists() and not args.force:
+            print(f"BLOCKED: template already exists: {args.init_evidence_template}")
+            return 2
+        args.init_evidence_template.parent.mkdir(parents=True, exist_ok=True)
+        template = build_evidence_template()
+        args.init_evidence_template.write_text(
+            json.dumps(template, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        validation = validate_evidence_package(template)
+        print(f"template={args.init_evidence_template}")
+        print(f"evidence_records={len(template['evidence'])}")
+        print(f"signoffs={len(template['signoffs'])}")
+        print(f"status={validation.status}")
+        print("Cần bác sĩ kiểm chứng.")
+        return 0
+
+    report = evaluate_all(evidence_path=args.evidence)
     if not args.no_write:
         write_reports(report)
     if args.json:
@@ -474,10 +802,15 @@ def main() -> int:
         print(f"overall_status={report['overall_status']}")
         print(f"fail_count={report['fail_count']}")
         print(f"human_gate_count={report['human_gate_count']}")
+        print(f"evidence_package_status={report['evidence_package_summary']['status']}")
         print("clinical_production_allowed=False")
         print("real_patient_data_allowed=False")
         print("Cần bác sĩ kiểm chứng.")
-    return 0 if report["fail_count"] == 0 else 1
+    evidence_ok = (
+        not report["evidence_package_summary"]["provided"]
+        or report["evidence_package_summary"]["valid"]
+    )
+    return 0 if report["fail_count"] == 0 and evidence_ok else 1
 
 
 if __name__ == "__main__":
