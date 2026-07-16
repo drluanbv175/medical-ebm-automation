@@ -51,6 +51,7 @@ def test_clinical_evidence_agent_standards_cover_all_required_domains() -> None:
         "EAS8",
         "EAS9",
         "EAS10",
+        "EAS11",
     }
     assert rows["EAS1"]["status"] == "PASS"
     assert rows["EAS2"]["status"] == "PASS"
@@ -62,6 +63,7 @@ def test_clinical_evidence_agent_standards_cover_all_required_domains() -> None:
     assert rows["EAS8"]["status"] == "PASS"
     assert rows["EAS9"]["status"] == "PASS"
     assert rows["EAS10"]["status"] == "PASS"
+    assert rows["EAS11"]["status"] == "PASS"
     assert all(not row["missing"] for row in rows.values())
 
 
@@ -85,6 +87,11 @@ def test_clinical_evidence_agent_standards_markdown_keeps_boundaries_visible() -
     assert "Evidence currency policy: `CURRENCY_CONTROLLED_WITH_RETRACTION_CHECK`" in markdown
     assert "Question Frame Policy" in markdown
     assert "Question frame policy: `FRAME_TOOL_LOCKED_BY_QUESTION_TYPE`" in markdown
+    assert "Conflicting Evidence Policy" in markdown
+    assert (
+        "Conflicting evidence policy: `CONFLICTS_MUST_BE_MAPPED_BEFORE_PRACTICE_CHANGE`"
+        in markdown
+    )
     assert "Agent Gate Contract" in markdown
     assert "CEG7 Guardrail cuối và bác sĩ quyết định áp dụng" in markdown
     assert "Cần bác sĩ kiểm chứng" in markdown
@@ -133,6 +140,8 @@ def test_release_packet_contract_blocks_until_doctor_review() -> None:
     ]
     assert "doctor_review_packet" in packet["minimum_artifacts"]
     assert "appraisal_tool_selection_audit" in packet["minimum_artifacts"]
+    assert "conflicting_evidence_matrix" in packet["minimum_artifacts"]
+    assert "conflicting_evidence_resolution_note" in packet["minimum_artifacts"]
     assert "evidence_currency_audit" in packet["minimum_artifacts"]
     assert "effect_measure_traceability_log" in packet["minimum_artifacts"]
     assert "final_guardrail_result" in packet["minimum_artifacts"]
@@ -154,6 +163,13 @@ def test_release_packet_contract_blocks_until_doctor_review() -> None:
     assert "QUESTION_FRAME_MISSING" in packet["hard_stop_reason_codes"]
     assert "FRAME_TOOL_MISMATCH" in packet["hard_stop_reason_codes"]
     assert "PICO_FOR_NON_INTERVENTION_WITHOUT_RATIONALE" in packet["hard_stop_reason_codes"]
+    assert "CONFLICTING_EVIDENCE_NOT_REPORTED" in packet["hard_stop_reason_codes"]
+    assert "CHERRY_PICKED_GUIDELINE_OR_TRIAL" in packet["hard_stop_reason_codes"]
+    assert "SOURCE_HIERARCHY_OVERRIDE_WITHOUT_RATIONALE" in packet["hard_stop_reason_codes"]
+    assert (
+        "SINGLE_SOURCE_PRACTICE_CHANGE_WITH_CONFLICT_UNCHECKED"
+        in packet["hard_stop_reason_codes"]
+    )
     assert "SEARCH_DATE_MISSING" in packet["hard_stop_reason_codes"]
     assert "CLAIMED_LATEST_WITHOUT_FRESH_SEARCH" in packet["hard_stop_reason_codes"]
     assert "WRONG_APPRAISAL_TOOL" in packet["hard_stop_reason_codes"]
@@ -309,3 +325,43 @@ def test_question_frame_policy_locks_frame_tool_and_effect_measure_choice() -> N
     assert "PREDICTION_MODEL_WITHOUT_PROBAST_OR_TRIPOD" in policy["hard_stop_codes"]
     assert "EFFECT_MEASURE_NOT_SOURCE_TRACEABLE" in policy["hard_stop_codes"]
     assert "FRAME_LABELS_MISSING_IN_DASHBOARD" in policy["hard_stop_codes"]
+
+
+def test_conflicting_evidence_policy_requires_matrix_and_blocks_cherry_picking() -> None:
+    mod = _load_module()
+    report = mod.evaluate_all(generated_at=FIXED_NOW)
+    policy = report["conflicting_evidence_policy"]
+
+    assert (
+        report["conflicting_evidence_policy_status"]
+        == "CONFLICTS_MUST_BE_MAPPED_BEFORE_PRACTICE_CHANGE"
+    )
+    for conflict_type in [
+        "guideline_vs_guideline",
+        "guideline_vs_new_trial",
+        "meta_analysis_vs_large_trial",
+        "benefit_vs_harm",
+        "international_vs_vietnam",
+        "population_mismatch",
+    ]:
+        assert conflict_type in policy["conflict_types"]
+    for column in [
+        "source_tier",
+        "effect_estimate_from_source",
+        "source_grading_or_certainty",
+        "direction_of_effect",
+        "applicability_to_outpatient_vietnam",
+        "resolution_rationale",
+    ]:
+        assert column in policy["evidence_matrix_columns"]
+    checks = " ".join(policy["mandatory_checks"])
+    assert "conflicting_evidence_matrix" in checks
+    assert "do not cherry-pick" in checks
+    assert "Chưa đủ để thay đổi thực hành" in checks
+    assert policy["decision_labels"]["unresolved_notyet"].startswith("Chưa đủ")
+    assert "CONFLICTING_EVIDENCE_NOT_REPORTED" in policy["hard_stop_codes"]
+    assert "CHERRY_PICKED_GUIDELINE_OR_TRIAL" in policy["hard_stop_codes"]
+    assert "SOURCE_HIERARCHY_OVERRIDE_WITHOUT_RATIONALE" in policy["hard_stop_codes"]
+    assert "BENEFIT_HARM_CONFLICT_NOT_EXPLAINED" in policy["hard_stop_codes"]
+    assert "LOCAL_GUIDELINE_CONFLICT_NOT_LABELED" in policy["hard_stop_codes"]
+    assert "UNRESOLVED_CONFLICT_MARKED_APPLY_NOW" in policy["hard_stop_codes"]

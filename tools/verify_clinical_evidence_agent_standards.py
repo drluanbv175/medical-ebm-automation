@@ -127,6 +127,19 @@ class QuestionFramePolicy:
     doctor_review_prompts: list[str]
 
 
+@dataclass(frozen=True)
+class ConflictingEvidencePolicy:
+    kind: str
+    status: str
+    conflict_types: dict[str, str]
+    evidence_matrix_columns: list[str]
+    resolution_order: list[str]
+    mandatory_checks: list[str]
+    decision_labels: dict[str, str]
+    hard_stop_codes: list[str]
+    doctor_review_prompts: list[str]
+
+
 def build_agent_contract() -> list[AgentGateContract]:
     """Hợp đồng vận hành tối thiểu cho mỗi lượt cập nhật chứng cứ lâm sàng."""
 
@@ -282,6 +295,8 @@ def build_release_packet_contract() -> ReleasePacketContract:
         artifacts.extend(gate.required_artifacts)
     artifacts.extend([
         "appraisal_tool_selection_audit",
+        "conflicting_evidence_matrix",
+        "conflicting_evidence_resolution_note",
         "evidence_currency_audit",
         "effect_measure_traceability_log",
         "international_standard_profile",
@@ -315,6 +330,10 @@ def build_release_packet_contract() -> ReleasePacketContract:
             "QUESTION_FRAME_MISSING",
             "FRAME_TOOL_MISMATCH",
             "PICO_FOR_NON_INTERVENTION_WITHOUT_RATIONALE",
+            "CONFLICTING_EVIDENCE_NOT_REPORTED",
+            "CHERRY_PICKED_GUIDELINE_OR_TRIAL",
+            "SOURCE_HIERARCHY_OVERRIDE_WITHOUT_RATIONALE",
+            "SINGLE_SOURCE_PRACTICE_CHANGE_WITH_CONFLICT_UNCHECKED",
             "SEARCH_DATE_MISSING",
             "CLAIMED_LATEST_WITHOUT_FRESH_SEARCH",
             "GRADE_SELF_ASSIGNED",
@@ -704,6 +723,83 @@ def build_question_frame_policy() -> QuestionFramePolicy:
             "Hiệu số/NNT/NNH có truy nguyên trực tiếp từ nguồn hoặc được ghi là đánh giá vận hành không?",
             "Dashboard có hiển thị đúng nhãn khung không-PICO để tránh hiểu sai không?",
             "Có cần chuyển thành [CẦN BỔ SUNG] thay vì khuyến cáo đổi thực hành không?",
+        ],
+    )
+
+
+def build_conflicting_evidence_policy() -> ConflictingEvidencePolicy:
+    """Chính sách xử lý khi chứng cứ, guideline hoặc cảnh báo an toàn không thống nhất."""
+
+    return ConflictingEvidencePolicy(
+        kind="clinical_ebm_conflicting_evidence_policy",
+        status="CONFLICTS_MUST_BE_MAPPED_BEFORE_PRACTICE_CHANGE",
+        conflict_types={
+            "guideline_vs_guideline": "Different official guidelines give different actions",
+            "guideline_vs_new_trial": "Current guideline differs from a new practice-changing trial",
+            "meta_analysis_vs_large_trial": "Meta-analysis signal conflicts with a large decisive trial",
+            "benefit_vs_harm": "Efficacy benefit conflicts with safety, tolerability or monitoring burden",
+            "international_vs_vietnam": "International recommendation conflicts with BYT/local availability",
+            "population_mismatch": "Evidence population does not match outpatient Vietnam patient group",
+            "certainty_mismatch": "Strong recommendation rests on low or indirect certainty",
+        },
+        evidence_matrix_columns=[
+            "source_or_study",
+            "year_or_version",
+            "source_tier",
+            "population",
+            "intervention_or_exposure",
+            "outcome_or_decision",
+            "effect_estimate_from_source",
+            "source_grading_or_certainty",
+            "direction_of_effect",
+            "applicability_to_outpatient_vietnam",
+            "safety_or_monitoring_limit",
+            "resolution_rationale",
+        ],
+        resolution_order=[
+            "Check whether any source is retracted, withdrawn, superseded or stale",
+            "Prefer official guideline/regulatory source for current practice unless newer decisive evidence",
+            "Prefer direct population and setting over indirect population",
+            "Prefer higher certainty and lower risk of bias for the same PICO/frame",
+            "Prefer patient-important outcomes over surrogate outcomes",
+            "Surface benefit-harm tradeoff before choosing a practice decision",
+            "Respect Vietnam MOH/local resource constraints or label [CẦN XÁC NHẬN TẠI ĐƠN VỊ]",
+            "If uncertainty remains, label Chưa đủ để thay đổi thực hành and require doctor review",
+        ],
+        mandatory_checks=[
+            "Search for more than one source family when a recommendation may change practice",
+            "Build a conflicting_evidence_matrix when sources disagree or direction is mixed",
+            "Report both supportive and non-supportive evidence; do not cherry-pick",
+            "Explain why one source is prioritized using source hierarchy, recency and directness",
+            "Keep original grading/certainty from each source side by side",
+            "Mark [CẦN BỔ SUNG] when only abstract, preprint or indirect evidence supports change",
+            "Use Chưa đủ để thay đổi thực hành when conflict cannot be resolved safely",
+            "Doctor must review any resolved conflict before clinical use",
+        ],
+        decision_labels={
+            "resolved_apply": "Áp dụng ngay only after hierarchy/directness/safety all support it",
+            "resolved_selective": "Cân nhắc chọn lọc when benefit applies to a narrower group",
+            "unresolved_notyet": "Chưa đủ để thay đổi thực hành when conflict remains material",
+            "partial": "PARTIAL when one required source family could not be checked",
+            "doctor_gate": "Cần bác sĩ phán định when Q2/Q5 or safety conflict is material",
+        },
+        hard_stop_codes=[
+            "CONFLICTING_EVIDENCE_NOT_REPORTED",
+            "CHERRY_PICKED_GUIDELINE_OR_TRIAL",
+            "SOURCE_HIERARCHY_OVERRIDE_WITHOUT_RATIONALE",
+            "BENEFIT_HARM_CONFLICT_NOT_EXPLAINED",
+            "LOCAL_GUIDELINE_CONFLICT_NOT_LABELED",
+            "POPULATION_MISMATCH_NOT_LABELED",
+            "SINGLE_SOURCE_PRACTICE_CHANGE_WITH_CONFLICT_UNCHECKED",
+            "UNRESOLVED_CONFLICT_MARKED_APPLY_NOW",
+            "CONFLICT_POLICY_MISSING",
+        ],
+        doctor_review_prompts=[
+            "Có nguồn chính thức nào đưa khuyến cáo ngược chiều hoặc thận trọng hơn không?",
+            "Khuyến cáo được chọn có trực tiếp đúng bệnh nhân ngoại trú Việt Nam không?",
+            "Lợi ích tuyệt đối có đủ lớn so với nguy cơ hại, monitoring và chi phí không?",
+            "Có cần giữ ở mức Cân nhắc chọn lọc hoặc Chưa đủ để thay đổi thực hành không?",
+            "Có xung đột với BYT/phác đồ đơn vị/danh mục thuốc sẵn có cần ghi nhãn không?",
         ],
     )
 
@@ -1310,6 +1406,84 @@ def _check_question_frame_policy() -> StandardCheck:
     )
 
 
+def _check_conflicting_evidence_policy() -> StandardCheck:
+    policy = build_conflicting_evidence_policy()
+    text = json.dumps(asdict(policy), ensure_ascii=False)
+    required_tokens = [
+        "guideline_vs_guideline",
+        "guideline_vs_new_trial",
+        "meta_analysis_vs_large_trial",
+        "benefit_vs_harm",
+        "international_vs_vietnam",
+        "population_mismatch",
+        "effect_estimate_from_source",
+        "source_grading_or_certainty",
+        "applicability_to_outpatient_vietnam",
+        "resolution_rationale",
+        "retracted, withdrawn, superseded or stale",
+        "official guideline/regulatory source",
+        "patient-important outcomes",
+        "conflicting_evidence_matrix",
+        "do not cherry-pick",
+        "Chưa đủ để thay đổi thực hành",
+        "CONFLICTING_EVIDENCE_NOT_REPORTED",
+        "CHERRY_PICKED_GUIDELINE_OR_TRIAL",
+        "SOURCE_HIERARCHY_OVERRIDE_WITHOUT_RATIONALE",
+        "BENEFIT_HARM_CONFLICT_NOT_EXPLAINED",
+        "LOCAL_GUIDELINE_CONFLICT_NOT_LABELED",
+        "UNRESOLVED_CONFLICT_MARKED_APPLY_NOW",
+        "CONFLICT_POLICY_MISSING",
+    ]
+    missing = [
+        f"conflicting_evidence_policy missing token: {token}"
+        for token in required_tokens
+        if token not in text
+    ]
+    if policy.status != "CONFLICTS_MUST_BE_MAPPED_BEFORE_PRACTICE_CHANGE":
+        missing.append(f"unexpected policy status: {policy.status}")
+    for key in (
+        "guideline_vs_guideline",
+        "guideline_vs_new_trial",
+        "meta_analysis_vs_large_trial",
+        "benefit_vs_harm",
+        "international_vs_vietnam",
+        "population_mismatch",
+    ):
+        if key not in policy.conflict_types:
+            missing.append(f"missing conflict type: {key}")
+    for column in (
+        "source_tier",
+        "direction_of_effect",
+        "source_grading_or_certainty",
+        "resolution_rationale",
+    ):
+        if column not in policy.evidence_matrix_columns:
+            missing.append(f"missing conflict matrix column: {column}")
+    if "unresolved_notyet" not in policy.decision_labels:
+        missing.append("missing unresolved_notyet decision label")
+    return StandardCheck(
+        check_id="EAS11",
+        title="Xử lý chứng cứ mâu thuẫn và chống cherry-picking",
+        status=FAIL if missing else PASS,
+        evidence=[
+            "tools/verify_clinical_evidence_agent_standards.py:ConflictingEvidencePolicy",
+            _rel(SKILL_ROOT / "SKILL.md"),
+            _rel(SKILL_ROOT / "references" / "01-nguon-va-xac-minh.md"),
+            _rel(SKILL_ROOT / "references" / "06-pico-va-trich-dan.md"),
+            _rel(SKILL_ROOT / "references" / "07-mo-hinh-cau-hoi-va-khung-thay-the.md"),
+        ],
+        proves=(
+            "Agent phải lập ma trận mâu thuẫn, nêu cả hai chiều chứng cứ, giải thích thứ tự ưu tiên "
+            "nguồn và chặn áp dụng ngay khi xung đột còn quan trọng."
+        ),
+        limitation=(
+            "Policy không tự quyết định lâm sàng thay bác sĩ; nó buộc gói cập nhật trình bày xung đột "
+            "minh bạch trước khi bác sĩ duyệt."
+        ),
+        missing=missing,
+    )
+
+
 def evaluate_all(generated_at: str | None = None) -> dict:
     checks = [
         _check_agents(),
@@ -1322,6 +1496,7 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         _check_source_authority_registry(),
         _check_evidence_currency_policy(),
         _check_question_frame_policy(),
+        _check_conflicting_evidence_policy(),
     ]
     agent_contract = build_agent_contract()
     release_packet = build_release_packet_contract()
@@ -1329,6 +1504,7 @@ def evaluate_all(generated_at: str | None = None) -> dict:
     source_registry = build_source_authority_registry()
     currency_policy = build_evidence_currency_policy()
     question_frame_policy = build_question_frame_policy()
+    conflicting_evidence_policy = build_conflicting_evidence_policy()
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
     if fail_count:
@@ -1362,6 +1538,8 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         "evidence_currency_policy": asdict(currency_policy),
         "question_frame_policy_status": question_frame_policy.status,
         "question_frame_policy": asdict(question_frame_policy),
+        "conflicting_evidence_policy_status": conflicting_evidence_policy.status,
+        "conflicting_evidence_policy": asdict(conflicting_evidence_policy),
         "checks": [asdict(check) for check in checks],
         "disclaimer": DISCLAIMER,
     }
@@ -1386,6 +1564,7 @@ def markdown_report(report: dict) -> str:
         f"- Source authority registry: `{report['source_authority_registry_status']}`",
         f"- Evidence currency policy: `{report['evidence_currency_policy_status']}`",
         f"- Question frame policy: `{report['question_frame_policy_status']}`",
+        f"- Conflicting evidence policy: `{report['conflicting_evidence_policy_status']}`",
         "",
         "| Check | Status | Proves | Limitation | Missing |",
         "|---|---|---|---|---|",
@@ -1482,6 +1661,20 @@ def markdown_report(report: dict) -> str:
     ])
     for code in frame_policy["hard_stop_codes"]:
         lines.append(f"| `{code}` |")
+    conflict_policy = report["conflicting_evidence_policy"]
+    lines.extend([
+        "",
+        "## Conflicting Evidence Policy",
+        "",
+        f"- Status: `{conflict_policy['status']}`",
+        f"- Conflict types: `{', '.join(conflict_policy['conflict_types'])}`",
+        f"- Matrix columns: `{len(conflict_policy['evidence_matrix_columns'])}`",
+        "",
+        "| Conflict Hard Stop |",
+        "|---|",
+    ])
+    for code in conflict_policy["hard_stop_codes"]:
+        lines.append(f"| `{code}` |")
     lines.extend([
         "",
         "## Agent Gate Contract",
@@ -1534,6 +1727,7 @@ def main(argv: list[str] | None = None) -> int:
         print("source_authority_registry_status=" + report["source_authority_registry_status"])
         print("evidence_currency_policy_status=" + report["evidence_currency_policy_status"])
         print("question_frame_policy_status=" + report["question_frame_policy_status"])
+        print("conflicting_evidence_policy_status=" + report["conflicting_evidence_policy_status"])
         print("Cần bác sĩ kiểm chứng.")
     return 0 if report["fail_count"] == 0 else 1
 
