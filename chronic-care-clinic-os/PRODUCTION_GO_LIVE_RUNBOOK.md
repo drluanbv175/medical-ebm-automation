@@ -23,6 +23,14 @@ pnpm production:verify -- --evidence /secure/path/production-evidence.json
 
 Exit code `0` means the evidence package unlocks `PRODUCTION_READY`; exit code `1` means the package is readable but still blocked; exit code `2` means the package cannot be read or the command is malformed.
 
+For the final one-run go-live gate, use:
+
+```bash
+pnpm production:go-live -- --evidence /secure/path/production-evidence.json --out /secure/path/go-live-report.json
+```
+
+This command validates all three layers together: signed evidence package, production runtime environment variables and the emitted production readiness headers. It treats runtime warnings as blockers. The system may be called production only when this command exits `0` and writes `status = "PRODUCTION_READY"`.
+
 Start from a complete template instead of writing the package by hand:
 
 ```bash
