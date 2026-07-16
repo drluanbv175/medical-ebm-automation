@@ -30,6 +30,7 @@ FAIL = "FAIL"
 PACKAGE_KIND = "personal_production_hardening_evidence_package"
 PLACEHOLDER_RE = re.compile(r"(TODO|TBD|PLACEHOLDER|REPLACE_ME|\[CẦN|\[CAN)", re.IGNORECASE)
 SAFE_PATH_KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,79}$")
+ARTIFACT_REF_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/+-]{2,199}$")
 PII_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("email", re.compile(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", re.IGNORECASE)),
     ("phone", re.compile(r"\b0\d{9,10}\b")),
@@ -50,6 +51,24 @@ FORBIDDEN_PII_KEYS = {
     "phone_number",
     "ten_benh_nhan",
 }
+FORBIDDEN_ARTIFACT_SEGMENTS = {
+    ".env",
+    "identifiers",
+    "phi",
+    "pii",
+    "raw",
+    "restricted",
+    "secret",
+    "secrets",
+}
+FORBIDDEN_ARTIFACT_SUBSTRINGS = (
+    ".env",
+    "linkage-key",
+    "mapping-table",
+    "patient-identifiers",
+    "raw-dataset",
+    "reidentification",
+)
 REQUIRED_SIGNOFF_ROLES = [
     "security_owner",
     "data_protection_owner",
@@ -168,6 +187,28 @@ def _safe_json_path_key(value: str) -> str:
     if any(pattern.search(value) for _label, pattern in PII_PATTERNS):
         return "<key>"
     return value
+
+
+def _safe_artifact_reference(value: Any) -> bool:
+    """Artefact ref an toàn: tương đối, không URL/traversal, không trỏ vùng PII/secret/raw."""
+    if not _safe_reference(value):
+        return False
+    text = str(value).strip()
+    lowered = text.lower()
+    if not ARTIFACT_REF_RE.fullmatch(text):
+        return False
+    if lowered.startswith(("/", "~")) or lowered.endswith("/"):
+        return False
+    if "\\" in text or ":" in text or "//" in text:
+        return False
+    segments = [segment for segment in lowered.split("/") if segment]
+    if len(segments) != len(lowered.split("/")):
+        return False
+    if any(segment in {".", ".."} or segment.startswith(".") for segment in segments):
+        return False
+    if any(segment in FORBIDDEN_ARTIFACT_SEGMENTS for segment in segments):
+        return False
+    return not any(token in lowered for token in FORBIDDEN_ARTIFACT_SUBSTRINGS)
 
 
 def _scan_package_text_policy(value: Any, path: str = "$") -> list[str]:
@@ -312,7 +353,7 @@ def validate_evidence_package(
         if (
             not isinstance(artifact_refs, list)
             or not artifact_refs
-            or not all(_safe_reference(x) for x in artifact_refs)
+            or not all(_safe_artifact_reference(x) for x in artifact_refs)
         ):
             record_errors.append("artifact_refs_invalid")
         controls = record.get("controls_verified")
@@ -365,7 +406,7 @@ def validate_evidence_package(
         if not _safe_reference(signoff.get("scope")):
             signoff_errors.append("scope_invalid")
         refs = signoff.get("artifact_refs")
-        if not isinstance(refs, list) or not refs or not all(_safe_reference(x) for x in refs):
+        if not isinstance(refs, list) or not refs or not all(_safe_artifact_reference(x) for x in refs):
             signoff_errors.append("artifact_refs_invalid")
         if signoff_errors:
             errors.extend(f"signoff[{role}]:{err}" for err in signoff_errors)
@@ -386,12 +427,13 @@ def validate_evidence_package(
         for field in (
             "release_id",
             "change_ticket_reference",
-            "rollback_plan_artifact_ref",
-            "post_deployment_checklist_ref",
             "operator_reference",
             "admin_approver_reference",
         ):
             if not _safe_reference(attestation.get(field)):
+                errors.append(f"go_live_attestation:{field}_invalid")
+        for field in ("rollback_plan_artifact_ref", "post_deployment_checklist_ref"):
+            if not _safe_artifact_reference(attestation.get(field)):
                 errors.append(f"go_live_attestation:{field}_invalid")
         dossier = str(attestation.get("evidence_dossier_sha256", ""))
         if not re.fullmatch(r"[a-f0-9]{64}", dossier, flags=re.IGNORECASE):

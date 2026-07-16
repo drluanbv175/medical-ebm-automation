@@ -139,3 +139,17 @@ def test_evidence_package_redacts_pii_from_error_paths() -> None:
     assert summary.status == "INVALID_OR_INCOMPLETE"
     assert "package_text_policy:$.extra_review.<key>:pii_key_phone" in joined_errors
     assert "0912345678" not in joined_errors
+
+
+def test_evidence_package_rejects_unsafe_artifact_references() -> None:
+    mod = _load_module()
+    package = _completed_evidence_package(mod)
+    package["evidence"][0]["artifact_refs"] = ["../secrets/.env"]
+    package["signoffs"][0]["artifact_refs"] = ["https://example.test/signoff.json"]
+    package["go_live_attestation"]["rollback_plan_artifact_ref"] = "/tmp/raw/patient-identifiers.csv"
+    summary = mod.validate_evidence_package(package, generated_at=FIXED_NOW)
+
+    assert summary.status == "INVALID_OR_INCOMPLETE"
+    assert "evidence[P1]:artifact_refs_invalid" in summary.errors
+    assert "signoff[security_owner]:artifact_refs_invalid" in summary.errors
+    assert "go_live_attestation:rollback_plan_artifact_ref_invalid" in summary.errors

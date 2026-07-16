@@ -98,6 +98,12 @@ python3 tools/verify_personal_production_hardening.py \
   --evidence /secure/path/personal-production-evidence.json
 ```
 
+Trong evidence package, mọi `artifact_refs` chỉ được là mã/đường dẫn tương đối
+an toàn tới artefact đã khử định danh và đã được duyệt. Không dùng URL ngoài,
+đường dẫn tuyệt đối, `..`, `.env`, thư mục `raw`/`restricted`, raw dataset, file
+PII/PHI, bảng ánh xạ pseudonymization, linkage key hoặc khóa tái định danh làm
+artefact ref.
+
 Gói evidence package hợp lệ chỉ có nghĩa là **đủ cấu trúc để đưa vào thẩm định
 người thật/đơn vị**. Nó không tự bật dữ liệu bệnh nhân thật, không tự thay UAT,
 không tự thay bảo mật triển khai và không tự cho phép ghi EMR/HIS.
