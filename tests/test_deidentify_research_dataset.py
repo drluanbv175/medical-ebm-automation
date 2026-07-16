@@ -51,6 +51,29 @@ record_id,Họ tên,phone,email,age,notes,primary_outcome
     assert intake["status"] == RDI.READY_STATUS
 
 
+def test_redact_value_fully_scrubs_formatted_phone_and_grouped_cccd_in_one_cell():
+    """Hồi quy (vòng audit đối kháng 3, 2026-07-16): VALUE_PATTERNS trước đây bỏ sót SĐT có
+    ngoặc đơn ("(090) 123 4567") và CCCD viết nhóm 3 số ("012 345 678 901"). Bản vá đầu tiên
+    (chỉ nới lỏng phone_vn) lại gây lỗi MỚI: phone_vn (khớp lỏng hơn) chạy trước, ẩn một phần
+    số CCCD, làm vỡ cấu trúc 3-3-3(-3) liền mạch mà cccd_cmnd_grouped cần để khớp phần CÒN
+    LẠI — hậu quả là đuôi CCCD ("901") vẫn lộ ra trong CSV đã khử định danh. Fix đúng: đặt
+    cccd_cmnd_grouped (khớp CHẶT hơn, độ dài cố định) TRƯỚC phone_vn trong VALUE_PATTERNS."""
+    text = "Lien he SDT (090) 123 4567, CCCD 012 345 678 901"
+    redacted, counts = DEID._redact_value(text)
+    assert "090" not in redacted
+    assert "4567" not in redacted
+    assert "012" not in redacted
+    assert "901" not in redacted
+    assert counts.get("phone_vn") == 1
+    assert counts.get("cccd_cmnd_grouped") == 1
+
+    # Đối chứng: số lâm sàng KHÔNG bị ẩn nhầm.
+    clinical = "Huyết áp 140/90, nhịp tim 88, đường huyết 7.2"
+    redacted_clinical, counts_clinical = DEID._redact_value(clinical)
+    assert redacted_clinical == clinical
+    assert counts_clinical == {}
+
+
 def test_deidentify_report_does_not_store_raw_pii_values(tmp_path):
     raw = _csv(
         tmp_path / "patient_0912345678.csv",

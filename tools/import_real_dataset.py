@@ -53,10 +53,30 @@ PII_HEADER_CONTAINS = (
     "ngaysinh", "so_cmnd", "so_cccd", "ho_va_ten", "hoten", "ten_bn",
     "ma_benh_nhan", "ma_bn", "ma_hsba", "sdt",
 )
+# Vá 2026-07-16 (round audit đối kháng 3): PII_HEADER_EXACT/CONTAINS ở trên là danh sách
+# CỐ ĐỊNH, bỏ sót các biến thể tên cột thực tế phổ biến (vd "phone_formatted", "cccd_so",
+# "patient_phone"). Kiểm thêm theo TỪNG TOKEN (tách bởi "_") khớp CHÍNH XÁC — an toàn hơn
+# substring vì không khớp nhầm từ tiếng Việt chứa chuỗi con trùng (vd "tuyen_giap" không có
+# token nào == "ten").
+PII_HEADER_TOKENS = {
+    "phone", "cccd", "cmnd", "ten", "email", "dob", "mrn", "bhyt", "ssn",
+    "address", "name", "sdt",
+}
 VALUE_PATTERNS = {
     "email": re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I),
-    "phone_vn": re.compile(r"(?<!\d)(?:\+?84|0)(?:[\s.\-]?\d){8,10}(?!\d)"),
+    # CCCD/CMND viết theo NHÓM 3 chữ số cách nhau bởi khoảng trắng/chấm/gạch (cách viết
+    # phổ biến trên giấy tờ thật, vd "012 345 678 901") — trước đây chỉ bắt chuỗi LIỀN.
+    # ĐẶT TRƯỚC phone_vn có chủ đích: một CCCD 12 số bắt đầu bằng "0" cũng "trông giống"
+    # số điện thoại ở vài chữ số đầu — nếu phone_vn (khớp lỏng hơn, độ dài biến thiên) chạy
+    # trước và redact một phần, phần CÒN LẠI của CCCD sẽ vỡ cấu trúc 3-3-3(-3) liền mạch mà
+    # cccd_cmnd_grouped cần, để lọt phần đuôi PII chưa bị ẩn (đã tái hiện bằng test).
+    "cccd_cmnd_grouped": re.compile(
+        r"(?<!\d)\d{3}[\s.\-]\d{3}[\s.\-]\d{3}(?:[\s.\-]\d{3})?(?!\d)"
+    ),
     "cccd_cmnd": re.compile(r"(?<!\d)(?:\d{9}|\d{12})(?!\d)"),
+    # SĐT VN: cho phép khoảng trắng/chấm/gạch/NGOẶC ĐƠN xen giữa các chữ số (vd
+    # "(090) 123 4567") — {0,3} vì có thể có NHIỀU ký tự phân cách liền nhau (")" + " ").
+    "phone_vn": re.compile(r"(?<!\d)\(?(?:\+?84|0)\)?(?:[\s.\-()]{0,3}\d){8,10}(?!\d)"),
 }
 
 
@@ -106,6 +126,8 @@ def _header_issue(column: str) -> Optional[str]:
     if norm in PII_HEADER_EXACT:
         return f"header_pii:{norm}"
     if any(token in norm for token in PII_HEADER_CONTAINS):
+        return f"header_pii:{norm}"
+    if set(norm.split("_")) & PII_HEADER_TOKENS:
         return f"header_pii:{norm}"
     return None
 
