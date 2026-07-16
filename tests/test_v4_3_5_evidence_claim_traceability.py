@@ -518,7 +518,7 @@ def test_t16_dr8_pass_all_verified_no_blocked_claims(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_t17_review_queue_routes_to_evidence_citation_reviewer(tmp_path):
-    """get_evidence_review_queue trả reviewer_reference = EVIDENCE_CITATION_REVIEWER."""
+    """Review queue có routing + hướng dẫn chặn/phản biện rõ, không còn placeholder."""
     project_dir = _make_project_dir(tmp_path)
     _add_source(project_dir, VerificationState.UNVERIFIED)
     _add_source(project_dir, VerificationState.REQUIRES_HUMAN_REVIEW, "Study Needs Review")
@@ -526,7 +526,18 @@ def test_t17_review_queue_routes_to_evidence_citation_reviewer(tmp_path):
     assert len(queue) == 2
     for item in queue:
         assert item["reviewer_reference"] == "EVIDENCE_CITATION_REVIEWER"
-        assert "not implemented" in item["note"]
+        assert item["claim_use_allowed"] is False
+        assert item["claim_release_gate"] == "blocked_until_human_verified_and_not_retracted"
+        assert item["actor_authentication_required"] is True
+        assert item["reviewer_independence_required"] is True
+        assert item["automation_may_mark_verified"] is False
+        assert "EVIDENCE_CITATION_REVIEWER" in item["required_action"]
+        assert len(item["manual_review_checklist"]) >= 4
+        assert "not implemented" not in item["note"].lower()
+    assert {item["blocking_reason"] for item in queue} == {
+        "source_not_human_verified",
+        "source_requires_human_review",
+    }
 
 
 # ---------------------------------------------------------------------------

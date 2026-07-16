@@ -827,6 +827,9 @@ def _cmd_evidence_list(args: argparse.Namespace, projects_root: pathlib.Path) ->
             print(f"\n  [{item['source_id']}] {item['title']}")
             print(f"    state:    {item['verification_state']}")
             print(f"    reviewer: {item['reviewer_reference']}")
+            print(f"    blocks:   {item['blocking_reason']}")
+            print(f"    action:   {item['required_action']}")
+            print(f"    release:  {item['claim_release_gate']}")
             print(f"    note:     {item['note']}")
     else:
         ledger = EvidenceSourceLedger(project_dir)

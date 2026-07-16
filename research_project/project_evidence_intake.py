@@ -386,10 +386,24 @@ def _make_source_id(project_id: str, title: str, ts: str) -> str:
 
 
 _EVIDENCE_REVIEW_NOTE = (
-    "Evidence verification is manually attested. "
-    "Reviewer identity authentication is not implemented. "
-    "Reviewer independence is not established."
+    "Manual evidence review required before any claim can rely on this source. "
+    "Actor authentication and reviewer independence must be documented by local "
+    "governance before marking HUMAN_VERIFIED."
 )
+
+_EVIDENCE_REVIEW_CHECKLIST = [
+    "Đối chiếu title/authors/year/journal với nguồn chính thức hoặc bản toàn văn.",
+    "Đối chiếu DOI/PMID/URL; ghi rõ nếu nguồn không có DOI/PMID.",
+    "Kiểm tra retraction/expression-of-concern/correction trước khi cho phép dùng claim.",
+    "Xác nhận nguồn thật sự hỗ trợ claim dự kiến, không chỉ có DOI/PMID hợp lệ.",
+    "Ghi reviewer_reference có thể truy xuất và bảo đảm không tự-review nguồn do mình tạo.",
+]
+
+
+def _queue_blocking_reason(state: VerificationState) -> str:
+    if state == VerificationState.REQUIRES_HUMAN_REVIEW:
+        return "source_requires_human_review"
+    return "source_not_human_verified"
 
 
 def add_evidence_source(
@@ -487,6 +501,17 @@ def get_evidence_review_queue(project_dir: pathlib.Path) -> List[dict]:
                 "verification_state": s.verification_state.value,
                 "reviewer_reference": s.reviewer_reference,
                 "claim_use_allowed": s.claim_use_allowed,
+                "blocking_reason": _queue_blocking_reason(s.verification_state),
+                "required_action": (
+                    "EVIDENCE_CITATION_REVIEWER phải xác minh metadata, "
+                    "trạng thái rút bài và mức hỗ trợ claim; sau đó ghi nhận "
+                    "HUMAN_VERIFIED bằng hành động người duyệt hợp lệ."
+                ),
+                "manual_review_checklist": list(_EVIDENCE_REVIEW_CHECKLIST),
+                "claim_release_gate": "blocked_until_human_verified_and_not_retracted",
+                "actor_authentication_required": True,
+                "reviewer_independence_required": True,
+                "automation_may_mark_verified": False,
                 "note": _EVIDENCE_REVIEW_NOTE,
             })
     return queue
