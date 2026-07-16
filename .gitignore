@@ -68,6 +68,9 @@ results/weekly_*.xml
 results/weekly_*.json
 results/research_studio_dashboard.html
 
+# Báo cáo hardening cá nhân sinh lại mỗi lần chạy verifier; không commit timestamp động.
+reports/PERSONAL_PRODUCTION_HARDENING_REPORT.*
+
 # === CLINICAL SAFETY HARDENING 2026-06-28 ===
 # .env variants (bare '.env' already covered above)
 .env.*
