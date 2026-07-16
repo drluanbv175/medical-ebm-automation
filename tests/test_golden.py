@@ -20,6 +20,7 @@ hiện NGAY (regression), không đợi PI duyệt xong mới biết.
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -39,6 +40,60 @@ FIXTURE_FILES = _load_fixtures()
 
 def _fixture_id(path):
     return path.stem
+
+
+def _dataframe_from_seeded_spec(spec: dict[str, Any]):
+    """Tạo dataset synthetic không PII từ đặc tả fixture golden G6.
+
+    Không dùng dữ liệu thật; mục tiêu là regression test kỹ thuật cho engine G6,
+    không phải bằng chứng hiệu quả lâm sàng.
+    """
+    np = pytest.importorskip("numpy")
+    pd = pytest.importorskip("pandas")
+    rng = np.random.default_rng(spec["seed"])
+    kind = spec["kind"]
+    n = int(spec["n"])
+    if kind == "binary_logistic_seeded":
+        exposure = rng.integers(0, 2, n)
+        age = rng.normal(55, 9, n).round(1)
+        bmi = rng.normal(25, 3, n).round(1)
+        sex = rng.integers(0, 2, n)
+        coefs = spec["coefficients"]
+        lin = (
+            float(spec["intercept"])
+            + float(coefs["exposure"]) * exposure
+            + float(coefs["age_centered"]) * (age - 55)
+            + float(coefs["bmi_centered"]) * (bmi - 25)
+            + float(coefs["sex"]) * sex
+        )
+        p = 1 / (1 + np.exp(-lin))
+        outcome = rng.binomial(1, p)
+        return pd.DataFrame({
+            "outcome": outcome,
+            "exposure": exposure,
+            "age": age,
+            "bmi": bmi,
+            "sex": sex,
+        })
+    if kind == "cox_survival_seeded":
+        exposure = rng.integers(0, 2, n)
+        age = rng.normal(58, 10, n).round(1)
+        coefs = spec["coefficients"]
+        hazard = (
+            float(spec["baseline_hazard"])
+            * np.exp(float(coefs["exposure"]) * exposure + float(coefs["age_centered"]) * (age - 58))
+        )
+        event_time = rng.exponential(1 / hazard)
+        censor = rng.uniform(float(spec["censor_uniform_low"]), float(spec["censor_uniform_high"]), n)
+        follow = np.minimum(event_time, censor).round(1)
+        event = (event_time <= censor).astype(int)
+        return pd.DataFrame({
+            "age": age,
+            "exposure_var": exposure,
+            "follow_time": follow,
+            "event_flag": event,
+        })
+    raise ValueError(f"Unsupported golden data kind: {kind}")
 
 
 @pytest.mark.parametrize("fixture_path", FIXTURE_FILES, ids=_fixture_id)
@@ -74,6 +129,36 @@ def test_golden_case_output_matches_expected(fixture_path):
         )
         assert len(good_errors) == expected["good_manuscript_error_count"], (
             f"{fixture['golden_id']}: good manuscript ra {len(good_errors)} lỗi (kỳ vọng 0): {good_errors}"
+        )
+    elif gate == "G6" and func_name == "multivariate_model":
+        pytest.importorskip("statsmodels")
+        from run_stats_analysis import multivariate_model
+        df = _dataframe_from_seeded_spec(fixture["input"]["data"])
+        actual = multivariate_model(
+            df,
+            fixture["input"]["outcome_col"],
+            fixture["input"]["group_col"],
+            fixture["input"]["covariates"],
+            outcome_type=fixture["input"]["outcome_type"],
+        )
+        assert actual == expected, (
+            f"{fixture['golden_id']}: multivariate_model() lệch golden output.\n"
+            f"Actual: {actual}\nExpected: {expected}"
+        )
+    elif gate == "G6" and func_name == "survival_model":
+        pytest.importorskip("lifelines")
+        from run_stats_analysis import survival_model
+        df = _dataframe_from_seeded_spec(fixture["input"]["data"])
+        actual = survival_model(
+            df,
+            fixture["input"]["time_col"],
+            fixture["input"]["event_col"],
+            fixture["input"]["group_col"],
+            fixture["input"]["covariates"],
+        )
+        assert actual == expected, (
+            f"{fixture['golden_id']}: survival_model() lệch golden output.\n"
+            f"Actual: {actual}\nExpected: {expected}"
         )
     else:
         pytest.skip(f"{fixture['golden_id']}: gate/function '{gate}/{func_name}' chưa có runner trong test_golden.py")

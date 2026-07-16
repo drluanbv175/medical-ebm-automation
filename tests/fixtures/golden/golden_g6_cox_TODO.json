@@ -1,9 +1,0 @@
-{
-  "golden_id": "GOLDEN-G6-002",
-  "gate": "G6",
-  "status": "TODO — CHƯA DỰNG",
-  "why_not_built_2026-07-06": "Tương tự GOLDEN-G6-001 nhưng cho phân tích sống còn (Cox regression, run_cox() trong template G6). Cần dữ liệu tổng hợp có thời gian theo dõi + biến cố, chạy thật để lấy HR/CI/p thật, PI xác nhận kịch bản.",
-  "approved_by_pi": false,
-  "approved_by": null,
-  "approved_date": null
-}

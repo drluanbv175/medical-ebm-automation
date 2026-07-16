@@ -1,9 +1,0 @@
-{
-  "golden_id": "GOLDEN-G6-001",
-  "gate": "G6",
-  "status": "TODO — CHƯA DỰNG",
-  "why_not_built_2026-07-06": "tools/run_g6_auto.py không phải thư viện thống kê gọi trực tiếp được — nó SINH RA (template) script phân tích riêng cho từng đề tài (vd exports/<STUDY>/scripts/run_analysis_cli.py). Cần: (1) chọn 1 kịch bản case-control/cohort tổng hợp KHÔNG PII cụ thể, (2) sinh script qua run_g6_auto.py hoặc dùng 1 script đã sinh sẵn trong exports/, (3) chạy logistic/Cox thật trên dữ liệu tổng hợp để lấy OR/HR + CI + p-value THẬT (không suy đoán), (4) PI xác nhận kịch bản đại diện đúng loại đề tài. Việc này cần thêm 1 phiên làm việc tập trung để làm đúng, không rush.",
-  "approved_by_pi": false,
-  "approved_by": null,
-  "approved_date": null
-}
