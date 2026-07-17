@@ -69,6 +69,15 @@ _SPECIALTY_KEYWORDS = {
         "trào ngược dạ dày", "trào ngược", "viêm gan mạn", "bệnh gan mạn",
         "bệnh viêm ruột",
     ],
+    # THÊM 2026-07-17: phát hiện thật khi chạy demo đề tài khảo sát hài lòng
+    # bệnh nhân C1a, BVQY175 — trước đây rơi về "generic", kéo theo _BASE_VITALS
+    # (huyết áp/nhịp tim) và bệnh nền tim mạch/chuyển hóa vào CRF của một khảo
+    # sát KHÔNG đo chỉ số lâm sàng, gây bác sĩ đánh giá "đề cương không đảm bảo".
+    "patient_satisfaction": [
+        "hài lòng", "satisfaction", "chất lượng dịch vụ", "chất lượng khám chữa bệnh",
+        "khảo sát bệnh nhân", "khảo sát người bệnh", "trải nghiệm người bệnh",
+        "patient experience", "chăm sóc khách hàng y tế",
+    ],
 }
 
 
@@ -429,6 +438,34 @@ _GASTRO_OUTCOMES = [
     ("follow_time_months","Outcomes","",                   "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
 ]
 
+# CHUYÊN KHOA: Khảo sát hài lòng người bệnh (dịch vụ y tế, KHÔNG phải bệnh lý
+# lâm sàng cụ thể — không đo sinh hiệu/bệnh nền; xem needs_vitals ở
+# _SPECIALTY_BUNDLES). Cấu trúc 5 lĩnh vực + điểm chung tham khảo khung phổ
+# biến trong khảo sát hài lòng bệnh viện tại Việt Nam (Bộ Y tế) — CHƯA kiểm
+# chứng trực tuyến số quyết định/nội dung chính xác, giữ nguyên nhãn
+# [CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC] cho tới khi bác sĩ đối chiếu bản gốc; nếu
+# đơn vị dùng bộ công cụ khác đã kiểm định, thay thế toàn bộ khối này.
+_HAI_LONG_CLINICAL = [
+    ("visit_type",     "Clinical", "Bối cảnh lượt khám (Khảo sát hài lòng)", "radio", "Loại lượt khám", "1, Khám mới lần đầu tại khoa | 2, Tái khám", "", "", "", "", "y", ""),
+    ("payment_type",   "Clinical", "",                   "dropdown", "Hình thức chi trả",                                    "1, Bảo hiểm y tế (BHYT) | 2, Khám theo yêu cầu/dịch vụ | 3, Tự chi trả không BHYT | 4, Khác", "", "", "", "", "y", ""),
+    ("wait_time_min",  "Clinical", "",                   "text",     "Thời gian chờ khám (phút, từ đăng ký đến khi được khám)", "",                                                                    "Người bệnh tự ước lượng hoặc ghi nhận thực tế nếu có hệ thống hẹn giờ", "number", "0", "600", "n", ""),
+    ("visit_freq_year","Clinical", "",                   "text",     "Số lần đến khám tại khoa trong 12 tháng qua",          "",                                                                      "",                        "integer",   "1",   "365", "n", ""),
+]
+_HAI_LONG_EXPOSURE = [
+    ("occupation",     "Exposure", "Yếu tố liên quan đến hài lòng (mục tiêu phân tích)", "dropdown", "Nghề nghiệp", "1, Cán bộ/công chức/viên chức (kể cả quân nhân) | 2, Lao động tự do/kinh doanh | 3, Hưu trí/nội trợ | 4, Khác", "", "", "", "", "n", ""),
+    ("income_self_rated","Exposure","",                  "dropdown", "Mức thu nhập tự đánh giá",                             "1, Thấp | 2, Trung bình | 3, Khá/cao | 9, Không muốn trả lời",       "",                        "",          "",    "",    "n", ""),
+]
+_HAI_LONG_OUTCOMES = [
+    ("domain_access_score",     "Outcomes", "Điểm hài lòng theo lĩnh vực (kết cục chính)", "text", "Điểm hài lòng — Khả năng tiếp cận dịch vụ",              "", "Thang Likert theo bộ công cụ đã chọn [CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC]", "number", "1", "5", "y", ""),
+    ("domain_transparency_score","Outcomes","",          "text",     "Điểm hài lòng — Minh bạch thông tin, thủ tục khám bệnh", "", "",                                                                     "number",    "1",   "5",   "y", ""),
+    ("domain_facility_score",   "Outcomes", "",          "text",     "Điểm hài lòng — Cơ sở vật chất, phương tiện phục vụ",    "", "",                                                                     "number",    "1",   "5",   "y", ""),
+    ("domain_staff_attitude_score","Outcomes","",        "text",     "Điểm hài lòng — Thái độ ứng xử, năng lực chuyên môn nhân viên y tế", "", "",                                                        "number",    "1",   "5",   "y", ""),
+    ("domain_service_result_score","Outcomes","",        "text",     "Điểm hài lòng — Kết quả cung cấp dịch vụ khám chữa bệnh", "", "",                                                                    "number",    "1",   "5",   "y", ""),
+    ("overall_satisfaction_score","Outcomes","",         "text",     "Điểm hài lòng chung (kết cục chính tổng hợp)",           "", "Cách tính theo hướng dẫn chấm điểm của bộ công cụ đã chọn",           "number",    "1",   "5",   "y", ""),
+    ("overall_satisfaction_binary","Outcomes","Kết cục phụ","radio", "Hài lòng chung (nhị phân, theo ngưỡng cắt bộ công cụ)",  "0, Không hài lòng | 1, Hài lòng", "Ngưỡng cắt theo hướng dẫn chính thức của bộ công cụ [CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC]", "", "", "", "y", ""),
+    ("willing_to_return","Outcomes","",                  "radio",    "Sẵn sàng quay lại khám/giới thiệu người khác",           "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
+]
+
 # GENERIC — dùng khi KHÔNG khớp chuyên khoa nào. KHÔNG bịa nội dung lâm sàng
 # cụ thể (vì có thể sai hoàn toàn với đề tài thật) — chỉ đặt placeholder rõ
 # ràng buộc bác sĩ phải tự định nghĩa theo PICO/SAP của chính đề tài.
@@ -487,6 +524,15 @@ _SPECIALTY_BUNDLES = {
         "clinical": _GASTRO_CLINICAL, "labs": [], "meds": _GASTRO_MEDS,
         "exposure": _GASTRO_EXPOSURE, "outcomes": _GASTRO_OUTCOMES,
         "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _GENERIC_LABS,
+    },
+    # THÊM 2026-07-17: needs_vitals=False — khảo sát hài lòng KHÔNG đo sinh
+    # hiệu; các bundle khác ở trên giữ nguyên hành vi cũ (mặc định True qua
+    # .get(), xem build_redcap_rows) để không đổi CRF của đề tài đang chạy.
+    "patient_satisfaction": {
+        "clinical": _HAI_LONG_CLINICAL, "labs": [], "meds": [],
+        "exposure": _HAI_LONG_EXPOSURE, "outcomes": _HAI_LONG_OUTCOMES,
+        "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _GENERIC_LABS,
+        "needs_vitals": False,
     },
     "generic": {
         "clinical": [], "labs": [], "meds": [],
@@ -547,12 +593,18 @@ def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
     """
     specialty = detect_specialty(topic)
     bundle = _SPECIALTY_BUNDLES[specialty]
+    # SỬA 2026-07-17: _BASE_VITALS (huyết áp/nhịp tim) trước đây bị nhồi CỨNG
+    # vào MỌI thiết kế bất kể chuyên khoa — đúng bug làm CRF khảo sát hài lòng
+    # có trường sinh hiệu vô nghĩa. Mặc định giữ nguyên True (không đổi hành vi
+    # các bundle lâm sàng hiện có); chỉ bundle nào tự khai needs_vitals=False
+    # (khảo sát/PROM không đo sinh hiệu) mới bỏ khối này.
+    base_vitals = _BASE_VITALS if bundle.get("needs_vitals", True) else []
 
     if design_code == "sr_ma":
         return _SRMA_FIELDS, specialty
     elif design_code == "rct":
         rows = (
-            _BASE_ADMIN + _BASE_DEMOGRAPHICS + _BASE_VITALS + bundle["clinical"]
+            _BASE_ADMIN + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
             + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"] + bundle["meds"]
             + _RCT_EXTRA
             + bundle["exposure"]   # RCT cũng có exposure (nhóm can thiệp)
@@ -561,14 +613,14 @@ def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
         )
     elif design_code == "diagnostic":
         rows = (
-            _BASE_ADMIN + _BASE_DEMOGRAPHICS + _BASE_VITALS + bundle["clinical"]
+            _BASE_ADMIN + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
             + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"]
             + _DIAGNOSTIC_EXTRA
             + _BASE_SAFETY
         )
     else:  # cohort, case_control, cross_sectional, mặc định
         rows = (
-            _BASE_ADMIN + _BASE_DEMOGRAPHICS + _BASE_VITALS + bundle["clinical"]
+            _BASE_ADMIN + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
             + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"] + bundle["meds"]
             + bundle["exposure"]
             + bundle["outcomes"]

@@ -304,7 +304,7 @@ def guardrail_check(artifact, n_adjusted, effect_val, missing_sd=False):
 
 def generate_artifact(study, topic, design_code, design_primary, alpha, power, effect_val, effect_type,
                       n_per_group, n_total, n_adjusted, dropout, formula_used, sens_rows, sens_mults,
-                      p_event, run_date, sd=None, design_ambiguous=False):
+                      p_event, run_date, sd=None, design_ambiguous=False, confirmed_n=None):
     """Sinh A4 — Kế hoạch cỡ mẫu."""
     study_safe = study.replace(" ", "-")
     lines = [
@@ -378,6 +378,46 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
             "| N tổng | **[CẦN EFFECT SIZE]** |",
             "| N điều chỉnh | **[CẦN EFFECT SIZE]** |",
         ]
+    if confirmed_n is not None:
+        lines += [
+            "",
+            "## PHẦN 2b — CỠ MẪU THỰC TẾ ĐÃ CHỐT (bác sĩ/chủ nhiệm quyết định)",
+            "",
+            f"**N thực tế đã chốt:** **{confirmed_n}** người tham gia — quyết định của "
+            "bác sĩ/chủ nhiệm đề tài (vd theo khả năng thu thập/thời gian/hành chính), "
+            "KHÔNG thay thế công thức tính N tối thiểu ở PHẦN 2, chỉ ghi SONG SONG để "
+            "đối chiếu.",
+            "",
+        ]
+        if n_adjusted > 0:
+            if confirmed_n >= n_adjusted:
+                margin = ""
+                if design_code == "cross_sectional":
+                    moe = 1.96 * math.sqrt(0.5 * 0.5 / confirmed_n) * 100
+                    margin = (
+                        f" Với N={confirmed_n} (giả định p=0.50, xấu nhất), sai số biên "
+                        f"(margin of error) 95% CI ước lượng tỷ lệ ≈ ±{moe:.1f} điểm phần "
+                        "trăm — chặt hơn mức tối thiểu PHẦN 2 (N tối thiểu cho ±5%)."
+                    )
+                lines.append(
+                    f"✅ **ĐẠT** — N chốt ({confirmed_n}) ≥ N tối thiểu tính theo thống kê "
+                    f"({n_adjusted}), đủ hoặc dư lực thống kê/độ chính xác so với yêu cầu tối "
+                    f"thiểu.{margin}"
+                )
+            else:
+                lines.append(
+                    f"🔴 **CẢNH BÁO** — N chốt ({confirmed_n}) THẤP HƠN N tối thiểu tính theo "
+                    f"thống kê ({n_adjusted}) — nguy cơ THIẾU LỰC THỐNG KÊ (underpowered). Bác "
+                    "sĩ/thống kê viên cần xác nhận đây là quyết định có chủ đích (vd nghiên cứu "
+                    "thăm dò/pilot) và ghi rõ giới hạn này trong đề cương, hoặc tăng N/điều "
+                    "chỉnh effect size kỳ vọng."
+                )
+        else:
+            lines.append(
+                "[CẦN BỔ SUNG] — chưa có N tối thiểu tính theo thống kê để đối chiếu (thiếu "
+                "effect size ở PHẦN 1); N chốt ở trên vẫn được ghi nhận nhưng KHÔNG có cơ sở "
+                "so sánh."
+            )
     lines += [
         "",
         "---",
@@ -429,6 +469,11 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         lines.append(f"Tính thêm {int(dropout*100)}% bỏ cuộc dự kiến, cỡ mẫu cuối = {n_adjusted} người.")
     else:
         lines.append("cỡ mẫu = [CẦN EFFECT SIZE từ bác sĩ].")
+    if confirmed_n is not None:
+        lines.append(
+            f"N THỰC TẾ đã được bác sĩ/chủ nhiệm CHỐT = {confirmed_n} người "
+            f"({'≥' if (n_adjusted > 0 and confirmed_n >= n_adjusted) else '—'} N tối thiểu tính toán)."
+        )
     lines += [
         "```",
         "",
@@ -484,6 +529,15 @@ def main():
     parser.add_argument("--p-event", type=float, default=0.30, help="Tỷ lệ biến cố tổng thể (log-rank)")
     parser.add_argument("--sd", type=float, default=None,
                          help="Độ lệch chuẩn kết cục liên tục (bắt buộc khi --effect-type MD)")
+    # THÊM 2026-07-17: trước đây G3 CHỈ tính N từ effect size — không có chỗ
+    # ghi nhận khi bác sĩ/chủ nhiệm CHỐT một N thực tế khác (vd theo khả năng
+    # thu thập/hành chính, thường ≥ N tối thiểu để dư an toàn) như phát hiện
+    # thật khi bác sĩ báo "Mẫu được chốt là 1000 mẫu". KHÔNG thay thế N tính
+    # theo thống kê — chỉ ghi SONG SONG cả hai, so sánh và cảnh báo nếu N chốt
+    # < N tối thiểu (thiếu lực thống kê).
+    parser.add_argument("--confirmed-n", type=int, default=None,
+                         help="N thực tế bác sĩ/chủ nhiệm đã CHỐT (vd theo khả năng thu thập/hành "
+                              "chính) — ghi kèm N tối thiểu tính theo thống kê, KHÔNG thay thế công thức")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
 
@@ -511,6 +565,9 @@ def main():
     if args.sd is None and _g3_pinned.get("sd") is not None:
         args.sd = _g3_pinned["sd"]
         print(f"  → Khôi phục sd={args.sd} từ study_meta.json")
+    if args.confirmed_n is None and _g3_pinned.get("confirmed_n") is not None:
+        args.confirmed_n = _g3_pinned["confirmed_n"]
+        print(f"  → Khôi phục confirmed_n={args.confirmed_n} từ study_meta.json (chạy lại không mất)")
 
     print(f"🔢 G3 — Tính cỡ mẫu: {study}")
     print("📂 Bước 1/6: Đọc checkpoints...")
@@ -763,7 +820,7 @@ def main():
         study, topic, design_code, design_primary, alpha, power,
         effect_val, effect_type, n_per_group, n_total, n_adjusted,
         dropout, formula_used, sens_rows, sens_mults, p_event, run_date, args.sd,
-        design_ambiguous=design_ambiguous,
+        design_ambiguous=design_ambiguous, confirmed_n=args.confirmed_n,
     )
     md_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md"
     md_path.write_text(artifact, encoding="utf-8")
@@ -853,7 +910,13 @@ def main():
                    "dropout": dropout, "p_event": p_event}
         if args.sd is not None:
             seed_g3["sd"] = args.sd
+        if args.confirmed_n is not None:
+            seed_g3["confirmed_n"] = args.confirmed_n
         GC.ensure_study_meta(out_dir, seed={"gate_params": {"G3": seed_g3}})
+    elif args.confirmed_n is not None:
+        # Bác sĩ có thể chốt N thực tế TRƯỚC khi effect size sẵn sàng — vẫn ghim
+        # riêng để không mất khi chạy lại.
+        GC.ensure_study_meta(out_dir, seed={"gate_params": {"G3": {"confirmed_n": args.confirmed_n}}})
 
     cp = {
         "gate": "G3", "study": study, "run_date": run_date,
@@ -863,6 +926,10 @@ def main():
         "effect_val": effect_val, "effect_type": effect_type,
         "effect_quality": effect_quality,  # "labeled" (có 95%CI) / "crude" (thô) / None (do bác sĩ cung cấp tay)
         "n_per_group": n_per_group, "n_total": n_total, "n_adjusted": n_adjusted,
+        "confirmed_n": args.confirmed_n,
+        "confirmed_n_adequate": (
+            (args.confirmed_n >= n_adjusted) if (args.confirmed_n is not None and n_adjusted > 0) else None
+        ),
         "dropout": dropout, "formula_used": formula_used, "p_event": p_event,
         "p0": args.p0,  # lưu tỷ lệ biến cố nhóm chứng → chạy lại KHÔNG mất (fix param recovery)
         "sd": args.sd,  # lưu SD kết cục liên tục (effect_type=MD) → chạy lại KHÔNG mất

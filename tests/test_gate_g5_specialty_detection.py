@@ -61,6 +61,14 @@ class TestIsolatedSpecialtyDetection:
     def test_gastroenterology(self):
         assert detect_specialty("Theo dõi xơ gan mất bù bằng thang Child-Pugh") == "gastroenterology"
 
+    def test_patient_satisfaction(self):
+        """Thêm 2026-07-17 — phát hiện thật khi chạy demo đề tài khảo sát hài
+        lòng bệnh nhân C1a, BVQY175 (trước đây rơi về generic, kéo theo CRF
+        có huyết áp/nhịp tim vô nghĩa với khảo sát)."""
+        assert detect_specialty(
+            "Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh"
+        ) == "patient_satisfaction"
+
     def test_no_match_falls_back_to_generic(self):
         assert detect_specialty("Đánh giá hiệu quả một loại vitamin tổng hợp") == "generic"
 

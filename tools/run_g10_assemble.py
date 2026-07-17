@@ -48,6 +48,17 @@ TAG_DV = S.STATUS_TAGS["CAN_XAC_NHAN_DON_VI"]      # [CẦN XÁC NHẬN TẠI Đ
 TAG_DRAFT = S.STATUS_TAGS["DU_THAO"]               # [DỰ THẢO]
 TAG_PROVIDED = S.STATUS_TAGS["DA_CUNG_CAP"]        # [ĐÃ CUNG CẤP]
 
+# THÊM 2026-07-17: dùng MỘT LẦN ở đầu khối nội dung lấy từ study_meta.json khi
+# nội dung đó là phán đoán/soạn thảo (PICO, giả thuyết, tiêu chuẩn chọn/loại,
+# công cụ đo lường...) thay vì gắn TAG_PROVIDED cho TỪNG dòng — assembler
+# không biết nội dung trong study_meta.json do bác sĩ tự gõ hay do agent soạn
+# hộ, nên KHÔNG được khẳng định "đã cung cấp" (quy sai nguồn gốc, vi phạm
+# đúng bảng "Phân biệt nguồn thông tin" của chính tài liệu).
+_META_DRAFT_NOTE = (
+    f"{TAG_DRAFT} — nội dung dưới đây do hệ thống/agent soạn dựa trên thông tin "
+    "đã có, bác sĩ/chủ nhiệm PHẢI xác nhận hoặc chỉnh sửa trước khi dùng chính thức."
+)
+
 
 # ════════════════════════════════════════════════════════════════════════════
 # ĐỌC CHECKPOINT
@@ -125,13 +136,21 @@ def sec_tomtat(cps, meta) -> str:
     topic = _g(cps["G0"], "topic", default=meta.get("title", TAG_BS))
     design = _g(cps["G1"], "design", "primary", default=TAG_BS)
     n_adj = _g(cps["G3"], "n_adjusted", default=TAG_BS)
+    # THÊM 2026-07-17: nếu bác sĩ/chủ nhiệm đã CHỐT N thực tế (--confirmed-n ở
+    # G3), tóm tắt phải nêu con số THẬT SẼ THU THẬP, không chỉ N tối thiểu lý
+    # thuyết — tránh đề cương nói "428" trong khi bác sĩ đã quyết định 1000.
+    confirmed_n = _g(cps["G3"], "confirmed_n", default=None)
+    if confirmed_n is not None:
+        n_txt = f"{confirmed_n} đối tượng (đã bác sĩ/chủ nhiệm chốt; N tối thiểu tính toán: {n_adj})"
+    else:
+        n_txt = f"{n_adj} đối tượng"
     std = _g(cps["G1"], "design", "reporting_standard",
              default=_g(cps["G4"], "reporting_standard", default=TAG_BS))
     return (
         "# 1. Tóm tắt\n\n"
         f"**Đề tài:** {topic}\n\n"
         f"**Thiết kế:** {design} (chuẩn báo cáo {std}).  \n"
-        f"**Cỡ mẫu dự kiến:** {n_adj} đối tượng.  \n"
+        f"**Cỡ mẫu dự kiến:** {n_txt}.  \n"
         f"**Mục tiêu, kết quả và kết luận:** {TAG_BS} — phần tóm tắt có cấu trúc "
         "(Bối cảnh–Mục tiêu–Phương pháp–Kết quả–Kết luận) chỉ hoàn thiện SAU khi "
         "có kết quả thật; hiện để trống phần Kết quả/Kết luận theo nguyên tắc "
@@ -158,15 +177,43 @@ def sec_datvande(cps, meta) -> str:
 
 
 def sec_cauhoi(cps, meta) -> str:
+    # SỬA 2026-07-17: trước đây hàm này BỎ QUA meta hoàn toàn (luôn TAG_BS) dù
+    # meta.get("research_question") đã được ĐỌC và dùng ở nơi khác trong cùng
+    # file (ma trận truy xuất, bảng kiểm) — tài liệu lắp ráp tự mâu thuẫn nội
+    # bộ khi bác sĩ đã cung cấp research_question/pico/hypothesis. Mở rộng
+    # theo ĐÚNG pattern meta-driven đã có ở sec_muctieu (aim/objectives).
     qtype = _g(cps["G1"], "question_type", default=TAG_BS)
-    return (
-        "# 3. Câu hỏi nghiên cứu và giả thuyết\n\n"
-        f"**Loại câu hỏi (tự động từ G1):** {qtype}.\n\n"
-        f"**Câu hỏi PICO/PECO:** {TAG_BS} — bác sĩ xác nhận 4 thành phần P-I/E-C-O "
-        "(đã khởi tạo ở G0, chờ chốt).\n\n"
-        f"**Giả thuyết:** {TAG_BS} (với nghiên cứu mô tả có thể không cần giả "
-        "thuyết kiểm định; với nghiên cứu phân tích: nêu H0/H1).\n"
-    )
+    lines = [
+        "# 3. Câu hỏi nghiên cứu và giả thuyết\n",
+        f"**Loại câu hỏi (tự động từ G1):** {qtype}.\n",
+    ]
+    if meta.get("research_question") or meta.get("pico") or meta.get("hypothesis"):
+        lines.append(f"> {_META_DRAFT_NOTE}\n")
+    research_question = meta.get("research_question")
+    if research_question:
+        lines.append(f"**Câu hỏi nghiên cứu:** {research_question}\n")
+    pico = meta.get("pico") or {}
+    if pico:
+        lines.append("**Câu hỏi PICO/PECO:**\n")
+        for key, label in (
+            ("p", "P — Đối tượng (Population)"),
+            ("i_e", "I/E — Can thiệp/Yếu tố phơi nhiễm (Intervention/Exposure)"),
+            ("c", "C — So sánh (Comparison)"),
+            ("o", "O — Kết cục (Outcome)"),
+        ):
+            val = pico.get(key)
+            lines.append(f"- **{label}:** {val if val else TAG_BS}")
+        lines.append("")
+    else:
+        lines.append(f"**Câu hỏi PICO/PECO:** {TAG_BS} — bác sĩ xác nhận 4 thành phần "
+                     "P-I/E-C-O (đã khởi tạo ở G0, chờ chốt).\n")
+    hypothesis = meta.get("hypothesis")
+    if hypothesis:
+        lines.append(f"**Giả thuyết:** {hypothesis}\n")
+    else:
+        lines.append(f"**Giả thuyết:** {TAG_BS} (với nghiên cứu mô tả có thể không cần "
+                     "giả thuyết kiểm định; với nghiên cứu phân tích: nêu H0/H1).\n")
+    return "\n".join(lines)
 
 
 def sec_muctieu(cps, meta) -> str:
@@ -208,15 +255,37 @@ def sec_thietke(cps, meta) -> str:
 
 
 def sec_doituong(cps, meta) -> str:
+    # SỬA 2026-07-17: mở rộng theo pattern meta-driven — inclusion_criteria/
+    # exclusion_criteria (list[str]) nếu bác sĩ đã cung cấp trong study_meta.json.
+    inclusion = meta.get("inclusion_criteria") or []
+    exclusion = meta.get("exclusion_criteria") or []
+    sampling = meta.get("sampling_method")
+    inclusion_txt = (
+        "\n".join(f"- {c}" for c in inclusion)
+        if inclusion else
+        f"{TAG_BS} — bác sĩ xác định tiêu chuẩn nhận (tuổi, tình trạng, đồng thuận...)."
+    )
+    exclusion_txt = (
+        "\n".join(f"- {c}" for c in exclusion)
+        if exclusion else
+        f"{TAG_BS} — bác sĩ xác định tiêu chuẩn loại trừ."
+    )
+    sampling_txt = (
+        sampling
+        if sampling else
+        f"{TAG_BS} — phương pháp chọn mẫu (thuận tiện/ngẫu nhiên hệ thống/phân "
+        "tầng...) và quy trình tuyển. Cỡ mẫu xem Mục 8."
+    )
+    draft_note = f"> {_META_DRAFT_NOTE}\n\n" if (inclusion or exclusion or sampling) else ""
     return (
         "# 6. Đối tượng nghiên cứu\n\n"
+        f"{draft_note}"
         "## 6.1. Tiêu chuẩn chọn\n\n"
-        f"{TAG_BS} — bác sĩ xác định tiêu chuẩn nhận (tuổi, tình trạng, đồng thuận...).\n\n"
+        f"{inclusion_txt}\n\n"
         "## 6.2. Tiêu chuẩn loại\n\n"
-        f"{TAG_BS} — bác sĩ xác định tiêu chuẩn loại trừ.\n\n"
+        f"{exclusion_txt}\n\n"
         "## 6.3. Tuyển mẫu\n\n"
-        f"{TAG_BS} — phương pháp chọn mẫu (thuận tiện/ngẫu nhiên hệ thống/phân "
-        "tầng...) và quy trình tuyển. Cỡ mẫu xem Mục 8.\n"
+        f"{sampling_txt}\n"
     )
 
 
@@ -277,12 +346,30 @@ def sec_comau(cps, meta) -> str:
     per_group = ""
     if code in _MULTI_ARM_DESIGNS and n_per not in ("?", n_total):
         per_group = f" (mỗi nhóm: {n_per})"
+    confirmed_n = _g(g3, "confirmed_n", default=None)
+    confirmed_block = ""
+    if confirmed_n is not None:
+        adequate = _g(g3, "confirmed_n_adequate", default=None)
+        if adequate is True:
+            confirmed_block = (
+                f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{confirmed_n}** — "
+                f"✅ ĐẠT, ≥ N tối thiểu tính theo thống kê ({n_adj}).\n"
+            )
+        elif adequate is False:
+            confirmed_block = (
+                f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{confirmed_n}** — "
+                f"🔴 CẢNH BÁO, THẤP HƠN N tối thiểu tính theo thống kê ({n_adj}); nguy cơ "
+                "thiếu lực thống kê (underpowered) — cần xác nhận có chủ đích hoặc điều chỉnh.\n"
+            )
+        else:
+            confirmed_block = f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{confirmed_n}**.\n"
     return (
         "# 8. Cỡ mẫu\n\n"
         f"**Công thức áp dụng (tự động từ G3):** {formula}.\n\n"
         f"- Mức ý nghĩa α = {alpha}; lực mẫu (power) = {power}.\n"
         f"- Cỡ mẫu tối thiểu tính được: **{n_total}**{per_group}.\n"
-        f"- Dự phòng bỏ cuộc {dropout_pct} → cỡ mẫu cần thu: **{n_adj}**.\n\n"
+        f"- Dự phòng bỏ cuộc {dropout_pct} → cỡ mẫu cần thu: **{n_adj}**.\n"
+        f"{confirmed_block}\n"
         f"> Lưu ý: nếu effect size/tỷ lệ giả định lấy từ y văn, PHẢI ghi PMID/DOI "
         f"nguồn ({TAG_BS}). G3 dùng quy ước thận trọng khi chưa có ước tính từ "
         "khảo sát tương tự tại cơ sở.\n"
@@ -292,11 +379,25 @@ def sec_comau(cps, meta) -> str:
 def sec_congcu(cps, meta) -> str:
     scripts = _g(cps["G5"], "scripts_generated", default=[]) or []
     sc_txt = "\n".join(f"- `{Path(s).name}`" for s in scripts) if scripts else f"- {TAG_BS}"
+    instrument = meta.get("instrument") or {}
+    if instrument.get("name"):
+        note = instrument.get("note")
+        instrument_txt = (
+            f"> {_META_DRAFT_NOTE}\n\n"
+            f"**Công cụ đo lường:** {instrument['name']}"
+            + (f" — {instrument.get('source')}" if instrument.get("source") else "")
+            + ". " + (note if note else S.TAG_CAN_KIEM_CHUNG_NGUON) + " Với PROM/thang đo: "
+            "quy trình dịch–thích nghi văn hoá + kiểm định COSMIN (nối `cong-cu-do-luong`).\n"
+        )
+    else:
+        instrument_txt = (
+            f"**Công cụ đo lường:** {TAG_BS} — bác sĩ CUNG CẤP bộ công cụ ĐÃ KIỂM ĐỊNH "
+            "(không tự chế). Với PROM/thang đo: quy trình dịch–thích nghi văn hoá + "
+            "kiểm định COSMIN (nối `cong-cu-do-luong`).\n"
+        )
     return (
         "# 9. Công cụ và quy trình thu thập\n\n"
-        f"**Công cụ đo lường:** {TAG_BS} — bác sĩ CUNG CẤP bộ công cụ ĐÃ KIỂM ĐỊNH "
-        "(không tự chế). Với PROM/thang đo: quy trình dịch–thích nghi văn hoá + "
-        "kiểm định COSMIN (nối `cong-cu-do-luong`).\n\n"
+        f"{instrument_txt}\n"
         "**Script quản trị dữ liệu đã sinh tự động (G5):**\n\n"
         f"{sc_txt}\n\n"
         f"**Pilot/thử nghiệm công cụ:** {TAG_BS} — nêu cỡ mẫu pilot, tiêu chí "
