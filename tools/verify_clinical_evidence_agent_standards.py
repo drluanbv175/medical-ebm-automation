@@ -140,6 +140,19 @@ class ConflictingEvidencePolicy:
     doctor_review_prompts: list[str]
 
 
+@dataclass(frozen=True)
+class OperationalCompletenessPolicy:
+    kind: str
+    status: str
+    required_policy_modules: list[str]
+    completeness_evidence: list[str]
+    allowed_automation: list[str]
+    blocked_capabilities: list[str]
+    external_approval_requirements: list[str]
+    hard_stop_codes: list[str]
+    doctor_review_prompts: list[str]
+
+
 def build_agent_contract() -> list[AgentGateContract]:
     """Hợp đồng vận hành tối thiểu cho mỗi lượt cập nhật chứng cứ lâm sàng."""
 
@@ -295,11 +308,13 @@ def build_release_packet_contract() -> ReleasePacketContract:
         artifacts.extend(gate.required_artifacts)
     artifacts.extend([
         "appraisal_tool_selection_audit",
+        "clinical_use_boundary_attestation",
         "conflicting_evidence_matrix",
         "conflicting_evidence_resolution_note",
         "evidence_currency_audit",
         "effect_measure_traceability_log",
         "international_standard_profile",
+        "operational_completeness_manifest",
         "question_frame_selection_audit",
         "retraction_withdrawal_check",
         "source_authority_registry",
@@ -347,6 +362,12 @@ def build_release_packet_contract() -> ReleasePacketContract:
             "RED_FLAG_OR_CONTRAINDICATION_MISSING",
             "DRUG_SAFETY_SCAN_REQUIRED",
             "HUB_SYNC_OR_QUARANTINE_FAILED",
+            "COMPLETION_MANIFEST_MISSING",
+            "DOCTOR_GATE_BYPASSED",
+            "REAL_PATIENT_DATA_WORKFLOW_ENABLED",
+            "AUTO_APPLY_ENABLED",
+            "CLINICAL_PRODUCTION_CLAIMED_WITH_BLOCKERS",
+            "SECURITY_UAT_APPROVAL_MISSING",
             "FINAL_GUARDRAIL_RED",
             "DOCTOR_REVIEW_MISSING",
         ],
@@ -800,6 +821,77 @@ def build_conflicting_evidence_policy() -> ConflictingEvidencePolicy:
             "Lợi ích tuyệt đối có đủ lớn so với nguy cơ hại, monitoring và chi phí không?",
             "Có cần giữ ở mức Cân nhắc chọn lọc hoặc Chưa đủ để thay đổi thực hành không?",
             "Có xung đột với BYT/phác đồ đơn vị/danh mục thuốc sẵn có cần ghi nhãn không?",
+        ],
+    )
+
+
+def build_operational_completeness_policy() -> OperationalCompletenessPolicy:
+    """Chính sách chốt trạng thái hoàn thiện kỹ thuật nhưng không tự nhận production lâm sàng."""
+
+    return OperationalCompletenessPolicy(
+        kind="clinical_ebm_operational_completeness_policy",
+        status="TECHNICAL_COMPLETENESS_WITH_DOCTOR_GATE_NOT_CLINICAL_PRODUCTION",
+        required_policy_modules=[
+            "agent_gate_contract CEG1-CEG7",
+            "release_packet_contract",
+            "international_standard_profile",
+            "source_authority_registry",
+            "evidence_currency_policy",
+            "question_frame_policy",
+            "conflicting_evidence_policy",
+            "final_guardrail R1-R7 + Q1-Q7",
+        ],
+        completeness_evidence=[
+            "upgrade_verify.py PASS 24/24",
+            "sync_agents_to_codex.py --check PASS",
+            "check_claude_codex_sync_health.py PASS",
+            "verify_clinical_evidence_agent_standards.py fail_count=0",
+            "verify_clinical_evidence_update_pipeline.py PASS",
+            "verify_clinical_production_control_plane.py keeps production blocked",
+            "doctor_review_packet present before clinical use",
+            "Cần bác sĩ kiểm chứng disclaimer present",
+        ],
+        allowed_automation=[
+            "Frame clinical question and select appraisal tool",
+            "Search and cross-check evidence sources",
+            "Generate Evidence Workbench for review",
+            "Run offline/online integrity gates",
+            "Generate derivatives for doctor review",
+            "Sync dashboard to review queue with quarantine",
+        ],
+        blocked_capabilities=[
+            "Real patient data ingestion",
+            "Autonomous diagnosis or prescription",
+            "Auto-apply to patient care",
+            "Mark Master as clinically approved without doctor action",
+            "Bypass CEG7 doctor review",
+            "Claim clinical production readiness while blockers remain",
+        ],
+        external_approval_requirements=[
+            "Bác sĩ xác minh nguồn, khuyến cáo, cờ đỏ và tính áp dụng tại đơn vị",
+            "Đơn vị phê duyệt bảo mật, UAT, audit log và quy trình xử lý PII",
+            "Hội đồng thuốc/phác đồ hoặc lãnh đạo chuyên môn duyệt nếu đổi thực hành",
+            "IRB/ethics approval when the same workflow is used for research output",
+            "Local SOP for downtime, escalation, incident response and version rollback",
+        ],
+        hard_stop_codes=[
+            "COMPLETION_MANIFEST_MISSING",
+            "DOCTOR_GATE_BYPASSED",
+            "REAL_PATIENT_DATA_WORKFLOW_ENABLED",
+            "AUTO_APPLY_ENABLED",
+            "CLINICAL_PRODUCTION_CLAIMED_WITH_BLOCKERS",
+            "SECURITY_UAT_APPROVAL_MISSING",
+            "LOCAL_SOP_MISSING",
+            "INCIDENT_RESPONSE_PLAN_MISSING",
+            "VERSION_ROLLBACK_PLAN_MISSING",
+            "OPERATIONAL_COMPLETENESS_POLICY_MISSING",
+        ],
+        doctor_review_prompts=[
+            "Gói này có đủ bằng chứng kiểm nguồn, độ mới, khung câu hỏi và xung đột chứng cứ chưa?",
+            "Có điểm nào được gắn Áp dụng ngay nhưng chưa qua bác sĩ hoặc chưa phù hợp đơn vị không?",
+            "Có dữ liệu bệnh nhân thật, PII, hoặc quyết định kê đơn tự động nào lọt vào workflow không?",
+            "Đơn vị đã có SOP, audit log, UAT, bảo mật và rollback trước khi gọi là production chưa?",
+            "Có cần hạ trạng thái về review-only hoặc Chưa đủ để thay đổi thực hành không?",
         ],
     )
 
@@ -1484,6 +1576,75 @@ def _check_conflicting_evidence_policy() -> StandardCheck:
     )
 
 
+def _check_operational_completeness_policy() -> StandardCheck:
+    policy = build_operational_completeness_policy()
+    text = json.dumps(asdict(policy), ensure_ascii=False)
+    required_tokens = [
+        "agent_gate_contract CEG1-CEG7",
+        "release_packet_contract",
+        "international_standard_profile",
+        "source_authority_registry",
+        "evidence_currency_policy",
+        "question_frame_policy",
+        "conflicting_evidence_policy",
+        "final_guardrail R1-R7 + Q1-Q7",
+        "upgrade_verify.py PASS 24/24",
+        "verify_clinical_production_control_plane.py keeps production blocked",
+        "doctor_review_packet present before clinical use",
+        "Real patient data ingestion",
+        "Autonomous diagnosis or prescription",
+        "Auto-apply to patient care",
+        "Bypass CEG7 doctor review",
+        "Bác sĩ xác minh nguồn",
+        "SECURITY_UAT_APPROVAL_MISSING",
+        "CLINICAL_PRODUCTION_CLAIMED_WITH_BLOCKERS",
+        "OPERATIONAL_COMPLETENESS_POLICY_MISSING",
+    ]
+    missing = [
+        f"operational_completeness_policy missing token: {token}"
+        for token in required_tokens
+        if token not in text
+    ]
+    if policy.status != "TECHNICAL_COMPLETENESS_WITH_DOCTOR_GATE_NOT_CLINICAL_PRODUCTION":
+        missing.append(f"unexpected policy status: {policy.status}")
+    for module in (
+        "source_authority_registry",
+        "evidence_currency_policy",
+        "question_frame_policy",
+        "conflicting_evidence_policy",
+    ):
+        if module not in policy.required_policy_modules:
+            missing.append(f"missing required policy module: {module}")
+    for blocked in (
+        "Real patient data ingestion",
+        "Auto-apply to patient care",
+        "Claim clinical production readiness while blockers remain",
+    ):
+        if blocked not in policy.blocked_capabilities:
+            missing.append(f"missing blocked capability: {blocked}")
+    return StandardCheck(
+        check_id="EAS12",
+        title="Chốt hoàn thiện kỹ thuật và ranh giới production lâm sàng",
+        status=FAIL if missing else PASS,
+        evidence=[
+            "tools/verify_clinical_evidence_agent_standards.py:OperationalCompletenessPolicy",
+            "tools/upgrade_verify.py",
+            "tools/verify_clinical_production_control_plane.py",
+            _rel(SKILL_ROOT / "SKILL.md"),
+            _rel(AGENTS / "_GIAM-SAT-CHUNG-CU-NOI-CHUNG.md"),
+        ],
+        proves=(
+            "Hệ chỉ được gọi là hoàn thiện ở mức kỹ thuật khi đủ policy/manifest và vẫn chặn "
+            "dữ liệu bệnh nhân thật, auto-apply và claim production lâm sàng."
+        ),
+        limitation=(
+            "Không thay thế phê duyệt thật của bác sĩ, đơn vị, bảo mật/UAT, IRB hoặc hội đồng "
+            "chuyên môn trước khi triển khai trên bệnh nhân thật."
+        ),
+        missing=missing,
+    )
+
+
 def evaluate_all(generated_at: str | None = None) -> dict:
     checks = [
         _check_agents(),
@@ -1497,6 +1658,7 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         _check_evidence_currency_policy(),
         _check_question_frame_policy(),
         _check_conflicting_evidence_policy(),
+        _check_operational_completeness_policy(),
     ]
     agent_contract = build_agent_contract()
     release_packet = build_release_packet_contract()
@@ -1505,6 +1667,7 @@ def evaluate_all(generated_at: str | None = None) -> dict:
     currency_policy = build_evidence_currency_policy()
     question_frame_policy = build_question_frame_policy()
     conflicting_evidence_policy = build_conflicting_evidence_policy()
+    operational_completeness_policy = build_operational_completeness_policy()
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
     if fail_count:
@@ -1540,6 +1703,8 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         "question_frame_policy": asdict(question_frame_policy),
         "conflicting_evidence_policy_status": conflicting_evidence_policy.status,
         "conflicting_evidence_policy": asdict(conflicting_evidence_policy),
+        "operational_completeness_policy_status": operational_completeness_policy.status,
+        "operational_completeness_policy": asdict(operational_completeness_policy),
         "checks": [asdict(check) for check in checks],
         "disclaimer": DISCLAIMER,
     }
@@ -1565,6 +1730,7 @@ def markdown_report(report: dict) -> str:
         f"- Evidence currency policy: `{report['evidence_currency_policy_status']}`",
         f"- Question frame policy: `{report['question_frame_policy_status']}`",
         f"- Conflicting evidence policy: `{report['conflicting_evidence_policy_status']}`",
+        f"- Operational completeness policy: `{report['operational_completeness_policy_status']}`",
         "",
         "| Check | Status | Proves | Limitation | Missing |",
         "|---|---|---|---|---|",
@@ -1675,6 +1841,20 @@ def markdown_report(report: dict) -> str:
     ])
     for code in conflict_policy["hard_stop_codes"]:
         lines.append(f"| `{code}` |")
+    operational_policy = report["operational_completeness_policy"]
+    lines.extend([
+        "",
+        "## Operational Completeness Policy",
+        "",
+        f"- Status: `{operational_policy['status']}`",
+        f"- Required modules: `{len(operational_policy['required_policy_modules'])}`",
+        f"- Blocked capabilities: `{len(operational_policy['blocked_capabilities'])}`",
+        "",
+        "| Operational Hard Stop |",
+        "|---|",
+    ])
+    for code in operational_policy["hard_stop_codes"]:
+        lines.append(f"| `{code}` |")
     lines.extend([
         "",
         "## Agent Gate Contract",
@@ -1728,6 +1908,7 @@ def main(argv: list[str] | None = None) -> int:
         print("evidence_currency_policy_status=" + report["evidence_currency_policy_status"])
         print("question_frame_policy_status=" + report["question_frame_policy_status"])
         print("conflicting_evidence_policy_status=" + report["conflicting_evidence_policy_status"])
+        print("operational_completeness_policy_status=" + report["operational_completeness_policy_status"])
         print("Cần bác sĩ kiểm chứng.")
     return 0 if report["fail_count"] == 0 else 1
 

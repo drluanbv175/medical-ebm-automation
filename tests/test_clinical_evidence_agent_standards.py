@@ -52,6 +52,7 @@ def test_clinical_evidence_agent_standards_cover_all_required_domains() -> None:
         "EAS9",
         "EAS10",
         "EAS11",
+        "EAS12",
     }
     assert rows["EAS1"]["status"] == "PASS"
     assert rows["EAS2"]["status"] == "PASS"
@@ -64,6 +65,7 @@ def test_clinical_evidence_agent_standards_cover_all_required_domains() -> None:
     assert rows["EAS9"]["status"] == "PASS"
     assert rows["EAS10"]["status"] == "PASS"
     assert rows["EAS11"]["status"] == "PASS"
+    assert rows["EAS12"]["status"] == "PASS"
     assert all(not row["missing"] for row in rows.values())
 
 
@@ -90,6 +92,12 @@ def test_clinical_evidence_agent_standards_markdown_keeps_boundaries_visible() -
     assert "Conflicting Evidence Policy" in markdown
     assert (
         "Conflicting evidence policy: `CONFLICTS_MUST_BE_MAPPED_BEFORE_PRACTICE_CHANGE`"
+        in markdown
+    )
+    assert "Operational Completeness Policy" in markdown
+    assert (
+        "Operational completeness policy: "
+        "`TECHNICAL_COMPLETENESS_WITH_DOCTOR_GATE_NOT_CLINICAL_PRODUCTION`"
         in markdown
     )
     assert "Agent Gate Contract" in markdown
@@ -140,6 +148,7 @@ def test_release_packet_contract_blocks_until_doctor_review() -> None:
     ]
     assert "doctor_review_packet" in packet["minimum_artifacts"]
     assert "appraisal_tool_selection_audit" in packet["minimum_artifacts"]
+    assert "clinical_use_boundary_attestation" in packet["minimum_artifacts"]
     assert "conflicting_evidence_matrix" in packet["minimum_artifacts"]
     assert "conflicting_evidence_resolution_note" in packet["minimum_artifacts"]
     assert "evidence_currency_audit" in packet["minimum_artifacts"]
@@ -149,6 +158,7 @@ def test_release_packet_contract_blocks_until_doctor_review() -> None:
         "required_commands"
     ]
     assert "international_standard_profile" in packet["minimum_artifacts"]
+    assert "operational_completeness_manifest" in packet["minimum_artifacts"]
     assert "question_frame_selection_audit" in packet["minimum_artifacts"]
     assert "source_authority_registry" in packet["minimum_artifacts"]
     assert "source_authority_tiering_rationale" in packet["minimum_artifacts"]
@@ -179,6 +189,12 @@ def test_release_packet_contract_blocks_until_doctor_review() -> None:
     assert "RETRACTION_STATUS_UNKNOWN" in packet["hard_stop_reason_codes"]
     assert "SOURCE_RETRACTED_OR_WITHDRAWN" in packet["hard_stop_reason_codes"]
     assert "SUPERSEDED_GUIDELINE_USED_AS_CURRENT" in packet["hard_stop_reason_codes"]
+    assert "COMPLETION_MANIFEST_MISSING" in packet["hard_stop_reason_codes"]
+    assert "DOCTOR_GATE_BYPASSED" in packet["hard_stop_reason_codes"]
+    assert "REAL_PATIENT_DATA_WORKFLOW_ENABLED" in packet["hard_stop_reason_codes"]
+    assert "AUTO_APPLY_ENABLED" in packet["hard_stop_reason_codes"]
+    assert "CLINICAL_PRODUCTION_CLAIMED_WITH_BLOCKERS" in packet["hard_stop_reason_codes"]
+    assert "SECURITY_UAT_APPROVAL_MISSING" in packet["hard_stop_reason_codes"]
     assert "FINAL_GUARDRAIL_RED" in packet["hard_stop_reason_codes"]
     assert "DOCTOR_REVIEW_MISSING" in packet["hard_stop_reason_codes"]
     assert any("Không tự áp dụng" in item for item in packet["non_goals"])
@@ -365,3 +381,40 @@ def test_conflicting_evidence_policy_requires_matrix_and_blocks_cherry_picking()
     assert "BENEFIT_HARM_CONFLICT_NOT_EXPLAINED" in policy["hard_stop_codes"]
     assert "LOCAL_GUIDELINE_CONFLICT_NOT_LABELED" in policy["hard_stop_codes"]
     assert "UNRESOLVED_CONFLICT_MARKED_APPLY_NOW" in policy["hard_stop_codes"]
+
+
+def test_operational_completeness_policy_closes_technical_scope_without_production_claim() -> None:
+    mod = _load_module()
+    report = mod.evaluate_all(generated_at=FIXED_NOW)
+    policy = report["operational_completeness_policy"]
+
+    assert (
+        report["operational_completeness_policy_status"]
+        == "TECHNICAL_COMPLETENESS_WITH_DOCTOR_GATE_NOT_CLINICAL_PRODUCTION"
+    )
+    required = policy["required_policy_modules"]
+    assert "agent_gate_contract CEG1-CEG7" in required
+    assert "release_packet_contract" in required
+    assert "source_authority_registry" in required
+    assert "evidence_currency_policy" in required
+    assert "question_frame_policy" in required
+    assert "conflicting_evidence_policy" in required
+    assert "final_guardrail R1-R7 + Q1-Q7" in required
+
+    evidence = " ".join(policy["completeness_evidence"])
+    assert "upgrade_verify.py PASS 24/24" in evidence
+    assert "check_claude_codex_sync_health.py PASS" in evidence
+    assert "verify_clinical_production_control_plane.py keeps production blocked" in evidence
+    assert "doctor_review_packet present before clinical use" in evidence
+
+    blocked = " ".join(policy["blocked_capabilities"])
+    assert "Real patient data ingestion" in blocked
+    assert "Autonomous diagnosis or prescription" in blocked
+    assert "Auto-apply to patient care" in blocked
+    assert "Bypass CEG7 doctor review" in blocked
+    assert "Claim clinical production readiness while blockers remain" in blocked
+    assert "COMPLETION_MANIFEST_MISSING" in policy["hard_stop_codes"]
+    assert "REAL_PATIENT_DATA_WORKFLOW_ENABLED" in policy["hard_stop_codes"]
+    assert "AUTO_APPLY_ENABLED" in policy["hard_stop_codes"]
+    assert "CLINICAL_PRODUCTION_CLAIMED_WITH_BLOCKERS" in policy["hard_stop_codes"]
+    assert "SECURITY_UAT_APPROVAL_MISSING" in policy["hard_stop_codes"]
