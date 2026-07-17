@@ -122,6 +122,39 @@ BIAS_CONTROLS = {
         ("Heterogeneity",    "Định lượng I²/τ²; không gộp khi I² > 75% không có lý do lâm sàng"),
         ("Reporting bias",   "PRISMA 2020 + registrátion (PROSPERO)"),
     ],
+    # THÊM 2026-07-17 (round audit gate — tiếp nối hoàn thiện gate cho
+    # "prediction"): trước đây "prediction" KHÔNG có trong dict này -> .get()
+    # fallback im lặng về bias_controls của "cohort" (không sai hoàn toàn —
+    # selection/confounding vẫn liên quan — nhưng thiếu các mối lo ĐẶC THÙ mô
+    # hình tiên lượng như overfitting/optimism, data leakage, class imbalance).
+    # 4 domain dưới đây theo ĐÚNG cấu trúc PROBAST+AI đã xác minh trực tiếp:
+    # Moons KGM, Damen JAA, Kaul T, et al. "PROBAST+AI: an updated quality,
+    # risk of bias, and applicability assessment tool for prediction models
+    # using regression or artificial intelligence methods." BMJ 2025;388:
+    # e082505 (PMID 40127903) — GIỮ NGUYÊN 4 domain của PROBAST 2019 gốc
+    # (Participants and data sources / Predictors / Outcome / Analysis),
+    # KHÔNG thêm domain mới — mối lo AI/ML (overfitting, data leakage, class
+    # imbalance) được gộp vào domain Analysis, không phải domain riêng.
+    "prediction": [
+        ("Selection bias (Participants/data sources)",
+         "Chọn mẫu đại diện quần thể đích; tiêu chí chọn/loại rõ ràng — PROBAST+AI domain 1"),
+        ("Predictor bias",
+         "Định nghĩa/thời điểm đo biến tiên đoán nhất quán phát triển-đánh giá; "
+         "KHÔNG dùng biến chỉ có SAU thời điểm dự đoán (data leakage) — PROBAST+AI domain 2"),
+        ("Outcome bias",
+         "Định nghĩa/thời điểm đo kết cục tiền định, nhất quán, đánh giá không "
+         "biết trước biến tiên đoán (blinded) — PROBAST+AI domain 3"),
+        ("Overfitting/optimism",
+         "Internal validation bằng bootstrap/cross-validation; shrinkage/penalization "
+         "(LASSO/ridge) nếu số biến tiên đoán lớn so với cỡ mẫu — PROBAST+AI domain 4 (Analysis)"),
+        ("Missing data",
+         "Multiple imputation (không complete-case đơn thuần trừ khi MCAR) — PROBAST+AI domain 4"),
+        ("Class imbalance/fairness",
+         "Đánh giá hiệu năng/công bằng theo phân nhóm nhân khẩu-xã hội, không chỉ tổng thể "
+         "(TRIPOD+AI mục 14/23a) — PROBAST+AI domain 4"),
+        ("Reporting bias",
+         "Đăng ký/giao thức trước nếu có + checklist TRIPOD+AI đầy đủ (không chỉ báo cáo mô hình cuối)"),
+    ],
 }
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -329,6 +362,25 @@ def _apply_design_pin(design: dict, pinned: str) -> dict:
 DESIGN_KEYWORD_HINTS = {
     "sr": ["tổng quan", "systematic review", "meta-analysis", "tong quan"],
     "diagnosis": ["chẩn đoán", "chan doan", "độ nhạy", "do nhay", "auc", "sensitivity"],
+    # THÊM 2026-07-17 (round audit gate — tiếp nối hoàn thiện gate cho
+    # "prediction"): TRƯỚC ĐÂY "prediction" (TRIPOD+AI) đã được nối xuyên suốt
+    # G2-G9 (round trước) nhưng KHÔNG BAO GIỜ CHẠM TỚI ĐƯỢC từ phân loại tự
+    # động — mọi đề tài "xây dựng mô hình tiên lượng" đều khớp từ khóa
+    # "tiên lượng"/"prognosis" phía dưới và bị gán internal_code="cohort" (STROBE),
+    # KHÔNG BAO GIỜ "prediction" (TRIPOD+AI). Cụm từ ở đây phải TƯỜNG MINH hơn
+    # "tiên lượng" đơn lẻ (vốn cũng đúng cho câu hỏi tiên lượng 1 yếu tố nguy cơ
+    # kiểu cohort/STROBE bình thường) — chỉ khớp khi đề tài NÊU RÕ Ý ĐỊNH XÂY
+    # DỰNG/PHÁT TRIỂN MỘT MÔ HÌNH ĐA BIẾN, không phải mọi câu hỏi có chữ "tiên
+    # lượng". Đặt TRƯỚC "prognosis" trong thứ tự kiểm tra bên dưới để thắng ưu
+    # tiên khi cả 2 đều khớp (vd "mô hình tiên lượng" chứa cả "mô hình tiên
+    # lượng" LẪN "tiên lượng").
+    "prediction_model": [
+        "mô hình tiên lượng", "mo hinh tien luong", "mô hình dự đoán", "mo hinh du doan",
+        "mô hình dự báo", "mo hinh du bao", "xây dựng thang điểm", "xay dung thang diem",
+        "phát triển thang điểm", "phat trien thang diem", "prediction model",
+        "predictive model", "risk prediction model", "clinical prediction rule",
+        "clinical prediction model", "nomogram", "risk calculator", "tripod",
+    ],
     "prognosis": ["tiên lượng", "tien luong", "prognosis", "sống còn", "song con",
                   "tử vong", "tu vong"],
     # Chỉ khớp cụm từ TƯỜNG MINH khai báo thiết kế (không dùng "yếu tố nguy cơ"
@@ -350,6 +402,7 @@ DESIGN_KEYWORD_HINTS = {
 _KEYWORD_TO_EXPECTED_INTERNAL = {
     "sr": "sr_ma",
     "diagnosis": "diagnostic",
+    "prediction_model": "prediction",
     "prognosis": "cohort",
     "harm": "case_control",
     "descriptive": "cross_sectional",
@@ -368,7 +421,15 @@ def check_topic_design_consistency(topic: str, chosen_internal_code: str) -> lis
     """
     topic_lower = topic.lower()
     warns = []
+    # SỬA 2026-07-17: "prediction_model" (mô hình tiên lượng đa biến) LUÔN chứa
+    # cả từ khóa "prognosis" đơn lẻ (vd "mô hình tiên lượng" khớp cả "tiên
+    # lượng") — nếu không loại trừ, mọi đề tài "prediction" hợp lệ vẫn bị cảnh
+    # báo giả "topic gợi ý cohort" (từ nhánh prognosis) dù đã chọn ĐÚNG. Khi
+    # prediction_model khớp, bỏ qua kiểm tra prognosis (bị bao hàm/thay thế).
+    _skip_qtypes = {"prognosis"} if _kw_in(DESIGN_KEYWORD_HINTS["prediction_model"], topic_lower) else set()
     for qtype, kws in DESIGN_KEYWORD_HINTS.items():
+        if qtype in _skip_qtypes:
+            continue
         if _kw_in(kws, topic_lower):
             expected = _KEYWORD_TO_EXPECTED_INTERNAL[qtype]
             if chosen_internal_code != expected:
@@ -397,10 +458,18 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     ambiguous = False
 
     # ── Phát hiện từ khóa thiết kế tường minh trong topic ──
+    # SỬA 2026-07-17: kiểm "prediction_model" TRƯỚC "prognosis" — cụm như "mô
+    # hình tiên lượng" khớp CẢ HAI, nhưng đây là đề tài xây mô hình đa biến
+    # (TRIPOD+AI), không phải câu hỏi tiên lượng 1 yếu tố nguy cơ (cohort/STROBE
+    # thường). Nếu để "prognosis" thắng trước (thứ tự cũ), mọi đề tài prediction
+    # model đều bị phân loại nhầm thành "cohort" — không bao giờ chạm được vào
+    # nhánh TRIPOD+AI đã nối xuyên G2-G9 (xem infer_study_design elif dưới).
     if _kw_in(DESIGN_KEYWORD_HINTS["sr"], topic_lower):
         question_type = "sr"
     elif _kw_in(DESIGN_KEYWORD_HINTS["diagnosis"], topic_lower):
         question_type = "diagnosis"
+    elif _kw_in(DESIGN_KEYWORD_HINTS["prediction_model"], topic_lower):
+        question_type = "prediction_model"
     elif _kw_in(DESIGN_KEYWORD_HINTS["prognosis"], topic_lower):
         question_type = "prognosis"
     elif _kw_in(DESIGN_KEYWORD_HINTS["harm"], topic_lower):
@@ -487,6 +556,25 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
         alt2 = "RCT chẩn đoán (nếu so sánh chiến lược kiểm tra)"
         rationale = ("Câu hỏi chẩn đoán: cần so index test với reference standard. "
                      "Cắt ngang với blinded verification là thiết kế chuẩn. Báo cáo: STARD 2015.")
+
+    elif question_type == "prediction_model":
+        # THÊM 2026-07-17 (round audit gate — tiếp nối hoàn thiện gate cho
+        # "prediction"): tách khỏi nhánh "prognosis" phía dưới — câu hỏi XÂY
+        # DỰNG/PHÁT TRIỂN một mô hình tiên lượng ĐA BIẾN (dùng để dự đoán nguy
+        # cơ/kết cục cho từng cá nhân) khác về bản chất với câu hỏi tiên lượng
+        # ĐƠN YẾU TỐ (vd "hút thuốc có tiên lượng tử vong không" — vẫn là
+        # cohort/STROBE bình thường, ở nhánh "prognosis"). Trước khi có nhánh
+        # này, MỌI đề tài prediction model đều rơi vào "prognosis" → internal=
+        # "cohort" → không bao giờ chạm được nhánh TRIPOD+AI đã nối xuyên G2-G9.
+        primary = "Nghiên cứu Phát triển/Đánh giá Mô hình Tiên lượng (Prediction Model)"
+        internal = "prediction"
+        alt1 = "Cohort tiến cứu đơn thuần (nếu chỉ khảo sát 1-2 yếu tố nguy cơ, không xây mô hình đa biến)"
+        alt2 = "External validation study (nếu mô hình đã có sẵn, chỉ kiểm định lại ở quần thể mới)"
+        rationale = ("Câu hỏi xây dựng/đánh giá mô hình dự đoán đa biến: cần phân biệt rõ "
+                     "giai đoạn PHÁT TRIỂN (development) và ĐÁNH GIÁ (validation nội bộ/ngoại "
+                     "bộ). Chuẩn báo cáo: TRIPOD+AI 2024 (Collins GS et al., BMJ "
+                     "2024;385:e078378) — thay thế hoàn toàn TRIPOD 2015, áp dụng cho cả mô "
+                     "hình hồi quy lẫn AI/ML.")
 
     elif question_type == "prognosis":
         primary = "Cohort Tiến cứu (Prospective Cohort)"

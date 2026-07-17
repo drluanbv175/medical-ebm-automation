@@ -62,6 +62,55 @@ class TestKeywordDetectionOverridesQuestionType:
         assert d["internal_code"] == "case_control"
 
 
+class TestPredictionModelKeywordDetection:
+    """Vá 2026-07-17 (round audit gate — tiếp nối hoàn thiện gate cho
+    "prediction"): PHÁT HIỆN LỚN — trước khi vá này, internal_code=
+    "prediction" KHÔNG BAO GIỜ có thể xuất hiện từ phân loại tự động. Mọi đề
+    tài "xây dựng mô hình tiên lượng" khớp từ khóa "tiên lượng" (generic) và
+    bị gán internal_code="cohort" — toàn bộ hệ thống TRIPOD+AI đã nối xuyên
+    G2-G9 (2 round trước) không bao giờ được chạm tới trong thực tế. Test
+    này khóa lại: cụm từ TƯỜNG MINH khai báo Ý ĐỊNH XÂY MÔ HÌNH (không phải
+    câu hỏi tiên lượng 1 yếu tố đơn thuần) phải cho internal_code="prediction"."""
+
+    def test_mo_hinh_tien_luong_keyword(self):
+        d = infer_study_design(
+            "treatment", _GAPS,
+            "Xây dựng mô hình tiên lượng nguy cơ tái nhập viện ở bệnh nhân suy tim",
+        )
+        assert d["internal_code"] == "prediction"
+        assert d["reporting_standard"] == "TRIPOD+AI 2024"
+
+    def test_nomogram_keyword(self):
+        d = infer_study_design("treatment", _GAPS, "Phát triển và đánh giá nomogram dự đoán biến chứng sau phẫu thuật")
+        assert d["internal_code"] == "prediction"
+
+    def test_english_prediction_model_keyword(self):
+        d = infer_study_design("treatment", _GAPS, "Prediction model for 30-day mortality in sepsis patients")
+        assert d["internal_code"] == "prediction"
+
+    def test_bias_controls_are_prediction_specific_not_cohort_fallback(self):
+        """Hồi quy: trước khi 'prediction' reachable, mọi lời gọi (nếu có) sẽ
+        rơi vào bias_controls của 'cohort' qua .get() fallback."""
+        d = infer_study_design(
+            "treatment", _GAPS,
+            "Xây dựng mô hình tiên lượng nguy cơ tái nhập viện ở bệnh nhân suy tim",
+        )
+        labels = [label for label, _ctrl in d["bias_controls"]]
+        assert "Overfitting/optimism" in labels
+        assert "Predictor bias" in labels
+
+    def test_single_factor_prognosis_still_classified_as_cohort_not_prediction(self):
+        """Chống over-match: câu hỏi tiên lượng 1 YẾU TỐ đơn thuần (không xây
+        mô hình đa biến) phải VẪN là cohort/STROBE như trước, không bị đẩy
+        nhầm sang 'prediction' chỉ vì có chữ 'tiên lượng'."""
+        d = infer_study_design("treatment", _GAPS, "Yếu tố tiên lượng sống còn ở bệnh nhân ung thư phổi giai đoạn IV")
+        assert d["internal_code"] == "cohort"
+
+    def test_single_factor_prognosis_keyword_still_works(self):
+        d = infer_study_design("treatment", _GAPS, "Hút thuốc lá có tiên lượng tử vong ở bệnh nhân COPD hay không")
+        assert d["internal_code"] == "cohort"
+
+
 class TestNoFalsePositiveOnRiskFactorAlone(object):
     """Cụm 'yếu tố nguy cơ' ĐƠN LẺ (không kèm 'bệnh-chứng'/'case-control')
     KHÔNG được tự ý coi là case-control — cụm này cũng dùng phổ biến cho
@@ -124,3 +173,22 @@ class TestGuardrailTopicDesignConsistency:
         )
         assert len(warns) == 1
         assert "sr_ma" in warns[0]
+
+    def test_no_false_warning_when_prediction_model_correctly_chosen(self):
+        """Hồi quy trực tiếp: "mô hình tiên lượng" khớp CẢ "prediction_model"
+        LẪN "prognosis" (chứa "tiên lượng") — nếu không loại trừ nhánh
+        prognosis khi prediction_model đã khớp, sẽ có cảnh báo giả "topic gợi
+        ý cohort" dù internal_code="prediction" là ĐÚNG."""
+        warns = check_topic_design_consistency(
+            "Xây dựng mô hình tiên lượng nguy cơ tái nhập viện ở bệnh nhân suy tim",
+            "prediction",
+        )
+        assert warns == []
+
+    def test_warns_when_prediction_model_topic_but_cohort_chosen(self):
+        warns = check_topic_design_consistency(
+            "Xây dựng mô hình tiên lượng nguy cơ tái nhập viện ở bệnh nhân suy tim",
+            "cohort",
+        )
+        assert len(warns) == 1
+        assert "prediction" in warns[0]
