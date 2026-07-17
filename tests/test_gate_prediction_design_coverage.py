@@ -18,6 +18,8 @@ nhưng thiếu hướng dẫn đúng chuẩn TRIPOD+AI).
   thuộc effect_val còn hay không.
 - run_g6_auto.py: analysis_name_map + TABLE_SHELLS thêm "prediction" (discrimination/
   calibration/DCA theo TRIPOD+AI mục 23a, khung tiêu đề cột — không có số liệu tính sẵn).
+- run_g4_auto.py: sap_sections thêm "prediction" (trước đây .get() fallback về nhãn mơ hồ
+  "Toàn bộ mẫu"/"[CẦN]" cho main_method — an toàn nhưng không đúng thuật ngữ TRIPOD+AI).
 """
 from __future__ import annotations
 
@@ -156,3 +158,10 @@ def test_g2_who_field_maps_include_prediction_source_check():
     src = (TOOLS_DIR / "run_g2_auto.py").read_text(encoding="utf-8")
     assert '"prediction": "Observational"' in src
     assert '"prediction": "Prognosis"' in src
+
+
+# ── G4: sap_sections có "prediction", main_method đúng thuật ngữ TRIPOD+AI ──
+def test_g4_sap_sections_include_prediction_with_tripod_ai_method():
+    src = (TOOLS_DIR / "run_g4_auto.py").read_text(encoding="utf-8")
+    assert '"prediction": (' in src
+    assert "TRIPOD+AI" in src

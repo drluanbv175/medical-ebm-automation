@@ -97,6 +97,15 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "diagnostic": ("Bệnh nhân có xét nghiệm chỉ số và tiêu chuẩn vàng", "Phân tích đầy đủ", "ROC, AUC, độ nhạy/đặc hiệu"),
         "sr_ma": ("Tất cả nghiên cứu đủ tiêu chí đưa vào", "Phân tích đầy đủ", "Random/Fixed effects meta-analysis"),
         "case_control": ("Ca bệnh vs chứng ghép cặp", "Phân tích đầy đủ", "Conditional logistic regression"),
+        # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction"
+        # (mô hình tiên lượng/TRIPOD+AI) trước đây rơi vào .get() fallback
+        # ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]") — an toàn (không bịa
+        # phương pháp) nhưng mơ hồ. Nêu đúng thuật ngữ TRIPOD+AI thay vì để
+        # trống hoàn toàn.
+        "prediction": ("Người tham gia đủ tiêu chí phát triển/đánh giá mô hình",
+                       "Phân tích đầy đủ (complete case + MI); internal validation qua bootstrap",
+                       "Hồi quy logistic/Cox hoặc ML — discrimination (C-statistic) + "
+                       "calibration + DCA (TRIPOD+AI)"),
     }
     pop, analysis_pop, main_method = sap_sections.get(design_code, ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]"))
 
