@@ -1223,7 +1223,18 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
         text = p.read_text(encoding="utf-8")
     except OSError:
         return False, "không đọc được artifact A12"
-    if "PARTIAL" in text:
+    # SỬA 2026-07-17 (phát hiện qua chạy demo thật cho đề tài hài lòng bệnh
+    # nhân C1a BVQY175): "PARTIAL" in text là substring-match thô — khớp nhầm
+    # cả khi agent viết PHỦ ĐỊNH tường minh "KHÔNG PARTIAL" (đúng ý "connector
+    # HOẠT ĐỘNG, không phải PARTIAL") để xác nhận rõ ràng connector đã sẵn sàng.
+    # Cùng lớp bug substring-không-nhận-phủ-định đã gặp ở run_g8_auto.py
+    # (_is_locked_or_pass — "UNLOCKED" chứa "LOCKED"). Doctrine kiem-chung-
+    # trich-dan.md định nghĩa nhãn PARTIAL chính thức là "⚠ PARTIAL" — ưu tiên
+    # khớp nhãn đó; nếu không có, chỉ coi là PARTIAL khi "PARTIAL" xuất hiện
+    # KHÔNG bị phủ định ngay trước (KHÔNG/không/NOT/not).
+    if re.search(r"⚠\s*PARTIAL", text) or re.search(
+        r"(?<!KHÔNG )(?<!không )(?<!NOT )(?<!not )\bPARTIAL\b", text
+    ):
         return False, "artifact A12 ở trạng thái PARTIAL (connector PubMed/Crossref không sẵn lúc kiểm)"
     if "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN" not in text:
         return False, "artifact A12 chưa có dòng xác nhận sạch (còn 🔴 chưa xử lý hoặc chưa hoàn tất)"

@@ -20,9 +20,27 @@ from pathlib import Path
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
 
+import skill_standards as S  # noqa: E402
 from run_g2_auto import RISK_PROFILES  # noqa: E402
 
 _AFFECTED_DESIGNS = ("cohort", "case_control", "cross_sectional")
+
+
+def test_registration_field_status_tag_matches_skill_valid_vocabulary():
+    """Hồi quy trực tiếp: chạy thật G10 (run_g10_assemble.py) trên đề tài hài lòng bệnh
+    nhân C1a lộ ra R3_valid_tags FAIL — bản sửa Helsinki §35 đầu tiên tự chế nhãn
+    "[CẦN BÁC SĨ XÁC ĐỊNH loại thu thập]" không thuộc VALID_STATUS_TAGS của
+    skill_standards.py (6 nhãn cố định). Mọi chuỗi trong ngoặc vuông [...] trong
+    registration PHẢI khớp ĐÚNG một trong 6 nhãn hợp lệ."""
+    import re
+
+    for design in _AFFECTED_DESIGNS:
+        reg = RISK_PROFILES[design]["registration"]
+        for bracketed in re.findall(r"\[[^\]]+\]", reg):
+            assert S.is_valid_status_tag(bracketed), (
+                f"{design}: nhãn '{bracketed}' không thuộc bộ nhãn hợp lệ của skill "
+                f"({S.VALID_STATUS_TAGS})"
+            )
 
 
 def test_registration_field_no_longer_unconditionally_says_not_required():

@@ -289,6 +289,34 @@ class TestCitationVerificationGate:
         finally:
             _rmtree_retry(d)
 
+    def test_does_not_block_when_artifact_explicitly_says_not_partial(self, tmp_path, monkeypatch):
+        """Hồi quy (2026-07-17, phát hiện khi chạy demo thật cho đề tài hài lòng bệnh
+        nhân C1a BVQY175): "PARTIAL" in text từng khớp NHẦM khi agent viết PHỦ ĐỊNH
+        tường minh "KHÔNG PARTIAL" để xác nhận connector HOẠT ĐỘNG bình thường — cùng
+        lớp bug substring-không-nhận-phủ-định đã gặp ở run_g8_auto.py
+        (_is_locked_or_pass, "UNLOCKED" chứa "LOCKED"). Câu văn agent thật đã viết,
+        dùng nguyên văn làm fixture."""
+        study = "PYTEST-G10SUB-A12-T2B"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            self._sign_g8_g9(d, study)
+            pmids = _g7_seed_pmids(d) or ["12345678"]
+            (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
+                "- Connector PubMed sống: **HOẠT ĐỘNG** (đã truy vấn trực tiếp, có phản "
+                "hồi đầy đủ metadata gốc). → **KHÔNG PARTIAL.**\n"
+                + "\n".join(f"PMID {pmid}: ✅ OK" for pmid in pmids) + "\n"
+                "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN\n"
+                "Cần bác sĩ kiểm chứng.\n",
+                encoding="utf-8",
+            )
+            _write_matching_retraction_receipt(d, study, pmids)
+            rc = _run_main(study)
+            assert rc == 0, "artifact tự khai 'KHÔNG PARTIAL' (đã xác minh) không được bị chặn"
+        finally:
+            _rmtree_retry(d)
+
     def test_blocks_when_citation_artifact_has_unresolved_red(self, tmp_path, monkeypatch):
         study = "PYTEST-G10SUB-A12-T3"
         d = _study_dir(study)

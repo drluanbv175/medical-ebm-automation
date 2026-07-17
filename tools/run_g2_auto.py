@@ -79,9 +79,13 @@ RISK_PROFILES = {
         # đã vá ở dao-duc-dang-ky.md round 4 (trước đó chỉ vá doctrine, code
         # RISK_PROFILES ở đây bị bỏ sót — chính là bug lặp lại kiểu "doctrine
         # nói X nhưng code vẫn làm Y" đã gặp nhiều lần trong dự án).
+        # SỬA thêm (đóng phát hiện R3 khi chạy demo G10 thật): nhãn trạng thái
+        # trong ngoặc vuông phải khớp ĐÚNG bộ 6 nhãn cố định của skill
+        # "nghien-cuu-y-khoa-chuan-quoc-te" (skill_standards.VALID_STATUS_TAGS)
+        # — không được tự chế nhãn mới, kể cả khi mô tả đúng ý nghĩa.
         "registration": ("BẮT BUỘC nếu TIẾN CỨU tuyển người tham gia mới (Helsinki §35, "
                           "trước NTG đầu tiên) — TÙY CHỌN chỉ khi HỒI CỨU/dữ liệu thứ cấp "
-                          "thuần túy không tuyển mới ai [CẦN BÁC SĨ XÁC ĐỊNH loại thu thập]"),
+                          "thuần túy không tuyển mới ai — loại hình thu thập [CẦN BỔ SUNG]"),
         # SỬA 2026-07-17 (cùng đợt sửa "registration" ở trên): "hoặc không
         # cần" trơn sai theo cùng lý do Helsinki §35 — nếu tiến cứu tuyển mới,
         # PHẢI có nơi đăng ký thật, không phải "không cần".
@@ -109,7 +113,7 @@ RISK_PROFILES = {
         # thuần túy từ hồ sơ có sẵn.
         "registration": ("BẮT BUỘC nếu TUYỂN ca/chứng mới (Helsinki §35, trước NTG đầu tiên) "
                           "— TÙY CHỌN chỉ khi dùng hồ sơ/dữ liệu đã có sẵn, không tuyển mới ai "
-                          "[CẦN BÁC SĨ XÁC ĐỊNH]"),
+                          "— loại hình thu thập [CẦN BỔ SUNG]"),
         "register_where": "Đăng ký trong nước hoặc ClinicalTrials.gov",
         "icf_required": True,
         "icf_waiver_eligible": False,
@@ -136,7 +140,7 @@ RISK_PROFILES = {
         # bị bỏ sót cho tới khi chạy demo thật mới lộ ra.
         "registration": ("BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, "
                           "trước NTG đầu tiên) — TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp "
-                          "thuần túy, không khảo sát ai mới [CẦN BÁC SĨ XÁC ĐỊNH loại thu thập]"),
+                          "thuần túy, không khảo sát ai mới — loại hình thu thập [CẦN BỔ SUNG]"),
         # SỬA 2026-07-17 (cùng đợt sửa "registration" ở trên): "Không cần" trơn
         # sai theo cùng lý do Helsinki §35 — nếu tiến cứu tuyển mới, PHẢI có
         # nơi đăng ký thật.
