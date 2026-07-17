@@ -201,17 +201,42 @@ def test_g8_result_section_items_never_auto_checked_even_when_all_gates_pass():
 
 # ── Sơ đồ dòng người tham gia (G5/G7) không được gán nhầm chuẩn ─────────────
 
-def test_g5_ascii_flowchart_does_not_crash_for_new_designs():
-    """Không hồi quy: build_strobe_flowchart() vẫn chạy được cho diagnostic/sr_ma/
-    prediction (dùng chung khung STROBE-phơi-nhiễm — HOÃN CÓ CHỦ Ý xây sơ đồ riêng
-    cho từng chuẩn, xem comment trong run_g5_auto.py; test này chỉ khóa không-crash,
-    KHÔNG khóa nhãn đúng chuẩn)."""
-    for design in ("diagnostic", "sr_ma", "prediction"):
+def test_g5_ascii_flowchart_has_dedicated_diagram_per_standard():
+    """Vá 2026-07-17 (đóng việc hoãn từ round 5): trước đây diagnostic/sr_ma/
+    prediction dùng CHUNG 1 sơ đồ kiểu STROBE (khung "phơi nhiễm") — sai ngữ
+    nghĩa (chẩn đoán không có phơi nhiễm, SR/MA sàng lọc NGHIÊN CỨU không phải
+    BỆNH NHÂN, TRIPOD+AI không có khung phơi nhiễm). Nay mỗi chuẩn có sơ đồ
+    riêng đúng cấu trúc mục flow diagram chính thức của chuẩn đó."""
+    expectations = {
+        "diagnostic": ["STARD Flow Diagram", "INDEX TEST", "REFERENCE STANDARD"],
+        "sr_ma": ["PRISMA 2020 Flow Diagram", "IDENTIFICATION", "SCREENING", "INCLUDED"],
+        "prediction": ["TRIPOD+AI Flow Diagram", "TẬP PHÁT", "TẬP ĐÁNH GIÁ"],
+    }
+    for design, must_contain in expectations.items():
         out = G5.build_strobe_flowchart(
             study="TEST-001", design_code=design, n_adjusted=100, n_total=120,
             n_per_group=60,
         )
         assert isinstance(out, str) and len(out) > 0
+        for phrase in must_contain:
+            assert phrase in out, f"{design}: thiếu '{phrase}' trong sơ đồ"
+        assert "PHƠI NHIỄM" not in out, (
+            f"{design}: vẫn dùng khung 'phơi nhiễm' của STROBE — sơ đồ riêng chưa "
+            "thay thế đúng nhánh else generic"
+        )
+
+
+def test_g5_ascii_flowchart_case_control_cross_sectional_still_use_generic_strobe():
+    """Không hồi quy: 2 thiết kế THẬT SỰ có khung phơi nhiễm (case_control,
+    cross_sectional) phải VẪN dùng sơ đồ STROBE chung như trước — chỉ
+    diagnostic/sr_ma/prediction mới cần sơ đồ riêng."""
+    for design in ("case_control", "cross_sectional"):
+        out = G5.build_strobe_flowchart(
+            study="TEST-001", design_code=design, n_adjusted=100, n_total=120,
+            n_per_group=60,
+        )
+        assert "STROBE Flowchart" in out
+        assert "PHƠI" in out and "NHIỄM" in out  # nhãn "CÓ PHƠI / NHIỄM" tách 2 dòng trong khung ASCII
 
 
 def test_g7_prediction_flow_diagram_not_mislabeled_prisma():

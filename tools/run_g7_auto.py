@@ -219,6 +219,16 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("12a","Phương pháp thống kê — TOÀN BỘ, gồm kiểm soát gây nhiễu", False),
         ("12b","Phương pháp xét subgroup/tương tác", False),
         ("12c","Cách xử lý dữ liệu thiếu", False),
+        # QUYẾT ĐỊNH CUỐI 2026-07-17 (đóng việc hoãn từ round 4 — "cần plumbing
+        # checkpoint mới cho hệ số k chọn mẫu hệ thống"): xét lại, mục 12d
+        # KHÔNG khác biệt về bản chất so với ~30 mục auto=False khác trong
+        # chính checklist này (vd mục 6 "tiêu chí nhận + nguồn/cách chọn người
+        # tham gia" cũng là quyết định giao thức chỉ bác sĩ mới biết) — xây
+        # riêng 1 field checkpoint mới (sampling_method/sampling_k) + CLI flag
+        # chỉ để tự điền MỘT dòng này là không tương xứng, trong khi mục 6 (nền
+        # tảng hơn) vẫn giữ [CẦN] không cần plumbing. Giữ [CẦN] là hành vi AN
+        # TOÀN VÀ ĐÚNG (bác sĩ xác nhận chiến lược chọn mẫu thật khi viết bản
+        # thảo) — không phải gap, đóng dứt điểm không cần code thêm.
         ("12d","Phương pháp phân tích có tính đến CHIẾN LƯỢC CHỌN MẪU (nếu áp dụng — vd hệ số k chọn mẫu hệ thống)", False),
         ("12e","Phân tích độ nhạy (sensitivity)", False),
         ("13a","Số người tham gia MỖI giai đoạn (đủ điều kiện, khám, đưa vào NC, phân tích)", False),

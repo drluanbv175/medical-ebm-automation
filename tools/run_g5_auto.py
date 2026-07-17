@@ -1014,15 +1014,175 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
   Cần bác sĩ kiểm chứng. KHÔNG PII.
 """
+    elif design_code == "diagnostic":
+        # THÊM 2026-07-17 (đóng việc hoãn từ round 5): sơ đồ STARD flow that —
+        # KHÔNG có khung "phơi nhiễm" như STROBE, mà là dòng index test/
+        # reference standard theo đúng STARD 2015 mục 19 (participant flow).
+        flowchart = f"""\
+┌─────────────────────────────────────────────────────────────────┐
+│           BIỂU ĐỒ DÒNG NGƯỜI THAM GIA (STARD Flow Diagram)    │
+│                      Đề tài: {study:<30}     │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────┐
+  │  Đánh giá đủ điều kiện (Eligible):      │
+  │  N = [CẦN — BÁC SĨ ĐIỀN]               │
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Loại trừ (Excluded):        │
+        │  N = [CẦN]                   │
+{exclusion_lines}
+        │  • Không đồng thuận          │
+        └─────────────────────────────┘
+                   │
+  ┌────────────────▼─────────────────────────┐
+  │  TUYỂN VÀO (Enrolled):                   │
+  │  N = {n_adjusted} (N dự kiến + 20% dự phòng)│
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Nhận INDEX TEST:            │
+        │  N = [CẦN]                   │
+        │  Không nhận: N = [CẦN — lý do]│
+        └──────────┬──────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Nhận REFERENCE STANDARD:    │
+        │  N = [CẦN]                   │
+        │  Không nhận: N = [CẦN — lý do]│
+        └──────────┬──────────────────┘
+                   │
+        ┌──────────┴──────────────────┐
+        │                             │
+        ▼                             ▼
+  ┌───────────────┐           ┌───────────────┐
+  │  INDEX TEST   │           │  INDEX TEST   │
+  │  DƯƠNG TÍNH   │           │  ÂM TÍNH      │
+  │  N ≈ {n_per_group:<8}     │           │  N ≈ {n_total - n_per_group:<8}     │
+  └───────┬───────┘           └───────┬───────┘
+          │                           │
+          ▼                           ▼
+  ┌──────────────────────────────────────────┐
+  │  PHÂN TÍCH (cross-tabulation với          │
+  │  reference standard — Se/Sp/PPV/NPV):    │
+  │  N = {n_adjusted} → [CẦN điều chỉnh thực tế]│
+  └──────────────────────────────────────────┘
+
+  Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
+  Tham chiếu: STARD 2015 mục 19 (PMID: 26511081). Cần bác sĩ kiểm chứng.
+"""
+    elif design_code == "sr_ma":
+        # THÊM 2026-07-17 (đóng việc hoãn từ round 5): sơ đồ PRISMA 2020 flow
+        # that (mục 16a) — sàng lọc NGHIÊN CỨU, không phải tuyển BỆNH NHÂN,
+        # nên khung hoàn toàn khác STROBE (identification/screening/included).
+        flowchart = f"""\
+┌─────────────────────────────────────────────────────────────────┐
+│              BIỂU ĐỒ SÀNG LỌC (PRISMA 2020 Flow Diagram)       │
+│                      Đề tài: {study:<30}     │
+└─────────────────────────────────────────────────────────────────┘
+
+  ── IDENTIFICATION ──────────────────────────────────────────────
+  ┌──────────────────────────────────────────┐
+  │  Bản ghi từ CSDL/registry:               │
+  │  N = [CẦN — tổng theo từng CSDL đã tìm] │
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Loại trước sàng lọc:        │
+        │  • Trùng lặp: N = [CẦN]     │
+        │  • Tự động loại: N = [CẦN]  │
+        └─────────────────────────────┘
+                   │
+  ── SCREENING ────────────────────────────────────────────────────
+  ┌────────────────▼─────────────────────────┐
+  │  Bản ghi được sàng lọc (title/abstract): │
+  │  N = {n_adjusted:<8}                        │
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Loại (title/abstract):      │
+        │  N = [CẦN — lý do]          │
+        └─────────────────────────────┘
+                   │
+  ┌────────────────▼─────────────────────────┐
+  │  Toàn văn tìm để đánh giá đủ điều kiện:  │
+  │  N = [CẦN] | Không lấy được: N = [CẦN]  │
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Loại (toàn văn, kèm lý do): │
+        │  N = {n_per_group:<8}            │
+{exclusion_lines}
+        └─────────────────────────────┘
+                   │
+  ── INCLUDED ─────────────────────────────────────────────────────
+  ┌────────────────▼─────────────────────────┐
+  │  Nghiên cứu đưa vào tổng quan:           │
+  │  N = {n_total - n_per_group:<8}                        │
+  │  → Đưa vào tổng hợp định lượng (MA):     │
+  │  N = [CẦN — sau đánh giá đồng nhất]     │
+  └──────────────────────────────────────────┘
+
+  Ghi chú: Điền N=[CẦN] SAU khi hoàn tất tìm kiếm/sàng lọc thật.
+  Tham chiếu: PRISMA 2020 mục 16a (Page MJ et al., BMJ 2021;372:n71).
+  Cần bác sĩ/nhóm sàng lọc kiểm chứng.
+"""
+    elif design_code == "prediction":
+        # THÊM 2026-07-17 (đóng việc hoãn từ round 5): sơ đồ TRIPOD+AI flow
+        # that (mục 20a) — tách rõ tập PHÁT TRIỂN (development) và ĐÁNH GIÁ
+        # (evaluation), không có khung "phơi nhiễm" như STROBE.
+        flowchart = f"""\
+┌─────────────────────────────────────────────────────────────────┐
+│      BIỂU ĐỒ DÒNG NGƯỜI THAM GIA (TRIPOD+AI Flow Diagram)     │
+│                      Đề tài: {study:<30}     │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────┐
+  │  Đánh giá đủ điều kiện (Eligible):      │
+  │  N = [CẦN — BÁC SĨ ĐIỀN]               │
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Loại trừ (Excluded):        │
+        │  N = [CẦN]                   │
+{exclusion_lines}
+        │  • Thiếu biến tiên đoán/kết cục N = [CẦN] │
+        └─────────────────────────────┘
+                   │
+  ┌────────────────▼─────────────────────────┐
+  │  TUYỂN VÀO (Enrolled):                   │
+  │  N = {n_adjusted} (N dự kiến + 20% dự phòng)│
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────┴──────────────────┐
+        │                             │
+        ▼                             ▼
+  ┌───────────────┐           ┌───────────────┐
+  │  TẬP PHÁT     │           │  TẬP ĐÁNH GIÁ │
+  │  TRIỂN (D)    │           │  (E — nội/    │
+  │               │           │  ngoại bộ)    │
+  │  N ≈ {n_per_group:<8}     │           │  N ≈ {n_total - n_per_group:<8}     │
+  └───────┬───────┘           └───────┬───────┘
+          │                           │
+          ▼                           ▼
+  ┌───────────────┐           ┌───────────────┐
+  │ Dữ liệu thiếu │           │ Dữ liệu thiếu │
+  │ N = [CẦN]    │           │ N = [CẦN]    │
+  └───────┬───────┘           └───────┬───────┘
+          │                           │
+          ▼                           ▼
+  ┌───────────────┐           ┌───────────────┐
+  │ MÔ HÌNH CUỐI  │           │ ĐÁNH GIÁ HIỆU │
+  │ N = [CẦN]    │           │ NĂNG N=[CẦN] │
+  │ (development) │           │ (discrimination/calibration)│
+  └───────────────┘           └───────────────┘
+
+  Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
+  Tham chiếu: TRIPOD+AI mục 20a (Collins GS et al., BMJ 2024;385:e078378).
+  Cần bác sĩ/thống kê viên kiểm chứng.
+"""
     else:
-        # HOÃN CÓ CHỦ Ý (round 5, 2026-07-17): nhánh else này dùng chung 1 sơ đồ
-        # kiểu STROBE (khung "phơi nhiễm") cho MỌI thiết kế không phải RCT, kể cả
-        # diagnostic/sr_ma/prediction — về mặt nội dung không khớp thật (chẩn
-        # đoán không có "phơi nhiễm", SR/MA sàng lọc NGHIÊN CỨU chứ không tuyển
-        # bệnh nhân, TRIPOD+AI không có khung phơi nhiễm). Cần 3 sơ đồ ASCII
-        # riêng (STARD/PRISMA/TRIPOD+AI flow) để đúng hoàn toàn — hoãn vì đây là
-        # sơ đồ minh họa (không phải cổng khóa cứng như nội dung checklist đã
-        # vá ở run_g7_auto.py/run_g8_auto.py cùng vòng audit này).
         flowchart = f"""\
 ┌─────────────────────────────────────────────────────────────────┐
 │        BIỂU ĐỒ THAM GIA NGHIÊN CỨU (STROBE Flowchart)         │

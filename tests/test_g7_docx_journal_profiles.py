@@ -301,3 +301,54 @@ class TestExportDocxG7Integration:
         xml = _xml(path)
         assert "CẦN XÁC MINH TRƯỚC KHI NỘP" in xml
         assert "BMJ Open" in xml
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# Đóng việc hoãn round 4 ("gen_research_docx.py STROBE template riêng — cấu
+# trúc, không phải lỗi nội dung"): xác nhận export_docx_g7() (đường xuất DOCX
+# THẬT cho bản thảo G7 — KHÁC gen_research_docx.py::_gen_manuscript(), module
+# cũ hơn/hẹp hơn chỉ còn dùng cho artifact G0-G6, KHÔNG còn là đường sống cho
+# checklist G7) render đúng BẢNG WORD THẬT cho MỌI chuẩn báo cáo, không cần
+# template riêng biệt cho từng chuẩn — vì bảng markdown checklist của
+# generate_checklist() dùng CHUNG 1 cấu trúc 4 cột (Mục|Nội dung yêu cầu|Tự
+# điền|Ghi chú) cho tất cả 7 thiết kế, nên 1 cỗ máy render markdown->docx
+# chung (md2docx_vn) là đủ đúng, không có gap cấu trúc như round 4 lo ngại.
+# ════════════════════════════════════════════════════════════════════════════
+class TestChecklistTableRendersRealWordTablePerStandard:
+    """2026-07-17: đóng việc hoãn round 4. Dùng ĐÚNG generate_checklist() thật
+    (đã vá vòng 5) cho 3 chuẩn nặng nhất (STARD 34 dòng, PRISMA 42 dòng,
+    TRIPOD+AI 52 dòng) — xác nhận mỗi chuẩn đều ra bảng Word thật đúng số
+    dòng, không phải khối chữ monospace/text blob."""
+
+    @pytest.mark.parametrize("design_code,std_key,expected_rows", [
+        ("diagnostic", "diagnostic", 34),
+        ("sr_ma", "sr_ma", 42),
+        ("prediction", "prediction", 52),
+    ])
+    def test_checklist_becomes_real_docx_table_with_correct_row_count(
+        self, tmp_path, design_code, std_key, expected_rows,
+    ):
+        from run_g7_auto import REPORTING_CHECKLISTS, generate_checklist
+
+        std_name, std_total = REPORTING_CHECKLISTS[std_key]
+        checklist_md = generate_checklist(
+            design_code=design_code, reporting_std=std_name, std_total_items=std_total,
+            irb_number="IRB-1", registration="NCT1", n_adjusted=100, alpha=0.05, power=0.8,
+        )
+        path = export_docx_g7(checklist_md, f"TEST-G7-CHECKLIST-{design_code}", tmp_path)
+        assert path is not None and path.exists()
+
+        import docx
+        d = docx.Document(str(path))
+        assert len(d.tables) >= 1, f"{design_code}: checklist không ra bảng Word thật"
+        t = d.tables[0]
+        assert len(t.rows) == expected_rows + 1, (  # +1 header row
+            f"{design_code}: bảng docx có {len(t.rows)} dòng, kỳ vọng "
+            f"{expected_rows + 1} (header + {expected_rows} mục)"
+        )
+        assert len(t.columns) == 4
+        assert [c.text for c in t.rows[0].cells] == [
+            "Mục", "Nội dung yêu cầu", "Tự điền (A8)", "Ghi chú",
+        ]
+        xml = _xml(path)
+        assert "Courier New" not in xml, f"{design_code}: vẫn hiển thị dạng monospace text blob"
