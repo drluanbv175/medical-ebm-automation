@@ -26,6 +26,8 @@ import sys
 # Hub gộp vào thư mục chung "Claude AI" (2026-06-11). Tự suy theo vị trí script để di động Mac↔Windows:
 # script ở Claude AI/medical-ebm-automation/scripts/ → lên 2 cấp = Claude AI/ → /EBM_MASTER
 HUB = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "EBM_MASTER")
+sys.path.insert(0, os.path.join(HUB, "tools"))
+from ledger_ids import max_seq, assert_unique  # noqa: E402 — vá 2026-07-17: seq=len(cards) từng gây trùng id thật (xem ledger_ids.py)
 
 GRADE_MAP = {  # operational_evidence_level / official_grade → gradeLevel chuẩn EBM_MASTER
     "high": "high", "moderate": "mod", "mod": "mod", "low": "low", "very low": "vlow", "vlow": "vlow",
@@ -105,7 +107,7 @@ def main():
     shutil.copy(master_path, os.path.join(backups, "EBM_MASTER_%s_pre-bridge.json" % stamp))
 
     existing = {key_of(c) for c in data.get("evidence_cards", [])}
-    seq = len(data.get("evidence_cards", []))
+    seq = max_seq(data.get("evidence_cards", []))
     added = dup = 0
 
     for it in rows:
@@ -163,6 +165,7 @@ def main():
     data["meta"]["last_updated"] = args.today or data["meta"].get("last_updated", "")
     data["meta"]["last_backup"] = "BACKUPS/EBM_MASTER_%s_pre-bridge.json" % stamp
     data["meta"]["counts"]["evidence_cards"] = len(data["evidence_cards"])
+    assert_unique(data["evidence_cards"])  # cổng khóa chống trùng id — chặn tái diễn lỗi 2026-07-17
     json.dump(data, open(master_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print("Cầu nối: +%d thẻ mới (chưa xác minh, chờ bác sĩ duyệt), %d trùng. Tổng sổ cái: %d." %
           (added, dup, len(data["evidence_cards"])))
