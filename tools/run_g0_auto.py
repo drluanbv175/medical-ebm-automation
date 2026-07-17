@@ -179,6 +179,38 @@ def _truncate_at_word(text: str, max_len: int) -> str:
     return (cut or text[:max_len]) + "..."
 
 
+def _warn_if_topic_collision(out_dir: "Path", new_topic: str) -> None:
+    """Cảnh báo (KHÔNG chặn) nếu --study trùng thư mục đã có G0_checkpoint.json
+    nhưng topic lệch xa — dấu hiệu gõ nhầm mã đề tài, sắp âm thầm trộn 2 đề tài
+    khác nhau vào cùng 1 thư mục exports/<study>/. Không dùng để phát hiện
+    "chạy lại G0 với topic diễn đạt lại" (similarity cao) — chỉ bắt trường hợp
+    lệch RÕ RỆT (< 40% giống nhau theo SequenceMatcher, ngưỡng thận trọng để
+    tránh cảnh báo giả khi bác sĩ chỉ sửa vài chữ)."""
+    cp_path = out_dir / "G0_checkpoint.json"
+    if not cp_path.exists():
+        return
+    try:
+        old = json.loads(cp_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    old_topic = str(old.get("topic") or "").strip()
+    if not old_topic:
+        return
+    import difflib
+    ratio = difflib.SequenceMatcher(None, old_topic.lower(), new_topic.strip().lower()).ratio()
+    if ratio < 0.4:
+        print(
+            "\n⚠️  CẢNH BÁO — MÃ ĐỀ TÀI CÓ THỂ BỊ TRÙNG NHẦM:\n"
+            f"  Thư mục exports/{out_dir.name}/ ĐÃ có đề tài với topic:\n"
+            f"    \"{old_topic[:120]}{'...' if len(old_topic) > 120 else ''}\"\n"
+            f"  Nhưng topic BẠN vừa nhập lại KHÁC HẲN:\n"
+            f"    \"{new_topic[:120]}{'...' if len(new_topic) > 120 else ''}\"\n"
+            f"  (độ giống nhau ~{ratio*100:.0f}%)\n"
+            "  Nếu đây là 2 đề tài KHÁC NHAU, dùng --study khác để tránh trộn dữ liệu.\n"
+            "  Nếu bạn đang diễn đạt lại CÙNG một đề tài, có thể bỏ qua cảnh báo này.\n"
+        )
+
+
 def build_pubmed_query(topic: str, query_en: Optional[str] = None) -> dict[str, str]:
     """
     Chuyển topic (VI hoặc EN) thành bộ truy vấn PubMed đa chiều.
@@ -748,6 +780,18 @@ def main():
     print(f"  Topic: {args.topic}")
     print(f"  Thời gian: {run_date}")
     print(f"{'='*65}\n")
+
+    # THÊM 2026-07-17: mỗi đề tài PHẢI có 1 thư mục riêng exports/<study>/ dùng
+    # xuyên suốt G0-G10 (lưu trữ + theo dõi tại đó) — nhưng trước đây KHÔNG có
+    # gì cảnh báo nếu bác sĩ gõ nhầm --study trùng với MÃ đã dùng cho MỘT ĐỀ TÀI
+    # KHÁC (topic khác hẳn) — hệ sẽ âm thầm ghi đè/pha trộn 2 đề tài vào cùng 1
+    # thư mục. Phát hiện thật: đề tài hài lòng bệnh nhân C1a từng có 2 thư mục
+    # riêng biệt (KKB-HAI-LONG-2026 rỗng + hai-long-benh-nhan-C1a-BVQY175 thật)
+    # do gõ mã khác nhau cho CÙNG 1 đề tài — chiều ngược (gõ TRÙNG mã cho khác
+    # đề tài) nguy hiểm hơn vì âm thầm trộn lẫn dữ liệu, không tự lộ ra. Cảnh
+    # báo (không chặn cứng — bác sĩ có thể đang hợp lệ chạy lại G0 với topic đã
+    # diễn đạt lại cho CÙNG đề tài).
+    _warn_if_topic_collision(Path("exports") / study, args.topic)
 
     # 1. Xây truy vấn
     print("📋 Bước 1/7: Xây dựng truy vấn PubMed...")
