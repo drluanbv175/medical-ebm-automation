@@ -584,7 +584,65 @@ def main():
     sens_rows, sens_mults = [], [0.80, 1.00, 1.20]
     missing_sd = False  # THÊM: cờ riêng cho ca "có MD nhưng thiếu SD" — khác "chưa có công thức"
 
-    if effect_val:
+    # SỬA 2026-07-17 (round audit gate): "sr_ma"/"prediction" KHÔNG dùng cỡ mẫu
+    # kiểu so-sánh-2-nhóm (HR/OR/RR/MD/AUC) nên KHÔNG được đặt trong nhánh
+    # "elif design_code == ..." lồng bên trong "if effect_val:" như trước —
+    # nếu G1 không trích được effect_val nào cho đề tài (rất có thể xảy ra với
+    # sr_ma/prediction, vì effect_val ở 2 thiết kế này vốn KHÔNG có ý nghĩa
+    # thống kê tương ứng), code rơi thẳng xuống else "[CẦN EFFECT SIZE từ bác
+    # sĩ]" chung chung — bỏ lỡ hoàn toàn lời giải thích RIS/TSA hoặc pmsampsize
+    # đã viết riêng cho 2 thiết kế này. Kiểm design_code == sr_ma/prediction
+    # TRƯỚC, không phụ thuộc effect_val còn hay không.
+    if design_code == "sr_ma":
+        # THÊM 2026-07-06: sr_ma là nhánh G1 gán THƯỜNG GẶP (topic có ≥2
+        # RCT chưa có SR/MA, hoặc câu hỏi tường minh yêu cầu tổng quan)
+        # nhưng G3 trước đây rơi vào else chung chung. SR/MA KHÔNG dùng
+        # công thức cỡ mẫu 1 nghiên cứu đơn lẻ — "cỡ mẫu" của SR/MA là
+        # SỐ NGHIÊN CỨU/số bệnh nhân cộng dồn cần để đạt power cho pooled
+        # estimate, tính bằng required information size (RIS) / Trial
+        # Sequential Analysis (TSA). Đây phụ thuộc dị biệt (I²), phương
+        # sai giữa nghiên cứu (τ²) — cần dữ liệu chỉ có SAU khi trích
+        # xuất, nên KHÔNG tự động hóa hoàn toàn được ở G3; ta chỉ chỉ rõ
+        # phương pháp đúng thay vì thông báo generic vô hướng.
+        n_per_group = n_total = n_adjusted = 0
+        formula_used = (
+            "[CẦN — SR/MA KHÔNG dùng công thức cỡ mẫu 1 nghiên cứu đơn lẻ. "
+            "Cỡ mẫu SR/MA = Required Information Size (RIS) / Trial Sequential "
+            "Analysis (TSA): số bệnh nhân cộng dồn cần để pooled estimate đạt "
+            "power, phụ thuộc dị biệt I²/τ² (chỉ biết SAU khi trích xuất dữ liệu). "
+            "Dùng phần mềm TSA (Copenhagen Trial Unit) hoặc metafor::power. "
+            "Bác sĩ/thống kê viên tính RIS sau bước trích xuất, KHÔNG bịa N ở đây.]"
+        )
+        print("  ⚠️  design=sr_ma → cần RIS/TSA (không phải công thức 1 nghiên cứu) "
+              "— KHÔNG bịa số, xem hướng dẫn trong artifact A4")
+    elif design_code == "prediction":
+        # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction"
+        # (mô hình tiên lượng/TRIPOD+AI) trước đây rơi vào else chung chung.
+        # Cỡ mẫu mô hình tiên lượng KHÔNG dùng công thức so sánh 2 nhóm (HR/
+        # OR/RR/MD) — cần phương pháp riêng theo Riley RD, Ensor J, Snell KIE,
+        # et al. "Calculating the sample size required for developing a
+        # clinical prediction model." BMJ 2020;368:m441 (PMID 32188600) —
+        # đòi hỏi ước lượng trước C-statistic/R² kỳ vọng, số tham số tiên
+        # đoán ứng viên, và tỷ lệ hiện mắc/biến cố — những con số CHỈ bác
+        # sĩ/thống kê viên mới có thể ấn định cho đề tài cụ thể (không thể
+        # suy ra từ effect_val/effect_type như các thiết kế so sánh 2 nhóm).
+        # KHÔNG bịa công thức từ trí nhớ — chỉ dẫn đúng phương pháp + gói
+        # phần mềm (pmsampsize, R/Stata) thay vì thông báo generic vô hướng.
+        n_per_group = n_total = n_adjusted = 0
+        formula_used = (
+            "[CẦN — Mô hình tiên lượng (TRIPOD+AI) KHÔNG dùng công thức so "
+            "sánh 2 nhóm (HR/OR/RR/MD). Cỡ mẫu tính theo Riley RD et al. "
+            "'Calculating the sample size required for developing a clinical "
+            "prediction model.' BMJ 2020;368:m441 (PMID 32188600) — cần bác "
+            "sĩ/thống kê viên cung cấp: C-statistic hoặc R² kỳ vọng, số tham "
+            "số tiên đoán ứng viên, tỷ lệ hiện mắc/biến cố trong quần thể "
+            "đích. Dùng gói phần mềm pmsampsize (R hoặc Stata) để tính. "
+            "KHÔNG bịa N ở đây.]"
+        )
+        print("  ⚠️  design=prediction → cần pmsampsize (Riley 2020, PMID "
+              "32188600), không phải công thức so sánh 2 nhóm — KHÔNG bịa "
+              "số, xem hướng dẫn trong artifact A4")
+    elif effect_val:
         try:
             if design_code == "cohort" and effect_type in ("HR", "OR", "RR"):
                 ev = effect_val if effect_val < 1.0 else 1 / effect_val
@@ -677,28 +735,6 @@ def main():
                                  "cho N hơi khác do giả định phương sai khác nhau; nếu cỡ mẫu "
                                  "của nghiên cứu phụ thuộc chủ yếu vào con số này, nên nhờ "
                                  "thống kê viên đối chiếu lại bằng phần mềm chuyên dụng.]")
-            elif design_code == "sr_ma":
-                # THÊM 2026-07-06: sr_ma là nhánh G1 gán THƯỜNG GẶP (topic có ≥2
-                # RCT chưa có SR/MA, hoặc câu hỏi tường minh yêu cầu tổng quan)
-                # nhưng G3 trước đây rơi vào else chung chung. SR/MA KHÔNG dùng
-                # công thức cỡ mẫu 1 nghiên cứu đơn lẻ — "cỡ mẫu" của SR/MA là
-                # SỐ NGHIÊN CỨU/số bệnh nhân cộng dồn cần để đạt power cho pooled
-                # estimate, tính bằng required information size (RIS) / Trial
-                # Sequential Analysis (TSA). Đây phụ thuộc dị biệt (I²), phương
-                # sai giữa nghiên cứu (τ²) — cần dữ liệu chỉ có SAU khi trích
-                # xuất, nên KHÔNG tự động hóa hoàn toàn được ở G3; ta chỉ chỉ rõ
-                # phương pháp đúng thay vì thông báo generic vô hướng.
-                n_per_group = n_total = n_adjusted = 0
-                formula_used = (
-                    "[CẦN — SR/MA KHÔNG dùng công thức cỡ mẫu 1 nghiên cứu đơn lẻ. "
-                    "Cỡ mẫu SR/MA = Required Information Size (RIS) / Trial Sequential "
-                    "Analysis (TSA): số bệnh nhân cộng dồn cần để pooled estimate đạt "
-                    "power, phụ thuộc dị biệt I²/τ² (chỉ biết SAU khi trích xuất dữ liệu). "
-                    "Dùng phần mềm TSA (Copenhagen Trial Unit) hoặc metafor::power. "
-                    "Bác sĩ/thống kê viên tính RIS sau bước trích xuất, KHÔNG bịa N ở đây.]"
-                )
-                print("  ⚠️  design=sr_ma → cần RIS/TSA (không phải công thức 1 nghiên cứu) "
-                      "— KHÔNG bịa số, xem hướng dẫn trong artifact A4")
             else:
                 # SỬA: KHÔNG còn fabricate N=100/200 giả khi không khớp công
                 # thức nào — để trống + gắn nhãn [CẦN] thay vì số bịa mà

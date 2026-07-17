@@ -365,13 +365,22 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
 """.format(study_name=study_name, run_date_short=run_date[:10], year=_YEAR)
 
     # 18 WHO Registration fields
+    # Vá 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction" (mô hình
+    # tiên lượng/TRIPOD+AI) trước đây KHÔNG có trong 2 bản đồ này -> .get()
+    # fallback im lặng về "Observational"/"Other" (Trường 14 dưới). "Observational"
+    # tình cờ đúng (mô hình tiên lượng không có can thiệp phân bổ), nhưng "Other"
+    # cho Primary Purpose là mơ hồ -- WHO ICTRP có hạng mục "Prognosis" riêng,
+    # đúng hơn cho đa số đề tài "prediction" (khác "diagnostic" đã có nhãn riêng
+    # "Diagnostic" -- 2 mã thiết kế này KHÔNG cùng ý nghĩa WHO Primary Purpose).
     who_design_type_map = {
         "rct": "Interventional", "cohort": "Observational", "case_control": "Observational",
         "cross_sectional": "Observational", "diagnostic": "Observational", "sr_ma": "Not Applicable",
+        "prediction": "Observational",
     }
     who_primary_purpose_map = {
         "rct": "Treatment", "cohort": "Observational", "case_control": "Epidemiology",
         "cross_sectional": "Epidemiology", "diagnostic": "Diagnostic", "sr_ma": "Health Services Research",
+        "prediction": "Prognosis",
     }
 
     ncts_for_ref = " · ".join([f"[{t['nct_id']}]({t['url']})" for t in ct_trials[:3]]) if ct_trials else "[Không tìm được thử nghiệm tương tự]"

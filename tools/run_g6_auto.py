@@ -2039,6 +2039,31 @@ TABLE_SHELLS = {
             ("Egger's test (publication bias)", "[chạy meta::metabias]", "—", "p<0.10 → nghi ngờ"),
         ]),
     ],
+    # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction" (mô
+    # hình tiên lượng/TRIPOD+AI) trước đây KHÔNG có bảng riêng — rơi vào
+    # fallback generic 1 dòng "[CẦN] chưa có mẫu bảng cho thiết kế". Bảng 2/3
+    # dưới đây theo đúng bộ chỉ số TRIPOD+AI mục 23a (discrimination/
+    # calibration) — chỉ là KHUNG TIÊU ĐỀ CỘT (giống mọi design khác ở trên),
+    # KHÔNG có công thức/số liệu nào được tính sẵn.
+    "prediction": [
+        ("Bảng 1 — Đặc điểm quần thể phát triển/đánh giá mô hình", [
+            ("Biến", "Phát triển (N=[CẦN])", "Đánh giá (N=[CẦN])", "p"),
+            ("Tuổi (năm), TB±SD", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
+            ("Tỷ lệ biến cố/kết cục, n (%)", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
+        ]),
+        ("Bảng 2 — Hiệu năng phân biệt (Discrimination)", [
+            ("Chỉ số", "Giá trị", "95%CI", "Ghi chú"),
+            ("C-statistic / AUC", "[chạy]", "[chạy]", "Apparent + internal validation (bootstrap)"),
+            ("R² (Cox-Snell / Nagelkerke)", "[chạy]", "[chạy]", ""),
+        ]),
+        ("Bảng 3 — Hiệu chỉnh & lợi ích lâm sàng (Calibration & DCA)", [
+            ("Chỉ số", "Giá trị", "95%CI", "Ghi chú"),
+            ("Calibration slope", "[chạy]", "[chạy]", "Lý tưởng = 1"),
+            ("Calibration-in-the-large", "[chạy]", "[chạy]", "Lý tưởng = 0"),
+            ("Brier score", "[chạy]", "—", ""),
+            ("Decision Curve Analysis", "[chạy dcurves::dca]", "—", "Net benefit vs treat-all/treat-none"),
+        ]),
+    ],
 }
 
 
@@ -2212,6 +2237,11 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "case_control":    "Conditional logistic regression (OR 95%CI)",
         "diagnostic":      "ROC/AUC + Calibration + DCA",
         "sr_ma":           "Random effects meta-analysis REML (meta::metagen/metabin)",
+        # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction"
+        # trước đây rơi vào .get() fallback "[CẦN XÁC ĐỊNH THEO SAP]".
+        "prediction":      "Phát triển mô hình (hồi quy logistic/Cox hoặc ML) + "
+                           "internal validation (bootstrap) + discrimination "
+                           "(C-statistic/AUC) + calibration (slope/intercept) + DCA (TRIPOD+AI)",
     }
     analysis_name = analysis_name_map.get(design_code, "[CẦN XÁC ĐỊNH THEO SAP]")
 
