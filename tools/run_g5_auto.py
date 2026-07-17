@@ -1015,6 +1015,14 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   Cần bác sĩ kiểm chứng. KHÔNG PII.
 """
     else:
+        # HOÃN CÓ CHỦ Ý (round 5, 2026-07-17): nhánh else này dùng chung 1 sơ đồ
+        # kiểu STROBE (khung "phơi nhiễm") cho MỌI thiết kế không phải RCT, kể cả
+        # diagnostic/sr_ma/prediction — về mặt nội dung không khớp thật (chẩn
+        # đoán không có "phơi nhiễm", SR/MA sàng lọc NGHIÊN CỨU chứ không tuyển
+        # bệnh nhân, TRIPOD+AI không có khung phơi nhiễm). Cần 3 sơ đồ ASCII
+        # riêng (STARD/PRISMA/TRIPOD+AI flow) để đúng hoàn toàn — hoãn vì đây là
+        # sơ đồ minh họa (không phải cổng khóa cứng như nội dung checklist đã
+        # vá ở run_g7_auto.py/run_g8_auto.py cùng vòng audit này).
         flowchart = f"""\
 ┌─────────────────────────────────────────────────────────────────┐
 │        BIỂU ĐỒ THAM GIA NGHIÊN CỨU (STROBE Flowchart)         │

@@ -55,14 +55,21 @@ import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 # 1. HẰNG SỐ — CHECKLIST BÁO CÁO THEO CHUẨN
 # ════════════════════════════════════════════════════════════════════════════
 
-# Tên chuẩn báo cáo và tổng số mục theo design
+# Tên chuẩn báo cáo và tổng số mục CHÍNH THỨC theo design (số mục chính thức
+# theo tên chuẩn, KHÔNG phải số dòng bảng — bảng có thể nhiều dòng hơn vì mục
+# con chữ cái; xem generate_checklist() dùng len(items) làm mẫu số dòng thật).
+# Vá 2026-07-17 (round 5): thêm "prediction" — TRƯỚC ĐÂY THIẾU HẲN, khiến một đề
+# tài mô hình tiên lượng bị .get() fallback về STROBE (sai hoàn toàn chuẩn báo
+# cáo) khi soạn bản thảo G7. run_g1_auto.py::REPORTING_STANDARDS["prediction"]
+# đã đúng "TRIPOD+AI 2024" từ trước — file này (G7) giờ mới khớp.
 REPORTING_CHECKLISTS: dict[str, tuple[str, int]] = {
-    "rct":             ("CONSORT 2025",  30),
-    "cohort":          ("STROBE 2007",   22),
-    "cross_sectional": ("STROBE 2007",   22),
-    "case_control":    ("STROBE 2007",   22),
-    "diagnostic":      ("STARD 2015",    30),
-    "sr_ma":           ("PRISMA 2020",   27),
+    "rct":             ("CONSORT 2025",   30),
+    "cohort":          ("STROBE 2007",    22),
+    "cross_sectional": ("STROBE 2007",    22),
+    "case_control":    ("STROBE 2007",    22),
+    "diagnostic":      ("STARD 2015",     30),
+    "sr_ma":           ("PRISMA 2020",    27),
+    "prediction":      ("TRIPOD+AI 2024", 27),
 }
 
 # Mục checklist chi tiết theo design (mô tả ngắn → tự điền hay cần thêm)
@@ -230,63 +237,156 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("21", "Khả năng khái quát hóa (generalizability/external validity)", False),
         ("22", "Tài trợ — nguồn tài trợ + vai trò nhà tài trợ", True),
     ],
+    # STARD 2015 (30 mục chính thức / 34 dòng) -- vá 2026-07-17 (round 5): bản cũ
+    # 25 dòng, khai tổng 30 nhưng thiếu hẳn nhiều mục thật (12a/12b, 13a/13b,
+    # 21a/21b, và đánh số méo). Xây lại đúng checklist chính thức (đối chiếu PDF
+    # gốc equator-network.org, Bossuyt PM et al. BMJ 2015;351:h5527). Mục KẾT QUẢ
+    # (19-27) luôn auto=False + mô tả tránh mọi từ khóa auto_filled_patterns.
     "diagnostic": [
-        ("1",  "Tiêu đề — xét nghiệm + tiêu chuẩn vàng", False),
-        ("2",  "Tóm tắt có cấu trúc", True),
-        ("3",  "Bối cảnh khoa học và lâm sàng", True),
-        ("4",  "Mục tiêu — câu hỏi nghiên cứu", False),
-        ("5",  "Thiết kế nghiên cứu", True),
-        ("6",  "Nơi + thời gian thu thập", False),
-        ("7",  "Người tham gia (tiêu chí nhận/loại, nguồn)", False),
-        ("8",  "Lấy mẫu — liên tiếp/ngẫu nhiên/tiện lợi", False),
-        ("9",  "Mô tả index test", False),
-        ("10", "Mô tả reference standard", False),
-        ("11", "Mù (blinding) — ai mù với kết quả nào", False),
-        ("12", "Cỡ mẫu — lý do", True),
-        ("13", "Phân tích thống kê — ROC/AUC/Se/Sp", False),
-        ("14", "STARD flow diagram", False),
-        ("15", "Đặc điểm người tham gia", False),
-        ("16", "Phân phối bệnh (Table 1)", False),
-        ("17", "Cross-tabulation index vs reference", False),
-        ("18", "Se, Sp, PPV, NPV, AUC + CI", False),
-        ("19", "Phân tích không xác định/trung gian", False),
-        ("20", "AE (nếu có)", False),
-        ("21", "Phân tích subgroup (nếu có)", False),
-        ("22", "Giới hạn", False),
-        ("23", "Ý nghĩa lâm sàng", False),
-        ("24", "Đăng ký + Protocol", True),
-        ("25", "Nguồn tài trợ", False),
+        ("1",   "Xác định ngay trong tiêu đề là NC độ chính xác chẩn đoán, nêu ít nhất 1 chỉ số đo (Se/Sp/PPV/NPV/AUC)", False),
+        ("2",   "Trình bày dạng chuẩn hóa: bối cảnh, phương pháp, kết quả, kết luận", False),
+        ("3",   "Bối cảnh khoa học/lâm sàng — vai trò dự kiến của xét nghiệm chỉ số (index test)", True),
+        ("4",   "Mục tiêu nghiên cứu và giả thuyết", True),
+        ("5",   "Hướng thu thập dữ liệu — trước (tiến cứu) hay sau (hồi cứu) khi thực hiện index test/reference standard", True),
+        ("6",   "Tiêu chí chọn người tham gia", True),
+        ("7",   "Cách xác định người đủ điều kiện tham gia (triệu chứng, xét nghiệm trước đó, danh sách bệnh nhân)", True),
+        ("8",   "Nơi và thời gian xác định người tham gia đủ điều kiện", False),
+        ("9",   "Tuyển liên tiếp, mẫu ngẫu nhiên, hay mẫu thuận tiện", False),
+        ("10a", "Mô tả xét nghiệm chỉ số (index test) đủ chi tiết để người khác lặp lại", False),
+        ("10b", "Mô tả tiêu chuẩn tham chiếu (reference standard) đủ chi tiết để người khác lặp lại", False),
+        ("11",  "Lý do chọn tiêu chuẩn tham chiếu, nếu có nhiều lựa chọn khả dĩ", True),
+        ("12a", "Ngưỡng cắt/phân loại kết quả index test — định trước hay dò tìm sau", False),
+        ("12b", "Ngưỡng cắt/phân loại kết quả reference standard — định trước hay dò tìm sau", False),
+        ("13a", "Người đọc kết quả index test có biết thông tin lâm sàng/kết quả reference standard hay không (làm mù)", False),
+        ("13b", "Người đọc kết quả reference standard có biết thông tin lâm sàng/kết quả index test hay không (làm mù)", False),
+        ("14",  "Phương pháp ước lượng/so sánh các chỉ số độ chính xác chẩn đoán", True),
+        ("15",  "Cách xử lý kết quả không xác định (indeterminate) của index test/reference standard", False),
+        ("16",  "Cách xử lý dữ liệu thiếu của index test/reference standard", True),
+        ("17",  "Phân tích biến thiên độ chính xác theo phân nhóm — định trước hay dò tìm sau", False),
+        ("18",  "Cỡ mẫu dự kiến và cách tính", True),
+        ("19",  "Sơ đồ dòng người tham gia (STARD flow diagram)", False),
+        ("20",  "Đặc điểm nhân khẩu học và lâm sàng nền của người tham gia", False),
+        ("21a", "Phân bố mức độ nặng bệnh ở nhóm có bệnh mục tiêu", False),
+        ("21b", "Phân bố các chẩn đoán thay thế ở nhóm không có bệnh mục tiêu", False),
+        ("22",  "Khoảng thời gian và can thiệp lâm sàng xen giữa index test và reference standard", False),
+        ("23",  "Bảng chéo (2x2) đối chiếu kết quả index test với reference standard", False),
+        ("24",  "Ước lượng độ chính xác chẩn đoán (Se/Sp/PPV/NPV...) kèm độ chính xác 95% CI", False),
+        ("25",  "Biến cố bất lợi khi thực hiện index test hoặc reference standard", False),
+        ("26",  "Hạn chế nghiên cứu — nguồn sai lệch, bất định thống kê, khả năng khái quát hóa", False),
+        ("27",  "Ý nghĩa lâm sàng — vai trò dự kiến của index test trong thực hành", False),
+        ("28",  "Số đăng ký và tên cơ quan đăng ký nghiên cứu", True),
+        ("29",  "Nơi có thể truy cập giao thức nghiên cứu đầy đủ", True),
+        ("30",  "Nguồn tài trợ và vai trò của nhà tài trợ", False),
     ],
+    # PRISMA 2020 (27 mục chính thức / 42 dòng) -- vá 2026-07-17 (round 5): bản
+    # cũ 28 dòng, đánh số KHÔNG khớp checklist thật (vd "2a/2b" không tồn tại
+    # trong PRISMA 2020, thiếu hẳn 13b-13f/16b/20b-20d/23b-23d/24b/24c...). Xây
+    # lại đúng checklist chính thức (đối chiếu PDF gốc prisma-statement.org,
+    # Page MJ et al. BMJ 2021;372:n71). Mục KẾT QUẢ (16-23) luôn auto=False.
     "sr_ma": [
-        ("1",  "Tiêu đề — SR/MA trong tiêu đề", False),
-        ("2a", "Tóm tắt có cấu trúc (PRISMA-A)", True),
-        ("2b", "Đăng ký protocol (PROSPERO)", True),
-        ("3a", "Tiêu chí nhận — PICOS", False),
-        ("3b", "Thay đổi tiêu chí so với protocol", False),
-        ("4",  "Cơ sở dữ liệu + chiến lược tìm kiếm", False),
-        ("5",  "Quản lý dữ liệu + sàng lọc", False),
-        ("6",  "Trích xuất dữ liệu", False),
-        ("7",  "Biến dữ liệu", False),
-        ("8a", "Đánh giá nguy cơ sai lệch (RoB tool)", False),
-        ("8b", "Thiên kiến xuất bản", False),
-        ("9",  "Đo lường kết quả tổng hợp", False),
-        ("10a","Phương pháp tổng hợp (I²/Q test)", False),
-        ("10b","Phương pháp giải quyết không đồng nhất", False),
-        ("10c","Sensitivity analysis", False),
-        ("10d","Subgroup analysis", False),
-        ("10e","Funnel plot/Egger", False),
-        ("11", "Số nghiên cứu được tìm/đưa vào (PRISMA flow)", False),
-        ("12", "Đặc điểm nghiên cứu đưa vào", False),
-        ("13", "Nguy cơ sai lệch từng nghiên cứu", False),
-        ("14", "Kết quả từng nghiên cứu", False),
-        ("15", "Tổng hợp kết quả (forest plot)", False),
-        ("16", "RoB toàn bộ bằng chứng", False),
-        ("17", "Báo cáo thiên kiến (reporting bias)", False),
-        ("18", "Kết quả bổ sung", False),
-        ("19", "Diễn giải", False),
-        ("20", "Giới hạn", False),
-        ("21", "Kết luận", False),
-        ("22", "Tài trợ + vai trò", False),
+        ("1",   "Xác định là SR, MA, hoặc cả hai ngay trong tiêu đề", False),
+        ("2",   "Trình bày tóm lược có cấu trúc theo checklist PRISMA riêng dành cho phần mở đầu bài báo", False),
+        ("3",   "Giải thích lý do thực hiện tổng quan trong bối cảnh hiểu biết hiện tại", True),
+        ("4",   "Nêu mục tiêu/câu hỏi PICO mà tổng quan trả lời", True),
+        ("5",   "Tiêu chí nhận/loại và cách nhóm nghiên cứu để tổng hợp", True),
+        ("6",   "Liệt kê mọi nguồn đã tìm kiếm và ngày tìm cuối cùng", True),
+        ("7",   "Trình bày đầy đủ chiến lược tìm kiếm cho ít nhất 1 cơ sở dữ liệu", True),
+        ("8",   "Quy trình sàng lọc — số người đọc độc lập, công cụ tự động (nếu có)", False),
+        ("9",   "Quy trình trích xuất dữ liệu — số người, độc lập, liên hệ tác giả", False),
+        ("10a", "Liệt kê/định nghĩa mọi kết cục tìm kiếm; cách xử lý kết quả không đầy đủ", False),
+        ("10b", "Liệt kê/định nghĩa các biến khác (đặc điểm PICOS, nguồn tài trợ...)", False),
+        ("11",  "Phương pháp và công cụ đánh giá nguy cơ sai lệch từng nghiên cứu, số người đánh giá", True),
+        ("12",  "Thước đo hiệu quả chính dùng cho từng kết cục (RR, MD...)", True),
+        ("13a", "Quy trình quyết định nghiên cứu nào đủ điều kiện cho từng tổng hợp cụ thể", True),
+        ("13b", "Các bước chuẩn bị dữ liệu trước tổng hợp (chuyển đổi thống kê, xử lý thiếu)", True),
+        ("13c", "Phương pháp trình bày bảng/hình vẽ kết quả từng nghiên cứu và tổng hợp", True),
+        ("13d", "Phương pháp tổng hợp, mô hình (fixed/random effects), độ không đồng nhất, phần mềm", True),
+        ("13e", "Phương pháp khám phá không đồng nhất (phân nhóm, meta-regression)", True),
+        ("13f", "Phân tích độ nhạy kiểm tra độ vững của kết quả gộp", True),
+        ("14",  "Phương pháp đánh giá sai lệch báo cáo (missing results) trong từng tổng hợp", True),
+        ("15",  "Phương pháp đánh giá độ chắc chắn bằng chứng (vd GRADE) cho từng kết cục", False),
+        ("16a", "Kết quả tìm kiếm/sàng lọc theo từng giai đoạn, lý tưởng có sơ đồ dòng", False),
+        ("16b", "Liệt kê nghiên cứu có vẻ đủ điều kiện nhưng bị loại, kèm lý do", False),
+        ("17",  "Trích dẫn từng nghiên cứu đưa vào và nêu đặc điểm", False),
+        ("18",  "Trình bày đánh giá nguy cơ sai lệch THẬT cho từng nghiên cứu đưa vào", False),
+        ("19",  "Số liệu từng nghiên cứu và ước lượng hiệu quả kèm độ chính xác, theo kết cục", False),
+        ("20a", "Đặc điểm/chất lượng các nghiên cứu đóng góp cho từng tổng hợp", False),
+        ("20b", "Kết quả từng tổng hợp thống kê: ước lượng gộp, độ chính xác, không đồng nhất", False),
+        ("20c", "Kết quả khám phá nguyên nhân không đồng nhất", False),
+        ("20d", "Kết quả phân tích độ nhạy", False),
+        ("21",  "Kết quả đánh giá độ hoàn chỉnh bằng chứng THẬT cho từng tổng hợp", False),
+        ("22",  "Kết quả xếp hạng độ chắc chắn bằng chứng THẬT cho từng kết cục quan trọng", False),
+        ("23a", "Diễn giải chung kết quả trong bối cảnh bằng chứng khác", False),
+        ("23b", "Bàn luận hạn chế của bằng chứng được đưa vào", False),
+        ("23c", "Bàn luận hạn chế của chính quy trình tổng quan", False),
+        ("23d", "Ý nghĩa đối với thực hành, chính sách, nghiên cứu tương lai", False),
+        ("24a", "Chi tiết đăng ký (PROSPERO...) hoặc nêu nếu không đăng ký", True),
+        ("24b", "Nơi truy cập giao thức tổng quan, hoặc nêu nếu chưa có giao thức", False),
+        ("24c", "Mô tả/giải thích mọi thay đổi so với đăng ký/giao thức gốc", True),
+        ("25",  "Nguồn tài trợ/hỗ trợ và vai trò nhà tài trợ", False),
+        ("26",  "Khai báo xung đột lợi ích của tác giả tổng quan", False),
+        ("27",  "Nêu rõ các tài liệu (form sàng lọc, dữ liệu trích xuất, code) có thể truy cập công khai ở đâu", False),
+    ],
+    # TRIPOD+AI 2024 (27 mục chính thức / 52 dòng) -- MỚI THÊM 2026-07-17 (round
+    # 5): trước đây "prediction" KHÔNG hề có trong CHECKLIST_ITEMS, khiến G7 rơi
+    # về fallback STROBE khi soạn bản thảo cho một đề tài mô hình tiên lượng --
+    # sai hoàn toàn chuẩn báo cáo. TRIPOD+AI 2024 (Collins GS et al., BMJ
+    # 2024;385:e078378) THAY THẾ HOÀN TOÀN TRIPOD 2015 cho mọi mô hình tiên
+    # lượng (hồi quy lẫn AI/ML). Mục KẾT QUẢ/THẢO LUẬN/USABILITY (20 trở đi) luôn
+    # auto=False. D=Development, E=Evaluation trong ngoặc vuông đầu mô tả.
+    "prediction": [
+        ("1",   "[D;E] Xác định dạng phát triển/đánh giá mô hình, quần thể đích, kết cục dự đoán ngay trong tiêu đề", False),
+        ("2",   "[D;E] Hoàn thành checklist riêng TRIPOD+AI dành cho phần mở đầu bài báo", False),
+        ("3a",  "[D;E] Bối cảnh lâm sàng (chẩn đoán/tiên lượng), lý do, tham chiếu mô hình có sẵn", True),
+        ("3b",  "[D;E] Quần thể đích, mục đích sử dụng trong quy trình chăm sóc, người dùng dự kiến", True),
+        ("3c",  "[D;E] Bất bình đẳng sức khỏe đã biết giữa các nhóm nhân khẩu xã hội liên quan", False),
+        ("4",   "[D;E] Nêu rõ đây là phát triển, đánh giá, hay cả hai", True),
+        ("5a",  "[D;E] Nguồn dữ liệu riêng cho phát triển/đánh giá, lý do, tính đại diện, dữ liệu tổng hợp (nếu có)", False),
+        ("5b",  "[D;E] Ngày bắt đầu tuyển và ngày kết thúc theo dõi", False),
+        ("6a",  "[D;E] Bối cảnh nghiên cứu, số lượng/vị trí trung tâm", False),
+        ("6b",  "[D;E] Tiêu chí chọn người tham gia", True),
+        ("6c",  "[D;E] Điều trị nhận được và cách xử lý trong quá trình phát triển/đánh giá", False),
+        ("7",   "[D;E] Tiền xử lý/làm sạch/feature engineering, kiểm tra chất lượng, tính nhất quán giữa các nhóm", False),
+        ("8a",  "[D;E] Định nghĩa kết cục + mốc thời gian, lý do, tính nhất quán giữa các nhóm", False),
+        ("8b",  "[D;E] Trình độ/đặc điểm người đánh giá kết cục (nếu kết cục mang tính chủ quan)", False),
+        ("8c",  "[D;E] Làm mù khi đánh giá kết cục (tránh rò rỉ nhãn/label leakage)", False),
+        ("9a",  "[D] Cách chọn/nguồn biến tiên đoán ban đầu và mọi tiền-lọc trước khi xây mô hình", False),
+        ("9b",  "[D;E] Định nghĩa mọi biến tiên đoán, cách/thời điểm đo, làm mù", False),
+        ("9c",  "[D;E] Trình độ/đặc điểm người đánh giá biến tiên đoán (nếu mang tính chủ quan)", False),
+        ("10",  "[D;E] Cách xác định cỡ mẫu, riêng cho phát triển/đánh giá, kèm chi tiết tính toán", True),
+        ("11",  "[D;E] Cách xử lý dữ liệu thiếu, lý do thiếu", True),
+        ("12a", "[D] Cách chia dữ liệu (phát triển, tuning, đánh giá), kiểm tra rò rỉ dữ liệu (leakage)", False),
+        ("12b", "[D] Dạng hàm/chuẩn hóa/biến đổi của biến tiên đoán", False),
+        ("12c", "[D] Loại mô hình + lý do, các bước xây dựng, tuning siêu tham số, validation nội bộ", False),
+        ("12d", "[D;E] Độ không đồng nhất giữa cụm (bệnh viện/quốc gia); đối chiếu TRIPOD-Cluster", False),
+        ("12e", "[D;E] Chỉ số/biểu đồ đánh giá hiệu năng đã xác định (phân biệt, hiệu chỉnh, lợi ích lâm sàng)", False),
+        ("12f", "[E] Cập nhật/hiệu chỉnh lại mô hình phát sinh từ đánh giá", False),
+        ("12g", "[E] Cách tính dự đoán khi đánh giá (công thức/code/object/API)", False),
+        ("13",  "[D;E] Có dùng phương pháp xử lý mất cân bằng lớp (SMOTE...) và tái hiệu chỉnh không", False),
+        ("14",  "[D;E] Cách tiếp cận đảm bảo công bằng/giảm thiên kiến mô hình và lý do", False),
+        ("15",  "[D] Loại đầu ra (xác suất/phân loại), lý do ngưỡng cắt, khoảng bất định", False),
+        ("16",  "[D;E] Khác biệt giữa dữ liệu phát triển và đánh giá (bối cảnh, tiêu chí, kết cục, tiên đoán)", False),
+        ("17",  "[D;E] Tên hội đồng đạo đức/IRB, đồng thuận hoặc lý do miễn", True),
+        ("18a", "[D;E] Nguồn tài trợ và vai trò nhà tài trợ", False),
+        ("18b", "[D;E] Xung đột lợi ích/khai báo tài chính của mọi tác giả", False),
+        ("18c", "[D;E] Nơi truy cập giao thức nghiên cứu, hoặc nêu nếu chưa có", False),
+        ("18d", "[D;E] Tên/số đăng ký, hoặc nêu nếu chưa đăng ký", True),
+        ("18e", "[D;E] Chi tiết khả năng tiếp cận dữ liệu, điều kiện, từ điển dữ liệu", False),
+        ("18f", "[D;E] Khả năng tiếp cận code phân tích, môi trường tính toán/phiên bản phần mềm-phần cứng", False),
+        ("19",  "[D;E] Sự tham gia của bệnh nhân/công chúng (PPI) khi xây dựng/thực hiện/báo cáo, hoặc nêu nếu không có (GRIPP2)", False),
+        ("20a", "[D;E] Luồng người tham gia, số kết cục, nêu lại quá trình theo dõi", False),
+        ("20b", "[D;E] Đặc điểm chung/theo nguồn, gồm khác biệt giữa nhóm nhân khẩu xã hội", False),
+        ("20c", "[E] So sánh phân bố biến tiên đoán/kết cục với dữ liệu phát triển", False),
+        ("21",  "[D;E] Số người tham gia và số kết cục trong từng phân tích (phát triển, tuning, đánh giá)", False),
+        ("22",  "[D] Chi tiết đầy đủ mô hình (công thức/code/object/API) để bên thứ ba sử dụng, hạn chế tiếp cận nếu có", False),
+        ("23a", "[D;E] Ước lượng hiệu năng kèm CI, gồm các phân nhóm quan trọng, biểu đồ", False),
+        ("23b", "[D;E] Độ không đồng nhất hiệu năng giữa các cụm; đối chiếu TRIPOD-Cluster", False),
+        ("24",  "[E] Kết quả cập nhật mô hình (nếu có), mô hình và hiệu năng sau cập nhật", False),
+        ("25",  "[D;E] Diễn giải tổng thể, gồm công bằng, so với mục tiêu/nghiên cứu trước", False),
+        ("26",  "[D;E] Hạn chế nghiên cứu và ảnh hưởng đến sai lệch/bất định/khả năng khái quát", False),
+        ("27a", "[D] Cách xử lý dữ liệu đầu vào kém chất lượng/không có khi triển khai thực tế", False),
+        ("27b", "[D] Có cần tương tác người-AI không, mức độ chuyên môn cần thiết", False),
+        ("27c", "[D;E] Bước tiếp theo cho nghiên cứu tương lai, khả năng khái quát hóa", False),
     ],
 }
 
@@ -823,6 +923,13 @@ def generate_manuscript(
         flow_label = "STROBE flow diagram"
     elif design_code == "diagnostic":
         flow_label = "STARD flow diagram"
+    elif design_code == "sr_ma":
+        flow_label = "PRISMA flow diagram"
+    elif design_code == "prediction":
+        # Vá 2026-07-17 (round 5): "prediction" trước đây rơi vào nhánh else nên
+        # bị gán nhầm "PRISMA flow diagram" — sai hoàn toàn (đây không phải SR/MA).
+        # TRIPOD+AI mục 20a yêu cầu sơ đồ luồng người tham gia riêng.
+        flow_label = "TRIPOD+AI flow diagram (mục 20a)"
     else:
         flow_label = "PRISMA flow diagram"
 
@@ -1183,9 +1290,16 @@ def generate_checklist(
 
         rows.append(f"| {item_id} | {desc} | {status} | {note} |")
 
+    # SỬA (vòng 5, 2026-07-17): std_total_items là TỔNG MỤC CHÍNH THỨC của chuẩn
+    # (vd "27 mục PRISMA 2020") — dùng đúng cho header. Nhưng bảng thực tế có
+    # NHIỀU DÒNG HƠN vì mục con chữ cái (10a/10b, 13a-13f...) được liệt kê thành
+    # dòng riêng — dùng std_total_items làm mẫu số ở đây đếm sai số dòng thật
+    # trong bảng vừa in (phát hiện: sai lệch ở CẢ 6 thiết kế đang có, vd rct khai
+    # 30 mục nhưng bảng có 42 dòng). Đổi mẫu số về len(items) — đúng số dòng bảng.
+    row_total = len(items)
     footer = (
-        f"\n**Tổng kết:** {auto_count}/{std_total_items} mục tự điền từ checkpoints G0-G4.  \n"
-        f"**Còn {std_total_items - auto_count} mục cần bác sĩ điền** khi có kết quả thật.  \n"
+        f"\n**Tổng kết:** {auto_count}/{row_total} dòng checklist tự điền từ checkpoints G0-G4.  \n"
+        f"**Còn {row_total - auto_count} dòng cần bác sĩ điền** khi có kết quả thật.  \n"
         "\n*Kiểm tra checklist này với tác giả chính trước khi nộp bản thảo.*\n"
     )
 
@@ -1577,7 +1691,7 @@ def main() -> None:
                        "design", "abstract", "structure", "reporting", "background", "protocol"}
         )
     )
-    print(f"  → {auto_count}/{std_total} mục tự điền từ G0-G4")
+    print(f"  → {auto_count}/{len(items_list)} dòng checklist tự điền từ G0-G4 (chuẩn {std_name} có {std_total} mục chính thức)")
 
     # ── Bước 4: Sinh manuscript ──
     print(f"\n✍️  Bước 4/8: Sinh bản thảo IMRAD ({design_code} / {reporting_std})...")

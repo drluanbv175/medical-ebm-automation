@@ -90,10 +90,17 @@ def test_item_6_wording_differs_by_design_no_longer_shared_verbatim():
 
 
 def test_generate_checklist_cross_sectional_header_matches_actual_row_count():
+    """Vá 2026-07-17 (round audit đối kháng 5): assertion cũ "/22 mục tự điền" tự nó
+    ăn theo ĐÚNG lỗi cấu trúc mà round 5 phát hiện & vá — std_total_items (22, số mục
+    CHÍNH THỨC) từng bị dùng làm mẫu số đếm DÒNG BẢNG THẬT, nhưng bảng STROBE cross_
+    sectional có NHIỀU HƠN 22 dòng (mục con chữ cái 12a-12e...). Test giờ so với
+    len(CHECKLIST_ITEMS[...]) thật — đúng cho mọi lần sửa nội dung sau này, không
+    hardcode một con số có thể lệch lại."""
     std_name, std_total = G7.REPORTING_CHECKLISTS["cross_sectional"]
+    items = G7.CHECKLIST_ITEMS["cross_sectional"]
     out = G7.generate_checklist("cross_sectional", std_name, std_total, "IRB-TEST", "NCT-TEST", 100, 0.05, 0.8)
     assert f"({std_total} mục tổng" in out
-    assert "/22 mục tự điền" in out
+    assert f"/{len(items)} dòng checklist tự điền" in out
 
 
 def test_generate_checklist_does_not_falsely_auto_mark_outcome_or_key_results_items():
