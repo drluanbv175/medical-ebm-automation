@@ -69,8 +69,23 @@ RISK_PROFILES = {
     "cohort": {
         "risk_level": "TỐI THIỂU",
         "irb_route": "EXPEDITED REVIEW (Rút gọn — nếu chỉ quan sát + lấy mẫu tối thiểu)",
-        "registration": "KHUYẾN KHÍCH (trước thu thập, không bắt buộc với quan sát thuần túy)",
-        "register_where": "ClinicalTrials.gov (nếu có can thiệp) hoặc không cần",
+        # SỬA 2026-07-17 (phát hiện khi chạy demo thật cho đề tài hài lòng bệnh
+        # nhân C1a BVQY175 — cắt ngang TIẾN CỨU tuyển người tham gia mới): dòng
+        # cũ "KHUYẾN KHÍCH... không bắt buộc với quan sát thuần túy" SAI với
+        # Tuyên ngôn Helsinki (WMA, bản sửa 2024) §35 — đăng ký công khai BẮT
+        # BUỘC trước khi tuyển người tham gia ĐẦU TIÊN cho MỌI nghiên cứu con
+        # người, không giới hạn RCT/can thiệp, KHÔNG có ngoại lệ cho "quan sát
+        # thuần túy" nếu vẫn TUYỂN người mới. Đây là fix CODE khớp với doctrine
+        # đã vá ở dao-duc-dang-ky.md round 4 (trước đó chỉ vá doctrine, code
+        # RISK_PROFILES ở đây bị bỏ sót — chính là bug lặp lại kiểu "doctrine
+        # nói X nhưng code vẫn làm Y" đã gặp nhiều lần trong dự án).
+        "registration": ("BẮT BUỘC nếu TIẾN CỨU tuyển người tham gia mới (Helsinki §35, "
+                          "trước NTG đầu tiên) — TÙY CHỌN chỉ khi HỒI CỨU/dữ liệu thứ cấp "
+                          "thuần túy không tuyển mới ai [CẦN BÁC SĨ XÁC ĐỊNH loại thu thập]"),
+        # SỬA 2026-07-17 (cùng đợt sửa "registration" ở trên): "hoặc không
+        # cần" trơn sai theo cùng lý do Helsinki §35 — nếu tiến cứu tuyển mới,
+        # PHẢI có nơi đăng ký thật, không phải "không cần".
+        "register_where": "ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)",
         "icf_required": True,
         "icf_waiver_eligible": False,
         "risks": [
@@ -88,7 +103,13 @@ RISK_PROFILES = {
     "case_control": {
         "risk_level": "TỐI THIỂU",
         "irb_route": "EXPEDITED REVIEW",
-        "registration": "KHUYẾN KHÍCH",
+        # SỬA 2026-07-17 (cùng đợt sửa cohort/cross_sectional ở trên — Helsinki
+        # §35, xem comment đầy đủ tại "cohort"): "KHUYẾN KHÍCH" trơn sai nếu
+        # bệnh-chứng TUYỂN ca/chứng MỚI (thường gặp), chỉ đúng khi hồi cứu
+        # thuần túy từ hồ sơ có sẵn.
+        "registration": ("BẮT BUỘC nếu TUYỂN ca/chứng mới (Helsinki §35, trước NTG đầu tiên) "
+                          "— TÙY CHỌN chỉ khi dùng hồ sơ/dữ liệu đã có sẵn, không tuyển mới ai "
+                          "[CẦN BÁC SĨ XÁC ĐỊNH]"),
         "register_where": "Đăng ký trong nước hoặc ClinicalTrials.gov",
         "icf_required": True,
         "icf_waiver_eligible": False,
@@ -105,8 +126,21 @@ RISK_PROFILES = {
     "cross_sectional": {
         "risk_level": "TỐI THIỂU",
         "irb_route": "EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)",
-        "registration": "KHÔNG BẮT BUỘC",
-        "register_where": "Không cần (có thể đăng ký tùy chọn)",
+        # SỬA 2026-07-17 — PHÁT HIỆN QUA CHẠY DEMO THẬT cho đề tài hài lòng
+        # bệnh nhân C1a BVQY175 (cắt ngang TIẾN CỨU khảo sát bệnh nhân mới đến
+        # khám, không phải hồi cứu hồ sơ có sẵn): dòng cũ "KHÔNG BẮT BUỘC" cho
+        # MỌI cross_sectional mâu thuẫn thẳng với Helsinki §35 (đăng ký công
+        # khai bắt buộc trước NTG đầu tiên cho MỌI NC con người có tuyển mới,
+        # không giới hạn RCT) — đúng ngay chính đề tài đã kích hoạt phát hiện
+        # này. Doctrine dao-duc-dang-ky.md đã vá round 4 nhưng CODE (dict này)
+        # bị bỏ sót cho tới khi chạy demo thật mới lộ ra.
+        "registration": ("BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, "
+                          "trước NTG đầu tiên) — TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp "
+                          "thuần túy, không khảo sát ai mới [CẦN BÁC SĨ XÁC ĐỊNH loại thu thập]"),
+        # SỬA 2026-07-17 (cùng đợt sửa "registration" ở trên): "Không cần" trơn
+        # sai theo cùng lý do Helsinki §35 — nếu tiến cứu tuyển mới, PHẢI có
+        # nơi đăng ký thật.
+        "register_where": "ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)",
         "icf_required": True,
         "icf_waiver_eligible": True,
         "risks": [
