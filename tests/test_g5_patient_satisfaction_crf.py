@@ -66,6 +66,19 @@ class TestPatientSatisfactionBundleExcludesVitals:
         for expected in ("visit_type", "payment_type", "wait_time_min", "visit_freq_year"):
             assert expected in names
 
+    def test_no_undisclosed_comorbidity_or_lab_fields(self):
+        """Hồi quy trực tiếp (bình duyệt agent dao-duc-dang-ky phát hiện thật,
+        2026-07-17): PICO của khảo sát hài lòng không liệt kê bệnh nền là yếu
+        tố liên quan, và ICF không công bố sẽ thu thông tin này — CRF từng
+        vẫn có dm/htn/comorbid_other/labs_other qua _GENERIC_COMORBIDITIES/
+        _GENERIC_LABS, vi phạm nguyên tắc tối thiểu hóa dữ liệu."""
+        rows, _ = build_redcap_rows("cross_sectional", _SATISFACTION_TOPIC)
+        names = _field_names(rows)
+        for undisclosed in ("dm", "htn", "comorbid_other", "labs_other"):
+            assert undisclosed not in names, (
+                f"CRF khảo sát hài lòng vẫn còn trường bệnh nền không công bố '{undisclosed}'"
+            )
+
     def test_no_duplicate_field_names(self):
         rows, _ = build_redcap_rows("cross_sectional", _SATISFACTION_TOPIC)
         names = _field_names(rows)

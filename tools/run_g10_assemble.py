@@ -520,19 +520,34 @@ def sec_quantri_dulieu(cps, meta) -> str:
     )
 
 
+_SURVIVAL_CAPABLE_DESIGNS = {"cohort", "rct"}
+
+
 def sec_sap(cps, meta) -> str:
     ver = _g(cps["G4"], "g4_sap_version", default=TAG_BS)
     status = _g(cps["G4"], "g4_status", default=TAG_BS)
     code = _design_code(cps) or TAG_BS
+    # SỬA 2026-07-17 (bình duyệt binh-duyet phát hiện thật): câu SAP từng nhắc
+    # "Cox" KHÔNG điều kiện cho MỌI thiết kế — hồi quy Cox chỉ có ý nghĩa với
+    # dữ liệu sống còn/thời gian-đến-biến cố (cohort/rct theo dõi dọc); một
+    # nghiên cứu cắt ngang MỘT thời điểm (cross_sectional/case_control/
+    # diagnostic) không có trục thời gian để tính Cox — nhắc "Cox" ở đó là
+    # dấu vết SAP dùng chung mọi thiết kế chưa rà lại, phản biện thật sẽ bắt
+    # ngay. Chỉ nhắc Cox khi thiết kế THỰC SỰ có thể có kết cục sống còn.
+    multivar = (
+        "đa biến (hồi quy logistic/tuyến tính/Cox tuỳ thiết kế)"
+        if code in _SURVIVAL_CAPABLE_DESIGNS else
+        "đa biến (hồi quy logistic/tuyến tính tuỳ kết cục — không áp dụng Cox vì "
+        "thiết kế không có trục thời gian-đến-biến cố)"
+    )
     return (
         "# 11. Kế hoạch phân tích thống kê\n\n"
         f"**Phiên bản SAP (tự động từ G4):** {ver} — trạng thái: {status}.\n\n"
         "**Phân tích dự kiến (định trước):**\n"
         "- Mô tả: tần số/tỷ lệ (biến định tính), TB±ĐLC hoặc trung vị (IQR) tuỳ "
         "phân phối; tỷ lệ kèm KTC 95%.\n"
-        "- Phân tích yếu tố liên quan: đơn biến (χ²/Fisher, t-test/Mann-Whitney) → "
-        "đa biến (hồi quy logistic/tuyến tính/Cox tuỳ thiết kế), báo cáo ước "
-        "lượng + KTC 95% (CẤM p-value đơn độc).\n"
+        f"- Phân tích yếu tố liên quan: đơn biến (χ²/Fisher, t-test/Mann-Whitney) → "
+        f"{multivar}, báo cáo ước lượng + KTC 95% (CẤM p-value đơn độc).\n"
         f"- Phần mềm + seed + ngưỡng ý nghĩa: {TAG_BS}.\n\n"
         f"> Cổng cứng: SAP phải được KÝ KHOÁ (G4 Lock Certificate) TRƯỚC khi xem "
         f"dữ liệu. Mã thiết kế `{code}` quyết định test phù hợp (nối "
@@ -547,8 +562,12 @@ def sec_sailech(cps, meta) -> str:
         "# 12. Sai lệch và kiểm soát\n\n"
         f"**Công cụ đánh giá nguy cơ sai lệch phù hợp thiết kế:** {rs['extra']}.\n\n"
         "**Các loại sai số cần khống chế:** sai số chọn mẫu, sai số thông tin, "
-        "sai số nhớ lại, nhiễu (confounding), và — với nghiên cứu hài lòng/khảo "
-        "sát — sai lệch mong muốn xã hội (social desirability).\n\n"
+        "sai số nhớ lại, nhiễu (confounding); và — với nghiên cứu hài lòng/khảo "
+        "sát — sai lệch mong muốn xã hội (social desirability) và **sai lệch "
+        "không trả lời (non-response bias)** (người không hài lòng có xu hướng "
+        "từ chối/bỏ dở phiếu cao hơn, có thể làm ước lượng mức hài lòng bị "
+        "thổi phồng — cần ghi nhận tỷ lệ từ chối + lý do, đối chiếu đặc điểm "
+        "cơ bản giữa người từ chối và người tham gia nếu khả thi).\n\n"
         f"**Biện pháp khống chế cụ thể tại đơn vị:** {TAG_BS} (chuẩn hoá công cụ, "
         "tập huấn điều tra viên, ẩn danh, tự điền phiếu, giám sát chéo...).\n"
     )

@@ -353,13 +353,50 @@ def generate_g2_full_package(
 
     risk_table_str = _risk_table(risk["risks"])
     ct_table_str   = _ct_table(ct_trials)
-    irb_required   = "BẮT BUỘC" if design_code == "rct" else "KHUYẾN KHÍCH"
+    # SỬA 2026-07-17 (bình duyệt agent `dao-duc-dang-ky` cho đề tài hài lòng
+    # bệnh nhân C1a phát hiện thật): dòng "irb_required" cũ tự tính RIÊNG,
+    # KHÔNG dùng risk["registration"] (nguồn đã vá đúng Helsinki §35 ở
+    # RISK_PROFILES) — bảng TỔNG QUAN G2 vẫn in "KHUYẾN KHÍCH" trơn cho MỌI
+    # thiết kế không phải rct, mâu thuẫn thẳng với mục ĐĂNG KÝ NGHIÊN CỨU chi
+    # tiết cùng tài liệu (đã đúng điều kiện BẮT BUỘC/TÙY CHỌN theo tiến
+    # cứu/hồi cứu). Cùng loại bug "sửa 1 nơi, quên nơi khác đọc cùng khái
+    # niệm" đã gặp nhiều lần trong dự án — nay dùng CHUNG risk["registration"].
     # SỬA (tự động hóa thêm — G2 và G3 chạy song song theo thiết kế, nhưng
     # nếu bác sĩ đã chạy G3 TRƯỚC G2, N thật đã có sẵn — không cần để cứng
     # [CẦN] trong khi dữ liệu đã có trong tay): hiển thị N thật nếu đã có,
     # nếu chưa vẫn giữ nguyên placeholder [CẦN] như cũ.
     n_display = str(n_adjusted) if n_adjusted and n_adjusted > 0 else "[CẦN — chờ kết quả G3]"
     n_display_inline = str(n_adjusted) if n_adjusted and n_adjusted > 0 else "[CẦN — từ G3]"
+
+    # SỬA 2026-07-17 (bình duyệt agent `dao-duc-dang-ky` cho đề tài hài lòng
+    # bệnh nhân C1a phát hiện thật): ICF trước đây LUÔN in sẵn "Bước 3: ví dụ
+    # lấy 5 mL máu tĩnh mạch" + "Bước 4: tái khám sau 3-6 tháng" + "lợi ích:
+    # tiếp cận thuốc/can thiệp mới" cho MỌI thiết kế — kể cả khảo sát cắt
+    # ngang một lần không xâm lấn, không can thiệp. Nguy cơ thật: bác sĩ chỉ
+    # điền vào chỗ trống theo mẫu mà quên XÓA HẲN các dòng không áp dụng,
+    # khiến ICF cuối cùng ngụ ý sai bản chất nghiên cứu (có lấy máu/tái khám/
+    # biến cố y khoa) — đúng loại lỗi hội đồng đạo đức thật rất hay bắt và
+    # trả hồ sơ về. Chỉ hiện các dòng này cho thiết kế THẬT SỰ có thể có lấy
+    # mẫu sinh học/theo dõi nhiều lần (rct, cohort) — designs khác (khảo sát/
+    # hồi cứu một lần) dùng mẫu 2 bước đơn giản.
+    if design_code in ("rct", "cohort"):
+        icf_extra_steps = (
+            "   ☐ Bước 3: [CẦN — ví dụ: lấy 5 mL máu tĩnh mạch/khám lâm sàng bổ sung "
+            "— XÓA dòng này nếu nghiên cứu không lấy mẫu sinh học]\n"
+            "   ☐ Bước 4: [CẦN — ví dụ: tái khám sau 3 tháng / 6 tháng — XÓA dòng này "
+            "nếu chỉ có MỘT lần tiếp xúc với người tham gia]\n"
+        )
+        icf_benefit_direct = (
+            "[CẦN — ví dụ: được theo dõi sức khỏe sát hơn, được tiếp cận thuốc/can "
+            "thiệp mới (nếu RCT)]"
+        )
+    else:
+        icf_extra_steps = ""
+        icf_benefit_direct = (
+            "[CẦN — ví dụ: không có lợi ích y khoa trực tiếp; góp ý giúp cải thiện "
+            "chất lượng dịch vụ — KHÔNG có can thiệp/thủ thuật y khoa nào thực hiện "
+            "thêm ngoài quy trình khám/chăm sóc thường quy]"
+        )
 
     # ICF waiver flag
     waiver_section = ""
@@ -471,7 +508,7 @@ Link to protocol (pre-print): [sẽ bổ sung sau]
 | Thiết kế | {design_primary} |
 | Mức nguy cơ | **{risk["risk_level"]}** |
 | Lộ trình IRB | **{risk["irb_route"]}** |
-| Đăng ký nghiên cứu | {irb_required} — {risk["register_where"]} |
+| Đăng ký nghiên cứu | {risk["registration"]} — {risk["register_where"]} |
 | ICF bắt buộc | {"✅ Có" if risk["icf_required"] else "⚠ Có thể miễn — xem Tài liệu 9"} |
 | Chuẩn báo cáo | {reporting_std} |
 
@@ -636,8 +673,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    Nếu anh/chị đồng ý, chúng tôi sẽ yêu cầu:
    ☐ Bước 1: [CẦN MÔ TẢ — ví dụ: ký phiếu đồng thuận này]
    ☐ Bước 2: [CẦN — ví dụ: trả lời bộ câu hỏi ~20 phút]
-   ☐ Bước 3: [CẦN — ví dụ: lấy 5 mL máu tĩnh mạch]
-   ☐ Bước 4: [CẦN — ví dụ: tái khám sau 3 tháng / 6 tháng]
+{icf_extra_steps}
 
    Tổng thời gian tham gia ước tính: [CẦN — ví dụ: 12 tháng]
    Số lần đến cơ sở y tế: [CẦN — ví dụ: 3 lần]
@@ -653,8 +689,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    Chi phí điều trị biến cố liên quan nghiên cứu: [CẦN XÁC NHẬN].
 
 4. LỢI ÍCH KỲ VỌNG
-   Lợi ích trực tiếp: [CẦN — ví dụ: được theo dõi sức khỏe sát
-   hơn, được tiếp cận thuốc/can thiệp mới (nếu RCT)]
+   Lợi ích trực tiếp: {icf_benefit_direct}
    Lợi ích cộng đồng: {risk["benefits"]}
 
    Chúng tôi KHÔNG đảm bảo lợi ích cá nhân từ việc tham gia.
@@ -670,7 +705,9 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    ✅ Kết quả công bố dùng dữ liệu TỔNG HỢP — KHÔNG tiết lộ danh tính
    ✅ Dữ liệu nhận dạng được xóa/ẩn danh hóa trong vòng [CẦN] năm
       sau khi kết thúc nghiên cứu theo quy định lưu trữ y tế
-   ✅ Trong trường hợp rò rỉ, anh/chị sẽ được thông báo trong 72 giờ
+   ✅ Trong trường hợp rò rỉ, anh/chị sẽ được thông báo NGAY KHI XÁC NHẬN
+      (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP —
+      mốc này áp cho cơ quan quản lý, không phải mốc cam kết với anh/chị)
 
    Anh/chị có quyền yêu cầu xem, sửa hoặc xóa dữ liệu của mình
    (trước khi chúng tôi tiến hành phân tích).

@@ -158,13 +158,22 @@ def detect_specialty_with_confidence(topic: str):
     return winner, (runner_up if is_ambiguous else None), is_ambiguous
 
 
-# Nhóm biến chung (admin + nhân khẩu) — dùng cho MỌI chuyên khoa
+# Nhóm biến chung (admin + nhân khẩu) — dùng cho MỌI chuyên khoa VÀ MỌI thiết kế.
 _BASE_ADMIN = [
     ("record_id",     "Admin",       "Hành chính",         "text",     "Mã tham gia (duy nhất, không PII)",                    "",                                                                      "",                        "",          "",    "",    "y", ""),
     ("consent_date",  "Admin",       "",                   "text",     "Ngày đồng thuận",                                       "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
     ("site_id",       "Admin",       "",                   "text",     "Mã cơ sở / trung tâm",                                  "",                                                                      "",                        "",          "",    "",    "y", ""),
-    ("visit_date",    "Admin",       "",                   "text",     "Ngày tái khám hiện tại",                                "",                                                                      "",                        "date_ymd",  "",    "",    "n", ""),
-    ("censor_date",   "Admin",       "",                   "text",     "Ngày kiểm duyệt (kết thúc theo dõi)",                   "",                                                                      "",                        "date_ymd",  "",    "",    "n", ""),
+    ("visit_date",    "Admin",       "",                   "text",     "Ngày khám/thu thập dữ liệu",                            "",                                                                      "",                        "date_ymd",  "",    "",    "n", ""),
+]
+
+# SỬA 2026-07-17 (bình duyệt đa vai trò phát hiện thật, cùng ngày với đề tài
+# hài lòng bệnh nhân C1a): censor_date/censor_reason/protocol_deviation/ltfu
+# trước đây nằm CỨNG trong _BASE_ADMIN, nhồi vào MỌI thiết kế kể cả cắt ngang
+# MỘT thời điểm (cross_sectional) — "mất theo dõi (LTFU)"/"ngày kiểm duyệt"
+# không có Ý NGHĨA gì khi không có trục thời gian theo dõi dọc. Tách riêng,
+# CHỈ ghép vào thiết kế thật sự có theo dõi dọc (xem build_redcap_rows()).
+_FOLLOWUP_ADMIN = [
+    ("censor_date",   "Admin",       "Theo dõi dọc",       "text",     "Ngày kiểm duyệt (kết thúc theo dõi)",                   "",                                                                      "",                        "date_ymd",  "",    "",    "n", ""),
     ("censor_reason", "Admin",       "",                   "dropdown", "Lý do kiểm duyệt",                                      "1, Hoàn thành theo dõi | 2, Rút đồng thuận | 3, Mất liên lạc | 4, Tử vong | 5, Khác", "",          "",          "",    "",    "n", ""),
     ("protocol_deviation","Admin",   "",                   "radio",    "Vi phạm đề cương",                                      "0, Không | 1, Nhỏ | 2, Lớn",                                          "",                        "",          "",    "",    "n", ""),
     ("ltfu",          "Admin",       "",                   "radio",    "Mất theo dõi (LTFU)",                                   "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
@@ -528,10 +537,20 @@ _SPECIALTY_BUNDLES = {
     # THÊM 2026-07-17: needs_vitals=False — khảo sát hài lòng KHÔNG đo sinh
     # hiệu; các bundle khác ở trên giữ nguyên hành vi cũ (mặc định True qua
     # .get(), xem build_redcap_rows) để không đổi CRF của đề tài đang chạy.
+    # SỬA 2026-07-17 (bình duyệt agent `dao-duc-dang-ky` phát hiện thật):
+    # comorbid/labs_base trước đây dùng _GENERIC_COMORBIDITIES/_GENERIC_LABS
+    # (đái tháo đường, tăng huyết áp, xét nghiệm nền...) — nhưng PICO của một
+    # khảo sát hài lòng (xem _HAI_LONG_EXPOSURE ở trên) KHÔNG liệt kê bệnh
+    # nền là yếu tố liên quan, và ICF không hề công bố sẽ hỏi/thu thập thông
+    # tin bệnh nền — thu thêm dữ liệu ngoài mục đích đã công bố vi phạm
+    # nguyên tắc tối thiểu hóa dữ liệu (data minimization, Luật 91/2025/QH15)
+    # và tạo khoảng cách minh bạch giữa ICF và CRF thật. Để rỗng — nếu bác sĩ
+    # thật sự cần khảo sát bệnh nền làm yếu tố liên quan, phải tự thêm CÓ chủ
+    # đích và cập nhật ICF tương ứng, không để hệ thống ngầm định.
     "patient_satisfaction": {
         "clinical": _HAI_LONG_CLINICAL, "labs": [], "meds": [],
         "exposure": _HAI_LONG_EXPOSURE, "outcomes": _HAI_LONG_OUTCOMES,
-        "comorbid": _GENERIC_COMORBIDITIES, "labs_base": _GENERIC_LABS,
+        "comorbid": [], "labs_base": [],
         "needs_vitals": False,
     },
     "generic": {
@@ -541,11 +560,21 @@ _SPECIALTY_BUNDLES = {
     },
 }
 
-_BASE_SAFETY = [
+# SỬA 2026-07-17: ae_any/ae_description/ae_grade/sae_any (phân độ CTCAE, theo
+# dõi biến cố bất lợi nghiêm trọng — thuật ngữ ICH-GCP của thử nghiệm CAN
+# THIỆP) trước đây nhồi CỨNG vào MỌI thiết kế — một khảo sát hài lòng (không
+# can thiệp, không xâm lấn) có CRF ghi "phân độ CTCAE" là dấu hiệu lộ template
+# thử nghiệm lâm sàng, gây nhầm lẫn tập huấn và có thể khiến hội đồng nghi
+# ngờ phân loại nguy cơ thật. Tách riêng khỏi complete_flag (trạng thái hoàn
+# thành phiếu — hoàn toàn tổng quát, không ngụ ý can thiệp) — xem
+# build_redcap_rows() để biết thiết kế nào ghép _BASE_SAFETY_AE.
+_BASE_SAFETY_AE = [
     ("ae_any",        "Safety",      "An toàn",            "radio",    "Có biến cố bất lợi",                                   "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
     ("ae_description","Safety",      "",                   "notes",    "Mô tả biến cố bất lợi",                                "",                                                                      "",                        "",          "",    "",    "n", "[ae_any] = '1'"),
     ("ae_grade",      "Safety",      "",                   "dropdown", "Phân độ biến cố (CTCAE v5)",                           "1, Độ 1 (nhẹ) | 2, Độ 2 (trung bình) | 3, Độ 3 (nặng) | 4, Độ 4 (đe dọa tính mạng) | 5, Độ 5 (tử vong)", "", "", "", "", "n", "[ae_any] = '1'"),
     ("sae_any",       "Safety",      "",                   "radio",    "Có biến cố bất lợi nghiêm trọng (SAE)",               "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+]
+_BASE_ADMIN_COMPLETE = [
     ("complete_flag", "Admin",       "Trạng thái phiếu",   "radio",    "Trạng thái hoàn thành phiếu",                          "0, Chưa hoàn thành | 1, Chưa xác minh | 2, Hoàn thành",              "",                        "",          "",    "",    "n", ""),
 ]
 
@@ -600,31 +629,47 @@ def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
     # (khảo sát/PROM không đo sinh hiệu) mới bỏ khối này.
     base_vitals = _BASE_VITALS if bundle.get("needs_vitals", True) else []
 
+    # SỬA 2026-07-17 (bình duyệt đa vai trò cho đề tài hài lòng bệnh nhân C1a
+    # phát hiện thật): censor/LTFU/protocol_deviation chỉ có ý nghĩa với thiết
+    # kế THEO DÕI DỌC (rct — có kỳ theo dõi định trước; cohort — theo dõi
+    # phơi nhiễm/kết cục qua thời gian). Biến cố bất lợi/SAE (thuật ngữ
+    # ICH-GCP) chỉ có ý nghĩa khi có CAN THIỆP đang thử nghiệm (rct; cohort
+    # trong hệ thống này thường là cohort phơi nhiễm thuốc — giữ để an toàn).
+    # case_control (hồi cứu, không theo dõi tiến cứu quần thể), cross_sectional
+    # (một thời điểm) và diagnostic (so sánh index-test/tiêu chuẩn vàng một
+    # lần) KHÔNG có trục thời gian/can thiệp tương ứng — nhồi các trường này
+    # vào CRF của chúng là dấu vết SAP/CRF dùng chung mọi thiết kế, dễ bị hội
+    # đồng khoa học/đạo đức bắt lỗi ngay khi đọc.
+    needs_followup = design_code in ("rct", "cohort")
+    needs_ae_safety = design_code in ("rct", "cohort")
+    followup_admin = _FOLLOWUP_ADMIN if needs_followup else []
+    safety_ae = _BASE_SAFETY_AE if needs_ae_safety else []
+
     if design_code == "sr_ma":
         return _SRMA_FIELDS, specialty
     elif design_code == "rct":
         rows = (
-            _BASE_ADMIN + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
+            _BASE_ADMIN + followup_admin + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
             + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"] + bundle["meds"]
             + _RCT_EXTRA
             + bundle["exposure"]   # RCT cũng có exposure (nhóm can thiệp)
             + bundle["outcomes"]
-            + _BASE_SAFETY
+            + safety_ae + _BASE_ADMIN_COMPLETE
         )
     elif design_code == "diagnostic":
         rows = (
-            _BASE_ADMIN + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
+            _BASE_ADMIN + followup_admin + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
             + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"]
             + _DIAGNOSTIC_EXTRA
-            + _BASE_SAFETY
+            + safety_ae + _BASE_ADMIN_COMPLETE
         )
     else:  # cohort, case_control, cross_sectional, mặc định
         rows = (
-            _BASE_ADMIN + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
+            _BASE_ADMIN + followup_admin + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
             + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"] + bundle["meds"]
             + bundle["exposure"]
             + bundle["outcomes"]
-            + _BASE_SAFETY
+            + safety_ae + _BASE_ADMIN_COMPLETE
         )
     return rows, specialty
 
