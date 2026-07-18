@@ -1,0 +1,45 @@
+{
+  "gate": "G6",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "run_date": "2026-07-17",
+  "version": "2.0-75pct",
+  "design_code": "cross_sectional",
+  "reporting_std": "STROBE",
+  "g4_was_locked": false,
+  "g4_status": "PENDING — CHỜ BÁC SĨ KÝ SAP",
+  "redcap_csv": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G5_REDCap_dictionary_hai-long-benh-nhan-C1a-BVQY175.csv",
+  "variables_detected": {
+    "exposure": "exposure_var",
+    "outcome": "primary_outcome",
+    "time_col": "follow_time_months",
+    "covariates": [
+      "age",
+      "sex",
+      "bmi",
+      "education",
+      "ethnicity",
+      "bp_sys",
+      "bp_dia",
+      "heart_rate",
+      "dm",
+      "htn",
+      "comorbid_other"
+    ]
+  },
+  "scripts_generated": [
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/scripts/00_setup.R",
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/scripts/01_cleaning.R",
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/scripts/02_tables.R",
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/scripts/03_analysis.R",
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/scripts/run_analysis_cli.py",
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/scripts/sensitivity_analysis.py"
+  ],
+  "n_scripts": 6,
+  "python_cli": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/scripts/run_analysis_cli.py",
+  "sensitivity_script": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/scripts/sensitivity_analysis.py",
+  "guardrail": "✅ PASS",
+  "automation_level": "75%",
+  "pending": "Cần dữ liệu thật + DB locked (G5) để chạy Python CLI và uncomment R scripts",
+  "next_gate": "G7 — Viết bản thảo (sau khi có kết quả phân tích thật)",
+  "artifact": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G6_A7_ANALYSIS_SCRIPTS_hai-long-benh-nhan-C1a-BVQY175.md"
+}
