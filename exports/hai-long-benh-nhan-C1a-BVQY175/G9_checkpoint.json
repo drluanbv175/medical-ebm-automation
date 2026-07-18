@@ -1,0 +1,56 @@
+{
+  "gate": "G9",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "generated_at": "2026-07-17T19:23:05.320169",
+  "g9_status": "DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ",
+  "author_integrity_status": "PENDING",
+  "ai_disclosure": "GENERATED — needs author review and verification",
+  "submission_package_ready": false,
+  "n_authors": 1,
+  "target_journal": "",
+  "pending": [
+    "G4 (SAP) chưa LOCKED — cần ký SAP Lock Certificate",
+    "G2 (Đạo đức) chưa LOCKED — cần số IRB thật từ Hội đồng Đạo đức",
+    "Tất cả 1 tác giả ký xác nhận ICMJE 4 tiêu chí (Phần 1)",
+    "Tất cả 1 tác giả ký khai báo COI đầy đủ form ICMJE gốc (Phần 2)",
+    "PI ký Tuyên bố Liêm chính Nghiên cứu 5 điểm (Phần 5)",
+    "Chọn Data Availability Option (A, B, hoặc C) trong Phần 3",
+    "Điền và ký Thư gửi tạp chí (Phần 6)",
+    "Kiểm tra đạo văn < 15% (iThenticate / Turnitin / CrossCheck)",
+    "Xác nhận không nộp song song và không chia nhỏ bài",
+    "Duyệt AI Use Disclosure và bổ sung công cụ AI khác nếu đã dùng (Phần 4)"
+  ],
+  "gates_read": [
+    "G0",
+    "G1",
+    "G2",
+    "G3",
+    "G4",
+    "G5",
+    "G6",
+    "G7",
+    "G8"
+  ],
+  "guardrail": {
+    "passed": true,
+    "errors": [],
+    "n_warnings": 7
+  },
+  "artifacts": {
+    "A10_markdown": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G9_A10_AUTHOR_INTEGRITY_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A10_docx": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G9_A10_AUTHOR_INTEGRITY_hai-long-benh-nhan-C1a-BVQY175.docx"
+  },
+  "parts_generated": [
+    "Phần 1 — ICMJE Tiêu chuẩn Tác giả (4 tiêu chí)",
+    "Phần 2 — Khai báo Xung đột Lợi ích Cuối (Final COI)",
+    "Phần 3 — Data Availability Statement (3 lựa chọn)",
+    "Phần 4 — AI Use Disclosure (COPE + Nature Portfolio 2024)",
+    "Phần 5 — Tuyên bố Liêm chính Nghiên cứu",
+    "Phần 6 — Thư gửi Tạp chí (Cover Letter Shell)",
+    "Phần 7 — Bản mẫu Phản hồi Phản biện",
+    "Phần 8 — Tiêu chí Cổng G9 (Hard Gate)"
+  ],
+  "lock_instruction": "G9 chỉ PASSED khi: (1) Tất cả tác giả ký form ICMJE; (2) PI ký Tuyên bố Liêm chính; (3) Plagiarism check < 15%; (4) Chọn Data Availability; (5) G2 + G4 đã LOCKED.",
+  "next_step": "Nộp bản thảo lên hệ thống nộp bài của tạp chí sau khi G9 PASSED",
+  "disclaimer": "Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp bài."
+}
