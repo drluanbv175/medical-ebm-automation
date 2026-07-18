@@ -538,6 +538,18 @@ JOURNAL_SUGGESTIONS = {
             ("Journal of Public Health", 3.0, "Suc khoe cong dong"),
         ],
     },
+    "case_control": {
+        "default": [
+            ("American Journal of Epidemiology", 5.0, "Case-control dich te phan tich"),
+            ("International Journal of Epidemiology", 7.7, "Case-control dich te lon"),
+            ("BMJ Open", 2.9, "Case-control lam sang + cong dong"),
+            ("PLOS ONE", 3.7, "Case-control da linh vuc, tiep can mo"),
+            ("Journal of Epidemiology & Community Health", 5.5, "Case-control dich te"),
+        ],
+        "cardiology": [
+            ("American Heart Journal", 4.3, "Case-control tim mach"),
+        ],
+    },
     "diagnostic": {
         "default": [
             ("Radiology", 19.7, "Chan doan hinh anh"),
@@ -950,9 +962,16 @@ def suggest_journals(design_code: str, topic: str, target_journal: str,
             "priority": "HIGH",
         })
 
-    design_journals = JOURNAL_SUGGESTIONS.get(
-        design_code, JOURNAL_SUGGESTIONS.get("cohort", {})
-    )
+    design_journals = JOURNAL_SUGGESTIONS.get(design_code)
+    if design_journals is None:
+        # Không khớp key nào → rơi về cohort, NHƯNG in cảnh báo (không âm thầm):
+        # tránh lặp lại lỗi đã gặp khi "prediction"/"case_control" bị fallback ngầm.
+        print(
+            f"  ⚠ G8: design_code='{design_code}' chưa có bảng gợi ý tạp chí riêng "
+            f"→ tạm dùng danh sách 'cohort'. Cân nhắc bổ sung key này vào "
+            f"JOURNAL_SUGGESTIONS."
+        )
+        design_journals = JOURNAL_SUGGESTIONS.get("cohort", {})
     topic_lower = topic.lower()
 
     sublists_to_use = ["default"]

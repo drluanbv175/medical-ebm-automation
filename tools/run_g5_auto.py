@@ -1280,6 +1280,41 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   Cần bác sĩ/thống kê viên kiểm chứng.
 """
     else:
+        # Khối giữa (sau 2 nhánh phơi nhiễm, trước PHÂN TÍCH) phải khớp trục
+        # thời gian THẬT của thiết kế: chỉ cohort mới có giai đoạn theo dõi dọc
+        # → mới có "Mất theo dõi/LTFU". case_control tra phơi nhiễm HỒI CỨU;
+        # cross_sectional đo đồng thời 1 thời điểm — cả hai KHÔNG có LTFU.
+        # (Cùng lớp lỗi "biến/khối mượn từ thiết kế khác" đã vá cho CRF 2026-07-17.)
+        if design_code == "cohort":
+            followup_block = """\
+          │                           │
+          ▼                           ▼
+  ┌──────────────────────────────────────────┐
+  │  THEO DÕI (Follow-up):                  │
+  │  Mất theo dõi / LTFU: N = [CẦN]        │
+  │  Lý do: [CẦN — rút ĐT/tử vong/ltfu]   │
+  └────────────────┬─────────────────────────┘
+                   │"""
+        elif design_code == "case_control":
+            followup_block = """\
+          │                           │
+          ▼                           ▼
+  ┌──────────────────────────────────────────┐
+  │  TRA PHƠI NHIỄM HỒI CỨU (case-control): │
+  │  Tra được (hồ sơ/phỏng vấn): N = [CẦN] │
+  │  Không tra được phơi nhiễm: N = [CẦN]  │
+  └────────────────┬─────────────────────────┘
+                   │"""
+        else:  # cross_sectional (và fallback khác) — 1 thời điểm, không theo dõi
+            followup_block = """\
+          │                           │
+          ▼                           ▼
+  ┌──────────────────────────────────────────┐
+  │  ĐO ĐỒNG THỜI (cross-sectional):        │
+  │  Phơi nhiễm + kết cục đo cùng 1 thời điểm│
+  │  Không có giai đoạn theo dõi dọc.       │
+  └────────────────┬─────────────────────────┘
+                   │"""
         flowchart = f"""\
 ┌─────────────────────────────────────────────────────────────────┐
 │        BIỂU ĐỒ THAM GIA NGHIÊN CỨU (STROBE Flowchart)         │
@@ -1312,14 +1347,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   │  NHIỄM {exposure_label:<8}│          │  NHIỄM        │
   │  N ≈ {n_per_group:<8}     │           │  N ≈ {n_total - n_per_group:<8}     │
   └───────┬───────┘           └───────┬───────┘
-          │                           │
-          ▼                           ▼
-  ┌──────────────────────────────────────────┐
-  │  THEO DÕI (Follow-up):                  │
-  │  Mất theo dõi / LTFU: N = [CẦN]        │
-  │  Lý do: [CẦN — rút ĐT/tử vong/ltfu]   │
-  └────────────────┬─────────────────────────┘
-                   │
+{followup_block}
   ┌────────────────▼─────────────────────────┐
   │  PHÂN TÍCH (Analysed):                   │
   │  N = {n_adjusted} → [CẦN điều chỉnh thực tế]│

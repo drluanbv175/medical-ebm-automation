@@ -53,7 +53,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # `scripts/regenerate_agent_manifest.py --write` rồi dán giá trị self-check mới
 # vào đây MỖI LẦN sync agent .md đã sửa sang medical-ebm-automation/.claude/agents/.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "83b991cff189863c8ab6beddb086113b144554b595900ffc7fb7da3792d2c52f"
+    "742543f91c49bb02d0f637d9c0f90ed42e279c153c5e3f5c15257343a2817ca4"
 )
 
 MINIMUM_AGENT_COUNT = 50

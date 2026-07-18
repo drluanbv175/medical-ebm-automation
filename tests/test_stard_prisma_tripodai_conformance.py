@@ -239,6 +239,31 @@ def test_g5_ascii_flowchart_case_control_cross_sectional_still_use_generic_strob
         assert "PHƠI" in out and "NHIỄM" in out  # nhãn "CÓ PHƠI / NHIỄM" tách 2 dòng trong khung ASCII
 
 
+def test_g5_flowchart_ltfu_box_only_for_cohort_not_case_control_or_cross_sectional():
+    """Vá 2026-07-18 (audit): khối 'THEO DÕI/LTFU' chỉ hợp lệ cho cohort (có trục
+    theo dõi dọc). case_control tra phơi nhiễm HỒI CỨU; cross_sectional đo 1 thời
+    điểm — cả hai KHÔNG có mất-theo-dõi. Trước đây nhánh else nhồi khối LTFU cho cả
+    ba (cùng lớp lỗi 'khối mượn từ thiết kế khác' đã vá cho CRF cùng file)."""
+    cohort_out = G5.build_strobe_flowchart(
+        study="T", design_code="cohort", n_adjusted=100, n_total=120, n_per_group=60,
+    )
+    assert "LTFU" in cohort_out and "Mất theo dõi" in cohort_out, (
+        "cohort PHẢI giữ khối theo dõi/LTFU"
+    )
+    for design in ("case_control", "cross_sectional"):
+        out = G5.build_strobe_flowchart(
+            study="T", design_code=design, n_adjusted=100, n_total=120, n_per_group=60,
+        )
+        assert "Mất theo dõi" not in out and "LTFU" not in out, (
+            f"{design}: KHÔNG được có khối theo dõi/LTFU (không có trục thời gian dọc)"
+        )
+    # case_control nêu tra phơi nhiễm hồi cứu; cross_sectional nêu đo đồng thời
+    cc = G5.build_strobe_flowchart("T", "case_control", 100, 120, 60)
+    assert "HỒI CỨU" in cc
+    xs = G5.build_strobe_flowchart("T", "cross_sectional", 100, 120, 60)
+    assert "ĐỒNG THỜI" in xs
+
+
 def test_g7_prediction_flow_diagram_not_mislabeled_prisma():
     """Hồi quy: 'prediction' trước đây rơi vào nhánh else của flow_label và bị gán
     nhầm 'PRISMA flow diagram' — sai hoàn toàn (không phải SR/MA). Kiểm bằng cách
