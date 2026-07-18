@@ -1,0 +1,35 @@
+{
+  "gate": "G3",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "run_date": "2026-07-17",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN",
+  "design_code": "cross_sectional",
+  "design_ambiguous": false,
+  "alpha": 0.05,
+  "power": 0.8,
+  "effect_val": 0.5,
+  "effect_type": "OR",
+  "effect_quality": null,
+  "n_per_group": 385,
+  "n_total": 385,
+  "n_adjusted": 428,
+  "confirmed_n": 1000,
+  "confirmed_n_adequate": true,
+  "dropout": 0.1,
+  "formula_used": "Wilson prevalence: p=0.50, e=0.05",
+  "p_event": 0.3,
+  "p0": 0.3,
+  "sd": null,
+  "guardrail": "✅ PASS",
+  "core_value": {
+    "name": "n_adjusted",
+    "value": 428,
+    "is_empty": false
+  },
+  "pending_doctor_actions": [
+    "Xác nhận effect size (PMID/DOI từ y văn/pilot study)",
+    "Xác nhận tỷ lệ bỏ cuộc dự kiến",
+    "Xác nhận tỷ lệ biến cố nền (với log-rank)",
+    "Copy khối cỡ mẫu vào đề cương"
+  ]
+}
