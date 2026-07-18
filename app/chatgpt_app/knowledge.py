@@ -24,6 +24,7 @@ DEFAULT_PATTERNS = (
     "docs/**/*.md",
     "knowledge-packs/**/*.yaml",
     "exports/chatgpt_project/README.md",
+    ".claude/agents/*.md",
 )
 MAX_DOCUMENT_BYTES = 512_000
 SENSITIVE_ID_PATTERN = re.compile(
@@ -180,8 +181,12 @@ class SafeKnowledgeIndex:
                 blockers = ["manifest_unreadable"]
         docs = self.documents()
         return {
-            "mode": "read_only_review",
-            "mcp_tools": ["search", "fetch", "get_system_status"],
+            "mode": "governed_orchestration_review",
+            "mcp_tools": [
+                "search", "fetch", "get_system_status", "list_ebm_agents",
+                "get_ebm_agent_instructions", "prepare_clinical_workflow",
+                "prepare_research_workflow", "get_sync_status", "synchronize_ebm_system",
+            ],
             "safe_document_count": len(docs),
             "corpus_sha256": hashlib.sha256(
                 "".join(sorted(doc.sha256 for doc in docs)).encode("utf-8")
@@ -190,7 +195,7 @@ class SafeKnowledgeIndex:
             "manifest_blockers": blockers,
             "manifest_warnings": warnings,
             "clinical_release": "blocked",
-            "writes_enabled": False,
+            "writes_enabled": "agent_mirror_sync_only_with_explicit_confirmation",
             "pii_allowed": False,
             "disclaimer": DISCLAIMER,
         }

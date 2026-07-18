@@ -1,4 +1,5 @@
-"""MCP server chỉ đọc để kết nối EBM Copilot với ứng dụng ChatGPT."""
+"""MCP server điều phối có quản trị để kết nối EBM Copilot với ChatGPT."""
+
 from __future__ import annotations
 
 import os
@@ -8,6 +9,7 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 from mcp.types import CallToolResult, TextContent, ToolAnnotations
 
+from app.chatgpt_app.agents import SafeAgentCatalog
 from app.chatgpt_app.knowledge import SafeKnowledgeIndex, json_text
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -24,7 +26,7 @@ def _local_git_ref(root: Path) -> str:
     except OSError:
         return "main"
     prefix = "ref: refs/heads/"
-    candidate = head[len(prefix):] if head.startswith(prefix) else ""
+    candidate = head[len(prefix) :] if head.startswith(prefix) else ""
     return candidate if re.fullmatch(r"[A-Za-z0-9._/-]+", candidate) else "main"
 
 
@@ -33,13 +35,15 @@ INDEX = SafeKnowledgeIndex(
     repository=os.getenv("EBM_GITHUB_REPOSITORY", "drluanbv175/medical-ebm-automation"),
     git_ref=os.getenv("EBM_GITHUB_REF") or _local_git_ref(ROOT),
 )
+AGENTS = SafeAgentCatalog(ROOT)
 
 mcp = FastMCP(
     "EBM Copilot",
     instructions=(
-        "Read-only EBM review source. Search before fetch. Never request or store PII. "
-        "Never present content as an automatically approved clinical recommendation. "
-        "Always retain the disclaimer: Cần bác sĩ kiểm chứng."
+        "Governed EBM orchestration source. Use prepare_clinical_workflow for clinical cases "
+        "and prepare_research_workflow for research topics, then load every named specialist "
+        "with get_ebm_agent_instructions. Never request or store PII. Never auto-approve Gate A/B "
+        "or G2/G4/G8/G9. Always run tham-dinh-dau-ra last and retain: Cần bác sĩ kiểm chứng."
     ),
     host=os.getenv("EBM_MCP_HOST", "127.0.0.1"),
     port=int(os.getenv("EBM_MCP_PORT", "2091")),
@@ -48,6 +52,13 @@ mcp = FastMCP(
 
 READ_ONLY = ToolAnnotations(
     readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+)
+
+CONTROLLED_WRITE = ToolAnnotations(
+    readOnlyHint=False,
     destructiveHint=False,
     idempotentHint=True,
     openWorldHint=False,
@@ -95,8 +106,97 @@ def get_system_status() -> CallToolResult:
     return _result(INDEX.system_status())
 
 
+@mcp.tool(
+    name="list_ebm_agents",
+    title="Danh mục agent EBM",
+    description="Use this when you need to discover all governed clinical or research agents available in EBM Copilot.",
+    annotations=READ_ONLY,
+)
+def list_ebm_agents(domain: str = "all") -> CallToolResult:
+    """Liệt kê agent; domain nhận all/clinical/research."""
+    return _result(AGENTS.list_payload(domain))
+
+
+@mcp.tool(
+    name="get_ebm_agent_instructions",
+    title="Nạp agent EBM chuyên trách",
+    description=(
+        "Use this before performing a workflow step named by an EBM orchestrator; "
+        "load the exact governed instructions for one agent ID."
+    ),
+    annotations=READ_ONLY,
+)
+def get_ebm_agent_instructions(agent_id: str) -> CallToolResult:
+    """Nạp role chuyên trách từ nguồn Claude chính."""
+    return _result(AGENTS.get_payload(agent_id))
+
+
+@mcp.tool(
+    name="prepare_clinical_workflow",
+    title="Điều phối ca lâm sàng EBM",
+    description=(
+        "Use this first for any patient case, diagnosis, treatment, medication, test "
+        "interpretation, prevention, or follow-up request. It blocks PII and enforces "
+        "red-flag screening plus Gate A/B."
+    ),
+    annotations=READ_ONLY,
+)
+def prepare_clinical_workflow(case_summary: str) -> CallToolResult:
+    """Dựng gói nhạc trưởng lâm sàng, không áp dụng điều trị."""
+    return _result(AGENTS.workflow_payload("clinical", case_summary))
+
+
+@mcp.tool(
+    name="prepare_research_workflow",
+    title="Điều phối nghiên cứu y khoa",
+    description=(
+        "Use this first for any medical research topic, protocol, sample size, analysis, "
+        "manuscript, or evidence-synthesis request. It enforces G2/G4/data/G8/G9 gates."
+    ),
+    annotations=READ_ONLY,
+)
+def prepare_research_workflow(research_topic: str) -> CallToolResult:
+    """Dựng gói nhạc trưởng nghiên cứu G0–G9, không tự duyệt cổng."""
+    return _result(AGENTS.workflow_payload("research", research_topic))
+
+
+@mcp.tool(
+    name="get_sync_status",
+    title="Kiểm tra đồng bộ EBM",
+    description=(
+        "Use this when you need the live Claude-to-Codex agent mirror and knowledge "
+        "reload status without changing files."
+    ),
+    annotations=READ_ONLY,
+)
+def get_sync_status() -> CallToolResult:
+    """Đọc trạng thái đồng bộ agent và corpus."""
+    return _result(AGENTS.sync_status())
+
+
+@mcp.tool(
+    name="synchronize_ebm_system",
+    title="Đồng bộ hệ thống agent EBM",
+    description=(
+        "Use this only after the physician explicitly asks to synchronize. Pass the exact "
+        "confirmation returned by the tool; it regenerates Claude-to-Codex mirrors but "
+        "never pulls or pushes GitHub."
+    ),
+    annotations=CONTROLLED_WRITE,
+)
+def synchronize_ebm_system(confirmation: str = "") -> CallToolResult:
+    """Chạy chuỗi đồng bộ allowlist, cần xác nhận tường minh."""
+    return _result(AGENTS.synchronize(confirmation))
+
+
 def main() -> None:
-    """Chạy transport Streamable HTTP tại `/mcp`."""
+    """Chạy Streamable HTTP hoặc stdio do tunnel-client quản lý."""
+    transport = os.getenv("EBM_MCP_TRANSPORT", "streamable-http")
+    if transport == "stdio":
+        mcp.run(transport="stdio")
+        return
+    if transport != "streamable-http":
+        raise SystemExit(f"[chatgpt_app] Transport không hỗ trợ: {transport!r}")
     # Fail-closed (vá 2026-07-18, audit vòng 2): connector đọc kho tri thức y khoa.
     # Nếu bind RA NGOÀI localhost mà KHÔNG đặt token bí mật `EBM_MCP_TOKEN` → TỪ CHỐI
     # khởi động, buộc người vận hành chủ ý cấu hình xác thực trước khi phơi ra mạng

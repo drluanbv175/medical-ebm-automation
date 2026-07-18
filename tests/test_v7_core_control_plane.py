@@ -64,6 +64,12 @@ def test_contains_pii_text_catches_nfd_unicode_form():
     assert contains_pii_text(marker_nfd) is True
 
 
+def test_contains_pii_text_does_not_treat_field_description_as_mrn():
+    """Cụm mô tả trường dữ liệu không phải một mã hồ sơ cụ thể."""
+    assert contains_pii_text("Không lưu mã hồ sơ bệnh trong tài liệu export.") is False
+    assert contains_pii_text("MRN: ABCD1234") is True
+
+
 def test_audit_logger_scrubs_pii_like_text(tmp_path):
     log_path = tmp_path / "audit.jsonl"
     event = AuditLogger(log_path).log(

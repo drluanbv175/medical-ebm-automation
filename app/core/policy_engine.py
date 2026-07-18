@@ -10,7 +10,11 @@ from app.core.feature_flags import merge_feature_flags
 
 _EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
 _PHONE = re.compile(r"(?<!\d)(?:\+?84|0)\d{8,10}(?!\d)")
-_MRN = re.compile(r"\b(?:mrn|mã\s*(?:bn|hs|hồ sơ)|số\s*hồ\s*sơ)\s*[:#]?\s*[\w-]{4,}\b", re.I)
+_MRN = re.compile(
+    r"\b(?:mrn|mã\s*(?:bn|hs|hồ sơ)|số\s*hồ\s*sơ)"
+    r"(?:\s*[:#]\s*[\w-]{4,}|\s+[A-Z0-9-]*\d[A-Z0-9-]{3,})\b",
+    re.I,
+)
 _DOB = re.compile(r"\b(?:dob|ngày\s*sinh)\s*[:#]?\s*\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b", re.I)
 
 

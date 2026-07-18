@@ -1,4 +1,5 @@
 """Kiểm tra corpus ChatGPT App luôn fail-closed và đúng schema MCP."""
+
 from __future__ import annotations
 
 import asyncio
@@ -9,6 +10,8 @@ import pytest
 
 from app.chatgpt_app.knowledge import SafeKnowledgeIndex, json_text
 from app.chatgpt_app.server import _local_git_ref, mcp
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _index(tmp_path: Path) -> SafeKnowledgeIndex:
@@ -74,14 +77,24 @@ def test_json_text_is_valid_unicode_json() -> None:
 def test_mcp_tool_contract_is_read_only_and_company_knowledge_compatible() -> None:
     tools = {tool.name: tool for tool in asyncio.run(mcp.list_tools())}
 
-    assert set(tools) == {"search", "fetch", "get_system_status"}
+    assert set(tools) == {
+        "search",
+        "fetch",
+        "get_system_status",
+        "list_ebm_agents",
+        "get_ebm_agent_instructions",
+        "prepare_clinical_workflow",
+        "prepare_research_workflow",
+        "get_sync_status",
+        "synchronize_ebm_system",
+    }
     assert set(tools["search"].inputSchema["properties"]) == {"query"}
     assert tools["search"].inputSchema["required"] == ["query"]
     assert set(tools["fetch"].inputSchema["properties"]) == {"id"}
     assert tools["fetch"].inputSchema["required"] == ["id"]
-    for tool in tools.values():
+    for name, tool in tools.items():
         assert tool.annotations is not None
-        assert tool.annotations.readOnlyHint is True
+        assert tool.annotations.readOnlyHint is (name != "synchronize_ebm_system")
         assert tool.annotations.destructiveHint is False
 
 
@@ -94,6 +107,7 @@ def test_local_git_ref_is_detected_without_subprocess(tmp_path: Path) -> None:
 
 
 # ── Audit vòng 2 (2026-07-18): gia cố disclaimer inline, PII đuôi, auth, invariants ──
+
 
 def test_fetch_text_includes_inline_disclaimer(tmp_path: Path) -> None:
     """Disclaimer PHẢI nằm trong thân `text` (không chỉ metadata) — ChatGPT
@@ -120,11 +134,20 @@ def test_pii_in_document_tail_beyond_scan_window_is_blocked(tmp_path: Path) -> N
 def test_system_status_invariants_are_locked(tmp_path: Path) -> None:
     (tmp_path / "README.md").write_text("# X", encoding="utf-8")
     s = _index(tmp_path).system_status()
-    assert s["mode"] == "read_only_review"
-    assert s["writes_enabled"] is False
+    assert s["mode"] == "governed_orchestration_review"
+    assert s["writes_enabled"] == "agent_mirror_sync_only_with_explicit_confirmation"
     assert s["pii_allowed"] is False
     assert s["clinical_release"] == "blocked"
-    assert set(s["mcp_tools"]) == {"search", "fetch", "get_system_status"}
+    assert "prepare_clinical_workflow" in s["mcp_tools"]
+    assert "prepare_research_workflow" in s["mcp_tools"]
+    assert "synchronize_ebm_system" in s["mcp_tools"]
+
+
+def test_agent_sources_are_live_searchable_documents() -> None:
+    index = SafeKnowledgeIndex(ROOT, repository="owner/repo", git_ref="main")
+    fetched = index.fetch(".claude/agents/dieu-phoi-lam-sang.md")
+    assert fetched["id"] == ".claude/agents/dieu-phoi-lam-sang.md"
+    assert "Cần bác sĩ kiểm chứng" in fetched["text"]
 
 
 def test_yaml_knowledge_pack_with_pii_is_blocked(tmp_path: Path) -> None:
@@ -138,6 +161,7 @@ def test_yaml_knowledge_pack_with_pii_is_blocked(tmp_path: Path) -> None:
 def test_main_refuses_non_localhost_bind_without_token(monkeypatch) -> None:
     """Fail-closed: bind ra ngoài localhost mà không có EBM_MCP_TOKEN → từ chối."""
     import app.chatgpt_app.server as srv
+
     calls = {"run": 0}
     monkeypatch.setattr(srv.mcp, "run", lambda *a, **k: calls.__setitem__("run", calls["run"] + 1))
     monkeypatch.setenv("EBM_MCP_HOST", "0.0.0.0")
@@ -152,3 +176,16 @@ def test_main_refuses_non_localhost_bind_without_token(monkeypatch) -> None:
     monkeypatch.delenv("EBM_MCP_TOKEN", raising=False)
     srv.main()
     assert calls["run"] == 2
+
+
+def test_main_supports_stdio_for_tunnel_supervision(monkeypatch) -> None:
+    """Tunnel-client sở hữu cả vòng đời MCP, không cần server HTTP rời."""
+    import app.chatgpt_app.server as srv
+
+    calls: list[str] = []
+    monkeypatch.setattr(srv.mcp, "run", lambda *a, **k: calls.append(k["transport"]))
+    monkeypatch.setenv("EBM_MCP_TRANSPORT", "stdio")
+    monkeypatch.setenv("EBM_MCP_HOST", "0.0.0.0")
+    monkeypatch.delenv("EBM_MCP_TOKEN", raising=False)
+    srv.main()
+    assert calls == ["stdio"]
