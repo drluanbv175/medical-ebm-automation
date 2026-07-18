@@ -1,0 +1,89 @@
+{
+  "gate": "G7",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "run_date": "2026-07-17",
+  "gate_status": "DRAFT — CHỜ KẾT QUẢ THẬT (G5+G6 hoàn tất)",
+  "sections_auto_filled": [
+    "Abstract: Background/Objective/Design/Setting/Participants/Registration",
+    "I. Introduction §1 (bối cảnh + số SR/RCT)",
+    "I. Introduction §2 (khoảng trống từ G0 research_gaps)",
+    "I. Introduction §3 (mục tiêu + thiết kế từ G1)",
+    "II. Methods §1 (thiết kế + chuẩn báo cáo từ G1)",
+    "II. Methods §5 (cỡ mẫu từ G3)",
+    "II. Methods §6b (kiểm soát sai lệch — STROBE mục 9 — từ G1 bias_controls)",
+    "II. Methods §7 (đạo đức + đăng ký từ G2)",
+    "IV. Discussion §2 (đối chiếu y văn — PMID seed từ G0)",
+    "IV. Discussion §4 (điểm mạnh — từ G1+G4)",
+    "Khai báo AI + tính có sẵn dữ liệu",
+    "TLTK seed (PMIDs từ G0)",
+    "II. Methods §3 (phơi nhiễm/can thiệp — 2 biến thật từ REDCap dictionary G5; ai thực hiện/kiểm soát chất lượng vẫn [CẦN])",
+    "II. Methods §4 (kết cục — 3 biến thật từ REDCap dictionary G5; định nghĩa biến cố ICD-10 vẫn [CẦN])"
+  ],
+  "sections_need_results": [
+    "Abstract: Results + Conclusions",
+    "Tiêu đề + Tác giả",
+    "II. Methods §2 (tiêu chí + cơ sở + thời gian)",
+    "II. Methods §6 (phần mềm + SAP chi tiết)",
+    "III. Results §1 (STROBE/CONSORT flowchart thật)",
+    "III. Results §2 (Table 1 — đặc điểm nền thật)",
+    "III. Results §3 (Table 2 — kết cục chính thật)",
+    "III. Results §4 (Table 3 — kết cục phụ thật)",
+    "III. Results §5 (sensitivity analysis thật)",
+    "IV. Discussion §1 (tóm tắt phát hiện chính)",
+    "IV. Discussion §3 (cơ chế)",
+    "IV. Discussion §5 (hạn chế cụ thể)",
+    "IV. Discussion §6 (ý nghĩa lâm sàng)",
+    "V. Kết luận",
+    "Lời cảm ơn"
+  ],
+  "design_code": "cross_sectional",
+  "reporting_standard": "STROBE 2007",
+  "target_journal": "Tạp chí Y học Việt Nam",
+  "word_limit": 3500,
+  "word_estimate": {
+    "current_skeleton": 2000,
+    "when_complete": "3200–4500",
+    "note": "Ước tính; phụ thuộc kết quả thật và yêu cầu tạp chí"
+  },
+  "pmids_used_as_seed": [
+    "42136107",
+    "42030602",
+    "41996905",
+    "41864267",
+    "41702261",
+    "41147535",
+    "40995744",
+    "40835508",
+    "40764466",
+    "40684274"
+  ],
+  "n_pmids": 10,
+  "n_planned": 428,
+  "checklist": {
+    "standard": "STROBE 2007",
+    "items_total": 22,
+    "items_auto": 6,
+    "items_needed": 16
+  },
+  "guardrail": {
+    "status": "✅ PASS",
+    "errors": []
+  },
+  "artifacts": {
+    "A8_markdown": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G7_A8_MANUSCRIPT_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A8_docx": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G7_A8_MANUSCRIPT_hai-long-benh-nhan-C1a-BVQY175.docx"
+  },
+  "pending_doctor_actions": [
+    "Điền Tiêu đề (≤120 ký tự) và Tác giả (tên/đơn vị/ORCID)",
+    "Điền Methods §2: tiêu chí nhận/loại, cơ sở, thời gian",
+    "Xác nhận Methods §3: danh sách biến phơi nhiễm/can thiệp tự điền từ CRF (G5) đã đúng + bổ sung ai thực hiện/kiểm soát chất lượng",
+    "Xác nhận Methods §4: danh sách biến kết cục tự điền từ CRF (G5) đã đúng chính/phụ + bổ sung định nghĩa biến cố ICD-10",
+    "Sau G5+G6: điền toàn bộ Section III (kết quả thật)",
+    "Sau G5+G6: điền Discussion §1, §3, §5, §6 và Kết luận",
+    "Kiểm chứng toàn bộ PMIDs/TLTK trước khi nộp",
+    "Điền Lời cảm ơn + COI + CRediT đầy đủ"
+  ],
+  "next_gate": "G8 — Peer Review / Journal Submission",
+  "note": "G7 KHÔNG thay thế việc bác sĩ viết bản thảo thật; chỉ là skeleton và seed.",
+  "disclaimer": "Cần bác sĩ kiểm chứng. KHÔNG nộp tạp chí trước khi điền kết quả thật."
+}
