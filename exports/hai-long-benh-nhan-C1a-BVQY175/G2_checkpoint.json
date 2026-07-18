@@ -1,0 +1,50 @@
+{
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "gate": "G2",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ NỘP IRB VÀ NHẬN SỐ PHÊ DUYỆT",
+  "generated_at": "2026-07-17T21:11:54.175437",
+  "g2_status": "PENDING",
+  "g2_irb_number": null,
+  "g2_approval_date": null,
+  "g2_icf_version": null,
+  "g2_registration": null,
+  "design_ambiguous": false,
+  "design_code": "cross_sectional",
+  "risk_level": "TỐI THIỂU",
+  "irb_route": "EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)",
+  "registration_required": "BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên) — TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới — loại hình thu thập [CẦN BỔ SUNG]",
+  "register_where": "ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)",
+  "icf_required": true,
+  "clinicaltrials_found": 0,
+  "clinicaltrials_samples": [],
+  "guardrail": {
+    "passed": true,
+    "errors": []
+  },
+  "artifacts": {
+    "A3_markdown": "exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A3_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.docx"
+  },
+  "documents_generated": [
+    "TL1 — Đơn xin phê duyệt IRB",
+    "TL2 — Tóm tắt đề cương (lay summary)",
+    "TL3 — Bảng rủi ro–lợi ích",
+    "TL4 — ICF tiếng Việt (7 mục Helsinki)",
+    "TL5 — ICF tiếng Anh",
+    "TL6 — DMP (Luật 91/2025/QH15)",
+    "TL7 — Checklist nộp Hội đồng",
+    "TL8 — Khai báo COI + Tài trợ + AI",
+    "WHO 18 fields — bản nháp đăng ký"
+  ],
+  "pending_doctor_actions": [
+    "Điền [CẦN BỔ SUNG] trong tất cả tài liệu (tên, đơn vị, liên lạc, cỡ mẫu...)",
+    "Ký Đơn xin phê duyệt (Tài liệu 1) + Trưởng đơn vị xác nhận",
+    "Nộp hồ sơ lên Hội đồng Đạo đức (lộ trình: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu))",
+    "Đăng ký nghiên cứu: ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)",
+    "Cung cấp số IRB + ngày phê duyệt để hệ thống ghi G2=LOCKED"
+  ],
+  "lock_instruction": "Để mở G2: cung cấp số IRB + ngày phê duyệt + phiên bản ICF đã duyệt",
+  "next_gate": "G3 (Cỡ mẫu) — chạy SONG SONG với G2 (không cần chờ G2 LOCKED)",
+  "note": "G5 (thu thập dữ liệu THẬT) chỉ mở sau khi G2 LOCKED",
+  "disclaimer": "Cần bác sĩ kiểm chứng."
+}
