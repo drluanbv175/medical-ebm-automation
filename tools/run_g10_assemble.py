@@ -1266,30 +1266,33 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
             "body_md": body_md, "cps": cps}
 
 
-_ARTIFACT_PMID_INLINE_RE = re.compile(r'PMID\s*:?\s*(\d{7,8})', re.IGNORECASE)
+# Vá 2026-07-18 (audit vòng 2): tiền tố "PMID" đã khử nhập nhằng → dùng \d+ (không
+# giới hạn 7-8 chữ số) để KHÔNG bỏ sót PMID <7 chữ số (bài MEDLINE thập niên 1950-60
+# đã bị rút) hay >8 chữ số. AN TOÀN vì phải có chữ "PMID" ngay trước — không dính năm/
+# cỡ mẫu. (Ô-bảng thuần KHÔNG có tiền tố nên VẪN giữ \d{7,8}, tránh bắt nhầm "2020"/"150".)
+_ARTIFACT_PMID_INLINE_RE = re.compile(r'PMID\s*:?\s*(\d+)', re.IGNORECASE)
+_TABLE_CELL_PMID_RE = re.compile(r"\d{7,8}")
 
 
-def _extract_pmids_from_artifact(text: str) -> set:
-    """Trích danh sách PMID mà artifact A12 nhắc tới, để đối chiếu với receipt
-    máy-kiểm (`A12_RETRACTION_RECEIPT.json`, ghi bởi `check_citation_retraction.py`).
-
-    CHỈ lấy (a) số ngay sau chữ "PMID" và (b) ô CUỐI của mỗi dòng bảng markdown
-    khi ô đó thuần 7-8 chữ số (đúng cột "PMID/DOI đã xác minh" theo mẫu module 4
-    của `kiem-chung-trich-dan.md`) — KHÔNG quét bừa mọi dãy 7-8 chữ số trong toàn
-    văn bản, tránh dính nhầm số nằm trong DOI (vd .../S0140-6736(10)60175-4) hay
-    cỡ mẫu/năm tháng."""
+def _pmids_from_text(text: str) -> set:
+    """Trích PMID từ một khối văn bản: (a) số ngay sau chữ "PMID" (mọi độ dài — tiền
+    tố đã khử nhập nhằng) và (b) ô CUỐI của mỗi dòng bảng markdown khi ô đó thuần 7-8
+    chữ số (cột "PMID/DOI đã xác minh"). KHÔNG quét bừa mọi dãy số trong toàn văn,
+    tránh dính DOI (.../S0140-6736(10)60175-4) hay cỡ mẫu/năm tháng."""
     found = set(_ARTIFACT_PMID_INLINE_RE.findall(text))
     for line in text.splitlines():
         line = line.strip()
         if not (line.startswith("|") and line.endswith("|")):
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
-        if not cells:
-            continue
-        last = cells[-1]
-        if re.fullmatch(r"\d{7,8}", last):
-            found.add(last)
+        if cells and _TABLE_CELL_PMID_RE.fullmatch(cells[-1]):
+            found.add(cells[-1])
     return found
+
+
+def _extract_pmids_from_artifact(text: str) -> set:
+    """Trích PMID mà artifact A12 nhắc tới, để đối chiếu receipt máy-kiểm."""
+    return _pmids_from_text(text)
 
 
 def _extract_pmids_from_final_document(study: str, out_dir: Path) -> set:
@@ -1297,13 +1300,14 @@ def _extract_pmids_from_final_document(study: str, out_dir: Path) -> set:
 
     G10 gọi citation_verification_ok() SAU khi ghi DE_CUONG_THONG_NHAT_<study>.md,
     nên đây là lớp đối chiếu phát hành cuối: PMID có mặt trong tài liệu chuẩn bị
-    nộp/nghiệm thu cũng phải có trong receipt máy-kiểm A12.
-    """
+    nộp/nghiệm thu cũng phải có trong receipt máy-kiểm A12. Vá 2026-07-18: dùng CHUNG
+    `_pmids_from_text` với artifact → cũng bắt PMID trong ô-bảng (trước chỉ bắt inline,
+    bất đối xứng — PMID chỉ nằm ở ô-bảng bản cuối từng thoát coverage)."""
     final_doc = out_dir / f"DE_CUONG_THONG_NHAT_{study}.md"
     if not final_doc.exists():
         return set()
     try:
-        return set(_ARTIFACT_PMID_INLINE_RE.findall(final_doc.read_text(encoding="utf-8")))
+        return _pmids_from_text(final_doc.read_text(encoding="utf-8"))
     except OSError:
         return set()
 
@@ -1604,7 +1608,8 @@ def main() -> int:
         cp["gate_status"] = "BLOCKED — chờ input đời-thực"
         cp["needs_input"] = GC.needs_input(
             reason_code, human_message, command,
-            must_not_fabricate=["approval_ledger.json", "A12_RETRACTION_RECEIPT.json"],
+            must_not_fabricate=["approval_ledger.json", "A12_RETRACTION_RECEIPT.json",
+                                "A12_METADATA_RECEIPT.json"],
         )
         result["checkpoint"].write_text(
             json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1629,6 +1634,17 @@ def main() -> int:
             f"python tools/check_citations.py --study {study} --pmids <...>",
         )
         return GC.EXIT_BLOCKED
+
+    # Advisory KHÔNG chặn (vá 2026-07-18, audit vòng 2 D5): cổng metadata (điều kiện e)
+    # chỉ BẮT BUỘC receipt cho đề tài THẬT trong denylist. Một đề tài thật MỚI quên thêm
+    # vào REAL_STUDY_DENYLIST sẽ bỏ qua metadata IM LẶNG. Làm cho nó KHÔNG im lặng: nếu
+    # thiếu A12_METADATA_RECEIPT.json mà không nằm denylist → nhắc (không đổi kết quả cổng).
+    if citation_ok and not (out_dir / "A12_METADATA_RECEIPT.json").exists() \
+            and not GC.is_real_study_denylisted(study):
+        print("\nℹ️  Lưu ý (không chặn): chưa thấy A12_METADATA_RECEIPT.json. Nếu đây là "
+              "đề tài THẬT sắp nộp hội đồng, chạy `python tools/check_citations.py --study "
+              f"{study} --pmids <...>` để có bằng chứng phân giải metadata gốc, và cân nhắc "
+              "thêm mã đề tài vào gate_contract.REAL_STUDY_DENYLIST.")
 
     # Vá 2026-07-14 (nâng cấp kiểm soát PI/IRB/thống kê viên/phản biện): G8 (bình
     # duyệt độc lập) trước đây KHÔNG có cổng cứng nào — không nằm trong --gate choices

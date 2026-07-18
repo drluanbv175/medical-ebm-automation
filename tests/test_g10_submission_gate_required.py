@@ -661,3 +661,28 @@ class TestCitationMetadataGate:
             assert rc == 0
         finally:
             _rmtree_retry(d)
+
+
+class TestPmidCoverageExtractionHardened:
+    """Vá 2026-07-18 (audit vòng 2, D2-F1): coverage cổng A12 trước bỏ sót PMID <7
+    hoặc >8 chữ số (bài MEDLINE cũ đã rút) và PMID chỉ nằm ở ô-bảng bản G10 cuối."""
+
+    def test_prefixed_pmid_any_length_captured(self):
+        got = G10._pmids_from_text("PMID: 14367 và PMID 12345678 và PMID: 123456789012")
+        assert {"14367", "12345678", "123456789012"} <= got
+
+    def test_table_cell_still_only_7_8_digits(self):
+        got = G10._pmids_from_text("| 1 | x | ✅ | năm 2020 | 23456789 |\n| 2 | y | ✅ | n=150 | 2020 |")
+        assert "23456789" in got and "2020" not in got and "150" not in got
+
+    def test_final_doc_extractor_now_parses_table_cells(self, tmp_path):
+        study = "PYTEST-COVER-T1"
+        d = _study_dir(study)
+        try:
+            (d / f"DE_CUONG_THONG_NHAT_{study}.md").write_text(
+                "| 1 | Trích | ✅ | | 23456789 |\n", encoding="utf-8"
+            )
+            pmids = G10._extract_pmids_from_final_document(study, d)
+            assert "23456789" in pmids, "final-doc phải bắt PMID trong ô-bảng (đối xứng artifact)"
+        finally:
+            _rmtree_retry(d)

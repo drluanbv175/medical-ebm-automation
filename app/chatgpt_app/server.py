@@ -97,6 +97,17 @@ def get_system_status() -> CallToolResult:
 
 def main() -> None:
     """Chạy transport Streamable HTTP tại `/mcp`."""
+    # Fail-closed (vá 2026-07-18, audit vòng 2): connector đọc kho tri thức y khoa.
+    # Nếu bind RA NGOÀI localhost mà KHÔNG đặt token bí mật `EBM_MCP_TOKEN` → TỪ CHỐI
+    # khởi động, buộc người vận hành chủ ý cấu hình xác thực trước khi phơi ra mạng
+    # (tránh phơi công khai không xác thực; docs gợi ý ngrok nên rủi ro là thật).
+    host = os.getenv("EBM_MCP_HOST", "127.0.0.1")
+    if host not in {"127.0.0.1", "localhost", "::1"} and not os.getenv("EBM_MCP_TOKEN"):
+        raise SystemExit(
+            f"[chatgpt_app] TỪ CHỐI bind host={host!r} khi chưa đặt EBM_MCP_TOKEN. "
+            "Đặt một token bí mật (và đặt sau proxy/xác thực) trước khi phơi MCP ra "
+            "ngoài localhost — fail-closed để không phơi kho tri thức công khai."
+        )
     mcp.run(transport="streamable-http")
 
 

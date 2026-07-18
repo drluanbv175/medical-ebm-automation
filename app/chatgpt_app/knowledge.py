@@ -92,7 +92,10 @@ class SafeKnowledgeIndex:
             text = resolved.read_text(encoding="utf-8", errors="strict")
             # Lớp bảo vệ bổ sung cho định danh y tế/CCCD mà policy chung có thể
             # chưa nhận ra; connector y khoa cần đóng cổng chặt hơn export docs.
-            if contains_pii_text(text[:200_000]) or SENSITIVE_ID_PATTERN.search(text[:200_000]):
+            # QUÉT TOÀN VĂN (vá 2026-07-18, audit vòng 2): trước đây chỉ quét
+            # text[:200_000] nhưng fetch() phục vụ TOÀN BỘ tới MAX_DOCUMENT_BYTES
+            # (512KB) → PII ở phần đuôi (200k–512k) lọt qua cổng mà vẫn bị trả về.
+            if contains_pii_text(text) or SENSITIVE_ID_PATTERN.search(text):
                 return None
         except (OSError, UnicodeError, ValueError):
             return None
@@ -141,10 +144,14 @@ class SafeKnowledgeIndex:
         doc = self._load(requested)
         if doc is None:
             raise PermissionError("document_blocked_by_export_policy")
+        # Chèn disclaimer NGAY TRONG thân `text` (vá 2026-07-18, audit vòng 2):
+        # trước đây disclaimer chỉ ở `metadata` — ChatGPT thường render field `text`
+        # làm nội dung nên có thể trình bày nội dung y khoa mà KHÔNG hiển thị
+        # disclaimer, vi phạm bất biến CLAUDE.md #5. Nay disclaimer luôn ở đầu nội dung.
         return {
             "id": doc.id,
             "title": doc.title,
-            "text": doc.text,
+            "text": f"⚠️ {DISCLAIMER}\n\n{doc.text}",
             "url": doc.url,
             "metadata": {
                 "sha256": doc.sha256,
