@@ -1,0 +1,25 @@
+Variable / Form Name / Section Header / Field Type / Field Label / Choices, Calculations, OR Slider Labels / Field Note / Text Validation Type OR Show Slider Number / Text Validation Min / Text Validation Max / Required Field / Branching Logic (Show field only if...)
+record_id / Admin / Hành chính / text / Mã tham gia (duy nhất, không PII) /  /  /  /  /  / y / 
+consent_date / Admin /  / text / Ngày đồng thuận /  /  / date_ymd /  /  / y / 
+site_id / Admin /  / text / Mã cơ sở / trung tâm /  /  /  /  /  / y / 
+visit_date / Admin /  / text / Ngày khám/thu thập dữ liệu /  /  / date_ymd /  /  / n / 
+age / Demographics / Nhân khẩu học / text / Tuổi (năm) /  /  / integer / 18 / 120 / y / 
+sex / Demographics /  / radio / Giới tính sinh học / 1, Nam | 2, Nữ | 3, Khác /  /  /  /  / y / 
+bmi / Demographics /  / text / BMI (kg/m²) /  /  / number / 10 / 60 / n / 
+education / Demographics /  / dropdown / Trình độ học vấn / 1, Tiểu học | 2, THCS | 3, THPT | 4, CĐ/ĐH | 5, Sau ĐH /  /  /  /  / n / 
+ethnicity / Demographics /  / dropdown / Dân tộc / 1, Kinh | 2, Hoa | 3, Khmer | 4, Khác /  /  /  /  / n / 
+visit_type / Clinical / Bối cảnh lượt khám (Khảo sát hài lòng) / radio / Loại lượt khám / 1, Khám mới lần đầu tại khoa | 2, Tái khám /  /  /  /  / y / 
+payment_type / Clinical /  / dropdown / Hình thức chi trả / 1, Bảo hiểm y tế (BHYT) | 2, Khám theo yêu cầu/dịch vụ | 3, Tự chi trả không BHYT | 4, Khác /  /  /  /  / y / 
+wait_time_min / Clinical /  / text / Thời gian chờ khám (phút, từ đăng ký đến khi được khám) /  / Người bệnh tự ước lượng hoặc ghi nhận thực tế nếu có hệ thống hẹn giờ / number / 0 / 600 / n / 
+visit_freq_year / Clinical /  / text / Số lần đến khám tại khoa trong 12 tháng qua /  /  / integer / 1 / 365 / n / 
+occupation / Exposure / Yếu tố liên quan đến hài lòng (mục tiêu phân tích) / dropdown / Nghề nghiệp / 1, Cán bộ/công chức/viên chức (kể cả quân nhân) | 2, Lao động tự do/kinh doanh | 3, Hưu trí/nội trợ | 4, Khác /  /  /  /  / n / 
+income_self_rated / Exposure /  / dropdown / Mức thu nhập tự đánh giá / 1, Thấp | 2, Trung bình | 3, Khá/cao | 9, Không muốn trả lời /  /  /  /  / n / 
+domain_access_score / Outcomes / Điểm hài lòng theo lĩnh vực (kết cục chính) / text / Điểm hài lòng — Khả năng tiếp cận dịch vụ /  / Thang Likert theo bộ công cụ đã chọn [CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC] / number / 1 / 5 / y / 
+domain_transparency_score / Outcomes /  / text / Điểm hài lòng — Minh bạch thông tin, thủ tục khám bệnh /  /  / number / 1 / 5 / y / 
+domain_facility_score / Outcomes /  / text / Điểm hài lòng — Cơ sở vật chất, phương tiện phục vụ /  /  / number / 1 / 5 / y / 
+domain_staff_attitude_score / Outcomes /  / text / Điểm hài lòng — Thái độ ứng xử, năng lực chuyên môn nhân viên y tế /  /  / number / 1 / 5 / y / 
+domain_service_result_score / Outcomes /  / text / Điểm hài lòng — Kết quả cung cấp dịch vụ khám chữa bệnh /  /  / number / 1 / 5 / y / 
+overall_satisfaction_score / Outcomes /  / text / Điểm hài lòng chung (kết cục chính tổng hợp) /  / Cách tính theo hướng dẫn chấm điểm của bộ công cụ đã chọn / number / 1 / 5 / y / 
+overall_satisfaction_binary / Outcomes / Kết cục phụ / radio / Hài lòng chung (nhị phân, theo ngưỡng cắt bộ công cụ) / 0, Không hài lòng | 1, Hài lòng / Ngưỡng cắt theo hướng dẫn chính thức của bộ công cụ [CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC] /  /  /  / y / 
+willing_to_return / Outcomes /  / radio / Sẵn sàng quay lại khám/giới thiệu người khác / 0, Không | 1, Có /  /  /  /  / n / 
+complete_flag / Admin / Trạng thái phiếu / radio / Trạng thái hoàn thành phiếu / 0, Chưa hoàn thành | 1, Chưa xác minh | 2, Hoàn thành /  /  /  /  / n / 
