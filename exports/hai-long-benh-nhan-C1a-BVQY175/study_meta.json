@@ -1,0 +1,50 @@
+{
+  "title": "Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm khám bệnh và điều trị theo yêu cầu C1, Bệnh viện Quân y 175",
+  "topic": "Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm khám bệnh và điều trị theo yêu cầu C1, Bệnh viện Quân y 175",
+  "query_en": "patient satisfaction outpatient department hospital",
+  "base_query": "treatment Khoa C1a Trung",
+  "irb_approved": false,
+  "sap_lock_date": null,
+  "data_lock_date": null,
+  "results_final": false,
+  "integrity_signed": false,
+  "aim": "Đánh giá mức độ hài lòng của người bệnh và một số yếu tố liên quan trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm khám bệnh và điều trị theo yêu cầu C1, Bệnh viện Quân y 175.",
+  "objectives": [
+    "Xác định mức độ hài lòng của người bệnh trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175.",
+    "Đánh giá một số yếu tố liên quan đến mức độ hài lòng của người bệnh trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175."
+  ],
+  "research_question": "Mức độ hài lòng chung và theo từng lĩnh vực dịch vụ của người bệnh khi khám chữa bệnh tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175 hiện nay như thế nào, và những yếu tố nào (nhân khẩu-xã hội, hình thức chi trả, thời gian chờ khám...) liên quan đến mức độ hài lòng đó?",
+  "pico": {
+    "p": "Người bệnh đến khám và sử dụng dịch vụ tại Khoa Khám bệnh C1a, Trung tâm khám bệnh và điều trị theo yêu cầu C1, Bệnh viện Quân y 175 trong thời gian nghiên cứu",
+    "i_e": "Trải nghiệm/quá trình khám chữa bệnh tại khoa (nghiên cứu mô tả cắt ngang, không có can thiệp so sánh); yếu tố khảo sát gồm đặc điểm nhân khẩu-xã hội, hình thức chi trả, thời gian chờ khám, số lần khám trong 12 tháng qua",
+    "c": "Không có nhóm can thiệp/đối chứng riêng biệt — so sánh GIỮA các phân nhóm người bệnh (vd theo tuổi/giới/hình thức chi trả/thời gian chờ) trong phân tích yếu tố liên quan (mục tiêu 2)",
+    "o": "[DỰ THẢO] Kết cục CHÍNH: mức độ hài lòng chung (overall_satisfaction_score/overall_satisfaction_binary — CHỌN MỘT khi khóa SAP, tránh phân tích cả hai gây trùng lặp). Kết cục PHỤ/THĂM DÒ (exploratory): điểm hài lòng theo 5 lĩnh vực dịch vụ (khả năng tiếp cận, minh bạch thông tin/thủ tục, cơ sở vật chất, thái độ ứng xử/năng lực chuyên môn nhân viên y tế, kết quả khám chữa bệnh) — đo bằng bộ công cụ đã chọn (xem Mục 9). Bình duyệt phát hiện: 6 kết cục ứng viên (5 lĩnh vực + hài lòng chung) hồi quy với ~8-10 yếu tố mà chưa nêu hiệu chỉnh đa so sánh (multiplicity) là nguy cơ outcome-switching thật; SAP (Mục 11) PHẢI khóa rõ 1 kết cục chính trước khi xem dữ liệu, phần còn lại ghi rõ 'exploratory', và nêu phương pháp hiệu chỉnh (Bonferroni/FDR) nếu vẫn phân tích cả 6."
+  },
+  "hypothesis": "Mục tiêu 1 (mô tả) không cần giả thuyết kiểm định thống kê chính thức — chỉ ước lượng tỷ lệ/điểm hài lòng kèm khoảng tin cậy 95%. Với mục tiêu 2 (yếu tố liên quan): H1 — có mối liên quan giữa đặc điểm người bệnh (tuổi, giới, trình độ học vấn, nghề nghiệp, hình thức chi trả, thời gian chờ khám...) và mức độ hài lòng chung; H0 — không có mối liên quan. Kiểm định cụ thể theo SAP (Mục 11).",
+  "inclusion_criteria": [
+    "Người bệnh từ 18 tuổi trở lên đến khám và sử dụng dịch vụ tại Khoa Khám bệnh C1a trong thời gian nghiên cứu",
+    "Đồng ý tự nguyện tham gia nghiên cứu sau khi được giải thích và xác nhận đồng thuận (ICF)",
+    "Có khả năng đọc hiểu và tự trả lời phiếu khảo sát bằng tiếng Việt (hoặc được hỗ trợ đọc câu hỏi nếu chỉ hạn chế thị lực/vận động, không ảnh hưởng nhận thức)"
+  ],
+  "exclusion_criteria": [
+    "Người bệnh trong tình trạng cấp cứu/nặng cần ưu tiên xử trí ngay, không phù hợp phỏng vấn tại thời điểm khám",
+    "Rối loạn nhận thức/tâm thần nặng không đủ khả năng hiểu và trả lời phiếu khảo sát",
+    "Từ chối tham gia hoặc không hoàn thành phiếu khảo sát (ghi nhận lý do, loại khỏi phân tích chính)"
+  ],
+  "sampling_method": "Chọn mẫu thuận tiện liên tiếp (consecutive convenience sampling): mời tất cả người bệnh đủ tiêu chuẩn đến khám tại Khoa C1a trong khung thời gian thu thập, cho đến khi đủ cỡ mẫu đã chốt (N=1000, xem Mục 8).",
+  "instrument": {
+    "name": "Bộ phiếu khảo sát mức độ hài lòng người bệnh ngoại trú, cấu trúc theo 5 lĩnh vực (khả năng tiếp cận; minh bạch thông tin/thủ tục khám bệnh; cơ sở vật chất; thái độ ứng xử/năng lực chuyên môn nhân viên y tế; kết quả cung cấp dịch vụ khám chữa bệnh) cộng 1 câu hỏi hài lòng chung",
+    "source": "[ĐÃ KIỂM CHỨNG] (2026-07-18, qua thuvienphapluat.vn/luatvietnam.vn/qlcl.net) Quyết định 56/QĐ-BYT ngày 08/01/2024 (Bộ Y tế) là văn bản HIỆN HÀNH cho mẫu phiếu khảo sát hài lòng NGƯỜI BỆNH — Điều 2 của QĐ 56/2024 bãi bỏ đúng mẫu phiếu số 1/số 2 (người bệnh) của Quyết định 3869/QĐ-BYT (28/8/2019); mẫu phiếu nhân viên y tế của QĐ 3869/2019 KHÔNG bị bãi bỏ, vẫn còn hiệu lực (bãi bỏ CHỈ MỘT PHẦN, không phải toàn bộ QĐ 3869/2019).",
+    "note": "Khung 5 lĩnh vực + điểm hài lòng chung ở trên là HỆ THỐNG TỰ SOẠN (composed), CHƯA đối chiếu từng mục với nội dung thật của mẫu phiếu số 1/số 2 tại QĐ 56/2024 — [CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC] vẫn áp dụng cho NỘI DUNG TỪNG CÂU HỎI cụ thể (dù văn bản gốc đã xác nhận thật). Bác sĩ/chủ nhiệm PHẢI lấy đúng mẫu phiếu 1/2 từ QĐ 56/2024 làm nền, hoặc ghi rõ lý do hiệu chỉnh nếu dùng khung riêng. [DỰ THẢO] Bình duyệt phát hiện: TRƯỚC KHI khóa SAP, PHẢI báo cáo độ tin cậy nội bộ (Cronbach's alpha từng lĩnh vực, ngưỡng chấp nhận thường ≥0.7) và giá trị nội dung qua pilot — domain score dùng làm kết cục phân tích chính mà chưa kiểm định là thiếu cơ sở đo lường vững (nối agent `cong-cu-do-luong`, chuẩn COSMIN). Người PHÁT/THU phiếu PHẢI độc lập với nhân viên trực tiếp khám cho người bệnh đó, thu tại nơi kín đáo (hộp thu kín/bàn riêng ngoài khu khám), không có mặt nhân viên khám khi người bệnh điền phiếu — giảm nguy cơ người bệnh ngại trả lời thật vì sợ ảnh hưởng chăm sóc sau này."
+  },
+  "gate_params": {
+    "G3": {
+      "effect_size": 0.5,
+      "effect_type": "OR",
+      "dropout": 0.1,
+      "p_event": 0.3,
+      "sd": null,
+      "confirmed_n": 1000
+    }
+  }
+}
