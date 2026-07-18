@@ -31,7 +31,11 @@ python medical-ebm-automation/tools/run_g7_auto.py \
     --study "MA-DE-TAI" \
     [--target-journal "Tên tạp chí đích"] [--word-limit 3500]
 # Tự động: đọc checkpoint G0-G6 → dựng khung IMRAD theo chuẩn báo cáo đúng thiết kế
-#           → A12 .md + .docx + G7_checkpoint.json
+#           → A11 .md + .docx + G7_checkpoint.json
+#           (2026-07-11: sửa "A12" — đó là mã của kiem-chung-trich-dan theo crosswalk;
+#           đúng mã của bản thảo IMRAD này là A11. Script thật hiện đặt tên file
+#           "G7_A8_MANUSCRIPT_..." — LỆCH khỏi crosswalk theo kiểu hệ thống, giống
+#           run_g5/g6/g9_auto.py; xem task theo dõi sửa code: task_e4138631.)
 ```
 Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kết cục) bằng **TÊN BIẾN THẬT** lấy từ CRF của G5 (`quan-ly-du-lieu`), thay vì chỗ trống chung chung — giảm việc tác giả phải tự tra lại tên biến khi viết Methods.
 
@@ -46,7 +50,7 @@ Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kế
 
 ## CHẾ ĐỘ PIPELINE — AUTO-PULL TỪ KẾT QUẢ PHÂN TÍCH (CHAY-TOAN-BO / G6→G7)
 
-> Kích hoạt khi orchestrator gọi từ CHAY-TOAN-BO **sau khi G6 đã hoàn tất** và truyền kết quả từ `phan-tich-thong-ke` + `dien-giai-ket-qua`. Kết quả phân tích từ dữ liệu bác sĩ nhập = **nội dung tác giả** → CỔNG 0 anti-ghostwrite KHÔNG chặn; vẫn gắn [BẢN NHÁP AI] bắt buộc.
+> Kích hoạt khi orchestrator gọi từ CHAY-TOAN-BO **sau khi G6 đã hoàn tất** và truyền kết quả từ `phan-tich-thong-ke` + `dien-giai-ket-qua`. **(2026-07-07 — làm rõ, tránh mâu thuẫn với CỔNG 0):** CỔNG 0 anti-ghostwrite KHÔNG chặn phần **Results/bảng số liệu** — đây là dữ kiện khách quan sao chép nguyên vẹn từ dữ liệu đã khóa (G4/G5 LOCKED) do bác sĩ cung cấp, không phải luận điểm AI tự nghĩ. Nhưng phần **Discussion/diễn giải** (luận điểm, ý nghĩa lâm sàng — do agent `dien-giai-ket-qua` soạn, không phải bác sĩ) VẪN phải qua CỔNG 0 đầy đủ: dùng đúng nhãn mạnh `[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]` (không phải nhãn yếu "chỉ kiểm tra số liệu" ở dưới), và bác sĩ phải cung cấp góc nhìn/ý chính của riêng mình trước khi AI soạn Discussion.
 
 **Điều kiện kích hoạt:** orchestrator truyền rõ kết quả G6 + G6.5 ĐÃ CÓ SỐ LIỆU THẬT (G4_STATUS=LOCKED + G5_STATUS=LOCKED).
 
@@ -64,7 +68,7 @@ Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kế
 - Số liệu **SAO CHÉP NGUYÊN VẸN** từ đầu ra G6 — không làm tròn/diễn đạt lại mà không gắn cờ
 - Ô bảng còn `___` (chưa chạy code) → giữ `[CẦN BỔ SUNG — chạy code R/SPSS trên dữ liệu thật]`
 - Không có trong đầu vào → `[CẦN BỔ SUNG]`, KHÔNG bịa
-- Gắn nhãn đầu bản thảo: `[BẢN NHÁP AI — TÁC GIẢ PHẢI KIỂM TRA TỪNG SỐ LIỆU TRƯỚC KHI NỘP]`
+- Gắn nhãn đầu bản thảo: nếu bản thảo CÓ đoạn Discussion do AI soạn → dùng `[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]` (nhãn mạnh, đúng CỔNG 0); nếu bản thảo CHỈ có Results/bảng số liệu (chưa có Discussion) → `[BẢN NHÁP AI — TÁC GIẢ PHẢI KIỂM TRA TỪNG SỐ LIỆU TRƯỚC KHI NỘP]` là đủ.
 - Tác giả phải khai báo dùng AI (ICMJE) và xác nhận số liệu trước khi nộp
 - Sau draft: tự giao `kiem-chung-trich-dan` + `binh-duyet` ngay trong cùng vòng
 
@@ -113,7 +117,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 6. Tiêu chí hoàn thành (qua cổng G7)
 **Hoàn thành khi:** thông điệp chính rõ; chuẩn báo cáo đúng thiết kế + bảng đối chiếu checklist; IMRAD văn xuôi; Results có CI; Discussion không overclaim; danh mục tham khảo đã qua `kiem-chung-trich-dan`; mục khai báo đầy đủ (tác giả xác nhận); chỗ thiếu đánh `[CẦN BỔ SUNG]`. Còn `[TRÍCH DẪN CHƯA XÁC MINH]` → CHƯA sẵn sàng nộp. **Bàn giao** `hieu-dinh-song-ngu` (nếu nộp quốc tế) → `binh-duyet`.
 
-> **Định dạng LaTeX theo venue cụ thể (2026-07-04):** dòng 101 ("xuất LaTeX/PDF/DOCX khi cần") hiện chỉ xuất bản thảo chung, KHÔNG có template riêng theo từng tạp chí. Khi đã chọn tạp chí/hội nghị/quỹ tài trợ đích cụ thể (Nature, Science, PLOS, Elsevier, NeurIPS, NSF, NIH...) — dùng skill `venue-templates` (có sẵn `.tex` thật cho 50+ venue + poster/grant) để định dạng đúng khuôn, SAU khi nội dung khoa học đã chốt ở bước này. Không dùng để thay nội dung/liêm chính đã qua cổng cứng trích dẫn ở trên.
+> **Định dạng LaTeX theo venue cụ thể (2026-07-04, sửa số liệu 2026-07-11 — "50+ venue" không khớp thực tế trên đĩa):** dòng 101 ("xuất LaTeX/PDF/DOCX khi cần") hiện chỉ xuất bản thảo chung, KHÔNG có template riêng theo từng tạp chí. Khi đã chọn tạp chí/hội nghị/quỹ tài trợ đích cụ thể — dùng skill `venue-templates` để định dạng đúng khuôn, SAU khi nội dung khoa học đã chốt ở bước này. Skill này có `.tex` THẬT (kiểm trực tiếp `sync/skills/venue-templates/assets/`) chỉ cho **Elsevier (3 biến thể), Nature, PLOS ONE, NeurIPS + 1 poster + 2 mẫu grant (NIH/NSF)** — 9 file, không phải "50+ venue" như SKILL.md của skill này tự mô tả; các venue khác trong bảng của SKILL.md chỉ có hướng dẫn định dạng bằng văn xuôi (`references/*.md`), KHÔNG có `.tex` sẵn dùng. Không dùng để thay nội dung/liêm chính đã qua cổng cứng trích dẫn ở trên.
 
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa trích dẫn/số liệu; phân biệt phát hiện vs suy diễn; nhắc khai báo AI/tác giả/COI; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
@@ -148,9 +152,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

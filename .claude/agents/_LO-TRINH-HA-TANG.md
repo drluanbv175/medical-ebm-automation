@@ -15,15 +15,15 @@
 |----|------|-----------|----------------|--------------------------|
 | **A** | Critic ngoài phiên (`tham-dinh-dau-ra` tự chứa + protocol gọi subagent) | `tools/critic/` | ✅ spec tự chứa + protocol; **PATCH ĐÃ ÁP vào 2 nhạc trưởng** (BS đồng ý 2026-06-13) | Task tool/subagent của runtime **[CẦN MÔI TRƯỜNG HỖ TRỢ]** (patch chỉ là KHUYẾN NGHỊ có điều kiện, không tự bật runtime) |
 | **B** | Bộ nhớ vector + RAG (khử PII → embed → query) | `tools/rag/` | ✅ ingest 3 synthetic / từ chối 1 PII; **backend SEMANTIC NHẸ TF-IDF (sklearn) chạy được** — so hashing: top-1 3/3 cả hai nhưng **margin tách hạng 0.299 vs 0.135 (~2,2×)** | (tùy chọn) cài `sentence-transformers` cho ngữ nghĩa neural đầy đủ + BS duyệt + xác nhận nguồn không-PII |
-| **C** | Harness đánh giá rule-based (giữ người duyệt) | `tools/eval/` | ✅ **rubric MỞ RỘNG 11 kiểm** (thêm: tách MỨC chắc vs MỨC mạnh · năm/phiên bản nguồn · WHO AWaRe khi kháng sinh · cấm suy nhân quả từ cắt ngang). Demo: good 9/9 · bad 1/9 · good_antibiotic 10/10 · bad_causal 3/11 | bổ sung gold set ẩn danh + quy trình review thủ công; **auto-optimizer VẪN KHÔNG bật** |
+| **C** | Harness đánh giá rule-based (giữ người duyệt) | `tools/eval/` | ✅ **rubric mở rộng qua nhiều đợt hardening/adversarial (2026-07-09), nay 15 kiểm** (2026-07-12: sửa "11" — chạy thật `run_eval.py` xác nhận 15 kiểm). Demo (chạy lại thật): good_output 15/15 · bad_output 7/15 · good_antibiotic 16/16 · bad_causal_cross_sectional 9/17 | bổ sung gold set ẩn danh + quy trình review thủ công; **auto-optimizer VẪN KHÔNG bật** |
 | **D** | Validator schema blackboard (siết 1b) | `tools/blackboard/` | ✅ demo synthetic: 3 ĐẠT · 4 lỗi ĐỎ · 2 cảnh báo (exit 1) | dùng làm lint trước khi nạp sổ cái/hub; **vẫn là QUY ƯỚC file, chưa phải bus cưỡng chế → 1b vẫn MỘT PHẦN (chắc hơn)** |
 
 ## ✅ PHẦN "TỰ ĐỘNG THẬT" HIỆN CÓ (đã tồn tại ngoài file — ghi nhận, không phóng đại)
-Hai **scheduled task** đã được tạo ở tầng Cowork (xác nhận qua trình quản lý tác vụ định kỳ), chạy nền theo lịch và khởi động một phiên Claude làm việc theo SKILL.md tương ứng:
+**2026-07-12: sửa lại theo kết quả gọi thật `mcp__scheduled-tasks__list_scheduled_tasks`** — bảng cũ ghi taskId/lịch sai (`tu-kiem-dong-bo-agent`/Thứ Hai không tồn tại; `giam-sat-chung-cu-noi-chung` không có trong lịch sống). TaskId THẬT đang chạy:
 | taskId | Lịch | Việc | Giao thức nối |
 |---|---|---|---|
-| `tu-kiem-dong-bo-agent` | **hằng tuần** (Thứ Hai 08:00) | tự kiểm đồng bộ & tự sửa chữa bộ agent | `_TU-SUA-CHUA-PROTOCOL.md` |
-| `giam-sat-chung-cu-noi-chung` | **hằng tháng** (ngày 1, 08:00) | giám sát chứng cứ/guideline mới nội tổng quát ngoại trú | `_GIAM-SAT-CHUNG-CU-NOI-CHUNG.md` → `cap-nhat-guideline` + `tra-cuu-chung-cu` |
+| `ebm-tu-kiem-dong-bo` | **hằng tuần** (Chủ Nhật 08:10, cron `10 8 * * 0`) | tự kiểm đồng bộ & tự sửa chữa bộ agent | `_TU-SUA-CHUA-PROTOCOL.md` |
+| *(giam-sat-chung-cu)* | **[CẦN XÁC NHẬN TẠI ĐƠN VỊ]** — KHÔNG có trong danh sách lịch sống hiện tại (đã gọi tool kiểm trực tiếp) | giám sát chứng cứ/guideline mới nội tổng quát ngoại trú | `_GIAM-SAT-CHUNG-CU-NOI-CHUNG.md` → `cap-nhat-guideline` + `tra-cuu-chung-cu` |
 *Giới hạn:* các task này **kích hoạt một phiên Claude theo lịch**; trong phiên đó việc gọi subagent/định tuyến tuân theo đặc tả file. Đây là "tự động theo lịch" THẬT, KHÁC với daemon nền tự vá mã liên tục. Phần còn lại dưới đây vẫn cần công cụ ngoài.
 
 ## 1. Bộ nhớ dài hạn vector hoá + RAG — [CẦN CÔNG CỤ NGOÀI] · 🧪 PROTOTYPE FUNCTIONAL HƠN: `tools/rag/` (đã có backend SEMANTIC NHẸ TF-IDF chạy được trên synthetic; CHƯA vận hành dữ liệu thật)
@@ -37,7 +37,7 @@ Hai **scheduled task** đã được tạo ở tầng Cowork (xác nhận qua tr
 - **Rủi ro:** chạy nền không người trực có thể phát hành kết luận chưa duyệt → mọi đầu ra vẫn vào hàng "chờ bác sĩ duyệt" (Cổng A/B), không tự áp dụng.
 
 ## 3. Auto-prompt-optimizer — [CẦN CÔNG CỤ NGOÀI] (rủi ro liêm chính cao) · 🧪 PROTOTYPE harness CHẤM: `tools/eval/` (chỉ con người xem; **optimizer tự động VẪN TẮT**)
-- **Trạng thái hiện tại:** prompt agent chỉnh **thủ công**, có sao lưu `.bak` + đọc lại xác minh. KHÔNG có vòng tối ưu tự động. Harness chấm `tools/eval/` nay **mở rộng lên 11 kiểm** (thêm: tách MỨC chắc chứng cứ vs MỨC mạnh khuyến cáo · năm/phiên bản nguồn · WHO AWaRe khi kháng sinh · cấm suy nhân quả từ cắt ngang). **Vẫn CHỈ để con người xem; auto-prompt-optimizer VẪN TẮT.**
+- **Trạng thái hiện tại:** prompt agent chỉnh **thủ công**, có sao lưu `.bak` + đọc lại xác minh. KHÔNG có vòng tối ưu tự động. Harness chấm `tools/eval/` nay **15 kiểm** (2026-07-12: sửa "11", đã lỗi thời sau các đợt hardening/adversarial 2026-07-09). **Vẫn CHỈ để con người xem; auto-prompt-optimizer VẪN TẮT.**
 - **Điều kiện đạt:** harness đánh giá (bộ ca/đề tài chuẩn + tiêu chí chấm) + người duyệt mỗi thay đổi; nhật ký thay đổi có thể truy vết.
 - **Rủi ro:** tối ưu theo điểm số có thể "học mẹo" làm yếu rào an toàn/liêm chính (vd bỏ disclaimer để gọn) → **bắt buộc người duyệt**; không để tự ghi đè prompt.
 

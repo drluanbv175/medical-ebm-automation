@@ -14,7 +14,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận tập bài 
 |--------|--------|-----------|
 | M1 | Kiểm đồng nhất lâm sàng–phương pháp–kết cục | Bắt buộc |
 | M2 | Trích & chuẩn hóa hiệu ứng (OR/RR/HR/MD/SMD) + SE | Bắt buộc |
-| M3 | Chọn mô hình fixed vs random-REML (mặc định random) | Bắt buộc |
+| M3 | Chọn mô hình fixed vs random (DerSimonian-Laird, mặc định random) | Bắt buộc |
 | M4 | Pooled effect + 95% CI + PI (nếu random) + forest plot | Bắt buộc |
 | M5 | Heterogeneity: I²/Q(p)/τ² + diễn giải mức | Bắt buộc |
 | M6 | Publication bias: Egger + funnel (+ trim-and-fill nếu asymmetry) | Khi ≥10 NC |
@@ -81,12 +81,8 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 
 **Xuất Word:**
 ```bash
-python tools/gen_research_docx.py --study "<TEN>" --gate G6
+python tools/gen_research_docx.py --study "<TEN>" --gate G6 --artifact meta-analysis
 ```
-(Không có khóa `meta-analysis` riêng trong `ARTIFACT_MAP`; khi dùng chung `--gate` + `--artifact`, `--gate`
-được ưu tiên xử lý trước nên `--artifact` bị BỎ QUA hoàn toàn — xem `hieu-dinh-song-ngu.md` ghi chú tương
-tự. `--gate G6` một mình đã sinh đủ G6a_ANALYSIS + G6b_INTERPRETATION; kết quả gộp phân tích meta dùng
-chung artifact `analysis` (G6a), không có khóa riêng.)
 
 ## Ranh giới
 Cần dữ liệu trích xuất chuẩn (← `trich-xuat-y-van`); khung PRISMA (← `tong-quan-y-van`); chạy mô hình thật (→ `phan-tich-thong-ke`). KHÔNG bịa số liệu thiếu; thiếu dữ liệu → loại khỏi gộp + nêu rõ.
@@ -114,9 +110,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

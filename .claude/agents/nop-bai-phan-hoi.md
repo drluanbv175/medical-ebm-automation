@@ -51,7 +51,7 @@ Bất biến cứng: KHÔNG bịa IF/quartile · KHÔNG nộp trùng lặp nhi�
 
 ---
 
-## G9 PHẦN 1 — BỘ KHAI BÁO LIÊM CHÍNH TÁC GIẢ (ICMJE Recommendations cập nhật 1/2024 + COPE Position Statement "Authorship and AI tools" 13/2/2023)
+## G9 PHẦN 1 — BỘ KHAI BÁO LIÊM CHÍNH TÁC GIẢ (ICMJE Recommendations cập nhật 1/2026, Mục V "Use of Artificial Intelligence in Publishing" — thay vị trí AI-không-được-là-tác-giả đơn lẻ trước đây; Mục V.A bắt buộc khai báo dùng AI TẠI HAI NƠI: cover letter VÀ mục phù hợp trong bản thảo, không khai báo có thể bị coi là hành vi sai trái khoa học theo Mục III.A/III.B + COPE Position Statement "Authorship and AI tools" 13/2/2023, vẫn là vị trí hình thức hiện hành của COPE — vá 2026-07-17, round audit đối kháng 4, xác minh trực tiếp qua icmje.org)
 
 ### A. BẢNG CRediT TAXONOMY (14 vai trò — CASRAI/NISO ANSI Z39.104-2022, KHÔNG phải chuẩn ICMJE; dùng SONG SONG với 4 tiêu chí tác giả ICMJE bên dưới — CRediT mô tả AI LÀM GÌ, ICMJE quyết định AI LÀ tác giả)
 
@@ -97,7 +97,10 @@ KHAI BÁO XUNG ĐỘT LỢI ÍCH — [Họ tên tác giả] — [Ngày]
 
 1. TÀI CHÍNH TỪ TỔ CHỨC THƯƠNG MẠI liên quan đến chủ đề bài:
    ☐ Không có
-   ☐ Có: Tổ chức: ___ | Loại: ☐ Tài trợ NC ☐ Phí tư vấn ☐ Cổ phần ☐ Thù lao ☐ Patent
+   ☐ Có: Tổ chức: ___ | Loại: ☐ Tài trợ NC ☐ Phí tư vấn ☐ Cổ phần ☐ Thù lao ☐ Sở hữu trí
+     tuệ (patent HOẶC copyright — chờ cấp/đã cấp/đã cấp phép/đang nhận bản quyền — mục
+     "Intellectual Property" của ICMJE Uniform Disclosure Form bao gồm cả copyright, không
+     chỉ patent — vá 2026-07-17, round audit đối kháng 4)
 
 2. TÀI CHÍNH TỪ TỔ CHỨC KHÔNG liên quan đến chủ đề:
    ☐ Không có  ☐ Có: ___
@@ -239,7 +242,12 @@ dựa trên scope và đối tượng đọc giả của tạp chí].
 §4 CAM KẾT LIÊM CHÍNH
 Xác nhận: (1) bài là nguyên bản, chưa nộp nơi nào khác; (2) tất cả
 tác giả đọc và đồng ý bản cuối; (3) không có COI ảnh hưởng kết quả;
-(4) mọi khai báo đạo đức/COI/AI/dữ liệu đính kèm bản thảo.
+(4) mọi khai báo đạo đức/COI/dữ liệu đính kèm bản thảo; (5) sử dụng
+công nghệ AI (LLM/chatbot/tạo ảnh) trong quá trình soạn bản thảo này:
+[Có/Không — nếu Có, nêu công cụ + mục đích, chi tiết đầy đủ ở Phần 4
+khai báo AI đính kèm] — khai NGAY TRONG cover letter theo ICMJE Mục
+V.A (bắt buộc khai ở CẢ cover letter LẪN bản thảo, không chỉ "đính
+kèm riêng" — vá 2026-07-17, round audit đối kháng 4).
 
 §5 REVIEWER (tùy chọn)
 Đề xuất: 1. [Tên, đơn vị, email] — chuyên môn: ___

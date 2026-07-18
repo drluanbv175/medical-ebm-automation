@@ -12,12 +12,36 @@ Khi đề tài đã có G0 checkpoint (và lý tưởng là bộ biến từ `bi
 ```bash
 python medical-ebm-automation/tools/run_g5_auto.py --study "MA-DE-TAI"
 # Tự động: đọc topic từ G0 checkpoint → tự suy luận chuyên khoa/biến
-#           → CRF 55 dòng + data dictionary + Python scripts + STROBE flowchart
-#           → A9/A17a .md + .docx + G5_checkpoint.json
+#           → CRF (số dòng biến động 12-56 tùy thiết kế/chuyên khoa nhận diện,
+#              KHÔNG cố định — "55 dòng" trong docstring script chỉ là tên gọi lịch sử,
+#              đã kiểm chứng 2026-07-11) + data dictionary + Python scripts + STROBE flowchart
+#           → MỘT file .md + .docx duy nhất (tên file script gắn mã "A6" — LỆCH với A9/A17a
+#              theo crosswalk chính thức bên dưới; đã kiểm chứng 2026-07-11, cần đối chiếu
+#              thủ công thay vì tin filename) + G5_checkpoint.json
 ```
 **Sau khi chạy**, đối chiếu CRF sinh ra với 7 TÀI LIỆU bên dưới (đặc biệt TÀI LIỆU 1 — Data Dictionary) và với bộ biến đã đặc tả ở `bien-so-nghien-cuu` để bảo đảm không thiếu/thừa biến.
 
 > **Khảo sát file dữ liệu thô TRƯỚC khi có CRF (2026-07-04):** 2 script Python mà `run_g5_auto.py` sinh ra (làm sạch + báo cáo chất lượng) chỉ chạy đúng trên file CSV **đã khớp cột theo CRF/chuyên khoa định sẵn** (REDCap export) — không phải công cụ tổng quát để soi 1 file dữ liệu thô bất kỳ. Khi bác sĩ đưa 1 file (Excel/CSV thô chưa theo CRF, hoặc định dạng khác như ảnh/phổ/gen học) và cần biết nhanh cấu trúc/chất lượng TRƯỚC khi dựng CRF chính thức, dùng skill `exploratory-data-analysis` (`scripts/eda_analyzer.py`, đã kiểm chứng chạy thật) để khảo sát trước — kết quả dùng làm căn cứ thiết kế Data Dictionary ở trên, KHÔNG thay thế CRF/luật kiểm tra chính thức. **Lưu ý môi trường Windows đã xác nhận thật:** cần `PYTHONUTF8=1` khi chạy (console mặc định cp1252 sẽ lỗi in tiếng Việt), và cần cài `pandas`+`numpy` trước (Python hệ thống không có sẵn — script vẫn chạy nhưng bỏ qua phần phân tích số liệu chính nếu thiếu).
+
+> **Luồng làm sạch dữ liệu thật tự động (2026-07-13):** sau khi dữ liệu đã qua `import_real_dataset.py` hoặc `deidentify_research_dataset.py`/`pseudonymize_research_dataset.py --then-import`, gọi tool tổng quát:
+> ```bash
+> python medical-ebm-automation/tools/clean_research_dataset.py \
+>   --study "MA-DE-TAI" \
+>   --data "exports/MA-DE-TAI/02_raw_readonly/<file>.csv" \
+>   --dictionary "exports/MA-DE-TAI/data_dictionary.json"
+> ```
+> Tool này tạo `03_clean_working/df_clean.<sha>.csv`, `04_query_logs/data_cleaning_query_log.csv`,
+> `03_cleaning_scripts/DATA_CLEANING_plan.json` và `DATA_CLEANING_report.json`.
+> Quy tắc: chỉ tự động trim whitespace + chuẩn hóa mã missing; range/category/date/duplicate/missing-critical
+> thành QUERY MỞ, KHÔNG tự sửa/điền/xóa. Chỉ khi query log không còn `open` mới được chạy:
+> ```bash
+> python medical-ebm-automation/tools/lock_analysis_dataset.py --study "MA-DE-TAI" \
+>   --clean-data "exports/MA-DE-TAI/03_clean_working/df_clean.<sha>.csv" \
+>   --query-log "exports/MA-DE-TAI/04_query_logs/data_cleaning_query_log.csv" \
+>   --lock-date <YYYY-MM-DD> --approved-by <PI> --sap-version <x.y> \
+>   --confirm-deidentified --confirm-clean-copy --confirm-no-open-query --confirm-sap-locked
+> ```
+> Nếu còn query mở, data lock phải BLOCK. Đây là hành vi đúng, không phải lỗi.
 
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`.
@@ -40,6 +64,9 @@ Kiểm tra trước khi xử lý dữ liệu thật:
 ## CHẾ ĐỘ TỰ ĐỘNG G5 — 7 TÀI LIỆU
 
 ### TÀI LIỆU 1 — DATA DICTIONARY / CODEBOOK
+
+> **Nếu nhóm nghiên cứu đã tự dựng sẵn một codebook thật (2026-07-06):** trước khi soạn bảng Data Dictionary theo khung mặc định bên dưới, hỏi/kiểm tra xem đã có file codebook/data dictionary thật (SPSS `.sav`, REDCap data dictionary, Excel...) hay chưa. Nếu có, đọc toàn văn và DÙNG NGUYÊN danh mục biến/mã hóa/công thức biến phái sinh đã có làm nguồn sự thật — chỉ bổ sung cột còn thiếu (miền giá trị hợp lệ, mã thiếu, nguồn), KHÔNG tự đặt lại tên biến/công thức khác đi. Codebook đã tự dựng sẵn thường phản ánh đúng quyết định phương pháp thật của nhóm nghiên cứu (ca có thật: một codebook `.sav` đã tự định nghĩa biến nhị phân thứ cấp "từ mục hỏi trực tiếp G1", không phải từ trung bình các lĩnh vực — chi tiết xác nhận lại với `thiet-ke-nghien-cuu`/`cong-cu-do-luong`).
+
 ```
 DATA DICTIONARY — Đề tài: ___  |  Phiên bản: 1.0  |  Ngày: ___
 
@@ -138,6 +165,18 @@ BƯỚC 4 — Kiểm tra sau khử định danh:
    ☐ Không còn tên thật trong file phân tích
    ☐ Không thể kết hợp lại danh tính từ file phân tích
    ☐ Bảng liên kết lưu tách biệt + mã hóa
+
+BƯỚC 5 — Trường định danh nội bộ dùng để đối soát/chống trùng, nằm CHUNG bảng với dữ liệu (2026-07-06):
+   Một số CRF/codebook có sẵn một trường định danh vận hành (vd mã hồ sơ bệnh án/mã y tế,
+   số bảo hiểm) để nhóm nhập liệu đối soát/chống trùng — trường này thường nằm CHUNG một
+   bảng/file với dữ liệu trả lời, KHÁC với "bảng liên kết" đã tách riêng ở BƯỚC 3. Đây vẫn
+   là rủi ro PII nếu lọt vào bộ dữ liệu bàn giao phân tích (có thể tra ngược ra danh tính
+   qua hệ thống nguồn). Quy tắc: trường này CHỈ dùng trong giai đoạn nhập liệu–làm sạch;
+   PHẢI được xóa/tách khỏi bộ dữ liệu trước khi đưa vào TÀI LIỆU 6 (Data Lock Memo) —
+   thêm một dòng checklist tiền-khóa xác nhận đã xóa trường này (TÀI LIỆU 5).
+   Ca có thật: codebook `.sav` của một đề tài hài lòng người bệnh có trường `MaSoBenhNhan`
+   (mã hồ sơ bệnh án) dùng để đối soát — phải bổ sung quy tắc tách trường này trước khi
+   khóa dữ liệu, việc này KHÔNG có trong khung DMP gốc trước đó.
 ```
 
 ### TÀI LIỆU 5 — CHECKLIST KHÓA CƠ SỞ DỮ LIỆU
@@ -148,6 +187,7 @@ CHECKLIST TIỀN-KHÓA DATABASE (hoàn tất trước khi khóa):
 ☐ Nhập kép đã so sánh và sai khác đã giải quyết
 ☐ Tỷ lệ dữ liệu thiếu đã được kiểm và ghi nhận theo biến
 ☐ Khử định danh đã xong và bảng liên kết đã lưu tách biệt
+☐ Trường định danh nội bộ dùng đối soát/chống trùng (vd mã hồ sơ bệnh án) đã được xóa khỏi bộ dữ liệu bàn giao phân tích (TÀI LIỆU 4, BƯỚC 5)
 ☐ Backup file trước khi khóa: [đường dẫn]
 ☐ Checksum/hash trước khi khóa: ___
 ☐ SAP đã khóa (G4_STATUS = LOCKED)
@@ -193,18 +233,18 @@ BÁO CÁO QC HẬU-KHÓA (trước khi giao phan-tich-thong-ke):
 ☐ So sánh với dummy tables (G4): cấu trúc dữ liệu khớp chưa
 ☐ QC PASS → giao phan-tich-thong-ke với SAP đã khóa
 
-CẤU TRÚC GÓI TÁI LẶP:
-study-data/
-├── raw/          ← dữ liệu gốc (READ-ONLY)
-├── clean/        ← sau làm sạch (versioned)
-├── analysis/     ← bản sao cho phân tích
-├── scripts/
-│   ├── 01_import.R/.py     ← import + validate
-│   ├── 02_clean.R/.py      ← làm sạch + log
-│   ├── 03_deidentify.R/.py ← khử định danh
-│   └── 04_lock.R/.py       ← tạo data lock memo
-├── output/       ← bảng/biểu đồ
-└── README.md     ← chạy lại từ đầu thế nào
+CẤU TRÚC GÓI TÁI LẶP (khớp đúng thực tế `run_g5_auto.py` sinh ra — đã kiểm chứng 2026-07-11,
+bản trước mô tả cấu trúc "study-data/" không khớp — dễ gây bác sĩ đối chiếu nhầm với BƯỚC 0):
+exports/{study}/
+├── data/             ← KHÔNG commit — chứa dữ liệu thật
+│   ├── raw/          ← dữ liệu thô từ REDCap export
+│   └── processed/    ← df_clean.csv + data_quality_report.txt
+├── scripts/          ← Python scripts tự động — có thể commit
+│   ├── data_cleaning.py        ← làm sạch REDCap export
+│   └── data_quality_report.py  ← báo cáo chất lượng
+├── output/           ← bảng kết quả, hình
+├── docs/             ← SAP, đề cương, artifact G0-G4
+└── README.md         ← hướng dẫn tái lặp đầy đủ
 ```
 
 ---
@@ -285,9 +325,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

@@ -40,7 +40,7 @@ Triệu chứng chính + thời gian kéo dài · mức độ ảnh hưởng ch�
    - **Bậc nặng/dai dẳng/nguy cơ cao:** phối hợp tâm lý + dược, cân nhắc **chuyển tâm thần**.
 3. **Nguyên tắc khởi trị dược (ĐỀ XUẤT — Cổng A):** nêu *nguyên tắc* (chọn nhóm theo nguồn, khởi liều thấp, chỉnh dần, giải thích thời gian khởi hiệu, không ngưng đột ngột — tránh **hội chứng ngưng thuốc/discontinuation**) — **liều cụ thể CHỈ ghi khi có nguồn xác minh, nếu không → `[CẦN KIỂM CHỨNG]`**. Mọi đơn dự kiến → chuyển `ke-don-an-toan` (tương tác, hội chứng serotonin, kéo dài QT, chống chỉ định, thai kỳ, suy thận–gan, người cao tuổi).
    - **⛔ ĐIỀU KIỆN CỨNG trước khi đề xuất thuốc CHỐNG TRẦM CẢM:** PHẢI đã **sàng rối loạn lưỡng cực** (tiền sử hưng/hưng cảm nhẹ) — dùng chống trầm cảm đơn trị ở bệnh nhân lưỡng cực CHƯA nhận diện có thể **gây chuyển pha hưng cảm**; nghi lưỡng cực → KHÔNG tự khởi chống trầm cảm, chuyển/hội chẩn tâm thần.
-   - **Nhóm đặc biệt — cảnh báo cứng:** **vị thành niên/người trẻ** — chống trầm cảm có **cảnh báo hộp đen (FDA boxed warning)** tăng ý tưởng/hành vi tự sát giai đoạn đầu → theo dõi sát + cân nhắc chuyển; **thai kỳ/cho con bú** — cân nhắc nguy cơ theo nhãn từng thuốc (đối chiếu LactMed/nhãn qua `ke-don-an-toan`), không khởi trị máy móc.
+   - **Nhóm đặc biệt — cảnh báo cứng:** **vị thành niên/người trẻ** — chống trầm cảm có **cảnh báo hộp đen (FDA boxed warning, 2004)** tăng ý tưởng/hành vi tự sát giai đoạn đầu (dựa trên phân tích gộp của FDA: Hammad TA, Laughren T, Racoosin J. "Suicidality in pediatric patients treated with antidepressant drugs." *Arch Gen Psychiatry* 2006;63(3):332-339, PMID 16520440) → theo dõi sát + cân nhắc chuyển; **thai kỳ/cho con bú** — cân nhắc nguy cơ theo nhãn từng thuốc (đối chiếu LactMed/nhãn qua `ke-don-an-toan`), không khởi trị máy móc.
 4. **Theo dõi đáp ứng & tác dụng phụ:** lịch tái khám sớm theo nguồn (đặc biệt **theo dõi ý tưởng tự sát giai đoạn đầu điều trị, nhất là người trẻ**), đo lại PHQ-9/GAD-7 để định lượng đáp ứng, mốc đánh giá hiệu quả trước khi đổi/tăng, dấu hiệu tác dụng phụ cần xử trí — mốc/ngưỡng có nguồn.
 5. **Ngưỡng CHUYỂN chuyên khoa tâm thần / vượt năng lực phòng khám** (xem §3bis).
 6. **Bàn giao:** rà đơn cụ thể → `ke-don-an-toan`; trình lựa chọn (tâm lý vs thuốc, lợi/hại) cho **quyết định chung** → `quyet-dinh-chung`; lời dặn + tự theo dõi + an toàn tại nhà → `loi-dan-tuan-thu`; theo dõi dài hạn như bệnh mạn → `theo-doi-benh-man`; tín hiệu kết cục ẩn danh → `ket-qua-hoc-tap`.
@@ -79,6 +79,10 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; an toàn (tự sát) trước tiên; không bịa liều/điểm cắt/ngưỡng; công cụ phải đã kiểm định; chỉ ĐỀ XUẤT (Cổng A); KHÔNG thay khám tâm thần chuyên khoa; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact depression-anxiety
+```
+
 ## Ranh giới
 - CHỈ quản lý tiến trình trầm cảm/lo âu ở **chăm sóc ban đầu**. **KHÔNG chỉ sàng cấp cứu/tự sát rồi dừng** — đó là `sang-loc-co-do` (agent này nối CỨNG nó cho an toàn nhưng quản cả tiến trình), **KHÔNG rà an toàn từng đơn cụ thể** (việc của `ke-don-an-toan` — mọi đơn dự kiến chuyển qua đó), **KHÔNG trình bày/cá thể hóa lựa chọn cho bệnh nhân** (việc của `quyet-dinh-chung`), **KHÔNG thay khám & điều trị chuyên khoa tâm thần** (ca nặng/loạn thần/lưỡng cực/kháng trị → CHUYỂN).
 - Khung tham chiếu: skill `ke-don-an-toan-benh-man` + `kham-ngoai-tru-ebm`; nguồn an toàn `_CAU-HOI-AN-TOAN-BAT-BUOC.md`. Xong việc → trả về `dieu-phoi-lam-sang` (bước Áp dụng/Theo dõi).
@@ -106,9 +110,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

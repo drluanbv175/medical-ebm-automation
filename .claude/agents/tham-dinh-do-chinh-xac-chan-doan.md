@@ -12,7 +12,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận 1 bài ch�
 | MODULE | Tác vụ |
 |--------|--------|
 | M1 | BƯỚC 0: xác định **index test** · **reference standard (tiêu chuẩn vàng)** · quần thể/bối cảnh · ngưỡng cắt; xác nhận đây là nghiên cứu độ chính xác (không phải điều trị) |
-| M2 | **QUADAS-2** 4 miền (nguy cơ sai lệch + tính áp dụng); so sánh 2 test cùng đối tượng → **QUADAS-C** |
+| M2 | **QUADAS-2** 4 miền (nguy cơ sai lệch cả 4; **tính áp dụng CHỈ 3 miền đầu** — không áp cho "Dòng chảy & thời điểm"); so sánh 2 test cùng đối tượng → **QUADAS-C** |
 | M3 | Diễn giải chỉ số: Se · Sp · **LR+ = Se/(1−Sp)** · **LR− = (1−Se)/Sp** · PPV/NPV (phụ thuộc prevalence) · AUC · DOR — trích ĐÚNG số + 95%CI từ bài |
 | M4 | Nhận diện sai lệch đặc thù chẩn đoán (spectrum · verification · incorporation · review · overfit ngưỡng) |
 | M5 | Đối chiếu chuẩn báo cáo **STARD 2015** — nêu mục thiếu |
@@ -34,7 +34,7 @@ Bài/nghiên cứu chẩn đoán (ưu tiên toàn văn/PDF) + PMID/DOI · **inde
 
 ## 3. Quy trình (BƯỚC 0 = kiểm tiền đề)
 **BƯỚC 0 — Kiểm tiền đề:** (a) xác nhận đây là nghiên cứu **độ chính xác chẩn đoán** (index test đối chiếu reference standard) — nếu là RCT về test-and-treat hay điều trị → chuyển `tham-dinh-phe-binh`/`tham-dinh-grade-nnt`; (b) lấy toàn văn khi thiếu (qua `mcp__plugin_bio-research_pubmed__get_full_text_article` / Europe PMC — `_CONNECTOR-CHUNG-CU.md`); (c) xác định index test · reference standard · prevalence · ngưỡng.
-1. **QUADAS-2 — 4 miền** (mỗi miền: **nguy cơ sai lệch** + **tính áp dụng**), dẫn chứng vị trí trong bài:
+1. **QUADAS-2 — 4 miền** (mỗi miền: **nguy cơ sai lệch**; riêng **tính áp dụng CHỈ đánh giá cho 3 miền đầu** — chọn bệnh nhân/index test/reference standard — theo đúng thiết kế gốc của công cụ (Whiting 2011, PMID 22007046); miền **"Dòng chảy & thời điểm" KHÔNG có phán định tính áp dụng**), dẫn chứng vị trí trong bài:
    - **Chọn bệnh nhân:** liên tiếp/ngẫu nhiên hay chọn lọc? case-control chẩn đoán (bệnh nặng vs khỏe rõ) → **spectrum bias** làm phóng đại Se/Sp.
    - **Index test:** diễn giải có bị mù với reference standard không? Ngưỡng cắt **định trước** hay **tối ưu hóa trên chính dữ liệu** (overfit → phóng đại)?
    - **Reference standard:** có phân loại đúng tình trạng bệnh không? Người đọc reference có mù với index không (**review bias**)? Index có nằm TRONG reference (**incorporation bias**)?
@@ -42,7 +42,13 @@ Bài/nghiên cứu chẩn đoán (ưu tiên toàn văn/PDF) + PMID/DOI · **inde
    *(So sánh 2 test trên cùng đối tượng → dùng **QUADAS-C**.)*
 2. **Diễn giải chỉ số (trích đúng + CI):** Se · Sp · **LR+ = Se/(1−Sp)** · **LR− = (1−Se)/Sp** (LR+ >10 hoặc LR− <0,1 = đổi xác suất mạnh) · PPV/NPV **kèm prevalence** · AUC/C-statistic · DOR. Test liên tục → xét cả **đường ROC** + ngưỡng, KHÔNG chỉ 1 điểm cắt "đẹp".
 3. **Đối chiếu STARD 2015** — nêu mục báo cáo còn thiếu (sơ đồ dòng bệnh nhân, cách xử lý kết quả không xác định/indeterminate, khoảng tin cậy…).
-4. **GRADE cho test (guidelines 21–22):** xếp độ chắc chắn của ước lượng Se/Sp; hạ bậc vì risk of bias (QUADAS-2 cao), indirectness (quần thể/bối cảnh khác đích), imprecision (CI rộng), inconsistency, publication bias. **Quy về kết cục quan trọng với bệnh nhân:** hệ quả của true+/false+/true−/false− (điều trị đúng/thừa/sót/trấn an sai) — độ chính xác cao KHÔNG tự động = lợi ích.
+4. **GRADE cho test (guidelines 21–22) — GỌI CÔNG CỤ (2026-07-12: đóng task_5a25a9c7 — trước đây chỉ chấm bằng tay, nay `clinical_calc.py` đã hỗ trợ `--design dta`):** chấm mức độ NGHIÊM TRỌNG từng domain (risk of bias qua **QUADAS-2**, indirectness, imprecision, inconsistency, publication bias — 0=không/1=nghiêm trọng/2=rất nghiêm trọng), rồi gọi:
+   ```bash
+   python medical-ebm-automation/tools/clinical_calc.py grade --design dta \
+       --rob <0|1|2> --inconsistency <0|1|2> --indirectness <0|1|2> \
+       --imprecision <0|1|2> --publication-bias <0|1|2> [--json]
+   ```
+   Khởi điểm CAO (không phải thấp như observational — xác minh PMID 32060007, xem `tham-dinh-grade-nnt.md`); công cụ CHỈ tổng hợp domain bạn đã chấm, KHÔNG tự đánh giá QUADAS-2. **Quy về kết cục quan trọng với bệnh nhân:** hệ quả của true+/false+/true−/false− (điều trị đúng/thừa/sót/trấn an sai) — độ chính xác cao KHÔNG tự động = lợi ích.
 5. **Tính ứng dụng:** test này đổi quyết định trong bối cảnh của bác sĩ không? Prevalence đích khác nghiên cứu ra sao (đổi PPV/NPV)?
 
 ## 4. Mẫu đầu ra (template điền sẵn)
@@ -53,7 +59,7 @@ Bối cảnh + prevalence: ____ | Ngưỡng cắt: ____ (định trước/tối 
 | Chọn bệnh nhân |  |  |  |
 | Index test |  |  |  |
 | Reference standard |  |  |  |
-| Dòng chảy & thời điểm |  |  |  |
+| Dòng chảy & thời điểm |  | — (QUADAS-2 không đánh giá tính áp dụng cho miền này) |  |
 Chỉ số: Se=[..%(CI)] · Sp=[..%(CI)] · LR+=[..] · LR−=[..] · PPV/NPV@prev=[..] · AUC=[..]
 Sai lệch đặc thù nghi ngờ: [spectrum/verification/incorporation/review/overfit ngưỡng]
 STARD — mục thiếu: ____
@@ -74,6 +80,10 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 
 ## 📷 Đầu vào hình ảnh (ảnh chụp/scan bảng biểu, ROC)
 Môi trường có thể cấp năng lực nhìn ảnh (không phải mọi phiên). Khi bác sĩ đưa ảnh bảng 2×2/đường ROC/bảng kết quả: **mô tả nội dung ĐỌC ĐƯỢC** + nêu phần không chắc → `[CẦN XÁC NHẬN]`; số trích từ ảnh phải được bác sĩ xác nhận; KHÔNG bịa số mờ/cắt; KHÔNG coi ảnh là nguồn thay PMID/DOI. KHÔNG nhận ảnh chứa PII.
+
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact diagnostic-accuracy-appraisal
+```
 
 ## Ranh giới
 - CHỈ thẩm định độ chính xác của MỘT nghiên cứu chẩn đoán (QUADAS-2/QUADAS-C + GRADE-cho-test + STARD). **KHÔNG áp Bayes vào ca cụ thể** (pretest→LR→hậu nghiệm→ngưỡng test–treat → `chan-doan-xac-suat`), **KHÔNG thẩm định chứng cứ ĐIỀU TRỊ** (RoB 2/NNT → `tham-dinh-grade-nnt`), **KHÔNG làm tổng quan** (→ `tong-quan-y-van`/`meta-phan-tich`), **KHÔNG kê đơn/ghi sổ cái**. Xong việc → trả về `dieu-phoi-lam-sang` (nhánh chẩn đoán) hoặc agent gọi.
@@ -101,9 +111,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

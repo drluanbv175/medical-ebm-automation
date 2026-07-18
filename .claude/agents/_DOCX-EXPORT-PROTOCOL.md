@@ -31,16 +31,16 @@ Chạy từ thư mục `medical-ebm-automation/`:
 | **G4 🔒** | `python tools/gen_research_docx.py --study "<TEN>" --artifact sap` | G4_SAP |
 | **G5** | `python tools/gen_research_docx.py --study "<TEN>" --gate G5` | G5a_SOP · G5b_DMP · G5c_DATALOCK |
 | **G6** | `python tools/gen_research_docx.py --study "<TEN>" --gate G6` | G6a_ANALYSIS · G6b_INTERPRETATION |
-| **G7** | `python tools/gen_research_docx.py --study "<TEN>" --gate G7` | G7a_MANUSCRIPT · G7b_CHECKLIST |
+| **G7** | `python tools/gen_research_docx.py --study "<TEN>" --gate G7` | G7a_MANUSCRIPT · G7b_CHECKLIST · **+ G1d_RISK bị sinh lại (2026-07-12: xác nhận bằng cách chạy mô phỏng `generate_all_gates()` thật — artifact `risk` có gate="G1+G7", hàm khớp gate bằng substring "G7" in "G1+G7" nên bị lặp; đây là hành vi thật của code, không phải lỗi tài liệu — đừng ngạc nhiên khi thấy Risk Register bị ghi đè ở G7)** |
 | **G8** | `python tools/gen_research_docx.py --study "<TEN>" --artifact review` | G8_REVIEW |
 | **G9 🔒** | `python tools/gen_research_docx.py --study "<TEN>" --artifact readiness` | G9_READINESS |
-| **Tất cả** | `python tools/gen_research_docx.py --study "<TEN>" --all` | 20 file docx toàn đề tài |
+| **Tất cả** | `python tools/gen_research_docx.py --study "<TEN>" --all` | **22** file docx toàn đề tài (2026-07-12: sửa "20" — `len(ARTIFACT_MAP)` thật = 22, xác nhận bằng import module thật + đếm bảng §5 dưới đây) |
 
 **Scaffold toàn đề tài** (tạo lần đầu):
 ```bash
 python tools/scaffold_research_project.py --study "<TEN-DE-TAI>"
 ```
-Sinh đồng thời 20 file .md + 20 file .docx (template) trong `exports/<TEN-DE-TAI>/`.
+**2026-07-12: sửa "20 file .md + 20 file .docx"** — kiểm `SCAFFOLD_FILES` thật: 21 dòng nhưng chỉ **18 key duy nhất** (3 khóa bị khai trùng: `literature`/`sap`/`checklist` mỗi khóa 2 lần), và **THIẾU hẳn 4 artifact hợp lệ** so với `ARTIFACT_MAP` (`instrument`, `review`, `plan`, `interpretation`) — scaffold thật sinh **18 cặp .md/.docx**, không phải 20, và không đủ 22 như `--all` của `gen_research_docx.py`.
 
 ---
 
@@ -79,7 +79,7 @@ BƯỚC E (bàn giao): nêu cổng kế tiếp + cần bác sĩ cấp gì
 
 ---
 
-## §5. DANH SÁCH 20 ARTIFACT KEY (dùng với --artifact)
+## §5. DANH SÁCH 22 ARTIFACT KEY (dùng với --artifact — 2026-07-12: sửa "20", đếm thật khớp bảng dưới)
 
 | Key | Code | Cổng | Tên |
 |-----|------|------|-----|

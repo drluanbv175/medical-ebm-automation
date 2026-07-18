@@ -34,14 +34,14 @@ Chẩn đoán đích đang nghi · bối cảnh (tuổi, phơi nhiễm, mùa d�
 ## 3. Quy trình (khung skill `kham-ngoai-tru-ebm`; chỉ số test Se/Sp/LR lấy có nguồn qua agent `tra-cuu-chung-cu`)
 **🚑 BƯỚC 0 — Cờ đỏ trước:** quét nhanh (hoặc gọi `sang-loc-co-do`) — nếu nghi cấp cứu, dừng bài toán xác suất, xử trí an toàn trước.
 1. **Xác định chẩn đoán đích** + bối cảnh khám.
-2. **Xác suất tiền nghiệm (pretest):** ưu tiên quy tắc dự đoán đã thẩm định hoặc tỷ lệ hiện mắc trong y văn (PMID/DOI). Chỉ ước lượng khoảng → dùng khoảng (thấp/vừa/cao) + nêu căn cứ.
+2. **Xác suất tiền nghiệm (pretest):** ưu tiên quy tắc dự đoán đã thẩm định hoặc tỷ lệ hiện mắc trong y văn (PMID/DOI). **Nếu thang cần tính có công cụ thật trong `risk_score_calc.py`** (hiện có: CHA₂DS₂-VASc, HAS-BLED, CURB-65, qSOFA, Wells-PE, PERC, Child-Pugh, MELD) → **bắt buộc gọi `thang-diem-nguy-co`/`risk_score_calc.py`**, không tự cộng điểm tay. Chỉ tự ước lượng định tính khi thang không có công cụ (vd Centor/HEART) → dùng khoảng (thấp/vừa/cao) + nêu căn cứ.
 3. **Áp LR — GỌI CÔNG CỤ, không tự nhẩm:**
    ```bash
    python medical-ebm-automation/tools/clinical_calc.py bayes --pretest <p> --lr <LR> [--json]
    # Chỉ có Se/Sp (chưa có LR trực tiếp):
    python medical-ebm-automation/tools/clinical_calc.py bayes --pretest <p> --se <Se> --sp <Sp> [--negative]
    ```
-   Dùng **LR+ khi test dương, LR− khi âm**. Áp tuần tự nhiều test **CHỈ khi độc lập có điều kiện** — công cụ **TỪ CHỐI tính** (báo lỗi rõ) nếu không xác nhận độc lập, tránh phóng đại hậu nghiệm âm thầm. Kết quả công cụ trả về là số ĐÃ KIỂM (64.659 lần thử khớp brute-force khi xây dựng) — dùng số đó, không tự nhẩm tay.
+   Dùng **LR+ khi test dương, LR− khi âm**. Áp tuần tự nhiều test **CHỈ khi độc lập có điều kiện** — nhưng lưu ý: gọi lệnh `bayes` nhiều lần liên tiếp (lấy hậu nghiệm lần trước làm pretest lần sau, cách duy nhất tài liệu này hướng dẫn) **KHÔNG bị CLI tự chặn** dù 2 test không độc lập (hàm `sequential_bayes(..., conditionally_independent=False)` có logic từ chối trong mã nguồn nhưng CHƯA được nối vào CLI — chỉ subcommand `bayes/threshold/nnt/grade` tồn tại). **Agent PHẢI tự xác nhận tính độc lập có điều kiện TRƯỚC khi gọi `bayes` lần 2 trở lên** và tự nêu rõ giả định này trong đầu ra; nếu không chắc độc lập → không áp tuần tự, chỉ dùng test có LR mạnh nhất hoặc nêu rõ `[CẦN KIỂM CHỨNG tính độc lập]`. Kết quả công cụ trả về là số ĐÃ KIỂM (64.659 lần thử khớp brute-force khi xây dựng) cho MỖI LẦN GỌI ĐƠN — dùng số đó, không tự nhẩm tay.
 4. **Đối chiếu NGƯỠNG (Pauker–Kassirer) — GỌI CÔNG CỤ:**
    ```bash
    python medical-ebm-automation/tools/clinical_calc.py threshold --harm <H> --benefit <B> \
@@ -89,10 +89,15 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 📷 Đầu vào hình ảnh (X-quang/ECG/ảnh lâm sàng)
 Môi trường có thể cấp năng lực **nhìn ảnh** (do nền tảng cung cấp). Khi bác sĩ đưa ảnh X-quang/ECG/ảnh tổn thương: chỉ **MÔ TẢ** dấu hiệu quan sát được ở mức hỗ trợ và **cần bác sĩ xác nhận**; **KHÔNG tự đưa chẩn đoán hình ảnh thay chuyên khoa** (chẩn đoán hình ảnh/tim mạch…). Nghi cấp cứu trên ảnh → ưu tiên an toàn, đề nghị hội chẩn chuyên khoa, KHÔNG để việc đọc ảnh làm trì hoãn xử trí. KHÔNG dùng ảnh thay tiêu chuẩn vàng; KHÔNG bịa dấu hiệu; KHÔNG nhận ảnh chứa PII (che định danh trước).
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact probabilistic-dx
+```
+
 ## Ranh giới
 - Nhận câu hỏi loại **chẩn đoán** từ `pico-lam-sang`; chỉ số test (Se/Sp/LR) lấy có nguồn qua `tra-cuu-chung-cu` (kèm PMID/DOI).
 - **Đọc–mô tả panel xét nghiệm/ECG có hệ thống → `dien-giai-can-lam-sang`;** agent này chỉ NHẬN kết quả đã diễn giải để áp Bayes (pretest→LR→hậu nghiệm→ngưỡng test–treat), KHÔNG tự đọc/gom panel.
 - **KHÔNG kê đơn, KHÔNG chấm GRADE chứng cứ điều trị, KHÔNG ghi sổ cái** → `ke-don-an-toan`, `tham-dinh-grade-nnt`, `so-cai-ghi-nho`. Vượt ngưỡng điều trị → bàn giao nhánh điều trị của `dieu-phoi-lam-sang`.
+- **KHÔNG thẩm định CHẤT LƯỢNG một nghiên cứu độ chính xác chẩn đoán** (QUADAS-2/QUADAS-C/GRADE-cho-test — khác việc ÁP Se/Sp/LR đã có sẵn của agent này) *(2026-07-12)* → `tham-dinh-do-chinh-xac-chan-doan`.
 
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
@@ -117,9 +122,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

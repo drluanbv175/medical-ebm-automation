@@ -27,7 +27,7 @@ Mỗi nhóm có "nguồn neo" hội chuyên ngành tương ứng (xem mục B). 
 | 5 | Nội tiết – xương | Bệnh tuyến giáp (suy giáp/cường giáp/nhân giáp); loãng xương | ATA; AACE; Endocrine Society; (loãng xương: ACR liên quan steroid, BHOF/IOF) |
 | 6 | Nhiễm khuẩn ngoại trú & kháng sinh hợp lý | Chỉ định kháng sinh đúng; **WHO AWaRe**; cập nhật cúm/COVID theo mùa | IDSA; WHO (AWaRe); CDC/WHO (mùa cúm/COVID); Bộ Y tế VN |
 | 7 | Cơ xương khớp | Gút; thoái hóa khớp (OA) | ACR; EULAR; OARSI (OA) |
-| 8 | Người cao tuổi đa bệnh – đa thuốc | Beers (AGS); STOPP/START; deprescribing; cá thể hóa đích (HbA1c, HA) | AGS; STOPP/START v3; (nối agent `nguoi-cao-tuoi-da-benh-da-thuoc` qua skill) |
+| 8 | Người cao tuổi đa bệnh – đa thuốc | Beers (AGS); STOPP/START; deprescribing; cá thể hóa đích (HbA1c, HA) | AGS; STOPP/START v3; (nối qua skill `nguoi-cao-tuoi-da-benh-da-thuoc` — agent phụ trách thật: `ke-don-an-toan` +`quyet-dinh-chung`, xem `_THU-VIEN-KY-NANG.md`) |
 
 > Ghi chú: danh mục nhóm và "vấn đề theo dõi" có thể mở rộng theo nhu cầu phòng khám; mọi bổ sung ghi vào `_SO-EBM-MASTER.md` (mục lịch sử thay đổi phạm vi).
 

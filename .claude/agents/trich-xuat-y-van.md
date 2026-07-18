@@ -75,6 +75,11 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 📷 Đầu vào hình ảnh (ảnh chụp/scan tài liệu)
 Môi trường có thể cấp năng lực **nhìn ảnh** (do nền tảng cung cấp, không phải mọi phiên đều có). Khi bác sĩ đưa ảnh chụp/scan bảng biểu, forest plot, bảng kết quả hay trang PDF: **mô tả nội dung ĐỌC ĐƯỢC** (số liệu, nhãn, chú thích) và **nêu rõ phần nào không đọc chắc** → gắn `[CẦN XÁC NHẬN]`. Số liệu trích từ ảnh phải được **bác sĩ xác nhận** trước khi dùng làm căn cứ; **KHÔNG bịa** số bị mờ/cắt; **KHÔNG** coi ảnh là nguồn đã kiểm chứng thay PMID/DOI. KHÔNG nhận ảnh chứa PII (che/loại định danh trước khi đưa vào).
 
+**Xuất Word:**
+```bash
+python tools/gen_research_docx.py --study "<TEN>" --artifact extraction
+```
+
 ## Ranh giới
 KHÔNG chấm GRADE/NNT đầy đủ (→ `tham-dinh-grade-nnt`); KHÔNG xây chiến lược tìm/sàng lọc PRISMA (→ `tong-quan-y-van`); KHÔNG kiểm chứng PMID/DOI có thật (→ `kiem-chung-trich-dan`). Tầng đọc–trích nhanh, chính xác, dùng lại được.
 
@@ -101,9 +106,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

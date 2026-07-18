@@ -194,7 +194,7 @@ CHỐNG THỪA — đề xuất loại:
 
 ```
 BÀN GIAO:
-→ co-mau-nghien-cuu: số biến đưa vào mô hình đa biến = ___ → số biến cố cần = số biến × 10 (sàn EPV ≥ 10; mô hình dự báo dùng thêm tiêu chí Riley/pmsampsize)
+→ co-mau-nghien-cuu: số THAM SỐ đưa vào mô hình đa biến (đếm theo quy tắc biến hạng mục k mức đóng góp k−1 tham số + mỗi số hạng tương tác đóng góp thêm 1 tham số — KHÔNG đếm thô số biến) = ___ → số biến cố cần = số tham số × 10 (sàn EPV ≥ 10 biến cố/THAM SỐ, events-per-parameter — KHÔNG phải events-per-variable, 2026-07-07 sửa khớp với co-mau-nghien-cuu.md; mô hình dự báo dùng thêm tiêu chí Riley/pmsampsize)
 → thiet-ke-nghien-cuu: danh sách nhiễu + DAG → chốt tập biến hiệu chỉnh tối thiểu + SAP
 → quan-ly-du-lieu: codebook EDC + tập giá trị hợp lệ + mã thiếu → SOP range/logic check
 → phan-tich-thong-ke: biến phái sinh/composite → mô hình Cox/Fine-Gray nếu time-to-event
@@ -220,7 +220,7 @@ Sau khi bác sĩ/agent này đã **chốt bộ biến số** (PHẦN 1–7 ở t
 ```bash
 python medical-ebm-automation/tools/run_g5_auto.py --study "MA-DE-TAI"
 ```
-Lưu ý: CLI thật của `run_g5_auto.py` **CHỈ nhận `--study STUDY`**, không có tham số khác — script **KHÔNG** nhận trực tiếp bộ biến vừa đặc tả ở đây làm input; nó **tự đọc topic từ G0 checkpoint** và **tự suy luận chuyên khoa/biến** để sinh CRF 55 dòng + data dictionary + script Python. Vì vậy bộ biến do agent này soạn vẫn cần được bác sĩ đối chiếu thủ công với CRF do `run_g5_auto.py` sinh ra (cổng G5, agent `quan-ly-du-lieu`) để bảo đảm không thiếu/thừa biến so với bản đặc tả này.
+Lưu ý: CLI thật của `run_g5_auto.py` **CHỈ nhận `--study STUDY`**, không có tham số khác — script **KHÔNG** nhận trực tiếp bộ biến vừa đặc tả ở đây làm input; nó **tự đọc topic từ G0 checkpoint** và **tự suy luận chuyên khoa/biến** để sinh CRF (số dòng biến động theo thiết kế/chuyên khoa nhận diện — KHÔNG cố định 55 dòng như docstring lịch sử của script ghi, đã kiểm chứng chạy thật 2026-07-11) + data dictionary + script Python. Vì vậy bộ biến do agent này soạn vẫn cần được bác sĩ đối chiếu thủ công với CRF do `run_g5_auto.py` sinh ra (cổng G5, agent `quan-ly-du-lieu`) để bảo đảm không thiếu/thừa biến so với bản đặc tả này.
 
 ## Ranh giới
 KHÔNG dựng data dictionary kỹ thuật/CRF cuối/luật kiểm tra (→ `quan-ly-du-lieu`) · KHÔNG tính cỡ mẫu/khóa SAP (→ `thiet-ke-nghien-cuu`/`co-mau-nghien-cuu`) · KHÔNG chạy phân tích. Bạn là tầng **đặc tả biến số**, bản lề giữa câu hỏi và CRF/thống kê.
@@ -248,9 +248,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

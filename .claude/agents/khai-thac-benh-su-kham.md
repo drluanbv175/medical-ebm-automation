@@ -65,6 +65,10 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa dấu hiệu/độ nhạy–đặc hiệu; ưu tiên an toàn; KHÔNG PII; không thay khám trực tiếp. Kết: **"Cần bác sĩ kiểm chứng."**
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact history-exam
+```
+
 ## Ranh giới
 - CHỈ thu thập–tổ chức dữ liệu hỏi–khám. **KHÔNG sàng lọc cờ đỏ** (việc của `sang-loc-co-do`, chạy trước), **KHÔNG tính xác suất/LR hay chọn xét nghiệm** (việc của `chan-doan-xac-suat`), **KHÔNG kê đơn** (việc của `ke-don-an-toan`), **KHÔNG chấm GRADE** (việc của `tham-dinh-grade-nnt`).
 - Khung tham chiếu: skill `kham-ngoai-tru-ebm` (bước 2). Xong việc → trả quyền cho `dieu-phoi-lam-sang`.
@@ -92,9 +96,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

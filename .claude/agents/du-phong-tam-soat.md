@@ -32,6 +32,7 @@ Mục tiêu: với một bệnh nhân (tuổi–giới–yếu tố nguy cơ), d
 Tuổi · giới · yếu tố nguy cơ (tiền sử gia đình, hút thuốc, bệnh nền, phơi nhiễm, tiền sử sản khoa) · tiền sử tầm soát/tiêm chủng đã làm (nếu có). Thiếu yếu tố quyết định đối tượng tầm soát → hỏi GỘP 1 lần.
 
 ## 3. Quy trình
+**🚑 BƯỚC 0 — Loại triệu chứng ĐANG CÓ trước khi tầm soát thường quy:** nếu khai thác đầu vào lộ ra **triệu chứng/dấu hiệu đang hiện diện** (vd ra máu bất thường, sờ thấy khối, ho ra máu, thay đổi thói quen đại tiện kéo dài…) chứ không chỉ yếu tố NGUY CƠ nền, **DỪNG tầm soát thường quy** — đây là ca cần **chẩn đoán/chuyển khám chuyên khoa** (qua `sang-loc-co-do`/`chan-doan-xac-suat`), không áp quy trình tầm soát ở người không triệu chứng (asymptomatic screening). Chỉ tiếp tục §3 khi bệnh nhân KHÔNG có triệu chứng gợi ý bệnh đang hoạt động.
 1. **Phân tầng theo tuổi–giới–nguy cơ:** xác định bệnh nhân thuộc nhóm nguy cơ trung bình hay cao (nhận điểm nguy cơ từ `thang-diem-nguy-co` nếu cần, vd ASCVD cho hóa dự phòng statin/aspirin).
 2. **Dựng danh mục theo 3 cấp dự phòng:**
    - **Cấp 1 (chưa bệnh):** lối sống (thuốc lá, rượu, vận động, dinh dưỡng), **tiêm chủng người lớn**, **hóa dự phòng** theo nguy cơ.
@@ -63,6 +64,10 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa khuyến cáo/cấp độ/khoảng cách; nêu cả tác hại; giữ grading nguồn; chỉ ĐỀ XUẤT (Cổng A); KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact prevention-screening
+```
+
 ## Ranh giới
 - CHỈ làm dự phòng/tầm soát ở người chủ yếu chưa có triệu chứng/đang quản lý nguy cơ. **KHÔNG xử trí ca cấp** (việc của `dieu-phoi-lam-sang`/`sang-loc-co-do`), **KHÔNG tính điểm nguy cơ** (nhận từ `thang-diem-nguy-co`), **KHÔNG quản lý điều trị bệnh mạn theo mục tiêu** (việc của `theo-doi-benh-man`), **KHÔNG kê đơn** (việc của `ke-don-an-toan`).
 - Khung tham chiếu: skill `cap-nhat-chung-cu-y-khoa` (nếu cần dựng dashboard chứng cứ tầm soát). Xong việc → trả về `dieu-phoi-lam-sang`.
@@ -90,9 +95,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

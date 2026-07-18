@@ -32,6 +32,7 @@ Mục tiêu: chuyển dữ kiện lâm sàng thành **nguy cơ định lượng 
 Bối cảnh lâm sàng + câu hỏi nguy cơ · các biến đầu vào của thang (tuổi, giới, bệnh nền, dấu hiệu sinh tồn, xét nghiệm liên quan). Thiếu biến → nêu chính xác **biến nào còn thiếu** để tính; không tự gán giá trị mặc định.
 
 ## 3. Quy trình
+**🚑 BƯỚC 0 — Cờ đỏ TRƯỚC khi tính điểm:** nhiều thang ở đây định lượng mức độ NẶNG của bệnh cảnh đe dọa tính mạng (qSOFA — tiên lượng nặng/tử vong ở BN ĐÃ nghi nhiễm khuẩn, KHÔNG dùng đơn độc để sàng lọc/loại trừ sepsis do độ nhạy thấp — SSC 2021 khuyến cáo ngược [PMID 34605781], ưu tiên SIRS/NEWS/MEWS để sàng lọc; CURB-65 — độ nặng viêm phổi; Wells-PE/PERC — thuyên tắc phổi). Trước khi tính, quét nhanh dấu hiệu đe dọa tính mạng NGOÀI các biến của chính thang đang tính (vd hạ huyết áp/SpO2 thấp không nằm trong CURB-65, dấu hiệu sốc không nằm trong qSOFA) — có → khuyến nghị xử trí cấp cứu trước, không để việc tính điểm trì hoãn xử trí an toàn; dẫn `sang-loc-co-do`/`dieu-phoi-lam-sang` nếu ca thuộc diện cấp.
 1. **Xác định câu hỏi nguy cơ** + loại (tiên lượng biến cố · phân tầng độ nặng · quyết định điều trị/dự phòng).
 2. **Chọn thang phù hợp + nêu nguồn kiểm định + quần thể đích.** Nếu có vài thang cạnh tranh → nêu lựa chọn và lý do (vd HAS-BLED bổ sung CHA₂DS₂-VASc khi cân nhắc kháng đông).
 3. **Kiểm điều kiện áp dụng:** ca này có thuộc quần thể đã kiểm định không? đủ biến đầu vào không? có yếu tố làm thang mất giá trị không?
@@ -81,6 +82,10 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa thang/điểm/ngưỡng; tách điểm–nguy cơ–hành động; chỉ ĐỀ XUẤT (Cổng A); KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact risk-score
+```
+
 ## Ranh giới
 - CHỈ chọn–áp–diễn giải thang/công cụ nguy cơ đã kiểm định. **KHÔNG làm suy luận Bayes test–treat** (việc của `chan-doan-xac-suat` — nhận con số tiền nghiệm từ đây), **KHÔNG kê đơn** (việc của `ke-don-an-toan`), **KHÔNG chấm GRADE chứng cứ** (việc của `tham-dinh-grade-nnt`), **KHÔNG ra khuyến cáo dự phòng dân số** (việc của `du-phong-tam-soat`).
 - Đã có nguy cơ → trả về `dieu-phoi-lam-sang` để ghép vào gói quyết định.
@@ -108,9 +113,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

@@ -43,19 +43,28 @@
 > Ghi chú: điểm 11 là *thực thi* SAP (không phải artifact tĩnh) — đạt khi `phan-tich-thong-ke` chạy ĐÚNG SAP đã khóa trên DB đã khóa, kết quả khớp dummy tables. Liêm chính tác giả (COI/AI — A14) + bình duyệt (A15) + nhân lực-kinh phí (A13) là artifact quản trị **kèm theo**, vẫn bắt buộc nhưng không nằm trong 14 điểm "chất lượng khoa học" mà chủ nhiệm liệt kê.
 
 ## A. DANH MỤC CHUNG (mọi nghiên cứu nguyên thủy — primary)
+> ⚠️ **CẢNH BÁO HỆ THỐNG (2026-07-11, xem `task_a5fde306`):** bảng A1–A18 dưới đây là mã CHUẨN/canonical, nhưng
+> `tools/run_g{3..9}_auto.py` (script THẬT sinh artifact) tự đặt tên file theo hệ mã KHÁC — quy tắc cũ
+> "gate N → A(N+1)" — LỆCH bảng này ở HẦU HẾT các mã A4–A10 (script gọi cỡ mẫu là "A4" nhưng bảng này định
+> nghĩa A4=Đăng ký; script gọi SAP là "A5" nhưng bảng định nghĩa A5=Cỡ mẫu; tương tự lệch ở A6/A7/A8/A9/A10).
+> `tools/run_pipeline_integrated.py` còn HARDCODE theo hệ mã lệch này để lấy nội dung; `tools/scaffold_
+> research_project.py` lại dùng ĐÚNG hệ mã bảng này; `tools/gen_research_docx.py` dùng hệ mã THỨ BA hoàn
+> toàn khác (không tiền tố "A"). **Khi tra artifact theo mã ở bảng dưới, ĐỪNG tin tên file — đối chiếu NỘI
+> DUNG**, tới khi việc thống nhất 3 hệ mã được xử lý. Riêng A10↔A14 đã vá 1 phần ở `nop-bai-phan-hoi.md`
+> (`task_3ee574ed`).
 | # | Artifact | Cổng | Agent phụ trách | Ghi chú bắt buộc |
 |---|----------|------|-----------------|------------------|
 | A1 | Câu hỏi nghiên cứu + PICO/PECO + FINER | G0 | `cau-hoi-nghien-cuu` | rõ, khả thi (điều phối: `dieu-phoi-nghien-cuu`) |
 | A1b | **Project Charter** (phạm vi·mục tiêu SMART·governance·milestone·link rủi ro) | G1 | `ke-hoach-trien-khai` (+`cau-hoi-nghien-cuu`) | "hiến chương" 1 trang neo đề tài; trỏ A1+A2 |
 | A2 | Đề cương/Protocol | G1 | `viet-ban-thao`+`thiet-ke-nghien-cuu` | theo chuẩn protocol (SPIRIT nếu thử nghiệm) |
-| A2b | **Evidence Ledger** (sổ chứng cứ: nguồn·thiết kế·cỡ mẫu·hiệu ứng·RoB·GRADE·gap) | G0/G1 | `tong-quan-y-van`+`trich-xuat-y-van`+`tham-dinh-phe-binh` | bảng truy được, KHÔNG citation ma; nền biện minh tính mới |
+| A2b | **Evidence Ledger** (sổ chứng cứ: nguồn·thiết kế·cỡ mẫu·hiệu ứng·RoB·GRADE·gap) | G0/G1 | `tong-quan-y-van`+`trich-xuat-y-van`+`tham-dinh-phe-binh` | bảng truy được, KHÔNG citation ma; nền biện minh tính mới. **Gói có truy xuất y văn → cũng soi 3 trục C-RAG** (`_CHUAN-NGHIEN-CUU-CRAG.md`: tự sửa có chạy? recall đủ/ghi giới hạn? phantom DOI = 0? — 2026-07-11) |
 | A3 | **Hồ sơ đạo đức (IRB) + Phiếu đồng thuận (ICF)** | **G2** | `dao-duc-dang-ky` | **bắt buộc TRƯỚC thu dữ liệu** |
 | A4 | Đăng ký nghiên cứu | G2 | `dao-duc-dang-ky` | bắt buộc cho thử nghiệm; quan sát → nêu quyết định có/không + lý do |
 | A5 | **Cỡ mẫu + lực thống kê (power)** | G3 | `co-mau-nghien-cuu` | công thức + giả định (effect size CÓ NGUỒN) + dropout/design effect; power cho kết cục chính/mục tiêu phân tích |
-| A6 | **Biến số + Data dictionary/Codebook** | G3 | `bien-so-nghien-cuu` (đặc tả bộ biến: nhóm·vai trò·dạng đo·thang·thời điểm) → `quan-ly-du-lieu` (codebook kỹ thuật) | đủ nhóm biến, gắn PICO/kết cục/nhiễu; không thừa biến khó thu; tên·nhãn·loại·mã hóa·nguồn; khớp công cụ thu thập |
+| A6 | **Biến số + Data dictionary/Codebook** | G3 | `bien-so-nghien-cuu` (đặc tả bộ biến: nhóm·vai trò·dạng đo·thang·thời điểm) → `quan-ly-du-lieu` (codebook kỹ thuật) | đủ nhóm biến, gắn PICO/kết cục/nhiễu; không thừa biến khó thu; tên·nhãn·loại·mã hóa·nguồn; khớp công cụ thu thập. Nếu nhóm nghiên cứu đã tự dựng sẵn codebook thật (SPSS/REDCap...) → đó là nguồn sự thật, đối chiếu trước khi tự đặt lại biến/công thức (2026-07-06, `quan-ly-du-lieu` TÀI LIỆU 1). |
 | A7 | CRF / công cụ thu thập (phiếu/biểu mẫu) | G3 | `quan-ly-du-lieu` | khớp data dictionary + biến phân tích |
 | A8 | **SAP (kế hoạch phân tích thống kê)** | G4 | `thiet-ke-nghien-cuu` | khóa TRƯỚC khi xem dữ liệu; kết cục chính/phụ, mô hình, dữ liệu thiếu |
-| A9 | **Kế hoạch quản lý dữ liệu (DMP)** | G5 | `quan-ly-du-lieu` | nhập liệu, kiểm tra, khử định danh, khóa DB, lưu trữ/bảo mật |
+| A9 | **Kế hoạch quản lý dữ liệu (DMP)** | G5 | `quan-ly-du-lieu` | nhập liệu, kiểm tra, khử định danh, khóa DB, lưu trữ/bảo mật. Trường định danh nội bộ dùng đối soát/chống trùng (vd mã hồ sơ bệnh án) nằm CHUNG bảng với dữ liệu trả lời phải được xóa khỏi bộ dữ liệu bàn giao phân tích TRƯỚC khi khóa (2026-07-06, `quan-ly-du-lieu` TÀI LIỆU 4 BƯỚC 5). |
 | A9b | **Data Lock Memo** (biên bản khóa dữ liệu) | G5/G6 | `quan-ly-du-lieu` | ngày·phiên bản/checksum·#bản ghi·#biến·truy vấn đã đóng·người khóa·**SAP khóa TRƯỚC** (template skill workflow 05 §5) |
 | A10 | Khung bảng kết quả (dummy tables/table shells) | G4 | `thiet-ke-nghien-cuu` | bảng trống cho từng phân tích định trước |
 | A11 | Chuẩn báo cáo phù hợp thiết kế | G7 | `viet-ban-thao` (+`hieu-dinh-song-ngu` nếu nộp tạp chí quốc tế) | xem danh mục RIÊNG; hiệu đính VN↔EN giữ nguyên số liệu/PMID/DOI |
@@ -70,14 +79,14 @@
 | A18 | **Hồ sơ bàn giao · lưu trữ · báo cáo nghiệm thu** | G9 | `so-cai-ghi-nho` + `quan-ly-du-lieu` (lưu trữ) + `viet-ban-thao` (báo cáo) | gói tái lặp + dữ liệu khóa + tài liệu; lưu trữ an toàn theo thời hạn; báo cáo nghiệm thu khớp mục tiêu; bàn giao đủ cho người kế thừa |
 
 ## B. DANH MỤC RIÊNG THEO LOẠI THIẾT KẾ (bổ sung vào A)
-- **Cắt ngang phân tích (cross-sectional):** chuẩn **STROBE**; mô tả phương pháp chọn mẫu + **bàn sai lệch không đáp ứng**; chiến lược mô hình đa biến (ngưỡng đưa biến, **đa cộng tuyến/VIF**, **Hosmer–Lemeshow** nếu logistic); EPV cho mục tiêu phân tích.
+- **Cắt ngang phân tích (cross-sectional):** chuẩn **STROBE**; mô tả phương pháp chọn mẫu + **bàn sai lệch không đáp ứng**; chiến lược mô hình đa biến (ngưỡng đưa biến, **đa cộng tuyến/VIF**, **Hosmer–Lemeshow** nếu logistic); cỡ mẫu theo **≥10 biến cố/THAM SỐ** (không phải/biến — `co-mau-nghien-cuu`); chọn mẫu hệ thống tại cơ sở đông cần dry-run TRƯỚC + kiểm HƯỚNG công thức *k=N/n* (không đảo ngược) — không khả thi thì DỪNG sửa SOP chính thức, KHÔNG chuyển đổi thiết kế chọn mẫu giữa chừng (`thiet-ke-nghien-cuu` [A], 2026-07-07); ngưỡng nhị phân hóa kết cục phải neo **mốc cố định có nguồn**, KHÔNG dùng trung vị mẫu (2026-07-06); kết cục thứ tự đơn có trần → mặc định hồi quy thứ tự, không phải linear (`thiet-ke-nghien-cuu` SAP §4, 2026-07-07).
 - **Cohort:** **STROBE**; định nghĩa phơi nhiễm/kết cục + thời điểm; theo dõi & **mất dấu (loss to follow-up)**; thời gian–người; **sống còn (Kaplan–Meier/Cox)**; kiểm soát nhiễu.
 - **Bệnh–chứng:** **STROBE**; định nghĩa ca/chứng + nguồn chọn chứng; **matching**; OR + hồi quy logistic; sai lệch nhớ lại.
 - **RCT/thử nghiệm:** **CONSORT** (báo cáo) + **SPIRIT** (protocol); **ngẫu nhiên hóa + giấu phân bổ + làm mù**; **đăng ký BẮT BUỘC** trước tuyển; phân tích **ITT**; **theo dõi an toàn (AE/SAE) + stopping rules + DSMB → `an-toan-nghien-cuu`**; sơ đồ CONSORT.
-- **Chẩn đoán (độ chính xác):** **STARD**; **QUADAS-2**; tiêu chuẩn vàng; **Se/Sp/PPV/NPV/LR/AUC**; ngưỡng cắt.
+- **Chẩn đoán (độ chính xác):** **STARD**; **QUADAS-2/QUADAS-C**; tiêu chuẩn vàng; **Se/Sp/PPV/NPV/LR/AUC**; ngưỡng cắt; GRADE cho test (KHÔNG dùng mô hình GRADE-kết-cục/NNT) → `tham-dinh-do-chinh-xac-chan-doan`.
 - **Tổng quan hệ thống/Meta:** **PRISMA**; **đăng ký PROSPERO**; chiến lược tìm tái lặp; **RoB 2/ROBINS-I**; heterogeneity (I²)/forest/funnel; GRADE.
 - **Mô hình dự đoán/AI:** **TRIPOD+AI** (PROBAST khi thẩm định mô hình có sẵn); ứng viên dự báo theo lý luận; **EPV/EPP** đủ; xử lý dữ liệu thiếu; chống quá khớp (shrinkage/penalization); **hiệu chuẩn (calibration-in-the-large+slope) + phân biệt (C-statistic/AUC)**; **validation nội (bootstrap/CV) + ngoại**; **decision-curve analysis (DCA)**; trình bày điểm/nomogram → `mo-hinh-tien-luong`.
-- **Công cụ đo lường / PROM (bộ câu hỏi·thang đo):** **COSMIN**; định nghĩa construct + khung lý thuyết; dịch–**thích nghi văn hóa chéo** (forward/back/hội đồng/pretest nhận thức); **giá trị nội dung (CVI)**·**cấu trúc (EFA/CFA)**·**tin cậy (Cronbach's α/ω, test–retest ICC, SEM/SDC)**·**hội tụ–phân biệt/known-groups**·**đáp ứng + MCID**·floor/ceiling → `cong-cu-do-luong` (cỡ mẫu kiểm định phối hợp `co-mau-nghien-cuu`).
+- **Công cụ đo lường / PROM (bộ câu hỏi·thang đo):** **COSMIN**; định nghĩa construct + khung lý thuyết; dịch–**thích nghi văn hóa chéo** (forward/back/hội đồng/pretest nhận thức); **giá trị nội dung (CVI)**·**cấu trúc (EFA/CFA)**·**tin cậy (Cronbach's α/ω, test–retest ICC, SEM/SDC)**·**hội tụ–phân biệt/known-groups**·**đáp ứng + MCID**·floor/ceiling → `cong-cu-do-luong` (cỡ mẫu kiểm định phối hợp `co-mau-nghien-cuu`). **Ngoại lệ downscope (2026-07-06):** công cụ CHUẨN QUỐC GIA/đã kiểm định dùng NGUYÊN TRẠNG (không sửa/thêm mục) chỉ cần mô tả phân bố điểm + Cronbach α trong mẫu + floor/ceiling — KHÔNG toàn bộ COSMIN; đầy đủ COSMIN CHỈ bắt buộc khi thực sự phát triển/sửa đổi/dịch thang (xem `cong-cu-do-luong` §Phạm vi áp dụng). Dữ liệu thiếu cho điểm miền: ngưỡng ≥80% mục hợp lệ (không phải 50%). **TRƯỚC khi xếp vào nhánh nào (2026-07-06):** verify xem đã có bản phiếu/CRF THẬT chưa — KHÔNG giả định "dùng nguyên trạng thang chuẩn" khi chưa xác minh toàn văn (`cong-cu-do-luong` §Phạm vi áp dụng, đoạn "Bước bắt buộc TRƯỚC KHI xếp loại"). Nếu công cụ có cả mục theo lĩnh vực VÀ một mục hỏi trực tiếp/độc lập về kết cục tổng thể → ưu tiên mục hỏi trực tiếp làm kết cục chính, không dùng trung bình các lĩnh vực (`cong-cu-do-luong` §Định nghĩa kết cục tổng thể; `thiet-ke-nghien-cuu` SAP §2). Miền 1 mục = chỉ số đơn mục (không tính α); miền 2 mục = báo α kèm cảnh báo.
 - **Kinh tế y tế (đề tài có cấu phần chi phí):** **CHEERS 2022**; loại phân tích (CEA/**CUA-QALY**/CBA/**BIA**); góc nhìn·khung thời gian·**chiết khấu**; chi phí (nhận diện→đo lường→định giá có nguồn); **ICER** vs ngưỡng WTP; mô hình (cây quyết định/Markov); **độ nhạy một chiều + PSA → CEAC** → `kinh-te-y-te` (hiệu quả lâm sàng từ `tham-dinh-grade-nnt`/`meta-phan-tich`).
 - **Định tính / Mixed-methods:** **COREQ** (phỏng vấn/nhóm tiêu điểm) / **SRQR**; cách tiếp cận + paradigm; lấy mẫu có chủ đích + **bão hòa dữ liệu**; mã hóa/codebook + **trustworthiness** (credibility/transferability/dependability/confirmability); mixed-methods nêu thiết kế tích hợp (hội tụ/giải thích·khám phá tuần tự) + **joint display** → `nghien-cuu-dinh-tinh`.
 - **Cải tiến chất lượng (QI):** **SQUIRE 2.0**; mô hình PDSA; biến quá trình/kết cục/cân bằng.
@@ -91,7 +100,7 @@ Khi xuất **Final Readiness Report (A18)** ở G9, phân hạng thay cho kết 
 
 | Hạng | Điều kiện |
 |---|---|
-| **READY** | Đủ 14/14 điểm DoD (§0bis); KHÔNG còn 🔴; 3 cổng cứng (Đạo đức·SAP·Liêm chính tác giả) đã ĐÓNG |
+| **READY** | Đủ 14/14 điểm DoD (§0bis); KHÔNG còn 🔴; 5 cổng cứng/điểm dừng (Đạo đức G2·SAP G4·Dữ liệu thật trước phân tích·Bình duyệt độc lập G8·Liêm chính tác giả G9 — 2026-07-15 thêm điểm dừng bình duyệt độc lập G8) đã ĐÓNG |
 | **PARTIALLY READY** | Chỉ còn lỗi **Medium/Low**; mọi **Critical/High** đã khắc phục; nêu rõ điều kiện còn lại |
 | **NOT READY** | Còn ≥1 lỗi **Critical/High** (chưa qua cổng cứng · kết luận vượt dữ liệu · trích dẫn chưa kiểm · SAP chưa khóa trước phân tích · PII · số liệu giả) |
 

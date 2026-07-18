@@ -8,7 +8,7 @@ Bạn là **Agent Kế hoạch Triển khai** (G1b). Nhiệm vụ: tạo TRỌN 
 
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`.
-Bất biến: KHÔNG bịa số tiền/định mức/đơn giá · tiến độ neo theo cổng cứng G2/G4 · không hứa mốc cho khâu cần phê duyệt thật.
+Bất biến: KHÔNG bịa số tiền/định mức/đơn giá · tiến độ neo theo cổng cứng G2/G4/G8/G9 · không hứa mốc cho khâu cần phê duyệt thật.
 
 ---
 
@@ -154,7 +154,23 @@ Rà lại sau MỖI cổng và giao so-cai-ghi-nho lưu phiên bản mới.
 | 5 | Kết quả trái kỳ vọng | Khoa học | — | — | INFO | SAP định trước + pre-reg | Kế hoạch công bố kết quả âm | Mở | | CN |
 | 6 | [Thêm rủi ro theo đề tài] | | | | | | | Mở | | |
 
-Thang mức rủi ro: CAO = Xác suất TB/Cao + Hậu quả Cao; TB = các trường hợp còn lại; THẤP = Xác suất thấp + Hậu quả thấp
+KẾ HOẠCH PHỔ BIẾN KẾT QUẢ (Dissemination Plan — SPIRIT 2025 mục 8, mục MỚI thuộc nhóm
+Open Science, bắt buộc nếu can thiệp/RCT; vá 2026-07-17 round audit đối kháng 4 — khác
+với "kế hoạch chia sẻ dữ liệu" ở A9/DMP, mục này là kế hoạch CÔNG BỐ/THÔNG BÁO kết quả):
+- Người tham gia nghiên cứu: `[CẦN CHỦ NHIỆM XÁC NHẬN]` có/không thông báo kết quả tổng
+  hợp cho người đã tham gia sau khi công bố (hình thức: thư/gặp trực tiếp/không thông báo
+  + lý do).
+- Nhân viên y tế/đơn vị liên quan: kế hoạch trình bày kết quả tại khoa/hội nghị nội bộ.
+- Công chúng/cộng đồng khoa học: công bố tạp chí (xem `nop-bai-phan-hoi`) + đăng ký kết
+  quả lên nơi đã đăng ký thử nghiệm (nếu registry hỗ trợ result-posting) — bất kể kết
+  quả dương tính hay âm tính (SAP định trước + pre-registration đã ghi ở rủi ro #5 trên).
+
+Thang mức rủi ro (sửa 2026-07-11 — công thức trước không khớp dòng #3/#5 trong chính bảng trên):
+CAO = Hậu quả RẤT CAO (bất kể xác suất — rủi ro hiếm nhưng hại lớn vẫn ưu tiên CAO, vd #3)
+      HOẶC Xác suất TB/Cao + Hậu quả Cao (vd #1, #2); TB = các trường hợp còn lại (vd #4);
+      THẤP = Xác suất thấp + Hậu quả thấp; INFO = mục thông tin/giả định theo dõi, không
+      phải rủi ro cần giảm thiểu theo thang trên (vd #5 — kết quả trái kỳ vọng là một khả
+      năng khoa học, không phải sự cố vận hành cần CAPA)
 ```
 
 ---
@@ -197,9 +213,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

@@ -55,6 +55,7 @@
 **Bằng chứng anti-fabrication chủ động:** khi sinh danh mục, agent đã LOẠI đúng ~5 bài nhiễu/sai — PREDIMED (retracted), Letter NEJMc, bài ADHD, LIFE-subgroup tiểu đường, WOSCOPS-commentary; và GHI THẬT khi PubMed không có DOI (4S 7968073, UKPDS33 9742976) thay vì bịa DOI. **→ P3.1 = 0% bịa ở mẫu 52.**
 
 ## D. TEST TỔNG QUÁT HOÁ + SPECIFICITY (ca MỚI ngoài gold, 2026-06-14)
+> ⚠️ **2026-07-12: KHÔNG có audit trail cho mục D** — khác mục A/B (khớp 1:1 `tools/eval/cafes_suite.py`, chạy lại xác nhận PASS) và mục C (log thật `tools/eval/agent_outputs/`), grep toàn repo cho các thuật ngữ đặc trưng của 8 ca dưới đây chỉ khớp trong CHÍNH file này — không có case_id, output log, hay code nào triển khai 8 ca này ở nơi khác, kể cả `_CHUAN-CAFES.md` (sổ ghi kết quả). Coi các con số dưới đây là **CHƯA XÁC MINH ĐƯỢC** (không phải đã chứng minh sai, chỉ là thiếu đường kiểm toán) cho tới khi có case_id + log thật.
 Kiểm hệ có **học thuộc** hay **suy luận thật**, và có **over-flag** không (kèm ca lành tính làm mồi nhử):
 - **Cờ đỏ (4 ca mới):** viêm não 🔴 · thiếu máu chi cấp 🔴 · thuyên tắc phổi 🔴 · **đau đầu căng cơ 🟢 (đúng KHÔNG cấp cứu)** → sensitivity 3/3 + **specificity giữ** (ca lành không bị nâng mức).
 - **Thuốc (4 ca mới):** clopidogrel+omeprazole 🔴 (đổi pantoprazole) · ACEi+spironolactone+K 🔴 (giữ phối hợp nền, chỉ bỏ viên K) · MTX+co-trimoxazole ⛔ · **paracetamol+amoxicillin 🟢 (đúng không tương tác)** → phát hiện đúng + **không bịa tương tác** ở ca lành.

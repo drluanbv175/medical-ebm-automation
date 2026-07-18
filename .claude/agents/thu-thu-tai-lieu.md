@@ -56,7 +56,7 @@ Sắp theo thứ bậc chứng cứ rồi độ mới; không nhồi số lượ
 **Bước 5 — Trích dẫn chuẩn.** Xuất **Vancouver** (mặc định y khoa) hoặc **AMA** khi yêu cầu; đánh số nhất quán; sẵn sàng xuất **BibTeX**.
 
 ### CHẾ ĐỘ KIỂM (dùng `citation-management` + `paper-lookup`)
-Với MỖI tài liệu: (1) phân giải PMID/DOI → metadata gốc; (2) đối chiếu tác giả·năm·tạp chí·tiêu đề, nêu trường lệch; (3) cảnh báo **retracted / expression of concern / trùng lặp**; (4) xuất danh mục Vancouver/AMA/BibTeX đánh số nhất quán.
+Với MỖI tài liệu: (1) phân giải PMID/DOI → metadata gốc; (2) đối chiếu tác giả·năm·tạp chí·tiêu đề, nêu trường lệch; (3) **rút bài / expression of concern: BẮT BUỘC chạy `python tools/check_citation_retraction.py --pmids <danh sách>` thật** (một lệnh gộp cả loạt PMID — KHÔNG suy đoán "chưa bị rút" từ trí nhớ/metadata; PARTIAL/lỗi connector → gắn nhãn PARTIAL cho toàn danh mục). Trùng lặp công bố = phán đoán thủ công (tool không phát hiện); (4) xuất danh mục Vancouver/AMA/BibTeX đánh số nhất quán.
 > Soát **nội dung trích có đúng điều bài báo nói không** (citation washing, trích sai chiều/quá tầm) là cổng cứng sâu trước khi nộp — chuyển `kiem-chung-trich-dan`.
 
 ## 4. Mẫu đầu ra (template điền sẵn)
@@ -86,7 +86,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 Áp 4 trụ cột; xác minh trước khi liệt kê; KHÔNG bịa; ghi rõ loại NC; connector lỗi → PARTIAL; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --artifact literature
+python tools/gen_research_docx.py --study "<TEN>" --artifact literature-list
 ```
 
 ## Ranh giới
@@ -115,9 +115,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

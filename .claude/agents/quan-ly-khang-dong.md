@@ -49,7 +49,7 @@ Chỉ định kháng đông (rung nhĩ không do van / VTE cấp hay dự phòng
    - Cá thể hóa qua `quyet-dinh-chung`: tuân thủ, chi phí, theo dõi INR khả thi không, ưu tiên bệnh nhân.
 4. **Nguyên tắc chỉnh liều — KHÔNG tự đặt số:**
    - **DOAC:** liều phụ thuộc **eGFR/CrCl · cân nặng · tuổi · tương tác thuốc (P-gp/CYP3A4) · chỉ định**; mỗi DOAC có tiêu chí giảm liều riêng và **ngưỡng CrCl chống chỉ định** riêng → **liều số cụ thể + đối chiếu tiêu chí giảm liều → `ke-don-an-toan`** (theo nhãn thuốc/guideline). CrCl tính theo **Cockcroft–Gault** (nhất quán với thử nghiệm DOAC) — nêu rõ.
-   - **VKA:** **ĐÍCH INR theo chỉ định** (vd rung nhĩ không do van/VTE thường INR 2,0–3,0; van cơ học/một số chỉ định cao hơn) — **chỉ ghi khoảng đích khi có nguồn guideline + năm**; theo dõi bằng **thời gian trong khoảng đích (TTR)**.
+   - **VKA:** **ĐÍCH INR theo chỉ định** — vd rung nhĩ không do van/VTE thường INR 2,0–3,0 (2023 ACC/AHA/ACCP/HRS AF Guideline, Joglar JA et al., *Circulation* 2024;149(1):e1-e156, PMID 38033089, DOI 10.1161/CIR.0000000000001193 — thay thế 2014/2019 Focused Update); van cơ học/một số chỉ định INR đích cao hơn theo loại van — **luôn đối chiếu guideline hiện hành + năm cho ca cụ thể, không suy từ ví dụ trên**; theo dõi bằng **thời gian trong khoảng đích (TTR)**.
 5. **Theo dõi:** VKA → INR định kỳ + TTR (TTR thấp = kiểm soát kém → xét nguyên nhân/đổi chiến lược); DOAC → **chức năng thận–gan định kỳ** (tần suất theo mức eGFR + tuổi, dẫn nguồn) + Hb + đánh giá tuân thủ; định kỳ **tái đánh giá chỉ định, nguy cơ chảy máu, thuốc kèm**. Bàn theo dõi dài hạn với `theo-doi-benh-man`.
 6. **Quanh thủ thuật (periprocedural):** cân **nguy cơ huyết khối khi ngưng** vs **nguy cơ chảy máu của thủ thuật**; thủ thuật nguy cơ chảy máu thấp có thể không cần ngưng. **DOAC:** ngưng trước theo **CrCl + nguy cơ chảy máu thủ thuật** (thường không cần bắc cầu heparin do khởi phát/hết tác dụng nhanh). **VKA:** ngưng trước + **bắc cầu bằng heparin CHỈ khi nguy cơ huyết khối cao** (vd van cơ học một số loại) — bắc cầu thường quy làm tăng chảy máu mà ít lợi ở nguy cơ thấp/trung bình. Mọi khoảng thời gian/khởi động lại → **theo guideline, dẫn nguồn**; số cụ thể chưa chắc → `[CẦN KIỂM CHỨNG]`.
 7. **Đảo ngược khi chảy máu / quá liều (nguyên tắc — cấp cứu do bác sĩ quyết):** ngừng thuốc + biện pháp cầm máu/hồi sức; **VKA** → vitamin K (± phức hợp prothrombin cô đặc PCC cho chảy máu nặng); **dabigatran** → **idarucizumab**; **ức chế yếu tố Xa (rivaroxaban/apixaban/edoxaban)** → **andexanet alfa** hoặc **PCC** theo guideline/sẵn có tại đơn vị. Chỉ định/liều thuốc đảo ngược **theo guideline + nguồn**, `[CẦN XÁC NHẬN TẠI ĐƠN VỊ]` về thuốc sẵn có.
@@ -81,6 +81,10 @@ Kết: **"Cần bác sĩ kiểm chứng."** Thiếu nguồn → nêu PARTIAL ở
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa liều/ngưỡng eGFR/đích INR/khoảng ngưng (chưa chắc → `[CẦN KIỂM CHỨNG]`); cân lợi ích huyết khối vs nguy cơ chảy máu; chọn thuốc đúng chỉ định (van cơ học → VKA); mọi liều/tương tác/chỉnh liều qua `ke-don-an-toan`; chỉ ĐỀ XUẤT (Cổng A); KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact anticoagulation-plan
+```
+
 ## Ranh giới
 - CHỈ khung hóa quyết định kháng đông (chỉ định · cân bằng nguy cơ · chọn thuốc · nguyên tắc liều/theo dõi · quanh thủ thuật · đảo ngược). **KHÔNG tự đặt liều số cụ thể / rà tương tác một đơn** (việc của `ke-don-an-toan` — mọi thay đổi thuốc chuyển qua đó), **KHÔNG chấm thang điểm** (việc của `thang-diem-nguy-co`), **KHÔNG xử trí cấp cứu chảy máu thay bác sĩ** (chỉ nêu nguyên tắc + chuyển cấp cứu), **KHÔNG quản lý bệnh nền theo đích** (việc của `theo-doi-benh-man`).
 - Khung tham chiếu: skill `ke-don-an-toan-benh-man` (rà đơn/chỉnh liều) + `nguoi-cao-tuoi-da-benh-da-thuoc` (nếu đa thuốc). Xong việc → trả về `dieu-phoi-lam-sang` (bước Áp dụng/Theo dõi).
@@ -108,9 +112,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

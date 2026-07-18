@@ -1,7 +1,7 @@
 # CHUẨN CHẤT LƯỢNG CÂU TRẢ LỜI Y KHOA — 7 TRỤC (Med-PaLM 2, phỏng theo + mở rộng EBM)
 
 > **Lớp 2** của chốt kiểm đầu ra — chấm **CHẤT LƯỢNG NỘI DUNG LÂM SÀNG**. Bổ sung, KHÔNG thay Lớp 1 (liêm chính/an toàn/định dạng R1–R7 trong `tham-dinh-dau-ra.md`).
-> Dùng cho: đầu ra **lâm sàng** của `dieu-phoi-lam-sang` và các routine sinh nội dung lâm sàng (`uptodate`, `drug-safety-daily`, `giam-sat-chung-cu`). Đầu ra **nghiên cứu** dùng chuẩn riêng (CONSORT/STROBE/PRISMA + `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`).
+> Dùng cho: đầu ra **lâm sàng** của `dieu-phoi-lam-sang` và các routine sinh nội dung lâm sàng (`uptodate`, `drug-safety-daily`, `giam-sat-chung-cu`, `antifacts-weekly-ebm`, `tong-hop-chung-cu-hang-tuan` — 2 routine sau bổ sung 2026-06-20, xem `_ROUTINE-AGENT-WIRING.md`). Đầu ra **nghiên cứu** dùng chuẩn riêng (CONSORT/STROBE/PRISMA + `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`).
 > Tạo 2026-06-14. Đồng bộ với `tham-dinh-dau-ra.md` · `_ROUTINE-AGENT-WIRING.md` · `_KIEM-DUYET-DOC-LAP.md`.
 
 ---
@@ -16,8 +16,7 @@ Bộ tiêu chuẩn gốc Med-PaLM/Med-PaLM 2 được chấm bởi **HỘI ĐỒ
 - **Med-PaLM (MultiMedQA):** Singhal K, et al. *Large language models encode clinical knowledge.* Nature 2023;620(7972):172–180. PMID 37438534 · DOI 10.1038/s41586-023-06291-2.
 - **Med-PaLM 2:** Singhal K, et al. *Toward expert-level medical question answering with large language models.* Nat Med 2025;31(3):943–950. PMID 39779926 · DOI 10.1038/s41591-024-03423-7. (Bác sĩ ưa câu trả lời Med-PaLM 2 trên **8/9 trục lâm sàng**.)
 - **Khớp trực tiếp rubric gốc:** Q2 Đúng đắn (alignment đồng thuận + nội dung không sai) · Q3 Đầy đủ (omission) · Q4 Thiên kiến (bias) · Q5 Nguy cơ hại (extent + likelihood of harm).
-- **Phụ trợ phổ biến (không phải trục xếp hạng gốc):** Q1 Dễ đọc — Flesch–Kincaid.
-- **MỞ RỘNG EBM (KHÔNG có trong Med-PaLM — thêm cho hệ này):** Q6 Tính cập nhật · Q7 Thẩm quyền nguồn. *(Med-PaLM không yêu cầu trích nguồn; hệ EBM này thì BẮT BUỘC — xem R1.)*
+- **MỞ RỘNG EBM (KHÔNG có trong Med-PaLM — thêm cho hệ này):** Q1 Dễ đọc (Flesch–Kincaid — 2026-07-11: sửa, trước đặt nhầm ở mục "Xuất xứ theo PubMed"; đã đọc toàn văn cả 2 bài Med-PaLM/Med-PaLM 2, KHÔNG bài nào dùng Flesch–Kincaid/readability/reading-level; metric phụ trợ THẬT của Med-PaLM 2 là độ dài câu trả lời tính ký tự [median 794 vs 565.5 vs 337.5, Bảng bổ sung 13] — Flesch–Kincaid là quy ước đọc-hiểu y khoa chung do hệ EBM này tự thêm, không truy nguyên được về 2 bài đã trích) · Q6 Tính cập nhật · Q7 Thẩm quyền nguồn. *(Med-PaLM không yêu cầu trích nguồn; hệ EBM này thì BẮT BUỘC — xem R1.)*
 
 ---
 

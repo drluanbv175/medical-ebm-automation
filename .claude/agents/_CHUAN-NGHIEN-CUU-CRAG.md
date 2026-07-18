@@ -56,6 +56,6 @@ Chạy `tra-cuu-chung-cu` (bẫy surrogate HDL), verify PMID qua PubMed MCP:
 - *Nguồn dữ liệu test: PubMed (E-utilities/MCP).*
 
 ## GẮN VÀO KIỂM TOÁN ĐỊNH KỲ
-Thêm vào rà nghiên cứu (`_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`) + tự-kiểm tuần: với gói có truy xuất y văn → soi 3 trục C-RAG (tự sửa có chạy? recall đủ/ghi giới hạn? phantom DOI = 0?).
+Thêm vào rà nghiên cứu (`_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`) + tự-kiểm tuần: với gói có truy xuất y văn → soi 3 trục C-RAG (tự sửa có chạy? recall đủ/ghi giới hạn? phantom DOI = 0?). *(2026-07-11: đã gắn cross-reference THẬT vào `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md` §A dòng A2b — trước đó tiêu đề mục này overclaim, file kia không hề nhắc C-RAG dù grep 0 kết quả.)*
 
 > **"Cần bác sĩ kiểm chứng."**

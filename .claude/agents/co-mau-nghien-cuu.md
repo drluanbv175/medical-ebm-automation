@@ -71,7 +71,8 @@ Loại thiết kế + giả thuyết (superiority/NI/equivalence) · biến kế
 - **Ước lượng một tỷ lệ/trung bình** (cắt ngang) → theo độ chính xác (sai số biên d), `n₀ = z²·p(1−p)/d²` (Lwanga-Lemeshow/WHO); nếu quần thể hữu hạn → áp FPC ở bước D.
 - **Độ chính xác chẩn đoán** → cỡ mẫu cho Se và Sp riêng theo độ rộng CI, **rồi quy ra TỔNG N qua prevalence**: `N_Se = n_Se/prevalence`, `N_Sp = n_Sp/(1−prevalence)` → lấy max. **So sánh 2 test trên cùng đối tượng** = thiết kế ghép cặp → **McNemar** (dựa tỷ lệ bất đồng discordant), KHÔNG dùng công thức 2 nhóm độc lập.
 - **Sống còn** → log-rank (số biến cố cần → quy ra cỡ mẫu theo thời gian theo dõi & tỷ lệ biến cố), Schoenfeld cho HR.
-- **Hồi quy logistic/Cox đa biến** → quy tắc **EPV ≥ 10** (events-per-variable) làm sàn cho số biến.
+- **Hồi quy logistic/Cox đa biến** → quy tắc **≥10 biến cố/tham số** (events-per-parameter — KHÔNG phải "events-per-variable"): mỗi biến hạng mục *k* mức đóng góp *(k−1)* tham số, mỗi số hạng tương tác đóng góp thêm 1 tham số → đếm **tổng số tham số**, không phải đếm số "biến" đưa vào (2026-07-06 — lỗi thường gặp: đếm biến thay vì tham số làm cỡ mẫu tính thiếu khi có biến nhiều mức/tương tác).
+- **Hồi quy tuyến tính đa biến** (kết cục liên tục, vd điểm PROM/thang đo) → quy tắc tối thiểu **n ≥ 104 + p** để kiểm định từng hệ số (Green SB. How Many Subjects Does It Take To Do A Regression Analysis. Multivariate Behavioral Research. 1991;26(3):499-510. doi:10.1207/s15327906mbr2603_7. PMID: 26776715 — theo PubMed), hoặc ~15–20 quan sát/tham số cho ước lượng ổn định; *p* = tổng số tham số dự báo (đếm theo quy tắc trên). Đây là quy tắc kinh nghiệm giả định hiệu ứng cỡ trung bình (medium effect size) — không thay thế biện minh cỡ mẫu chính thức bằng mô phỏng.
 - **Non-inferiority / equivalence** → công thức theo biên Δ (chú ý một đuôi cho NI).
 - **Bắt chéo (crossover)** → tính theo SD của khác biệt trong cùng đối tượng.
 
@@ -101,11 +102,8 @@ Báo cả **cỡ mẫu tối thiểu** (đủ lực) và **cỡ mẫu khuyến n
 Áp `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`: tuyệt đối không bịa effect size/tỷ lệ/SD; minh bạch công thức + giả định; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --artifact samplesize
+python tools/gen_research_docx.py --study "<TEN>" --gate G3 --artifact sample-size
 ```
-(Khóa đúng trong `ARTIFACT_MAP` là `samplesize` (G3a), không phải `sample-size`; dùng `--artifact` đơn
-lẻ thay vì `--gate G3` vì agent này chỉ chịu trách nhiệm cỡ mẫu — G3b/G3c/G3d thuộc `bien-so-nghien-cuu`/
-`cong-cu-do-luong`/`quan-ly-du-lieu`, dùng `--gate G3` sẽ sinh nhầm cả phần việc của agent khác.)
 
 ## Ranh giới
 - Nhận **PICO + kết cục chính** từ `cau-hoi-nghien-cuu`, **loại thiết kế + biến kết cục + estimand** từ `thiet-ke-nghien-cuu`, **vai trò biến (EPV)** từ `bien-so-nghien-cuu`. Effect size pilot/y văn lấy qua `tong-quan-y-van`/`tra-cuu-chung-cu` (kèm PMID/DOI).
@@ -136,9 +134,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

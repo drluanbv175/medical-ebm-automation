@@ -32,10 +32,10 @@ KHÔI PHỤC NHANH — Đề tài [mã] — [ngày]
 ```
 
 ## ⛔ BẤT BIẾN GHI SỔ (kiểm TRƯỚC mọi việc, không ngoại lệ)
-**Append-only + backup TRƯỚC khi ghi** (ALCOA+) — chỉ THÊM, KHÔNG xóa/ghi đè lịch sử. Mọi thẻ EBM_MASTER mới mang `verification_status="chưa xác minh"`, vào hàng chờ — **KHÔNG tự duyệt thẻ**. **KHÔNG PII** trong bất kỳ bản ghi nào; KHÔNG bịa số phê duyệt/mã đăng ký (chỉ ghi điều đã được cung cấp).
+**Append-only + backup TRƯỚC khi ghi** (ALCOA+) — chỉ THÊM, KHÔNG xóa/ghi đè lịch sử. Mọi thẻ EBM_MASTER mới vào hàng chờ qua trường `decision` (`notyet`/`consider`, KHÔNG bao giờ tự `apply` lúc nạp) — **KHÔNG tự duyệt thẻ**. *(2026-07-12: `verification_status` KHÔNG phải tín hiệu hàng chờ — chỉ nói nguồn/trích dẫn đã qua cổng liêm chính tự động; xem `_SO-EBM-MASTER.md`.)* **KHÔNG PII** trong bất kỳ bản ghi nào; KHÔNG bịa số phê duyệt/mã đăng ký (chỉ ghi điều đã được cung cấp).
 
 ## Luật nền
-Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). Đặc biệt: **append-only + backup TRƯỚC khi ghi** (ALCOA+) — chỉ THÊM, không xóa lịch sử; **KHÔNG PII** trong bất kỳ bản ghi nào. Mọi thẻ mới vào EBM_MASTER mang `verification_status="chưa xác minh"`, hàng "chờ bác sĩ duyệt" (CỔNG B); KHÔNG bịa số phê duyệt/mã đăng ký — chỉ ghi điều đã được cung cấp.
+Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). Đặc biệt: **append-only + backup TRƯỚC khi ghi** (ALCOA+) — chỉ THÊM, không xóa lịch sử; **KHÔNG PII** trong bất kỳ bản ghi nào. Mọi thẻ mới vào EBM_MASTER ở hàng "chờ bác sĩ duyệt" (CỔNG B) qua trường `decision`; KHÔNG bịa số phê duyệt/mã đăng ký — chỉ ghi điều đã được cung cấp.
 
 ## 1. Mục tiêu & khi nào kích hoạt
 Mục tiêu: lưu quyết định + mốc cổng + artifact + bài học vào sổ cái/MEMORY.md để phiên sau RESUME được; và khôi phục "đề tài đang ở đâu". Kích hoạt sau MỖI cổng G PASS, khi chốt quyết định thiết kế/thống kê, hoặc "đề tài này đang ở đâu rồi".
@@ -48,7 +48,7 @@ Trạng thái/quyết định cần ghi (từ `dieu-phoi-nghien-cuu` hoặc agen
 1. Nhận trạng thái/quyết định từ `dieu-phoi-nghien-cuu` (hoặc agent chuyên trách).
 2. Quy date tương đối → tuyệt đối; loại PII; viết bản ghi ngắn gọn, có nguồn.
 3. Backup → **append** vào sổ cái + cập nhật chỉ mục; nếu là dashboard, chạy chuỗi `verify_dashboard.py --online` → `build_library.py add` → `sync_all.py` (bước cuối tự dựng lại 3 trang hub + **Antifacts** — mặt tiền theo chuyên khoa, tích lũy).
-3b. **Máy kiểm khối checkpoint vừa ghi (bắt buộc, vá 2026-07-04):** `python medical-ebm-automation/tools/clinical_checkpoint.py <file_so_trang_thai>.md --json` — schema đủ trường · Cổng A/B không PASS khi còn 🔴 · Cổng A trước Cổng B · không PII. Còn 🔴 → SỬA khối vừa ghi NGAY (đây là lỗi của chính bản ghi mình vừa tạo, không giao lại agent khác), rồi kiểm lại. Chi tiết: `_SO-TRANG-THAI-CHECKPOINT.md`.
+3a. **Máy kiểm khối checkpoint vừa ghi (bắt buộc, vá 2026-07-04; đổi số từ "3b"→"3a" ngày 2026-07-11 để không trùng nhãn với mục H2 "§3b CHẾ ĐỘ AUTO-CHECKPOINT" bên dưới — 2 nội dung khác nhau, các file khác trong hệ agent trích "§3b" đều hiểu theo nghĩa AUTO-CHECKPOINT):** `python medical-ebm-automation/tools/clinical_checkpoint.py <file_so_trang_thai>.md --json` — schema đủ trường · Cổng A/B không PASS khi còn 🔴 · Cổng A trước Cổng B · không PII · **(2026-07-12) Cổng A/B phải có `guardrail_dau_ra: ĐẠT`** — điền verdict THẬT của `tham-dinh-dau-ra` đã chạy TRƯỚC khi ghi khối này (không tự ghi "ĐẠT" nếu chưa thật sự gọi guardrail — máy kiểm chỉ đọc chữ, không tự xác minh nội dung). Còn 🔴/thiếu guardrail_dau_ra → SỬA khối vừa ghi NGAY (đây là lỗi của chính bản ghi mình vừa tạo, không giao lại agent khác), rồi kiểm lại. Chi tiết: `_SO-TRANG-THAI-CHECKPOINT.md`.
 4. Trả xác nhận "đã ghi gì, ở đâu" + con trỏ để phiên sau khôi phục.
 
 ## 3b. CHẾ ĐỘ AUTO-CHECKPOINT (không chờ cổng PASS)
@@ -129,6 +129,10 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; append-only + backup; KHÔNG PII; KHÔNG bịa mã/số phê duyệt; thẻ luôn ở hàng chờ duyệt. Kết: **"Cần bác sĩ kiểm chứng."**
+
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact study-log
+```
 
 ## Ranh giới
 KHÔNG ra quyết định khoa học (chỉ ghi điều đã quyết); KHÔNG sửa nội dung artifact (chỉ lưu trữ + chỉ mục); KHÔNG tự duyệt thẻ EBM_MASTER (luôn hàng "chờ duyệt"). Là trí nhớ trung thực của đề tài, không phải người ra quyết định.

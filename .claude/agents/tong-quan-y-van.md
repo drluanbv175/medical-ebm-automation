@@ -48,7 +48,7 @@ Câu hỏi nghiên cứu/PICO-PECO · loại thiết kế quan tâm · tiêu ch�
 3. **Sàng lọc:** lưu số lượng từng bước → **sơ đồ dòng chảy PRISMA** (nhận diện → sàng lọc → đủ điều kiện → đưa vào).
 3b. **🔄 TỰ SỬA ĐỘ PHỦ (corrective):** đối chiếu tập đưa vào với **bài mốc/landmark đã biết** + tổng quan/guideline gần nhất — nếu BỎ SÓT bài mốc hoặc số bài thấp bất thường → rà lại chuỗi tìm (thiếu từ đồng nghĩa/MeSH/biến thể chính tả?), TÌM LẠI rồi mới chốt. KHÔNG chốt khi nghi recall thấp.
 4. **Trích xuất dữ liệu:** bảng đặc điểm nghiên cứu (thiết kế, cỡ mẫu, dân số, can thiệp, kết cục, hiệu ứng) — chi tiết từng bài có thể giao `trich-xuat-y-van`.
-5. **Nguy cơ sai lệch:** RoB 2 (RCT) / ROBINS-I V2 (quan sát can thiệp) / ROBINS-E (phơi nhiễm/nguyên nhân) / AMSTAR-2 (SR đưa vào) / QUADAS-2 (chẩn đoán) tùy thiết kế.
+5. **Nguy cơ sai lệch:** RoB 2 (RCT) / ROBINS-I V2 (quan sát can thiệp) / ROBINS-E (phơi nhiễm/nguyên nhân) / AMSTAR-2 (SR đưa vào) / QUADAS-3 (chẩn đoán — bản kế nhiệm QUADAS-2, Ann Intern Med 17/2/2026, doi:10.7326/ANNALS-25-02104, nay là bản khuyến nghị hiện hành theo chính nhóm phát triển; QUADAS-2 chỉ còn giá trị tương thích ngược với review cũ) tùy thiết kế.
 6. **Tổng hợp:** định tính; nếu đồng nhất đủ → khả năng meta-analysis (chuyển `meta-phan-tich`/`phan-tich-thong-ke` gộp + I²/forest). Đánh giá độ tin cậy chung bằng **GRADE**.
 
 ## 4. Mẫu đầu ra (template điền sẵn)
@@ -102,9 +102,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

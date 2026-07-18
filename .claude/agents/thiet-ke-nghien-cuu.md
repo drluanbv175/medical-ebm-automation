@@ -46,6 +46,17 @@ python medical-ebm-automation/tools/run_g1_auto.py \
 1. Xác định đang ở **G1** (chọn thiết kế) hay **G4** (khóa SAP) hay cả hai.
 2. Đọc sổ cái (`so-cai-ghi-nho`) — PICO, kết cục chính, cỡ mẫu đã chốt chưa.
 3. Cảnh báo nếu bác sĩ yêu cầu khóa SAP sau khi đã trót xem dữ liệu — vi phạm liêm chính (p-hacking/HARKing).
+3b. **Kế hoạch SỬA ĐỔI đề cương chính thức (SPIRIT 2025 mục 31 "Protocol amendments" —
+    bắt buộc nếu can thiệp/RCT, vá 2026-07-17 round audit đối kháng 4):** trước khi khóa
+    SAP, xác định RÕ quy trình khi cần sửa đề cương SAU khi đã bắt đầu (khác với sửa TRƯỚC
+    khi tuyển người đầu tiên, vốn tự do): (a) ai được quyền đề xuất sửa đổi (thường chủ
+    nhiệm), (b) sửa đổi phải qua Hội đồng đạo đức phê duyệt LẠI trước khi áp dụng nếu ảnh
+    hưởng an toàn/quyền lợi người tham gia hoặc mục tiêu/kết cục chính, (c) kênh thông báo
+    cho các bên liên quan (đồng nghiên cứu viên, nơi đăng ký thử nghiệm, DMC nếu có, người
+    tham gia đang trong nghiên cứu nếu ảnh hưởng trực tiếp đến họ). Ghi vào Risk Register
+    sống (`ke-hoach-trien-khai` TÀI LIỆU 5) mỗi lần có sửa đổi thật, kèm ngày + lý do +
+    người phê duyệt — không chỉ nhắc chung "sửa SOP một cách chính thức" như trước đây mà
+    không nêu rõ QUY TRÌNH cụ thể.
 4. **Hỏi/tìm xem đã có công cụ thu thập/CRF/codebook THẬT hay chưa (2026-07-06):** trước khi giả định thiết kế/kết cục dựa trên một công cụ đo lường "điển hình" của y văn (vd một thang chuẩn quốc gia/quốc tế), hỏi bác sĩ đã có bản phiếu khảo sát/CRF thật (dù chỉ là bản nháp) hoặc một codebook/data dictionary (SPSS `.sav`, REDCap...) đã tự dựng sẵn hay chưa. Nếu có, đọc toàn văn NGAY và để nó quyết định biến/kết cục — codebook đã tự dựng sẵn thường ĐÃ NGẦM ĐỊNH các quyết định phương pháp quan trọng (vd công thức của biến phái sinh/kết cục thứ cấp) mạnh hơn suy luận lý thuyết trừu tượng; đối chiếu trước khi tự quyết định khác đi. Ca có thật: đề cương hài lòng Khoa C1a xây dựng suốt 3 vòng phản biện trên giả định dùng nguyên trạng một thang chuẩn quốc gia (chưa xác minh được toàn văn); khi có phiếu + codebook thật, hóa ra là công cụ tự xây dựng khác hẳn, phải sửa lại toàn bộ phần đo lường/kết cục — xem chi tiết ở `cong-cu-do-luong.md`.
 
 ---
@@ -159,10 +170,18 @@ Phần mềm + lệnh: ___
 Mô hình: ☐ Hồi quy logistic ☐ Linear ☐ Cox ☐ Mixed-effects ☐ GEE
 Biến đưa vào mô hình (định trước, không dùng stepwise mù):
   - Covariates: ___ (lý do: ___)
-EPV (Events Per Variable): kết cục sự kiện / số biến >= 10 [CẦN XÁC NHẬN]
+EPV (Events Per Variable — tên gọi quy ước, tính THEO THAM SỐ không phải theo BIẾN,
+2026-07-16 sửa khớp co-mau-nghien-cuu.md/SAP §template [A]): kết cục sự kiện / TỔNG SỐ
+THAM SỐ mô hình (biến hạng mục k mức đóng góp k-1 tham số, mỗi số hạng tương tác +1) >= 10
+[CẦN XÁC NHẬN — đếm lại nếu có biến nhiều mức/tương tác, không chỉ đếm số "biến" đưa vào]
 VIF < 5 cho mọi biến dự báo (kiểm đa cộng tuyến)
 Kiểm định mức phù hợp: ☐ Hosmer-Lemeshow (logistic) ☐ GOF tương đương
 Hệ số trình bày: OR/HR/β + 95% CI + p-value (KHÔNG chỉ p-value đơn độc)
+Kế hoạch dự phòng nếu EPV<10 trên dữ liệu thật (2026-07-16, ĐỊNH TRƯỚC — không quyết
+định sau khi thấy kết quả): ☐ gộp bớt biến hạng mục nhiều mức ☐ bỏ số hạng tương tác
+trước ☐ dùng penalized/regularized regression (ridge/lasso/firth) ☐ báo cáo mô hình
+kèm cảnh báo quá khớp rõ ràng — chọn phương án TRƯỚC khi khóa SAP, không tự chọn khi
+đã thấy N thật.
 ```
 
 ### SAP §6 — Dữ liệu thiếu

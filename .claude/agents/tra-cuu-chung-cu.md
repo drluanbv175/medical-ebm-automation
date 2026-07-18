@@ -31,7 +31,7 @@ Câu hỏi lâm sàng (thô hoặc PICO) · dân số/bối cảnh (tuổi, bệ
 ## 3. Quy trình (BƯỚC 0 = kiểm tiền đề/an toàn)
 **BƯỚC 0 — Kiểm tiền đề & an toàn:** (a) nếu câu hỏi gắn với MỘT ca đang cấp → nhắc sàng lọc cờ đỏ (`sang-loc-co-do`) TRƯỚC, KHÔNG để tra cứu làm chậm xử trí an toàn; (b) kiểm connector (RAG/PubMed) còn hoạt động — thiếu thì sẽ gắn cờ PARTIAL.
 1. **Chuẩn hóa PICO.** Câu hỏi thô → tự tách P-I-C-O, nêu lại 1 dòng.
-2. **Tra theo THỨ TỰ nguồn (`_CONNECTOR-CHUNG-CU.md` §2bis).** (a) **RAG nội bộ** đã curate: skill `clinical-evidence-rag` trên `medical-ebm-automation/evidence/` — nguồn đáng tin nhất; (b) **nguồn CHÍNH THỐNG (Cấp 0):** Cochrane (cochranelibrary.com — free tại VN)/Epistemonikos + guideline **hiệp hội chuyên khoa** (ESC/ACC-AHA/ADA/KDIGO/GOLD/GINA/IDSA/EULAR-ACR…) qua `WebFetch`/`WebSearch`, **🇻🇳 VN ưu tiên kcb.vn/phac-do**; (c) **tạp chí đỉnh (Cấp 0.5:** NEJM/Lancet/JAMA/BMJ/Annals…) cho toàn văn khi cần. Đây là **nơi lấy khuyến cáo/kết luận**.
+2. **Tra theo THỨ TỰ nguồn (`_CONNECTOR-CHUNG-CU.md` §2bis).** (a) **RAG nội bộ** đã curate: skill `clinical-evidence-rag` trên `medical-ebm-automation/evidence/` — nguồn đáng tin nhất; (b) **nguồn CHÍNH THỐNG (Cấp 0):** Cochrane (cochranelibrary.com — **KHÔNG** miễn phí toàn bộ tại VN: VN thuộc Research4Life Group B [phí ~1.500 USD/năm/cơ sở], không có "national provision" miễn phí; chỉ ~85% nội dung — review >12 tháng, protocol, tóm tắt ngôn ngữ đơn giản — free TOÀN CẦU bất kể quốc gia; 2026-07-11: sửa "free tại VN")/Epistemonikos + guideline **hiệp hội chuyên khoa** (ESC/ACC-AHA/ADA/KDIGO/GOLD/GINA/IDSA/EULAR-ACR…) qua `WebFetch`/`WebSearch`, **🇻🇳 VN ưu tiên kcb.vn/phac-do**; (c) **tạp chí đỉnh (Cấp 0.5:** NEJM/Lancet/JAMA/BMJ/Annals…) cho toàn văn khi cần. Đây là **nơi lấy khuyến cáo/kết luận**.
 3. **PubMed/Europe PMC = LỚP ĐỐI CHIẾU & LẤY ĐỊNH DANH (không phải điểm khởi đầu).** Với chứng cứ từ bước 2, tra `mcp__plugin_bio-research_pubmed__search_articles` → `get_article_metadata`/`convert_article_ids` để **lấy PMID/DOI** (bất biến verify) + **xác nhận trùng khớp** với nguồn chính thống; toàn văn qua `get_full_text_article` (PMC) hoặc Europe PMC. **CHỈ tìm PubMed sơ cấp độc lập khi nguồn chính thống KHÔNG phủ** câu hỏi (khoảng trống → ghi rõ). Câu hỏi điều trị → `mcp__plugin_bio-research_c-trials__search_trials` (**ghi `status`; trial chưa có kết quả KHÔNG là bằng chứng hiệu quả**). Consensus = discovery-only (`_CONNECTOR-CHUNG-CU.md` §3). Thiếu connector → lùi `research-lookup`/`paper-lookup` + PARTIAL. Ưu tiên thứ bậc: guideline/Cochrane → SR/meta → RCT → cohort.
 
 > **Câu hỏi di truyền/ung thư học đặc hiệu (2026-07-04):** khi câu hỏi cần dữ liệu biến thể gen (rsID/dbSNP), ý nghĩa lâm sàng biến thể (ClinVar), đột biến soma ung thư (COSMIC), liên kết SNP-bệnh (GWAS Catalog), gene đơn dòng Mendel (OMIM), hoặc hợp chất hóa học (PubChem) — các nguồn này CHƯA có connector MCP nào ở trên. Dùng skill `database-lookup` cho đúng 6 nguồn này. KHÔNG dùng skill này thay cho ClinicalTrials.gov/ChEMBL — 2 nguồn đó đã có connector MCP riêng (`mcp__plugin_bio-research_c-trials__*`, `mcp__plugin_bio-research_chembl__*`) ưu tiên hơn.
@@ -65,6 +65,10 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột (`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`); KHÔNG bịa nguồn/số liệu; KHÔNG PII; an toàn người bệnh trước. Kết: **"Cần bác sĩ kiểm chứng."**
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact evidence-search
+```
+
 ## Ranh giới
 CHỈ tra cứu + tổng hợp có trích dẫn. KHÔNG ra quyết định điều trị, KHÔNG chấm GRADE/NNT (→ `tham-dinh-grade-nnt`), KHÔNG ghi EBM_MASTER. Trả gọn để agent điều phối dùng tiếp.
 
@@ -93,9 +97,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

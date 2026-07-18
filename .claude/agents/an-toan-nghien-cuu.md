@@ -54,12 +54,16 @@ Thiết kế: ☐ QUAN SÁT ☐ CAN THIỆP
 
 BIẾN CỐ BẤT LỢI (AE — Adverse Event):
   Định nghĩa: Bất kỳ biến cố y tế bất lợi nào xảy ra ở người tham gia sau khi nhận can thiệp,
-  KHÔNG nhất thiết có quan hệ nhân quả với can thiệp (ICH-GCP E6(R3) §1.2)
+  KHÔNG nhất thiết có quan hệ nhân quả với can thiệp (ICH-GCP E6(R3), mục Glossary —
+  KHÔNG phải §1.2 như bản trước ghi; §1.2 là "Responsibilities" thuộc IRB/IEC, đã kiểm
+  chứng trực tiếp bản PDF chính thức 2026-07-11)
   Nguồn ghi nhận: ___
   Khoảng thời gian theo dõi: ___
 
 BIẾN CỐ BẤT LỢI NGHIÊM TRỌNG (SAE — Serious Adverse Event):
-  Định nghĩa (ICH E2A §3): Biến cố thỏa BẤT KỲ tiêu chí nào:
+  Định nghĩa (ICH E2A §II.B "Serious Adverse Event or Adverse Drug Reaction" — KHÔNG phải
+  §3 như bản trước ghi; mục 3 trong văn bản gốc là "Unexpected Adverse Drug Reaction", đã
+  kiểm chứng trực tiếp bản PDF chính thức 2026-07-11): Biến cố thỏa BẤT KỲ tiêu chí nào:
   ☐ Tử vong
   ☐ Nguy hiểm tính mạng
   ☐ Cần nhập viện / kéo dài nhập viện
@@ -77,7 +81,10 @@ PHÂN ĐỘ NẶNG (CTCAE nếu phù hợp):
   Grade 4: Nguy hiểm tính mạng — cần can thiệp khẩn cấp
   Grade 5: Tử vong liên quan can thiệp
   Phiên bản CTCAE dùng: ___ (nêu rõ vì phân độ thay đổi giữa phiên bản)
-  Nguồn: NCI CTCAE v5.0 (ctep.cancer.gov/protocoldevelopment/electronic_applications/ctc.htm)
+  Nguồn: NCI CTCAE v6.0 cho đề tài MỚI (phát hành 2025; NCI CTEP/DCP áp dụng cho thử nghiệm
+  mới từ 01/01/2026, xác nhận qua dctd.cancer.gov 2026-07-11) — v5.0 chỉ còn dùng cho đề tài
+  ĐANG chạy đã bắt đầu trước khi có v6.0 (không bắt buộc chuyển đổi ngược)
+  (dctd.cancer.gov/research/ctep-trials/for-sites/adverse-events)
 
 QUAN HỆ NHÂN QUẢ (Attribution):
   ☐ Không liên quan (Unrelated)
@@ -182,6 +189,11 @@ THÀNH PHẦN DSMB (nếu CÓ):
   Bao gồm: ☐ Chuyên gia lâm sàng ☐ Nhà thống kê độc lập ☐ Chuyên gia đạo đức
   Thành viên: [CẦN CHỦ NHIỆM CHỈ ĐỊNH]
   Chủ tịch DSMB: ___
+  KHAI BÁO ĐỘC LẬP + XUNG ĐỘT LỢI ÍCH từng thành viên (SPIRIT 2025 mục 28a — bắt
+  buộc, vá 2026-07-17 round audit đối kháng 4): mỗi thành viên DSMB ký xác nhận
+  KHÔNG có quan hệ tài chính/học thuật/nhân sự với nhóm nghiên cứu hoặc nhà tài
+  trợ có thể ảnh hưởng tính khách quan — [CẦN mẫu khai báo riêng cho từng thành
+  viên, tương tự Tài liệu 8 khai báo COI tác giả ở `dao-duc-dang-ky`].
 
 TẦN SUẤT HỌP:
   Họp định kỳ: Sau khi ___ % tuyển xong (vd sau 25%, 50%, 75%)
@@ -238,6 +250,10 @@ Gửi DSMB: ☐ Có (ngày: ___) ☐ Không cần
 
 Bàn giao: phân tích giữa kỳ → `phan-tich-thong-ke`; stopping rules alpha → `co-mau-nghien-cuu`; hồ sơ IRB → `dao-duc-dang-ky`.
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact safety-monitoring
+```
+
 ## Ranh giới
 KHÔNG thay DSMB/hội đồng thật · KHÔNG quyết định dừng nghiên cứu (chỉ nêu tiêu chí + cờ) · thử nghiệm pivotal → cần chuyên gia an toàn/DSMB độc lập. Phân tích giữa kỳ → `phan-tich-thong-ke`.
 
@@ -264,9 +280,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

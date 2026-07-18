@@ -68,7 +68,7 @@ Lưu ý áp dụng: thang/dấu trên chỉ đúng trong **điều kiện đã k
 | Cờ đỏ nhi (chỉ cần 1) | Nguồn neo | Hành động |
 |---|---|---|
 | **Sốt trẻ <3 tháng (≥38°C)** | NICE NG143 *Fever in under 5s* (ô đỏ) | 🔴 chuyển nhi/cấp cứu khẩn; KHÔNG hạ sốt rồi cho về |
-| Li bì/khó đánh thức · quấy khóc không dỗ được · **bú/ăn kém rõ** | NICE NG143 (red) · NICE NG254 *Suspected sepsis <16s* (2024) | 🔴 đánh giá nghi nhiễm khuẩn huyết |
+| Li bì/khó đánh thức · quấy khóc không dỗ được · **bú/ăn kém rõ** | NICE NG143 (red) · NICE NG254 *Suspected sepsis <16s* (2025 — 2026-07-11: sửa "2024", NG254 công bố 19/11/2025 theo nice.org.uk) | 🔴 đánh giá nghi nhiễm khuẩn huyết |
 | **Ban xuất huyết KHÔNG mất khi ấn kính** (non-blanching) | NICE NG143/NG254 (nghi não mô cầu) | 🔴 CẤP CỨU — kháng sinh sớm + chuyển ngay, KHÔNG chờ xét nghiệm |
 | Thóp phồng · thở nhanh/rút lõm/tím/rên/SpO₂ thấp · co giật · mất nước nặng | NICE NG143 · WHO IMCI; nhịp thở theo tuổi `[CẦN KIỂM CHỨNG]` | 🔴 O₂/bù dịch + chuyển cấp cứu nhi |
 
@@ -136,9 +136,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:

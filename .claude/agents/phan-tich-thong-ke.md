@@ -34,7 +34,7 @@ Khi đề tài đã có CRF từ G5 (`quan-ly-du-lieu`) → **chạy NGAY**, k�
 ```bash
 python medical-ebm-automation/tools/run_g6_auto.py --study "MA-DE-TAI"
 # Tự động: đọc CRF/tên biến thật từ G5 checkpoint → sinh SCRIPT phân tích R/Python
-#           đúng tên biến + Table 1 shell + STROBE flowchart → A11 .md + .docx + G6_checkpoint.json
+#           đúng tên biến + Table 1 shell + STROBE flowchart → A17b .md + .docx + G6_checkpoint.json
 ```
 Đây là bước **SỚM HƠN** trong quy trình — chạy trước khi có dữ liệu thu thập thật, để chuẩn bị sẵn script phân tích (đúng tên biến CRF) chờ dữ liệu về.
 
@@ -121,7 +121,7 @@ p: t-test/Mann-Whitney cho liên tục; chi²/Fisher cho phân loại; SMD = sta
 #### [A] So sánh 2 nhóm — Kết cục liên tục
 ```r
 # Kiểm giả định
-var.test(outcome ~ group, data = data)  # Levene's test phương sai
+var.test(outcome ~ group, data = data)  # F-test phương sai (2 mẫu, giả định phân phối chuẩn — KHÁC Levene's test; nếu nghi ngờ vi phạm chuẩn, dùng car::leveneTest() thay thế vì bền vững hơn)
 # Phân phối chuẩn + phương sai bằng:
 t_test <- t.test(outcome ~ group, data = data, var.equal = TRUE)
 # Không chuẩn:
@@ -144,7 +144,7 @@ OR_crude <- exp(coef(model_crude)); CI_crude <- exp(confint(model_crude))
 
 # RR (Poisson + robust SE):
 library(sandwich); library(lmtest)
-model_rr <- glm(outcome ~ group, data = data, family = poisson(log = "log"))
+model_rr <- glm(outcome ~ group, data = data, family = poisson(link = "log"))
 coeftest(model_rr, vcov = sandwich)
 RR <- exp(coef(model_rr)["groupB"])
 ```

@@ -28,6 +28,8 @@ Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG
 ## 1. Mục tiêu & khi nào kích hoạt
 Mục tiêu: với một bệnh nhân bệnh nặng/giai đoạn cuối, dựng **kế hoạch chăm sóc giảm nhẹ có cấu trúc** — kiểm soát triệu chứng theo nguyên tắc có nguồn · đánh giá gánh nặng triệu chứng bằng thang đã kiểm định · điều phối thảo luận mục tiêu chăm sóc & kế hoạch chăm sóc trước · hỗ trợ người nhà · ngưỡng cần đội giảm nhẹ chuyên sâu/nhập viện. Kích hoạt khi bác sĩ hỏi kiểm soát triệu chứng cuối đời (đau, khó thở, buồn nôn, táo bón, mê sảng, lo âu), bàn mục tiêu chăm sóc cho bệnh nhân giai đoạn cuối, chăm sóc bệnh nhân ung thư tiến triển/suy cơ quan giai đoạn cuối không còn điều trị triệt căn.
 
+**Kích hoạt THAY VÌ tiếp tục `theo-doi-benh-man` (2026-07-12 — đối xứng bước 6bis của file đó):** bệnh mạn đang theo dõi theo đích (treat-to-target) mà xuất hiện ≥1 dấu hiệu giai đoạn hạn chế tiên lượng — suy tim **NYHA III–IV** kháng trị, COPD **GOLD nhóm E/rất nặng** phụ thuộc oxy, bệnh thận mạn **G5 (eGFR<15) chọn KHÔNG lọc máu**, gan mạn **Child-Pugh C**, hoặc suy giảm chức năng tiến triển nhanh không đáp ứng điều trị tối ưu → đây là điểm CHUYỂN từ theo dõi-theo-đích sang chăm sóc giảm nhẹ, không phải tiếp tục chỉnh liều/tăng bậc điều trị.
+
 ## 2. Đầu vào tối thiểu (thu GỘP 1 lần nếu thiếu)
 Bệnh chính + giai đoạn/tiên lượng (nếu có) · triệu chứng gây khó chịu nhất + mức độ · thuốc đang dùng (đặc biệt opioid/an thần đã dùng) · chức năng thận/gan nếu liên quan thuốc · bệnh kèm · tình trạng nhận thức (tỉnh/mê sảng) · **giá trị–ưu tiên đã biết của người bệnh** (muốn được điều trị tới đâu, nơi muốn được chăm sóc) · người nhà/người chăm sóc chính. Thiếu thông tin gánh nặng triệu chứng → đề xuất dùng thang đánh giá. KHÔNG nhận PII.
 
@@ -36,7 +38,7 @@ Bệnh chính + giai đoạn/tiên lượng (nếu có) · triệu chứng gây 
 
 1. **Đánh giá gánh nặng triệu chứng** bằng thang đã kiểm định (vd ESAS — Edmonton Symptom Assessment System; hoặc thang khác) — **nêu thang + cách chấm CHỈ khi có nguồn**; nếu không chắc điểm cắt/cách diễn giải → **[CẦN KIỂM CHỨNG]**, mô tả định tính thay vì điền số.
 2. **Lập kế hoạch kiểm soát từng triệu chứng** (mỗi triệu chứng kèm nguyên tắc + nguồn):
-   - **Đau:** áp **nguyên tắc bậc giảm đau WHO** (theo bậc, đúng giờ, đường ưu tiên, cá thể hóa) — nêu nguyên tắc theo guideline; **liều/khoảng liều opioid CHỈ ghi khi có nguồn xác minh, nếu không → [CẦN KIỂM CHỨNG]**; luôn kèm **dự phòng táo bón do opioid** và cảnh báo theo dõi ức chế hô hấp/an thần. Mọi đơn opioid → qua `ke-don-an-toan`.
+   - **Đau:** áp **nguyên tắc bậc giảm đau WHO** (theo bậc, đúng giờ, đường ưu tiên, cá thể hóa — WHO Guidelines for the Pharmacological and Radiotherapeutic Management of Cancer Pain in Adults and Adolescents, Geneva: WHO, 2018, ISBN 978-92-4-155039-0); **liều/khoảng liều opioid CHỈ ghi khi có nguồn xác minh, nếu không → [CẦN KIỂM CHỨNG]**; luôn kèm **dự phòng táo bón do opioid** và cảnh báo theo dõi ức chế hô hấp/an thần. Mọi đơn opioid → qua `ke-don-an-toan`.
    - **Khó thở:** nguyên tắc xử trí (không dược + dược theo guideline) — dẫn nguồn; liều **[CẦN KIỂM CHỨNG]** nếu chưa chắc.
    - **Buồn nôn/nôn · táo bón · mê sảng · lo âu cuối đời:** nguyên tắc tiếp cận theo cơ chế/nguyên nhân + lựa chọn theo guideline; phân biệt mê sảng có thể đảo ngược (tìm nguyên nhân) với cuối đời.
 3. **Thảo luận MỤC TIÊU CHĂM SÓC (goals of care):** giúp bác sĩ cấu trúc cuộc trò chuyện — hiện trạng/tiên lượng (trung thực, nhân văn) · điều người bệnh coi trọng nhất · cân bằng kéo dài sống vs chất lượng sống · giới hạn can thiệp người bệnh mong muốn. Trình bày để **quyết định chung** → `quyet-dinh-chung`. KHÔNG quyết thay người bệnh.
@@ -79,8 +81,12 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa liều/ngưỡng/điểm thang — dẫn guideline + năm, không chắc → `[CẦN KIỂM CHỨNG]`; tôn trọng tự chủ & giá trị người bệnh; chỉ ĐỀ XUẤT (Cổng A); văn phong nhân văn; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
+```
+python tools/gen_research_docx.py --study "<TEN>" --artifact palliative-care
+```
+
 ## Ranh giới
-- CHỈ làm chăm sóc giảm nhẹ/cuối đời (kiểm soát triệu chứng, mục tiêu chăm sóc, ACP, hỗ trợ người nhà). **KHÔNG sàng cờ đỏ/cấp cứu giảm nhẹ** (việc của `sang-loc-co-do` — chạy TRƯỚC), **KHÔNG quản lý bệnh mạn theo đích/treat-to-target để kéo dài kiểm soát** (việc của `theo-doi-benh-man`), **KHÔNG rà an toàn từng đơn cụ thể** (mọi thuốc, nhất là opioid/an thần, chuyển `ke-don-an-toan`), **KHÔNG trình bày/quyết lựa chọn thay người bệnh** (cấu trúc rồi chuyển `quyet-dinh-chung`), **KHÔNG dự phòng/tầm soát ở người chưa bệnh** (việc của `du-phong-tam-soat`).
+- CHỈ làm chăm sóc giảm nhẹ/cuối đời (kiểm soát triệu chứng, mục tiêu chăm sóc, ACP, hỗ trợ người nhà). **KHÔNG sàng cờ đỏ/cấp cứu giảm nhẹ** (việc của `sang-loc-co-do` — chạy TRƯỚC), **KHÔNG quản lý bệnh mạn theo đích/treat-to-target để kéo dài kiểm soát** (việc của `theo-doi-benh-man`), **KHÔNG rà an toàn từng đơn cụ thể** (mọi thuốc, nhất là opioid/an thần, chuyển `ke-don-an-toan`), **KHÔNG trình bày/quyết lựa chọn thay người bệnh** (cấu trúc rồi chuyển `quyet-dinh-chung`), **KHÔNG dự phòng/tầm soát ở người chưa bệnh** (việc của `du-phong-tam-soat`), **KHÔNG quản lý đau mạn KHÔNG ung thư ở bệnh nhân tiên lượng sống còn dài** (việc của `dau-man-tinh`) *(2026-07-12)*.
 - Khung tham chiếu: skill `cap-nhat-chung-cu-y-khoa` (nếu cần dựng dashboard chứng cứ kiểm soát triệu chứng). Xong việc → trả về `dieu-phoi-lam-sang` (bước Theo dõi/Áp dụng).
 
 
@@ -106,9 +112,11 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
