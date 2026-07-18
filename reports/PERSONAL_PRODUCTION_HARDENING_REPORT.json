@@ -1,0 +1,163 @@
+{
+  "kind": "personal_production_hardening_report",
+  "generated_at": "2026-07-17T10:35:17+00:00",
+  "overall_status": "CONTROLLED_PERSONAL_READY_WITH_HUMAN_GATES",
+  "fail_count": 0,
+  "human_gate_count": 6,
+  "evidence_package_summary": {
+    "status": "NOT_PROVIDED",
+    "provided": false,
+    "valid": false,
+    "evidence_records": 0,
+    "valid_evidence_records": 0,
+    "valid_signoffs": 0,
+    "missing_domains": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7"
+    ],
+    "missing_signoffs": [
+      "security_owner",
+      "data_protection_owner",
+      "physician_lead",
+      "operations_owner",
+      "ai_governance_owner",
+      "pi_or_clinic_owner"
+    ],
+    "errors": []
+  },
+  "clinical_production_allowed": false,
+  "real_patient_data_allowed": false,
+  "checks": [
+    {
+      "domain_id": "P1",
+      "title": "Đóng 37 blocker production bằng bằng chứng thật, không tự gỡ",
+      "status": "HUMAN_GATE",
+      "evidence": [
+        "chronic-care-clinic-os/PRODUCTION_BLOCKERS.md",
+        "docs/chronic-care/PHASE_3A_PRODUCTION_BLOCKERS.md",
+        "chronic-care-clinic-os/lib/production-readiness.ts",
+        "chronic-care-clinic-os/lib/production-go-live.ts",
+        "chronic-care-clinic-os/scripts/verify-production-readiness.ts"
+      ],
+      "findings": [
+        "open_blocker_bullets=37",
+        "production remains blocked until a valid evidence package and independent signoffs exist."
+      ],
+      "human_action": "Bác sĩ/quản trị viên chỉ đánh dấu blocker CLEARED sau khi có evidence package, 5 signoff độc lập, dossier hash, rollback và checklist hậu triển khai."
+    },
+    {
+      "domain_id": "P2",
+      "title": "Xác thực actor thật cho PI/IRB/thống kê/phản biện",
+      "status": "HUMAN_GATE",
+      "evidence": [
+        "tools/approve_gate.py",
+        "tools/setup_gate_approval_key.py",
+        "tools/gate_contract.py",
+        "runtime/approval_ledger.py",
+        "tests/test_approval_ledger.py",
+        "tests/test_gate_contract_roles.py",
+        "tests/test_gate_contract_approval_ledger_stakeholder_parity.py",
+        "tests/test_g9_ledger_gate_required.py"
+      ],
+      "findings": [
+        "approval ledger binds role, artifact hash, timestamp and optional local HMAC signature."
+      ],
+      "human_action": "Bác sĩ tự chạy setup_gate_approval_key.py ngoài phiên agent; mỗi approval thật phải do người đúng vai trò tự thực hiện, không nhờ agent chạy hộ."
+    },
+    {
+      "domain_id": "P3",
+      "title": "Pipeline dữ liệu thật: PII → pseudonymization → cleaning → data lock",
+      "status": "HUMAN_GATE",
+      "evidence": [
+        "tools/import_real_dataset.py",
+        "tools/deidentify_research_dataset.py",
+        "tools/pseudonymize_research_dataset.py",
+        "tools/clean_research_dataset.py",
+        "tools/lock_analysis_dataset.py",
+        "tools/secure_permissions.py",
+        "tests/test_real_data_intake.py",
+        "tests/test_deidentify_research_dataset.py",
+        "tests/test_pseudonymize_research_dataset.py",
+        "tests/test_clean_research_dataset.py",
+        "tests/test_analysis_dataset_lock.py"
+      ],
+      "findings": [
+        "raw file is never overwritten; linkage map stays outside repo/OneDrive by default."
+      ],
+      "human_action": "Trước dữ liệu thật: cần IRB/DMP, retention owner, mapping custody, data manager xác nhận no-PII và PI ký data-lock."
+    },
+    {
+      "domain_id": "P4",
+      "title": "SOP cá nhân: khi dùng, khi dừng, ai duyệt",
+      "status": "HUMAN_GATE",
+      "evidence": [
+        "docs/PERSONAL_PRODUCTION_HARDENING_SOP.md"
+      ],
+      "findings": [
+        "single personal SOP now binds the 7 hardening domains to daily operation."
+      ],
+      "human_action": "Bác sĩ/quản trị viên đọc SOP, điền người phụ trách thật và lưu bản ký tại cơ sở trước khi chuyển từ synthetic/de-identified pilot sang dữ liệu thật."
+    },
+    {
+      "domain_id": "P5",
+      "title": "UAT bằng dữ liệu giả lập và đã khử định danh trước dữ liệu thật",
+      "status": "HUMAN_GATE",
+      "evidence": [
+        "chronic-care-clinic-os/MVP_01_ACCEPTANCE_TEST.md",
+        "chronic-care-clinic-os/TEST_PLAN.md",
+        "docs/system-v7/PHASE_2C_SHADOW_PILOT_PROTOCOL.md",
+        "docs/system-v7/PHASE_2D_SHADOW_PILOT_READINESS.md",
+        "tests/evals/clinical_safety/vignettes/phase_2a_minimum_vignettes.json",
+        "tests/evals/clinical_safety/vignettes/phase_2c_minimum_vignettes.json",
+        "chronic-care-clinic-os/scripts/verify-outpatient-automation-control.ts"
+      ],
+      "findings": [
+        "UAT artifacts exist but real clinic UAT signoff must remain an external human gate."
+      ],
+      "human_action": "Chạy shadow/UAT với dữ liệu synthetic hoặc đã khử định danh; bác sĩ, điều dưỡng, quản trị dữ liệu ký biên bản trước khi bật bất kỳ workflow thật nào."
+    },
+    {
+      "domain_id": "P6",
+      "title": "Backup, versioning, rollback, monitoring và incident response",
+      "status": "HUMAN_GATE",
+      "evidence": [
+        "docs/system-v7/ROLLBACK_PLAN.md",
+        "docs/system-v7/INCIDENT_RESPONSE.md",
+        "docs/system-v7/CHANGE_CONTROL_POLICY.md",
+        "chronic-care-clinic-os/PRODUCTION_GO_LIVE_RUNBOOK.md",
+        "chronic-care-clinic-os/DATA_RETENTION_POLICY.md",
+        "chronic-care-clinic-os/lib/audit-storage-contract.ts",
+        "chronic-care-clinic-os/lib/prisma-rollback-evidence.ts",
+        "research_automation/project_snapshot.py",
+        "app/core/incident_manager.py"
+      ],
+      "findings": [
+        "repo has rollback and incident contracts; production still needs restore drill evidence."
+      ],
+      "human_action": "Thực hiện restore drill có checksum, xác nhận RPO/RTO, tabletop incident drill và change ticket/rollback plan cho từng lần go-live."
+    },
+    {
+      "domain_id": "P7",
+      "title": "Tách research_mode và clinical_support_mode, không auto-apply/EMR write",
+      "status": "PASS",
+      "evidence": [
+        "app/core/feature_flags.py",
+        "runtime/dispatch_guard.py",
+        "research_studio/research_workflow.py",
+        "app/dashboard/v7_readonly.py",
+        "app/clinical_content/shadow_pilot.py",
+        "chronic-care-clinic-os/lib/workflow-actions.ts"
+      ],
+      "findings": [
+        "dangerous_flags_disabled=true"
+      ],
+      "human_action": "Chỉ bật research official analysis hoặc clinical release bằng change-control riêng, không bật chung với auto-apply hoặc EMR write khi chưa có go-live signoff."
+    }
+  ],
+  "disclaimer": "Cần bác sĩ kiểm chứng. Đây là cổng hardening kỹ thuật/offline; không thay IRB, PI, thống kê viên, phản biện độc lập, pháp lý, bảo mật bệnh viện, UAT hoặc quyết định lâm sàng."
+}
