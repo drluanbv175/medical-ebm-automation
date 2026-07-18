@@ -113,11 +113,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 📷 Đầu vào hình ảnh (ảnh chụp/scan tài liệu)
 Môi trường có thể cấp năng lực **nhìn ảnh** (do nền tảng cung cấp, không phải mọi phiên đều có). Khi bác sĩ đưa ảnh chụp/scan bảng biểu, forest plot, bảng kết quả hay trang PDF: **mô tả nội dung ĐỌC ĐƯỢC** (số liệu, nhãn, chú thích) và **nêu rõ phần nào không đọc chắc** → gắn `[CẦN XÁC NHẬN]`. Số liệu trích từ ảnh phải được **bác sĩ xác nhận** trước khi dùng làm căn cứ; **KHÔNG bịa** số bị mờ/cắt; **KHÔNG** coi ảnh là nguồn đã kiểm chứng thay PMID/DOI. KHÔNG nhận ảnh chứa PII (che/loại định danh trước khi đưa vào).
 
-**Xuất Word:**
-```bash
-python tools/gen_research_docx.py --study "<TEN>" --artifact grade-etd
-```
-
 ## Ranh giới
 KHÔNG tự tìm nguồn mới (nhận từ `tra-cuu-chung-cu`); thiếu nguồn → nói rõ + yêu cầu tra thêm. KHÔNG kê đơn, KHÔNG ghi sổ cái. Output là đầu vào cho dashboard và cho quyết định của bác sĩ. Thẩm định nhanh 1 bài → khung skill `tham-dinh-chung-cu-grade-nnt`.
 

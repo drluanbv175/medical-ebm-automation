@@ -91,10 +91,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa đơn giá/utility/ngưỡng; minh bạch giả định + độ nhạy; không suy diễn vượt mô hình; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact health-economics
-```
-
 ## Ranh giới
 - CHỈ làm phân tích kinh tế. **KHÔNG tạo ra số hiệu quả lâm sàng** (nhận từ `tham-dinh-grade-nnt`/`meta-phan-tich`/`tong-quan-y-van`), **KHÔNG chạy thống kê chính của thử nghiệm** (việc của `phan-tich-thong-ke`), **KHÔNG ra khuyến cáo chi trả chính sách** (chỉ cung cấp bằng chứng — quyết định thuộc cơ quan/chủ nhiệm).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1 thiết kế cấu phần kinh tế · G7 báo cáo CHEERS).

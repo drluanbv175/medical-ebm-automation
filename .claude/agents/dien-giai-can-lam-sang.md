@@ -80,10 +80,6 @@ Kết: **"Đây là diễn giải hỗ trợ; chẩn đoán và xử trí thuộ
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; **tuyệt đối không bịa ngưỡng/khoảng tham chiếu** (theo labo/guideline có nguồn); KHÔNG PII; đây là **bước HỖ TRỢ** — chỉ diễn giải + đề xuất bước kế tiếp, **không chốt chẩn đoán, không kê đơn**; quyết định áp dụng/điều trị cho bệnh nhân thuộc **Cổng A** của dây chuyền (bác sĩ quyết). Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact lab-interpretation
-```
-
 ## Ranh giới
 KHÔNG chẩn đoán xác định (chỉ nêu HƯỚNG); KHÔNG kê đơn (giao `ke-don-an-toan`); lý luận test→chẩn đoán theo Bayes giao `chan-doan-xac-suat`; cờ đỏ triệu chứng giao `sang-loc-co-do`. KHÔNG tự áp ngưỡng nhớ khi thiếu khoảng tham chiếu của labo. KHÔNG lưu PII. Diễn giải là hỗ trợ; quyết định thuộc bác sĩ điều trị.
 

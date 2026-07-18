@@ -81,10 +81,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa thang/điểm/ngưỡng; tách điểm–nguy cơ–hành động; chỉ ĐỀ XUẤT (Cổng A); KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact risk-score
-```
-
 ## Ranh giới
 - CHỈ chọn–áp–diễn giải thang/công cụ nguy cơ đã kiểm định. **KHÔNG làm suy luận Bayes test–treat** (việc của `chan-doan-xac-suat` — nhận con số tiền nghiệm từ đây), **KHÔNG kê đơn** (việc của `ke-don-an-toan`), **KHÔNG chấm GRADE chứng cứ** (việc của `tham-dinh-grade-nnt`), **KHÔNG ra khuyến cáo dự phòng dân số** (việc của `du-phong-tam-soat`).
 - Đã có nguy cơ → trả về `dieu-phoi-lam-sang` để ghép vào gói quyết định.

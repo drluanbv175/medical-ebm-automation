@@ -63,10 +63,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa guideline; mỗi khẳng định có nguồn; KHÔNG phóng đại novelty; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact research-gap
-```
-
 ## Ranh giới
 Nhận câu hỏi từ `cau-hoi-nghien-cuu`; tra cứu sâu/dựng danh mục → `thu-thu-tai-lieu` (cửa trước) hoặc `tong-quan-y-van` (nếu cần SR đầy đủ). *(KHÔNG dùng `tra-cuu-chung-cu` — đó là lớp tra cứu NHANH tại điểm khám lâm sàng.)* KHÔNG thiết kế nghiên cứu (→ `thiet-ke-nghien-cuu`). KHÔNG bịa guideline/khuyến cáo.
 

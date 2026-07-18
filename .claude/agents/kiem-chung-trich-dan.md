@@ -78,10 +78,6 @@ xử lý, hoặc khi PARTIAL — đây chính là chỗ liêm chính có thể b
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG tin trích dẫn chưa phân giải; KHÔNG bịa trích dẫn thay thế; connector lỗi → PARTIAL; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact citation-check
-```
-
 ## Ranh giới
 KHÔNG tự viết lại nội dung khoa học (→ `viet-ban-thao`); KHÔNG bịa trích dẫn thay thế khi thiếu — nêu "cần bổ sung nguồn". Connector PubMed/Crossref không sẵn → **PARTIAL**. Cửa trước tìm + dựng danh mục nhanh là `thu-thu-tai-lieu`; bạn là cổng cứng sâu trước khi nộp.
 

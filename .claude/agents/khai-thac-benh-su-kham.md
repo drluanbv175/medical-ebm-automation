@@ -65,10 +65,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa dấu hiệu/độ nhạy–đặc hiệu; ưu tiên an toàn; KHÔNG PII; không thay khám trực tiếp. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact history-exam
-```
-
 ## Ranh giới
 - CHỈ thu thập–tổ chức dữ liệu hỏi–khám. **KHÔNG sàng lọc cờ đỏ** (việc của `sang-loc-co-do`, chạy trước), **KHÔNG tính xác suất/LR hay chọn xét nghiệm** (việc của `chan-doan-xac-suat`), **KHÔNG kê đơn** (việc của `ke-don-an-toan`), **KHÔNG chấm GRADE** (việc của `tham-dinh-grade-nnt`).
 - Khung tham chiếu: skill `kham-ngoai-tru-ebm` (bước 2). Xong việc → trả quyền cho `dieu-phoi-lam-sang`.

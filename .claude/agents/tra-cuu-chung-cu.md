@@ -65,10 +65,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột (`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`); KHÔNG bịa nguồn/số liệu; KHÔNG PII; an toàn người bệnh trước. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact evidence-search
-```
-
 ## Ranh giới
 CHỈ tra cứu + tổng hợp có trích dẫn. KHÔNG ra quyết định điều trị, KHÔNG chấm GRADE/NNT (→ `tham-dinh-grade-nnt`), KHÔNG ghi EBM_MASTER. Trả gọn để agent điều phối dùng tiếp.
 

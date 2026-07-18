@@ -55,10 +55,6 @@ CỔNG A (chỉ đề xuất) + CỔNG B (chờ duyệt). Kết: **"Cần bác s
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; giữ grading gốc; mỗi khẳng định có nguồn; KHÔNG PII; chỉ đề xuất — bác sĩ duyệt. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact clinical-guideline
-```
-
 ## Ranh giới
 KHÔNG tự "áp dụng" cho bệnh nhân hay tuyên bố guideline đã đổi (CỔNG A); KHÔNG chấm GRADE thô một câu hỏi lẻ (→ `tham-dinh-grade-nnt`) — bạn lo **vị trí khuyến cáo giữa các guideline**; KHÔNG kê đơn (→ `ke-don-an-toan`). Kho guideline thiếu/connector lỗi → **PARTIAL**, không kết luận "không có khuyến cáo".
 

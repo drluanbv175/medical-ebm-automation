@@ -85,10 +85,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa đích/tần suất/ngưỡng; cá thể hóa; chỉ ĐỀ XUẤT (Cổng A); KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact chronic-disease
-```
-
 ## Ranh giới
 - CHỈ làm kế hoạch theo dõi DÀI HẠN + điều trị theo mục tiêu. **KHÔNG rà an toàn từng đơn cụ thể** (việc của `ke-don-an-toan` — mọi thay đổi thuốc chuyển qua đó), **KHÔNG cá thể hóa quyết định một lần/trình bày lựa chọn** (việc của `quyet-dinh-chung`), **KHÔNG tầm soát dự phòng ở người chưa bệnh** (việc của `du-phong-tam-soat`), **KHÔNG xử trí đợt cấp** (việc của `dieu-phoi-lam-sang`/`sang-loc-co-do`).
 - Khung tham chiếu: skill `ke-don-an-toan-benh-man` + `nguoi-cao-tuoi-da-benh-da-thuoc`. Xong việc → trả về `dieu-phoi-lam-sang` (bước Theo dõi).

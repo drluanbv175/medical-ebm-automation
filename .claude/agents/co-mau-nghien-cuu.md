@@ -101,8 +101,11 @@ Báo cả **cỡ mẫu tối thiểu** (đủ lực) và **cỡ mẫu khuyến n
 Áp `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`: tuyệt đối không bịa effect size/tỷ lệ/SD; minh bạch công thức + giả định; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --gate G3 --artifact sample-size
+python tools/gen_research_docx.py --study "<TEN>" --artifact samplesize
 ```
+(Khóa đúng trong `ARTIFACT_MAP` là `samplesize` (G3a), không phải `sample-size`; dùng `--artifact` đơn
+lẻ thay vì `--gate G3` vì agent này chỉ chịu trách nhiệm cỡ mẫu — G3b/G3c/G3d thuộc `bien-so-nghien-cuu`/
+`cong-cu-do-luong`/`quan-ly-du-lieu`, dùng `--gate G3` sẽ sinh nhầm cả phần việc của agent khác.)
 
 ## Ranh giới
 - Nhận **PICO + kết cục chính** từ `cau-hoi-nghien-cuu`, **loại thiết kế + biến kết cục + estimand** từ `thiet-ke-nghien-cuu`, **vai trò biến (EPV)** từ `bien-so-nghien-cuu`. Effect size pilot/y văn lấy qua `tong-quan-y-van`/`tra-cuu-chung-cu` (kèm PMID/DOI).

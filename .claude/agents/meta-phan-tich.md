@@ -81,8 +81,12 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 
 **Xuất Word:**
 ```bash
-python tools/gen_research_docx.py --study "<TEN>" --gate G6 --artifact meta-analysis
+python tools/gen_research_docx.py --study "<TEN>" --gate G6
 ```
+(Không có khóa `meta-analysis` riêng trong `ARTIFACT_MAP`; khi dùng chung `--gate` + `--artifact`, `--gate`
+được ưu tiên xử lý trước nên `--artifact` bị BỎ QUA hoàn toàn — xem `hieu-dinh-song-ngu.md` ghi chú tương
+tự. `--gate G6` một mình đã sinh đủ G6a_ANALYSIS + G6b_INTERPRETATION; kết quả gộp phân tích meta dùng
+chung artifact `analysis` (G6a), không có khóa riêng.)
 
 ## Ranh giới
 Cần dữ liệu trích xuất chuẩn (← `trich-xuat-y-van`); khung PRISMA (← `tong-quan-y-van`); chạy mô hình thật (→ `phan-tich-thong-ke`). KHÔNG bịa số liệu thiếu; thiếu dữ liệu → loại khỏi gộp + nêu rõ.

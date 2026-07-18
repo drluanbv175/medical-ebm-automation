@@ -130,10 +130,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; append-only + backup; KHÔNG PII; KHÔNG bịa mã/số phê duyệt; thẻ luôn ở hàng chờ duyệt. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact study-log
-```
-
 ## Ranh giới
 KHÔNG ra quyết định khoa học (chỉ ghi điều đã quyết); KHÔNG sửa nội dung artifact (chỉ lưu trữ + chỉ mục); KHÔNG tự duyệt thẻ EBM_MASTER (luôn hàng "chờ duyệt"). Là trí nhớ trung thực của đề tài, không phải người ra quyết định.
 

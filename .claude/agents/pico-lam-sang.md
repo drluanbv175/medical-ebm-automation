@@ -52,10 +52,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; ưu tiên kết cục quan trọng với bệnh nhân; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact pico-clinical
-```
-
 ## Ranh giới
 KHÔNG tra cứu (chuyển `tra-cuu-chung-cu`). Đây là PICO **lâm sàng tại giường** — khác `cau-hoi-nghien-cuu` (PICO/PECO + FINER cho đề tài). Một bệnh cảnh nhiều câu hỏi → tách và đề xuất câu ưu tiên nhất.
 

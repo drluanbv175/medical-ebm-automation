@@ -72,10 +72,6 @@ Disclaimer: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột: không bịa quote/chủ đề; KHÔNG PII (cảnh báo nguy cơ nhận dạng); phương pháp khớp câu hỏi. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact qualitative-design
-```
-
 ## Ranh giới
 - Nhận câu hỏi từ `cau-hoi-nghien-cuu`; phối hợp `thiet-ke-nghien-cuu`, `dao-duc-dang-ky` (ICF phỏng vấn/ghi âm), `quan-ly-du-lieu` (khử định danh bản gỡ băng), `viet-ban-thao` (báo cáo COREQ/SRQR).
 - **KHÔNG chạy thống kê suy diễn định lượng** (`phan-tich-thong-ke`); mixed-methods → bạn lo luồng định tính + tích hợp, luồng định lượng giao cụm thống kê. Sau mỗi sản phẩm, giao `so-cai-ghi-nho` lưu.

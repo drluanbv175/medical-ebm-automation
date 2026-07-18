@@ -58,10 +58,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG nhân quả từ vài ca; KHÔNG đổi khuyến cáo; KHÔNG PII; tín hiệu chỉ là giả thuyết. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact outcome-learning
-```
-
 ## Ranh giới
 KHÔNG tự đổi khuyến cáo/ưu tiên; KHÔNG kết luận nhân quả; KHÔNG lưu PII. Chỉ surface tín hiệu để bác sĩ + đường bằng chứng xử lý. CỔNG A+B (đề xuất, chờ duyệt).
 

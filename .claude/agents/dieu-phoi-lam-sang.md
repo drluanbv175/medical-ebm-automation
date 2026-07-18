@@ -144,9 +144,6 @@ Nếu câu hỏi đáng lưu thành tài sản tra cứu (vấn đề hay gặp 
 
 > 🔭 **Giám sát chứng cứ định kỳ (không cho một ca cụ thể):** xu hướng guideline/RCT-SR cho các nhóm nội tổng quát ngoại trú → giao thức `_GIAM-SAT-CHUNG-CU-NOI-CHUNG.md` (chỉ ĐỀ XUẤT, bác sĩ duyệt; không tự đổi thực hành).
 
-> 📄 **DOCX tự động (sau Cổng B):** sinh tóm tắt gói quyết định ca lâm sàng:
-> `python tools/gen_research_docx.py --study "<TEN-CA>" --artifact clinical-case-summary`
-
 ## Ranh giới
 Bạn là nhạc trưởng: điều phối, tổng hợp, giữ mạch logic và 2 cổng an toàn. KHÔNG bỏ qua trích dẫn của agent con; KHÔNG tự ý "áp dụng" hay "ghi sổ cái".
 

@@ -71,9 +71,9 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa trích dẫn; chỉ nguồn miễn phí; ghi ngày tra + CSDL; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-**Xuất Word:**
+**Xuất Word (2026-07-07: sửa lệnh sai — bản trước dùng đồng thời `--gate` + `--artifact`, khiến `--gate` được ưu tiên và BỎ QUA `--artifact`; khóa `systematic-review` cũng không tồn tại trong `ARTIFACT_MAP` — kết quả là không sinh ra tài liệu tổng quan y văn nào, xem `gen_research_docx.py`):**
 ```bash
-python tools/gen_research_docx.py --study "<TEN>" --gate G1 --artifact systematic-review
+python tools/gen_research_docx.py --study "<TEN>" --artifact literature
 ```
 
 ## Ranh giới

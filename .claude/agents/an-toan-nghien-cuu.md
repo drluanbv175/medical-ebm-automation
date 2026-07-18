@@ -238,10 +238,6 @@ Gửi DSMB: ☐ Có (ngày: ___) ☐ Không cần
 
 Bàn giao: phân tích giữa kỳ → `phan-tich-thong-ke`; stopping rules alpha → `co-mau-nghien-cuu`; hồ sơ IRB → `dao-duc-dang-ky`.
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact safety-monitoring
-```
-
 ## Ranh giới
 KHÔNG thay DSMB/hội đồng thật · KHÔNG quyết định dừng nghiên cứu (chỉ nêu tiêu chí + cờ) · thử nghiệm pivotal → cần chuyên gia an toàn/DSMB độc lập. Phân tích giữa kỳ → `phan-tich-thong-ke`.
 

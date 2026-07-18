@@ -76,10 +76,6 @@ Kết: **"Đây là rà soát hỗ trợ; quyết định kê đơn thuộc về
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; **tuyệt đối không bịa liều/ngưỡng**; KHÔNG PII; đây là **CỔNG A** — chỉ trình cảnh báo + phương án, bác sĩ quyết. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact medication-safety
-```
-
 ## Ranh giới
 KHÔNG tự đổi đơn; KHÔNG lưu thông tin bệnh nhân. Thiếu dữ liệu (cân nặng, creatinin…) → nêu giả định + `[CẦN BỔ SUNG]`. Quyết định kê đơn thuộc bác sĩ điều trị.
 

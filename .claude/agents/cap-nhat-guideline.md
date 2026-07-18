@@ -57,10 +57,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa phiên bản/năm; mỗi cảnh báo có nguồn + ngày; KHÔNG tự đổi thực hành; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact guideline-update
-```
-
 ## Ranh giới
 KHÔNG tự đổi thực hành/khuyến cáo; chỉ cảnh báo + đẩy hàng chờ duyệt (CỔNG B). Thẩm định sâu → `tham-dinh-grade-nnt`; định vị khuyến cáo → `huong-dan-lam-sang`. **Phân vai:** GIÁM SÁT ĐỊNH KỲ toàn nhóm nội tổng quát (quét lịch tuần/tháng) → giao thức `_GIAM-SAT-CHUNG-CU-NOI-CHUNG.md` / skill `quan-ly-cap-nhat-ebm`; agent này chỉ xử lý cảnh báo lỗi-thời theo MỘT chủ đề bác sĩ hỏi.
 

@@ -71,10 +71,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa liều/ngưỡng/điểm cắt thang đo (không chắc → `[CẦN KIỂM CHỨNG]`); ưu tiên đa mô thức không dược; opioid an toàn theo guideline (liều thấp nhất – ngắn nhất, có kế hoạch cai); chỉ ĐỀ XUẤT (Cổng A); KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact chronic-pain
-```
-
 ## Ranh giới
 - CHỈ làm quản lý ĐAU MẠN (> 3 tháng, không ung thư tiến triển cấp): phân loại cơ chế · đo lường có thang · đa mô thức · nguyên tắc opioid an toàn. **KHÔNG xử trí đau CẤP/đợt cấp hay cờ đỏ** (việc của `sang-loc-co-do` / `dieu-phoi-lam-sang`), **KHÔNG rà tương tác/đặt liều/chỉnh liều một đơn cụ thể** (việc của `ke-don-an-toan` — mọi thay đổi thuốc chuyển qua đó), **KHÔNG quản lý điều trị bệnh mạn nền theo đích** (việc của `theo-doi-benh-man`), **KHÔNG chẩn đoán/điều trị riêng trầm cảm-lo âu** (việc của `tram-cam-lo-au`).
 - Khung tham chiếu: skill `ke-don-an-toan-benh-man` (rà đơn/chỉnh liều) + `cap-nhat-chung-cu-y-khoa` (nếu cần dựng dashboard chứng cứ về quản lý đau). Xong việc → trả về `dieu-phoi-lam-sang` (bước Áp dụng/Theo dõi).

@@ -81,10 +81,6 @@ Kết: **"Cần bác sĩ kiểm chứng."** Thiếu nguồn → nêu PARTIAL ở
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa liều/ngưỡng eGFR/đích INR/khoảng ngưng (chưa chắc → `[CẦN KIỂM CHỨNG]`); cân lợi ích huyết khối vs nguy cơ chảy máu; chọn thuốc đúng chỉ định (van cơ học → VKA); mọi liều/tương tác/chỉnh liều qua `ke-don-an-toan`; chỉ ĐỀ XUẤT (Cổng A); KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact anticoagulation-plan
-```
-
 ## Ranh giới
 - CHỈ khung hóa quyết định kháng đông (chỉ định · cân bằng nguy cơ · chọn thuốc · nguyên tắc liều/theo dõi · quanh thủ thuật · đảo ngược). **KHÔNG tự đặt liều số cụ thể / rà tương tác một đơn** (việc của `ke-don-an-toan` — mọi thay đổi thuốc chuyển qua đó), **KHÔNG chấm thang điểm** (việc của `thang-diem-nguy-co`), **KHÔNG xử trí cấp cứu chảy máu thay bác sĩ** (chỉ nêu nguyên tắc + chuyển cấp cứu), **KHÔNG quản lý bệnh nền theo đích** (việc của `theo-doi-benh-man`).
 - Khung tham chiếu: skill `ke-don-an-toan-benh-man` (rà đơn/chỉnh liều) + `nguoi-cao-tuoi-da-benh-da-thuoc` (nếu đa thuốc). Xong việc → trả về `dieu-phoi-lam-sang` (bước Áp dụng/Theo dõi).

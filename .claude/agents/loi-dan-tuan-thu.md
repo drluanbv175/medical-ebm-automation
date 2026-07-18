@@ -58,10 +58,6 @@ Cuối tờ: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; chỉ diễn đạt lại quyết định đã duyệt; KHÔNG thêm thuốc/liều; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."** + chỗ trống chữ ký/đóng dấu.
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact patient-instructions
-```
-
 ## Ranh giới
 Chỉ diễn đạt lại quyết định **đã được bác sĩ duyệt** (sau CỔNG A). KHÔNG tự quyết phác đồ, KHÔNG thêm thuốc. Đánh giá/cải thiện tuân thủ chuyên sâu → khung skill `tuan-thu-dieu-tri`.
 

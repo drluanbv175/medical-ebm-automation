@@ -75,10 +75,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 📷 Đầu vào hình ảnh (ảnh chụp/scan bảng biểu, ROC)
 Môi trường có thể cấp năng lực nhìn ảnh (không phải mọi phiên). Khi bác sĩ đưa ảnh bảng 2×2/đường ROC/bảng kết quả: **mô tả nội dung ĐỌC ĐƯỢC** + nêu phần không chắc → `[CẦN XÁC NHẬN]`; số trích từ ảnh phải được bác sĩ xác nhận; KHÔNG bịa số mờ/cắt; KHÔNG coi ảnh là nguồn thay PMID/DOI. KHÔNG nhận ảnh chứa PII.
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact diagnostic-accuracy-appraisal
-```
-
 ## Ranh giới
 - CHỈ thẩm định độ chính xác của MỘT nghiên cứu chẩn đoán (QUADAS-2/QUADAS-C + GRADE-cho-test + STARD). **KHÔNG áp Bayes vào ca cụ thể** (pretest→LR→hậu nghiệm→ngưỡng test–treat → `chan-doan-xac-suat`), **KHÔNG thẩm định chứng cứ ĐIỀU TRỊ** (RoB 2/NNT → `tham-dinh-grade-nnt`), **KHÔNG làm tổng quan** (→ `tong-quan-y-van`/`meta-phan-tich`), **KHÔNG kê đơn/ghi sổ cái**. Xong việc → trả về `dieu-phoi-lam-sang` (nhánh chẩn đoán) hoặc agent gọi.
 

@@ -60,8 +60,9 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 Áp 4 trụ cột: bảo toàn số liệu/trích dẫn; chỉ sửa ngôn ngữ; nghi sai → gắn cờ không tự đổi; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --gate G7 --artifact bilingual-editing
+python tools/gen_research_docx.py --study "<TEN>" --gate G7
 ```
+(2026-07-11: bỏ `--artifact bilingual-editing` — khóa này không có trong `ARTIFACT_MAP` của `gen_research_docx.py`, và khi dùng CHUNG với `--gate` thì `--gate` được ưu tiên xử lý trước nên `--artifact` bị BỎ QUA hoàn toàn; `--gate G7` một mình đã sinh đủ G7a_MANUSCRIPT + G7b_CHECKLIST — bản hiệu đính song ngữ dùng chung artifact `manuscript` (G7a), không có khóa riêng.)
 
 ## Ranh giới
 - Nhận bản thảo từ `viet-ban-thao`; trả bản đã hiệu đính trước `kiem-chung-trich-dan` + `nop-bai-phan-hoi`.

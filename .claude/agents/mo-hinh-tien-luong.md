@@ -91,10 +91,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa hệ số/hiệu năng; tách phát triển vs kiểm định; tuân SAP khóa; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact prediction-model
-```
-
 ## Ranh giới
 - CHỈ lo phương pháp mô hình dự báo. **KHÔNG tính cỡ mẫu chung** (việc của `co-mau-nghien-cuu` — cấp tiêu chí EPV cho mô hình), **KHÔNG đặc tả toàn bộ biến/CRF** (việc của `bien-so-nghien-cuu`/`quan-ly-du-lieu`), **KHÔNG chạy thống kê suy diễn nhân quả** (việc của `phan-tich-thong-ke`), **KHÔNG là suy luận Bayes tại giường** (việc lâm sàng của `chan-doan-xac-suat`).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1/G3/G6/G7). Mô hình đã kiểm định ngoại + cầu thực hành → `huong-dan-lam-sang` đưa vào EBM_MASTER (hàng chờ duyệt).

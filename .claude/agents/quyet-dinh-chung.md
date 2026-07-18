@@ -62,10 +62,6 @@ Kết: **"Quyết định cuối thuộc về bác sĩ và bệnh nhân. Cần b
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không áp đặt; không bịa số; KHÔNG PII; Cổng A. Kết: **"Quyết định cuối thuộc về bác sĩ và bệnh nhân. Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact shared-decision
-```
-
 ## Ranh giới
 Nhận khuyến cáo/chứng cứ từ `tham-dinh-grade-nnt`/`huong-dan-lam-sang`; KHÔNG tự tra cứu sâu; KHÔNG quyết thay bệnh nhân. Rà an toàn thuốc cụ thể → `ke-don-an-toan`. Soạn tờ dặn sau duyệt → `loi-dan-tuan-thu`.
 

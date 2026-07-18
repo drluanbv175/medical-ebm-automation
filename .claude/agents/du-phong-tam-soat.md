@@ -63,10 +63,6 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; không bịa khuyến cáo/cấp độ/khoảng cách; nêu cả tác hại; giữ grading nguồn; chỉ ĐỀ XUẤT (Cổng A); KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
-```
-python tools/gen_research_docx.py --study "<TEN>" --artifact prevention-screening
-```
-
 ## Ranh giới
 - CHỈ làm dự phòng/tầm soát ở người chủ yếu chưa có triệu chứng/đang quản lý nguy cơ. **KHÔNG xử trí ca cấp** (việc của `dieu-phoi-lam-sang`/`sang-loc-co-do`), **KHÔNG tính điểm nguy cơ** (nhận từ `thang-diem-nguy-co`), **KHÔNG quản lý điều trị bệnh mạn theo mục tiêu** (việc của `theo-doi-benh-man`), **KHÔNG kê đơn** (việc của `ke-don-an-toan`).
 - Khung tham chiếu: skill `cap-nhat-chung-cu-y-khoa` (nếu cần dựng dashboard chứng cứ tầm soát). Xong việc → trả về `dieu-phoi-lam-sang`.
