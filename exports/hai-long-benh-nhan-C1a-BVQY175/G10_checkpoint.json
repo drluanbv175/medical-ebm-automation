@@ -1,0 +1,107 @@
+{
+  "gate": "G10",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "generated_at": "2026-07-18T04:50:43.439731",
+  "gate_status": "BLOCKED — chờ input đời-thực",
+  "guardrail": {
+    "passed": true,
+    "checks": {
+      "R1_16_sections": "PASS (đủ 16 mục)",
+      "R2_gate_table": "PASS (10 cổng + 4 mốc)",
+      "R3_valid_tags": "PASS",
+      "R4_pmid_traceable": "PASS (10/10 PMID đối chiếu PubMed raw)",
+      "R5_disclaimer": "PASS",
+      "R6_no_results": "PASS",
+      "R7_display_items": "PASS (Bảng 1/2 + Hình 1/2 + checklist)",
+      "R8_international_compliance": "PASS (reporting + ICH-GCP/IRB + SAP + transparency + reproducibility)",
+      "R9_technical_completion": "PASS (10 bước + 16 đầu ra + kiểm định cuối + quy tắc hoàn thành)",
+      "R10_no_false_completion": "PASS (không tự tuyên bố hoàn thành kỹ thuật)",
+      "R11_missing_information": "PASS (thiếu sót/cổng chờ được liệt kê với ảnh hưởng và phương án an toàn)",
+      "R12_document_control": "PASS (phiên bản/ngày/nguồn thay đổi/người duyệt/nhật ký hiện rõ)",
+      "R13_traceability_matrix": "PASS (mục tiêu-biến-công cụ-phân tích-bảng được nối trong một ma trận)"
+    },
+    "errors": [],
+    "warnings": []
+  },
+  "checkpoints_present": [
+    "G0",
+    "G1",
+    "G2",
+    "G3",
+    "G4",
+    "G5",
+    "G6",
+    "G7",
+    "G8",
+    "G9"
+  ],
+  "checkpoints_missing": [],
+  "document_control": {
+    "document_version": "[DỰ THẢO]",
+    "document_date": "2026-07-18 04:50",
+    "requires_change_history": true,
+    "status": "[DỰ THẢO]"
+  },
+  "real_world_signals": {
+    "irb_approved": false,
+    "sap_locked": false,
+    "db_locked": false,
+    "results_final": false,
+    "integrity_signed": false
+  },
+  "skill_gate_states": {
+    "G0": "DỰ THẢO (ĐẠT guardrail)",
+    "G1": "DỰ THẢO (ĐẠT guardrail)",
+    "G2": "DỰ THẢO (ĐẠT guardrail)",
+    "G3": "DỰ THẢO (ĐẠT guardrail)",
+    "G4": "DỰ THẢO (ĐẠT guardrail)",
+    "G5": "DỰ THẢO (ĐẠT guardrail)",
+    "G6": "THIẾU",
+    "G7": "DỰ THẢO (ĐẠT guardrail)",
+    "G8": "DỰ THẢO (ĐẠT guardrail)",
+    "G9": "DỰ THẢO (ĐẠT guardrail)"
+  },
+  "readiness": [
+    {
+      "moc": "Sẵn sàng nộp Hội đồng đạo đức",
+      "dat": "ĐẠT (dự thảo — chờ bác sĩ điền/nộp)",
+      "chi_tiet": "Hồ sơ đạo đức + protocol ở dạng dự thảo đầy đủ; bác sĩ điền nốt rồi nộp XIN phê duyệt"
+    },
+    {
+      "moc": "Sẵn sàng triển khai (thu thập dữ liệu)",
+      "dat": "CHƯA ĐẠT",
+      "chi_tiet": "BẮT BUỘC có phê duyệt Hội đồng Đạo đức THẬT (tín hiệu irb_approved) + công cụ/SOP dự thảo đầy đủ | Chặn bởi: thiếu phê duyệt IRB thật"
+    },
+    {
+      "moc": "Sẵn sàng phân tích chính",
+      "dat": "CHƯA ĐẠT",
+      "chi_tiet": "BẮT BUỘC SAP đã ký khoá (sap_locked) VÀ dữ liệu đã khoá thật (db_locked) — khớp SKILL.md §Kết luận | Chặn bởi: thiếu SAP đã ký khoá; thiếu dữ liệu đã khoá thật; cổng skill G6 (Dữ liệu): THIẾU"
+    },
+    {
+      "moc": "Sẵn sàng nộp công bố/nghiệm thu",
+      "dat": "CHƯA ĐẠT",
+      "chi_tiet": "BẮT BUỘC có kết quả phân tích THẬT (results_final, bác sĩ xác nhận) + gói liêm chính đã ký (integrity_signed) | Chặn bởi: thiếu kết quả phân tích thật (bác sĩ xác nhận); thiếu gói liêm chính đã ký"
+    }
+  ],
+  "artifacts": {
+    "de_cuong_md": "exports/hai-long-benh-nhan-C1a-BVQY175/DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
+    "de_cuong_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx"
+  },
+  "n_de_cuong_sections": 16,
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PEER_REVIEW_SIGNATURE",
+    "human_message": "G8 (bình duyệt độc lập) chưa có phê duyệt thật trong approval_ledger.json.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "python tools/approve_gate.py --study hai-long-benh-nhan-C1a-BVQY175 --gate G8 --artifact G8_A9_PRESUBMISSION_hai-long-benh-nhan-C1a-BVQY175.md --reviewer-role PHAN_BIEN_DOC_LAP",
+      "study_meta_patch": {},
+      "must_not_fabricate": [
+        "approval_ledger.json",
+        "A12_RETRACTION_RECEIPT.json"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}
