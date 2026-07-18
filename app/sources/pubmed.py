@@ -197,6 +197,85 @@ class PubMedClient(SourceClient):
                                   "reason": "PubMed không trả về bản ghi cho PMID này"}
         return results
 
+    # -- Phân giải METADATA gốc CHỦ ĐỘNG (vá 2026-07-18) ------------------
+    def fetch_metadata(self, pmids: List[str]) -> Dict[str, dict]:
+        """Phân giải CHỦ ĐỘNG metadata gốc (tác giả·tiêu đề·tạp chí·năm·DOI) THẬT
+        từ PubMed cho danh sách PMID — dùng để đối chiếu Bước 1-2 của
+        `kiem-chung-trich-dan` (metadata trong bài vs gốc). Khác
+        `check_retraction_status()` (chỉ đọc cờ rút bài): hàm này trả metadata
+        định danh đầy đủ, làm nền cho `tools/check_citation_metadata.py` ghi
+        receipt máy-kiểm A12_METADATA_RECEIPT.json — bằng chứng PMID đã thật sự
+        được phân giải, không phải agent tự điền ✅ từ trí nhớ.
+
+        Trả {pmid: {"status": ..., "title", "authors", "journal", "year", "doi"}}:
+          "resolved"                 — PubMed trả bản ghi, có metadata gốc
+          "unresolved"               — PubMed không trả bản ghi (nghi ma/PMID sai)
+          "unknown_mock_or_no_email" — KHÔNG tra cứu thật được (mock/thiếu email/
+                                        lỗi mạng) — PHẢI coi là CHƯA phân giải.
+        """
+        if not pmids:
+            return {}
+        if self.use_mock or not settings.ncbi_email:
+            reason = ("USE_MOCK_SOURCES=true" if self.use_mock else "thiếu NCBI_EMAIL")
+            return {
+                pmid: {"status": "unknown_mock_or_no_email",
+                       "reason": f"{reason} — KHÔNG tra cứu PubMed thật, không được coi là đã phân giải"}
+                for pmid in pmids
+            }
+        params = {"db": "pubmed", "id": ",".join(pmids), "retmode": "xml", "email": settings.ncbi_email}
+        if settings.ncbi_api_key:
+            params["api_key"] = settings.ncbi_api_key
+        try:
+            xml_text = self.http.get_text(EFETCH, params=params)
+        except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
+            logger.warning("[pubmed] fetch_metadata lỗi gọi thật: %s", exc)
+            return {
+                pmid: {"status": "unknown_mock_or_no_email", "reason": f"lỗi gọi PubMed: {exc}"}
+                for pmid in pmids
+            }
+        return self._parse_metadata_xml(xml_text, pmids)
+
+    @staticmethod
+    def _parse_metadata_xml(xml_text: str, requested_pmids: List[str]) -> Dict[str, dict]:
+        results: Dict[str, dict] = {}
+        try:
+            root = _safe_fromstring(xml_text)
+        except (ET.ParseError, ValueError) as exc:
+            logger.warning("[pubmed] parse XML (metadata) lỗi/không an toàn: %s", exc)
+            return {pmid: {"status": "unresolved", "reason": f"parse XML lỗi: {exc}"}
+                    for pmid in requested_pmids}
+        found = set()
+        for art in root.findall(".//PubmedArticle"):
+            pmid = art.findtext(".//PMID")
+            if not pmid:
+                continue
+            found.add(pmid)
+            title = (art.findtext(".//ArticleTitle") or "").strip()
+            journal = (art.findtext(".//Journal/Title") or "").strip()
+            year = (art.findtext(".//PubDate/Year")
+                    or art.findtext(".//PubDate/MedlineDate") or "").strip()
+            doi = None
+            for el in art.findall(".//ArticleId"):
+                if el.get("IdType") == "doi":
+                    doi = (el.text or "").strip() or None
+            authors = ", ".join(
+                f"{a.findtext('LastName') or ''} {a.findtext('Initials') or ''}".strip()
+                for a in art.findall(".//Author")[:5]
+            ).strip()
+            results[pmid] = {
+                "status": "resolved",
+                "title": title,
+                "authors": authors or None,
+                "journal": journal or None,
+                "year": year or None,
+                "doi": doi,
+            }
+        for pmid in requested_pmids:
+            if pmid not in found:
+                results[pmid] = {"status": "unresolved",
+                                  "reason": "PubMed không trả về bản ghi cho PMID này"}
+        return results
+
     @staticmethod
     def _infer_study_type(pubtypes: List[str]) -> Optional[str]:
         joined = " ".join(pubtypes).lower()

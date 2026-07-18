@@ -1435,6 +1435,93 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
             "(chưa được `check_citation_retraction.py` kiểm rút bài trước khi phát hành): "
             + ", ".join(missing_final)
         )
+    # (e) Điều kiện metadata (vá 2026-07-18): khâu ĐỐI CHIẾU tác giả/tiêu đề/tạp chí
+    # (Bước 1-2 kiem-chung-trich-dan) trước đây KHÔNG có bằng chứng máy-kiểm — chỉ
+    # bảng agent tự gõ. Nay đòi THÊM receipt A12_METADATA_RECEIPT.json (do
+    # check_citation_metadata.py ghi) chứng minh mỗi PMID đã thật sự được PHÂN GIẢI
+    # metadata gốc. Bắt buộc (fail-closed) cho đề tài THẬT (denylist); validate khi
+    # có mặt cho mọi đề tài; bỏ qua khi vắng cho đề tài synthetic (không phá test).
+    meta_ok, meta_reason = metadata_verification_ok(
+        study, out_dir, artifact_pmids | final_doc_pmids
+    )
+    if not meta_ok:
+        return False, meta_reason
+    return True, ""
+
+
+def metadata_verification_ok(study: str, out_dir: Path, required_pmids: set) -> tuple[bool, str]:
+    """Điều kiện (e) của cổng A12 — đối chiếu receipt máy-kiểm METADATA
+    (`A12_METADATA_RECEIPT.json`, ghi bởi `tools/check_citation_metadata.py`).
+
+    Song song với phần rút bài trong `citation_verification_ok`: chứng minh mỗi PMID
+    đã thật sự được PHÂN GIẢI metadata gốc từ PubMed (không phải agent tự điền ✅ từ
+    trí nhớ). KHÔNG tự chứng minh "trích dẫn trong bài khớp metadata gốc" (so khớp
+    ngữ nghĩa vẫn là phán đoán agent+bác sĩ) — nhưng buộc metadata gốc phải được lấy
+    về THẬT làm mốc đối chiếu.
+
+    Gating (khớp cách phần rút bài xử lý synthetic vs thật):
+      - Thiếu receipt + đề tài THẬT (denylist) → CHẶN (fail-closed).
+      - Thiếu receipt + đề tài synthetic → cho qua (không phá test/luồng cũ).
+      - Có receipt → LUÔN validate (all_resolved, hash, chữ ký khi có khóa, coverage).
+    """
+    receipt_path = out_dir / "A12_METADATA_RECEIPT.json"
+    if not receipt_path.exists():
+        if GC.is_real_study_denylisted(study):
+            return False, (
+                "đề tài THẬT thiếu receipt máy-kiểm A12_METADATA_RECEIPT.json — chưa "
+                "thấy bằng chứng đã phân giải metadata gốc thật "
+                "(`python tools/check_citation_metadata.py --pmids <...> --study "
+                f"{study}`); bảng metadata agent tự gõ không đủ để qua cổng A12"
+            )
+        return True, ""
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False, "receipt A12_METADATA_RECEIPT.json hỏng/không phải JSON hợp lệ"
+    if not isinstance(receipt, dict):
+        return False, "receipt A12_METADATA_RECEIPT.json không đúng cấu trúc (không phải object)"
+    if receipt.get("all_resolved") is not True:
+        return False, (
+            "receipt máy-kiểm A12_METADATA_RECEIPT.json ghi all_resolved=false (còn PMID "
+            "chưa phân giải được metadata gốc) — không khớp dòng \"ĐÃ XÁC MINH\" artifact A12 tự khai"
+        )
+    checked_pmids = receipt.get("pmids_checked")
+    if not isinstance(checked_pmids, list):
+        return False, "receipt A12_METADATA_RECEIPT.json thiếu/sai kiểu trường pmids_checked"
+    import check_citation_metadata as CCM  # noqa: E402 (nạp trễ, tránh phụ thuộc vòng)
+    expected_hash = CCM.pmids_hash([str(x) for x in checked_pmids])
+    if receipt.get("pmids_hash") != expected_hash:
+        return False, (
+            "receipt A12_METADATA_RECEIPT.json có pmids_hash không khớp pmids_checked "
+            "(nghi bị sửa tay sau khi ghi) — không đủ tin cậy để qua cổng"
+        )
+    # Chữ ký HMAC (gate_id A12META riêng, không trùng chữ ký receipt rút bài).
+    if GC.signing_key_configured():
+        expected_signature = GC.sign_approval(
+            CCM.METADATA_GATE_ID, study, receipt.get("pmids_hash", ""),
+            receipt.get("checked_at_utc", "")
+        )
+        receipt_signature = receipt.get("receipt_signature")
+        if not receipt_signature or not expected_signature or not hmac.compare_digest(
+            str(receipt_signature), str(expected_signature)
+        ):
+            return False, (
+                "receipt A12_METADATA_RECEIPT.json thiếu chữ ký hợp lệ hoặc chữ ký không "
+                "khớp (nghi bị giả mạo/sửa tay) — không đủ tin cậy để qua cổng"
+            )
+    elif GC.is_real_study_denylisted(study):
+        return False, (
+            "đề tài THẬT nhưng máy đang chạy CHƯA cấu hình khóa ký "
+            "(setup_gate_approval_key.py) — không thể xác minh chữ ký receipt "
+            "A12_METADATA_RECEIPT.json, coi như CHƯA xác minh (fail-closed)"
+        )
+    checked_set = {str(x) for x in checked_pmids}
+    missing = sorted({str(x) for x in required_pmids} - checked_set)
+    if missing:
+        return False, (
+            "PMID trong artifact/bản G10 cuối chưa được phân giải metadata gốc thật "
+            "(`check_citation_metadata.py`): " + ", ".join(missing)
+        )
     return True, ""
 
 
@@ -1569,6 +1656,15 @@ def main() -> int:
     # trạng thái "DRAFT" trong văn bản (dễ bị bỏ qua). Nay xác minh THẬT qua ledger
     # (chữ ký, xem gate_contract.py) — vẫn XUẤT file (bác sĩ có thể cần xem nháp),
     # nhưng KHÔNG báo "sẵn sàng"/exit 0 nếu G9 chưa thật sự có phê duyệt.
+    #
+    # GIỚI HẠN THẬT ĐÃ BIẾT (ghi nhận 2026-07-18, audit đối kháng 7 trục — KHÔNG phải
+    # drift mới, là đặc điểm kiến trúc từ đầu): cổng cứng mã hóa G9 chỉ đòi MỘT chữ ký
+    # ledger role=PI, KHÔNG đối chiếu số bản ghi với n_authors. Hệ thống chưa có hạ
+    # tầng định danh riêng cho từng đồng tác giả nên KHÔNG thể xác minh bằng mã việc
+    # "đủ N chữ ký tay của tất cả tác giả" mà tài liệu A10 (ICMJE) yêu cầu trên giấy.
+    # Kỷ luật vận hành — PI chỉ ký cổng G9 SAU khi đã thật sự thu đủ chữ ký giấy của
+    # TẤT CẢ đồng tác giả — là lớp bảo vệ DUY NHẤT cho phần này. Không nới lỏng cổng;
+    # chỉ nêu rõ ranh giới máy-kiểm để bác sĩ không hiểu nhầm "G9 xanh = đủ mọi chữ ký".
     g9_artifact = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
     g9_signed = GC.ledger_approved("G9", study, g9_artifact, repo_root=BASE)
     if not g9_signed and not args.i_know_g9_not_signed:

@@ -27,6 +27,7 @@ TOOLS_DIR = REPO_ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+import check_citation_metadata as CCM  # noqa: E402
 import check_citation_retraction as CCR  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
@@ -138,6 +139,34 @@ def _write_matching_retraction_receipt(
     if signature:
         receipt["receipt_signature"] = signature
     (d / "A12_RETRACTION_RECEIPT.json").write_text(
+        json.dumps(receipt, ensure_ascii=False), encoding="utf-8"
+    )
+
+
+def _write_matching_metadata_receipt(
+    d: Path, study: str, pmids: list[str], all_resolved: bool = True
+) -> None:
+    """Ghi `A12_METADATA_RECEIPT.json` giả lập ĐÚNG format do
+    `check_citation_metadata.py::write_metadata_receipt` sinh ra — dùng test
+    metadata_verification_ok() mà không cần gọi PubMed thật."""
+    checked_at_utc = "2026-07-18T00:00:00+00:00"
+    pmids_hash_value = CCM.pmids_hash(pmids)
+    receipt = {
+        "study": study,
+        "checked_at_utc": checked_at_utc,
+        "pmids_checked": sorted(pmids),
+        "pmids_hash": pmids_hash_value,
+        "all_resolved": all_resolved,
+        "metadata": {
+            p: ({"status": "resolved", "title": "t", "authors": "a", "journal": "j",
+                 "year": "2020", "doi": None} if all_resolved else {"status": "unresolved"})
+            for p in pmids
+        },
+    }
+    signature = GC.sign_approval(CCM.METADATA_GATE_ID, study, pmids_hash_value, checked_at_utc)
+    if signature:
+        receipt["receipt_signature"] = signature
+    (d / "A12_METADATA_RECEIPT.json").write_text(
         json.dumps(receipt, ensure_ascii=False), encoding="utf-8"
     )
 
@@ -507,6 +536,127 @@ class TestCitationRetractionReceiptGate:
             self._sign_g8_g9(d, study)
             self._write_verified_artifact(d, study, pmids)
             _write_matching_retraction_receipt(d, study, pmids)
+            rc = _run_main(study)
+            assert rc == 0
+        finally:
+            _rmtree_retry(d)
+
+
+class TestCitationMetadataGate:
+    """Cổng A12 điều kiện (e) — receipt METADATA (vá 2026-07-18, audit đối kháng 7
+    trục). Trước bản vá, A12 CHỈ máy-kiểm khâu RÚT BÀI; đối chiếu tác giả/tiêu đề/
+    tạp chí (Bước 1-2 kiem-chung-trich-dan) hoàn toàn dựa bảng agent tự gõ. Nay đòi
+    THÊM A12_METADATA_RECEIPT.json chứng minh PMID đã thật sự được phân giải.
+    Gating: bắt buộc cho đề tài THẬT (denylist); validate khi có mặt; bỏ qua khi
+    vắng cho synthetic (không phá test cũ). Test gọi thẳng metadata_verification_ok."""
+
+    def test_synthetic_study_without_metadata_receipt_passes(self, tmp_path, monkeypatch):
+        """Không phá luồng cũ: đề tài synthetic (không denylist) thiếu receipt
+        metadata vẫn qua điều kiện (e)."""
+        _configure_test_signing_key(tmp_path, monkeypatch)
+        d = _study_dir("PYTEST-META-T1")
+        try:
+            ok, reason = G10.metadata_verification_ok("PYTEST-META-T1", d, {"12345678"})
+            assert ok, reason
+        finally:
+            _rmtree_retry(d)
+
+    def test_real_study_without_metadata_receipt_blocked(self, tmp_path, monkeypatch):
+        """Đề tài THẬT (denylist) thiếu receipt metadata → fail-closed."""
+        _configure_test_signing_key(tmp_path, monkeypatch)
+        monkeypatch.setattr(GC, "is_real_study_denylisted", lambda s: True)
+        d = _study_dir("PYTEST-META-T2-REAL")
+        try:
+            ok, reason = G10.metadata_verification_ok("PYTEST-META-T2-REAL", d, {"12345678"})
+            assert not ok
+            assert "A12_METADATA_RECEIPT.json" in reason
+        finally:
+            _rmtree_retry(d)
+
+    def test_metadata_receipt_all_resolved_false_blocked(self, tmp_path, monkeypatch):
+        _configure_test_signing_key(tmp_path, monkeypatch)
+        d = _study_dir("PYTEST-META-T3")
+        try:
+            _write_matching_metadata_receipt(d, "PYTEST-META-T3", ["12345678"], all_resolved=False)
+            ok, reason = G10.metadata_verification_ok("PYTEST-META-T3", d, {"12345678"})
+            assert not ok
+            assert "all_resolved=false" in reason
+        finally:
+            _rmtree_retry(d)
+
+    def test_metadata_receipt_valid_passes(self, tmp_path, monkeypatch):
+        _configure_test_signing_key(tmp_path, monkeypatch)
+        d = _study_dir("PYTEST-META-T4")
+        try:
+            _write_matching_metadata_receipt(d, "PYTEST-META-T4", ["12345678", "23456789"])
+            ok, reason = G10.metadata_verification_ok(
+                "PYTEST-META-T4", d, {"12345678", "23456789"}
+            )
+            assert ok, reason
+        finally:
+            _rmtree_retry(d)
+
+    def test_metadata_receipt_hash_tampered_blocked(self, tmp_path, monkeypatch):
+        _configure_test_signing_key(tmp_path, monkeypatch)
+        d = _study_dir("PYTEST-META-T5")
+        try:
+            _write_matching_metadata_receipt(d, "PYTEST-META-T5", ["12345678"])
+            rp = d / "A12_METADATA_RECEIPT.json"
+            receipt = json.loads(rp.read_text(encoding="utf-8"))
+            receipt["pmids_checked"] = ["12345678", "99999999"]  # thêm PMID không kiểm
+            rp.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8")
+            ok, reason = G10.metadata_verification_ok("PYTEST-META-T5", d, {"12345678"})
+            assert not ok
+            assert "pmids_hash không khớp" in reason
+        finally:
+            _rmtree_retry(d)
+
+    def test_metadata_receipt_missing_required_pmid_blocked(self, tmp_path, monkeypatch):
+        """Coverage: bản G10/artifact nhắc PMID chưa được phân giải metadata → chặn."""
+        _configure_test_signing_key(tmp_path, monkeypatch)
+        d = _study_dir("PYTEST-META-T6")
+        try:
+            _write_matching_metadata_receipt(d, "PYTEST-META-T6", ["12345678"])
+            ok, reason = G10.metadata_verification_ok(
+                "PYTEST-META-T6", d, {"12345678", "99999999"}
+            )
+            assert not ok
+            assert "99999999" in reason
+        finally:
+            _rmtree_retry(d)
+
+    def test_metadata_receipt_bad_signature_blocked(self, tmp_path, monkeypatch):
+        """Chữ ký sai (khi máy có khóa) → chặn, chống receipt tự bịa."""
+        _configure_test_signing_key(tmp_path, monkeypatch)
+        d = _study_dir("PYTEST-META-T7")
+        try:
+            _write_matching_metadata_receipt(d, "PYTEST-META-T7", ["12345678"])
+            rp = d / "A12_METADATA_RECEIPT.json"
+            receipt = json.loads(rp.read_text(encoding="utf-8"))
+            receipt["receipt_signature"] = "deadbeef" * 8  # chữ ký giả
+            rp.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8")
+            ok, reason = G10.metadata_verification_ok("PYTEST-META-T7", d, {"12345678"})
+            assert not ok
+            assert "chữ ký" in reason
+        finally:
+            _rmtree_retry(d)
+
+    def test_full_g10_passes_with_both_receipts_and_metadata(self, tmp_path, monkeypatch):
+        """Tích hợp: luồng G10 đầy đủ (G8+G9 ký, A12 sạch, CẢ HAI receipt) → qua."""
+        study = "PYTEST-META-T8"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            g8_content = "PRESUBMISSION REVIEW — nội dung giả lập test"
+            g9_content = "AUTHOR INTEGRITY — nội dung giả lập test"
+            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8")
+            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8")
+            _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
+            _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
+            _write_clean_citation_artifact(d, study)
+            pmids = _g7_seed_pmids(d) or ["12345678"]
+            _write_matching_metadata_receipt(d, study, pmids)
             rc = _run_main(study)
             assert rc == 0
         finally:
