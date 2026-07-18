@@ -1625,7 +1625,8 @@ def main() -> int:
         _mark_g10_blocked(
             GC.REASON_MISSING_CITATION_VERIFICATION,
             f"Trích dẫn (cổng A12) {citation_reason}.",
-            f"python tools/check_citation_retraction.py --study {study} --pmids <...>",
+            # Tool GỘP: 1 efetch, ghi cả 2 receipt (rút bài + metadata) — ít token/mạng.
+            f"python tools/check_citations.py --study {study} --pmids <...>",
         )
         return GC.EXIT_BLOCKED
 

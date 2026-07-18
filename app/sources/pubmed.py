@@ -197,6 +197,46 @@ class PubMedClient(SourceClient):
                                   "reason": "PubMed không trả về bản ghi cho PMID này"}
         return results
 
+    # -- GỘP: rút bài + metadata trong MỘT efetch (vá 2026-07-18, giảm token) ---
+    def check_citations(self, pmids: List[str]) -> Dict[str, Dict[str, dict]]:
+        """Gọi PubMed efetch MỘT LẦN cho danh sách PMID rồi trả CẢ trạng thái rút
+        bài LẪN metadata gốc — thay cho việc gọi `check_retraction_status()` và
+        `fetch_metadata()` riêng (2 efetch cho cùng danh sách PMID = gấp đôi mạng,
+        parse, và token đọc kết quả). Dùng bởi `tools/check_citations.py` để ghi cả
+        hai receipt (rút bài + metadata) từ một lệnh duy nhất.
+
+        Trả {"retraction": {pmid: {...}}, "metadata": {pmid: {...}}} — mỗi nhánh
+        đúng format của `check_retraction_status()`/`fetch_metadata()` tương ứng, để
+        các hàm ghi receipt hiện có tái dùng y nguyên (không phân kỳ logic)."""
+        if not pmids:
+            return {"retraction": {}, "metadata": {}}
+        if self.use_mock or not settings.ncbi_email:
+            reason = ("USE_MOCK_SOURCES=true" if self.use_mock else "thiếu NCBI_EMAIL")
+            retr = {pmid: {"status": "unknown_mock_or_no_email",
+                           "reason": f"{reason} — KHÔNG tra cứu PubMed thật, không được coi là 'ok'"}
+                    for pmid in pmids}
+            meta = {pmid: {"status": "unknown_mock_or_no_email",
+                           "reason": f"{reason} — KHÔNG tra cứu PubMed thật, không được coi là đã phân giải"}
+                    for pmid in pmids}
+            return {"retraction": retr, "metadata": meta}
+        params = {"db": "pubmed", "id": ",".join(pmids), "retmode": "xml", "email": settings.ncbi_email}
+        if settings.ncbi_api_key:
+            params["api_key"] = settings.ncbi_api_key
+        try:
+            xml_text = self.http.get_text(EFETCH, params=params)
+        except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
+            logger.warning("[pubmed] check_citations lỗi gọi thật: %s", exc)
+            retr = {pmid: {"status": "unknown_mock_or_no_email", "reason": f"lỗi gọi PubMed: {exc}"}
+                    for pmid in pmids}
+            meta = {pmid: {"status": "unknown_mock_or_no_email", "reason": f"lỗi gọi PubMed: {exc}"}
+                    for pmid in pmids}
+            return {"retraction": retr, "metadata": meta}
+        # Một XML → hai parser (không gọi mạng lần 2).
+        return {
+            "retraction": self._parse_retraction_xml(xml_text, pmids),
+            "metadata": self._parse_metadata_xml(xml_text, pmids),
+        }
+
     # -- Phân giải METADATA gốc CHỦ ĐỘNG (vá 2026-07-18) ------------------
     def fetch_metadata(self, pmids: List[str]) -> Dict[str, dict]:
         """Phân giải CHỦ ĐỘNG metadata gốc (tác giả·tiêu đề·tạp chí·năm·DOI) THẬT
