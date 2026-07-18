@@ -1,0 +1,74 @@
+{
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "gate": "G1",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN THIẾT KẾ + ĐIỀN PICO O VÀO SAP",
+  "generated_at": "2026-07-17T19:12:49.397719",
+  "question_type": "descriptive",
+  "design": {
+    "primary": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)",
+    "internal_code": "cross_sectional",
+    "reporting_standard": "STROBE",
+    "alternative_1": "Khảo sát dựa cộng đồng (nếu muốn ngoại suy toàn dân số)",
+    "ambiguous": false,
+    "bias_controls": [
+      [
+        "Selection bias",
+        "Sampling ngẫu nhiên hoặc liên tiếp; tránh tự chọn"
+      ],
+      [
+        "Information bias",
+        "Đo phơi nhiễm + kết cục cùng thời điểm → không suy nhân quả"
+      ],
+      [
+        "Confounding",
+        "Đa biến; hạn chế: cùng thời điểm → không loại trừ causal confounders"
+      ],
+      [
+        "Prevalence-incidence bias",
+        "Thiết kế chỉ ước lượng hiện mắc; bàn luận giới hạn này"
+      ],
+      [
+        "Non-response bias",
+        "So sánh người trả lời vs không trả lời (nếu có thể)"
+      ],
+      [
+        "Social desirability",
+        "Tự báo cáo → có thể underreport hành vi tiêu cực"
+      ],
+      [
+        "Reporting bias",
+        "Đăng ký nghiên cứu + tiền định phân tích"
+      ]
+    ]
+  },
+  "specialist_modules": [],
+  "effect_sizes_found": 1,
+  "effect_size_samples": [
+    {
+      "type": "MD",
+      "value": 0.91,
+      "ci": "",
+      "pmid": "42136107",
+      "title": "Effects of Decision Aids on Decision Knowledge, Conflict, and Satisfaction Among",
+      "year": "2026",
+      "quality": "crude"
+    }
+  ],
+  "guardrail": {
+    "passed": true,
+    "errors": []
+  },
+  "artifacts": {
+    "A2_markdown": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A2_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.docx"
+  },
+  "pending_doctor_actions": [
+    "Xác nhận thiết kế chọn (§1)",
+    "Điền kết cục chính (SAP §2) — từ PICO O ở G0",
+    "Điền covariates (SAP §5) với lý do",
+    "Chọn effect size ước lượng từ §3 (hoặc pilot data)"
+  ],
+  "next_gate": "G2 (Đạo đức IRB) song song với G3 (Cỡ mẫu + SAP hoàn thiện)",
+  "g4_status": "PENDING — SAP chưa khóa (khóa sau G3 sau khi bác sĩ ký)",
+  "disclaimer": "Cần bác sĩ kiểm chứng."
+}
