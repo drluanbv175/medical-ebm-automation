@@ -1,0 +1,98 @@
+{
+  "gate": "G8",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "run_date": "2026-07-17 19:22",
+  "gate_status": "PENDING -- Can: IRB that (G2), SAP ky (G4), Ket qua phan tich THAT da xac nhan (results_final trong study_meta.json -- chua co nghia la ban thao con placeholder [CAN KET QUA THAT], KHONG duoc coi la san sang nop du diem tu kiem co cao)",
+  "pipeline_completeness": {
+    "G0": {
+      "status": "PASS OK",
+      "artifact": "G0_A1_PICO",
+      "checkpoint_exists": true
+    },
+    "G1": {
+      "status": "PASS OK",
+      "artifact": "G1_A2_DESIGN",
+      "checkpoint_exists": true
+    },
+    "G2": {
+      "status": "PENDING -- cho IRB that",
+      "artifact": "G2_A3_IRB",
+      "checkpoint_exists": true
+    },
+    "G3": {
+      "status": "PASS OK",
+      "artifact": "G3_A4_SAMPLE",
+      "checkpoint_exists": true
+    },
+    "G4": {
+      "status": "PENDING -- cho SAP ky",
+      "artifact": "G4_A5_SAP",
+      "checkpoint_exists": true
+    },
+    "G5": {
+      "status": "PASS OK",
+      "artifact": "G5_A6_DATA",
+      "checkpoint_exists": true
+    },
+    "G6": {
+      "status": "PASS OK",
+      "artifact": "G6_A7_SCRIPTS",
+      "checkpoint_exists": true
+    },
+    "G7": {
+      "status": "DRAFT",
+      "artifact": "G7_A8_MANUSCRIPT",
+      "checkpoint_exists": true
+    }
+  },
+  "pipeline_pass_count": 5,
+  "pipeline_total": 8,
+  "pipeline_completeness_pct": 62,
+  "reporting_standard": "STROBE 2007",
+  "reporting_checklist_score": "8/22",
+  "reporting_score_pct": 36,
+  "statistical_integrity": {
+    "overall": "PASS",
+    "passed_count": 5,
+    "total_checks": 6,
+    "warnings": [
+      "SAP chua duoc ky chinh thuc"
+    ]
+  },
+  "target_journal": null,
+  "target_journal_if": null,
+  "journal_suggestions": [
+    {
+      "journal": "BMC Public Health",
+      "if": 4.5,
+      "note": "Cross-sectional suc khoe cong dong"
+    },
+    {
+      "journal": "PLOS ONE",
+      "if": 3.7,
+      "note": "Da linh vuc, tiep can mo"
+    },
+    {
+      "journal": "BMJ Open",
+      "if": 2.9,
+      "note": "Cross-sectional lam sang + cong dong"
+    },
+    {
+      "journal": "Journal of Public Health",
+      "if": 3.0,
+      "note": "Suc khoe cong dong"
+    }
+  ],
+  "presubmission_score": 18,
+  "presubmission_total": 30,
+  "presubmission_readiness": "CAN THEM 7 DIEM",
+  "submission_readiness": "NEEDS: PENDING -- Can: IRB that (G2), SAP ky (G4), Ket qua phan tich THAT da xac nhan (results_final trong study_meta.json -- chua co nghia la ban thao con placeholder [CAN KET QUA THAT], KHONG duoc coi la san sang nop du diem tu kiem co cao)",
+  "guardrail": {
+    "status": "[OK] PASS",
+    "passed": true,
+    "n_errors": 0,
+    "errors": []
+  },
+  "disclaimer": "Can bac si kiem chung.",
+  "next_gate": "SUBMISSION hoac G9 (Peer Review Response) sau khi nop"
+}
