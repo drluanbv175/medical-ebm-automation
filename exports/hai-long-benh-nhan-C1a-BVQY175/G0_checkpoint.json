@@ -1,0 +1,39 @@
+{
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "gate": "G0",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN PICO",
+  "generated_at": "2026-07-17T19:12:31.683169",
+  "topic": "Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm khám bệnh và điều trị theo yêu cầu C1, Bệnh viện Quân y 175",
+  "base_query": "patient satisfaction outpatient department hospital",
+  "pubmed_results": {
+    "total_found": 40,
+    "n_pmids": 40,
+    "n_sr": 20,
+    "n_rct": 20,
+    "n_guideline": 0,
+    "n_recent": 10,
+    "most_recent_year": 2026
+  },
+  "evidence_level": "MẠNH — có SR/MA",
+  "research_gaps": [
+    "Chưa có guideline/khuyến cáo chính thức cho vấn đề này"
+  ],
+  "design_suggestion": "Nghiên cứu phân tích dưới nhóm / quần thể đặc thù / pragmatic trial",
+  "guardrail": {
+    "passed": true,
+    "n_errors": 0,
+    "errors": []
+  },
+  "artifacts": {
+    "A1_markdown": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A1_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx"
+  },
+  "pending_doctor_actions": [
+    "Xác nhận PICO 4 thành phần",
+    "Ấn định kết cục chính (1 kết cục duy nhất)",
+    "Điền FINER F (Feasible) và E (Ethical)",
+    "Xác nhận thiết kế gợi ý"
+  ],
+  "next_gate": "G1 — Thiết kế nghiên cứu (sau khi bác sĩ xác nhận PICO)",
+  "disclaimer": "Cần bác sĩ kiểm chứng."
+}
