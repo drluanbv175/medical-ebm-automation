@@ -1,0 +1,21 @@
+{
+  "gate": "G4",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "run_date": "2026-07-17",
+  "g4_status": "PENDING — CHỜ BÁC SĨ KÝ SAP",
+  "g4_sap_version": "1.0",
+  "g4_lock_date": null,
+  "n_from_g3": 428,
+  "alpha": 0.05,
+  "power": 0.8,
+  "design_code": "cross_sectional",
+  "reporting_standard": "STROBE",
+  "guardrail": "✅ PASS",
+  "pending_doctor_actions": [
+    "Điền §2 kết cục chính (tên biến, đơn vị, ngưỡng)",
+    "Điền §5 covariates với lý do lâm sàng / DAG",
+    "Điền §10 phần mềm + seed",
+    "Ký SAP Lock Certificate → cung cấp ngày ký"
+  ],
+  "lock_instruction": "Để mở G4: ký SAP Lock Certificate → cung cấp ngày ký → ghi G4_STATUS=LOCKED"
+}
