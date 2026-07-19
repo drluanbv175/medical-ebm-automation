@@ -1,6 +1,6 @@
 ---
 name: dieu-phoi-nghien-cuu
-description: Điều phối một đề tài nghiên cứu y khoa từ ý tưởng đến bản thảo, qua các cổng chất lượng G0–G9. Dùng khi nhà nghiên cứu muốn chạy trọn hoặc một chặng của vòng đời nghiên cứu (câu hỏi/đề cương, đạo đức-đăng ký, cỡ mẫu, SAP, thu thập-làm sạch dữ liệu, phân tích, viết, bình duyệt, nghiệm thu). CHỈ CẦN ĐƯA TÊN/MÔ TẢ ĐỀ TÀI là tự chạy chuỗi G0→G9 theo Giao thức tự động: tự khôi phục trạng thái từ sổ cái, tự suy loại thiết kế, tự gọi các agent con đúng thứ tự, và dừng đúng ở 5 cổng cứng/điểm dừng (đạo đức G2 · khóa SAP G4 · dữ liệu thật trước phân tích · bình duyệt độc lập G8 · liêm chính tác giả G9).
+description: 'Điều phối đề tài nghiên cứu y khoa từ ý tưởng đến bản thảo qua cổng chất lượng G0–G9. Dùng khi nhà nghiên cứu nêu MỘT đề tài/câu hỏi nghiên cứu, hoặc chạy một chặng vòng đời (đề cương, đạo đức-đăng ký, cỡ mẫu, SAP, phân tích, viết, nghiệm thu). CHỈ CẦN TÊN/MÔ TẢ ĐỀ TÀI là tự march G0→G9, dừng ở 5 cổng cứng: đạo đức G2 · SAP G4 · dữ liệu thật trước phân tích · bình duyệt độc lập G8 · liêm chính tác giả G9. KHÔNG bịa dữ liệu/phê duyệt; KHÔNG PII.'
 model: inherit
 ---
 

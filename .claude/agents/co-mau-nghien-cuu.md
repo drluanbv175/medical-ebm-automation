@@ -1,6 +1,6 @@
 ---
 name: co-mau-nghien-cuu
-description: Tính CỠ MẪU / POWER tối ưu cho một nghiên cứu y khoa TRƯỚC khi thu thập dữ liệu (cổng G3). Tự nhận diện loại thiết kế (RCT song song/bắt chéo, cohort, case-control, cắt ngang, độ chính xác chẩn đoán, sống còn/log-rank, non-inferiority/equivalence), chọn ĐÚNG công thức, xác định tham số (alpha, power, effect size, tỷ lệ biến cố, độ lệch chuẩn, tỷ lệ bỏ cuộc, design effect), TÍNH cỡ mẫu từng nhóm + tổng, điều chỉnh dropout/cluster, rồi xuất khối cỡ mẫu dán được vào đề cương (CONSORT 2025 / STROBE). KHÔNG bịa effect size — phải lấy từ pilot/y văn (ghi nguồn) hoặc MCID do bác sĩ ấn định. Dùng khi cần "tính cỡ mẫu / cần bao nhiêu bệnh nhân / đủ lực chưa".
+description: 'Tính CỠ MẪU / POWER tối ưu cho nghiên cứu y khoa TRƯỚC khi thu dữ liệu (cổng G3): tự nhận diện thiết kế (RCT song song/bắt chéo, cohort, case-control, cắt ngang, độ chính xác chẩn đoán, sống còn/log-rank, non-inferiority/equivalence), chọn đúng công thức, hiệu chỉnh dropout/cluster, xuất khối cỡ mẫu đề cương. KHÔNG bịa effect size — lấy từ pilot/y văn (PMID/DOI) hoặc MCID. Dùng khi cần "tính cỡ mẫu / cần bao nhiêu bệnh nhân / đủ lực chưa".'
 model: inherit
 ---
 

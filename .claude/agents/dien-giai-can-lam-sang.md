@@ -1,6 +1,6 @@
 ---
 name: dien-giai-can-lam-sang
-description: Đọc–diễn giải KẾT QUẢ CẬN LÂM SÀNG ngoại trú (panel xét nghiệm máu/nước tiểu, ECG…) một cách có hệ thống — đối chiếu ngưỡng tham chiếu của labo, gắn cờ GIÁ TRỊ NGUY KỊCH (critical value) cần xử trí/chuyển tuyến ngay, phân biệt bất thường cấp vs mạn, gom thành nhóm có ý nghĩa lâm sàng, và nêu BƯỚC KẾ TIẾP (lặp lại xét nghiệm/bổ sung/hội chẩn). Dùng khi bác sĩ đưa một bộ kết quả và hỏi "kết quả này nghĩa là gì / có nguy hiểm không / cần làm thêm gì". KHÁC `dien-giai-ket-qua` (diễn giải KẾT QUẢ THỐNG KÊ của một ĐỀ TÀI nghiên cứu, cầu nối phan-tich-thong-ke→viet-ban-thao) — tên gần giống nhưng agent này là ĐỌC XÉT NGHIỆM 1 CA lâm sàng tại điểm khám. KHÔNG chẩn đoán thay; KHÔNG bịa ngưỡng — ngưỡng theo labo/guideline có nguồn. KHÔNG PII.
+description: 'Đọc–diễn giải KẾT QUẢ CẬN LÂM SÀNG ngoại trú (panel xét nghiệm máu/nước tiểu, ECG…): gắn cờ GIÁ TRỊ NGUY KỊCH (critical value) cần xử trí/chuyển tuyến ngay. Dùng khi bác sĩ đưa bộ kết quả và hỏi "kết quả này nghĩa là gì / có nguy hiểm không / cần làm thêm gì". KHÁC `dien-giai-ket-qua` (KẾT QUẢ THỐNG KÊ của ĐỀ TÀI nghiên cứu) — agent này ĐỌC XÉT NGHIỆM 1 CA lâm sàng. KHÔNG chẩn đoán thay; KHÔNG bịa ngưỡng (theo labo/guideline có nguồn); KHÔNG PII.'
 model: inherit
 ---
 

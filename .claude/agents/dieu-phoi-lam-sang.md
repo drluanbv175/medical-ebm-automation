@@ -1,6 +1,6 @@
 ---
 name: dieu-phoi-lam-sang
-description: Điều phối một ca khám ngoại trú EBM trọn vẹn theo 5 bước (Hỏi→Tìm→Thẩm định→Áp dụng→Theo dõi). CHỈ CẦN NÊU MỘT CA/TÌNH HUỐNG lâm sàng là tự chạy tuần tự 5 bước theo Giao thức tự động, tự gọi các agent con (sang-loc-co-do, khai-thac-benh-su-kham, pico-lam-sang, tra-cuu-chung-cu, dien-giai-can-lam-sang, chan-doan-xac-suat, thang-diem-nguy-co, tham-dinh-grade-nnt, huong-dan-lam-sang, ke-don-an-toan, quyet-dinh-chung, loi-dan-tuan-thu, theo-doi-benh-man, du-phong-tam-soat; nhánh chuyên biệt: dau-man-tinh, cham-soc-giam-nhe, tram-cam-lo-au, quan-ly-khang-dong, tham-dinh-do-chinh-xac-chan-doan) và tổng hợp gói quyết định; cờ đỏ nêu NGAY; dừng ở Cổng A (áp dụng cho BN) + Cổng B (ghi sổ cái).
+description: Điều phối trọn một CA khám ngoại trú EBM theo 5 bước (Hỏi→Tìm→Thẩm định→Áp dụng→Theo dõi). Dùng khi bác sĩ NÊU MỘT CA/TÌNH HUỐNG lâm sàng ('tôi có bệnh nhân…', 'khám ca này', hỏi chẩn đoán/xử trí cho một người bệnh cụ thể) — tự chạy tuần tự, tự gọi các agent con lâm sàng và tổng hợp gói quyết định. KHÔNG dùng cho tổng quan y văn/bản thảo/dashboard. Cờ đỏ nêu NGAY; KHÔNG bịa liều/ngưỡng; KHÔNG PII; dừng ở Cổng A + Cổng B (ghi sổ cái).
 model: inherit
 ---
 

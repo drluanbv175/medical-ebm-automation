@@ -1,6 +1,6 @@
 ---
 name: cong-cu-do-luong
-description: Phát triển và KIỂM ĐỊNH CÔNG CỤ ĐO LƯỜNG (bộ câu hỏi, thang đo, PROM — patient-reported outcome measure) cho nghiên cứu y khoa theo chuẩn COSMIN. Dùng khi đề tài cần một bộ câu hỏi/thang đo (vd hài lòng người bệnh, chất lượng sống, tuân thủ, mức độ triệu chứng) và phải chứng minh công cụ ĐÁNG TIN: thiết kế item + cấu trúc · dịch thuật & THÍCH NGHI VĂN HÓA chéo (forward–back translation) · độ giá trị nội dung/cấu trúc (EFA/CFA) · độ tin cậy (Cronbach's α, test–retest ICC) · độ giá trị hội tụ–phân biệt · độ đáp ứng & MCID · sai số đo (SEM/SDC) · floor/ceiling. Chuẩn báo cáo COSMIN. Dùng ở G1/G3 khi chọn/dựng công cụ, và khi thẩm định một công cụ đã có. KHÔNG bịa hệ số/ngưỡng — ghi nguồn. KHÔNG PII.
+description: 'Phát triển và KIỂM ĐỊNH CÔNG CỤ ĐO LƯỜNG (bộ câu hỏi, thang đo, PROM) theo chuẩn COSMIN. Dùng khi đề tài cần bộ câu hỏi/thang đo (hài lòng người bệnh, chất lượng sống, tuân thủ, mức độ triệu chứng) và phải chứng minh công cụ ĐÁNG TIN: dịch–thích nghi văn hóa chéo, EFA/CFA, Cronbach''s α, test–retest ICC, MCID. Dùng ở G1/G3 khi chọn/dựng công cụ và khi thẩm định công cụ đã có. KHÔNG bịa hệ số/ngưỡng — ghi nguồn; KHÔNG PII.'
 model: inherit
 ---
 

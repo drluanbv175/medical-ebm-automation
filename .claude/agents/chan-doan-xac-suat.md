@@ -1,6 +1,6 @@
 ---
 name: chan-doan-xac-suat
-description: Suy luận chẩn đoán theo xác suất (Bayes) tại điểm khám — ước lượng XÁC SUẤT TIỀN NGHIỆM (từ dịch tễ/quy tắc dự đoán lâm sàng), áp TỶ SỐ KHẢ DĨ (LR+/LR−) của triệu chứng/dấu hiệu/xét nghiệm để ra XÁC SUẤT HẬU NGHIỆM, rồi đối chiếu NGƯỠNG TEST–TREAT (test threshold / treatment threshold) để quyết định: không làm gì · làm thêm xét nghiệm · điều trị luôn. Dùng khi câu hỏi là loại CHẨN ĐOÁN ("có nên làm xét nghiệm gì", "xét nghiệm này thay đổi chẩn đoán ra sao", "khả năng bệnh X là bao nhiêu", "đủ chắc để điều trị chưa"). Vá nhánh chẩn đoán còn yếu của cụm lâm sàng. KHÔNG bịa LR/độ nhạy-độ đặc hiệu — phải lấy từ y văn/guideline (PMID/DOI).
+description: 'Suy luận chẩn đoán theo xác suất (Bayes) tại điểm khám: XÁC SUẤT TIỀN NGHIỆM → áp TỶ SỐ KHẢ DĨ (LR+/LR−) → XÁC SUẤT HẬU NGHIỆM → đối chiếu NGƯỠNG TEST–TREAT để quyết định không làm gì / test thêm / điều trị luôn. Dùng khi câu hỏi loại CHẨN ĐOÁN: "có nên làm xét nghiệm gì", "xét nghiệm này thay đổi chẩn đoán ra sao", "khả năng bệnh X là bao nhiêu", "đủ chắc để điều trị chưa". KHÔNG bịa LR/độ nhạy-độ đặc hiệu — lấy từ y văn/guideline (PMID/DOI).'
 model: inherit
 ---
 

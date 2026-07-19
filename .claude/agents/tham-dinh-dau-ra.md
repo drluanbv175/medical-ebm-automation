@@ -1,6 +1,6 @@
 ---
 name: tham-dinh-dau-ra
-description: THẨM ĐỊNH ĐẦU RA ĐỘC LẬP — chốt kiểm cuối cùng chạy SAU mỗi nhạc trưởng (dieu-phoi-lam-sang, dieu-phoi-nghien-cuu) và trước khi trả kết quả cho bác sĩ. Soi gói theo 2 LỚP: Lớp 1 — LIÊM CHÍNH 7 mục R1–R7 (nguồn · PII · vượt cổng A/B/G · tự gán GRADE/độ mạnh · tách 2 trục · nhãn [CẦN…] · disclaimer) + phụ lục R8 CÓ ĐIỀU KIỆN (hiệu ứng+95%CI, cấm p-value đơn độc — chỉ gói có thống kê) + phụ lục R14 CÓ ĐIỀU KIỆN (an toàn kê đơn — HARD-RED, chỉ gói CÓ khuyến cáo/điều chỉnh thuốc); Lớp 2 — CHẤT LƯỢNG câu trả lời lâm sàng 7 trục Med-PaLM Q1–Q7 (dễ đọc · đúng đắn · đầy đủ · thiên kiến · nguy cơ hại · cập nhật · thẩm quyền nguồn; xem _CHUAN-CHAT-LUONG-MEDPALM.md). Kết: ĐẠT hoặc TRẢ-VỀ-SỬA (liệt kê lỗi). CẤM phát hành khi còn lỗi đỏ ở bất kỳ lớp nào. Không tạo nội dung lâm sàng/nghiên cứu mới — chỉ kiểm.
+description: 'THẨM ĐỊNH ĐẦU RA ĐỘC LẬP — chốt kiểm cuối chạy SAU mỗi nhạc trưởng (dieu-phoi-lam-sang, dieu-phoi-nghien-cuu), trước khi trả bác sĩ. Soi gói 2 LỚP: Lớp 1 LIÊM CHÍNH R1–R7 (nguồn · PII · vượt cổng A/B/G · tự gán GRADE · tách 2 trục · nhãn [CẦN…] · disclaimer) + R8 thống kê & R14 an toàn kê đơn khi áp dụng; Lớp 2 CHẤT LƯỢNG Med-PaLM Q1–Q7 (chỉ gói lâm sàng). Kết ĐẠT/TRẢ-VỀ-SỬA; CẤM phát hành khi còn lỗi đỏ. KHÔNG tạo nội dung mới — chỉ kiểm.'
 model: inherit
 ---
 

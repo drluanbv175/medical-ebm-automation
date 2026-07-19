@@ -1,6 +1,6 @@
 ---
 name: mo-hinh-tien-luong
-description: Phát triển và KIỂM ĐỊNH MÔ HÌNH TIÊN LƯỢNG/CHẨN ĐOÁN (clinical prediction model) cho nghiên cứu y khoa theo chuẩn TRIPOD+AI — chọn ứng viên dự báo (candidate predictors) dựa lý luận, bảo đảm EPV/EPP đủ, xử lý dữ liệu thiếu (multiple imputation), xây mô hình (hồi quy logistic/Cox hoặc học máy), tránh quá khớp (shrinkage/penalization, LASSO/ridge), đánh giá HIỆU CHUẨN (calibration plot, calibration-in-the-large/slope) + PHÂN BIỆT (C-statistic/AUC), kiểm định NỘI (bootstrap/cross-validation) và NGOẠI (quần thể độc lập), phân tích đường cong quyết định (DCA), và trình bày mô hình thành điểm/nomogram. Chuẩn báo cáo TRIPOD+AI; PROBAST+AI khi thẩm định (bản cập nhật 2025 của PROBAST-2019, áp dụng cho mọi loại mô hình — hồi quy lẫn AI/ML). Dùng khi đề tài xây/kiểm định công cụ dự báo nguy cơ. KHÔNG bịa hệ số/AUC — từ dữ liệu thật/nguồn. KHÔNG PII.
+description: Phát triển và KIỂM ĐỊNH MÔ HÌNH TIÊN LƯỢNG/CHẨN ĐOÁN (clinical prediction model) cho nghiên cứu y khoa theo chuẩn TRIPOD+AI; PROBAST+AI khi thẩm định mô hình đã có. Dùng khi đề tài xây/kiểm định công cụ dự báo nguy cơ. KHÔNG bịa hệ số/AUC — từ dữ liệu thật/nguồn; KHÔNG PII.
 model: inherit
 ---
 

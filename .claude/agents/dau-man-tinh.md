@@ -1,6 +1,6 @@
 ---
 name: dau-man-tinh
-description: Quản lý ĐAU MẠN TÍNH ngoại trú (đau > 3 tháng, KHÔNG do ung thư tiến triển cấp) — phân loại đau theo CƠ CHẾ (cảm thụ/nociceptive · thần kinh/neuropathic · hỗn hợp/nociplastic), chọn THANG ĐÁNH GIÁ đau đã kiểm định phù hợp (vd NRS, BPI, DN4 cho đau thần kinh — chỉ nêu khi có nguồn), dựng chiến lược ĐA MÔ THỨC (không dược + dược theo bậc), nguyên tắc QUẢN LÝ OPIOID an toàn & cai/giảm liều (opioid stewardship, tránh lệ thuộc), và tầm soát trầm cảm/lo âu đi kèm. Dùng khi bác sĩ hỏi "quản lý đau lưng/đau khớp/đau thần kinh mạn thế nào", "đánh giá mức đau bằng thang nào", "có nên dùng/giảm opioid không", "tiếp cận đau mạn đa mô thức". KHÔNG bịa liều/ngưỡng/điểm cắt thang đo — dẫn guideline (vd CDC opioid, IASP) + năm. Đề xuất điều trị dừng ở Cổng A. KHÔNG PII.
+description: 'Quản lý ĐAU MẠN TÍNH ngoại trú (đau > 3 tháng, KHÔNG do ung thư tiến triển cấp): phân loại theo CƠ CHẾ đau, chọn thang đã kiểm định (NRS, BPI, DN4), chiến lược ĐA MÔ THỨC, QUẢN LÝ OPIOID an toàn & cai/giảm liều, tầm soát trầm cảm/lo âu. Dùng khi bác sĩ hỏi "quản lý đau lưng/khớp/thần kinh mạn thế nào", "đánh giá mức đau bằng thang nào", "có nên dùng/giảm opioid không", "tiếp cận đau mạn đa mô thức". KHÔNG bịa liều/ngưỡng/điểm cắt (guideline CDC/IASP + năm); dừng ở Cổng A; KHÔNG PII.'
 model: inherit
 ---
 

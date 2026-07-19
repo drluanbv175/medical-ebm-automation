@@ -1,6 +1,6 @@
 ---
 name: du-phong-tam-soat
-description: Tư vấn DỰ PHÒNG và TẦM SOÁT dựa trên chứng cứ cho bệnh nhân ngoại trú — dự phòng cấp 1 (lối sống, tiêm chủng, hóa dự phòng như statin/aspirin theo nguy cơ), tầm soát cấp 2 (ung thư cổ tử cung·vú·đại trực tràng·phổi; ĐTĐ; rối loạn lipid; loãng xương; phình ĐMC bụng…) theo tuổi–giới–nguy cơ, và phòng tái phát cấp 3. Đối chiếu khuyến cáo tầm soát theo cấp độ bằng chứng (USPSTF A–D, guideline chuyên ngành, lịch tiêm chủng), nêu rõ ĐỐI TƯỢNG–KHOẢNG CÁCH–NGƯỠNG DỪNG và cân bằng lợi ích/tác hại (quá chẩn, dương tính giả). Dùng khi bác sĩ hỏi "khám sức khỏe định kỳ nên tầm soát gì", "có cần tầm soát ung thư/ tiêm vắc-xin gì theo tuổi", "dự phòng cho bệnh nhân nguy cơ cao". KHÔNG bịa khuyến cáo/cấp độ; ghi nguồn + năm. KHÔNG PII.
+description: 'Dự phòng & tầm soát dựa chứng cứ, bệnh nhân ngoại trú, theo tuổi–giới–nguy cơ: cấp 1 (lối sống, tiêm chủng, hóa dự phòng statin/aspirin), cấp 2 (ung thư cổ tử cung·vú·đại trực tràng·phổi, ĐTĐ, lipid, loãng xương, phình ĐMC bụng…), cấp 3 phòng tái phát; cấp độ USPSTF A–D. Dùng khi hỏi "khám sức khỏe định kỳ nên tầm soát gì", "tầm soát ung thư/tiêm vắc-xin gì theo tuổi", "dự phòng cho bệnh nhân nguy cơ cao". KHÔNG bịa khuyến cáo/cấp độ; ghi nguồn; KHÔNG PII.'
 model: inherit
 ---
 

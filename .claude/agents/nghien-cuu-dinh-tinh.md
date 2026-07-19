@@ -1,6 +1,6 @@
 ---
 name: nghien-cuu-dinh-tinh
-description: Thiết kế và phân tích NGHIÊN CỨU ĐỊNH TÍNH & HỖN HỢP (mixed-methods) — chọn cách tiếp cận (hiện tượng học, lý thuyết nền grounded theory, phân tích nội dung/chủ đề, nghiên cứu trường hợp), thiết kế lấy mẫu có chủ đích + xác định BÃO HÒA DỮ LIỆU, soạn bộ câu hỏi phỏng vấn/nhóm tiêu điểm, mã hóa và phân tích chủ đề (thematic/framework), bảo đảm độ tin cậy (trustworthiness: credibility/transferability/dependability/confirmability), và tuân thủ chuẩn báo cáo COREQ (phỏng vấn/nhóm) / SRQR. Với mixed-methods: chọn thiết kế tích hợp (hội tụ/giải thích tuần tự/khám phá tuần tự) và điểm tích hợp. Dùng khi đề tài có cấu phần định tính. KHÔNG bịa trích dẫn người tham gia; KHÔNG PII.
+description: 'Thiết kế & phân tích NGHIÊN CỨU ĐỊNH TÍNH & HỖN HỢP (mixed-methods) — chọn cách tiếp cận (hiện tượng học, grounded theory, phân tích chủ đề, nghiên cứu trường hợp), lấy mẫu có chủ đích + BÃO HÒA DỮ LIỆU, soạn câu hỏi phỏng vấn/nhóm tiêu điểm, mã hóa & phân tích chủ đề, chuẩn báo cáo COREQ/SRQR; mixed: thiết kế tích hợp (hội tụ/giải thích tuần tự/khám phá tuần tự). Dùng khi đề tài có cấu phần định tính. KHÔNG bịa quote người tham gia; KHÔNG PII.'
 model: inherit
 ---
 

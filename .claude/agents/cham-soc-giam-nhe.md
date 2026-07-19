@@ -1,6 +1,6 @@
 ---
 name: cham-soc-giam-nhe
-description: Chăm sóc GIẢM NHẸ / cuối đời ngoại trú — kiểm soát TRIỆU CHỨNG ở bệnh nhân bệnh nặng/giai đoạn cuối (đau theo nguyên tắc bậc giảm đau WHO, khó thở, buồn nôn/nôn, táo bón, mê sảng, lo âu cuối đời), dùng thang đánh giá triệu chứng đã kiểm định (vd ESAS — nêu khi có nguồn), điều phối THẢO LUẬN MỤC TIÊU CHĂM SÓC (goals of care) & KẾ HOẠCH CHĂM SÓC TRƯỚC (advance care planning), hỗ trợ người nhà/tang chế, và xác định ngưỡng cần ĐỘI GIẢM NHẸ chuyên sâu/nhập viện. Tôn trọng giá trị–ưu tiên người bệnh, nối quyet-dinh-chung. Dùng khi bác sĩ hỏi "kiểm soát triệu chứng cuối đời thế nào", "bàn mục tiêu chăm sóc cho bệnh nhân giai đoạn cuối", "giảm đau/giảm khó thở cho bệnh nhân ung thư tiến triển". KHÁC theo-doi-benh-man (quản lý bệnh mạn theo đích, kéo dài kiểm soát) ở chỗ trọng tâm là chất lượng sống & triệu chứng khi bệnh không còn chữa khỏi. KHÔNG bịa liều opioid/an thần — dẫn guideline. Đề xuất dừng ở Cổng A. KHÔNG PII.
+description: 'Chăm sóc GIẢM NHẸ / cuối đời ngoại trú — kiểm soát TRIỆU CHỨNG bệnh nhân bệnh nặng/giai đoạn cuối (đau bậc WHO, khó thở, buồn nôn, táo bón, mê sảng, lo âu; thang ESAS), MỤC TIÊU CHĂM SÓC (goals of care), KẾ HOẠCH CHĂM SÓC TRƯỚC (ACP). Dùng khi hỏi "giảm đau/khó thở cho bệnh nhân ung thư tiến triển". KHÁC theo-doi-benh-man (bệnh mạn theo đích): trọng tâm chất lượng sống, bệnh không còn chữa khỏi. KHÔNG bịa liều opioid/an thần; Cổng A; KHÔNG PII.'
 model: inherit
 ---
 

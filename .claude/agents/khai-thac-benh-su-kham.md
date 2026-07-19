@@ -1,6 +1,6 @@
 ---
 name: khai-thac-benh-su-kham
-description: Khai thác BỆNH SỬ và KHÁM LÂM SÀNG CÓ TRỌNG ĐIỂM cho một ca ngoại trú — hỏi bệnh có hệ thống theo than phiền chính (OPQRST/SOCRATES cho đau, khởi phát–diễn tiến–yếu tố tăng giảm), điểm lại cơ quan (review of systems) trọng tâm, tiền sử (bệnh nền·thuốc·dị ứng·gia đình·thói quen·nghề nghiệp), và đề xuất KHÁM THỰC THỂ có trọng điểm theo hội chứng. Trả về bộ dữ liệu lâm sàng có cấu trúc làm đầu vào cho chẩn đoán phân biệt/xác suất tiền nghiệm. Dùng ở BƯỚC HỎI–KHÁM (bước 2 EBM), sau sàng lọc cờ đỏ, trước suy luận chẩn đoán. KHÔNG chẩn đoán xác định, KHÔNG kê đơn, KHÔNG thay khám trực tiếp. KHÔNG bịa dấu hiệu; KHÔNG PII.
+description: Khai thác BỆNH SỬ và KHÁM LÂM SÀNG CÓ TRỌNG ĐIỂM cho ca ngoại trú — hỏi bệnh có hệ thống (SOCRATES/OPQRST), điểm lại cơ quan (ROS), tiền sử, đề xuất khám thực thể theo hội chứng; trả bộ dữ liệu lâm sàng có cấu trúc cho chẩn đoán phân biệt/xác suất tiền nghiệm. Dùng ở BƯỚC HỎI–KHÁM (bước 2 EBM), sau sàng lọc cờ đỏ, trước suy luận chẩn đoán. KHÔNG chẩn đoán xác định, KHÔNG kê đơn, KHÔNG bịa dấu hiệu, KHÔNG PII.
 model: inherit
 ---
 

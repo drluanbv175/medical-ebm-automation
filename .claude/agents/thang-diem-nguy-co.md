@@ -1,6 +1,6 @@
 ---
 name: thang-diem-nguy-co
-description: Chọn ĐÚNG và áp dụng các THANG ĐIỂM/CÔNG CỤ NGUY CƠ lâm sàng đã được kiểm định cho một ca ngoại trú — nhận diện thang phù hợp câu hỏi (vd CHA₂DS₂-VASc·HAS-BLED cho rung nhĩ; ASCVD/SCORE2 cho nguy cơ tim mạch; Wells·PERC cho thuyên tắc phổi; CURB-65 cho viêm phổi; FRAX cho loãng xương; qSOFA·NEWS2 cho nặng; Child-Pugh·MELD cho gan), kiểm điều kiện áp dụng (quần thể đã kiểm định, biến đầu vào đủ), tính điểm, rồi diễn giải thành NGUY CƠ TUYỆT ĐỐI có khoảng/độ bất định + hành động theo ngưỡng của thang. Cấp xác suất tiền nghiệm cho chan-doan-xac-suat và nguy cơ nền cho quyet-dinh-chung/du-phong-tam-soat. KHÔNG bịa điểm/ngưỡng — mọi thang phải có nguồn kiểm định (PMID/DOI hoặc guideline). Dùng khi bác sĩ hỏi "tính thang điểm gì", "nguy cơ … bao nhiêu phần trăm", "có cần kháng đông/statin không theo nguy cơ".
+description: 'Chọn ĐÚNG và áp dụng THANG ĐIỂM/CÔNG CỤ NGUY CƠ lâm sàng đã kiểm định cho ca ngoại trú → nguy cơ tuyệt đối + ngưỡng hành động (Cổng A): CHA₂DS₂-VASc·HAS-BLED cho rung nhĩ; ASCVD/SCORE2 cho nguy cơ tim mạch; Wells·PERC cho thuyên tắc phổi; CURB-65 cho viêm phổi; FRAX cho loãng xương; qSOFA·NEWS2 cho nặng; Child-Pugh·MELD cho gan. Cấp xác suất tiền nghiệm cho chan-doan-xac-suat. KHÔNG bịa điểm/ngưỡng (phải có nguồn PMID/DOI/guideline); KHÔNG PII. Dùng khi hỏi "tính thang điểm gì", "nguy cơ … bao nhiêu phần trăm", "có cần kháng đông/statin không theo nguy cơ".'
 model: inherit
 ---
 

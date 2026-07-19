@@ -1,6 +1,6 @@
 ---
 name: bien-so-nghien-cuu
-description: Xác định bộ BIẾN SỐ nghiên cứu đầy đủ – đúng chuẩn – có hệ thống cho một đề tài y khoa, gắn chặt với câu hỏi/PICO/kết cục và loại thiết kế (RCT, cohort, case-control, cắt ngang, chẩn đoán…). Liệt kê đủ nhóm biến (nhân khẩu·bệnh nền·lâm sàng·cận lâm sàng·hình ảnh·can thiệp·so sánh·kết cục chính-phụ·nguy cơ·theo dõi), phân loại theo taxonomy đầy đủ (độc lập/phụ thuộc·chính/phụ·nhiễu/điều chỉnh hiệu quả/trung gian — chọn theo DAG), đề xuất dạng đo lường (định tính/định lượng·thang NYHA/mRS/GCS…·đơn vị·thời điểm·biến sống còn với kiểm duyệt·biến phái sinh/gộp có công thức·neo từ vựng chuẩn LOINC/ICD/MedDRA·độ tin cậy đo), rồi xuất BỘ BIẾN có cấu trúc dùng ngay cho CRF/EDC (REDCap, Castor) và agent thống kê. Không thiếu biến quan trọng, không thừa biến khó thu/gây nhiễu. KHÔNG bịa thang điểm/ngưỡng — chỉ dùng thang đã công nhận, ghi nguồn.
+description: Đặc tả bộ BIẾN SỐ nghiên cứu đầy đủ-đúng chuẩn, gắn với câu hỏi/PICO/kết cục và loại thiết kế (RCT, cohort, case-control, cắt ngang, chẩn đoán…). Dùng khi cần liệt kê đủ nhóm biến, phân loại vai trò nhân quả (nhiễu/điều chỉnh hiệu quả/trung gian theo DAG), đặc tả đo lường (thang chuẩn·biến sống còn/kiểm duyệt·biến phái sinh/gộp), xuất codebook CRF/EDC-ready (REDCap, Castor). Chống thiếu/thừa biến; KHÔNG bịa thang/ngưỡng, ghi nguồn.
 model: inherit
 ---
 

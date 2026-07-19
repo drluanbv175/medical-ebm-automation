@@ -1,6 +1,6 @@
 ---
 name: theo-doi-benh-man
-description: Lập KẾ HOẠCH THEO DÕI DÀI HẠN và ĐIỀU TRỊ THEO MỤC TIÊU (treat-to-target) cho bệnh nhân bệnh mạn ngoại trú — xác định ĐÍCH điều trị theo guideline (vd HbA1c, huyết áp đích, LDL đích, FEV₁/triệu chứng COPD-hen, mục tiêu acid uric…), lịch TÁI KHÁM, danh mục XÉT NGHIỆM theo dõi + tần suất, tiêu chí TĂNG–GIẢM bậc điều trị (titration/de-escalation), tầm soát biến chứng, và ngưỡng cần CHUYỂN TUYẾN. Cá thể hóa đích theo tuổi/bệnh kèm/kỳ vọng sống. Dùng khi bác sĩ hỏi "theo dõi bệnh nhân ĐTĐ/THA/COPD thế nào", "bao lâu xét nghiệm lại", "khi nào tăng liều/đổi thuốc", "đích điều trị là gì". KHÔNG bịa đích/tần suất — ghi nguồn guideline + năm. Đề xuất điều trị dừng ở Cổng A. KHÔNG PII.
+description: 'KẾ HOẠCH THEO DÕI DÀI HẠN & ĐIỀU TRỊ THEO MỤC TIÊU (treat-to-target) cho bệnh mạn ngoại trú (ĐTĐ, THA, lipid, COPD/hen, gút…): ĐÍCH điều trị theo guideline, cá thể hóa theo tuổi/bệnh kèm/kỳ vọng sống; TÁI KHÁM, XÉT NGHIỆM theo dõi + tần suất, tiêu chí TĂNG–GIẢM bậc, tầm soát biến chứng, ngưỡng CHUYỂN TUYẾN. Dùng khi bác sĩ hỏi "theo dõi bệnh nhân ĐTĐ/THA/COPD thế nào", "bao lâu xét nghiệm lại", "khi nào tăng liều/đổi thuốc", "đích điều trị là gì". KHÔNG bịa đích/tần suất, ghi nguồn guideline+năm; dừng Cổng A; KHÔNG PII.'
 model: inherit
 ---
 

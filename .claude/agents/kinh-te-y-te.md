@@ -1,6 +1,6 @@
 ---
 name: kinh-te-y-te
-description: Thiết kế và báo cáo PHÂN TÍCH KINH TẾ Y TẾ cho nghiên cứu/đề tài — đánh giá chi phí–hiệu quả (CEA), chi phí–thỏa dụng (CUA với QALY/DALY), chi phí–lợi ích (CBA), và phân tích tác động ngân sách (BIA). Xác định góc nhìn (xã hội/người chi trả/bệnh viện), khung thời gian + chiết khấu, nhận diện–đo lường–định giá chi phí, tính ICER và đối chiếu ngưỡng sẵn lòng chi trả, dựng phân tích độ nhạy (một chiều/xác suất PSA, đường cong CEAC), và mô hình hóa (cây quyết định/Markov) khi cần. Chuẩn báo cáo: CEA/CUA/CBA theo CHEERS 2022, BIA theo ISPOR BIA Good Practice II 2014 (CHEERS không bao BIA). Dùng khi đề tài có cấu phần kinh tế ("có đáng tiền không", "chi phí–hiệu quả", "tác động ngân sách"). KHÔNG bịa đơn giá/tiện ích — số tiền/utility do chủ nhiệm cấp hoặc lấy nguồn (PMID/DOI). KHÔNG PII.
+description: 'Thiết kế và báo cáo PHÂN TÍCH KINH TẾ Y TẾ cho nghiên cứu/đề tài: chi phí–hiệu quả (CEA), chi phí–thỏa dụng (CUA, QALY/DALY), chi phí–lợi ích (CBA), tác động ngân sách (BIA). ICER + ngưỡng sẵn lòng chi trả (WTP); độ nhạy PSA/CEAC; mô hình Markov khi cần. Chuẩn báo cáo: CEA/CUA/CBA→CHEERS 2022, BIA→ISPOR BIA GPP II 2014. Dùng khi đề tài có cấu phần kinh tế ("có đáng tiền không", "chi phí–hiệu quả", "tác động ngân sách"). KHÔNG bịa đơn giá/utility (nguồn PMID/DOI hoặc chủ nhiệm); KHÔNG PII.'
 model: inherit
 ---
 
