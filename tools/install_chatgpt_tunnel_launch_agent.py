@@ -42,6 +42,13 @@ def main() -> int:
 
     logs = Path.home() / "Library/Application Support/tunnel-client/logs"
     logs.mkdir(parents=True, exist_ok=True)
+    # Khóa quyền thư mục log (vá audit MCP 2026-07-20): plist (0600) và launcher
+    # (0700) đã được khóa chặt bên dưới nhưng thư mục log trước đây bị bỏ ngỏ theo
+    # umask hệ thống (thường 022 → world-readable 755/644). launchd tạo file log
+    # theo umask, không theo quyền thư mục cha; nhưng 0700 trên THƯ MỤC vẫn chặn
+    # được user khác truy cập file bên trong (cần quyền execute trên thư mục cha).
+    logs.chmod(0o700)
+    logs.parent.chmod(0o700)
     installed_launcher.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source_launcher, installed_launcher)
     installed_launcher.chmod(0o700)

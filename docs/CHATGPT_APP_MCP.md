@@ -54,6 +54,40 @@ python -m pytest tests/test_chatgpt_app_knowledge.py -q
 npx @modelcontextprotocol/inspector http://127.0.0.1:2091/mcp
 ```
 
+## Kết nối ChatGPT/Codex desktop app trên CÙNG máy — stdio cục bộ (đơn giản nhất)
+
+Nếu máy đã cài **ChatGPT desktop app (có Codex)** — không phải trình duyệt ChatGPT
+web — thì KHÔNG cần Secure MCP Tunnel/ngrok. App này tự đọc `~/.codex/config.toml`
+và có thể tự spawn một MCP server stdio cục bộ, y hệt cách nó đã cấu hình sẵn
+`node_repl`/`computer-use`. Thêm khối sau vào `~/.codex/config.toml` (sao lưu
+file trước khi sửa tay):
+
+```toml
+[mcp_servers.ebm-copilot]
+command = "/Users/<user>/.ebm-venv/bin/python3"
+args = ["tools/run_chatgpt_mcp_stdio.py"]
+cwd = "/đường/dẫn/tới/medical-ebm-automation"
+startup_timeout_sec = 60
+```
+
+`tools/run_chatgpt_mcp_stdio.py` tự đặt `EBM_MCP_TRANSPORT=stdio` trước khi nạp
+`app.chatgpt_app.server` nên không cần khai thêm biến môi trường. Vì server
+chạy stdio do chính app spawn — KHÔNG bind cổng mạng, KHÔNG cần
+`EBM_MCP_TOKEN`, KHÔNG phơi ra Internet. Sau khi sửa file, **khởi động lại
+ChatGPT app** (MCP server chỉ được app đọc lại lúc khởi động) rồi kiểm 9 tool
+đã liệt kê ở đầu tài liệu này xuất hiện trong danh sách MCP tool của app.
+
+Xác minh nhanh không cần mở app (mô phỏng đúng handshake MCP mà app sẽ làm):
+
+```bash
+cd medical-ebm-automation
+~/.ebm-venv/bin/python3 -m pytest tests/test_chatgpt_app_knowledge.py tests/test_chatgpt_app_agents.py -q
+```
+
+Đường này phù hợp máy cá nhân một người dùng. Muốn ChatGPT WEB (không phải
+desktop app) hoặc nhiều người dùng cùng truy cập thì mới cần Streamable HTTP +
+Secure MCP Tunnel ở mục dưới.
+
 ## Kết nối ChatGPT — khuyến nghị Secure MCP Tunnel
 
 Vì đây là hệ thống y khoa chạy trên máy cá nhân, ưu tiên **Secure MCP Tunnel**
@@ -75,6 +109,21 @@ Tài liệu: https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
 Nếu tài khoản chưa có Secure MCP Tunnel, phương án phát triển tạm thời là
 `ngrok http 2091` rồi nhập `https://<subdomain>.ngrok.app/mcp` trong custom app.
 Không dùng tunnel công khai cho dữ liệu bệnh nhân hoặc production.
+
+**⚠️ `EBM_MCP_TOKEN` KHÔNG phải xác thực request thật (audit MCP 2026-07-20).**
+Cổng fail-closed trong `main()` chỉ kiểm tra biến này CÓ ĐƯỢC ĐẶT hay không lúc
+khởi động (`EBM_MCP_HOST` khác localhost mà thiếu token → từ chối chạy) — giá
+trị token KHÔNG bao giờ được so khớp với request MCP thật (`FastMCP(...)` chưa
+truyền `token_verifier`/`auth`). Đặt `EBM_MCP_TOKEN` chỉ vượt qua được cổng
+khởi động, **không** tạo ra lớp xác thực nào chặn client mạng ngoài gọi vào 9
+tool (kể cả `synchronize_ebm_system`). Cổng này cũng KHÔNG phát hiện được
+trường hợp `ngrok`/reverse-proxy forward cổng cục bộ ra Internet trong khi
+`EBM_MCP_HOST` vẫn là `127.0.0.1` — đúng kịch bản "phương án tạm thời" ở trên.
+**Kết luận vận hành: chỉ dùng transport `streamable-http` sau khi tự triển
+khai `token_verifier`/`auth` thật (xem tham số của `mcp.server.fastmcp.FastMCP`)
+hoặc đặt sau một proxy có xác thực riêng; đường AN TOÀN THẬT hiện tại là
+stdio cục bộ (mục "ChatGPT/Codex desktop app" phía trên, hoặc tunnel-client ở
+chế độ quản lý stdio) — cả hai không bao giờ chạm nhánh fail-closed này.**
 
 Production cần xác thực, log/metrics, rate limit và quy trình vận hành sự cố.
 Không đưa `.env`, database, dataset thô hoặc dữ liệu bệnh nhân lên hosting.

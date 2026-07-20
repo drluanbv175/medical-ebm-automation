@@ -178,6 +178,23 @@ def test_main_refuses_non_localhost_bind_without_token(monkeypatch) -> None:
     assert calls["run"] == 2
 
 
+def test_tool_lookup_errors_stay_inside_disclaimer_envelope() -> None:
+    """Hồi quy audit MCP 2026-07-20: trước đây fetch/get_ebm_agent_instructions/
+    prepare_*_workflow ném KeyError/ValueError THẲNG ra ngoài _result(), đi vòng
+    qua lớp gắn disclaimer/PII của app (dispatcher chung của thư viện mcp bắt
+    exception ở tầng khác). Nay mọi lỗi tra cứu phải đi qua CÙNG _result() có
+    disclaimer, phòng khi một raise tương lai vô tình chèn nội dung động."""
+    import app.chatgpt_app.server as srv
+
+    result = srv.fetch(id="does/not/exist.md")
+    assert result.structuredContent["status"] == "error"
+    assert "Cần bác sĩ kiểm chứng" in result.structuredContent["disclaimer"]
+
+    result = srv.get_ebm_agent_instructions(agent_id="khong-ton-tai")
+    assert result.structuredContent["status"] == "error"
+    assert "Cần bác sĩ kiểm chứng" in result.structuredContent["disclaimer"]
+
+
 def test_main_supports_stdio_for_tunnel_supervision(monkeypatch) -> None:
     """Tunnel-client sở hữu cả vòng đời MCP, không cần server HTTP rời."""
     import app.chatgpt_app.server as srv

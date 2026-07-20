@@ -13,7 +13,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from app.chatgpt_app.knowledge import SENSITIVE_ID_PATTERN
+from app.chatgpt_app.knowledge import _matches_sensitive_id
 from app.core.export_policy import classify_export_file
 from app.core.policy_engine import contains_pii_text
 
@@ -56,7 +56,12 @@ class SafeAgentCatalog:
             # Agent nguồn thường NÊU TÊN các trường PII (CCCD, họ tên...) để
             # hướng dẫn chặn chúng; đó không phải bản ghi người bệnh. Chỉ chặn
             # khi có một định danh cụ thể đi kèm.
-            if SENSITIVE_ID_PATTERN.search(text):
+            # QUÉT TOÀN VĂN + NFD-safe (vá audit MCP 2026-07-20): trước đây chỉ
+            # dựa vào classify_export_file() (giới hạn 200KB đầu) + regex chưa
+            # chuẩn hóa Unicode — agent .md dài 200–256KB hoặc chứa PII dạng NFD
+            # lọt cả hai lớp, khác hẳn fetch()/search() (đã quét toàn văn từ
+            # 2026-07-18). Đồng bộ 2 đường lại cho cùng một mức bảo vệ.
+            if contains_pii_text(text) or _matches_sensitive_id(text):
                 return None
         except (OSError, UnicodeError, ValueError):
             return None
@@ -118,7 +123,7 @@ class SafeAgentCatalog:
             raise ValueError("request_required")
         if len(clean_request) > 20_000:
             raise ValueError("request_too_large")
-        if contains_pii_text(clean_request) or SENSITIVE_ID_PATTERN.search(clean_request):
+        if contains_pii_text(clean_request) or _matches_sensitive_id(clean_request):
             return {
                 "status": "blocked",
                 "reason": "possible_pii_detected",
@@ -181,7 +186,14 @@ class SafeAgentCatalog:
         }
 
     def synchronize(self, confirmation: str) -> dict[str, object]:
-        """Đồng bộ mirror bằng đúng chuỗi script allowlist; không git pull/push."""
+        """Chạy chuỗi script allowlist; không git pull/push.
+
+        Bước đầu (``enforce_agent_guardrails.py``) có thể GHI TRỰC TIẾP lên
+        chính file nguồn biên tập ``.claude/agents/*.md`` (chèn khối guardrail
+        nếu thiếu marker), không chỉ tái sinh mirror ``.Codex``/``.codex`` như
+        tên hàm/mô tả tool gợi ý — ghi rõ ở đây để không đánh giá thấp phạm vi
+        thay đổi khi bác sĩ xác nhận đồng bộ.
+        """
         if confirmation != SYNC_CONFIRMATION:
             return {
                 "status": "confirmation_required",
@@ -211,11 +223,19 @@ class SafeAgentCatalog:
                 check=False,
                 env={"PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin"},
             )
+            output_tail = (completed.stdout + completed.stderr)[-2_000:]
+            # Phòng thủ theo chiều sâu (audit MCP 2026-07-20): đây là nhánh duy nhất
+            # trong file trả "nội dung" (log subprocess) mà không qua cùng cổng PII
+            # như search/fetch/get_ebm_agent_instructions. 3 script hiện tại chỉ in
+            # tên file/số đếm/lỗi TOML, không PII — nhưng nếu một script tương lai
+            # vô tình in trích đoạn nội dung, cổng này chặn trước khi rời tiến trình.
+            if contains_pii_text(output_tail) or _matches_sensitive_id(output_tail):
+                output_tail = "[ẩn: nghi ngờ chứa PII, xem log cục bộ thay vì qua ChatGPT]"
             results.append(
                 {
                     "step": label,
                     "returncode": completed.returncode,
-                    "output_tail": (completed.stdout + completed.stderr)[-2_000:],
+                    "output_tail": output_tail,
                 }
             )
             if completed.returncode != 0:
@@ -235,7 +255,7 @@ class SafeAgentCatalog:
             "chan-doan-xac-suat",
             "thang-diem-nguy-co",
             "tham-dinh-grade-nnt",
-            "huong-dan-lam-sang",
+            "ket-qua-hoc-tap",
             "ke-don-an-toan",
             "quyet-dinh-chung",
             "loi-dan-tuan-thu",
@@ -246,7 +266,7 @@ class SafeAgentCatalog:
             "tram-cam-lo-au",
             "quan-ly-khang-dong",
             "tham-dinh-do-chinh-xac-chan-doan",
-            "ket-qua-hoc-tap",
+            "cap-nhat-guideline",
         }
 
 

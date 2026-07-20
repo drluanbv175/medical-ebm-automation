@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import os
 import re
 from pathlib import Path
@@ -10,7 +11,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import CallToolResult, TextContent, ToolAnnotations
 
 from app.chatgpt_app.agents import SafeAgentCatalog
-from app.chatgpt_app.knowledge import SafeKnowledgeIndex, json_text
+from app.chatgpt_app.knowledge import DISCLAIMER, SafeKnowledgeIndex, json_text
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -73,6 +74,27 @@ def _result(payload: dict[str, object]) -> CallToolResult:
     )
 
 
+def _safe(fn):
+    """Bọc lỗi tra cứu (không tìm thấy/không cho phép/tham số sai) qua _result()
+    thay vì để lộ ra ngoài như exception thô.
+
+    Phòng thủ theo chiều sâu (audit MCP 2026-07-20): dispatcher chung của thư
+    viện mcp bắt mọi exception KHÔNG qua _result()/DISCLAIMER — hiện tại mọi
+    raise trong app đều dùng chuỗi hằng cố định nên chưa rò nội dung động, nhưng
+    một thay đổi tương lai (vd. except re-raise lỗi filesystem gốc) sẽ tự động
+    thoát khỏi lớp gắn disclaimer nếu không đi qua điểm bọc chung này.
+    """
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except (KeyError, PermissionError, ValueError) as exc:
+            return _result({"status": "error", "reason": str(exc), "disclaimer": DISCLAIMER})
+
+    return wrapper
+
+
 @mcp.tool(
     name="search",
     title="Tìm tri thức EBM",
@@ -90,6 +112,7 @@ def search(query: str) -> CallToolResult:
     description="Use this when you need the full text of one document ID returned by search.",
     annotations=READ_ONLY,
 )
+@_safe
 def fetch(id: str) -> CallToolResult:
     """Đọc toàn văn một tài liệu an toàn theo ID từ search."""
     return _result(INDEX.fetch(id))
@@ -126,6 +149,7 @@ def list_ebm_agents(domain: str = "all") -> CallToolResult:
     ),
     annotations=READ_ONLY,
 )
+@_safe
 def get_ebm_agent_instructions(agent_id: str) -> CallToolResult:
     """Nạp role chuyên trách từ nguồn Claude chính."""
     return _result(AGENTS.get_payload(agent_id))
@@ -141,6 +165,7 @@ def get_ebm_agent_instructions(agent_id: str) -> CallToolResult:
     ),
     annotations=READ_ONLY,
 )
+@_safe
 def prepare_clinical_workflow(case_summary: str) -> CallToolResult:
     """Dựng gói nhạc trưởng lâm sàng, không áp dụng điều trị."""
     return _result(AGENTS.workflow_payload("clinical", case_summary))
@@ -155,6 +180,7 @@ def prepare_clinical_workflow(case_summary: str) -> CallToolResult:
     ),
     annotations=READ_ONLY,
 )
+@_safe
 def prepare_research_workflow(research_topic: str) -> CallToolResult:
     """Dựng gói nhạc trưởng nghiên cứu G0–G9, không tự duyệt cổng."""
     return _result(AGENTS.workflow_payload("research", research_topic))
@@ -179,8 +205,9 @@ def get_sync_status() -> CallToolResult:
     title="Đồng bộ hệ thống agent EBM",
     description=(
         "Use this only after the physician explicitly asks to synchronize. Pass the exact "
-        "confirmation returned by the tool; it regenerates Claude-to-Codex mirrors but "
-        "never pulls or pushes GitHub."
+        "confirmation returned by the tool; it regenerates Claude-to-Codex mirrors AND may "
+        "write directly to the source .claude/agents/*.md files (guardrail block insertion, "
+        "additive only), but never pulls or pushes GitHub."
     ),
     annotations=CONTROLLED_WRITE,
 )

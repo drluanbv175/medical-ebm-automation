@@ -70,6 +70,53 @@ def test_contains_pii_text_does_not_treat_field_description_as_mrn():
     assert contains_pii_text("MRN: ABCD1234") is True
 
 
+# ── Hồi quy audit MCP ChatGPT 2026-07-20: gia cố các dạng PII tự do bác sĩ hay gõ ──
+
+
+def test_contains_pii_text_catches_spaced_and_dotted_phone_numbers():
+    """_PHONE gốc chỉ khớp chuỗi số liền mạch — SĐT viết tách nhóm bằng dấu cách/
+    chấm/gạch (cách gõ tự nhiên phổ biến nhất) trước đây lọt qua hoàn toàn."""
+    assert contains_pii_text("SĐT 090 123 4567") is True
+    assert contains_pii_text("gọi 0901.234.567 khi cần") is True
+    assert contains_pii_text("liên hệ 090-123-4567") is True
+
+
+def test_contains_pii_text_catches_benh_an_label_variants():
+    """'số/mã bệnh án' là nhãn phổ biến nhất trong ghi chú lâm sàng VN nhưng trước
+    đây KHÔNG nằm trong _MRN (chỉ có 'mã bn/hs/hồ sơ')."""
+    assert contains_pii_text("số bệnh án 123456") is True
+    assert contains_pii_text("mã bệnh án: 654321") is True
+
+
+def test_contains_pii_text_catches_text_form_dob():
+    """DOB viết bằng chữ ('sinh năm', 'SN:') trước đây lọt vì _DOB chỉ nhận định
+    dạng số có '/'-'-' sau nhãn 'dob'/'ngày sinh'."""
+    assert contains_pii_text("sinh năm 1980") is True
+    assert contains_pii_text("SN: 1980") is True
+
+
+def test_contains_pii_text_catches_address_markers():
+    """Địa chỉ cư trú cụ thể (nhãn + số) trước đây hoàn toàn không có pattern nào bắt."""
+    assert contains_pii_text("ngụ 12 Nguyễn Trãi Q1 TPHCM") is True
+    assert contains_pii_text("địa chỉ: 45 Lê Lợi, phường 3") is True
+
+
+def test_contains_pii_text_catches_common_vietnamese_patient_name():
+    """Họ Việt Nam phổ biến + đệm giới tính + tên — kiểu ghi tên bệnh nhân hay gặp
+    nhất trong bệnh án tự do ('Nguyễn Văn A', 'Trần Thị B...')."""
+    assert contains_pii_text("Bệnh nhân Nguyễn Văn An, 45 tuổi") is True
+    assert contains_pii_text("Trần Thị Bình đến khám vì đau đầu") is True
+
+
+def test_contains_pii_text_full_free_text_case_summary_is_blocked():
+    """Tái hiện đúng câu audit dùng để chứng minh lỗ hổng — nay phải bị chặn."""
+    text = (
+        "Bệnh nhân Nguyễn Văn A, 45 tuổi, ngụ 12 Nguyễn Trãi Q1 TPHCM, "
+        "SĐT 090 123 4567, số bệnh án 123456, đang dùng metformin"
+    )
+    assert contains_pii_text(text) is True
+
+
 def test_audit_logger_scrubs_pii_like_text(tmp_path):
     log_path = tmp_path / "audit.jsonl"
     event = AuditLogger(log_path).log(

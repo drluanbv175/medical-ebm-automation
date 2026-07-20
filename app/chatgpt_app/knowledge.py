@@ -9,13 +9,14 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 from urllib.parse import quote
 
 from app.core.export_policy import classify_export_file, validate_project_manifest
-from app.core.policy_engine import contains_pii_text
+from app.core.policy_engine import _collapse_digit_separators, contains_pii_text
 
 DISCLAIMER = "Cần bác sĩ kiểm chứng. Không dùng đầu ra này để tự động áp dụng cho người bệnh."
 DEFAULT_PATTERNS = (
@@ -30,6 +31,15 @@ MAX_DOCUMENT_BYTES = 512_000
 SENSITIVE_ID_PATTERN = re.compile(
     r"(?i)\b(?:cccd|cmnd|căn\s*cước|mã\s*(?:người\s*)?bệnh|patient\s*id)\s*[:#-]?\s*[A-Z0-9-]{6,}\b"
 )
+
+
+def _matches_sensitive_id(text: str) -> bool:
+    """Chuẩn hóa NFC + gộp dấu cách/chấm/gạch giữa số trước khi so khớp
+    SENSITIVE_ID_PATTERN — literal trong pattern là NFC-precomposed nên văn bản
+    NFD (chữ nền + dấu rời) khớp trượt hoàn toàn nếu so trực tiếp trên text thô;
+    CCCD viết tách nhóm ('012 345 678 901') cũng lọt nếu không gộp số trước."""
+    normalized = unicodedata.normalize("NFC", text or "")
+    return bool(SENSITIVE_ID_PATTERN.search(_collapse_digit_separators(normalized)))
 
 
 @dataclass(frozen=True)
@@ -96,7 +106,7 @@ class SafeKnowledgeIndex:
             # QUÉT TOÀN VĂN (vá 2026-07-18, audit vòng 2): trước đây chỉ quét
             # text[:200_000] nhưng fetch() phục vụ TOÀN BỘ tới MAX_DOCUMENT_BYTES
             # (512KB) → PII ở phần đuôi (200k–512k) lọt qua cổng mà vẫn bị trả về.
-            if contains_pii_text(text) or SENSITIVE_ID_PATTERN.search(text):
+            if contains_pii_text(text) or _matches_sensitive_id(text):
                 return None
         except (OSError, UnicodeError, ValueError):
             return None

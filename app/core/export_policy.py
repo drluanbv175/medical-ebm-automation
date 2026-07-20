@@ -45,9 +45,15 @@ def classify_export_file(path: Path) -> ExportFileDecision:
         reasons.append("secret_file")
     if suffix in RESTRICTED_SUFFIXES:
         reasons.append("raw_or_binary_dataset")
-    if path.is_file() and suffix in {".md", ".txt", ".html", ".json", ".toml", ".py"}:
+    # .yaml/.yml thêm vào tập quét (vá audit MCP 2026-07-20): knowledge-packs/**/*.yaml
+    # được allowlist bởi SafeKnowledgeIndex nhưng trước đây không nằm trong tập đuôi
+    # được quét PII ở đây — chỉ được che chắn nhờ lớp kiểm tra thừa riêng của caller đó,
+    # không phải chủ đích của hàm dùng chung này. Đọc TOÀN VĂN thay vì mẫu 200KB đầu:
+    # caller có thể phục vụ file lớn hơn 200KB (agents.py tới 256KB, knowledge.py tới
+    # 512KB) khiến PII ở phần đuôi lọt qua nếu chỉ lấy mẫu.
+    if path.is_file() and suffix in {".md", ".txt", ".html", ".json", ".toml", ".py", ".yaml", ".yml"}:
         try:
-            sample = path.read_text(encoding="utf-8", errors="ignore")[:200000]
+            sample = path.read_text(encoding="utf-8", errors="ignore")
             if contains_pii_text(sample):
                 reasons.append("pii_like_text")
         except OSError:

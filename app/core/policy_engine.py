@@ -11,11 +11,30 @@ from app.core.feature_flags import merge_feature_flags
 _EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
 _PHONE = re.compile(r"(?<!\d)(?:\+?84|0)\d{8,10}(?!\d)")
 _MRN = re.compile(
-    r"\b(?:mrn|mã\s*(?:bn|hs|hồ sơ)|số\s*hồ\s*sơ)"
+    r"\b(?:mrn|mã\s*(?:bn|hs|hồ\s*sơ|bệnh\s*án|người\s*bệnh)|số\s*(?:hồ\s*sơ|bệnh\s*án))"
     r"(?:\s*[:#]\s*[\w-]{4,}|\s+[A-Z0-9-]*\d[A-Z0-9-]{3,})\b",
     re.I,
 )
-_DOB = re.compile(r"\b(?:dob|ngày\s*sinh)\s*[:#]?\s*\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b", re.I)
+_DOB = re.compile(
+    r"\b(?:dob|ngày\s*sinh)\s*[:#]?\s*\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b"
+    r"|\b(?:sn|sinh\s*năm|năm\s*sinh)\s*[:#]?\s*(?:19|20)\d{2}\b",
+    re.I,
+)
+# Địa chỉ cư trú: nhãn thường gặp trong ghi chú lâm sàng VN + có số gần đó (số nhà/khu vực).
+_ADDRESS = re.compile(r"\b(?:ngụ|trú\s*tại|địa\s*chỉ)\b[^.\n]{0,60}\d", re.I)
+# Họ Việt Nam phổ biến + đệm giới tính + tên/chữ viết tắt — bắt kiểu ghi tên bệnh nhân phổ
+# biến nhất ("Nguyễn Văn A", "Trần Thị B..."), kể cả khi dùng làm ví dụ/placeholder thật.
+_VN_NAME = re.compile(
+    r"\b(?:Nguyễn|Trần|Lê|Phạm|Hoàng|Huỳnh|Phan|Vũ|Võ|Đặng|Bùi|Đỗ|Hồ|Ngô|Dương|Lý)\s+"
+    r"(?:Văn|Thị|Hữu|Thanh|Xuân|Minh|Đức|Ngọc|Thành|Anh)\s+[A-ZĐ][\wÀ-ỹ]*\b"
+)
+
+
+def _collapse_digit_separators(text: str) -> str:
+    """Xóa khoảng trắng/chấm/gạch NẰM GIỮA hai chữ số để bắt SĐT/mã số viết tách nhóm
+    (vd '090 123 4567', '012.345.678.901') — các định dạng thật bác sĩ hay gõ tự nhiên
+    mà _PHONE/_MRN gốc (chỉ khớp chuỗi số liền mạch) bỏ sót."""
+    return re.sub(r"(?<=\d)[\s.-]+(?=\d)", "", text)
 
 
 @dataclass(frozen=True)
@@ -46,7 +65,11 @@ def contains_pii_text(text: str) -> bool:
     # sẵn (NFC); văn bản NFD (chữ nền + dấu rời) khớp trượt và lọt qua mọi cổng dùng hàm này
     # (export_policy.classify_export_file, shadow-pilot/red-team scan...) mà không báo lỗi.
     normalized = unicodedata.normalize("NFC", text or "")
-    return any(pattern.search(normalized) for pattern in (_EMAIL, _PHONE, _MRN, _DOB))
+    collapsed = _collapse_digit_separators(normalized)
+    return any(
+        pattern.search(collapsed)
+        for pattern in (_EMAIL, _PHONE, _MRN, _DOB, _ADDRESS, _VN_NAME)
+    )
 
 
 def _context_text(context: Mapping[str, Any]) -> str:
