@@ -12,8 +12,10 @@ phải dán tay giá trị này vào hằng số MANIFEST_SELF_CHECK_SHA256 tron
 `runtime/agent_registry.py` (thiết kế cố ý: không tự sửa mã nguồn, để
 việc "khóa lại baseline" luôn là một bước NGƯỜI xác nhận, không lặng lẽ).
 
-Dùng: python3 scripts/regenerate_agent_manifest.py [--write]
-  (không có --write: chỉ in ra sẽ ghi gì, không đổi file)
+Dùng:
+  python3 scripts/regenerate_agent_manifest.py          # preview, không đổi file
+  python3 scripts/regenerate_agent_manifest.py --check  # kiểm drift, không đổi file
+  python3 scripts/regenerate_agent_manifest.py --write  # ghi manifest thật
 """
 from __future__ import annotations
 
@@ -24,7 +26,12 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from runtime.agent_registry import AGENTS_DIR, SCOPE_A_MANIFEST_PATH  # noqa: E402
+from runtime.agent_registry import (  # noqa: E402
+    AGENTS_DIR,
+    MANIFEST_SELF_CHECK_SHA256,
+    MINIMUM_AGENT_COUNT,
+    SCOPE_A_MANIFEST_PATH,
+)
 
 
 def _sha256(path: pathlib.Path) -> str:
@@ -37,7 +44,9 @@ def _sha256(path: pathlib.Path) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--write", action="store_true", help="ghi manifest thật (mặc định chỉ xem trước)")
+    mode = ap.add_mutually_exclusive_group()
+    mode.add_argument("--check", action="store_true", help="kiểm manifest hiện tại có drift không; không ghi file")
+    mode.add_argument("--write", action="store_true", help="ghi manifest thật (mặc định chỉ xem trước)")
     args = ap.parse_args()
 
     if not AGENTS_DIR.exists():
@@ -65,7 +74,26 @@ def main() -> int:
     print(f"→ Cập nhật MINIMUM_AGENT_COUNT trong runtime/agent_registry.py nếu số agent đổi "
           f"(hiện quét được {len(rows)}).")
 
-    if args.write:
+    if args.check:
+        problems = []
+        if len(rows) < MINIMUM_AGENT_COUNT:
+            problems.append(f"agent_count {len(rows)} < MINIMUM_AGENT_COUNT {MINIMUM_AGENT_COUNT}")
+        try:
+            current_content = SCOPE_A_MANIFEST_PATH.read_text(encoding="utf-8")
+        except OSError as exc:
+            problems.append(f"không đọc được manifest hiện tại: {exc}")
+            current_content = ""
+        if current_content and current_content != content:
+            problems.append("manifest hiện tại khác nội dung sinh lại từ .claude/agents")
+        if self_hash != MANIFEST_SELF_CHECK_SHA256:
+            problems.append("MANIFEST_SELF_CHECK_SHA256 không khớp manifest sinh lại")
+        if problems:
+            print("CHECK FAIL:")
+            for problem in problems:
+                print(f"- {problem}")
+            return 1
+        print("CHECK PASS: manifest hiện tại khớp agent source và self-check.")
+    elif args.write:
         # SỬA 2026-07-08: Path.write_text() chỉ nhận tham số newline= từ Python
         # 3.10 — venv dự án đang chạy 3.9 (xem ~/.ebm-venv) nên crash TypeError.
         # Dùng open() (luôn hỗ trợ newline=) để giữ đúng ý định gốc: ép LF, tránh

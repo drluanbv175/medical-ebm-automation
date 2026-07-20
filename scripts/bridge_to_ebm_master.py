@@ -27,7 +27,7 @@ import sys
 # script ở Claude AI/medical-ebm-automation/scripts/ → lên 2 cấp = Claude AI/ → /EBM_MASTER
 HUB = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "EBM_MASTER")
 sys.path.insert(0, os.path.join(HUB, "tools"))
-from ledger_ids import max_seq, assert_unique  # noqa: E402 — vá 2026-07-17: seq=len(cards) từng gây trùng id thật (xem ledger_ids.py)
+from ledger_ids import assert_unique, max_seq  # isort: skip  # noqa: E402 — vá 2026-07-17: seq=len(cards) từng gây trùng id thật (xem ledger_ids.py)
 
 GRADE_MAP = {  # operational_evidence_level / official_grade → gradeLevel chuẩn EBM_MASTER
     "high": "high", "moderate": "mod", "mod": "mod", "low": "low", "very low": "vlow", "vlow": "vlow",
