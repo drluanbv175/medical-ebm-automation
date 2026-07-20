@@ -55,6 +55,14 @@ QUESTION_TYPES = {
     "harm":         "Tác hại / An toàn (cohort hoặc case-control)",
     "descriptive":  "Mô tả (cross-sectional)",
     "sr":           "Tổng hợp bằng chứng (SR/meta-analysis)",
+    # THÊM 2026-07-19 (audit vòng 3, D1_qual_mixed_gate_coverage — NGHIÊM TRỌNG):
+    # trước bản vá này, infer_study_design() KHÔNG có nhánh nào cho định tính/
+    # hỗn hợp — mọi đề tài định tính bị âm thầm gán internal_code="rct" (khi
+    # question_type mặc định "treatment") hoặc "cross_sectional" (nhánh else
+    # "descriptive"), kéo theo G3 tính cỡ mẫu bằng công thức SAI (power thay vì
+    # bão hòa dữ liệu), G4 hard-block khi N=0, G7 gán sai checklist STROBE thay
+    # COREQ/SRQR. Cùng lớp lỗi & cùng khuôn vá đã làm cho "prediction" 2026-07-17.
+    "qualitative":  "Định tính/hỗn hợp (COREQ/SRQR — bão hòa dữ liệu thay power)",
 }
 
 REPORTING_STANDARDS = {
@@ -65,6 +73,7 @@ REPORTING_STANDARDS = {
     "sr_ma":            "PRISMA 2020",
     "diagnostic":       "STARD 2015",
     "prediction":       "TRIPOD+AI 2024",
+    "qualitative":      "COREQ (phỏng vấn/nhóm tiêu điểm) / SRQR (định tính nói chung)",
 }
 
 BIAS_CONTROLS = {
@@ -155,6 +164,23 @@ BIAS_CONTROLS = {
         ("Reporting bias",
          "Đăng ký/giao thức trước nếu có + checklist TRIPOD+AI đầy đủ (không chỉ báo cáo mô hình cuối)"),
     ],
+    # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): định tính KHÔNG dùng
+    # khung "bias" định lượng (selection/confounding/detection...) — nếu thiếu
+    # entry này, .get(internal, BIAS_CONTROLS["cohort"]) sẽ fallback SAI sang
+    # bias cohort. Dùng khung TRUSTWORTHINESS chuẩn (Lincoln & Guba) mà chính
+    # nghien-cuu-dinh-tinh.md đòi ("bảng trustworthiness 4 tiêu chí").
+    "qualitative": [
+        ("Credibility (độ tin cậy nội tại)",
+         "Tam giác đạc nguồn/phương pháp (triangulation); member checking; thời gian tương tác đủ dài"),
+        ("Transferability (khả năng chuyển giao)",
+         "Mô tả dày (thick description) bối cảnh + đặc điểm mẫu để người đọc tự đánh giá áp dụng"),
+        ("Dependability (độ tin cậy quy trình)",
+         "Audit trail rõ ràng (nhật ký quyết định phân tích); quy trình mã hóa nhất quán"),
+        ("Confirmability (tính khách quan)",
+         "Phản tư của nhà nghiên cứu (reflexivity); đối chiếu độc lập giữa 2 người mã hóa"),
+        ("Reporting bias",
+         "Chuẩn báo cáo COREQ (phỏng vấn/nhóm)/SRQR đầy đủ — không chọn lọc quote hợp ý"),
+    ],
 }
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -218,6 +244,13 @@ SPECIALIST_MODULE_KEYWORDS: dict[str, list[str]] = {
         "focus group", "in-depth interview", "grounded theory",
         "phenomenology", "hiện tượng học", "phân tích chủ đề",
         "thematic analysis", "coreq", "srqr",
+        # THÊM 2026-07-19 (audit vòng 3, D1 — khớp ĐÚNG 3 cụm doctrine
+        # nghien-cuu-dinh-tinh.md dòng 35 tự công bố: "Phương pháp khớp câu
+        # hỏi: 'trải nghiệm/ý nghĩa/rào cản' → định tính" — trước bản vá này,
+        # danh sách keyword ở đây KHÔNG chứa 3 cụm mà chính doctrine dùng làm
+        # ví dụ chuẩn, nên ví dụ mẫu của agent tự nó cũng không kích hoạt được
+        # qua đường tự động).
+        "trải nghiệm", "ý nghĩa", "rào cản",
     ],
 }
 
@@ -394,6 +427,14 @@ DESIGN_KEYWORD_HINTS = {
                     "hài lòng", "hai long", "satisfaction", "khảo sát", "khao sat",
                     "survey", "thực trạng", "thuc trang", "kiến thức thái độ",
                     "kap", "chất lượng dịch vụ", "chat luong dich vu"],
+    # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, cùng khuôn vá
+    # "prediction_model" 2026-07-17): tái dùng ĐÚNG danh sách keyword định
+    # tính ở SPECIALIST_MODULE_KEYWORDS["qualitative"] để 2 lớp phát hiện
+    # (design chính + specialist module cộng thêm) nhất quán, một nguồn duy
+    # nhất — sửa ở 1 nơi tự lan sang cả 2. Đặt TRƯỚC "descriptive" trong thứ
+    # tự elif của infer_study_design() vì không đụng độ (không cụm nào ở đây
+    # trùng "hài lòng/khảo sát/thực trạng/tỷ lệ" của descriptive).
+    "qualitative": SPECIALIST_MODULE_KEYWORDS["qualitative"],
 }
 
 # question_type (từ khóa phát hiện) → internal_code KỲ VỌNG tương ứng, dùng
@@ -406,6 +447,7 @@ _KEYWORD_TO_EXPECTED_INTERNAL = {
     "prognosis": "cohort",
     "harm": "case_control",
     "descriptive": "cross_sectional",
+    "qualitative": "qualitative",
 }
 
 
@@ -466,6 +508,17 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     # nhánh TRIPOD+AI đã nối xuyên G2-G9 (xem infer_study_design elif dưới).
     if _kw_in(DESIGN_KEYWORD_HINTS["sr"], topic_lower):
         question_type = "sr"
+    # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): kiểm "qualitative"
+    # NGAY SAU "sr" — trước bản vá này, đề tài định tính rơi thẳng vào nhánh
+    # else "descriptive" hoặc mặc định "treatment"→"rct", SAI phương pháp
+    # luận (không power/effect size). Đặt SỚM (trước diagnosis/prognosis) vì
+    # marker "trải nghiệm/ý nghĩa/rào cản" là dấu hiệu PARADIGM/PHƯƠNG PHÁP
+    # LUẬN — đặc hiệu hơn và phải THẮNG marker DOMAIN/TOPIC như "chẩn đoán"/
+    # "tiên lượng" (vd "Ý nghĩa của chẩn đoán ung thư..." là câu hỏi định
+    # tính dù chứa chữ "chẩn đoán" — đã xác nhận qua ca thật khi kiểm chứng
+    # bản vá, "diagnosis" từng nuốt mất câu này khi đặt "qualitative" sau).
+    elif _kw_in(DESIGN_KEYWORD_HINTS["qualitative"], topic_lower):
+        question_type = "qualitative"
     elif _kw_in(DESIGN_KEYWORD_HINTS["diagnosis"], topic_lower):
         question_type = "diagnosis"
     elif _kw_in(DESIGN_KEYWORD_HINTS["prediction_model"], topic_lower):
@@ -592,6 +645,26 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
         alt2 = "Self-controlled case series (SCCS) (nếu phơi nhiễm nhất thời)"
         rationale = ("Câu hỏi tác hại: kết cục thường hiếm → case-control hiệu quả. "
                      "Nếu phơi nhiễm phổ biến và có hồ sơ tốt → cohort hồi cứu.")
+
+    elif question_type == "qualitative":
+        # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, cùng khuôn vá
+        # "prediction_model" 2026-07-17): trước bản vá này, KHÔNG nhánh nào ở
+        # đây từng gán internal="qualitative" — infer_study_design() luôn trả
+        # về rct/cohort/cross_sectional cho MỌI đề tài, kể cả định tính thuần
+        # túy. Hệ quả downstream: G3 tính cỡ mẫu bằng công thức power/effect
+        # size (SAI phương pháp luận — định tính dùng bão hòa dữ liệu, không
+        # phải power); G4 hard-block SAP khi N=0; G7 gán checklist STROBE/
+        # CONSORT thay vì COREQ/SRQR.
+        primary = "Nghiên cứu Định tính (Qualitative Research)"
+        internal = "qualitative"
+        alt1 = "Mixed-methods (nếu cần bổ sung cấu phần định lượng — thiết kế tích hợp hội tụ/giải thích tuần tự/khám phá tuần tự)"
+        alt2 = "Nghiên cứu trường hợp (case study) nếu câu hỏi tập trung MỘT đơn vị/bối cảnh cụ thể"
+        rationale = ("Câu hỏi khai thác TRẢI NGHIỆM/Ý NGHĨA/RÀO CẢN (paradigm định tính, không "
+                     "phải 'bao nhiêu/liên quan' của định lượng): cần cách tiếp cận (hiện tượng "
+                     "học/grounded theory/phân tích chủ đề) + lấy mẫu có chủ đích + quy tắc BÃO "
+                     "HÒA DỮ LIỆU (không ấn định cỡ mẫu cứng như power/effect size). Chuyển "
+                     "`nghien-cuu-dinh-tinh` để thiết kế chi tiết. Chuẩn báo cáo: COREQ (phỏng "
+                     "vấn/nhóm tiêu điểm) / SRQR (định tính nói chung).")
 
     else:  # descriptive
         primary = "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)"

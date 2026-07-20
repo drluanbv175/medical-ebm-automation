@@ -18,6 +18,15 @@ sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
+# THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, xác nhận bằng thực
+# nghiệm chạy thật G3→G4): 3 thiết kế KHÔNG dùng công thức cỡ mẫu power/
+# effect size — n_adjusted=0 là CÓ CHỦ ĐÍCH (G3 đã ghi formula_used giải
+# thích phương pháp thay thế: RIS/TSA cho sr_ma, pmsampsize cho prediction,
+# bão hòa dữ liệu cho qualitative). ĐỒNG BỘ TAY với
+# run_g3_auto.py::N_NOT_APPLICABLE_DESIGNS — sửa 1 nơi phải sửa cả 2 (2 file
+# độc lập, không cross-import CLI script khác để tránh side-effect).
+N_NOT_APPLICABLE_DESIGNS = {"sr_ma", "prediction", "qualitative"}
+
 
 def load_cp(path):
     if Path(path).exists():
@@ -109,6 +118,16 @@ def generate(study, topic, design_code, design_primary, reporting_std,
     }
     pop, analysis_pop, main_method = sap_sections.get(design_code, ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]"))
 
+    # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): với sr_ma/prediction/
+    # qualitative, n_adjusted=0 là CÓ CHỦ ĐÍCH (không dùng power/effect size)
+    # — hiện "[CẦN từ G3]" sẽ SAI (ngụ ý G3 chưa xong/thiếu dữ liệu). CHỈ áp
+    # dụng khi n_adjusted VẪN <= 0 (chưa có confirmed_n) — nếu bác sĩ đã tự
+    # tính N (RIS/pmsampsize/bão hòa) và chốt qua --confirmed-n, main() đã
+    # gán n_adjusted=confirmed_n TRƯỚC khi gọi generate() nên phải hiện N
+    # thật, không phải "N/A".
+    n_not_applicable = design_code in N_NOT_APPLICABLE_DESIGNS and not n_adjusted
+    n_na_note = f"N/A — {design_code} không dùng power (xem A4)"
+
     lines = [
         "# A5 — SAP FINAL + SAP LOCK CERTIFICATE (DRAFT — CHỜ BÁC SĨ KÝ)",
         f"**Đề tài:** {topic}  ",
@@ -146,7 +165,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "### §1 QUẦN THỂ PHÂN TÍCH",
         "",
         f"- **Quần thể chính:** {pop}  ",
-        f"- **Cỡ mẫu cuối:** N = {n_adjusted} (alpha={alpha}, power={int(power*100)}%)  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  ",
+        (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
+         (f"- **Cỡ mẫu cuối:** N = {n_adjusted} (alpha={alpha}, power={int(power*100)}%)  " if n_adjusted
+          else "- **Cỡ mẫu:** [CẦN từ G3]  ")),
         "- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  ",
         "- **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  ",
         "",
@@ -224,8 +245,11 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
         f"- **Alpha (two-sided):** {alpha}  ",
         f"- **Power:** {int(power*100)}%  ",
-        f"- **Cỡ mẫu:** N = {n_adjusted}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  ",
-        f"- **Effect size dự kiến:** {effect_type} = {effect_val:.2f}  " if effect_val else "- **Effect size:** [CẦN từ G3]  ",
+        (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
+         (f"- **Cỡ mẫu:** N = {n_adjusted}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  ")),
+        (f"- **Effect size:** N/A — {design_code} không dùng effect size  " if n_not_applicable else
+         (f"- **Effect size dự kiến:** {effect_type} = {effect_val:.2f}  " if effect_val
+          else "- **Effect size:** [CẦN từ G3]  ")),
     ] + (
         # THÊM 2026-07-06: SD bị RỚT khi truyền G3→G4 (phát hiện qua kiểm định
         # đối kháng vòng 2) — bác sĩ ký SAP mà không thấy tham số bắt buộc để
@@ -255,7 +279,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "╠══════════════════════════════════════════════════════════════╣",
         f"║ Đề tài    : {study:<48} ║",
         f"║ Ngày soạn : {run_date:<48} ║",
-        f"║ Cỡ mẫu   : N = {str(n_adjusted):<45} ║" if n_adjusted else "║ Cỡ mẫu   : [CẦN từ G3]                                      ║",
+        (f"║ Cỡ mẫu   : {n_na_note:<49} ║" if n_not_applicable else
+         (f"║ Cỡ mẫu   : N = {str(n_adjusted):<45} ║" if n_adjusted
+          else "║ Cỡ mẫu   : [CẦN từ G3]                                      ║")),
         f"║ Alpha     : {alpha}                                            ║",
         f"║ Power     : {int(power*100)}%                                            ║",
     ] + (
@@ -362,6 +388,19 @@ def main():
         n_adjusted = int(g3.get("n_adjusted") or 0)
     except (TypeError, ValueError):
         n_adjusted = 0
+    # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, xác nhận thực nghiệm
+    # G3→G4 thật): với sr_ma/prediction/qualitative, n_adjusted (kết quả
+    # công thức power/effect size) LUÔN 0 CÓ CHỦ ĐÍCH — N thật (nếu bác sĩ đã
+    # tự tính NGOÀI hệ thống bằng RIS/pmsampsize/bão hòa dữ liệu) nằm ở
+    # `confirmed_n` (G3 ghi vào checkpoint khi chạy `--confirmed-n`). Dùng
+    # confirmed_n làm N hiệu lực cho 3 thiết kế này — KHÔNG đổi hành vi cho
+    # thiết kế khác (rct/cohort/... vẫn chỉ dùng n_adjusted như cũ).
+    try:
+        confirmed_n = int(g3.get("confirmed_n")) if g3.get("confirmed_n") is not None else None
+    except (TypeError, ValueError):
+        confirmed_n = None
+    if design_code in N_NOT_APPLICABLE_DESIGNS and confirmed_n:
+        n_adjusted = confirmed_n
     alpha = g3.get("alpha") or 0.05
     power = g3.get("power") or 0.80
     effect_val = g3.get("effect_val")

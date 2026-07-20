@@ -18,6 +18,15 @@ sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
+# THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): 3 thiết kế KHÔNG dùng
+# công thức cỡ mẫu power/effect size truyền thống — n_adjusted=0 là CÓ CHỦ
+# ĐÍCH (kèm formula_used giải thích phương pháp thay thế: RIS/TSA cho sr_ma,
+# pmsampsize cho prediction, bão hòa dữ liệu cho qualitative), KHÔNG phải
+# "thiếu effect size" (lỗi thật). Hằng số DÙNG CHUNG giữa guardrail (không
+# hard-block) và generate_artifact (không hiện nhầm thông báo "chưa tính
+# được — cần effect size").
+N_NOT_APPLICABLE_DESIGNS = {"sr_ma", "prediction", "qualitative"}
+
 # Hệ số z phổ biến (6 chữ số thập phân — khớp scipy.stats.norm.ppf để tránh
 # lệch 1 đơn vị ở biên math.ceil() khi phải dùng bảng dự phòng không scipy)
 Z_TABLE = {
@@ -368,6 +377,23 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
                 f"thức cho thiết kế `{design_code}` NHƯNG có thể phải tính LẠI nếu bác sĩ chọn thiết kế "
                 "khác (SR/MA cập nhật không cần cỡ mẫu kiểu này, hoặc RCT nhắm phân nhóm cụ thể).",
             ]
+    elif design_code in N_NOT_APPLICABLE_DESIGNS:
+        # SỬA 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): trước bản vá này,
+        # nhánh `else` phía dưới ("⚠ Chưa tính được — cần effect size") hiện
+        # SAI cho sr_ma/prediction/qualitative — 3 thiết kế này effect_val
+        # LUÔN None (không áp dụng), N=0 là CÓ CHỦ ĐÍCH với phương pháp thay
+        # thế đã giải thích ở PHẦN 1 (formula_used), không phải "thiếu".
+        lines += [
+            f"**ℹ️ N=0 CÓ CHỦ ĐÍCH** — thiết kế `{design_code}` không dùng công thức "
+            "cỡ mẫu power/effect size truyền thống. Xem PHẦN 1 (mục Công thức) để "
+            "biết phương pháp đúng cho thiết kế này.",
+            "",
+            "| Chỉ số | Kết quả |",
+            "|---|---|",
+            "| N mỗi nhóm | **[N/A — xem Công thức]** |",
+            "| N tổng | **[N/A — xem Công thức]** |",
+            "| N điều chỉnh | **[N/A — xem Công thức]** |",
+        ]
     else:
         lines += [
             "**⚠ Chưa tính được** — bác sĩ cần cung cấp effect size.",
@@ -699,6 +725,27 @@ def main():
         print("  ⚠️  design=prediction → cần pmsampsize (Riley 2020, PMID "
               "32188600), không phải công thức so sánh 2 nhóm — KHÔNG bịa "
               "số, xem hướng dẫn trong artifact A4")
+    elif design_code == "qualitative":
+        # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, cùng khuôn vá
+        # sr_ma/prediction 2026-07-06/07-17): trước bản vá này, "qualitative"
+        # rơi thẳng vào nhánh else "[CẦN EFFECT SIZE từ bác sĩ]" chung chung —
+        # SAI phương pháp luận hoàn toàn. Định tính KHÔNG dùng power/effect
+        # size — cỡ mẫu xác định bằng BÃO HÒA DỮ LIỆU (data saturation, không
+        # ấn định cứng trước khi thu thập). n_adjusted=0 CÓ CHỦ Ý (không phải
+        # thiếu dữ liệu) — G4 phải nhận diện design_code="qualitative" để
+        # KHÔNG hard-block như với N=0 của thiết kế định lượng thật.
+        n_per_group = n_total = n_adjusted = 0
+        formula_used = (
+            "[Nghiên cứu định tính KHÔNG dùng công thức cỡ mẫu power/effect size. "
+            "Cỡ mẫu xác định bằng QUY TẮC BÃO HÒA DỮ LIỆU (data saturation) — dừng "
+            "phỏng vấn/nhóm tiêu điểm khi không còn chủ đề mới xuất hiện (thường "
+            "12-20 người tham gia cho phỏng vấn sâu, 4-6 nhóm cho focus group — "
+            "kinh nghiệm chung, KHÔNG phải ngưỡng cứng). Xem `nghien-cuu-dinh-tinh` "
+            "để lập kế hoạch lấy mẫu có chủ đích + tiêu chí dừng bão hòa cụ thể. "
+            "KHÔNG áp công thức power cho thiết kế này.]"
+        )
+        print("  ℹ️  design=qualitative → cỡ mẫu theo BÃO HÒA DỮ LIỆU (không phải "
+              "power/effect size) — N=0 có chủ đích, xem artifact A4/nghien-cuu-dinh-tinh")
     elif effect_val:
         try:
             if design_code == "cohort" and effect_type in ("HR", "OR", "RR"):
@@ -841,7 +888,26 @@ def main():
     #   3) n_adjusted > 0 + không lỗi R → PASS (exit 0) — đường thành công cũ.
     # SỬA lỗi false-PASS đã xác nhận: trước đây n=0 (thiếu effect size) vẫn ghi
     # guardrail "✅ PASS", làm cả chuỗi tưởng G3 xong rồi kẹt ở G4.
-    core = GC.core_value("n_adjusted", n_adjusted, is_empty=(n_adjusted <= 0))
+    #
+    # SỬA 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, xác nhận bằng thực
+    # nghiệm chạy thật G3→G4 cho sr_ma/prediction): với sr_ma/prediction/
+    # qualitative, effect_size KHÔNG áp dụng (n_adjusted=0 CÓ CHỦ ĐÍCH, kèm
+    # formula_used hướng dẫn phương pháp riêng: RIS/TSA, pmsampsize, bão hòa
+    # dữ liệu). Test cũ (2026-07-17, test_gate_prediction_design_coverage.py)
+    # CÓ CHỦ Ý giữ BLOCKED cho tới khi bác sĩ tự tính N (ngoài hệ thống, theo
+    # phương pháp đã hướng dẫn) rồi CHỐT qua `--confirmed-n` — không bỏ hẳn
+    # yêu cầu hành động của bác sĩ trước khi khóa SAP (đúng triết lý "liêm
+    # chính > tiến độ" của toàn hệ). Vấn đề THẬT không phải "có nên chặn" mà
+    # là (a) thông báo SAI ("thiếu effect size" — effect size không hề áp
+    # dụng) và (b) `--confirmed-n` TRƯỚC ĐÂY KHÔNG có tác dụng cho 3 thiết kế
+    # này (is_empty chỉ nhìn n_adjusted, bỏ qua confirmed_n hoàn toàn — bug
+    # thật, khác bản chất so với D1 nhưng phát hiện được khi vá D1). Nay: đã
+    # CHỐT --confirmed-n → PASS (dùng N đã chốt); CHƯA chốt → vẫn BLOCKED,
+    # nhưng thông báo đúng (xem nhánh needs_input bên dưới).
+    core_is_empty = (n_adjusted <= 0) and not (
+        design_code in N_NOT_APPLICABLE_DESIGNS and args.confirmed_n is not None
+    )
+    core = GC.core_value("n_adjusted", n_adjusted, is_empty=core_is_empty)
     need = None
     if errors:
         status = f"⚠ {len(errors)} LỖI (R1–R7)"
@@ -851,7 +917,32 @@ def main():
         exit_code = GC.EXIT_BLOCKED
         cmd = (f'python tools/run_g3_auto.py --study {study} '
                '--effect-size <giá_trị> --effect-type <HR|OR|RR|ARR%|AUC>')
-        if effect_val is None:
+        if design_code in N_NOT_APPLICABLE_DESIGNS:
+            # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): sr_ma/
+            # prediction/qualitative KHÔNG dùng effect_size — thông báo
+            # "thiếu effect size" ở nhánh dưới SAI hoàn toàn cho 3 thiết kế
+            # này. Đúng quy trình: bác sĩ/thống kê viên tự tính N NGOÀI hệ
+            # thống theo phương pháp đã hướng dẫn trong artifact (RIS/TSA,
+            # pmsampsize, hoặc quy tắc bão hòa dữ liệu), rồi CHỐT qua
+            # `--confirmed-n` (cờ có sẵn, trước bản vá này KHÔNG có tác dụng
+            # cho 3 thiết kế này — is_empty chỉ nhìn n_adjusted).
+            _method_hint = {
+                "sr_ma": "Required Information Size (RIS)/TSA — dùng metafor::power hoặc phần mềm TSA (Copenhagen Trial Unit)",
+                "prediction": "pmsampsize theo Riley RD et al. BMJ 2020;368:m441 (PMID 32188600)",
+                "qualitative": "quy tắc bão hòa dữ liệu (data saturation) — xem nghien-cuu-dinh-tinh",
+            }[design_code]
+            need = GC.needs_input(
+                GC.REASON_MISSING_SAMPLE_SIZE,
+                f"G3 (thiết kế `{design_code}`) KHÔNG dùng effect_size/power truyền thống "
+                f"— cần bác sĩ/thống kê viên tự tính N theo {_method_hint} (NGOÀI hệ "
+                "thống, xem hướng dẫn chi tiết trong artifact A4), rồi chốt qua --confirmed-n. "
+                "Hệ KHÔNG tự tính/bịa N cho thiết kế này.",
+                f'python tools/run_g3_auto.py --study {study} --confirmed-n <N_đã_tự_tính>',
+                must_not_fabricate=["n_adjusted", "confirmed_n"],
+                study_meta_patch={"gate_params": {"G3": {
+                    "confirmed_n": f"<CẦN BÁC SĨ/THỐNG KÊ VIÊN CẤP — tự tính bằng {_method_hint}>"}}},
+            )
+        elif effect_val is None:
             need = GC.needs_input(
                 GC.REASON_MISSING_EFFECT_SIZE,
                 "G3 chưa tính được cỡ mẫu vì THIẾU effect size. Không tìm được "

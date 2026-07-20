@@ -70,6 +70,14 @@ REPORTING_CHECKLISTS: dict[str, tuple[str, int]] = {
     "diagnostic":      ("STARD 2015",     30),
     "sr_ma":           ("PRISMA 2020",    27),
     "prediction":      ("TRIPOD+AI 2024", 27),
+    # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, cùng khuôn vá
+    # "prediction" 2026-07-17): "qualitative" TRƯỚC ĐÂY THIẾU HẲN — G7 fallback
+    # về STROBE (sai hoàn toàn phương pháp luận) khi soạn bản thảo cho đề tài
+    # định tính/hỗn hợp. SRQR (Standards for Reporting Qualitative Research,
+    # O'Brien BC et al. Acad Med 2014;89(9):1245-1251) là chuẩn TỔNG QUÁT cho
+    # định tính nói chung (COREQ hẹp hơn — chỉ phỏng vấn/nhóm tiêu điểm), đúng
+    # theo doctrine nghien-cuu-dinh-tinh.md dòng 36. 21 mục chính thức.
+    "qualitative":     ("SRQR 2014",      21),
 }
 
 # Mục checklist chi tiết theo design (mô tả ngắn → tự điền hay cần thêm)
@@ -397,6 +405,39 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("27a", "[D] Cách xử lý dữ liệu đầu vào kém chất lượng/không có khi triển khai thực tế", False),
         ("27b", "[D] Có cần tương tác người-AI không, mức độ chuyên môn cần thiết", False),
         ("27c", "[D;E] Bước tiếp theo cho nghiên cứu tương lai, khả năng khái quát hóa", False),
+    ],
+    # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): SRQR 2014 (Standards
+    # for Reporting Qualitative Research, O'Brien BC et al. Acad Med
+    # 2014;89(9):1245-1251), 21 mục chính thức theo cấu trúc IMRaD. TẤT CẢ
+    # auto_filled=False — nhất quán nguyên tắc "KHÔNG bịa quote/chủ đề khi
+    # chưa có dữ liệu thật" của nghien-cuu-dinh-tinh.md (khác RCT/cohort có
+    # thể tự điền phương pháp từ checkpoint G0-G4, dữ liệu định tính — quote,
+    # chủ đề, bão hòa — chỉ tồn tại SAU khi thu thập+mã hóa thật). ⚠️ Đối
+    # chiếu PDF gốc equator-network.org/reporting-guidelines/srqr TRƯỚC KHI
+    # dùng nộp tạp chí — khung này soạn từ cấu trúc chuẩn công bố, chưa qua
+    # đối chiếu trực tuyến trong phiên vá này (offline theo yêu cầu audit).
+    "qualitative": [
+        ("1",  "Tiêu đề — nêu rõ nghiên cứu là ĐỊNH TÍNH hoặc tên cách tiếp cận (vd hiện tượng học)", False),
+        ("2",  "Tóm tắt — tóm lược mục tiêu, phương pháp, kết quả chính theo cấu trúc", False),
+        ("3",  "Xác định vấn đề — mô tả vấn đề nghiên cứu và tổng quan y văn liên quan", False),
+        ("4",  "Mục tiêu/câu hỏi nghiên cứu — nêu rõ câu hỏi khớp paradigm định tính", False),
+        ("5",  "Cách tiếp cận định tính và paradigm — hiện tượng học/grounded theory/phân tích chủ đề..., lý do chọn", False),
+        ("6",  "Đặc điểm/vai trò nhà nghiên cứu — kinh nghiệm, đào tạo, mối quan hệ với người tham gia, giả định (reflexivity)", False),
+        ("7",  "Bối cảnh — cơ sở/địa điểm nghiên cứu và lý do chọn", False),
+        ("8",  "Chiến lược chọn mẫu — cách chọn người tham gia (purposive/snowball...), tiêu chí, cách tiếp cận", False),
+        ("9",  "Vấn đề đạo đức — chấp thuận IRB, đồng thuận tham gia, bảo mật, cân nhắc đặc thù nghiên cứu định tính", False),
+        ("10", "Phương pháp thu thập dữ liệu — hình thức (phỏng vấn/nhóm/quan sát), thời gian, số lần lặp, lý do dừng", False),
+        ("11", "Công cụ thu thập dữ liệu — hướng dẫn phỏng vấn/quan sát, thử nghiệm trước, ai thu thập, thay đổi trong quá trình", False),
+        ("12", "Đơn vị nghiên cứu — số người/nhóm tham gia, mức độ tham gia, đặc điểm nhân khẩu", False),
+        ("13", "Xử lý dữ liệu — gỡ băng, ghi chú hiện trường, quản lý dữ liệu, khử định danh", False),
+        ("14", "Phân tích dữ liệu — quy trình mã hóa, ai phân tích, phần mềm hỗ trợ (nếu có)", False),
+        ("15", "Kỹ thuật tăng độ tin cậy — trustworthiness (credibility/transferability/dependability/confirmability), triangulation, member checking, audit trail", False),
+        ("16", "Kết quả/phát hiện — trình bày phát hiện chính có hỗ trợ bằng dữ liệu (quote/trích đoạn) THẬT", False),
+        ("17", "Liên kết với dữ liệu thực nghiệm — kết luận có bám sát/được minh họa bởi dữ liệu thu thập", False),
+        ("18", "Tích hợp với lý thuyết/nghiên cứu khác — đối chiếu phát hiện với khung lý thuyết/y văn hiện có", False),
+        ("19", "Hạn chế — hạn chế nghiên cứu, ảnh hưởng đến độ tin cậy/khả năng chuyển giao kết quả", False),
+        ("20", "Xung đột lợi ích — khai báo xung đột lợi ích của nhóm nghiên cứu", False),
+        ("21", "Nguồn tài trợ — nguồn tài trợ và vai trò nhà tài trợ trong thiết kế/thực hiện/công bố", False),
     ],
 }
 
@@ -940,6 +981,13 @@ def generate_manuscript(
         # bị gán nhầm "PRISMA flow diagram" — sai hoàn toàn (đây không phải SR/MA).
         # TRIPOD+AI mục 20a yêu cầu sơ đồ luồng người tham gia riêng.
         flow_label = "TRIPOD+AI flow diagram (mục 20a)"
+    elif design_code == "qualitative":
+        # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): trước bản vá này
+        # rơi vào else → gán nhầm "PRISMA flow diagram" (sai hoàn toàn — định
+        # tính không phải SR/MA, không có luồng sàng lọc bài báo). SRQR KHÔNG
+        # bắt buộc 1 sơ đồ dòng chảy chuẩn hóa như CONSORT/STROBE/PRISMA/
+        # TRIPOD+AI — mô tả tuyển chọn thường ở dạng tường thuật (mục 8 SRQR).
+        flow_label = "Mô tả tuyển chọn tường thuật (SRQR mục 8 — không bắt buộc sơ đồ dòng chảy chuẩn hóa)"
     else:
         flow_label = "PRISMA flow diagram"
 
