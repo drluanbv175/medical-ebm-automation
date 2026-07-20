@@ -2572,6 +2572,21 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
         return _r03_rct_with_vars(v)
     elif design_code == "cross_sectional":
         return _r03_cross_with_vars(v)
+    # THÊM 2026-07-19 (audit vòng 3, D2_prediction_dta_gate_coverage — NGHIÊM
+    # TRỌNG): "diagnostic"/"prediction"/"sr_ma" trước đây rơi vào else →
+    # make_r03_cohort() (Cox regression + Kaplan-Meier) — SAI HOÀN TOÀN
+    # phương pháp thống kê cho cả 3 (không có trục thời gian-đến-biến-cố hợp
+    # lệ theo nghĩa Cox cho chẩn đoán/mô hình tiên lượng/tổng hợp nhiều
+    # nghiên cứu). Mâu thuẫn nội tại: TABLE_SHELLS/analysis_name_map (đã vá
+    # 2026-07-17) ghi đúng ROC/AUC+DCA (diagnostic), TRIPOD+AI (prediction),
+    # nhưng 03_analysis.R thực tế lại dạy Cox/HR — cùng lớp lỗi "2 lớp xử lý
+    # design_code tách rời nhau" mà case_control từng gặp (2026-07-06).
+    elif design_code == "diagnostic":
+        return _r03_diagnostic_with_vars(v)
+    elif design_code == "prediction":
+        return _r03_prediction_with_vars(v)
+    elif design_code == "sr_ma":
+        return _r03_srma_template()
     else:
         return make_r03_cohort(v, n_adjusted, alpha, power, effect_val, effect_type)
 
@@ -2679,6 +2694,123 @@ source(here::here("scripts", "00_setup.R"))
 # broom::tidy(glm_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
 message("03_analysis.R (Cross-sectional) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
+"""
+
+
+def _r03_diagnostic_with_vars(v: dict) -> str:
+    """THÊM 2026-07-19 (audit vòng 3, D2 — NGHIÊM TRỌNG): độ chính xác chẩn
+    đoán (STARD 2015) — index test vs reference standard. KHÔNG có trục
+    thời gian-đến-biến-cố; dùng ROC/AUC + độ nhạy-đặc hiệu tại ngưỡng tối ưu
+    (Youden index) + calibration, KHÔNG Cox/log-rank. `exposure`/`outcome`
+    (tên field cố định từ detect_variables_from_redcap) dùng làm proxy cho
+    index test / reference standard — KHÔNG có field riêng trong REDCap
+    dictionary heuristic hiện tại."""
+    index_test = v["exposure"]
+    ref_standard = v["outcome"]
+    return f"""\
+# 03_analysis.R — Độ chính xác chẩn đoán (STARD 2015): ROC/AUC + Se/Sp
+# Biến: index test={index_test} | tiêu chuẩn vàng (reference standard)={ref_standard}
+# Chẩn đoán KHÔNG có trục thời gian-đến-biến-cố hợp lệ — KHÔNG dùng Cox/log-rank.
+# Đúng chuẩn: đường cong ROC, AUC, và Se/Sp tại ngưỡng tối ưu (Youden index).
+source(here::here("scripts", "00_setup.R"))
+# library(pROC)
+# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
+
+# roc_obj <- pROC::roc(response = df${ref_standard}, predictor = df${index_test}, ci = TRUE)
+# roc_obj$auc; ci(roc_obj)  # AUC + 95% CI
+
+# Ngưỡng tối ưu theo Youden index (Se+Sp-1 lớn nhất) — [CẦN BÁC SĨ XÁC NHẬN
+# ngưỡng lâm sàng có ý nghĩa thay vì thuần thống kê nếu khác nhau]:
+# best_cut <- pROC::coords(roc_obj, "best", best.method = "youden")
+# pROC::coords(roc_obj, best_cut$threshold, ret = c("sensitivity","specificity","ppv","npv"))
+
+# Calibration (nếu index test là điểm số/xác suất liên tục, không phải nhị phân):
+# giả::val.prob(df${index_test}, df${ref_standard})  # gói 'giả' hoặc rms::val.prob
+
+message("03_analysis.R (Diagnostic) — index test={index_test} vs reference={ref_standard} | [CẦN DỮ LIỆU THẬT]")
+"""
+
+
+def _r03_prediction_with_vars(v: dict) -> str:
+    """THÊM 2026-07-19 (audit vòng 3, D2 — NGHIÊM TRỌNG): mô hình tiên lượng
+    (TRIPOD+AI 2024) — phát triển + đánh giá nội bộ. KHÔNG dùng Cox/HR đơn
+    biến như cohort thường — cần đa biến + shrinkage (chống overfitting) +
+    bootstrap internal validation + calibration + discrimination (C-statistic)
+    + DCA, theo Riley RD et al. BMJ 2020;368:m441 (đã dùng ở G3)."""
+    outcome  = v["outcome"]
+    time_col = v["time_col"]
+    covars   = v["covariates"]
+    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi + [CẦN — các biến tiên đoán ứng viên khác]"
+    return f"""\
+# 03_analysis.R — Mô hình tiên lượng (TRIPOD+AI 2024): phát triển + đánh giá nội bộ
+# Biến: kết cục dự đoán={outcome} | thời gian (nếu time-to-event)={time_col}
+# Biến tiên đoán ứng viên (candidate predictors): {cov_fml}
+# KHÔNG dùng Cox/HR đơn biến như cohort thường — cần mô hình ĐA BIẾN có kiểm
+# soát overfitting (shrinkage), sau đó đánh giá hiệu chuẩn + phân biệt + DCA.
+source(here::here("scripts", "00_setup.R"))
+# library(rms); library(glmnet); library(pROC)
+# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
+
+# 1) PHÁT TRIỂN mô hình đa biến (logistic nếu kết cục nhị phân; Cox nếu
+#    time-to-event {time_col} có ý nghĩa — [CẦN BÁC SĨ XÁC NHẬN loại kết cục]):
+# model_full <- glm({outcome} ~ {cov_fml}, data = df, family = binomial())
+# # HOẶC: model_full <- coxph(Surv({time_col}, {outcome}) ~ {cov_fml}, data = df)
+
+# 2) SHRINKAGE (LASSO/ridge) — chống quá khớp khi nhiều biến tiên đoán so
+#    với cỡ mẫu (PROBAST+AI domain 4):
+# x <- model.matrix(~ {cov_fml}, data = df)[, -1]; y <- df${outcome}
+# cv_lasso <- glmnet::cv.glmnet(x, y, family = "binomial", alpha = 1)
+
+# 3) INTERNAL VALIDATION (bootstrap, KHÔNG split-sample đơn giản):
+# val_boot <- rms::validate(rms::lrm({outcome} ~ {cov_fml}, data = df, x=TRUE, y=TRUE),
+#                            method = "boot", B = 200)
+
+# 4) CALIBRATION (slope + intercept-in-the-large) + DISCRIMINATION (C-statistic):
+# rms::val.prob(predict(model_full, type="response"), df${outcome})
+
+# 5) DECISION CURVE ANALYSIS (lợi ích lâm sàng ròng theo ngưỡng xác suất):
+# dcurves::dca({outcome} ~ pred, data = df) |> plot()
+
+message("03_analysis.R (Prediction/TRIPOD+AI) — kết cục={outcome} | predictors={cov_fml} | [CẦN DỮ LIỆU THẬT — C-statistic/R² kỳ vọng do bác sĩ/thống kê viên cấp theo Riley 2020, PMID 32188600]")
+"""
+
+
+def _r03_srma_template() -> str:
+    """THÊM 2026-07-19 (audit vòng 3, D2 — NGHIÊM TRỌNG): tổng hợp bằng
+    chứng (PRISMA 2020) — random/fixed-effects meta-analysis. KHÁC HẲN 6
+    thiết kế còn lại: input KHÔNG phải df tham gia-cấp-cá-nhân từ REDCap
+    (detect_variables_from_redcap không áp dụng — SR/MA phân tích bảng
+    STUDY-LEVEL: mỗi dòng 1 nghiên cứu đã trích xuất, không phải 1 bệnh
+    nhân), nên hàm này KHÔNG nhận `v`."""
+    return """\
+# 03_analysis.R — Tổng hợp bằng chứng (PRISMA 2020): random/fixed-effects meta-analysis
+# KHÁC 6 thiết kế còn lại: input là bảng STUDY-LEVEL (mỗi dòng 1 nghiên cứu đã
+# trích xuất — tác giả/năm/effect/SE hoặc 2x2 table), KHÔNG phải df tham gia
+# cấp-cá-nhân. KHÔNG dùng Cox/log-rank/logistic đơn-nghiên-cứu.
+source(here::here("scripts", "00_setup.R"))
+# library(meta)  # hoặc metafor
+# extracted <- read.csv(file.path(DATA_PROC, "study_level_extraction.csv"))
+# # Cột kỳ vọng: study, year, kèm MỘT trong hai bộ:
+# #   (a) hiệu ứng liên tục: TE, seTE (log-scale nếu OR/RR/HR)
+# #   (b) 2x2 table (nhị phân): event.e, n.e, event.c, n.c
+
+# Kết cục NHỊ PHÂN (OR/RR) — [CẦN XÁC NHẬN loại effect size từ PICO]:
+# m_bin <- meta::metabin(event.e, n.e, event.c, n.c, studlab = study,
+#                         data = extracted, sm = "OR",        # hoặc "RR"
+#                         method = "MH", random = TRUE, common = FALSE)
+# summary(m_bin); meta::forest(m_bin)
+
+# Kết cục LIÊN TỤC hoặc effect size đã tính sẵn (HR/MD) — TE/seTE trên log-scale nếu HR:
+# m_gen <- meta::metagen(TE, seTE, studlab = study, data = extracted,
+#                         sm = "HR", random = TRUE, common = FALSE)   # sm theo PICO thật
+# summary(m_gen); meta::forest(m_gen)
+
+# Dị biệt (heterogeneity) — I²/τ²/Q đã có sẵn trong summary() ở trên.
+
+# Publication bias (chỉ khi ≥10 nghiên cứu — Egger test không đáng tin cậy dưới ngưỡng này):
+# meta::funnel(m_bin); meta::metabias(m_bin, method.bias = "Egger")
+
+message("03_analysis.R (SR/MA) — input STUDY-LEVEL (không phải participant-level) | [CẦN BẢNG TRÍCH XUẤT THẬT sau khi hoàn tất sàng lọc PRISMA]")
 """
 
 
