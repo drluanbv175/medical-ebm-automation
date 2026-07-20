@@ -1,0 +1,61 @@
+#!/bin/sh
+# post-commit — tu dong khoi dong lai tunnel-client (Secure MCP Tunnel) khi
+# commit vua roi dung toi code ma server MCP dang song thuc thi.
+#
+# Ly do co hook nay (phat hien 2026-07-20, tai hien thuc nghiem qua chinh app
+# ChatGPT "EBM Copilot Research Clinical"): tunnel-client spawn tien trinh
+# `tools/run_chatgpt_mcp_stdio.py` MOT LAN roi giu song suot vong doi launchd
+# job — code Python KHONG tu nap lai khi file .py tren dia doi, nen mot ban va
+# bao mat (vd hom nay: PII regex) van "nam ngu" tren ket noi dang chay cho toi
+# khi co nguoi thu cong `launchctl kickstart -k`. Nhanh Codex desktop app
+# (~/.codex/config.toml, stdio cuc bo) KHONG can hook nay: da xac nhan thuc
+# nghiem no spawn tien trinh MOI cho moi "Tac vu moi", nen tu nhien nhan code
+# moi ma khong can can thiep.
+#
+# Hook nay chay SAU commit (khong chan commit) — chi la tien ich lam moi ket
+# noi dang song, khong phai buoc bat buoc de commit thanh cong. Chay du commit
+# do Claude Code, Codex, hay nguoi dung go tay, vi git hook gan voi REPO chu
+# khong gan voi cong cu nao goi `git commit`.
+#
+# Kich hoat 1 lan/may (giong .githooks/pre-commit o thu muc goc):
+#   git config core.hooksPath .githooks
+#   chmod +x .githooks/post-commit
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT" || exit 0
+
+LABEL="vn.drluan.ebm-copilot-tunnel"
+
+# Chi xet file anh huong THUC SU toi hanh vi server MCP dang chay (import
+# truc tiep/gian tiep tu app.chatgpt_app.server). Sua file khac (test, doc
+# khong lien quan, module chua import toi day) khong can restart.
+CHANGED=$(git diff --name-only HEAD~1 HEAD -- \
+  'app/chatgpt_app/*' \
+  'app/core/policy_engine.py' \
+  'app/core/export_policy.py' \
+  'tools/run_chatgpt_mcp_stdio.py' \
+  2>/dev/null)
+
+if [ -z "$CHANGED" ]; then
+  exit 0
+fi
+
+if ! command -v launchctl >/dev/null 2>&1; then
+  exit 0
+fi
+
+UID_NUM=$(id -u)
+if ! launchctl print "gui/${UID_NUM}/${LABEL}" >/dev/null 2>&1; then
+  # Job chua load tren may nay (vd may khac, hoac chua cai tunnel) — bo qua im lang.
+  exit 0
+fi
+
+launchctl kickstart -k "gui/${UID_NUM}/${LABEL}" >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo "post-commit: da khoi dong lai ${LABEL} (Secure MCP Tunnel) de nap code moi:" >&2
+  echo "$CHANGED" | sed 's/^/  - /' >&2
+else
+  echo "post-commit: CANH BAO — thu restart ${LABEL} that bai. Chay tay: launchctl kickstart -k gui/${UID_NUM}/${LABEL}" >&2
+fi
+
+exit 0
