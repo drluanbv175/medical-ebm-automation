@@ -123,7 +123,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 Áp 4 trụ cột; KHÔNG bịa trích dẫn/số liệu; phân biệt phát hiện vs suy diễn; nhắc khai báo AI/tác giả/COI; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --gate G7 --artifact manuscript
+python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 ```
 
 ## Ranh giới

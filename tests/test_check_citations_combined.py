@@ -18,11 +18,11 @@ TOOLS_DIR = REPO_ROOT / "tools"
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(TOOLS_DIR))
 
-from app.config import settings  # noqa: E402
-from app.sources.pubmed import PubMedClient  # noqa: E402
-
 import check_citation_metadata as CCM  # noqa: E402
 import check_citation_retraction as CCR  # noqa: E402
+
+from app.config import settings  # noqa: E402
+from app.sources.pubmed import PubMedClient  # noqa: E402
 
 # Dùng lại đúng XML thật (rút gọn) đã xác minh trong test_check_citation_retraction.
 from tests.test_check_citation_retraction import _RETRACTED_XML  # noqa: E402

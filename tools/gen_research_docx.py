@@ -341,10 +341,15 @@ class ResearchDocxGenerator:
     def generate(self, artifact_key: str, content: dict = None) -> str:
         """Điểm vào chính — tự chọn generator theo artifact_key.
 
-        - Khóa thuộc 20 artifact NGHIÊN CỨU chuẩn → generator chuyên biệt (hoặc generic).
-        - Khóa NGOÀI danh mục (vd khóa lâm sàng `guideline-update`, `chronic-pain`… do các
-          agent lâm sàng nhúng trong khối "Xuất Word") → KHÔNG sập: dùng mẫu CHUNG (generic)
-          + in cảnh báo (fail-soft, không im lặng) để lệnh minh họa chạy được thay vì ValueError.
+        - Khóa thuộc 22 artifact NGHIÊN CỨU chuẩn (len(ARTIFACT_MAP)) → generator
+          chuyên biệt (hoặc generic).
+        - Khóa NGOÀI danh mục → KHÔNG sập: dùng mẫu CHUNG (generic) + in cảnh báo
+          (fail-soft, không im lặng) để lệnh minh họa chạy được thay vì ValueError.
+          Sửa 2026-07-19 (audit vòng 3, D4): nguồn khóa sai KHÔNG chỉ agent lâm
+          sàng nhúng khóa lạ (vd `guideline-update`, `chronic-pain`) — 2 agent
+          NGHIÊN CỨU (co-mau-nghien-cuu.md, meta-phan-tich.md) cũng từng dùng
+          khóa sai chính tả (`sample-size`/`meta-analysis` thay vì `samplesize`/
+          `analysis` thật trong ARTIFACT_MAP) trước khi được sửa.
         """
         content = content or {}
         if artifact_key in ARTIFACT_MAP:
@@ -933,6 +938,15 @@ def main():
                 print("Cảnh báo: --content không phải JSON hợp lệ — dùng content rỗng.")
 
     gen = ResearchDocxGenerator(args.study, args.outdir)
+
+    # THÊM 2026-07-19 (audit vòng 3, D4_g10_docx_artifact_integrity — trung
+    # bình): trước bản vá này, nếu bác sĩ/agent vô tình truyền CẢ --gate LẪN
+    # --artifact trong cùng 1 lệnh (3 file doctrine từng làm vậy —
+    # co-mau-nghien-cuu.md/meta-phan-tich.md/viet-ban-thao.md), --artifact bị
+    # "nuốt" ÂM THẦM (nhánh elif args.gate thắng trước, không cảnh báo gì).
+    # Nay báo lỗi tường minh thay vì im lặng bỏ qua 1 cờ.
+    if args.gate and args.artifact:
+        parser.error("--gate và --artifact loại trừ nhau, chỉ dùng MỘT cờ trong một lệnh")
 
     if args.all:
         for key in ARTIFACT_MAP:

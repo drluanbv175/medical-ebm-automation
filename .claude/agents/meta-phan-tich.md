@@ -81,7 +81,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 
 **Xuất Word:**
 ```bash
-python tools/gen_research_docx.py --study "<TEN>" --gate G6 --artifact meta-analysis
+python tools/gen_research_docx.py --study "<TEN>" --artifact analysis
 ```
 
 ## Ranh giới

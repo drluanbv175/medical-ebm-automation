@@ -102,7 +102,7 @@ Báo cả **cỡ mẫu tối thiểu** (đủ lực) và **cỡ mẫu khuyến n
 Áp `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`: tuyệt đối không bịa effect size/tỷ lệ/SD; minh bạch công thức + giả định; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --gate G3 --artifact sample-size
+python tools/gen_research_docx.py --study "<TEN>" --artifact samplesize
 ```
 
 ## Ranh giới

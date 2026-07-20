@@ -30,7 +30,7 @@
 **Phán định Lớp 1:** còn bất kỳ 🔴 → **TRẢ-VỀ-SỬA** (CẤM phát hành). Chỉ 🟡 → ĐẠT-CÓ-LƯU-Ý. Toàn ✅ → ĐẠT. (R8 — phụ lục thống kê CÓ ĐIỀU KIỆN, chỉ gói CÓ số liệu thống kê — không liệt ở đây vì không phải cốt lõi; đặc tả đầy đủ ở `tham-dinh-dau-ra.md` §3.)
 
 ## RUBRIC DÙNG CHUNG — LỚP 2: CHẤT LƯỢNG LÂM SÀNG (7 trục Q1–Q7, Med-PaLM 2)
-> CHỈ áp cho gói **lâm sàng** (đầu ra `dieu-phoi-lam-sang` + routine lâm sàng). Gói **nghiên cứu** bỏ qua Lớp 2 (dùng CONSORT/STROBE/PRISMA + `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`). Bản chuẩn đầy đủ + xuất xứ từng trục + PMID/DOI: **`_CHUAN-CHAT-LUONG-MEDPALM.md`**.
+> CHỈ áp cho gói **lâm sàng** (đầu ra `dieu-phoi-lam-sang` + routine lâm sàng). Gói **nghiên cứu** bỏ qua Lớp 2 (dùng CONSORT/STROBE/PRISMA + `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`). **Nguyên tắc khái quát (2026-07-19):** áp cho mọi gói có nội dung lâm sàng/tài liệu cho bệnh nhân, bất kể agent nguồn nào tạo ra (kể cả `loi-dan-tuan-thu`/`quyet-dinh-chung`/`huong-dan-lam-sang` gọi trực tiếp) và bất kể qua nhạc trưởng hay độc lập. Bản chuẩn đầy đủ + xuất xứ từng trục + PMID/DOI: **`_CHUAN-CHAT-LUONG-MEDPALM.md`**.
 
 Q1 Dễ đọc · Q2 Đúng đắn *(cần bác sĩ)* · Q3 Đầy đủ · Q4 Thiên kiến · Q5 Nguy cơ hại · Q6 Cập nhật · Q7 Thẩm quyền nguồn.
 

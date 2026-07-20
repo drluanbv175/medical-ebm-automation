@@ -1,7 +1,7 @@
 # CHUẨN CHẤT LƯỢNG CÂU TRẢ LỜI Y KHOA — 7 TRỤC (Med-PaLM 2, phỏng theo + mở rộng EBM)
 
 > **Lớp 2** của chốt kiểm đầu ra — chấm **CHẤT LƯỢNG NỘI DUNG LÂM SÀNG**. Bổ sung, KHÔNG thay Lớp 1 (liêm chính/an toàn/định dạng R1–R7 trong `tham-dinh-dau-ra.md`).
-> Dùng cho: đầu ra **lâm sàng** của `dieu-phoi-lam-sang` và các routine sinh nội dung lâm sàng (`uptodate`, `drug-safety-daily`, `giam-sat-chung-cu`, `antifacts-weekly-ebm`, `tong-hop-chung-cu-hang-tuan` — 2 routine sau bổ sung 2026-06-20, xem `_ROUTINE-AGENT-WIRING.md`). Đầu ra **nghiên cứu** dùng chuẩn riêng (CONSORT/STROBE/PRISMA + `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`).
+> Dùng cho: đầu ra **lâm sàng** của `dieu-phoi-lam-sang` và các routine sinh nội dung lâm sàng (`uptodate`, `drug-safety-daily`, `giam-sat-chung-cu`, `antifacts-weekly-ebm`, `tong-hop-chung-cu-hang-tuan` — 2 routine sau bổ sung 2026-06-20, xem `_ROUTINE-AGENT-WIRING.md`). Đầu ra **nghiên cứu** dùng chuẩn riêng (CONSORT/STROBE/PRISMA + `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`). **Nguyên tắc khái quát (2026-07-19):** áp cho mọi gói có NỘI DUNG LÂM SÀNG/tài liệu cho bệnh nhân, bất kể agent nguồn nào tạo ra (kể cả `loi-dan-tuan-thu`/`quyet-dinh-chung`/`huong-dan-lam-sang` gọi trực tiếp làm "việc lẻ") và bất kể gọi qua nhạc trưởng hay độc lập.
 > Tạo 2026-06-14. Đồng bộ với `tham-dinh-dau-ra.md` · `_ROUTINE-AGENT-WIRING.md` · `_KIEM-DUYET-DOC-LAP.md`.
 
 ---

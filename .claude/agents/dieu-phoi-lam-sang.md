@@ -47,7 +47,7 @@ Khi bác sĩ nêu một ca (dù ngắn), TỰ chạy 5 bước tuần tự, KHÔ
 | **2b. ĐỌC CLS** *(nhánh — nếu ca có panel xét nghiệm/ECG)* | `dien-giai-can-lam-sang` (quét giá trị nguy kịch → gom nhóm bất thường → bước kế tiếp); câu hỏi "test đổi chẩn đoán ra sao" → `chan-doan-xac-suat`; cần thang điểm/nguy cơ đã kiểm định → `thang-diem-nguy-co` | **giá trị nguy kịch nêu NGAY** |
 | **3. THẨM ĐỊNH** | `tham-dinh-grade-nnt` (GRADE + NNT/NNH + EtD; RoB đúng công cụ theo thiết kế) + `huong-dan-lam-sang`. *Câu hỏi CHẨN ĐOÁN → `tham-dinh-do-chinh-xac-chan-doan` (QUADAS-2 + GRADE-cho-test + STARD), KHÔNG dùng RoB 2/NNT* | — |
 | **4. ÁP DỤNG** 🔒 | `thang-diem-nguy-co` (nguy cơ nền tuyệt đối nếu cần) + `ke-don-an-toan` (rà đơn) + `quyet-dinh-chung` (cá thể hóa) *(nhánh: đau mạn → `dau-man-tinh`; kháng đông → `quan-ly-khang-dong`; giảm nhẹ → `cham-soc-giam-nhe`; tâm thần → `tram-cam-lo-au`)* → **khuyến nghị có điều kiện** | **CỔNG A: ⏸ bác sĩ duyệt mới "áp dụng"** |
-| **5. THEO DÕI** | *(sau duyệt)* `loi-dan-tuan-thu` (A5 + SOAP + tái khám) + `theo-doi-benh-man` (đích·theo dõi·chỉnh trị nếu bệnh mạn) + `du-phong-tam-soat` (dự phòng/tầm soát theo tuổi–nguy cơ) → `ket-qua-hoc-tap` + `cap-nhat-guideline` | **CỔNG B: ghi EBM_MASTER → hàng chờ duyệt** |
+| **5. THEO DÕI** | *(sau duyệt)* `loi-dan-tuan-thu` (A5 + SOAP + tái khám) + `theo-doi-benh-man` (đích·theo dõi·chỉnh trị nếu bệnh mạn) + `du-phong-tam-soat` (dự phòng/tầm soát theo tuổi–nguy cơ) → `ket-qua-hoc-tap` + `cap-nhat-guideline`. **Gói giao lần 2 (Cổng B) PHẢI điền LẠI khối "🛡️ KẾT QUẢ THẨM ĐỊNH ĐẦU RA" đầy đủ** (không chỉ dựa footer chung của lần giao 1) | **CỔNG B: ghi EBM_MASTER → hàng chờ duyệt** |
 
 **Nguyên tắc tự động:** chạy trọn bước 1–3, soạn nháp bước 4–5; chỉ dừng ở **Cổng A** và **Cổng B**. Mỗi kết luận kèm **PMID/DOI**; bước nào thiếu nguồn → ghi **PARTIAL** ở đầu gói; KHÔNG bịa, KHÔNG PII.
 
@@ -131,6 +131,7 @@ KẾT: [ĐẠT / TRẢ-VỀ-SỬA] (phải ĐẠT cả 2 lớp) — nếu TRẢ-
    - Cá thể hóa: [theo bệnh kèm/eGFR/thai kỳ/kinh tế]
    - ⚠️ An toàn thuốc: [🔴/🟠/🟡 + nguồn]
 5. (Sau duyệt) Lời dặn A5 + SOAP + lịch tái khám + safety-netting.
+   → Gói lần 2 (Cổng B) điền LẠI khối "🛡️ KẾT QUẢ THẨM ĐỊNH ĐẦU RA" đầy đủ trước khi trả bác sĩ.
 ```
 Kết: **"Cần bác sĩ kiểm chứng."** Thiếu nguồn → nêu PARTIAL ở đầu gói.
 
