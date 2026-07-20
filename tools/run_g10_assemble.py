@@ -533,6 +533,34 @@ def sec_sap(cps, meta) -> str:
     ver = _g(cps["G4"], "g4_sap_version", default=TAG_BS)
     status = _g(cps["G4"], "g4_status", default=TAG_BS)
     code = _design_code(cps) or TAG_BS
+    # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện CRITICAL):
+    # bản vá vòng 2 chỉ thêm "prediction" vào _SURVIVAL_CAPABLE_DESIGNS —
+    # "qualitative" hoàn toàn không xuất hiện ở đâu trong file này (xác nhận
+    # bằng grep), nên vẫn rơi vào nhánh dưới và sinh một Mục 11 THUẦN ĐỊNH
+    # LƯỢNG (χ²/Fisher/t-test/hồi quy) cho nghiên cứu định tính — mâu thuẫn
+    # trực tiếp với G2/G5/G6/G7/G8 (đã đúng COREQ/SRQR cho "qualitative" từ
+    # 2026-07-19/21). Đây là văn bản đề cương/protocol CUỐI CÙNG bác sĩ có
+    # thể nộp hội đồng đạo đức/tạp chí — SAI ở đây dễ bị bắt lỗi ngay hoặc
+    # tệ hơn là không ai nhận ra.
+    if code == "qualitative":
+        return (
+            "# 11. Kế hoạch phân tích thống kê\n\n"
+            f"**Phiên bản SAP (tự động từ G4):** {ver} — trạng thái: {status}.\n\n"
+            "**Không áp dụng phân tích thống kê suy diễn (nghiên cứu ĐỊNH TÍNH):**\n"
+            "- Phân tích chính: mã hóa chủ đề (thematic/framework analysis) — mã "
+            "mở → mã trục → chủ đề, ≥2 người mã hóa độc lập (COREQ/SRQR).\n"
+            "- Cỡ mẫu: xác định bằng BÃO HÒA DỮ LIỆU (data saturation), không "
+            "tính bằng power/alpha (xem A4).\n"
+            "- Độ tin cậy (thay ước lượng + KTC 95%): trustworthiness theo Lincoln "
+            "& Guba — credibility (member checking/triangulation), transferability "
+            "(mô tả bối cảnh dày), dependability (audit trail), confirmability "
+            "(nhật ký phản tư).\n"
+            "- KHÔNG dùng p-value/χ²/t-test/hồi quy — không kiểm định giả thuyết "
+            "thống kê cho thiết kế này.\n"
+            f"- Phần mềm mã hóa (QDA): {TAG_BS} (vd NVivo/ATLAS.ti/MAXQDA hoặc mã tay theo codebook).\n\n"
+            f"> Cổng cứng: SAP phải được KÝ KHOÁ (G4 Lock Certificate) TRƯỚC khi xem "
+            f"dữ liệu. Mã thiết kế `{code}` (COREQ/SRQR, nối `nghien-cuu-dinh-tinh`/`phan-tich-thong-ke`).\n"
+        )
     # SỬA 2026-07-17 (bình duyệt binh-duyet phát hiện thật): câu SAP từng nhắc
     # "Cox" KHÔNG điều kiện cho MỌI thiết kế — hồi quy Cox chỉ có ý nghĩa với
     # dữ liệu sống còn/thời gian-đến-biến cố (cohort/rct theo dõi dọc); một

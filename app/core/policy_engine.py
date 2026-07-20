@@ -17,13 +17,31 @@ from app.core.feature_flags import merge_feature_flags
 
 _EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
 _PHONE = re.compile(r"(?<!\d)(?:\+?84|0)\d{8,10}(?!\d)")
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện HIGH): _MRN
+# trước đây KHÔNG có "cccd"/"cmnd"/"căn cước"/"patient id"/"bệnh nhân" — các
+# nhãn này CHỈ được app/chatgpt_app/knowledge.py::SENSITIVE_ID_PATTERN nhận
+# diện riêng (qua _matches_sensitive_id()). 7+ module khác (safety/red_team,
+# clinical_content/shadow_pilot, clinical_content/phase_2c_shadow,
+# safety/evaluation_suite, chronic_care/service, chronic_care/synthetic_cases…)
+# CHỈ gọi contains_pii_text() một mình — không có _matches_sensitive_id() đi
+# kèm — nên "CCCD: 012345678901"/"Patient ID: X" lọt qua hoàn toàn ở các
+# module đó dù bị chặn đúng ở agents.py/knowledge.py. Gộp nhãn vào ĐÂY để mọi
+# caller của contains_pii_text() được bảo vệ như nhau, không phụ thuộc có
+# nhớ gọi thêm _matches_sensitive_id() hay không.
 _MRN = re.compile(
-    r"\b(?:mrn|mã\s*(?:bn|hs|hồ\s*sơ|bệnh\s*án|người\s*bệnh)|số\s*(?:hồ\s*sơ|bệnh\s*án))"
+    r"\b(?:mrn|cccd|cmnd|căn\s*cước|patient\s*id"
+    r"|mã\s*(?:bn|hs|hồ\s*sơ|bệnh\s*án|người\s*bệnh|bệnh\s*nhân)"
+    r"|số\s*(?:hồ\s*sơ|bệnh\s*án|bệnh\s*nhân))"
     r"(?:\s*[:#]\s*[\w-]{4,}|\s+[A-Z0-9-]*\d[A-Z0-9-]{3,})\b",
     re.I,
 )
 _DOB = re.compile(
-    r"\b(?:dob|ngày\s*sinh)\s*[:#]?\s*\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b"
+    # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện LOW):
+    # thêm `\s*` quanh mỗi dấu phân cách "/"/"-" để bắt DOB viết có khoảng
+    # trắng quanh dấu ("15 - 07 - 1980") — bản vá CRITICAL trước (bỏ collapse
+    # cho _DOB) chỉ xử lý trường hợp dấu phân cách sát chữ số, không xử lý
+    # trường hợp có khoảng trắng đệm quanh dấu.
+    r"\b(?:dob|ngày\s*sinh)\s*[:#]?\s*\d{1,2}\s*[/-]\s*\d{1,2}\s*[/-]\s*\d{2,4}\b"
     r"|\b(?:sn|sinh\s*năm|năm\s*sinh)\s*[:#]?\s*(?:19|20)\d{2}\b",
     re.I,
 )

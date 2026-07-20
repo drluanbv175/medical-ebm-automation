@@ -21,6 +21,12 @@ LABEL="vn.drluan.ebm-copilot-tunnel"
 STATE_DIR="${HOME}/Library/Application Support/tunnel-client"
 MARKER="${STATE_DIR}/last_code_watch_restart"
 DEBOUNCE_SECONDS=8
+# THAM SO 1 (tuy chon): duong dan repo — do install_ebm_mcp_code_watcher.py
+# truyen vao qua ProgramArguments. Dung de kiem cu phap (py_compile) truoc
+# khi restart — xem chu thich o duoi (vong lap kiem tra-hoan thien vong 3,
+# phat hien MEDIUM: restart giua luc OneDrive dong bo do co the nap file
+# TRUC TIEP TU DUONG DAN ONEDRIVE), khong bao gio dung neu khong duoc truyen.
+REPO_ROOT="${1:-}"
 
 mkdir -p "${STATE_DIR}" 2>/dev/null
 
@@ -55,6 +61,39 @@ fi
 # mỗi "Tác vụ mới" (spawn tiến trình mới, không phụ thuộc watcher này).
 if (( NOW - LAST < DEBOUNCE_SECONDS )); then
   exit 0
+fi
+
+# THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện MEDIUM):
+# debounce theo thời gian không đảm bảo TẤT CẢ file trong WatchPaths đã đồng
+# bộ xong và nhất quán — OneDrive đồng bộ từng file ĐỘC LẬP, không nguyên tử
+# đa-file. Nếu tiến trình được restart import một file đang ghi dở (torn
+# write), nó sẽ crash với SyntaxError/ImportError. Kiểm cú pháp (py_compile)
+# TRƯỚC khi restart — bắt được trường hợp "file nửa vời" (không bắt được
+# trường hợp "2 file đầy đủ nhưng khác phiên bản", vốn cần một cơ chế khóa
+# nguyên tử đa-file phức tạp hơn hẳn, chưa làm). KHÔNG cập nhật MARKER khi bỏ
+# qua — để lần ghi HOÀN TẤT kế tiếp (khi OneDrive đồng bộ xong) tự kích hoạt
+# lại ngay, không bị debounce chặn.
+if [[ -n "${REPO_ROOT}" && -d "${REPO_ROOT}" ]]; then
+  PY="${HOME}/.ebm-venv/bin/python3"
+  if [[ ! -x "${PY}" ]]; then
+    PY="python3"
+  fi
+  if command -v "${PY}" >/dev/null 2>&1; then
+    COMPILE_FAILED=0
+    for f in "${REPO_ROOT}/app/chatgpt_app"/*.py \
+             "${REPO_ROOT}/app/core/policy_engine.py" \
+             "${REPO_ROOT}/app/core/export_policy.py" \
+             "${REPO_ROOT}/tools/run_chatgpt_mcp_stdio.py"; do
+      [[ -f "${f}" ]] || continue
+      if ! "${PY}" -m py_compile "${f}" >/dev/null 2>&1; then
+        COMPILE_FAILED=1
+        echo "watch-restart: BỎ QUA restart — ${f} chưa biên dịch được (có thể đang đồng bộ dở)" >&2
+      fi
+    done
+    if (( COMPILE_FAILED )); then
+      exit 0
+    fi
+  fi
 fi
 
 echo "${NOW}" > "${MARKER}"

@@ -50,3 +50,44 @@ def test_watched_relative_always_includes_standalone_files(tmp_path: Path) -> No
     watched = WATCHER._watched_relative(tmp_path)
     for standalone in WATCHER.WATCHED_STANDALONE:
         assert standalone in watched
+
+
+def test_build_plist_passes_repo_root_as_program_argument(tmp_path: Path) -> None:
+    """Hồi quy MEDIUM (vòng lặp kiểm tra-hoàn thiện vòng 3, 2026-07-21):
+    watch_restart_ebm_tunnel.sh cần biết repo_root THẬT để py_compile các
+    file trước khi restart (tránh nạp file đang đồng bộ dở từ OneDrive) —
+    build_plist() phải truyền repo_root làm đối số 2 trong ProgramArguments."""
+    (tmp_path / "app/chatgpt_app").mkdir(parents=True)
+    (tmp_path / "app/core").mkdir(parents=True)
+    for rel in WATCHER.WATCHED_STANDALONE:
+        p = tmp_path / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("# demo\n", encoding="utf-8")
+    (tmp_path / "app/chatgpt_app/server.py").write_text("# demo\n", encoding="utf-8")
+
+    payload = WATCHER.build_plist(tmp_path)
+
+    assert payload["ProgramArguments"][-1] == str(tmp_path)
+
+
+def test_install_local_files_locks_down_permissions(tmp_path: Path) -> None:
+    """Hồi quy MEDIUM (vòng lặp kiểm tra-hoàn thiện vòng 3, 2026-07-21):
+    logs.mkdir() trước đây không chmod — thư mục log TRÙNG đường dẫn với
+    install_chatgpt_tunnel_launch_agent.py (đã khóa 0700/0600) bị tạo lại
+    với quyền mặc định theo umask nếu installer này chạy trước, làm mất tác
+    dụng lớp khóa quyền đã vá cho CÙNG thư mục đó."""
+    script = tmp_path / "src" / "watch_restart_ebm_tunnel.sh"
+    script.parent.mkdir(parents=True)
+    script.write_text("#!/bin/zsh\necho ok\n", encoding="utf-8")
+
+    installed_launcher = tmp_path / "installed" / "watch-restart-ebm-tunnel"
+    logs_dir = tmp_path / "AppSupport" / "tunnel-client" / "logs"
+    destination = tmp_path / "LaunchAgents" / "vn.drluan.ebm-mcp-code-watch.plist"
+
+    WATCHER._install_local_files(script, installed_launcher, logs_dir, destination, {"Label": "demo"})
+
+    assert (logs_dir.stat().st_mode & 0o777) == 0o700
+    assert (logs_dir.parent.stat().st_mode & 0o777) == 0o700
+    assert (installed_launcher.stat().st_mode & 0o777) == 0o700
+    assert (destination.stat().st_mode & 0o777) == 0o600
+    assert installed_launcher.read_text(encoding="utf-8") == script.read_text(encoding="utf-8")

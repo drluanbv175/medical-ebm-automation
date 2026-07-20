@@ -16,7 +16,7 @@ from typing import Iterable
 from urllib.parse import quote
 
 from app.core.export_policy import classify_export_file, validate_project_manifest
-from app.core.policy_engine import _collapse_digit_separators, contains_pii_text
+from app.core.policy_engine import _collapse_digit_separators, contains_bare_id_number, contains_pii_text
 
 DISCLAIMER = "Cần bác sĩ kiểm chứng. Không dùng đầu ra này để tự động áp dụng cho người bệnh."
 DEFAULT_PATTERNS = (
@@ -126,6 +126,24 @@ class SafeKnowledgeIndex:
 
     def search(self, query: str, *, limit: int = 10) -> dict[str, object]:
         """Tìm tài liệu, trả đúng payload chuẩn `search` của MCP."""
+        # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện HIGH):
+        # search(query) trước đây là đường THỨ HAI bỏ sót hoàn toàn cổng PII —
+        # workflow_payload() (agents.py) là nơi DUY NHẤT gọi contains_bare_id_
+        # number(), nhưng mô tả tool `search` không cấm PII và có thể được gọi
+        # trực tiếp với câu tự do của bác sĩ thay vì qua prepare_*_workflow.
+        if (
+            contains_pii_text(query)
+            or _matches_sensitive_id(query)
+            or contains_bare_id_number(query)
+        ):
+            return {
+                "status": "blocked",
+                "reason": "possible_pii_detected",
+                "next_step": (
+                    "Khử định danh trước khi gửi lại; không nhập tên, CCCD, BHYT, số điện thoại, email hoặc địa chỉ."
+                ),
+                "disclaimer": DISCLAIMER,
+            }
         query_tokens = _tokens(query)
         ranked: list[tuple[int, KnowledgeDocument]] = []
         for doc in self.documents():

@@ -483,9 +483,16 @@ SRQR_ITEMS = [
     ("Data analysis", "14", "Quy trinh ma hoa, ai phan tich, phan mem ho tro (neu co)"),
     ("Techniques to enhance trustworthiness", "15",
      "Trustworthiness (credibility/transferability/dependability/confirmability), triangulation, member checking, audit trail"),
-    ("Results/findings", "16", "Trinh bay phat hien chinh co ho tro bang du lieu (quote/trich doan) THAT"),
+    # SUA 2026-07-21 (vong lap kiem tra-hoan thien vong 3, phat hien LOW, do
+    # tin cay trung binh): ten muc 16/18 truoc day ("Results/findings"/
+    # "Integration with theory") khong khop checklist SRQR 2014 chinh thuc
+    # (O'Brien BC et al., Acad Med 2014;89:1245-1251) -- muc 16 la "Synthesis
+    # and interpretation" (khong phai ten muc lon "Results/findings" gom ca
+    # 16-17), muc 18 la "Integration with other literature". Sua dong bo ca
+    # run_g7_auto.py.
+    ("Synthesis and interpretation", "16", "Trinh bay phat hien chinh co ho tro bang du lieu (quote/trich doan) THAT"),
     ("Links to empirical data", "17", "Ket luan co bam sat/duoc minh hoa boi du lieu thu thap"),
-    ("Integration with theory", "18", "Doi chieu phat hien voi khung ly thuyet/y van hien co"),
+    ("Integration with other literature", "18", "Doi chieu phat hien voi khung ly thuyet/y van hien co"),
     ("Limitations", "19", "Han che nghien cuu, anh huong den do tin cay/kha nang chuyen giao ket qua"),
     ("Conflicts of interest", "20", "Khai bao xung dot loi ich cua nhom nghien cuu"),
     ("Funding source", "21", "Nguon tai tro va vai tro nha tai tro trong thiet ke/thuc hien/cong bo"),

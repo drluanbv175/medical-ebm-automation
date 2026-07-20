@@ -292,9 +292,9 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/2026
 | Loại NC | Quyết định | Nơi đăng ký | Thời điểm |
 |---------|------------|-------------|-----------|
 | RCT / can thiệp | **BẮT BUỘC** | ClinicalTrials.gov · ANZCTR · DRKS · ISRCTN | Trước tuyển người tham gia đầu tiên |
-| Cohort tiến cứu | Khuyến khích | ClinicalTrials.gov · ISRCTN | Trước thu thập |
+| Quan sát TIẾN CỨU có tuyển người tham gia mới (cohort tiến cứu · cắt ngang khảo sát · bệnh-chứng tuyển mới) | **BẮT BUỘC** — Helsinki §35, KHÔNG giới hạn riêng RCT (xem BƯỚC 0 mục 2) | ClinicalTrials.gov · WHO ICTRP · đăng ký trong nước | Trước khi tuyển người tham gia đầu tiên |
 | SR/MA | Khuyến nghị | PROSPERO | Trước tìm kiếm |
-| Cắt ngang / hồi cứu | Tùy chọn | — | — |
+| Quan sát HỒI CỨU/dữ liệu thứ cấp thuần túy, KHÔNG tuyển người tham gia mới | Tùy chọn (không có "người tham gia đầu tiên" để mốc thời gian áp vào) | — | — |
 
 **WHO Trial Registration Data Set — 20 trường bắt buộc** (danh sách dưới tách riêng Key Inclusion/Key Exclusion Criteria thành 2 dòng thao tác cho rõ ràng nên liệt kê 21 dòng; soạn sẵn, điền `[CẦN BỔ SUNG]` cho trường chưa biết — vá 2026-07-11: bản cũ thiếu 2 trường bắt buộc Primary/Secondary Sponsor và gộp nhầm Key Secondary Outcomes vào Primary Outcome):
 1. Primary registry & ID · 2. Date of registration · 3. Secondary IDs · 4. Source of funding

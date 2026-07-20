@@ -26,6 +26,28 @@ def test_export_policy_blocks_raw_data_and_allows_safe_markdown(tmp_path):
     assert "raw_or_binary_dataset" in raw_decision.reasons
 
 
+def test_export_policy_blocks_bare_national_id_labels(tmp_path):
+    """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 3, 2026-07-21):
+    classify_export_file() chỉ gọi contains_pii_text() (không có
+    _matches_sensitive_id() như agents.py/knowledge.py) — trước bản vá,
+    _MRN trong policy_engine.py không nhận diện nhãn 'cccd'/'cmnd'/'căn cước'/
+    'patient id'/'bệnh nhân', khiến manifest export báo safe_to_upload=True
+    sai cho file có các nhãn này."""
+    for text in (
+        "Hồ sơ: CCCD: 012345678901",
+        "CMND 123456789",
+        "căn cước: 012345678901",
+        "Patient ID: AB-123456",
+        "mã bệnh nhân: 012345678901",
+        "số bệnh nhân 012345678901",
+    ):
+        f = tmp_path / "demo.md"
+        f.write_text(text, encoding="utf-8")
+        decision = classify_export_file(f)
+        assert not decision.allowed, f"Không chặn được: {text!r}"
+        assert "pii_like_text" in decision.reasons
+
+
 def test_chatgpt_bridge_requires_feature_flag_and_writes_manifest(tmp_path):
     safe = tmp_path / "agent.md"
     safe.write_text("Agent EBM export. Cần bác sĩ kiểm chứng.", encoding="utf-8")

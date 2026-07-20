@@ -18,6 +18,24 @@ def _index(tmp_path: Path) -> SafeKnowledgeIndex:
     return SafeKnowledgeIndex(tmp_path, repository="owner/repo", git_ref="main")
 
 
+def test_search_blocks_pii_query_bare_cccd() -> None:
+    """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 3, 2026-07-21):
+    search(query) trước đây là đường THỨ HAI bỏ sót hoàn toàn cổng PII —
+    workflow_payload() là nơi DUY NHẤT gọi contains_bare_id_number(), nhưng
+    tool `search` không cấm PII và có thể gọi trực tiếp với câu tự do."""
+    index = SafeKnowledgeIndex(ROOT, repository="owner/repo", git_ref="main")
+    result = index.search("tìm thêm chứng cứ cho Nguyễn Văn A, CCCD 012345678901, đau ngực")
+    assert result["status"] == "blocked"
+    assert result["reason"] == "possible_pii_detected"
+
+
+def test_search_blocks_pii_query_labeled_id() -> None:
+    index = SafeKnowledgeIndex(ROOT, repository="owner/repo", git_ref="main")
+    result = index.search("CCCD: 012345678901 tăng huyết áp")
+    assert result["status"] == "blocked"
+    assert result["reason"] == "possible_pii_detected"
+
+
 def test_search_and_fetch_use_standard_shapes(tmp_path: Path) -> None:
     docs = tmp_path / "docs"
     docs.mkdir()

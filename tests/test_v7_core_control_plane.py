@@ -128,6 +128,14 @@ def test_contains_pii_text_catches_hyphen_formatted_numeric_dob():
     assert contains_pii_text("DOB: 15/07/1980") is True
 
 
+def test_contains_pii_text_catches_dob_with_spaces_around_separator():
+    """Hồi quy LOW (vòng lặp kiểm tra-hoàn thiện vòng 3, 2026-07-21): bản vá
+    CRITICAL ở trên (bỏ collapse cho _DOB) chỉ xử lý dấu phân cách sát chữ
+    số — DOB viết có khoảng trắng đệm quanh dấu ('15 - 07 - 1980') vẫn lọt."""
+    assert contains_pii_text("Ngày sinh: 15 - 07 - 1980") is True
+    assert contains_pii_text("DOB: 15 / 07 / 1980") is True
+
+
 def test_contains_pii_text_catches_address_markers():
     """Địa chỉ cư trú cụ thể (nhãn + số) trước đây hoàn toàn không có pattern nào bắt."""
     assert contains_pii_text("ngụ 12 Nguyễn Trãi Q1 TPHCM") is True

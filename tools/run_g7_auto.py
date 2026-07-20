@@ -432,9 +432,14 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("13", "Xử lý dữ liệu — gỡ băng, ghi chú hiện trường, quản lý dữ liệu, khử định danh", False),
         ("14", "Phân tích dữ liệu — quy trình mã hóa, ai phân tích, phần mềm hỗ trợ (nếu có)", False),
         ("15", "Kỹ thuật tăng độ tin cậy — trustworthiness (credibility/transferability/dependability/confirmability), triangulation, member checking, audit trail", False),
-        ("16", "Kết quả/phát hiện — trình bày phát hiện chính có hỗ trợ bằng dữ liệu (quote/trích đoạn) THẬT", False),
+        # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện LOW,
+        # độ tin cậy trung bình): mục 16/18 khớp lại đúng tên chính thức
+        # SRQR 2014 (O'Brien BC et al., Acad Med 2014;89:1245-1251) — mục 16
+        # là "Synthesis and interpretation", mục 18 là "Integration with
+        # other literature". Đồng bộ cùng run_g8_auto.py::SRQR_ITEMS.
+        ("16", "Tổng hợp và diễn giải — trình bày phát hiện chính có hỗ trợ bằng dữ liệu (quote/trích đoạn) THẬT", False),
         ("17", "Liên kết với dữ liệu thực nghiệm — kết luận có bám sát/được minh họa bởi dữ liệu thu thập", False),
-        ("18", "Tích hợp với lý thuyết/nghiên cứu khác — đối chiếu phát hiện với khung lý thuyết/y văn hiện có", False),
+        ("18", "Tích hợp với y văn khác — đối chiếu phát hiện với khung lý thuyết/y văn hiện có", False),
         ("19", "Hạn chế — hạn chế nghiên cứu, ảnh hưởng đến độ tin cậy/khả năng chuyển giao kết quả", False),
         ("20", "Xung đột lợi ích — khai báo xung đột lợi ích của nhóm nghiên cứu", False),
         ("21", "Nguồn tài trợ — nguồn tài trợ và vai trò nhà tài trợ trong thiết kế/thực hiện/công bố", False),

@@ -170,9 +170,9 @@ Phần mềm + lệnh: ___
 Mô hình: ☐ Hồi quy logistic ☐ Linear ☐ Cox ☐ Mixed-effects ☐ GEE
 Biến đưa vào mô hình (định trước, không dùng stepwise mù):
   - Covariates: ___ (lý do: ___)
-EPV (Events Per Variable — tên gọi quy ước, tính THEO THAM SỐ không phải theo BIẾN,
-2026-07-16 sửa khớp co-mau-nghien-cuu.md/SAP §template [A]): kết cục sự kiện / TỔNG SỐ
-THAM SỐ mô hình (biến hạng mục k mức đóng góp k-1 tham số, mỗi số hạng tương tác +1) >= 10
+EPV/EPP (events-per-parameter — tên gọi phổ biến "Events Per Variable" KHÔNG chính xác
+vì tính THEO THAM SỐ không phải theo BIẾN, khớp co-mau-nghien-cuu.md — sửa 2026-07-21):
+kết cục sự kiện / TỔNG SỐ THAM SỐ mô hình (biến hạng mục k mức đóng góp k-1 tham số, mỗi số hạng tương tác +1) >= 10
 [CẦN XÁC NHẬN — đếm lại nếu có biến nhiều mức/tương tác, không chỉ đếm số "biến" đưa vào]
 VIF < 5 cho mọi biến dự báo (kiểm đa cộng tuyến)
 Kiểm định mức phù hợp: ☐ Hosmer-Lemeshow (logistic) ☐ GOF tương đương

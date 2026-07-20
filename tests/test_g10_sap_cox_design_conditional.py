@@ -67,6 +67,30 @@ class TestCoxMentionedOnlyForLongitudinalDesigns:
             assert "tuyến tính" in text
 
 
+class TestQualitativeSapIsNotQuantitative:
+    """Hồi quy CRITICAL (vòng lặp kiểm tra-hoàn thiện vòng 3, 2026-07-21):
+    sec_sap() hoàn toàn thiếu nhánh design_code="qualitative" — rơi vào
+    nhánh định lượng, sinh Mục 11 dùng χ²/Fisher/t-test/hồi quy cho nghiên
+    cứu định tính, mâu thuẫn với G2/G5/G6/G7/G8 (đã đúng COREQ/SRQR)."""
+
+    def test_qualitative_sap_does_not_prescribe_quantitative_tests(self):
+        """Không hồi quy về nhánh định lượng cũ ('đơn biến (χ²/Fisher,
+        t-test/Mann-Whitney) → đa biến...') — các test này chỉ được PHÉP
+        xuất hiện trong câu 'KHÔNG dùng', không phải như phương pháp chính."""
+        text = G10.sec_sap(_cps_for("qualitative"), {})
+        assert "đơn biến (χ²/Fisher, t-test/Mann-Whitney)" not in text
+        assert "Phân tích yếu tố liên quan" not in text
+
+    def test_qualitative_sap_mentions_thematic_coding_and_saturation(self):
+        text = G10.sec_sap(_cps_for("qualitative"), {})
+        assert "mã hóa chủ đề" in text or "thematic" in text.lower()
+        assert "bão hòa" in text.lower() or "saturation" in text.lower()
+
+    def test_qualitative_sap_mentions_trustworthiness(self):
+        text = G10.sec_sap(_cps_for("qualitative"), {})
+        assert "credibility" in text.lower() or "trustworthiness" in text.lower()
+
+
 class TestNonResponseBiasMentioned:
     """Bình duyệt agent `binh-duyet` phát hiện thật: Mục 12 liệt kê sai số
     chọn mẫu/thông tin/nhớ lại/nhiễu/mong muốn xã hội nhưng KHÔNG đặt tên

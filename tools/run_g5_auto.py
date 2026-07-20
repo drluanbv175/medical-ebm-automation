@@ -620,12 +620,19 @@ _SRMA_FIELDS = [
 # tiêu điểm). Bộ trường này theo dõi lấy mẫu có chủ đích, mã hóa và bão hòa dữ
 # liệu (COREQ/SRQR) thay vì biến lâm sàng số.
 _QUALITATIVE_FIELDS = [
-    ("participant_id",      "Sampling",        "Quản lý người tham gia", "text",     "Mã người tham gia (ẩn danh, không PII)",                    "",                                                              "", "",        "",   "",   "y", ""),
+    # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện MEDIUM):
+    # tên trường PHẢI là "record_id" (không phải "participant_id") — mọi hàm
+    # sinh script dùng chung (gen_data_cleaning_script()::check_duplicates(),
+    # báo cáo dữ liệu thiếu, kiểm tra trước phân tích) đều DÒ CỨNG cột tên
+    # "record_id" để phát hiện trùng ID; dùng tên khác làm các kiểm tra đó
+    # ÂM THẦM không chạy gì (điều kiện `if "record_id" in df.columns` false)
+    # thay vì báo lỗi rõ ràng.
+    ("record_id",           "Sampling",        "Quản lý người tham gia", "text",     "Mã người tham gia (record_id, ẩn danh, không PII)",         "",                                                              "", "",        "",   "",   "y", ""),
     ("sampling_category",   "Sampling",        "",                       "text",     "Nhóm lấy mẫu có chủ đích (vd theo mức tuân thủ/giới/thời gian mắc bệnh)", "",                                            "", "",        "",   "",   "y", ""),
-    ("recruitment_date",    "Sampling",        "",                       "text",     "Ngày mời tham gia",                                          "",                                                              "", "date",    "",   "",   "y", ""),
+    ("recruitment_date",    "Sampling",        "",                       "text",     "Ngày mời tham gia",                                          "",                                                              "", "date_ymd","",   "",   "y", ""),
     ("consent_confirmed",   "Sampling",        "",                       "radio",    "Đã ký đồng thuận tham gia",                                  "0, Không | 1, Có",                                             "", "",        "",   "",   "y", ""),
     ("interview_type",      "Data Collection", "Thu thập dữ liệu",       "dropdown", "Loại thu thập",                                              "1, Phỏng vấn sâu | 2, Nhóm tiêu điểm | 3, Quan sát thực địa", "", "",        "",   "",   "y", ""),
-    ("interview_date",      "Data Collection", "",                      "text",     "Ngày thu thập",                                              "",                                                              "", "date",    "",   "",   "y", ""),
+    ("interview_date",      "Data Collection", "",                      "text",     "Ngày thu thập",                                              "",                                                              "", "date_ymd","",   "",   "y", ""),
     ("audio_recorded",      "Data Collection", "",                      "radio",    "Có ghi âm (đã đồng thuận)",                                  "0, Không | 1, Có",                                             "", "",        "",   "",   "y", ""),
     ("transcript_id",       "Data Collection", "",                      "text",     "Mã bản gỡ băng (đã khử định danh)",                          "",                                                              "", "",        "",   "",   "y", ""),
     ("coder_assigned",      "Coding",          "Mã hóa chủ đề",          "text",     "Người mã hóa (≥2 người mã độc lập)",                        "",                                                              "", "",        "",   "",   "y", ""),

@@ -82,13 +82,44 @@ def build_plist(repo_root: Path) -> dict[str, object]:
         # tien trinh LaunchAgent. WatchPaths (theo doi thay doi) VAN tro vao repo
         # that vi phan do da chay dung — chi ProgramArguments (thuc thi) can ban
         # cuc bo. Cung mau voi install_chatgpt_tunnel_launch_agent.py.
-        "ProgramArguments": ["/bin/zsh", str(INSTALLED_LAUNCHER)],
+        # Tham so 2 = repo_root THAT (khong phai ban sao cuc bo) -- script
+        # dung no de py_compile cac file duoc theo doi TRUOC khi restart,
+        # tranh nap file dang ghi do do OneDrive dong bo (vong lap kiem tra-
+        # hoan thien vong 3, phat hien MEDIUM).
+        "ProgramArguments": ["/bin/zsh", str(INSTALLED_LAUNCHER), str(repo_root)],
         "WatchPaths": watch_paths,
         "ThrottleInterval": 5,
         "StandardOutPath": str(logs / "code-watch.out.log"),
         "StandardErrorPath": str(logs / "code-watch.err.log"),
         "ProcessType": "Background",
     }
+
+
+def _install_local_files(
+    script: Path, installed_launcher: Path, logs_dir: Path, destination: Path, payload: dict[str, object]
+) -> None:
+    """Ghi launcher/log dir/plist cục bộ với quyền đã siết chặt.
+
+    SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện MEDIUM):
+    thư mục log này TRÙNG đường dẫn với install_chatgpt_tunnel_launch_agent.py
+    (đã khóa 0700/0600 từ vòng vá audit MCP 2026-07-20) — nếu bác sĩ chạy
+    installer NÀY trước, thư mục/launcher/plist được tạo với quyền mặc định
+    theo umask hệ thống (thường world-readable), làm mất tác dụng lớp khóa
+    quyền đã vá cho CÙNG thư mục đó. Khớp ĐÚNG 0700/0600 như installer kia.
+    Tách hàm riêng (không thao tác trực tiếp trên ~/Library thật trong main())
+    để có thể unit test bằng tmp_path mà không đụng launchd/thư mục thật.
+    """
+    script.chmod(0o755)
+    installed_launcher.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(script, installed_launcher)
+    installed_launcher.chmod(0o700)
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    logs_dir.chmod(0o700)
+    logs_dir.parent.chmod(0o700)
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(plistlib.dumps(payload, sort_keys=True))
+    destination.chmod(0o600)
 
 
 def main() -> int:
@@ -107,17 +138,9 @@ def main() -> int:
         print(plistlib.dumps(payload).decode("utf-8"))
         return 0
 
-    script.chmod(0o755)
-    INSTALLED_LAUNCHER.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(script, INSTALLED_LAUNCHER)
-    INSTALLED_LAUNCHER.chmod(0o755)
     logs = Path.home() / "Library/Application Support/tunnel-client/logs"
-    logs.mkdir(parents=True, exist_ok=True)
-
     destination = Path.home() / "Library/LaunchAgents" / f"{LABEL}.plist"
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_bytes(plistlib.dumps(payload, sort_keys=True))
-    destination.chmod(0o644)
+    _install_local_files(script, INSTALLED_LAUNCHER, logs, destination, payload)
 
     uid = subprocess.run(["id", "-u"], capture_output=True, text=True, check=True).stdout.strip()
     domain = f"gui/{uid}"
