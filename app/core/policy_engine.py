@@ -1,4 +1,11 @@
-"""Policy engine bảo vệ liêm chính khoa học và an toàn lâm sàng V7."""
+"""Policy engine bảo vệ liêm chính khoa học và an toàn lâm sàng V7.
+
+File này được app/chatgpt_app/server.py import (qua agents.py/knowledge.py) và phục vụ
+kết nối MCP sống (Codex desktop + Secure MCP Tunnel). Sửa ở đây KHÔNG tự áp dụng cho
+kết nối tunnel đang chạy (tiến trình dài hạn, không hot-reload) — .githooks/post-commit
+tự động `launchctl kickstart -k` sau mỗi commit chạm file này để nạp code mới; nhánh
+Codex desktop tự nhận code mới mỗi "Tác vụ mới" (spawn tiến trình riêng), không cần hook.
+"""
 from __future__ import annotations
 
 import re
