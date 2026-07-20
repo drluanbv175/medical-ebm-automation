@@ -153,9 +153,18 @@ class SafeAgentCatalog:
             "hard_gates": gates,
             "orchestrator_instructions": conductor["instructions"],
             "final_guardrail_instructions": guardrail["instructions"],
+            # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện, audit đối kháng
+            # xác nhận): orchestrator+guardrail full text đã nhúng sẵn ở 2
+            # field trên (và có thể trùng lần nữa qua search()/fetch() vì
+            # cùng đọc .claude/agents/*.md) — báo rõ để ChatGPT/Codex KHÔNG
+            # gọi lại get_ebm_agent_instructions/fetch cho đúng 2 agent_id
+            # này, tiết kiệm ~13KB/lần lặp không cần thiết.
+            "already_included_agent_ids": [orchestrator, "tham-dinh-dau-ra"],
             "agent_loading": (
-                "Call get_ebm_agent_instructions for each specialist named by the "
-                "orchestrator before performing that step."
+                "orchestrator_instructions/final_guardrail_instructions above already contain the "
+                "FULL text for entry_agent and 'tham-dinh-dau-ra' — do NOT call get_ebm_agent_instructions "
+                "or fetch() for those 2 IDs again (see already_included_agent_ids). Call "
+                "get_ebm_agent_instructions only for OTHER specialists named by the orchestrator."
             ),
             "release_rule": "Never claim applied/approved/released while any hard gate is pending.",
             "disclaimer": DISCLAIMER,

@@ -27,24 +27,40 @@ from pathlib import Path
 
 LABEL = "vn.drluan.ebm-mcp-code-watch"
 INSTALLED_LAUNCHER = Path.home() / ".ebm-tools/bin/watch-restart-ebm-tunnel"
-WATCHED_RELATIVE = (
-    "app/chatgpt_app/__init__.py",
-    "app/chatgpt_app/agents.py",
-    "app/chatgpt_app/knowledge.py",
-    "app/chatgpt_app/server.py",
+# Cac file DUNG-1-CHO ngoai app/chatgpt_app/ (khong glob duoc vi khong nam
+# chung 1 thu muc voi nhau).
+WATCHED_STANDALONE = (
     "app/core/policy_engine.py",
     "app/core/export_policy.py",
     "tools/run_chatgpt_mcp_stdio.py",
 )
 
 
+def _watched_relative(repo_root: Path) -> list[str]:
+    """Danh sach file can theo doi — glob app/chatgpt_app/*.py DUNG mau voi
+    .githooks/post-commit (pathspec 'app/chatgpt_app/*') thay vi liet ke tay
+    tung file rieng. Vá 2026-07-20 (vong lap kiem tra-hoan thien): truoc day
+    la tuple TINH, phai sua tay + chay lai installer moi khi them file .py
+    moi duoi app/chatgpt_app/ — 2 "danh sach file can theo doi" (glob hook vs
+    tuple installer) duy tri doc lap nhau, dung pattern "2 lop xu ly tach roi"
+    da lap lai nhieu lan trong lich su du an."""
+    chatgpt_app_dir = repo_root / "app/chatgpt_app"
+    globbed = sorted(
+        str(p.relative_to(repo_root))
+        for p in chatgpt_app_dir.glob("*.py")
+        if "__pycache__" not in p.parts
+    )
+    return globbed + list(WATCHED_STANDALONE)
+
+
 def build_plist(repo_root: Path) -> dict[str, object]:
     logs = Path.home() / "Library/Application Support/tunnel-client/logs"
-    watch_paths = [str(repo_root / rel) for rel in WATCHED_RELATIVE]
+    watched_relative = _watched_relative(repo_root)
+    watch_paths = [str(repo_root / rel) for rel in watched_relative]
     missing = [p for p in watch_paths if not Path(p).is_file()]
     if missing:
         raise SystemExit(
-            "Thieu file can theo doi (kiem tra lai repo_root/WATCHED_RELATIVE): "
+            "Thieu file can theo doi (kiem tra lai repo_root/WATCHED_STANDALONE): "
             + ", ".join(missing)
         )
     return {
@@ -99,7 +115,7 @@ def main() -> int:
     subprocess.run(["launchctl", "bootout", domain, str(destination)], check=False)
     subprocess.run(["launchctl", "bootstrap", domain, str(destination)], check=True)
     print(f"installed:{destination}")
-    print(f"watching {len(WATCHED_RELATIVE)} file(s) duoi {repo_root}")
+    print(f"watching {len(_watched_relative(repo_root))} file(s) duoi {repo_root}")
     return 0
 
 

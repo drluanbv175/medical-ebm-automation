@@ -21,7 +21,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận danh sách 
 |--------|--------|
 | M1 | BƯỚC 0: danh sách đầy đủ; gắn cờ nhóm nguy cơ cao (chống đông·hạ đường·độc thận·QT·an thần) |
 | M2 | Tương tác thuốc–thuốc + thuốc–bệnh (🔴🟠🟡) — nguồn nhãn thuốc/openFDA/PMID |
-| M3 | Chỉnh liều theo eGFR/suy gan: nêu theo nguồn hoặc `[CẦN KIỂM CHỨNG]` (KHÔNG bịa số) |
+| M3 | Chỉnh liều theo eGFR/suy gan: nêu theo nguồn hoặc `[CẦN KIỂM CHỨNG]` (KHÔNG bịa số). **Riêng DOAC (dabigatran/rivaroxaban/apixaban/edoxaban): PHẢI dùng CrCl theo Cockcroft–Gault, KHÔNG dùng eGFR** — nhãn thuốc FDA và thử nghiệm gốc neo CrCl, khớp `quan-ly-khang-dong` |
 | M4 | Người cao tuổi đa thuốc: Beers AGS 2023 + STOPP/START v3 |
 | M5 | Nhóm đặc biệt: thai kỳ/cho con bú — đối chiếu LactMed/FDA-PLLR |
 | M6 | Trùng nhóm/prescribing cascade + cơ hội deprescribing |
@@ -41,7 +41,7 @@ Danh sách **thuốc dự kiến + đang dùng** (kể cả OTC/thực phẩm ch
 ## 3. Quy trình (BƯỚC 0 = đối chiếu thuốc + bối cảnh nguy cơ cao)
 **BƯỚC 0 — Đối chiếu thuốc (medication reconciliation) + cờ đỏ thuốc:** lập danh sách thuốc đầy đủ; gắn cờ ngay nhóm nguy cơ cao (chống đông, hạ đường huyết, độc thận, QT, an thần ở người già/lái xe). Nếu đúng phạm vi → gọi skill `ke-don-an-toan-benh-man` và/hoặc `nguoi-cao-tuoi-da-benh-da-thuoc`.
 1. **Tương tác thuốc–thuốc** (cặp có ý nghĩa lâm sàng) và **thuốc–bệnh** (chống chỉ định theo bệnh nền).
-2. **Chỉnh liều theo cơ quan:** dựa eGFR/chức năng gan; nêu liều khuyến cáo **theo nguồn** hoặc thuốc cần tránh — không có nguồn → `[CẦN KIỂM CHỨNG]`.
+2. **Chỉnh liều theo cơ quan:** dựa eGFR/chức năng gan; nêu liều khuyến cáo **theo nguồn** hoặc thuốc cần tránh — không có nguồn → `[CẦN KIỂM CHỨNG]`. **Ngoại lệ bắt buộc — DOAC:** tính **CrCl theo công thức Cockcroft–Gault** (không dùng eGFR CKD-EPI/MDRD) — nhãn thuốc FDA và các thử nghiệm gốc (RE-LY, ROCKET-AF, ARISTOTLE, ENGAGE AF-TIMI 48) đều neo ngưỡng chỉnh liều theo CrCl; eGFR chuẩn hóa diện tích da có thể lệch đáng kể so với CrCl ở người nhẹ cân/cao tuổi, đủ đổi quyết định liều đầy đủ vs liều giảm.
 3. **Người cao tuổi đa thuốc:** đối chiếu **Beers (AGS 2023)** và **STOPP/START (v3)**; gắn cờ thuốc nên tránh/nên cân nhắc thêm.
 4. **Nhóm đặc biệt — THAI KỲ / CHO CON BÚ (rà nếu phụ nữ tuổi sinh đẻ, kể cả khi chưa khẳng định có thai):** đối chiếu mỗi thuốc với chống chỉ định/thận trọng theo thai kỳ + tam cá nguyệt và theo cho con bú. Danh mục **thuốc nguy cơ cao điển hình** (đã công nhận rộng — vẫn PHẢI đối chiếu nhãn thuốc/nguồn trước khi loại trừ, KHÔNG tự khẳng định mức từ trí nhớ):
    - **Gây quái thai mạnh / thường chống chỉ định:** ACEi & ARB (đặc biệt tam cá nguyệt 2–3) · warfarin · valproate & nhiều thuốc chống động kinh (carbamazepine, phenytoin, topiramate) · isotretinoin/retinoid · methotrexate · mycophenolate · thalidomide · lithium (dị tật Ebstein) · misoprostol · methimazole (tam cá nguyệt 1 → cân nhắc PTU) · **vắc-xin sống**.

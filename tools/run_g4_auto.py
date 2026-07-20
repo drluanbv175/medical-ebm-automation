@@ -115,6 +115,13 @@ def generate(study, topic, design_code, design_primary, reporting_std,
                        "Phân tích đầy đủ (complete case + MI); internal validation qua bootstrap",
                        "Hồi quy logistic/Cox hoặc ML — discrimination (C-statistic) + "
                        "calibration + DCA (TRIPOD+AI)"),
+        # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện): trước rơi vào .get()
+        # fallback ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]") — an toàn
+        # nhưng mơ hồ, cùng lớp thiếu sót vừa vá cho §5-§9 bên dưới.
+        "qualitative": ("Người tham gia phỏng vấn/nhóm tiêu điểm đủ tiêu chí (chọn mẫu có chủ đích)",
+                        "Toàn bộ bản ghi/bản gỡ băng đã mã hóa tới khi bão hòa dữ liệu",
+                        "Mã hóa chủ đề (thematic analysis) — mở mã → mã trục → chủ đề "
+                        "(COREQ/SRQR, xem A4)"),
     }
     pop, analysis_pop, main_method = sap_sections.get(design_code, ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]"))
 
@@ -127,6 +134,79 @@ def generate(study, topic, design_code, design_primary, reporting_std,
     # thật, không phải "N/A".
     n_not_applicable = design_code in N_NOT_APPLICABLE_DESIGNS and not n_adjusted
     n_na_note = f"N/A — {design_code} không dùng power (xem A4)"
+
+    # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện, xác nhận đối kháng):
+    # trước đây §5-§9 (đa biến/dữ liệu thiếu/subgroup/đa so sánh/độ nhạy) là
+    # VĂN BẢN CỐ ĐỊNH cho MỌI design_code kể cả "qualitative" — bác sĩ ký SAP
+    # Lock Certificate cho đề tài định tính sẽ vô tình xác nhận một kế hoạch
+    # Multiple Imputation/Bonferroni vô nghĩa về phương pháp luận. G3 (bão hòa
+    # dữ liệu) và G7 (SRQR 2014) đã có nhánh riêng cho qualitative từ
+    # 2026-07-19 — G4 là gate duy nhất còn thiếu. Thay bằng khung COREQ/SRQR:
+    # chiến lược mã hóa, bão hòa dữ liệu, chọn mẫu đa dạng, trustworthiness
+    # (Lincoln & Guba) thay cho đa biến/MI/subgroup/đa-so-sánh/độ-nhạy.
+    if design_code == "qualitative":
+        sap_sections_5_to_9 = [
+            "### §5 CHIẾN LƯỢC MÃ HÓA (thay Phân tích đa biến — không áp dụng cho định tính)",
+            "",
+            "- **Tiếp cận:** [CẦN BÁC SĨ — quy nạp (inductive)/diễn dịch (deductive)/hỗn hợp]  ",
+            "- **Mã hóa:** [CẦN — số người mã hóa độc lập, phần mềm QDA (NVivo/ATLAS.ti/MAXQDA) hoặc mã tay theo codebook]  ",
+            "- **Độ tin cậy liên-người-mã (nếu ≥2 người):** [CẦN — Cohen's kappa hoặc thảo luận đồng thuận]  ",
+            "",
+            "### §6 BÃO HÒA DỮ LIỆU (thay Dữ liệu thiếu — không áp dụng cho định tính)",
+            "",
+            "- **Tiêu chí bão hòa:** [CẦN BÁC SĨ — vd không còn mã/chủ đề mới sau N cuộc phỏng vấn liên tiếp]  ",
+            "- **Cỡ mẫu dự kiến:** xem A4 (chọn mẫu có chủ đích, không tính power)  ",
+            "",
+            "### §7 CHỌN MẪU ĐA DẠNG (thay Phân tích nhóm nhỏ — không áp dụng cho định tính)",
+            "",
+            "- **Chiến lược chọn mẫu:** [CẦN BÁC SĨ — purposive/maximum variation/theoretical sampling]  ",
+            "- **Tiêu chí đa dạng:** [CẦN — vd tuổi, giới, mức độ nặng bệnh, thời gian mắc bệnh]  ",
+            "",
+            "### §8 KHÔNG ÁP DỤNG (Đa so sánh — chỉ dành cho kiểm định giả thuyết thống kê)",
+            "",
+            "- Nghiên cứu định tính không kiểm định giả thuyết bằng p-value → không có đa so sánh cần hiệu chỉnh.  ",
+            "",
+            "### §9 TRUSTWORTHINESS (thay Phân tích độ nhạy — khung Lincoln & Guba cho định tính)",
+            "",
+            "- **Credibility:** [CẦN — member checking / triangulation nguồn dữ liệu]  ",
+            "- **Transferability:** [CẦN — mô tả bối cảnh dày (thick description)]  ",
+            "- **Dependability:** [CẦN — audit trail quá trình mã hóa]  ",
+            "- **Confirmability:** [CẦN — nhật ký phản tư (reflexivity journal)]  ",
+            "",
+        ]
+    else:
+        sap_sections_5_to_9 = [
+            "### §5 PHÂN TÍCH ĐA BIẾN",
+            "",
+            "- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  ",
+            "- **Phương pháp chọn biến:** Đưa vào toàn bộ (không stepwise)  ",
+            "- **Giả định:** [CẦN kiểm tra PH / normality theo thiết kế]  ",
+            "",
+            "### §6 DỮ LIỆU THIẾU",
+            "",
+            "- **Chiến lược:** Multiple Imputation (MI, m=20, method=pmm)  ",
+            "- **Giả định:** MAR (missing at random)  ",
+            "- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  ",
+            "- **Phân tích hoàn chỉnh (complete case):** báo cáo song song với MI  ",
+            "",
+            "### §7 PHÂN TÍCH NHÓM NHỎ (Subgroup Analysis)",
+            "",
+            "- **Nhóm nhỏ tiền định:** [CẦN BÁC SĨ — phải ghi TRƯỚC khi xem dữ liệu]  ",
+            "- **Kiểm định tương tác:** Mô hình với interaction term  ",
+            "- **Cảnh báo:** Phân tích nhóm nhỏ chỉ diễn giải thăm dò  ",
+            "",
+            "### §8 ĐA SO SÁNH",
+            "",
+            "- **Điều chỉnh:** [CẦN — Bonferroni / FDR nếu >3 kết cục chính]  ",
+            "- **Kết cục được coi là kết cục chính:** chỉ 1  ",
+            "",
+            "### §9 PHÂN TÍCH ĐỘ NHẠY",
+            "",
+            "- Thay đổi định nghĩa phơi nhiễm/kết cục ±1 SD  ",
+            "- Complete case vs MI  ",
+            "- [CẦN BÁC SĨ thêm kịch bản cụ thể]  ",
+            "",
+        ]
 
     lines = [
         "# A5 — SAP FINAL + SAP LOCK CERTIFICATE (DRAFT — CHỜ BÁC SĨ KÝ)",
@@ -191,36 +271,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         f"- **Quần thể:** {analysis_pop}  ",
         "- **Trình bày:** ước lượng + 95%CI; không báo p-value đơn độc  ",
         "",
-        "### §5 PHÂN TÍCH ĐA BIẾN",
-        "",
-        "- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  ",
-        "- **Phương pháp chọn biến:** Đưa vào toàn bộ (không stepwise)  ",
-        "- **Giả định:** [CẦN kiểm tra PH / normality theo thiết kế]  ",
-        "",
-        "### §6 DỮ LIỆU THIẾU",
-        "",
-        "- **Chiến lược:** Multiple Imputation (MI, m=20, method=pmm)  ",
-        "- **Giả định:** MAR (missing at random)  ",
-        "- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  ",
-        "- **Phân tích hoàn chỉnh (complete case):** báo cáo song song với MI  ",
-        "",
-        "### §7 PHÂN TÍCH NHÓM NHỎ (Subgroup Analysis)",
-        "",
-        "- **Nhóm nhỏ tiền định:** [CẦN BÁC SĨ — phải ghi TRƯỚC khi xem dữ liệu]  ",
-        "- **Kiểm định tương tác:** Mô hình với interaction term  ",
-        "- **Cảnh báo:** Phân tích nhóm nhỏ chỉ diễn giải thăm dò  ",
-        "",
-        "### §8 ĐA SO SÁNH",
-        "",
-        "- **Điều chỉnh:** [CẦN — Bonferroni / FDR nếu >3 kết cục chính]  ",
-        "- **Kết cục được coi là kết cục chính:** chỉ 1  ",
-        "",
-        "### §9 PHÂN TÍCH ĐỘ NHẠY",
-        "",
-        "- Thay đổi định nghĩa phơi nhiễm/kết cục ±1 SD  ",
-        "- Complete case vs MI  ",
-        "- [CẦN BÁC SĨ thêm kịch bản cụ thể]  ",
-        "",
+        *sap_sections_5_to_9,
         "### §10 PHẦN MỀM + SEED",
         "",
         "- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ",

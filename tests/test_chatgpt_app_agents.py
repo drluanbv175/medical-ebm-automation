@@ -47,6 +47,19 @@ def test_clinical_workflow_includes_gate_a_b_and_guardrail() -> None:
     assert "tham-dinh-dau-ra" in payload["final_guardrail_instructions"]
 
 
+def test_clinical_workflow_flags_already_included_agents_to_avoid_double_fetch() -> None:
+    """Hồi quy (vòng lặp kiểm tra-hoàn thiện, 2026-07-20): orchestrator +
+    guardrail đã nhúng toàn văn trong response — search()/fetch() và
+    get_ebm_agent_instructions() cùng phục vụ .claude/agents/*.md nên có thể
+    bị gọi trùng cho đúng 2 agent_id này. Response phải tự báo rõ để tránh
+    double-fetch tốn token."""
+    payload = SafeAgentCatalog(ROOT).workflow_payload(
+        "clinical", "Nam 68 tuổi, đau ngực khi gắng sức, không có thông tin định danh"
+    )
+    assert payload["already_included_agent_ids"] == ["dieu-phoi-lam-sang", "tham-dinh-dau-ra"]
+    assert "already_included_agent_ids" in payload["agent_loading"]
+
+
 def test_research_workflow_includes_hard_gates() -> None:
     payload = SafeAgentCatalog(ROOT).workflow_payload(
         "research", "Đề tài hiệu quả can thiệp tuân thủ ở người bệnh tăng huyết áp"

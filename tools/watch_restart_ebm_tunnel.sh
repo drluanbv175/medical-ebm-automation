@@ -39,6 +39,20 @@ if [[ -f "${MARKER}" ]]; then
   LAST=$(cat "${MARKER}" 2>/dev/null || echo 0)
 fi
 
+# ĐÃ THỬ trailing-edge (2026-07-20, vòng lặp kiểm tra-hoàn thiện): hẹn 1 lần
+# kiểm tra lại qua `(sleep N; ...) & disown` SAU khi cửa sổ debounce đóng, để
+# bù lần ghi CUỐI bị nuốt nếu không còn thao tác ghi nào xảy ra sau đó (đúng
+# khoảng trống thật do audit đối kháng xác nhận). ĐÃ KIỂM CHỨNG THỰC NGHIỆM
+# hướng đó KHÔNG hoạt động: launchd dọn dẹp/giết cả process group của job khi
+# tiến trình chính (script này) kết thúc, kể cả con đã `disown` — subshell
+# nền không sống sót tới lúc `sleep` xong (đo trực tiếp: marker không đổi,
+# tiến trình sleep biến mất sớm). KHÔNG dùng lại hướng background-detach cho
+# launchd WatchPaths job trừ khi tìm được cách thoát process group thật (vd
+# launchd job RIÊNG cho lần hẹn giờ — chưa làm, đổi lấy thêm 1 LaunchAgent).
+# Giữ nguyên debounce leading-edge-only (đơn giản, ĐÚNG những gì nó làm) —
+# rủi ro còn lại (lần ghi cuối trong chuỗi dồn dập bị nuốt) đã có 2 lớp khác
+# bù: .githooks/post-commit (restart khi commit) và Codex tự nhận code mới
+# mỗi "Tác vụ mới" (spawn tiến trình mới, không phụ thuộc watcher này).
 if (( NOW - LAST < DEBOUNCE_SECONDS )); then
   exit 0
 fi

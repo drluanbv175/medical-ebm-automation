@@ -1461,8 +1461,9 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
         .replace("__COVARS_DEFAULT__", covars_default)
         .replace("__COVARS_DISPLAY__", covars_display)
     )
+    warns = []
     if effect_type == "MD":
-        warn = (
+        warns.append(
             "# ⚠️  [CẦN CHÚ Ý — KẾT CỤC LIÊN TỤC (effect_type=MD)]\n"
             "# Template CLI này dùng Cox/HR (kết cục thời gian-đến-biến-cố) — SAI\n"
             "# phương pháp cho kết cục LIÊN TỤC (đau NRS, HbA1c, chất lượng sống…).\n"
@@ -1470,6 +1471,32 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
             "# phân tích chính; KHÔNG chạy Cox bên dưới cho biến liên tục.\n"
             "# (Phiên bản CLI Python cho kết cục liên tục sẽ bổ sung sau.)\n\n"
         )
+    # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện): trước đây CHỈ tách riêng
+    # case_control khỏi _RUN_CLI_TEMPLATE (Cox/HR) — 5 design_code còn lại
+    # (cross_sectional/diagnostic/prediction/sr_ma/qualitative) vẫn âm thầm
+    # nhận CLI Cox/HR dù 03_analysis.R (đã vá đúng phương pháp cho cả 5) hoàn
+    # toàn khác — cùng lớp lỗi "2 lớp xử lý design_code tách rời" đã lặp lại
+    # nhiều lần. Chưa viết CLI Python riêng cho từng thiết kế (rủi ro/công sức
+    # lớn) — dùng ĐÚNG mẫu cảnh báo nổi bật đã có sẵn cho effect_type=MD.
+    _WRONG_METHOD_DESIGNS = {"cross_sectional", "diagnostic", "prediction", "sr_ma", "qualitative"}
+    if design_code in _WRONG_METHOD_DESIGNS:
+        method_hint = {
+            "cross_sectional": "hồi quy logistic đa biến (OR)",
+            "diagnostic": "ROC/AUC + decision curve analysis (STARD)",
+            "prediction": "mô hình tiên lượng (TRIPOD+AI) — KHÔNG phải Cox đơn biến",
+            "sr_ma": "tổng hợp bằng chứng (PRISMA) trên bảng STUDY-LEVEL, không phải participant-level",
+            "qualitative": "mã hóa chủ đề (COREQ/SRQR) — KHÔNG có mô hình thống kê suy diễn",
+        }[design_code]
+        warns.append(
+            f"# ⚠️  [CẦN CHÚ Ý — THIẾT KẾ {design_code.upper()}]\n"
+            "# Template CLI này dùng Cox/HR (kết cục thời gian-đến-biến-cố) — KHÔNG\n"
+            f"# đúng phương pháp cho thiết kế này (cần {method_hint}).\n"
+            "# Dùng script R kèm theo (03_analysis.R — đã có nhánh đúng cho thiết kế\n"
+            "# này) làm phân tích chính; KHÔNG chạy Cox bên dưới.\n"
+            "# (Phiên bản CLI Python riêng cho thiết kế này sẽ bổ sung sau.)\n\n"
+        )
+    if warns:
+        warn = "".join(warns)
         # Chèn sau dòng shebang nếu có, để cảnh báo nổi bật ngay đầu file.
         if code.startswith("#!"):
             first_nl = code.index("\n") + 1
@@ -1928,7 +1955,7 @@ def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort") 
             .replace("__OUTCOME__",        outcome)
             .replace("__COVARS_DEFAULT__", covars_default)
         )
-    return (
+    code = (
         _SENSITIVITY_TEMPLATE
         .replace("__STUDY__",          study)
         .replace("__EXPOSURE__",       exposure)
@@ -1936,6 +1963,25 @@ def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort") 
         .replace("__TIME__",           time_col)
         .replace("__COVARS_DEFAULT__", covars_default)
     )
+    # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện): cùng lớp lỗi vừa vá ở
+    # make_run_analysis_cli() — _SENSITIVITY_TEMPLATE cũng là Cox/HR
+    # (lifelines.CoxPHFitter), sai phương pháp cho 5 design_code này. Dùng
+    # đúng mẫu cảnh báo nổi bật đã có, chưa viết template riêng cho từng thiết kế.
+    _WRONG_METHOD_DESIGNS = {"cross_sectional", "diagnostic", "prediction", "sr_ma", "qualitative"}
+    if design_code in _WRONG_METHOD_DESIGNS:
+        warn = (
+            f"# ⚠️  [CẦN CHÚ Ý — THIẾT KẾ {design_code.upper()}]\n"
+            "# Template phân tích độ nhạy này dùng Cox/HR (E-value theo HR) — KHÔNG\n"
+            "# đúng phương pháp cho thiết kế này. Cần thống kê viên thiết kế phân\n"
+            "# tích độ nhạy phù hợp (vd E-value theo OR cho cross_sectional/\n"
+            "# diagnostic, leave-one-out cho sr_ma) trước khi dùng script này.\n\n"
+        )
+        if code.startswith("#!"):
+            first_nl = code.index("\n") + 1
+            code = code[:first_nl] + warn + code[first_nl:]
+        else:
+            code = warn + code
+    return code
 
 
 # ─────────────────────────────────────────────
@@ -2587,6 +2633,14 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
         return _r03_prediction_with_vars(v)
     elif design_code == "sr_ma":
         return _r03_srma_template()
+    # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện, xac nhan doi khang): truoc
+    # day "qualitative" khong co nhanh rieng nen roi vao else -> make_r03_cohort()
+    # (Cox regression + Kaplan-Meier) — SAI HOAN TOAN phuong phap luan cho du
+    # lieu phong van/nhom tieu diem dinh tinh. Cung lop loi "2 lop xu ly
+    # design_code tach roi nhau" da vá cho case_control/diagnostic/prediction/
+    # sr_ma (G1/G3/G7 da ho tro qualitative tu 2026-07-19, rieng G6 sot lai).
+    elif design_code == "qualitative":
+        return _r03_qualitative_template()
     else:
         return make_r03_cohort(v, n_adjusted, alpha, power, effect_val, effect_type)
 
@@ -2811,6 +2865,46 @@ source(here::here("scripts", "00_setup.R"))
 # meta::funnel(m_bin); meta::metabias(m_bin, method.bias = "Egger")
 
 message("03_analysis.R (SR/MA) — input STUDY-LEVEL (không phải participant-level) | [CẦN BẢNG TRÍCH XUẤT THẬT sau khi hoàn tất sàng lọc PRISMA]")
+"""
+
+
+def _r03_qualitative_template() -> str:
+    """THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện): nghiên cứu định
+    tính/hỗn hợp (COREQ/SRQR — xem run_g1_auto.py). KHÁC 7 thiết kế còn lại:
+    KHÔNG có mô hình thống kê suy diễn (không hồi quy/Cox/log-rank/OR/RR),
+    phân tích chính là MÃ HÓA CHỦ ĐỀ (thematic analysis) thường làm bằng
+    phần mềm QDA chuyên dụng (NVivo/ATLAS.ti/MAXQDA) hoặc mã tay có bảng mã
+    (codebook). R ở đây CHỈ hỗ trợ đếm tần suất/đồng-xuất-hiện mã sau khi đã
+    mã hóa thủ công — KHÔNG thay thế bước diễn giải định tính. Không nhận
+    `v` (không dò biến REDCap dạng tham gia-cấp-cá-nhân định lượng)."""
+    return """\
+# 03_analysis.R — Nghiên cứu định tính/hỗn hợp (COREQ/SRQR): KHÔNG có mô hình
+# thống kê suy diễn. Phân tích chính là MÃ HÓA CHỦ ĐỀ (thematic analysis),
+# thường thực hiện bằng phần mềm QDA (NVivo/ATLAS.ti/MAXQDA) hoặc mã tay theo
+# codebook — KHÔNG dùng hồi quy/Cox/log-rank/OR/RR/AUC cho dữ liệu này.
+source(here::here("scripts", "00_setup.R"))
+# Script này CHỈ hỗ trợ bước phụ (đếm tần suất/đồng-xuất-hiện mã) SAU KHI đã
+# mã hóa thủ công xong — không thay thế việc đọc/diễn giải của nhà nghiên cứu.
+
+# codes <- read.csv(file.path(DATA_PROC, "coded_transcripts.csv"))
+# # Cột kỳ vọng: participant_id, transcript_segment, code_1, code_2, ...
+# # (mỗi dòng 1 đoạn trích đã gán mã, sinh ra từ phần mềm QDA hoặc bảng mã tay)
+
+# Tần suất mã theo người tham gia (kiểm tra bão hòa dữ liệu — data saturation):
+# table(codes$code_1)
+# aggregate(participant_id ~ code_1, data = codes, FUN = function(x) length(unique(x)))
+
+# Đồng-xuất-hiện mã (co-occurrence) — gợi ý chủ đề gộp (theme clustering):
+# table(codes$code_1, codes$code_2)
+
+# ⚠ KHÔNG chạy bất kỳ mô hình hồi quy/suy diễn nào ở đây. Chất lượng nghiên
+# cứu định tính đánh giá qua TRUSTWORTHINESS (Lincoln & Guba): credibility
+# (member checking/triangulation), transferability (mô tả bối cảnh dày —
+# thick description), dependability (audit trail mã hóa), confirmability
+# (phản tư — reflexivity, ghi ở nhật ký nghiên cứu). Xem run_g1_auto.py
+# BIAS_CONTROLS["qualitative"] cho khung đầy đủ.
+
+message("03_analysis.R (định tính/hỗn hợp) — KHÔNG có mô hình suy diễn; phân tích chính là mã hóa chủ đề bằng phần mềm QDA hoặc tay | [CẦN BẢNG MÃ HÓA THẬT sau khi hoàn tất phỏng vấn/nhóm tiêu điểm]")
 """
 
 

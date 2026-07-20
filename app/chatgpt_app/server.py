@@ -98,7 +98,12 @@ def _safe(fn):
 @mcp.tool(
     name="search",
     title="Tìm tri thức EBM",
-    description="Use this when you need to find safe, review-only EBM system documents by a text query.",
+    description=(
+        "Use this when you need to find safe, review-only EBM system documents by a text query. "
+        "Note: agent doctrine files are also indexed here AND served by get_ebm_agent_instructions/"
+        "prepare_*_workflow — check already_included_agent_ids in a prior workflow response before "
+        "fetching an agent .md you may already have."
+    ),
     annotations=READ_ONLY,
 )
 def search(query: str) -> CallToolResult:

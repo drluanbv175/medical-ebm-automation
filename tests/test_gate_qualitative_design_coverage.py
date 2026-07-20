@@ -202,6 +202,33 @@ class TestG3G4QualitativeSampleSize:
         res4 = _run("run_g4_auto.py", study_dir.name)
         assert res4.returncode == EXIT_BLOCKED
 
+    def test_g4_sap_uses_coreq_srqr_sections_not_quantitative_stats(self, study_dir):
+        """Hồi quy (vòng lặp kiểm tra-hoàn thiện, 2026-07-20, audit đối kháng):
+        trước khi vá, §5-§9 của SAP Final là văn bản cố định Multiple
+        Imputation/Bonferroni/subgroup-interaction cho MỌI design_code kể cả
+        "qualitative" — bác sĩ ký SAP Lock Certificate cho đề tài định tính sẽ
+        vô tình xác nhận một kế hoạch thống kê định lượng vô nghĩa. G3 (bão
+        hòa) và G7 (SRQR) đã có nhánh riêng từ 2026-07-19; G4 là gate cuối
+        cùng còn thiếu, nay đã vá bằng khung COREQ/SRQR (mã hóa/bão hòa/chọn
+        mẫu đa dạng/trustworthiness)."""
+        _mk_upstream(study_dir)
+        res3 = _run("run_g3_auto.py", study_dir.name, ["--confirmed-n", "20"])
+        assert res3.returncode == EXIT_OK
+        res4 = _run("run_g4_auto.py", study_dir.name)
+        assert res4.returncode == EXIT_OK, res4.stdout[-1000:]
+        artifact = (study_dir / f"G4_A5_SAP_FINAL_{study_dir.name}.md").read_text(encoding="utf-8")
+
+        assert "Multiple Imputation" not in artifact
+        assert "Bonferroni" not in artifact
+        assert "stepwise" not in artifact.lower()
+        assert "interaction term" not in artifact
+
+        assert "TRUSTWORTHINESS" in artifact
+        assert "Credibility" in artifact
+        assert "BÃO HÒA DỮ LIỆU" in artifact
+        assert "CHIẾN LƯỢC MÃ HÓA" in artifact
+        assert "mã hóa chủ đề" in artifact.lower() or "thematic" in artifact.lower()
+
 
 # ── G7: checklist SRQR (không fallback STROBE/cohort) ────────────────────────────
 
