@@ -49,6 +49,17 @@ class TestCoxMentionedOnlyForLongitudinalDesigns:
         text = G10.sec_sap(_cps_for("rct"), {})
         assert "hồi quy logistic/tuyến tính/Cox tuỳ thiết kế" in text
 
+    def test_prediction_still_mentions_cox_as_option(self):
+        """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 2, 2026-07-21):
+        _SURVIVAL_CAPABLE_DESIGNS thiếu 'prediction' làm G10 khẳng định cứng
+        'không áp dụng Cox' cho MỌI mô hình tiên lượng — mâu thuẫn trực tiếp
+        với run_g6_auto.py (analysis_name_map['prediction'] ghi rõ 'hồi quy
+        logistic/Cox hoặc ML tuỳ SAP'), vì mô hình tiên lượng thời gian-đến-
+        biến cố (vd Cox tiên lượng tử vong 5 năm, TRIPOD+AI) là thiết kế hợp lệ."""
+        text = G10.sec_sap(_cps_for("prediction"), {})
+        assert "hồi quy logistic/tuyến tính/Cox tuỳ thiết kế" in text
+        assert "không áp dụng Cox" not in text
+
     def test_logistic_and_linear_always_mentioned(self):
         for code in ("cross_sectional", "case_control", "diagnostic", "cohort", "rct"):
             text = G10.sec_sap(_cps_for(code), {})

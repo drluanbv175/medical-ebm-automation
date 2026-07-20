@@ -520,7 +520,13 @@ def sec_quantri_dulieu(cps, meta) -> str:
     )
 
 
-_SURVIVAL_CAPABLE_DESIGNS = {"cohort", "rct"}
+_SURVIVAL_CAPABLE_DESIGNS = {"cohort", "rct", "prediction"}
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện HIGH): thiếu
+# "prediction" ở đây làm G10 khẳng định CỨNG "không áp dụng Cox" cho MỌI mô
+# hình tiên lượng — mâu thuẫn trực tiếp với chính run_g6_auto.py (biến
+# analysis_name_map["prediction"]) vốn đã ghi rõ "hồi quy logistic/Cox hoặc
+# ML tuỳ SAP" cho thiết kế này (mô hình tiên lượng thời gian-đến-biến cố,
+# vd Cox tiên lượng tử vong 5 năm, là một dạng TRIPOD+AI hợp lệ).
 
 
 def sec_sap(cps, meta) -> str:

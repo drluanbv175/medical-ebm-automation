@@ -134,6 +134,13 @@ def generate(study, topic, design_code, design_primary, reporting_std,
     # thật, không phải "N/A".
     n_not_applicable = design_code in N_NOT_APPLICABLE_DESIGNS and not n_adjusted
     n_na_note = f"N/A — {design_code} không dùng power (xem A4)"
+    # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện HIGH): dòng
+    # "Effect size" KHÔNG được gộp chung điều kiện với "Cỡ mẫu" — sr_ma/prediction/
+    # qualitative không bao giờ dùng effect_size dù N đã được bác sĩ chốt qua
+    # --confirmed-n (n_adjusted khác 0). Dùng cờ RIÊNG, chỉ phụ thuộc design_code,
+    # để tránh hiện "[CẦN từ G3]" (TODO không bao giờ giải được) hoặc một effect
+    # size trông như bịa còn sót lại từ vòng scrape G1.
+    effect_size_not_applicable = design_code in N_NOT_APPLICABLE_DESIGNS
 
     # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện, xác nhận đối kháng):
     # trước đây §5-§9 (đa biến/dữ liệu thiếu/subgroup/đa so sánh/độ nhạy) là
@@ -298,7 +305,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         f"- **Power:** {int(power*100)}%  ",
         (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
          (f"- **Cỡ mẫu:** N = {n_adjusted}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  ")),
-        (f"- **Effect size:** N/A — {design_code} không dùng effect size  " if n_not_applicable else
+        (f"- **Effect size:** N/A — {design_code} không dùng effect size  " if effect_size_not_applicable else
          (f"- **Effect size dự kiến:** {effect_type} = {effect_val:.2f}  " if effect_val
           else "- **Effect size:** [CẦN từ G3]  ")),
     ] + (

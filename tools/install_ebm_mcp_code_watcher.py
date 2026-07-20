@@ -37,18 +37,27 @@ WATCHED_STANDALONE = (
 
 
 def _watched_relative(repo_root: Path) -> list[str]:
-    """Danh sach file can theo doi — glob app/chatgpt_app/*.py DUNG mau voi
+    """Danh sach file can theo doi — glob app/chatgpt_app/* DUNG mau voi
     .githooks/post-commit (pathspec 'app/chatgpt_app/*') thay vi liet ke tay
     tung file rieng. Vá 2026-07-20 (vong lap kiem tra-hoan thien): truoc day
     la tuple TINH, phai sua tay + chay lai installer moi khi them file .py
     moi duoi app/chatgpt_app/ — 2 "danh sach file can theo doi" (glob hook vs
     tuple installer) duy tri doc lap nhau, dung pattern "2 lop xu ly tach roi"
-    da lap lai nhieu lan trong lich su du an."""
+    da lap lai nhieu lan trong lich su du an.
+
+    SUA 2026-07-21 (vong lap kiem tra-hoan thien vong 2, phat hien LOW): glob
+    truoc day chi lay "*.py", trong khi pathspec that cua post-commit
+    ('app/chatgpt_app/*') khop MOI file bat ke duoi, khong rieng .py — neu
+    tuong lai them file server.py doc luc chay (vd prompts.json), sua file do
+    KHONG kich hoat restart tuc thi qua LaunchAgent nay du post-commit van
+    restart sau commit ke tiep, tao khoang trong live-edit/instant-restart.
+    Doi thanh "*" (chi loc file, khong lay thu muc con nhu __pycache__) de
+    khop DUNG pham vi voi hook."""
     chatgpt_app_dir = repo_root / "app/chatgpt_app"
     globbed = sorted(
         str(p.relative_to(repo_root))
-        for p in chatgpt_app_dir.glob("*.py")
-        if "__pycache__" not in p.parts
+        for p in chatgpt_app_dir.glob("*")
+        if p.is_file() and "__pycache__" not in p.parts
     )
     return globbed + list(WATCHED_STANDALONE)
 

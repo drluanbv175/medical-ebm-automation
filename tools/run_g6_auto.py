@@ -356,7 +356,53 @@ message("=== 00_setup.R hoàn tất === Seed: ", SEED)
 """
 
 
-def make_r01_cleaning(v: dict) -> str:
+# THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện LOW +
+# MEDIUM gộp): _WRONG_METHOD_DESIGNS trước đây định nghĩa LẶP LẠI y hệt ở
+# make_run_analysis_cli() và make_sensitivity_analysis() (cùng lớp lỗi "2 nơi
+# xử lý design_code tách rời" đã ghi nhận nhiều lần trong file này) — nay
+# hoist thành hằng số module-level DÙNG CHUNG, và gộp luôn logic "chèn cảnh
+# báo sau shebang" thành 1 helper dùng chung cho CẢ 4 hàm sinh script (bao
+# gồm make_r01_cleaning/make_r02_tables — trước đây 2 hàm này sinh code
+# cohort-style KHÔNG ĐIỀU KIỆN cho MỌI design_code, không có cảnh báo gì,
+# trong khi 03_analysis.R/CLI/sensitivity đã có cảnh báo từ 2026-07-20).
+_WRONG_METHOD_DESIGNS = {"cross_sectional", "diagnostic", "prediction", "sr_ma", "qualitative"}
+
+_METHOD_HINT_BY_DESIGN = {
+    "cross_sectional": "hồi quy logistic đa biến (OR)",
+    "diagnostic": "ROC/AUC + decision curve analysis (STARD)",
+    "prediction": "mô hình tiên lượng (TRIPOD+AI) — KHÔNG phải Cox đơn biến",
+    "sr_ma": "tổng hợp bằng chứng (PRISMA) trên bảng STUDY-LEVEL, không phải participant-level",
+    "qualitative": "mã hóa chủ đề (COREQ/SRQR) — KHÔNG có mô hình thống kê suy diễn",
+}
+
+
+def _insert_warning_after_shebang(code: str, warn: str) -> str:
+    """Chèn cảnh báo NGAY sau dòng shebang (nếu có) để nổi bật ngay đầu file;
+    nếu không có shebang, chèn lên đầu."""
+    if code.startswith("#!"):
+        first_nl = code.index("\n") + 1
+        return code[:first_nl] + warn + code[first_nl:]
+    return warn + code
+
+
+def _cohort_style_wrong_method_warning(design_code: str, script_name: str) -> str:
+    """Cảnh báo dùng chung cho 01_cleaning.R/02_tables.R khi design_code nằm
+    trong _WRONG_METHOD_DESIGNS — 2 script này sinh mutate/Table-1-theo-nhóm-
+    phơi-nhiễm CỐ ĐỊNH không phù hợp các thiết kế không có trục phơi nhiễm/
+    kết cục nhị phân kiểu cohort (vd định tính không có biến số để 'làm sạch'
+    theo kiểu này, SR/MA là bảng study-level chứ không phải participant-level)."""
+    method_hint = _METHOD_HINT_BY_DESIGN[design_code]
+    return (
+        f"# ⚠️  [CẦN CHÚ Ý — THIẾT KẾ {design_code.upper()}]\n"
+        f"# {script_name} sinh theo khuôn mặc định (biến phơi nhiễm/kết cục kiểu\n"
+        "# cohort) — KHÔNG chắc phù hợp thiết kế này (cần "
+        f"{method_hint}).\n"
+        "# Rà lại với thống kê viên trước khi dùng làm bước làm sạch/mô tả chính;\n"
+        "# xem SAP (A5) §4-§6 để biết đúng khung phân tích cho thiết kế này.\n\n"
+    )
+
+
+def make_r01_cleaning(v: dict, design_code: str = "cohort") -> str:
     """Sinh 01_cleaning.R với tên biến thật từ REDCap dictionary."""
     exposure  = v["exposure"]
     outcome   = v["outcome"]
@@ -380,7 +426,7 @@ def make_r01_cleaning(v: dict) -> str:
 
     mutate_block = "\n".join(mutate_lines)
 
-    return f"""\
+    code = f"""\
 # ============================================================
 # 01_cleaning.R — Làm sạch dữ liệu
 # Biến phơi nhiễm: {exposure}
@@ -459,15 +505,20 @@ source(here::here("scripts", "00_setup.R"))
 message("01_cleaning.R — biến phát hiện từ REDCap: {exposure}/{outcome}/{time_col}")
 message("[CẦN DỮ LIỆU THẬT + G5 DB LOCKED để uncomment và chạy]")
 """
+    if design_code in _WRONG_METHOD_DESIGNS:
+        code = _insert_warning_after_shebang(
+            code, _cohort_style_wrong_method_warning(design_code, "01_cleaning.R")
+        )
+    return code
 
 
-def make_r02_tables(v: dict) -> str:
+def make_r02_tables(v: dict, design_code: str = "cohort") -> str:
     """Sinh 02_tables.R với tên biến thật."""
     exposure = v["exposure"]
     covars   = v["covariates"]
     vars_list = ", ".join(f'"{c}"' for c in covars) if covars else '"age", "sex", "bmi", "dm", "htn"'
 
-    return f"""\
+    code = f"""\
 # ============================================================
 # 02_tables.R — Bảng đặc điểm nền (Table 1) và thống kê mô tả
 # Biến phân nhóm: {exposure}
@@ -509,6 +560,11 @@ source(here::here("scripts", "00_setup.R"))
 
 message("02_tables.R — Biến nhóm: {exposure} | [CẦN DỮ LIỆU THẬT]")
 """
+    if design_code in _WRONG_METHOD_DESIGNS:
+        code = _insert_warning_after_shebang(
+            code, _cohort_style_wrong_method_warning(design_code, "02_tables.R")
+        )
+    return code
 
 
 def make_r03_cohort(v: dict, n_adjusted: int, alpha: float, power: float,
@@ -1478,15 +1534,11 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
     # toàn khác — cùng lớp lỗi "2 lớp xử lý design_code tách rời" đã lặp lại
     # nhiều lần. Chưa viết CLI Python riêng cho từng thiết kế (rủi ro/công sức
     # lớn) — dùng ĐÚNG mẫu cảnh báo nổi bật đã có sẵn cho effect_type=MD.
-    _WRONG_METHOD_DESIGNS = {"cross_sectional", "diagnostic", "prediction", "sr_ma", "qualitative"}
+    # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2): _WRONG_METHOD_DESIGNS
+    # và method_hint hoist lên module-level (xem đầu file, gần make_r01_cleaning)
+    # — trước đây định nghĩa LẶP LẠI y hệt ở đây và make_sensitivity_analysis().
     if design_code in _WRONG_METHOD_DESIGNS:
-        method_hint = {
-            "cross_sectional": "hồi quy logistic đa biến (OR)",
-            "diagnostic": "ROC/AUC + decision curve analysis (STARD)",
-            "prediction": "mô hình tiên lượng (TRIPOD+AI) — KHÔNG phải Cox đơn biến",
-            "sr_ma": "tổng hợp bằng chứng (PRISMA) trên bảng STUDY-LEVEL, không phải participant-level",
-            "qualitative": "mã hóa chủ đề (COREQ/SRQR) — KHÔNG có mô hình thống kê suy diễn",
-        }[design_code]
+        method_hint = _METHOD_HINT_BY_DESIGN[design_code]
         warns.append(
             f"# ⚠️  [CẦN CHÚ Ý — THIẾT KẾ {design_code.upper()}]\n"
             "# Template CLI này dùng Cox/HR (kết cục thời gian-đến-biến-cố) — KHÔNG\n"
@@ -1496,13 +1548,7 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
             "# (Phiên bản CLI Python riêng cho thiết kế này sẽ bổ sung sau.)\n\n"
         )
     if warns:
-        warn = "".join(warns)
-        # Chèn sau dòng shebang nếu có, để cảnh báo nổi bật ngay đầu file.
-        if code.startswith("#!"):
-            first_nl = code.index("\n") + 1
-            code = code[:first_nl] + warn + code[first_nl:]
-        else:
-            code = warn + code
+        code = _insert_warning_after_shebang(code, "".join(warns))
     return code
 
 
@@ -1967,7 +2013,9 @@ def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort") 
     # make_run_analysis_cli() — _SENSITIVITY_TEMPLATE cũng là Cox/HR
     # (lifelines.CoxPHFitter), sai phương pháp cho 5 design_code này. Dùng
     # đúng mẫu cảnh báo nổi bật đã có, chưa viết template riêng cho từng thiết kế.
-    _WRONG_METHOD_DESIGNS = {"cross_sectional", "diagnostic", "prediction", "sr_ma", "qualitative"}
+    # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2): _WRONG_METHOD_DESIGNS
+    # hoist lên module-level (xem đầu file, gần make_r01_cleaning) — trước đây
+    # định nghĩa LẶP LẠI y hệt ở đây và make_run_analysis_cli().
     if design_code in _WRONG_METHOD_DESIGNS:
         warn = (
             f"# ⚠️  [CẦN CHÚ Ý — THIẾT KẾ {design_code.upper()}]\n"
@@ -1976,11 +2024,7 @@ def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort") 
             "# tích độ nhạy phù hợp (vd E-value theo OR cho cross_sectional/\n"
             "# diagnostic, leave-one-out cho sr_ma) trước khi dùng script này.\n\n"
         )
-        if code.startswith("#!"):
-            first_nl = code.index("\n") + 1
-            code = code[:first_nl] + warn + code[first_nl:]
-        else:
-            code = warn + code
+        code = _insert_warning_after_shebang(code, warn)
     return code
 
 
@@ -2484,8 +2528,8 @@ def main():
 
     scripts_to_write = {
         "00_setup.R":    R_00_SETUP,
-        "01_cleaning.R": make_r01_cleaning(v),
-        "02_tables.R":   make_r02_tables(v),
+        "01_cleaning.R": make_r01_cleaning(v, design_code),
+        "02_tables.R":   make_r02_tables(v, design_code),
         "03_analysis.R": r03,
     }
 

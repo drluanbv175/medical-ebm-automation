@@ -7,7 +7,7 @@ from app.core.approval_service import ApprovalCenter
 from app.core.audit_logger import AuditLogger
 from app.core.feature_flags import DEFAULT_FEATURE_FLAGS
 from app.core.idempotency import IdempotencyLedger, make_idempotency_key
-from app.core.policy_engine import PolicyEngine, contains_pii_text
+from app.core.policy_engine import PolicyEngine, contains_bare_id_number, contains_pii_text
 from app.core.release_manager import ReleaseManager
 from app.core.run_packet import Lane, new_run_packet
 from app.core.run_state_machine import InvalidTransition, RunState, transition
@@ -93,6 +93,39 @@ def test_contains_pii_text_catches_text_form_dob():
     dạng số có '/'-'-' sau nhãn 'dob'/'ngày sinh'."""
     assert contains_pii_text("sinh năm 1980") is True
     assert contains_pii_text("SN: 1980") is True
+
+
+def test_contains_bare_id_number_catches_unlabeled_cccd_and_bhyt():
+    """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 2, 2026-07-21): CCCD (12
+    số)/BHYT viết TRẦN không kèm nhãn lọt cả contains_pii_text() (_PHONE cần
+    tiền tố 0/+84 đúng độ dài, _MRN cần nhãn đứng trước)."""
+    assert contains_bare_id_number("Bệnh nhân số 012345678901, đau ngực 2 ngày") is True
+    assert contains_bare_id_number("BN nam 60 tuổi, BHYT GD4790123456789, đau thượng vị") is True
+    assert contains_pii_text("Bệnh nhân số 012345678901, đau ngực 2 ngày") is False, (
+        "contains_pii_text() KHÔNG được tự bắt trường hợp này — dùng "
+        "contains_bare_id_number() riêng để tránh vỡ DOI/NCT ID hợp lệ do hệ "
+        "thống tự sinh (xem chú thích _BARE_LONG_DIGITS)"
+    )
+
+
+def test_contains_bare_id_number_does_not_flag_valid_nct_and_doi_identifiers():
+    """Không hồi quy ngược: NCT ID (ClinicalTrials.gov) và DOI có đoạn số sau
+    khi gộp dấu phân cách KHÔNG được coi là CCCD/BHYT giả."""
+    assert contains_bare_id_number("Xem thử nghiệm NCT01234567 để tham khảo") is False
+    assert contains_bare_id_number("DOI: 10.1016/j.jacc.2021.09.006") is False
+    assert contains_bare_id_number("PMID: 34605781") is False
+
+
+def test_contains_pii_text_catches_hyphen_formatted_numeric_dob():
+    """Hồi quy (vòng lặp kiểm tra-hoàn thiện vòng 2, 2026-07-21): _collapse_digit_separators()
+    xóa MỌI dấu cách/chấm/GẠCH NGANG giữa 2 chữ số trước khi so khớp — nhưng _DOB dạng số
+    dùng chính dấu gạch ngang làm phân cách ('15-07-1980'). Nếu chạy _DOB trên bản đã gộp số
+    thì 'DOB: 15-07-1980' bị xóa gạch ngang thành '15071980' và KHÔNG còn khớp được, trong khi
+    dạng gạch chéo ('15/07/1980', không nằm trong lớp ký tự bị gộp) vẫn khớp đúng — sự bất đối
+    xứng này chính là lỗ hổng: dạng gạch ngang (dd-mm-yyyy, phổ biến nhất ở VN) lọt qua."""
+    assert contains_pii_text("DOB: 15-07-1980") is True
+    assert contains_pii_text("Ngày sinh: 15-07-1980") is True
+    assert contains_pii_text("DOB: 15/07/1980") is True
 
 
 def test_contains_pii_text_catches_address_markers():

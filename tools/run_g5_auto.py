@@ -613,6 +613,29 @@ _SRMA_FIELDS = [
 ]
 
 
+# THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện CRITICAL: G5
+# hoàn toàn thiếu nhánh design_code="qualitative", rơi vào nhánh "mặc định"
+# cohort/case_control/cross_sectional và sinh CRF lâm sàng định lượng — huyết
+# áp/xét nghiệm/exposure-outcome nhị phân — vô nghĩa với phỏng vấn sâu/nhóm
+# tiêu điểm). Bộ trường này theo dõi lấy mẫu có chủ đích, mã hóa và bão hòa dữ
+# liệu (COREQ/SRQR) thay vì biến lâm sàng số.
+_QUALITATIVE_FIELDS = [
+    ("participant_id",      "Sampling",        "Quản lý người tham gia", "text",     "Mã người tham gia (ẩn danh, không PII)",                    "",                                                              "", "",        "",   "",   "y", ""),
+    ("sampling_category",   "Sampling",        "",                       "text",     "Nhóm lấy mẫu có chủ đích (vd theo mức tuân thủ/giới/thời gian mắc bệnh)", "",                                            "", "",        "",   "",   "y", ""),
+    ("recruitment_date",    "Sampling",        "",                       "text",     "Ngày mời tham gia",                                          "",                                                              "", "date",    "",   "",   "y", ""),
+    ("consent_confirmed",   "Sampling",        "",                       "radio",    "Đã ký đồng thuận tham gia",                                  "0, Không | 1, Có",                                             "", "",        "",   "",   "y", ""),
+    ("interview_type",      "Data Collection", "Thu thập dữ liệu",       "dropdown", "Loại thu thập",                                              "1, Phỏng vấn sâu | 2, Nhóm tiêu điểm | 3, Quan sát thực địa", "", "",        "",   "",   "y", ""),
+    ("interview_date",      "Data Collection", "",                      "text",     "Ngày thu thập",                                              "",                                                              "", "date",    "",   "",   "y", ""),
+    ("audio_recorded",      "Data Collection", "",                      "radio",    "Có ghi âm (đã đồng thuận)",                                  "0, Không | 1, Có",                                             "", "",        "",   "",   "y", ""),
+    ("transcript_id",       "Data Collection", "",                      "text",     "Mã bản gỡ băng (đã khử định danh)",                          "",                                                              "", "",        "",   "",   "y", ""),
+    ("coder_assigned",      "Coding",          "Mã hóa chủ đề",          "text",     "Người mã hóa (≥2 người mã độc lập)",                        "",                                                              "", "",        "",   "",   "y", ""),
+    ("coding_round",        "Coding",          "",                      "integer",  "Vòng mã hóa (1=mã mở, 2=mã trục...)",                        "",                                                              "", "integer", "1",  "5",  "y", ""),
+    ("themes_identified",   "Coding",          "",                      "text",     "Chủ đề/mã xuất hiện (danh sách)",                            "",                                                              "", "",        "",   "",   "y", ""),
+    ("saturation_reached",  "Saturation",      "Bão hòa dữ liệu",        "radio",    "Đã đạt bão hòa dữ liệu tại lượt phỏng vấn này",              "0, Chưa | 1, Có",                                              "", "",        "",   "",   "y", ""),
+    ("saturation_criterion","Saturation",      "",                      "text",     "Tiêu chí xác định bão hòa (vd 3 lượt liên tiếp không có mã mới)", "",                                                        "", "",        "",   "",   "n", ""),
+]
+
+
 def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
     """
     Xây dựng CRF theo loại thiết kế + chuyên khoa nhận diện từ topic.
@@ -645,7 +668,9 @@ def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
     followup_admin = _FOLLOWUP_ADMIN if needs_followup else []
     safety_ae = _BASE_SAFETY_AE if needs_ae_safety else []
 
-    if design_code == "sr_ma":
+    if design_code == "qualitative":
+        return _QUALITATIVE_FIELDS, specialty
+    elif design_code == "sr_ma":
         return _SRMA_FIELDS, specialty
     elif design_code == "rct":
         rows = (
@@ -1278,6 +1303,61 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
   Tham chiếu: TRIPOD+AI mục 20a (Collins GS et al., BMJ 2024;385:e078378).
   Cần bác sĩ/thống kê viên kiểm chứng.
+"""
+    elif design_code == "qualitative":
+        # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện CRITICAL:
+        # G5 hoàn toàn thiếu nhánh định tính, rơi vào else STROBE có khung "phơi
+        # nhiễm" vô nghĩa): sơ đồ LẤY MẪU CÓ CHỦ ĐÍCH + BÃO HÒA DỮ LIỆU theo
+        # COREQ/SRQR — không so sánh 2 nhóm phơi nhiễm/không phơi nhiễm.
+        flowchart = f"""\
+┌─────────────────────────────────────────────────────────────────┐
+│   SƠ ĐỒ LẤY MẪU CÓ CHỦ ĐÍCH & BÃO HÒA DỮ LIỆU (COREQ/SRQR)   │
+│                      Đề tài: {study:<30}     │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────┐
+  │  Mời tham gia (Approached):              │
+  │  N = [CẦN — BÁC SĨ/NHÓM NGHIÊN CỨU ĐIỀN]│
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  Từ chối/không đủ điều kiện: │
+        │  N = [CẦN]                   │
+{exclusion_lines}
+        │  • Từ chối tham gia: N=[CẦN]│
+        └─────────────────────────────┘
+                   │
+  ┌────────────────▼─────────────────────────┐
+  │  ĐỒNG THUẬN THAM GIA:                    │
+  │  N ≈ {n_adjusted} (ước tính ban đầu — cỡ mẫu ĐỊNH TÍNH│
+  │  không tính bằng power, xem G3)          │
+  └────────────────┬─────────────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  THU THẬP DỮ LIỆU theo lượt: │
+        │  Phỏng vấn sâu/nhóm tiêu điểm│
+        │  (mã hóa song song, ≥2 người)│
+        └──────────┬──────────────────┘
+                   │
+        ┌──────────▼──────────────────┐
+        │  KIỂM TRA BÃO HÒA sau mỗi   │
+        │  lượt: đủ [CẦN — tiêu chí,  │
+        │  vd 3 lượt liên tiếp không  │
+        │  có mã/chủ đề mới] → DỪNG   │
+        └──────────┬──────────────────┘
+                   │
+  ┌────────────────▼─────────────────────────┐
+  │  TỔNG SỐ NGƯỜI THAM GIA (khi bão hòa):  │
+  │  N = [CẦN — SAU KHI ĐẠT BÃO HÒA THẬT]  │
+  │  → Phân tích chủ đề/khung (thematic/    │
+  │    framework analysis)                   │
+  └──────────────────────────────────────────┘
+
+  Ghi chú: KHÔNG áp cỡ mẫu định lượng cho thiết kế này — N cuối cùng do
+  BÃO HÒA DỮ LIỆU quyết định, không phải công thức power (xem G3).
+  Tham chiếu: COREQ (Tong A et al., Int J Qual Health Care 2007;19:349-357)
+  hoặc SRQR (O'Brien BC et al., Acad Med 2014;89:1245-1251).
+  Cần bác sĩ/nhóm nghiên cứu kiểm chứng. KHÔNG PII.
 """
     else:
         # Khối giữa (sau 2 nhánh phơi nhiễm, trước PHÂN TÍCH) phải khớp trục

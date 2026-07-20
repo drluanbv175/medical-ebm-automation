@@ -185,6 +185,47 @@ RISK_PROFILES = {
         ],
         "benefits": "Tổng hợp bằng chứng cấp cao nhất; nền tảng cho guideline; tiết kiệm chi phí nghiên cứu mới",
     },
+    # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện HIGH):
+    # "prediction" và "qualitative" trước đây KHÔNG có trong bảng này —
+    # get_risk_profile() coi internal_code không nhận diện được và fallback
+    # về hồ sơ rủi ro "rct" (AE/SAE, DSMB/DMC, lấy mẫu máu bổ sung) — sai bản
+    # chất cho 2 thiết kế không có can thiệp thuốc thử nghiệm nào.
+    "prediction": {
+        "risk_level": "TỐI THIỂU (thường dùng dữ liệu quan sát/thứ cấp sẵn có, không can thiệp)",
+        "irb_route": "EXPEDITED REVIEW (Rút gọn — dữ liệu quan sát, không can thiệp)",
+        "registration": ("BẮT BUỘC nếu TIẾN CỨU thu thập biến tiên đoán/kết cục mới (Helsinki §35, "
+                          "trước NTG đầu tiên) — TÙY CHỌN chỉ khi dùng HOÀN TOÀN dữ liệu thứ cấp/"
+                          "hồi cứu đã có sẵn, không tuyển mới ai — loại hình thu thập [CẦN BỔ SUNG]"),
+        "register_where": "ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu thu thập mới)",
+        "icf_required": True,
+        "icf_waiver_eligible": True,
+        "risks": [
+            ("Rò rỉ thông tin cá nhân từ dữ liệu quan sát/hồ sơ bệnh án", "Rất thấp", "Trung bình",
+             "Khử định danh trước phân tích; bảng liên kết ID lưu riêng, khóa mật khẩu mạnh"),
+            ("Mô hình dự báo sai lệch (miscalibration) nếu triển khai lâm sàng trước khi thẩm định đủ",
+             "Thấp", "Tiềm tàng cao nếu áp dụng lâm sàng sớm",
+             "Internal + external validation (TRIPOD+AI) trước khi khuyến nghị dùng lâm sàng"),
+        ],
+        "benefits": "Cung cấp công cụ tiên lượng/dự báo hỗ trợ quyết định lâm sàng; không có can thiệp/thuốc thử nghiệm nên nguy cơ trực tiếp cho NTG rất thấp",
+    },
+    "qualitative": {
+        "risk_level": "TỐI THIỂU ĐẾN THẤP (phỏng vấn/nhóm tiêu điểm, không can thiệp y khoa)",
+        "irb_route": "EXPEDITED REVIEW",
+        "registration": "KHÔNG BẮT BUỘC đăng ký thử nghiệm (không phải nghiên cứu can thiệp) — cân nhắc đăng ký protocol định tính (OSF) nếu tạp chí đích yêu cầu",
+        "register_where": "Không áp dụng (hoặc OSF/registry protocol định tính nếu cần)",
+        "icf_required": True,
+        "icf_waiver_eligible": False,
+        "risks": [
+            ("Rò rỉ thông tin từ bản ghi âm/bản gỡ băng phỏng vấn", "Thấp", "Trung bình",
+             "Khử định danh bản gỡ băng; xóa file âm thanh gốc sau khi gỡ băng theo lịch đã khai; lưu mã hóa"),
+            ("Khó chịu/lo lắng tâm lý khi thảo luận chủ đề nhạy cảm (bệnh tật, tuân thủ điều trị...)",
+             "Thấp", "Nhẹ–Trung bình",
+             "Người phỏng vấn được đào tạo; NTG có thể dừng/bỏ qua câu hỏi/rút lui bất kỳ lúc nào"),
+            ("Gánh nặng thời gian phỏng vấn/nhóm tiêu điểm", "Thấp", "Không đáng kể",
+             "Thời lượng hợp lý (thường ≤60-90 phút); lịch hẹn linh hoạt theo NTG"),
+        ],
+        "benefits": "Hiểu sâu trải nghiệm/rào cản của người bệnh mà nghiên cứu định lượng không nắm bắt được; định hướng can thiệp phù hợp bối cảnh văn hóa-xã hội",
+    },
 }
 
 
@@ -399,14 +440,43 @@ def generate_g2_full_package(
         )
 
     # ICF waiver flag
+    # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện MEDIUM):
+    # điều kiện cũ `and design_code == "sr_ma"` khóa cứng TÀI LIỆU 9 chỉ cho
+    # SR/MA — cờ risk["icf_waiver_eligible"]=True của cross_sectional (và nay
+    # cả prediction) trở thành dead value, không bao giờ sinh artifact dù hệ
+    # thống tự đánh giá đủ điều kiện miễn ICF. Bỏ vế thiết kế, dùng CHUNG cờ;
+    # nội dung mẫu đơn diễn giải theo ĐÚNG bản chất từng thiết kế thay vì luôn
+    # giả định "dữ liệu đã công bố" (chỉ đúng cho SR/MA).
     waiver_section = ""
-    if risk["icf_waiver_eligible"] and design_code == "sr_ma":
+    if risk["icf_waiver_eligible"]:
+        if design_code == "sr_ma":
+            activation_note = "Kích hoạt vì thiết kế SR/MA không tiếp xúc người tham gia trực tiếp."
+            waiver_criteria = (
+                "☑ SR/MA dùng dữ liệu đã công bố — không truy ngược cá nhân\n"
+                "☑ Không có can thiệp/thủ thuật bổ sung lên người tham gia\n"
+                "☑ Rủi ro không vượt nguy cơ tối thiểu từ dữ liệu đã ẩn danh\n"
+                "☑ Không khả thi yêu cầu ICF từ tác giả gốc (nghiên cứu đã công bố)"
+            )
+            data_type_line = "Tóm tắt/bảng đã công bố trong y văn — không có PII"
+        else:
+            activation_note = (
+                f"Kích hoạt vì hồ sơ nguy cơ của thiết kế '{design_code}' được hệ thống đánh giá "
+                "đủ điều kiện miễn ICF (dữ liệu thứ cấp/ẩn danh hoàn toàn, không can thiệp) — BÁC "
+                "SĨ PHẢI tự xác nhận nghiên cứu THẬT SỰ không thu thập dữ liệu định danh mới nào."
+            )
+            waiver_criteria = (
+                "☑ Dùng dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát ẩn danh hoàn toàn — không truy ngược cá nhân\n"
+                "☑ Không có can thiệp/thủ thuật bổ sung lên người tham gia\n"
+                "☑ Rủi ro không vượt nguy cơ tối thiểu từ dữ liệu đã ẩn danh\n"
+                "☑ Không khả thi/không cần thiết yêu cầu ICF đầy đủ (khảo sát nặc danh hoặc dữ liệu đã có sẵn)"
+            )
+            data_type_line = "[CẦN BÁC SĨ MÔ TẢ — dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát nặc danh]"
         waiver_section = """
 ---
 
-## TÀI LIỆU 9 — ĐỀ NGHỊ MIỄN ICF (ICF Waiver — chỉ cho SR/MA hoặc dữ liệu thứ cấp)
+## TÀI LIỆU 9 — ĐỀ NGHỊ MIỄN ICF (ICF Waiver — cho thiết kế đủ điều kiện)
 
-> Kích hoạt vì thiết kế SR/MA không tiếp xúc người tham gia trực tiếp.
+> {activation_note}
 > `[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`
 
 ```
@@ -418,13 +488,10 @@ Chủ nhiệm: [CẦN BỔ SUNG]
 Ngày: {run_date_short}
 
 CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
-☑ SR/MA dùng dữ liệu đã công bố — không truy ngược cá nhân
-☑ Không có can thiệp/thủ thuật bổ sung lên người tham gia
-☑ Rủi ro không vượt nguy cơ tối thiểu từ dữ liệu đã ẩn danh
-☑ Không khả thi yêu cầu ICF từ tác giả gốc (nghiên cứu đã công bố)
+{waiver_criteria}
 
 ĐẢM BẢO BẢO MẬT:
-Loại dữ liệu: Tóm tắt/bảng đã công bố trong y văn — không có PII
+Loại dữ liệu: {data_type_line}
 Mã hóa: Không cần (không có PII)
 Quyền truy cập: Chỉ nhóm nghiên cứu
 Kế hoạch hủy: Lưu trữ 5 năm sau công bố theo quy định
@@ -437,7 +504,11 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
 "DRAFT — Cần Hội đồng Đạo đức phê duyệt."
 ═══════════════════════════════════════════════════════════════
 ```
-""".format(study_name=study_name, run_date_short=run_date[:10], year=_YEAR)
+""".format(
+            study_name=study_name, run_date_short=run_date[:10], year=_YEAR,
+            activation_note=activation_note, waiver_criteria=waiver_criteria,
+            data_type_line=data_type_line,
+        )
 
     # 18 WHO Registration fields
     # Vá 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction" (mô hình

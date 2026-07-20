@@ -451,6 +451,46 @@ TRIPOD_ITEMS = [
      "[D;E] Buoc tiep theo cho nghien cuu tuong lai, kha nang khai quat hoa"),
 ]
 
+# SRQR 2014 (21 muc -- Standards for Reporting Qualitative Research, O'Brien BC
+# et al., Acad Med 2014;89:1245-1251). THEM 2026-07-21 (vong lap kiem tra-hoan
+# thien vong 2, phat hien HIGH): DESIGN_CHECKLIST_MAP truoc day thieu han
+# "qualitative" -- build_reporting_checklist() fallback ve STROBE 2007 (22 muc
+# ngau nhien hoa/mu/phoi nhiem) cho nghien cuu dinh tinh, du run_g1_auto.py va
+# run_g7_auto.py da gan DUNG chuan SRQR cho thiet ke nay tu 2026-07-19.
+# Noi dung dong bo Y HET voi run_g7_auto.py::CHECKLIST_ITEMS["qualitative"] (21
+# muc, da vetted 2026-07-19) -- tranh dung lop loi "2 file xu ly cung khai niem
+# nhung lech nhau" da gap nhieu lan trong du an nay.
+SRQR_ITEMS = [
+    ("Title", "1",
+     "Neu ro nghien cuu la DINH TINH hoac ten cach tiep can (vd hien tuong hoc)"),
+    ("Abstract", "2", "Tom luoc muc tieu, phuong phap, ket qua chinh theo cau truc"),
+    ("Problem formulation", "3", "Mo ta van de nghien cuu va tong quan y van lien quan"),
+    ("Purpose/research question", "4", "Neu ro cau hoi nghien cuu khop paradigm dinh tinh"),
+    ("Qualitative approach and research paradigm", "5",
+     "Hien tuong hoc/grounded theory/phan tich chu de..., ly do chon"),
+    ("Researcher characteristics and reflexivity", "6",
+     "Kinh nghiem, dao tao, moi quan he voi nguoi tham gia, gia dinh (reflexivity)"),
+    ("Context", "7", "Co so/dia diem nghien cuu va ly do chon"),
+    ("Sampling strategy", "8", "Cach chon nguoi tham gia (purposive/snowball...), tieu chi, cach tiep can"),
+    ("Ethical issues pertaining to human subjects", "9",
+     "Chap thuan IRB, dong thuan tham gia, bao mat, can nhac dac thu nghien cuu dinh tinh"),
+    ("Data collection methods", "10",
+     "Hinh thuc (phong van/nhom/quan sat), thoi gian, so lan lap, ly do dung"),
+    ("Data collection instruments and technologies", "11",
+     "Huong dan phong van/quan sat, thu nghiem truoc, ai thu thap, thay doi trong qua trinh"),
+    ("Units of study", "12", "So nguoi/nhom tham gia, muc do tham gia, dac diem nhan khau"),
+    ("Data processing", "13", "Go bang, ghi chu hien truong, quan ly du lieu, khu dinh danh"),
+    ("Data analysis", "14", "Quy trinh ma hoa, ai phan tich, phan mem ho tro (neu co)"),
+    ("Techniques to enhance trustworthiness", "15",
+     "Trustworthiness (credibility/transferability/dependability/confirmability), triangulation, member checking, audit trail"),
+    ("Results/findings", "16", "Trinh bay phat hien chinh co ho tro bang du lieu (quote/trich doan) THAT"),
+    ("Links to empirical data", "17", "Ket luan co bam sat/duoc minh hoa boi du lieu thu thap"),
+    ("Integration with theory", "18", "Doi chieu phat hien voi khung ly thuyet/y van hien co"),
+    ("Limitations", "19", "Han che nghien cuu, anh huong den do tin cay/kha nang chuyen giao ket qua"),
+    ("Conflicts of interest", "20", "Khai bao xung dot loi ich cua nhom nghien cuu"),
+    ("Funding source", "21", "Nguon tai tro va vai tro nha tai tro trong thiet ke/thuc hien/cong bo"),
+]
+
 # Anh xa design_code -> (ten chuan, danh sach muc)
 DESIGN_CHECKLIST_MAP = {
     "rct":             ("CONSORT 2025",   CONSORT_ITEMS),
@@ -461,6 +501,7 @@ DESIGN_CHECKLIST_MAP = {
     "sr_ma":           ("PRISMA 2020",    PRISMA_ITEMS),
     "prediction":      ("TRIPOD+AI 2024", TRIPOD_ITEMS),
     "tripod":          ("TRIPOD+AI 2024", TRIPOD_ITEMS),
+    "qualitative":     ("SRQR 2014",      SRQR_ITEMS),
 }
 
 # 14 vai tro CRediT taxonomy

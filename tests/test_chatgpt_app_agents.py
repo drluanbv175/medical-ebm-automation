@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import unicodedata
 from pathlib import Path
 
@@ -135,6 +136,38 @@ def test_clinical_workflow_blocks_realistic_free_text_pii() -> None:
     assert payload["reason"] == "possible_pii_detected"
 
 
+def test_clinical_workflow_propagates_execution_contract() -> None:
+    """Hồi quy LOW (vòng lặp kiểm tra-hoàn thiện vòng 2, 2026-07-21):
+    get_payload() gắn execution_contract (must_call_guardrail_last=True...)
+    cho mỗi agent lẻ, nhưng workflow_payload() — lối vào CHÍNH cho ChatGPT —
+    trước đây chỉ rút field 'instructions', làm rơi mất cờ máy-đọc-được duy
+    nhất xác nhận guardrail là bắt buộc."""
+    payload = SafeAgentCatalog(ROOT).workflow_payload(
+        "clinical", "Nam 68 tuổi, đau ngực khi gắng sức, không có thông tin định danh"
+    )
+    assert payload["execution_contract"]["must_call_guardrail_last"] is True
+    assert payload["execution_contract"]["automatic_gate_approval"] is False
+
+
+def test_clinical_workflow_blocks_unlabeled_cccd_and_bhyt_bare_numbers() -> None:
+    """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 2, 2026-07-21): CCCD (12
+    số)/BHYT viết TRẦN không kèm nhãn ("số", "mã hồ sơ"...) trước đây lọt cả
+    contains_pii_text() (_PHONE cần tiền tố 0/+84 đúng độ dài, _MRN cần nhãn
+    đứng trước) lẫn _matches_sensitive_id() (cũng cần nhãn) — toàn bộ câu văn
+    kèm CCCD/BHYT bị echo nguyên văn sang ChatGPT."""
+    payload = SafeAgentCatalog(ROOT).workflow_payload(
+        "clinical", "Bệnh nhân số 012345678901, đau ngực 2 ngày"
+    )
+    assert payload["status"] == "blocked"
+    assert payload["reason"] == "possible_pii_detected"
+
+    payload2 = SafeAgentCatalog(ROOT).workflow_payload(
+        "clinical", "BN nam 60 tuổi, BHYT GD4790123456789, đau thượng vị"
+    )
+    assert payload2["status"] == "blocked"
+    assert payload2["reason"] == "possible_pii_detected"
+
+
 def test_synchronize_redacts_pii_like_subprocess_output(monkeypatch, tmp_path: Path) -> None:
     """output_tail của synchronize() phải qua cùng cổng PII như mọi nhánh khác —
     trước đây log subprocess được trả nguyên văn không qua contains_pii_text/
@@ -164,3 +197,63 @@ def test_synchronize_redacts_pii_like_subprocess_output(monkeypatch, tmp_path: P
     assert payload["status"] == "synchronized"
     for step in payload["results"]:
         assert "012345678901" not in step["output_tail"]
+
+
+def test_synchronize_handles_subprocess_timeout_without_leaking_local_paths(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """Hồi quy MEDIUM (vòng lặp kiểm tra-hoàn thiện vòng 2, 2026-07-21):
+    subprocess.run() trước đây không có try/except — TimeoutExpired (script
+    chạy quá 180s, khả dĩ dưới I/O OneDrive) hoặc FileNotFoundError (thiếu
+    ~/.ebm-venv) ném exception thô chứa đường dẫn/argv cục bộ ra ngoài
+    synchronize(), vượt qua mọi cổng disclaimer/PII của hàm."""
+    import subprocess as subprocess_module
+
+    project_root = tmp_path / "medical-ebm-automation"
+    project_root.mkdir()
+    catalog = SafeAgentCatalog(project_root)
+    root = tmp_path
+    for name in (
+        "tools/enforce_agent_guardrails.py",
+        "tools/sync_agents_to_codex.py",
+        "tools/check_claude_codex_sync_health.py",
+    ):
+        script = root / name
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text("print('ok')\n", encoding="utf-8")
+
+    def _raise_timeout(*a, **k):
+        raise subprocess_module.TimeoutExpired(cmd=["python3", "/Users/luan/secret/path.py"], timeout=180)
+
+    monkeypatch.setattr(subprocess_module, "run", _raise_timeout)
+    payload = catalog.synchronize(SYNC_CONFIRMATION)
+    assert payload["status"] == "blocked"
+    assert payload["reason"] == "sync_subprocess_failed:enforce"
+    assert "/Users/luan/secret/path.py" not in json.dumps(payload)
+
+
+def test_synchronize_handles_missing_python_executable_without_leaking_paths(
+    monkeypatch, tmp_path: Path
+) -> None:
+    import subprocess as subprocess_module
+
+    project_root = tmp_path / "medical-ebm-automation"
+    project_root.mkdir()
+    catalog = SafeAgentCatalog(project_root)
+    root = tmp_path
+    for name in (
+        "tools/enforce_agent_guardrails.py",
+        "tools/sync_agents_to_codex.py",
+        "tools/check_claude_codex_sync_health.py",
+    ):
+        script = root / name
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text("print('ok')\n", encoding="utf-8")
+
+    def _raise_not_found(*a, **k):
+        raise FileNotFoundError("[Errno 2] No such file or directory: '/Users/luan/.ebm-venv/bin/python'")
+
+    monkeypatch.setattr(subprocess_module, "run", _raise_not_found)
+    payload = catalog.synchronize(SYNC_CONFIRMATION)
+    assert payload["status"] == "blocked"
+    assert payload["reason"] == "sync_subprocess_failed:enforce"

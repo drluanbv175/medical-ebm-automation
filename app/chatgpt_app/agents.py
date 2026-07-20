@@ -15,7 +15,7 @@ from pathlib import Path
 
 from app.chatgpt_app.knowledge import _matches_sensitive_id
 from app.core.export_policy import classify_export_file
-from app.core.policy_engine import contains_pii_text
+from app.core.policy_engine import contains_bare_id_number, contains_pii_text
 
 DISCLAIMER = "Cần bác sĩ kiểm chứng. Không dùng đầu ra này để tự động áp dụng cho người bệnh."
 SYNC_CONFIRMATION = "BAC_SI_DONG_Y_DONG_BO"
@@ -123,7 +123,19 @@ class SafeAgentCatalog:
             raise ValueError("request_required")
         if len(clean_request) > 20_000:
             raise ValueError("request_too_large")
-        if contains_pii_text(clean_request) or _matches_sensitive_id(clean_request):
+        # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện HIGH):
+        # CCCD (12 số)/BHYT viết TRẦN không kèm nhãn ("BN số 012345678901")
+        # lọt cả contains_pii_text() (_PHONE cần tiền tố 0/+84 đúng độ dài,
+        # _MRN cần nhãn đứng trước) lẫn _matches_sensitive_id() (cũng cần
+        # nhãn). contains_bare_id_number() dùng RIÊNG cho câu tự do bác sĩ gõ
+        # ở đây — KHÔNG gộp vào contains_pii_text() dùng chung vì các tài
+        # liệu hệ thống tự sinh (DOI/NCT ID) có thể trùng khớp giả sau khi gộp
+        # số (xem chú thích tại policy_engine._BARE_LONG_DIGITS).
+        if (
+            contains_pii_text(clean_request)
+            or _matches_sensitive_id(clean_request)
+            or contains_bare_id_number(clean_request)
+        ):
             return {
                 "status": "blocked",
                 "reason": "possible_pii_detected",
@@ -153,6 +165,16 @@ class SafeAgentCatalog:
             "hard_gates": gates,
             "orchestrator_instructions": conductor["instructions"],
             "final_guardrail_instructions": guardrail["instructions"],
+            # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện
+            # LOW): get_payload() gắn execution_contract (must_call_guardrail_
+            # last=True...) cho MỖI agent lẻ, nhưng workflow_payload() — lối
+            # vào CHÍNH cho ChatGPT — trước đây chỉ rút field 'instructions',
+            # làm rơi mất cờ máy-đọc-được duy nhất xác nhận guardrail là bắt
+            # buộc. Văn xuôi trong final_guardrail_instructions vẫn còn
+            # nguyên (không phải lỗ hổng bypass độc lập), nhưng client nào
+            # kiểm tra field có cấu trúc thay vì đọc văn xuôi sẽ không có gì
+            # để xác nhận.
+            "execution_contract": guardrail["execution_contract"],
             # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện, audit đối kháng
             # xác nhận): orchestrator+guardrail full text đã nhúng sẵn ở 2
             # field trên (và có thể trùng lần nữa qua search()/fetch() vì
@@ -223,15 +245,30 @@ class SafeAgentCatalog:
         for label, script, extra in commands:
             if not script.is_file():
                 return {"status": "blocked", "reason": f"missing_sync_script:{script.name}", "results": results}
-            completed = subprocess.run(
-                [str(python), str(script), *extra],
-                cwd=root,
-                capture_output=True,
-                text=True,
-                timeout=180,
-                check=False,
-                env={"PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin"},
-            )
+            # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện
+            # MEDIUM, xác nhận độc lập ở CẢ 2 hướng audit "verify-round1-fixes"
+            # VÀ "mcp-security-round2"): subprocess.run() trước đây không có
+            # try/except nào quanh nó — TimeoutExpired (script chạy quá 180s,
+            # plausible dưới I/O OneDrive) hoặc FileNotFoundError (thiếu
+            # ~/.ebm-venv) sẽ ném exception thô chứa đường dẫn tuyệt đối/argv
+            # cục bộ ra khỏi synchronize(), vượt qua cổng PII/disclaimer của
+            # mọi nhánh khác trong hàm này.
+            try:
+                completed = subprocess.run(
+                    [str(python), str(script), *extra],
+                    cwd=root,
+                    capture_output=True,
+                    text=True,
+                    timeout=180,
+                    check=False,
+                    env={"PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin"},
+                )
+            except (OSError, subprocess.SubprocessError):
+                return {
+                    "status": "blocked",
+                    "reason": f"sync_subprocess_failed:{label}",
+                    "results": results,
+                }
             output_tail = (completed.stdout + completed.stderr)[-2_000:]
             # Phòng thủ theo chiều sâu (audit MCP 2026-07-20): đây là nhánh duy nhất
             # trong file trả "nội dung" (log subprocess) mà không qua cùng cổng PII

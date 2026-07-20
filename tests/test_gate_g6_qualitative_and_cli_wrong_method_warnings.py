@@ -94,3 +94,49 @@ class TestG6SensitivityAnalysisWrongMethodWarning:
     def test_cohort_still_clean_no_spurious_warning(self):
         code = G6.make_sensitivity_analysis(_V, "STUDY-X", "cohort")
         assert "CẦN CHÚ Ý" not in code
+
+
+class TestG6CleaningAndTablesWrongMethodWarning:
+    """Hồi quy MEDIUM (vòng lặp kiểm tra-hoàn thiện vòng 2, 2026-07-21):
+    01_cleaning.R/02_tables.R trước đây sinh mutate/Table-1-theo-nhóm-phơi-
+    nhiễm KHÔNG ĐIỀU KIỆN cho MỌI design_code, không cảnh báo gì — trong khi
+    03_analysis.R/CLI/sensitivity đã có cảnh báo từ 2026-07-20."""
+
+    def test_r01_cleaning_warns_for_all_5_non_cohort_designs(self):
+        for design_code in _WRONG_METHOD_DESIGNS:
+            code = G6.make_r01_cleaning(_V, design_code)
+            assert "CẦN CHÚ Ý" in code, f"01_cleaning.R thiếu cảnh báo cho {design_code}"
+            assert design_code.upper() in code
+
+    def test_r02_tables_warns_for_all_5_non_cohort_designs(self):
+        for design_code in _WRONG_METHOD_DESIGNS:
+            code = G6.make_r02_tables(_V, design_code)
+            assert "CẦN CHÚ Ý" in code, f"02_tables.R thiếu cảnh báo cho {design_code}"
+            assert design_code.upper() in code
+
+    def test_r01_cleaning_cohort_still_clean_no_spurious_warning(self):
+        code = G6.make_r01_cleaning(_V, "cohort")
+        assert "CẦN CHÚ Ý" not in code
+
+    def test_r02_tables_cohort_still_clean_no_spurious_warning(self):
+        code = G6.make_r02_tables(_V, "cohort")
+        assert "CẦN CHÚ Ý" not in code
+
+    def test_r01_cleaning_default_design_code_still_cohort_no_warning(self):
+        """Không hồi quy ngược: lời gọi cũ không truyền design_code (mặc định
+        'cohort') vẫn phải sinh script sạch, không cảnh báo giả."""
+        code = G6.make_r01_cleaning(_V)
+        assert "CẦN CHÚ Ý" not in code
+
+
+class TestWrongMethodDesignsConstantIsSharedNotDuplicated:
+    """Hồi quy LOW (vòng lặp kiểm tra-hoàn thiện vòng 2, 2026-07-21):
+    _WRONG_METHOD_DESIGNS trước đây định nghĩa lặp lại y hệt ở 2 hàm — nay
+    phải là MỘT hằng số module-level dùng chung cho cả 4 hàm sinh script."""
+
+    def test_module_level_constant_exists_and_matches_test_tuple(self):
+        assert G6._WRONG_METHOD_DESIGNS == set(_WRONG_METHOD_DESIGNS)
+
+    def test_method_hint_defined_for_every_wrong_method_design(self):
+        for design_code in _WRONG_METHOD_DESIGNS:
+            assert design_code in G6._METHOD_HINT_BY_DESIGN

@@ -44,6 +44,30 @@ def _collapse_digit_separators(text: str) -> str:
     return re.sub(r"(?<=\d)[\s.-]+(?=\d)", "", text)
 
 
+# Dãy chữ số dài đứng MỘT MÌNH, LIỀN MẠCH (không tách nhóm) — CCCD (12 số)/
+# CMND cũ (9 số)/số BHYT không kèm nhãn ("mã hồ sơ", "SĐT"...) đứng trước rơi
+# ngoài phạm vi _PHONE (yêu cầu tiền tố 0/+84 và đúng 9-11 số) lẫn _MRN (yêu
+# cầu nhãn đứng trước). CỐ Ý so trên bản GỐC (KHÔNG gộp dấu phân cách như
+# _PHONE/_MRN): thử trên _collapse_digit_separators() từng gây SAI DƯƠNG TÍNH
+# với DOI/NCT ID/mã lesson dạng ngày-số hợp lệ của chính hệ thống (đã xác
+# nhận thực nghiệm — vd DOI có đoạn '.2021.09.006' gộp số thành '202109006',
+# mã lesson '2026-07-08-01' gộp thành '2026070801') vì các định dạng đó dùng
+# dấu chấm/gạch ngang làm phân cách CÓ Ý NGHĨA giữa các đoạn số ngắn, khác
+# hẳn CCCD/BHYT vốn LUÔN được viết liền một dãy số duy nhất không phân cách.
+# CHỈ dùng cho contains_bare_id_number() bên dưới — KHÔNG gộp vào
+# contains_pii_text() dùng chung cho toàn hệ thống.
+_BARE_LONG_DIGITS = re.compile(r"(?<!\d)\d{9,13}(?!\d)")
+
+
+def contains_bare_id_number(text: str) -> bool:
+    """Bắt số CCCD/CMND/BHYT viết TRẦN không kèm nhãn (vd 'BN số 012345678901',
+    'BHYT GD4790123456789'). Hẹp có chủ đích — xem chú thích _BARE_LONG_DIGITS
+    về lý do KHÔNG gộp vào contains_pii_text() và vì sao KHÔNG dùng bản đã gộp
+    dấu phân cách."""
+    normalized = unicodedata.normalize("NFC", text or "")
+    return bool(_BARE_LONG_DIGITS.search(normalized))
+
+
 @dataclass(frozen=True)
 class PolicyViolation:
     code: str
@@ -73,10 +97,14 @@ def contains_pii_text(text: str) -> bool:
     # (export_policy.classify_export_file, shadow-pilot/red-team scan...) mà không báo lỗi.
     normalized = unicodedata.normalize("NFC", text or "")
     collapsed = _collapse_digit_separators(normalized)
-    return any(
-        pattern.search(collapsed)
-        for pattern in (_EMAIL, _PHONE, _MRN, _DOB, _ADDRESS, _VN_NAME)
-    )
+    # _PHONE/_MRN cần bản đã gộp số để bắt SĐT/mã hồ sơ viết tách nhóm ("090 123 4567").
+    # NGƯỢC LẠI _DOB/_ADDRESS/_VN_NAME/_EMAIL phải so trên bản GỐC: gộp số sẽ xóa mất dấu
+    # gạch ngang có Ý NGHĨA PHÂN CÁCH của ngày sinh dạng số ("15-07-1980" -> "15071980"),
+    # làm _DOB không còn khớp được (hồi quy đã tìm thấy 2026-07-20/21: contains_pii_text
+    # trả False cho DOB dạng gạch ngang trong khi vẫn đúng cho dạng gạch chéo).
+    if any(pattern.search(collapsed) for pattern in (_PHONE, _MRN)):
+        return True
+    return any(pattern.search(normalized) for pattern in (_EMAIL, _DOB, _ADDRESS, _VN_NAME))
 
 
 def _context_text(context: Mapping[str, Any]) -> str:

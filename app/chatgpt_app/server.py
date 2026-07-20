@@ -216,6 +216,7 @@ def get_sync_status() -> CallToolResult:
     ),
     annotations=CONTROLLED_WRITE,
 )
+@_safe
 def synchronize_ebm_system(confirmation: str = "") -> CallToolResult:
     """Chạy chuỗi đồng bộ allowlist, cần xác nhận tường minh."""
     return _result(AGENTS.synchronize(confirmation))
