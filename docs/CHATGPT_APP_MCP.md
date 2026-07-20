@@ -54,6 +54,31 @@ python -m pytest tests/test_chatgpt_app_knowledge.py -q
 npx @modelcontextprotocol/inspector http://127.0.0.1:2091/mcp
 ```
 
+## Đồng bộ code sống — Codex tự nhận, Tunnel cần restart (quan trọng)
+
+**Nội dung agent (`.claude/agents/*.md`)** luôn được đọc lại từ đĩa ở MỖI lần
+gọi tool (`search`/`fetch`/`list_ebm_agents`/`get_ebm_agent_instructions`) —
+không cần restart gì khi sửa các file `.md` này.
+
+**Code Python của server** (`app/chatgpt_app/*.py`, `app/core/policy_engine.py`,
+`app/core/export_policy.py`, `tools/run_chatgpt_mcp_stdio.py`) thì KHÁC nhau
+theo từng kênh kết nối:
+- **Codex desktop app** (mục dưới, stdio cục bộ qua `~/.codex/config.toml`):
+  đã xác nhận thực nghiệm — mỗi "Tác vụ mới" spawn một tiến trình Python MỚI,
+  tự nhận code mới nhất trên đĩa, không cần làm gì thêm.
+- **Secure MCP Tunnel** (mục "Kết nối ChatGPT — khuyến nghị Secure MCP Tunnel"
+  dưới): tunnel-client giữ tiến trình MCP sống SUỐT vòng đời launchd job —
+  sửa code KHÔNG tự áp dụng cho kết nối đang chạy. Xác nhận bằng thực nghiệm
+  2026-07-20: sau khi vá lỗ hổng PII, gọi thật qua app ChatGPT vẫn lọt PII
+  (tiến trình cũ) cho tới khi `launchctl kickstart -k gui/$(id -u)/
+  vn.drluan.ebm-copilot-tunnel`, sau đó mới chặn đúng.
+
+Để không phải nhớ làm tay: `.githooks/post-commit` (kích hoạt bằng
+`git config core.hooksPath .githooks`) tự động kickstart tunnel-client ngay
+sau mỗi commit chạm 1 trong 4 đường dẫn trên — chạy với MỌI công cụ commit
+(Claude Code, Codex, hay tay), vì hook gắn với repo chứ không gắn với người
+gọi `git commit`.
+
 ## Kết nối ChatGPT/Codex desktop app trên CÙNG máy — stdio cục bộ (đơn giản nhất)
 
 Nếu máy đã cài **ChatGPT desktop app (có Codex)** — không phải trình duyệt ChatGPT
