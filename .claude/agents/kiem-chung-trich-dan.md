@@ -51,6 +51,15 @@ Danh mục tham khảo sạch (định dạng đích): ____
 ```
 Kết: **"Cần bác sĩ kiểm chứng."**
 
+> **⚠ Luôn ghi rõ tiền tố "PMID:" ở cột "PMID/DOI đã xác minh" (vòng lặp kiểm
+> tra-hoàn thiện vòng 5, phát hiện LOW):** bộ kiểm máy `run_g10_assemble.py`
+> trích PMID từ ô-bảng theo 2 cách — số NGAY SAU chữ "PMID" (mọi độ dài, an
+> toàn) và ô-bảng THUẦN SỐ 7-8 chữ số (không tiền tố, để tránh bắt nhầm năm/cỡ
+> mẫu). PMID của bài rất cũ (MEDLINE thập niên 1950-60) có thể dưới 7 chữ số —
+> nếu ghi TRẦN không tiền tố, bộ kiểm máy sẽ KHÔNG thấy nó, khiến trích dẫn đó
+> thoát yêu cầu bao phủ của receipt rút bài mà không ai biết. Luôn viết
+> "PMID:<số>" tường minh trong ô này, không viết số trần.
+
 ## 4b. Khi kiểm cho MỘT đề tài trong pipeline G0-G9 — LƯU artifact A12 (bắt buộc, vá 2026-07-15)
 
 Nếu đang kiểm trích dẫn cho một bản thảo thuộc đề tài đã có thư mục `exports/<study>/`

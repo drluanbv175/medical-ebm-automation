@@ -959,6 +959,22 @@ def run_cox(df, time_col, outcome, exposure, covariates):
         cph = CoxPHFitter()
         cph.fit(df_cox[[time_col, outcome, exposure]],
                 duration_col=time_col, event_col=outcome)
+        # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện MEDIUM):
+        # trước bản vá này, KHÔNG có lệnh nào trong toàn file kiểm định giả định
+        # proportional hazards (tương đương cox.zph() của R) cho mô hình Cox THẬT
+        # chạy trên dữ liệu thật bằng lifelines/Python — checklist A17b (PHẦN 5)
+        # yêu cầu "Kiểm định PH assumption: cox.zph() p > 0.05" nhưng cox.zph()
+        # không tồn tại trong lifelines, nên bác sĩ chỉ theo đường Python (không
+        # dùng R) sẽ KHÔNG BAO GIỜ kiểm được giả định này. check_assumptions() là
+        # tương đương gần nhất trong lifelines (kiểm định Schoenfeld residuals +
+        # in cảnh báo/gợi ý). Bọc try/except riêng — đây là bước CHẨN ĐOÁN, lỗi ở
+        # đây (dữ liệu ít biến cố, ties...) không nên làm crash toàn bộ phân tích
+        # Cox chính.
+        try:
+            cph.check_assumptions(df_cox[[time_col, outcome, exposure]],
+                                   p_value_threshold=0.05, show_plots=False)
+        except Exception as _e_ph:
+            print(f"   [CẢNH BÁO] Không kiểm được giả định PH (mô hình thô): {_e_ph}")
         s = cph.summary
         hr  = s.loc[exposure, "exp(coef)"]
         clo = s.loc[exposure, "exp(coef) lower 95%"]
@@ -984,6 +1000,11 @@ def run_cox(df, time_col, outcome, exposure, covariates):
             cph2 = CoxPHFitter()
             cph2.fit(df_cox[[time_col, outcome, exposure] + avail],
                      duration_col=time_col, event_col=outcome)
+            try:
+                cph2.check_assumptions(df_cox[[time_col, outcome, exposure] + avail],
+                                        p_value_threshold=0.05, show_plots=False)
+            except Exception as _e_ph2:
+                print(f"   [CẢNH BÁO] Không kiểm được giả định PH (mô hình hiệu chỉnh): {_e_ph2}")
             s2 = cph2.summary
             hr  = s2.loc[exposure, "exp(coef)"]
             clo = s2.loc[exposure, "exp(coef) lower 95%"]
@@ -1637,6 +1658,10 @@ _SENSITIVITY_TEMPLATE = (
     "    df2  = df[[c for c in cols if c in df.columns]].dropna()\n"
     "    cph  = CoxPHFitter()\n"
     "    cph.fit(df2, duration_col=time_col, event_col=outcome)\n"
+    "    try:\n"
+    "        cph.check_assumptions(df2, p_value_threshold=0.05, show_plots=False)\n"
+    "    except Exception as _e_ph:\n"
+    "        print(f'   [CANH BAO] Khong kiem duoc gia dinh PH cho {exposure}: {_e_ph}')\n"
     "    s = cph.summary.loc[exposure]\n"
     "    hr, clo, chi, pv = (s[k] for k in[\'exp(coef)\',\'exp(coef) lower 95%\',\'exp(coef) upper 95%\',\'p\'])\n"
     "    return hr,clo,chi,pv,len(df2),int(df2[outcome].sum())\n"
@@ -2291,6 +2316,95 @@ def _is_locked(status) -> bool:
     return bool(re.match(r'^LOCKED\b', s))
 
 
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện HIGH): PHẦN 3/
+# 5/6 của generate_artifact() (dòng "03_analysis.R | Cox + KM + MI...", checklist
+# "cox.zph()"/"E-value"/"KM curve", tiêu chí "Cox kết quả HR...") trước đây là
+# text TĨNH, không rẽ nhánh theo design_code — khác hẳn TABLE_SHELLS/analysis_
+# name_map/03_analysis.R (đã vá đúng theo thiết kế ở các vòng trước). Với 6/8
+# thiết kế KHÔNG dùng Cox (case_control/cross_sectional dùng logistic, diagnostic
+# dùng ROC, prediction dùng mô hình đa biến TRIPOD+AI, sr_ma dùng meta-analysis
+# study-level, qualitative không có mô hình suy diễn), bác sĩ vẫn nhận artifact
+# yêu cầu kiểm cox.zph()/điền HR — mâu thuẫn trực tiếp với 03_analysis.R thật.
+def _is_cox_like(design_code, effect_type):
+    return design_code in ("rct", "cohort") and effect_type != "MD"
+
+
+_SCRIPT03_INFO = {
+    "cross_sectional": ("Logistic/Linear regression + MI (m=20)", "stats, mice, gtsummary"),
+    "case_control":    ("Conditional logistic regression + MI (m=20)", "survival (clogit), mice"),
+    "diagnostic":      ("ROC/AUC + Se-Sp (Youden) + CI bootstrap + Calibration", "pROC"),
+    "sr_ma":           ("Random/fixed-effects meta-analysis (forest/funnel/Egger)", "meta"),
+    "prediction":      ("Mô hình đa biến + shrinkage + internal validation + DCA (TRIPOD+AI)",
+                        "rms, glmnet, dcurves"),
+    "qualitative":     ("Mã hóa chủ đề (thematic analysis) — KHÔNG mô hình thống kê suy diễn",
+                        "N/A (QDA thủ công/NVivo/ATLAS.ti)"),
+}
+
+
+def _script03_row(design_code, effect_type, exposure, outcome, time_col):
+    """Dòng '03_analysis.R' của PHẦN 3 — khớp ĐÚNG phương pháp thật dùng cho
+    từng thiết kế (xem các hàm _r03_*_with_vars và nhánh Cox/regression trong
+    _RUN_CLI_TEMPLATE), tránh mâu thuẫn đã bị vòng 5 phát hiện."""
+    if _is_cox_like(design_code, effect_type):
+        desc, libs = "Cox + KM + MI (m=20)", "survival, survminer, mice"
+    elif design_code in ("rct", "cohort") and effect_type == "MD":
+        desc, libs = "Hồi quy tuyến tính/ANCOVA + MI (m=20)", "stats, mice, gtsummary"
+    else:
+        desc, libs = _SCRIPT03_INFO.get(design_code, ("[CẦN xác định theo SAP]", "[CẦN]"))
+    return f"| `03_analysis.R` | {desc} | {exposure}/{outcome}/{time_col} | {libs} |"
+
+
+def _phan5_checklist(design_code, effect_type):
+    """Checklist PHẦN 5 — mỗi mục phải THẬT SỰ áp dụng cho phương pháp phân
+    tích của thiết kế đó (cox.zph()/KM/E-value chỉ có nghĩa cho mô hình Cox)."""
+    ci_line = "- [ ] Mọi ước lượng kèm **95%CI** — KHÔNG báo p-value đơn độc"
+    if _is_cox_like(design_code, effect_type):
+        return [
+            ci_line,
+            "- [ ] Báo cáo **complete case** VÀ **MI (m=20)** — nhất quán",
+            "- [ ] Kiểm định **PH assumption**: `check_assumptions()`/`cox.zph()` p > 0.05",
+            "- [ ] **E-value** báo cáo kèm kết quả chính (sensitivity_analysis.py)",
+            "- [ ] **Subgroup** chỉ chạy nếu có trong SAP §7 đã khóa",
+            "- [ ] **KM curve** kèm bảng số-tại-nguy-cơ và log-rank p",
+        ]
+    if design_code in ("rct", "cohort", "cross_sectional", "case_control"):
+        return [
+            ci_line,
+            "- [ ] Báo cáo **complete case** VÀ **MI (m=20)** — nhất quán",
+            "- [ ] Kiểm tra **giả định mô hình hồi quy** (phần dư, đa cộng tuyến VIF)",
+            "- [ ] **E-value** báo cáo kèm kết quả chính (nhiễu chưa đo được, nếu quan sát)",
+            "- [ ] **Subgroup** chỉ chạy nếu có trong SAP §7 đã khóa",
+        ]
+    if design_code == "diagnostic":
+        return [
+            ci_line,
+            "- [ ] **AUC + 95%CI** (bootstrap `ci.auc()`) báo cáo đầy đủ",
+            "- [ ] **Se/Sp/PPV/NPV tại ngưỡng Youden + 95%CI bootstrap** (`ci.coords()`, KHÔNG chỉ điểm ước lượng)",
+            "- [ ] Ngưỡng tối ưu đã được **bác sĩ xác nhận ý nghĩa lâm sàng** (không chỉ thống kê)",
+        ]
+    if design_code == "prediction":
+        return [
+            ci_line,
+            "- [ ] **Discrimination** (C-statistic/AUC) + **Calibration** (slope/intercept) báo cáo đầy đủ",
+            "- [ ] **Internal validation** (bootstrap ≥200 lần) đã chạy, không chỉ split-sample",
+            "- [ ] **Decision Curve Analysis** (lợi ích lâm sàng ròng) đã báo cáo",
+        ]
+    if design_code == "sr_ma":
+        return [
+            ci_line,
+            "- [ ] **I²/τ²/Q** (dị biệt) báo cáo kèm lựa chọn mô hình fixed/random có giải thích",
+            "- [ ] **Publication bias** (Egger/funnel) nếu ≥10 nghiên cứu",
+            "- [ ] **Forest plot** đính kèm cho kết cục chính",
+        ]
+    if design_code == "qualitative":
+        return [
+            "- [ ] **Bão hòa dữ liệu** (data saturation) đã đạt và ghi rõ tiêu chí dừng",
+            "- [ ] **Trustworthiness** (credibility/transferability/dependability/confirmability) đã báo cáo",
+            "- [ ] **Trích dẫn (quote)** người tham gia THẬT minh họa mỗi chủ đề chính",
+        ]
+    return [ci_line, f"- [ ] [CẦN xác định checklist phù hợp thiết kế '{design_code}' thủ công]"]
+
+
 def generate_artifact(study, topic, design_code, reporting_std,
                       n_total, alpha, power, effect_val, effect_type,
                       g4_status, run_date, scripts_dir, v: dict) -> str:
@@ -2385,7 +2499,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "| `00_setup.R` | Cài packages R | — | tidyverse, survival, mice, gtsummary |",
         f"| `01_cleaning.R` | Làm sạch, recode biến | {exposure}, {outcome}, {time_col} | tidyverse, REDCapR |",
         f"| `02_tables.R` | Table 1 theo nhóm {exposure} | {', '.join(covars[:4]) if covars else 'age,sex,dm,htn'} | gtsummary, flextable |",
-        f"| `03_analysis.R` | Cox + KM + MI (m=20) | {exposure}/{outcome}/{time_col} | survival, survminer, mice |",
+        _script03_row(design_code, effect_type, exposure, outcome, time_col),
         f"| `run_analysis_cli.py` | **Python CLI đầy đủ** — chạy ngay với CSV | {exposure}/{outcome}/{time_col} | lifelines, pandas, matplotlib |",
         f"| `sensitivity_analysis.py` | CC vs MI, Subgroup, E-value | {exposure}/{outcome}/{time_col} | lifelines, pandas |",
         "",
@@ -2422,17 +2536,17 @@ def generate_artifact(study, topic, design_code, reporting_std,
         lines.append(render_table_shell(table_name, rows))
         lines.append("")
 
+    _sensitivity_line = (
+        "- [ ] **Sensitivity** (CC vs MI + E-value) nhất quán [CẦN]"
+        if design_code in ("rct", "cohort", "cross_sectional", "case_control")
+        else f"- [ ] **Đối chiếu độ nhạy** phù hợp thiết kế '{design_code}' (xem PHẦN 5) [CẦN]"
+    )
     lines += [
         "---",
         "",
         "## PHẦN 5 — CHECKLIST TRƯỚC BÁO CÁO",
         "",
-        "- [ ] Mọi ước lượng kèm **95%CI** — KHÔNG báo p-value đơn độc",
-        "- [ ] Báo cáo **complete case** VÀ **MI (m=20)** — nhất quán",
-        "- [ ] Kiểm định **PH assumption**: `cox.zph()` p > 0.05",
-        "- [ ] **E-value** báo cáo kèm kết quả chính (sensitivity_analysis.py)",
-        "- [ ] **Subgroup** chỉ chạy nếu có trong SAP §7 đã khóa",
-        "- [ ] **KM curve** kèm bảng risk-at-risk và log-rank p",
+        *_phan5_checklist(design_code, effect_type),
         "",
         "---",
         "",
@@ -2441,8 +2555,8 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "- [ ] **G4 = LOCKED** trước khi xem dữ liệu [CẦN BÁC SĨ XÁC NHẬN]",
         "- [ ] **Chạy 01_cleaning.R** — log không lỗi [CẦN BÁC SĨ]",
         f"- [ ] **Table 1 hoàn chỉnh** theo nhóm `{exposure}` — SMD < 0.2 [CẦN]",
-        f"- [ ] **Cox kết quả** HR + 95%CI `{exposure}/{outcome}` điền Bảng 2 [CẦN]",
-        "- [ ] **Sensitivity** (CC vs MI + E-value) nhất quán [CẦN]",
+        f"- [ ] **Kết quả phân tích chính** ({analysis_name}) điền Bảng 2 [CẦN]",
+        _sensitivity_line,
         "- [ ] **Bác sĩ duyệt** kết quả trước khi viết G7 [CẦN]",
         "",
         "---",
@@ -2821,6 +2935,19 @@ source(here::here("scripts", "00_setup.R"))
 # ngưỡng lâm sàng có ý nghĩa thay vì thuần thống kê nếu khác nhau]:
 # best_cut <- pROC::coords(roc_obj, "best", best.method = "youden")
 # pROC::coords(roc_obj, best_cut$threshold, ret = c("sensitivity","specificity","ppv","npv"))
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện HIGH): dòng
+# coords() ở trên KHÔNG tính khoảng tin cậy nào (mặc định pROC::coords() không
+# có CI) — trong khi Bảng 2 (TABLE_SHELLS["diagnostic"]) khai cột "95%CI" cho
+# Se/Sp/PPV/NPV, tạo mâu thuẫn: bảng hứa một con số script không bao giờ tính.
+# pROC::coords() và pROC::ci.coords() là 2 HÀM KHÁC NHAU — phải gọi ci.coords()
+# RIÊNG (bootstrap, boot.n mặc định 2000) mới có CI cho Se/Sp/PPV/NPV tại một
+# ngưỡng cụ thể. Quan trọng nhất với cỡ mẫu nhỏ/Se-Sp gần 0%-100% (hay gặp ở
+# nghiên cứu chẩn đoán) — chính là tình huống xấp xỉ Wald mặc định sai lệch
+# nặng nhất, nên dùng bootstrap (ci.coords) thay vì Wald thủ công.
+# ci_coords <- pROC::ci.coords(roc_obj, x = best_cut$threshold, input = "threshold",
+#                               ret = c("sensitivity","specificity","ppv","npv"),
+#                               boot.n = 2000)
+# ci_coords  # in ra 95%CI bootstrap cho từng chỉ số tại ngưỡng đã chọn
 
 # Calibration (nếu index test là điểm số/xác suất liên tục, không phải nhị phân):
 # giả::val.prob(df${index_test}, df${ref_standard})  # gói 'giả' hoặc rms::val.prob
@@ -2892,18 +3019,43 @@ source(here::here("scripts", "00_setup.R"))
 # #   (a) hiệu ứng liên tục: TE, seTE (log-scale nếu OR/RR/HR)
 # #   (b) 2x2 table (nhị phân): event.e, n.e, event.c, n.c
 
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện MEDIUM): bản
+# trước ép cứng random=TRUE, common=FALSE cho MỌI trường hợp, không kèm giải
+# thích/lựa chọn — nhìn giống một quyết định ngầm hơn là chủ đích. Cả 2 hàm
+# dưới đây VẪN tính I²/τ²/Q trong summary() bất kể random/common (gói meta tự
+# tính không phụ thuộc lựa chọn mô hình), nên KHÔNG phải thiếu tính toán dị
+# biệt — chỉ là dị biệt chưa được dùng để RA quyết định mô hình. Random-effects
+# mặc định (bất kể I²) là lập trường CHÍNH THỐNG hiện nay của Cochrane Handbook
+# (khuyến nghị coi dị biệt lâm sàng/phương pháp là gần như luôn tồn tại, không
+# cần I² thấp mới chọn fixed) — giữ nguyên làm mặc định của template, nhưng nay
+# NÊU RÕ đây là lựa chọn có chủ đích + cách đối chiếu bằng fixed-effect làm phân
+# tích độ nhạy, để thống kê viên tự quyết định thay vì thấy một tham số ẩn:
+
 # Kết cục NHỊ PHÂN (OR/RR) — [CẦN XÁC NHẬN loại effect size từ PICO]:
 # m_bin <- meta::metabin(event.e, n.e, event.c, n.c, studlab = study,
 #                         data = extracted, sm = "OR",        # hoặc "RR"
 #                         method = "MH", random = TRUE, common = FALSE)
 # summary(m_bin); meta::forest(m_bin)
+# # Đối chiếu độ nhạy với fixed-effect (Mantel-Haenszel, không giả định dị biệt
+# # ngẫu nhiên) — nếu 2 ước lượng lệch nhiều, cần bàn luận rõ trong bài:
+# m_bin_fixed <- meta::metabin(event.e, n.e, event.c, n.c, studlab = study,
+#                               data = extracted, sm = "OR", method = "MH",
+#                               random = FALSE, common = TRUE)
+# summary(m_bin_fixed)
 
 # Kết cục LIÊN TỤC hoặc effect size đã tính sẵn (HR/MD) — TE/seTE trên log-scale nếu HR:
 # m_gen <- meta::metagen(TE, seTE, studlab = study, data = extracted,
 #                         sm = "HR", random = TRUE, common = FALSE)   # sm theo PICO thật
 # summary(m_gen); meta::forest(m_gen)
+# # Đối chiếu độ nhạy với fixed-effect, cùng lý do như trên:
+# m_gen_fixed <- meta::metagen(TE, seTE, studlab = study, data = extracted,
+#                               sm = "HR", random = FALSE, common = TRUE)
+# summary(m_gen_fixed)
 
-# Dị biệt (heterogeneity) — I²/τ²/Q đã có sẵn trong summary() ở trên.
+# Dị biệt (heterogeneity) — I²/τ²/Q đã có sẵn trong summary() ở trên (tính bất
+# kể random/common). [CẦN THỐNG KÊ VIÊN XÁC NHẬN] lựa chọn mô hình cuối (mặc
+# định random-effects ở đây) phù hợp với mức dị biệt và bối cảnh lâm sàng của
+# đề tài — không chỉ dùng số mặc định của template mà không xem I²/Q thật.
 
 # Publication bias (chỉ khi ≥10 nghiên cứu — Egger test không đáng tin cậy dưới ngưỡng này):
 # meta::funnel(m_bin); meta::metabias(m_bin, method.bias = "Egger")

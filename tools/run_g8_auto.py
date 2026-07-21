@@ -615,6 +615,22 @@ JOURNAL_SUGGESTIONS = {
             ("Journal of Clinical Epidemiology", 5.9, "TRIPOD prediction models"),
         ],
     },
+    # THEM 2026-07-21 (vong lap kiem tra-hoan thien vong 5, phat hien MEDIUM): key
+    # "qualitative" bi THIEU trong dict nay tu dau (7/8 ma canon design_code) --
+    # suggest_journals() rơi vao nhanh fallback "cohort" (goi y tap chi lam sang
+    # dinh luong nhu JACC/Diabetes Care cho mot nghien cuu dinh tinh, sai chuyen
+    # mon du co in canh bao). Cung loi "sua 1 dict quen dict song song" nhu
+    # DESIGN_CHECKLIST_MAP da vá o vong truoc (dict ngay phia tren, dong ~502) --
+    # 2 dict nay dinh nghia SONG SONG theo design_code nhung duoc bao tri doc lap.
+    "qualitative": {
+        "default": [
+            ("Qualitative Health Research", 2.9, "Dinh tinh y te noi chung"),
+            ("BMC Medical Research Methodology", 4.4, "Phuong phap luan dinh tinh/hon hop"),
+            ("International Journal of Qualitative Methods", 2.5,
+             "Dinh tinh da phuong phap, open access"),
+            ("Global Qualitative Nursing Research", 2.5, "Dinh tinh dieu duong/cham soc suc khoe"),
+        ],
+    },
 }
 
 

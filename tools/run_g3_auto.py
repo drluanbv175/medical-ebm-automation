@@ -543,6 +543,52 @@ def write_docx(artifact, out_path):
     except ImportError:
         return False
 
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện HIGH+MEDIUM):
+# cùng họ bug design_code (run_g1_auto.py::_canonicalize_pinned_design_code). CLI
+# --effect-type có argparse choices=["HR","OR","RR","ARR%","AUC","MD"] chặn giá trị
+# sai, nhưng nhánh phục hồi từ study_meta.json (bác sĩ tự điền đè placeholder
+# needs_input, vd effect_type="hr" chữ thường) bỏ qua HOÀN TOÀN bước chuẩn hoá đó —
+# làm vỡ mọi so khớp chuỗi CHÍNH XÁC effect_type=="HR"/in (...) rải khắp file, rơi
+# nhầm vào nhánh else báo SAI "chưa có công thức tự động" dù công thức thật sự tồn
+# tại. --effect-size/--sd cũng gặp vấn đề song song nhưng khác dạng: argparse
+# type=float CHỈ áp khi truyền qua CLI — nhánh JSON gán thẳng giá trị thô (có thể
+# vẫn là chuỗi placeholder "<CẦN BÁC SĨ CẤP...>" nếu bác sĩ quên thay), khiến so
+# sánh str<float ở downstream (nhánh Cox/log-rank) ném TypeError KHÔNG được except
+# InvalidEffectSizeError bắt — crash cả script thay vì báo lỗi rõ ràng.
+_EFFECT_TYPE_CANON = {"HR", "OR", "RR", "ARR%", "AUC", "MD"}
+_EFFECT_TYPE_ALIASES = {
+    "ARR": "ARR%",
+    "HAZARD RATIO": "HR",
+    "ODDS RATIO": "OR",
+    "RELATIVE RISK": "RR",
+    "RISK RATIO": "RR",
+    "MEAN DIFFERENCE": "MD",
+    "AUROC": "AUC",
+    "AUC-ROC": "AUC",
+}
+
+
+def _canonicalize_pinned_effect_type(raw):
+    """Chuẩn hoá effect_type đọc từ study_meta.json về đúng 1 trong 6 mã canon."""
+    key = str(raw).strip().upper()
+    if key in _EFFECT_TYPE_CANON:
+        return key
+    return _EFFECT_TYPE_ALIASES.get(key, key)
+
+
+def _coerce_pinned_float(raw, field_name):
+    """Ép kiểu float cho effect_size/sd đọc từ study_meta.json. Coi giá trị
+    không ép được (vẫn là placeholder [CẦN...] bác sĩ chưa thay) là 'chưa
+    cấp' (None) — nhất quán với hành vi khi bác sĩ không điền gì, thay vì để
+    TypeError crash script ở downstream."""
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        print(f"  ⚠️  {field_name}='{raw}' trong study_meta.json không phải số hợp lệ "
+              "(có thể còn là placeholder [CẦN...] chưa được bác sĩ thay) — coi như CHƯA CẤP.")
+        return None
+
+
 def main():
     parser = argparse.ArgumentParser(description="G3 — Tính cỡ mẫu tự động")
     parser.add_argument("--study", required=True, help="Mã đề tài")
@@ -583,14 +629,16 @@ def main():
     _study_meta = GC.load_study_meta(out_dir)
     _g3_pinned = (_study_meta.get("gate_params") or {}).get("G3") or {}
     if args.effect_size is None and _g3_pinned.get("effect_size") is not None:
-        args.effect_size = _g3_pinned["effect_size"]
-        print(f"  → Khôi phục effect_size={args.effect_size} từ study_meta.json (chạy lại không mất)")
+        args.effect_size = _coerce_pinned_float(_g3_pinned["effect_size"], "effect_size")
+        if args.effect_size is not None:
+            print(f"  → Khôi phục effect_size={args.effect_size} từ study_meta.json (chạy lại không mất)")
     if args.effect_type is None and _g3_pinned.get("effect_type"):
-        args.effect_type = _g3_pinned["effect_type"]
+        args.effect_type = _canonicalize_pinned_effect_type(_g3_pinned["effect_type"])
         print(f"  → Khôi phục effect_type={args.effect_type} từ study_meta.json")
     if args.sd is None and _g3_pinned.get("sd") is not None:
-        args.sd = _g3_pinned["sd"]
-        print(f"  → Khôi phục sd={args.sd} từ study_meta.json")
+        args.sd = _coerce_pinned_float(_g3_pinned["sd"], "sd")
+        if args.sd is not None:
+            print(f"  → Khôi phục sd={args.sd} từ study_meta.json")
     if args.confirmed_n is None and _g3_pinned.get("confirmed_n") is not None:
         args.confirmed_n = _g3_pinned["confirmed_n"]
         print(f"  → Khôi phục confirmed_n={args.confirmed_n} từ study_meta.json (chạy lại không mất)")
@@ -858,6 +906,19 @@ def main():
                   "--effect-size/--effect-type hoặc effect size trích từ G1.")
             n_per_group = n_total = n_adjusted = 0
             formula_used = f"[LỖI — {e}]"
+        except (TypeError, ValueError) as e:
+            # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện MEDIUM):
+            # lưới an toàn bổ sung — _coerce_pinned_float() ở trên đã chặn trường hợp
+            # thường gặp nhất (placeholder chưa thay), nhưng effect_val/args.sd vẫn có
+            # thể mang kiểu bất ngờ từ nguồn khác (extract_best_effect() từ G1/G0).
+            # Trước đây TypeError/ValueError ở đây làm crash TOÀN BỘ script với
+            # traceback thô — nay báo lỗi tiếng Việt rõ ràng, nhất quán với nhánh
+            # InvalidEffectSizeError ở trên.
+            print(f"❌ LỖI DỮ LIỆU EFFECT SIZE: {e}")
+            print("   → effect_size/sd có kiểu dữ liệu không hợp lệ (có thể còn sót "
+                  "placeholder chưa thay). KHÔNG tính được cỡ mẫu — cần bác sĩ kiểm tra lại.")
+            n_per_group = n_total = n_adjusted = 0
+            formula_used = f"[LỖI DỮ LIỆU — {e}]"
     else:
         formula_used = "[CẦN EFFECT SIZE từ bác sĩ để tính]"
         print("  → N: [CẦN BÁC SĨ ẤN ĐỊNH EFFECT SIZE]")

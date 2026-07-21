@@ -1329,6 +1329,48 @@ def _extract_pmids_from_artifact(text: str) -> set:
     return _pmids_from_text(text)
 
 
+# THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện HIGH): toàn bộ
+# cơ chế A12 (check_citation_retraction.py + PubMedClient.check_retraction_status())
+# CHỈ nhận PMID — một trích dẫn preprint/guideline/sách CHỈ có DOI (không được PubMed
+# index) không hề được 2 hàm _pmids_from_text ở trên "nhìn thấy", nên KHÔNG BAO GIỜ bị
+# liệt vào danh sách "missing" bắt receipt phải bao phủ — có thể đã bị rút bài/gắn
+# expression-of-concern mà citation_verification_ok() vẫn trả True vì cơ chế mã hóa
+# không hề biết nó tồn tại. kiem-chung-trich-dan.md đã có đoạn nhắc agent tự tra
+# Retraction Watch thủ công cho ca này (hôm nay), nhưng đó CHỈ là hướng dẫn tự-báo-cáo
+# — KHÔNG có gì ép buộc. Xây dựng một bộ kiểm rút bài qua DOI/Crossref đáng tin cậy
+# NGOÀI phạm vi vá nhanh này (Crossref không phủ hết quan hệ rút bài — một kết quả
+# "không thấy gắn cờ" không đồng nghĩa "chưa bị rút", nguy cơ tạo ẢO TƯỞNG đã kiểm
+# tra kỹ còn nguy hiểm hơn hiện trạng "biết là chưa kiểm"). Ở ĐÂY chỉ làm phần tối
+# thiểu, trung thực: PHÁT HIỆN và CẢNH BÁO rõ ràng tại đúng điểm quyết định (G10),
+# thay vì để hoàn toàn im lặng.
+# Mẫu regex DOI THEO KHUYẾN NGHỊ của Crossref (bao gồm dấu ngoặc đơn — DOI của
+# Elsevier/Cell Press/Lancet dùng ngoặc đơn HỢP LỆ trong hậu tố, vd
+# "10.1016/S0140-6736(20)30183-5"). Loại trừ `)`/`]` khỏi ký tự hợp lệ (như bản
+# nháp đầu của vá này) làm CẮT CỤT chính những DOI phổ biến đó ngay tại dấu
+# ngoặc đầu tiên — bắt được qua test hồi quy (tests/test_audit_round5_fixes.py).
+_DOI_INLINE_RE = re.compile(r'\b10\.\d{4,9}/[-._;()/:a-zA-Z0-9]+', re.IGNORECASE)
+
+
+def _dois_from_text(text: str) -> set:
+    """Trích các chuỗi trông giống DOI (10.xxxx/...) xuất hiện trong văn bản."""
+    return {d.rstrip(".,;") for d in _DOI_INLINE_RE.findall(text)}
+
+
+def _scan_doi_citation_coverage(artifact_text: str, study: str, out_dir: Path) -> set:
+    """Trả về tập DOI xuất hiện trong artifact A12/bản G10 cuối. Regex thô không đủ
+    để ghép chính xác "DOI này thuộc đúng trích dẫn nào" (không phân biệt chắc chắn
+    được DOI-chỉ-DOI với DOI của một trích dẫn đã có PMID riêng ở nơi khác) — CHỈ
+    dùng để cảnh báo bác sĩ tự rà, KHÔNG dùng để tự động chặn/kết luận."""
+    final_doc = out_dir / f"DE_CUONG_THONG_NHAT_{study}.md"
+    final_text = ""
+    if final_doc.exists():
+        try:
+            final_text = final_doc.read_text(encoding="utf-8")
+        except OSError:
+            final_text = ""
+    return _dois_from_text(artifact_text + "\n" + final_text)
+
+
 def _extract_pmids_from_final_document(study: str, out_dir: Path) -> set:
     """Trích PMID xuất hiện trong bản G10 cuối nếu file đã được assemble().
 
@@ -1457,6 +1499,31 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
             "(setup_gate_approval_key.py) — không thể xác minh chữ ký receipt A12, "
             "coi như CHƯA xác minh (fail-closed), không hạ chuẩn cho đề tài thật"
         )
+    else:
+        # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện HIGH):
+        # nhánh elif ở trên CHỈ fail-closed cho đề tài đã CÓ TÊN trong
+        # gate_contract.REAL_STUDY_DENYLIST — một đề tài NGƯỜI THẬT mới mà ai đó
+        # (bác sĩ/agent) quên thêm vào danh sách đó (chính tool tự thừa nhận kịch
+        # bản này ở nơi khác) sẽ rơi vào đây và ĐƯỢC CHẤP NHẬN mà không hề có chữ
+        # ký nào bảo vệ — vì pmids_hash công khai (không khoá bí mật), một receipt
+        # tự viết tay hoàn toàn (chưa từng gọi PubMed) vẫn qua được, KHÔNG CÓ CẢNH
+        # BÁO gì cho bác sĩ biết. KHÔNG đổi kết quả True ở đây (giữ hành vi hợp
+        # đồng cũ cho đề tài synthetic/test — cùng nguyên tắc "không hạ chuẩn
+        # nhưng cũng không phá luồng cũ" đã áp dụng ở gate_contract.ledger_approved(),
+        # xem test_ledger_approved_fails_closed_real_study_no_key.py), nhưng IN
+        # CẢNH BÁO không thể bỏ sót để đóng phần "im lặng" của lỗ hổng — khớp
+        # triết lý "cảnh báo để người rà, không tự ý chặn" đã dùng nhất quán ở
+        # verify_dashboard.py/ingest_dashboard.py cho các trường hợp mơ hồ khác.
+        print(
+            "  ⚠️  CẢNH BÁO CỔNG A12: máy đang chạy CHƯA cấu hình khóa ký "
+            "(setup_gate_approval_key.py) và đề tài "
+            f"'{study}' KHÔNG có trong gate_contract.REAL_STUDY_DENYLIST — receipt "
+            "A12_RETRACTION_RECEIPT.json ĐANG được chấp nhận CHỈ dựa trên pmids_hash "
+            "(công thức công khai, KHÔNG có chữ ký bảo vệ chống giả mạo). Nếu đây LÀ "
+            "nghiên cứu người thật: (1) thêm tên đề tài vào REAL_STUDY_DENYLIST NGAY, "
+            "và/hoặc (2) chạy tools/setup_gate_approval_key.py trước khi tin tưởng "
+            "gói nộp cuối cùng."
+        )
     artifact_pmids = _extract_pmids_from_artifact(text)
     checked_set = {str(x) for x in checked_pmids}
     missing = sorted(artifact_pmids - checked_set)
@@ -1484,6 +1551,19 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
     )
     if not meta_ok:
         return False, meta_reason
+    doi_citations = _scan_doi_citation_coverage(text, study, out_dir)
+    if doi_citations:
+        print(
+            "  ⚠️  CẢNH BÁO CỔNG A12: phát hiện " + str(len(doi_citations)) +
+            " DOI trong tài liệu (" + ", ".join(sorted(doi_citations)[:8]) +
+            (" …" if len(doi_citations) > 8 else "") +
+            ") — cơ chế kiểm rút bài máy-kiểm (check_citation_retraction.py) CHỈ nhận "
+            "PMID, KHÔNG tự tra rút bài qua DOI. Nếu các DOI này thuộc trích dẫn "
+            "KHÔNG có PMID song song (preprint/guideline/sách không index PubMed), "
+            "bác sĩ/agent PHẢI tự tra Retraction Watch (retractionwatch.com) thủ công "
+            "cho từng DOI trước khi tin tưởng gói nộp — receipt all_clean=true ở trên "
+            "KHÔNG bao phủ các DOI này."
+        )
     return True, ""
 
 
@@ -1637,6 +1717,26 @@ def main() -> int:
     # sẽ báo SAI một đề tài đang chặn thật ở G10 là "✅ xong". run_pipeline.py khi đó
     # phải dò lý do qua 6 dòng cuối stdout — bản dự phòng, không phải tín hiệu có cấu
     # trúc như mọi cổng khác. Vá bằng cách ghi needs_input đúng chuẩn TRƯỚC khi return.
+    def _apply_submission_status_banner(banner_lines: list) -> None:
+        """THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện MEDIUM):
+        assemble() (ở trên) ghi DE_CUONG_THONG_NHAT_<study>.md/.docx TRƯỚC KHI 3
+        cổng A12/G8/G9 dưới đây được kiểm — nội dung file HOÀN TOÀN GIỐNG NHAU dù
+        cổng đạt, bị BLOCKED, hay bị ép qua bằng --i-know-*-not-*. Cảnh báo trước
+        đây chỉ tồn tại ở stdout + G10_checkpoint.json['needs_input'] — ai chỉ mở/
+        chia sẻ file .md/.docx thành phẩm (không đọc log/checkpoint) không có cách
+        nào biết trạng thái thật. Chèn banner vào ĐẦU file phản ánh đúng kết quả
+        THẬT tại thời điểm này. CHỈ vá .md (nguồn chính, rủi ro thấp) — KHÔNG thao
+        tác XML .docx ở đây (rủi ro hỏng cấu trúc OOXML cao hơn lợi ích cho một vá
+        nhanh; .docx vẫn được sinh lại đầy đủ mỗi lần assemble() chạy lại)."""
+        banner = "\n".join(banner_lines) + "\n\n---\n\n"
+        md_path = result["md"]
+        try:
+            current = md_path.read_text(encoding="utf-8")
+            if not current.startswith(banner_lines[0]):
+                md_path.write_text(banner + current, encoding="utf-8")
+        except OSError:
+            pass
+
     def _mark_g10_blocked(reason_code: str, human_message: str, command: str) -> None:
         cp = json.loads(result["checkpoint"].read_text(encoding="utf-8"))
         cp["gate_status"] = "BLOCKED — chờ input đời-thực"
@@ -1654,6 +1754,8 @@ def main() -> int:
     # thực sự chạy trước khi march tiếp G8→G9→G10. Nay xác minh THẬT artifact A12 tồn
     # tại + sạch trước khi cho lắp ráp gói sẵn sàng nộp — kiểm TRƯỚC G8 vì phản biện
     # độc lập không nên đọc một bản thảo còn trích dẫn chưa xác minh.
+    bypass_notes: list = []
+
     citation_ok, citation_reason = citation_verification_ok(study, out_dir)
     if not citation_ok and not args.i_know_citations_not_verified:
         print(f"\n🚧 CHƯA SẴN SÀNG NỘP BÀI: Trích dẫn (cổng A12) {citation_reason}.")
@@ -1667,7 +1769,13 @@ def main() -> int:
             # Tool GỘP: 1 efetch, ghi cả 2 receipt (rút bài + metadata) — ít token/mạng.
             f"python tools/check_citations.py --study {study} --pmids <...>",
         )
+        _apply_submission_status_banner([
+            "> 🚧 **BẢN NHÁP — CHƯA SẴN SÀNG NỘP.** Cổng A12 (trích dẫn): "
+            f"{citation_reason}. KHÔNG dùng tài liệu này để nộp Hội đồng/tạp chí.",
+        ])
         return GC.EXIT_BLOCKED
+    if not citation_ok and args.i_know_citations_not_verified:
+        bypass_notes.append(f"Cổng A12 (trích dẫn) bị BỎ QUA bằng --i-know-citations-not-verified: {citation_reason}.")
 
     # Advisory KHÔNG chặn (vá 2026-07-18, audit vòng 2 D5): cổng metadata (điều kiện e)
     # chỉ BẮT BUỘC receipt cho đề tài THẬT trong denylist. Một đề tài thật MỚI quên thêm
@@ -1699,7 +1807,14 @@ def main() -> int:
             f"python tools/approve_gate.py --study {study} --gate G8 "
             f"--artifact {g8_artifact.name} --reviewer-role PHAN_BIEN_DOC_LAP",
         )
+        _apply_submission_status_banner([
+            "> 🚧 **BẢN NHÁP — CHƯA SẴN SÀNG NỘP.** Cổng G8 (bình duyệt độc lập) "
+            "chưa có phê duyệt thật. KHÔNG dùng tài liệu này để nộp Hội đồng/tạp chí.",
+        ])
         return GC.EXIT_BLOCKED
+    if not g8_signed and args.i_know_g8_not_signed:
+        bypass_notes.append("Cổng G8 (bình duyệt độc lập) bị BỎ QUA bằng --i-know-g8-not-signed: "
+                             "chưa có phê duyệt thật trong approval_ledger.json.")
 
     # Vá 2026-07-12 (audit toàn diện cổng G0-G9): G10 là bước lắp ráp CUỐI trước khi
     # tài liệu này có thể bị hiểu nhầm là "sẵn sàng nộp" — nhưng G9 (liêm chính tác
@@ -1730,7 +1845,26 @@ def main() -> int:
             f"python tools/approve_gate.py --study {study} --gate G9 "
             f"--artifact {g9_artifact.name} --reviewer-role PI",
         )
+        _apply_submission_status_banner([
+            "> 🚧 **BẢN NHÁP — CHƯA SẴN SÀNG NỘP.** Cổng G9 (liêm chính tác giả) "
+            "chưa có phê duyệt thật. KHÔNG dùng tài liệu này để nộp tạp chí/hội đồng.",
+        ])
         return GC.EXIT_BLOCKED
+    if not g9_signed and args.i_know_g9_not_signed:
+        bypass_notes.append("Cổng G9 (liêm chính tác giả) bị BỎ QUA bằng --i-know-g9-not-signed: "
+                             "chưa có phê duyệt thật trong approval_ledger.json.")
+
+    if bypass_notes:
+        banner = ["> 🚧 **BẢN NHÁP — MỘT HOẶC NHIỀU CỔNG ĐÃ BỊ BỎ QUA BẰNG CỜ XEM-TRƯỚC. "
+                   "KHÔNG dùng tài liệu này để nộp Hội đồng/tạp chí:**"]
+        banner += [f"> - {note}" for note in bypass_notes]
+        _apply_submission_status_banner(banner)
+    else:
+        _apply_submission_status_banner([
+            "> ✅ **Đã qua cổng A12 (trích dẫn) + G8 (bình duyệt độc lập) + G9 (liêm "
+            "chính tác giả)** tại thời điểm lắp ráp này. Cần bác sĩ kiểm chứng toàn "
+            "bộ nội dung trước khi nộp chính thức.",
+        ])
 
     print("\n✅ Xong. Cần bác sĩ kiểm chứng.")
     return 0
