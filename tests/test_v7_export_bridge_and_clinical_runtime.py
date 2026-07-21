@@ -32,14 +32,19 @@ def test_export_policy_blocks_bare_national_id_labels(tmp_path):
     _matches_sensitive_id() như agents.py/knowledge.py) — trước bản vá,
     _MRN trong policy_engine.py không nhận diện nhãn 'cccd'/'cmnd'/'căn cước'/
     'patient id'/'bệnh nhân', khiến manifest export báo safe_to_upload=True
-    sai cho file có các nhãn này."""
+    sai cho file có các nhãn này.
+
+    KHÔNG còn 'số bệnh nhân <số>' trong danh sách (vòng 4, 2026-07-21): đó là
+    câu SỐ LƯỢNG bệnh nhân ("Số bệnh nhân: 1000 tham gia nghiên cứu"), không
+    phải nhãn mã định danh — _MRN đã thu hẹp có chủ đích để hết false-positive
+    này; nhãn mã định danh thật dùng 'mã bệnh nhân'/'mã số bệnh nhân' (vẫn
+    được chặn, xem case bên dưới)."""
     for text in (
         "Hồ sơ: CCCD: 012345678901",
         "CMND 123456789",
         "căn cước: 012345678901",
         "Patient ID: AB-123456",
         "mã bệnh nhân: 012345678901",
-        "số bệnh nhân 012345678901",
     ):
         f = tmp_path / "demo.md"
         f.write_text(text, encoding="utf-8")

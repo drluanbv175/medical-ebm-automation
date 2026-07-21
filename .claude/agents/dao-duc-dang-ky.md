@@ -292,7 +292,7 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/2026
 | Loại NC | Quyết định | Nơi đăng ký | Thời điểm |
 |---------|------------|-------------|-----------|
 | RCT / can thiệp | **BẮT BUỘC** | ClinicalTrials.gov · ANZCTR · DRKS · ISRCTN | Trước tuyển người tham gia đầu tiên |
-| Quan sát TIẾN CỨU có tuyển người tham gia mới (cohort tiến cứu · cắt ngang khảo sát · bệnh-chứng tuyển mới) | **BẮT BUỘC** — Helsinki §35, KHÔNG giới hạn riêng RCT (xem BƯỚC 0 mục 2) | ClinicalTrials.gov · WHO ICTRP · đăng ký trong nước | Trước khi tuyển người tham gia đầu tiên |
+| Quan sát TIẾN CỨU có tuyển người tham gia mới (cohort tiến cứu · cắt ngang khảo sát · bệnh-chứng tuyển mới) | **BẮT BUỘC** — Helsinki §35, KHÔNG giới hạn riêng RCT (xem BƯỚC 0 mục 2) | ClinicalTrials.gov · ANZCTR · DRKS · ISRCTN · đăng ký trong nước · OSF Registries (nếu không có registry quốc gia phù hợp) | Trước khi tuyển người tham gia đầu tiên |
 | SR/MA | Khuyến nghị | PROSPERO | Trước tìm kiếm |
 | Quan sát HỒI CỨU/dữ liệu thứ cấp thuần túy, KHÔNG tuyển người tham gia mới | Tùy chọn (không có "người tham gia đầu tiên" để mốc thời gian áp vào) | — | — |
 

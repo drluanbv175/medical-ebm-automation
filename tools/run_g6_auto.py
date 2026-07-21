@@ -2931,12 +2931,12 @@ source(here::here("scripts", "00_setup.R"))
 # mã hóa thủ công xong — không thay thế việc đọc/diễn giải của nhà nghiên cứu.
 
 # codes <- read.csv(file.path(DATA_PROC, "coded_transcripts.csv"))
-# # Cột kỳ vọng: participant_id, transcript_segment, code_1, code_2, ...
+# # Cột kỳ vọng: record_id, transcript_segment, code_1, code_2, ...
 # # (mỗi dòng 1 đoạn trích đã gán mã, sinh ra từ phần mềm QDA hoặc bảng mã tay)
 
 # Tần suất mã theo người tham gia (kiểm tra bão hòa dữ liệu — data saturation):
 # table(codes$code_1)
-# aggregate(participant_id ~ code_1, data = codes, FUN = function(x) length(unique(x)))
+# aggregate(record_id ~ code_1, data = codes, FUN = function(x) length(unique(x)))
 
 # Đồng-xuất-hiện mã (co-occurrence) — gợi ý chủ đề gộp (theme clustering):
 # table(codes$code_1, codes$code_2)

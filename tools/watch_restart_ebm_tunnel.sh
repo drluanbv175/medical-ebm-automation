@@ -80,9 +80,14 @@ if [[ -n "${REPO_ROOT}" && -d "${REPO_ROOT}" ]]; then
   fi
   if command -v "${PY}" >/dev/null 2>&1; then
     COMPILE_FAILED=0
+    # DUNG mau voi WATCHED_STANDALONE trong tools/install_ebm_mcp_code_watcher.py
+    # (them app/core/feature_flags.py vong 4 -- policy_engine.py import module
+    # nay o muc module-level, py_compile rieng policy_engine.py khong bat duoc
+    # file feature_flags.py dang ghi do).
     for f in "${REPO_ROOT}/app/chatgpt_app"/*.py \
              "${REPO_ROOT}/app/core/policy_engine.py" \
              "${REPO_ROOT}/app/core/export_policy.py" \
+             "${REPO_ROOT}/app/core/feature_flags.py" \
              "${REPO_ROOT}/tools/run_chatgpt_mcp_stdio.py"; do
       [[ -f "${f}" ]] || continue
       if ! "${PY}" -m py_compile "${f}" >/dev/null 2>&1; then

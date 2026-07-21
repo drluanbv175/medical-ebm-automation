@@ -32,6 +32,13 @@ INSTALLED_LAUNCHER = Path.home() / ".ebm-tools/bin/watch-restart-ebm-tunnel"
 WATCHED_STANDALONE = (
     "app/core/policy_engine.py",
     "app/core/export_policy.py",
+    # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 4, phát hiện MEDIUM):
+    # policy_engine.py import module này ở mức module-level (merge_feature_
+    # flags) — nếu feature_flags.py bị ghi dở (torn write) trong khi
+    # policy_engine.py đã ghi xong, restart vẫn có thể nạp phải file nửa vời
+    # NÀY dù py_compile policy_engine.py tự nó PASS (py_compile chỉ kiểm cú
+    # pháp file đích, không kiểm module nó import).
+    "app/core/feature_flags.py",
     "tools/run_chatgpt_mcp_stdio.py",
 )
 

@@ -81,6 +81,38 @@ def test_contains_pii_text_catches_spaced_and_dotted_phone_numbers():
     assert contains_pii_text("liên hệ 090-123-4567") is True
 
 
+def test_contains_pii_text_does_not_flag_so_benh_nhan_as_count():
+    """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 4, 2026-07-21): 'số bệnh
+    nhân' trong tiếng Việt y khoa CỰC KỲ thường là 'số LƯỢNG bệnh nhân', không
+    phải mã định danh — _MRN trước đây khớp nhầm câu thống kê thông thường."""
+    assert contains_pii_text("Số bệnh nhân: 1000 tham gia nghiên cứu") is False
+    assert contains_pii_text("Số bệnh nhân: 1000 tham gia nghiên cứu RCT này có đủ lực thống kê không?") is False
+    # Không hồi quy ngược: "mã bệnh nhân" (không mơ hồ) vẫn phải bị chặn.
+    assert contains_pii_text("mã bệnh nhân: 012345678901") is True
+
+
+def test_contains_pii_text_does_not_flag_ngoai_tru_tai_khoa():
+    """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 4, 2026-07-21): _ADDRESS
+    khớp nhầm cụm y khoa phổ biến 'ngoại trú tại'/'nội trú tại' (khám tại một
+    khoa/bệnh viện) vì là chuỗi con của 'trú tại' — đã loại cả README.md/tài
+    liệu docs/ thật khỏi corpus ChatGPT trước bản vá."""
+    assert contains_pii_text(
+        "đánh giá sự hài lòng của người bệnh ngoại trú tại Khoa Khám bệnh C1a – Bệnh viện Quân y 175"
+    ) is False
+    assert contains_pii_text("bệnh nhân nội trú tại khoa Nội tim mạch") is False
+    # Không hồi quy ngược: "trú tại" đứng riêng (địa chỉ cư trú thật) vẫn chặn.
+    assert contains_pii_text("hiện đang trú tại 45 Lê Lợi, phường 3") is True
+
+
+def test_contains_pii_text_ignores_placeholder_email_domains():
+    """Hồi quy MEDIUM (vòng lặp kiểm tra-hoàn thiện vòng 4, 2026-07-21): email
+    PLACEHOLDER trong tài liệu hướng dẫn (README.md: 'NCBI_EMAIL=ban@email.com')
+    trước đây bị coi là PII thật, loại README.md khỏi corpus ChatGPT."""
+    assert contains_pii_text("NCBI_EMAIL=ban@email.com   OPENALEX_EMAIL=you@example.com") is False
+    # Không hồi quy ngược: email thật vẫn phải bị chặn.
+    assert contains_pii_text("liên hệ: nguyenvana@gmail.com") is True
+
+
 def test_contains_pii_text_catches_benh_an_label_variants():
     """'số/mã bệnh án' là nhãn phổ biến nhất trong ghi chú lâm sàng VN nhưng trước
     đây KHÔNG nằm trong _MRN (chỉ có 'mã bn/hs/hồ sơ')."""

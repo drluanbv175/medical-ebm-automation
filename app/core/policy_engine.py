@@ -15,7 +15,23 @@ from typing import Any, Iterable, List, Mapping, Optional
 
 from app.core.feature_flags import merge_feature_flags
 
-_EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 4, phát hiện MEDIUM):
+# email PLACEHOLDER trong tài liệu hướng dẫn (vd README.md dòng mẫu
+# "NCBI_EMAIL=ban@email.com") trước đây bị coi là PII thật, loại README.md
+# (tài liệu onboarding quan trọng nhất) khỏi corpus phục vụ ChatGPT. Domain
+# đã liệt kê là placeholder chuẩn, KHÔNG bao giờ là email cá nhân thật.
+_EMAIL = re.compile(r"\b[\w.+-]+@([\w-]+\.[\w.-]+)\b")
+_PLACEHOLDER_EMAIL_DOMAINS = {
+    "example.com", "email.com", "yourdomain.com", "domain.com", "test.com",
+    "yourcompany.com", "mycompany.com", "acme.com",
+}
+
+
+def _has_non_placeholder_email(text: str) -> bool:
+    for m in _EMAIL.finditer(text):
+        if m.group(1).lower() not in _PLACEHOLDER_EMAIL_DOMAINS:
+            return True
+    return False
 _PHONE = re.compile(r"(?<!\d)(?:\+?84|0)\d{8,10}(?!\d)")
 # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện HIGH): _MRN
 # trước đây KHÔNG có "cccd"/"cmnd"/"căn cước"/"patient id"/"bệnh nhân" — các
@@ -28,10 +44,15 @@ _PHONE = re.compile(r"(?<!\d)(?:\+?84|0)\d{8,10}(?!\d)")
 # module đó dù bị chặn đúng ở agents.py/knowledge.py. Gộp nhãn vào ĐÂY để mọi
 # caller của contains_pii_text() được bảo vệ như nhau, không phụ thuộc có
 # nhớ gọi thêm _matches_sensitive_id() hay không.
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 4, phát hiện HIGH):
+# "số bệnh nhân" bỏ khỏi nhánh "số\s*(...)" — cụm này trong tiếng Việt y khoa
+# CỰC KỲ thường có nghĩa "số LƯỢNG bệnh nhân" (vd "Số bệnh nhân: 1000 tham
+# gia nghiên cứu"), không phải mã định danh cá nhân. "mã bệnh nhân" giữ
+# nguyên vì KHÔNG mơ hồ (luôn chỉ mã định danh, không bao giờ chỉ số lượng).
 _MRN = re.compile(
     r"\b(?:mrn|cccd|cmnd|căn\s*cước|patient\s*id"
     r"|mã\s*(?:bn|hs|hồ\s*sơ|bệnh\s*án|người\s*bệnh|bệnh\s*nhân)"
-    r"|số\s*(?:hồ\s*sơ|bệnh\s*án|bệnh\s*nhân))"
+    r"|số\s*(?:hồ\s*sơ|bệnh\s*án))"
     r"(?:\s*[:#]\s*[\w-]{4,}|\s+[A-Z0-9-]*\d[A-Z0-9-]{3,})\b",
     re.I,
 )
@@ -46,7 +67,15 @@ _DOB = re.compile(
     re.I,
 )
 # Địa chỉ cư trú: nhãn thường gặp trong ghi chú lâm sàng VN + có số gần đó (số nhà/khu vực).
-_ADDRESS = re.compile(r"\b(?:ngụ|trú\s*tại|địa\s*chỉ)\b[^.\n]{0,60}\d", re.I)
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 4, phát hiện HIGH):
+# "trú tại" khớp NHẦM cụm y khoa cực kỳ phổ biến "ngoại trú tại"/"nội trú
+# tại" (khám ngoại trú/nội trú TẠI một khoa/bệnh viện — không phải địa chỉ
+# cư trú) vì âm tiết tiếng Việt cách nhau bằng khoảng trắng nên "trú tại" là
+# chuỗi con của cả hai. Đã xác nhận thực nghiệm: câu thật trong
+# docs/system-v7/PHASE_2B_RESEARCHOS_PILOT.md ("...người bệnh ngoại trú tại
+# Khoa Khám bệnh...") bị chặn nhầm, loại tài liệu đó khỏi corpus ChatGPT phục
+# vụ. Thêm lookbehind loại trừ "ngoại "/"nội " đứng ngay trước "trú".
+_ADDRESS = re.compile(r"\b(?:ngụ|(?<!ngoại )(?<!nội )trú\s*tại|địa\s*chỉ)\b[^.\n]{0,60}\d", re.I)
 # Họ Việt Nam phổ biến + đệm giới tính + tên/chữ viết tắt — bắt kiểu ghi tên bệnh nhân phổ
 # biến nhất ("Nguyễn Văn A", "Trần Thị B..."), kể cả khi dùng làm ví dụ/placeholder thật.
 _VN_NAME = re.compile(
@@ -122,7 +151,9 @@ def contains_pii_text(text: str) -> bool:
     # trả False cho DOB dạng gạch ngang trong khi vẫn đúng cho dạng gạch chéo).
     if any(pattern.search(collapsed) for pattern in (_PHONE, _MRN)):
         return True
-    return any(pattern.search(normalized) for pattern in (_EMAIL, _DOB, _ADDRESS, _VN_NAME))
+    if _has_non_placeholder_email(normalized):
+        return True
+    return any(pattern.search(normalized) for pattern in (_DOB, _ADDRESS, _VN_NAME))
 
 
 def _context_text(context: Mapping[str, Any]) -> str:

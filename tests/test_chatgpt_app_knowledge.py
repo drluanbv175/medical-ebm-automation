@@ -168,6 +168,16 @@ def test_agent_sources_are_live_searchable_documents() -> None:
     assert "Cần bác sĩ kiểm chứng" in fetched["text"]
 
 
+def test_readme_is_served_despite_placeholder_email_in_env_example() -> None:
+    """Hồi quy MEDIUM (vòng lặp kiểm tra-hoàn thiện vòng 4, 2026-07-21):
+    README.md — tài liệu onboarding đầu tiên trong DEFAULT_PATTERNS — chứa
+    dòng mẫu 'NCBI_EMAIL=ban@email.com' bị contains_pii_text() coi là email
+    thật, loại TOÀN BỘ README.md khỏi corpus ChatGPT."""
+    index = SafeKnowledgeIndex(ROOT, repository="owner/repo", git_ref="main")
+    ids = {d.id for d in index.documents()}
+    assert "README.md" in ids
+
+
 def test_yaml_knowledge_pack_with_pii_is_blocked(tmp_path: Path) -> None:
     """Lớp PII thứ cấp phải áp cho cả .yaml (knowledge-packs), không chỉ .md."""
     kp = tmp_path / "knowledge-packs" / "sub"
@@ -207,6 +217,42 @@ def test_tool_lookup_errors_stay_inside_disclaimer_envelope() -> None:
     result = srv.fetch(id="does/not/exist.md")
     assert result.structuredContent["status"] == "error"
     assert "Cần bác sĩ kiểm chứng" in result.structuredContent["disclaimer"]
+
+
+def test_get_system_status_survives_malformed_manifest_count_field(tmp_path: Path, monkeypatch) -> None:
+    """Hồi quy MEDIUM (vòng lặp kiểm tra-hoàn thiện vòng 4, 2026-07-21):
+    get_system_status() trước đây KHÔNG có @_safe — validate_project_manifest()
+    ném ValueError thẳng ra ngoài khi retracted_sources_count không phải số,
+    vượt qua mọi cổng disclaimer/PII của app."""
+    import app.chatgpt_app.server as srv
+
+    manifest_dir = tmp_path / "exports" / "chatgpt_project"
+    manifest_dir.mkdir(parents=True)
+    (manifest_dir / "v7_manifest.json").write_text(
+        json.dumps({"retracted_sources_count": "not-a-number", "files": []}), encoding="utf-8"
+    )
+    monkeypatch.setattr(srv.INDEX, "root", tmp_path)
+
+    result = srv.get_system_status()
+
+    assert result.structuredContent["status"] == "error"
+    assert "Cần bác sĩ kiểm chứng" in result.structuredContent["disclaimer"]
+
+
+def test_all_nine_mcp_tools_use_safe_error_wrapper() -> None:
+    """Hồi quy LOW (vòng lặp kiểm tra-hoàn thiện vòng 4, 2026-07-21): 4/9 tool
+    (search/get_system_status/list_ebm_agents/get_sync_status) thiếu @_safe
+    trong khi 5 tool còn lại đều có — bất nhất phòng thủ theo chiều sâu."""
+    import app.chatgpt_app.server as srv
+
+    tool_names = (
+        "search", "fetch", "get_system_status", "list_ebm_agents",
+        "get_ebm_agent_instructions", "prepare_clinical_workflow",
+        "prepare_research_workflow", "get_sync_status", "synchronize_ebm_system",
+    )
+    for name in tool_names:
+        fn = getattr(srv, name)
+        assert hasattr(fn, "__wrapped__"), f"{name} thiếu @_safe (không có __wrapped__ từ functools.wraps)"
 
     result = srv.get_ebm_agent_instructions(agent_id="khong-ton-tai")
     assert result.structuredContent["status"] == "error"

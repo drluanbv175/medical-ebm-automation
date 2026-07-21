@@ -1,6 +1,6 @@
 ---
 name: tham-dinh-phe-binh
-description: Thẩm định phê bình MỘT nghiên cứu (đọc toàn văn/PDF) — tóm tắt theo PICO, đánh giá nguy cơ sai lệch theo đúng công cụ của thiết kế (RoB 2, ROBINS-I, QUADAS-2, AMSTAR-2), đối chiếu chuẩn báo cáo (CONSORT/STROBE/PRISMA/STARD), và xếp hạng độ tin cậy GRADE. Khác tong-quan-y-van (làm cả tổng quan) và tham-dinh-grade-nnt (cho điểm khám lâm sàng).
+description: Thẩm định phê bình MỘT nghiên cứu (đọc toàn văn/PDF) — tóm tắt theo PICO, đánh giá nguy cơ sai lệch theo đúng công cụ của thiết kế (RoB 2, ROBINS-I, QUADAS-3 — bản kế nhiệm QUADAS-2, Ann Intern Med 17/2/2026, doi:10.7326/ANNALS-25-02104, AMSTAR-2), đối chiếu chuẩn báo cáo (CONSORT/STROBE/PRISMA/STARD), và xếp hạng độ tin cậy GRADE. Khác tong-quan-y-van (làm cả tổng quan) và tham-dinh-grade-nnt (cho điểm khám lâm sàng).
 model: inherit
 ---
 
@@ -30,7 +30,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận 1 bài (ưu
 | D4: Đo lường kết cục | Người đo biết nhóm? Kết cục bị ảnh hưởng bởi biết nhóm? | | |
 | D5: Chọn lọc báo cáo | Tất cả kết cục SAP được báo cáo? | | |
 | Tổng thể | | [thấp/một số lo ngại/cao] | |
-(Quan sát → ROBINS-I 7 miền | Chẩn đoán → QUADAS-2 | SR → AMSTAR-2)
+(Quan sát → ROBINS-I 7 miền | Chẩn đoán → QUADAS-3 | SR → AMSTAR-2)
 ```
 
 > **Bổ trợ cho M3 tự-chất-vấn (2026-07-04):** khung RoB2/GRADE ở trên chấm CHẤT LƯỢNG THIẾT KẾ, không thay cho việc soi LẬP LUẬN của tác giả. Khi nghi ngờ bài dùng ngụy biện logic (post hoc, ecological fallacy, cherry-picking, Texas sharpshooter...), thiên kiến nghiên cứu tinh vi (HARKing, p-hacking, subgroup fishing), hoặc lỗi thống kê diễn giải (Simpson's paradox, base rate neglect, đọc sai p-value) — tra skill `scientific-critical-thinking` (`references/logical_fallacies.md`, `common_biases.md`, `statistical_pitfalls.md`) làm danh mục đối chiếu cho M3, rồi đưa phát hiện vào phán định RoB/GRADE ở trên — KHÔNG thay thế khung RoB2/GRADE.
@@ -52,7 +52,7 @@ Bài/nghiên cứu (ưu tiên toàn văn/PDF) + định danh PMID/DOI · loại 
    - RCT → **RoB 2** (5 miền).
    - Quan sát về **CAN THIỆP** (NRSI/cohort điều trị) → **ROBINS-I** (ưu tiên **V2, 11/2024**) / Newcastle-Ottawa.
    - Quan sát về **PHƠI NHIỄM/nguyên nhân** (case-control, cohort phơi nhiễm) → **ROBINS-E**.
-   - Độ chính xác chẩn đoán → thẩm định ĐẦY ĐỦ (khung GRADE-cho-test chuyên biệt, KHÔNG dùng GRADE-kết-cục/NNT ở mục 4 dưới) → giao `tham-dinh-do-chinh-xac-chan-doan`; ở đây chỉ dùng **QUADAS-2**/**QUADAS-C** để sàng lọc nhanh/nhận diện thiết kế.
+   - Độ chính xác chẩn đoán → thẩm định ĐẦY ĐỦ (khung GRADE-cho-test chuyên biệt, KHÔNG dùng GRADE-kết-cục/NNT ở mục 4 dưới) → giao `tham-dinh-do-chinh-xac-chan-doan`; ở đây chỉ dùng **QUADAS-3**/**QUADAS-C** để sàng lọc nhanh/nhận diện thiết kế.
    - Tổng quan hệ thống → **AMSTAR-2**.
 3. **Đối chiếu chuẩn báo cáo** tương ứng (CONSORT/STROBE/PRISMA/STARD/TRIPOD) — nêu mục thiếu.
 4. **GRADE theo từng kết cục:** chất lượng (cao→rất thấp) + lý do hạ/nâng bậc.

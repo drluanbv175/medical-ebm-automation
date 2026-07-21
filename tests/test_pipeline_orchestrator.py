@@ -166,3 +166,71 @@ class TestG1DesignPin:
     def test_no_pin_returns_empty(self, tmp_path):
         import run_g1_auto as G1
         assert G1._read_pinned_design(tmp_path) == ""
+
+    def test_read_pinned_design_canonicalizes_qual_alias(self, tmp_path):
+        """Hồi quy CRITICAL (vòng lặp kiểm tra-hoàn thiện vòng 4, 2026-07-21):
+        bác sĩ pin design_code bằng bí danh tự nhiên "qual" (thay vì
+        "qualitative") trước đây được ghi THÔ vào internal_code — mọi so khớp
+        chuỗi chính xác rải khắp run_g2/g4/g5/g6/g7/g8/g10_auto.py không khớp,
+        rơi vào nhánh mặc định sai thiết kế (đúng lớp bug đã vá cho G10)."""
+        import run_g1_auto as G1
+        (tmp_path / "study_meta.json").write_text(
+            json.dumps({"design_code": "qual"}), encoding="utf-8")
+        assert G1._read_pinned_design(tmp_path) == "qualitative"
+
+    def test_read_pinned_design_canonicalizes_sr_alias_to_sr_ma_not_systematic_review(self, tmp_path):
+        """KHÔNG được dùng skill_standards.canonical_design_code() trực tiếp —
+        bảng đó ánh xạ 'sr_ma'/'sr' -> 'systematic_review', một vocabulary
+        KHÁC với 'sr_ma' mà toàn bộ RISK_PROFILES/DESIGN_CHECKLIST_MAP/... của
+        run_g2-g8_auto.py dùng làm key thật. Dùng nhầm sẽ phá vỡ mọi so khớp
+        'sr_ma' hiện có — tệ hơn cả bug gốc."""
+        import run_g1_auto as G1
+        (tmp_path / "study_meta.json").write_text(
+            json.dumps({"design_code": "sr"}), encoding="utf-8")
+        assert G1._read_pinned_design(tmp_path) == "sr_ma"
+        (tmp_path / "study_meta.json").write_text(
+            json.dumps({"design_code": "SR_MA"}), encoding="utf-8")
+        assert G1._read_pinned_design(tmp_path) == "sr_ma"
+
+    def test_read_pinned_design_canonicalizes_rct_and_diagnostic_aliases(self, tmp_path):
+        import run_g1_auto as G1
+        for raw, expected in (
+            ("rct_parallel", "rct"),
+            ("rct_crossover", "rct"),
+            ("randomized", "rct"),
+            ("diagnostic_accuracy", "diagnostic"),
+            ("prognostic", "prediction"),
+            ("cross_sectional_descriptive", "cross_sectional"),
+        ):
+            (tmp_path / "study_meta.json").write_text(
+                json.dumps({"design_code": raw}), encoding="utf-8")
+            assert G1._read_pinned_design(tmp_path) == expected, f"{raw} -> {expected}"
+
+    def test_read_pinned_design_leaves_already_canonical_codes_unchanged(self, tmp_path):
+        import run_g1_auto as G1
+        for code in ("rct", "cohort", "case_control", "cross_sectional",
+                     "diagnostic", "sr_ma", "prediction", "qualitative"):
+            (tmp_path / "study_meta.json").write_text(
+                json.dumps({"design_code": code}), encoding="utf-8")
+            assert G1._read_pinned_design(tmp_path) == code
+
+    def test_apply_design_pin_with_qual_alias_end_to_end_matches_g10_qualitative_branch(self, tmp_path):
+        """Kiểm tra xuyên suốt: pin 'qual' → internal_code phải khớp ĐÚNG
+        nhánh qualitative của G10 sec_sap() (không rơi vào nhánh định lượng)."""
+        import run_g1_auto as G1
+        import run_g10_assemble as G10
+
+        (tmp_path / "study_meta.json").write_text(
+            json.dumps({"design_code": "qual"}), encoding="utf-8")
+        pinned = G1._read_pinned_design(tmp_path)
+        inferred = {"internal_code": "cohort", "primary": "Cohort",
+                    "reporting_standard": "STROBE", "rationale": "auto"}
+        design = G1._apply_design_pin(inferred, pinned)
+
+        cps = {
+            "G1": {"design": design},
+            "G4": {"g4_sap_version": "1.0", "g4_status": "LOCKED"},
+        }
+        text = G10.sec_sap(cps, {})
+        assert "BÃO HÒA" in text or "bão hòa" in text.lower()
+        assert "đơn biến (χ²/Fisher, t-test/Mann-Whitney)" not in text

@@ -16,7 +16,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận 1 bài (to�
 | M2 | PICO/PECO đầy đủ 4 thành phần |
 | M3 | Thiết kế + cỡ mẫu + bối cảnh + thời gian theo dõi |
 | M4 | Kết quả chính: ước lượng + 95% CI + p; kết cục phụ tách riêng |
-| M5 | RoB sơ bộ theo đúng công cụ (RoB 2 / ROBINS-I / QUADAS-2) |
+| M5 | RoB sơ bộ theo đúng công cụ (RoB 2 / ROBINS-I / QUADAS-3 — bản kế nhiệm QUADAS-2, Ann Intern Med 17/2/2026, doi:10.7326/ANNALS-25-02104) |
 | M6 | TL;DR 1 câu trung thực + bàn giao |
 
 **Bảng RoB 2 sơ bộ (cho RCT — 5 miền):**
@@ -29,7 +29,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận 1 bài (to�
 | D4: Đo lường kết cục | | |
 | D5: Chọn lọc kết quả báo cáo | | |
 | Tổng thể | [thấp/một số lo ngại/cao] | → Cần thẩm định kỹ ở tham-dinh-phe-binh |
-(Quan sát can thiệp → ROBINS-I V2/Newcastle-Ottawa | Phơi nhiễm/nguyên nhân → ROBINS-E | Chẩn đoán → QUADAS-2)
+(Quan sát can thiệp → ROBINS-I V2/Newcastle-Ottawa | Phơi nhiễm/nguyên nhân → ROBINS-E | Chẩn đoán → QUADAS-3)
 ```
 
 ## Luật nền
@@ -48,7 +48,7 @@ Với mỗi bài, trích các trường:
 2. **PICO/PECO:** dân số · can thiệp/phơi nhiễm · so sánh · kết cục.
 3. **Thiết kế & cỡ mẫu:** loại thiết kế · n · bối cảnh · thời gian theo dõi.
 4. **Kết quả chính:** ước lượng hiệu ứng (RR/OR/HR/MD…) + **95% CI** + p; kết cục chính tách khỏi phụ.
-5. **Nguy cơ sai lệch:** ghi giới hạn tác giả nêu; gợi ý công cụ phù hợp (RoB 2 *chỉ* cho RCT; ROBINS-I V2 cho quan sát can thiệp; ROBINS-E cho phơi nhiễm/nguyên nhân; AMSTAR-2 cho SR; QUADAS-2 cho chẩn đoán) — chấm sơ bộ, ghi "cần thẩm định kỹ ở `tham-dinh-phe-binh`".
+5. **Nguy cơ sai lệch:** ghi giới hạn tác giả nêu; gợi ý công cụ phù hợp (RoB 2 *chỉ* cho RCT; ROBINS-I V2 cho quan sát can thiệp; ROBINS-E cho phơi nhiễm/nguyên nhân; AMSTAR-2 cho SR; QUADAS-3 cho chẩn đoán) — chấm sơ bộ, ghi "cần thẩm định kỹ ở `tham-dinh-phe-binh`".
 6. **TL;DR một câu** trung thực (bài cho thấy gì, mạnh/yếu chỗ nào).
 
 ## 4. Mẫu đầu ra (template điền sẵn)

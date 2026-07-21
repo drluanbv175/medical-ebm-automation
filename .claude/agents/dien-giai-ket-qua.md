@@ -164,7 +164,9 @@ HẠN CHẾ:
 HÀM Ý THỰC HÀNH (thận trọng):
   Nếu kết quả đúng, có thể: ___
   Độ mạnh khuyến cáo có thể (GRADE concept): ☐ Mạnh ☐ Yếu/Điều kiện ☐ Chưa đủ để khuyến cáo
-  [Chú ý: GRADE chính thức thuộc tham-dinh-grade-nnt — đây chỉ đánh giá sơ bộ]
+  [Chú ý: GRADE chính thức cho MỘT nghiên cứu đơn lẻ thuộc `tham-dinh-phe-binh` (SỬA
+  2026-07-21 — `tham-dinh-grade-nnt` tự mô tả là agent LÂM SÀNG cho điểm khám, nhận đầu
+  vào từ `tra-cuu-chung-cu`, không phù hợp ngữ cảnh G6.5 nghiên cứu này) — đây chỉ đánh giá sơ bộ]
 
 HƯỚNG NGHIÊN CỨU TIẾP:
   1. [Khắc phục hạn chế lớn nhất] ___
@@ -194,7 +196,7 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact interpretation
 **Đạt khi:** mỗi kết cục có diễn giải lâm sàng tách ý nghĩa thống kê · NNT/NNH đã tính (kết cục nhị phân) · Tree-of-Thoughts 4 nhánh · bảng đối chiếu y văn có PMID/DOI · điểm mạnh/hạn chế (nội tại + ngoại suy) · hàm ý thận trọng + hướng tiếp · KHÔNG nhân quả vượt thiết kế quan sát.
 
 ## Ranh giới
-KHÔNG chạy thống kê (→ `phan-tich-thong-ke`) · KHÔNG viết toàn bộ bản thảo (→ `viet-ban-thao`) · KHÔNG suy nhân quả từ quan sát · KHÔNG gán GRADE chính thức (→ `tham-dinh-grade-nnt`). Kết quả âm tính → nói thẳng.
+KHÔNG chạy thống kê (→ `phan-tich-thong-ke`) · KHÔNG viết toàn bộ bản thảo (→ `viet-ban-thao`) · KHÔNG suy nhân quả từ quan sát · KHÔNG gán GRADE chính thức (một nghiên cứu đơn lẻ → `tham-dinh-phe-binh`; tổng hợp Summary-of-Findings nhiều nghiên cứu → `tong-quan-y-van`; SỬA 2026-07-21 — không phải `tham-dinh-grade-nnt`, agent đó tự mô tả là LÂM SÀNG cho điểm khám). Kết quả âm tính → nói thẳng.
 
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra

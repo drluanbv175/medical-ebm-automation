@@ -106,6 +106,7 @@ def _safe(fn):
     ),
     annotations=READ_ONLY,
 )
+@_safe
 def search(query: str) -> CallToolResult:
     """Tìm trong corpus đã vượt chính sách export an toàn."""
     return _result(INDEX.search(query))
@@ -129,6 +130,7 @@ def fetch(id: str) -> CallToolResult:
     description="Use this when you need the read-only safety, export, and corpus status of EBM Copilot.",
     annotations=READ_ONLY,
 )
+@_safe
 def get_system_status() -> CallToolResult:
     """Trả snapshot trạng thái, không tạo bảng hay thay đổi feature flag."""
     return _result(INDEX.system_status())
@@ -140,6 +142,7 @@ def get_system_status() -> CallToolResult:
     description="Use this when you need to discover all governed clinical or research agents available in EBM Copilot.",
     annotations=READ_ONLY,
 )
+@_safe
 def list_ebm_agents(domain: str = "all") -> CallToolResult:
     """Liệt kê agent; domain nhận all/clinical/research."""
     return _result(AGENTS.list_payload(domain))
@@ -200,6 +203,7 @@ def prepare_research_workflow(research_topic: str) -> CallToolResult:
     ),
     annotations=READ_ONLY,
 )
+@_safe
 def get_sync_status() -> CallToolResult:
     """Đọc trạng thái đồng bộ agent và corpus."""
     return _result(AGENTS.sync_status())

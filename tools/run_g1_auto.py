@@ -354,6 +354,48 @@ def specialist_modules_block(modules: list[str]) -> str:
 {sections}"""
 
 
+# THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 4, phát hiện CRITICAL):
+# bác sĩ pin design_code qua study_meta.json bằng bí danh tự nhiên (vd "qual"
+# thay vì "qualitative") — trước bản vá, giá trị THÔ này được ghi thẳng vào
+# internal_code, khiến MỌI so khớp chuỗi chính xác rải khắp run_g2/g4/g5/g6/
+# g7/g8/g10_auto.py (RISK_PROFILES, DESIGN_CHECKLIST_MAP, N_NOT_APPLICABLE_
+# DESIGNS, _WRONG_METHOD_DESIGNS, _SURVIVAL_CAPABLE_DESIGNS...) đều KHÔNG
+# khớp, rơi vào nhánh mặc định sai thiết kế — đúng lớp bug CRITICAL vừa vá
+# cho design_code="qualitative" ở G10, chỉ khác input trigger.
+#
+# CỐ Ý KHÔNG dùng skill_standards.canonical_design_code()/DESIGN_CODE_ALIASES:
+# bảng đó phục vụ vocabulary RIÊNG của reporting_standards_for()/
+# DISPLAY_ITEM_BY_DESIGN (vd "sr_ma" -> "systematic_review") — áp trực tiếp
+# ở đây sẽ làm HỎNG mọi so khớp `internal_code == "sr_ma"` rải khắp các file
+# run_g*_auto.py (vốn dùng "sr_ma" LÀM canon, không phải "systematic_review").
+# Bảng dưới đây ánh xạ RIÊNG về đúng 8 mã canon mà pipeline G2-G10 dùng làm
+# internal_code: rct, cohort, case_control, cross_sectional, diagnostic,
+# sr_ma, prediction, qualitative.
+_PIN_DESIGN_ALIASES = {
+    "qual": "qualitative",
+    "rct_parallel": "rct",
+    "rct_crossover": "rct",
+    "randomized": "rct",
+    "sr": "sr_ma",
+    "systematic_review": "sr_ma",
+    "meta_analysis": "sr_ma",
+    "metaanalysis": "sr_ma",
+    "case_control_study": "case_control",
+    "cross_sectional_descriptive": "cross_sectional",
+    "prevalence": "cross_sectional",
+    "prognostic": "prediction",
+    "prediction_model": "prediction",
+    "diagnostic_accuracy": "diagnostic",
+}
+
+
+def _canonicalize_pinned_design_code(raw: str) -> str:
+    """Chuẩn hoá bí danh design_code do bác sĩ pin về đúng 8 mã canon dùng
+    làm internal_code xuyên suốt G2-G10 (xem chú thích _PIN_DESIGN_ALIASES)."""
+    key = raw.strip().lower()
+    return _PIN_DESIGN_ALIASES.get(key, key)
+
+
 def _read_pinned_design(out_dir) -> str:
     """Đọc study_meta.json['design_code'] (hoặc gate_params.G1.design). '' nếu không có."""
     import json as _json
@@ -366,7 +408,7 @@ def _read_pinned_design(out_dir) -> str:
     except (ValueError, OSError):
         return ""
     pin = meta.get("design_code") or (meta.get("gate_params", {}).get("G1", {}) or {}).get("design")
-    return str(pin).strip().lower() if pin else ""
+    return _canonicalize_pinned_design_code(str(pin)) if pin else ""
 
 
 def _apply_design_pin(design: dict, pinned: str) -> dict:
