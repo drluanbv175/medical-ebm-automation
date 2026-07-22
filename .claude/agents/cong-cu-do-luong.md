@@ -14,7 +14,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận construct +
 |--------|--------|
 | M1 | Định nghĩa construct + số chiều/domain + quần thể đích |
 | M2 | Quyết định: dùng công cụ đã có (rà bằng chứng + quyền dùng) vs dựng mới |
-| M3 | Dịch–thích nghi văn hóa chéo (forward/back/hội đồng/pretest nhận thức) nếu cần |
+| M3 | Dịch–thích nghi văn hóa chéo (forward [≥2 dịch giả] → **đồng thuận hợp nhất bản dịch xuôi** → back → hội đồng → pretest nhận thức) nếu cần |
 | M4 | Kế hoạch kiểm định theo COSMIN: CVI → EFA/CFA → α/ω → ICC+SEM/SDC → MCID |
 | M5 | Điền bảng COSMIN: ngưỡng (nguồn) + cỡ mẫu (phối hợp `co-mau-nghien-cuu`) |
 | M6 | Báo cáo COSMIN + giới hạn (chỉ giá trị trong quần thể/ngôn ngữ đã kiểm định) |
@@ -70,7 +70,7 @@ Khái niệm cần đo (construct) + quần thể đích · công cụ dự ki�
 
 ## 3. Quy trình (theo COSMIN)
 1. **Định nghĩa construct + khung lý thuyết** (đo cái gì, mấy chiều/domain) → quyết định công cụ mới vs có sẵn.
-2. **Nếu dùng công cụ đã có:** rà bằng chứng đo lường đã công bố (nguồn) + **độ giá trị nội dung** trong quần thể đích; lên kế hoạch **dịch + thích nghi văn hóa chéo** (forward translation → back-translation → hội đồng → pretest nhận thức) nếu khác ngôn ngữ/văn hóa.
+2. **Nếu dùng công cụ đã có:** rà bằng chứng đo lường đã công bố (nguồn) + **độ giá trị nội dung** trong quần thể đích; lên kế hoạch **dịch + thích nghi văn hóa chéo** theo chuẩn Beaton 2000/COSMIN/ISPOR — **forward translation (≥2 dịch giả độc lập) → ĐỒNG THUẬN/HỢP NHẤT các bản dịch xuôi thành 1 bản thống nhất (bước dễ bị bỏ sót nhất — sửa 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 7: trước đây quy trình mô tả thiếu bước này, có thể đi thẳng từ nhiều bản dịch xuôi song song sang dịch ngược mà không hợp nhất) → back-translation → hội đồng chuyên gia rà toàn bộ phiên bản → pretest nhận thức/thử nghiệm tiên phong** nếu khác ngôn ngữ/văn hóa.
 3. **Nếu dựng mới:** sinh item từ khung lý thuyết + ý kiến chuyên gia/bệnh nhân; **chỉ số giá trị nội dung (CVI/CVR)**; thử nghiệm nhận thức (cognitive interview); thang trả lời.
 4. **Kế hoạch kiểm định thuộc tính đo lường** (chỉ rõ phân tích + cỡ mẫu, phối hợp `co-mau-nghien-cuu`) — **áp dụng đầy đủ bước này khi dựng công cụ MỚI/dùng lần đầu; công cụ dùng NGUYÊN TRẠNG một thang chuẩn đã kiểm định thì KHÔNG áp bước 4 này, chỉ làm 3 nội dung ở §Phạm vi áp dụng bên dưới:**
    - **Độ giá trị cấu trúc:** EFA/CFA (chỉ số phù hợp mô hình).
@@ -145,8 +145,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

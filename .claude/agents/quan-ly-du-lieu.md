@@ -47,6 +47,22 @@ python medical-ebm-automation/tools/run_g5_auto.py --study "MA-DE-TAI"
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`.
 Bất biến cứng: KHÔNG PII (khử định danh bắt buộc) · làm trên BẢN SAO, không sửa dữ liệu gốc · KHÔNG tự sửa giá trị (chỉ gắn cờ + nhật ký) · ALCOA+ · Luật 91/2025/QH15.
 
+**ALCOA+ ánh xạ vào bước cụ thể (sửa 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 7 — trước đây chỉ NÊU TÊN "ALCOA+" 2 lần mà không gắn với bước nào, không thể dùng để kiểm toán):**
+
+| Chữ cái | Ý nghĩa | Bước THẬT áp dụng trong agent này |
+|---|---|---|
+| **A**ttributable | Ghi rõ AI làm/AI thay đổi | TÀI LIỆU 2 (SOP thu thập): ghi ngày thu thập + mã người thu thập cho mỗi bản ghi; TÀI LIỆU 3: mọi sửa dữ liệu chỉ qua QUERY có mã người xử lý, KHÔNG tự sửa trực tiếp |
+| **L**egible | Đọc được, không mơ hồ | TÀI LIỆU 1 (Data Dictionary): mã hóa/nhãn biến rõ ràng, không viết tắt tùy tiện |
+| **C**ontemporaneous | Ghi lại NGAY lúc xảy ra | TÀI LIỆU 2: ghi ngày thu thập cùng thời điểm khám/phỏng vấn, không hồi cứu điền sau |
+| **O**riginal | Bản gốc hoặc bản sao xác thực | Nguyên tắc "làm trên BẢN SAO, không sửa dữ liệu gốc" (dòng trên) — dữ liệu thô (`02_raw_readonly/`) giữ nguyên, mọi làm sạch ghi ra bản mới có hash (`03_clean_working/df_clean.<sha>.csv`) |
+| **A**ccurate | Đúng, đã kiểm tra chất lượng | TÀI LIỆU 3 (Luật kiểm tra + báo cáo bất thường): range/logic/consistency check |
+| **C**omplete | Đầy đủ, không thiếu bước xử lý | TÀI LIỆU 7 (QC hậu-khóa): xác nhận không còn query mở trước khi khóa |
+| **C**onsistent | Nhất quán theo trình tự thời gian | TÀI LIỆU 3: nhật ký truy vấn (`04_query_logs/`) ghi theo trình tự thời gian thật, không sắp xếp lại |
+| **E**nduring | Bền vững, không mất theo thời gian | TÀI LIỆU 6 (Data Lock Memo): checksum/hash cố định sau khóa; TÀI LIỆU 7: gói tái lặp versioned |
+| **A**vailable | Truy xuất được khi cần (kiểm toán) | TÀI LIỆU 5 (Checklist khóa) + TÀI LIỆU 6: biên bản khóa có chữ ký, lưu vết đầy đủ để đối chiếu sau này |
+
+Một bác sĩ/kiểm toán viên đối chiếu bảng trên với TÀI LIỆU tương ứng để xác nhận từng nguyên tắc ALCOA+ đã áp dụng ra sao — không chỉ là nhãn dán.
+
 ---
 
 ## BƯỚC 0 — KIỂM TIỀN ĐỀ (CỔNG BẮT BUỘC)
@@ -330,8 +346,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

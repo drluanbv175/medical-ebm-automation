@@ -111,8 +111,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

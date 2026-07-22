@@ -37,7 +37,7 @@ Map từng chặng tới agent con phù hợp:
   - Đề tài dùng **bộ câu hỏi/thang đo/PROM** (hài lòng người bệnh, chất lượng sống, tuân thủ…) → `cong-cu-do-luong` (COSMIN: giá trị nội dung/cấu trúc · tin cậy α/ICC · đáp ứng/MCID · dịch–thích nghi văn hóa) ở G1/G3, trước khi khóa CRF.
   - Đề tài xây/kiểm định **mô hình tiên lượng/dự báo** → `mo-hinh-tien-luong` (TRIPOD+AI: EPV · hiệu chuẩn + phân biệt · validation nội/ngoại · DCA) ở G1/G3/G6/G7; PROBAST+AI khi thẩm định mô hình có sẵn (BMJ 2025;388:e082505 — bản cập nhật/mở rộng thay PROBAST-2019, đã kiểm chứng 2026-07-11).
   - Đề tài có **cấu phần kinh tế** (chi phí–hiệu quả, tác động ngân sách) → `kinh-te-y-te` (CHEERS 2022: CEA/CUA/ICER · PSA/CEAC) ở G1 thiết kế + G7 báo cáo; nhận hiệu quả lâm sàng từ `tham-dinh-grade-nnt`/`meta-phan-tich`.
-  - Đề tài là **ĐỘ CHÍNH XÁC CHẨN ĐOÁN** (index test vs reference standard) → `tham-dinh-do-chinh-xac-chan-doan` (QUADAS-3 thẩm định thiết kế — bản kế nhiệm QUADAS-2, Ann Intern Med 17/2/2026, doi:10.7326/ANNALS-25-02104, đã kiểm chứng 2026-07-11 + STARD chuẩn báo cáo + GRADE-cho-test) ở G1 thiết kế + G7 viết theo STARD.
+  - Đề tài là **ĐỘ CHÍNH XÁC CHẨN ĐOÁN** (index test vs reference standard) → `tham-dinh-do-chinh-xac-chan-doan` ở G1 thiết kế + G7 viết theo STARD + GRADE-cho-test. **Lưu ý đồng bộ (sửa 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 7):** QUADAS-3 (bản kế nhiệm QUADAS-2, Ann Intern Med 17/2/2026, doi:10.7326/ANNALS-25-02104, đã kiểm chứng 2026-07-11) là khuyến nghị HIỆN HÀNH, nhưng agent con hiện vẫn vận hành theo cấu trúc **QUADAS-2 4 miền** (Whiting 2011, PMID 22007046) vì CHƯA có đủ nguồn xác minh chi tiết từng miền/mục của QUADAS-3 để viết lại đúng — xem ghi chú minh bạch trong chính `tham-dinh-do-chinh-xac-chan-doan.md`. KHÔNG diễn giải dòng này là "đang thẩm định theo QUADAS-3" — hành vi thật là QUADAS-2 (vẫn là công cụ hợp lệ, dùng tương thích ngược) cho tới khi agent con được cập nhật đầy đủ.
 - **Cầu nối thực hành (sau công bố/khi rà guideline)** → `huong-dan-lam-sang` (đặt phát hiện vào bối cảnh hướng dẫn hiện hành, GRADE EtD, đề xuất/cập nhật khuyến cáo → nạp EBM_MASTER ở hàng chờ duyệt — CỔNG A+B).
 - **Xuyên suốt — ghi sổ cái:** sau MỖI cổng PASS, giao `so-cai-ghi-nho` lưu quyết định + mốc + 🔴 còn thiếu vào `_SO-TRANG-THAI-CHECKPOINT.md` (2026-07-12: sửa "EBM_MASTER/MEMORY.md" — file đó không tồn tại) để phiên sau (và máy khác qua sync) tiếp tục được.
 
@@ -361,8 +361,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

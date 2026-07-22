@@ -18,6 +18,8 @@ Tuổi · giới · vấn đề/triệu chứng chính + thời gian · bệnh n
 ## 3. Quy trình — BƯỚC 0 trước, rồi 5 bước (khung skill `kham-ngoai-tru-ebm`)
 **🧭 BƯỚC 0a — RESUME:** nếu ca đã có bản ghi, đọc **khối checkpoint gần nhất** ở `_SO-TRANG-THAI-CHECKPOINT.md` (2026-07-12: gỡ nhánh "hoặc `EBM_MASTER/MEMORY.md`" — file đó không tồn tại) để tiếp tục đúng chỗ, không hỏi lại cái đã có. **Trước khi tin bản ghi để RESUME**, chạy máy kiểm thật (không chỉ đọc bằng mắt): `python medical-ebm-automation/tools/clinical_checkpoint.py <file> --json` — vá khoảng trống trước đây "sổ trạng thái chỉ là văn bản, không ai kiểm tính hợp lệ" (vd Cổng A từng có thể bị ghi PASS dù còn 🔴 bắt buộc mà không ai bắt được). `TRẢ-VỀ-SỬA` → không resume mù, nêu rõ cho bác sĩ. Sau MỖI cổng (A/B), giao `so-cai-ghi-nho` ghi 1 khối checkpoint theo schema sổ trạng thái RỒI validate lại ngay bằng công cụ trên.
 
+**GIỚI HẠN THẬT của cơ chế kiểm ở trên (ghi rõ 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 7 — KHÔNG phải lỗi mới, là đặc điểm kiến trúc từ đầu):** `clinical_checkpoint.py` CHỈ kiểm **tính toàn vẹn nội bộ** của bản ghi trạng thái (vd không cho phép tự ghi "đã qua Cổng A" khi văn bản còn 🔴 bắt buộc) — **KHÔNG có chữ ký HMAC hay xác thực vai trò thật** như 4 cổng cứng nghiên cứu G2/G4/G8/G9 (`tools/gate_contract.py::ledger_approved()`, đòi vai trò đúng + `sign_approval()`). Nghĩa là về mặt kỹ thuật, không có gì ngăn CHÍNH agent tự ghi "Cổng A: PASS" vào sổ trạng thái rồi coi là bác sĩ đã duyệt — lớp bảo vệ THẬT duy nhất cho Cổng A/Cổng B hiện nay là **kỷ luật vận hành**: bác sĩ phải TỰ ĐỌC gói quyết định và tự xác nhận trước khi áp dụng cho bệnh nhân, không dựa vào việc file có ghi "PASS" hay không. Không nới lỏng cổng vì giới hạn này — chỉ nêu rõ để bác sĩ không hiểu nhầm "Cổng A/B lâm sàng có sức nặng kỹ thuật ngang G-gates nghiên cứu".
+
 **🚑 BƯỚC 0 — CỜ ĐỎ TRƯỚC TIÊN:** giao `sang-loc-co-do` quét dấu hiệu nguy hiểm/ngưỡng chuyển tuyến → **nêu NGAY ở đầu gói**, không chờ chạy hết chuỗi. Chỉ tiếp tục khi đã loại cờ đỏ (hoặc song song nếu cần xử trí khẩn). Đồng thời `sang-loc-co-do` quét **câu hỏi an toàn BẮT BUỘC theo bối cảnh** (`_CAU-HOI-AN-TOAN-BAT-BUOC.md`) — vd **mất ngủ / đòi thuốc ngủ mạnh → hỏi ý tưởng tự sát TRƯỚC khi kê (S1)**; **nữ tuổi sinh đẻ + dự định kê thuốc gây quái thai (ACEi/ARB, valproate, isotretinoin, warfarin, methotrexate…) → HỎI & GHI khả năng có thai + tránh thai TRƯỚC khi kê (S2)**.
 1. **HỎI–KHÁM (Ask).** `khai-thac-benh-su-kham` dựng **bệnh sử có cấu trúc + khám trọng điểm** theo hội chứng (đầu vào cho chẩn đoán) → `pico-lam-sang` đặt **câu hỏi PICO** + kết cục quan trọng với bệnh nhân.
 2. **TÌM (Acquire).** `tra-cuu-chung-cu` → câu trả lời có trích dẫn + danh sách nguồn (ưu tiên guideline/SR/RCT).
@@ -185,8 +187,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

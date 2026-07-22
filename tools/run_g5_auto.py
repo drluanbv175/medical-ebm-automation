@@ -596,6 +596,31 @@ _DIAGNOSTIC_EXTRA = [
     ("specificity_confirmed","Diagnostic","",             "text",     "Độ đặc hiệu xác nhận tại cơ sở (%)",                   "",                                                                      "",                        "number",    "0",   "100", "n", ""),
 ]
 
+# THÊM 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 7, phát hiện CRITICAL):
+# build_redcap_rows() trước đây KHÔNG có nhánh riêng cho design_code=
+# "prediction" — rơi vào else (cohort/case_control/cross_sectional), sinh CRF
+# dùng bundle["exposure"]/bundle["outcomes"] kiểu cohort, KHÔNG có trường nào
+# cho: cờ phân biệt tập PHÁT TRIỂN (development) vs tập ĐÁNH GIÁ (validation)
+# — yêu cầu CỐT LÕI của TRIPOD+AI (build_strobe_flowchart() trong CHÍNH file
+# này đã vẽ rõ 2 tập D/E cho thiết kế này) — hay điểm nguy cơ mô hình dự đoán.
+# Bundle["clinical"]/["comorbid"]/["labs_base"]/["labs"]/["meds"] đã cung cấp
+# GIÁ TRỊ ứng viên dự báo hợp lý (tuổi/bệnh nền/xét nghiệm) nên không cần bộ
+# trường ứng viên dự báo riêng — phần THẬT sự thiếu là cờ tách tập D/E.
+_PREDICTION_EXTRA = [
+    ("dataset_split",       "Prediction", "Mô hình tiên lượng (TRIPOD+AI)", "radio",
+     "Tập dữ liệu (phát triển hay đánh giá mô hình)",
+     "0, Phát triển (development) | 1, Đánh giá/kiểm định (validation)",
+     "[CẦN — phân chia TRƯỚC khi xem kết cục, KHÔNG phân chia sau khi biết kết quả — tránh rò rỉ dữ liệu]",
+     "", "", "", "y", ""),
+    ("predicted_outcome_time","Prediction", "",                             "text",
+     "Thời điểm dự báo kết cục (đơn vị thời gian kể từ mốc bắt đầu)",
+     "", "[CẦN ĐƠN VỊ — vd tháng/năm]", "number", "0", "", "y", ""),
+    ("model_predicted_risk", "Prediction", "",                             "text",
+     "Xác suất/điểm nguy cơ do mô hình dự đoán (nếu đã fit mô hình)",
+     "", "[Điền SAU khi mô hình đã fit — KHÔNG điền trước khi khóa dữ liệu phát triển, tránh rò rỉ]",
+     "number", "0", "1", "n", ""),
+]
+
 # SR/MA: biểu mẫu trích xuất
 _SRMA_FIELDS = [
     ("study_id",      "Extraction",  "Trích xuất SR/MA",   "text",     "Mã nghiên cứu (Tác giả_Năm)",                         "",                                                                      "",                        "",          "",    "",    "y", ""),
@@ -670,7 +695,11 @@ def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
     # lần) KHÔNG có trục thời gian/can thiệp tương ứng — nhồi các trường này
     # vào CRF của chúng là dấu vết SAP/CRF dùng chung mọi thiết kế, dễ bị hội
     # đồng khoa học/đạo đức bắt lỗi ngay khi đọc.
-    needs_followup = design_code in ("rct", "cohort")
+    # SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 7): "prediction" thêm
+    # vào needs_followup — mô hình tiên lượng dự báo kết cục TƯƠNG LAI (vd tử
+    # vong 1 năm) luôn cần trục thời gian theo dõi, dù không có can thiệp/AE
+    # (needs_ae_safety KHÔNG thêm — không có can thiệp đang thử nghiệm).
+    needs_followup = design_code in ("rct", "cohort", "prediction")
     needs_ae_safety = design_code in ("rct", "cohort")
     followup_admin = _FOLLOWUP_ADMIN if needs_followup else []
     safety_ae = _BASE_SAFETY_AE if needs_ae_safety else []
@@ -694,6 +723,17 @@ def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
             + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"]
             + _DIAGNOSTIC_EXTRA
             + safety_ae + _BASE_ADMIN_COMPLETE
+        )
+    elif design_code == "prediction":
+        # THÊM 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 7, phát hiện
+        # CRITICAL): trước đây rơi vào else (cohort/case_control/cross_
+        # sectional) — CRF không có cờ tách tập phát triển/đánh giá TRIPOD+AI.
+        rows = (
+            _BASE_ADMIN + followup_admin + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
+            + bundle["comorbid"] + bundle["labs_base"] + bundle["labs"] + bundle["meds"]
+            + bundle["outcomes"]
+            + _PREDICTION_EXTRA
+            + _BASE_ADMIN_COMPLETE
         )
     else:  # cohort, case_control, cross_sectional, mặc định
         rows = (

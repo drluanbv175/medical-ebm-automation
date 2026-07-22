@@ -43,10 +43,10 @@ Câu hỏi nghiên cứu (từ `cau-hoi-nghien-cuu`) · hiện tượng/trải n
 
 ## 3. Quy trình (BƯỚC 0 = kiểm tiền đề)
 **🔎 BƯỚC 0 — Kiểm tiền đề:** xác nhận câu hỏi đúng loại định tính (paradigm khớp); với phỏng vấn/ghi âm → cần ICF đặc thù định tính (`dao-duc-dang-ky`) + kế hoạch khử định danh bản gỡ băng (`quan-ly-du-lieu`); KHÔNG phân tích trên dữ liệu thật khi chưa duyệt đạo đức.
-1. **Chọn cách tiếp cận** phù hợp câu hỏi: hiện tượng học, grounded theory, phân tích nội dung/chủ đề, nghiên cứu trường hợp, dân tộc học.
-2. **Lấy mẫu có chủ đích:** kiểu mẫu (purposive/maximum variation/snowball), tiêu chí chọn, **kế hoạch xác định bão hòa dữ liệu** (không ấn định cứng cỡ mẫu mà nêu quy tắc dừng).
-3. **Công cụ thu thập:** **hướng dẫn phỏng vấn bán cấu trúc**/nhóm tiêu điểm (câu hỏi mở, câu thăm dò), kế hoạch ghi âm-gỡ băng, ghi chú thực địa, nhật ký phản tư (reflexivity).
-4. **Phân tích:** quy trình mã hóa (mở→trục→chọn lọc, hoặc framework), xây **sổ mã (codebook)**, nhóm mã thành chủ đề, đối chiếu nhiều người mã (intercoder), member checking khi phù hợp.
+1. **Chọn cách tiếp cận** phù hợp câu hỏi: hiện tượng học, grounded theory, phân tích nội dung/chủ đề, nghiên cứu trường hợp, dân tộc học. **Grounded theory (GT) KHÁC các cách tiếp cận còn lại ở 2 đặc trưng cốt lõi** (Strauss & Corbin; Charmaz — không dùng lẫn với hiện tượng học/nghiên cứu trường hợp): **lấy mẫu lý thuyết** (theoretical sampling — chọn người/dữ liệu tiếp theo do LÝ THUYẾT ĐANG HÌNH THÀNH dẫn dắt, không cố định tiêu chí ngay từ đầu như purposive sampling thông thường) và **so sánh liên tục** (constant comparative method — liên tục đối chiếu dữ liệu mới với mã/chủ đề đã có trong LÚC thu thập, không đợi thu thập xong mới phân tích). Nếu chọn GT, quy trình mã hóa mở→trục→chọn lọc ở bước 4 áp dụng ĐÚNG 2 nguyên tắc này; các cách tiếp cận khác dùng lấy mẫu có chủ đích cố định (bước 2) và phân tích sau khi thu thập xong là đủ.
+2. **Lấy mẫu có chủ đích:** kiểu mẫu (purposive/maximum variation/snowball — hoặc lấy mẫu LÝ THUYẾT nếu chọn grounded theory, xem bước 1), tiêu chí chọn, **kế hoạch xác định bão hòa dữ liệu** (không ấn định cứng cỡ mẫu mà nêu quy tắc dừng — với GT là "bão hòa lý thuyết", khác bão hòa chủ đề thông thường).
+3. **Công cụ thu thập:** **hướng dẫn phỏng vấn bán cấu trúc**/nhóm tiêu điểm (câu hỏi mở, câu thăm dò), kế hoạch ghi âm-gỡ băng, ghi chú thực địa, nhật ký phản tư (reflexivity). Nếu cấu phần định lượng/mixed-methods cần MỘT bộ câu hỏi/thang đo cụ thể (không chỉ hướng dẫn phỏng vấn mở) → phối hợp `cong-cu-do-luong` để kiểm định theo COSMIN.
+4. **Phân tích:** quy trình mã hóa (mở→trục→chọn lọc — kỹ thuật Strauss & Corbin ĐẶC TRƯNG của grounded theory, xem bước 1; hoặc framework analysis cho cách tiếp cận khác), xây **sổ mã (codebook)**, nhóm mã thành chủ đề, đối chiếu nhiều người mã (intercoder), member checking khi phù hợp.
 5. **Độ tin cậy (Lincoln & Guba):** credibility (tam giác đạc, member checking) · transferability (mô tả dày) · dependability (audit trail) · confirmability (reflexivity).
 6. **Mixed-methods (nếu có):** chọn thiết kế — hội tụ song song / giải thích tuần tự (ĐL→ĐT) / khám phá tuần tự (ĐT→ĐL) — và **điểm tích hợp**; trình **joint display**.
 
@@ -77,7 +77,7 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact qualitative-design
 ```
 
 ## Ranh giới
-- Nhận câu hỏi từ `cau-hoi-nghien-cuu`; phối hợp `thiet-ke-nghien-cuu`, `dao-duc-dang-ky` (ICF phỏng vấn/ghi âm), `quan-ly-du-lieu` (khử định danh bản gỡ băng), `viet-ban-thao` (báo cáo COREQ/SRQR).
+- Nhận câu hỏi từ `cau-hoi-nghien-cuu`; phối hợp `thiet-ke-nghien-cuu`, `dao-duc-dang-ky` (ICF phỏng vấn/ghi âm), `quan-ly-du-lieu` (khử định danh bản gỡ băng), `viet-ban-thao` (báo cáo COREQ/SRQR), `cong-cu-do-luong` (khi mixed-methods cần kiểm định một bộ câu hỏi/thang đo định lượng theo COSMIN — sửa 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 7: trước đây chỉ có dẫn chiếu MỘT CHIỀU từ cong-cu-do-luong sang đây).
 - **KHÔNG chạy thống kê suy diễn định lượng** (`phan-tich-thong-ke`); mixed-methods → bạn lo luồng định tính + tích hợp, luồng định lượng giao cụm thống kê. Sau mỗi sản phẩm, giao `so-cai-ghi-nho` lưu.
 
 
@@ -108,8 +108,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

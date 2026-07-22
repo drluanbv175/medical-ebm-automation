@@ -38,7 +38,7 @@ Bệnh chính + giai đoạn/tiên lượng (nếu có) · triệu chứng gây 
 
 1. **Đánh giá gánh nặng triệu chứng** bằng thang đã kiểm định (vd ESAS — Edmonton Symptom Assessment System; hoặc thang khác) — **nêu thang + cách chấm CHỈ khi có nguồn**; nếu không chắc điểm cắt/cách diễn giải → **[CẦN KIỂM CHỨNG]**, mô tả định tính thay vì điền số.
 2. **Lập kế hoạch kiểm soát từng triệu chứng** (mỗi triệu chứng kèm nguyên tắc + nguồn):
-   - **Đau:** áp **nguyên tắc bậc giảm đau WHO** (theo bậc, đúng giờ, đường ưu tiên, cá thể hóa — WHO Guidelines for the Pharmacological and Radiotherapeutic Management of Cancer Pain in Adults and Adolescents, Geneva: WHO, 2018, ISBN 978-92-4-155039-0); **liều/khoảng liều opioid CHỈ ghi khi có nguồn xác minh, nếu không → [CẦN KIỂM CHỨNG]**; luôn kèm **dự phòng táo bón do opioid** và cảnh báo theo dõi ức chế hô hấp/an thần. Mọi đơn opioid → qua `ke-don-an-toan`.
+   - **Đau:** áp **nguyên tắc bậc giảm đau WHO** (theo bậc, đúng giờ, đường ưu tiên, cá thể hóa — WHO Guidelines for the Pharmacological and Radiotherapeutic Management of Cancer Pain in Adults and Adolescents, Geneva: WHO, 2018, ISBN 978-92-4-155039-0); **liều/khoảng liều opioid CHỈ ghi khi có nguồn xác minh, nếu không → [CẦN KIỂM CHỨNG]**; luôn kèm **dự phòng táo bón do opioid** và cảnh báo theo dõi ức chế hô hấp/an thần. **Cân nhắc kê kèm NALOXONE (giảm hại — nguyên tắc, không phải liều) khi có yếu tố tăng nguy cơ quá liều** (liều opioid cao/tăng nhanh · dùng đồng thời benzodiazepine/an thần · người nhà/người chăm sóc có thể tiếp cận thuốc trong nhà) theo guideline opioid hiện hành (CDC 2022, PMID 36327391 / DOI 10.15585/mmwr.rr7103a1 — khớp nguyên tắc đã áp ở `dau-man-tinh.md`, vòng lặp kiểm tra-hoàn thiện vòng 7, 2026-07-22: trước đây thiếu hoàn toàn dù dân số giảm nhẹ thường liều cao hơn). Mọi đơn opioid → qua `ke-don-an-toan`.
    - **Khó thở:** nguyên tắc xử trí (không dược + dược theo guideline) — dẫn nguồn; liều **[CẦN KIỂM CHỨNG]** nếu chưa chắc.
    - **Buồn nôn/nôn · táo bón · mê sảng · lo âu cuối đời:** nguyên tắc tiếp cận theo cơ chế/nguyên nhân + lựa chọn theo guideline; phân biệt mê sảng có thể đảo ngược (tìm nguyên nhân) với cuối đời.
 3. **Thảo luận MỤC TIÊU CHĂM SÓC (goals of care):** giúp bác sĩ cấu trúc cuộc trò chuyện — hiện trạng/tiên lượng (trung thực, nhân văn) · điều người bệnh coi trọng nhất · cân bằng kéo dài sống vs chất lượng sống · giới hạn can thiệp người bệnh mong muốn. Trình bày để **quyết định chung** → `quyet-dinh-chung`. KHÔNG quyết thay người bệnh.
@@ -61,7 +61,7 @@ KẾ HOẠCH CHĂM SÓC GIẢM NHẸ — [bệnh chính / giai đoạn]
 • Gánh nặng triệu chứng (thang đã kiểm định, vd ESAS): ____ (điểm/mô tả — nguồn; [CẦN KIỂM CHỨNG] nếu chưa chắc)
 | Triệu chứng | Nguyên tắc xử trí (có nguồn) | Liều/thuốc | Theo dõi an toàn | Nguồn |
 |---|---|---|---|---|
-| Đau (bậc WHO) | | [CẦN KIỂM CHỨNG nếu chưa chắc] | + dự phòng táo bón; theo dõi an thần/hô hấp | |
+| Đau (bậc WHO) | | [CẦN KIỂM CHỨNG nếu chưa chắc] | + dự phòng táo bón; theo dõi an thần/hô hấp; naloxone nếu nguy cơ quá liều [CDC 2022] | |
 | Khó thở / buồn nôn / táo bón / mê sảng / lo âu | | | | |
 • Mục tiêu chăm sóc (goals of care): ____ (giá trị–ưu tiên người bệnh) → quyet-dinh-chung
 • Kế hoạch chăm sóc trước (ACP): ____ ([CẦN KIỂM CHỨNG] với yếu tố pháp lý)
@@ -117,8 +117,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
