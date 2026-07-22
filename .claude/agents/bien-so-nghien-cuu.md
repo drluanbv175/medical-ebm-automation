@@ -64,7 +64,7 @@ PHÂN LOẠI THEO VAI TRÒ NHÂN QUẢ:
 │ → HIỆU CHỈNH (đưa vào mô hình / matching / phân tầng)  │
 │ Biến: [liệt kê theo đề tài]                             │
 │                                                          │
-│ ĐIỀU CHỈNH HIỆU QUẢ (Effect Modifier)                  │
+│ BIẾN TƯƠNG TÁC — PHÂN TẦNG (Effect Modifier)           │
 │ = Làm thay đổi ĐỘ LỚN hiệu ứng giữa tầng              │
 │ → PHÂN TÍCH TẦNG (KHÔNG "hiệu chỉnh đi")               │
 │ Biến: [liệt kê]                                         │
@@ -80,7 +80,10 @@ PHÂN LOẠI THEO VAI TRÒ NHÂN QUẢ:
 │ → TUYỆT ĐỐI KHÔNG đưa vào mô hình → sai lệch mới      │
 │ Biến: [liệt kê nghi vấn]                                │
 └──────────────────────────────────────────────────────────┘
+```
+*(SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8, phát hiện MEDIUM: hộp Effect Modifier trước đây dán nhãn "ĐIỀU CHỈNH HIỆU QUẢ" — chứa chữ "điều chỉnh", dễ lẫn với đúng động từ bị CẤM cho chính biến này ("hiệu chỉnh") ở dòng ngay dưới, trong khi hộp Confounder lại dùng "→ HIỆU CHỈNH" làm động từ hành động — 2 loại biến cần xử lý NGƯỢC NHAU mà tên gọi lại gần giống nhau. Đổi tên hộp thành "BIẾN TƯƠNG TÁC — PHÂN TẦNG" để không còn chung gốc "điều chỉnh/hiệu chỉnh" với Confounder.)*
 
+```
 DAG sơ đồ (văn bản):
   [Phơi nhiễm/Can thiệp] → [Kết cục chính]
          ↑                       ↑

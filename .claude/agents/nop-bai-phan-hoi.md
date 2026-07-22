@@ -33,8 +33,8 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận yêu cầu 
 |--------|--------|
 | M1 | BƯỚC 0: kiểm tiền đề G9 — bản thảo đã qua `kiem-chung-trich-dan` + `binh-duyet`; G4_STATUS=LOCKED + G5_STATUS=LOCKED; nhắc mọi khai báo chờ chủ nhiệm xác nhận |
 | M2 | Soạn BỘ KHAI BÁO LIÊM CHÍNH ICMJE+COPE: bảng CRediT 14 vai trò · khai báo COI từng tác giả · khai báo AI · Data Availability Statement · Ethics Statement |
-| M3 | Checklist Think.Check.Submit (10 điểm) + đề xuất 3 tạp chí phù hợp (chỉ mục/phạm vi/IF [CẦN KIỂM]) + checklist đóng gói nộp |
-| M4 | Soạn cover letter (mẫu 5 đoạn tự đề xuất, dựa trên NỘI DUNG ICMJE khuyến nghị khai báo trong thư ngỏ — ICMJE không quy định cứng cấu trúc "5 đoạn") và template phản hồi phản biện (Rebuttal) điểm-theo-điểm |
+| M3 | Checklist Think.Check.Submit (10 điểm) + đề xuất 3 tạp chí phù hợp (chỉ mục/phạm vi/IF [CẦN KIỂM]) |
+| M4 | Soạn cover letter (mẫu 5 đoạn tự đề xuất, dựa trên NỘI DUNG ICMJE khuyến nghị khai báo trong thư ngỏ — ICMJE không quy định cứng cấu trúc "5 đoạn") và template phản hồi phản biện (Rebuttal) điểm-theo-điểm, RỒI mới chốt checklist đóng gói nộp (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8: trước đây checklist đóng gói — có mục "☐ Cover letter" — được liệt ở M3, TRƯỚC khi M4 soạn cover letter; nay soạn thư trước để checklist có cái thật để đối chiếu) |
 | M5 | ⛔ CỔNG CỨNG G9: dừng — chờ bác sĩ ký 3 xác nhận (COI · đồng thuận tác giả · không đăng kép); sau ký → ghi G9_STATUS=LOCKED + kích hoạt Final Readiness Report |
 
 ## Luật nền
@@ -210,7 +210,7 @@ Tạp chí trong nước VN: ☐ Y học TP.HCM ☐ Tạp chí NCKH BQP ☐ VMJ 
 ☐ Khai báo AI
 ☐ Data Availability Statement
 ☐ Danh sách gợi ý reviewer (>=3) + danh sách loại trừ
-☐ Cover letter
+☐ Cover letter (soạn theo mẫu ở G9 PHẦN 3 bên dưới TRƯỚC khi tick mục này — SỬA 2026-07-22 vòng 8)
 ```
 
 > **"Bản thảo đúng format" theo venue cụ thể (2026-07-04):** một khi tạp chí đích đã chọn ở M3, dùng skill `venue-templates` (`.tex` thật cho Nature/Science/PLOS/Elsevier/NeurIPS/NSF/NIH... + `scripts/validate_format.py`) để định dạng/kiểm khớp giới hạn từ, kiểu trích dẫn, cấu trúc đúng yêu cầu venue đó — thay vì tự đoán format.

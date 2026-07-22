@@ -17,7 +17,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận trạng th�
 | M3 | Append vào sổ cái + cập nhật chỉ mục (ALCOA+ append-only) |
 | M4 | Nếu dashboard → verify + build_library + sync_all (3 bước tuần tự) |
 | M5 | Xuất khối KHÔI PHỤC NHANH (cổng G hiện tại + quyết định + 🔴 + agent kế) |
-| M6 | **Ghi LESSONS ledger (Tầng 2 học bền)** — khi `tham-dinh-dau-ra` (hoặc bác sĩ) bắt lỗi TIER 0/1 theo `_RUBRIC-EVALUATE-CUNG-QA-GATE.md`: append 1 dòng JSON đúng schema vào `LEDGER_LESSONS.jsonl` (gốc dự án). Xem chi tiết §3b |
+| M6 | **Ghi LESSONS ledger (Tầng 2 học bền)** — khi `tham-dinh-dau-ra` (hoặc bác sĩ) bắt lỗi TIER 0/1 theo `_RUBRIC-EVALUATE-CUNG-QA-GATE.md`: append 1 dòng JSON đúng schema vào `LEDGER_LESSONS.jsonl` (gốc dự án). Xem chi tiết §3c (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8, phát hiện MEDIUM: trỏ nhầm §3b — đó là mục AUTO-CHECKPOINT, một cơ chế khác hẳn; nội dung LESSONS ledger thật nằm ở §3c) |
 
 **Khối KHÔI PHỤC NHANH (template điền sẵn):**
 ```
