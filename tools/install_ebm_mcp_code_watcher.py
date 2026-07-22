@@ -62,7 +62,7 @@ def _watched_relative(repo_root: Path) -> list[str]:
     khop DUNG pham vi voi hook."""
     chatgpt_app_dir = repo_root / "app/chatgpt_app"
     globbed = sorted(
-        str(p.relative_to(repo_root))
+        p.relative_to(repo_root).as_posix()
         for p in chatgpt_app_dir.glob("*")
         if p.is_file() and "__pycache__" not in p.parts
     )

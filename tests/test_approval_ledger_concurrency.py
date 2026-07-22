@@ -31,6 +31,8 @@ import threading
 import time
 from pathlib import Path
 
+import pytest
+
 from runtime.approval_ledger import ApprovalLedger, LedgerLockInvalidated
 from runtime.schemas import ApprovalDecisionEnum
 
@@ -147,6 +149,10 @@ def test_lock_file_created_alongside_ledger_and_reusable(tmp_path):
         assert fd is not None  # yield chính fd (thêm 2026-07-16) — locked_update dùng để re-check
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Windows prevents unlinking an open lock file, so this POSIX stale-lock attack is not reproducible",
+)
 def test_lock_deleted_mid_hold_causes_loud_failure_not_silent_dataloss(tmp_path):
     """T-RACE-4 — hồi quy vòng 2 (red-team đối kháng, CONFIRMED bằng script thật
     trước khi vá): xóa file .lock TRONG LÚC một tiến trình đang giữ khóa (giữa
@@ -210,6 +216,10 @@ def test_lock_deleted_mid_hold_causes_loud_failure_not_silent_dataloss(tmp_path)
     )
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Windows prevents unlinking an open lock file, so inode-replacement identity checks are POSIX-only",
+)
 def test_lock_identity_matches_detects_unlink_and_recreate(tmp_path):
     """T-RACE-5 — unit test trực tiếp cho _lock_identity_matches(): phải phân
     biệt đúng file GIỮ NGUYÊN (True) vs file đã bị xóa-rồi-tạo-lại (False, dù

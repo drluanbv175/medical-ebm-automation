@@ -13,10 +13,18 @@ thật đã bị revert).
 """
 from __future__ import annotations
 
+import shutil
 import subprocess
 from pathlib import Path
 
+import pytest
+
 SCRIPT = Path(__file__).resolve().parent.parent / "tools" / "watch_restart_ebm_tunnel.sh"
+
+pytestmark = pytest.mark.skipif(
+    shutil.which("zsh") is None,
+    reason="watch_restart_ebm_tunnel.sh is a macOS/zsh launchd watcher",
+)
 
 _FAKE_LAUNCHCTL = """#!/bin/bash
 if [[ "$1" == "print" ]]; then

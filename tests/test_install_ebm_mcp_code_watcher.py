@@ -8,8 +8,11 @@ tiếp — khoảng trống live-edit/instant-restart.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
+
+import pytest
 
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
@@ -70,6 +73,7 @@ def test_build_plist_passes_repo_root_as_program_argument(tmp_path: Path) -> Non
     assert payload["ProgramArguments"][-1] == str(tmp_path)
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX chmod mode bits are not meaningful on Windows")
 def test_install_local_files_locks_down_permissions(tmp_path: Path) -> None:
     """Hồi quy MEDIUM (vòng lặp kiểm tra-hoàn thiện vòng 3, 2026-07-21):
     logs.mkdir() trước đây không chmod — thư mục log TRÙNG đường dẫn với
