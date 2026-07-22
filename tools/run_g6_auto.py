@@ -2961,7 +2961,17 @@ def _r03_prediction_with_vars(v: dict) -> str:
     (TRIPOD+AI 2024) — phát triển + đánh giá nội bộ. KHÔNG dùng Cox/HR đơn
     biến như cohort thường — cần đa biến + shrinkage (chống overfitting) +
     bootstrap internal validation + calibration + discrimination (C-statistic)
-    + DCA, theo Riley RD et al. BMJ 2020;368:m441 (đã dùng ở G3)."""
+    + DCA, theo Riley RD et al. BMJ 2020;368:m441 (đã dùng ở G3).
+
+    SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện HIGH):
+    doctrine mo-hinh-tien-luong.md (M7) yêu cầu kiểm định NGOẠI (quần thể độc
+    lập) là "Bắt buộc" ngang hàng với kiểm định nội (bootstrap), nhưng bản
+    trước của hàm này KHÔNG có mục nào — kể cả comment hướng dẫn — cho kiểm
+    định ngoại (grep "ngoại"/"external" trên toàn file cho 0 kết quả). Thêm
+    mục 6) làm rõ: pipeline G0-G10 này chỉ vận hành trên MỘT bộ dữ liệu của
+    MỘT đề tài (không có quần thể độc lập thứ hai tự động), nên kiểm định
+    ngoại LUÔN cần bác sĩ/thống kê viên tự cung cấp dataset độc lập — code
+    sườn chỉ hướng dẫn CÁCH làm khi có dataset đó, không tự bịa ra được."""
     outcome  = v["outcome"]
     time_col = v["time_col"]
     covars   = v["covariates"]
@@ -2996,7 +3006,18 @@ source(here::here("scripts", "00_setup.R"))
 # 5) DECISION CURVE ANALYSIS (lợi ích lâm sàng ròng theo ngưỡng xác suất):
 # dcurves::dca({outcome} ~ pred, data = df) |> plot()
 
-message("03_analysis.R (Prediction/TRIPOD+AI) — kết cục={outcome} | predictors={cov_fml} | [CẦN DỮ LIỆU THẬT — C-statistic/R² kỳ vọng do bác sĩ/thống kê viên cấp theo Riley 2020, PMID 32188600]")
+# 6) KIỂM ĐỊNH NGOẠI (external validation) — BẮT BUỘC theo TRIPOD+AI M7,
+#    KHÔNG được thay thế bằng bootstrap internal validation ở mục 3. Cần một
+#    quần thể ĐỘC LẬP (khác thời gian/địa điểm thu thập) — [CẦN BÁC SĨ/THỐNG
+#    KÊ VIÊN CUNG CẤP df_external; pipeline này KHÔNG tự có quần thể thứ hai]:
+# df_external <- readRDS(file.path(DATA_PROC, "df_external_validation.rds"))  # [CẦN DỮ LIỆU THẬT]
+# pred_external <- predict(model_full, newdata = df_external, type = "response")
+# rms::val.prob(pred_external, df_external${outcome})  # calibration + discrimination TRÊN quần thể ngoại
+# [CẦN — nếu KHÔNG có quần thể độc lập, mô hình CHỈ được coi là "đã phát triển +
+# kiểm định nội" — KHÔNG được tuyên bố "đã kiểm định ngoại"/"sẵn sàng lâm sàng"
+# cho tới khi có bước này, theo mo-hinh-tien-luong.md M7]
+
+message("03_analysis.R (Prediction/TRIPOD+AI) — kết cục={outcome} | predictors={cov_fml} | [CẦN DỮ LIỆU THẬT — C-statistic/R² kỳ vọng do bác sĩ/thống kê viên cấp theo Riley 2020, PMID 32188600; kiểm định NGOẠI cần quần thể độc lập riêng, xem mục 6]")
 """
 
 

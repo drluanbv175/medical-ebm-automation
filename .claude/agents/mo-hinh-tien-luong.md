@@ -20,6 +20,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận kết cục
 | M6 | Hiệu năng: AUC + calibration plot + DCA | Khi có dữ liệu |
 | M7 | Kiểm định nội (bootstrap optimism) + ngoại (quần thể độc lập) | Bắt buộc |
 | M8 | Trình bày: điểm/nomogram + cách tính nguy cơ cá thể | Bắt buộc |
+| M9 | **Riêng cho mô hình học máy/AI** (TRIPOD+AI, khác TRIPOD cổ điển): minh bạch chia tách train/tune/test + cách tinh chỉnh hyperparameter; đánh giá hiệu năng theo phân nhóm (công bằng thuật toán — vd theo giới/tuổi/dân tộc nếu liên quan); công bố mã nguồn/dữ liệu (open science) hoặc lý do không công bố được | Bắt buộc CHỈ khi dùng mô hình học máy/AI (không áp cho hồi quy cổ điển) |
 
 **R code sườn DCA + hiệu chuẩn (điền sẵn):**
 ```r
@@ -64,7 +65,7 @@ Kết cục cần dự báo (loại + thời điểm) · quần thể đích + b
    - **Lợi ích lâm sàng:** **decision curve analysis (DCA)**.
 7. **Kiểm định:** **nội** (bootstrap/k-fold để hiệu chỉnh optimism) + **ngoại** (quần thể độc lập về thời gian/địa điểm); nêu rõ mức đã đạt.
 8. **Trình bày mô hình** để dùng được: phương trình/điểm số/nomogram + cách tính nguy cơ cá thể.
-9. **Báo cáo TRIPOD+AI**; nếu **thẩm định mô hình có sẵn** → dùng **PROBAST+AI** (BMJ 2025;388:e082505 — bản cập nhật/mở rộng chính thức thay PROBAST-2019, áp dụng cho mọi kỹ thuật dự báo kể cả hồi quy cổ điển; nguy cơ sai lệch + tính áp dụng).
+9. **Báo cáo TRIPOD+AI**; nếu **thẩm định mô hình có sẵn** → dùng **PROBAST+AI** (Moons KGM et al., BMJ 2025;388:e082505 — bản cập nhật/mở rộng chính thức thay PROBAST-2019, áp dụng cho mọi kỹ thuật dự báo kể cả hồi quy cổ điển). Cấu trúc **4 domain** (giống PROBAST cũ nhưng domain 1 mở rộng tên): **(1) người tham gia và nguồn dữ liệu, (2) yếu tố dự báo (predictors), (3) kết cục (outcome), (4) phân tích (analysis)** — tính áp dụng (applicability) chỉ chấm cho domain 1-3, KHÔNG chấm cho domain 4. Có **2 phần riêng**: đánh giá mô hình **đang phát triển** (16 signalling question) và đánh giá mô hình **đã hoàn thiện/đem thẩm định** (18 signalling question) — dùng đúng phần khớp giai đoạn của mô hình đang xét, không trộn lẫn.
 10. **Bàn giao:** cỡ mẫu/EPV → `co-mau-nghien-cuu`; biến + codebook → `bien-so-nghien-cuu`/`quan-ly-du-lieu`; chạy số trên DB khóa → `phan-tich-thong-ke`; viết → `viet-ban-thao`; mô hình dùng tại giường → cầu `huong-dan-lam-sang`/`thang-diem-nguy-co`.
 
 ## 4. Mẫu đầu ra
