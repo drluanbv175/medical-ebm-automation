@@ -15,10 +15,10 @@ path,sha256,size_bytes
 .claude/agents/dieu-phoi-lam-sang.md,31f2f68815ae2bb8561c7fe665d8d42f238a433b4c5fe76ca8aec89e4e1b5e2c,28152
 .claude/agents/dieu-phoi-nghien-cuu.md,fefbfc65fc97069c135f4bb6cfc2136e1048f5034510d9e7f362dd87096a144f,51675
 .claude/agents/du-phong-tam-soat.md,d242aa1cae05f5e4194e97fb827a643c98fc224f3f9e9f9902362bdcbc7fd488,10981
-.claude/agents/hieu-dinh-song-ngu.md,c7d3dedcb6b6eb2f200e8d927ed767214b3b94f64ef768a4b625c2aea1e1cd8a,10966
+.claude/agents/hieu-dinh-song-ngu.md,3c95f087b0af3c051d54b5e76d8490e67e880797dd689e1146f968f3c9cd1cbe,11206
 .claude/agents/huong-dan-lam-sang.md,003ff80a27ff2abb9fb22e2d47a4c9367b6b7757b54328e7dddf9ddfa6a4ac14,9765
 .claude/agents/ke-don-an-toan.md,1770f5185ac34dfb68d0448fd390af7c70110943e2ae1947e916a5f50bc67bee,16382
-.claude/agents/ke-hoach-trien-khai.md,c30c6ab69f1e2549f262d16eb4dac1a202a42db495db17aa1cd68092f1db5bbc,13813
+.claude/agents/ke-hoach-trien-khai.md,0f41fef215019b02809c978bc872faf3cc2d10662aed7c2fb9744ec549a55ef5,14195
 .claude/agents/ket-qua-hoc-tap.md,2d9fd44b9fc6f850d3a540b7c3e2ed70092d13e8fdf523930edef4ba2f80a4af,8748
 .claude/agents/khai-thac-benh-su-kham.md,6d8d86bf0eaa302674d65a83806821e56efee80fb28752c662cd2393da88f474,10457
 .claude/agents/khoang-trong-nghien-cuu.md,488043d194c8066adfe098fb9701ea074a9c389d3e773bf344bbdc001ee2d0df,8701
@@ -35,8 +35,8 @@ path,sha256,size_bytes
 .claude/agents/quan-ly-khang-dong.md,08f750cc178bf6595d94ccd0860e5a0736618d2f58b6b8ba0e88cfd99dc2ba9b,19735
 .claude/agents/quyet-dinh-chung.md,61e4b24351b7d7f298947f98e1bd7edf033d45958367c22c81fdef9b2892c170,9581
 .claude/agents/sang-loc-co-do.md,3dc4604a093ac100040dba03651b6f74a8b11be82430b6b04bd9cdef85892c4e,20432
-.claude/agents/so-cai-ghi-nho.md,562e022456413e1088104cf61f9621209761b87811927338d5166c4c9b982932,15313
-.claude/agents/tham-dinh-dau-ra.md,93f8bcb829e4dfbd78338f011e9283f0a0ac64febcfce7e0d2c6a796413e4a13,27637
+.claude/agents/so-cai-ghi-nho.md,7e93f23189adf5537c3e87f21616b3fb5a3b1e0b2c79c924deab4aca641024be,16108
+.claude/agents/tham-dinh-dau-ra.md,89f8f53659b7efb3f2f972e5cd008c698a004c6281acd70065936e30d10fcd0d,32328
 .claude/agents/tham-dinh-do-chinh-xac-chan-doan.md,327a23bc54ce153790fab862c73dc45e10dbab9041d54a73c786ca1095117812,16032
 .claude/agents/tham-dinh-grade-nnt.md,550a14ca947568ee094977244ec37b73fee3489f2b584dc99d5a779ae5bb6326,20398
 .claude/agents/tham-dinh-phe-binh.md,befbcdd1e06150cd7743d7ab66a65386f3df590c545071717296503c3af9c564,11946

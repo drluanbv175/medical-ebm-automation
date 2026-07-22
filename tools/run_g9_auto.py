@@ -1186,8 +1186,8 @@ def main():
         help="Mã đề tài (cùng với --study ở các cổng G0-G8)",
     )
     parser.add_argument(
-        "--n-authors", type=int, default=1,
-        help="Số tác giả (mặc định: 1). Sinh form COI và ICMJE cho từng người.",
+        "--n-authors", type=int, default=None,
+        help="Số tác giả (mặc định: 1 nếu không truyền/không có pin). Sinh form COI và ICMJE cho từng người.",
     )
     parser.add_argument(
         "--target-journal", default="",
@@ -1205,9 +1205,17 @@ def main():
 
     # THÊM 2026-07-08 (CRIT-05): gọi thẳng script (không qua run_pipeline.py)
     # trước đây mất n_authors/target_journal bác sĩ đã pin khi chạy lại.
+    # SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 8, phát hiện MEDIUM): trước đây
+    # dùng default=1 làm sentinel cho "bác sĩ không truyền --n-authors" — nhưng 1 cũng là
+    # giá trị HỢP LỆ bác sĩ có thể gõ tường minh (vd rút bớt đồng tác giả), nên bị pin cũ
+    # đè âm thầm không cảnh báo. Nay default=None phân biệt được "không truyền" (None) với
+    # "gõ tường minh 1"; chỉ khôi phục từ pin khi bác sĩ THẬT SỰ không truyền cờ.
     _g9_pinned = (GC.load_study_meta(out_dir).get("gate_params") or {}).get("G9") or {}
-    if args.n_authors == 1 and _g9_pinned.get("n_authors") is not None:
+    if args.n_authors is None and _g9_pinned.get("n_authors") is not None:
         args.n_authors = _g9_pinned["n_authors"]
+        print(f"  → Khôi phục n_authors={args.n_authors} từ study_meta.json (pin trước đó)")
+    if args.n_authors is None:
+        args.n_authors = 1
     if not args.target_journal and _g9_pinned.get("target_journal"):
         args.target_journal = _g9_pinned["target_journal"]
 

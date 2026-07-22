@@ -131,7 +131,7 @@ NHÓM 3 — CÔNG BỐ:
 | Dịch thuật/hiệu đính | [CẦN] |
 Tổng công bố: ___
 
-NHÓM 4 — DỰ PHÒNG (10–15% tổng):
+NHÓM 4 — DỰ PHÒNG ([CẦN CHỦ NHIỆM ẤN ĐỊNH tỷ lệ % — tham khảo phổ biến 10–15% tổng, KHÔNG phải định mức bắt buộc; SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8, phát hiện LOW: trước đây "10–15%" là con số cụ thể DUY NHẤT trong bảng thoát khỏi cơ chế đánh dấu chờ chủ nhiệm, không nhất quán với mọi đơn giá khác]):
 Tổng dự phòng: ___
 
 ══════════════════════════════════════════

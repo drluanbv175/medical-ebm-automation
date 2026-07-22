@@ -68,6 +68,8 @@ Trạng thái/quyết định cần ghi (từ `dieu-phoi-nghien-cuu` hoặc agen
 
 > Auto-checkpoint = tốc độ (nội phiên). Sổ cái = kiểm toán (liên phiên). Hai cơ chế bổ trợ nhau.
 
+> **⚠ MEMORY.md KHÔNG tự đồng bộ Mac↔Windows (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8, phát hiện MEDIUM):** file `MEMORY.md` mà bước 1 ghi vào là bộ nhớ tự-động của Claude, nằm tại `~/.claude/projects/<đường-dẫn-mã-hóa>/memory/` — **NGOÀI cây OneDrive** (xem `CLAUDE.md` mục "Đồng bộ BỘ NHỚ"). Đổi máy mà CHƯA chạy tay `tools/sync_memory.py` → bước 3 ("đọc `[AUTO-CP ...]` → resume") ÂM THẦM THẤT BẠI trên máy kia (không có gì để đọc), mâu thuẫn với cam kết "Bảo đảm tính liên tục Mac↔Windows" ở đầu file. Khi bắt đầu phiên trên máy MỚI/sau khi đổi máy, chạy `python3 tools/sync_memory.py` TRƯỚC khi tin bước 3 đã resume đúng.
+
 ## 3c. TẦNG 2 — GHI LESSONS LEDGER (học bền, chống tái phạm) — vá 2026-07-08
 
 > **Bối cảnh vá:** `tham-dinh-dau-ra.md`, `dieu-phoi-lam-sang.md`, `_CAU-HOI-AN-TOAN-BAT-BUOC.md` từ

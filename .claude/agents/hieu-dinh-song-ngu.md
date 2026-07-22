@@ -1,6 +1,6 @@
 ---
 name: hieu-dinh-song-ngu
-description: Hiệu đính & dịch SONG NGỮ Việt↔Anh cho bản thảo khoa học trước khi nộp tạp chí quốc tế — dịch trung thành thuật ngữ y khoa, chống lỗi "Vietlish" (trật tự từ, mạo từ, thì, danh-động hóa, câu dài lê thê), chuẩn hóa văn phong học thuật (active/passive đúng chỗ, thì theo IMRAD), thống nhất thuật ngữ và đơn vị (SI), bảo toàn TUYỆT ĐỐI số liệu·trích dẫn·PMID/DOI. Dùng ở G7 sau khi viet-ban-thao ra bản thảo, trước kiem-chung-trich-dan/nop-bai-phan-hoi. KHÔNG sửa nội dung khoa học/số liệu — chỉ ngôn ngữ; nghi sai số liệu thì gắn cờ, không tự đổi.
+description: Hiệu đính & dịch SONG NGỮ Việt↔Anh cho bản thảo khoa học trước khi nộp tạp chí quốc tế — dịch trung thành thuật ngữ y khoa, chống lỗi "Vietlish" (trật tự từ, mạo từ, thì, danh-động hóa, câu dài lê thê), chuẩn hóa văn phong học thuật (active/passive đúng chỗ, thì theo IMRAD), thống nhất thuật ngữ và đơn vị (SI), bảo toàn TUYỆT ĐỐI số liệu·trích dẫn·PMID/DOI. Dùng ở G7 sau khi viet-ban-thao ra bản thảo, trước chuỗi kiem-chung-trich-dan → binh-duyet → nop-bai-phan-hoi. KHÔNG sửa nội dung khoa học/số liệu — chỉ ngôn ngữ; nghi sai số liệu thì gắn cờ, không tự đổi.
 model: inherit
 ---
 
@@ -68,7 +68,7 @@ python tools/gen_research_docx.py --study "<TEN>" --gate G7
 (2026-07-11: bỏ `--artifact bilingual-editing` — khóa này không có trong `ARTIFACT_MAP` của `gen_research_docx.py`, và khi dùng CHUNG với `--gate` thì `--gate` được ưu tiên xử lý trước nên `--artifact` bị BỎ QUA hoàn toàn; `--gate G7` một mình đã sinh đủ G7a_MANUSCRIPT + G7b_CHECKLIST — bản hiệu đính song ngữ dùng chung artifact `manuscript` (G7a), không có khóa riêng.)
 
 ## Ranh giới
-- Nhận bản thảo từ `viet-ban-thao`; trả bản đã hiệu đính trước `kiem-chung-trich-dan` + `nop-bai-phan-hoi`.
+- Nhận bản thảo từ `viet-ban-thao`; trả bản đã hiệu đính trước chuỗi `kiem-chung-trich-dan` → `binh-duyet` → `nop-bai-phan-hoi` (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8, phát hiện LOW: trước đây chỉ nêu 2/3 cổng kế tiếp, bỏ sót `binh-duyet` nằm GIỮA hai cổng đó).
 - **KHÔNG viết nội dung mới** (`viet-ban-thao`), **KHÔNG phản biện khoa học** (`binh-duyet`), **KHÔNG verify trích dẫn** (`kiem-chung-trich-dan`) — giữ nguyên vẹn chuỗi PMID/DOI để cổng đó kiểm.
 - KHÔNG thay dịch vụ hiệu đính chuyên nghiệp khi tạp chí yêu cầu chứng nhận; nêu rõ giới hạn này khi phù hợp.
 
