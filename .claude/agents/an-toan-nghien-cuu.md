@@ -81,8 +81,11 @@ PHÂN ĐỘ NẶNG (CTCAE nếu phù hợp):
   Grade 4: Nguy hiểm tính mạng — cần can thiệp khẩn cấp
   Grade 5: Tử vong liên quan can thiệp
   Phiên bản CTCAE dùng: ___ (nêu rõ vì phân độ thay đổi giữa phiên bản)
-  Nguồn: NCI CTCAE v6.0 cho đề tài MỚI (phát hành 2025; NCI CTEP/DCP áp dụng cho thử nghiệm
-  mới từ 01/01/2026, xác nhận qua dctd.cancer.gov 2026-07-11) — v5.0 chỉ còn dùng cho đề tài
+  Nguồn: NCI CTCAE v6.0 cho đề tài MỚI (phát hành 2025; mốc NCI CTEP/DCP áp dụng cho thử
+  nghiệm mới ĐƯỢC NHẮM (targeted) 01/01/2026 nhưng CHÍNH nguồn dctd.cancer.gov ghi rõ mốc
+  này PHỤ THUỘC vào việc phần mềm bắt buộc (Rave ALS 7.2) đã phát hành hay chưa — xác nhận
+  qua dctd.cancer.gov 2026-07-21: KHÔNG coi 01/01/2026 là ngày chắc chắn, kiểm tra thông báo
+  chính thức mới nhất của CTEP/DCP tại thời điểm dùng) — v5.0 chỉ còn dùng cho đề tài
   ĐANG chạy đã bắt đầu trước khi có v6.0 (không bắt buộc chuyển đổi ngược)
   (dctd.cancer.gov/research/ctep-trials/for-sites/adverse-events)
 

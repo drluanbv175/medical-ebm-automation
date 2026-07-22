@@ -49,7 +49,7 @@ def _write_cross_sectional_fixture(d: Path, specialty="generic",
         "G3": {"study": "FIXT", "gate": "G3", "guardrail": "✅ PASS",
                "design_code": "cross_sectional", "alpha": 0.05, "power": 0.8,
                "n_per_group": 385, "n_total": 385, "n_adjusted": 428,
-               "dropout": 0.1, "formula_used": "Wilson prevalence: p=0.50, e=0.05"},
+               "dropout": 0.1, "formula_used": "Cỡ mẫu ước lượng tỷ lệ (xấp xỉ chuẩn/Cochran): p=0.50, e=0.05"},
         "G4": {"study": "FIXT", "gate": "G4", "guardrail": "✅ PASS",
                "g4_sap_version": "1.0", "g4_status": "PENDING",
                "reporting_standard": "STROBE"},
@@ -105,7 +105,7 @@ class TestAssemble:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         assert "428" in text            # N điều chỉnh
-        assert "Wilson prevalence" in text
+        assert "Cỡ mẫu ước lượng tỷ lệ" in text
 
     def test_gate_table_has_all_10_skill_gates(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)

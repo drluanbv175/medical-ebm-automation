@@ -518,15 +518,24 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
     # cho Primary Purpose là mơ hồ -- WHO ICTRP có hạng mục "Prognosis" riêng,
     # đúng hơn cho đa số đề tài "prediction" (khác "diagnostic" đã có nhãn riêng
     # "Diagnostic" -- 2 mã thiết kế này KHÔNG cùng ý nghĩa WHO Primary Purpose).
+    # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện LOW):
+    # "qualitative" lặp lại ĐÚNG lỗ hổng vừa vá cho "prediction" ở trên (thêm
+    # 2026-07-17) — thiếu khỏi 2 bảng này khiến .get() fallback về "Observational"/
+    # "Other" mơ hồ. "Health Services Research" là bucket WHO ICTRP hợp lý nhất
+    # cho đa số đề tài định tính của hệ thống này (thường về trải nghiệm/hài
+    # lòng bệnh nhân, quy trình chăm sóc — khớp ví dụ định tính thật đang chạy,
+    # xem exports/hai-long-benh-nhan-C1a-BVQY175/); đề tài định tính khác chủ đề
+    # (vd giáo dục y khoa) cần bác sĩ tự điều chỉnh Trường 14, không tự động
+    # đoán đúng mọi chủ đề định tính được.
     who_design_type_map = {
         "rct": "Interventional", "cohort": "Observational", "case_control": "Observational",
         "cross_sectional": "Observational", "diagnostic": "Observational", "sr_ma": "Not Applicable",
-        "prediction": "Observational",
+        "prediction": "Observational", "qualitative": "Observational",
     }
     who_primary_purpose_map = {
         "rct": "Treatment", "cohort": "Observational", "case_control": "Epidemiology",
         "cross_sectional": "Epidemiology", "diagnostic": "Diagnostic", "sr_ma": "Health Services Research",
-        "prediction": "Prognosis",
+        "prediction": "Prognosis", "qualitative": "Health Services Research",
     }
 
     ncts_for_ref = " · ".join([f"[{t['nct_id']}]({t['url']})" for t in ct_trials[:3]]) if ct_trials else "[Không tìm được thử nghiệm tương tự]"

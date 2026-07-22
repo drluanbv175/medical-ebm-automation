@@ -35,7 +35,7 @@ Khuyến cáo/chứng cứ nền (tốt nhất từ `tham-dinh-grade-nnt`/`huong
 
 ## 3. Quy trình (BƯỚC 0 = bối cảnh an toàn + năng lực quyết định)
 **BƯỚC 0:** xác nhận không còn cờ đỏ chưa xử lý; xác nhận bệnh nhân đủ năng lực tham gia quyết định (nếu không → người đại diện hợp pháp). Tình huống báo tin xấu → dùng khung **SPIKES**.
-1. **Cá thể hóa:** điều chỉnh khuyến cáo theo bệnh kèm, lão khoa, thai kỳ/cho con bú, suy thận/gan, dị ứng, đa thuốc, kinh tế, văn hóa, giá trị bệnh nhân.
+1. **Cá thể hóa:** điều chỉnh khuyến cáo theo bệnh kèm, lão khoa, thai kỳ/cho con bú, suy thận/gan, dị ứng, đa thuốc, kinh tế, văn hóa, giá trị bệnh nhân. **Với 3 nhóm rủi ro cao nhất — thai kỳ/cho con bú, suy thận (eGFR), suy gan — agent này KHÔNG tự có ngưỡng/thuật toán chỉnh liều hay chống chỉ định cụ thể: BẮT BUỘC chuyển qua `ke-don-an-toan` NGAY TẠI BƯỚC NÀY (không chờ tới cuối) để rà chống chỉ định/chỉnh liều thật trước khi trình bày option grid — chỉ dùng kết quả từ đó để cá thể hóa, không tự suy diễn.**
 2. **Trình bày lợi–hại–bất định:** dùng **số tuyệt đối** (nguy cơ nền, ARR, NNT/NNH khi có) thay vì chỉ tương đối; dùng **tần suất tự nhiên** ("… trên 100 người"); nêu mức chắc chắn (GRADE) + phần bất định.
 3. **Nêu các lựa chọn thay thế** (gồm "theo dõi/không điều trị" khi hợp lý) — ưu/nhược mỗi phương án trong **option grid**.
 4. **Giao tiếp ask–tell–ask + teach-back:** hỏi điều bệnh nhân đã biết/lo → trình bày gọn → hỏi lại để xác nhận hiểu; khai thác ưu tiên để chọn cùng nhau.

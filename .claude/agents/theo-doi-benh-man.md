@@ -57,13 +57,13 @@ Bệnh mạn cần theo dõi · mức kiểm soát hiện tại (nếu có: HbA1
 | Bệnh mạn | Guideline neo (đối chiếu phiên bản hiện hành) |
 |---|---|
 | Đái tháo đường type 2 | ADA *Standards of Care* (cập nhật hằng năm) · BYT |
-| Tăng huyết áp | **2025 AHA/ACC** (Circulation 2025, DOI:10.1161/CIR.0000000000001356) hoặc **2024 ESC** (Eur Heart J 2024) — đã thay bản 2017/ESC cũ, xem chi tiết + PMID ở `playbooks-lam-sang/tang-huyet-ap.md` · BYT |
+| Tăng huyết áp | AHA/ACC hoặc ESC (bản hiện hành — đối chiếu năm ban hành mới nhất tại thời điểm dùng, KHÔNG neo cứng một năm cũ; **2025 AHA/ACC** (Circulation 2025, DOI:10.1161/CIR.0000000000001356) và **2024 ESC** (Eur Heart J 2024) là bản MỚI NHẤT tại thời điểm viết doctrine này, đã thay bản 2017/ESC cũ — xem chi tiết + PMID ở `playbooks-lam-sang/tang-huyet-ap.md`) · BYT |
 | Rối loạn lipid máu | ACC/AHA hoặc ESC/EAS (bản hiện hành — đối chiếu năm ban hành mới nhất tại thời điểm dùng, KHÔNG neo cứng một năm cũ) |
 | Bệnh thận mạn (± ĐTĐ) | KDIGO (CKD / ĐTĐ-CKD, bản hiện hành) |
 | COPD | GOLD (cập nhật hằng năm) |
 | Hen | GINA (cập nhật hằng năm) |
 | Suy tim | ESC hoặc AHA/ACC/HFSA (bản hiện hành) |
-| Gút | ACR 2020 · EULAR |
+| Gút | ACR hoặc EULAR (bản hiện hành — đối chiếu năm ban hành mới nhất tại thời điểm dùng; ACR 2020 là bản gần nhất tại thời điểm viết doctrine này) |
 | Suy giáp | ATA (bản hiện hành) |
 | Rung nhĩ (theo dõi) | ESC hoặc AHA/ACC/ACCP/HRS (bản hiện hành) — phối `thang-diem-nguy-co` (CHA₂DS₂-VASc/HAS-BLED) |
 

@@ -112,7 +112,17 @@ def n_log_rank(hr, alpha=0.05, power=0.80, p_event=0.30):
     return n_total, n_events
 
 def n_prevalence(p, e=0.05, alpha=0.05):
-    """Cỡ mẫu ước lượng tỷ lệ (Wilson)."""
+    """Cỡ mẫu ước lượng tỷ lệ: n = zα/2² × p(1-p) / e².
+
+    SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện MEDIUM):
+    docstring/nhãn cũ ghi "(Wilson)" nhưng công thức thật là xấp xỉ CHUẨN/
+    Wald cổ điển (Cochran) suy từ nới rộng CI kiểu Wald (e = zα/2·√(p(1-p)/n))
+    — KHÔNG phải công thức Wilson score interval thật (Wilson không có dạng
+    đóng đơn giản n=z²p(1-p)/e², chính vì Wilson được thiết kế để tránh
+    nhược điểm của xấp xỉ chuẩn ở p gần 0/1). Đổi nhãn cho đúng — KHÔNG đổi
+    công thức (đã có test khóa số tests/test_gate_g3_formulas.py); với p rất
+    gần 0/1 (bệnh hiếm), công thức này có thể ước lượng kém hơn Wilson thật —
+    cần thống kê viên đối chiếu nếu p nằm ngoài khoảng 0.1-0.9."""
     if not (0 < p < 1):
         raise InvalidEffectSizeError(f"Tỷ lệ p phải trong (0,1), nhận được p={p}")
     if not (0 < e < 1):
@@ -203,7 +213,17 @@ def extract_best_effect(effect_samples):
     return None, None, None
 
 def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_event=0.30, p0=0.30, sd=None):
-    """Bảng phân tích độ nhạy: power × effect_size → N."""
+    """Bảng phân tích độ nhạy: power × effect_size → N.
+
+    SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6): viết lại để LUÔN
+    khớp đúng logic thật trong main() cho MỌI thiết kế main() hỗ trợ (6/6,
+    trước đây thiếu cross_sectional/diagnostic — bảng "PHẦN 3 — PHÂN TÍCH ĐỘ
+    NHẠY" trả về 100% "N/A" cho 2 thiết kế này dù N chính đã tính được bình
+    thường, và nhánh cohort+OR/RR dùng SAI công thức Schoenfeld log-rank cho
+    effect size không phải HR — cùng lỗi đã sửa ở main(), xem elif phía
+    trên). Ô bị KẸP p2≤0 (nhánh ARR%) nay đánh dấu "*" thay vì im lặng, khớp
+    tinh thần clamp_note của main() (không lặp lại nguyên văn ghi chú dài
+    trong một ô bảng hẹp)."""
     powers = [0.70, 0.80, 0.90]
     mults = [0.80, 1.00, 1.20]  # -20%, cơ sở, +20%
     rows = []
@@ -221,9 +241,12 @@ def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_eve
                 # TRƯỚC design_code, đồng bộ với logic thật trong main().
                 elif effect_type == "ARR%" and design_code in ("rct", "cohort", "case_control"):
                     p1, p2 = p0, p0 - ev / 100
-                    if p2 <= 0:
+                    clamped = p2 <= 0
+                    if clamped:
                         p2 = 0.05
                     n = n_two_proportion(p1, p2, alpha, pwr) * 2
+                    if clamped:
+                        n = f"{n}*"
                 elif design_code == "case_control" and effect_type in ("OR", "RR", "HR"):
                     # SỬA: đồng bộ với main() — case-control dùng two-proportion
                     # trên tỷ lệ phơi nhiễm suy từ OR, KHÔNG dùng log-rank
@@ -232,12 +255,29 @@ def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_eve
                     odds1 = ev * odds0
                     p1_exposed = odds1 / (1 + odds1)
                     n = n_two_proportion(p1_exposed, p0, alpha, pwr) * 2
-                elif effect_type in ("HR",) and design_code in ("cohort", "rct"):
+                elif design_code == "cohort" and effect_type == "HR":
                     ev_hr = ev if ev < 1.0 else 1 / ev
                     n, _ = n_log_rank(ev_hr, alpha, pwr, p_event)
-                elif effect_type in ("OR", "RR") and design_code == "cohort":
+                elif design_code == "cohort" and effect_type in ("OR", "RR"):
+                    # SỬA (cùng finding với main()): OR/RR của cohort là so
+                    # sánh tỷ lệ TÍCH LŨY, không phải HR — dùng two-proportion,
+                    # KHÔNG dùng Schoenfeld log-rank.
+                    if effect_type == "OR":
+                        odds0 = p0 / (1 - p0)
+                        odds1 = ev * odds0
+                        p1_exposed = odds1 / (1 + odds1)
+                    else:
+                        p1_exposed = min(max(p0 * ev, 1e-6), 1 - 1e-6)
+                    n = n_two_proportion(p1_exposed, p0, alpha, pwr) * 2
+                elif design_code == "rct" and effect_type == "HR":
                     ev_hr = ev if ev < 1.0 else 1 / ev
                     n, _ = n_log_rank(ev_hr, alpha, pwr, p_event)
+                elif design_code == "cross_sectional":
+                    p = ev if 0 < ev < 1.0 else 0.30
+                    n = n_prevalence(p, 0.05, alpha)
+                elif design_code == "diagnostic":
+                    auc = ev if effect_type == "AUC" else 0.75
+                    n = n_auc(auc, alpha, pwr)
                 else:
                     row.append("N/A")
                     continue
@@ -796,13 +836,43 @@ def main():
               "power/effect size) — N=0 có chủ đích, xem artifact A4/nghien-cuu-dinh-tinh")
     elif effect_val:
         try:
-            if design_code == "cohort" and effect_type in ("HR", "OR", "RR"):
+            if design_code == "cohort" and effect_type == "HR":
                 ev = effect_val if effect_val < 1.0 else 1 / effect_val
                 n_total_raw, n_events = n_log_rank(ev, alpha, power, p_event)
                 n_per_group = math.ceil(n_total_raw / 2)
                 n_total = n_per_group * 2
                 n_adjusted = math.ceil(n_total / (1 - dropout))
                 formula_used = f"Schoenfeld log-rank: d = (zα/2+zβ)²/ln(HR)² = {n_events} biến cố → N={n_total}"
+            elif design_code == "cohort" and effect_type in ("OR", "RR"):
+                # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện
+                # HIGH): nhánh cũ đưa THẲNG giá trị OR/RR vào n_log_rank() như
+                # thể là HR — công thức Schoenfeld log-rank chỉ đúng cho hazard
+                # ratio (dữ liệu thời gian-đến-biến-cố có kiểm duyệt), KHÔNG
+                # tương đương OR/RR khi biến cố không hiếm (kiểm chứng tay:
+                # OR=0.5 với p0=0.30 cho RR thật≈0.588, dùng OR trực tiếp làm
+                # N thấp hơn ~41% so với dùng RR quy đổi đúng → nguy cơ nghiên
+                # cứu THIẾU LỰC THỐNG KÊ). Khi effect size là OR/RR (không phải
+                # HR thật), đây là so sánh TỶ LỆ TÍCH LŨY (cumulative incidence)
+                # giữa 2 nhóm phơi nhiễm — dùng two-proportion (cùng kỹ thuật
+                # đã áp cho case_control), KHÔNG dùng Schoenfeld (vốn cần cấu
+                # trúc thời gian-đến-biến-cố mà một OR/RR đơn thuần không có).
+                p0_baseline = args.p0  # tỷ lệ biến cố tích lũy NỀN ở nhóm không phơi nhiễm
+                if effect_type == "OR":
+                    odds0 = p0_baseline / (1 - p0_baseline)
+                    odds1 = effect_val * odds0
+                    p1_exposed = odds1 / (1 + odds1)
+                else:  # RR
+                    p1_exposed = min(max(p0_baseline * effect_val, 1e-6), 1 - 1e-6)
+                n_per_group = n_two_proportion(p1_exposed, p0_baseline, alpha, power)
+                n_total = n_per_group * 2
+                n_adjusted = math.ceil(n_total / (1 - dropout))
+                formula_used = (f"Two-proportion (cohort, {effect_type}={effect_val:.2f} → "
+                                 f"tỷ lệ biến cố tích lũy phơi nhiễm≈{p1_exposed:.2f} vs "
+                                 f"không phơi nhiễm={p0_baseline:.2f}). [CẦN — --p0 ở đây là TỶ "
+                                 "LỆ BIẾN CỐ TÍCH LŨY NỀN của nhóm không phơi nhiễm; nếu đề tài "
+                                 "thật sự có dữ liệu thời gian-đến-biến-cố và effect size là HR "
+                                 "thật (không phải OR/RR), dùng --effect-type HR để tính bằng "
+                                 "Schoenfeld log-rank thay vì công thức này.]")
             elif design_code == "case_control" and effect_type in ("OR", "RR", "HR"):
                 # SỬA: case-control (hồi cứu, chọn mẫu theo tình trạng bệnh)
                 # không có trục "thời gian đến biến cố" hợp lệ để dùng
@@ -876,7 +946,7 @@ def main():
                 n_total = n_prevalence(p, 0.05, alpha)
                 n_per_group = n_total
                 n_adjusted = math.ceil(n_total / (1 - dropout))
-                formula_used = f"Wilson prevalence: p={p:.2f}, e=0.05"
+                formula_used = f"Cỡ mẫu ước lượng tỷ lệ (xấp xỉ chuẩn/Cochran): p={p:.2f}, e=0.05"
             elif design_code == "diagnostic":
                 auc = effect_val if effect_type == "AUC" else 0.75
                 n_total = n_auc(auc, alpha, power)

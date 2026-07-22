@@ -206,6 +206,14 @@ _DESIGN_LABEL = {
     "rct": "Thử nghiệm Ngẫu nhiên Đối chứng (RCT)",
     "diagnostic": "Nghiên cứu Độ chính xác Chẩn đoán",
     "sr_ma": "Tổng quan Hệ thống / Phân tích gộp",
+    # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện MEDIUM):
+    # thiếu 2/8 mã canonical — bác sĩ PIN design_code='prediction'/'qualitative'
+    # qua study_meta.json (_apply_design_pin()) nhận nhãn generic "Thiết kế:
+    # prediction" thay vì nhãn tiếng Việt đầy đủ mà infer_study_design() (dòng
+    # 664/700) đã dùng cho CÙNG 2 mã này qua đường suy luận tự động — khớp
+    # NGUYÊN VĂN 2 chuỗi đó để nhất quán bất kể đi đường nào.
+    "prediction": "Nghiên cứu Phát triển/Đánh giá Mô hình Tiên lượng (Prediction Model)",
+    "qualitative": "Nghiên cứu Định tính (Qualitative Research)",
 }
 
 
@@ -907,12 +915,41 @@ def generate_g1_artifact(topic: str, study_name: str, question_type: str,
                              "Calibration: Hosmer-Lemeshow; DCA (decision curve analysis)")
         quanso_note = "Toàn bộ người tham gia (không có nhóm so sánh can thiệp)"
         epv_note = "EPP ≥ 10: cần N_events ≥ 10 × số predictor"
-    else:  # sr_ma
+    elif internal == "sr_ma":
         sap_analysis_note = ("Phân tích gộp: random-effects (DerSimonian-Laird) nếu I² > 25%\n"
                              "Fixed-effects nếu I² < 25% và đồng nhất lâm sàng\n"
                              "Publication bias: funnel plot + Egger test (nếu N ≥ 10 nghiên cứu)")
         quanso_note = "Tất cả nghiên cứu đủ tiêu chí nhận vào"
         epv_note = "N/A (SR/MA)"
+    elif internal == "prediction":
+        # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện
+        # HIGH): trước đây "prediction" không có nhánh riêng, rơi vào else
+        # (viết cho sr_ma) — SAP §4 sinh ra phương pháp luận META-ANALYSIS
+        # cho một mô hình tiên lượng, mâu thuẫn trực tiếp với BIAS_CONTROLS
+        # ['prediction'] (nhấn mạnh EPV/overfitting) trong CÙNG file.
+        sap_analysis_note = ("Phát triển mô hình đa biến (logistic/Cox tùy kết cục) + "
+                             "shrinkage/penalization (LASSO/ridge) chống quá khớp\n"
+                             "Kiểm định nội (bootstrap optimism, B≥200) + kiểm định ngoại "
+                             "(quần thể độc lập — bắt buộc, TRIPOD+AI M7)\n"
+                             "Hiệu năng: discrimination (C-statistic/AUC) + calibration "
+                             "(slope + intercept-in-the-large) + DCA")
+        quanso_note = "Toàn bộ ca có đủ biến tiên đoán + kết cục (Complete case); Sensitivity: MI"
+        epv_note = ("EPV ≥ 20 khuyến nghị (cao hơn ngưỡng ≥10 kinh điển — cần dự trữ cho "
+                    "shrinkage/internal validation, Riley RD et al. BMJ 2020;368:m441, PMID 32188600)")
+    else:  # qualitative
+        # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện
+        # HIGH): cùng lỗi với "prediction" ở trên — "qualitative" trước đây
+        # cũng rơi vào else (sr_ma), sinh SAP §4 kiểu meta-analysis cho một
+        # nghiên cứu định tính (không có mô hình thống kê suy diễn nào).
+        sap_analysis_note = ("Phân tích chủ đề (thematic analysis)/mã hóa theo khung đã chọn "
+                             "(hiện tượng học/grounded theory/phân tích nội dung...) — KHÔNG "
+                             "có mô hình thống kê suy diễn (không hồi quy/Cox/log-rank/OR/RR)\n"
+                             "Bão hòa dữ liệu (data saturation) quyết định thời điểm dừng thu "
+                             "thập, KHÔNG phải công thức cỡ mẫu\n"
+                             "Trustworthiness: credibility/transferability/dependability/"
+                             "confirmability (Lincoln & Guba) + triangulation/member checking")
+        quanso_note = "Toàn bộ người tham gia đến khi đạt bão hòa dữ liệu (không áp dụng ITT/complete-case)"
+        epv_note = "N/A (nghiên cứu định tính — không có mô hình hồi quy/EPV)"
 
     # Gợi ý R packages theo thiết kế + seed tự sinh từ ngày chạy — dữ liệu
     # (internal_code, run_date) đã có sẵn trong tay nhưng trước đây để
@@ -926,6 +963,8 @@ def generate_g1_artifact(topic: str, study_name: str, question_type: str,
         "cross_sectional": "tableone, car",
         "diagnostic":     "pROC, tableone, rmda",
         "sr_ma":          "meta, metafor",
+        "prediction":     "rms, glmnet, pROC, dcurves",
+        "qualitative":    "N/A (QDA thủ công/NVivo/ATLAS.ti, không phải R)",
     }
     suggested_packages = _PACKAGE_SUGGESTIONS.get(internal, "tableone")
     suggested_seed = run_date[:10].replace("-", "")
