@@ -12,12 +12,12 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận 1 bài ch�
 | MODULE | Tác vụ |
 |--------|--------|
 | M1 | BƯỚC 0: xác định **index test** · **reference standard (tiêu chuẩn vàng)** · quần thể/bối cảnh · ngưỡng cắt; xác nhận đây là nghiên cứu độ chính xác (không phải điều trị) |
-| M2 | **QUADAS-2** 4 miền (nguy cơ sai lệch cả 4; **tính áp dụng CHỈ 3 miền đầu** — không áp cho "Dòng chảy & thời điểm"); so sánh 2 test cùng đối tượng → **QUADAS-C** |
-| M3 | Diễn giải chỉ số: Se · Sp · **LR+ = Se/(1−Sp)** · **LR− = (1−Se)/Sp** · PPV/NPV (phụ thuộc prevalence) · AUC · DOR — trích ĐÚNG số + 95%CI từ bài |
-| M4 | Nhận diện sai lệch đặc thù chẩn đoán (spectrum · verification · incorporation · review · overfit ngưỡng) |
-| M5 | Đối chiếu chuẩn báo cáo **STARD 2015** — nêu mục thiếu |
-| M6 | **GRADE cho test** (guidelines 21–22): độ chắc chắn của Se/Sp/LR quy về **kết cục quan trọng với bệnh nhân** (true+/false+/true−/false− → lợi–hại) |
-| M7 | Bàn giao: áp vào ca cụ thể (pretest→hậu nghiệm) → `chan-doan-xac-suat`; kết cục điều trị đi kèm → `tham-dinh-grade-nnt` |
+| M2 | **QUADAS-2** 4 miền (nguy cơ sai lệch cả 4; **tính áp dụng CHỈ 3 miền đầu** — không áp cho "Dòng chảy & thời điểm"); so sánh 2 test cùng đối tượng → **QUADAS-C** — *(= bước 1, gồm cả M4)* |
+| M3 | Diễn giải chỉ số: Se · Sp · **LR+ = Se/(1−Sp)** · **LR− = (1−Se)/Sp** · PPV/NPV (phụ thuộc prevalence) · AUC · DOR — trích ĐÚNG số + 95%CI từ bài — *(= bước 2)* |
+| M4 | Nhận diện sai lệch đặc thù chẩn đoán (spectrum · verification · incorporation · review · overfit ngưỡng) — *(SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 9, phát hiện LOW: nội dung này nằm LỒNG trong BƯỚC 1/QUADAS-2 bên dưới, không phải một bước đánh số riêng — bảng module trước đây không nêu rõ)* |
+| M5 | Đối chiếu chuẩn báo cáo **STARD 2015** — nêu mục thiếu — *(= bước 3)* |
+| M6 | **GRADE cho test** (guidelines 21–22): độ chắc chắn của Se/Sp/LR quy về **kết cục quan trọng với bệnh nhân** (true+/false+/true−/false− → lợi–hại) — *(= bước 4)* |
+| M7 | Bàn giao: áp vào ca cụ thể (pretest→hậu nghiệm) → `chan-doan-xac-suat`; kết cục điều trị đi kèm → `tham-dinh-grade-nnt` — *(= BƯỚC 6, xem mục 3)* |
 
 > **⚠ QUADAS-3 đã thay thế QUADAS-2 làm khuyến nghị hiện hành (sửa 2026-07-21, vòng lặp
 > kiểm tra-hoàn thiện vòng 4 — xác nhận độc lập qua tìm kiếm trực tiếp):** Whiting PF et al.,
@@ -62,6 +62,7 @@ Bài/nghiên cứu chẩn đoán (ưu tiên toàn văn/PDF) + PMID/DOI · **inde
    ```
    Khởi điểm CAO (không phải thấp như observational — xác minh PMID 32060007, xem `tham-dinh-grade-nnt.md`); công cụ CHỈ tổng hợp domain bạn đã chấm, KHÔNG tự đánh giá QUADAS-2. **Quy về kết cục quan trọng với bệnh nhân:** hệ quả của true+/false+/true−/false− (điều trị đúng/thừa/sót/trấn an sai) — độ chính xác cao KHÔNG tự động = lợi ích.
 5. **Tính ứng dụng:** test này đổi quyết định trong bối cảnh của bác sĩ không? Prevalence đích khác nghiên cứu ra sao (đổi PPV/NPV)?
+6. **Bàn giao** (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 9, phát hiện LOW: trước đây chỉ xuất hiện ở mẫu đầu ra/mục Ranh giới, không phải một bước trong quy trình chính dù có module M7 riêng): áp kết quả vào ca cụ thể (pretest→hậu nghiệm) → `chan-doan-xac-suat`; nếu kết cục điều trị đi kèm → `tham-dinh-grade-nnt`.
 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```

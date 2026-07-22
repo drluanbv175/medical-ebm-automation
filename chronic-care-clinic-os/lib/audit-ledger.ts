@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import type { AuditEvent } from "./audit";
 
 export type AuditLedgerEntry = AuditEvent & {
@@ -92,14 +94,14 @@ export function validateAuditLedger(ledger: AuditLedgerEntry[]): AuditLedgerVali
 }
 
 function hashAuditPayload(payload: Record<string, unknown>): string {
+  // SUA 2026-07-22 (vong lap kiem tra-hoan thien vong 9, phat hien LOW): FNV-1a 32-bit
+  // truoc day khong phai ma bam mat ma - de bi va cham/gia mao neu chuoi hash chain nay
+  // tro thanh co che chong gia mao THAT khi wire vao Prisma AuditLog. Doi sang SHA-256
+  // (node:crypto, khong can them dependency) de co do vung mat ma thuc su.
   const canonical = Object.keys(payload)
     .sort()
     .map((key) => `${key}:${String(payload[key])}`)
     .join("|");
-  let hash = 2166136261;
-  for (let index = 0; index < canonical.length; index += 1) {
-    hash ^= canonical.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, "0")}`;
+  const digest = createHash("sha256").update(canonical, "utf8").digest("hex");
+  return `sha256-${digest}`;
 }

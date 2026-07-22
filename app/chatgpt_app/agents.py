@@ -61,7 +61,11 @@ class SafeAgentCatalog:
             # chuẩn hóa Unicode — agent .md dài 200–256KB hoặc chứa PII dạng NFD
             # lọt cả hai lớp, khác hẳn fetch()/search() (đã quét toàn văn từ
             # 2026-07-18). Đồng bộ 2 đường lại cho cùng một mức bảo vệ.
-            if contains_pii_text(text) or _matches_sensitive_id(text):
+            # SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 9, phát hiện HIGH): thiếu
+            # contains_bare_id_number() — cùng lỗ hổng như knowledge.py::_load(), một số
+            # CCCD/BHYT viết TRẦN không kèm nhãn trong nội dung doctrine agent sẽ lọt qua
+            # cổng này dù workflow_payload() bên dưới ĐÃ gọi đúng cả 3 hàm cho câu hỏi tự do.
+            if contains_pii_text(text) or _matches_sensitive_id(text) or contains_bare_id_number(text):
                 return None
         except (OSError, UnicodeError, ValueError):
             return None
@@ -275,7 +279,11 @@ class SafeAgentCatalog:
             # như search/fetch/get_ebm_agent_instructions. 3 script hiện tại chỉ in
             # tên file/số đếm/lỗi TOML, không PII — nhưng nếu một script tương lai
             # vô tình in trích đoạn nội dung, cổng này chặn trước khi rời tiến trình.
-            if contains_pii_text(output_tail) or _matches_sensitive_id(output_tail):
+            if (
+                contains_pii_text(output_tail)
+                or _matches_sensitive_id(output_tail)
+                or contains_bare_id_number(output_tail)
+            ):
                 output_tail = "[ẩn: nghi ngờ chứa PII, xem log cục bộ thay vì qua ChatGPT]"
             results.append(
                 {

@@ -106,7 +106,12 @@ class SafeKnowledgeIndex:
             # QUÉT TOÀN VĂN (vá 2026-07-18, audit vòng 2): trước đây chỉ quét
             # text[:200_000] nhưng fetch() phục vụ TOÀN BỘ tới MAX_DOCUMENT_BYTES
             # (512KB) → PII ở phần đuôi (200k–512k) lọt qua cổng mà vẫn bị trả về.
-            if contains_pii_text(text) or _matches_sensitive_id(text):
+            # SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 9, phát hiện HIGH): trước đây
+            # thiếu contains_bare_id_number() — số CCCD/BHYT viết TRẦN không kèm nhãn trong
+            # một file được allowlist vẫn lọt qua cổng này (dù search(query) ở dưới ĐÃ gọi
+            # đúng cả 3 hàm cho câu hỏi tự do). Cùng lớp lỗ hổng với 2 CVE PII đã vá trước đó,
+            # chỉ khác nằm ở phía nội dung được SERVE thay vì phía input tự do.
+            if contains_pii_text(text) or _matches_sensitive_id(text) or contains_bare_id_number(text):
                 return None
         except (OSError, UnicodeError, ValueError):
             return None

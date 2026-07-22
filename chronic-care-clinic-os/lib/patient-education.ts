@@ -96,14 +96,31 @@ export function buildPatientEducationReleasePackage(
   patient: Patient,
   today = "2026-06-19"
 ): PatientEducationReleasePackage {
-  const template = selectEducationTemplate(patient);
+  const { template, matchedCondition } = selectEducationTemplate(patient);
   const hasApprovedTemplate = template.status === "APPROVED";
   const hasApprovedCarePlan = patient.carePlan.status === "APPROVED";
   const hasConsent = patient.consentStatus === "SIGNED";
+  // SUA 2026-07-22 (vong lap kiem tra-hoan thien vong 9): PATIENT_COMMUNICATION_POLICY.md
+  // yeu cau "Red flags block patient communication" nhung ham nay truoc day khong doc
+  // patient.redFlags o dau ca - chi co evaluatePatientCommunicationPolicy() (runtime-hardening.ts)
+  // kiem dieu nay, va ham do KHONG duoc goi tu day. Them kiem tra truc tiep de cong quyet dinh
+  // release-gate that su tuan thu chinh sach da cong bo.
+  const hasNoActiveRedFlag = patient.redFlags.length === 0;
   const blockedReasons = [
+    // SUA 2026-07-22 (vong 9): truoc day selectEducationTemplate() im lang tra ve
+    // educationTemplates[0] (Tang huyet ap) khi KHONG co template nao khop benh nen
+    // (vd benh nhan chi co Dyslipidemia/Obesity/Frailty/Polypharmacy) - template.status
+    // van la "APPROVED" nen hasApprovedTemplate=true dan toi phat hanh loi dan SAI noi dung
+    // ma khong ai biet. Nay bao 🔴 rieng khi khong khop, khong lam an nhu dung template that.
+    ...(!matchedCondition
+      ? [`Khong tim thay template giao duc khop voi benh nen (${patient.conditions.map((c) => c.conditionName).join(", ")}) - dang tam dung mau "${template.title}" chi de tham khao cau truc, CAN chon/soan template dung chuyen khoa truoc khi phat hanh.`]
+      : []),
     ...(!hasApprovedTemplate ? ["Template chua duoc phe duyet."] : []),
     ...(!hasApprovedCarePlan ? [`Care plan hien tai la ${patient.carePlan.status}, chua duoc APPROVED.`] : []),
-    ...(!hasConsent ? [`Consent hien tai la ${patient.consentStatus}.`] : [])
+    ...(!hasConsent ? [`Consent hien tai la ${patient.consentStatus}.`] : []),
+    ...(!hasNoActiveRedFlag
+      ? [`Co canh bao do (red flag) dang hoat dong: ${patient.redFlags.join("; ")} - can bac si danh gia truc tiep, khong phat hanh loi dan/nhan tin tu dong.`]
+      : [])
   ];
   const printAllowed = blockedReasons.length === 0;
   const patientMessageAllowed = isPatientCommunicationAllowed("APPROVED_EDUCATION_READY", hasApprovedTemplate, hasConsent);
@@ -149,12 +166,19 @@ export function buildPatientEducationReleaseQueue(
     );
 }
 
-function selectEducationTemplate(patient: Patient): EducationTemplate {
-  return (
-    educationTemplates.find((template) =>
-      patient.conditions.some((condition) => template.conditionKeywords.includes(condition.conditionName))
-    ) ?? educationTemplates[0]
+function selectEducationTemplate(patient: Patient): { template: EducationTemplate; matchedCondition: boolean } {
+  const matched = educationTemplates.find((template) =>
+    patient.conditions.some((condition) => template.conditionKeywords.includes(condition.conditionName))
   );
+  return { template: matched ?? educationTemplates[0], matchedCondition: Boolean(matched) };
+}
+
+// SUA 2026-07-22 (vong lap kiem tra-hoan thien vong 9): xuat tin hieu "co template giao duc
+// da duyet KHOP benh nen" that su de care-orchestrator.ts dung, thay vi tu hardcode true
+// khong doi chieu gi (finding MEDIUM: hasApprovedTemplate=true trong buildCareGaps()).
+export function hasApprovedEducationTemplate(patient: Patient): boolean {
+  const { template, matchedCondition } = selectEducationTemplate(patient);
+  return matchedCondition && template.status === "APPROVED";
 }
 
 function buildHandoutSections(patient: Patient, template: EducationTemplate): string[] {

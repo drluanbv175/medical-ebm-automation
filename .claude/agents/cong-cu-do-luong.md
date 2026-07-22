@@ -110,7 +110,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 Áp 4 trụ cột; không bịa hệ số/ngưỡng; tôn trọng bản quyền công cụ; chỉ giá trị trong quần thể/ngôn ngữ đã kiểm định; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --artifact measurement-tool
+python tools/gen_research_docx.py --study "<TEN>" --artifact instrument
 ```
 
 ## Ranh giới

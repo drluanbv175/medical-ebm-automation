@@ -1,5 +1,6 @@
 import { assessRisk, hasDuplicateMedicationClass } from "./clinical-safety";
 import { isPatientCommunicationAllowed } from "./automation";
+import { hasApprovedEducationTemplate } from "./patient-education";
 import { reviewProgramEnrollments } from "./program-registry";
 import type { Patient, RiskLevel, Role } from "./types";
 
@@ -95,7 +96,17 @@ export function buildCareGaps(patient: Patient, today = "2026-06-19"): CareGap[]
   const gaps: CareGap[] = [];
   const activeMedicationCount = patient.medications.filter((medication) => medication.isActive).length;
   const communicationConsent = patient.consentStatus === "SIGNED";
-  const hasApprovedTemplate = true;
+  // SUA 2026-07-22 (vong lap kiem tra-hoan thien vong 9, phat hien MEDIUM): truoc day
+  // hasApprovedTemplate=true duoc dung CHUNG cho ca 3 loai nhan tin (nhac tai kham,
+  // chuan bi truoc kham, giao duc tuan thu) du khong doi chieu template nao ca - lam
+  // "patientCommunicationAllowed" bao dung du khi thuc te chua he co template nao duoc duyet.
+  // Giao duc tuan thu (APPROVED_EDUCATION_READY) gio dung tin hieu THAT tu patient-education.ts
+  // (template giao duc that su khop benh nen + da duyet). Nhac tai kham/chuan bi truoc kham
+  // CHUA co ha tang template that trong repo nay (app/admin/templates/page.tsx chi la nhan
+  // tinh, khong co du lieu template nhac lich) -> mac dinh FALSE (fail-closed) cho toi khi
+  // co template registry that, thay vi bao "da duyet" khi chua co gi de duyet.
+  const hasApprovedEducationTemplateForPatient = hasApprovedEducationTemplate(patient);
+  const hasApprovedReminderTemplate = false;
 
   if (assessment.suggestedRiskLevel === "RED") {
     gaps.push(
@@ -126,7 +137,7 @@ export function buildCareGaps(patient: Patient, today = "2026-06-19"): CareGap[]
         title: "Khoi phuc lien he sau bo hen",
         reason: "Nguoi benh bo hen hoac qua han tai kham.",
         recommendedAction: "Goi nhac bang kich ban da duyet, dat lai lich va bao bac si neu khong lien he duoc.",
-        patientCommunicationAllowed: isPatientCommunicationAllowed("APPOINTMENT_REMINDER", hasApprovedTemplate, communicationConsent),
+        patientCommunicationAllowed: isPatientCommunicationAllowed("APPOINTMENT_REMINDER", hasApprovedReminderTemplate, communicationConsent),
         sourceRules: ["AUTO-001", "AUTO-005"]
       })
     );
@@ -195,7 +206,7 @@ export function buildCareGaps(patient: Patient, today = "2026-06-19"): CareGap[]
         title: "Checklist sau xuat vien",
         reason: "Nguoi benh moi xuat vien can doi chieu thuoc, giay ra vien va lich tai kham.",
         recommendedAction: "Thu thap tom tat ra vien, doi chieu thuoc va chuyen bac si neu co thong tin thieu.",
-        patientCommunicationAllowed: isPatientCommunicationAllowed("PRE_VISIT_PREP", hasApprovedTemplate, communicationConsent),
+        patientCommunicationAllowed: isPatientCommunicationAllowed("PRE_VISIT_PREP", hasApprovedReminderTemplate, communicationConsent),
         sourceRules: ["AUTO-006"]
       })
     );
@@ -212,7 +223,7 @@ export function buildCareGaps(patient: Patient, today = "2026-06-19"): CareGap[]
         title: "Danh gia rao can tuan thu",
         reason: "Ho so co dau hieu tuan thu thuoc chua tot.",
         recommendedAction: "Dung teach-back va phan loai rao can; khong gui loi khuyen dieu tri tu dong.",
-        patientCommunicationAllowed: isPatientCommunicationAllowed("APPROVED_EDUCATION_READY", hasApprovedTemplate, communicationConsent),
+        patientCommunicationAllowed: isPatientCommunicationAllowed("APPROVED_EDUCATION_READY", hasApprovedEducationTemplateForPatient, communicationConsent),
         sourceRules: ["AUTO-011"]
       })
     );

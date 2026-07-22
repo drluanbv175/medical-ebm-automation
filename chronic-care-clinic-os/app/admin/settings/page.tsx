@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/Badge";
+import { automationRules } from "@/lib/automation";
 import { buildOutpatientAutomationControlReport } from "@/lib/outpatient-automation-control";
 import { buildProductionEvidenceDossier } from "@/lib/production-evidence-dossier";
 import { loadProductionEvidencePackageFromEnv } from "@/lib/production-evidence-loader";
@@ -10,7 +11,10 @@ export default function SettingsPage() {
   const productionEvidenceDossier = buildProductionEvidenceDossier(evidenceLoad.package);
   const productionReadiness = productionEvidenceDossier.readiness;
   const openBlockers = productionReadiness.blockers.filter((item) => item.status === "OPEN");
-  const outpatientAutomation = buildOutpatientAutomationControlReport();
+  // SUA 2026-07-22 (vong lap kiem tra-hoan thien vong 9, phat hien LOW): cung 1 loi voi
+  // route.ts - goi khong tham so lam self-check "review_date_expired" khong bao gio phan
+  // anh dung thoi gian thuc. Truyen ngay hien tai that.
+  const outpatientAutomation = buildOutpatientAutomationControlReport(automationRules, new Date().toISOString().slice(0, 10));
   const writeSummary = summarizeWriteActionRegistry();
   const unsafeActions = unsafeWriteActions();
 

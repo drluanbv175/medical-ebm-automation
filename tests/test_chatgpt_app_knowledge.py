@@ -87,6 +87,26 @@ def test_pii_like_document_is_blocked(tmp_path: Path) -> None:
     assert _index(tmp_path).search("")["results"] == []
 
 
+def test_served_document_with_bare_unlabeled_id_is_blocked(tmp_path: Path) -> None:
+    """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 9, 2026-07-22, workflow
+    wf_110cffc4-258): _load() trước đây chỉ gọi contains_pii_text()/
+    _matches_sensitive_id(), thiếu contains_bare_id_number() — một số CCCD/BHYT
+    viết TRẦN không kèm nhãn trong tài liệu ĐƯỢC SERVE (khác câu hỏi tự do đã
+    vá ở vòng 3) lọt qua cổng và bị trả về nguyên văn."""
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "ghi_chu.md").write_text(
+        "# Ghi chu\nSo tham chieu noi bo cua ho so: 012345678901 duoc dung de doi chieu.",
+        encoding="utf-8",
+    )
+
+    result = _index(tmp_path).search("ghi chu ho so")
+    assert result["results"] == [], (
+        "tài liệu chứa CCCD/BHYT trần không nhãn phải bị chặn ở _load(), "
+        "không được xuất hiện trong kết quả search()"
+    )
+
+
 def test_json_text_is_valid_unicode_json() -> None:
     payload = {"results": [{"id": "a", "title": "Bằng chứng", "url": "https://example.com"}]}
     assert json.loads(json_text(payload)) == payload

@@ -363,7 +363,16 @@ class ResearchDocxGenerator:
         return generator(code, gate, title, content)
 
     def generate_all_gates(self, gate: str, content_map: dict = None):
-        """Xuất tất cả artifact thuộc một cổng G."""
+        """Xuất tất cả artifact thuộc một cổng G.
+
+        SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 9, phát hiện HIGH):
+        trước đây khi `gate` không khớp bất kỳ artifact nào (sai hoa/thường
+        như "g3", hoặc cổng không tồn tại như "G10"), hàm âm thầm trả về
+        list rỗng — main() không kiểm tra, nên lệnh thoát mã 0, KHÔNG sinh
+        file, KHÔNG cảnh báo gì, mâu thuẫn với chính docstring của generate()
+        (thiết kế "fail-soft, không im lặng"). Nay cảnh báo rõ + liệt kê
+        các mã cổng hợp lệ, giống hệt cách generate() đã làm cho --artifact sai.
+        """
         content_map = content_map or {}
         gate_clean  = gate.replace("🔒", "").strip()
         results     = []
@@ -372,6 +381,13 @@ class ResearchDocxGenerator:
             if g_clean == gate_clean or gate_clean in g_clean:
                 path = self.generate(key, content_map.get(key, {}))
                 results.append(path)
+        if not results:
+            valid_gates = sorted({
+                g.replace("🔒", "").replace(" ", "").split("-")[0]
+                for (_, g, _) in ARTIFACT_MAP.values()
+            })
+            print(f"⚠ Cổng '{gate}' không khớp bất kỳ artifact nào trong ARTIFACT_MAP "
+                  f"(phân biệt hoa/thường) → KHÔNG sinh file nào. Cổng hợp lệ: {valid_gates}")
         return results
 
     # ── Generic (dùng khi chưa có generator chuyên biệt) ───────────────────

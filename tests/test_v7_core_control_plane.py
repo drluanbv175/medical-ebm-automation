@@ -148,6 +148,18 @@ def test_contains_bare_id_number_does_not_flag_valid_nct_and_doi_identifiers():
     assert contains_bare_id_number("PMID: 34605781") is False
 
 
+def test_contains_bare_id_number_does_not_flag_openalex_work_ids():
+    """Hồi quy MEDIUM (vòng lặp kiểm tra-hoàn thiện vòng 9, 2026-07-22): OpenAlex
+    work ID ("W" + 9-13 chữ số, vd W2001233144) trước đây bị bắt nhầm là CCCD/BHYT
+    trần vì phần số của ID vẫn khớp _BARE_LONG_DIGITS — chặn nhầm câu hỏi nghiên
+    cứu hợp lệ trích dẫn OpenAlex, một nguồn miễn phí chính thống của hệ thống
+    này. Vẫn phải bắt đúng CCCD/BHYT thật dù có chữ cái khác 'W' đứng ngay trước
+    (regression trên test bên trên: 'BHYT GD4790123456789' vẫn phải True)."""
+    assert contains_bare_id_number("kiem tra cong bo OpenAlex W2001233144 co lien quan khong") is False
+    assert contains_bare_id_number("bai bao OpenAlex id W123456789 va W1234567890123 nen xem") is False
+    assert contains_bare_id_number("BN nam 60 tuổi, BHYT GD4790123456789, đau thượng vị") is True
+
+
 def test_contains_pii_text_catches_hyphen_formatted_numeric_dob():
     """Hồi quy (vòng lặp kiểm tra-hoàn thiện vòng 2, 2026-07-21): _collapse_digit_separators()
     xóa MỌI dấu cách/chấm/GẠCH NGANG giữa 2 chữ số trước khi so khớp — nhưng _DOB dạng số

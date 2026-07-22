@@ -123,6 +123,23 @@ def test_agent_source_with_phone_beyond_classify_sample_is_blocked(tmp_path: Pat
         SafeAgentCatalog(tmp_path).get_payload("demo-phone")
 
 
+def test_agent_source_with_bare_unlabeled_id_is_blocked(tmp_path: Path) -> None:
+    """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 9, 2026-07-22, workflow
+    wf_110cffc4-258): _load() trước đây chỉ gọi contains_pii_text()/
+    _matches_sensitive_id(), thiếu contains_bare_id_number() — CCCD/BHYT viết
+    TRẦN không kèm nhãn trong nội dung agent doctrine (được nhúng nguyên văn vào
+    mọi response prepare_clinical_workflow/prepare_research_workflow) lọt qua
+    cổng và bị trả về nguyên văn."""
+    agent_dir = tmp_path / ".claude/agents"
+    agent_dir.mkdir(parents=True)
+    (agent_dir / "vi-du-agent.md").write_text(
+        "# Vi du Agent\n\nMa tham chieu ho so kiem thu: 012345678901 dung de doi chieu vi du.\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(KeyError):
+        SafeAgentCatalog(tmp_path).get_payload("vi-du-agent")
+
+
 def test_clinical_workflow_blocks_realistic_free_text_pii() -> None:
     """Tái hiện đúng kịch bản audit: câu văn tự do có họ tên + địa chỉ + SĐT có dấu
     cách + 'số bệnh án' — trước bản vá contains_pii_text/SENSITIVE_ID_PATTERN đều

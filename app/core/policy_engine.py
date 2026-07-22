@@ -105,14 +105,31 @@ def _collapse_digit_separators(text: str) -> str:
 # contains_pii_text() dùng chung cho toàn hệ thống.
 _BARE_LONG_DIGITS = re.compile(r"(?<!\d)\d{9,13}(?!\d)")
 
+# SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 9, phát hiện MEDIUM): _BARE_LONG_DIGITS
+# khớp cả phần số của một OpenAlex work ID hợp lệ (vd "W2001233144" — chữ "W" + 10 chữ số),
+# gây sai dương tính chặn nhầm câu hỏi nghiên cứu hợp lệ trích dẫn OpenAlex — một nguồn
+# chứng cứ miễn phí CHÍNH THỐNG của hệ thống này (app/sources/openalex.py), không phải PII.
+# Loại trừ hẹp: chỉ khi digit-run đứng NGAY SAU ký tự "W" hoa và KHÔNG có chữ/số nào khác
+# đứng trước "W" đó (tránh loại trừ nhầm một số CCCD/BHYT tình cờ có "W" đứng trước — dù
+# CCCD/BHYT tiếng Việt không dùng tiền tố "W").
+_OPENALEX_WORK_ID_PREFIX = re.compile(r"(?<![A-Za-z0-9])W\d{9,13}(?!\d)")
+
 
 def contains_bare_id_number(text: str) -> bool:
     """Bắt số CCCD/CMND/BHYT viết TRẦN không kèm nhãn (vd 'BN số 012345678901',
     'BHYT GD4790123456789'). Hẹp có chủ đích — xem chú thích _BARE_LONG_DIGITS
     về lý do KHÔNG gộp vào contains_pii_text() và vì sao KHÔNG dùng bản đã gộp
-    dấu phân cách."""
+    dấu phân cách. Loại trừ OpenAlex work ID (vd 'W2001233144') — xem chú thích
+    _OPENALEX_WORK_ID_PREFIX."""
     normalized = unicodedata.normalize("NFC", text or "")
-    return bool(_BARE_LONG_DIGITS.search(normalized))
+    for match in _BARE_LONG_DIGITS.finditer(normalized):
+        start = match.start()
+        if start > 0 and normalized[start - 1] == "W":
+            preceding_char_ok = start == 1 or not normalized[start - 2].isalnum()
+            if preceding_char_ok and _OPENALEX_WORK_ID_PREFIX.match(normalized, start - 1):
+                continue
+        return True
+    return False
 
 
 @dataclass(frozen=True)
