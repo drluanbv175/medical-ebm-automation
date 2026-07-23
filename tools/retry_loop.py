@@ -139,6 +139,18 @@ ERROR_ROUTING_TABLE: dict[str, tuple[ErrorSeverity, str]] = {
     # ESCALATE_HARD, ngược hẳn hành vi tài liệu mô tả (phát hiện qua audit đối kháng).
     "R14":      (ErrorSeverity.ESCALATE_HARD,
                  "DỪNG NGAY — thiếu rà an toàn kê đơn (tương tác/CCĐ/chỉnh liều) → ke-don-an-toan"),
+    # STD-REPORT/STAT-MISMATCH/AI-DISCLOSE: THÊM 2026-07-22 (vòng lặp kiểm tra-hoàn thiện
+    # vòng 10, phát hiện MEDIUM) — run_eval.py::CHECK_ID_TO_RCODE (qua
+    # research_checks.RESEARCH_CHECK_ID_TO_LEDGER) đã ánh xạ 3 check nghiên cứu
+    # (reporting_standard/stat_mismatch/ai_disclosure) sang 3 mã này từ 2026-07-08, nhưng
+    # bảng NÀY — nơi DUY NHẤT classify_error() tra cứu — chưa từng có entry, khiến
+    # classify_error() fallback về AUTO_FIX/"agent-goc" (placeholder chung, không phải
+    # agent thật), trái với chính docstring của run_eval.py::classify() ("chuẩn hóa từ
+    # MỘT bảng dùng chung, không do LLM tự suy diễn"). Cả 3 là TIER-1 sửa-được (RETURN-
+    # FOR-FIX), không phải cổng cứng kiểu PII — dùng AUTO_FIX + agent chuyên trách.
+    "STD-REPORT":     (ErrorSeverity.AUTO_FIX, "viet-ban-thao (sửa đúng chuẩn báo cáo theo thiết kế)"),
+    "STAT-MISMATCH":  (ErrorSeverity.AUTO_FIX, "phan-tich-thong-ke (rà lại kiểm định thống kê)"),
+    "AI-DISCLOSE":    (ErrorSeverity.AUTO_FIX, "nop-bai-phan-hoi (bổ khai báo AI theo ICMJE Mục V)"),
 }
 
 # ════════════════════════════════════════════════════════════════════════════
