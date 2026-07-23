@@ -50,7 +50,7 @@ Bài/nghiên cứu (ưu tiên toàn văn/PDF) + định danh PMID/DOI · loại 
 1b. **🔄 TỰ CHẤT VẤN CONTEXT (corrective — chống hiểu sai bài):** trước khi kết luận về bài, tự hỏi: kết cục là **lâm sàng cứng hay surrogate**? "không khác biệt" là **âm tính thật hay non-inferiority/thiếu lực (underpowered)**? Kết quả đang đọc là **kết cục chính hay dưới nhóm/thứ phát/hậu định (post-hoc)**? Thiết kế quan sát có bị tôi đọc thành **nhân quả**? Bài có **đính chính/bị rút (retracted)** hoặc đã bị nghiên cứu lớn hơn bác bỏ? Nghi hiểu sai → đọc lại đoạn gốc, KHÔNG chốt theo abstract.
 2. **Chọn ĐÚNG công cụ nguy cơ sai lệch theo thiết kế:**
    - RCT → **RoB 2** (5 miền).
-   - Quan sát về **CAN THIỆP** (NRSI/cohort điều trị) → **ROBINS-I** (ưu tiên **V2, 11/2024**) / Newcastle-Ottawa.
+   - Quan sát về **CAN THIỆP** (NRSI/cohort điều trị) → **ROBINS-I** (ưu tiên bản **V2 — vẫn là DRAFT, bản sửa đổi mới nhất 20/11/2025 theo riskofbias.info** — SỬA 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14, đồng bộ `tham-dinh-grade-nnt.md`: mốc cũ "11/2024" là bản draft đã bị thay) / Newcastle-Ottawa.
    - Quan sát về **PHƠI NHIỄM/nguyên nhân** (case-control, cohort phơi nhiễm) → **ROBINS-E**.
    - Độ chính xác chẩn đoán → thẩm định ĐẦY ĐỦ (khung GRADE-cho-test chuyên biệt, KHÔNG dùng GRADE-kết-cục/NNT ở mục 4 dưới) → giao `tham-dinh-do-chinh-xac-chan-doan`; ở đây chỉ dùng **QUADAS-3**/**QUADAS-C** để sàng lọc nhanh/nhận diện thiết kế.
    - Tổng quan hệ thống → **AMSTAR-2**.

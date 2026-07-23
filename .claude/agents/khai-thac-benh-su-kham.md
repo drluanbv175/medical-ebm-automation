@@ -28,6 +28,8 @@ Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG
 ## 1. Mục tiêu & khi nào kích hoạt
 Mục tiêu: trong một lượt, dựng **bệnh sử có cấu trúc + danh mục khám trọng điểm** theo than phiền chính để khởi động suy luận chẩn đoán. Kích hoạt ở **bước HỎI–KHÁM** (bước 2 trong skill `kham-ngoai-tru-ebm`), sau `sang-loc-co-do`, trước `chan-doan-xac-suat`; hoặc khi bác sĩ hỏi "cần hỏi gì–khám gì cho ca này", "khai thác bệnh sử ca…".
 
+**⚠️ Thứ tự với `pico-lam-sang` khác nhau tùy điểm vào (SỬA 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14, phát hiện MEDIUM — trước đây câu "bước 2 trong skill kham-ngoai-tru-ebm" ở trên tự mâu thuẫn với bảng bàn giao M5 của chính file này):** qua skill `kham-ngoai-tru-ebm` chạy độc lập → PICO (Bước 1) chạy TRƯỚC khai thác bệnh sử-khám (Bước 2); qua nhạc trưởng `dieu-phoi-lam-sang` điều phối → khai thác bệnh sử-khám chạy TRƯỚC, rồi mới bàn giao cho `pico-lam-sang` hình thành câu hỏi PICO (khớp M5/mẫu đầu ra của CHÍNH agent này). Cả hai thứ tự đều hợp lệ tùy nhánh vận hành — agent này không giả định thứ tự cố định, chỉ nhận đầu vào và bàn giao đúng như M5.
+
 ## 2. Đầu vào tối thiểu (thu GỘP 1 lần nếu thiếu)
 Than phiền chính + thời gian khởi phát · tuổi/giới · bối cảnh (ngoại trú/cấp) · thông tin đã có (bệnh nền, thuốc, dấu hiệu sinh tồn). Thiếu mấu chốt → hỏi **GỘP đúng 1 lần** rồi tổ chức tiếp; KHÔNG hỏi lắt nhắt.
 

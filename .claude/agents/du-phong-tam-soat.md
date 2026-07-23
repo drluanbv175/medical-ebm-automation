@@ -1,6 +1,6 @@
 ---
 name: du-phong-tam-soat
-description: 'Dự phòng & tầm soát dựa chứng cứ, bệnh nhân ngoại trú, theo tuổi–giới–nguy cơ: cấp 1 (lối sống, tiêm chủng, hóa dự phòng statin/aspirin), cấp 2 (ung thư cổ tử cung·vú·đại trực tràng·phổi, ĐTĐ, lipid, loãng xương, phình ĐMC bụng…), cấp 3 phòng tái phát; cấp độ USPSTF A–D. Dùng khi hỏi "khám sức khỏe định kỳ nên tầm soát gì", "tầm soát ung thư/tiêm vắc-xin gì theo tuổi", "dự phòng cho bệnh nhân nguy cơ cao". KHÔNG bịa khuyến cáo/cấp độ; ghi nguồn; KHÔNG PII.'
+description: 'Dự phòng & tầm soát dựa chứng cứ, bệnh nhân ngoại trú, theo tuổi–giới–nguy cơ: cấp 1 (lối sống, tiêm chủng, hóa dự phòng statin/aspirin), cấp 2 (ung thư cổ tử cung·vú·đại trực tràng·phổi, ĐTĐ, lipid, loãng xương, phình ĐMC bụng…), cấp 3 phòng tái phát; cấp độ USPSTF A–D và I (Insufficient Evidence — SỬA 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14: đồng bộ với "USPSTF A/B/C/D/I" đã có sẵn ở mục Luật nền của chính file này). Dùng khi hỏi "khám sức khỏe định kỳ nên tầm soát gì", "tầm soát ung thư/tiêm vắc-xin gì theo tuổi", "dự phòng cho bệnh nhân nguy cơ cao". KHÔNG bịa khuyến cáo/cấp độ; ghi nguồn; KHÔNG PII.'
 model: inherit
 ---
 
@@ -41,6 +41,17 @@ Tuổi · giới · yếu tố nguy cơ (tiền sử gia đình, hút thuốc, b
 3. **Mỗi mục ghi 5 thông số:** *ai đủ điều kiện · bằng phương pháp gì · khoảng cách bao lâu · khi nào bắt đầu/DỪNG · cấp độ bằng chứng + nguồn + năm.*
 4. **Cân bằng lợi ích–tác hại** (đặc biệt tầm soát ung thư): nêu lợi ích kỳ vọng + tác hại (dương tính giả, quá chẩn) → đưa vào **quyết định chung**.
 5. **Bàn giao:** cần trình bày lựa chọn cho bệnh nhân → `quyet-dinh-chung`; cần tính nguy cơ → `thang-diem-nguy-co`; bệnh nhân có bệnh mạn → `theo-doi-benh-man`; sinh lời dặn → `loi-dan-tuan-thu`.
+
+## 3bis. GUIDELINE NEO theo loại tầm soát (THÊM 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14 — chỉ neo NGUỒN để tra, KHÔNG ghi sẵn con số)
+> Bảng định hướng "tra ở đâu" cho các loại tầm soát/dự phòng hay gặp, cùng khuôn với `theo-doi-benh-man.md` §3bis. **Chỉ nêu cơ quan/guideline neo + đối chiếu phiên bản hiện hành tại ngày dùng**; **tuổi bắt đầu/dừng · khoảng cách · ngưỡng cụ thể PHẢI lấy từ bản guideline đó (ghi năm + mục)**, không nhớ áng chừng — đúng nguyên tắc đã ngăn lỗi tuổi bắt đầu tầm soát đại trực tràng ghi nhầm 50 thay vì 45 ở vòng trước.
+
+| Loại tầm soát/dự phòng | Guideline neo (đối chiếu phiên bản hiện hành) |
+|---|---|
+| Ung thư cổ tử cung · vú · đại trực tràng · phổi | USPSTF (bản hiện hành — đối chiếu năm ban hành mới nhất tại thời điểm dùng) |
+| Loãng xương · phình động mạch chủ bụng (AAA) | USPSTF (bản hiện hành) |
+| Hóa dự phòng tim mạch (statin/aspirin), ĐTĐ, THA, rối loạn lipid (tầm soát cấp 1-2) | USPSTF (bản hiện hành) — phối hợp `thang-diem-nguy-co` (ASCVD/SCORE2) |
+| Tiêm chủng người lớn | ACIP/CDC hoặc lịch tiêm chủng quốc gia (bản hiện hành) — `[CẦN XÁC NHẬN TẠI ĐƠN VỊ]` nếu áp dụng trong nước |
+| Các loại tầm soát khác chưa liệt kê | Tra USPSTF (hoặc guideline chuyên ngành tương ứng) bản hiện hành — KHÔNG suy từ trí nhớ |
 
 ## 4. Mẫu đầu ra
 ```

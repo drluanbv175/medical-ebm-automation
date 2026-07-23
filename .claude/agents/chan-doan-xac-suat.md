@@ -41,7 +41,8 @@ Chẩn đoán đích đang nghi · bối cảnh (tuổi, phơi nhiễm, mùa d�
    # Chỉ có Se/Sp (chưa có LR trực tiếp):
    python medical-ebm-automation/tools/clinical_calc.py bayes --pretest <p> --se <Se> --sp <Sp> [--negative]
    ```
-   Dùng **LR+ khi test dương, LR− khi âm**. Áp tuần tự nhiều test **CHỈ khi độc lập có điều kiện** — nhưng lưu ý: gọi lệnh `bayes` nhiều lần liên tiếp (lấy hậu nghiệm lần trước làm pretest lần sau, cách duy nhất tài liệu này hướng dẫn) **KHÔNG bị CLI tự chặn** dù 2 test không độc lập (hàm `sequential_bayes(..., conditionally_independent=False)` có logic từ chối trong mã nguồn nhưng CHƯA được nối vào CLI — chỉ subcommand `bayes/threshold/nnt/grade` tồn tại). **Agent PHẢI tự xác nhận tính độc lập có điều kiện TRƯỚC khi gọi `bayes` lần 2 trở lên** và tự nêu rõ giả định này trong đầu ra; nếu không chắc độc lập → không áp tuần tự, chỉ dùng test có LR mạnh nhất hoặc nêu rõ `[CẦN KIỂM CHỨNG tính độc lập]`. Kết quả công cụ trả về là số ĐÃ KIỂM (64.659 lần thử khớp brute-force khi xây dựng) cho MỖI LẦN GỌI ĐƠN — dùng số đó, không tự nhẩm tay.
+   **⚠️ `--pretest` BẮT BUỘC là số THẬP PHÂN mở trong (0,1), KHÔNG phải phần trăm** (SỬA 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14, phát hiện HIGH: `_validate_prob()` trong `clinical_calc.py` chỉ chặn `p` ngoài (0,1) — với pretest THẤP <1% phổ biến trong thực hành ngoại trú (vd nguy cơ đột quỵ/năm CHA₂DS₂-VASc thấp ~0,5-0,9%, xác suất PE nhóm Wells thấp), nhập nhầm "0.5" (nghĩ là "0,5%") vẫn được CHẤP NHẬN ÂM THẦM vì 0<0,5<1 hợp lệ — tính hậu nghiệm dựa trên pretest=50% thay vì 0,5%, sai lệch 100 LẦN mà KHÔNG có cảnh báo nào). **Luôn tự xác nhận đã chia 100 trước khi gọi lệnh — vd pretest 0,5% → `--pretest 0.005`, KHÔNG phải `--pretest 0.5`.** Khi nhận nguy cơ tuyệt đối dạng "%" từ `thang-diem-nguy-co` (bàn giao), PHẢI chuyển đổi ngay trước khi gọi.
+   Dùng **LR+ khi test dương, LR− khi âm**. Áp tuần tự nhiều test **CHỈ khi độc lập có điều kiện** — nhưng lưu ý: gọi lệnh `bayes` nhiều lần liên tiếp (lấy hậu nghiệm lần trước làm pretest lần sau, cách duy nhất tài liệu này hướng dẫn) **KHÔNG bị CLI tự chặn** dù 2 test không độc lập (hàm `sequential_bayes(..., conditionally_independent=False)` có logic từ chối trong mã nguồn nhưng CHƯA được nối vào CLI — chỉ subcommand `bayes/threshold/nnt/grade` tồn tại). **Agent PHẢI tự xác nhận tính độc lập có điều kiện TRƯỚC khi gọi `bayes` lần 2 trở lên** và tự nêu rõ giả định này trong đầu ra; nếu không chắc độc lập → không áp tuần tự, chỉ dùng test có LR mạnh nhất hoặc nêu rõ `[CẦN KIỂM CHỨNG tính độc lập]`. Phép nhân odds×LR trong lệnh `bayes` là công thức đóng đã kiểm bằng unit test riêng (SỬA 2026-07-23, vòng 14: câu cũ ở đây trích "64.659 lần thử khớp brute-force" — con số đó xác minh riêng cho `threshold` ở bước 4 dưới đây (so sánh 3 chiến lược treat-none/treat-all/test), KHÔNG phải cho phép tính Bayes/LR đơn giản này — tránh gộp chung 2 loại bằng chứng kiểm định khác nhau).
 4. **Đối chiếu NGƯỠNG (Pauker–Kassirer) — GỌI CÔNG CỤ:**
    ```bash
    python medical-ebm-automation/tools/clinical_calc.py threshold --harm <H> --benefit <B> \
@@ -67,7 +68,7 @@ Chẩn đoán đích đang nghi · bối cảnh (tuổi, phơi nhiễm, mùa d�
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
 🚑 Cờ đỏ: [không/có → xử trí trước]
-Chẩn đoán đích: ____ | Pretest = [..%] (nguồn/quy tắc: ____)
+Chẩn đoán đích: ____ | Pretest = [..%] (= [0.___] khi gọi --pretest — ĐÃ chia 100) (nguồn/quy tắc: ____)
 BẢNG BAYES:
 | Test | Kết quả | LR áp dụng (nguồn) | Hậu nghiệm |
 Hai ngưỡng: test=[..%] · điều trị=[..%] (căn cứ/giả định: ____)
