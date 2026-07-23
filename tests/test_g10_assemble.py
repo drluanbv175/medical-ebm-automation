@@ -364,6 +364,7 @@ class TestValidatorCatchesFabrication:
             "sap_lock_date": "2026-07-13",
             "data_lock_date": "2026-07-14",
             "results_final": True,
+            "peer_review_approved": True,
             "integrity_signed": True,
         }
         (cross_sectional_study / "study_meta.json").write_text(
