@@ -21,6 +21,17 @@ class TestCanonShape:
     def test_16_de_cuong_sections(self):
         assert len(S.DE_CUONG_SECTIONS) == 16
 
+    def test_20_protocol_core_items(self):
+        assert len(S.PROTOCOL_CORE_ITEMS) == 20
+        assert [item_id for item_id, _ in S.PROTOCOL_CORE_ITEMS] == [
+            f"P{i:02d}" for i in range(1, 21)
+        ]
+
+    def test_five_hard_gates(self):
+        assert tuple(S.PIPELINE_HARD_GATES) == (
+            "G2", "G4", "DATA_LOCK", "G8", "G9",
+        )
+
     def test_10_skill_gates(self):
         assert len(S.SKILL_GATES) == 10
         assert set(S.SKILL_GATES) == {f"G{i}" for i in range(10)}
@@ -172,7 +183,11 @@ class TestAdversarialRegressions:
     def test_publication_milestone_reachable_with_signals(self):
         # #11: mốc công bố KHÔNG được là dead-end — đạt được khi có tín hiệu thật.
         cps = _all_draft_checkpoints()
-        meta = {"results_final": True, "integrity_signed": True}
+        meta = {
+            "results_final": True,
+            "peer_review_approved": True,
+            "integrity_signed": True,
+        }
         rep = {r["moc"]: r["dat"] for r in S.readiness_report(cps, meta)}
         assert rep["Sẵn sàng nộp công bố/nghiệm thu"] != "CHƯA ĐẠT"
 
