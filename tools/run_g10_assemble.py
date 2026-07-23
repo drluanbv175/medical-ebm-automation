@@ -41,6 +41,7 @@ TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — 4 mã thoát)
+import research_study_spec as RS  # noqa: E402
 import skill_standards as S  # noqa: E402
 
 TAG_BS = S.STATUS_TAGS["CAN_BO_SUNG"]              # [CẦN BỔ SUNG]
@@ -114,6 +115,28 @@ def _g(cp: Optional[dict], *keys, default=None):
     return cur if cur is not None else default
 
 
+def _text(value, default=TAG_BS) -> str:
+    """Hiển thị gọn giá trị StudySpec/legacy meta trong Markdown."""
+    if not RS.is_present(value):
+        return str(default)
+    if isinstance(value, dict):
+        preferred = (
+            value.get("name")
+            or value.get("description")
+            or value.get("label")
+        )
+        if RS.is_present(preferred):
+            return str(preferred)
+        return "; ".join(
+            f"{key}: {_text(item)}"
+            for key, item in value.items()
+            if RS.is_present(item)
+        )
+    if isinstance(value, (list, tuple)):
+        return "; ".join(_text(item) for item in value if RS.is_present(item))
+    return str(value)
+
+
 def _design_code(cps: Dict[str, dict]) -> Optional[str]:
     """Lấy mã thiết kế THỐNG NHẤT: ưu tiên G1.internal_code, fallback G3/G5.
 
@@ -146,15 +169,24 @@ def sec_tomtat(cps, meta) -> str:
         n_txt = f"{n_adj} đối tượng"
     std = _g(cps["G1"], "design", "reporting_standard",
              default=_g(cps["G4"], "reporting_standard", default=TAG_BS))
+    protocol_summary = meta.get("summary")
+    summary_text = (
+        f"**Tóm tắt protocol đã cung cấp:** {_text(protocol_summary)}\n\n"
+        if RS.is_present(protocol_summary)
+        else (
+            f"**Mục tiêu và phương pháp tóm tắt:** {TAG_BS} — hoàn thiện tóm tắt "
+            "có cấu trúc Bối cảnh–Mục tiêu–Phương pháp. Phần Kết quả/Kết luận chỉ "
+            "được điền sau khi có dữ liệu thật.\n\n"
+        )
+    )
     return (
         "# 1. Tóm tắt\n\n"
         f"**Đề tài:** {topic}\n\n"
         f"**Thiết kế:** {design} (chuẩn báo cáo {std}).  \n"
         f"**Cỡ mẫu dự kiến:** {n_txt}.  \n"
-        f"**Mục tiêu, kết quả và kết luận:** {TAG_BS} — phần tóm tắt có cấu trúc "
-        "(Bối cảnh–Mục tiêu–Phương pháp–Kết quả–Kết luận) chỉ hoàn thiện SAU khi "
-        "có kết quả thật; hiện để trống phần Kết quả/Kết luận theo nguyên tắc "
-        "không bịa số liệu.\n"
+        f"{summary_text}"
+        "**Kết quả và kết luận:** chỉ hoàn thiện SAU khi có kết quả thật; hiện "
+        "không tạo số liệu hoặc kết luận giả.\n"
     )
 
 
@@ -163,12 +195,23 @@ def sec_datvande(cps, meta) -> str:
     n_sr = _g(cps["G0"], "pubmed_results", "n_pmids", default="?")
     gaps = _g(cps["G0"], "research_gaps", default=[]) or []
     gap_txt = "\n".join(f"- {x}" for x in gaps) if gaps else f"- {TAG_BS}"
+    background = (
+        meta.get("problem_statement")
+        or meta.get("background")
+        or meta.get("rationale")
+    )
+    background_txt = (
+        f"\n**Bối cảnh và lý do nghiên cứu:** {_text(background)}\n"
+        if RS.is_present(background)
+        else ""
+    )
     return (
         "# 2. Đặt vấn đề\n\n"
         f"Mức độ chứng cứ hiện có (tự động từ G0): **{ev}**, dựa trên "
         f"{n_sr} tài liệu PubMed liên quan đã truy hồi.\n\n"
         "Khoảng trống nghiên cứu (tự động từ G0):\n\n"
-        f"{gap_txt}\n\n"
+        f"{gap_txt}\n"
+        f"{background_txt}\n"
         f"> {TAG_BS}: Phần đặt vấn đề dạng VĂN XUÔI HỌC THUẬT (tầm quan trọng lâm "
         "sàng, bối cảnh Việt Nam/đơn vị, lập luận tính cần thiết) do agent "
         "`viet-ban-thao`/`tong-quan-y-van` hoặc bác sĩ soạn — G10 không tự viết "
@@ -249,8 +292,12 @@ def sec_thietke(cps, meta) -> str:
     ]
     if alt:
         txt.append(f"**Thiết kế thay thế đã cân nhắc:** {alt}.\n")
-    txt.append(f"**Bối cảnh (cơ sở, thời gian, địa điểm):** {TAG_DV} — bác sĩ "
-               "xác nhận cụ thể tại đơn vị.\n")
+    setting = meta.get("setting")
+    period = meta.get("study_period")
+    txt.append(
+        f"**Bối cảnh/cơ sở nghiên cứu:** {_text(setting, TAG_DV)}.  \n"
+        f"**Thời gian nghiên cứu:** {_text(period, TAG_DV)}.\n"
+    )
     return "\n".join(txt)
 
 
@@ -317,10 +364,37 @@ def sec_bienso(cps, meta) -> str:
             "bằng bộ biến đúng chủ đề (thời gian chờ, thái độ nhân viên, cơ sở vật "
             "chất, chi phí...) và một BỘ CÔNG CỤ ĐÃ KIỂM ĐỊNH — không tự chế thang đo.\n"
         )
+    primary = meta.get("primary_outcome")
+    secondary = meta.get("secondary_outcomes") or []
+    if isinstance(primary, dict) and RS.is_present(primary):
+        lines.extend([
+            "**Kết cục chính đã cấu trúc hóa:**\n",
+            "| Kết cục | Định nghĩa vận hành | Nguồn/công cụ | Thời điểm đo | Biến CRF |",
+            "|---|---|---|---|---|",
+            f"| {_text(primary.get('name'))} | {_text(primary.get('definition'))} | "
+            f"{_text(primary.get('source'))} | {_text(primary.get('timepoint'))} | "
+            f"`{_text(primary.get('variable_name'))}` |",
+            "",
+        ])
+    elif RS.is_present(primary):
+        lines.append(
+            f"**Kết cục chính:** {_text(primary)} — {TAG_BS} định nghĩa vận hành, "
+            "nguồn/công cụ và thời điểm đo.\n"
+        )
+    else:
+        lines.append(
+            f"**Kết cục chính/phụ + định nghĩa vận hành + thời điểm đo:** {TAG_BS} — "
+            "bác sĩ chốt (nối agent `bien-so-nghien-cuu`).\n"
+        )
+    if secondary:
+        lines.append(f"**Kết cục phụ:** {_text(secondary)}.\n")
+    confounders = meta.get("confounders") or []
+    modifiers = meta.get("effect_modifiers") or []
     lines.append(
-        f"**Kết cục chính/phụ + định nghĩa vận hành + thời điểm đo:** {TAG_BS} — "
-        "bác sĩ chốt (nối agent `bien-so-nghien-cuu`). Với thang đo/PROM: bổ sung "
-        "COSMIN (nối `cong-cu-do-luong`).\n"
+        f"**Yếu tố nhiễu:** {_text(confounders)}.  \n"
+        f"**Biến tương tác/effect modifiers:** {_text(modifiers)}.\n\n"
+        "Với thang đo/PROM: bổ sung quyền sử dụng, quy tắc chấm điểm và COSMIN "
+        "khi phát triển/thích nghi/thẩm định công cụ.\n"
     )
     return "\n".join(lines)
 
@@ -395,13 +469,20 @@ def sec_congcu(cps, meta) -> str:
             "(không tự chế). Với PROM/thang đo: quy trình dịch–thích nghi văn hoá + "
             "kiểm định COSMIN (nối `cong-cu-do-luong`).\n"
         )
+    data_source = meta.get("data_source")
+    procedure = meta.get("data_collection_procedure")
+    qc_plan = meta.get("quality_control") or meta.get("qc_plan")
+    pilot = meta.get("pilot") or meta.get("pilot_plan")
     return (
         "# 9. Công cụ và quy trình thu thập\n\n"
         f"{instrument_txt}\n"
+        f"**Nguồn dữ liệu:** {_text(data_source)}.  \n"
+        f"**Quy trình thu thập:** {_text(procedure)}.  \n"
+        f"**Kiểm soát chất lượng:** {_text(qc_plan)}.\n\n"
         "**Script quản trị dữ liệu đã sinh tự động (G5):**\n\n"
         f"{sc_txt}\n\n"
-        f"**Pilot/thử nghiệm công cụ:** {TAG_BS} — nêu cỡ mẫu pilot, tiêu chí "
-        "chỉnh sửa.\n"
+        f"**Pilot/thử nghiệm công cụ:** {_text(pilot)} — nêu đối tượng/số lượng, "
+        "khả năng hiểu, thời gian, lỗi logic, thay đổi và ảnh hưởng protocol/ethics.\n"
     )
 
 
@@ -533,6 +614,7 @@ def sec_sap(cps, meta) -> str:
     ver = _g(cps["G4"], "g4_sap_version", default=TAG_BS)
     status = _g(cps["G4"], "g4_status", default=TAG_BS)
     code = _design_code(cps) or TAG_BS
+    analysis = meta.get("analysis") if isinstance(meta.get("analysis"), dict) else {}
     # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện CRITICAL):
     # bản vá vòng 2 chỉ thêm "prediction" vào _SURVIVAL_CAPABLE_DESIGNS —
     # "qualitative" hoàn toàn không xuất hiện ở đâu trong file này (xác nhận
@@ -574,6 +656,22 @@ def sec_sap(cps, meta) -> str:
         "đa biến (hồi quy logistic/tuyến tính tuỳ kết cục — không áp dụng Cox vì "
         "thiết kế không có trục thời gian-đến-biến cố)"
     )
+    if RS.is_present(analysis.get("primary_method")):
+        return (
+            "# 11. Kế hoạch phân tích thống kê\n\n"
+            f"**Phiên bản SAP (tự động từ G4):** {ver} — trạng thái: {status}.\n\n"
+            f"- **Kết cục chính trong SAP:** {_text(analysis.get('primary_outcome'))}.\n"
+            f"- **Phân tích chính định trước:** {_text(analysis.get('primary_method'))}.\n"
+            f"- **Phân tích phụ:** {_text(analysis.get('secondary_methods'))}.\n"
+            f"- **Dữ liệu thiếu:** {_text(analysis.get('missing_data'))}.\n"
+            f"- **Độ nhạy:** {_text(analysis.get('sensitivity'))}.\n"
+            f"- **Đa kiểm định:** {_text(analysis.get('multiplicity'))}.\n"
+            f"- **Phần mềm/phiên bản:** {_text(analysis.get('software'))}.\n\n"
+            "Mọi phân tích ngoài kế hoạch phải ghi rõ exploratory/deviation; báo "
+            "cáo estimate + KTC 95% khi phù hợp, không dùng p-value đơn độc.\n\n"
+            f"> Cổng cứng: SAP phải được ký khóa (G4) trước khi xem kết quả chính. "
+            f"Mã thiết kế `{code}`.\n"
+        )
     return (
         "# 11. Kế hoạch phân tích thống kê\n\n"
         f"**Phiên bản SAP (tự động từ G4):** {ver} — trạng thái: {status}.\n\n"
@@ -592,6 +690,16 @@ def sec_sap(cps, meta) -> str:
 def sec_sailech(cps, meta) -> str:
     code = _design_code(cps)
     rs = S.reporting_standards_for(code)
+    bias = meta.get("bias") if isinstance(meta.get("bias"), dict) else {}
+    if RS.is_present(bias):
+        return (
+            "# 12. Sai lệch và kiểm soát\n\n"
+            f"**Công cụ/khung phù hợp thiết kế:** {rs['extra']}.\n\n"
+            f"**Nguy cơ sai lệch đã xác định:** {_text(bias.get('risks'))}.\n\n"
+            f"**Biện pháp giảm thiểu:** {_text(bias.get('mitigations'))}.\n\n"
+            "Mọi thay đổi biện pháp kiểm soát sau khi protocol/SAP đã khóa phải "
+            "được ghi amendment/deviation và đánh giá ảnh hưởng.\n"
+        )
     return (
         "# 12. Sai lệch và kiểm soát\n\n"
         f"**Công cụ đánh giá nguy cơ sai lệch phù hợp thiết kế:** {rs['extra']}.\n\n"
@@ -619,12 +727,17 @@ def sec_daoduc(cps, meta) -> str:
     irb_line = (f"Số phê duyệt IRB: **{irb_num}**." if irb_num
                 else f"Số phê duyệt IRB: {TAG_DV} — CHƯA có, phải nộp Hội đồng "
                      "Đạo đức và nhận số thật trước khi thu thập dữ liệu.")
+    ethics = meta.get("ethics") if isinstance(meta.get("ethics"), dict) else {}
     return (
         "# 13. Đạo đức nghiên cứu\n\n"
         f"**Phân loại nguy cơ (tự động từ G2):** {risk}.  \n"
         f"**Lộ trình thẩm định:** {route}.  \n"
         f"**Đăng ký nghiên cứu:** {reg} ({reg_where}).\n\n"
         f"{irb_line}\n\n"
+        f"**Đánh giá lợi ích–nguy cơ:** {_text(ethics.get('benefit_risk'))}.  \n"
+        f"**Đồng thuận/waiver rationale:** {_text(ethics.get('consent') or meta.get('consent_plan'))}.  \n"
+        f"**Bảo mật dữ liệu:** {_text(ethics.get('privacy'))}.  \n"
+        f"**An toàn và xử lý sự cố/biến cố:** {_text(ethics.get('safety'))}.\n\n"
         "**Hồ sơ đạo đức đã sinh tự động (G2):**\n\n"
         f"{doc_txt}\n\n"
         "Tuân thủ Tuyên ngôn Helsinki 2024, ICH-GCP, Thông tư 43/2024/TT-BYT "
@@ -641,21 +754,28 @@ def sec_phobien(cps, meta) -> str:
         js_txt += "| Tạp chí | IF | Ghi chú |\n|---|---|---|\n"
         for j in js:
             js_txt += f"| {j.get('journal','?')} | {j.get('if','?')} | {j.get('note','')} |\n"
+    registration = (
+        meta.get("registration")
+        if isinstance(meta.get("registration"), dict)
+        else {}
+    )
+    dissemination = registration.get("dissemination") or meta.get("dissemination_plan")
+    registration_plan = registration.get("plan")
     return (
         "# 14. Kế hoạch phổ biến kết quả/ứng dụng\n\n"
-        "Kết quả dùng để cải tiến chất lượng dịch vụ/thực hành tại đơn vị và công "
-        f"bố khoa học. Kế hoạch chuyển giao cụ thể: {TAG_BS}."
+        f"**Kế hoạch đăng ký/preregistration:** {_text(registration_plan)}.\n\n"
+        f"**Kế hoạch phổ biến/chuyển giao:** {_text(dissemination)}."
         f"{js_txt}\n"
     )
 
 
 def sec_tiendo(cps, meta) -> str:
+    resources = meta.get("resources") if isinstance(meta.get("resources"), dict) else {}
     return (
         "# 15. Tiến độ và nguồn lực\n\n"
-        f"**Nhân lực & phân công:** {TAG_BS} (thu thập/nhập liệu/phân tích/giám sát).\n\n"
-        f"**Tiến độ theo mốc cổng G0–G9:** {TAG_BS} (biểu Gantt — nối "
-        "`ke-hoach-trien-khai`).\n\n"
-        f"**Dự trù kinh phí:** {TAG_BS} — đơn giá/định mức do chủ nhiệm ấn định, "
+        f"**Nhân lực & phân công:** {_text(resources.get('team'))}.\n\n"
+        f"**Tiến độ theo mốc cổng G0–G9:** {_text(resources.get('timeline'))}.\n\n"
+        f"**Dự trù kinh phí:** {_text(resources.get('budget'))} — đơn giá/định mức do chủ nhiệm ấn định, "
         "KHÔNG bịa số tiền.\n"
     )
 
@@ -697,6 +817,111 @@ SECTION_BUILDERS = [
 # BẢNG TRẠNG THÁI CỔNG + KẾT LUẬN SẴN SÀNG + PHỤ LỤC
 # ════════════════════════════════════════════════════════════════════════════
 
+def build_study_map(spec: dict, evaluation: dict) -> str:
+    """Bản đồ đề tài bắt buộc trước khi soạn protocol dài."""
+    primary = _g(spec, "outcomes", "primary", default={}) or {}
+    design = _g(spec, "design", "code", default=TAG_BS)
+    standards = _g(spec, "design", "reporting_primary", default=TAG_BS)
+    current_gate = (
+        "G2 — Protocol"
+        if evaluation["scientific_content_complete"]
+        else "G0-G2 — còn quyết định khoa học cần xác nhận"
+    )
+    rows = [
+        ("Vấn đề/khoảng trống",
+         _text(_g(spec, "rationale", "evidence_gap",
+                  default=_g(spec, "rationale", "problem")))),
+        ("Câu hỏi và mục tiêu",
+         f"{_text(_g(spec, 'question', 'text'))}; "
+         f"mục tiêu: {_text(_g(spec, 'objectives', 'specific', default=[]))}"),
+        ("Thiết kế đề nghị",
+         f"`{design}`; chuẩn chính {standards}; "
+         f"lý do: {_text(_g(spec, 'design', 'rationale'))}"),
+        ("Bối cảnh/quần thể",
+         f"{_text(_g(spec, 'design', 'setting'))}; "
+         f"{_text(_g(spec, 'population', 'description'))}; "
+         f"thời gian {_text(_g(spec, 'design', 'period'))}"),
+        ("Kết cục chính",
+         f"{_text(primary.get('name'))}; định nghĩa: "
+         f"{_text(primary.get('definition'))}; thời điểm: "
+         f"{_text(primary.get('timepoint'))}"),
+        ("Dữ liệu hiện có",
+         _text(_g(spec, "data_collection", "source"),
+               "Chưa có dữ liệu thật/nguồn chưa xác nhận")),
+        ("Rủi ro đạo đức và dữ liệu",
+         f"{_text(_g(spec, 'ethics', 'risk_level'))}; "
+         f"bảo mật: {_text(_g(spec, 'ethics', 'privacy'))}"),
+        ("Sản phẩm cần tạo",
+         "Protocol, IRB/ICF, CRF, data dictionary, SAP, DMP, bảng/hình rỗng, "
+         "checklist báo cáo và nhật ký phiên bản"),
+        ("Cổng chất lượng hiện tại",
+         f"{current_gate}; mức máy-đánh giá: `{evaluation['readiness_level']}`"),
+    ]
+    lines = [
+        "# Bản đồ đề tài\n",
+        "| Thành phần | Nội dung đã chuẩn hóa |",
+        "|---|---|",
+    ]
+    lines.extend(f"| {label} | {value} |" for label, value in rows)
+    lines.append(
+        "\n> Bản đồ này được sinh từ StudySpec + checkpoint. Trường còn thiếu "
+        "không được hệ thống tự suy thành sự thật.\n"
+    )
+    return "\n".join(lines)
+
+
+def build_protocol_coverage(evaluation: dict) -> str:
+    """Ma trận chứng minh đề cương 16 chương bao phủ đủ 20 nội dung protocol."""
+    lines = [
+        "# Ma trận bao phủ 20 thành phần protocol lõi\n",
+        "Bố cục 16 chương được chấp nhận khi toàn bộ 20 thành phần nội dung dưới "
+        "đây có vị trí, dữ liệu và nguồn truy xuất. `ĐỦ DỮ LIỆU DỰ THẢO` không "
+        "đồng nghĩa đã được IRB/chủ nhiệm phê duyệt.\n",
+        "| Mã | Thành phần protocol | Trạng thái | Còn thiếu | Nguồn |",
+        "|---|---|---|---|---|",
+    ]
+    for row in evaluation["protocol_coverage"]:
+        missing = "; ".join(row["missing"]) if row["missing"] else "—"
+        lines.append(
+            f"| {row['id']} | {row['title']} | {row['status']} | "
+            f"{missing} | {row['source']} |"
+        )
+    lines.append(
+        f"\n**Tổng hợp:** {evaluation['protocol_complete_items']}/"
+        f"{evaluation['protocol_total_items']} thành phần đủ dữ liệu dự thảo; "
+        f"trạng thái `{evaluation['readiness_level']}`.\n"
+    )
+    return "\n".join(lines)
+
+
+def build_semantic_audit(evaluation: dict) -> str:
+    """Hiển thị mâu thuẫn khoa học có cấu trúc thay vì chỉ kiểm tiêu đề."""
+    lines = [
+        "# Kiểm định nhất quán khoa học\n",
+        "| Mức | Mã lỗi | Vị trí | Kết quả kiểm |",
+        "|---|---|---|---|",
+    ]
+    issues = evaluation["semantic_issues"]
+    if issues:
+        for issue in issues:
+            lines.append(
+                f"| {issue['severity']} | {issue['code']} | `{issue['path']}` | "
+                f"{issue['message']} |"
+            )
+    else:
+        lines.append("| — | — | — | Chưa phát hiện mâu thuẫn có cấu trúc. |")
+    lines.append(
+        "\n**Kết luận nội dung khoa học:** "
+        + (
+            "ĐỦ DỮ LIỆU DỰ THẢO — vẫn cần bác sĩ/chủ nhiệm thẩm định."
+            if evaluation["scientific_content_complete"]
+            else "CHƯA ĐỦ — xem Gói quyết định và Danh sách thông tin còn thiếu."
+        )
+        + "\n"
+    )
+    return "\n".join(lines)
+
+
 # Cổng skill nào KHÔNG có nguồn pipeline sinh bằng chứng thật (chỉ khoá qua tín
 # hiệu bác sĩ xác nhận) — chú thích rõ trong bảng để không đọc nhầm 'đã có' (#15).
 _SIGNAL_ONLY_NOTE = {
@@ -723,10 +948,16 @@ def build_gate_table(cps, meta=None) -> str:
             source_cell = (srcs + "; " if srcs else "") + note
         lines.append(f"| {sg} | {name} | {state} | {product} | {source_cell} |")
     lines.append("")
-    lines.append("**Ba cổng CỨNG của pipeline (không được tự vượt):**\n")
+    lines.append("**Năm cổng CỨNG của vòng đời nghiên cứu (không được tự vượt):**\n")
+    signals = S.real_world_signals(cps, meta)
     for pg, why in S.PIPELINE_HARD_GATES.items():
-        st = S.normalize_pipeline_gate_state(pg, cps.get(pg), meta)
-        lines.append(f"- pipeline {pg}: {st} — {why}")
+        if pg == "DATA_LOCK":
+            st = S.GATE_STATE_LOCKED if signals["db_locked"] else S.GATE_STATE_MISSING
+            label = "dữ liệu thật"
+        else:
+            st = S.normalize_pipeline_gate_state(pg, cps.get(pg), meta)
+            label = f"pipeline {pg}"
+        lines.append(f"- {label}: {st} — {why}")
     lines.append("")
     return "\n".join(lines)
 
@@ -973,7 +1204,7 @@ def build_final_technical_completion(cps, meta=None) -> str:
     return "\n".join(lines)
 
 
-def build_missing_information(cps, meta=None) -> str:
+def build_missing_information(cps, meta=None, evaluation=None) -> str:
     """Danh sách thiếu sót còn lại để bác sĩ/chủ nhiệm ra quyết định."""
     signals = S.real_world_signals(cps, meta)
     signal_rows = {
@@ -1000,6 +1231,12 @@ def build_missing_information(cps, meta=None) -> str:
             "Không được viết kết quả/kết luận cuối hoặc bài báo hoàn chỉnh.",
             "Giữ phần Results/Discussion ở nhãn [CẦN BỔ SUNG]; chỉ dùng dummy tables.",
             "Chủ nhiệm đề tài + nhóm phân tích",
+        ),
+        "peer_review_approved": (
+            "Bình duyệt độc lập đã phê duyệt đúng vai trò",
+            "Không đủ điều kiện coi bản báo cáo/công bố đã qua phản biện.",
+            "Chuyển hồ sơ cho phản biện độc lập và ghi approval ledger thật.",
+            "Phản biện độc lập",
         ),
         "integrity_signed": (
             "Gói liêm chính tác giả đã ký (ICMJE/COI/tài trợ/AI/CRediT)",
@@ -1052,6 +1289,24 @@ def build_missing_information(cps, meta=None) -> str:
                 "Bác sĩ/chủ nhiệm xác nhận bằng study_meta.json hoặc artifact đã duyệt. | "
                 "Chủ nhiệm đề tài |")
 
+    for row in (evaluation or {}).get("missing_requirements", []):
+        added = True
+        lines.append(
+            f"| Quyết định `{row['id']}` | {row['label']}; thiếu "
+            f"`{', '.join(row['paths'])}` | Protocol chưa đủ nội dung khoa học "
+            f"để thẩm định chính thức. | {row['action']} | {row['owner']} |"
+        )
+
+    for issue in (evaluation or {}).get("semantic_issues", []):
+        if issue.get("severity") != "ERROR":
+            continue
+        added = True
+        lines.append(
+            f"| Mâu thuẫn `{issue['code']}` | {issue['message']} | Có thể làm sai "
+            "thiết kế, cỡ mẫu, CRF hoặc SAP. | Sửa nguồn chuẩn rồi chạy lại toàn "
+            f"bộ downstream bị ảnh hưởng. | Chủ nhiệm + phương pháp/thống kê |"
+        )
+
     if not added:
         lines.append(
             "| Không còn thiếu sót cứng | Các tín hiệu bắt buộc đã có theo checkpoint/meta | "
@@ -1088,7 +1343,8 @@ def build_front_note(study: str, cps, meta, generated: str | None = None) -> str
     return (
         f"> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) "
         f"lắp ráp TỰ ĐỘNG lúc {generated} từ checkpoint G0–G9 của đề tài "
-        f"`{study}`, theo mẫu 16 mục của skill `nghien-cuu-y-khoa-chuan-quoc-te`. "
+        f"`{study}`, theo mẫu 16 chương và ma trận bao phủ 20 thành phần protocol "
+        "lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. "
         "Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, "
         f"{n_pmids} PMID) lấy TỪ pipeline — không bịa. Mọi chỗ mang nhãn "
         f"{TAG_BS}/{TAG_DV}/{TAG_DRAFT}/{S.TAG_CAN_KIEM_CHUNG_NGUON} là chỗ hệ "
@@ -1189,7 +1445,10 @@ def title_page_dict(study: str, cps, meta) -> dict:
 
 def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     cps = load_checkpoints(out_dir)
-    meta = load_meta(out_dir)
+    raw_meta = load_meta(out_dir)
+    study_spec = RS.build_study_spec(study, cps, raw_meta)
+    spec_evaluation = RS.evaluate_study_spec(study_spec, cps, raw_meta)
+    meta = RS.meta_for_render(raw_meta, study_spec)
     now = datetime.now()
     generated_display = now.strftime("%Y-%m-%d %H:%M")
     generated_iso = now.isoformat()
@@ -1204,6 +1463,8 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     parts.append("")
     parts.append(build_document_control(study, cps, meta, generated=generated_display))
     parts.append("")
+    parts.append(build_study_map(study_spec, spec_evaluation))
+    parts.append("")
     # Bảng trạng thái + kết luận sẵn sàng đặt ĐẦU để bác sĩ thấy bức tranh thật.
     parts.append(build_gate_table(cps, meta))
     parts.append(build_readiness(cps, meta, study=study))
@@ -1212,13 +1473,17 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     for builder in SECTION_BUILDERS:
         parts.append(builder(cps, meta))
         parts.append("")
-    # Phụ lục + danh mục hình/bảng + tuân thủ quốc tế + kiểm hoàn thành + pháp lý.
+    # Ma trận protocol + phụ lục + bảng/hình + tuân thủ + kiểm hoàn thành.
+    parts.append(build_protocol_coverage(spec_evaluation))
+    parts.append(build_semantic_audit(spec_evaluation))
     parts.append(build_phuluc())
     parts.append(build_traceability_matrix(cps, meta))
     parts.append(build_display_items(cps, meta))
     parts.append(build_international_compliance(cps, meta))
     parts.append(build_final_technical_completion(cps, meta))
-    parts.append(build_missing_information(cps, meta))
+    parts.append(build_missing_information(cps, meta, spec_evaluation))
+    decision_md = RS.decision_package_markdown(study, study_spec, spec_evaluation)
+    parts.append(decision_md)
     parts.append(build_legal_refs())
     parts.append(
         "\n---\n\n> **Disclaimer:** Tài liệu do hệ thống hỗ trợ lắp ráp; dữ liệu "
@@ -1232,6 +1497,17 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
 
     md_path = out_dir / f"DE_CUONG_THONG_NHAT_{study}.md"
     md_path.write_text(body_md, encoding="utf-8")
+
+    spec_path = out_dir / f"STUDY_SPEC_{study}.json"
+    spec_payload = dict(study_spec)
+    spec_payload["_evaluation"] = spec_evaluation
+    spec_path.write_text(
+        json.dumps(spec_payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    decision_path = out_dir / f"GOI_QUYET_DINH_{study}.md"
+    decision_path.write_text(decision_md, encoding="utf-8")
 
     docx_path = None
     try:
@@ -1250,7 +1526,14 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
         import check_de_cuong
         rep = check_de_cuong.validate(md_path, out_dir)
         guardrail = {"passed": rep["passed"], "checks": rep["checks"],
-                     "errors": rep["errors"], "warnings": rep["warnings"]}
+                     "errors": rep["errors"], "warnings": rep["warnings"],
+                     "study_spec_readiness": rep.get("study_spec_readiness"),
+                     "scientific_content_complete": rep.get(
+                         "scientific_content_complete"
+                     ),
+                     "protocol_content_complete": rep.get(
+                         "protocol_content_complete"
+                     )}
     except ImportError:
         pass
 
@@ -1283,21 +1566,52 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
             "status": TAG_DRAFT,
         },
         "real_world_signals": signals,
+        "study_spec": {
+            "schema_version": RS.SCHEMA_VERSION,
+            "readiness_level": spec_evaluation["readiness_level"],
+            "scientific_content_complete": spec_evaluation[
+                "scientific_content_complete"
+            ],
+            "protocol_content_complete": spec_evaluation[
+                "protocol_content_complete"
+            ],
+            "protocol_complete_items": spec_evaluation[
+                "protocol_complete_items"
+            ],
+            "protocol_total_items": spec_evaluation["protocol_total_items"],
+            "missing_requirement_ids": [
+                row["id"] for row in spec_evaluation["missing_requirements"]
+            ],
+            "semantic_error_codes": [
+                row["code"] for row in spec_evaluation["semantic_issues"]
+                if row["severity"] == "ERROR"
+            ],
+        },
         "skill_gate_states": gate_states,
         "readiness": readiness,
         "artifacts": {
             "de_cuong_md": _rel(md_path),
             "de_cuong_docx": _rel(docx_path),
+            "study_spec_json": _rel(spec_path),
+            "decision_package_md": _rel(decision_path),
         },
         "n_de_cuong_sections": len(SECTION_BUILDERS),
+        "n_protocol_core_items": len(S.PROTOCOL_CORE_ITEMS),
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
     cp_path = out_dir / "G10_checkpoint.json"
     cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2),
                        encoding="utf-8")
 
-    return {"md": md_path, "docx": docx_path, "checkpoint": cp_path,
-            "body_md": body_md, "cps": cps}
+    return {
+        "md": md_path,
+        "docx": docx_path,
+        "checkpoint": cp_path,
+        "study_spec": spec_path,
+        "decision_package": decision_path,
+        "body_md": body_md,
+        "cps": cps,
+    }
 
 
 # Vá 2026-07-18 (audit vòng 2): tiền tố "PMID" đã khử nhập nhằng → dùng \d+ (không
@@ -1676,6 +1990,8 @@ def main() -> int:
     print(f"  ✓ Markdown: {result['md'].relative_to(BASE)}")
     if result["docx"]:
         print(f"  ✓ Word:     {result['docx'].relative_to(BASE)}")
+    print(f"  ✓ StudySpec: {result['study_spec'].relative_to(BASE)}")
+    print(f"  ✓ Gói quyết định: {result['decision_package'].relative_to(BASE)}")
     print(f"  ✓ Checkpoint: {result['checkpoint'].relative_to(BASE)}")
 
     # Làm mới STUDY_INDEX.md theo checkpoint THẬT — trước đây chỉ sinh 1 lần lúc
