@@ -86,6 +86,26 @@ ARTIFACT_MAP = {
 
     # G9 — Nghiệm thu
     "readiness":    ("G9",  "G9🔒", "Báo cáo sẵn sàng nghiệm thu (Final Readiness Report)"),
+
+    # SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11, dimension
+    # research_agents_deep_audit/g6_g7_depth_and_artifact_map): 10 agent doctrine
+    # khai `--artifact <khóa>` bằng khóa KHÔNG tồn tại ở trên — generate() rơi vào
+    # fallback code="GX"/gate="" (mất định danh cổng G0-G9), cùng lớp lỗi đã vá
+    # cho co-mau-nghien-cuu.md/meta-phan-tich.md/cong-cu-do-luong.md ở các vòng
+    # trước. Thêm đúng 10 khóa agent doctrine đang tham chiếu, gắn cổng/tiêu đề
+    # đúng nghĩa (dùng _gen_generic như phần lớn khóa hiện có — không cần
+    # generator riêng để sửa lỗi mất định danh cổng).
+    "research-gap":       ("G0d", "G0-G1", "Đối chiếu khoảng trống nghiên cứu (Research Gap Analysis)"),
+    "extraction":         ("G0e", "G0-G1", "Bảng trích xuất dữ liệu nghiên cứu (Data Extraction Table)"),
+    "critical-appraisal": ("G0f", "G0-G1",
+                           "Thẩm định phê bình một nghiên cứu (RoB 2/ROBINS-I/AMSTAR-2/QUADAS-2 · GRADE)"),
+    "qualitative-design": ("G1e", "G1", "Thiết kế nghiên cứu định tính/hỗn hợp (COREQ/SRQR)"),
+    "safety-monitoring":  ("G2a", "G2", "Kế hoạch giám sát an toàn — AE/SAE · DSMB · Stopping Rules"),
+    "prediction-model":   ("G6c", "G6", "Mô hình tiên lượng/chẩn đoán (TRIPOD+AI/PROBAST+AI)"),
+    "clinical-guideline": ("G6d", "G6-G7", "Cầu nối Nghiên cứu↔Thực hành — Evidence-to-Decision (GRADE EtD)"),
+    "health-economics":   ("G7c", "G1+G7", "Phân tích kinh tế y tế (CEA/CUA/CBA/BIA — CHEERS 2022/ISPOR BIA GPP II)"),
+    "citation-check":     ("G7d", "G7-G8🔒", "Kiểm chứng trích dẫn học thuật (A12 — cổng cứng chống trích dẫn ma)"),
+    "study-log":          ("G9a", "G9", "Sổ cái & Bàn giao lưu trữ đề tài (A18 — Final Handover Log)"),
 }
 
 
@@ -341,7 +361,8 @@ class ResearchDocxGenerator:
     def generate(self, artifact_key: str, content: dict = None) -> str:
         """Điểm vào chính — tự chọn generator theo artifact_key.
 
-        - Khóa thuộc 22 artifact NGHIÊN CỨU chuẩn (len(ARTIFACT_MAP)) → generator
+        - Khóa thuộc len(ARTIFACT_MAP) artifact NGHIÊN CỨU chuẩn (32, sau vòng lặp
+          kiểm tra-hoàn thiện vòng 11 — trước đó 22, xem comment ở ARTIFACT_MAP) → generator
           chuyên biệt (hoặc generic).
         - Khóa NGOÀI danh mục → KHÔNG sập: dùng mẫu CHUNG (generic) + in cảnh báo
           (fail-soft, không im lặng) để lệnh minh họa chạy được thay vì ValueError.

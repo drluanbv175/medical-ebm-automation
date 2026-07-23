@@ -2179,6 +2179,27 @@ TABLE_SHELLS = {
             ("Decision Curve Analysis", "[chạy dcurves::dca]", "—", "Net benefit vs treat-all/treat-none"),
         ]),
     ],
+    # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11): "qualitative" là
+    # thiết kế chuẩn thứ 8 duy nhất còn thiếu bảng riêng — trước đây rơi vào
+    # fallback generic 1 dòng "[CẦN] chưa có mẫu bảng cho thiết kế" dù pipeline
+    # G0-G10 đã có nhánh định tính đầy đủ từ vòng trước (task #21). Bảng dưới
+    # theo đúng cấu trúc báo cáo định tính chuẩn (đặc điểm người tham gia +
+    # bão hòa dữ liệu, rồi chủ đề kèm trích dẫn minh họa) — chỉ KHUNG TIÊU ĐỀ
+    # CỘT, không có nội dung/trích dẫn nào được bịa sẵn.
+    "qualitative": [
+        ("Bảng 1 — Đặc điểm người tham gia & bão hòa dữ liệu", [
+            ("Biến", "Giá trị", "Ghi chú"),
+            ("Số người tham gia (N)", "[CẦN]", "Đến khi bão hòa dữ liệu"),
+            ("Tuổi (năm), TB±SD hoặc khoảng", "[CẦN]", ""),
+            ("Giới nữ, n (%)", "[CẦN]", ""),
+            ("Phương pháp lấy mẫu", "[CẦN]", "Có chủ đích/lý thuyết"),
+            ("Tiêu chí dừng thu thập", "[CẦN]", "Bão hòa chủ đề — ghi rõ căn cứ"),
+        ]),
+        ("Bảng 2 — Chủ đề & trích dẫn minh họa (Thematic Analysis)", [
+            ("Chủ đề chính", "Chủ đề phụ", "Trích dẫn minh họa (ẩn danh)", "Số người tham gia nhắc đến"),
+            ("[CẦN — mã hóa từ dữ liệu thật]", "[CẦN]", "[CẦN — KHÔNG bịa trích dẫn]", "[CẦN]"),
+        ]),
+    ],
 }
 
 
@@ -2446,6 +2467,11 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "prediction":      "Phát triển mô hình (hồi quy logistic/Cox hoặc ML) + "
                            "internal validation (bootstrap) + discrimination "
                            "(C-statistic/AUC) + calibration (slope/intercept) + DCA (TRIPOD+AI)",
+        # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11): "qualitative"
+        # trước đây rơi vào .get() fallback "[CẦN XÁC ĐỊNH THEO SAP]" dù
+        # _SCRIPT03_INFO["qualitative"] (dòng ~2339) đã có nhãn đúng sẵn — dùng
+        # lại đúng nhãn đó để nhất quán trong cùng file (không tạo nhãn mới).
+        "qualitative":     _SCRIPT03_INFO["qualitative"][0],
     }
     analysis_name = analysis_name_map.get(design_code, "[CẦN XÁC ĐỊNH THEO SAP]")
 

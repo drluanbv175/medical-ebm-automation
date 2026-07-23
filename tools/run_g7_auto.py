@@ -78,6 +78,17 @@ REPORTING_CHECKLISTS: dict[str, tuple[str, int]] = {
     # định tính nói chung (COREQ hẹp hơn — chỉ phỏng vấn/nhóm tiêu điểm), đúng
     # theo doctrine nghien-cuu-dinh-tinh.md dòng 36. 21 mục chính thức.
     "qualitative":     ("SRQR 2014",      21),
+    # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11, dimension
+    # g6_g7_depth_and_artifact_map): "economic" (CHEERS 2022) — TRƯỚC ĐÂY
+    # THIẾU HẲN dù kinh-te-y-te.md + dieu-phoi-nghien-cuu.md đã tuyên bố "G7
+    # báo cáo CHEERS" từ trước — một đề tài có specialist_modules=['economic']
+    # (phát hiện ở run_g1_auto.py::detect_specialist_modules) hoặc PIN
+    # design_code='economic' trực tiếp đều rơi vào fallback "cohort"/STROBE
+    # (sai hoàn toàn chuẩn báo cáo cho cấu phần kinh tế y tế). 28 mục chính
+    # thức — xác minh trực tiếp Table 1, Husereau D et al. Value Health.
+    # 2022;25(1):3-9. doi:10.1016/j.jval.2021.11.1351 (đọc PDF gốc, không suy
+    # diễn từ trí nhớ huấn luyện).
+    "economic":        ("CHEERS 2022",    28),
 }
 
 # Mục checklist chi tiết theo design (mô tả ngắn → tự điền hay cần thêm)
@@ -443,6 +454,45 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("19", "Hạn chế — hạn chế nghiên cứu, ảnh hưởng đến độ tin cậy/khả năng chuyển giao kết quả", False),
         ("20", "Xung đột lợi ích — khai báo xung đột lợi ích của nhóm nghiên cứu", False),
         ("21", "Nguồn tài trợ — nguồn tài trợ và vai trò nhà tài trợ trong thiết kế/thực hiện/công bố", False),
+    ],
+    # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11): CHEERS 2022 — 28
+    # mục chính thức, dịch trung thành từ Table 1 (Husereau D, Drummond M,
+    # Augustovski F, et al. Consolidated Health Economic Evaluation Reporting
+    # Standards 2022 (CHEERS 2022) Statement. Value Health. 2022;25(1):3-9.
+    # doi:10.1016/j.jval.2021.11.1351 — 7 nhóm: Title/Abstract/Introduction/
+    # Methods/Results/Discussion/Other relevant information). auto_filled=True
+    # chỉ cho 2 mục có thể tái dùng cấu trúc/nội dung đã tự điền ở nơi khác
+    # trong pipeline (tóm tắt có cấu trúc, bối cảnh từ G0/G1) — khớp đúng quy
+    # ước auto_filled đã dùng cho các thiết kế khác trong file này.
+    "economic": [
+        ("1",  "Tiêu đề — xác định đây là đánh giá kinh tế y tế và nêu rõ các can thiệp được so sánh", False),
+        ("2",  "Tóm tắt có cấu trúc — nêu bối cảnh, phương pháp chính, kết quả, và các phân tích thay thế", True),
+        ("3",  "Bối cảnh nghiên cứu, câu hỏi nghiên cứu, và ý nghĩa thực tiễn cho quyết định chính sách/thực hành", True),
+        ("4",  "Nêu rõ đã xây dựng kế hoạch phân tích kinh tế y tế (health economic analysis plan) hay chưa, và nơi có thể truy cập", False),
+        ("5",  "Mô tả đặc điểm quần thể nghiên cứu (tuổi, nhân khẩu học, kinh tế-xã hội, hoặc đặc điểm lâm sàng)", False),
+        ("6",  "Cung cấp thông tin bối cảnh liên quan có thể ảnh hưởng đến kết quả", False),
+        ("7",  "Mô tả các can thiệp/chiến lược được so sánh và lý do lựa chọn", False),
+        ("8",  "Nêu rõ góc nhìn (perspective) của nghiên cứu và lý do lựa chọn", False),
+        ("9",  "Nêu rõ khung thời gian (time horizon) của nghiên cứu và lý do phù hợp", False),
+        ("10", "Báo cáo tỷ lệ chiết khấu (discount rate) và lý do lựa chọn", False),
+        ("11", "Mô tả kết cục nào được dùng làm thước đo lợi ích/tác hại", False),
+        ("12", "Mô tả cách đo lường các kết cục dùng để nắm bắt lợi ích/tác hại", False),
+        ("13", "Mô tả quần thể và phương pháp dùng để đo lường và định giá (value) kết cục", False),
+        ("14", "Mô tả cách định giá chi phí (nguồn lực sử dụng)", False),
+        ("15", "Báo cáo thời điểm ước tính số lượng nguồn lực và đơn giá, cộng đơn vị tiền tệ và năm quy đổi", False),
+        ("16", "Nếu có dùng mô hình hóa: mô tả chi tiết và lý do sử dụng; nêu rõ mô hình có công khai không và truy cập ở đâu", False),
+        ("17", "Mô tả phương pháp phân tích/biến đổi thống kê dữ liệu, phương pháp ngoại suy, và cách thẩm định mô hình (nếu có)", False),
+        ("18", "Mô tả phương pháp ước tính kết quả nghiên cứu khác nhau thế nào giữa các nhóm nhỏ (subgroups)", False),
+        ("19", "Mô tả cách tác động được phân bổ giữa các cá nhân khác nhau hoặc điều chỉnh để phản ánh nhóm ưu tiên", False),
+        ("20", "Mô tả phương pháp mô tả đặc điểm các nguồn bất định (uncertainty) trong phân tích", False),
+        ("21", "Mô tả cách tiếp cận để bệnh nhân/người nhận dịch vụ, cộng đồng, hoặc bên liên quan tham gia vào thiết kế nghiên cứu", False),
+        ("22", "Báo cáo mọi tham số đầu vào phân tích (giá trị, khoảng, nguồn trích dẫn) kèm giả định bất định/phân bố", False),
+        ("23", "Báo cáo giá trị trung bình cho các nhóm chi phí và kết cục chính, tổng hợp bằng thước đo tổng quát phù hợp nhất", False),
+        ("24", "Mô tả bất định về nhận định phân tích/đầu vào/dự phóng ảnh hưởng kết quả thế nào; báo cáo ảnh hưởng của lựa chọn tỷ lệ chiết khấu và khung thời gian (nếu áp dụng)", False),
+        ("25", "Báo cáo sự tham gia của bệnh nhân/người nhận dịch vụ/cộng đồng/bên liên quan đã thay đổi cách tiếp cận hoặc kết quả nghiên cứu ra sao", False),
+        ("26", "Báo cáo phát hiện chính, hạn chế, cân nhắc đạo đức/công bằng chưa nắm bắt được, và ảnh hưởng đến bệnh nhân/chính sách/thực hành", False),
+        ("27", "Mô tả nguồn tài trợ nghiên cứu và vai trò của nhà tài trợ trong xác định/thiết kế/triển khai/báo cáo phân tích", False),
+        ("28", "Báo cáo xung đột lợi ích của tác giả theo yêu cầu tạp chí hoặc ICMJE", False),
     ],
 }
 
@@ -1305,44 +1355,30 @@ def generate_manuscript(
 # 5. SINH CHECKLIST BÁO CÁO
 # ════════════════════════════════════════════════════════════════════════════
 
-def generate_checklist(
-    design_code: str,
-    reporting_std: str,
-    std_total_items: int,
-    irb_number: str,
-    registration: str,
-    n_adjusted: int,
-    alpha: float,
-    power: float,
-) -> str:
-    """
-    Sinh bảng checklist đầy đủ theo chuẩn báo cáo.
-    Đánh dấu ☑ cho mục đã tự điền, ☐ cho mục [CẦN bác sĩ điền].
-    """
-    items = CHECKLIST_ITEMS.get(design_code, CHECKLIST_ITEMS.get("cohort", []))
+# Tự động đánh dấu một số mục dựa trên dữ liệu có sẵn (dùng chung cho checklist
+# chính VÀ checklist phụ trợ specialist_modules — tách ra 2026-07-23, vòng 11).
+_CHECKLIST_AUTO_FILLED_PATTERNS = {
+    "tóm tắt", "thiết kế", "cỡ mẫu", "đăng ký", "ethics", "irb", "design",
+    "abstract", "structure", "reporting standard", "background", "protocol"
+}
 
-    # Tự động đánh dấu một số mục dựa trên dữ liệu có sẵn
-    auto_filled_patterns = {
-        "tóm tắt", "thiết kế", "cỡ mẫu", "đăng ký", "ethics", "irb", "design",
-        "abstract", "structure", "reporting standard", "background", "protocol"
-    }
 
+def _render_checklist_block(items: list, reporting_std: str, std_total_items: int) -> tuple[str, int, int]:
+    """Sinh 1 khối bảng checklist (header+rows+footer) cho MỘT chuẩn báo cáo.
+    Trả về (markdown, auto_count, row_total) — tách từ generate_checklist()
+    2026-07-23 (vòng 11) để dùng lại cho checklist phụ trợ specialist_modules
+    (vd CHEERS 2022 đi kèm CONSORT/STROBE khi có cấu phần kinh tế y tế)."""
     header = (
         f"\n## PHỤ LỤC — CHECKLIST {reporting_std} "
         f"({std_total_items} mục tổng | tự điền vs [CẦN])\n\n"
-    )
-    header += (
         "| Mục | Nội dung yêu cầu | Tự điền (A8) | Ghi chú |\n"
         "|-----|------------------|:------------:|--------|\n"
     )
-
     auto_count = 0
     rows = []
     for item_id, desc, auto in items:
-        # Xác định trạng thái tự điền
         desc_lower = desc.lower()
-        is_auto = auto or any(p in desc_lower for p in auto_filled_patterns)
-
+        is_auto = auto or any(p in desc_lower for p in _CHECKLIST_AUTO_FILLED_PATTERNS)
         if is_auto:
             status = "☑ Auto"
             note = "§ tương ứng trong A8"
@@ -1350,7 +1386,6 @@ def generate_checklist(
         else:
             status = "☐ [CẦN]"
             note = "Bác sĩ điền khi có kết quả thật"
-
         rows.append(f"| {item_id} | {desc} | {status} | {note} |")
 
     # SỬA (vòng 5, 2026-07-17): std_total_items là TỔNG MỤC CHÍNH THỨC của chuẩn
@@ -1365,8 +1400,52 @@ def generate_checklist(
         f"**Còn {row_total - auto_count} dòng cần bác sĩ điền** khi có kết quả thật.  \n"
         "\n*Kiểm tra checklist này với tác giả chính trước khi nộp bản thảo.*\n"
     )
+    return header + "\n".join(rows) + "\n" + footer, auto_count, row_total
 
-    return header + "\n".join(rows) + "\n" + footer
+
+def generate_checklist(
+    design_code: str,
+    reporting_std: str,
+    std_total_items: int,
+    irb_number: str,
+    registration: str,
+    n_adjusted: int,
+    alpha: float,
+    power: float,
+    specialist_modules: Optional[list] = None,
+) -> str:
+    """
+    Sinh bảng checklist đầy đủ theo chuẩn báo cáo chính của design_code.
+
+    THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11, dimension
+    g6_g7_depth_and_artifact_map): khi run_g1_auto.py::detect_specialist_modules()
+    phát hiện 'economic' như MODULE CỘNG THÊM (đề tài chính không phải thuần kinh
+    tế y tế, vd RCT có nhánh phân tích chi phí-hiệu quả lồng bên trong), checklist
+    CHÍNH (CONSORT/STROBE/...) không tự động bao gồm CHEERS — trước đây
+    specialist_modules bị G1 GHI vào checkpoint nhưng KHÔNG BAO GIỜ được G7/G8 ĐỌC
+    lại, nên kinh-te-y-te.md/dieu-phoi-nghien-cuu.md hứa "G7 báo cáo CHEERS" mà
+    không có gì thật thực hiện lời hứa đó. Nay khi 'economic' có trong
+    specialist_modules VÀ design_code chính KHÔNG PHẢI 'economic' (tránh sinh
+    trùng 2 lần CHEERS nếu physician đã PIN design_code='economic' trực tiếp),
+    nối THÊM khối CHEERS 2022 riêng sau checklist chính.
+    """
+    items = CHECKLIST_ITEMS.get(design_code, CHECKLIST_ITEMS.get("cohort", []))
+    block, _auto, _total = _render_checklist_block(items, reporting_std, std_total_items)
+
+    specialist_modules = specialist_modules or []
+    if "economic" in specialist_modules and design_code != "economic":
+        econ_std, econ_total = REPORTING_CHECKLISTS["economic"]
+        econ_items = CHECKLIST_ITEMS["economic"]
+        econ_block, _econ_auto, _econ_total = _render_checklist_block(econ_items, econ_std, econ_total)
+        block += (
+            "\n---\n"
+            "\n> ℹ️ Đề tài có cấu phần **kinh tế y tế** cộng thêm (specialist_modules "
+            "phát hiện ở G1) — checklist CHEERS 2022 dưới đây báo cáo RIÊNG cho "
+            "cấu phần đó, KHÔNG thay thế checklist chính ở trên.\n"
+        )
+        block += econ_block
+
+    return block
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -1802,6 +1881,7 @@ def main() -> None:
         n_adjusted=n_adjusted,
         alpha=alpha,
         power=power,
+        specialist_modules=g1.get("specialist_modules") or [],
     )
 
     # Ghép toàn bộ artifact

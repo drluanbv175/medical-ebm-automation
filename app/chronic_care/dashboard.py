@@ -2,13 +2,23 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from app.chronic_care.service import ChronicCareDashboardState, build_shadow_pilot_state
 
 
 def build_chronic_care_readonly_snapshot() -> ChronicCareDashboardState:
     return build_shadow_pilot_state()
+
+
+# SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11, phát hiện HIGH): cache
+# CẤP TIẾN TRÌNH cho snapshot dashboard — xem lý do đầy đủ trong
+# render_chronic_care_shadow_dashboard() bên dưới. Cố ý dùng biến module-level
+# đơn giản thay vì st_module.cache_resource (thử ban đầu SAI: gọi
+# cache_resource(...) BÊN TRONG hàm render tạo một wrapper lru_cache MỚI mỗi
+# lần render chạy — cache rỗng lại từ đầu mỗi lần, không hề cache được gì cả;
+# bắt được lỗi này bằng test_chronic_care_dashboard_seed_once.py trước khi commit).
+_CACHED_SNAPSHOT: Optional[ChronicCareDashboardState] = None
 
 
 def snapshot_to_rows(snapshot: ChronicCareDashboardState) -> Dict[str, List[Dict[str, Any]]]:
@@ -35,7 +45,22 @@ def snapshot_to_rows(snapshot: ChronicCareDashboardState) -> Dict[str, List[Dict
 
 
 def render_chronic_care_shadow_dashboard(st_module) -> ChronicCareDashboardState:
-    snapshot = build_chronic_care_readonly_snapshot()
+    # SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11, phát hiện HIGH):
+    # trước đây gọi build_chronic_care_readonly_snapshot() TRỰC TIẾP mỗi lần
+    # hàm này chạy — và vì Streamlit rerun TOÀN BỘ script trên MỌI tương tác
+    # widget ở CẢ 14 tab (không chỉ khi bác sĩ mở đúng tab này), mỗi lần rerun
+    # tạo ChronicCareService() MỚI → seed_synthetic_cases() MỚI → hàng trăm
+    # dòng audit event thật được APPEND vào data/processed/chronic_care_phase_
+    # 3a_audit.jsonl (AuditLogger.log() mở file chế độ "a", không giới hạn) —
+    # phình vô hạn trên đĩa mỗi lần bác sĩ tương tác dashboard, dù toàn bộ dữ
+    # liệu chỉ là 30 ca TỔNG HỢP giống hệt nhau mỗi lần seed. Dùng cache
+    # module-level (_CACHED_SNAPSHOT) để chỉ seed MỘT LẦN cho vòng đời tiến
+    # trình (an toàn vì dữ liệu 100% tổng hợp/tĩnh, không phụ thuộc input
+    # người dùng) — không đổi hành vi hiển thị, chỉ chặn việc seed lặp lại.
+    global _CACHED_SNAPSHOT
+    if _CACHED_SNAPSHOT is None:
+        _CACHED_SNAPSHOT = build_chronic_care_readonly_snapshot()
+    snapshot = _CACHED_SNAPSHOT
     rows = snapshot_to_rows(snapshot)
     st_module.header("🫀 Chronic Care Shadow Pilot — Read-only")
     st_module.caption(

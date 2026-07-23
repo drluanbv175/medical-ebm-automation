@@ -24,17 +24,17 @@ Chạy từ thư mục `medical-ebm-automation/`:
 
 | Cổng | Lệnh chuẩn | File .docx sinh ra |
 |------|-----------|-------------------|
-| **G0** | `python tools/gen_research_docx.py --study "<TEN>" --gate G0` | G0a_INTAKE · G0b_PICO · G0c_LITERATURE |
-| **G1** | `python tools/gen_research_docx.py --study "<TEN>" --gate G1` | G1a_PROTOCOL · G1b_CHARTER · G1c_PLAN · G1d_RISK |
-| **G2 🔒** | `python tools/gen_research_docx.py --study "<TEN>" --artifact ethics` | G2_ETHICS |
+| **G0** | `python tools/gen_research_docx.py --study "<TEN>" --gate G0` | G0a_INTAKE · G0b_PICO · G0c_LITERATURE · G0d_RESEARCH-GAP · G0e_EXTRACTION · G0f_CRITICAL-APPRAISAL |
+| **G1** | `python tools/gen_research_docx.py --study "<TEN>" --gate G1` | G1a_PROTOCOL · G1b_CHARTER · G1c_PLAN · G1d_RISK · G1e_QUALITATIVE-DESIGN |
+| **G2 🔒** | `python tools/gen_research_docx.py --study "<TEN>" --gate G2` | G2_ETHICS · G2a_SAFETY-MONITORING (2026-07-23, vòng lặp vòng 11: thêm `safety-monitoring`, đổi lệnh từ `--artifact ethics` đơn lẻ sang `--gate G2` để xuất cả 2) |
 | **G3** | `python tools/gen_research_docx.py --study "<TEN>" --gate G3` | G3a_SAMPLESIZE · G3b_VARIABLES · G3c_CRF · G3d_INSTRUMENT |
 | **G4 🔒** | `python tools/gen_research_docx.py --study "<TEN>" --artifact sap` | G4_SAP |
 | **G5** | `python tools/gen_research_docx.py --study "<TEN>" --gate G5` | G5a_SOP · G5b_DMP · G5c_DATALOCK |
-| **G6** | `python tools/gen_research_docx.py --study "<TEN>" --gate G6` | G6a_ANALYSIS · G6b_INTERPRETATION |
-| **G7** | `python tools/gen_research_docx.py --study "<TEN>" --gate G7` | G7a_MANUSCRIPT · G7b_CHECKLIST · **+ G1d_RISK bị sinh lại (2026-07-12: xác nhận bằng cách chạy mô phỏng `generate_all_gates()` thật — artifact `risk` có gate="G1+G7", hàm khớp gate bằng substring "G7" in "G1+G7" nên bị lặp; đây là hành vi thật của code, không phải lỗi tài liệu — đừng ngạc nhiên khi thấy Risk Register bị ghi đè ở G7)** |
+| **G6** | `python tools/gen_research_docx.py --study "<TEN>" --gate G6` | G6a_ANALYSIS · G6b_INTERPRETATION · G6c_PREDICTION-MODEL · G6d_CLINICAL-GUIDELINE |
+| **G7** | `python tools/gen_research_docx.py --study "<TEN>" --gate G7` | G7a_MANUSCRIPT · G7b_CHECKLIST · G7c_HEALTH-ECONOMICS · G7d_CITATION-CHECK · **+ G1d_RISK bị sinh lại (2026-07-12: xác nhận bằng cách chạy mô phỏng `generate_all_gates()` thật — artifact `risk` có gate="G1+G7", hàm khớp gate bằng substring "G7" in "G1+G7" nên bị lặp; đây là hành vi thật của code, không phải lỗi tài liệu — đừng ngạc nhiên khi thấy Risk Register bị ghi đè ở G7. `health-economics` dùng cùng quy ước "+" nên CŨNG cố ý xuất hiện ở cả G1 và G7)** |
 | **G8** | `python tools/gen_research_docx.py --study "<TEN>" --artifact review` | G8_REVIEW |
-| **G9 🔒** | `python tools/gen_research_docx.py --study "<TEN>" --artifact readiness` | G9_READINESS |
-| **Tất cả** | `python tools/gen_research_docx.py --study "<TEN>" --all` | **22** file docx toàn đề tài (2026-07-12: sửa "20" — `len(ARTIFACT_MAP)` thật = 22, xác nhận bằng import module thật + đếm bảng §5 dưới đây) |
+| **G9 🔒** | `python tools/gen_research_docx.py --study "<TEN>" --gate G9` | G9_READINESS · G9a_STUDY-LOG |
+| **Tất cả** | `python tools/gen_research_docx.py --study "<TEN>" --all` | **32** file docx toàn đề tài (2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 11: sửa "22" → thêm 10 khóa artifact mà agent doctrine đã tham chiếu nhưng trước đây thiếu trong `ARTIFACT_MAP` — research-gap/extraction/critical-appraisal/qualitative-design/safety-monitoring/prediction-model/clinical-guideline/health-economics/citation-check/study-log; xác nhận bằng `len(ARTIFACT_MAP)` thật + đếm bảng §5 dưới đây) |
 
 **Scaffold toàn đề tài** (tạo lần đầu):
 ```bash
@@ -79,18 +79,23 @@ BƯỚC E (bàn giao): nêu cổng kế tiếp + cần bác sĩ cấp gì
 
 ---
 
-## §5. DANH SÁCH 22 ARTIFACT KEY (dùng với --artifact — 2026-07-12: sửa "20", đếm thật khớp bảng dưới)
+## §5. DANH SÁCH 32 ARTIFACT KEY (dùng với --artifact — 2026-07-23, vòng lặp vòng 11: sửa "22")
 
 | Key | Code | Cổng | Tên |
 |-----|------|------|-----|
 | `intake` | G0a | G0 | Research Intake & Feasibility Audit |
 | `pico` | G0b | G0 | Câu hỏi nghiên cứu — PICO/PECO/FINER |
 | `literature` | G0c | G0-G1 | Tổng quan y văn & Evidence Ledger |
+| `research-gap` | G0d | G0-G1 | Đối chiếu khoảng trống nghiên cứu (Research Gap Analysis) |
+| `extraction` | G0e | G0-G1 | Bảng trích xuất dữ liệu nghiên cứu (Data Extraction Table) |
+| `critical-appraisal` | G0f | G0-G1 | Thẩm định phê bình một nghiên cứu (RoB 2/ROBINS-I/AMSTAR-2/QUADAS-2 · GRADE) |
 | `protocol` | G1a | G1 | Đề cương & Thiết kế nghiên cứu |
 | `charter` | G1b | G1 | Project Charter |
 | `plan` | G1c | G1 | Kế hoạch triển khai |
 | `risk` | G1d | G1+G7 | Risk Register sống |
+| `qualitative-design` | G1e | G1 | Thiết kế nghiên cứu định tính/hỗn hợp (COREQ/SRQR) |
 | `ethics` | G2 | G2🔒 | Hồ sơ đạo đức (IRB) + ICF |
+| `safety-monitoring` | G2a | G2 | Kế hoạch giám sát an toàn — AE/SAE · DSMB · Stopping Rules |
 | `samplesize` | G3a | G3 | Tính cỡ mẫu & Power |
 | `variables` | G3b | G3 | Biến số & Data Dictionary |
 | `crf` | G3c | G3 | Công cụ thu thập (CRF) |
@@ -101,10 +106,15 @@ BƯỚC E (bàn giao): nêu cổng kế tiếp + cần bác sĩ cấp gì
 | `datalock` | G5c | G5-G6 | Biên bản khóa dữ liệu |
 | `analysis` | G6a | G6 | Kết quả phân tích thống kê |
 | `interpretation` | G6b | G6-G7 | Diễn giải kết quả |
+| `prediction-model` | G6c | G6 | Mô hình tiên lượng/chẩn đoán (TRIPOD+AI/PROBAST+AI) |
+| `clinical-guideline` | G6d | G6-G7 | Cầu nối Nghiên cứu↔Thực hành — Evidence-to-Decision (GRADE EtD) |
 | `manuscript` | G7a | G7 | Bản thảo khoa học (IMRAD) |
 | `checklist` | G7b | G7 | Checklist chuẩn báo cáo |
+| `health-economics` | G7c | G1+G7 | Phân tích kinh tế y tế (CEA/CUA/CBA/BIA — CHEERS 2022/ISPOR BIA GPP II) |
+| `citation-check` | G7d | G7-G8🔒 | Kiểm chứng trích dẫn học thuật (A12 — cổng cứng chống trích dẫn ma) |
 | `review` | G8 | G8 | Bình duyệt nội bộ |
 | `readiness` | G9 | G9🔒 | Báo cáo sẵn sàng nghiệm thu |
+| `study-log` | G9a | G9 | Sổ cái & Bàn giao lưu trữ đề tài (A18 — Final Handover Log) |
 
 ---
 

@@ -79,8 +79,23 @@ def evaluate_chronic_care_rules(case: SyntheticChronicCareCase, now: datetime | 
     now = now or datetime.now(timezone.utc)
     status = case.synthetic_status_fields
     actions: List[RuleAction] = []
-    due_at = datetime.fromisoformat(str(status.get("next_review_due_at")))
-    if due_at < now:
+    # SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11, phát hiện LOW):
+    # trước đây không kiểm tra key tồn tại/định dạng hợp lệ trước khi parse —
+    # nếu thiếu "next_review_due_at" (str(None) = "None") hoặc giá trị không
+    # phải ISO datetime, fromisoformat() ném ValueError không được bắt, sập
+    # toàn bộ evaluate_chronic_care_rules()/seed_synthetic_cases(). Hiện tại
+    # được che chắn vì build_synthetic_case_pack() luôn set trường này cho
+    # mọi ca tổng hợp, nhưng bọc try/except để an toàn nếu hàm này được tái sử
+    # dụng với nguồn dữ liệu khác không đảm bảo trường này (fail-closed: bỏ
+    # qua rule CC-001 thay vì sập cả luồng, không coi thiếu dữ liệu = quá hạn).
+    raw_due_at = status.get("next_review_due_at")
+    due_at = None
+    if raw_due_at:
+        try:
+            due_at = datetime.fromisoformat(str(raw_due_at))
+        except ValueError:
+            due_at = None
+    if due_at is not None and due_at < now:
         actions.append(RuleAction("CC-001", "CREATE_TASK", "REVIEW_OVERDUE_CASE", _priority_for(case.synthetic_risk_label)))
     if case.synthetic_care_plan_draft_status == "PENDING_REVIEW":
         actions.append(RuleAction("CC-002", "CREATE_TASK", "REQUEST_PHYSICIAN_REVIEW", "MEDIUM", "physician"))

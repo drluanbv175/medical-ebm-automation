@@ -86,7 +86,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 Áp 4 trụ cột; xác minh trước khi liệt kê; KHÔNG bịa; ghi rõ loại NC; connector lỗi → PARTIAL; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --artifact literature-list
+python tools/gen_research_docx.py --study "<TEN>" --artifact literature
 ```
 
 ## Ranh giới
