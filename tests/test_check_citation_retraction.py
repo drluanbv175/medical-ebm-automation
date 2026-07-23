@@ -184,6 +184,23 @@ class TestCheckRetractionStatusLiveMockedHttp:
         assert res["9500320"]["status"] == "unknown_mock_or_no_email"
         assert "simulated network failure" in res["9500320"]["reason"]
 
+    def test_check_retraction_status_disables_http_cache(self, monkeypatch):
+        """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 10, 2026-07-22): self.http mặc định
+        cache 24h (settings.http_cache_ttl) — dùng chung cho search() lẫn kiểm rút bài. Không
+        truyền use_cache=False cho get_text() ở đây thì một bài bị rút NGAY SAU lần kiểm trước
+        (trong cửa sổ 24h) sẽ không bị phát hiện cho tới khi cache hết hạn."""
+        client = self._live_client(monkeypatch, _RETRACTED_XML)
+        calls = []
+        real_get_text = client.http.get_text
+        monkeypatch.setattr(client.http, "get_text",
+                             lambda *a, **k: (calls.append(k), real_get_text(*a, **k))[1])
+        client.check_retraction_status(["9500320"])
+        assert calls, "get_text() không được gọi"
+        assert calls[0].get("use_cache") is False, (
+            "check_retraction_status() phải gọi get_text(..., use_cache=False) để không trả "
+            "trạng thái rút bài đã cache cũ tới 24h"
+        )
+
 
 # ════════════════════════════════════════════════════════════════════════════
 # CLI wrapper — gọi main() trong-tiến-trình (patch sys.argv), mock ở tầng

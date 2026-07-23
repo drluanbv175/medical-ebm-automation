@@ -150,7 +150,12 @@ class PubMedClient(SourceClient):
         if settings.ncbi_api_key:
             params["api_key"] = settings.ncbi_api_key
         try:
-            xml_text = self.http.get_text(EFETCH, params=params)
+            # SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 10, phát hiện HIGH):
+            # use_cache=False bắt buộc — self.http mặc định cache 24h (settings.http_cache_ttl),
+            # phù hợp cho search() (tra cứu y văn thường) nhưng SAI cho kiểm rút bài: một bài bị
+            # rút NGAY SAU lần kiểm trước (trong cửa sổ 24h) sẽ không bị phát hiện cho tới khi
+            # cache hết hạn, dù receipt vẫn ghi checked_at_utc MỚI tạo cảm giác đã kiểm tra live.
+            xml_text = self.http.get_text(EFETCH, params=params, use_cache=False)
         except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
             logger.warning("[pubmed] check_retraction_status lỗi gọi thật: %s", exc)
             return {
@@ -194,7 +199,15 @@ class PubMedClient(SourceClient):
         for pmid in requested_pmids:
             if pmid not in found:
                 results[pmid] = {"status": "unresolved",
-                                  "reason": "PubMed không trả về bản ghi cho PMID này"}
+                                  # SUA 2026-07-22 (vong lap kiem tra-hoan thien vong 10, phat hien
+                                  # LOW): thong diep cu ngu y "PMID sai" - nhung neu PubMed tra HTTP
+                                  # 200 hop le ma KHONG chua <PubmedArticle> nao cho CA LO (loi tang
+                                  # API/NCBI), MOI pmid deu roi vao day du khong sai. Van chan dung
+                                  # (fail-closed), chi lam ro nguyen nhan co the.
+                                  "reason": "PubMed không trả về bản ghi cho PMID này trong lô truy vấn "
+                                            "(PMID có thể sai/không tồn tại, HOẶC lỗi tầng API khiến "
+                                            "cả lô bị bỏ sót — nghi lỗi API nếu NHIỀU PMID cùng lô đều "
+                                            "'unresolved')"}
         return results
 
     # -- GỘP: rút bài + metadata trong MỘT efetch (vá 2026-07-18, giảm token) ---
@@ -223,7 +236,9 @@ class PubMedClient(SourceClient):
         if settings.ncbi_api_key:
             params["api_key"] = settings.ncbi_api_key
         try:
-            xml_text = self.http.get_text(EFETCH, params=params)
+            # SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 10, phát hiện HIGH) — cùng lý
+            # do với check_retraction_status(): tắt cache 24h cho cổng kiểm rút bài/trích dẫn.
+            xml_text = self.http.get_text(EFETCH, params=params, use_cache=False)
         except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
             logger.warning("[pubmed] check_citations lỗi gọi thật: %s", exc)
             retr = {pmid: {"status": "unknown_mock_or_no_email", "reason": f"lỗi gọi PubMed: {exc}"}
@@ -266,7 +281,10 @@ class PubMedClient(SourceClient):
         if settings.ncbi_api_key:
             params["api_key"] = settings.ncbi_api_key
         try:
-            xml_text = self.http.get_text(EFETCH, params=params)
+            # SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 10, phát hiện HIGH) — cùng lý
+            # do với check_retraction_status()/check_citations(): đây cũng là một phần cơ chế
+            # A12 THẬT (kiểm metadata trích dẫn), tắt cache để nhất quán và tránh dữ liệu cũ.
+            xml_text = self.http.get_text(EFETCH, params=params, use_cache=False)
         except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
             logger.warning("[pubmed] fetch_metadata lỗi gọi thật: %s", exc)
             return {
@@ -313,7 +331,15 @@ class PubMedClient(SourceClient):
         for pmid in requested_pmids:
             if pmid not in found:
                 results[pmid] = {"status": "unresolved",
-                                  "reason": "PubMed không trả về bản ghi cho PMID này"}
+                                  # SUA 2026-07-22 (vong lap kiem tra-hoan thien vong 10, phat hien
+                                  # LOW): thong diep cu ngu y "PMID sai" - nhung neu PubMed tra HTTP
+                                  # 200 hop le ma KHONG chua <PubmedArticle> nao cho CA LO (loi tang
+                                  # API/NCBI), MOI pmid deu roi vao day du khong sai. Van chan dung
+                                  # (fail-closed), chi lam ro nguyen nhan co the.
+                                  "reason": "PubMed không trả về bản ghi cho PMID này trong lô truy vấn "
+                                            "(PMID có thể sai/không tồn tại, HOẶC lỗi tầng API khiến "
+                                            "cả lô bị bỏ sót — nghi lỗi API nếu NHIỀU PMID cùng lô đều "
+                                            "'unresolved')"}
         return results
 
     @staticmethod

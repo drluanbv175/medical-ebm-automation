@@ -50,6 +50,20 @@ class TestCheckCitationsSingleEfetch:
         assert calls["n"] == 1, "check_citations PHẢI chỉ gọi efetch 1 lần cho cả 2 nhánh"
         assert "retraction" in out and "metadata" in out
 
+    def test_disables_http_cache(self, monkeypatch):
+        """Hồi quy HIGH (vòng lặp kiểm tra-hoàn thiện vòng 10, 2026-07-22): check_citations()
+        phải gọi get_text(..., use_cache=False) — cùng lý do check_retraction_status()."""
+        client = PubMedClient()
+        monkeypatch.setattr(client, "use_mock", False)
+        monkeypatch.setattr(settings, "ncbi_email", "test@example.com")
+        kwargs_seen = []
+        monkeypatch.setattr(
+            client.http, "get_text",
+            lambda *a, **k: (kwargs_seen.append(k), _RETRACTED_XML)[1],
+        )
+        client.check_citations(["9500320"])
+        assert kwargs_seen and kwargs_seen[0].get("use_cache") is False
+
     def test_retraction_branch_detects_retracted(self, monkeypatch):
         client, _ = _live_client(monkeypatch, _RETRACTED_XML)
         out = client.check_citations(["9500320"])
