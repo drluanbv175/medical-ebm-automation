@@ -6,7 +6,7 @@ tuân thủ ĐÚNG mẫu/checklist của skill một cách tự động, thay v�
 đối chiếu thủ công mỗi lần. Bao gồm:
 
 - 5 NHÃN TRẠNG THÁI bắt buộc khi soạn hồ sơ.
-- Mẫu ĐỀ CƯƠNG 16 mục (templates/01_mau_de_cuong_tong_the.md).
+- Mẫu ĐỀ CƯƠNG 16 mục và 20 thành phần protocol lõi.
 - Định nghĩa 10 CỔNG CHẤT LƯỢNG của skill (G0-G9): điều kiện tối thiểu + sản
   phẩm bắt buộc (SKILL.md).
 - BẢN ĐỒ CHUẨN BÁO CÁO theo mã thiết kế (references/02_ban_do_chuan_bao_cao.md).
@@ -92,6 +92,102 @@ DE_CUONG_PHU_LUC: List[str] = [
     "SAP (Kế hoạch phân tích thống kê)",
     "Checklist reporting guideline",
 ]
+
+# Hai mươi thành phần NỘI DUNG của một protocol y khoa. Một đề cương có thể giữ
+# bố cục 16 chương để phù hợp hồ sơ trong nước, nhưng validator phải chứng minh
+# đủ 20 thành phần này; số chương không thay thế độ đầy đủ nội dung.
+PROTOCOL_CORE_ITEMS: Tuple[Tuple[str, str], ...] = (
+    ("P01", "Trang bìa, mã đề tài, phiên bản và ngày"),
+    ("P02", "Tóm tắt protocol"),
+    ("P03", "Bối cảnh và lý do nghiên cứu"),
+    ("P04", "Câu hỏi nghiên cứu và giả thuyết"),
+    ("P05", "Mục tiêu chính và mục tiêu phụ"),
+    ("P06", "Thiết kế, bối cảnh và thời gian"),
+    ("P07", "Đối tượng, tiêu chuẩn chọn và loại"),
+    ("P08", "Tuyển mẫu và quy trình đồng thuận"),
+    ("P09", "Phơi nhiễm, can thiệp hoặc đánh giá"),
+    ("P10", "Kết cục và định nghĩa vận hành"),
+    ("P11", "Biến số, yếu tố nhiễu và biến tương tác"),
+    ("P12", "Cỡ mẫu và giả định"),
+    ("P13", "Thu thập dữ liệu và quản lý chất lượng"),
+    ("P14", "Quản trị dữ liệu và bảo mật"),
+    ("P15", "Kế hoạch phân tích thống kê"),
+    ("P16", "Sai lệch và biện pháp giảm thiểu"),
+    ("P17", "Đạo đức và an toàn"),
+    ("P18", "Đăng ký và phổ biến kết quả"),
+    ("P19", "Tiến độ, nhân lực và kinh phí"),
+    ("P20", "Tài liệu tham khảo và phụ lục"),
+)
+
+# Các nội dung phải được làm rõ thêm theo thiết kế. Đây là bản đồ tối thiểu để
+# G10 sinh gói quyết định; checklist chi tiết vẫn phải đối chiếu nguồn chính
+# thức trước khi nộp.
+DESIGN_PROTOCOL_REQUIREMENTS: Dict[str, Tuple[str, ...]] = {
+    "cross_sectional": (
+        "Khung chọn mẫu và xử lý không đáp ứng",
+        "Công cụ khảo sát/PROM, bản quyền và quy tắc chấm điểm khi áp dụng",
+        "STROBE; CROSS/COSMIN/RECORD khi phù hợp",
+    ),
+    "case_control": (
+        "Định nghĩa ca và chứng, nguồn tuyển và matching khi áp dụng",
+        "Cửa sổ phơi nhiễm và kiểm soát recall/selection bias",
+        "STROBE",
+    ),
+    "cohort": (
+        "Mốc bắt đầu theo dõi, lịch follow-up và tiêu chí kiểm duyệt",
+        "Xử lý mất theo dõi và time-varying exposure khi áp dụng",
+        "STROBE; RECORD khi dùng dữ liệu thường quy",
+    ),
+    "rct": (
+        "Can thiệp và comparator đủ chi tiết để tái lập",
+        "Randomization, allocation concealment và blinding",
+        "Harms, monitoring, stopping rules và lịch SPIRIT",
+        "Đăng ký trial trước tuyển mẫu; SPIRIT 2025 và CONSORT 2025",
+    ),
+    "non_randomized": (
+        "Mô tả can thiệp/comparator và cách phân nhóm",
+        "Kiểm soát confounding by indication và ROBINS-I",
+        "TREND hoặc STROBE phù hợp",
+    ),
+    "diagnostic": (
+        "Index test, reference standard và ngưỡng định trước",
+        "Blinding giữa index test/reference standard",
+        "Spectrum/verification bias và bảng 2x2",
+        "STARD",
+    ),
+    "prediction": (
+        "Định nghĩa target outcome và thời điểm dự báo",
+        "Cỡ mẫu theo số biến/biến cố và xử lý overfitting",
+        "Internal/external validation, calibration, discrimination và utility",
+        "TRIPOD+AI; PROBAST+AI khi phù hợp",
+    ),
+    "systematic_review": (
+        "Tiêu chí chọn nghiên cứu và chiến lược tìm kiếm tái lập",
+        "Quy trình sàng lọc/trích xuất kép và risk of bias",
+        "Kế hoạch tổng hợp, heterogeneity, sensitivity và certainty",
+        "PRISMA-P; PROSPERO/OSF khi phù hợp",
+    ),
+    "qualitative": (
+        "Sampling, information power/bão hòa và reflexivity",
+        "Quy trình ghi âm, phiên mã, mã hóa và audit trail",
+        "COREQ hoặc SRQR",
+    ),
+    "mixed_methods": (
+        "Lý do mixed-method và thứ tự/ưu tiên hai nhánh",
+        "Điểm tích hợp, joint display và meta-inference",
+        "Checklist cho từng nhánh",
+    ),
+    "quality_improvement": (
+        "Phân định QI hay research tại đơn vị",
+        "Chỉ số outcome/process/balancing và kế hoạch PDSA/SPC",
+        "SQUIRE 2.0",
+    ),
+    "economic": (
+        "Perspective, time horizon, discounting và currency year",
+        "Nguồn chi phí/utility và uncertainty analysis",
+        "CHEERS 2022",
+    ),
+}
 
 # Chuẩn tối thiểu cho bảng/hình trong đề cương và bản thảo khoa học.
 # Mỗi đề cương G10 phải có danh mục này để tránh bản thảo thiếu Table 1/flowchart/
@@ -343,10 +439,13 @@ for _pg, _sgs in PIPELINE_TO_SKILL_GATE.items():
         SKILL_TO_PIPELINE_GATE.setdefault(_sg, []).append(_pg)
 
 
-# Ba CỔNG CỨNG của pipeline (CLAUDE.md): không được tự vượt.
+# Năm CỔNG CỨNG của vòng đời nghiên cứu: không được tự vượt. DATA_LOCK là
+# sự kiện đời thực, không phải pipeline G5 (G5 chỉ sinh công cụ/CRF/script).
 PIPELINE_HARD_GATES = {
     "G2": "Đạo đức IRB — cần số phê duyệt thật từ Hội đồng Đạo đức",
     "G4": "Khoá SAP — cần chữ ký SAP Lock Certificate",
+    "DATA_LOCK": "Dữ liệu thật — phải làm sạch, giải quyết query và khóa trước phân tích chính",
+    "G8": "Bình duyệt độc lập — cần người phản biện độc lập phê duyệt đúng vai trò",
     "G9": "Liêm chính tác giả — cần tất cả tác giả ký ICMJE + PI ký liêm chính",
 }
 
@@ -497,8 +596,9 @@ READINESS_MILESTONES: List[Tuple[str, List[str], List[str], str]] = [
      ["G6"], ["sap_locked", "db_locked"],
      "BẮT BUỘC SAP đã ký khoá (sap_locked) VÀ dữ liệu đã khoá thật (db_locked) — khớp SKILL.md §Kết luận"),
     ("Sẵn sàng nộp công bố/nghiệm thu",
-     ["G7", "G8", "G9"], ["results_final", "integrity_signed"],
-     "BẮT BUỘC có kết quả phân tích THẬT (results_final, bác sĩ xác nhận) + gói liêm chính đã ký (integrity_signed)"),
+     ["G7", "G8", "G9"],
+     ["results_final", "peer_review_approved", "integrity_signed"],
+     "BẮT BUỘC có kết quả phân tích THẬT, bình duyệt độc lập đúng vai trò và gói liêm chính đã ký"),
 ]
 
 
@@ -616,11 +716,12 @@ def _status_is_locked(status: Optional[str]) -> bool:
 # của chính cổng, HOẶC study_meta.json do bác sĩ xác nhận.
 def real_world_signals(checkpoints: Dict[str, Dict],
                        meta: Optional[Dict] = None) -> Dict[str, bool]:
-    """Trả dict{irb_approved, sap_locked, db_locked, results_final, integrity_signed}."""
+    """Trả các tín hiệu đời thực; artifact/checkpoint đơn thuần không đủ."""
     meta = meta or {}
     g2 = checkpoints.get("G2") or {}
     g4 = checkpoints.get("G4") or {}
     g5 = checkpoints.get("G5") or {}
+    g8 = checkpoints.get("G8") or {}
     g9 = checkpoints.get("G9") or {}
 
     irb = (
@@ -641,12 +742,19 @@ def real_world_signals(checkpoints: Dict[str, Dict],
     # Kết quả phân tích thật KHÔNG do pipeline sinh — chỉ bác sĩ xác nhận.
     results = bool(meta.get("results_final"))
 
+    peer = (
+        _guardrail_passed(g8)
+        and g8.get("independent_peer_review_approved") is True
+        and _is_real_value(g8.get("peer_review_approval_date"))
+    ) or bool(meta.get("peer_review_approved"))
+
     integ = (
         g9.get("submission_package_ready") is True and _guardrail_passed(g9)
     ) or bool(meta.get("integrity_signed"))
 
     return {"irb_approved": irb, "sap_locked": sap, "db_locked": db,
-            "results_final": results, "integrity_signed": integ}
+            "results_final": results, "peer_review_approved": peer,
+            "integrity_signed": integ}
 
 
 def normalize_pipeline_gate_state(pipeline_gate: str, cp: Optional[Dict],
@@ -671,6 +779,8 @@ def normalize_pipeline_gate_state(pipeline_gate: str, cp: Optional[Dict],
         return GATE_STATE_LOCKED
     if pipeline_gate == "G5" and sig["db_locked"]:
         return GATE_STATE_LOCKED
+    if pipeline_gate == "G8" and sig["peer_review_approved"]:
+        return GATE_STATE_LOCKED
     if pipeline_gate == "G9" and sig["integrity_signed"]:
         return GATE_STATE_LOCKED
 
@@ -685,6 +795,7 @@ SKILL_GATE_LOCK_SIGNAL: Dict[str, str] = {
     "G3": "irb_approved",     # Đạo đức
     "G6": "db_locked",        # Dữ liệu đã khoá thật
     "G7": "results_final",    # Phân tích có kết quả thật
+    "G8": "peer_review_approved",  # Báo cáo đã được bình duyệt độc lập
     "G9": "integrity_signed", # Công bố: gói liêm chính đã ký
 }
 
@@ -738,6 +849,7 @@ def readiness_report(checkpoints: Dict[str, Dict],
         "sap_locked": "SAP đã ký khoá",
         "db_locked": "dữ liệu đã khoá thật",
         "results_final": "kết quả phân tích thật (bác sĩ xác nhận)",
+        "peer_review_approved": "bình duyệt độc lập đã phê duyệt đúng vai trò",
         "integrity_signed": "gói liêm chính đã ký",
     }
     out: List[Dict[str, str]] = []
