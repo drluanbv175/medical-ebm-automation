@@ -1263,7 +1263,7 @@ with tabs[11]:
                                help="Kiểm tra mỗi PMID phân giải đúng trên PubMed (chống trích dẫn ảo)")
         st.caption("ℹ️ Nội dung được **dịch máy sang tiếng Việt (tham khảo)**; references giữ nguyên văn + "
                    "PMID/DOI để truy nguyên. Luôn đối chiếu nguồn gốc.")
-        if st.button("🛠️ Tạo + việt hoá + cổng liêm chính + MỞ tại app", type="primary", key="ew_go"):
+        if st.button("🛠️ Tạo Word + Dashboard + việt hoá + cổng liêm chính", type="primary", key="ew_go"):
             from app.reports.evidence_workbench import export_and_publish
             with st.spinner("Đang xuất, dịch tiếng Việt, xác minh PMID & chạy cổng liêm chính…"):
                 res = export_and_publish(area=_area, limit=_limit, online=_online)
@@ -1272,6 +1272,8 @@ with tabs[11]:
             else:
                 p = res["path"]
                 st.session_state["ew_last"] = str(p)
+                if res.get("docx"):
+                    st.session_state["ew_last_docx"] = str(res["docx"])
                 (st.success if res["gate_pass"] else st.warning)(
                     f"{'✅ Cổng liêm chính PASS' if res['gate_pass'] else '⚠️ Cổng FAIL — xem log'} · "
                     f"{p.name}")
@@ -1281,6 +1283,14 @@ with tabs[11]:
         _last = st.session_state.get("ew_last")
         if _last and Path(_last).exists():
             st.markdown(f"#### 👁️ Xem trực tiếp: `{Path(_last).name}`")
+            _docx = st.session_state.get("ew_last_docx")
+            if _docx and Path(_docx).exists():
+                _dp = Path(_docx)
+                st.download_button("⬇️ Tải file Word (.docx)", _dp.read_bytes(),
+                                   file_name=_dp.name,
+                                   mime=("application/vnd.openxmlformats-officedocument."
+                                         "wordprocessingml.document"),
+                                   key=f"dl_docx_{_dp.name}")
             _embed(Path(_last))
 
         # Danh sách dashboard EW đã tạo — chọn để mở ngay
