@@ -135,7 +135,14 @@ def cha2ds2vasc(chf: int, hypertension: int, age: int, diabetes: int,
                        "diabetes": diabetes, "stroke_tia_thromboembolism_x2": 2 * stroke_tia_thromboembolism,
                        "vascular_disease": vascular_disease, "sex_points": sex_points},
         "note": "% nguy cơ đột quỵ/năm theo ĐIỂM này thay đổi theo cohort kiểm định — "
-                "lấy từ nguồn agent trích dẫn (PMID/DOI), KHÔNG phải hằng số cố định.",
+                "lấy từ nguồn agent trích dẫn (PMID/DOI), KHÔNG phải hằng số cố định. "
+                "THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 13, phát hiện MEDIUM): "
+                "ESC 2024 AF guidelines đã ban hành thang thay thế CHA₂DS₂-VA — LOẠI BỎ HOÀN "
+                "TOÀN điểm giới tính (không chỉ 'nữ đơn độc không tính' như bản này, mà bỏ "
+                "điểm nữ cho MỌI trường hợp), khuyến cáo kháng đông ở điểm ≥2 bất kể giới. "
+                "Hàm này tính đúng CHA₂DS₂-VASc KINH ĐIỂN (Lip 2010; ESC 2012-2020; vẫn dùng ở "
+                "ACC/AHA/HRS 2023 Mỹ) — KHÔNG phải bản mới nhất. Cân nhắc gắn cảnh báo khi tính "
+                "cho bệnh nhân nữ mà điểm giới tính là yếu tố quyết định ngưỡng hành động.",
         "source": "Lip GYH et al. Chest. 2010;137(2):263-72.",
     }
 
@@ -346,7 +353,14 @@ def meld(bilirubin: float, inr: float, creatinine: float,
         "inputs_used": {"bilirubin": bili, "inr": inr_v, "creatinine": creat,
                         "dialysis_adjustment_applied": dialysis_2x_past_week},
         "note": "Đây là MELD GỐC (không có natri). MELD-Na (dùng phân bổ ghép gan từ 2016) "
-                + NOT_IMPLEMENTED_HIGH_RISK,
+                + NOT_IMPLEMENTED_HIGH_RISK
+                + " THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 13, phát hiện MEDIUM): "
+                  "OPTN đã CHÍNH THỨC thay MELD-Na bằng MELD 3.0 (Kim WR et al., Gastroenterology "
+                  "2021;161(6):1887-1895.e4 — thêm giới tính+albumin+số hạng tương tác) cho phân bổ "
+                  "ghép gan thật tại Mỹ từ 2023 — MELD-Na (thứ note này nói 'chưa triển khai') bản "
+                  "thân nó ĐÃ bị thay thêm một lớp nữa. Công thức MELD gốc ở đây (2001, không đổi) "
+                  "phù hợp ước lượng độ nặng/tiên lượng lâm sàng ngoại trú, KHÔNG phản ánh điểm ưu "
+                  "tiên ghép gan hiện hành nếu bối cảnh liên quan ghép tạng thật.",
         "source": "Kamath PS et al. Hepatology. 2001;33(2):464-70; công thức chuẩn OPTN/UNOS.",
     }
 

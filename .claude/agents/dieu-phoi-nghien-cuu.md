@@ -294,6 +294,8 @@ Sau **completeness-critic** (A1–A18) ở mỗi cổng và **TRƯỚC KHI BÀN 
 ```
 KẾT QUẢ THẨM ĐỊNH ĐẦU RA (tham-dinh-dau-ra) — nghiên cứu — cổng: G[..]
 R1. Nguồn — mọi khẳng định/số liệu có PMID/DOI hoặc nhãn thiếu ... [✅/🟡/🔴]
+R1b. Chống lách nhãn — tỷ lệ khẳng định cốt lõi gắn [CẦN…] mà không
+     có nguồn thật ≈ __% ............................ [✅/🟡/🔴]
 R2. PII — không lẫn định danh BN (làm trên bản sao, mã giả danh) .. [✅/🟡/🔴]
 R3. Cổng A/B/G — không vượt G2·G4·dữ liệu thật trước phân tích·liêm chính tác giả khi chưa duyệt [✅/🟡/🔴]
 R4. Không tự gán GRADE/độ mạnh khuyến cáo; RoB 2 chỉ cho RCT ...... [✅/🟡/🔴]

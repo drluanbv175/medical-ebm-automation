@@ -100,6 +100,8 @@ Sau khi đã soạn xong gói quyết định và chạy tự-rà C1–C9, **TR�
 KẾT QUẢ THẨM ĐỊNH ĐẦU RA (tham-dinh-dau-ra) — lâm sàng — cổng/bước: [..]
 — LỚP 1 (LIÊM CHÍNH) —
 R1. Nguồn — mọi khẳng định/số liệu có PMID/DOI hoặc nhãn thiếu ... [✅/🟡/🔴]
+R1b. Chống lách nhãn — tỷ lệ khẳng định cốt lõi gắn [CẦN…] mà không
+     có nguồn thật ≈ __% ............................ [✅/🟡/🔴]
 R2. PII — không lẫn định danh bệnh nhân .......................... [✅/🟡/🔴]
 R3. Cổng A/B/G — không tự "áp dụng cho BN"/"ghi sổ cái"/vượt cổng . [✅/🟡/🔴]
 R4. Không tự gán GRADE/độ mạnh khuyến cáo khi nguồn không cấp ..... [✅/🟡/🔴]

@@ -4,8 +4,10 @@
 > Được đọc bởi (vòng thực thi chính): `sang-loc-co-do` (HỎI ở Bước 0) · `ke-don-an-toan` (CHẶN kê khi chưa hỏi) ·
 > `tham-dinh-dau-ra` (KIỂM gói đã hỏi chưa → 🔴 TRẢ-VỀ-SỬA nếu thiếu).
 > Tham chiếu thêm (nhánh chuyên biệt tự nối `sang-loc-co-do`/`tham-dinh-dau-ra` + tài liệu taxonomy/rubric
-> đồng bộ CLIN-SAFETYQ từ bảng này): `dau-man-tinh` · `quan-ly-khang-dong` · `tram-cam-lo-au` ·
-> `dieu-phoi-lam-sang` · `so-cai-ghi-nho` · `_LESSONS-LEDGER-TAXONOMY.md` · `_RUBRIC-EVALUATE-CUNG-QA-GATE.md`.
+> đồng bộ CLIN-SAFETYQ từ bảng này): `dau-man-tinh` · `cham-soc-giam-nhe` (thêm 2026-07-23, vòng lặp
+> kiểm tra-hoàn thiện vòng 13 — trước đó thiếu dù trực tiếp kê opioid/an thần cho quần thể nguy cơ cao) ·
+> `quan-ly-khang-dong` · `tram-cam-lo-au` · `dieu-phoi-lam-sang` · `so-cai-ghi-nho` ·
+> `_LESSONS-LEDGER-TAXONOMY.md` · `_RUBRIC-EVALUATE-CUNG-QA-GATE.md`.
 > Danh sách tay — LUÔN xác nhận bằng `grep -l _CAU-HOI-AN-TOAN-BAT-BUOC *.md` trước khi sửa dòng kích hoạt,
 > đừng chỉ tin danh sách này (đã lệch thực tế một lần, vá 2026-07-11).
 > Cập nhật 2026-07-11. Mở rộng = thêm DÒNG vào bảng (không sửa cấu trúc agent).
