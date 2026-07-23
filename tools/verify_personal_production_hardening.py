@@ -583,7 +583,7 @@ def check_production_blocker_closure() -> HardeningCheck:
         findings=findings,
         human_action=(
             "Bác sĩ/quản trị viên chỉ đánh dấu blocker CLEARED sau khi có evidence package, "
-            "5 signoff độc lập, dossier hash, rollback và checklist hậu triển khai."
+            "7 signoff độc lập, approval record, dossier hash, rollback và checklist hậu triển khai."
         ),
         human_gated=True,
     )

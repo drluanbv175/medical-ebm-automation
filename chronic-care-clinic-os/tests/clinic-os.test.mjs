@@ -702,6 +702,9 @@ test("production readiness blockers are machine-readable and surfaced in setting
   assert.match(goLive, /evidenceDossierSha256/);
   assert.match(goLive, /operator_and_admin_approver_must_be_distinct/);
   assert.match(goLive, /runtime_env_warning/);
+  assert.match(blockers, /seven independent signoffs/);
+  assert.match(blockers, /final approval record/);
+  assert.doesNotMatch(blockers, /five independent signoffs/);
   assert.match(blockers, /dual-control admin change attestation/);
   assert.match(blockers, /lib\/production-readiness\.ts/);
   assert.match(typecheck, /app\/api\/admin\/production-readiness\/route\.ts/);

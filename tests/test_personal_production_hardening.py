@@ -38,6 +38,10 @@ def test_personal_production_hardening_covers_all_seven_domains() -> None:
         "P6",
         "P7",
     }
+    p1 = next(row for row in report["checks"] if row["domain_id"] == "P1")
+    assert "7 signoff độc lập" in p1["human_action"]
+    assert "approval record" in p1["human_action"]
+    assert "5 signoff" not in p1["human_action"]
 
 
 def test_mode_separation_keeps_dangerous_flags_disabled() -> None:
