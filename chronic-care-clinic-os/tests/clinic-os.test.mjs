@@ -62,8 +62,14 @@ test("supplemental architecture and security docs exist", () => {
     "PRODUCTION_GO_LIVE_RUNBOOK.md",
     "PATIENT_COMMUNICATION_POLICY.md",
     "DATA_RETENTION_POLICY.md",
+    "PRODUCTION_EVIDENCE_PACKAGE_TEMPLATE.md",
     "CLINICAL_SAFETY_SIGNOFF_TEMPLATE.md",
-    "DATA_PROTECTION_SIGNOFF_TEMPLATE.md"
+    "DATA_PROTECTION_SIGNOFF_TEMPLATE.md",
+    "SECURITY_SIGNOFF_TEMPLATE.md",
+    "LEGAL_COMPLIANCE_SIGNOFF_TEMPLATE.md",
+    "UAT_SIGNOFF_TEMPLATE.md",
+    "GO_LIVE_APPROVAL_RECORD_TEMPLATE.md",
+    "GO_LIVE_ATTESTATION_TEMPLATE.md"
   ]) {
     assert.ok(read(file).length > 100, `${file} should be non-empty`);
   }

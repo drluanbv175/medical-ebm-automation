@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,6 +37,17 @@ PII_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("phone", re.compile(r"\b0\d{9,10}\b")),
     ("national_id", re.compile(r"\b\d{12}\b")),
 )
+
+
+def ensure_utf8_console() -> None:
+    """Keep Windows PowerShell/cp1252 from crashing on Vietnamese gate text."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            encoding = (getattr(stream, "encoding", "") or "").lower()
+            if encoding and "utf" not in encoding and hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, OSError, ValueError):
+            continue
 FORBIDDEN_PII_KEYS = {
     "address",
     "cccd",
@@ -72,7 +84,9 @@ FORBIDDEN_ARTIFACT_SUBSTRINGS = (
 REQUIRED_SIGNOFF_ROLES = [
     "security_owner",
     "data_protection_owner",
+    "legal_compliance_owner",
     "physician_lead",
+    "uat_owner",
     "operations_owner",
     "ai_governance_owner",
     "pi_or_clinic_owner",
@@ -112,6 +126,7 @@ class EvidencePackageSummary:
     evidence_records: int
     valid_evidence_records: int
     valid_signoffs: int
+    valid_approval_record: bool
     missing_domains: list[str]
     missing_signoffs: list[str]
     errors: list[str]
@@ -271,6 +286,15 @@ def build_evidence_template(generated_at: str | None = None) -> dict[str, Any]:
             }
             for role in REQUIRED_SIGNOFF_ROLES
         ],
+        "approval_record": {
+            "approval_id": "TODO_GO_LIVE_APPROVAL_ID",
+            "status": "approved_for_go_live_review",
+            "approver_role": "pi_or_clinic_owner",
+            "approver_reference": "TODO_DISTINCT_PI_OR_CLINIC_APPROVER_REF",
+            "approved_at": "TODO_ISO8601",
+            "scope": "TODO_REPLACE_WITH_SIGNED_SCOPE_NO_PII",
+            "artifact_refs": ["TODO/approval-record/go-live-approval.json"],
+        },
         "go_live_attestation": {
             "release_id": "TODO_RELEASE_ID",
             "change_ticket_reference": "TODO_CHANGE_TICKET",
@@ -300,6 +324,7 @@ def validate_evidence_package(
             evidence_records=0,
             valid_evidence_records=0,
             valid_signoffs=0,
+            valid_approval_record=False,
             missing_domains=list(DOMAIN_EVIDENCE_REQUIREMENTS),
             missing_signoffs=list(REQUIRED_SIGNOFF_ROLES),
             errors=[],
@@ -420,6 +445,38 @@ def validate_evidence_package(
     ]
     errors.extend(f"missing_signoff:{role}" for role in missing_signoffs)
 
+    approval_record = package.get("approval_record")
+    valid_approval_record = False
+    if not isinstance(approval_record, dict):
+        errors.append("approval_record_missing")
+    else:
+        approval_errors: list[str] = []
+        if not _safe_reference(approval_record.get("approval_id")):
+            approval_errors.append("approval_id_invalid")
+        if approval_record.get("status") != "approved_for_go_live_review":
+            approval_errors.append("status_invalid")
+        if approval_record.get("approver_role") != "pi_or_clinic_owner":
+            approval_errors.append("approver_role_invalid")
+        approver = approval_record.get("approver_reference")
+        if not _safe_reference(approver):
+            approval_errors.append("approver_reference_invalid")
+        elif str(approver).lower() in signer_refs:
+            approval_errors.append(f"approver_reference_reused_with:{signer_refs[str(approver).lower()]}")
+        approved_at = _parse_iso(str(approval_record.get("approved_at", "")))
+        if approved_at is None:
+            approval_errors.append("approved_at_invalid")
+        elif now and approved_at > now:
+            approval_errors.append("approved_at_future")
+        if not _safe_reference(approval_record.get("scope")):
+            approval_errors.append("scope_invalid")
+        refs = approval_record.get("artifact_refs")
+        if not isinstance(refs, list) or not refs or not all(_safe_artifact_reference(x) for x in refs):
+            approval_errors.append("artifact_refs_invalid")
+        if approval_errors:
+            errors.extend(f"approval_record:{err}" for err in approval_errors)
+        else:
+            valid_approval_record = True
+
     attestation = package.get("go_live_attestation")
     if not isinstance(attestation, dict):
         errors.append("go_live_attestation_missing")
@@ -452,6 +509,7 @@ def validate_evidence_package(
         evidence_records=len(evidence),
         valid_evidence_records=len(valid_domains),
         valid_signoffs=len(valid_signoffs),
+        valid_approval_record=valid_approval_record,
         missing_domains=missing_domains,
         missing_signoffs=missing_signoffs,
         errors=errors,
@@ -872,6 +930,7 @@ def write_reports(report: dict, json_path: Path = DEFAULT_JSON, md_path: Path = 
 
 
 def main() -> int:
+    ensure_utf8_console()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json", action="store_true", help="In toàn bộ báo cáo JSON ra stdout.")
     parser.add_argument("--no-write", action="store_true", help="Không ghi report vào reports/.")

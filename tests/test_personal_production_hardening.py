@@ -63,6 +63,15 @@ def _completed_evidence_package(mod):
         signoff["signed_at"] = "2026-07-15T18:00:00+00:00"
         signoff["scope"] = "signed-personal-production-hardening-scope-v1"
         signoff["artifact_refs"] = [f"signoffs/{signoff['role']}-v1.json"]
+    package["approval_record"] = {
+        "approval_id": "approval-record-2026-07-16-001",
+        "status": "approved_for_go_live_review",
+        "approver_role": "pi_or_clinic_owner",
+        "approver_reference": "pi-or-clinic-approver-ref-001",
+        "approved_at": "2026-07-15T20:00:00+00:00",
+        "scope": "signed-personal-production-hardening-scope-v1",
+        "artifact_refs": ["approval-record/go-live-approval-v1.json"],
+    }
     package["go_live_attestation"] = {
         "release_id": "release-2026-07-16-001",
         "change_ticket_reference": "change-ticket-2026-07-16-001",
@@ -87,6 +96,7 @@ def test_evidence_template_is_complete_but_fail_closed_until_filled() -> None:
     assert summary.valid is False
     assert any("status_not_cleared" in err for err in summary.errors)
     assert any("signer_reference_invalid" in err for err in summary.errors)
+    assert any("approval_record:approver_reference_invalid" in err for err in summary.errors)
 
 
 def test_completed_evidence_package_is_external_review_ready_not_production_enablement() -> None:
@@ -99,6 +109,7 @@ def test_completed_evidence_package_is_external_review_ready_not_production_enab
     assert summary.valid is True
     assert summary.valid_evidence_records == 7
     assert summary.valid_signoffs == len(mod.REQUIRED_SIGNOFF_ROLES)
+    assert summary.valid_approval_record is True
     assert report["evidence_package_summary"]["valid"] is True
     assert report["clinical_production_allowed"] is False
     assert report["real_patient_data_allowed"] is False
@@ -153,3 +164,14 @@ def test_evidence_package_rejects_unsafe_artifact_references() -> None:
     assert "evidence[P1]:artifact_refs_invalid" in summary.errors
     assert "signoff[security_owner]:artifact_refs_invalid" in summary.errors
     assert "go_live_attestation:rollback_plan_artifact_ref_invalid" in summary.errors
+
+
+def test_evidence_package_requires_distinct_final_approval_record():
+    mod = _load_module()
+    package = _completed_evidence_package(mod)
+    package["approval_record"]["approver_reference"] = package["signoffs"][0]["signer_reference"]
+    summary = mod.validate_evidence_package(package, generated_at=FIXED_NOW)
+
+    assert summary.status == "INVALID_OR_INCOMPLETE"
+    assert summary.valid_approval_record is False
+    assert any("approval_record:approver_reference_reused_with:" in err for err in summary.errors)

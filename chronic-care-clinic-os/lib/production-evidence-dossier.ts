@@ -7,6 +7,7 @@ import {
   type ProductionBlocker,
   type ProductionEvidencePackage,
   type ProductionEvidenceRecord,
+  type ProductionApprovalRecord,
   type ProductionReadinessFinding,
   type ProductionReadinessReport,
   type ProductionSignoff,
@@ -45,6 +46,18 @@ export type ProductionEvidenceDossierSignoff = {
   findings: ProductionReadinessFinding[];
 };
 
+export type ProductionEvidenceDossierApprovalRecord = {
+  status: ProductionDossierItemStatus;
+  approvalId: string | null;
+  approvalStatus: string | null;
+  approverRole: string | null;
+  approverReference: string | null;
+  approvedAt: string | null;
+  scope: string | null;
+  artifactRefs: string[];
+  findings: ProductionReadinessFinding[];
+};
+
 export type ProductionEvidenceDossierSummary = {
   totalBlockers: number;
   validBlockerEvidence: number;
@@ -55,6 +68,7 @@ export type ProductionEvidenceDossierSummary = {
   validSignoffs: number;
   missingSignoffs: number;
   invalidSignoffs: number;
+  validApprovalRecord: boolean;
 };
 
 export type ProductionEvidenceDossier = {
@@ -65,6 +79,7 @@ export type ProductionEvidenceDossier = {
   summary: ProductionEvidenceDossierSummary;
   blockers: ProductionEvidenceDossierBlocker[];
   signoffs: ProductionEvidenceDossierSignoff[];
+  approvalRecord: ProductionEvidenceDossierApprovalRecord;
   readiness: ProductionReadinessReport;
   repositoryControlsOutsideProductionBlockers: RuntimeHardeningControlEvidence[];
   blockedReasons: string[];
@@ -92,16 +107,19 @@ export function buildProductionEvidenceDossier(
     evidencePackage?.signoffs.find((item) => item.role === role) ?? null,
     readiness.findings
   ));
-  const summary = summarizeDossier(blockerItems, signoffItems);
+  const approvalRecord = buildApprovalRecordDossierItem(evidencePackage?.approvalRecord ?? null, readiness.findings);
+  const summary = summarizeDossier(blockerItems, signoffItems, approvalRecord);
   const blockedReasons = [
     ...readiness.releaseDecision.blockedReasons,
     ...(summary.missingRepositoryControlLinks > 0 ? ["missing_repository_control_links"] : []),
-    ...(summary.invalidSignoffs > 0 ? ["invalid_signoff_records"] : [])
+    ...(summary.invalidSignoffs > 0 ? ["invalid_signoff_records"] : []),
+    ...(!summary.validApprovalRecord ? ["invalid_or_missing_approval_record"] : [])
   ];
   const uniqueBlockedReasons = Array.from(new Set(blockedReasons));
   const readyForFinalGoLiveCheck = readiness.releaseDecision.productionReady
     && summary.missingRepositoryControlLinks === 0
     && summary.invalidSignoffs === 0
+    && summary.validApprovalRecord
     && uniqueBlockedReasons.length === 0;
 
   return {
@@ -112,6 +130,7 @@ export function buildProductionEvidenceDossier(
     summary,
     blockers: blockerItems,
     signoffs: signoffItems,
+    approvalRecord,
     readiness,
     repositoryControlsOutsideProductionBlockers: runtimeHardeningControls.filter(
       (control) => !control.blockerIds.some((blockerId) => productionBlockers.some((blocker) => blocker.id === blockerId))
@@ -176,9 +195,31 @@ function buildSignoffDossierItem(
   };
 }
 
+function buildApprovalRecordDossierItem(
+  approvalRecord: ProductionApprovalRecord | null,
+  findings: ProductionReadinessFinding[]
+): ProductionEvidenceDossierApprovalRecord {
+  const approvalFindings = findings.filter((finding) => (
+    finding.code === "production_approval_record_missing"
+    || finding.code === "invalid_production_approval_record"
+  ));
+  return {
+    status: !approvalRecord ? "MISSING" : (approvalFindings.length > 0 ? "INVALID" : "VALID"),
+    approvalId: approvalRecord?.approvalId ?? null,
+    approvalStatus: approvalRecord?.status ?? null,
+    approverRole: approvalRecord?.approverRole ?? null,
+    approverReference: approvalRecord?.approverReference ?? null,
+    approvedAt: approvalRecord?.approvedAt ?? null,
+    scope: approvalRecord?.scope ?? null,
+    artifactRefs: approvalRecord?.artifactRefs ?? [],
+    findings: approvalFindings
+  };
+}
+
 function summarizeDossier(
   blockers: ProductionEvidenceDossierBlocker[],
-  signoffs: ProductionEvidenceDossierSignoff[]
+  signoffs: ProductionEvidenceDossierSignoff[],
+  approvalRecord: ProductionEvidenceDossierApprovalRecord
 ): ProductionEvidenceDossierSummary {
   return {
     totalBlockers: blockers.length,
@@ -189,6 +230,7 @@ function summarizeDossier(
     missingRepositoryControlLinks: blockers.reduce((sum, item) => sum + item.missingRepositoryControlIds.length, 0),
     validSignoffs: signoffs.filter((item) => item.status === "VALID").length,
     missingSignoffs: signoffs.filter((item) => item.status === "MISSING").length,
-    invalidSignoffs: signoffs.filter((item) => item.status === "INVALID").length
+    invalidSignoffs: signoffs.filter((item) => item.status === "INVALID").length,
+    validApprovalRecord: approvalRecord.status === "VALID"
   };
 }

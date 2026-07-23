@@ -26,7 +26,8 @@ test("production readiness report is machine-readable and blocks production", ()
   assert.ok(report.releaseDecision.blockedReasons.includes("production_evidence_package_missing"));
   assert.equal(report.evidenceSummary.evidenceRecords, 0);
   assert.equal(report.evidenceSummary.validSignoffs, 0);
-  assert.equal(report.evidenceSummary.missingSignoffs.length, 5);
+  assert.equal(report.evidenceSummary.missingSignoffs.length, 7);
+  assert.equal(report.evidenceSummary.validApprovalRecord, false);
   assert.equal(report.summary.byCategory.security, 8);
   assert.equal(report.summary.byCategory.data_protection, 5);
   assert.equal(report.summary.byCategory.clinical_safety, 6);
@@ -36,7 +37,9 @@ test("production readiness report is machine-readable and blocks production", ()
   assert.deepEqual(report.requiredSignoffs, [
     "security_owner",
     "data_protection_owner",
+    "legal_compliance_owner",
     "physician_lead",
+    "uat_owner",
     "operations_owner",
     "ai_governance_owner"
   ]);
@@ -75,6 +78,7 @@ test("complete production evidence package can unlock production readiness for s
   assert.deepEqual(report.releaseDecision.blockedReasons, []);
   assert.equal(report.evidenceSummary.validEvidenceRecords, 24);
   assert.equal(report.evidenceSummary.validSignoffs, requiredProductionSignoffs.length);
+  assert.equal(report.evidenceSummary.validApprovalRecord, true);
   assert.equal(report.findings.length, 0);
   assert.match(report.safetyBoundary, /signed scope/);
 });
@@ -87,6 +91,42 @@ test("production evidence package stays blocked when signoff is missing", () => 
   assert.equal(report.summary.productionReady, false);
   assert.ok(report.evidenceSummary.missingSignoffs.includes("physician_lead"));
   assert.ok(report.releaseDecision.blockedReasons.includes("missing_signoff:physician_lead"));
+});
+
+test("production evidence package stays blocked when legal or UAT signoff is missing", () => {
+  const pkg = completeEvidencePackage();
+  pkg.signoffs = pkg.signoffs.filter((item) => !["legal_compliance_owner", "uat_owner"].includes(item.role));
+  const report = buildProductionReadinessReport("2026-07-16T00:00:00.000Z", productionBlockers, pkg);
+
+  assert.equal(report.summary.productionReady, false);
+  assert.ok(report.evidenceSummary.missingSignoffs.includes("legal_compliance_owner"));
+  assert.ok(report.evidenceSummary.missingSignoffs.includes("uat_owner"));
+  assert.ok(report.releaseDecision.blockedReasons.includes("missing_signoff:legal_compliance_owner"));
+  assert.ok(report.releaseDecision.blockedReasons.includes("missing_signoff:uat_owner"));
+});
+
+test("production evidence package stays blocked without final approval record", () => {
+  const pkg = completeEvidencePackage() as Partial<ProductionEvidencePackage>;
+  delete pkg.approvalRecord;
+  const report = buildProductionReadinessReport(
+    "2026-07-16T00:00:00.000Z",
+    productionBlockers,
+    pkg as ProductionEvidencePackage
+  );
+
+  assert.equal(report.summary.productionReady, false);
+  assert.equal(report.evidenceSummary.validApprovalRecord, false);
+  assert.ok(report.releaseDecision.blockedReasons.includes("production_approval_record_missing"));
+});
+
+test("production approval record cannot be signed by an existing signoff signer", () => {
+  const pkg = completeEvidencePackage();
+  pkg.approvalRecord.approverReference = pkg.signoffs[0].signerReference;
+  const report = buildProductionReadinessReport("2026-07-16T00:00:00.000Z", productionBlockers, pkg);
+
+  assert.equal(report.summary.productionReady, false);
+  assert.equal(report.evidenceSummary.validApprovalRecord, false);
+  assert.ok(report.findings.some((item) => item.message.includes("distinct from all production signoff")));
 });
 
 test("production evidence package stays blocked when blocker evidence is expired", () => {
@@ -115,6 +155,7 @@ test("production evidence template covers all gates but cannot unlock with place
   assert.equal(template.signoffs.length, requiredProductionSignoffs.length);
   assert.equal(report.summary.productionReady, false);
   assert.ok(report.findings.some((item) => item.message.includes("placeholder")));
+  assert.ok(report.findings.some((item) => item.message.includes("approvalRecord")));
   assert.ok(report.releaseDecision.blockedReasons.some((item) => item.startsWith("open_blocker:")));
 });
 
@@ -181,6 +222,7 @@ test("production evidence package shape validator rejects malformed package", ()
   assert.ok(warnings.some((item) => item.includes("kind must be")));
   assert.ok(warnings.some((item) => item.includes("generatedAt")));
   assert.ok(warnings.some((item) => item.includes("security_owner")));
+  assert.ok(warnings.some((item) => item.includes("approvalRecord")));
 });
 
 function completeEvidencePackage(): ProductionEvidencePackage {
@@ -203,6 +245,15 @@ function completeEvidencePackage(): ProductionEvidencePackage {
       signedAt: "2026-07-15T18:00:00.000Z",
       scope: "production release for chronic care clinic os MVP-01",
       artifactRefs: [`production-readiness/signoffs/${role}.json`]
-    }))
+    })),
+    approvalRecord: {
+      approvalId: "approval-record-2026-07-16-001",
+      status: "APPROVED_FOR_GO_LIVE_REVIEW",
+      approverRole: "CLINIC_ADMIN",
+      approverReference: "CLINIC_ADMIN_APPROVER_001",
+      approvedAt: "2026-07-15T20:00:00.000Z",
+      scope: "production release for chronic care clinic os MVP-01",
+      artifactRefs: ["production-readiness/approval-record/go-live-approval.json"]
+    }
   };
 }

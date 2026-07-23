@@ -43,7 +43,16 @@ export function buildProductionEvidenceTemplate(
       signedAt: reviewedAt,
       scope,
       artifactRefs: [`TODO/signoffs/${role}.json`]
-    }))
+    })),
+    approvalRecord: {
+      approvalId: "TODO_GO_LIVE_APPROVAL_ID",
+      status: "APPROVED_FOR_GO_LIVE_REVIEW",
+      approverRole: "CLINIC_ADMIN",
+      approverReference: "TODO_CLINIC_ADMIN_APPROVER_REF",
+      approvedAt: reviewedAt,
+      scope,
+      artifactRefs: ["TODO/approval-record/go-live-approval.json"]
+    }
   };
 }
 

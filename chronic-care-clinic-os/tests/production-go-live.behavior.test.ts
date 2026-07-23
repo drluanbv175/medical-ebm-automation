@@ -170,6 +170,15 @@ function completeEvidencePackage(): ProductionEvidencePackage {
       signedAt: "2026-07-15T18:00:00.000Z",
       scope: "production release for chronic care clinic os MVP-01",
       artifactRefs: [`production-readiness/signoffs/${role}.json`]
-    }))
+    })),
+    approvalRecord: {
+      approvalId: "approval-record-2026-07-16-001",
+      status: "APPROVED_FOR_GO_LIVE_REVIEW",
+      approverRole: "CLINIC_ADMIN",
+      approverReference: "CLINIC_ADMIN_APPROVER_001",
+      approvedAt: "2026-07-15T20:00:00.000Z",
+      scope: "production release for chronic care clinic os MVP-01",
+      artifactRefs: ["production-readiness/approval-record/go-live-approval.json"]
+    }
   };
 }

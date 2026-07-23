@@ -29,7 +29,9 @@ export type ProductionEvidenceRecord = {
 export type ProductionSignoffRole =
   | "security_owner"
   | "data_protection_owner"
+  | "legal_compliance_owner"
   | "physician_lead"
+  | "uat_owner"
   | "operations_owner"
   | "ai_governance_owner";
 
@@ -41,11 +43,22 @@ export type ProductionSignoff = {
   artifactRefs: string[];
 };
 
+export type ProductionApprovalRecord = {
+  approvalId: string;
+  status: "APPROVED_FOR_GO_LIVE_REVIEW";
+  approverRole: "CLINIC_ADMIN";
+  approverReference: string;
+  approvedAt: string;
+  scope: string;
+  artifactRefs: string[];
+};
+
 export type ProductionEvidencePackage = {
   kind: "chronic_care_production_evidence_package";
   generatedAt: string;
   evidence: ProductionEvidenceRecord[];
   signoffs: ProductionSignoff[];
+  approvalRecord: ProductionApprovalRecord;
 };
 
 export type ProductionReadinessFinding = {
@@ -62,6 +75,7 @@ export type ProductionEvidenceSummary = {
   validSignoffs: number;
   requiredSignoffs: number;
   missingSignoffs: ProductionSignoffRole[];
+  validApprovalRecord: boolean;
 };
 
 export type ProductionReleaseDecision = {
@@ -102,7 +116,9 @@ const categoryOrder: ProductionBlockerCategory[] = [
 export const requiredProductionSignoffs: ProductionSignoffRole[] = [
   "security_owner",
   "data_protection_owner",
+  "legal_compliance_owner",
   "physician_lead",
+  "uat_owner",
   "operations_owner",
   "ai_governance_owner"
 ];
@@ -206,6 +222,7 @@ export function assessProductionEvidence(
   const findings: ProductionReadinessFinding[] = [];
   const evidenceRecords = evidencePackage?.evidence ?? [];
   const signoffs = evidencePackage?.signoffs ?? [];
+  const approvalRecord = evidencePackage?.approvalRecord ?? null;
   const blockerById = new Map(blockers.map((item) => [item.id, item]));
   const validEvidenceByBlocker = new Map<string, ProductionEvidenceRecord>();
 
@@ -267,6 +284,14 @@ export function assessProductionEvidence(
 
   const signoffValidation = validateProductionSignoffs(signoffs, generatedAt);
   findings.push(...signoffValidation.findings);
+  const approvalRecordErrors = validateProductionApprovalRecord(approvalRecord, signoffValidation.signerReferences, generatedAt);
+  for (const message of approvalRecordErrors) {
+    findings.push({
+      severity: "ERROR",
+      code: approvalRecord ? "invalid_production_approval_record" : "production_approval_record_missing",
+      message
+    });
+  }
 
   return {
     blockers: blockers.map((item) => ({
@@ -279,7 +304,8 @@ export function assessProductionEvidence(
       invalidEvidenceRecords: Math.max(0, evidenceRecords.length - validEvidenceByBlocker.size),
       validSignoffs: signoffValidation.validRoles.size,
       requiredSignoffs: requiredProductionSignoffs.length,
-      missingSignoffs: requiredProductionSignoffs.filter((role) => !signoffValidation.validRoles.has(role))
+      missingSignoffs: requiredProductionSignoffs.filter((role) => !signoffValidation.validRoles.has(role)),
+      validApprovalRecord: approvalRecordErrors.length === 0
     },
     findings
   };
@@ -345,7 +371,11 @@ function validateEvidenceRecord(
 function validateProductionSignoffs(
   signoffs: ProductionSignoff[],
   generatedAt: string
-): { validRoles: Set<ProductionSignoffRole>; findings: ProductionReadinessFinding[] } {
+): {
+  validRoles: Set<ProductionSignoffRole>;
+  findings: ProductionReadinessFinding[];
+  signerReferences: Set<string>;
+} {
   const validRoles = new Set<ProductionSignoffRole>();
   const seenRoles = new Set<ProductionSignoffRole>();
   const seenSignerReferences = new Map<string, ProductionSignoffRole>();
@@ -404,7 +434,46 @@ function validateProductionSignoffs(
       });
     }
   }
-  return { validRoles, findings };
+  return { validRoles, findings, signerReferences: new Set(seenSignerReferences.keys()) };
+}
+
+function validateProductionApprovalRecord(
+  approvalRecord: ProductionApprovalRecord | null,
+  signoffSignerReferences: Set<string>,
+  generatedAt: string
+): string[] {
+  if (!approvalRecord) {
+    return ["Production approval record is required before final go-live review."];
+  }
+  const errors: string[] = [];
+  if (!safeReference(approvalRecord.approvalId)) {
+    errors.push("approvalRecord approvalId is missing, placeholder, or appears to contain PII.");
+  }
+  if (approvalRecord.status !== "APPROVED_FOR_GO_LIVE_REVIEW") {
+    errors.push("approvalRecord status must be APPROVED_FOR_GO_LIVE_REVIEW.");
+  }
+  if (approvalRecord.approverRole !== "CLINIC_ADMIN") {
+    errors.push("approvalRecord approverRole must be CLINIC_ADMIN.");
+  }
+  if (!safeReference(approvalRecord.approverReference)) {
+    errors.push("approvalRecord approverReference is missing, placeholder, or appears to contain PII.");
+  } else if (signoffSignerReferences.has(normalizeReference(approvalRecord.approverReference))) {
+    errors.push("approvalRecord approverReference must be distinct from all production signoff signerReference values.");
+  }
+  if (!isValidPastOrPresentIso(approvalRecord.approvedAt, generatedAt)) {
+    errors.push("approvalRecord approvedAt must be a valid ISO timestamp not after report generation.");
+  }
+  if (containsPlaceholder(approvalRecord.scope) || !approvalRecord.scope.toLowerCase().includes("production")) {
+    errors.push("approvalRecord scope must explicitly include production and contain no placeholders.");
+  }
+  if (
+    !Array.isArray(approvalRecord.artifactRefs)
+    || approvalRecord.artifactRefs.length === 0
+    || approvalRecord.artifactRefs.some((item) => !safeArtifactRef(item))
+  ) {
+    errors.push("approvalRecord requires at least one safe approval artifact reference.");
+  }
+  return errors;
 }
 
 function isValidPastOrPresentIso(value: string, generatedAt: string): boolean {

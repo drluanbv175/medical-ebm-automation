@@ -29,7 +29,7 @@ Dừng ngay và không chạy tiếp nếu gặp một trong các điều kiện
 - Thiếu khóa SAP, thiếu data-lock hoặc còn query mở nhưng đã muốn phân tích chính.
 - Có yêu cầu tự ký thay PI, IRB, thống kê viên, phản biện độc lập hoặc bác sĩ.
 - Có ý định bật auto-apply, EMR write, gửi tin bệnh nhân hoặc production connector
-  khi chưa có UAT và go-live signoff.
+  khi chưa có UAT, signoff bắt buộc, approval record và go-live attestation.
 - Có nguồn chứng cứ không truy nguyên được PMID/DOI/URL chính thức.
 - Có cảnh báo red flag/cấp cứu trong tình huống lâm sàng.
 
@@ -91,7 +91,8 @@ python3 tools/verify_personal_production_hardening.py \
   --init-evidence-template /secure/path/personal-production-evidence.json
 ```
 
-Sau khi đã có artefact, signoff và go-live attestation thật, kiểm package:
+Sau khi đã có artefact, signoff, approval record và go-live attestation thật,
+kiểm package:
 
 ```bash
 python3 tools/verify_personal_production_hardening.py \
@@ -103,6 +104,23 @@ an toàn tới artefact đã khử định danh và đã được duyệt. Khôn
 đường dẫn tuyệt đối, `..`, `.env`, thư mục `raw`/`restricted`, raw dataset, file
 PII/PHI, bảng ánh xạ pseudonymization, linkage key hoặc khóa tái định danh làm
 artefact ref.
+
+Evidence package chỉ đủ điều kiện vào thẩm định go-live khi có đủ 7 signoff
+đúng role:
+
+- `security_owner`
+- `data_protection_owner`
+- `legal_compliance_owner`
+- `physician_lead`
+- `operations_owner`
+- `ai_governance_owner`
+- `uat_owner`
+
+Approval record là cổng cuối trước go-live review: approver phải là người thật
+có thẩm quyền, khác mọi signer ở trên, scope phải ghi rõ production và phải dẫn
+tới artefact đã duyệt. Go-live attestation sau đó phải ghi release ID, source
+commit, evidence package hash, evidence dossier hash, change ticket, rollback
+plan, post-deploy checklist và tách người vận hành khỏi admin approver.
 
 Gói evidence package hợp lệ chỉ có nghĩa là **đủ cấu trúc để đưa vào thẩm định
 người thật/đơn vị**. Nó không tự bật dữ liệu bệnh nhân thật, không tự thay UAT,
@@ -120,7 +138,8 @@ Kết quả hợp lệ cho sử dụng cá nhân có kiểm soát là:
 - Có thể còn `HUMAN_GATE`, và khi còn `HUMAN_GATE` thì không dùng dữ liệu bệnh
   nhân thật hoặc không bật clinical production.
 - `clinical_production_allowed=False` và `real_patient_data_allowed=False` cho
-  tới khi có đủ phê duyệt, UAT, bảo mật và go-live signoff.
+  tới khi có đủ phê duyệt, UAT, bảo mật, pháp lý/tuân thủ, clinical signoff,
+  approval record và go-live attestation.
 
 ## 8. Trách nhiệm tối thiểu
 
@@ -132,6 +151,9 @@ Kết quả hợp lệ cho sử dụng cá nhân có kiểm soát là:
 | Phản biện độc lập | Rà soát phương pháp, báo cáo, minh bạch và nguy cơ sai lệch |
 | Quản trị dữ liệu | PII, pseudonymization, mapping custody, backup, retention |
 | Quản trị hệ thống | RBAC, MFA, log, rollback, incident response, go-live change control |
+| Pháp lý/tuân thủ | Intended use, privacy notice, consent, hợp đồng, nghĩa vụ pháp lý |
+| UAT owner | Biên bản UAT, lỗi còn mở, residual risk và quyết định pass/fail |
+| Admin go-live | Approval record cuối cùng, tách khỏi operator và các signer bắt buộc |
 
 ## 9. Kết luận vận hành
 

@@ -3,9 +3,13 @@
 ## Scope
 
 - Product: Chronic Care Clinic OS.
+- Release ID:
 - Data environment:
 - Date:
-- Reviewer:
+- Reviewer reference:
+
+Do not include patient identifiers, PHI, secrets, raw datasets, linkage keys or
+private absolute paths in this record.
 
 ## Review items
 
@@ -18,6 +22,8 @@
 - [ ] No PHI sent to public AI API.
 - [ ] Export controls reviewed.
 - [ ] Incident response owner and process assigned.
+- [ ] Legal/compliance review path is identified for the signed deployment scope.
+- [ ] UAT artifacts used synthetic or de-identified data only.
 
 ## Decision
 

@@ -19,6 +19,8 @@ test("production evidence dossier creates a full checklist when no package exist
   assert.equal(dossier.summary.validBlockerEvidence, 0);
   assert.equal(dossier.summary.missingBlockerEvidence, productionBlockers.length);
   assert.equal(dossier.summary.missingSignoffs, requiredProductionSignoffs.length);
+  assert.equal(dossier.summary.validApprovalRecord, false);
+  assert.equal(dossier.approvalRecord.status, "MISSING");
   assert.ok(dossier.blockedReasons.includes("production_evidence_package_missing"));
   const sec001 = dossier.blockers.find((item) => item.blockerId === "SEC-001");
   assert.ok(sec001);
@@ -41,6 +43,8 @@ test("production evidence dossier can become ready for final go-live check only 
   assert.equal(dossier.summary.invalidBlockerEvidence, 0);
   assert.equal(dossier.summary.missingRepositoryControlLinks, 0);
   assert.equal(dossier.summary.validSignoffs, requiredProductionSignoffs.length);
+  assert.equal(dossier.summary.validApprovalRecord, true);
+  assert.equal(dossier.approvalRecord.status, "VALID");
   assert.deepEqual(dossier.blockedReasons, []);
   assert.match(dossier.safetyBoundary, /not itself a production approval/);
 });
@@ -79,6 +83,21 @@ test("production evidence dossier surfaces invalid duplicate signoffs", () => {
   assert.ok(security.findings.some((finding) => finding.message.includes("Duplicate required production signoff")));
 });
 
+test("production evidence dossier surfaces missing approval record", () => {
+  const pkg = completeEvidencePackage() as Partial<ProductionEvidencePackage>;
+  delete pkg.approvalRecord;
+
+  const dossier = buildProductionEvidenceDossier(
+    pkg as ProductionEvidencePackage,
+    "2026-07-16T00:00:00.000Z"
+  );
+
+  assert.equal(dossier.status, "BLOCKED");
+  assert.equal(dossier.approvalRecord.status, "MISSING");
+  assert.equal(dossier.summary.validApprovalRecord, false);
+  assert.ok(dossier.blockedReasons.includes("production_approval_record_missing"));
+});
+
 function completeEvidencePackage(): ProductionEvidencePackage {
   return {
     kind: "chronic_care_production_evidence_package",
@@ -99,6 +118,15 @@ function completeEvidencePackage(): ProductionEvidencePackage {
       signedAt: "2026-07-15T18:00:00.000Z",
       scope: "production release for chronic care clinic os MVP-01",
       artifactRefs: [`production-readiness/signoffs/${role}.json`]
-    }))
+    })),
+    approvalRecord: {
+      approvalId: "approval-record-2026-07-16-001",
+      status: "APPROVED_FOR_GO_LIVE_REVIEW",
+      approverRole: "CLINIC_ADMIN",
+      approverReference: "CLINIC_ADMIN_APPROVER_001",
+      approvedAt: "2026-07-15T20:00:00.000Z",
+      scope: "production release for chronic care clinic os MVP-01",
+      artifactRefs: ["production-readiness/approval-record/go-live-approval.json"]
+    }
   };
 }

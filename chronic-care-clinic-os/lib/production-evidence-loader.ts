@@ -6,7 +6,9 @@ const REQUIRED_PACKAGE_KIND = "chronic_care_production_evidence_package";
 const REQUIRED_SIGNOFF_ROLES: ProductionSignoffRole[] = [
   "security_owner",
   "data_protection_owner",
+  "legal_compliance_owner",
   "physician_lead",
+  "uat_owner",
   "operations_owner",
   "ai_governance_owner"
 ];
@@ -82,6 +84,9 @@ export function validateEvidencePackageShape(value: unknown): string[] {
   }
   if (!Array.isArray(pkg.signoffs)) {
     warnings.push("signoffs must be an array.");
+  }
+  if (!pkg.approvalRecord || typeof pkg.approvalRecord !== "object") {
+    warnings.push("approvalRecord must be an object.");
   }
   if (Array.isArray(pkg.signoffs)) {
     const roles = new Set(

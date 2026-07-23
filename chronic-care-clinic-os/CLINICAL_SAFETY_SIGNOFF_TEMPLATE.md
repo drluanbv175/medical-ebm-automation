@@ -4,8 +4,12 @@
 
 - Product: Chronic Care Clinic OS.
 - Slice: MVP-01 Hypertension and Type 2 Diabetes Follow-up Pathway.
+- Release ID:
 - Date:
-- Reviewer:
+- Reviewer reference:
+
+Do not include patient identifiers or PHI in this record. This template is not a
+real production approval until completed and signed by an authorized clinician.
 
 ## Review items
 
@@ -16,6 +20,8 @@
 - [ ] Clinical rules have approved source, scope, limitation notes and review date.
 - [ ] Patient handout templates are safe and understandable.
 - [ ] Medication reconciliation warnings are framed as "needs review".
+- [ ] UAT evidence for the signed clinical scope has been reviewed.
+- [ ] The signed scope does not permit autonomous diagnosis, prescribing or EMR/HIS writeback.
 
 ## Decision
 
