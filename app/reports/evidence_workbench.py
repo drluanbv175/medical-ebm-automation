@@ -344,6 +344,110 @@ def _slug(text: str) -> str:
     return t or "VanDe"
 
 
+def build_workbench_payload(area: Optional[str] = None, limit: int = 20,
+                            updated: Optional[str] = None,
+                            verify_pmids: bool = True, vi: bool = True) -> Optional[Dict]:
+    """Dựng một khối DATA chuẩn để dùng chung cho Dashboard HTML và file Word.
+
+    Mục tiêu là một lần cập nhật chứng cứ chỉ có MỘT nguồn dữ liệu đã lọc/xác minh;
+    các sản phẩm xuất bản (HTML/DOCX) chỉ là hai cách trình bày khác nhau của cùng dữ liệu đó.
+    """
+    updated = updated or date.today().isoformat()
+    with session_scope() as s:
+        q = s.query(EvidenceItem).filter(EvidenceItem.is_primary_record.is_(True))
+        if area:
+            q = q.filter(EvidenceItem.clinical_area == area)
+        q = q.filter((EvidenceItem.pmid.isnot(None)) | (EvidenceItem.doi.isnot(None)))
+        rows = q.order_by(EvidenceItem.practice_change_score.desc().nullslast())\
+                .limit(limit).all()
+        if not rows:
+            return None
+        resolved = resolve_pmids([r.pmid for r in rows]) if verify_pmids else None
+        data = build_data(area, rows, updated, resolved, vi)
+    return data if data["items"] else None
+
+
+def export_workbench_docx(area: Optional[str] = None, limit: int = 20,
+                          updated: Optional[str] = None, verify_pmids: bool = True,
+                          vi: bool = True, out_dir: Optional[Path] = None,
+                          data: Optional[Dict] = None) -> Optional[Path]:
+    """Xuất file Word đi kèm mỗi Evidence Workbench theo cùng cấu trúc DATA.
+
+    File này là bản đọc/in/chia sẻ của Dashboard: tóm tắt, hành động, mục chưa nên làm,
+    cờ đỏ, từng ITEM với PICO, hiệu số, đánh giá nguồn và PMID/DOI. Không chứa PII.
+    """
+    updated = updated or date.today().isoformat()
+    data = data or build_workbench_payload(area=area, limit=limit, updated=updated,
+                                           verify_pmids=verify_pmids, vi=vi)
+    if not data:
+        return None
+    try:
+        from docx import Document
+    except ImportError:  # pragma: no cover
+        logger.warning("python-docx chưa cài; bỏ qua xuất Evidence Workbench .docx")
+        return None
+
+    out_dir = out_dir or settings.reports_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+    topic = area or "TongHop"
+    path = out_dir / (
+        f"Evidence_Workbench_{_slug(topic)}_{updated.replace('-', '')}.docx")
+
+    doc = Document()
+    meta = data["meta"]
+    summary = data["summary"]
+    doc.add_heading(meta["question"], level=0)
+    doc.add_paragraph(f"Cập nhật: {meta['updated']}")
+    doc.add_paragraph("Cần bác sĩ kiểm chứng. Không chứa PII. Không tự áp dụng cho bệnh nhân khi chưa được bác sĩ duyệt.")
+
+    doc.add_heading("1. Tóm tắt quyết định", level=1)
+    doc.add_paragraph(summary["conclusion"])
+
+    doc.add_heading("2. Có thể làm ngay", level=1)
+    for text in summary["doNow"]:
+        doc.add_paragraph(text, style="List Bullet")
+
+    doc.add_heading("3. Không nên làm / chưa đủ thay đổi", level=1)
+    for text in summary["dontDo"]:
+        doc.add_paragraph(text, style="List Bullet")
+
+    doc.add_heading("4. Cờ đỏ cần chú ý", level=1)
+    for text in summary["redFlags"]:
+        doc.add_paragraph(text, style="List Bullet")
+
+    doc.add_heading("5. Chi tiết từng chứng cứ", level=1)
+    for item in data["items"]:
+        doc.add_heading(f"{item['id']}. {item['title']}", level=2)
+        doc.add_paragraph(
+            f"Nguồn: {item.get('source') or '—'} | Thiết kế: {item.get('design') or '—'} | "
+            f"Ngày/phiên bản: {item.get('dateVersion') or '—'} | Quyết định: {item.get('decision') or '—'}")
+        doc.add_paragraph(f"Đánh giá nguồn: {item.get('gradeSource') or '—'}")
+        if item.get("effectText"):
+            doc.add_paragraph(f"Hiệu số/kết quả chính: {item['effectText']}")
+        doc.add_paragraph(f"Hành động: {item.get('action') or '—'}")
+        doc.add_paragraph(f"Theo dõi/an toàn: {item.get('monitoring') or '—'}")
+
+        table = doc.add_table(rows=1, cols=2)
+        table.style = "Table Grid"
+        hdr = table.rows[0].cells
+        hdr[0].text = "PICO"
+        hdr[1].text = "Nội dung trích từ nguồn"
+        for key in ("P", "I", "C", "O"):
+            row = table.add_row().cells
+            row[0].text = key
+            row[1].text = (item.get("pico", {}).get(key) or ["—"])[0]
+
+        refs = item.get("references") or []
+        if refs:
+            doc.add_paragraph("Tài liệu tham khảo:")
+            for ref in refs:
+                doc.add_paragraph(ref, style="List Number")
+
+    doc.save(str(path))
+    logger.info("Đã xuất Evidence Workbench DOCX: %s", path)
+    return path
+
+
 def prewarm_translations(per_area: int = 10) -> int:
     """Dịch TRƯỚC (làm ấm cache) nội dung các tab dashboard sau khi quét → mở dashboard
     TỨC THÌ. Trả về số chủ đề đã làm ấm. Không ném lỗi (offline/giới hạn → bỏ qua êm)."""
@@ -519,6 +623,7 @@ def render_item_dashboard(item_id: int, dark: bool = True, vi: bool = True) -> O
 def export_workbench(area: Optional[str] = None, limit: int = 20,
                      updated: Optional[str] = None, verify_pmids: bool = True,
                      vi: bool = True, dark: bool = False,
+                     data: Optional[Dict] = None,
                      out_dir: Path = OUT_DIR) -> Optional[Path]:
     """Xuất 1 dashboard Evidence Workbench cho 1 chuyên khoa (hoặc tất cả).
 
@@ -526,20 +631,9 @@ def export_workbench(area: Optional[str] = None, limit: int = 20,
     trên PubMed (verify_pmids=True) — PMID lỗi sẽ bị bỏ. None nếu không còn item.
     """
     updated = updated or date.today().isoformat()
-    with session_scope() as s:
-        q = s.query(EvidenceItem).filter(EvidenceItem.is_primary_record.is_(True))
-        if area:
-            q = q.filter(EvidenceItem.clinical_area == area)
-        # chỉ item truy nguyên được (gate yêu cầu PMID/DOI)
-        q = q.filter((EvidenceItem.pmid.isnot(None)) | (EvidenceItem.doi.isnot(None)))
-        rows = q.order_by(EvidenceItem.practice_change_score.desc().nullslast())\
-                .limit(limit).all()
-        if not rows:
-            return None
-        resolved = resolve_pmids([r.pmid for r in rows]) if verify_pmids else None
-        # dựng DATA ngay trong session_scope (đọc thuộc tính ORM)
-        data = build_data(area, rows, updated, resolved, vi)
-    if not data["items"]:
+    data = data or build_workbench_payload(area=area, limit=limit, updated=updated,
+                                           verify_pmids=verify_pmids, vi=vi)
+    if not data:
         return None
     out_dir.mkdir(parents=True, exist_ok=True)
     suffix = "_DarkAnalyst" if dark else ""
@@ -574,7 +668,10 @@ def export_and_publish(area: Optional[str] = None, limit: int = 20,
             env=env,
         )
 
-    path = export_workbench(area=area, limit=limit)
+    updated = date.today().isoformat()
+    data = build_workbench_payload(area=area, limit=limit, updated=updated)
+    path = export_workbench(area=area, limit=limit, updated=updated, data=data)
+    docx = export_workbench_docx(area=area, limit=limit, updated=updated, data=data)
     if not path:
         return {"path": None, "n_items": 0, "gate_pass": False,
                 "gate_log": "Không có chứng cứ truy nguyên (PMID/DOI) cho chủ đề này."}
@@ -599,4 +696,5 @@ def export_and_publish(area: Optional[str] = None, limit: int = 20,
             library = str(OUT_DIR / "evidence-library.html")
         except Exception as exc:  # pragma: no cover
             library = f"Lỗi cập nhật thư viện: {exc}"
-    return {"path": path, "gate_pass": gate_pass, "gate_log": gate_log, "library": library}
+    return {"path": path, "docx": docx, "n_items": len(data["items"]) if data else 0,
+            "gate_pass": gate_pass, "gate_log": gate_log, "library": library}
