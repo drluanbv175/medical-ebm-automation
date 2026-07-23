@@ -53,6 +53,10 @@ _WIDE_PRINCIPALS = (
 
 def _windows_principal() -> str:
     """Trả về principal icacls của user hiện tại, dạng DOMAIN\\user nếu có domain."""
+    result = subprocess.run(["whoami"], capture_output=True, text=True, check=False)
+    principal = (result.stdout or "").strip()
+    if result.returncode == 0 and "\\" in principal:
+        return principal
     user = os.environ.get("USERNAME", "")
     domain = os.environ.get("USERDOMAIN", "")
     if domain and user:
