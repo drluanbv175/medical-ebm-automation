@@ -29,8 +29,15 @@ R12. Có kiểm soát phiên bản và lịch sử thay đổi: phiên bản, ng
      thay đổi và người phê duyệt/chủ nhiệm phải hiện rõ trong đầu ra chính.
 R13. Có ma trận truy xuất mục tiêu-biến-công cụ-phân tích-bảng để đồng bộ
      protocol, CRF/codebook, SAP, bảng/hình và kết luận.
+R14. Có ma trận bao phủ đủ 20 thành phần protocol lõi, không đánh đồng 16 tiêu
+     đề với độ đầy đủ nội dung.
+R15. Không có mâu thuẫn ngữ nghĩa nghiêm trọng giữa thiết kế, kết cục chính,
+     CRF, cỡ mẫu và SAP.
+R16. Có một gói quyết định hợp nhất liệt kê mọi trường khoa học còn thiếu.
+R17. Không tự tuyên bố nội dung khoa học đầy đủ khi StudySpec vẫn thiếu quyết
+     định cốt lõi hoặc còn lỗi ngữ nghĩa.
 
-Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R13 = ĐỎ
+Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R17 = ĐỎ
 (passed=False). R6 = cảnh báo (không chặn, vì một số tham số giả định hợp lệ).
 
 Dùng: python3 tools/check_de_cuong.py --study <MÃ>   (hoặc import validate()).
@@ -49,6 +56,7 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import research_study_spec as RS  # noqa: E402
 import skill_standards as S  # noqa: E402
 
 # Nhãn "trông giống marker": mở ngoặc vuông + bắt đầu bằng các từ khoá này.
@@ -99,7 +107,8 @@ _COMPLETION_CLAIM_RE = re.compile(
     r"\s*[:：-]\s*(?!CHƯA\b)(?:ĐÃ\s*)?HOÀN THÀNH KỸ THUẬT\b"
 )
 _COMPLETION_REQUIRED_SIGNALS = (
-    "irb_approved", "sap_locked", "db_locked", "results_final", "integrity_signed",
+    "irb_approved", "sap_locked", "db_locked", "results_final",
+    "peer_review_approved", "integrity_signed",
 )
 _MISSING_INFO_REQUIRED_TERMS = (
     "Thông tin còn thiếu", "Ảnh hưởng", "Phương án an toàn", "Người quyết định",
@@ -492,16 +501,136 @@ def validate(md_path, out_dir) -> Dict:
         checks["R13_traceability_matrix"] = (
             "PASS (mục tiêu-biến-công cụ-phân tích-bảng được nối trong một ma trận)")
 
+    # R14 — đủ 20 thành phần protocol lõi, độc lập với bố cục 16 chương.
+    has_protocol_matrix = re.search(
+        r"^#\s*Ma trận bao phủ 20 thành phần protocol lõi\b",
+        text,
+        re.MULTILINE,
+    )
+    missing_protocol_items = [
+        item_id for item_id, _title in S.PROTOCOL_CORE_ITEMS
+        if not re.search(rf"\|\s*{re.escape(item_id)}\s*\|", text)
+    ]
+    if not has_protocol_matrix:
+        errors.append(
+            "R14 THIẾU mục 'Ma trận bao phủ 20 thành phần protocol lõi'."
+        )
+        checks["R14_protocol_core_coverage"] = "FAIL (thiếu ma trận)"
+    elif missing_protocol_items:
+        errors.append(
+            "R14 MA TRẬN PROTOCOL thiếu: " + ", ".join(missing_protocol_items)
+        )
+        checks["R14_protocol_core_coverage"] = (
+            f"FAIL (thiếu {len(missing_protocol_items)}/20 mục)"
+        )
+    else:
+        checks["R14_protocol_core_coverage"] = "PASS (đủ P01-P20)"
+
+    # R15 — kiểm mâu thuẫn ngữ nghĩa từ cùng StudySpec mà assembler sử dụng.
+    spec = RS.build_study_spec(md_path.stem, cps, meta)
+    spec_evaluation = RS.evaluate_study_spec(spec, cps, meta)
+    semantic_errors = [
+        issue for issue in spec_evaluation["semantic_issues"]
+        if issue["severity"] == "ERROR"
+    ]
+    semantic_warnings = [
+        issue for issue in spec_evaluation["semantic_issues"]
+        if issue["severity"] == "WARNING"
+    ]
+    if semantic_errors:
+        errors.append(
+            "R15 MÂU THUẪN NGỮ NGHĨA: "
+            + "; ".join(
+                f"{issue['code']}: {issue['message']}"
+                for issue in semantic_errors
+            )
+        )
+        checks["R15_semantic_consistency"] = (
+            f"FAIL ({len(semantic_errors)} lỗi nghiêm trọng)"
+        )
+    else:
+        checks["R15_semantic_consistency"] = "PASS"
+    for issue in semantic_warnings:
+        warnings.append(
+            f"R15 CẢNH BÁO {issue['code']}: {issue['message']}"
+        )
+
+    # R16 — gói quyết định duy nhất phải liệt kê mọi requirement còn thiếu.
+    has_decision_package = re.search(
+        r"^#\s*Gói quyết định hoàn thiện đề cương\b",
+        text,
+        re.MULTILINE,
+    )
+    missing_decision_rows = [
+        row["id"] for row in spec_evaluation["missing_requirements"]
+        if not re.search(rf"\|\s*{re.escape(row['id'])}\s*\|", text)
+    ]
+    if not has_decision_package:
+        errors.append("R16 THIẾU 'Gói quyết định hoàn thiện đề cương'.")
+        checks["R16_decision_package"] = "FAIL (thiếu gói quyết định)"
+    elif missing_decision_rows:
+        errors.append(
+            "R16 GÓI QUYẾT ĐỊNH chưa liệt kê: "
+            + ", ".join(missing_decision_rows)
+        )
+        checks["R16_decision_package"] = (
+            f"FAIL (thiếu {len(missing_decision_rows)} quyết định)"
+        )
+    else:
+        checks["R16_decision_package"] = "PASS"
+
+    # R17 — tách "sinh đủ cấu trúc" khỏi "đủ nội dung khoa học".
+    false_scientific_claim = bool(re.search(
+        r"(?im)^\s*\*\*Kết luận nội dung khoa học:\*\*\s*"
+        r"(?:ĐÃ\s*)?ĐỦ(?:\s+DỮ LIỆU)?\b",
+        text,
+    ))
+    if false_scientific_claim and not spec_evaluation["scientific_content_complete"]:
+        errors.append(
+            "R17 TỰ TUYÊN BỐ ĐỦ NỘI DUNG KHOA HỌC khi StudySpec vẫn thiếu "
+            + ", ".join(
+                row["id"] for row in spec_evaluation["missing_requirements"]
+            )
+            + "."
+        )
+        checks["R17_scientific_readiness"] = "FAIL (tuyên bố quá mức)"
+    elif spec_evaluation["scientific_content_complete"]:
+        checks["R17_scientific_readiness"] = (
+            "PASS (đủ trường khoa học cốt lõi; vẫn cần người duyệt)"
+        )
+    else:
+        checks["R17_scientific_readiness"] = (
+            "PASS (trung thực: còn quyết định khoa học mở)"
+        )
+
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,
             "checks": checks, "n_raw_pmids": len(raw), "n_seed_pmids": len(seed),
             "seed_only_pmids": seed_only, "raw_verified_pmids": raw_verified,
-            "doc_pmids": sorted(doc_pmids)}
+            "doc_pmids": sorted(doc_pmids),
+            "study_spec_readiness": spec_evaluation["readiness_level"],
+            "scientific_content_complete": spec_evaluation[
+                "scientific_content_complete"
+            ],
+            "protocol_content_complete": spec_evaluation[
+                "protocol_content_complete"
+            ],
+            "protocol_complete_items": spec_evaluation[
+                "protocol_complete_items"
+            ],
+            "protocol_total_items": spec_evaluation["protocol_total_items"]}
 
 
 def print_report(report: Dict) -> None:
     status = "✅ PASS" if report["passed"] else "❌ FAIL"
     print(f"  Guardrail đề cương (skill): {status}")
+    if report.get("study_spec_readiness"):
+        print(
+            "    - Mức StudySpec: "
+            f"{report['study_spec_readiness']} "
+            f"({report.get('protocol_complete_items', 0)}/"
+            f"{report.get('protocol_total_items', 20)} mục protocol)"
+        )
     for name, res in report["checks"].items():
         print(f"    - {name}: {res}")
     for e in report["errors"]:
