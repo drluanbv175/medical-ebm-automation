@@ -37,7 +37,7 @@ Than phiền/bệnh cảnh chính · tuổi/bệnh nền/bối cảnh liên quan
    - **Tiên lượng:** thường dùng khung **PECO** (P=quần thể · **E=yếu tố tiên lượng/phơi nhiễm đang xét**, KHÔNG phải "can thiệp" vì không có can thiệp thật · C=không có yếu tố đó/mức khác · O=kết cục theo thời gian) — KHÔNG ép vào khuôn "I=can thiệp".
    - **Tác hại:** P=quần thể phơi nhiễm nghi ngờ · **I/E=phơi nhiễm nghi gây hại** (thuốc/yếu tố môi trường) · **C=KHÔNG phơi nhiễm** (không phải "chăm sóc thường quy") · O=biến cố bất lợi.
 4. **Ưu tiên KẾT CỤC QUAN TRỌNG VỚI BỆNH NHÂN:** tử vong, biến cố tim mạch lớn, nhập viện, chất lượng sống, biến chứng, tác hại — **ưu tiên hơn kết cục thay thế (surrogate)** như chỉ số xét nghiệm.
-5. **Định hướng agent kế** theo loại câu hỏi đã gắn ở bước 2 (chẩn đoán → `chan-doan-xac-suat`; điều trị → `tra-cuu-chung-cu`+`tham-dinh-grade-nnt`; tiên lượng/tác hại → `tra-cuu-chung-cu` với chứng cứ quan sát/cohort ưu tiên).
+5. **Định hướng agent kế** theo loại câu hỏi đã gắn ở bước 2 (chẩn đoán → `tra-cuu-chung-cu` tìm bằng chứng độ chính xác test **rồi** `chan-doan-xac-suat` áp LR/hậu nghiệm — SỬA 2026-07-24, vòng lặp vòng 15: trước bỏ sót bước TÌM cho câu hỏi chẩn đoán, mâu thuẫn với luồng chủ `dieu-phoi-lam-sang.md` nơi bước 2 TÌM chạy KHÔNG điều kiện cho MỌI loại câu hỏi; điều trị → `tra-cuu-chung-cu`+`tham-dinh-grade-nnt`; tiên lượng/tác hại → `tra-cuu-chung-cu` với chứng cứ quan sát/cohort ưu tiên).
 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```

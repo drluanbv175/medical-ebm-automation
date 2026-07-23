@@ -106,6 +106,18 @@ ARTIFACT_MAP = {
     "health-economics":   ("G7c", "G1+G7", "Phân tích kinh tế y tế (CEA/CUA/CBA/BIA — CHEERS 2022/ISPOR BIA GPP II)"),
     "citation-check":     ("G7d", "G7-G8🔒", "Kiểm chứng trích dẫn học thuật (A12 — cổng cứng chống trích dẫn ma)"),
     "study-log":          ("G9a", "G9", "Sổ cái & Bàn giao lưu trữ đề tài (A18 — Final Handover Log)"),
+
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, dimension
+    # workflow_agents_a): 4 khóa LÂM SÀNG (Cổng A/B — KHÔNG thuộc chuỗi cổng
+    # G0-G9 nghiên cứu) mà quyet-dinh-chung.md/loi-dan-tuan-thu.md/
+    # ket-qua-hoc-tap.md/cap-nhat-guideline.md tham chiếu nhưng chưa có trong
+    # danh mục → cùng lớp lỗi "mất định danh cổng, rơi về generic GX" đã vá ở
+    # vòng 11 cho 10 khóa nghiên cứu. "gate" ở đây ghi Cổng A/B thật (không
+    # phải G-gate) chỉ để hiển thị đúng nghĩa trên header .docx.
+    "shared-decision":      ("CA1", "A", "Quyết định chung & Option Grid (Shared Decision-Making)"),
+    "patient-instructions": ("CA2", "A", "Lời dặn bệnh nhân & Kế hoạch tuân thủ (A5)"),
+    "outcome-learning":     ("CB1", "B", "Ghi nhận kết quả điều trị & Tín hiệu học tập (QI)"),
+    "guideline-update":     ("CB2", "B", "Cảnh báo cập nhật Guideline"),
 }
 
 

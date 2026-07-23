@@ -338,7 +338,7 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact ethics
 ---
 
 ### TÀI LIỆU 9 — ICF WAIVER (có điều kiện — chỉ khi nghiên cứu dữ liệu THỨ CẤP / không tiếp xúc người tham gia trực tiếp)
-Kích hoạt khi Intake Audit mục [6] = "thứ cấp" hoặc "đã khóa". KHÔNG áp khi có tiếp xúc người tham gia trực tiếp.
+Kích hoạt theo cờ `risk["icf_waiver_eligible"]` gắn TĨNH theo `design_code` (SỬA 2026-07-24, vòng lặp kiểm tra-hoàn thiện vòng 15 — trước mô tả sai cơ chế "Intake Audit mục [6]", một khái niệm KHÔNG tồn tại trong code; `tools/run_g2_auto.py::RISK_PROFILES` thật gán `icf_waiver_eligible=True` cho `sr_ma`/`cross_sectional`/`prediction`, bất kể đề tài THẬT SỰ dùng dữ liệu thứ cấp hay đang tiến cứu tuyển người tham gia mới): MỌI đề tài `cross_sectional`/`prediction` đều tự động nhận DRAFT "Yêu cầu miễn ICF", kèm cảnh báo BẮT BUỘC bác sĩ tự xác nhận nghiên cứu THẬT SỰ không thu thập dữ liệu định danh mới nào trước khi dùng — KHÔNG áp khi có tiếp xúc người tham gia trực tiếp thu thập dữ liệu mới có định danh, dù `design_code` rơi vào 3 nhóm trên.
 ```
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request) — DRAFT Phiên bản 1.0
 ═══════════════════════════════════════════════════════

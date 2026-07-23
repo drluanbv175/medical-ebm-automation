@@ -75,7 +75,7 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
 4. Chỉ trả khi self-check PASS; còn 🔴 → áp vòng tự sửa (`_TU-CHINH-SUA-PROTOCOL.md` §4)
 
 ```
-✦ SELF-CHECK loi-dan-tuan-thu — Cổng G__:
+✦ SELF-CHECK loi-dan-tuan-thu — Cổng A (SỬA 2026-07-24, vòng lặp vòng 15 — agent lâm sàng không dùng cổng G0-G9 nghiên cứu):
   ĐÃ ĐẠT: [liệt kê tiêu chí đã đáp ứng]
   CÒN THIẾU: [liệt kê hoặc "không có"]
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]

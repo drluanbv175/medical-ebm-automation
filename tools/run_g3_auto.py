@@ -63,8 +63,15 @@ def z(p):
             )
         return Z_TABLE[key]
 
-def n_two_proportion(p1, p2, alpha=0.05, power=0.80):
-    """Cỡ mẫu so sánh hai tỷ lệ (two-sided)."""
+def n_two_proportion(p1, p2, alpha=0.05, power=0.80, continuity_correction=False):
+    """Cỡ mẫu so sánh hai tỷ lệ (two-sided).
+
+    continuity_correction=False (mặc định, KHÔNG đổi để không phá vỡ giá trị
+    đã khóa ở tests/test_gate_g3_formulas.py::test_known_case) giữ nguyên xấp
+    xỉ chuẩn cổ điển. Khi True, áp hiệu chỉnh liên tục Fleiss-Tytun-Ubhaya
+    (1980) — xem n_two_proportion_auto() để tự động quyết định khi nào cần,
+    theo đúng ngưỡng doctrine co-mau-nghien-cuu.md dòng 69 ("với cỡ mẫu nhỏ/
+    tỷ lệ gần biên dùng hiệu chỉnh liên tục")."""
     if not (0 < p1 < 1) or not (0 < p2 < 1):
         raise InvalidEffectSizeError(f"p1, p2 phải trong (0,1), nhận được p1={p1}, p2={p2}")
     if abs(p1 - p2) < 0.001:
@@ -77,10 +84,110 @@ def n_two_proportion(p1, p2, alpha=0.05, power=0.80):
     pooled = (p1 + p2) / 2
     num = (za * math.sqrt(2 * pooled * (1 - pooled)) + zb * math.sqrt(p1 * (1 - p1) + p2 * (1 - p2))) ** 2
     denom = (p1 - p2) ** 2
-    return math.ceil(num / denom)
+    n = num / denom
+    if continuity_correction:
+        # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện
+        # MEDIUM): Fleiss JL, Levin B, Paik MC. Statistical Methods for Rates
+        # and Proportions, 3rd ed., 2003 — công thức 3.19 (Fleiss-Tytun-Ubhaya
+        # 1980): n' = n/4 × [1 + sqrt(1 + 4/(n×δ))]², δ=|p1-p2|. Luôn cho
+        # n' ≥ n (bảo thủ hơn) — chính xác hơn xấp xỉ chuẩn khi n nhỏ/tỷ lệ
+        # gần biên (kiểm định z rời rạc, không liên tục).
+        delta = abs(p1 - p2)
+        n = n / 4 * (1 + math.sqrt(1 + 4 / (n * delta))) ** 2
+    return math.ceil(n)
+
+
+def n_two_proportion_auto(p1, p2, alpha=0.05, power=0.80):
+    """Như n_two_proportion(), nhưng TỰ ĐỘNG áp hiệu chỉnh liên tục Fleiss khi
+    cỡ mẫu cơ sở nhỏ (<100) HOẶC tỷ lệ gần biên (min(p1,p2,1-p1,1-p2)<0.10) —
+    đúng ngưỡng co-mau-nghien-cuu.md dòng 69. Trả về (n, đã_hiệu_chỉnh: bool)
+    để gọi nơi cần ghi rõ trong artifact A4 việc hiệu chỉnh này có áp dụng
+    hay không (SỬA 2026-07-24, vòng lặp kiểm tra-hoàn thiện vòng 15, phát
+    hiện MEDIUM — trước đây n_two_proportion() KHÔNG có hiệu chỉnh liên tục ở
+    BẤT KỲ lời gọi nào trong main(), dù đây là công thức dùng chung cho ≥6
+    nhánh thiết kế, khiến N bị ước lượng thấp hơn thực tế cần ~5-15%)."""
+    n_base = n_two_proportion(p1, p2, alpha, power, continuity_correction=False)
+    near_boundary = min(p1, p2, 1 - p1, 1 - p2) < 0.10
+    small_n = n_base < 100
+    if near_boundary or small_n:
+        return n_two_proportion(p1, p2, alpha, power, continuity_correction=True), True
+    return n_base, False
 
 class InvalidEffectSizeError(ValueError):
     """Effect size/tham số nằm ngoài miền công thức có thể tính hợp lệ."""
+
+
+def n_two_proportion_ni(p_test, p_control, margin, alpha=0.05, power=0.80):
+    """Cỡ mẫu MỖI NHÓM cho kiểm định NON-INFERIORITY hai tỷ lệ (one-sided).
+
+    SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện HIGH):
+    trước đây run_g3_auto.py KHÔNG có bất kỳ nhánh nào cho non-inferiority/
+    equivalence dù co-mau-nghien-cuu.md liệt kê đây là bước PHÂN BIỆT bắt
+    buộc ("chọn nhầm là sai toàn bộ"). Công thức (Wald, không gộp phương
+    sai — H0: p_test - p_control ≤ δ, δ=-margin, margin>0 là mức "kém hơn
+    tối đa chấp nhận được"):
+        n = (z_{1-alpha} + z_{1-beta})² × [p_test(1-p_test)+p_control(1-p_control)]
+            / (p_test - p_control - δ)²
+    z_{1-alpha} dùng MỘT PHÍA (không phải alpha/2, khác superiority) vì NI
+    chỉ kiểm định một chiều. Đã kiểm chứng bằng ví dụ số cụ thể (HyLown
+    powerandsamplesize.com/Calculators/Compare-2-Proportions/2-Sample-Non-
+    Inferiority-or-Superiority, tham chiếu Chow/Shao/Wang 2008): p_test=0.85,
+    p_control=0.65, margin=0.10, alpha=0.05, power=0.80 → n=25/nhóm (khớp
+    chính xác kết quả tính bằng công thức này)."""
+    if not (0 < p_test < 1) or not (0 < p_control < 1):
+        raise InvalidEffectSizeError(
+            f"p_test, p_control phải trong (0,1), nhận được p_test={p_test}, p_control={p_control}")
+    if margin is None or margin <= 0:
+        raise InvalidEffectSizeError(f"Biên (margin) phải dương, nhận được margin={margin}")
+    za = z(alpha)  # MỘT PHÍA — khác n_two_proportion() (alpha/2, hai phía)
+    zb = z(1 - power)
+    denom = (p_test - p_control) + margin
+    if denom <= 0:
+        raise InvalidEffectSizeError(
+            f"p_test-p_control+margin = {denom:.4f} ≤ 0 — với p_test={p_test}, "
+            f"p_control={p_control}, margin={margin}, KHÔNG thể chứng minh non-inferiority "
+            "về mặt toán học (biên đã bị vi phạm ngay ở giá trị kỳ vọng). Kiểm tra lại "
+            "chiều margin/p_test hoặc chọn margin khác có biện minh lâm sàng."
+        )
+    variance_term = p_test * (1 - p_test) + p_control * (1 - p_control)
+    return math.ceil((za + zb) ** 2 * variance_term / denom ** 2)
+
+
+def apply_fpc_and_cluster_de(n_total, population_n=None, icc=None, cluster_size=None):
+    """Áp hiệu chỉnh QUẦN THỂ HỮU HẠN (FPC) rồi CLUSTER DESIGN EFFECT (DE) lên
+    n_total — ĐÚNG THỨ TỰ doctrine co-mau-nghien-cuu.md dòng 34 (M4): "Tính cỡ
+    mẫu từng nhóm → hiệu chỉnh FPC → cluster DE → dropout → tổng tối thiểu".
+
+    SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện MEDIUM):
+    trước đây KHÔNG có CLI flag/dòng code nào tính FPC hay design effect/ICC
+    trong toàn bộ run_g3_auto.py — một cắt ngang tại MỘT cơ sở với quần thể
+    hữu hạn xác định (N nhỏ), hoặc một RCT ngẫu nhiên hóa THEO CỤM (cluster-
+    randomized) sẽ nhận N SAI (quá cỡ vì thiếu FPC, hoặc thiếu lực vì thiếu
+    design effect). FPC: n_fpc = n/(1+n/N) (Cochran 1977, công thức hiệu
+    chỉnh quần thể hữu hạn chuẩn). Cluster DE: DE=1+(m-1)×ICC, n_cluster=n×DE
+    (Donner & Klar 2000, "Design and Analysis of Cluster Randomization Trials
+    in Health Research" — công thức design effect chuẩn cho cluster RCT).
+    Trả về (n_int, ghi_chú: str)."""
+    note = ""
+    n = float(n_total)
+    if population_n and population_n > 0:
+        n_fpc = n / (1 + n / population_n)
+        note += (f" Đã áp hiệu chỉnh quần thể hữu hạn (FPC, N quần thể={population_n}): "
+                 f"n {n:.0f}→{math.ceil(n_fpc)}.")
+        n = n_fpc
+    if icc is not None and cluster_size:
+        de = 1 + (cluster_size - 1) * icc
+        n_cluster = n * de
+        num_clusters = math.ceil(n_cluster / cluster_size)
+        small_k_warning = (
+            " ⚠️ Số cụm nhỏ (<15-20) — cân nhắc dùng phân phối t với (k-2) bậc tự do "
+            "thay vì z, đối chiếu với thống kê viên (Donner & Klar 2000)."
+            if num_clusters < 15 else ""
+        )
+        note += (f" Đã áp design effect cụm (DE=1+(m-1)×ICC={de:.2f}, m={cluster_size}, "
+                 f"ICC={icc}): n {n:.0f}→{math.ceil(n_cluster)} (~{num_clusters} cụm).{small_k_warning}")
+        n = n_cluster
+    return math.ceil(n), note
 
 
 def n_log_rank(hr, alpha=0.05, power=0.80, p_event=0.30):
@@ -258,10 +365,10 @@ def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_eve
                 elif design_code == "cohort" and effect_type == "HR":
                     ev_hr = ev if ev < 1.0 else 1 / ev
                     n, _ = n_log_rank(ev_hr, alpha, pwr, p_event)
-                elif design_code == "cohort" and effect_type in ("OR", "RR"):
-                    # SỬA (cùng finding với main()): OR/RR của cohort là so
-                    # sánh tỷ lệ TÍCH LŨY, không phải HR — dùng two-proportion,
-                    # KHÔNG dùng Schoenfeld log-rank.
+                elif design_code in ("cohort", "rct") and effect_type in ("OR", "RR"):
+                    # SỬA (cùng finding với main(), mở rộng "rct" vòng 15): OR/RR
+                    # của cohort/rct là so sánh tỷ lệ TÍCH LŨY, không phải HR —
+                    # dùng two-proportion, KHÔNG dùng Schoenfeld log-rank.
                     if effect_type == "OR":
                         odds0 = p0 / (1 - p0)
                         odds1 = ev * odds0
@@ -353,9 +460,15 @@ def guardrail_check(artifact, n_adjusted, effect_val, missing_sd=False):
 
 def generate_artifact(study, topic, design_code, design_primary, alpha, power, effect_val, effect_type,
                       n_per_group, n_total, n_adjusted, dropout, formula_used, sens_rows, sens_mults,
-                      p_event, run_date, sd=None, design_ambiguous=False, confirmed_n=None):
+                      p_event, run_date, sd=None, design_ambiguous=False, confirmed_n=None,
+                      hypothesis_type="superiority"):
     """Sinh A4 — Kế hoạch cỡ mẫu."""
     study_safe = study.replace(" ", "-")
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15): non_inferiority
+    # dùng z MỘT PHÍA (xem n_two_proportion_ni()) — nhãn "two-sided" cứng cho
+    # MỌI thiết kế trước đây sẽ sai/gây nhầm lẫn cho hypothesis_type khác
+    # superiority.
+    _alpha_sidedness = "one-sided" if hypothesis_type == "non_inferiority" else "two-sided"
     lines = [
         "# A4 — KẾ HOẠCH CỠ MẪU (DRAFT)",
         f"**Đề tài:** {topic}  ",
@@ -367,7 +480,8 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         "",
         "| Thông số | Giá trị | Nguồn |",
         "|---|---|---|",
-        f"| Mức ý nghĩa (α) | {alpha} (two-sided) | Quy ước |",
+        f"| Loại giả thuyết | {hypothesis_type} | {'Quy ước (mặc định)' if hypothesis_type == 'superiority' else '[CẦN BÁC SĨ/THỐNG KÊ VIÊN XÁC NHẬN]'} |",
+        f"| Mức ý nghĩa (α) | {alpha} ({_alpha_sidedness}) | Quy ước |",
         f"| Lực thống kê (1−β) | {int(power*100)}% | Quy ước |",
         f"| Tỷ lệ bỏ cuộc dự kiến | {int(dropout*100)}% | [CẦN BÁC SĨ XÁC NHẬN] |",
     ]
@@ -508,7 +622,7 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         "",
         "```",
         f"Cỡ mẫu được tính theo {formula_used}.",
-        f"Với mức ý nghĩa hai phía α = {alpha}, lực thống kê 1−β = {int(power*100)}%,",
+        f"Với mức ý nghĩa {_alpha_sidedness} α = {alpha}, lực thống kê 1−β = {int(power*100)}%,",
     ]
     if effect_val:
         # SỬA: dòng "{effect_type} = {effect_val} (lấy từ y văn [CẦN PMID/DOI])"
@@ -650,6 +764,29 @@ def main():
     parser.add_argument("--confirmed-n", type=int, default=None,
                          help="N thực tế bác sĩ/chủ nhiệm đã CHỐT (vd theo khả năng thu thập/hành "
                               "chính) — ghi kèm N tối thiểu tính theo thống kê, KHÔNG thay thế công thức")
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện HIGH):
+    # co-mau-nghien-cuu.md yêu cầu phân biệt superiority vs non-inferiority/
+    # equivalence TRƯỚC khi tính (chọn nhầm là sai toàn bộ) — trước đây G3
+    # không có tham số nào cho việc này, mọi thiết kế đều tính như superiority.
+    parser.add_argument("--hypothesis-type", default="superiority",
+                         choices=["superiority", "non_inferiority", "equivalence"],
+                         help="Loại giả thuyết — quyết định công thức + z một phía/hai phía "
+                              "(mặc định superiority, không đổi hành vi cũ)")
+    parser.add_argument("--margin", type=float, default=None,
+                         help="Biên Δ (BẮT BUỘC nếu --hypothesis-type khác superiority) — mức "
+                              "'kém hơn tối đa chấp nhận được' (đơn vị TỶ LỆ, vd 0.1 = 10 điểm %%), "
+                              "PHẢI có biện minh lâm sàng + nguồn, KHÔNG bịa")
+    # THÊM 2026-07-24 (cùng vòng, phát hiện MEDIUM): FPC (quần thể hữu hạn) +
+    # cluster design effect — xem apply_fpc_and_cluster_de().
+    parser.add_argument("--population-n", type=int, default=None,
+                         help="Cỡ quần thể hữu hạn N (áp hiệu chỉnh FPC) — CHỈ dùng khi quần thể "
+                              "ĐÍCH nhỏ/xác định (vd toàn bộ bệnh nhân của 1 cơ sở trong 1 khoảng "
+                              "thời gian), KHÔNG dùng cho quần thể vô hạn/không xác định")
+    parser.add_argument("--icc", type=float, default=None,
+                         help="Hệ số tương quan nội cụm (ICC/rho) — dùng khi ngẫu nhiên hóa/lấy "
+                              "mẫu THEO CỤM (cluster-randomized), PHẢI đi cùng --cluster-size")
+    parser.add_argument("--cluster-size", type=int, default=None,
+                         help="Cỡ cụm trung bình (m) — bắt buộc cùng --icc để tính design effect")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
 
@@ -717,7 +854,14 @@ def main():
     # thầm, hệ thống tự chuyển sang dùng effect size khác từ G1 mà KHÔNG báo
     # cho bác sĩ biết giá trị họ nhập đã bị bỏ qua. Dùng "is not None" để chỉ
     # phân biệt "không truyền" (None) với "có truyền" (kể cả 0.0).
-    if args.effect_size is not None and args.effect_type:
+    if args.effect_size is not None and args.hypothesis_type != "superiority":
+        # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15): non_inferiority/
+        # equivalence dùng --effect-size làm p_test TRỰC TIẾP (tỷ lệ, không
+        # phải OR/RR/HR/ARR%/AUC/MD) — KHÔNG cần --effect-type đi kèm, khác
+        # nhánh superiority ngay dưới.
+        effect_val, effect_type = args.effect_size, "p_test"
+        print(f"  → p_test (từ tham số, {args.hypothesis_type}) = {effect_val}")
+    elif args.effect_size is not None and args.effect_type:
         effect_val, effect_type = args.effect_size, args.effect_type
         print(f"  → Effect size (từ tham số): {effect_type} = {effect_val}")
     else:
@@ -834,6 +978,62 @@ def main():
         )
         print("  ℹ️  design=qualitative → cỡ mẫu theo BÃO HÒA DỮ LIỆU (không phải "
               "power/effect size) — N=0 có chủ đích, xem artifact A4/nghien-cuu-dinh-tinh")
+    elif args.hypothesis_type != "superiority":
+        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện
+        # HIGH): co-mau-nghien-cuu.md dòng 45/49/65/76 yêu cầu phân biệt
+        # superiority vs non-inferiority/equivalence TRƯỚC khi chọn công
+        # thức — trước đây KHÔNG có nhánh nào, mọi thiết kế tính như
+        # superiority mặc định (SAI toàn bộ nếu đề tài thật là NI/equivalence
+        # — dùng za hai phía thay vì một phía sẽ cho N SAI, và không trừ
+        # margin thì không kiểm định đúng giả thuyết NI/equivalence).
+        # Diễn giải tham số: --effect-size = tỷ lệ biến cố NHÓM THỬ NGHIỆM
+        # (p_test, KHÔNG phải OR/RR/HR), --p0 = tỷ lệ biến cố NHÓM CHỨNG
+        # (p_control, tái dùng flag có sẵn), --margin = biên Δ (BẮT BUỘC).
+        try:
+            if args.margin is None or args.margin <= 0:
+                raise InvalidEffectSizeError(
+                    f"--hypothesis-type={args.hypothesis_type} BẮT BUỘC có --margin dương "
+                    "(biên Δ có biện minh lâm sàng + nguồn) — KHÔNG bịa margin.")
+            if effect_val is None or not (0 < effect_val < 1):
+                raise InvalidEffectSizeError(
+                    f"--hypothesis-type={args.hypothesis_type} cần --effect-size là TỶ LỆ "
+                    f"biến cố nhóm thử nghiệm (p_test) trong (0,1), nhận được {effect_val} "
+                    "— KHÔNG phải OR/RR/HR như superiority.")
+            if args.hypothesis_type == "non_inferiority":
+                n_per_group = n_two_proportion_ni(effect_val, args.p0, args.margin, alpha, power)
+                n_total = n_per_group * 2
+                n_adjusted = math.ceil(n_total / (1 - dropout))
+                formula_used = (
+                    f"Non-inferiority two-proportion (one-sided, Wald): p_test={effect_val:.2f}, "
+                    f"p_control={args.p0:.2f}, margin={args.margin:.2f}, "
+                    f"zα(một phía)={z(alpha):.3f}. [CẦN — --margin PHẢI có biện minh lâm sàng "
+                    "(không phải giá trị thống kê thuận tiện) và được Hội đồng/thống kê viên "
+                    "xác nhận TRƯỚC khi khóa SAP.]"
+                )
+            else:  # equivalence
+                # KHÔNG tự tính — công thức TOST (Two One-Sided Tests) cho
+                # equivalence cần z_{beta/2} thay vì z_beta trong một số biến
+                # thể (Chow/Shao/Wang 2008, tr.86) mà chưa thể xác minh bằng
+                # ví dụ số cụ thể từ nguồn có thể truy cập công khai tại thời
+                # điểm vá này — KHÔNG bịa công thức chưa xác minh chắc chắn
+                # (nguyên tắc cứng của dự án), khác hẳn non_inferiority ở
+                # trên (đã xác minh khớp ví dụ số n=25 từ HyLown/Chow-Shao-Wang).
+                n_per_group = n_total = n_adjusted = 0
+                formula_used = (
+                    "[CẦN — Equivalence (TOST — Two One-Sided Tests) CHƯA được tự động hóa ở "
+                    "đây vì công thức closed-form chưa được xác minh bằng ví dụ số cụ thể từ "
+                    "nguồn công khai tại thời điểm này (khác non_inferiority — đã xác minh). "
+                    "Dùng phần mềm chuyên dụng (PASS 'Equivalence Tests', R TOSTER/PowerTOST) "
+                    "theo Chow SC, Shao J, Wang H. Sample Size Calculations in Clinical "
+                    "Research, 2nd ed., 2008, Chương 3 (tr.86) — cần bác sĩ/thống kê viên tính "
+                    "TRỰC TIẾP bằng phần mềm đó. KHÔNG bịa N ở đây.]"
+                )
+                print("  ⚠️  hypothesis_type=equivalence → CHƯA tự động hóa (công thức TOST "
+                      "chưa xác minh đủ chắc chắn) — dùng PASS/TOSTER, xem artifact A4")
+        except InvalidEffectSizeError as e:
+            print(f"❌ LỖI: {e}")
+            n_per_group = n_total = n_adjusted = 0
+            formula_used = f"[LỖI — {e}]"
     elif effect_val:
         try:
             if design_code == "cohort" and effect_type == "HR":
@@ -843,7 +1043,7 @@ def main():
                 n_total = n_per_group * 2
                 n_adjusted = math.ceil(n_total / (1 - dropout))
                 formula_used = f"Schoenfeld log-rank: d = (zα/2+zβ)²/ln(HR)² = {n_events} biến cố → N={n_total}"
-            elif design_code == "cohort" and effect_type in ("OR", "RR"):
+            elif design_code in ("cohort", "rct") and effect_type in ("OR", "RR"):
                 # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện
                 # HIGH): nhánh cũ đưa THẲNG giá trị OR/RR vào n_log_rank() như
                 # thể là HR — công thức Schoenfeld log-rank chỉ đúng cho hazard
@@ -856,20 +1056,32 @@ def main():
                 # giữa 2 nhóm phơi nhiễm — dùng two-proportion (cùng kỹ thuật
                 # đã áp cho case_control), KHÔNG dùng Schoenfeld (vốn cần cấu
                 # trúc thời gian-đến-biến-cố mà một OR/RR đơn thuần không có).
-                p0_baseline = args.p0  # tỷ lệ biến cố tích lũy NỀN ở nhóm không phơi nhiễm
+                # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện
+                # MEDIUM): mở rộng thêm "rct" — chính thiet-ke-nghien-cuu.md
+                # dòng 291 (template RCT song song) ghi kết cục nhị phân dùng
+                # "logistic/Poisson + robust SE → RR (95%CI)" là thước đo CHUẨN
+                # cho RCT, nhưng nhánh này trước chỉ nhận "cohort" — RCT + OR/RR
+                # rơi vào else "[CẦN CÔNG THỨC]" dù công thức two-proportion
+                # suy từ OR/RR không phụ thuộc cohort vs rct (chỉ khác Ý NGHĨA
+                # của p0: tỷ lệ biến cố nền nhóm chứng/không can thiệp).
+                p0_baseline = args.p0  # tỷ lệ biến cố nền (nhóm chứng/không phơi nhiễm)
                 if effect_type == "OR":
                     odds0 = p0_baseline / (1 - p0_baseline)
                     odds1 = effect_val * odds0
                     p1_exposed = odds1 / (1 + odds1)
                 else:  # RR
                     p1_exposed = min(max(p0_baseline * effect_val, 1e-6), 1 - 1e-6)
-                n_per_group = n_two_proportion(p1_exposed, p0_baseline, alpha, power)
+                n_per_group, _fleiss_applied = n_two_proportion_auto(p1_exposed, p0_baseline, alpha, power)
                 n_total = n_per_group * 2
                 n_adjusted = math.ceil(n_total / (1 - dropout))
-                formula_used = (f"Two-proportion (cohort, {effect_type}={effect_val:.2f} → "
-                                 f"tỷ lệ biến cố tích lũy phơi nhiễm≈{p1_exposed:.2f} vs "
-                                 f"không phơi nhiễm={p0_baseline:.2f}). [CẦN — --p0 ở đây là TỶ "
-                                 "LỆ BIẾN CỐ TÍCH LŨY NỀN của nhóm không phơi nhiễm; nếu đề tài "
+                _group_label = "phơi nhiễm" if design_code == "cohort" else "can thiệp"
+                _p0_label = "không phơi nhiễm" if design_code == "cohort" else "chứng/không can thiệp"
+                _fleiss_note = (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)."
+                                 if _fleiss_applied else "")
+                formula_used = (f"Two-proportion ({design_code}, {effect_type}={effect_val:.2f} → "
+                                 f"tỷ lệ biến cố {_group_label}≈{p1_exposed:.2f} vs "
+                                 f"{_p0_label}={p0_baseline:.2f}).{_fleiss_note} [CẦN — --p0 ở đây là TỶ "
+                                 f"LỆ BIẾN CỐ NỀN của nhóm {_p0_label}; nếu đề tài "
                                  "thật sự có dữ liệu thời gian-đến-biến-cố và effect size là HR "
                                  "thật (không phải OR/RR), dùng --effect-type HR để tính bằng "
                                  "Schoenfeld log-rank thay vì công thức này.]")
@@ -885,11 +1097,13 @@ def main():
                 odds0 = p0_exposed / (1 - p0_exposed)
                 odds1 = OR * odds0
                 p1_exposed = odds1 / (1 + odds1)
-                n_per_group = n_two_proportion(p1_exposed, p0_exposed, alpha, power)
+                n_per_group, _fleiss_applied = n_two_proportion_auto(p1_exposed, p0_exposed, alpha, power)
                 n_total = n_per_group * 2
                 n_adjusted = math.ceil(n_total / (1 - dropout))
+                _fleiss_note = (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)."
+                                 if _fleiss_applied else "")
                 formula_used = (f"Two-proportion (case-control, {effect_type}={effect_val:.2f} → "
-                                 f"tỷ lệ phơi nhiễm ca≈{p1_exposed:.2f} vs chứng={p0_exposed:.2f}). "
+                                 f"tỷ lệ phơi nhiễm ca≈{p1_exposed:.2f} vs chứng={p0_exposed:.2f}).{_fleiss_note} "
                                  f"[CẦN — --p0 ở đây được diễn giải là TỶ LỆ PHƠI NHIỄM NỀN của "
                                  "nhóm chứng (không phải tỷ lệ biến cố như ở cohort/RCT); bác sĩ "
                                  "xác nhận con số này đúng với đề tài, mặc định 0.30 chỉ là khởi tạo.]")
@@ -937,10 +1151,12 @@ def main():
                                    f"KHÔNG phải {effect_val}% như yêu cầu ban đầu)]")
                     print(f"  ⚠️  ARR%={effect_val} với p0={p1:.2f} cho p2≤0 → đã kẹp p2=0.05 "
                           f"(ARR hiệu dụng = {(p1-0.05)*100:.1f}%, KHÔNG phải {effect_val}% như yêu cầu)")
-                n_per_group = n_two_proportion(p1, p2, alpha, power)
+                n_per_group, _fleiss_applied = n_two_proportion_auto(p1, p2, alpha, power)
                 n_total = n_per_group * 2
                 n_adjusted = math.ceil(n_total / (1 - dropout))
-                formula_used = f"Two-proportion z-test: p1={p1:.2f}, p2={p2:.2f}{clamp_note}"
+                _fleiss_note = (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)."
+                                 if _fleiss_applied else "")
+                formula_used = f"Two-proportion z-test: p1={p1:.2f}, p2={p2:.2f}{clamp_note}{_fleiss_note}"
             elif design_code == "cross_sectional":
                 p = effect_val if effect_val < 1.0 else 0.30
                 n_total = n_prevalence(p, 0.05, alpha)
@@ -993,12 +1209,29 @@ def main():
         formula_used = "[CẦN EFFECT SIZE từ bác sĩ để tính]"
         print("  → N: [CẦN BÁC SĨ ẤN ĐỊNH EFFECT SIZE]")
 
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện MEDIUM):
+    # FPC/cluster DE áp UNIVERSAL sau khi n_total đã tính (bất kể nhánh nào ở
+    # trên ra n_total — superiority hay non_inferiority), TRƯỚC dropout đã áp
+    # ở từng nhánh — nghĩa là ở đây ta áp lên n_total GỐC rồi tính lại
+    # n_adjusted từ N đã hiệu chỉnh, đúng thứ tự "FPC → cluster DE → dropout"
+    # của co-mau-nghien-cuu.md dòng 34. N=0 có chủ đích (sr_ma/prediction/
+    # qualitative/equivalence chưa tính) không bị đụng tới.
+    if n_total and (args.population_n or (args.icc is not None and args.cluster_size)):
+        n_total, _fpc_cluster_note = apply_fpc_and_cluster_de(
+            n_total, args.population_n, args.icc, args.cluster_size)
+        n_per_group = math.ceil(n_total / 2)
+        n_adjusted = math.ceil(n_total / (1 - dropout))
+        formula_used += _fpc_cluster_note
+        print(f"  → Sau FPC/cluster DE: N mỗi nhóm={n_per_group}, N tổng={n_total}, "
+              f"N điều chỉnh dropout={n_adjusted}")
+
     print("📝 Bước 4/6: Sinh artifact A4...")
     artifact = generate_artifact(
         study, topic, design_code, design_primary, alpha, power,
         effect_val, effect_type, n_per_group, n_total, n_adjusted,
         dropout, formula_used, sens_rows, sens_mults, p_event, run_date, args.sd,
         design_ambiguous=design_ambiguous, confirmed_n=args.confirmed_n,
+        hypothesis_type=args.hypothesis_type,
     )
     md_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md"
     md_path.write_text(artifact, encoding="utf-8")
@@ -1084,6 +1317,42 @@ def main():
                 study_meta_patch={"gate_params": {"G3": {
                     "effect_size": "<CẦN BÁC SĨ CẤP — kèm PMID/DOI nguồn hoặc MCID>",
                     "effect_type": "<HR|OR|RR|ARR%|AUC>"}}},
+            )
+        elif args.hypothesis_type == "equivalence":
+            # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15): phân biệt
+            # với nhánh else chung chung phía dưới — equivalence KHÔNG phải
+            # "tổ hợp thiếu công thức tình cờ", mà là quyết định CÓ CHỦ Ý
+            # không tự tính (công thức TOST chưa xác minh đủ chắc bằng ví dụ
+            # số công khai — xem formula_used để biết lý do đầy đủ).
+            need = GC.needs_input(
+                GC.REASON_MISSING_SAMPLE_SIZE,
+                "G3 CHƯA tự động hóa cỡ mẫu cho equivalence (TOST) — công thức "
+                "closed-form chưa được xác minh bằng ví dụ số cụ thể từ nguồn công "
+                "khai (khác non_inferiority, đã xác minh). Dùng phần mềm chuyên "
+                "dụng (PASS 'Equivalence Tests', R TOSTER/PowerTOST) theo Chow SC, "
+                "Shao J, Wang H. Sample Size Calculations in Clinical Research, "
+                "2nd ed., 2008, Chương 3 (tr.86), rồi CHỐT qua --confirmed-n.",
+                f'python tools/run_g3_auto.py --study {study} --confirmed-n <N_đã_tự_tính_bằng_PASS/TOSTER>',
+                must_not_fabricate=["n_adjusted", "confirmed_n"],
+                study_meta_patch={"gate_params": {"G3": {
+                    "confirmed_n": "<CẦN BÁC SĨ/THỐNG KÊ VIÊN CẤP — tính bằng PASS/TOSTER theo TOST>"}}},
+            )
+        elif args.hypothesis_type == "non_inferiority":
+            # THÊM 2026-07-24 (cùng vòng): non_inferiority CÓ công thức (đã
+            # xác minh) nhưng n_adjusted vẫn có thể =0 nếu thiếu --margin/
+            # --effect-size hợp lệ hoặc margin vi phạm ngay ở giá trị kỳ vọng
+            # (xem InvalidEffectSizeError trong n_two_proportion_ni()) — thông
+            # báo đúng nguyên nhân thay vì "chưa có công thức" (SAI, công thức
+            # đã có).
+            need = GC.needs_input(
+                GC.REASON_MISSING_EFFECT_SIZE,
+                f"G3 (non_inferiority) chưa tính được N — kiểm tra lại: {formula_used}",
+                f'python tools/run_g3_auto.py --study {study} --effect-size <p_test 0-1> '
+                '--hypothesis-type non_inferiority --margin <Δ dương> --p0 <p_control 0-1>',
+                must_not_fabricate=["effect_size", "margin"],
+                study_meta_patch={"gate_params": {"G3": {
+                    "effect_size": "<CẦN BÁC SĨ CẤP — p_test, tỷ lệ biến cố nhóm thử nghiệm>",
+                    "margin": "<CẦN BÁC SĨ/HỘI ĐỒNG CẤP — biên Δ có biện minh lâm sàng>"}}},
             )
         elif missing_sd:
             # THÊM 2026-07-06: phân biệt "có MD nhưng thiếu SD" (CÓ công thức,

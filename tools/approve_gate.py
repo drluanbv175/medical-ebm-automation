@@ -52,6 +52,7 @@ KHÔNG dùng để tự động hóa duyệt hàng loạt — mỗi lần gọi 
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -63,6 +64,50 @@ import gate_contract as GC
 from app.utils.console import configure_unicode_console
 from runtime.approval_ledger import ApprovalLedger, LedgerLockInvalidated
 from runtime.schemas import ApprovalDecisionEnum
+
+
+# SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện HIGH): trước
+# đây KHÔNG có chỗ nào trong chuỗi khóa G4 thật (approve_gate.py →
+# ApprovalLedger.add_approval() → gate_contract.ledger_approved()) kiểm nội
+# dung artifact còn placeholder "[CẦN" hay chưa trước khi cho ký/coi LOCKED —
+# khóa mật mã (evidence_hash + chữ ký) chỉ bảo vệ TÍNH TOÀN VẸN của một nội
+# dung, không đảm bảo nội dung đó có Ý NGHĨA (không rỗng). Một SAP vừa sinh ra
+# (nguyên placeholder "[CẦN BÁC SĨ ĐIỀN]" ở §2 kết cục chính/§5 covariates/
+# §10 phần mềm+seed) vẫn ký được — phá vỡ mục đích chống HARKing/p-hacking mà
+# G4 hướng tới. Tái dùng khái niệm đếm "[CẦN" đã có ở run_g4_auto.py::
+# guardrail() R6, nhưng áp NGAY TRƯỚC lúc ký thay vì chỉ trên bản DRAFT gốc.
+_G4_REQUIRED_SECTIONS = {
+    "§1": "Tiêu chí nhận/loại (Quần thể phân tích)",
+    "§2": "Kết cục chính",
+    "§5": "Covariates/Phân tích đa biến",
+    "§10": "Phần mềm + seed",
+}
+
+
+def _g4_sections_still_draft(content: str) -> list[str]:
+    """Trả về danh sách mục §N BẮT BUỘC của SAP còn placeholder '[CẦN' chưa
+    điền. Thiết kế không có một mục nào đó (vd định tính dùng §5 CHIẾN LƯỢC
+    MÃ HÓA thay vì PHÂN TÍCH ĐA BIẾN — vẫn đánh số §5) không bị coi là lỗi
+    riêng biệt; chỉ mục THẬT SỰ tồn tại mà còn placeholder mới bị chặn."""
+    lines = content.splitlines()
+    still_draft = []
+    for section_num, label in _G4_REQUIRED_SECTIONS.items():
+        start = None
+        for i, line in enumerate(lines):
+            if re.match(rf'^#{{2,3}}\s+{re.escape(section_num)}\b', line):
+                start = i
+                break
+        if start is None:
+            continue
+        end = len(lines)
+        for j in range(start + 1, len(lines)):
+            if re.match(r'^#{2,3}\s+§\d', lines[j]):
+                end = j
+                break
+        body = "\n".join(lines[start:end])
+        if "[CẦN" in body:
+            still_draft.append(f"{section_num} ({label})")
+    return still_draft
 
 
 def main() -> int:
@@ -101,6 +146,17 @@ def main() -> int:
         print(f"✗ Artifact không phải UTF-8 hợp lệ, không thể ràng buộc hash an toàn: {artifact_path}")
         print("   (Kiểm tra lại encoding file — mọi artifact pipeline phải là UTF-8 không BOM.)")
         return 1
+
+    if args.gate == "G4":
+        still_draft = _g4_sections_still_draft(evidence_content)
+        if still_draft:
+            print("✗ TỪ CHỐI ký G4 — SAP còn placeholder '[CẦN' chưa điền ở mục bắt buộc:")
+            for item in still_draft:
+                print(f"   - {item}")
+            print("   Bác sĩ/thống kê viên PHẢI điền đầy đủ các mục này TRƯỚC khi ký khóa G4")
+            print("   (khóa mật mã bảo vệ TÍNH TOÀN VẸN nội dung, không tự đảm bảo nội dung có ý nghĩa).")
+            print("   Không ghi ledger để tránh SAP rỗng bị coi là đã khóa.")
+            return 1
 
     study_dir = Path(__file__).resolve().parents[1] / "exports" / args.study
     if not study_dir.exists():

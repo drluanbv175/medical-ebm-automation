@@ -388,12 +388,36 @@ def _risk_table(risks: list) -> str:
 def generate_g2_full_package(
     topic: str, study_name: str, design_code: str, design_primary: str,
     reporting_std: str, n_sr: int, n_rct: int, evidence_level: str,
-    ct_trials: list, risk: dict, run_date: str, n_adjusted: int = 0
+    ct_trials: list, risk: dict, run_date: str, n_adjusted: int = 0,
+    specialist_modules: Optional[list] = None
 ) -> str:
     """Sinh toàn bộ hồ sơ G2 — 8 tài liệu + 18 WHO fields."""
 
+    specialist_modules = specialist_modules or []
     risk_table_str = _risk_table(risk["risks"])
     ct_table_str   = _ct_table(ct_trials)
+
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện MEDIUM):
+    # thêm dòng rủi ro/đồng thuận riêng khi đề tài có cấu phần economic/
+    # qualitative BỔ SUNG (specialist_modules từ G1) — khớp cách G7/G8/G9 đã
+    # nối phụ lục CHEERS/COREQ cho cùng tín hiệu này.
+    specialist_risk_note = ""
+    if "economic" in specialist_modules and design_code != "economic":
+        specialist_risk_note += (
+            "\n\n**⚠️ Cấu phần KINH TẾ Y TẾ bổ sung** (specialist_modules "
+            "phát hiện ở G1): đề tài có thu thập thêm dữ liệu chi phí/khả "
+            "năng chi trả (vd bảng câu hỏi chi phí túi tiền, EQ-5D) — cần bổ "
+            "sung vào ICF mục 2 (Quy trình) + mục 3 (Rủi ro): thời gian trả "
+            "lời thêm, khả năng câu hỏi về thu nhập/chi phí gây khó chịu; "
+            "và vào DMP: nguồn đơn giá dùng, có PII tài chính không.")
+    if "qualitative" in specialist_modules and design_code != "qualitative":
+        specialist_risk_note += (
+            "\n\n**⚠️ Cấu phần ĐỊNH TÍNH/PHỎNG VẤN bổ sung** (specialist_modules "
+            "phát hiện ở G1): đề tài có phỏng vấn sâu/nhóm tiêu điểm bổ sung "
+            "— cần bổ sung vào ICF mục 2+3: có ghi âm không (nêu rõ trong "
+            "đồng thuận, không ngầm định), thời lượng phỏng vấn, quyền từ "
+            "chối trả lời từng câu; và vào DMP: nơi lưu bản ghi âm/gỡ băng, "
+            "thời hạn hủy sau khi mã hóa/phân tích xong.")
     # SỬA 2026-07-17 (bình duyệt agent `dao-duc-dang-ky` cho đề tài hài lòng
     # bệnh nhân C1a phát hiện thật): dòng "irb_required" cũ tự tính RIÊNG,
     # KHÔNG dùng risk["registration"] (nguồn đã vá đúng Helsinki §35 ở
@@ -439,6 +463,74 @@ def generate_g2_full_package(
             "thêm ngoài quy trình khám/chăm sóc thường quy]"
         )
 
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện HIGH):
+    # ICF do hàm này sinh ra trước đây chỉ có 7 mục GỐC (1-7), thiếu 7 mục con
+    # BẮT BUỘC mà doctrine `dao-duc-dang-ky.md` đã thêm từ 2026-07-17 (1b/4b/
+    # 4c/6b/6c/6d/6e — Helsinki §26, ICH-GCP E6(R3) 2.8.10(h)/(i), SPIRIT 2025
+    # mục 32b/34) — guardrail_check_g2() vẫn báo "✅ đủ 7 mục Helsinki" dù
+    # thiếu các khoản này, để lọt hồ sơ ICF không đủ chuẩn ra Hội đồng thật.
+    # 1b/4b/4c/6c là nghĩa vụ CHUNG cho MỌI thiết kế (Helsinki §26 không giới
+    # hạn RCT). 6b (lựa chọn thay thế)/6d (chăm sóc sau NC) chỉ áp dụng khi có
+    # can thiệp thật (rct) — quan sát không "thay thế" phác đồ nào. 6e (mẫu
+    # sinh học) dùng CHUNG điều kiện với icf_extra_steps ở trên (rct/cohort —
+    # thiết kế thật sự có thể lấy mẫu/theo dõi nhiều lần).
+    icf_1b = """
+1b. NGƯỜI THỰC HIỆN NGHIÊN CỨU
+   Nghiên cứu do [CẦN — họ tên chủ nhiệm], [CẦN — chức danh/trình độ chuyên
+   môn, vd Bác sĩ CKII/Thạc sĩ Y học], công tác tại [CẦN — đơn vị], chủ trì
+   thực hiện."""
+
+    icf_4bc = """
+4b. NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH
+   Nghiên cứu này được tài trợ bởi: [CẦN — tên nguồn tài trợ, hoặc "không có
+   tài trợ ngoài" nếu đúng]. Nhóm nghiên cứu [CẦN — có/không] có xung đột
+   lợi ích liên quan đến chủ đề nghiên cứu (khớp khai báo COI ở Tài liệu 8).
+
+4c. HỖ TRỢ/BỒI DƯỠNG KHI THAM GIA
+   ☐ Không có hỗ trợ/bồi dưỡng nào ngoài chăm sóc y tế thường quy.
+   ☐ Có hỗ trợ: [CẦN — mô tả cụ thể, vd hỗ trợ chi phí đi lại/thời gian;
+     PHẢI ở mức hợp lý, không mang tính ép buộc/dụ dỗ tham gia]."""
+
+    if design_code == "rct":
+        icf_6b = """
+6b. LỰA CHỌN THAY THẾ
+   Nếu không tham gia, anh/chị vẫn có thể tiếp tục điều trị theo phác đồ
+   chuẩn hiện có: [CẦN — mô tả phương pháp/điều trị thay thế sẵn có ngoài
+   nghiên cứu]. Quyết định tham gia hay không không làm mất đi lựa chọn
+   điều trị chuẩn này."""
+        icf_6d = """
+6d. CHĂM SÓC BỔ TRỢ VÀ SAU NGHIÊN CỨU
+   [CẦN CHỦ NHIỆM XÁC NHẬN]: Sau khi kết thúc tham gia/kết thúc nghiên cứu,
+   anh/chị [sẽ/sẽ không] tiếp tục được tiếp cận can thiệp đang thử nghiệm
+   (nếu chứng minh có lợi); các vấn đề sức khỏe phát sinh cần chăm sóc thêm
+   ngoài phạm vi nghiên cứu sẽ được [CẦN — mô tả, vd chuyển tuyến điều trị
+   theo phác đồ chuẩn]."""
+    else:
+        icf_6b = ""
+        icf_6d = ""
+
+    icf_6c = """
+6c. BỒI THƯỜNG KHI CÓ TỔN HẠI
+   Nếu xảy ra tổn hại liên quan trực tiếp đến việc tham gia nghiên cứu,
+   [CẦN — đơn vị/chủ nhiệm] sẽ [CẦN CHỦ NHIỆM XÁC NHẬN — mô tả chính sách
+   chi trả điều trị/bồi thường cụ thể và nguồn kinh phí]. Với nghiên cứu
+   quan sát nguy cơ tối thiểu (không can thiệp), mục này có thể rút gọn
+   thành xác nhận không phát sinh thủ thuật/can thiệp ngoài thực hành
+   thường quy — nhưng KHÔNG được bỏ hẳn."""
+
+    if design_code in ("rct", "cohort"):
+        icf_6e = """
+6e. ĐỒNG THUẬN THU THẬP/SỬ DỤNG MẪU SINH HỌC (chỉ áp dụng nếu có lấy mẫu
+    máu/mô/dịch cơ thể — XÓA mục này nếu không áp dụng)
+   [CẦN CHỦ NHIỆM XÁC NHẬN]: Mẫu sinh học thu thập sẽ được dùng cho: [CẦN —
+   mục đích cụ thể trong đề tài này].
+   ☐ Mẫu sẽ được hủy sau khi phân tích xong.
+   ☐ Mẫu sẽ được lưu trữ để dùng cho nghiên cứu khác trong tương lai — nếu
+     chọn mục này, PHẢI xin đồng thuận RIÊNG cho việc lưu trữ/dùng lại,
+     không gộp chung vào đồng thuận tham gia nghiên cứu hiện tại."""
+    else:
+        icf_6e = ""
+
     # ICF waiver flag
     # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện MEDIUM):
     # điều kiện cũ `and design_code == "sr_ma"` khóa cứng TÀI LIỆU 9 chỉ cho
@@ -482,7 +574,7 @@ def generate_g2_full_package(
 ```
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request) — DRAFT Phiên bản 1.0
 ═══════════════════════════════════════════════════════════════
-Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki WMA 2013 §29
+Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki (WMA, bản sửa 2024) §29
 Tên đề tài: {study_name}
 Chủ nhiệm: [CẦN BỔ SUNG]
 Ngày: {run_date_short}
@@ -575,7 +667,7 @@ Link to protocol (pre-print): [sẽ bổ sung sau]
 """
 
     doc = f"""# A3 — HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU | {study_name}
-> Tạo tự động: {run_date} | Theo Helsinki 2013 · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
+> Tạo tự động: {run_date} | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
 > [BẢN NHÁP TỰ ĐỘNG — DRAFT Phiên bản 1.0 chờ phê duyệt]
 > Cần bác sĩ/chủ nhiệm kiểm chứng, chỉnh sửa và ký trước khi nộp Hội đồng đạo đức.
 
@@ -625,7 +717,7 @@ THÔNG TIN TỔNG QUAN:
 
 CAM KẾT:
   Chúng tôi cam kết thực hiện nghiên cứu theo Tuyên ngôn Helsinki
-  (WMA 2013), ICH-GCP E6(R3), TT43/2024/TT-BYT, Luật BVDLCN
+  (WMA, bản sửa 2024), ICH-GCP E6(R3), TT43/2024/TT-BYT, Luật BVDLCN
   91/2025/QH15 và NĐ 356/2025/NĐ-CP.
 
 Kèm theo hồ sơ:
@@ -715,6 +807,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
 **Kết luận:** Lợi ích dự kiến của nghiên cứu **vượt trội** nguy cơ tiềm tàng.
 Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
 `[CẦN BÁC SĨ XÁC NHẬN bảng rủi ro phù hợp với đề tài thật]`
+{specialist_risk_note}
 
 ---
 
@@ -748,6 +841,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
    THAM GIA LÀ HOÀN TOÀN TỰ NGUYỆN. Quyết định không tham gia
    KHÔNG ảnh hưởng đến chất lượng chăm sóc y tế của anh/chị.
+{icf_1b}
 
 2. QUY TRÌNH THỰC HIỆN NẾU ĐỒNG Ý THAM GIA
    Nếu anh/chị đồng ý, chúng tôi sẽ yêu cầu:
@@ -774,6 +868,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
    Chúng tôi KHÔNG đảm bảo lợi ích cá nhân từ việc tham gia.
    Anh/chị sẽ nhận được tóm tắt kết quả nghiên cứu khi hoàn tất.
+{icf_4bc}
 
 5. BẢO MẬT THÔNG TIN CÁ NHÂN
    Thông tin cá nhân của anh/chị được bảo vệ theo
@@ -799,6 +894,10 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    ✅ Anh/chị có thể RÚT LUI bất kỳ lúc nào, không cần giải thích
    ✅ Nếu rút lui, dữ liệu đã thu thập: ☐ sẽ bị xóa ☐ vẫn dùng
       (do tính ẩn danh — ghi rõ chính sách) [CẦN XÁC NHẬN]
+{icf_6b}
+{icf_6c}
+{icf_6d}
+{icf_6e}
 
 7. THÔNG TIN LIÊN HỆ
    ┌─────────────────────────────────────────────────────────┐
@@ -1204,7 +1303,15 @@ def guardrail_check_g2(artifact: str) -> dict:
 
     # R2 — Không bịa số phê duyệt (chỉ flag nếu số xuất hiện dưới dạng "đã được cấp", không phải trong bảng prior art)
     # NCT từ ClinicalTrials.gov search là THẬT → không flag; chỉ flag nếu có vẻ tự gán cho đề tài này
-    fake_irb = re.search(r'Mã nghiên cứu:\s+(?!.*\[CẦN)([A-Z]{3,}\d{4,})', artifact)
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện LOW): regex
+    # cũ chỉ khớp nhãn "Mã nghiên cứu:" — template ICF thật do
+    # generate_g2_full_package() sinh ra KHÔNG dùng nhãn này (dùng "[Phiên bản
+    # phê duyệt sẽ có số IRB — CẦN BỔ SUNG]"), nên R2 chưa từng có cơ hội khớp
+    # với chính artifact nó bảo vệ — kiểm tra "chết". Nay khớp CẢ 2 nhãn thật
+    # đang dùng trong template ("Mã nghiên cứu"/"số IRB"/"Số IRB").
+    fake_irb = re.search(
+        r'(?:Mã nghiên cứu|[Ss]ố IRB)[:\s]+(?!.*\[CẦN)([A-Z0-9][A-Z0-9\-/\.]{3,})',
+        artifact)
     if fake_irb:
         errors.append(f"R2 🔴 Số nghiên cứu có vẻ bịa đặt: '{fake_irb.group(1)}' — dùng [CẦN BỔ SUNG]")
     else:
@@ -1234,13 +1341,31 @@ def guardrail_check_g2(artifact: str) -> dict:
     else:
         errors.append(f"R5 🟡 Chỉ {can_count} trường [CẦN...] — kiểm xem còn trường nào trống không")
 
-    # R6 — 7 mục ICF đủ
+    # R6 — 7 mục ICF gốc đủ
     icf_sections = ["MỤC ĐÍCH", "QUY TRÌNH", "RỦI RO", "LỢI ÍCH", "BẢO MẬT", "TỰ NGUYỆN", "LIÊN HỆ"]
     missing = [s for s in icf_sections if s not in artifact.upper()]
     if missing:
         errors.append(f"R6 🔴 ICF thiếu mục: {', '.join(missing)}")
     else:
         warnings.append("R6 ✅ ICF đủ 7 mục Helsinki")
+
+    # R6b — 4 mục con BẮT BUỘC (Helsinki §26, MỌI thiết kế — không giới hạn
+    # RCT) mà check R6 gốc bỏ sót (SỬA 2026-07-24, vòng lặp kiểm tra-hoàn
+    # thiện vòng 15, phát hiện HIGH — trước đây R6 báo "✅ đủ 7 mục" dù ICF
+    # thiếu hoàn toàn công khai COI/tài trợ, bồi thường tổn hại. Không kiểm
+    # 6b/6d/6e ở đây vì 2 mục đó chỉ áp dụng khi thiết kế = rct — thiếu ở
+    # cohort/cross_sectional/... là ĐÚNG chủ định, không phải lỗi).
+    icf_subsections = {
+        "1b. NGƯỜI THỰC HIỆN NGHIÊN CỨU": "trình độ chuyên môn người nghiên cứu (Helsinki §26)",
+        "4b. NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH": "công khai tài trợ/COI trong ICF (Helsinki §26)",
+        "4c. HỖ TRỢ/BỒI DƯỠNG": "công khai hỗ trợ/bồi dưỡng khi tham gia (Helsinki §26)",
+        "6c. BỒI THƯỜNG KHI CÓ TỔN HẠI": "bồi thường tổn hại (Helsinki §26)",
+    }
+    missing_sub = [label for marker, label in icf_subsections.items() if marker not in artifact]
+    if missing_sub:
+        errors.append(f"R6b 🔴 ICF thiếu mục con bắt buộc (Helsinki §26): {', '.join(missing_sub)}")
+    else:
+        warnings.append("R6b ✅ ICF đủ 4 mục con bắt buộc Helsinki §26 (1b/4b/4c/6c)")
 
     # R7 — Disclaimer
     if "cần bác sĩ" not in artifact.lower() or "kiểm chứng" not in artifact.lower():
@@ -1416,8 +1541,17 @@ def main():
 
     g1_cp_path = out_dir / "G1_checkpoint.json"
     design_ambiguous = False
+    specialist_modules: list = []
     if g1_cp_path.exists():
         g1 = json.loads(g1_cp_path.read_text(encoding="utf-8"))
+        # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện
+        # MEDIUM): G7/G8/G9 đều đọc lại cờ specialist_modules do
+        # run_g1_auto.py::detect_specialist_modules() gắn vào G1 checkpoint để
+        # bổ sung yêu cầu báo cáo (CHEERS/COREQ) — G2 là cổng DUY NHẤT trong
+        # chuỗi G0-G10 bỏ qua tín hiệu này, nên Bảng rủi ro–lợi ích/ICF/DMP
+        # không phản ánh gánh nặng/rủi ro riêng của cấu phần kinh tế/định tính
+        # bổ sung (vd câu hỏi chi phí nhạy cảm, ghi âm phỏng vấn).
+        specialist_modules = g1.get("specialist_modules") or []
         design_code_raw    = g1.get("design", {}).get("internal_code")
         design_primary_raw = g1.get("design", {}).get("primary")
         reporting_std_raw  = g1.get("design", {}).get("reporting_standard")
@@ -1492,7 +1626,7 @@ def main():
         design_primary=design_primary, reporting_std=reporting_std,
         n_sr=n_sr, n_rct=n_rct, evidence_level=evidence_level,
         ct_trials=ct_trials, risk=risk, run_date=run_date,
-        n_adjusted=n_adjusted
+        n_adjusted=n_adjusted, specialist_modules=specialist_modules
     )
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     md_path.write_text(artifact_md, encoding="utf-8")
