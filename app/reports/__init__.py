@@ -23,6 +23,10 @@ from app.reports.weekly_ebm import (
                                     export_weekly_ebm_html,
                                     export_weekly_ebm_markdown,
 )
+from app.reports.evidence_workbench import (
+                                    build_workbench_payload,
+                                    export_workbench_docx,
+)
 
 __all__ = [
     "build_weekly_data", "export_weekly_ebm_markdown", "export_weekly_ebm_html",
@@ -31,4 +35,5 @@ __all__ = [
     "build_drug_safety_data", "build_antibiotic_data",
     "export_drug_safety_report", "export_antibiotic_report",
     "build_alert_data", "export_alert_digest", "get_new_items", "render_alert_markdown",
+    "build_workbench_payload", "export_workbench_docx",
 ]
