@@ -11,7 +11,7 @@ Cách dùng:
     python run.py notify [số_ngày]# GỬI cảnh báo email/webhook nếu có mục mới ưu tiên cao
     python run.py report          # chạy pipeline + xuất báo cáo tuần (md/html/docx)
     python run.py export          # xuất Excel/CSV/BibTeX
-    python run.py workbench [chuyên_khoa] [--online]  # xuất Evidence Workbench + cổng liêm chính
+    python run.py workbench [chuyên_khoa] [--online]  # xuất Evidence Workbench HTML + Word + cổng liêm chính
     python run.py safety          # xuất báo cáo An toàn thuốc + Kháng sinh tuần
     python run.py dossier <project_id>   # xuất Hồ sơ nghiên cứu (đề cương + tài liệu nền + checklist)
     python run.py zotero-push     # đẩy tài liệu actionable vào Zotero (cần cấu hình)
@@ -143,7 +143,8 @@ def main() -> int:
         online = "--online" in sys.argv
         res = export_and_publish(area=area, online=online)
         _print({"path": str(res.get("path")), "gate_pass": res.get("gate_pass"),
-                "library": res.get("library")})
+                "docx": str(res.get("docx")) if res.get("docx") else None,
+                "n_items": res.get("n_items"), "library": res.get("library")})
 
     elif cmd == "safety":
         from app.database import init_db
