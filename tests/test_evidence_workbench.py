@@ -1,5 +1,6 @@
 """Xuất Evidence Workbench: đúng schema DATA + qua được cổng liêm chính (offline)."""
 import re
+import zipfile
 from types import SimpleNamespace
 
 from app.reports import evidence_workbench as ew
@@ -106,6 +107,35 @@ def test_render_passes_integrity_gate_fields():
     dec = re.search(r"decision:\"(\w+)\"", block).group(1)
     assert grade in {"high", "mod", "low", "vlow", "na"}
     assert dec in {"apply", "consider", "notyet"}
+
+
+def test_same_payload_exports_dashboard_and_word(tmp_path):
+    """Moi lan cap nhat chung cu phai co du HTML dashboard va Word tu cung DATA."""
+    rows = [_fake_row()]
+    data = ew.build_data("Than", rows, "2026-06-09", resolved={"36331190"}, vi=False)
+
+    html_path = ew.export_workbench(
+        area="Than",
+        updated="2026-06-09",
+        verify_pmids=False,
+        data=data,
+        out_dir=tmp_path,
+    )
+    docx_path = ew.export_workbench_docx(
+        area="Than",
+        updated="2026-06-09",
+        verify_pmids=False,
+        data=data,
+        out_dir=tmp_path,
+    )
+
+    assert html_path and html_path.exists()
+    assert docx_path and docx_path.exists()
+    assert "const DATA = " in html_path.read_text(encoding="utf-8")
+    with zipfile.ZipFile(docx_path) as zf:
+        xml = zf.read("word/document.xml").decode("utf-8", errors="ignore")
+    assert "Empagliflozin in CKD" in xml
+    assert "36331190" in xml
 
 
 def test_js_serializer_escapes_script():
