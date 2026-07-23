@@ -33,6 +33,12 @@ sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — chỉ dùng load_study_meta)
 
+# SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện HIGH): tái
+# dùng cơ chế A12 THẬT (đọc artifact A12_CITATION_VERIFICATION_<study>.md +
+# A12_RETRACTION_RECEIPT.json) thay vì proxy g0._file_exists (chỉ phản ánh G0
+# tìm kiếm PubMed tồn tại, không phản ánh kiem-chung-trich-dan đã chạy/PASS).
+import run_g10_assemble as G10  # noqa: E402
+
 # ============================================================================
 # 1. DU LIEU CHECKLIST CHUAN BAO CAO
 # ============================================================================
@@ -498,6 +504,45 @@ SRQR_ITEMS = [
     ("Funding source", "21", "Nguon tai tro va vai tro nha tai tro trong thiet ke/thuc hien/cong bo"),
 ]
 
+# THEM 2026-07-23 (vong lap kiem tra-hoan thien vong 12, phat hien MEDIUM):
+# CHEERS 2022 (28 muc chinh thuc) -- dong bo Y HET noi dung da xac minh truc
+# tiep Table 1 (Husereau D et al. Value Health. 2022;25(1):3-9) va da dung o
+# run_g7_auto.py::CHECKLIST_ITEMS["economic"] (vong 11) -- tranh dung lop loi
+# "2 file xu ly cung khai niem nhung lech nhau".
+CHEERS_ITEMS = [
+    ("Title", "1", "Xac dinh day la danh gia kinh te y te va neu ro cac can thiep duoc so sanh"),
+    ("Abstract", "2", "Tom tat co cau truc -- boi canh, phuong phap chinh, ket qua, phan tich thay the"),
+    ("Background and objectives", "3", "Boi canh nghien cuu, cau hoi nghien cuu, y nghia thuc tien cho quyet dinh"),
+    ("Health economic analysis plan", "4", "Neu ro da xay dung ke hoach phan tich kinh te y te hay chua, noi truy cap"),
+    ("Study population", "5", "Dac diem quan the nghien cuu (tuoi, nhan khau hoc, kinh te-xa hoi, lam sang)"),
+    ("Setting and location", "6", "Thong tin boi canh lien quan co the anh huong ket qua"),
+    ("Comparators", "7", "Cac can thiep/chien luoc duoc so sanh va ly do chon"),
+    ("Perspective", "8", "Goc nhin cua nghien cuu va ly do chon"),
+    ("Time horizon", "9", "Khung thoi gian cua nghien cuu va ly do phu hop"),
+    ("Discount rate", "10", "Ty le chiet khau va ly do chon"),
+    ("Selection of outcomes", "11", "Ket cuc nao duoc dung lam thuoc do loi ich/tac hai"),
+    ("Measurement of outcomes", "12", "Cach do luong cac ket cuc dung de nam bat loi ich/tac hai"),
+    ("Valuation of outcomes", "13", "Quan the va phuong phap dung de do luong va dinh gia ket cuc"),
+    ("Measurement and valuation of resources and costs", "14", "Cach dinh gia chi phi"),
+    ("Currency, price date, and conversion", "15", "Thoi diem uoc tinh nguon luc/don gia, don vi tien te, nam quy doi"),
+    ("Rationale and description of model", "16", "Neu co mo hinh hoa: mo ta chi tiet va ly do; mo hinh co cong khai khong"),
+    ("Analytics and assumptions", "17", "Phuong phap phan tich/bien doi thong ke, ngoai suy, tham dinh mo hinh"),
+    ("Characterizing heterogeneity", "18", "Phuong phap uoc tinh ket qua khac nhau the nao giua cac nhom nho"),
+    ("Characterizing distributional effects", "19", "Cach tac dong duoc phan bo giua cac ca nhan/dieu chinh nhom uu tien"),
+    ("Characterizing uncertainty", "20", "Phuong phap mo ta dac diem cac nguon bat dinh trong phan tich"),
+    ("Approach to engagement with patients and others affected by the study", "21",
+     "Cach tiep can de benh nhan/cong dong/ben lien quan tham gia thiet ke nghien cuu"),
+    ("Study parameters", "22", "Moi tham so dau vao phan tich (gia tri, khoang, nguon) kem gia dinh bat dinh"),
+    ("Summary of main results", "23", "Gia tri trung binh cho cac nhom chi phi/ket cuc chinh, tong hop bang thuoc do phu hop"),
+    ("Effect of uncertainty", "24", "Bat dinh ve nhan dinh/dau vao/du phong anh huong ket qua the nao"),
+    ("Effect of engagement with patients and others affected by the study", "25",
+     "Su tham gia cua benh nhan/cong dong da thay doi cach tiep can/ket qua ra sao"),
+    ("Study findings, limitations, generalizability, and current knowledge", "26",
+     "Phat hien chinh, han che, can nhac dao duc/cong bang chua nam bat, anh huong benh nhan/chinh sach"),
+    ("Source of funding", "27", "Nguon tai tro va vai tro nha tai tro trong xac dinh/thiet ke/trien khai/bao cao"),
+    ("Conflicts of interest", "28", "Xung dot loi ich cua tac gia theo yeu cau tap chi hoac ICMJE"),
+]
+
 # Anh xa design_code -> (ten chuan, danh sach muc)
 DESIGN_CHECKLIST_MAP = {
     "rct":             ("CONSORT 2025",   CONSORT_ITEMS),
@@ -509,6 +554,7 @@ DESIGN_CHECKLIST_MAP = {
     "prediction":      ("TRIPOD+AI 2024", TRIPOD_ITEMS),
     "tripod":          ("TRIPOD+AI 2024", TRIPOD_ITEMS),
     "qualitative":     ("SRQR 2014",      SRQR_ITEMS),
+    "economic":        ("CHEERS 2022",    CHEERS_ITEMS),
 }
 
 # 14 vai tro CRediT taxonomy
@@ -864,8 +910,17 @@ def _item_auto_check(item_name: str, gates: dict, design_code: str) -> str:
     return "☐"
 
 
-def build_reporting_checklist(design_code: str, gates: dict) -> dict:
-    """Xay dung checklist chuan bao cao va tu kiem tu checkpoints."""
+def build_reporting_checklist(design_code: str, gates: dict, specialist_modules: list = None) -> dict:
+    """Xay dung checklist chuan bao cao va tu kiem tu checkpoints.
+
+    THEM 2026-07-23 (vong lap kiem tra-hoan thien vong 12, phat hien MEDIUM):
+    run_g1_auto.py::detect_specialist_modules() co the gan module cong them
+    (vd 'economic') vao checkpoint G1 doc lap voi design_code CHINH -- truoc
+    day ham nay KHONG doc lai specialist_modules (grep xac nhan khong co chuoi
+    'specialist' nao trong file), nen diem % checklist/muc "Checklist >= 60%"
+    o Phan 7 khong bao gio phan anh CHEERS du run_g7_auto.py da noi tu vong 11.
+    specialist_module_checklist=None neu khong co module cong them nao ap dung.
+    """
     std_name, items = DESIGN_CHECKLIST_MAP.get(
         design_code, ("STROBE 2007", STROBE_ITEMS)
     )
@@ -884,13 +939,19 @@ def build_reporting_checklist(design_code: str, gates: dict) -> dict:
         })
 
     total = len(items)
-    return {
+    result = {
         "standard_name": std_name,
         "items": rows,
         "checked": checked,
         "total": total,
         "score_pct": round(checked / total * 100) if total > 0 else 0,
+        "specialist_module_checklist": None,
     }
+
+    specialist_modules = specialist_modules or []
+    if "economic" in specialist_modules and design_code != "economic":
+        result["specialist_module_checklist"] = build_reporting_checklist("economic", gates)
+    return result
 
 
 # ============================================================================
@@ -1067,7 +1128,8 @@ def suggest_journals(design_code: str, topic: str, target_journal: str,
 
 def build_presubmission_checklist(pipeline: dict, reporting: dict,
                                    stat_check: dict, gates: dict,
-                                   journal_suggestions: list) -> dict:
+                                   journal_suggestions: list,
+                                   study: str = "", out_dir: Path = None) -> dict:
     """
     Xay dung danh sach 30 muc tu kiem truoc nop.
     Nhom: PIPELINE (10) + KHOA HOC (8) + LIEM CHINH (7) + TRINH BAY (5).
@@ -1077,6 +1139,17 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
     g2 = gates.get("G2", {})
     g4 = gates.get("G4", {})
     g5 = gates.get("G5", {})
+
+    # SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện HIGH):
+    # 2 mục dưới đây (LIEM CHINH "PMID/DOI đã xác minh" + TRINH BAY "định dạng
+    # trích dẫn") trước đây dùng g0.get("_file_exists") làm proxy — G0 là
+    # checkpoint TÌM KIẾM PUBMED, gần như luôn tồn tại rất sớm, hoàn toàn không
+    # phản ánh agent kiem-chung-trich-dan (cổng A12 thật) đã chạy/PASS. Dùng
+    # lại citation_verification_ok() thật của run_g10_assemble.py — cùng cơ chế
+    # đọc A12_CITATION_VERIFICATION_<study>.md + A12_RETRACTION_RECEIPT.json.
+    citation_ok = False
+    if study and out_dir is not None:
+        citation_ok, _reason = G10.citation_verification_ok(study, out_dir)
 
     items = []
 
@@ -1155,8 +1228,9 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
          True,
          note="Guardrail R2 tu dong -- luon PASS")
     _add("LIEM CHINH", "Tat ca PMID/DOI da xac minh (khong bia)",
-         g0.get("_file_exists", False),
-         note="Kiem lai bang agent kiem-chung-trich-dan")
+         citation_ok,
+         note="Cong A12 (kiem-chung-trich-dan)" if citation_ok
+              else "[CAN] Chua PASS cong A12 -- chay agent kiem-chung-trich-dan")
     _add("LIEM CHINH", "So IRB that (khong phai placeholder [CAN...])",
          bool(g2.get("g2_irb_number") and "[CAN" not in str(g2.get("g2_irb_number", ""))))
     _add("LIEM CHINH", "Dang ky thu nghiem (ClinicalTrials.gov / TCTR)",
@@ -1183,8 +1257,9 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
          False,
          note="[CAN xac nhan CRediT roles o Phan 5]")
     _add("TRINH BAY", "Tai lieu tham khao theo dinh dang tap chi dich (Vancouver/APA/...)",
-         g0.get("_file_exists", False),
-         note="Kiem lai bang agent kiem-chung-trich-dan")
+         citation_ok,
+         note="Cong A12 (kiem-chung-trich-dan)" if citation_ok
+              else "[CAN] Chua PASS cong A12 -- chay agent kiem-chung-trich-dan")
     _add("TRINH BAY", "Cover letter chuan bi cho ban bien tap",
          False,
          note="[CAN bac si soan -- khong sinh tu dong]")
@@ -1219,6 +1294,7 @@ def generate_a9_artifact(
     target_journal: str,
     impact_factor: float,
     g8_status: str,
+    gate_criteria: dict = None,
 ) -> str:
     """Sinh artifact A9 -- Bao cao toan dien kiem tra truoc nop bai."""
 
@@ -1284,6 +1360,27 @@ def generate_a9_artifact(
     ln(f"**Tóm tắt:** {reporting['checked']}/{reporting['total']} mục có bằng chứng từ checkpoints.")
     ln(f"{reporting['total'] - reporting['checked']} mục ☐ cần bác sĩ điền thủ công.")
     ln()
+
+    # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12): cấu phần chuyên
+    # biệt (vd kinh tế y tế) mà run_g1_auto.py::detect_specialist_modules()
+    # phát hiện cộng thêm bên cạnh thiết kế chính — trước đây tính xong rồi
+    # KHÔNG hiển thị ở đâu cả trong artifact A9.
+    sm = reporting.get("specialist_module_checklist")
+    if sm:
+        ln(f"### Cấu phần cộng thêm — CHECKLIST {sm['standard_name']} ({sm['total']} MỤC)")
+        ln()
+        ln(f"> Đề tài có cấu phần chuyên biệt cộng thêm (specialist_modules phát hiện ở G1) — "
+           f"checklist {sm['standard_name']} dưới đây báo cáo RIÊNG cho cấu phần đó, KHÔNG thay "
+           f"thế checklist chính ở trên.")
+        ln(f"> **Tự kiểm từ checkpoints:** {sm['checked']}/{sm['total']} mục = **{sm['score_pct']}%**")
+        ln()
+        ln("| # | Mục | Mô tả rút gọn | Trạng thái |")
+        ln("|---|-----|--------------|-----------|")
+        for item in sm["items"]:
+            desc_s = item["desc"][:70] + ("..." if len(item["desc"]) > 70 else "")
+            ln(f"| {item['num']} | {item['name']} | {desc_s} | {item['mark']} |")
+        ln()
+
     ln("---")
     ln()
     ln("## PHẦN 3 — KIỂM TRA TÍNH TOÀN VẸN THỐNG KÊ")
@@ -1416,16 +1513,33 @@ def generate_a9_artifact(
             ln(f"- {item['mark']} {item['description']}{note_str}")
         ln()
 
-    # Phan 7
-    irb_ok = bool(
-        gates["G2"].get("g2_irb_number") and
-        "[CAN" not in str(gates["G2"].get("g2_irb_number", ""))
-    )
-    sap_ok = bool(
-        gates["G4"].get("sap_signed_date") or gates["G4"].get("sap_locked")
-    )
-    g7_ok = gates["G7"].get("_file_exists", False)
-    score_ok = presubmission["passed"] >= 25
+    # Phan 7 -- SUA 2026-07-23 (vong lap kiem tra-hoan thien vong 12, phat hien
+    # HIGH): truoc day ham nay TU TINH LAI mot ban sao rieng irb_ok/sap_ok/
+    # g7_ok/score_ok chi de HIEN THI, troi dat khoi logic g8_status THAT trong
+    # main() (2 noi tinh doc lap -- cung lop loi da lap lai nhieu lan trong
+    # file nay). Va results_final -- dieu kien CHAN THAT trong main() (thieu no
+    # → luon PENDING/PARTIAL) -- KHONG he xuat hien trong bang "BAT BUOC" hien
+    # thi cho bac si, chi duoc nhac nhe o muc 6 ngang hang voi "phan cong CRediT
+    # roles". Nay nhan gate_criteria (dict) tu main() lam NGUON SU THAT DUY NHAT
+    # -- khong tinh lai; gate_criteria=None (vd goi truc tiep tu test cu) →
+    # fallback tinh nhu cu de khong pha vo tuong thich nguoc.
+    if gate_criteria is None:
+        irb_ok = bool(
+            gates["G2"].get("g2_irb_number") and
+            "[CAN" not in str(gates["G2"].get("g2_irb_number", ""))
+        )
+        sap_ok = bool(
+            gates["G4"].get("sap_signed_date") or gates["G4"].get("sap_locked")
+        )
+        g7_ok = gates["G7"].get("_file_exists", False)
+        score_ok = presubmission["passed"] >= 25
+        results_final = False
+    else:
+        irb_ok = gate_criteria["irb_ok"]
+        sap_ok = gate_criteria["sap_ok"]
+        g7_ok = gate_criteria["g7_ok"]
+        score_ok = gate_criteria["score_ok"]
+        results_final = gate_criteria["results_final"]
     reporting_ok = reporting["score_pct"] >= 60
 
     ln("---")
@@ -1433,17 +1547,18 @@ def generate_a9_artifact(
     ln("## PHẦN 7 — TIÊU CHÍ QUA CỔNG G8")
     ln()
     ln("```")
-    ln("G8 PASS khi dap ung TAT CA 5 dieu kien BAT BUOC + bac si xac nhan 5 muc cuoi:")
+    ln("G8 PASS khi dap ung TAT CA 6 dieu kien BAT BUOC + bac si xac nhan 4 muc cuoi:")
     ln()
     ln("BAT BUOC (tu dong kiem tu checkpoints):")
     ln(f"{'OK' if irb_ok else 'ND'} 1. G2 LOCKED -- IRB number that: {gates['G2'].get('g2_irb_number','[CAN]')}")
     ln(f"{'OK' if sap_ok else 'ND'} 2. G4 LOCKED -- SAP da ky truoc khi xem du lieu")
     ln(f"{'OK' if g7_ok else 'ND'} 3. G7 DONE -- Ban thao IMRAD skeleton da sinh")
-    ln(f"{'OK' if score_ok else 'ND'} 4. Diem tu kiem >= 25/30 (hien: {presubmission['passed']}/30)")
-    ln(f"{'OK' if reporting_ok else 'ND'} 5. Checklist {reporting['standard_name']} >= 60% (hien: {reporting['score_pct']}%)")
+    ln(f"{'OK' if results_final else 'ND'} 4. Ket qua phan tich THAT da xac nhan (results_final trong "
+       "study_meta.json -- dieu kien CHAN, thieu no thi KHONG bao gio PASS du diem tu kiem cao)")
+    ln(f"{'OK' if score_ok else 'ND'} 5. Diem tu kiem >= 25/30 (hien: {presubmission['passed']}/30)")
+    ln(f"{'OK' if reporting_ok else 'ND'} 6. Checklist {reporting['standard_name']} >= 60% (hien: {reporting['score_pct']}%)")
     ln()
     ln("CAN BAC SI XAC NHAN (khong the tu dong):")
-    ln("[CAN] 6. Ket qua that da dien vao Section III+V ban thao (sau G5+G6 phan tich)")
     ln("[CAN] 7. Toan bo ban thao doc lai -- khong con placeholder [CAN...]")
     ln("[CAN] 8. CRediT roles da phan cong day du (Phan 5)")
     ln("[CAN] 9. COI da khai bao hoac xac nhan khong co (Phan 5)")
@@ -1776,9 +1891,14 @@ def main():
 
     # 3. Checklist chuan bao cao
     print(f"\nBuoc 3/7: Kiem checklist {design_code}...")
-    reporting = build_reporting_checklist(design_code, gates)
+    reporting = build_reporting_checklist(
+        design_code, gates, specialist_modules=gates.get("G1", {}).get("specialist_modules") or []
+    )
     print(f"  -> {reporting['standard_name']}: {reporting['checked']}/{reporting['total']} "
           f"({reporting['score_pct']}%)")
+    if reporting["specialist_module_checklist"]:
+        sm = reporting["specialist_module_checklist"]
+        print(f"  -> + {sm['standard_name']} (cau phan cong them): {sm['checked']}/{sm['total']} ({sm['score_pct']}%)")
 
     # 4. Kiem tra thong ke
     print("\nBuoc 4/7: Kiem tra tinh toan ven thong ke...")
@@ -1799,7 +1919,8 @@ def main():
     # 6. Diem tu kiem 30 diem
     print("\nBuoc 6/7: Tinh diem tu kiem (30 diem)...")
     presubmission = build_presubmission_checklist(
-        pipeline, reporting, stat_check, gates, journal_suggestions
+        pipeline, reporting, stat_check, gates, journal_suggestions,
+        study=study, out_dir=out_dir,
     )
     print(f"  -> Diem: {presubmission['passed']}/30 -- {presubmission['readiness_note']}")
 
@@ -1846,10 +1967,14 @@ def main():
 
     # 7. Sinh artifact A9 + guardrail
     print("\nBuoc 7/7: Sinh artifact A9 + guardrail...")
+    gate_criteria = {
+        "irb_ok": irb_ok, "sap_ok": sap_ok, "g7_ok": g7_ok,
+        "score_ok": score_ok, "results_final": results_final,
+    }
     artifact_md = generate_a9_artifact(
         study, run_date, gates, pipeline, reporting, stat_check,
         journal_suggestions, presubmission, args.target_journal, args.impact_factor,
-        g8_status
+        g8_status, gate_criteria=gate_criteria,
     )
 
     guardrail = guardrail_g8(artifact_md, pipeline)

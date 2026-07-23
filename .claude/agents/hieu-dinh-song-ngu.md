@@ -65,7 +65,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ```
 python tools/gen_research_docx.py --study "<TEN>" --gate G7
 ```
-(2026-07-11: bỏ `--artifact bilingual-editing` — khóa này không có trong `ARTIFACT_MAP` của `gen_research_docx.py`, và khi dùng CHUNG với `--gate` thì `--gate` được ưu tiên xử lý trước nên `--artifact` bị BỎ QUA hoàn toàn; `--gate G7` một mình đã sinh đủ G7a_MANUSCRIPT + G7b_CHECKLIST — bản hiệu đính song ngữ dùng chung artifact `manuscript` (G7a), không có khóa riêng.)
+(2026-07-11: bỏ `--artifact bilingual-editing` — khóa này không có trong `ARTIFACT_MAP` của `gen_research_docx.py`, và khi dùng CHUNG với `--gate` thì `--gate` được ưu tiên xử lý trước nên `--artifact` bị BỎ QUA hoàn toàn; bản hiệu đính song ngữ dùng chung artifact `manuscript` (G7a), không có khóa riêng. SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12): sau vòng 11 mở rộng `ARTIFACT_MAP`, `--gate G7` nay sinh THÊM G7a_MANUSCRIPT + G7b_CHECKLIST + G7c_HEALTH-ECONOMICS + G7d_CITATION-CHECK (+ G1d_RISK bị sinh lại do quy ước gate ghép "G1+G7" — xem `_DOCX-EXPORT-PROTOCOL.md` §2 hàng G7); 2 file G7c/G7d KHÔNG liên quan bản hiệu đính song ngữ, có thể bỏ qua.)
 
 ## Ranh giới
 - Nhận bản thảo từ `viet-ban-thao`; trả bản đã hiệu đính trước chuỗi `kiem-chung-trich-dan` → `binh-duyet` → `nop-bai-phan-hoi` (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8, phát hiện LOW: trước đây chỉ nêu 2/3 cổng kế tiếp, bỏ sót `binh-duyet` nằm GIỮA hai cổng đó).

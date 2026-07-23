@@ -784,6 +784,7 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
     """
     g4 = cps.get("G4", {})
     g2 = cps.get("G2", {})
+    g5 = cps.get("G5", {})
     g7 = cps.get("G7", {})
     g1 = cps.get("G1", {})
 
@@ -815,8 +816,23 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
     sap_locked = sap_locked_text and _ledger_approved(
         study, "G4", _REPO_ROOT / "exports" / study / f"G4_A5_SAP_FINAL_{study}.md")
 
+    # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện HIGH):
+    # nop-bai-phan-hoi.md BƯỚC 0 điểm 2 yêu cầu xác nhận "G5_STATUS = LOCKED"
+    # là tiền đề G9 — nhưng trước đây file này chỉ tính boolean cho G2/G4,
+    # KHÔNG có biến nào cho G5 dù đã đọc G5_checkpoint.json vào cps từ trước.
+    # Một đề tài có CSDL CHƯA khóa (rủi ro thao túng dữ liệu sau khi đã biết
+    # kết quả — đúng loại rủi ro G9 tồn tại để chặn) vẫn nhận gói A10 đầy đủ mà
+    # không có cảnh báo tự động, khác hẳn cách G2/G4 được xử lý.
+    db_locked_text = bool(
+        g5.get("db_lock_date") and "[CẦN" not in str(g5.get("db_lock_date", ""))
+        and "[CAN" not in str(g5.get("db_lock_date", ""))
+    )
+    db_locked = db_locked_text and _ledger_approved(
+        study, "G5", _REPO_ROOT / "exports" / study / f"G5_A6_DATA_MGMT_{study}.md")
+
     g2_icon = "✅" if ethics_locked else "⚠ CHỜ BÁC SĨ"
     g4_icon = "✅" if sap_locked    else "⚠ CHỜ BÁC SĨ"
+    g5_icon = "✅" if db_locked     else "⚠ CHỜ BÁC SĨ"
 
     # SỬA: g1.get("reporting_standard") đọc sai đường dẫn (lồng trong
     # "design") — nếu G7 chưa chạy, chuỗi fallback nhảy thẳng xuống "[CẦN]"
@@ -826,6 +842,15 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         or (g1.get("design") or {}).get("reporting_standard")
         or "[CẦN]"
     )
+    # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện MEDIUM):
+    # nếu G1 phát hiện specialist_modules (vd 'economic'), G7 đã tự nối thêm
+    # phụ lục CHEERS 2022 riêng vào bản thảo (vòng 11) -- C4 trước đây chỉ nhắc
+    # MỘT chuẩn báo cáo chính, khiến bác sĩ có thể tick "Đã điền và đính kèm"
+    # mà quên rà phụ lục CHEERS đi kèm.
+    specialist_modules = g1.get("specialist_modules") or []
+    reporting_std_note = ""
+    if "economic" in specialist_modules:
+        reporting_std_note = " + CHEERS 2022 (cấu phần kinh tế y tế cộng thêm, xem A8/G7)"
 
     lines = [
         "## PHẦN 8 — TIÊU CHÍ QUA CỔNG G9 (HARD GATE — CẦN KÝ)",
@@ -867,6 +892,10 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         f"    Hiện tại: {'LOCKED (SAP đã ký thật)' if sap_locked else g4_status}  {g4_icon}",
         f"    SAP Lock Date: {g4.get('g4_lock_date', '[CẦN]')}",
         "",
+        "B3. G5 (Khóa CSDL) = LOCKED",
+        f"    Hiện tại: {'LOCKED (CSDL đã khóa thật)' if db_locked else 'CHƯA KHÓA'}  {g5_icon}",
+        f"    DB Lock Date: {g5.get('db_lock_date', '[CẦN]')}",
+        "",
         "NHÓM C — CHẤT LƯỢNG BẢN THẢO",
         "─────────────────────────────────────────────",
         "C1. Bản thảo IMRAD (G7) đã có kết quả THẬT (không còn [CẦN KẾT QUẢ THẬT])",
@@ -879,7 +908,7 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         "    Tỷ lệ thực tế: [CẦN điền sau khi chạy iThenticate/Turnitin]%",
         "    ☐ Chưa chạy  ☐ Đạt (<15%)",
         "",
-        f"C4. Checklist báo cáo ({reporting_std}) hoàn chỉnh",
+        f"C4. Checklist báo cáo ({reporting_std}{reporting_std_note}) hoàn chỉnh",
         "    ☐ Chưa điền  ☐ Đã điền và đính kèm",
         "",
         "C5. Thư gửi tạp chí (Phần 6) và mẫu phản biện (Phần 7) hoàn chỉnh",
@@ -1082,6 +1111,7 @@ def write_g9_checkpoint(
 
     g2_cp = cps.get("G2", {}) or {}
     g4_cp = cps.get("G4", {}) or {}
+    g5_cp = cps.get("G5", {}) or {}
 
     # Danh sách việc còn lại của bác sĩ
     pending = [
@@ -1117,6 +1147,15 @@ def write_g9_checkpoint(
         study, "G2", _REPO_ROOT / "exports" / study / f"G2_A3_ETHICS_PACKAGE_{study}.md")
     sap_locked_cp = sap_locked_cp_text and _ledger_approved(
         study, "G4", _REPO_ROOT / "exports" / study / f"G4_A5_SAP_FINAL_{study}.md")
+    # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện HIGH):
+    # cùng chuỗi lỗi với build_part8_gate_criteria() — G5 (khóa CSDL) chưa bao
+    # giờ được đối chiếu ở đây dù nop-bai-phan-hoi.md coi đây là tiền đề G9.
+    db_locked_cp_text = bool(
+        g5_cp.get("db_lock_date") and "[CẦN" not in str(g5_cp.get("db_lock_date", ""))
+        and "[CAN" not in str(g5_cp.get("db_lock_date", ""))
+    )
+    db_locked_cp = db_locked_cp_text and _ledger_approved(
+        study, "G5", _REPO_ROOT / "exports" / study / f"G5_A6_DATA_MGMT_{study}.md")
     if not ethics_locked_cp:
         pending.insert(
             0, "G2 (Đạo đức) chưa LOCKED — cần số IRB thật từ Hội đồng Đạo đức"
@@ -1124,6 +1163,10 @@ def write_g9_checkpoint(
     if not sap_locked_cp:
         pending.insert(
             0, "G4 (SAP) chưa LOCKED — cần ký SAP Lock Certificate"
+        )
+    if not db_locked_cp:
+        pending.insert(
+            0, "G5 (Khóa CSDL) chưa LOCKED — cần ký Biên bản khóa dữ liệu (Data Lock Memo)"
         )
 
     cp = {

@@ -156,12 +156,12 @@ Gọi Bash tool, chạy từ `medical-ebm-automation/` — không chờ bác sĩ
 |------|----------|-----------------|
 | **G0** | `python tools/gen_research_docx.py --study "<TEN>" --gate G0` | G0a_intake · G0b_pico · G0c_literature |
 | **G1** | `python tools/gen_research_docx.py --study "<TEN>" --gate G1` | G1a_protocol · G1b_charter · G1c_plan · G1d_risk |
-| **G2** | `python tools/gen_research_docx.py --study "<TEN>" --artifact ethics` | G2_ethics |
+| **G2** | `python tools/gen_research_docx.py --study "<TEN>" --gate G2` | G2_ethics · G2a_safety-monitoring (SỬA 2026-07-23 vòng 12: đổi từ `--artifact ethics` đơn lẻ sang `--gate G2` — vòng 11 đã thêm safety-monitoring=G2a) |
 | **G3** | `python tools/gen_research_docx.py --study "<TEN>" --gate G3` | G3a_samplesize · G3b_variables · G3c_crf · G3d_instrument (2026-07-12: bổ sung G3d bị bỏ sót — mô phỏng `generate_all_gates('G3')` thật xác nhận đủ 4 file) |
 | **G4** | `python tools/gen_research_docx.py --study "<TEN>" --artifact sap` | G4_sap |
 | **G5** | `python tools/gen_research_docx.py --study "<TEN>" --gate G5` | G5a_sop · G5b_dmp · G5c_datalock |
-| **G6** | `python tools/gen_research_docx.py --study "<TEN>" --gate G6` | G6a_analysis · G6b_interpretation |
-| **G7** | `python tools/gen_research_docx.py --study "<TEN>" --gate G7` | G7a_manuscript · G7b_checklist · + G1d_risk bị sinh lại (xem `_DOCX-EXPORT-PROTOCOL.md` §2 hàng G7 — hành vi thật của code, không phải lỗi) |
+| **G6** | `python tools/gen_research_docx.py --study "<TEN>" --gate G6` | G6a_analysis · G6b_interpretation · G6c_prediction-model · G6d_clinical-guideline (SỬA 2026-07-23 vòng 12: vòng 11 đã thêm G6c/G6d, bảng này lạc hậu chưa cập nhật) |
+| **G7** | `python tools/gen_research_docx.py --study "<TEN>" --gate G7` | G7a_manuscript · G7b_checklist · G7c_health-economics · G7d_citation-check (SỬA 2026-07-23 vòng 12: vòng 11 đã thêm G7c/G7d) · + G1d_risk bị sinh lại (xem `_DOCX-EXPORT-PROTOCOL.md` §2 hàng G7 — hành vi thật của code, không phải lỗi) |
 | **G8** | `python tools/gen_research_docx.py --study "<TEN>" --artifact review` | G8_review |
 | **G9** | `python tools/gen_research_docx.py --study "<TEN>" --artifact readiness` | G9_readiness |
 | **G10** *(CAPSTONE — bắt buộc sau mỗi lần march)* | `python tools/run_g10_assemble.py --study "<TEN>"` | DE_CUONG_THONG_NHAT_<TEN>.md + .docx + G10_checkpoint.json |

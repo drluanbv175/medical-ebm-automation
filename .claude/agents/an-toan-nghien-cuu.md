@@ -72,14 +72,24 @@ BIẾN CỐ BẤT LỢI NGHIÊM TRỌNG (SAE — Serious Adverse Event):
   ☐ Biến cố quan trọng về y tế (medical important event — theo đánh giá điều tra viên)
 
 SUSAR (Suspected Unexpected Serious Adverse Reaction):
-  = SAE + Quan hệ nhân quả "có thể" hoặc "chắc chắn" + KHÔNG trong Investigator's Brochure/SmPC
+  = SAE + Quan hệ nhân quả "Có thể" HOẶC "Có khả năng" HOẶC "Chắc chắn" (mọi mức TRỪ "Không
+    liên quan" và "Ít có khả năng" — đúng khái niệm ICH E2A "reasonable possibility of a
+    causal relationship", SỬA 2026-07-23 vòng lặp kiểm tra-hoàn thiện vòng 12: bản cũ chỉ lấy
+    2 đầu "có thể"/"chắc chắn", bỏ sót mức giữa "Có khả năng/Probable" — sẽ bỏ sót báo cáo
+    nhanh SUSAR cho một biến cố điều tra viên đánh giá nhân quả ở mức Probable)
+  + KHÔNG trong Investigator's Brochure/SmPC
 
-PHÂN ĐỘ NẶNG (CTCAE nếu phù hợp):
+PHÂN ĐỘ NẶNG (CTCAE nếu phù hợp — độc lập với trục Quan hệ nhân quả bên dưới):
   Grade 1: Nhẹ — không triệu chứng / triệu chứng nhẹ
-  Grade 2: Trung bình — hạn chế hoạt động bình thường
-  Grade 3: Nặng — hạn chế hoạt động sinh hoạt
+  Grade 2: Trung bình — hạn chế hoạt động sinh hoạt CÔNG CỤ (instrumental ADL — nấu ăn, mua
+    sắm, quản lý tiền, việc nhà...), can thiệp tối thiểu/không xâm lấn
+  Grade 3: Nặng — hạn chế hoạt động TỰ CHĂM SÓC (self-care ADL — tắm rửa, mặc đồ, ăn uống,
+    dùng thuốc) VÀ/HOẶC cần nhập viện/kéo dài nhập viện, gây tàn phế, chưa đe dọa tính mạng
   Grade 4: Nguy hiểm tính mạng — cần can thiệp khẩn cấp
-  Grade 5: Tử vong liên quan can thiệp
+  Grade 5: Tử vong liên quan BIẾN CỐ (AE) — ĐỘC LẬP với đánh giá quan hệ nhân quả với can
+    thiệp (xem mục Quan hệ nhân quả riêng bên dưới; SỬA 2026-07-23 vòng 12: bản cũ ghi "tử
+    vong liên quan can thiệp" — lẫn trục độ nặng với trục nhân quả, 2 trục ĐỘC LẬP theo đúng
+    thiết kế CTCAE, có thể khiến bỏ sót Grade 5 cho ca tử vong chưa xác định nhân quả)
   Phiên bản CTCAE dùng: ___ (nêu rõ vì phân độ thay đổi giữa phiên bản)
   Nguồn: NCI CTCAE v6.0 cho đề tài MỚI (phát hành 2025; mốc NCI CTEP/DCP áp dụng cho thử
   nghiệm mới ĐƯỢC NHẮM (targeted) 01/01/2026 nhưng CHÍNH nguồn dctd.cancer.gov ghi rõ mốc
