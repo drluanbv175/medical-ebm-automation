@@ -98,7 +98,8 @@ def guardrail(artifact):
     return errors, warnings
 
 def generate(study, topic, design_code, design_primary, reporting_std,
-             n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None):
+             n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
+             hypothesis_type="superiority", margin=None):
     sap_sections = {
         "rct": ("Nhóm can thiệp vs nhóm chứng", "Intention-to-treat (ITT), Per-protocol (PP)", "t-test hoặc Mann-Whitney; logistic/log-rank"),
         "cohort": ("Nhóm phơi nhiễm vs không phơi nhiễm", "Phân tích đầy đủ (complete case + MI)", "Cox regression; logistic regression"),
@@ -124,6 +125,15 @@ def generate(study, topic, design_code, design_primary, reporting_std,
                         "(COREQ/SRQR, xem A4)"),
     }
     pop, analysis_pop, main_method = sap_sections.get(design_code, ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]"))
+
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 18, phát hiện HIGH):
+    # run_g3_auto.py (vòng 15) đã sửa nhãn "hai phía" cứng thành động theo
+    # hypothesis_type (non_inferiority dùng z MỘT PHÍA) — bản vá đó KHÔNG
+    # lan sang run_g4_auto.py, khiến SAP Lock Certificate (văn bản bác sĩ
+    # KÝ trước khi khóa, không phải chỉ artifact tham khảo) khẳng định SAI
+    # "Alpha (two-sided)" cho một đề tài non-inferiority thực chất dùng z
+    # một phía — mâu thuẫn nội bộ ngay trong văn bản đã ký.
+    _alpha_sidedness = "one-sided" if hypothesis_type == "non_inferiority" else "two-sided"
 
     # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): với sr_ma/prediction/
     # qualitative, n_adjusted=0 là CÓ CHỦ ĐÍCH (không dùng power/effect size)
@@ -301,7 +311,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
         "### §12 ALPHA + POWER",
         "",
-        f"- **Alpha (two-sided):** {alpha}  ",
+        f"- **Alpha ({_alpha_sidedness}):** {alpha}  ",
         f"- **Power:** {int(power*100)}%  ",
         (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
          (f"- **Cỡ mẫu:** N = {n_adjusted}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  ")),
@@ -309,6 +319,16 @@ def generate(study, topic, design_code, design_primary, reporting_std,
          (f"- **Effect size dự kiến:** {effect_type} = {effect_val:.2f}  " if effect_val
           else "- **Effect size:** [CẦN từ G3]  ")),
     ] + (
+        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 18, phát hiện
+        # HIGH): margin Δ là tham số an toàn-trọng yếu nhất của thiết kế NI/
+        # equivalence (định nghĩa "kém hơn tối đa chấp nhận được") — trước
+        # đây KHÔNG xuất hiện ở đâu trong SAP mà bác sĩ/thống kê viên ký,
+        # dù run_g3_auto.py đã ghi vào G3_checkpoint.json từ vòng 15.
+        [f"- **Loại giả thuyết:** {hypothesis_type}  ",
+         f"- **Biên (margin, Δ):** {margin if margin is not None else '[CẦN từ G3]'} "
+         "— [CẦN Hội đồng/thống kê viên xác nhận biện minh lâm sàng TRƯỚC KHI KÝ]  "]
+        if hypothesis_type != "superiority" else []
+    ) + (
         # THÊM 2026-07-06: SD bị RỚT khi truyền G3→G4 (phát hiện qua kiểm định
         # đối kháng vòng 2) — bác sĩ ký SAP mà không thấy tham số bắt buộc để
         # tái tạo/kiểm chứng cỡ mẫu kết cục liên tục (effect_type=MD).
@@ -340,13 +360,20 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         (f"║ Cỡ mẫu   : {n_na_note:<49} ║" if n_not_applicable else
          (f"║ Cỡ mẫu   : N = {str(n_adjusted):<45} ║" if n_adjusted
           else "║ Cỡ mẫu   : [CẦN từ G3]                                      ║")),
-        f"║ Alpha     : {alpha}                                            ║",
+        f"║ Alpha     : {alpha} ({_alpha_sidedness})                                  ║",
         f"║ Power     : {int(power*100)}%                                            ║",
     ] + (
         # THÊM 2026-07-06: giữ nguyên tinh thần vá ở §12 — SD bắt buộc để tái
         # tạo/kiểm chứng cỡ mẫu kết cục liên tục, không được rớt ở chứng chỉ ký.
         [f"║ SD kết cục: {sd:<48.2f} ║" if sd else "║ SD kết cục: [CẦN từ G3 — bắt buộc khi effect_type=MD]       ║"]
         if effect_type == "MD" else []
+    ) + (
+        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 18, phát hiện
+        # HIGH): margin phải xuất hiện ngay trên chứng chỉ KÝ, không chỉ ở
+        # §12 phía trên — đây là văn bản bác sĩ/thống kê viên thực sự ký.
+        [f"║ Giả thuyết: {hypothesis_type:<48} ║",
+         f"║ Margin (Δ): {str(margin if margin is not None else '[CẦN từ G3]'):<48} ║"]
+        if hypothesis_type != "superiority" else []
     ) + [
         "║ KQ chính  : [CẦN BÁC SĨ ĐIỀN — từ SAP §2]                 ║",
         "║ Phân tích : [CẦN BÁC SĨ ĐIỀN — quần thể phân tích]        ║",
@@ -464,6 +491,11 @@ def main():
     effect_val = g3.get("effect_val")
     effect_type = g3.get("effect_type") or "HR"
     sd = g3.get("sd")  # THÊM 2026-07-06: SD kết cục liên tục (effect_type=MD), từng bị rớt khi truyền G3→G4
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 18, phát hiện HIGH):
+    # hypothesis_type/margin bị RỚT khi truyền G3→G4 — cùng lớp lỗi với SD
+    # ở trên (2026-07-06), nay áp cùng cách vá.
+    hypothesis_type = g3.get("hypothesis_type") or "superiority"
+    margin = g3.get("margin")
 
     # SỬA: trước đây N=0 (G3 chưa chạy/chưa tính được) vẫn cho SAP hoàn tất
     # với guardrail PASS im lặng — một SAP không có cỡ mẫu là vô nghĩa để
@@ -508,7 +540,8 @@ def main():
     print(f"  → Design: {design_code} | N={n_adjusted}")
 
     artifact = generate(study, topic, design_code, design_primary, reporting_std,
-                        n_adjusted, alpha, power, effect_val, effect_type, run_date, sd)
+                        n_adjusted, alpha, power, effect_val, effect_type, run_date, sd,
+                        hypothesis_type=hypothesis_type, margin=margin)
     md = out / f"G4_A5_SAP_FINAL_{study}.md"
     md.write_text(artifact, encoding="utf-8")
     print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")

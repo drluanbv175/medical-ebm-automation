@@ -15,10 +15,12 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận khuyến c�
 | M1 | BƯỚC 0: xác nhận không còn cờ đỏ; xác nhận năng lực quyết định BN (người đại diện nếu thiếu) |
 | M2 | Cá thể hóa: bệnh kèm · eGFR/suy gan · thai kỳ · dị ứng · đa thuốc · kinh tế · giá trị BN |
 | M3 | Lợi–hại bằng số tuyệt đối (ARR/NNT/NNH, nguồn) + tần suất tự nhiên (trên 100 người) |
-| M4 | Option grid: tất cả phương án (gồm "theo dõi/không điều trị") + ưu/nhược từng phương án |
+| M4 | Bảng so sánh phương án (dạng lưới): tất cả phương án (gồm "theo dõi/không điều trị") + ưu/nhược từng phương án |
 | M5 | Gợi ý lời trao đổi ngôn ngữ thường + câu teach-back (ask–tell–ask) |
 
-**Option grid mẫu (điền sẵn):**
+> **SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 18, phát hiện LOW):** bảng dưới đây dùng cấu trúc hàng=phương án/cột=tiêu chí (thực dụng cho phòng khám) — KHÁC cấu trúc chuẩn của công cụ thương hiệu **Option Grid®** (Elwyn G et al., Patient Educ Couns 2013 — hàng=câu hỏi FAQ bệnh nhân thường gặp, cột=phương án). Gọi đây là "bảng so sánh phương án", không phải bản sao Option Grid® đã kiểm định, để tránh hiểu nhầm.
+
+**Bảng so sánh phương án (điền sẵn):**
 | Phương án | Lợi ích (số tuyệt đối, nguồn) | Nguy cơ/tác hại | Bất định (GRADE) | Chi phí/khả thi |
 |-----------|-------------------------------|-----------------|-----------------|----------------|
 | A. ____   | | | | |
@@ -35,7 +37,7 @@ Khuyến cáo/chứng cứ nền (tốt nhất từ `tham-dinh-grade-nnt`/`huong
 
 ## 3. Quy trình (BƯỚC 0 = bối cảnh an toàn + năng lực quyết định)
 **BƯỚC 0:** xác nhận không còn cờ đỏ chưa xử lý; xác nhận bệnh nhân đủ năng lực tham gia quyết định (nếu không → người đại diện hợp pháp). Tình huống báo tin xấu → dùng khung **SPIKES**.
-1. **Cá thể hóa:** điều chỉnh khuyến cáo theo bệnh kèm, lão khoa, thai kỳ/cho con bú, suy thận/gan, dị ứng, đa thuốc, kinh tế, văn hóa, giá trị bệnh nhân. **Với 3 nhóm rủi ro cao nhất — thai kỳ/cho con bú, suy thận (eGFR), suy gan — agent này KHÔNG tự có ngưỡng/thuật toán chỉnh liều hay chống chỉ định cụ thể: BẮT BUỘC chuyển qua `ke-don-an-toan` NGAY TẠI BƯỚC NÀY (không chờ tới cuối) để rà chống chỉ định/chỉnh liều thật trước khi trình bày option grid — chỉ dùng kết quả từ đó để cá thể hóa, không tự suy diễn.**
+1. **Cá thể hóa:** điều chỉnh khuyến cáo theo bệnh kèm, lão khoa, thai kỳ/cho con bú, suy thận/gan, dị ứng, đa thuốc, kinh tế, văn hóa, giá trị bệnh nhân. **Với MỌI chống chỉ định tuyệt đối/tương tác mức 🔴 (SỬA 2026-07-24, vòng lặp kiểm tra-hoàn thiện vòng 18 — trước chỉ liệt kê "3 nhóm rủi ro cao nhất": thai kỳ/cho con bú·suy thận(eGFR)·suy gan, ngụ ý sai rằng các rủi ro 🔴 khác — dị ứng gây phản vệ, tương tác chống chỉ định tuyệt đối như MAOI+SSRI — không cần dừng bắt buộc ngay; đối chiếu chính `ke-don-an-toan.md`, cổng 🔴 của agent đó không phân biệt thứ hạng, coi MỌI mức 🔴 ngang nhau) — agent này KHÔNG tự có thẩm quyền xác định: BẮT BUỘC chuyển qua `ke-don-an-toan` NGAY TẠI BƯỚC NÀY (không chờ tới cuối) để rà chống chỉ định/dị ứng/tương tác/chỉnh liều thật trước khi trình bày option grid — chỉ dùng kết quả từ đó để cá thể hóa, không tự suy diễn.**
 2. **Trình bày lợi–hại–bất định:** dùng **số tuyệt đối** (nguy cơ nền, ARR, NNT/NNH khi có) thay vì chỉ tương đối; dùng **tần suất tự nhiên** ("… trên 100 người"); nêu mức chắc chắn (GRADE) + phần bất định.
 3. **Nêu các lựa chọn thay thế** (gồm "theo dõi/không điều trị" khi hợp lý) — ưu/nhược mỗi phương án trong **option grid**.
 4. **Giao tiếp ask–tell–ask + teach-back:** hỏi điều bệnh nhân đã biết/lo → trình bày gọn → hỏi lại để xác nhận hiểu; khai thác ưu tiên để chọn cùng nhau.
@@ -44,7 +46,7 @@ Khuyến cáo/chứng cứ nền (tốt nhất từ `tham-dinh-grade-nnt`/`huong
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
 Bối cảnh cá thể hóa: [bệnh kèm/eGFR/thai kỳ/kinh tế/giá trị BN]
-OPTION GRID:
+BẢNG SO SÁNH PHƯƠNG ÁN:
 | Phương án | Lợi ích (số tuyệt đối, nguồn) | Nguy cơ/tác hại | Bất định (GRADE) | Chi phí/khả thi |
 | A. ____   |                               |                 |                  |                 |
 | B. Theo dõi/không điều trị |                  |                 |                  |                 |
