@@ -36,15 +36,16 @@ Than phiền/bệnh cảnh chính · tuổi/bệnh nền/bối cảnh liên quan
    - **Chẩn đoán:** P=bệnh nhân nghi bệnh X · I=**test/chỉ số chẩn đoán đang xét** · C=**tiêu chuẩn vàng (reference standard)**, KHÔNG phải "chăm sóc thường quy" · O=độ chính xác chẩn đoán (Se/Sp/khả năng thay đổi quyết định).
    - **Tiên lượng:** thường dùng khung **PECO** (P=quần thể · **E=yếu tố tiên lượng/phơi nhiễm đang xét**, KHÔNG phải "can thiệp" vì không có can thiệp thật · C=không có yếu tố đó/mức khác · O=kết cục theo thời gian) — KHÔNG ép vào khuôn "I=can thiệp".
    - **Tác hại:** P=quần thể phơi nhiễm nghi ngờ · **I/E=phơi nhiễm nghi gây hại** (thuốc/yếu tố môi trường) · **C=KHÔNG phơi nhiễm** (không phải "chăm sóc thường quy") · O=biến cố bất lợi.
+   - **Sàng lọc** (THÊM 2026-07-24, vòng lặp kiểm tra-hoàn thiện vòng 19 — trước liệt kê ở bước 2 nhưng KHÔNG có khuôn PICO nào, điểm chết nội tại): P=quần thể KHÔNG triệu chứng có nguy cơ (asymptomatic at-risk) · I=chương trình/test sàng lọc đang xét · C=không sàng lọc/chăm sóc thường quy · O=**giảm tử vong/biến chứng đặc hiệu bệnh** — LUÔN cân nhắc song song nguy cơ overdiagnosis/overtreatment, lead-time bias, length-time bias (sàng lọc dễ "cho thấy sống lâu hơn" giả tạo chỉ vì phát hiện sớm hơn, không phải vì thay đổi tiên lượng thật).
 4. **Ưu tiên KẾT CỤC QUAN TRỌNG VỚI BỆNH NHÂN:** tử vong, biến cố tim mạch lớn, nhập viện, chất lượng sống, biến chứng, tác hại — **ưu tiên hơn kết cục thay thế (surrogate)** như chỉ số xét nghiệm.
-5. **Định hướng agent kế** theo loại câu hỏi đã gắn ở bước 2 (chẩn đoán → `tra-cuu-chung-cu` tìm bằng chứng độ chính xác test **rồi** `chan-doan-xac-suat` áp LR/hậu nghiệm — SỬA 2026-07-24, vòng lặp vòng 15: trước bỏ sót bước TÌM cho câu hỏi chẩn đoán, mâu thuẫn với luồng chủ `dieu-phoi-lam-sang.md` nơi bước 2 TÌM chạy KHÔNG điều kiện cho MỌI loại câu hỏi; điều trị → `tra-cuu-chung-cu`+`tham-dinh-grade-nnt`; tiên lượng/tác hại → `tra-cuu-chung-cu` với chứng cứ quan sát/cohort ưu tiên).
+5. **Định hướng agent kế** theo loại câu hỏi đã gắn ở bước 2 (chẩn đoán → `tra-cuu-chung-cu` tìm bằng chứng độ chính xác test **rồi** `chan-doan-xac-suat` áp LR/hậu nghiệm — SỬA 2026-07-24, vòng lặp vòng 15: trước bỏ sót bước TÌM cho câu hỏi chẩn đoán, mâu thuẫn với luồng chủ `dieu-phoi-lam-sang.md` nơi bước 2 TÌM chạy KHÔNG điều kiện cho MỌI loại câu hỏi; điều trị → `tra-cuu-chung-cu`+`tham-dinh-grade-nnt`; tiên lượng/tác hại → `tra-cuu-chung-cu` với chứng cứ quan sát/cohort ưu tiên; **sàng lọc → `du-phong-tam-soat` (agent chuyên trách dự phòng/tầm soát theo tuổi-giới-nguy cơ, cấp độ USPSTF A-D-I) THÊM 2026-07-24, vòng 19**).
 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
 Câu hỏi (1 câu): Ở [P], [I] so với [C] có [O] không/như thế nào?
 | P | I | C | O |
 Kết cục chính (quan trọng với BN): ____  | Kết cục phụ: ____
-Loại câu hỏi: [điều trị/chẩn đoán/tiên lượng/tác hại] → chứng cứ ưu tiên: [vd RCT/SR] → agent kế: ____
+Loại câu hỏi: [điều trị/chẩn đoán/tiên lượng/tác hại/sàng lọc] → chứng cứ ưu tiên: [vd RCT/SR] → agent kế: ____
 ```
 Kết: **"Cần bác sĩ kiểm chứng."**
 

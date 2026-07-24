@@ -45,7 +45,7 @@ Danh sách **kết quả + đơn vị + khoảng tham chiếu của labo** (rấ
 | **Hb rất thấp** | ≤6–7 g/dL (≤60–70 g/L) | đánh giá huyết động/chảy máu; truyền theo bệnh cảnh |
 | **Tiểu cầu rất thấp** | <20 ×10⁹/L (một số labo <40) `[CẦN KIỂM CHỨNG]` | nguy cơ xuất huyết tự phát; tránh thủ thuật/chống đông |
 | **Neutropenia + sốt** | ANC <0.5 ×10⁹/L + T≥38.3°C | **SỐT GIẢM BẠCH CẦU = cấp cứu** — kháng sinh phổ rộng SỚM + chuyển (IDSA 2010) |
-| **Lactate cao** | ≥4 mmol/L | dấu giảm tưới máu/sốc — hồi sức + tìm nguồn + chuyển (Surviving Sepsis, PMID 25479113) |
+| **Lactate cao** | ≥4 mmol/L | dấu giảm tưới máu/sốc — hồi sức + tìm nguồn + chuyển (Casserly et al., Crit Care Med 2015;43(3):567-573, PMID 25479113 — phân tích registry SSC xác nhận ngưỡng, KHÔNG phải chính văn bản khuyến cáo SSC; SỬA 2026-07-24 vòng 19, cùng lớp lỗi gán-nhầm-nguồn đã vá cho dòng Glucose cao ở vòng 15) |
 | **pH khí máu** | <~7.2 hoặc >~7.6 `[CẦN KIỂM CHỨNG theo máy]` | toan/kiềm nặng → xử trí nguyên nhân + hỗ trợ + chuyển |
 | **Creatinin — chẩn đoán AKI (bất kỳ giai đoạn)** | KDIGO: ↑≥26.5 µmol/L (0.3 mg/dL)/48h HOẶC ≥1.5× nền/7 ngày `[CẦN KIỂM CHỨNG bản KDIGO]` — đây là ngưỡng CHẨN ĐOÁN AKI nói chung, KHÔNG tự động là "nặng" | xác nhận AKI, tìm nguyên nhân trước/tại/sau thận, theo dõi sát |
 | **Creatinin/AKI NẶNG (KDIGO giai đoạn 3)** | ↑≥3× nền, HOẶC ≥353.6 µmol/L (4.0 mg/dL), HOẶC cần điều trị thay thế thận `[CẦN KIỂM CHỨNG bản KDIGO]` | AKI nặng + tăng K⁺/quá tải dịch/toan → cân nhắc lọc máu cấp + chuyển |
