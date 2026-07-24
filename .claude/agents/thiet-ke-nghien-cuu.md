@@ -183,6 +183,19 @@ trước ☐ dùng penalized/regularized regression (ridge/lasso/firth) ☐ báo
 kèm cảnh báo quá khớp rõ ràng — chọn phương án TRƯỚC khi khóa SAP, không tự chọn khi
 đã thấy N thật.
 ```
+> **SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21) — "EPV/EPP ≥ 10" là kinh
+> nghiệm CŨ, không phải quy luật vững chắc:** ngưỡng này bắt nguồn từ Peduzzi et al.
+> 1996 nhưng y văn phương pháp luận hiện hành coi nó THIẾU CƠ SỞ LÝ THUYẾT chắc chắn
+> (van Smeden M et al., "No rationale for 1 variable per 10 events criterion for
+> binary logistic regression analysis", BMC Med Res Methodol 2016 — PMC5122171).
+> Thực hành hiện đại khuyến nghị TÍNH TRỰC TIẾP cỡ mẫu tối thiểu cho mô hình đa biến
+> bằng công cụ như `pmsampsize` (Riley RD et al., "Minimum sample size for developing
+> a multivariable prediction model", Stat Med 2019, 2 phần — nhắm mục tiêu shrinkage/
+> overfitting/độ chính xác ước lượng trực tiếp) thay vì áp một ngưỡng sự kiện cố định.
+> Dùng EPV/EPP ≥ 10 như một kiểm tra SƠ BỘ bổ sung, KHÔNG phải tiêu chí quyết định
+> duy nhất để khóa SAP — đặc biệt với thiết kế chẩn đoán/tiên lượng (mục [D]), ưu
+> tiên phối hợp với agent `co-mau-nghien-cuu`/`mo-hinh-tien-luong` để tính bằng
+> `pmsampsize` khi khả thi.
 
 ### SAP §6 — Dữ liệu thiếu
 ```
@@ -193,7 +206,21 @@ Phương pháp xử lý:
   MNAR → Sensitivity analysis (tilt parameter / pattern mixture model)
 Ngưỡng thiếu được chấp nhận: < ___% (trên ngưỡng → phân tích nhạy cảm bổ sung)
 ```
-> **Với PROM/thang đo nhiều mục theo miền (2026-07-06):** ngưỡng "≥50% mục hợp lệ thì tính điểm miền" là QUÁ LỎNG cho thang hài lòng/PROM — dùng ngưỡng chặt hơn: **điểm miền chỉ tính khi ≥80% mục của miền đó hợp lệ** (dưới 80% → miền coi là thiếu). Ưu tiên **complete-case** làm phân tích chính khi tỷ lệ thiếu rất thấp (<5%); **MICE chỉ dùng cho biến NỀN/PHƠI NHIỄM khi giả định MAR hợp lý — không áp cho biến kết cục**; không nội suy trung bình cơ học (mean substitution/LOCF) cho toàn bộ phiếu.
+> **Với PROM/thang đo nhiều mục theo miền — SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn
+> thiện vòng 21, phát hiện MEDIUM):** ngưỡng cứng "≥80% mục của miền hợp lệ mới tính
+> điểm" ở đây trước đây KHÔNG kèm nguồn — tra cứu quy ước thật của các thang PROM phổ
+> biến (SF-36, WHOQOL, EORTC QLQ-C30, FACIT) cho thấy ngưỡng prorate CẤP MIỀN/subscale
+> phổ biến hơn là **>50% mục trả lời** (vd FACIT: subscale được prorate khi trả lời
+> hơn một nửa số mục của subscale đó), KHÔNG phải 80%. Vì vậy: (1) KHÔNG áp cứng một
+> con số chung — nếu công cụ đang dùng có quy ước chấm điểm CHÍNH THỨC (scoring
+> manual), quy ước đó LUÔN thắng, khớp nguyên tắc ưu tiên CRF/codebook thật đã nêu ở
+> BƯỚC 0 mục 4 của chính agent này; (2) khi KHÔNG có quy ước chính thức khả dụng, mặc
+> định gợi ý ngưỡng phổ biến ">50% mục hợp lệ" (không phải 80%) và gắn nhãn
+> **[CẦN XÁC NHẬN theo quy ước chấm điểm CHÍNH THỨC của công cụ đang dùng]** thay vì
+> khẳng định một con số cố định không nguồn. Ưu tiên **complete-case** làm phân tích
+> chính khi tỷ lệ thiếu rất thấp (<5%); **MICE chỉ dùng cho biến NỀN/PHƠI NHIỄM khi
+> giả định MAR hợp lý — không áp cho biến kết cục**; không nội suy trung bình cơ học
+> (mean substitution/LOCF) cho toàn bộ phiếu.
 
 ### SAP §7 — Phân tích nhóm nhỏ (định trước — KHÔNG thêm sau khi xem dữ liệu)
 ```

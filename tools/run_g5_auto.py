@@ -764,10 +764,21 @@ def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
     elif design_code == "economic":
         # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20): trước đây
         # rơi vào else — CRF không có trường CHEERS 2022 nào (góc nhìn,
-        # chi phí, thỏa dụng/QALY, mô hình hóa). Chuẩn hóa như sr_ma/
-        # qualitative: bộ trường ĐỘC LẬP, không nhồi khối lâm sàng cá thể
-        # (clinical/comorbid/labs) vì phân tích kinh tế y tế thường tổng hợp
-        # ở mức QUẦN THỂ/kịch bản mô hình, không phải hồ sơ từng bệnh nhân.
+        # chi phí, thỏa dụng/QALY, mô hình hóa). Bộ trường ĐỘC LẬP, không
+        # nhồi khối lâm sàng cá thể (clinical/comorbid/labs) vì phân tích
+        # kinh tế y tế thường tổng hợp ở mức QUẦN THỂ/kịch bản mô hình,
+        # không phải hồ sơ từng bệnh nhân.
+        # SỬA 2026-07-24 (vòng lặp vòng 21, phát hiện MEDIUM): nhánh này KHÔNG
+        # tự chạy tới trong pipeline G0→G10 tự động — grep run_g1_auto.py xác
+        # nhận infer_study_design() chỉ gán 1 trong 8 mã canonical (rct/cohort/
+        # case_control/cross_sectional/diagnostic/sr_ma/prediction/qualitative);
+        # "economic" CHỈ tồn tại như specialist_module CỘNG THÊM (xử lý riêng ở
+        # main(), xem "existing_names"/_ECONOMIC_FIELDS phía dưới), không bao
+        # giờ trở thành design_code chính qua suy luận tự động. Nhánh dưới đây
+        # chỉ chạy nếu design_code="economic" được ép thủ công (vd chỉnh tay
+        # study_meta.json — KHÔNG phải đường chính thức doctrine hỗ trợ) — giữ
+        # lại để không mất dữ liệu nếu ai đó làm vậy, nhưng KHÔNG coi là một
+        # thiết kế "song song, tương đương" sr_ma/qualitative như trước đây.
         return _ECONOMIC_FIELDS, specialty
     else:  # cohort, case_control, cross_sectional, mặc định
         rows = (
@@ -1273,7 +1284,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   └──────────────────────────────────────────┘
 
   Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
-  Tham chiếu: STARD 2015 mục 19 (PMID: 26511081). Cần bác sĩ kiểm chứng.
+  Tham chiếu: STARD 2015 mục 19 (PMID: 26511519). Cần bác sĩ kiểm chứng.
 """
     elif design_code == "sr_ma":
         # THÊM 2026-07-17 (đóng việc hoãn từ round 5): sơ đồ PRISMA 2020 flow
@@ -1446,6 +1457,12 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
         # → mới có "Mất theo dõi/LTFU". case_control tra phơi nhiễm HỒI CỨU;
         # cross_sectional đo đồng thời 1 thời điểm — cả hai KHÔNG có LTFU.
         # (Cùng lớp lỗi "biến/khối mượn từ thiết kế khác" đã vá cho CRF 2026-07-17.)
+        # LƯU Ý 2026-07-24 (vòng lặp vòng 21): design_code="economic" cũng rơi
+        # vào nhánh else này nếu bị ép thủ công (không xảy ra qua pipeline tự
+        # động — xem ghi chú ở build_redcap_rows()) — sơ đồ "CÓ/KHÔNG PHƠI
+        # NHIỄM" bên dưới KHÔNG phù hợp CHEERS 2022 (đánh giá kinh tế y tế
+        # không có khái niệm dòng người tham gia phơi nhiễm/không phơi nhiễm).
+        # Chưa xây nhánh riêng vì đường này chưa có lối vào chính thức.
         if design_code == "cohort":
             followup_block = """\
           │                           │
@@ -1970,7 +1987,17 @@ def main():
     # (design_code chính không phải "economic" nhưng G1 phát hiện tín hiệu
     # kinh tế y tế trong chủ đề, vd RCT có tiểu mục chi phí-hiệu quả).
     if "economic" in specialist_modules and design_code != "economic":
-        rows = rows + _ECONOMIC_FIELDS
+        # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH,
+        # tự phát hiện lỗi do CHÍNH bản vá vòng 20 gây ra): _ECONOMIC_FIELDS tự
+        # khai "record_id" riêng (dùng khi design_code chính LÀ "economic",
+        # đứng một mình — không đi qua _BASE_ADMIN). Nhưng khi nối THÊM vào một
+        # CRF đã có _BASE_ADMIN (rct/cohort/...), "record_id" bị định nghĩa 2
+        # LẦN với Form Name/label khác nhau trong CÙNG data dictionary — REDCap
+        # yêu cầu tên biến duy nhất, import sẽ lỗi/không xác định. Loại các
+        # trường đã tồn tại theo TÊN trước khi nối, để _BASE_ADMIN thắng.
+        existing_names = {r[0] for r in rows}
+        add_on_fields = [r for r in _ECONOMIC_FIELDS if r[0] not in existing_names]
+        rows = rows + add_on_fields
         print("  → CRF: nối thêm bộ trường KINH TẾ Y TẾ (CHEERS 2022) — "
               "specialist_modules phát hiện 'economic' cộng thêm ở G1")
 

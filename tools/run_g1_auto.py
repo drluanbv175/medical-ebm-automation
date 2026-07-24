@@ -397,11 +397,38 @@ _PIN_DESIGN_ALIASES = {
 }
 
 
+# 8 mã canon DUY NHẤT mà pipeline G2-G10 dùng làm internal_code (khớp docstring
+# dòng 379-381 phía dưới). "economic"/"prom_tool"/"prognostic_model" KHÔNG nằm
+# trong tập này — đó là specialist_modules cộng thêm (run_g1_auto.py::
+# detect_specialist_modules()), không bao giờ là design_code chính.
+_CANONICAL_DESIGN_CODES = frozenset({
+    "rct", "cohort", "case_control", "cross_sectional",
+    "diagnostic", "sr_ma", "prediction", "qualitative",
+})
+
+
 def _canonicalize_pinned_design_code(raw: str) -> str:
     """Chuẩn hoá bí danh design_code do bác sĩ pin về đúng 8 mã canon dùng
-    làm internal_code xuyên suốt G2-G10 (xem chú thích _PIN_DESIGN_ALIASES)."""
+    làm internal_code xuyên suốt G2-G10 (xem chú thích _PIN_DESIGN_ALIASES).
+
+    SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH):
+    trước đây không validate — pin gõ sai/lạ (vd "economic", "mixed_methods",
+    lỗi chính tả một mã hợp lệ) bị truyền NGUYÊN VĂN xuống pipeline, rơi vào
+    else cuối của khối chọn SAP §4 trong generate_g1_artifact() (dòng ~939) —
+    else đó chỉ viết cho "qualitative" nhưng KHÔNG có validate nên bất kỳ mã
+    lạ nào cũng nhận nhầm nội dung SAP của qualitative (thematic analysis,
+    bão hòa dữ liệu...) dù thiết kế thật là gì khác. Trả về "" (bỏ qua pin,
+    dùng suy luận tự động) nếu không khớp bất kỳ mã canon nào, thay vì âm
+    thầm truyền giá trị lạ.
+    """
     key = raw.strip().lower()
-    return _PIN_DESIGN_ALIASES.get(key, key)
+    canonical = _PIN_DESIGN_ALIASES.get(key, key)
+    if canonical not in _CANONICAL_DESIGN_CODES:
+        print(f"  ⚠️  design_code pin '{raw}' không khớp bất kỳ mã canon nào "
+              f"({sorted(_CANONICAL_DESIGN_CODES)}) — BỎ QUA pin, dùng suy luận "
+              "tự động thay vì truyền giá trị lạ xuống pipeline.")
+        return ""
+    return canonical
 
 
 def _read_pinned_design(out_dir) -> str:
@@ -432,6 +459,20 @@ def _apply_design_pin(design: dict, pinned: str) -> dict:
         d["reporting_standard"] = _S.reporting_standards_for(pinned)["primary"]
     except Exception:  # noqa: BLE001
         pass
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH):
+    # trước đây chỉ ghi đè internal_code/primary/reporting_standard/rationale —
+    # bias_controls và alternative_1/alternative_2 vẫn giữ NGUYÊN giá trị đã
+    # tính từ suy luận tự động TRƯỚC KHI pin (dựa trên design cũ, có thể khác
+    # hẳn design đã pin). Hệ quả thật: G0 suy "rct" (mặc định treatment) rồi
+    # bác sĩ pin lại "diagnostic" → PHẦN 2 (bảng 7 sai lệch, đọc bias_controls)
+    # và PHẦN 1 (2 dòng "thiết kế thay thế") vẫn hiển thị nguyên văn của RCT
+    # (ngẫu nhiên hóa/làm mù...) — mâu thuẫn ngay trong CÙNG một artifact A2.
+    # Tính lại bias_controls theo thiết kế MỚI; vô hiệu hoá bảng "thiết kế
+    # thay thế" (dữ liệu đó gắn với suy luận tự động cũ, không còn ý nghĩa
+    # sau khi bác sĩ đã CHỐT thiết kế bằng pin).
+    d["bias_controls"] = BIAS_CONTROLS.get(pinned, BIAS_CONTROLS["cohort"])
+    d["alternative_1"] = "[Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động]"
+    d["alternative_2"] = "[Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động]"
     d["rationale"] = ("Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định "
                       "thật, ưu tiên hơn suy luận tự động). " + str(design.get("rationale", "")))
     return d
@@ -518,7 +559,11 @@ def check_topic_design_consistency(topic: str, chosen_internal_code: str) -> lis
     # lượng") — nếu không loại trừ, mọi đề tài "prediction" hợp lệ vẫn bị cảnh
     # báo giả "topic gợi ý cohort" (từ nhánh prognosis) dù đã chọn ĐÚNG. Khi
     # prediction_model khớp, bỏ qua kiểm tra prognosis (bị bao hàm/thay thế).
-    _skip_qtypes = {"prognosis"} if _kw_in(DESIGN_KEYWORD_HINTS["prediction_model"], topic_lower) else set()
+    # SỬA 2026-07-24 (vòng lặp vòng 21, đồng bộ với đảo thứ tự elif ở
+    # infer_study_design()): DESIGN_KEYWORD_HINTS["diagnosis"] chứa "auc"/
+    # "sensitivity" — cũng thường khớp cùng lúc với đề tài prediction model
+    # (vd "AUC của mô hình dự đoán..."). Bỏ qua luôn "diagnosis" cùng lý do.
+    _skip_qtypes = {"prognosis", "diagnosis"} if _kw_in(DESIGN_KEYWORD_HINTS["prediction_model"], topic_lower) else set()
     for qtype, kws in DESIGN_KEYWORD_HINTS.items():
         if qtype in _skip_qtypes:
             continue
@@ -569,10 +614,20 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     # bản vá, "diagnosis" từng nuốt mất câu này khi đặt "qualitative" sau).
     elif _kw_in(DESIGN_KEYWORD_HINTS["qualitative"], topic_lower):
         question_type = "qualitative"
-    elif _kw_in(DESIGN_KEYWORD_HINTS["diagnosis"], topic_lower):
-        question_type = "diagnosis"
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện MEDIUM):
+    # "prediction_model" kiểm TRƯỚC "diagnosis" (đảo thứ tự cũ) — DESIGN_KEYWORD_
+    # HINTS["diagnosis"] chứa "auc"/"sensitivity" (dòng ~447), thuật ngữ chỉ-số-
+    # hiệu-năng dùng CHUNG cho cả nghiên cứu chẩn đoán LẪN mô hình tiên lượng
+    # (vd "mô hình dự đoán tái nhập viện: độ nhạy, AUC..."). Nếu "diagnosis"
+    # thắng trước, đề tài prediction model đó bị gán nhầm internal="diagnostic"
+    # (STARD, Se/Sp/PPV/NPV) thay vì "prediction" (TRIPOD+AI, EPV/overfitting) —
+    # cùng lớp lỗi đã vá cho xung đột prediction_model/prognosis 2026-07-17.
+    # Cụm "mô hình dự đoán/tiên lượng/nomogram" (đặc hiệu ý định thiết kế) phải
+    # thắng thuật ngữ chỉ-số-hiệu-năng chung (AUC/sensitivity).
     elif _kw_in(DESIGN_KEYWORD_HINTS["prediction_model"], topic_lower):
         question_type = "prediction_model"
+    elif _kw_in(DESIGN_KEYWORD_HINTS["diagnosis"], topic_lower):
+        question_type = "diagnosis"
     elif _kw_in(DESIGN_KEYWORD_HINTS["prognosis"], topic_lower):
         question_type = "prognosis"
     elif _kw_in(DESIGN_KEYWORD_HINTS["harm"], topic_lower):
@@ -740,6 +795,16 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
         "reporting_standard": reporting,
         "bias_controls": BIAS_CONTROLS.get(internal, BIAS_CONTROLS["cohort"]),
         "ambiguous": ambiguous,
+        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện
+        # HIGH): `question_type` là THAM SỐ truyền vào hàm này, nhưng dòng
+        # 600-622 phía trên GÁN LẠI nó cục bộ theo từ khóa trong topic (vd
+        # topic có "trải nghiệm/rào cản" → đổi cục bộ thành "qualitative") —
+        # Python truyền string theo giá trị nên biến ở nơi GỌI hàm (main())
+        # không hề đổi theo, dù internal_code đã đúng là "qualitative". Trả
+        # về giá trị ĐÃ SUY LUẬN CUỐI CÙNG để main() gán lại, tránh checkpoint/
+        # log ghi "question_type" cũ mâu thuẫn với "design.internal_code" mới
+        # trong CÙNG một G1_checkpoint.json.
+        "resolved_question_type": question_type,
     }
 
 
@@ -1269,7 +1334,13 @@ def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_c
     # ở dạng NFD (chữ nền + dấu rời) khớp trượt hoàn toàn, để lọt PII qua guardrail G1 mà
     # không báo lỗi.
     artifact_normalized = unicodedata.normalize("NFC", artifact).lower()
-    pii_keywords = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd"]
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện MEDIUM):
+    # danh sách này lệch với pii_patterns tương ứng ở run_g0_auto.py (dòng 600)
+    # — thiếu "số hồ sơ" (số hồ sơ bệnh án, một dạng định danh gián tiếp mà G0
+    # đã coi đủ nghiêm trọng để chặn cứng R2). Cùng nội dung lẫn vào artifact
+    # G1 (topic bác sĩ tự sửa tay) sẽ bị G0 CHẶN nhưng G1 lại PASS êm — lỗ
+    # hổng bất đối xứng giữa 2 cổng liền kề trong cùng pipeline.
+    pii_keywords = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd", "số hồ sơ"]
     for p in pii_keywords:
         if p in artifact_normalized:
             errors.append(f"R2 🔴 PII phát hiện: '{p}'")
@@ -1296,10 +1367,17 @@ def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_c
     # "cỡ mẫu = 200" bịa xuất hiện ở BẤT KỲ ĐÂU khác trong văn bản 700+ dòng,
     # guardrail vẫn PASS oan (vì "[CẦN" luôn tồn tại ở chỗ khác). Sửa: kiểm
     # CỤC BỘ trong cửa sổ ±80 ký tự quanh MỖI vị trí khớp "cỡ mẫu...=...\d+".
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện LOW):
+    # regex cũ CHỈ khớp khi có dấu "=" — nhưng chính template của hàm này viết
+    # "Cỡ mẫu dự kiến: [CẦN...]" bằng dấu HAI CHẤM (dòng ~1111), không phải
+    # "=". Nếu một con số cụ thể bị điền vào đúng văn phong đó (vd "Cỡ mẫu dự
+    # kiến: 250 bệnh nhân"), regex cũ KHÔNG khớp ngay từ đầu — không phải do
+    # cửa sổ ±80 ký tự (đã sửa 2026-07-06) mà do thiếu hẳn ký tự phân cách
+    # phổ biến nhất mà template thật dùng. Chấp nhận cả ":" lẫn "=".
     import re as _re
     artifact_lower = artifact.lower()
     unlabeled_matches = []
-    for m in _re.finditer(r'cỡ mẫu.*?=\s*\d+', artifact_lower):
+    for m in _re.finditer(r'cỡ mẫu[^\n]{0,40}?[:=]\s*\d+', artifact_lower):
         window = artifact_lower[max(0, m.start() - 80): m.end() + 80]
         if "[cần" not in window:
             unlabeled_matches.append(artifact[m.start():m.end()])
@@ -1490,8 +1568,16 @@ def main():
         print(f"   Tiếp tục với --question-type={question_type}")
 
     # Suy loại thiết kế
-    print(f"\n🔬 Bước 2/7: Suy loại thiết kế ({QUESTION_TYPES.get(question_type, question_type)})...")
     design = infer_study_design(question_type, g0_gaps, topic)
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH):
+    # question_type bị GÁN LẠI CỤC BỘ bên trong infer_study_design() theo từ
+    # khóa trong topic (vd topic có "trải nghiệm/rào cản" → đổi cục bộ thành
+    # "qualitative") — Python truyền string theo giá trị nên biến question_type
+    # Ở ĐÂY không tự đổi theo, dù design["internal_code"] đã đúng. Đồng bộ lại
+    # TRƯỚC khi in log/sinh artifact/ghi checkpoint, để 2 trường không còn tự
+    # mâu thuẫn trong CÙNG một G1_checkpoint.json.
+    question_type = design.get("resolved_question_type", question_type)
+    print(f"\n🔬 Bước 2/7: Suy loại thiết kế ({QUESTION_TYPES.get(question_type, question_type)})...")
 
     # PIN THIẾT KẾ (bác sĩ xác nhận, durable) — study_meta.json['design_code']
     # ghi đè suy luận tự động để CHẠY LẠI KHÔNG DRIFT (vd đề tài hài lòng phải là
