@@ -78,3 +78,36 @@ class TestRound15ClinicalArtifactKeys:
     def test_no_code_collision_between_clinical_and_research_keys(self):
         codes = [v[0] for v in G.ARTIFACT_MAP.values()]
         assert len(codes) == len(set(codes)), "Có mã artifact_code bị trùng trong ARTIFACT_MAP"
+
+
+ROUND16_CLINICAL_KEYS_CODES_AND_GATES = [
+    ("evidence-search", "CA3", "A"),
+    ("clinical-case-summary", "CA4", "A-B"),
+]
+
+
+class TestRound16ClinicalArtifactKeys:
+    """Hồi quy vòng lặp kiểm tra-hoàn thiện vòng 16 (2026-07-24): 2 khóa bị
+    bỏ sót ở đợt vá vòng 15 cùng ngày (tra-cuu-chung-cu.md dùng
+    'evidence-search'; dieu-phoi-lam-sang.md — agent điều phối chính, dùng
+    'clinical-case-summary' ở bước CUỐI CÙNG sau Cổng B)."""
+
+    def test_each_key_present_with_ab_gate(self):
+        for key, code, gate in ROUND16_CLINICAL_KEYS_CODES_AND_GATES:
+            assert key in G.ARTIFACT_MAP, f"{key} thiếu trong ARTIFACT_MAP"
+            assert G.ARTIFACT_MAP[key][0] == code
+            assert G.ARTIFACT_MAP[key][1] == gate
+
+    def test_each_key_generates_with_correct_code_not_generic(self, capsys):
+        for key, code, _gate in ROUND16_CLINICAL_KEYS_CODES_AND_GATES:
+            d = _study_dir(f"TEST-VONG16-{key.upper()}")
+            try:
+                gen = G.ResearchDocxGenerator(study_name=d.name)
+                path = gen.generate(key, {})
+                assert re.search(rf"{re.escape(code)}_{re.escape(key.upper())}_", path, re.IGNORECASE), (
+                    f"{key} không sinh đúng mã {code}: {path}"
+                )
+                captured = capsys.readouterr()
+                assert "ngoài danh mục nghiên cứu chuẩn" not in captured.out
+            finally:
+                _rmtree_retry(d)

@@ -324,6 +324,18 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
                   round(np.exp(np.log(or_crude) + 1.96 * se_log), 3))
             result["or_crude"] = round(or_crude, 3)
             result["ci_95"] = ci
+        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện
+        # HIGH): risk difference (RD) + CI 95% Wald — vòng 15 vừa thêm
+        # --hypothesis-type non_inferiority/equivalence vào run_g3_auto.py
+        # (margin định nghĩa trên THANG TỶ LỆ, không phải OR) nhưng
+        # compare_primary_outcome() trước đây CHỈ tính OR — không thể so
+        # sánh margin (thang tỷ lệ) với CI của OR (thang log-odds, khác thang
+        # hoàn toàn). RD cho phép interpret_hypothesis_type() bên dưới so
+        # sánh ĐÚNG thang với margin từ G3.
+        rd = p1 - p0
+        se_rd = np.sqrt(p0 * (1 - p0) / n0 + p1 * (1 - p1) / n1)
+        result["risk_diff"] = round(rd, 4)
+        result["risk_diff_ci_95"] = (round(rd - 1.96 * se_rd, 4), round(rd + 1.96 * se_rd, 4))
         if HAS_SCIPY:
             ct = pd.crosstab(df[outcome_col], df[group_col])
             _, p, _, _ = sp_stats.chi2_contingency(ct)
@@ -339,6 +351,62 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
         result["test"] = comp["test"]
 
     return result
+
+
+def interpret_hypothesis_type(res: dict, hypothesis_type: str, margin) -> dict:
+    """Diễn giải kết cục chính theo ĐÚNG khung giả thuyết đã thiết kế ở G3
+    (superiority/non_inferiority/equivalence) — xem run_g3_auto.py::
+    n_two_proportion_ni().
+
+    THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện HIGH):
+    trước đây run_stats_analysis.py hoàn toàn không biết hypothesis_type —
+    một đề tài NI được tính cỡ mẫu đúng ở G3 nhưng bị phân tích/diễn giải
+    y hệt superiority ở G6 (chỉ nhìn p-value hai đuôi), sai nguyên tắc kết
+    luận NI kinh điển (dựa vào VỊ TRÍ giới hạn CI so với margin, không phải
+    p<0.05). Hàm này CHỈ tính toán số học khách quan (RD + CI đã có ở
+    compare_primary_outcome()) và trình bày CẢ HAI khả năng chiều diễn giải
+    (nhóm nào là thử nghiệm/chứng) — KHÔNG tự đoán chiều nào đúng, vì
+    compare_primary_outcome() chỉ biết "group_0"/"group_1" (sắp theo giá
+    trị), không biết ngữ nghĩa lâm sàng nào là can thiệp mới. Tự đoán sai
+    chiều ở đây có thể dẫn tới kết luận non-inferiority SAI — rủi ro cao hơn
+    hẳn một dòng cảnh báo thiếu, nên cố tình để bác sĩ/thống kê viên xác
+    nhận chiều thay vì tự quyết."""
+    if hypothesis_type not in ("non_inferiority", "equivalence"):
+        return {}
+    if res.get("outcome_type") != "binary" or "risk_diff_ci_95" not in res:
+        return {"note": (
+            "[CẦN THỐNG KÊ VIÊN — diễn giải non_inferiority/equivalence tự động ở đây CHỈ hỗ trợ "
+            "kết cục NHỊ PHÂN qua risk difference. Kết cục liên tục/sống còn cần tính tay theo "
+            "CÙNG nguyên tắc (so giới hạn CI của MD/HR với margin), KHÔNG dựa vào p-value.]"
+        )}
+    if margin is None:
+        return {"note": "[CẦN — thiếu margin từ G3 checkpoint, KHÔNG thể diễn giải non_inferiority/equivalence.]"}
+    lo, hi = res["risk_diff_ci_95"]
+    g0, g1 = res.get("groups", ["A", "B"])
+    if hypothesis_type == "non_inferiority":
+        cond_group1_is_test = lo > -margin
+        cond_group0_is_test = hi < margin
+        note = (
+            f"[CẦN BÁC SĨ/THỐNG KÊ VIÊN XÁC NHẬN CHIỀU DIỄN GIẢI — hệ KHÔNG tự đoán nhóm nào là "
+            f"thử nghiệm]: NẾU nhóm '{g1}' là THỬ NGHIỆM và '{g0}' là CHỨNG → "
+            f"{'ĐẠT' if cond_group1_is_test else 'CHƯA ĐẠT'} non-inferiority (cận dưới CI của RD="
+            f"{lo} {'>' if cond_group1_is_test else '≤'} −margin={-margin}). NẾU ngược lại "
+            f"('{g0}' là thử nghiệm) → {'ĐẠT' if cond_group0_is_test else 'CHƯA ĐẠT'} non-inferiority "
+            f"(cận trên CI={hi} {'<' if cond_group0_is_test else '≥'} +margin={margin}). "
+            "Kết luận NI dựa trên VỊ TRÍ giới hạn CI so với margin, KHÔNG dựa vào p-value superiority."
+        )
+    else:  # equivalence
+        within = (lo > -margin) and (hi < margin)
+        note = (
+            f"{'ĐẠT' if within else 'CHƯA ĐẠT'} equivalence theo xấp xỉ CI-vs-margin đơn giản hóa: "
+            f"toàn bộ CI của RD [{lo}, {hi}] {'nằm trong' if within else 'KHÔNG nằm hoàn toàn trong'} "
+            f"biên [−{margin}, +{margin}]. [CẦN — đây là xấp xỉ dùng CI 95% hai phía làm proxy cho "
+            "TOST (Two One-Sided Tests) thật; thống kê viên nên đối chiếu bằng phần mềm chuyên dụng "
+            "(R TOSTER/PowerTOST) nếu kết luận equivalence là trọng yếu cho đề tài — cùng caveat đã "
+            "ghi ở run_g3_auto.py về việc chưa tự động hóa công thức TOST ở bước cỡ mẫu.]"
+        )
+    return {"hypothesis_type": hypothesis_type, "margin": margin,
+            "risk_diff_ci_95": [lo, hi], "note": note}
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -663,7 +731,7 @@ def format_table1_text(t1: dict) -> str:
     return "\n".join(lines)
 
 
-def format_outcome_text(res: dict, outcome_col: str) -> str:
+def format_outcome_text(res: dict, outcome_col: str, hypothesis_interp: dict = None) -> str:
     if "error" in res:
         return f"LỖI: {res['error']}"
     g = res.get("groups", ["A", "B"])
@@ -676,12 +744,23 @@ def format_outcome_text(res: dict, outcome_col: str) -> str:
         if "or_crude" in res:
             ci = res["ci_95"]
             lines.append(f"  OR thô = {res['or_crude']} (95%CI {ci[0]}–{ci[1]})")
+        if "risk_diff" in res:
+            rd_ci = res["risk_diff_ci_95"]
+            lines.append(f"  Risk difference = {res['risk_diff']} (95%CI {rd_ci[0]}–{rd_ci[1]})")
     else:
         lines.append(f"  Nhóm {g[0]}: Mean={n0.get('mean','?')} ± SD={n0.get('sd','?')}")
         lines.append(f"  Nhóm {g[1]}: Mean={n1.get('mean','?')} ± SD={n1.get('sd','?')}")
         lines.append(f"  {res.get('effect', 'N/A')}")
     if "p_value" in res:
         lines.append(f"  p = {res['p_value']} ({res.get('test','')})")
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện HIGH):
+    # xem interpret_hypothesis_type() — chỉ xuất hiện khi G3 thiết kế NI/
+    # equivalence, KHÔNG đổi gì cho đề tài superiority (mặc định, đa số).
+    if hypothesis_interp and hypothesis_interp.get("hypothesis_type"):
+        lines.append("")
+        lines.append(f"  ── DIỄN GIẢI {hypothesis_interp['hypothesis_type'].upper()} "
+                      f"(margin=±{hypothesis_interp['margin']}) ──")
+        lines.append(f"  {hypothesis_interp['note']}")
     lines.append("\n[BÁC SĨ KIỂM TRA: số liệu lấy trực tiếp từ dữ liệu thật]")
     return "\n".join(lines)
 
@@ -1052,6 +1131,15 @@ def main():
         sys.exit(1)
     g4_cp = _load_checkpoint(args.study, "G4")
     g5_cp = _load_checkpoint(args.study, "G5")
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện HIGH):
+    # đọc lại hypothesis_type/margin đã ghim ở G3 (run_g3_auto.py) để diễn
+    # giải kết cục chính đúng khung — xem interpret_hypothesis_type().
+    g3_cp = _load_checkpoint(args.study, "G3")
+    hypothesis_type = g3_cp.get("hypothesis_type", "superiority")
+    hypothesis_margin = g3_cp.get("margin")
+    if hypothesis_type and hypothesis_type != "superiority":
+        print(f"ℹ️  G3 checkpoint: hypothesis_type={hypothesis_type}, margin={hypothesis_margin} "
+              "— sẽ diễn giải kết cục chính theo khung này (không chỉ p-value superiority).")
     g4_checkpoint_locked = _is_locked(g4_cp.get("g4_status", g4_cp.get("G4_STATUS")))
     g5_checkpoint_locked = _is_locked(g5_cp.get("g5_status", g5_cp.get("G5_STATUS")))
     g4_ledger_ok = _ledger_approved(
@@ -1129,10 +1217,15 @@ def main():
     # 5. Kết cục chính
     if args.outcome and args.group and args.outcome in df.columns:
         res = compare_primary_outcome(df, args.outcome, args.group, args.outcome_type)
-        res_txt = format_outcome_text(res, args.outcome)
+        hypothesis_interp = interpret_hypothesis_type(res, hypothesis_type, hypothesis_margin)
+        res_txt = format_outcome_text(res, args.outcome, hypothesis_interp)
         (prefix.parent / f"{args.gate}_table2_main_outcome.txt").write_text(res_txt, encoding="utf-8")
         summary["primary_outcome"] = res
+        if hypothesis_interp:
+            summary["hypothesis_interpretation"] = hypothesis_interp
         print(f"✓ Kết cục chính ({res.get('outcome_type','')}): p={res.get('p_value','?')}")
+        if hypothesis_interp.get("hypothesis_type"):
+            print(f"  ℹ️  Diễn giải {hypothesis_type}: xem {args.gate}_table2_main_outcome.txt")
 
         # 6. Đa biến
         mv = multivariate_model(df, args.outcome, args.group, covariates, args.outcome_type)

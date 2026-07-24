@@ -1424,6 +1424,14 @@ def main():
         "dropout": dropout, "formula_used": formula_used, "p_event": p_event,
         "p0": args.p0,  # lưu tỷ lệ biến cố nhóm chứng → chạy lại KHÔNG mất (fix param recovery)
         "sd": args.sd,  # lưu SD kết cục liên tục (effect_type=MD) → chạy lại KHÔNG mất
+        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện
+        # HIGH): hypothesis_type/margin trước đây CHỈ tồn tại trong văn bản
+        # .md/.docx — KHÔNG có trong JSON máy đọc được, nên run_g6_auto.py/
+        # run_stats_analysis.py không có cách nào biết đề tài là non_
+        # inferiority để diễn giải đúng (so cận CI với margin thay vì chỉ
+        # p-value kiểu superiority). Ghi vào checkpoint để G6 đọc lại được.
+        "hypothesis_type": args.hypothesis_type,
+        "margin": args.margin,
         "guardrail": status,
         "core_value": core,
         "pending_doctor_actions": [

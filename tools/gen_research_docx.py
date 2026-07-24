@@ -118,6 +118,13 @@ ARTIFACT_MAP = {
     "patient-instructions": ("CA2", "A", "Lời dặn bệnh nhân & Kế hoạch tuân thủ (A5)"),
     "outcome-learning":     ("CB1", "B", "Ghi nhận kết quả điều trị & Tín hiệu học tập (QI)"),
     "guideline-update":     ("CB2", "B", "Cảnh báo cập nhật Guideline"),
+
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16): 2 khóa LÂM SÀNG
+    # bị bỏ sót ở đợt vá vòng 15 cùng ngày (tra-cuu-chung-cu.md và
+    # dieu-phoi-lam-sang.md — agent điều phối chính, dùng khóa này ở bước
+    # CUỐI CÙNG sau Cổng B — tham chiếu khóa không tồn tại).
+    "evidence-search":      ("CA3", "A", "Tóm tắt tra cứu chứng cứ điểm khám (PICO)"),
+    "clinical-case-summary": ("CA4", "A-B", "Tóm tắt gói quyết định ca lâm sàng"),
 }
 
 

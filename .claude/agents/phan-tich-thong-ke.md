@@ -174,6 +174,14 @@ OR_table <- data.frame(
 
 > **Ngoài phạm vi Logit/OLS (2026-07-04):** `run_stats_analysis.py` (BƯỚC 0b) đã CHẠY THẬT bằng Python cho Logit (nhị phân) và OLS (liên tục). Khi kết cục/thiết kế cần **GLM khác** (Poisson/NegBinomial cho biến đếm, Gamma cho dữ liệu lệch dương), **mixed-effects/hierarchical model** (dữ liệu phân cấp, đo lặp lại nhiều lần/bệnh nhân), hoặc **ARIMA/time-series** — những loại này CHƯA có script Python đóng gói sẵn. Dùng skill `statsmodels` (tài liệu + code mẫu statsmodels, không có script CLI riêng — AI viết code theo đúng ví dụ trong skill rồi chạy) để lấp khoảng trống này, thay vì chỉ để code R mẫu tĩnh.
 
+#### [B-bis] Non-inferiority / Equivalence — KHÁC HẲN superiority ở tiêu chí kết luận
+**THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện HIGH):** nếu SAP/G3 định thiết kế **non-inferiority (NI)** hoặc **equivalence** (`co-mau-nghien-cuu` đã tính cỡ mẫu theo `--hypothesis-type non_inferiority --margin <Δ>`), kết luận **KHÔNG dựa vào p-value hai đuôi kiểu superiority** — dựa vào **VỊ TRÍ của giới hạn khoảng tin cậy (CI) so với biên Δ (margin)**:
+- **Non-inferiority:** ĐẠT khi giới hạn CI (phía "kém hơn") nằm **trong** biên Δ đã định trước — vd nếu nhóm thử nghiệm có tỷ lệ biến cố THẤP HƠN=tốt hơn là nhóm chứng, NI đạt khi cận CI phía "cao hơn" của (p_test − p_control) < +Δ.
+- **Equivalence (TOST):** ĐẠT khi **TOÀN BỘ** CI nằm trong biên hai phía [−Δ, +Δ].
+- **p<0.05 KHÔNG chứng minh non-inferiority** (chỉ chứng minh có khác biệt — sai hướng câu hỏi); **p≥0.05 KHÔNG chứng minh non-inferiority** (chỉ là "chưa đủ bằng chứng khác biệt", không phải "đã chứng minh không kém hơn Δ").
+- Phân tích chính khuyến nghị chạy **CẢ ITT lẫn Per-Protocol** song song cho NI (khác superiority thường chỉ ưu tiên ITT) — ITT thiên về bảo thủ cho superiority nhưng có thể "pha loãng" khác biệt thật và làm NI DỄ đạt giả tạo (Per-Protocol mới là kiểm định khắt khe hơn cho NI); nếu 2 phân tích cho kết luận khác nhau → KHÔNG kết luận NI, cần thống kê viên xem lại.
+- `run_stats_analysis.py` (BƯỚC 0b) đã tự đọc `hypothesis_type`/`margin` từ `G3_checkpoint.json` và tự tính risk difference + CI 95% + diễn giải NI/equivalence (`interpret_hypothesis_type()`) — nhưng KHÔNG tự đoán nhóm nào là thử nghiệm/chứng (chỉ liệt kê CẢ HAI khả năng chiều) vì đoán sai chiều ở đây có thể dẫn tới kết luận NI SAI; **bác sĩ/thống kê viên PHẢI tự xác nhận chiều đúng** trước khi dùng kết luận NI/equivalence để viết Bàn luận. Equivalence hiện chỉ dùng xấp xỉ CI-vs-margin (không phải TOST đầy đủ) — đối chiếu phần mềm chuyên dụng (R TOSTER/PowerTOST) nếu kết luận trọng yếu.
+
 #### [D] Phân tích sống còn (Cox regression)
 ```r
 library(survival); library(survminer)

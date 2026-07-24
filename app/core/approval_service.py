@@ -63,6 +63,14 @@ class ApprovalCenter:
 
     def reject(self, approval_id: str, reviewer_role: str, note: str) -> ApprovalItem:
         item = self._require_item(approval_id)
+        # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện LOW
+        # — defense-in-depth, không phải lỗ hổng đang khai thác được: route
+        # sống hiện tại (app/chronic_care/dashboard.py) không hề gọi
+        # reject(), nhưng approve() đã có kiểm role này còn reject() thì
+        # không — bất đối xứng dễ gây lỗi nếu Phase 3B thêm UI ghi thật gọi
+        # thẳng reject() mà quên kiểm role riêng).
+        if reviewer_role not in {"physician", "principal_investigator", "system_owner"}:
+            raise PermissionError("Chỉ reviewer có thẩm quyền mới được reject")
         item.status = ReviewStatus.REJECTED
         item.reviewed_at = datetime.now(timezone.utc).isoformat()
         item.reviewer_role = reviewer_role

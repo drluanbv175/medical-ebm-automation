@@ -1,6 +1,7 @@
 """Read-only dashboard adapter cho Chronic Care Phase 3A."""
 from __future__ import annotations
 
+import threading
 from dataclasses import asdict
 from typing import Any, Dict, List, Optional
 
@@ -19,6 +20,17 @@ def build_chronic_care_readonly_snapshot() -> ChronicCareDashboardState:
 # lần render chạy — cache rỗng lại từ đầu mỗi lần, không hề cache được gì cả;
 # bắt được lỗi này bằng test_chronic_care_dashboard_seed_once.py trước khi commit).
 _CACHED_SNAPSHOT: Optional[ChronicCareDashboardState] = None
+# THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện MEDIUM):
+# check-then-set trần (không khóa) ở trên là TOCTOU race thật trên route đã
+# xác nhận CHẠY THẬT (app/dashboard/main.py tab 14, mỗi phiên bác sĩ là 1
+# thread trong CÙNG tiến trình Streamlit) — 2 phiên rerun gần như đồng thời
+# TRƯỚC khi biến toàn cục được gán có thể cùng thấy None, cùng gọi
+# seed_synthetic_cases() độc lập, mỗi lần APPEND một lô dòng audit MỚI vào
+# CÙNG file (AuditLogger mở "a") trước khi cache hội tụ về 1 snapshot — làm
+# hỏng đúng mục tiêu "chỉ seed MỘT LẦN" của bản vá vòng 11. Khóa bằng
+# threading.Lock (double-checked locking) — vẫn giữ nguyên lý do KHÔNG dùng
+# st_module.cache_resource đã giải thích ở trên.
+_CACHE_LOCK = threading.Lock()
 
 
 def snapshot_to_rows(snapshot: ChronicCareDashboardState) -> Dict[str, List[Dict[str, Any]]]:
@@ -58,8 +70,10 @@ def render_chronic_care_shadow_dashboard(st_module) -> ChronicCareDashboardState
     # trình (an toàn vì dữ liệu 100% tổng hợp/tĩnh, không phụ thuộc input
     # người dùng) — không đổi hành vi hiển thị, chỉ chặn việc seed lặp lại.
     global _CACHED_SNAPSHOT
-    if _CACHED_SNAPSHOT is None:
-        _CACHED_SNAPSHOT = build_chronic_care_readonly_snapshot()
+    if _CACHED_SNAPSHOT is None:  # kiểm nhanh không khóa (đường phổ biến sau lần seed đầu)
+        with _CACHE_LOCK:
+            if _CACHED_SNAPSHOT is None:  # kiểm lại TRONG khóa — chặn race vòng 16
+                _CACHED_SNAPSHOT = build_chronic_care_readonly_snapshot()
     snapshot = _CACHED_SNAPSHOT
     rows = snapshot_to_rows(snapshot)
     st_module.header("🫀 Chronic Care Shadow Pilot — Read-only")

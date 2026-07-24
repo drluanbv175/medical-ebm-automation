@@ -24,6 +24,9 @@ thuộc thứ tự test khác đã làm nóng cache trước đó.
 """
 from __future__ import annotations
 
+import threading
+import time
+
 import app.chronic_care.dashboard as CCD
 
 
@@ -77,4 +80,50 @@ def test_render_dashboard_only_seeds_snapshot_once_across_multiple_reruns(monkey
     assert call_count["n"] == 1, (
         f"Snapshot builder bị gọi {call_count['n']} lần thay vì đúng 1 lần — "
         "audit log sẽ phình vô hạn mỗi lần Streamlit rerun"
+    )
+
+
+def test_render_dashboard_seeds_exactly_once_under_concurrent_reruns(monkeypatch):
+    """Hồi quy vòng lặp kiểm tra-hoàn thiện vòng 16 (2026-07-24, phát hiện
+    MEDIUM): test tuần tự ở trên không bắt được TOCTOU — 2 phiên bác sĩ rerun
+    gần như đồng thời (cùng thread pool của 1 tiến trình Streamlit) đều thấy
+    _CACHED_SNAPSHOT is None TRƯỚC khi bên kia kịp gán, cùng gọi
+    seed_synthetic_cases() độc lập, cùng APPEND audit log — phá vỡ mục tiêu
+    "chỉ seed MỘT LẦN". Test này dùng threading.Barrier để ép NHIỀU thread
+    cùng vào đường kiểm tra y hệt lúc, mô phỏng đúng race window đã vá bằng
+    _CACHE_LOCK (double-checked locking)."""
+    monkeypatch.setattr(CCD, "_CACHED_SNAPSHOT", None)
+    call_count = {"n": 0}
+    call_lock = threading.Lock()
+    real_build = CCD.build_chronic_care_readonly_snapshot
+
+    def slow_counting_build():
+        with call_lock:
+            call_count["n"] += 1
+        time.sleep(0.05)  # nới rộng cửa sổ race để test bắt được lỗi nếu khóa bị bỏ
+        return real_build()
+
+    monkeypatch.setattr(CCD, "build_chronic_care_readonly_snapshot", slow_counting_build)
+
+    n_threads = 8
+    barrier = threading.Barrier(n_threads)
+    errors = []
+
+    def worker():
+        try:
+            barrier.wait(timeout=5)  # ép mọi thread cùng gọi render() gần như đồng thời
+            CCD.render_chronic_care_shadow_dashboard(_FakeSt())
+        except Exception as exc:  # noqa: BLE001 — thu lỗi để assert ở main thread
+            errors.append(exc)
+
+    threads = [threading.Thread(target=worker) for _ in range(n_threads)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=10)
+
+    assert not errors, f"Lỗi trong thread: {errors}"
+    assert call_count["n"] == 1, (
+        f"Snapshot builder bị gọi {call_count['n']} lần dưới {n_threads} thread đồng thời "
+        "thay vì đúng 1 lần — TOCTOU race, mỗi lần gọi APPEND audit log riêng vào cùng file"
     )
