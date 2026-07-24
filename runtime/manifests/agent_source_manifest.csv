@@ -4,7 +4,7 @@ path,sha256,size_bytes
 .claude/agents/binh-duyet.md,6f2201207de1170c41815d8c29108b2c7f70eeb7792db126d8ef52588f8a52f5,15454
 .claude/agents/cap-nhat-guideline.md,b475673b61881210a30fb670f4a7c029b428e467ebd1a6e2dc41454a058a5915,11473
 .claude/agents/cau-hoi-nghien-cuu.md,ebdca91385523c29a93b8e27c1d6c7cb1899fdafa90d34f3d75c808491f9b306,14991
-.claude/agents/cham-soc-giam-nhe.md,ac01cafcfdba52480307f6d36e4acd847f9e2e8d7d4def36e3e728dca55c79fc,21988
+.claude/agents/cham-soc-giam-nhe.md,dbb544e740e449dbbc363fe047b7d1a332f7be30aa2e1bda53f107209c32a5a5,23293
 .claude/agents/chan-doan-xac-suat.md,bc85776220f6d96b62f848b3a042d9b1c5badb7c8994b3ae1d97ab7ad5fb805b,17111
 .claude/agents/co-mau-nghien-cuu.md,270bcc47ba15758387f7f27b99d59551cd51b8cb3c465845c64cce15ee275eb1,18408
 .claude/agents/cong-cu-do-luong.md,f2aa702ada347ba134bcd431c45b9c28782cd2f02d15caad7c8f44a5c978adad,21589
@@ -33,7 +33,7 @@ path,sha256,size_bytes
 .claude/agents/pico-lam-sang.md,ec96db5b907d61bc523cea1ffba52cae9435557f4e61d8ae683adbd4f2d7aa0b,11039
 .claude/agents/quan-ly-du-lieu.md,a526d492368f2d232d8a22f900e661dd9b700910fd3aece39f0f919c196f0262,24903
 .claude/agents/quan-ly-khang-dong.md,b815762686fefbd72c11168595b3093cc5b291be923da39d32270ac12e14903a,22504
-.claude/agents/quyet-dinh-chung.md,373eb8cc927af2179f878c09f4adaf0f4a52260b24cf74962f78df09ec452e8e,10737
+.claude/agents/quyet-dinh-chung.md,d6d356990ed772221c2cc6187a354048bd5bc559534d5650fac0432fa526fb8d,11023
 .claude/agents/sang-loc-co-do.md,c90c33eb93f51cc54233ae43e4907270816016c67c55aba82315f91c9c91c5d4,25439
 .claude/agents/so-cai-ghi-nho.md,7e93f23189adf5537c3e87f21616b3fb5a3b1e0b2c79c924deab4aca641024be,16108
 .claude/agents/tham-dinh-dau-ra.md,83926ed575987a5627a8c8483b99260ba9c8076154ea966cb669f3d8722935c7,34416
