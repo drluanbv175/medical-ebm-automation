@@ -638,6 +638,32 @@ _SRMA_FIELDS = [
 ]
 
 
+# THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20, phát hiện HIGH): G5
+# trước đây KHÔNG có nhánh riêng cho design_code="economic" — rơi vào nhánh
+# "mặc định" cohort/case_control/cross_sectional, sinh CRF LÂM SÀNG cho bệnh
+# nhân cá thể (sinh hiệu, bệnh nền, exposure/outcome kiểu cohort) HOÀN TOÀN
+# KHÔNG có trường nào cho các dữ liệu cốt lõi của CHEERS 2022 (Husereau D et
+# al. Value Health. 2022;25(1):3-9, doi:10.1016/j.jval.2021.11.1351 — đã xác
+# minh trực tiếp từ PDF gốc ở vòng 11) mà chính run_g7_auto.py đã cam kết báo
+# cáo khi design_code/specialist_modules chứa "economic": góc nhìn phân tích,
+# khung thời gian/tỷ lệ chiết khấu, danh mục chi phí, đơn giá, công cụ đo độ
+# thỏa dụng (QALY), loại mô hình. Cùng lớp bug "rơi fallback sai" đã vá cho
+# qualitative (vòng 2) và prediction (vòng 7), nay vá cho economic.
+_ECONOMIC_FIELDS = [
+    ("record_id",         "Admin",        "Quản lý hồ sơ",                          "text",     "Mã hồ sơ (record_id, ẩn danh, không PII)", "",                                                                       "",                                                                                    "",       "",   "",    "y", ""),
+    ("perspective",       "Study Design", "Thiết kế phân tích kinh tế (CHEERS 2022)", "dropdown", "Góc nhìn phân tích",                       "1, Xã hội | 2, Người chi trả (BHYT) | 3, Bệnh viện/cơ sở y tế | 4, Khác", "[CẦN XÁC ĐỊNH TRƯỚC — CHEERS 2022 mục 6]",                                                                                "",       "",   "",    "y", ""),
+    ("time_horizon",      "Study Design", "",                                        "text",     "Khung thời gian phân tích (đơn vị năm/tháng)", "",                                                                     "[CẦN — biện minh phù hợp với diễn tiến bệnh, CHEERS 2022 mục 9]",                                                        "number", "0",  "",    "y", ""),
+    ("discount_rate",     "Study Design", "",                                        "text",     "Tỷ lệ chiết khấu áp dụng (%/năm)",           "",                                                                     "[CẦN — CHEERS 2022 mục 10 chỉ yêu cầu BÁO CÁO, KHÔNG quy định mức cụ thể]",                                              "number", "0",  "20",  "n", ""),
+    ("cost_category",     "Costing",      "Chi phí (CHEERS 2022 mục 15-17)",         "checkbox", "Loại chi phí thu thập",                     "1, Trực tiếp y tế | 2, Trực tiếp ngoài y tế | 3, Gián tiếp (mất năng suất)", "",                                                                                                                     "",       "",   "",    "y", ""),
+    ("resource_use_unit", "Costing",      "",                                        "text",     "Đơn vị sử dụng nguồn lực (vd số lần khám/ngày nằm viện)", "",                                                        "[CẦN — theo từng hạng mục chi phí]",                                                                                     "number", "0",  "",    "n", ""),
+    ("unit_cost_value",   "Costing",      "",                                        "text",     "Đơn giá áp dụng",                           "",                                                                     "[CẦN NGUỒN — KHÔNG bịa đơn giá, dùng biểu giá BHYT/bệnh viện thật]",                                                     "number", "0",  "",    "y", ""),
+    ("unit_cost_source",  "Costing",      "",                                        "text",     "Nguồn đơn giá (PMID/DOI/biểu giá chính thức + năm)", "",                                                             "",                                                                                                                        "",       "",   "",    "y", ""),
+    ("utility_instrument","Outcomes",     "Thước đo hiệu quả (CHEERS 2022 mục 18-19)","dropdown", "Công cụ đo độ thỏa dụng (nếu CUA/QALY)",    "0, Không áp dụng (CEA/CBA) | 1, EQ-5D | 2, SF-6D | 3, Khác",              "",                                                                                                                        "",       "",   "",    "n", ""),
+    ("utility_score",     "Outcomes",     "",                                        "text",     "Điểm thỏa dụng đo được",                    "",                                                                     "",                                                                                                                        "number", "0",  "1",   "n", ""),
+    ("clinical_outcome_unit","Outcomes",  "",                                        "text",     "Đơn vị hiệu quả lâm sàng (nếu CEA — vd số ca tránh được biến cố)", "",                                              "",                                                                                                                        "",       "",   "",    "n", ""),
+    ("model_type",        "Modeling",     "Mô hình hóa (nếu có)",                    "dropdown", "Loại mô hình",                              "0, Không dùng mô hình (dữ liệu thử nghiệm trực tiếp) | 1, Cây quyết định (decision tree) | 2, Markov | 3, Khác", "",                                                                                                     "",       "",   "",    "n", ""),
+]
+
 # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện CRITICAL: G5
 # hoàn toàn thiếu nhánh design_code="qualitative", rơi vào nhánh "mặc định"
 # cohort/case_control/cross_sectional và sinh CRF lâm sàng định lượng — huyết
@@ -735,6 +761,14 @@ def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
             + _PREDICTION_EXTRA
             + _BASE_ADMIN_COMPLETE
         )
+    elif design_code == "economic":
+        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20): trước đây
+        # rơi vào else — CRF không có trường CHEERS 2022 nào (góc nhìn,
+        # chi phí, thỏa dụng/QALY, mô hình hóa). Chuẩn hóa như sr_ma/
+        # qualitative: bộ trường ĐỘC LẬP, không nhồi khối lâm sàng cá thể
+        # (clinical/comorbid/labs) vì phân tích kinh tế y tế thường tổng hợp
+        # ở mức QUẦN THỂ/kịch bản mô hình, không phải hồ sơ từng bệnh nhân.
+        return _ECONOMIC_FIELDS, specialty
     else:  # cohort, case_control, cross_sectional, mặc định
         rows = (
             _BASE_ADMIN + followup_admin + _BASE_DEMOGRAPHICS + base_vitals + bundle["clinical"]
@@ -1591,7 +1625,7 @@ def generate_artifact(
     study: str, topic: str, design_code: str,
     n_adjusted: int, n_total: int, n_per_group: int,
     run_date: str, rows: list, specialty: str = "generic",
-    specialty_runner_up=None,
+    specialty_runner_up=None, hypothesis_type=None, margin=None,
 ) -> str:
     is_srma = (design_code == "sr_ma")
     n_rows = len(rows)
@@ -1785,6 +1819,22 @@ def generate_artifact(
         "- [ ] Ngày khóa DB: [CẦN BÁC SĨ ĐIỀN]",
         "- [ ] Người khóa DB (chữ ký): [CẦN]",
         "- [ ] Người chứng kiến (chữ ký): [CẦN]",
+    ]
+    if hypothesis_type in ("non_inferiority", "equivalence"):
+        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20): cùng khuôn
+        # CONSORT-NI/Equivalence (Piaggio et al., JAMA 2012;308(24):2594-2604,
+        # doi:10.1001/jama.2012.87802) đã đưa vào run_g7_auto.py/run_g8_auto.py
+        # — quần thể ITT/PP và cách phân loại vi phạm đề cương PHẢI chốt TRƯỚC
+        # khi khóa DB, vì khác biệt ITT/PP có thể đổi chiều kết luận non-inferior.
+        _margin_txt = f"Δ = {margin}" if margin is not None else "[CẦN — chưa ghi ở G3]"
+        lines += [
+            f"- [ ] **[CẦN THỐNG KÊ VIÊN]** Đề tài giả thuyết **{hypothesis_type}** "
+            f"({_margin_txt}) — CHỐT định nghĩa quần thể ITT và Per-Protocol (PP), "
+            "cùng quy tắc phân loại vi phạm đề cương, TRƯỚC khi ký khóa DB "
+            "(CONSORT-NI/Equivalence, Piaggio 2012, doi:10.1001/jama.2012.87802 — "
+            "khác ITT/PP có thể đảo chiều kết luận non-inferior).",
+        ]
+    lines += [
         "",
         "---",
         "",
@@ -1885,6 +1935,15 @@ def main():
     n_total     = (g3.get("n_total") or n_adjusted) if n_adjusted else 0
     n_per_group = (g3.get("n_per_group") or n_total // 2) if n_total else 0
     g3_effect_type = g3.get("effect_type")  # THÊM 2026-07-06: để đối chiếu loại kết cục vs CRF
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20): G5 trước đây
+    # KHÔNG đọc specialist_modules (G1) lẫn hypothesis_type/margin (G3) —
+    # cùng "khoảng trống truyền field" đã vá cho run_g7_auto.py/run_g8_auto.py/
+    # run_g9_auto.py (chỉ riêng "economic", theo đúng phạm vi 2 gate đó đã làm
+    # — KHÔNG mở rộng thêm prom_tool/prognostic_model vì G5 chưa có bundle CRF
+    # tương ứng cho các mô-đun đó, tránh bịa field không có nguồn).
+    specialist_modules = g1.get("specialist_modules") or []
+    hypothesis_type = g3.get("hypothesis_type")
+    margin = g3.get("margin")
 
     print(f"📊 G5 NÂNG CẤP — Quản lý dữ liệu: {study}")
     print(f"  → Đề tài: {topic}")
@@ -1904,6 +1963,17 @@ def main():
     # Xây CRF theo thiết kế + chuyên khoa nhận diện từ topic (KHÔNG cứng hóa
     # field của 1 đề tài mẫu cho mọi chủ đề khác — xem detect_specialty())
     rows, specialty = build_redcap_rows(design_code, topic)
+
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20): "nối thêm, không
+    # thay thế" — cùng khuôn run_g7_auto.py/run_g8_auto.py/run_g9_auto.py đã
+    # áp dụng cho checklist báo cáo CHEERS khi economic là cấu phần CỘNG THÊM
+    # (design_code chính không phải "economic" nhưng G1 phát hiện tín hiệu
+    # kinh tế y tế trong chủ đề, vd RCT có tiểu mục chi phí-hiệu quả).
+    if "economic" in specialist_modules and design_code != "economic":
+        rows = rows + _ECONOMIC_FIELDS
+        print("  → CRF: nối thêm bộ trường KINH TẾ Y TẾ (CHEERS 2022) — "
+              "specialist_modules phát hiện 'economic' cộng thêm ở G1")
+
     print(f"  → Chuyên khoa nhận diện: {_SPECIALTY_LABELS.get(specialty, specialty)}")
     print(f"  → CRF: {len(rows)} dòng (thiết kế: {design_code})")
     if specialty == "generic":
@@ -1938,6 +2008,7 @@ def main():
         n_adjusted, n_total, n_per_group,
         run_date, rows, specialty,
         specialty_runner_up=specialty_runner_up,
+        hypothesis_type=hypothesis_type, margin=margin,
     )
     md = out / f"G5_A6_DATA_MGMT_{study}.md"
     md.write_text(artifact, encoding="utf-8")
