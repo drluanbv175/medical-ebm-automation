@@ -75,7 +75,14 @@ _DOB = re.compile(
 # docs/system-v7/PHASE_2B_RESEARCHOS_PILOT.md ("...người bệnh ngoại trú tại
 # Khoa Khám bệnh...") bị chặn nhầm, loại tài liệu đó khỏi corpus ChatGPT phục
 # vụ. Thêm lookbehind loại trừ "ngoại "/"nội " đứng ngay trước "trú".
-_ADDRESS = re.compile(r"\b(?:ngụ|(?<!ngoại )(?<!nội )trú\s*tại|địa\s*chỉ)\b[^.\n]{0,60}\d", re.I)
+# SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 23, phát hiện qua hồi quy
+# thật khi sửa doctrine agent lâm sàng): "ngụ" bắt được cả cụm CỰC KỲ phổ biến
+# "ngụ ý" (nghĩa "ngầm hiểu là", không liên quan cư trú) — một câu văn khoa
+# học/kỹ thuật bình thường như "...ngụ ý rằng liều X là 5mg..." (chứa chữ số
+# trong 60 ký tự sau) bị chặn nhầm là địa chỉ cư trú, loại cả agent doctrine
+# khỏi corpus ChatGPT. Thêm lookahead loại trừ "ngụ" khi theo sau ngay là "ý".
+_ADDRESS = re.compile(
+    r"\b(?:ngụ(?!\s*ý\b)|(?<!ngoại )(?<!nội )trú\s*tại|địa\s*chỉ)\b[^.\n]{0,60}\d", re.I)
 # Họ Việt Nam phổ biến + đệm giới tính + tên/chữ viết tắt — bắt kiểu ghi tên bệnh nhân phổ
 # biến nhất ("Nguyễn Văn A", "Trần Thị B..."), kể cả khi dùng làm ví dụ/placeholder thật.
 _VN_NAME = re.compile(

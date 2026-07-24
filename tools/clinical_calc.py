@@ -22,11 +22,17 @@ BẤT BIẾN LIÊM CHÍNH:
     ru ngủ).
   - Ngưỡng test/treat: dẫn xuất TỪ ĐẦU bằng phân tích cây quyết định kỳ vọng lợi ích
     (expected-utility decision tree — Pauker SG, Kassirer JP. N Engl J Med. 1980;
-    302(20):1109-17) — KHÔNG chép công thức đóng từ trí nhớ không kiểm chứng được. Đã
-    xác minh số học: 64,659 lần thử ngẫu nhiên khớp 100% với so sánh brute-force 3 chiến
-    lược (treat-none/treat-all/test), cùng các trường hợp biên (test hoàn hảo miễn phí →
-    vùng test = [0,1]; test vô dụng → vùng test co về đúng ngưỡng điều trị hoặc biến mất
-    nếu test có phí).
+    302(20):1109-17) — KHÔNG chép công thức đóng từ trí nhớ không kiểm chứng được.
+    SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 23, phát hiện HIGH): dòng cũ ở
+    đây khẳng định "đã xác minh 64.659 lần thử ngẫu nhiên khớp 100% brute-force" —
+    con số này KHÔNG có script/seed/log nào trong repo (kể cả lịch sử git) để tái lập,
+    chỉ tồn tại dưới dạng văn xuôi từ commit gốc tạo file. Đây đúng kiểu "số liệu nghe
+    khoa học vì rất cụ thể" mà chính nguyên tắc BẤT BIẾN LIÊM CHÍNH ở trên cấm áp dụng
+    cho input y khoa — gỡ bỏ khẳng định không tái lập được. Công thức đã kiểm bằng các
+    TRƯỜNG HỢP BIÊN GIẢI TÍCH cụ thể trong tests/test_clinical_calc.py (test hoàn hảo
+    miễn phí → vùng test=[0,1]; test vô dụng se=sp=0.5 → vùng test co về đúng ngưỡng
+    điều trị harm/(harm+benefit); test vô dụng có phí → vùng test biến mất) — CHƯA
+    có mô phỏng Monte Carlo/brute-force quy mô lớn nào được viết/commit.
   - Mọi kết quả là CÔNG CỤ HỖ TRỢ RA QUYẾT ĐỊNH — không thay phán đoán lâm sàng.
 
 Dùng:
@@ -134,9 +140,10 @@ def test_threshold(se: float, sp: float, harm: float, benefit: float,
     trị; giữa hai ngưỡng: NÊN xét nghiệm; trên ngưỡng trên: điều trị luôn không cần test.
 
     Dẫn xuất TỪ ĐẦU bằng so sánh kỳ vọng lợi ích 3 chiến lược (treat-none/treat-all/test),
-    KHÔNG chép công thức đóng ghi nhớ sẵn (xem docstring module — đã kiểm 64,659 lần thử
-    khớp brute-force). test_cost = tác hại/rủi ro CỐ HỮU của việc làm xét nghiệm (0 nếu
-    xét nghiệm không xâm lấn/không rủi ro).
+    KHÔNG chép công thức đóng ghi nhớ sẵn (xem docstring module — kiểm bằng các trường
+    hợp biên giải tích trong tests/test_clinical_calc.py, KHÔNG phải mô phỏng brute-force
+    quy mô lớn — SỬA 2026-07-24, vòng lặp kiểm tra-hoàn thiện vòng 23). test_cost = tác
+    hại/rủi ro CỐ HỮU của việc làm xét nghiệm (0 nếu xét nghiệm không xâm lấn/không rủi ro).
 
     Trả {"lower": .., "upper": .., "valid_testing_zone": bool}. Nếu
     valid_testing_zone=False → xét nghiệm không đáng giá (chi phí/rủi ro test vượt lợi
@@ -431,7 +438,21 @@ def main() -> int:
             else:
                 raise ClinicalCalcError("Cần --lr HOẶC cả --se và --sp.")
             posttest = bayes_posttest(args.pretest, lr)
-            _print({"pretest": args.pretest, "lr_used": lr, "posttest": posttest}, args.json)
+            result = {"pretest": args.pretest, "lr_used": lr, "posttest": posttest}
+            # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 23, phát hiện MEDIUM):
+            # trước đây ghi chú "SỬA 2026-07-23" ở chan-doan-xac-suat.md CHỈ thêm văn
+            # xuôi nhắc bác sĩ tự xác nhận đã chia 100 — KHÔNG có backstop kỹ thuật nào
+            # trong công cụ. Đa số bệnh cảnh ngoại trú thực tế có pretest THẤP (<30%);
+            # cảnh báo (không chặn — bác sĩ vẫn có thể có pretest thật sự cao) khi vượt
+            # ngưỡng này để bắt sớm lỗi gõ "0.5" (nghĩ "0,5%") thay vì "0.005".
+            if args.pretest > 0.3:
+                result["warning"] = (
+                    f"pretest={args.pretest} > 0.3 (30%) — XÁC NHẬN đây không phải lỗi "
+                    "nhập nhầm phần trăm-thành-thập phân (vd '0.5' khi ý là '0,5%' → "
+                    "phải nhập '0.005'). Nếu pretest thật sự cao (vd bệnh cảnh lâm sàng "
+                    "rõ ràng), bỏ qua cảnh báo này."
+                )
+            _print(result, args.json)
         elif args.cmd == "threshold":
             if args.se is not None and args.sp is not None:
                 res = test_threshold(args.se, args.sp, args.harm, args.benefit, args.test_cost)

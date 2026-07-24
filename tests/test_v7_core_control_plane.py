@@ -186,6 +186,19 @@ def test_contains_pii_text_catches_address_markers():
     assert contains_pii_text("địa chỉ: 45 Lê Lợi, phường 3") is True
 
 
+def test_contains_pii_text_does_not_flag_ngu_y_false_positive():
+    """Hồi quy (vòng lặp kiểm tra-hoàn thiện vòng 23, 2026-07-24, phát hiện thật khi
+    sửa doctrine ke-don-an-toan.md/quan-ly-khang-dong.md): "ngụ" khớp bắt cả cụm CỰC
+    KỲ phổ biến "ngụ ý" (nghĩa "ngầm hiểu là" — không liên quan cư trú) — một câu
+    thường như "...ngụ ý rằng liều 5mg..." (có chữ số trong 60 ký tự sau) bị chặn
+    nhầm là địa chỉ cư trú, khiến SafeAgentCatalog loại cả agent doctrine khỏi
+    corpus ChatGPT (2 agent thật bị ảnh hưởng: ke-don-an-toan, quan-ly-khang-dong)."""
+    assert contains_pii_text("...ngụ ý rằng liều 5mg là đúng...") is False
+    assert contains_pii_text("văn bản trước đây ngụ ý — nhãn FDA có liều riêng 5mg") is False
+    # Không hồi quy ngược: "ngụ" đứng riêng (địa chỉ cư trú thật) vẫn chặn.
+    assert contains_pii_text("ngụ 12 Nguyễn Trãi Q1 TPHCM") is True
+
+
 def test_contains_pii_text_catches_common_vietnamese_patient_name():
     """Họ Việt Nam phổ biến + đệm giới tính + tên — kiểu ghi tên bệnh nhân hay gặp
     nhất trong bệnh án tự do ('Nguyễn Văn A', 'Trần Thị B...')."""

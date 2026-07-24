@@ -44,12 +44,15 @@ Tuổi · giới · yếu tố nguy cơ (tiền sử gia đình, hút thuốc, b
 
 ## 3bis. GUIDELINE NEO theo loại tầm soát (THÊM 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14 — chỉ neo NGUỒN để tra, KHÔNG ghi sẵn con số)
 > Bảng định hướng "tra ở đâu" cho các loại tầm soát/dự phòng hay gặp, cùng khuôn với `theo-doi-benh-man.md` §3bis. **Chỉ nêu cơ quan/guideline neo + đối chiếu phiên bản hiện hành tại ngày dùng**; **tuổi bắt đầu/dừng · khoảng cách · ngưỡng cụ thể PHẢI lấy từ bản guideline đó (ghi năm + mục)**, không nhớ áng chừng — đúng nguyên tắc đã ngăn lỗi tuổi bắt đầu tầm soát đại trực tràng ghi nhầm 50 thay vì 45 ở vòng trước.
+>
+> **BẮT BUỘC 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 23, phát hiện MEDIUM):** trước khi điền BẤT KỲ ô Tuổi bắt đầu/dừng · Khoảng cách · Cấp độ nào vào đầu ra, PHẢI gọi công cụ tra cứu THẬT (WebSearch/WebFetch tới uspreventiveservicestaskforce.org, hoặc skill/tool tra cứu y văn có kết nối mạng) để lấy đúng bản khuyến cáo CÒN HIỆU LỰC — KHÔNG được điền từ trí nhớ huấn luyện dù có vẻ chắc chắn. Nếu không thể tra cứu thật trong phiên này (không có công cụ mạng), để trống ô đó và gắn `[CẦN KIỂM CHỨNG]` thay vì đoán. Đồng thời **phân biệt DRAFT (chưa hiệu lực, chỉ để biết xu hướng sắp đổi — KHÔNG áp dụng làm khuyến cáo chính thức) và FINAL/bản hiện hành (đang áp dụng)** trên trang USPSTF của từng chủ đề — luôn dùng bản FINAL mới nhất làm khuyến cáo chính, có thể nêu thêm "[có draft đang chờ ban hành, xu hướng: …]" nếu liên quan để bác sĩ biết trước (vd tầm soát cổ tử cung/AAA đang có draft cập nhật song song bản final hiện hành — kiểm tra tình trạng draft/final MỖI LẦN dùng vì có thể đã chính thức hóa).
 
 | Loại tầm soát/dự phòng | Guideline neo (đối chiếu phiên bản hiện hành) |
 |---|---|
-| Ung thư cổ tử cung · vú · đại trực tràng · phổi | USPSTF (bản hiện hành — đối chiếu năm ban hành mới nhất tại thời điểm dùng) |
-| Loãng xương · phình động mạch chủ bụng (AAA) | USPSTF (bản hiện hành) |
-| Hóa dự phòng tim mạch (statin/aspirin), ĐTĐ, THA, rối loạn lipid (tầm soát cấp 1-2) | USPSTF (bản hiện hành) — phối hợp `thang-diem-nguy-co` (ASCVD/SCORE2) |
+| Ung thư cổ tử cung · vú · đại trực tràng · phổi | USPSTF (bản FINAL hiện hành — đối chiếu năm ban hành mới nhất; kiểm riêng có draft đang chờ không) |
+| Loãng xương · phình động mạch chủ bụng (AAA) | USPSTF (bản FINAL hiện hành — kiểm riêng có draft đang chờ không) |
+| Hóa dự phòng tim mạch (statin/aspirin), ĐTĐ, THA (tầm soát cấp 1-2) | USPSTF (bản hiện hành) — phối hợp `thang-diem-nguy-co` (ASCVD/SCORE2) |
+| Rối loạn lipid/cholesterol | **KHÔNG còn là mục tầm soát USPSTF độc lập** (SỬA 2026-07-24, vòng lặp vòng 23, phát hiện HIGH — đã xác minh trực tiếp trên uspreventiveservicestaskforce.org: "Lipid Disorders in Adults... Screening" đã **ARCHIVED từ 2008**) — lipid nay chỉ là MỘT ĐẦU VÀO để tính nguy cơ ASCVD trong khuyến cáo **"Statin Use for the Primary Prevention of Cardiovascular Disease in Adults"** (bản hiện hành) — tra ĐÚNG chủ đề này, KHÔNG tra "lipid screening" (sẽ ra trang archived) |
 | Tiêm chủng người lớn | ACIP/CDC hoặc lịch tiêm chủng quốc gia (bản hiện hành) — `[CẦN XÁC NHẬN TẠI ĐƠN VỊ]` nếu áp dụng trong nước |
 | Các loại tầm soát khác chưa liệt kê | Tra USPSTF (hoặc guideline chuyên ngành tương ứng) bản hiện hành — KHÔNG suy từ trí nhớ |
 

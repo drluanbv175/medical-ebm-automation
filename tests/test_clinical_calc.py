@@ -1,8 +1,13 @@
 """Test clinical_calc.py — máy tính suy luận lâm sàng (Bayes/ngưỡng/NNT/GRADE).
 
-Mỗi test khóa lại một ví dụ đã KIỂM TRA TAY hoặc bằng mô phỏng brute-force trước khi
-viết module (xem docstring module để biết cách dẫn xuất ngưỡng test/treat — đã xác
-minh 64,659 lần thử ngẫu nhiên khớp 100% với so sánh kỳ vọng lợi ích brute-force).
+Mỗi test khóa lại một ví dụ đã KIỂM TRA TAY (trường hợp biên giải tích cụ thể) trước
+khi viết module (xem docstring module để biết cách dẫn xuất ngưỡng test/treat).
+
+SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 23, phát hiện HIGH): dòng cũ ở đây
+khẳng định "đã xác minh 64.659 lần thử ngẫu nhiên khớp 100% brute-force" — con số này
+KHÔNG có script/seed/log nào trong repo (kể cả lịch sử git) để tái lập; gỡ bỏ khẳng
+định không tái lập được. Các test dưới đây (perfect-free-test, useless-test-collapse,
+useless-test-with-cost) là trường hợp biên giải tích thật, không phải Monte Carlo.
 """
 from __future__ import annotations
 
@@ -264,3 +269,40 @@ def test_grade_dta_accepted_by_cli_design_choices():
     # Hồi quy: trước bản vá, "dta" không có trong _START_LEVEL -> ClinicalCalcError.
     r = CC.grade_rating(design="DTA")  # cũng kiểm chuẩn hóa hoa/thường
     assert r["design"] == "dta"
+
+
+# ── CLI --pretest percent-vs-decimal guard (vòng lặp vòng 23, phát hiện MEDIUM) ──
+class TestBayesCliPretestWarning:
+    """Trước vá 2026-07-24: chan-doan-xac-suat.md nhắc bác sĩ tự xác nhận đã chia 100
+    trước khi gọi --pretest, nhưng KHÔNG có backstop kỹ thuật nào trong công cụ — lỗi
+    gõ nhầm "0.5" (nghĩ "0,5%") vẫn bị chấp nhận âm thầm. Nay CLI tự cảnh báo khi
+    pretest > 0.3 (không chặn cứng, vì bác sĩ có thể có pretest thật sự cao)."""
+
+    def _run(self, *args):
+        import subprocess
+        repo_root = Path(__file__).resolve().parent.parent
+        return subprocess.run(
+            [sys.executable, str(TOOLS / "clinical_calc.py"), *args],
+            cwd=repo_root, capture_output=True, text=True, timeout=30,
+        )
+
+    def test_high_pretest_triggers_warning(self):
+        res = self._run("bayes", "--pretest", "0.5", "--lr", "6", "--json")
+        assert res.returncode == 0, res.stderr
+        import json
+        out = json.loads(res.stdout)
+        assert "warning" in out
+        assert "0.3" in out["warning"]
+
+    def test_low_pretest_no_warning(self):
+        res = self._run("bayes", "--pretest", "0.005", "--lr", "6", "--json")
+        assert res.returncode == 0, res.stderr
+        import json
+        out = json.loads(res.stdout)
+        assert "warning" not in out
+
+    def test_pretest_at_boundary_no_warning(self):
+        res = self._run("bayes", "--pretest", "0.3", "--lr", "6", "--json")
+        import json
+        out = json.loads(res.stdout)
+        assert "warning" not in out
