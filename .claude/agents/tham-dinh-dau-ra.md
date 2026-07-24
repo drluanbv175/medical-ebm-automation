@@ -131,7 +131,7 @@ python tools/eval/run_eval.py <gói_đầu_ra.md> --classify --json
 Công cụ này chấm rule-based (PMID/DOI, PII, vượt cổng, GRADE-không-nguồn, tách 2 trục,
 disclaimer, năm nguồn, WHO AWaRe, suy nhân quả từ quan sát, cờ đỏ, **+ 2026-07-04: p-value
 đơn độc thiếu 95%CI [R8], lách nhãn [CẦN…] tràn lan không nguồn thật [R1b], thiếu câu hỏi
-an toàn bắt buộc theo `_CAU-HOI-AN-TOAN-BAT-BUOC.md` — S1 tự sát/S2 thai kỳ [R13]**) RỒI
+an toàn bắt buộc theo `_CAU-HOI-AN-TOAN-BAT-BUOC.md` — S1 tự sát/S2 thai kỳ/S3 khởi trị chống trầm cảm-giải lo âu [R13]**) RỒI
 phân loại từng lỗi qua bảng `retry_loop.ERROR_ROUTING_TABLE` dùng chung (severity `auto_fix` /
 `escalate` / `wait_input` + `fix_agent`) — dùng kết quả này làm CĂN CỨ cho Bước 1/2
 bên dưới thay vì tự suy diễn lại từ đầu mỗi lần. R8/R1b/R13 trước đây có mã trong bảng
@@ -167,7 +167,7 @@ file) → tự áp BẢNG ROUTING dưới bằng tay như trước.
 | R10 kháng sinh thiếu xét WHO AWaRe | `ke-don-an-toan` (bổ xét AWaRe) | ✅ |
 | **R11 suy nhân quả từ quan sát/cắt ngang** | **DỪNG NGAY — leo thang** | ❌ |
 | **R12 thiếu cờ đỏ/safety-net bắt buộc** | **DỪNG NGAY — leo thang (Q3/Q5)** | ❌ |
-| **R13 thiếu câu hỏi an toàn bắt buộc (S1 tự sát/S2 thai kỳ)** | **DỪNG NGAY — leo thang, `sang-loc-co-do`+`ke-don-an-toan` hỏi lại** | ❌ |
+| **R13 thiếu câu hỏi an toàn bắt buộc (S1 tự sát/S2 thai kỳ/S3 khởi trị chống trầm cảm-giải lo âu)** | **DỪNG NGAY — leo thang, `sang-loc-co-do`+`ke-don-an-toan` hỏi lại** | ❌ |
 | **R14 thiếu rà an toàn kê đơn (tương tác/CCĐ/chỉnh liều) khi gói CÓ khuyến cáo/đổi thuốc** | **DỪNG NGAY — leo thang, giao `ke-don-an-toan` (M2–M5)** | ❌ |
 | XGATE-SYNC lệch biến | `bien-so-nghien-cuu` → `quan-ly-du-lieu` | ✅ |
 | XGATE-SYNC lệch cỡ mẫu | `co-mau-nghien-cuu` (cập nhật SAP) | ✅ |

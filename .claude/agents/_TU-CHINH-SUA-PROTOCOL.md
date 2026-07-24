@@ -60,7 +60,7 @@
 | **R10** | Kháng sinh không xét WHO AWaRe | `ke-don-an-toan` | ✅ | Nối `run_eval.py::who_aware_if_antibiotic` |
 | **R11** | Suy nhân quả vượt thiết kế cắt ngang/quan sát | **DỪNG NGAY — leo thang** | ❌ | Không retry; nêu rõ thiết kế không đỡ kết luận nhân quả |
 | **R12** | Thiếu cờ đỏ/safety-net bắt buộc (Q3/Q5) | **DỪNG NGAY — leo thang** | ❌ | Không retry; an toàn bệnh nhân |
-| **R13** | Thiếu câu hỏi an toàn bắt buộc (S1 tự sát/S2 thai kỳ) | **DỪNG NGAY — leo thang** | ❌ | `sang-loc-co-do` + `ke-don-an-toan` hỏi lại; đối xứng `_CAU-HOI-AN-TOAN-BAT-BUOC.md` |
+| **R13** | Thiếu câu hỏi an toàn bắt buộc (S1 tự sát/S2 thai kỳ/S3 khởi trị chống trầm cảm-giải lo âu — S3 thêm 2026-07-24 vòng 24) | **DỪNG NGAY — leo thang** | ❌ | `sang-loc-co-do` + `ke-don-an-toan` hỏi lại; đối xứng `_CAU-HOI-AN-TOAN-BAT-BUOC.md` |
 | **R14** *(thêm 2026-07-07)* | Thiếu rà an toàn kê đơn (tương tác/CCĐ/chỉnh liều) | **DỪNG NGAY — leo thang** | ❌ | `ke-don-an-toan`; HARD-RED đối xứng R12/R13 |
 | **XGATE-a** | Tên biến CRF ≠ SAP | `bien-so-nghien-cuu` → `quan-ly-du-lieu` | ✅ | Đồng bộ từ codebook chuẩn → SAP |
 | **XGATE-b** | Kết cục SAP ≠ PICO A1 | `thiet-ke-nghien-cuu` (chỉnh SAP) | ✅ | Ưu tiên A1 đã chốt làm gốc |
