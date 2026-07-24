@@ -121,13 +121,24 @@ def cha2ds2vasc(chf: int, hypertension: int, age: int, diabetes: int,
     sex_points = 1 if (sex == "female" and non_sex_points >= 1) else 0
     total = non_sex_points + sex_points
 
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện HIGH — đã xác
+    # minh qua guideline gốc): trước đây total>=2 ở NỮ trả về CÙNG category
+    # "khuyến cáo kháng đông" như NAM total>=2 — SAI so với 2023 ACC/AHA/ACCP/HRS
+    # (Joglar JA et al., Circulation 2024;149(1):e1-e156, PMID 38033089): Class 1
+    # (khuyến cáo mạnh, nguy cơ đột quỵ ≥2%/năm) ứng với ≥2 Ở NAM nhưng ≥3 Ở NỮ —
+    # điểm 2 ở nữ (do sex_points=1 chỉ cộng khi non_sex_points>=1, nên total=2 ở nữ
+    # nghĩa là chỉ có 1 yếu tố khác + điểm giới) chỉ là Class IIb (cân nhắc/chia sẻ
+    # quyết định), KHÔNG phải chỉ định mạnh như cùng điểm số ở nam.
     if sex == "male":
         category = "rất thấp — cân nhắc không kháng đông" if total == 0 else \
                    "thấp — cân nhắc kháng đông" if total == 1 else \
                    "khuyến cáo kháng đông (theo guideline nguồn)"
     else:
         category = "rất thấp (nữ, không yếu tố khác) — cân nhắc không kháng đông" if total <= 1 else \
-                   "khuyến cáo kháng đông (theo guideline nguồn)"
+                   ("trung gian (nữ, điểm 2) — CÂN NHẮC/chia sẻ quyết định, KHÔNG phải chỉ định "
+                    "mạnh (2023 ACC/AHA/ACCP/HRS Mỹ: Class IIb ở nữ khi điểm=2, khác nam cùng điểm)"
+                    if total == 2 else
+                    "khuyến cáo kháng đông (theo guideline nguồn — Class 1 ở nữ khi điểm≥3)")
 
     return {
         "score": total, "max_score": 9, "category": category,
@@ -141,8 +152,11 @@ def cha2ds2vasc(chf: int, hypertension: int, age: int, diabetes: int,
                 "TOÀN điểm giới tính (không chỉ 'nữ đơn độc không tính' như bản này, mà bỏ "
                 "điểm nữ cho MỌI trường hợp), khuyến cáo kháng đông ở điểm ≥2 bất kể giới. "
                 "Hàm này tính đúng CHA₂DS₂-VASc KINH ĐIỂN (Lip 2010; ESC 2012-2020; vẫn dùng ở "
-                "ACC/AHA/HRS 2023 Mỹ) — KHÔNG phải bản mới nhất. Cân nhắc gắn cảnh báo khi tính "
-                "cho bệnh nhân nữ mà điểm giới tính là yếu tố quyết định ngưỡng hành động.",
+                "ACC/AHA/ACCP/HRS 2023 Mỹ) — KHÔNG phải bản mới nhất. "
+                "SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện HIGH): 2023 "
+                "ACC/AHA/ACCP/HRS (Joglar JA et al., Circulation 2024;149(1):e1-e156, "
+                "PMID 38033089) đổi ngưỡng Class 1 theo GIỚI TÍNH — ≥2 ở nam, ≥3 ở nữ (điểm 2 "
+                "ở nữ chỉ Class IIb). Diễn giải category ở trên đã phản ánh khác biệt này.",
         "source": "Lip GYH et al. Chest. 2010;137(2):263-72.",
     }
 

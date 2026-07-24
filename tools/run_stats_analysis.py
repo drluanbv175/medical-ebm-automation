@@ -218,8 +218,18 @@ def _compare_continuous(a: pd.Series, b: pd.Series) -> dict:
         # định phương sai bằng nhau, là mặc định khuyến nghị của thống kê hiện đại.
         t, p = sp_stats.ttest_ind(a, b, equal_var=False)
         md = a.mean() - b.mean()
-        se = np.sqrt(a.std()**2 / len(a) + b.std()**2 / len(b))
-        ci = (round(md - 1.96 * se, 3), round(md + 1.96 * se, 3))
+        v1, v2 = a.std()**2 / len(a), b.std()**2 / len(b)
+        se = np.sqrt(v1 + v2)
+        # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện MEDIUM):
+        # trước đây dùng z=1.96 cố định cho CI trong khi p ở trên đã dùng bậc tự do
+        # Welch-Satterthwaite (nội bộ scipy ttest_ind equal_var=False) — p và CI
+        # không cùng phương pháp, có thể mâu thuẫn ở mẫu nhỏ (t_{df,0.975} > 1.96
+        # đáng kể khi df nhỏ, vd ≈2.78 ở df≈4 so với 1.96 — CI báo hẹp hơn thực tế,
+        # có thể kết luận sai "khác biệt có ý nghĩa" khi CI đúng chuẩn lại chứa 0).
+        # Dùng ĐÚNG t-critical theo df Welch-Satterthwaite để nhất quán với p.
+        df_ws = (v1 + v2) ** 2 / (v1**2 / (len(a) - 1) + v2**2 / (len(b) - 1))
+        t_crit = sp_stats.t.ppf(0.975, df_ws)
+        ci = (round(md - t_crit * se, 3), round(md + t_crit * se, 3))
         return {"p": round(float(p), 4), "effect": f"MD={md:.3f} (95%CI {ci[0]}–{ci[1]})", "test": "Welch's t-test"}
     elif HAS_SCIPY:
         u, p = sp_stats.mannwhitneyu(a, b, alternative="two-sided")
@@ -585,8 +595,13 @@ def survival_model(df: pd.DataFrame, time_col: str, event_col: str,
                     group_col: str, covariates: list) -> dict:
     """Cox proportional-hazards THẬT (lifelines.CoxPHFitter) — mô hình thô (chỉ
     group_col) rồi hiệu chỉnh (thêm covariates nếu có). EPV (Events-Per-Variable,
-    Peduzzi 1996) tính theo SỐ BIẾN CỐ — cùng ngưỡng ≥10 biến cố/biến áp dụng cho
-    logistic ở multivariate_model()."""
+    Peduzzi 1995 — SỬA 2026-07-24, vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện
+    LOW: trước đây ghi nhầm "1996", đó là bài Peduzzi cho hồi quy LOGISTIC, không
+    phải Cox; bài đúng cho ngưỡng EPV của Cox là Peduzzi P, Concato J, Feinstein AR,
+    Holford TR. "Importance of events per independent variable in proportional
+    hazards regression analysis. II." J Clin Epidemiol. 1995;48(12):1503-1510)
+    tính theo SỐ BIẾN CỐ — cùng ngưỡng ≥10 biến cố/biến áp dụng cho logistic ở
+    multivariate_model() (đó mới đúng là Peduzzi 1996)."""
     if not HAS_LIFELINES:
         return {
             "error": "lifelines chưa cài. Chạy: pip install lifelines",
@@ -606,7 +621,7 @@ def survival_model(df: pd.DataFrame, time_col: str, event_col: str,
     if n_events < n_predictors * 10:
         result["epv_warning"] = (
             f"Số biến cố {n_events} có thể không đủ EPV cho {n_predictors} biến dự "
-            f"báo (cần ≥10 biến cố/biến — Peduzzi 1996)."
+            f"báo (cần ≥10 biến cố/biến — Peduzzi 1995, J Clin Epidemiol 1995;48(12):1503-1510)."
         )
 
     def _fit(cols: list) -> dict:
@@ -756,10 +771,20 @@ def format_outcome_text(res: dict, outcome_col: str, hypothesis_interp: dict = N
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện HIGH):
     # xem interpret_hypothesis_type() — chỉ xuất hiện khi G3 thiết kế NI/
     # equivalence, KHÔNG đổi gì cho đề tài superiority (mặc định, đa số).
-    if hypothesis_interp and hypothesis_interp.get("hypothesis_type"):
+    # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện liên quan
+    # tới HIGH #7): điều kiện cũ `hypothesis_interp.get("hypothesis_type")` chỉ
+    # đúng cho nhánh đã tính đủ (kết cục nhị phân + có margin) — 2 nhánh dự
+    # phòng của interpret_hypothesis_type() (kết cục KHÔNG nhị phân; thiếu
+    # margin) chỉ trả về {"note": ...} không có khóa "hypothesis_type", nên
+    # cảnh báo "[CẦN THỐNG KÊ VIÊN]"/"[CẦN — thiếu margin]" bị ÂM THẦM rớt
+    # mất khỏi file kết quả thật dù đã được TÍNH — bác sĩ không bao giờ thấy.
+    if hypothesis_interp and hypothesis_interp.get("note"):
         lines.append("")
-        lines.append(f"  ── DIỄN GIẢI {hypothesis_interp['hypothesis_type'].upper()} "
-                      f"(margin=±{hypothesis_interp['margin']}) ──")
+        if hypothesis_interp.get("hypothesis_type"):
+            lines.append(f"  ── DIỄN GIẢI {hypothesis_interp['hypothesis_type'].upper()} "
+                          f"(margin=±{hypothesis_interp['margin']}) ──")
+        else:
+            lines.append("  ── DIỄN GIẢI GIẢ THUYẾT NON_INFERIORITY/EQUIVALENCE ──")
         lines.append(f"  {hypothesis_interp['note']}")
     lines.append("\n[BÁC SĨ KIỂM TRA: số liệu lấy trực tiếp từ dữ liệu thật]")
     return "\n".join(lines)
@@ -817,7 +842,7 @@ def format_mi_text(mi: dict, mv: dict = None) -> str:
     return "\n".join(lines)
 
 
-def format_survival_text(res: dict, km: dict = None) -> str:
+def format_survival_text(res: dict, km: dict = None, hypothesis_interp: dict = None) -> str:
     if "error" in res:
         return f"PHÂN TÍCH SỐNG CÒN: {res['error']}\n{res.get('note', '')}"
     lines = [f"BẢNG 3 — PHÂN TÍCH SỐNG CÒN (Cox PH) — {res.get('group_col', '')}", "=" * 70]
@@ -848,6 +873,13 @@ def format_survival_text(res: dict, km: dict = None) -> str:
             lines.append(f"    Log-rank p = {km['logrank_p']}")
         if km.get("plot_path"):
             lines.append(f"    Đường cong: {km['plot_path']}")
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện HIGH):
+    # xem chú thích ở điểm gọi (main()) — nhánh sống còn trước đây không hề
+    # diễn giải hypothesis_type/margin dù đã đọc từ G3 checkpoint.
+    if hypothesis_interp and hypothesis_interp.get("note"):
+        lines.append("")
+        lines.append("  ── DIỄN GIẢI GIẢ THUYẾT NON_INFERIORITY/EQUIVALENCE ──")
+        lines.append(f"  {hypothesis_interp['note']}")
     lines.append("\n[BÁC SĨ KIỂM TRA: số liệu lấy trực tiếp từ dữ liệu thật]")
     return "\n".join(lines)
 
@@ -1140,6 +1172,53 @@ def main():
     if hypothesis_type and hypothesis_type != "superiority":
         print(f"ℹ️  G3 checkpoint: hypothesis_type={hypothesis_type}, margin={hypothesis_margin} "
               "— sẽ diễn giải kết cục chính theo khung này (không chỉ p-value superiority).")
+
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện CRITICAL):
+    # trước đây script này (engine THỰC THI phân tích trên dữ liệu đã khóa)
+    # hoàn toàn không đọc G0/G1 checkpoint — chạy y hệt một quy trình so sánh
+    # 2 nhóm kiểu cohort/RCT (Bảng 1, OR/MD thô, logistic/linear đa biến, Cox)
+    # cho BẤT KỲ design_code nào, kể cả "qualitative"/"sr_ma" (không có trục
+    # phơi nhiễm/kết cục participant-level phù hợp khuôn này) và "prediction"/
+    # "diagnostic" (cần AUC/calibration hoặc Se/Sp/PPV/NPV — không phải OR/HR
+    # thô). Không có cảnh báo/guardrail nào chặn — khác hẳn sibling
+    # run_g6_auto.py vốn đã có _WRONG_METHOD_DESIGNS cho các thiết kế này (chỉ
+    # sinh TEMPLATE, không chạy thật). Vì script NÀY chạy dữ liệu THẬT đã khóa,
+    # một kết quả sai-phương-pháp ở đây có nguy cơ bị dùng thẳng làm "kết cục
+    # chính" trong bản thảo mà không ai được cảnh báo là sai phương pháp.
+    g1_cp = _load_checkpoint(args.study, "G1")
+    design_code = g1_cp.get("design_code") or (g1_cp.get("design") or {}).get("internal_code")
+    specialist_modules = g1_cp.get("specialist_modules") or []
+    # "qualitative"/"sr_ma": KHÔNG có trục so sánh 2-nhóm participant-level phù
+    # hợp khuôn cohort/RCT của engine này — DỪNG thay vì âm thầm ép dữ liệu
+    # vào Bảng 1/chi-square (định tính) hay coi mỗi study là 1 "participant"
+    # (sr_ma, vốn cần pooling/heterogeneity ở tầng study, không phải cá thể).
+    if design_code in ("qualitative", "sr_ma"):
+        print(f"✗ DỪNG: design_code='{design_code}' (từ G1 checkpoint) KHÔNG được engine "
+              "so sánh 2-nhóm cohort/RCT của run_stats_analysis.py hỗ trợ.")
+        if design_code == "qualitative":
+            print("   Định tính cần mã hóa chủ đề (COREQ/SRQR), KHÔNG có mô hình thống kê suy diễn "
+                  "kiểu OR/MD/HR — dùng quy trình phân tích định tính chuyên biệt (agent "
+                  "`nghien-cuu-dinh-tinh`), KHÔNG chạy script này.")
+        else:
+            print("   SR/MA cần phân tích gộp (pooled effect + heterogeneity I²/Q/τ², forest/funnel "
+                  "plot) trên bảng STUDY-LEVEL, không phải participant-level — dùng agent "
+                  "`meta-phan-tich`, KHÔNG chạy script này.")
+        sys.exit(1)
+    # "prediction"/"diagnostic": có dữ liệu định lượng nhưng thước đo ĐÚNG khác
+    # hẳn OR/MD/HR thô — CẢNH BÁO rõ (không chặn cứng, vì vẫn có thể có mục
+    # tiêu phụ/khám phá hợp lệ dùng đúng engine 2-nhóm này).
+    _WRONG_PRIMARY_MEASURE_HINT = {
+        "prediction": "AUC/C-statistic + calibration (TRIPOD+AI) — KHÔNG phải OR/HR đơn biến/đa biến",
+        "diagnostic": "Se/Sp/PPV/NPV + ROC (STARD) — KHÔNG phải OR/MD so sánh 2 nhóm kiểu cohort",
+    }
+    if design_code in _WRONG_PRIMARY_MEASURE_HINT:
+        print(f"⚠️  [CẦN THỐNG KÊ VIÊN] design_code='{design_code}' — kết quả OR/MD/HR mà script này "
+              f"tính KHÔNG phải thước đo chính xác cho thiết kế này (cần {_WRONG_PRIMARY_MEASURE_HINT[design_code]}). "
+              "Chỉ dùng làm phân tích PHỤ/khám phá nếu có mục tiêu phụ phù hợp; KHÔNG báo cáo làm kết cục chính.")
+    if "economic" in specialist_modules:
+        print("⚠️  [CẦN THỐNG KÊ VIÊN] specialist_modules phát hiện cấu phần KINH TẾ Y TẾ cộng thêm "
+              "(G1) — script này KHÔNG tính ICER/chi phí-hiệu quả (CHEERS 2022); cần phân tích riêng "
+              "cho cấu phần đó, không suy ra được từ Bảng 1/2/3 ở đây.")
     g4_checkpoint_locked = _is_locked(g4_cp.get("g4_status", g4_cp.get("G4_STATUS")))
     g5_checkpoint_locked = _is_locked(g5_cp.get("g5_status", g5_cp.get("G5_STATUS")))
     g4_ledger_ok = _ledger_approved(
@@ -1224,7 +1303,9 @@ def main():
         if hypothesis_interp:
             summary["hypothesis_interpretation"] = hypothesis_interp
         print(f"✓ Kết cục chính ({res.get('outcome_type','')}): p={res.get('p_value','?')}")
-        if hypothesis_interp.get("hypothesis_type"):
+        # SỬA 2026-07-24 (vòng lặp vòng 22): dùng .get("note") thay vì
+        # .get("hypothesis_type") — xem chú thích tương ứng trong format_outcome_text().
+        if hypothesis_interp.get("note"):
             print(f"  ℹ️  Diễn giải {hypothesis_type}: xem {args.gate}_table2_main_outcome.txt")
 
         # 6. Đa biến
@@ -1264,10 +1345,22 @@ def main():
         surv = survival_model(df, args.time, args.event, args.group, covariates)
         km_path = prefix.parent / f"{args.gate}_km_curve.png"
         km = kaplan_meier_summary(df, args.time, args.event, args.group, out_path=km_path)
-        surv_txt = format_survival_text(surv, km)
+        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện HIGH):
+        # trước đây hypothesis_type/margin (G3) chỉ được diễn giải cho nhánh
+        # kết cục nhị phân/liên tục (--outcome) — nhánh sống còn (--time/--event,
+        # dùng ĐỘC LẬP không cần --outcome) hoàn toàn không gọi interpret_
+        # hypothesis_type(), dù thông báo đầu main() đã in "sẽ diễn giải theo
+        # khung này" bất kể loại kết cục. Dùng res giả outcome_type="survival"
+        # để tái dùng đúng nhánh dự phòng (không nhị phân) đã có sẵn — tránh
+        # đoán/tính tay HR-vs-margin (rủi ro cao hơn một dòng [CẦN] rõ ràng).
+        surv_hyp_interp = interpret_hypothesis_type({"outcome_type": "survival"},
+                                                     hypothesis_type, hypothesis_margin)
+        surv_txt = format_survival_text(surv, km, surv_hyp_interp)
         (prefix.parent / f"{args.gate}_table3_survival.txt").write_text(surv_txt, encoding="utf-8")
         summary["survival"] = surv
         summary["kaplan_meier"] = km
+        if surv_hyp_interp.get("note"):
+            summary["survival_hypothesis_interpretation"] = surv_hyp_interp
         if "crude" in surv:
             c = surv["crude"]
             print(f"✓ Cox PH thô: HR={c['HR']} (95%CI {c['CI_95'][0]}–{c['CI_95'][1]}), p={c['p']}")

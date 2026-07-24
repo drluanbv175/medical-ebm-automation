@@ -53,7 +53,33 @@ def test_ci_se_formula_matches_welch_not_pooled():
     không đổi công thức CI. Xác nhận cả 2 vẫn nhất quán sau vá."""
     a, b = _unequal_variance_groups()
     res = rsa._compare_continuous(a, b)
-    se_welch = np.sqrt(a.std() ** 2 / len(a) + b.std() ** 2 / len(b))
+    v1, v2 = a.std() ** 2 / len(a), b.std() ** 2 / len(b)
+    se_welch = np.sqrt(v1 + v2)
     md = a.mean() - b.mean()
-    expected_ci = (round(md - 1.96 * se_welch, 3), round(md + 1.96 * se_welch, 3))
+    df_ws = (v1 + v2) ** 2 / (v1**2 / (len(a) - 1) + v2**2 / (len(b) - 1))
+    t_crit = sp_stats.t.ppf(0.975, df_ws)
+    expected_ci = (round(md - t_crit * se_welch, 3), round(md + t_crit * se_welch, 3))
     assert f"{expected_ci[0]}" in res["effect"] and f"{expected_ci[1]}" in res["effect"]
+
+
+class TestCiUsesWelchSatterthwaiteTNotFixedZ:
+    """Hồi quy (vòng lặp kiểm tra-hoàn thiện vòng 22, 2026-07-24, phát hiện MEDIUM):
+    trước đây CI dùng z=1.96 cố định trong khi p-value đã dùng bậc tự do Welch-
+    Satterthwaite (nội bộ scipy) — 2 phương pháp khác nhau trong CÙNG 1 kết quả,
+    lệch đáng kể ở mẫu nhỏ (t_crit > 1.96 khi df nhỏ)."""
+
+    def test_small_sample_ci_wider_than_fixed_z_would_give(self):
+        rng = np.random.default_rng(1)
+        a = pd.Series(rng.normal(10, 2, 5))
+        b = pd.Series(rng.normal(12, 3, 5))
+        res = rsa._compare_continuous(a, b)
+        v1, v2 = a.std() ** 2 / len(a), b.std() ** 2 / len(b)
+        se = np.sqrt(v1 + v2)
+        df_ws = (v1 + v2) ** 2 / (v1**2 / (len(a) - 1) + v2**2 / (len(b) - 1))
+        t_crit = sp_stats.t.ppf(0.975, df_ws)
+        assert t_crit > 1.96, "test cần df đủ nhỏ để t_crit khác 1.96 rõ rệt"
+        md = a.mean() - b.mean()
+        expected_ci = (round(md - t_crit * se, 3), round(md + t_crit * se, 3))
+        assert f"{expected_ci[0]}" in res["effect"] and f"{expected_ci[1]}" in res["effect"]
+        wrong_ci_with_fixed_z = (round(md - 1.96 * se, 3), round(md + 1.96 * se, 3))
+        assert wrong_ci_with_fixed_z != expected_ci

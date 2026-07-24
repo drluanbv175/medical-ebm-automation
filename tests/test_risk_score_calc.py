@@ -62,6 +62,44 @@ def test_cha2ds2vasc_rejects_non_binary_input():
                        stroke_tia_thromboembolism=0, vascular_disease=0, sex="male")
 
 
+class TestCha2ds2vascSexSpecificThreshold:
+    """Hồi quy (vòng lặp kiểm tra-hoàn thiện vòng 22, 2026-07-24, phát hiện HIGH,
+    đã xác minh qua Joglar JA et al., Circulation 2024;149(1):e1-e156,
+    PMID 38033089): 2023 ACC/AHA/ACCP/HRS đổi ngưỡng Class 1 theo GIỚI TÍNH —
+    ≥2 ở nam nhưng ≥3 ở nữ (điểm 2 ở nữ chỉ Class IIb). Trước vá, total==2 ở nữ
+    trả về CÙNG category "khuyến cáo kháng đông" như nam cùng điểm — sai lệch
+    mức khuyến cáo (Class 1 mạnh vs Class IIb cân nhắc)."""
+
+    def test_male_score_2_gets_strong_recommendation(self):
+        r = RS.cha2ds2vasc(chf=0, hypertension=1, age=40, diabetes=1,
+                           stroke_tia_thromboembolism=0, vascular_disease=0, sex="male")
+        assert r["score"] == 2
+        assert "khuyến cáo kháng đông" in r["category"]
+        assert "trung gian" not in r["category"]
+
+    def test_female_score_2_gets_class_iib_not_strong_recommendation(self):
+        r = RS.cha2ds2vasc(chf=0, hypertension=1, age=40, diabetes=0,
+                           stroke_tia_thromboembolism=0, vascular_disease=0, sex="female")
+        assert r["score"] == 2  # 1 yếu tố khác(1) + sex(1)
+        assert "trung gian" in r["category"]
+        assert "Class IIb" in r["category"]
+
+    def test_female_score_3_gets_strong_recommendation(self):
+        r = RS.cha2ds2vasc(chf=0, hypertension=1, age=40, diabetes=1,
+                           stroke_tia_thromboembolism=0, vascular_disease=0, sex="female")
+        assert r["score"] == 3  # 2 yếu tố khác(2) + sex(1)
+        assert "khuyến cáo kháng đông" in r["category"]
+        assert "trung gian" not in r["category"]
+
+    def test_female_and_male_same_score_2_now_have_different_categories(self):
+        male = RS.cha2ds2vasc(chf=0, hypertension=1, age=40, diabetes=1,
+                              stroke_tia_thromboembolism=0, vascular_disease=0, sex="male")
+        female = RS.cha2ds2vasc(chf=0, hypertension=1, age=40, diabetes=0,
+                                stroke_tia_thromboembolism=0, vascular_disease=0, sex="female")
+        assert male["score"] == female["score"] == 2
+        assert male["category"] != female["category"]
+
+
 # ── HAS-BLED ─────────────────────────────────────────────────────────────────
 def test_hasbled_simple_sum():
     r = RS.hasbled(hypertension=1, abnormal_renal=1, abnormal_liver=0, stroke=0,
