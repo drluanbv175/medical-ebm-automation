@@ -1403,6 +1403,35 @@ def _render_checklist_block(items: list, reporting_std: str, std_total_items: in
     return header + "\n".join(rows) + "\n" + footer, auto_count, row_total
 
 
+# THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 17, phát hiện HIGH):
+# CONSORT có phụ lục RIÊNG cho thử nghiệm non-inferiority/equivalence — Piaggio G,
+# Elbourne DR, Pocock SJ, Evans SJ, Altman DG; CONSORT Group. "Reporting of
+# noninferiority and equivalence randomized trials: extension of the CONSORT 2010
+# statement." JAMA. 2012;308(24):2594-2604. doi:10.1001/jama.2012.87802 — xác
+# minh trực tiếp qua trang bài báo JAMA. Vòng 15 (2026-07-24) đã thêm
+# --hypothesis-type non_inferiority/equivalence vào run_g3_auto.py (ghi vào
+# G3_checkpoint.json) nhưng G7 trước đây luôn dùng checklist CONSORT superiority
+# 30-mục chuẩn cho MỌI RCT, bất kể hypothesis_type — bỏ sót các mục PHỤ LỤC
+# RIÊNG (tiêu đề phải ghi rõ NI/equivalence, mục tiêu phải nêu margin+biện minh,
+# mục cỡ mẫu phải nêu margin, phương pháp thống kê phải nêu CI 1 phía/2 phía,
+# và mục diễn giải phải bàn theo giả thuyết NI/equivalence). Danh sách dưới
+# PARAPHRASE (không chép nguyên văn — tránh vi phạm bản quyền JAMA) đúng các
+# mục Piaggio 2012 đã sửa/thêm so với CONSORT 2010 gốc.
+CONSORT_NI_EXTENSION_ITEMS: list[tuple[str, str, bool]] = [
+    ("1a-NI", "Tiêu đề PHẢI ghi rõ đây là thử nghiệm non-inferiority/equivalence (không chỉ 'randomised trial')", False),
+    ("1b-NI", "Tóm tắt nêu rõ giả thuyết NI/equivalence + margin, và kết quả diễn giải THEO margin đó", False),
+    ("2a-NI", "Bối cảnh: lý do CHỌN thiết kế NI/equivalence + bằng chứng điều trị đối chứng đã có hiệu quả", False),
+    ("2b-NI", "Mục tiêu: nêu rõ giả thuyết NI/equivalence, margin Δ VÀ biện minh lâm sàng cho margin đó", False),
+    ("4a-NI", "Người tham gia: đối chiếu quần thể thử nghiệm này với quần thể (các) thử nghiệm đã xác lập hiệu quả điều trị đối chứng", False),
+    ("5-NI",  "Can thiệp: điều trị đối chứng ở đây có GIỐNG (hoặc rất gần) với điều trị đối chứng trong (các) thử nghiệm đã xác lập hiệu quả không", False),
+    ("6a-NI", "Kết cục: nêu rõ kết cục nào kiểm định NI/equivalence, kết cục nào (nếu có) vẫn kiểm định superiority", False),
+    ("7a-NI", "Cỡ mẫu: NÊU RÕ cỡ mẫu tính theo tiêu chí NI/equivalence, margin Δ dùng để tính, VÀ nguồn/biện minh margin (KHÔNG bịa margin)", False),
+    ("12a-NI","Phương pháp thống kê: nêu rõ dùng khoảng tin cậy MỘT phía hay HAI phía để kết luận NI/equivalence", False),
+    ("17a-NI","Kết quả: trình bày khoảng tin cậy của kết cục NI/equivalence SO VỚI margin (khuyến nghị có hình minh họa CI-vs-margin)", False),
+    ("22-NI", "Diễn giải: bàn kết quả THEO giả thuyết NI/equivalence; nếu chuyển sang kết luận superiority, PHẢI biện minh rõ lý do chuyển", False),
+]
+
+
 def generate_checklist(
     design_code: str,
     reporting_std: str,
@@ -1413,6 +1442,8 @@ def generate_checklist(
     alpha: float,
     power: float,
     specialist_modules: Optional[list] = None,
+    hypothesis_type: str = "superiority",
+    margin: Optional[float] = None,
 ) -> str:
     """
     Sinh bảng checklist đầy đủ theo chuẩn báo cáo chính của design_code.
@@ -1428,6 +1459,12 @@ def generate_checklist(
     specialist_modules VÀ design_code chính KHÔNG PHẢI 'economic' (tránh sinh
     trùng 2 lần CHEERS nếu physician đã PIN design_code='economic' trực tiếp),
     nối THÊM khối CHEERS 2022 riêng sau checklist chính.
+
+    THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 17, phát hiện HIGH):
+    cùng khuôn — khi design_code=='rct' VÀ hypothesis_type là non_inferiority/
+    equivalence (ghi ở G3_checkpoint.json bởi run_g3_auto.py, vòng 15), nối
+    THÊM phụ lục CONSORT-NI/Equivalence (Piaggio 2012, xem CONSORT_NI_
+    EXTENSION_ITEMS) — checklist CONSORT chuẩn KHÔNG tự đủ cho thiết kế này.
     """
     items = CHECKLIST_ITEMS.get(design_code, CHECKLIST_ITEMS.get("cohort", []))
     block, _auto, _total = _render_checklist_block(items, reporting_std, std_total_items)
@@ -1444,6 +1481,21 @@ def generate_checklist(
             "cấu phần đó, KHÔNG thay thế checklist chính ở trên.\n"
         )
         block += econ_block
+
+    if design_code == "rct" and hypothesis_type in ("non_inferiority", "equivalence"):
+        ni_block, _ni_auto, _ni_total = _render_checklist_block(
+            CONSORT_NI_EXTENSION_ITEMS,
+            f"CONSORT Non-inferiority/Equivalence Extension (Piaggio 2012, JAMA;308(24):2594-2604)",
+            len(CONSORT_NI_EXTENSION_ITEMS),
+        )
+        margin_note = f"margin Δ={margin}" if margin is not None else "margin [CẦN BÁC SĨ/THỐNG KÊ VIÊN CUNG CẤP]"
+        block += (
+            "\n---\n"
+            f"\n> ⚠️ Đề tài thiết kế **{hypothesis_type.upper()}** ({margin_note}, từ G3_checkpoint.json) "
+            "— CONSORT chuẩn KHÔNG đủ, PHẢI báo cáo thêm phụ lục Piaggio 2012 dưới đây "
+            "(doi:10.1001/jama.2012.87802). KHÔNG thay thế checklist CONSORT chính ở trên.\n"
+        )
+        block += ni_block
 
     return block
 
@@ -1809,6 +1861,11 @@ def main() -> None:
     effect_val  = g3.get("effect_val")
     effect_type = g3.get("effect_type") or "HR"
     formula_used = g3.get("formula_used") or ""
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 17, phát hiện HIGH):
+    # đọc lại hypothesis_type/margin đã ghim ở G3 (vòng 15) để nối phụ lục
+    # CONSORT-NI/Equivalence (Piaggio 2012) vào checklist khi cần.
+    hypothesis_type = g3.get("hypothesis_type") or "superiority"
+    margin = g3.get("margin")
 
     # Từ G4
     g4_status    = g4.get("g4_status", "PENDING")
@@ -1882,6 +1939,8 @@ def main() -> None:
         alpha=alpha,
         power=power,
         specialist_modules=g1.get("specialist_modules") or [],
+        hypothesis_type=hypothesis_type,
+        margin=margin,
     )
 
     # Ghép toàn bộ artifact

@@ -256,6 +256,22 @@ def sec_cauhoi(cps, meta) -> str:
     else:
         lines.append(f"**Giả thuyết:** {TAG_BS} (với nghiên cứu mô tả có thể không cần "
                      "giả thuyết kiểm định; với nghiên cứu phân tích: nêu H0/H1).\n")
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 17, phát hiện MEDIUM):
+    # hypothesis_type/margin (non_inferiority/equivalence, ghi ở G3_checkpoint.json
+    # bởi run_g3_auto.py, vòng 15) trước đây CHỈ hiện lẫn trong chuỗi formula_used
+    # tự do ở mục "8. Cỡ mẫu" (sec_comau) — không phải vị trí chuẩn để công bố loại
+    # giả thuyết, và sẽ biến mất nếu câu chữ formula_used thay đổi sau này. Đây mới
+    # là mục "Câu hỏi nghiên cứu và giả thuyết" — vị trí đúng để công bố tường minh.
+    hypothesis_type = _g(cps.get("G3"), "hypothesis_type", default="superiority")
+    margin = _g(cps.get("G3"), "margin", default=None)
+    if hypothesis_type and hypothesis_type != "superiority":
+        margin_text = margin if margin is not None else TAG_BS
+        lines.append(
+            f"**Loại giả thuyết (tự động từ G3):** {hypothesis_type.upper()} — Margin Δ = "
+            f"{margin_text} [CẦN Hội đồng/thống kê viên xác nhận biện minh lâm sàng cho margin "
+            "này TRƯỚC khi khóa SAP (G4) — xem CONSORT-NI extension, Piaggio 2012, "
+            "JAMA;308(24):2594-2604, doi:10.1001/jama.2012.87802].\n"
+        )
     return "\n".join(lines)
 
 

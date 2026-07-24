@@ -852,6 +852,26 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
     if "economic" in specialist_modules:
         reporting_std_note = " + CHEERS 2022 (cấu phần kinh tế y tế cộng thêm, xem A8/G7)"
 
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 17, phát hiện HIGH):
+    # run_g3_auto.py (vòng 15) ghi rõ margin "[CẦN — ...PHẢI có biện minh lâm
+    # sàng... và được Hội đồng/thống kê viên xác nhận TRƯỚC khi khóa SAP]",
+    # nhưng KHÔNG cổng nào sau G3 (kể cả G9 — cổng liêm chính tác giả CUỐI
+    # CÙNG) kiểm tra/bắt xác nhận điều này bằng structured field. Rủi ro: chọn
+    # margin lỏng lẻo/thuận tiện SAU khi đã thấy dữ liệu có xu hướng thuận lợi
+    # (biến "không đạt superiority" thành "đạt non-inferiority") — cùng loại
+    # rủi ro HARKing mà NHÓM A tồn tại để chặn.
+    g3 = cps.get("G3", {})
+    hypothesis_type = g3.get("hypothesis_type") or "superiority"
+    margin = g3.get("margin")
+    ni_gate_block = ""
+    if hypothesis_type in ("non_inferiority", "equivalence"):
+        ni_gate_block = "\n".join([
+            "",
+            f"A6. [CHỈ {hypothesis_type.upper()}] Margin Δ = {margin if margin is not None else '[CẦN]'} đã "
+            "được Hội đồng/thống kê viên xác nhận biện minh lâm sàng TRƯỚC khi khóa SAP (G4)",
+            f"    ☐ Chưa xác nhận  ☐ Đã xác nhận, ngày: [CẦN ___/___/{_YEAR}]",
+        ])
+
     lines = [
         "## PHẦN 8 — TIÊU CHÍ QUA CỔNG G9 (HARD GATE — CẦN KÝ)",
         "",
@@ -881,6 +901,7 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         "",
         "A5. Data Availability Statement đã chọn (Phần 3)",
         "    ☐ Chưa chọn  ☐ Đã chọn Option [A/B/C]",
+        ni_gate_block,
         "",
         "NHÓM B — TIỀN ĐỀ CỔNG TRƯỚC (phải LOCKED trước G9)",
         "─────────────────────────────────────────────",

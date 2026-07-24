@@ -42,7 +42,7 @@ Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kế
 | MODULE | Tác vụ |
 |--------|--------|
 | M1 | BƯỚC 0: kiểm SAP đã khóa + số phê duyệt đạo đức (thật, do tác giả cấp) + không ghostwrite |
-| M2 | Chọn chuẩn báo cáo đúng thiết kế (CONSORT 2025/STROBE/PRISMA 2020/SPIRIT 2025/STARD/TRIPOD+AI/COREQ) |
+| M2 | Chọn chuẩn báo cáo đúng thiết kế (CONSORT 2025/STROBE/PRISMA 2020/SPIRIT 2025/STARD/TRIPOD+AI/COREQ). **RCT có `hypothesis_type` (G3) = non_inferiority/equivalence → THÊM Phụ lục CONSORT-NI (Piaggio 2012, JAMA;308(24):2594-2604, doi:10.1001/jama.2012.87802) — sửa mục tiêu đề (ghi rõ NI/equivalence), mục cỡ mẫu (biện minh margin Δ), mục diễn giải (CI so với margin, không chỉ p-value); CONSORT chuẩn KHÔNG đủ riêng nó** |
 | M3 | Bước 1: dàn ý IMRAD theo checklist chuẩn báo cáo đã chọn |
 | M4 | Bước 2: văn xuôi liền mạch (không gạch đầu dòng trong thân bài) |
 | M5 | Results: ước lượng + 95% CI; Discussion: không overclaim, không suy nhân quả vượt thiết kế |
@@ -88,7 +88,7 @@ Thông điệp chính (1 câu) · loại thiết kế (chọn chuẩn báo cáo)
   2. Đề nghị tác giả **cung cấp ý chính/kết quả** trước, rồi mới chuyển thành văn xuôi;
   3. Nếu **đã có bản nháp của tác giả** → biên tập/làm mạnh/sửa ngữ pháp/chuẩn hóa trích dẫn.
   Mọi đoạn văn xuôi AI soạn giúp phải gắn nhãn **`[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]`** + nhắc **khai báo dùng AI (ICMJE)**. Cổng cứng: không vì bị thúc mà bỏ qua.
-**Bước 1 — Dàn ý:** chốt thông điệp chính (1 câu), chọn chuẩn báo cáo (CONSORT 2025/RCT · STROBE/quan sát · PRISMA 2020/SR · SPIRIT 2025/protocol · STARD/chẩn đoán · TRIPOD+AI/mô hình; định tính → COREQ/SRQR qua `nghien-cuu-dinh-tinh`), lập sườn IMRAD theo checklist chuẩn đó.
+**Bước 1 — Dàn ý:** chốt thông điệp chính (1 câu), chọn chuẩn báo cáo (CONSORT 2025/RCT · STROBE/quan sát · PRISMA 2020/SR · SPIRIT 2025/protocol · STARD/chẩn đoán · TRIPOD+AI/mô hình; định tính → COREQ/SRQR qua `nghien-cuu-dinh-tinh`), lập sườn IMRAD theo checklist chuẩn đó. **Nếu G3/`hypothesis_type` = non_inferiority hoặc equivalence → dùng THÊM Phụ lục CONSORT cho Non-inferiority/Equivalence (Piaggio G et al. JAMA. 2012;308(24):2594-2604. doi:10.1001/jama.2012.87802) — sửa mục tiêu đề (ghi rõ NI/equivalence), mục cỡ mẫu (biện minh margin Δ, KHÔNG bịa), và mục diễn giải kết quả (CI so với margin, không chỉ p-value).**
 **Bước 2 — Văn xuôi:** viết liền mạch, KHÔNG gạch đầu dòng trong thân bài.
 - **Introduction:** khoảng trống kiến thức → mục tiêu/giả thuyết.
 - **Methods:** đủ chi tiết để tái lặp; nêu phê duyệt đạo đức + mã đăng ký; tham chiếu SAP.

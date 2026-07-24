@@ -162,6 +162,30 @@ CONSORT_ITEMS = [
      "Han che thu nghiem, de cap nguon sai lech/do chinh xac/kha nang khai quat hoa"),
 ]
 
+# THEM 2026-07-24 (vong lap kiem tra-hoan thien vong 17, phat hien HIGH): CONSORT
+# co phu luc RIENG cho non-inferiority/equivalence trial -- Piaggio G, Elbourne DR,
+# Pocock SJ, Evans SJ, Altman DG; CONSORT Group. "Reporting of noninferiority and
+# equivalence randomized trials: extension of the CONSORT 2010 statement." JAMA.
+# 2012;308(24):2594-2604. doi:10.1001/jama.2012.87802 -- xac minh truc tiep qua
+# trang bai bao JAMA. run_g8_auto.py truoc day dung CHUNG CONSORT_ITEMS superiority
+# cho MOI RCT bat ke hypothesis_type (ghi o G3_checkpoint.json tu vong 15) -- cong
+# kiem truoc nop bai co the cham PASS du ban thao thieu cac muc rieng cua thiet ke
+# NI/equivalence. Danh sach PARAPHRASE (khong chep nguyen van) khop voi
+# CONSORT_NI_EXTENSION_ITEMS trong run_g7_auto.py.
+CONSORT_NI_EXTENSION_ITEMS = [
+    ("Title (NI)", "1a-NI", "Tieu de PHAI ghi ro day la thu nghiem non-inferiority/equivalence"),
+    ("Abstract (NI)", "1b-NI", "Tom tat neu ro gia thuyet NI/equivalence + margin, ket qua dien giai THEO margin"),
+    ("Background (NI)", "2a-NI", "Ly do CHON thiet ke NI/equivalence + bang chung dieu tri doi chung da co hieu qua"),
+    ("Objectives (NI)", "2b-NI", "Neu ro gia thuyet NI/equivalence, margin Delta VA bien minh lam sang cho margin do"),
+    ("Participants (NI)", "4a-NI", "Doi chieu quan the thu nghiem nay voi quan the (cac) thu nghiem da xac lap hieu qua dieu tri doi chung"),
+    ("Interventions (NI)", "5-NI", "Dieu tri doi chung o day co GIONG (hoac rat gan) voi dieu tri doi chung trong (cac) thu nghiem da xac lap hieu qua khong"),
+    ("Outcomes (NI)", "6a-NI", "Neu ro ket cuc nao kiem dinh NI/equivalence, ket cuc nao (neu co) van kiem dinh superiority"),
+    ("Sample size (NI)", "7a-NI", "NEU RO co mau tinh theo tieu chi NI/equivalence, margin Delta dung de tinh, VA nguon/bien minh margin (KHONG bia margin)"),
+    ("Statistical methods (NI)", "12a-NI", "Neu ro dung khoang tin cay MOT phia hay HAI phia de ket luan NI/equivalence"),
+    ("Outcomes/estimation (NI)", "17a-NI", "Trinh bay khoang tin cay cua ket cuc NI/equivalence SO VOI margin"),
+    ("Interpretation (NI)", "22-NI", "Ban ket qua THEO gia thuyet NI/equivalence; neu chuyen sang ket luan superiority, PHAI bien minh ro ly do chuyen"),
+]
+
 # PRISMA 2020 (27 muc chinh thuc / 42 dong checklist -- SR/MA)
 # Vá 2026-07-17 (round audit doi khang 5): ban cu 27 "muc" nhung DANH SO SAI hoan
 # toan so voi checklist that (vd "11a" dung mot minh khong co "11b", thieu het cac
@@ -910,7 +934,8 @@ def _item_auto_check(item_name: str, gates: dict, design_code: str) -> str:
     return "☐"
 
 
-def build_reporting_checklist(design_code: str, gates: dict, specialist_modules: list = None) -> dict:
+def build_reporting_checklist(design_code: str, gates: dict, specialist_modules: list = None,
+                               hypothesis_type: str = "superiority", margin=None) -> dict:
     """Xay dung checklist chuan bao cao va tu kiem tu checkpoints.
 
     THEM 2026-07-23 (vong lap kiem tra-hoan thien vong 12, phat hien MEDIUM):
@@ -920,6 +945,11 @@ def build_reporting_checklist(design_code: str, gates: dict, specialist_modules:
     'specialist' nao trong file), nen diem % checklist/muc "Checklist >= 60%"
     o Phan 7 khong bao gio phan anh CHEERS du run_g7_auto.py da noi tu vong 11.
     specialist_module_checklist=None neu khong co module cong them nao ap dung.
+
+    THEM 2026-07-24 (vong lap kiem tra-hoan thien vong 17, phat hien HIGH):
+    tuong tu -- khi design_code=='rct' VA hypothesis_type la non_inferiority/
+    equivalence (ghi o G3_checkpoint.json boi run_g3_auto.py, vong 15), them
+    ni_extension_checklist rieng (Piaggio 2012) -- xem CONSORT_NI_EXTENSION_ITEMS.
     """
     std_name, items = DESIGN_CHECKLIST_MAP.get(
         design_code, ("STROBE 2007", STROBE_ITEMS)
@@ -946,11 +976,26 @@ def build_reporting_checklist(design_code: str, gates: dict, specialist_modules:
         "total": total,
         "score_pct": round(checked / total * 100) if total > 0 else 0,
         "specialist_module_checklist": None,
+        "ni_extension_checklist": None,
     }
 
     specialist_modules = specialist_modules or []
     if "economic" in specialist_modules and design_code != "economic":
         result["specialist_module_checklist"] = build_reporting_checklist("economic", gates)
+
+    if design_code == "rct" and hypothesis_type in ("non_inferiority", "equivalence"):
+        ni_rows = [{"num": num, "name": name, "desc": desc, "mark": "☐ [CẦN]"}
+                   for name, num, desc in CONSORT_NI_EXTENSION_ITEMS]
+        result["ni_extension_checklist"] = {
+            "standard_name": f"CONSORT Non-inferiority/Equivalence Extension "
+                              f"(Piaggio 2012, JAMA;308(24):2594-2604, doi:10.1001/jama.2012.87802)",
+            "hypothesis_type": hypothesis_type,
+            "margin": margin,
+            "items": ni_rows,
+            "checked": 0,
+            "total": len(ni_rows),
+            "score_pct": 0,
+        }
     return result
 
 
@@ -1377,6 +1422,25 @@ def generate_a9_artifact(
         ln("| # | Mục | Mô tả rút gọn | Trạng thái |")
         ln("|---|-----|--------------|-----------|")
         for item in sm["items"]:
+            desc_s = item["desc"][:70] + ("..." if len(item["desc"]) > 70 else "")
+            ln(f"| {item['num']} | {item['name']} | {desc_s} | {item['mark']} |")
+        ln()
+
+    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 17, phát hiện HIGH):
+    # phụ lục CONSORT-NI/Equivalence (Piaggio 2012) — cùng khuôn hiển thị như
+    # specialist_module_checklist ở trên, nhưng theo hypothesis_type (G3) chứ
+    # không phải specialist_modules (G1).
+    ni_ext = reporting.get("ni_extension_checklist")
+    if ni_ext:
+        margin_note = f"margin Δ={ni_ext['margin']}" if ni_ext.get("margin") is not None else "margin [CẦN BÁC SĨ/THỐNG KÊ VIÊN CUNG CẤP]"
+        ln(f"### ⚠️ Đề tài {ni_ext['hypothesis_type'].upper()} — CHECKLIST {ni_ext['standard_name']} ({ni_ext['total']} MỤC)")
+        ln()
+        ln(f"> Đề tài thiết kế **{ni_ext['hypothesis_type']}** ({margin_note}, từ G3_checkpoint.json) — "
+           f"CONSORT chuẩn KHÔNG đủ, PHẢI báo cáo thêm các mục dưới đây. KHÔNG thay thế checklist chính ở trên.")
+        ln()
+        ln("| # | Mục | Mô tả rút gọn | Trạng thái |")
+        ln("|---|-----|--------------|-----------|")
+        for item in ni_ext["items"]:
             desc_s = item["desc"][:70] + ("..." if len(item["desc"]) > 70 else "")
             ln(f"| {item['num']} | {item['name']} | {desc_s} | {item['mark']} |")
         ln()
@@ -1892,7 +1956,9 @@ def main():
     # 3. Checklist chuan bao cao
     print(f"\nBuoc 3/7: Kiem checklist {design_code}...")
     reporting = build_reporting_checklist(
-        design_code, gates, specialist_modules=gates.get("G1", {}).get("specialist_modules") or []
+        design_code, gates, specialist_modules=gates.get("G1", {}).get("specialist_modules") or [],
+        hypothesis_type=gates.get("G3", {}).get("hypothesis_type") or "superiority",
+        margin=gates.get("G3", {}).get("margin"),
     )
     print(f"  -> {reporting['standard_name']}: {reporting['checked']}/{reporting['total']} "
           f"({reporting['score_pct']}%)")
