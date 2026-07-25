@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import type { AuditEvent } from "../lib/audit";
+import { assertAiDraftsEnabled, isAiDraftsEnabled } from "../lib/ai-guard";
 import { buildProductionReadinessReport } from "../lib/production-readiness";
 import {
   buildSecureHeaders,
@@ -55,6 +56,28 @@ test("production runtime environment gate blocks unsafe production configuration
   assert.ok(decision.blockedReasons.includes("ai_drafts_must_remain_disabled"));
   assert.ok(decision.blockedReasons.includes("audit_log_redaction_not_enabled"));
   assert.ok(decision.blockedReasons.includes("weak_or_missing_secret:NEXTAUTH_SECRET"));
+});
+
+test("AI draft circuit breaker blocks future LLM call sites unless explicitly enabled", () => {
+  const previous = process.env.AI_DRAFTS_ENABLED;
+  try {
+    process.env.AI_DRAFTS_ENABLED = "false";
+    assert.equal(isAiDraftsEnabled(), false);
+    assert.throws(
+      () => assertAiDraftsEnabled("synthetic-care-plan-draft"),
+      /AI drafting is disabled/
+    );
+
+    process.env.AI_DRAFTS_ENABLED = "true";
+    assert.equal(isAiDraftsEnabled(), true);
+    assert.doesNotThrow(() => assertAiDraftsEnabled("synthetic-care-plan-draft"));
+  } finally {
+    if (previous === undefined) {
+      delete process.env.AI_DRAFTS_ENABLED;
+    } else {
+      process.env.AI_DRAFTS_ENABLED = previous;
+    }
+  }
 });
 
 test("secure header policy validates API and page hardening headers", () => {
@@ -198,5 +221,7 @@ test("production readiness report surfaces repository hardening controls without
   assert.equal(report.summary.productionReady, false);
   assert.equal(report.repositoryControls.length, runtimeHardeningControls.length);
   assert.ok(report.repositoryControls.some((item) => item.blockerIds.includes("SEC-008")));
+  assert.ok(report.repositoryControls.some((item) => item.blockerIds.includes("DATA-003")));
+  assert.ok(report.repositoryControls.some((item) => item.blockerIds.includes("AI-001")));
   assert.ok(report.repositoryControls.every((item) => item.implementationStatus === "REPO_CONTRACT_READY"));
 });

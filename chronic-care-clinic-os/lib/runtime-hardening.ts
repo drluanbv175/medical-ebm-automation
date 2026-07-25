@@ -134,7 +134,7 @@ export const runtimeHardeningControls: RuntimeHardeningControlEvidence[] = [
   },
   {
     controlId: "RUNTIME-GOVERNANCE-PERSISTENCE-001",
-    blockerIds: ["PHASE3A-LIVE-GOVERNANCE-PERSISTENCE"],
+    blockerIds: ["DATA-003", "PHASE3A-LIVE-GOVERNANCE-PERSISTENCE"],
     implementationStatus: "REPO_CONTRACT_READY",
     files: ["lib/production-go-live-controls.ts", "prisma/schema.prisma", "tests/production-go-live-controls.behavior.test.ts"],
     residualGate: "Live governance tables need migration, backup and append-only audit evidence before production."
@@ -150,6 +150,13 @@ export const runtimeHardeningControls: RuntimeHardeningControlEvidence[] = [
       "tests/outpatient-automation-control.behavior.test.ts"
     ],
     residualGate: "Clinic leadership must review automation rules, patient-facing templates, consent workflow and escalation evidence before real outpatient use."
+  },
+  {
+    controlId: "RUNTIME-AI-DRAFTS-GATE-001",
+    blockerIds: ["AI-001"],
+    implementationStatus: "REPO_CONTRACT_READY",
+    files: ["lib/ai-guard.ts", "lib/runtime-hardening.ts", "tests/runtime-hardening.behavior.test.ts"],
+    residualGate: "AI drafting remains disabled until MVP-01 stability, privacy controls and human review workflow are signed."
   }
 ];
 
