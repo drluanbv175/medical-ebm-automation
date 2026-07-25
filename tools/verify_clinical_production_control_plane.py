@@ -39,6 +39,17 @@ DISCLAIMER = (
 )
 
 
+def ensure_utf8_console() -> None:
+    """Keep direct Windows PowerShell/cp1252 runs from crashing on Vietnamese output."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            encoding = (getattr(stream, "encoding", "") or "").lower()
+            if encoding and "utf" not in encoding and hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, OSError, ValueError):
+            continue
+
+
 @dataclass(frozen=True)
 class ControlPlaneCheck:
     check_id: str
@@ -374,6 +385,8 @@ def markdown_report(report: dict[str, Any]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    ensure_utf8_console()
+
     parser = argparse.ArgumentParser(description="Verify clinical production control-plane automation.")
     parser.add_argument("--json", action="store_true", help="print full JSON report")
     parser.add_argument("--write", action="store_true", help="write reports/ JSON and Markdown artifacts")
