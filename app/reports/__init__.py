@@ -5,6 +5,10 @@ from app.reports.alert_digest import (
                                     get_new_items,
                                     render_alert_markdown,
 )
+from app.reports.evidence_workbench import (
+                                    build_workbench_payload,
+                                    export_workbench_docx,
+)
 from app.reports.exporters import (
                                     export_dashboard_excel,
                                     export_research_tracker_excel,
@@ -22,10 +26,6 @@ from app.reports.weekly_ebm import (
                                     export_weekly_ebm_docx,
                                     export_weekly_ebm_html,
                                     export_weekly_ebm_markdown,
-)
-from app.reports.evidence_workbench import (
-                                    build_workbench_payload,
-                                    export_workbench_docx,
 )
 
 __all__ = [

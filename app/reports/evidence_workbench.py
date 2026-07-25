@@ -398,7 +398,10 @@ def export_workbench_docx(area: Optional[str] = None, limit: int = 20,
     summary = data["summary"]
     doc.add_heading(meta["question"], level=0)
     doc.add_paragraph(f"Cập nhật: {meta['updated']}")
-    doc.add_paragraph("Cần bác sĩ kiểm chứng. Không chứa PII. Không tự áp dụng cho bệnh nhân khi chưa được bác sĩ duyệt.")
+    doc.add_paragraph(
+        "Cần bác sĩ kiểm chứng. Không chứa PII. "
+        "Không tự áp dụng cho bệnh nhân khi chưa được bác sĩ duyệt."
+    )
 
     doc.add_heading("1. Tóm tắt quyết định", level=1)
     doc.add_paragraph(summary["conclusion"])

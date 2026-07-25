@@ -65,7 +65,6 @@ from app.utils.console import configure_unicode_console
 from runtime.approval_ledger import ApprovalLedger, LedgerLockInvalidated
 from runtime.schemas import ApprovalDecisionEnum
 
-
 # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện HIGH): trước
 # đây KHÔNG có chỗ nào trong chuỗi khóa G4 thật (approve_gate.py →
 # ApprovalLedger.add_approval() → gate_contract.ledger_approved()) kiểm nội

@@ -1,6 +1,7 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 
+# ruff: noqa: E402,E501
 
 ROOT = Path(r"C:\Users\Admin\OneDrive\Claude AI")
 REPO = ROOT / "medical-ebm-automation"

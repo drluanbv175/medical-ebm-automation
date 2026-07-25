@@ -21,7 +21,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pytest
 
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 if str(TOOLS_DIR) not in sys.path:

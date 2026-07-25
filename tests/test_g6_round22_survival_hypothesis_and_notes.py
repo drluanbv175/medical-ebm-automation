@@ -55,6 +55,7 @@ class TestSurvivalBranchGetsHypothesisNote:
 
     def test_main_source_calls_interpret_hypothesis_type_for_survival_branch(self):
         import inspect
+
         import run_stats_analysis as RSA
         src = inspect.getsource(RSA)
         assert '{"outcome_type": "survival"}' in src

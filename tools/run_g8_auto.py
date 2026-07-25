@@ -987,8 +987,8 @@ def build_reporting_checklist(design_code: str, gates: dict, specialist_modules:
         ni_rows = [{"num": num, "name": name, "desc": desc, "mark": "☐ [CẦN]"}
                    for name, num, desc in CONSORT_NI_EXTENSION_ITEMS]
         result["ni_extension_checklist"] = {
-            "standard_name": f"CONSORT Non-inferiority/Equivalence Extension "
-                              f"(Piaggio 2012, JAMA;308(24):2594-2604, doi:10.1001/jama.2012.87802)",
+            "standard_name": "CONSORT Non-inferiority/Equivalence Extension "
+                              "(Piaggio 2012, JAMA;308(24):2594-2604, doi:10.1001/jama.2012.87802)",
             "hypothesis_type": hypothesis_type,
             "margin": margin,
             "items": ni_rows,

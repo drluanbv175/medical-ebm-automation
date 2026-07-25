@@ -1485,7 +1485,7 @@ def generate_checklist(
     if design_code == "rct" and hypothesis_type in ("non_inferiority", "equivalence"):
         ni_block, _ni_auto, _ni_total = _render_checklist_block(
             CONSORT_NI_EXTENSION_ITEMS,
-            f"CONSORT Non-inferiority/Equivalence Extension (Piaggio 2012, JAMA;308(24):2594-2604)",
+            "CONSORT Non-inferiority/Equivalence Extension (Piaggio 2012, JAMA;308(24):2594-2604)",
             len(CONSORT_NI_EXTENSION_ITEMS),
         )
         margin_note = f"margin Δ={margin}" if margin is not None else "margin [CẦN BÁC SĨ/THỐNG KÊ VIÊN CUNG CẤP]"
