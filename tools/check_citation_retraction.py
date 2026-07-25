@@ -66,6 +66,15 @@ _STATUS_LABEL = {
 }
 
 
+def configure_utf8_stdio() -> None:
+    """Giúp argparse/help và nhãn tiếng Việt không lỗi trên Windows console cp1252."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, OSError, ValueError):
+            pass
+
+
 def pmids_hash(pmids: List[str]) -> str:
     """sha256 của danh sách PMID đã sort, nối bằng dấu phẩy. Dùng để đối chiếu
     receipt máy-kiểm (ghi bởi tool này) với danh sách PMID mà artifact A12 nêu
@@ -122,6 +131,7 @@ def write_retraction_receipt(study_raw: str, pmids: List[str], results: Dict[str
 
 
 def main() -> int:
+    configure_utf8_stdio()
     ap = argparse.ArgumentParser(description=__doc__.split("Dùng:")[0])
     ap.add_argument("--pmids", required=True, help="Danh sách PMID, phân cách bằng dấu phẩy")
     ap.add_argument("--json", action="store_true", help="Xuất JSON thay vì bảng văn bản")
