@@ -461,9 +461,24 @@ def required_reviewer_role_hint(gate_id: str) -> str:
 #       → Vá: (a) role_group + reviewer_ref nay NẰM TRONG nội dung được ký (chống
 #       tái dùng chữ ký của vai trò này cho vai trò khác); (b) hỗ trợ KHÓA RIÊNG
 #       THEO VAI TRÒ gate_approval_key_<NHÓM> — khi có, chữ ký của nhóm đó chỉ tạo
-#       được bằng đúng khóa đó, nên tách vai trò trở thành THẬT (giao khóa IRB cho
-#       hội đồng thật giữ); (c) chữ ký TỰ KHAI phạm vi ("role" vs "shared") để
+#       được bằng đúng khóa đó; (c) chữ ký TỰ KHAI phạm vi ("role" vs "shared") để
 #       downstream nói đúng sự thật thay vì ngầm định mọi chữ ký đều tương đương.
+#
+#       ★ GIỚI HẠN THẬT của (b) — SỬA 2026-07-26 vòng 2 sau khi red-team ĐỘC LẬP chỉ ra
+#       bản ghi chú đầu tiên NÓI QUÁ ("tách vai trò trở thành THẬT"). HMAC là mật mã
+#       ĐỐI XỨNG: máy nào XÁC MINH cũng phải giữ ĐÚNG khóa đã KÝ. Nên trên một máy đơn
+#       lẻ chạy cả pipeline, muốn cổng G2/G8 xác minh được thì khóa IRB/phản biện PHẢI
+#       nằm sẵn trên chính máy đó — tức cấu hình DUY NHẤT triển khai được lại chính là
+#       cấu hình mà một người giữ đủ 4 khóa và ký được cả 4 vai trò. Red-team đã chứng
+#       minh: đưa khóa IRB cho hội đồng thật giữ (gỡ khỏi máy) → xác minh G2 trả False.
+#       Vậy khóa riêng theo vai trò MANG LẠI: tách bạch về mặt VẬN HÀNH (mỗi vai trò
+#       một tệp khóa, tạo/lưu/luân chuyển riêng, mất 1 khóa không vô hiệu các vai trò
+#       khác) và một dấu vết TỰ KHAI kiểm toán được ("role" vs "shared"). Nó KHÔNG mang
+#       lại: bằng chứng mật mã rằng người ký độc lập với chủ nhiệm đề tài.
+#       Muốn có bảo đảm ĐÓ thì phải dùng chữ ký BẤT ĐỐI XỨNG (vd Ed25519): người duyệt
+#       giữ khóa RIÊNG, máy chạy pipeline chỉ cần khóa CÔNG để xác minh — khi đó gỡ khóa
+#       riêng khỏi máy vẫn xác minh được. Đây là hướng đi đúng nhưng đổi cả quy trình
+#       quản lý khóa, cần bác sĩ quyết định trước khi làm.
 #
 #   (2) EBM_GATE_KEY_PATH ghi đè được ở code VẬN HÀNH THẬT. Comment cũ ghi "chỉ dùng
 #       cho test" nhưng KHÔNG có gì thực thi điều đó: đặt biến môi trường trỏ tới một
@@ -590,7 +605,20 @@ def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: s
     return f"{_SIGNATURE_SCHEME}:{scope}:{mac}"
 
 
-def _record_reviewer_ref(record: Dict[str, Any]) -> str:
+# Các trường mà một bản ghi ledger dùng để TỰ KHAI rằng agent đã tạo/duyệt nó
+# (runtime/schemas.py::ApprovalRecord có artifact_creator_agent/reviewer_agent;
+# `created_by_agent` là tham số của add_approval nhưng vẫn có thể xuất hiện trong JSON
+# dựng tay). Xem giới hạn ở docstring ledger_approved() điều kiện (2).
+_AGENT_AUTHORSHIP_FIELDS = ("created_by_agent", "reviewer_agent", "artifact_creator_agent")
+
+
+def _declares_agent_authorship(record: Dict[str, Any]) -> bool:
+    """True nếu bản ghi TỰ KHAI do agent tạo/duyệt. KHÔNG phải cơ chế chống giả mạo —
+    kẻ dựng ledger bằng tay chỉ cần bỏ trống các trường này. Chỉ chặn bản ghi trung thực."""
+    return any(bool(record.get(f)) for f in _AGENT_AUTHORSHIP_FIELDS)
+
+
+def _record_reviewer_ref(record: Dict[str, Any]) -> Tuple[str, bool]:
     """Mã định danh người duyệt trong một bản ghi ledger.
 
     CẨN TRỌNG (bẫy thật, suýt tự gây lỗi khi vá 2026-07-26): tên trường CHUẨN trong
@@ -598,12 +626,21 @@ def _record_reviewer_ref(record: Dict[str, Any]) -> str:
     `reviewer_ref` — `reviewer_ref` chỉ là tên THAM SỐ của factory
     ApprovalLedger.make_human_approval(). Đọc nhầm khóa sẽ luôn ra chuỗi rỗng, làm mọi
     chữ ký thật (ký kèm reviewer_ref có giá trị) không bao giờ khớp. Đọc trường chuẩn
-    trước, chấp nhận `reviewer_ref` như bí danh cho các bản ghi/test dựng tay."""
-    for key in ("reviewer_identity_reference", "reviewer_ref"):
-        val = record.get(key)
-        if val:
-            return str(val)
-    return ""
+    trước, chấp nhận `reviewer_ref` như bí danh cho các bản ghi/test dựng tay.
+
+    VÁ 2026-07-26 vòng 2 (red-team độc lập, liêm chính-kiểm toán): bản đầu lấy khóa TRUTHY
+    ĐẦU TIÊN, nên một bản ghi mang ĐỒNG THỜI hai khóa khác giá trị
+    (reviewer_identity_reference="dr-x" + reviewer_ref="NGƯỜI-KHÁC-HẲN") vẫn xác minh ĐẠT
+    trong khi danh tính HIỂN THỊ khác danh tính ĐƯỢC KÝ — sổ cái nói một đằng, chữ ký bảo
+    đảm một nẻo. Không phải vượt cổng, nhưng phá đúng thứ ledger sinh ra để làm: truy vết
+    ai đã duyệt. Nay trả (ref, ok) và ok=False khi hai khóa mâu thuẫn → xác minh từ chối.
+
+    Trả về: (mã_định_danh, hợp_lệ)."""
+    canonical = record.get("reviewer_identity_reference")
+    alias = record.get("reviewer_ref")
+    if canonical and alias and str(canonical) != str(alias):
+        return "", False
+    return str(canonical or alias or ""), True
 
 
 def signature_scope(record: Dict[str, Any]) -> Optional[str]:
@@ -624,7 +661,15 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
     định dạng v2, nội dung bị sửa, HOẶC role/reviewer_ref của bản ghi khác lúc ký (vì cả
     hai nay nằm trong payload) — tức không thể lấy chữ ký hợp lệ của một vai trò rồi đổi
     nhãn role trong JSON thành vai trò khác. Bản ghi tự khai phạm vi 'role' mà máy hiện
-    KHÔNG có khóa riêng của nhóm đó cũng bị từ chối (chống hạ cấp về khóa chung)."""
+    KHÔNG có khóa riêng của nhóm đó cũng bị từ chối (chống hạ cấp về khóa chung).
+
+    VÁ 2026-07-26 vòng 2 (red-team độc lập): hàm PHẢI trả False cho mọi đầu vào dị dạng,
+    KHÔNG được ném exception — nó là chốt fail-closed, caller chỉ xử lý True/False; một
+    ngoại lệ lọt ra sẽ thành crash pipeline thay vì "chưa duyệt". Hai ca đã tái hiện được:
+    (a) MAC chứa ký tự NGOÀI ASCII → hmac.compare_digest ném TypeError; (b) bản ghi không
+    phải dict / trường không phải chuỗi → AttributeError."""
+    if not isinstance(record, dict):
+        return False
     sig = record.get("approver_signature")
     if not isinstance(sig, str) or not sig:
         return False
@@ -634,27 +679,53 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
     claimed_scope, mac_hex = parts[1], parts[2]
     if claimed_scope not in (_SIGNATURE_SCOPE_ROLE, _SIGNATURE_SCOPE_SHARED):
         return False
-    group = role_group_for(record.get("reviewer_role", "")) or ""
+    # compare_digest CHỈ nhận chuỗi ASCII — chặn sớm thay vì để nó ném TypeError.
+    if not mac_hex or not mac_hex.isascii():
+        return False
+    reviewer_ref, ref_ok = _record_reviewer_ref(record)
+    if not ref_ok:
+        return False  # bản ghi mang 2 mã định danh mâu thuẫn — xem _record_reviewer_ref
+    role_raw = record.get("reviewer_role", "")
+    group = role_group_for(role_raw if isinstance(role_raw, str) else "") or ""
     key, actual_scope = _load_signing_key(group or None)
     if not key or actual_scope != claimed_scope:
         return False
-    expected = hmac.new(
-        key.encode("utf-8"),
-        _signature_payload(record.get("gate_id", ""), study, record.get("evidence_hash", ""),
-                           record.get("timestamp_utc", ""), group, _record_reviewer_ref(record)),
-        hashlib.sha256,
-    ).hexdigest()
-    return hmac.compare_digest(expected, mac_hex)
+    try:
+        expected = hmac.new(
+            key.encode("utf-8"),
+            _signature_payload(str(record.get("gate_id", "") or ""), study,
+                               str(record.get("evidence_hash", "") or ""),
+                               str(record.get("timestamp_utc", "") or ""), group, reviewer_ref),
+            hashlib.sha256,
+        ).hexdigest()
+        return hmac.compare_digest(expected, mac_hex)
+    except (TypeError, ValueError, AttributeError):
+        return False
 
 
 def is_synthetic_test_study(study: str, repo_root: Optional[Path] = None) -> bool:
     """True CHỈ khi đề tài đã được đánh dấu TƯỜNG MINH study_kind == 'synthetic_test'
-    (qua tools/mark_study_synthetic.py) VÀ không nằm trong denylist đề tài thật. Đây là
-    ngoại lệ DUY NHẤT còn được đi tiếp khi máy chưa cấu hình khóa ký."""
-    if is_real_study_denylisted(study):
-        return False
+    (qua tools/mark_study_synthetic.py) VÀ không nằm trong denylist đề tài thật.
+
+    Đây là ngoại lệ DUY NHẤT còn được đi tiếp khi máy chưa cấu hình khóa ký — nên nó
+    phải chặt bằng đúng resolve_synthetic_study_dir().
+
+    VÁ 2026-07-26 vòng 2 (red-team ĐỘC LẬP tái hiện được, HIGH): bản đầu tiên của hàm này
+    kiểm denylist trên CHUỖI THÔ `study` rồi mới ghép đường dẫn, nên các biến thể trỏ ĐÚNG
+    thư mục đề tài thật vẫn lọt: `is_real_study_denylisted("./hai-long-benh-nhan-C1a-BVQY175")`
+    → False (chuỗi khác), trong khi `load_study_meta` giải ra ĐÚNG thư mục thật đó → hàm
+    trả True cho một đề tài NGƯỜI THẬT. Đã tái hiện: "./TÊN", "TÊN/", "TÊN/." đều cho
+    {G2,G4,G8,G9} = True. Đường dẫn tuyệt đối/"../" còn khiến nó đọc study_meta.json từ
+    NGOÀI exports/. Cùng lớp lỗi mà resolve_synthetic_study_dir() (dòng ~283) đã cố ý
+    phòng bằng cách kiểm trên real_dir.name — bản vá vòng 1 quên tái dùng.
+    (Giảm nhẹ: các run_g*_auto.py sanitize `re.sub(r'[^\\w\\-]','_')` nên biến thể này
+    không tới được từ CLI — nhưng đây là hàm hợp đồng dùng chung, không được dựa vào việc
+    caller nào cũng sanitize.)"""
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
-    meta = load_study_meta(root / "exports" / study)
+    real_dir, err = resolve_synthetic_study_dir(study, root)
+    if err or real_dir is None:
+        return False
+    meta = load_study_meta(real_dir)
     return str(meta.get("study_kind", "")).strip().casefold() == "synthetic_test"
 
 
@@ -665,7 +736,7 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
     run_g6_auto.py (×4 template) và run_g9_auto.py trước 2026-07-12 (chính cách
     trùng lặp này từng gây lỗi thật ở nơi khác trong hệ thống — sửa 1 chỗ quên 3
     chỗ). True CHỈ khi ĐỦ CẢ NĂM: (1) có bản ghi APPROVED không synthetic cho
-    gate_id, (2) không phải agent tạo, (3) reviewer_role của bản ghi thuộc ĐÚNG
+    gate_id, (2) bản ghi KHÔNG tự khai do agent tạo/duyệt, (3) reviewer_role của bản ghi thuộc ĐÚNG
     nhóm stakeholder bắt buộc cho gate_id nếu có (xem _GATE_REQUIRED_STAKEHOLDERS
     — vá 2026-07-14, trước đó role chỉ được ép ở approve_gate.py lúc TẠO bản ghi,
     không được xác minh lại ở đây lúc DÙNG), (4) evidence_hash khớp NỘI DUNG HIỆN
@@ -681,7 +752,19 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
     evidence_hash (hash KHÔNG phải bí mật, ai cũng tính được) — là qua cổng. Nay
     "chưa có khóa ⇒ CHƯA DUYỆT" áp dụng cho MỌI đề tài; ngoại lệ duy nhất là đề tài
     đã được TỰ TAY đánh dấu study_kind == "synthetic_test". Denylist trở thành lớp
-    phòng thủ thứ hai thay vì lớp duy nhất."""
+    phòng thủ thứ hai thay vì lớp duy nhất.
+
+    SỬA 2026-07-26 vòng 2 (red-team độc lập) — hai điểm ở ĐIỀU KIỆN (2):
+    a) Docstring này TỪNG khai "(2) không phải agent tạo" nhưng bộ lọc bên dưới CHƯA BAO
+       GIỜ kiểm điều đó — red-team ghi một bản ghi `created_by_agent: true` kèm chữ ký hợp
+       lệ và vẫn được trả True. Nay có kiểm thật (_AGENT_AUTHORSHIP_FIELDS).
+    b) Nhưng phải nói RÕ GIỚI HẠN, không lặp lại lỗi khai quá: cờ này do CHÍNH bản ghi tự
+       khai, mà kẻ dựng ledger bằng tay thì không việc gì phải khai thật. Nó chỉ chặn bản
+       ghi TRUNG THỰC tự nhận do agent tạo (vd tool nội bộ ghi đúng cờ). Bảo đảm THẬT duy
+       nhất chống ledger bịa vẫn là CHỮ KÝ ở điều kiện (5) — `created_by_agent` là lớp
+       phòng thủ theo chiều sâu, KHÔNG phải bằng chứng độc lập.
+    Kèm: chống ledger dị dạng (JSON không phải list, phần tử không phải dict) — trước đây
+    ném AttributeError thay vì trả False, biến chốt fail-closed thành crash pipeline."""
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
     ledger_p = root / "exports" / study / "approval_ledger.json"
     if not ledger_p.exists() or not Path(artifact_path).exists():
@@ -690,9 +773,14 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
         records = json.loads(ledger_p.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return False
-    matches = [r for r in records if r.get("gate_id") == gate_id
+    if not isinstance(records, list):
+        return False
+    matches = [r for r in records if isinstance(r, dict)
+               and r.get("gate_id") == gate_id
                and r.get("decision") == "APPROVED" and not r.get("is_synthetic")
-               and reviewer_role_satisfies_gate(gate_id, r.get("reviewer_role", ""))]
+               and not _declares_agent_authorship(r)
+               and reviewer_role_satisfies_gate(
+                   gate_id, r.get("reviewer_role") if isinstance(r.get("reviewer_role"), str) else "")]
     if not matches:
         return False
     latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]

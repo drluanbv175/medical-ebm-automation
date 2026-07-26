@@ -180,7 +180,14 @@ def main() -> int:
         if GC.per_role_key_available(role_group or ""):
             print(f"🔑 Đã ký bằng KHÓA RIÊNG của nhóm {role_group} "
                   f"(~/.ebm-secrets/gate_approval_key_{role_group}).")
-            print("   → Chữ ký này là bằng chứng TÁCH VAI TRÒ thật (chỉ người giữ khóa đó tạo được).")
+            # SỬA 2026-07-26 vòng 2: dòng này TỪNG ghi "bằng chứng TÁCH VAI TRÒ thật" —
+            # red-team độc lập chỉ ra là NÓI QUÁ. HMAC đối xứng: máy này xác minh được
+            # nghĩa là chính nó đang giữ khóa đó, nên không thể loại trừ khả năng chủ
+            # nhiệm đề tài tự ký. Nói đúng mức bảo đảm thay vì trấn an.
+            print("   → Tách bạch VẬN HÀNH: khóa riêng cho vai trò này, không dùng chung với vai trò khác.")
+            print("   ⚠️  KHÔNG phải bằng chứng mật mã về tính độc lập: máy này xác minh được")
+            print("      nghĩa là chính nó đang giữ khóa đó. Bảo đảm độc lập thật cần chữ ký")
+            print("      bất đối xứng (người duyệt giữ khóa riêng, máy chỉ giữ khóa công).")
         else:
             print("🔑 Đã ký bằng khóa CHUNG của máy (~/.ebm-secrets/gate_approval_key).")
             print("   ⚠️  GIỚI HẠN THẬT — nói rõ để không hiểu nhầm mức bảo đảm: khóa chung ký được")

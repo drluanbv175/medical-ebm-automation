@@ -33,6 +33,9 @@ if str(TOOLS_DIR) not in sys.path:
 import gate_contract as GC  # noqa: E402
 
 TIMESTAMP = "2026-07-26T00:00:00Z"
+# Đề tài NGƯỜI THẬT trong gate_contract.REAL_STUDY_DENYLIST — chỉ dùng làm TÊN trong
+# tmp_path, KHÔNG bao giờ đụng exports/ thật.
+REAL_STUDY = "hai-long-benh-nhan-C1a-BVQY175"
 
 
 def _study_with_artifact(root: Path, study: str) -> tuple[Path, str]:
@@ -189,6 +192,131 @@ def test_role_scoped_signature_rejected_when_role_key_disappears(tmp_path, monke
 
     role_key.unlink()  # khóa riêng biến mất → chữ ký 'role' không còn xác minh được
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+
+
+# ── VÒNG 2: 5 phát hiện của RED-TEAM ĐỘC LẬP chống lại chính bản vá vòng 1 ────
+# Bản vá vòng 1 (ở trên) đóng đúng 3 lỗ hổng nó nhắm tới, nhưng một agent độc lập chạy
+# sau đó tìm thêm 5 vấn đề — trong đó 1 cái nằm NGAY TRONG hàm vừa được nâng lên thành
+# ngoại lệ DUY NHẤT của fail-closed. Đây chính là lý do phải có vòng kiểm định độc lập
+# thay vì tự tuyên bố đã xong.
+
+def test_denylisted_real_study_cannot_be_bypassed_by_path_variants(tmp_path, monkeypatch):
+    """RED-TEAM VÒNG 2 (HIGH, đã tái hiện): is_synthetic_test_study() bản đầu kiểm denylist
+    trên CHUỖI THÔ rồi mới ghép đường dẫn. "./TÊN-THẬT" là chuỗi KHÁC nên qua được denylist,
+    trong khi load_study_meta giải ra ĐÚNG thư mục đề tài thật → {G2,G4,G8,G9} = True cho
+    một đề tài NGƯỜI THẬT. Nay chuẩn hóa bằng resolve_synthetic_study_dir()."""
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(tmp_path / "khong_ton_tai"))
+    study_dir = tmp_path / "exports" / REAL_STUDY
+    study_dir.mkdir(parents=True, exist_ok=True)
+    (study_dir / "study_meta.json").write_text(
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8"
+    )
+    artifact, evidence_hash = _study_with_artifact(tmp_path, REAL_STUDY)
+    _write_ledger(tmp_path, REAL_STUDY, {
+        "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
+        "reviewer_role": "IRB", "evidence_hash": evidence_hash,
+        "timestamp_utc": TIMESTAMP, "reviewer_identity_reference": "ke-gia-mao",
+    })
+
+    for variant in (REAL_STUDY, f"./{REAL_STUDY}", f"{REAL_STUDY}/", f"{REAL_STUDY}/.",
+                    f"./{REAL_STUDY}/."):
+        assert GC.is_synthetic_test_study(variant, tmp_path) is False, variant
+        assert GC.ledger_approved("G2", variant, artifact, repo_root=tmp_path) is False, variant
+
+
+def test_study_path_escaping_exports_is_rejected(tmp_path):
+    """Biến thể đường dẫn tuyệt đối/'../' từng khiến hàm đọc study_meta.json từ NGOÀI
+    exports/ — nay phải từ chối vì thư mục không phải con TRỰC TIẾP của exports/."""
+    outside = tmp_path / "ngoai_exports"
+    outside.mkdir(parents=True, exist_ok=True)
+    (outside / "study_meta.json").write_text(
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8"
+    )
+    (tmp_path / "exports").mkdir(parents=True, exist_ok=True)
+    for variant in (str(outside), "../ngoai_exports", "", "   "):
+        assert GC.is_synthetic_test_study(variant, tmp_path) is False, variant
+
+
+def test_record_carrying_two_conflicting_identities_is_rejected(tmp_path, monkeypatch):
+    """RED-TEAM VÒNG 2 (liêm chính kiểm toán): bản ghi mang ĐỒNG THỜI
+    reviewer_identity_reference và reviewer_ref KHÁC NHAU thì chữ ký ký theo một cái,
+    còn sổ cái hiển thị cái kia → truy vết "ai đã duyệt" sai. Phải từ chối."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-hai-danh-tinh"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    signature = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
+                                 reviewer_role="IRB", reviewer_ref="dr-x")
+    _write_ledger(tmp_path, study, {
+        "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
+        "reviewer_role": "IRB", "evidence_hash": evidence_hash,
+        "timestamp_utc": TIMESTAMP,
+        "reviewer_identity_reference": "dr-x",          # được ký
+        "reviewer_ref": "NGUOI-KHAC-HAN",               # hiển thị — mâu thuẫn
+        "approver_signature": signature,
+    })
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+
+
+def test_record_declaring_agent_authorship_is_rejected(tmp_path, monkeypatch):
+    """RED-TEAM VÒNG 2: docstring ledger_approved() khai điều kiện "(2) không phải agent
+    tạo" nhưng bộ lọc CHƯA BAO GIỜ kiểm — bản ghi created_by_agent=true kèm chữ ký hợp lệ
+    vẫn qua. Nay có kiểm thật (giới hạn: chỉ chặn bản ghi TRUNG THỰC tự khai)."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    for field in ("created_by_agent", "reviewer_agent", "artifact_creator_agent"):
+        study = f"de-tai-agent-{field}"
+        artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+        signature = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
+                                     reviewer_role="IRB", reviewer_ref="ref-1")
+        record = {
+            "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
+            "reviewer_role": "IRB", "evidence_hash": evidence_hash,
+            "timestamp_utc": TIMESTAMP, "reviewer_identity_reference": "ref-1",
+            "approver_signature": signature,
+            field: True if field == "created_by_agent" else "claude-code",
+        }
+        _write_ledger(tmp_path, study, record)
+        assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False, field
+
+
+def test_malformed_ledger_returns_false_not_exception(tmp_path, monkeypatch):
+    """RED-TEAM VÒNG 2: ledger dị dạng từng ném AttributeError/TypeError — biến chốt
+    FAIL-CLOSED thành CRASH pipeline. Chốt kiểm phải luôn trả True/False."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-ledger-di-dang"
+    artifact, _ = _study_with_artifact(tmp_path, study)
+    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
+
+    for payload in ('{"gate_id": "G2"}', '["chuoi", null, 123]', 'null', '"chi la chuoi"',
+                    '[{"gate_id": "G2", "decision": "APPROVED", "reviewer_role": 12345}]'):
+        ledger_p.write_text(payload, encoding="utf-8")
+        assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False, payload
+
+
+def test_non_ascii_mac_returns_false_not_typeerror(tmp_path, monkeypatch):
+    """RED-TEAM VÒNG 2: hmac.compare_digest ném TypeError với chuỗi ngoài ASCII."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-mac-phi-ascii"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    for mac in ("v2:shared:đây-là-mac-tiếng-việt", "v2:shared:" + "ü" * 64, "v2:shared:"):
+        _write_ledger(tmp_path, study, {
+            "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
+            "reviewer_role": "IRB", "evidence_hash": evidence_hash,
+            "timestamp_utc": TIMESTAMP, "reviewer_identity_reference": "ref",
+            "approver_signature": mac,
+        })
+        assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False, mac
 
 
 def test_legacy_v1_bare_hex_signature_no_longer_accepted(tmp_path, monkeypatch):
