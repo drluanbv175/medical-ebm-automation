@@ -33,7 +33,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận yêu cầu 
 |--------|--------|
 | M1 | BƯỚC 0: kiểm tiền đề G9 — bản thảo đã qua `kiem-chung-trich-dan` + `binh-duyet`; G4_STATUS=LOCKED + G5_STATUS=LOCKED; nhắc mọi khai báo chờ chủ nhiệm xác nhận |
 | M2 | Soạn BỘ KHAI BÁO LIÊM CHÍNH ICMJE+COPE: bảng CRediT 14 vai trò · khai báo COI từng tác giả · khai báo AI · Data Availability Statement · Ethics Statement |
-| M3 | Checklist Think.Check.Submit (10 điểm) + đề xuất 3 tạp chí phù hợp (chỉ mục/phạm vi/IF [CẦN KIỂM]) |
+| M3 | Checklist chống predatory (10 điểm, tự soạn — tham khảo Think.Check.Submit) + đề xuất 3 tạp chí phù hợp (chỉ mục/phạm vi/IF [CẦN KIỂM]) |
 | M4 | Soạn cover letter (mẫu 5 đoạn tự đề xuất, dựa trên NỘI DUNG ICMJE khuyến nghị khai báo trong thư ngỏ — ICMJE không quy định cứng cấu trúc "5 đoạn") và template phản hồi phản biện (Rebuttal) điểm-theo-điểm, RỒI mới chốt checklist đóng gói nộp (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8: trước đây checklist đóng gói — có mục "☐ Cover letter" — được liệt ở M3, TRƯỚC khi M4 soạn cover letter; nay soạn thư trước để checklist có cái thật để đối chiếu) |
 | M5 | ⛔ CỔNG CỨNG G9: dừng — chờ bác sĩ ký 3 xác nhận (COI · đồng thuận tác giả · không đăng kép); sau ký → ghi G9_STATUS=LOCKED + kích hoạt Final Readiness Report |
 
@@ -87,20 +87,35 @@ Tiêu chí tác giả ICMJE — TẤT CẢ 4 tiêu chí phải đạt:
 Không đủ 4 tiêu chí → ghi vào Lời cảm ơn, KHÔNG ghi là tác giả
 ```
 
-### B. KHAI BÁO COI (ICMJE Disclosure Form — 5 lĩnh vực)
+### B. KHAI BÁO COI (theo mẫu ICMJE Disclosure Form — bảng PHẲNG 13 mục, hiện hành từ 6/2021)
+
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 30, phát hiện HIGH: bản cũ ghi "5 lĩnh vực" + khẳng định sai mục "Intellectual Property" gộp cả copyright — đó là cấu trúc form CŨ đã bị chính ICMJE thay thế >4 năm trước (xem icmje.org/news-and-editorials/updated_disclosure_form_2021.html). Đã xác minh bằng tải trực tiếp file .docx chính thức đang sống tại icmje.org/downloads/coi_disclosure.docx: form thật là MỘT bảng phẳng liệt kê đúng 13 mục đánh số, KHÔNG chia "lĩnh vực" có tên, KHÔNG có mục nào tên "Intellectual Property" — mục 8 chỉ ghi "Patents planned, issued or pending" (không nhắc copyright); "Royalties or licenses" là mục 3 TÁCH BIỆT khỏi patent. Mẫu dưới đây là bản RÚT GỌN nội bộ tham khảo cho đủ 13 mục — agent LUÔN phải nhắc bác sĩ tải và điền TRỰC TIẾP file .docx chính thức tại icmje.org/downloads/coi_disclosure.docx làm bản khai chính thức, không coi mẫu này là bản thay thế đầy đủ.)*
 
 ```
 ════════════════════════════════════════════════════════
 KHAI BÁO XUNG ĐỘT LỢI ÍCH — [Họ tên tác giả] — [Ngày]
 ════════════════════════════════════════════════════════
-(Điền riêng cho từng tác giả — theo mẫu ICMJE Disclosure Form: quan hệ TRỰC TIẾP LIÊN QUAN đến bài — từ lúc bắt đầu thai nghén/thiết kế NC đến hiện tại, không giới hạn tháng; quan hệ CHỈ LIÊN QUAN CHỦ ĐỀ nhưng không trực tiếp tài trợ — 36 tháng qua tính đến ngày nộp)
+(Điền riêng cho từng tác giả — mục 1 "All support for the present manuscript" KHÔNG giới
+hạn thời gian [từ lúc thai nghén/thiết kế NC]; các mục 2-13 khai quan hệ CHỈ LIÊN QUAN chủ
+đề trong 36 tháng qua tính đến ngày nộp — BẢN KHAI CHÍNH THỨC phải dùng đúng file .docx tại
+icmje.org/downloads/coi_disclosure.docx, mẫu dưới đây chỉ tham khảo)
 
-1. TÀI CHÍNH TỪ TỔ CHỨC THƯƠNG MẠI liên quan đến chủ đề bài:
+1. TÀI CHÍNH TỪ TỔ CHỨC THƯƠNG MẠI liên quan đến chủ đề bài — tích các mục áp dụng
+   (khớp đúng 13 mục ICMJE, không gộp/bỏ mục nào):
    ☐ Không có
-   ☐ Có: Tổ chức: ___ | Loại: ☐ Tài trợ NC ☐ Phí tư vấn ☐ Cổ phần ☐ Thù lao ☐ Sở hữu trí
-     tuệ (patent HOẶC copyright — chờ cấp/đã cấp/đã cấp phép/đang nhận bản quyền — mục
-     "Intellectual Property" của ICMJE Uniform Disclosure Form bao gồm cả copyright, không
-     chỉ patent — vá 2026-07-17, round audit đối kháng 4)
+   ☐ Có — Tổ chức: ___ | Loại:
+     ☐ Tài trợ NC/hợp đồng (Grants/contracts)
+     ☐ Bản quyền/giấy phép (Royalties or licenses — TÁCH BIỆT khỏi patent)
+     ☐ Phí tư vấn (Consulting fees)
+     ☐ Thù lao/honoraria cho bài giảng (Payment or honoraria)
+     ☐ Phí làm chứng chuyên gia (Payment for expert testimony)
+     ☐ Hỗ trợ đi họp/du lịch (Support for attending meetings or travel)
+     ☐ Patent đang chờ/đã cấp (Patents planned, issued or pending)
+     ☐ Tham gia DSMB/Ban tư vấn (Participation on a DSMB or Advisory Board)
+     ☐ Vai trò lãnh đạo/ủy thác — có trả lương HOẶC không (Leadership or fiduciary role)
+     ☐ Cổ phần/quyền chọn cổ phần (Stock or stock options)
+     ☐ Nhận thiết bị/vật tư/thuốc/quà tặng (Receipt of equipment, materials, drugs, or gifts)
+     ☐ Khác (Other financial or non-financial interests): ___
 
 2. TÀI CHÍNH TỪ TỔ CHỨC KHÔNG liên quan đến chủ đề:
    ☐ Không có  ☐ Có: ___
@@ -174,7 +189,10 @@ was conducted in accordance with the Declaration of Helsinki."
 
 ## G9 PHẦN 2 — CHỌN TẠP CHÍ VÀ ĐÓNG GÓI
 
-### Checklist Think.Check.Submit (10 điểm)
+### Checklist chống tạp chí predatory (tự soạn — tham khảo tinh thần Think.Check.Submit + tiêu chí Beall/COPE)
+
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 30, phát hiện MEDIUM: bản cũ gắn nhãn danh sách 10 mục TỰ SOẠN này là "Checklist Think.Check.Submit (10 điểm)" — sai nguồn/số lượng. Checklist CHÍNH THỨC của sáng kiến Think.Check.Submit (thinkchecksubmit.org/journals/) chỉ có ĐÚNG 7 câu hỏi, không hỏi trực tiếp về Retraction Watch hay "email mời chào không mong muốn" như 10 mục dưới đây. Nội dung từng mục vẫn hợp lý/hữu ích, chỉ đổi tên cho đúng nguồn — không gắn thương hiệu "Think.Check.Submit" cho một checklist khác số lượng.)*
+
 ```
 ☐ 1. Ban biên tập có tên thật, xác minh được?
 ☐ 2. Chính sách peer-review rõ ràng?
@@ -329,7 +347,7 @@ Trân trọng, [Tên tác giả liên hệ]
 
 ## TIÊU CHÍ QUA CỔNG G9
 
-**Đạt G9 (AI side):** Bảng CRediT 14 vai trò · khai báo COI mỗi tác giả · khai báo AI · Data Availability Statement · Ethics Statement · checklist Think.Check.Submit · 3 tạp chí đề xuất · cover letter · checklist đóng gói hoàn chỉnh.
+**Đạt G9 (AI side):** Bảng CRediT 14 vai trò · khai báo COI mỗi tác giả · khai báo AI · Data Availability Statement · Ethics Statement · checklist chống predatory · 3 tạp chí đề xuất · cover letter · checklist đóng gói hoàn chỉnh.
 
 **Mở khóa thật (human side):** bác sĩ ký xác nhận 3 mục → agent ghi G9=LOCKED → xuất Final Readiness Report.
 
