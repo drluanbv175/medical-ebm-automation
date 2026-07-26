@@ -46,7 +46,7 @@ Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kế
 | M3 | Bước 1: dàn ý IMRAD theo checklist chuẩn báo cáo đã chọn |
 | M4 | Bước 2: văn xuôi liền mạch (không gạch đầu dòng trong thân bài) |
 | M5 | Results: ước lượng + 95% CI; Discussion: không overclaim, không suy nhân quả vượt thiết kế |
-| M6 | 🔒 CỔNG CỨNG: giao `kiem-chung-trich-dan` kiểm TỪNG tham khảo; chỗ thiếu → `[CẦN BỔ SUNG]` |
+| M6 | 🔒 CỔNG CỨNG (chạy trên bản CUỐI — SAU `hieu-dinh-song-ngu` nếu nộp quốc tế, xem mục 🔒 CỔNG CỨNG trích dẫn bên dưới): giao `kiem-chung-trich-dan` kiểm TỪNG tham khảo; chỗ thiếu → `[CẦN BỔ SUNG]` |
 
 ## CHẾ ĐỘ PIPELINE — AUTO-PULL TỪ KẾT QUẢ PHÂN TÍCH (CHAY-TOAN-BO / G6→G7)
 
@@ -96,8 +96,9 @@ Thông điệp chính (1 câu) · loại thiết kế (chọn chuẩn báo cáo)
 - **Discussion:** diễn giải trong giới hạn, đối chiếu y văn (`tong-quan-y-van`), điểm mạnh–hạn chế, ý nghĩa lâm sàng (không overclaim).
 - Trích dẫn Vancouver/APA/AMA theo tạp chí; giao `kiem-chung-trich-dan` kiểm từng tham khảo.
 
-## 🔒 CỔNG CỨNG trích dẫn (bắt buộc trước khi trả bản thảo)
-Trước khi coi bản thảo "xong", giao `kiem-chung-trich-dan` kiểm **TỪNG** tham khảo: PMID/DOI có thật, phân giải được, nội dung trích **đúng** điều bài viết khẳng định. Trích dẫn không xác minh được → gắn cờ `[TRÍCH DẪN CHƯA XÁC MINH]`, KHÔNG để lọt vào bản nộp. Không khẳng định khoa học nào được thiếu nguồn xác minh.
+## 🔒 CỔNG CỨNG trích dẫn (bắt buộc trước khi trả bản thảo — chạy trên bản CUỐI, SAU `hieu-dinh-song-ngu` nếu nộp quốc tế)
+Trước khi coi bản thảo "xong", giao `kiem-chung-trich-dan` kiểm **TỪNG** tham khảo TRÊN BẢN CUỐI (đã dịch nếu nộp quốc tế): PMID/DOI có thật, phân giải được, nội dung trích **đúng** điều bài viết khẳng định. Trích dẫn không xác minh được → gắn cờ `[TRÍCH DẪN CHƯA XÁC MINH]`, KHÔNG để lọt vào bản nộp. Không khẳng định khoa học nào được thiếu nguồn xác minh.
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 29, phát hiện HIGH: bản cũ đặt cổng này TRƯỚC `hieu-dinh-song-ngu` — mâu thuẫn trực tiếp với `hieu-dinh-song-ngu.md` (tự khai chạy "trước chuỗi kiem-chung-trich-dan → binh-duyet") và với `dieu-phoi-nghien-cuu.md`/`README.md`/`_BAN-DO-KET-NOI.md`/`_CROSSWALK-NGHIEN-CUU.md`/`_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md` — TẤT CẢ đều thống nhất thứ tự `viet-ban-thao → hieu-dinh-song-ngu → kiem-chung-trich-dan → binh-duyet`. Kiểm trích dẫn TRƯỚC khi dịch có rủi ro thật: artifact `A12_CITATION_VERIFICATION_<study>.md` sẽ xác minh trên bản TIẾNG VIỆT/nháp, trong khi `hieu-dinh-song-ngu` chỉ đối chiếu HẬU dịch NỘI BỘ (so bản dịch với bản gốc đã đánh dấu, KHÔNG tra lại PubMed/Crossref) — khiến A12 có thể lỗi thời so với bản CUỐI thật sự nộp. Đã sửa để khớp thứ tự đã thống nhất ở 5 file kia.)*
 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
@@ -115,7 +116,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 > *Đầu vào:* kết quả + diễn giải của một nghiên cứu cắt ngang. → Chọn STROBE, dàn ý IMRAD theo checklist, viết Methods đủ tái lặp (nêu phê duyệt đạo đức + mã — hoặc `[CẦN BỔ SUNG]`), Results chỉ sự kiện + CI, Discussion nêu "liên quan" không "nhân quả", bảng đối chiếu checklist. Sau đó qua cổng cứng trích dẫn. *Không bịa số/nguồn.*
 
 ## 6. Tiêu chí hoàn thành (qua cổng G7)
-**Hoàn thành khi:** thông điệp chính rõ; chuẩn báo cáo đúng thiết kế + bảng đối chiếu checklist; IMRAD văn xuôi; Results có CI; Discussion không overclaim; danh mục tham khảo đã qua `kiem-chung-trich-dan`; mục khai báo đầy đủ (tác giả xác nhận); chỗ thiếu đánh `[CẦN BỔ SUNG]`. Còn `[TRÍCH DẪN CHƯA XÁC MINH]` → CHƯA sẵn sàng nộp. **Bàn giao** `hieu-dinh-song-ngu` (nếu nộp quốc tế) → `binh-duyet`.
+**Hoàn thành khi:** thông điệp chính rõ; chuẩn báo cáo đúng thiết kế + bảng đối chiếu checklist; IMRAD văn xuôi; Results có CI; Discussion không overclaim; mục khai báo đầy đủ (tác giả xác nhận); chỗ thiếu đánh `[CẦN BỔ SUNG]`. **Bàn giao** `hieu-dinh-song-ngu` (nếu nộp quốc tế) → `kiem-chung-trich-dan` (cổng cứng, kiểm TỪNG tham khảo trên bản CUỐI — xem mục 🔒 CỔNG CỨNG trích dẫn) → `binh-duyet`. Danh mục tham khảo PHẢI đã qua `kiem-chung-trich-dan` trước khi sang `binh-duyet`; còn `[TRÍCH DẪN CHƯA XÁC MINH]` → CHƯA sẵn sàng nộp (sửa 2026-07-26, vòng lặp vòng 29, phát hiện HIGH: đồng bộ thứ tự với mục 🔒 CỔNG CỨNG trích dẫn phía trên).
 
 > **Định dạng LaTeX theo venue cụ thể (2026-07-04, sửa số liệu 2026-07-11 — "50+ venue" không khớp thực tế trên đĩa):** dòng 101 ("xuất LaTeX/PDF/DOCX khi cần") hiện chỉ xuất bản thảo chung, KHÔNG có template riêng theo từng tạp chí. Khi đã chọn tạp chí/hội nghị/quỹ tài trợ đích cụ thể — dùng skill `venue-templates` để định dạng đúng khuôn, SAU khi nội dung khoa học đã chốt ở bước này. Skill này có `.tex` THẬT (kiểm trực tiếp `sync/skills/venue-templates/assets/`) chỉ cho **Elsevier (3 biến thể), Nature, PLOS ONE, NeurIPS + 1 poster + 2 mẫu grant (NIH/NSF)** — 9 file, không phải "50+ venue" như SKILL.md của skill này tự mô tả; các venue khác trong bảng của SKILL.md chỉ có hướng dẫn định dạng bằng văn xuôi (`references/*.md`), KHÔNG có `.tex` sẵn dùng. Không dùng để thay nội dung/liêm chính đã qua cổng cứng trích dẫn ở trên.
 

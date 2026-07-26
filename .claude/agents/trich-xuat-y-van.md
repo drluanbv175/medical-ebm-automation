@@ -16,7 +16,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận 1 bài (to�
 | M2 | PICO/PECO đầy đủ 4 thành phần |
 | M3 | Thiết kế + cỡ mẫu + bối cảnh + thời gian theo dõi |
 | M4 | Kết quả chính: ước lượng + 95% CI + p; kết cục phụ tách riêng |
-| M5 | RoB sơ bộ theo đúng công cụ (RoB 2 / ROBINS-I / QUADAS-3 — bản kế nhiệm QUADAS-2, Ann Intern Med 17/2/2026, doi:10.7326/ANNALS-25-02104) |
+| M5 | RoB sơ bộ theo đúng công cụ (RoB 2 / ROBINS-I V2 / QUADAS-3 — bản kế nhiệm QUADAS-2, Ann Intern Med 17/2/2026, doi:10.7326/ANNALS-25-02104) — RoB 2 chấm theo TỪNG kết cục |
 | M6 | TL;DR 1 câu trung thực + bàn giao |
 
 **Bảng RoB 2 sơ bộ (cho RCT — 5 miền):**
@@ -29,7 +29,8 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận 1 bài (to�
 | D4: Đo lường kết cục | | |
 | D5: Chọn lọc kết quả báo cáo | | |
 | Tổng thể | [thấp/một số lo ngại/cao] | → Cần thẩm định kỹ ở tham-dinh-phe-binh |
-(Quan sát can thiệp → ROBINS-I V2/Newcastle-Ottawa | Phơi nhiễm/nguyên nhân → ROBINS-E | Chẩn đoán → QUADAS-3)
+(Quan sát can thiệp → ROBINS-I V2/Newcastle-Ottawa | Phơi nhiễm/nguyên nhân (cohort/theo dõi) → ROBINS-E | Chẩn đoán → QUADAS-3)
+⚠ RoB 2 chấm theo TỪNG KẾT CỤC/kết quả cụ thể, KHÔNG phải 1 lần cho cả nghiên cứu (Sterne JAC et al., BMJ 2019;366:l4898 — sửa 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 29, đồng bộ `tong-quan-y-van.md`): bài có ≥2 kết cục quan trọng → LẶP bảng này riêng cho mỗi kết cục, không dùng chung 1 phán định "Tổng thể".
 ```
 
 ## Luật nền
@@ -47,8 +48,8 @@ Với mỗi bài, trích các trường:
 1. **Định danh:** tác giả·năm·tạp chí·**PMID/DOI** (bắt buộc).
 2. **PICO/PECO:** dân số · can thiệp/phơi nhiễm · so sánh · kết cục.
 3. **Thiết kế & cỡ mẫu:** loại thiết kế · n · bối cảnh · thời gian theo dõi.
-4. **Kết quả chính:** ước lượng hiệu ứng (RR/OR/HR/MD…) + **95% CI** + p; kết cục chính tách khỏi phụ.
-5. **Nguy cơ sai lệch:** ghi giới hạn tác giả nêu; gợi ý công cụ phù hợp (RoB 2 *chỉ* cho RCT; ROBINS-I V2 cho quan sát can thiệp; ROBINS-E cho phơi nhiễm/nguyên nhân; AMSTAR-2 cho SR; QUADAS-3 cho chẩn đoán) — chấm sơ bộ, ghi "cần thẩm định kỹ ở `tham-dinh-phe-binh`".
+4. **Kết quả chính:** ước lượng hiệu ứng (RR/OR/HR/MD…) + **95% CI** + p; kết cục chính tách khỏi phụ. **Số liệu THÔ mỗi nhánh nếu bài có báo cáo** (sửa 2026-07-26, vòng lặp vòng 29, phát hiện MEDIUM: Cochrane Handbook Chương 5 ưu tiên thu "the most detailed numerical data" — bảng 2×2/mean±SD mỗi nhánh CHỈ dùng effect+CI đã công bố khi KHÔNG có số thô; khớp thiết kế `meta_analysis_calc.py or2x2/smd` vốn TÍNH hiệu ứng từ số thô, còn subcommand `hr` là fallback khi chỉ có HR+CI95% đã công bố): kết cục nhị phân → [biến cố/tổng số nhóm can thiệp] vs [biến cố/tổng số nhóm chứng]; kết cục liên tục → [mean±SD, n] mỗi nhóm; không có → ghi "chỉ có effect đã công bố".
+5. **Nguy cơ sai lệch:** ghi giới hạn tác giả nêu; gợi ý công cụ phù hợp (RoB 2 *chỉ* cho RCT, **chấm theo TỪNG kết cục** — xem cảnh báo ở bảng M5 phía trên; ROBINS-I V2 cho quan sát can thiệp; ROBINS-E cho phơi nhiễm/nguyên nhân **thiết kế cohort/theo dõi — chưa phủ case-control**; AMSTAR-2 cho SR; QUADAS-3 cho chẩn đoán) — chấm sơ bộ, ghi "cần thẩm định kỹ ở `tham-dinh-phe-binh`".
 6. **TL;DR một câu** trung thực (bài cho thấy gì, mạnh/yếu chỗ nào).
 
 ## 4. Mẫu đầu ra (template điền sẵn)
@@ -57,7 +58,8 @@ Với mỗi bài, trích các trường:
 PICO: P[..] I/E[..] C[..] O[..]
 Thiết kế: [..] | n=[..] | bối cảnh [..] | theo dõi [..]
 Kết quả chính: [hiệu ứng] = [..] (95% CI [..]; p[..])  | kết cục phụ: [..]
-RoB (công cụ): [sơ bộ — cần thẩm định ở tham-dinh-phe-binh]
+Số liệu thô mỗi nhánh (nếu có báo cáo): [biến cố/tổng số mỗi nhóm HOẶC mean±SD/n mỗi nhóm] | không có → "chỉ có effect đã công bố"
+RoB (công cụ, theo TỪNG kết cục nếu có ≥2 kết cục chính): [sơ bộ — cần thẩm định ở tham-dinh-phe-binh]
 TL;DR: ____
 [trường không có → "không báo cáo"; nếu chỉ abstract → ghi "chỉ từ abstract"]
 ```

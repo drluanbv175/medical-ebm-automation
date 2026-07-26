@@ -17,6 +17,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận bản thả
 | M3 | Hiệu đính IMRAD: Intro→HT, Methods/Results→QK, Discussion→linh hoạt |
 | M4 | Chống Vietlish hệ thống (mạo từ · số ít/nhiều · trật tự từ · câu dài) |
 | M5 | Thống nhất thuật ngữ + đơn vị SI → bảng thuật ngữ VN–EN |
+| M5b | Soát chuẩn ngôn ngữ tạp chí: độ dài abstract/từ khóa, tránh từ thổi phồng ("novel", "significant" dùng đúng nghĩa thống kê) (thêm 2026-07-26, vòng lặp vòng 29, phát hiện LOW: bước này đã có ở §3 bước 5 nhưng thiếu trong bảng MODULE tóm tắt/mẫu đầu ra — dễ bị bỏ sót khi chạy theo checklist tóm tắt) |
 | M6 | **Đối chiếu HẬU dịch** (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8): so từng chuỗi "vùng cấm sửa" đánh dấu ở M1 với bản dịch cuối — số/CI/p-value/PMID/DOI phải khớp Y HỆT |
 | M7 | Bảng sửa đổi đáng kể + 🚩 nghi vấn số liệu → bàn giao |
 
@@ -48,6 +49,7 @@ Chiều dịch: ___ | Tạp chí đích: ___ (biến thể chính tả: ___)
 BẢN THẢO ĐÃ HIỆU ĐÍNH: [song ngữ hoặc bản đích]
 BẢNG SỬA ĐỔI ĐÁNG KỂ: | Câu gốc | Câu sửa | Lý do (ngữ pháp/văn phong/thuật ngữ) |
 BẢNG THUẬT NGỮ THỐNG NHẤT: | VN | EN | Ghi chú |
+SOÁT NGÔN NGỮ TẠP CHÍ (độ dài abstract/từ khóa/từ thổi phồng thống kê): đạt / còn vấn đề — nêu cụ thể
 ĐỐI CHIẾU HẬU DỊCH (số/CI/p/PMID/DOI khớp bản gốc?): ĐẠT / còn lệch — nêu chuỗi lệch
 🚩 NGHI VẤN SỐ LIỆU/NỘI DUNG (chuyển tác giả/binh-duyet — KHÔNG tự sửa): ___
 ```

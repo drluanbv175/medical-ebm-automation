@@ -32,6 +32,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận 1 bài (ưu
 | Tổng thể | | [thấp/một số lo ngại/cao] | |
 (Quan sát → ROBINS-I 7 miền | Chẩn đoán → QUADAS-3 | SR → AMSTAR-2)
 ```
+⚠ RoB 2 chấm theo TỪNG KẾT CỤC/kết quả cụ thể (specific result), KHÔNG phải một lần cho cả nghiên cứu (Sterne JAC et al., BMJ 2019;366:l4898 — sửa 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 29, đồng bộ `tong-quan-y-van.md`/`trich-xuat-y-van.md`): nghiên cứu có ≥2 kết cục quan trọng → LẶP bảng RoB 2 riêng cho MỖI kết cục, đặc biệt miền D5 (chọn lọc báo cáo) vốn có thể khác nhau giữa các kết cục.
 
 > **Bổ trợ cho M3 tự-chất-vấn (2026-07-04):** khung RoB2/GRADE ở trên chấm CHẤT LƯỢNG THIẾT KẾ, không thay cho việc soi LẬP LUẬN của tác giả. Khi nghi ngờ bài dùng ngụy biện logic (post hoc, ecological fallacy, cherry-picking, Texas sharpshooter...), thiên kiến nghiên cứu tinh vi (HARKing, p-hacking, subgroup fishing), hoặc lỗi thống kê diễn giải (Simpson's paradox, base rate neglect, đọc sai p-value) — tra skill `scientific-critical-thinking` (`references/logical_fallacies.md`, `common_biases.md`, `statistical_pitfalls.md`) làm danh mục đối chiếu cho M3, rồi đưa phát hiện vào phán định RoB/GRADE ở trên — KHÔNG thay thế khung RoB2/GRADE.
 
@@ -50,10 +51,11 @@ Bài/nghiên cứu (ưu tiên toàn văn/PDF) + định danh PMID/DOI · loại 
 1b. **🔄 TỰ CHẤT VẤN CONTEXT (corrective — chống hiểu sai bài):** trước khi kết luận về bài, tự hỏi: kết cục là **lâm sàng cứng hay surrogate**? "không khác biệt" là **âm tính thật hay non-inferiority/thiếu lực (underpowered)**? Kết quả đang đọc là **kết cục chính hay dưới nhóm/thứ phát/hậu định (post-hoc)**? Thiết kế quan sát có bị tôi đọc thành **nhân quả**? Bài có **đính chính/bị rút (retracted)** hoặc đã bị nghiên cứu lớn hơn bác bỏ? Nghi hiểu sai → đọc lại đoạn gốc, KHÔNG chốt theo abstract.
 2. **Chọn ĐÚNG công cụ nguy cơ sai lệch theo thiết kế:**
    - RCT → **RoB 2** (5 miền).
-   - Quan sát về **CAN THIỆP** (NRSI/cohort điều trị) → **ROBINS-I** (ưu tiên bản **V2 — vẫn là DRAFT, bản sửa đổi mới nhất 20/11/2025 theo riskofbias.info** — SỬA 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14, đồng bộ `tham-dinh-grade-nnt.md`: mốc cũ "11/2024" là bản draft đã bị thay) / Newcastle-Ottawa.
-   - Quan sát về **PHƠI NHIỄM/nguyên nhân** (case-control, cohort phơi nhiễm) → **ROBINS-E**.
+   - Quan sát về **CAN THIỆP** (NRSI/cohort điều trị) → **ROBINS-I** (ưu tiên bản **V2 — vẫn là DRAFT, bản sửa đổi mới nhất 20/11/2025 theo riskofbias.info, hiện CHỈ phủ thiết kế cohort/theo dõi; dùng ROBINS-I gốc [Sterne et al., BMJ 2016] cho quan sát khác cohort** — SỬA 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14, đồng bộ `tham-dinh-grade-nnt.md`: mốc cũ "11/2024" là bản draft đã bị thay; SỬA THÊM 2026-07-26, vòng lặp vòng 29, phát hiện MEDIUM: bổ sung cảnh báo phạm vi phủ cohort-only đã có ở `tham-dinh-grade-nnt.md`/`tong-quan-y-van.md` nhưng bị thiếu ở đây) / Newcastle-Ottawa.
+   - Quan sát về **PHƠI NHIỄM/nguyên nhân, thiết kế cohort/theo dõi** → **ROBINS-E** (SỬA 2026-07-26, vòng lặp vòng 29, phát hiện HIGH: ROBINS-E hiện CHỈ phủ thiết kế cohort/follow-up — Higgins JPT et al., "A tool to assess risk of bias in non-randomized follow-up studies of exposure effects", Environment International 2024, PMC11098530, tự ghi rõ "targets cohort (follow-up) studies" và biến thể case-control "còn đang phát triển", CHƯA công bố). **Case-control/bệnh-chứng** → dùng **Newcastle-Ottawa Scale (bản case-control)** cho tới khi có biến thể ROBINS-E chính thức.
    - Độ chính xác chẩn đoán → thẩm định ĐẦY ĐỦ (khung GRADE-cho-test chuyên biệt, KHÔNG dùng GRADE-kết-cục/NNT ở mục 4 dưới) → giao `tham-dinh-do-chinh-xac-chan-doan`; ở đây chỉ dùng **QUADAS-3**/**QUADAS-C** để sàng lọc nhanh/nhận diện thiết kế.
    - Tổng quan hệ thống → **AMSTAR-2**.
+   - **Mô hình tiên lượng/dự báo** (dự đoán nguy cơ/biến cố tương lai, KHÔNG phải kiểm định độ chính xác chẩn đoán) → KHÔNG dùng RoB 2/ROBINS-I/ROBINS-E ở đây (thêm 2026-07-26, vòng lặp vòng 29, phát hiện MEDIUM: file trước đây thiếu hẳn nhánh cho design code "prediction" đã được hệ thống công nhận, xem `mo-hinh-tien-luong.md`/`dieu-phoi-nghien-cuu.md`) — giao `mo-hinh-tien-luong` dùng **PROBAST**/**PROBAST+AI** (Moons KGM et al., BMJ 2025;388:e082505).
 3. **Đối chiếu chuẩn báo cáo** tương ứng (CONSORT/STROBE/PRISMA/STARD/TRIPOD) — nêu mục thiếu.
 4. **GRADE theo từng kết cục:** chất lượng (cao→rất thấp) + lý do hạ/nâng bậc.
 5. **Tính ứng dụng:** giá trị nội tại (internal validity) + ngoại suy (external validity) cho bối cảnh đích.
@@ -61,7 +63,7 @@ Bài/nghiên cứu (ưu tiên toàn văn/PDF) + định danh PMID/DOI · loại 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
 PICO + thiết kế + n | Kết quả chính: [hiệu ứng] (95% CI [..])  | PMID/DOI
-| Miền nguy cơ sai lệch (công cụ [..]) | Phán định | Bằng chứng từ bài (vị trí) |
+| Miền nguy cơ sai lệch (công cụ [..], theo TỪNG kết cục nếu có ≥2 kết cục chính) | Phán định | Bằng chứng từ bài (vị trí) |
 Chuẩn báo cáo [CONSORT/STROBE/…] — mục còn thiếu: ____
 | Kết cục | GRADE (cao→rất thấp) | Lý do hạ/nâng bậc |
 Ứng dụng: nội tại [..] | ngoại suy cho bối cảnh đích [..]
@@ -86,7 +88,7 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact critical-appraisal
 ```
 
 ## Ranh giới
-Thẩm định MỘT nghiên cứu; tổng hợp nhiều bài → `tong-quan-y-van`/`meta-phan-tich`; cho điểm khám lâm sàng (ARR/NNT) → `tham-dinh-grade-nnt`; kiểm chứng định danh → `kiem-chung-trich-dan`; bài ĐỘ CHÍNH XÁC CHẨN ĐOÁN cần khung GRADE-cho-test chuyên sâu (không phải GRADE-kết-cục-điều-trị) → giao `tham-dinh-do-chinh-xac-chan-doan`. KHÔNG bịa số liệu thiếu trong bài.
+Thẩm định MỘT nghiên cứu; tổng hợp nhiều bài → `tong-quan-y-van`/`meta-phan-tich`; cho điểm khám lâm sàng (ARR/NNT) → `tham-dinh-grade-nnt`; kiểm chứng định danh → `kiem-chung-trich-dan`; bài ĐỘ CHÍNH XÁC CHẨN ĐOÁN cần khung GRADE-cho-test chuyên sâu (không phải GRADE-kết-cục-điều-trị) → giao `tham-dinh-do-chinh-xac-chan-doan`; bài MÔ HÌNH TIÊN LƯỢNG/DỰ BÁO (PROBAST/PROBAST+AI, không phải RoB 2/ROBINS-I/ROBINS-E) → giao `mo-hinh-tien-luong` (thêm 2026-07-26, vòng lặp vòng 29). KHÔNG bịa số liệu thiếu trong bài.
 
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
