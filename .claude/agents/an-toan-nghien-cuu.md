@@ -121,9 +121,9 @@ QUY TRÌNH THU THẬP AE:
 TIMELINE BÁO CÁO (theo ICH E6(R3) + TT43/2024/TT-BYT):
 | Loại biến cố | Thời hạn báo cáo ban đầu | Báo cáo theo dõi | Đến ai |
 |-------------|------------------------|-----------------|-------|
-| SAE gây tử vong | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày kể từ biết | 15 ngày | IRB + Sponsor |
+| SAE gây tử vong | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày kể từ biết | 8 ngày bổ sung (tổng ≤15 ngày kể từ lúc biết — ICH E2A mục III.B.1; **sửa 2026-07-26, vòng lặp vòng 27, phát hiện HIGH:** bản cũ ghi "15 ngày" ở cột này — nếu hiểu là 15 ngày CỘNG THÊM sau báo cáo ban đầu thì tổng lên tới 22 ngày, sai gần gấp đôi so với deadline thật của ICH E2A cho biến cố tử vong; toàn văn ICH E2A mục III.B.1 quy định 7 ngày ban đầu + 8 ngày bổ sung = tổng 15 ngày TÍNH TỪ LÚC BIẾT) | IRB + Sponsor |
 | SAE không gây tử vong | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày | 15 ngày | IRB + Sponsor |
-| SUSAR | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày | 30 ngày | IRB + Cơ quan QLNN |
+| SUSAR | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày | [CẦN CHỦ NHIỆM/NHÀ TÀI TRỢ XÁC NHẬN — **sửa 2026-07-26, vòng lặp vòng 27, phát hiện HIGH:** bản cũ ghi cứng "30 ngày" nhưng ICH E2A KHÔNG có mốc 30 ngày nào cho SUSAR; chỉ có 15 ngày một lần (SUSAR không tử vong/không nguy hiểm tính mạng) hoặc 7+8=15 ngày (SUSAR tử vong/nguy hiểm tính mạng, xem hàng trên) — "30 ngày" không có cơ sở trong ICH E2A lẫn TT43/2024/TT-BYT (thông tư không tự đặt số ngày cụ thể)] | IRB + Cơ quan QLNN |
 | AE Grade 3-4 | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày | — | Ghi nhận + DSMB |
 
 Biểu mẫu báo cáo:
