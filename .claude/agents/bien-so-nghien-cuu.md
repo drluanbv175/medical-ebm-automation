@@ -49,7 +49,7 @@ BỘ BIẾN — Đề tài: ___  |  Thiết kế: ___  |  Phiên bản: 1.0
 - G6: Can thiệp (I) / Phơi nhiễm (E)
 - G7: So sánh (C)
 - G8: Kết cục (chính + phụ — định nghĩa đo được)
-- G9: Theo dõi / An toàn (AE nếu can thiệp)
+- G9: Theo dõi / An toàn (AE/SAE nếu can thiệp — mã hóa **MedDRA PT/SOC** (Preferred Term/System Organ Class), KHÔNG để văn bản tự do; phối hợp `an-toan-nghien-cuu`)
 
 ---
 
@@ -76,12 +76,14 @@ PHÂN LOẠI THEO VAI TRÒ NHÂN QUẢ:
 │ Biến: [liệt kê]                                         │
 │                                                          │
 │ COLLIDER (⚠ NGUY HIỂM NẾU HIỆU CHỈNH)                  │
-│ = Hệ quả của CẢ phơi nhiễm lẫn nhiễu                   │
+│ = Hệ quả CHUNG của CẢ phơi nhiễm lẫn kết cục            │
+│   (hoặc của nguyên nhân dẫn tới 2 biến đó) — KHÁC nhiễu │
 │ → TUYỆT ĐỐI KHÔNG đưa vào mô hình → sai lệch mới      │
 │ Biến: [liệt kê nghi vấn]                                │
 └──────────────────────────────────────────────────────────┘
 ```
 *(SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8, phát hiện MEDIUM: hộp Effect Modifier trước đây dán nhãn "ĐIỀU CHỈNH HIỆU QUẢ" — chứa chữ "điều chỉnh", dễ lẫn với đúng động từ bị CẤM cho chính biến này ("hiệu chỉnh") ở dòng ngay dưới, trong khi hộp Confounder lại dùng "→ HIỆU CHỈNH" làm động từ hành động — 2 loại biến cần xử lý NGƯỢC NHAU mà tên gọi lại gần giống nhau. Đổi tên hộp thành "BIẾN TƯƠNG TÁC — PHÂN TẦNG" để không còn chung gốc "điều chỉnh/hiệu chỉnh" với Confounder.)*
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 26, phát hiện HIGH: định nghĩa COLLIDER trước đây ghi sai "hệ quả của CẢ phơi nhiễm lẫn NHIỄU" — định nghĩa chuẩn dịch tễ học là hệ quả CHUNG của PHƠI NHIỄM và KẾT CỤC (hoặc của các nguyên nhân dẫn tới 2 biến đó); collider bias khác hẳn confounding bias [Cole SR et al., "Illustrating bias due to conditioning on a collider", Int J Epidemiol 2010;39(2):417-20; Hernán MA, Robins JM, Causal Inference: What If]. Định nghĩa sai cũ có thể khiến agent xếp nhầm một biến hậu-kết-cục là "giống nhiễu, an toàn để hiệu chỉnh" trong khi thực ra hiệu chỉnh nó gây sai lệch mới.)*
 
 ```
 DAG sơ đồ (văn bản):
@@ -140,13 +142,14 @@ BIẾN TÍNH TOÁN (không nhập tay):
 KẾT CỤC GỘP (Composite — ví dụ MACE):
 | Thành phần | Định nghĩa | Nguồn | Ngưỡng |
 |-----------|-----------|-------|--------|
-| Tử vong tim mạch | ___ | ICD-10: I21–I22… | — |
-| NMCT không tử vong | ___ | Troponin >99th %ile + triệu chứng | |
-| Đột quỵ | ___ | Mới theo tiêu chuẩn ___ | |
+| Tử vong tim mạch | ___ | Tiêu chuẩn hội đồng phán định (adjudication) — KHÔNG chỉ dựa mã ICD-10 nguyên nhân tử vong (nguy cơ phân loại sai cao); tham khảo định nghĩa ARC-2 | — |
+| NMCT không tử vong | ___ | ICD-10: I21 (NMCT cấp)/I22 (NMCT tái phát) + Troponin >99th %ile + triệu chứng | |
+| Đột quỵ | ___ | Mới theo tiêu chuẩn ___ (vd ICD-10 I63–I64 + hình ảnh học xác nhận) | |
 
 Quy tắc gộp: biến cố ĐẦU TIÊN xảy ra
 ⚠ Cảnh báo: thành phần nhẹ (tái nhập viện) có thể lấn át thành phần nặng (tử vong) — cân nhắc hierarchy
 ```
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 26, phát hiện MEDIUM: bảng ví dụ MACE trước đây gắn mã ICD-10 I21–I22 [nhồi máu cơ tim cấp/tái phát] vào hàng "Tử vong tim mạch" — sai vị trí, vì I21–I22 là mã chẩn đoán NMCT chứ không phải mã nguyên nhân tử vong; đã chuyển 2 mã này sang đúng hàng "NMCT không tử vong" và ghi rõ tử vong tim mạch trong thử nghiệm lâm sàng thường là kết cục do HỘI ĐỒNG PHÁN ĐỊNH xác định, không suy ra thẳng từ ICD tử vong.)*
 
 ---
 
@@ -197,7 +200,7 @@ CHỐNG THỪA — đề xuất loại:
 
 ```
 BÀN GIAO:
-→ co-mau-nghien-cuu: số THAM SỐ đưa vào mô hình đa biến (đếm theo quy tắc biến hạng mục k mức đóng góp k−1 tham số + mỗi số hạng tương tác đóng góp thêm 1 tham số — KHÔNG đếm thô số biến) = ___ → số biến cố cần = số tham số × 10 (sàn EPV ≥ 10 biến cố/THAM SỐ, events-per-parameter — KHÔNG phải events-per-variable, 2026-07-07 sửa khớp với co-mau-nghien-cuu.md; mô hình dự báo dùng thêm tiêu chí Riley/pmsampsize)
+→ co-mau-nghien-cuu: số THAM SỐ đưa vào mô hình đa biến (đếm theo quy tắc biến hạng mục k mức đóng góp k−1 tham số + mỗi số hạng tương tác đóng góp thêm 1 tham số — KHÔNG đếm thô số biến) = ___ → ước tính SƠ BỘ số biến cố cần = số tham số × 10 (EPV/EPP ≥ 10 biến cố/THAM SỐ, events-per-parameter — KHÔNG phải events-per-variable, 2026-07-07 sửa khớp với co-mau-nghien-cuu.md). **Chỉ là kiểm tra sơ bộ bổ sung, KHÔNG phải tiêu chí quyết định duy nhất** — van Smeden M et al., BMC Med Res Methodol 2016 (PMC5122171) cho thấy ngưỡng "1 biến/10 sự kiện" thiếu cơ sở lý thuyết chắc chắn; ưu tiên tính TRỰC TIẾP cỡ mẫu tối thiểu bằng `pmsampsize` (Riley RD et al., Stat Med 2019) qua `co-mau-nghien-cuu`/`mo-hinh-tien-luong`, đặc biệt cho thiết kế chẩn đoán/tiên lượng (2026-07-26 đồng bộ với hạ cấp Round 21 của `thiet-ke-nghien-cuu.md`)
 → thiet-ke-nghien-cuu: danh sách nhiễu + DAG → chốt tập biến hiệu chỉnh tối thiểu + SAP
 → quan-ly-du-lieu: codebook EDC + tập giá trị hợp lệ + mã thiếu → SOP range/logic check
 → phan-tich-thong-ke: biến phái sinh/composite → mô hình Cox/Fine-Gray nếu time-to-event

@@ -14,7 +14,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận construct +
 |--------|--------|
 | M1 | Định nghĩa construct + số chiều/domain + quần thể đích |
 | M2 | Quyết định: dùng công cụ đã có (rà bằng chứng + quyền dùng) vs dựng mới |
-| M3 | Dịch–thích nghi văn hóa chéo (forward [≥2 dịch giả] → **đồng thuận hợp nhất bản dịch xuôi** → back → hội đồng → pretest nhận thức) nếu cần |
+| M3 | Dịch–thích nghi văn hóa chéo (forward [≥2 dịch giả độc lập] → **đồng thuận hợp nhất bản dịch xuôi** → back [≥2 dịch giả độc lập, MÙ với bản gốc — Beaton 2000] → hội đồng → pretest nhận thức) nếu cần |
 | M4 | Kế hoạch kiểm định theo COSMIN: CVI → EFA/CFA → α/ω → ICC+SEM/SDC → MCID |
 | M5 | Điền bảng COSMIN: ngưỡng (nguồn) + cỡ mẫu (phối hợp `co-mau-nghien-cuu`) |
 | M6 | Báo cáo COSMIN + giới hạn (chỉ giá trị trong quần thể/ngôn ngữ đã kiểm định) |
@@ -24,12 +24,15 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận construct +
 | Thuộc tính | Phương pháp/chỉ số | Ngưỡng đạt (nguồn) | Cỡ mẫu cần |
 |-----------|-------------------|-------------------|------------|
 | Giá trị nội dung (CVI/CVR) | Hội đồng chuyên gia | I-CVI≥0.78 (hội đồng ≥6 chuyên gia) hoặc I-CVI=1.00 (hội đồng 3–5 chuyên gia — Polit & Beck 2006) | ≥6 chuyên gia |
-| Giá trị cấu trúc (EFA/CFA) | EFA → CFA | CFI≥0.95, RMSEA≤0.06 | ≥200 |
+| Giá trị cấu trúc — EFA | Phân tích nhân tố khám phá | Phương sai giải thích ≥50% (COSMIN v2.0 — mỗi tiêu chí phụ đều phải đạt, không phải OR-logic như CFA) | ≥200 |
+| Giá trị cấu trúc — CFA | Phân tích nhân tố khẳng định | CFI/TLI>0.95 **HOẶC** RMSEA<0.06 **HOẶC** SRMR<0.08 (COSMIN v2.0 — đạt 1/3 chỉ số là đủ "sufficient", KHÔNG cần cả 3 cùng lúc) | ≥200 |
 | Tin cậy nội bộ (α/ω) | Cronbach's α | ≥0.70 | ≥100 |
 | Test–retest (ICC+SEM) | ICC + SEM/SDC | ICC≥0.70 (COSMIN "sufficient") | ≥50 |
-| Hội tụ–phân biệt | Tương quan giả thuyết | r≥0.50/≤0.30 | ≥100 |
+| Hội tụ–phân biệt | Kiểm định giả thuyết tương quan ĐỊNH TRƯỚC (hypotheses testing) | ĐẠT khi ≥75% giả thuyết định trước được xác nhận (COSMIN v2.0 — KHÔNG dùng ngưỡng cố định r≥0.50 hội tụ/r≤0.30 phân biệt, đó là tiêu chí Terwee 2007 đã bị COSMIN v2.0 thay thế) | ≥100 |
 | Đáp ứng + MCID | Effect size + receiver ROC | [CẦN nguồn] | ≥50 |
 | Floor/ceiling | % ở min/max | <15% | — |
+
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 26, 2 phát hiện HIGH đã vá: (1) hàng "Giá trị cấu trúc (EFA/CFA)" trước đây gộp chung EFA+CFA vào MỘT ngưỡng "CFI≥0.95, RMSEA≤0.06" — sai ở 2 điểm: EFA và CFA dùng tiêu chí khác nhau hoàn toàn (EFA: phương sai giải thích ≥50%; CFA: CFI/TLI/RMSEA/SRMR), và bản thân tiêu chí CFA của COSMIN v2.0 là logic OR (đạt 1 trong 3 chỉ số là đủ) chứ không phải phải đạt CẢ CFI lẫn RMSEA cùng lúc như ngưỡng cũ ngụ ý — tách thành 2 hàng riêng, khớp COSMIN Criteria for good measurement properties v2.0 (Prinsen 2018/Mokkink); (2) hàng "Hội tụ–phân biệt" dùng ngưỡng cố định r≥0.50/≤0.30 không ghi nguồn — đây là tiêu chí Terwee 2007 đã bị COSMIN v2.0 thay bằng quy tắc kiểm định giả thuyết định trước "≥75% giả thuyết được xác nhận", đã sửa lại đúng chuẩn hiện hành.)*
 
 ## Phạm vi áp dụng — công cụ CHUẨN/ĐÃ CÓ dùng nguyên trạng vs PHÁT TRIỂN/SỬA ĐỔI (2026-07-06)
 
@@ -70,7 +73,7 @@ Khái niệm cần đo (construct) + quần thể đích · công cụ dự ki�
 
 ## 3. Quy trình (theo COSMIN)
 1. **Định nghĩa construct + khung lý thuyết** (đo cái gì, mấy chiều/domain) → quyết định công cụ mới vs có sẵn.
-2. **Nếu dùng công cụ đã có:** rà bằng chứng đo lường đã công bố (nguồn) + **độ giá trị nội dung** trong quần thể đích; lên kế hoạch **dịch + thích nghi văn hóa chéo** theo chuẩn Beaton 2000/COSMIN/ISPOR — **forward translation (≥2 dịch giả độc lập) → ĐỒNG THUẬN/HỢP NHẤT các bản dịch xuôi thành 1 bản thống nhất (bước dễ bị bỏ sót nhất — sửa 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 7: trước đây quy trình mô tả thiếu bước này, có thể đi thẳng từ nhiều bản dịch xuôi song song sang dịch ngược mà không hợp nhất) → back-translation → hội đồng chuyên gia rà toàn bộ phiên bản → pretest nhận thức/thử nghiệm tiên phong** nếu khác ngôn ngữ/văn hóa.
+2. **Nếu dùng công cụ đã có:** rà bằng chứng đo lường đã công bố (nguồn) + **độ giá trị nội dung** trong quần thể đích; lên kế hoạch **dịch + thích nghi văn hóa chéo** theo chuẩn Beaton 2000/COSMIN/ISPOR — **forward translation (≥2 dịch giả độc lập) → ĐỒNG THUẬN/HỢP NHẤT các bản dịch xuôi thành 1 bản thống nhất (bước dễ bị bỏ sót nhất — sửa 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 7: trước đây quy trình mô tả thiếu bước này, có thể đi thẳng từ nhiều bản dịch xuôi song song sang dịch ngược mà không hợp nhất) → back-translation (≥2 dịch giả độc lập, MÙ với bản gốc — sửa 2026-07-26, vòng lặp vòng 26: trước đây chỉ forward yêu cầu ≥2 dịch giả, back-translation không nêu số lượng, trong khi Beaton DE et al., Spine 2000;25(24):3186-91 yêu cầu ĐỐI XỨNG ≥2 dịch giả độc lập cho CẢ hai chiều) → hội đồng chuyên gia rà toàn bộ phiên bản → pretest nhận thức/thử nghiệm tiên phong** nếu khác ngôn ngữ/văn hóa.
 3. **Nếu dựng mới:** sinh item từ khung lý thuyết + ý kiến chuyên gia/bệnh nhân; **chỉ số giá trị nội dung (CVI/CVR)**; thử nghiệm nhận thức (cognitive interview); thang trả lời.
 4. **Kế hoạch kiểm định thuộc tính đo lường** (chỉ rõ phân tích + cỡ mẫu, phối hợp `co-mau-nghien-cuu`) — **áp dụng đầy đủ bước này khi dựng công cụ MỚI/dùng lần đầu; công cụ dùng NGUYÊN TRẠNG một thang chuẩn đã kiểm định thì KHÔNG áp bước 4 này, chỉ làm 3 nội dung ở §Phạm vi áp dụng bên dưới:**
    - **Độ giá trị cấu trúc:** EFA/CFA (chỉ số phù hợp mô hình).

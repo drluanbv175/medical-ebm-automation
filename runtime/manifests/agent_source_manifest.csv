@@ -1,13 +1,13 @@
 path,sha256,size_bytes
 .claude/agents/an-toan-nghien-cuu.md,813c2d238dd8bc44b97356340b1c2a452017be73f49f82f13a779990813f60ec,17319
-.claude/agents/bien-so-nghien-cuu.md,c76ab10a1e6dab0d44f0661d17fd4ad5b72eda8bc4b6a39b0d77200c5c63ec5d,15443
+.claude/agents/bien-so-nghien-cuu.md,93a56f84e212515c9ae05a078d36c06f8c722fd5832dec1143993bd60a20b9ea,17779
 .claude/agents/binh-duyet.md,6f2201207de1170c41815d8c29108b2c7f70eeb7792db126d8ef52588f8a52f5,15454
 .claude/agents/cap-nhat-guideline.md,b475673b61881210a30fb670f4a7c029b428e467ebd1a6e2dc41454a058a5915,11473
 .claude/agents/cau-hoi-nghien-cuu.md,ebdca91385523c29a93b8e27c1d6c7cb1899fdafa90d34f3d75c808491f9b306,14991
 .claude/agents/cham-soc-giam-nhe.md,dbb544e740e449dbbc363fe047b7d1a332f7be30aa2e1bda53f107209c32a5a5,23293
 .claude/agents/chan-doan-xac-suat.md,bc85776220f6d96b62f848b3a042d9b1c5badb7c8994b3ae1d97ab7ad5fb805b,17111
 .claude/agents/co-mau-nghien-cuu.md,270bcc47ba15758387f7f27b99d59551cd51b8cb3c465845c64cce15ee275eb1,18408
-.claude/agents/cong-cu-do-luong.md,f2aa702ada347ba134bcd431c45b9c28782cd2f02d15caad7c8f44a5c978adad,21589
+.claude/agents/cong-cu-do-luong.md,b3711e61a1c6b2363792e8f46827cb02dcff86f919b76e10c2e3ea2db942bafd,23645
 .claude/agents/dao-duc-dang-ky.md,ff0e1f282650a250450d6e55b5d50047e506bed2e4ee65b9d149b7e58f5c3e8a,36022
 .claude/agents/dau-man-tinh.md,b0d0b68db13a61c1a70f09e0a7b76a377a8fdf6d70998e6d22c7123ee204c1ad,22555
 .claude/agents/dien-giai-can-lam-sang.md,8bc9ef089ced60e3c9c4fa0ea61b36b1c941b0f41c3e0e9aa3f5adf3bc1b5f69,16367
@@ -26,7 +26,7 @@ path,sha256,size_bytes
 .claude/agents/kinh-te-y-te.md,8f34322263da170f72a01502109608616c120dffad5b5980ddf9cc55c303752c,17714
 .claude/agents/loi-dan-tuan-thu.md,d08f59bfcd1fbbee6cd09bd56c6fa64724c705fdb7359c64f89b9c7847e536d3,9103
 .claude/agents/meta-phan-tich.md,f07001952c6f5351f7be138ea309350c059cf00d2571ea3985e52272261f146e,10988
-.claude/agents/mo-hinh-tien-luong.md,f6cb21171d63874939403923cf762f30394bea4c2f6a2ff022e40aa6cf488a1b,13179
+.claude/agents/mo-hinh-tien-luong.md,60d351e6088a5ecf53abc50de096a39aa5a9eb4ce491e10930e5fe5317b6c322,15157
 .claude/agents/nghien-cuu-dinh-tinh.md,07ed3cea22499cd6943f1aa73c1d4a5bbdbca396a157e20c505d20dc9cd6a705,12222
 .claude/agents/nop-bai-phan-hoi.md,df06043281be6bfaea1eb5cec1f3ea9137bb5e615d89eb0355bee91df2ebea1b,23634
 .claude/agents/phan-tich-thong-ke.md,2578175d41347008fee6198bc90ffc617991f0842b257c1380eedeeea8313193,19665
