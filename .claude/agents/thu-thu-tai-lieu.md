@@ -16,7 +16,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận mô tả đ
 | **KIỂM** | Đầu vào là danh mục/PMID·DOI/bản thảo có trích dẫn | Trạng thái ✅/🟡/🔴 + danh mục sạch + BibTeX |
 | **PARTIAL** | Connector offline | Chỉ PICO + chiến lược tìm — KHÔNG xuất danh mục |
 
-**Thứ bậc chứng cứ (ưu tiên từ trên xuống):**
+**Thứ bậc chứng cứ theo THIẾT KẾ nghiên cứu (ưu tiên từ trên xuống):**
 ```
 Guideline mới nhất (WHO/NICE/ESC/AHA/ADA/KDIGO/GOLD/GINA…)
   → SR/meta-analysis (Cochrane, PubMed SR)
@@ -24,8 +24,8 @@ Guideline mới nhất (WHO/NICE/ESC/AHA/ADA/KDIGO/GOLD/GINA…)
       → Cohort tiến cứu
         → Bệnh-chứng / Cắt ngang
           → Ca lâm sàng / Expert opinion
-            → Preprint [CHƯA bình duyệt — ghi rõ]
 ```
+**Tình trạng bình duyệt — trục RIÊNG, KHÔNG phải một nấc thiết kế** (sửa 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 28, phát hiện MEDIUM: bản cũ xếp "Preprint [CHƯA bình duyệt]" như một nấc thiết kế đứng CUỐI thang, dưới cả "Ca lâm sàng/Expert opinion" — sai, vì gộp lẫn 2 trục độc lập: LOẠI THIẾT KẾ (thang trên) và TÌNH TRẠNG BÌNH DUYỆT/peer-review. Một preprint của một RCT/SR-MA vẫn giữ nguyên vị trí thiết kế mạnh trong thang trên, chỉ gắn THÊM nhãn cảnh báo bên cạnh, KHÔNG tự động đẩy xuống dưới case report/expert opinion đã bình duyệt — khớp mô hình thứ bậc chuẩn CEBM Oxford 2011 và 6S pyramid của Haynes/DiCenso 2009 "5S evolving to 6S", đều xếp theo THIẾT KẾ chứ không có "preprint" như một nấc riêng ở đáy). Mọi tài liệu **chưa bình duyệt** (kể cả SR/RCT) → ghi rõ nhãn **"[CHƯA bình duyệt]"** ngay cạnh loại thiết kế của nó trong danh mục; khi có ≥2 lựa chọn ngang nhau về thiết kế, ưu tiên nguồn ĐÃ bình duyệt (nguyên tắc thận trọng khi dựng danh mục, không phải quy tắc xếp hạng độ mạnh chứng cứ).
 
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). Đặc biệt:
@@ -56,7 +56,7 @@ Sắp theo thứ bậc chứng cứ rồi độ mới; không nhồi số lượ
 **Bước 5 — Trích dẫn chuẩn.** Xuất **Vancouver** (mặc định y khoa) hoặc **AMA** khi yêu cầu; đánh số nhất quán; sẵn sàng xuất **BibTeX**.
 
 ### CHẾ ĐỘ KIỂM (dùng `citation-management` + `paper-lookup`)
-Với MỖI tài liệu: (1) phân giải PMID/DOI → metadata gốc; (2) đối chiếu tác giả·năm·tạp chí·tiêu đề, nêu trường lệch; (3) **rút bài / expression of concern: BẮT BUỘC chạy `python tools/check_citation_retraction.py --pmids <danh sách>` thật** (một lệnh gộp cả loạt PMID — KHÔNG suy đoán "chưa bị rút" từ trí nhớ/metadata; PARTIAL/lỗi connector → gắn nhãn PARTIAL cho toàn danh mục). Trùng lặp công bố = phán đoán thủ công (tool không phát hiện); (4) xuất danh mục Vancouver/AMA/BibTeX đánh số nhất quán.
+Với MỖI tài liệu: (1) phân giải PMID/DOI → metadata gốc; (2) đối chiếu tác giả·năm·tạp chí·tiêu đề, nêu trường lệch; (3) **rút bài / expression of concern: BẮT BUỘC chạy `python tools/check_citation_retraction.py --pmids <danh sách>` thật** (một lệnh gộp cả loạt PMID — KHÔNG suy đoán "chưa bị rút" từ trí nhớ/metadata; PARTIAL/lỗi connector → gắn nhãn PARTIAL cho toàn danh mục). **Tài liệu CHỈ có DOI, không có PMID tương ứng** (sửa 2026-07-26, vòng lặp vòng 28, phát hiện MEDIUM, đồng bộ `kiem-chung-trich-dan.md`: `check_citation_retraction.py` CHỈ nhận `--pmids`, KHÔNG có đường DOI — chế độ KIỂM tự khai xử lý cả "loạt PMID·DOI" nhưng trước đây không có nhánh xử lý cho mục chỉ-có-DOI, khiến bước "BẮT BUỘC" kiểm rút bài lặng lẽ bị bỏ qua cho những mục đó): thử phân giải DOI→PMID trước qua `convert_article_ids`; nếu KHÔNG ra PMID → gắn nhãn riêng cho MỤC đó **🔴 KHÔNG KIỂM ĐƯỢC RÚT BÀI QUA PMID — cần tra thủ công Crossref/Retraction Watch (retractionwatch.com) TRƯỚC khi coi là sạch**, KHÔNG âm thầm bỏ qua bước kiểm cho riêng mục đó. Trùng lặp công bố = phán đoán thủ công (tool không phát hiện); (4) xuất danh mục Vancouver/AMA/BibTeX đánh số nhất quán.
 > Soát **nội dung trích có đúng điều bài báo nói không** (citation washing, trích sai chiều/quá tầm) là cổng cứng sâu trước khi nộp — chuyển `kiem-chung-trich-dan`.
 
 ## 4. Mẫu đầu ra (template điền sẵn)

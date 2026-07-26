@@ -106,6 +106,25 @@ def test_2x2_rejects_negative_counts():
         MC.log_or_from_2x2(-1, 85, 5, 95)
 
 
+def test_log_hr_from_ci_matches_parmar_tierney_formula():
+    r = MC.log_hr_from_ci(0.72, 0.58, 0.89)
+    assert r["log_hr"] == pytest.approx(math.log(0.72), abs=1e-12)
+    expected_se = (math.log(0.89) - math.log(0.58)) / (2 * 1.96)
+    assert r["se"] == pytest.approx(expected_se, abs=1e-12)
+
+
+def test_log_hr_from_ci_rejects_nonpositive_values():
+    with pytest.raises(MC.MetaCalcError):
+        MC.log_hr_from_ci(0, 0.58, 0.89)
+    with pytest.raises(MC.MetaCalcError):
+        MC.log_hr_from_ci(0.72, -0.1, 0.89)
+
+
+def test_log_hr_from_ci_rejects_hr_outside_confidence_interval():
+    with pytest.raises(MC.MetaCalcError):
+        MC.log_hr_from_ci(0.95, 0.58, 0.89)  # hr not strictly between ci bounds
+
+
 def test_smd_hedges_g_bias_correction_shrinks_toward_zero():
     # J luôn < 1 (hiệu chỉnh sai lệch mẫu nhỏ) -> |g| < |d| luôn đúng khi d>0.
     r = MC.smd_from_groups(5, 2, 10, 4, 2.2, 8)
@@ -159,3 +178,24 @@ def test_md_from_groups_simple_difference():
     r = MC.md_from_groups(5, 2, 30, 4, 2.2, 28)
     assert r["md"] == pytest.approx(1.0, abs=1e-9)
     assert r["se"] == pytest.approx(math.sqrt(4 / 30 + 4.84 / 28), abs=1e-9)
+
+
+# ── CLI smoke test ───────────────────────────────────────────────────────────
+# Vá 2026-07-26 (vòng lặp kiểm tra-hoàn thiện vòng 28): argparse's add_parser(help=...)
+# treats a literal "%" in the help string as an old-style format directive and crashes
+# at parser-build time (ValueError: unsupported format character) UNLESS escaped as
+# "%%" — a bug the pure-function unit tests above never exercise, since they call
+# MC.<fn>() directly and never build the argparse parser. This test runs the actual
+# CLI entry point so a future subcommand with an unescaped "%" in its help text fails
+# the test suite instead of only failing at first real invocation.
+def test_cli_hr_subcommand_runs_without_argparse_error():
+    import subprocess
+
+    script = TOOLS / "meta_analysis_calc.py"
+    result = subprocess.run(
+        [sys.executable, str(script), "hr", "--hr", "0.72",
+         "--ci_lower", "0.58", "--ci_upper", "0.89", "--json"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "log_hr" in result.stdout

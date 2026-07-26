@@ -90,7 +90,7 @@ Câu hỏi kiểm tra:
      [Chỉ báo p-value là LỖI — ICMJE + APA Style]
      Nhận xét: ___
 
-□ 3. Kết cục chính có bị đổi so với SAP/đăng ký không? (HARKing)
+□ 3. Kết cục chính có bị đổi so với SAP/đăng ký không? (đổi kết cục / outcome switching / selective outcome reporting — sửa 2026-07-26, vòng lặp vòng 28, phát hiện MEDIUM: bản cũ gán nhãn "HARKing" cho mục này là SAI thuật ngữ; HARKing — Hypothesizing After the Results are Known, Kerr 1998 — là hiện tượng trình bày một giả thuyết hình thành SAU khi biết kết quả như thể có TRƯỚC trong phần Đặt vấn đề, KHÁC với việc đổi kết cục chính đã đăng ký, vốn thuộc domain 5 Cochrane RoB "selective reporting")
      SAP đăng ký: ___ | Kết cục trong bài: ___ | Khớp không: ___
      Nhận xét: ___
 
@@ -123,7 +123,7 @@ Góp ý nhỏ: ___
 Câu hỏi kiểm tra:
 
 □ 1. Đối chiếu checklist chuẩn báo cáo:
-     Thiết kế: ___ → Checklist: ☐ CONSORT 2025 ☐ SPIRIT 2025 ☐ STROBE ☐ PRISMA 2020 ☐ STARD ☐ TRIPOD+AI ☐ COREQ
+     Thiết kế: ___ → Checklist: ☐ CONSORT 2025 ☐ SPIRIT 2025 ☐ STROBE ☐ PRISMA 2020 ☐ STARD ☐ TRIPOD+AI ☐ COREQ (phỏng vấn/nhóm tiêu điểm) ☐ SRQR (định tính nói chung — sửa 2026-07-26, vòng lặp vòng 28, phát hiện MEDIUM: bản cũ thiếu SRQR dù chính hệ thống này, vd `tools/run_g1_auto.py`, đã định nghĩa design_code="qualitative" dùng "COREQ (phỏng vấn/nhóm) / SRQR (định tính nói chung)")
      | Mục checklist | Ở đoạn/trang | Đầy đủ? | Thiếu gì? |
      |--------------|-------------|---------|---------|
      | [Mục 1: Title/Abstract] | | | |

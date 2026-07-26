@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """meta_analysis_calc.py — Máy tính PHÂN TÍCH GỘP (meta-analysis) chạy được: pooled
 effect (fixed + random) · heterogeneity (Q/I²/τ²) · khoảng dự báo (PI) · Egger's test ·
-chuyển đổi cỡ hiệu ứng (2x2→log-OR/RR, nhóm→MD/SMD).
+chuyển đổi cỡ hiệu ứng (2x2→log-OR/RR, nhóm→MD/SMD, HR+CI95%→log-HR).
 
 Vá khoảng trống đã xác nhận (kiểm tra trực tiếp mã nguồn 2026-07-04): `meta-phan-tich.md`
 và `phan-tich-thong-ke.md` đều nói "chạy mô hình thật" nhưng KHÔNG có bất kỳ engine
@@ -33,6 +33,7 @@ Dùng:
   python tools/meta_analysis_calc.py pool --effects 0.1,0.55,-0.2 --variances 0.02,0.03,0.025 [--json]
   python tools/meta_analysis_calc.py or2x2 --a 15 --b 85 --c 5 --d 95     # log-OR + SE từ bảng 2x2
   python tools/meta_analysis_calc.py rr2x2 --a 15 --b 100 --c 5 --d 100   # log-RR + SE từ bảng 2x2
+  python tools/meta_analysis_calc.py hr --hr 0.72 --ci_lower 0.58 --ci_upper 0.89  # log-HR + SE từ HR+CI95%
   python tools/meta_analysis_calc.py smd --mean1 5 --sd1 2 --n1 30 --mean2 4 --sd2 2.2 --n2 28
   python tools/meta_analysis_calc.py egger --effects ... --variances ...
 """
@@ -98,6 +99,25 @@ def log_rr_from_2x2(a: int, b: int, c: int, d: int) -> Dict:
     if 0 in (a, b, c, d):
         out["note"] = "Đã áp hiệu chỉnh liên tục Haldane–Anscombe (+0.5 mỗi ô) do có ô = 0."
     return out
+
+
+def log_hr_from_ci(hr: float, ci_lower: float, ci_upper: float) -> Dict:
+    """log(HR) + SE từ HR đã công bố + khoảng tin cậy 95% — công thức chuẩn cho kết
+    cục thời gian-đến-biến-cố (Parmar MK et al., Stat Med 1998;17(24):2815-34;
+    Tierney JF et al., Trials 2007;8:16): log_hr = ln(HR); SE = (ln(CI_trên) −
+    ln(CI_dưới)) / (2×1.96). CHỈ dùng khi trích trực tiếp HR + CI95% đã công bố từ
+    một nghiên cứu (khi có dữ liệu thô hơn — số biến cố/người-năm mỗi nhánh, đường
+    cong Kaplan-Meier — nên tái tạo log-HR/SE bằng phương pháp Parmar/Tierney đầy đủ
+    thay vì công thức xấp xỉ này, vốn giả định CI đối xứng trên thang log)."""
+    for name, v in (("hr", hr), ("ci_lower", ci_lower), ("ci_upper", ci_upper)):
+        if v <= 0:
+            raise MetaCalcError(f"{name}={v} phải dương (HR/CI luôn > 0).")
+    if not (ci_lower < hr < ci_upper):
+        raise MetaCalcError(
+            f"CI không hợp lệ: cần ci_lower({ci_lower}) < hr({hr}) < ci_upper({ci_upper}).")
+    log_hr = math.log(hr)
+    se = (math.log(ci_upper) - math.log(ci_lower)) / (2 * 1.96)
+    return {"log_hr": log_hr, "se": se, "hr": hr}
 
 
 def md_from_groups(mean1: float, sd1: float, n1: int, mean2: float, sd2: float, n2: int) -> Dict:
@@ -315,6 +335,12 @@ def main() -> int:
         r.add_argument(f"--{c}", type=int, required=True)
     r.add_argument("--json", action="store_true")
 
+    h = sub.add_parser("hr", help="log-HR + SE từ HR + khoảng tin cậy 95%% đã công bố (Parmar 1998/Tierney 2007)")
+    h.add_argument("--hr", type=float, required=True)
+    h.add_argument("--ci_lower", type=float, required=True)
+    h.add_argument("--ci_upper", type=float, required=True)
+    h.add_argument("--json", action="store_true")
+
     s = sub.add_parser("smd", help="Hedges' g (SMD) + SE từ 2 nhóm")
     s.add_argument("--mean1", type=float, required=True)
     s.add_argument("--sd1", type=float, required=True)
@@ -343,6 +369,8 @@ def main() -> int:
             res = log_or_from_2x2(args.a, args.b, args.c, args.d)
         elif args.cmd == "rr2x2":
             res = log_rr_from_2x2(args.a, args.b, args.c, args.d)
+        elif args.cmd == "hr":
+            res = log_hr_from_ci(args.hr, args.ci_lower, args.ci_upper)
         elif args.cmd == "smd":
             res = smd_from_groups(args.mean1, args.sd1, args.n1, args.mean2, args.sd2, args.n2)
         elif args.cmd == "md":
