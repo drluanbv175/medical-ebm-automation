@@ -60,7 +60,8 @@ def _write_real_approval(study: str, gate_id: str, artifact_rel: str, content: s
     }
     reviewer_role = role_by_gate.get(gate_id, "PI_PROJECT_OWNER")
     signature = GC.sign_approval(gate_id, study, evidence_hash, timestamp_utc,
-                                 reviewer_role=reviewer_role, reviewer_ref=f"TEST-{gate_id}")
+                                 reviewer_role=reviewer_role, reviewer_ref=f"TEST-{gate_id}",
+                                 decision="APPROVED")
     assert signature
     record = ApprovalLedger.make_human_approval(
         gate_id=gate_id,

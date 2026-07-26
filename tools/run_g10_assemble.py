@@ -2209,13 +2209,34 @@ def main() -> int:
         print("   Cần bác sĩ kiểm chứng.")
         return GC.EXIT_GUARDRAIL_FAIL
 
-    _apply_submission_status_banner([
+    # VÁ 2026-07-27 (workflow kiểm định 6 góc nhìn): gói nộp TỪNG in y hệt dòng "đã qua
+    # cổng G8 (bình duyệt độc lập)" dù G2+G8+G9 có thể được ký bằng CÙNG MỘT khóa chung
+    # của cùng một người. Trường "phạm vi" đã được ghi vào chữ ký từ 2026-07-26 nhưng
+    # KHÔNG AI ĐỌC. Một gói nộp Hội đồng/tạp chí KHÔNG ĐƯỢC khẳng định có bình duyệt độc
+    # lập khi hệ không biết điều đó có thật hay không — nay công bố đúng mức bảo đảm.
+    scopes = {g: GC.approving_signature_scope(g, study, repo_root=BASE) for g in ("G2", "G8", "G9")}
+    shared_gates = sorted(g for g, s in scopes.items() if s == GC.SIGNATURE_SCOPE_SHARED)
+    banner = [
         "> ✅ **Đã qua cổng A12 (trích dẫn) + G8 (bình duyệt độc lập) + G9 (liêm "
         "chính tác giả)** tại thời điểm lắp ráp này. Cần bác sĩ kiểm chứng toàn "
         "bộ nội dung trước khi nộp chính thức.",
-    ])
+    ]
+    if shared_gates:
+        banner.append(
+            "> ⚠️ **Mức bảo đảm của chữ ký — công bố minh bạch:** cổng "
+            + ", ".join(shared_gates)
+            + " được ký bằng KHÓA CHUNG của máy, không phải khóa riêng của từng vai trò. "
+            "Khóa chung ký được MỌI vai trò, nên các chữ ký này chứng minh 'một người có "
+            "quyền truy cập máy đã ký', KHÔNG chứng minh người ký độc lập với chủ nhiệm "
+            "đề tài. Nếu Hội đồng/tạp chí cần bằng chứng bình duyệt độc lập, phải bổ sung "
+            "bằng chứng ngoài hệ (biên bản họp, thư phản biện có danh tính)."
+        )
+    _apply_submission_status_banner(banner)
 
     print("\n✅ Xong. Cần bác sĩ kiểm chứng.")
+    if shared_gates:
+        print(f"   ⚠️  Cổng {', '.join(shared_gates)} ký bằng khóa CHUNG — gói đã ghi rõ giới hạn")
+        print("      này trong biểu ngữ; KHÔNG khẳng định bình duyệt độc lập với bên thứ ba.")
     return 0
 
 

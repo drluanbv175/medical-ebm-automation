@@ -174,8 +174,11 @@ def main() -> int:
     # vai trò nào (đổi nhãn reviewer_role trong JSON là xong) — tách vai trò IRB/thống
     # kê/phản biện/PI chỉ tồn tại trên giấy. Nay role nằm trong nội dung được ký.
     role_group = GC.role_group_for(args.reviewer_role)
+    # decision NẰM TRONG payload từ v3 (2026-07-27): trước đây ký mà không gồm quyết định,
+    # nên một bản ghi REJECTED đã ký hợp lệ chỉ cần sửa chuỗi thành APPROVED là qua cổng.
     signature = GC.sign_approval(args.gate, args.study, evidence_hash, timestamp_utc,
-                                 reviewer_role=args.reviewer_role, reviewer_ref=args.reviewer_ref)
+                                 reviewer_role=args.reviewer_role, reviewer_ref=args.reviewer_ref,
+                                 decision=args.decision, is_synthetic=False)
     if signature:
         if GC.per_role_key_available(role_group or ""):
             print(f"🔑 Đã ký bằng KHÓA RIÊNG của nhóm {role_group} "

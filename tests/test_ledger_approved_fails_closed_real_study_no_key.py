@@ -138,7 +138,8 @@ def test_real_study_still_approved_when_signature_actually_valid(tmp_path, monke
     # cặp giá trị sẽ nằm trong bản ghi (trước đây payload không có 2 trường này — chính
     # là lỗ hổng cho phép dùng lại một chữ ký hợp lệ cho vai trò khác).
     signature = GC.sign_approval("G2", REAL_STUDY, evidence_hash, timestamp,
-                                 reviewer_role="IRB", reviewer_ref="bac-si-that")
+                                 reviewer_role="IRB", reviewer_ref="bac-si-that",
+                                 decision="APPROVED")
     assert signature is not None
 
     record = {

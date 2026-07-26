@@ -84,7 +84,8 @@ def _write_ledger_approval(study_dir: Path, gate_id: str, artifact_content: str)
     }
     reviewer_role = role_by_gate.get(gate_id, "PI_PROJECT_OWNER")
     signature = GC.sign_approval(gate_id, study_dir.name, evidence_hash, timestamp_utc,
-                                 reviewer_role=reviewer_role, reviewer_ref="REF-TEST-001")
+                                 reviewer_role=reviewer_role, reviewer_ref="REF-TEST-001",
+                                 decision="APPROVED")
     record = {
         "approval_id": f"test-{gate_id}-001", "gate_id": gate_id,
         "reviewer_role": reviewer_role,

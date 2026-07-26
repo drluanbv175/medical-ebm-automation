@@ -67,7 +67,8 @@ def test_signature_signed_as_pi_cannot_be_relabelled_as_irb(tmp_path, monkeypatc
 
     # Kẻ tấn công ký HỢP LỆ với vai trò PI (vai trò họ thật sự có).
     signature_as_pi = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
-                                       reviewer_role="PI", reviewer_ref="chu-nhiem")
+                                       reviewer_role="PI", reviewer_ref="chu-nhiem",
+                                 decision="APPROVED")
     assert signature_as_pi is not None
 
     # ...rồi ghi vào ledger với nhãn IRB để qua cổng đạo đức.
@@ -91,7 +92,8 @@ def test_reviewer_ref_tampering_invalidates_signature(tmp_path, monkeypatch):
     study = "de-tai-thu-nghiem-ref-binding"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
     signature = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
-                                 reviewer_role="IRB", reviewer_ref="hoi-dong-A")
+                                 reviewer_role="IRB", reviewer_ref="hoi-dong-A",
+                                 decision="APPROVED")
     _write_ledger(tmp_path, study, {
         "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
         "reviewer_role": "IRB", "evidence_hash": evidence_hash,
@@ -112,7 +114,8 @@ def test_matching_role_and_ref_still_verifies(tmp_path, monkeypatch):
     study = "de-tai-thu-nghiem-hop-le"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
     signature = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
-                                 reviewer_role="IRB", reviewer_ref="hoi-dong-A")
+                                 reviewer_role="IRB", reviewer_ref="hoi-dong-A",
+                                 decision="APPROVED")
     _write_ledger(tmp_path, study, {
         "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
         "reviewer_role": "IRB", "evidence_hash": evidence_hash,
@@ -159,9 +162,11 @@ def test_per_role_key_produces_role_scoped_signature(tmp_path, monkeypatch):
     _artifact, evidence_hash = _study_with_artifact(tmp_path, study)
 
     sig_irb = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
-                               reviewer_role="IRB", reviewer_ref="hoi-dong-A")
+                               reviewer_role="IRB", reviewer_ref="hoi-dong-A",
+                                 decision="APPROVED")
     sig_pi = GC.sign_approval("G9", study, evidence_hash, TIMESTAMP,
-                              reviewer_role="PI", reviewer_ref="chu-nhiem")
+                              reviewer_role="PI", reviewer_ref="chu-nhiem",
+                                 decision="APPROVED")
 
     assert GC.signature_scope({"approver_signature": sig_irb}) == "role"
     assert GC.signature_scope({"approver_signature": sig_pi}) == "shared"
@@ -181,7 +186,8 @@ def test_role_scoped_signature_rejected_when_role_key_disappears(tmp_path, monke
     study = "de-tai-mat-khoa-rieng"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
     signature = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
-                                 reviewer_role="IRB", reviewer_ref="hoi-dong-A")
+                                 reviewer_role="IRB", reviewer_ref="hoi-dong-A",
+                                 decision="APPROVED")
     _write_ledger(tmp_path, study, {
         "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
         "reviewer_role": "IRB", "evidence_hash": evidence_hash,
@@ -192,6 +198,91 @@ def test_role_scoped_signature_rejected_when_role_key_disappears(tmp_path, monke
 
     role_key.unlink()  # khóa riêng biến mất → chữ ký 'role' không còn xác minh được
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+
+
+# ── VÒNG 3: phát hiện NẶNG NHẤT cả đợt (workflow kiểm định 6 góc nhìn) ────────
+
+def test_signed_rejection_cannot_be_flipped_to_approval(tmp_path, monkeypatch):
+    """★ LỖ HỔNG NẶNG NHẤT: `decision` là trường ledger_approved() DÙNG ĐỂ LỌC
+    (chỉ nhận "APPROVED") nhưng TRƯỚC v3 KHÔNG nằm trong nội dung được ký.
+
+    Kịch bản thật: hội đồng đạo đức xét đề tài và TỪ CHỐI. approve_gate.py ghi bản ghi
+    decision="REJECTED" kèm chữ ký HỢP LỆ. Kẻ khác chỉ cần sửa MỘT chuỗi trong JSON
+    thành "APPROVED" — chữ ký vẫn khớp (payload không hề nhắc tới trường đó) → cổng mở.
+    KHÔNG cần biết khóa. Hệ báo "đã qua cổng đạo đức" trong khi hồ sơ thật là ĐÃ BỊ TỪ
+    CHỐI — cách tệ nhất để đánh lừa bác sĩ."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-bi-tu-choi"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+
+    # Hội đồng ký một quyết định TỪ CHỐI — hoàn toàn hợp lệ.
+    sig_rejected = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
+                                    reviewer_role="IRB", reviewer_ref="hoi-dong-A",
+                                    decision="REJECTED")
+    assert sig_rejected is not None
+
+    # Kẻ tấn công lật nhãn quyết định, giữ nguyên chữ ký.
+    _write_ledger(tmp_path, study, {
+        "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
+        "reviewer_role": "IRB", "evidence_hash": evidence_hash,
+        "timestamp_utc": TIMESTAMP, "reviewer_identity_reference": "hoi-dong-A",
+        "approver_signature": sig_rejected,
+    })
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+
+
+def test_synthetic_only_approval_cannot_be_flipped_to_real(tmp_path, monkeypatch):
+    """Cùng lớp lỗi với is_synthetic: một phê duyệt CHỈ dành cho dữ liệu thử nghiệm
+    không được lật thành phê duyệt cho đề tài thật bằng cách sửa một cờ boolean."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-synthetic-bi-lat"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    sig_synthetic = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
+                                     reviewer_role="IRB", reviewer_ref="ref",
+                                     decision="APPROVED", is_synthetic=True)
+    _write_ledger(tmp_path, study, {
+        "gate_id": "G2", "decision": "APPROVED",
+        "is_synthetic": False,  # ← lật từ True
+        "reviewer_role": "IRB", "evidence_hash": evidence_hash,
+        "timestamp_utc": TIMESTAMP, "reviewer_identity_reference": "ref",
+        "approver_signature": sig_synthetic,
+    })
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+
+
+def test_symlink_laundering_of_denylisted_name_is_blocked(tmp_path, monkeypatch):
+    """★ REGRESSION do chính bản vá vòng 2 gây ra, workflow kiểm định bắt được:
+    vòng 2 THAY THẾ phép kiểm denylist trên chuỗi thô bằng phép kiểm sau khi giải
+    symlink — nên chỉ cần đổi tên thư mục thật rồi tạo symlink mang ĐÚNG tên bị cấm
+    là `real_dir.name` thành tên khác → lọt. Nay kiểm CẢ HAI."""
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(tmp_path / "khong_ton_tai"))
+    exports = tmp_path / "exports"
+    exports.mkdir(parents=True, exist_ok=True)
+
+    real_dir = exports / "du-lieu-noi-bo-2026"
+    real_dir.mkdir()
+    (real_dir / "study_meta.json").write_text(
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8")
+    artifact = real_dir / "artifact.md"
+    artifact.write_text("noi dung", encoding="utf-8")
+    evidence_hash = hashlib.sha256(artifact.read_bytes()).hexdigest()
+    (real_dir / "approval_ledger.json").write_text(json.dumps([{
+        "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
+        "reviewer_role": "IRB", "evidence_hash": evidence_hash,
+        "timestamp_utc": TIMESTAMP, "reviewer_identity_reference": "bia",
+    }]), encoding="utf-8")
+
+    # "Giặt tên": symlink mang tên đề tài THẬT trỏ vào thư mục tên khác.
+    (exports / REAL_STUDY).symlink_to(real_dir.name)
+
+    assert GC.is_synthetic_test_study(REAL_STUDY, tmp_path) is False
+    assert GC.ledger_approved("G2", REAL_STUDY, artifact, repo_root=tmp_path) is False
 
 
 # ── VÒNG 2: 5 phát hiện của RED-TEAM ĐỘC LẬP chống lại chính bản vá vòng 1 ────
@@ -248,7 +339,8 @@ def test_record_carrying_two_conflicting_identities_is_rejected(tmp_path, monkey
     study = "de-tai-hai-danh-tinh"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
     signature = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
-                                 reviewer_role="IRB", reviewer_ref="dr-x")
+                                 reviewer_role="IRB", reviewer_ref="dr-x",
+                                 decision="APPROVED")
     _write_ledger(tmp_path, study, {
         "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
         "reviewer_role": "IRB", "evidence_hash": evidence_hash,
@@ -272,7 +364,8 @@ def test_record_declaring_agent_authorship_is_rejected(tmp_path, monkeypatch):
         study = f"de-tai-agent-{field}"
         artifact, evidence_hash = _study_with_artifact(tmp_path, study)
         signature = GC.sign_approval("G2", study, evidence_hash, TIMESTAMP,
-                                     reviewer_role="IRB", reviewer_ref="ref-1")
+                                     reviewer_role="IRB", reviewer_ref="ref-1",
+                                 decision="APPROVED")
         record = {
             "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
             "reviewer_role": "IRB", "evidence_hash": evidence_hash,

@@ -215,7 +215,8 @@ def _approve_all_gates(ledger, gates, artifact_map, study_dir, study_name) -> in
         # nếu không verify_approval_signature() sẽ trượt. Lấy role LÊN TRƯỚC lúc ký.
         role = _ROLE_FOR_GATE[gate_id]
         signature = GC.sign_approval(gate_id, study_name, evidence_hash, timestamp_utc,
-                                     reviewer_role=role, reviewer_ref=_REVIEWER_REF)
+                                     reviewer_role=role, reviewer_ref=_REVIEWER_REF,
+                                     decision="APPROVED", is_synthetic=False)
         scope = (
             f"[ADMIN-SYNTHETIC-BYPASS] Tự động duyệt {gate_id} qua "
             "tools/approve_gate_synthetic_admin.py — CHỈ hợp lệ vì đề tài "

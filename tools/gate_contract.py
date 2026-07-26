@@ -294,13 +294,36 @@ def resolve_synthetic_study_dir(study: str, repo_root: Path) -> Tuple[Optional[P
       2. Thoát sandbox bằng --study tuyệt đối / "../" / symlink trỏ ra ngoài: ép
          real_dir.parent PHẢI ĐÚNG exports/ (con trực tiếp), nếu không → từ chối.
       3. --study rỗng ("" khiến exports/"" == exports/ gốc): bắt riêng đầu hàm.
-      4. Denylist: kiểm trên real_dir.name (tên CANONICAL sau resolve), không phải
-         chuỗi --study thô — bắt cả "./<tên thật>", dấu "/" cuối, "../<tên>/<tên>".
+      4. Denylist: kiểm trên CẢ HAI — chuỗi --study THÔ *và* real_dir.name (tên CANONICAL
+         sau resolve). Xem khối cảnh báo ngay dưới: kiểm một trong hai là KHÔNG ĐỦ.
     """
+    # ★ VÁ 2026-07-27 (workflow kiểm định 6 góc nhìn — REGRESSION do chính bản vá
+    # 2026-07-26 vòng 2 gây ra, mức HIGH). Lịch sử để không ai "sửa lùi" lần nữa:
+    #   - Bản gốc kiểm denylist trên real_dir.name (CANONICAL). Chặn được "./TÊN",
+    #     "TÊN/", "TÊN/." — các biến thể chuỗi trỏ cùng một thư mục.
+    #   - Vòng 2 phát hiện is_synthetic_test_study() kiểm trên CHUỖI THÔ nên bị các biến
+    #     thể đó lách, và "sửa" bằng cách BỎ HẲN phép kiểm thô, giao trọn cho hàm này.
+    #   - Red-team độc lập chỉ ra ngay: như vậy chỉ ĐỔI lỗ hổng này lấy lỗ hổng kia.
+    #     Kiểm CANONICAL một mình bị "giặt tên" bằng symlink — đổi tên thư mục thật thành
+    #     tên khác rồi tạo symlink mang ĐÚNG tên bị cấm trỏ vào đó:
+    #         mv exports/hai-long-benh-nhan-C1a-BVQY175 exports/du-lieu-noi-bo-2026
+    #         ln -s du-lieu-noi-bo-2026 exports/hai-long-benh-nhan-C1a-BVQY175
+    #     → real_dir.name = "du-lieu-noi-bo-2026" (không nằm trong danh sách) → LỌT, và
+    #     4 cổng G2/G4/G8/G9 trả True cho đề tài NGƯỜI THẬT với ledger bịa không chữ ký.
+    #     `ls` thường vẫn hiện đúng tên cũ, chỉ `ls -l` mới lộ — rất khó nhận ra bằng mắt.
+    # ⇒ Kết luận: hai phép kiểm bắt hai lớp tấn công KHÁC NHAU (biến thể chuỗi vs giặt tên
+    #   qua symlink). PHẢI GIỮ CẢ HAI. Đừng bao giờ thay cái này bằng cái kia.
     if not study or not str(study).strip():
         return None, "Tên đề tài (--study) rỗng — không xác định được thư mục."
+    if is_real_study_denylisted(study):
+        return None, (
+            f"'{study}' nằm trong gate_contract.REAL_STUDY_DENYLIST (khớp trên chuỗi THÔ) — "
+            "đề tài nghiên cứu người thật đã biết. KHÔNG cờ/đường-dẫn nào bỏ qua được."
+        )
     exports_root = (Path(repo_root) / "exports").resolve()
-    study_dir = Path(repo_root) / "exports" / study
+    # str(study) — không để một study id phi-chuỗi (vd đọc từ JSON metadata) ném TypeError
+    # ở phép "/" bên dưới: đây là chốt fail-closed, phải TRẢ VỀ lỗi chứ không được ném.
+    study_dir = Path(repo_root) / "exports" / str(study)
     try:
         real_dir = study_dir.resolve(strict=True)
     except (OSError, RuntimeError, ValueError):
@@ -494,15 +517,44 @@ def required_reviewer_role_hint(gate_id: str) -> str:
 #       "synthetic_test" qua tools/mark_study_synthetic.py (vốn đã tự từ chối đề tài
 #       trong denylist). Denylist từ nay là lớp phòng thủ THỨ HAI, không còn là lớp
 #       duy nhất đứng giữa một đề tài thật và một phê duyệt giả.
-_SIGNATURE_SCHEME = "v2"
+# v3 (2026-07-27): thêm `decision` + `is_synthetic` vào nội dung ký — xem
+# _signature_payload(). Nâng số hiệu để chữ ký v2 (thiếu 2 trường đó) bị từ chối thẳng
+# thay vì được chấp nhận âm thầm. An toàn: tại thời điểm nâng KHÔNG có approval_ledger.json
+# nào tồn tại trên đĩa (đã kiểm `find exports -name approval_ledger.json`), nên không phê
+# duyệt thật nào bị vô hiệu.
+_SIGNATURE_SCHEME = "v3"
 _SIGNATURE_SCOPE_ROLE = "role"      # ký bằng khóa RIÊNG của nhóm stakeholder
 _SIGNATURE_SCOPE_SHARED = "shared"  # ký bằng khóa CHUNG (một người giữ — KHÔNG chứng minh tách vai trò)
+# Bí danh công khai để nơi khác (vd run_g10_assemble.py) không phải dùng tên có gạch dưới.
+SIGNATURE_SCOPE_ROLE = _SIGNATURE_SCOPE_ROLE
+SIGNATURE_SCOPE_SHARED = _SIGNATURE_SCOPE_SHARED
 
 
 def _test_context_active() -> bool:
     """True khi đang chạy dưới pytest — điều kiện DUY NHẤT cho phép EBM_GATE_KEY_PATH
-    ghi đè vị trí khóa. Ngoài test, biến môi trường đó bị bỏ qua hoàn toàn (lỗ hổng
-    (2) ở trên: comment 'chỉ dùng cho test' trước đây không được thực thi)."""
+    ghi đè vị trí khóa.
+
+    ★ NÓI THẲNG MỨC BẢO ĐẢM (sửa 2026-07-27 — đây là lần thứ BA trong cùng file này một
+    dòng tài liệu hứa nhiều hơn code làm được, nên viết dứt khoát):
+    **Đây KHÔNG PHẢI một ranh giới bảo mật, và không thể là.** Cả hai tín hiệu đều giả
+    lập được: `PYTEST_CURRENT_TEST` chỉ là biến môi trường ai cũng `export` được, còn
+    `"pytest" in sys.modules` chỉ cần một dòng `import pytest`. Đừng ở đâu mô tả cơ chế
+    này là "đã đóng cửa ghi đè khóa".
+
+    Vì sao vẫn giữ, và vì sao thế là ĐỦ: giả lập được cờ này chỉ giúp kẻ tấn công tự ký
+    một chữ ký xác minh được TRONG CHÍNH TIẾN TRÌNH CỦA HỌ. Mọi tiến trình bình thường
+    (bác sĩ chạy cổng thật) đọc khóa thật ở ~/.ebm-secrets/ và vẫn trả False — nên KHÔNG
+    tạo ra được phê duyệt giả BỀN VỮNG trên đĩa. Red-team độc lập đã xác nhận điểm này
+    bằng thực nghiệm. Giá trị thật của hàm là chống VÔ Ý: một biến EBM_GATE_KEY_PATH sót
+    lại trong shell profile không được phép âm thầm làm hỏng một lần chạy cổng THẬT.
+
+    ĐÃ THỬ bỏ vế `PYTEST_CURRENT_TEST` (2026-07-27) và ĐÃ HOÀN NGUYÊN: 17 test hợp lệ vỡ.
+    Lý do đáng ghi lại — nhiều test chạy các cổng như TIẾN TRÌNH CON
+    (`subprocess.run([...run_stats_analysis.py...])`); tiến trình con KHÔNG có `pytest`
+    trong sys.modules, nên chỉ còn biến môi trường (pytest tự đặt và truyền xuống) là tín
+    hiệu khả dụng. Bỏ nó = chặn oan chính luồng kiểm thử đang bảo vệ hệ thống, đổi lấy
+    một lợi ích bảo mật bằng KHÔNG (kẻ tấn công vốn đọc được file khóa). Siết ở đây là
+    siết nhầm chỗ."""
     return "pytest" in sys.modules or "PYTEST_CURRENT_TEST" in os.environ
 
 
@@ -569,10 +621,27 @@ def per_role_key_available(role_group: str) -> bool:
 
 
 def _signature_payload(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str,
-                       role_group: str = "", reviewer_ref: str = "") -> bytes:
-    """Nội dung được ký. KHÁC bản trước 2026-07-26: có thêm role_group + reviewer_ref,
-    và tiền tố scheme — nên chữ ký tạo cho vai trò này KHÔNG dùng lại được cho vai trò
-    khác, kể cả khi cùng cổng/cùng artifact/cùng thời điểm."""
+                       role_group: str = "", reviewer_ref: str = "",
+                       decision: str = "", is_synthetic: bool = False) -> bytes:
+    """Nội dung được ký.
+
+    v2 (2026-07-26) thêm role_group + reviewer_ref — chống dùng lại chữ ký của vai trò này
+    cho vai trò khác.
+
+    ★ v3 (2026-07-27) — VÁ LỖ HỔNG NẶNG NHẤT CẢ ĐỢT, do workflow kiểm định 6 góc nhìn tìm
+    ra: `decision` và `is_synthetic` là HAI TRƯỜNG mà ledger_approved() DÙNG ĐỂ LỌC
+    (chỉ nhận decision=="APPROVED" và không synthetic) nhưng LẠI KHÔNG NẰM TRONG nội dung
+    được ký. Hệ quả cụ thể: hội đồng đạo đức xét và TỪ CHỐI đề tài, chữ ký được tạo hợp lệ
+    cho quyết định "REJECTED" — kẻ khác chỉ cần sửa MỘT chuỗi trong JSON thành "APPROVED"
+    là chữ ký vẫn khớp (vì payload không hề nhắc tới trường đó) và cổng mở. KHÔNG cần biết
+    khóa. Đây là cách tệ nhất để đánh lừa bác sĩ: hệ báo "đã qua cổng đạo đức" trong khi
+    hồ sơ thật là ĐÃ BỊ TỪ CHỐI. Tương tự với is_synthetic: một phê duyệt CHỈ dành cho dữ
+    liệu thử nghiệm có thể bị lật thành phê duyệt cho đề tài thật.
+    Nay mọi trường mà chốt kiểm dựa vào để RA QUYẾT ĐỊNH đều nằm trong nội dung ký.
+
+    Nguyên tắc rút ra (ghi lại để không tái phạm): TRƯỜNG NÀO ĐƯỢC DÙNG ĐỂ LỌC/QUYẾT ĐỊNH
+    THÌ TRƯỜNG ĐÓ PHẢI ĐƯỢC KÝ. Ký một phần bản ghi rồi tin vào phần không ký là vô nghĩa.
+    """
     return "|".join([
         _SIGNATURE_SCHEME,
         gate_id or "",
@@ -581,11 +650,14 @@ def _signature_payload(gate_id: str, study: str, evidence_hash: str, timestamp_u
         timestamp_utc or "",
         role_group or "",
         (reviewer_ref or "").strip(),
+        (decision or "").strip().upper(),
+        "1" if is_synthetic else "0",
     ]).encode("utf-8")
 
 
 def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str, *,
-                  reviewer_role: str = "", reviewer_ref: str = "") -> Optional[str]:
+                  reviewer_role: str = "", reviewer_ref: str = "",
+                  decision: str = "", is_synthetic: bool = False) -> Optional[str]:
     """Ký HMAC-SHA256 một phê duyệt. Trả None nếu CHƯA có khóa (approve_gate.py khi đó
     vẫn ghi phê duyệt nhưng CẢNH BÁO rõ, và ledger_approved() sẽ KHÔNG coi là đã duyệt).
 
@@ -599,7 +671,8 @@ def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: s
         return None
     mac = hmac.new(
         key.encode("utf-8"),
-        _signature_payload(gate_id, study, evidence_hash, timestamp_utc, group, reviewer_ref),
+        _signature_payload(gate_id, study, evidence_hash, timestamp_utc, group, reviewer_ref,
+                           decision, is_synthetic),
         hashlib.sha256,
     ).hexdigest()
     return f"{_SIGNATURE_SCHEME}:{scope}:{mac}"
@@ -695,12 +768,42 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
             key.encode("utf-8"),
             _signature_payload(str(record.get("gate_id", "") or ""), study,
                                str(record.get("evidence_hash", "") or ""),
-                               str(record.get("timestamp_utc", "") or ""), group, reviewer_ref),
+                               str(record.get("timestamp_utc", "") or ""), group, reviewer_ref,
+                               str(record.get("decision", "") or ""),
+                               bool(record.get("is_synthetic"))),
             hashlib.sha256,
         ).hexdigest()
         return hmac.compare_digest(expected, mac_hex)
     except (TypeError, ValueError, AttributeError):
         return False
+
+
+def approving_signature_scope(gate_id: str, study: str,
+                              repo_root: Optional[Path] = None) -> Optional[str]:
+    """Phạm vi khóa đã ký bản ghi phê duyệt MỚI NHẤT của một cổng: 'role' | 'shared' | None.
+
+    THÊM 2026-07-27 để đóng phát hiện của workflow kiểm định: trường "phạm vi" được GHI vào
+    chữ ký nhưng KHÔNG AI ĐỌC — `signature_scope()` không có một nơi dùng thật nào ngoài
+    test. Nghĩa là gói nộp G10 in "✅ Đã qua cổng G8 (bình duyệt độc lập)" y hệt nhau dù
+    G2+G8+G9 đều được ký bằng CÙNG MỘT khóa chung của một người. Một gói nộp KHÔNG ĐƯỢC
+    khẳng định có bình duyệt độc lập khi hệ không biết điều đó có thật hay không.
+    Hàm này cấp dữ liệu để nơi phát hành nói ĐÚNG mức bảo đảm."""
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    ledger_p = root / "exports" / str(study) / "approval_ledger.json"
+    if not ledger_p.exists():
+        return None
+    try:
+        records = json.loads(ledger_p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return None
+    if not isinstance(records, list):
+        return None
+    matches = [r for r in records if isinstance(r, dict)
+               and r.get("gate_id") == gate_id and r.get("decision") == "APPROVED"]
+    if not matches:
+        return None
+    latest = sorted(matches, key=lambda r: str(r.get("timestamp_utc") or ""))[-1]
+    return signature_scope(latest)
 
 
 def is_synthetic_test_study(study: str, repo_root: Optional[Path] = None) -> bool:
@@ -771,7 +874,10 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
         return False
     try:
         records = json.loads(ledger_p.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        # UnicodeDecodeError thêm 2026-07-27: ledger không phải UTF-8 hợp lệ (file hỏng /
+        # bị OneDrive ghi dở) từng ném ra ngoài thay vì trả False — chốt fail-closed phải
+        # luôn TRẢ VỀ, không được ném.
         return False
     if not isinstance(records, list):
         return False
@@ -783,14 +889,20 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
                    gate_id, r.get("reviewer_role") if isinstance(r.get("reviewer_role"), str) else "")]
     if not matches:
         return False
-    latest = sorted(matches, key=lambda r: r.get("timestamp_utc", ""))[-1]
+    # str(... or "") — timestamp_utc phi-chuỗi (None/int/dict do ledger dựng tay) từng làm
+    # sorted() ném TypeError khi so kiểu hỗn hợp.
+    latest = sorted(matches, key=lambda r: str(r.get("timestamp_utc") or ""))[-1]
     try:
         actual_hash = hashlib.sha256(Path(artifact_path).read_bytes()).hexdigest()
-    except OSError:
+    except (OSError, ValueError):
         return False
     if actual_hash != latest.get("evidence_hash"):
         return False
-    group = role_group_for(latest.get("reviewer_role", "")) or None
+    # isinstance — bộ lọc ở trên đã ép kiểu chuỗi khi gọi reviewer_role_satisfies_gate(),
+    # nhưng dòng này ĐỌC LẠI trường thô nên phải tự bảo vệ (vá 2026-07-27: đúng chỗ
+    # workflow kiểm định chỉ ra là "guard ở dòng 782 không che được dòng 793").
+    _role_raw = latest.get("reviewer_role")
+    group = role_group_for(_role_raw if isinstance(_role_raw, str) else "") or None
     if signing_key_configured(group):
         return verify_approval_signature(latest, study)
     # VÁ 2026-07-26 — LẬT MẶC ĐỊNH SANG FAIL-CLOSED (lỗ hổng (3) mô tả ở trên).

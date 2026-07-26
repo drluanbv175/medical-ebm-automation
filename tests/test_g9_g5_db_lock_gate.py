@@ -62,7 +62,8 @@ def _write_ledger_approval(d: Path, gate_id: str, artifact_content: str) -> None
     evidence_hash = hashlib.sha256(artifact_content.encode()).hexdigest()
     timestamp_utc = "2026-07-23T00:00:00+00:00"
     signature = GC.sign_approval(gate_id, d.name, evidence_hash, timestamp_utc,
-                                 reviewer_role="PI_PROJECT_OWNER", reviewer_ref="REF-TEST-001")
+                                 reviewer_role="PI_PROJECT_OWNER", reviewer_ref="REF-TEST-001",
+                                 decision="APPROVED")
     assert signature
     record = {
         "approval_id": f"test-{gate_id}-001", "gate_id": gate_id,

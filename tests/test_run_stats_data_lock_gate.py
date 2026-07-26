@@ -54,7 +54,8 @@ def _approve_g2_g4_g5(study: str) -> None:
         evidence_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
         signature = GC.sign_approval(gate_id, study, evidence_hash, timestamp_utc,
                                      reviewer_role=role_by_gate[gate_id],
-                                     reviewer_ref=f"TEST-{gate_id}")
+                                     reviewer_ref=f"TEST-{gate_id}",
+                                 decision="APPROVED")
         assert signature
         record = ApprovalLedger.make_human_approval(
             gate_id=gate_id,
