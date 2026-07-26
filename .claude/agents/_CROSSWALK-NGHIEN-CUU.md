@@ -20,9 +20,12 @@
 Đạo đức là **G2 (agent) vs G3 (skill)**; Phân tích là **G6 (agent) vs G7 (skill)**. Câu tiêu đề agent
 "dùng skill làm CHUẨN" gây hiểu nhầm thẩm quyền nguồn (vi phạm tinh thần P7/P8).
 
-**Chốt (canonical):** **TRỤC AGENT là chuẩn vận hành** — vì nó là bộ điều phối thực thi, khớp 4 cổng
-cứng/điểm dừng 🔒 (Đạo đức G2 · SAP G4 · Dữ liệu thật trước phân tích · Liêm chính tác giả G9 —
-2026-07-07 sửa thiếu điểm dừng dữ liệu thật) và khớp bản đồ A1–A18. Skill `nghien-cuu-y-khoa-chuan-quoc-te` cấp **NỘI DUNG/chuẩn báo cáo/
+**Chốt (canonical):** **TRỤC AGENT là chuẩn vận hành** — vì nó là bộ điều phối thực thi, khớp 5 cổng
+cứng/điểm dừng 🔒 (Đạo đức G2 · SAP G4 · Dữ liệu thật trước phân tích (2026-07-07) · Bình duyệt độc lập
+G8 (2026-07-14/15) · Liêm chính tác giả G9 — sửa 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 31, phát
+hiện HIGH: đoạn "Chốt" này trước chỉ liệt 4 cổng, thiếu G8, mâu thuẫn với chính footnote dòng 39 và §6
+dòng 151 của file này, và với `dieu-phoi-nghien-cuu.md` hiện hành đều xác nhận đúng 5 cổng) và khớp bản
+đồ A1–A18. Skill `nghien-cuu-y-khoa-chuan-quoc-te` cấp **NỘI DUNG/chuẩn báo cáo/
 template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIAO cho người dùng, luôn gọi cổng bằng
 **TÊN** (Đạo đức / SAP / Phân tích…), không để trần số "G" — vì số G mơ hồ giữa hai trục.
 
@@ -38,6 +41,13 @@ template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIA
 
 > 🔒 = cổng cứng (dừng chờ chủ nhiệm): **G2 Đạo đức+đăng ký · G4 Khóa SAP · Dữ liệu thật trước phân tích (2026-07-07) · G8 Bình duyệt độc lập (2026-07-14) · G9 Liêm chính tác giả**.
 > Sổ checkpoint `_SO-TRANG-THAI-CHECKPOINT.md` ghi cổng theo **TRỤC AGENT** để RESUME nhất quán.
+>
+> **G10 — LẮP RÁP ĐỀ CƯƠNG THỐNG NHẤT (capstone, ngoài trục G0-G9)** — thêm 2026-07-26, vòng lặp kiểm
+> tra-hoàn thiện vòng 31, phát hiện MEDIUM: file này bỏ sót hoàn toàn G10 dù đã tồn tại từ 2026-07-03,
+> TRƯỚC cả lần sửa gần nhất của chính file này (2026-07-16). `tools/run_g10_assemble.py` là nơi CHẶN
+> CỨNG THẬT (fail-closed) cho cả cổng G8 Bình duyệt độc lập (`MISSING_PEER_REVIEW_SIGNATURE`) lẫn cổng
+> A12 kiểm chứng trích dẫn (`MISSING_CITATION_VERIFICATION`) — gộp mọi checkpoint G0-G9 thành MỘT đề
+> cương thống nhất theo mẫu 16 mục của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Xem `dieu-phoi-nghien-cuu.md`.
 
 ---
 
@@ -72,6 +82,17 @@ template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIA
 > Ghi chú định dạng: SPEC ghi `.xlsx` cho Evidence Ledger / Data Dictionary / Table Shells / Risk
 > Register. Hệ này **offline, markdown-first** → mặc định sinh `.md` + `.csv` (mở được bằng Excel),
 > KHÔNG phụ thuộc thư viện xlsx, trừ khi chủ nhiệm yêu cầu `.xlsx` thật.
+>
+> ⚠️ **Mã A trong TÊN FILE do `tools/run_gN_auto.py` sinh ra KHÁC hệ A1-A18 doctrine ở bảng trên**
+> (thêm 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 31, phát hiện MEDIUM — đã grep trực tiếp mã
+> nguồn): G3→`G3_A4_SAMPLE_SIZE_{study}.md` ("A4", bảng trên ghi A5) · G4→`G4_A5_SAP_FINAL_{study}.md`
+> ("A5", bảng ghi A8) · G5→`G5_A6_DATA_MGMT_{study}.md` ("A6", bảng ghi A9) ·
+> G6→`G6_A7_ANALYSIS_SCRIPTS_{study}.md` ("A7", bảng ghi A17b) · G7→`G7_A8_MANUSCRIPT_{study}.md`
+> ("A8", bảng ghi A11) · G8→`G8_A9_PRESUBMISSION_...` ("A9", bảng ghi A15 theo crosswalk cũ) ·
+> G9→`G9_A10_AUTHOR_INTEGRITY_{study}.md` ("A10", bảng ghi A14/A18). Mã A trong TÊN FILE là dãy số
+> NỘI BỘ của script (gate N → A{N+1}), KHÔNG phải hệ A1-A18 doctrine — đối chiếu NỘI DUNG file, đừng
+> tin tên file. Xem task theo dõi sửa code task_3ee574ed/task_e4138631 (đã ghi trong
+> `binh-duyet.md`/`viet-ban-thao.md`/`quan-ly-du-lieu.md`/`nop-bai-phan-hoi.md`).
 
 ## §2bis. 4 AGENT NGOÀI 20-FILE SPEC gốc (2026-07-12 — vá khoảng trống rà kiến trúc)
 
@@ -82,7 +103,7 @@ template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIA
 
 | Agent | Cổng (trục AGENT) | Vai (§4) | Ghi chú |
 |---|---|---|---|
-| `nghien-cuu-dinh-tinh` | G1 (nếu đề tài có cấu phần định tính/hỗn hợp) | hỗ trợ vai 1/4 | COREQ/SRQR — không thuộc 1 trong 20 file gốc (SPEC không có cấu phần định tính riêng) |
+| `nghien-cuu-dinh-tinh` | G0 (chọn paradigm/cách tiếp cận) → G7 (COREQ/SRQR khi viết) — sửa 2026-07-26, vòng lặp vòng 31, phát hiện MEDIUM: bản cũ ghi "G1" không khớp 2 điểm gọi thật trong `dieu-phoi-nghien-cuu.md` | hỗ trợ vai 1/4 | COREQ/SRQR — không thuộc 1 trong 20 file gốc (SPEC không có cấu phần định tính riêng) |
 | `kinh-te-y-te` | G1 (thiết kế cấu phần chi phí) · G7 (bàn luận) | hỗ trợ vai 3 | CHEERS 2022/ISPOR BIA GPP II — SPEC gốc không có nhánh kinh tế y tế |
 | `dien-giai-ket-qua` | G6→G7 (sau phân tích, trước viết Bàn luận) | hỗ trợ vai 2/3 | Cầu nối `phan-tich-thong-ke`→`viet-ban-thao`; SPEC gốc gộp việc này vào Manuscript (A11), không tách agent riêng |
 | `tham-dinh-do-chinh-xac-chan-doan` | G0–G1 (thẩm định 1 bài) — **thuộc Cụm Lâm sàng theo README.md**, không phải 1/28 agent Cụm Nghiên cứu | hỗ trợ vai 2 (song song `tham-dinh-phe-binh`) | Thêm 2026-07-04; làm thẩm định NGHIÊN CỨU độ chính xác chẩn đoán (QUADAS-2/STARD) dù xếp cụm lâm sàng — dùng được cả khi thẩm định 1 bài cho đề tài nghiên cứu |

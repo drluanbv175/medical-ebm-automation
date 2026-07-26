@@ -97,7 +97,7 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
 4. Chỉ trả khi self-check PASS; còn 🔴 → áp vòng tự sửa (`_TU-CHINH-SUA-PROTOCOL.md` §4)
 
 ```
-✦ SELF-CHECK ke-don-an-toan — Cổng G__:
+✦ SELF-CHECK ke-don-an-toan — Cổng A (SỬA 2026-07-26, vòng lặp vòng 31, phát hiện MEDIUM: placeholder "Cổng G__" — dành cho cổng nghiên cứu G0-G9 — bị bỏ sót từ đợt sửa 2026-07-24 vòng 15 vốn đã đổi placeholder này thành nhãn cổng lâm sàng cho quyet-dinh-chung.md/loi-dan-tuan-thu.md/ket-qua-hoc-tap.md/cap-nhat-guideline.md nhưng KHÔNG gồm file này; theo `dieu-phoi-lam-sang.md` bước 4 ÁP DỤNG 🔒A, ke-don-an-toan là 1 trong 2 agent tạo nên khuyến nghị bị khóa Cổng A):
   ĐÃ ĐẠT: [liệt kê tiêu chí đã đáp ứng]
   CÒN THIẾU: [liệt kê hoặc "không có"]
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]

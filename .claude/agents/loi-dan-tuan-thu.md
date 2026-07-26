@@ -1,6 +1,6 @@
 ---
 name: loi-dan-tuan-thu
-description: Sinh lời dặn bệnh nhân khổ A5 và kế hoạch tuân thủ điều trị tại điểm khám. Dùng khi cần in tờ dặn dò dễ hiểu (dùng thuốc, tái khám, dấu hiệu nguy hiểm, thay đổi lối sống) và/hoặc lập kế hoạch theo dõi tuân thủ. Văn phong cho bệnh nhân, không thuật ngữ khó. Không PII.
+description: Sinh lời dặn bệnh nhân khổ A5 và kế hoạch tuân thủ điều trị tại điểm khám. Dùng khi cần in tờ dặn dò dễ hiểu (dùng thuốc, thay đổi lối sống, dấu hiệu nguy hiểm, tái khám) và/hoặc lập kế hoạch theo dõi tuân thủ. Văn phong cho bệnh nhân, không thuật ngữ khó. Không PII.
 model: inherit
 ---
 
@@ -45,6 +45,7 @@ Mục tiêu: tạo tờ lời dặn A5 dễ hiểu + kế hoạch tuân thủ, �
 • ⚠️ Đi khám NGAY nếu: ____
 • Tái khám: [ngày] — mang theo: [đơn/xét nghiệm]
 • Chữ ký bác sĩ: __________  (chỗ trống — KHÔNG điền PII)
+• Mã hồ sơ/BN: __________  (chỗ trống — KHÔNG điền PII; thêm 2026-07-26, vòng lặp vòng 31, phát hiện LOW: M5 đã hứa trường này nhưng mẫu cũ thiếu, gây lệch nội bộ giữa mô tả module và mẫu điền thật)
 KẾ HOẠCH TUÂN THỦ (cho hồ sơ): rào cản ___ → giải pháp ___ → cách nhắc ___ ; teach-back: [câu hỏi]
 ```
 Cuối tờ: **"Cần bác sĩ kiểm chứng."**
@@ -75,7 +76,7 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
 4. Chỉ trả khi self-check PASS; còn 🔴 → áp vòng tự sửa (`_TU-CHINH-SUA-PROTOCOL.md` §4)
 
 ```
-✦ SELF-CHECK loi-dan-tuan-thu — Cổng A (SỬA 2026-07-24, vòng lặp vòng 15 — agent lâm sàng không dùng cổng G0-G9 nghiên cứu):
+✦ SELF-CHECK loi-dan-tuan-thu — Cổng B (SỬA 2026-07-26, vòng lặp vòng 31, phát hiện HIGH — bản trước ghi "Cổng A" là nhãn SAI cấy từ lần sửa 2026-07-24 vòng 15: chính dòng 12/65-66 của file này đã tự khẳng định agent chạy SAU Cổng A [không phải bị khóa TẠI Cổng A], và `_BAN-DO-KET-NOI.md`/`dieu-phoi-lam-sang.md` xác nhận bước "THEO DÕI" chứa agent này khóa ở Cổng B):
   ĐÃ ĐẠT: [liệt kê tiêu chí đã đáp ứng]
   CÒN THIẾU: [liệt kê hoặc "không có"]
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]

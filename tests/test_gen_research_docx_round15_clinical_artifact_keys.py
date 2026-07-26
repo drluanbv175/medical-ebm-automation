@@ -44,7 +44,9 @@ def _study_dir(name: str) -> Path:
 
 CLINICAL_KEYS_CODES_AND_GATES = [
     ("shared-decision", "CA1", "A"),
-    ("patient-instructions", "CA2", "A"),
+    # SỬA 2026-07-26 (vòng lặp kiểm tra-hoàn thiện vòng 31): patient-instructions
+    # dùng gate="A" là SAI (agent chạy SAU Cổng A, khóa ở Cổng B) — đổi CA2→CB3/"B".
+    ("patient-instructions", "CB3", "B"),
     ("outcome-learning", "CB1", "B"),
     ("guideline-update", "CB2", "B"),
 ]

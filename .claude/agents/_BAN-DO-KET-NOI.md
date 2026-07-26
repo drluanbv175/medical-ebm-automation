@@ -29,12 +29,12 @@
 ## 3. CẦU NỐI LÂM SÀNG ↔ NGHIÊN CỨU (cạnh xuyên cụm — trích thật)
 | Cạnh | Chiều | Ý nghĩa |
 |---|---|---|
-| `huong-dan-lam-sang` → `dien-giai-ket-qua` · `tham-dinh-phe-binh` · `tong-quan-y-van` | LS → NC | đưa phát hiện nghiên cứu vào định vị khuyến cáo |
+| `dien-giai-ket-qua` · `tham-dinh-phe-binh` · `tong-quan-y-van` → `huong-dan-lam-sang` | NC → LS | đưa phát hiện nghiên cứu vào định vị khuyến cáo (sửa 2026-07-26, vòng lặp vòng 31, phát hiện HIGH: mũi tên bản cũ VẼ NGƯỢC — `huong-dan-lam-sang.md` tự khai nhận đầu vào từ 3 agent này, và cả 3 file KHÔNG hề nhắc `huong-dan-lam-sang`, xác nhận không có chiều ngược) |
 | `ket-qua-hoc-tap` → `dao-duc-dang-ky` | LS → NC | tín hiệu nội bộ → đường nghiên cứu/QI có đạo đức |
-| `thu-thu-tai-lieu` → `tham-dinh-grade-nnt`; `trich-xuat-y-van` → `tham-dinh-grade-nnt` | NC → LS | dùng lại công cụ thẩm định nhanh cho điểm khám |
-| `tra-cuu-chung-cu` → `huong-dan-lam-sang` | NC → LS | chia sẻ lớp tra cứu chứng cứ |
+| `tra-cuu-chung-cu` → `huong-dan-lam-sang` | LS → NC | chia sẻ lớp tra cứu chứng cứ (sửa 2026-07-26, vòng lặp vòng 31, phát hiện LOW: nhãn chiều cụm bị đảo — `tra-cuu-chung-cu` thuộc Cụm Lâm sàng, `huong-dan-lam-sang` thuộc Cụm Nghiên cứu theo README.md, nên đúng là LS → NC không phải NC → LS) |
 
 > **2026-07-12: gỡ 2 cạnh không có thật** — `pico-lam-sang ↔ cau-hoi-nghien-cuu` và nửa `tong-quan-y-van → tra-cuu-chung-cu` chỉ là câu "Khác X" phân biệt phạm vi trong 2 file agent đó, KHÔNG có chỉ dẫn bàn giao/chuyển tiếp công việc thật (grep xác nhận không có mũi tên/động từ bàn giao nào ở cả 2 phía, kể cả 2 router).
+> **2026-07-26 (vòng lặp vòng 31, phát hiện MEDIUM): gỡ thêm 1 cạnh không có thật** — `thu-thu-tai-lieu`/`trich-xuat-y-van` → `tham-dinh-grade-nnt`: grep xác nhận `tham-dinh-grade-nnt` chỉ xuất hiện đúng 1 lần trong mỗi 2 file kia, ở câu PHÂN RANH GIỚI PHẠM VI ("KHÔNG thẩm định GRADE/NNT (→ `tham-dinh-grade-nnt`)"), KHÔNG nằm trong mục "Bàn giao" thật; mục Bàn giao thật của cả 2 file đều KHÔNG trỏ tới `tham-dinh-grade-nnt`, và `tham-dinh-grade-nnt.md` tự khai chỉ nhận đầu vào từ `tra-cuu-chung-cu`.
 
 **`huong-dan-lam-sang`** là cầu nối chính (in=6, out=6; được CẢ HAI router trỏ tới): nơi vòng nghiên cứu đổ kết quả về thực hành (GRADE EtD → EBM_MASTER hàng chờ duyệt).
 

@@ -115,9 +115,14 @@ ARTIFACT_MAP = {
     # vòng 11 cho 10 khóa nghiên cứu. "gate" ở đây ghi Cổng A/B thật (không
     # phải G-gate) chỉ để hiển thị đúng nghĩa trên header .docx.
     "shared-decision":      ("CA1", "A", "Quyết định chung & Option Grid (Shared Decision-Making)"),
-    "patient-instructions": ("CA2", "A", "Lời dặn bệnh nhân & Kế hoạch tuân thủ (A5)"),
     "outcome-learning":     ("CB1", "B", "Ghi nhận kết quả điều trị & Tín hiệu học tập (QI)"),
     "guideline-update":     ("CB2", "B", "Cảnh báo cập nhật Guideline"),
+    # SỬA 2026-07-26 (vòng lặp kiểm tra-hoàn thiện vòng 31): "patient-instructions"
+    # (loi-dan-tuan-thu.md) trước đây gắn gate="A" (mã CA2) — SAI, vì agent này tự
+    # khai chạy SAU Cổng A (diễn đạt lại quyết định ĐÃ duyệt), thuộc bước "THEO DÕI"
+    # khóa Cổng B theo _BAN-DO-KET-NOI.md/dieu-phoi-lam-sang.md, giống hệt
+    # ket-qua-hoc-tap.md (CB1). Đổi mã sang CB3 cho khớp dãy CB, gate="B".
+    "patient-instructions": ("CB3", "B", "Lời dặn bệnh nhân & Kế hoạch tuân thủ (A5)"),
 
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16): 2 khóa LÂM SÀNG
     # bị bỏ sót ở đợt vá vòng 15 cùng ngày (tra-cuu-chung-cu.md và
