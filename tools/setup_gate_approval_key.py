@@ -26,6 +26,7 @@ Script:
 """
 from __future__ import annotations
 
+import argparse
 import secrets
 import sys
 from pathlib import Path
@@ -38,28 +39,64 @@ from secure_permissions import lock_owner_exclusive  # noqa: E402
 
 _KEY_PATH = Path.home() / ".ebm-secrets" / "gate_approval_key"
 
+# THÊM 2026-07-26 (audit độc lập lớp bảo mật): KHÓA RIÊNG THEO VAI TRÒ.
+# Vấn đề gốc: một khóa duy nhất cho cả máy ký được MỌI vai trò, nên chữ ký "IRB" và
+# chữ ký "PI" không phân biệt được về mặt mật mã — nguyên tắc "PI không thể tự làm hội
+# đồng đạo đức của chính mình" chỉ tồn tại trên giấy. Với khóa riêng, chữ ký của nhóm
+# chỉ tạo được bằng đúng khóa của nhóm đó → giao khóa IRB cho hội đồng thật giữ (hoặc
+# đơn giản là giữ ở nơi khác, chỉ mở khi có người đó thật sự duyệt) là tách vai trò trở
+# thành bằng chứng THẬT. Không bắt buộc — không tạo thì hệ vẫn chạy bằng khóa chung,
+# nhưng approve_gate.py sẽ NÓI RÕ mức bảo đảm thấp hơn thay vì im lặng.
+_ROLE_GROUPS = ("IRB", "STATISTICIAN", "INDEPENDENT_PEER_REVIEWER", "PI")
+
+
+def _key_path_for(role: str | None) -> Path:
+    return _KEY_PATH if not role else _KEY_PATH.with_name(f"{_KEY_PATH.name}_{role}")
+
 
 def main() -> int:
+    ap = argparse.ArgumentParser(description="Thiết lập khóa ký duyệt cổng (chung hoặc riêng theo vai trò)")
+    ap.add_argument("--role", choices=_ROLE_GROUPS, default=None,
+                    help="Tạo KHÓA RIÊNG cho một nhóm stakeholder (khuyến nghị mạnh cho IRB và "
+                         "INDEPENDENT_PEER_REVIEWER — 2 vai trò bắt buộc phải độc lập với chủ nhiệm "
+                         "đề tài). Không truyền = tạo khóa CHUNG của máy.")
+    args = ap.parse_args()
+    key_path = _key_path_for(args.role)
+
     print("=" * 70)
-    print(" THIẾT LẬP KHÓA KÝ DUYỆT CỔNG — chỉ chạy MỘT LẦN, TỰ TAY")
+    if args.role:
+        print(f" THIẾT LẬP KHÓA KÝ RIÊNG CHO VAI TRÒ {args.role} — TỰ TAY")
+    else:
+        print(" THIẾT LẬP KHÓA KÝ DUYỆT CỔNG (CHUNG) — chỉ chạy MỘT LẦN, TỰ TAY")
     print("=" * 70)
 
-    if _KEY_PATH.exists():
-        print(f"\n✋ Đã có khóa tại: {_KEY_PATH}")
+    if key_path.exists():
+        print(f"\n✋ Đã có khóa tại: {key_path}")
         print("   KHÔNG ghi đè (tránh vô hiệu hóa mọi phê duyệt đã ký bằng khóa cũ).")
         print("   Muốn đổi khóa: tự tay xóa file trên rồi chạy lại script này.")
         return 0
 
-    _KEY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    key_path.parent.mkdir(parents=True, exist_ok=True)
     key = secrets.token_hex(32)
-    _KEY_PATH.write_text(key, encoding="utf-8")
+    key_path.write_text(key, encoding="utf-8")
     try:
         # 600 (POSIX) / ACL owner-exclusive (Windows, qua icacls) — chỉ chủ sở hữu
-        lock_owner_exclusive(_KEY_PATH, writable=True)
+        lock_owner_exclusive(key_path, writable=True)
     except (OSError, RuntimeError):
         pass  # một số filesystem (vd exFAT) hoặc thiếu icacls — vẫn tiếp tục, không crash
 
-    print(f"\n✅ Đã tạo khóa mới tại: {_KEY_PATH}")
+    if args.role:
+        print(f"\n✅ Đã tạo KHÓA RIÊNG cho vai trò {args.role} tại: {key_path}")
+        print(f"   Từ giờ, phê duyệt với role thuộc nhóm {args.role} sẽ được ký bằng khóa NÀY,")
+        print("   và chữ ký ghi rõ phạm vi 'role' — bằng chứng TÁCH VAI TRÒ thật.")
+        if args.role in ("IRB", "INDEPENDENT_PEER_REVIEWER"):
+            print(f"\n   ⚠️  Để {args.role} thật sự độc lập, khóa này KHÔNG nên nằm cùng nơi/cùng")
+            print("      quyền truy cập với người làm chủ nhiệm đề tài. Nếu bác sĩ tự tạo VÀ tự")
+            print("      giữ cả khóa này lẫn khóa PI, thì về mặt kỹ thuật vẫn là tự ký — chỉ khác")
+            print("      là hành vi đó nay ĐƯỢC GHI NHẬN RÕ, không còn ngầm định là độc lập.")
+        return 0
+
+    print(f"\n✅ Đã tạo khóa mới tại: {key_path}")
     print("   Từ giờ, mọi lần chạy tools/approve_gate.py trên MÁY NÀY sẽ tự động ký bằng")
     print("   khóa này. Không cần làm gì thêm — không cần nhớ/gõ lại khóa.")
     print("\n   ⚠️  LƯU Ý:")

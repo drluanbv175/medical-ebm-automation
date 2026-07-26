@@ -1823,11 +1823,15 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
                 "receipt A12_RETRACTION_RECEIPT.json thiếu chữ ký hợp lệ hoặc chữ ký "
                 "không khớp (nghi bị giả mạo/sửa tay) — không đủ tin cậy để qua cổng"
             )
-    elif GC.is_real_study_denylisted(study):
+    elif not GC.is_synthetic_test_study(study):
+        # VÁ 2026-07-26: trước đây chỉ fail-closed cho đề tài trong REAL_STUDY_DENYLIST
+        # (danh sách phải nhớ cập nhật tay) — đề tài người thật mới tạo, chưa kịp thêm
+        # vào danh sách, vẫn được cho qua với receipt KHÔNG chữ ký. Nay fail-closed cho
+        # MỌI đề tài trừ đề tài đã tự tay đánh dấu study_kind=synthetic_test.
         return False, (
-            "đề tài THẬT nhưng máy đang chạy CHƯA cấu hình khóa ký "
-            "(setup_gate_approval_key.py) — không thể xác minh chữ ký receipt A12, "
-            "coi như CHƯA xác minh (fail-closed), không hạ chuẩn cho đề tài thật"
+            "máy đang chạy CHƯA cấu hình khóa ký (setup_gate_approval_key.py) — không "
+            "thể xác minh chữ ký receipt A12, coi như CHƯA xác minh (fail-closed). Chỉ "
+            "đề tài đã đánh dấu study_kind=synthetic_test mới được bỏ qua bước ký"
         )
     else:
         # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện HIGH):
@@ -1957,11 +1961,12 @@ def metadata_verification_ok(study: str, out_dir: Path, required_pmids: set) -> 
                 "receipt A12_METADATA_RECEIPT.json thiếu chữ ký hợp lệ hoặc chữ ký không "
                 "khớp (nghi bị giả mạo/sửa tay) — không đủ tin cậy để qua cổng"
             )
-    elif GC.is_real_study_denylisted(study):
+    elif not GC.is_synthetic_test_study(study):
+        # VÁ 2026-07-26 — cùng lý do fail-open như receipt rút bài ở trên.
         return False, (
-            "đề tài THẬT nhưng máy đang chạy CHƯA cấu hình khóa ký "
-            "(setup_gate_approval_key.py) — không thể xác minh chữ ký receipt "
-            "A12_METADATA_RECEIPT.json, coi như CHƯA xác minh (fail-closed)"
+            "máy đang chạy CHƯA cấu hình khóa ký (setup_gate_approval_key.py) — không "
+            "thể xác minh chữ ký receipt A12_METADATA_RECEIPT.json, coi như CHƯA xác "
+            "minh (fail-closed). Chỉ đề tài study_kind=synthetic_test mới được bỏ qua"
         )
     checked_set = {str(x) for x in checked_pmids}
     missing = sorted({str(x) for x in required_pmids} - checked_set)
@@ -2191,12 +2196,24 @@ def main() -> int:
                    "KHÔNG dùng tài liệu này để nộp Hội đồng/tạp chí:**"]
         banner += [f"> - {note}" for note in bypass_notes]
         _apply_submission_status_banner(banner)
-    else:
-        _apply_submission_status_banner([
-            "> ✅ **Đã qua cổng A12 (trích dẫn) + G8 (bình duyệt độc lập) + G9 (liêm "
-            "chính tác giả)** tại thời điểm lắp ráp này. Cần bác sĩ kiểm chứng toàn "
-            "bộ nội dung trước khi nộp chính thức.",
-        ])
+        # VÁ 2026-07-26 (audit độc lập): TRƯỚC ĐÂY trả về 0 (thành công) ngay cả khi
+        # G8/G9/A12 bị ép qua bằng --i-know-*-not-*. Biểu ngữ cảnh báo chỉ nằm TRONG
+        # file .md — mọi caller kiểm bằng MÃ THOÁT (script, CI, run_pipeline, hoặc
+        # `&&` trong shell) đều đọc "0" và hiểu nhầm là gói đã qua đủ cổng. Nay trả
+        # EXIT_GUARDRAIL_FAIL=3: gói VẪN được lắp (để xem trước — đúng mục đích cờ),
+        # nhưng mã thoát nói đúng sự thật "chưa đủ điều kiện nộp".
+        print("\n🚧 Đã lắp gói XEM TRƯỚC, nhưng CÓ CỔNG BỊ BỎ QUA:")
+        for note in bypass_notes:
+            print(f"   - {note}")
+        print("   → Mã thoát 3 (chưa đủ điều kiện nộp). Gói vẫn nằm trên đĩa để xem trước.")
+        print("   Cần bác sĩ kiểm chứng.")
+        return GC.EXIT_GUARDRAIL_FAIL
+
+    _apply_submission_status_banner([
+        "> ✅ **Đã qua cổng A12 (trích dẫn) + G8 (bình duyệt độc lập) + G9 (liêm "
+        "chính tác giả)** tại thời điểm lắp ráp này. Cần bác sĩ kiểm chứng toàn "
+        "bộ nội dung trước khi nộp chính thức.",
+    ])
 
     print("\n✅ Xong. Cần bác sĩ kiểm chứng.")
     return 0

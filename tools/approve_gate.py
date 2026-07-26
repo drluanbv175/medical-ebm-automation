@@ -169,13 +169,32 @@ def main() -> int:
     import hashlib as _hashlib
     evidence_hash = _hashlib.sha256(evidence_content.encode("utf-8")).hexdigest()
     timestamp_utc = datetime.now(timezone.utc).isoformat()
-    signature = GC.sign_approval(args.gate, args.study, evidence_hash, timestamp_utc)
+    # VÁ 2026-07-26: truyền reviewer_role + reviewer_ref vào chữ ký. Trước đây payload
+    # chỉ gồm gate/study/hash/timestamp, nên MỘT chữ ký hợp lệ dùng lại được cho BẤT KỲ
+    # vai trò nào (đổi nhãn reviewer_role trong JSON là xong) — tách vai trò IRB/thống
+    # kê/phản biện/PI chỉ tồn tại trên giấy. Nay role nằm trong nội dung được ký.
+    role_group = GC.role_group_for(args.reviewer_role)
+    signature = GC.sign_approval(args.gate, args.study, evidence_hash, timestamp_utc,
+                                 reviewer_role=args.reviewer_role, reviewer_ref=args.reviewer_ref)
     if signature:
-        print("🔑 Đã ký bằng khóa cục bộ (~/.ebm-secrets/gate_approval_key).")
+        if GC.per_role_key_available(role_group or ""):
+            print(f"🔑 Đã ký bằng KHÓA RIÊNG của nhóm {role_group} "
+                  f"(~/.ebm-secrets/gate_approval_key_{role_group}).")
+            print("   → Chữ ký này là bằng chứng TÁCH VAI TRÒ thật (chỉ người giữ khóa đó tạo được).")
+        else:
+            print("🔑 Đã ký bằng khóa CHUNG của máy (~/.ebm-secrets/gate_approval_key).")
+            print("   ⚠️  GIỚI HẠN THẬT — nói rõ để không hiểu nhầm mức bảo đảm: khóa chung ký được")
+            print("      MỌI vai trò, nên chữ ký này CHỨNG MINH 'có người truy cập được máy đã ký',")
+            print("      KHÔNG chứng minh người ký độc lập với chủ nhiệm đề tài.")
+            if role_group in ("IRB", "INDEPENDENT_PEER_REVIEWER"):
+                print(f"      Với {args.gate} ({role_group}) — vai trò BẮT BUỘC phải độc lập — muốn có")
+                print("      bằng chứng tách vai trò thật, tạo khóa riêng cho người duyệt đó:")
+                print(f"      python3 tools/setup_gate_approval_key.py --role {role_group}")
     else:
         print("⚠️  CHƯA THIẾT LẬP KHÓA KÝ — phê duyệt này KHÔNG có chữ ký mật mã.")
         print("   Chạy MỘT LẦN (TỰ TAY, không nhờ agent): python3 tools/setup_gate_approval_key.py")
-        print("   Vẫn ghi phê duyệt (tương thích ngược) nhưng dễ giả mạo hơn phê duyệt có chữ ký.")
+        print("   ⚠️  SỬA 2026-07-26: phê duyệt KHÔNG chữ ký nay KHÔNG còn được các cổng downstream")
+        print("      coi là 'đã duyệt' (fail-closed), trừ đề tài đã đánh dấu synthetic_test.")
 
     # locked_update() khóa file độc quyền quanh load→mutate→save (thêm 2026-07-15
     # sau red-team đối kháng — vá lost-update race khi 2 tiến trình duyệt gần như

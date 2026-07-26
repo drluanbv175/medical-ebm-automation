@@ -72,17 +72,52 @@ def test_forged_ledger_entry_rejected_for_denylisted_alias_too(tmp_path, monkeyp
     assert GC.ledger_approved("G8", "KKB-HAI-LONG-2026", artifact, repo_root=tmp_path) is False
 
 
-def test_legacy_no_key_behavior_unchanged_for_non_real_study(tmp_path, monkeypatch):
-    """Đối chứng bắt buộc: hành vi CŨ (không chữ ký vẫn qua được khi chưa có khóa) phải GIỮ
-    NGUYÊN cho đề tài KHÔNG nằm trong denylist — bản vá chỉ siết đúng đề tài thật, không đổi
-    hành vi toàn hệ thống (tránh phá test/luồng synthetic có từ trước 2026-07-13)."""
+def test_unsigned_ledger_now_rejected_for_ordinary_study_too(tmp_path, monkeypatch):
+    """SỬA 2026-07-26 (audit độc lập) — test này TRƯỚC ĐÂY khẳng định điều NGƯỢC LẠI
+    (`is True`), tức nó ĐÓNG BĂNG chính lỗ hổng fail-open thành "hành vi mong muốn".
+
+    Lý do đảo: bản vá 2026-07-16 chỉ siết đề tài có tên trong REAL_STUDY_DENYLIST — một
+    danh sách phải nhớ cập nhật BẰNG TAY cho mỗi đề tài người thật mới. Một đề tài người
+    thật vừa tạo (chưa kịp thêm tên vào danh sách) rơi đúng vào nhánh "đề tài khác" này và
+    được coi là ĐÃ DUYỆT chỉ với một ledger tự bịa. Khoảng trống đó chính là thứ denylist
+    không thể tự đóng. Nay mặc định là fail-closed cho MỌI đề tài; muốn bỏ qua bước ký thì
+    phải TỰ TAY đánh dấu synthetic (xem test kế tiếp) — một hành động tường minh, có chủ ý,
+    không phải trạng thái mặc định im lặng."""
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(tmp_path / "khong_ton_tai"))
 
     artifact = _write_forged_ledger(tmp_path, "mot-de-tai-tong-hop-nao-do")
 
     assert GC.ledger_approved(
         "G2", "mot-de-tai-tong-hop-nao-do", artifact, repo_root=tmp_path
-    ) is True
+    ) is False
+
+
+def test_explicitly_marked_synthetic_study_still_passes_without_key(tmp_path, monkeypatch):
+    """Đối chứng cho bản vá trên: luồng thử nghiệm/synthetic KHÔNG bị chặn oan — nhưng
+    phải khai báo TƯỜNG MINH study_kind='synthetic_test' trong study_meta.json (việc mà
+    tools/mark_study_synthetic.py làm, và chính nó đã từ chối mọi tên trong denylist)."""
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(tmp_path / "khong_ton_tai"))
+
+    study = "de-tai-tong-hop-da-danh-dau"
+    artifact = _write_forged_ledger(tmp_path, study)
+    (tmp_path / "exports" / study / "study_meta.json").write_text(
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8"
+    )
+
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
+
+
+def test_synthetic_marking_cannot_rescue_a_denylisted_real_study(tmp_path, monkeypatch):
+    """Phòng thủ theo chiều sâu: kể cả khi ai đó copy-paste một study_meta.json có
+    study_kind='synthetic_test' sang thư mục đề tài THẬT, denylist vẫn chặn."""
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(tmp_path / "khong_ton_tai"))
+
+    artifact = _write_forged_ledger(tmp_path, REAL_STUDY)
+    (tmp_path / "exports" / REAL_STUDY / "study_meta.json").write_text(
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8"
+    )
+
+    assert GC.ledger_approved("G2", REAL_STUDY, artifact, repo_root=tmp_path) is False
 
 
 def test_real_study_still_approved_when_signature_actually_valid(tmp_path, monkeypatch):
@@ -99,7 +134,11 @@ def test_real_study_still_approved_when_signature_actually_valid(tmp_path, monke
     artifact.write_text("noi dung artifact that", encoding="utf-8")
     evidence_hash = hashlib.sha256(artifact.read_bytes()).hexdigest()
     timestamp = "2026-07-16T00:00:00Z"
-    signature = GC.sign_approval("G2", REAL_STUDY, evidence_hash, timestamp)
+    # SỬA 2026-07-26: chữ ký nay bind cả reviewer_role + reviewer_ref, nên phải ký ĐÚNG
+    # cặp giá trị sẽ nằm trong bản ghi (trước đây payload không có 2 trường này — chính
+    # là lỗ hổng cho phép dùng lại một chữ ký hợp lệ cho vai trò khác).
+    signature = GC.sign_approval("G2", REAL_STUDY, evidence_hash, timestamp,
+                                 reviewer_role="IRB", reviewer_ref="bac-si-that")
     assert signature is not None
 
     record = {

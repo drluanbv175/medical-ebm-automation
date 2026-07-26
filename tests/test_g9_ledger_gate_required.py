@@ -58,16 +58,18 @@ def _write_artifacts_and_locked_text(study: str, d: Path) -> tuple[str, str]:
 def _write_ledger_approval(d: Path, gate_id: str, artifact_content: str) -> None:
     evidence_hash = hashlib.sha256(artifact_content.encode()).hexdigest()
     timestamp_utc = "2026-07-11T00:00:00+00:00"
-    signature = GC.sign_approval(gate_id, d.name, evidence_hash, timestamp_utc)
-    assert signature
     role_by_gate = {
         "G2": "IRB_ETHICS_COMMITTEE",
         "G4": "METHODS_STATISTICS_REVIEWER",
         "G9": "PI_PROJECT_OWNER",
     }
+    reviewer_role = role_by_gate.get(gate_id, "PI_PROJECT_OWNER")
+    signature = GC.sign_approval(gate_id, d.name, evidence_hash, timestamp_utc,
+                                 reviewer_role=reviewer_role, reviewer_ref="REF-TEST-001")
+    assert signature
     record = {
         "approval_id": f"test-{gate_id}-001", "gate_id": gate_id,
-        "reviewer_role": role_by_gate.get(gate_id, "PI_PROJECT_OWNER"),
+        "reviewer_role": reviewer_role,
         "reviewer_identity_reference": "REF-TEST-001",
         "decision": "APPROVED", "scope": "test", "evidence_hash": evidence_hash,
         "timestamp_utc": timestamp_utc, "supersedes": None,

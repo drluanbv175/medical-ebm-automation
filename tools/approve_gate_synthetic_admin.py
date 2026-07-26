@@ -210,9 +210,12 @@ def _approve_all_gates(ledger, gates, artifact_map, study_dir, study_name) -> in
 
         evidence_hash = hashlib.sha256(evidence_content.encode("utf-8")).hexdigest()
         timestamp_utc = datetime.now(timezone.utc).isoformat()
-        signature = GC.sign_approval(gate_id, study_name, evidence_hash, timestamp_utc)
-
+        # VÁ 2026-07-26: role/reviewer_ref nay nằm TRONG payload chữ ký (gate_contract.
+        # _signature_payload) — phải ký ĐÚNG cặp giá trị sẽ ghi vào bản ghi bên dưới,
+        # nếu không verify_approval_signature() sẽ trượt. Lấy role LÊN TRƯỚC lúc ký.
         role = _ROLE_FOR_GATE[gate_id]
+        signature = GC.sign_approval(gate_id, study_name, evidence_hash, timestamp_utc,
+                                     reviewer_role=role, reviewer_ref=_REVIEWER_REF)
         scope = (
             f"[ADMIN-SYNTHETIC-BYPASS] Tự động duyệt {gate_id} qua "
             "tools/approve_gate_synthetic_admin.py — CHỈ hợp lệ vì đề tài "

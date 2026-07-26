@@ -77,15 +77,17 @@ def _write_ledger_approval(study_dir: Path, gate_id: str, artifact_content: str)
     evidence_hash khớp ĐÚNG artifact_content — mô phỏng tools/approve_gate.py."""
     evidence_hash = hashlib.sha256(artifact_content.encode()).hexdigest()
     timestamp_utc = "2026-07-09T00:00:00+00:00"
-    signature = GC.sign_approval(gate_id, study_dir.name, evidence_hash, timestamp_utc)
     role_by_gate = {
         "G2": "IRB_ETHICS_COMMITTEE",
         "G4": "METHODS_STATISTICS_REVIEWER",
         "G5": "DATA_GOVERNANCE_QA_REVIEWER",
     }
+    reviewer_role = role_by_gate.get(gate_id, "PI_PROJECT_OWNER")
+    signature = GC.sign_approval(gate_id, study_dir.name, evidence_hash, timestamp_utc,
+                                 reviewer_role=reviewer_role, reviewer_ref="REF-TEST-001")
     record = {
         "approval_id": f"test-{gate_id}-001", "gate_id": gate_id,
-        "reviewer_role": role_by_gate.get(gate_id, "PI_PROJECT_OWNER"),
+        "reviewer_role": reviewer_role,
         "reviewer_identity_reference": "REF-TEST-001",
         "decision": "APPROVED", "scope": "test", "evidence_hash": evidence_hash,
         "timestamp_utc": timestamp_utc, "supersedes": None,

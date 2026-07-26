@@ -343,7 +343,7 @@ def resolve_synthetic_study_dir(study: str, repo_root: Path) -> Tuple[Optional[P
 # nhờ agent), chữ ký hợp lệ là bằng chứng đủ mạnh rằng một người có quyền truy cập máy
 # tính (không nhất thiết chạy qua agent) đã ký. Đây là cải thiện thật so với hiện trạng
 # (hardcode luôn =False), không phải tuyên bố "không thể vượt qua".
-_SIGNING_KEY_ENV = "EBM_GATE_KEY_PATH"  # override vị trí khóa — dùng cho test, KHÔNG dùng vận hành thật
+_SIGNING_KEY_ENV = "EBM_GATE_KEY_PATH"  # override vị trí khóa — CHỈ có tác dụng khi chạy dưới pytest (vá 2026-07-26)
 _DEFAULT_KEY_PATH = Path.home() / ".ebm-secrets" / "gate_approval_key"
 
 _STAKEHOLDER_ROLE_ALIASES: Dict[str, set[str]] = {
@@ -447,17 +447,77 @@ def required_reviewer_role_hint(gate_id: str) -> str:
     return " HOẶC ".join(_ROLE_HINT_TEXT[group] for group in required_groups)
 
 
-def signing_key_path() -> Path:
-    """Đường dẫn file khóa ký — mặc định ~/.ebm-secrets/gate_approval_key, có thể ghi đè
-    bằng biến môi trường EBM_GATE_KEY_PATH (chỉ dùng cho test có kiểm soát)."""
-    override = os.environ.get(_SIGNING_KEY_ENV)
+# ── VÁ 2026-07-26 (audit độc lập lớp bảo mật, KHÔNG phải vòng lặp doctrine) ───
+# Ba lỗ hổng THẬT trong chính cơ chế chữ ký ở trên, chưa vòng kiểm tra nào chạm tới
+# vì 30 vòng trước đều soi NỘI DUNG doctrine, không soi thiết kế mật mã:
+#
+#   (1) TÁCH VAI TRÒ KHÔNG ĐƯỢC THỰC THI. _signature_payload() cũ ký đúng
+#       "gate_id:study:evidence_hash:timestamp" — KHÔNG có reviewer_role. Cộng với
+#       MỘT khóa duy nhất dùng chung cho cả máy, hệ quả: người giữ khóa ký hợp lệ
+#       được CẢ 4 vai trò (IRB · thống kê · phản biện độc lập G8 · PI G9), và 4 bản
+#       ghi đó KHÔNG THỂ PHÂN BIỆT về mặt mật mã với 4 người thật ký độc lập. Nguyên
+#       tắc "PI không thể tự làm hội đồng đạo đức của chính mình" (ghi ở dòng ~254)
+#       chỉ được kiểm bằng một chuỗi role TỰ GÕ VÀO, không xác thực gì.
+#       → Vá: (a) role_group + reviewer_ref nay NẰM TRONG nội dung được ký (chống
+#       tái dùng chữ ký của vai trò này cho vai trò khác); (b) hỗ trợ KHÓA RIÊNG
+#       THEO VAI TRÒ gate_approval_key_<NHÓM> — khi có, chữ ký của nhóm đó chỉ tạo
+#       được bằng đúng khóa đó, nên tách vai trò trở thành THẬT (giao khóa IRB cho
+#       hội đồng thật giữ); (c) chữ ký TỰ KHAI phạm vi ("role" vs "shared") để
+#       downstream nói đúng sự thật thay vì ngầm định mọi chữ ký đều tương đương.
+#
+#   (2) EBM_GATE_KEY_PATH ghi đè được ở code VẬN HÀNH THẬT. Comment cũ ghi "chỉ dùng
+#       cho test" nhưng KHÔNG có gì thực thi điều đó: đặt biến môi trường trỏ tới một
+#       khóa tự tạo là tự ký mọi cổng trót lọt. → Vá: chỉ đọc override khi ĐANG chạy
+#       trong pytest (_test_context_active()); ngoài test, biến này bị bỏ qua hoàn toàn.
+#
+#   (3) FAIL-OPEN khi máy chưa cấu hình khóa. ledger_approved() cũ trả True cho mọi
+#       đề tài KHÔNG nằm trong REAL_STUDY_DENYLIST — một danh sách phải nhớ cập nhật
+#       BẰNG TAY cho từng đề tài thật mới. Đề tài người thật vừa tạo, chưa kịp thêm
+#       vào danh sách, trên máy chưa có khóa → ledger JSON bịa tay vẫn được coi là
+#       "đã duyệt". → Vá: LẬT MẶC ĐỊNH sang fail-closed. Không có khóa ⇒ CHƯA DUYỆT,
+#       trừ đúng một ngoại lệ tường minh: đề tài đã được đánh dấu study_kind ==
+#       "synthetic_test" qua tools/mark_study_synthetic.py (vốn đã tự từ chối đề tài
+#       trong denylist). Denylist từ nay là lớp phòng thủ THỨ HAI, không còn là lớp
+#       duy nhất đứng giữa một đề tài thật và một phê duyệt giả.
+_SIGNATURE_SCHEME = "v2"
+_SIGNATURE_SCOPE_ROLE = "role"      # ký bằng khóa RIÊNG của nhóm stakeholder
+_SIGNATURE_SCOPE_SHARED = "shared"  # ký bằng khóa CHUNG (một người giữ — KHÔNG chứng minh tách vai trò)
+
+
+def _test_context_active() -> bool:
+    """True khi đang chạy dưới pytest — điều kiện DUY NHẤT cho phép EBM_GATE_KEY_PATH
+    ghi đè vị trí khóa. Ngoài test, biến môi trường đó bị bỏ qua hoàn toàn (lỗ hổng
+    (2) ở trên: comment 'chỉ dùng cho test' trước đây không được thực thi)."""
+    return "pytest" in sys.modules or "PYTEST_CURRENT_TEST" in os.environ
+
+
+def role_group_for(reviewer_role: str) -> Optional[str]:
+    """Nhóm stakeholder chuẩn của một role tự khai (None nếu không thuộc nhóm nào).
+    Biên lai máy sinh (A12 trích dẫn, metadata) không có vai trò người → None."""
+    normalized = _normalize_role(reviewer_role)
+    for group, aliases in _STAKEHOLDER_ROLE_ALIASES.items():
+        if normalized in aliases:
+            return group
+    return None
+
+
+def _base_key_path() -> Path:
+    override = os.environ.get(_SIGNING_KEY_ENV) if _test_context_active() else None
     return Path(override) if override else _DEFAULT_KEY_PATH
 
 
-def _load_signing_key() -> Optional[str]:
-    """Đọc khóa ký từ đĩa — None nếu chưa thiết lập (BÁC SĨ chưa chạy
-    setup_gate_approval_key.py) hoặc file rỗng/không đọc được."""
-    p = signing_key_path()
+def signing_key_path(role_group: Optional[str] = None) -> Path:
+    """Đường dẫn file khóa ký. Có khóa RIÊNG cho nhóm (gate_approval_key_<NHÓM>) thì
+    ưu tiên dùng; không thì về khóa chung ~/.ebm-secrets/gate_approval_key."""
+    base = _base_key_path()
+    if role_group:
+        per_role = base.with_name(f"{base.name}_{role_group}")
+        if per_role.exists():
+            return per_role
+    return base
+
+
+def _read_key(p: Path) -> Optional[str]:
     try:
         key = p.read_text(encoding="utf-8").strip()
     except OSError:
@@ -465,42 +525,137 @@ def _load_signing_key() -> Optional[str]:
     return key or None
 
 
-def signing_key_configured() -> bool:
-    """True nếu máy này đã có khóa ký (bất kể nội dung cụ thể)."""
-    return _load_signing_key() is not None
+def _load_signing_key(role_group: Optional[str] = None) -> Tuple[Optional[str], str]:
+    """Trả (khóa, phạm_vi). phạm_vi='role' khi dùng được khóa riêng của nhóm (tách vai
+    trò THẬT), ='shared' khi phải dùng khóa chung (một người giữ — không chứng minh
+    được có người thứ hai tham gia)."""
+    if role_group:
+        per_role_path = signing_key_path(role_group)
+        if per_role_path != _base_key_path():
+            key = _read_key(per_role_path)
+            if key:
+                return key, _SIGNATURE_SCOPE_ROLE
+    return _read_key(_base_key_path()), _SIGNATURE_SCOPE_SHARED
 
 
-def _signature_payload(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str) -> bytes:
-    return f"{gate_id}:{study}:{evidence_hash}:{timestamp_utc}".encode("utf-8")
+def signing_key_configured(role_group: Optional[str] = None) -> bool:
+    """True nếu máy này có khóa ký dùng được cho nhóm (hoặc khóa chung khi không nêu nhóm)."""
+    key, _ = _load_signing_key(role_group)
+    return key is not None
 
 
-def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str) -> Optional[str]:
-    """Ký HMAC-SHA256 một phê duyệt bằng khóa cục bộ. Trả None nếu CHƯA có khóa
-    (approve_gate.py khi đó vẫn ghi phê duyệt nhưng CẢNH BÁO rõ — không chặn cứng,
-    để không phá vỡ các đề tài/test đã có từ trước khi cơ chế này tồn tại)."""
-    key = _load_signing_key()
+def per_role_key_available(role_group: str) -> bool:
+    """True nếu tồn tại khóa RIÊNG cho nhóm stakeholder này — tức chữ ký của nhóm đó
+    là bằng chứng tách vai trò thật, không phải tự ký bằng khóa chung."""
+    if not role_group:
+        return False
+    key, scope = _load_signing_key(role_group)
+    return bool(key) and scope == _SIGNATURE_SCOPE_ROLE
+
+
+def _signature_payload(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str,
+                       role_group: str = "", reviewer_ref: str = "") -> bytes:
+    """Nội dung được ký. KHÁC bản trước 2026-07-26: có thêm role_group + reviewer_ref,
+    và tiền tố scheme — nên chữ ký tạo cho vai trò này KHÔNG dùng lại được cho vai trò
+    khác, kể cả khi cùng cổng/cùng artifact/cùng thời điểm."""
+    return "|".join([
+        _SIGNATURE_SCHEME,
+        gate_id or "",
+        study or "",
+        evidence_hash or "",
+        timestamp_utc or "",
+        role_group or "",
+        (reviewer_ref or "").strip(),
+    ]).encode("utf-8")
+
+
+def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str, *,
+                  reviewer_role: str = "", reviewer_ref: str = "") -> Optional[str]:
+    """Ký HMAC-SHA256 một phê duyệt. Trả None nếu CHƯA có khóa (approve_gate.py khi đó
+    vẫn ghi phê duyệt nhưng CẢNH BÁO rõ, và ledger_approved() sẽ KHÔNG coi là đã duyệt).
+
+    Chuỗi trả về: "v2:<phạm_vi>:<hex>" — phạm_vi 'role' nghĩa là ký bằng khóa riêng của
+    nhóm stakeholder (tách vai trò thật), 'shared' nghĩa là ký bằng khóa chung của máy.
+    Phạm vi nằm NGAY TRONG chữ ký để mọi nơi đọc ledger nói đúng mức bảo đảm, thay vì
+    ngầm hiểu mọi chữ ký đều là bằng chứng độc lập."""
+    group = role_group_for(reviewer_role) or ""
+    key, scope = _load_signing_key(group or None)
     if not key:
         return None
-    mac = hmac.new(key.encode("utf-8"), _signature_payload(gate_id, study, evidence_hash, timestamp_utc),
-                    hashlib.sha256)
-    return mac.hexdigest()
+    mac = hmac.new(
+        key.encode("utf-8"),
+        _signature_payload(gate_id, study, evidence_hash, timestamp_utc, group, reviewer_ref),
+        hashlib.sha256,
+    ).hexdigest()
+    return f"{_SIGNATURE_SCHEME}:{scope}:{mac}"
+
+
+def _record_reviewer_ref(record: Dict[str, Any]) -> str:
+    """Mã định danh người duyệt trong một bản ghi ledger.
+
+    CẨN TRỌNG (bẫy thật, suýt tự gây lỗi khi vá 2026-07-26): tên trường CHUẨN trong
+    runtime/schemas.py::ApprovalRecord là `reviewer_identity_reference`, KHÔNG phải
+    `reviewer_ref` — `reviewer_ref` chỉ là tên THAM SỐ của factory
+    ApprovalLedger.make_human_approval(). Đọc nhầm khóa sẽ luôn ra chuỗi rỗng, làm mọi
+    chữ ký thật (ký kèm reviewer_ref có giá trị) không bao giờ khớp. Đọc trường chuẩn
+    trước, chấp nhận `reviewer_ref` như bí danh cho các bản ghi/test dựng tay."""
+    for key in ("reviewer_identity_reference", "reviewer_ref"):
+        val = record.get(key)
+        if val:
+            return str(val)
+    return ""
+
+
+def signature_scope(record: Dict[str, Any]) -> Optional[str]:
+    """Phạm vi khóa đã ký bản ghi ('role' | 'shared'), None nếu không có/không đúng định dạng."""
+    sig = record.get("approver_signature")
+    if not isinstance(sig, str):
+        return None
+    parts = sig.split(":")
+    if len(parts) != 3 or parts[0] != _SIGNATURE_SCHEME:
+        return None
+    return parts[1] if parts[1] in (_SIGNATURE_SCOPE_ROLE, _SIGNATURE_SCOPE_SHARED) else None
 
 
 def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
-    """Xác minh LẠI chữ ký của một bản ghi ledger bằng khóa cục bộ hiện tại.
-    False nếu: chưa có khóa trên máy này, bản ghi chưa từng được ký, hoặc chữ ký
-    không khớp (khóa khác / nội dung bị sửa)."""
-    key = _load_signing_key()
+    """Xác minh LẠI chữ ký một bản ghi ledger bằng khóa cục bộ hiện tại.
+
+    False nếu: chưa có khóa phù hợp trên máy này, bản ghi chưa từng được ký, chữ ký sai
+    định dạng v2, nội dung bị sửa, HOẶC role/reviewer_ref của bản ghi khác lúc ký (vì cả
+    hai nay nằm trong payload) — tức không thể lấy chữ ký hợp lệ của một vai trò rồi đổi
+    nhãn role trong JSON thành vai trò khác. Bản ghi tự khai phạm vi 'role' mà máy hiện
+    KHÔNG có khóa riêng của nhóm đó cũng bị từ chối (chống hạ cấp về khóa chung)."""
     sig = record.get("approver_signature")
-    if not key or not sig:
+    if not isinstance(sig, str) or not sig:
+        return False
+    parts = sig.split(":")
+    if len(parts) != 3 or parts[0] != _SIGNATURE_SCHEME:
+        return False
+    claimed_scope, mac_hex = parts[1], parts[2]
+    if claimed_scope not in (_SIGNATURE_SCOPE_ROLE, _SIGNATURE_SCOPE_SHARED):
+        return False
+    group = role_group_for(record.get("reviewer_role", "")) or ""
+    key, actual_scope = _load_signing_key(group or None)
+    if not key or actual_scope != claimed_scope:
         return False
     expected = hmac.new(
         key.encode("utf-8"),
-        _signature_payload(record.get("gate_id", ""), study,
-                            record.get("evidence_hash", ""), record.get("timestamp_utc", "")),
+        _signature_payload(record.get("gate_id", ""), study, record.get("evidence_hash", ""),
+                           record.get("timestamp_utc", ""), group, _record_reviewer_ref(record)),
         hashlib.sha256,
     ).hexdigest()
-    return hmac.compare_digest(expected, sig)
+    return hmac.compare_digest(expected, mac_hex)
+
+
+def is_synthetic_test_study(study: str, repo_root: Optional[Path] = None) -> bool:
+    """True CHỈ khi đề tài đã được đánh dấu TƯỜNG MINH study_kind == 'synthetic_test'
+    (qua tools/mark_study_synthetic.py) VÀ không nằm trong denylist đề tài thật. Đây là
+    ngoại lệ DUY NHẤT còn được đi tiếp khi máy chưa cấu hình khóa ký."""
+    if is_real_study_denylisted(study):
+        return False
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    meta = load_study_meta(root / "exports" / study)
+    return str(meta.get("study_kind", "")).strip().casefold() == "synthetic_test"
 
 
 def ledger_approved(gate_id: str, study: str, artifact_path: Path,
@@ -514,18 +669,19 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
     nhóm stakeholder bắt buộc cho gate_id nếu có (xem _GATE_REQUIRED_STAKEHOLDERS
     — vá 2026-07-14, trước đó role chỉ được ép ở approve_gate.py lúc TẠO bản ghi,
     không được xác minh lại ở đây lúc DÙNG), (4) evidence_hash khớp NỘI DUNG HIỆN
-    TẠI của artifact_path (sửa file sau duyệt → coi như chưa duyệt), (5) NẾU máy
-    này đã cấu hình khóa ký (signing_key_configured()) — chữ ký PHẢI khớp; nếu máy
-    CHƯA từng thiết lập khóa, hạ về kiểm tra cũ (1)-(4) để không phá đề tài/test
-    có từ trước khi có chữ ký (rely_on_signature=False được ghi rõ qua giá trị
-    trả về của signing_key_configured(), gọi riêng nếu cần phân biệt 2 trường hợp)
-    — TRỪ đề tài THẬT trong REAL_STUDY_DENYLIST: vá 2026-07-16 sau khi red-team đối
-    kháng tái hiện được — trên một máy CHƯA cấu hình khóa ký, approval_ledger.json
-    chỉ là JSON đọc-ghi thô (json.loads() không kiểm toàn vẹn gì), nên MỘT bản ghi
-    "APPROVED" tự bịa (không chữ ký, reviewer_ref bất kỳ) vẫn qua được (1)-(4) nếu
-    tính đúng evidence_hash — điều bất kỳ ai/agent nào cũng làm được vì hash không
-    phải bí mật. Với đề tài THẬT, KHÔNG được hạ chuẩn — coi "chưa cấu hình khóa" là
-    CHƯA DUYỆT (fail-closed) thay vì bỏ qua bước ký."""
+    TẠI của artifact_path (sửa file sau duyệt → coi như chưa duyệt), (5) chữ ký
+    mật mã PHẢI khớp bằng đúng khóa của nhóm stakeholder tương ứng.
+
+    SỬA 2026-07-26 (audit độc lập lớp bảo mật) — điều kiện (5) nay FAIL-CLOSED THEO
+    MẶC ĐỊNH. Trước đây, khi máy chạy kiểm tra chưa cấu hình khóa ký, hàm này HẠ
+    CHUẨN về (1)-(4) cho mọi đề tài không nằm trong REAL_STUDY_DENYLIST — mà denylist
+    là danh sách phải nhớ cập nhật BẰNG TAY cho từng đề tài người thật mới. Hệ quả
+    thật: một đề tài người thật vừa tạo (chưa kịp thêm vào danh sách) chỉ cần một
+    approval_ledger.json tự bịa — không chữ ký, reviewer_ref bất kỳ, tính đúng
+    evidence_hash (hash KHÔNG phải bí mật, ai cũng tính được) — là qua cổng. Nay
+    "chưa có khóa ⇒ CHƯA DUYỆT" áp dụng cho MỌI đề tài; ngoại lệ duy nhất là đề tài
+    đã được TỰ TAY đánh dấu study_kind == "synthetic_test". Denylist trở thành lớp
+    phòng thủ thứ hai thay vì lớp duy nhất."""
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
     ledger_p = root / "exports" / study / "approval_ledger.json"
     if not ledger_p.exists() or not Path(artifact_path).exists():
@@ -546,12 +702,14 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
         return False
     if actual_hash != latest.get("evidence_hash"):
         return False
-    if signing_key_configured():
+    group = role_group_for(latest.get("reviewer_role", "")) or None
+    if signing_key_configured(group):
         return verify_approval_signature(latest, study)
-    if is_real_study_denylisted(study):
-        # Fail-closed: đề tài THẬT không được coi là "đã duyệt" chỉ vì máy đang chạy
-        # kiểm tra chưa cấu hình khóa ký — nếu không, một bản ghi approval_ledger.json
-        # tự bịa (không chữ ký) vẫn qua được (1)-(4) bằng cách tính đúng evidence_hash,
-        # điều KHÔNG cần bí mật gì để làm.
-        return False
-    return True
+    # VÁ 2026-07-26 — LẬT MẶC ĐỊNH SANG FAIL-CLOSED (lỗ hổng (3) mô tả ở trên).
+    # Trước: mọi đề tài KHÔNG có trong REAL_STUDY_DENYLIST đều được coi là "đã duyệt"
+    # khi máy chưa cấu hình khóa ký — nghĩa là một đề tài NGƯỜI THẬT vừa tạo, chưa kịp
+    # thêm tay vào danh sách, chỉ cần một approval_ledger.json bịa (tính đúng
+    # evidence_hash — không cần bí mật gì) là qua cổng. Nay: KHÔNG có khóa ⇒ CHƯA DUYỆT,
+    # ngoại lệ duy nhất là đề tài đã tự tay đánh dấu study_kind == "synthetic_test"
+    # (tools/mark_study_synthetic.py, vốn đã từ chối mọi tên trong denylist).
+    return is_synthetic_test_study(study, root)

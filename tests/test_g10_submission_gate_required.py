@@ -61,7 +61,8 @@ def _study_dir(name: str) -> Path:
 def _write_ledger_approval(d: Path, gate_id: str, artifact_content: str, reviewer_role: str) -> None:
     evidence_hash = hashlib.sha256(artifact_content.encode()).hexdigest()
     timestamp_utc = "2026-07-14T00:00:00+00:00"
-    signature = GC.sign_approval(gate_id, d.name, evidence_hash, timestamp_utc)
+    signature = GC.sign_approval(gate_id, d.name, evidence_hash, timestamp_utc,
+                                 reviewer_role=reviewer_role, reviewer_ref="REF-TEST-001")
     assert signature
     record = {
         "approval_id": f"test-{gate_id}-001", "gate_id": gate_id,
@@ -265,7 +266,12 @@ class TestG8SubmissionGate:
             _write_cross_sectional_fixture(d)
             _write_clean_citation_artifact(d, study)
             rc = _run_main(study, ["--i-know-g8-not-signed", "--i-know-g9-not-signed"])
-            assert rc == 0
+            # SỬA 2026-07-26 (audit độc lập): tên test đã nói "exit_blocked" nhưng thân
+            # test lại khẳng định rc == 0 — mâu thuẫn có sẵn, đúng chỗ lỗi. Ép qua G8+G9
+            # nay trả EXIT_GUARDRAIL_FAIL=3 để caller đọc mã thoát không hiểu nhầm là
+            # gói đã đủ điều kiện nộp; file .md vẫn được lắp để xem trước.
+            assert rc == GC.EXIT_GUARDRAIL_FAIL
+            assert (d / f"DE_CUONG_THONG_NHAT_{study}.md").exists()
         finally:
             _rmtree_retry(d)
 
@@ -387,7 +393,9 @@ class TestCitationVerificationGate:
             self._sign_g8_g9(d, study)
             # CỐ Ý không tạo A12 — chỉ cờ override cho phép xem nháp.
             rc = _run_main(study, ["--i-know-citations-not-verified"])
-            assert rc == 0
+            # SỬA 2026-07-26: xem chú thích ở TestG8SubmissionGate — bỏ qua cổng nay
+            # phản ánh vào MÃ THOÁT, không chỉ vào biểu ngữ trong file .md.
+            assert rc == GC.EXIT_GUARDRAIL_FAIL
             assert (d / f"DE_CUONG_THONG_NHAT_{study}.md").exists()
         finally:
             _rmtree_retry(d)

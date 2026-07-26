@@ -179,7 +179,12 @@ class TestG10SubmissionStatusBanner:
                 "--i-know-g8-not-signed",
                 "--i-know-g9-not-signed",
             ])
-            assert rc == 0
+            # SỬA 2026-07-26 (audit độc lập): trước đây khẳng định rc == 0 — tức mã thoát
+            # nói "thành công" dù CẢ BA cổng A12/G8/G9 đều bị ép qua. Cảnh báo chỉ nằm
+            # trong file .md, nên mọi caller kiểm bằng mã thoát (CI, script, `&&` trong
+            # shell) đều hiểu nhầm gói đã đủ điều kiện nộp. Nay EXIT_GUARDRAIL_FAIL=3:
+            # gói vẫn được lắp để xem trước, nhưng mã thoát nói đúng sự thật.
+            assert rc == GC.EXIT_GUARDRAIL_FAIL
             md_text = (d / f"DE_CUONG_THONG_NHAT_{study}.md").read_text(encoding="utf-8")
             top = md_text.split("---", 1)[0]
             assert "BỊ BỎ QUA BẰNG CỜ XEM-TRƯỚC" in top
