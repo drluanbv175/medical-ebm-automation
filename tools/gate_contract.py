@@ -927,17 +927,41 @@ def _diagnose_gate_records(records: Any, gate_id: str, study: str,
     # Nay: bất kỳ mục nào trong sổ cái KHÔNG phải object, hoặc có chữ ký KHÔNG xác minh
     # được, đều là bất thường của CẢ SỔ CÁI — không cần biết nó tự nhận thuộc cổng nào.
     # (gate_id nằm trong nội dung ký, nên sửa gate_id ⇒ chữ ký hỏng ⇒ bị bắt tại đây.)
+    def _same_gate_raw(value: Any) -> bool:
+        s = unicodedata.normalize("NFC", str(value or ""))
+        s = "".join(ch for ch in s if ch.isprintable() and not ch.isspace())
+        return s.casefold() == gate_id.strip().casefold()
+
     for idx, rec in enumerate(records):
         if not isinstance(rec, dict):
             return None, (f"BẤT THƯỜNG — mục #{idx + 1} trong approval_ledger.json không phải "
                           "một bản ghi (object). Sổ cái có dấu hiệu bị sửa tay.")
-        if key_available and not verify_approval_signature(rec, study):
-            return None, (
-                f"BẤT THƯỜNG — mục #{idx + 1} trong approval_ledger.json (tự nhận thuộc cổng "
-                f"{rec.get('gate_id')!r}) có chữ ký KHÔNG xác minh được. Vì gate_id nằm trong "
-                "nội dung ký, đây có thể là một bản ghi bị đổi cổng để 'giấu' nó khỏi cổng thật. "
-                "KHÔNG tự bỏ qua — đối chiếu sổ cái với người đã duyệt."
-            )
+        # ★ VÁ 2026-07-27 vòng 7 — SỬA REGRESSION DO CHÍNH VÒNG 6 GÂY RA.
+        # Vòng 6 coi MỌI bản ghi không xác minh được là bất thường của CẢ sổ cái. Điều đó
+        # PHÁ HỎNG kịch bản hai máy mà chính dự án tài liệu hóa là BÌNH THƯỜNG:
+        # setup_gate_approval_key.py ghi rõ "mỗi máy một khóa, khóa khác nhau là BÌNH
+        # THƯỜNG", còn ~/.ebm-secrets/ nằm NGOÀI OneDrive nên không đồng bộ — vậy một
+        # approval_ledger.json dùng chung HỢP LỆ chứa bản ghi ký bằng nhiều khóa. Đã tái
+        # hiện: ký G2 trên Mac + G8 trên Windows ⇒ trên Mac CẢ HAI cổng đều bị chặn, kể
+        # cả G2 vốn ký bằng đúng khóa máy đó. Bác sĩ bị khóa khỏi chính đề tài của mình,
+        # không lối thoát ngoài sửa tay sổ cái kiểm toán — đúng thứ đẩy người ta sang cờ
+        # bỏ qua. "Siết quá tay làm hỏng việc hợp lệ" cũng là một lỗi an toàn.
+        #
+        # Cách phân biệt ĐÚNG (không cần phân biệt được "khóa lạ" với "bị sửa" bằng mật mã):
+        # thử xác minh bản ghi NHƯ THỂ nó thuộc cổng ĐANG XÉT. Vì gate_id nằm trong nội
+        # dung ký, phép thử này chỉ khớp khi bản ghi VỐN LÀ của cổng này rồi bị đổi nhãn
+        # để giấu — đúng đòn tấn công vòng 5. Bản ghi của máy khác (khóa khác) sẽ KHÔNG
+        # khớp, nên được bỏ qua đúng như trước, không làm hỏng cổng khác.
+        if key_available and not _same_gate_raw(rec.get("gate_id")):
+            probe = dict(rec)
+            probe["gate_id"] = gate_id
+            if verify_approval_signature(probe, study):
+                return None, (
+                    f"BẤT THƯỜNG — mục #{idx + 1} tự nhận thuộc cổng {rec.get('gate_id')!r}, "
+                    f"nhưng chữ ký của nó khớp CHÍNH XÁC với cổng {gate_id}. Đây là một bản ghi "
+                    f"của {gate_id} đã bị ĐỔI NHÃN để giấu khỏi cổng này (rất có thể là một "
+                    "quyết định THU HỒI). KHÔNG tự bỏ qua — đối chiếu sổ cái với người đã duyệt."
+                )
 
     def _same_gate(value: Any) -> bool:
         """So khớp gate_id CHỐNG NÉ: bỏ ký tự vô hình/điều khiển, chuẩn hóa NFC, không

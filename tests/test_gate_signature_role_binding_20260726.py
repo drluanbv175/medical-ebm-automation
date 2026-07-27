@@ -335,6 +335,62 @@ def test_tampered_revocation_fails_closed_not_erased(tmp_path, monkeypatch):
         assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
 
 
+def test_two_machine_ledger_still_works_and_retag_still_blocked(tmp_path, monkeypatch):
+    """★ REGRESSION do CHÍNH bản vá vòng 6 gây ra — tự phát hiện trước khi vòng kiểm định
+    thứ sáu trả kết quả.
+
+    Vòng 6 coi MỌI bản ghi không xác minh được là bất thường của CẢ sổ cái, để chặn đòn
+    đổi nhãn gate_id. Nhưng điều đó PHÁ kịch bản hai máy mà chính dự án tài liệu hóa là
+    BÌNH THƯỜNG: `setup_gate_approval_key.py` ghi rõ "mỗi máy một khóa, khóa khác nhau là
+    BÌNH THƯỜNG", còn `~/.ebm-secrets/` nằm NGOÀI OneDrive nên không đồng bộ — vậy một
+    approval_ledger.json dùng chung HỢP LỆ chứa bản ghi ký bằng nhiều khóa. Tái hiện: ký
+    G2 trên Mac + G8 trên Windows ⇒ trên Mac CẢ HAI cổng bị chặn, kể cả G2 vốn ký bằng
+    đúng khóa máy đó. Bác sĩ bị khóa khỏi chính đề tài mình — "siết quá tay làm hỏng việc
+    hợp lệ" cũng là lỗi an toàn, vì nó đẩy người dùng sang cờ bỏ qua.
+
+    Cách phân biệt đúng (không cần phân biệt "khóa lạ" với "bị sửa" bằng mật mã): thử xác
+    minh bản ghi NHƯ THỂ nó thuộc cổng ĐANG XÉT. gate_id nằm trong nội dung ký nên phép
+    thử chỉ khớp khi bản ghi VỐN LÀ của cổng này rồi bị đổi nhãn — bắt được đổi nhãn sang
+    tên BẤT KỲ, kể cả tên cổng không tồn tại, mà không đụng bản ghi của máy khác."""
+    key_a = tmp_path / "key_mac"
+    key_a.write_text("khoa-may-mac", encoding="utf-8")
+    key_b = tmp_path / "key_win"
+    key_b.write_text("khoa-may-windows", encoding="utf-8")
+    study = "de-tai-hai-may"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
+
+    def sign_on(key: Path, gate: str, role: str, decision: str, ts: str) -> dict:
+        monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
+        return {
+            "gate_id": gate, "decision": decision, "is_synthetic": False,
+            "reviewer_role": role, "evidence_hash": evidence_hash, "timestamp_utc": ts,
+            "reviewer_identity_reference": "ref",
+            "approver_signature": GC.sign_approval(gate, study, evidence_hash, ts,
+                                                   reviewer_role=role, reviewer_ref="ref",
+                                                   decision=decision),
+        }
+
+    g2_mac = sign_on(key_a, "G2", "IRB", "APPROVED", "2026-07-26T10:00:00Z")
+    g8_win = sign_on(key_b, "G8", "PHAN_BIEN_DOC_LAP", "APPROVED", "2026-07-26T11:00:00Z")
+    g8_mac = sign_on(key_a, "G8", "PHAN_BIEN_DOC_LAP", "APPROVED", "2026-07-26T09:00:00Z")
+    revoke_mac = sign_on(key_a, "G8", "PHAN_BIEN_DOC_LAP", "REJECTED", "2026-07-27T10:00:00Z")
+
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_a))   # đang đứng trên máy Mac
+
+    # Bản ghi ký ở máy KHÁC không được làm hỏng cổng ký ở máy NÀY.
+    ledger_p.write_text(json.dumps([g2_mac, g8_win]), encoding="utf-8")
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
+    assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
+
+    # Đổi nhãn bản THU HỒI sang tên BẤT KỲ vẫn phải bị bắt, và không đụng cổng khác.
+    for hidden in ("g8", "G8_AN_DANH", "G99", "G8​"):
+        ledger_p.write_text(
+            json.dumps([g2_mac, g8_mac, dict(revoke_mac, gate_id=hidden)]), encoding="utf-8")
+        assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False, hidden
+        assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True, hidden
+
+
 def test_revocation_cannot_be_hidden_by_retagging_or_retyping_the_record(tmp_path, monkeypatch):
     """★ Vòng kiểm định thứ NĂM phá vòng 5 ở đây: bộ lọc `gate_id` chạy TRƯỚC các phép
     kiểm bất thường, mà "bản ghi thuộc cổng nào" lại đọc từ dữ liệu CHƯA XÁC MINH. Nên
