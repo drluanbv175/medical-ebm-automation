@@ -36,11 +36,14 @@ Exit code:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import gate_contract as GC  # noqa: E402
 
 from app.utils.console import configure_unicode_console  # noqa: E402
 from runtime.approval_ledger import (  # noqa: E402
@@ -165,6 +168,30 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     approval_ledger = ApprovalLedger.from_file(ledger_path)
+
+    # ★ VÁ 2026-07-27 — TOÀN VẸN SỔ CÁI. Đây là công cụ BÁC SĨ dùng KIỂM TAY, nên nó
+    # TUYỆT ĐỐI không được nói khác cổng thật. Trước bản vá này nó chỉ đọc bản ghi mà
+    # KHÔNG kiểm chuỗi băm/con dấu, nên trên một sổ cái bị cắt đuôi hoặc đứt xích nó vẫn
+    # in [PASS] trong khi pipeline thật chặn — đúng mẫu "hai công cụ nói hai chuyện về
+    # cùng một sổ cái" mà các vòng kiểm định trước đã bắt được hai lần. Một công cụ kiểm
+    # tra nói dối còn nguy hiểm hơn không có công cụ kiểm tra nào.
+    try:
+        _raw = json.loads(ledger_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as _exc:
+        _raw = None
+        print(f"\n⛔ TOÀN VẸN SỔ CÁI: không đọc được file ({_exc.__class__.__name__}).")
+    if _raw is not None:
+        _chain_ok, _chain_why = GC.verify_ledger_chain(_raw)
+        _seal_ok, _seal_why = GC.verify_ledger_seal(args.study, _raw, repo_root=_REPO_ROOT)
+        if _chain_ok and _seal_ok:
+            print("\n🔏 TOÀN VẸN SỔ CÁI: ✅ chuỗi băm liền mạch, con dấu niêm phong khớp.")
+        else:
+            print("\n⛔ TOÀN VẸN SỔ CÁI: BẤT THƯỜNG — kết quả stakeholder bên dưới KHÔNG "
+                  "đáng tin cho tới khi xử lý xong:")
+            for _why in (_chain_why, _seal_why):
+                if _why:
+                    print(f"   - {_why}")
+            print("   (Cổng thật trong pipeline cũng đang CHẶN vì lý do này — hai bên nhất quán.)")
 
     # Bước 2 — lớp PHỤ research_project/ (fail-open, không ảnh hưởng exit code).
     rp_result = _try_research_project_cross_check(args.study, approval_ledger)
