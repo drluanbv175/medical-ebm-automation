@@ -2157,6 +2157,13 @@ def main() -> int:
     g8_artifact = out_dir / f"G8_A9_PRESUBMISSION_{study}.md"
     g8_signed = GC.ledger_approved("G8", study, g8_artifact, repo_root=BASE)
     if not g8_signed and not args.i_know_g8_not_signed:
+        # VÁ 2026-07-27 vòng 5b: in RÕ LÝ DO. "Chưa có phê duyệt" gộp chung ba tình huống
+        # khác hẳn nhau — chưa ai duyệt (bình thường) / đã bị THU HỒI (phải hỏi lại hội
+        # đồng) / sổ cái có dấu hiệu BỊ SỬA (phải điều tra). Không phân biệt được thì bác
+        # sĩ dễ mặc định là ca đầu rồi dùng --i-know-g8-not-signed cho xong.
+        _reason = GC.gate_block_reason("G8", study, g8_artifact, repo_root=BASE)
+        if _reason:
+            print(f"\n⚠️  LÝ DO CỔNG G8 KHÔNG ĐẠT: {_reason}")
         print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: G8 (bình duyệt độc lập) chưa có phê duyệt")
         print("   THẬT trong approval_ledger.json (chạy tools/approve_gate.py --gate G8,")
         print("   TỰ TAY bởi người phản biện, không nhờ agent). Tài liệu đã xuất Ở TRÊN")
@@ -2195,6 +2202,9 @@ def main() -> int:
     g9_artifact = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
     g9_signed = GC.ledger_approved("G9", study, g9_artifact, repo_root=BASE)
     if not g9_signed and not args.i_know_g9_not_signed:
+        _reason = GC.gate_block_reason("G9", study, g9_artifact, repo_root=BASE)
+        if _reason:
+            print(f"\n⚠️  LÝ DO CỔNG G9 KHÔNG ĐẠT: {_reason}")
         print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: G9 (liêm chính tác giả) chưa có phê duyệt")
         print("   THẬT trong approval_ledger.json (chạy tools/approve_gate.py --gate G9,")
         print("   TỰ TAY bởi bác sĩ/PI, không nhờ agent). Tài liệu đã xuất Ở TRÊN chỉ là")

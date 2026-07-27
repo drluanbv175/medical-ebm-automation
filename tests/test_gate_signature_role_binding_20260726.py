@@ -335,6 +335,46 @@ def test_tampered_revocation_fails_closed_not_erased(tmp_path, monkeypatch):
         assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
 
 
+def test_block_reason_distinguishes_never_approved_revoked_and_tampered(tmp_path, monkeypatch):
+    """Chốt an toàn chỉ trả `False` trống không là một vấn đề AN TOÀN, không phải tiện
+    dụng: bác sĩ không phân biệt được "chưa ai duyệt" (bình thường) với "đã bị THU HỒI"
+    (phải hỏi lại hội đồng) và "sổ cái BỊ SỬA" (phải điều tra) — rồi mặc định hiểu là ca
+    đầu và dùng cờ --i-know-*-not-signed cho xong. Mỗi tình huống phải có lý do riêng."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-chan-doan-ly-do"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
+    approved = _signed(study, "G2", "IRB", "hd", "APPROVED", evidence_hash,
+                       "2026-07-26T10:00:00Z")
+
+    ledger_p.write_text(json.dumps([]), encoding="utf-8")
+    assert "chưa có bản ghi" in (GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) or "")
+
+    ledger_p.write_text(json.dumps([approved]), encoding="utf-8")
+    assert GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) is None
+
+    revoked = _signed(study, "G2", "IRB", "hd", "REJECTED", evidence_hash,
+                      "2026-07-27T10:00:00Z")
+    ledger_p.write_text(json.dumps([approved, revoked]), encoding="utf-8")
+    reason = GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) or ""
+    assert "THU HỒI" in reason and "phê duyệt MỚI" in reason
+
+    tampered = dict(approved, approver_signature="v3:shared:" + "0" * 64)
+    ledger_p.write_text(json.dumps([tampered]), encoding="utf-8")
+    reason = GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) or ""
+    assert "BẤT THƯỜNG" in reason and "KHÔNG tự bỏ qua" in reason
+
+    # Nội dung bị sửa sau khi duyệt — phải nói rõ là "đổi sau khi duyệt", không phải
+    # "chưa duyệt", để bác sĩ biết cần trình lại bản đã sửa cho người duyệt.
+    ledger_p.write_text(json.dumps([approved]), encoding="utf-8")
+    artifact.write_text("noi dung DA BI SUA", encoding="utf-8")
+    reason = GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) or ""
+    assert "ĐÃ ĐỔI SAU KHI DUYỆT" in reason
+
+
 def test_tie_on_identical_timestamp_resolves_to_rejection(tmp_path, monkeypatch):
     """Hai bản ghi CÙNG thời điểm: thứ tự dòng trong file KHÔNG được quyết định cổng mở
     hay đóng. Trước đây sorted() ổn định nên đảo 2 dòng JSON là lật được cổng mà không

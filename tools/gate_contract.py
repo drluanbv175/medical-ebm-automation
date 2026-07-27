@@ -893,37 +893,69 @@ def _latest_authoritative_record(records: Any, gate_id: str, study: str,
     Trả None khi: không có bản ghi nào cho cổng, HOẶC phát hiện bất thường ở BẤT KỲ bản
     ghi nào của cổng đó.
     """
+    record, _reason = _diagnose_gate_records(records, gate_id, study, root)
+    return record
+
+
+def _diagnose_gate_records(records: Any, gate_id: str, study: str,
+                           root: Path) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    """Như _latest_authoritative_record() nhưng trả kèm LÝ DO khi không có bản ghi hợp lệ.
+
+    THÊM 2026-07-27 vòng 5b — tự vá một khiếm khuyết của chính thiết kế vòng 5, không chờ
+    vòng kiểm định sau chỉ ra. Quy tắc "bất thường ⇒ coi như CHƯA DUYỆT" là đúng hướng an
+    toàn, NHƯNG nếu chốt kiểm chỉ trả về `False` trống không thì bác sĩ thấy đúng một câu
+    "chưa có phê duyệt" — không phân biệt được ba tình huống KHÁC HẲN NHAU:
+      · thật sự chưa ai duyệt (bình thường, cứ đi duyệt);
+      · đã duyệt rồi nhưng bị THU HỒI (phải hỏi lại hội đồng — KHÔNG được tự đi tiếp);
+      · sổ cái có dấu hiệu BỊ SỬA (phải điều tra, tuyệt đối không bỏ qua).
+    Một cổng đóng mà không nói lý do sẽ đẩy người dùng bực bội sang dùng cờ `--i-confirm-*`
+    / `--i-know-*-not-*` — tức chính cơ chế an toàn lại tạo ra đường vòng quanh nó. Trong
+    hệ y khoa, "chặn mà không giải thích" là một vấn đề AN TOÀN, không phải chuyện tiện dụng.
+    """
     if not isinstance(records, list):
-        return None
+        return None, "approval_ledger.json không phải danh sách bản ghi (file hỏng?)"
     gate_recs = [r for r in records
                  if isinstance(r, dict) and str(r.get("gate_id") or "").strip() == gate_id]
     if not gate_recs:
-        return None
+        return None, f"chưa có bản ghi phê duyệt nào cho cổng {gate_id}"
 
     key_available = signing_key_configured(None)
     parsed: list = []
-    for rec in gate_recs:
+    for idx, rec in enumerate(gate_recs):
+        where = f"bản ghi #{idx + 1}/{len(gate_recs)} của {gate_id}"
         # (1) tự khai do agent tạo/duyệt — approve_gate.py KHÔNG BAO GIỜ ghi các trường này
         if _declares_agent_authorship(rec):
-            return None
+            return None, (f"BẤT THƯỜNG — {where} tự khai do agent tạo/duyệt. "
+                          "approve_gate.py không bao giờ ghi các trường này; kiểm tra sổ cái.")
         # (2) sai vai trò — approve_gate.py từ chối ghi trước khi tới ledger
         role_raw = rec.get("reviewer_role")
         if not reviewer_role_satisfies_gate(gate_id, role_raw if isinstance(role_raw, str) else ""):
-            return None
+            return None, (f"BẤT THƯỜNG — {where} có reviewer_role={role_raw!r} không thuộc nhóm "
+                          f"bắt buộc của {gate_id} ({required_reviewer_role_hint(gate_id)}). "
+                          "approve_gate.py từ chối ghi bản ghi kiểu này; kiểm tra sổ cái.")
         # (3) timestamp phải là ISO-8601 phân giải được. So chuỗi thô từng cho phép:
         #     timestamp rỗng/None sắp đầu bảng (mất bản thu hồi), "2026-07-27 11:00:00"
         #     (dấu cách < 'T') im lặng không thu hồi được, và timestamp tương lai xa làm
         #     một phê duyệt VĨNH VIỄN không thu hồi nổi.
         ts = _parse_iso_utc(rec.get("timestamp_utc"))
         if ts is None:
-            return None
+            return None, (f"BẤT THƯỜNG — {where} có timestamp_utc="
+                          f"{rec.get('timestamp_utc')!r} không phải ISO-8601 hợp lệ.")
         # (4) chữ ký phải xác minh được khi máy có khóa; máy chưa có khóa thì chỉ đề tài
         #     đã tự tay đánh dấu synthetic_test mới được đi tiếp.
         if key_available:
             if not verify_approval_signature(rec, study):
-                return None
+                return None, (
+                    f"BẤT THƯỜNG — {where} có chữ ký KHÔNG xác minh được bằng khóa trên máy "
+                    "này. Có thể do: bản ghi bị sửa sau khi ký, ký bằng máy/khóa khác, hoặc "
+                    "khóa đã bị đổi. KHÔNG tự bỏ qua — đối chiếu sổ cái với người đã duyệt."
+                )
         elif not is_synthetic_test_study(study, root):
-            return None
+            return None, (
+                "máy này CHƯA cấu hình khóa ký (chạy tools/setup_gate_approval_key.py) nên "
+                "không xác minh được phê duyệt nào. Chỉ đề tài đã tự tay đánh dấu "
+                "study_kind=synthetic_test mới được bỏ qua bước ký."
+            )
         parsed.append((ts, rec))
 
     # Chọn bản mới nhất. HÒA thì ưu tiên REJECTED — hướng an toàn: hai bản ghi cùng giây
@@ -932,7 +964,51 @@ def _latest_authoritative_record(records: Any, gate_id: str, study: str,
     # Khóa phụ: APPROVED = 0, mọi quyết định khác = 1. Sắp tăng dần rồi lấy phần tử CUỐI
     # ⇒ khi hòa thời điểm, bản KHÔNG-phải-APPROVED (thu hồi/từ chối) được chọn.
     parsed.sort(key=lambda p: (p[0], 0 if str(p[1].get("decision")) == "APPROVED" else 1))
-    return parsed[-1][1]
+    latest = parsed[-1][1]
+    if str(latest.get("decision") or "").strip().upper() != "APPROVED":
+        return latest, (
+            f"cổng {gate_id} đã bị THU HỒI/TỪ CHỐI — bản ghi mới nhất "
+            f"({latest.get('timestamp_utc')}) mang quyết định "
+            f"{latest.get('decision')!r} của {latest.get('reviewer_role')}. "
+            "Phải xin phê duyệt MỚI, không được dùng phê duyệt cũ trước đó."
+        )
+    return latest, None
+
+
+def gate_block_reason(gate_id: str, study: str, artifact_path: Path,
+                      repo_root: Optional[Path] = None) -> Optional[str]:
+    """Lý do NGƯỜI ĐỌC HIỂU ĐƯỢC khi ledger_approved() trả False; None nếu cổng thật sự đạt.
+
+    Dùng ở mọi nơi báo cho bác sĩ biết cổng chưa qua — để phân biệt "chưa ai duyệt" (bình
+    thường) với "đã bị THU HỒI" (phải hỏi lại hội đồng) và "sổ cái có dấu hiệu BỊ SỬA"
+    (phải điều tra). Xem lý do đầy đủ ở docstring _diagnose_gate_records()."""
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    ledger_p = root / "exports" / str(study) / "approval_ledger.json"
+    if not ledger_p.exists():
+        return f"chưa có sổ cái phê duyệt ({ledger_p.name}) cho đề tài này"
+    if not Path(artifact_path).exists():
+        return f"không thấy artifact cần đối chiếu: {artifact_path}"
+    try:
+        records = json.loads(ledger_p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as exc:
+        return f"không đọc được {ledger_p.name} ({exc.__class__.__name__}) — file hỏng?"
+    latest, reason = _diagnose_gate_records(records, gate_id, str(study), root)
+    if reason:
+        return reason
+    if latest is None:
+        return f"chưa có bản ghi phê duyệt hợp lệ cho cổng {gate_id}"
+    if latest.get("is_synthetic"):
+        return (f"cổng {gate_id} chỉ có phê duyệt MÔ PHỎNG (is_synthetic) — "
+                "không phải phê duyệt của người thật, không dùng cho đề tài thật")
+    try:
+        actual_hash = hashlib.sha256(Path(artifact_path).read_bytes()).hexdigest()
+    except (OSError, ValueError):
+        return f"không đọc được nội dung artifact để đối chiếu hash: {artifact_path}"
+    if actual_hash != latest.get("evidence_hash"):
+        return (f"NỘI DUNG ĐÃ ĐỔI SAU KHI DUYỆT — {Path(artifact_path).name} hiện có hash "
+                f"{actual_hash[:12]}… nhưng bản duyệt gắn với {str(latest.get('evidence_hash'))[:12]}…. "
+                "Phải trình lại bản đã sửa cho người duyệt.")
+    return None
 
 
 def approving_signature_scope(gate_id: str, study: str,
