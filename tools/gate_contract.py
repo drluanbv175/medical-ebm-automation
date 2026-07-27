@@ -280,6 +280,44 @@ def is_real_study_denylisted(study: str) -> bool:
     return needle in {unicodedata.normalize("NFC", s).casefold() for s in REAL_STUDY_DENYLIST}
 
 
+def _study_path_components(study: Any) -> set:
+    """MỌI tên thành phần xuất hiện trong chuỗi --study, sau khi chuẩn hóa lexically.
+
+    Mục đích: denylist phải bắt được tên đề tài thật DÙ NGƯỜI TA VIẾT ĐƯỜNG DẪN KIỂU GÌ —
+    "./TÊN", "TÊN/", "TÊN/.", "TÊN/../TÊN", ".//TÊN". Kiểm mỗi chuỗi thô là không đủ (đó
+    chính là cách red-team ghép đòn để vượt cả hai phép kiểm ở vòng 3)."""
+    s = str(study or "").strip()
+    if not s:
+        return set()
+    names = {s}
+    normalized = os.path.normpath(s)
+    names.add(normalized)
+    names.add(os.path.basename(normalized))
+    names.update(Path(normalized).parts)
+    return {n for n in names if n and n not in (".", "..", os.sep)}
+
+
+def _symlink_chain_names(path: Path, limit: int = 40) -> set:
+    """Tên của MỌI CHẶNG trong chuỗi symlink từ `path` tới đích cuối cùng.
+
+    Kiểm tên ở chặng CUỐI (real_dir.name) một mình không đủ: tên bị cấm có thể nằm ở một
+    chặng GIỮA (a → TÊN-BỊ-CẤM → b), khi đó chặng cuối mang tên vô hại. `limit` chặn vòng
+    lặp symlink tự trỏ vào nhau."""
+    names: set = set()
+    cur = path
+    for _ in range(limit):
+        names.add(cur.name)
+        try:
+            if not cur.is_symlink():
+                break
+            target = os.readlink(cur)
+            cur = Path(target) if os.path.isabs(target) else (cur.parent / target)
+        except OSError:
+            break
+    names.add(cur.name)
+    return {n for n in names if n}
+
+
 def resolve_synthetic_study_dir(study: str, repo_root: Path) -> Tuple[Optional[Path], Optional[str]]:
     """CHỐT AN TOÀN dùng chung cho 2 tool admin-synthetic (mark_study_synthetic.py +
     approve_gate_synthetic_admin.py). Giải exports/<study> thành MỘT đường dẫn CANONICAL
@@ -315,11 +353,20 @@ def resolve_synthetic_study_dir(study: str, repo_root: Path) -> Tuple[Optional[P
     #   qua symlink). PHẢI GIỮ CẢ HAI. Đừng bao giờ thay cái này bằng cái kia.
     if not study or not str(study).strip():
         return None, "Tên đề tài (--study) rỗng — không xác định được thư mục."
-    if is_real_study_denylisted(study):
-        return None, (
-            f"'{study}' nằm trong gate_contract.REAL_STUDY_DENYLIST (khớp trên chuỗi THÔ) — "
-            "đề tài nghiên cứu người thật đã biết. KHÔNG cờ/đường-dẫn nào bỏ qua được."
-        )
+    # ★ VÁ 2026-07-27 vòng 4 — kiểm MỌI THÀNH PHẦN đường dẫn, không chỉ chuỗi thô.
+    # Vòng 3 kiểm "chuỗi thô" + "tên canonical" và tưởng thế là phủ hai lớp tấn công.
+    # Red-team GHÉP hai đòn lại thì cả hai phép kiểm cùng trượt: "./TÊN-THẬT" không khớp
+    # chuỗi thô (khác ký tự), còn symlink đổi tên làm real_dir.name thành tên khác — nên
+    # `./hai-long-benh-nhan-C1a-BVQY175` trỏ vào thư mục đã đổi tên vẫn LỌT, và
+    # mark_study_synthetic.py + approve_gate_synthetic_admin.py chấp nhận nó (tái hiện
+    # bằng CLI thật). Nay chuẩn hóa lexically rồi soi TỪNG thành phần: bắt "./TÊN",
+    # "TÊN/", "TÊN/.", "TÊN/../TÊN", ".//TÊN" — mọi cách viết đường dẫn có chứa tên bị cấm.
+    for candidate in _study_path_components(study):
+        if is_real_study_denylisted(candidate):
+            return None, (
+                f"'{study}' chứa thành phần đường dẫn '{candidate}' nằm trong "
+                "gate_contract.REAL_STUDY_DENYLIST — đề tài nghiên cứu người thật đã biết."
+            )
     exports_root = (Path(repo_root) / "exports").resolve()
     # str(study) — không để một study id phi-chuỗi (vd đọc từ JSON metadata) ném TypeError
     # ở phép "/" bên dưới: đây là chốt fail-closed, phải TRẢ VỀ lỗi chứ không được ném.
@@ -334,12 +381,15 @@ def resolve_synthetic_study_dir(study: str, repo_root: Path) -> Tuple[Optional[P
             f"'{study}' giải ra '{real_dir}' (nằm ngoài). Từ chối đường dẫn tuyệt đối, "
             "'../', chuỗi rỗng, hoặc symlink trỏ ra ngoài exports/."
         )
-    if is_real_study_denylisted(real_dir.name):
-        return None, (
-            f"'{study}' (→ thư mục thật '{real_dir.name}') nằm trong "
-            "gate_contract.REAL_STUDY_DENYLIST — đề tài nghiên cứu người thật đã biết. "
-            "KHÔNG cờ/đường-dẫn nào bỏ qua được kiểm tra này."
-        )
+    # Kiểm TỪNG CHẶNG của chuỗi symlink, không chỉ chặng cuối: tên bị cấm có thể nằm ở
+    # giữa chuỗi (a → TÊN-BỊ-CẤM → b) khiến real_dir.name trông vô hại.
+    for hop_name in _symlink_chain_names(study_dir) | {real_dir.name}:
+        if is_real_study_denylisted(hop_name):
+            return None, (
+                f"'{study}' giải qua '{hop_name}' — tên này nằm trong "
+                "gate_contract.REAL_STUDY_DENYLIST (đề tài nghiên cứu người thật đã biết). "
+                "Kiểm trên MỌI chặng symlink, không chỉ thư mục đích."
+            )
     return real_dir, None
 
 
@@ -778,6 +828,59 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
         return False
 
 
+def _latest_authoritative_record(records: Any, gate_id: str, study: str,
+                                 root: Path) -> Optional[Dict[str, Any]]:
+    """Bản ghi MỚI NHẤT có thẩm quyền quyết định trạng thái một cổng — bất kể nó là
+    APPROVED hay REJECTED. Trả None nếu không có bản ghi nào đủ điều kiện được TÍNH.
+
+    THÊM 2026-07-27 vòng 4 để đóng hai lỗi mà workflow kiểm định vòng 3 tìm ra:
+      (A) THU HỒI KHÔNG CÓ TÁC DỤNG — nơi gọi trước đây lọc decision=="APPROVED" TRƯỚC
+          khi chọn bản mới nhất, nên một REJECTED ký hợp lệ về sau bị vứt đi trước khi
+          kịp được nhìn tới. Nay việc chọn "bản mới nhất" và việc xét "quyết định là gì"
+          được TÁCH RIÊNG: hàm này chỉ chọn, nơi gọi mới xét.
+      (B) HAI NƠI ĐỌC LEDGER LỆCH NHAU — approving_signature_scope() (phục vụ công bố
+          mức bảo đảm trong gói nộp G10) trước đây lọc KHÁC ledger_approved(): không
+          kiểm vai trò, không kiểm agent, và KHÔNG XÁC MINH CHỮ KÝ. Hệ quả: chỉ cần
+          nối thêm một dòng JSON rác tự khai `v3:role:...` là tắt được đoạn cảnh báo
+          "cổng này ký bằng khóa chung" — tức tính năng minh bạch vừa thêm ở vòng 3 bị
+          vô hiệu bằng một thao tác KHÔNG CẦN KHÓA. Nay cả hai nơi dùng CHUNG hàm này,
+          nên không thể lệch nhau nữa.
+
+    Một bản ghi chỉ được TÍNH khi: đúng cổng · là dict · vai trò thuộc nhóm bắt buộc ·
+    không tự khai do agent tạo · VÀ chữ ký xác minh được (khi máy có khóa cho nhóm đó).
+    Yêu cầu chữ ký áp cho CẢ bản REJECTED — nếu không, bất kỳ ai ghi thêm một dòng
+    "REJECTED" không chữ ký cũng chặn oan được một phê duyệt thật (biến cơ chế thu hồi
+    thành công cụ phá hoại). Khi máy CHƯA có khóa, chỉ đề tài đã tự tay đánh dấu
+    synthetic_test mới được tính — đồng bộ với quy tắc fail-closed ở ledger_approved().
+    """
+    if not isinstance(records, list):
+        return None
+
+    def _counts(rec: Dict[str, Any]) -> bool:
+        role_raw = rec.get("reviewer_role")
+        group = role_group_for(role_raw if isinstance(role_raw, str) else "") or None
+        if signing_key_configured(group):
+            return verify_approval_signature(rec, study)
+        return is_synthetic_test_study(study, root)
+
+    counted = []
+    for r in records:
+        if not isinstance(r, dict) or r.get("gate_id") != gate_id:
+            continue
+        if _declares_agent_authorship(r):
+            continue
+        role_raw = r.get("reviewer_role")
+        if not reviewer_role_satisfies_gate(gate_id, role_raw if isinstance(role_raw, str) else ""):
+            continue
+        if _counts(r):
+            counted.append(r)
+    if not counted:
+        return None
+    # str(... or "") — timestamp_utc phi-chuỗi (None/int/dict do ledger dựng tay) từng làm
+    # sorted() ném TypeError khi so kiểu hỗn hợp.
+    return sorted(counted, key=lambda r: str(r.get("timestamp_utc") or ""))[-1]
+
+
 def approving_signature_scope(gate_id: str, study: str,
                               repo_root: Optional[Path] = None) -> Optional[str]:
     """Phạm vi khóa đã ký bản ghi phê duyệt MỚI NHẤT của một cổng: 'role' | 'shared' | None.
@@ -796,13 +899,14 @@ def approving_signature_scope(gate_id: str, study: str,
         records = json.loads(ledger_p.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError, UnicodeDecodeError):
         return None
-    if not isinstance(records, list):
+    # VÁ 2026-07-27 vòng 4: dùng CHUNG _latest_authoritative_record() với ledger_approved()
+    # — trước đây hàm này lọc riêng (không kiểm vai trò/agent, KHÔNG xác minh chữ ký), nên
+    # một dòng JSON rác tự khai "v3:role:..." nối vào ledger là tắt được cảnh báo "ký bằng
+    # khóa chung" mà không cần khóa. Hai nơi đọc cùng một sổ mà lọc khác nhau thì sớm muộn
+    # cũng nói hai chuyện khác nhau về cùng một cổng.
+    latest = _latest_authoritative_record(records, gate_id, str(study), root)
+    if latest is None or latest.get("decision") != "APPROVED":
         return None
-    matches = [r for r in records if isinstance(r, dict)
-               and r.get("gate_id") == gate_id and r.get("decision") == "APPROVED"]
-    if not matches:
-        return None
-    latest = sorted(matches, key=lambda r: str(r.get("timestamp_utc") or ""))[-1]
     return signature_scope(latest)
 
 
@@ -881,30 +985,27 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
         return False
     if not isinstance(records, list):
         return False
-    matches = [r for r in records if isinstance(r, dict)
-               and r.get("gate_id") == gate_id
-               and r.get("decision") == "APPROVED" and not r.get("is_synthetic")
-               and not _declares_agent_authorship(r)
-               and reviewer_role_satisfies_gate(
-                   gate_id, r.get("reviewer_role") if isinstance(r.get("reviewer_role"), str) else "")]
-    if not matches:
+    latest = _latest_authoritative_record(records, gate_id, study, root)
+    if latest is None:
         return False
-    # str(... or "") — timestamp_utc phi-chuỗi (None/int/dict do ledger dựng tay) từng làm
-    # sorted() ném TypeError khi so kiểu hỗn hợp.
-    latest = sorted(matches, key=lambda r: str(r.get("timestamp_utc") or ""))[-1]
+    # ★ VÁ 2026-07-27 vòng 4 — TÔN TRỌNG THU HỒI. Bản trước LỌC decision=="APPROVED"
+    # TRƯỚC khi chọn bản ghi mới nhất, nên một quyết định TỪ CHỐI ký hợp lệ SAU đó
+    # không bao giờ đóng được cổng: hội đồng đạo đức rút phê duyệt, phản biện độc lập
+    # ký REJECTED — `ledger_approved` vẫn trả True và gói nộp G10 vẫn in "✅ Đã qua cổng
+    # G8 (bình duyệt độc lập)". Red-team tái hiện bằng CHÍNH tools/approve_gate.py với
+    # `--decision REJECTED` (một lựa chọn argparse hợp lệ, tức quy trình được hỗ trợ),
+    # và tools/stakeholder_review_audit.py cũng in [PASS] — nên bác sĩ kiểm tay cũng
+    # thấy "ổn". Schema có sẵn trường `supersedes` nhưng KHÔNG nơi nào đọc.
+    # Nay: lấy bản ghi MỚI NHẤT theo thời gian rồi mới xét quyết định của nó.
+    if latest.get("decision") != "APPROVED" or latest.get("is_synthetic"):
+        return False
     try:
         actual_hash = hashlib.sha256(Path(artifact_path).read_bytes()).hexdigest()
     except (OSError, ValueError):
         return False
     if actual_hash != latest.get("evidence_hash"):
         return False
-    # isinstance — bộ lọc ở trên đã ép kiểu chuỗi khi gọi reviewer_role_satisfies_gate(),
-    # nhưng dòng này ĐỌC LẠI trường thô nên phải tự bảo vệ (vá 2026-07-27: đúng chỗ
-    # workflow kiểm định chỉ ra là "guard ở dòng 782 không che được dòng 793").
-    _role_raw = latest.get("reviewer_role")
-    group = role_group_for(_role_raw if isinstance(_role_raw, str) else "") or None
-    if signing_key_configured(group):
-        return verify_approval_signature(latest, study)
+    return True
     # VÁ 2026-07-26 — LẬT MẶC ĐỊNH SANG FAIL-CLOSED (lỗ hổng (3) mô tả ở trên).
     # Trước: mọi đề tài KHÔNG có trong REAL_STUDY_DENYLIST đều được coi là "đã duyệt"
     # khi máy chưa cấu hình khóa ký — nghĩa là một đề tài NGƯỜI THẬT vừa tạo, chưa kịp

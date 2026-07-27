@@ -1718,6 +1718,22 @@ def _extract_pmids_from_final_document(study: str, out_dir: Path) -> set:
         return set()
 
 
+def _safe_compare(a, b) -> bool:
+    """So sanh chu ky an toan: LUON tra True/False, khong bao gio nem.
+
+    hmac.compare_digest chi nhan chuoi ASCII (hoac bytes); mot receipt bi hong ma / bi sua
+    tay se lam no nem TypeError. Them 2026-07-27 vong 4 sau khi workflow kiem dinh chi ra
+    ban va ASCII-guard 2026-07-26 chi duoc ap o gate_contract.py, KHONG ap cho hai cho
+    goi anh em o file nay - dung mau "sua 1 cho quen 2 cho" da lap lai nhieu lan."""
+    try:
+        sa, sb = str(a), str(b)
+        if not sa.isascii() or not sb.isascii():
+            return False
+        return hmac.compare_digest(sa, sb)
+    except (TypeError, ValueError):
+        return False
+
+
 def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
     """Cổng A12 (kiem-chung-trich-dan) — trước 2026-07-15, run_g7_auto.py chỉ IN
     RA một dòng nhắc bác sĩ tự chạy agent kiểm trích dẫn (không gì ép buộc); đề
@@ -1816,8 +1832,12 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
         expected_signature = GC.sign_approval(
             "A12", study, receipt.get("pmids_hash", ""), receipt.get("checked_at_utc", "")
         )
-        if not receipt_signature or not expected_signature or not hmac.compare_digest(
-            str(receipt_signature), str(expected_signature)
+        # VA 2026-07-27 vong 4: hmac.compare_digest NEM TypeError voi chuoi ngoai ASCII
+        # (vd receipt bi OneDrive lam hong ma - moi nguy co THAT trong cay nay). Truoc day
+        # ngoai le nay lot ra SAU khi goi nop da duoc ghi ra dia -> khong bien ngu nhap,
+        # khong needs_input, chi mot traceback. Chot fail-closed phai TRA VE, khong duoc nem.
+        if not receipt_signature or not expected_signature or not _safe_compare(
+            receipt_signature, expected_signature
         ):
             return False, (
                 "receipt A12_RETRACTION_RECEIPT.json thiếu chữ ký hợp lệ hoặc chữ ký "
@@ -1954,8 +1974,12 @@ def metadata_verification_ok(study: str, out_dir: Path, required_pmids: set) -> 
             receipt.get("checked_at_utc", "")
         )
         receipt_signature = receipt.get("receipt_signature")
-        if not receipt_signature or not expected_signature or not hmac.compare_digest(
-            str(receipt_signature), str(expected_signature)
+        # VA 2026-07-27 vong 4: hmac.compare_digest NEM TypeError voi chuoi ngoai ASCII
+        # (vd receipt bi OneDrive lam hong ma - moi nguy co THAT trong cay nay). Truoc day
+        # ngoai le nay lot ra SAU khi goi nop da duoc ghi ra dia -> khong bien ngu nhap,
+        # khong needs_input, chi mot traceback. Chot fail-closed phai TRA VE, khong duoc nem.
+        if not receipt_signature or not expected_signature or not _safe_compare(
+            receipt_signature, expected_signature
         ):
             return False, (
                 "receipt A12_METADATA_RECEIPT.json thiếu chữ ký hợp lệ hoặc chữ ký không "
@@ -2216,11 +2240,24 @@ def main() -> int:
     # lập khi hệ không biết điều đó có thật hay không — nay công bố đúng mức bảo đảm.
     scopes = {g: GC.approving_signature_scope(g, study, repo_root=BASE) for g in ("G2", "G8", "G9")}
     shared_gates = sorted(g for g, s in scopes.items() if s == GC.SIGNATURE_SCOPE_SHARED)
+    # VÁ 2026-07-27 vòng 4: phạm vi None (KHÔNG xác định được — không có bản ghi có thẩm
+    # quyền, chữ ký không xác minh được, hoặc sai định dạng) là trạng thái YẾU NHẤT nhưng
+    # trước đây lại IM LẶNG y như trạng thái mạnh nhất ('role'), vì nó chỉ đơn giản không
+    # lọt vào shared_gates. Trạng thái không biết gì phải kêu TO NHẤT, không phải êm nhất.
+    unknown_gates = sorted(g for g, s in scopes.items() if s is None)
     banner = [
         "> ✅ **Đã qua cổng A12 (trích dẫn) + G8 (bình duyệt độc lập) + G9 (liêm "
         "chính tác giả)** tại thời điểm lắp ráp này. Cần bác sĩ kiểm chứng toàn "
         "bộ nội dung trước khi nộp chính thức.",
     ]
+    if unknown_gates:
+        banner.append(
+            "> ⛔ **KHÔNG XÁC ĐỊNH ĐƯỢC mức bảo đảm chữ ký cho cổng "
+            + ", ".join(unknown_gates)
+            + ":** không tìm thấy bản ghi phê duyệt có thẩm quyền, hoặc chữ ký không xác "
+            "minh được trên máy này. ĐỪNG coi các cổng này là đã có bằng chứng phê duyệt "
+            "mật mã — kiểm lại approval_ledger.json và khóa ký trước khi nộp."
+        )
     if shared_gates:
         banner.append(
             "> ⚠️ **Mức bảo đảm của chữ ký — công bố minh bạch:** cổng "
@@ -2234,6 +2271,9 @@ def main() -> int:
     _apply_submission_status_banner(banner)
 
     print("\n✅ Xong. Cần bác sĩ kiểm chứng.")
+    if unknown_gates:
+        print(f"   ⛔ KHÔNG xác định được mức bảo đảm chữ ký cho cổng {', '.join(unknown_gates)}")
+        print("      — kiểm lại approval_ledger.json + khóa ký TRƯỚC khi nộp.")
     if shared_gates:
         print(f"   ⚠️  Cổng {', '.join(shared_gates)} ký bằng khóa CHUNG — gói đã ghi rõ giới hạn")
         print("      này trong biểu ngữ; KHÔNG khẳng định bình duyệt độc lập với bên thứ ba.")

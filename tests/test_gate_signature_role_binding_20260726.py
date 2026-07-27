@@ -200,6 +200,158 @@ def test_role_scoped_signature_rejected_when_role_key_disappears(tmp_path, monke
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
 
 
+# ── VÒNG 4: workflow kiểm định vòng 3 — 4 mục MUST-FIX ───────────────────────
+
+def _signed(study, gate, role, ref, decision, evidence_hash, ts):
+    return {
+        "gate_id": gate, "decision": decision, "is_synthetic": False,
+        "reviewer_role": role, "evidence_hash": evidence_hash,
+        "timestamp_utc": ts, "reviewer_identity_reference": ref,
+        "approver_signature": GC.sign_approval(gate, study, evidence_hash, ts,
+                                               reviewer_role=role, reviewer_ref=ref,
+                                               decision=decision),
+    }
+
+
+def test_later_signed_rejection_revokes_earlier_approval(tmp_path, monkeypatch):
+    """★ MUST-FIX #1 vòng 3: `ledger_approved()` LỌC decision=="APPROVED" TRƯỚC khi chọn
+    bản ghi mới nhất — nên một quyết định TỪ CHỐI ký hợp lệ SAU đó không bao giờ đóng
+    được cổng. Hội đồng đạo đức rút phê duyệt, hoặc phản biện độc lập ký REJECTED, mà
+    gói nộp G10 vẫn in "✅ Đã qua cổng G8 (bình duyệt độc lập)".
+
+    Red-team tái hiện bằng CHÍNH tools/approve_gate.py với --decision REJECTED (một lựa
+    chọn argparse hợp lệ — tức quy trình được hỗ trợ, không phải thủ thuật), và
+    stakeholder_review_audit.py cũng in [PASS] nên bác sĩ kiểm tay cũng thấy "ổn"."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-bi-rut-phe-duyet"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+
+    approved = _signed(study, "G2", "IRB", "hoi-dong", "APPROVED", evidence_hash,
+                       "2026-07-26T10:00:00Z")
+    _write_ledger(tmp_path, study, approved)
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
+
+    # Hội đồng RÚT phê duyệt bằng một bản ghi REJECTED ký hợp lệ, muộn hơn.
+    rejected = _signed(study, "G2", "IRB", "hoi-dong", "REJECTED", evidence_hash,
+                       "2026-07-26T18:00:00Z")
+    (tmp_path / "exports" / study / "approval_ledger.json").write_text(
+        json.dumps([approved, rejected]), encoding="utf-8")
+
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+    # ...và một phê duyệt MỚI HƠN nữa thì mở lại được (thu hồi không phải một chiều).
+    reapproved = _signed(study, "G2", "IRB", "hoi-dong", "APPROVED", evidence_hash,
+                         "2026-07-27T09:00:00Z")
+    (tmp_path / "exports" / study / "approval_ledger.json").write_text(
+        json.dumps([approved, rejected, reapproved]), encoding="utf-8")
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
+
+
+def test_unsigned_rejection_cannot_block_a_real_approval(tmp_path, monkeypatch):
+    """Mặt kia của cơ chế thu hồi: nếu bản REJECTED KHÔNG cần chữ ký thì bất kỳ ai ghi
+    thêm một dòng cũng chặn oan được phê duyệt thật — biến thu hồi thành công cụ phá
+    hoại. Bản REJECTED không chữ ký phải bị BỎ QUA."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-bi-pha-hoai"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    approved = _signed(study, "G2", "IRB", "hoi-dong", "APPROVED", evidence_hash,
+                       "2026-07-26T10:00:00Z")
+    forged_reject = {
+        "gate_id": "G2", "decision": "REJECTED", "is_synthetic": False,
+        "reviewer_role": "IRB", "evidence_hash": evidence_hash,
+        "timestamp_utc": "2026-07-27T23:00:00Z",
+        "reviewer_identity_reference": "ke-pha-hoai",
+    }
+    (tmp_path / "exports" / study / "approval_ledger.json").write_text(
+        json.dumps([approved, forged_reject]), encoding="utf-8")
+
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
+
+
+def test_scope_disclosure_cannot_be_silenced_by_unsigned_record(tmp_path, monkeypatch):
+    """★ MUST-FIX #2 vòng 3: approving_signature_scope() lọc KHÁC ledger_approved()
+    (không kiểm vai trò/agent, KHÔNG xác minh chữ ký), nên chỉ cần nối một dòng JSON rác
+    tự khai "v3:role:..." là tắt được cảnh báo "cổng này ký bằng khóa CHUNG" trong gói
+    nộp — vô hiệu hóa đúng tính năng minh bạch vừa thêm, KHÔNG cần khóa."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-bi-tat-canh-bao"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    genuine = _signed(study, "G2", "IRB", "hoi-dong", "APPROVED", evidence_hash,
+                      "2026-07-26T10:00:00Z")
+    _write_ledger(tmp_path, study, genuine)
+    assert GC.approving_signature_scope("G2", study, repo_root=tmp_path) == "shared"
+
+    junk = dict(genuine)
+    junk["timestamp_utc"] = "2026-07-27T23:00:00Z"
+    junk["approver_signature"] = "v3:role:" + "0" * 64  # MAC rác, tự khai phạm vi 'role'
+    (tmp_path / "exports" / study / "approval_ledger.json").write_text(
+        json.dumps([genuine, junk]), encoding="utf-8")
+
+    # Bản ghi rác KHÔNG được coi là có thẩm quyền → vẫn công bố 'shared', không im lặng.
+    assert GC.approving_signature_scope("G2", study, repo_root=tmp_path) == "shared"
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
+
+
+def test_composed_path_and_symlink_evasion_is_blocked(tmp_path):
+    """★ MUST-FIX #4 vòng 3: vòng 3 kiểm "chuỗi thô" + "tên canonical" và tưởng đã phủ
+    hai lớp. Red-team GHÉP hai đòn: "./TÊN-THẬT" không khớp chuỗi thô, còn symlink đổi
+    tên làm real_dir.name khác đi — cả hai phép kiểm cùng trượt."""
+    exports = tmp_path / "exports"
+    exports.mkdir(parents=True, exist_ok=True)
+    real = exports / "du-lieu-noi-bo-2026"
+    real.mkdir()
+    (real / "study_meta.json").write_text(
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8")
+    (exports / REAL_STUDY).symlink_to(real.name)
+
+    for variant in (REAL_STUDY, f"./{REAL_STUDY}", f"{REAL_STUDY}/", f"{REAL_STUDY}/.",
+                    f"{REAL_STUDY}/../{REAL_STUDY}", f".//{REAL_STUDY}", f"{REAL_STUDY}//"):
+        real_dir, err = GC.resolve_synthetic_study_dir(variant, tmp_path)
+        assert real_dir is None and err, f"LỌT: {variant!r}"
+        assert GC.is_synthetic_test_study(variant, tmp_path) is False, variant
+
+
+def test_denylisted_name_in_middle_of_symlink_chain_is_blocked(tmp_path):
+    """Tên bị cấm nằm ở CHẶNG GIỮA chuỗi symlink (a → TÊN-BỊ-CẤM → b) — chặng cuối mang
+    tên vô hại nên phép kiểm chỉ soi real_dir.name sẽ bỏ lọt."""
+    exports = tmp_path / "exports"
+    exports.mkdir(parents=True, exist_ok=True)
+    final = exports / "ten-vo-hai"
+    final.mkdir()
+    (final / "study_meta.json").write_text(
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8")
+    (exports / REAL_STUDY).symlink_to(final.name)   # chặng giữa mang tên bị cấm
+    (exports / "loi-vao").symlink_to(REAL_STUDY)     # chặng đầu vô hại
+
+    real_dir, err = GC.resolve_synthetic_study_dir("loi-vao", tmp_path)
+    assert real_dir is None and err, "LỌT qua chặng giữa"
+    assert GC.is_synthetic_test_study("loi-vao", tmp_path) is False
+
+
+def test_legitimate_study_name_containing_denylisted_substring_still_works(tmp_path):
+    """Đối chứng chống chặn oan: tên chỉ CHỨA chuỗi con trùng tên đề tài thật (không
+    trùng khớp cả tên) vẫn phải dùng được bình thường."""
+    exports = tmp_path / "exports"
+    exports.mkdir(parents=True, exist_ok=True)
+    ok_name = f"pilot-{REAL_STUDY}-v2"
+    d = exports / ok_name
+    d.mkdir()
+    (d / "study_meta.json").write_text(
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8")
+
+    real_dir, err = GC.resolve_synthetic_study_dir(ok_name, tmp_path)
+    assert err is None and real_dir is not None, f"CHẶN OAN: {err}"
+    assert GC.is_synthetic_test_study(ok_name, tmp_path) is True
+
+
 # ── VÒNG 3: phát hiện NẶNG NHẤT cả đợt (workflow kiểm định 6 góc nhìn) ────────
 
 def test_signed_rejection_cannot_be_flipped_to_approval(tmp_path, monkeypatch):
