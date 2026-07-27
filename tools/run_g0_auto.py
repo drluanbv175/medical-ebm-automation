@@ -217,7 +217,22 @@ def _warn_if_topic_collision(out_dir: "Path", new_topic: str) -> None:
         )
 
 
+def _reject_empty_topic(topic: str) -> None:
+    """DỪNG ngay nếu topic rỗng/toàn khoảng trắng.
+
+    VÁ 2026-07-27 (kiểm định độc lập): `--topic ""` làm truy vấn thành "() AND (bộ lọc)",
+    PubMed trả 1.139.330 hit, G0 liệt kê 50 bài hoàn toàn không liên quan dưới tiêu đề
+    "BẰNG CHỨNG HIỆN CÓ (THẬT)", guardrail in ✅ PASS và exit 0. Một cổng khởi đầu nghiên
+    cứu KHÔNG được phép báo "hoàn thành" khi chưa có đề tài."""
+    if not (topic or "").strip():
+        print("🚧 G0 DỪNG: --topic rỗng. Không thể tìm bằng chứng cho một đề tài chưa có tên.")
+        print("   (Trước bản vá 2026-07-27: trả ~1,1 triệu hit không liên quan rồi vẫn báo")
+        print("    HOÀN THÀNH — đúng kiểu 'thành công giả'.)")
+        raise SystemExit(GC.EXIT_BLOCKED)
+
+
 def build_pubmed_query(topic: str, query_en: Optional[str] = None) -> dict[str, str]:
+    _reject_empty_topic(topic)
     """
     Chuyển topic (VI hoặc EN) thành bộ truy vấn PubMed đa chiều.
     Trả về dict: {query_type: query_string}
@@ -359,7 +374,17 @@ def analyze_evidence_gaps(results: dict, topic: str) -> dict:
         v = _tc.get(key)
         return int(v) if isinstance(v, int) else len(results.get(key, []))
 
-    counts_are_real = any(isinstance(v, int) for v in _tc.values())
+    # ★ VÁ 2026-07-27 (kiểm định độc lập): TRƯỚC ĐÂY dùng any() — chỉ cần MỘT nhánh tra
+    # được số thật là cả báo cáo được dán nhãn "số hit THẬT", kể cả khi nhánh khác timeout
+    # (rate-limit HTTP 429 xảy ra thật) và lùi về len([]) = 0. Tái hiện: nhánh sr_ma timeout
+    # trên "outpatient satisfaction hospital" → in "SR/MA: 0 … (số hit THẬT từ PubMed)"
+    # trong khi sự thật là 203, kéo evidence_level từ "MẠNH" xuống "CÓ HẠN" và thêm khẳng
+    # định SAI "Chưa có systematic review". Một số 0 BỊA được dán nhãn THẬT là kiểu sai
+    # nguy hiểm nhất ở cổng này. Nay all(): chỉ nhận nhãn THẬT khi MỌI nhánh đều tra được.
+    _attempted = [v for v in _tc.values()]
+    counts_are_real = bool(_attempted) and all(isinstance(v, int) for v in _attempted)
+    # Nhánh nào không tra được số thật thì nêu đích danh, để bác sĩ biết con số nào đáng ngờ.
+    counts_unavailable = sorted(k for k, v in _tc.items() if not isinstance(v, int))
     n_sr = _n("sr_ma")
     n_rct = _n("rct")
     n_guide = _n("guideline")
@@ -435,6 +460,7 @@ def analyze_evidence_gaps(results: dict, topic: str) -> dict:
         # số bài LẤY VỀ (trần --max-results) nên là ƯỚC LƯỢNG DƯỚI, không dùng
         # để kết luận "khoảng trống".
         "counts_are_real": counts_are_real,
+        "counts_unavailable": counts_unavailable,
         "most_recent_year": most_recent,
         "evidence_level": evidence_level,
         "novelty_concern": novelty_concern,
@@ -471,6 +497,12 @@ def generate_a1_artifact(topic: str, study_name: str, queries: dict,
     rct_list = _format_article_list(results["rct"])
     guide_list = _format_article_list(results["guideline"])
     recent_list = _format_article_list(results["recent"], max_show=3)
+    # VÁ 2026-07-27 (kiểm định độc lập, mức NẶNG NHẤT): nhánh quan sát ĐƯỢC ĐẾM
+    # nhưng KHÔNG BAO GIỜ được ghi ra artifact/raw JSON. Hệ quả: cổng chuyển từ
+    # CHẶN (exit 2, "0 PMID") sang QUA (exit 0, "13 PMIDs thật") nhờ 13 bài mà
+    # bác sĩ KHÔNG nhìn thấy và KHÔNG kiểm chứng được — vi phạm trực tiếp bất
+    # biến "mọi đầu ra kèm PMID để bác sĩ kiểm chứng".
+    obs_list = _format_article_list(results.get("observational", []))
 
     artifact = f"""# A1 — CÂU HỎI NGHIÊN CỨU & PICO | {study_name}
 > Tạo tự động: {run_date} | Truy vấn PubMed thật
@@ -567,6 +599,12 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 
 ### 3.3 Guideline / Khuyến cáo ({gaps['n_guide']} bài)
 {guide_list}
+
+### 3.5 Nghiên cứu QUAN SÁT (cohort/bệnh-chứng/cắt ngang) — ~{gaps.get('n_observational', 0)} bài khớp truy vấn
+{obs_list}
+> ⚠️ Con số ~{gaps.get('n_observational', 0)} là SỐ HIT của bộ lọc quan sát và CÓ CHỒNG LẤN
+> với RCT/SR (đo thật: ~13% ở một số chủ đề). Dùng để biết "lĩnh vực này đã có nền quan sát
+> hay chưa", KHÔNG dùng làm số nghiên cứu quan sát thuần.
 
 ### 3.4 Nghiên cứu gần đây {int(run_date[:4]) - 5}-{run_date[:4]} ({gaps['n_recent']} bài)
 {recent_list}
@@ -942,6 +980,12 @@ def main():
         "recent": [{"pmid": r.pmid, "title": r.title, "year": r.publication_date,
                     "journal": r.journal_or_organization, "url": r.url}
                    for r in results["recent"]],
+        # VÁ 2026-07-27: PHẢI ghi — trước đây nhánh này đếm mà không lưu, nên "bằng chứng"
+        # mở được cổng lại không tồn tại ở bất kỳ file nào bác sĩ đọc được.
+        "observational": [{"pmid": r.pmid, "title": r.title, "year": r.publication_date,
+                           "journal": r.journal_or_organization, "url": r.url}
+                          for r in results.get("observational", [])],
+        "true_counts": results.get("true_counts", {}),
     }
     raw_path.write_text(json.dumps(raw_results, ensure_ascii=False, indent=2), encoding="utf-8")
 

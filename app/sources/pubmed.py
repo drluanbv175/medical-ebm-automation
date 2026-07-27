@@ -95,7 +95,16 @@ class PubMedClient(SourceClient):
             params["api_key"] = settings.ncbi_api_key
         try:
             data = self.http.get_json(ESEARCH, params=params)
-            return int(data.get("esearchresult", {}).get("count", 0))
+            # VÁ 2026-07-27 (kiểm định độc lập): mặc định 0 khi THIẾU khóa "count" là
+            # fail-OPEN ngay tại hàm mà lý do tồn tại là "phân biệt KHÔNG BIẾT với BẰNG 0".
+            # E-utilities trả {"esearchresult": {"ERROR": "..."}} khi truy vấn hỏng — khi đó
+            # 0 nghĩa là "không tra được", không phải "không có bài nào".
+            _res = data.get("esearchresult")
+            if not isinstance(_res, dict) or "count" not in _res:
+                logger.warning("[pubmed] esearch không trả 'count' (%s) — trả None, KHÔNG suy ra 0",
+                               str(_res)[:120])
+                return None
+            return int(_res["count"])
         except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
             logger.warning("[pubmed] count_hits lỗi — trả None (KHÔNG suy ra 0): %s", exc)
             return None
