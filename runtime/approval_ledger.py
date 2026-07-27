@@ -108,6 +108,10 @@ class ApprovalLedger:
 
     def __init__(self):
         self._records: list[ApprovalRecord] = []
+        # Dòng thô KHÔNG phân giải được khi đọc file (thiếu trường bắt buộc / sai kiểu).
+        # GIỮ LẠI để to_file() ghi trả nguyên vẹn — xem chú thích dài ở from_file():
+        # trước 2026-07-27 chúng bị bỏ qua rồi bị to_file() xóa vĩnh viễn khỏi sổ cái.
+        self._unparsed_raw: list = []
 
     # ── Write ─────────────────────────────────────────────────────────────────
 
@@ -326,8 +330,12 @@ class ApprovalLedger:
                 "is_synthetic": getattr(r, "is_synthetic", False),
                 "approver_signature": getattr(r, "approver_signature", None),
             }
+        # VÁ 2026-07-27 vòng 6 (CRITICAL): ghi TRẢ LẠI cả những dòng thô không phân giải
+        # được lúc đọc. Trước đây chúng bị bỏ khỏi danh sách rồi to_file() ghi đè nguyên
+        # file → XÓA VĨNH VIỄN bản ghi phê duyệt thật (kể cả của Hội đồng Đạo đức), không
+        # cảnh báo, không bản sao lưu. Sổ cái kiểm toán chỉ được PHÉP thêm.
         return json.dumps(
-            [record_to_dict(r) for r in self._records],
+            [record_to_dict(r) for r in self._records] + list(self._unparsed_raw),
             indent=2,
             ensure_ascii=False,
         )
@@ -493,7 +501,24 @@ class ApprovalLedger:
                     approver_signature=d.get("approver_signature"),
                 )
             except (KeyError, ValueError):
-                continue  # dòng hỏng/thiếu trường bắt buộc — bỏ qua, không crash cả ledger
+                # ★★ VÁ 2026-07-27 vòng 6 — LỖI CRITICAL, có sẵn từ trước, do vòng kiểm
+                # định độc lập thứ NĂM tìm ra. Trước đây ở đây là `continue`: dòng không
+                # phân giải được bị BỎ QUA. Nghe vô hại, nhưng to_file() ghi đè NGUYÊN
+                # FILE từ danh sách còn lại (os.replace) → mọi bản ghi bị bỏ qua bị XÓA
+                # VĨNH VIỄN khỏi sổ cái, KHÔNG cảnh báo, KHÔNG bản sao lưu.
+                # Kịch bản đã tái hiện: xóa khóa `scope` (trường BẮT BUỘC khi đọc nhưng
+                # KHÔNG nằm trong nội dung ký, nên chữ ký vẫn hợp lệ và không cổng nào
+                # báo bất thường) khỏi 3 phê duyệt thật → bác sĩ chạy MỘT lệnh
+                # approve_gate.py hoàn toàn bình thường cho G8 → bản ghi G2 của HỘI ĐỒNG
+                # ĐẠO ĐỨC biến mất khỏi sổ cái. Cùng cơ chế xóa được một bản THU HỒI:
+                # ký một cổng KHÁC là bản REJECTED biến mất, cổng đã thu hồi mở lại.
+                # Tệ hơn: KHÔNG CẦN kẻ tấn công — một bản ghi do bác sĩ sửa tay (con
+                # đường phục hồi duy nhất còn lại khi sổ cái bị nhiễm) hoặc do phiên bản
+                # schema khác ghi cũng bị xóa ở lần phê duyệt kế tiếp.
+                # Nay: GIỮ NGUYÊN dòng thô để to_file() ghi lại y nguyên. Sổ cái kiểm
+                # toán chỉ được PHÉP thêm, KHÔNG được âm thầm mất dữ liệu.
+                ledger._unparsed_raw.append(d)
+                continue
             ledger._records.append(rec)
         return ledger
 

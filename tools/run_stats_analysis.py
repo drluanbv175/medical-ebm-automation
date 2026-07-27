@@ -1155,6 +1155,17 @@ def main():
         print("✗ DỪNG: G2 (phê duyệt đạo đức/IRB) chưa xác nhận LOCKED bằng phê duyệt thật.")
         print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
+        # VÁ 2026-07-27 vòng 6: in RÕ LÝ DO. Vòng kiểm định thứ năm chỉ ra bản vá chẩn
+        # đoán trước đó chỉ nối vào run_g10_assemble.py (G8/G9) — CHÍNH CHỖ NGUY HIỂM
+        # NHẤT này thì bỏ sót: cổng G2 gác việc phân tích dữ liệu BỆNH NHÂN THẬT, lại
+        # chỉ in "thiếu/không khớp" y hệt nhau cho ba tình huống khác hẳn nhau, và ở đây
+        # KHÔNG có cờ bỏ qua nào — nên một dòng rác trong sổ cái là chặn cứng cả đề tài
+        # mà bác sĩ không có manh mối nào để gỡ. Đúng mẫu "sửa 1 chỗ quên chỗ anh em".
+        _why = GC.gate_block_reason(
+            "G2", args.study,
+            Path("exports") / args.study / f"G2_A3_ETHICS_PACKAGE_{args.study}.md")
+        if _why:
+            print(f"   ⚠️  LÝ DO: {_why}")
         print("   KHÔNG chạy phân tích trên dữ liệu bệnh nhân THẬT khi chưa có phê duyệt đạo đức thật.")
         print("   Ghi phê duyệt thật bằng (bác sĩ TỰ TAY chạy, không nhờ agent):")
         print(f"     python tools/approve_gate.py --study \"{args.study}\" --gate G2 "
@@ -1233,6 +1244,11 @@ def main():
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
+        for _g, _art in (("G4", f"G4_A5_SAP_FINAL_{args.study}.md"),
+                         ("G5", "G5_checkpoint.json")):
+            _why = GC.gate_block_reason(_g, args.study, Path("exports") / args.study / _art)
+            if _why:
+                print(f"   ⚠️  LÝ DO {_g}: {_why}")
         print("   Không thể chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
         print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng:")
         print(f"     python tools/approve_gate.py --study \"{args.study}\" --gate G4 "

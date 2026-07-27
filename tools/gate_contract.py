@@ -914,12 +914,41 @@ def _diagnose_gate_records(records: Any, gate_id: str, study: str,
     """
     if not isinstance(records, list):
         return None, "approval_ledger.json không phải danh sách bản ghi (file hỏng?)"
-    gate_recs = [r for r in records
-                 if isinstance(r, dict) and str(r.get("gate_id") or "").strip() == gate_id]
-    if not gate_recs:
-        return None, f"chưa có bản ghi phê duyệt nào cho cổng {gate_id}"
 
     key_available = signing_key_configured(None)
+
+    # ★★ VÁ 2026-07-27 vòng 6 — QUÉT TOÀN SỔ CÁI TRƯỚC KHI LỌC THEO CỔNG.
+    # Vòng kiểm định thứ năm phá được vòng 5 ở đúng chỗ này: bộ lọc `gate_id` chạy TRƯỚC
+    # các phép kiểm bất thường, mà "bản ghi này thuộc cổng nào" lại đọc từ dữ liệu CHƯA
+    # XÁC MINH. Hệ quả: sửa MỘT ký tự trong gate_id của bản THU HỒI ("G8"→"g8", hoặc chèn
+    # một ký tự vô hình U+200B), hay biến nó thành chuỗi JSON thay vì object, là bản ghi
+    # đó rơi khỏi tầm nhìn TRƯỚC KHI chữ ký kịp được kiểm → cổng đã thu hồi MỞ LẠI, âm
+    # thầm. Đúng điều mà chú thích vòng 5 khẳng định là không thể.
+    # Nay: bất kỳ mục nào trong sổ cái KHÔNG phải object, hoặc có chữ ký KHÔNG xác minh
+    # được, đều là bất thường của CẢ SỔ CÁI — không cần biết nó tự nhận thuộc cổng nào.
+    # (gate_id nằm trong nội dung ký, nên sửa gate_id ⇒ chữ ký hỏng ⇒ bị bắt tại đây.)
+    for idx, rec in enumerate(records):
+        if not isinstance(rec, dict):
+            return None, (f"BẤT THƯỜNG — mục #{idx + 1} trong approval_ledger.json không phải "
+                          "một bản ghi (object). Sổ cái có dấu hiệu bị sửa tay.")
+        if key_available and not verify_approval_signature(rec, study):
+            return None, (
+                f"BẤT THƯỜNG — mục #{idx + 1} trong approval_ledger.json (tự nhận thuộc cổng "
+                f"{rec.get('gate_id')!r}) có chữ ký KHÔNG xác minh được. Vì gate_id nằm trong "
+                "nội dung ký, đây có thể là một bản ghi bị đổi cổng để 'giấu' nó khỏi cổng thật. "
+                "KHÔNG tự bỏ qua — đối chiếu sổ cái với người đã duyệt."
+            )
+
+    def _same_gate(value: Any) -> bool:
+        """So khớp gate_id CHỐNG NÉ: bỏ ký tự vô hình/điều khiển, chuẩn hóa NFC, không
+        phân biệt hoa-thường — để 'g8' hay 'G8<U+200B>' không lọt thành cổng khác."""
+        s = unicodedata.normalize("NFC", str(value or ""))
+        s = "".join(ch for ch in s if ch.isprintable() and not ch.isspace())
+        return s.casefold() == gate_id.strip().casefold()
+
+    gate_recs = [r for r in records if _same_gate(r.get("gate_id"))]
+    if not gate_recs:
+        return None, f"chưa có bản ghi phê duyệt nào cho cổng {gate_id}"
     parsed: list = []
     for idx, rec in enumerate(gate_recs):
         where = f"bản ghi #{idx + 1}/{len(gate_recs)} của {gate_id}"

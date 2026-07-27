@@ -335,6 +335,81 @@ def test_tampered_revocation_fails_closed_not_erased(tmp_path, monkeypatch):
         assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
 
 
+def test_revocation_cannot_be_hidden_by_retagging_or_retyping_the_record(tmp_path, monkeypatch):
+    """★ Vòng kiểm định thứ NĂM phá vòng 5 ở đây: bộ lọc `gate_id` chạy TRƯỚC các phép
+    kiểm bất thường, mà "bản ghi thuộc cổng nào" lại đọc từ dữ liệu CHƯA XÁC MINH. Nên
+    sửa MỘT ký tự trong gate_id của bản THU HỒI ("G8"→"g8"), chèn một ký tự vô hình, hay
+    biến nó thành chuỗi JSON, là bản ghi rơi khỏi tầm nhìn TRƯỚC KHI chữ ký kịp được kiểm
+    → cổng đã thu hồi MỞ LẠI, âm thầm — đúng điều chú thích vòng 5 khẳng định là không thể.
+
+    GIỚI HẠN CÒN LẠI, ghi rõ để không tự huyễn hoặc: nếu bản ghi THU HỒI bị XÓA HẲN khỏi
+    file thì hệ KHÔNG phát hiện được. Muốn chống được cần sổ cái có CHUỖI BĂM LIÊN KẾT
+    (mỗi bản ghi ký kèm hash bản trước) — thay đổi kiến trúc, cần bác sĩ quyết."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-giau-thu-hoi"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
+    approved = _signed(study, "G8", "PHAN_BIEN_DOC_LAP", "pb", "APPROVED", evidence_hash,
+                       "2026-07-26T10:00:00Z")
+    revoked = _signed(study, "G8", "PHAN_BIEN_DOC_LAP", "pb", "REJECTED", evidence_hash,
+                      "2026-07-27T10:00:00Z")
+
+    ledger_p.write_text(json.dumps([approved, revoked]), encoding="utf-8")
+    assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
+
+    for label, mutated in (
+        ("chuỗi JSON thay vì object", "day la mot chuoi"),
+        ("gate_id đổi hoa-thường", dict(revoked, gate_id="g8")),
+        ("gate_id chèn ký tự vô hình", dict(revoked, gate_id="G8​")),
+        ("gate_id thêm khoảng trắng", dict(revoked, gate_id=" G8 ")),
+    ):
+        ledger_p.write_text(json.dumps([approved, mutated]), encoding="utf-8")
+        assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False, label
+
+
+def test_ledger_write_does_not_delete_unparsable_records(tmp_path):
+    """★★ LỖI CRITICAL vòng kiểm định thứ năm tìm ra, CÓ SẴN TỪ TRƯỚC cả đợt vá này:
+    ApprovalLedger.from_file() bỏ qua bản ghi thiếu trường bắt buộc, rồi to_file() ghi đè
+    NGUYÊN FILE từ danh sách còn lại → bản ghi bị bỏ qua BIẾN MẤT vĩnh viễn, không cảnh
+    báo, không sao lưu.
+
+    `scope` là trường BẮT BUỘC khi đọc nhưng KHÔNG nằm trong nội dung ký — nên xóa nó giữ
+    nguyên chữ ký hợp lệ và không cổng nào báo bất thường, mà vẫn bảo đảm bản ghi bị xóa ở
+    lần ghi kế tiếp. Kịch bản thật: bác sĩ chạy MỘT lệnh phê duyệt bình thường cho cổng
+    KHÁC → bản ghi của HỘI ĐỒNG ĐẠO ĐỨC biến mất khỏi sổ cái kiểm toán."""
+    from runtime.approval_ledger import ApprovalLedger
+    from runtime.schemas import ApprovalDecisionEnum
+
+    ledger_p = tmp_path / "approval_ledger.json"
+    irb = ApprovalLedger.make_human_approval(
+        gate_id="G2", reviewer_role="IRB_ETHICS_COMMITTEE", reviewer_ref="hoi-dong",
+        scope="duyet dao duc", evidence_content="ho so",
+        decision=ApprovalDecisionEnum.APPROVED, timestamp_utc="2026-07-26T10:00:00+00:00")
+    first = ApprovalLedger()
+    first.add_approval(irb)
+    first.to_file(ledger_p)
+
+    # Gỡ khóa `scope` — chữ ký KHÔNG bị ảnh hưởng vì scope không nằm trong payload.
+    recs = json.loads(ledger_p.read_text(encoding="utf-8"))
+    del recs[0]["scope"]
+    ledger_p.write_text(json.dumps(recs), encoding="utf-8")
+
+    # Bác sĩ phê duyệt một cổng KHÁC — thao tác hoàn toàn bình thường.
+    second = ApprovalLedger.from_file(ledger_p)
+    second.add_approval(ApprovalLedger.make_human_approval(
+        gate_id="G8", reviewer_role="PHAN_BIEN_DOC_LAP", reviewer_ref="pb",
+        scope="binh duyet", evidence_content="ban thao",
+        decision=ApprovalDecisionEnum.APPROVED, timestamp_utc="2026-07-27T10:00:00+00:00"))
+    second.to_file(ledger_p)
+
+    gates = sorted(str(r.get("gate_id")) for r in json.loads(ledger_p.read_text(encoding="utf-8")))
+    assert "G2" in gates, "bản ghi phê duyệt của Hội đồng Đạo đức đã bị XÓA khỏi sổ cái"
+    assert "G8" in gates
+
+
 def test_block_reason_distinguishes_never_approved_revoked_and_tampered(tmp_path, monkeypatch):
     """Chốt an toàn chỉ trả `False` trống không là một vấn đề AN TOÀN, không phải tiện
     dụng: bác sĩ không phân biệt được "chưa ai duyệt" (bình thường) với "đã bị THU HỒI"
