@@ -973,43 +973,73 @@ def _diagnose_gate_records(records: Any, gate_id: str, study: str,
     gate_recs = [r for r in records if _same_gate(r.get("gate_id"))]
     if not gate_recs:
         return None, f"chưa có bản ghi phê duyệt nào cho cổng {gate_id}"
-    parsed: list = []
+    if not key_available and not is_synthetic_test_study(study, root):
+        return None, (
+            "máy này CHƯA cấu hình khóa ký (chạy tools/setup_gate_approval_key.py) nên "
+            "không xác minh được phê duyệt nào. Chỉ đề tài đã tự tay đánh dấu "
+            "study_kind=synthetic_test mới được bỏ qua bước ký."
+        )
+
+    # ★★ VÁ 2026-07-27 vòng 8 — QUY TẮC THEO THỜI GIAN, thay cho "bất kỳ bản ghi lạ nào
+    # cũng khóa cổng". Vòng kiểm định thứ sáu chứng minh quy tắc cũ tạo ra trạng thái
+    # KHÔNG THỂ PHỤC HỒI trong chính quy trình mà tài liệu dự án hướng dẫn:
+    #   · cùng một cổng được ký trên CẢ HAI máy (mỗi máy một khóa — tài liệu nói là bình
+    #     thường) ⇒ CẢ HAI máy đều thấy False, đề tài "vỡ đôi", không máy nào qua được;
+    #   · ĐỔI KHÓA đúng như setup_gate_approval_key.py chỉ dẫn ("tự tay xóa file cũ rồi
+    #     chạy lại") ⇒ cổng chết, ký lại bằng khóa MỚI cũng KHÔNG cứu được;
+    #   · bản ghi KHÔNG chữ ký mà chính approve_gate.py ghi ra khi máy chưa có khóa
+    #     (nó chỉ cảnh báo rồi vẫn ghi) ⇒ cổng chết vĩnh viễn;
+    #   · chữ ký định dạng v2 cũ ⇒ cổng chết.
+    # Và KHÔNG có công cụ phục hồi nào (`ls tools/ | grep -i ledger|repair|recover` rỗng);
+    # lối ra duy nhất là sửa tay sổ cái kiểm toán — đúng thứ hệ thống sinh ra để chống.
+    #
+    # Quy tắc mới, dựa trên một nhận xét đơn giản: MỘT BẢN THU HỒI PHẢI ĐẾN SAU BẢN PHÊ
+    # DUYỆT NÓ THU HỒI. Vậy một bản ghi lạ CŨ HƠN bản phê duyệt hợp lệ mới nhất KHÔNG THỂ
+    # là một quyết định thu hồi bị giấu — nó chỉ là dấu vết lịch sử (khóa cũ, máy khác,
+    # định dạng cũ). Chỉ bản ghi lạ MỚI HƠN mới có thể đang che giấu một thu hồi ⇒ chỉ
+    # trường hợp đó mới khóa cổng.
+    # Hệ quả quan trọng: KÝ LẠI TRÊN MÁY NÀY LUÔN LÀ ĐƯỜNG PHỤC HỒI — bản ghi mới hợp lệ
+    # đẩy mọi dấu vết lạ vào quá khứ. Đó chính là lối thoát mà quy tắc cũ không có.
+    # Đồng thời vẫn chặn được đòn của vòng 5/6 (làm hỏng một bản THU HỒI để nó "biến
+    # mất"): bản thu hồi bị sửa luôn MỚI HƠN bản phê duyệt nó nhắm tới, nên vẫn khóa cổng.
+    verified: list = []
+    suspects: list = []
     for idx, rec in enumerate(gate_recs):
         where = f"bản ghi #{idx + 1}/{len(gate_recs)} của {gate_id}"
-        # (1) tự khai do agent tạo/duyệt — approve_gate.py KHÔNG BAO GIỜ ghi các trường này
-        if _declares_agent_authorship(rec):
-            return None, (f"BẤT THƯỜNG — {where} tự khai do agent tạo/duyệt. "
-                          "approve_gate.py không bao giờ ghi các trường này; kiểm tra sổ cái.")
-        # (2) sai vai trò — approve_gate.py từ chối ghi trước khi tới ledger
-        role_raw = rec.get("reviewer_role")
-        if not reviewer_role_satisfies_gate(gate_id, role_raw if isinstance(role_raw, str) else ""):
-            return None, (f"BẤT THƯỜNG — {where} có reviewer_role={role_raw!r} không thuộc nhóm "
-                          f"bắt buộc của {gate_id} ({required_reviewer_role_hint(gate_id)}). "
-                          "approve_gate.py từ chối ghi bản ghi kiểu này; kiểm tra sổ cái.")
-        # (3) timestamp phải là ISO-8601 phân giải được. So chuỗi thô từng cho phép:
-        #     timestamp rỗng/None sắp đầu bảng (mất bản thu hồi), "2026-07-27 11:00:00"
-        #     (dấu cách < 'T') im lặng không thu hồi được, và timestamp tương lai xa làm
-        #     một phê duyệt VĨNH VIỄN không thu hồi nổi.
         ts = _parse_iso_utc(rec.get("timestamp_utc"))
-        if ts is None:
-            return None, (f"BẤT THƯỜNG — {where} có timestamp_utc="
-                          f"{rec.get('timestamp_utc')!r} không phải ISO-8601 hợp lệ.")
-        # (4) chữ ký phải xác minh được khi máy có khóa; máy chưa có khóa thì chỉ đề tài
-        #     đã tự tay đánh dấu synthetic_test mới được đi tiếp.
-        if key_available:
-            if not verify_approval_signature(rec, study):
-                return None, (
-                    f"BẤT THƯỜNG — {where} có chữ ký KHÔNG xác minh được bằng khóa trên máy "
-                    "này. Có thể do: bản ghi bị sửa sau khi ký, ký bằng máy/khóa khác, hoặc "
-                    "khóa đã bị đổi. KHÔNG tự bỏ qua — đối chiếu sổ cái với người đã duyệt."
-                )
-        elif not is_synthetic_test_study(study, root):
+        role_raw = rec.get("reviewer_role")
+        problem = None
+        if _declares_agent_authorship(rec):
+            problem = (f"{where} tự khai do agent tạo/duyệt — approve_gate.py không bao giờ "
+                       "ghi các trường này")
+        elif not reviewer_role_satisfies_gate(gate_id, role_raw if isinstance(role_raw, str) else ""):
+            problem = (f"{where} có reviewer_role={role_raw!r} không thuộc nhóm bắt buộc của "
+                       f"{gate_id} ({required_reviewer_role_hint(gate_id)})")
+        elif ts is None:
+            problem = (f"{where} có timestamp_utc={rec.get('timestamp_utc')!r} "
+                       "không phải ISO-8601 hợp lệ")
+        elif key_available and not verify_approval_signature(rec, study):
+            problem = (f"{where} có chữ ký KHÔNG xác minh được bằng khóa trên máy này "
+                       "(bị sửa sau khi ký, ký bằng máy/khóa khác, hoặc khóa đã đổi)")
+        if problem:
+            suspects.append((ts, problem))
+        else:
+            verified.append((ts, rec))
+
+    newest_verified_ts = max((t for t, _ in verified), default=None)
+    for ts, problem in suspects:
+        # Bản ghi lạ KHÔNG phân giải được thời điểm ⇒ không loại trừ được khả năng nó mới
+        # hơn ⇒ vẫn khóa (fail-closed đúng chỗ, không phải khóa tràn lan).
+        if newest_verified_ts is None or ts is None or ts > newest_verified_ts:
             return None, (
-                "máy này CHƯA cấu hình khóa ký (chạy tools/setup_gate_approval_key.py) nên "
-                "không xác minh được phê duyệt nào. Chỉ đề tài đã tự tay đánh dấu "
-                "study_kind=synthetic_test mới được bỏ qua bước ký."
+                f"BẤT THƯỜNG — {problem}. Bản ghi này KHÔNG cũ hơn phê duyệt hợp lệ mới nhất, "
+                "nên không loại trừ được khả năng nó đang che giấu một quyết định THU HỒI. "
+                "KHÔNG tự bỏ qua — đối chiếu sổ cái với người đã duyệt. Nếu đây là dấu vết "
+                "hợp lệ từ máy/khóa khác, hãy KÝ LẠI cổng này trên máy hiện tại "
+                "(tools/approve_gate.py) — bản ghi mới sẽ đưa dấu vết cũ về quá khứ."
             )
-        parsed.append((ts, rec))
+
+    parsed = verified
 
     # Chọn bản mới nhất. HÒA thì ưu tiên REJECTED — hướng an toàn: hai bản ghi cùng giây
     # thì thứ tự dòng trong file KHÔNG được quyết định cổng mở hay đóng (sorted() ổn định

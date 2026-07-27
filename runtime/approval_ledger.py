@@ -500,7 +500,16 @@ class ApprovalLedger:
                     is_synthetic=d.get("is_synthetic", False),
                     approver_signature=d.get("approver_signature"),
                 )
-            except (KeyError, ValueError):
+            except (KeyError, ValueError, TypeError):
+                # TypeError thêm 2026-07-27 vòng 8 (vòng kiểm định thứ sáu): một dòng KHÔNG
+                # PHẢI dict (chuỗi/số do sửa tay) không bao giờ tới được handler cũ —
+                # `d["approval_id"]` ném TypeError TRƯỚC, thoát ra ngoài và làm CRASH
+                # approve_gate.py lẫn stakeholder_review_audit.py bằng traceback thô, để
+                # lại file .lock treo. Trớ trêu: dòng không-phải-dict CHÍNH LÀ trạng thái
+                # mà gate_contract gắn cờ "sổ cái có dấu hiệu bị sửa tay" — đúng lúc đó
+                # thì hai việc bác sĩ cần nhất (ghi thu hồi, và tự kiểm sổ cái) đều chết.
+                # Cũng mâu thuẫn docstring của chính from_file: "file hỏng → trả ledger
+                # RỖNG (KHÔNG raise)".
                 # ★★ VÁ 2026-07-27 vòng 6 — LỖI CRITICAL, có sẵn từ trước, do vòng kiểm
                 # định độc lập thứ NĂM tìm ra. Trước đây ở đây là `continue`: dòng không
                 # phân giải được bị BỎ QUA. Nghe vô hại, nhưng to_file() ghi đè NGUYÊN

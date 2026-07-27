@@ -335,6 +335,83 @@ def test_tampered_revocation_fails_closed_not_erased(tmp_path, monkeypatch):
         assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
 
 
+def test_resigning_locally_recovers_a_gate_poisoned_by_foreign_or_legacy_records(tmp_path, monkeypatch):
+    """★ Vòng kiểm định thứ SÁU: quy tắc "bất kỳ bản ghi lạ nào cũng khóa cổng" tạo ra
+    trạng thái KHÔNG THỂ PHỤC HỒI trong chính quy trình mà tài liệu dự án hướng dẫn —
+    cùng cổng ký trên cả hai máy; ĐỔI KHÓA đúng như setup_gate_approval_key.py chỉ dẫn;
+    bản ghi không chữ ký mà chính approve_gate.py ghi khi máy chưa có khóa; chữ ký v2 cũ.
+    Ký lại bằng khóa mới cũng KHÔNG cứu được, và không có công cụ phục hồi nào — lối ra
+    duy nhất là sửa tay sổ cái kiểm toán, đúng thứ hệ thống sinh ra để chống.
+
+    Quy tắc mới dựa trên một nhận xét đơn giản: MỘT BẢN THU HỒI PHẢI ĐẾN SAU BẢN PHÊ DUYỆT
+    NÓ THU HỒI. Nên bản ghi lạ CŨ HƠN phê duyệt hợp lệ mới nhất không thể là thu hồi bị
+    giấu — chỉ là dấu vết lịch sử. ⇒ KÝ LẠI TRÊN MÁY NÀY luôn là đường phục hồi."""
+    key_old = tmp_path / "key_cu"
+    key_old.write_text("khoa-cu-hoac-may-khac", encoding="utf-8")
+    key_now = tmp_path / "key_moi"
+    key_now.write_text("khoa-may-nay", encoding="utf-8")
+    study = "de-tai-phuc-hoi"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
+
+    def sign_on(key, decision, ts, **over):
+        monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
+        rec = {
+            "gate_id": "G8", "decision": decision, "is_synthetic": False,
+            "reviewer_role": "PHAN_BIEN_DOC_LAP", "evidence_hash": evidence_hash,
+            "timestamp_utc": ts, "reviewer_identity_reference": "pb",
+            "approver_signature": GC.sign_approval("G8", study, evidence_hash, ts,
+                                                   reviewer_role="PHAN_BIEN_DOC_LAP",
+                                                   reviewer_ref="pb", decision=decision),
+        }
+        rec.update(over)
+        return rec
+
+    foreign_old = sign_on(key_old, "APPROVED", "2026-07-20T10:00:00Z")
+    unsigned_old = sign_on(key_now, "APPROVED", "2026-07-19T10:00:00Z", approver_signature=None)
+    local_new = sign_on(key_now, "APPROVED", "2026-07-26T10:00:00Z")
+    revoke_new = sign_on(key_now, "REJECTED", "2026-07-27T10:00:00Z")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_now))
+
+    # PHỤC HỒI: dấu vết cũ (khóa khác / chưa có khóa) + ký lại trên máy này ⇒ cổng mở.
+    for historic in (foreign_old, unsigned_old):
+        ledger_p.write_text(json.dumps([historic, local_new]), encoding="utf-8")
+        assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is True
+
+    # VẪN CHẶN: bản ghi lạ MỚI HƠN phê duyệt ⇒ không loại trừ được là thu hồi bị giấu.
+    ledger_p.write_text(
+        json.dumps([local_new, dict(foreign_old, timestamp_utc="2026-07-28T10:00:00Z")]),
+        encoding="utf-8")
+    assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
+
+    # VẪN CHẶN: thu hồi hợp lệ, và thu hồi bị làm hỏng để "biến mất" (đều mới hơn).
+    for variant in (revoke_new,
+                    dict(revoke_new, approver_signature="v3:shared:" + "0" * 64),
+                    dict(revoke_new, gate_id="G99")):
+        ledger_p.write_text(json.dumps([local_new, variant]), encoding="utf-8")
+        assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
+
+
+def test_non_dict_ledger_row_does_not_crash_the_ledger_reader():
+    """Vòng kiểm định thứ sáu: from_file() chỉ bắt (KeyError, ValueError) nên một dòng
+    KHÔNG PHẢI dict ném TypeError ra ngoài, làm CRASH approve_gate.py và
+    stakeholder_review_audit.py bằng traceback thô + để lại file .lock treo. Trớ trêu:
+    dòng không-phải-dict CHÍNH LÀ trạng thái được gắn cờ "sổ cái bị sửa tay" — đúng lúc
+    đó thì hai việc bác sĩ cần nhất (ghi thu hồi, tự kiểm sổ cái) đều chết."""
+    import tempfile
+
+    from runtime.approval_ledger import ApprovalLedger
+
+    d = Path(tempfile.mkdtemp())
+    p = d / "approval_ledger.json"
+    for payload in ('["chuoi rac", 123, null]', '[{"gate_id": "G2"}, "rac"]'):
+        p.write_text(payload, encoding="utf-8")
+        ledger = ApprovalLedger.from_file(p)   # không được ném
+        assert isinstance(ledger, ApprovalLedger)
+        ledger.to_file(p)                       # và ghi lại không mất dòng nào
+        assert len(json.loads(p.read_text(encoding="utf-8"))) == len(json.loads(payload))
+
+
 def test_two_machine_ledger_still_works_and_retag_still_blocked(tmp_path, monkeypatch):
     """★ REGRESSION do CHÍNH bản vá vòng 6 gây ra — tự phát hiện trước khi vòng kiểm định
     thứ sáu trả kết quả.
