@@ -283,28 +283,76 @@ def test_later_signed_rejection_revokes_earlier_approval(tmp_path, monkeypatch):
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
 
 
-def test_unsigned_rejection_cannot_block_a_real_approval(tmp_path, monkeypatch):
-    """Mặt kia của cơ chế thu hồi: nếu bản REJECTED KHÔNG cần chữ ký thì bất kỳ ai ghi
-    thêm một dòng cũng chặn oan được phê duyệt thật — biến thu hồi thành công cụ phá
-    hoại. Bản REJECTED không chữ ký phải bị BỎ QUA."""
+def test_tampered_revocation_fails_closed_not_erased(tmp_path, monkeypatch):
+    """★ SỬA 2026-07-27 vòng 5 — test này TRƯỚC ĐÂY khẳng định điều NGƯỢC LẠI (`is True`),
+    và chính nó đóng băng một thiết kế SAI mà vòng kiểm định thứ tư đã phá được.
+
+    Thiết kế vòng 4: bản REJECTED phải có chữ ký hợp lệ mới được TÍNH (chống ai đó ghi
+    một dòng REJECTED giả để chặn oan phê duyệt thật). Ý định đúng, cách làm sai — bản
+    ghi KHÔNG qua kiểm bị coi như KHÔNG TỒN TẠI. Red-team chỉ cần **đổi MỘT ký tự hex**
+    trong chữ ký của bản TỪ CHỐI (không cần khóa) là bản thu hồi rơi khỏi danh sách →
+    cổng MỞ LẠI, gói nộp in "✅ Đã qua cổng G8", còn dòng REJECTED vẫn nằm nguyên trong
+    file. Tức: phê duyệt thì chống-sửa-đổi, còn thu hồi thì XÓA-ĐƯỢC — ngược chiều an toàn.
+
+    Ngữ nghĩa mới: bản ghi bất thường (chữ ký hỏng, sai vai trò, tự khai agent, timestamp
+    không hợp lệ) ⇒ CHƯA DUYỆT. Hướng sai lệch này AN TOÀN: kẻ tấn công chỉ làm cổng ĐÓNG
+    oan — bác sĩ thấy ngay và kiểm được ledger — chứ không MỞ được cổng đã thu hồi."""
     key_path = tmp_path / "gate_approval_key"
     key_path.write_text("pytest-shared-key", encoding="utf-8")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
-    study = "de-tai-bi-pha-hoai"
+    study = "de-tai-thu-hoi-bi-pha"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
     approved = _signed(study, "G2", "IRB", "hoi-dong", "APPROVED", evidence_hash,
                        "2026-07-26T10:00:00Z")
-    forged_reject = {
-        "gate_id": "G2", "decision": "REJECTED", "is_synthetic": False,
-        "reviewer_role": "IRB", "evidence_hash": evidence_hash,
-        "timestamp_utc": "2026-07-27T23:00:00Z",
-        "reviewer_identity_reference": "ke-pha-hoai",
-    }
-    (tmp_path / "exports" / study / "approval_ledger.json").write_text(
-        json.dumps([approved, forged_reject]), encoding="utf-8")
+    revoked = _signed(study, "G2", "IRB", "hoi-dong", "REJECTED", evidence_hash,
+                      "2026-07-27T09:00:00Z")
 
-    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
+    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
+    ledger_p.write_text(json.dumps([approved, revoked]), encoding="utf-8")
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+
+    # ĐÒN TẤN CÔNG: đổi ĐÚNG MỘT ký tự trong MAC của bản thu hồi.
+    sig = revoked["approver_signature"]
+    revoked_tampered = dict(revoked)
+    revoked_tampered["approver_signature"] = sig[:-1] + ("0" if sig[-1] != "0" else "1")
+    ledger_p.write_text(json.dumps([approved, revoked_tampered]), encoding="utf-8")
+
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False, \
+        "sửa 1 ký tự trong chữ ký thu hồi KHÔNG được phép mở lại cổng"
+
+    # Các biến thể khác cùng lớp — đều phải fail-closed, không được lờ đi.
+    for mutate in (
+        lambda r: {**r, "created_by_agent": True},
+        lambda r: {**r, "reviewer_agent": "claude-code"},
+        lambda r: {**r, "reviewer_identity_reference": "nguoi-khac"},
+        lambda r: {**r, "reviewer_role": "PI"},              # sai nhóm cho G2
+        lambda r: {**r, "gate_id": "G2 "},                    # khoảng trắng thừa
+        lambda r: {**r, "timestamp_utc": "2026-07-27 09:00:00"},  # dấu cách thay 'T'
+        lambda r: {**r, "timestamp_utc": ""},
+    ):
+        ledger_p.write_text(json.dumps([approved, mutate(revoked)]), encoding="utf-8")
+        assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+
+
+def test_tie_on_identical_timestamp_resolves_to_rejection(tmp_path, monkeypatch):
+    """Hai bản ghi CÙNG thời điểm: thứ tự dòng trong file KHÔNG được quyết định cổng mở
+    hay đóng. Trước đây sorted() ổn định nên đảo 2 dòng JSON là lật được cổng mà không
+    đổi một byte đã ký nào. Nay hòa thì ưu tiên TỪ CHỐI (hướng an toàn)."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-hoa-thoi-diem"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    ts = "2026-07-26T10:00:00Z"
+    approved = _signed(study, "G2", "IRB", "hoi-dong", "APPROVED", evidence_hash, ts)
+    rejected = _signed(study, "G2", "IRB", "hoi-dong", "REJECTED", evidence_hash, ts)
+    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
+
+    for order in ([approved, rejected], [rejected, approved]):
+        ledger_p.write_text(json.dumps(order), encoding="utf-8")
+        assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
 
 
 def test_scope_disclosure_cannot_be_silenced_by_unsigned_record(tmp_path, monkeypatch):
@@ -329,9 +377,40 @@ def test_scope_disclosure_cannot_be_silenced_by_unsigned_record(tmp_path, monkey
     (tmp_path / "exports" / study / "approval_ledger.json").write_text(
         json.dumps([genuine, junk]), encoding="utf-8")
 
-    # Bản ghi rác KHÔNG được coi là có thẩm quyền → vẫn công bố 'shared', không im lặng.
-    assert GC.approving_signature_scope("G2", study, repo_root=tmp_path) == "shared"
-    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
+    # SỬA 2026-07-27 vòng 5: bản trước khẳng định vẫn trả 'shared' (coi bản ghi rác là
+    # vô hại, bỏ qua). Ngữ nghĩa mới: bản ghi rác là BẤT THƯỜNG → cổng coi như CHƯA DUYỆT
+    # và phạm vi là None. Điều quan trọng là None nay KÊU TO NHẤT trong gói nộp G10
+    # (biểu ngữ ⛔ riêng), chứ không im lặng như trạng thái mạnh nhất 'role' — nên kẻ tấn
+    # công KHÔNG thể dùng một dòng rác để làm gói nộp trông "sạch hơn thực tế".
+    assert GC.approving_signature_scope("G2", study, repo_root=tmp_path) is None
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+
+
+def test_synthetic_approval_is_not_published_as_signed_scope(tmp_path, monkeypatch):
+    """Vòng kiểm định thứ tư: approving_signature_scope() KHÔNG kiểm is_synthetic trong
+    khi ledger_approved() có — nên gói nộp công bố "cổng G2 đã ký" cho một đề tài mà cổng
+    đạo đức chỉ có phê duyệt MÔ PHỎNG. Trong hồ sơ nghiên cứu người thật, dòng đó đọc
+    thành "cổng đạo đức đã có phê duyệt mật mã" — sai sự thật theo hướng nguy hiểm nhất."""
+    key_path = tmp_path / "gate_approval_key"
+    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
+
+    study = "de-tai-chi-co-phe-duyet-mo-phong"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    ts = "2026-07-26T10:00:00Z"
+    rec = {
+        "gate_id": "G2", "decision": "APPROVED", "is_synthetic": True,
+        "reviewer_role": "IRB", "evidence_hash": evidence_hash,
+        "timestamp_utc": ts, "reviewer_identity_reference": "mo-phong",
+        "approver_signature": GC.sign_approval("G2", study, evidence_hash, ts,
+                                               reviewer_role="IRB", reviewer_ref="mo-phong",
+                                               decision="APPROVED", is_synthetic=True),
+    }
+    _write_ledger(tmp_path, study, rec)
+
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
+    assert GC.approving_signature_scope("G2", study, repo_root=tmp_path) is None, \
+        "phê duyệt mô phỏng KHÔNG được công bố như chữ ký thật trong gói nộp"
 
 
 def test_composed_path_and_symlink_evasion_is_blocked(tmp_path):

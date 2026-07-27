@@ -30,6 +30,7 @@ import json
 import os
 import sys
 import unicodedata
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Tuple
 
@@ -828,6 +829,28 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
         return False
 
 
+def _parse_iso_utc(value: Any) -> Optional[datetime]:
+    """Phân giải timestamp_utc thành datetime có múi giờ; None nếu không hợp lệ.
+
+    THÊM 2026-07-27 vòng 5: trước đây thứ tự thời gian được quyết bằng SO CHUỖI THÔ
+    (`str(r.get("timestamp_utc") or "")`). Vòng kiểm định thứ tư chỉ ra ba hệ quả thật:
+    timestamp rỗng/None sắp lên ĐẦU nên bản thu hồi bị coi là cũ nhất (mất tác dụng);
+    "2026-07-27 11:00:00" (dấu cách < 'T') là định dạng trông rất hợp lý nhưng im lặng
+    không thu hồi được; và một timestamp tương lai xa làm phê duyệt VĨNH VIỄN không thu
+    hồi nổi. Nay bắt buộc ISO-8601 phân giải được — không phân giải được thì bản ghi bị
+    coi là BẤT THƯỜNG (fail-closed), không phải "xếp cuối bảng"."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    raw = value.strip()
+    if raw.endswith("Z"):
+        raw = raw[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(raw)
+    except (ValueError, TypeError):
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
 def _latest_authoritative_record(records: Any, gate_id: str, study: str,
                                  root: Path) -> Optional[Dict[str, Any]]:
     """Bản ghi MỚI NHẤT có thẩm quyền quyết định trạng thái một cổng — bất kể nó là
@@ -846,39 +869,70 @@ def _latest_authoritative_record(records: Any, gate_id: str, study: str,
           vô hiệu bằng một thao tác KHÔNG CẦN KHÓA. Nay cả hai nơi dùng CHUNG hàm này,
           nên không thể lệch nhau nữa.
 
-    Một bản ghi chỉ được TÍNH khi: đúng cổng · là dict · vai trò thuộc nhóm bắt buộc ·
-    không tự khai do agent tạo · VÀ chữ ký xác minh được (khi máy có khóa cho nhóm đó).
-    Yêu cầu chữ ký áp cho CẢ bản REJECTED — nếu không, bất kỳ ai ghi thêm một dòng
-    "REJECTED" không chữ ký cũng chặn oan được một phê duyệt thật (biến cơ chế thu hồi
-    thành công cụ phá hoại). Khi máy CHƯA có khóa, chỉ đề tài đã tự tay đánh dấu
-    synthetic_test mới được tính — đồng bộ với quy tắc fail-closed ở ledger_approved().
+    ★★ VÁ 2026-07-27 vòng 5 — BẤT THƯỜNG PHẢI FAIL-CLOSED, KHÔNG ĐƯỢC LỜ ĐI.
+    Bản vòng 4 (ngay trên) đòi bản REJECTED cũng phải có chữ ký hợp lệ mới được TÍNH —
+    ý định đúng (chống ai đó ghi một dòng REJECTED giả để chặn oan phê duyệt thật), nhưng
+    CÁCH LÀM sai: bản ghi KHÔNG qua kiểm bị coi như KHÔNG TỒN TẠI. Vòng kiểm định thứ tư
+    khai thác đúng chỗ đó: **đổi MỘT ký tự hex trong chữ ký của bản TỪ CHỐI** (không cần
+    khóa) là bản thu hồi rơi khỏi danh sách → cổng MỞ LẠI, gói nộp in "✅ Đã qua cổng G8
+    (bình duyệt độc lập)", còn dòng REJECTED vẫn nằm nguyên trong file mà gói nộp không hề
+    nhắc tới. Sáu biến thể đều được: sửa MAC, thêm created_by_agent, thêm reviewer_agent,
+    đổi reviewer_ref, đổi reviewer_role sang nhóm khác, thêm khoảng trắng vào gate_id.
+    ⇒ Kết cục: **phê duyệt thì chống-sửa-đổi (fail-closed), còn thu hồi thì XÓA-ĐƯỢC
+    (fail-OPEN)** — đúng NGƯỢC chiều an toàn, và đúng với kẻ tấn công mà cơ chế chữ ký
+    sinh ra để chống (người ghi được ledger nhưng không có khóa).
+
+    Nguyên tắc thay thế: **ledger chỉ do approve_gate.py ghi, và nó LUÔN ký + LUÔN kiểm
+    vai trò.** Vậy một bản ghi không xác minh được, sai vai trò, tự khai do agent tạo, hay
+    có timestamp không phải ISO-8601 là DẤU HIỆU BẤT THƯỜNG — không phải "rác vô hại".
+    Gặp bất thường ⇒ coi như CHƯA DUYỆT (trả None), thay vì lặng lẽ bỏ qua rồi tin phần
+    còn lại. Hướng sai lệch mới là AN TOÀN: kẻ tấn công chỉ có thể làm cổng ĐÓNG oan (bác
+    sĩ nhìn thấy, kiểm ledger, gỡ dòng lạ) chứ không MỞ được cổng đã thu hồi (âm thầm,
+    không ai biết).
+
+    Trả None khi: không có bản ghi nào cho cổng, HOẶC phát hiện bất thường ở BẤT KỲ bản
+    ghi nào của cổng đó.
     """
     if not isinstance(records, list):
         return None
-
-    def _counts(rec: Dict[str, Any]) -> bool:
-        role_raw = rec.get("reviewer_role")
-        group = role_group_for(role_raw if isinstance(role_raw, str) else "") or None
-        if signing_key_configured(group):
-            return verify_approval_signature(rec, study)
-        return is_synthetic_test_study(study, root)
-
-    counted = []
-    for r in records:
-        if not isinstance(r, dict) or r.get("gate_id") != gate_id:
-            continue
-        if _declares_agent_authorship(r):
-            continue
-        role_raw = r.get("reviewer_role")
-        if not reviewer_role_satisfies_gate(gate_id, role_raw if isinstance(role_raw, str) else ""):
-            continue
-        if _counts(r):
-            counted.append(r)
-    if not counted:
+    gate_recs = [r for r in records
+                 if isinstance(r, dict) and str(r.get("gate_id") or "").strip() == gate_id]
+    if not gate_recs:
         return None
-    # str(... or "") — timestamp_utc phi-chuỗi (None/int/dict do ledger dựng tay) từng làm
-    # sorted() ném TypeError khi so kiểu hỗn hợp.
-    return sorted(counted, key=lambda r: str(r.get("timestamp_utc") or ""))[-1]
+
+    key_available = signing_key_configured(None)
+    parsed: list = []
+    for rec in gate_recs:
+        # (1) tự khai do agent tạo/duyệt — approve_gate.py KHÔNG BAO GIỜ ghi các trường này
+        if _declares_agent_authorship(rec):
+            return None
+        # (2) sai vai trò — approve_gate.py từ chối ghi trước khi tới ledger
+        role_raw = rec.get("reviewer_role")
+        if not reviewer_role_satisfies_gate(gate_id, role_raw if isinstance(role_raw, str) else ""):
+            return None
+        # (3) timestamp phải là ISO-8601 phân giải được. So chuỗi thô từng cho phép:
+        #     timestamp rỗng/None sắp đầu bảng (mất bản thu hồi), "2026-07-27 11:00:00"
+        #     (dấu cách < 'T') im lặng không thu hồi được, và timestamp tương lai xa làm
+        #     một phê duyệt VĨNH VIỄN không thu hồi nổi.
+        ts = _parse_iso_utc(rec.get("timestamp_utc"))
+        if ts is None:
+            return None
+        # (4) chữ ký phải xác minh được khi máy có khóa; máy chưa có khóa thì chỉ đề tài
+        #     đã tự tay đánh dấu synthetic_test mới được đi tiếp.
+        if key_available:
+            if not verify_approval_signature(rec, study):
+                return None
+        elif not is_synthetic_test_study(study, root):
+            return None
+        parsed.append((ts, rec))
+
+    # Chọn bản mới nhất. HÒA thì ưu tiên REJECTED — hướng an toàn: hai bản ghi cùng giây
+    # thì thứ tự dòng trong file KHÔNG được quyết định cổng mở hay đóng (sorted() ổn định
+    # nên trước đây đảo 2 dòng JSON là lật được cổng mà không đổi một byte đã ký nào).
+    # Khóa phụ: APPROVED = 0, mọi quyết định khác = 1. Sắp tăng dần rồi lấy phần tử CUỐI
+    # ⇒ khi hòa thời điểm, bản KHÔNG-phải-APPROVED (thu hồi/từ chối) được chọn.
+    parsed.sort(key=lambda p: (p[0], 0 if str(p[1].get("decision")) == "APPROVED" else 1))
+    return parsed[-1][1]
 
 
 def approving_signature_scope(gate_id: str, study: str,
@@ -906,6 +960,14 @@ def approving_signature_scope(gate_id: str, study: str,
     # cũng nói hai chuyện khác nhau về cùng một cổng.
     latest = _latest_authoritative_record(records, gate_id, str(study), root)
     if latest is None or latest.get("decision") != "APPROVED":
+        return None
+    # VÁ 2026-07-27 vòng 5: thêm kiểm is_synthetic. Vòng kiểm định thứ tư chỉ ra hai nơi
+    # VẪN lệch nhau dù đã dùng chung hàm chọn: ledger_approved() từ chối bản ghi
+    # is_synthetic (phê duyệt MÔ PHỎNG, không phải người thật duyệt) còn hàm này thì không
+    # — nên gói nộp G10 công bố "cổng G2 đã ký (shared)" cho một đề tài mà cổng đạo đức
+    # chỉ có phê duyệt mô phỏng. Trong hồ sơ nghiên cứu người thật, dòng đó đọc thành
+    # "cổng đạo đức đã có phê duyệt mật mã" — sai sự thật theo hướng nguy hiểm nhất.
+    if latest.get("is_synthetic"):
         return None
     return signature_scope(latest)
 
