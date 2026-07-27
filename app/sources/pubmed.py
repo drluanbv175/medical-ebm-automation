@@ -23,10 +23,28 @@ ESEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 EFETCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 
 # Bộ lọc ưu tiên các thiết kế bằng chứng mạnh.
+#
+# ★ VÁ 2026-07-27 (cổng G0) — TRƯỚC ĐÂY BỘ LỌC NÀY LÀ BẮT BUỘC VỚI MỌI TRUY VẤN, khiến hệ
+# MÙ HOÀN TOÀN với nghiên cứu QUAN SÁT. Đo thật trên "outpatient satisfaction hospital":
+# 335 hit lọt lưới / 2.916 hit thật — 88% y văn gần đây vô hình. Hệ quả nghiêm trọng cho
+# một cổng "phân tích khoảng trống nghiên cứu": một lĩnh vực có 200 cohort và 0 RCT bị báo
+# là "THIẾU — chưa có RCT/SR … Khoảng trống lớn — cơ hội nghiên cứu rõ ràng", tức khuyên
+# bác sĩ làm một đề tài đã có nhiều người làm. Đề tài hài lòng người bệnh của chính dự án
+# này thuộc đúng loại đó. Nay bộ lọc là THAM SỐ: mặc định giữ nguyên (tương thích ngược),
+# nhưng caller có thể truyền bộ lọc khác hoặc None để tìm không giới hạn thiết kế.
 PUBTYPE_FILTER = (
     '("systematic review"[Publication Type] OR "meta-analysis"[Publication Type] '
     'OR "randomized controlled trial"[Publication Type] OR "guideline"[Publication Type] '
     'OR "practice guideline"[Publication Type])'
+)
+
+# Bộ lọc nghiên cứu QUAN SÁT — dùng MeSH thay vì [Publication Type] vì PubMed KHÔNG có
+# publication type cho cohort/case-control/cross-sectional (đó là lý do bộ lọc cũ không
+# thể tìm ra chúng dù có muốn).
+OBSERVATIONAL_FILTER = (
+    '("Cohort Studies"[MeSH] OR "Case-Control Studies"[MeSH] '
+    'OR "Cross-Sectional Studies"[MeSH] OR "Observational Study"[Publication Type] '
+    'OR "Prospective Studies"[MeSH] OR "Retrospective Studies"[MeSH])'
 )
 
 
@@ -39,21 +57,54 @@ class PubMedClient(SourceClient):
         self.http = HttpClient()
 
     def search(self, query: str, clinical_area: Optional[str] = None,
-               max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
+               max_results: int = 20, since_date: Optional[str] = None,
+               pubtype_filter: Optional[str] = PUBTYPE_FILTER) -> List[RawRecord]:
+        """pubtype_filter: None = KHÔNG giới hạn thiết kế (xem chú thích PUBTYPE_FILTER)."""
         if self.use_mock or not settings.ncbi_email:
             logger.info("[pubmed] dùng mock (use_mock=%s, có email=%s)",
                         self.use_mock, bool(settings.ncbi_email))
             return mock_records_for(self.name, query, clinical_area, max_results)
         try:
-            return self._live_search(query, clinical_area, max_results, since_date)
+            return self._live_search(query, clinical_area, max_results, since_date,
+                                     pubtype_filter)
         except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
             logger.warning("[pubmed] lỗi gọi thật (live) — BỎ QUA nguồn này, KHÔNG bịa mock: %s", exc)
             return []
 
+    def count_hits(self, query: str, since_date: Optional[str] = None,
+                   pubtype_filter: Optional[str] = PUBTYPE_FILTER) -> Optional[int]:
+        """SỐ BÀI THẬT khớp truy vấn (esearch Count), KHÔNG phải số bài lấy về.
+
+        ★ VÁ 2026-07-27 (cổng G0): analyze_evidence_gaps() trước đây đếm len(danh sách đã
+        lấy) — mà danh sách đó bị chặn trần bởi --max-results (mặc định 15). Đo thật: một
+        chủ đề có 34 SR/MA và 16 RCT được ghi vào checkpoint là 15/15. Ngưỡng phân loại
+        (n_sr>=3 → "MẠNH", n_rct>=2 …) vì thế BÃO HÒA với gần như mọi chủ đề, và hệ không
+        thể phân biệt 3 SR với 3.400 SR. Một cổng có nhiệm vụ nói "khoảng trống nghiên cứu
+        ở đâu" mà đếm sai bậc độ lớn thì kết luận của nó không dùng được.
+        Trả None nếu không tra được (mock/không mạng/không email) — caller PHẢI phân biệt
+        "không biết" với "bằng 0", đúng nguyên tắc không bịa của dự án."""
+        if self.use_mock or not settings.ncbi_email:
+            return None
+        term = f"({query}) AND {pubtype_filter}" if pubtype_filter else f"({query})"
+        params = {"db": "pubmed", "term": term, "retmax": 0, "retmode": "json",
+                  "email": settings.ncbi_email}
+        if since_date:
+            params.update(datetype="pdat", mindate=since_date.replace("-", "/"),
+                          maxdate="3000/01/01")
+        if settings.ncbi_api_key:
+            params["api_key"] = settings.ncbi_api_key
+        try:
+            data = self.http.get_json(ESEARCH, params=params)
+            return int(data.get("esearchresult", {}).get("count", 0))
+        except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
+            logger.warning("[pubmed] count_hits lỗi — trả None (KHÔNG suy ra 0): %s", exc)
+            return None
+
     # -- Live ------------------------------------------------------------
     def _live_search(self, query: str, clinical_area: Optional[str],
-                     max_results: int, since_date: Optional[str] = None) -> List[RawRecord]:
-        term = f"({query}) AND {PUBTYPE_FILTER}"
+                     max_results: int, since_date: Optional[str] = None,
+                     pubtype_filter: Optional[str] = PUBTYPE_FILTER) -> List[RawRecord]:
+        term = f"({query}) AND {pubtype_filter}" if pubtype_filter else f"({query})"
         params = {
             "db": "pubmed", "term": term, "retmax": max_results,
             "retmode": "json", "email": settings.ncbi_email, "sort": "date",

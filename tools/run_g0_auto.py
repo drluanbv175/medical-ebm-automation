@@ -15,7 +15,11 @@ Hệ thống tự động:
   7. Xuất DOCX + JSON checkpoint
   8. Ghi vào sổ cái (so-cai-ghi-nho trigger)
 
-Sau khi chạy, bác sĩ chỉ cần XÁC NHẬN PICO (không điền lại từ đầu).
+★ NÓI ĐÚNG MỨC (sửa 2026-07-27): dòng này TỪNG ghi "bác sĩ chỉ cần XÁC NHẬN PICO (không
+điền lại từ đầu)" — SAI. Hệ KHÔNG suy ra PICO: mọi ô P/I/C/O trong artifact A1 là placeholder
+("[suy ra từ topic: …]", "[CẦN BÁC SĨ ẤN ĐỊNH]"), bác sĩ phải TỰ VIẾT toàn bộ. Thứ G0 thật
+sự làm là dựng NỀN BẰNG CHỨNG cho bác sĩ viết PICO: tìm thật trên PubMed, đếm thật số hit,
+và chỉ ra khoảng trống. Đó vẫn là việc có giá trị — nhưng không phải việc điền PICO.
 
 Yêu cầu: NCBI_EMAIL trong .env (miễn phí, không cần API key trả tiền)
 """
@@ -42,6 +46,8 @@ if not os.environ.get("NCBI_EMAIL"):
 if not os.environ.get("USE_MOCK_SOURCES"):
     os.environ["USE_MOCK_SOURCES"] = "false"
 
+from app.sources.pubmed import OBSERVATIONAL_FILTER as PM_OBSERVATIONAL_FILTER  # noqa: E402
+from app.sources.pubmed import PUBTYPE_FILTER as PM_PUBTYPE_FILTER  # noqa: E402
 from app.sources.pubmed import PubMedClient  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # thư mục tools/
@@ -256,6 +262,10 @@ def build_pubmed_query(topic: str, query_en: Optional[str] = None) -> dict[str, 
         "sr_ma": f"{base} AND (systematic review[pt] OR meta-analysis[pt])",
         "rct": f"{base} AND randomized controlled trial[pt]",
         "guideline": f"{base} AND (guideline[pt] OR practice guideline[pt])",
+        # VÁ 2026-07-27: thêm nhánh QUAN SÁT. Trước đây G0 chỉ hỏi SR/RCT/guideline nên
+        # mù với cohort/case-control/cắt ngang — đúng loại thiết kế của phần lớn đề tài
+        # bệnh viện (kể cả đề tài hài lòng người bệnh của chính dự án này).
+        "observational": base,
         "recent_5yr": f"{base} AND {this_year - 5}:{this_year}[dp]",
     }
     return {"base": base, **queries}
@@ -272,7 +282,8 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
     """
     client = PubMedClient()
     # recent KHÔNG dedup (cần biết bao nhiêu bài mới 2020+, kể cả trùng với SR/RCT)
-    results = {"sr_ma": [], "rct": [], "guideline": [], "recent": [], "all_pmids": set(),
+    results = {"sr_ma": [], "rct": [], "guideline": [], "observational": [],
+               "recent": [], "all_pmids": set(),
                "query_errors": {}}
     total_found = 0
 
@@ -281,6 +292,7 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
         "sr_ma":      ("sr_ma",      max_per_query, True),
         "rct":        ("rct",        max_per_query, True),
         "guideline":  ("guideline",  5,             True),
+        "observational": ("observational", max_per_query, True),
         "recent_5yr": ("recent",     10,            False),  # giữ nguyên để đếm bài mới
     }
 
@@ -288,7 +300,15 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
         q = queries.get(qtype, queries["broad"])
         print(f"  🔍 Tìm {qtype} [{n} kết quả]: {q[:80]}...")
         try:
-            records = client.search(q, max_results=n)
+            # Nhánh quan sát PHẢI dùng bộ lọc MeSH riêng — PubMed không có
+            # [Publication Type] cho cohort/case-control/cắt ngang.
+            _filt = (PM_OBSERVATIONAL_FILTER if qtype == "observational"
+                     else PM_PUBTYPE_FILTER)
+            records = client.search(q, max_results=n, pubtype_filter=_filt)
+            # SỐ HIT THẬT (esearch Count) — KHÁC số bài lấy về (bị chặn bởi
+            # --max-results). Xem count_hits() và analyze_evidence_gaps().
+            results.setdefault("true_counts", {})[result_key] = client.count_hits(
+                q, pubtype_filter=_filt)
             new_count = 0
             for r in records:
                 if dedup:
@@ -326,10 +346,25 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
 
 def analyze_evidence_gaps(results: dict, topic: str) -> dict:
     """Tổng hợp bằng chứng + phân tích khoảng trống từ kết quả PubMed thật."""
-    n_sr = len(results["sr_ma"])
-    n_rct = len(results["rct"])
-    n_guide = len(results["guideline"])
-    n_recent = len(results["recent"])
+    # ★ VÁ 2026-07-27: ưu tiên SỐ HIT THẬT (esearch Count) thay vì số bài LẤY VỀ.
+    # Trước đây n_sr = len(danh sách đã lấy), bị chặn trần bởi --max-results (mặc định 15):
+    # một chủ đề có 34 SR/MA và 16 RCT được ghi vào checkpoint là 15/15, nên mọi ngưỡng
+    # phân loại đều BÃO HÒA và hệ không phân biệt nổi 3 SR với 3.400 SR. Với một cổng có
+    # nhiệm vụ chỉ ra "khoảng trống nghiên cứu", đếm sai bậc độ lớn làm kết luận vô dụng.
+    # None = KHÔNG TRA ĐƯỢC (mock/không mạng) — khi đó mới lùi về đếm số bài lấy về, và
+    # ghi rõ trong checkpoint để người đọc biết con số nào là ước lượng dưới.
+    _tc = results.get("true_counts") or {}
+
+    def _n(key: str) -> int:
+        v = _tc.get(key)
+        return int(v) if isinstance(v, int) else len(results.get(key, []))
+
+    counts_are_real = any(isinstance(v, int) for v in _tc.values())
+    n_sr = _n("sr_ma")
+    n_rct = _n("rct")
+    n_guide = _n("guideline")
+    n_obs = _n("observational")
+    n_recent = _n("recent")
 
     # Tìm năm gần nhất
     all_years = []
@@ -352,9 +387,20 @@ def analyze_evidence_gaps(results: dict, topic: str) -> dict:
     elif n_rct == 1:
         evidence_level = "YẾU — mới 1 RCT"
         novelty_concern = "Cơ hội tốt cho RCT mới hoặc cohort tiến cứu"
+    elif n_obs >= 10:
+        # VÁ 2026-07-27: nhánh MỚI. Trước đây một lĩnh vực có hàng trăm nghiên cứu quan sát
+        # nhưng 0 RCT/SR bị báo thẳng là "Khoảng trống lớn — cơ hội nghiên cứu rõ ràng",
+        # tức khuyên bác sĩ làm một đề tài đã có rất nhiều người làm.
+        evidence_level = f"CÓ NỀN QUAN SÁT — ~{n_obs} NC quan sát, chưa có RCT/SR"
+        novelty_concern = ("Đã có nhiều nghiên cứu quan sát: KHÔNG phải khoảng trống. Cần đọc "
+                           "kỹ nhóm này trước khi biện minh tính mới; hướng khả dĩ là SR/MA "
+                           "tổng hợp chúng, hoặc nghiên cứu ở quần thể/bối cảnh chưa được phủ.")
     else:
         evidence_level = "THIẾU — chưa có RCT/SR"
-        novelty_concern = "Khoảng trống lớn — cơ hội nghiên cứu rõ ràng"
+        novelty_concern = ("Chưa thấy RCT/SR. LƯU Ý: kết luận 'khoảng trống' chỉ đáng tin khi "
+                           "số hit là số THẬT (xem counts_are_real trong checkpoint) và đã soi "
+                           "cả nhánh quan sát — nhiều lĩnh vực lâm sàng không có RCT vì lý do "
+                           "đạo đức/thực tế chứ không phải vì chưa ai nghiên cứu.")
 
     # Nhận diện khoảng trống cụ thể
     gaps = []
@@ -384,6 +430,11 @@ def analyze_evidence_gaps(results: dict, topic: str) -> dict:
 
     return {
         "n_sr": n_sr, "n_rct": n_rct, "n_guide": n_guide, "n_recent": n_recent,
+        "n_observational": n_obs,
+        # True = các con số trên là SỐ HIT THẬT từ PubMed; False = chỉ đếm được
+        # số bài LẤY VỀ (trần --max-results) nên là ƯỚC LƯỢNG DƯỚI, không dùng
+        # để kết luận "khoảng trống".
+        "counts_are_real": counts_are_real,
         "most_recent_year": most_recent,
         "evidence_level": evidence_level,
         "novelty_concern": novelty_concern,
@@ -482,7 +533,8 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 │   → {gaps['novelty_concern']}
 ├─────────────────────────────────────────────────────────────┤
 │ N — NOVEL (Tính mới) — DỰA TRÊN PUBMED THẬT              │
-│   SR/MA hiện có: {gaps['n_sr']} | RCT: {gaps['n_rct']} | Guideline: {gaps['n_guide']}
+│   SR/MA: {gaps['n_sr']} | RCT: {gaps['n_rct']} | Guideline: {gaps['n_guide']} | Quan sát: {gaps.get('n_observational', 0)}
+│   {'(số hit THẬT từ PubMed)' if gaps.get('counts_are_real') else '(⚠ chỉ đếm bài lấy về — ước lượng DƯỚI, không dùng để kết luận khoảng trống)'}
 │   Bằng chứng mới nhất: {gaps['most_recent_year'] or 'Không xác định'}
 │   Khoảng trống:
 {''.join(f"│     • {g}" + chr(10) for g in gaps['gaps'])}│
