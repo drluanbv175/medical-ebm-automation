@@ -360,6 +360,19 @@ class ApprovalLedger:
         tmp = p.with_suffix(p.suffix + ".tmp")
         tmp.write_text(self.export_json(), encoding="utf-8")
         os.replace(tmp, p)  # ghi nguyên tử — tránh file nửa vời nếu crash giữa chừng
+        # NIÊM PHONG LẠI ngay sau mỗi lần ghi (2026-07-27). Con dấu là mốc neo NGOÀI file
+        # — thứ duy nhất phát hiện được việc CẮT ĐUÔI sổ cái (xóa bản ghi cuối, thường là
+        # một quyết định THU HỒI). Đặt ở ĐÂY chứ không chỉ trong approve_gate.py để MỌI
+        # đường ghi sổ cái đều được niêm phong — đúng bài học "sửa 1 chỗ quên chỗ anh em"
+        # đã lặp lại ở mọi vòng kiểm định của đợt này.
+        # Suy tên đề tài từ đường dẫn exports/<study>/approval_ledger.json.
+        try:
+            study = p.parent.name
+            if study:
+                _GC.write_ledger_seal(study, json.loads(p.read_text(encoding="utf-8")),
+                                      repo_root=p.parent.parent.parent)
+        except (OSError, ValueError, KeyError, json.JSONDecodeError):
+            pass  # không ký được (máy chưa có khóa) — verify_ledger_seal sẽ báo rõ lý do
 
     # ── Khóa liên-tiến-trình (thêm 2026-07-15, sau red-team đối kháng) ──────────
     # Lỗ hổng THẬT đã tái hiện được: from_file() → mutate → to_file() là read-

@@ -82,6 +82,8 @@ def _write_ledger_approval(d: Path, gate_id: str, artifact_content: str) -> None
     existing = json.loads(ledger_path.read_text(encoding="utf-8")) if ledger_path.exists() else []
     existing.append(record)
     ledger_path.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8")
+    # Niem phong (2026-07-27): so cai khong rong ma thieu con dau la BAT THUONG.
+    GC.write_ledger_seal(d.name, existing, repo_root=REPO_ROOT)
 
 
 _CPS_TEXT_LOCKED = {

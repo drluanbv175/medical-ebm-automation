@@ -51,6 +51,8 @@ def _write_forged_ledger(root: Path, study: str, *, gate_id: str = "G2",
     (study_dir / "approval_ledger.json").write_text(
         json.dumps([forged_record]), encoding="utf-8"
     )
+    # Niem phong: tu 2026-07-27 so cai khong rong ma thieu con dau la BAT THUONG.
+    GC.write_ledger_seal(study, [forged_record], repo_root=root)
     return artifact
 
 
@@ -149,5 +151,6 @@ def test_real_study_still_approved_when_signature_actually_valid(tmp_path, monke
         "approver_signature": signature,
     }
     (study_dir / "approval_ledger.json").write_text(json.dumps([record]), encoding="utf-8")
+    GC.write_ledger_seal(REAL_STUDY, [record], repo_root=tmp_path)
 
     assert GC.ledger_approved("G2", REAL_STUDY, artifact, repo_root=tmp_path) is True

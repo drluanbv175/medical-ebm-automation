@@ -150,9 +150,17 @@ def _study_with_artifact(root: Path, study: str) -> tuple[Path, str]:
 
 
 def _write_ledger(root: Path, study: str, record: dict) -> None:
+    _write_ledger_records(root, study, [record])
+
+
+def _write_ledger_records(root: Path, study: str, records: list) -> None:
+    """Ghi so cai VA NIEM PHONG. Tu 2026-07-27 moi so cai khong rong deu phai co con
+    dau — approve_gate.py va ApprovalLedger.to_file() tu lam, nen test ghi JSON tho
+    phai lam theo; neu khong la dang mo phong mot trang thai KHONG THE xay ra that."""
     (root / "exports" / study / "approval_ledger.json").write_text(
-        json.dumps([record]), encoding="utf-8"
+        json.dumps(records), encoding="utf-8"
     )
+    GC.write_ledger_seal(study, records, repo_root=root)
 
 
 # ── (1) Tấn công: dùng lại chữ ký của vai trò này cho vai trò khác ────────────
@@ -374,15 +382,13 @@ def test_later_signed_rejection_revokes_earlier_approval(tmp_path, monkeypatch):
     # Hội đồng RÚT phê duyệt bằng một bản ghi REJECTED ký hợp lệ, muộn hơn.
     rejected = _signed(study, "G2", "IRB", "hoi-dong", "REJECTED", evidence_hash,
                        "2026-07-26T18:00:00Z")
-    (tmp_path / "exports" / study / "approval_ledger.json").write_text(
-        json.dumps([approved, rejected]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [approved, rejected])
 
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
     # ...và một phê duyệt MỚI HƠN nữa thì mở lại được (thu hồi không phải một chiều).
     reapproved = _signed(study, "G2", "IRB", "hoi-dong", "APPROVED", evidence_hash,
                          "2026-07-27T09:00:00Z")
-    (tmp_path / "exports" / study / "approval_ledger.json").write_text(
-        json.dumps([approved, rejected, reapproved]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [approved, rejected, reapproved])
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
 
 
@@ -411,15 +417,14 @@ def test_tampered_revocation_fails_closed_not_erased(tmp_path, monkeypatch):
     revoked = _signed(study, "G2", "IRB", "hoi-dong", "REJECTED", evidence_hash,
                       "2026-07-27T09:00:00Z")
 
-    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
-    ledger_p.write_text(json.dumps([approved, revoked]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [approved, revoked])
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
 
     # ĐÒN TẤN CÔNG: đổi ĐÚNG MỘT ký tự trong MAC của bản thu hồi.
     sig = revoked["approver_signature"]
     revoked_tampered = dict(revoked)
     revoked_tampered["approver_signature"] = sig[:-1] + ("0" if sig[-1] != "0" else "1")
-    ledger_p.write_text(json.dumps([approved, revoked_tampered]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [approved, revoked_tampered])
 
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False, \
         "sửa 1 ký tự trong chữ ký thu hồi KHÔNG được phép mở lại cổng"
@@ -434,7 +439,7 @@ def test_tampered_revocation_fails_closed_not_erased(tmp_path, monkeypatch):
         lambda r: {**r, "timestamp_utc": "2026-07-27 09:00:00"},  # dấu cách thay 'T'
         lambda r: {**r, "timestamp_utc": ""},
     ):
-        ledger_p.write_text(json.dumps([approved, mutate(revoked)]), encoding="utf-8")
+        _write_ledger_records(tmp_path, study, [approved, mutate(revoked)])
         assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
 
 
@@ -455,7 +460,6 @@ def test_resigning_locally_recovers_a_gate_poisoned_by_foreign_or_legacy_records
     key_now.write_text("khoa-may-nay", encoding="utf-8")
     study = "de-tai-phuc-hoi"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
-    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
 
     def sign_on(key, decision, ts, **over):
         monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
@@ -478,20 +482,18 @@ def test_resigning_locally_recovers_a_gate_poisoned_by_foreign_or_legacy_records
 
     # PHỤC HỒI: dấu vết cũ (khóa khác / chưa có khóa) + ký lại trên máy này ⇒ cổng mở.
     for historic in (foreign_old, unsigned_old):
-        ledger_p.write_text(json.dumps([historic, local_new]), encoding="utf-8")
+        _write_ledger_records(tmp_path, study, [historic, local_new])
         assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is True
 
     # VẪN CHẶN: bản ghi lạ MỚI HƠN phê duyệt ⇒ không loại trừ được là thu hồi bị giấu.
-    ledger_p.write_text(
-        json.dumps([local_new, dict(foreign_old, timestamp_utc="2026-07-28T10:00:00Z")]),
-        encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [local_new, dict(foreign_old, timestamp_utc="2026-07-28T10:00:00Z")])
     assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
 
     # VẪN CHẶN: thu hồi hợp lệ, và thu hồi bị làm hỏng để "biến mất" (đều mới hơn).
     for variant in (revoke_new,
                     dict(revoke_new, approver_signature="v3:shared:" + "0" * 64),
                     dict(revoke_new, gate_id="G99")):
-        ledger_p.write_text(json.dumps([local_new, variant]), encoding="utf-8")
+        _write_ledger_records(tmp_path, study, [local_new, variant])
         assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
 
 
@@ -538,7 +540,6 @@ def test_two_machine_ledger_still_works_and_retag_still_blocked(tmp_path, monkey
     key_b.write_text("khoa-may-windows", encoding="utf-8")
     study = "de-tai-hai-may"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
-    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
 
     def sign_on(key: Path, gate: str, role: str, decision: str, ts: str) -> dict:
         monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
@@ -559,14 +560,13 @@ def test_two_machine_ledger_still_works_and_retag_still_blocked(tmp_path, monkey
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_a))   # đang đứng trên máy Mac
 
     # Bản ghi ký ở máy KHÁC không được làm hỏng cổng ký ở máy NÀY.
-    ledger_p.write_text(json.dumps([g2_mac, g8_win]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [g2_mac, g8_win])
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
     assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
 
     # Đổi nhãn bản THU HỒI sang tên BẤT KỲ vẫn phải bị bắt, và không đụng cổng khác.
     for hidden in ("g8", "G8_AN_DANH", "G99", "G8​"):
-        ledger_p.write_text(
-            json.dumps([g2_mac, g8_mac, dict(revoke_mac, gate_id=hidden)]), encoding="utf-8")
+        _write_ledger_records(tmp_path, study, [g2_mac, g8_mac, dict(revoke_mac, gate_id=hidden)])
         assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False, hidden
         assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True, hidden
 
@@ -587,13 +587,12 @@ def test_revocation_cannot_be_hidden_by_retagging_or_retyping_the_record(tmp_pat
 
     study = "de-tai-giau-thu-hoi"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
-    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
     approved = _signed(study, "G8", "PHAN_BIEN_DOC_LAP", "pb", "APPROVED", evidence_hash,
                        "2026-07-26T10:00:00Z")
     revoked = _signed(study, "G8", "PHAN_BIEN_DOC_LAP", "pb", "REJECTED", evidence_hash,
                       "2026-07-27T10:00:00Z")
 
-    ledger_p.write_text(json.dumps([approved, revoked]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [approved, revoked])
     assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
 
     for label, mutated in (
@@ -602,7 +601,7 @@ def test_revocation_cannot_be_hidden_by_retagging_or_retyping_the_record(tmp_pat
         ("gate_id chèn ký tự vô hình", dict(revoked, gate_id="G8​")),
         ("gate_id thêm khoảng trắng", dict(revoked, gate_id=" G8 ")),
     ):
-        ledger_p.write_text(json.dumps([approved, mutated]), encoding="utf-8")
+        _write_ledger_records(tmp_path, study, [approved, mutated])
         assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False, label
 
 
@@ -657,30 +656,29 @@ def test_block_reason_distinguishes_never_approved_revoked_and_tampered(tmp_path
 
     study = "de-tai-chan-doan-ly-do"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
-    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
     approved = _signed(study, "G2", "IRB", "hd", "APPROVED", evidence_hash,
                        "2026-07-26T10:00:00Z")
 
-    ledger_p.write_text(json.dumps([]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [])
     assert "chưa có bản ghi" in (GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) or "")
 
-    ledger_p.write_text(json.dumps([approved]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [approved])
     assert GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) is None
 
     revoked = _signed(study, "G2", "IRB", "hd", "REJECTED", evidence_hash,
                       "2026-07-27T10:00:00Z")
-    ledger_p.write_text(json.dumps([approved, revoked]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [approved, revoked])
     reason = GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) or ""
     assert "THU HỒI" in reason and "phê duyệt MỚI" in reason
 
     tampered = dict(approved, approver_signature="v3:shared:" + "0" * 64)
-    ledger_p.write_text(json.dumps([tampered]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [tampered])
     reason = GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) or ""
     assert "BẤT THƯỜNG" in reason and "KHÔNG tự bỏ qua" in reason
 
     # Nội dung bị sửa sau khi duyệt — phải nói rõ là "đổi sau khi duyệt", không phải
     # "chưa duyệt", để bác sĩ biết cần trình lại bản đã sửa cho người duyệt.
-    ledger_p.write_text(json.dumps([approved]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [approved])
     artifact.write_text("noi dung DA BI SUA", encoding="utf-8")
     reason = GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) or ""
     assert "ĐÃ ĐỔI SAU KHI DUYỆT" in reason
@@ -699,10 +697,9 @@ def test_tie_on_identical_timestamp_resolves_to_rejection(tmp_path, monkeypatch)
     ts = "2026-07-26T10:00:00Z"
     approved = _signed(study, "G2", "IRB", "hoi-dong", "APPROVED", evidence_hash, ts)
     rejected = _signed(study, "G2", "IRB", "hoi-dong", "REJECTED", evidence_hash, ts)
-    ledger_p = tmp_path / "exports" / study / "approval_ledger.json"
 
     for order in ([approved, rejected], [rejected, approved]):
-        ledger_p.write_text(json.dumps(order), encoding="utf-8")
+        _write_ledger_records(tmp_path, study, order)
         assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False
 
 
@@ -725,8 +722,7 @@ def test_scope_disclosure_cannot_be_silenced_by_unsigned_record(tmp_path, monkey
     junk = dict(genuine)
     junk["timestamp_utc"] = "2026-07-27T23:00:00Z"
     junk["approver_signature"] = "v3:role:" + "0" * 64  # MAC rác, tự khai phạm vi 'role'
-    (tmp_path / "exports" / study / "approval_ledger.json").write_text(
-        json.dumps([genuine, junk]), encoding="utf-8")
+    _write_ledger_records(tmp_path, study, [genuine, junk])
 
     # SỬA 2026-07-27 vòng 5: bản trước khẳng định vẫn trả 'shared' (coi bản ghi rác là
     # vô hại, bỏ qua). Ngữ nghĩa mới: bản ghi rác là BẤT THƯỜNG → cổng coi như CHƯA DUYỆT

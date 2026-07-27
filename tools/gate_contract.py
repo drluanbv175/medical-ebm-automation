@@ -989,16 +989,35 @@ def write_ledger_seal(study: str, records: Any, repo_root: Optional[Path] = None
 def verify_ledger_seal(study: str, records: Any,
                        repo_root: Optional[Path] = None) -> Tuple[bool, Optional[str]]:
     """Đối chiếu sổ cái với con dấu niêm phong: (khớp?, lý do lệch)."""
-    has_chained = isinstance(records, list) and any(
-        isinstance(r, dict) and r.get("prev_hash") is not None for r in records)
-    if not has_chained:
-        return True, None          # sổ cái đời cũ — chưa có chuỗi thì cũng chưa có dấu
+    # ★ VÁ 2026-07-27 (tự tấn công bản vá của chính mình, ngay sau khi triển khai):
+    # Bản đầu chỉ đòi con dấu khi sổ cái CÓ bản ghi mang prev_hash ("sổ cái đời cũ thì
+    # miễn"). Quy tắc khoan dung đó BỊ LỢI DỤNG ĐƯỢC — đã tái hiện: kẻ tấn công (1) cắt
+    # đuôi để gỡ bản THU HỒI, (2) gỡ luôn trường prev_hash khỏi bản ghi còn lại, (3) xóa
+    # file con dấu ⇒ sổ cái trông y hệt đời cũ, né được CẢ chuỗi băm LẪN con dấu, cổng mở
+    # lại, không một dòng cảnh báo nào. Tức là toàn bộ cơ chế vô nghĩa trước đúng kẻ tấn
+    # công nó nhắm tới.
+    # (Đòn này chỉ hiệu quả trên bản ghi ĐẦU chuỗi, vì prev_hash của nó vốn là GENESIS nên
+    # gỡ đi không làm hỏng chữ ký; với bản ghi thứ hai trở đi, gỡ prev_hash là chữ ký vỡ
+    # ngay. Nhưng "chỉ bản ghi đầu" vẫn đủ để xóa sạch một sổ cái 2 dòng.)
+    # ⇒ Nay: MỌI sổ cái KHÔNG RỖNG đều phải có con dấu. An toàn để siết vì tại thời điểm
+    # này KHÔNG có approval_ledger.json nào tồn tại trên đĩa — "sổ cái đời cũ" là trường
+    # hợp phòng xa cho một thứ chưa từng tồn tại, và cái giá của nó là thủng cả cơ chế.
+    # Đường phục hồi vẫn rõ ràng: ký lại bằng approve_gate.py sẽ niêm phong lại.
+    if not isinstance(records, list) or not records:
+        return True, None          # sổ cái rỗng — chưa có gì để niêm phong
+    if not signing_key_configured(None):
+        # Máy chưa có khóa thì KHÔNG niêm phong được mà cũng không xác minh được dấu.
+        # Đòi con dấu ở đây là chặn oan; đường fail-closed cho trường hợp này đã do
+        # quy tắc "chưa có khóa ⇒ chỉ đề tài synthetic_test mới đi tiếp" lo (xem
+        # _diagnose_gate_records), nên không có kẽ hở.
+        return True, None
     p = ledger_seal_path(study, repo_root)
     if not p.exists():
         return False, (
-            "sổ cái có bản ghi đã niêm phong (prev_hash) nhưng THIẾU file "
-            f"{p.name}. Con dấu bị xóa — đây chính là cách che giấu việc CẮT ĐUÔI sổ cái "
-            "(gỡ bản ghi cuối, thường là một quyết định THU HỒI)."
+            f"sổ cái có {len(records)} bản ghi nhưng THIẾU file niêm phong {p.name}. "
+            "Con dấu bị xóa (hoặc sổ cái được tạo ngoài approve_gate.py) — đây chính là "
+            "cách che giấu việc CẮT ĐUÔI sổ cái, gỡ bản ghi cuối vốn thường là một quyết "
+            "định THU HỒI."
         )
     try:
         seal = json.loads(p.read_text(encoding="utf-8"))
