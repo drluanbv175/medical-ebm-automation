@@ -122,6 +122,12 @@ class ApprovalRecord:
     # None nếu máy chưa thiết lập khóa (tương thích ngược, không phá đề tài cũ).
     # verify_approval_signature() xác minh lại trước khi coi một cổng là khóa thật.
     approver_signature: Optional[str] = None
+    # Thêm 2026-07-27 — SỔ CÁI CHUỖI BĂM LIÊN KẾT (chữ ký v4): vân tay của bản ghi đứng
+    # NGAY TRƯỚC trong sổ cái, và nó nằm TRONG nội dung được ký. Nhờ vậy XÓA/đảo/chèn bản
+    # ghi làm đứt xích và bị phát hiện — điều chữ ký một mình không làm được, vì một sổ cái
+    # bị cắt bớt trông y hệt một sổ cái ngắn. None = bản ghi từ trước khi có chuỗi (không
+    # được chuỗi bảo vệ, nhưng KHÔNG bị coi là dấu hiệu bị sửa).
+    prev_hash: Optional[str] = None
 
 
 @dataclass

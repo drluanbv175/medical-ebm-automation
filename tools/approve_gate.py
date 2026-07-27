@@ -52,6 +52,7 @@ KHÔNG dùng để tự động hóa duyệt hàng loạt — mỗi lần gọi 
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from datetime import datetime, timezone
@@ -174,11 +175,23 @@ def main() -> int:
     # vai trò nào (đổi nhãn reviewer_role trong JSON là xong) — tách vai trò IRB/thống
     # kê/phản biện/PI chỉ tồn tại trên giấy. Nay role nằm trong nội dung được ký.
     role_group = GC.role_group_for(args.reviewer_role)
+    # SỔ CÁI CHUỖI BĂM (v4, 2026-07-27): mắt xích = vân tay bản ghi ĐANG ĐỨNG CUỐI sổ cái.
+    # Nhờ vậy, xóa/đảo/chèn bản ghi về sau sẽ làm đứt xích và bị phát hiện — điều mà chữ
+    # ký một mình KHÔNG làm được (sổ cái bị cắt bớt trông y hệt sổ cái ngắn). Đọc ở đây
+    # thay vì trong locked_update để ký ĐÚNG giá trị sẽ ghi; nếu có tiến trình khác chen
+    # vào giữa, khóa file sẽ xếp hàng và lần chạy này ghi tiếp vào đuôi mới.
+    try:
+        _existing = json.loads(ledger_path.read_text(encoding="utf-8")) if ledger_path.exists() else []
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        _existing = []
+    _prev = _existing[-1] if isinstance(_existing, list) and _existing else None
+    prev_hash = GC.chain_prev_hash(_prev if isinstance(_prev, dict) else None)
     # decision NẰM TRONG payload từ v3 (2026-07-27): trước đây ký mà không gồm quyết định,
     # nên một bản ghi REJECTED đã ký hợp lệ chỉ cần sửa chuỗi thành APPROVED là qua cổng.
     signature = GC.sign_approval(args.gate, args.study, evidence_hash, timestamp_utc,
                                  reviewer_role=args.reviewer_role, reviewer_ref=args.reviewer_ref,
-                                 decision=args.decision, is_synthetic=False)
+                                 decision=args.decision, is_synthetic=False,
+                                 prev_hash=prev_hash)
     if signature:
         if GC.per_role_key_available(role_group or ""):
             print(f"🔑 Đã ký bằng KHÓA RIÊNG của nhóm {role_group} "
@@ -232,6 +245,17 @@ def main() -> int:
     if not ok:
         print(f"✗ TỪ CHỐI ghi phê duyệt: {reason}")
         return 1
+
+    # Niêm phong lại sổ cái NGAY SAU khi ghi — con dấu (số bản ghi + vân tay đuôi, đã ký)
+    # là mốc neo NGOÀI file, thứ duy nhất phát hiện được việc CẮT ĐUÔI sổ cái. Xem
+    # gate_contract.write_ledger_seal().
+    try:
+        _sealed = GC.write_ledger_seal(
+            args.study, json.loads(ledger_path.read_text(encoding="utf-8")))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        _sealed = False
+    if _sealed:
+        print("🔏 Đã niêm phong lại sổ cái (approval_ledger.seal.json) — chống cắt đuôi.")
 
     print(f"✅ Đã ghi phê duyệt THẬT cho {args.gate} — đề tài {args.study}")
     print(f"   approval_id : {record.approval_id}")

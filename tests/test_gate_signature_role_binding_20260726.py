@@ -38,6 +38,109 @@ TIMESTAMP = "2026-07-26T00:00:00Z"
 REAL_STUDY = "hai-long-benh-nhan-C1a-BVQY175"
 
 
+# ── SỔ CÁI CHUỖI BĂM + CON DẤU (2026-07-27) — đóng lỗ hổng IM LẶNG cuối cùng ──
+# Cả SÁU vòng kiểm định độc lập đều ghi nhận cùng một điều chưa vá được: **xóa hẳn một
+# bản ghi THU HỒI thì không ai phát hiện**. Chữ ký chứng minh từng bản ghi không bị sửa,
+# nhưng KHÔNG nói gì về bản ghi ĐÃ TỪNG CÓ MÀ NAY KHÔNG CÒN — sổ cái bị cắt bớt trông y
+# hệt sổ cái ngắn. Hai lớp bổ sung, mỗi lớp bắt một kiểu:
+#   · CHUỖI BĂM: mỗi bản ghi ký kèm vân tay bản trước ⇒ xóa Ở GIỮA / đảo thứ tự = đứt xích.
+#   · CON DẤU (file .seal.json, đã ký, ghi số bản ghi + vân tay đuôi): mốc neo NGOÀI file
+#     ⇒ bắt CẮT ĐUÔI, thứ chuỗi băm một mình không thấy (xóa bản cuối vẫn để lại chuỗi
+#     hoàn hảo). Xóa luôn con dấu cũng không thoát: sổ cái có bản ghi v4 mà thiếu dấu
+#     chính là bất thường.
+
+def _chained_ledger(root: Path, study: str, artifact_hash: str, entries) -> list:
+    """Dựng sổ cái nối xích thật: mỗi bản ghi ký kèm vân tay bản đứng trước."""
+    chain: list = []
+    for gate, role, decision, ts in entries:
+        prev = GC.chain_prev_hash(chain[-1] if chain else None)
+        rec = {
+            "gate_id": gate, "decision": decision, "is_synthetic": False,
+            "reviewer_role": role, "evidence_hash": artifact_hash, "timestamp_utc": ts,
+            "reviewer_identity_reference": "ref", "prev_hash": prev,
+            "approver_signature": GC.sign_approval(gate, study, artifact_hash, ts,
+                                                   reviewer_role=role, reviewer_ref="ref",
+                                                   decision=decision, prev_hash=prev),
+        }
+        chain.append(rec)
+    return chain
+
+
+def _write_chained(root: Path, study: str, chain: list, *, reseal: bool = True) -> None:
+    (root / "exports" / study / "approval_ledger.json").write_text(
+        json.dumps(chain), encoding="utf-8")
+    if reseal:
+        GC.write_ledger_seal(study, chain, repo_root=root)
+
+
+def test_deleting_the_revocation_from_the_end_is_now_detected(tmp_path, monkeypatch):
+    """★ ĐÒN TẤN CÔNG MÀ SÁU VÒNG TRƯỚC ĐỀU KHÔNG CHẶN ĐƯỢC: gỡ hẳn bản ghi THU HỒI ở
+    CUỐI sổ cái để mở lại một cổng đã đóng. Chuỗi băm một mình không thấy (phần còn lại
+    vẫn là chuỗi hoàn hảo) — phải có CON DẤU làm mốc neo ngoài file."""
+    key = tmp_path / "gate_approval_key"
+    key.write_text("pytest-chain-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
+    study = "de-tai-cat-duoi"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    R = "PHAN_BIEN_DOC_LAP"
+    chain = _chained_ledger(tmp_path, study, evidence_hash, [
+        ("G8", R, "APPROVED", "2026-07-26T10:00:00Z"),
+        ("G8", R, "REJECTED", "2026-07-27T10:00:00Z"),
+    ])
+    _write_chained(tmp_path, study, chain)
+    assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
+
+    # CẮT ĐUÔI: gỡ bản THU HỒI, giữ nguyên con dấu.
+    _write_chained(tmp_path, study, chain[:1], reseal=False)
+    assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
+    assert "KHÔNG KHỚP CON DẤU" in (GC.gate_block_reason("G8", study, artifact,
+                                                        repo_root=tmp_path) or "")
+
+    # CẮT ĐUÔI + xóa luôn con dấu để phi tang.
+    GC.ledger_seal_path(study, tmp_path).unlink()
+    assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False
+    assert "THIẾU file" in (GC.gate_block_reason("G8", study, artifact, repo_root=tmp_path) or "")
+
+
+def test_reordering_or_deleting_a_middle_record_breaks_the_chain(tmp_path, monkeypatch):
+    """Xóa Ở GIỮA và đảo thứ tự — chuỗi băm bắt được ngay, không cần tới con dấu."""
+    key = tmp_path / "gate_approval_key"
+    key.write_text("pytest-chain-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
+    study = "de-tai-dut-xich"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    R = "PHAN_BIEN_DOC_LAP"
+    chain = _chained_ledger(tmp_path, study, evidence_hash, [
+        ("G8", R, "APPROVED", "2026-07-25T10:00:00Z"),
+        ("G8", R, "REJECTED", "2026-07-26T10:00:00Z"),
+        ("G8", R, "APPROVED", "2026-07-27T10:00:00Z"),
+    ])
+    _write_chained(tmp_path, study, chain)
+    assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is True
+
+    for label, mutated in (("xóa bản ghi GIỮA", [chain[0], chain[2]]),
+                           ("đảo thứ tự", [chain[1], chain[0], chain[2]])):
+        _write_chained(tmp_path, study, mutated, reseal=False)
+        assert GC.ledger_approved("G8", study, artifact, repo_root=tmp_path) is False, label
+        assert "ĐỨT CHUỖI" in (GC.gate_block_reason("G8", study, artifact,
+                                                    repo_root=tmp_path) or ""), label
+
+
+def test_legacy_unchained_ledger_is_not_locked_out(tmp_path, monkeypatch):
+    """Đối chứng chống chặn oan: sổ cái ghi TRƯỚC khi có chuỗi (không có prev_hash, không
+    có con dấu) vẫn dùng được bình thường. Coi chúng là "đứt xích" sẽ khóa oan mọi đề tài
+    cũ — đúng lỗi "siết quá tay" đã mắc ba lần trong đợt này."""
+    key = tmp_path / "gate_approval_key"
+    key.write_text("pytest-chain-key", encoding="utf-8")
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
+    study = "de-tai-so-cai-cu"
+    artifact, evidence_hash = _study_with_artifact(tmp_path, study)
+    legacy = _signed(study, "G2", "IRB", "hd", "APPROVED", evidence_hash, TIMESTAMP)
+    assert "prev_hash" not in legacy
+    _write_ledger(tmp_path, study, legacy)
+    assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
+
+
 def _study_with_artifact(root: Path, study: str) -> tuple[Path, str]:
     study_dir = root / "exports" / study
     study_dir.mkdir(parents=True, exist_ok=True)

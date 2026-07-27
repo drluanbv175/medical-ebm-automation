@@ -573,7 +573,13 @@ def required_reviewer_role_hint(gate_id: str) -> str:
 # thay vì được chấp nhận âm thầm. An toàn: tại thời điểm nâng KHÔNG có approval_ledger.json
 # nào tồn tại trên đĩa (đã kiểm `find exports -name approval_ledger.json`), nên không phê
 # duyệt thật nào bị vô hiệu.
-_SIGNATURE_SCHEME = "v3"
+# v4 (2026-07-27): thêm `prev_hash` — SỔ CÁI CHUỖI BĂM LIÊN KẾT. Xem chain_prev_hash().
+# Lý do nâng số hiệu: prev_hash nằm TRONG nội dung ký, nên chữ ký v3 (không có nó) phải bị
+# từ chối thay vì chấp nhận âm thầm. An toàn: tại thời điểm nâng KHÔNG có approval_ledger.json
+# nào tồn tại trên đĩa (`find exports -name approval_ledger.json` rỗng).
+_SIGNATURE_SCHEME = "v4"
+# Mắt xích đầu tiên của chuỗi — bản ghi đầu sổ cái ký với giá trị này.
+_CHAIN_GENESIS = "GENESIS"
 _SIGNATURE_SCOPE_ROLE = "role"      # ký bằng khóa RIÊNG của nhóm stakeholder
 _SIGNATURE_SCOPE_SHARED = "shared"  # ký bằng khóa CHUNG (một người giữ — KHÔNG chứng minh tách vai trò)
 # Bí danh công khai để nơi khác (vd run_g10_assemble.py) không phải dùng tên có gạch dưới.
@@ -671,9 +677,44 @@ def per_role_key_available(role_group: str) -> bool:
     return bool(key) and scope == _SIGNATURE_SCOPE_ROLE
 
 
+def chain_prev_hash(record: Optional[Dict[str, Any]]) -> str:
+    """Vân tay của một bản ghi, dùng làm mắt xích cho bản ghi KẾ TIẾP trong sổ cái.
+
+    ★ SỔ CÁI CHUỖI BĂM LIÊN KẾT (2026-07-27) — vá lỗ hổng IM LẶNG cuối cùng mà cả SÁU
+    vòng kiểm định độc lập đều ghi nhận là chưa đóng được: **xóa hẳn một bản ghi THU HỒI
+    khỏi file thì không ai phát hiện được**. Chữ ký chứng minh từng bản ghi không bị sửa,
+    nhưng KHÔNG nói gì về những bản ghi ĐÃ TỪNG CÓ MÀ NAY KHÔNG CÒN — một sổ cái bị cắt
+    bớt trông y hệt một sổ cái ngắn.
+
+    Cách đóng: mỗi bản ghi ký kèm vân tay của bản ghi ĐỨNG NGAY TRƯỚC nó. Xóa một bản ghi
+    ⇒ bản kế tiếp trỏ tới một vân tay không còn tồn tại ⇒ ĐỨT XÍCH, phát hiện được. Đảo
+    thứ tự hoặc chèn thêm cũng đứt. Vì prev_hash nằm TRONG nội dung ký, kẻ không có khóa
+    không thể vá lại xích.
+
+    Vân tay tính trên ĐÚNG các trường đã được ký (không gồm scope/approval_id — những
+    trường không ký, để một thay đổi vô hại ở đó không làm đứt xích oan).
+    """
+    if not isinstance(record, dict):
+        return _CHAIN_GENESIS
+    ref, _ok = _record_reviewer_ref(record)
+    role_raw = record.get("reviewer_role")
+    material = "|".join([
+        str(record.get("gate_id") or ""),
+        str(record.get("evidence_hash") or ""),
+        str(record.get("timestamp_utc") or ""),
+        role_group_for(role_raw if isinstance(role_raw, str) else "") or "",
+        ref,
+        str(record.get("decision") or "").strip().upper(),
+        "1" if record.get("is_synthetic") else "0",
+        str(record.get("approver_signature") or ""),
+    ])
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()
+
+
 def _signature_payload(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str,
                        role_group: str = "", reviewer_ref: str = "",
-                       decision: str = "", is_synthetic: bool = False) -> bytes:
+                       decision: str = "", is_synthetic: bool = False,
+                       prev_hash: str = "") -> bytes:
     """Nội dung được ký.
 
     v2 (2026-07-26) thêm role_group + reviewer_ref — chống dùng lại chữ ký của vai trò này
@@ -703,12 +744,14 @@ def _signature_payload(gate_id: str, study: str, evidence_hash: str, timestamp_u
         (reviewer_ref or "").strip(),
         (decision or "").strip().upper(),
         "1" if is_synthetic else "0",
+        prev_hash or _CHAIN_GENESIS,
     ]).encode("utf-8")
 
 
 def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str, *,
                   reviewer_role: str = "", reviewer_ref: str = "",
-                  decision: str = "", is_synthetic: bool = False) -> Optional[str]:
+                  decision: str = "", is_synthetic: bool = False,
+                  prev_hash: str = "") -> Optional[str]:
     """Ký HMAC-SHA256 một phê duyệt. Trả None nếu CHƯA có khóa (approve_gate.py khi đó
     vẫn ghi phê duyệt nhưng CẢNH BÁO rõ, và ledger_approved() sẽ KHÔNG coi là đã duyệt).
 
@@ -723,7 +766,7 @@ def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: s
     mac = hmac.new(
         key.encode("utf-8"),
         _signature_payload(gate_id, study, evidence_hash, timestamp_utc, group, reviewer_ref,
-                           decision, is_synthetic),
+                           decision, is_synthetic, prev_hash),
         hashlib.sha256,
     ).hexdigest()
     return f"{_SIGNATURE_SCHEME}:{scope}:{mac}"
@@ -821,7 +864,8 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
                                str(record.get("evidence_hash", "") or ""),
                                str(record.get("timestamp_utc", "") or ""), group, reviewer_ref,
                                str(record.get("decision", "") or ""),
-                               bool(record.get("is_synthetic"))),
+                               bool(record.get("is_synthetic")),
+                               str(record.get("prev_hash") or "")),
             hashlib.sha256,
         ).hexdigest()
         return hmac.compare_digest(expected, mac_hex)
@@ -895,6 +939,127 @@ def _latest_authoritative_record(records: Any, gate_id: str, study: str,
     """
     record, _reason = _diagnose_gate_records(records, gate_id, study, root)
     return record
+
+
+_SEAL_GATE_ID = "LEDGER_SEAL"   # gate_id giả lập, chỉ để tái dùng cơ chế ký sẵn có
+
+
+def ledger_seal_path(study: str, repo_root: Optional[Path] = None) -> Path:
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    return root / "exports" / str(study) / "approval_ledger.seal.json"
+
+
+def compute_ledger_tip(records: Any) -> Tuple[int, str]:
+    """(số bản ghi, vân tay bản ghi CUỐI) — trạng thái 'đuôi' của sổ cái."""
+    if not isinstance(records, list):
+        return 0, _CHAIN_GENESIS
+    last = records[-1] if records else None
+    return len(records), chain_prev_hash(last if isinstance(last, dict) else None)
+
+
+def write_ledger_seal(study: str, records: Any, repo_root: Optional[Path] = None) -> bool:
+    """Ghi CON DẤU NIÊM PHONG cho sổ cái. True nếu ký được (máy có khóa).
+
+    ★ Vì sao cần, dù đã có chuỗi băm: chuỗi bắt được xóa ở GIỮA và đảo thứ tự, nhưng
+    KHÔNG bắt được CẮT ĐUÔI — xóa bản ghi cuối cùng thì phần còn lại vẫn là một chuỗi
+    hoàn hảo. Đây là bài toán kinh điển của mọi sổ append-only: muốn biết sổ có bị cắt
+    ngắn hay không thì phải có một MỐC NEO NGOÀI FILE. Đúng đòn nguy hiểm nhất trong bối
+    cảnh này: gỡ bản ghi THU HỒI mới nhất để mở lại một cổng đã bị đóng.
+
+    Con dấu ghi (số bản ghi, vân tay đuôi) và được KÝ. Kẻ không có khóa muốn cắt đuôi
+    trót lọt thì phải làm giả con dấu — bất khả. Xóa luôn file dấu cũng không thoát: sổ
+    cái có bản ghi v4 mà THIẾU dấu chính là một bất thường (xem verify_ledger_seal)."""
+    count, tip = compute_ledger_tip(records)
+    sealed_at = datetime.now(timezone.utc).isoformat()
+    sig = sign_approval(_SEAL_GATE_ID, str(study), tip, sealed_at, decision=str(count))
+    if not sig:
+        return False
+    p = ledger_seal_path(study, repo_root)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps({
+        "kind": "approval_ledger_seal",
+        "record_count": count,
+        "tip_hash": tip,
+        "sealed_at_utc": sealed_at,
+        "seal_signature": sig,
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
+    return True
+
+
+def verify_ledger_seal(study: str, records: Any,
+                       repo_root: Optional[Path] = None) -> Tuple[bool, Optional[str]]:
+    """Đối chiếu sổ cái với con dấu niêm phong: (khớp?, lý do lệch)."""
+    has_chained = isinstance(records, list) and any(
+        isinstance(r, dict) and r.get("prev_hash") is not None for r in records)
+    if not has_chained:
+        return True, None          # sổ cái đời cũ — chưa có chuỗi thì cũng chưa có dấu
+    p = ledger_seal_path(study, repo_root)
+    if not p.exists():
+        return False, (
+            "sổ cái có bản ghi đã niêm phong (prev_hash) nhưng THIẾU file "
+            f"{p.name}. Con dấu bị xóa — đây chính là cách che giấu việc CẮT ĐUÔI sổ cái "
+            "(gỡ bản ghi cuối, thường là một quyết định THU HỒI)."
+        )
+    try:
+        seal = json.loads(p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return False, f"không đọc được {p.name} (file hỏng?)"
+    if not isinstance(seal, dict):
+        return False, f"{p.name} không đúng định dạng"
+    count, tip = compute_ledger_tip(records)
+    probe = {
+        "gate_id": _SEAL_GATE_ID, "evidence_hash": str(seal.get("tip_hash") or ""),
+        "timestamp_utc": str(seal.get("sealed_at_utc") or ""),
+        "decision": str(seal.get("record_count")),
+        "reviewer_role": "", "reviewer_identity_reference": "",
+        "approver_signature": seal.get("seal_signature"),
+    }
+    if signing_key_configured(None) and not verify_approval_signature(probe, str(study)):
+        return False, (f"chữ ký của {p.name} KHÔNG xác minh được bằng khóa trên máy này "
+                       "(dấu bị sửa, hoặc niêm phong ở máy/khóa khác)")
+    if int(seal.get("record_count") or -1) != count or str(seal.get("tip_hash")) != tip:
+        return False, (
+            f"SỔ CÁI KHÔNG KHỚP CON DẤU — dấu niêm phong {seal.get('record_count')} bản ghi "
+            f"(đuôi {str(seal.get('tip_hash'))[:12]}…) nhưng file hiện có {count} bản ghi "
+            f"(đuôi {tip[:12]}…). Có bản ghi ĐÃ BỊ XÓA KHỎI CUỐI SỔ — rất có thể là một "
+            "quyết định THU HỒI vừa bị gỡ đi."
+        )
+    return True, None
+
+
+def verify_ledger_chain(records: Any) -> Tuple[bool, Optional[str]]:
+    """Kiểm CHUỖI BĂM của sổ cái: (còn nguyên vẹn?, lý do đứt nếu có).
+
+    Xóa một bản ghi, đảo thứ tự, hay chèn thêm đều làm bản ghi KẾ TIẾP trỏ tới một vân tay
+    không khớp ⇒ phát hiện được. Đây là thứ chữ ký MỘT MÌNH không làm được: chữ ký chứng
+    minh từng bản ghi không bị sửa, nhưng một sổ cái bị CẮT BỚT trông y hệt một sổ cái ngắn.
+
+    Bỏ qua (không coi là đứt) các bản ghi CHƯA có prev_hash — sổ cái ghi bằng phiên bản
+    trước khi có chuỗi. Chúng chỉ không được chuỗi bảo vệ, chứ không phải dấu hiệu bị sửa;
+    coi chúng là đứt xích sẽ khóa oan mọi đề tài cũ (đúng lỗi "siết quá tay" đã mắc 3 lần).
+    """
+    if not isinstance(records, list):
+        return False, "sổ cái không phải danh sách bản ghi"
+    prev: Optional[Dict[str, Any]] = None
+    for idx, rec in enumerate(records):
+        if not isinstance(rec, dict):
+            prev = None          # dòng rác cắt chuỗi — đã báo ở nơi khác, không nhân đôi lỗi
+            continue
+        declared = rec.get("prev_hash")
+        if declared is None:
+            prev = rec           # bản ghi thời chưa có chuỗi — bỏ qua, vẫn nối tiếp
+            continue
+        expected = chain_prev_hash(prev)
+        if str(declared) != expected:
+            return False, (
+                f"ĐỨT CHUỖI SỔ CÁI tại bản ghi #{idx + 1} (cổng {rec.get('gate_id')!r}, "
+                f"{rec.get('timestamp_utc')}): nó ghi mắt xích {str(declared)[:12]}… nhưng bản "
+                f"ghi đứng trước hiện có vân tay {expected[:12]}…. Nghĩa là có bản ghi ĐÃ BỊ "
+                "XÓA, bị chèn thêm, hoặc bị đảo thứ tự — thứ mà chữ ký một mình không phát "
+                "hiện được. Rất có thể một quyết định THU HỒI đã bị gỡ khỏi sổ cái."
+            )
+        prev = rec
+    return True, None
 
 
 def _diagnose_gate_records(records: Any, gate_id: str, study: str,
@@ -973,6 +1138,18 @@ def _diagnose_gate_records(records: Any, gate_id: str, study: str,
     gate_recs = [r for r in records if _same_gate(r.get("gate_id"))]
     if not gate_recs:
         return None, f"chưa có bản ghi phê duyệt nào cho cổng {gate_id}"
+    # Chuỗi băm kiểm TRƯỚC mọi thứ khác: nó bắt được loại tấn công mà các phép kiểm bên
+    # dưới (vốn chỉ soi từng bản ghi CÒN LẠI) không thể thấy — bản ghi đã bị XÓA.
+    chain_ok, chain_reason = verify_ledger_chain(records)
+    if not chain_ok:
+        return None, f"BẤT THƯỜNG — {chain_reason}"
+    # Con dấu bắt CẮT ĐUÔI — thứ chuỗi băm một mình không thấy (xóa bản ghi CUỐI vẫn để
+    # lại một chuỗi hoàn hảo). Đây đúng là đòn nguy hiểm nhất: gỡ bản THU HỒI mới nhất.
+    seal_ok, seal_reason = verify_ledger_seal(study, records, root)
+    if not seal_ok:
+        return None, (f"BẤT THƯỜNG — {seal_reason} Nếu đây là sổ cái hợp lệ vừa được ghi ở "
+                      "máy/khóa khác, hãy KÝ LẠI cổng này trên máy hiện tại để niêm phong lại.")
+
     if not key_available and not is_synthetic_test_study(study, root):
         return None, (
             "máy này CHƯA cấu hình khóa ký (chạy tools/setup_gate_approval_key.py) nên "

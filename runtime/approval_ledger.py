@@ -329,6 +329,8 @@ class ApprovalLedger:
                 "reviewer_agent": r.reviewer_agent,
                 "is_synthetic": getattr(r, "is_synthetic", False),
                 "approver_signature": getattr(r, "approver_signature", None),
+                # Mắt xích chuỗi băm (v4) — xem gate_contract.chain_prev_hash().
+                "prev_hash": getattr(r, "prev_hash", None),
             }
         # VÁ 2026-07-27 vòng 6 (CRITICAL): ghi TRẢ LẠI cả những dòng thô không phân giải
         # được lúc đọc. Trước đây chúng bị bỏ khỏi danh sách rồi to_file() ghi đè nguyên
@@ -499,6 +501,7 @@ class ApprovalLedger:
                     _created_by_agent=False,
                     is_synthetic=d.get("is_synthetic", False),
                     approver_signature=d.get("approver_signature"),
+                    prev_hash=d.get("prev_hash"),
                 )
             except (KeyError, ValueError, TypeError):
                 # TypeError thêm 2026-07-27 vòng 8 (vòng kiểm định thứ sáu): một dòng KHÔNG
@@ -546,6 +549,7 @@ class ApprovalLedger:
         reviewer_agent: Optional[str] = None,
         approver_signature: Optional[str] = None,
         timestamp_utc: Optional[str] = None,
+        prev_hash: Optional[str] = None,
     ) -> ApprovalRecord:
         """
         Factory dùng trong tests để tạo human approval hợp lệ.
@@ -578,6 +582,7 @@ class ApprovalLedger:
             _created_by_agent=False,
             is_synthetic=False,
             approver_signature=approver_signature,
+            prev_hash=prev_hash,
         )
 
     @staticmethod
