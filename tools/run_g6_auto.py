@@ -2630,7 +2630,13 @@ def main():
     # bị che giấu suốt phiên vì mọi ca test đều tình cờ là cohort.
     g1_design     = g1.get("design") or {}
     topic         = g0.get("topic") or g1.get("topic") or study
-    design_code   = g1_design.get("internal_code") or "cohort"
+    # VÁ 2026-07-27: dùng bộ giải quyết DÙNG CHUNG. Trước đây cổng này chỉ đọc
+    # G1_checkpoint rồi mặc định "cohort", nên `--design` bác sĩ truyền TƯỜNG MINH ở
+    # G2 bị NUỐT — chuẩn báo cáo/công thức cỡ mẫu chọn sai mà không cảnh báo.
+    # Xem gate_contract.resolve_design_code().
+    design_code, _design_warn = GC.resolve_design_code(out)
+    if _design_warn:
+        print(_design_warn)
     reporting_std = g1_design.get("reporting_standard") or "STROBE 2007"
     n_adjusted    = g3.get("n_adjusted", g3.get("n_total", 0))
     alpha         = g3.get("alpha", 0.05)

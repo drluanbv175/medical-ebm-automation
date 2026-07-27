@@ -836,7 +836,13 @@ def main():
     #    không cảnh báo gì (bug bị che giấu vì mọi ca test trong phiên này
     #    tình cờ đều là cohort). Sửa: đọc đúng "design"."internal_code".
     topic = (g0_cp.get("topic") or study)
-    design_code = g1_cp.get("design", {}).get("internal_code") or "cohort"
+    # VÁ 2026-07-27: dùng bộ giải quyết DÙNG CHUNG. Trước đây cổng này chỉ đọc
+    # G1_checkpoint rồi mặc định "cohort", nên `--design` bác sĩ truyền TƯỜNG MINH ở
+    # G2 bị NUỐT — chuẩn báo cáo/công thức cỡ mẫu chọn sai mà không cảnh báo.
+    # Xem gate_contract.resolve_design_code().
+    design_code, _design_warn = GC.resolve_design_code(out_dir)
+    if _design_warn:
+        print(_design_warn)
     design_primary = g1_cp.get("design", {}).get("primary") or "Cohort tiến cứu"
     # THÊM 2026-07-08: G1 gắn cờ ambiguous=True khi "cohort" chỉ là placeholder
     # tạm (lĩnh vực bão hòa RCT+SR, bác sĩ CHƯA xác nhận khoảng trống thật) —

@@ -231,6 +231,51 @@ def ensure_study_meta(out_dir: Path, *, seed: Optional[Dict[str, Any]] = None,
     return meta
 
 
+def resolve_design_code(out_dir: Path, default: str = "cohort") -> Tuple[str, Optional[str]]:
+    """Mã THIẾT KẾ nghiên cứu dùng chung cho MỌI cổng: (design_code, cảnh báo nếu có).
+
+    ★ VÁ 2026-07-27 — LỖI THẬT phát hiện qua chạy thử trọn G0→G10: `--design rct` truyền ở
+    G2 BỊ NUỐT, và G3/G4/G6 rơi về "cohort".
+    Nguyên nhân: G2 nhận `--design`, dùng đúng cho phần việc của nó, và có ghi `design_code`
+    vào G2_checkpoint.json — nhưng G3/G4/G6 chỉ đọc G1_checkpoint.json rồi mặc định
+    "cohort" nếu không thấy. Hệ quả KHÔNG hề nhỏ với một pipeline nghiên cứu: **chuẩn báo
+    cáo bị chọn sai** (STROBE thay vì CONSORT cho một RCT), nhánh công thức cỡ mẫu sai,
+    template phân tích sai — mà không một dòng cảnh báo nào. Hội đồng Đạo đức hoặc tạp chí
+    sẽ nhận một hồ sơ tự khai sai loại thiết kế.
+    (G5/G7/G9 vốn đã đọc cả hai checkpoint nên không dính; đúng mẫu "sửa/viết 1 chỗ quên
+    chỗ anh em" đã lặp ở mọi vòng kiểm định của đợt này — nên đặt hàm này ở chỗ dùng chung
+    thay vì vá riêng từng cổng.)
+
+    Thứ tự ưu tiên: G2 (nơi bác sĩ có thể truyền `--design` TƯỜNG MINH) > G1 (suy luận tự
+    động) > default. Khi hai nơi KHÁC nhau thì trả kèm cảnh báo để cổng in ra — im lặng
+    chọn một bên là đúng cách lỗi này đã tồn tại mà không ai biết.
+    """
+    out_dir = Path(out_dir)
+
+    def _read(name: str, *path: str) -> Optional[str]:
+        p = out_dir / name
+        if not p.exists():
+            return None
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+            return None
+        for key in path:
+            if not isinstance(data, dict):
+                return None
+            data = data.get(key)
+        return data if isinstance(data, str) and data.strip() else None
+
+    g1 = _read("G1_checkpoint.json", "design", "internal_code")
+    g2 = _read("G2_checkpoint.json", "design_code")
+    if g1 and g2 and g1 != g2:
+        return g2, (f"⚠️  THIẾT KẾ LỆCH GIỮA CÁC CỔNG: G1 suy luận '{g1}' nhưng G2 ghi "
+                    f"'{g2}' (thường do bác sĩ truyền --design {g2} ở G2). Đang dùng '{g2}'. "
+                    "Nếu SAI, chạy lại G1/G2 cho khớp TRƯỚC khi đi tiếp — mã thiết kế quyết "
+                    "định chuẩn báo cáo (CONSORT/STROBE/PRISMA…) và công thức cỡ mẫu.")
+    return (g2 or g1 or default), None
+
+
 def load_study_meta(out_dir: Path) -> Dict[str, Any]:
     """Đọc study_meta.json (dict rỗng nếu không có/lỗi)."""
     p = Path(out_dir) / "study_meta.json"

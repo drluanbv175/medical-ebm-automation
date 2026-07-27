@@ -462,7 +462,13 @@ def main():
     g3 = load_cp(out / "G3_checkpoint.json")
     g1_design = g1.get("design") or {}
     topic = (g0.get("topic") or None) or study
-    design_code = g1_design.get("internal_code") or "cohort"
+    # VÁ 2026-07-27: dùng bộ giải quyết DÙNG CHUNG. Trước đây cổng này chỉ đọc
+    # G1_checkpoint rồi mặc định "cohort", nên `--design` bác sĩ truyền TƯỜNG MINH ở
+    # G2 bị NUỐT — chuẩn báo cáo/công thức cỡ mẫu chọn sai mà không cảnh báo.
+    # Xem gate_contract.resolve_design_code().
+    design_code, _design_warn = GC.resolve_design_code(out)
+    if _design_warn:
+        print(_design_warn)
     design_primary = g1_design.get("primary") or "Cohort tiến cứu"
     reporting_std = g1_design.get("reporting_standard") or "STROBE 2007"
     # SỬA: n_adjusted có thể là string nếu checkpoint bị ghi/sửa bởi nguồn
