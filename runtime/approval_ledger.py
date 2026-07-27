@@ -150,15 +150,37 @@ class ApprovalLedger:
         gate_id: str,
         decision: ApprovalDecisionEnum = ApprovalDecisionEnum.APPROVED,
     ) -> Optional[ApprovalRecord]:
-        """Trả ApprovalRecord mới nhất cho gate_id nếu có, ngược lại None."""
-        matching = [
-            r for r in self._records
-            if r.gate_id == gate_id and r.decision == decision
-        ]
-        if not matching:
+        """Trả ApprovalRecord mới nhất cho gate_id nếu có, ngược lại None.
+
+        ★ VÁ 2026-07-27 (vòng kiểm định độc lập thứ 3 → sửa vòng 4): TÔN TRỌNG THU HỒI.
+        Bản trước lọc `r.decision == decision` RỒI mới lấy bản mới nhất, nên một quyết
+        định TỪ CHỐI ghi SAU đó không bao giờ che được phê duyệt trước — hội đồng rút phê
+        duyệt mà hàm này vẫn trả về approval cũ. Đây là bản sao CÙNG LỖI với
+        tools/gate_contract.py::ledger_approved(); lỗi ở đó đã vá trước, còn ở đây thì
+        chưa — đúng mẫu "sửa 1 chỗ quên chỗ anh em" đã lặp lại nhiều vòng trong dự án.
+        Hệ quả THẬT: tools/stakeholder_review_audit.py (công cụ BÁC SĨ dùng kiểm tay) gọi
+        xuống đây nên vẫn in [PASS] cho một cổng đã bị thu hồi — người kiểm tra thủ công
+        được xác nhận một câu trả lời SAI."""
+        return self._latest_if_not_superseded(
+            [r for r in self._records if r.gate_id == gate_id], decision
+        )
+
+    @staticmethod
+    def _latest_if_not_superseded(
+        candidates: list[ApprovalRecord],
+        decision: ApprovalDecisionEnum,
+    ) -> Optional[ApprovalRecord]:
+        """Bản ghi MỚI NHẤT trong `candidates` — chỉ trả về nếu quyết định của nó ĐÚNG
+        bằng `decision`. Nếu bản mới nhất mang quyết định khác (vd REJECTED thu hồi một
+        APPROVED trước đó) thì trả None.
+
+        Tách riêng việc CHỌN bản mới nhất khỏi việc XÉT quyết định — đúng cách
+        gate_contract._latest_authoritative_record() làm, để hai nơi không lệch nhau."""
+        if not candidates:
             return None
-        # Trả record mới nhất (timestamp_utc sort lexicographic — ISO 8601)
-        return sorted(matching, key=lambda r: r.timestamp_utc)[-1]
+        # timestamp_utc sort lexicographic — ISO 8601; str() phòng giá trị phi-chuỗi.
+        latest = sorted(candidates, key=lambda r: str(getattr(r, "timestamp_utc", "") or ""))[-1]
+        return latest if latest.decision == decision else None
 
     def check_required_stakeholder_approval(
         self,
@@ -177,10 +199,12 @@ class ApprovalLedger:
         allowed_stakeholders = _allowed_stakeholders_for_gate(gate_id)
         if not allowed_stakeholders:
             return self.check_has_approval(gate_id, decision=decision)
+        # VÁ 2026-07-27: KHÔNG lọc theo decision ở đây — chọn bản mới nhất trong số các
+        # bản ghi ĐỦ THẨM QUYỀN (đúng stakeholder, không synthetic, không agent tự duyệt)
+        # rồi mới xét quyết định của nó, để một REJECTED muộn hơn THU HỒI được approval.
         matching = [
             r for r in self._records
             if r.gate_id == gate_id
-            and r.decision == decision
             and not getattr(r, "is_synthetic", False)
             and not getattr(r, "_created_by_agent", False)
             and not (
@@ -193,9 +217,7 @@ class ApprovalLedger:
                 for s in allowed_stakeholders
             )
         ]
-        if not matching:
-            return None
-        return sorted(matching, key=lambda r: r.timestamp_utc)[-1]
+        return self._latest_if_not_superseded(matching, decision)
 
     def stakeholder_gate_status(self, gate_id: str) -> dict:
         """Tóm tắt trạng thái cổng theo stakeholder thật, dùng cho audit/verifier."""

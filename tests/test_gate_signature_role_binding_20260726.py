@@ -213,6 +213,40 @@ def _signed(study, gate, role, ref, decision, evidence_hash, ts):
     }
 
 
+def test_approval_ledger_query_api_also_honors_revocation():
+    """★ Mẫu hình lặp lại ở MỌI vòng: sửa một chỗ, quên chỗ anh em.
+
+    `runtime/approval_ledger.py` có BẢN SAO cùng lỗi "lọc theo quyết định RỒI mới lấy bản
+    mới nhất" ở `check_has_approval()` và `check_required_stakeholder_approval()`. Vòng 4
+    vá `gate_contract.ledger_approved()` trước; nếu dừng ở đó thì
+    `tools/stakeholder_review_audit.py` — công cụ BÁC SĨ dùng KIỂM TAY — vẫn in [PASS] cho
+    một cổng đã bị thu hồi, tức người kiểm tra thủ công được xác nhận một câu trả lời SAI.
+    Test này canh cả hai hàm truy vấn đó."""
+    from runtime.approval_ledger import ApprovalLedger
+    from runtime.schemas import ApprovalDecisionEnum
+
+    ledger = ApprovalLedger()
+    approved = ApprovalLedger.make_human_approval(
+        gate_id="G2", reviewer_role="IRB_ETHICS_COMMITTEE", reviewer_ref="hoi-dong",
+        scope="duyet", evidence_content="noi dung",
+        decision=ApprovalDecisionEnum.APPROVED, timestamp_utc="2026-07-26T10:00:00+00:00")
+    ok, _ = ledger.add_approval(approved)
+    assert ok
+    assert ledger.check_has_approval("G2") is not None
+    assert ledger.check_required_stakeholder_approval("G2") is not None
+
+    revoked = ApprovalLedger.make_human_approval(
+        gate_id="G2", reviewer_role="IRB_ETHICS_COMMITTEE", reviewer_ref="hoi-dong",
+        scope="RUT phe duyet", evidence_content="noi dung",
+        decision=ApprovalDecisionEnum.REJECTED, timestamp_utc="2026-07-26T18:00:00+00:00")
+    ok, _ = ledger.add_approval(revoked)
+    assert ok
+
+    assert ledger.check_has_approval("G2") is None, "check_has_approval bỏ qua thu hồi"
+    assert ledger.check_required_stakeholder_approval("G2") is None, \
+        "check_required_stakeholder_approval bỏ qua thu hồi — audit sẽ in PASS sai"
+
+
 def test_later_signed_rejection_revokes_earlier_approval(tmp_path, monkeypatch):
     """★ MUST-FIX #1 vòng 3: `ledger_approved()` LỌC decision=="APPROVED" TRƯỚC khi chọn
     bản ghi mới nhất — nên một quyết định TỪ CHỐI ký hợp lệ SAU đó không bao giờ đóng
