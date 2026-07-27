@@ -196,6 +196,43 @@ def lock_dataset(study: str, clean_data: Path, *, lock_date: str, approved_by: s
     out_dir = exports_root / study_id
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # ★★ VÁ 2026-07-27 — CHẶN KHÓA ĐÈ. Đánh giá độc lập tái hiện được đòn nguy hiểm nhất
+    # của cả hệ: xóa 25 ca bất lợi khỏi tập dữ liệu rồi CHẠY LẠI lock_dataset() — hệ ghi
+    # đè manifest cũ, in "✅ checksum khớp", và phân tích hạ nguồn chạy trơn tru với
+    # OR 1,485 → 4,858 (p 0,15 → <0,001). Đó chính là p-hacking, KÈM DẤU TÍCH XANH.
+    # Một cơ chế "khóa dữ liệu" cho phép khóa lại vô điều kiện thì TỆ HƠN không có khóa,
+    # vì nó cấp cho dữ liệu đã bị sửa một bằng chứng giả về tính bất biến.
+    # Nay: đã khóa rồi thì KHÔNG khóa lại được trừ khi nội dung y hệt (idempotent).
+    # Muốn khóa dữ liệu KHÁC phải là một quyết định CÓ CHỦ Ý, ghi lại được — hiện tại
+    # đường duy nhất là bác sĩ tự tay xóa/đổi tên manifest cũ, để hành vi đó hiện trong
+    # lịch sử thư mục thay vì diễn ra âm thầm bên trong một lệnh trông vô hại.
+    _existing_manifest = out_dir / "DATA_LOCK_manifest.json"
+    if _existing_manifest.exists():
+        try:
+            _old = json.loads(_existing_manifest.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+            _old = {}
+        if _old.get("status") == LOCKED_STATUS:
+            try:
+                _new_sha = RDI._sha256_file(Path(clean_data))
+            except OSError:
+                _new_sha = None
+            if _new_sha and _new_sha == _old.get("sha256"):
+                return _old          # khóa lại đúng y file cũ — vô hại, trả nguyên trạng
+            return {
+                **_old,
+                "status": BLOCKED_STATUS,
+                "blockers": [
+                    "ĐÃ KHÓA TRƯỚC ĐÓ — TỪ CHỐI KHÓA ĐÈ. Đề tài này đã có DATA_LOCK_manifest.json "
+                    f"ở trạng thái {LOCKED_STATUS} (khóa lúc {_old.get('locked_at')}, "
+                    f"sha256 {str(_old.get('sha256'))[:12]}…), nhưng file dữ liệu đưa vào lần này "
+                    f"có sha256 {str(_new_sha)[:12]}… — tức NỘI DUNG ĐÃ KHÁC. Khóa đè sẽ xóa dấu "
+                    "vết bản khóa cũ và hợp thức hóa một tập dữ liệu đã bị thay đổi sau khi khóa "
+                    "(chính là p-hacking có dấu tích xanh). Nếu thật sự cần khóa một tập khác, "
+                    "hãy TỰ TAY lưu/đổi tên manifest cũ trước, để việc đó hiện trong lịch sử.",
+                ],
+            }
+
     locked_at = datetime.now().isoformat(timespec="seconds")
     profile = (
         RDI._scan_csv(clean_data, max_scan_rows=max_scan_rows)

@@ -236,6 +236,14 @@ def main() -> int:
                 decision=ApprovalDecisionEnum(args.decision),
                 approver_signature=signature,
                 timestamp_utc=timestamp_utc,
+                # VÁ 2026-07-27: prev_hash PHẢI vào cả BẢN GHI, không chỉ vào chữ ký.
+                # Trước đó nó được tính và đưa vào sign_approval() nhưng KHÔNG truyền
+                # xuống make_human_approval(), nên bản ghi ghi ra đĩa có prev_hash=None
+                # trong khi chữ ký lại tính theo prev_hash THẬT ⇒ từ bản ghi THỨ HAI trở
+                # đi chữ ký KHÔNG XÁC MINH ĐƯỢC. Hệ quả: đường ký hợp lệ bị đóng hoàn
+                # toàn — bác sĩ ký đúng quy trình mà cổng vẫn báo "chưa duyệt". Lỗi do
+                # chính đợt thêm chuỗi băm hôm nay gây ra; phát hiện qua đánh giá độc lập.
+                prev_hash=prev_hash,
             )
             ok, reason = ledger.add_approval(record, created_by_agent=False)
     except (TimeoutError, LedgerLockInvalidated) as exc:
