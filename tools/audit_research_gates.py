@@ -63,6 +63,7 @@ REAL_SIGNAL_LABELS = {
 REAL_SIGNAL_BY_PIPELINE_GATE: Dict[str, Tuple[str, str]] = {
     "G2": ("irb_approved", "phê duyệt IRB thật"),
     "G4": ("sap_locked", "SAP đã ký khóa trước khi xem dữ liệu"),
+    "G5": ("db_locked", "dataset phân tích đã khóa và G5 được duyệt"),
     "G6": ("db_locked", "dataset phân tích đã khóa trước phân tích chính"),
     "G9": ("integrity_signed", "COI/tài trợ/đóng góp tác giả/khai báo AI đã ký"),
 }
@@ -108,9 +109,15 @@ GATE_AUTOMATION_PROFILES: Dict[str, Dict[str, str]] = {
         "doctor_input": "Chữ ký khóa SAP thật trước khi xem dữ liệu.",
     },
     "G5": {
-        "mode": "AUTO_DRAFT_DATA_TOOLS",
-        "auto": "Tự sinh DMP, CRF/REDCap dictionary, SOP và script QC.",
-        "doctor_input": "Xác nhận công cụ/pilot/SOP tại đơn vị.",
+        "mode": "DATA_GOVERNANCE_HARD_STOP",
+        "auto": (
+            "Tự sinh DMP/CRF/SOP/QC và xác minh intake, provenance, query, "
+            "checksum, data lock theo G5-2026.1."
+        ),
+        "doctor_input": (
+            "Dữ liệu thật đã khử định danh, đóng query, xác nhận backup/access/"
+            "retention và chữ ký G5 của data manager/PI."
+        ),
     },
     "G6": {
         "mode": "DATA_PIPELINE_HARD_STOP",
@@ -275,6 +282,18 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "key": "cleaning_plan",
             "label": "Data cleaning plan",
             "patterns": ["12_Data_Cleaning_Plan.md"],
+            "required": False,
+        },
+        {
+            "key": "g5_quality_report",
+            "label": "Báo cáo hợp đồng chất lượng G5",
+            "patterns": ["G5_QUALITY_REPORT.json"],
+            "required": True,
+        },
+        {
+            "key": "data_lock_manifest",
+            "label": "Manifest khóa dữ liệu có checksum",
+            "patterns": ["DATA_LOCK_manifest.json"],
             "required": False,
         },
     ],

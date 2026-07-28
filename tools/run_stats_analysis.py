@@ -55,6 +55,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import g5_quality_gate as G5Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 
 warnings.filterwarnings("ignore")
@@ -1247,14 +1248,26 @@ def main():
         args.study, "G4", Path("exports") / args.study / f"G4_A5_SAP_FINAL_{args.study}.md")
     g5_ledger_ok = _ledger_approved(
         args.study, "G5", Path("exports") / args.study / "G5_checkpoint.json")
+    g5_quality = G5Q.evaluate_study(
+        args.study,
+        Path("exports") / args.study,
+        repo_root=Path(__file__).resolve().parents[1],
+        write=False,
+    )
+    g5_quality_ok = g5_quality["status"] == G5Q.STATUS_LOCKED
     g4_locked = (g4_checkpoint_locked or args.i_confirm_sap_locked) and g4_ledger_ok
-    g5_locked = (g5_checkpoint_locked or args.i_confirm_sap_locked) and g5_ledger_ok
+    g5_locked = (
+        (g5_checkpoint_locked or args.i_confirm_sap_locked)
+        and g5_ledger_ok
+        and g5_quality_ok
+    )
     if not (g4_locked and g5_locked):
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật.")
         print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
-              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
+              f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}"
+              f"  |  quality: {g5_quality['status']}")
         for _g, _art in (("G4", f"G4_A5_SAP_FINAL_{args.study}.md"),
                          ("G5", "G5_checkpoint.json")):
             _why = GC.gate_block_reason(_g, args.study, Path("exports") / args.study / _art)

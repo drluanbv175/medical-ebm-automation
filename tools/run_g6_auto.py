@@ -839,7 +839,12 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         and g2_quality_ok
     )
     g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
-    g5_locked = (g5_checkpoint_locked or i_confirm_sap) and g5_ledger_ok
+    g5_quality_ok = _GC.g5_quality_contract_satisfied("__STUDY__")
+    g5_locked = (
+        (g5_checkpoint_locked or i_confirm_sap)
+        and g5_ledger_ok
+        and g5_quality_ok
+    )
     if not g2_locked:
         print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
         print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
@@ -1275,7 +1280,12 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         and g2_quality_ok
     )
     g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
-    g5_locked = (g5_checkpoint_locked or i_confirm_sap) and g5_ledger_ok
+    g5_quality_ok = _GC.g5_quality_contract_satisfied("__STUDY__")
+    g5_locked = (
+        (g5_checkpoint_locked or i_confirm_sap)
+        and g5_ledger_ok
+        and g5_quality_ok
+    )
     if not g2_locked:
         print("✗ DỪNG: G2 (phê duyệt IRB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
         print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
@@ -1663,7 +1673,8 @@ _SENSITIVITY_TEMPLATE = (
     "        g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'))\n"
     "    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality\n"
     "    g4_locked = (g4_cp or i_confirm_sap) and g4_ledger\n"
-    "    g5_locked = (g5_cp or i_confirm_sap) and g5_ledger\n"
+    "    g5_quality = _GC.g5_quality_contract_satisfied('__STUDY__')\n"
+    "    g5_locked = (g5_cp or i_confirm_sap) and g5_ledger and g5_quality\n"
     "    if not g2_locked:\n"
     "        raise SystemExit(\'DUNG: G2 (phe duyet dao duc/IRB) chua xac nhan LOCKED bang phe duyet that (chu ky). \'\n"
     "                         \'--i-confirm-irb-approved chi thay checkpoint-file, KHONG thay duoc ledger.\')\n"
@@ -1890,7 +1901,8 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
         g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'))
     g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality
     g4_locked = (g4_cp or i_confirm_sap) and g4_ledger
-    g5_locked = (g5_cp or i_confirm_sap) and g5_ledger
+    g5_quality = _GC.g5_quality_contract_satisfied("__STUDY__")
+    g5_locked = (g5_cp or i_confirm_sap) and g5_ledger and g5_quality
     if not g2_locked:
         raise SystemExit('DUNG: G2 (phe duyet dao duc/IRB) chua xac nhan LOCKED bang phe duyet that (chu ky). '
                           '--i-confirm-irb-approved chi thay checkpoint-file, KHONG thay duoc ledger.')

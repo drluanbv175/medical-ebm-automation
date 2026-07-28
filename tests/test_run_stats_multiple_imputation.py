@@ -24,12 +24,10 @@ PYTHON = sys.executable
 
 sys.path.insert(0, str(TOOLS_DIR))
 sys.path.insert(0, str(REPO_ROOT))
-import lock_analysis_dataset as LAD  # noqa: E402
 import run_stats_analysis as RSA  # noqa: E402
 
+from tests.g5_test_helpers import prepare_locked_g5_study  # noqa: E402
 from tests.test_run_stats_data_lock_gate import (  # noqa: E402
-    _approve_g2_g4_g5,
-    _closed_query_log,
     _configure_test_signing_key,
     _csv,
     _rmtree_retry,
@@ -186,16 +184,11 @@ class TestMultipleImputationUnit:
 
 def _lock_mi_study(study: str, tmp_path: Path) -> Path:
     clean = _csv(tmp_path / f"{study}_df_clean.csv", _MI_CSV)
-    qlog = _closed_query_log(tmp_path / f"{study}_query_log.csv")
-    manifest = LAD.lock_dataset(
+    locked_path, _ = prepare_locked_g5_study(
         study, clean, exports_root=REPO_ROOT / "exports",
-        lock_date="2026-07-15", approved_by="PI Nguyen", sap_version="1.0",
-        query_log=qlog, confirm_deidentified=True, confirm_clean_copy=True,
-        confirm_no_open_query=True, confirm_sap_locked=True,
+        repo_root=REPO_ROOT,
     )
-    assert manifest["status"] == LAD.LOCKED_STATUS
-    _approve_g2_g4_g5(study)
-    return REPO_ROOT / "exports" / study / manifest["locked_dataset_path"]
+    return locked_path
 
 
 def test_mi_cli_end_to_end_through_data_lock_gate(tmp_path, monkeypatch):
@@ -255,13 +248,8 @@ def test_mi_cli_skips_cleanly_when_no_missing_data(tmp_path, monkeypatch):
 
 def _lock_mi_study_from_text(study: str, tmp_path: Path, csv_text: str) -> Path:
     clean = _csv(tmp_path / f"{study}_df_clean.csv", csv_text)
-    qlog = _closed_query_log(tmp_path / f"{study}_query_log.csv")
-    manifest = LAD.lock_dataset(
+    locked_path, _ = prepare_locked_g5_study(
         study, clean, exports_root=REPO_ROOT / "exports",
-        lock_date="2026-07-15", approved_by="PI Nguyen", sap_version="1.0",
-        query_log=qlog, confirm_deidentified=True, confirm_clean_copy=True,
-        confirm_no_open_query=True, confirm_sap_locked=True,
+        repo_root=REPO_ROOT,
     )
-    assert manifest["status"] == LAD.LOCKED_STATUS
-    _approve_g2_g4_g5(study)
-    return REPO_ROOT / "exports" / study / manifest["locked_dataset_path"]
+    return locked_path

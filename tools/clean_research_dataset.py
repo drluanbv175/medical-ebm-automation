@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -98,7 +99,14 @@ def _split_list(value: Any) -> List[str]:
 
 
 def _variable_name(raw: Dict[str, Any]) -> Optional[str]:
-    for key in ("name", "variable", "variable_name", "field_name", "ten_bien"):
+    for key in (
+        "name",
+        "variable",
+        "variable_name",
+        "variable_field_name",
+        "field_name",
+        "ten_bien",
+    ):
         value = raw.get(key)
         if value:
             return str(value).strip()
@@ -106,22 +114,69 @@ def _variable_name(raw: Dict[str, Any]) -> Optional[str]:
 
 
 def _normalise_rule(raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    name = _variable_name(raw)
+    # REDCap dùng tiêu đề có khoảng trắng/dấu "/" (vd "Variable / Field Name").
+    # Chuẩn hóa khóa trước khi đọc để data dictionary do G5 sinh ra thực sự dùng
+    # được, thay vì bị đọc thành danh sách biến rỗng.
+    normalized = {
+        re.sub(
+            r"[^a-z0-9_]+",
+            "_",
+            RDI._normalize_header(str(key)),
+        ).strip("_"): value
+        for key, value in raw.items()
+    }
+    name = _variable_name(normalized)
     if not name:
         return None
-    allowed = raw.get("allowed")
+    allowed = normalized.get("allowed")
     if allowed is None:
-        allowed = raw.get("allowed_values")
+        allowed = normalized.get("allowed_values")
     if allowed is None:
-        allowed = raw.get("choices")
+        allowed = normalized.get("choices")
+    if allowed is None:
+        allowed = normalized.get("choices_calculations_or_slider_labels")
+    field_type = str(
+        normalized.get("type")
+        or normalized.get("data_type")
+        or normalized.get("field_type")
+        or "text"
+    ).strip().lower()
+    validation_type = str(
+        normalized.get("text_validation_type_or_show_slider_number") or ""
+    ).strip().lower()
+    if field_type in {"radio", "dropdown", "checkbox", "yesno", "truefalse"}:
+        data_type = "category"
+    elif validation_type in {"number", "number_1dp", "number_2dp", "number_3dp"}:
+        data_type = "number"
+    elif validation_type == "integer":
+        data_type = "integer"
+    elif validation_type.startswith("date_"):
+        data_type = "date"
+    else:
+        data_type = field_type
+    allowed_values = _split_list(allowed)
+    if data_type == "category":
+        allowed_values = [
+            item.split(",", 1)[0].strip()
+            for item in allowed_values
+            if item.split(",", 1)[0].strip()
+        ]
+        if field_type == "yesno" and not allowed_values:
+            allowed_values = ["0", "1"]
+        elif field_type == "truefalse" and not allowed_values:
+            allowed_values = ["0", "1"]
     rule = {
         "name": name,
-        "type": str(raw.get("type") or raw.get("data_type") or "text").strip().lower(),
-        "required": _truthy(raw.get("required") or raw.get("bat_buoc")),
-        "min": raw.get("min"),
-        "max": raw.get("max"),
-        "allowed": _split_list(allowed),
-        "date_format": str(raw.get("date_format") or "%Y-%m-%d").strip(),
+        "type": data_type,
+        "required": _truthy(
+            normalized.get("required")
+            or normalized.get("required_field")
+            or normalized.get("bat_buoc")
+        ),
+        "min": normalized.get("min") or normalized.get("text_validation_min"),
+        "max": normalized.get("max") or normalized.get("text_validation_max"),
+        "allowed": allowed_values,
+        "date_format": str(normalized.get("date_format") or "%Y-%m-%d").strip(),
     }
     return rule
 
@@ -489,6 +544,7 @@ def clean_dataset(study: str, data_path: Path, *,
     query_log_path: Optional[Path] = None
     plan_path: Optional[Path] = None
     output_sha256: Optional[str] = None
+    query_log_sha256: Optional[str] = None
 
     if blocker is None:
         all_missing_tokens = sorted(
@@ -531,11 +587,17 @@ def clean_dataset(study: str, data_path: Path, *,
         output_sha256 = RDI._sha256_file(output_path)
         query_log_path = out_dir / "04_query_logs" / QUERY_LOG_NAME
         _write_query_log(query_log_path, validation_issues)
+        query_log_sha256 = RDI._sha256_file(query_log_path)
         plan_payload = {
             "kind": "research_dataset_cleaning_plan",
             "study": study_id,
             "created_at": cleaned_at,
             "dictionary": _safe_rel(Path(dictionary_path), out_dir) if dictionary_path else None,
+            "dictionary_sha256": (
+                RDI._sha256_file(Path(dictionary_path))
+                if dictionary_path and Path(dictionary_path).exists()
+                else None
+            ),
             "id_column": detected_id_column,
             "required_columns": merged_required,
             "missing_tokens": all_missing_tokens,
@@ -568,11 +630,20 @@ def clean_dataset(study: str, data_path: Path, *,
         "clean_dataset_path": _safe_rel(clean_dataset_path, out_dir),
         "output_sha256": output_sha256,
         "query_log": _safe_rel(query_log_path, out_dir),
+        "query_log_sha256": (
+            query_log_sha256 if query_log_path and query_log_path.exists() else None
+        ),
         "plan": _safe_rel(plan_path, out_dir),
         "row_count": len(rows),
         "column_count": len(columns),
         "pii_scan": pii_scan,
         "dictionary_loaded": bool(dictionary.get("variables")),
+        "dictionary_path": _safe_rel(Path(dictionary_path), out_dir) if dictionary_path else None,
+        "dictionary_sha256": (
+            RDI._sha256_file(Path(dictionary_path))
+            if dictionary_path and Path(dictionary_path).exists()
+            else None
+        ),
         "dictionary_blocker": dictionary_blocker,
         "safe_action_counts": action_counts,
         "open_query_count": open_query_count,

@@ -23,12 +23,14 @@ PYTHON = sys.executable
 
 sys.path.insert(0, str(TOOLS_DIR))
 sys.path.insert(0, str(REPO_ROOT))
-import lock_analysis_dataset as LAD  # noqa: E402
 import run_stats_analysis as RSA  # noqa: E402
 
+from tests.g5_test_helpers import (  # noqa: E402
+    prepare_locked_g5_study,
+    prepare_upstream_approvals,
+    write_g5_toolkit,
+)
 from tests.test_run_stats_data_lock_gate import (  # noqa: E402
-    _approve_g2_g4_g5,
-    _closed_query_log,
     _configure_test_signing_key,
     _csv,
     _rmtree_retry,
@@ -166,16 +168,11 @@ class TestSurvivalArgValidation:
 
 def _lock_survival_study(study: str, tmp_path: Path) -> Path:
     clean = _csv(tmp_path / f"{study}_df_clean.csv", _SURVIVAL_CSV)
-    qlog = _closed_query_log(tmp_path / f"{study}_query_log.csv")
-    manifest = LAD.lock_dataset(
+    locked_path, _ = prepare_locked_g5_study(
         study, clean, exports_root=REPO_ROOT / "exports",
-        lock_date="2026-07-15", approved_by="PI Nguyen", sap_version="1.0",
-        query_log=qlog, confirm_deidentified=True, confirm_clean_copy=True,
-        confirm_no_open_query=True, confirm_sap_locked=True,
+        repo_root=REPO_ROOT,
     )
-    assert manifest["status"] == LAD.LOCKED_STATUS
-    _approve_g2_g4_g5(study)
-    return REPO_ROOT / "exports" / study / manifest["locked_dataset_path"]
+    return locked_path
 
 
 def test_survival_cli_end_to_end_through_data_lock_gate(tmp_path, monkeypatch):
@@ -228,7 +225,8 @@ def test_survival_cli_blocked_without_data_lock(tmp_path, monkeypatch):
     try:
         _configure_test_signing_key(tmp_path, monkeypatch)
         study_dir.mkdir(parents=True, exist_ok=True)
-        _approve_g2_g4_g5(study)
+        write_g5_toolkit(study, study_dir)
+        prepare_upstream_approvals(study, study_dir, repo_root=REPO_ROOT)
         unlocked = _csv(tmp_path / "unlocked.csv", _SURVIVAL_CSV)
         res = subprocess.run(
             [PYTHON, str(TOOLS_DIR / "run_stats_analysis.py"),
@@ -239,7 +237,7 @@ def test_survival_cli_blocked_without_data_lock(tmp_path, monkeypatch):
             cwd=REPO_ROOT, capture_output=True, text=True, timeout=120,
         )
         assert res.returncode != 0
-        assert "DATA LOCK" in res.stdout
-        assert "missing_DATA_LOCK_manifest" in res.stdout
+        assert "G5 (khóa DB)" in res.stdout
+        assert "DRAFT_READY_NEEDS_REAL_DATA" in res.stdout
     finally:
         _rmtree_retry(study_dir)

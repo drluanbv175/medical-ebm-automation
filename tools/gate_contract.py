@@ -174,6 +174,33 @@ def g2_quality_contract_satisfied(
     return True
 
 
+def g5_quality_contract_satisfied(
+    study: str,
+    repo_root: Optional[Path] = None,
+) -> bool:
+    """True khi G5 được chấm trực tiếp là dataset khóa + phê duyệt hợp lệ.
+
+    Import lười tránh vòng import ở lúc nạp module: ``g5_quality_gate`` dùng lại
+    các primitive ledger trong file này. Không tin riêng report JSON lưu sẵn vì
+    dataset/dictionary/query log có thể đã thay đổi sau lần chấm trước.
+    """
+    try:
+        import g5_quality_gate as g5_quality  # noqa: PLC0415
+    except ImportError:
+        return False
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    try:
+        report = g5_quality.evaluate_study(
+            str(study),
+            root / "exports" / str(study),
+            repo_root=root,
+            write=False,
+        )
+    except (OSError, RuntimeError, ValueError):
+        return False
+    return report.get("status") == g5_quality.STATUS_LOCKED
+
+
 # ── study_meta.json — NƠI PIN durable quyết định thật của bác sĩ ──────────────
 # Cờ bằng-chứng-đời-thực: hệ KHÔNG tự bật, chỉ bác sĩ xác nhận. gate_params là nơi
 # PIN tham số (effect size…) để CHẠY LẠI không mất input (khớp run_pipeline._recover_params).
@@ -644,6 +671,15 @@ _STAKEHOLDER_ROLE_ALIASES: Dict[str, set[str]] = {
         "CHUYÊN_GIA_THỐNG_KÊ",
         "PHƯƠNG_PHÁP_THỐNG_KÊ",
     },
+    "DATA_MANAGER": {
+        "DATA_MANAGER",
+        "CLINICAL_DATA_MANAGER",
+        "DATA_GOVERNANCE_REVIEWER",
+        "DATA_GOVERNANCE_QA_REVIEWER",
+        "DATA_STEWARD",
+        "QUAN_LY_DU_LIEU",
+        "QUẢN_LÝ_DỮ_LIỆU",
+    },
     "INDEPENDENT_PEER_REVIEWER": {
         "INDEPENDENT_PEER_REVIEWER",
         "PEER_REVIEWER",
@@ -666,6 +702,7 @@ _STAKEHOLDER_ROLE_ALIASES: Dict[str, set[str]] = {
 _GATE_REQUIRED_STAKEHOLDERS: Dict[str, Tuple[str, ...]] = {
     "G2": ("IRB",),
     "G4": ("STATISTICIAN", "PI"),
+    "G5": ("DATA_MANAGER", "PI"),
     "G8": ("INDEPENDENT_PEER_REVIEWER",),
     "G9": ("PI",),
 }
@@ -685,9 +722,10 @@ def _normalize_role(role: str) -> str:
 def reviewer_role_satisfies_gate(gate_id: str, reviewer_role: str) -> bool:
     """Role người duyệt có đúng stakeholder bắt buộc cho cổng không.
 
-    Cổng chưa có stakeholder requirement (vd G5/Gate A/B) trả True để giữ tương
-    thích. G2/G4/G8/G9 fail-closed nếu role không thuộc BẤT KỲ nhóm nào được phép:
-    IRB · thống kê/phương pháp HOẶC PI (G4) · phản biện độc lập (G8) · PI (G9).
+    Cổng chưa có stakeholder requirement (vd Gate A/B) trả True để giữ tương
+    thích. G2/G4/G5/G8/G9 fail-closed nếu role không thuộc BẤT KỲ nhóm nào
+    được phép: IRB · thống kê/phương pháp HOẶC PI (G4) · quản trị dữ liệu HOẶC
+    PI (G5) · phản biện độc lập (G8) · PI (G9).
     """
     required_groups = _GATE_REQUIRED_STAKEHOLDERS.get(_normalize_role(gate_id))
     if not required_groups:
@@ -699,6 +737,7 @@ def reviewer_role_satisfies_gate(gate_id: str, reviewer_role: str) -> bool:
 _ROLE_HINT_TEXT: Dict[str, str] = {
     "IRB": "IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE",
     "STATISTICIAN": "METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN",
+    "DATA_MANAGER": "DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD",
     "PI": "PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR",
     "INDEPENDENT_PEER_REVIEWER": "PHAN_BIEN / PEER_REVIEWER / EXTERNAL_REVIEWER",
 }

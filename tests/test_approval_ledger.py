@@ -435,6 +435,49 @@ class TestApproveGateEndToEnd:
                         "--reviewer-role", "PI", "--reviewer-ref", "PI-01")
         assert res.returncode == 0, f"stderr={res.stderr}\nstdout={res.stdout}"
 
+    def test_approve_gate_g5_rejects_arbitrary_artifact(self, study_dir):
+        artifact = study_dir / "tu-khai-g5.md"
+        artifact.write_text("Tự khai đã khóa.", encoding="utf-8")
+        res = self._run(
+            "--study",
+            self._STUDY,
+            "--gate",
+            "G5",
+            "--artifact",
+            str(artifact),
+            "--reviewer-role",
+            "DATA_MANAGER",
+            "--reviewer-ref",
+            "DM-01",
+        )
+        assert res.returncode != 0
+        assert "artifact phải là G5_checkpoint.json" in res.stdout
+
+    def test_approve_gate_g5_rejects_checkpoint_without_quality_chain(
+        self,
+        study_dir,
+    ):
+        artifact = study_dir / "G5_checkpoint.json"
+        artifact.write_text(
+            json.dumps({"g5_status": "LOCKED"}),
+            encoding="utf-8",
+        )
+        res = self._run(
+            "--study",
+            self._STUDY,
+            "--gate",
+            "G5",
+            "--artifact",
+            str(artifact),
+            "--reviewer-role",
+            "DATA_MANAGER",
+            "--reviewer-ref",
+            "DM-01",
+        )
+        assert res.returncode != 0
+        assert "hồ sơ chưa ở trạng thái READY_FOR_G5_APPROVAL" in res.stdout
+        assert not (study_dir / "approval_ledger.json").exists()
+
     def test_approve_gate_missing_study_dir_exits_nonzero(self, tmp_path):
         # Đề tài chưa có thư mục exports/<study> → từ chối (không tự tạo phê duyệt khống).
         artifact = tmp_path / "art.md"

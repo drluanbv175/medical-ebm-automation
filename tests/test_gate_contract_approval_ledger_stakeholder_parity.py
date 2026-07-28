@@ -45,11 +45,12 @@ class TestGateKeySetParity:
             "PHẢI được thêm vào bên kia (xem docstring module này)."
         )
 
-    def test_includes_g2_g4_g8_g9(self):
-        """Khẳng định cụ thể 4 cổng hiện có — bắt regression nếu ai lỡ xoá 1 gate
+    def test_includes_g2_g4_g5_g8_g9(self):
+        """Khẳng định cụ thể 5 cổng hiện có — bắt regression nếu ai lỡ xoá 1 gate
         thay vì chỉ thêm gate mới."""
-        assert set(GATE_REQUIRED_STAKEHOLDERS.keys()) == {"G2", "G4", "G8", "G9"}
-        assert set(GC._GATE_REQUIRED_STAKEHOLDERS.keys()) == {"G2", "G4", "G8", "G9"}
+        expected = {"G2", "G4", "G5", "G8", "G9"}
+        assert set(GATE_REQUIRED_STAKEHOLDERS.keys()) == expected
+        assert set(GC._GATE_REQUIRED_STAKEHOLDERS.keys()) == expected
 
     def test_g8_maps_to_independent_peer_reviewer_in_both(self):
         assert GATE_REQUIRED_STAKEHOLDERS["G8"] == "INDEPENDENT_PEER_REVIEWER"

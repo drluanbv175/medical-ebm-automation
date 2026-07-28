@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""
-run_g5_auto.py — Cổng G5: Quản lý dữ liệu (Data Management Infrastructure)
-NÂNG CẤP: 55 dòng CRF theo thiết kế cụ thể, auto-gen data_cleaning.py,
-data_quality_report.py, STROBE participant flowchart.
-Mức tự động: 70%
-KHÔNG xử lý dữ liệu thật — chỉ sinh CRF, REDCap dictionary, scripts, cấu trúc.
+"""G5 — hạ tầng quản trị dữ liệu và bộ công cụ chuẩn bị khóa dataset.
+
+Lệnh này sinh DMP, data dictionary REDCap và script QC. Dữ liệu thật khử định
+danh được xử lý bằng chuỗi intake -> cleaning/query -> data lock riêng; việc sinh
+file ở đây không đồng nghĩa cổng G5 đã qua.
 """
 import argparse
+import csv
 import json
 import re
 import sys
@@ -16,6 +16,7 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / "tools"))
+import g5_quality_gate as G5Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -1609,18 +1610,101 @@ def guardrail(artifact: str) -> tuple[list, list]:
 # ---------------------------------------------------------------------------
 
 def generate_csv(study: str, out_dir: Path, rows: list) -> tuple[Path, int]:
-    """Sinh REDCap data dictionary CSV."""
-    header = ("Variable / Form Name / Section Header / Field Type / Field Label / "
-              "Choices, Calculations, OR Slider Labels / Field Note / "
-              "Text Validation Type OR Show Slider Number / "
-              "Text Validation Min / Text Validation Max / "
-              "Required Field / Branching Logic (Show field only if...)")
-    lines = [header]
-    for r in rows:
-        lines.append(" / ".join(str(x) for x in r))
+    """Sinh CSV data dictionary có thể import vào REDCap.
+
+    Bản cũ chỉ nối trường bằng ``" / "`` nhưng vẫn đặt đuôi ``.csv``; REDCap và
+    ``csv.DictReader`` đều đọc toàn bộ dòng thành một cột. Dùng đúng 18 cột data
+    dictionary chuẩn, đồng thời giữ mapping tuple nội bộ hiện có.
+    """
+    headers = [
+        "Variable / Field Name",
+        "Form Name",
+        "Section Header",
+        "Field Type",
+        "Field Label",
+        "Choices, Calculations, OR Slider Labels",
+        "Field Note",
+        "Text Validation Type OR Show Slider Number",
+        "Text Validation Min",
+        "Text Validation Max",
+        "Identifier?",
+        "Branching Logic (Show field only if...)",
+        "Required Field?",
+        "Custom Alignment",
+        "Question Number (surveys only)",
+        "Matrix Group Name",
+        "Matrix Ranking?",
+        "Field Annotation",
+    ]
     csv_path = out_dir / f"G5_REDCap_dictionary_{study}.csv"
-    csv_path.write_text("\n".join(lines), encoding="utf-8")
+    with csv_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=headers)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(
+                {
+                    "Variable / Field Name": row[0],
+                    "Form Name": row[1],
+                    "Section Header": row[2],
+                    "Field Type": row[3],
+                    "Field Label": row[4],
+                    "Choices, Calculations, OR Slider Labels": row[5],
+                    "Field Note": row[6],
+                    "Text Validation Type OR Show Slider Number": row[7],
+                    "Text Validation Min": row[8],
+                    "Text Validation Max": row[9],
+                    "Identifier?": "",
+                    "Branching Logic (Show field only if...)": row[11],
+                    "Required Field?": row[10],
+                    "Custom Alignment": "",
+                    "Question Number (surveys only)": "",
+                    "Matrix Group Name": "",
+                    "Matrix Ranking?": "",
+                    "Field Annotation": "",
+                }
+            )
     return csv_path, len(rows)
+
+
+def write_operational_readiness_template(out_dir: Path) -> Path:
+    """Sinh hồ sơ vận hành fail-closed; người có thẩm quyền phải hoàn tất."""
+    path = out_dir / G5Q.OPERATIONAL_READINESS_JSON
+    if path.exists():
+        return path
+    payload = {
+        "schema_version": "G5-OPS-2026.1",
+        "status": "DRAFT_REQUIRES_HUMAN_VERIFICATION",
+        "access_control_review": {
+            "completed": False,
+            "reviewed_at": "[CẦN NGÀY YYYY-MM-DD]",
+            "least_privilege_confirmed": False,
+            "evidence_ref": "[CẦN MÃ BIÊN BẢN/SOP, KHÔNG PII]",
+        },
+        "backup_restore_test": {
+            "completed": False,
+            "tested_at": "[CẦN NGÀY YYYY-MM-DD]",
+            "restore_verified": False,
+            "checksum_verified": False,
+            "evidence_ref": "[CẦN MÃ BIÊN BẢN, KHÔNG PII]",
+        },
+        "retention_plan": {
+            "confirmed": False,
+            "retention_rule": "[CẦN QUY TẮC THEO IRB, tài trợ và pháp luật]",
+        },
+        "protocol_deviations": {
+            "reconciled": False,
+            "open_count": "[CẦN SỐ NGUYÊN]",
+            "log_ref": "[CẦN MÃ DEVIATION LOG, KHÔNG PII]",
+        },
+        "reviewer_role": "[CẦN DATA_MANAGER hoặc PI]",
+        "reviewer_ref": "[CẦN MÃ THAM CHIẾU, KHÔNG GHI HỌ TÊN/PII]",
+        "disclaimer": "Cần bác sĩ kiểm chứng.",
+    }
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return path
 
 
 # ---------------------------------------------------------------------------
@@ -1658,9 +1742,10 @@ def generate_artifact(
         f"**Mã:** {study} | **Ngày:** {run_date} | **Thiết kế:** {design_code} | **N dự kiến:** {n_adjusted}  ",
         "**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC [CẦN...] VÀ XÁC NHẬN",
         "",
-        "> ⚠️ **BẢO MẬT:** KHÔNG xử lý PII hoặc dữ liệu thật qua hệ thống này.",
-        "> Dữ liệu thật chỉ được xử lý tại môi trường bảo mật của đơn vị (REDCap, server nội bộ).",
-        "> Tham chiếu: STROBE 2007 (PMID: 18064739), CONSORT 2025, ICH-GCP E6(R2).",
+        "> **BẢO MẬT:** KHÔNG đưa PII vào pipeline. Chỉ xử lý bản đã khử định danh trong "
+        "môi trường cục bộ được đơn vị cho phép; dữ liệu không được gửi tới mô hình AI.",
+        "> Tham chiếu: ICH E6(R3) Data Governance; FDA Electronic Records 2024; "
+        "CDISC CDASH; FAIR Principles (PMID: 26978244; DOI: 10.1038/sdata.2016.18).",
         "",
     ]
     if specialty == "generic":
@@ -1787,14 +1872,14 @@ def generate_artifact(
         "",
         "---",
         "",
-        "## PHẦN 6 — KẾ HOẠCH DỮ LIỆU THIẾU",
+        "## PHẦN 6 — QUẢN TRỊ DỮ LIỆU THIẾU VÀ SAI LỆCH",
         "",
-        "| Loại thiếu | Giả định | Chiến lược xử lý |",
-        "|------------|----------|-----------------|",
-        "| < 5% mỗi biến | MCAR | Complete case đủ |",
-        "| 5–30% | MAR | Multiple Imputation (m=20, package `mice`) |",
-        "| > 30% hoặc MNAR | MNAR | Pattern mixture models / Sensitivity analysis |",
-        "| [CẦN XEM XÉT THỰC TẾ từ bước thu thập] | | |",
+        "- G5 chỉ lập hồ sơ mức độ/mẫu hình thiếu và mở query; **không tự nội suy**.",
+        "- Phương pháp complete-case, multiple imputation hoặc phân tích nhạy cảm phải "
+        "được định trước ở SAP G4 theo cơ chế thiếu và estimand.",
+        "- Mọi loại trừ người tham gia/điểm dữ liệu và protocol deviation phải có lý do, "
+        "người xác nhận, thời điểm và audit trail.",
+        "- [CẦN ĐỐI CHIẾU] Ngưỡng cảnh báo thiếu cho từng biến trọng yếu theo protocol/SAP.",
         "",
         "---",
         "",
@@ -1826,11 +1911,41 @@ def generate_artifact(
         "",
         "---",
         "",
+        "## PHẦN 7B — VÒNG ĐỜI, BẢO MẬT VÀ AUDIT TRAIL",
+        "",
+        "- **Provenance:** bản raw đã khử định danh được copy chỉ đọc, gắn SHA-256; mọi "
+        "bản clean phải truy ngược được về raw và đúng phiên bản dictionary.",
+        "- **Audit trail/correction:** lưu giá trị ban đầu, thay đổi, lý do, thời điểm và "
+        "vai trò thực hiện; không sửa/xóa giá trị lâm sàng chỉ vì nằm ngoài khoảng.",
+        "- **Khử định danh:** tách bảng ánh xạ khỏi dataset phân tích; không đưa họ tên, "
+        "ngày sinh đầy đủ, số hồ sơ, điện thoại, địa chỉ hoặc mã định danh trực tiếp vào G5.",
+        "- **Phân quyền:** least privilege theo vai trò; rà quyền định kỳ; người phân tích "
+        "chỉ nhận dataset đã khóa và không nhận bảng ánh xạ.",
+        "- **Sao lưu:** backup mã hóa theo quy định đơn vị và phải có bằng chứng thử phục hồi.",
+        "- **Lưu trữ/hủy:** thời hạn, nơi lưu, quyền truy cập và thủ tục hủy theo IRB, "
+        "pháp luật và chính sách tài trợ/đơn vị; không dùng một thời hạn cứng cho mọi đề tài.",
+        "- **Sự cố:** ghi nhận vi phạm bảo mật, đánh giá ảnh hưởng và báo bên có thẩm quyền.",
+        "",
+        "Tham chiếu: ICH E6(R3) §4.2–4.3; FDA Electronic Systems/Records/Signatures 2024.",
+        "",
+        "---",
+        "",
+        "## PHẦN 7C — CHIA SẺ DỮ LIỆU VÀ METADATA",
+        "",
+        "- Xác định dữ liệu/metadata/code được chia sẻ, thời điểm, repository, thời hạn "
+        "bảo tồn và người giám sát theo DMP/IRB/consent.",
+        "- Dữ liệu người tham gia chỉ chia sẻ khi quyền riêng tư, phạm vi đồng thuận và "
+        "kiểm soát truy cập phù hợp; ghi rõ lý do đạo đức/pháp lý/kỹ thuật nếu hạn chế.",
+        "- Kèm protocol, data dictionary, README, mã phân tích và điều kiện tái sử dụng "
+        "để hỗ trợ FAIR, nhưng FAIR không đồng nghĩa dữ liệu nhạy cảm phải mở công khai.",
+        "",
+        "---",
+        "",
         "## PHẦN 8 — CHECKLIST KHÓA CƠ SỞ DỮ LIỆU",
         "",
         "Thực hiện TRƯỚC khi chạy phân tích chính (G6):",
         "- [ ] Tất cả data queries đã được giải quyết (trả lời đủ)",
-        "- [ ] Tỷ lệ thiếu biến chính < 5%",
+        "- [ ] Mức thiếu và protocol deviation đã đối chiếu theo SAP, không dùng ngưỡng chung tùy tiện",
         "- [ ] Audit trail REDCap đầy đủ (không có chỉnh sửa không có lý do)",
         "- [ ] Backup database kiểm tra thành công (restore test OK)",
         "- [ ] Dual-entry hoặc 10% spot-check xác nhận",
@@ -1868,8 +1983,8 @@ def generate_artifact(
         "",
         "---",
         "",
-        "*Cần bác sĩ kiểm chứng. KHÔNG xử lý dữ liệu thật qua hệ thống này.*",
-        "*Script tự động ở PHẦN 5 chỉ chạy trên môi trường bảo mật nội bộ với dữ liệu thật.*",
+        "*Cần bác sĩ kiểm chứng. KHÔNG đưa PII vào hệ thống.*",
+        "*Chỉ chạy pipeline dữ liệu thật khử định danh trong môi trường cục bộ được đơn vị cho phép.*",
     ]
     return "\n".join(lines)
 
@@ -2068,6 +2183,8 @@ def main():
     # Sinh REDCap CSV
     csv_path, n_vars = generate_csv(study, out, rows)
     print(f"  → REDCap CSV: {csv_path} ({n_vars} dòng)")
+    operations_path = write_operational_readiness_template(out)
+    print(f"  → Hồ sơ vận hành: {operations_path}")
 
     # Guardrail R1–R7
     errors, warnings = guardrail(artifact)
@@ -2099,7 +2216,9 @@ def main():
         "gate":           "G5",
         "study":          study,
         "run_date":       run_date,
-        "version":        "2.1-topic-aware",
+        "version":        "3.0-data-governance-contract",
+        "quality_contract_version": G5Q.QUALITY_CONTRACT_VERSION,
+        "g5_status":      "PENDING",
         "design_code":    design_code,
         "specialty":      specialty,
         "specialty_is_generic_placeholder": specialty == "generic",
@@ -2114,10 +2233,11 @@ def main():
         "strobe_flowchart": "included_in_artifact",
         "database_lock_status": "PENDING — dữ liệu chưa thu thập (chờ G2 LOCKED)",
         "guardrail": status,
-        "automation_level": "70%",
+        "automation_level": "DRAFT_AUTOMATED_HUMAN_CONTROLLED",
         "pending_doctor_actions": [
             "Điền tất cả [CẦN...] trong CRF (biến phơi nhiễm/kết cục cụ thể)",
             "Import REDCap dictionary CSV vào REDCap cơ sở",
+            f"Hoàn tất {G5Q.OPERATIONAL_READINESS_JSON} bằng bằng chứng tại đơn vị",
             "Thu thập dữ liệu thật (chỉ sau G2 = LOCKED)",
             "Spot-check 10% phiếu CRF",
             "Chạy data_cleaning.py + data_quality_report.py trên dữ liệu thật → PASS",
@@ -2128,11 +2248,31 @@ def main():
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"💾 Checkpoint: {cp_path}")
 
+    quality_gate = G5Q.evaluate_study(
+        study,
+        out,
+        repo_root=BASE,
+        write=True,
+    )
+    print(f"  → G5 quality status: {quality_gate['status']}")
+    print(f"  → Báo cáo: {out / G5Q.REPORT_JSON}")
+
     print()
-    print("✅ G5 NÂNG CẤP HOÀN TẤT — Mức tự động: 70%")
+    if quality_gate["status"] == G5Q.STATUS_BLOCKED:
+        print("🚧 G5 BỊ CHẶN BỞI LỖI CHẤT LƯỢNG")
+    elif quality_gate["status"] == G5Q.STATUS_DRAFT:
+        print("🟡 BỘ CÔNG CỤ G5 ĐÃ TẠO — CHƯA QUA CỔNG, CẦN DỮ LIỆU THẬT")
+    elif quality_gate["status"] == G5Q.STATUS_READY:
+        print("🟠 DATASET ĐÃ KHÓA KỸ THUẬT — CHỜ NGƯỜI CÓ THẨM QUYỀN DUYỆT G5")
+    else:
+        print("✅ G5 ĐÃ QUA: DATASET KHÓA + PHÊ DUYỆT G5 HỢP LỆ")
     print(f"  CRF: {n_vars} dòng ({design_code}) | Guardrail: {status}")
     print(f"  Scripts: data_cleaning.py + data_quality_report.py → {scripts_dir}")
     print("  STROBE flowchart: nhúng trong artifact")
+    print("  Cần bác sĩ kiểm chứng.")
+    if errors or quality_gate["status"] == G5Q.STATUS_BLOCKED:
+        return GC.EXIT_GUARDRAIL_FAIL
+    return GC.EXIT_OK
 
 
 if __name__ == "__main__":

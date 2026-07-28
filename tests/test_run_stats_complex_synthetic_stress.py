@@ -42,11 +42,8 @@ PYTHON = sys.executable
 
 sys.path.insert(0, str(TOOLS_DIR))
 sys.path.insert(0, str(REPO_ROOT))
-import lock_analysis_dataset as LAD  # noqa: E402
-
+from tests.g5_test_helpers import prepare_locked_g5_study  # noqa: E402
 from tests.test_run_stats_data_lock_gate import (  # noqa: E402
-    _approve_g2_g4_g5,
-    _closed_query_log,
     _configure_test_signing_key,
     _csv,
     _rmtree_retry,
@@ -139,17 +136,11 @@ R080,49.0,F,1,,5.48,5.4,1
 
 def _lock_complex_study(study: str, tmp_path: Path) -> Path:
     clean = _csv(tmp_path / f"{study}_df_clean.csv", _COMPLEX_CSV)
-    qlog = _closed_query_log(tmp_path / f"{study}_query_log.csv")
-    manifest = LAD.lock_dataset(
+    locked_path, _ = prepare_locked_g5_study(
         study, clean, exports_root=REPO_ROOT / "exports",
-        lock_date="2026-07-16", approved_by="PI (pilot khô, không phải PI thật)",
-        sap_version="1.0", query_log=qlog,
-        confirm_deidentified=True, confirm_clean_copy=True,
-        confirm_no_open_query=True, confirm_sap_locked=True,
+        repo_root=REPO_ROOT,
     )
-    assert manifest["status"] == LAD.LOCKED_STATUS
-    _approve_g2_g4_g5(study)
-    return REPO_ROOT / "exports" / study / manifest["locked_dataset_path"]
+    return locked_path
 
 
 def test_complex_dataset_exercises_survival_and_mice_in_one_cli_run(tmp_path, monkeypatch):

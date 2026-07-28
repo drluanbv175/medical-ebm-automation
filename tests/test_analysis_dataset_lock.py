@@ -12,6 +12,10 @@ import lock_analysis_dataset as LAD  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
 import skill_standards as S  # noqa: E402
 
+from tests.g5_test_helpers import (  # noqa: E402
+    configure_test_signing_key,
+    prepare_locked_g5_study,
+)
 from tests.test_g10_assemble import _write_cross_sectional_fixture  # noqa: E402
 
 
@@ -54,38 +58,45 @@ S002,52,M,0,1
 def _lock_kwargs(query_log: Path) -> dict:
     return {
         "lock_date": "2026-07-13",
-        "approved_by": "PI Nguyen",
+        "reviewer_role": "DATA_GOVERNANCE_QA_REVIEWER",
+        "reviewer_ref": "PYTEST-G5-REVIEWER",
         "sap_version": "1.0",
         "query_log": query_log,
         "confirm_deidentified": True,
         "confirm_clean_copy": True,
         "confirm_no_open_query": True,
         "confirm_sap_locked": True,
+        "confirm_dictionary_crf_aligned": True,
+        "confirm_access_control_reviewed": True,
+        "confirm_backup_restore_tested": True,
+        "confirm_retention_plan": True,
+        "confirm_protocol_deviations_reconciled": True,
     }
 
 
-def test_lock_clean_dataset_copies_readonly_and_updates_meta(tmp_path):
+def test_lock_clean_dataset_copies_readonly_and_updates_meta(tmp_path, monkeypatch):
     clean = _clean_dataset(tmp_path / "df_clean.csv")
-    qlog = _closed_query_log(tmp_path / "query_log.csv")
-
-    manifest = LAD.lock_dataset(
+    configure_test_signing_key(tmp_path, monkeypatch)
+    locked_path, _ = prepare_locked_g5_study(
         "LOCK-OK",
         clean,
         exports_root=tmp_path / "exports",
-        **_lock_kwargs(qlog),
+        repo_root=tmp_path,
     )
 
+    out_dir = tmp_path / "exports" / "LOCK-OK"
+    manifest = json.loads(
+        (out_dir / "DATA_LOCK_manifest.json").read_text(encoding="utf-8")
+    )
     assert manifest["status"] == LAD.LOCKED_STATUS
     assert manifest["analysis_allowed"] is True
-    out_dir = tmp_path / "exports" / "LOCK-OK"
-    locked_path = out_dir / manifest["locked_dataset_path"]
     assert locked_path.exists()
     assert locked_path.stat().st_mode & stat.S_IWUSR == 0
     assert (out_dir / "DATA_LOCK_manifest.json").exists()
     assert (out_dir / "DATA_LOCK_memo.md").exists()
 
     meta = json.loads((out_dir / "study_meta.json").read_text(encoding="utf-8"))
-    assert meta["data_lock_date"] == "2026-07-13"
+    assert meta["data_lock_date"] == manifest["lock_date"]
     assert meta["real_data_lock"]["status"] == LAD.LOCKED_STATUS
     assert S.real_world_signals({"G5": {}}, meta)["db_locked"] is True
 
@@ -99,13 +110,19 @@ def test_lock_blocks_without_required_confirmations(tmp_path):
         clean,
         exports_root=tmp_path / "exports",
         lock_date="2026-07-13",
-        approved_by="PI Nguyen",
+        reviewer_role="DATA_GOVERNANCE_QA_REVIEWER",
+        reviewer_ref="PYTEST-G5-REVIEWER",
         sap_version="1.0",
         query_log=qlog,
         confirm_deidentified=True,
         confirm_clean_copy=False,
         confirm_no_open_query=True,
         confirm_sap_locked=True,
+        confirm_dictionary_crf_aligned=True,
+        confirm_access_control_reviewed=True,
+        confirm_backup_restore_tested=True,
+        confirm_retention_plan=True,
+        confirm_protocol_deviations_reconciled=True,
     )
 
     assert manifest["status"] == LAD.BLOCKED_STATUS

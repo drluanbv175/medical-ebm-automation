@@ -37,17 +37,23 @@ def _dict_json(path: Path) -> Path:
 def _lock_kwargs(query_log: Path) -> dict:
     return {
         "lock_date": "2026-07-13",
-        "approved_by": "PI Nguyen",
+        "reviewer_role": "DATA_GOVERNANCE_QA_REVIEWER",
+        "reviewer_ref": "PYTEST-G5-REVIEWER",
         "sap_version": "1.0",
         "query_log": query_log,
         "confirm_deidentified": True,
         "confirm_clean_copy": True,
         "confirm_no_open_query": True,
         "confirm_sap_locked": True,
+        "confirm_dictionary_crf_aligned": True,
+        "confirm_access_control_reviewed": True,
+        "confirm_backup_restore_tested": True,
+        "confirm_retention_plan": True,
+        "confirm_protocol_deviations_reconciled": True,
     }
 
 
-def test_clean_dataset_creates_clean_copy_closed_query_and_can_lock(tmp_path):
+def test_clean_dataset_creates_copy_but_lock_requires_governed_provenance(tmp_path):
     data = _csv(
         tmp_path / "input.csv",
         """
@@ -84,7 +90,9 @@ S002,52,M,1,không rõ
         exports_root=tmp_path / "exports",
         **_lock_kwargs(query_log),
     )
-    assert locked["status"] == LAD.LOCKED_STATUS
+    assert locked["status"] == LAD.BLOCKED_STATUS
+    assert "G2_not_approved_or_not_locked" in locked["blockers"]
+    assert "provenance_failed:intake_ready" in locked["blockers"]
 
 
 def test_clean_dataset_flags_queries_without_fixing_values_and_lock_blocks(tmp_path):

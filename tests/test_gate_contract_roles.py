@@ -61,6 +61,27 @@ class TestG8PeerReviewGate:
         assert "PHAN_BIEN" in hint or "PEER_REVIEWER" in hint
 
 
+class TestG5DataGovernanceGate:
+    def test_data_manager_or_pi_satisfies_g5(self):
+        for role in (
+            "DATA_MANAGER",
+            "DATA_STEWARD",
+            "DATA_GOVERNANCE_QA_REVIEWER",
+            "PI",
+            "PRINCIPAL_INVESTIGATOR",
+        ):
+            assert GC.reviewer_role_satisfies_gate("G5", role), role
+
+    def test_unrelated_roles_do_not_satisfy_g5(self):
+        for role in ("IRB", "STATISTICIAN", "PHAN_BIEN", "ANYTHING_AT_ALL", ""):
+            assert not GC.reviewer_role_satisfies_gate("G5", role), role
+
+    def test_hint_names_data_governance_and_pi(self):
+        hint = GC.required_reviewer_role_hint("G5")
+        assert "DATA_MANAGER" in hint
+        assert "PI" in hint
+
+
 class TestUnchangedGatesStillFailClosed:
     """G2/G9 KHÔNG được nới theo — vẫn chỉ 1 nhóm role như trước, tránh sửa quá tay."""
 
@@ -76,6 +97,6 @@ class TestUnchangedGatesStillFailClosed:
         assert not GC.reviewer_role_satisfies_gate("G9", "PHAN_BIEN")
 
     def test_gates_without_requirement_still_noop_true(self):
-        for gate_id in ("G0", "G1", "G3", "G5", "G6", "G7", "G10", "GATE_A", "GATE_B"):
+        for gate_id in ("G0", "G1", "G3", "G6", "G7", "G10", "GATE_A", "GATE_B"):
             assert GC.reviewer_role_satisfies_gate(gate_id, "ANYTHING_AT_ALL"), gate_id
             assert GC.reviewer_role_satisfies_gate(gate_id, ""), gate_id

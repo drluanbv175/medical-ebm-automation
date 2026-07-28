@@ -28,6 +28,7 @@ chính thức; nếu chưa kiểm được thì giữ nguyên cờ [CẦN KIỂM
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -743,8 +744,41 @@ def real_world_signals(checkpoints: Dict[str, Dict],
              or _status_is_locked(g4.get("g4_status")))
     ) or _is_real_value(meta.get("sap_lock_date"))
 
-    db = _status_is_locked(g5.get("database_lock_status")) \
-        or _is_real_value(meta.get("data_lock_date"))
+    if g5.get("quality_contract_version"):
+        study = str(g5.get("study") or "").strip()
+        if study and re.fullmatch(r"[\w-]+", study):
+            root = Path(__file__).resolve().parents[1]
+            default_out = root / "exports" / study
+            if default_out.exists():
+                try:
+                    import g5_quality_gate as G5Q  # noqa: PLC0415
+
+                    live = G5Q.evaluate_study(
+                        study,
+                        default_out,
+                        repo_root=root,
+                        write=False,
+                    )
+                    db = live.get("status") == G5Q.STATUS_LOCKED
+                except (ImportError, OSError, RuntimeError, ValueError):
+                    db = False
+            else:
+                # Audit/verifier có thể chạy trong TemporaryDirectory; ở đó
+                # caller vừa chấm G5 và pin trạng thái vào meta của chính fixture.
+                db = (
+                    meta.get("g5_quality_status") == "PASS_G5_DATA_LOCKED"
+                    and _is_real_value(meta.get("data_lock_date"))
+                )
+        else:
+            # Checkpoint fixture/legacy không có study: giữ đường tương thích,
+            # còn pipeline thật luôn ghi study và phải chấm trực tiếp từ artifact.
+            db = (
+                meta.get("g5_quality_status") == "PASS_G5_DATA_LOCKED"
+                and _is_real_value(meta.get("data_lock_date"))
+            )
+    else:
+        db = _status_is_locked(g5.get("database_lock_status")) \
+            or _is_real_value(meta.get("data_lock_date"))
 
     # Kết quả phân tích thật KHÔNG do pipeline sinh — chỉ bác sĩ xác nhận.
     results = bool(meta.get("results_final"))

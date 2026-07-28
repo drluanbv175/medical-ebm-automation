@@ -18,9 +18,11 @@ PYTHON = sys.executable
 sys.path.insert(0, str(TOOLS_DIR))
 sys.path.insert(0, str(REPO_ROOT))
 import gate_contract as GC  # noqa: E402
-import lock_analysis_dataset as LAD  # noqa: E402
 
 from runtime.approval_ledger import ApprovalLedger  # noqa: E402
+from tests.g5_test_helpers import (  # noqa: E402
+    prepare_locked_g5_study,
+)
 
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
@@ -112,23 +114,13 @@ timestamp,issue_type,column,row,detail,status,owner,resolution
 
 def _lock_study(study: str, tmp_path: Path) -> Path:
     clean = _clean_dataset(tmp_path / f"{study}_df_clean.csv")
-    qlog = _closed_query_log(tmp_path / f"{study}_query_log.csv")
-    manifest = LAD.lock_dataset(
+    locked_path, _ = prepare_locked_g5_study(
         study,
         clean,
         exports_root=REPO_ROOT / "exports",
-        lock_date="2026-07-13",
-        approved_by="PI Nguyen",
-        sap_version="1.0",
-        query_log=qlog,
-        confirm_deidentified=True,
-        confirm_clean_copy=True,
-        confirm_no_open_query=True,
-        confirm_sap_locked=True,
+        repo_root=REPO_ROOT,
     )
-    assert manifest["status"] == LAD.LOCKED_STATUS
-    _approve_g2_g4_g5(study)
-    return REPO_ROOT / "exports" / study / manifest["locked_dataset_path"]
+    return locked_path
 
 
 def _run_stats(study: str, data_path: Path) -> subprocess.CompletedProcess:
@@ -197,6 +189,6 @@ def test_run_stats_blocks_locked_dataset_checksum_mismatch(tmp_path, monkeypatch
             f.write("S999,99,F,1,1\n")
         res = _run_stats(study, locked_path)
         assert res.returncode != 0
-        assert "locked_dataset_checksum_mismatch" in res.stdout
+        assert "quality: BLOCKED" in res.stdout
     finally:
         _rmtree_retry(study_dir)

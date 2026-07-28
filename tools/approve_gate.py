@@ -40,6 +40,8 @@ cứng nào):
     G2  → IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE
     G4  → METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN
           HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
+    G5  → DATA_MANAGER / DATA_STEWARD / DATA_GOVERNANCE_QA_REVIEWER
+          HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
     G8  → PHAN_BIEN / PEER_REVIEWER / EXTERNAL_REVIEWER (bình duyệt độc lập)
     G9  → PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
 
@@ -65,6 +67,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import g2_quality_gate as G2Q
+import g5_quality_gate as G5Q
 import gate_contract as GC
 
 from app.utils.console import configure_unicode_console
@@ -398,6 +401,50 @@ def main() -> int:
             print("   Không ghi ledger để tránh SAP rỗng bị coi là đã khóa.")
             return 1
 
+    if args.gate == "G5" and args.decision == "APPROVED":
+        expected_artifact = study_dir / "G5_checkpoint.json"
+        try:
+            artifact_matches = (
+                artifact_path.resolve() == expected_artifact.resolve()
+            )
+        except OSError:
+            artifact_matches = False
+        if not artifact_matches:
+            print(
+                "✗ TỪ CHỐI ký G5 — artifact phải là "
+                f"{expected_artifact.name} trong đúng thư mục đề tài."
+            )
+            print("   Không cho dùng file tự chọn để thay thế hồ sơ khóa dữ liệu.")
+            return 1
+        try:
+            g5_report = G5Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=False,
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"✗ TỪ CHỐI ký G5 — không thẩm định được hồ sơ: {exc}")
+            return 1
+        if g5_report.get("status") != G5Q.STATUS_READY:
+            print(
+                "✗ TỪ CHỐI ký G5 — hồ sơ chưa ở trạng thái "
+                f"{G5Q.STATUS_READY}."
+            )
+            print(f"   Trạng thái hiện tại: {g5_report.get('status', 'UNKNOWN')}")
+            blocked = [
+                item
+                for item in g5_report.get("automatic_criteria", [])
+                if item.get("status") == "BLOCK"
+            ]
+            for item in blocked[:10]:
+                print(
+                    f"   - {item.get('id')}: {item.get('label')} "
+                    f"({item.get('evidence')})"
+                )
+            print("   Không ghi ledger; phải xử lý hết lỗi dữ liệu trước.")
+            return 1
+
     ledger_path = study_dir / "approval_ledger.json"
 
     # Chữ ký (2026-07-12): cần evidence_hash + timestamp TRƯỚC khi ký (payload chữ ký
@@ -518,6 +565,17 @@ def main() -> int:
             print(f"   G2 quality status: {report['status']}")
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G2 quality report: {exc}")
+    elif args.gate == "G5":
+        try:
+            report = G5Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=True,
+            )
+            print(f"   G5 quality status: {report['status']}")
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G5 quality report: {exc}")
     return 0
 
 

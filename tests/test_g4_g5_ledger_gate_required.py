@@ -8,7 +8,8 @@ tin ngay và chạy phân tích thật, dù chưa từng có phê duyệt thật
 ApprovalLedger cryptographic-binding (BL-06, 2026-07-08) đã tồn tại nhưng CHƯA từng
 được nối vào đây trước vòng vá này — 3 test dưới khóa đúng hành vi ĐÃ NỐI:
   T1  checkpoint LOCKED + KHÔNG có approval_ledger.json → vẫn CHẶN (hồi quy chính)
-  T2  checkpoint LOCKED + approval_ledger có bản ghi thật khớp hash → CHO CHẠY
+  T2  checkpoint LOCKED + approval_ledger khớp nhưng thiếu chuỗi chất lượng G5
+      → vẫn CHẶN
   T3  checkpoint LOCKED + approval_ledger có bản ghi nhưng artifact bị sửa SAU
       khi duyệt (hash lệch) → vẫn CHẶN (phát hiện giả mạo)
 """
@@ -128,9 +129,11 @@ def test_checkpoint_locked_without_ledger_still_blocked():
         _rmtree_retry(d)
 
 
-def test_checkpoint_locked_with_matching_ledger_passes_gate(tmp_path, monkeypatch):
-    """T2 — phê duyệt thật khớp hash → KHÔNG bị chặn ở bước cổng (không assert
-    chạy phân tích thành công trọn vẹn — chỉ assert đã QUA được cổng G4/G5)."""
+def test_matching_ledger_without_g5_quality_contract_still_blocks(
+    tmp_path,
+    monkeypatch,
+):
+    """T2 — chữ ký chỉ bảo vệ nội dung, không thay thế provenance/khóa dữ liệu."""
     study = "PYTEST-LEDGER-T2"
     d = _study_dir(study)
     try:
@@ -142,10 +145,8 @@ def test_checkpoint_locked_with_matching_ledger_passes_gate(tmp_path, monkeypatc
         g5_artifact = d / "G5_checkpoint.json"
         _write_ledger_approval(d, "G5", g5_artifact.read_text(encoding="utf-8"))
         res = _run_stats(study)
-        assert "DỪNG: G4" not in res.stdout and "DỪNG: G5" not in res.stdout, (
-            f"Phê duyệt thật khớp hash phải cho QUA cổng G4/G5 (lỗi khác sau đó, vd "
-            f"thiếu file --data, là chấp nhận được — chỉ cổng khóa không được chặn)."
-            f"\n{res.stdout}")
+        assert "DỪNG: G4 (SAP) hoặc G5" in res.stdout
+        assert "quality: BLOCKED" in res.stdout
     finally:
         _rmtree_retry(d)
 
