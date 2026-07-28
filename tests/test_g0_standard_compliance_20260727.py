@@ -29,6 +29,19 @@ from app.sources.pubmed import PubMedClient  # noqa: E402
 PYTHON = sys.executable
 
 
+class _FakeRecord:
+    """Bản ghi PubMed tối thiểu — đủ các thuộc tính mà G0 đọc, không gọi mạng."""
+
+    def __init__(self, pmid="", title="", publication_date="2025",
+                 journal_or_organization="J Test", authors="Nguyen A", url=None):
+        self.pmid = pmid
+        self.title = title
+        self.publication_date = publication_date
+        self.journal_or_organization = journal_or_organization
+        self.authors = authors
+        self.url = url or (f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else None)
+
+
 def test_counts_are_real_requires_every_branch_not_just_one():
     """LỖI (2): dùng any() nên chỉ cần MỘT nhánh tra được số thật là cả báo cáo bị dán nhãn
     "số hit THẬT" — kể cả khi nhánh khác timeout (rate-limit HTTP 429 xảy ra thật khi kiểm
@@ -108,11 +121,33 @@ def test_observational_evidence_is_written_not_just_counted():
     chứng được — vi phạm trực tiếp bất biến "mọi đầu ra kèm PMID để bác sĩ kiểm chứng".
 
     Test này kiểm ĐƯỜNG GHI (không gọi mạng): nhánh observational phải có mặt trong cả
-    artifact lẫn raw JSON."""
+    artifact lẫn raw JSON.
+
+    ★ VIẾT LẠI 2026-07-27: bản cũ grep chuỗi cứng "### 3.5 Nghiên cứu QUAN SÁT" trong MÃ
+    NGUỒN — nên nó vẫn xanh nếu mục đó bị xoá khỏi đầu ra nhưng chuỗi còn nằm trong một
+    comment, và nó vỡ oan khi tiêu đề mục được sinh động (đúng cái đã xảy ra). Nay dựng
+    artifact THẬT rồi soi PMID của bài quan sát có xuất hiện cho bác sĩ đọc hay không —
+    đó mới là điều test này muốn bảo vệ."""
+    rec = _FakeRecord(pmid="34567890", title="Cohort study of outpatient satisfaction")
+    results = {
+        "sr_ma": [], "rct": [], "guideline": [], "recent": [],
+        "observational": [rec],
+        "all_pmids": ["34567890"], "total": 1,
+        "true_counts": {"sr_ma": 0, "rct": 0, "guideline": 0,
+                        "observational": 12, "recent": 0},
+        "query_errors": {},
+    }
+    gaps = G0.analyze_evidence_gaps(results, "outpatient satisfaction")
+    artifact = G0.generate_a1_artifact(
+        "outpatient satisfaction", "TEST-OBS", {"base": "outpatient satisfaction"},
+        results, gaps, "2026-07-27 10:00",
+    )
+    assert "34567890" in artifact, (
+        "PMID của nghiên cứu quan sát không xuất hiện trong artifact — bác sĩ không kiểm "
+        "chứng được thứ bằng chứng đã mở cổng"
+    )
+    assert "QUAN SÁT" in artifact.upper(), "artifact A1 thiếu mục hiển thị bài quan sát"
     src = (TOOLS_DIR / "run_g0_auto.py").read_text(encoding="utf-8")
-    assert 'obs_list = _format_article_list(results.get("observational", []))' in src, \
-        "artifact A1 không dựng danh sách bài quan sát"
-    assert "### 3.5 Nghiên cứu QUAN SÁT" in src, "artifact A1 thiếu mục hiển thị bài quan sát"
     assert '"observational": [{"pmid"' in src, "G0_pubmed_raw.json không lưu nhánh quan sát"
 
 

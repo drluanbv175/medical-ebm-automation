@@ -51,6 +51,7 @@ from app.sources.pubmed import PUBTYPE_FILTER as PM_PUBTYPE_FILTER  # noqa: E402
 from app.sources.pubmed import PubMedClient  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # thư mục tools/
+import g0_quality_gate as G0Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G0)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG + study_meta dùng chung)
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -232,11 +233,16 @@ def _reject_empty_topic(topic: str) -> None:
 
 
 def build_pubmed_query(topic: str, query_en: Optional[str] = None) -> dict[str, str]:
+    """Chuyển topic (VI hoặc EN) thành bộ truy vấn PubMed đa chiều.
+
+    Trả về dict: {query_type: query_string}.
+    DỪNG ngay nếu topic rỗng (xem _reject_empty_topic).
+
+    (Sửa 2026-07-28: lời gọi _reject_empty_topic từng đứng TRƯỚC chuỗi này, biến
+    docstring thành một biểu thức chuỗi vô nghĩa giữa thân hàm — `help()` và mọi
+    công cụ đọc docstring đều thấy hàm này không có tài liệu.)
+    """
     _reject_empty_topic(topic)
-    """
-    Chuyển topic (VI hoặc EN) thành bộ truy vấn PubMed đa chiều.
-    Trả về dict: {query_type: query_string}
-    """
     # Phòng thủ: --topic là required=True qua CLI nên None không xảy ra qua
     # đường chính, nhưng hàm này có thể được gọi trực tiếp (import module,
     # test, script khác) với topic=None — coerce về "" để không crash tại
@@ -290,6 +296,12 @@ def build_pubmed_query(topic: str, query_en: Optional[str] = None) -> dict[str, 
 # 3. TÌM KIẾM PUBMED THẬT (đa chiều)
 # ════════════════════════════════════════════════════════════════════════════
 
+# Danh sách nhánh PHẢI tra được số hit thật thì mới được nói "số hit THẬT".
+# Dùng DANH SÁCH MONG ĐỢI (không dùng "những khóa có mặt") để một nhánh chết
+# hoàn toàn không thể lặng lẽ biến mất khỏi phép kiểm — xem analyze_evidence_gaps.
+EXPECTED_COUNT_BRANCHES = ("sr_ma", "rct", "guideline", "observational", "recent")
+
+
 def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dict:
     """
     Chạy nhiều truy vấn PubMed, trả về kết quả phân loại.
@@ -299,6 +311,7 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
     # recent KHÔNG dedup (cần biết bao nhiêu bài mới 2020+, kể cả trùng với SR/RCT)
     results = {"sr_ma": [], "rct": [], "guideline": [], "observational": [],
                "recent": [], "all_pmids": set(),
+               "true_counts": {},   # khởi tạo sẵn: nhánh ném exception vẫn đọc được
                "query_errors": {}}
     total_found = 0
 
@@ -340,6 +353,19 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
                         total_found += 1
                     new_count += 1
             print(f"     → Tìm thấy {len(records)} bài ({new_count} thêm vào)")
+            # ★ VÁ 2026-07-28 (vòng soi độc lập thứ hai): khối `except` bên dưới là MÃ
+            # CHẾT trên đường lỗi mạng — PubMedClient.search() tự bắt mọi exception rồi
+            # trả [] ("BỎ QUA nguồn này, KHÔNG bịa mock"), nên guardrail R1B in
+            # "✅ Không có truy vấn PubMed nào lỗi" ngay giữa một sự cố mất mạng hoàn
+            # toàn. Dấu hiệu nhận biết THẬT của nhánh hỏng: không lấy được bài NÀO **và**
+            # cũng không tra được số hit. Một chủ đề thật sự không có bài vẫn tra ra
+            # count = 0 (int), nên hai điều kiện này không lẫn với nhau.
+            if not records and results["true_counts"].get(result_key) is None:
+                results["query_errors"][qtype] = (
+                    "0 bài lấy về VÀ không tra được số hit — nghi lỗi mạng/rate-limit "
+                    "hoặc đang chạy chế độ mock, KHÔNG kết luận là 'không có bài nào'"
+                )
+                print(f"     ⚠ Nhánh {qtype}: không lấy được bài nào và không tra được số hit")
         except Exception as e:
             # SỬA: trước đây lỗi mạng/timeout/rate-limit chỉ in ra console rồi
             # bị nuốt hoàn toàn — n_sr/n_rct/evidence_level tính SAI (thiếu do
@@ -356,11 +382,119 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# 3b. TRA ĐĂNG KÝ NGHIÊN CỨU — "câu hỏi này đã có ai ĐANG LÀM chưa?"
+# ════════════════════════════════════════════════════════════════════════════
+
+CTG_STUDIES_API = "https://clinicaltrials.gov/api/v2/studies"
+# Ba trạng thái nghĩa là "chưa thu xong người tham gia" → một đề tài trùng ở đây
+# sẽ công bố trước khi đề tài mới kịp thu số liệu.
+CTG_ACTIVE_STATUSES = "RECRUITING,NOT_YET_RECRUITING,ENROLLING_BY_INVITATION"
+
+
+def check_trial_registry(base_query: str, max_results: int = 5) -> dict:
+    """Tra ClinicalTrials.gov: câu hỏi này đã có ai ĐANG TIẾN HÀNH chưa?
+
+    THÊM 2026-07-28. Lý do: PubMed chỉ trả lời "đã CÔNG BỐ những gì" — nó KHÔNG
+    trả lời "đang có ai LÀM". Một cổng G0 chỉ soi PubMed có thể kết luận "khoảng
+    trống lớn — cơ hội nghiên cứu rõ ràng" cho đúng một câu hỏi đang có hàng chục
+    thử nghiệm tuyển bệnh dở dang. Đề tài sẽ trùng, và bên kia công bố trước.
+
+    Miễn phí, không cần API key (ClinicalTrials.gov API v2 — xác minh thật ngày
+    2026-07-28: query.term + countTotal + filter.overallStatus phân tách bằng dấu
+    phẩy đều trả HTTP 200).
+
+    LIÊM CHÍNH: không tra được (mất mạng/chế độ mock/HTTP lỗi) thì trả
+    checked=False kèm lý do — TUYỆT ĐỐI không im lặng coi như "không có ai làm",
+    vì im lặng ở đây đọc ra thành một khẳng định sai có hậu quả thật.
+    """
+    out: dict = {
+        "registry": "ClinicalTrials.gov",
+        "query": base_query,
+        "checked": False,
+        "n_trials": None,
+        "n_active": None,
+        "trials": [],
+        "error": None,
+        "checked_at": datetime.now().isoformat(timespec="seconds"),
+    }
+    if not (base_query or "").strip():
+        out["error"] = "truy vấn rỗng"
+        return out
+
+    try:
+        from app.config import settings
+        if getattr(settings, "use_mock_sources", False):
+            out["error"] = "USE_MOCK_SOURCES=true — bỏ qua tra đăng ký (không bịa dữ liệu)"
+            return out
+        from app.utils.http import HttpClient
+        http = HttpClient()
+
+        params = {
+            "query.term": base_query,
+            "pageSize": max_results,
+            "countTotal": "true",
+            "format": "json",
+        }
+        data = http.get_json(CTG_STUDIES_API, params=params)
+        out["n_trials"] = data.get("totalCount")
+
+        for st in (data.get("studies") or [])[:max_results]:
+            ps = st.get("protocolSection", {}) or {}
+            ident = ps.get("identificationModule", {}) or {}
+            status_mod = ps.get("statusModule", {}) or {}
+            design_mod = ps.get("designModule", {}) or {}
+            nct = ident.get("nctId")
+            out["trials"].append({
+                "nct_id": nct,
+                "title": (ident.get("briefTitle") or ident.get("officialTitle") or "")[:180],
+                "status": status_mod.get("overallStatus"),
+                "start_date": (status_mod.get("startDateStruct") or {}).get("date"),
+                "phases": design_mod.get("phases"),
+                "enrollment": (design_mod.get("enrollmentInfo") or {}).get("count"),
+                "url": f"https://clinicaltrials.gov/study/{nct}" if nct else None,
+            })
+
+        active = http.get_json(CTG_STUDIES_API, params={
+            "query.term": base_query,
+            "pageSize": 1,
+            "countTotal": "true",
+            "format": "json",
+            "filter.overallStatus": CTG_ACTIVE_STATUSES,
+        })
+        out["n_active"] = active.get("totalCount")
+        out["checked"] = isinstance(out["n_trials"], int)
+    except Exception as e:  # noqa: BLE001 — mọi lỗi đều phải thành "CHƯA TRA", không thành 0
+        out["error"] = f"{type(e).__name__}: {e}"
+    return out
+
+
+def _format_trial_list(trials: list, max_show: int = 5) -> str:
+    if not trials:
+        return "  → Không có hồ sơ đăng ký nào khớp truy vấn\n"
+    lines = []
+    for i, t in enumerate(trials[:max_show]):
+        phases = ", ".join(t.get("phases") or []) or "—"
+        lines.append(
+            f"  {i+1}. [{t.get('status') or '?'}] {t.get('title') or '(không tiêu đề)'}\n"
+            f"     {t.get('nct_id') or 'NCT: ?'} | Pha: {phases} | "
+            f"Cỡ mẫu dự kiến: {t.get('enrollment') if t.get('enrollment') is not None else '?'} | "
+            f"Bắt đầu: {t.get('start_date') or '?'}\n"
+            f"     URL: {t.get('url') or 'N/A'}"
+        )
+    return "\n".join(lines) + "\n"
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # 4. PHÂN TÍCH KHOẢNG TRỐNG TỪ KẾT QUẢ THẬT
 # ════════════════════════════════════════════════════════════════════════════
 
-def analyze_evidence_gaps(results: dict, topic: str) -> dict:
-    """Tổng hợp bằng chứng + phân tích khoảng trống từ kết quả PubMed thật."""
+def analyze_evidence_gaps(results: dict, topic: str,
+                          registry: Optional[dict] = None) -> dict:
+    """Tổng hợp bằng chứng + phân tích khoảng trống từ kết quả PubMed thật.
+
+    `registry` (tuỳ chọn) là kết quả check_trial_registry(): dùng để KHÔNG kết
+    luận "khoảng trống" khi thực tế đang có thử nghiệm tuyển bệnh cho đúng câu
+    hỏi đó. Để None thì hàm hoạt động y như trước (giữ nguyên mọi test cũ)."""
     # ★ VÁ 2026-07-27: ưu tiên SỐ HIT THẬT (esearch Count) thay vì số bài LẤY VỀ.
     # Trước đây n_sr = len(danh sách đã lấy), bị chặn trần bởi --max-results (mặc định 15):
     # một chủ đề có 34 SR/MA và 16 RCT được ghi vào checkpoint là 15/15, nên mọi ngưỡng
@@ -381,10 +515,20 @@ def analyze_evidence_gaps(results: dict, topic: str) -> dict:
     # trong khi sự thật là 203, kéo evidence_level từ "MẠNH" xuống "CÓ HẠN" và thêm khẳng
     # định SAI "Chưa có systematic review". Một số 0 BỊA được dán nhãn THẬT là kiểu sai
     # nguy hiểm nhất ở cổng này. Nay all(): chỉ nhận nhãn THẬT khi MỌI nhánh đều tra được.
-    _attempted = [v for v in _tc.values()]
-    counts_are_real = bool(_attempted) and all(isinstance(v, int) for v in _attempted)
-    # Nhánh nào không tra được số thật thì nêu đích danh, để bác sĩ biết con số nào đáng ngờ.
-    counts_unavailable = sorted(k for k, v in _tc.items() if not isinstance(v, int))
+    #
+    # ★ VÁ TIẾP 2026-07-28 (vòng soi độc lập thứ hai): all() ở trên vẫn FAIL-OPEN với
+    # khóa VẮNG MẶT. `results["true_counts"][key]` chỉ được gán SAU khi client.search()
+    # trả về; nếu nhánh đó ném exception thì khóa không bao giờ tồn tại, `_tc.values()`
+    # chỉ còn 4 nhánh int, all() → True, và _n("sr_ma") lùi về len([]) = 0. Tức đúng
+    # con số 0 BỊA lại được dán nhãn "số hit THẬT" — nguyên văn lỗi mà bản vá trước
+    # định đóng. Nay đối chiếu với DANH SÁCH NHÁNH MONG ĐỢI, không với những gì có mặt.
+    _attempted = [_tc.get(k) for k in EXPECTED_COUNT_BRANCHES]
+    counts_are_real = all(isinstance(v, int) for v in _attempted)
+    # Nhánh nào không tra được số thật thì nêu đích danh, để bác sĩ biết con số nào đáng
+    # ngờ — kể cả nhánh vắng mặt hoàn toàn khỏi true_counts.
+    counts_unavailable = sorted(
+        k for k in EXPECTED_COUNT_BRANCHES if not isinstance(_tc.get(k), int)
+    )
     n_sr = _n("sr_ma")
     n_rct = _n("rct")
     n_guide = _n("guideline")
@@ -439,9 +583,24 @@ def analyze_evidence_gaps(results: dict, topic: str) -> dict:
     if most_recent and (this_year - most_recent) > 5:
         gaps.append(f"Bằng chứng mới nhất từ {most_recent} — có thể đã lỗi thời")
     if n_recent == 0:
-        gaps.append(f"Không có nghiên cứu mới trong 5 năm gần đây ({this_year - 5}-{this_year})")
+        # ★ SỬA NHÃN 2026-07-28: nhánh "recent" chạy với PUBTYPE_FILTER (SR/MA/RCT/
+        # guideline), KHÔNG phải mọi thiết kế. Câu cũ "Không có nghiên cứu mới trong 5
+        # năm gần đây" vì thế là một khẳng định SAI về toàn bộ y văn: một lĩnh vực có
+        # 300 cohort công bố năm ngoái vẫn rơi vào nhánh này. Nói đúng phạm vi đo được.
+        gaps.append(
+            f"Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây "
+            f"({this_year - 5}-{this_year}) — nhánh này KHÔNG soi nghiên cứu quan sát"
+        )
     if not gaps:
-        gaps.append("Có thể còn khoảng trống về quần thể đặc thù (Việt Nam, khu vực châu Á)")
+        # ★ SỬA 2026-07-28: câu cũ "Có thể còn khoảng trống về quần thể đặc thù (Việt
+        # Nam, khu vực châu Á)" là một khoảng trống BỊA — hệ không tra gì về Việt Nam,
+        # không tra gì về châu Á, mà lại in nó dưới tiêu đề "PHÂN TÍCH KHOẢNG TRỐNG (tự
+        # động từ evidence thật)". Đúng kiểu khẳng định vô căn cứ mà cổng này phải cấm.
+        gaps.append(
+            "KHÔNG phát hiện khoảng trống nào từ dữ liệu PubMed đã tra "
+            "(đã có SR/MA, RCT, guideline và nghiên cứu mới) — [CẦN BÁC SĨ TỰ XÁC ĐỊNH "
+            "khoảng trống, ví dụ quần thể/bối cảnh chưa được phủ; hệ KHÔNG suy ra được]"
+        )
 
     # Gợi ý thiết kế
     if n_sr == 0 and n_rct >= 2:
@@ -452,6 +611,43 @@ def analyze_evidence_gaps(results: dict, topic: str) -> dict:
         design_hint = "Nghiên cứu phân tích dưới nhóm / quần thể đặc thù / pragmatic trial"
     else:
         design_hint = "RCT HOẶC Cohort tiến cứu đa trung tâm"
+
+    # ★ THÊM 2026-07-28 — TRÙNG LẶP VỚI NGHIÊN CỨU ĐANG TIẾN HÀNH.
+    # "Chưa công bố" KHÁC "chưa ai làm". Trước bản này, một chủ đề có 0 RCT đã
+    # công bố nhưng 17 thử nghiệm đang tuyển bệnh vẫn được G0 gọi thẳng là
+    # "THIẾU — chưa có RCT/SR" kèm khuyến khích làm RCT mới.
+    registry_note = None
+    if isinstance(registry, dict) and registry.get("checked"):
+        n_active = registry.get("n_active")
+        n_reg = registry.get("n_trials")
+        if isinstance(n_active, int) and n_active > 0:
+            registry_note = (
+                f"⚠ ClinicalTrials.gov: {n_active} nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này "
+                f"(tổng {n_reg} hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — "
+                "đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật."
+            )
+            gaps.append(
+                f"Có {n_active} nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — "
+                "cần đối chiếu để tránh trùng lặp (xem §3.6)"
+            )
+            novelty_concern = f"{novelty_concern} | {registry_note}"
+            # Không để hệ khuyên "làm RCT mới" một cách phẳng khi đang có thử nghiệm
+            # tuyển bệnh cho đúng câu hỏi đó.
+            if "RCT" in design_hint:
+                design_hint = (
+                    f"{design_hint} — ⚠ NHƯNG có {n_active} thử nghiệm đang/sắp tuyển: "
+                    "đọc §3.6 trước, cân nhắc hợp tác/đa trung tâm hoặc đổi câu hỏi thay "
+                    "vì khởi động một thử nghiệm trùng"
+                )
+        elif isinstance(n_reg, int) and n_reg == 0:
+            registry_note = ("ClinicalTrials.gov: 0 hồ sơ đăng ký khớp truy vấn "
+                             "(chỉ phủ thử nghiệm; nghiên cứu quan sát thường không đăng ký).")
+    elif isinstance(registry, dict):
+        registry_note = (
+            "⚠ CHƯA TRA ĐƯỢC đăng ký nghiên cứu ("
+            f"{registry.get('error') or 'không rõ lý do'}) — kết luận 'tính mới' bên dưới "
+            "CHỈ dựa trên bài đã công bố, chưa loại trừ đề tài đang tiến hành."
+        )
 
     return {
         "n_sr": n_sr, "n_rct": n_rct, "n_guide": n_guide, "n_recent": n_recent,
@@ -466,6 +662,12 @@ def analyze_evidence_gaps(results: dict, topic: str) -> dict:
         "novelty_concern": novelty_concern,
         "gaps": gaps,
         "design_hint": design_hint,
+        # Đăng ký nghiên cứu — None nghĩa là KHÔNG TRA, khác hẳn 0 nghĩa là đã tra
+        # và không có. Hai thứ này trước đây hiển thị y hệt nhau.
+        "registry_checked": bool(isinstance(registry, dict) and registry.get("checked")),
+        "n_registered": (registry or {}).get("n_trials") if isinstance(registry, dict) else None,
+        "n_registered_active": (registry or {}).get("n_active") if isinstance(registry, dict) else None,
+        "registry_note": registry_note,
     }
 
 
@@ -489,14 +691,33 @@ def _format_article_list(articles: list, max_show: int = 5) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _section_heading(label: str, n_hits: int, articles: list,
+                     counts_are_real: bool) -> str:
+    """Tiêu đề mục §3.x nói rõ SỐ HIT vs SỐ BÀI ĐANG HIỂN THỊ.
+
+    ★ SỬA 2026-07-28: tiêu đề cũ dạng "### 3.1 Systematic Review ({n_sr} bài)" lấy
+    n_sr = SỐ HIT (có thể 203) rồi bên dưới liệt kê tối đa 5 bài kèm dòng "... và
+    10 bài khác" — hai con số mâu thuẫn ngay trong một mục, người đọc không biết
+    203 hay 15 mới là số bài hệ thật sự nắm.
+    """
+    shown = len(articles)
+    tag = "số hit thật" if counts_are_real else "ước lượng dưới"
+    return f"{label} — ~{n_hits} hit ({tag}); hiển thị {min(shown, 5)}/{shown} bài đã tải"
+
+
 def generate_a1_artifact(topic: str, study_name: str, queries: dict,
-                          results: dict, gaps: dict, run_date: str) -> str:
+                          results: dict, gaps: dict, run_date: str,
+                          registry: Optional[dict] = None) -> str:
     """Sinh artifact A1 hoàn chỉnh với kết quả PubMed thật."""
 
     sr_list = _format_article_list(results["sr_ma"])
     rct_list = _format_article_list(results["rct"])
     guide_list = _format_article_list(results["guideline"])
     recent_list = _format_article_list(results["recent"], max_show=3)
+    registry = registry or {}
+    trial_list = _format_trial_list(registry.get("trials") or [])
+    _real = bool(gaps.get("counts_are_real"))
+    _std = G0Q.expected_reporting_standard(gaps.get("design_hint"))
     # VÁ 2026-07-27 (kiểm định độc lập, mức NẶNG NHẤT): nhánh quan sát ĐƯỢC ĐẾM
     # nhưng KHÔNG BAO GIỜ được ghi ra artifact/raw JSON. Hệ quả: cổng chuyển từ
     # CHẶN (exit 2, "0 PMID") sang QUA (exit 0, "13 PMIDs thật") nhờ 13 bài mà
@@ -506,12 +727,19 @@ def generate_a1_artifact(topic: str, study_name: str, queries: dict,
 
     artifact = f"""# A1 — CÂU HỎI NGHIÊN CỨU & PICO | {study_name}
 > Tạo tự động: {run_date} | Truy vấn PubMed thật
-> Bác sĩ cần: XÁC NHẬN hoặc CHỈNH PICO bên dưới (không điền lại từ đầu)
+> **Hệ KHÔNG suy ra PICO.** Mọi ô P/I/C/O bên dưới là chỗ TRỐNG — bác sĩ phải tự viết.
+> Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (§3) và chỉ ra khoảng trống (§5) để bác sĩ
+> viết PICO có căn cứ. (Câu cũ ở dòng này ghi "xác nhận hoặc chỉnh PICO, không điền
+> lại từ đầu" — đã bỏ 2026-07-28 vì mô tả sai việc hệ thật sự làm.)
+>
+> ⚠️ **NƠI CHỐT chính thức KHÔNG phải file này** mà là `study_meta.json →
+> gate_params.G0` (file .md này bị GHI ĐÈ mỗi lần chạy lại G0). Sau khi điền, chạy:
+> `python tools/g0_quality_gate.py --study {study_name}`
 > Cần bác sĩ kiểm chứng.
 
 ---
 
-## PHẦN 1 — PICO / PECO (dự thảo — bác sĩ xác nhận)
+## PHẦN 1 — PICO / PECO (khung trống — bác sĩ tự viết)
 
 **Topic đề tài:** {topic}
 **Truy vấn PubMed:** `{queries.get('base', topic)}`
@@ -539,15 +767,42 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 │   [CẦN BÁC SĨ XÁC NHẬN]                              │
 ├─────────────────────────────────────────────────────────┤
 │ O — OUTCOMES (Kết cục)                                 │
-│   Kết cục CHÍNH (1): [CẦN BÁC SĨ ẤN ĐỊNH]           │
+│   Kết cục CHÍNH — CHỈ ĐƯỢC 1:                          │
+│     Tên kết cục: [CẦN BÁC SĨ ẤN ĐỊNH]                │
+│     Định nghĩa/công cụ đo: [CẦN BÁC SĨ ẤN ĐỊNH]      │
+│     Đơn vị/thang đo: [CẦN BÁC SĨ ẤN ĐỊNH]            │
+│     Thời điểm đo: [CẦN BÁC SĨ ẤN ĐỊNH]               │
 │   Kết cục PHỤ 1: [CẦN BÁC SĨ ẤN ĐỊNH]               │
 │   Kết cục PHỤ 2: [CẦN BÁC SĨ ẤN ĐỊNH]               │
 │   Căn cứ chọn kết cục: PMIDs bên dưới                 │
 └─────────────────────────────────────────────────────────┘
 ```
 
+> Ba dòng "định nghĩa · đơn vị · thời điểm" của kết cục chính là bắt buộc: cổng G1
+> sẽ CHẶN nếu thiếu, và cỡ mẫu ở G3 không tính được nếu không biết thang đo.
+
 **Loại câu hỏi:** ☐ Điều trị  ☐ Chẩn đoán  ☐ Tiên lượng  ☐ Tác hại  ☐ Mô tả
 **Loại kiểm định:** ☐ Superiority  ☐ Non-inferiority  ☐ Equivalence  ☐ Mô tả
+
+> Ô tick ở trên chỉ để bác sĩ suy nghĩ. Giá trị được HỆ ĐỌC nằm ở
+> `study_meta.json → gate_params.G0.question_type` và `.test_type` — ô tick trong
+> file .md này không có mã nào đọc lại (đã kiểm 2026-07-28).
+
+---
+
+## PHẦN 1b — GIẢ THUYẾT (THÀNH PHẦN 3 của doctrine — trước đây THIẾU HẲN)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ H0 (giả thuyết vô hiệu): [CẦN BÁC SĨ ẤN ĐỊNH]            │
+│ H1 (giả thuyết nghiên cứu): [CẦN BÁC SĨ ẤN ĐỊNH]         │
+│ Chiều kỳ vọng: ☐ tăng ☐ giảm ☐ liên quan dương ☐ âm       │
+│   Căn cứ chiều kỳ vọng: PMID/DOI ___ hoặc [CẦN KIỂM CHỨNG]│
+│ Nghiên cứu MÔ TẢ thuần: ☐ đúng → không cần H0/H1           │
+└─────────────────────────────────────────────────────────────┘
+```
+> Điền vào `gate_params.G0.hypothesis_h0/hypothesis_h1/expected_direction`.
+> Không có giả thuyết định trước thì mọi kiểm định ở G6 đều là thăm dò.
 
 ---
 
@@ -590,24 +845,41 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 
 > **Lưu ý:** Danh sách dưới đây là kết quả THẬT từ PubMed E-utilities.
 > PMIDs đã được xác minh. Bác sĩ cần đọc toàn văn để kiểm chứng nội dung.
+> Mỗi tiêu đề mục ghi RỜI hai con số: ~số hit (toàn kho PubMed) và số bài hệ đã tải
+> về (bị chặn bởi `--max-results`) — trước 2026-07-28 hai số này bị trộn làm một.
 
-### 3.1 Systematic Review / Meta-analysis ({gaps['n_sr']} bài)
+### {_section_heading("3.1 Systematic Review / Meta-analysis", gaps['n_sr'], results['sr_ma'], _real)}
 {sr_list}
 
-### 3.2 Randomized Controlled Trials ({gaps['n_rct']} bài)
+### {_section_heading("3.2 Randomized Controlled Trials", gaps['n_rct'], results['rct'], _real)}
 {rct_list}
 
-### 3.3 Guideline / Khuyến cáo ({gaps['n_guide']} bài)
+### {_section_heading("3.3 Guideline / Khuyến cáo", gaps['n_guide'], results['guideline'], _real)}
 {guide_list}
+> ⚠️ Chỉ soi guideline được PubMed đánh chỉ mục. KHÔNG thay việc quét trang chính thống
+> (WHO · NICE · USPSTF · hiệp hội chuyên khoa · Bộ Y tế) — nhiều khuyến cáo không nằm
+> trên PubMed. Kết luận "chưa có guideline" ở §5 chỉ đúng trong phạm vi PubMed.
 
-### 3.5 Nghiên cứu QUAN SÁT (cohort/bệnh-chứng/cắt ngang) — ~{gaps.get('n_observational', 0)} bài khớp truy vấn
+### {_section_heading("3.5 Nghiên cứu QUAN SÁT (cohort/bệnh-chứng/cắt ngang)", gaps.get('n_observational', 0), results.get('observational', []), _real)}
 {obs_list}
 > ⚠️ Con số ~{gaps.get('n_observational', 0)} là SỐ HIT của bộ lọc quan sát và CÓ CHỒNG LẤN
 > với RCT/SR (đo thật: ~13% ở một số chủ đề). Dùng để biết "lĩnh vực này đã có nền quan sát
 > hay chưa", KHÔNG dùng làm số nghiên cứu quan sát thuần.
 
-### 3.4 Nghiên cứu gần đây {int(run_date[:4]) - 5}-{run_date[:4]} ({gaps['n_recent']} bài)
+### {_section_heading(f"3.4 SR/MA · RCT · guideline gần đây {int(run_date[:4]) - 5}-{run_date[:4]}", gaps['n_recent'], results['recent'], _real)}
 {recent_list}
+> ⚠️ Nhánh này chạy với bộ lọc SR/MA·RCT·guideline, nên nó KHÔNG trả lời "có nghiên cứu
+> nào mới không" nói chung — nghiên cứu quan sát mới không xuất hiện ở đây.
+
+### 3.6 ĐĂNG KÝ NGHIÊN CỨU — đã có ai ĐANG LÀM chưa? (ClinicalTrials.gov)
+{trial_list}
+> **{("Đã tra ngày " + str(registry.get("checked_at") or "")[:10] + f": ~{registry.get('n_trials')} hồ sơ khớp, {registry.get('n_active')} đang/sắp tuyển.") if registry.get("checked") else ("⚠️ CHƯA TRA ĐƯỢC (" + str(registry.get("error") or "không rõ lý do") + ") — KHÔNG được đọc mục này thành 'không có ai làm'.")}**
+> PubMed chỉ biết cái ĐÃ CÔNG BỐ; mục này mới trả lời "đang có ai làm".
+> ClinicalTrials.gov chủ yếu phủ THỬ NGHIỆM CAN THIỆP. Còn phải tự tra thủ công:
+> · Tổng quan hệ thống → PROSPERO: https://www.crd.york.ac.uk/prospero/
+> · Đăng ký quốc tế khác → WHO ICTRP: https://trialsearch.who.int/
+> (hai nguồn này không có API mở miễn phí — hệ KHÔNG tra, đừng coi là đã tra)
+> ☐ Bác sĩ đã tự tra PROSPERO   ☐ Bác sĩ đã tự tra WHO ICTRP
 
 **Tổng PMIDs thật tìm được:** {results['total']} bài từ {len(results['all_pmids'])} PMID duy nhất
 
@@ -620,30 +892,63 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 **Khoảng trống nghiên cứu cụ thể:**
 {chr(10).join(f"• {g}" for g in gaps['gaps'])}
 
-**Gợi ý thiết kế sơ bộ:** {gaps['design_hint']}
+{("**Đối chiếu đăng ký:** " + gaps["registry_note"]) if gaps.get("registry_note") else ""}
+
+---
+
+## PHẦN 5 — THIẾT KẾ GỢI Ý SƠ BỘ (G1 quyết định chính thức)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Ưu tiên 1 (hệ gợi ý từ bằng chứng thật):                   │
+│   {_truncate_at_word(gaps['design_hint'], 55)}
+│   Lý do: suy từ {gaps['n_sr']} SR/MA · {gaps['n_rct']} RCT · {gaps.get('n_observational', 0)} quan sát
+│   Hạn chế: [CẦN BÁC SĨ NÊU — khả thi tại đơn vị?]         │
+├─────────────────────────────────────────────────────────────┤
+│ Ưu tiên 2 (phương án thay thế): [CẦN BÁC SĨ ẤN ĐỊNH]     │
+│   Lý do: [CẦN BÁC SĨ NÊU]                                 │
+│   Hạn chế: [CẦN BÁC SĨ NÊU]                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Chuẩn báo cáo DỰ KIẾN** (theo ưu tiên 1; G1 chốt lại theo thiết kế thật):
+- Mã thiết kế suy được: `{_std.get('design_code') or '[chưa suy được từ gợi ý]'}`
+- Chuẩn báo cáo: {_std.get('primary', '')}
+- Chuẩn đề cương: {_std.get('protocol', '')}
+
 *(Chuyển `thiet-ke-nghien-cuu` quyết định chi tiết ở G1)*
 
 ---
 
-## PHẦN 5 — TIÊU CHÍ QUA CỔNG G0
+## PHẦN 6 — TIÊU CHÍ QUA CỔNG G0
+
+Hệ chấm bằng `tools/g0_quality_gate.py`; báo cáo đầy đủ ở `G0_QUALITY_REPORT.md`.
+**Ô tick dưới đây chỉ để đọc — nơi hệ ĐỌC THẬT là `study_meta.json → gate_params.G0`.**
 
 ```
+PHẦN MÁY LÀM ĐƯỢC (tự động)
 ☑ Topic đề tài đã có
-☑ Truy vấn PubMed đã chạy ({results['total']} bài thật)
+☑ Truy vấn PubMed đã chạy ({results['total']} bài tải về / {len(results['all_pmids'])} PMID duy nhất)
 ☑ Khoảng trống nghiên cứu đã phân tích
-☐ PICO 4 thành phần đã xác nhận [CHỜ BÁC SĨ]
-☐ Kết cục chính DUY NHẤT đã định nghĩa [CHỜ BÁC SĨ]
-☐ FINER 5 tiêu chí đã đánh giá [CHỜ BÁC SĨ]
-☐ Thiết kế gợi ý đã có lý do [→ thiet-ke-nghien-cuu]
-☐ Bác sĩ xác nhận PICO + kết cục [CHỜ BÁC SĨ]
+{'☑' if registry.get('checked') else '☐'} Đã tra đăng ký nghiên cứu đang tiến hành
+
+PHẦN CHỈ BÁC SĨ QUYẾT ĐƯỢC (hệ KHÔNG tự điền)
+☐ PICO/PECO 4 thành phần            → gate_params.G0.population/intervention/comparison/outcomes
+☐ Kết cục CHÍNH duy nhất + thang đo + thời điểm → .primary_outcome{{,_measure,_timepoint}}
+☐ Giả thuyết H0/H1 + chiều kỳ vọng  → .hypothesis_h0/.hypothesis_h1/.expected_direction
+☐ Loại câu hỏi + loại kiểm định     → .question_type/.test_type
+☐ FINER 5 tiêu chí                  → .finer_feasible/_interesting/_novel/_ethical/_relevant
+☐ Đã đọc lại bằng chứng + biện minh tính mới → .evidence_reviewed_confirmed/.novelty_justification
+☐ Chốt PICO (vai trò + thời điểm)   → .pico_confirmed/.reviewed_by_role/.reviewed_at
 ```
 
 **Hành động tiếp theo của bác sĩ:**
-1. Đọc danh sách bài tìm được ở §3 (click PMIDs)
-2. Xác nhận/chỉnh PICO ở §1
-3. Điền F (Feasible) và E (Ethical) ở §2
-4. Xác nhận kết cục CHÍNH (1 kết cục duy nhất)
-→ Sau khi xác nhận, hệ thống tự kích hoạt G1 (thiet-ke-nghien-cuu)
+1. Đọc danh sách bài ở §3 (click PMID) và hồ sơ đăng ký ở §3.6
+2. Mở `study_meta.json`, điền khối `gate_params.G0` theo bảng trên
+3. Chạy `python tools/g0_quality_gate.py --study {study_name}` để xem còn thiếu gì
+4. Khi trạng thái đạt `PASS_G0_CONFIRMED` thì mới chạy G1 (`thiet-ke-nghien-cuu`)
+
+> G0 KHÔNG tự kích hoạt G1. Bác sĩ tự chạy G1 sau khi chốt câu hỏi.
 
 ---
 
@@ -686,26 +991,68 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
     # Chuẩn hóa NFC trước khi so khớp: pii_patterns liệt kê ở dạng tổ hợp sẵn (NFC); artifact
     # ở dạng NFD (chữ nền + dấu rời) khớp trượt hoàn toàn, để lọt PII qua guardrail G0 mà
     # không báo lỗi.
+    #
+    # ★ MỞ RỘNG 2026-07-28: trước đây R2 chỉ dò 5 chuỗi NHÃN tiếng Việt ("họ tên",
+    # "ngày sinh"…). Nghĩa là dữ liệu định danh THẬT — một số căn cước 12 chữ số, một
+    # số điện thoại, một ngày sinh 03/11/1958, một mã thẻ BHYT — đi thẳng qua guardrail
+    # và được ghi vào exports/ nếu bác sĩ lỡ dán bệnh cảnh thật vào `--topic`. Nay dò
+    # cả HÌNH DẠNG dữ liệu, không chỉ nhãn.
     artifact_normalized = unicodedata.normalize("NFC", artifact).lower()
-    pii_patterns = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd", "số hồ sơ"]
-    for p in pii_patterns:
-        if p in artifact_normalized:
-            errors.append(f"R2 🔴 PII phát hiện: '{p}'")
-            break
-    else:
-        warnings.append("R2 ✅ Không có PII")
+    pii_patterns = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd", "cmnd",
+                    "căn cước", "số hồ sơ", "số bhyt", "bảo hiểm y tế số",
+                    "địa chỉ nhà", "số điện thoại"]
+    pii_hits = [p for p in pii_patterns if p in artifact_normalized]
 
-    # R3 — Không vượt cổng
-    if "G1_STATUS = PASS" in artifact or "ĐÃ QUA G1" in artifact:
+    # Hình dạng dữ liệu định danh. Cố ý KHÔNG khớp PMID (5-9 số đứng sau "PMID:")
+    # hay NCT (chữ + 8 số) — đã kiểm bằng chính đầu ra của G0.
+    _shape_checks = (
+        (r"\b\d{2}[/-]\d{2}[/-](19|20)\d{2}\b", "ngày tháng năm dạng dd/mm/yyyy"),
+        (r"(?<!\d)0\d{9}(?!\d)", "số điện thoại 10 chữ số bắt đầu bằng 0"),
+        (r"(?<!\d)\d{12}(?!\d)", "dãy 12 chữ số (dạng số căn cước)"),
+        (r"\b[\w.+-]+@[\w-]+\.[\w.]{2,}\b", "địa chỉ email"),
+    )
+    for pattern, label in _shape_checks:
+        if re.search(pattern, artifact_normalized):
+            pii_hits.append(label)
+
+    if pii_hits:
+        errors.append(
+            "R2 🔴 Nghi có PII trong artifact G0 — KHÔNG được ghi thông tin định danh "
+            f"bệnh nhân: {', '.join(sorted(set(pii_hits))[:4])}"
+        )
+    else:
+        warnings.append("R2 ✅ Không có PII (kiểm cả nhãn lẫn hình dạng dữ liệu)")
+
+    # R3 — Không vượt cổng (so khớp KHÔNG phân biệt hoa-thường: bản cũ chỉ bắt đúng
+    # một cách viết hoa duy nhất nên "g1_status = pass" lọt thẳng qua)
+    _art_lower = artifact.lower()
+    if "g1_status = pass" in _art_lower or "đã qua g1" in artifact_normalized:
         errors.append("R3 🔴 Artifact G0 không được tự tuyên bố đã qua G1")
     else:
         warnings.append("R3 ✅ Không vượt cổng")
 
-    # R4 — Không tự gán GRADE
-    if re.search(r'GRADE [A-D]|Grade [A-D]|Độ mạnh khuyến cáo', artifact):
+    # R4 — Không tự gán GRADE (bỏ phân biệt hoa-thường)
+    if re.search(r'grade\s+[a-d]\b|độ mạnh khuyến cáo', artifact_normalized):
         errors.append("R4 🟡 Phát hiện nhãn GRADE — kiểm xem có nguồn không")
     else:
         warnings.append("R4 ✅ Không tự gán GRADE")
+
+    # R5 — TÁCH 2 TRỤC. THÊM 2026-07-28: quy tắc này vắng mặt hoàn toàn ở G0 dù
+    # CLAUDE.md liệt kê R1–R7. Ở cổng G0, vi phạm cụ thể là: một artifact "câu hỏi
+    # nghiên cứu" đi kèm khuyến cáo áp dụng cho bệnh nhân — trộn trục CHỨNG CỨ với
+    # trục KHUYẾN CÁO LÂM SÀNG, đúng thứ chỉ được phép xuất hiện sau Cổng A.
+    _clinical_advice = re.search(
+        r"nên (kê|dùng|chỉ định|điều trị|cho bệnh nhân)|khuyến cáo (dùng|điều trị)|"
+        r"chỉ định cho bệnh nhân",
+        artifact_normalized,
+    )
+    if _clinical_advice:
+        errors.append(
+            "R5 🔴 Artifact G0 chứa khuyến cáo ĐIỀU TRỊ cho bệnh nhân — G0 chỉ đặt câu "
+            f"hỏi nghiên cứu, không phải cổng lâm sàng (khớp: '{_clinical_advice.group(0)}')"
+        )
+    else:
+        warnings.append("R5 ✅ Không trộn trục khuyến cáo lâm sàng vào cổng nghiên cứu")
 
     # R6 — Gắn [CẦN BỔ SUNG] khi thiếu
     has_can_label = "[CẦN BÁC SĨ XÁC NHẬN]" in artifact or "[CẦN BỔ SUNG]" in artifact
@@ -791,27 +1138,76 @@ def export_docx(artifact_md: str, study_name: str, out_dir: Path) -> Optional[Pa
 def write_checkpoint(study_name: str, out_dir: Path, results: dict,
                      gaps: dict, guardrail: dict, artifact_path: Path,
                      docx_path: Optional[Path],
-                     topic: str = "", base_query: str = "") -> Path:
-    """Ghi JSON checkpoint để so-cai-ghi-nho và dieu-phoi-nghien-cuu resume được."""
+                     topic: str = "", base_query: str = "",
+                     registry: Optional[dict] = None,
+                     blocked: bool = False) -> Path:
+    """Ghi JSON checkpoint để so-cai-ghi-nho và dieu-phoi-nghien-cuu resume được.
+
+    ★ MỞ RỘNG 2026-07-28 sau khi grep mọi nơi tiêu thụ file này. Ba lệch hợp đồng
+    THẬT đã được vá tại đây (sửa một chỗ, thay vì sửa từng cổng tiêu thụ):
+
+    1. `run_g9_auto.py:578` đọc `g0.get("n_sr", 0)` ở TOP-LEVEL trong khi G0 ghi
+       LỒNG trong `pubmed_results` → thư gửi tổng biên tập tạp chí in nguyên văn
+       "Current evidence includes 0 systematic review(s) and 0 randomized
+       controlled trial(s)" cho MỌI đề tài. Một khẳng định sai gửi ra ngoài.
+    2. `run_pipeline_integrated.py` đọc `pmids_verified`, `n_pmids`, `evidence_note`
+       ở TOP-LEVEL — cả ba chưa từng tồn tại → đề cương 16 mục trình Hội đồng Đạo
+       đức tự khai "0 PMID đã xác minh" và không có tài liệu tham khảo.
+    3. `g1_quality_gate.collect_evidence_identifiers` tìm `pubmed_results.all_pmids`
+       (danh sách) — G0 chỉ ghi số đếm, nên G1 phải lùi về regex trên file .md vốn
+       đã bị cắt còn 5 bài mỗi mục → Evidence Ledger G1 mất phần lớn PMID.
+
+    Các khóa top-level dưới đây là BẢN SAO có chủ ý (không phải trùng lặp do cẩu
+    thả): giữ nguyên khối `pubmed_results` để không phá cổng đang đọc đúng.
+    """
+    all_pmids = list(results.get("all_pmids") or [])
+    # gate_status phải NÓI THẬT trạng thái, không phải hằng số. Trước đây luôn là
+    # "DRAFT — CHỜ BÁC SĨ XÁC NHẬN PICO" kể cả khi cổng BỊ CHẶN hoặc guardrail đỏ,
+    # nên study_readiness.py/list_studies.py đọc vào đều báo "✅ có checkpoint".
+    if blocked:
+        gate_status = "BLOCKED — thiếu bằng chứng thật (xem needs_input)"
+    elif not guardrail.get("passed", True):
+        gate_status = "BLOCKED — guardrail liêm chính chưa sạch"
+    else:
+        gate_status = "DRAFT — CHỜ BÁC SĨ CHỐT PICO trong study_meta.json (gate_params.G0)"
+
     checkpoint = {
         "study": study_name,
         "gate": "G0",
-        "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN PICO",
+        "gate_status": gate_status,
         "generated_at": datetime.now().isoformat(),
         "topic": topic,
         "base_query": base_query,
         "pubmed_results": {
             "total_found": results["total"],
-            "n_pmids": len(results["all_pmids"]),
+            "n_pmids": len(all_pmids),
+            # Danh sách PMID THẬT — g1_quality_gate đọc khóa này.
+            "all_pmids": all_pmids,
             "n_sr": gaps["n_sr"],
             "n_rct": gaps["n_rct"],
             "n_guideline": gaps["n_guide"],
+            "n_observational": gaps.get("n_observational", 0),
             "n_recent": gaps["n_recent"],
             "most_recent_year": gaps["most_recent_year"],
+            # Độ TIN CẬY của chính các con số trên — trước đây bị bỏ rơi, nên cổng
+            # sau nhận "n_sr = 0" mà không có cách nào biết đó là "đã tra, không có"
+            # hay "không tra được".
+            "counts_are_real": gaps.get("counts_are_real", False),
+            "counts_unavailable": gaps.get("counts_unavailable", []),
+            "query_errors": results.get("query_errors") or {},
         },
+        # ── Bản sao TOP-LEVEL cho các cổng đang đọc ở cấp này (xem docstring) ──
+        "n_sr": gaps["n_sr"],
+        "n_rct": gaps["n_rct"],
+        "n_pmids": len(all_pmids),
+        "pmids_verified": all_pmids,
+        "evidence_note": gaps["evidence_level"],
         "evidence_level": gaps["evidence_level"],
         "research_gaps": gaps["gaps"],
         "design_suggestion": gaps["design_hint"],
+        "novelty_concern": gaps.get("novelty_concern"),
+        # Kết quả tra đăng ký — g0_quality_gate đọc khóa này (G0-AUTO-06).
+        "registry_check": registry or {"checked": False, "error": "chưa tra"},
         "guardrail": {
             "passed": guardrail["passed"],
             "n_errors": len(guardrail["errors"]),
@@ -822,12 +1218,14 @@ def write_checkpoint(study_name: str, out_dir: Path, results: dict,
             "A1_docx": str(docx_path) if docx_path else None,
         },
         "pending_doctor_actions": [
-            "Xác nhận PICO 4 thành phần",
-            "Ấn định kết cục chính (1 kết cục duy nhất)",
-            "Điền FINER F (Feasible) và E (Ethical)",
-            "Xác nhận thiết kế gợi ý",
+            "Điền PICO 4 thành phần vào study_meta.json → gate_params.G0",
+            "Ấn định kết cục chính DUY NHẤT + thang đo + thời điểm đo",
+            "Điền giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định",
+            "Đánh giá FINER đủ 5 tiêu chí (F và E máy không tự làm được)",
+            "Đọc lại bằng chứng §3 + §3.6 rồi biện minh tính mới",
+            f"Chạy: python tools/g0_quality_gate.py --study {study_name}",
         ],
-        "next_gate": "G1 — Thiết kế nghiên cứu (sau khi bác sĩ xác nhận PICO)",
+        "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
     cp_path = out_dir / "G0_checkpoint.json"
@@ -853,6 +1251,10 @@ def main():
                         help="Số kết quả tối đa mỗi loại query (mặc định: 15)")
     parser.add_argument("--email", default=None,
                         help="Email NCBI (mặc định: từ NCBI_EMAIL trong .env)")
+    parser.add_argument("--skip-registry", action="store_true",
+                        help="Bỏ qua bước tra ClinicalTrials.gov (chạy offline/nhanh). "
+                             "Khi bỏ qua, artifact GHI RÕ là CHƯA TRA — không coi như "
+                             "'không có nghiên cứu trùng'.")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
 
@@ -870,6 +1272,36 @@ def main():
     print(f"  Topic: {args.topic}")
     print(f"  Thời gian: {run_date}")
     print(f"{'='*65}\n")
+
+    # ★ VÁ 2026-07-28: topic rỗng trước đây dừng bằng SystemExit(2) NGAY trong
+    # build_pubmed_query — đúng mã thoát nhưng KHÔNG tạo thư mục, KHÔNG ghi
+    # checkpoint, KHÔNG có needs_input, tức vi phạm chính hợp đồng gate_contract
+    # ("BLOCKED = ĐÃ ghi checkpoint DRAFT + needs_input"). Pipeline đọc vào không
+    # thấy gì để chẩn đoán. Nay dừng ở tầng CLI và để lại dấu vết máy đọc được.
+    if not (args.topic or "").strip():
+        out_dir = Path("exports") / study
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "G0_checkpoint.json").write_text(json.dumps({
+            "study": study, "gate": "G0",
+            "gate_status": "BLOCKED — chưa có chủ đề nghiên cứu",
+            "generated_at": datetime.now().isoformat(),
+            "topic": "", "base_query": "",
+            "core_value": GC.core_value("topic", "", is_empty=True),
+            "needs_input": GC.needs_input(
+                GC.REASON_MISSING_PUBMED,
+                "G0 không thể tìm bằng chứng cho một đề tài chưa có tên. "
+                "--topic rỗng hoặc chỉ có khoảng trắng.",
+                f'python tools/run_g0_auto.py --study {study} --topic "<chủ đề nghiên cứu>"',
+                must_not_fabricate=["topic", "PMID"],
+                study_meta_patch={"topic": "<chủ đề nghiên cứu>"},
+            ),
+            "guardrail": {"passed": False, "n_errors": 1,
+                          "errors": ["R1 🔴 Không có chủ đề — không có nguồn nào để tra"]},
+            "disclaimer": "Cần bác sĩ kiểm chứng.",
+        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        print("🚧 G0 DỪNG: --topic rỗng. Đã ghi checkpoint BLOCKED tại "
+              f"{out_dir / 'G0_checkpoint.json'}")
+        return GC.EXIT_BLOCKED
 
     # THÊM 2026-07-17: mỗi đề tài PHẢI có 1 thư mục riêng exports/<study>/ dùng
     # xuyên suốt G0-G10 (lưu trữ + theo dõi tại đó) — nhưng trước đây KHÔNG có
@@ -889,29 +1321,57 @@ def main():
     print(f"  Base query: {queries['base']}")
 
     # 2. Tìm kiếm PubMed thật
-    print("\n🔍 Bước 2/7: Tìm kiếm PubMed thật (có thể mất 10-30 giây)...")
+    print("\n🔍 Bước 2/8: Tìm kiếm PubMed thật (có thể mất 10-30 giây)...")
     results = run_pubmed_searches(queries, args.max_results)
     print(f"  → Tổng cộng: {results['total']} bài / {len(results['all_pmids'])} PMIDs duy nhất")
 
+    # 2b. Tra đăng ký nghiên cứu — "đã có ai ĐANG LÀM chưa"
+    print("\n🧾 Bước 3/8: Tra đăng ký nghiên cứu đang tiến hành (ClinicalTrials.gov)...")
+    if args.skip_registry:
+        registry = {"registry": "ClinicalTrials.gov", "checked": False,
+                    "error": "bị bỏ qua bằng --skip-registry", "trials": [],
+                    "n_trials": None, "n_active": None, "query": queries.get("base", "")}
+        print("  ⏭  Bỏ qua theo yêu cầu (--skip-registry)")
+    else:
+        registry = check_trial_registry(queries.get("base", args.topic))
+        if registry.get("checked"):
+            print(f"  → {registry['n_trials']} hồ sơ khớp, "
+                  f"{registry['n_active']} đang/sắp tuyển")
+        else:
+            print(f"  ⚠ CHƯA TRA ĐƯỢC: {registry.get('error')}")
+            print("     (KHÔNG được đọc thành 'không có ai đang làm')")
+
     # 3. Phân tích khoảng trống
-    print("\n📊 Bước 3/7: Phân tích bằng chứng & khoảng trống...")
-    gaps = analyze_evidence_gaps(results, args.topic)
+    print("\n📊 Bước 4/8: Phân tích bằng chứng & khoảng trống...")
+    gaps = analyze_evidence_gaps(results, args.topic, registry=registry)
     print(f"  → Mức độ evidence: {gaps['evidence_level']}")
     print(f"  → Khoảng trống: {len(gaps['gaps'])} điểm")
 
     # 4. Sinh artifact A1
-    print("\n✍️  Bước 4/7: Sinh artifact A1 (PICO + FINER + Evidence + Gap)...")
-    artifact_md = generate_a1_artifact(args.topic, study, queries, results, gaps, run_date)
+    print("\n✍️  Bước 5/8: Sinh artifact A1 (PICO + Giả thuyết + FINER + Evidence + Gap)...")
+    artifact_md = generate_a1_artifact(args.topic, study, queries, results, gaps, run_date,
+                                       registry=registry)
 
     # 5. Lưu artifact
     out_dir = Path("exports") / study
     out_dir.mkdir(parents=True, exist_ok=True)
     md_path = out_dir / f"G0_A1_PICO_FINER_{study}.md"
+    # ★ THÊM 2026-07-28: chạy lại G0 GHI ĐÈ file này. Nếu bác sĩ đã điền tay PICO
+    # vào bản .md cũ (chính artifact cũ từng dặn làm vậy), lần chạy lại xoá sạch mà
+    # không cảnh báo. Nay giữ một bản sao trước khi ghi đè. (Nơi chốt chính thức đã
+    # chuyển sang study_meta.json — file này chỉ là bản đọc.)
+    if md_path.exists():
+        backup = out_dir / f"G0_A1_PICO_FINER_{study}.bak-{datetime.now():%Y%m%d-%H%M%S}.md"
+        try:
+            backup.write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8")
+            print(f"  ↩ Đã sao lưu bản A1 cũ: {backup.name}")
+        except OSError as e:
+            print(f"  ⚠ Không sao lưu được bản A1 cũ ({e}) — vẫn tiếp tục ghi đè")
     md_path.write_text(artifact_md, encoding="utf-8")
     print(f"  → Lưu: {md_path}")
 
     # 6. Guardrail
-    print("\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
+    print("\n🛡️  Bước 6/8: Kiểm guardrail R1-R7...")
     guardrail = guardrail_check_g0(artifact_md, results)
     for msg in guardrail["warnings"]:
         print(f"  {msg}")
@@ -921,15 +1381,18 @@ def main():
     print(f"  → Guardrail: {status}")
 
     # 7. Xuất DOCX
-    print("\n📄 Bước 6/7: Xuất DOCX...")
+    print("\n📄 Bước 7/8: Xuất DOCX...")
     docx_path = export_docx(artifact_md, study, out_dir)
     if docx_path:
         print(f"  → Lưu: {docx_path}")
 
     # 8. Checkpoint
-    print("\n💾 Bước 7/7: Ghi checkpoint...")
+    print("\n💾 Bước 8/8: Ghi checkpoint...")
+    n_pmids = len(results["all_pmids"])
+    blocked = (n_pmids == 0)
     cp_path = write_checkpoint(study, out_dir, results, gaps, guardrail, md_path, docx_path,
-                              topic=args.topic, base_query=queries.get("base", ""))
+                              topic=args.topic, base_query=queries.get("base", ""),
+                              registry=registry, blocked=blocked)
     print(f"  → Lưu: {cp_path}")
 
     # ── SEED study_meta.json (D4) — NƠI PIN durable cho cả chuỗi ──────────────
@@ -945,8 +1408,6 @@ def main():
     # Ghi needs_input MÁY-ĐỌC-ĐƯỢC vào checkpoint (không chỉ để pipeline đoán) +
     # exit 2. Nguyên nhân thường gặp: chủ đề tiếng Việt → PubMed (index tiếng Anh)
     # trả 0 kết quả; cần --query-en. Hệ KHÔNG bịa PMID để "đi tiếp".
-    n_pmids = len(results["all_pmids"])
-    blocked = (n_pmids == 0)
     if blocked:
         try:
             cp = json.loads(cp_path.read_text(encoding="utf-8"))
@@ -989,27 +1450,78 @@ def main():
     }
     raw_path.write_text(json.dumps(raw_results, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    # Tóm tắt cuối
+    # ── HỢP ĐỒNG CHẤT LƯỢNG G0 (mới 2026-07-28) ──────────────────────────────
+    # G0 từng là cổng DUY NHẤT không có bước này: nó in "✅ G0 HOÀN THÀNH" và thoát
+    # mã 0 kể cả khi PICO còn nguyên placeholder, tức cổng khởi đầu tuyên bố hoàn
+    # thành khi CÂU HỎI NGHIÊN CỨU chưa tồn tại. Nay trạng thái do g0_quality_gate
+    # quyết định, và nó ĐỌC quyết định thật của bác sĩ trong study_meta.json.
+    quality = G0Q.evaluate_study(study, out_dir)
+    G0Q.write_quality_report(study, out_dir, quality)
+    try:
+        cp = json.loads(cp_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        cp = {}
+    cp["quality_gate"] = {
+        "status": quality["status"],
+        "contract_version": quality.get("contract_version"),
+        "automated_checks_passed": quality.get("automated_checks_passed"),
+        "human_confirmation_complete": quality.get("human_confirmation_complete"),
+        "pending_actions": quality.get("pending_actions", []),
+    }
+    # needs_input do quality gate sinh (REASON_MISSING_PICO) chỉ ghi khi cổng CHƯA
+    # bị chặn vì lý do nặng hơn (0 PMID) — không đè lý do dừng gốc.
+    if not blocked and quality.get("needs_input"):
+        cp["needs_input"] = quality["needs_input"]
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # Tóm tắt cuối — banner NÓI ĐÚNG trạng thái, không còn "HOÀN THÀNH" vô điều kiện.
     print(f"\n{'='*65}")
-    print(f"  ✅ G0 HOÀN THÀNH — {study}")
+    if blocked:
+        print(f"  🚧 G0 BỊ CHẶN — {study} (0 PMID: chưa có nền bằng chứng thật)")
+    elif not guardrail["passed"]:
+        print(f"  🚧 G0 CHƯA ĐẠT GUARDRAIL LIÊM CHÍNH — {study}")
+    elif quality["status"] == G0Q.STATUS_CONFIRMED:
+        print(f"  ✅ G0 ĐÃ ĐƯỢC BÁC SĨ CHỐT — {study}")
+    elif quality["status"] == G0Q.STATUS_BLOCKED:
+        print(f"  🚧 G0 CHƯA ĐẠT KIỂM TỰ ĐỘNG — {study}")
+    else:
+        print(f"  🟡 G0 ĐÃ DỰNG NỀN BẰNG CHỨNG — CHỜ BÁC SĨ CHỐT CÂU HỎI — {study}")
     print(f"{'='*65}")
     print(f"\n  📁 Đầu ra tại: {out_dir}/")
     print(f"  📝 A1 Markdown: {md_path.name}")
     if docx_path:
         print(f"  📄 A1 DOCX:     {docx_path.name}")
-    print(f"  🔢 PubMed:      {results['total']} bài ({gaps['n_sr']} SR | {gaps['n_rct']} RCT | {gaps['n_guide']} Guideline)")
+    _real_tag = "số hit thật" if gaps.get("counts_are_real") else "⚠ ước lượng dưới"
+    print(f"  🔢 PubMed:      {gaps['n_sr']} SR | {gaps['n_rct']} RCT | "
+          f"{gaps['n_guide']} Guideline | {gaps.get('n_observational', 0)} quan sát ({_real_tag})")
+    if registry.get("checked"):
+        print(f"  🧾 Đăng ký:     {registry['n_trials']} hồ sơ | "
+              f"{registry['n_active']} đang/sắp tuyển")
+    else:
+        print(f"  🧾 Đăng ký:     ⚠ CHƯA TRA ĐƯỢC ({registry.get('error')})")
     print(f"  📊 Evidence:    {gaps['evidence_level']}")
     print(f"  🔴 Guardrail:   {status}")
-    print("\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
-    print(f"  1. Mở {md_path.name} — đọc danh sách bài tìm được")
-    print("  2. Xác nhận/chỉnh PICO (§1) — đặc biệt P, O (kết cục chính)")
-    print("  3. Điền FINER F (Feasible) và E (Ethical)")
-    print("  4. Khi đồng ý → hệ thống tự kích hoạt G1 (thiet-ke-nghien-cuu)")
+    print(f"  🧭 G0 quality:  {quality['status']}")
+    if quality.get("pending_actions"):
+        print("\n  VIỆC CÒN LẠI TRƯỚC KHI ĐƯỢC GHI PASS_G0_CONFIRMED:")
+        for i, action in enumerate(quality["pending_actions"], 1):
+            print(f"  {i}. {action}")
+    else:
+        print(f"\n  Bước kế: chạy G1 (thiet-ke-nghien-cuu) cho đề tài {study}.")
     print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
 
-    # Mã thoát theo hợp đồng DỪNG: 0 PMID → BLOCKED (2); còn lại → OK (0).
-    return GC.EXIT_BLOCKED if blocked else GC.EXIT_OK
+    # Mã thoát rời nghĩa theo gate_contract:
+    #   3 = artifact vi phạm liêm chính / kiểm tự động của G0 chưa sạch
+    #   2 = DỪNG chờ input đời thực (0 PMID, hoặc PICO chưa được bác sĩ chốt)
+    #   0 = G0 đã được bác sĩ chốt
+    # ★ VÁ 2026-07-28: trước đây guardrail đỏ vẫn trả 0 — G0 là cổng DUY NHẤT
+    # trong chuỗi thiếu EXIT_GUARDRAIL_FAIL (G1/G2/G4/G6/G7/G8/G9 đều có).
+    if not guardrail["passed"] or quality["status"] == G0Q.STATUS_BLOCKED:
+        return GC.EXIT_GUARDRAIL_FAIL
+    if blocked or quality["status"] != G0Q.STATUS_CONFIRMED:
+        return GC.EXIT_BLOCKED
+    return GC.EXIT_OK
 
 
 if __name__ == "__main__":

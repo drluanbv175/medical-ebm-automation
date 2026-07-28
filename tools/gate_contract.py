@@ -134,6 +134,99 @@ _META_DEFAULTS: Dict[str, Any] = {
 }
 
 _GATE_PARAMS_SKELETON: Dict[str, Any] = {
+    # G0 — CÂU HỎI NGHIÊN CỨU. Thêm 2026-07-28: trước đây G0 là cổng DUY NHẤT
+    # không có khối gate_params, nên bác sĩ KHÔNG CÓ CHỖ CHUẨN để pin quyết định
+    # "PICO này là PICO cuối" — và hệ quả là G0 luôn in "✅ HOÀN THÀNH" trong khi
+    # mọi ô P/I/C/O trong artifact A1 vẫn còn nguyên placeholder [CẦN BÁC SĨ...].
+    # Hằng số REASON_MISSING_PICO ở trên đã dự trù đúng tình huống này từ đầu
+    # nhưng chưa từng có nơi nào dùng — khối này là chỗ đóng vòng đó.
+    # Hệ KHÔNG tự bật cờ nào ở đây; g0_quality_gate.py chỉ ĐỌC.
+    "G0": {
+        # PICO/PECO — bác sĩ tự viết, hệ không suy ra (xem docstring run_g0_auto.py).
+        "population": None,
+        "intervention": None,
+        "comparison": None,          # "không có nhóm so sánh — mô tả" cũng là câu trả lời hợp lệ
+        "outcomes": [],
+        # Kết cục CHÍNH phải DUY NHẤT và ĐO ĐƯỢC (doctrine cau-hoi-nghien-cuu).
+        "primary_outcome": None,
+        "primary_outcome_measure": None,     # đơn vị/thang đo
+        "primary_outcome_timepoint": None,   # thời điểm đo
+        # Giả thuyết + loại kiểm định (THÀNH PHẦN 3 của doctrine).
+        "hypothesis_h0": None,
+        "hypothesis_h1": None,
+        "expected_direction": None,
+        "test_type": None,           # superiority/non_inferiority/equivalence/descriptive
+        "question_type": None,       # therapy/diagnosis/prognosis/harm/descriptive
+        # FINER — 5 tiêu chí, bác sĩ đánh giá từng cái (không phải 1 cờ gộp).
+        "finer_feasible": None,
+        "finer_interesting": None,
+        "finer_novel": None,
+        "finer_ethical": None,
+        "finer_relevant": None,
+        # Đã ĐỌC LẠI bằng chứng G0 tìm được, và biện minh tính mới bằng chữ.
+        "evidence_reviewed_confirmed": False,
+        "novelty_justification": None,
+        "pico_confirmed": False,
+        "reviewed_by_role": None,
+        "reviewed_at": None,
+    },
+    # G1 — quyết định phương pháp do PI/methodologist xác nhận. Hệ chỉ sinh
+    # dự thảo và kiểm nhất quán; không tự bật các cờ xác nhận người thật.
+    "G1": {
+        "protocol_version": "1.0",
+        "design": None,
+        "design_confirmed": False,
+        "design_rationale": None,
+        "objectives": [],
+        "research_question": None,
+        "primary_outcome": None,
+        "secondary_outcomes": [],
+        "population": None,
+        "inclusion_criteria": [],
+        "exclusion_criteria": [],
+        "setting": None,
+        "study_period": None,
+        "intervention_or_exposure": None,
+        "comparator": None,
+        "recruitment_strategy": None,
+        "follow_up_schedule": None,
+        "central_phenomenon": None,
+        "qualitative_approach": None,
+        "data_collection_method": None,
+        "saturation_criterion": None,
+        "information_sources": [],
+        "search_strategy": None,
+        "search_last_date": None,
+        "study_selection_process": None,
+        "estimand": {
+            "population": None,
+            "treatment_condition": None,
+            "variable": None,
+            "intercurrent_events_strategy": None,
+            "population_summary_measure": None,
+        },
+        "bias_controls_confirmed": False,
+        "protocol_core_confirmed": False,
+        "feasibility_confirmed": False,
+        "evidence_review_confirmed": False,
+        "reviewed_by_role": None,
+        "reviewed_at": None,
+    },
+    # G2 — metadata phiên bản và đường đi đạo đức/đăng ký. Các trường này chỉ
+    # mô tả hồ sơ hiện hành; KHÔNG phải phê duyệt. G2 chỉ khóa khi ledger có
+    # chữ ký đúng vai trò IRB và phụ lục approval attestation hợp lệ.
+    "G2": {
+        "protocol_version": "1.0",
+        "icf_version": "1.0",
+        "recruitment_mode": None,
+        "registration_required": None,
+        "registration_registry": None,
+        "registration_id": None,
+        "registration_date": None,
+        "first_enrolment_date": None,
+        "icf_waiver_requested": False,
+        "safety_plan_required": None,
+    },
     # G3 — bác sĩ PIN effect size (kèm PMID nguồn) để tính cỡ mẫu; hệ KHÔNG bịa.
     "G3": {
         "effect_size": None,          # vd 0.75 (HR) — [CẦN BÁC SĨ CẤP + PMID/DOI nguồn]
