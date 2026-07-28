@@ -1000,7 +1000,14 @@ def generate_g1_artifact(
             "cấu trúc dữ liệu đã định trước"
         )
         quanso_note = "Toàn bộ người đủ tiêu chí (Complete case) / Sensitivity: MI"
-        epv_note = "EPV ≥ 10: cần N_events ≥ 10 × số biến đa biến"
+        # SỬA 2026-07-28: nêu kèm giới hạn của quy tắc EPV để nhất quán với nhánh
+        # case_control (vốn đã ghi đúng) — bằng chứng ủng hộ ngưỡng EPV cứng là YẾU.
+        epv_note = (
+            "EPV ≥ 10 (N_events ≥ 10 × số THAM SỐ đa biến) chỉ là kiểm tra sơ bộ, "
+            "không phải bảo đảm: bằng chứng ủng hộ ngưỡng EPV cứng là yếu "
+            "(van Smeden và cs. 2016, PMID 27881078) — biện minh cỡ mẫu bằng phương "
+            "pháp cỡ mẫu hiện hành cho mô hình đa biến"
+        )
     elif internal == "case_control":
         sap_analysis_note = (
             "Case-control không ghép: logistic regression → OR (95%CI)\n"
@@ -1021,7 +1028,12 @@ def generate_g1_artifact(
                              "Hoặc: Linear regression → β (95%CI) nếu kết cục liên tục\n"
                              "VIF < 5 (kiểm đa cộng tuyến); Hosmer-Lemeshow (logistic)")
         quanso_note = "Toàn bộ người đủ tiêu chí (Complete case)"
-        epv_note = "EPV ≥ 10 cho mô hình đa biến"
+        # SỬA 2026-07-28: cùng lý do với nhánh cohort — xem ghi chú ở đó.
+        epv_note = (
+            "EPV ≥ 10 cho mô hình đa biến chỉ là kiểm tra sơ bộ, không phải bảo đảm "
+            "(bằng chứng ủng hộ ngưỡng EPV cứng là yếu — van Smeden và cs. 2016, "
+            "PMID 27881078); biện minh cỡ mẫu bằng phương pháp cỡ mẫu hiện hành"
+        )
     elif internal == "diagnostic":
         sap_analysis_note = (
             "Tại ngưỡng định trước: bảng 2×2 → Se, Sp, PPV, NPV, LR+, LR− cùng 95%CI\n"
@@ -1059,8 +1071,30 @@ def generate_g1_artifact(
                              "Hiệu năng: discrimination (C-statistic/AUC) + calibration "
                              "(slope + intercept-in-the-large) + DCA")
         quanso_note = "Toàn bộ ca có đủ biến tiên đoán + kết cục (Complete case); Sensitivity: MI"
-        epv_note = ("EPV ≥ 20 khuyến nghị (cao hơn ngưỡng ≥10 kinh điển — cần dự trữ cho "
-                    "shrinkage/internal validation, Riley RD et al. BMJ 2020;368:m441, PMID 32188600)")
+        # SỬA 2026-07-28 (VIỆN DẪN SAI NGUỒN — phát hiện khi tra chuẩn cho cổng G3,
+        # xác minh lại bằng PubMed E-utilities trước khi sửa): bản cũ ghi
+        # "EPV ≥ 20 khuyến nghị ... Riley RD et al. BMJ 2020;368:m441, PMID 32188600".
+        # SAI HAI LẦN: (1) Riley BMJ 2020 KHÔNG đưa ra ngưỡng EPV nào — bài đó tính
+        # cỡ mẫu trực tiếp từ shrinkage/R²/tỷ lệ biến cố/số tham số ứng viên
+        # (pmsampsize), và thông điệp trung tâm của nó là BÁC BỎ quy tắc ngón tay;
+        # gán một ngưỡng EPV cho nó là đảo ngược nội dung bài. (2) Nguồn THẬT của
+        # con số 20 là Ogundimu 2016, và nó CÓ ĐIỀU KIỆN: chỉ cho mô hình Cox có
+        # nhiều biến tiên đoán nhị phân TỶ LỆ THẤP, kèm câu "EPV rule of thumb
+        # should be data driven".
+        epv_note = (
+            "Cỡ mẫu tính TRỰC TIẾP theo Riley RD và cs. BMJ 2020;368:m441 "
+            "(PMID 32188600, doi:10.1136/bmj.m441) — đặt shrinkage đích ≥ 0,9, "
+            "R² kỳ vọng, tỷ lệ biến cố và số THAM SỐ ứng viên; công cụ tham chiếu "
+            "pmsampsize. KHÔNG dùng quy tắc ngón tay EPV làm tiêu chí quyết định: "
+            "bằng chứng ủng hộ ngưỡng EPV cho hồi quy logistic là YẾU (van Smeden "
+            "và cs. BMC Med Res Methodol 2016;16:163, PMID 27881078, "
+            "doi:10.1186/s12874-016-0267-3). "
+            "EPV chỉ dùng làm chỉ số MÔ TẢ hậu kiểm; nếu viện dẫn ngưỡng EPV ≥ 20 "
+            "thì phải dẫn ĐÚNG nguồn Ogundimu EO và cs. J Clin Epidemiol "
+            "2016;76:175-82 (PMID 26964707, doi:10.1016/j.jclinepi.2016.02.031) và "
+            "nêu rõ điều kiện áp dụng: mô hình Cox có nhiều biến tiên đoán nhị phân "
+            "tỷ lệ thấp, và ngưỡng phải theo dữ liệu cụ thể"
+        )
     else:  # qualitative
         # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện
         # HIGH): cùng lỗi với "prediction" ở trên — "qualitative" trước đây
