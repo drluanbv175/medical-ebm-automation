@@ -15,6 +15,8 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
+sys.path.insert(0, str(BASE / "tools"))
+import gate_contract as GC  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # CRF DEFINITIONS — 55 dòng, cụ thể theo loại thiết kế
@@ -1938,6 +1940,28 @@ def main():
 
     run_date = datetime.now().strftime("%Y-%m-%d")
 
+    # ★★ VÁ 2026-07-27 — G5 PHẢI ĐÒI G4 ĐÃ KÝ. Kiểm định độc lập đo được: G6 gọi
+    # ledger_approved() 20 chỗ, run_stats_analysis.py 8 chỗ, còn G5 = 0 chỗ. Nghĩa là
+    # cổng KHÓA DỮ LIỆU chạy được trong khi SAP CHƯA KHÓA.
+    # Vì sao đây là lỗ hổng cốt lõi chứ không phải thiếu sót nhỏ: toàn bộ lý do G4 tồn tại
+    # là chốt kế hoạch phân tích TRƯỚC khi ai nhìn thấy dữ liệu. Nếu khóa được dữ liệu mà
+    # chưa khóa SAP, người nghiên cứu có thể xem dữ liệu rồi mới viết SAP — chính là HARKing
+    # (đặt giả thuyết sau khi biết kết quả). Chuỗi chống p-hacking G4→G5→G6 đứt ngay mắt đầu.
+    # Fail-closed, có đường đi tiếp tường minh cho đề tài thử nghiệm.
+    _g4_artifact = out / f"G4_A5_SAP_FINAL_{study}.md"
+    if not GC.ledger_approved("G4", study, _g4_artifact, repo_root=BASE):
+        _why = GC.gate_block_reason("G4", study, _g4_artifact, repo_root=BASE)
+        print("🚧 G5 DỪNG: chưa có phê duyệt THẬT cho cổng G4 (khóa SAP).")
+        if _why:
+            print(f"   ⚠️  LÝ DO: {_why}")
+        print("   KHÔNG khóa dữ liệu khi kế hoạch phân tích chưa được khóa — nếu không,")
+        print("   SAP có thể được viết SAU khi đã nhìn thấy dữ liệu (HARKing/p-hacking).")
+        print("   Ghi phê duyệt thật (bác sĩ/thống kê viên TỰ TAY chạy, không nhờ agent):")
+        print(f'     python3 tools/approve_gate.py --study "{study}" --gate G4 \\')
+        print(f"       --artifact exports/{study}/G4_A5_SAP_FINAL_{study}.md \\")
+        print('       --reviewer-role "METHODS_STATISTICS_REVIEWER" --reviewer-ref "<mã người duyệt>"')
+        return GC.EXIT_BLOCKED
+
     # Đọc checkpoints
     g0 = load_cp(out / "G0_checkpoint.json")
     g1 = load_cp(out / "G1_checkpoint.json")
@@ -2112,4 +2136,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # VÁ 2026-07-27: TRƯỚC ĐÂY gọi main() trần nên MỌI mã thoát main() trả về đều bị
+    # vứt và tiến trình luôn exit 0 — chốt chặn G4 vừa thêm sẽ in cảnh báo rồi vẫn báo
+    # "thành công" với caller/script tự động. Cùng lớp lỗi đã vá ở run_g10_assemble.py.
+    sys.exit(main() or 0)
