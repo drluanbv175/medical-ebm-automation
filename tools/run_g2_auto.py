@@ -10,7 +10,7 @@ run_g2_auto.py — TỰ ĐỘNG HÓA CỔNG G2: Đạo đức & Đăng ký nghi�
   6. Kế hoạch Quản lý Dữ liệu (DMP — Luật 91/2025/QH15 + NĐ 356/2025)
   7. Checklist nộp Hội đồng Đạo đức (TT43/2024/TT-BYT)
   8. Khai báo COI + Tài trợ + AI (ICMJE form rút gọn)
-  + Bản nháp 18 trường WHO Trial Registration (ClinicalTrials.gov)
+  + Bản nháp 24 mục WHO Trial Registration Data Set 1.3.1
   + Tìm kiếm thật ClinicalTrials.gov API v2 (prior art + tham khảo NCT)
 
 Bác sĩ chỉ cần: in/ký và nộp Hội đồng → nhận số IRB → cung cấp để mở G2.
@@ -35,10 +35,22 @@ _REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 _TODAY = datetime.now().strftime("%d/%m/%Y")
 _YEAR  = datetime.now().strftime("%Y")
+
+DESIGN_DEFAULTS = {
+    "rct": ("Thử nghiệm ngẫu nhiên có đối chứng", "CONSORT 2025"),
+    "cohort": ("Nghiên cứu đoàn hệ", "STROBE"),
+    "case_control": ("Nghiên cứu bệnh-chứng", "STROBE"),
+    "cross_sectional": ("Nghiên cứu cắt ngang", "STROBE"),
+    "diagnostic": ("Nghiên cứu độ chính xác chẩn đoán", "STARD 2015"),
+    "sr_ma": ("Tổng quan hệ thống và phân tích gộp", "PRISMA 2020"),
+    "prediction": ("Nghiên cứu mô hình dự báo/tiên lượng", "TRIPOD+AI"),
+    "qualitative": ("Nghiên cứu định tính", "COREQ/SRQR"),
+}
 
 # ════════════════════════════════════════════════════════════════════════════
 # 1. PHÂN LOẠI RỦI RO VÀ LỘ TRÌNH IRB
@@ -158,8 +170,10 @@ RISK_PROFILES = {
     "diagnostic": {
         "risk_level": "TỐI THIỂU ĐẾN LỚN HƠN TỐI THIỂU (tùy loại xét nghiệm)",
         "irb_route": "EXPEDITED hoặc FULL (tùy xét nghiệm tham chiếu có xâm lấn không)",
-        "registration": "KHUYẾN KHÍCH (STARD 2015 yêu cầu tiền đăng ký)",
-        "register_where": "ClinicalTrials.gov hoặc PROSPERO (nếu SR chẩn đoán)",
+        "registration": ("BẮT BUỘC nếu TIẾN CỨU tuyển người tham gia mới "
+                         "(Helsinki 2024 §35, trước NTG đầu tiên) — TÙY CHỌN nếu "
+                         "hồi cứu/dữ liệu thứ cấp không tuyển mới"),
+        "register_where": "ClinicalTrials.gov hoặc WHO ICTRP primary registry",
         "icf_required": True,
         "icf_waiver_eligible": False,
         "risks": [
@@ -211,8 +225,10 @@ RISK_PROFILES = {
     "qualitative": {
         "risk_level": "TỐI THIỂU ĐẾN THẤP (phỏng vấn/nhóm tiêu điểm, không can thiệp y khoa)",
         "irb_route": "EXPEDITED REVIEW",
-        "registration": "KHÔNG BẮT BUỘC đăng ký thử nghiệm (không phải nghiên cứu can thiệp) — cân nhắc đăng ký protocol định tính (OSF) nếu tạp chí đích yêu cầu",
-        "register_where": "Không áp dụng (hoặc OSF/registry protocol định tính nếu cần)",
+        "registration": ("BẮT BUỘC nếu nghiên cứu y khoa TIẾN CỨU tuyển người tham gia "
+                         "mới (Helsinki 2024 §35, trước NTG đầu tiên) — có thể dùng "
+                         "registry phù hợp/OSF nếu registry thử nghiệm không nhận thiết kế"),
+        "register_where": "Registry công khai phù hợp hoặc OSF trước tuyển người tham gia",
         "icf_required": True,
         "icf_waiver_eligible": False,
         "risks": [
@@ -391,7 +407,7 @@ def generate_g2_full_package(
     ct_trials: list, risk: dict, run_date: str, n_adjusted: int = 0,
     specialist_modules: Optional[list] = None
 ) -> str:
-    """Sinh toàn bộ hồ sơ G2 — 8 tài liệu + 18 WHO fields."""
+    """Sinh toàn bộ hồ sơ G2 — 8 tài liệu + 24 mục WHO TRDS 1.3.1."""
 
     specialist_modules = specialist_modules or []
     risk_table_str = _risk_table(risk["risks"])
@@ -602,10 +618,11 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
             data_type_line=data_type_line,
         )
 
-    # 18 WHO Registration fields
+    # WHO Trial Registration Data Set 1.3.1 hiện có 24 mục. Bản 18 trường cũ
+    # đã lỗi thời và thiếu ethics review, completion/results và IPD sharing.
     # Vá 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction" (mô hình
     # tiên lượng/TRIPOD+AI) trước đây KHÔNG có trong 2 bản đồ này -> .get()
-    # fallback im lặng về "Observational"/"Other" (Trường 14 dưới). "Observational"
+    # fallback im lặng về "Observational"/"Other" (Trường 15 dưới). "Observational"
     # tình cờ đúng (mô hình tiên lượng không có can thiệp phân bổ), nhưng "Other"
     # cho Primary Purpose là mơ hồ -- WHO ICTRP có hạng mục "Prognosis" riêng,
     # đúng hơn cho đa số đề tài "prediction" (khác "diagnostic" đã có nhãn riêng
@@ -617,7 +634,7 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
     # cho đa số đề tài định tính của hệ thống này (thường về trải nghiệm/hài
     # lòng bệnh nhân, quy trình chăm sóc — khớp ví dụ định tính thật đang chạy,
     # xem exports/hai-long-benh-nhan-C1a-BVQY175/); đề tài định tính khác chủ đề
-    # (vd giáo dục y khoa) cần bác sĩ tự điều chỉnh Trường 14, không tự động
+    # (vd giáo dục y khoa) cần bác sĩ tự điều chỉnh Trường 15, không tự động
     # đoán đúng mọi chủ đề định tính được.
     who_design_type_map = {
         "rct": "Interventional", "cohort": "Observational", "case_control": "Observational",
@@ -1140,7 +1157,7 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/{_YEAR}
 {waiver_section}
 ---
 
-## ĐĂNG KÝ NGHIÊN CỨU — 18 TRƯỜNG WHO TRIAL REGISTRATION DATA SET
+## ĐĂNG KÝ NGHIÊN CỨU — 24 MỤC WHO TRIAL REGISTRATION DATA SET 1.3.1
 
 **Nơi đăng ký đề nghị:** {risk["register_where"]}
 **Thời điểm:** {risk["registration"]}
@@ -1150,7 +1167,7 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/{_YEAR}
 *(Tham chiếu NCT: {ncts_for_ref})*
 
 ```
-WHO Trial Registration Data Set — DRAFT Phiên bản 1.0
+WHO Trial Registration Data Set 1.3.1 — DRAFT Phiên bản 1.0
 ═══════════════════════════════════════════════════════════════
 
 Trường 1  — Primary registry & Trial ID:
@@ -1166,54 +1183,78 @@ Trường 3  — Secondary IDs (nếu có):
 Trường 4  — Source(s) of monetary or material support:
             [CẦN BỔ SUNG — tên tổ chức tài trợ hoặc "None"]
 
-Trường 5  — Primary sponsor contact:
-            [CẦN — Tên chủ nhiệm, Đơn vị, Email, Điện thoại]
+Trường 5  — Primary sponsor:
+            [CẦN — tên pháp nhân/tổ chức chịu trách nhiệm]
 
-Trường 6  — Secondary sponsor / contact (nếu có):
+Trường 6  — Secondary sponsor(s) (nếu có):
             [CẦN BỔ SUNG]
 
-Trường 7  — Public title (tiêu đề công khai, dễ hiểu):
+Trường 7  — Contact for public queries:
+            [ĐIỀN TRỰC TIẾP TRÊN REGISTRY — không lưu PII trong hệ thống]
+
+Trường 8  — Contact for scientific queries:
+            [ĐIỀN TRỰC TIẾP TRÊN REGISTRY — không lưu PII trong hệ thống]
+
+Trường 9  — Public title (tiêu đề công khai, dễ hiểu):
             [CẦN BỔ SUNG — ngôn ngữ không chuyên]
 
-Trường 8  — Scientific title (tiêu đề khoa học):
+Trường 10 — Scientific title (tiêu đề khoa học):
             {topic}
 
-Trường 9  — Countries of recruitment:
+Trường 11 — Countries of recruitment:
             Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]
 
-Trường 10 — Health condition(s) studied:
+Trường 12 — Health condition(s) studied:
             [CẦN — từ PICO P: ví dụ Heart failure with preserved EF / HFpEF]
 
-Trường 11 — Intervention(s):
+Trường 13 — Intervention(s):
             [CẦN — từ PICO I: ví dụ SGLT2 inhibitor (empagliflozin 10mg OD)]
             Comparator: [CẦN — từ PICO C]
 
-Trường 12 — Key inclusion criteria:
-            [CẦN BỔ SUNG — từ SAP §1 / PICO P]
+Trường 14 — Key inclusion and exclusion criteria:
+            Inclusion: [CẦN BỔ SUNG — từ protocol/PICO P]
+            Exclusion: [CẦN BỔ SUNG — từ protocol]
 
-Trường 13 — Key exclusion criteria:
-            [CẦN BỔ SUNG — từ SAP §1]
-
-Trường 14 — Study type:
+Trường 15 — Study type:
             {who_design_type_map.get(design_code, "Observational")} ·
             {who_primary_purpose_map.get(design_code, "Other")} ·
             {"Randomized" if design_code == "rct" else "Non-randomized"} ·
             {"Blinded" if design_code == "rct" else "Open label"}
 
-Trường 15 — Anticipated date of first enrolment:
-            [CẦN — sau G2 LOCKED: ___/___/{_YEAR}]
+Trường 16 — Date of first enrolment:
+            [CẦN — chỉ tuyển sau phê duyệt và đăng ký: ___/___/{_YEAR}]
 
-Trường 16 — Target sample size:
+Trường 17 — Target sample size:
             {n_display}
 
-Trường 17 — Recruitment status (tại thời điểm đăng ký):
+Trường 18 — Recruitment status:
             Not yet recruiting
 
-Trường 18 — Primary outcome:
-            [CẦN — từ PICO O đã ấn định ở G0]
+Trường 19 — Primary outcome(s):
+            [CẦN — tên kết cục + thước đo + thời điểm từ G0/G1]
 
-            Key secondary outcomes:
-            [CẦN — từ SAP §2]
+Trường 20 — Key secondary outcomes:
+            [CẦN — tên kết cục + thước đo + thời điểm từ SAP]
+
+Trường 21 — Ethics review:
+            Status: Not approved
+            Approval date: [CẦN sau quyết định IRB]
+            Ethics committee: [CẦN mã/tên đơn vị; không lưu PII cá nhân]
+
+Trường 22 — Completion date:
+            [CẦN — ngày hoàn tất dự kiến; cập nhật ngày thật khi kết thúc]
+
+Trường 23 — Summary results:
+            [CẦN CẬP NHẬT sau nghiên cứu — ngày đăng kết quả/tác phẩm,
+             protocol URL + phiên bản, participant flow, AE, outcomes]
+
+Trường 24 — IPD sharing statement:
+            Plan to share de-identified IPD: [CẦN — Yes/No]
+            What/when/how/with whom/purpose: [CẦN — kế hoạch cụ thể]
+
+GHI CHÚ CHUYỂN ĐỔI:
+  Bản mẫu cũ 18 trường đã ngừng dùng. WHO TRDS 1.3.1 có 24 mục;
+  tiêu chí nhận/loại cùng nằm trong mục 14 và kết cục chính/phụ là mục 19/20.
 ═══════════════════════════════════════════════════════════════
 "DRAFT — Điền trường còn [CẦN] trước khi gửi đăng ký."
 ```
@@ -1223,26 +1264,23 @@ Trường 18 — Primary outcome:
 ## CƠ CHẾ MỞ KHÓA G2
 
 ```
-╔══════════════════════════════════════════════════════════════╗
-║         ĐỂ MỞ CỔNG G2 — bác sĩ cung cấp:                   ║
-╠══════════════════════════════════════════════════════════════╣
-║  1. Số phê duyệt IRB: ___ (do Hội đồng đạo đức cấp)         ║
-║  2. Ngày phê duyệt:   ___/___/20___                         ║
-║  3. Phiên bản ICF phê duyệt: 1.0 (hoặc phiên bản đã sửa)   ║
-║  4. Nếu RCT: số đăng ký NCT_____ hoặc tương đương           ║
-╠══════════════════════════════════════════════════════════════╣
-║  → Hệ thống ghi:                                            ║
-║    G2_STATUS: LOCKED                                        ║
-║    G2_IRB_NUMBER: ___                                       ║
-║    G2_APPROVAL_DATE: ___                                    ║
-║    G2_ICF_VERSION: ___                                      ║
-║    G2_REGISTRATION: ___                                     ║
-╠══════════════════════════════════════════════════════════════╣
-║  Sau khi LOCKED:                                            ║
-║  • G3 (cỡ mẫu), G4 (SAP lock) chạy song song               ║
-║  • G5 (thu thập dữ liệu THẬT) CHỈ MỞ khi G2=LOCKED         ║
-║  Khi chưa LOCKED: KHÔNG thu thập dữ liệu người tham gia     ║
-╚══════════════════════════════════════════════════════════════╝
+ĐỂ MỞ CỔNG G2 — phải đủ CẢ HAI LỚP:
+
+LỚP 1 — HỒ SƠ SẴN SÀNG
+  1. Không còn placeholder khoa học/vận hành trọng yếu.
+  2. Protocol + ICF + DMP + rủi ro/an toàn nhất quán.
+  3. WHO TRDS 1.3.1 đủ 24 mục.
+  4. G1 đã được PI/methodologist xác nhận.
+
+LỚP 2 — SỰ KIỆN THẬT
+  1. IRB/IEC cấp số quyết định, ngày, phạm vi và hiệu lực.
+  2. Phiên bản protocol/ICF hiện hành khớp đúng bản được duyệt.
+  3. Nếu tuyển mới: đã đăng ký công khai trước người đầu tiên.
+  4. Người có thẩm quyền IRB tự ghi approval ledger đúng vai trò.
+
+Chỉ khi G2_QUALITY_REPORT = PASS_G2_APPROVED mới ghi G2_STATUS = LOCKED.
+Agent không được tự chạy lệnh phê duyệt. HMAC cục bộ không tự chứng minh
+tính độc lập của Hội đồng; phải đối chiếu quyết định gốc.
 ```
 
 ---
@@ -1256,7 +1294,7 @@ Trường 18 — Primary outcome:
 ☑ Bảng rủi ro–lợi ích có phân loại mức nguy cơ
 ☑ DMP theo Luật 91/2025/QH15 (7 mục)
 ☑ Khai báo COI + AI đầy đủ
-☑ 18 trường WHO Trial Registration soạn sẵn
+☑ 24 mục WHO Trial Registration Data Set 1.3.1 soạn sẵn
 ☑ ClinicalTrials.gov search: prior art thật
 ☑ Không PII trong bất kỳ tài liệu nào
 ☑ Không bịa số phê duyệt/mã đăng ký
@@ -1270,7 +1308,8 @@ Trường 18 — Primary outcome:
 **Bước tiếp theo:**
 1. In hồ sơ, ký → nộp Hội đồng Đạo đức (lộ trình: {risk["irb_route"]})
 2. Đăng ký nghiên cứu: {risk["register_where"]}
-3. Khi nhận số IRB → cung cấp cho hệ thống → G2 LOCKED
+3. Khi nhận quyết định IRB/IEC → người có thẩm quyền tự ghi ledger; hệ thống
+   kiểm số/ngày/hiệu lực/phiên bản/đăng ký rồi mới có thể ghi G2 LOCKED
 4. Chạy G3 song song: `python tools/run_g3_auto.py --study {study_name}`
 
 ---
@@ -1433,11 +1472,13 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
 def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
                          risk: dict, ct_trials: list, guardrail: dict,
                          artifact_path: Path, docx_path: Optional[Path],
+                         registration_path: Path,
                          design_ambiguous: bool = False) -> Path:
     cp = {
         "study": study_name, "gate": "G2",
         "gate_status": "DRAFT — CHỜ BÁC SĨ NỘP IRB VÀ NHẬN SỐ PHÊ DUYỆT",
         "generated_at": datetime.now().isoformat(),
+        "quality_contract_version": G2Q.QUALITY_CONTRACT_VERSION,
         "g2_status": "PENDING",
         "g2_irb_number": None,
         "g2_approval_date": None,
@@ -1460,6 +1501,7 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
         "artifacts": {
             "A3_markdown": str(artifact_path),
             "A3_docx": str(docx_path) if docx_path else None,
+            "registration_draft": str(registration_path),
         },
         "documents_generated": [
             "TL1 — Đơn xin phê duyệt IRB",
@@ -1470,16 +1512,20 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
             "TL6 — DMP (Luật 91/2025/QH15)",
             "TL7 — Checklist nộp Hội đồng",
             "TL8 — Khai báo COI + Tài trợ + AI",
-            "WHO 18 fields — bản nháp đăng ký",
+            "WHO TRDS 1.3.1 — bản nháp đủ 24 mục",
         ],
         "pending_doctor_actions": [
             "Điền [CẦN BỔ SUNG] trong tất cả tài liệu (tên, đơn vị, liên lạc, cỡ mẫu...)",
             "Ký Đơn xin phê duyệt (Tài liệu 1) + Trưởng đơn vị xác nhận",
             "Nộp hồ sơ lên Hội đồng Đạo đức (lộ trình: " + risk["irb_route"] + ")",
             "Đăng ký nghiên cứu: " + risk["register_where"],
-            "Cung cấp số IRB + ngày phê duyệt để hệ thống ghi G2=LOCKED",
+            "Người có thẩm quyền IRB tự ghi số/ngày/hiệu lực + phiên bản protocol/ICF "
+            "+ trạng thái đăng ký vào approval ledger",
         ],
-        "lock_instruction": "Để mở G2: cung cấp số IRB + ngày phê duyệt + phiên bản ICF đã duyệt",
+        "lock_instruction": (
+            "Chỉ mở khi G2_QUALITY_REPORT=PASS_G2_APPROVED; agent không được "
+            "tự chạy tools/approve_gate.py."
+        ),
         "next_gate": "G3 (Cỡ mẫu) — chạy SONG SONG với G2 (không cần chờ G2 LOCKED)",
         "note": "G5 (thu thập dữ liệu THẬT) chỉ mở sau khi G2 LOCKED",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
@@ -1520,8 +1566,7 @@ def main():
     # ── Bước 1: Đọc G0 + G1 checkpoint ──
     topic = args.topic or study
     design_code = args.design or "cohort"
-    design_primary = "Cohort tiến cứu"
-    reporting_std = "STROBE"
+    design_primary, reporting_std = DESIGN_DEFAULTS[design_code]
     n_sr, n_rct = 0, 0
     evidence_level = ""
 
@@ -1598,6 +1643,10 @@ def main():
     # ── Bước 2: Risk profile ──
     print("\n⚖️  Bước 2/7: Xác định mức nguy cơ và lộ trình IRB...")
     risk = get_risk_profile(design_code, design_primary)
+    GC.ensure_study_meta(
+        out_dir,
+        seed={"title": topic, "design_code": design_code},
+    )
     print(f"  → Mức nguy cơ: {risk['risk_level']}")
     print(f"  → Lộ trình IRB: {risk['irb_route']}")
     print(f"  → Đăng ký: {risk['registration']}")
@@ -1631,6 +1680,17 @@ def main():
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     md_path.write_text(artifact_md, encoding="utf-8")
     print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
+    registration_path = G2Q.build_registration_draft(
+        study=study,
+        topic=topic,
+        design_code=design_code,
+        design_primary=design_primary,
+        risk=risk,
+        n_target=n_adjusted or None,
+        out_dir=out_dir,
+        generated_at=datetime.now().isoformat(),
+    )
+    print(f"  → WHO TRDS 24 mục: {registration_path}")
 
     # ── Bước 5: Guardrail ──
     print("\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
@@ -1652,13 +1712,29 @@ def main():
     print("\n💾 Bước 7/7: Ghi checkpoint G2...")
     cp_path = write_g2_checkpoint(
         study, out_dir, design_code, risk, ct_trials, guardrail, md_path, docx_path,
+        registration_path,
         design_ambiguous=design_ambiguous,
     )
     print(f"  → Lưu: {cp_path}")
+    quality_gate = G2Q.evaluate_study(
+        study,
+        out_dir,
+        repo_root=_REPO_ROOT,
+        write=True,
+    )
+    print(f"  → G2 quality status: {quality_gate['status']}")
+    print(f"  → Báo cáo: {out_dir / 'G2_QUALITY_REPORT.md'}")
 
     # ── Tóm tắt ──
     print(f"\n{'='*65}")
-    print(f"  ✅ G2 HOÀN THÀNH — {study}")
+    if quality_gate["status"] == G2Q.STATUS_APPROVED:
+        print(f"  ✅ G2 ĐÃ ĐƯỢC PHÊ DUYỆT THẬT — {study}")
+    elif quality_gate["status"] == G2Q.STATUS_READY:
+        print(f"  🟡 HỒ SƠ G2 SẴN SÀNG NỘP IRB — {study}")
+    elif quality_gate["status"] == G2Q.STATUS_BLOCKED:
+        print(f"  🚧 G2 BỊ CHẶN BỞI LỖI CHẤT LƯỢNG — {study}")
+    else:
+        print(f"  🟠 G2 LÀ BẢN NHÁP/CHỜ PHÊ DUYỆT THẬT — {study}")
     print(f"{'='*65}")
     print(f"\n  📁 Đầu ra: {out_dir}/")
     print(f"  📝 A3 Markdown: {md_path.name}")
@@ -1673,16 +1749,17 @@ def main():
     print("  TL6 — DMP (Luật 91/2025/QH15)")
     print(f"  TL7 — Checklist nộp Hội đồng ({risk['irb_route']})")
     print("  TL8 — Khai báo COI + Tài trợ + AI")
-    print("  + WHO 18 fields draft")
+    print("  + WHO TRDS 1.3.1 đủ 24 mục (JSON + bản đọc trong A3)")
     if design_code == "sr_ma":
         print("  + PROSPERO registration draft")
     print(f"  🔍 ClinicalTrials.gov: {len(ct_trials)} thử nghiệm tương tự")
     print(f"  🔴 Guardrail: {status}")
+    print(f"  🧭 G2 quality: {quality_gate['status']}")
     print("\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
     print("  1. Mở file DOCX, điền tất cả [CẦN BỔ SUNG]")
     print("  2. Ký + Trưởng đơn vị ký → nộp Hội đồng Đạo đức")
     print(f"  3. Đăng ký: {risk['register_where']}")
-    print("  4. Nhận số IRB → cung cấp để G2=LOCKED")
+    print("  4. Người có thẩm quyền IRB tự ghi quyết định bằng tools/approve_gate.py")
     print(f"  5. Chạy G3 song song: python tools/run_g3_auto.py --study {study}")
     print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
@@ -1691,7 +1768,7 @@ def main():
     # luôn 0 dù guardrail có lỗi thật — checkpoint ĐÃ ghi đúng, nhưng process exit code
     # không phản ánh, nên chạy trực tiếp (không qua run_pipeline.py) sẽ tưởng nhầm là
     # xong. Đối xứng cách G3/G4/G9 đã làm.
-    if not guardrail["passed"]:
+    if not guardrail["passed"] or quality_gate["status"] == G2Q.STATUS_BLOCKED:
         raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
 
 

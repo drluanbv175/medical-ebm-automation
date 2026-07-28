@@ -164,8 +164,40 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
         {
             "key": "project_charter",
             "label": "Project charter",
-            "patterns": ["01_Project_Charter.md", "G1b_CHARTER_*.docx"],
-            "required": False,
+            "patterns": [
+                "G1_A1b_PROJECT_CHARTER_*.md",
+                "01_Project_Charter.md",
+                "G1b_CHARTER_*.docx",
+            ],
+            "required": True,
+        },
+        {
+            "key": "evidence_ledger",
+            "label": "Evidence ledger có truy nguyên",
+            "patterns": [
+                "G1_A2b_EVIDENCE_LEDGER_*.md",
+                "03_Evidence_Ledger.md",
+            ],
+            "required": True,
+        },
+        {
+            "key": "implementation_plan",
+            "label": "Kế hoạch RACI/Gantt/kinh phí",
+            "patterns": [
+                "G1_A13_IMPLEMENTATION_PLAN_*.md",
+                "G1c_PLAN_*.docx",
+            ],
+            "required": True,
+        },
+        {
+            "key": "living_risk_register",
+            "label": "Risk Register sống + CAPA",
+            "patterns": [
+                "G1_A13b_RISK_REGISTER_*.md",
+                "18_Risk_Register.md",
+                "G1d_RISK_*.docx",
+            ],
+            "required": True,
         },
     ],
     "G2": [
@@ -173,6 +205,18 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "key": "ethics_package",
             "label": "IRB/ethics package + ICF",
             "patterns": ["G2_A3_ETHICS_PACKAGE_*.md", "06_Ethics_Package_Checklist.md"],
+            "required": True,
+        },
+        {
+            "key": "registration_draft",
+            "label": "WHO TRDS 1.3.1 đủ 24 mục",
+            "patterns": ["G2_REGISTRATION_DRAFT_*.json"],
+            "required": True,
+        },
+        {
+            "key": "g2_quality_report",
+            "label": "Báo cáo chất lượng G2",
+            "patterns": ["G2_QUALITY_REPORT.json"],
             "required": True,
         },
     ],
@@ -187,6 +231,16 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "key": "variables_crf",
             "label": "Variables/CRF scaffold",
             "patterns": ["09_Data_Dictionary.md", "07_CRF_or_Questionnaire.md"],
+            "required": False,
+        },
+        {
+            # required=False (khác G2) là CÓ CHỦ ĐÍCH: `tools/verify_research_gate_
+            # contracts.py` ở thư mục gốc dựng fixture G3 chỉ với artifact A4, nên
+            # đặt bắt buộc ở đây sẽ làm bộ verify đó đỏ. Nâng lên required=True
+            # phải sửa đồng thời cả hai file — việc đó để bác sĩ quyết.
+            "key": "g3_quality_report",
+            "label": "Báo cáo chất lượng G3 (cỡ mẫu)",
+            "patterns": ["G3_QUALITY_REPORT.json"],
             "required": False,
         },
     ],
@@ -298,7 +352,67 @@ GATE_METADATA_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "key": "design_code_pin",
             "label": "Thiết kế đã pin trong study_meta",
             "fields": ["design_code", "gate_params.G1.design"],
-            "required": False,
+            "required": True,
+        },
+        {
+            "key": "design_confirmed",
+            "label": "PI/methodologist đã xác nhận thiết kế",
+            "fields": ["gate_params.G1.design_confirmed"],
+            "required": True,
+        },
+        {
+            "key": "objectives",
+            "label": "Mục tiêu nghiên cứu đã chốt",
+            "fields": ["objectives", "gate_params.G1.objectives"],
+            "required": True,
+        },
+        {
+            "key": "primary_outcome",
+            "label": "Kết cục chính đã chốt",
+            "fields": ["primary_outcome", "gate_params.G1.primary_outcome"],
+            "required": True,
+        },
+        {
+            "key": "population",
+            "label": "Quần thể nghiên cứu đã xác định",
+            "fields": ["population", "gate_params.G1.population"],
+            "required": True,
+        },
+        {
+            "key": "setting",
+            "label": "Bối cảnh nghiên cứu đã xác định",
+            "fields": ["setting", "gate_params.G1.setting"],
+            "required": True,
+        },
+        {
+            "key": "study_period",
+            "label": "Thời gian nghiên cứu đã xác định",
+            "fields": ["study_period", "gate_params.G1.study_period"],
+            "required": True,
+        },
+        {
+            "key": "feasibility_confirmed",
+            "label": "Tính khả thi đã được xác nhận",
+            "fields": ["gate_params.G1.feasibility_confirmed"],
+            "required": True,
+        },
+        {
+            "key": "evidence_review_confirmed",
+            "label": "Bằng chứng và khoảng trống đã được đọc lại",
+            "fields": ["gate_params.G1.evidence_review_confirmed"],
+            "required": True,
+        },
+        {
+            "key": "reviewed_by_role",
+            "label": "Vai trò người rà phương pháp đã ghi",
+            "fields": ["gate_params.G1.reviewed_by_role"],
+            "required": True,
+        },
+        {
+            "key": "reviewed_at",
+            "label": "Thời điểm rà phương pháp đã ghi",
+            "fields": ["gate_params.G1.reviewed_at"],
+            "required": True,
         },
     ],
     "G3": [
@@ -675,6 +789,164 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
             "next_action": f"Rà guardrail rồi chạy lại: {default_command}",
             **extras,
         }
+
+    if gate == "G1":
+        quality = cp.get("quality_gate")
+        quality_status = (
+            quality.get("status") if isinstance(quality, dict) else None
+        )
+        if quality_status == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": None,
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": True,
+                "next_action": f"Sửa lỗi trong G1_QUALITY_REPORT rồi chạy lại: {default_command}",
+                **extras,
+            }
+        if quality_status != "PASS_G1_CONFIRMED":
+            pending = (
+                quality.get("pending_actions")
+                if isinstance(quality, dict)
+                else None
+            )
+            action = (
+                str(pending[0])
+                if isinstance(pending, list) and pending
+                else f"Chạy lại G1 để sinh báo cáo chất lượng mới: {default_command}"
+            )
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_NEEDS_REAL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "g1_methodology_confirmation",
+                    "label": "PI/methodologist xác nhận G1",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": action,
+                **extras,
+            }
+
+    if gate == "G2" and cp.get("quality_contract_version"):
+        quality = cp.get("quality_gate")
+        quality_status = (
+            quality.get("status") if isinstance(quality, dict) else None
+        )
+        if quality_status == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "irb_approved",
+                    "label": "phê duyệt IRB thật",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Sửa lỗi trong G2_QUALITY_REPORT rồi chạy lại "
+                    f"`python3 tools/g2_quality_gate.py --study {study}`."
+                ),
+                **extras,
+            }
+        if quality_status != "PASS_G2_APPROVED":
+            pending = (
+                quality.get("pending_actions")
+                if isinstance(quality, dict)
+                else None
+            )
+            action = (
+                str(pending[0])
+                if isinstance(pending, list) and pending
+                else (
+                    "Hoàn tất hồ sơ, quyết định IRB/IEC và đăng ký; "
+                    f"sau đó chạy lại `python3 tools/g2_quality_gate.py --study {study}`."
+                )
+            )
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_NEEDS_REAL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "irb_approved",
+                    "label": "phê duyệt IRB thật",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": action,
+                **extras,
+            }
+
+    # G3 — cỡ mẫu. Guard theo `quality_contract_version` để checkpoint CŨ (sinh
+    # trước 2026-07-28) không bị hồi tố đánh giá bằng hợp đồng mới.
+    if gate == "G3" and cp.get("quality_contract_version"):
+        quality = cp.get("quality_gate")
+        quality_status = quality.get("status") if isinstance(quality, dict) else None
+        if quality_status == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": None,
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Sửa lỗi trong G3_QUALITY_REPORT rồi chạy lại "
+                    f"`python3 tools/g3_quality_gate.py --study {study}`."
+                ),
+                **extras,
+            }
+        if quality_status != "PASS_G3_CONFIRMED":
+            pending = (
+                quality.get("pending_actions") if isinstance(quality, dict) else None
+            )
+            action = (
+                str(pending[0])
+                if isinstance(pending, list) and pending
+                else (
+                    "Cấp nguồn cho từng giả định cỡ mẫu rồi chạy lại "
+                    f"`python3 tools/g3_quality_gate.py --study {study}`."
+                )
+            )
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_NEEDS_REAL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "g3_statistician_confirmation",
+                    "label": "thống kê viên/chủ nhiệm xác nhận giả định cỡ mẫu",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": action,
+                **extras,
+            }
 
     if gate in REAL_SIGNAL_BY_PIPELINE_GATE:
         signal_key, signal_label = REAL_SIGNAL_BY_PIPELINE_GATE[gate]

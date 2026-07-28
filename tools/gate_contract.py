@@ -122,6 +122,58 @@ def blocked_detail(cp: Dict[str, Any]) -> Optional[str]:
     return f"{msg} → {cmd}" if cmd else msg
 
 
+def g2_quality_contract_satisfied(
+    checkpoint: Dict[str, Any],
+    meta: Optional[Dict[str, Any]] = None,
+) -> bool:
+    """True khi checkpoint G2 mới đã qua hợp đồng chất lượng có cấu trúc.
+
+    Checkpoint cũ chưa mang ``quality_contract_version`` được giữ tương thích;
+    workflow sinh từ G2-2026.1 trở đi bắt buộc ``PASS_G2_APPROVED`` ngoài chữ
+    ký ledger. Nhờ vậy, một chữ ký đúng kỹ thuật trên hồ sơ thiếu metadata,
+    sai phiên bản hoặc hết hiệu lực không mở được đường dữ liệu thật.
+    """
+    if not isinstance(checkpoint, dict):
+        return False
+    if not checkpoint.get("quality_contract_version"):
+        return True
+    quality = checkpoint.get("quality_gate")
+    if not (
+        isinstance(quality, dict)
+        and quality.get("status") == "PASS_G2_APPROVED"
+    ):
+        return False
+
+    valid_until = str(checkpoint.get("g2_approval_valid_until") or "").strip()
+    no_expiry = checkpoint.get("g2_no_expiry_confirmed") is True
+    if valid_until:
+        try:
+            expiry = datetime.fromisoformat(valid_until[:10]).date()
+        except ValueError:
+            return False
+        if expiry < datetime.now(timezone.utc).date():
+            return False
+    elif not no_expiry:
+        return False
+
+    if isinstance(meta, dict):
+        params = meta.get("gate_params")
+        g2 = params.get("G2") if isinstance(params, dict) else {}
+        if isinstance(g2, dict):
+            current_protocol = str(g2.get("protocol_version") or "").strip()
+            approved_protocol = str(
+                checkpoint.get("g2_protocol_version") or ""
+            ).strip()
+            if current_protocol and current_protocol != approved_protocol:
+                return False
+            current_icf = str(g2.get("icf_version") or "").strip()
+            approved_icf = str(checkpoint.get("g2_icf_version") or "").strip()
+            waiver = checkpoint.get("g2_icf_waiver_approved") is True
+            if current_icf and not waiver and current_icf != approved_icf:
+                return False
+    return True
+
+
 # ── study_meta.json — NƠI PIN durable quyết định thật của bác sĩ ──────────────
 # Cờ bằng-chứng-đời-thực: hệ KHÔNG tự bật, chỉ bác sĩ xác nhận. gate_params là nơi
 # PIN tham số (effect size…) để CHẠY LẠI không mất input (khớp run_pipeline._recover_params).
@@ -245,7 +297,7 @@ def ensure_study_meta(out_dir: Path, *, seed: Optional[Dict[str, Any]] = None,
     Quy tắc hợp nhất:
       - File chưa có → tạo mới từ seed + cờ mặc định + gate_params skeleton.
       - File đã có → chỉ THÊM key còn THIẾU (không đè giá trị bác sĩ đã điền).
-      - gate_params.G3 skeleton chỉ thêm key con còn thiếu (giữ effect_size bác sĩ pin).
+      - gate_params từng cổng chỉ thêm key con còn thiếu (giữ mọi quyết định đã pin).
     Trả về dict meta cuối cùng (đã ghi nếu có thay đổi).
     """
     out_dir = Path(out_dir)

@@ -9,7 +9,7 @@ run_g1_auto.py — TỰ ĐỘNG HÓA CỔNG G1: Thiết kế nghiên cứu + SAP
   5. Trích xuất effect size ƯỚC LƯỢNG từ abstracts PubMed thật (để tính cỡ mẫu)
   6. KHỐI THIẾT KẾ hoàn chỉnh (dán vào Protocol)
   7. SAP skeleton 12 mục (bác sĩ điền [CẦN...])
-  8. Dummy tables 4 bảng (shell sẵn sàng)
+  8. Dummy tables RIÊNG theo thiết kế (shell rỗng — xem g1_design_blocks.py)
   9. SAP Lock Certificate (chờ bác sĩ ký → mở G4)
   10. Guardrail R1-R7 + xuất A2 .md + .docx + G1_checkpoint.json
 
@@ -35,7 +35,10 @@ _REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import g1_design_blocks as G1D  # noqa: E402  (khối thiết kế + dummy tables theo thiết kế)
+import g1_quality_gate as G1Q  # noqa: E402  (hợp đồng chất lượng riêng G1)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import skill_standards as S  # noqa: E402  (bản đồ chuẩn báo cáo/protocol)
 
 _DEFAULT_EMAIL = "bsluanbv175@gmail.com"
 if not os.environ.get("NCBI_EMAIL"):
@@ -456,7 +459,9 @@ def _apply_design_pin(design: dict, pinned: str) -> dict:
         from pathlib import Path as _Path
         _sys.path.insert(0, str(_Path(__file__).resolve().parent))
         import skill_standards as _S
-        d["reporting_standard"] = _S.reporting_standards_for(pinned)["primary"]
+        standards = _S.reporting_standards_for(pinned)
+        d["reporting_standard"] = standards["primary"]
+        d["protocol_standard"] = standards["protocol"]
     except Exception:  # noqa: BLE001
         pass
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH):
@@ -785,6 +790,7 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
             "cohort" if "cohort" in internal else "cross_sectional", "STROBE"
         )
     )
+    protocol_standard = S.reporting_standards_for(internal)["protocol"]
 
     return {
         "primary": primary,
@@ -793,6 +799,7 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
         "alternative_2": alt2,
         "rationale": rationale,
         "reporting_standard": reporting,
+        "protocol_standard": protocol_standard,
         "bias_controls": BIAS_CONTROLS.get(internal, BIAS_CONTROLS["cohort"]),
         "ambiguous": ambiguous,
         # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện
@@ -945,14 +952,35 @@ def _effect_size_section(effects: list) -> str:
     return "\n".join(lines) + "\n"
 
 
-def generate_g1_artifact(topic: str, study_name: str, question_type: str,
-                          design: dict, effects: list, g0_gaps: dict,
-                          run_date: str) -> str:
+def generate_g1_artifact(
+    topic: str,
+    study_name: str,
+    question_type: str,
+    design: dict,
+    effects: list,
+    g0_gaps: dict,
+    run_date: str,
+    meta: Optional[dict] = None,
+) -> str:
     bias_table = _bias_table(design["bias_controls"])
     es_section = _effect_size_section(effects)
     internal = design["internal_code"]
     specialist_modules = detect_specialist_modules(topic)
     specialist_block = specialist_modules_block(specialist_modules)
+    protocol_standard = (
+        design.get("protocol_standard")
+        or S.reporting_standards_for(internal)["protocol"]
+    )
+    effect_source_note = (
+        "có ứng viên effect size truy nguyên từ PubMed"
+        if effects else
+        "chưa có effect size truy nguyên; giữ nhãn [CẦN]"
+    )
+    effect_gate_line = (
+        "☑ Có ứng viên effect size từ PubMed; chưa được dùng trước khi đọc toàn văn"
+        if effects else
+        "☐ Chưa có effect size truy nguyên [CHỜ BỔ SUNG PMID/DOI hoặc pilot/MCID]"
+    )
 
     # Chọn SAP template theo thiết kế
     if internal == "rct":
@@ -962,12 +990,32 @@ def generate_g1_artifact(topic: str, study_name: str, question_type: str,
                              "Thời gian đến sự kiện: log-rank + Cox → HR (95%CI)")
         quanso_note = "ITT / Per-Protocol / Completers (ITT là chính)"
         epv_note = "N/A (RCT — cỡ mẫu từ power calculation)"
-    elif internal in ("cohort", "case_control"):
-        sap_analysis_note = ("Phân tích chính: Cox regression → HR (95%CI) + Kaplan-Meier\n"
-                             "Hoặc: Logistic regression → OR (95%CI) nếu kết cục nhị phân\n"
-                             "Kiểm giả định PH: Schoenfeld residuals")
+    elif internal == "cohort":
+        sap_analysis_note = (
+            "Kết cục thời gian đến sự kiện: Kaplan-Meier mô tả + Cox → HR (95%CI); "
+            "kiểm giả định PH bằng Schoenfeld residuals\n"
+            "Kết cục nhị phân/nguy cơ: mô hình log-binomial hoặc Poisson robust → "
+            "RR (95%CI); logistic → OR khi phù hợp\n"
+            "Kết cục liên tục/lặp lại: mô hình tuyến tính hoặc mixed-effects theo "
+            "cấu trúc dữ liệu đã định trước"
+        )
         quanso_note = "Toàn bộ người đủ tiêu chí (Complete case) / Sensitivity: MI"
         epv_note = "EPV ≥ 10: cần N_events ≥ 10 × số biến đa biến"
+    elif internal == "case_control":
+        sap_analysis_note = (
+            "Case-control không ghép: logistic regression → OR (95%CI)\n"
+            "Case-control ghép: conditional logistic regression theo matched set → "
+            "OR (95%CI)\n"
+            "Biến phơi nhiễm và confounders phải định trước; không dùng Cox/Kaplan-Meier "
+            "cho lấy mẫu case-control thông thường"
+        )
+        quanso_note = (
+            "Tất cả ca bệnh và chứng đủ tiêu chí; giữ matched set nếu có ghép"
+        )
+        epv_note = (
+            "Số ca/biến của mô hình phải được biện minh bằng mô phỏng hoặc phương pháp "
+            "cỡ mẫu hiện hành; không dùng ngưỡng EPV cứng như bảo đảm duy nhất"
+        )
     elif internal == "cross_sectional":
         sap_analysis_note = ("Phân tích chính: Logistic regression → OR (95%CI)\n"
                              "Hoặc: Linear regression → β (95%CI) nếu kết cục liên tục\n"
@@ -975,15 +1023,27 @@ def generate_g1_artifact(topic: str, study_name: str, question_type: str,
         quanso_note = "Toàn bộ người đủ tiêu chí (Complete case)"
         epv_note = "EPV ≥ 10 cho mô hình đa biến"
     elif internal == "diagnostic":
-        sap_analysis_note = ("Phân tích chính: 2×2 table → Se, Sp, PPV, NPV, LR+, LR−\n"
-                             "ROC curve → AUC (95%CI bootstrap)\n"
-                             "Calibration: Hosmer-Lemeshow; DCA (decision curve analysis)")
+        sap_analysis_note = (
+            "Tại ngưỡng định trước: bảng 2×2 → Se, Sp, PPV, NPV, LR+, LR− cùng 95%CI\n"
+            "Nếu index test liên tục/nhiều ngưỡng: ROC/AUC (95%CI) và báo cách chọn "
+            "ngưỡng, không tối ưu ngưỡng sau khi xem dữ liệu mà không gắn nhãn\n"
+            "Báo xử lý kết quả không xác định, verification bias, missing reference "
+            "standard và độ tái lập nếu áp dụng"
+        )
         quanso_note = "Toàn bộ người tham gia (không có nhóm so sánh can thiệp)"
-        epv_note = "EPP ≥ 10: cần N_events ≥ 10 × số predictor"
+        epv_note = (
+            "Cỡ mẫu dựa trên độ chính xác mong muốn của Se/Sp (số ca bệnh và không bệnh), "
+            "không dùng EPV của mô hình dự đoán"
+        )
     elif internal == "sr_ma":
-        sap_analysis_note = ("Phân tích gộp: random-effects (DerSimonian-Laird) nếu I² > 25%\n"
-                             "Fixed-effects nếu I² < 25% và đồng nhất lâm sàng\n"
-                             "Publication bias: funnel plot + Egger test (nếu N ≥ 10 nghiên cứu)")
+        sap_analysis_note = (
+            "Chọn common-effect hoặc random-effects từ estimand và giả định khoa học "
+            "định trước, không chọn mô hình bằng ngưỡng I²\n"
+            "Nếu random-effects: ước lượng τ² bằng REML; cân nhắc Hartung-Knapp và "
+            "prediction interval khi số nghiên cứu/độ không đồng nhất cho phép\n"
+            "Báo τ², I² và 95%CI; funnel plot/Egger chỉ khi đủ nghiên cứu và diễn giải "
+            "cùng nguy cơ small-study effects"
+        )
         quanso_note = "Tất cả nghiên cứu đủ tiêu chí nhận vào"
         epv_note = "N/A (SR/MA)"
     elif internal == "prediction":
@@ -1024,39 +1084,320 @@ def generate_g1_artifact(topic: str, study_name: str, question_type: str,
     _PACKAGE_SUGGESTIONS = {
         "rct":            "survival, geepack, tableone",
         "cohort":         "survival, tableone, mice",
-        "case_control":   "survival, tableone, mice",
+        "case_control":   "survival (clogit nếu ghép), tableone, mice",
         "cross_sectional": "tableone, car",
-        "diagnostic":     "pROC, tableone, rmda",
+        "diagnostic":     "pROC, epiR, tableone",
         "sr_ma":          "meta, metafor",
         "prediction":     "rms, glmnet, pROC, dcurves",
         "qualitative":    "N/A (QDA thủ công/NVivo/ATLAS.ti, không phải R)",
     }
     suggested_packages = _PACKAGE_SUGGESTIONS.get(internal, "tableone")
     suggested_seed = run_date[:10].replace("-", "")
+    protocol_core = G1Q.build_protocol_core(
+        study=study_name,
+        topic=topic,
+        design=design,
+        meta=meta or {},
+        generated_at=run_date,
+    )
+    model_assessment_note = (
+        "Đánh giá giả định và độ phù hợp phải khớp mô hình đã chọn; báo residual/"
+        "influence diagnostics và calibration khi đó là mục tiêu hợp lệ."
+    )
+    if internal == "diagnostic":
+        model_assessment_note = (
+            "Không dùng Hosmer-Lemeshow/DCA mặc định cho nghiên cứu độ chính xác "
+            "chẩn đoán; tập trung 2×2, ROC/AUC, độ chính xác ước lượng và verification bias."
+        )
+    elif internal == "prediction":
+        model_assessment_note = (
+            "Báo calibration-in-the-large, calibration slope/plot, discrimination và "
+            "clinical utility đã định trước; không chỉ dùng Hosmer-Lemeshow."
+        )
 
-    # Estimand block (chỉ cho RCT/can thiệp)
+    sap_population_detail = f"""{quanso_note}
+Tiêu chí chọn vào: [CẦN — từ PICO P]
+Tiêu chí loại trừ: [CẦN BÁC SĨ ẤN ĐỊNH]
+Quần thể CHÍNH dùng báo cáo: [CẦN XÁC NHẬN]"""
+    sap_outcome_detail = """KẾT CỤC CHÍNH (chỉ 1):
+  Tên: [CẦN — từ PICO O, kết cục chính BÁC SĨ ĐÃ ẤN ĐỊNH ở G0]
+  Định nghĩa vận hành: [CẦN — rõ ràng, đo được, cụ thể]
+  Đơn vị đo: [CẦN]
+  Thời điểm đo: [CẦN]
+  Thước đo: ☐ Liên tục  ☐ Nhị phân  ☐ Thứ tự  ☐ Thời gian đến sự kiện
+
+KẾT CỤC PHỤ (tối đa 3–5):
+  1. ___ | thời điểm: ___
+  2. ___ | thời điểm: ___
+  3. ___ | thời điểm: ___"""
+    sap_descriptive_detail = """Biến liên tục: xem histogram/Q-Q plot, ngoại lệ và bối cảnh đo; không tự chuyển
+  phương pháp chỉ theo một kiểm định normality.
+  Gần đối xứng: TB ± ĐLC  |  Lệch rõ: Trung vị [IQR Q1–Q3]
+Biến phân loại: n (%)
+RCT: mô tả cân bằng nền, không kiểm định ý nghĩa khác biệt baseline.
+Quan sát: mô tả khác biệt nền bằng độ lớn/standardized difference và bối cảnh;
+  không dùng p-value baseline để tự động chọn confounder."""
+    inference_note = (
+        "α (hai đuôi): 0.05 [CẦN XÁC NHẬN THEO GIẢ THUYẾT]\n"
+        "Hiệu ứng trình bày: [OR/HR/RR/MD + 95%CI] — KHÔNG chỉ p-value"
+    )
+    sap_multivariable_detail = f"""Mô hình: ☐ Logistic  ☐ Linear  ☐ Cox  ☐ Mixed-effects  ☐ GEE
+Covariates (định trước — KHÔNG thêm sau khi xem dữ liệu):
+  - [CẦN BÁC SĨ LIỆT KÊ với lý do cho từng biến + DAG nếu có]
+{epv_note}
+Kiểm đa cộng tuyến: VIF < 5 cho mọi biến
+{model_assessment_note}"""
+    sap_missing_detail = """Mô tả tỷ lệ và mẫu hình thiếu trước khi chọn phương pháp.
+Giả định chính: ☐ MCAR  ☐ MAR  ☐ MNAR — phải có lý do theo cơ chế thu thập.
+Phân tích chính: [CẦN ĐỊNH TRƯỚC; complete-case không phải mặc định vô điều kiện]
+Multiple imputation: mô hình biến, số bộ dữ liệu và diagnostics [CẦN]
+MNAR/sai lệch do mất theo dõi: phân tích nhạy cảm [CẦN]"""
+    sap_subgroup_detail = """Nhóm nhỏ 1: [CẦN — tiêu chí: ___] | Giả thuyết tương tác: ___
+Nhóm nhỏ 2: [CẦN]
+Ước lượng tương tác + 95%CI; không kết luận khác biệt nhóm chỉ vì một nhóm
+  có p<0,05 còn nhóm kia không.
+Kết quả nhóm nhỏ là THĂM DÒ nếu không định trước và không đủ lực; diễn giải
+  cùng tính hợp lý sinh học, tính nhất quán và kiểm soát đa bội."""
+    sap_multiplicity_detail = """Số kết cục phụ / nhóm / thời điểm: [CẦN ẤN ĐỊNH]
+Chiến lược:
+  ☐ Không điều chỉnh (1 kết cục chính rõ, phụ là thăm dò)
+  ☐ Bonferroni  ☐ Holm  ☐ FDR  ☐ Phương pháp khác: [CẦN]
+Khớp với giả thuyết, estimand và cỡ mẫu ở G3: [CẦN XÁC NHẬN]"""
+    sap_sensitivity_detail = """1. Dữ liệu thiếu/cơ chế thiếu: [CẦN]
+2. Định nghĩa quần thể/kết cục/mô hình thay thế có lý do: [CẦN]
+3. Per-protocol chỉ là nhạy cảm nếu estimand chính là treatment-policy/ITT.
+Mọi phân tích phải định trước hoặc gắn nhãn hậu nghiệm/thăm dò."""
+    software_note = f"""Phần mềm chính: ☐ R v___  ☐ Stata v___  ☐ SPSS v___
+R packages dự kiến: {suggested_packages} [CẦN BÁC SĨ XÁC NHẬN — gợi ý theo thiết kế {internal}]
+Random seed: {suggested_seed} [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
+Script phân tích: lưu tại exports/{study_name}/scripts/ — versioned cùng protocol"""
+    sap_lock_inference_line = (
+        "α/CI và power/cỡ mẫu: [CẦN CHỐT Ở G3/G4 THEO GIẢ THUYẾT CHÍNH]"
+    )
+    lock_primary_label = "Kết cục chính (KHÔNG đổi sau khóa):"
+    lock_population_label = "Quần thể phân tích chính:"
+    lock_method_label = "Phương pháp phân tích chính:"
+    lock_primary_prompt = "[CẦN ĐIỀN — từ PICO O đã xác nhận ở G0]"
+    lock_population_prompt = "[CẦN ĐIỀN — từ SAP §1]"
+    lock_method_prompt = "[CẦN ĐIỀN — từ SAP §4]"
+
+    if internal == "diagnostic":
+        inference_note = (
+            "Ước lượng Se/Sp/LR/AUC cùng 95%CI; ngưỡng chính phải định trước.\n"
+            "Không dùng p-value đơn lẻ làm tiêu chí độ chính xác chẩn đoán."
+        )
+        sap_multivariable_detail = (
+            "Không có phân tích đa biến mặc định. Nếu mục tiêu có điều chỉnh/so sánh test, "
+            "ghi rõ mô hình, biến điều chỉnh và estimand; không biến nghiên cứu STARD thành "
+            "nghiên cứu prediction sau khi xem dữ liệu.\n"
+            f"{model_assessment_note}"
+        )
+        sap_missing_detail = (
+            "Báo riêng kết quả index test không xác định, thiếu index test, thiếu reference "
+            "standard và loại khỏi phân tích; vẽ flow người tham gia.\n"
+            "Định trước phân tích nhạy cảm cho partial/differential verification và "
+            "phương pháp xử lý dữ liệu thiếu."
+        )
+        sap_lock_inference_line = (
+            "Precision Se/Sp và độ rộng 95%CI/cỡ mẫu: [CẦN CHỐT G3/G4]"
+        )
+    elif internal == "prediction":
+        inference_note = (
+            "Báo discrimination, calibration và clinical utility cùng 95%CI; "
+            "không dùng α=0,05 làm tiêu chí đạt mô hình."
+        )
+        sap_multivariable_detail = (
+            "Định trước toàn bộ pipeline: mã hóa predictor, transformations, selection/"
+            "regularisation, tuning và internal validation; lặp lại toàn pipeline trong "
+            "bootstrap/cross-validation.\n"
+            f"{epv_note}\n{model_assessment_note}"
+        )
+        sap_subgroup_detail = (
+            "Đánh giá hiệu năng và calibration theo các nhóm fairness/khả năng áp dụng đã "
+            "định trước; báo 95%CI và cỡ mẫu từng nhóm, không tái huấn luyện tùy tiện."
+        )
+        sap_multiplicity_detail = (
+            "Không sàng predictor bằng p-value đơn biến. Kiểm soát optimism/tuning trong "
+            "resampling; mọi threshold/classification rule phải định trước hoặc gắn nhãn."
+        )
+        sap_lock_inference_line = (
+            "Precision/optimism và cỡ mẫu theo Riley: [CẦN CHỐT G3/G4]"
+        )
+    elif internal == "sr_ma":
+        sap_population_detail = """Đơn vị nhận vào: nghiên cứu/báo cáo đủ tiêu chí PICO và thiết kế.
+Tiêu chí chọn/loại nghiên cứu: [CẦN ĐỊNH TRƯỚC]
+Quy tắc gộp nhiều báo cáo của cùng một nghiên cứu: [CẦN]
+Tập nghiên cứu chính cho từng tổng hợp: [CẦN XÁC NHẬN]"""
+        sap_outcome_detail = """KẾT CỤC CHÍNH CỦA TỔNG QUAN:
+  Định nghĩa, thước đo hiệu ứng, thời điểm và hierarchy khi nghiên cứu báo nhiều cách: [CẦN]
+KẾT CỤC PHỤ: [CẦN]
+Quy tắc chuyển đổi đơn vị/thước đo và chọn thời điểm: [CẦN]"""
+        sap_descriptive_detail = """Lập bảng đặc điểm nghiên cứu, quần thể, can thiệp/phơi nhiễm,
+  comparator, kết cục, thời gian theo dõi, tài trợ và nguy cơ sai lệch.
+Báo riêng số nghiên cứu (k) và tổng số người tham gia; không dùng Table 1 kiểu hai nhóm."""
+        inference_note = (
+            "Báo hiệu ứng gộp + 95%CI, τ², I² và prediction interval khi phù hợp.\n"
+            "Không chọn mô hình theo p-value Q hoặc ngưỡng I²."
+        )
+        sap_multivariable_detail = (
+            "Meta-regression/nhóm nhỏ chỉ thực hiện nếu định trước, đủ số nghiên cứu và "
+            "có giả thuyết; báo hệ số + 95%CI và nguy cơ ecological/confounding bias."
+        )
+        sap_missing_detail = (
+            "Liên hệ tác giả khi thiếu thống kê; định trước cách chuyển đổi SD/SE/CI và "
+            "không tự suy số liệu không có nguồn.\n"
+            "Đánh giá missing results/reporting bias bằng registry/protocol, funnel/"
+            "asymmetry khi đủ k và phân tích nhạy cảm."
+        )
+        sap_subgroup_detail = (
+            "Nhóm nhỏ/meta-regression: [CẦN ĐỊNH TRƯỚC biến và hướng giả thuyết].\n"
+            "Dùng kiểm định khác biệt giữa nhóm/tương tác, không so p-value riêng từng nhóm."
+        )
+        sap_multiplicity_detail = (
+            "Định trước outcome, timepoint, subgroup và synthesis chính/phụ; gắn nhãn "
+            "mọi phân tích hậu nghiệm và cân nhắc đa bội trong diễn giải."
+        )
+        sap_sensitivity_detail = (
+            "Định trước loại nghiên cứu nguy cơ sai lệch cao, giả định effect measure, "
+            "mô hình/τ², dữ liệu quy đổi và influential studies sẽ được kiểm nhạy cảm."
+        )
+        software_note = f"""Phần mềm tổng hợp: R v___ / Stata v___; packages: {suggested_packages}
+Công cụ screening/trích xuất: [CẦN] | Version: [CẦN]
+Seed {suggested_seed}: chỉ khóa khi có resampling/mô phỏng.
+Search, screening decisions, extraction và analysis script phải có audit trail."""
+        sap_lock_inference_line = (
+            "Không power tuyển mẫu; khóa PICO/search/RoB/synthesis ở G4."
+        )
+        lock_primary_label = "Kết cục chính của tổng quan:"
+        lock_population_label = "Tập nghiên cứu chính của từng tổng hợp:"
+        lock_method_label = "Mô hình tổng hợp/đánh giá độ chắc chắn:"
+        lock_primary_prompt = "[CẦN ĐIỀN — từ câu hỏi tổng quan]"
+        lock_population_prompt = "[CẦN ĐIỀN — từ eligibility ở SAP §1]"
+        lock_method_prompt = "[CẦN ĐIỀN — từ synthesis plan]"
+    elif internal == "qualitative":
+        sap_population_detail = """Người tham gia/nguồn dữ liệu và bối cảnh: [CẦN]
+Chiến lược lấy mẫu có chủ đích/lý thuyết/tối đa biến thiên: [CẦN + lý do]
+Tiêu chí chọn/loại và quan hệ nhà nghiên cứu-người tham gia: [CẦN]
+Quy tắc dừng: bão hòa dữ liệu/thông tin hoặc tiêu chí phù hợp phương pháp luận [CẦN]"""
+        sap_outcome_detail = """Không ép một "kết cục chính" định lượng.
+Câu hỏi/hiện tượng trung tâm, đơn vị ý nghĩa và phạm vi chủ đề: [CẦN]
+Khung lý thuyết/phương pháp luận và cách xác định theme/category: [CẦN]"""
+        sap_descriptive_detail = """Mô tả mẫu và bối cảnh đủ để đánh giá transferability.
+Không tạo Table 1 kiểm định hai nhóm hoặc p-value mặc định.
+Đặc điểm người tham gia chỉ báo ở mức tổng hợp, không để lộ định danh."""
+        inference_note = (
+            "Không áp dụng α, power, OR/HR/RR/MD hay p-value.\n"
+            "Báo theme/category kèm dữ liệu minh họa đã khử định danh và trường hợp trái chiều."
+        )
+        sap_multivariable_detail = (
+            "Không áp dụng mô hình đa biến/EPV. Định trước quy trình mã hóa, phát triển "
+            "codebook, reflexivity, triangulation/member checking và giải quyết bất đồng."
+        )
+        sap_missing_detail = (
+            "Ghi nhận phỏng vấn/quan sát không hoàn chỉnh, rút lui, bản ghi lỗi và các "
+            "góc nhìn bị thiếu; không áp dụng MCAR/MAR/MNAR hoặc multiple imputation."
+        )
+        sap_subgroup_detail = (
+            "Không kiểm định subgroup. Có thể purposive comparison giữa bối cảnh/nhóm "
+            "đã định trước để làm rõ variation, nhưng không biến thành kiểm định p-value."
+        )
+        sap_multiplicity_detail = (
+            "Không áp dụng Bonferroni/FDR. Quản lý phạm vi phân tích bằng câu hỏi nghiên "
+            "cứu, audit trail, negative cases và phân biệt theme định trước với theme mới."
+        )
+        sap_sensitivity_detail = (
+            "Kiểm tính vững bằng negative/deviant cases, triangulation, reflexive audit, "
+            "member checking khi phù hợp và mô tả cách diễn giải thay đổi."
+        )
+        software_note = """Phần mềm QDA (nếu dùng): NVivo/ATLAS.ti/MAXQDA/khác + version [CẦN]
+Codebook, memo, audit trail và version history: [CẦN]
+Không yêu cầu random seed trừ khi có bước lấy mẫu/ngẫu nhiên bằng máy."""
+        sap_lock_inference_line = (
+            "Không α/power; khóa câu hỏi/lấy mẫu/bão hòa/phân tích G4."
+        )
+        lock_primary_label = "Câu hỏi/hiện tượng trung tâm:"
+        lock_population_label = "Nguồn dữ liệu + quy tắc bão hòa:"
+        lock_method_label = "Phương pháp mã hóa/phân tích định tính:"
+        lock_primary_prompt = "[CẦN ĐIỀN — từ câu hỏi nghiên cứu]"
+        lock_population_prompt = "[CẦN ĐIỀN — từ sampling ở SAP §1]"
+        lock_method_prompt = "[CẦN ĐIỀN — từ analytic approach]"
+
+    gate_human_lines = """☐ PI/methodologist xác nhận thiết kế và toàn bộ đề cương lõi [CHỜ]
+☐ Kết cục chính được định nghĩa vận hành + lịch đo [CHỜ]
+☐ Quần thể, tuyển mẫu, can thiệp/phơi nhiễm, comparator và theo dõi đã chốt [CHỜ]
+☐ Effect size/precision input có nguồn + cỡ mẫu → G3 [BƯỚC TIẾP]
+☐ SAP Lock Certificate chỉ ký ở G4 sau khi G3 hoàn tất [CHỜ]"""
+    next_step_lines = f"""1. PI/methodologist hoàn thiện `study_meta.json` và chạy lại G1
+2. Chạy G3: `python tools/run_g3_auto.py --study {study_name}`
+3. Hoàn thiện SAP rồi xin khóa ở G4; hệ không tự ký."""
+    if internal == "sr_ma":
+        effect_gate_line = (
+            "☐ Nguồn nền và chiến lược tìm kiếm truy nguyên được trong Evidence Ledger"
+        )
+        gate_human_lines = """☐ PI/methodologist xác nhận PICO, eligibility và protocol PRISMA-P [CHỜ]
+☐ Nguồn tìm, chiến lược tìm, chọn lọc, trích xuất và RoB đã chốt [CHỜ]
+☐ Kết cục, effect measure, mô hình tổng hợp và phân tích nhạy cảm đã chốt [CHỜ]
+☐ Đăng ký PROSPERO/OSF nếu phù hợp xử lý ở G2 [CHỜ]
+☐ SAP/synthesis plan chỉ khóa ở G4; không có power tuyển mẫu người bệnh."""
+        next_step_lines = """1. Hoàn thiện protocol PRISMA-P và Evidence Ledger
+2. Xử lý đăng ký protocol ở G2 nếu phù hợp
+3. Khóa search/screening/RoB/synthesis plan ở G4 trước khi tổng hợp."""
+    elif internal == "qualitative":
+        effect_gate_line = (
+            "☐ Nguồn bối cảnh/phương pháp truy nguyên được trong Evidence Ledger"
+        )
+        gate_human_lines = """☐ PI/nhà phương pháp định tính xác nhận câu hỏi và cách tiếp cận [CHỜ]
+☐ Lấy mẫu, thu thập dữ liệu, reflexivity và quy tắc bão hòa đã chốt [CHỜ]
+☐ Mã hóa, audit trail, triangulation/negative cases đã chốt [CHỜ]
+☐ Không dùng effect size, α hoặc power làm điều kiện đạt G1
+☐ Kế hoạch phân tích định tính chỉ khóa ở G4; không tự ký."""
+        next_step_lines = """1. Hoàn thiện protocol/reflexivity plan và tài liệu người tham gia
+2. Xử lý đạo đức/đồng thuận ở G2
+3. Khóa kế hoạch lấy mẫu, bão hòa, mã hóa và phân tích ở G4."""
+
+    # Khối THIẾT KẾ + khung bảng kết quả + SAP §12 RIÊNG theo thiết kế.
+    # SỬA 2026-07-28: 4 khối này trước đây GIỐNG HỆT nhau ở cả 8 mã thiết kế —
+    # khuôn RCT 2 nhóm ("Bố trí song song/bắt chéo", "Ngẫu nhiên hóa", "Làm mù",
+    # bảng "Nhóm A/Nhóm B/p", "α 0.05 / Power 80%") bị áp cho cả tổng quan hệ
+    # thống lẫn nghiên cứu định tính. Vi phạm quy tắc 6 của
+    # `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md` (thiết kế ↔ SAP ↔ dummy tables phải KHỚP;
+    # mâu thuẫn nội tại → 🔴). Chi tiết + nguồn từng chuẩn: `g1_design_blocks.py`.
+    design_block_body = G1D.design_block_body(internal)
+    dummy_tables_block = G1D.dummy_tables(internal)
+    sap12_title = G1D.sap12_title(internal)
+    sap12_body = G1D.sap12_note(internal)
+    sample_size_line = G1D.sample_size_next_step(internal)
+
+    # Estimand block (chỉ cho RCT/can thiệp).
+    # Dùng CHUNG một hằng số với khối thiết kế (G1D.has_estimand_block) để khối
+    # thiết kế không còn trỏ "xem §Estimand bên trên" khi mục đó không được sinh —
+    # tham chiếu treo cũ ảnh hưởng 7/8 thiết kế.
     estimand_block = ""
-    if internal == "rct":
+    if G1D.has_estimand_block(internal):
         estimand_block = """
-### ESTIMAND ICH E9(R1) — Bắt buộc cho RCT
+## PHẦN 2b — ESTIMAND ICH E9(R1) (bắt buộc cho thiết kế can thiệp)
 
 ```
 Dân số: [CẦN BÁC SĨ XÁC NHẬN — từ PICO P]
+Điều kiện điều trị được so sánh: [CẦN — can thiệp và đối chứng đủ chi tiết]
 Biến kết cục: [CẦN — từ PICO O, kết cục chính]
 Biến cố xen ngang: ☐ Dừng điều trị ☐ Điều trị thêm ☐ Tử vong cạnh tranh
   Chiến lược: ☐ Treatment-policy  ☐ Composite  ☐ While-on-treatment
               ☐ Hypothetical  ☐ Principal-stratum
 Thước đo tổng hợp: ☐ RR  ☐ OR  ☐ RD  ☐ HR  ☐ MD
-Quần thể phân tích chính: ☐ ITT (treatment-policy)  ☐ Per-protocol
+Quần thể phân tích chính liên kết estimand (không phải thuộc tính thứ sáu):
+  ☐ ITT/treatment-policy  ☐ Per-protocol  ☐ Khác: [CẦN]
 ```
 """
 
     artifact = f"""# A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | {study_name}
-> Tạo tự động: {run_date} | Rule-based + PubMed effect size thật
+> Tạo tự động: {run_date} | Rule-based; {effect_source_note}
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
 ---
+
+{protocol_core}
 
 ## PHẦN 1 — BẢNG THIẾT KẾ ỨNG VIÊN
 
@@ -1070,6 +1411,7 @@ Quần thể phân tích chính: ☐ ITT (treatment-policy)  ☐ Per-protocol
 {design["rationale"]}
 
 **Chuẩn báo cáo:** {design["reporting_standard"]}
+**Chuẩn đề cương/protocol:** {protocol_standard}
 
 ---
 
@@ -1098,19 +1440,18 @@ Quần thể phân tích chính: ☐ ITT (treatment-policy)  ☐ Per-protocol
 
 ## PHẦN 4 — KHỐI THIẾT KẾ (dán vào §Phương pháp của Đề cương)
 
+> Khối dưới đây được sinh RIÊNG theo thiết kế `{internal}` — các trường không áp dụng cho
+> thiết kế này đã được loại bỏ thay vì để bác sĩ tự gạch bỏ.
+
 ```
 ═══════════════════════════════════════════════════════════════
 KHỐI THIẾT KẾ — {study_name}
 Loại thiết kế: {design["primary"]}
-Bố trí: ☐ Song song  ☐ Bắt chéo  ☐ Factorial  ☐ Thích nghi
-Ngẫu nhiên hóa: ☐ Không  ☐ Đơn giản  ☐ Phân tầng: [theo ___]  ☐ Cụm
-Làm mù: ☐ Mở  ☐ Đơn mù  ☐ Đôi mù  ☐ Tam mù
-Estimand chính (can thiệp): [CẦN XÁC NHẬN — xem §Estimand bên trên]
+{design_block_body}
 Kiểm soát biến nhiễu chính: [từ §2 Bias Control]
-Thời gian theo dõi: [CẦN BÁC SĨ XÁC NHẬN]
-Cỡ mẫu dự kiến: [CẦN → chạy run_g3_auto.py sau khi xác nhận effect size]
-Giả định effect size (nguồn): [CẦN — xem §3 hoặc pilot data]
+{sample_size_line}
 Chuẩn báo cáo: {design["reporting_standard"]}
+Chuẩn đề cương/protocol: {protocol_standard}
 ═══════════════════════════════════════════════════════════════
 ```
 
@@ -1123,133 +1464,66 @@ Chuẩn báo cáo: {design["reporting_standard"]}
 
 ### SAP §1 — Quần thể phân tích
 ```
-{quanso_note}
-Tiêu chí chọn vào: [CẦN — từ PICO P]
-Tiêu chí loại trừ: [CẦN BÁC SĨ ẤN ĐỊNH]
-Quần thể CHÍNH dùng báo cáo: [CẦN XÁC NHẬN]
+{sap_population_detail}
 ```
 
 ### SAP §2 — Biến kết cục (định nghĩa vận hành)
 ```
-KẾT CỤC CHÍNH (chỉ 1):
-  Tên: [CẦN — từ PICO O, kết cục chính BÁC SĨ ĐÃ ẤN ĐỊNH ở G0]
-  Định nghĩa vận hành: [CẦN — rõ ràng, đo được, cụ thể]
-  Đơn vị đo: [CẦN]
-  Thời điểm đo: [CẦN]
-  Thước đo: ☐ Liên tục  ☐ Nhị phân  ☐ Thứ tự  ☐ Thời gian đến sự kiện
-
-KẾT CỤC PHỤ (tối đa 3–5):
-  1. ___ | thời điểm: ___
-  2. ___ | thời điểm: ___
-  3. ___ | thời điểm: ___
+{sap_outcome_detail}
 ```
 
 ### SAP §3 — Thống kê mô tả (Table 1)
 ```
-Biến liên tục: kiểm phân phối → Shapiro-Wilk (n<50) hoặc histogram (n≥50)
-  Chuẩn: TB ± ĐLC  |  Lệch: Trung vị [IQR Q1–Q3]
-Biến phân loại: n (%)
-So sánh nền (Table 1): t-test/Mann-Whitney + chi²/Fisher (CHỈ MÔ TẢ, không p-value chính)
+{sap_descriptive_detail}
 ```
 
 ### SAP §4 — Phân tích chính (Mục tiêu 1)
 ```
 {sap_analysis_note}
-α (hai đuôi): 0.05
-Hiệu ứng trình bày: [OR/HR/RR/MD + 95%CI] — KHÔNG chỉ p-value
+{inference_note}
 Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: {suggested_seed} [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
 ```
 
 ### SAP §5 — Phân tích đa biến (Mục tiêu 2 — nếu có)
 ```
-Mô hình: ☐ Logistic  ☐ Linear  ☐ Cox  ☐ Mixed-effects  ☐ GEE
-Covariates (định trước — KHÔNG thêm sau khi xem dữ liệu):
-  - [CẦN BÁC SĨ LIỆT KÊ với lý do cho từng biến + DAG nếu có]
-{epv_note}
-Kiểm đa cộng tuyến: VIF < 5 cho mọi biến
-Kiểm mức phù hợp: ☐ Hosmer-Lemeshow  ☐ Calibration plot
+{sap_multivariable_detail}
 ```
 
 ### SAP §6 — Dữ liệu thiếu
 ```
-Giả định: ☐ MCAR  ☐ MAR  ☐ MNAR (phân tích pattern thiếu trước khi chọn)
-  MCAR → Complete-case (báo cáo tỷ lệ thiếu)
-  MAR  → Multiple Imputation: m=20, phương pháp PMM/logistic
-  MNAR → Sensitivity (tilt parameter / pattern mixture)
-Ngưỡng chấp nhận: < [CẦN ẤN ĐỊNH]% (ví dụ: <20%)
+{sap_missing_detail}
 ```
 
 ### SAP §7 — Phân tích nhóm nhỏ (định trước — KHÔNG thêm sau)
 ```
-Nhóm nhỏ 1: [CẦN — tiêu chí: ___] | Giả thuyết tương tác: ___
-Nhóm nhỏ 2: [CẦN]
-Kiểm định tương tác: interaction test (p < 0.05 = subgroup effect có ý nghĩa)
-Kết quả nhóm nhỏ là THĂM DÒ nếu không có giả thuyết định trước
+{sap_subgroup_detail}
 ```
 
 ### SAP §8 — Kiểm soát đa so sánh
 ```
-Số kết cục phụ / nhóm / thời điểm: [CẦN ẤN ĐỊNH]
-Chiến lược:
-  ☐ Không điều chỉnh (1 kết cục chính rõ, phụ là thăm dò)
-  ☐ Bonferroni: α = 0.05 / n_so_sánh
-  ☐ Holm-Bonferroni
-  ☐ FDR Benjamini-Hochberg
-Khớp với α dùng khi tính cỡ mẫu (G3): ✓
+{sap_multiplicity_detail}
 ```
 
 ### SAP §9 — Phân tích nhạy cảm
 ```
-1. [CẦN — lý do: ___] → kỳ vọng: kết quả ổn định
-2. [CẦN — lý do: ___] → kỳ vọng: ___
-3. Per-protocol sensitivity (nếu ITT là chính) → kiểm tính vững chắc
+{sap_sensitivity_detail}
 ```
 
 ### SAP §10 — Phần mềm và seed
 ```
-Phần mềm chính: ☐ R v___  ☐ Stata v___  ☐ SPSS v___
-R packages dự kiến: {suggested_packages} [CẦN BÁC SĨ XÁC NHẬN — gợi ý theo thiết kế {internal}]
-Random seed: {suggested_seed} [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy, có thể đổi]
-Script phân tích: lưu tại exports/{study_name}/scripts/ — versioned cùng protocol
+{software_note}
 ```
 
 ### SAP §11 — Dummy Tables (Shells — điền sau khi có kết quả thật)
 
+> Bộ bảng dưới đây là bộ RIÊNG của thiết kế `{internal}`, khớp chuẩn báo cáo
+> {design["reporting_standard"]}. Vỏ rỗng — KHÔNG được điền số trước khi dữ liệu khóa.
+
+{dummy_tables_block}
+
+### SAP §12 — {sap12_title}
 ```
-BẢNG 1 — ĐẶC ĐIỂM NỀN
-| Biến | Nhóm A (n=___) | Nhóm B (n=___) | p |
-|------|----------------|----------------|---|
-| Tuổi, TB±ĐLC (năm) | | | |
-| Giới nữ, n (%) | | | |
-| [Bệnh kèm], n (%) | | | |
-| [Biến nền theo PICO P] | | | |
-| [Biến lâm sàng chính] | | | |
-
-BẢNG 2 — KẾT CỤC CHÍNH
-| Kết cục | Nhóm A (n=___) | Nhóm B (n=___) | Hiệu ứng (95%CI) | p |
-|---------|----------------|----------------|-------------------|---|
-| [Tên kết cục chính] | | | [OR/HR/MD]=___ | |
-
-BẢNG 3 — KẾT CỤC PHỤ
-| Kết cục phụ | Nhóm A | Nhóm B | Hiệu ứng (95%CI) | p |
-|-------------|--------|--------|-------------------|---|
-| [Kết cục phụ 1] | | | | |
-| [Kết cục phụ 2] | | | | |
-| [Kết cục phụ 3] | | | | |
-
-BẢNG 4 — PHÂN TÍCH ĐA BIẾN
-| Biến | OR/HR (thô) | 95%CI | OR/HR (hiệu chỉnh) | 95%CI | p |
-|------|-------------|-------|---------------------|-------|---|
-| [Can thiệp/Phơi nhiễm chính] | | | | | |
-| [Covariate 1] | | | | | |
-| [Covariate 2] | | | | | |
-```
-
-### SAP §12 — Ngưỡng ý nghĩa và power
-```
-α (hai đuôi): 0.05
-Power mục tiêu: ___% (thường 80% hoặc 90%)
-→ Khớp với tính cỡ mẫu (G3) — KHÔNG đổi sau khi chốt.
+{sap12_body}
 ```
 
 ---
@@ -1265,13 +1539,13 @@ Power mục tiêu: ___% (thường 80% hoặc 90%)
 ║  Ngày soạn SAP: {run_date[:10]:<46}║
 ║  Trạng thái dữ liệu lúc khóa: CHƯA CÓ / CHƯA XEM          ║
 ║                                                              ║
-║  Kết cục chính (KHÔNG đổi sau khóa):                        ║
-║    [CẦN BÁC SĨ ĐIỀN — từ PICO O đã xác nhận ở G0]          ║
-║  Quần thể phân tích chính:                                  ║
-║    [CẦN BÁC SĨ ĐIỀN — từ SAP §1]                           ║
-║  Phương pháp phân tích chính:                               ║
-║    [CẦN BÁC SĨ ĐIỀN — từ SAP §4]                           ║
-║  α: 0.05 (hai đuôi)  |  Power: [CẦN]%                      ║
+║  {lock_primary_label[:58]:<58}║
+║    {lock_primary_prompt[:56]:<56}║
+║  {lock_population_label[:58]:<58}║
+║    {lock_population_prompt[:56]:<56}║
+║  {lock_method_label[:58]:<58}║
+║    {lock_method_prompt[:56]:<56}║
+║  {sap_lock_inference_line[:58]:<58}║
 ╠══════════════════════════════════════════════════════════════╣
 ║  Người xác nhận: ___ (Chủ nhiệm đề tài)                     ║
 ║  Ngày khóa chính thức: [CẦN ĐIỀN + KÝ TÊN]                 ║
@@ -1291,27 +1565,21 @@ Power mục tiêu: ___% (thường 80% hoặc 90%)
 ## PHẦN 7 — TIÊU CHÍ QUA CỔNG G1
 
 ```
-☑ Loại thiết kế đã suy luận từ PICO + evidence landscape
+☑ Loại thiết kế đã suy luận từ câu hỏi/topic + evidence landscape nếu có
 ☑ 2-3 thiết kế ứng viên đã so sánh
 ☑ 7 sai lệch đã phân tích với biện pháp kiểm soát
 ☑ SAP skeleton 12 mục đã sinh
-☑ Dummy tables 4 bảng đã tạo shell
-☑ Effect size ước lượng từ PubMed thật (xem §3)
-☐ Bác sĩ xác nhận thiết kế chọn [CHỜ BÁC SĨ]
-☐ PICO O (kết cục) điền vào SAP §2 [CHỜ BÁC SĨ]
-☐ Covariates SAP §5 liệt kê với lý do [CHỜ BÁC SĨ]
-☐ Effect size thật + cỡ mẫu → G3 (co-mau-nghien-cuu) [BƯỚC TIẾP]
-☐ SAP Lock Certificate ký → G4 [CHỜ SAU G3]
+☑ Khối thiết kế + dummy tables sinh RIÊNG theo thiết kế `{internal}` (không dùng khuôn RCT chung)
+{effect_gate_line}
+{gate_human_lines}
 ```
 
 **Bước tiếp theo:**
-1. Bác sĩ xem §3 (effect size) → chọn ước lượng phù hợp
-2. Chạy G3: `python tools/run_g3_auto.py --study {study_name}`
-3. Sau khi có cỡ mẫu, ký SAP → mở G4
+{next_step_lines}
 {specialist_block}
 ---
 
-*[BẢN NHÁP TỰ ĐỘNG] — Cần bác sĩ kiểm chứng. PMID/DOI trong §3 là THẬT từ PubMed.*
+*[BẢN NHÁP TỰ ĐỘNG] — Cần bác sĩ kiểm chứng. Không có PMID/DOI thì không được coi effect size là đã có nguồn.*
 """
     return artifact
 
@@ -1459,17 +1727,49 @@ def export_docx_g1(artifact_md: str, study_name: str, out_dir: Path) -> Optional
 def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
                          design: dict, effects: list, guardrail: dict,
                          artifact_path: Path, docx_path: Optional[Path],
-                         specialist_modules: Optional[list[str]] = None) -> Path:
+                         specialist_modules: Optional[list[str]] = None,
+                         supporting_artifacts: Optional[dict[str, Path]] = None,
+                         quality_gate: Optional[dict] = None,
+                         quality_report_path: Optional[Path] = None) -> Path:
+    supporting_artifacts = supporting_artifacts or {}
+    quality_gate = quality_gate or {
+        "status": G1Q.STATUS_BLOCKED,
+        "automated_checks_passed": False,
+        "human_confirmation_complete": False,
+        "pending_actions": ["Chưa chạy hợp đồng chất lượng G1."],
+    }
+    if quality_gate["status"] == G1Q.STATUS_CONFIRMED:
+        gate_status = "PASS — G1 DESIGN + REPORTING MAP ĐÃ ĐƯỢC XÁC NHẬN"
+    elif quality_gate["status"] == G1Q.STATUS_DRAFT_READY:
+        gate_status = (
+            "DRAFT_READY — KIỂM TỰ ĐỘNG ĐÃ CHẠY; "
+            "G1 CHƯA ĐƯỢC PI/METHODOLOGIST XÁC NHẬN"
+        )
+    else:
+        gate_status = "BLOCKED — G1 QUALITY CHECK CÒN LỖI"
+    protocol_standard = (
+        design.get("protocol_standard")
+        or S.reporting_standards_for(design.get("internal_code"))["protocol"]
+    )
+
     cp = {
         "study": study_name, "gate": "G1",
-        "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN THIẾT KẾ + ĐIỀN PICO O VÀO SAP",
+        "gate_status": gate_status,
+        "automation_status": (
+            "AUTOMATED_CHECKS_PASS"
+            if quality_gate.get("automated_checks_passed")
+            else "AUTOMATED_CHECKS_BLOCKED"
+        ),
         "generated_at": datetime.now().isoformat(),
         "question_type": question_type,
         "design": {
             "primary": design["primary"],
             "internal_code": design["internal_code"],
             "reporting_standard": design["reporting_standard"],
+            "protocol_standard": protocol_standard,
             "alternative_1": design["alternative_1"],
+            "alternative_2": design.get("alternative_2"),
+            "rationale": design.get("rationale"),
             "ambiguous": design.get("ambiguous", False),
             # Vá 2026-07-17 (round audit đối kháng 4, chuẩn STROBE mục 9 — Bias): bảng
             # kiểm soát sai lệch ĐÃ tính ở đây (BIAS_CONTROLS, dùng để render bảng trong
@@ -1486,16 +1786,22 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
             "passed": guardrail["passed"],
             "errors": guardrail["errors"],
         },
+        "quality_gate": quality_gate,
+        "quality_contract_version": G1Q.QUALITY_CONTRACT_VERSION,
         "artifacts": {
             "A2_markdown": str(artifact_path),
             "A2_docx": str(docx_path) if docx_path else None,
+            "A1b_project_charter": str(supporting_artifacts.get("A1b"))
+            if supporting_artifacts.get("A1b") else None,
+            "A2b_evidence_ledger": str(supporting_artifacts.get("A2b"))
+            if supporting_artifacts.get("A2b") else None,
+            "A13_implementation_plan": str(supporting_artifacts.get("A13"))
+            if supporting_artifacts.get("A13") else None,
+            "A13b_risk_register": str(supporting_artifacts.get("A13b"))
+            if supporting_artifacts.get("A13b") else None,
+            "quality_report": str(quality_report_path) if quality_report_path else None,
         },
-        "pending_doctor_actions": [
-            "Xác nhận thiết kế chọn (§1)",
-            "Điền kết cục chính (SAP §2) — từ PICO O ở G0",
-            "Điền covariates (SAP §5) với lý do",
-            "Chọn effect size ước lượng từ §3 (hoặc pilot data)",
-        ],
+        "pending_doctor_actions": quality_gate.get("pending_actions", []),
         "next_gate": "G2 (Đạo đức IRB) song song với G3 (Cỡ mẫu + SAP hoàn thiện)",
         "g4_status": "PENDING — SAP chưa khóa (khóa sau G3 sau khi bác sĩ ký)",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
@@ -1567,6 +1873,13 @@ def main():
         print(f"📂 Bước 1/7: Không tìm thấy G0 checkpoint tại {g0_cp_path}")
         print(f"   Tiếp tục với --question-type={question_type}")
 
+    # study_meta là nơi lưu quyết định bền của PI/methodologist. Chỉ điền các
+    # khóa còn thiếu; không đè nội dung người dùng đã nhập.
+    meta = GC.ensure_study_meta(
+        out_dir,
+        seed={"title": topic, "topic": topic},
+    )
+
     # Suy loại thiết kế
     design = infer_study_design(question_type, g0_gaps, topic)
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH):
@@ -1590,6 +1903,7 @@ def main():
 
     print(f"  → Thiết kế ưu tiên: {design['primary']}")
     print(f"  → Chuẩn báo cáo: {design['reporting_standard']}")
+    print(f"  → Chuẩn protocol: {design['protocol_standard']}")
 
     # Tìm effect size từ PubMed thật
     print("\n📊 Bước 3/7: Trích xuất effect size từ abstracts PubMed...")
@@ -1603,7 +1917,14 @@ def main():
     # Sinh artifact G1
     print("\n✍️  Bước 4/7: Sinh artifact G1 (Design + SAP skeleton)...")
     artifact_md = generate_g1_artifact(
-        topic, study, question_type, design, effects, g0_gaps, run_date
+        topic,
+        study,
+        question_type,
+        design,
+        effects,
+        g0_gaps,
+        run_date,
+        meta=meta,
     )
     md_path = out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
     md_path.write_text(artifact_md, encoding="utf-8")
@@ -1612,6 +1933,21 @@ def main():
     if detected_modules:
         labels = ", ".join(_SPECIALIST_MODULE_LABEL[m] for m in detected_modules)
         print(f"  → 🧩 Mô-đun chuyên biệt phát hiện: {labels}")
+
+    # Sinh đầy đủ bộ artifact G1 theo bản đồ A1-A18, không chỉ A2.
+    print("\n🧭 Bước 4b/7: Sinh Project Charter, Evidence Ledger, kế hoạch và Risk Register...")
+    supporting_paths = G1Q.build_supporting_artifacts(
+        study=study,
+        topic=topic,
+        out_dir=out_dir,
+        design=design,
+        g0_checkpoint=g0_cp if g0_cp_path.exists() else {},
+        effects=effects,
+        meta=meta,
+        generated_at=run_date,
+    )
+    for key, path in supporting_paths.items():
+        print(f"  → {key}: {path}")
 
     # Guardrail
     print("\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
@@ -1622,6 +1958,30 @@ def main():
         print(f"  {err}")
     status = "✅ PASS" if guardrail["passed"] else f"⚠ {len(guardrail['errors'])} LỖI"
     print(f"  → Guardrail: {status}")
+
+    # Hợp đồng G1 phân biệt "máy đã sinh/kiểm" với "người thật đã xác nhận".
+    artifact_paths = {"A2": md_path, **supporting_paths}
+    artifact_texts = {
+        key: path.read_text(encoding="utf-8")
+        for key, path in artifact_paths.items()
+    }
+    evidence_identifiers = G1Q.collect_evidence_identifiers(
+        out_dir,
+        g0_cp if g0_cp_path.exists() else {},
+        effects,
+    )
+    quality_gate = G1Q.evaluate_g1_quality(
+        design=design,
+        artifact_texts=artifact_texts,
+        artifact_paths=artifact_paths,
+        g0_checkpoint=g0_cp if g0_cp_path.exists() else {},
+        meta=meta,
+        evidence_identifiers=evidence_identifiers,
+        guardrail_passed=guardrail["passed"],
+    )
+    quality_report_path = G1Q.write_quality_report(study, out_dir, quality_gate)
+    print(f"  → G1 quality status: {quality_gate['status']}")
+    print(f"  → Báo cáo: {quality_report_path}")
 
     # Xuất DOCX
     print("\n📄 Bước 6/7: Xuất DOCX...")
@@ -1635,12 +1995,20 @@ def main():
     cp_path = write_g1_checkpoint(
         study, out_dir, question_type, design, effects, guardrail, md_path, docx_path,
         specialist_modules=specialist_modules,
+        supporting_artifacts=supporting_paths,
+        quality_gate=quality_gate,
+        quality_report_path=quality_report_path,
     )
     print(f"  → Lưu: {cp_path}")
 
     # Tóm tắt
     print(f"\n{'='*65}")
-    print(f"  ✅ G1 HOÀN THÀNH — {study}")
+    if quality_gate["status"] == G1Q.STATUS_CONFIRMED:
+        print(f"  ✅ G1 ĐÃ XÁC NHẬN ĐỦ TIÊU CHÍ — {study}")
+    elif quality_gate["status"] == G1Q.STATUS_DRAFT_READY:
+        print(f"  🟡 G1 DỰ THẢO ĐÃ SẴN SÀNG ĐỂ NGƯỜI THẬT RÀ — {study}")
+    else:
+        print(f"  🚧 G1 CHƯA ĐẠT KIỂM TỰ ĐỘNG — {study}")
     print(f"{'='*65}")
     print(f"\n  📁 Đầu ra: {out_dir}/")
     print(f"  📝 A2 Markdown: {md_path.name}")
@@ -1649,12 +2017,13 @@ def main():
     print(f"  🔬 Thiết kế:   {design['primary']}")
     print(f"  📊 Effect sizes: {len(effects)} từ PubMed thật")
     print(f"  🔴 Guardrail:  {status}")
-    print("\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
-    print("  1. Xem §1 — xác nhận thiết kế chọn")
-    print("  2. Xem §3 — effect size ước lượng → chọn cho G3")
-    print("  3. Điền §5 SAP §2 (kết cục chính) + §5 (covariates)")
-    print(f"  4. Chạy G3 (cỡ mẫu): python tools/run_g3_auto.py --study {study}")
-    print("  5. Sau G3: ký SAP Lock Certificate → mở G4")
+    print(f"  🧭 G1 quality: {quality_gate['status']}")
+    if quality_gate["pending_actions"]:
+        print("\n  VIỆC CÒN LẠI TRƯỚC KHI ĐƯỢC GHI PASS_G1_CONFIRMED:")
+        for i, action in enumerate(quality_gate["pending_actions"], 1):
+            print(f"  {i}. {action}")
+    else:
+        print(f"\n  Bước kế: chạy G2/G3 theo điều phối của đề tài {study}.")
     print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
 
@@ -1662,11 +2031,14 @@ def main():
     # luôn 0 dù guardrail có lỗi thật — checkpoint ĐÃ ghi đúng, nhưng process exit code
     # không phản ánh, nên chạy trực tiếp (không qua run_pipeline.py) sẽ tưởng nhầm là
     # xong. Đối xứng cách G3/G4/G9 đã làm.
-    if not guardrail["passed"]:
+    if (
+        not guardrail["passed"]
+        or quality_gate["status"] == G1Q.STATUS_BLOCKED
+    ):
         raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
 
     return {
-        "gate": "G1", "status": status,
+        "gate": "G1", "status": quality_gate["status"],
         "design": design["primary"],
         "n_effects": len(effects),
     }

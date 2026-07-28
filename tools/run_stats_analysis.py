@@ -1150,11 +1150,22 @@ def main():
     g2_checkpoint_locked = _is_locked(g2_cp.get("g2_status", g2_cp.get("G2_STATUS")))
     g2_ledger_ok = _ledger_approved(
         args.study, "G2", Path("exports") / args.study / f"G2_A3_ETHICS_PACKAGE_{args.study}.md")
-    g2_locked = (g2_checkpoint_locked or args.i_confirm_irb_approved) and g2_ledger_ok
+    g2_quality_ok = GC.g2_quality_contract_satisfied(
+        g2_cp,
+        GC.load_study_meta(Path("exports") / args.study),
+    )
+    g2_locked = (
+        (g2_checkpoint_locked or args.i_confirm_irb_approved)
+        and g2_ledger_ok
+        and g2_quality_ok
+    )
     if not g2_locked:
         print("✗ DỪNG: G2 (phê duyệt đạo đức/IRB) chưa xác nhận LOCKED bằng phê duyệt thật.")
         print(f"   G2 checkpoint: {'✅ LOCKED' if g2_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g2_ledger_ok else '⚠️ thiếu/không khớp'}")
+        if not g2_quality_ok:
+            print("   G2 quality: ⚠️ chưa PASS_G2_APPROVED "
+                  "(thiếu metadata/phiên bản/hiệu lực/đăng ký hợp lệ).")
         # VÁ 2026-07-27 vòng 6: in RÕ LÝ DO. Vòng kiểm định thứ năm chỉ ra bản vá chẩn
         # đoán trước đó chỉ nối vào run_g10_assemble.py (G8/G9) — CHÍNH CHỖ NGUY HIỂM
         # NHẤT này thì bỏ sót: cổng G2 gác việc phân tích dữ liệu BỆNH NHÂN THẬT, lại

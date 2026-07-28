@@ -724,11 +724,18 @@ def real_world_signals(checkpoints: Dict[str, Dict],
     g8 = checkpoints.get("G8") or {}
     g9 = checkpoints.get("G9") or {}
 
-    irb = (
-        _guardrail_passed(g2)
-        and _is_real_value(g2.get("g2_irb_number"))
-        and _is_real_value(g2.get("g2_approval_date"))
-    ) or bool(meta.get("irb_approved"))
+    if g2.get("quality_contract_version"):
+        quality = g2.get("quality_gate")
+        irb = (
+            isinstance(quality, dict)
+            and quality.get("status") == "PASS_G2_APPROVED"
+        )
+    else:
+        irb = (
+            _guardrail_passed(g2)
+            and _is_real_value(g2.get("g2_irb_number"))
+            and _is_real_value(g2.get("g2_approval_date"))
+        ) or bool(meta.get("irb_approved"))
 
     sap = (
         _guardrail_passed(g4)

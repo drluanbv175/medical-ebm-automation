@@ -7,19 +7,36 @@ Bác sĩ chỉ cần:
 
 Hệ thống tự động:
   1. Xây dựng truy vấn PubMed từ topic (VI→EN tự động)
-  2. Tìm kiếm THẬT trên PubMed: SR/MA, RCT, Guideline, Observational
-  3. Tổng hợp bằng chứng hiện có (số lượng, thiết kế, năm gần nhất)
-  4. Phân tích khoảng trống nghiên cứu dựa trên kết quả thật
-  5. Sinh artifact A1 hoàn chỉnh (PICO + FINER + Evidence + Gap)
-  6. Kiểm guardrail R1-R7
-  7. Xuất DOCX + JSON checkpoint
-  8. Ghi vào sổ cái (so-cai-ghi-nho trigger)
+  2. Tìm kiếm THẬT trên PubMed: SR/MA, RCT, Guideline, Observational, 5 năm gần đây
+  3. Tra ĐĂNG KÝ nghiên cứu đang tiến hành (ClinicalTrials.gov API v2)
+  4. Tổng hợp bằng chứng hiện có (số hit thật, thiết kế, năm gần nhất)
+  5. Phân tích khoảng trống nghiên cứu dựa trên kết quả thật
+  6. Sinh khung artifact A1 (PICO · giả thuyết · FINER · bằng chứng · khoảng trống ·
+     thiết kế gợi ý + chuẩn báo cáo dự kiến)
+  7. Kiểm guardrail R1–R7 + chấm hợp đồng chất lượng (g0_quality_gate.py)
+  8. Xuất DOCX + JSON checkpoint + G0_QUALITY_REPORT.{json,md}
 
 ★ NÓI ĐÚNG MỨC (sửa 2026-07-27): dòng này TỪNG ghi "bác sĩ chỉ cần XÁC NHẬN PICO (không
 điền lại từ đầu)" — SAI. Hệ KHÔNG suy ra PICO: mọi ô P/I/C/O trong artifact A1 là placeholder
 ("[suy ra từ topic: …]", "[CẦN BÁC SĨ ẤN ĐỊNH]"), bác sĩ phải TỰ VIẾT toàn bộ. Thứ G0 thật
 sự làm là dựng NỀN BẰNG CHỨNG cho bác sĩ viết PICO: tìm thật trên PubMed, đếm thật số hit,
 và chỉ ra khoảng trống. Đó vẫn là việc có giá trị — nhưng không phải việc điền PICO.
+
+★ SỬA 2026-07-28: bước "8. Ghi vào sổ cái (so-cai-ghi-nho trigger)" đã bị BỎ khỏi danh
+sách trên vì KHÔNG CÓ dòng code nào làm việc đó — script không đọc cũng không ghi sổ cái
+nào. Đây đúng kiểu docstring hứa một việc hệ không làm; giữ lại thì lần đọc sau sẽ tưởng
+sổ cái đã được cập nhật tự động.
+
+★ NƠI CHỐT CÂU HỎI (2026-07-28): là `exports/<study>/study_meta.json → gate_params.G0`,
+KHÔNG phải file .md (file .md bị ghi đè mỗi lần chạy lại — nay có sao lưu .bak-* trước
+khi đè). Chấm lại mà không gọi PubMed: `python tools/g0_quality_gate.py --study <mã>`.
+
+★ VỀ TRA ĐĂNG KÝ (2026-07-28): hàm check_trial_registry() dưới đây gọi thẳng
+ClinicalTrials.gov API v2 qua HttpClient thay vì dùng app/sources/clinicaltrials.py
+(ClinicalTrialsClient) — CÓ CHỦ Ý: client dùng chung KHÔNG trả `overallStatus`, mà trạng
+thái tuyển bệnh mới là thứ trả lời được câu "có ai ĐANG làm không". Sửa client dùng chung
+sẽ đụng mọi nơi khác đang dùng nó. Nếu sau này client được mở rộng để trả overallStatus
+và totalCount thì nên gộp hai đường này lại.
 
 Yêu cầu: NCBI_EMAIL trong .env (miễn phí, không cần API key trả tiền)
 """

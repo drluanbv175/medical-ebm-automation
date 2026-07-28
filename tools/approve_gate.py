@@ -30,6 +30,9 @@ Dùng:
         --artifact exports/<tên>/G4_A5_SAP_FINAL_<tên>.md \\
         --reviewer-role "METHODS_STATISTICS_REVIEWER" --reviewer-ref "<mã/tên viết tắt, KHÔNG PII đầy đủ>"
 
+G2 cần thêm metadata quyết định thật (số/ngày/hiệu lực, phiên bản protocol/ICF,
+loại tuyển mẫu và đăng ký). Xem ``python3 tools/approve_gate.py --help``.
+
 Role bắt buộc theo cổng (vá 2026-07-14 — nâng cấp kiểm soát PI/IRB/thống kê viên/
 phản biện; G4 nới thêm PI vì doctrine hướng dẫn "Chủ nhiệm đề tài" tự ký khóa SAP
 khi không có thống kê viên riêng; G8 mới thêm — trước đây bình duyệt không có cổng
@@ -52,6 +55,7 @@ KHÔNG dùng để tự động hóa duyệt hàng loạt — mỗi lần gọi 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -60,6 +64,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import g2_quality_gate as G2Q
 import gate_contract as GC
 
 from app.utils.console import configure_unicode_console
@@ -110,6 +115,190 @@ def _g4_sections_still_draft(content: str) -> list[str]:
     return still_draft
 
 
+def _valid_iso_date(value: str | None) -> bool:
+    """Ngày G2 phải là ISO YYYY-MM-DD để so sánh không mơ hồ."""
+    if not value:
+        return False
+    try:
+        datetime.fromisoformat(value)
+    except ValueError:
+        return False
+    return bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", value))
+
+
+def _prepare_g2_attestation(
+    args: argparse.Namespace,
+    artifact_path: Path,
+    evidence_content: str,
+    study_dir: Path,
+) -> tuple[str | None, list[str]]:
+    """Kiểm semantic G2 và gắn attestation có cấu trúc vào đúng A3.
+
+    Trả ``(nội_dung_mới, lỗi)``. Hàm không ký và không ghi ledger.
+    """
+    errors: list[str] = []
+    try:
+        artifact_path.resolve().relative_to(study_dir.resolve())
+    except ValueError:
+        errors.append("Artifact G2 phải nằm trong đúng thư mục exports/<study>")
+
+    expected_name = f"G2_A3_ETHICS_PACKAGE_{args.study}.md"
+    if artifact_path.name != expected_name:
+        errors.append(f"Artifact G2 phải là {expected_name}")
+
+    required = (
+        ("g2_approval_number", "số quyết định/phê duyệt IRB"),
+        ("g2_approval_date", "ngày phê duyệt"),
+        ("g2_protocol_version", "phiên bản protocol được duyệt"),
+        ("g2_ethics_decision", "loại quyết định đạo đức"),
+        ("g2_recruitment_mode", "loại tuyển mẫu"),
+        ("g2_registration_status", "trạng thái đăng ký"),
+    )
+    for field, label in required:
+        if not str(getattr(args, field, "") or "").strip():
+            errors.append(f"Thiếu {label}")
+
+    if args.g2_approval_date and not _valid_iso_date(args.g2_approval_date):
+        errors.append("--g2-approval-date phải theo YYYY-MM-DD")
+    elif (
+        args.g2_approval_date
+        and args.g2_approval_date > datetime.now(timezone.utc).date().isoformat()
+    ):
+        errors.append("--g2-approval-date không được ở tương lai")
+    if args.g2_valid_until and not _valid_iso_date(args.g2_valid_until):
+        errors.append("--g2-valid-until phải theo YYYY-MM-DD")
+    elif (
+        args.g2_valid_until
+        and args.g2_valid_until < datetime.now(timezone.utc).date().isoformat()
+    ):
+        errors.append("Quyết định G2 đã hết hiệu lực")
+    if not args.g2_valid_until and not args.g2_no_expiry_confirmed:
+        errors.append(
+            "Phải có --g2-valid-until hoặc --g2-no-expiry-confirmed"
+        )
+    if args.g2_valid_until and args.g2_no_expiry_confirmed:
+        errors.append(
+            "Không dùng đồng thời --g2-valid-until và --g2-no-expiry-confirmed"
+        )
+    if (
+        args.g2_approval_date
+        and args.g2_valid_until
+        and _valid_iso_date(args.g2_approval_date)
+        and _valid_iso_date(args.g2_valid_until)
+        and args.g2_valid_until < args.g2_approval_date
+    ):
+        errors.append("Ngày hết hiệu lực không được trước ngày phê duyệt")
+    if not args.g2_icf_version and not args.g2_icf_waiver_approved:
+        errors.append(
+            "Phải có --g2-icf-version hoặc --g2-icf-waiver-approved"
+        )
+    if args.g2_icf_version and args.g2_icf_waiver_approved:
+        errors.append(
+            "Không dùng đồng thời phiên bản ICF và xác nhận miễn ICF"
+        )
+
+    checkpoint_path = study_dir / "G2_checkpoint.json"
+    try:
+        checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        checkpoint = {}
+    design_code = str(
+        checkpoint.get("design_code") if isinstance(checkpoint, dict) else ""
+    ).strip()
+    registration_required = (
+        args.g2_recruitment_mode == "PROSPECTIVE_NEW_PARTICIPANTS"
+        or design_code == "sr_ma"
+    )
+    if registration_required:
+        if args.g2_registration_status != "REGISTERED":
+            errors.append(
+                "Thiết kế này phải có trạng thái REGISTERED "
+                "(registry người tham gia hoặc registry protocol phù hợp)"
+            )
+        for field, label in (
+            ("g2_registry", "tên registry"),
+            ("g2_registration_id", "mã đăng ký"),
+            ("g2_registration_date", "ngày đăng ký"),
+        ):
+            if not str(getattr(args, field, "") or "").strip():
+                errors.append(f"Thiếu {label}")
+        if args.g2_registration_date and not _valid_iso_date(args.g2_registration_date):
+            errors.append("--g2-registration-date phải theo YYYY-MM-DD")
+        elif (
+            args.g2_registration_date
+            and args.g2_registration_date
+            > datetime.now(timezone.utc).date().isoformat()
+        ):
+            errors.append("--g2-registration-date không được ở tương lai")
+    elif args.g2_registration_status != "NOT_REQUIRED":
+        errors.append(
+            "Không tuyển mới phải ghi --g2-registration-status NOT_REQUIRED"
+        )
+
+    if args.g2_first_enrolment_date:
+        if not _valid_iso_date(args.g2_first_enrolment_date):
+            errors.append("--g2-first-enrolment-date phải theo YYYY-MM-DD")
+        elif (
+            args.g2_registration_date
+            and _valid_iso_date(args.g2_registration_date)
+            and args.g2_registration_date > args.g2_first_enrolment_date
+        ):
+            errors.append("Ngày đăng ký không được muộn hơn ngày tuyển đầu tiên")
+    if design_code == "sr_ma":
+        if not args.g2_first_search_date:
+            errors.append("SR/MA phải có --g2-first-search-date")
+        elif not _valid_iso_date(args.g2_first_search_date):
+            errors.append("--g2-first-search-date phải theo YYYY-MM-DD")
+        elif (
+            args.g2_registration_date
+            and _valid_iso_date(args.g2_registration_date)
+            and args.g2_registration_date > args.g2_first_search_date
+        ):
+            errors.append("Đăng ký protocol muộn hơn ngày bắt đầu tìm kiếm")
+
+    unresolved = G2Q.unresolved_critical_placeholders(evidence_content)
+    if unresolved:
+        errors.append(
+            f"Hồ sơ còn {len(unresolved)} placeholder khoa học/vận hành '[CẦN]'"
+        )
+
+    if errors:
+        return None, errors
+
+    base = G2Q.strip_attestation(evidence_content)
+    attestation = {
+        "schema_version": G2Q.ATTESTATION_SCHEMA,
+        "study": args.study,
+        "ethics_decision": args.g2_ethics_decision,
+        "ethics_committee_ref": args.reviewer_ref,
+        "approval_number": args.g2_approval_number,
+        "approval_date": args.g2_approval_date,
+        "valid_until": args.g2_valid_until,
+        "no_expiry_confirmed": bool(args.g2_no_expiry_confirmed),
+        "approval_scope": args.g2_approval_scope or args.scope,
+        "approved_protocol_version": args.g2_protocol_version,
+        "approved_icf_version": args.g2_icf_version,
+        "icf_waiver_approved": bool(args.g2_icf_waiver_approved),
+        "recruitment_mode": args.g2_recruitment_mode,
+        "first_enrolment_date": args.g2_first_enrolment_date,
+        "first_search_date": args.g2_first_search_date,
+        "registration": {
+            "required": registration_required,
+            "status": args.g2_registration_status,
+            "registry": args.g2_registry,
+            "registration_id": args.g2_registration_id,
+            "registration_date": args.g2_registration_date,
+        },
+        "package_sha256_before_attestation": hashlib.sha256(
+            base.encode("utf-8")
+        ).hexdigest(),
+        "attested_at": datetime.now(timezone.utc).isoformat(),
+        "pii_policy": "Reviewer reference only; no full name/contact/identity document.",
+        "disclaimer": "Cần bác sĩ kiểm chứng.",
+    }
+    return G2Q.append_attestation(base, attestation), []
+
+
 def main() -> int:
     configure_unicode_console()
     ap = argparse.ArgumentParser(description=__doc__.split("Dùng:")[0])
@@ -121,6 +310,37 @@ def main() -> int:
                     help="Mã/tên viết tắt định danh người duyệt — KHÔNG ghi tên đầy đủ/CCCD/số điện thoại")
     ap.add_argument("--scope", default="", help="Mô tả ngắn phạm vi duyệt (tùy chọn)")
     ap.add_argument("--decision", default="APPROVED", choices=["APPROVED", "REJECTED", "CONDITIONAL"])
+    # G2 hard gate: metadata chỉ bắt buộc khi ghi quyết định APPROVED. Agent
+    # không được chạy lệnh này; người có thẩm quyền IRB tự nhập dữ kiện thật.
+    ap.add_argument("--g2-approval-number")
+    ap.add_argument("--g2-approval-date")
+    ap.add_argument("--g2-valid-until")
+    ap.add_argument("--g2-no-expiry-confirmed", action="store_true")
+    ap.add_argument("--g2-protocol-version")
+    ap.add_argument("--g2-icf-version")
+    ap.add_argument("--g2-icf-waiver-approved", action="store_true")
+    ap.add_argument(
+        "--g2-ethics-decision",
+        choices=["APPROVED", "EXEMPT", "WAIVER"],
+    )
+    ap.add_argument(
+        "--g2-recruitment-mode",
+        choices=[
+            "PROSPECTIVE_NEW_PARTICIPANTS",
+            "RETROSPECTIVE_SECONDARY_DATA",
+            "NOT_APPLICABLE",
+        ],
+    )
+    ap.add_argument(
+        "--g2-registration-status",
+        choices=["REGISTERED", "NOT_REQUIRED"],
+    )
+    ap.add_argument("--g2-registry")
+    ap.add_argument("--g2-registration-id")
+    ap.add_argument("--g2-registration-date")
+    ap.add_argument("--g2-first-enrolment-date")
+    ap.add_argument("--g2-first-search-date")
+    ap.add_argument("--g2-approval-scope")
     args = ap.parse_args()
 
     artifact_path = Path(args.artifact)
@@ -131,6 +351,10 @@ def main() -> int:
         print(f"✗ Role người duyệt không đúng stakeholder bắt buộc cho {args.gate}.")
         print(f"   {args.gate} cần: {GC.required_reviewer_role_hint(args.gate)}")
         print("   Không ghi ledger để tránh cổng có approval nhưng sai thẩm quyền.")
+        return 1
+    study_dir = Path(__file__).resolve().parents[1] / "exports" / args.study
+    if not study_dir.exists():
+        print(f"✗ Không thấy thư mục đề tài: {study_dir}")
         return 1
     # RÀNG BUỘC HASH VÀO ĐÚNG BYTES TRÊN ĐĨA (vá 2026-07-09): make_human_approval tính
     # evidence_hash = sha256(evidence_content.encode("utf-8")), CÒN _ledger_approved ở
@@ -147,6 +371,22 @@ def main() -> int:
         print("   (Kiểm tra lại encoding file — mọi artifact pipeline phải là UTF-8 không BOM.)")
         return 1
 
+    if args.gate == "G2" and args.decision == "APPROVED":
+        prepared, g2_errors = _prepare_g2_attestation(
+            args,
+            artifact_path,
+            evidence_content,
+            study_dir,
+        )
+        if g2_errors:
+            print("✗ TỪ CHỐI ký G2 — hồ sơ/metadata phê duyệt chưa đủ:")
+            for item in g2_errors:
+                print(f"   - {item}")
+            print("   Không ghi ledger và không tự suy diễn quyết định IRB.")
+            return 1
+        evidence_content = prepared or evidence_content
+        artifact_path.write_text(evidence_content, encoding="utf-8")
+
     if args.gate == "G4":
         still_draft = _g4_sections_still_draft(evidence_content)
         if still_draft:
@@ -158,10 +398,6 @@ def main() -> int:
             print("   Không ghi ledger để tránh SAP rỗng bị coi là đã khóa.")
             return 1
 
-    study_dir = Path(__file__).resolve().parents[1] / "exports" / args.study
-    if not study_dir.exists():
-        print(f"✗ Không thấy thư mục đề tài: {study_dir}")
-        return 1
     ledger_path = study_dir / "approval_ledger.json"
 
     # Chữ ký (2026-07-12): cần evidence_hash + timestamp TRƯỚC khi ký (payload chữ ký
@@ -271,6 +507,17 @@ def main() -> int:
     print(f"   Ghi vào     : {ledger_path}")
     print("   ⚠️  Nếu file artifact bị sửa SAU thời điểm này, phê duyệt sẽ KHÔNG còn khớp hash")
     print("      (lần kiểm tiếp theo sẽ coi như chưa duyệt) — đúng ý nghĩa ràng buộc mật mã.")
+    if args.gate == "G2":
+        try:
+            report = G2Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=True,
+            )
+            print(f"   G2 quality status: {report['status']}")
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G2 quality report: {exc}")
     return 0
 
 

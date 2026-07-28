@@ -1,13 +1,9 @@
 """
-Smoke test tích hợp: chạy trọn chuỗi G1→G9 (bỏ G0 vì cần mạng thật) cho 1 đề
-tài giả lập, xác nhận mọi cổng thoát mã 0 + guardrail PASS + checkpoint tiếp
-theo đọc được checkpoint trước — không có bộ test tự động nào cho việc này
-trước 2026-07-02 (mọi verify trước đó đều thủ công/qua agent, không tái lặp
-được). Đề tài dùng mã "PYTEST-SMOKE-*" trong exports/, TỰ DỌN DẸP sau khi chạy
-(kể cả khi test fail) để không để lại rác trong exports/ thật.
+Smoke test tích hợp: chạy chuỗi soạn thảo G1→G4 (bỏ G0 vì cần mạng thật), rồi
+xác nhận G5 fail-closed vì chưa có phê duyệt thật G2/G4. Test không được tự tạo
+phê duyệt IRB/thống kê viên chỉ để đi tiếp tới G9.
 
-Đây là test CHẬM (gọi ~9 script con, sinh DOCX thật) — đánh dấu @pytest.mark.slow
-để có thể bỏ qua bằng `pytest -m "not slow"` khi cần vòng lặp nhanh.
+Đề tài dùng mã "PYTEST-SMOKE-*" trong exports/ và tự dọn dẹp sau khi chạy.
 """
 from __future__ import annotations
 
@@ -122,10 +118,9 @@ def smoke_study():
 
 
 @pytest.mark.slow
-def test_full_chain_g1_through_g9(smoke_study):
+def test_draft_chain_stops_before_data_without_human_approvals(smoke_study):
     """
-    Chạy tuần tự G1→G9 (bỏ G0), mỗi bước xác nhận exit code 0 và có PASS
-    trong output. Nếu 1 cổng lỗi, dừng ngay và báo lỗi rõ cổng nào.
+    G1→G4 được phép tạo hồ sơ nháp; G5 phải dừng nếu thiếu phê duyệt thật.
     """
     steps = [
         ("G1", "run_g1_auto.py", None),
@@ -133,11 +128,6 @@ def test_full_chain_g1_through_g9(smoke_study):
         ("G3", "run_g3_auto.py", ["--alpha", "0.05", "--power", "0.8", "--effect-size", "0.75",
                                    "--effect-type", "HR", "--p-event", "0.3", "--dropout", "0.15"]),
         ("G4", "run_g4_auto.py", None),
-        ("G5", "run_g5_auto.py", None),
-        ("G6", "run_g6_auto.py", None),
-        ("G7", "run_g7_auto.py", None),
-        ("G8", "run_g8_auto.py", None),
-        ("G9", "run_g9_auto.py", None),
     ]
     for gate, script, extra_args in steps:
         result = _run(script, extra_args)
@@ -160,17 +150,17 @@ def test_full_chain_g1_through_g9(smoke_study):
             f"in banner PASS — đây chính là kịch bản 'pass giả' cần bắt được:\n{result.stdout[-2000:]}"
         )
 
-    # Xác nhận checkpoint cuối cùng (G9) đọc được đủ chuỗi G0-G8 trước đó.
-    g9_checkpoint_path = STUDY_DIR / "G9_checkpoint.json"
-    assert g9_checkpoint_path.exists(), "G9 không sinh checkpoint"
-    g9 = json.loads(g9_checkpoint_path.read_text(encoding="utf-8"))
-    assert g9.get("guardrail", {}).get("passed") is True
-
-    # Xác nhận G5 nhận diện đúng chuyên khoa (không rơi về generic cho topic
-    # rõ ràng là metabolic_diabetes).
-    g5 = json.loads((STUDY_DIR / "G5_checkpoint.json").read_text(encoding="utf-8"))
-    assert g5.get("specialty") == "metabolic_diabetes"
-
     # Xác nhận G3 tính ra cỡ mẫu dương hợp lệ.
     g3 = json.loads((STUDY_DIR / "G3_checkpoint.json").read_text(encoding="utf-8"))
     assert g3.get("n_adjusted", 0) > 0
+
+    # Hồ sơ G2 tự sinh chỉ là hồ sơ nháp, không được tự nhận đã có IRB thật.
+    g2 = json.loads((STUDY_DIR / "G2_checkpoint.json").read_text(encoding="utf-8"))
+    assert g2.get("quality_gate", {}).get("status") != "PASS_G2_APPROVED"
+    assert not (STUDY_DIR / "approval_ledger.json").exists()
+
+    # Không có phê duyệt G2/G4 thật thì tuyệt đối không được khóa/thu dữ liệu ở G5.
+    g5_result = _run("run_g5_auto.py")
+    assert g5_result.returncode == 2
+    assert "chưa có phê duyệt THẬT" in g5_result.stdout
+    assert not (STUDY_DIR / "G5_checkpoint.json").exists()

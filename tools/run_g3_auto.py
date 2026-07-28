@@ -17,6 +17,7 @@ sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import g3_quality_gate as G3Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G3)
 
 # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): 3 thiết kế KHÔNG dùng
 # công thức cỡ mẫu power/effect size truyền thống — n_adjusted=0 là CÓ CHỦ
@@ -1457,14 +1458,43 @@ def main():
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
     print("💾 Ghi checkpoint G3...")
     print(f"  → Lưu: {cp_path}")
+    # ── HỢP ĐỒNG CHẤT LƯỢNG G3 ────────────────────────────────────────────
+    # THÊM 2026-07-28: guardrail_check() ở trên chỉ soi VĂN BẢN do
+    # generate_artifact() vừa sinh, nên phần lớn luật của nó là tự đúng (xem
+    # docstring tools/g3_quality_gate.py). Lớp này kiểm CON SỐ và NGUỒN, rồi
+    # tách bạch "máy đã tính được N" với "thống kê viên/chủ nhiệm đã xác nhận
+    # từng giả định".
+    #
+    # CỐ Ý KHÔNG đổi `exit_code`: mã thoát của G3 là hợp đồng đang được 19 file
+    # test và chuỗi run_pipeline/pipeline_freshness dựa vào. Kết luận chất lượng
+    # được ghi vào checkpoint + G3_QUALITY_REPORT.{json,md} và IN RA, không nuốt
+    # im lặng. Việc có nên nâng quality BLOCKED thành mã thoát khác hay không là
+    # quyết định đổi QUY TRÌNH, thuộc thẩm quyền bác sĩ.
+    quality = None
+    try:
+        quality = G3Q.evaluate_study(study, out_dir, write=True)
+    except Exception as exc:  # pragma: no cover - không để lớp phụ giết cổng chính
+        print(f"  ⚠️ Không chấm được hợp đồng chất lượng G3: {exc}")
+
     if exit_code == GC.EXIT_BLOCKED:
         print(f"\n🚧 G3 DỪNG — {study} (cần input đời thực, hệ KHÔNG tự vượt)")
         print(f"  → {GC.blocked_detail(cp)}")
     else:
-        print(f"\n✅ G3 HOÀN THÀNH — {study}")
+        print(f"\n✅ G3 TÍNH XONG — {study} (công thức đã chạy; CHƯA phải 'đạt cổng')")
         print(f"  N mỗi nhóm: {n_per_group}, N tổng: {n_total}, N điều chỉnh (dropout {int(dropout*100)}%): {n_adjusted}")
         print(f"  Alpha: {alpha}, Power: {int(power*100)}%, {effect_type}: {effect_val}")
     print(f"  → Guardrail: {status}")
+    if quality:
+        pending = [
+            row for row in quality["automatic_criteria"] + quality["human_criteria"]
+            if row["status"] != "PASS"
+        ]
+        print(f"  🧭 Hợp đồng chất lượng G3: {quality['status']} "
+              f"({len(pending)} mục chưa đạt)")
+        for row in pending[:5]:
+            print(f"      {row['status']:6} {row['id']} — {row['label']}")
+        if len(pending) > 5:
+            print(f"      … và {len(pending) - 5} mục nữa — xem G3_QUALITY_REPORT.md")
     return exit_code
 
 if __name__ == "__main__":

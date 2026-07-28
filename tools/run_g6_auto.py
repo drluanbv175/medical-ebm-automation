@@ -829,7 +829,15 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
     g5_ledger_ok = _GC.ledger_approved(
         "G5", "__STUDY__", Path("exports") / "__STUDY__" / "G5_checkpoint.json")
     # Cờ --i-confirm-* CHỈ thay thế checkpoint-file, KHÔNG BAO GIỜ thay thế ledger_ok.
-    g2_locked = (g2_checkpoint_locked or i_confirm_irb) and g2_ledger_ok
+    g2_quality_ok = _GC.g2_quality_contract_satisfied(
+        g2,
+        _GC.load_study_meta(Path("exports") / "__STUDY__"),
+    )
+    g2_locked = (
+        (g2_checkpoint_locked or i_confirm_irb)
+        and g2_ledger_ok
+        and g2_quality_ok
+    )
     g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
     g5_locked = (g5_checkpoint_locked or i_confirm_sap) and g5_ledger_ok
     if not g2_locked:
@@ -1257,7 +1265,15 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
     g5_ledger_ok = _GC.ledger_approved(
         "G5", "__STUDY__", Path("exports") / "__STUDY__" / "G5_checkpoint.json")
     # Cờ --i-confirm-* CHỈ thay thế checkpoint-file, KHÔNG BAO GIỜ thay thế ledger_ok.
-    g2_locked = (g2_checkpoint_locked or i_confirm_irb) and g2_ledger_ok
+    g2_quality_ok = _GC.g2_quality_contract_satisfied(
+        g2,
+        _GC.load_study_meta(Path("exports") / "__STUDY__"),
+    )
+    g2_locked = (
+        (g2_checkpoint_locked or i_confirm_irb)
+        and g2_ledger_ok
+        and g2_quality_ok
+    )
     g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
     g5_locked = (g5_checkpoint_locked or i_confirm_sap) and g5_ledger_ok
     if not g2_locked:
@@ -1643,7 +1659,9 @@ _SENSITIVITY_TEMPLATE = (
     "        \"G4\", \"__STUDY__\", _Path(\'exports\') / \'__STUDY__\' / \'G4_A5_SAP_FINAL___STUDY__.md\')\n"
     "    g5_ledger = _GC.ledger_approved(\n"
     "        \"G5\", \"__STUDY__\", _Path(\'exports\') / \'__STUDY__\' / \'G5_checkpoint.json\')\n"
-    "    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger\n"
+    "    g2_quality = _GC.g2_quality_contract_satisfied(\n"
+    "        g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'))\n"
+    "    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality\n"
     "    g4_locked = (g4_cp or i_confirm_sap) and g4_ledger\n"
     "    g5_locked = (g5_cp or i_confirm_sap) and g5_ledger\n"
     "    if not g2_locked:\n"
@@ -1868,7 +1886,9 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
         "G4", "__STUDY__", _Path('exports') / '__STUDY__' / 'G4_A5_SAP_FINAL___STUDY__.md')
     g5_ledger = _GC.ledger_approved(
         "G5", "__STUDY__", _Path('exports') / '__STUDY__' / 'G5_checkpoint.json')
-    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger
+    g2_quality = _GC.g2_quality_contract_satisfied(
+        g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'))
+    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality
     g4_locked = (g4_cp or i_confirm_sap) and g4_ledger
     g5_locked = (g5_cp or i_confirm_sap) and g5_ledger
     if not g2_locked:

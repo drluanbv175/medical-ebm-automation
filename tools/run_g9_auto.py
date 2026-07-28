@@ -811,8 +811,17 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
     # Audit 2026-07-11: checkpoint text một mình không còn đủ — cần thêm phê duyệt
     # thật khớp hash trong approval_ledger.json (cùng chuẩn run_stats_analysis.py/
     # run_g6_auto.py), vì đây là cổng cứng CUỐI CÙNG trước nộp bài ra ngoài.
-    ethics_locked = ethics_locked_text and _ledger_approved(
-        study, "G2", _REPO_ROOT / "exports" / study / f"G2_A3_ETHICS_PACKAGE_{study}.md")
+    ethics_locked = (
+        ethics_locked_text
+        and _ledger_approved(
+            study, "G2",
+            _REPO_ROOT / "exports" / study / f"G2_A3_ETHICS_PACKAGE_{study}.md",
+        )
+        and GC.g2_quality_contract_satisfied(
+            g2,
+            GC.load_study_meta(_REPO_ROOT / "exports" / study),
+        )
+    )
     sap_locked = sap_locked_text and _ledger_approved(
         study, "G4", _REPO_ROOT / "exports" / study / f"G4_A5_SAP_FINAL_{study}.md")
 
@@ -1164,8 +1173,17 @@ def write_g9_checkpoint(
     )
     # Audit 2026-07-11: cùng cổng ledger đã thêm ở build_part8_gate_criteria() —
     # checkpoint viết ra phải phản ánh ĐÚNG trạng thái đã kiểm mật mã, không chỉ text.
-    ethics_locked_cp = ethics_locked_cp_text and _ledger_approved(
-        study, "G2", _REPO_ROOT / "exports" / study / f"G2_A3_ETHICS_PACKAGE_{study}.md")
+    ethics_locked_cp = (
+        ethics_locked_cp_text
+        and _ledger_approved(
+            study, "G2",
+            _REPO_ROOT / "exports" / study / f"G2_A3_ETHICS_PACKAGE_{study}.md",
+        )
+        and GC.g2_quality_contract_satisfied(
+            g2_cp,
+            GC.load_study_meta(_REPO_ROOT / "exports" / study),
+        )
+    )
     sap_locked_cp = sap_locked_cp_text and _ledger_approved(
         study, "G4", _REPO_ROOT / "exports" / study / f"G4_A5_SAP_FINAL_{study}.md")
     # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện HIGH):

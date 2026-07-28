@@ -155,7 +155,7 @@ class TestG1DesignLabelCoversAllEightCodes:
 
 class TestG2WhoFieldCoversQualitative:
     """Hồi quy cho phát hiện LOW (tái xác minh vòng 6): WHO Trial Registration
-    Trường 14 thiếu mã 'qualitative' — lặp lại đúng lỗi vừa vá cho 'prediction'."""
+    mục Study Type thiếu mã 'qualitative' — nay là Trường 15 theo TRDS 1.3.1."""
 
     def test_qualitative_primary_purpose_not_other(self):
         doc = G2.generate_g2_full_package(
@@ -166,6 +166,6 @@ class TestG2WhoFieldCoversQualitative:
             run_date="2026-07-21", n_adjusted=1000,
         )
         import re
-        m = re.search(r"Trường 14.*", doc)
+        m = re.search(r"Trường 15.*", doc)
         assert m is not None
         assert "Other" not in m.group(0)

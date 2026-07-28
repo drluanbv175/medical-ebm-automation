@@ -181,12 +181,47 @@ def test_action_queue_includes_blocked_data_steps_until_irb(tmp_path):
 
 def test_next_agent_action_does_not_skip_human_gate_blocker(tmp_path):
     _cp(tmp_path, "G0", {})
-    _cp(tmp_path, "G1", {})
+    _cp(tmp_path, "G1", {
+        "quality_gate": {
+            "status": "PASS_G1_CONFIRMED",
+            "pending_actions": [],
+        },
+    })
     _cp(tmp_path, "G2", {"g2_irb_number": "[CẦN BỔ SUNG]"})
-    _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
+    _write_json(tmp_path / "study_meta.json", {
+        "title": "Đề tài X",
+        "design_code": "rct",
+        "gate_params": {
+            "G1": {
+                "design": "rct",
+                "design_confirmed": True,
+                "objectives": ["Mục tiêu đã chốt"],
+                "primary_outcome": "Kết cục chính tại 12 tuần",
+                "population": "Quần thể đích",
+                "setting": "Bệnh viện",
+                "study_period": "2027-2028",
+                "feasibility_confirmed": True,
+                "evidence_review_confirmed": True,
+                "reviewed_by_role": "methodologist",
+                "reviewed_at": "2026-07-27T10:00:00+07:00",
+            },
+        },
+    })
     (tmp_path / "G0_A1_PICO_FINER_AUTO.md").write_text("PICO", encoding="utf-8")
     (tmp_path / "G1_A2_PROTOCOL_DESIGN_AUTO.md").write_text(
         "design rationale", encoding="utf-8"
+    )
+    (tmp_path / "G1_A1b_PROJECT_CHARTER_AUTO.md").write_text(
+        "project charter", encoding="utf-8"
+    )
+    (tmp_path / "G1_A2b_EVIDENCE_LEDGER_AUTO.md").write_text(
+        "evidence ledger", encoding="utf-8"
+    )
+    (tmp_path / "G1_A13_IMPLEMENTATION_PLAN_AUTO.md").write_text(
+        "implementation plan", encoding="utf-8"
+    )
+    (tmp_path / "G1_A13b_RISK_REGISTER_AUTO.md").write_text(
+        "risk register", encoding="utf-8"
     )
     (tmp_path / "G2_A3_ETHICS_PACKAGE_AUTO.md").write_text("ethics", encoding="utf-8")
 
