@@ -523,6 +523,35 @@ def test_a1_neu_chuan_bao_cao_du_kien():
     assert "Chuẩn báo cáo DỰ KIẾN" in art
 
 
+def test_che_do_mock_khong_duoc_trinh_bay_la_bang_chung_that(monkeypatch):
+    """USE_MOCK_SOURCES=true trả bản ghi FIXTURE (thường lạc đề), nhưng artifact
+    vẫn in "BẰNG CHỨNG HIỆN CÓ (THẬT — từ PubMed)" và "PMIDs đã được xác minh".
+    Một file A1 sinh lúc thử nghiệm mà lọt vào hồ sơ đề tài sẽ đọc y hệt file thật."""
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "use_mock_sources", False, raising=False)
+    art_real = _artifact_text()
+    assert "THẬT — từ PubMed" in art_real and "GIẢ LẬP" not in art_real
+
+    monkeypatch.setattr(settings, "use_mock_sources", True, raising=False)
+    art_mock = _artifact_text()
+    assert "DỮ LIỆU GIẢ LẬP" in art_mock
+    assert "USE_MOCK_SOURCES=true" in art_mock, "phải nói rõ cách chạy lại cho đúng"
+
+
+def test_docstring_khong_hua_ghi_so_cai():
+    """Docstring từng khai "8. Ghi vào sổ cái (so-cai-ghi-nho trigger)" trong danh
+    sách việc hệ tự động làm, trong khi script không đọc cũng không ghi sổ cái nào."""
+    doc = G0.__doc__ or ""
+    steps = [ln.strip() for ln in doc.split("\n") if ln.strip()[:2] in
+             {"1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9."}]
+    assert steps, "không đọc được danh sách bước trong docstring"
+    assert not any("sổ cái" in s for s in steps), \
+        f"docstring vẫn hứa ghi sổ cái trong danh sách việc tự động: {steps}"
+    # và phải nói rõ vì sao đã bỏ, để lần đọc sau không thêm lại
+    assert "KHÔNG CÓ dòng code nào làm việc đó" in doc
+
+
 @pytest.mark.parametrize("hint,expected", [
     ("SR/Meta-analysis (tổng hợp RCT hiện có)", "sr_ma"),
     ("RCT ngẫu nhiên có đối chứng HOẶC Cohort tiến cứu", "rct"),
