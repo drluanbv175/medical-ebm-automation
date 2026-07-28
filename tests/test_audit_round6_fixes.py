@@ -162,7 +162,7 @@ class TestG2WhoFieldCoversQualitative:
             topic="Đề tài test", study_name="TEST-STUDY", design_code="qualitative",
             design_primary="Nghiên cứu Định tính (Qualitative Research)",
             reporting_std="SRQR", n_sr=5, n_rct=0, evidence_level="TRUNG BÌNH",
-            ct_trials=[], risk=G2.RISK_PROFILES["qualitative"],
+            registry=None, risk=G2.RISK_PROFILES["qualitative"],
             run_date="2026-07-21", n_adjusted=1000,
         )
         import re

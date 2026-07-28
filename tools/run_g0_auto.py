@@ -31,12 +31,14 @@ sổ cái đã được cập nhật tự động.
 KHÔNG phải file .md (file .md bị ghi đè mỗi lần chạy lại — nay có sao lưu .bak-* trước
 khi đè). Chấm lại mà không gọi PubMed: `python tools/g0_quality_gate.py --study <mã>`.
 
-★ VỀ TRA ĐĂNG KÝ (2026-07-28): hàm check_trial_registry() dưới đây gọi thẳng
-ClinicalTrials.gov API v2 qua HttpClient thay vì dùng app/sources/clinicaltrials.py
+★ VỀ TRA ĐĂNG KÝ (2026-07-28, gộp cùng ngày): thân hàm check_trial_registry() nay nằm ở
+`tools/trial_registry.py` và ĐƯỢC G2 DÙNG CHUNG (trước đó G2 có bản urllib riêng, gửi
+truy vấn tiếng Việt bỏ dấu nên gần như luôn trả 0 — xem docstring module đó). Vẫn gọi
+thẳng ClinicalTrials.gov API v2 qua HttpClient thay vì dùng app/sources/clinicaltrials.py
 (ClinicalTrialsClient) — CÓ CHỦ Ý: client dùng chung KHÔNG trả `overallStatus`, mà trạng
 thái tuyển bệnh mới là thứ trả lời được câu "có ai ĐANG làm không". Sửa client dùng chung
 sẽ đụng mọi nơi khác đang dùng nó. Nếu sau này client được mở rộng để trả overallStatus
-và totalCount thì nên gộp hai đường này lại.
+và totalCount thì nên gộp nốt đường này vào đó.
 
 Yêu cầu: NCBI_EMAIL trong .env (miễn phí, không cần API key trả tiền)
 """
@@ -70,6 +72,7 @@ from app.sources.pubmed import PubMedClient  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # thư mục tools/
 import g0_quality_gate as G0Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G0)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG + study_meta dùng chung)
+import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G2)
 
 # ════════════════════════════════════════════════════════════════════════════
 # 1. TỪ ĐIỂN VI → EN (thuật ngữ y khoa thường gặp)
@@ -402,103 +405,16 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
 # 3b. TRA ĐĂNG KÝ NGHIÊN CỨU — "câu hỏi này đã có ai ĐANG LÀM chưa?"
 # ════════════════════════════════════════════════════════════════════════════
 
-CTG_STUDIES_API = "https://clinicaltrials.gov/api/v2/studies"
-# Ba trạng thái nghĩa là "chưa thu xong người tham gia" → một đề tài trùng ở đây
-# sẽ công bố trước khi đề tài mới kịp thu số liệu.
-CTG_ACTIVE_STATUSES = "RECRUITING,NOT_YET_RECRUITING,ENROLLING_BY_INVITATION"
-
-
-def check_trial_registry(base_query: str, max_results: int = 5) -> dict:
-    """Tra ClinicalTrials.gov: câu hỏi này đã có ai ĐANG TIẾN HÀNH chưa?
-
-    THÊM 2026-07-28. Lý do: PubMed chỉ trả lời "đã CÔNG BỐ những gì" — nó KHÔNG
-    trả lời "đang có ai LÀM". Một cổng G0 chỉ soi PubMed có thể kết luận "khoảng
-    trống lớn — cơ hội nghiên cứu rõ ràng" cho đúng một câu hỏi đang có hàng chục
-    thử nghiệm tuyển bệnh dở dang. Đề tài sẽ trùng, và bên kia công bố trước.
-
-    Miễn phí, không cần API key (ClinicalTrials.gov API v2 — xác minh thật ngày
-    2026-07-28: query.term + countTotal + filter.overallStatus phân tách bằng dấu
-    phẩy đều trả HTTP 200).
-
-    LIÊM CHÍNH: không tra được (mất mạng/chế độ mock/HTTP lỗi) thì trả
-    checked=False kèm lý do — TUYỆT ĐỐI không im lặng coi như "không có ai làm",
-    vì im lặng ở đây đọc ra thành một khẳng định sai có hậu quả thật.
-    """
-    out: dict = {
-        "registry": "ClinicalTrials.gov",
-        "query": base_query,
-        "checked": False,
-        "n_trials": None,
-        "n_active": None,
-        "trials": [],
-        "error": None,
-        "checked_at": datetime.now().isoformat(timespec="seconds"),
-    }
-    if not (base_query or "").strip():
-        out["error"] = "truy vấn rỗng"
-        return out
-
-    try:
-        from app.config import settings
-        if getattr(settings, "use_mock_sources", False):
-            out["error"] = "USE_MOCK_SOURCES=true — bỏ qua tra đăng ký (không bịa dữ liệu)"
-            return out
-        from app.utils.http import HttpClient
-        http = HttpClient()
-
-        params = {
-            "query.term": base_query,
-            "pageSize": max_results,
-            "countTotal": "true",
-            "format": "json",
-        }
-        data = http.get_json(CTG_STUDIES_API, params=params)
-        out["n_trials"] = data.get("totalCount")
-
-        for st in (data.get("studies") or [])[:max_results]:
-            ps = st.get("protocolSection", {}) or {}
-            ident = ps.get("identificationModule", {}) or {}
-            status_mod = ps.get("statusModule", {}) or {}
-            design_mod = ps.get("designModule", {}) or {}
-            nct = ident.get("nctId")
-            out["trials"].append({
-                "nct_id": nct,
-                "title": (ident.get("briefTitle") or ident.get("officialTitle") or "")[:180],
-                "status": status_mod.get("overallStatus"),
-                "start_date": (status_mod.get("startDateStruct") or {}).get("date"),
-                "phases": design_mod.get("phases"),
-                "enrollment": (design_mod.get("enrollmentInfo") or {}).get("count"),
-                "url": f"https://clinicaltrials.gov/study/{nct}" if nct else None,
-            })
-
-        active = http.get_json(CTG_STUDIES_API, params={
-            "query.term": base_query,
-            "pageSize": 1,
-            "countTotal": "true",
-            "format": "json",
-            "filter.overallStatus": CTG_ACTIVE_STATUSES,
-        })
-        out["n_active"] = active.get("totalCount")
-        out["checked"] = isinstance(out["n_trials"], int)
-    except Exception as e:  # noqa: BLE001 — mọi lỗi đều phải thành "CHƯA TRA", không thành 0
-        out["error"] = f"{type(e).__name__}: {e}"
-    return out
-
-
-def _format_trial_list(trials: list, max_show: int = 5) -> str:
-    if not trials:
-        return "  → Không có hồ sơ đăng ký nào khớp truy vấn\n"
-    lines = []
-    for i, t in enumerate(trials[:max_show]):
-        phases = ", ".join(t.get("phases") or []) or "—"
-        lines.append(
-            f"  {i+1}. [{t.get('status') or '?'}] {t.get('title') or '(không tiêu đề)'}\n"
-            f"     {t.get('nct_id') or 'NCT: ?'} | Pha: {phases} | "
-            f"Cỡ mẫu dự kiến: {t.get('enrollment') if t.get('enrollment') is not None else '?'} | "
-            f"Bắt đầu: {t.get('start_date') or '?'}\n"
-            f"     URL: {t.get('url') or 'N/A'}"
-        )
-    return "\n".join(lines) + "\n"
+# ★ GỘP 2026-07-28: thân hàm tra đăng ký đã chuyển sang `tools/trial_registry.py`
+# để G0 và G2 dùng CHUNG một đường code. Trước đó G2 có bản `urllib` tự viết riêng,
+# gửi lên truy vấn tiếng Việt bỏ dấu (gần như luôn 0 kết quả) và không phân biệt
+# "đã tra, không có" với "không tra được" — xem docstring của module đó.
+# Giữ lại các tên dưới đây làm BÍ DANH: chúng là API công khai của module này
+# (test hồi quy và mọi nơi gọi `G0.check_trial_registry` vẫn chạy nguyên như cũ).
+CTG_STUDIES_API = TR.CTG_STUDIES_API
+CTG_ACTIVE_STATUSES = TR.CTG_ACTIVE_STATUSES
+check_trial_registry = TR.check_trial_registry
+_format_trial_list = TR.format_trial_list
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -1375,9 +1291,8 @@ def main():
     # 2b. Tra đăng ký nghiên cứu — "đã có ai ĐANG LÀM chưa"
     print("\n🧾 Bước 3/8: Tra đăng ký nghiên cứu đang tiến hành (ClinicalTrials.gov)...")
     if args.skip_registry:
-        registry = {"registry": "ClinicalTrials.gov", "checked": False,
-                    "error": "bị bỏ qua bằng --skip-registry", "trials": [],
-                    "n_trials": None, "n_active": None, "query": queries.get("base", "")}
+        registry = TR.empty_registry(queries.get("base", ""),
+                                     "bị bỏ qua bằng --skip-registry")
         print("  ⏭  Bỏ qua theo yêu cầu (--skip-registry)")
     else:
         registry = check_trial_registry(queries.get("base", args.topic))

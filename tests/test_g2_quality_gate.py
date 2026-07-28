@@ -405,9 +405,11 @@ def test_run_g2_main_writes_quality_contract_and_never_false_pass(
             "--study", study,
             "--topic", "Can thiệp X ở người trưởng thành",
             "--design", "rct",
+            # 2026-07-28: thay cho monkeypatch `search_clinicaltrials` (hàm đã bị
+            # gỡ) — cờ CLI thật, giữ test offline mà không cần biết nội bộ hàm tra.
+            "--skip-registry",
         ],
     )
-    monkeypatch.setattr(G2, "search_clinicaltrials", lambda *_args: [])
     monkeypatch.setattr(G2, "export_docx_g2", lambda *_args: None)
 
     G2.main()

@@ -28,7 +28,7 @@ def _gen(design_code, design_primary="Thiết kế test"):
     return generate_g2_full_package(
         topic="Đề tài test", study_name="TEST-STUDY", design_code=design_code,
         design_primary=design_primary, reporting_std="STROBE", n_sr=5, n_rct=0,
-        evidence_level="TRUNG BÌNH", ct_trials=[], risk=risk,
+        evidence_level="TRUNG BÌNH", registry=None, risk=risk,
         run_date="2026-07-21", n_adjusted=1000,
     )
 

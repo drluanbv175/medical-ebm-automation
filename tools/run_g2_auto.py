@@ -11,7 +11,8 @@ run_g2_auto.py — TỰ ĐỘNG HÓA CỔNG G2: Đạo đức & Đăng ký nghi�
   7. Checklist nộp Hội đồng Đạo đức (TT43/2024/TT-BYT)
   8. Khai báo COI + Tài trợ + AI (ICMJE form rút gọn)
   + Bản nháp 24 mục WHO Trial Registration Data Set 1.3.1
-  + Tìm kiếm thật ClinicalTrials.gov API v2 (prior art + tham khảo NCT)
+  + Tra thật ClinicalTrials.gov API v2 (prior art + tham khảo NCT) bằng truy vấn
+    TIẾNG ANH `base_query` do G0 tính — xem mục 2 để biết vì sao điều đó quan trọng
 
 Bác sĩ chỉ cần: in/ký và nộp Hội đồng → nhận số IRB → cung cấp để mở G2.
 
@@ -24,9 +25,6 @@ import argparse
 import json
 import re
 import sys
-import time
-import urllib.parse
-import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -37,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G0)
 
 _TODAY = datetime.now().strftime("%d/%m/%Y")
 _YEAR  = datetime.now().strftime("%Y")
@@ -313,79 +312,43 @@ def get_risk_profile(internal_code: str, design_primary: str = "") -> dict:
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 2. TÌM KIẾM CLINICALTRIALS.GOV (API v2 — miễn phí, không cần key)
+# 2. TRA CLINICALTRIALS.GOV — PRIOR ART CHO HỒ SƠ ĐẠO ĐỨC
 # ════════════════════════════════════════════════════════════════════════════
-
-_CT_BASE = "https://clinicaltrials.gov/api/v2/studies"
-
-def search_clinicaltrials(topic: str, design_code: str, max_results: int = 8) -> list[dict]:
-    """Tìm kiếm ClinicalTrials.gov để tham chiếu prior art."""
-    # Tách từ khóa
-    words = [w for w in topic.split() if len(w) > 3 and w.lower()
-             not in {"effect", "with", "from", "among", "patients", "using",
-                     "therapy", "treatment", "nghiên", "hiệu", "quả", "trong", "của"}]
-    kw = " ".join(words[:4])  # max 4 từ khóa
-    kw_en = re.sub(r'[àáảãạăắằẳẵặâấầẩẫậ]', 'a',
-             re.sub(r'[èéẻẽẹêếềểễệ]', 'e',
-             re.sub(r'[ìíỉĩị]', 'i',
-             re.sub(r'[òóỏõọôốồổỗộơớờởỡợ]', 'o',
-             re.sub(r'[ùúủũụưứừửữự]', 'u',
-             re.sub(r'[đ]', 'd',
-             re.sub(r'[ýỳỷỹỵ]', 'y', kw.lower())))))))
-
-    # Trạng thái tìm phù hợp với thiết kế
-    status_filter = ""
-    if design_code in ("rct", "cohort"):
-        status_filter = "&filter.overallStatus=RECRUITING,ACTIVE_NOT_RECRUITING,COMPLETED,NOT_YET_RECRUITING"
-
-    params = urllib.parse.urlencode({
-        "query.term": kw_en,
-        "pageSize": max_results,
-        "fields": "NCTId,BriefTitle,StudyType,OverallStatus,EnrollmentCount,StartDate,Condition,Intervention,Phase",
-    })
-    url = f"{_CT_BASE}?{params}{status_filter}"
-
-    try:
-        req = urllib.request.Request(url, headers={"Accept": "application/json",
-                                                    "User-Agent": "EBM-Copilot/1.0 (bsluanbv175@gmail.com)"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read())
-        studies = data.get("studies", [])
-        results = []
-        for s in studies:
-            ps = s.get("protocolSection", {})
-            id_mod   = ps.get("identificationModule", {})
-            stat_mod = ps.get("statusModule", {})
-            design_mod = ps.get("designModule", {})
-            cond_mod = ps.get("conditionsModule", {})
-            enroll_m = design_mod.get("enrollmentInfo", {})
-            results.append({
-                "nct_id":    id_mod.get("nctId", ""),
-                "title":     id_mod.get("briefTitle", "")[:100],
-                "status":    stat_mod.get("overallStatus", ""),
-                "study_type": design_mod.get("studyType", ""),
-                "phase":     ", ".join(design_mod.get("phases", [])),
-                "enrollment": enroll_m.get("count", "?"),
-                "start_date": stat_mod.get("startDateStruct", {}).get("date", "?"),
-                "conditions": ", ".join(cond_mod.get("conditions", [])[:3]),
-                "url": f"https://clinicaltrials.gov/study/{id_mod.get('nctId', '')}",
-            })
-        time.sleep(0.5)
-        return results
-    except Exception as e:
-        print(f"  ⚠ ClinicalTrials.gov không truy cập được: {e}")
-        return []
+#
+# ★ VÁ 2026-07-28 (hai lỗi cùng chỗ, đều đo được thật):
+#
+#   (1) TRUY VẤN SAI NGÔN NGỮ. Hàm cũ `search_clinicaltrials(topic, design_code)`
+#       nhận `topic` TIẾNG VIỆT thô, cắt 4 từ dài rồi BÓC DẤU bằng regex (không
+#       dịch) và gửi thẳng chuỗi đó lên `query.term`. Đề tài "Sự hài lòng của người
+#       bệnh ngoại trú tại Khoa Khám bệnh" biến thành `"long nguoi benh ngoai"`
+#       → totalCount = 0. Trong khi đó G0 ĐÃ tính truy vấn TIẾNG ANH và ĐÃ ghi sẵn
+#       vào `G0_checkpoint.json → base_query`: `"outpatient patient satisfaction
+#       hospital"` → totalCount = 1422, trong đó 241 hồ sơ đang tuyển (đo ngày
+#       2026-07-28, API v2). G2 chỉ việc ĐỌC khóa đó thay vì tự bịa lại truy vấn.
+#
+#   (2) TRA THẤT BẠI = "KHÔNG CÓ NGHIÊN CỨU TRÙNG". Hàm cũ nuốt mọi lỗi
+#       (timeout 10s/mất mạng/SSL) rồi `return []`, và `_ct_table([])` in đúng một
+#       câu cho CẢ HAI trường hợp: "Không tìm thấy thử nghiệm tương tự /
+#       ClinicalTrials.gov không truy cập được." Checkpoint thì ghi
+#       `clinicaltrials_found: 0`. Hội đồng Đạo đức đọc thành "chưa ai làm" — một
+#       khẳng định về prior art mà hệ thống KHÔNG có bằng chứng để đưa ra.
+#
+# Cả hai nay do `tools/trial_registry.py` xử lý (dùng chung với G0), theo hợp đồng
+# 3 trạng thái: CHƯA TRA ĐƯỢC ≠ đã tra & 0 hồ sơ ≠ đã tra & có prior art.
 
 
-def _ct_table(trials: list) -> str:
-    if not trials:
-        return "  → Không tìm thấy thử nghiệm tương tự / ClinicalTrials.gov không truy cập được.\n"
-    rows = []
-    for t in trials:
-        rows.append(f"| {t['nct_id']} | {t['title'][:70]} | {t['status']} | {t['enrollment']} | {t['start_date'][:4] if t['start_date'] != '?' else '?'} | {t['phase']} |")
-    header  = "| NCT ID | Tên nghiên cứu | Trạng thái | Cỡ mẫu | Năm | Phase |\n"
-    divider = "|--------|---------------|-----------|--------|-----|-------|\n"
-    return header + divider + "\n".join(rows)
+def lookup_prior_art(base_query: str, max_results: int = 8) -> dict:
+    """Tra prior art trên ClinicalTrials.gov bằng truy vấn TIẾNG ANH của G0.
+
+    Trả về dict registry theo hợp đồng `trial_registry` (KHÔNG phải list) — nơi gọi
+    bắt buộc phải phân biệt `checked=False` với `n_trials == 0`.
+    """
+    return TR.check_trial_registry(base_query, max_results=max_results)
+
+
+def _ct_table(registry: Optional[dict]) -> str:
+    """Khối prior art in vào hồ sơ G2 — phân biệt đủ 3 trạng thái."""
+    return TR.format_prior_art_table(registry)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -404,14 +367,19 @@ def _risk_table(risks: list) -> str:
 def generate_g2_full_package(
     topic: str, study_name: str, design_code: str, design_primary: str,
     reporting_std: str, n_sr: int, n_rct: int, evidence_level: str,
-    ct_trials: list, risk: dict, run_date: str, n_adjusted: int = 0,
+    registry: Optional[dict], risk: dict, run_date: str, n_adjusted: int = 0,
     specialist_modules: Optional[list] = None
 ) -> str:
-    """Sinh toàn bộ hồ sơ G2 — 8 tài liệu + 24 mục WHO TRDS 1.3.1."""
+    """Sinh toàn bộ hồ sơ G2 — 8 tài liệu + 24 mục WHO TRDS 1.3.1.
+
+    `registry` là kết quả `lookup_prior_art()` (dict theo hợp đồng
+    `trial_registry`), KHÔNG còn là list thử nghiệm như trước 2026-07-28: một list
+    rỗng không nói được hệ đã tra hay chưa tra được. `None` = chưa tra.
+    """
 
     specialist_modules = specialist_modules or []
     risk_table_str = _risk_table(risk["risks"])
-    ct_table_str   = _ct_table(ct_trials)
+    ct_table_str   = _ct_table(registry)
 
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện MEDIUM):
     # thêm dòng rủi ro/đồng thuận riêng khi đề tài có cấu phần economic/
@@ -647,7 +615,9 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
         "prediction": "Prognosis", "qualitative": "Health Services Research",
     }
 
-    ncts_for_ref = " · ".join([f"[{t['nct_id']}]({t['url']})" for t in ct_trials[:3]]) if ct_trials else "[Không tìm được thử nghiệm tương tự]"
+    # VÁ 2026-07-28: chuỗi cũ "[Không tìm được thử nghiệm tương tự]" in ra Y HỆT
+    # nhau cho "đã tra, 0 hồ sơ" và "không tra được" — nay tách hẳn 2 câu.
+    ncts_for_ref = TR.format_prior_art_refs(registry)
 
     # PROSPERO template (chỉ SR/MA)
     prospero_section = ""
@@ -1162,9 +1132,13 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/{_YEAR}
 **Nơi đăng ký đề nghị:** {risk["register_where"]}
 **Thời điểm:** {risk["registration"]}
 
-**Nghiên cứu tương tự đã đăng ký (từ ClinicalTrials.gov API):**
+**Nghiên cứu tương tự đã đăng ký (prior art — tra thật trên ClinicalTrials.gov API v2):**
 {ct_table_str}
 *(Tham chiếu NCT: {ncts_for_ref})*
+
+> ClinicalTrials.gov KHÔNG bao phủ mọi đăng ký. Dù mục trên có kết quả hay không,
+> WHO ICTRP, PROSPERO (nếu SR/MA) và đăng ký trong nước vẫn cần bác sĩ tự tra —
+> hệ thống không tra được hai nguồn đầu vì không có API mở. [CẦN BÁC SĨ TỰ TRA]
 
 ```
 WHO Trial Registration Data Set 1.3.1 — DRAFT Phiên bản 1.0
@@ -1470,7 +1444,7 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
 # ════════════════════════════════════════════════════════════════════════════
 
 def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
-                         risk: dict, ct_trials: list, guardrail: dict,
+                         risk: dict, registry: Optional[dict], guardrail: dict,
                          artifact_path: Path, docx_path: Optional[Path],
                          registration_path: Path,
                          design_ambiguous: bool = False) -> Path:
@@ -1494,9 +1468,18 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
         "registration_required": risk["registration"],
         "register_where": risk["register_where"],
         "icf_required": risk["icf_required"],
-        "clinicaltrials_found": len(ct_trials),
-        "clinicaltrials_samples": [{"nct_id": t["nct_id"], "title": t["title"][:80], "url": t["url"]}
-                                    for t in ct_trials[:5]],
+        # VÁ 2026-07-28: khối MÁY-ĐỌC-ĐƯỢC đầy đủ, giữ nguyên 3 trạng thái của hợp
+        # đồng `trial_registry` (CHƯA TRA ĐƯỢC ≠ đã tra & 0 hồ sơ ≠ có prior art).
+        "clinicaltrials": TR.checkpoint_block(registry),
+        # Hai khóa cũ giữ lại cho tương thích ngược, nhưng KHÔNG còn nói dối:
+        # `clinicaltrials_found` trước đây là `len(ct_trials)` nên tra thất bại ghi
+        # thành 0 — không phân biệt được với "đã tra, không có". Nay None = CHƯA TRA.
+        "clinicaltrials_found": (registry or {}).get("n_trials") if (registry or {}).get("checked") else None,
+        "clinicaltrials_checked": bool((registry or {}).get("checked")),
+        "clinicaltrials_samples": [
+            {"nct_id": t.get("nct_id"), "title": (t.get("title") or "")[:80], "url": t.get("url")}
+            for t in ((registry or {}).get("trials") or [])[:5]
+        ],
         "guardrail": {"passed": guardrail["passed"], "errors": guardrail["errors"]},
         "artifacts": {
             "A3_markdown": str(artifact_path),
@@ -1550,6 +1533,11 @@ def main():
     parser.add_argument("--design", default=None,
                         choices=list(RISK_PROFILES.keys()),
                         help="Loại thiết kế (mặc định: đọc từ G1 checkpoint)")
+    # Đối xứng với run_g0_auto.py: cho phép chạy hoàn toàn offline. Hồ sơ vẫn sinh
+    # ra, nhưng mục prior art được dán nhãn CHƯA TRA ĐƯỢC (không giả vờ đã tra).
+    parser.add_argument("--skip-registry", action="store_true",
+                        help="Bỏ qua tra ClinicalTrials.gov (offline). Hồ sơ sẽ ghi rõ "
+                             "CHƯA TRA ĐƯỢC, không được đọc thành 'chưa ai làm'.")
     args = parser.parse_args()
 
     run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -1565,6 +1553,7 @@ def main():
 
     # ── Bước 1: Đọc G0 + G1 checkpoint ──
     topic = args.topic or study
+    base_query = ""  # truy vấn TIẾNG ANH do G0 tính — dùng để tra đăng ký
     design_code = args.design or "cohort"
     design_primary, reporting_std = DESIGN_DEFAULTS[design_code]
     n_sr, n_rct = 0, 0
@@ -1582,7 +1571,20 @@ def main():
         n_sr  = pub_results.get("n_sr", 0)
         n_rct = pub_results.get("n_rct", 0)
         evidence_level = g0.get("evidence_level", "")
+        # ★ VÁ 2026-07-28: đọc `base_query` — truy vấn TIẾNG ANH mà G0 ĐÃ tính và ĐÃ
+        # ghi sẵn vào checkpoint này. Trước đây G2 bỏ qua khóa đó và tự bóc dấu
+        # `topic` tiếng Việt để tra ClinicalTrials.gov, nên gần như luôn trả 0 hồ sơ
+        # (đo thật: "long nguoi benh ngoai" → 0 vs "outpatient patient satisfaction
+        # hospital" → 1422). Hồ sơ đạo đức vì thế khẳng định sai là "chưa ai làm".
+        base_query = (g0.get("base_query") or "").strip()
         print(f"  → G0: topic='{topic[:50]}', {n_sr} SR, {n_rct} RCT")
+        if base_query:
+            print(f"  → G0 base_query (EN, dùng để tra đăng ký): '{base_query[:70]}'")
+        else:
+            print("  ⚠ G0 checkpoint KHÔNG có `base_query` (checkpoint cũ hoặc G0 dừng "
+                  "sớm) — lùi về dùng topic để tra đăng ký. Nếu topic là tiếng Việt, "
+                  "kết quả gần như chắc chắn là 0: chạy lại G0 (có --query-en) để có "
+                  "truy vấn tiếng Anh thật.")
 
     g1_cp_path = out_dir / "G1_checkpoint.json"
     design_ambiguous = False
@@ -1658,15 +1660,17 @@ def main():
               "— xem G1 A2 §khoảng trống). Mức nguy cơ/lộ trình IRB/loại đăng ký ở trên có "
               "thể phải tính LẠI nếu bác sĩ chọn thiết kế khác.")
 
-    # ── Bước 3: Tìm ClinicalTrials.gov ──
-    print("\n🔍 Bước 3/7: Tìm kiếm ClinicalTrials.gov (prior art)...")
-    ct_trials = search_clinicaltrials(topic, design_code)
-    if ct_trials:
-        print(f"  → Tìm được {len(ct_trials)} thử nghiệm tương tự:")
-        for t in ct_trials[:3]:
-            print(f"     • {t['nct_id']} | {t['title'][:60]} | {t['status']}")
+    # ── Bước 3: Tra ClinicalTrials.gov (prior art) ──
+    print("\n🔍 Bước 3/7: Tra ClinicalTrials.gov (prior art)...")
+    registry_query = base_query or topic
+    if args.skip_registry:
+        registry = TR.empty_registry(registry_query, "bị bỏ qua bằng --skip-registry")
+        print("  ⏭  Bỏ qua theo yêu cầu (--skip-registry)")
     else:
-        print("  → Không tìm được thử nghiệm tương tự")
+        print(f"  → Truy vấn: '{registry_query[:70]}'")
+        registry = lookup_prior_art(registry_query)
+    for line in TR.console_summary(registry):
+        print(line)
 
     # ── Bước 4: Sinh hồ sơ G2 ──
     print("\n✍️  Bước 4/7: Sinh trọn bộ hồ sơ G2 (8 tài liệu)...")
@@ -1674,7 +1678,7 @@ def main():
         topic=topic, study_name=study, design_code=design_code,
         design_primary=design_primary, reporting_std=reporting_std,
         n_sr=n_sr, n_rct=n_rct, evidence_level=evidence_level,
-        ct_trials=ct_trials, risk=risk, run_date=run_date,
+        registry=registry, risk=risk, run_date=run_date,
         n_adjusted=n_adjusted, specialist_modules=specialist_modules
     )
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
@@ -1711,7 +1715,7 @@ def main():
     # ── Bước 7: Checkpoint ──
     print("\n💾 Bước 7/7: Ghi checkpoint G2...")
     cp_path = write_g2_checkpoint(
-        study, out_dir, design_code, risk, ct_trials, guardrail, md_path, docx_path,
+        study, out_dir, design_code, risk, registry, guardrail, md_path, docx_path,
         registration_path,
         design_ambiguous=design_ambiguous,
     )
@@ -1752,7 +1756,13 @@ def main():
     print("  + WHO TRDS 1.3.1 đủ 24 mục (JSON + bản đọc trong A3)")
     if design_code == "sr_ma":
         print("  + PROSPERO registration draft")
-    print(f"  🔍 ClinicalTrials.gov: {len(ct_trials)} thử nghiệm tương tự")
+    if registry.get("checked"):
+        print(f"  🔍 ClinicalTrials.gov: đã tra thật — {registry.get('n_trials')} hồ sơ khớp, "
+              f"{registry.get('n_active')} đang/sắp tuyển")
+    else:
+        print(f"  🔍 ClinicalTrials.gov: {TR.NOT_CHECKED_LABEL} "
+              f"({registry.get('error') or 'không rõ lý do'}) — hồ sơ CHƯA có bằng chứng "
+              "prior art, KHÔNG được đọc thành 'chưa ai làm'")
     print(f"  🔴 Guardrail: {status}")
     print(f"  🧭 G2 quality: {quality_gate['status']}")
     print("\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
