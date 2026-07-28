@@ -708,6 +708,36 @@ def _format_article_list(articles: list, max_show: int = 5) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _in_mock_mode() -> bool:
+    """Đang chạy với nguồn GIẢ LẬP (fixture) thay vì PubMed thật?"""
+    try:
+        from app.config import settings
+        return bool(getattr(settings, "use_mock_sources", False))
+    except Exception:  # noqa: BLE001 — không xác định được thì coi như thật, và
+        return False   # các cờ counts_are_real/query_errors vẫn cảnh báo riêng
+
+
+def _evidence_source_label() -> str:
+    """Nhãn tiêu đề §3 — KHÔNG được viết "THẬT" khi dữ liệu là fixture.
+
+    ★ VÁ 2026-07-28: ở chế độ USE_MOCK_SOURCES=true, PubMedClient trả bản ghi
+    FIXTURE (thường lạc đề), nhưng artifact vẫn in nguyên "BẰNG CHỨNG HIỆN CÓ
+    (THẬT — từ PubMed)" và "PMIDs đã được xác minh". Một file A1 sinh trong lúc
+    thử nghiệm mà lọt vào hồ sơ đề tài sẽ đọc y hệt một file thật.
+    """
+    return "⚠ DỮ LIỆU GIẢ LẬP — KHÔNG DÙNG" if _in_mock_mode() else "THẬT — từ PubMed"
+
+
+def _evidence_source_warning() -> str:
+    if _in_mock_mode():
+        return ("⚠️ **CẢNH BÁO: đang chạy chế độ USE_MOCK_SOURCES=true.** Danh sách dưới "
+                "đây là dữ liệu GIẢ LẬP dùng để thử phần mềm, KHÔNG phải kết quả PubMed và "
+                "KHÔNG được dùng cho bất kỳ quyết định nghiên cứu nào. Chạy lại với "
+                "USE_MOCK_SOURCES=false để có bằng chứng thật.")
+    return ("Danh sách dưới đây là kết quả THẬT từ PubMed E-utilities. "
+            "PMIDs đã được xác minh.")
+
+
 def _section_heading(label: str, n_hits: int, articles: list,
                      counts_are_real: bool) -> str:
     """Tiêu đề mục §3.x nói rõ SỐ HIT vs SỐ BÀI ĐANG HIỂN THỊ.
@@ -858,10 +888,10 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 
 ---
 
-## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ (THẬT — từ PubMed {run_date[:10]})
+## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ ({_evidence_source_label()} — {run_date[:10]})
 
-> **Lưu ý:** Danh sách dưới đây là kết quả THẬT từ PubMed E-utilities.
-> PMIDs đã được xác minh. Bác sĩ cần đọc toàn văn để kiểm chứng nội dung.
+> **Lưu ý:** {_evidence_source_warning()}
+> Bác sĩ cần đọc toàn văn để kiểm chứng nội dung.
 > Mỗi tiêu đề mục ghi RỜI hai con số: ~số hit (toàn kho PubMed) và số bài hệ đã tải
 > về (bị chặn bởi `--max-results`) — trước 2026-07-28 hai số này bị trộn làm một.
 
