@@ -49,6 +49,7 @@ BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import g7_quality_gate as G7Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G7)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -830,13 +831,42 @@ def guardrail_g7(artifact: str) -> tuple[list[str], list[str]]:
     else:
         warnings.append("R5 ✅ Không có kết quả thống kê hardcoded")
 
-    # R6 — Đủ số ô [CẦN...]
+    # R6 — Ô [CẦN...] phải PHỦ ĐÚNG những phần chưa có dữ liệu
+    #
+    # ★ VÁ 2026-07-28 — QUY TẮC CŨ CÓ LOGIC NGƯỢC. Bản trước: "can_total >= 15 →
+    # PASS, ngược lại → LỖI ĐỎ". Nghĩa là bản thảo càng NHIỀU chỗ trống càng dễ
+    # qua, còn bản thảo ĐÃ HOÀN THIỆN (bác sĩ điền hết, sẵn sàng nộp) sẽ bị chính
+    # guardrail CHẶN vì "chỉ 3 trường [CẦN...]". Một quy tắc liêm chính không được
+    # phạt việc hoàn thành công việc.
+    #
+    # Điều R6 thật sự cần bảo vệ: mục KẾT QUẢ không được có nội dung khi chưa có
+    # dữ liệu thật. Nay kiểm đúng điều đó, và ĐẾM (không phán) tổng số ô trống —
+    # việc phán "còn trống bao nhiêu thì chưa được nộp" thuộc về g7_quality_gate.py,
+    # nơi đọc bản thảo TỪ ĐĨA (kể cả phần bác sĩ viết tay).
     can_total   = len(re.findall(r'\[CẦN', artifact))
     can_results = len(re.findall(r'\[CẦN KẾT QUẢ THẬT', artifact))
-    if can_total >= 15:
-        warnings.append(f"R6 ✅ {can_total} trường [CẦN...] ({can_results} là [CẦN KẾT QUẢ THẬT])")
+    _results_sec = ""
+    _i = artifact.find("## III. KẾT QUẢ")
+    if _i >= 0:
+        _j = artifact.find("## IV.", _i)
+        _results_sec = artifact[_i:_j] if _j > _i else artifact[_i:]
+    # Mục Kết quả có số liệu (dạng "n = 123", "45,6%", "p = 0,03") mà KHÔNG có ô
+    # [CẦN KẾT QUẢ THẬT] nào → hoặc đã có kết quả thật (hợp lệ), hoặc ai đó điền số
+    # vào skeleton mà không qua G6. Guardrail không phân biệt được → cảnh báo, và
+    # g7_quality_gate đối chiếu với G6/results_final để kết luận.
+    _has_numbers = bool(re.search(r'\b\d+[.,]\d+\s*%|\bn\s*=\s*\d+|\bp\s*[=<]\s*0[.,]\d+',
+                                  _results_sec))
+    if _results_sec and _has_numbers and "[CẦN KẾT QUẢ THẬT" not in _results_sec:
+        warnings.append(
+            "R6 ⚠ Mục KẾT QUẢ có số liệu và không còn ô [CẦN KẾT QUẢ THẬT] — "
+            "g7_quality_gate.py sẽ đối chiếu với G6/results_final xem số này có "
+            "thật không"
+        )
     else:
-        errors.append(f"R6 🔴 Chỉ {can_total} trường [CẦN...] — cần ≥15 cho manuscript đầy đủ")
+        warnings.append(
+            f"R6 ✅ {can_total} ô [CẦN...] ({can_results} là [CẦN KẾT QUẢ THẬT]) — "
+            "đếm để theo dõi tiến độ, KHÔNG dùng làm điều kiện đạt/không đạt"
+        )
 
     # R7 — Disclaimer
     if "cần bác sĩ kiểm chứng" in artifact.lower():
@@ -1190,9 +1220,20 @@ def generate_manuscript(
         "*Định nghĩa biến cố:* [CẦN — ICD-10 hoặc tiêu chí lâm sàng cụ thể cho từng biến cố trên]  ",
         "",
         "**§5 Cỡ mẫu:**  ",
-        f"Cỡ mẫu được tính theo {formula_used or 'phương pháp thống kê phù hợp'}, "
-        f"{sample_size_detail}, {effect_text}. "
-        f"Cần {n_adjusted} người tham gia (chi tiết xem Bảng S1 — G3 checkpoint).  ",
+        # ★ VÁ 2026-07-28 — KHẲNG ĐỊNH TRẦN VỀ VIỆC CHƯA LÀM.
+        # Câu cũ luôn mở đầu bằng "Cỡ mẫu được tính theo <công thức>" và kết bằng
+        # "Cần {n_adjusted} người tham gia" — cả hai ở thể ĐÃ HOÀN THÀNH. Chạy thử
+        # thật (đề tài chỉ có G0, không có G3): bản thảo in "Cỡ mẫu được tính theo
+        # phương pháp thống kê phù hợp … Cần 0 người tham gia" — vừa khẳng định một
+        # việc chưa làm, vừa in ra con số 0 như thể đó là kết quả tính toán.
+        (
+            f"Cỡ mẫu được tính theo {formula_used}, {sample_size_detail}, {effect_text}. "
+            f"Cần {n_adjusted} người tham gia (chi tiết xem Bảng S1 — G3 checkpoint).  "
+            if (formula_used and n_adjusted)
+            else "[CẦN CỠ MẪU TỪ G3 — chưa có kết quả tính cỡ mẫu cho đề tài này. "
+                 "KHÔNG viết 'cỡ mẫu được tính theo…' khi G3 chưa chạy; chạy "
+                 "`python tools/run_g3_auto.py --study <mã>` rồi sinh lại bản thảo.]  "
+        ),
         "",
         "**§6 Phân tích thống kê:**  ",
         f"Phân tích theo {sap_lock_text}. "
@@ -1207,11 +1248,30 @@ def generate_manuscript(
         build_bias_control_block(bias_controls or []),
         "",
         "**§7 Đạo đức và đăng ký:**  ",
-        f"Nghiên cứu được Hội đồng Đạo đức phê duyệt (số: {irb_number}; "
-        f"ICF phiên bản: {icf_version}). "
-        f"Đăng ký nghiên cứu: {registration}. "
-        "Mọi người tham gia ký Phiếu đồng thuận tự nguyện trước khi tham gia. "
-        "Thực hiện theo Tuyên ngôn Helsinki 2013 và TT43/2024/TT-BYT.  ",
+        # ★ VÁ 2026-07-28 — ĐÂY LÀ ĐOẠN NGUY HIỂM NHẤT CỦA BẢN THẢO.
+        # Câu cũ khẳng định TRẦN ba việc: "Nghiên cứu ĐƯỢC Hội đồng Đạo đức phê
+        # duyệt", "Mọi người tham gia KÝ Phiếu đồng thuận", "THỰC HIỆN theo Tuyên
+        # ngôn Helsinki". Chỉ SỐ IRB là [CẦN]; ba khẳng định kia đứng trần. Chạy thử
+        # thật trên đề tài chưa từng nộp Hội đồng Đạo đức (không có G2 checkpoint):
+        # bản thảo vẫn in nguyên ba câu đó. Nếu bác sĩ về sau chỉ điền số IRB vào ô
+        # [CẦN] mà không đọc lại cả đoạn, bản thảo gửi tạp chí sẽ khẳng định đã làm
+        # những việc chưa hề làm — đúng loại sai phạm liêm chính bị rút bài.
+        # Nay: có bằng chứng G2 thật thì viết thể khẳng định; không có thì nói thẳng
+        # là CHƯA, và không mượn danh Helsinki.
+        (
+            f"Nghiên cứu được Hội đồng Đạo đức phê duyệt (số: {irb_number}; "
+            f"ICF phiên bản: {icf_version}). "
+            f"Đăng ký nghiên cứu: {registration}. "
+            "Mọi người tham gia ký Phiếu đồng thuận tự nguyện trước khi tham gia. "
+            "Thực hiện theo Tuyên ngôn Helsinki 2013 và TT43/2024/TT-BYT.  "
+            if not str(irb_number).startswith("[CẦN")
+            else "[CẦN — CHƯA CÓ PHÊ DUYỆT ĐẠO ĐỨC THẬT. Đề tài này chưa có "
+                 "G2_checkpoint.json với số IRB. KHÔNG được viết 'nghiên cứu được Hội "
+                 "đồng Đạo đức phê duyệt', 'mọi người tham gia đã ký ICF' hay 'thực hiện "
+                 "theo Helsinki' trước khi việc đó xảy ra thật. Sau khi có quyết định "
+                 "phê duyệt: điền số IRB, phiên bản ICF đã duyệt, số đăng ký nghiên cứu, "
+                 "rồi sinh lại bản thảo.]  "
+        ),
         "",
         "---",
         "",
@@ -1953,6 +2013,24 @@ def main() -> None:
     # ── Bước 6: Lưu Markdown ──
     print("\n💾 Bước 5/8: Lưu A8 Markdown...")
     md_path = out_dir / f"G7_A8_MANUSCRIPT_{study}.md"
+    # ★ VÁ 2026-07-28 — MẤT CÔNG VIẾT TAY. Chạy lại G7 GHI ĐÈ thẳng bản thảo. Ở G0
+    # điều đó chỉ mất một khung PICO; ở đây nó xoá TOÀN BỘ phần bác sĩ đã viết —
+    # Results, Discussion, Kết luận — tức nhiều ngày công. Và người ta có lý do
+    # chính đáng để chạy lại (thêm --target-journal, sau khi G3/G5 có dữ liệu mới).
+    # Nay luôn giữ một bản sao trước khi đè, và NÓI RÕ trên màn hình.
+    if md_path.exists():
+        try:
+            _old = md_path.read_text(encoding="utf-8")
+            _bak = out_dir / (f"G7_A8_MANUSCRIPT_{study}"
+                              f".bak-{datetime.now():%Y%m%d-%H%M%S}.md")
+            _bak.write_text(_old, encoding="utf-8")
+            _n_written = len(re.findall(r"\[CẦN", _old))
+            print(f"  ↩ Đã sao lưu bản thảo cũ: {_bak.name} "
+                  f"(bản cũ còn {_n_written} ô [CẦN…])")
+            print("     Nếu bạn ĐÃ VIẾT TAY vào bản cũ, phần đó nằm trong file .bak — "
+                  "bản mới là KHUNG sinh lại, không chứa nội dung bạn viết.")
+        except OSError as _e:
+            print(f"  ⚠ Không sao lưu được bản thảo cũ ({_e}) — vẫn tiếp tục ghi đè")
     md_path.write_text(artifact, encoding="utf-8")
     print(f"  → {md_path} ({len(artifact)//1000}KB, ~{len(artifact.split())} từ)")
 
@@ -1996,13 +2074,49 @@ def main() -> None:
     )
     print(f"  → {cp_path}")
 
+    # ── HỢP ĐỒNG CHẤT LƯỢNG G7 (mới 2026-07-28) ──────────────────────────────
+    # Trước bản này G7 in "✅ G7 HOÀN THÀNH" + thoát mã 0 vô điều kiện. Chạy thử
+    # thật trên đề tài chỉ có G0 (và G0 còn BLOCKED, thoát mã 2), không hề có
+    # G1–G6: G7 vẫn sinh trọn bản thảo 3.547 từ, guardrail "✅ PASS", thoát 0.
+    # Tức tuyên bố hoàn thành một BẢN THẢO GỬI TẠP CHÍ cho đề tài chưa có câu hỏi,
+    # chưa có thiết kế, chưa qua Hội đồng Đạo đức, chưa có dữ liệu.
+    # g7_quality_gate đọc bản thảo TỪ ĐĨA nên cũng phản ánh phần bác sĩ viết tay.
+    quality = G7Q.evaluate_study(study, out_dir)
+    G7Q.write_quality_report(study, out_dir, quality)
+    try:
+        _cp = json.loads(cp_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        _cp = {}
+    _cp["quality_gate"] = {
+        "status": quality["status"],
+        "contract_version": quality.get("contract_version"),
+        "automated_checks_passed": quality.get("automated_checks_passed"),
+        "human_confirmation_complete": quality.get("human_confirmation_complete"),
+        "placeholder_counts": quality.get("placeholder_counts", {}),
+        "unsupported_claims": quality.get("unsupported_claims", []),
+        "pending_actions": quality.get("pending_actions", []),
+    }
+    # gate_status nói THẬT thay vì hằng số cứng "DRAFT — CHỜ KẾT QUẢ THẬT".
+    _cp["gate_status"] = {
+        G7Q.STATUS_CONFIRMED: "PASS — bản thảo đã được tác giả chốt, sẵn sàng G8",
+        G7Q.STATUS_BLOCKED: "BLOCKED — thiếu tiền đề hoặc còn lỗi liêm chính",
+    }.get(quality["status"], "DRAFT — CHỜ KẾT QUẢ THẬT + tác giả chốt (gate_params.G7)")
+    if quality.get("needs_input"):
+        _cp["needs_input"] = quality["needs_input"]
+    cp_path.write_text(json.dumps(_cp, ensure_ascii=False, indent=2), encoding="utf-8")
+
     # ── Tóm tắt ──
     n_can_total   = len(re.findall(r'\[CẦN', artifact))
     n_can_result  = len(re.findall(r'\[CẦN KẾT QUẢ THẬT', artifact))
     n_can_fill    = n_can_total - n_can_result
 
     print(f"\n{'='*68}")
-    print(f"  ✅ G7 HOÀN THÀNH — {study}")
+    if quality["status"] == G7Q.STATUS_CONFIRMED:
+        print(f"  ✅ G7 — BẢN THẢO ĐÃ ĐƯỢC TÁC GIẢ CHỐT — {study}")
+    elif quality["status"] == G7Q.STATUS_BLOCKED:
+        print(f"  🚧 G7 CHƯA ĐẠT KIỂM TỰ ĐỘNG — {study}")
+    else:
+        print(f"  🟡 G7 ĐÃ DỰNG KHUNG BẢN THẢO — CHƯA SẴN SÀNG NỘP — {study}")
     print(f"{'='*68}")
     print(f"\n  📁 Thư mục: {out_dir}/")
     print(f"  📝 A8 Markdown: {md_path.name}  (~{len(artifact.split())} từ)")
@@ -2015,28 +2129,37 @@ def main() -> None:
     print(f"  • Ô [CẦN KẾT QUẢ THẬT]:  {n_can_result}")
     print(f"  • Ô [CẦN] khác:       {n_can_fill}")
     print(f"  • Guardrail:          {guardrail_status}")
-    print("\n  VIỆC CÒN LẠI:")
-    print("  1. Mở A8 DOCX → điền Tiêu đề, Tác giả, Methods §2-4")
-    print("  2. Sau G5+G6: điền Section III (kết quả thật) + V Kết luận")
-    print(f"  3. Kiểm chứng toàn bộ {min(10,len(pmids))} PMID trước khi nộp")
-    print("  4. Chạy agent kiem-chung-trich-dan để xác minh TLTK — BẮT BUỘC (vá 2026-07-15):")
-    print(f"     agent phải ghi kết quả vào {out_dir.name}/A12_CITATION_VERIFICATION_{study}.md,")
-    print("     nếu không run_g10_assemble.py sẽ CHẶN (EXIT_BLOCKED) trước khi cho nộp.")
-    if args.target_journal:
-        print(f"  5. Định dạng theo Author Guidelines: {args.target_journal}")
+    print(f"  • G7 quality:         {quality['status']}")
+    if quality.get("unsupported_claims"):
+        print("\n  ⚠️  BẢN THẢO KHẲNG ĐỊNH VIỆC CHƯA CÓ BẰNG CHỨNG:")
+        for c in quality["unsupported_claims"]:
+            print(f"     • {c}")
+    if quality.get("pending_actions"):
+        print("\n  VIỆC CÒN LẠI TRƯỚC KHI BẢN THẢO SẴN SÀNG (G8):")
+        for i, action in enumerate(quality["pending_actions"], 1):
+            print(f"  {i}. {action}")
+        print("\n  Chấm lại bất cứ lúc nào (không sinh lại bản thảo, không đè bản đã sửa):")
+        print(f"     python tools/g7_quality_gate.py --study {study}")
     else:
-        print(f"  5. Chọn tạp chí mục tiêu → chạy lại: python tools/run_g7_auto.py "
+        print(f"\n  Bước kế: G8 — bình duyệt độc lập cho đề tài {study}.")
+    if not args.target_journal:
+        print(f"\n  Chọn tạp chí mục tiêu → chạy lại: python tools/run_g7_auto.py "
               f"--study {study} --target-journal \"Tên tạp chí\"")
     print("\n  ⚠️  KHÔNG nộp tạp chí khi còn ô [CẦN KẾT QUẢ THẬT].")
     print("  Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp.")
     print(f"\n{'='*68}\n")
 
-    # Vá 2026-07-11 (vòng 9): trước đây banner "HOÀN THÀNH" in vô điều kiện + exit code
-    # luôn 0 dù guardrail có lỗi thật — checkpoint ĐÃ ghi đúng, nhưng process exit code
-    # không phản ánh, nên chạy trực tiếp (không qua run_pipeline.py) sẽ tưởng nhầm là
-    # xong. Đối xứng cách G3/G4/G9 đã làm.
-    if g7_errors:
+    # Mã thoát rời nghĩa theo gate_contract:
+    #   3 = guardrail liêm chính lỗi, HOẶC kiểm tự động của G7 chưa sạch (thiếu
+    #       thiết kế G1, artifact khuyết, hoặc bản thảo khẳng định việc chưa làm)
+    #   2 = DỪNG chờ input đời thực (chưa có kết quả thật / tác giả chưa chốt)
+    #   0 = bản thảo đã được tác giả chốt
+    # ★ VÁ 2026-07-28: trước đây chỉ có nhánh mã 3 cho guardrail; mọi trường hợp
+    # còn lại đều thoát 0 kèm banner "HOÀN THÀNH", kể cả bản thảo rỗng ruột.
+    if g7_errors or quality["status"] == G7Q.STATUS_BLOCKED:
         raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
+    if quality["status"] != G7Q.STATUS_CONFIRMED:
+        raise SystemExit(GC.EXIT_BLOCKED)
 
 
 if __name__ == "__main__":

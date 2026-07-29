@@ -361,6 +361,25 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         "icf_waiver_requested": False,
         "safety_plan_required": None,
     },
+    # G7 — BẢN THẢO. Thêm 2026-07-28. G7 là cổng có đầu ra đi RA NGOÀI xa nhất
+    # (bản thảo gửi tạp chí), nhưng trước đây không có chỗ nào để tác giả chốt
+    # những thứ chỉ người thật quyết được: ai là tác giả, khai báo ICMJE, và
+    # quan trọng nhất — đã có người ĐỌC LẠI TOÀN VĂN chưa. Hệ KHÔNG tự bật cờ nào.
+    "G7": {
+        "title": None,
+        "authors": None,              # tên/đơn vị/ORCID — hệ không suy ra được
+        "target_journal": None,
+        # 5 khai báo bắt buộc theo ICMJE — thiếu là tạp chí trả lại.
+        "author_contributions": None,
+        "coi_declared": None,
+        "funding_declared": None,
+        "data_sharing_statement": None,
+        "ai_use_declared": None,
+        # Bản nháp do công cụ sinh KHÔNG được gửi đi khi chưa có người đọc lại.
+        "manuscript_reviewed_confirmed": False,
+        "reviewed_by_role": None,
+        "reviewed_at": None,
+    },
     # G3 — bác sĩ PIN effect size (kèm PMID nguồn) để tính cỡ mẫu; hệ KHÔNG bịa.
     "G3": {
         "effect_size": None,          # vd 0.75 (HR) — [CẦN BÁC SĨ CẤP + PMID/DOI nguồn]
