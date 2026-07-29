@@ -1209,7 +1209,26 @@ def main():
     # một kết quả sai-phương-pháp ở đây có nguy cơ bị dùng thẳng làm "kết cục
     # chính" trong bản thảo mà không ai được cảnh báo là sai phương pháp.
     g1_cp = _load_checkpoint(args.study, "G1")
-    design_code = g1_cp.get("design_code") or (g1_cp.get("design") or {}).get("internal_code")
+    # SỬA 2026-07-29 (soi cổng G6, phát hiện HIGH): trước đây chỗ này đọc THẲNG
+    # G1_checkpoint.json, KHÔNG qua bộ giải dùng chung gate_contract.resolve_design_code().
+    # Bộ giải đó ra đời đúng vì lỗi "`--design` bác sĩ truyền TƯỜNG MINH ở G2 bị nuốt"
+    # (vá 2026-07-27) — và đã được nối vào run_g3_auto.py, run_g4_auto.py,
+    # run_g6_auto.py, nhưng BỎ SÓT đúng file này. Đây là file nguy hiểm nhất để sót:
+    # 3 file kia chỉ SINH TEMPLATE, còn file này CHẠY THẬT trên dữ liệu đã khóa.
+    # Kịch bản hỏng: G0/G1 suy sai thành "cohort", bác sĩ sửa bằng `--design case_control`
+    # ở G2 → G3/G4/G6 đều tôn trọng case_control, riêng engine này vẫn chạy khuôn cohort
+    # trên dữ liệu thật, và cảnh báo _WRONG_PRIMARY_MEASURE_HINT cũng không bắn vì
+    # "cohort" không nằm trong đó. Kết quả sai phương pháp đi thẳng vào bản thảo.
+    design_code, _design_warn = GC.resolve_design_code(
+        Path("exports") / args.study,
+        default=(
+            g1_cp.get("design_code")
+            or (g1_cp.get("design") or {}).get("internal_code")
+            or "cohort"
+        ),
+    )
+    if _design_warn:
+        print(f"ℹ️  {_design_warn}")
     specialist_modules = g1_cp.get("specialist_modules") or []
     # "qualitative"/"sr_ma": KHÔNG có trục so sánh 2-nhóm participant-level phù
     # hợp khuôn cohort/RCT của engine này — DỪNG thay vì âm thầm ép dữ liệu

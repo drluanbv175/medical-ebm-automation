@@ -512,16 +512,72 @@ message("[CẦN DỮ LIỆU THẬT + G5 DB LOCKED để uncomment và chạy]")
     return code
 
 
+#: Bảng 1 phải phân tầng theo TRỤC LẤY MẪU của thiết kế, không phải luôn theo phơi nhiễm.
+#: SỬA 2026-07-29 (soi cổng G6, phát hiện MEDIUM-HIGH): trước đây MỌI thiết kế đều sinh
+#: `by = "<phơi nhiễm>"`. Sai rõ nhất ở bệnh-chứng: thiết kế này lấy mẫu THEO KẾT CỤC
+#: (chọn ca, rồi chọn chứng), nên Bảng 1 phải trình bày riêng theo CA và CHỨNG — phơi
+#: nhiễm là biến đem SO, không phải trục phân tầng. STROBE mục 14(a) có dấu * ghi rõ:
+#: "Give information separately for cases and controls in case-control studies". Với
+#: nghiên cứu độ chính xác chẩn đoán, trục là KẾT QUẢ TIÊU CHUẨN THAM CHIẾU (có/không
+#: có bệnh đích) — STARD mục 20 + 21a + 21b.
+#: Lỗi này lọt lưới vì `case_control` KHÔNG nằm trong `_WRONG_METHOD_DESIGNS` (danh sách
+#: được chèn cảnh báo) — hợp lý cho phần HỒI QUY (bệnh-chứng dùng logistic như cohort,
+#: và make_run_analysis_cli/make_sensitivity_analysis đã có nhánh riêng), nhưng KHÔNG
+#: hợp lý cho Bảng 1.
+_TABLE1_GROUP_BY_OUTCOME = {"case_control", "diagnostic"}
+
+#: Thiết kế KHÔNG kiểm định ý nghĩa khác biệt nền. Với thử nghiệm ngẫu nhiên, khác biệt
+#: nền theo định nghĩa là do ngẫu nhiên nên p-value nền không trả lời câu hỏi nào; dùng
+#: chênh lệch chuẩn hóa (SMD) để mô tả mức mất cân bằng. Đây cũng chính là điều SAP §3
+#: mà G1 sinh ra đã ghi: "RCT: mô tả cân bằng nền, không kiểm định ý nghĩa khác biệt
+#: baseline" — trước bản vá này khuôn R của G6 mâu thuẫn với SAP của chính hệ.
+_TABLE1_NO_BASELINE_PVALUE = {"rct"}
+
+
 def make_r02_tables(v: dict, design_code: str = "cohort") -> str:
-    """Sinh 02_tables.R với tên biến thật."""
+    """Sinh 02_tables.R với tên biến thật, phân tầng theo ĐÚNG trục của thiết kế."""
     exposure = v["exposure"]
+    outcome  = v["outcome"]
     covars   = v["covariates"]
     vars_list = ", ".join(f'"{c}"' for c in covars) if covars else '"age", "sex", "bmi", "dm", "htn"'
+
+    if design_code in _TABLE1_GROUP_BY_OUTCOME:
+        group_var = outcome
+        if design_code == "case_control":
+            group_note = (f"CA/CHỨNG ({outcome}) — KHÔNG phân tầng theo phơi nhiễm "
+                          f"({exposure}): bệnh-chứng lấy mẫu theo kết cục (STROBE mục 14a, dấu *)")
+            caption = f"Bảng 1. Đặc điểm nền theo nhóm CA và CHỨNG ({outcome})"
+        else:
+            group_note = (f"KẾT QUẢ TIÊU CHUẨN THAM CHIẾU ({outcome}) — có/không có bệnh đích "
+                          f"(STARD mục 20 + 21a + 21b)")
+            caption = f"Bảng 1. Đặc điểm nền theo kết quả tiêu chuẩn tham chiếu ({outcome})"
+    else:
+        group_var = exposure
+        group_note = exposure
+        caption = f"Bảng 1. Đặc điểm nền theo nhóm {exposure}"
+
+    if design_code in _TABLE1_NO_BASELINE_PVALUE:
+        pvalue_block = (
+            "#   # KHÔNG add_p() cho đặc điểm nền của thử nghiệm ngẫu nhiên:\n"
+            "#   #   khác biệt nền là do NGẪU NHIÊN, nên p-value ở đây không trả lời câu hỏi nào.\n"
+            "#   #   Dùng add_smd() bên dưới để mô tả mức mất cân bằng.\n"
+            "#   #   (Khớp SAP §3 do G1 sinh: \"RCT: mô tả cân bằng nền, không kiểm định\n"
+            "#   #    ý nghĩa khác biệt baseline\".)\n"
+        )
+    else:
+        pvalue_block = (
+            "#   gtsummary::add_p(\n"
+            "#     test = list(\n"
+            "#       all_continuous()  ~ \"t.test\",\n"
+            "#       all_categorical() ~ \"chisq.test\"\n"
+            "#     )\n"
+            "#   ) %>%\n"
+        )
 
     code = f"""\
 # ============================================================
 # 02_tables.R — Bảng đặc điểm nền (Table 1) và thống kê mô tả
-# Biến phân nhóm: {exposure}
+# Biến phân nhóm: {group_note}
 # Covariates    : {", ".join(covars) if covars else "[xem SAP §5]"}
 # ============================================================
 
@@ -535,8 +591,8 @@ source(here::here("scripts", "00_setup.R"))
 # vars_table1 <- c({vars_list})
 
 # tbl1 <- gtsummary::tbl_summary(
-#   data    = df %>% dplyr::select(all_of(c(vars_table1, "{exposure}"))),
-#   by      = "{exposure}",
+#   data    = df %>% dplyr::select(all_of(c(vars_table1, "{group_var}"))),
+#   by      = "{group_var}",
 #   missing = "ifany",
 #   statistic = list(
 #     all_continuous()  ~ "{{mean}} ± {{sd}}",
@@ -544,21 +600,15 @@ source(here::here("scripts", "00_setup.R"))
 #   ),
 #   digits  = all_continuous() ~ 1
 # ) %>%
-#   gtsummary::add_p(
-#     test = list(
-#       all_continuous()  ~ "t.test",
-#       all_categorical() ~ "chisq.test"
-#     )
-#   ) %>%
-#   gtsummary::add_smd() %>%
+{pvalue_block}#   gtsummary::add_smd() %>%
 #   gtsummary::bold_labels() %>%
-#   gtsummary::modify_caption("**Bảng 1. Đặc điểm nền theo nhóm {exposure}**")
+#   gtsummary::modify_caption("**{caption}**")
 
 # Xuất Word
 # gtsummary::as_flex_table(tbl1) %>%
 #   flextable::save_as_docx(path = file.path(OUTPUT, "Table1_baseline.docx"))
 
-message("02_tables.R — Biến nhóm: {exposure} | [CẦN DỮ LIỆU THẬT]")
+message("02_tables.R — Biến nhóm: {group_var} | [CẦN DỮ LIỆU THẬT]")
 """
     if design_code in _WRONG_METHOD_DESIGNS:
         code = _insert_warning_after_shebang(
