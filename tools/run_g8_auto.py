@@ -1540,7 +1540,11 @@ def generate_a9_artifact(
     ln("|--------------|------------------|-------------|-----------------|")
     ln("| [CAN -- hoac 'Khong nhan tai tro tu ben ngoai'] | | | |")
     ln()
-    ln("### 5.5 Khai báo sử dụng AI (ICMJE 2023+)")
+    # SUA 2026-07-28: nhan phien ban STALE. Ban ICMJE hien hanh la "Updated January
+    # 2026", trong do "Use of Artificial Intelligence in Publishing" da thanh MUC V
+    # cap 1 (V.A tac gia, V.B nguoi phan bien, V.C ban bien tap) — khac han ghi chu
+    # ngan trong ban 2023. Xac minh bang cach doc byte that tu icmje-recommendations.pdf.
+    ln("### 5.5 Khai báo sử dụng AI (ICMJE Mục V, bản cập nhật 1/2026)")
     ln()
     ln("Nghiên cứu này sử dụng **EBM Copilot** (Claude-based AI tool) để hỗ trợ:")
     ln("1. Tổng quan y văn tự động: tìm kiếm PubMed, phân loại bằng chứng (G0)")
@@ -1548,7 +1552,11 @@ def generate_a9_artifact(
     ln("3. Soạn thảo IMRAD skeleton dựa trên checkpoints (G7)")
     ln()
     ln("Tất cả nội dung khoa học, kết quả, diễn giải do tác giả người kiểm chứng và chịu trách nhiệm.")
-    ln("Theo ICMJE 2023, AI KHÔNG được liệt kê là tác giả.")
+    ln("Theo ICMJE Mục V.A (bản 1/2026), AI KHÔNG được liệt kê là tác giả; việc dùng AI")
+    ln("phải khai ở **cả cover letter lẫn bản thảo**; nội dung do AI sinh KHÔNG được")
+    ln("trích dẫn như nguồn gốc; và KHÔNG khai báo có thể bị coi là sai phạm nghiên cứu.")
+    ln("Người phản biện (Mục V.B) cũng phải khai việc dùng AI và không được tải bản thảo")
+    ln("lên công cụ AI không bảo đảm bảo mật khi chưa được tạp chí cho phép.")
     ln()
     ln("---")
     ln()
@@ -2092,6 +2100,34 @@ def main():
     print("  4. Soan cover letter theo yeu cau tap chi dich")
     print("  5. Chay plagiarism check (iThenticate/Turnitin) truoc khi nop")
     print("\n  Can bac si kiem chung.")
+
+    # ── HOP DONG CHAT LUONG G8 ────────────────────────────────────────────
+    # THEM 2026-07-28: guardrail_g8() o tren kiem duoc mot so thu that (R1 dem
+    # checkpoint, R3 doi chieu tuyen bo SAN SANG NOP voi so cong da qua) nhung
+    # van con luat kieu "dem su co mat" (R6 doi >=8 nhan [CAN] — artifact cang
+    # hoan chinh cang de fail). Quan trong hon: chu ky G8 rang buoc vao chinh
+    # ban TU KIEM nay, khong phai ban nhan xet cua nguoi phan bien.
+    # Lop nay kiem NOI DUNG goi tien-nop-bai va doi bang chung binh duyet that.
+    # CO Y KHONG doi exit_code: hop dong 3 ma thoat cua G8 dang duoc downstream
+    # dung; ket luan chat luong duoc GHI + IN, khong nuot im lang.
+    quality = None
+    try:
+        import g8_quality_gate as G8Q
+        quality = G8Q.evaluate_study(study, out_dir, repo_root=BASE, write=True)
+    except Exception as exc:  # pragma: no cover - khong de lop phu giet cong chinh
+        print(f"  !! Khong cham duoc hop dong chat luong G8: {exc}")
+    if quality:
+        pending = [
+            row for row in quality["automatic_criteria"] + quality["approval_criteria"]
+            if row["status"] != "PASS"
+        ]
+        print(f"  Hop dong chat luong G8: {quality['status']} "
+              f"({len(pending)} muc chua dat; pham vi khoa ky: "
+              f"{quality.get('signature_scope') or 'khong xac dinh'})")
+        for row in pending[:5]:
+            print(f"      {row['status']:6} {row['id']} -- {row['label']}")
+        if len(pending) > 5:
+            print(f"      ... va {len(pending) - 5} muc nua -- xem G8_QUALITY_REPORT.md")
     print(f"{'='*65}\n")
     # Va 2026-07-11 (vong 9): truoc day exit code luon 0 du guardrail["passed"]=False --
     # checkpoint DA ghi dung, nhung process exit code khong phan anh, nen chay truc tiep
