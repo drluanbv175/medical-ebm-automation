@@ -1692,6 +1692,7 @@ def write_checkpoint(
     checklist_auto: int,
     checklist_total: int,
     crf_blocks: Optional[dict] = None,
+    design_drift_warning: Optional[str] = None,
 ) -> Path:
     """Ghi G7_checkpoint.json với đầy đủ metadata."""
     crf_blocks = crf_blocks or {}
@@ -1755,6 +1756,7 @@ def write_checkpoint(
         "sections_auto_filled":  sections_auto_filled,
         "sections_need_results": sections_need_results,
         "design_code":         design_code,
+        "design_drift_warning": design_drift_warning,
         "reporting_standard":  reporting_std,
         "target_journal":      target_journal or "[CẦN]",
         "word_limit":          word_limit,
@@ -1887,23 +1889,46 @@ def main() -> None:
     # SỬA: .get("design", {}) không dùng default {} khi key tồn tại với giá
     # trị null — bọc "or {}" để tránh crash design_info.get(...) ngay dưới.
     design_info   = g1.get("design") or {}
-    design_code   = design_info.get("internal_code") or g1.get("design_code") or "cohort"
+    # ★ VÁ 2026-07-28 (soi độc lập): dòng cũ CHỈ đọc G1, bỏ qua G2 — trong khi
+    # gate_contract.py::resolve_design_code() đã có SẴN từ 2026-07-27 để đóng
+    # đúng lỗi này (G2 nhận `--design rct` tường minh, G1 suy nhầm "cohort" —
+    # G3/G4/G6 dùng resolve_design_code nên đúng, G7 thì không). Tái hiện được
+    # thật: bản thảo nộp tạp chí tự khai "Chuẩn báo cáo: STROBE 2007" và đính
+    # kèm phụ lục 22-mục STROBE cho một đề tài đã được xác nhận là RCT ở G2 —
+    # thiếu toàn bộ mục CONSORT bắt buộc (ngẫu nhiên hóa, che giấu phân bổ, làm
+    # mù, sơ đồ CONSORT). Docstring của resolve_design_code từng khẳng định SAI
+    # "G5/G7/G9 vốn đã đọc cả hai checkpoint nên không dính" — đã đính chính.
+    design_code, design_drift_warning = GC.resolve_design_code(out_dir)
+    if design_drift_warning:
+        print(f"  {design_drift_warning}")
     design_primary = design_info.get("primary") or g1.get("design_primary") or "Cohort tiến cứu"
     # STROBE mục 9 (Bias) — bảng kiểm soát sai lệch đã tính sẵn ở G1 (BIAS_CONTROLS theo
     # design_code), nay đọc lại từ checkpoint thay vì luôn để trống [CẦN].
     bias_controls = design_info.get("bias_controls") or []
-    reporting_std = (
-        design_info.get("reporting_standard")
-        or g1.get("reporting_standard")
-        or "STROBE 2007"
-    )
-    # Chuẩn hóa reporting_std (một số checkpoint lưu "STROBE", không phải "STROBE 2007")
-    if reporting_std and " " not in reporting_std:
-        year_map = {"STROBE": "2007", "CONSORT": "2025", "STARD": "2015", "PRISMA": "2020"}
-        for k, yr in year_map.items():
-            if reporting_std.upper().startswith(k):
-                reporting_std = f"{k} {yr}"
-                break
+    # ★ VÁ 2026-07-28 — HAI NGUỒN SỰ THẬT KHÔNG ĐỐI CHIẾU NHAU.
+    # Trước đây reporting_std lấy THẲNG từ trường G1 tự ghi — dựa trên design_code
+    # CŨ của G1 (trước khi resolve_design_code() sửa lại theo G2). Hệ quả tái hiện
+    # được: design_code sửa đúng thành "rct", nhưng reporting_std vẫn là "STROBE
+    # 2007" của G1 cũ — bản thảo tự khai "Chuẩn báo cáo: STROBE 2007" NGAY TRÊN
+    # TRANG ĐẦU trong khi phụ lục checklist (dùng REPORTING_CHECKLISTS[design_code]
+    # đúng) lại in 30 mục CONSORT dưới tiêu đề "STROBE 2007" — hai chuẩn trộn vào
+    # nhau trong CÙNG một bản thảo. Chỉ khi KHÔNG có cảnh báo lệch mới tin trường
+    # G1 tự ghi (giữ đường cũ cho các trường hợp G1/G2 khớp nhau).
+    if design_drift_warning:
+        reporting_std = REPORTING_CHECKLISTS.get(design_code, ("STROBE 2007", 22))[0]
+    else:
+        reporting_std = (
+            design_info.get("reporting_standard")
+            or g1.get("reporting_standard")
+            or "STROBE 2007"
+        )
+        # Chuẩn hóa reporting_std (một số checkpoint lưu "STROBE", không phải "STROBE 2007")
+        if reporting_std and " " not in reporting_std:
+            year_map = {"STROBE": "2007", "CONSORT": "2025", "STARD": "2015", "PRISMA": "2020"}
+            for k, yr in year_map.items():
+                if reporting_std.upper().startswith(k):
+                    reporting_std = f"{k} {yr}"
+                    break
 
     # Từ G2
     irb_number  = g2.get("g2_irb_number")  or "[CẦN SỐ IRB THẬT]"
@@ -2071,6 +2096,7 @@ def main() -> None:
         checklist_auto=auto_count,
         checklist_total=std_total,
         crf_blocks=crf_blocks,
+        design_drift_warning=design_drift_warning,
     )
     print(f"  → {cp_path}")
 

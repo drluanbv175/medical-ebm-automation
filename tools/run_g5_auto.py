@@ -2086,7 +2086,13 @@ def main():
     # SỬA: .get(key, default) không dùng default khi key tồn tại với giá trị
     # null — bọc "or" tránh in "None" ra artifact và tránh crash arithmetic.
     topic       = g0.get("topic") or study
-    design_code = g1.get("design_code") or (g1.get("design") or {}).get("internal_code") or "cohort"
+    # ★ VÁ 2026-07-28: dòng cũ chỉ đọc G1, cùng lỗi vừa vá ở run_g7_auto.py — G2
+    # (nơi bác sĩ truyền --design tường minh) bị bỏ qua. Docstring của
+    # resolve_design_code() từng khẳng định SAI "G5 vốn đã đọc cả hai checkpoint";
+    # đã đính chính và nối G5 vào đúng hàm dùng chung.
+    design_code, _design_drift_g5 = GC.resolve_design_code(out)
+    if _design_drift_g5:
+        print(f"  {_design_drift_g5}")
     n_adjusted  = g3.get("n_adjusted") or 0
     n_total     = (g3.get("n_total") or n_adjusted) if n_adjusted else 0
     n_per_group = (g3.get("n_per_group") or n_total // 2) if n_total else 0

@@ -488,9 +488,14 @@ def resolve_design_code(out_dir: Path, default: str = "cohort") -> Tuple[str, Op
     cáo bị chọn sai** (STROBE thay vì CONSORT cho một RCT), nhánh công thức cỡ mẫu sai,
     template phân tích sai — mà không một dòng cảnh báo nào. Hội đồng Đạo đức hoặc tạp chí
     sẽ nhận một hồ sơ tự khai sai loại thiết kế.
-    (G5/G7/G9 vốn đã đọc cả hai checkpoint nên không dính; đúng mẫu "sửa/viết 1 chỗ quên
-    chỗ anh em" đã lặp ở mọi vòng kiểm định của đợt này — nên đặt hàm này ở chỗ dùng chung
-    thay vì vá riêng từng cổng.)
+    ★ ĐÍNH CHÍNH 2026-07-28 (soi độc lập cổng G7): câu trên TỪNG viết "G5/G7/G9 vốn đã
+    đọc cả hai checkpoint nên không dính" — SAI, đã tự kiểm chứng lại bằng grep trực
+    tiếp. G7 chỉ đọc `g1.get("design", {}).get("internal_code")`, KHÔNG hề gọi hàm này;
+    G5 mắc đúng lỗi giống hệt (`g1.get("design_code") or design_info.get("internal_code")`);
+    G9 không có biến design_code nào cả — không đọc G1 lẫn G2. Tức đúng mẫu "sửa/viết 1
+    chỗ quên chỗ anh em" đã lặp ở mọi vòng kiểm định của đợt này, và lời khẳng định đã
+    sửa xong lại chính là nơi lặp lại mẫu lỗi đó. G5 và G7 đã được nối vào hàm này ngày
+    2026-07-28; G9 không dùng design_code nên không cần nối.
 
     Thứ tự ưu tiên: G2 (nơi bác sĩ có thể truyền `--design` TƯỜNG MINH) > G1 (suy luận tự
     động) > default. Khi hai nơi KHÁC nhau thì trả kèm cảnh báo để cổng in ra — im lặng

@@ -280,6 +280,16 @@ def evaluate_g7_quality(
         "thì chuẩn báo cáo (CONSORT/STROBE/PRISMA…) sẽ bị chọn sai cho cả bản thảo.",
     ))
 
+    design_drift = g7cp.get("design_drift_warning")
+    automatic.append(_criterion(
+        "G7-AUTO-01b", "Mã thiết kế KHÔNG lệch giữa G1 và G2",
+        "BLOCK" if design_drift else "PASS",
+        design_drift or "G1/G2 khớp thiết kế (hoặc chỉ một nơi có giá trị)",
+        "G1 suy luận và G2 (nơi bác sĩ có thể truyền --design tường minh) lệch nhau — "
+        "chạy lại G1/G2 cho khớp trước khi tin chuẩn báo cáo của bản thảo này. Xem "
+        "gate_contract.py::resolve_design_code().",
+    ))
+
     missing_gates = [g for g in ("G0", "G2", "G3", "G4")
                      if not _gate_present(checkpoints.get(g) or {})]
     automatic.append(_criterion(
