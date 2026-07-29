@@ -176,6 +176,33 @@ def g2_quality_contract_satisfied(
     return True
 
 
+def g4_quality_contract_satisfied(
+    study: str,
+    repo_root: Optional[Path] = None,
+) -> bool:
+    """True khi G4 được chấm trực tiếp là SAP đã khóa (PASS_G4_SAP_LOCKED).
+
+    Import lười (như g5/g9/g10) tránh vòng import lúc nạp module. Không tin
+    report JSON lưu sẵn — chấm trực tiếp bắt lại drift số liệu với G3 hiện tại
+    (xem G4-AUTO-03 trong g4_quality_gate.py) và thay đổi nội dung SAP sau lần
+    chấm trước."""
+    try:
+        import g4_quality_gate as g4_quality  # noqa: PLC0415
+    except ImportError:
+        return False
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    try:
+        report = g4_quality.evaluate_study(
+            str(study),
+            root / "exports" / str(study),
+            repo_root=root,
+            write=False,
+        )
+    except (OSError, RuntimeError, ValueError):
+        return False
+    return report.get("status") == g4_quality.STATUS_LOCKED
+
+
 def g5_quality_contract_satisfied(
     study: str,
     repo_root: Optional[Path] = None,
@@ -387,6 +414,17 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         "dropout": None,              # vd 0.15
         "p_event": None,              # tỷ lệ biến cố nền (log-rank)
         "sd": None,                   # độ lệch chuẩn kết cục liên tục (bắt buộc khi effect_type=MD)
+    },
+    # G4 — khóa SAP. Thêm 2026-07-29 (audit toàn diện G0-G10): trước đây G4
+    # KHÔNG có khối gate_params riêng — 3 xác nhận người thật mà
+    # g4_quality_gate.py cần (EPV/VIF, cơ chế dữ liệu thiếu, subgroup tiền
+    # định) không có chỗ chuẩn để pin. Hệ KHÔNG tự bật cờ nào ở đây.
+    "G4": {
+        "epv_vif_reviewed": False,
+        "missing_data_mechanism_confirmed": False,
+        "subgroup_multiplicity_predefined_confirmed": False,
+        "reviewed_by_role": None,
+        "reviewed_at": None,
     },
 }
 

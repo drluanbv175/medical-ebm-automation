@@ -270,6 +270,14 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "patterns": ["15_Table_Shells.md", "G4_SAP_*.docx"],
             "required": False,
         },
+        {
+            # required=False như G3/G8 (khác G2 là True): fixture G4 của bộ verify
+            # ở thư mục gốc chỉ dựng artifact SAP, nâng lên bắt buộc phải sửa đồng thời.
+            "key": "g4_quality_report",
+            "label": "Báo cáo chất lượng G4 (khóa SAP)",
+            "patterns": ["G4_QUALITY_REPORT.json"],
+            "required": False,
+        },
     ],
     "G5": [
         {
@@ -1087,6 +1095,62 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
                 "real_signal": {
                     "key": "g3_statistician_confirmation",
                     "label": "thống kê viên/chủ nhiệm xác nhận giả định cỡ mẫu",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": action,
+                **extras,
+            }
+
+    # G4 — khóa SAP. Guard theo `quality_contract_version` để checkpoint CŨ (sinh
+    # trước 2026-07-29) không bị hồi tố. LƯU Ý: nhánh này KHÔNG thay chốt fail-closed
+    # thật của G4 (vẫn là gate_contract.ledger_approved("G4", ...) mà G5/G6/
+    # run_stats_analysis.py gọi) — nó chỉ để đài kiểm soát THẤY được kết luận chất
+    # lượng thay vì bỏ qua im lặng (đúng khoảng trống F1/F7 mà audit 2026-07-29 tìm thấy).
+    if gate == "G4" and cp.get("quality_contract_version"):
+        quality = cp.get("quality_gate")
+        quality_status = quality.get("status") if isinstance(quality, dict) else None
+        if quality_status == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": None,
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Sửa lỗi trong G4_QUALITY_REPORT rồi chạy lại "
+                    f"`python3 tools/g4_quality_gate.py --study {study}`."
+                ),
+                **extras,
+            }
+        if quality_status != "PASS_G4_SAP_LOCKED":
+            pending = (
+                quality.get("pending_actions") if isinstance(quality, dict) else None
+            )
+            action = (
+                str(pending[0])
+                if isinstance(pending, list) and pending
+                else (
+                    "Hoàn tất nội dung SAP và xác nhận gate_params.G4, sau đó thống "
+                    f"kê viên/PI tự ký `approve_gate.py --gate G4`; chạy lại "
+                    f"`python3 tools/g4_quality_gate.py --study {study}`."
+                )
+            )
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_NEEDS_REAL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "g4_sap_lock_confirmation",
+                    "label": "thống kê viên/PI ký khóa SAP",
                     "present": False,
                 },
                 "stale": stale,

@@ -68,6 +68,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import g2_quality_gate as G2Q
+import g4_quality_gate as G4Q
 import g5_quality_gate as G5Q
 import g9_quality_gate as G9Q
 import g10_quality_gate as G10Q
@@ -666,6 +667,17 @@ def main() -> int:
             print(f"   G2 quality status: {report['status']}")
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G2 quality report: {exc}")
+    elif args.gate == "G4":
+        try:
+            report = G4Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=True,
+            )
+            print(f"   G4 quality status: {report['status']}")
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G4 quality report: {exc}")
     elif args.gate == "G5":
         try:
             report = G5Q.evaluate_study(

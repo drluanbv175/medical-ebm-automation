@@ -738,11 +738,42 @@ def real_world_signals(checkpoints: Dict[str, Dict],
             and _is_real_value(g2.get("g2_approval_date"))
         ) or bool(meta.get("irb_approved"))
 
-    sap = (
-        _guardrail_passed(g4)
-        and (_is_real_value(g4.get("g4_lock_date"))
-             or _status_is_locked(g4.get("g4_status")))
-    ) or _is_real_value(meta.get("sap_lock_date"))
+    # SỬA 2026-07-29 (audit toàn diện G0-G10, F6): trước đây tín hiệu "SAP đã
+    # khóa" chỉ đọc g4_lock_date/g4_status — cả hai đều KHÔNG được approve_gate.py
+    # cập nhật khi ký thật (chỉ g4_quality_gate.py mới ghi g4_lock_date, xem
+    # refresh_checkpoint() của module đó) — nên một G4 đã ký hợp lệ vẫn báo "chưa
+    # khóa" ở đây. Mirror đúng nhánh G5/G9: có quality_contract_version thì chấm
+    # TRỰC TIẾP (bắt lại drift số liệu với G3 hiện tại), không tin field cũ.
+    if g4.get("quality_contract_version"):
+        study = str(g4.get("study") or "").strip()
+        if study and re.fullmatch(r"[\w-]+", study):
+            root = Path(__file__).resolve().parents[1]
+            default_out = root / "exports" / study
+            if default_out.exists():
+                try:
+                    import g4_quality_gate as G4Q  # noqa: PLC0415
+
+                    live = G4Q.evaluate_study(
+                        study,
+                        default_out,
+                        repo_root=root,
+                        write=False,
+                    )
+                    sap = live.get("status") == G4Q.STATUS_LOCKED
+                except (ImportError, OSError, RuntimeError, ValueError):
+                    sap = False
+            else:
+                # Audit/verifier có thể chạy trong TemporaryDirectory; ở đó caller
+                # vừa chấm G4 và pin trạng thái vào meta của chính fixture.
+                sap = meta.get("g4_quality_status") == "PASS_G4_SAP_LOCKED"
+        else:
+            sap = meta.get("g4_quality_status") == "PASS_G4_SAP_LOCKED"
+    else:
+        sap = (
+            _guardrail_passed(g4)
+            and (_is_real_value(g4.get("g4_lock_date"))
+                 or _status_is_locked(g4.get("g4_status")))
+        ) or _is_real_value(meta.get("sap_lock_date"))
 
     if g5.get("quality_contract_version"):
         study = str(g5.get("study") or "").strip()
