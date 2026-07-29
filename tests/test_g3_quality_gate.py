@@ -8,16 +8,45 @@ dưới đây tương ứng một lỗ hổng đã xác nhận bằng cách đ�
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TOOLS_DIR = REPO_ROOT / "tools"
+PYTHON = sys.executable
 sys.path.insert(0, str(TOOLS_DIR))
 
 import g3_quality_gate as G3Q  # noqa: E402
 import run_g3_auto as G3  # noqa: E402
+
+
+def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
+    for _ in range(attempts):
+        if not d.exists():
+            return
+        shutil.rmtree(d, ignore_errors=True)
+        if not d.exists():
+            return
+        time.sleep(delay_s)
+
+
+def _seed_g0_g1(study_dir: Path, design_code: str) -> None:
+    study_dir.mkdir(parents=True, exist_ok=True)
+    (study_dir / "G0_checkpoint.json").write_text(
+        json.dumps({"gate": "G0", "topic": "Đề tài kiểm định", "guardrail": {"passed": True}}),
+        encoding="utf-8",
+    )
+    (study_dir / "G1_checkpoint.json").write_text(
+        json.dumps({
+            "gate": "G1",
+            "design": {"internal_code": design_code, "primary": design_code, "ambiguous": False},
+        }),
+        encoding="utf-8",
+    )
 
 # ════════════════════════════════════════════════════════════════════════════
 # Đồ gá
@@ -861,3 +890,98 @@ def test_bang_do_nhay_duoc_boc_dung_so_o(tmp_path):
     assert table["cells_na"] == 0
     assert table["header_dropout_pct"] == 20
     assert G3Q.sensitivity_base_cell(table, 0.80) == 1178
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# Test TÍCH HỢP THẬT — gọi CLI run_g3_auto.py thật, không dùng fixture văn bản
+# tự viết tay. Đóng lỗ hổng "test yếu": các test ở trên dùng _artifact() giả
+# lập nên không phát hiện được rằng generate_artifact() THẬT không hề in tên
+# chuẩn báo cáo (G3-AUTO-10) và luôn in ngôn ngữ power ngay cả cho thiết kế
+# không dùng power (G3-AUTO-17/qualitative) — hai lỗi CRITICAL/HIGH chỉ lộ ra
+# khi chạy pipeline thật (phát hiện qua kiểm định độc lập 2026-07-29).
+# ════════════════════════════════════════════════════════════════════════════
+
+
+class TestPipelineThatKhongDungFixtureGia:
+    def test_rct_dat_auto10_qua_pipeline_that(self):
+        study = "TEST-AUDIT-G3-PIPELINE-RCT"
+        study_dir = REPO_ROOT / "exports" / study
+        _rmtree_retry(study_dir)
+        try:
+            _seed_g0_g1(study_dir, "rct")
+            result = subprocess.run(
+                [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"),
+                 "--study", study, "--effect-size", "8", "--effect-type", "ARR%", "--p0", "0.30"],
+                cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
+            )
+            assert result.returncode == 0, result.stdout + result.stderr
+            report = json.loads((study_dir / "G3_QUALITY_REPORT.json").read_text(encoding="utf-8"))
+            row = next(r for r in report["automatic_criteria"] if r["id"] == "G3-AUTO-10")
+            assert row["status"] == "PASS", row
+            assert "CONSORT 2025" in (study_dir / f"G3_A4_SAMPLE_SIZE_{study}.md").read_text(encoding="utf-8")
+        finally:
+            _rmtree_retry(study_dir)
+
+    def test_sr_ma_khong_con_pass_gia_qua_pipeline_that(self):
+        """Trước khi sửa: formula_used tự in 'RIS/TSA' vô điều kiện nên
+        G3-AUTO-17 LUÔN PASS dù chưa ai tính RIS thật. Nay phải REVIEW."""
+        study = "TEST-AUDIT-G3-PIPELINE-SRMA"
+        study_dir = REPO_ROOT / "exports" / study
+        _rmtree_retry(study_dir)
+        try:
+            _seed_g0_g1(study_dir, "sr_ma")
+            result = subprocess.run(
+                [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"), "--study", study, "--confirmed-n", "30"],
+                cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
+            )
+            assert result.returncode == 0, result.stdout + result.stderr
+            artifact_text = (study_dir / f"G3_A4_SAMPLE_SIZE_{study}.md").read_text(encoding="utf-8")
+            assert "RIS" in artifact_text or "TSA" in artifact_text  # xác nhận vẫn còn tautology-bait
+            report = json.loads((study_dir / "G3_QUALITY_REPORT.json").read_text(encoding="utf-8"))
+            row = next(r for r in report["automatic_criteria"] if r["id"] == "G3-AUTO-17")
+            assert row["status"] == "REVIEW", row
+        finally:
+            _rmtree_retry(study_dir)
+
+    def test_qualitative_khong_con_bi_khoa_cung_qua_pipeline_that(self):
+        """Trước khi sửa: PHẦN 4 luôn in 'α =' + 'lực thống kê' vô điều kiện,
+        khiến G3-AUTO-17 KHÔNG BAO GIỜ đạt cho thiết kế định tính. Nay phải
+        REVIEW vì thiếu quy tắc dừng bão hòa (lý do THẬT), rồi PASS khi được
+        cấp quy tắc dừng — chứng minh không còn bị khóa cứng."""
+        study = "TEST-AUDIT-G3-PIPELINE-QUAL"
+        study_dir = REPO_ROOT / "exports" / study
+        _rmtree_retry(study_dir)
+        try:
+            _seed_g0_g1(study_dir, "qualitative")
+            result = subprocess.run(
+                [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"), "--study", study, "--confirmed-n", "20"],
+                cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
+            )
+            assert result.returncode == 0, result.stdout + result.stderr
+            artifact_text = (study_dir / f"G3_A4_SAMPLE_SIZE_{study}.md").read_text(encoding="utf-8")
+            assert "α =" not in artifact_text and "lực thống kê" not in artifact_text
+
+            report = json.loads((study_dir / "G3_QUALITY_REPORT.json").read_text(encoding="utf-8"))
+            row = next(r for r in report["automatic_criteria"] if r["id"] == "G3-AUTO-17")
+            assert row["status"] == "REVIEW", row
+            # Lý do REVIEW phải là thiếu quy tắc dừng THẬT — không phải bị bắt
+            # nhầm vì "ngôn ngữ kiểm định power" (đúng lỗi đã sửa).
+            assert "khối cỡ mẫu dán vào đề cương" not in row["evidence"]
+            assert "QUY TẮC DỪNG" in row["evidence"]
+
+            (study_dir / "study_meta.json").write_text(
+                json.dumps({"gate_params": {"G3": {
+                    "saturation_stopping_rule": "Dừng khi 3 cuộc phỏng vấn liên tiếp không sinh mã mới",
+                }}}),
+                encoding="utf-8",
+            )
+            result2 = subprocess.run(
+                [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"), "--study", study, "--confirmed-n", "20"],
+                cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
+            )
+            assert result2.returncode == 0, result2.stdout + result2.stderr
+            report2 = json.loads((study_dir / "G3_QUALITY_REPORT.json").read_text(encoding="utf-8"))
+            row2 = next(r for r in report2["automatic_criteria"] if r["id"] == "G3-AUTO-17")
+            assert row2["status"] == "PASS", row2
+        finally:
+            _rmtree_retry(study_dir)

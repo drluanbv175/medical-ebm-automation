@@ -16,8 +16,9 @@ TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(TOOLS))
 
-import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import g3_quality_gate as G3Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G3)
+import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import skill_standards as S  # noqa: E402  (bản đồ chuẩn báo cáo theo thiết kế)
 
 # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): 3 thiết kế KHÔNG dùng
 # công thức cỡ mẫu power/effect size truyền thống — n_adjusted=0 là CÓ CHỦ
@@ -623,8 +624,21 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         "",
         "```",
         f"Cỡ mẫu được tính theo {formula_used}.",
-        f"Với mức ý nghĩa {_alpha_sidedness} α = {alpha}, lực thống kê 1−β = {int(power*100)}%,",
     ]
+    # SỬA 2026-07-29 (phát hiện qua kiểm định độc lập, HIGH): dòng "α = ...,
+    # lực thống kê ..." trước đây in VÔ ĐIỀU KIỆN cho MỌI thiết kế, kể cả
+    # sr_ma/prediction/qualitative — 3 thiết kế KHÔNG dùng kiểm định power theo
+    # doctrine (xem N_NOT_APPLICABLE_DESIGNS). Hệ quả: khối PHẦN 4 của một đề
+    # tài ĐỊNH TÍNH luôn chứa chữ "α ="/"lực thống kê", nên
+    # g3_quality_gate.py::G3-AUTO-17 (kiểm "khối cỡ mẫu định tính không được
+    # chứa ngôn ngữ power") KHÔNG BAO GIỜ đạt được — khóa cứng mọi đề tài định
+    # tính ở DRAFT_NEEDS_HUMAN_PARAMETERS vĩnh viễn. Chỉ in câu alpha/power khi
+    # thiết kế thật sự dùng công thức power.
+    if design_code not in N_NOT_APPLICABLE_DESIGNS:
+        lines.append(
+            f"Với mức ý nghĩa {_alpha_sidedness} α = {alpha}, lực thống kê "
+            f"1−β = {int(power*100)}%,"
+        )
     if effect_val:
         # SỬA: dòng "{effect_type} = {effect_val} (lấy từ y văn [CẦN PMID/DOI])"
         # đúng cho cohort/case_control/RCT (effect_val THẬT LÀ effect size
@@ -658,6 +672,27 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
     lines += [
         "```",
         "",
+    ]
+    # SỬA 2026-07-29 (phát hiện qua kiểm định độc lập, CRITICAL): PHẦN 4 trước
+    # đây KHÔNG BAO GIỜ nhắc tên chuẩn báo cáo, dù doctrine co-mau-nghien-cuu.md
+    # khẳng định lặp lại rằng công cụ "xuất khối cỡ mẫu CONSORT 2025/STROBE" —
+    # và g3_quality_gate.py::G3-AUTO-10 kiểm ĐÚNG chuỗi chuẩn báo cáo này trong
+    # artifact. Hai điều đó cộng lại nghĩa là G3-AUTO-10 KHÔNG THỂ PASS qua bất
+    # kỳ lần chạy pipeline thật nào (xác nhận bằng cách chạy thật run_g3_auto.py
+    # trên một ca RCT: artifact không có chữ "CONSORT" ở đâu cả) — PASS_G3_
+    # CONFIRMED vĩnh viễn không đạt được. Lấy nguồn chuẩn TRỰC TIẾP từ
+    # skill_standards (cùng bảng mà g3_quality_gate.py dùng để chấm) để hai bên
+    # luôn khớp nhau bằng cấu trúc, không phải bằng cách đoán đúng chuỗi.
+    _reporting = S.reporting_standards_for(design_code)
+    _reporting_primary = str(_reporting.get("primary") or "")
+    if _reporting_primary and "CẦN KIỂM CHỨNG" not in _reporting_primary.upper():
+        lines.append(
+            f"> Trình bày cỡ mẫu theo mục cỡ mẫu của **{_reporting_primary}** khi đưa "
+            "vào đề cương/bản thảo (vd CONSORT 2025 mục 16a, SPIRIT 2025 mục 19, "
+            "STROBE mục 10, STARD 2015 mục 18, TRIPOD+AI mục 10 — tùy thiết kế)."
+        )
+        lines.append("")
+    lines += [
         "---",
         "",
         "## PHẦN 5 — TIÊU CHÍ QUA CỔNG G3",

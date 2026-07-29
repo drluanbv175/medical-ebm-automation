@@ -1142,16 +1142,26 @@ def evaluate_g3_quality(
         alt_status = "REVIEW" if alt_problems else "PASS"
         alt_evidence = "; ".join(alt_problems) or "có khung cỡ mẫu định tính hợp lệ"
     elif design_code == "sr_ma":
+        # SỬA 2026-07-29 (phát hiện qua kiểm định độc lập, HIGH — tautology):
+        # bản cũ tìm "RIS/TSA" trong CẢ `artifact_text` — nhưng formula_used
+        # của nhánh sr_ma LUÔN tự in sẵn câu "[CẦN — Tổng quan hệ thống dùng
+        # RIS/TSA, không dùng công thức power]" một cách VÔ ĐIỀU KIỆN (xem
+        # generate_artifact()), nên artifact_text luôn chứa chữ "RIS"/"TSA"
+        # bất kể ai đã thực sự tính RIS/TSA hay chưa — tiêu chí không bao giờ
+        # có thể REVIEW. Nay CHỈ chấp nhận giá trị THẬT do người điền ở
+        # gate_params.G3.confirmed_n_method (cùng nguồn mà G3-AUTO-13 đã dùng
+        # cho tiêu chí "N chốt có phương pháp"), không soi lại chuỗi tự sinh.
+        method_text = str(g3.get("confirmed_n_method") or "")
         has_ris = bool(
             re.search(r"\b(RIS|required information size|TSA|trial sequential)\b",
-                      artifact_text + " " + str(g3.get("confirmed_n_method") or ""),
-                      re.IGNORECASE)
+                      method_text, re.IGNORECASE)
         )
         alt_status = "PASS" if has_ris else "REVIEW"
         alt_evidence = (
-            "có nhắc RIS/TSA"
+            f"phương pháp: {method_text[:80]}"
             if has_ris
-            else "tổng quan hệ thống nhưng không nhắc required information size / TSA"
+            else "tổng quan hệ thống nhưng gate_params.G3.confirmed_n_method chưa "
+                 "nhắc required information size / TSA"
         )
     elif design_code == "prediction":
         alt_status = "PASS" if _present(g3.get("confirmed_n_method")) else "REVIEW"
