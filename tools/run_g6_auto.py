@@ -775,6 +775,10 @@ source(here::here("scripts", "00_setup.R"))
 #   warning("Vi phạm PH assumption — cân nhắc time-varying covariates")
 # }}
 #
+# Kiểm đa cộng tuyến (SAP §5: "VIF < 5 cho mọi biến" — trước đây chỉ có trong
+# checklist văn bản, không có dòng code nào thực sự tính; thêm 2026-07-29):
+# car::vif(cox_adj)
+#
 # Trích xuất HR + 95%CI (Bảng 2)
 # result_main <- broom::tidy(cox_adj, exponentiate=TRUE, conf.int=TRUE) %>%
 #   dplyr::filter(term == "{exposure}") %>%
@@ -3028,6 +3032,14 @@ source(here::here("scripts", "00_setup.R"))
 # NẾU KHÔNG bắt cặp (unmatched case-control) — logistic thường là đủ:
 # glm_crude <- glm({outcome} ~ {exposure}, data=df, family=binomial())
 # glm_adj   <- glm({outcome} ~ {exposure} + {cov_fml}, data=df, family=binomial())
+#
+# Kiểm đa cộng tuyến (SAP §5: "VIF < 5 cho mọi biến"; thêm 2026-07-29 — trước
+# đây chỉ có trong checklist văn bản, không có dòng code nào thực sự tính).
+# CHỈ áp dụng cho glm_adj (unmatched) — clogit() có strata nên VIF thường quy
+# không áp dụng trực tiếp, cần car::vif() phiên bản riêng cho conditional
+# logistic nếu thống kê viên muốn kiểm (ngoài phạm vi template này):
+# car::vif(glm_adj)
+#
 # broom::tidy(glm_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
 message("03_analysis.R (case-control) — Biến: {exposure}/{outcome} | [CẦN XÁC NHẬN có bắt cặp hay không, rồi CẦN DỮ LIỆU THẬT]")
@@ -3051,6 +3063,20 @@ source(here::here("scripts", "00_setup.R"))
 # surv_obj <- Surv({time_col}, {outcome})
 # cox_itt  <- coxph(surv_obj ~ {exposure} + {cov_fml}, data=df_itt)
 # summary(cox_itt)
+#
+# SỬA 2026-07-29 (soi cổng G6): trước đây nhánh RCT dùng coxph() nhưng KHÔNG
+# kiểm định giả định proportional hazards — trong khi nhánh cohort (cùng dùng
+# coxph()) đã có cox.zph() từ trước. Cùng mô hình, cùng giả định cần kiểm,
+# không có lý do RCT được miễn:
+# ph_test <- survival::cox.zph(cox_itt)
+# print(ph_test)
+# if (any(ph_test$table[,"p"] < 0.05)) {{
+#   warning("Vi phạm PH assumption — cân nhắc time-varying covariates")
+# }}
+#
+# Kiểm đa cộng tuyến cho mô hình hiệu chỉnh (SAP §5: "VIF < 5 cho mọi biến"):
+# car::vif(cox_itt)
+#
 # broom::tidy(cox_itt, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
 message("03_analysis.R (RCT) — Biến: {exposure}/{outcome}/{time_col} | [CẦN DỮ LIỆU THẬT]")
@@ -3072,6 +3098,13 @@ source(here::here("scripts", "00_setup.R"))
 # glm_crude <- glm({outcome} ~ {exposure}, data=df, family=binomial())
 # Mô hình hiệu chỉnh
 # glm_adj   <- glm({outcome} ~ {exposure} + {cov_fml}, data=df, family=binomial())
+#
+# Kiểm đa cộng tuyến (SAP §5: "VIF < 5 cho mọi biến"; thêm 2026-07-29 — trước
+# đây chỉ có trong checklist văn bản, không có dòng code nào thực sự tính):
+# car::vif(glm_adj)
+# Kiểm mức phù hợp mô hình:
+# generalhoslem::logitgof(df${outcome}, fitted(glm_adj))  # Hosmer-Lemeshow
+#
 # broom::tidy(glm_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
 message("03_analysis.R (Cross-sectional) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
@@ -3118,6 +3151,23 @@ source(here::here("scripts", "00_setup.R"))
 #                               boot.n = 2000)
 # ci_coords  # in ra 95%CI bootstrap cho từng chỉ số tại ngưỡng đã chọn
 
+# BẢNG CHÉO 2×2 (STARD 2015 mục 23 — BẮT BUỘC, KHÔNG PHẢI TÙY CHỌN):
+# "Cross tabulation of the index test results (or their distribution) by the
+# results of the reference standard" — Se/Sp/AUC ở trên KHÔNG thay được bảng
+# thô này; người đọc cần tự tính lại được mọi chỉ số từ đúng 4 ô TP/FP/FN/TN.
+# SỬA 2026-07-29 (soi cổng G6): trước đây nhánh diagnostic chỉ có ROC/coords,
+# thiếu hẳn bảng này — mâu thuẫn với BẢNG 2 (STARD mục 23) mà chính G1 đã hứa
+# sẵn trong dummy tables (xem g1_design_blocks.py::_TABLES_DIAGNOSTIC).
+# index_binary <- ifelse(df${index_test} >= best_cut$threshold, 1, 0)  # đảo dấu
+#   ">=" thành "<=" nếu ngưỡng thấp hơn nghĩa là dương tính với thang đo này
+# table_2x2 <- table(Index_test = index_binary, Reference_standard = df${ref_standard})
+# table_2x2  # hàng = kết quả index test, cột = kết quả tiêu chuẩn tham chiếu
+# TP <- table_2x2["1","1"]; FP <- table_2x2["1","0"]
+# FN <- table_2x2["0","1"]; TN <- table_2x2["0","0"]
+# Dán TP/FP/FN/TN vào BẢNG 2 (STARD mục 23) — Se=TP/(TP+FN), Sp=TN/(TN+FP)
+# phải khớp với kết quả pROC::coords() ở trên; lệch nhau nghĩa là hướng ngưỡng
+# (>= hay <=) đã chọn sai.
+
 # Calibration (nếu index test là điểm số/xác suất liên tục, không phải nhị phân):
 # rms::val.prob(df${index_test}, df${ref_standard})
 
@@ -3159,6 +3209,11 @@ source(here::here("scripts", "00_setup.R"))
 #    time-to-event {time_col} có ý nghĩa — [CẦN BÁC SĨ XÁC NHẬN loại kết cục]):
 # model_full <- glm({outcome} ~ {cov_fml}, data = df, family = binomial())
 # # HOẶC: model_full <- coxph(Surv({time_col}, {outcome}) ~ {cov_fml}, data = df)
+#
+# Kiểm đa cộng tuyến TRƯỚC khi shrinkage (SAP §5: "VIF < 5 cho mọi biến"; thêm
+# 2026-07-29 — LASSO ở bước 2 giảm nhẹ ảnh hưởng đa cộng tuyến lên hệ số
+# nhưng KHÔNG thay được việc kiểm tra nó ở mô hình đầy đủ trước khi co hệ số):
+# car::vif(model_full)
 
 # 2) SHRINKAGE (LASSO/ridge) — chống quá khớp khi nhiều biến tiên đoán so
 #    với cỡ mẫu (PROBAST+AI domain 4):
