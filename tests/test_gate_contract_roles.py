@@ -96,7 +96,13 @@ class TestUnchangedGatesStillFailClosed:
         assert not GC.reviewer_role_satisfies_gate("G9", "IRB")
         assert not GC.reviewer_role_satisfies_gate("G9", "PHAN_BIEN")
 
+    def test_g10_release_lock_is_pi_only(self):
+        assert GC.reviewer_role_satisfies_gate("G10", "PI")
+        assert not GC.reviewer_role_satisfies_gate("G10", "STATISTICIAN")
+        assert not GC.reviewer_role_satisfies_gate("G10", "IRB")
+        assert not GC.reviewer_role_satisfies_gate("G10", "PHAN_BIEN")
+
     def test_gates_without_requirement_still_noop_true(self):
-        for gate_id in ("G0", "G1", "G3", "G6", "G7", "G10", "GATE_A", "GATE_B"):
+        for gate_id in ("G0", "G1", "G3", "G6", "G7", "GATE_A", "GATE_B"):
             assert GC.reviewer_role_satisfies_gate(gate_id, "ANYTHING_AT_ALL"), gate_id
             assert GC.reviewer_role_satisfies_gate(gate_id, ""), gate_id

@@ -674,6 +674,112 @@ class TestCitationMetadataGate:
             _rmtree_retry(d)
 
 
+class TestModernG10ReleaseContract:
+    """G10-2026.1 là khóa gói riêng; không tái dùng chữ ký G9 như chữ ký phát hành."""
+
+    def test_modern_g9_reaches_ready_but_still_waits_for_g10_pi(
+        self, tmp_path, monkeypatch
+    ):
+        study = "PYTEST-G10-MODERN-READY"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            _write_clean_citation_artifact(d, study)
+            g8_content = "PRESUBMISSION REVIEW — synthetic"
+            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(
+                g8_content, encoding="utf-8"
+            )
+            _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
+            g9_path = d / "G9_checkpoint.json"
+            g9 = json.loads(g9_path.read_text(encoding="utf-8"))
+            g9["quality_contract_version"] = "G9-2026.1"
+            g9_path.write_text(json.dumps(g9, ensure_ascii=False), encoding="utf-8")
+            monkeypatch.setattr(
+                GC, "g9_quality_contract_satisfied", lambda *_a, **_k: True
+            )
+            monkeypatch.setattr(
+                G10.G10Q,
+                "evaluate_study",
+                lambda *_a, **_k: {
+                    "status": G10.G10Q.STATUS_READY,
+                    "actions": [],
+                    "package_sha256": "a" * 64,
+                },
+            )
+
+            rc = _run_main(study)
+            assert rc == GC.EXIT_BLOCKED
+            needs = _read_g10_needs_input(d)
+            assert needs["reason_code"] == GC.REASON_MISSING_RELEASE_APPROVAL
+            assert "--gate G10" in needs["remediation"]["command"]
+        finally:
+            _rmtree_retry(d)
+
+    def test_locked_g10_is_not_reassembled_or_overwritten(self, tmp_path, monkeypatch):
+        study = "PYTEST-G10-MODERN-LOCKED"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            G10.assemble(study, d)
+            checkpoint_path = d / "G10_checkpoint.json"
+            before = checkpoint_path.read_bytes()
+            monkeypatch.setattr(
+                GC,
+                "ledger_approved",
+                lambda gate, *_a, **_k: gate == "G10",
+            )
+            monkeypatch.setattr(
+                G10.G10Q,
+                "evaluate_study",
+                lambda *_a, **_k: {
+                    "status": G10.G10Q.STATUS_LOCKED,
+                    "package_sha256": "b" * 64,
+                },
+            )
+
+            rc = _run_main(study)
+            assert rc == GC.EXIT_OK
+            assert checkpoint_path.read_bytes() == before
+        finally:
+            _rmtree_retry(d)
+
+    def test_real_study_with_legacy_g9_is_blocked_for_migration(
+        self, tmp_path, monkeypatch
+    ):
+        study = "PYTEST-G10-LEGACY-REAL"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_cross_sectional_fixture(d)
+            meta_path = d / "study_meta.json"
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            meta["study_kind"] = "real_research"
+            meta_path.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+            _write_clean_citation_artifact(d, study)
+            pmids = _g7_seed_pmids(d)
+            _write_matching_metadata_receipt(d, study, pmids)
+            g8_content = "PRESUBMISSION REVIEW — legacy synthetic fixture"
+            g9_content = "AUTHOR INTEGRITY — legacy synthetic fixture"
+            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(
+                g8_content, encoding="utf-8"
+            )
+            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(
+                g9_content, encoding="utf-8"
+            )
+            _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
+            _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
+
+            rc = _run_main(study)
+            assert rc == GC.EXIT_BLOCKED
+            needs = _read_g10_needs_input(d)
+            assert needs["reason_code"] == GC.REASON_MISSING_INTEGRITY
+            assert "g9_quality_gate.py" in needs["remediation"]["command"]
+        finally:
+            _rmtree_retry(d)
+
+
 class TestPmidCoverageExtractionHardened:
     """Vá 2026-07-18 (audit vòng 2, D2-F1): coverage cổng A12 trước bỏ sót PMID <7
     hoặc >8 chữ số (bài MEDLINE cũ đã rút) và PMID chỉ nằm ở ô-bảng bản G10 cuối."""

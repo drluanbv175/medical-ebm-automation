@@ -69,6 +69,8 @@ REASON_MISSING_DATA = "MISSING_REAL_DATA"                # G5: chưa có dữ li
 REASON_MISSING_INTEGRITY = "MISSING_INTEGRITY_SIGNATURES"  # G9: chưa ký liêm chính
 REASON_MISSING_CITATION_VERIFICATION = "MISSING_CITATION_VERIFICATION"  # G10: A12 receipt chưa có/chưa sạch
 REASON_MISSING_PEER_REVIEW = "MISSING_PEER_REVIEW_SIGNATURE"  # G10: G8 (bình duyệt độc lập) chưa ký ledger
+REASON_MISSING_RELEASE_READINESS = "MISSING_G10_RELEASE_READINESS"
+REASON_MISSING_RELEASE_APPROVAL = "MISSING_G10_RELEASE_APPROVAL"
 
 # Chuỗi guardrail cho trạng thái BLOCKED — CỐ Ý không chứa "PASS"/"✅"/"[OK]" để
 # bộ đọc guardrail cũ (run_pipeline._read_guardrail) KHÔNG nhầm là đã đạt.
@@ -225,6 +227,33 @@ def g9_quality_contract_satisfied(
     except (OSError, RuntimeError, ValueError):
         return False
     return report.get("status") == g9_quality.STATUS_LOCKED
+
+
+def g10_quality_contract_satisfied(
+    study: str,
+    repo_root: Optional[Path] = None,
+) -> bool:
+    """True khi gói G10 được chấm trực tiếp là đã khóa phát hành.
+
+    Không tin ``release_package_ready`` hoặc report JSON lưu sẵn. Việc chấm
+    trực tiếp bắt lại thay đổi ở đề cương, StudySpec, readiness, A12, G8, G9
+    và mọi artifact trong manifest sau chữ ký PI.
+    """
+    try:
+        import g10_quality_gate as g10_quality  # noqa: PLC0415
+    except ImportError:
+        return False
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    try:
+        report = g10_quality.evaluate_study(
+            str(study),
+            root / "exports" / str(study),
+            repo_root=root,
+            write=False,
+        )
+    except (OSError, RuntimeError, ValueError):
+        return False
+    return report.get("status") == g10_quality.STATUS_LOCKED
 
 
 # ── study_meta.json — NƠI PIN durable quyết định thật của bác sĩ ──────────────
@@ -731,6 +760,7 @@ _GATE_REQUIRED_STAKEHOLDERS: Dict[str, Tuple[str, ...]] = {
     "G5": ("DATA_MANAGER", "PI"),
     "G8": ("INDEPENDENT_PEER_REVIEWER",),
     "G9": ("PI",),
+    "G10": ("PI",),
 }
 
 
@@ -749,9 +779,9 @@ def reviewer_role_satisfies_gate(gate_id: str, reviewer_role: str) -> bool:
     """Role người duyệt có đúng stakeholder bắt buộc cho cổng không.
 
     Cổng chưa có stakeholder requirement (vd Gate A/B) trả True để giữ tương
-    thích. G2/G4/G5/G8/G9 fail-closed nếu role không thuộc BẤT KỲ nhóm nào
+    thích. G2/G4/G5/G8/G9/G10 fail-closed nếu role không thuộc BẤT KỲ nhóm nào
     được phép: IRB · thống kê/phương pháp HOẶC PI (G4) · quản trị dữ liệu HOẶC
-    PI (G5) · phản biện độc lập (G8) · PI (G9).
+    PI (G5) · phản biện độc lập (G8) · PI (G9/G10).
     """
     required_groups = _GATE_REQUIRED_STAKEHOLDERS.get(_normalize_role(gate_id))
     if not required_groups:

@@ -40,6 +40,7 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import g10_quality_gate as G10Q  # noqa: E402
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — 4 mã thoát)
 import research_study_spec as RS  # noqa: E402
 import skill_standards as S  # noqa: E402
@@ -1460,6 +1461,32 @@ def title_page_dict(study: str, cps, meta) -> dict:
 
 
 def assemble(study: str, out_dir: Path) -> Dict[str, object]:
+    existing_checkpoint = out_dir / G10Q.CHECKPOINT_JSON
+    if existing_checkpoint.exists() and GC.ledger_approved(
+        "G10", study, existing_checkpoint, repo_root=BASE
+    ):
+        locked_report = G10Q.evaluate_study(
+            study, out_dir, repo_root=BASE, write=False
+        )
+        if locked_report.get("status") != G10Q.STATUS_LOCKED:
+            raise RuntimeError(
+                "G10 đã có chữ ký PI nhưng gói hiện tại không còn khớp manifest; "
+                "không được tự ghi đè. Ghi quyết định G10 mới có chủ ý trước khi lắp lại."
+            )
+        md_path = out_dir / f"DE_CUONG_THONG_NHAT_{study}.md"
+        docx_candidate = out_dir / f"DE_CUONG_THONG_NHAT_{study}.docx"
+        return {
+            "md": md_path,
+            "docx": docx_candidate if docx_candidate.exists() else None,
+            "checkpoint": existing_checkpoint,
+            "study_spec": out_dir / f"STUDY_SPEC_{study}.json",
+            "decision_package": out_dir / f"GOI_QUYET_DINH_{study}.md",
+            "release_readiness": out_dir / G10Q.READINESS_JSON,
+            "body_md": md_path.read_text(encoding="utf-8"),
+            "cps": load_checkpoints(out_dir),
+            "already_locked": True,
+        }
+
     cps = load_checkpoints(out_dir)
     raw_meta = load_meta(out_dir)
     study_spec = RS.build_study_spec(study, cps, raw_meta)
@@ -1524,13 +1551,15 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
 
     decision_path = out_dir / f"GOI_QUYET_DINH_{study}.md"
     decision_path.write_text(decision_md, encoding="utf-8")
+    readiness_path = G10Q.ensure_readiness(study, out_dir)
 
     docx_path = None
+    title_page = title_page_dict(study, cps, meta)
     try:
         import md2docx_vn
         docx_path = out_dir / f"DE_CUONG_THONG_NHAT_{study}.docx"
         md2docx_vn.markdown_to_docx(body_md, docx_path,
-                                    title_page=title_page_dict(study, cps, meta))
+                                    title_page=title_page)
     except ImportError:
         print("  ⚠ python-docx chưa cài — bỏ qua .docx (vẫn có .md).")
         docx_path = None
@@ -1562,6 +1591,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
         "study": study,
         "generated_at": generated_iso,
         "gate_status": "DỰ THẢO — đề cương thống nhất đã lắp ráp",
+        "quality_contract_version": G10Q.QUALITY_CONTRACT_VERSION,
         "guardrail": guardrail,
         "checkpoints_present": present,
         "checkpoints_missing": [g for g in cps if not cps[g]],
@@ -1610,7 +1640,16 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
             "de_cuong_docx": _rel(docx_path),
             "study_spec_json": _rel(spec_path),
             "decision_package_md": _rel(decision_path),
+            "release_readiness_json": _rel(readiness_path),
         },
+        "quality_gate": {
+            "status": G10Q.STATUS_DRAFT,
+            "report": G10Q.REPORT_JSON,
+            "human_approval_valid": False,
+            "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10",
+        },
+        "release_package_ready": False,
+        "release_package_locked": False,
         "n_de_cuong_sections": len(SECTION_BUILDERS),
         "n_protocol_core_items": len(S.PROTOCOL_CORE_ITEMS),
         "disclaimer": "Cần bác sĩ kiểm chứng.",
@@ -1625,8 +1664,11 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
         "checkpoint": cp_path,
         "study_spec": spec_path,
         "decision_package": decision_path,
+        "release_readiness": readiness_path,
+        "title_page": title_page,
         "body_md": body_md,
         "cps": cps,
+        "already_locked": False,
     }
 
 
@@ -2030,6 +2072,27 @@ def main() -> int:
         print(f"❌ Không thấy thư mục {out_dir}")
         return 2
 
+    existing_g10_checkpoint = out_dir / G10Q.CHECKPOINT_JSON
+    if existing_g10_checkpoint.exists() and GC.ledger_approved(
+        "G10", study, existing_g10_checkpoint, repo_root=BASE
+    ):
+        locked_report = G10Q.evaluate_study(
+            study, out_dir, repo_root=BASE, write=False
+        )
+        if locked_report.get("status") == G10Q.STATUS_LOCKED:
+            print(f"🔒 G10 đã khóa hợp lệ cho: {study}")
+            print(
+                f"   Package SHA-256: {locked_report.get('package_sha256', '')}"
+            )
+            print("   G10 không tự nộp hồ sơ và không chứng minh tiếp nhận/chấp nhận.")
+            print("   Cần bác sĩ kiểm chứng.")
+            return GC.EXIT_OK
+        print("⛔ G10 đã có chữ ký PI nhưng gói hiện tại không còn đạt/khớp manifest.")
+        print("   Hệ thống không tự ghi đè một gói đã khóa. Điều tra thay đổi và ghi")
+        print("   quyết định G10 mới có chủ ý trước khi lắp lại.")
+        print("   Cần bác sĩ kiểm chứng.")
+        return GC.EXIT_GUARDRAIL_FAIL
+
     print(f"📦 G10 — Lắp ráp đề cương thống nhất cho: {study}")
     result = assemble(study, out_dir)
     print(f"  ✓ Markdown: {result['md'].relative_to(BASE)}")
@@ -2037,6 +2100,7 @@ def main() -> int:
         print(f"  ✓ Word:     {result['docx'].relative_to(BASE)}")
     print(f"  ✓ StudySpec: {result['study_spec'].relative_to(BASE)}")
     print(f"  ✓ Gói quyết định: {result['decision_package'].relative_to(BASE)}")
+    print(f"  ✓ Release readiness: {result['release_readiness'].relative_to(BASE)}")
     print(f"  ✓ Checkpoint: {result['checkpoint'].relative_to(BASE)}")
 
     # Làm mới STUDY_INDEX.md theo checkpoint THẬT — trước đây chỉ sinh 1 lần lúc
@@ -2088,13 +2152,23 @@ def main() -> int:
         nào biết trạng thái thật. Chèn banner vào ĐẦU file phản ánh đúng kết quả
         THẬT tại thời điểm này. CHỈ vá .md (nguồn chính, rủi ro thấp) — KHÔNG thao
         tác XML .docx ở đây (rủi ro hỏng cấu trúc OOXML cao hơn lợi ích cho một vá
-        nhanh; .docx vẫn được sinh lại đầy đủ mỗi lần assemble() chạy lại)."""
+        nhanh; từ G10-2026.1, dựng lại .docx từ chính Markdown đã gắn banner để
+        hai bản cuối không mang trạng thái khác nhau."""
         banner = "\n".join(banner_lines) + "\n\n---\n\n"
         md_path = result["md"]
         try:
             current = md_path.read_text(encoding="utf-8")
             if not current.startswith(banner_lines[0]):
-                md_path.write_text(banner + current, encoding="utf-8")
+                updated = banner + current
+                md_path.write_text(updated, encoding="utf-8")
+                if result.get("docx"):
+                    import md2docx_vn
+
+                    md2docx_vn.markdown_to_docx(
+                        updated,
+                        result["docx"],
+                        title_page=result.get("title_page"),
+                    )
         except OSError:
             pass
 
@@ -2104,7 +2178,8 @@ def main() -> int:
         cp["needs_input"] = GC.needs_input(
             reason_code, human_message, command,
             must_not_fabricate=["approval_ledger.json", "A12_RETRACTION_RECEIPT.json",
-                                "A12_METADATA_RECEIPT.json"],
+                                "A12_METADATA_RECEIPT.json",
+                                G10Q.READINESS_JSON, G10Q.CHECKPOINT_JSON],
         )
         result["checkpoint"].write_text(
             json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -2234,6 +2309,30 @@ def main() -> int:
         bypass_notes.append("Cổng G9 (liêm chính tác giả) bị BỎ QUA bằng --i-know-g9-not-signed: "
                              "chưa có phê duyệt thật trong approval_ledger.json.")
 
+    # Hồ sơ lịch sử G9 chỉ ký file A10 riêng lẻ không ràng buộc manuscript,
+    # readiness, A12 và G8. Giữ tương thích cho fixture synthetic, nhưng đề tài
+    # thật phải nâng lên G9-2026.1 trước khi được phép đi vào khóa phát hành G10.
+    if (
+        g9_signed
+        and not g9_has_quality_contract
+        and not GC.is_synthetic_test_study(study, repo_root=BASE)
+    ):
+        _mark_g10_blocked(
+            GC.REASON_MISSING_INTEGRITY,
+            "G9 đang dùng hợp đồng lịch sử, chưa ràng buộc toàn bộ gói công bố.",
+            f"python tools/g9_quality_gate.py --study {study}",
+        )
+        _apply_submission_status_banner([
+            "> 🚧 **BẢN NHÁP — G9 CẦN NÂNG LÊN HỢP ĐỒNG G9-2026.1.** "
+            "Chữ ký trên file A10 lịch sử không đủ để khóa gói phát hành G10. "
+            "KHÔNG dùng tài liệu này để nộp.",
+        ])
+        print("\n🚧 G10 chặn: đề tài thật đang dùng hợp đồng G9 lịch sử.")
+        print(f"   Chạy: python tools/g9_quality_gate.py --study {study}")
+        print("   Sau khi READY, PI tự ký đúng G9_checkpoint.json.")
+        print("   Cần bác sĩ kiểm chứng.")
+        return GC.EXIT_BLOCKED
+
     if bypass_notes:
         banner = ["> 🚧 **BẢN NHÁP — MỘT HOẶC NHIỀU CỔNG ĐÃ BỊ BỎ QUA BẰNG CỜ XEM-TRƯỚC. "
                    "KHÔNG dùng tài liệu này để nộp Hội đồng/tạp chí:**"]
@@ -2264,11 +2363,19 @@ def main() -> int:
     # trước đây lại IM LẶNG y như trạng thái mạnh nhất ('role'), vì nó chỉ đơn giản không
     # lọt vào shared_gates. Trạng thái không biết gì phải kêu TO NHẤT, không phải êm nhất.
     unknown_gates = sorted(g for g, s in scopes.items() if s is None)
-    banner = [
-        "> ✅ **Đã qua cổng A12 (trích dẫn) + G8 (bình duyệt độc lập) + G9 (liêm "
-        "chính tác giả)** tại thời điểm lắp ráp này. Cần bác sĩ kiểm chứng toàn "
-        "bộ nội dung trước khi nộp chính thức.",
-    ]
+    if g9_has_quality_contract:
+        banner = [
+            "> ℹ️ **GÓI CAPSTONE G10:** A12 + G8 + G9 đã đạt tại thời điểm lắp "
+            "ráp. Trạng thái khóa G10 phải được xác minh trực tiếp bằng "
+            "G10_QUALITY_REPORT.json/approval_ledger; riêng file này không phải "
+            "bằng chứng đã khóa, đã nộp hoặc đã được chấp nhận.",
+        ]
+    else:
+        banner = [
+            "> ✅ **Đã qua cổng A12 (trích dẫn) + G8 (bình duyệt độc lập) + G9 (liêm "
+            "chính tác giả)** tại thời điểm lắp ráp này. Cần bác sĩ kiểm chứng toàn "
+            "bộ nội dung trước khi nộp chính thức.",
+        ]
     if unknown_gates:
         banner.append(
             "> ⛔ **KHÔNG XÁC ĐỊNH ĐƯỢC mức bảo đảm chữ ký cho cổng "
@@ -2288,6 +2395,49 @@ def main() -> int:
             "bằng chứng ngoài hệ (biên bản họp, thư phản biện có danh tính)."
         )
     _apply_submission_status_banner(banner)
+
+    if g9_has_quality_contract:
+        g10_report = G10Q.evaluate_study(
+            study,
+            out_dir,
+            repo_root=BASE,
+            write=True,
+        )
+        g10_status = g10_report.get("status")
+        print(f"\n🔍 G10 quality status: {g10_status}")
+        if g10_status == G10Q.STATUS_LOCKED:
+            print("🔒 Gói G10 đã khóa hợp lệ. G10 không tự nộp hồ sơ.")
+            print("Cần bác sĩ kiểm chứng.")
+            return GC.EXIT_OK
+        if g10_status == G10Q.STATUS_READY:
+            _mark_g10_blocked(
+                GC.REASON_MISSING_RELEASE_APPROVAL,
+                "Gói G10 đã đủ tiêu chí kỹ thuật nhưng chưa có phê duyệt PI trên đúng manifest.",
+                f"python tools/approve_gate.py --study {study} --gate G10 "
+                f"--artifact {result['checkpoint']} --reviewer-role PI "
+                "--reviewer-ref <MA_THAM_CHIEU_KHONG_PII>",
+            )
+            print("🚧 Gói đã sẵn sàng để PI rà và khóa, nhưng CHƯA được phát hành.")
+            print("   PI phải tự tay ký đúng G10_checkpoint.json; agent không được ký hộ.")
+            print("   Việc nộp bên ngoài vẫn chưa được G10 thực hiện hoặc chứng minh.")
+            print("   Cần bác sĩ kiểm chứng.")
+            return GC.EXIT_BLOCKED
+
+        _mark_g10_blocked(
+            GC.REASON_MISSING_RELEASE_READINESS,
+            "Gói G10 chưa đạt hợp đồng release-readiness/nhất quán/toàn vẹn.",
+            f"Hoàn tất exports/{study}/{G10Q.READINESS_JSON} rồi chạy "
+            f"python tools/g10_quality_gate.py --study {study}",
+        )
+        for action in g10_report.get("actions", [])[:8]:
+            print(f"   - {action}")
+        if g10_status == G10Q.STATUS_BLOCKED:
+            print("⛔ G10 có lỗi chặn/an toàn hoặc gói đã bị thay đổi.")
+            print("   Cần bác sĩ kiểm chứng.")
+            return GC.EXIT_GUARDRAIL_FAIL
+        print("🚧 G10 mới là bản lắp ráp; còn mục cần hoàn tất trước khi PI ký.")
+        print("   Cần bác sĩ kiểm chứng.")
+        return GC.EXIT_BLOCKED
 
     print("\n✅ Xong. Cần bác sĩ kiểm chứng.")
     if unknown_gates:

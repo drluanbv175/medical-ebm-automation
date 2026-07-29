@@ -140,9 +140,15 @@ GATE_AUTOMATION_PROFILES: Dict[str, Dict[str, str]] = {
         "doctor_input": "Chữ ký liêm chính thật của chủ nhiệm/tác giả.",
     },
     "G10": {
-        "mode": "AUTO_ASSEMBLE",
-        "auto": "Tự lắp ráp đề cương/bộ hồ sơ thống nhất và readiness package.",
-        "doctor_input": "Chủ nhiệm duyệt bản cuối trước nộp/sử dụng.",
+        "mode": "AUTO_ASSEMBLE_HARD_STOP",
+        "auto": (
+            "Tự lắp ráp, kiểm nhất quán, tạo release-readiness và manifest "
+            "SHA-256 của toàn bộ gói cuối."
+        ),
+        "doctor_input": (
+            "Chủ nhiệm hoàn tất release-readiness và tự ký đúng G10_checkpoint.json; "
+            "G10 không tự nộp hồ sơ."
+        ),
     },
 }
 
@@ -326,6 +332,23 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "patterns": ["G8_A9_PRESUBMISSION_*.md", "17_Reporting_Checklist.md"],
             "required": True,
         },
+        {
+            # required=False như G3 (khác G2 là True): fixture G8 của bộ verify ở
+            # thư mục gốc chỉ dựng artifact A9, nâng lên bắt buộc phải sửa đồng thời.
+            "key": "g8_quality_report",
+            "label": "Báo cáo chất lượng G8 (bình duyệt)",
+            "patterns": ["G8_QUALITY_REPORT.json"],
+            "required": False,
+        },
+        {
+            # Bản nhận xét THẬT của người phản biện. Máy KHÔNG sinh file này và
+            # không nên sinh — chữ ký G8 hiện chỉ ràng buộc vào bản tự kiểm do
+            # pipeline tạo ra, nên đây là bằng chứng NỘI DUNG còn thiếu.
+            "key": "peer_review_report",
+            "label": "Nhận xét phản biện của người thật",
+            "patterns": ["G8_PEER_REVIEW_REPORT_*.md"],
+            "required": False,
+        },
     ],
     "G9": [
         {
@@ -358,6 +381,18 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "key": "assembled_protocol",
             "label": "Đề cương/bộ hồ sơ thống nhất",
             "patterns": ["DE_CUONG_THONG_NHAT_*.md", "20_Final_Readiness_Report.md"],
+            "required": True,
+        },
+        {
+            "key": "release_readiness",
+            "label": "Structured final release readiness",
+            "patterns": ["G10_RELEASE_READINESS.json"],
+            "required": True,
+        },
+        {
+            "key": "quality_report",
+            "label": "Live G10 quality report",
+            "patterns": ["G10_QUALITY_REPORT.json"],
             "required": True,
         },
     ],
@@ -714,6 +749,13 @@ def _real_action(gate: str, study: str) -> str:
             f"chạy `python3 tools/g9_quality_gate.py --study {study}`. Chỉ khi READY, "
             "PI tự ký đúng G9_checkpoint.json bằng approve_gate.py --gate G9."
         )
+    if gate == "G10":
+        return (
+            f"Hoàn tất G10_RELEASE_READINESS.json; chạy "
+            f"`python3 tools/g10_quality_gate.py --study {study}`. Chỉ khi READY, "
+            "PI tự ký đúng G10_checkpoint.json bằng approve_gate.py --gate G10. "
+            "Việc nộp bên ngoài là bước riêng."
+        )
     return f"Chạy tiếp pipeline: python3 tools/run_pipeline.py --study {study}"
 
 
@@ -757,7 +799,7 @@ def _requirement_action(gate: str, default_command: str,
             f"sau đó chạy lại: {default_command}"
         )
     profile = extras.get("automation_profile") or {}
-    if gate in {"G3", "G8", "G9"}:
+    if gate in {"G3", "G8", "G9", "G10"}:
         return (
             "Có thể tăng tự động bằng cách pin thêm input trong study_meta.json: "
             f"{profile.get('doctor_input', '')}"
@@ -819,6 +861,80 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
             "orphan": orphan,
             "can_auto_run": True,
             "next_action": f"Rà guardrail rồi chạy lại: {default_command}",
+            **extras,
+        }
+
+    if gate == "G10" and cp.get("quality_contract_version"):
+        try:
+            import g10_quality_gate as G10Q  # noqa: PLC0415
+
+            quality_report = G10Q.evaluate_study(
+                study,
+                out_dir,
+                repo_root=BASE,
+                write=False,
+            )
+            quality_status = quality_report.get("status")
+        except (ImportError, OSError, RuntimeError, ValueError):
+            quality_status = None
+        if quality_status == "PASS_G10_RELEASE_PACKAGE_LOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_LOCKED,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "g10_release_locked",
+                    "label": "PI đã khóa đúng manifest G10",
+                    "present": True,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Không cần hành động kỹ thuật. Việc nộp/tiếp nhận bên ngoài "
+                    "không được G10 tự thực hiện hoặc chứng minh."
+                ),
+                **extras,
+            }
+        if quality_status == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "g10_release_locked",
+                    "label": "PI đã khóa đúng manifest G10",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Điều tra lỗi G10_QUALITY_REPORT; không ghi đè gói đã ký hoặc "
+                    f"tự cập nhật manifest. Chạy `python3 tools/g10_quality_gate.py "
+                    f"--study {study}` sau khi sửa."
+                ),
+                **extras,
+            }
+        return {
+            "gate": gate,
+            "label": PIPELINE_GATE_LABELS[gate],
+            "status": STATUS_NEEDS_REAL,
+            "guardrail": guardrail,
+            "checkpoint": str(checkpoint_path),
+            "real_signal": {
+                "key": "g10_release_locked",
+                "label": "PI đã khóa đúng manifest G10",
+                "present": False,
+            },
+            "stale": stale,
+            "orphan": orphan,
+            "can_auto_run": False,
+            "next_action": _real_action(gate, study),
             **extras,
         }
 
@@ -971,6 +1087,60 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
                 "real_signal": {
                     "key": "g3_statistician_confirmation",
                     "label": "thống kê viên/chủ nhiệm xác nhận giả định cỡ mẫu",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": action,
+                **extras,
+            }
+
+    # G8 — bình duyệt. Guard theo `quality_contract_version` để checkpoint CŨ không
+    # bị hồi tố. LƯU Ý: nhánh này KHÔNG thay chốt fail-closed thật của G8 (vẫn là
+    # run_g10_assemble.py gọi ledger_approved) — nó chỉ để đài kiểm soát THẤY được
+    # kết luận chất lượng thay vì bỏ qua im lặng.
+    if gate == "G8" and cp.get("quality_contract_version"):
+        quality = cp.get("quality_gate")
+        quality_status = quality.get("status") if isinstance(quality, dict) else None
+        if quality_status == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": None,
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Sửa lỗi trong G8_QUALITY_REPORT rồi chạy lại "
+                    f"`python3 tools/g8_quality_gate.py --study {study}`."
+                ),
+                **extras,
+            }
+        if quality_status != "PASS_G8_REVIEW_RECORDED":
+            pending = (
+                quality.get("pending_actions") if isinstance(quality, dict) else None
+            )
+            action = (
+                str(pending[0])
+                if isinstance(pending, list) and pending
+                else (
+                    "Hoàn tất gói tiền nộp bài và mời người phản biện độc lập viết "
+                    f"G8_PEER_REVIEW_REPORT_{study}.md, sau đó tự ký approve_gate.py --gate G8."
+                )
+            )
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_NEEDS_REAL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "g8_independent_review",
+                    "label": "bình duyệt độc lập có bằng chứng nội dung",
                     "present": False,
                 },
                 "stale": stale,

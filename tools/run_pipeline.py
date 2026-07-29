@@ -353,6 +353,25 @@ def _hard_gate_report(out_dir: Path, meta: dict) -> List[Dict[str, object]]:
                       else f"🔒 draft — CHỜ {need_label}"),
             "need": None if locked else need_label,
         })
+    g10 = cps.get("G10") or {}
+    if g10.get("quality_contract_version"):
+        locked = GC.g10_quality_contract_satisfied(
+            str(g10.get("study") or out_dir.name),
+            repo_root=BASE,
+        )
+        out.append(
+            {
+                "gate": "G10",
+                "signal": "g10_release_locked",
+                "locked": locked,
+                "state": (
+                    "🔒 ĐÃ KHÓA GÓI PHÁT HÀNH (không đồng nghĩa đã nộp)"
+                    if locked
+                    else "🔒 draft/ready — CHỜ PI khóa đúng manifest G10"
+                ),
+                "need": None if locked else "PI khóa đúng manifest G10",
+            }
+        )
     return out
 
 
@@ -423,10 +442,20 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
 
     # 4) Kết luận sẵn sàng từ G10 checkpoint (nếu có).
     readiness = None
+    g10_quality_status = None
     g10 = out_dir / "G10_checkpoint.json"
     if g10.exists():
         try:
-            readiness = json.loads(g10.read_text(encoding="utf-8")).get("readiness")
+            g10_checkpoint = json.loads(g10.read_text(encoding="utf-8"))
+            readiness = g10_checkpoint.get("readiness")
+            quality = g10_checkpoint.get("quality_gate")
+            if isinstance(quality, dict):
+                g10_quality_status = quality.get("status")
+            if (
+                g10_checkpoint.get("quality_contract_version")
+                and GC.g10_quality_contract_satisfied(study, repo_root=BASE)
+            ):
+                g10_quality_status = "PASS_G10_RELEASE_PACKAGE_LOCKED"
         except (json.JSONDecodeError, OSError):
             readiness = None
 
@@ -446,6 +475,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
         "total_gate_runs": total_runs,
         "converged_fresh": post["fresh"],
         "readiness": readiness,
+        "g10_quality_status": g10_quality_status,
         "hard_gates": _hard_gate_report(out_dir, meta),
     }
     # Ghi report.
@@ -496,6 +526,9 @@ def print_summary(report: Dict[str, object]) -> None:
         print("  Kết luận sẵn sàng (G10):")
         for r in report["readiness"]:
             print(f"    • {r['moc']}: {r['dat']}")
+    if report.get("g10_quality_status"):
+        print(f"  Trạng thái hợp đồng G10: {report['g10_quality_status']}")
+        print("    • G10 không tự nộp hồ sơ và không chứng minh tiếp nhận/chấp nhận.")
     print("  → Cần bác sĩ kiểm chứng. Cổng cứng (IRB/SAP/dữ liệu thật) chờ bằng "
           "chứng đời thực, hệ KHÔNG tự vượt.")
 

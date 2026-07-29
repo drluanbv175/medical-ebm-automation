@@ -44,6 +44,7 @@ cứng nào):
           HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
     G8  → PHAN_BIEN / PEER_REVIEWER / EXTERNAL_REVIEWER (bình duyệt độc lập)
     G9  → PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
+    G10 → PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
 
 Sau khi chạy: exports/<tên>/approval_ledger.json có thêm 1 dòng phê duyệt, evidence_hash =
 SHA256 của ĐÚNG nội dung file --artifact TẠI THỜI ĐIỂM CHẠY LỆNH NÀY. Nếu artifact bị sửa SAU
@@ -69,6 +70,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import g2_quality_gate as G2Q
 import g5_quality_gate as G5Q
 import g9_quality_gate as G9Q
+import g10_quality_gate as G10Q
 import gate_contract as GC
 
 from app.utils.console import configure_unicode_console
@@ -307,7 +309,11 @@ def main() -> int:
     configure_unicode_console()
     ap = argparse.ArgumentParser(description=__doc__.split("Dùng:")[0])
     ap.add_argument("--study", required=True, help="Tên đề tài (khớp thư mục exports/<tên>)")
-    ap.add_argument("--gate", required=True, choices=["G2", "G4", "G5", "G8", "G9", "GATE_A", "GATE_B"])
+    ap.add_argument(
+        "--gate",
+        required=True,
+        choices=["G2", "G4", "G5", "G8", "G9", "G10", "GATE_A", "GATE_B"],
+    )
     ap.add_argument("--artifact", required=True, help="File đại diện cho nội dung được duyệt (SAP/checkpoint/...)")
     ap.add_argument("--reviewer-role", required=True, help='vd "Chủ nhiệm đề tài", "Nghiên cứu viên chính"')
     ap.add_argument("--reviewer-ref", required=True,
@@ -484,6 +490,62 @@ def main() -> int:
             print("   Không ghi ledger; PI phải kiểm đủ form thật của từng tác giả.")
             return 1
 
+    if args.gate == "G10" and args.decision == "APPROVED":
+        expected_artifact = study_dir / G10Q.CHECKPOINT_JSON
+        try:
+            artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
+        except OSError:
+            artifact_matches = False
+        if not artifact_matches:
+            print(
+                "✗ TỪ CHỐI ký G10 — artifact phải là "
+                f"{expected_artifact.name} trong đúng thư mục đề tài."
+            )
+            print("   Chỉ checkpoint này ràng buộc manifest của toàn bộ gói phát hành.")
+            return 1
+        try:
+            g10_report = G10Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=False,
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"✗ TỪ CHỐI ký G10 — không thẩm định được gói cuối: {exc}")
+            return 1
+        if g10_report.get("status") != G10Q.STATUS_READY:
+            print(
+                "✗ TỪ CHỐI ký G10 — gói chưa ở trạng thái "
+                f"{G10Q.STATUS_READY}."
+            )
+            print(f"   Trạng thái hiện tại: {g10_report.get('status', 'UNKNOWN')}")
+            for item in g10_report.get("automatic_criteria", []):
+                if item.get("status") != "PASS":
+                    print(
+                        f"   - {item.get('id')}: {item.get('label')} "
+                        f"({item.get('evidence')})"
+                    )
+            print("   Không ghi ledger; PI phải rà đúng gói cuối và xử lý hết mục còn lại.")
+            return 1
+        # Dọn tín hiệu BLOCKED trước khi ký. Đây vẫn là thay đổi TRƯỚC chữ ký;
+        # manifest G10 không chứa chính checkpoint nên không tạo vòng hash.
+        # Sau bước này, hash ledger ràng buộc đúng bytes không còn needs_input cũ.
+        try:
+            g10_checkpoint = json.loads(artifact_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            print("✗ TỪ CHỐI ký G10 — không đọc được checkpoint để dọn trạng thái chờ.")
+            return 1
+        if not isinstance(g10_checkpoint, dict):
+            print("✗ TỪ CHỐI ký G10 — checkpoint không phải JSON object.")
+            return 1
+        g10_checkpoint.pop("needs_input", None)
+        g10_checkpoint["gate_status"] = G10Q.STATUS_READY
+        artifact_path.write_text(
+            json.dumps(g10_checkpoint, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        evidence_content = artifact_path.read_text(encoding="utf-8")
+
     ledger_path = study_dir / "approval_ledger.json"
 
     # Chữ ký (2026-07-12): cần evidence_hash + timestamp TRƯỚC khi ký (payload chữ ký
@@ -626,6 +688,18 @@ def main() -> int:
             print(f"   G9 quality status: {report['status']}")
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G9 quality report: {exc}")
+    elif args.gate == "G10":
+        try:
+            report = G10Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=True,
+            )
+            print(f"   G10 quality status: {report['status']}")
+            print("   Việc nộp bên ngoài: CHƯA được G10 thực hiện hoặc chứng minh.")
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G10 quality report: {exc}")
     return 0
 
 

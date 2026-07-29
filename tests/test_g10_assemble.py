@@ -78,6 +78,16 @@ def _write_cross_sectional_fixture(d: Path, specialty="generic",
     raw = {"pmids": pmids, "results": [{"pmid": p} for p in pmids]}
     (d / "G0_pubmed_raw.json").write_text(
         json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+    (d / "study_meta.json").write_text(
+        json.dumps(
+            {
+                "study_kind": "synthetic_test",
+                "disclaimer": "SYNTHETIC TEST ONLY — không phải phê duyệt người thật.",
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
 
 
 @pytest.fixture
