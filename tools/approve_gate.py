@@ -68,6 +68,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import g2_quality_gate as G2Q
 import g5_quality_gate as G5Q
+import g9_quality_gate as G9Q
 import gate_contract as GC
 
 from app.utils.console import configure_unicode_console
@@ -445,6 +446,44 @@ def main() -> int:
             print("   Không ghi ledger; phải xử lý hết lỗi dữ liệu trước.")
             return 1
 
+    if args.gate == "G9" and args.decision == "APPROVED":
+        expected_artifact = study_dir / G9Q.CHECKPOINT_JSON
+        try:
+            artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
+        except OSError:
+            artifact_matches = False
+        if not artifact_matches:
+            print(
+                "✗ TỪ CHỐI ký G9 — artifact phải là "
+                f"{expected_artifact.name} trong đúng thư mục đề tài."
+            )
+            print("   Gói A10 riêng lẻ không ràng buộc manuscript/readiness/G8/A12.")
+            return 1
+        try:
+            g9_report = G9Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=False,
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"✗ TỪ CHỐI ký G9 — không thẩm định được hồ sơ: {exc}")
+            return 1
+        if g9_report.get("status") != G9Q.STATUS_READY:
+            print(
+                "✗ TỪ CHỐI ký G9 — hồ sơ chưa ở trạng thái "
+                f"{G9Q.STATUS_READY}."
+            )
+            print(f"   Trạng thái hiện tại: {g9_report.get('status', 'UNKNOWN')}")
+            for item in g9_report.get("automatic_criteria", []):
+                if item.get("status") != "PASS":
+                    print(
+                        f"   - {item.get('id')}: {item.get('label')} "
+                        f"({item.get('evidence')})"
+                    )
+            print("   Không ghi ledger; PI phải kiểm đủ form thật của từng tác giả.")
+            return 1
+
     ledger_path = study_dir / "approval_ledger.json"
 
     # Chữ ký (2026-07-12): cần evidence_hash + timestamp TRƯỚC khi ký (payload chữ ký
@@ -576,6 +615,17 @@ def main() -> int:
             print(f"   G5 quality status: {report['status']}")
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G5 quality report: {exc}")
+    elif args.gate == "G9":
+        try:
+            report = G9Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=True,
+            )
+            print(f"   G9 quality status: {report['status']}")
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G9 quality report: {exc}")
     return 0
 
 

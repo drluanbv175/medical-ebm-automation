@@ -335,6 +335,18 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "required": True,
         },
         {
+            "key": "publication_readiness",
+            "label": "Structured author/publication attestations",
+            "patterns": ["G9_PUBLICATION_READINESS.json"],
+            "required": True,
+        },
+        {
+            "key": "quality_report",
+            "label": "Live G9 quality report",
+            "patterns": ["G9_QUALITY_REPORT.json"],
+            "required": True,
+        },
+        {
             "key": "final_readiness",
             "label": "Final readiness report",
             "patterns": ["20_Final_Readiness_Report.md"],
@@ -698,8 +710,9 @@ def _real_action(gate: str, study: str) -> str:
         )
     if gate == "G9":
         return (
-            "Chủ nhiệm và tác giả xác nhận COI/tài trợ/đóng góp/khai báo AI; "
-            "sau đó cập nhật `integrity_signed=true` hoặc dùng tools/approve_gate.py --gate G9."
+            "Hoàn tất G9_PUBLICATION_READINESS.json và mọi form/evidence_ref thật; "
+            f"chạy `python3 tools/g9_quality_gate.py --study {study}`. Chỉ khi READY, "
+            "PI tự ký đúng G9_checkpoint.json bằng approve_gate.py --gate G9."
         )
     return f"Chạy tiếp pipeline: python3 tools/run_pipeline.py --study {study}"
 

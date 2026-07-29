@@ -201,6 +201,32 @@ def g5_quality_contract_satisfied(
     return report.get("status") == g5_quality.STATUS_LOCKED
 
 
+def g9_quality_contract_satisfied(
+    study: str,
+    repo_root: Optional[Path] = None,
+) -> bool:
+    """True khi G9 được chấm trực tiếp là đã khóa liêm chính công bố.
+
+    Không tin ``submission_package_ready`` hoặc report JSON lưu sẵn. Việc chấm
+    trực tiếp bắt lại thay đổi ở manuscript/readiness/A12/G8 sau chữ ký PI.
+    """
+    try:
+        import g9_quality_gate as g9_quality  # noqa: PLC0415
+    except ImportError:
+        return False
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    try:
+        report = g9_quality.evaluate_study(
+            str(study),
+            root / "exports" / str(study),
+            repo_root=root,
+            write=False,
+        )
+    except (OSError, RuntimeError, ValueError):
+        return False
+    return report.get("status") == g9_quality.STATUS_LOCKED
+
+
 # ── study_meta.json — NƠI PIN durable quyết định thật của bác sĩ ──────────────
 # Cờ bằng-chứng-đời-thực: hệ KHÔNG tự bật, chỉ bác sĩ xác nhận. gate_params là nơi
 # PIN tham số (effect size…) để CHẠY LẠI không mất input (khớp run_pipeline._recover_params).

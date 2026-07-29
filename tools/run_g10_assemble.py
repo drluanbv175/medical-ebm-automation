@@ -2191,28 +2191,37 @@ def main() -> int:
     # (chữ ký, xem gate_contract.py) — vẫn XUẤT file (bác sĩ có thể cần xem nháp),
     # nhưng KHÔNG báo "sẵn sàng"/exit 0 nếu G9 chưa thật sự có phê duyệt.
     #
-    # GIỚI HẠN THẬT ĐÃ BIẾT (ghi nhận 2026-07-18, audit đối kháng 7 trục — KHÔNG phải
-    # drift mới, là đặc điểm kiến trúc từ đầu): cổng cứng mã hóa G9 chỉ đòi MỘT chữ ký
-    # ledger role=PI, KHÔNG đối chiếu số bản ghi với n_authors. Hệ thống chưa có hạ
-    # tầng định danh riêng cho từng đồng tác giả nên KHÔNG thể xác minh bằng mã việc
-    # "đủ N chữ ký tay của tất cả tác giả" mà tài liệu A10 (ICMJE) yêu cầu trên giấy.
-    # Kỷ luật vận hành — PI chỉ ký cổng G9 SAU khi đã thật sự thu đủ chữ ký giấy của
-    # TẤT CẢ đồng tác giả — là lớp bảo vệ DUY NHẤT cho phần này. Không nới lỏng cổng;
-    # chỉ nêu rõ ranh giới máy-kiểm để bác sĩ không hiểu nhầm "G9 xanh = đủ mọi chữ ký".
-    g9_artifact = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
-    g9_signed = GC.ledger_approved("G9", study, g9_artifact, repo_root=BASE)
+    # Hợp đồng G9-2026.1 khóa đúng checkpoint chứa manifest toàn gói và chấm trực
+    # tiếp readiness/từng author_ref/G8/A12. Checkpoint cũ giữ đường tương thích
+    # chỉ để không phá hồ sơ lịch sử; phê duyệt G9 mới qua approve_gate.py luôn
+    # bắt buộc G9_checkpoint.json và trạng thái READY.
+    g9_checkpoint_path = out_dir / "G9_checkpoint.json"
+    try:
+        g9_checkpoint = json.loads(g9_checkpoint_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        g9_checkpoint = {}
+    if not isinstance(g9_checkpoint, dict):
+        g9_checkpoint = {}
+    g9_has_quality_contract = bool(g9_checkpoint.get("quality_contract_version"))
+    if g9_has_quality_contract:
+        g9_artifact = g9_checkpoint_path
+        g9_signed = GC.g9_quality_contract_satisfied(study, repo_root=BASE)
+    else:
+        g9_artifact = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
+        g9_signed = GC.ledger_approved("G9", study, g9_artifact, repo_root=BASE)
     if not g9_signed and not args.i_know_g9_not_signed:
         _reason = GC.gate_block_reason("G9", study, g9_artifact, repo_root=BASE)
         if _reason:
             print(f"\n⚠️  LÝ DO CỔNG G9 KHÔNG ĐẠT: {_reason}")
-        print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: G9 (liêm chính tác giả) chưa có phê duyệt")
-        print("   THẬT trong approval_ledger.json (chạy tools/approve_gate.py --gate G9,")
-        print("   TỰ TAY bởi bác sĩ/PI, không nhờ agent). Tài liệu đã xuất Ở TRÊN chỉ là")
+        print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: G9 chưa đạt hợp đồng liêm chính công bố")
+        print("   G9-2026.1 hoặc chưa có phê duyệt PI hợp lệ trên đúng checkpoint.")
+        print("   Chạy tools/g9_quality_gate.py, xử lý mọi tiêu chí, rồi PI TỰ TAY")
+        print("   chạy approve_gate.py --gate G9; không nhờ agent. Tài liệu chỉ là")
         print("   BẢN NHÁP để rà soát — KHÔNG dùng để nộp tạp chí/hội đồng khi ở trạng")
         print("   thái này. Nếu chỉ muốn xem trước, thêm --i-know-g9-not-signed.")
         _mark_g10_blocked(
             GC.REASON_MISSING_INTEGRITY,
-            "G9 (liêm chính tác giả) chưa có phê duyệt thật trong approval_ledger.json.",
+            "G9 chưa đạt hợp đồng G9-2026.1 và/hoặc chưa có phê duyệt PI hợp lệ.",
             f"python tools/approve_gate.py --study {study} --gate G9 "
             f"--artifact {g9_artifact.name} --reviewer-role PI",
         )

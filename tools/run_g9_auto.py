@@ -5,9 +5,9 @@ run_g9_auto.py — TỰ ĐỘNG HÓA CỔNG G9: Liêm chính Tác giả (Author 
 Cổng cứng cuối cùng trước khi nộp bản thảo ra bên ngoài.
 Đọc tất cả checkpoints G0-G8 -> sinh GÓI LIÊM CHÍNH TÁC GIẢ (A10) gồm 8 phần:
   Phần 1 — ICMJE Tiêu chuẩn Tác giả (4 tiêu chí, từng tác giả)
-  Phần 2 — Khai báo Xung đột Lợi ích Cuối (Final COI)
-  Phần 3 — Data Availability Statement (3 lựa chọn)
-  Phần 4 — AI Use Disclosure (COPE + Nature Portfolio guidelines 2024)
+  Phần 2 — Khai báo quan hệ/hoạt động và xung đột lợi ích
+  Phần 3 — Data Availability Statement
+  Phần 4 — AI Use Disclosure theo ICMJE 2026
   Phần 5 — Tuyên bố Liêm chính Nghiên cứu
   Phần 6 — Thư gửi Tạp chí (Cover Letter Shell)
   Phần 7 — Bản mẫu Phản hồi Phản biện (Response-to-Reviewers Template)
@@ -35,6 +35,7 @@ _TOOLS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(_TOOLS_DIR))
 
+import g9_quality_gate as G9Q  # noqa: E402
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — chỉ dùng load_study_meta)
 
 
@@ -111,8 +112,9 @@ def build_part1_icmje(n_authors: int, study: str) -> str:
         "## PHẦN 1 — TIÊU CHUẨN TÁC GIẢ ICMJE (CẢ 4 TIÊU CHÍ)",
         "",
         "> **Căn cứ:** ICMJE Recommendations for Conduct, Reporting, Editing, and Publication",
-        "> of Scholarly Work in Medical Journals (2023 update).",
+        "> of Scholarly Work in Medical Journals (updated January 2026).",
         "> Tất cả 4 tiêu chí phải đạt ĐỦ mới là Tác giả.",
+        "> CRediT mô tả vai trò đóng góp nhưng không thay thế 4 tiêu chí ICMJE.",
         "> Đóng góp chỉ đáp ứng 1-2 tiêu chí -> ghi trong Lời cảm ơn (Acknowledgment).",
         "",
         "### Bảng Tiêu chuẩn Tác giả ICMJE",
@@ -187,15 +189,16 @@ def build_part1_icmje(n_authors: int, study: str) -> str:
 
 def build_part2_coi(n_authors: int, study: str) -> str:
     """
-    Sinh mẫu ICMJE COI đầy đủ cho từng tác giả + tuyên bố tập thể.
-    Dựa trên ICMJE Form for Disclosure of Potential Conflicts of Interest (2021).
+    Sinh checklist chuẩn bị khai báo cho từng tác giả + tuyên bố tập thể.
+    Tác giả vẫn phải dùng form ICMJE hiện hành của tạp chí tại ngày nộp.
     """
     lines = [
         "## PHẦN 2 — KHAI BÁO XUNG ĐỘT LỢI ÍCH CUỐI (FINAL COI DECLARATION)",
         "",
-        "> **Căn cứ:** ICMJE Form for Disclosure of Potential Conflicts of Interest (2021).",
-        "> Mỗi tác giả điền riêng; khai báo trong vòng 36 tháng kể từ khi bắt đầu nghiên cứu.",
-        "> Tạp chí sẽ yêu cầu nộp form ICMJE gốc — form này là bản tóm tắt chuẩn bị sẵn.",
+        "> **Căn cứ:** ICMJE Disclosure Form hiện hành (kiểm lại tại ngày nộp).",
+        "> Hỗ trợ cho chính bản thảo phải khai không giới hạn thời gian; các quan hệ/hoạt động",
+        "> khác thường được khai trong 36 tháng trước khi nộp. Mỗi tác giả điền riêng.",
+        "> Đây chỉ là checklist chuẩn bị, không thay thế form chính thức của tạp chí.",
         "",
         "### A. MẪU KHAI BÁO TỪNG TÁC GIẢ (điền riêng cho mỗi người)",
         "",
@@ -211,55 +214,28 @@ def build_part2_coi(n_authors: int, study: str) -> str:
             "",
             "Họ tên tác giả: [CẦN ĐIỀN]",
             "Đơn vị: [CẦN ĐIỀN]",
-            "Email: [CẦN ĐIỀN]",
-            "ORCID: [CẦN ĐIỀN — https://orcid.org/0000-0000-0000-0000]",
+            "Mã tác giả nội bộ (không PII): [CẦN ĐIỀN]",
+            "ORCID/tên/email chỉ điền trong hệ thống nộp bài được kiểm soát, không lưu tại đây.",
             "",
-            "I. HOẠT ĐỘNG CÓ THÙ LAO (36 tháng gần nhất — liên quan nội dung bài)",
+            "I. HỖ TRỢ CHO CHÍNH BẢN THẢO (không giới hạn thời gian)",
             "",
-            "1a. Tư vấn chuyên môn có thù lao:",
+            "1. Tài trợ, vật tư, hỗ trợ viết/phân tích, phí xử lý bài hoặc hỗ trợ khác:",
             "   ☐ Không có",
-            "   ☐ Có -> Tên tổ chức: ___ | Số tiền: ___",
+            "   ☐ Có -> Tổ chức/loại hỗ trợ/đơn vị nhận: ___",
             "",
-            "1b. Cổ phần/cổ phiếu (không kể quỹ chỉ số):",
+            "II. QUAN HỆ/HOẠT ĐỘNG TRONG 36 THÁNG QUA",
+            "",
+            "2. Grants/contracts; 3. Royalties/licenses; 4. Consulting fees;",
+            "5. Honoraria; 6. Expert testimony; 7. Travel/meeting support;",
+            "8. Patents planned/pending/issued; 9. Data Safety Monitoring Board/advisory board;",
+            "10. Leadership/fiduciary role; 11. Stock/stock options;",
+            "12. Equipment/materials/drugs/writing/gifts/services; 13. Other interests.",
+            "",
+            "Khai từng mục trên trong form chính thức:",
             "   ☐ Không có",
-            "   ☐ Có -> Tên công ty: ___ | Loại: ___",
-            "",
-            # Vá 2026-07-17 (round audit đối kháng 4): mục "Intellectual Property" của
-            # ICMJE Uniform Disclosure Form bao gồm CẢ patent LẪN copyright (đang chờ cấp/
-            # đã cấp/đã cấp phép/đang nhận tiền bản quyền) — trước đây chỉ hỏi "bằng sáng
-            # chế", bỏ sót copyright/licensing/royalty mà form gốc yêu cầu khai.
-            "1c. Sở hữu trí tuệ — bằng sáng chế (patent) VÀ bản quyền (copyright), bất kể",
-            "    đang chờ cấp / đã được cấp / đã cấp phép (licensed) / đang nhận tiền bản",
-            "    quyền (royalties):",
-            "   ☐ Không có",
-            "   ☐ Có -> Loại (patent/copyright): ___ | Trạng thái (chờ cấp/đã cấp/đã cấp "
-            "phép/đang nhận bản quyền): ___ | Chi tiết: ___",
-            "",
-            "1d. Thù lao cho bài nói chuyện / tham gia hội đồng chuyên gia:",
-            "   ☐ Không có",
-            "   ☐ Có -> Tên tổ chức: ___ | Số tiền: ___",
-            "",
-            "1e. Chi phí du lịch/hội nghị được tài trợ (không kể học thuật):",
-            "   ☐ Không có",
-            "   ☐ Có -> Tên tổ chức: ___ | Chi tiết: ___",
-            "",
-            "1f. Tham gia Ủy ban Cố vấn / Tư vấn Khoa học:",
-            "   ☐ Không có",
-            "   ☐ Có -> Tên tổ chức: ___ | Thời gian: ___",
-            "",
-            "II. TÀI TRỢ NGHIÊN CỨU",
-            "   Tên nhà tài trợ: [CẦN ĐIỀN — 'Không có tài trợ bên ngoài' nếu đúng]",
-            "   Số hợp đồng/tài trợ: [CẦN ĐIỀN nếu có]",
-            "   Nhà tài trợ can thiệp vào thiết kế/phân tích/quyết định công bố:",
-            "   ☐ Không  ☐ Có -> giải thích: ___",
-            "",
-            "III. XUNG ĐỘT LỢI ÍCH PHI TÀI CHÍNH",
-            "   ☐ Không có",
-            "   ☐ Có -> (quan hệ cá nhân / lợi ích học thuật / quan điểm đối nghịch): ___",
-            "",
-            "IV. CÁC MỐI QUAN HỆ LIÊN QUAN (gia đình hoặc đối tác gần)",
-            "   ☐ Không có",
-            "   ☐ Có -> Mô tả: ___",
+            "   ☐ Có -> Mục số: ___ | Tổ chức | Bản chất quan hệ | Đơn vị nhận: ___",
+            "   Lưu ý: royalties/licenses có thể gồm bản quyền (copyright) hoặc nội dung",
+            "   đã cấp phép (licensed); khai theo câu hỏi thực tế của form hiện hành.",
             "",
             "Tôi tuyên bố các thông tin trên là đầy đủ và chính xác.",
             "",
@@ -305,7 +281,7 @@ def build_part2_coi(n_authors: int, study: str) -> str:
 
 def build_part3_data_availability(cps: dict, study: str) -> str:
     """
-    Sinh 3 lựa chọn Data Availability Statement theo FAIR Principles và Luật 91/2025/QH15.
+    Sinh 3 lựa chọn Data Availability theo FAIR, ICMJE và yêu cầu bảo mật áp dụng.
     Bác sĩ chọn một trong ba và điền thông tin còn thiếu.
     """
     # Lấy số IRB từ G2 để điền vào template
@@ -315,8 +291,8 @@ def build_part3_data_availability(cps: dict, study: str) -> str:
     lines = [
         "## PHẦN 3 — DATA AVAILABILITY STATEMENT",
         "",
-        "> **Căn cứ:** FAIR Data Principles; Luật Bảo vệ Dữ liệu Cá nhân 91/2025/QH15;",
-        "> Chính sách chia sẻ dữ liệu ICMJE (2023).",
+        "> **Căn cứ:** FAIR Data Principles; ICMJE Clinical Trials and Data Sharing;",
+        "> điều kiện IRB/IEC và pháp luật bảo vệ dữ liệu áp dụng tại thời điểm nộp.",
         "",
         "> **[CẦN BÁC SĨ CHỌN MỘT TRONG BA LỰA CHỌN VÀ XÓA HAI LỰA CHỌN CÒN LẠI]**",
         "",
@@ -350,13 +326,24 @@ def build_part3_data_availability(cps: dict, study: str) -> str:
         "DATA AVAILABILITY STATEMENT — Option C",
         "─────────────────────────────────────────",
         "The data that support the findings of this study are not publicly available",
-        "due to legal restrictions under Vietnamese Personal Data Protection Law",
-        "No. 91/2025/QH15 (effective July 2025) and Decree 356/2025/ND-CP.",
+        "due to applicable legal, consent, privacy, and ethics approval restrictions.",
         "Further inquiries can be directed to the corresponding author.",
         "─────────────────────────────────────────",
         "```",
         "",
         "**[CẦN BÁC SĨ XÁC NHẬN lựa chọn trước khi nộp bài]**",
+        "",
+        "### Phụ lục bắt buộc nếu là thử nghiệm lâm sàng",
+        "",
+        "Theo yêu cầu ICMJE, tuyên bố phải nêu: có chia sẻ hay không; dữ liệu cá thể nào",
+        "được chia sẻ và có khử định danh; tài liệu liên quan (protocol/SAP/code); thời điểm",
+        "bắt đầu; thời hạn; tiêu chí và cơ chế truy cập. Nội dung phải nhất quán với đăng ký.",
+        "",
+        "- Dữ liệu sẽ chia sẻ: [CẦN]",
+        "- Tài liệu liên quan: [CẦN]",
+        "- Bắt đầu/thời hạn: [CẦN]",
+        "- Tiêu chí truy cập/cơ chế xét duyệt/repository: [CẦN]",
+        "- Đã đối chiếu registry: ☐ Chưa  ☐ Đã đối chiếu",
         "",
         "---",
         "",
@@ -369,102 +356,55 @@ def build_part3_data_availability(cps: dict, study: str) -> str:
 # ════════════════════════════════════════════════════════════════════════════
 
 def build_part4_ai_disclosure(cps: dict, study: str) -> str:
-    """
-    Sinh khai báo sử dụng AI theo COPE guidelines 2024 và Nature Portfolio guidelines 2024.
-    Tự động liệt kê các cổng đã chạy EBM Copilot từ checkpoints.
-    """
-    # Mô tả từng cổng
+    """Sinh form khai báo AI fail-closed; không tự suy công cụ hay mục đích."""
     gate_descriptions = {
-        "G0": "Literature search assistance — PubMed, Europe PMC (G0)",
-        "G1": "Protocol/SAP template generation (G1)",
-        "G2": "Ethics documentation assistance — IRB forms, ICF templates (G2)",
-        "G3": "Sample size calculation scripting (G3)",
-        "G4": "Statistical Analysis Plan template generation (G4)",
-        "G5": "Data collection form structuring (G5)",
-        "G6": "Analysis script generation — R/Python statistical scripts (G6)",
-        "G7": "Manuscript IMRAD skeleton generation (G7)",
-        "G8": "Submission checklist and peer review preparation (G8)",
+        "G0": "G0 literature/research-question assistance",
+        "G1": "G1 protocol/design assistance",
+        "G2": "G2 ethics-document drafting assistance",
+        "G3": "G3 sample-size scripting assistance",
+        "G4": "G4 SAP drafting assistance",
+        "G5": "G5 data-management tooling assistance",
+        "G6": "G6 analysis-code assistance",
+        "G7": "G7 manuscript-drafting assistance",
+        "G8": "G8 presubmission-review assistance",
     }
-
-    # Lấy danh sách cổng thực sự đã chạy
-    gates_run = [
-        f"   - {desc}"
-        for g, desc in gate_descriptions.items()
-        if g in cps
-    ]
-
-    # Fallback nếu không có checkpoint nào
-    if not gates_run:
-        gates_run = [
-            "   - Literature search assistance (G0)",
-            "   - Protocol/SAP template generation (G1, G4)",
-            "   - Ethics documentation (G2)",
-            "   - Analysis script generation (G6)",
-            "   - Manuscript skeleton (G7)",
-        ]
-
-    ai_uses_str = "\n".join(gates_run)
+    possible_uses = [f"  ☐ {desc}" for gate, desc in gate_descriptions.items() if gate in cps]
+    if not possible_uses:
+        possible_uses = ["  ☐ [CẦN XÁC NHẬN các công việc có AI hỗ trợ]"]
 
     lines = [
-        "## PHẦN 4 — KHAI BÁO SỬ DỤNG AI (ICMJE Mục V + COPE + Nature Portfolio)",
+        "## PHẦN 4 — KHAI BÁO SỬ DỤNG AI (ICMJE Mục V, cập nhật 01/2026)",
         "",
-        "> **Căn cứ:**",
-        "> - ICMJE Recommendations, Mục V \"Use of Artificial Intelligence in Publishing\" "
-        "(cập nhật 1/2026 — thay cho vị trí AI-không-được-là-tác-giả đơn lẻ trước đây; "
-        "Mục V.A yêu cầu khai báo dùng công nghệ AI (LLM/chatbot/tạo ảnh) TẠI HAI NƠI: "
-        "cover letter VÀ mục phù hợp trong bản thảo — không khai báo có thể bị coi là "
-        "hành vi sai trái khoa học, Mục III.A/III.B).",
-        "> - COPE Guidelines: Authorship and AI tools (February 2023) — vị trí hình thức "
-        "hiện hành của COPE tại thời điểm soạn; \"Global Reporting Standard for AI "
-        "Disclosure in Research\" đang trong giai đoạn tham vấn đa bên, CHƯA thay thế.",
-        "> - Nature Portfolio Editorial Policies: Use of AI tools (updated 2024)",
-        "> - JAMA Network / Lancet policies on AI/LLM disclosure (2024)",
+        "> ICMJE yêu cầu công khai AI trong cover letter và đúng mục của bản thảo;",
+        "> tác giả con người phải kiểm nội dung, chịu trách nhiệm và bảo vệ dữ liệu bí mật.",
+        "> Việc có checkpoint chỉ cho biết công cụ đã chạy, không chứng minh AI thực sự",
+        "> được dùng cho mục đích nào. Tác giả phải xác nhận từng dòng bên dưới.",
         "",
-        "### Khai báo đầy đủ (cho IRB, đơn vị, và hồ sơ nội bộ)",
+        "### Hồ sơ xác nhận",
         "",
         "```",
         f"AI USE DISCLOSURE — {study}",
         f"Date: {_TODAY}",
         "─────────────────────────────────────────────────────────────",
-        "",
-        "AI TOOLS USED:",
-        "  Tool: EBM Copilot (powered by Claude, Anthropic)",
-        "  Purpose(s):",
-        ai_uses_str,
-        "",
-        "HUMAN OVERSIGHT AND VERIFICATION:",
-        "  All AI-generated content was critically reviewed and verified by",
-        "  [CẦN — tên tác giả chịu trách nhiệm kiểm tra AI output].",
-        "  Scientific interpretations, clinical judgments, and conclusions",
-        "  are entirely the responsibility of the human author team.",
-        "",
-        "AI TOOLS WERE NOT USED FOR:",
-        "  - Data collection or entry",
-        "  - Statistical analysis or results interpretation",
-        "  - Drawing scientific conclusions",
-        "  - Patient data access or clinical decision-making",
-        "",
-        "AUTHORSHIP:",
-        "  AI tools are NOT listed as authors (ICMJE Recommendations, Mục V.A — AI cannot",
-        "  meet authorship criteria and cannot be held accountable for the work).",
-        "",
-        "[CẦN BÁC SĨ BỔ SUNG nếu dùng thêm công cụ AI khác]:",
-        "  ☐ ChatGPT / GPT-4 -> Mục đích: ___",
-        "  ☐ Grammarly / language editing AI -> Mục đích: ___",
-        "  ☐ AI-assisted image processing -> Phần mềm: ___",
-        "  ☐ Không dùng thêm công cụ AI nào khác",
+        "AI used: ☐ No  ☐ Yes",
+        "Tool/provider/model/version/date accessed: [CẦN XÁC NHẬN]",
+        "Possible EBM Copilot-assisted stages (tick only after human verification):",
+        *possible_uses,
+        "Other tools/purposes: [CẦN XÁC NHẬN]",
+        "Human reviewer reference (no PII): [CẦN XÁC NHẬN]",
+        "☐ Every AI-assisted statement/citation/calculation was independently checked.",
+        "☐ No confidential, identifiable participant or unpublished restricted data was uploaded.",
+        "☐ AI is not listed as an author; human authors accept full responsibility.",
+        "☐ The manuscript statement and cover-letter statement match actual use.",
         "─────────────────────────────────────────────────────────────",
         "```",
         "",
-        "### Mẫu rút gọn (điền vào bản thảo, mục Methods hoặc Declarations)",
+        "### Mẫu soạn sau khi xác nhận thực tế",
         "",
         "```",
-        "AI TOOLS:",
-        "During the preparation of this work, the authors used EBM Copilot",
-        "(Claude-based, Anthropic) for literature search assistance, protocol",
-        "template generation, and manuscript drafting support.",
-        "After using this tool, the authors reviewed and edited the content",
-        "as needed and take full responsibility for the content of the publication.",
+        "During preparation of this work, the authors used [TOOL, PROVIDER, VERSION]",
+        "for [PURPOSE AND SECTION]. The authors independently reviewed and verified",
+        "the output, made all scientific decisions, and accept full responsibility.",
         "```",
         "",
         "---",
@@ -506,9 +446,10 @@ def build_part5_integrity(cps: dict, study: str) -> str:
         "   Tuyên bố: Bài báo này là sáng tạo gốc của nhóm tác giả.",
         "   Không sao chép không trích dẫn từ bất kỳ nguồn nào.",
         "   Công cụ kiểm tra: [CẦN — iThenticate / Turnitin / CrossCheck]",
-        "   Tỷ lệ trùng lặp: [CẦN — cần < 15% toàn bài, < 3% từng đoạn]",
+        "   Tỷ lệ similarity: [CẦN — ghi kết quả, không tự đồng nhất với đạo văn]",
+        "   Tiêu chí của tạp chí/cơ sở và kết luận rà soát con người: [CẦN]",
         "   Ngày kiểm tra: [CẦN]",
-        "   ☐ Đã kiểm tra và đạt ngưỡng yêu cầu",
+        "   ☐ Đã kiểm từng đoạn/nguồn và xử lý trùng lặp không phù hợp",
         "",
         "2. KHÔNG CHIA NHỎ BÀI (NO SALAMI SLICING)",
         f"   Tuyên bố: Đây là báo cáo ĐẦY ĐỦ và DUY NHẤT của tập dữ liệu {study}.",
@@ -654,8 +595,8 @@ def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
             # thêm dòng này vào cover letter (trước đây chỉ có ở Phần 4 khai báo AI riêng,
             # KHÔNG có trong chính cover letter — vá 2026-07-17, round audit đối kháng 4).
             "  - Use of AI-assisted technologies (LLMs/chatbots/image creators) in producing "
-            "this submission: Yes — EBM Copilot (Claude, Anthropic); chi tiết xem Phần 4 "
-            "(Khai báo sử dụng AI) đính kèm."
+            "this submission: [CẦN XÁC NHẬN Yes/No]. Nếu có dùng EBM Copilot hoặc công cụ "
+            "khác, ghi đúng tool/provider/version/purpose và khớp Phần 4."
         ),
         "",
         "SUGGESTED REVIEWERS (khuyến nghị, không bắt buộc):",
@@ -836,8 +777,17 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         g5.get("db_lock_date") and "[CẦN" not in str(g5.get("db_lock_date", ""))
         and "[CAN" not in str(g5.get("db_lock_date", ""))
     )
-    db_locked = db_locked_text and _ledger_approved(
-        study, "G5", _REPO_ROOT / "exports" / study / f"G5_A6_DATA_MGMT_{study}.md")
+    db_locked = GC.g5_quality_contract_satisfied(
+        study,
+        repo_root=_REPO_ROOT,
+    ) or (
+        db_locked_text
+        and _ledger_approved(
+            study,
+            "G5",
+            _REPO_ROOT / "exports" / study / f"G5_A6_DATA_MGMT_{study}.md",
+        )
+    )
 
     g2_icon = "✅" if ethics_locked else "⚠ CHỜ BÁC SĨ"
     g4_icon = "✅" if sap_locked    else "⚠ CHỜ BÁC SĨ"
@@ -934,9 +884,9 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         "C2. Tất cả PMID/DOI đã kiểm chứng toàn văn",
         "    ☐ Chưa kiểm  ☐ Đã kiểm chứng đầy đủ",
         "",
-        "C3. Kiểm tra đạo văn < 15%",
+        "C3. Similarity/plagiarism đã rà theo chính sách tạp chí/cơ sở",
         "    Tỷ lệ thực tế: [CẦN điền sau khi chạy iThenticate/Turnitin]%",
-        "    ☐ Chưa chạy  ☐ Đạt (<15%)",
+        "    ☐ Chưa chạy  ☐ Đã rà từng nguồn và có kết luận của người chịu trách nhiệm",
         "",
         f"C4. Checklist báo cáo ({reporting_std}{reporting_std_note}) hoàn chỉnh",
         "    ☐ Chưa điền  ☐ Đã điền và đính kèm",
@@ -1146,13 +1096,15 @@ def write_g9_checkpoint(
     # Danh sách việc còn lại của bác sĩ
     pending = [
         f"Tất cả {n_authors} tác giả ký xác nhận ICMJE 4 tiêu chí (Phần 1)",
-        f"Tất cả {n_authors} tác giả ký khai báo COI đầy đủ form ICMJE gốc (Phần 2)",
+        f"Tất cả {n_authors} tác giả hoàn tất form disclosure hiện hành và evidence_ref",
         "PI ký Tuyên bố Liêm chính Nghiên cứu 5 điểm (Phần 5)",
-        "Chọn Data Availability Option (A, B, hoặc C) trong Phần 3",
+        f"Hoàn tất hồ sơ có cấu trúc {G9Q.READINESS_JSON}",
+        "Chốt Data Availability và chi tiết ICMJE nếu là thử nghiệm lâm sàng",
         "Điền và ký Thư gửi tạp chí (Phần 6)",
-        "Kiểm tra đạo văn < 15% (iThenticate / Turnitin / CrossCheck)",
+        "Rà similarity theo chính sách tạp chí/cơ sở và phán đoán con người",
         "Xác nhận không nộp song song và không chia nhỏ bài",
-        "Duyệt AI Use Disclosure và bổ sung công cụ AI khác nếu đã dùng (Phần 4)",
+        "Duyệt AI Use Disclosure theo công cụ/mục đích thực tế, không tự suy từ checkpoint",
+        "G8 phải có phản biện độc lập đã ký và A12 phải còn xác minh hợp lệ",
     ]
 
     # Ưu tiên thêm blocking actions từ cổng trước nếu chưa locked
@@ -1193,8 +1145,17 @@ def write_g9_checkpoint(
         g5_cp.get("db_lock_date") and "[CẦN" not in str(g5_cp.get("db_lock_date", ""))
         and "[CAN" not in str(g5_cp.get("db_lock_date", ""))
     )
-    db_locked_cp = db_locked_cp_text and _ledger_approved(
-        study, "G5", _REPO_ROOT / "exports" / study / f"G5_A6_DATA_MGMT_{study}.md")
+    db_locked_cp = GC.g5_quality_contract_satisfied(
+        study,
+        repo_root=_REPO_ROOT,
+    ) or (
+        db_locked_cp_text
+        and _ledger_approved(
+            study,
+            "G5",
+            _REPO_ROOT / "exports" / study / f"G5_A6_DATA_MGMT_{study}.md",
+        )
+    )
     if not ethics_locked_cp:
         pending.insert(
             0, "G2 (Đạo đức) chưa LOCKED — cần số IRB thật từ Hội đồng Đạo đức"
@@ -1212,6 +1173,7 @@ def write_g9_checkpoint(
         "gate": "G9",
         "study": study,
         "generated_at": datetime.now().isoformat(),
+        "quality_contract_version": G9Q.QUALITY_CONTRACT_VERSION,
         "g9_status": "DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ",
         "author_integrity_status": "PENDING",
         "ai_disclosure": "GENERATED — needs author review and verification",
@@ -1228,6 +1190,8 @@ def write_g9_checkpoint(
         "artifacts": {
             "A10_markdown": str(md_path),
             "A10_docx": str(docx_path) if docx_path else None,
+            "publication_readiness": G9Q.READINESS_JSON,
+            "quality_report": G9Q.REPORT_JSON,
         },
         "parts_generated": [
             "Phần 1 — ICMJE Tiêu chuẩn Tác giả (4 tiêu chí)",
@@ -1240,12 +1204,13 @@ def write_g9_checkpoint(
             "Phần 8 — Tiêu chí Cổng G9 (Hard Gate)",
         ],
         "lock_instruction": (
-            "G9 chỉ PASSED khi: (1) Tất cả tác giả ký form ICMJE; "
-            "(2) PI ký Tuyên bố Liêm chính; (3) Plagiarism check < 15%; "
-            "(4) Chọn Data Availability; (5) G2 + G4 đã LOCKED."
+            "G9 chỉ khóa khi g9_quality_gate.py chấm READY, tất cả tác giả có "
+            "attestation/evidence_ref thật, G2/G4/G5/G8/A12 còn hợp lệ và PI tự "
+            "ký đúng G9_checkpoint.json. Không dùng một ngưỡng similarity phổ quát."
         ),
         "next_step": (
-            "Nộp bản thảo lên hệ thống nộp bài của tạp chí sau khi G9 PASSED"
+            f"Hoàn tất {G9Q.READINESS_JSON}, chạy g9_quality_gate.py, rồi PI tự ký "
+            "G9_checkpoint.json nếu trạng thái READY"
         ),
         "disclaimer": "Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi nộp bài.",
     }
@@ -1336,6 +1301,8 @@ def main():
 
     header = "\n".join([
         "# A10 — GÓI LIÊM CHÍNH TÁC GIẢ (AUTHOR INTEGRITY PACKAGE)",
+        "> Tên file A10 được giữ để tương thích pipeline cũ; hợp đồng G9-2026.1",
+        "> dùng checkpoint/readiness có cấu trúc làm nguồn quyết định.",
         f"**Mã đề tài:** {study}",
         f"**Số tác giả:** {n_authors}",
         f"**Tạp chí mục tiêu:** {target_journal or '[CẦN XÁC NHẬN]'}",
@@ -1390,7 +1357,7 @@ def main():
         "| 5 | Duyệt và bổ sung AI Use Disclosure | Phần 4 | ✅ Có |",
         "| 6 | PI ký Tuyên bố Liêm chính 5 điểm | Phần 5 | ✅ Có |",
         "| 7 | Điền Cover Letter (tiêu đề bài, kết quả chính) | Phần 6 | ✅ Có |",
-        "| 8 | Chạy iThenticate/Turnitin — đạt < 15% | Phần 5 | ✅ Có |",
+        "| 8 | Chạy similarity check và rà từng nguồn theo chính sách đích | Phần 5 | ✅ Có |",
         "| 9 | Điền Response-to-Reviewers khi nhận peer review | Phần 7 | Khi cần |",
         "| 10 | Ký checklist G9 (Phần 8) khi tất cả xong | Phần 8 | ✅ Có |",
         "",
@@ -1409,6 +1376,28 @@ def main():
     print("\n💾 Bước 3/6: Lưu A10 Markdown...")
     md_path = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
     md_path.write_text(artifact, encoding="utf-8")
+    cover_letter_path = out_dir / f"G9_COVER_LETTER_{study}.md"
+    cover_letter_path.write_text(
+        "\n".join(
+            [
+                f"# COVER LETTER — {study}",
+                "",
+                "> BẢN NHÁP — phải hoàn tất và đối chiếu với khai báo AI/COI trước khi nộp.",
+                "",
+                part6,
+                "",
+                "Cần bác sĩ kiểm chứng.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    readiness_path = G9Q.write_readiness_template(
+        out_dir,
+        study,
+        n_authors,
+        target_journal,
+    )
     n_lines = artifact.count("\n")
     print(f"  -> Lưu: {md_path} ({len(artifact)//1000} KB, {n_lines} dòng)")
 
@@ -1443,21 +1432,30 @@ def main():
         cps=cps,
     )
     print(f"  -> Lưu: {cp_path}")
+    quality_report = G9Q.evaluate_study(
+        study,
+        out_dir,
+        repo_root=_REPO_ROOT,
+        write=True,
+    )
 
     # ── Tóm tắt ──
     print(f"\n{'='*65}")
-    print(f"  ✅ G9 HOÀN THÀNH — {study}")
+    print(f"  G9 DRAFT ĐÃ SINH — {study}")
     print(f"{'='*65}")
     print(f"\n  📁 Đầu ra: {out_dir}/")
     print(f"  📝 A10 Markdown: {md_path.name}")
     if docx_path:
         print(f"  📄 A10 DOCX:     {docx_path.name}")
     print(f"  📋 Checkpoint:   {cp_path.name}")
+    print(f"  🧾 Readiness:    {readiness_path.name}")
+    print(f"  ✉️  Cover letter: {cover_letter_path.name}")
+    print(f"  🔎 Quality:      {quality_report['status']}")
     print("\n  8 PHẦN ĐÃ SINH:")
     print(f"  Phần 1 — ICMJE Tiêu chuẩn Tác giả ({n_authors} tác giả, 4 tiêu chí + CRediT 14 vai trò)")
     print(f"  Phần 2 — Khai báo COI Cuối ({n_authors} form + tuyên bố tập thể)")
-    print("  Phần 3 — Data Availability Statement (3 lựa chọn A/B/C)")
-    print("  Phần 4 — AI Use Disclosure (COPE + Nature Portfolio 2024)")
+    print("  Phần 3 — Data Availability Statement + chi tiết ICMJE cho clinical trial")
+    print("  Phần 4 — AI Use Disclosure (ICMJE 01/2026)")
     print("  Phần 5 — Tuyên bố Liêm chính Nghiên cứu (5 điểm)")
     print(f"  Phần 6 — Cover Letter Shell (tạp chí: {target_journal or '[CẦN]'})")
     print("  Phần 7 — Response-to-Reviewers Template")
@@ -1470,10 +1468,11 @@ def main():
     print("  1. Mở file DOCX, điền TẤT CẢ [CẦN ...]")
     print(f"  2. Tất cả {n_authors} tác giả ký ICMJE + COI (Phần 1-2)")
     print("  3. PI ký Tuyên bố Liêm chính (Phần 5)")
-    print("  4. Chọn Data Availability A/B/C (Phần 3)")
-    print("  5. Chạy kiểm tra đạo văn < 15% (Phần 5)")
-    print("  6. Ký checklist G9 (Phần 8) -> G9 PASSED")
-    print("  7. Nộp bài lên hệ thống tạp chí")
+    print(f"  4. Hoàn tất {G9Q.READINESS_JSON} bằng evidence_ref không PII")
+    print("  5. Rà similarity theo chính sách tạp chí/cơ sở và phán đoán con người")
+    print(f"  6. Chạy: python tools/g9_quality_gate.py --study {study}")
+    print("  7. Chỉ khi trạng thái READY, PI tự ký đúng G9_checkpoint.json")
+    print("  8. Chạy lại quality gate; chỉ PASS_G9...LOCKED mới được chuyển G10")
     print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
 

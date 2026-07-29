@@ -789,9 +789,38 @@ def real_world_signals(checkpoints: Dict[str, Dict],
         and _is_real_value(g8.get("peer_review_approval_date"))
     ) or bool(meta.get("peer_review_approved"))
 
-    integ = (
-        g9.get("submission_package_ready") is True and _guardrail_passed(g9)
-    ) or bool(meta.get("integrity_signed"))
+    if g9.get("quality_contract_version"):
+        study = str(g9.get("study") or "").strip()
+        if study and re.fullmatch(r"[\w-]+", study):
+            root = Path(__file__).resolve().parents[1]
+            default_out = root / "exports" / study
+            if default_out.exists():
+                try:
+                    import g9_quality_gate as G9Q  # noqa: PLC0415
+
+                    live = G9Q.evaluate_study(
+                        study,
+                        default_out,
+                        repo_root=root,
+                        write=False,
+                    )
+                    integ = live.get("status") == G9Q.STATUS_LOCKED
+                except (ImportError, OSError, RuntimeError, ValueError):
+                    integ = False
+            else:
+                integ = (
+                    meta.get("g9_quality_status")
+                    == "PASS_G9_PUBLICATION_INTEGRITY_LOCKED"
+                )
+        else:
+            integ = (
+                meta.get("g9_quality_status")
+                == "PASS_G9_PUBLICATION_INTEGRITY_LOCKED"
+            )
+    else:
+        integ = (
+            g9.get("submission_package_ready") is True and _guardrail_passed(g9)
+        ) or bool(meta.get("integrity_signed"))
 
     return {"irb_approved": irb, "sap_locked": sap, "db_locked": db,
             "results_final": results, "peer_review_approved": peer,
