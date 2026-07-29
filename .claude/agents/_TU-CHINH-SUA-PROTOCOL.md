@@ -50,7 +50,7 @@
 | **R1** | Thiếu PMID/DOI cho khẳng định y khoa | `tra-cuu-chung-cu` + `kiem-chung-trich-dan` | ✅ | Bổ nguồn thật; nếu không tìm được → gắn `[CẦN KIỂM CHỨNG]` |
 | **R1b** | Lách nhãn `[CẦN…]` tràn lan | Agent gốc (viết lại có nguồn) | ✅ | Yêu cầu bổ nguồn ≥1 PMID/DOI thật cho từng khẳng định cốt lõi |
 | **R2** | PII phát hiện | **DỪNG NGAY — leo thang** | ❌ | Không retry; nêu rõ dòng/trường có PII; bác sĩ phải xử lý |
-| **R3** | Vượt cổng cứng (G2/G4/G8/G9) | **DỪNG NGAY — leo thang** | ❌ | Không retry; nêu cổng bị vượt + artifact vi phạm |
+| **R3** | Vượt cổng cứng (G2/G4/G5/G8/G9/G10) | **DỪNG NGAY — leo thang** | ❌ | Không retry; nêu cổng bị vượt + artifact vi phạm |
 | **R4** | Tự gán GRADE không nguồn | `tham-dinh-grade-nnt` (re-grade) hoặc xóa nhãn | ✅ | Xóa GRADE label; dùng `gradeLevel:'na'` |
 | **R5** | Trộn độ chắc chứng cứ & độ mạnh KCáo | Agent gốc (tách rõ hai trục) | ✅ | Thêm chú thích phân biệt |
 | **R6** | Thiếu nhãn `[CẦN…]` ở chỗ thiếu | Agent gốc (gắn nhãn đúng chỗ) | ✅ | Tìm tất cả giá trị trống/giả định → gắn nhãn |

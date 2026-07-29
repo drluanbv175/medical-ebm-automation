@@ -121,7 +121,7 @@ Mỗi sản phẩm (thẻ chứng cứ · gói quyết định lâm sàng · art
 | Nhạc trưởng | `dieu-phoi-lam-sang` | `dieu-phoi-nghien-cuu` |
 | An toàn trước tiên | **Bước 0: cờ đỏ** (`sang-loc-co-do`) | **Bước 0: RESUME** + chưa chạm dữ liệu thật khi chưa G2 |
 | Thân | 5 bước EBM | G0–G9 + 18 artifact A1–A18 |
-| Cổng cứng | Cổng A | G2 · G4 · Dữ liệu thật trước phân tích (DỪNG 3) · G8 · G9 (+ A12 kiểm trích dẫn — 2026-07-15: bổ sung G8) |
+| Cổng cứng | Cổng A | G2 · G4 · G5 khóa dữ liệu thật trước phân tích · G8 · G9 · G10 PI khóa gói phát hành (+ A12 kiểm trích dẫn) |
 | Guardrail cuối | `tham-dinh-dau-ra` (chung) | `tham-dinh-dau-ra` (chung) |
 | Điểm dừng phê duyệt | Cổng A + Cổng B | Cổng G + Cổng B |
 | Sổ cái | EBM_MASTER (thẻ chứng cứ) | EBM_MASTER + hồ sơ đề tài (mốc cổng) |
@@ -132,7 +132,7 @@ Mỗi sản phẩm (thẻ chứng cứ · gói quyết định lâm sàng · art
 - [ ] Mọi luồng đi qua **L3 guardrail** trước **L4 hàng đợi** — không đường tắt.
 - [ ] Agent **chỉ** đưa mục tới `cho-duyet`; `duyet`/`tu-choi`/`hoan` là đặc quyền bác sĩ.
 - [ ] Cờ đỏ (lâm sàng) xuất hiện **ĐẦU** đầu ra, trước mọi phân tích EBM.
-- [ ] Cổng cứng nghiên cứu (G2·G4·Dữ liệu thật trước phân tích·G8·G9 — 2026-07-15: bổ sung G8) không tự vượt; nêu **chính xác cần bác sĩ cấp gì**.
+- [ ] Cổng cứng nghiên cứu (G2·G4·G5 khóa dữ liệu thật trước phân tích·G8·G9·G10 PI khóa gói phát hành) không tự vượt; nêu **chính xác người có thẩm quyền phải cấp gì**.
 - [ ] Mọi mục vào sổ cái: `verification_status="chưa xác minh"`, append-only + backup.
 - [ ] Mỗi đầu ra y khoa kèm **PMID/DOI** + **"Cần bác sĩ kiểm chứng."**
 

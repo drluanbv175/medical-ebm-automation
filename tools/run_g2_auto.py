@@ -1117,7 +1117,8 @@ E. SỬ DỤNG CÔNG CỤ AI TRONG NGHIÊN CỨU:
 
   XÁC NHẬN (bắt buộc): "Tôi đã kiểm chứng TOÀN BỘ nội dung AI
   hỗ trợ. Mọi số liệu, trích dẫn và kết quả đã được xác minh
-  từ nguồn gốc. AI KHÔNG được liệt kê là tác giả." [ICMJE 2023]
+  từ nguồn gốc. AI KHÔNG được liệt kê là tác giả. Nội dung do
+  AI sinh KHÔNG được trích dẫn như nguồn gốc." [ICMJE Mục V, bản 1/2026]
 
 Chữ ký chủ nhiệm: _______________  Ngày: ___/___/{_YEAR}
 [Mỗi đồng tác giả cần khai báo COI riêng theo mẫu ICMJE]

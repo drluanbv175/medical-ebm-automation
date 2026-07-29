@@ -39,7 +39,7 @@
        │        + MEMORY.md + checkpoint + study_meta                          │
        └──────────────┘  (phiên sau / máy khác qua OneDrive → RESUME)         │
                                                                               ─┘
-   ⛔ DỪNG THẬT ở cổng cứng: G2 IRB · G4 SAP-lock · G5 dữ liệu · G8 phản biện độc lập · G9 liêm chính
+   ⛔ DỪNG THẬT ở cổng cứng: G2 IRB · G4 SAP-lock · G5 dữ liệu · G8 phản biện độc lập · G9 liêm chính · G10 PI khóa gói phát hành
       (hợp đồng DỪNG exit-2 + needs_input — hệ KHÔNG tự vượt, KHÔNG bịa)
 ```
 
@@ -57,7 +57,7 @@
 ## Bất biến của vòng lặp (KHÔNG được phá)
 
 1. **Liêm chính > tiến độ**: mọi mắt xích chỉ ĐỀ XUẤT; bác sĩ duyệt mới "áp dụng". Không bịa
-   dữ liệu/PMID/phê duyệt/thang điểm. Cổng cứng (G2/G4/G5/G8/G9 + Cổng A/B lâm sàng) là điểm DỪNG thật.
+   dữ liệu/PMID/phê duyệt/thang điểm. Cổng cứng (G2/G4/G5/G8/G9/G10 + Cổng A/B lâm sàng) là điểm DỪNG thật.
 2. **Đóng vòng bắt buộc**: sau mỗi cổng PASS → GHI sổ cái (mắt xích 4). Không ghi = vòng hở =
    phiên sau làm lại. `so-cai-ghi-nho` là mắt xích không được bỏ.
 3. **Tự sinh có duyệt**: agent tự sinh = PROPOSED (registry), nhãn `[TỰ SINH — CHỜ BÁC SĨ DUYỆT]`,

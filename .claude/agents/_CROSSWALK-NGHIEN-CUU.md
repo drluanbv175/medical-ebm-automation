@@ -20,11 +20,9 @@
 Đạo đức là **G2 (agent) vs G3 (skill)**; Phân tích là **G6 (agent) vs G7 (skill)**. Câu tiêu đề agent
 "dùng skill làm CHUẨN" gây hiểu nhầm thẩm quyền nguồn (vi phạm tinh thần P7/P8).
 
-**Chốt (canonical):** **TRỤC AGENT là chuẩn vận hành** — vì nó là bộ điều phối thực thi, khớp 5 cổng
+**Chốt (canonical):** **TRỤC AGENT là chuẩn vận hành** — vì nó là bộ điều phối thực thi, khớp 6 cổng
 cứng/điểm dừng 🔒 (Đạo đức G2 · SAP G4 · Dữ liệu thật trước phân tích (2026-07-07) · Bình duyệt độc lập
-G8 (2026-07-14/15) · Liêm chính tác giả G9 — sửa 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 31, phát
-hiện HIGH: đoạn "Chốt" này trước chỉ liệt 4 cổng, thiếu G8, mâu thuẫn với chính footnote dòng 39 và §6
-dòng 151 của file này, và với `dieu-phoi-nghien-cuu.md` hiện hành đều xác nhận đúng 5 cổng) và khớp bản
+G8 (2026-07-14/15) · Liêm chính tác giả G9 · PI khóa gói phát hành G10) và khớp bản
 đồ A1–A18. Skill `nghien-cuu-y-khoa-chuan-quoc-te` cấp **NỘI DUNG/chuẩn báo cáo/
 template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIAO cho người dùng, luôn gọi cổng bằng
 **TÊN** (Đạo đức / SAP / Phân tích…), không để trần số "G" — vì số G mơ hồ giữa hai trục.
@@ -39,7 +37,7 @@ template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIA
 | GĐ6 Phân tích & báo cáo | Khóa DL · **Phân tích** · Viết | **G5 · G6/G6.5 · G7** | G5 Triển khai · G6 Dữ liệu · **G7 Phân tích** · G8 Báo cáo |
 | GĐ7 Audit & nghiệm thu | Bình duyệt · **Nghiệm thu/Liêm chính** 🔒 | **G8 · G9 🔒** | G9 Công bố |
 
-> 🔒 = cổng cứng (dừng chờ chủ nhiệm): **G2 Đạo đức+đăng ký · G4 Khóa SAP · Dữ liệu thật trước phân tích (2026-07-07) · G8 Bình duyệt độc lập (2026-07-14) · G9 Liêm chính tác giả**.
+> 🔒 = cổng cứng (dừng chờ người có thẩm quyền): **G2 Đạo đức+đăng ký · G4 Khóa SAP · G5 Khóa dữ liệu thật trước phân tích · G8 Bình duyệt độc lập · G9 Liêm chính tác giả · G10 PI khóa gói phát hành**.
 > Sổ checkpoint `_SO-TRANG-THAI-CHECKPOINT.md` ghi cổng theo **TRỤC AGENT** để RESUME nhất quán.
 >
 > **G10 — LẮP RÁP ĐỀ CƯƠNG THỐNG NHẤT (capstone, ngoài trục G0-G9)** — thêm 2026-07-26, vòng lặp kiểm
@@ -169,7 +167,7 @@ KẾT: cổng kế tiếp = G__ ; CHÍNH XÁC cần chủ nhiệm cấp gì: <1 
 
 | Hạng | Điều kiện |
 |---|---|
-| **READY** | Đủ 14/14 điểm DoD; KHÔNG còn 🔴; 5 cổng cứng/điểm dừng (Đạo đức G2·SAP G4·Dữ liệu thật trước phân tích·Bình duyệt độc lập G8·Liêm chính tác giả G9 — 2026-07-15 thêm điểm dừng bình duyệt độc lập G8, khớp CHAY-TOAN-BO đã cập nhật) đã ĐÓNG |
+| **READY** | Đủ 14/14 điểm DoD; KHÔNG còn 🔴; 6 cổng cứng/điểm dừng (Đạo đức G2 · SAP G4 · Khóa dữ liệu G5 · Bình duyệt G8 · Liêm chính tác giả G9 · PI khóa gói phát hành G10) đã ĐÓNG |
 | **PARTIALLY READY** | Chỉ còn lỗi **Medium/Low**; mọi Critical/High đã khắc phục; nêu rõ điều kiện còn lại |
 | **NOT READY** | Còn ≥1 lỗi **Critical hoặc High** (vd chưa qua cổng cứng, kết luận vượt dữ liệu, trích dẫn chưa kiểm) |
 
@@ -229,7 +227,7 @@ Projects/<ten-de-tai>/
 | **INTAKE-AUDIT** | Thêm RESEARCH INTAKE & FEASIBILITY AUDIT (10 mục §5 CROSSWALK) vào BƯỚC 0 đề tài MỚI trong orchestrator | `dieu-phoi-nghien-cuu.md` | High | ✅ **Hoàn tất 2026-06-30** — nhúng trực tiếp vào BƯỚC 0 + PHIẾU CẤP PHÁT |
 | **XGATE-SYNC** | Kiểm nhất quán chéo G3→G4 (tên biến CRF ↔ SAP ↔ dummy tables) trước khi KHÓA SAP | `dieu-phoi-nghien-cuu.md` + `thiet-ke-nghien-cuu.md` | Medium | ✅ **Hoàn tất 2026-06-30** — hàng XGATE-SYNC + thứ tự ưu tiên sửa |
 | **SELF-CORRECT** | Vòng tự sửa (≤3 lần) + auto-dispatch agent theo BẢNG AUTO-FIX | `_TU-CHINH-SUA-PROTOCOL.md` · `dieu-phoi-nghien-cuu.md` · `tham-dinh-dau-ra.md` | **High** | ✅ **Hoàn tất 2026-06-30** — file hạ tầng + BƯỚC 3 + §8 dispatch |
-| **CHAY-TOAN-BO** | Một lệnh chạy G0→G9; bác sĩ chỉ nhập 5 lần tại 5 cổng cứng; PHIẾU CẤP PHÁT phát trước | `dieu-phoi-nghien-cuu.md` | **High** | ✅ **Hoàn tất 2026-06-30, nâng 4→5 DỪNG 2026-07-15** — §CHẾ ĐỘ CHAY-TOAN-BO + trình tự 5 DỪNG |
+| **CHAY-TOAN-BO** | Một lệnh chạy G0→G10; người có thẩm quyền xác nhận tại 6 cổng cứng; PHIẾU CẤP PHÁT phát trước | `dieu-phoi-nghien-cuu.md` | **High** | ✅ **Hoàn tất; nâng thành 6 DỪNG sau khi G10 có khóa phát hành PI** |
 | **PIPELINE-G7** | Auto-pull kết quả G6→G7: bảng kết quả tự chảy vào bản thảo IMRAD | `viet-ban-thao.md` | Medium | ✅ **Hoàn tất 2026-06-30** — §CHẾ ĐỘ PIPELINE với routing table + quy tắc cứng |
 | **SELF-CHECK-ALL** | BƯỚC TỰ KIỂM trong tất cả agent — không có agent nào bỏ qua self-check trước khi trả đầu ra | Tất cả `.claude/agents/[^_]*.md` · `tools/inject_self_check.py` | **High** | ✅ **Hoàn tất 2026-07-12** — 50/50 agents; script inject tái dùng được |
 | **PYTHON-STATS** | Engine thống kê Python thật: bác sĩ cung cấp CSV/Excel → nhận Bảng 1-4 + OR/CI + mô hình đa biến ngay (không phải code template) | `medical-ebm-automation/tools/run_stats_analysis.py` · `phan-tich-thong-ke.md` §BƯỚC 0 | **High** | ✅ **Hoàn tất 2026-06-30** — scipy 1.13 + statsmodels 0.14; CLI + cuối-to-cuối đã test |

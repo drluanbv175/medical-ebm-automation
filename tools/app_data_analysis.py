@@ -19,6 +19,41 @@ from scipy import stats
 warnings.filterwarnings("ignore")
 
 BASE = Path(__file__).resolve().parent.parent
+import sys  # noqa: E402
+
+sys.path.insert(0, str(BASE / "tools"))
+import gate_contract as GC  # noqa: E402
+
+
+# SỬA 2026-07-29 (soi cổng G6, phát hiện MEDIUM-HIGH): đây là app Streamlit độc lập
+# (điểm vào chính thống — "Mở Phân tích Thống kê.command" bấm đúp mở được), chạy
+# Cox/logistic/OLS thật trên dữ liệu upload rồi có thể ghi thẳng file
+# "G6_RESULTS_*.docx" vào exports/<study>/ — trước đây KHÔNG kiểm G4 (SAP)/G5 (khóa
+# dữ liệu) đã LOCKED THẬT (ledger_approved) trước khi cho chạy, khác hẳn
+# `run_g6_auto.py` (bốn bản _check_sap_db_locked, đều enforce G2+G4+G5).
+# Downstream (G7/G8/G9/G10) KHÔNG đọc file "G6_RESULTS_*" (đã kiểm — không nhánh nào
+# tham chiếu) nên đây không phải lỗ hổng "giả mạo cổng qua máy", nhưng vẫn là lỗ hổng
+# thật ở NGHĨA KHÁC: (1) không cổng nào cản một bác sĩ chạy thử nhiều tổ hợp
+# outcome/exposure trên dữ liệu CHƯA khóa để "xem cái nào đẹp" (p-hacking/HARKing);
+# (2) tên file "G6_RESULTS_" dễ khiến CON NGƯỜI (bác sĩ khác, reviewer khi audit thủ
+# công thư mục exports/) nhầm đây là kết quả CHÍNH THỨC của cổng G6.
+# KHÔNG chặn cứng nút chạy — thăm dò dữ liệu (pilot, dữ liệu ngoài pipeline G0-G9,
+# hoặc chưa chọn đề tài nào) vẫn là việc làm hợp pháp. Thay vào đó: hiển thị RÕ
+# trạng thái khóa, và khi CHƯA khóa — gắn nhãn "DỰ THẢO THĂM DÒ" cả trên màn hình
+# lẫn trong tên file + nội dung .docx xuất ra, để không ai nhầm là kết quả chính thức.
+def _g4_g5_lock_status(study: str, exports_dir: Path) -> dict:
+    """Trạng thái khóa G4(SAP)/G5(dữ liệu) THẬT (chữ ký ledger, không phải checkpoint
+    tự khai) cho một đề tài. `study` rỗng/"-- Chọn --" → not_applicable (chế độ thăm
+    dò không gắn với đề tài nào trong pipeline G0-G9)."""
+    if not study or study == "-- Chọn --":
+        return {"applicable": False, "g4_locked": False, "g5_locked": False, "locked": False}
+    g4_ok = GC.ledger_approved(
+        "G4", study, exports_dir / study / f"G4_A5_SAP_FINAL_{study}.md"
+    )
+    g5_ok = GC.ledger_approved(
+        "G5", study, exports_dir / study / "G5_checkpoint.json"
+    )
+    return {"applicable": True, "g4_locked": g4_ok, "g5_locked": g5_ok, "locked": g4_ok and g5_ok}
 
 # ─────────────────────────── CẤU HÌNH ────────────────────────────
 st.set_page_config(
@@ -358,10 +393,22 @@ def plot_regression(res, exposure, is_or=True):
     return fig
 
 # ─────────────────────────── XUẤT DOCX ────────────────────────────
-def export_docx(study, design, tab1_df, analysis_res):
+def export_docx(study, design, tab1_df, analysis_res, locked: bool = False):
     from docx import Document
     doc = Document()
-    doc.add_heading(f"Kết quả phân tích — {study}", 0)
+    if locked:
+        doc.add_heading(f"Kết quả phân tích — {study}", 0)
+    else:
+        doc.add_heading(f"[DỰ THẢO THĂM DÒ] Kết quả phân tích — {study}", 0)
+        warn = doc.add_paragraph()
+        run = warn.add_run(
+            "⚠️ G4 (SAP) và/hoặc G5 (khóa dữ liệu) CHƯA được duyệt bằng chữ ký thật cho "
+            "đề tài này. Đây CHỈ LÀ KẾT QUẢ THĂM DÒ trên dữ liệu CHƯA khóa — KHÔNG PHẢI "
+            "phân tích chính thức của cổng G6, KHÔNG được dùng làm kết cục chính trong "
+            "bản thảo. Chạy python tools/run_g6_auto.py sau khi SAP và dữ liệu đã khóa "
+            "để có kết quả chính thức."
+        )
+        run.bold = True
     doc.add_paragraph(f"Thiết kế: {design} | Ngày phân tích: {pd.Timestamp.today().date()}")
     doc.add_paragraph("⚠ Cần bác sĩ kiểm chứng toàn bộ kết quả trước khi sử dụng.")
     # Table 1
@@ -414,6 +461,7 @@ with st.sidebar:
     exports_dir = BASE / "exports"
     studies = [d.name for d in exports_dir.iterdir() if d.is_dir()] if exports_dir.exists() else []
     study = st.selectbox("📁 Đề tài (từ G0-G5)", ["-- Chọn --"] + sorted(studies))
+    lock_status = _g4_g5_lock_status(study, exports_dir)
     if study != "-- Chọn --":
         cp_path = exports_dir / study / "G1_checkpoint.json"
         design_code = "cohort"
@@ -422,6 +470,20 @@ with st.sidebar:
                 cp = json.load(f)
             design_code = cp.get("design_code", "cohort")
         st.info(f"Thiết kế: **{design_code}**")
+        if lock_status["locked"]:
+            st.success("🔒 G4 (SAP) + G5 (khóa dữ liệu): ĐÃ DUYỆT bằng chữ ký thật.")
+        else:
+            missing = []
+            if not lock_status["g4_locked"]:
+                missing.append("G4 (SAP)")
+            if not lock_status["g5_locked"]:
+                missing.append("G5 (khóa dữ liệu)")
+            st.warning(
+                f"⚠️ {' và '.join(missing)} CHƯA được duyệt bằng chữ ký thật cho đề tài này. "
+                "Mọi kết quả dưới đây CHỈ ĐỂ THĂM DÒ — KHÔNG PHẢI phân tích chính thức của "
+                "cổng G6. Chạy `python tools/run_g6_auto.py --study " + study + "` sau khi "
+                "G4/G5 đã khóa để có kết quả chính thức."
+            )
     else:
         design_code = "cohort"
     st.markdown("---")
@@ -669,13 +731,22 @@ with tab_export:
         st.info("Chạy phân tích chính trước.")
     else:
         study_name = study if study != "-- Chọn --" else "EBM_Study"
+        is_locked = lock_status["locked"]
         st.write("**Sẽ xuất:**")
         st.write("- Bảng 1 (đặc điểm nền)")
         st.write("- Bảng 2 (kết quả phân tích chính với 95%CI)")
         st.write("- Disclaimer 'Cần bác sĩ kiểm chứng'")
+        if not is_locked:
+            st.warning("⚠️ G4/G5 chưa khóa — file xuất ra sẽ gắn nhãn DỰ THẢO THĂM DÒ, "
+                       "không dùng tên G6_RESULTS để tránh nhầm là kết quả chính thức.")
         if st.button("📄 Tạo DOCX"):
-            buf = export_docx(study_name, design_sel if 'design_sel' in st.session_state else design_code, t1, res)
-            fname = f"G6_RESULTS_{study_name}_{pd.Timestamp.today().date()}.docx"
+            buf = export_docx(
+                study_name,
+                design_sel if 'design_sel' in st.session_state else design_code,
+                t1, res, locked=is_locked,
+            )
+            prefix = "G6_RESULTS" if is_locked else "DRAFT_THAMDO_KHONG_CHINH_THUC"
+            fname = f"{prefix}_{study_name}_{pd.Timestamp.today().date()}.docx"
             st.download_button("⬇ Tải DOCX", data=buf.getvalue(), file_name=fname,
                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
             st.success(f"✅ Sẵn sàng tải: {fname}")

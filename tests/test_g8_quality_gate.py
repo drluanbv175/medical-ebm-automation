@@ -16,6 +16,7 @@ TOOLS_DIR = REPO_ROOT / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
 
 import g8_quality_gate as G8Q  # noqa: E402
+import run_g8_auto as G8  # noqa: E402
 
 CLEAN_MANUSCRIPT = """# Bản thảo
 
@@ -464,3 +465,55 @@ def test_cap_nhat_checkpoint_giu_nguyen_khoa_downstream(tmp_path):
         assert updated[key] == original[key], key
     assert updated["quality_gate"]["status"] == report["status"]
     assert updated["quality_contract_version"] == G8Q.QUALITY_CONTRACT_VERSION
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# decide_g8_status() — lệch nội bộ đã sửa: artifact tự xưng 6 điều kiện bắt
+# buộc nhưng bản cũ chỉ kiểm 5, bỏ qua reporting_ok (checklist chuẩn báo cáo).
+# ════════════════════════════════════════════════════════════════════════════
+
+
+def _decide(**overrides):
+    kwargs = dict(
+        irb_ok=True, sap_ok=True, g7_ok=True, results_final=True, score_ok=True,
+        reporting_ok=True, presubmission_passed=27, reporting_pct=82.0,
+        reporting_standard_name="CONSORT 2025",
+    )
+    kwargs.update(overrides)
+    return G8.decide_g8_status(**kwargs)
+
+
+def test_du_ca_6_dieu_kien_thi_pass():
+    assert _decide().startswith("PASS")
+
+
+def test_checklist_thap_KHONG_con_duoc_pass_du_5_dieu_kien_kia_dat():
+    """Bug đã sửa: checklist 30% từng vẫn cho PASS vì reporting_ok bị bỏ ngoài."""
+    status = _decide(reporting_ok=False, reporting_pct=30.0)
+    assert not status.startswith("PASS")
+    assert status.startswith("PARTIAL")
+    assert "CONSORT 2025" in status
+    assert "30.0" in status
+
+
+def test_diem_tu_kiem_thap_van_bi_chan_nhu_cu():
+    status = _decide(score_ok=False, presubmission_passed=20)
+    assert status.startswith("PARTIAL")
+    assert "diem tu kiem" in status
+
+
+def test_ca_diem_va_checklist_deu_thieu_liet_ke_ca_hai():
+    status = _decide(score_ok=False, presubmission_passed=20, reporting_ok=False, reporting_pct=40.0)
+    assert "diem tu kiem" in status and "CONSORT 2025" in status
+
+
+def test_thieu_irb_van_pending_bat_ke_reporting_ok():
+    status = _decide(irb_ok=False, reporting_ok=False)
+    assert status.startswith("PENDING")
+    assert "IRB" in status
+
+
+def test_thieu_results_final_van_pending():
+    status = _decide(results_final=False)
+    assert status.startswith("PENDING")
+    assert "phan tich THAT" in status

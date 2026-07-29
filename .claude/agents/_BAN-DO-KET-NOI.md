@@ -84,7 +84,7 @@ Xuyên suốt: so-cai-ghi-nho (ghi sổ cái sau mỗi cổng) ; cầu thực h�
 
 ## 7. CỔNG CHUYỂN (gate trên đường đi)
 - **CỔNG A** (quyết định lâm sàng) + **CỔNG B** (ghi EBM_MASTER) — xem `_HIEN-PHAP-LIEM-CHINH.md`.
-- **G2 / G4 / dữ liệu thật trước phân tích (DỪNG 3) / G8 bình duyệt độc lập (DỪNG 4) / liêm chính tác giả (G9, DỪNG 5)** — **5** cổng cứng/điểm dừng nghiên cứu (2026-07-15: thêm DỪNG G8 — khớp đúng 5 DỪNG thật trong `dieu-phoi-nghien-cuu.md` §CHẾ ĐỘ CHAY-TOAN-BO), xem `dieu-phoi-nghien-cuu` + `_KIEM-TOAN`.
+- **G2 / G4 / G5 khóa dữ liệu thật trước phân tích (DỪNG 3) / G8 bình duyệt độc lập (DỪNG 4) / liêm chính tác giả (G9, DỪNG 5) / PI khóa gói phát hành (G10, DỪNG 6)** — **6** cổng cứng/điểm dừng nghiên cứu, xem `dieu-phoi-nghien-cuu` + `_KIEM-TOAN`.
 - Mọi chuyển tiếp qua cổng đều DỪNG chờ bác sĩ duyệt khi chạm quyết định/dữ liệu/phê duyệt thật.
 
 ## 8. LỚP ROUTINES THEO LỊCH → ĐỘI AGENT (điểm vào thứ 3 — tự động hoá)

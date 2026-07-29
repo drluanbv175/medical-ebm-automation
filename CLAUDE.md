@@ -97,6 +97,10 @@ python ../tools/sync_agents_to_codex.py --check
 ```bash
 python -m compileall -q app scripts tests
 python ../tools/sync_agents_to_codex.py --check
+python ../tools/check_claude_codex_sync_health.py
+python ../tools/verify_claude_code_repo_alignment.py
+python scripts/regenerate_agent_manifest.py --check
+python tools/agent_gate_governance.py
 python ../tools/audit_ebm_system.py
 # If dev dependencies are installed:
 pytest

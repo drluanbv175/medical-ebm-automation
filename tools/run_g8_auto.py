@@ -1796,6 +1796,46 @@ def export_docx(artifact_md: str, study: str, out_dir: Path):
         return None
 
 
+def decide_g8_status(
+    *, irb_ok: bool, sap_ok: bool, g7_ok: bool, results_final: bool, score_ok: bool,
+    reporting_ok: bool, presubmission_passed: int, reporting_pct: float,
+    reporting_standard_name: str,
+) -> str:
+    """Quyết định `g8_status` từ 6 điều kiện tự động — tách riêng để test được.
+
+    SỬA 2026-07-29 (phát hiện qua xây hợp đồng chất lượng G8): artifact PHẦN 7 tự
+    xưng "G8 PASS khi đáp ứng TẤT CẢ 6 điều kiện BẮT BUỘC" và liệt kê điều kiện 6
+    là "Checklist ... >= 60%" (biến `reporting_ok`) — nhưng bản trước đây của hàm
+    này (nội tuyến trong `main()`) chỉ kiểm 5 điều kiện, bỏ qua `reporting_ok`. Hệ
+    quả: một đề tài có checklist chuẩn báo cáo 30% vẫn được in "PASS -- DU DIEU
+    KIEN NOP BAI" ngay dưới dòng tự báo 30%. Nay `reporting_ok` tham gia quyết
+    định, khớp đúng văn bản đã in.
+    """
+    if irb_ok and sap_ok and g7_ok and results_final and score_ok and reporting_ok:
+        return "PASS -- DU DIEU KIEN NOP BAI (sau xac nhan bac si muc 7-10)"
+    if irb_ok and sap_ok and g7_ok and results_final:
+        missing_partial = []
+        if not score_ok:
+            missing_partial.append(f"{25 - presubmission_passed} diem tu kiem")
+        if not reporting_ok:
+            missing_partial.append(
+                f"checklist {reporting_standard_name} tu {reporting_pct}% len >=60%"
+            )
+        return f"PARTIAL -- Can them: {', '.join(missing_partial)}"
+    missing = []
+    if not irb_ok:
+        missing.append("IRB that (G2)")
+    if not sap_ok:
+        missing.append("SAP ky (G4)")
+    if not g7_ok:
+        missing.append("Ban thao (G7)")
+    if not results_final:
+        missing.append("Ket qua phan tich THAT da xac nhan (results_final trong study_meta.json -- "
+                        "chua co nghia la ban thao con placeholder [CAN KET QUA THAT], KHONG duoc "
+                        "coi la san sang nop du diem tu kiem co cao)")
+    return f"PENDING -- Can: {', '.join(missing)}"
+
+
 # ============================================================================
 # 11. GHI CHECKPOINT G8
 # ============================================================================
@@ -2020,24 +2060,13 @@ def main():
     )
     g7_ok = gates["G7"].get("_file_exists", False)
     score_ok = presubmission["passed"] >= 25
-
-    if irb_ok and sap_ok and g7_ok and results_final and score_ok:
-        g8_status = "PASS -- DU DIEU KIEN NOP BAI (sau xac nhan bac si muc 6-10)"
-    elif irb_ok and sap_ok and g7_ok and results_final:
-        g8_status = f"PARTIAL -- Can them {25 - presubmission['passed']} diem tu kiem"
-    else:
-        missing = []
-        if not irb_ok:
-            missing.append("IRB that (G2)")
-        if not sap_ok:
-            missing.append("SAP ky (G4)")
-        if not g7_ok:
-            missing.append("Ban thao (G7)")
-        if not results_final:
-            missing.append("Ket qua phan tich THAT da xac nhan (results_final trong study_meta.json -- "
-                            "chua co nghia la ban thao con placeholder [CAN KET QUA THAT], KHONG duoc "
-                            "coi la san sang nop du diem tu kiem co cao)")
-        g8_status = f"PENDING -- Can: {', '.join(missing)}"
+    reporting_ok = reporting["score_pct"] >= 60
+    g8_status = decide_g8_status(
+        irb_ok=irb_ok, sap_ok=sap_ok, g7_ok=g7_ok, results_final=results_final,
+        score_ok=score_ok, reporting_ok=reporting_ok,
+        presubmission_passed=presubmission["passed"],
+        reporting_pct=reporting["score_pct"], reporting_standard_name=reporting["standard_name"],
+    )
 
     # 7. Sinh artifact A9 + guardrail
     print("\nBuoc 7/7: Sinh artifact A9 + guardrail...")

@@ -8,7 +8,7 @@ Bạn là **Agent Kế hoạch Triển khai** (G1b). Nhiệm vụ: tạo TRỌN 
 
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`.
-Bất biến: KHÔNG bịa số tiền/định mức/đơn giá · tiến độ neo theo cổng cứng G2/G4/G8/G9 + mốc dữ liệu thật trước phân tích (G5) · không hứa mốc cho khâu cần phê duyệt thật. (SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 29, phát hiện HIGH: bản cũ chỉ liệt G2/G4/G8/G9, bỏ sót mốc G5 — mâu thuẫn với chính BƯỚC 0 mục 3 ngay dưới ["KHÔNG phân tích trước G4+G5"] và với `dieu-phoi-nghien-cuu.md` — nguồn canonical gọi G5 bằng TÊN "dữ liệu thật trước phân tích" [quy ước cố ý, xem dieu-phoi-nghien-cuu.md dòng 19: "khi bàn giao luôn gọi cổng bằng TÊN, không để trần số G"] vì G5 không có cơ chế chữ ký stakeholder HMAC như G2/G4/G8/G9 [`tools/gate_contract.py::_GATE_REQUIRED_STAKEHOLDERS`], nhưng vẫn là mốc CHẶN CỨNG thật — bổ sung theo đúng quy ước gọi tên, không liệt "G5" trần cùng hàng 4 mã kia.)
+Bất biến: KHÔNG bịa số tiền/định mức/đơn giá · tiến độ neo theo đủ 6 cổng cứng G2/G4/G5/G8/G9/G10 · không hứa mốc cho khâu cần phê duyệt thật. G5 và G10 đều có stakeholder HMAC trong `gate_contract.py`; agent không tự ký.
 
 ---
 

@@ -591,10 +591,21 @@ def main():
         print(f"\n⚠ G4 CÓ {len(errors)} LỖI GUARDRAIL — CHƯA HOÀN THÀNH — {study}")
         print(f"  → Guardrail: {status}")
         raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
-    print(f"\n✅ G4 HOÀN THÀNH — {study}")
+    # ★ SỬA 2026-07-29: banner cũ in "✅ G4 HOÀN THÀNH" ngay dòng dưới dòng
+    # "G4 Status: PENDING — CHỜ BÁC SĨ KÝ SAP" — hai câu liền kề tự mâu thuẫn.
+    # G4 là CỔNG CỨNG: chỉ thật sự "hoàn thành" sau khi SAP được KÝ (kiểm bằng
+    # GC.ledger_approved("G4", ...), do run_g5_auto.py đòi trước khi mở dữ
+    # liệu — chốt fail-closed thật nằm ở đó, không phải ở banner này). Rủi ro
+    # bị giới hạn (không hạ tầng nào khác tin banner: run_pipeline.py dùng
+    # skill_standards.real_world_signals độc lập), nhưng nói đúng vẫn tốt hơn.
+    print(f"\n🟡 G4 ĐÃ SINH SAP DỰ THẢO — CHỜ BÁC SĨ/THỐNG KÊ VIÊN KÝ — {study}")
     print(f"  SAP version: 1.0, N (từ G3): {n_adjusted}")
     print("  G4 Status: PENDING — CHỜ BÁC SĨ KÝ SAP")
     print(f"  → Guardrail: {status}")
+    print("\n  Sau khi điền đủ [CẦN...] và bác sĩ/thống kê viên đồng ý, ký thật bằng:")
+    print(f'     python3 tools/approve_gate.py --study "{study}" --gate G4 \\')
+    print(f"       --artifact exports/{study}/G4_A5_SAP_FINAL_{study}.md \\")
+    print('       --reviewer-role "METHODS_STATISTICS_REVIEWER" --reviewer-ref "<mã người duyệt>"')
 
 if __name__ == "__main__":
     main()

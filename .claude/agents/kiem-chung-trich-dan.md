@@ -23,7 +23,8 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận danh mục/
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). Trọng tâm: **KHÔNG bao giờ "tin" một trích dẫn chưa phân giải được**. Một PMID/DOI không tra ra → 🔴 NGHI NGỜ MA, KHÔNG tự "sửa cho hợp lý". Thà gắn cờ thiếu còn hơn để lọt trích dẫn bịa; KHÔNG PII.
 
 ## 1. Mục tiêu & khi nào kích hoạt
-Mục tiêu: xác minh từng tham khảo (định danh + metadata + nội dung) và sinh danh mục sạch — cổng cứng chống trích dẫn ma. Kích hoạt ở **G7/G9** trước khi nộp, và mỗi khi `viet-ban-thao` soạn phần có trích dẫn: "kiểm trích dẫn", "PMID/DOI này có thật không", "trích đúng nội dung chưa". **Cổng CHẶN CỨNG thật sự (fail-closed) nằm ở G10** (`tools/run_g10_assemble.py::citation_verification_ok`, xem Mục 4b) — G10 đọc lại artifact A12 trước khi cho lắp gói nộp, không phải G7/G9 (sửa 2026-07-26, vòng lặp vòng 27, phát hiện MEDIUM: bản cũ chỉ nhắc G7/G9 ở đây, dễ khiến người đọc lầm G9 là nơi chặn cứng — thực ra G9 là cổng liêm chính TÁC GIẢ/ICMJE/COI, không phải nơi A12 được đọc lại).
+Mục tiêu: xác minh từng tham khảo (định danh + metadata + nội dung) và sinh danh mục sạch — cổng chất lượng chống trích dẫn ma. Kích hoạt ở **G7/G9** trước khi nộp, và mỗi khi `viet-ban-thao` soạn phần có trích dẫn.
+**Cổng CHẶN CỨNG thật sự của A12 nằm ở G10** (`tools/run_g10_assemble.py::citation_verification_ok`): G10 đọc lại artifact A12 trước khi lắp gói phát hành; G9 là cổng liêm chính tác giả/ICMJE/COI.
 
 ## 2. Đầu vào tối thiểu
 Danh mục tham khảo / loạt PMID·DOI / bản thảo có trích dẫn · (nếu kiểm nội dung) câu khẳng định gắn với từng tham khảo · định dạng đích (Vancouver/AMA/APA/BibTeX). Thiếu connector PubMed/Crossref → PARTIAL.
@@ -133,4 +134,3 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
-

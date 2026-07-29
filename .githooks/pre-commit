@@ -1,0 +1,45 @@
+#!/bin/sh
+# Chan commit repo y khoa neu workspace Claude Code ↔ Codex con drift.
+# Repo goc la nguon agent; repo nay la runtime cac cong. Hai ben phai cung dat
+# tai moi moc hoan thien, khong duoc commit runtime trong khi doctrine con lech.
+
+COMPLETION_SYNC_FAIL_CLOSED=1
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+WORKSPACE_ROOT=${EBM_WORKSPACE_ROOT:-$(cd "$REPO_ROOT/.." && pwd)}
+ROOT_HOOK="$WORKSPACE_ROOT/.githooks/pre-commit"
+
+if [ ! -x "$ROOT_HOOK" ]; then
+  echo "CHAN COMMIT: khong tim thay hook dong bo workspace: $ROOT_HOOK" >&2
+  echo "  Dat EBM_WORKSPACE_ROOT toi thu muc chua .claude/agents va .Codex/agents." >&2
+  exit 1
+fi
+
+(
+  cd "$WORKSPACE_ROOT" || exit 1
+  "$ROOT_HOOK"
+)
+if [ "$?" -ne 0 ]; then
+  echo "CHAN COMMIT repo y khoa: Claude Code ↔ Codex chua dong bo." >&2
+  exit 1
+fi
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "CHAN COMMIT repo y khoa: khong tim thay python3 de kiem agent snapshot." >&2
+  exit 1
+fi
+
+cd "$REPO_ROOT" || exit 1
+python3 scripts/regenerate_agent_manifest.py --check
+if [ "$?" -ne 0 ]; then
+  echo "CHAN COMMIT: snapshot .claude/agents va manifest runtime con lech." >&2
+  exit 1
+fi
+
+python3 tools/agent_gate_governance.py
+if [ "$?" -ne 0 ]; then
+  echo "CHAN COMMIT: governance agent/cong trong repo y khoa chua dat." >&2
+  exit 1
+fi
+
+exit 0

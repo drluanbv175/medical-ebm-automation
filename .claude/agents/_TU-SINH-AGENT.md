@@ -54,7 +54,7 @@ soạn SPEC theo lối **đối kháng đa lăng kính** — nháp vai/phương 
 
 - Agent tự sinh = **PROPOSED** trong registry; đầu ra của nó coi như **[DỰ THẢO]** cho
   tới khi bác sĩ xoá dòng `[TỰ SINH — CHỜ BÁC SĨ DUYỆT]`.
-- **KHÔNG** dùng agent tự sinh để vượt cổng cứng (G2 đạo đức · G4 SAP · G8 bình duyệt độc lập · G9 liêm chính tác giả · Cổng A/B lâm sàng). Nó chỉ ĐỀ XUẤT như mọi agent khác.
+- **KHÔNG** dùng agent tự sinh để vượt cổng cứng (G2 đạo đức · G4 SAP · G5 khóa dữ liệu · G8 bình duyệt độc lập · G9 liêm chính tác giả · G10 PI khóa gói phát hành · Cổng A/B lâm sàng). Nó chỉ ĐỀ XUẤT như mọi agent khác.
 - Audit hệ (`audit_ebm_system.py`) đã **nhận biết registry**: agent tự sinh đã đăng ký
   được phép vượt baseline **50** (2026-07-12: sửa "48" — `CORE_AGENT_COUNT` đã tăng 48→49→50 sau khi
   thêm `quan-ly-khang-dong`/`tham-dinh-do-chinh-xac-chan-doan` 2026-07-04, xem `audit_ebm_system.py`

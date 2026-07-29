@@ -119,7 +119,7 @@ phải nút thắt "đánh giá người", mà là bất biến "người giữ 
 
 ## 7. BẤT BIẾN GIỮ NGUYÊN
 - KHÔNG bịa κ/điểm; KHÔNG tự ký/tự APPROVE cổng MRAQ; KHÔNG gọi phản biện-AI là "independent review".
-- 2 Cổng bác sĩ (A quyết định · B ghi sổ cái) + 5 điểm dừng cứng nghiên cứu (G2/G4/dữ liệu thật/G8 bình duyệt độc lập/G9 liêm chính) **nguyên vẹn**.
+- 2 Cổng bác sĩ (A quyết định · B ghi sổ cái) + 6 điểm dừng cứng nghiên cứu (G2/G4/G5 khóa dữ liệu thật/G8 bình duyệt độc lập/G9 liêm chính/G10 PI khóa gói phát hành) **nguyên vẹn**.
 - Tier S hợp lệ **CHỈ KHI** bác sĩ duyệt từng đầu ra. Tự trị/xuất bản ⇒ Tier R.
 
 > **"Cần bác sĩ kiểm chứng."** Khung này điều chỉnh PHẠM VI đánh giá cho khả thi, KHÔNG hạ chuẩn an toàn.

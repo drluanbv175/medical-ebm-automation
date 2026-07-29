@@ -100,7 +100,7 @@ Khi xuất **Final Readiness Report (A18)** ở G9, phân hạng thay cho kết 
 
 | Hạng | Điều kiện |
 |---|---|
-| **READY** | Đủ 14/14 điểm DoD (§0bis); KHÔNG còn 🔴; 5 cổng cứng/điểm dừng (Đạo đức G2·SAP G4·Dữ liệu thật trước phân tích·Bình duyệt độc lập G8·Liêm chính tác giả G9 — 2026-07-15 thêm điểm dừng bình duyệt độc lập G8) đã ĐÓNG |
+| **READY** | Đủ 14/14 điểm DoD (§0bis); KHÔNG còn 🔴; 6 cổng cứng/điểm dừng (Đạo đức G2 · SAP G4 · Khóa dữ liệu G5 · Bình duyệt G8 · Liêm chính tác giả G9 · PI khóa gói phát hành G10) đã ĐÓNG |
 | **PARTIALLY READY** | Chỉ còn lỗi **Medium/Low**; mọi **Critical/High** đã khắc phục; nêu rõ điều kiện còn lại |
 | **NOT READY** | Còn ≥1 lỗi **Critical/High** (chưa qua cổng cứng · kết luận vượt dữ liệu · trích dẫn chưa kiểm · SAP chưa khóa trước phân tích · PII · số liệu giả) |
 

@@ -39,10 +39,14 @@ def test_gate_contract_roles_are_fail_closed_in_governance_report():
     assert checks["exit_blocked_is_2"] is True
     assert checks["gate_role:G2"] is True
     assert checks["gate_role:G4"] is True
+    assert checks["gate_role:G5"] is True
     assert checks["gate_role:G8"] is True
     assert checks["gate_role:G9"] is True
+    assert checks["gate_role:G10"] is True
     assert checks["reason:MISSING_CITATION_VERIFICATION"] is True
     assert checks["reason:MISSING_PEER_REVIEW_SIGNATURE"] is True
+    assert checks["reason:MISSING_G10_RELEASE_READINESS"] is True
+    assert checks["reason:MISSING_G10_RELEASE_APPROVAL"] is True
 
 
 def test_generate_agent_dry_run_renders_required_guardrails():

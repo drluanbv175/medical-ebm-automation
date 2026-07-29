@@ -50,6 +50,41 @@ _COMORBID_KEYWORDS   = ["dm", "htn", "af", "cad", "ckd", "copd", "chf", "diabete
                         "benh_nen", "tien_su", "comorbid", "baseline_disease", "stroke", "tia"]
 
 
+#: Tên biến sẽ được nhúng THẲNG làm định danh cột trong code R/Python sinh ra
+#: (`by = "{exposure}"`, `df["{outcome}"]`...). Đây là LỚP PHÒNG THỦ THỨ HAI
+#: (2026-07-29, soi cổng G6) — độc lập với việc sửa thuật toán đoán delimiter
+#: ở trên: nếu vì lý do nào khác (file dictionary chỉnh tay, định dạng lạ...)
+#: mà tên biến phát hiện được vẫn không phải một định danh hợp lệ, phải DỪNG
+#: thay vì âm thầm sinh ra script vỡ cú pháp mà guardrail() không bắt được
+#: (guardrail chỉ kiểm PII/hardcode/claim-LOCKED/disclaimer, không kiểm cú pháp).
+_VALID_R_IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_.]*$")
+
+
+def _reject_if_variable_names_invalid(v: dict) -> None:
+    bad = {
+        role: name
+        for role, name in (
+            ("exposure", v.get("exposure")),
+            ("outcome", v.get("outcome")),
+            ("time_col", v.get("time_col")),
+        )
+        if name and not _VALID_R_IDENTIFIER.match(str(name))
+    }
+    bad.update({
+        f"covariate[{i}]": c
+        for i, c in enumerate(v.get("covariates") or [])
+        if not _VALID_R_IDENTIFIER.match(str(c))
+    })
+    if bad:
+        print("\n✗ DỪNG: tên biến phát hiện được KHÔNG phải định danh hợp lệ — "
+              "sinh script R/CLI sẽ vỡ cú pháp mà không ai được cảnh báo.")
+        for role, name in bad.items():
+            print(f"   {role} = {name!r}")
+        print("   Nguyên nhân thường gặp: G5_REDCap_dictionary_<study>.csv sai định dạng, "
+              "hoặc bị sửa tay làm lệch cột. Kiểm lại file dictionary trước khi chạy lại G6.")
+        raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
+
+
 def detect_variables_from_redcap(csv_path: Path) -> dict:
     """
     Đọc G5 REDCap dictionary → phát hiện tên biến theo vai trò.
@@ -82,15 +117,34 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
         result["detection_log"].append("⚠️  CSV quá ngắn (< 2 dòng)")
         return result
 
-    # Xác định delimiter: "/" hoặc ","
-    # REDCap dictionary xuất từ hệ thống thường dùng " / " hoặc ","
+    # Xác định delimiter: "," hoặc " / " hoặc tab.
+    # SỬA 2026-07-29 (soi cổng G6, phát hiện CRITICAL — tái hiện được 100% bằng
+    # tích hợp G5→G6 thật): quy tắc cũ "có ' / ' trong dòng đầu thì dùng ' / '"
+    # SAI với chính CSV chuẩn mà run_g5_auto.py::generate_csv() sinh ra — header
+    # 18 cột REDCap chuẩn có TÊN CỘT ĐẦU TIÊN literally là "Variable / Field
+    # Name", nên dòng đầu LUÔN chứa " / " dù toàn bộ file là CSV phân tách bằng
+    # dấu phẩy. Hậu quả tái hiện được: detect_variables_from_redcap() coi cả
+    # dòng CSV là một "trường" duy nhất, exposure/outcome trở thành NGUYÊN CẢ
+    # DÒNG CSV, và script R/CLI sinh ra vỡ cú pháp hoàn toàn — trong khi
+    # guardrail() (chỉ kiểm PII/hardcode/claim-LOCKED/disclaimer) vẫn báo PASS.
+    # Sửa: đếm SỐ CỘT thực tế mà mỗi delimiter ứng viên tách được, chọn delimiter
+    # cho ra NHIỀU CỘT NHẤT. Định dạng ĐÚNG luôn tách ra đủ số trường thật (18
+    # cột qua dấu phẩy, hoặc nhiều trường qua " / " ở định dạng cũ); định dạng
+    # SAI chỉ tình cờ khớp một lần (đúng 1 dấu " / " nằm trong tên cột).
     first_line = lines[0]
-    if " / " in first_line:
-        delimiter = " / "
-    elif "\t" in first_line:
-        delimiter = "\t"
-    else:
-        delimiter = ","
+
+    def _col_count(line: str, delim: str) -> int:
+        if delim == ",":
+            try:
+                return len(list(csv.reader([line]))[0])
+            except Exception:  # noqa: BLE001
+                return 0
+        return len(line.split(delim))
+
+    _candidates = {d: _col_count(first_line, d) for d in (",", " / ", "\t")}
+    delimiter = max(_candidates, key=_candidates.get)
+    if _candidates[delimiter] < 2:
+        delimiter = ","  # không tách được gì bằng ứng viên nào → coi là 1 cột CSV
 
     def split_row(line: str):
         """Tách dòng theo delimiter, trim whitespace từng field."""
@@ -2741,6 +2795,7 @@ def main():
     redcap_csv = out / f"G5_REDCap_dictionary_{study}.csv"
     print(f"\n  📂 Đọc REDCap dictionary: {redcap_csv.name}")
     v = detect_variables_from_redcap(redcap_csv)
+    _reject_if_variable_names_invalid(v)
 
     print(f"  → Phơi nhiễm : {v['exposure']}")
     print(f"  → Kết cục    : {v['outcome']}")
@@ -3064,7 +3119,7 @@ source(here::here("scripts", "00_setup.R"))
 # ci_coords  # in ra 95%CI bootstrap cho từng chỉ số tại ngưỡng đã chọn
 
 # Calibration (nếu index test là điểm số/xác suất liên tục, không phải nhị phân):
-# giả::val.prob(df${index_test}, df${ref_standard})  # gói 'giả' hoặc rms::val.prob
+# rms::val.prob(df${index_test}, df${ref_standard})
 
 message("03_analysis.R (Diagnostic) — index test={index_test} vs reference={ref_standard} | [CẦN DỮ LIỆU THẬT]")
 """
