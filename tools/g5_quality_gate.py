@@ -368,7 +368,12 @@ def evaluate_operational_readiness(path: Path) -> Dict[str, Any]:
         except ValueError:
             issues.append(f"invalid_{field}")
         else:
-            if parsed > datetime.now(timezone.utc).date():
+            # reviewed_at/tested_at là ngày lịch không kèm múi giờ, do người
+            # duyệt gõ tay theo NGÀY ĐỊA PHƯƠNG trên máy họ (giống quy ước
+            # lock_date ở lock_analysis_dataset.py) — so với UTC sẽ báo sai
+            # "future_" với múi giờ trước UTC (VD UTC+7) suốt khoảng nửa đêm
+            # đến rạng sáng giờ địa phương.
+            if parsed > datetime.now().date():
                 issues.append(f"future_{field}")
     try:
         raw_text = path.read_text(encoding="utf-8")
