@@ -46,6 +46,11 @@ def _manuscript(*, with_results: bool = False, extra: str = "") -> str:
     )
     return (
         "# BẢN THẢO DRAFT\n\n"
+        # SỬA 2026-07-30 (G7-F1): fixture trước chỉ có 1 lần chữ "DRAFT" — sau khi
+        # g7_quality_gate.py chấm lại guardrail_g7() THẬT trên text này (thay vì tin
+        # checkpoint cache), R4 (đòi ≥2 lần "DRAFT") sẽ fail thật. Thêm dòng trạng
+        # thái thứ hai, đúng văn phong template thật (vd G4/G5 luôn có ≥2 nhãn DRAFT).
+        "**Trạng thái:** DRAFT — chưa nộp tạp chí.\n\n"
         "## TÓM TẮT\nNền tảng, mục tiêu, thiết kế.\n\n"
         "## I. GIỚI THIỆU\nBối cảnh nghiên cứu.\n\n"
         "## II. PHƯƠNG PHÁP\n"
@@ -251,6 +256,45 @@ def test_evaluate_study_doc_ban_thao_TU_DIA(tmp_path):
     assert r2["status"] == G7Q.STATUS_CONFIRMED, r2["pending_actions"]
     assert r2["placeholder_counts"]["results"] == 0
     assert (d / "G7_QUALITY_REPORT.md").exists()
+
+
+def test_evaluate_study_khong_tin_guardrail_cache_khi_ban_thao_bi_chen_PII_va_so_lieu_bia(
+    tmp_path,
+):
+    """Hồi quy G7-F1 (audit toàn diện G0-G10, HIGH, FABRICATION_RISK): trước vá
+    này, evaluate_study() KHÔNG chạy lại guardrail_g7() trên bản thảo hiện tại
+    trên đĩa — nó tin thẳng giá trị guardrail ĐÃ CACHE từ lần sinh khung ban
+    đầu. Kịch bản: checkpoint cache nói "✅ PASS", nhưng SAU ĐÓ ai đó chèn CMND
+    (PII) + số liệu HR/CI/p hardcoded (không kèm [CẦN KẾT QUẢ THẬT]) thẳng vào
+    file .md — đúng loại nội dung guardrail_g7() (R1/R5) được thiết kế để chặn.
+    G7 tự nhận là "lớp phòng thủ cuối cùng trước khi bản thảo rời hệ thống" nên
+    PHẢI bắt được kịch bản này khi chấm lại, không được tin cache cũ."""
+    study = "T-G7-FABRICATED"
+    d = tmp_path / study
+    d.mkdir(parents=True)
+    for gate, cp in _cps().items():
+        (d / f"{gate}_checkpoint.json").write_text(
+            json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+    (d / "study_meta.json").write_text(
+        json.dumps(_meta_confirmed(), ensure_ascii=False), encoding="utf-8")
+    (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
+        "Đã xác minh 10/10 PMID.", encoding="utf-8")
+
+    # Checkpoint CACHE nói guardrail đã "✅ PASS" từ lần sinh khung ban đầu —
+    # cùng giá trị _cps() vẫn dùng cho các test khác trong file này.
+    fabricated = (
+        "# BẢN THẢO DRAFT\n\n**Trạng thái:** DRAFT — chưa nộp tạp chí.\n\n"
+        "## TÓM TẮT\nBệnh nhân có CMND 123456789012 tham gia nghiên cứu.\n\n"
+        "## III. KẾT QUẢ\nHR = 1.45 (95%CI 1.02-2.01), p = 0.03.\n\n"
+        "Cần bác sĩ kiểm chứng.\n"
+    )
+    md = d / f"G7_A8_MANUSCRIPT_{study}.md"
+    md.write_text(fabricated, encoding="utf-8")
+
+    report = G7Q.evaluate_study(study, d, write=False)
+    row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-00")
+    assert row["status"] == "BLOCK", row
+    assert report["status"] == G7Q.STATUS_BLOCKED, report
 
 
 # ════════════════════════════════════════════════════════════════════════════

@@ -584,12 +584,36 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True) -> Dict[str
     else:
         citation_ok = None
 
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G7-F1 — HIGH, FABRICATION_RISK):
+    # trước đây KHÔNG truyền guardrail_passed ở đây → evaluate_g7_quality() rơi
+    # vào nhánh mặc định đọc guardrail ĐÃ CACHE từ checkpoint (giá trị ghi MỘT
+    # LẦN lúc run_g7_auto.py sinh khung ban đầu). Module này tự giới thiệu là
+    # chấm bản thảo TỪ ĐĨA — "kể cả phần bác sĩ đã viết tay" — nhưng nếu bác sĩ
+    # (hoặc agent) chèn PII/số liệu bịa (HR/CI/p không kèm nhãn [CẦN...]) thẳng
+    # vào bản thảo SAU khi checkpoint đã ghi "PASS", G7-AUTO-00 vẫn báo PASS vì
+    # chưa từng soi lại text hiện tại — mâu thuẫn trực tiếp với vai trò "lớp
+    # phòng thủ cuối cùng trước khi bản thảo rời hệ thống". Vá: chạy lại
+    # guardrail_g7() (run_g7_auto.py) TRÊN CHÍNH `text` vừa đọc, không tin cache.
+    # Import lười tránh vòng import (run_g7_auto.py đã `import g7_quality_gate
+    # as G7Q` ở cấp module).
+    try:
+        import run_g7_auto as G7  # noqa: PLC0415
+
+        # KHÔNG đặc cách text rỗng — guardrail_g7("") tự nhiên trả lỗi thật
+        # (thiếu nhãn DRAFT, thiếu disclaimer...) nên không cần ép PASS/BLOCK
+        # riêng cho trường hợp thiếu bản thảo.
+        fresh_errors, _fresh_warnings = G7.guardrail_g7(text)
+        guardrail_passed = not fresh_errors
+    except ImportError:  # pragma: no cover - lưới an toàn
+        guardrail_passed = None
+
     report = evaluate_g7_quality(
         manuscript_text=text,
         checkpoints=checkpoints,
         meta=meta,
         artifact_paths={"A8": md_path} if md_path.exists() else {},
         citation_verification_ok=citation_ok,
+        guardrail_passed=guardrail_passed,
     )
     if write:
         write_quality_report(study, out_dir, report)

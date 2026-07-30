@@ -519,3 +519,17 @@ def test_full_signed_chain_reaches_locked_with_real_g5_evaluator(tmp_path, monke
     )
     assert locked["status"] == G9Q.STATUS_LOCKED, locked
     assert G9Q.GC.g9_quality_contract_satisfied(study, repo_root=tmp_path)
+
+
+def test_cope_authorship_ai_citation_khong_con_tro_sai_sang_thesis_publishing():
+    """Hồi quy G9-F3 (audit toàn diện G0-G10, HIGH, trích dẫn sai): DOI cũ
+    '10.24318/LQU1h9US' xác minh trực tiếp trỏ tới một tài liệu 2017 về XUẤT
+    BẢN LUẬN VĂN (thesis publishing), không liên quan tác giả/AI. DOI đúng
+    cho 'COPE Position Statement — Authorship and AI Tools' là
+    '10.24318/cCVRZBms' (xác minh qua redirect doi.org)."""
+    entry = next(
+        item for item in G9Q.STANDARDS_BASIS
+        if "authorship" in item["standard"].lower() and "ai" in item["standard"].lower()
+    )
+    assert entry["doi"] == "10.24318/cCVRZBms", entry
+    assert entry["doi"] != "10.24318/LQU1h9US"

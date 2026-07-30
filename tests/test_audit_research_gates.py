@@ -284,6 +284,61 @@ def test_data_pipeline_reads_cleaning_and_lock_status(tmp_path):
     assert lock["blockers"] == ["open_query_log"]
 
 
+def test_g7_blocked_quality_gate_is_visible_not_silently_passed(tmp_path):
+    """Hồi quy G7-F2 (audit toàn diện G0-G10, HIGH): trước đây G7_QUALITY_REPORT.json
+    hoàn toàn vô hình với đài kiểm soát này — một G7 bị BLOCKED bởi lớp chất lượng
+    riêng (vd PII/số liệu bịa bắt được lúc chấm lại) vẫn lọt qua như bình thường vì
+    chỉ cần artifact manuscript tồn tại + guardrail cache cũ."""
+    _cp(tmp_path, "G7", {
+        "quality_contract_version": "G7-2026.1",
+        "quality_gate": {"status": "BLOCKED", "pending_actions": []},
+    })
+    (tmp_path / "G7_A8_MANUSCRIPT_AUTO-G7-BLOCK.md").write_text(
+        "bản thảo có nội dung đã bị chặn bởi lớp chất lượng", encoding="utf-8")
+
+    report = ARG.audit_gates("AUTO-G7-BLOCK", out_dir=tmp_path, write=False)
+    g7 = next(row for row in report["pipeline_gates"] if row["gate"] == "G7")
+
+    assert g7["status"] == ARG.STATUS_GUARDRAIL_FAIL, g7
+    assert "g7_quality_gate.py" in g7["next_action"]
+
+
+def test_g7_needs_real_quality_gate_is_visible(tmp_path):
+    _cp(tmp_path, "G7", {
+        "quality_contract_version": "G7-2026.1",
+        "quality_gate": {
+            "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+            "pending_actions": ["Điền kết quả thật ở Bảng 2"],
+        },
+    })
+    (tmp_path / "G7_A8_MANUSCRIPT_AUTO-G7-DRAFT.md").write_text(
+        "bản thảo khung", encoding="utf-8")
+
+    report = ARG.audit_gates("AUTO-G7-DRAFT", out_dir=tmp_path, write=False)
+    g7 = next(row for row in report["pipeline_gates"] if row["gate"] == "G7")
+
+    assert g7["status"] == ARG.STATUS_NEEDS_REAL, g7
+    assert g7["next_action"] == "Điền kết quả thật ở Bảng 2"
+
+
+def test_g9_blocked_quality_gate_is_visible_not_silently_passed(tmp_path):
+    """Cùng lớp lỗi G7-F2, phát hiện thêm ở G9: artifact quality_report ĐÃ đăng
+    ký required=True nhưng thiếu nhánh phân loại đọc quality_gate.status."""
+    _cp(tmp_path, "G9", {
+        "quality_contract_version": "G9-2026.1",
+        "quality_gate": {"status": "BLOCKED", "pending_actions": []},
+    })
+    (tmp_path / "G9_A10_AUTHOR_INTEGRITY_AUTO-G9-BLOCK.md").write_text(
+        "hồ sơ liêm chính", encoding="utf-8")
+    _write_json(tmp_path / "G9_PUBLICATION_READINESS.json", {})
+
+    report = ARG.audit_gates("AUTO-G9-BLOCK", out_dir=tmp_path, write=False)
+    g9 = next(row for row in report["pipeline_gates"] if row["gate"] == "G9")
+
+    assert g9["status"] == ARG.STATUS_GUARDRAIL_FAIL, g9
+    assert "g9_quality_gate.py" in g9["next_action"]
+
+
 def test_write_reports_and_updates_study_meta(tmp_path):
     report = ARG.audit_gates("AUTO-WRITE", out_dir=tmp_path, topic="Đề tài X", write=True)
 

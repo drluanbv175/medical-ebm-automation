@@ -332,6 +332,14 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "patterns": ["G7_A8_MANUSCRIPT_*.md", "16_IMRAD_Manuscript.md"],
             "required": True,
         },
+        {
+            # required=False như G3/G8 (khác G2 là True): fixture G7 của bộ verify ở
+            # thư mục gốc chỉ dựng artifact A8, nâng lên bắt buộc phải sửa đồng thời.
+            "key": "g7_quality_report",
+            "label": "Báo cáo chất lượng G7 (bản thảo)",
+            "patterns": ["G7_QUALITY_REPORT.json"],
+            "required": False,
+        },
     ],
     "G8": [
         {
@@ -1151,6 +1159,115 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
                 "real_signal": {
                     "key": "g4_sap_lock_confirmation",
                     "label": "thống kê viên/PI ký khóa SAP",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": action,
+                **extras,
+            }
+
+    # G7 — bản thảo. Guard theo `quality_contract_version` để checkpoint CŨ không bị
+    # hồi tố. Thêm 2026-07-30 (audit toàn diện G0-G10, G7-F2): trước đây
+    # g7_quality_gate.py/G7_QUALITY_REPORT.json hoàn toàn vô hình với đài kiểm soát
+    # này — một G7 bị BLOCKED bởi lớp chất lượng riêng vẫn lọt qua như bình thường.
+    if gate == "G7" and cp.get("quality_contract_version"):
+        quality = cp.get("quality_gate")
+        quality_status = quality.get("status") if isinstance(quality, dict) else None
+        if quality_status == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": None,
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Sửa lỗi trong G7_QUALITY_REPORT rồi chạy lại "
+                    f"`python3 tools/g7_quality_gate.py --study {study}`."
+                ),
+                **extras,
+            }
+        if quality_status != "PASS_G7_CONFIRMED":
+            pending = (
+                quality.get("pending_actions") if isinstance(quality, dict) else None
+            )
+            action = (
+                str(pending[0])
+                if isinstance(pending, list) and pending
+                else (
+                    "Điền kết quả thật + khai báo ICMJE rồi chạy lại "
+                    f"`python3 tools/g7_quality_gate.py --study {study}`."
+                )
+            )
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_NEEDS_REAL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "g7_manuscript_confirmation",
+                    "label": "tác giả xác nhận bản thảo + khai báo ICMJE",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": action,
+                **extras,
+            }
+
+    # G9 — liêm chính tác giả/công bố. Guard theo `quality_contract_version`. Thêm
+    # 2026-07-30 (audit toàn diện G0-G10, cùng lớp F2 đã tìm ở G7): G9_QUALITY_
+    # REPORT.json ĐÃ đăng ký artifact (required=True) nhưng chưa có nhánh phân loại
+    # đọc `quality_gate.status` — đài kiểm soát báo cáo theo đường mặc định (chỉ cần
+    # artifact tồn tại), không phản ánh BLOCKED/DRAFT của lớp chất lượng riêng.
+    if gate == "G9" and cp.get("quality_contract_version"):
+        quality = cp.get("quality_gate")
+        quality_status = quality.get("status") if isinstance(quality, dict) else None
+        if quality_status == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": None,
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Sửa lỗi trong G9_QUALITY_REPORT rồi chạy lại "
+                    f"`python3 tools/g9_quality_gate.py --study {study}`."
+                ),
+                **extras,
+            }
+        if quality_status != "PASS_G9_PUBLICATION_INTEGRITY_LOCKED":
+            pending = (
+                quality.get("pending_actions") if isinstance(quality, dict) else None
+            )
+            action = (
+                str(pending[0])
+                if isinstance(pending, list) and pending
+                else (
+                    "Hoàn tất G9_PUBLICATION_READINESS.json và mọi form/evidence_ref "
+                    f"thật, rồi chạy lại `python3 tools/g9_quality_gate.py --study {study}`."
+                )
+            )
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_NEEDS_REAL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "g9_publication_integrity_confirmation",
+                    "label": "PI xác nhận đủ 9 nhóm tiêu chí liêm chính công bố",
                     "present": False,
                 },
                 "stale": stale,

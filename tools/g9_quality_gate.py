@@ -93,9 +93,17 @@ STANDARDS_BASIS = (
         "url": "https://credit.niso.org/contributor-roles-defined/",
     },
     {
-        "standard": "COPE authorship and AI guidance",
+        # SỬA 2026-07-30 (audit toàn diện G0-G10, G9-F3 — HIGH, trích dẫn sai): DOI
+        # cũ "10.24318/LQU1h9US" xác minh trực tiếp qua doi.org REDIRECT tới
+        # publicationethics.org/guidance/discussion-document/best-practice-theses-
+        # publishing — một tài liệu 2017 về XUẤT BẢN LUẬN VĂN, không liên quan
+        # tác giả/AI. DOI đúng cho "COPE Position Statement — Authorship and AI
+        # Tools" là "10.24318/cCVRZBms" (redirect xác nhận tới .../cope-position/
+        # authorship-and-ai-tools). Đây là báo cáo chất lượng của CHÍNH cổng liêm
+        # chính tác giả/AI nên trích sai nguồn này đặc biệt nghiêm trọng.
+        "standard": "COPE Position Statement — Authorship and AI Tools",
         "scope": "Tranh chấp tác giả, trách nhiệm và AI không thể là tác giả",
-        "doi": "10.24318/LQU1h9US",
+        "doi": "10.24318/cCVRZBms",
     },
     {
         "standard": "COPE Ethical Editing for New Editors",
