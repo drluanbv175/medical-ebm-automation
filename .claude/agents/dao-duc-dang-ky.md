@@ -24,7 +24,7 @@ Khi đề tài đã có G1 checkpoint → **chạy NGAY**:
 ```bash
 python medical-ebm-automation/tools/run_g2_auto.py --study "MA-DE-TAI"
 # Tự động: đọc G0+G1 checkpoint → risk profile → ClinicalTrials.gov search
-#           → 8 tài liệu IRB + WHO 18 fields + guardrail → A3 .md + .docx
+#           → 8 tài liệu IRB + WHO TRDS 1.3.1 (24 mục) + guardrail → A3 .md + .docx
 ```
 Mở `exports/<MA-DE-TAI>/G2_A3_ETHICS_PACKAGE_<MA-DE-TAI>.docx`:
 - Điền tất cả `[CẦN BỔ SUNG]` (tên chủ nhiệm, đơn vị, liên lạc, cỡ mẫu)
@@ -296,13 +296,22 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/2026
 | SR/MA | Khuyến nghị | PROSPERO | Trước tìm kiếm |
 | Quan sát HỒI CỨU/dữ liệu thứ cấp thuần túy, KHÔNG tuyển người tham gia mới | Tùy chọn (không có "người tham gia đầu tiên" để mốc thời gian áp vào) | — | — |
 
-**WHO Trial Registration Data Set — 20 trường bắt buộc** (danh sách dưới tách riêng Key Inclusion/Key Exclusion Criteria thành 2 dòng thao tác cho rõ ràng nên liệt kê 21 dòng; soạn sẵn, điền `[CẦN BỔ SUNG]` cho trường chưa biết — vá 2026-07-11: bản cũ thiếu 2 trường bắt buộc Primary/Secondary Sponsor và gộp nhầm Key Secondary Outcomes vào Primary Outcome):
-1. Primary registry & ID · 2. Date of registration · 3. Secondary IDs · 4. Source of funding
-5. Primary sponsor · 6. Secondary sponsor(s) · 7. PI contact · 8. Research contact
-9. Public title · 10. Scientific title · 11. Countries of recruitment · 12. Health condition
-13. Intervention · 14. Key inclusion criteria · 15. Key exclusion criteria · 16. Study type
-17. Date of first enrollment · 18. Target sample size · 19. Recruitment status
-20. Primary outcome · 21. Key secondary outcomes
+**WHO Trial Registration Data Set v1.3.1 — 24 mục bắt buộc** (khớp ĐÚNG hằng số
+`WHO_TRDS_LABELS`/`WHO_TRDS_ITEM_COUNT` trong `tools/g2_quality_gate.py` — nguồn xác định duy nhất
+cho danh sách này; soạn sẵn, điền `[CẦN BỔ SUNG]` cho trường chưa biết — SỬA 2026-07-30, audit toàn
+diện G0-G10 mục G2-F3: bản liệt kê cũ ghi "20 trường/21 dòng thao tác" theo cách đếm CŨ (tách riêng
+Key Inclusion/Key Exclusion Criteria thành 2 dòng); mã nguồn thật đã dùng ĐÚNG WHO TRDS **v1.3.1
+(24 mục)** — gộp Key Inclusion/Exclusion Criteria thành 1 mục (#14) và có 4 mục mà bản liệt kê cũ
+bỏ sót hẳn: Ethics Review (#21), Completion Date (#22), Summary Results (#23), IPD Sharing
+Statement (#24); đã xác minh ngoài qua who.int ở audit gốc, không cần verify lại):
+1. Primary Registry and Trial Identifying Number · 2. Date of Registration in Primary Registry ·
+3. Secondary Identifying Numbers · 4. Source(s) of Monetary or Material Support · 5. Primary
+Sponsor · 6. Secondary Sponsor(s) · 7. Contact for Public Queries · 8. Contact for Scientific
+Queries · 9. Public Title · 10. Scientific Title · 11. Countries of Recruitment · 12. Health
+Condition(s) or Problem(s) Studied · 13. Intervention(s) · 14. Key Inclusion and Exclusion
+Criteria · 15. Study Type · 16. Date of First Enrolment · 17. Target Sample Size · 18. Recruitment
+Status · 19. Primary Outcome(s) · 20. Key Secondary Outcomes · 21. Ethics Review · 22. Completion
+Date · 23. Summary Results · 24. IPD Sharing Statement
 
 > **WHO ICTRP KHÔNG phải một registry để đăng ký trực tiếp (2026-07-07):** ICTRP là cổng TÌM KIẾM/gộp dữ liệu từ các registry thành viên (primary registry mạng lưới WHO), KHÔNG nhận đăng ký trực tiếp. Mục "Nơi đăng ký" PHẢI nêu tên MỘT registry chính danh cụ thể (ClinicalTrials.gov/ANZCTR/DRKS/ISRCTN hoặc registry trong nước phù hợp) — không để "ICTRP hoặc registry phù hợp" như một lựa chọn (A)/(B) còn bỏ ngỏ. Với nghiên cứu QUAN SÁT/không can thiệp mà KHÔNG có registry quốc gia phù hợp → dùng nền tảng cụ thể **OSF Registries** (registries.osf.io) thay vì bỏ ngỏ.
 
