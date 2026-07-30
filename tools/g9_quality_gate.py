@@ -730,13 +730,32 @@ def evaluate_study(
         )
     )
 
-    guardrail_ok = _guardrail_ok(checkpoint)
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G9-F5 — MEDIUM, cùng lớp "tin
+    # cache cũ" đã đóng ở G7-AUTO-00/G8-AUTO-00/G4-AUTO-00 trong phiên này):
+    # trước đây đọc thẳng checkpoint["guardrail"] — giá trị ĐÓNG BĂNG tại thời
+    # điểm run_g9_auto.py sinh artifact — dù file A10 thật (G9_A10_AUTHOR_
+    # INTEGRITY_<study>.md) có thể đọc lại FRESH từ đĩa ngay tại đây. Đồng
+    # thời: 4/7 luật (R4/R5/R6/R7) kiểm boilerplate mà generator luôn in cứng
+    # (nhãn DRAFT/CHỜ, placeholder [CẦN], 8 tiêu đề PHẦN, disclaimer) — không
+    # thể fail bất kể nội dung — chỉ R1(PII)/R2(DOI bịa)/R3(tự claim PASSED)
+    # thật sự phản ứng với nội dung. Chạy lại guardrail_check_g9() trên file
+    # thật ít nhất để R1-R3 bắt được tampering xảy ra SAU khi sinh.
+    try:
+        import run_g9_auto as G9run  # noqa: PLC0415
+        a10_path = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
+        a10_text = a10_path.read_text(encoding="utf-8") if a10_path.exists() else ""
+        fresh_guardrail = G9run.guardrail_check_g9(a10_text)
+        guardrail_ok = bool(fresh_guardrail.get("passed")) if a10_text else False
+        guardrail_evidence = f"guardrail_passed={guardrail_ok} (chấm lại trên A10 hiện tại, không tin cache)"
+    except ImportError:  # pragma: no cover - lưới an toàn nếu import thất bại
+        guardrail_ok = _guardrail_ok(checkpoint)
+        guardrail_evidence = f"guardrail={checkpoint.get('guardrail')}"
     rows.append(
         _criterion(
             "G9-AUTO-02",
             "Guardrail gói G9 đạt và không tự tuyên bố PASSED",
             "PASS" if guardrail_ok else "BLOCK",
-            f"guardrail={checkpoint.get('guardrail')}",
+            guardrail_evidence,
             "Sửa mọi lỗi guardrail trong gói G9 trước khi thu xác nhận.",
         )
     )
@@ -960,9 +979,62 @@ def evaluate_study(
         )
     )
 
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G9-F6 — MEDIUM): g8_quality_gate.py
+    # (G8-HUMAN-04) đã đối chiếu reviewer_ref của G8 với TẤT CẢ cổng khác — kể cả
+    # G9 — để phát hiện "cùng một người ký nhiều vai trò". Nhưng vì G8 thường ký
+    # TRƯỚC G9 trong luồng chuẩn, lúc đó G9 CHƯA có bản ghi nên phép đối chiếu ở
+    # G8 luôn "chưa có gì để so" — thời điểm DUY NHẤT phép so khớp này có ý nghĩa
+    # thật (sau khi CẢ HAI đã ký) là ở phía G9, nhưng g9_quality_gate.py trước vá
+    # này không có đối chiếu ngược lại nào (grep xác nhận 0 kết quả cho
+    # "reviewer_ref"/"cross_gate"). Tái dùng ledger_records/_latest_approved/
+    # _reviewer_ref của g8_quality_gate.py (import lười, không viết lại).
+    try:
+        import g8_quality_gate as G8Q  # noqa: PLC0415
+        records = G8Q.ledger_records(study, root)
+        cross_refs = {
+            gate: G8Q._reviewer_ref(G8Q._latest_approved(records, gate))
+            for gate in ("G2", "G4", "G5", "G8", "G9")
+        }
+        g9_ref = cross_refs.get("G9", "")
+        clashes = [
+            gate for gate, ref in cross_refs.items()
+            if gate != "G9" and ref and g9_ref and ref == g9_ref
+        ]
+        if not g9_ref:
+            ref_status, ref_evidence = "REVIEW", "chưa có bản ghi phê duyệt G9 để đối chiếu"
+        elif clashes:
+            ref_status = "REVIEW"
+            ref_evidence = (
+                f"reviewer_ref của G9 ({g9_ref!r}) TRÙNG với cổng {', '.join(sorted(clashes))} "
+                "— cùng một người đang ký nhiều vai trò"
+            )
+        else:
+            ref_status = "PASS"
+            ref_evidence = f"reviewer_ref của G9 ({g9_ref!r}) khác mọi cổng còn lại"
+    except ImportError:  # pragma: no cover - lưới an toàn nếu import thất bại
+        ref_status, ref_evidence = "REVIEW", "không đọc được g8_quality_gate.py để đối chiếu"
+    rows.append(
+        _criterion(
+            "G9-HUMAN-10",
+            "Người ký G9 (PI) khác người ký các cổng khác (chỉ dấu độc lập)",
+            ref_status,
+            ref_evidence,
+            "Đối chiếu vai trò ký; nếu trùng người, cân nhắc mời phản biện/thống kê viên độc lập khác cho lần sau.",
+        )
+    )
+
+    # G9-HUMAN-10 CỐ Ý không gate STATUS_LOCKED (loại trừ khỏi non_pi_pending
+    # cùng G9-HUMAN-09): g9_ref chỉ có giá trị SAU KHI G9 đã ký, nên nếu tiêu
+    # chí này gate LOCKED, một đề tài sẽ KHÔNG BAO GIỜ đạt READY_FOR_G9_PI_
+    # APPROVAL trước khi ký (bẫy con-gà-quả-trứng) — mô hình 4 trạng thái của
+    # G9 (khác 5 trạng thái của G8) không có chỗ cho một mức "đã ký nhưng còn
+    # cảnh báo độc lập" riêng. Đây vẫn là tín hiệu THẬT hiển thị trong báo cáo
+    # (không bị ẩn), chỉ không tự động chặn khóa — cùng tinh thần "chỉ dấu,
+    # không phải phán quyết" mà G8-HUMAN-04 đã ghi.
     any_block = any(row["status"] == "BLOCK" for row in rows)
     non_pi_pending = any(
-        row["status"] != "PASS" and row["id"] != "G9-HUMAN-09" for row in rows
+        row["status"] != "PASS" and row["id"] not in ("G9-HUMAN-09", "G9-HUMAN-10")
+        for row in rows
     )
     if any_block:
         status = STATUS_BLOCKED

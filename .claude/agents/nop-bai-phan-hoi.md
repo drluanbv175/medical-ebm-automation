@@ -343,6 +343,23 @@ Trân trọng, [Tên tác giả liên hệ]
 > `approve_gate.py --gate G9 --reviewer-role "PI"`) — thiếu 1 trong 2 vẫn báo "CHƯA SẴN
 > SÀNG NỘP BÀI". Agent KHÔNG tự chạy 2 lệnh này thay người thật.
 
+> **"3 xác nhận" ở trên là 3 mục ĐẦU DÒNG của doctrine, KHÔNG phải toàn bộ điều kiện ký
+> thật (tài liệu hóa 2026-07-30, đóng khoảng trống G9-F2 — trước đây file này chưa hề
+> nhắc tới `g9_quality_gate.py` dù G0/G3/G8 đều có mục doctrine riêng cùng ngày xây lớp
+> đó):** `approve_gate.py --gate G9` CHỈ nhận chữ ký khi
+> `python tools/g9_quality_gate.py --study <mã>` trả `READY_FOR_G9_PI_APPROVAL` — đòi
+> **9 nhóm tiêu chí người thật**, không phải 3: (1) đủ 4 tiêu chí ICMJE + CRediT + COI +
+> `evidence_ref` cho TỪNG tác giả riêng biệt (không phải một xác nhận gộp); (2) thứ tự
+> tác giả/guarantor đã chốt và không còn tranh chấp; (3) khai AI đủ tools/purposes/
+> confirmed_at (ICMJE Mục V, không chỉ "có dùng AI hay không"); (4) Data Availability
+> Statement đủ chi tiết ICMJE cho thử nghiệm lâm sàng (không nhận "chưa quyết định");
+> (5) liêm chính công bố (similarity/image integrity/kết quả khớp phân tích khóa ở G6);
+> (6) venue due diligence (URL https, phạm vi, phí, lưu trữ, rút bài, indexing);
+> (7) ethics/privacy cuối; (8) manifest SHA-256 ràng buộc toàn gói còn nguyên; (9) PI ký
+> đúng `G9_checkpoint.json`. Chạy `g9_quality_gate.py` TRƯỚC khi đọc "TIÊU CHÍ QUA CỔNG
+> G9" bên dưới để biết CHÍNH XÁC còn thiếu gì — mục dưới đây là hướng dẫn soạn thảo, không
+> phải danh sách đầy đủ điều kiện ký.
+
 ---
 
 ## TIÊU CHÍ QUA CỔNG G9

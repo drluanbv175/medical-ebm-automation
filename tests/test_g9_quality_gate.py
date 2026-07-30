@@ -157,7 +157,6 @@ def _prepare_study(out_dir: Path, study: str, n_authors: int = 2) -> None:
         )
     for name in (
         f"G7_A8_MANUSCRIPT_{study}.md",
-        f"G9_A10_AUTHOR_INTEGRITY_{study}.md",
         f"G9_COVER_LETTER_{study}.md",
         f"A12_CITATION_VERIFICATION_{study}.md",
     ):
@@ -165,6 +164,27 @@ def _prepare_study(out_dir: Path, study: str, n_authors: int = 2) -> None:
             "Final synthetic publication document. Cần bác sĩ kiểm chứng.",
             encoding="utf-8",
         )
+    # SỬA 2026-07-30 (G9-F5): G9-AUTO-02 nay chạy LẠI guardrail_check_g9() trên
+    # file A10 THẬT thay vì tin checkpoint["guardrail"] cache — fixture cũ chỉ
+    # có 1 câu chung chung nên fail R4/R6 thật (thiếu nhãn DRAFT/CHỜ, thiếu đủ
+    # 8 tiêu đề PHẦN). Dựng văn bản đủ boilerplate mà guardrail_check_g9() đòi
+    # — KHÔNG dùng "[CẦN" (R5 đã hạ xuống chỉ-thông-tin, nhưng _documents_
+    # clean()/G9-AUTO-05 vẫn đòi CHÍNH file này sạch placeholder hoàn toàn để
+    # coi là "sẵn sàng nộp" — 2 tiêu chí xung khắc nếu còn "[CẦN" ở đây).
+    (out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(
+        "# A10 — LIÊM CHÍNH TÁC GIẢ (DRAFT — CHỜ KÝ)\n\n"
+        "**Trạng thái:** DRAFT — CHỜ xác nhận từng tác giả.\n\n"
+        "## PHẦN 1\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 2\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 3\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 4\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 5\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 6\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 7\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 8 — HARD GATE\nDRAFT — CHỜ ký PI.\n\n"
+        "Cần bác sĩ kiểm chứng.\n",
+        encoding="utf-8",
+    )
     _write_json(out_dir / "A12_RETRACTION_RECEIPT.json", {"all_clean": True})
     _write_json(out_dir / "A12_METADATA_RECEIPT.json", {"all_resolved": True})
     _write_json(out_dir / G9Q.READINESS_JSON, _complete_readiness(study, n_authors))
@@ -473,7 +493,6 @@ def test_full_signed_chain_reaches_locked_with_real_g5_evaluator(tmp_path, monke
     )
     for name in (
         f"G7_A8_MANUSCRIPT_{study}.md",
-        f"G9_A10_AUTHOR_INTEGRITY_{study}.md",
         f"G9_COVER_LETTER_{study}.md",
         f"A12_CITATION_VERIFICATION_{study}.md",
     ):
@@ -481,6 +500,22 @@ def test_full_signed_chain_reaches_locked_with_real_g5_evaluator(tmp_path, monke
             "Final synthetic publication document. Cần bác sĩ kiểm chứng.",
             encoding="utf-8",
         )
+    # SỬA 2026-07-30 (G9-F5): xem chú thích tương tự trong _prepare_study() —
+    # G9-AUTO-02 nay chạy lại guardrail_check_g9() trên file A10 thật.
+    (study_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(
+        "# A10 — LIÊM CHÍNH TÁC GIẢ (DRAFT — CHỜ KÝ)\n\n"
+        "**Trạng thái:** DRAFT — CHỜ xác nhận từng tác giả.\n\n"
+        "## PHẦN 1\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 2\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 3\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 4\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 5\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 6\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 7\nĐã điền đầy đủ.\n\n"
+        "## PHẦN 8 — HARD GATE\nDRAFT — CHỜ ký PI.\n\n"
+        "Cần bác sĩ kiểm chứng.\n",
+        encoding="utf-8",
+    )
     _write_json(study_dir / "A12_RETRACTION_RECEIPT.json", {"all_clean": True})
     _write_json(study_dir / "A12_METADATA_RECEIPT.json", {"all_resolved": True})
     _write_json(study_dir / G9Q.READINESS_JSON, _complete_readiness(study))

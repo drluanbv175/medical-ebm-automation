@@ -911,6 +911,19 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         "KẾT LUẬN: G9 chỉ PASSED khi TẤT CẢ ô ☐ ở NHÓM A, B, C được tích xong.",
         f"Ngày G9 PASSED dự kiến: [CẦN ___/___/{_YEAR}]",
         "",
+        # THÊM 2026-07-30 (audit toàn diện G0-G10, G9-F4 — MEDIUM): checklist
+        # trên là văn bản bác sĩ ĐỌC/KÝ trên giấy/Word, nhưng không có mã nào
+        # đọc lại trạng thái tick ☐/☑ ở đây — cổng THẬT 100% đến từ
+        # G9_PUBLICATION_READINESS.json (chấm bởi g9_quality_gate.py) và chữ
+        # ký ledger trên G9_checkpoint.json (qua approve_gate.py --gate G9).
+        # Điền/ký đầy đủ bảng trên giấy KHÔNG tự động tiến được bước nào ở
+        # cổng thật nếu chưa cập nhật đúng 2 file đó.
+        "LƯU Ý: Bảng trên là checklist THAM KHẢO cho bác sĩ tự rà — cổng G9",
+        "THẬT (quyết định PASS/BLOCK) đến từ tools/g9_quality_gate.py chấm",
+        "G9_PUBLICATION_READINESS.json, và chữ ký PI qua:",
+        "  python tools/approve_gate.py --study <mã> --gate G9 ...",
+        "Tự tay tick đủ các ô ☐ trên văn bản này KHÔNG thay thế 2 bước đó.",
+        "",
         "Chữ ký PI xác nhận G9 PASSED:",
         f"_______________  Ngày: ___/___/{_YEAR}",
         "═══════════════════════════════════════════════════════════════",
@@ -974,13 +987,16 @@ def guardrail_check_g9(artifact: str) -> dict:
         )
 
     # R5 — Đủ trường [CẦN]
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G9-F5 — MEDIUM, phát hiện khi
+    # chạy lại guardrail_check_g9() tươi cho G9-AUTO-02): ngưỡng "≥15 [CẦN]"
+    # XUNG ĐỘT TRỰC TIẾP với g9_quality_gate.py::_documents_clean() (dùng cho
+    # G9-AUTO-05) — hàm đó đòi CHÍNH file A10 này KHÔNG còn "[CẦN..." nào mới
+    # được coi "sạch, sẵn sàng nộp". Một gói G9 THỰC SỰ hoàn chỉnh (bác sĩ đã
+    # điền hết) sẽ có can_count=0, khiến R5 cũ luôn ERROR đúng lúc gói đã sẵn
+    # sàng nhất — cùng lớp "phạt chính việc hoàn thiện" đã sửa ở G8 R6. Hạ
+    # xuống cảnh báo thông tin, không còn chặn.
     can_count = len(re.findall(r'\[CẦN', artifact))
-    if can_count >= 15:
-        warnings.append(f"R5 ✅ {can_count} trường [CẦN...] đánh dấu rõ ràng")
-    else:
-        errors.append(
-            f"R5 🔴 Quá ít [CẦN...] ({can_count} — cần >= 15 cho gói G9 đầy đủ)"
-        )
+    warnings.append(f"R5 ✅ {can_count} trường [CẦN...] còn lại (thông tin, không chặn)")
 
     # R6 — 8 phần đủ
     required_sections = [
@@ -1197,7 +1213,12 @@ def write_g9_checkpoint(
             "Phần 1 — ICMJE Tiêu chuẩn Tác giả (4 tiêu chí)",
             "Phần 2 — Khai báo Xung đột Lợi ích Cuối (Final COI)",
             "Phần 3 — Data Availability Statement (3 lựa chọn)",
-            "Phần 4 — AI Use Disclosure (COPE + Nature Portfolio 2024)",
+            # SỬA 2026-07-30 (audit toàn diện G0-G10, G9-F7 — LOW): nhãn cũ
+            # "COPE + Nature Portfolio 2024" là tàn dư từ phiên bản trước khi
+            # Phần 4 chuyển sang trích ICMJE Mục V/2026 trực tiếp — header
+            # thật của build_part4_ai_disclosure() (dòng ~376) đã ghi đúng
+            # "ICMJE Mục V, cập nhật 01/2026", mâu thuẫn nội bộ với nhãn này.
+            "Phần 4 — AI Use Disclosure (ICMJE Mục V, cập nhật 01/2026)",
             "Phần 5 — Tuyên bố Liêm chính Nghiên cứu",
             "Phần 6 — Thư gửi Tạp chí (Cover Letter Shell)",
             "Phần 7 — Bản mẫu Phản hồi Phản biện",
