@@ -683,7 +683,18 @@ def evaluate_g8_quality(
     # BẮT BUỘC" và liệt kê mục 6 là "checklist ≥ 60%", nhưng g8_status của
     # run_g8_auto.py chỉ tính 5 điều kiện — reporting_ok bị bỏ ngoài. Nghĩa là
     # một đề tài có checklist 30% vẫn in PASS ngay dưới dòng báo 30%.
-    reporting_pct = checkpoint.get("reporting_completeness_pct")
+    # SỬA 2026-07-31 (audit tautology vòng 2 — CRITICAL KEY_MISMATCH): trước
+    # đây đọc "reporting_completeness_pct"/"reporting_pct" — nhưng
+    # run_g8_auto.py::write_g8_checkpoint() (dòng ~1919) chỉ TỪNG ghi khóa
+    # "reporting_score_pct". Hai khóa cũ KHÔNG BAO GIỜ được ghi bởi đường sản
+    # xuất thật ⇒ pct luôn None ⇒ G8-AUTO-10 luôn REVIEW ⇒ MỌI đề tài thật
+    # kẹt vĩnh viễn, không bao giờ đạt PASS_G8_REVIEW_RECORDED — xác nhận
+    # bằng grep: run_g8_auto.py không có dòng nào ghi 2 khóa cũ. Đọc đúng khóa
+    # thật trước; giữ 2 khóa cũ làm fallback vô hại (đề phòng checkpoint từ
+    # writer khác/tương lai).
+    reporting_pct = checkpoint.get("reporting_score_pct")
+    if reporting_pct is None:
+        reporting_pct = checkpoint.get("reporting_completeness_pct")
     if reporting_pct is None:
         reporting_pct = checkpoint.get("reporting_pct")
     try:

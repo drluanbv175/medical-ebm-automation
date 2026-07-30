@@ -65,7 +65,13 @@ def _checkpoint(**overrides) -> dict:
         "study": "TEST-G8",
         "design_code": "rct",
         "guardrail": {"passed": True},
-        "reporting_completeness_pct": 82.0,
+        # SỬA 2026-07-31 (audit tautology vòng 2 — CRITICAL): khóa THẬT mà
+        # run_g8_auto.py::write_g8_checkpoint() ghi là "reporting_score_pct",
+        # KHÔNG PHẢI "reporting_completeness_pct" — fixture cũ dùng nhầm tên
+        # khóa TRÙNG với bug trong g8_quality_gate.py (cả hai đều sai theo
+        # cùng một cách), nên mọi test trong file này trước đây không hề chạy
+        # qua đường đọc khóa thật, che giấu bug G8-AUTO-10 (permanent REVIEW).
+        "reporting_score_pct": 82.0,
         # THÊM 2026-07-30 (audit toàn diện G0-G10 — sửa cùng lớp "tin cache
         # cũ" đã đóng ở G7-F1): G8-AUTO-00 nay chạy LẠI guardrail_g8() trên
         # presubmission_text THẬT thay vì đọc checkpoint["guardrail"]["passed"]
@@ -477,10 +483,40 @@ def test_a12_chua_dat_thi_CHAN_cong():
 
 
 def test_checklist_duoi_nguong_bi_ra_soat_kem_ghi_chu_lech_noi_bo():
-    report = _evaluate(checkpoint=_checkpoint(reporting_completeness_pct=30.0))
+    report = _evaluate(checkpoint=_checkpoint(reporting_score_pct=30.0))
     row = _row(report, "G8-AUTO-10")
     assert row["status"] == "REVIEW"
     assert "KHÔNG tính điều kiện này vào g8_status" in row["evidence"]
+
+
+def test_g8_auto_10_key_mismatch_20260731():
+    """Hồi quy CRITICAL (audit tautology vòng 2): G8-AUTO-10 trước đây đọc
+    "reporting_completeness_pct"/"reporting_pct" — hai khóa mà
+    run_g8_auto.py::write_g8_checkpoint() KHÔNG BAO GIỜ ghi (khóa thật là
+    "reporting_score_pct") — khiến pct luôn None, G8-AUTO-10 luôn REVIEW, và
+    MỌI đề tài thật kẹt vĩnh viễn không đạt PASS_G8_REVIEW_RECORDED."""
+    # Đúng khóa thật, giá trị cao -> phải PASS (trước bản vá: luôn REVIEW).
+    report = _evaluate(checkpoint=_checkpoint(reporting_score_pct=95.0))
+    row = _row(report, "G8-AUTO-10")
+    assert row["status"] == "PASS"
+    assert "95" in row["evidence"]
+
+    # Checkpoint CHỈ có khóa cũ (mô phỏng writer/thời điểm khác) -> vẫn đọc
+    # được nhờ fallback, không phải None.
+    stale = _checkpoint(reporting_score_pct=None)
+    stale.pop("reporting_score_pct")
+    stale["reporting_completeness_pct"] = 95.0
+    report2 = _evaluate(checkpoint=stale)
+    assert _row(report2, "G8-AUTO-10")["status"] == "PASS"
+
+    # Checkpoint không có khóa nào cả -> None thật, REVIEW đúng (không phải
+    # bug, không có dữ liệu để chấm).
+    missing = _checkpoint()
+    missing.pop("reporting_score_pct")
+    report3 = _evaluate(checkpoint=missing)
+    row3 = _row(report3, "G8-AUTO-10")
+    assert row3["status"] == "REVIEW"
+    assert "không đọc được" in row3["evidence"]
 
 
 # ════════════════════════════════════════════════════════════════════════════

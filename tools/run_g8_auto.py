@@ -1204,12 +1204,14 @@ def suggest_journals(design_code: str, topic: str, target_journal: str,
 def build_presubmission_checklist(pipeline: dict, reporting: dict,
                                    stat_check: dict, gates: dict,
                                    journal_suggestions: list,
-                                   study: str = "", out_dir: Path = None) -> dict:
+                                   study: str = "", out_dir: Path = None,
+                                   gate_params_g8: dict = None) -> dict:
     """
     Xay dung danh sach 30 muc tu kiem truoc nop.
     Nhom: PIPELINE (10) + KHOA HOC (8) + LIEM CHINH (7) + TRINH BAY (5).
     Nguong nop: >= 25/30.
     """
+    gate_params_g8 = gate_params_g8 or {}
     g0 = gates.get("G0", {})
     g2 = gates.get("G2", {})
     g4 = gates.get("G4", {})
@@ -1299,9 +1301,19 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
          note="Tu scripts G6")
 
     # --- NHOM C: LIEM CHINH (7 diem) ---
+    # SỬA 2026-07-31 (audit tautology vòng 2): mục này KHÔNG BAO GIỜ False qua
+    # pipeline thật — guardrail_g8() R2 (kiểm PII trên presubmission_text) CHỈ
+    # chạy SAU khi hàm này đã trả điểm, và guardrail đó BLOCK toàn bộ artifact
+    # nếu phát hiện PII (khác lỗi thưởng-dán-nhãn của R6 đã hạ ở đợt trước —
+    # đây là lỗi PHÁT HIỆN thật, chỉ chạy sai thời điểm để mục này tự phản
+    # ánh). Giữ True làm ĐÚNG chủ đích (không hạ điểm oan cho 1 mục mà lớp
+    # guardrail khác đã bảo vệ tốt hơn) — chỉ ghi rõ phạm vi thật thay vì ngụ
+    # ý mục này tự kiểm tra.
     _add("LIEM CHINH", "Khong co PII (thong tin dinh danh benh nhan) trong artifact",
          True,
-         note="Guardrail R2 tu dong -- luon PASS")
+         note="Guardrail R2 se BLOCK toan bo artifact neu phat hien PII (chay "
+              "SAU buoc nay) -- muc nay khong tu kiem, chi phan anh guardrail "
+              "da qua o lan chay nay")
     _add("LIEM CHINH", "Tat ca PMID/DOI da xac minh (khong bia)",
          citation_ok,
          note="Cong A12 (kiem-chung-trich-dan)" if citation_ok
@@ -1314,14 +1326,37 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
     _add("LIEM CHINH", "Khai bao AI: EBM Copilot da duoc ghi nhan trong Methods/Acknowledgements",
          gates["G7"].get("_file_exists", False),
          note="Theo ICMJE/nhieu tap chi 2024+")
+    # SỬA 2026-07-31: generate_a9_artifact() in disclaimer này VÔ ĐIỀU KIỆN ở
+    # nhiều vị trí cố định — không có input nào (topic/design/gates) có thể
+    # khiến nó vắng mặt qua đường sinh thật. Giữ True (đúng, vì disclaimer
+    # LUÔN có mặt) nhưng ghi rõ đây là tautology cấu trúc, không phải kiểm
+    # nội dung — cùng khuôn đã áp cho G0/G3/G6/G9 R7 trong đợt audit này.
     _add("LIEM CHINH", "Disclaimer 'Can bac si kiem chung' trong moi artifact",
          True,
-         note="Guardrail R7 tu dong -- luon PASS")
+         note="generate_a9_artifact() luon in cung -- muc nay chi xac nhan "
+              "cau truc, khong xac minh noi dung khoa hoc")
+    # SỬA 2026-07-31 (audit tautology vòng 2, phần fix AN TOÀN của reverse-
+    # tautology): trước đây hardcode False -- KHÔNG BAO GIỜ đạt được qua
+    # pipeline thật, dù bác sĩ đã khai COI thật ở đâu đó. Dùng lại CHÍNH
+    # ground-truth mà G8-AUTO-09 (g8_quality_gate.py) đã đọc cho cover letter
+    # -- cover_letter_coi_declared trong gate_params.G8 (study_meta.json).
     _add("LIEM CHINH", "Xung dot loi ich (COI) da khai bao hoac xac nhan khong co",
-         False,
-         note="[CAN -- dien form COI o Phan 5]")
+         gate_params_g8.get("cover_letter_coi_declared") is True,
+         note="Doc gate_params.G8.cover_letter_coi_declared trong study_meta.json"
+              if gate_params_g8.get("cover_letter_coi_declared") is True
+              else "[CAN] gate_params.G8.cover_letter_coi_declared chua = true")
 
     # --- NHOM D: TRINH BAY (5 diem) ---
+    # SỬA 2026-07-31 (audit tautology vòng 2): Tieu de/Tom tat/Danh sach tac
+    # gia GIỮ hardcode False có chủ đích -- không phải bug chưa vá, mà là
+    # quyết định phạm vi: nội dung tiêu đề/tóm tắt/tác giả nằm trong bản thảo
+    # G7 dạng văn xuôi tự do, và việc trích xuất + thẩm định "đã đủ/đúng" đòi
+    # phân tích văn bản (đếm từ đúng ranh giới mục, phân biệt placeholder còn
+    # sót khỏi nội dung thật đã điền) rủi ro cao nếu làm vội -- một regex sai
+    # ranh giới mục có thể tạo lại đúng lớp lỗi reverse-tautology vừa phát
+    # hiện ở đây. Không có ground-truth máy đọc được khác ngoài chính văn bản
+    # tự do đó. Để CỐ Ý là [CẦN] (bác sĩ tự xác nhận qua Phần 5), không giả
+    # vờ đã tự động hoá.
     _add("TRINH BAY", "Tieu de bai <= 120 ky tu, chua thiet ke nghien cuu",
          False,
          note="[CAN xac nhan tieu de cuoi tu G7]")
@@ -1335,9 +1370,19 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
          citation_ok,
          note="Cong A12 (kiem-chung-trich-dan)" if citation_ok
               else "[CAN] Chua PASS cong A12 -- chay agent kiem-chung-trich-dan")
+    # SỬA 2026-07-31: cùng cách sửa với COI ở trên -- dùng lại 5 field
+    # cover_letter_* mà G8-AUTO-09 đã đọc, thay vì hardcode False vĩnh viễn.
+    _cover_fields = (
+        "cover_letter_no_duplicate_submission", "cover_letter_coi_declared",
+        "cover_letter_all_authors_approved", "cover_letter_corresponding_contact",
+        "cover_letter_preprint_status",
+    )
+    _cover_missing = [f for f in _cover_fields if gate_params_g8.get(f) is not True]
     _add("TRINH BAY", "Cover letter chuan bi cho ban bien tap",
-         False,
-         note="[CAN bac si soan -- khong sinh tu dong]")
+         not _cover_missing,
+         note="Doc du 5 field cover_letter_* trong gate_params.G8"
+              if not _cover_missing
+              else f"[CAN] con thieu: {', '.join(_cover_missing)}")
 
     total_passed = sum(1 for it in items if it["passed"])
     return {
@@ -1766,6 +1811,14 @@ def guardrail_g8(artifact: str, pipeline: dict) -> dict:
     warnings.append(f"R6 [OK] {n_can} nhan [CAN...] con lai (thong tin, khong chan)")
 
     # R7 -- Disclaimer
+    # SỬA 2026-07-31 (audit tautology vòng 2): generate_a9_artifact() in dòng
+    # disclaimer này VÔ ĐIỀU KIỆN ở 2 vị trí cố định (mở đầu + kết luận), bất
+    # kể study/design_code/gates -- xác nhận thực nghiệm với nhiều tổ hợp
+    # input khác nhau, R7 không bao giờ chuyển errors qua đường sinh thật.
+    # Giữ làm error (không hạ warning) là ĐÚNG: phạm vi thật hẹp nhưng có giá
+    # trị -- chỉ bắt được nếu ai đó XÓA dòng này SAU khi sinh (tampering),
+    # không có kịch bản hoàn thiện thật nào cần xóa disclaimer. Cùng khuôn đã
+    # áp cho R7 của G0/G3/G9 trong đợt audit này.
     if "can bac si kiem chung" in artifact.lower() or "Cần bác sĩ kiểm chứng" in artifact:
         warnings.append("R7 [OK] Co disclaimer")
     else:
@@ -2078,9 +2131,15 @@ def main():
 
     # 6. Diem tu kiem 30 diem
     print("\nBuoc 6/7: Tinh diem tu kiem (30 diem)...")
+    # SỬA 2026-07-31 (audit tautology vòng 2): trước đây build_presubmission_
+    # checklist() không nhận meta/gate_params.G8 -> mục COI/Cover-letter
+    # KHÔNG THỂ đạt qua pipeline thật dù bác sĩ đã điền, cùng khuôn stale-cache
+    # đã đóng ở nhiều gate khác. Đọc TƯƠI từ đĩa (không dùng _g8_pinned đã nạp
+    # sớm hơn ở Bước 0, có thể lệch nếu bác sĩ vừa sửa study_meta.json).
+    _gate_params_g8 = (GC.load_study_meta(out_dir).get("gate_params") or {}).get("G8") or {}
     presubmission = build_presubmission_checklist(
         pipeline, reporting, stat_check, gates, journal_suggestions,
-        study=study, out_dir=out_dir,
+        study=study, out_dir=out_dir, gate_params_g8=_gate_params_g8,
     )
     print(f"  -> Diem: {presubmission['passed']}/30 -- {presubmission['readiness_note']}")
 

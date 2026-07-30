@@ -194,3 +194,107 @@ class TestSpecialistModuleChecklistWiring:
         result = G8.build_reporting_checklist("economic", _BASE_GATES, specialist_modules=["economic"])
         assert result["specialist_module_checklist"] is None
         assert result["standard_name"] == "CHEERS 2022"
+
+
+class TestPresubmissionCoiCoverLetterUseRealGateParams:
+    """Hồi quy audit tautology vòng 2 (2026-07-31, CRITICAL ceiling bug):
+    trước bản vá, mục COI và Cover-letter trong build_presubmission_checklist()
+    hardcode False vô điều kiện — không tham số nào của hàm (kể cả gates đầy
+    đủ nhất) có thể khiến chúng True, khiến điểm tối đa đạt được đúng bằng
+    ngưỡng 25/30 (0 dư), cùng lớp lỗi reverse-tautology đã gặp ở G2-AUTO-08/09.
+    Nay dùng lại gate_params.G8.cover_letter_* — CHÍNH ground-truth mà
+    g8_quality_gate.py::G8-AUTO-09 đã đọc cho cùng mục đích."""
+
+    def _coi_item(self, result):
+        return next(i for i in result["items"] if "Xung dot loi ich" in i["description"])
+
+    def _cover_item(self, result):
+        return next(i for i in result["items"] if "Cover letter" in i["description"])
+
+    def test_no_gate_params_g8_means_coi_and_cover_letter_false(self):
+        result = G8.build_presubmission_checklist(
+            _PIPELINE, _REPORTING, _STAT_CHECK, _BASE_GATES, [],
+        )
+        assert self._coi_item(result)["passed"] is False
+        assert self._cover_item(result)["passed"] is False
+
+    def test_coi_declared_true_makes_coi_item_pass(self):
+        result = G8.build_presubmission_checklist(
+            _PIPELINE, _REPORTING, _STAT_CHECK, _BASE_GATES, [],
+            gate_params_g8={"cover_letter_coi_declared": True},
+        )
+        assert self._coi_item(result)["passed"] is True
+
+    def test_partial_cover_letter_fields_still_fails(self):
+        """4/5 field — chưa đủ, vẫn False (không được PASS non oan)."""
+        result = G8.build_presubmission_checklist(
+            _PIPELINE, _REPORTING, _STAT_CHECK, _BASE_GATES, [],
+            gate_params_g8={
+                "cover_letter_no_duplicate_submission": True,
+                "cover_letter_coi_declared": True,
+                "cover_letter_all_authors_approved": True,
+                "cover_letter_corresponding_contact": True,
+                # thiếu cover_letter_preprint_status
+            },
+        )
+        item = self._cover_item(result)
+        assert item["passed"] is False
+        assert "cover_letter_preprint_status" in item["note"]
+
+    def test_all_5_cover_letter_fields_true_makes_item_pass(self):
+        result = G8.build_presubmission_checklist(
+            _PIPELINE, _REPORTING, _STAT_CHECK, _BASE_GATES, [],
+            gate_params_g8={
+                "cover_letter_no_duplicate_submission": True,
+                "cover_letter_coi_declared": True,
+                "cover_letter_all_authors_approved": True,
+                "cover_letter_corresponding_contact": True,
+                "cover_letter_preprint_status": True,
+            },
+        )
+        assert self._cover_item(result)["passed"] is True
+
+    def test_ceiling_now_above_threshold_with_realistic_complete_study(self):
+        """Đóng CHẶT bug ceiling=threshold: với mọi mục THẬT SỰ khả thi đạt
+        True (bao gồm COI/Cover-letter qua gate_params.G8 mới), tổng điểm
+        phải VƯỢT ngưỡng 25, không chỉ chạm đúng ngưỡng — xác nhận còn dư ít
+        nhất 1 điểm biên (trước bản vá: ceiling tuyệt đối = 25, dư = 0)."""
+        full_gates = {
+            "G0": {"_file_exists": True, "pubmed_results": {"n_sr": 2, "n_rct": 3}},
+            "G1": {"_file_exists": True},
+            "G2": {"_file_exists": True, "g2_irb_number": "IRB-2026-001",
+                   "g2_registration": "NCT00000001"},
+            "G3": {"_file_exists": True},
+            "G4": {"_file_exists": True, "sap_signed_date": "2026-07-01"},
+            "G5": {"_file_exists": True, "db_lock_date": "2026-07-10"},
+            "G6": {"_file_exists": True},
+            "G7": {"_file_exists": True},
+        }
+        full_pipeline = {"n_pass": 8, "n_total": 8, "completeness_pct": 100, "rows": []}
+        full_reporting = {"standard_name": "STROBE 2007", "score_pct": 90,
+                           "checked": 5, "total": 5, "items": [],
+                           "specialist_module_checklist": None}
+        full_stat_check = {"passed_count": 5, "total_checks": 5, "overall": "OK", "warnings": []}
+        study = "PYTEST-G8-CEILING-T1"
+        d = _study_dir(study)
+        try:
+            _write_clean_citation_artifact(d, study)  # A12 sạch -> 2 mục PMID/DOI+định dạng PASS
+            result = G8.build_presubmission_checklist(
+                full_pipeline, full_reporting, full_stat_check, full_gates, [],
+                study=study, out_dir=d,
+                gate_params_g8={
+                    "cover_letter_no_duplicate_submission": True,
+                    "cover_letter_coi_declared": True,
+                    "cover_letter_all_authors_approved": True,
+                    "cover_letter_corresponding_contact": True,
+                    "cover_letter_preprint_status": True,
+                },
+            )
+        finally:
+            _rmtree_retry(d)
+        # Author list/ORCID, Tiêu đề, Tóm tắt vẫn CỐ Ý [CẦN] (infeasible bằng
+        # máy) — nên trần thật KHÔNG PHẢI 30, nhưng phải > 25 (ngưỡng nộp).
+        assert result["passed"] > 25, (
+            f"Ceiling vẫn chạm đúng ngưỡng (passed={result['passed']}) — bug reverse-tautology "
+            "chưa thực sự đóng"
+        )
