@@ -885,10 +885,31 @@ def analyze_pipeline(gates: dict, study: str) -> dict:
 # 4. CHECKLIST CHUAN BAO CAO
 # ============================================================================
 
-def _item_auto_check(item_name: str, gates: dict, design_code: str) -> str:
+def _extract_manuscript_section(text: str, start_marker: str, end_marker: str) -> str:
+    """Cắt một mục IMRAD ra khỏi bản thảo A8 bằng 2 marker tiêu đề cố định
+    do generate_manuscript() luôn in ra; rỗng nếu không tìm thấy."""
+    if not text or start_marker not in text:
+        return ""
+    after = text.split(start_marker, 1)[1]
+    return after.split(end_marker, 1)[0] if end_marker in after else after
+
+
+def _item_auto_check(item_name: str, gates: dict, design_code: str,
+                      manuscript_text: str = "") -> str:
     """
     Tu kiem xem muc checklist da duoc dien chua dua vao checkpoints.
     Tra ve 'OK' neu co bang chung, 'ND' neu can bac si hoan thien.
+
+    THEM 2026-07-30 (audit toan dien G0-G10, G8-F2 -- HIGH): truoc day ham
+    nay CHI kiem checkpoint cong TRUOC co ton tai (vd g0.get("_file_exists"))
+    -- hoan toan khong doc BAN THAO THAT (G7_A8_MANUSCRIPT_<study>.md).
+    Checkpoint G0-G4 ton tai RAT SOM (ngay khi moi cong chay xong, bat ke sau
+    do ban thao co duoc viet that hay khong) nen hang loat muc CONSORT/STROBE
+    danh (check) du ban thao moi chi la khung IMRAD rong -- vi du that trong
+    audit (G0-G4 xong nhung G7 la khung rong, van dat >=60%). Them dieu kien
+    CAN (khong thay the dieu kien cu) -- muc thuoc I. GIOI THIEU/II. PHUONG
+    PHAP chi duoc danh (check) khi phan TUONG UNG cua CHINH ban thao khong con
+    nhan "[CAN" (placeholder nguoi viet de lai khi phan do CHUA hoan thien).
     """
     g0 = gates.get("G0", {})
     g1 = gates.get("G1", {})
@@ -900,14 +921,21 @@ def _item_auto_check(item_name: str, gates: dict, design_code: str) -> str:
 
     name_lower = item_name.lower()
 
+    intro_section = _extract_manuscript_section(
+        manuscript_text, "## I. GIỚI THIỆU", "## II.")
+    methods_section = _extract_manuscript_section(
+        manuscript_text, "## II. PHƯƠNG PHÁP", "## III.")
+    intro_ready = bool(manuscript_text) and "[CẦN" not in intro_section
+    methods_ready = bool(manuscript_text) and "[CẦN" not in methods_section
+
     if any(k in name_lower for k in ["background", "rationale", "search", "eligibility"]):
-        return "☑" if g0.get("_file_exists") else "☐"
+        return "☑" if (g0.get("_file_exists") and intro_ready) else "☐"
     if "objective" in name_lower:
-        return "☑" if g0.get("_file_exists") else "☐"
+        return "☑" if (g0.get("_file_exists") and intro_ready) else "☐"
     if any(k in name_lower for k in ["study design", "trial design"]):
-        return "☑" if g1.get("_file_exists") else "☐"
+        return "☑" if (g1.get("_file_exists") and methods_ready) else "☐"
     if "participant" in name_lower:
-        return "☑" if g1.get("_file_exists") else "☐"
+        return "☑" if (g1.get("_file_exists") and methods_ready) else "☐"
     if any(k in name_lower for k in ["variable", "data item"]):
         # SỬA: mục STROBE #7 "Variables" đòi hỏi định nghĩa biến kết cục/phơi
         # nhiễm/tiên đoán/nhiễu — dữ liệu đó nằm ở G5 (crf_columns — tên biến
@@ -916,26 +944,27 @@ def _item_auto_check(item_name: str, gates: dict, design_code: str) -> str:
         # dùng g4.get("_file_exists") làm tín hiệu nên luôn báo "☐ cần điền"
         # dù G5/G6 đã có sẵn danh sách biến thật.
         has_vars = bool(g6.get("variables_detected")) or bool(g5.get("crf_columns"))
-        return "☑" if has_vars else "☐"
+        return "☑" if (has_vars and methods_ready) else "☐"
     if "sample size" in name_lower:
-        return "☑" if g3.get("_file_exists") else "☐"
+        return "☑" if (g3.get("_file_exists") and methods_ready) else "☐"
     if any(k in name_lower for k in ["statistic", "effect measure", "synthesis"]):
-        return "☑" if g4.get("_file_exists") else "☐"
+        return "☑" if (g4.get("_file_exists") and methods_ready) else "☐"
     if any(k in name_lower for k in ["ethical", "registration", "ethical"]):
         irb = g2.get("g2_irb_number", "")
         return "☑" if (irb and "[CAN" not in str(irb)) else "☐"
     if "bias" in name_lower:
-        return "☑" if g1.get("_file_exists") else "☐"
+        return "☑" if (g1.get("_file_exists") and methods_ready) else "☐"
     if "missing" in name_lower:
-        return "☑" if g4.get("_file_exists") else "☐"
+        return "☑" if (g4.get("_file_exists") and methods_ready) else "☐"
     if any(k in name_lower for k in ["randomis", "allocation", "blinding"]):
-        return "☑" if (design_code == "rct" and g4.get("_file_exists")) else "☐"
+        return "☑" if (design_code == "rct" and g4.get("_file_exists") and methods_ready) else "☐"
     # Cac muc can ket qua that hoac bac si dien
     return "☐"
 
 
 def build_reporting_checklist(design_code: str, gates: dict, specialist_modules: list = None,
-                               hypothesis_type: str = "superiority", margin=None) -> dict:
+                               hypothesis_type: str = "superiority", margin=None,
+                               manuscript_text: str = "") -> dict:
     """Xay dung checklist chuan bao cao va tu kiem tu checkpoints.
 
     THEM 2026-07-23 (vong lap kiem tra-hoan thien vong 12, phat hien MEDIUM):
@@ -958,7 +987,7 @@ def build_reporting_checklist(design_code: str, gates: dict, specialist_modules:
     checked = 0
     rows = []
     for item_name, item_num, item_desc in items:
-        mark = _item_auto_check(item_name, gates, design_code)
+        mark = _item_auto_check(item_name, gates, design_code, manuscript_text)
         if mark == "☑":
             checked += 1
         rows.append({
@@ -981,7 +1010,8 @@ def build_reporting_checklist(design_code: str, gates: dict, specialist_modules:
 
     specialist_modules = specialist_modules or []
     if "economic" in specialist_modules and design_code != "economic":
-        result["specialist_module_checklist"] = build_reporting_checklist("economic", gates)
+        result["specialist_module_checklist"] = build_reporting_checklist(
+            "economic", gates, manuscript_text=manuscript_text)
 
     if design_code == "rct" and hypothesis_type in ("non_inferiority", "equivalence"):
         ni_rows = [{"num": num, "name": name, "desc": desc, "mark": "☐ [CẦN]"}
@@ -1720,11 +1750,20 @@ def guardrail_g8(artifact: str, pipeline: dict) -> dict:
         warnings.append("R5 [OK] Khong co ket qua hardcoded")
 
     # R6 -- Nhan [CAN...] cho muc chua hoan chinh
+    # SUA 2026-07-30 (audit toan dien G0-G10, G8-F1 -- HIGH): nguong ">= 8"
+    # cu PHAT chinh viec bac si dien THAT -- so nhan [CAN] TU NHIEN GIAM khi
+    # IRB/SAP/DB-lock/CRediT/COI duoc dien that, nen mot goi G8 THUC SU gan
+    # san sang nop (chi con vai muc hanh chinh chua dien) co the tut duoi 8,
+    # bi bao ERROR va lam guardrail['passed']=False -- keo ca report xuong
+    # STATUS_BLOCKED du noi dung khoa hoc da tot. Xac nhan thuc nghiem: mot
+    # goi hoan toan MOI SINH (chua bac si dong gop gi) da co ~85 nhan [CAN]
+    # (bang CRediT/COI/cover letter luon con nguyen theo dung chu dinh --
+    # he thong KHONG tu dien ten tac gia/COI), nen nguong toi thieu khong
+    # phai la tin hieu dang tin cay ve muc do hoan thien. Ha xuong CANH BAO
+    # (khong con la loi chan) -- van bao so luong con lai de bac si biet,
+    # nhung khong con the tu BLOCK mot goi da thuc su hoan chinh.
     n_can = len(re.findall(r'\[CAN', artifact))
-    if n_can >= 8:
-        warnings.append(f"R6 [OK] {n_can} nhan [CAN...] danh dau ro phan can hoan thien")
-    else:
-        errors.append(f"R6 [DO] Qua it nhan [CAN...] ({n_can}) cho bao cao pre-submission")
+    warnings.append(f"R6 [OK] {n_can} nhan [CAN...] con lai (thong tin, khong chan)")
 
     # R7 -- Disclaimer
     if "can bac si kiem chung" in artifact.lower() or "Cần bác sĩ kiểm chứng" in artifact:
@@ -2003,10 +2042,17 @@ def main():
 
     # 3. Checklist chuan bao cao
     print(f"\nBuoc 3/7: Kiem checklist {design_code}...")
+    # THÊM 2026-07-30 (G8-F2): đọc bản thảo THẬT từ đĩa để build_reporting_
+    # checklist() có thể đối chiếu nội dung, không chỉ dựa checkpoint tồn tại.
+    _manuscript_path = out_dir / f"G7_A8_MANUSCRIPT_{study}.md"
+    _manuscript_text = (
+        _manuscript_path.read_text(encoding="utf-8") if _manuscript_path.exists() else ""
+    )
     reporting = build_reporting_checklist(
         design_code, gates, specialist_modules=gates.get("G1", {}).get("specialist_modules") or [],
         hypothesis_type=gates.get("G3", {}).get("hypothesis_type") or "superiority",
         margin=gates.get("G3", {}).get("margin"),
+        manuscript_text=_manuscript_text,
     )
     print(f"  -> {reporting['standard_name']}: {reporting['checked']}/{reporting['total']} "
           f"({reporting['score_pct']}%)")

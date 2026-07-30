@@ -66,6 +66,16 @@ def _checkpoint(**overrides) -> dict:
         "design_code": "rct",
         "guardrail": {"passed": True},
         "reporting_completeness_pct": 82.0,
+        # THÊM 2026-07-30 (audit toàn diện G0-G10 — sửa cùng lớp "tin cache
+        # cũ" đã đóng ở G7-F1): G8-AUTO-00 nay chạy LẠI guardrail_g8() trên
+        # presubmission_text THẬT thay vì đọc checkpoint["guardrail"]["passed"]
+        # đóng băng — guardrail_g8() cần "pipeline" (rows + n_pass) để chấm R1;
+        # dựng lại từ đúng 2 khóa mà write_g8_checkpoint() ghi thật.
+        "pipeline_completeness": {
+            f"G{i}": {"status": "PASS", "artifact": f"G{i}_ARTIFACT", "checkpoint_exists": True}
+            for i in range(8)
+        },
+        "pipeline_pass_count": 8,
     }
     value.update(overrides)
     return value
@@ -106,7 +116,18 @@ def _evaluate(**overrides):
     kwargs = dict(
         study="TEST-G8",
         checkpoint=_checkpoint(),
-        presubmission_text="# A9 — GÓI TIỀN NỘP BÀI\nNội dung tự kiểm.",
+        # SỬA 2026-07-30: fixture cũ ("# A9...\nNội dung tự kiểm.") không có
+        # disclaimer/qua ngắn — vô hại khi G8-AUTO-00 chỉ đọc checkpoint cache,
+        # nhưng nay guardrail_g8() chạy THẬT trên chuỗi này (R1 cần
+        # pipeline["rows"] có checkpoint_exists — xem _checkpoint() ở trên;
+        # R7 cần disclaimer) nên fixture phải là văn bản THỰC SỰ qua được
+        # guardrail, không chỉ là placeholder rỗng.
+        presubmission_text=(
+            "# A9 — GÓI TIỀN NỘP BÀI\n"
+            "Nội dung tự kiểm toàn bộ pipeline G0-G7.\n"
+            "[CAN] Vài mục hành chính (CRediT/COI) còn chờ bác sĩ điền.\n"
+            "Cần bác sĩ kiểm chứng.\n"
+        ),
         manuscript_text=CLEAN_MANUSCRIPT,
         sap_text=SAP_TEXT,
         review_report_text=REVIEW_REPORT,

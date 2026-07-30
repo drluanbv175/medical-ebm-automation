@@ -492,10 +492,34 @@ def evaluate_g8_quality(
     approval: list[dict[str, str]] = []
 
     # ── G8-AUTO-00 — guardrail nền ─────────────────────────────────────────
-    guardrail = checkpoint.get("guardrail")
-    guardrail_passed = (
-        guardrail.get("passed") is True if isinstance(guardrail, Mapping) else False
-    )
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, phát hiện khi vá G8-F1 — cùng
+    # lớp "tin cache cũ" đã đóng ở G7-F1): trước đây đọc thẳng
+    # checkpoint["guardrail"]["passed"] — giá trị ĐÓNG BĂNG tại thời điểm
+    # run_g8_auto.py sinh artifact lần đầu — dù presubmission_text ở trên đã
+    # đọc FRESH từ đĩa. Một bác sĩ sửa file .md sau đó (chèn PII, xóa
+    # disclaimer, hoặc NGƯỢC LẠI đã sửa xong lỗi cũ) sẽ KHÔNG bao giờ được
+    # phản ánh vào G8-AUTO-00 vì nó chưa từng đọc lại. Chạy lại guardrail_g8()
+    # TRÊN presubmission_text THẬT; dựng "pipeline" tối thiểu mà guardrail_g8()
+    # cần (R1: có checkpoint cổng trước hay không) từ chính
+    # checkpoint["pipeline_completeness"]/["pipeline_pass_count"] đã ghi.
+    try:
+        import run_g8_auto as G8run  # noqa: PLC0415
+        _pipeline_rows = [
+            {"checkpoint_exists": bool(v.get("checkpoint_exists"))}
+            for v in (checkpoint.get("pipeline_completeness") or {}).values()
+            if isinstance(v, Mapping)
+        ]
+        _pipeline_for_guardrail = {
+            "rows": _pipeline_rows,
+            "n_pass": checkpoint.get("pipeline_pass_count", 0),
+        }
+        fresh_guardrail = G8run.guardrail_g8(presubmission_text, _pipeline_for_guardrail)
+        guardrail_passed = bool(fresh_guardrail.get("passed"))
+    except ImportError:  # pragma: no cover - lưới an toàn nếu import thất bại
+        guardrail = checkpoint.get("guardrail")
+        guardrail_passed = (
+            guardrail.get("passed") is True if isinstance(guardrail, Mapping) else False
+        )
     automatic.append(_criterion(
         "G8-AUTO-00",
         "Guardrail liêm chính G8 sạch",
