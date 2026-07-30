@@ -1341,6 +1341,15 @@ def guardrail_check_g2(artifact: str) -> dict:
         # G2_STATUS: LOCKED trong khối hướng dẫn/template là hợp lệ — không flag
         warnings.append("R3 ✅ Không tự claim APPROVED/LOCKED (LOCKED trong template là hướng dẫn bác sĩ)")
 
+    # LƯU Ý PHẠM VI CHUNG CHO R4/R5/R6/R6b (audit toàn diện G0-G10, 2026-07-30,
+    # G2-F2): generate_g2_full_package() luôn in các nhãn/tiêu đề dưới đây VÔ
+    # ĐIỀU KIỆN (không phụ thuộc design_code/dữ liệu bác sĩ) — 4 luật này CHỈ
+    # có ý nghĩa thật khi văn bản bị XÓA/CẮT sau khi sinh (hand-edit làm mất
+    # một mục), KHÔNG thể tự phát hiện "nội dung có đủ chất lượng cho đề tài
+    # này hay không". "✅ PASS" ở đây = "cấu trúc còn nguyên", không phải "hồ
+    # sơ đã sẵn sàng nộp Hội đồng" — xem g2_quality_gate.py (lớp kiểm chất
+    # lượng riêng, có phân biệt DRAFT/READY/APPROVED) cho đánh giá đó.
+
     # R4 — Có nhãn DRAFT trên tài liệu
     draft_count = artifact.count("DRAFT")
     if draft_count >= 5:

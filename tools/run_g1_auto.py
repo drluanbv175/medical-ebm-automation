@@ -1651,16 +1651,52 @@ def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_c
         warnings.append("R2 ✅ Không có PII")
 
     # R3 — Không tự vượt cổng G4
-    if "G4_STATUS = LOCKED" in artifact or "G4=LOCKED" in artifact:
-        errors.append("R3 🔴 Không được tự ghi G4=LOCKED — cần bác sĩ ký")
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G1-F1 — HIGH): chuỗi kiểm cũ
+    # ("G4_STATUS = LOCKED" có dấu cách quanh '=', hoặc "G4=LOCKED") KHÔNG
+    # BAO GIỜ khớp — chính template dòng ~1595 luôn in KHÔNG dấu cách
+    # "G4_STATUS=LOCKED | G4_SAP_VERSION=1.0 | G4_LOCK_DATE=[date]" như một
+    # HƯỚNG DẪN cho bước SAU (bác sĩ xác nhận khóa SAP), với "[date]" luôn
+    # là placeholder CHƯA điền. Đây là guardrail VĂN BẢN đối chiếu nội dung
+    # artifact G1 — KHÔNG phải cơ chế khóa thật (cơ chế khóa G4 thật nằm ở
+    # chữ ký ledger của gate_contract.py, đã cứng hóa 2026-07-13/26) — nên
+    # chỉ cần phân biệt HƯỚNG DẪN (vô hại, "[date]" chưa điền) với một ngày
+    # khóa CỤ THỂ đã bị điền vào chỗ placeholder đó: dấu hiệu văn bản đã bị
+    # sửa để tự nhận G4 đã xong mà không qua approve_gate.py thật.
+    _g4_lock_dates = re.findall(r'G4_LOCK_DATE\s*=\s*(\S+)', artifact)
+    _g4_fake_lock_date = any(v != "[date]" for v in _g4_lock_dates)
+    if _g4_fake_lock_date or "G4=LOCKED" in artifact:
+        errors.append(
+            "R3 🔴 Nghi tự ghi G4 đã khóa (G4_LOCK_DATE đã điền hoặc 'G4=LOCKED') "
+            "— cần bác sĩ ký qua approve_gate.py, không tự nhận trong văn bản"
+        )
     else:
-        warnings.append("R3 ✅ Không tự vượt cổng G4")
+        warnings.append("R3 ✅ Không tự vượt cổng G4 (mẫu hướng dẫn chưa bị điền ngày khóa giả)")
 
     # R4 — Không bịa effect size
-    if "[CẦN" in artifact:
-        warnings.append("R4 ✅ Các giá trị cần bác sĩ điền đã gắn nhãn [CẦN...]")
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G1-F2 — HIGH): "if '[CẦN' in
+    # artifact" kiểm TOÀN VĂN BẢN 700+ dòng — đúng lỗi mà comment giải thích
+    # sửa R5 ngay bên dưới đã tự thừa nhận, nhưng KHÔNG áp dụng ngược cho
+    # R4. Template luôn có ≥40 chỗ [CẦN] không liên quan effect size, nên
+    # điều kiện cũ luôn PASS dù một OR/RR/HR/MD cụ thể bị bịa ở nơi khác.
+    # Sửa theo đúng mẫu R5: kiểm CỤC BỘ quanh mỗi vị trí khớp OR/RR/HR/MD=
+    # <số> — hợp lệ nếu có "pmid" (effect trích PubMed thật —
+    # _effect_size_section luôn in "— PMID:...") HOẶC "[cần" (đã gắn nhãn
+    # chờ bác sĩ điền) trong cửa sổ ±80 ký tự.
+    _artifact_lower_r4 = artifact.lower()
+    unlabeled_effect_matches = []
+    for m in re.finditer(r'\b(?:or|rr|hr|md)\s*[=:]\s*-?\d+\.?\d*', _artifact_lower_r4):
+        window = _artifact_lower_r4[max(0, m.start() - 80): m.end() + 80]
+        if "[cần" not in window and "pmid" not in window:
+            unlabeled_effect_matches.append(artifact[m.start():m.end()])
+    if unlabeled_effect_matches:
+        errors.append(
+            f"R4 🔴 Tìm thấy effect size (OR/RR/HR/MD) KHÔNG kèm PMID nguồn hay "
+            f"nhãn [CẦN...] gần đó (nghi bịa số): {unlabeled_effect_matches[:3]}"
+        )
     else:
-        errors.append("R4 🔴 Thiếu nhãn [CẦN...] cho các mục cần bác sĩ")
+        warnings.append(
+            "R4 ✅ Mọi effect size (OR/RR/HR/MD) đều có PMID nguồn hoặc nhãn [CẦN...] cục bộ"
+        )
 
     # R5 — Không bịa cỡ mẫu
     # SỬA: kiểm tra "[CẦN" trên TOÀN VĂN BẢN vô nghĩa vì template có ≥40 chỗ

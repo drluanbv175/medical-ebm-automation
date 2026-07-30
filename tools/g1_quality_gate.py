@@ -853,6 +853,20 @@ def evaluate_g1_quality(
             "DerSimonian-Laird) nếu I²",
             "Fixed-effects nếu I² <",
         ),
+        # THÊM 2026-07-30 (audit toàn diện G0-G10, G1-F3 — HIGH): dict này
+        # trước đây chỉ có 4/8 mã thiết kế — HOÀN TOÀN THIẾU 'prediction',
+        # đúng thiết kế mà chính g1_design_blocks.py (docstring) ghi nhận có
+        # lịch sử rơi vào khuôn sr_ma nhiều lần (2026-07-17, 2026-07-21,
+        # xem nhánh `elif internal == "prediction"` ở run_g1_auto.py — thêm
+        # RIÊNG đúng vì trước đó rơi vào else viết cho sr_ma). Hai cụm dưới
+        # xác nhận CHỈ xuất hiện trong nhánh sap_analysis_note của sr_ma
+        # (run_g1_auto.py, không xuất hiện ở bất kỳ nhánh thiết kế nào khác) —
+        # nếu SAP §4 của một đề tài 'prediction' chứa các cụm này, đó là dấu
+        # hiệu khuôn sr_ma đã rò vào thay vì khuôn tiên lượng riêng.
+        "prediction": (
+            "Hartung-Knapp",
+            "funnel plot/Egger",
+        ),
         "qualitative": (
             "α: 0.05 (hai đuôi)",
             "Power: [CẦN]%",

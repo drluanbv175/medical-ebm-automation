@@ -255,10 +255,21 @@ def build_registration_draft(
         6: None,
         7: "[ĐIỀN LIÊN HỆ CÔNG KHAI TRỰC TIẾP TRÊN REGISTRY]",
         8: "[ĐIỀN LIÊN HỆ KHOA HỌC TRỰC TIẾP TRÊN REGISTRY]",
-        9: None,
+        # SỬA 2026-07-30 (audit toàn diện G0-G10, G2-F1 — HIGH): mục 9 (Public
+        # Title) trước đây hardcode None dù `topic` (chuỗi THẬT của đề tài,
+        # đã được item 10 dùng ngay dưới) luôn có sẵn — không có lý do kỹ
+        # thuật nào để bỏ trống. Dùng lại NGUYÊN topic (không rút gọn thêm để
+        # tránh diễn giải sai) làm placeholder khởi điểm; bác sĩ vẫn có thể
+        # sửa cho "đại chúng" hơn trước khi đăng ký thật.
+        9: topic,
         10: topic,
         11: "Vietnam",
-        12: None,
+        # Mục 12 (Health Condition) trước đây cũng hardcode None — topic của
+        # một đề tài y khoa THƯỜNG NGAY LÀ mô tả vấn đề sức khỏe đang nghiên
+        # cứu (vd "Hiệu quả điều trị X ở bệnh nhân Y"); dùng làm giá trị khởi
+        # điểm AN TOÀN (không bịa nội dung mới — cùng một chuỗi đã tin cậy ở
+        # mục 9/10), bác sĩ xác nhận/chỉnh sửa trước khi đăng ký.
+        12: topic,
         13: None,
         14: {"inclusion": None, "exclusion": None},
         15: {
@@ -332,6 +343,25 @@ def _registration_draft_errors(document: Mapping[str, Any]) -> list[str]:
         number = item.get("number")
         if number in WHO_TRDS_LABELS and item.get("label") != WHO_TRDS_LABELS[number]:
             errors.append(f"Nhãn WHO TRDS mục {number} không đúng")
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G2-F1 — HIGH): trước vá này,
+    # hàm này CHỈ kiểm số lượng/nhãn/version — ba trường này do build_
+    # registration_draft() sinh ra bằng CHÍNH các hằng số WHO_TRDS_LABELS/
+    # WHO_TRDS_ITEM_COUNT/WHO_TRDS_VERSION mà hàm này cũng đọc, nên KHÔNG có
+    # đầu vào thật nào (topic/design/dữ liệu bác sĩ) có thể khiến hai bên
+    # lệch nhau — tiêu chí G2-AUTO-04 dùng hàm này về mặt toán học không bao
+    # giờ có thể fail. Thêm kiểm tra PHỤ THUỘC DỮ LIỆU THẬT: mục 9 (Public
+    # Title) và 10 (Scientific Title) phải có nội dung (đều lấy từ `topic`
+    # của chính đề tài) — nếu topic rỗng/thiếu (vd G0 chưa từng chạy thật),
+    # kiểm tra này MỚI có khả năng thật sự BLOCK.
+    by_number = {
+        item.get("number"): item
+        for item in items
+        if isinstance(item, Mapping)
+    }
+    for number in (9, 10):
+        value = by_number.get(number, {}).get("value") if isinstance(by_number.get(number), Mapping) else None
+        if not (isinstance(value, str) and value.strip()):
+            errors.append(f"WHO TRDS mục {number} ({WHO_TRDS_LABELS[number]}) còn trống")
     return errors
 
 
@@ -506,6 +536,15 @@ def evaluate_g2_quality(
         "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.",
     ))
 
+    # LƯU Ý PHẠM VI (audit toàn diện G0-G10, 2026-07-30, G2-F1): generate_g2_
+    # full_package() in TẤT CẢ marker dưới đây VÔ ĐIỀU KIỆN (không phụ thuộc
+    # design_code/dữ liệu bác sĩ), nên tiêu chí này KHÔNG BAO GIỜ tự phát
+    # hiện được nội dung THIẾU CHẤT LƯỢNG hay SAI cho đề tài cụ thể — nó chỉ
+    # có ý nghĩa THẬT trong một kịch bản: hồ sơ bị XÓA/CẮT một phần sau khi
+    # sinh (hand-edit làm mất một mục). PASS ở đây = "cấu trúc còn nguyên",
+    # KHÔNG phải "nội dung khoa học đã đủ/đúng cho đề tài này" — xem G2-AUTO-
+    # 05 (unresolved_critical_placeholders) và G2-F4 cho khoảng trống nội
+    # dung mà tiêu chí NÀY không phủ.
     missing_markers = [
         marker for marker in _PACKAGE_MARKERS
         if marker.casefold() not in package_text.casefold()
@@ -548,6 +587,14 @@ def evaluate_g2_quality(
         "PI/methodologist xác nhận thiết kế rồi tính lại lộ trình IRB.",
     ))
 
+    # LƯU Ý PHẠM VI (audit toàn diện G0-G10, 2026-07-30, G2-F1): RISK_PROFILES
+    # ['rct']['risks'][0] ở run_g2_auto.py luôn chứa cả 3 cụm dưới VÔ ĐIỀU
+    # KIỆN mỗi khi design_code=="rct" — nên trên đường đi BÌNH THƯỜNG (package
+    # sinh khớp đúng design_code hiện tại), tiêu chí này không thể tự phát
+    # hiện nội dung an toàn "yếu" hay "chưa đủ" cho đề tài cụ thể. Nó CHỈ có
+    # ý nghĩa thật khi design_code đã ĐỔI (vd cohort→rct) sau khi package đã
+    # sinh mà chưa chạy lại — phát hiện package LỖI THỜI so với thiết kế hiện
+    # tại, không phải phát hiện "kế hoạch an toàn có đủ chi tiết hay không".
     if design_code == "rct":
         safety_requirements = {
             "AE/SAE": ("AE/SAE",),
