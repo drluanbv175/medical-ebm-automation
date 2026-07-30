@@ -333,12 +333,30 @@ def evaluate_g4_quality(
     approval: list[dict[str, str]] = []
 
     # ── G4-AUTO-00 — guardrail nền ─────────────────────────────────────────
-    guardrail_passed = S._guardrail_passed(dict(checkpoint))
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G4-F2/F3 — HIGH, phát hiện khi
+    # rà lại F10-DESIGN-PROPOSAL): thiết kế gốc của tiêu chí này đọc thẳng
+    # checkpoint["guardrail"] — giá trị ĐÓNG BĂNG tại thời điểm run_g4_auto.py
+    # sinh artifact — với lý do "đã biết guardrail() tautology". Rà lại code
+    # THẬT của guardrail() cho thấy R3 (chống tự công bố đã khóa/duyệt SAP)
+    # đã được nâng cấp thành kiểm THEO DÒNG có phân biệt câu điều kiện/quy
+    # trình — một luật THẬT SỰ có thể fail — nhưng guardrail() chỉ được
+    # main() của run_g4_auto.py gọi ĐÚNG MỘT LẦN ngay sau khi sinh, không ai
+    # gọi lại nó trên artifact_text SAU KHI bác sĩ đã chỉnh sửa. Vì
+    # evaluate_g4_quality() ở đây ĐÃ nhận artifact_text tươi từ đĩa (tham số
+    # hàm, không phải checkpoint cache), chạy lại guardrail() ngay tại đây để
+    # bắt được tampering THẬT SỰ xảy ra sau khi sinh — cùng lớp sửa đã áp
+    # dụng cho G7-AUTO-00/G8-AUTO-00 trong phiên audit này.
+    try:
+        import run_g4_auto as G4run  # noqa: PLC0415
+        fresh_errors, _fresh_warnings = G4run.guardrail(artifact_text)
+        guardrail_passed = not fresh_errors
+    except ImportError:  # pragma: no cover - lưới an toàn nếu import thất bại
+        guardrail_passed = S._guardrail_passed(dict(checkpoint))
     automatic.append(_criterion(
         "G4-AUTO-00",
         "Guardrail liêm chính G4 sạch",
         "PASS" if guardrail_passed else "BLOCK",
-        f"guardrail={checkpoint.get('guardrail')!r}",
+        f"guardrail_passed={guardrail_passed} (chấm lại trên artifact hiện tại, không tin cache)",
         "Sửa lỗi liêm chính (nguồn, PII, tự claim đã khóa) trước khi chấm chất lượng.",
     ))
 

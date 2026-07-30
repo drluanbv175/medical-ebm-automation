@@ -243,7 +243,13 @@ def test_sap_day_du_thi_dat_LOCKED_toan_bo_tieu_chi():
 
 
 def test_guardrail_loi_chan_cong():
-    report = _evaluate(checkpoint=_checkpoint(guardrail="⚠ 2 LỖI"))
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G4-F2/F3): G4-AUTO-00 nay chạy
+    # LẠI guardrail() trên artifact_text thật thay vì tin checkpoint["guardrail"]
+    # cache — checkpoint(guardrail="⚠ 2 LỖI") không còn tác dụng, phải tamper
+    # NỘI DUNG artifact thật để tạo lỗi guardrail thật (R3: tự công bố đã
+    # được duyệt mà không có nhãn [CẦN]/CHỜ KÝ ngay trong dòng đó).
+    tampered = _filled_comparative_sap() + "\nNghiên cứu đã được duyệt hoàn toàn.\n"
+    report = _evaluate(artifact_text=tampered)
     assert _row(report, "G4-AUTO-00")["status"] == "BLOCK"
     assert report["status"] == G4Q.STATUS_BLOCKED
 
