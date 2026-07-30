@@ -2055,6 +2055,46 @@ def main():
 
     run_date = datetime.now().strftime("%Y-%m-%d")
 
+    # ★★ VÁ 2026-07-30 (audit toàn diện G0-G10, G5-F1 — CRITICAL) — CHẶN KHÓA ĐÈ
+    # Ở PHÍA G5 CHÍNH NÓ, không chỉ ở lock_analysis_dataset.py.
+    # Đo thực tế: dòng "cp = {...}" phía dưới ghi G5_checkpoint.json bằng một
+    # dict LITERAL MỚI HOÀN TOÀN (g5_status="PENDING"), không đọc/merge checkpoint
+    # cũ — nếu G5 đã được khóa+ký (lock_analysis_dataset.py rồi approve_gate.py
+    # --gate G5), chạy lại CHÍNH TOOL NÀY sẽ xóa mất locked_dataset_sha256/
+    # reviewer_role/data_lock_date mà lock_analysis_dataset.py đã ghi — làm
+    # evidence_hash trong approval_ledger.json KHÔNG còn khớp checkpoint hiện
+    # tại, chữ ký duyệt G5 mất hiệu lực NGAY LẬP TỨC, G5 tụt từ PASS_G5_DATA_
+    # LOCKED về DRAFT, kéo theo G6/run_stats_analysis.py (đều gọi
+    # ledger_approved("G5", ...)) bị chặn theo. Tệ hơn: chạy lại
+    # lock_analysis_dataset.py để "sửa" KHÔNG cứu được — vì DATA_LOCK_manifest.json
+    # (file RIÊNG, không bị lệnh này đụng tới) vẫn còn nguyên status=LOCKED với
+    # đúng sha256 cũ, nên guard idempotent ở đó trả về SỚM (dòng ~526) TRƯỚC KHI
+    # chạm tới đoạn ghi lại checkpoint — G5_checkpoint.json vẫn kẹt ở PENDING
+    # vĩnh viễn, không có đường tự phục hồi.
+    # Vá: kiểm ledger_approved("G5", ...) TRÊN CHÍNH checkpoint hiện tại NGAY TỪ
+    # ĐẦU main(), trước khi làm bất kỳ việc gì (kể cả sinh CRF/DMP) — nếu G5 đã
+    # có chữ ký hợp lệ khớp đúng bytes hiện tại, TỪ CHỐI chạy tiếp. Cùng tinh
+    # thần "chặn khóa đè" đã áp dụng cho lock_analysis_dataset.py (2026-07-27)
+    # — muốn soạn lại CRF/DMP cho một G5 đã khóa PHẢI là quyết định CÓ CHỦ Ý,
+    # ghi lại được (tự tay lưu/đổi tên G5_checkpoint.json cũ), không diễn ra
+    # âm thầm bên trong một lệnh trông vô hại.
+    _g5_cp_path = out / "G5_checkpoint.json"
+    if GC.ledger_approved("G5", study, _g5_cp_path, repo_root=BASE):
+        print("🚫 G5 TỪ CHỐI CHẠY LẠI — checkpoint hiện tại ĐÃ CÓ chữ ký duyệt hợp lệ.")
+        print(f"   {_g5_cp_path} đang khớp evidence_hash đã ký trong approval_ledger.json")
+        print("   (G5 đã ở trạng thái đã khóa + đã duyệt).")
+        print("   Chạy lại công cụ này sẽ GHI ĐÈ TOÀN BỘ checkpoint (dict mới, g5_status=")
+        print("   PENDING), XÓA MẤT locked_dataset_sha256/reviewer_role/data_lock_date —")
+        print("   làm chữ ký MẤT HIỆU LỰC NGAY LẬP TỨC dù dữ liệu/khoa học không đổi, và")
+        print("   chạy lại lock_analysis_dataset.py sau đó KHÔNG tự sửa được (manifest cũ")
+        print("   vẫn khớp hash nên trả về sớm, không ghi lại checkpoint).")
+        print("   Nếu THẬT SỰ cần soạn lại CRF/DMP cho đề tài này (quyết định có chủ ý):")
+        print(f"     1. Tự tay lưu/đổi tên {_g5_cp_path.name} hiện có (để việc đó hiện rõ")
+        print("        trong lịch sử thư mục, không diễn ra âm thầm).")
+        print("     2. Chạy lại run_g5_auto.py → lock_analysis_dataset.py → approve_gate.py")
+        print("        --gate G5 từ đầu cho bộ dữ liệu MỚI.")
+        return GC.EXIT_GUARDRAIL_FAIL
+
     # ★★ VÁ 2026-07-27 — G5 PHẢI ĐÒI G4 ĐÃ KÝ. Kiểm định độc lập đo được: G6 gọi
     # ledger_approved() 20 chỗ, run_stats_analysis.py 8 chỗ, còn G5 = 0 chỗ. Nghĩa là
     # cổng KHÓA DỮ LIỆU chạy được trong khi SAP CHƯA KHÓA.
