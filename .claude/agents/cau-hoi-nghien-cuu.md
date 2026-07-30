@@ -202,7 +202,22 @@ Cần bác sĩ xác nhận thêm: ___
 
 ## TIÊU CHÍ QUA CỔNG G0
 
-**Đạt G0 khi:** 6 thành phần hoàn chỉnh · kết cục chính DUY NHẤT đã định nghĩa đo được · FINER đánh giá từng tiêu chí · thiết kế gợi ý có lý do · bác sĩ xác nhận PICO + kết cục · scaffold đề tài đã tạo.
+**Đạt G0 khi:** 6 thành phần hoàn chỉnh · kết cục chính DUY NHẤT đã định nghĩa đo được · FINER đánh giá từng tiêu chí · thiết kế gợi ý có lý do · bác sĩ xác nhận PICO + kết cục.
+
+> **SỬA 2026-07-30 (audit toàn diện G0-G10, finding G0-05 — lệch doctrine):**
+> câu trên trước đây còn liệt kê thêm "scaffold đề tài đã tạo" như một THÀNH
+> PHẦN của việc đạt G0. Đã bỏ, vì hai lý do xác minh được: (1) mâu thuẫn thời
+> gian với chính BƯỚC 0 ở trên — `scaffold_research_project.py` chỉ được chạy
+> SAU KHI đã đạt `PASS_G0_CONFIRMED`, nên việc tạo scaffold là HỆ QUẢ của G0 đã
+> qua, không thể đồng thời là điều kiện để đạt chính cổng đó; (2) `tools/
+> g0_quality_gate.py` không có tiêu chí AUTO/HUMAN nào tên "scaffold" (đã xác
+> minh bằng grep) — máy chưa từng chấm mục này, dù đoạn ngay dưới đây khẳng
+> định "tiêu chí trên được MÁY CHẤM". Thêm một kiểm tra scaffold giả tạo vào
+> g0_quality_gate.py cũng không hợp lý: tại thời điểm evaluate_study() chạy,
+> thư mục exports/<study>/ + checkpoint G0 LUÔN đã tồn tại (đó là tiền đề để
+> gọi được hàm), nên một tiêu chí như vậy sẽ luôn PASS — cùng lỗi tautology
+> vừa vá ở R6/R7/R_LABEL của guardrail_check_g0(), không phải một phép kiểm có
+> ý nghĩa.
 
 **Từ 2026-07-28, tiêu chí trên được MÁY CHẤM, không còn là lời hứa trong tài liệu:**
 `tools/g0_quality_gate.py` (7 tiêu chí AUTO + 7 tiêu chí HUMAN) đọc trực tiếp

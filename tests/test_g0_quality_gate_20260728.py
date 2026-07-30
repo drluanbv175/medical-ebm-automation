@@ -584,3 +584,103 @@ def test_write_quality_report_sinh_ca_json_va_markdown(tmp_path):
     assert "G0-AUTO-00" in text and "G0-HUMAN-01" in text
     data = json.loads((tmp_path / "G0_QUALITY_REPORT.json").read_text(encoding="utf-8"))
     assert data["contract_version"] == G0Q.QUALITY_CONTRACT_VERSION
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 10. G0-04 — CHẤM ĐỘC LẬP (không gọi lại PubMed) PHẢI CẬP NHẬT CHECKPOINT
+#     (audit toàn diện G0-G10, 2026-07-30). Trước bản vá 2026-07-30, chỉ
+#     run_g0_auto.py (một lượt CHẠY LẠI TOÀN BỘ) ghi cp["quality_gate"]; chạy
+#     `python tools/g0_quality_gate.py --study X` độc lập chỉ ghi
+#     G0_QUALITY_REPORT.{json,md}, để checkpoint đứng yên ở dữ liệu CŨ — mọi
+#     công cụ đọc thẳng checkpoint (study_readiness.py, đài kiểm soát) sẽ thấy
+#     thông tin lỗi thời. refresh_checkpoint() đóng khoảng trống này.
+# ════════════════════════════════════════════════════════════════════════════
+
+def _seed_out_dir_for_evaluate_study(tmp_path, study="ZZ-REFRESH", *,
+                                     checkpoint_extra=None):
+    """Dựng exports/<study>/ tối thiểu để evaluate_study() chạy được thật."""
+    out_dir = tmp_path / "exports" / study
+    out_dir.mkdir(parents=True, exist_ok=True)
+    cp = _checkpoint(study=study)
+    if checkpoint_extra:
+        cp.update(checkpoint_extra)
+    (out_dir / "G0_checkpoint.json").write_text(
+        json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+    (out_dir / "study_meta.json").write_text(
+        json.dumps({"gate_params": {"G0": {}}}), encoding="utf-8")
+    (out_dir / f"G0_A1_PICO_FINER_{study}.md").write_text(
+        _artifact_text(), encoding="utf-8")
+    return out_dir
+
+
+def test_evaluate_study_doc_lap_cap_nhat_quality_gate_vao_checkpoint(tmp_path):
+    """Lỗi trung tâm của G0-04: checkpoint KHÔNG có khối 'quality_gate' trước
+    khi chấm độc lập; sau evaluate_study(write=True) PHẢI có, và phải khớp
+    đúng report vừa chấm — không phải bản đóng băng từ lần sinh artifact."""
+    out_dir = _seed_out_dir_for_evaluate_study(tmp_path)
+    cp_path = out_dir / "G0_checkpoint.json"
+    before = json.loads(cp_path.read_text(encoding="utf-8"))
+    assert "quality_gate" not in before,         "fixture phải mô phỏng đúng checkpoint CŨ chưa từng được chấm độc lập"
+
+    report = G0Q.evaluate_study("ZZ-REFRESH", out_dir, write=True)
+
+    after = json.loads(cp_path.read_text(encoding="utf-8"))
+    assert "quality_gate" in after,         "evaluate_study(write=True) phải ghi lại quality_gate vào CHÍNH checkpoint "         "trên đĩa, không chỉ vào G0_QUALITY_REPORT.json/.md"
+    assert after["quality_gate"]["status"] == report["status"]
+    assert after["quality_gate"]["contract_version"] == G0Q.QUALITY_CONTRACT_VERSION
+    assert after["quality_gate"]["pending_actions"] == report["pending_actions"]
+    # Các khoá khác của checkpoint (do run_g0_auto.py ghi trước đó) phải giữ nguyên —
+    # refresh_checkpoint() chỉ được THÊM khối quality_gate, không xoá dữ liệu khác.
+    assert after["topic"] == before["topic"]
+    assert after["pubmed_results"] == before["pubmed_results"]
+
+
+def test_evaluate_study_no_write_khong_dung_toi_checkpoint(tmp_path):
+    """--no-write (write=False) chỉ để XEM, không được đụng tới file trên đĩa —
+    đối chứng cho test ở trên để phân biệt rõ tác dụng của cờ write."""
+    out_dir = _seed_out_dir_for_evaluate_study(tmp_path, study="ZZ-NOWRITE")
+    cp_path = out_dir / "G0_checkpoint.json"
+    raw_before = cp_path.read_text(encoding="utf-8")
+
+    G0Q.evaluate_study("ZZ-NOWRITE", out_dir, write=False)
+
+    assert cp_path.read_text(encoding="utf-8") == raw_before,         "write=False (--no-write) không được ghi đè checkpoint"
+    assert not (out_dir / "G0_QUALITY_REPORT.json").exists()
+
+
+def test_refresh_checkpoint_khong_ghi_de_needs_input_nang_hon_da_co(tmp_path):
+    """Mirror đúng guard của run_g0_auto.py: nếu checkpoint đã bị chặn vì 0 PMID
+    thật (REASON_MISSING_PUBMED — nặng hơn), một lần chấm lại G0 với PICO chưa
+    chốt (REASON_MISSING_PICO — nhẹ hơn) KHÔNG được ghi đè needs_input cũ."""
+    out_dir = _seed_out_dir_for_evaluate_study(
+        tmp_path, study="ZZ-KEEPBLOCK",
+        checkpoint_extra={
+            "needs_input": {
+                "blocked": True, "reason_code": GC.REASON_MISSING_PUBMED,
+                "remediation": {},
+            },
+        },
+    )
+    G0Q.evaluate_study("ZZ-KEEPBLOCK", out_dir, write=True)
+    after = json.loads((out_dir / "G0_checkpoint.json").read_text(encoding="utf-8"))
+    # quality_gate PHẢI được ghi (chứng minh refresh_checkpoint() thật sự đã chạy —
+    # nếu không, needs_input "giữ nguyên" chỉ vì KHÔNG AI đụng vào checkpoint, chứ
+    # không phải vì guard hoạt động đúng).
+    assert "quality_gate" in after
+    assert after["needs_input"]["reason_code"] == GC.REASON_MISSING_PUBMED,         "needs_input nặng hơn (0 PMID) bị PICO-chưa-chốt ghi đè nhầm"
+
+
+def test_g0_quality_gate_cli_doc_lap_cung_cap_nhat_checkpoint(tmp_path):
+    """Đường THẬT bác sĩ dùng: gọi thẳng CLI `python tools/g0_quality_gate.py
+    --study X` (không qua run_g0_auto.py) và kiểm checkpoint trên đĩa sau đó."""
+    _seed_out_dir_for_evaluate_study(tmp_path, study="ZZ-CLI")
+    env = dict(os.environ, PYTHONUTF8="1")
+    proc = subprocess.run(
+        [PYTHON, str(TOOLS_DIR / "g0_quality_gate.py"), "--study", "ZZ-CLI"],
+        cwd=tmp_path, env=env, capture_output=True, text=True, timeout=60,
+    )
+    assert proc.returncode in (GC.EXIT_OK, GC.EXIT_BLOCKED, GC.EXIT_GUARDRAIL_FAIL),         proc.stdout[-800:] + proc.stderr[-800:]
+    cp = json.loads(
+        (tmp_path / "exports" / "ZZ-CLI" / "G0_checkpoint.json").read_text(encoding="utf-8")
+    )
+    assert "quality_gate" in cp, "CLI độc lập phải cập nhật checkpoint, không chỉ report"

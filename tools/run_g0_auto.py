@@ -1018,6 +1018,17 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
         warnings.append("R5 ✅ Không trộn trục khuyến cáo lâm sàng vào cổng nghiên cứu")
 
     # R6 — Gắn [CẦN BỔ SUNG] khi thiếu
+    # ★ PHẠM VI THẬT (audit toàn diện G0-G10, finding G0-03 — 2026-07-30):
+    # generate_a1_artifact() in CỨNG các nhãn "[CẦN BÁC SĨ XÁC NHẬN]"/
+    # "[CẦN BÁC SĨ ẤN ĐỊNH]" ở PHẦN 1/1b/2 (P/I/C/O, giả thuyết, FINER) VÔ ĐIỀU
+    # KIỆN — không nhánh nào của hàm đó bỏ qua các nhãn này, bất kể topic/kết
+    # quả PubMed. Vì guardrail_check_g0() luôn được gọi NGAY SAU generate_a1_artifact()
+    # trên đúng chuỗi vừa sinh (xem bước 6/8 trong main()), R6 KHÔNG THỂ BLOCK qua
+    # pipeline thật — nó chỉ có khả năng bắt được việc một code path khác (hoặc một
+    # artifact đã bị cắt/sửa tay trước khi đưa vào hàm này) làm mất các nhãn đó. R6
+    # KHÔNG phải và không thể là thước đo "bác sĩ đã điền đủ PICO chưa" — việc đó do
+    # g0_quality_gate.py (tiêu chí G0-HUMAN-01..07) đảm nhiệm, đọc study_meta.json
+    # chứ không đọc artifact .md này.
     has_can_label = "[CẦN BÁC SĨ XÁC NHẬN]" in artifact or "[CẦN BỔ SUNG]" in artifact
     if not has_can_label:
         errors.append("R6 🔴 Thiếu nhãn [CẦN...] cho phần chưa hoàn chỉnh")
@@ -1025,12 +1036,20 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
         warnings.append("R6 ✅ Các phần chưa hoàn chỉnh đã gắn nhãn [CẦN...]")
 
     # R7 — Disclaimer
+    # ★ PHẠM VI THẬT (G0-03): dòng "Cần bác sĩ kiểm chứng." được generate_a1_artifact()
+    # in CỨNG vô điều kiện ở cả tiêu đề mở đầu lẫn dòng cuối cùng của artifact — không
+    # nhánh nào bỏ qua nó. Cùng lý do như R6: qua pipeline thật R7 KHÔNG THỂ BLOCK; nó
+    # chỉ bắt được việc disclaimer bị xoá SAU khi artifact đã sinh ra (bug ghi file,
+    # tampering, sửa tay) — không phải một kiểm tra chất lượng nội dung cho đề tài cụ thể.
     if "cần bác sĩ kiểm chứng" not in artifact.lower():
         errors.append("R7 🔴 Thiếu disclaimer 'Cần bác sĩ kiểm chứng'")
     else:
         warnings.append("R7 ✅ Có disclaimer")
 
     # [BẢN NHÁP] label
+    # ★ PHẠM VI THẬT (G0-03): "[BẢN NHÁP TỰ ĐỘNG]" cũng được generate_a1_artifact() in
+    # CỨNG vô điều kiện ở dòng cuối cùng — cùng lý do như R6/R7, R_LABEL KHÔNG THỂ
+    # BLOCK qua pipeline thật, chỉ bắt được tampering/truncation xảy ra SAU khi sinh.
     if "[BẢN NHÁP TỰ ĐỘNG]" not in artifact:
         errors.append("R_LABEL 🟡 Nên gắn nhãn [BẢN NHÁP TỰ ĐỘNG]")
     else:
