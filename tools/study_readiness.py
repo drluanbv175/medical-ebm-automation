@@ -24,6 +24,7 @@ Dùng:
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -59,6 +60,24 @@ def _study_dir(study: str) -> Path:
     return BASE / "exports" / study
 
 
+_G0_QUALITY_LABELS = {
+    "PASS_G0_CONFIRMED": "✅ ĐÃ CHỐT (PASS_G0_CONFIRMED — PICO/kết cục chính đã do bác sĩ xác nhận)",
+    "BLOCKED": "🔴 BỊ CHẶN (guardrail/liêm chính) — xem G0_QUALITY_REPORT.md",
+    "DRAFT_READY_NEEDS_HUMAN_REVIEW": "🟡 DỰ THẢO — PICO/kết cục chính CHƯA được bác sĩ chốt",
+}
+
+
+def _g0_quality_status(cp: Path) -> str | None:
+    """quality_gate.status THẬT trong G0_checkpoint.json, None nếu không đọc được
+    (file hỏng, hoặc checkpoint CŨ trước 2026-07-28 chưa có khối này)."""
+    try:
+        data = json.loads(cp.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    quality = data.get("quality_gate") if isinstance(data, dict) else None
+    return quality.get("status") if isinstance(quality, dict) else None
+
+
 def _gate_state(study: str, d: Path) -> list[tuple[str, str, str]]:
     """[(gate, nhãn, trạng thái)] — trạng thái là chuỗi người đọc hiểu ngay."""
     rows = []
@@ -78,6 +97,20 @@ def _gate_state(study: str, d: Path) -> list[tuple[str, str, str]]:
                 state = "📝 có hồ sơ, CHƯA AI KÝ"
             else:
                 state = "— chưa chạy"
+        elif gate == "G0" and cp.exists():
+            # SỬA 2026-07-30 (audit toàn diện G0-G10, G0-02 — HIGH): trước đây
+            # G0 chỉ được đánh giá bằng "checkpoint tồn tại hay không" — một
+            # checkpoint với quality_gate.status == DRAFT_READY_NEEDS_HUMAN_
+            # REVIEW (PICO còn placeholder) và một checkpoint PASS_G0_CONFIRMED
+            # hiển thị Y HỆT NHAU: dấu "✅". Đây đúng là công cụ được xây RIÊNG
+            # để chống ảo giác "trông như sắp xong" (xem docstring module),
+            # nên khoảng trống này đặc biệt đáng chú ý. Đọc quality_gate.status
+            # THẬT; checkpoint CŨ (không có khối này) giữ nguyên hành vi cũ.
+            quality_status = _g0_quality_status(cp)
+            if quality_status is None:
+                state = "✅ có checkpoint (chưa có lớp chất lượng — checkpoint cũ)"
+            else:
+                state = _G0_QUALITY_LABELS.get(quality_status, f"🟡 {quality_status}")
         else:
             state = "✅ có checkpoint" if cp.exists() else (
                 "📄 có artifact, chưa có checkpoint" if artifacts else "— chưa chạy")

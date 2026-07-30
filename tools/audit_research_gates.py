@@ -166,6 +166,15 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             "patterns": ["G0_pubmed_raw.json", "03_Evidence_Ledger.md"],
             "required": False,
         },
+        {
+            # required=False như G3/G7/G8 (khác G2 là True): fixture G0 của bộ
+            # verify ở thư mục gốc chỉ dựng artifact A1, nâng lên bắt buộc phải
+            # sửa đồng thời.
+            "key": "g0_quality_report",
+            "label": "Báo cáo chất lượng G0 (câu hỏi nghiên cứu)",
+            "patterns": ["G0_QUALITY_REPORT.json"],
+            "required": False,
+        },
     ],
     "G1": [
         {
@@ -953,6 +962,64 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
             "next_action": _real_action(gate, study),
             **extras,
         }
+
+    # G0 — câu hỏi nghiên cứu. Thêm 2026-07-30 (audit toàn diện G0-G10, G0-01 —
+    # HIGH, MISSING_CONTROL_TOWER_REGISTRATION): trước đây "đài kiểm soát" này
+    # không hề đọc quality_gate của G0 — một checkpoint có
+    # quality_gate.status == "DRAFT_READY_NEEDS_HUMAN_REVIEW" (PICO/kết cục
+    # chính CHƯA được bác sĩ chốt) rơi vào nhánh mặc định cuối và báo
+    # STATUS_READY/"Không cần hành động" — tái hiện đúng lỗi mà g0_quality_gate.py
+    # được xây để đóng ở run_g0_auto.py, chỉ ở một tầng khác. Guard theo sự có
+    # mặt của khối `quality_gate` (KHÔNG phải `quality_contract_version` cấp cao
+    # nhất như G2/G3/G4 — G0 lưu contract_version NẰM TRONG quality_gate) để
+    # checkpoint CŨ (trước 2026-07-28) không bị hồi tố.
+    if gate == "G0" and isinstance(cp.get("quality_gate"), dict):
+        quality = cp["quality_gate"]
+        quality_status = quality.get("status")
+        if quality_status == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": None,
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Sửa lỗi trong G0_QUALITY_REPORT rồi chạy lại "
+                    f"`python3 tools/g0_quality_gate.py --study {study}`."
+                ),
+                **extras,
+            }
+        if quality_status != "PASS_G0_CONFIRMED":
+            pending = quality.get("pending_actions")
+            action = (
+                str(pending[0])
+                if isinstance(pending, list) and pending
+                else (
+                    "Chốt PICO/kết cục chính/FINER trong study_meta.json rồi chạy lại "
+                    f"`python3 tools/g0_quality_gate.py --study {study}`."
+                )
+            )
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_NEEDS_REAL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": {
+                    "key": "g0_pico_confirmation",
+                    "label": "PI/chủ nhiệm xác nhận PICO/kết cục chính",
+                    "present": False,
+                },
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": action,
+                **extras,
+            }
 
     if gate == "G1":
         quality = cp.get("quality_gate")

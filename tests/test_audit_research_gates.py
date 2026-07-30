@@ -284,6 +284,51 @@ def test_data_pipeline_reads_cleaning_and_lock_status(tmp_path):
     assert lock["blockers"] == ["open_query_log"]
 
 
+def test_g0_draft_quality_gate_is_visible_not_silently_ready(tmp_path):
+    """Hồi quy G0-01 (audit toàn diện G0-G10, HIGH): trước đây đài kiểm soát
+    không đọc quality_gate của G0 — một checkpoint với PICO/kết cục chính CHƯA
+    được bác sĩ chốt (DRAFT_READY_NEEDS_HUMAN_REVIEW) vẫn báo STATUS_READY/
+    "Không cần hành động" nếu artifact+metadata đã có mặt trên đĩa."""
+    _cp(tmp_path, "G0", {
+        "quality_gate": {
+            "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+            "pending_actions": ["Chốt PICO trong study_meta.json"],
+        },
+    })
+    _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
+    (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-DRAFT.md").write_text("PICO", encoding="utf-8")
+
+    report = ARG.audit_gates("AUTO-G0-DRAFT", out_dir=tmp_path, write=False)
+    g0 = next(row for row in report["pipeline_gates"] if row["gate"] == "G0")
+
+    assert g0["status"] == ARG.STATUS_NEEDS_REAL, g0
+    assert g0["next_action"] == "Chốt PICO trong study_meta.json"
+
+
+def test_g0_blocked_quality_gate_is_visible(tmp_path):
+    _cp(tmp_path, "G0", {"quality_gate": {"status": "BLOCKED", "pending_actions": []}})
+    (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-BLOCK.md").write_text("PICO", encoding="utf-8")
+
+    report = ARG.audit_gates("AUTO-G0-BLOCK", out_dir=tmp_path, write=False)
+    g0 = next(row for row in report["pipeline_gates"] if row["gate"] == "G0")
+
+    assert g0["status"] == ARG.STATUS_GUARDRAIL_FAIL, g0
+    assert "g0_quality_gate.py" in g0["next_action"]
+
+
+def test_g0_checkpoint_truoc_2026_khong_bi_hoi_to(tmp_path):
+    """Checkpoint CŨ (trước 2026-07-28, không có khối quality_gate) phải giữ
+    nguyên hành vi cũ — không bị nhánh mới hồi tố phán BLOCK/NEEDS_REAL oan."""
+    _cp(tmp_path, "G0", {})
+    _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
+    (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-LEGACY.md").write_text("PICO", encoding="utf-8")
+
+    report = ARG.audit_gates("AUTO-G0-LEGACY", out_dir=tmp_path, write=False)
+    g0 = next(row for row in report["pipeline_gates"] if row["gate"] == "G0")
+
+    assert g0["status"] == ARG.STATUS_READY, g0
+
+
 def test_g7_blocked_quality_gate_is_visible_not_silently_passed(tmp_path):
     """Hồi quy G7-F2 (audit toàn diện G0-G10, HIGH): trước đây G7_QUALITY_REPORT.json
     hoàn toàn vô hình với đài kiểm soát này — một G7 bị BLOCKED bởi lớp chất lượng

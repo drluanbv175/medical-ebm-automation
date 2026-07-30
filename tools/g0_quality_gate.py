@@ -650,6 +650,40 @@ def write_quality_report(study: str, out_dir: Path,
     return md_path
 
 
+def refresh_checkpoint(*, study: str, out_dir: Path,
+                       report: Mapping[str, Any]) -> Path:
+    """Đồng bộ G0_checkpoint.json['quality_gate'] khi chấm ĐỘC LẬP.
+
+    SỬA 2026-07-30 (audit toàn diện G0-G10, G0-04 — MEDIUM): trước đây CHỈ
+    run_g0_auto.py (một lượt CHẠY LẠI TOÀN BỘ, kể cả gọi lại PubMed tốn thời
+    gian) mới ghi ``cp["quality_gate"]``. Doctrine + docstring module này đều
+    hướng dẫn bác sĩ, sau khi điền study_meta.json, chạy ĐỘC LẬP
+    ``python tools/g0_quality_gate.py --study <MÃ>`` để chấm lại "không cần
+    gọi lại PubMed" — nhưng đường đó chỉ ghi G0_QUALITY_REPORT.json/.md, để
+    checkpoint đứng yên ở giá trị CŨ. Bất kỳ công cụ nào đọc trực tiếp
+    checkpoint (đài kiểm soát, study_readiness.py) sẽ thấy dữ liệu lỗi thời.
+    """
+    out_dir = Path(out_dir)
+    checkpoint_path = out_dir / "G0_checkpoint.json"
+    checkpoint = _read_json(checkpoint_path)
+    checkpoint["quality_gate"] = {
+        "status": report["status"],
+        "contract_version": report.get("contract_version"),
+        "automated_checks_passed": report.get("automated_checks_passed"),
+        "human_confirmation_complete": report.get("human_confirmation_complete"),
+        "pending_actions": report.get("pending_actions", []),
+    }
+    # Không để needs_input (PICO chưa chốt) ghi đè needs_input NẶNG HƠN đã có
+    # (0 PMID) — mirror đúng guard `if not blocked and ...` của run_g0_auto.py.
+    existing_reason = ((checkpoint.get("needs_input") or {}).get("reason_code"))
+    already_blocked_on_pubmed = existing_reason == GC.REASON_MISSING_PUBMED
+    if report.get("needs_input") and not already_blocked_on_pubmed:
+        checkpoint["needs_input"] = report["needs_input"]
+    checkpoint_path.write_text(
+        json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8")
+    return checkpoint_path
+
+
 def evaluate_study(study: str, out_dir: Path, *, write: bool = True) -> Dict[str, Any]:
     """Chấm lại G0 từ các file đã có — KHÔNG gọi lại PubMed.
 
@@ -678,6 +712,7 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True) -> Dict[str
     )
     if write:
         write_quality_report(study, out_dir, report)
+        refresh_checkpoint(study=study, out_dir=out_dir, report=report)
     return report
 
 
