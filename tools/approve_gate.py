@@ -277,7 +277,10 @@ def _prepare_g2_attestation(
         "schema_version": G2Q.ATTESTATION_SCHEMA,
         "study": args.study,
         "ethics_decision": args.g2_ethics_decision,
-        "ethics_committee_ref": args.reviewer_ref,
+        "ethics_committee_ref": args.g2_ethics_committee_ref or args.reviewer_ref,
+        "ethics_committee_ref_source": (
+            "explicit" if args.g2_ethics_committee_ref else "reviewer_ref_fallback"
+        ),
         "approval_number": args.g2_approval_number,
         "approval_date": args.g2_approval_date,
         "valid_until": args.g2_valid_until,
@@ -323,6 +326,20 @@ def main() -> int:
     ap.add_argument("--decision", default="APPROVED", choices=["APPROVED", "REJECTED", "CONDITIONAL"])
     # G2 hard gate: metadata chỉ bắt buộc khi ghi quyết định APPROVED. Agent
     # không được chạy lệnh này; người có thẩm quyền IRB tự nhập dữ kiện thật.
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G2-F5): --reviewer-ref là định
+    # danh NGƯỜI DUYỆT dùng CHUNG cho MỌI gate/vai trò (help text: "định danh
+    # người duyệt"), không phải mã Hội đồng Đạo đức — trước đây ethics_
+    # committee_ref luôn = reviewer_ref nên validate_attestation() kiểm
+    # "không rỗng" vacuously PASS với bất kỳ giá trị reviewer_ref nào, kể cả
+    # khi đó KHÔNG phải mã hội đồng thật. Cờ này TÙY CHỌN để tách biệt ngữ
+    # nghĩa; thiếu thì fallback về reviewer_ref (giữ nguyên hành vi CLI cũ,
+    # không phá vỡ test/luồng ký hiện có) và G2-AUTO-09 chỉ REVIEW nhắc bác
+    # sĩ, không BLOCK cổng.
+    ap.add_argument(
+        "--g2-ethics-committee-ref",
+        help="Mã/tên viết tắt Hội đồng Đạo đức đã duyệt (khác --reviewer-ref "
+        "là định danh người duyệt chung); thiếu thì fallback về --reviewer-ref",
+    )
     ap.add_argument("--g2-approval-number")
     ap.add_argument("--g2-approval-date")
     ap.add_argument("--g2-valid-until")

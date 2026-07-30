@@ -159,6 +159,159 @@ def test_valid_attestation_and_ledger_can_pass_g2(tmp_path):
     assert report["human_approval_complete"] is True
 
 
+def _row(report, criterion_id):
+    for row in report["automatic_criteria"]:
+        if row["id"] == criterion_id:
+            return row
+    raise AssertionError(f"Không tìm thấy tiêu chí {criterion_id}")
+
+
+def test_g2_auto_08_reviews_missing_scientific_items_without_blocking_status(tmp_path):
+    """G2-F4 phần còn lại (audit toàn diện G0-G10, 2026-07-30): mục 13/14/19/20
+    WHO TRDS (Intervention/Inclusion-Exclusion/Primary-Secondary Outcome) rơi
+    None thật sự thiếu dữ liệu khoa học — build_registration_draft() không có
+    cách lấy PICO thật. Tiêu chí G2-AUTO-08 phải REVIEW (nhắc bác sĩ điền)
+    NHƯNG KHÔNG được gate status tổng — nếu không, MỌI đề tài thật sẽ kẹt vĩnh
+    viễn ở DRAFT vì đường sản xuất thật không bao giờ điền 4 mục này."""
+    base = _package()
+    signed = G2Q.append_attestation(base, _attestation("TEST-G2", base))
+    report = _evaluate(tmp_path, signed, ledger=True)
+
+    row = _row(report, "G2-AUTO-08")
+    assert row["status"] == "REVIEW"
+    assert "#13" in row["evidence"] and "#14" in row["evidence"]
+    assert "#19" in row["evidence"] and "#20" in row["evidence"]
+    # Không gate: cùng input này (registration mặc định thiếu 13/14/19/20) đã
+    # đạt STATUS_APPROVED ở test phía trên — G2-AUTO-08 REVIEW không hạ status.
+    assert report["status"] == G2Q.STATUS_APPROVED
+
+
+def test_g2_auto_08_passes_when_scientific_items_filled(tmp_path):
+    study = "TEST-G2"
+    registration_path = _write_registration(tmp_path, study)
+    document = json.loads(registration_path.read_text(encoding="utf-8"))
+    filled = {13: "Thuốc X 10mg/ngày x 12 tuần", 19: "Tử vong do mọi nguyên nhân lúc 12 tháng",
+              20: "Nhập viện do suy tim; chất lượng sống (KCCQ)"}
+    for item in document["items"]:
+        if item["number"] in filled:
+            item["value"] = filled[item["number"]]
+        elif item["number"] == 14:
+            item["value"] = {"inclusion": "Tuổi >= 18, chẩn đoán xác định",
+                              "exclusion": "Chống chỉ định thuốc nghiên cứu"}
+    registration_path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+
+    package_path = tmp_path / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    package_path.write_text(_package(), encoding="utf-8")
+    report = G2Q.evaluate_g2_quality(
+        study=study,
+        design_code="rct",
+        package_path=package_path,
+        registration_path=registration_path,
+        g1_checkpoint=_g1_confirmed(),
+        meta=_meta(),
+        guardrail_passed=True,
+        ledger_approved=False,
+        today=date(2026, 7, 27),
+    )
+    row = _row(report, "G2-AUTO-08")
+    assert row["status"] == "PASS"
+
+
+def test_g2_auto_09_reviews_ethics_ref_fallback_without_blocking_status(tmp_path):
+    """G2-F5 (audit toàn diện G0-G10, 2026-07-30): attestation cũ (trước khi
+    có cờ --g2-ethics-committee-ref) không có ethics_committee_ref_source —
+    fallback tự nhiên (get() trả None, không phải chuỗi "reviewer_ref_fallback"
+    tường minh) vẫn phải REVIEW, không PASS oan. Đồng thời không được gate
+    status tổng — cùng lý do G2-AUTO-08 (nhiều đề tài đã ký TRƯỚC cờ mới)."""
+    base = _package()
+    signed = G2Q.append_attestation(base, _attestation("TEST-G2", base))
+    report = _evaluate(tmp_path, signed, ledger=True)
+
+    row = _row(report, "G2-AUTO-09")
+    assert row["status"] == "REVIEW"
+    assert report["status"] == G2Q.STATUS_APPROVED
+
+
+def test_g2_auto_09_passes_when_ethics_ref_explicit(tmp_path):
+    base = _package()
+    signed = G2Q.append_attestation(
+        base,
+        _attestation(
+            "TEST-G2", base,
+            ethics_committee_ref_source="explicit",
+        ),
+    )
+    report = _evaluate(tmp_path, signed, ledger=True)
+
+    row = _row(report, "G2-AUTO-09")
+    assert row["status"] == "PASS"
+
+
+def test_cli_g2_ethics_committee_ref_flag_records_explicit_source(tmp_path):
+    """Đường thật: --g2-ethics-committee-ref tách biệt khỏi --reviewer-ref
+    khiến attestation ghi 'explicit' và G2-AUTO-09 PASS ngay lần ký đầu."""
+    study = "PYTEST-G2-ETHICS-REF-CLI"
+    study_dir = REPO_ROOT / "exports" / study
+    shutil.rmtree(study_dir, ignore_errors=True)
+    study_dir.mkdir(parents=True)
+    try:
+        package_path = study_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+        package_path.write_text(_package(), encoding="utf-8")
+        _write_registration(study_dir, study)
+        (study_dir / "G1_checkpoint.json").write_text(
+            json.dumps(_g1_confirmed(), ensure_ascii=False), encoding="utf-8"
+        )
+        (study_dir / "study_meta.json").write_text(
+            json.dumps(_meta(), ensure_ascii=False), encoding="utf-8"
+        )
+        (study_dir / "G2_checkpoint.json").write_text(
+            json.dumps({
+                "study": study,
+                "gate": "G2",
+                "design_code": "rct",
+                "quality_contract_version": G2Q.QUALITY_CONTRACT_VERSION,
+                "guardrail": {"passed": True, "errors": []},
+                "artifacts": {"A3_markdown": str(package_path)},
+            }, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        key_path = tmp_path / "gate_approval_key"
+        key_path.write_text("pytest-g2-ethics-ref-key", encoding="utf-8")
+        env = os.environ.copy()
+        env["EBM_GATE_KEY_PATH"] = str(key_path)
+        result = subprocess.run(
+            [
+                PYTHON, str(TOOLS_DIR / "approve_gate.py"),
+                "--study", study, "--gate", "G2", "--artifact", str(package_path),
+                "--reviewer-role", "IRB_ETHICS_COMMITTEE", "--reviewer-ref", "bs-luan",
+                "--g2-ethics-committee-ref", "HDDD-BVQY175-2026",
+                "--g2-approval-number", "IRB-2026-002",
+                "--g2-approval-date", "2026-07-20", "--g2-valid-until", "2027-07-20",
+                "--g2-protocol-version", "2.1", "--g2-icf-version", "2.0",
+                "--g2-ethics-decision", "APPROVED",
+                "--g2-recruitment-mode", "PROSPECTIVE_NEW_PARTICIPANTS",
+                "--g2-registration-status", "REGISTERED",
+                "--g2-registry", "ClinicalTrials.gov",
+                "--g2-registration-id", "NCT00000002",
+                "--g2-registration-date", "2026-07-25",
+                "--g2-first-enrolment-date", "2026-08-15",
+            ],
+            cwd=REPO_ROOT, env=env, capture_output=True, text=True, timeout=60,
+        )
+        checkpoint = json.loads(
+            (study_dir / "G2_checkpoint.json").read_text(encoding="utf-8")
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert checkpoint["g2_status"] == "LOCKED"
+        attestation = G2Q.extract_attestation(
+            package_path.read_text(encoding="utf-8")
+        )
+        assert attestation["ethics_committee_ref"] == "HDDD-BVQY175-2026"
+        assert attestation["ethics_committee_ref_source"] == "explicit"
+    finally:
+        shutil.rmtree(study_dir, ignore_errors=True)
+
+
 def test_protocol_version_mismatch_fails_closed(tmp_path):
     base = _package()
     attestation = _attestation(

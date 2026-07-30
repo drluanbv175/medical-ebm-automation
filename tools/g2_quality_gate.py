@@ -625,6 +625,53 @@ def evaluate_g2_quality(
         "Bổ sung giám sát AE/SAE, DSMB/DMC và stopping rules cho thử nghiệm.",
     ))
 
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G2-F4 phần còn lại — REVIEW-only,
+    # KHÔNG BLOCK): sau khi mục 9/10/12 (G2-F1) đã được vá dùng `topic`, 4 mục
+    # WHO TRDS còn lại rơi None THẬT SỰ là thiếu dữ liệu khoa học của đề tài:
+    # #13 Intervention(s), #14 Key Inclusion/Exclusion Criteria, #19 Primary
+    # Outcome(s), #20 Key Secondary Outcomes. Các mục None KHÁC (1,2,3,4,6,16,
+    # 21 sub-field,22,23,24) là ĐÚNG CHỦ Ý (registry-assigned lúc đăng ký thật/
+    # hậu-nghiên-cứu), không phải khoảng trống. build_registration_draft()
+    # hiện chỉ nhận (study,topic,design_code,design_primary,risk,n_target,
+    # out_dir,generated_at) — không có PICO thật từ G1 checkpoint; thêm tham
+    # số + sửa call site (tools/run_g2_auto.py) là thay đổi LỚN hơn phạm vi
+    # bản vá này, nên chỉ THÊM tiêu chí REVIEW nhắc bác sĩ điền, không tự suy
+    # luận nội dung khoa học (tránh bịa).
+    def _who_trds_value_empty(value: Any) -> bool:
+        if isinstance(value, Mapping):
+            return not any(
+                isinstance(v, str) and v.strip() for v in value.values()
+            )
+        return not (isinstance(value, str) and value.strip())
+
+    reg_items_by_number = {
+        item.get("number"): item
+        for item in (registration.get("items") or [])
+        if isinstance(item, Mapping)
+    }
+    still_empty_scientific = [
+        f"#{number} {name}"
+        for number, name in (
+            (13, "Intervention(s)"),
+            (14, "Key Inclusion and Exclusion Criteria"),
+            (19, "Primary Outcome(s)"),
+            (20, "Key Secondary Outcomes"),
+        )
+        if _who_trds_value_empty(reg_items_by_number.get(number, {}).get("value"))
+    ]
+    automatic.append(_criterion(
+        "G2-AUTO-08",
+        "Mục khoa học WHO TRDS (can thiệp/tiêu chí/kết cục) đã có nội dung thật",
+        "REVIEW" if still_empty_scientific else "PASS",
+        (
+            f"còn trống: {', '.join(still_empty_scientific)}"
+            if still_empty_scientific
+            else "mục 13/14/19/20 đã có nội dung"
+        ),
+        "Điền Intervention(s)/Inclusion-Exclusion/Primary-Secondary Outcome "
+        "từ PICO thật của đề tài (checkpoint G1) trước khi đăng ký thật.",
+    ))
+
     attestation = extract_attestation(package_text)
     attestation_errors = validate_attestation(
         attestation=attestation,
@@ -649,8 +696,46 @@ def evaluate_g2_quality(
         "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt.",
     ))
 
-    auto_blocked = any(row["status"] == "BLOCK" for row in automatic)
-    auto_review = any(row["status"] == "REVIEW" for row in automatic)
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G2-F5 — REVIEW-only, KHÔNG
+    # BLOCK): tools/approve_gate.py::--reviewer-ref dùng CHUNG cho MỌI gate/
+    # vai trò (định danh người duyệt), không phải mã Hội đồng Đạo đức riêng —
+    # trước đây ethics_committee_ref LUÔN = reviewer_ref nên validate_
+    # attestation() (kiểm "không rỗng") vacuously PASS với bất kỳ giá trị
+    # reviewer_ref nào. Cờ mới --g2-ethics-committee-ref (tùy chọn) tách biệt
+    # ngữ nghĩa; khi thiếu, approve_gate.py fallback về reviewer_ref và ghi
+    # "ethics_committee_ref_source": "reviewer_ref_fallback" vào attestation —
+    # tiêu chí này chỉ NHẮC (REVIEW), loại khỏi auto_blocked/auto_review
+    # (cùng G2-AUTO-08 ngay dưới) để không phá vỡ luồng ký hiện có cho các
+    # đề tài đã ký TRƯỚC khi có cờ mới này.
+    ethics_ref_source = attestation.get("ethics_committee_ref_source") if attestation else None
+    # KHÔNG so == "reviewer_ref_fallback": attestation KÝ TRƯỚC khi cờ
+    # --g2-ethics-committee-ref tồn tại không có field này (None), và None
+    # cũng phải REVIEW — chỉ "explicit" (đã dùng cờ mới) mới PASS. Chưa có
+    # attestation nào (chưa ký) thì chưa có gì để nhắc — PASS vacuously,
+    # G2-HUMAN-01 đã tự báo "Chưa có phụ lục quyết định IRB" riêng.
+    automatic.append(_criterion(
+        "G2-AUTO-09",
+        "Mã Hội đồng Đạo đức tách biệt khỏi định danh người duyệt chung",
+        "REVIEW" if attestation and ethics_ref_source != "explicit" else "PASS",
+        f"ethics_committee_ref_source={ethics_ref_source or 'chưa có attestation'}",
+        "Ký lại bằng approve_gate.py --gate G2 kèm --g2-ethics-committee-ref "
+        "để tách mã hội đồng khỏi --reviewer-ref dùng chung.",
+    ))
+
+    # G2-AUTO-08 CỐ Ý loại khỏi auto_blocked/auto_review (cùng khuôn
+    # G9-HUMAN-09/10 ở g9_quality_gate.py): build_registration_draft() trong
+    # ĐƯỜNG SẢN XUẤT THẬT (tools/run_g2_auto.py) không có cách nhận PICO thật
+    # để điền mục 13/14/19/20 — nếu tiêu chí này tham gia auto_review như mọi
+    # tiêu chí khác, MỌI đề tài thật sẽ kẹt vĩnh viễn ở STATUS_DRAFT (không
+    # bao giờ tới APPROVED/LOCKED), trái với ý định gốc "REVIEW-only, KHÔNG
+    # BLOCK cổng" của phát hiện G2-F4 (xác nhận bằng thực nghiệm: test tích
+    # hợp CLI thật test_human_cli_valid_g2_flow_updates_checkpoint_to_pass đỏ
+    # trước khi thêm loại trừ này). Tiêu chí vẫn xuất hiện trong report để bác
+    # sĩ thấy và điền — chỉ không gate tiến trình cổng.
+    _NON_BLOCKING_CRITERIA = ("G2-AUTO-08", "G2-AUTO-09")
+    _status_driving = [row for row in automatic if row["id"] not in _NON_BLOCKING_CRITERIA]
+    auto_blocked = any(row["status"] == "BLOCK" for row in _status_driving)
+    auto_review = any(row["status"] == "REVIEW" for row in _status_driving)
     approval_complete = all(row["status"] == "PASS" for row in approval)
     if auto_blocked:
         status = STATUS_BLOCKED
