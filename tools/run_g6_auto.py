@@ -2533,11 +2533,17 @@ def guardrail(artifact: str, all_scripts_text: str) -> tuple:
         errors.append(f"R5 🔴 Quá ít placeholder ({can_n})")
 
     # R6 — CI patterns
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G6-01 — CRITICAL): CẢ HAI nhánh
+    # if/else trước đây chỉ warnings_list.append(...) — không nhánh nào chạm
+    # errors, nên R6 về mặt CẤU TRÚC không thể tạo lỗi bất kể ci_n bằng bao
+    # nhiêu (kể cả ci_n=0). Đây là lỗi mã nguồn thật (khác R4/R5/R7 vốn chỉ
+    # yếu tín hiệu do boilerplate luôn in cứng) — sửa để nhánh else thật sự
+    # errors.append khi thiếu hẳn yêu cầu báo khoảng tin cậy trong scripts.
     ci_n = len(re.findall(r'95%CI|conf\.int|conf_int|ci_lo|CI_lo|lower 95%', artifact + all_scripts_text))
     if ci_n >= 3:
         warnings_list.append(f"R6 ✅ {ci_n} lần yêu cầu 95%CI")
     else:
-        warnings_list.append("R6 ✅ Cấu trúc CI có trong lệnh phân tích")
+        errors.append(f"R6 🔴 Thiếu yêu cầu báo cáo 95%CI trong artifact/scripts ({ci_n} lần, cần ≥3)")
 
     # R7 — Disclaimer
     if "Cần bác sĩ kiểm chứng" in artifact:
@@ -2846,7 +2852,16 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "",
         "## PHẦN 6 — TIÊU CHÍ QUA CỔNG G6",
         "",
-        "- [ ] **G4 = LOCKED** trước khi xem dữ liệu [CẦN BÁC SĨ XÁC NHẬN]",
+        # SỬA 2026-07-30 (audit toàn diện G0-G10, G6-03 — HIGH): cả 6 mục
+        # trước đây LUÔN in "- [ ]" (chưa đạt) bất kể trạng thái thật, dù
+        # main() có sẵn `g4_locked` (đã tính ở đầu hàm này, dùng thật ở PHẦN 1
+        # dòng ~2784) — mục ĐẦU TIÊN vốn là điều kiện DUY NHẤT trong 6 mục có
+        # thể xác định được NGAY tại thời điểm sinh artifact (5 mục còn lại
+        # đòi hỏi chạy script/xem dữ liệu/bác sĩ duyệt — những việc xảy ra
+        # SAU khi artifact này đã sinh, nên KHÔNG thể tự động hóa được và
+        # đúng chủ định vẫn là "[ ]" chờ người thật xác nhận).
+        f"- [{'x' if g4_locked else ' '}] **G4 = LOCKED** trước khi xem dữ liệu"
+        + ("" if g4_locked else " [CẦN BÁC SĨ XÁC NHẬN]"),
         "- [ ] **Chạy 01_cleaning.R** — log không lỗi [CẦN BÁC SĨ]",
         f"- [ ] **Table 1 hoàn chỉnh** theo nhóm `{exposure}` — SMD < 0.2 [CẦN]",
         f"- [ ] **Kết quả phân tích chính** ({analysis_name}) điền Bảng 2 [CẦN]",
