@@ -124,6 +124,72 @@ def blocked_detail(cp: Dict[str, Any]) -> Optional[str]:
     return f"{msg} → {cmd}" if cmd else msg
 
 
+def locked_analysis_dataset_blockers(
+    study: str, data_arg: str, repo_root: Optional[Path] = None,
+) -> Tuple[list, Dict[str, Any]]:
+    """(danh sách lý do chặn, manifest) khi ``--data`` KHÔNG phải dataset đã khóa.
+
+    Rút ra từ ``run_stats_analysis.py::_require_locked_analysis_dataset()`` (đã đúng,
+    có test) để dùng CHUNG — trước 2026-07-30, 4 template CLI mà ``run_g6_auto.py``
+    sinh ra (Cox/HR, case-control/OR, và 2 bản sensitivity) hoàn toàn KHÔNG kiểm việc
+    này: chúng chỉ gọi ``_check_sap_db_locked()`` — xác nhận G2/G4/G5 đã LOCKED ở CẤP
+    ĐỀ TÀI — rồi ``pd.read_csv(data_path)`` bất kỳ file nào. Sau khi khóa dữ liệu LẦN
+    ĐẦU, ai đó có thể chạy lại các script đó trên CSV bất kỳ (cắt gọt/sửa/thử nhiều tổ
+    hợp) và mỗi lần đều "qua cổng" vì cổng đó không nhìn vào NỘI DUNG file — đúng
+    p-hacking/data dredging mà bất biến "khóa SAP trước khi xem dữ liệu" (G4→G5→G6)
+    được thiết kế để ngăn (audit toàn diện G0-G10, phát hiện G6-02, CRITICAL).
+
+    Đây là HÀM DUY NHẤT tính blocker — mọi caller (``run_stats_analysis.py`` và 4
+    template của ``run_g6_auto.py``) đều gọi hàm này rồi tự in/thoát theo văn phong
+    riêng, để tránh đúng lỗi "sửa 1 nơi quên N nơi khác" đã xảy ra nhiều lần trong
+    dự án này với logic ``ledger_approved()``.
+
+    Tôn trọng override ``study_meta.json["real_data_lock"]["manifest"]`` (do
+    ``lock_analysis_dataset.py`` ghi) giống hệt
+    ``run_stats_analysis.py::_data_lock_manifest_path()`` — không tự ý mặc định
+    ``DATA_LOCK_manifest.json`` khi đề tài đã pin đường dẫn khác.
+    """
+    root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
+    study_dir = root / "exports" / str(study)
+    meta = load_study_meta(study_dir)
+    manifest_rel = (meta.get("real_data_lock") or {}).get("manifest")
+    manifest_path = study_dir / manifest_rel if manifest_rel else study_dir / "DATA_LOCK_manifest.json"
+    manifest: Dict[str, Any] = {}
+    if manifest_path.exists():
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+            manifest = {}
+    blockers: list = []
+    if not manifest:
+        blockers.append("missing_DATA_LOCK_manifest")
+    elif manifest.get("status") != "LOCKED_FOR_ANALYSIS":
+        blockers.append(f"manifest_status_not_locked:{manifest.get('status')}")
+    elif manifest.get("analysis_allowed") is not True:
+        blockers.append("analysis_allowed_false")
+
+    locked_rel = manifest.get("locked_dataset_path") if manifest else None
+    locked_path = study_dir / locked_rel if locked_rel else None
+    provided_path = Path(data_arg)
+    if not provided_path.exists():
+        blockers.append("provided_data_missing")
+    if not locked_path:
+        blockers.append("locked_dataset_path_missing")
+    elif not locked_path.exists():
+        blockers.append("locked_dataset_missing")
+    elif provided_path.exists() and provided_path.resolve() != locked_path.resolve():
+        blockers.append("provided_data_is_not_locked_dataset")
+
+    expected_sha = manifest.get("sha256") if manifest else None
+    if locked_path and locked_path.exists():
+        actual_sha = hashlib.sha256(locked_path.read_bytes()).hexdigest()
+        if not expected_sha:
+            blockers.append("locked_dataset_checksum_missing")
+        elif actual_sha != expected_sha:
+            blockers.append("locked_dataset_checksum_mismatch")
+    return blockers, manifest
+
+
 def g2_quality_contract_satisfied(
     checkpoint: Dict[str, Any],
     meta: Optional[Dict[str, Any]] = None,

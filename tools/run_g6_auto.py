@@ -973,6 +973,40 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         sys.exit(1)
 
 
+
+
+def _require_locked_dataset(data_arg: str) -> None:
+    """VÁ 2026-07-30 (audit G0-G10, G6-02 — CRITICAL): _check_sap_db_locked() ở trên
+    chỉ xác nhận G2/G4/G5 đã LOCKED ở CẤP ĐỀ TÀI — không hề nhìn vào NỘI DUNG file
+    truyền qua --data. Sau khi khóa dữ liệu LẦN ĐẦU, ai đó có thể chạy lại script này
+    trên CSV bất kỳ (cắt gọt/sửa/thử nhiều tổ hợp) và vẫn 'qua cổng' — đúng
+    p-hacking/data dredging mà bất biến 'khóa SAP trước khi xem dữ liệu' được thiết
+    kế để ngăn. run_stats_analysis.py (công cụ song song) đã giải đúng vấn đề này
+    bằng gate_contract.locked_analysis_dataset_blockers() (đối chiếu sha256 với
+    DATA_LOCK_manifest.json) — dùng lại CHÍNH hàm đó ở đây, không viết lại logic."""
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[3] / "tools"))
+    import gate_contract as _GC
+    _blockers, _manifest = _GC.locked_analysis_dataset_blockers("__STUDY__", data_arg)
+    if _blockers:
+        print("✗ DỪNG: DATA LOCK — --data phải là dataset phân tích ĐÃ KHÓA (không phải "
+              "CSV bất kỳ) — chống p-hacking/data dredging sau khi đề tài đã khóa dữ liệu.")
+        print(f"   File --data: {data_arg}")
+        _locked_rel = _manifest.get("locked_dataset_path") if _manifest else None
+        if _locked_rel:
+            print(f"   Dataset khóa kỳ vọng: exports/__STUDY__/{_locked_rel}")
+        print("   Lý do:")
+        for _b in _blockers:
+            print(f"   - {_b}")
+        print("   Khóa dữ liệu bằng: python tools/lock_analysis_dataset.py --study __STUDY__ "
+              "--clean-data <df_clean.csv> --query-log <query_log.csv> --lock-date <YYYY-MM-DD> "
+              "--approved-by <PI> --sap-version <x.y> --confirm-deidentified --confirm-clean-copy "
+              "--confirm-no-open-query --confirm-sap-locked")
+        _sys.exit(1)
+    print("✓ DATA LOCK: --data khớp dataset đã khóa (checksum xác nhận).")
+
+
 def fmt_pval(p):
     return "<0.001" if p < 0.001 else f"{p:.3f}"
 
@@ -1198,6 +1232,7 @@ def export_docx(tbl1, cox_res, km_path, out_path, study_name, exposure, outcome,
 def main():
     args = parse_args()
     _check_sap_db_locked(args.i_confirm_sap_locked, args.i_confirm_irb_approved)
+    _require_locked_dataset(args.data)
     data_path  = Path(args.data)
     out_dir    = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1414,6 +1449,40 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         sys.exit(1)
 
 
+
+
+def _require_locked_dataset(data_arg: str) -> None:
+    """VÁ 2026-07-30 (audit G0-G10, G6-02 — CRITICAL): _check_sap_db_locked() ở trên
+    chỉ xác nhận G2/G4/G5 đã LOCKED ở CẤP ĐỀ TÀI — không hề nhìn vào NỘI DUNG file
+    truyền qua --data. Sau khi khóa dữ liệu LẦN ĐẦU, ai đó có thể chạy lại script này
+    trên CSV bất kỳ (cắt gọt/sửa/thử nhiều tổ hợp) và vẫn 'qua cổng' — đúng
+    p-hacking/data dredging mà bất biến 'khóa SAP trước khi xem dữ liệu' được thiết
+    kế để ngăn. run_stats_analysis.py (công cụ song song) đã giải đúng vấn đề này
+    bằng gate_contract.locked_analysis_dataset_blockers() (đối chiếu sha256 với
+    DATA_LOCK_manifest.json) — dùng lại CHÍNH hàm đó ở đây, không viết lại logic."""
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[3] / "tools"))
+    import gate_contract as _GC
+    _blockers, _manifest = _GC.locked_analysis_dataset_blockers("__STUDY__", data_arg)
+    if _blockers:
+        print("✗ DỪNG: DATA LOCK — --data phải là dataset phân tích ĐÃ KHÓA (không phải "
+              "CSV bất kỳ) — chống p-hacking/data dredging sau khi đề tài đã khóa dữ liệu.")
+        print(f"   File --data: {data_arg}")
+        _locked_rel = _manifest.get("locked_dataset_path") if _manifest else None
+        if _locked_rel:
+            print(f"   Dataset khóa kỳ vọng: exports/__STUDY__/{_locked_rel}")
+        print("   Lý do:")
+        for _b in _blockers:
+            print(f"   - {_b}")
+        print("   Khóa dữ liệu bằng: python tools/lock_analysis_dataset.py --study __STUDY__ "
+              "--clean-data <df_clean.csv> --query-log <query_log.csv> --lock-date <YYYY-MM-DD> "
+              "--approved-by <PI> --sap-version <x.y> --confirm-deidentified --confirm-clean-copy "
+              "--confirm-no-open-query --confirm-sap-locked")
+        _sys.exit(1)
+    print("✓ DATA LOCK: --data khớp dataset đã khóa (checksum xác nhận).")
+
+
 def fmt_pval(p):
     return "<0.001" if p < 0.001 else f"{p:.3f}"
 
@@ -1591,6 +1660,7 @@ def export_docx(tbl1, lr_res, out_path, study_name, exposure, outcome, matched):
 def main():
     args = parse_args()
     _check_sap_db_locked(args.i_confirm_sap_locked, args.i_confirm_irb_approved)
+    _require_locked_dataset(args.data)
     data_path  = Path(args.data)
     out_dir    = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1790,6 +1860,28 @@ _SENSITIVITY_TEMPLATE = (
     "        raise SystemExit(\'DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that (chu ky). \'\n"
     "                         \'--i-confirm-sap-locked chi thay checkpoint-file, KHONG thay duoc ledger.\')\n"
     "\n"
+    "\n"
+    "def _require_locked_dataset(data_arg):\n"
+    "    # Va 2026-07-30 (audit G0-G10, G6-02 -- CRITICAL): _check_sap_db_locked()\n"
+    "    # o tren chi xac nhan G2/G4/G5 da LOCKED o CAP DE TAI -- khong nhin vao\n"
+    "    # NOI DUNG file --data. Dung lai gate_contract.locked_analysis_dataset_\n"
+    "    # blockers() (doi chieu sha256 voi DATA_LOCK_manifest.json).\n"
+    "    import sys as _sys3\n"
+    "    from pathlib import Path as _Path3\n"
+    "    _sys3.path.insert(0, str(_Path3(__file__).resolve().parents[3] / 'tools'))\n"
+    "    import gate_contract as _GC3\n"
+    "    _blockers, _manifest = _GC3.locked_analysis_dataset_blockers('__STUDY__', data_arg)\n"
+    "    if _blockers:\n"
+    "        print('DUNG: DATA LOCK -- --data phai la dataset da khoa (chong p-hacking).')\n"
+    "        print(f'   File --data: {data_arg}')\n"
+    "        _locked_rel = _manifest.get('locked_dataset_path') if _manifest else None\n"
+    "        if _locked_rel:\n"
+    "            print(f'   Dataset khoa ky vong: exports/__STUDY__/{_locked_rel}')\n"
+    "        for _b in _blockers:\n"
+    "            print(f'   - {_b}')\n"
+    "        raise SystemExit(1)\n"
+    "    print('OK DATA LOCK: --data khop dataset da khoa (checksum xac nhan).')\n"
+    "\n"
     "def run_cox_sub(df, time_col, outcome, exposure, avail):\n"
     "    cols = [time_col, outcome, exposure]+avail\n"
     "    df2  = df[[c for c in cols if c in df.columns]].dropna()\n"
@@ -1823,6 +1915,7 @@ _SENSITIVITY_TEMPLATE = (
     "    parser.add_argument(\'--i-confirm-irb-approved\', action=\'store_true\')\n"
     "    args = parser.parse_args()\n"
     "    _check_sap_db_locked(args.i_confirm_sap_locked, args.i_confirm_irb_approved)\n"
+    "    _require_locked_dataset(args.data)\n"
     "    exposure   = args.exposure\n"
     "    outcome    = args.outcome\n"
     "    time_col   = args.time\n"
@@ -2019,6 +2112,40 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
                           '--i-confirm-sap-locked chi thay checkpoint-file, KHONG thay duoc ledger.')
 
 
+
+
+def _require_locked_dataset(data_arg: str) -> None:
+    """VÁ 2026-07-30 (audit G0-G10, G6-02 — CRITICAL): _check_sap_db_locked() ở trên
+    chỉ xác nhận G2/G4/G5 đã LOCKED ở CẤP ĐỀ TÀI — không hề nhìn vào NỘI DUNG file
+    truyền qua --data. Sau khi khóa dữ liệu LẦN ĐẦU, ai đó có thể chạy lại script này
+    trên CSV bất kỳ (cắt gọt/sửa/thử nhiều tổ hợp) và vẫn 'qua cổng' — đúng
+    p-hacking/data dredging mà bất biến 'khóa SAP trước khi xem dữ liệu' được thiết
+    kế để ngăn. run_stats_analysis.py (công cụ song song) đã giải đúng vấn đề này
+    bằng gate_contract.locked_analysis_dataset_blockers() (đối chiếu sha256 với
+    DATA_LOCK_manifest.json) — dùng lại CHÍNH hàm đó ở đây, không viết lại logic."""
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parents[3] / "tools"))
+    import gate_contract as _GC
+    _blockers, _manifest = _GC.locked_analysis_dataset_blockers("__STUDY__", data_arg)
+    if _blockers:
+        print("✗ DỪNG: DATA LOCK — --data phải là dataset phân tích ĐÃ KHÓA (không phải "
+              "CSV bất kỳ) — chống p-hacking/data dredging sau khi đề tài đã khóa dữ liệu.")
+        print(f"   File --data: {data_arg}")
+        _locked_rel = _manifest.get("locked_dataset_path") if _manifest else None
+        if _locked_rel:
+            print(f"   Dataset khóa kỳ vọng: exports/__STUDY__/{_locked_rel}")
+        print("   Lý do:")
+        for _b in _blockers:
+            print(f"   - {_b}")
+        print("   Khóa dữ liệu bằng: python tools/lock_analysis_dataset.py --study __STUDY__ "
+              "--clean-data <df_clean.csv> --query-log <query_log.csv> --lock-date <YYYY-MM-DD> "
+              "--approved-by <PI> --sap-version <x.y> --confirm-deidentified --confirm-clean-copy "
+              "--confirm-no-open-query --confirm-sap-locked")
+        _sys.exit(1)
+    print("✓ DATA LOCK: --data khớp dataset đã khóa (checksum xác nhận).")
+
+
 def run_logistic_sub(df, outcome, exposure, avail):
     cols = [outcome, exposure] + avail
     df2 = df[[c for c in cols if c in df.columns]].dropna().astype(float)
@@ -2055,6 +2182,7 @@ def main():
     parser.add_argument('--i-confirm-irb-approved', action='store_true')
     args = parser.parse_args()
     _check_sap_db_locked(args.i_confirm_sap_locked, args.i_confirm_irb_approved)
+    _require_locked_dataset(args.data)
     exposure = args.exposure
     outcome = args.outcome
     covariates = [c.strip() for c in args.covariates.split(',') if c.strip()]

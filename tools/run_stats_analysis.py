@@ -1035,37 +1035,18 @@ def _data_lock_manifest_path(study: str) -> Path:
 
 
 def _require_locked_analysis_dataset(study: str, data_arg: str) -> dict:
-    """Chặn phân tích chính nếu --data không phải dataset đã khóa trong manifest."""
+    """Chặn phân tích chính nếu --data không phải dataset đã khóa trong manifest.
+
+    SỬA 2026-07-30 (audit G0-G10, G6-02): logic tính blocker rút ra thành
+    ``gate_contract.locked_analysis_dataset_blockers()`` — dùng CHUNG với 4 template
+    CLI mà ``run_g6_auto.py`` sinh ra (trước đây hoàn toàn không kiểm việc này). Hàm
+    này chỉ còn giữ phần in/thoát theo văn phong đã có, không tính lại blocker.
+    """
     study_dir = Path("exports") / study
     manifest_path = _data_lock_manifest_path(study)
-    manifest = _load_json(manifest_path)
-    blockers = []
-    if not manifest:
-        blockers.append("missing_DATA_LOCK_manifest")
-    elif manifest.get("status") != "LOCKED_FOR_ANALYSIS":
-        blockers.append(f"manifest_status_not_locked:{manifest.get('status')}")
-    elif manifest.get("analysis_allowed") is not True:
-        blockers.append("analysis_allowed_false")
-
+    blockers, manifest = GC.locked_analysis_dataset_blockers(study, data_arg)
     locked_rel = manifest.get("locked_dataset_path") if manifest else None
     locked_path = study_dir / locked_rel if locked_rel else None
-    provided_path = Path(data_arg)
-    if not provided_path.exists():
-        blockers.append("provided_data_missing")
-    if not locked_path:
-        blockers.append("locked_dataset_path_missing")
-    elif not locked_path.exists():
-        blockers.append("locked_dataset_missing")
-    elif provided_path.exists() and provided_path.resolve() != locked_path.resolve():
-        blockers.append("provided_data_is_not_locked_dataset")
-
-    expected_sha = manifest.get("sha256") if manifest else None
-    if locked_path and locked_path.exists():
-        actual_sha = _sha256_file(locked_path)
-        if not expected_sha:
-            blockers.append("locked_dataset_checksum_missing")
-        elif actual_sha != expected_sha:
-            blockers.append("locked_dataset_checksum_mismatch")
 
     if blockers:
         print("✗ DỪNG: DATA LOCK — --data phải là dataset phân tích đã khóa.")
