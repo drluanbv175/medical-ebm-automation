@@ -235,7 +235,11 @@ class TestG3G4QualitativeSampleSize:
 class TestG7QualitativeChecklist:
     def test_reporting_checklist_is_srqr_not_strobe(self):
         std, n_items = G7.REPORTING_CHECKLISTS["qualitative"]
-        assert std == "SRQR 2014"
+        # SỬA 2026-07-30 (G7-F5): nhãn nay làm rõ SRQR là chuẩn ĐỊNH TÍNH NÓI
+        # CHUNG (COREQ hẹp hơn — phỏng vấn/nhóm tiêu điểm) thay vì chỉ "SRQR
+        # 2014" trần trụi — kiểm bằng startswith thay vì so khớp tuyệt đối.
+        assert std.startswith("SRQR 2014")
+        assert "STROBE" not in std and "CONSORT" not in std
         assert n_items == 21
 
     def test_checklist_items_full_21_and_all_manual(self):
@@ -258,3 +262,35 @@ class TestG7QualitativeChecklist:
         items = G7.CHECKLIST_ITEMS.get("qualitative", G7.CHECKLIST_ITEMS.get("cohort", []))
         cohort_items = G7.CHECKLIST_ITEMS["cohort"]
         assert items != cohort_items
+
+    def test_render_checklist_block_does_not_false_flip_manual_items_to_auto(self):
+        """Hồi quy G7-F3 (audit toàn diện G0-G10, 2026-07-30): trước bản vá,
+        _render_checklist_block() ép is_auto=True cho bất kỳ mục nào có MÔ TẢ
+        TĨNH tình cờ chứa từ khóa chung chung ("thiết kế", "irb"...), bất kể
+        auto_filled thật của mục đó. Mục 9 của checklist SRQR (auto_filled=
+        False — "Vấn đề đạo đức — chấp thuận IRB...") từng bị hiển thị nhầm
+        thành "☑ Auto" chỉ vì mô tả chứa chữ "irb"/"đạo đức"; mục 1a của
+        checklist STROBE cohort (auto_filled=False — nhắc tới "thiết kế
+        cohort") cũng bị flip tương tự. Kiểm cả 2 design_code."""
+        md_qual, auto_count_qual, _ = G7._render_checklist_block(
+            G7.CHECKLIST_ITEMS["qualitative"], "SRQR 2014", 21
+        )
+        assert auto_count_qual == 0, (
+            "Mọi mục SRQR có auto_filled=False — không mục nào được hiện ☑ Auto"
+        )
+        for line in md_qual.splitlines():
+            if line.startswith("| 9 |"):
+                assert "☐ [CẦN]" in line and "☑ Auto" not in line
+                break
+        else:
+            raise AssertionError("Không tìm thấy dòng mục 9 trong bảng checklist")
+
+        md_cohort, _auto_count_cohort, _ = G7._render_checklist_block(
+            G7.CHECKLIST_ITEMS["cohort"], "STROBE 2007", 22
+        )
+        for line in md_cohort.splitlines():
+            if line.startswith("| 1a |"):
+                assert "☐ [CẦN]" in line and "☑ Auto" not in line
+                break
+        else:
+            raise AssertionError("Không tìm thấy dòng mục 1a trong bảng checklist")

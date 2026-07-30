@@ -38,7 +38,10 @@ BA TRẠNG THÁI
 
 GIỚI HẠN PHÁN ĐỊNH: ``PASS_G7_CONFIRMED`` KHÔNG có nghĩa bản thảo tốt, đúng khoa
 học, hay đáng đăng. Nó chỉ nói: không còn chỗ trống, không còn khẳng định về việc
-chưa làm, và người thật đã ký nhận. Thẩm định khoa học là việc của G8.
+chưa làm, và người thật đã xác nhận (SỬA 2026-07-30, audit toàn diện G0-G10,
+G7-F4: G7 KHÔNG có trong ``_GATE_REQUIRED_STAKEHOLDERS`` của gate_contract.py —
+đây là xác nhận nội dung, không phải chữ ký mật mã như G2/G4/G5/G8/G9/G10).
+Thẩm định khoa học là việc của G8.
 
 Chạy lại độc lập (không sinh lại bản thảo, không ghi đè bản bác sĩ đã sửa):
     python tools/g7_quality_gate.py --study <MÃ-ĐỀ-TÀI>

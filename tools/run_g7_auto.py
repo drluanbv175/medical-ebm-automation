@@ -78,7 +78,15 @@ REPORTING_CHECKLISTS: dict[str, tuple[str, int]] = {
     # O'Brien BC et al. Acad Med 2014;89(9):1245-1251) là chuẩn TỔNG QUÁT cho
     # định tính nói chung (COREQ hẹp hơn — chỉ phỏng vấn/nhóm tiêu điểm), đúng
     # theo doctrine nghien-cuu-dinh-tinh.md dòng 36. 21 mục chính thức.
-    "qualitative":     ("SRQR 2014",      21),
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G7-F5): nhãn TRƯỚC ĐÂY chỉ ghi
+    # "SRQR 2014" trong khi REPORTING_STANDARDS['qualitative'] (dòng ~79 của
+    # tools/run_g1_auto.py) đã ghi ĐẦY ĐỦ hơn "COREQ (phỏng vấn/nhóm tiêu
+    # điểm) / SRQR (định tính nói chung)" — 2 cổng cùng thiết kế nhưng lệch
+    # nhãn. 21 mục ở đây ĐÚNG là số mục SRQR thật (COREQ có 32 mục, một con số
+    # khác hẳn) nên std_total_items GIỮ NGUYÊN — chỉ làm rõ CHUỖI HIỂN THỊ để
+    # không ngụ ý bảng 21-mục này cũng thỏa COREQ.
+    "qualitative":     ("SRQR 2014 (định tính nói chung; dùng COREQ nếu là "
+                         "phỏng vấn/nhóm tiêu điểm)", 21),
     # THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11, dimension
     # g6_g7_depth_and_artifact_map): "economic" (CHEERS 2022) — TRƯỚC ĐÂY
     # THIẾU HẲN dù kinh-te-y-te.md + dieu-phoi-nghien-cuu.md đã tuyên bố "G7
@@ -1379,7 +1387,8 @@ def generate_manuscript(
         "đề xuất thiết kế (G1), soạn hồ sơ đạo đức (G2), tính cỡ mẫu (G3), "
         "và sinh skeleton bản thảo (G7). "
         "Mọi nội dung khoa học được tác giả kiểm chứng độc lập. "
-        "AI không được liệt kê là tác giả (ICMJE 2023).  ",
+        "AI không được liệt kê là tác giả (ICMJE Recommendations, Updated "
+        "January 2026 — Mục V).  ",
         "",
         "**Đóng góp tác giả (CRediT):**  ",
         "[CẦN — Conceptualization: ...; Methodology: ...; Data collection: ...; "
@@ -1415,14 +1424,6 @@ def generate_manuscript(
 # 5. SINH CHECKLIST BÁO CÁO
 # ════════════════════════════════════════════════════════════════════════════
 
-# Tự động đánh dấu một số mục dựa trên dữ liệu có sẵn (dùng chung cho checklist
-# chính VÀ checklist phụ trợ specialist_modules — tách ra 2026-07-23, vòng 11).
-_CHECKLIST_AUTO_FILLED_PATTERNS = {
-    "tóm tắt", "thiết kế", "cỡ mẫu", "đăng ký", "ethics", "irb", "design",
-    "abstract", "structure", "reporting standard", "background", "protocol"
-}
-
-
 def _render_checklist_block(items: list, reporting_std: str, std_total_items: int) -> tuple[str, int, int]:
     """Sinh 1 khối bảng checklist (header+rows+footer) cho MỘT chuẩn báo cáo.
     Trả về (markdown, auto_count, row_total) — tách từ generate_checklist()
@@ -1437,8 +1438,13 @@ def _render_checklist_block(items: list, reporting_std: str, std_total_items: in
     auto_count = 0
     rows = []
     for item_id, desc, auto in items:
-        desc_lower = desc.lower()
-        is_auto = auto or any(p in desc_lower for p in _CHECKLIST_AUTO_FILLED_PATTERNS)
+        # SỬA 2026-07-30 (audit toàn diện G0-G10, G7-F3): trước đây còn ép
+        # is_auto=True nếu MÔ TẢ TĨNH của mục checklist tình cờ chứa từ khóa
+        # chung chung ("thiết kế", "irb"...) — khiến các mục auto_flag=False
+        # do người viết chuẩn hóa cố ý (vd mục IRB approval ở nhóm qualitative)
+        # bị đánh dấu "☑ Auto" sai, dù mô tả không hề liên quan tới việc IRB đã
+        # duyệt hay chưa. Chỉ còn dùng đúng flag đã tuyển chọn tay cho từng mục.
+        is_auto = auto
         if is_auto:
             status = "☑ Auto"
             note = "§ tương ứng trong A8"
