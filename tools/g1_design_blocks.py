@@ -685,7 +685,7 @@ thuyết về hiệu quả can thiệp.
 
 ⚠ "EPV ≥ 10" chỉ là kiểm tra SƠ BỘ bổ sung, KHÔNG phải tiêu chí quyết định — ngưỡng này
   bị y văn phương pháp luận hiện hành coi là thiếu cơ sở lý thuyết chắc chắn (van Smeden
-  M et al., BMC Med Res Methodol 2016, PMC5122171). Ưu tiên tính trực tiếp bằng
+  M et al., BMC Med Res Methodol 2016;16:163, PMID 27881078). Ưu tiên tính trực tiếp bằng
   `pmsampsize` và phối hợp agent `co-mau-nghien-cuu`/`mo-hinh-tien-luong`."""
 
 _SAP12_SR_MA = """KHÔNG có α/power theo nghĩa của thử nghiệm — tổng quan hệ thống không tuyển

@@ -187,13 +187,15 @@ kèm cảnh báo quá khớp rõ ràng — chọn phương án TRƯỚC khi khó
 > nghiệm CŨ, không phải quy luật vững chắc:** ngưỡng này bắt nguồn từ Peduzzi et al.
 > 1996 nhưng y văn phương pháp luận hiện hành coi nó THIẾU CƠ SỞ LÝ THUYẾT chắc chắn
 > (van Smeden M et al., "No rationale for 1 variable per 10 events criterion for
-> binary logistic regression analysis", BMC Med Res Methodol 2016 — PMC5122171).
+> binary logistic regression analysis", BMC Med Res Methodol 2016;16:163 — PMID 27881078).
 > Thực hành hiện đại khuyến nghị TÍNH TRỰC TIẾP cỡ mẫu tối thiểu cho mô hình đa biến
 > bằng công cụ như `pmsampsize` (Riley RD et al., "Minimum sample size for developing
 > a multivariable prediction model", Stat Med 2019, 2 phần — nhắm mục tiêu shrinkage/
 > overfitting/độ chính xác ước lượng trực tiếp) thay vì áp một ngưỡng sự kiện cố định.
 > Dùng EPV/EPP ≥ 10 như một kiểm tra SƠ BỘ bổ sung, KHÔNG phải tiêu chí quyết định
-> duy nhất để khóa SAP — đặc biệt với thiết kế chẩn đoán/tiên lượng (mục [D]), ưu
+> duy nhất để khóa SAP — đặc biệt với thiết kế tiên lượng/mô hình dự đoán (mục
+> [D2] — KHÔNG áp dụng cho [D1] chẩn đoán, vốn dùng cỡ mẫu theo bề rộng 95%CI
+> chứ không dùng EPV/EPP), ưu
 > tiên phối hợp với agent `co-mau-nghien-cuu`/`mo-hinh-tien-luong` để tính bằng
 > `pmsampsize` khi khả thi.
 
@@ -322,13 +324,31 @@ Phân tích giữa kỳ: alpha spending O'Brien-Fleming (nếu có DSMB)
 Báo cáo: CONSORT 2025 + Extension phù hợp
 ```
 
-### [D] Nghiên cứu chẩn đoán / tiên lượng (dự đoán)
+### [D1] Nghiên cứu chẩn đoán (diagnostic accuracy)
+<!-- SỬA 2026-07-30 (audit toàn diện G0-G10, G1-F5): template [D] cũ gộp
+     chung diagnostic và prediction dưới MỘT cỡ mẫu "EPP>=10" — mâu thuẫn
+     với ghi chú ngay phía trên (dòng 186-198) tự nói EPV/EPP là bằng chứng
+     YẾU, và với code thật: tools/g1_design_blocks.py map design_code
+     "diagnostic"→_BLOCK_DIAGNOSTIC (STARD, cỡ mẫu theo bề rộng 95%CI) và
+     "prediction"→_BLOCK_PREDICTION (TRIPOD+AI, KHÔNG dùng EPV/EPP làm
+     ngưỡng quyết định) là 2 block SAP §12 HOÀN TOÀN RIÊNG — template ở đây
+     phải khớp, không được gộp lại thành một mục [D] duy nhất. -->
+```
+Kết cục: độ nhạy / độ đặc hiệu / AUC so với tiêu chuẩn tham chiếu (reference standard)
+Cỡ mẫu: theo bề rộng 95%CI mong muốn của độ nhạy/độ đặc hiệu (KHÔNG dùng EPV/EPP)
+Kiểm sai lệch: QUADAS-2/QUADAS-C theo đúng thiết kế
+Báo cáo: STARD 2015
+```
+
+### [D2] Nghiên cứu tiên lượng / mô hình dự đoán (prediction model)
 ```
 Kết cục: độ nhạy / độ đặc hiệu / AUC / C-statistic
 Mô hình: logistic regression → điểm / nomogram
 Kiểm nội giá trị: bootstrap (B=200) → optimism-corrected C-statistic
 Kiểm hiệu chuẩn: calibration plot + Hosmer-Lemeshow
-Cỡ mẫu: EPP >= 10 (Events Per Predictor Parameter)
+Cỡ mẫu: KHÔNG dùng EPV/EPP >= 10 làm ngưỡng quyết định duy nhất (bằng
+        chứng yếu — PMID 27881078); ưu tiên pmsampsize/Riley 2019, EPV chỉ
+        là kiểm sơ bộ bổ sung
 Báo cáo: TRIPOD+AI (2024)
 ```
 

@@ -921,11 +921,19 @@ def evaluate_g1_quality(
     )
     automatic.append(_criterion(
         "G1-AUTO-06",
-        "Evidence Ledger có ít nhất một định danh truy nguyên",
+        # SỬA 2026-07-30 (audit toàn diện G0-G10, G1-F6): nhãn CŨ "có ít nhất
+        # một định danh truy nguyên" dễ đọc nhầm là định danh đã được XÁC
+        # MINH tồn tại thật — hàm này chỉ so khớp CHUỖI PMID/DOI xuất hiện
+        # case-insensitive trong text Evidence Ledger, KHÔNG gọi PubMed/
+        # Crossref. Xác minh tồn tại thật thuộc cổng A12 (kiem-chung-trich-dan),
+        # không phải G1 (G1 chạy thường xuyên, không có rate-limit/cache
+        # mạng như A12 — quyết định phạm vi, không thêm gọi mạng ở đây).
+        "Có định danh PMID/DOI khớp chuỗi trong Evidence Ledger (CHƯA xác "
+        "minh qua PubMed/Crossref — việc đó thuộc cổng A12 kiem-chung-trich-dan)",
         "PASS" if identifiers and ledger_traceable else "REVIEW",
         (
-            f"{len(identifiers)} PMID/DOI được thu; "
-            f"ledger_traceable={ledger_traceable}"
+            f"{len(identifiers)} PMID/DOI được thu, ledger_traceable={ledger_traceable} "
+            "(khớp CHUỖI, KHÔNG gọi PubMed để xác minh tồn tại)"
         ),
         "Bổ sung Evidence Ledger có PMID/DOI thật; không bịa nguồn.",
     ))

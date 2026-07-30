@@ -221,6 +221,20 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
             ],
             "required": True,
         },
+        {
+            # SỬA 2026-07-30 (audit toàn diện G0-G10, G1-F4): mọi gate khác từ
+            # G0 tới G10 đều đăng ký báo cáo chất lượng của chính nó ở đây —
+            # G1 là gate DUY NHẤT bị bỏ sót dù g1_quality_gate.py đã ghi file
+            # này ra out_dir/'G1_QUALITY_REPORT.json' từ lâu. required=False
+            # (giống G3/G4/G7/G8) là CÓ CHỦ ĐÍCH: fixture ở thư mục gốc
+            # (tools/verify_research_gate_contracts.py) chỉ dựng 5 artifact
+            # A1b/A2/A2b/A13/A13b cho G1, không dựng G1_QUALITY_REPORT.json —
+            # nâng lên required=True phải sửa đồng thời cả hai file.
+            "key": "g1_quality_report",
+            "label": "Báo cáo chất lượng G1 (thiết kế + đề cương nền)",
+            "patterns": ["G1_QUALITY_REPORT.json"],
+            "required": False,
+        },
     ],
     "G2": [
         {
