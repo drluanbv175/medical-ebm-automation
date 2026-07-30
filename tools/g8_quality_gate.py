@@ -361,12 +361,36 @@ def primary_outcome_consistency(
     )
 
 
+def _manuscript_signals_ai_use(manuscript: str) -> bool:
+    """Bản thảo có tự nhắc tới việc dùng AI hay không.
+
+    Dùng để đối chiếu NGƯỢC với khai báo ``ai_use_declared`` (G8-F3) — tái dùng
+    ``_AI_DISCLOSURE_TOKENS``/``_AI_TOOL_NAME_RE`` đã có, không viết lại regex.
+    """
+    if not manuscript:
+        return False
+    if any(token.casefold() in manuscript.casefold() for token in _AI_DISCLOSURE_TOKENS):
+        return True
+    return bool(_AI_TOOL_NAME_RE.search(manuscript))
+
+
 def ai_disclosure_issues(manuscript: str, g8: Mapping[str, Any]) -> list[str]:
     """Kiểm khai báo AI theo ICMJE Mục V.A (bản 1/2026)."""
     issues: list[str] = []
     declared = g8.get("ai_use_declared")
     if declared is None:
         issues.append("chưa khai dứt khoát có/không dùng AI (ICMJE: không khai có thể bị coi là misconduct)")
+        # SỬA 2026-07-30 (G8-F3): trước đây return NGAY tại đây nên không bao
+        # giờ đối chiếu với bản thảo thật — một bản thảo đã thừa nhận dùng AI
+        # (vd CLEAN_MANUSCRIPT trong test: "công cụ trí tuệ nhân tạo để hiệu
+        # đính ngôn ngữ") mà gate_params chưa chốt có/không vẫn chỉ bị coi là
+        # thiếu sót hành chính chung chung. Thêm cảnh báo CỤ THỂ khi bản thảo
+        # đã tự lộ việc dùng AI để bác sĩ biết cần chốt field này ngay.
+        if _manuscript_signals_ai_use(manuscript):
+            issues.append(
+                "bản thảo có nhắc tới việc dùng AI dù CHƯA khai dứt khoát — cần chốt "
+                "có/không trong gate_params.G8.ai_use_declared trước khi nộp"
+            )
         return issues
     if declared is True:
         if not _present(g8.get("ai_tools")):
@@ -379,6 +403,18 @@ def ai_disclosure_issues(manuscript: str, g8: Mapping[str, Any]) -> list[str]:
             token.casefold() in manuscript.casefold() for token in _AI_DISCLOSURE_TOKENS
         ):
             issues.append("thiếu khai AI trong chính BẢN THẢO")
+    elif declared is False:
+        # SỬA 2026-07-30 (G8-F3, MEDIUM FABRICATION_RISK): trước đây nhánh
+        # declared=False KHÔNG kiểm gì cả — khai "KHÔNG dùng AI" trong khi bản
+        # thảo THẬT SỰ nhắc tới AI (vd "công cụ trí tuệ nhân tạo để hiệu đính
+        # ngôn ngữ") lọt qua hoàn toàn, dù đó là khai báo SAI SỰ THẬT theo
+        # ICMJE Mục V.A (Updated January 2026). primary_outcome_consistency()
+        # trong cùng file là mẫu thiết kế cho việc đối chiếu hai chiều này.
+        if _manuscript_signals_ai_use(manuscript):
+            issues.append(
+                "khai KHÔNG dùng AI (ai_use_declared=False) NHƯNG bản thảo THẬT SỰ nhắc "
+                "tới việc dùng AI — nghi khai báo SAI SỰ THẬT, vi phạm ICMJE Mục V.A"
+            )
     # Cấm tuyệt đối: AI ở vị trí tác giả, hoặc AI bị trích dẫn làm nguồn gốc.
     if manuscript:
         author_block = manuscript[:3000]
@@ -484,9 +520,22 @@ def evaluate_g8_quality(
     signature_scope: Optional[str],
     role_key_available: bool,
     cross_gate_refs: Mapping[str, str],
+    design_drift_warning: Optional[str] = None,
 ) -> dict[str, Any]:
     """Chấm G8 hai tầng: máy kiểm NỘI DUNG, rồi bằng chứng bình duyệt người thật."""
     g8 = _g8_meta(meta)
+    # LƯU Ý (G8-F5, MEDIUM DOWNSTREAM_CONTRACT_RISK): design_code ở đây KHÔNG
+    # đến từ G8_checkpoint.json (write_g8_checkpoint() trong run_g8_auto.py
+    # không bao giờ ghi khóa "design_code") — luôn rơi về g2_checkpoint, khác
+    # với cách run_g8_auto.py::main() tự lấy design_code (đọc thẳng
+    # gates['G1']['design']['internal_code']), và cũng khác
+    # gate_contract.resolve_design_code() (ưu tiên G2 > G1, đã nối vào G5/G7).
+    # Đổi nguồn chính ở đây rủi ro lan sang mọi call site (evaluate_study(),
+    # approve_gate.py, test) nên KHÔNG đổi biến này — thay vào đó
+    # ``design_drift_warning`` (tham số mới, do evaluate_study() tính qua
+    # resolve_design_code()) nuôi một tiêu chí CẢNH BÁO riêng (G8-AUTO-11)
+    # bên dưới khi G1/G2 lệch nhau, để bác sĩ biết registration_issues()/
+    # data_sharing_issues() có thể đang dùng design_code sai.
     design_code = str(checkpoint.get("design_code") or g2_checkpoint.get("design_code") or "")
     automatic: list[dict[str, str]] = []
     approval: list[dict[str, str]] = []
@@ -659,6 +708,26 @@ def evaluate_g8_quality(
         "Bổ sung các mục checklist còn thiếu trong bản thảo trước khi mời phản biện.",
     ))
 
+    # ── G8-AUTO-11 — thiết kế KHÔNG lệch giữa G1 và G2 ─────────────────────
+    # THÊM 2026-07-30 (G8-F5, MEDIUM DOWNSTREAM_CONTRACT_RISK): design_code ở
+    # trên (đầu hàm) đọc checkpoint/g2_checkpoint bằng logic RIÊNG của module
+    # này, KHÁC gate_contract.resolve_design_code() mà G5/G7 đã nối vào. Nếu
+    # G1 và G2 từng chạy với --design khác nhau (run_g2_auto.py chỉ CẢNH BÁO
+    # console, không chặn), G8-AUTO-07/08 (đăng ký/chia sẻ dữ liệu) có thể
+    # âm thầm dùng design_code SAI mà không ai biết. Giải pháp AN TOÀN: KHÔNG
+    # đổi design_code chính (rủi ro lan sang mọi call site) — chỉ thêm tiêu
+    # chí CẢNH BÁO (REVIEW, không BLOCK) tái dùng resolve_design_code() làm
+    # trọng tài, giống cách G7-AUTO-01b đã làm cho G7.
+    automatic.append(_criterion(
+        "G8-AUTO-11",
+        "Mã thiết kế KHÔNG lệch giữa G1 và G2 (ảnh hưởng đăng ký/chia sẻ dữ liệu)",
+        "REVIEW" if design_drift_warning else "PASS",
+        design_drift_warning or "G1/G2 khớp thiết kế (hoặc chỉ một nơi có giá trị)",
+        "G1 suy luận và G2 (nơi bác sĩ có thể truyền --design tường minh) lệch nhau — "
+        "chạy lại G1/G2 cho khớp trước khi tin design_code dùng ở G8-AUTO-07/08. Xem "
+        "gate_contract.py::resolve_design_code().",
+    ))
+
     # ── Tầng BẰNG CHỨNG BÌNH DUYỆT NGƯỜI THẬT ──────────────────────────────
     report_problems = review_report_issues(review_report_text)
     approval.append(_criterion(
@@ -762,6 +831,27 @@ def evaluate_g8_quality(
     else:
         status = STATUS_REVIEWED
 
+    # SỬA 2026-07-30 (G8-F4, LOW INTERNAL_INCONSISTENCY): tên
+    # STATUS_PENDING="PENDING_REAL_REVIEW_SIGNATURE" khiến bác sĩ đọc nhầm là
+    # "còn thiếu CHỮ KÝ" ngay cả khi ledger_signed=True thật (chữ ký G8 đã tồn
+    # tại, chỉ thiếu bằng chứng NỘI DUNG/ĐỘC LẬP khác — bản nhận xét, khóa
+    # CHUNG, hoặc reviewer_ref trùng cổng khác). KHÔNG đổi tên hằng số/giá trị
+    # chuỗi (hợp đồng downstream: test + mọi nơi đọc report["status"]) — chỉ
+    # làm rõ NGỮ CẢNH trong một trường evidence riêng.
+    status_detail = ""
+    if status == STATUS_PENDING:
+        missing_labels = [row["label"] for row in approval if row["status"] != "PASS"]
+        if ledger_signed:
+            status_detail = (
+                "Đã có chữ ký G8 hợp lệ trên sổ cái (ledger_signed=True) — còn thiếu: "
+                + "; ".join(missing_labels)
+            )
+        else:
+            status_detail = (
+                "Chưa có chữ ký G8 hợp lệ trên sổ cái — "
+                + (ledger_reason or "chưa ai duyệt")
+            )
+
     pending = [
         row["action"] for row in automatic + approval
         if row["status"] != "PASS" and row.get("action")
@@ -772,6 +862,7 @@ def evaluate_g8_quality(
         "study": study,
         "gate": "G8",
         "status": status,
+        "status_detail": status_detail,
         "automated_checks_passed": not auto_blocked,
         "package_ready_for_review": not auto_blocked and not auto_review,
         "review_evidence_complete": approval_complete,
@@ -808,6 +899,12 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
         f"# BÁO CÁO CHẤT LƯỢNG G8 (BÌNH DUYỆT) — {study}",
         "",
         f"**Trạng thái:** `{report.get('status')}`",
+    ]
+    # G8-F4: làm rõ NGỮ CẢNH của trạng thái (vd STATUS_PENDING có thể là "đã
+    # ký, còn thiếu bằng chứng khác" chứ không phải "chưa ký").
+    if report.get("status_detail"):
+        lines.append(f"**Chi tiết trạng thái:** {report['status_detail']}")
+    lines += [
         f"**Phiên bản hợp đồng:** {report.get('contract_version')}",
         f"**Phạm vi khóa ký:** {report.get('signature_scope') or 'không xác định'}",
         "",
@@ -919,6 +1016,14 @@ def evaluate_study(study: str, out_dir: Path, *, repo_root: Optional[Path] = Non
         for gate in ("G2", "G4", "G5", "G8", "G9")
     }
 
+    # G8-F5: tái dùng resolve_design_code() (đã nối vào G5/G7) làm trọng tài
+    # CẢNH BÁO khi G1/G2 lệch nhau — KHÔNG dùng để thay design_code chính ở
+    # trên (xem chú thích trong evaluate_g8_quality()).
+    try:
+        _, design_drift_warning = GC.resolve_design_code(out_dir)
+    except Exception:  # pragma: no cover - lưới an toàn
+        design_drift_warning = None
+
     report = evaluate_g8_quality(
         study=study,
         checkpoint=checkpoint,
@@ -935,6 +1040,7 @@ def evaluate_study(study: str, out_dir: Path, *, repo_root: Optional[Path] = Non
         signature_scope=scope,
         role_key_available=bool(role_key),
         cross_gate_refs=cross_refs,
+        design_drift_warning=design_drift_warning,
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)

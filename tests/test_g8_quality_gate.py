@@ -284,6 +284,54 @@ def test_khai_ai_day_du_thi_khong_con_van_de():
     assert G8Q.ai_disclosure_issues(CLEAN_MANUSCRIPT, _meta()["gate_params"]["G8"]) == []
 
 
+# ── G8-F3: đối chiếu NGƯỢC — khai KHÔNG dùng AI nhưng bản thảo thật thừa
+# nhận có dùng (trước đây nhánh declared=False không kiểm gì cả) ────────────
+
+
+def test_khai_khong_dung_ai_nhung_ban_thao_that_thua_nhan_bi_bat():
+    """G8-F3 (MEDIUM FABRICATION_RISK): ai_use_declared=False nhưng
+    CLEAN_MANUSCRIPT thật sự có câu 'công cụ trí tuệ nhân tạo để hiệu đính
+    ngôn ngữ' — đây là khai báo sai sự thật theo ICMJE Mục V.A, không phải
+    thiếu sót hành chính đơn thuần."""
+    issues = G8Q.ai_disclosure_issues(CLEAN_MANUSCRIPT, {"ai_use_declared": False})
+    assert issues, "phải bắt được lệch — trước đây nhánh này trả rỗng vô điều kiện"
+    assert any("SAI SỰ THẬT" in i for i in issues)
+
+
+def test_khai_khong_dung_ai_va_ban_thao_khong_nhac_AI_thi_khong_bi_bat_oan():
+    text = (
+        "# Bản thảo\nKết cục chính là tử vong do mọi nguyên nhân trong 12 tháng.\n"
+        "## TÀI LIỆU THAM KHẢO\n1. Cook JA và cs. BMJ 2018;363:k3750.\n"
+    )
+    assert G8Q.ai_disclosure_issues(text, {"ai_use_declared": False}) == []
+
+
+def test_khai_khong_dung_ai_nhung_nhac_ten_cong_cu_cu_the_van_bi_bat():
+    """Không chỉ khớp token 'trí tuệ nhân tạo' — tên công cụ cụ thể cũng đủ
+    tín hiệu (tái dùng _AI_TOOL_NAME_RE đã có, không viết regex mới)."""
+    text = "# Bản thảo\nChúng tôi đã dùng ChatGPT để soát lỗi chính tả bản thảo.\n"
+    issues = G8Q.ai_disclosure_issues(text, {"ai_use_declared": False})
+    assert any("SAI SỰ THẬT" in i for i in issues)
+
+
+def test_chua_khai_dut_khoat_nhung_ban_thao_da_nhac_AI_them_canh_bao_cu_the():
+    """declared=None: giữ nguyên cảnh báo 'chưa khai dứt khoát' (misconduct)
+    NHƯNG thêm cảnh báo cụ thể khi bản thảo đã tự lộ việc dùng AI."""
+    issues = G8Q.ai_disclosure_issues(CLEAN_MANUSCRIPT, {})
+    assert "misconduct" in issues[0]
+    assert any("CHƯA khai dứt khoát" in i for i in issues[1:])
+
+
+def test_g8_auto_06_ra_soat_khi_khai_sai_su_that_qua_pipeline_that():
+    """Mutation-test ở tầng tích hợp: G8-AUTO-06 phải REVIEW khi
+    ai_use_declared=False nhưng manuscript_text (CLEAN_MANUSCRIPT) thật sự
+    nhắc tới AI — trước khi sửa, tiêu chí này PASS sai (bug thật)."""
+    report = _evaluate(meta=_meta(ai_use_declared=False))
+    row = _row(report, "G8-AUTO-06")
+    assert row["status"] == "REVIEW"
+    assert "SAI SỰ THẬT" in row["evidence"]
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # ICMJE — đăng ký nghiên cứu và chia sẻ dữ liệu
 # ════════════════════════════════════════════════════════════════════════════
@@ -436,6 +484,66 @@ def test_checklist_duoi_nguong_bi_ra_soat_kem_ghi_chu_lech_noi_bo():
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# G8-F5: thiết kế lệch giữa G1 và G2 (design_code có thể ảnh hưởng
+# registration_issues()/data_sharing_issues()) — tiêu chí CẢNH BÁO mới,
+# KHÔNG đổi design_code chính đang dùng cho các quyết định khác.
+# ════════════════════════════════════════════════════════════════════════════
+
+
+def test_khong_lech_thiet_ke_thi_g8_auto_11_dat():
+    row = _row(_evaluate(), "G8-AUTO-11")
+    assert row["status"] == "PASS"
+
+
+def test_lech_thiet_ke_g1_g2_bi_canh_bao_khong_bi_chan():
+    report = _evaluate(
+        design_drift_warning=(
+            "⚠️  THIẾT KẾ LỆCH GIỮA CÁC CỔNG: G1 suy luận 'cohort' nhưng G2 ghi 'rct'."
+        )
+    )
+    row = _row(report, "G8-AUTO-11")
+    assert row["status"] == "REVIEW"
+    assert "LỆCH GIỮA CÁC CỔNG" in row["evidence"]
+    # CẢNH BÁO, không phải CHẶN — hạ xuống DRAFT (auto_review) chứ không BLOCK.
+    assert report["status"] == G8Q.STATUS_DRAFT
+
+
+def test_evaluate_study_tich_hop_tu_tinh_lech_thiet_ke_tu_checkpoint_that(tmp_path):
+    """Kiểm dây nối THẬT (không chỉ tham số truyền tay ở 2 test trên):
+    evaluate_study() phải tự gọi gate_contract.resolve_design_code() để đọc
+    G1_checkpoint.json/G2_checkpoint.json THẬT trên đĩa và truyền cảnh báo
+    lệch vào evaluate_g8_quality() — đúng cơ chế G5/G7 đã dùng."""
+    study = "G8-DESIGN-DRIFT"
+    out_dir = tmp_path / "exports" / study
+    out_dir.mkdir(parents=True)
+    (out_dir / "G1_checkpoint.json").write_text(
+        json.dumps({"design": {"internal_code": "cohort"}}), encoding="utf-8"
+    )
+    (out_dir / "G2_checkpoint.json").write_text(
+        json.dumps({"design_code": "rct"}), encoding="utf-8"
+    )
+    report = G8Q.evaluate_study(study, out_dir, repo_root=tmp_path, write=False)
+    row = _row(report, "G8-AUTO-11")
+    assert row["status"] == "REVIEW"
+    assert "LỆCH GIỮA CÁC CỔNG" in row["evidence"]
+
+
+def test_evaluate_study_tich_hop_khong_lech_thi_g8_auto_11_dat(tmp_path):
+    study = "G8-DESIGN-OK"
+    out_dir = tmp_path / "exports" / study
+    out_dir.mkdir(parents=True)
+    (out_dir / "G1_checkpoint.json").write_text(
+        json.dumps({"design": {"internal_code": "cohort"}}), encoding="utf-8"
+    )
+    (out_dir / "G2_checkpoint.json").write_text(
+        json.dumps({"design_code": "cohort"}), encoding="utf-8"
+    )
+    report = G8Q.evaluate_study(study, out_dir, repo_root=tmp_path, write=False)
+    row = _row(report, "G8-AUTO-11")
+    assert row["status"] == "PASS"
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # Bậc trạng thái và đầu ra
 # ════════════════════════════════════════════════════════════════════════════
 
@@ -459,6 +567,36 @@ def test_goi_sach_nhung_chua_co_phan_bien_thi_o_trang_thai_san_sang():
 def test_da_co_nhan_xet_nhung_chua_ky_thi_cho_chu_ky():
     report = _evaluate(ledger_signed=False, ledger_reason="chưa ai duyệt")
     assert report["status"] == G8Q.STATUS_PENDING
+
+
+# ── G8-F4: STATUS_PENDING không được để bác sĩ hiểu nhầm "chưa ký" khi chữ ký
+# G8 THẬT SỰ đã tồn tại — evidence phải nói rõ ngữ cảnh (đã ký/chưa ký + còn
+# thiếu gì cụ thể), không chỉ dựa vào tên trạng thái. ─────────────────────────
+
+
+def test_status_pending_voi_ledger_da_ky_noi_ro_da_co_chu_ky_con_thieu_gi():
+    """Ledger ĐÃ ký hợp lệ (ledger_signed=True) nhưng còn thiếu bằng chứng
+    nội dung khác (ở đây: chưa có bản nhận xét phản biện thật) — trước khi
+    sửa, bác sĩ chỉ thấy tên STATUS_PENDING và dễ hiểu lầm là 'chưa ký'."""
+    report = _evaluate(review_report_text="", ledger_signed=True, signature_scope="shared")
+    assert report["status"] == G8Q.STATUS_PENDING
+    assert "Đã có chữ ký G8 hợp lệ" in report["status_detail"]
+    assert "còn thiếu" in report["status_detail"]
+    # Không được lặp lại nhầm lẫn "chưa ký" trong chính lời giải thích.
+    assert "Chưa có chữ ký" not in report["status_detail"]
+
+
+def test_status_pending_voi_ledger_chua_ky_noi_ro_chua_co_chu_ky():
+    report = _evaluate(ledger_signed=False, ledger_reason="chưa ai duyệt")
+    assert report["status"] == G8Q.STATUS_PENDING
+    assert "Chưa có chữ ký G8 hợp lệ" in report["status_detail"]
+    assert "chưa ai duyệt" in report["status_detail"]
+
+
+def test_status_khac_pending_thi_status_detail_rong():
+    report = _evaluate()  # đủ mọi điều kiện -> STATUS_REVIEWED
+    assert report["status"] == G8Q.STATUS_REVIEWED
+    assert report["status_detail"] == ""
 
 
 def test_ghi_bao_cao_ra_ca_json_va_markdown(tmp_path):
