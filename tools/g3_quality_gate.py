@@ -1231,7 +1231,14 @@ def evaluate_g3_quality(
                 if pin_missing
                 else "tham số quyết định đã ghim trong study_meta"
             ),
-            "Ghim gate_params.G3 (effect_size, effect_type, p_event, dropout…) để chạy lại không trôi giá trị.",
+            # SỬA 2026-07-30 (audit toàn diện G0-G10, G3-QG-06 — LOW, đã biết):
+            # action text cũ hứa kiểm "p_event, dropout…" nhưng pin_missing ở
+            # trên CHỈ kiểm 2 khóa (effect_size/effect_type) — run_g3_auto.py
+            # chưa bao giờ ghim p_event/dropout vào gate_params.G3 nên mở rộng
+            # check sẽ khiến tiêu chí này REVIEW vĩnh viễn cho thiết kế cần
+            # p_event (case_control/cross_sectional/diagnostic) thay vì đóng
+            # đúng khoảng trống — sửa CÂU CHỮ khớp với những gì thật sự kiểm.
+            "Ghim gate_params.G3 (effect_size, effect_type) để chạy lại không trôi giá trị.",
         )
     )
 
