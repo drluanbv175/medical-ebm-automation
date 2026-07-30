@@ -181,8 +181,12 @@ def _guardrail_ok(checkpoint: Mapping[str, Any]) -> bool:
 
 
 def _status_is_locked(value: Any) -> bool:
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G5-F5 — LOW): regex cũ chỉ
+    # nhận đúng dấu ("CHƯA"/"KHÔNG"), lệch với bản ở run_g5_auto.py (chấp
+    # nhận cả không dấu "CHUA"/"KHONG"). Đồng bộ để 3 hàm cùng tên
+    # _status_is_locked() không kết luận khác nhau về cùng một chuỗi.
     text = str(value or "").strip().upper()
-    if re.search(r"(UN|NOT|CHƯA|KHÔNG)\s*LOCKED", text):
+    if re.search(r"(UN|CH[ƯU]A|KH[ÔO]NG|NOT)\s*LOCKED", text):
         return False
     return bool(re.match(r"^LOCKED\b", text))
 
@@ -514,6 +518,13 @@ def evaluate_study(
         )
     )
 
+    # LƯU Ý PHẠM VI (audit toàn diện G0-G10, 2026-07-30, G5-F3 — MEDIUM):
+    # _REQUIRED_DMP_TOKENS là 11 TIÊU ĐỀ MỤC cố định mà generate_artifact()
+    # luôn in vô điều kiện (không phụ thuộc design_code/specialty/rows) — nên
+    # tiêu chí này chỉ chứng minh "văn bản có đủ tiêu đề mục", KHÔNG chứng
+    # minh nội dung DƯỚI mỗi mục đã được điền thật (một DMP toàn placeholder
+    # rỗng vẫn PASS). Có giá trị THẬT ở kịch bản cấu trúc bị xóa/cắt sau khi
+    # sinh — không phải kiểm chất lượng nội dung cho đề tài cụ thể.
     missing_dmp = [
         token for token in _REQUIRED_DMP_TOKENS if token.casefold() not in dmp_text.casefold()
     ]

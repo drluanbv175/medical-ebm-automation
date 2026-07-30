@@ -1546,7 +1546,17 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
 # ---------------------------------------------------------------------------
 
 def guardrail(artifact: str) -> tuple[list, list]:
-    """Kiểm tra liêm chính R1–R7."""
+    """Kiểm tra liêm chính R1–R7.
+
+    LƯU Ý PHẠM VI (audit toàn diện G0-G10, 2026-07-30, G5-F2 — HIGH): R1/R4/
+    R5/R7 kiểm sự có mặt của chuỗi mà generate_artifact() LUÔN in cứng vô
+    điều kiện (tiêu đề chuẩn báo cáo, nhãn "(DRAFT)", checklist Phần 8/9,
+    disclaimer) — không phụ thuộc design_code/CRF/specialty thật, nên 4 luật
+    này KHÔNG THỂ fail với bất kỳ artifact nào generate_artifact() sinh ra.
+    Đây là guardrail STRUCTURAL (chỉ bắt được việc bị XÓA/CẮT sau khi sinh),
+    KHÔNG phải kiểm tra chất lượng nội dung DMP cho đề tài cụ thể — chỉ R2
+    (PII)/R3 (vượt cổng)/R6 (tự gán GRADE) thật sự phản ứng với nội dung.
+    """
     errors, warnings = [], []
 
     # R1 — Nguồn

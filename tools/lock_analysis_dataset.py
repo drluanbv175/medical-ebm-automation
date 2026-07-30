@@ -136,8 +136,12 @@ def _read_json(path: Path) -> Dict[str, Any]:
 
 
 def _status_is_locked(value: Any) -> bool:
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G5-F5 — LOW): regex cũ chỉ
+    # nhận đúng dấu ("CHƯA"/"KHÔNG"), lệch với bản ở run_g5_auto.py (chấp
+    # nhận cả không dấu "CHUA"/"KHONG"). Đồng bộ để 3 hàm cùng tên
+    # _status_is_locked() không kết luận khác nhau về cùng một chuỗi.
     text = str(value or "").strip().upper()
-    if re.search(r"(UN|NOT|CHƯA|KHÔNG)\s*LOCKED", text):
+    if re.search(r"(UN|CH[ƯU]A|KH[ÔO]NG|NOT)\s*LOCKED", text):
         return False
     return bool(re.match(r"^LOCKED\b", text))
 
