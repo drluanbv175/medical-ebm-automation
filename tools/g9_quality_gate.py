@@ -734,21 +734,20 @@ def evaluate_study(
     )
 
     g2_cp = _read_json(out_dir / "G2_checkpoint.json")
-    g4_cp = _read_json(out_dir / "G4_checkpoint.json")
     g8_artifact = out_dir / f"G8_A9_PRESUBMISSION_{study}.md"
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G10-01 — CRITICAL, cùng lỗi cũng thấy ở
+    # g10_quality_gate.py::G10-AUTO-04): _status_locked(g2/g4.get("g*_status")) kiểm
+    # một chuỗi mà run_g2_auto.py/run_g4_auto.py KHÔNG BAO GIỜ ghi ("LOCKED") — cả hai
+    # chỉ ghi "PENDING"/"BLOCKED — ...". g4_ok vì vậy vĩnh viễn False cho MỌI đề tài
+    # thật, dù chữ ký ledger G4 hợp lệ. Vá theo đúng khuôn g5_ok bên dưới đã dùng đúng
+    # (chấm trực tiếp qua hàm hợp đồng chất lượng, không đọc field text đã lỗi thời).
     g2_ok = bool(
-        _status_locked(g2_cp.get("g2_status") or g2_cp.get("G2_STATUS"))
-        and GC.ledger_approved(
+        GC.ledger_approved(
             "G2", study, out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md", repo_root=root
         )
         and GC.g2_quality_contract_satisfied(g2_cp, meta)
     )
-    g4_ok = bool(
-        _status_locked(g4_cp.get("g4_status") or g4_cp.get("G4_STATUS"))
-        and GC.ledger_approved(
-            "G4", study, out_dir / f"G4_A5_SAP_FINAL_{study}.md", repo_root=root
-        )
-    )
+    g4_ok = GC.g4_quality_contract_satisfied(study, repo_root=root)
     g5_ok = GC.g5_quality_contract_satisfied(study, repo_root=root)
     g8_ok = bool(
         g8_artifact.exists()

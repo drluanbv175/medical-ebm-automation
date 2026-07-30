@@ -622,11 +622,23 @@ def evaluate_study(
     )
 
     g2 = checkpoints.get("G2") or {}
-    g4 = checkpoints.get("G4") or {}
     g8_artifact = out_dir / f"G8_A9_PRESUBMISSION_{study}.md"
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G10-01 — CRITICAL): g2_ok/g4_ok trước
+    # đây AND thêm `_status_locked(g*.get("g*_status"))` — một kiểm text tìm chuỗi
+    # "LOCKED" trong g2_status/g4_status. Nhưng run_g2_auto.py/run_g4_auto.py CHỈ BAO
+    # GIỜ ghi "PENDING"/"BLOCKED — ..." vào các trường này; KHÔNG đoạn code nào trong
+    # repo từng ghi "LOCKED" vào đó (approve_gate.py --gate G2/G4 chỉ cập nhật
+    # approval_ledger.json + quality_gate report, không đụng g2_status/g4_status thô).
+    # Hệ quả: g2_ok luôn False, còn g4_ok (chưa từng có g4_quality_contract_satisfied
+    # để bù) LUÔN False vĩnh viễn cho MỌI đề tài thật — G10-AUTO-04 không bao giờ PASS
+    # được dù cả 5 cổng thượng nguồn đã ký hợp lệ. g5_ok/g9_ok bên dưới KHÔNG mắc lỗi
+    # này vì đã dùng đúng hàm chấm trực tiếp (g5_quality_contract_satisfied/g9_...).
+    # Vá: bỏ _status_locked() (tín hiệu không tồn tại), g2_ok giữ ledger_approved +
+    # g2_quality_contract_satisfied (đã có, chỉ bỏ điều kiện chết); g4_ok đổi sang
+    # cùng khuôn g5_ok/g9_ok — gọi thẳng g4_quality_contract_satisfied() (mới xây,
+    # tự bao gồm cả ledger_approved qua tiêu chí G4-HUMAN-01 bên trong).
     g2_ok = bool(
-        _status_locked(g2.get("g2_status") or g2.get("G2_STATUS"))
-        and GC.ledger_approved(
+        GC.ledger_approved(
             "G2",
             study,
             out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md",
@@ -634,15 +646,7 @@ def evaluate_study(
         )
         and GC.g2_quality_contract_satisfied(g2, GC.load_study_meta(out_dir))
     )
-    g4_ok = bool(
-        _status_locked(g4.get("g4_status") or g4.get("G4_STATUS"))
-        and GC.ledger_approved(
-            "G4",
-            study,
-            out_dir / f"G4_A5_SAP_FINAL_{study}.md",
-            repo_root=root,
-        )
-    )
+    g4_ok = GC.g4_quality_contract_satisfied(study, repo_root=root)
     g5_ok = GC.g5_quality_contract_satisfied(study, repo_root=root)
     g8_ok = GC.ledger_approved("G8", study, g8_artifact, repo_root=root)
     g9_ok = GC.g9_quality_contract_satisfied(study, repo_root=root)

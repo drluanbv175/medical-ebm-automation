@@ -196,6 +196,15 @@ def _patch_upstream(monkeypatch, approvals: dict[str, bool] | None = None) -> di
         "g2_quality_contract_satisfied",
         lambda *_args, **_kwargs: True,
     )
+    # SỬA 2026-07-30 (G10-01): g9_quality_gate.py nay chấm G4 qua
+    # g4_quality_contract_satisfied() thay vì đọc g4_status text (đã lỗi thời) —
+    # test giả lập tầng upstream này phải mock đúng hàm mới, nếu không hàm THẬT
+    # sẽ chạy và trả False vì fixture không dựng SAP/ledger G4 đầy đủ.
+    monkeypatch.setattr(
+        G9Q.GC,
+        "g4_quality_contract_satisfied",
+        lambda *_args, **_kwargs: state.get("G4", False),
+    )
     monkeypatch.setattr(
         G9Q.GC,
         "g5_quality_contract_satisfied",

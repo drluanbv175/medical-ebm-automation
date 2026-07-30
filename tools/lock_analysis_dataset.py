@@ -167,15 +167,16 @@ def _upstream_approval_report(
     meta = GC.load_study_meta(out_dir)
     g2_artifact = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     g4_artifact = out_dir / f"G4_A5_SAP_FINAL_{study}.md"
+    # SỬA 2026-07-30 (audit toàn diện G0-G10, G10-01 — CRITICAL, bản sao thứ 3 của
+    # cùng lỗi cũng đã vá ở g9_quality_gate.py/g10_quality_gate.py): _status_is_locked
+    # đọc g2_status/g4_status — chuỗi mà run_g2_auto.py/run_g4_auto.py KHÔNG BAO GIỜ
+    # ghi "LOCKED" vào. g4 vì vậy vĩnh viễn False, khóa dữ liệu (G5) không bao giờ mở
+    # được cho một đề tài SAP đã ký hợp lệ thật. Dùng đúng hàm chấm trực tiếp.
     g2 = bool(
-        _status_is_locked(g2_cp.get("g2_status") or g2_cp.get("G2_STATUS"))
-        and GC.ledger_approved("G2", study, g2_artifact, repo_root=repo_root)
+        GC.ledger_approved("G2", study, g2_artifact, repo_root=repo_root)
         and GC.g2_quality_contract_satisfied(g2_cp, meta)
     )
-    g4 = bool(
-        _status_is_locked(g4_cp.get("g4_status") or g4_cp.get("G4_STATUS"))
-        and GC.ledger_approved("G4", study, g4_artifact, repo_root=repo_root)
-    )
+    g4 = GC.g4_quality_contract_satisfied(study, repo_root=repo_root)
     return {
         "G2": g2,
         "G4": g4,

@@ -1363,9 +1363,19 @@ def build_front_note(study: str, cps, meta, generated: str | None = None) -> str
         f"`{study}`, theo mẫu 16 chương và ma trận bao phủ 20 thành phần protocol "
         "lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. "
         "Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, "
-        f"{n_pmids} PMID) lấy TỪ pipeline — không bịa. Mọi chỗ mang nhãn "
-        f"{TAG_BS}/{TAG_DV}/{TAG_DRAFT}/{S.TAG_CAN_KIEM_CHUNG_NGUON} là chỗ hệ "
-        "thống KHÔNG đủ dữ liệu/thẩm quyền để tự quyết. **Văn xuôi học thuật "
+        f"{n_pmids} PMID) lấy TỪ pipeline — không bịa. "
+        # SỬA 2026-07-30 (audit G0-G10, G10-02 — CRITICAL, "tautology ngược"): câu
+        # chú giải này TỪNG nội suy trực tiếp TAG_BS/TAG_DV/TAG_CAN_KIEM_CHUNG_NGUON
+        # (chuỗi "[CẦN ...]" ngoặc vuông thật) vào MỌI văn bản lắp ráp, kể cả khi
+        # 100% trường dữ liệu đã điền đủ. g10_quality_gate._documents_clean() quét
+        # đúng _PLACEHOLDER_RE (bắt "[CẦN...]") trên chính văn bản này nên LUÔN thấy
+        # "còn placeholder" — G10-AUTO-09 không bao giờ PASS được qua pipeline thật.
+        # Nay chỉ MÔ TẢ tên quy ước bằng chữ (không tái tạo ký hiệu ngoặc vuông thật)
+        # — người đọc vẫn hiểu quy ước, nhưng câu chú giải không tự kích hoạt máy quét.
+        "Mọi chỗ còn thiếu dữ liệu/thẩm quyền sẽ được đánh dấu NGAY TẠI ĐÓ bằng một "
+        "trong các nhãn quy ước của skill (CẦN BỔ SUNG · CẦN XÁC NHẬN TẠI ĐƠN VỊ · "
+        "DỰ THẢO · CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — luôn đặt trong ngoặc vuông tại "
+        "đúng vị trí thiếu). **Văn xuôi học thuật "
         "(Đặt vấn đề, Tổng quan, Bàn luận) do bác sĩ/agent viết riêng — G10 chỉ "
         "dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm "
         "chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.\n"
@@ -1409,7 +1419,14 @@ def build_document_control(study: str, cps, meta, generated: str | None = None) 
         f"| Nguồn thay đổi | Checkpoint {source}; SAP version {sap_version} | Chỉ dùng "
         "nguồn có trace; không sửa tay ngoài pipeline mà không ghi nhật ký. |",
         f"| Người soạn/cập nhật | {prepared_by} | Người thật chịu trách nhiệm rà soát. |",
-        f"| Người phê duyệt/chủ nhiệm | {approved_by} | {TAG_BS} nếu chưa có chữ ký/xác nhận. |",
+        # SỬA 2026-07-30 (G10-02): cột chú giải TỪNG nội suy trực tiếp TAG_BS (chuỗi
+        # "[CẦN BỔ SUNG]" ngoặc vuông thật) KHÔNG ĐIỀU KIỆN — xuất hiện cả khi
+        # {approved_by} đã có tên thật, khiến _documents_clean() luôn thấy placeholder.
+        # Giá trị THẬT cần kiểm nằm ở cột {approved_by} (đã đúng, chỉ là TAG_BS khi
+        # thật sự chưa điền — xem dòng gán approved_by phía trên); cột chú giải chỉ
+        # nên mô tả QUY TẮC bằng chữ, không tái tạo ký hiệu ngoặc vuông thật.
+        f"| Người phê duyệt/chủ nhiệm | {approved_by} | Cần tên/vai trò thật; nếu chưa "
+        "có chữ ký/xác nhận sẽ tự mang nhãn quy ước tương ứng ở cột bên trái. |",
         f"| Trạng thái khóa tài liệu | {TAG_DRAFT} | Chỉ khóa khi G2/G4/G6/G9 có bằng chứng thật. |",
         "",
         "## Nhật ký thay đổi",

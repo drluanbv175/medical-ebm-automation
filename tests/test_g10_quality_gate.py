@@ -132,6 +132,11 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
 
 def _patch_upstream(monkeypatch, approval_state: dict[str, bool]) -> None:
     monkeypatch.setattr(GC, "g2_quality_contract_satisfied", lambda *_a, **_k: True)
+    # SỬA 2026-07-30 (G10-01): g10_quality_gate.py nay chấm G4 qua
+    # g4_quality_contract_satisfied() thay vì đọc g4_status text (đã lỗi thời) —
+    # fixture "ready" ở đây không dựng SAP/ledger G4 đầy đủ nên phải mock đúng
+    # hàm mới, nếu không hàm THẬT sẽ chạy và trả False.
+    monkeypatch.setattr(GC, "g4_quality_contract_satisfied", lambda *_a, **_k: True)
     monkeypatch.setattr(GC, "g5_quality_contract_satisfied", lambda *_a, **_k: True)
     monkeypatch.setattr(GC, "g9_quality_contract_satisfied", lambda *_a, **_k: True)
     monkeypatch.setattr(
