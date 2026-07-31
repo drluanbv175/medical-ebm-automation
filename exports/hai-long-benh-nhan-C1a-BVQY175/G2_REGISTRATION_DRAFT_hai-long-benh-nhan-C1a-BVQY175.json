@@ -1,0 +1,152 @@
+{
+  "schema_version": "who-trds-draft-v1",
+  "who_trds_version": "1.3.1",
+  "item_count": 24,
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "generated_at": "2026-07-31T20:54:06.239935",
+  "status": "DRAFT",
+  "registration_requirement": "BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên) — TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới — loại hình thu thập [CẦN BỔ SUNG]",
+  "suggested_registry": "ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)",
+  "items": [
+    {
+      "number": 1,
+      "label": "Primary Registry and Trial Identifying Number",
+      "value": null
+    },
+    {
+      "number": 2,
+      "label": "Date of Registration in Primary Registry",
+      "value": null
+    },
+    {
+      "number": 3,
+      "label": "Secondary Identifying Numbers",
+      "value": null
+    },
+    {
+      "number": 4,
+      "label": "Source(s) of Monetary or Material Support",
+      "value": null
+    },
+    {
+      "number": 5,
+      "label": "Primary Sponsor",
+      "value": "[ĐIỀN TRỰC TIẾP TRÊN REGISTRY; KHÔNG LƯU PII TRONG HỆ THỐNG]"
+    },
+    {
+      "number": 6,
+      "label": "Secondary Sponsor(s)",
+      "value": null
+    },
+    {
+      "number": 7,
+      "label": "Contact for Public Queries",
+      "value": "[ĐIỀN LIÊN HỆ CÔNG KHAI TRỰC TIẾP TRÊN REGISTRY]"
+    },
+    {
+      "number": 8,
+      "label": "Contact for Scientific Queries",
+      "value": "[ĐIỀN LIÊN HỆ KHOA HỌC TRỰC TIẾP TRÊN REGISTRY]"
+    },
+    {
+      "number": 9,
+      "label": "Public Title",
+      "value": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối"
+    },
+    {
+      "number": 10,
+      "label": "Scientific Title",
+      "value": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối"
+    },
+    {
+      "number": 11,
+      "label": "Countries of Recruitment",
+      "value": "Vietnam"
+    },
+    {
+      "number": 12,
+      "label": "Health Condition(s) or Problem(s) Studied",
+      "value": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối"
+    },
+    {
+      "number": 13,
+      "label": "Intervention(s)",
+      "value": null
+    },
+    {
+      "number": 14,
+      "label": "Key Inclusion and Exclusion Criteria",
+      "value": {
+        "inclusion": null,
+        "exclusion": null
+      }
+    },
+    {
+      "number": 15,
+      "label": "Study Type",
+      "value": {
+        "design": "Observational",
+        "primary_purpose": "Epidemiology",
+        "description": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)"
+      }
+    },
+    {
+      "number": 16,
+      "label": "Date of First Enrolment",
+      "value": null
+    },
+    {
+      "number": 17,
+      "label": "Target Sample Size",
+      "value": null
+    },
+    {
+      "number": 18,
+      "label": "Recruitment Status",
+      "value": "Not yet recruiting"
+    },
+    {
+      "number": 19,
+      "label": "Primary Outcome(s)",
+      "value": null
+    },
+    {
+      "number": 20,
+      "label": "Key Secondary Outcomes",
+      "value": null
+    },
+    {
+      "number": 21,
+      "label": "Ethics Review",
+      "value": {
+        "status": "Not approved",
+        "approval_date": null,
+        "committee_ref": null
+      }
+    },
+    {
+      "number": 22,
+      "label": "Completion Date",
+      "value": null
+    },
+    {
+      "number": 23,
+      "label": "Summary Results",
+      "value": {
+        "summary_results_date": null,
+        "first_publication_date": null,
+        "protocol_url": null
+      }
+    },
+    {
+      "number": 24,
+      "label": "IPD Sharing Statement",
+      "value": {
+        "plan_to_share_ipd": null,
+        "what_when_how_with_whom": null
+      }
+    }
+  ],
+  "no_pii_note": "Thông tin liên hệ cá nhân phải điền trực tiếp trên registry công khai; không lưu PII trong artifact pipeline.",
+  "disclaimer": "Cần bác sĩ kiểm chứng."
+}

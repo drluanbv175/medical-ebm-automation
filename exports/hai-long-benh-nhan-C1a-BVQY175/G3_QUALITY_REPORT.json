@@ -1,0 +1,372 @@
+{
+  "schema_version": "1.0",
+  "contract_version": "G3-2026.1",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "gate": "G3",
+  "status": "DRAFT_READY_NEEDS_STATISTICIAN_REVIEW",
+  "automated_checks_passed": true,
+  "parameters_ready_for_review": true,
+  "human_confirmation_complete": false,
+  "automatic_criteria": [
+    {
+      "id": "G3-AUTO-00",
+      "label": "Guardrail liêm chính G3 sạch",
+      "status": "PASS",
+      "evidence": "guardrail='✅ PASS'",
+      "action": "Sửa lỗi liêm chính (nguồn, PII, tự claim đã duyệt) trước khi chấm chất lượng."
+    },
+    {
+      "id": "G3-AUTO-01",
+      "label": "Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng)",
+      "status": "PASS",
+      "evidence": "có G1_checkpoint làm nguồn thiết kế",
+      "action": "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
+    },
+    {
+      "id": "G3-AUTO-02",
+      "label": "Mã thiết kế thuộc từ vựng canonical",
+      "status": "PASS",
+      "evidence": "design_code='cross_sectional'",
+      "action": "Chốt lại thiết kế ở G1; công thức cỡ mẫu chọn theo thiết kế."
+    },
+    {
+      "id": "G3-AUTO-03",
+      "label": "Loại effect size tương thích với thiết kế và dạng kết cục",
+      "status": "PASS",
+      "evidence": "effect_type=PREVALENCE hợp lệ cho cross_sectional",
+      "action": "Cấp tham số ĐÚNG loại (tỷ lệ hiện mắc cho cắt ngang, AUC cho chẩn đoán) kèm nguồn."
+    },
+    {
+      "id": "G3-AUTO-04",
+      "label": "Có giá trị cỡ mẫu dùng được (hoặc N thay thế hợp lệ)",
+      "status": "PASS",
+      "evidence": "n_adjusted=453",
+      "action": "Cấp effect size có nguồn, hoặc N tính bằng phương pháp thay thế của thiết kế."
+    },
+    {
+      "id": "G3-AUTO-05",
+      "label": "Effect size có định danh nguồn thật (PMID/DOI/MCID/pilot)",
+      "status": "PASS",
+      "evidence": "thiết kế mô tả: cỡ mẫu theo độ chính xác, không dùng effect size; nguồn tỷ lệ ước lượng p đã ghi: Quy ước thận trọng p = 0,50 — giá trị làm phương sai p(1-p) lớn nhất nên cho cỡ mẫu lớn nhất; dùng k",
+      "action": "Ghi gate_params.G3.effect_source = PMID/DOI của y văn, hoặc tuyên bố\nMCID do chủ nhiệm ấn định."
+    },
+    {
+      "id": "G3-AUTO-06",
+      "label": "Effect size không phải số THÔ chưa đọc toàn văn",
+      "status": "PASS",
+      "evidence": "effect size do bác sĩ cấp trực tiếp hoặc không áp dụng",
+      "action": "Đọc toàn văn nguồn, lấy ước lượng kèm 95%CI; cân nhắc dùng CẬN DƯỚI CI thay điểm ước lượng."
+    },
+    {
+      "id": "G3-AUTO-07",
+      "label": "Alpha/power trong quy ước và đã xử lý bội/giữa kỳ",
+      "status": "PASS",
+      "evidence": "alpha=0.05, power=0.8",
+      "action": "Biện minh alpha/power ngoài quy ước; khai chiến lược alpha khi đa kết cục hoặc có giữa kỳ."
+    },
+    {
+      "id": "G3-AUTO-08",
+      "label": "Mọi tham số phụ đưa vào công thức đều có nguồn",
+      "status": "PASS",
+      "evidence": "các tham số phụ đang dùng đều có khai nguồn",
+      "action": "Ghi <tên>_source trong gate_params.G3 (vd p_event_source,\ndropout_source) kèm PMID/DOI hoặc cơ sở."
+    },
+    {
+      "id": "G3-AUTO-09",
+      "label": "Các con số trong artifact nhất quán với nhau",
+      "status": "PASS",
+      "evidence": "N, bảng độ nhạy và dropout khớp nhau",
+      "action": "Sinh lại artifact sau khi sửa; bảng độ nhạy phải neo vào chính N đã kết luận."
+    },
+    {
+      "id": "G3-AUTO-10",
+      "label": "Artifact nhắc đúng chuẩn báo cáo của thiết kế",
+      "status": "PASS",
+      "evidence": "tìm thấy 'STROBE' trong artifact",
+      "action": "Thêm khối cỡ mẫu theo văn phong chuẩn báo cáo (CONSORT 2025 mục 16a /\nSPIRIT 2025 mục 19 / STROBE mục 10 / STARD 2015 mục 18 / TRIPOD+AI mục 10)."
+    },
+    {
+      "id": "G3-AUTO-11",
+      "label": "Non-inferiority/equivalence: biên Δ có khung quy định, biện minh và nguồn",
+      "status": "PASS",
+      "evidence": "giả thuyết superiority",
+      "action": "Khai ni_regulatory_framework (FDA/EMA) + margin_justification +\nmargin_source; biên Δ quá rộng làm kết luận 'không kém hơn' quá dễ đạt."
+    },
+    {
+      "id": "G3-AUTO-12",
+      "label": "Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm",
+      "status": "PASS",
+      "evidence": "không khai thiết kế theo chùm",
+      "action": "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ."
+    },
+    {
+      "id": "G3-AUTO-16",
+      "label": "Hiệu chỉnh quần thể hữu hạn (FPC) chỉ dùng cho khảo sát quần thể hữu hạn",
+      "status": "PASS",
+      "evidence": "không dùng hiệu chỉnh quần thể hữu hạn",
+      "action": "Bỏ --population-n với thử nghiệm ngẫu nhiên; với khảo sát thì ghi population_n_source."
+    },
+    {
+      "id": "G3-AUTO-17",
+      "label": "Thiết kế không dùng power đã dùng đúng khung thay thế",
+      "status": "PASS",
+      "evidence": "thiết kế dùng công thức power thông thường",
+      "action": "Định tính: quy tắc dừng bão hòa/information power. SR-MA: RIS + TSA\ncó hiệu chỉnh dị biệt. Tiên lượng: pmsampsize theo Riley."
+    },
+    {
+      "id": "G3-AUTO-13",
+      "label": "N thực tế đã chốt đủ lực và có phương pháp",
+      "status": "PASS",
+      "evidence": "N chốt=1000 ≥ N tối thiểu=453",
+      "action": "Nâng N, hoặc ghi rõ chấp nhận giảm lực kèm hệ quả; ghi confirmed_n_method cho thiết kế không dùng power."
+    },
+    {
+      "id": "G3-AUTO-14",
+      "label": "Tham số đã ghim đủ để chạy lại ra cùng một N",
+      "status": "PASS",
+      "evidence": "tham số quyết định đã ghim trong study_meta",
+      "action": "Ghim gate_params.G3 (effect_size, effect_type) để chạy lại không trôi giá trị."
+    },
+    {
+      "id": "G3-AUTO-15",
+      "label": "Khai rõ công thức đã dùng và phần mềm/phiên bản",
+      "status": "PASS",
+      "evidence": "formula=có; software=Python 3.14 (scipy.stats, statsmodels 0.14); đối chiếu chéo bằng nửa rộng KTC 95%",
+      "action": "Ghi gate_params.G3.software (vd 'run_g3_auto.py + scipy 1.18.0',\nG*Power 3.1, R pwr, pmsampsize 1.1.3)."
+    }
+  ],
+  "human_criteria": [
+    {
+      "id": "G3-HUMAN-01",
+      "label": "Chủ nhiệm/thống kê viên xác nhận effect size và nguồn của nó",
+      "status": "REVIEW",
+      "evidence": "effect_source_confirmed=False; nguồn=thiếu",
+      "action": "Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true."
+    },
+    {
+      "id": "G3-HUMAN-02",
+      "label": "Đã xác nhận các giả định phụ (bỏ cuộc, tỷ lệ biến cố, SD, tỷ lệ hiện mắc)",
+      "status": "REVIEW",
+      "evidence": "assumptions_confirmed=False",
+      "action": "Rà từng dòng bảng tham số của artifact A4 rồi đặt assumptions_confirmed=true."
+    },
+    {
+      "id": "G3-HUMAN-03",
+      "label": "Đã xác nhận loại giả thuyết (superiority / không thua kém / tương đương)",
+      "status": "REVIEW",
+      "evidence": "hypothesis_type=superiority (mặc định của hệ là superiority); confirmed=False",
+      "action": "Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true."
+    },
+    {
+      "id": "G3-HUMAN-04",
+      "label": "Cỡ mẫu được tính cho ĐÚNG kết cục chính đã chốt ở G1",
+      "status": "REVIEW",
+      "evidence": "powered_for_outcome='Cỡ mẫu tính cho KẾT CỤC MT1: tỷ lệ hài lòng chung (G1 >= 4/5' khác kết cục chính của G1 ('G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_Truc')",
+      "action": "Ghi gate_params.G3.powered_for_outcome khớp\ngate_params.G1.primary_outcome; nếu tính cho kết cục khác thì phải nói\nrõ và biện minh."
+    },
+    {
+      "id": "G3-HUMAN-05",
+      "label": "Đã xác nhận khả thi tuyển đủ cỡ mẫu tại cơ sở",
+      "status": "REVIEW",
+      "evidence": "recruitment_feasibility_confirmed=False",
+      "action": "Đối chiếu N với lưu lượng bệnh nhân thật và thời gian thu thập, rồi xác nhận."
+    },
+    {
+      "id": "G3-HUMAN-06",
+      "label": "Có vai trò (thống kê viên/chủ nhiệm) và thời điểm rà soát",
+      "status": "REVIEW",
+      "evidence": "reviewed_by_role=thiếu (nhóm=không nhận diện); reviewed_at=thiếu",
+      "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI) và reviewed_at dạng ISO-8601; không lưu danh tính."
+    },
+    {
+      "id": "G3-HUMAN-07",
+      "label": "Thử nghiệm then chốt: có nhà thống kê độc lập và lực đủ cao",
+      "status": "PASS",
+      "evidence": "không khai là thử nghiệm then chốt",
+      "action": "Với thử nghiệm quyết định, mời nhà thống kê độc lập xác nhận và cân nhắc power 90%."
+    }
+  ],
+  "pending_actions": [
+    "Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true.",
+    "Rà từng dòng bảng tham số của artifact A4 rồi đặt assumptions_confirmed=true.",
+    "Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true.",
+    "Ghi gate_params.G3.powered_for_outcome khớp\ngate_params.G1.primary_outcome; nếu tính cho kết cục khác thì phải nói\nrõ và biện minh.",
+    "Đối chiếu N với lưu lượng bệnh nhân thật và thời gian thu thập, rồi xác nhận.",
+    "Ghi reviewed_by_role (STATISTICIAN hoặc PI) và reviewed_at dạng ISO-8601; không lưu danh tính."
+  ],
+  "artifact_manifest": {
+    "A4_SAMPLE_SIZE": {
+      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "62f5e875dd9c6a2b6b7e2052505417c3edf6f7aec63f81d78c970ece1c7d48ed"
+    }
+  },
+  "sensitivity_table": {
+    "found": true,
+    "cells_total": 9,
+    "cells_na": 0,
+    "base_cell": 385
+  },
+  "standards_basis": [
+    {
+      "standard": "DELTA2 guidance (Cook JA và cs., 2018)",
+      "scope": "Chọn và BIỆN MINH target difference; 8 mục bắt buộc khi báo cáo phép tính cỡ mẫu của thử nghiệm ngẫu nhiên",
+      "pmid": "30560792",
+      "doi": "10.1136/bmj.k3750"
+    },
+    {
+      "standard": "DELTA2 — báo cáo HTA đầy đủ (2019)",
+      "scope": "Target difference phải khớp estimand chính; nêu rõ nếu dùng cách xác định cỡ mẫu không theo power quy ước",
+      "pmid": "31661431",
+      "doi": "10.3310/hta23600"
+    },
+    {
+      "standard": "ICH E9 §3.5 (Statistical Principles for Clinical Trials)",
+      "scope": "Đề cương phải ghi phương pháp tính cỡ mẫu, mọi đại lượng đầu vào, CƠ SỞ của từng ước lượng và một phân tích độ nhạy của cỡ mẫu",
+      "url": "https://database.ich.org/sites/default/files/E9_Guideline.pdf"
+    },
+    {
+      "standard": "ICH E9(R1) §A.4 (Addendum on Estimands)",
+      "scope": "Cỡ mẫu phải xuất phát từ mô tả chính xác treatment effect quan tâm; cẩn trọng khi mượn effect size từ nghiên cứu báo cáo theo estimand khác",
+      "url": "https://database.ich.org/sites/default/files/E9-R1_Step4_Guideline_2019_1203.pdf"
+    },
+    {
+      "standard": "CONSORT 2025 — mục 16a/16b",
+      "scope": "Nêu cỡ mẫu được xác định thế nào KÈM TẤT CẢ giả định chống đỡ phép tính; nêu phần mềm; nêu phân tích giữa kỳ và quy tắc dừng",
+      "doi": "10.1136/bmj-2024-081123"
+    },
+    {
+      "standard": "SPIRIT 2025 — mục 19",
+      "scope": "Đề cương phải nêu cỡ mẫu và mọi giả định; cỡ mẫu phải nhất quán với kết cục chính và với bản ghi ở cơ quan đăng ký nghiên cứu",
+      "doi": "10.1136/bmj-2024-081477"
+    },
+    {
+      "standard": "Riley RD và cs., BMJ 2020 — cỡ mẫu mô hình tiên lượng",
+      "scope": "Cỡ mẫu phát triển mô hình tính theo shrinkage/R² đích, KHÔNG dùng quy tắc ngón tay EPV",
+      "pmid": "32188600",
+      "doi": "10.1136/bmj.m441"
+    },
+    {
+      "standard": "Riley RD, 2019 — đính chính Part II",
+      "scope": "Erratum bắt buộc đọc kèm công thức Part II (nhị phân/time-to-event)",
+      "pmid": "31793031",
+      "doi": "10.1002/sim.8409"
+    },
+    {
+      "standard": "van Smeden M và cs., 2016",
+      "scope": "Bằng chứng ủng hộ ngưỡng EPV cho hồi quy logistic là YẾU — không dùng EPV làm tiêu chí quyết định cỡ mẫu",
+      "pmid": "27881078",
+      "doi": "10.1186/s12874-016-0267-3"
+    },
+    {
+      "standard": "Ogundimu EO và cs., 2016",
+      "scope": "Nguồn THẬT của ngưỡng 'EPV ≥ 20' — chỉ áp cho mô hình Cox có nhiều biến tiên đoán nhị phân tỷ lệ thấp, và phải theo dữ liệu cụ thể",
+      "pmid": "26964707",
+      "doi": "10.1016/j.jclinepi.2016.02.031"
+    },
+    {
+      "standard": "TRIPOD+AI (2024) — mục 10",
+      "scope": "Giải trình cỡ mẫu RIÊNG cho phát triển và cho đánh giá mô hình, kèm chi tiết phép tính; thay thế hoàn toàn TRIPOD 2015",
+      "pmid": "38626948",
+      "doi": "10.1136/bmj-2023-078378"
+    },
+    {
+      "standard": "Green SB, 1991",
+      "scope": "Quy tắc n ≥ 104 + m cho kiểm định từng hệ số hồi quy đa biến",
+      "pmid": "26776715",
+      "doi": "10.1207/s15327906mbr2603_7"
+    },
+    {
+      "standard": "STARD 2015 — mục 18",
+      "scope": "Nêu cỡ mẫu DỰ KIẾN và cách xác định, cho nghiên cứu độ chính xác chẩn đoán",
+      "pmid": "26511519",
+      "doi": "10.1136/bmj.h5527"
+    },
+    {
+      "standard": "STARD-AI (2025)",
+      "scope": "Bản MỞ RỘNG (không thay thế STARD 2015) khi test chỉ số là mô hình AI; đòi cỡ mẫu của từng tập huấn luyện/hiệu chỉnh/kiểm định",
+      "pmid": "40954311",
+      "doi": "10.1038/s41591-025-03953-8"
+    },
+    {
+      "standard": "Buderer NMF, 1996",
+      "scope": "Cỡ mẫu độ nhạy/độ đặc hiệu quy ra TỔNG N qua tỷ lệ hiện mắc (N_Se = n_Se/prev; N_Sp = n_Sp/(1−prev); lấy max)",
+      "pmid": "8870764",
+      "doi": "10.1111/j.1553-2712.1996.tb03538.x"
+    },
+    {
+      "standard": "Connor RJ, 1987",
+      "scope": "Cỡ mẫu so sánh hai test GHÉP CẶP trên cùng bệnh nhân (nền tảng McNemar)",
+      "pmid": "3567305"
+    },
+    {
+      "standard": "STROBE — mục 10 (Study size)",
+      "scope": "Nghiên cứu quan sát phải giải thích cỡ mẫu đến từ đâu: theo công thức, hoặc do ràng buộc thực tế (và nói rõ ràng buộc đó)",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2020496/"
+    },
+    {
+      "standard": "Hajian-Tilaki K, 2011",
+      "scope": "Cỡ mẫu ước lượng MỘT tỷ lệ theo sai số biên d; dùng p=0,5 khi chưa biết tỷ lệ thì phải ghi rõ lý do (phương sai lớn nhất)",
+      "pmid": "24551434"
+    },
+    {
+      "standard": "Malterud K và cs., 2016 — information power",
+      "scope": "Khung quyết định cỡ mẫu định tính theo 5 chiều, thay cho công thức power",
+      "pmid": "26613970",
+      "doi": "10.1177/1049732315617444"
+    },
+    {
+      "standard": "COREQ (2007) / SRQR (2014)",
+      "scope": "Chuẩn báo cáo nghiên cứu định tính — khai số người tham gia và lý lẽ",
+      "pmid": "17872937",
+      "doi": "10.1093/intqhc/mzm042"
+    },
+    {
+      "standard": "Wetterslev J và cs., 2017 — TSA/RIS",
+      "scope": "Tổng quan hệ thống không dùng công thức power theo nhóm; dùng required information size có hiệu chỉnh dị biệt (D²/I²)",
+      "pmid": "28264661",
+      "doi": "10.1186/s12874-017-0315-7"
+    },
+    {
+      "standard": "FDA Guidance — Non-Inferiority Clinical Trials (11/2016)",
+      "scope": "Tách bạch M1 (toàn bộ hiệu quả thuốc chứng, cận dưới KTC từ dữ liệu lịch sử) và M2 (chênh lệch tối đa chấp nhận được về lâm sàng)",
+      "url": "https://www.fda.gov/media/78504/download"
+    },
+    {
+      "standard": "EMA/CHMP — Choice of the non-inferiority margin (EMEA/CPMP/EWP/2158/99)",
+      "scope": "Biên Δ phải biện minh trong đề cương; CẤM định nghĩa Δ như một TỶ LỆ của hiệu số thuốc chứng–giả dược, CẤM dùng effect size chuẩn hoá, CẤM nới Δ vì nghiên cứu nhỏ. (Đang có bản dự thảo thay thế EMA/301654/2025 — rà lại.)",
+      "url": "https://www.ema.europa.eu/en/choice-non-inferiority-margin-scientific-guideline"
+    },
+    {
+      "standard": "CONSORT extension — non-inferiority/equivalence (Piaggio 2012)",
+      "scope": "Khai khung NI/tương đương ở tiêu đề, giả thuyết, cỡ mẫu và một/hai phía",
+      "pmid": "23268518",
+      "doi": "10.1001/jama.2012.87802"
+    },
+    {
+      "standard": "CONSORT extension — cluster randomised trials (2012), mục 7a",
+      "scope": "Nêu cách tính, SỐ CHÙM (và giả định cỡ chùm đều/không đều), cỡ chùm, ICC và độ bất định của ICC",
+      "pmid": "22951546",
+      "doi": "10.1136/bmj.e5661"
+    },
+    {
+      "standard": "CONSORT extension — stepped wedge CRT (2018)",
+      "scope": "SW-CRT KHÔNG dùng được DE = 1+(m−1)·ICC đơn giản; phải khai đủ tham số tương quan để tái lập phép tính",
+      "pmid": "30413417",
+      "doi": "10.1136/bmj.k1614"
+    },
+    {
+      "standard": "Kahan BC và cs., 2016",
+      "scope": "Số chùm nhỏ làm lạm phát sai lầm loại I — cần hiệu chỉnh mẫu nhỏ (Kenward-Roger/Satterthwaite hoặc sandwich hiệu chỉnh)",
+      "pmid": "27600609",
+      "doi": "10.1186/s13063-016-1571-2"
+    },
+    {
+      "standard": "Eldridge SM và cs., 2006",
+      "scope": "Cỡ chùm không đều: cần hệ số biến thiên CV; CV < 0,23 thì ảnh hưởng không đáng kể, từ 0,23 trở lên phải hiệu chỉnh",
+      "pmid": "16943232",
+      "doi": "10.1093/ije/dyl129"
+    }
+  ],
+  "scope_statement": "PASS_G3_CONFIRMED chỉ xác nhận rằng từng giả định đưa vào phép tính cỡ mẫu đã có nguồn khai báo và đã được người nhận vai trò thống kê viên/chủ nhiệm xác nhận. G3 KHÔNG phải cổng ký mật mã: chữ ký sổ cái không áp dụng cho cổng này, nên đây là lời tự khai có dấu vết, không phải bằng chứng độc lập. Hợp đồng này cũng không kiểm được tính đúng đắn lâm sàng của effect size — việc đó thuộc thống kê viên và bác sĩ.",
+  "disclaimer": "Cần bác sĩ kiểm chứng."
+}

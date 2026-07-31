@@ -574,6 +574,28 @@ def parse_sensitivity_table(artifact_text: str) -> dict[str, Any]:
             continue
         power_match = re.fullmatch(r"(\d+)%", cells[0])
         if not power_match:
+            # THÊM 2026-07-31: thiết kế MÔ TẢ dùng bảng "p × d" chứ không phải
+            # "power × effect size" (cỡ mẫu theo độ chính xác không phụ thuộc
+            # power). Trước đây parser chỉ nhận hàng mở đầu bằng "NN%", nên với
+            # mọi đề tài mô tả nó trả found=False và G3-AUTO-09 báo "không đọc
+            # được bảng" — một lỗi không bao giờ sửa được từ phía artifact.
+            prev_match = re.fullmatch(r"(0?\.\d+)\s*(\(cơ sở\))?", cells[0])
+            if not prev_match:
+                continue
+            result["found"] = True
+            result["kind"] = "prevalence"
+            values_p: list[Optional[int]] = []
+            for cell in cells[1:4]:
+                number = re.fullmatch(r"\*{0,2}(\d+)\*{0,2}\**", cell)
+                if number:
+                    values_p.append(int(number.group(1)))
+                else:
+                    values_p.append(None)
+                    result["cells_na"] += 1
+                result["cells_total"] += 1
+            result["rows"][prev_match.group(1)] = values_p
+            if prev_match.group(2):
+                result["base_row_key"] = prev_match.group(1)
             continue
         result["found"] = True
         values: list[Optional[int]] = []
@@ -592,10 +614,21 @@ def parse_sensitivity_table(artifact_text: str) -> dict[str, Any]:
 def sensitivity_base_cell(
     table: Mapping[str, Any], power: Optional[float]
 ) -> Optional[int]:
-    """Ô cơ sở = hàng ứng với power đang dùng, cột ES × 1.00 (cột giữa)."""
+    """Ô cơ sở của bảng độ nhạy.
+
+    Bảng "power × effect size": hàng ứng với power đang dùng, cột ES × 1.00.
+    Bảng "p × d" của thiết kế mô tả: hàng được đánh dấu "(cơ sở)", cột d giữa —
+    ở đó cỡ mẫu không phụ thuộc power nên không có hàng power để tra.
+    """
     rows = table.get("rows") or {}
     if not rows:
         return None
+    if table.get("kind") == "prevalence":
+        base_key = table.get("base_row_key")
+        if base_key is None or base_key not in rows:
+            return None
+        values = rows[base_key]
+        return values[1] if len(values) > 1 else None
     key = None
     if power is not None:
         key = int(round(power * 100))
@@ -782,7 +815,25 @@ def evaluate_g3_quality(
     effect_source = g3.get("effect_source") or g3.get("effect_size_source")
     kind = source_kind(effect_source)
     needs_effect = bool(effect_val) or (effect_type and not n_not_applicable)
-    if not needs_effect:
+    if effect_type == "PREVALENCE":
+        # THÊM 2026-07-31: thiết kế MÔ TẢ không có effect size — cỡ mẫu tính theo
+        # ĐỘ CHÍNH XÁC, nên "nguồn của tham số cỡ mẫu" chính là nguồn của tỷ lệ
+        # ước lượng p (đã kiểm riêng ở G3-AUTO-08 qua prevalence_source). Trước
+        # đây tiêu chí này đòi PMID/DOI/MCID/pilot cho effect size, một thứ
+        # thiết kế mô tả không thể có, nên mọi đề tài mô tả kẹt REVIEW vĩnh viễn.
+        if _present(g3.get("prevalence_source")):
+            source_status = "PASS"
+            source_evidence = (
+                "thiết kế mô tả: cỡ mẫu theo độ chính xác, không dùng effect size; "
+                f"nguồn tỷ lệ ước lượng p đã ghi: {str(g3.get('prevalence_source'))[:100]}"
+            )
+        else:
+            source_status = "REVIEW"
+            source_evidence = (
+                "thiết kế mô tả nhưng chưa ghi nguồn của tỷ lệ ước lượng p — "
+                "điền gate_params.G3.prevalence_source"
+            )
+    elif not needs_effect:
         source_status = "PASS"
         source_evidence = "thiết kế không dùng effect size kiểu này"
     elif kind:

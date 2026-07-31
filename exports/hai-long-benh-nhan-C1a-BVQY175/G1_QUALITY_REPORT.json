@@ -1,0 +1,196 @@
+{
+  "schema_version": "1.1",
+  "contract_version": "G1-2026.1",
+  "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+  "automated_checks_passed": true,
+  "human_confirmation_complete": false,
+  "automatic_criteria": [
+    {
+      "id": "G1-AUTO-00",
+      "label": "Guardrail liêm chính G1 sạch",
+      "status": "PASS",
+      "evidence": "guardrail_passed=True",
+      "action": "Sửa mọi lỗi PII, vượt cổng, nguồn hoặc disclaimer trước khi tiếp tục."
+    },
+    {
+      "id": "G1-AUTO-01",
+      "label": "Tiền đề G0 có checkpoint và guardrail sạch",
+      "status": "PASS",
+      "evidence": "G0 legacy guardrail passed=True",
+      "action": "Hoàn thiện G0 trước khi xác nhận G1."
+    },
+    {
+      "id": "G1-AUTO-02",
+      "label": "Mã thiết kế thuộc vocabulary canonical",
+      "status": "PASS",
+      "evidence": "internal_code='cross_sectional'",
+      "action": "Chọn một mã thiết kế canonical được hệ hỗ trợ."
+    },
+    {
+      "id": "G1-AUTO-03",
+      "label": "Chuẩn báo cáo khớp thiết kế",
+      "status": "PASS",
+      "evidence": "đã chọn='STROBE'; canon='STROBE'",
+      "action": "Sửa reporting map theo skill_standards.py."
+    },
+    {
+      "id": "G1-AUTO-03b",
+      "label": "Chuẩn đề cương/protocol khớp thiết kế",
+      "status": "PASS",
+      "evidence": "đã chọn='Protocol định trước; đăng ký nếu cần minh bạch'; canon='Protocol định trước; đăng ký nếu cần minh bạch'",
+      "action": "Gắn chuẩn protocol riêng; không dùng checklist báo cáo kết quả thay thế."
+    },
+    {
+      "id": "G1-AUTO-04",
+      "label": "Thiết kế không còn suy luận mơ hồ",
+      "status": "PASS",
+      "evidence": "ambiguous=false",
+      "action": "PI/methodologist phải pin thiết kế sau khi đọc lại khoảng trống."
+    },
+    {
+      "id": "G1-AUTO-04b",
+      "label": "So sánh ít nhất ba phương án và kiểm soát đủ nhóm sai lệch/trustworthiness theo thiết kế",
+      "status": "PASS",
+      "evidence": "primary_present=True; alternatives_complete=True; rationale_present=True; bias_controls=7",
+      "action": "Bổ sung 3 phương án, lý do chọn/loại và đủ 7 nhóm sai lệch."
+    },
+    {
+      "id": "G1-AUTO-04c",
+      "label": "SAP không chứa khuôn phân tích mâu thuẫn với thiết kế",
+      "status": "PASS",
+      "evidence": "không phát hiện khuôn sai cho cross_sectional",
+      "action": "Sinh lại A2 bằng template theo đúng thiết kế; không vá một khuôn RCT cho mọi loại."
+    },
+    {
+      "id": "G1-AUTO-05",
+      "label": "Đủ bộ A1b/A2/A2b/A13/A13b và các phần bắt buộc",
+      "status": "PASS",
+      "evidence": "5/5 artifact có mặt và qua kiểm cấu trúc",
+      "action": "Sinh lại hoặc sửa artifact G1 bị thiếu."
+    },
+    {
+      "id": "G1-AUTO-06",
+      "label": "Có định danh PMID/DOI khớp chuỗi trong Evidence Ledger (CHƯA xác minh qua PubMed/Crossref — việc đó thuộc cổng A12 kiem-chung-trich-dan)",
+      "status": "PASS",
+      "evidence": "12 PMID/DOI được thu, ledger_traceable=True (khớp CHUỖI, KHÔNG gọi PubMed để xác minh tồn tại)",
+      "action": "Bổ sung Evidence Ledger có PMID/DOI thật; không bịa nguồn."
+    }
+  ],
+  "human_criteria": [
+    {
+      "id": "G1-HUMAN-01",
+      "label": "PI/methodologist xác nhận thiết kế",
+      "status": "REVIEW",
+      "evidence": "pin='cross_sectional'; design_confirmed=False",
+      "action": "Điền design_code/gate_params.G1.design và design_confirmed=true."
+    },
+    {
+      "id": "G1-HUMAN-02",
+      "label": "Mục tiêu và kết cục chính vận hành đã chốt",
+      "status": "REVIEW",
+      "evidence": "objectives=đủ; outcome_name=có; measure=thiếu; timepoint=thiếu; type=thiếu",
+      "action": "Điền objectives và primary_outcome gồm tên, định nghĩa/công cụ đo, thời điểm và loại dữ liệu."
+    },
+    {
+      "id": "G1-HUMAN-03",
+      "label": "Quần thể, tiêu chí chọn, tuyển mẫu, bối cảnh và thời gian đã xác định",
+      "status": "REVIEW",
+      "evidence": "population=có; inclusion=có; exclusion=có; recruitment=có; setting=có; study_period=thiếu",
+      "action": "Điền population, inclusion/exclusion criteria, recruitment_strategy, setting và study_period."
+    },
+    {
+      "id": "G1-HUMAN-04",
+      "label": "Can thiệp/phơi nhiễm, đối chứng và lịch theo dõi đã xác định",
+      "status": "PASS",
+      "evidence": "intervention_or_exposure=có; comparator=có; follow_up_schedule=có",
+      "action": "Điền intervention_or_exposure, comparator (hoặc lý do N/A) và follow_up_schedule."
+    },
+    {
+      "id": "G1-HUMAN-05",
+      "label": "Estimand đủ 5 thuộc tính khi là RCT",
+      "status": "PASS",
+      "evidence": "N/A cho thiết kế không phải RCT",
+      "action": "Điền population, treatment condition, variable, intercurrent-event strategy và population summary measure."
+    },
+    {
+      "id": "G1-HUMAN-06",
+      "label": "Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận",
+      "status": "REVIEW",
+      "evidence": "protocol_core_confirmed=False; bias_controls_confirmed=False; feasibility_confirmed=False",
+      "action": "PI/methodologist rà toàn bộ protocol core, bảng bias và tính khả thi rồi bật ba cờ xác nhận."
+    },
+    {
+      "id": "G1-HUMAN-07",
+      "label": "Khoảng trống và nội dung trích dẫn đã được người thật đọc lại",
+      "status": "REVIEW",
+      "evidence": "evidence_review_confirmed=False; identifiers=12",
+      "action": "Evidence reviewer/PI xác nhận nội dung nguồn và khoảng trống."
+    },
+    {
+      "id": "G1-HUMAN-08",
+      "label": "Có vai trò và thời điểm rà phương pháp",
+      "status": "REVIEW",
+      "evidence": "reviewed_by_role=thiếu; reviewed_at=thiếu",
+      "action": "Ghi reviewed_by_role và reviewed_at dạng ISO-8601; không cần lưu danh tính."
+    }
+  ],
+  "pending_actions": [
+    "Điền design_code/gate_params.G1.design và design_confirmed=true.",
+    "Điền objectives và primary_outcome gồm tên, định nghĩa/công cụ đo, thời điểm và loại dữ liệu.",
+    "Điền population, inclusion/exclusion criteria, recruitment_strategy, setting và study_period.",
+    "PI/methodologist rà toàn bộ protocol core, bảng bias và tính khả thi rồi bật ba cờ xác nhận.",
+    "Evidence reviewer/PI xác nhận nội dung nguồn và khoảng trống.",
+    "Ghi reviewed_by_role và reviewed_at dạng ISO-8601; không cần lưu danh tính."
+  ],
+  "artifact_manifest": {
+    "A2": {
+      "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "95026d294466fd7bced6fb7249c784df79a8602e3ed2102b22c7909557175107"
+    },
+    "A1b": {
+      "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "29384c97c7e907d213ed81495dfdf0ef6b943a36d0152ae2ad4069c5bd5eaa3a"
+    },
+    "A2b": {
+      "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "5066abe7d535d221f76336f963eab2114f751f3d8ca119504141270e8992c728"
+    },
+    "A13": {
+      "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "5de5087b086310a566d9e16cb13df4ce9a41b5060d585b2ef8560af52dfefcd9"
+    },
+    "A13b": {
+      "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "ee4142804669315d6fd1e27a4e7a5c67d44e4c09b08a52043950a81e03df52ca"
+    }
+  },
+  "standards_basis": [
+    {
+      "standard": "EQUATOR Network",
+      "scope": "Bản đồ guideline theo loại nghiên cứu",
+      "url": "https://www.equator-network.org/library/"
+    },
+    {
+      "standard": "SPIRIT 2025",
+      "scope": "Protocol thử nghiệm ngẫu nhiên",
+      "pmid": "40294593",
+      "doi": "10.1001/jama.2025.4486"
+    },
+    {
+      "standard": "CONSORT 2025",
+      "scope": "Báo cáo kết quả thử nghiệm ngẫu nhiên",
+      "doi": "10.1136/bmj-2024-081123"
+    },
+    {
+      "standard": "PRISMA-P 2015",
+      "scope": "Protocol tổng quan hệ thống",
+      "doi": "10.1186/2046-4053-4-1"
+    },
+    {
+      "standard": "ICH E6(R3)",
+      "scope": "Quality-by-design và GCP cho thử nghiệm lâm sàng",
+      "url": "https://www.ema.europa.eu/en/ich-e6-good-clinical-practice-scientific-guideline"
+    }
+  ],
+  "scope_statement": "PASS_G1_CONFIRMED chỉ xác nhận thiết kế/reporting map và bộ artifact G1 theo bằng chứng đã ghi; không thay IRB, khóa SAP, dữ liệu thật hoặc thẩm định khoa học độc lập. Checklist báo cáo đánh giá tính đầy đủ của mô tả, không tự chứng minh chất lượng thiết kế hay thực hiện."
+}

@@ -633,17 +633,49 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         "",
         "## PHẦN 3 — PHÂN TÍCH ĐỘ NHẠY (Sensitivity Analysis)",
         "",
-        f"Bảng: Power × Effect size → N tổng (điều chỉnh {int(dropout*100)}% dropout)",
-        "",
-        f"| Power | ES × {sens_mults[0]} ({int(sens_mults[0]*100)}%) | ES × {sens_mults[1]} (cơ sở) | ES × {sens_mults[2]} ({int(sens_mults[2]*100)}%) |",
-        "|---|---|---|---|",
     ]
-    for pwr, row in sens_rows:
-        r = [str(v) if v != "N/A" else "N/A" for v in row]
-        lines.append(f"| {int(pwr*100)}% | {r[0]} | {r[1]} | {r[2]} |")
+    # SỬA 2026-07-31: bảng "Power × Effect size" vô nghĩa với thiết kế MÔ TẢ —
+    # cỡ mẫu theo độ chính xác không phụ thuộc power (ba dòng power cho cùng một
+    # số), và nhãn "ES" sai ngữ nghĩa vì tham số là tỷ lệ p chứ không phải effect
+    # size. Bảng đúng cho thiết kế này là p × d, giống bảng mà đề cương mô tả nào
+    # cũng phải có. Tiêu đề cũ còn tự khai "điều chỉnh N% dropout" trong khi các ô
+    # là N TRƯỚC dropout (chính G3-AUTO-09 bắt được mâu thuẫn này).
+    if effect_type == "PREVALENCE":
+        _d_list = [0.03, 0.05, 0.10]
+        _p_list = [0.10, 0.30, 0.50]
+        lines += [
+            f"Bảng: tỷ lệ ước lượng p × sai số cho phép d → N tối thiểu "
+            f"(TRƯỚC khi bù {int(dropout*100)}% không trả lời)",
+            "",
+            "| p ước lượng | " + " | ".join(f"d = ±{int(d*100)}%" for d in _d_list) + " |",
+            "|---|" + "---|" * len(_d_list),
+        ]
+        for _p in _p_list:
+            _cells = " | ".join(str(n_prevalence(_p, _d, alpha)) for _d in _d_list)
+            _mark = " (cơ sở)" if abs(_p - float(effect_val)) < 1e-9 else ""
+            lines.append(f"| {_p:.2f}{_mark} | {_cells} |")
+        lines += [
+            "",
+            "> *p = 0,50 cho N lớn nhất vì phương sai p(1−p) đạt cực đại tại đó; đây là lựa chọn "
+            "thận trọng khi chưa biết tỷ lệ thật. Thu hẹp d làm N tăng nhanh theo bình phương.*",
+            "",
+        ]
+    else:
+        lines += [
+            f"Bảng: Power × Effect size → N tổng (TRƯỚC khi bù {int(dropout*100)}% dropout)",
+            "",
+            f"| Power | ES × {sens_mults[0]} ({int(sens_mults[0]*100)}%) | ES × {sens_mults[1]} (cơ sở) | ES × {sens_mults[2]} ({int(sens_mults[2]*100)}%) |",
+            "|---|---|---|---|",
+        ]
+        for pwr, row in sens_rows:
+            r = [str(v) if v != "N/A" else "N/A" for v in row]
+            lines.append(f"| {int(pwr*100)}% | {r[0]} | {r[1]} | {r[2]} |")
+        lines += [
+            "",
+            "> *Lưu ý: Nếu bác sĩ điều chỉnh effect size, cỡ mẫu thay đổi theo bảng trên.*",
+            "",
+        ]
     lines += [
-        "",
-        "> *Lưu ý: Nếu bác sĩ điều chỉnh effect size, cỡ mẫu thay đổi theo bảng trên.*",
         "",
         "---",
         "",
@@ -814,6 +846,16 @@ def main():
     parser.add_argument("--effect-size", type=float, default=None)
     parser.add_argument("--effect-type", default=None, choices=["HR", "OR", "RR", "ARR%", "AUC", "MD"])
     parser.add_argument("--p0", type=float, default=0.30, help="Tỷ lệ biến cố nhóm chứng")
+    # Hai tham số của cỡ mẫu theo ĐỘ CHÍNH XÁC (thiết kế mô tả). Cố ý TÁCH khỏi
+    # --p0: p0 là "tỷ lệ nhóm chứng" trong so sánh hai nhóm, còn --prevalence là
+    # "tỷ lệ hiện mắc ước lượng" của quần thể — hai đại lượng khác nhau, gộp lại
+    # sẽ khiến artifact ghi sai tên tham số trong phần công thức.
+    parser.add_argument("--prevalence", type=float, default=None,
+                        help="Tỷ lệ hiện mắc ƯỚC LƯỢNG của quần thể (thiết kế mô tả cắt ngang). "
+                             "Không truyền thì dùng 0.5 — giá trị thận trọng nhất, cho N lớn nhất.")
+    parser.add_argument("--precision", type=float, default=0.05,
+                        help="Sai số cho phép d (nửa rộng khoảng tin cậy mong muốn) của cỡ mẫu "
+                             "theo độ chính xác. Mặc định 0.05 (±5%%).")
     parser.add_argument("--dropout", type=float, default=0.20)
     parser.add_argument("--p-event", type=float, default=0.30, help="Tỷ lệ biến cố tổng thể (log-rank)")
     parser.add_argument("--sd", type=float, default=None,
@@ -944,6 +986,35 @@ def main():
                       "để khóa cỡ mẫu, hoặc cung cấp --effect-size/--effect-type thủ công.")
         else:
             print("  ⚠ Không tìm được effect size — bác sĩ cần ấn định")
+
+    # SỬA 2026-07-31 (đề tài THẬT đầu tiên đi qua G3 — hài lòng người bệnh C1a):
+    # nghiên cứu MÔ TẢ cắt ngang tính cỡ mẫu theo ĐỘ CHÍNH XÁC (Lwanga & Lemeshow,
+    # WHO 1991), tham số là tỷ lệ ước lượng p và sai số cho phép d — nó KHÔNG có
+    # "effect size" theo nghĩa hiệu quả can thiệp. Trước bản vá này, mọi đề tài
+    # mô tả không truyền --effect-size đều BLOCKED ở G3 dù về phương pháp không
+    # thiếu gì; muốn chạy được phải nhét p vào ô --effect-size (chính bộ test
+    # tests/test_g3_confirmed_n.py cũng phải làm vậy — dấu hiệu ô này sai ngữ
+    # nghĩa cho thiết kế mô tả). Nhánh dưới đây nhận p từ --p0 đúng tên gọi của
+    # nó, và KHÔNG đổi hành vi khi bác sĩ có truyền --effect-size.
+    if design_code == "cross_sectional" and effect_val is None:
+        _p_est = args.prevalence if args.prevalence is not None else 0.5
+        if not (0 < _p_est < 1):
+            print(f"❌ LỖI: --prevalence={args.prevalence} phải trong khoảng (0,1) — đây là tỷ lệ "
+                  "hiện mắc ước lượng của quần thể, dùng cho công thức cỡ mẫu theo độ chính xác.")
+            sys.exit(1)
+        if not (0 < args.precision < 1):
+            print(f"❌ LỖI: --precision={args.precision} phải trong khoảng (0,1).")
+            sys.exit(1)
+        # Tên "PREVALENCE" là tên mà g3_quality_gate.EFFECT_TYPES_BY_DESIGN đã
+        # khai từ trước cho cross_sectional. Trước bản vá này run_g3_auto.py
+        # chưa bao giờ sinh ra tên đó, nên tiêu chí G3-AUTO-03 không có đường
+        # nào đạt được với thiết kế mô tả — hai module đã viết cho nhau nhưng
+        # chưa từng nối, vì chưa có đề tài mô tả thật nào chạy qua G3.
+        effect_val, effect_type = _p_est, "PREVALENCE"
+        _src = ("tham số --prevalence" if args.prevalence is not None
+                else "mặc định 0.5 — thận trọng nhất, cho N lớn nhất")
+        print(f"  → Thiết kế mô tả: cỡ mẫu theo ĐỘ CHÍNH XÁC, tỷ lệ ước lượng p = {effect_val} ({_src})")
+        print(f"     Sai số cho phép d = {args.precision}. Thiết kế này không cần effect size.")
 
     alpha = args.alpha
     power = args.power
@@ -1228,10 +1299,18 @@ def main():
                 formula_used = f"Two-proportion z-test: p1={p1:.2f}, p2={p2:.2f}{clamp_note}{_fleiss_note}"
             elif design_code == "cross_sectional":
                 p = effect_val if effect_val < 1.0 else 0.30
-                n_total = n_prevalence(p, 0.05, alpha)
+                # Sai số d lấy từ --precision (trước đây cố định 0.05, không cho
+                # chỉnh — nhưng d là lựa chọn thiết kế của chủ nhiệm, và bảng độ
+                # nhạy theo nhiều mức d là nội dung chuẩn của đề cương mô tả).
+                _d = args.precision
+                n_total = n_prevalence(p, _d, alpha)
                 n_per_group = n_total
                 n_adjusted = math.ceil(n_total / (1 - dropout))
-                formula_used = f"Cỡ mẫu ước lượng tỷ lệ (xấp xỉ chuẩn/Cochran): p={p:.2f}, e=0.05"
+                _p_label = ("tỷ lệ hiện mắc ước lượng" if effect_type == "PREVALENCE"
+                            else "tỷ lệ")
+                formula_used = (f"Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác "
+                                f"(Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): {_p_label} p={p:.2f}, "
+                                f"sai số cho phép d={_d}, alpha={alpha}")
             elif design_code == "diagnostic":
                 auc = effect_val if effect_type == "AUC" else 0.75
                 n_total = n_auc(auc, alpha, power)

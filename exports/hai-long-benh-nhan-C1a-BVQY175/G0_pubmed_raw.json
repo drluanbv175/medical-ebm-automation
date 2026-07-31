@@ -1,0 +1,99 @@
+{
+  "sr_ma": [],
+  "rct": [],
+  "guideline": [],
+  "recent": [],
+  "observational": [
+    {
+      "pmid": "41162961",
+      "title": "Implementation and evaluation of clinical pharmacy services in elderly outpatients with poorly controlled type 2 diabetes: a single-center experience from Vietnam.",
+      "year": "2025",
+      "journal": "BMC health services research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41162961/"
+    },
+    {
+      "pmid": "40771771",
+      "title": "Counseling Preferences Among Patients With Type 2 Diabetes: Implications for Personalized Care.",
+      "year": "2025",
+      "journal": "Journal of diabetes research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40771771/"
+    },
+    {
+      "pmid": "40726017",
+      "title": "Temporal Trends in Patient Choice of Outpatient Care Provider Among Vietnam's Insured Rural Residents, 2006-2020.",
+      "year": "2025",
+      "journal": "The International journal of health planning and management",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40726017/"
+    },
+    {
+      "pmid": "40623792",
+      "title": "Patient experience with cancer care in low- and middle-income Asian countries: a cross-sectional study of patients with advanced cancer.",
+      "year": "2025",
+      "journal": "BMJ global health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40623792/"
+    },
+    {
+      "pmid": "39132755",
+      "title": "An international observational study assessing conservative management in hemorrhoidal disease: results of CHORALIS (aCute HemORrhoidal disease evALuation International Study).",
+      "year": "2024",
+      "journal": "Journal of comparative effectiveness research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39132755/"
+    },
+    {
+      "pmid": "38753416",
+      "title": "Psychometric Assessment of an Item Bank for Adaptive Testing on Patient-Reported Experience of Care Environment for Severe Mental Illness: Validation Study.",
+      "year": "2024",
+      "journal": "JMIR mental health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38753416/"
+    },
+    {
+      "pmid": "36439278",
+      "title": "Patient Satisfaction With Healthcare Service Quality and Its Associated Factors at One Polyclinic in Hanoi, Vietnam.",
+      "year": "2022",
+      "journal": "International journal of public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36439278/"
+    },
+    {
+      "pmid": "34445940",
+      "title": "Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities.",
+      "year": "2023",
+      "journal": "Hospital topics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34445940/"
+    },
+    {
+      "pmid": "32584904",
+      "title": "Measuring satisfaction with health care services for Vietnamese patients with cardiovascular diseases.",
+      "year": "2020",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32584904/"
+    },
+    {
+      "pmid": "31703089",
+      "title": "Patient satisfaction with HIV services in Vietnam: Status, service models and association with treatment outcome.",
+      "year": "2019",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31703089/"
+    },
+    {
+      "pmid": "29051978",
+      "title": "Symptom prevalence, bother, and treatment satisfaction in men with lower urinary tract symptoms in Southeast Asia: a multinational, cross-sectional survey.",
+      "year": "2018",
+      "journal": "World journal of urology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29051978/"
+    },
+    {
+      "pmid": "16148334",
+      "title": "Mental health needs of cohabiting partners of Vietnam veterans with combat-related PTSD.",
+      "year": "2005",
+      "journal": "Psychiatric services (Washington, D.C.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/16148334/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 0,
+    "rct": 0,
+    "guideline": 0,
+    "observational": 12,
+    "recent": 0
+  }
+}
