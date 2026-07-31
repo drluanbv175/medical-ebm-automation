@@ -82,7 +82,7 @@ Xuất phát từ nhu cầu có dữ liệu nền tại chỗ để Trung tâm C
 
 **Mục tiêu 1 (mô tả):** Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
 
-**Mục tiêu 2 (phân tích):** Đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a.
+**Mục tiêu 2 (phân tích):** Đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
 
 *Do đây là nghiên cứu quan sát cắt ngang, Mục tiêu 2 chỉ nhằm xác định các mối liên quan, không nhằm và không cho phép suy diễn quan hệ nhân quả.*
 
