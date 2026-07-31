@@ -364,11 +364,34 @@ def _risk_table(risks: list) -> str:
     return header + divider + "\n".join(rows)
 
 
+def _meta_or_blank(meta: Optional[dict], *path: str, blank: str = "[CẦN BỔ SUNG]") -> str:
+    """Lấy giá trị đã có trong study_meta.json, không có thì trả nhãn chờ điền.
+
+    THÊM 2026-07-31: trước đây G2 chỉ đọc G1/G3 checkpoint (thiết kế + cỡ mẫu),
+    nên hồ sơ IRB để trống hàng loạt "[CẦN BỔ SUNG]" cho những thứ ĐÃ ĐƯỢC chốt
+    và lưu ở study_meta.gate_params từ G0/G1: chủ nhiệm, dân số, mục tiêu, tiêu
+    chí chọn/loại, nơi thực hiện. Bác sĩ phải gõ lại bằng tay những gì hệ thống
+    đã biết, và mỗi lần gõ lại là một cơ hội sai lệch giữa đề cương và hồ sơ IRB.
+    """
+    if not meta:
+        return blank
+    cur: object = meta
+    for key in path:
+        if not isinstance(cur, dict):
+            return blank
+        cur = cur.get(key)
+    if cur is None or cur == "" or cur == []:
+        return blank
+    if isinstance(cur, list):
+        return "; ".join(str(x) for x in cur)
+    return str(cur)
+
+
 def generate_g2_full_package(
     topic: str, study_name: str, design_code: str, design_primary: str,
     reporting_std: str, n_sr: int, n_rct: int, evidence_level: str,
     registry: Optional[dict], risk: dict, run_date: str, n_adjusted: int = 0,
-    specialist_modules: Optional[list] = None
+    specialist_modules: Optional[list] = None, meta: Optional[dict] = None
 ) -> str:
     """Sinh toàn bộ hồ sơ G2 — 8 tài liệu + 24 mục WHO TRDS 1.3.1.
 
@@ -378,6 +401,27 @@ def generate_g2_full_package(
     """
 
     specialist_modules = specialist_modules or []
+
+    # Dữ liệu đã chốt ở G0/G1 — điền thẳng vào hồ sơ thay vì bắt gõ lại.
+    _pi        = _meta_or_blank(meta, "administrative", "principal_investigator")
+    _pi_title  = _meta_or_blank(meta, "administrative", "pi_title")
+    _pi_unit   = _meta_or_blank(meta, "administrative", "pi_unit")
+    _pi_phone  = _meta_or_blank(meta, "administrative", "pi_phone")
+    _pi_email  = _meta_or_blank(meta, "administrative", "pi_email")
+    _irb_name  = _meta_or_blank(meta, "administrative", "irb_name", blank="[TÊN ĐƠN VỊ — CẦN BỔ SUNG]")
+    _sponsor   = _meta_or_blank(meta, "administrative", "sponsor",
+                                blank='[CẦN BỔ SUNG / "Không có tài trợ bên ngoài"]')
+    _population = _meta_or_blank(meta, "gate_params", "G0", "population",
+                                 blank="[CẦN BỔ SUNG — từ PICO P]")
+    _setting    = _meta_or_blank(meta, "gate_params", "G1", "setting",
+                                 blank="[CẦN — Đơn vị/bệnh viện]")
+    _incl       = _meta_or_blank(meta, "gate_params", "G1", "inclusion_criteria",
+                                 blank="[CẦN — từ PICO P, G0]")
+    _excl       = _meta_or_blank(meta, "gate_params", "G1", "exclusion_criteria",
+                                 blank="[CẦN — từ G1 SAP §1]")
+    _objectives = (meta or {}).get("gate_params", {}).get("G1", {}).get("objectives") or []
+    _obj1 = str(_objectives[0]) if len(_objectives) > 0 else "[CẦN — Mục tiêu 1, từ PICO G0]"
+    _obj2 = str(_objectives[1]) if len(_objectives) > 1 else "[CẦN — Mục tiêu 2 nếu có]"
     risk_table_str = _risk_table(risk["risks"])
     ct_table_str   = _ct_table(registry)
 
@@ -682,12 +726,12 @@ Link to protocol (pre-print): [sẽ bổ sung sau]
 ══════════════════════════════════════════════════════════════
 
 Kính gửi: Hội đồng Đạo đức Nghiên cứu Y sinh
-          [TÊN ĐƠN VỊ — CẦN BỔ SUNG]
+          {_irb_name}
 
-Từ:  Chủ nhiệm đề tài: [CẦN BỔ SUNG]
-     Chức vụ: [CẦN BỔ SUNG]
-     Đơn vị: [CẦN BỔ SUNG]
-     Điện thoại: [CẦN BỔ SUNG] | Email: [CẦN BỔ SUNG]
+Từ:  Chủ nhiệm đề tài: {_pi}
+     Chức vụ: {_pi_title}
+     Đơn vị: {_pi_unit}
+     Điện thoại: {_pi_phone} | Email: {_pi_email}
 
 TÊN ĐỀ TÀI: {topic}
 
@@ -695,10 +739,10 @@ THÔNG TIN TỔNG QUAN:
   Loại nghiên cứu: {design_primary}
   Mức nguy cơ (tự đánh giá): {risk["risk_level"]}
   Lộ trình xét duyệt đề nghị: {risk["irb_route"]}
-  Dân số tham gia: [CẦN BỔ SUNG — từ PICO P]
+  Dân số tham gia: {_population}
   Cỡ mẫu dự kiến: {n_display}
   Thời gian nghiên cứu: [CẦN — từ ___/___/{_YEAR} đến ___/___/____]
-  Nguồn tài trợ: [CẦN BỔ SUNG / "Không có tài trợ bên ngoài"]
+  Nguồn tài trợ: {_sponsor}
   Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
   Đăng ký nghiên cứu: [CẦN — {risk["register_where"]}]
 
@@ -743,18 +787,18 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
    [CẦN BỔ SUNG: lý do cần nghiên cứu thêm tại bối cảnh Việt Nam]
 
 2. MỤC TIÊU CỤ THỂ:
-   2.1 [CẦN — Mục tiêu 1, từ PICO G0]
-   2.2 [CẦN — Mục tiêu 2 nếu có]
+   2.1 {_obj1}
+   2.2 {_obj2}
 
 3. ĐỐI TƯỢNG THAM GIA:
-   Tiêu chí chọn: [CẦN — từ PICO P, G0]
-   Tiêu chí loại: [CẦN — từ G1 SAP §1]
+   Tiêu chí chọn: {_incl}
+   Tiêu chí loại: {_excl}
    Cỡ mẫu dự kiến: {n_display}
 
 4. PHƯƠNG PHÁP VÀ QUY TRÌNH:
    Thiết kế: {design_primary}
    Chuẩn báo cáo: {reporting_std}
-   Nơi thực hiện: [CẦN — Đơn vị/bệnh viện]
+   Nơi thực hiện: {_setting}
    Quy trình: [CẦN MÔ TẢ ngắn gọn theo PICO]
 
 5. RỦI RO TIỀM TÀNG VÀ BIỆN PHÁP BẢO VỆ:
@@ -809,7 +853,7 @@ Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
 
 TÊN ĐỀ TÀI: {topic}
 Đơn vị thực hiện: [CẦN BỔ SUNG]
-Chủ nhiệm đề tài: [CẦN BỔ SUNG]
+Chủ nhiệm đề tài: {_pi}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
@@ -889,7 +933,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 7. THÔNG TIN LIÊN HỆ
    ┌─────────────────────────────────────────────────────────┐
    │ Thắc mắc về nghiên cứu:                                │
-   │   Chủ nhiệm đề tài: [CẦN BỔ SUNG]                     │
+   │   Chủ nhiệm đề tài: {_pi}                     │
    │   Điện thoại: [CẦN BỔ SUNG]  Email: [CẦN BỔ SUNG]     │
    │                                                        │
    │ Thắc mắc về quyền của người tham gia:                  │
@@ -1666,11 +1710,27 @@ def main():
     if g3_cp_path.exists():
         try:
             g3 = json.loads(g3_cp_path.read_text(encoding="utf-8"))
-            n_adjusted = int(g3.get("n_adjusted") or 0)
+            # SỬA 2026-07-31: dùng confirmed_n khi chủ nhiệm/Hội đồng đã chốt N —
+            # cùng lỗi vừa vá ở run_g4_auto.py. Hồ sơ IRB và ICF phải ghi cỡ mẫu
+            # THẬT SẼ TUYỂN, không phải N tối thiểu theo công thức: người tham gia
+            # đọc ICF cần biết quy mô thật, và Hội đồng duyệt trên số thật.
+            _confirmed = int(g3.get("confirmed_n") or 0)
+            n_adjusted = _confirmed or int(g3.get("n_adjusted") or 0)
             if n_adjusted > 0:
-                print(f"  → G3: đã có cỡ mẫu thật N={n_adjusted} — tự điền vào ICF/đăng ký")
+                _src = "confirmed_n (chủ nhiệm/Hội đồng chốt)" if _confirmed else "n_adjusted"
+                print(f"  → G3: đã có cỡ mẫu thật N={n_adjusted} từ {_src} — tự điền vào ICF/đăng ký")
         except (json.JSONDecodeError, OSError, TypeError, ValueError):
             n_adjusted = 0
+
+    # study_meta.json giữ những gì G0/G1 đã chốt (chủ nhiệm, PICO, tiêu chí,
+    # bối cảnh) — đọc để hồ sơ IRB không bắt bác sĩ gõ lại thứ hệ thống đã biết.
+    _study_meta_for_g2 = None
+    _meta_path = out_dir / "study_meta.json"
+    if _meta_path.exists():
+        try:
+            _study_meta_for_g2 = json.loads(_meta_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            _study_meta_for_g2 = None
 
     # ── Bước 2: Risk profile ──
     print("\n⚖️  Bước 2/7: Xác định mức nguy cơ và lộ trình IRB...")
@@ -1709,7 +1769,8 @@ def main():
         design_primary=design_primary, reporting_std=reporting_std,
         n_sr=n_sr, n_rct=n_rct, evidence_level=evidence_level,
         registry=registry, risk=risk, run_date=run_date,
-        n_adjusted=n_adjusted, specialist_modules=specialist_modules
+        n_adjusted=n_adjusted, specialist_modules=specialist_modules,
+        meta=_study_meta_for_g2,
     )
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     md_path.write_text(artifact_md, encoding="utf-8")

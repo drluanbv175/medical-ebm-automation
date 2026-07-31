@@ -1,5 +1,5 @@
 # A3 — HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-07-31 20:54 | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
+> Tạo tự động: 2026-07-31 21:22 | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
 > [BẢN NHÁP TỰ ĐỘNG — DRAFT Phiên bản 1.0 chờ phê duyệt]
 > Cần bác sĩ/chủ nhiệm kiểm chứng, chỉnh sửa và ký trước khi nộp Hội đồng đạo đức.
 
@@ -27,11 +27,11 @@
 ══════════════════════════════════════════════════════════════
 
 Kính gửi: Hội đồng Đạo đức Nghiên cứu Y sinh
-          [TÊN ĐƠN VỊ — CẦN BỔ SUNG]
+          Hội đồng Y đức Bệnh viện Quân y 175
 
-Từ:  Chủ nhiệm đề tài: [CẦN BỔ SUNG]
+Từ:  Chủ nhiệm đề tài: Nguyễn Hà Luân
      Chức vụ: [CẦN BỔ SUNG]
-     Đơn vị: [CẦN BỔ SUNG]
+     Đơn vị: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
      Điện thoại: [CẦN BỔ SUNG] | Email: [CẦN BỔ SUNG]
 
 TÊN ĐỀ TÀI: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
@@ -40,10 +40,10 @@ THÔNG TIN TỔNG QUAN:
   Loại nghiên cứu: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
   Mức nguy cơ (tự đánh giá): TỐI THIỂU
   Lộ trình xét duyệt đề nghị: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)
-  Dân số tham gia: [CẦN BỔ SUNG — từ PICO P]
-  Cỡ mẫu dự kiến: [CẦN — chờ kết quả G3]
+  Dân số tham gia: Người bệnh ngoại trú từ đủ 18 tuổi trở lên (kể cả phụ nữ mang thai), đủ sức khỏe và năng lực nhận thức/ngôn ngữ để trả lời, đã cơ bản hoàn thành quy trình khám tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, và đồng ý tham gia tự nguyện (mục 4.3.1 đề cương)
+  Cỡ mẫu dự kiến: 1000
   Thời gian nghiên cứu: [CẦN — từ ___/___/2026 đến ___/___/____]
-  Nguồn tài trợ: [CẦN BỔ SUNG / "Không có tài trợ bên ngoài"]
+  Nguồn tài trợ: Không có tài trợ bên ngoài — kinh phí tự túc (chủ nhiệm đề tài tự chi trả)
   Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
   Đăng ký nghiên cứu: [CẦN — ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)]
 
@@ -88,18 +88,18 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
    [CẦN BỔ SUNG: lý do cần nghiên cứu thêm tại bối cảnh Việt Nam]
 
 2. MỤC TIÊU CỤ THỂ:
-   2.1 [CẦN — Mục tiêu 1, từ PICO G0]
-   2.2 [CẦN — Mục tiêu 2 nếu có]
+   2.1 MT1 (mô tả): Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
+   2.2 MT2 (phân tích): Đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 
 3. ĐỐI TƯỢNG THAM GIA:
-   Tiêu chí chọn: [CẦN — từ PICO P, G0]
-   Tiêu chí loại: [CẦN — từ G1 SAP §1]
-   Cỡ mẫu dự kiến: [CẦN — chờ kết quả G3]
+   Tiêu chí chọn: Người bệnh ngoại trú từ đủ 18 tuổi trở lên (bao gồm cả phụ nữ mang thai); Đủ sức khỏe, tỉnh táo và đủ năng lực nhận thức/ngôn ngữ để trả lời; Đã cơ bản hoàn thành quy trình khám tại Khoa C1a (đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT); Đồng ý tham gia tự nguyện sau khi được giải thích
+   Tiêu chí loại: Từ chối tham gia; Không đủ năng lực trả lời (cấp cứu, suy giảm nhận thức, rào cản ngôn ngữ không khắc phục được); Nhân viên y tế của chính khoa/bệnh viện đi khám (nguy cơ xung đột/thiên lệch đánh giá); Đã tham gia nghiên cứu này ở lượt trước trong cùng kỳ (chống trùng); Phiếu khuyết dữ liệu vượt ngưỡng cho phép (biến PhieuHopLe, mục 4.10)
+   Cỡ mẫu dự kiến: 1000
 
 4. PHƯƠNG PHÁP VÀ QUY TRÌNH:
    Thiết kế: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
    Chuẩn báo cáo: STROBE
-   Nơi thực hiện: [CẦN — Đơn vị/bệnh viện]
+   Nơi thực hiện: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — khối khám ngoại trú theo yêu cầu (dịch vụ) tại bệnh viện quân y tuyến cuối
    Quy trình: [CẦN MÔ TẢ ngắn gọn theo PICO]
 
 5. RỦI RO TIỀM TÀNG VÀ BIỆN PHÁP BẢO VỆ:
@@ -157,7 +157,7 @@ Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
 
 TÊN ĐỀ TÀI: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 Đơn vị thực hiện: [CẦN BỔ SUNG]
-Chủ nhiệm đề tài: [CẦN BỔ SUNG]
+Chủ nhiệm đề tài: Nguyễn Hà Luân
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
@@ -171,7 +171,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    trạng [bệnh] ở người bệnh như anh/chị không."
 
    Nghiên cứu do [đơn vị] thực hiện với sự hỗ trợ của [tài trợ
-   nếu có]. Cỡ mẫu dự kiến: khoảng [CẦN — từ G3] người tham gia
+   nếu có]. Cỡ mẫu dự kiến: khoảng 1000 người tham gia
    tại [nơi thực hiện].
 
    THAM GIA LÀ HOÀN TOÀN TỰ NGUYỆN. Quyết định không tham gia
@@ -258,7 +258,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 7. THÔNG TIN LIÊN HỆ
    ┌─────────────────────────────────────────────────────────┐
    │ Thắc mắc về nghiên cứu:                                │
-   │   Chủ nhiệm đề tài: [CẦN BỔ SUNG]                     │
+   │   Chủ nhiệm đề tài: Nguyễn Hà Luân                     │
    │   Điện thoại: [CẦN BỔ SUNG]  Email: [CẦN BỔ SUNG]     │
    │                                                        │
    │ Thắc mắc về quyền của người tham gia:                  │
@@ -609,7 +609,7 @@ Trường 16 — Date of first enrolment:
             [CẦN — chỉ tuyển sau phê duyệt và đăng ký: ___/___/2026]
 
 Trường 17 — Target sample size:
-            [CẦN — chờ kết quả G3]
+            1000
 
 Trường 18 — Recruitment status:
             Not yet recruiting

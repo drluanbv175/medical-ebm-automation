@@ -4,7 +4,7 @@
 
 ---
 
-**Chủ nhiệm đề tài:** ……………………………………… *(họ tên, chức danh, đơn vị công tác, bổ sung khi được phê duyệt)*
+**Chủ nhiệm đề tài:** Nguyễn Hà Luân — Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175. *(Chức danh: ……………………)*
 
 **Đơn vị chủ trì:** Khoa Khám bệnh C1a – Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh.
 
@@ -478,7 +478,7 @@ Kế hoạch phân tích được trình bày tóm tắt dưới đây và chi t
 
 ## 4.11. Đạo đức nghiên cứu
 
-Toàn bộ hồ sơ đạo đức của đề tài là **bản trình Hội đồng; việc thu thập dữ liệu chỉ bắt đầu sau khi được phê duyệt**. Điều kiện bắt buộc (cổng cứng): phải có phê duyệt của Hội đồng Đạo đức trong nghiên cứu y sinh học Bệnh viện Quân y 175 (và cấp có thẩm quyền của đơn vị) trước khi thu thập bất kỳ dữ liệu người tham gia nào. Mã số phê duyệt để trống …………… *(bổ sung khi được phê duyệt)*, không điền giả.
+Toàn bộ hồ sơ đạo đức của đề tài là **bản trình Hội đồng; việc thu thập dữ liệu chỉ bắt đầu sau khi được phê duyệt**. Điều kiện bắt buộc (cổng cứng): phải có phê duyệt của Hội đồng Y đức Bệnh viện Quân y 175 (và cấp có thẩm quyền của đơn vị) trước khi thu thập bất kỳ dữ liệu người tham gia nào. Mã số phê duyệt để trống …………… *(bổ sung khi được phê duyệt)*, không điền giả.
 
 Đây là nghiên cứu quan sát, không can thiệp, khảo sát ẩn danh và tự điền, **mức nguy cơ tối thiểu**. Nghiên cứu tuân thủ Tuyên ngôn Helsinki (WMA, bản sửa đổi 2024), hướng dẫn CIOMS 2016, và các quy định của Việt Nam: Thông tư 43/2024/TT-BYT (về tổ chức và hoạt động của Hội đồng đạo đức trong nghiên cứu y sinh học, hiệu lực 01/02/2025), Luật Khám bệnh, chữa bệnh 15/2023/QH15 (quyền chấp nhận/từ chối tham gia nghiên cứu), và Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 cùng Nghị định 356/2025/NĐ-CP (hiệu lực 01/01/2026).
 
@@ -861,7 +861,7 @@ Chúng tôi trân trọng mời Ông/Bà tham gia một khảo sát ngắn về 
 
 **7. Quyền tự nguyện và không ảnh hưởng chăm sóc.** Tham gia là hoàn toàn tự nguyện. Nếu Ông/Bà không tham gia hoặc dừng giữa chừng, việc khám chữa bệnh và mọi quyền lợi của Ông/Bà tại Bệnh viện không bị ảnh hưởng (Luật Khám bệnh, chữa bệnh 15/2023/QH15). Ông/Bà có thể dừng trước khi nộp phiếu khảo sát. Vì phiếu khảo sát không mang thông tin định danh và không liên kết ngược được với tờ đồng thuận này, sau khi đã bỏ phiếu khảo sát vào hòm sẽ không thể rút lại riêng phiếu trả lời cụ thể của Ông/Bà; Ông/Bà vẫn có thể liên hệ để rút quyền sử dụng thông tin đã ký trên chính tờ này nếu thực hiện trước thời điểm đó.
 
-**8. Thông tin liên hệ.** Chủ nhiệm đề tài: …………… – Điện thoại/Email: ……………. Thắc mắc/khiếu nại về quyền của người tham gia: Hội đồng Đạo đức BVQY 175: …………….
+**8. Thông tin liên hệ.** Chủ nhiệm đề tài: Nguyễn Hà Luân, Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 – Điện thoại/Email: ……………. Thắc mắc hoặc khiếu nại về quyền của người tham gia xin liên hệ Hội đồng Y đức Bệnh viện Quân y 175: …………….
 
 ---
 

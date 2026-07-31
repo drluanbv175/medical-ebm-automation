@@ -148,5 +148,15 @@
       "reviewed_at": null
     }
   },
-  "design_code": "cross_sectional"
+  "design_code": "cross_sectional",
+  "administrative": {
+    "principal_investigator": "Nguyễn Hà Luân",
+    "pi_title": null,
+    "pi_unit": "Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175",
+    "pi_phone": null,
+    "pi_email": null,
+    "irb_name": "Hội đồng Y đức Bệnh viện Quân y 175",
+    "irb_contact": null,
+    "sponsor": "Không có tài trợ bên ngoài — kinh phí tự túc (chủ nhiệm đề tài tự chi trả)"
+  }
 }
