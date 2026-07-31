@@ -427,23 +427,50 @@ def guardrail_check(artifact, n_adjusted, effect_val, missing_sd=False):
     else:
         warnings.append("R3 ✅ Không tự claim approved")
     # R4 — Có DRAFT
+    # SỬA 2026-07-31 (audit tautology vòng 2): generate_artifact() in cứng
+    # đúng 2 lần chuỗi "DRAFT" VÔ ĐIỀU KIỆN (tiêu đề + dòng trạng thái) cho
+    # MỌI design_code/effect_val/hypothesis_type — đã xác nhận thực nghiệm
+    # 12 tổ hợp thiết kế khác nhau, draft_count LUÔN=2, R4 LUÔN PASS. R4
+    # KHÔNG BAO GIỜ có thể BLOCK qua pipeline thật; giá trị hẹp DUY NHẤT là
+    # bắt được nếu ai đó XÓA nhãn DRAFT khỏi file .md sau khi sinh
+    # (tampering) — không thẩm định N/effect size có đáng tin.
     draft_count = artifact.count("DRAFT")
     if draft_count < 1:
         errors.append("R4 🔴 Thiếu nhãn DRAFT")
     else:
         warnings.append(f"R4 ✅ Nhãn DRAFT đủ ({draft_count} lần)")
     # R5 — Sensitivity analysis
+    # SỬA 2026-07-31: luật này chỉ kiểm SỰ HIỆN DIỆN của tiêu đề mục "PHẦN 3
+    # — PHÂN TÍCH ĐỘ NHẠY" (luôn có, generate_artifact() in cứng), KHÔNG
+    # kiểm NỘI DUNG bảng — PASS ngay cả khi 100% ô là "N/A" (thiếu SD khiến
+    # mọi kịch bản không tính được số thật, đã xác nhận thực nghiệm). Thẩm
+    # định nội dung bảng THẬT thuộc g3_quality_gate.py::G3-AUTO-09 (đọc số
+    # qua parse_sensitivity_table()/cells_na) — không nhân đôi logic đó ở
+    # đây.
     if "sensitivity" in artifact.lower() or "độ nhạy" in artifact.lower():
         warnings.append("R5 ✅ Sensitivity analysis gồm nhiều kịch bản")
     else:
         errors.append("R5 🔴 Thiếu sensitivity analysis")
     # R6 — Có [CẦN]
+    # SỬA 2026-07-31: generate_artifact() luôn in tối thiểu 4 chuỗi "[CẦN"
+    # VÔ ĐIỀU KIỆN (1 ở bảng dropout + 3 ở checklist PHẦN 5 cố định) — đã
+    # xác nhận thực nghiệm can_count dao động 5-11 nhưng LUÔN >=3 ở 12 tổ
+    # hợp thử, R6 LUÔN PASS bất kể mức độ hoàn thiện thật của đề tài. Cùng
+    # dạng lỗi "thưởng dán nhãn" đã đóng ở G0::guardrail_check_g0() R6.
+    # KHÔNG thêm ngưỡng phụ thuộc dữ liệu mới ở đây — PHẦN 5 giữ checklist
+    # tĩnh dù bác sĩ đã xác nhận xong qua gate_params.G3, nên đếm "[CẦN"
+    # không phản ánh đúng tiến độ; đánh giá hoàn thiện ĐÚNG đã có sẵn ở
+    # g3_quality_gate.py (G3-HUMAN-01..07).
     can_count = len(re.findall(r'\[CẦN', artifact))
     if can_count < 3:
         errors.append(f"R6 🔴 Quá ít trường [CẦN...] ({can_count})")
     else:
         warnings.append(f"R6 ✅ {can_count}+ trường [CẦN...] đã gắn nhãn")
     # R7 — Disclaimer
+    # SỬA 2026-07-31: dòng disclaimer được generate_artifact() in cứng VÔ
+    # ĐIỀU KIỆN ở cuối artifact — R7 chỉ bắt được tampering (xóa dòng sau
+    # khi sinh), không thẩm định bác sĩ có thực sự kiểm chứng nội dung hay
+    # chưa. Cùng khuôn R7 đã đóng ở G0/G1/G2/G6/G8/G9 trong đợt audit này.
     if "Cần bác sĩ kiểm chứng" not in artifact:
         errors.append("R7 🔴 Thiếu disclaimer")
     else:
