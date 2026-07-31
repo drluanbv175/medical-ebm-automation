@@ -125,6 +125,13 @@ def _complete_readiness(study: str, n_authors: int = 2) -> dict:
             "no_identifiable_participant_content_confirmed": True,
         }
     )
+    value["institutional_confirmation"].update(
+        {
+            "department_head_required": False,
+            "internal_review_required": False,
+            "sponsor_review_required": False,
+        }
+    )
     value["final_package"].update(
         {
             "manuscript_version": "1.0-final",
@@ -327,6 +334,77 @@ def test_similarity_requires_human_policy_not_universal_percentage(tmp_path, mon
     assert row["status"] == "REVIEW"
     assert "< 15%" not in G9.build_part5_integrity({}, "PYTEST")
     assert "< 15%" not in G9.build_part8_gate_criteria({}, 1, "PYTEST")
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# G9-HUMAN-11 — NHÓM D (xác nhận thể chế), thêm 2026-07-31 (audit tích hợp plugin)
+# ════════════════════════════════════════════════════════════════════════════
+# Trước bản vá này, checklist "Phần 8 — Hard Gate" (run_g9_auto.py) in NHÓM D
+# (D1 trưởng đơn vị · D2 hội đồng nội bộ · D3 nhà tài trợ) cho bác sĩ đọc/ký trên
+# giấy/Word nhưng KHÔNG có field cấu trúc nào để xác nhận máy đọc được — khoảng
+# trống THẬT DUY NHẤT trong Phần 8 (NHÓM A/B/C đều đã có ánh xạ điện tử từ trước).
+# _complete_readiness() baseline đánh dấu cả 3 nhóm "không cần" (required=False) —
+# các test dưới đây kiểm 2 đường lệch: (a) chưa trả lời (required=None) và
+# (b) cần nhưng chưa xác nhận (required=True, confirmed=False).
+
+
+def test_institutional_confirmation_undetermined_blocks_ready(tmp_path, monkeypatch):
+    """required=None (bác sĩ chưa trả lời có/không cần) KHÔNG được coi là OK — phải
+    trả lời rõ ràng, không được bỏ trống rồi mặc định qua."""
+    out_dir = tmp_path / "exports" / "PYTEST-G9Q-INSTDET"
+    _prepare_study(out_dir, "PYTEST-G9Q-INSTDET")
+    readiness = json.loads((out_dir / G9Q.READINESS_JSON).read_text(encoding="utf-8"))
+    readiness["institutional_confirmation"]["department_head_required"] = None
+    _write_json(out_dir / G9Q.READINESS_JSON, readiness)
+    _patch_upstream(monkeypatch)
+    report = G9Q.evaluate_study("PYTEST-G9Q-INSTDET", out_dir, repo_root=tmp_path)
+    row = next(x for x in report["automatic_criteria"] if x["id"] == "G9-HUMAN-11")
+    assert row["status"] == "REVIEW"
+    assert report["status"] != G9Q.STATUS_READY
+
+
+def test_institutional_confirmation_required_not_yet_confirmed_blocks_ready(
+    tmp_path, monkeypatch
+):
+    """Trưởng đơn vị ĐƯỢC đánh dấu là cần duyệt (required=True) nhưng chưa xác
+    nhận thật (confirmed=False) — không được qua chỉ vì đã "trả lời có"."""
+    out_dir = tmp_path / "exports" / "PYTEST-G9Q-INSTREQ"
+    _prepare_study(out_dir, "PYTEST-G9Q-INSTREQ")
+    readiness = json.loads((out_dir / G9Q.READINESS_JSON).read_text(encoding="utf-8"))
+    readiness["institutional_confirmation"]["sponsor_review_required"] = True
+    _write_json(out_dir / G9Q.READINESS_JSON, readiness)
+    _patch_upstream(monkeypatch)
+    report = G9Q.evaluate_study("PYTEST-G9Q-INSTREQ", out_dir, repo_root=tmp_path)
+    row = next(x for x in report["automatic_criteria"] if x["id"] == "G9-HUMAN-11")
+    assert row["status"] == "REVIEW"
+    assert "sponsor_review" in row["evidence"]
+    assert report["status"] != G9Q.STATUS_READY
+
+
+def test_institutional_confirmation_required_and_confirmed_reaches_ready(
+    tmp_path, monkeypatch
+):
+    """Đường PASS phải đạt được khi cần duyệt VÀ đã xác nhận thật kèm ngày —
+    không chỉ đường "không cần" mới qua được."""
+    out_dir = tmp_path / "exports" / "PYTEST-G9Q-INSTOK"
+    _prepare_study(out_dir, "PYTEST-G9Q-INSTOK")
+    readiness = json.loads((out_dir / G9Q.READINESS_JSON).read_text(encoding="utf-8"))
+    now = datetime.now(timezone.utc).isoformat()
+    readiness["institutional_confirmation"].update(
+        {
+            "internal_review_required": True,
+            "internal_review_confirmed": True,
+            "internal_review_confirmed_at": now,
+        }
+    )
+    _write_json(out_dir / G9Q.READINESS_JSON, readiness)
+    _patch_upstream(monkeypatch)
+    report = G9Q.evaluate_study(
+        "PYTEST-G9Q-INSTOK", out_dir, repo_root=tmp_path, write=True
+    )
+    row = next(x for x in report["automatic_criteria"] if x["id"] == "G9-HUMAN-11")
+    assert row["status"] == "PASS", row
+    assert report["status"] == G9Q.STATUS_READY, report
 
 
 def test_pi_approval_on_checkpoint_locks_then_manuscript_tamper_blocks(

@@ -129,8 +129,12 @@ _INTERNAL_TRACE_PATTERNS: Sequence[tuple[str, Any]] = (
     ),
 )
 
-# ICMJE bản Updated January 2026 — Mục V (AI) là phần cấp 1 MỚI; nhãn "ICMJE 2023"
-# hiện còn trong run_g8_auto.py là STALE.
+# ICMJE bản Updated January 2026 — Mục V (AI) là phần cấp 1 quan trọng cho khai báo AI.
+# SỬA 2026-07-31 (audit tích hợp plugin, phát hiện qua rà lại các "chưa sửa" cũ trong CLAUDE.md):
+# comment này TỪNG nói nhãn "ICMJE 2023" "hiện còn" trong run_g8_auto.py là STALE — đã lỗi thời,
+# nhãn đó đã được sửa xong ở run_g8_auto.py từ trước (đọc đúng "ICMJE Mục V, bản cập nhật 1/2026");
+# comment cũ mô tả một trạng thái không còn đúng. Giữ lại như ghi chú LỊCH SỬ về lý do có bộ token
+# dưới đây (bắt câu khai báo AI thật, không phải kiểm tra nhãn chuẩn).
 _AI_DISCLOSURE_TOKENS = ("trí tuệ nhân tạo", "artificial intelligence", "AI-assisted", "LLM")
 _AI_TOOL_NAME_RE = re.compile(
     r"(chatgpt|gpt-?[0-9]|claude|gemini|copilot|bard|llama|mistral)", re.IGNORECASE
@@ -679,10 +683,20 @@ def evaluate_g8_quality(
     ))
 
     # ── G8-AUTO-10 — checklist chuẩn báo cáo có tham gia quyết định không ──
-    # Lệch NỘI BỘ đã xác nhận: artifact in "PASS khi đáp ứng TẤT CẢ 6 điều kiện
-    # BẮT BUỘC" và liệt kê mục 6 là "checklist ≥ 60%", nhưng g8_status của
-    # run_g8_auto.py chỉ tính 5 điều kiện — reporting_ok bị bỏ ngoài. Nghĩa là
-    # một đề tài có checklist 30% vẫn in PASS ngay dưới dòng báo 30%.
+    # LỊCH SỬ (đã lỗi thời, giữ để hiểu bối cảnh): comment ở đây từng nói
+    # g8_status của run_g8_auto.py "chỉ tính 5 điều kiện — reporting_ok bị bỏ
+    # ngoài" (một đề tài checklist 30% vẫn PASS). SỬA 2026-07-31 (rà lại các
+    # mục "chưa sửa" cũ trong CLAUDE.md): bug đó đã được vá TRƯỚC ĐÓ, ngày
+    # 2026-07-29 (commit bc2890a, `decide_g8_status()` nay nhận đủ 6 biến gồm
+    # `reporting_ok` — xác nhận qua đọc code + `git log -S"reporting_ok"` +
+    # `tests/test_g8_quality_gate.py` 5 test khóa đúng hành vi mới). Comment
+    # SỬA 2026-07-31 CRITICAL KEY_MISMATCH bên dưới được viết SAU bug 5-vs-6
+    # nhưng TRƯỚC khi phát hiện nó đã được vá — nên vẫn đúng về key-mismatch,
+    # chỉ riêng câu mở đầu "chỉ tính 5 điều kiện" ở trên là không còn đúng.
+    # G8-AUTO-10 do đó KHÔNG còn là "cửa duy nhất" — nó là lớp kiểm ĐỘC LẬP
+    # THỨ HAI đọc lại checkpoint, hữu ích nếu checkpoint bị sửa tay/ghi sai
+    # key sau khi run_g8_auto.py đã quyết định g8_status (đúng như key-mismatch
+    # bên dưới minh hoạ) — không phải vì run_g8_auto.py không tự kiểm.
     # SỬA 2026-07-31 (audit tautology vòng 2 — CRITICAL KEY_MISMATCH): trước
     # đây đọc "reporting_completeness_pct"/"reporting_pct" — nhưng
     # run_g8_auto.py::write_g8_checkpoint() (dòng ~1919) chỉ TỪNG ghi khóa
@@ -706,8 +720,9 @@ def evaluate_g8_quality(
     elif pct < 60:
         rep_status = "REVIEW"
         rep_evidence = (
-            f"checklist chuẩn báo cáo {pct:.0f}% < 60% — lưu ý run_g8_auto.py KHÔNG "
-            "tính điều kiện này vào g8_status dù artifact in nó là 'bắt buộc'"
+            f"checklist chuẩn báo cáo {pct:.0f}% < 60% — run_g8_auto.py cũng dùng "
+            "đúng ngưỡng này khi tính g8_status (từ 2026-07-29); đây là lớp kiểm "
+            "độc lập thứ hai đọc lại checkpoint, phòng khi checkpoint bị sửa tay/ghi sai key"
         )
     else:
         rep_status, rep_evidence = "PASS", f"checklist chuẩn báo cáo {pct:.0f}%"

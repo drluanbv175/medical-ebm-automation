@@ -317,6 +317,26 @@ def build_readiness_template(
             "registration_statement_final": False,
             "no_identifiable_participant_content_confirmed": False,
         },
+        # THÊM 2026-07-31 (audit tích hợp plugin — khoảng trống NHÓM D của checklist
+        # "PHẦN 8 — Hard Gate" mà run_g9_auto.py::build_part8_gate_criteria() in ra
+        # cho bác sĩ đọc/ký trên giấy/Word: D1 trưởng đơn vị · D2 hội đồng xét duyệt
+        # nội bộ · D3 nhà tài trợ duyệt nội dung — 3 mục này KHÔNG có field cấu trúc
+        # nào trước đây (0 kết quả grep "institution"/"sponsor_approv"/"department_head"
+        # trong g9_quality_gate.py); mọi mục KHÁC của Phần 8 (NHÓM A/B/C) đã có ánh xạ
+        # điện tử qua các khối/tiêu chí khác. Mỗi nhóm dùng cặp *_required (None=chưa
+        # xác định, False="không cần" theo đúng checklist gốc, True="cần") + *_confirmed
+        # + *_confirmed_at, cùng khuôn venue_due_diligence/ethics_and_privacy ở trên.
+        "institutional_confirmation": {
+            "department_head_required": None,
+            "department_head_confirmed": False,
+            "department_head_confirmed_at": None,
+            "internal_review_required": None,
+            "internal_review_confirmed": False,
+            "internal_review_confirmed_at": None,
+            "sponsor_review_required": None,
+            "sponsor_review_confirmed": False,
+            "sponsor_review_confirmed_at": None,
+        },
         "final_package": {
             "manuscript_path": f"G7_A8_MANUSCRIPT_{study}.md",
             "reporting_checklist_path": f"G8_A9_PRESUBMISSION_{study}.md",
@@ -578,6 +598,35 @@ def _ethics_ok(payload: Mapping[str, Any]) -> tuple[bool, str]:
         )
     )
     return ok, f"final_ethics_privacy_statements={ok}"
+
+
+def _institutional_ok(payload: Mapping[str, Any]) -> tuple[bool, str]:
+    """NHÓM D của checklist Phần 8 (run_g9_auto.py) — xem THÊM 2026-07-31 ở
+    build_readiness_template(). Mỗi nhóm OK khi: (a) đánh dấu rõ "không cần"
+    (required=False, đúng lựa chọn ☐ Không cần trên checklist gốc), hoặc
+    (b) required=True VÀ đã xác nhận VÀ có ngày xác nhận thật. required=None
+    (chưa trả lời) KHÔNG ok — bác sĩ phải trả lời rõ, không được bỏ trống."""
+    value = payload.get("institutional_confirmation")
+    value = value if isinstance(value, Mapping) else {}
+
+    def _group_ok(prefix: str) -> bool:
+        required = value.get(f"{prefix}_required")
+        if required is False:
+            return True
+        if required is True:
+            return (
+                value.get(f"{prefix}_confirmed") is True
+                and _iso_date(value.get(f"{prefix}_confirmed_at"))
+            )
+        return False
+
+    groups = ("department_head", "internal_review", "sponsor_review")
+    ok = all(_group_ok(g) for g in groups)
+    detail = "; ".join(
+        f"{g}(required={value.get(f'{g}_required')!r},confirmed={value.get(f'{g}_confirmed')!r})"
+        for g in groups
+    )
+    return ok, detail
 
 
 def _package_files(
@@ -903,6 +952,28 @@ def evaluate_study(
             "PASS" if ethics_ok else "REVIEW",
             ethics_evidence,
             "PI rà toàn văn và hình/phụ lục; loại dữ liệu nhận diện trước phát hành.",
+        )
+    )
+
+    # THÊM 2026-07-31 (audit tích hợp plugin): đóng khoảng trống NHÓM D của
+    # checklist "PHẦN 8 — Hard Gate" (run_g9_auto.py) — trưởng đơn vị/hội đồng
+    # nội bộ/nhà tài trợ duyệt nội dung trước khi nộp. Trước bản vá này, đây là
+    # khoảng trống THẬT duy nhất trong Phần 8 (NHÓM A/B/C đều đã có ánh xạ điện
+    # tử qua các tiêu chí khác). Tờ giấy Phần 8 vẫn là bản TÓM TẮT cho bác sĩ
+    # đọc — xác nhận thật vẫn qua gate_params/JSON như mọi G9-HUMAN khác, KHÔNG
+    # phải cơ chế đọc ngược tick ☐/☑ trên bản in/Word (việc đó là quyết định UX
+    # khác, để ngỏ cho tới khi có yêu cầu rõ).
+    institutional_ok, institutional_evidence = _institutional_ok(readiness)
+    rows.append(
+        _criterion(
+            "G9-HUMAN-11",
+            "Xác nhận thể chế (NHÓM D — trưởng đơn vị/hội đồng nội bộ/nhà tài trợ)",
+            "PASS" if institutional_ok else "REVIEW",
+            institutional_evidence,
+            (
+                "Với mỗi nhóm: đánh dấu 'không cần' nếu đúng, hoặc xác nhận đã duyệt kèm "
+                "ngày trong institutional_confirmation của G9_PUBLICATION_READINESS.json."
+            ),
         )
     )
 

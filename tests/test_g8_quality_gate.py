@@ -482,11 +482,19 @@ def test_a12_chua_dat_thi_CHAN_cong():
     assert report["status"] == G8Q.STATUS_BLOCKED
 
 
-def test_checklist_duoi_nguong_bi_ra_soat_kem_ghi_chu_lech_noi_bo():
+def test_checklist_duoi_nguong_bi_ra_soat_la_kiem_doc_lap_lan_hai():
+    """SỬA 2026-07-31: trước đây test này (và evidence string nguồn) mô tả một
+    LỆCH NỘI BỘ — run_g8_auto.py không tính reporting_ok vào g8_status dù artifact
+    tuyên bố bắt buộc. Lệch đó đã được vá từ 2026-07-29 (commit bc2890a,
+    xem test_g8_status_bug_20260729* / decide_g8_status trong run_g8_auto.py) —
+    TRƯỚC bản test này được viết, nhưng comment/evidence string vẫn mô tả sai.
+    Nay G8-AUTO-10 là lớp kiểm ĐỘC LẬP THỨ HAI (đọc lại checkpoint), không phải
+    cửa duy nhất."""
     report = _evaluate(checkpoint=_checkpoint(reporting_score_pct=30.0))
     row = _row(report, "G8-AUTO-10")
     assert row["status"] == "REVIEW"
-    assert "KHÔNG tính điều kiện này vào g8_status" in row["evidence"]
+    assert "lớp kiểm độc lập thứ hai" in row["evidence"]
+    assert "KHÔNG" not in row["evidence"]
 
 
 def test_g8_auto_10_key_mismatch_20260731():
