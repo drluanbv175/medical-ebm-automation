@@ -977,6 +977,17 @@ def guardrail_check_g9(artifact: str) -> dict:
         warnings.append("R3 ✅ Không tự claim G9 PASSED")
 
     # R4 — Đủ nhãn DRAFT và CHỜ
+    # LƯU Ý PHẠM VI (audit tautology vòng 2, 2026-07-31): main() ghép artifact
+    # từ header + 8 phần + footer — cả header ("**Trạng thái:** DRAFT — CHỜ KÝ
+    # TẤT CẢ TÁC GIẢ"), footer ("[BẢN NHÁP TỰ ĐỘNG — DRAFT]"), build_part1_
+    # icmje/build_part2_coi/build_part5_integrity (mỗi hàm 1 dòng "[DRAFT —
+    # ...]" cố định), và build_part8_gate_criteria ("G9 STATUS: DRAFT — CHỜ KÝ
+    # TẤT CẢ TÁC GIẢ VÀ PI") đều in các chuỗi này VÔ ĐIỀU KIỆN — không phụ
+    # thuộc n_authors/target_journal/checkpoint nào. Ngưỡng draft_count>=3 và
+    # cho_count>=2 LUÔN đạt qua pipeline thật (xác nhận: 5 nguồn "DRAFT" + 3
+    # nguồn "CHỜ" cố định, chưa kể phần điều kiện). Tiêu chí chỉ bắt được nếu
+    # ai đó xóa các dòng này SAU KHI sinh (tampering), không thẩm định gói đã
+    # thật sự sẵn sàng ký hay chưa — việc đó thuộc g9_quality_gate.py.
     draft_count = artifact.count("DRAFT")
     cho_count   = artifact.count("CHỜ")
     if draft_count >= 3 and cho_count >= 2:
@@ -999,6 +1010,16 @@ def guardrail_check_g9(artifact: str) -> dict:
     warnings.append(f"R5 ✅ {can_count} trường [CẦN...] còn lại (thông tin, không chặn)")
 
     # R6 — 8 phần đủ
+    # LƯU Ý PHẠM VI (audit tautology vòng 2, 2026-07-31): main() ghép artifact
+    # bằng "\n".join([header, part1, ..., part8, footer]) — part1..part8 là
+    # kết quả của build_part1_icmje()...build_part8_gate_criteria(), MỖI hàm
+    # in tiêu đề "## PHẦN N — ..." VÔ ĐIỀU KIỆN ở đầu, và cả 8 hàm LUÔN được
+    # gọi theo đúng thứ tự cố định — không có nhánh nào bỏ qua một phần theo
+    # study/n_authors/checkpoint. R6 KHÔNG BAO GIỜ có thể BLOCK qua pipeline
+    # thật; giá trị hẹp DUY NHẤT là bắt được nếu ai đó xóa một tiêu đề phần
+    # khỏi file .md SAU KHI sinh (tampering/truncation) — không thẩm định nội
+    # dung từng phần có đủ/đúng hay chưa (việc đó thuộc g9_quality_gate.py
+    # G9-HUMAN-01..10). Cùng dạng lỗi đã đóng ở G7-AUTO-04 (7 mục A8 IMRAD).
     required_sections = [
         "PHẦN 1", "PHẦN 2", "PHẦN 3", "PHẦN 4",
         "PHẦN 5", "PHẦN 6", "PHẦN 7", "PHẦN 8",
@@ -1010,6 +1031,12 @@ def guardrail_check_g9(artifact: str) -> dict:
         warnings.append("R6 ✅ Đủ 8 phần A10")
 
     # R7 — Disclaimer
+    # SỬA 2026-07-31 (audit tautology vòng 2): header ("> Cần bác sĩ kiểm
+    # chứng toàn bộ nội dung.") và footer ("Cần bác sĩ kiểm chứng.") của
+    # main() đều in dòng này VÔ ĐIỀU KIỆN — R7 chỉ bắt được tampering (xóa
+    # dòng sau khi sinh), không thẩm định bác sĩ có thực sự đọc lại nội dung
+    # hay chưa. Cùng khuôn R7 đã đóng ở G0/G1/G2/G3/G6/G7/G8 trong đợt audit
+    # này.
     if "cần bác sĩ" in artifact.lower() and "kiểm chứng" in artifact.lower():
         warnings.append("R7 ✅ Có disclaimer 'Cần bác sĩ kiểm chứng'")
     else:
