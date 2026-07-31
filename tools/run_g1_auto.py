@@ -1728,6 +1728,15 @@ def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_c
         warnings.append("R5 ✅ Mọi chỗ 'cỡ mẫu = N' đều gắn nhãn [CẦN...] cục bộ hoặc chưa điền")
 
     # R7 — Disclaimer
+    # SỬA 2026-07-31 (audit tautology vòng 2): generate_g1_artifact() in dòng
+    # disclaimer này VÔ ĐIỀU KIỆN ở 2 vị trí cố định (mở đầu + kết luận) cho
+    # MỌI question_type/topic/internal_code — đã xác nhận thực nghiệm 4 tổ
+    # hợp treatment/diagnostic/qualitative/sr đều PASS như nhau. R7 KHÔNG BAO
+    # GIỜ có thể BLOCK qua pipeline thật; phạm vi thật chỉ là bắt tampering/
+    # truncation SAU khi sinh (xóa dòng disclaimer khỏi file .md đã lưu) —
+    # không thẩm định bác sĩ có thực sự kiểm chứng nội dung hay chưa (việc đó
+    # thuộc G1-HUMAN-06/07/08, đọc gate_params.G1 thật). Cùng khuôn đã áp cho
+    # R7 của G0/G3/G6/G8/G9 trong đợt audit này.
     if "cần bác sĩ kiểm chứng" not in artifact.lower():
         errors.append("R7 🔴 Thiếu disclaimer")
     else:

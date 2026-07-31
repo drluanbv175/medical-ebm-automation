@@ -212,11 +212,25 @@ def test_rct_without_complete_five_attribute_estimand_never_passes(tmp_path):
 
 
 def test_qualitative_g1_uses_qualitative_confirmation_not_numeric_outcome(tmp_path):
+    # SỬA 2026-07-31 (audit tautology vòng 2, G1-AUTO-04b): _design() mặc
+    # định bias_controls là danh sách 7 mục RCT — trước bản vá này, test
+    # KHÔNG BAO GIỜ thực sự khớp bias_controls['qualitative'] thật (5 mục,
+    # xem run_g1_auto.py::BIAS_CONTROLS['qualitative']) mà infer_study_design()/
+    # _apply_design_pin() thật sự gán, nên đã "che" đúng bug G1-AUTO-04b
+    # (ngưỡng cũ >=7 hardcode cho mọi thiết kế). Ghi đè bằng danh sách 5 mục
+    # thật để test khớp đường sản xuất thật.
     design = _design(
         primary="Nghiên cứu định tính",
         internal_code="qualitative",
         reporting_standard="COREQ hoặc SRQR",
         protocol_standard="Protocol/reflexivity plan",
+        bias_controls=[
+            ("Credibility (độ tin cậy nội tại)", "Triangulation; member checking"),
+            ("Transferability (khả năng chuyển giao)", "Mô tả dày bối cảnh + mẫu"),
+            ("Dependability (độ tin cậy quy trình)", "Audit trail; mã hóa nhất quán"),
+            ("Confirmability (tính khách quan)", "Reflexivity; đối chiếu 2 người mã hóa"),
+            ("Reporting bias", "Chuẩn báo cáo COREQ/SRQR đầy đủ"),
+        ],
     )
     meta = _confirmed_meta()
     meta["design_code"] = "qualitative"

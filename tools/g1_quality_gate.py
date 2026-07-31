@@ -809,8 +809,22 @@ def evaluate_g1_quality(
     )
     rationale_present = _present(design.get("rationale"))
     draft_rationale_present = bool(str(design.get("rationale") or "").strip())
+    # SỬA 2026-07-31 (audit tautology vòng 2 — reverse-tautology CRITICAL):
+    # ngưỡng >=7 hardcode cho MỌI thiết kế, nhưng run_g1_auto.py::
+    # BIAS_CONTROLS["qualitative"] CHỦ Ý chỉ có 5 mục (4 miền trustworthiness
+    # Lincoln & Guba — Credibility/Transferability/Dependability/
+    # Confirmability — cộng Reporting bias; định tính KHÔNG dùng khung bias
+    # định lượng, đã ghi chú tại nơi định nghĩa 2026-07-19) — khiến MỌI đề
+    # tài định tính hợp lệ bị BLOCK cứng (main() coi BLOCKED là SystemExit
+    # thật, không chỉ REVIEW). Xác nhận thực nghiệm: cả infer_study_design()
+    # và _apply_design_pin() (2 đường sản xuất thật gán internal_code=
+    # "qualitative") đều trả bias_controls dài 5 — một đề tài định tính ĐÃ
+    # ĐIỀN ĐẦY ĐỦ mọi trường G1-HUMAN-01..08 vẫn BLOCK chỉ vì mục này.
+    _MIN_BIAS_CONTROLS_BY_DESIGN = {"qualitative": 5}
+    _DEFAULT_MIN_BIAS_CONTROLS = 7
     bias_controls = design.get("bias_controls")
-    bias_ok = isinstance(bias_controls, (list, tuple)) and len(bias_controls) >= 7
+    _min_bias = _MIN_BIAS_CONTROLS_BY_DESIGN.get(internal, _DEFAULT_MIN_BIAS_CONTROLS)
+    bias_ok = isinstance(bias_controls, (list, tuple)) and len(bias_controls) >= _min_bias
     if (
         not alternatives_complete
         or not bias_ok
@@ -825,7 +839,8 @@ def evaluate_g1_quality(
         design_comparison_status = "PASS"
     automatic.append(_criterion(
         "G1-AUTO-04b",
-        "So sánh ít nhất ba phương án và kiểm soát bảy nhóm sai lệch",
+        "So sánh ít nhất ba phương án và kiểm soát đủ nhóm sai lệch/"
+        "trustworthiness theo thiết kế",
         design_comparison_status,
         f"primary_present={primary_present}; "
         f"alternatives_complete={alternatives_complete}; "
@@ -888,6 +903,16 @@ def evaluate_g1_quality(
         "Sinh lại A2 bằng template theo đúng thiết kế; không vá một khuôn RCT cho mọi loại.",
     ))
 
+    # LƯU Ý PHẠM VI (audit tautology vòng 2, 2026-07-31): mọi tiêu đề mục
+    # trong _REQUIRED_SECTIONS và dòng disclaimer đều được các hàm sinh
+    # artifact (build_protocol_core()/build_supporting_artifacts()) in CỨNG
+    # VÔ ĐIỀU KIỆN — đã xác nhận thực nghiệm với meta RỖNG HOÀN TOÀN (mọi
+    # trường bác sĩ điền tự do rơi về placeholder "[CẦN...]") vẫn PASS 5/5.
+    # Tiêu chí này kiểm CẤU TRÚC (đủ mục/đủ disclaimer), không thẩm định nội
+    # dung khoa học có đúng/đủ cho đề tài cụ thể hay không — module tự khai
+    # đúng phạm vi này trong scope_statement; việc thẩm định nội dung thuộc
+    # G1-HUMAN-01..08 (đọc gate_params.G1 thật). Không có ground truth máy
+    # đọc được khác để thẩm định câu trả lời tự do dưới mỗi tiêu đề.
     artifact_failures: List[str] = []
     for key in REQUIRED_ARTIFACT_KEYS:
         path = artifact_paths.get(key)
