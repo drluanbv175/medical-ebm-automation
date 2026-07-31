@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0",
+  "contract_version": "G0-2026.1",
+  "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+  "automated_checks_passed": true,
+  "human_confirmation_complete": false,
+  "automatic_criteria": [
+    {
+      "id": "G0-AUTO-00",
+      "label": "Guardrail liêm chính G0 sạch",
+      "status": "PASS",
+      "evidence": "guardrail_passed=True",
+      "action": "Sửa mọi lỗi R1–R7 (nguồn, PII, vượt cổng, disclaimer) rồi chạy lại G0."
+    },
+    {
+      "id": "G0-AUTO-01",
+      "label": "Đề tài có chủ đề thật (không rỗng/placeholder)",
+      "status": "PASS",
+      "evidence": "topic='Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo'",
+      "action": "Chạy lại với --topic mô tả đúng vấn đề nghiên cứu."
+    },
+    {
+      "id": "G0-AUTO-02",
+      "label": "Có bằng chứng THẬT làm nền (≥1 PMID từ PubMed)",
+      "status": "PASS",
+      "evidence": "n_pmids=12",
+      "action": "Chạy lại với --query-en \"<từ khóa tiếng Anh>\"; hệ KHÔNG bịa PMID."
+    },
+    {
+      "id": "G0-AUTO-03",
+      "label": "Số hit dùng để kết luận khoảng trống là SỐ THẬT",
+      "status": "PASS",
+      "evidence": "counts_are_real=True; nhánh không tra được=[]",
+      "action": "Chạy lại G0 khi mạng ổn định; đừng kết luận 'khoảng trống' trên số ước lượng dưới."
+    },
+    {
+      "id": "G0-AUTO-04",
+      "label": "Checkpoint đủ trường hợp đồng cho cổng sau đọc",
+      "status": "PASS",
+      "evidence": "10 khóa gốc + 9 khóa pubmed_results đầy đủ",
+      "action": "Chạy lại G0 bản hiện hành để ghi checkpoint đúng schema."
+    },
+    {
+      "id": "G0-AUTO-05",
+      "label": "Artifact A1 có đủ 6 thành phần theo doctrine",
+      "status": "PASS",
+      "evidence": "A1 có đủ 7 mục bắt buộc",
+      "action": "Sinh lại A1 bằng run_g0_auto.py bản hiện hành."
+    },
+    {
+      "id": "G0-AUTO-06",
+      "label": "Đã tra đăng ký nghiên cứu đang tiến hành (trùng lặp)",
+      "status": "PASS",
+      "evidence": "ClinicalTrials.gov: 0 hồ sơ khớp, 0 đang tuyển",
+      "action": "Chạy lại G0 khi có mạng, hoặc tự tra ClinicalTrials.gov/WHO ICTRP trước khi khẳng định đề tài là mới."
+    }
+  ],
+  "human_criteria": [
+    {
+      "id": "G0-HUMAN-01",
+      "label": "PICO/PECO đủ 4 thành phần do bác sĩ viết",
+      "status": "PASS",
+      "evidence": "P/I/C/O đều có nội dung",
+      "action": "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy)."
+    },
+    {
+      "id": "G0-HUMAN-02",
+      "label": "Kết cục CHÍNH duy nhất, đo được, có thời điểm",
+      "status": "PASS",
+      "evidence": "1 kết cục chính, có thang đo và thời điểm đo",
+      "action": "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint."
+    },
+    {
+      "id": "G0-HUMAN-03",
+      "label": "Giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định",
+      "status": "PASS",
+      "evidence": "test_type=descriptive; H0=thiếu; H1=thiếu; chiều=thiếu",
+      "action": "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction."
+    },
+    {
+      "id": "G0-HUMAN-04",
+      "label": "Loại câu hỏi đã xác định",
+      "status": "PASS",
+      "evidence": "question_type=descriptive",
+      "action": "Điền question_type: therapy/diagnosis/prognosis/harm/descriptive."
+    },
+    {
+      "id": "G0-HUMAN-05",
+      "label": "FINER đánh giá đủ từng tiêu chí (5/5)",
+      "status": "REVIEW",
+      "evidence": "thiếu: feasible, interesting, novel, ethical, relevant",
+      "action": "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá."
+    },
+    {
+      "id": "G0-HUMAN-06",
+      "label": "Đã đọc lại bằng chứng G0 và biện minh tính mới",
+      "status": "REVIEW",
+      "evidence": "evidence_reviewed_confirmed=False; novelty_justification=có",
+      "action": "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification."
+    },
+    {
+      "id": "G0-HUMAN-07",
+      "label": "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm)",
+      "status": "REVIEW",
+      "evidence": "pico_confirmed=False; vai trò=thiếu; reviewed_at=thiếu",
+      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist) và reviewed_at dạng ISO-8601. Không cần lưu danh tính."
+    }
+  ],
+  "pending_actions": [
+    "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá.",
+    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist) và reviewed_at dạng ISO-8601. Không cần lưu danh tính."
+  ],
+  "artifact_manifest": {
+    "A1": {
+      "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "5a0c0940832ad678080716cb6c49ad149af57d78715883d234ec94c9650c3180"
+    }
+  },
+  "standards_basis": [
+    {
+      "standard": "PICO framework",
+      "scope": "Khung câu hỏi lâm sàng/nghiên cứu 4 thành phần",
+      "pmid": "7582737"
+    },
+    {
+      "standard": "FINER criteria (Hulley, Designing Clinical Research)",
+      "scope": "Sàng lọc câu hỏi nghiên cứu: Feasible/Interesting/Novel/Ethical/Relevant",
+      "url": "https://www.equator-network.org/library/"
+    },
+    {
+      "standard": "EQUATOR Network",
+      "scope": "Bản đồ chuẩn báo cáo theo loại thiết kế (dùng cho chuẩn dự kiến ở G0)",
+      "url": "https://www.equator-network.org/library/"
+    },
+    {
+      "standard": "ICMJE Recommendations",
+      "scope": "Đăng ký nghiên cứu trước khi tuyển người tham gia đầu tiên",
+      "url": "https://www.icmje.org/recommendations/"
+    }
+  ],
+  "expected_reporting_standard": {
+    "design_code": "rct",
+    "primary": "CONSORT 2025",
+    "protocol": "SPIRIT 2025; đăng ký trial TRƯỚC tuyển mẫu; ICH-GCP nếu áp dụng"
+  },
+  "scope_statement": "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. KHÔNG thẩm định chất lượng khoa học của câu hỏi, không thay tổng quan y văn có hệ thống, không thay Hội đồng Đạo đức. Một PICO đầy đủ vẫn có thể là một PICO tồi.",
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PICO",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (PICO/kết cục chính/FINER còn trống). Hệ KHÔNG tự viết PICO thay bác sĩ.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
+      "study_meta_patch": {
+        "gate_params": {
+          "G0": {
+            "pico_confirmed": true
+          }
+        }
+      },
+      "must_not_fabricate": [
+        "PICO",
+        "primary_outcome",
+        "FINER",
+        "hypothesis"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}

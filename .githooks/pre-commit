@@ -42,4 +42,22 @@ if [ "$?" -ne 0 ]; then
   exit 1
 fi
 
+# Them 2026-07-31 sau su co that: commit a21a01f di qua TOAN BO cac chot tren
+# sach hoan toan, trong khi file de cuong dang hong 26 cho — cac placeholder gia
+# tri cua bang du kien ket qua ("n = —", "cOR = —") bi mot buoc xu ly van ban doi
+# nham thanh dau phay. Moi chot phia tren chi kiem DONG BO agent/doctrine, khong
+# co chot nao doc NOI DUNG tai lieu nghien cuu. Neu khong co nguoi doi chieu tay
+# voi ban goc, ban hong da co the di thang vao tai lieu trinh Hoi dong Dao duc.
+if [ -f tools/verify_exports_integrity.py ]; then
+  python3 tools/verify_exports_integrity.py --staged
+  if [ "$?" -ne 0 ]; then
+    echo "" >&2
+    echo "CHAN COMMIT: tai lieu nghien cuu trong exports/ co dau hieu hong noi dung." >&2
+    echo "  Xem chi tiet o tren. Kiem lai mot file:" >&2
+    echo "    python3 tools/verify_exports_integrity.py --path <duong-dan>" >&2
+    echo "  Khan cap can bo qua: git commit --no-verify (KHONG khuyen nghi)." >&2
+    exit 1
+  fi
+fi
+
 exit 0

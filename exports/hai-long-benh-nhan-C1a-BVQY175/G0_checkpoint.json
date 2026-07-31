@@ -1,0 +1,125 @@
+{
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "gate": "G0",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ CHỐT PICO trong study_meta.json (gate_params.G0)",
+  "generated_at": "2026-07-31T20:39:23.828548",
+  "topic": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối",
+  "base_query": "patient satisfaction outpatient department Vietnam hospital",
+  "pubmed_results": {
+    "total_found": 12,
+    "n_pmids": 12,
+    "all_pmids": [
+      "34445940",
+      "32584904",
+      "40771771",
+      "16148334",
+      "40726017",
+      "31703089",
+      "41162961",
+      "40623792",
+      "29051978",
+      "38753416",
+      "39132755",
+      "36439278"
+    ],
+    "n_sr": 0,
+    "n_rct": 0,
+    "n_guideline": 0,
+    "n_observational": 12,
+    "n_recent": 0,
+    "most_recent_year": null,
+    "counts_are_real": true,
+    "counts_unavailable": [],
+    "query_errors": {}
+  },
+  "n_sr": 0,
+  "n_rct": 0,
+  "n_pmids": 12,
+  "pmids_verified": [
+    "34445940",
+    "32584904",
+    "40771771",
+    "16148334",
+    "40726017",
+    "31703089",
+    "41162961",
+    "40623792",
+    "29051978",
+    "38753416",
+    "39132755",
+    "36439278"
+  ],
+  "evidence_note": "CÓ NỀN QUAN SÁT — ~12 NC quan sát, chưa có RCT/SR",
+  "evidence_level": "CÓ NỀN QUAN SÁT — ~12 NC quan sát, chưa có RCT/SR",
+  "research_gaps": [
+    "Chưa có systematic review tổng hợp bằng chứng",
+    "Chưa có RCT kiểm định hiệu quả can thiệp",
+    "Chưa có guideline/khuyến cáo chính thức cho vấn đề này",
+    "Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát"
+  ],
+  "design_suggestion": "RCT ngẫu nhiên có đối chứng HOẶC Cohort tiến cứu",
+  "novelty_concern": "Đã có nhiều nghiên cứu quan sát: KHÔNG phải khoảng trống. Cần đọc kỹ nhóm này trước khi biện minh tính mới; hướng khả dĩ là SR/MA tổng hợp chúng, hoặc nghiên cứu ở quần thể/bối cảnh chưa được phủ.",
+  "registry_check": {
+    "registry": "ClinicalTrials.gov",
+    "query": "patient satisfaction outpatient department Vietnam hospital",
+    "checked": true,
+    "n_trials": 0,
+    "n_active": 0,
+    "trials": [],
+    "error": null,
+    "checked_at": "2026-07-31T20:39:22"
+  },
+  "guardrail": {
+    "passed": true,
+    "n_errors": 0,
+    "errors": []
+  },
+  "artifacts": {
+    "A1_markdown": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A1_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx"
+  },
+  "pending_doctor_actions": [
+    "Điền PICO 4 thành phần vào study_meta.json → gate_params.G0",
+    "Ấn định kết cục chính DUY NHẤT + thang đo + thời điểm đo",
+    "Điền giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định",
+    "Đánh giá FINER đủ 5 tiêu chí (F và E máy không tự làm được)",
+    "Đọc lại bằng chứng §3 + §3.6 rồi biện minh tính mới",
+    "Chạy: python tools/g0_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175"
+  ],
+  "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "quality_gate": {
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "contract_version": "G0-2026.1",
+    "automated_checks_passed": true,
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá.",
+      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist) và reviewed_at dạng ISO-8601. Không cần lưu danh tính."
+    ]
+  },
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PICO",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (PICO/kết cục chính/FINER còn trống). Hệ KHÔNG tự viết PICO thay bác sĩ.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
+      "study_meta_patch": {
+        "gate_params": {
+          "G0": {
+            "pico_confirmed": true
+          }
+        }
+      },
+      "must_not_fabricate": [
+        "PICO",
+        "primary_outcome",
+        "FINER",
+        "hypothesis"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}
