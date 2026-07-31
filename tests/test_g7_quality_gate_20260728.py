@@ -402,3 +402,145 @@ def test_scope_statement_khong_overclaim():
     scope = report["scope_statement"]
     assert "KHÔNG có nghĩa bản thảo tốt" in scope
     assert "G8" in scope
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 7. G7-AUTO-06 — generate_manuscript() không còn khẳng định trần IRB/SAP-locked
+# ════════════════════════════════════════════════════════════════════════════
+# Hồi quy audit tautology vòng 2 (2026-07-31): _manuscript() ở đầu file là
+# fixture VIẾT TAY, không đi qua generate_manuscript() thật — nên các test ở
+# mục 2 không phủ được lỗi 2 câu khẳng định trần TỪNG in cứng ngay trong hàm
+# sinh bản thảo (Discussion §4 "SAP khóa trước khi xem dữ liệu" và Khai báo
+# "Tính có sẵn dữ liệu" khẳng định đã được IRB phê duyệt), bất kể g4_status/
+# irb_number truyền vào là gì. Test dưới đây gọi THẲNG generate_manuscript().
+
+def _sinh_ban_thao_that(**over) -> str:
+    args = dict(
+        study="TEST-G7-AUTO06", topic="Test topic", n_sr=1, n_rct=2, n_guideline=0,
+        research_gaps=["gap 1"], pmids=["12345678"], pmid_meta={},
+        design_code="rct", design_primary="RCT", reporting_std="CONSORT 2025",
+        irb_number="[CẦN SỐ IRB THẬT]", icf_version="1.0", registration="[CẦN]",
+        n_total=0, n_adjusted=0, alpha=0.05, power=0.8,
+        effect_val=None, effect_type="", formula_used="",
+        g4_status="PENDING", g4_lock_date=None, target_journal="", word_limit=3000,
+        run_date="2026-07-31",
+    )
+    args.update(over)
+    return G7.generate_manuscript(**args)
+
+
+def test_khong_khang_dinh_IRB_khi_chua_co_so_that():
+    # "đã được IRB phê duyệt" vẫn xuất hiện trong CHÍNH câu cảnh báo "KHÔNG viết
+    # ...", nên không thể assert vắng mặt bằng substring — kiểm câu khẳng định
+    # THẬT (lead-in riêng của nhánh true) không xuất hiện.
+    text = _sinh_ban_thao_that(irb_number="[CẦN SỐ IRB THẬT]")
+    assert "Dữ liệu nghiên cứu (đã khử định danh) có thể cung cấp" not in text
+    assert "CHƯA có phê duyệt đạo đức thật" in text
+
+
+def test_khang_dinh_IRB_khi_da_co_so_that():
+    text = _sinh_ban_thao_that(irb_number="1234/QĐ-HĐĐĐ-BVQY175-2026")
+    assert "đã được IRB phê duyệt" in text
+    assert "CHƯA có phê duyệt đạo đức thật" not in text
+
+
+def test_khong_khang_dinh_SAP_khoa_khi_G4_chua_LOCKED():
+    # Cùng lý do như test IRB ở trên — "SAP khóa trước khi xem dữ liệu" vẫn
+    # xuất hiện trong câu cảnh báo "KHÔNG viết ...". Kiểm cụm chỉ có ở nhánh
+    # true (khẳng định đã giảm sai lệch) không xuất hiện.
+    text = _sinh_ban_thao_that(g4_status="PENDING", g4_lock_date=None)
+    assert "giảm thiểu sai lệch phân tích sau dữ liệu" not in text
+    assert "SAP CHƯA khóa (G4 hiện PENDING)" in text
+
+
+def test_khang_dinh_SAP_khoa_khi_G4_da_LOCKED():
+    text = _sinh_ban_thao_that(g4_status="LOCKED", g4_lock_date="2026-05-01")
+    assert "SAP khóa trước khi xem dữ liệu (G4, khóa 2026-05-01)" in text
+    assert "SAP CHƯA khóa" not in text
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 8. G7-AUTO-01b — dùng giá trị SỐNG, không tin cache đóng băng
+# ════════════════════════════════════════════════════════════════════════════
+
+def test_auto01b_uu_tien_gia_tri_song_khi_cache_cu_con_canh_bao():
+    """checkpoint cache còn ghi cảnh báo lệch thiết kế từ lần sinh trước, nhưng
+    caller đã tính SỐNG và không còn lệch (đã chạy lại G1/G2 khớp nhau) — phải
+    tin giá trị sống, không được BLOCK theo cache cũ."""
+    cps = _cps()
+    cps["G7"] = dict(cps["G7"], design_drift_warning="G1=rct nhưng G2=cohort (CŨ)")
+    report = G7Q.evaluate_g7_quality(
+        manuscript_text=_manuscript(with_results=True),
+        checkpoints=cps, meta=_meta_confirmed(),
+        citation_verification_ok=True,
+        design_drift_warning=None,  # giá trị SỐNG: không còn lệch
+    )
+    row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-01b")
+    assert row["status"] == "PASS", row
+
+
+def test_auto01b_khong_truyen_thi_roi_ve_cache_cu_de_tuong_thich_nguoc():
+    """Không truyền design_drift_warning (caller cũ, ví dụ test khác trong chính
+    file này) → vẫn đọc checkpoint cache như trước, giữ tương thích ngược."""
+    cps = _cps()
+    cps["G7"] = dict(cps["G7"], design_drift_warning="G1=rct nhưng G2=cohort")
+    report = G7Q.evaluate_g7_quality(
+        manuscript_text=_manuscript(with_results=True),
+        checkpoints=cps, meta=_meta_confirmed(),
+        citation_verification_ok=True,
+    )
+    row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-01b")
+    assert row["status"] == "BLOCK", row
+
+
+def test_evaluate_study_tinh_design_drift_song_tu_G1_G2_tren_dia(tmp_path):
+    """Test tích hợp: evaluate_study() phải tự gọi GC.resolve_design_code() trên
+    checkpoint HIỆN TẠI trên đĩa, không tin g7cp["design_drift_warning"] đóng
+    băng. Dựng G1=rct/G2 không ghi design rõ (khớp) + checkpoint G7 cache cố
+    tình mang cảnh báo lệch CŨ → phải PASS theo trạng thái sống hiện tại."""
+    study = "T-G7-DRIFT-LIVE"
+    d = tmp_path / study
+    d.mkdir(parents=True)
+    cps = _cps()
+    cps["G7"] = dict(cps["G7"], design_drift_warning="cảnh báo lệch CŨ, đã hết hạn")
+    for gate, cp in cps.items():
+        (d / f"{gate}_checkpoint.json").write_text(
+            json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+    (d / "study_meta.json").write_text(
+        json.dumps(_meta_confirmed(), ensure_ascii=False), encoding="utf-8")
+    (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
+        "Đã xác minh 10/10 PMID.", encoding="utf-8")
+    (d / f"G7_A8_MANUSCRIPT_{study}.md").write_text(
+        _manuscript(with_results=True), encoding="utf-8")
+
+    report = G7Q.evaluate_study(study, d, write=False)
+    row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-01b")
+    assert row["status"] == "PASS", row
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 9. guardrail_g7() R1 — cửa sổ ngữ cảnh hành chính, không bắt nhầm mã IRB/QĐ
+# ════════════════════════════════════════════════════════════════════════════
+
+def test_R1_khong_bat_nham_so_IRB_thuan_so_co_ngu_canh():
+    text = _manuscript().replace(
+        "**§7 Đạo đức và đăng ký:** [CẦN — chưa có phê duyệt đạo đức thật]",
+        "**§7 Đạo đức và đăng ký:** IRB số 1234567890 đã phê duyệt đề cương.",
+    )
+    errors, _ = G7.guardrail_g7(text)
+    assert not any("R1" in e for e in errors), errors
+
+
+def test_R1_van_bat_chuoi_so_9_12_chu_so_khong_co_ngu_canh_hanh_chinh():
+    text = _manuscript() + "\nMã liên hệ trực tiếp: 987654321012.\n"
+    errors, _ = G7.guardrail_g7(text)
+    assert any("R1" in e for e in errors), errors
+
+
+def test_R1_khong_bat_nham_ma_dang_ky_NCT_lan_can_9_12_so():
+    text = _manuscript().replace(
+        "**§7 Đạo đức và đăng ký:** [CẦN — chưa có phê duyệt đạo đức thật]",
+        "**§7 Đạo đức và đăng ký:** Đăng ký tại 123456789 (protocol nội bộ).",
+    )
+    errors, _ = G7.guardrail_g7(text)
+    assert not any("R1" in e for e in errors), errors

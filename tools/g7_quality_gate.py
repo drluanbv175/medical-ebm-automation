@@ -62,6 +62,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import gate_contract as GC  # noqa: E402
 
+# Sentinel "chưa truyền" cho design_drift_warning — phân biệt với None HỢP LỆ
+# (nghĩa là "đã tính SỐNG qua resolve_design_code() và không có lệch", SỬA
+# 2026-07-31, G7-AUTO-01b). Dùng None làm mặc định sẽ không phân biệt được
+# "caller không truyền gì" (nên fallback checkpoint cũ) với "caller đã tính
+# sống và kết quả là không lệch" (PHẢI tin giá trị sống, không fallback).
+_UNSET = object()
+
 STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT_READY = "DRAFT_READY_NEEDS_HUMAN_REVIEW"
 STATUS_CONFIRMED = "PASS_G7_CONFIRMED"
@@ -99,11 +106,16 @@ _PLACEHOLDER_MARKERS = ("[CẦN", "[REQUIRE_HUMAN", "CHƯA XÁC NHẬN", "[TODO"
 # khi bác sĩ tự viết tay vào bản thảo, những câu này không được đứng một mình mà
 # thiếu bằng chứng tương ứng ở cổng trước.
 _UNSUPPORTED_CLAIM_PATTERNS: Sequence[tuple[str, str, str]] = (
-    (r"được\s+Hội\s*đồng\s*Đạo\s*đức\s+phê\s*duyệt", "irb_approved",
-     "khẳng định đã được Hội đồng Đạo đức phê duyệt"),
+    # SỬA 2026-07-31 (audit tautology vòng 2, G7-AUTO-06 — phòng thủ lớp 2):
+    # thêm biến thể viết tắt "IRB" — trước đây chỉ khớp "Hội đồng Đạo đức",
+    # bỏ lọt 2 câu khẳng định thật ở run_g7_auto.py (dòng ~1398, ~1333 trước
+    # khi vá) dùng chữ "IRB" thay vì "Hội đồng Đạo đức".
+    (r"được\s+(?:Hội\s*đồng\s*Đạo\s*đức|IRB|Ethics\s*Committee)\s+phê\s*duyệt", "irb_approved",
+     "khẳng định đã được Hội đồng Đạo đức/IRB phê duyệt"),
     (r"đã\s+được\s+đăng\s*ký\s+(?:tại|trên)\s+ClinicalTrials", "registered",
      "khẳng định đã đăng ký ClinicalTrials.gov"),
-    (r"SAP\s+đã\s+(?:được\s+)?khóa|kế\s*hoạch\s*phân\s*tích\s+đã\s+khóa", "sap_locked",
+    (r"SAP\s+đã\s+(?:được\s+)?khóa|kế\s*hoạch\s*phân\s*tích\s+đã\s+khóa|"
+     r"SAP\s+khóa\s+trước\s+khi\s+xem\s+dữ\s+liệu", "sap_locked",
      "khẳng định đã khóa SAP"),
     (r"cơ\s*sở\s*dữ\s*liệu\s+đã\s+(?:được\s+)?khóa|dữ\s*liệu\s+đã\s+khóa", "db_locked",
      "khẳng định đã khóa cơ sở dữ liệu"),
@@ -247,6 +259,7 @@ def evaluate_g7_quality(
     artifact_paths: Optional[Mapping[str, Path]] = None,
     citation_verification_ok: Optional[bool] = None,
     guardrail_passed: Optional[bool] = None,
+    design_drift_warning: Any = _UNSET,
 ) -> Dict[str, Any]:
     """Chấm G7 theo hai tầng: máy kiểm được vs người thật phải chốt.
 
@@ -283,7 +296,20 @@ def evaluate_g7_quality(
         "thì chuẩn báo cáo (CONSORT/STROBE/PRISMA…) sẽ bị chọn sai cho cả bản thảo.",
     ))
 
-    design_drift = g7cp.get("design_drift_warning")
+    # SỬA 2026-07-31 (audit tautology vòng 2, G7-AUTO-01b — reverse-tautology
+    # do stale cache, cùng lớp lỗi đã đóng ở G8-AUTO-11): g7cp.get(...) đọc
+    # giá trị ĐÓNG BĂNG tại thời điểm run_g7_auto.py sinh bản thảo lần cuối
+    # — nếu G1/G2 sửa lại SAU đó (khớp hoặc lệch mới) mà không sinh lại G7,
+    # tiêu chí này báo sai theo cache cũ. Khi caller đã tính SỐNG (evaluate_
+    # study() gọi GC.resolve_design_code() ngay lúc chấm), dùng giá trị đó
+    # thay vì tin cache — an toàn vì resolve_design_code() chỉ đọc G1/G2
+    # checkpoint, 2 file evaluate_study() đã đọc sẵn cho G7-AUTO-01/02, nên
+    # không thêm trường mới bác sĩ phải điền (không có rủi ro kẹt DRAFT kiểu
+    # G2-AUTO-08/09).
+    design_drift = (
+        design_drift_warning if design_drift_warning is not _UNSET
+        else g7cp.get("design_drift_warning")
+    )
     automatic.append(_criterion(
         "G7-AUTO-01b", "Mã thiết kế KHÔNG lệch giữa G1 và G2",
         "BLOCK" if design_drift else "PASS",
@@ -316,6 +342,15 @@ def evaluate_g7_quality(
     ))
 
     # ── Artifact ─────────────────────────────────────────────────────────────
+    # LƯU Ý PHẠM VI (audit tautology vòng 2, 2026-07-31): 7 tiêu đề mục
+    # REQUIRED_A8_SECTIONS được generate_manuscript() in CỨNG VÔ ĐIỀU KIỆN
+    # cho MỌI design_code (đã xác nhận thực nghiệm 7 thiết kế khác nhau —
+    # rct/cohort/diagnostic/sr_ma/prediction/qualitative/economic — không
+    # trường hợp nào thiếu mục). Tiêu chí này CHỈ bắt được xóa/cắt SAU KHI
+    # SINH (tampering/truncation), KHÔNG thẩm định nội dung khoa học có phù
+    # hợp với thiết kế/topic cụ thể hay không — việc đó thuộc G7-HUMAN-04
+    # (đọc lại toàn văn) và G8 (bình duyệt độc lập), đúng scope_statement
+    # của chính module.
     text = manuscript_text or ""
     missing_sections = [s for s in REQUIRED_A8_SECTIONS
                         if s.casefold() not in text.casefold()]
@@ -610,6 +645,14 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True) -> Dict[str
     except ImportError:  # pragma: no cover - lưới an toàn
         guardrail_passed = None
 
+    # SỬA 2026-07-31 (G7-AUTO-01b): tính SỐNG thay vì tin g7cp["design_drift_
+    # warning"] đóng băng — cùng cơ chế GC.resolve_design_code() đã nối vào
+    # G5/G7(qua đây)/G8.
+    try:
+        _dc_live, design_drift_warning = GC.resolve_design_code(out_dir)
+    except Exception:  # pragma: no cover - lưới an toàn
+        design_drift_warning = None
+
     report = evaluate_g7_quality(
         manuscript_text=text,
         checkpoints=checkpoints,
@@ -617,6 +660,7 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True) -> Dict[str
         artifact_paths={"A8": md_path} if md_path.exists() else {},
         citation_verification_ok=citation_ok,
         guardrail_passed=guardrail_passed,
+        design_drift_warning=design_drift_warning,
     )
     if write:
         write_quality_report(study, out_dir, report)

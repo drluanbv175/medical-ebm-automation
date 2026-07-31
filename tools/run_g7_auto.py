@@ -791,8 +791,29 @@ def guardrail_g7(artifact: str) -> tuple[list[str], list[str]]:
     warnings: list[str] = []
 
     # R1 — PII
-    pii_patterns = [r'\b\d{9,12}\b', r'\b\d{2}/\d{2}/\d{4}\b(?=\s*sinh)']
-    pii_found = any(re.search(p, artifact) for p in pii_patterns)
+    # SỬA 2026-07-31 (audit tautology vòng 2 — reverse-tautology): \b\d{9,12}\b
+    # trước đây khớp BẤT KỲ chuỗi 9-12 số nào, kể cả mã hành chính hợp lệ (số
+    # quyết định IRB thuần số, không có dấu "/"). Xác nhận thực nghiệm:
+    # irb_number='1234567890' (10 chữ số thuần) → R1 BLOCK sai; irb_number có
+    # định dạng thật '1234/QĐ-HĐĐĐ-2026' (có dấu '/') hoặc placeholder
+    # '[CẦN SỐ IRB THẬT]' → không trigger — nghĩa là việc trigger phụ thuộc
+    # THUẦN vào hình dạng chuỗi số, không phân biệt PII bệnh nhân thật với mã
+    # hành chính hợp lệ. Thu hẹp: chỉ coi là PII nếu KHÔNG có từ khóa ngữ
+    # cảnh hành chính (IRB/QĐ/quyết định/protocol/NCT...) trong cửa sổ
+    # ±40 ký tự quanh vị trí khớp — không thêm trường mới, không đổi call
+    # site.
+    _admin_context_kw = (
+        "irb", "qđ", "quyết định", "protocol", "nct", "isrctn", "chictr",
+        "ictrp", "hội đồng", "đạo đức", "phê duyệt", "đăng ký",
+    )
+    pii_found = False
+    for m in re.finditer(r'\b\d{9,12}\b', artifact):
+        window = artifact[max(0, m.start() - 40):m.end() + 40].casefold()
+        if not any(kw in window for kw in _admin_context_kw):
+            pii_found = True
+            break
+    if not pii_found and re.search(r'\b\d{2}/\d{2}/\d{4}\b(?=\s*sinh)', artifact):
+        pii_found = True
     if pii_found:
         errors.append("R1 🔴 Phát hiện PII tiềm năng — kiểm tra và xóa")
     else:
@@ -1330,7 +1351,19 @@ def generate_manuscript(
         "[CẦN — giải thích sinh học/lâm sàng cho phát hiện sau khi có kết quả thật]  ",
         "",
         "**§4 Điểm mạnh (Strengths):**  ",
-        f"*(1)* Thiết kế {design_primary} với SAP khóa trước khi xem dữ liệu (G4) giảm thiểu sai lệch phân tích sau dữ liệu.  ",
+        # SỬA 2026-07-31 (audit tautology vòng 2, G7-AUTO-06): câu này TỪNG
+        # khẳng định "SAP khóa trước khi xem dữ liệu" VÔ ĐIỀU KIỆN, không
+        # branching theo g4_status/g4_lock_date — giống câu (2) ngay dưới đã
+        # branching đúng theo n_adjusted. Một đề tài G4 còn PENDING (chưa
+        # khóa SAP) vẫn tự nhận đã kiểm soát sai lệch phân tích sau dữ liệu.
+        (
+            f"*(1)* Thiết kế {design_primary} với SAP khóa trước khi xem dữ liệu "
+            f"(G4, khóa {g4_lock_date}) giảm thiểu sai lệch phân tích sau dữ liệu.  "
+            if g4_status == "LOCKED" and g4_lock_date
+            else f"*(1)* [CẦN — SAP CHƯA khóa (G4 hiện {g4_status}); KHÔNG viết "
+                 "\"SAP khóa trước khi xem dữ liệu\" cho tới khi G4 thật sự LOCKED. "
+                 f"Thiết kế {design_primary} vẫn là điểm mạnh dự kiến sau khi SAP khóa.]  "
+        ),
         (
             f"*(2)* Cỡ mẫu được tính TRƯỚC (a priori) theo "
             f"{formula_used or 'công thức thống kê phù hợp'}: {sample_size_detail}, {effect_text} "
@@ -1396,9 +1429,21 @@ def generate_manuscript(
         "Supervision: ...; Funding acquisition: ...]  ",
         "",
         "**Tính có sẵn dữ liệu:**  ",
-        "Dữ liệu nghiên cứu (đã khử định danh) có thể cung cấp theo yêu cầu hợp lý "
-        "từ tác giả liên lạc, theo điều kiện đã được IRB phê duyệt và "
-        "Luật BVDLCN 91/2025/QH15.  ",
+        # SỬA 2026-07-31 (audit tautology vòng 2, G7-AUTO-06): câu này TỪNG in
+        # cứng "đã được IRB phê duyệt" VÔ ĐIỀU KIỆN, không branching theo
+        # irb_number như khối Methods §7 đã vá 2026-07-28 — một đề tài CHƯA
+        # có phê duyệt đạo đức thật vẫn khẳng định đã có, đúng loại sai phạm
+        # liêm chính bị rút bài nếu bác sĩ không đọc lại kỹ trước khi nộp.
+        (
+            "Dữ liệu nghiên cứu (đã khử định danh) có thể cung cấp theo yêu cầu "
+            "hợp lý từ tác giả liên lạc, theo điều kiện đã được IRB phê duyệt và "
+            "Luật BVDLCN 91/2025/QH15.  "
+            if not str(irb_number).startswith("[CẦN")
+            else "[CẦN — CHƯA có phê duyệt đạo đức thật; KHÔNG viết \"đã được IRB "
+                 "phê duyệt\" cho tới khi có G2 thật. Sau khi có quyết định phê "
+                 "duyệt: điền lại câu tính có sẵn dữ liệu theo đúng điều kiện IRB "
+                 "đã duyệt.]  "
+        ),
         "",
         "---",
         "",
