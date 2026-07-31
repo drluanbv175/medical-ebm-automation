@@ -112,7 +112,7 @@ def guardrail(artifact):
 
 def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
-             hypothesis_type="superiority", margin=None):
+             hypothesis_type="superiority", margin=None, n_statistical_min=None):
     sap_sections = {
         "rct": ("Nhóm can thiệp vs nhóm chứng", "Intention-to-treat (ITT), Per-protocol (PP)", "t-test hoặc Mann-Whitney; logistic/log-rank"),
         "cohort": ("Nhóm phơi nhiễm vs không phơi nhiễm", "Phân tích đầy đủ (complete case + MI)", "Cox regression; logistic regression"),
@@ -278,6 +278,12 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
          (f"- **Cỡ mẫu cuối:** N = {n_adjusted} (alpha={alpha}, power={int(power*100)}%)  " if n_adjusted
           else "- **Cỡ mẫu:** [CẦN từ G3]  ")),
+        # Khi chủ nhiệm/Hội đồng chốt N lớn hơn N tối thiểu, in CẢ HAI con số:
+        # giấu N tối thiểu đi cũng là mất minh bạch, còn ghi mỗi N tối thiểu thì
+        # SAP đã khóa sẽ lệch với dữ liệu thật sẽ thu.
+        *([f"- **N tối thiểu theo thống kê (từ G3):** {n_statistical_min} — "
+           f"N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  "]
+          if (n_statistical_min and n_adjusted and n_statistical_min != n_adjusted) else []),
         "- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  ",
         "- **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  ",
         "",
@@ -503,7 +509,18 @@ def main():
         confirmed_n = int(g3.get("confirmed_n")) if g3.get("confirmed_n") is not None else None
     except (TypeError, ValueError):
         confirmed_n = None
-    if design_code in N_NOT_APPLICABLE_DESIGNS and confirmed_n:
+    # SỬA 2026-07-31 (đề tài THẬT đầu tiên đi qua G4 — hài lòng người bệnh C1a):
+    # trước đây confirmed_n CHỈ được dùng cho sr_ma/prediction/qualitative, còn
+    # mọi thiết kế khác luôn lấy n_adjusted. Nhưng trường hợp "chủ nhiệm/Hội đồng
+    # chốt N LỚN HƠN N tối thiểu" là rất phổ biến (khả năng thu thập, yêu cầu
+    # hành chính, biên an toàn cho outcome lệch phân bố). Khi đó SAP — tài liệu
+    # ĐƯỢC KÝ VÀ KHÓA — ghi N tối thiểu thay vì N thật sẽ thu, nên phân tích sau
+    # này trên N thật sẽ lệch khỏi chính SAP đã khóa. Với C1a: SAP ghi N=453
+    # trong khi đề cương và Hội đồng chốt n=1000.
+    # N hiệu lực nay là confirmed_n cho MỌI thiết kế; n_adjusted vẫn được in kèm
+    # để không mất thông tin "N tối thiểu theo thống kê".
+    n_statistical_min = n_adjusted
+    if confirmed_n:
         n_adjusted = confirmed_n
     alpha = g3.get("alpha") or 0.05
     power = g3.get("power") or 0.80
@@ -560,7 +577,8 @@ def main():
 
     artifact = generate(study, topic, design_code, design_primary, reporting_std,
                         n_adjusted, alpha, power, effect_val, effect_type, run_date, sd,
-                        hypothesis_type=hypothesis_type, margin=margin)
+                        hypothesis_type=hypothesis_type, margin=margin,
+                        n_statistical_min=n_statistical_min)
     md = out / f"G4_A5_SAP_FINAL_{study}.md"
     md.write_text(artifact, encoding="utf-8")
     print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")

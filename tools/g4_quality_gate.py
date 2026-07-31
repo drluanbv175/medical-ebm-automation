@@ -418,9 +418,16 @@ def evaluate_g4_quality(
         if parsed["power_pct"] is not None and g3_power is not None and parsed["power_pct"] != round(g3_power * 100):
             mismatches.append(f"power ký={parsed['power_pct']}% ≠ G3 hiện tại={round(g3_power * 100)}%")
         if design_code not in N_NOT_APPLICABLE_DESIGNS:
-            g3_n = _as_int(g3_checkpoint.get("n_adjusted"))
+            # SỬA 2026-07-31: N hiệu lực của SAP là confirmed_n khi chủ nhiệm/Hội
+            # đồng đã chốt N (thường lớn hơn N tối thiểu), ngược lại mới là
+            # n_adjusted. Trước đây luôn so với n_adjusted cho các thiết kế này,
+            # nên một SAP ghi ĐÚNG cỡ mẫu kế hoạch lại bị báo lệch — cùng gốc với
+            # lỗi ở run_g4_auto.py, hai module phải đổi đồng thời.
+            g3_confirmed = _as_int(g3_checkpoint.get("confirmed_n"))
+            g3_n = g3_confirmed if g3_confirmed else _as_int(g3_checkpoint.get("n_adjusted"))
+            _n_label = "confirmed_n" if g3_confirmed else "n_adjusted"
             if parsed["n"] is not None and g3_n is not None and parsed["n"] != g3_n:
-                mismatches.append(f"N ký={parsed['n']} ≠ G3 hiện tại n_adjusted={g3_n}")
+                mismatches.append(f"N ký={parsed['n']} ≠ G3 hiện tại {_n_label}={g3_n}")
             g3_effect_val = _as_float(g3_checkpoint.get("effect_val"))
             g3_effect_type = str(g3_checkpoint.get("effect_type") or "")
             effect_val_drift = (
