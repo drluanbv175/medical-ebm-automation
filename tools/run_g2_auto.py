@@ -36,6 +36,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G0)
+import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
 
 _TODAY = datetime.now().strftime("%d/%m/%Y")
 _YEAR  = datetime.now().strftime("%Y")
@@ -1772,6 +1773,10 @@ def main():
         n_adjusted=n_adjusted, specialist_modules=specialist_modules,
         meta=_study_meta_for_g2,
     )
+    # Hồ sơ này in ra để nộp Hội đồng, nên phải đọc như văn bản khoa học do
+    # người viết: bỏ dấu ngắt kiểu máy và ký tự vẽ khung, GIỮ nguyên ô trống chờ
+    # điền và mọi số liệu (tools/vn_prose_style.py).
+    artifact_md = _VNSTYLE.clean_generated_prose(artifact_md)
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     md_path.write_text(artifact_md, encoding="utf-8")
     print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")

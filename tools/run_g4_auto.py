@@ -17,6 +17,7 @@ sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
 
 # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, xác nhận bằng thực
 # nghiệm chạy thật G3→G4): 3 thiết kế KHÔNG dùng công thức cỡ mẫu power/
@@ -580,6 +581,10 @@ def main():
                         hypothesis_type=hypothesis_type, margin=margin,
                         n_statistical_min=n_statistical_min)
     md = out / f"G4_A5_SAP_FINAL_{study}.md"
+    # SAP là tài liệu bác sĩ/thống kê viên ĐỌC RỒI KÝ, nên chuẩn hoá văn phong
+    # trước khi ghi. keep_box=True: khung của SAP LOCK CERTIFICATE đóng vai con
+    # dấu, giữ nguyên có chủ đích (tools/vn_prose_style.py).
+    artifact = _VNSTYLE.clean_generated_prose(artifact, keep_box=True)
     md.write_text(artifact, encoding="utf-8")
     print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
 

@@ -1,14 +1,14 @@
-# A5 — SAP FINAL + SAP LOCK CERTIFICATE (DRAFT — CHỜ BÁC SĨ KÝ)
+# A5, SAP FINAL + SAP LOCK CERTIFICATE (DRAFT, CHỜ BÁC SĨ KÝ)
 **Đề tài:** Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối  
 **Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.0 | **Ngày sinh:** 2026-07-31
 **Chuẩn báo cáo:** STROBE
 
-> ⚠️ **CỔNG G4 — SAP LOCK:** SAP này ở trạng thái DRAFT. Bác sĩ phải đọc, điền [CẦN...], KÝ ở Phần 5.
+> LƯU Ý: **CỔNG G4, SAP LOCK:** SAP này ở trạng thái DRAFT. Bác sĩ phải đọc, điền [CẦN...], KÝ ở Phần 5.
 > Sau khi ký: KHÔNG thay đổi kết cục chính / mô hình chính. Phân tích thêm sau khi xem dữ liệu → ghi THĂM DÒ.
 
 ---
 
-## PHẦN 1 — THÔNG TIN ĐỀ TÀI
+## PHẦN 1, THÔNG TIN ĐỀ TÀI
 
 | Mục | Nội dung |
 |---|---|
@@ -21,7 +21,7 @@
 
 ---
 
-## PHẦN 2 — LỊCH SỬ PHIÊN BẢN SAP
+## PHẦN 2, LỊCH SỬ PHIÊN BẢN SAP
 
 | Phiên bản | Ngày | Người soạn | Thay đổi chính |
 |---|---|---|---|
@@ -29,13 +29,13 @@
 
 ---
 
-## PHẦN 3 — SAP 12 MỤC CUỐI
+## PHẦN 3, SAP 12 MỤC CUỐI
 
 ### §1 QUẦN THỂ PHÂN TÍCH
 
 - **Quần thể chính:** Toàn bộ mẫu đủ tiêu chí  
 - **Cỡ mẫu cuối:** N = 1000 (alpha=0.05, power=80%)  
-- **N tối thiểu theo thống kê (từ G3):** 453 — N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  
+- **N tối thiểu theo thống kê (từ G3):** 453. N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  
 - **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  
 - **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  
 
@@ -97,14 +97,14 @@
 
 ### §11 DUMMY TABLES (Khung bảng kết quả)
 
-**Bảng 1 — Đặc điểm nền:**
+**Bảng 1, Đặc điểm nền:**
 | Biến | Nhóm 1 | Nhóm 2 | p |
 |---|---|---|---|
 | Tuổi (năm) | ___ ± ___ | ___ ± ___ | ___ |
 | Giới nữ, n (%) | ___ (_) | ___ (_) | ___ |
 | [CẦN thêm biến] | | | |
 
-**Bảng 2 — Kết cục chính:**
+**Bảng 2, Kết cục chính:**
 | Kết cục | N (%) / Trung vị | 95%CI | p |
 |---|---|---|---|
 | [CẦN KẾT QUẢ THẬT] | | | |
@@ -118,7 +118,7 @@
 
 ---
 
-## PHẦN 4 — THAY ĐỔI SAU KHI KHÓA
+## PHẦN 4, THAY ĐỔI SAU KHI KHÓA
 
 | Ngày | Mô tả thay đổi | Loại | Người duyệt |
 |---|---|---|---|
@@ -129,34 +129,34 @@
 
 ---
 
-## PHẦN 5 — SAP LOCK CERTIFICATE (DRAFT — CHỜ KÝ)
+## PHẦN 5, SAP LOCK CERTIFICATE (DRAFT, CHỜ KÝ)
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║              SAP LOCK CERTIFICATE — PHIÊN BẢN 1.0          ║
+║ SAP LOCK CERTIFICATE, PHIÊN BẢN 1.0 ║
 ╠══════════════════════════════════════════════════════════════╣
-║ Đề tài    : hai-long-benh-nhan-C1a-BVQY175                   ║
-║ Ngày soạn : 2026-07-31                                       ║
-║ Cỡ mẫu   : N = 1000                                          ║
-║ Alpha     : 0.05 (two-sided)                                  ║
-║ Power     : 80%                                            ║
-║ KQ chính  : [CẦN BÁC SĨ ĐIỀN — từ SAP §2]                 ║
-║ Phân tích : [CẦN BÁC SĨ ĐIỀN — quần thể phân tích]        ║
+║ Đề tài : hai-long-benh-nhan-C1a-BVQY175 ║
+║ Ngày soạn : 2026-07-31 ║
+║ Cỡ mẫu : N = 1000 ║
+║ Alpha : 0.05 (two-sided) ║
+║ Power : 80% ║
+║ KQ chính : [CẦN BÁC SĨ ĐIỀN — từ SAP §2] ║
+║ Phân tích : [CẦN BÁC SĨ ĐIỀN — quần thể phân tích] ║
 ╠══════════════════════════════════════════════════════════════╣
-║ TRẠNG THÁI: DRAFT — CHỜ KÝ                                 ║
+║ TRẠNG THÁI: DRAFT, CHỜ KÝ ║
 ╠══════════════════════════════════════════════════════════════╣
 ║ Chủ nhiệm đề tài: _________________________ Ngày: ___/___/ ║
-║ Đồng tác giả:     _________________________ Ngày: ___/___/ ║
+║ Đồng tác giả: _________________________ Ngày: ___/___/ ║
 ╚══════════════════════════════════════════════════════════════╝
 
-  → Sau khi ký: scan + lưu vào exports/<study>/G4_SAP_SIGNED.pdf
-  → Cung cấp ngày ký → hệ thống ghi G4_STATUS: LOCKED
-  → Chỉ sau khi G4=LOCKED mới được xem dữ liệu (G5→G6)
+ → Sau khi ký: scan + lưu vào exports/<study>/G4_SAP_SIGNED.pdf
+ → Cung cấp ngày ký → hệ thống ghi G4_STATUS: LOCKED
+ → Chỉ sau khi G4=LOCKED mới được xem dữ liệu (G5→G6)
 ```
 
 ---
 
-## PHẦN 6 — TIÊU CHÍ QUA CỔNG G4 + CƠ CHẾ MỞ KHÓA
+## PHẦN 6, TIÊU CHÍ QUA CỔNG G4 + CƠ CHẾ MỞ KHÓA
 
 **Để G4=LOCKED:**
 1. Bác sĩ điền TẤT CẢ [CẦN...] trong SAP §2 (kết cục) và §5 (covariates)
