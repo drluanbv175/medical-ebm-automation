@@ -45,11 +45,24 @@ def guardrail(artifact):
         errors.append("R4 🔴 Thiếu nhãn DRAFT/CHỜ KÝ")
     else:
         warnings.append(f"R4 ✅ Nhãn DRAFT/CHỜ KÝ đủ ({draft_n} lần)")
+    # SỬA 2026-07-31 (audit tautology vòng 2 — reverse-tautology CRITICAL):
+    # R6 TỪNG BLOCK khi can_n<5 — nhưng một SAP được điền THẬT SỰ đầy đủ (kể
+    # cả Lock Certificate: "KQ chính"/"Phân tích") xóa gần hết placeholder,
+    # khiến can_n giảm về 0-2, dưới ngưỡng 5 — R6 BLOCK đúng lúc SAP hoàn
+    # thiện thật, không phải lúc còn thiếu. g4_quality_gate.py::G4-AUTO-00
+    # (thêm 2026-07-30, chạy lại guardrail() trên artifact_text sống) khiến
+    # lỗi này lan ra evaluate_g4_quality(): BẤT KỲ BLOCK nào từ guardrail()
+    # đều ép report['status']=BLOCKED, đè cả ledger_signed/human_complete.
+    # Xác nhận thực nghiệm: SAP điền thật (EPV/VIF đúng, MI đúng biến, subgroup
+    # tiền định, R v4.3.1+seed, outcome khớp SAP) + ledger_signed=True +
+    # mọi gate_params.G4 human attestations=True → status vẫn BLOCKED chỉ vì
+    # G4-AUTO-00 (guardrail_passed=False do R6). Hạ xuống CẢNH BÁO thông tin
+    # (không còn chặn) — đúng tiền lệ đã áp cho R6 tương tự của G8. Kiểm
+    # placeholder THẬT còn sót ở mục BẮT BUỘC (§1/§2/§5/§10) đã có sẵn ở
+    # approve_gate.py::_g4_sections_still_draft() — chốt trước-ký thật sự,
+    # không nhân đôi logic sai ở đây.
     can_n = len(re.findall(r'\[CẦN', artifact))
-    if can_n < 5:
-        errors.append(f"R6 🔴 Quá ít [CẦN...] ({can_n})")
-    else:
-        warnings.append(f"R6 ✅ {can_n} trường [CẦN...] đã gắn nhãn")
+    warnings.append(f"R6 ✅ {can_n} trường [CẦN...] còn lại (thông tin, không chặn)")
     if "Cần bác sĩ kiểm chứng" not in artifact:
         errors.append("R7 🔴 Thiếu disclaimer")
     else:

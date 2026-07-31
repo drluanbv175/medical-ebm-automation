@@ -510,10 +510,24 @@ def evaluate_g4_quality(
         comparison_status, comparison_evidence = "REVIEW", "§8 còn placeholder '[CẦN' — chưa điền chiến lược đa so sánh"
     elif re.search(r"bonferroni", body8, re.IGNORECASE):
         count_m = re.search(r"(\d+)\s*(kết cục|so sánh|comparisons)", body8, re.IGNORECASE)
-        alpha_m = re.search(r"0\.0\d+", body8)
+        # SỬA 2026-07-31 (audit tautology vòng 2 — reverse-tautology): trước
+        # đây lấy SỐ 0.0x ĐẦU TIÊN xuất hiện trong §8 — nhưng câu diễn đạt tự
+        # nhiên phổ biến nhất ("alpha gốc 0.05, alpha điều chỉnh = 0.0125")
+        # có alpha GỐC (chưa điều chỉnh) đứng trước, nên regex bắt nhầm 0.05
+        # thay vì 0.0125 dù toán học của bác sĩ hoàn toàn đúng — báo "không
+        # khớp số học" oan. Xác nhận thực nghiệm: câu trên (Bonferroni 4 kết
+        # cục, 0.05/4=0.0125 chính xác) bị regex cũ bắt "0.05" → so sánh với
+        # expected=0.0125 → lệch 0.0375 > tolerance 0.005 → REVIEW sai. Ưu
+        # tiên số có NHÃN "alpha điều chỉnh/hiệu chỉnh" đứng ngay trước; chỉ
+        # rơi về số 0.0x đầu tiên khi không có nhãn (giữ nguyên hành vi cũ
+        # cho trường hợp không nhãn — không làm yếu khả năng bắt lỗi thật).
+        alpha_labeled_m = re.search(
+            r"alpha\s*(?:điều chỉnh|hiệu chỉnh)[^0-9]{0,20}(0\.0\d+)", body8, re.IGNORECASE
+        )
+        alpha_m = alpha_labeled_m or re.search(r"(0\.0\d+)", body8)
         if count_m and alpha_m:
             n_comp = int(count_m.group(1))
-            adj_alpha = float(alpha_m.group(0))
+            adj_alpha = float(alpha_m.group(1))
             g3_alpha = _as_float(g3_checkpoint.get("alpha")) or 0.05
             expected = g3_alpha / n_comp if n_comp else None
             if expected is not None and abs(expected - adj_alpha) > 0.005:
@@ -772,8 +786,25 @@ def evaluate_g4_quality(
     ))
 
     # ── Tổng hợp ─────────────────────────────────────────────────────────
-    auto_blocked = any(row["status"] == "BLOCK" for row in automatic)
-    auto_review = any(row["status"] == "REVIEW" for row in automatic)
+    # SỬA 2026-07-31 (audit tautology vòng 2, G4-AUTO-11 — reverse-tautology):
+    # containment đơn giản (declared_outcome.casefold() in body2.casefold())
+    # là NLP-brittle — cùng kết cục diễn đạt lại tự nhiên (không copy y
+    # nguyên) vẫn bị REVIEW dù ý nghĩa lâm sàng giống hệt. Xác nhận thực
+    # nghiệm: với SAP đã ký (ledger_signed=True) + mọi human attestation
+    # True, chỉ đổi §2 từ copy-nguyên-văn sang diễn đạt tự nhiên tương đương
+    # đã khiến report['status'] rơi từ LOCKED xuống DRAFT_NEEDS_HUMAN_CONTENT
+    # — một SAP đã ký, đã người thật xác nhận, bị hạ cấp SAI chỉ vì cách
+    # diễn đạt câu. TRƯỚC KHI ký, vẫn để G4-AUTO-11 tham gia auto_review bình
+    # thường (nhắc bác sĩ đối chiếu, không hại gì vì chưa khóa) — chỉ loại
+    # khỏi phép tính khi ledger_signed=True (SAU khi đã ký, không để heuristic
+    # dễ vỡ này hạ cấp một quyết định người thật đã chốt). Dòng G4-AUTO-11
+    # vẫn hiển thị REVIEW trong báo cáo để bác sĩ đọc, chỉ không gate status.
+    _status_driving = [
+        row for row in automatic
+        if not (row["id"] == "G4-AUTO-11" and ledger_signed)
+    ]
+    auto_blocked = any(row["status"] == "BLOCK" for row in _status_driving)
+    auto_review = any(row["status"] == "REVIEW" for row in _status_driving)
     human_complete = all(row["status"] == "PASS" for row in approval)
 
     if auto_blocked:

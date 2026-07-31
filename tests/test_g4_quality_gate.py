@@ -59,6 +59,19 @@ _COMPARATIVE_FILLS = [
     ("- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ", "- **Phần mềm:** R v4.3.1  "),
     ("- **Packages:** [CẦN — survival, lme4, mice, gtsummary...]  ", "- **Packages:** survival, mice  "),
     ("- **Random seed:** [CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]  ", "- **Random seed:** set.seed(20260730)  "),
+    # THÊM 2026-07-31 (audit tautology vòng 2, G4-F1 — hồi quy R6): 5 trường
+    # này TRƯỚC ĐÂY không được fixture điền, khiến _filled_comparative_sap()
+    # (dùng bởi test "SAP đầy đủ thì đạt LOCKED toàn bộ tiêu chí") vô tình
+    # dừng ở can_n=7 — CHỈ CAO HƠN 2 so với ngưỡng R6 cũ (>=5) một cách tình
+    # cờ, nên test chưa từng thực sự đi qua một SAP hoàn thiện 100% thật.
+    ("| 1.0 | 2026-07-29 | [CẦN TÊN TÁC GIẢ] | Bản đầu tiên (tự động từ G1) |",
+     "| 1.0 | 2026-07-29 | BS. Nguyễn Văn A | Bản đầu tiên (tự động từ G1) |"),
+    ("| [CẦN thêm biến] | | | |", "| age, hba1c_baseline | | | |"),
+    ("| [CẦN KẾT QUẢ THẬT] | | | |", "| (điền sau khi có dữ liệu thật) | | | |"),
+    ("║ KQ chính  : [CẦN BÁC SĨ ĐIỀN — từ SAP §2]                 ║",
+     "║ KQ chính  : Tỷ lệ nhập viện tim mạch trong 12 tháng        ║"),
+    ("║ Phân tích : [CẦN BÁC SĨ ĐIỀN — quần thể phân tích]        ║",
+     "║ Phân tích : Intention-to-treat (ITT)                      ║"),
 ]
 
 _QUALITATIVE_FILLS = [
@@ -413,6 +426,22 @@ def test_bonferroni_khong_khop_so_hoc_bi_review():
     row = _row(report, "G4-AUTO-06")
     assert row["status"] == "REVIEW"
     assert "không khớp số học" in row["evidence"]
+
+
+def test_bonferroni_alpha_goc_truoc_alpha_dieu_chinh_khong_bi_bao_sai():
+    """Hồi quy G4-AUTO-06 (audit tautology vòng 2, 2026-07-31): trước bản
+    vá, regex lấy SỐ 0.0x ĐẦU TIÊN trong §8 — câu diễn đạt tự nhiên phổ biến
+    "alpha gốc 0.05, alpha điều chỉnh = 0.0125" có alpha GỐC đứng trước, bị
+    bắt nhầm 0.05 thay vì 0.0125 dù toán học hoàn toàn đúng (0.05/4=0.0125)."""
+    text = _filled_comparative_sap()
+    text = text.replace(
+        "- **Điều chỉnh:** Chỉ 1 kết cục chính nên không cần hiệu chỉnh  ",
+        "- **Điều chỉnh:** Bonferroni cho 4 kết cục chính; alpha gốc 0.05, "
+        "alpha điều chỉnh = 0.0125  ",
+    )
+    report = _evaluate(artifact_text=text)
+    row = _row(report, "G4-AUTO-06")
+    assert row["status"] == "PASS", row["evidence"]
 
 
 def test_muc_8_con_placeholder_la_review():
@@ -788,3 +817,47 @@ def test_audit_research_gates_co_nhanh_phan_loai_g4():
     src = inspect.getsource(ARG._classify_gate)
     assert 'gate == "G4"' in src
     assert "PASS_G4_SAP_LOCKED" in src
+
+
+def test_g4_auto_11_naturally_phrased_outcome_does_not_demote_signed_sap():
+    """Hồi quy G4-AUTO-11 (audit tautology vòng 2, 2026-07-31): containment
+    đơn giản (declared_outcome trong body2) là NLP-brittle — diễn đạt lại
+    TỰ NHIÊN (không copy y nguyên) cùng kết cục vẫn bị REVIEW dù ý nghĩa
+    giống hệt. Với SAP đã ký (ledger_signed=True mặc định của _evaluate()),
+    G4-AUTO-11 vẫn hiện REVIEW trong báo cáo (không giấu) nhưng KHÔNG được
+    hạ report['status'] khỏi PASS_G4_SAP_LOCKED."""
+    text = _filled_comparative_sap()
+    text = text.replace(
+        "- **Kết cục chính:** Tỷ lệ nhập viện tim mạch trong 12 tháng  ",
+        "- **Kết cục chính:** Tỷ lệ bệnh nhân nhập viện do biến cố tim mạch "
+        "trong vòng 12 tháng theo dõi  ",
+    )
+    report = _evaluate(
+        artifact_text=text,
+        meta=_meta(g0_overrides={"primary_outcome": "Tỷ lệ nhập viện tim mạch trong 12 tháng"}),
+    )
+    row = _row(report, "G4-AUTO-11")
+    assert row["status"] == "REVIEW", "Tiêu chí vẫn phải hiện REVIEW cho bác sĩ đọc, không giấu"
+    assert report["status"] == G4Q.STATUS_LOCKED, (
+        f"SAP đã ký không được hạ cấp chỉ vì diễn đạt outcome khác câu chữ — got {report['status']}"
+    )
+
+
+def test_g4_auto_11_before_signing_still_demotes_to_draft():
+    """Trước khi ký (ledger_signed=False), G4-AUTO-11 vẫn được phép tham
+    gia auto_review bình thường — không hại gì vì SAP chưa khóa, và vẫn
+    nhắc bác sĩ đối chiếu trước khi ký."""
+    text = _filled_comparative_sap()
+    text = text.replace(
+        "- **Kết cục chính:** Tỷ lệ nhập viện tim mạch trong 12 tháng  ",
+        "- **Kết cục chính:** Một kết cục hoàn toàn khác không liên quan  ",
+    )
+    report = _evaluate(
+        artifact_text=text,
+        ledger_signed=False,
+        ledger_reason="chưa ai duyệt",
+        meta=_meta(g0_overrides={"primary_outcome": "Tỷ lệ nhập viện tim mạch trong 12 tháng"}),
+    )
+    row = _row(report, "G4-AUTO-11")
+    assert row["status"] == "REVIEW"
+    assert report["status"] != G4Q.STATUS_LOCKED
