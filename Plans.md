@@ -70,6 +70,26 @@ không bị trôi/sai khi sửa về sau.
 
 ---
 
+## Phase 5: Rà soát tautology guardrail G0-G10 + tích hợp MCP plugin (2026-07-29 → 2026-07-31)
+
+> Sprint này KHÔNG được khởi tạo qua `/harness-plan` — bác sĩ yêu cầu trực tiếp qua chat ("kiểm
+> tra và hoàn thiện từng cổng", sau đó "kiểm tra plugin MCP đã cài đặt có tham gia hoàn thiện hệ
+> thống"). Ghi lại đây qua `/harness-sync` (2026-07-31) để Plans.md không lệch thực tế git log —
+> tự phát hiện chính mình chưa dùng harness cho sprint này khi bác sĩ hỏi về plugin, và bác sĩ
+> chọn "đồng bộ lại ngay" thay vì chuyển hẳn quy trình.
+
+| Task | Nội dung | DoD | Depends | Status |
+|------|----------|-----|---------|--------|
+| 5.1 | G8: sửa key-mismatch NGHIÊM TRỌNG (`reporting_completeness_pct`/`reporting_pct` không khớp khóa thật `reporting_score_pct`) khiến MỌI đề tài thật kẹt vĩnh viễn không đạt PASS. `[tdd:required]` | `tests/test_g8_quality_gate.py` PASS; mutation-tested | - | cc:done (5b59c44) |
+| 5.2 | G10: sửa reverse-tautology NGHIÊM TRỌNG — 6 hàm build in placeholder vô điều kiện khiến cổng khóa cuối cùng KHÔNG BAO GIỜ đạt READY/LOCKED. `[tdd:required]` | test tích hợp assemble()+evaluate_study() thật xanh | 5.1 | cc:done (085f8b5) |
+| 5.3 | G0/G1/G2/G4/G5: sửa 6 reverse-tautology (chặn oan Grade A/PICO hợp lệ ở G0; chặn cứng thiết kế định tính ở G1; topic-fallback lọt qua ở G2; SAP hoàn thiện thật bị BLOCK + 2 lỗi khác ở G4; phạt khai đúng SAP version ở G5). `[tdd:required]` | mỗi gate có test hồi quy mutation-tested; full suite xanh | 5.1, 5.2 | cc:done (5b5a35e, 5073da2, 25e34a8, fc09d53, a4471df) |
+| 5.4 | G3/G6/G7/G9: honest-scope comment cho luật tautology thuần (chỉ bắt tampering, không thẩm định nội dung khoa học) + G7 2 khẳng định IRB/SAP-locked chưa bảo vệ + stale design-drift cache + PII false-positive. `[tdd:required]` | comment không đổi hành vi (xác nhận bằng diff); G7 có 4 test mới mutation-tested | 5.3 | cc:done (d3518df, 1ff39c0, a8e81be, 3b0bf7b) |
+| 5.5 | Audit tích hợp MCP plugin: sửa ID gia đình plugin sai (`bio-research`→`healthcare`) cho PubMed/ClinicalTrials.gov ở 8 file doctrine (agent gọi đúng chuỗi cũ sẽ lỗi); bổ sung connector MCP vào 9 agent doctrine chưa hề nhắc dù có sẵn; trỏ 2 file bản đồ sang `_CONNECTOR-CHUNG-CU.md`. `[tdd:skip:docs-only]` | grep xác nhận 0 ID sai còn sót; `sync_agents_to_codex.py --check`/`verify_claude_code_repo_alignment.py` PASS | - | cc:done (5082f26, dbb254d) |
+| 5.6 | Đính chính 2 mục "chưa sửa" lỗi thời trong CLAUDE.md (G8 6-vs-5 điều kiện, nhãn ICMJE 2023 — cả hai hóa ra đã vá từ trước, chỉ tài liệu quên cập nhật) + sửa 1 `rep_evidence` string lộ thông tin sai ra báo cáo cho bác sĩ. `[tdd:required]` | test hồi quy đổi tên theo string mới; full suite xanh | 5.5 | cc:done (9aea8ce) |
+| 5.7 | G9: đóng khoảng trống THẬT trong checklist "Phần 8 — Hard Gate" — NHÓM D (trưởng đơn vị/hội đồng nội bộ/nhà tài trợ) chưa có field máy đọc được. Thêm `institutional_confirmation` + `_institutional_ok()` + tiêu chí `G9-HUMAN-11`. `[tdd:required]` | 3 test mới (undetermined/required-not-confirmed/required-and-confirmed) mutation-tested; full suite xanh | 5.6 | cc:done (9aea8ce) |
+
+---
+
 ## In Progress
 
 | Task | Noi dung | DoD | Depends | Status |
@@ -106,6 +126,6 @@ TDD tags: `[tdd:required]` = viết test thất bại trước; `[tdd:skip:<lý 
 
 ## Last Update
 
-- **Updated at**: 2026-06-19
-- **Last session owner**: Codex
-- **Branch**: main
+- **Updated at**: 2026-07-31 (harness-sync, retroactive)
+- **Last session owner**: Claude Code
+- **Branch**: feat/r1-1-2-design-gap-remediation
