@@ -289,6 +289,12 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/2026
 
 ## ĐĂNG KÝ NGHIÊN CỨU — PHÂN LOẠI TỰ ĐỘNG
 
+> **Benchmark thiết kế qua connector MCP sống (thêm 2026-07-31, `_CONNECTOR-CHUNG-CU.md`):** trước khi
+> soạn §thiết kế/tiêu chí thu nhận, tra `mcp__plugin_healthcare_Clinical_Trials__analyze_endpoints`/
+> `get_trial_details` để đối chiếu endpoint/cỡ mẫu/tiêu chí với thử nghiệm TƯƠNG TỰ đã đăng ký — giúp
+> phát hiện sớm nếu đề tài trùng hoặc lệch chuẩn thực hành đang có. Thiếu connector → bỏ qua bước này,
+> không suy đoán thay.
+
 | Loại NC | Quyết định | Nơi đăng ký | Thời điểm |
 |---------|------------|-------------|-----------|
 | RCT / can thiệp | **BẮT BUỘC** | ClinicalTrials.gov · ANZCTR · DRKS · ISRCTN | Trước tuyển người tham gia đầu tiên |

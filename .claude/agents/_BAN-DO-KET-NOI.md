@@ -4,6 +4,9 @@
 > **Dựng từ đồ thị cạnh THẬT** (quét tham chiếu `` `agent` `` trong từng file `.claude/agents/*.md`, 2026-06-13; **tái quét 2026-07-05** sau 2 đợt thêm agent 48→50) — KHÔNG bịa cạnh.
 > Đồng bộ với `README.md`, `dieu-phoi-lam-sang.md`, `dieu-phoi-nghien-cuu.md`, `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`.
 > *Lưu ý:* đây là **bản đồ định tuyến cấp prompt** (agent gợi ý chuyển tiếp; nhạc trưởng điều phối). Không có agent nào tự thực thi bước của agent khác ngoài cơ chế điều phối.
+> **Phạm vi:** chỉ vẽ cạnh **agent↔agent**. Cạnh **agent↔connector MCP** (PubMed/ClinicalTrials.gov/
+> bioRxiv/ChEMBL/Consensus/ICD-10…) nằm ở sổ riêng `_CONNECTOR-CHUNG-CU.md` (thêm 2026-07-31, audit
+> tích hợp plugin — bản đồ này trước đó không nhắc MCP dù nhiều node dùng connector sống).
 
 ---
 

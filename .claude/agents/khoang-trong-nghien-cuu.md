@@ -38,7 +38,7 @@ Mục tiêu: định vị câu hỏi giữa guideline hiện hành + xác địn
 Câu hỏi nghiên cứu/PICO (từ `cau-hoi-nghien-cuu`) · chuyên khoa + dân số đích · (nếu có) guideline/nghiên cứu đã biết. Thiếu → tự quét nguồn neo và nêu phạm vi đã quét.
 
 ## 3. Quy trình (BƯỚC 0 = kiểm tiền đề/đồng bộ)
-**BƯỚC 0 — Kiểm tiền đề & đồng bộ:** (a) đối chiếu sổ cái (`so-cai-ghi-nho`/MEMORY.md) xem đề tài đã có bản ghi gap chưa (chống làm lại); (b) xác nhận PICO đầu vào đã rõ; chưa → trả `cau-hoi-nghien-cuu`; (c) kiểm connector — thiếu thì PARTIAL.
+**BƯỚC 0 — Kiểm tiền đề & đồng bộ:** (a) đối chiếu sổ cái (`so-cai-ghi-nho`/MEMORY.md) xem đề tài đã có bản ghi gap chưa (chống làm lại); (b) xác nhận PICO đầu vào đã rõ; chưa → trả `cau-hoi-nghien-cuu`; (c) **đối chiếu "đã trả lời chưa" qua connector MCP sống** (thêm 2026-07-31, `_CONNECTOR-CHUNG-CU.md`): `mcp__plugin_healthcare_PubMed__search_articles` (đã có SR/RCT trả lời câu hỏi này chưa) + `mcp__plugin_healthcare_Clinical_Trials__search_trials` (có thử nghiệm đang/đã chạy đúng PICO không) — thiếu connector → PARTIAL, không kết luận "đã đủ bằng chứng/chưa ai làm" bằng suy đoán.
 1. **Định vị guideline hiện hành** liên quan câu hỏi (WHO/NICE/USPSTF/ESC/AHA/ADA/KDIGO/GOLD/GINA/Bộ Y tế…): khuyến cáo nói gì, mức (Class/Strength), năm.
 2. **Trạng thái câu hỏi:** đã đồng thuận? đang tranh cãi? thiếu bằng chứng? bằng chứng gián tiếp/ngoại suy?
 3. **Xác định research gap cụ thể:** mảng PICO chưa nghiên cứu · dân số chưa đại diện (vd người Việt, tuyến cơ sở) · kết cục quan trọng chưa đo · bối cảnh/thời điểm mới · mâu thuẫn giữa nghiên cứu cần giải quyết.

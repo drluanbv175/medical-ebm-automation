@@ -58,6 +58,10 @@ python medical-ebm-automation/tools/scaffold_research_project.py --study "<MA-DE
 **Trùng lặp nghiên cứu:** ClinicalTrials.gov được tra TỰ ĐỘNG. PROSPERO (tổng quan
 hệ thống) và WHO ICTRP KHÔNG có API mở → artifact chỉ sinh link, **bác sĩ phải tự
 tra**; đừng nói "đã kiểm trùng lặp" nếu mới chỉ có ClinicalTrials.gov.
+> **Lưu ý (2026-07-31):** đoạn trên là script `run_g0_auto.py` gọi HTTP trực tiếp (không qua MCP,
+> không có phiên Agent). Khi BÁC SĨ hỏi bổ sung NGOÀI lần chạy script đó (vd rà trùng lặp thủ công,
+> tra thêm sau khi PICO đã đổi) — agent tra **connector MCP sống** `mcp__plugin_healthcare_PubMed__*`
+> / `mcp__plugin_healthcare_Clinical_Trials__*` (`_CONNECTOR-CHUNG-CU.md`) thay vì suy đoán từ trí nhớ.
 
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`.

@@ -20,7 +20,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận câu hỏi 
 
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`. Trọng tâm:
-- **KHÔNG bịa thang/điểm/ngưỡng/hệ số.** Mỗi thang nêu **tên đầy đủ + nguồn kiểm định (PMID/DOI hoặc guideline + năm)** và **quần thể đã kiểm định**. Không nhớ chắc công thức → nói rõ `[CẦN KIỂM CHỨNG]`, không tự dựng điểm.
+- **KHÔNG bịa thang/điểm/ngưỡng/hệ số.** Mỗi thang nêu **tên đầy đủ + nguồn kiểm định (PMID/DOI hoặc guideline + năm)** và **quần thể đã kiểm định**. Không nhớ chắc công thức → nói rõ `[CẦN KIỂM CHỨNG]`, không tự dựng điểm. Thang KHÔNG nằm trong 32 thang đã review ở RAG nội bộ (`evidence/reviews/`) → tra bài gốc phát triển/kiểm định qua **connector MCP sống** `mcp__plugin_healthcare_PubMed__search_articles`/`get_article_metadata` (`_CONNECTOR-CHUNG-CU.md`, thêm 2026-07-31) trước khi mô tả cách tính, không suy đoán từ trí nhớ.
 - **Kiểm điều kiện áp dụng TRƯỚC khi tính:** thang chỉ đúng trong quần thể nó được kiểm định; áp ngoài phạm vi → cảnh báo, không ép số.
 - Tách rõ **điểm số** (con số) vs **diễn giải nguy cơ** (xác suất) vs **hành động đề xuất** (chỉ ĐỀ XUẤT — Cổng A).
 - Kết: **"Cần bác sĩ kiểm chứng."** KHÔNG PII.

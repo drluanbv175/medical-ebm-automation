@@ -3,6 +3,8 @@
 > Sổ tham chiếu hạ tầng (`_*`) — **KHÔNG phải agent** (không tính vào bộ đếm agent). Tạo 2026-06-14.
 > Gộp hai luồng (Lâm sàng 5 bước · Nghiên cứu G0–G9) vào **một khung dùng chung**: cùng cổng vào · cùng luật nền · cùng guardrail · cùng sổ cái · cùng hàng đợi phê duyệt.
 > Đồng bộ: `README.md`, `HUONG-DAN-VAN-HANH.md`, `_HIEN-PHAP-LIEM-CHINH.md` §2, `dieu-phoi-lam-sang.md`, `dieu-phoi-nghien-cuu.md`.
+> **Tra cứu chứng cứ sống trong cả 2 luồng đi qua connector MCP** — bản đồ agent↔connector riêng ở
+> `_CONNECTOR-CHUNG-CU.md` (thêm 2026-07-31, audit tích hợp plugin).
 > **"Cần bác sĩ kiểm chứng."**
 
 ---

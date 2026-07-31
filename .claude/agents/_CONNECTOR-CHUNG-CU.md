@@ -6,6 +6,14 @@
 > PubMed; file này gom mọi connector về một chỗ để mọi agent trỏ tới bằng **1 dòng tham chiếu**.
 > Luật nền: `_HIEN-PHAP-LIEM-CHINH.md` + `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`
 > (4 trụ cột) + `_QUAN-TRI-DU-LIEU-PII.md` (§3 outbound). **"Cần bác sĩ kiểm chứng."**
+>
+> **SỬA 2026-07-31 (audit tích hợp plugin):** ID công cụ MCP cho PubMed/ClinicalTrials.gov ghi cứng
+> ở đây và ở agent trỏ tới bảng này từng dùng gia đình `mcp__plugin_bio-research_pubmed__*`/
+> `mcp__plugin_bio-research_c-trials__*` — **sai gia đình plugin**; ID sống thật trong phiên là
+> `mcp__plugin_healthcare_PubMed__*`/`mcp__plugin_healthcare_Clinical_Trials__*` (họ "healthcare",
+> không phải "bio-research"). Agent gọi đúng chuỗi cũ sẽ lỗi vì tên plugin không tồn tại — đã sửa 8
+> file (bảng này + 7 agent trỏ tới). ICD-10 cũng đổi từ ID hash phiên (`mcp__bb740761-...__`, dễ đổi
+> khi connector kết nối lại) sang tên plugin ổn định `mcp__plugin_healthcare_ICD10_Codes__*`.
 
 ---
 
@@ -31,15 +39,25 @@
 
 | Connector | ID công cụ MCP (tiền tố) | Vai chứng cứ | Khi ưu tiên |
 |---|---|---|---|
-| **PubMed/MEDLINE** | `mcp__plugin_bio-research_pubmed__` → `search_articles` · `get_article_metadata` · `get_full_text_article` · `find_related_articles` · `convert_article_ids` (PMID↔DOI↔PMCID) · `lookup_article_by_citation` | **NỀN TẢNG** — tìm SR/MA, RCT, cohort; phân giải & kiểm metadata; lấy toàn văn PMC | Mọi câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại; mọi lần xác minh PMID/DOI |
+| **PubMed/MEDLINE** | `mcp__plugin_healthcare_PubMed__` → `search_articles` · `get_article_metadata` · `get_full_text_article` · `find_related_articles` · `convert_article_ids` (PMID↔DOI↔PMCID) · `lookup_article_by_citation` | **NỀN TẢNG** — tìm SR/MA, RCT, cohort; phân giải & kiểm metadata; lấy toàn văn PMC | Mọi câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại; mọi lần xác minh PMID/DOI |
 | **Consensus** | `mcp__plugin_bio-research_consensus__search` | **CHỈ KHÁM PHÁ** (discovery) — tổng hợp AI có trích dẫn để định hướng nhanh | Quét sơ bộ "bài nào nói gì"; **KHÔNG** dùng làm nguồn trích dẫn cấp 1 — xem ⚠ §3 |
-| **ClinicalTrials.gov** | `mcp__plugin_bio-research_c-trials__` → `search_trials` · `get_trial_details` · `analyze_endpoints` · `search_by_eligibility` | Đăng ký & thiết kế thử nghiệm; endpoint benchmark; thử nghiệm đang chạy/đã có kết quả | Câu hỏi điều trị (xem có RCT đang/đã chạy); thiết kế NC (đối chiếu endpoint/cỡ mẫu/tiêu chí) |
+| **ClinicalTrials.gov** | `mcp__plugin_healthcare_Clinical_Trials__` → `search_trials` · `get_trial_details` · `analyze_endpoints` · `search_by_eligibility` | Đăng ký & thiết kế thử nghiệm; endpoint benchmark; thử nghiệm đang chạy/đã có kết quả | Câu hỏi điều trị (xem có RCT đang/đã chạy); thiết kế NC (đối chiếu endpoint/cỡ mẫu/tiêu chí) |
 | **bioRxiv/medRxiv** | `mcp__plugin_bio-research_biorxiv__` → `search_preprints` · `get_preprint` · `search_published_preprints` | Tiền ấn phẩm (**CHƯA bình duyệt**); kiểm preprint đã lên tạp chí chưa | Văn liệu xám cho SR; tín hiệu rất mới — **luôn ghi nhãn "CHƯA bình duyệt"** |
 | **ChEMBL** | `mcp__plugin_bio-research_chembl__` → `drug_search` · `get_mechanism` · `get_admet` · `get_bioactivity` · `target_search` | Dược lý **TIỀN LÂM SÀNG** (cơ chế, IC50/Ki, ADMET dự đoán) | Bối cảnh cơ chế thuốc cho NGHIÊN CỨU — xem ⚠ §3 (KHÔNG dùng cho cảnh báo kê đơn) |
-| **ICD-10-CM/PCS** | `mcp__bb740761-1dc3-44f5-a43c-4e9429d9ddc0__` → `search_codes` · `lookup_code` · `validate_code` · `get_hierarchy` | Mã hóa chẩn đoán/thủ thuật (bộ mã 2026) | Khi cần mã ICD-10 chuẩn cho chẩn đoán/biến số/báo cáo |
+| **ICD-10-CM/PCS** | `mcp__plugin_healthcare_ICD10_Codes__` → `search_codes` · `lookup_code` · `validate_code` · `get_hierarchy` | Mã hóa chẩn đoán/thủ thuật (bộ mã 2026) | Khi cần mã ICD-10 chuẩn cho chẩn đoán/biến số/báo cáo |
 
 > Bộ mã ICD-10-CM là chuẩn Hoa Kỳ — đối chiếu danh mục **ICD-10 của Bộ Y tế VN** khi dùng cho hồ sơ
 > trong nước (`[CẦN XÁC NHẬN TẠI ĐƠN VỊ]`).
+
+**3 connector khác đã kết nối nhưng NGOÀI PHẠM VI đội agent này (ghi rõ để không bỏ sót khi rà —
+KHÔNG phải thiếu sót, là quyết định phạm vi):**
+- **NPI Registry** (`mcp__plugin_healthcare_NPI_Registry__*`) — định danh nhà cung cấp dịch vụ y tế
+  Hoa Kỳ (NPPES); không áp dụng cho hành nghề tại Việt Nam.
+- **CMS Coverage** (`mcp__plugin_healthcare_CMS_Coverage__*`) — chính sách chi trả Medicare (Mỹ);
+  không áp dụng cho BHYT Việt Nam.
+- **Open Targets** (`mcp__plugin_bio-research_ot__*`) — dữ liệu liên kết gen-bệnh/genomics tiền
+  lâm sàng, cùng tầng thẩm quyền với ChEMBL (§2: "Bối cảnh NGHIÊN CỨU, không lâm sàng") — dùng khi
+  đề tài có cấu phần dược lý phân tử/di truyền, KHÔNG làm chỗ dựa cho khuyến cáo lâm sàng.
 
 ---
 
