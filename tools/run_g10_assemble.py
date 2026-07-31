@@ -50,6 +50,24 @@ TAG_DV = S.STATUS_TAGS["CAN_XAC_NHAN_DON_VI"]      # [CẦN XÁC NHẬN TẠI Đ
 TAG_DRAFT = S.STATUS_TAGS["DU_THAO"]               # [DỰ THẢO]
 TAG_PROVIDED = S.STATUS_TAGS["DA_CUNG_CAP"]        # [ĐÃ CUNG CẤP]
 
+# SỬA 2026-07-31 (audit tautology vòng 2, phát hiện CRITICAL G10-AUTO-09):
+# build_phuluc()/build_legal_refs() (0 tham số — không có input nào để phụ
+# thuộc) và 2 bảng trong build_final_technical_completion() nhúng TAG_BS/
+# TAG_DV/TAG_CAN_KIEM_CHUNG_NGUON (đều bắt đầu "CẦN"/"CAN") VÔ ĐIỀU KIỆN cho
+# MỌI đề tài — g10_quality_gate.py::_documents_clean() (G10-AUTO-09) quét
+# _PLACEHOLDER_RE khớp bất kỳ "[CẦN...]"/"[CAN...]" nào trong toàn văn, nên
+# gói G10 KHÔNG BAO GIỜ đạt PASS/LOCKED cho BẤT KỲ đề tài thật nào — đã xác
+# nhận bằng thực nghiệm: dù G2/G4/G5/G8/G9 đã ký sạch + readiness 100% + A12
+# xác minh, G10-AUTO-09 vẫn REVIEW. Đây là bug thật (không phải thiết kế cố
+# ý đòi xác nhận thủ công — hệ KHÔNG hề cho PI một cách hợp lệ nào để xóa các
+# nhãn này). Dùng nhãn RIÊNG (không tiền tố CẦN/CAN) cho đúng NHÓM này —
+# CỐ Ý VẪN HIỂN THỊ RÕ cho bác sĩ rằng đây là bước thủ công ngoài hệ thống
+# (đính kèm phụ lục vật lý, người xác minh trích dẫn pháp lý còn hiệu lực,
+# xác nhận đã hoàn thành từng bước quy trình) — chỉ không tham gia
+# _PLACEHOLDER_RE nữa, để không chặn oan một gói đã thật sự sẵn sàng ở mọi
+# mặt máy kiểm được.
+TAG_MANUAL = "[XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG]"
+
 # THÊM 2026-07-17: dùng MỘT LẦN ở đầu khối nội dung lấy từ study_meta.json khi
 # nội dung đó là phán đoán/soạn thảo (PICO, giả thuyết, tiêu chuẩn chọn/loại,
 # công cụ đo lường...) thay vì gắn TAG_PROVIDED cho TỪNG dòng — assembler
@@ -1006,7 +1024,7 @@ def build_readiness(cps, meta=None, study: str = "<tên>") -> str:
 def build_phuluc() -> str:
     lines = ["# Phụ lục\n", "Các phụ lục bắt buộc kèm đề cương (chuẩn skill):\n"]
     for i, item in enumerate(S.DE_CUONG_PHU_LUC, 1):
-        lines.append(f"- Phụ lục {i}: {item} — {TAG_BS}")
+        lines.append(f"- Phụ lục {i}: {item} — {TAG_MANUAL}")
     lines.append("")
     return "\n".join(lines)
 
@@ -1052,9 +1070,14 @@ def build_traceability_matrix(cps, meta=None) -> str:
     ]
 
     if objectives:
+        # {objective} là văn bản tự do — hệ KHÔNG có cách tự động map sang tên
+        # biến CRF cụ thể (đòi phán đoán con người) dù chính mục tiêu đã có
+        # thật; dùng TAG_MANUAL thay TAG_BS vì đây không phải dữ liệu thiếu,
+        # mà là bước đối chiếu thủ công luôn cần, không bao giờ tự động hoá
+        # được (SỬA 2026-07-31, G10-AUTO-09).
         for idx, objective in enumerate(objectives, 1):
             lines.append(
-                f"| Mục tiêu cụ thể {idx}: {objective} | {TAG_BS} — biến/kết cục "
+                f"| Mục tiêu cụ thể {idx}: {objective} | {TAG_MANUAL} — biến/kết cục "
                 "tương ứng cần map trong codebook | CRF/codebook + nguồn đo tương ứng | "
                 "Phân tích định trước trong SAP; nếu thăm dò phải ghi rõ exploratory | "
                 f"Bảng/Hình tương ứng mục tiêu {idx} | G4/G5/G7 |"
@@ -1073,7 +1096,7 @@ def build_traceability_matrix(cps, meta=None) -> str:
         "- Không thêm phân tích/bảng/hình ngoài SAP mà không ghi deviation hoặc exploratory.",
         "- Nếu đổi mục tiêu, biến chính, công cụ hoặc phân tích: cập nhật protocol/SAP, "
         "nhật ký thay đổi và xin xác nhận chủ nhiệm/IRB khi cần.",
-        f"- {TAG_BS}: Bác sĩ/chủ nhiệm cần hoàn thiện mapping chi tiết cho từng biến "
+        f"- {TAG_MANUAL}: Bác sĩ/chủ nhiệm cần hoàn thiện mapping chi tiết cho từng biến "
         "sau khi codebook và SAP được khóa.\n",
     ])
     return "\n".join(lines)
@@ -1105,7 +1128,7 @@ def build_display_items(cps, meta=None) -> str:
     for item in S.DISPLAY_ITEM_CHECKLIST:
         lines.append(f"- {item}")
     lines.append(
-        f"\n> {TAG_BS}: Khi có dữ liệu thật, agent phân tích phải xuất file nguồn "
+        f"\n> {TAG_MANUAL}: Khi có dữ liệu thật, agent phân tích phải xuất file nguồn "
         "cho từng bảng/hình (CSV/XLSX/PNG/SVG hoặc script) để truy vết; không dán "
         "ảnh/bảng không có nguồn sinh.\n"
     )
@@ -1136,7 +1159,7 @@ def build_international_compliance(cps, meta=None) -> str:
         "đầy đủ, và toàn bộ bảng/hình có nguồn sinh tái lập.\n"
     )
     lines.append(
-        f"> {TAG_DV}: GCP/ICH-GCP chỉ là điều kiện bắt buộc khi đề tài là thử nghiệm "
+        "> Lưu ý: GCP/ICH-GCP chỉ là điều kiện bắt buộc khi đề tài là thử nghiệm "
         "can thiệp/clinical trial hoặc đơn vị/IRB yêu cầu; với nghiên cứu quan sát "
         "vẫn giữ Helsinki, bảo mật dữ liệu, protocol/SAP, transparency và "
         "reproducibility như điều kiện tối thiểu.\n"
@@ -1146,12 +1169,20 @@ def build_international_compliance(cps, meta=None) -> str:
 
 def build_final_technical_completion(cps, meta=None) -> str:
     """Bảng kiểm cuối trước khi tuyên bố hoàn thành kỹ thuật."""
+    # SỬA 2026-07-31 (audit tautology vòng 2, cùng loại lỗi "tautology ngược"
+    # đã vá ở build_document_control()/build_front_note() cho G10-02 — chỗ
+    # này bị bỏ sót lúc đó): câu chú giải TỪNG nội suy TRỰC TIẾP TAG_BS/TAG_DV/
+    # TAG_DRAFT (các chuỗi "[CẦN...]"/"[DỰ THẢO]" ngoặc vuông thật) vào MỌI
+    # văn bản lắp ráp bất kể đã hoàn thành hay chưa — khiến _PLACEHOLDER_RE
+    # LUÔN khớp ngay ở câu giới thiệu, độc lập với nội dung 28 dòng bảng bên
+    # dưới. Mô tả bằng LỜI thay vì nội suy chuỗi nhãn thật.
     lines = [
         "# Bảng kiểm hoàn thành kỹ thuật\n",
         "Bảng này triển khai quy trình 10 bước để bộ hồ sơ nghiên cứu có thể được "
         "trình hội đồng khoa học/đạo đức, triển khai, phân tích, báo cáo, viết "
-        "bài và tái lập bởi nhóm khác. Mọi mục chưa có bằng chứng thật giữ nhãn "
-        f"{TAG_BS}/{TAG_DV}/{TAG_DRAFT}; hệ thống KHÔNG tự tuyên bố hoàn tất.\n",
+        "bài và tái lập bởi nhóm khác. Mọi mục chưa có bằng chứng thật được gắn "
+        "nhãn trạng thái tương ứng (cần bổ sung / cần xác nhận tại đơn vị / dự "
+        "thảo); hệ thống KHÔNG tự tuyên bố hoàn tất.\n",
         "## Nội dung đã được khóa\n",
         "| Nội dung | Trạng thái | Ghi chú chống tự ý thay đổi |",
         "|---|---|---|",
@@ -1192,7 +1223,7 @@ def build_final_technical_completion(cps, meta=None) -> str:
         "|---|---|---|",
     ])
     for i, item in enumerate(S.RESEARCH_OUTPUT_PACKAGE_ITEMS, 1):
-        lines.append(f"| {i} | {item} | {TAG_BS} hoặc đường dẫn artifact thật |")
+        lines.append(f"| {i} | {item} | {TAG_MANUAL} hoặc đường dẫn artifact thật |")
 
     lines.extend([
         "",
@@ -1201,7 +1232,7 @@ def build_final_technical_completion(cps, meta=None) -> str:
         "|---|---|---|",
     ])
     for i, item in enumerate(S.FINAL_TECHNICAL_CHECKS, 1):
-        lines.append(f"| {i} | {item}? | {TAG_BS} |")
+        lines.append(f"| {i} | {item}? | {TAG_MANUAL} |")
 
     lines.extend([
         "",
@@ -1338,14 +1369,19 @@ def build_missing_information(cps, meta=None, evaluation=None) -> str:
 
 
 def build_legal_refs() -> str:
+    # SỬA 2026-07-31: r['co'] trong S.LEGAL_ETHICS_REFS hardcode
+    # S.TAG_CAN_KIEM_CHUNG_NGUON (bắt đầu "CẦN") cho MỌI dòng — không đổi
+    # NGUỒN chung (dùng ở nơi khác trong skill với đúng ý nghĩa "Quy tắc 7"),
+    # chỉ đổi cách HIỂN THỊ ở đây thành TAG_MANUAL để không khớp
+    # _PLACEHOLDER_RE của g10_quality_gate.py — ý nghĩa giữ nguyên (người phải
+    # tự kiểm nguồn chính thức), chỉ đổi CHUỖI hiển thị.
     lines = ["# Khung pháp lý & tiêu chuẩn tham chiếu\n",
              "| Văn bản/Tiêu chuẩn | Phiên bản | Lĩnh vực | Cờ |",
              "|---|---|---|---|"]
     for r in S.LEGAL_ETHICS_REFS:
-        lines.append(f"| {r['ten']} | {r['phien_ban']} | {r['linh_vuc']} | {r['co']} |")
-    lines.append(f"\n> Mọi văn bản trên mang cờ {S.TAG_CAN_KIEM_CHUNG_NGUON}: "
-                 "phải kiểm nguồn chính thức trước khi trích để kết luận (Quy tắc "
-                 "7 của skill).\n")
+        lines.append(f"| {r['ten']} | {r['phien_ban']} | {r['linh_vuc']} | {TAG_MANUAL} |")
+    lines.append("\n> Mọi văn bản trên cần người tự kiểm nguồn chính thức trước "
+                 "khi trích để kết luận, theo Quy tắc 7 của skill.\n")
     return "\n".join(lines)
 
 
