@@ -995,8 +995,32 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
         warnings.append("R3 ✅ Không vượt cổng")
 
     # R4 — Không tự gán GRADE (bỏ phân biệt hoa-thường)
-    if re.search(r'grade\s+[a-d]\b|độ mạnh khuyến cáo', artifact_normalized):
-        errors.append("R4 🟡 Phát hiện nhãn GRADE — kiểm xem có nguồn không")
+    # SỬA 2026-07-31 (audit tautology vòng 2 — reverse-tautology thật, không
+    # phải chỉ honest-comment): regex cũ khớp "grade [a-d]" Ở BẤT KỲ ĐÂU, kể
+    # cả khi cụm đó chỉ là một phần TOPIC do bác sĩ gõ và không liên quan gì
+    # tới khung GRADE chứng cứ (vd "Grade A của độ ác tính u gan", "Los
+    # Angeles Classification Grade A-D viêm thực quản trào ngược") — topic
+    # được generate_a1_artifact() echo nguyên văn nên chặn oan MỌI chủ đề như
+    # vậy. Xác nhận thực nghiệm: 4 tổ hợp topic="...Grade A..." đều bị chặn
+    # dù không liên quan GRADE. Thu hẹp bằng CỬA SỔ NGỮ CẢNH ±40 ký tự quanh
+    # "grade [a-d]" — chỉ coi là vi phạm nếu có từ khóa khung GRADE-chứng-cứ
+    # gần đó. Đây là phép THU HẸP thuần túy (chỉ bớt false-positive, giữ
+    # nguyên true-positive vì mọi câu tự gán GRADE thật luôn kèm từ khóa
+    # ngữ cảnh theo đúng mẫu artifact tự in) — không tạo lỗi đối xứng.
+    _grade_context_kw = (
+        "chứng cứ", "khuyến cáo", "chất lượng", "certainty",
+        "quality of evidence", "strength of recommendation",
+    )
+    _grade_violation = None
+    for _m in re.finditer(r"grade\s+[a-d]\b", artifact_normalized):
+        _window = artifact_normalized[max(0, _m.start() - 40):_m.end() + 40]
+        if any(kw in _window for kw in _grade_context_kw):
+            _grade_violation = _m.group(0)
+            break
+    if _grade_violation is None and "độ mạnh khuyến cáo" in artifact_normalized:
+        _grade_violation = "độ mạnh khuyến cáo"
+    if _grade_violation:
+        errors.append(f"R4 🟡 Phát hiện nhãn GRADE — kiểm xem có nguồn không (khớp: '{_grade_violation}')")
     else:
         warnings.append("R4 ✅ Không tự gán GRADE")
 
@@ -1004,11 +1028,50 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
     # CLAUDE.md liệt kê R1–R7. Ở cổng G0, vi phạm cụ thể là: một artifact "câu hỏi
     # nghiên cứu" đi kèm khuyến cáo áp dụng cho bệnh nhân — trộn trục CHỨNG CỨ với
     # trục KHUYẾN CÁO LÂM SÀNG, đúng thứ chỉ được phép xuất hiện sau Cổng A.
-    _clinical_advice = re.search(
+    # SỬA 2026-07-31 (audit tautology vòng 2 — reverse-tautology thật): regex
+    # cũ quét TOÀN VĂN không phân biệt CÂU HỎI NGHIÊN CỨU dạng PICO ("có nên
+    # dùng X cho bệnh nhân Y không?") với CHỈ THỊ LÂM SÀNG khẳng định — trong
+    # khi mẫu câu hỏi PICO điều trị phổ biến nhất chính là "Nên dùng/chỉ định
+    # X cho bệnh nhân Y (...) không?", R5 cũ tự chặn ĐÚNG loại câu hỏi mà G0
+    # được thiết kế để phục vụ (mục "☐ Điều trị" có sẵn trong artifact). Xác
+    # nhận thực nghiệm: topic="Nên dùng statin cho bệnh nhân đái tháo đường
+    # không" (câu hỏi PICO chuẩn) bị chặn ở mọi tổ hợp. Thu hẹp: quét theo
+    # CÂU chứa khớp (ranh giới .!?\n), bỏ qua nếu câu chứa "có nên" TRƯỚC vị
+    # trí khớp, HOẶC câu kết ở "không", HOẶC câu có dấu "?" — vẫn bắt đúng
+    # chỉ thị khẳng định thật (không có các dấu hiệu câu hỏi trên).
+    # GIỚI HẠN THẬT (không giấu): đây là đánh đổi precision/recall có chủ ý,
+    # không giải quyết triệt để bài toán phân biệt câu-hỏi-vs-chỉ-thị bằng
+    # regex thuần (không có bộ phân tích ngữ nghĩa tiếng Việt nào làm ground
+    # truth) — một chỉ thị lâm sàng thật lồng trong vỏ câu hỏi (vd "Có nên kê
+    # ngay 500mg X cho bệnh nhân tại phòng cấp cứu không?") từ nay sẽ LỌT qua
+    # R5, khác trước đây.
+    _clinical_advice_re = re.compile(
         r"nên (kê|dùng|chỉ định|điều trị|cho bệnh nhân)|khuyến cáo (dùng|điều trị)|"
-        r"chỉ định cho bệnh nhân",
-        artifact_normalized,
+        r"chỉ định cho bệnh nhân"
     )
+    _clinical_advice = None
+    for _m in _clinical_advice_re.finditer(artifact_normalized):
+        _sent_start = max(
+            artifact_normalized.rfind(".", 0, _m.start()),
+            artifact_normalized.rfind("!", 0, _m.start()),
+            artifact_normalized.rfind("?", 0, _m.start()),
+            artifact_normalized.rfind("\n", 0, _m.start()),
+        ) + 1
+        _sent_end_candidates = [
+            artifact_normalized.find(c, _m.end())
+            for c in (".", "!", "?", "\n")
+        ]
+        _sent_end_candidates = [c for c in _sent_end_candidates if c != -1]
+        _sent_end = min(_sent_end_candidates) + 1 if _sent_end_candidates else len(artifact_normalized)
+        _sentence = artifact_normalized[_sent_start:_sent_end]
+        _is_question = (
+            "có nên" in artifact_normalized[_sent_start:_m.start()]
+            or _sentence.rstrip().rstrip(".!?").endswith("không")
+            or "?" in _sentence
+        )
+        if not _is_question:
+            _clinical_advice = _m
+            break
     if _clinical_advice:
         errors.append(
             "R5 🔴 Artifact G0 chứa khuyến cáo ĐIỀU TRỊ cho bệnh nhân — G0 chỉ đặt câu "

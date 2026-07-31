@@ -321,6 +321,16 @@ def evaluate_g0_quality(
         "Chạy lại G0 khi mạng ổn định; đừng kết luận 'khoảng trống' trên số ước lượng dưới.",
     ))
 
+    # LƯU Ý PHẠM VI (audit tautology vòng 2, 2026-07-31): write_checkpoint()
+    # trong run_g0_auto.py in CỨNG đủ 19 khóa này (10 REQUIRED_CHECKPOINT_KEYS
+    # + 9 REQUIRED_PUBMED_KEYS) VÔ ĐIỀU KIỆN cho MỌI checkpoint mới do pipeline
+    # thật sinh (đã xác nhận thực nghiệm với 4 tổ hợp topic/results khác
+    # nhau) — tiêu chí này KHÔNG BAO GIỜ tự phát hiện được nội dung THIẾU CHẤT
+    # LƯỢNG cho một checkpoint MỚI. Nó vẫn có giá trị THẬT: bắt checkpoint CŨ/
+    # hỏng/sửa tay/ghi bởi writer khác (đã xác nhận: checkpoint bị xoá tay 1
+    # khóa → BLOCK đúng) — đây là kiểm SCHEMA/toàn vẹn, không phải thước đo
+    # chất lượng câu hỏi nghiên cứu cho đề tài cụ thể (việc đó thuộc
+    # G0-HUMAN-01..07, đọc study_meta.json).
     missing_cp = [k for k in REQUIRED_CHECKPOINT_KEYS if k not in checkpoint]
     missing_pm = [k for k in REQUIRED_PUBMED_KEYS if k not in pubmed]
     cp_problems = (
@@ -337,6 +347,14 @@ def evaluate_g0_quality(
         "Chạy lại G0 bản hiện hành để ghi checkpoint đúng schema.",
     ))
 
+    # LƯU Ý PHẠM VI (audit tautology vòng 2, 2026-07-31): 7 tiêu đề mục trong
+    # REQUIRED_A1_SECTIONS là header markdown TĨNH được generate_a1_artifact()
+    # in CỨNG VÔ ĐIỀU KIỆN — không phụ thuộc topic/gaps/results (đã xác nhận
+    # thực nghiệm nhiều tổ hợp topic×results, không case nào thiếu mục). Tiêu
+    # chí này chỉ có khả năng BLOCK thật khi artifact bị TRUNCATE/tampering
+    # SAU khi file .md đã ghi ra đĩa (đã xác nhận: cắt tay 1 header → BLOCK
+    # đúng) — không phải thước đo bác sĩ đã điền PICO/FINER/giả thuyết đủ nội
+    # dung hay chưa (việc đó thuộc G0-HUMAN-01..07).
     missing_sections = [
         s for s in REQUIRED_A1_SECTIONS
         if s.casefold() not in (artifact_text or "").casefold()
