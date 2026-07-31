@@ -1260,25 +1260,36 @@ tính độc lập của Hội đồng; phải đối chiếu quyết định g�
 
 ---
 
-## TIÊU CHÍ QUA CỔNG G2 (AI side — tự kiểm)
+## YÊU CẦU ÁP DỤNG KHI QUA CỔNG G2
+
+<!-- SỬA 2026-07-31 (audit tautology vòng 2): khối này TRƯỚC ĐÂY dùng dấu ☑
+("đã kiểm") cho 12 dòng đầu và tự xưng "AI side — tự kiểm" — nhưng
+generate_g2_full_package() sinh khối này TĨNH, không nội suy biến nào cả,
+và guardrail_check_g2() (kiểm THẬT) chỉ chạy Ở BƯỚC 5, SAU KHI hàm này đã
+trả về chuỗi hoàn chỉnh — nên dù guardrail thật BLOCK (vd PII bị chèn, số
+IRB bịa), khối ☑ tĩnh này vẫn hiển thị y hệt cho Hội đồng đọc, ngụ ý sai là
+"đã xác nhận". Đổi ☑ thành gạch đầu dòng trung tính, bỏ chữ "tự kiểm" khỏi
+tiêu đề — kết quả kiểm THẬT của lần chạy này nằm ở G2_QUALITY_REPORT.md. -->
 
 ```
-☑ 8 tài liệu IRB đã soạn đầy đủ (Tài liệu 1–8)
-☑ ICF tiếng Việt đủ 7 mục Helsinki (MỤC 1–7)
-☑ ICF tiếng Anh (dịch trung thành)
-☑ Bảng rủi ro–lợi ích có phân loại mức nguy cơ
-☑ DMP theo Luật 91/2025/QH15 (7 mục)
-☑ Khai báo COI + AI đầy đủ
-☑ 24 mục WHO Trial Registration Data Set 1.3.1 soạn sẵn
-☑ ClinicalTrials.gov search: prior art thật
-☑ Không PII trong bất kỳ tài liệu nào
-☑ Không bịa số phê duyệt/mã đăng ký
-☑ Mọi tài liệu đánh dấu "DRAFT — chờ phê duyệt"
-☑ Disclaimer cuối mỗi tài liệu
+• 8 tài liệu IRB đã soạn đầy đủ (Tài liệu 1–8)
+• ICF tiếng Việt đủ 7 mục Helsinki (MỤC 1–7)
+• ICF tiếng Anh (dịch trung thành)
+• Bảng rủi ro–lợi ích có phân loại mức nguy cơ
+• DMP theo Luật 91/2025/QH15 (7 mục)
+• Khai báo COI + AI đầy đủ
+• 24 mục WHO Trial Registration Data Set 1.3.1 soạn sẵn
+• ClinicalTrials.gov search: prior art thật
+• Không PII trong bất kỳ tài liệu nào
+• Không bịa số phê duyệt/mã đăng ký
+• Mọi tài liệu đánh dấu "DRAFT — chờ phê duyệt"
+• Disclaimer cuối mỗi tài liệu
 ☐ Số IRB thật → bác sĩ nộp + nhận [CHỜ BÁC SĨ]
 ☐ Số đăng ký NCT/PROSPERO → bác sĩ đăng ký [CHỜ BÁC SĨ]
 ☐ G2_STATUS: LOCKED → sau khi nhận số IRB thật [CHỜ BÁC SĨ]
 ```
+> Kết quả kiểm THẬT của lần chạy này (guardrail R1-R7) nằm ở
+> `G2_QUALITY_REPORT.md`, sinh SAU khối này — không phải chính khối trên.
 
 **Bước tiếp theo:**
 1. In hồ sơ, ký → nộp Hội đồng Đạo đức (lộ trình: {risk["irb_route"]})
@@ -1391,6 +1402,15 @@ def guardrail_check_g2(artifact: str) -> dict:
         warnings.append("R6b ✅ ICF đủ 4 mục con bắt buộc Helsinki §26 (1b/4b/4c/6c)")
 
     # R7 — Disclaimer
+    # SỬA 2026-07-31 (audit tautology vòng 2): generate_g2_full_package() in
+    # 'cần bác sĩ'/'kiểm chứng' VÔ ĐIỀU KIỆN ở nhiều vị trí cố định (header,
+    # cuối Tài liệu 2, cuối ICF, footer) — không phụ thuộc design_code/topic/
+    # risk hay bất kỳ dữ liệu bác sĩ nào (đã xác nhận thực nghiệm 3 bộ input
+    # rct/cross_sectional/sr_ma đều PASS như nhau). R7 KHÔNG BAO GIỜ có thể
+    # BLOCK qua pipeline thật; phạm vi thật chỉ là bắt tampering/truncation
+    # SAU khi sinh — disclaimer LẼ RA phải luôn cố định (không nên biến
+    # thiên theo đề tài), nên giữ nguyên hành vi. Cùng khuôn R7 đã đóng ở
+    # G0/G1/G3/G6/G8/G9 trong đợt audit này.
     if "cần bác sĩ" not in artifact.lower() or "kiểm chứng" not in artifact.lower():
         errors.append("R7 🔴 Thiếu disclaimer")
     else:

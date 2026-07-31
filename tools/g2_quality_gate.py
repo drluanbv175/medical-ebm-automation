@@ -362,6 +362,31 @@ def _registration_draft_errors(document: Mapping[str, Any]) -> list[str]:
         value = by_number.get(number, {}).get("value") if isinstance(by_number.get(number), Mapping) else None
         if not (isinstance(value, str) and value.strip()):
             errors.append(f"WHO TRDS mục {number} ({WHO_TRDS_LABELS[number]}) còn trống")
+    # SỬA 2026-07-31 (audit tautology vòng 2, G2-AUTO-04 — reverse-tautology
+    # thật): bản vá G2-F1 (trên) chỉ kiểm "không rỗng" — nhưng đường sản
+    # xuất thật (tools/run_g2_auto.py::main(), `topic = args.topic or study`)
+    # khi thiếu --topic VÀ không có G0 checkpoint sẽ tự fallback về CHÍNH mã
+    # đề tài đã làm sạch (vd "NOTOPIC-2026") — một chuỗi máy sinh, không phải
+    # tiêu đề khoa học thật — mà vẫn thỏa "không rỗng" nên PASS giả. Xác nhận
+    # thực nghiệm: build_registration_draft(study="NOTOPIC-2026",
+    # topic="NOTOPIC-2026", ...) (mô phỏng đúng fallback thật) → mục 9/10
+    # đều ="NOTOPIC-2026", _registration_draft_errors() trả [] (0 lỗi). Thêm
+    # kiểm: mục 9/10 KHÔNG được trùng với document["study"] (mã đề tài). AN
+    # TOÀN để BLOCK (khác G2-AUTO-08/09 — không xếp vào _NON_BLOCKING_CRITERIA)
+    # vì `topic` LÀ tham số CLI thật (--topic) và/hoặc có đường G0 checkpoint
+    # thật trong main() — bác sĩ có cách hợp lệ để giải quyết chỉ bằng chạy
+    # lại với --topic hoặc chạy G0 trước, không phải một trường không bao giờ
+    # được điền qua pipeline thật.
+    study_code = document.get("study")
+    if isinstance(study_code, str) and study_code.strip():
+        for number in (9, 10):
+            value = by_number.get(number, {}).get("value") if isinstance(by_number.get(number), Mapping) else None
+            if isinstance(value, str) and value.strip() == study_code.strip():
+                errors.append(
+                    f"WHO TRDS mục {number} ({WHO_TRDS_LABELS[number]}) trùng với mã đề tài "
+                    f"'{study_code}' — có vẻ chỉ là fallback, chưa phải tiêu đề khoa học thật "
+                    "(chạy lại với --topic thật hoặc chạy G0 trước)"
+                )
     return errors
 
 

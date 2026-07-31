@@ -135,6 +135,29 @@ def test_who_registration_draft_has_current_24_items(tmp_path):
     assert document["items"][23]["label"] == "IPD Sharing Statement"
 
 
+def test_registration_draft_topic_fallback_to_study_code_is_caught(tmp_path):
+    """Hồi quy G2-AUTO-04 (audit tautology vòng 2, 2026-07-31): khi thiếu
+    --topic và không có G0 checkpoint, tools/run_g2_auto.py::main() fallback
+    topic = study (mã đề tài đã làm sạch) — trước bản vá, mục 9/10 vẫn PASS
+    vì "không rỗng" dù chỉ là mã đề tài, không phải tiêu đề khoa học thật."""
+    path = G2Q.build_registration_draft(
+        study="NOTOPIC-2026", topic="NOTOPIC-2026", design_code="rct",
+        design_primary="RCT",
+        risk={"registration": "BẮT BUỘC", "register_where": "ClinicalTrials.gov"},
+        n_target=100, out_dir=tmp_path, generated_at="2026-07-31T00:00:00+07:00",
+    )
+    document = json.loads(path.read_text(encoding="utf-8"))
+    errors = G2Q._registration_draft_errors(document)
+    assert any("trùng với mã đề tài" in e for e in errors)
+
+
+def test_registration_draft_real_topic_not_flagged_as_fallback(tmp_path):
+    path = _write_registration(tmp_path, "TEST-G2")
+    document = json.loads(path.read_text(encoding="utf-8"))
+    errors = G2Q._registration_draft_errors(document)
+    assert not any("trùng với mã đề tài" in e for e in errors)
+
+
 def test_generated_or_placeholder_package_never_claims_g2_approved(tmp_path):
     report = _evaluate(tmp_path, _package() + "\n[CẦN — kết cục chính]\n", ledger=True)
 
