@@ -340,11 +340,27 @@ def _build_blockers(
         blockers.append("G2_not_approved_or_not_locked")
     if not upstream.get("G4"):
         blockers.append("G4_not_approved_or_not_locked")
-    if (
-        upstream.get("g4_sap_version")
-        and str(upstream.get("g4_sap_version")) != str(sap_version)
-    ):
-        blockers.append("sap_version_mismatch_with_G4")
+    # SỬA 2026-07-31 (audit tautology vòng 2 — reverse-tautology CRITICAL):
+    # tools/run_g4_auto.py CHỈ TỪNG ghi upstream["g4_sap_version"] là None
+    # (G4 BLOCK) hoặc hardcode "1.0" (G4 sinh thành công) — không CLI flag,
+    # không phép tính nào từng gán giá trị khác (đã grep toàn tools/*.py).
+    # Nghĩa là check này chỉ thật sự kiểm "bác sĩ có gõ ĐÚNG hằng số 1.0 hay
+    # không", KHÔNG kiểm được SAP có thật sự khớp phiên bản đang dùng để
+    # khóa hay không. Xác nhận thực nghiệm bằng _build_blockers() thật:
+    # (A) sap_version="1.0" khớp g4="1.0" -> không blocker (đúng, vô nghĩa).
+    # (B) sap_version="2.0" (bác sĩ khai TRUNG THỰC một SAP đã tu chỉnh,
+    #     đúng thực tế) trong khi g4="1.0" (vì run_g4_auto.py không có cách
+    #     ghi khác) -> bị chặn dù khai ĐÚNG sự thật — reverse-tautology.
+    # (C) sap_version="1.0" dù SAP thật đã là bản 2.0 (khai SAI để né kiểm)
+    #     -> KHÔNG bị chặn, lọt qua trơn tru — thưởng khai gian.
+    # Hạ từ BLOCK cứng xuống trường ghi-nhận-để-audit (không chặn) cho tới
+    # khi run_g4_auto.py có --sap-version CLI thật (việc LỚN hơn, ngoài phạm
+    # vi bản vá này). KHÔNG mất bảo vệ thật: chống SAP bị đổi SAU khi khóa
+    # do một cơ chế ĐỘC LẬP khác đảm nhiệm — upstream["G4"] (dòng phía trên)
+    # gọi GC.g4_quality_contract_satisfied()+GC.ledger_approved(), tức so
+    # khớp hash/chữ ký mật mã trên chính nội dung SAP đã ký. Giá trị
+    # upstream["g4_sap_version"] được ghi lại (không chặn) vào manifest ở
+    # caller (_lock(), khóa "g4_sap_version_at_signing") để phục vụ audit.
     for key in (
         "intake_ready",
         "raw_readonly",
@@ -603,6 +619,11 @@ def lock_dataset(
         # Trường legacy chỉ chứa vai trò để không lưu tên người.
         "approved_by": reviewer_role,
         "sap_version": sap_version,
+        # THÊM 2026-07-31 (audit tautology vòng 2): ghi lại (KHÔNG chặn) giá
+        # trị g4_sap_version thật tại thời điểm khóa để phục vụ audit thủ
+        # công sau này — xem chú thích tại _build_blockers() vì sao trường
+        # này không còn tham gia blockers.
+        "g4_sap_version_at_signing": upstream.get("g4_sap_version"),
         "row_count": int(profile.get("rows") or 0),
         "column_count": len(profile.get("columns") or []),
         "columns": profile.get("columns") or [],

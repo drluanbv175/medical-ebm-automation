@@ -195,3 +195,57 @@ def test_g10_mentions_locked_analysis_dataset(tmp_path):
     assert "Dữ liệu phân tích đã khóa" in text
     assert "05_clean_locked/df_clean.abc123.locked.csv" in text
     assert "DATA_LOCK_memo.md" in text
+
+
+def test_sap_version_mismatch_no_longer_blocks_truthful_amendment(tmp_path):
+    """Hồi quy audit tautology vòng 2 (2026-07-31): tools/run_g4_auto.py chỉ
+    từng ghi g4_sap_version=None hoặc hardcode "1.0" — không CLI flag nào
+    từng gán giá trị khác. Trước bản vá, bác sĩ khai TRUNG THỰC một SAP đã
+    tu chỉnh (vd "2.0", đúng thực tế) bị chặn vì g4_sap_version trong
+    checkpoint vẫn là "1.0" (giá trị duy nhất run_g4_auto.py có thể ghi) —
+    reverse-tautology: phạt khai đúng, thưởng khai khớp hằng số vô nghĩa."""
+    clean = _clean_dataset(tmp_path / "df_clean.csv")
+    qlog = _closed_query_log(tmp_path / "query_log.csv")
+    study = "LOCK-SAP-AMEND"
+    out_dir = tmp_path / "exports" / study
+    out_dir.mkdir(parents=True)
+    (out_dir / "G4_checkpoint.json").write_text(
+        json.dumps({"g4_sap_version": "1.0"}, ensure_ascii=False), encoding="utf-8"
+    )
+
+    kwargs = _lock_kwargs(qlog)
+    kwargs["sap_version"] = "2.0"  # khai TRUNG THỰC một SAP đã tu chỉnh
+    manifest = LAD.lock_dataset(
+        study,
+        clean,
+        exports_root=tmp_path / "exports",
+        **kwargs,
+    )
+
+    assert "sap_version_mismatch_with_G4" not in manifest["blockers"], manifest["blockers"]
+    assert manifest["g4_sap_version_at_signing"] == "1.0"
+    assert manifest["sap_version"] == "2.0"
+
+
+def test_sap_version_dishonest_match_recorded_but_not_specially_flagged(tmp_path):
+    """Đối chứng: khai "1.0" trùng hằng số (dù SAP thật có thể đã khác) cũng
+    KHÔNG bị chặn — xác nhận field này chỉ còn tính ghi-nhận-audit, không
+    còn là một lớp bảo vệ (bảo vệ thật nằm ở chữ ký mật mã upstream["G4"])."""
+    clean = _clean_dataset(tmp_path / "df_clean.csv")
+    qlog = _closed_query_log(tmp_path / "query_log.csv")
+    study = "LOCK-SAP-MATCH"
+    out_dir = tmp_path / "exports" / study
+    out_dir.mkdir(parents=True)
+    (out_dir / "G4_checkpoint.json").write_text(
+        json.dumps({"g4_sap_version": "1.0"}, ensure_ascii=False), encoding="utf-8"
+    )
+
+    manifest = LAD.lock_dataset(
+        study,
+        clean,
+        exports_root=tmp_path / "exports",
+        **_lock_kwargs(qlog),  # sap_version="1.0" mặc định
+    )
+
+    assert "sap_version_mismatch_with_G4" not in manifest["blockers"]
+    assert manifest["g4_sap_version_at_signing"] == "1.0"
