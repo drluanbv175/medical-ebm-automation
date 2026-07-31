@@ -2546,6 +2546,16 @@ def guardrail(artifact: str, all_scripts_text: str) -> tuple:
         errors.append(f"R6 🔴 Thiếu yêu cầu báo cáo 95%CI trong artifact/scripts ({ci_n} lần, cần ≥3)")
 
     # R7 — Disclaimer
+    # SỬA 2026-07-31 (audit tautology vòng 2): generate_artifact() luôn
+    # append dòng disclaimer này VÔ ĐIỀU KIỆN vào cuối artifact — không phụ
+    # thuộc design_code/topic/study/effect_type/g4_status/covariates (đã
+    # xác nhận thực nghiệm 4 tổ hợp input rất khác nhau, kể cả 'qualitative'
+    # có cấu trúc hoàn toàn khác 'cohort', đều PASS như nhau). Không có
+    # ground truth nào trong hệ thống để so khớp "nội dung đã thật sự được
+    # bác sĩ kiểm chứng khoa học chưa" — hành động đó xảy ra SAU khi artifact
+    # sinh ra. R7 chỉ có giá trị hẹp: bắt tampering/truncation (xóa dòng
+    # disclaimer khỏi file .md đã lưu) — cùng khuôn R7 đã đóng ở
+    # G0/G1/G2/G3/G8/G9 trong đợt audit này.
     if "Cần bác sĩ kiểm chứng" in artifact:
         warnings_list.append("R7 ✅ Có disclaimer")
     else:
