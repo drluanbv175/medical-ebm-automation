@@ -6,11 +6,11 @@
 
 **Chủ nhiệm đề tài:** ……………………………………… *(họ tên, chức danh, đơn vị công tác, bổ sung khi được phê duyệt)*
 
-**Đơn vị chủ trì:** Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh.
+**Đơn vị chủ trì:** Khoa Khám bệnh C1a – Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh.
 
 **Loại hình nghiên cứu:** Mô tả cắt ngang có phân tích (analytical cross-sectional).
 
-**Chuẩn báo cáo áp dụng:** STROBE (cross-sectional).
+**Chuẩn báo cáo áp dụng:** STROBE (cross-sectional) và CROSS (báo cáo nghiên cứu khảo sát).
 
 **Năm thực hiện:** 2026.
 
@@ -32,6 +32,7 @@
 | CIOMS | Council for International Organizations of Medical Sciences |
 | COSMIN | COnsensus-based Standards for the selection of health Measurement INstruments |
 | CRF | Case Report Form (phiếu thu thập dữ liệu) |
+| CROSS | Consensus-Based Checklist for Reporting of Survey Studies (chuẩn báo cáo nghiên cứu khảo sát) |
 | DAG | Directed Acyclic Graph (sơ đồ nhân quả có hướng) |
 | DMP | Data Management Plan (kế hoạch quản trị dữ liệu) |
 | DOI | Digital Object Identifier |
@@ -70,7 +71,7 @@
 
 Sự hài lòng của người bệnh là một trong những chỉ số cốt lõi phản ánh chất lượng dịch vụ khám chữa bệnh và là cấu phần bắt buộc trong khung quản lý chất lượng bệnh viện tại Việt Nam. Không chỉ là thước đo trải nghiệm chủ quan, mức độ hài lòng còn có thể liên quan đến sự gắn bó của người bệnh với cơ sở y tế và uy tín của đơn vị; các mối liên quan này được nêu ở mức thận trọng, không hàm ý quan hệ nhân quả. Vì vậy, đo lường và theo dõi sự hài lòng của người bệnh một cách có hệ thống, bằng công cụ chuẩn hóa, đã trở thành yêu cầu thường quy đối với mọi cơ sở khám chữa bệnh.
 
-Trong hệ thống bệnh viện, khối khám chữa bệnh ngoại trú theo yêu cầu (dịch vụ) là một mô hình đặc thù: người bệnh chủ động chi trả cao hơn để đổi lấy kỳ vọng cao hơn về chất lượng phục vụ, thời gian chờ và tiện nghi. Khoa Khám bệnh C1a thuộc Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, một bệnh viện quân y tuyến cuối tại Thành phố Hồ Chí Minh, là đơn vị vận hành theo mô hình này. Bối cảnh của Khoa C1a giao thoa hai đặc điểm: khối dịch vụ theo yêu cầu với kỳ vọng cao, và vị trí tuyến cuối tại một đô thị lớn trong một bệnh viện quân y.
+Trong hệ thống bệnh viện, khối khám chữa bệnh ngoại trú theo yêu cầu (dịch vụ) là một mô hình đặc thù: người bệnh chủ động chi trả cao hơn để đổi lấy kỳ vọng cao hơn về chất lượng phục vụ, thời gian chờ và tiện nghi. Khoa Khám bệnh C1a thuộc Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, một bệnh viện quân y tuyến cuối tại Thành phố Hồ Chí Minh, là đơn vị vận hành theo mô hình này. Bối cảnh của Khoa C1a giao thoa hai đặc điểm đáng chú ý: khối dịch vụ theo yêu cầu với kỳ vọng cao, và vị trí tuyến cuối tại một đô thị lớn trong một bệnh viện quân y.
 
 Nhiều nghiên cứu trong nước và quốc tế đã khảo sát sự hài lòng của người bệnh ngoại trú, kể cả tại khối khám theo yêu cầu, và cho thấy các "điểm đau" lặp lại là thời gian chờ, thủ tục hành chính, thông tin cung cấp, cơ sở vật chất và chi phí. Một số bằng chứng còn gợi ý một nghịch lý đáng lưu tâm: nhóm sử dụng dịch vụ theo yêu cầu, nhóm ở tỉnh khác đến khám, đôi khi lại có mức hài lòng thấp hơn, có thể do kỳ vọng đặt ra cao hơn. Tuy vậy, cho đến nay chưa tìm thấy một nghiên cứu công bố, được kiểm chứng, khảo sát riêng mức độ hài lòng và các yếu tố liên quan tại chính Khoa C1a/Bệnh viện Quân y 175. Đây là một khoảng trống ở cấp cơ sở (site-specific): chủ đề đã "chín" về mặt phương pháp, nhưng dữ liệu đặc thù cho đơn vị này thì còn thiếu. Bên cạnh đó, các bộ mẫu phiếu hài lòng người bệnh do Bộ Y tế ban hành (Quyết định 3869/QĐ-BYT 2019, nay là Quyết định 56/QĐ-BYT 2024) hướng đến quần thể ngoại trú nói chung và không có lĩnh vực riêng cho khía cạnh chi phí dịch vụ theo yêu cầu; nhóm nghiên cứu vì vậy xây dựng một bộ câu hỏi riêng, phù hợp với đặc thù khối theo yêu cầu tại Khoa C1a (chi tiết và so sánh với khung của Bộ Y tế ở mục 3.2 và 4.5).
 
@@ -94,7 +95,7 @@ Xuất phát từ nhu cầu có dữ liệu nền tại chỗ để Trung tâm C
 
 Sự hài lòng của người bệnh (patient satisfaction) là mức độ trải nghiệm dịch vụ y tế đáp ứng được kỳ vọng của người bệnh. Đây là một thước đo trải nghiệm và sự hài lòng do người bệnh tự báo cáo (patient-reported experience measure, gần với nghĩa lâm sàng hơn là patient-reported outcome measure), phản ánh nhiều chiều của chất lượng dịch vụ: khả năng tiếp cận, sự minh bạch về thông tin và thủ tục, cơ sở vật chất, thái độ ứng xử và năng lực chuyên môn của nhân viên y tế, cũng như kết quả cung cấp dịch vụ. Trong thực hành quản lý chất lượng bệnh viện, hài lòng người bệnh vừa là chỉ số theo dõi thường quy, vừa là căn cứ để xác định các điểm cần cải tiến.
 
-Tại Việt Nam, sự hài lòng của người bệnh ngoại trú đã được nghiên cứu ở nhiều tuyến và nhiều bối cảnh. Một khảo sát đa cơ sở tại Hà Nội ghi nhận nhóm sử dụng dịch vụ "theo yêu cầu" (on-demand), nhóm ngoại trú và nhóm người bệnh ở tỉnh khác có mức hài lòng thấp hơn, một tín hiệu liên quan trực tiếp đến bối cảnh của Khoa C1a.[1] Một nghiên cứu trên hệ thống chăm sóc ban đầu toàn quốc cho thấy tỷ lệ hài lòng nhìn chung cao (khoảng 85% ở trạm y tế và 73% ở bệnh viện huyện) và thời gian chờ dài đi kèm mức hài lòng thấp hơn.[2] Nghiên cứu trên người bệnh nội, ngoại trú tại một bệnh viện chuyên khoa ở Hà Nội cũng ghi nhận nhóm ngoại trú hài lòng thấp hơn nội trú, với miền "thời gian chờ" có điểm thấp nhất ở nhóm ngoại trú.[3] Các nghiên cứu về cấp phát thuốc bảo hiểm y tế ngoại trú[4] và về phòng khám ngoại trú điều trị ARV[5] tiếp tục xác nhận "thủ tục hành chính/thời gian chờ" là miền có điểm thấp nhất. Tóm lại, mẫu hình lặp lại của y văn trong nước là: người bệnh ngoại trú thường hài lòng thấp hơn nội trú, và các "điểm đau" thường xoay quanh thời gian chờ, thủ tục hành chính, thông tin, cơ sở vật chất và chi phí. Đây chính là các miền và biến ứng viên cho Mục tiêu 2.
+Tại Việt Nam, sự hài lòng của người bệnh ngoại trú đã được nghiên cứu ở nhiều tuyến và nhiều bối cảnh. Một khảo sát đa cơ sở tại Hà Nội ghi nhận nhóm sử dụng dịch vụ "theo yêu cầu" (on-demand), nhóm ngoại trú và nhóm người bệnh ở tỉnh khác có mức hài lòng thấp hơn, một tín hiệu trực tiếp liên quan đến bối cảnh của Khoa C1a.[1] Một nghiên cứu trên hệ thống chăm sóc ban đầu toàn quốc cho thấy tỷ lệ hài lòng nhìn chung cao (khoảng 85% ở trạm y tế và 73% ở bệnh viện huyện) và thời gian chờ dài đi kèm mức hài lòng thấp hơn.[2] Nghiên cứu trên người bệnh nội, ngoại trú tại một bệnh viện chuyên khoa ở Hà Nội cũng ghi nhận nhóm ngoại trú hài lòng thấp hơn nội trú, với miền "thời gian chờ" có điểm thấp nhất ở nhóm ngoại trú.[3] Các nghiên cứu về cấp phát thuốc bảo hiểm y tế ngoại trú[4] và về phòng khám ngoại trú điều trị ARV[5] tiếp tục xác nhận "thủ tục hành chính/thời gian chờ" là miền có điểm thấp nhất. Tóm lại, mẫu hình lặp lại của y văn trong nước là: người bệnh ngoại trú thường hài lòng thấp hơn nội trú, và các "điểm đau" thường xoay quanh thời gian chờ, thủ tục hành chính, thông tin, cơ sở vật chất và chi phí. Đây chính là các miền và biến ứng viên cho Mục tiêu 2.
 
 ## 3.2. Các bộ công cụ đo lường sự hài lòng người bệnh ngoại trú
 
@@ -146,6 +147,8 @@ Vì vậy, tính mới của đề tài nằm ở việc mở rộng/nhân rộn
 ## 4.1. Thiết kế nghiên cứu
 
 Nghiên cứu mô tả cắt ngang có phân tích (analytical cross-sectional), báo cáo theo chuẩn **STROBE** phiên bản cross-sectional (checklist 22 mục).[11]
+
+Vì số liệu được thu thập bằng một bộ câu hỏi tự điền chứ không phải từ hồ sơ bệnh án hay đo lường lâm sàng, đề tài áp dụng đồng thời chuẩn **CROSS** (A Consensus-Based Checklist for Reporting of Survey Studies).[21] Hai chuẩn bổ sung cho nhau chứ không thay thế nhau: STROBE bao quát phần dịch tễ học quan sát (nguồn mẫu, biến số, kiểm soát nhiễu, phân tích), còn CROSS bao quát những phần đặc thù của một khảo sát mà STROBE không có mục tương ứng, gồm quá trình phát triển và thử nghiệm bộ câu hỏi, phương thức phát phiếu, tỷ lệ đáp ứng và cách tính, ảnh hưởng của điều tra viên, cùng cách xử lý câu trả lời thiếu ở mức từng mục. Khi nộp bản thảo, nhóm nghiên cứu nộp kèm cả hai checklist đã điền.
 
 Thiết kế cắt ngang phù hợp với cả hai mục tiêu. Đối với Mục tiêu 1, cắt ngang là thiết kế chuẩn để ước lượng tỷ lệ hiện mắc của một trạng thái (ở đây là "hài lòng") trong quần thể, đo một lần trên mỗi đối tượng. Đối với Mục tiêu 2, cắt ngang cho phép đo đồng thời yếu tố phơi nhiễm và kết cục, từ đó ước lượng các mối liên quan (β/OR hiệu chỉnh). Vì phơi nhiễm và kết cục được đo cùng thời điểm, thiết kế này chỉ cho phép kết luận về mối liên quan và **không cho phép suy diễn nhân quả** cũng như không xác lập được trình tự thời gian. Đây cũng là thông lệ đã được xác lập cho chủ đề hài lòng ngoại trú tại Việt Nam và quốc tế (mô tả tần số/tỷ lệ kết hợp hồi quy đa biến cho yếu tố liên quan).[1][4][9][10]
 
@@ -493,7 +496,7 @@ Các nguyên tắc bảo vệ người tham gia:
 
 # 5. DỰ KIẾN KẾT QUẢ
 
-Kết quả sẽ được trình bày theo bộ bảng dưới đây. Đây là các **bảng trống (table shells)**: chỉ chứa placeholder (, XX,X), tuyệt đối không có số giả. Số lĩnh vực/số mục của phần hài lòng và danh mục biến Mục tiêu 2 khóa theo bộ câu hỏi thật (Phụ lục C) và SAP.
+Kết quả sẽ được trình bày theo bộ bảng dưới đây. Đây là các **bảng trống (table shells)**: chỉ chứa placeholder (—, XX,X), tuyệt đối không có số giả. Số lĩnh vực/số mục của phần hài lòng và danh mục biến Mục tiêu 2 khóa theo bộ câu hỏi thật (Phụ lục C) và SAP.
 
 ### Bảng 5.1. Đặc điểm nền của mẫu nghiên cứu (n = 1000)
 
@@ -541,7 +544,7 @@ Kết quả sẽ được trình bày theo bộ bảng dưới đây. Đây là 
 | Yếu tố | Phân nhóm | G1 TB ± SD (hoặc tỷ lệ ≥4/5 %, KTC 95%) | Hiệu ứng thô (β hoặc OR, KTC 95%) | p |
 |---|---|---|---|---|
 | Nhóm tuổi | [nhóm] | — | — (—; —) | 0,00X |
-| Giới | Nam / Nữ | — |, (, ;, ) [ref] | 0,00X |
+| Giới | Nam / Nữ | — | — (—; —) [ref] | 0,00X |
 | Học vấn | [nhóm] | — | — (—; —) | 0,00X |
 | Nơi cư trú | Thành thị / Nông thôn | — | — (—; —) | 0,00X |
 | Khoảng cách nhà–viện | [nhóm] | — | — (—; —) | 0,00X |
@@ -568,7 +571,7 @@ Kết quả sẽ được trình bày theo bộ bảng dưới đây. Đây là 
 | Khung giờ khám | [nhóm] | — | (—; —) | 0,00X |
 | Ngày trong tuần | [nhóm] | — | (—; —) | 0,00X |
 
-*Kết cục = G1, thứ hạng 1–5 (mục 4.5.2). Kiểm định proportional odds: [Brant χ² =. , p =. / thỏa mãn hay vi phạm]; nếu vi phạm, bảng thay bằng hệ số partial proportional odds theo từng ranh giới cắt cho biến vi phạm.[20] Pseudo-R² (McFadden) =. ; kiểm phi tuyến của thời gian chờ (restricted cubic spline 3 nút hoặc phân tích theo phân vị), VIF/GVIF max =. ; n đưa vào mô hình =. (complete-case)/MI m =. . Kết quả hồi quy tuyến tính tương ứng (phân tích nhạy cảm) ở Bảng 5.5.*
+*Kết cục = G1, thứ hạng 1–5 (mục 4.5.2). Kiểm định proportional odds: [Brant χ² = —, p = — / thỏa mãn hay vi phạm]; nếu vi phạm, bảng thay bằng hệ số partial proportional odds theo từng ranh giới cắt cho biến vi phạm.[20] Pseudo-R² (McFadden) = —; kiểm phi tuyến của thời gian chờ (restricted cubic spline 3 nút hoặc phân tích theo phân vị), VIF/GVIF max = —; n đưa vào mô hình = — (complete-case)/MI m = —. Kết quả hồi quy tuyến tính tương ứng (phân tích nhạy cảm) ở Bảng 5.5.*
 
 ### Bảng 5.4b (phân tích thứ cấp/mô tả, kết cục nhị phân SHLNBChung_NhiPhan, từ G1 ≥4/5, CHỈ thực hiện nếu đủ điều kiện kích hoạt). Đa biến hồi quy logistic
 
@@ -578,33 +581,52 @@ Kết quả sẽ được trình bày theo bộ bảng dưới đây. Đây là 
 |---|---|---|---|
 | [từng biến] | — | (—; —) | 0,00X |
 
-*Số biến cố = ___; số biến cố/tham số = ___. Chẩn đoán mô hình: VIF/GVIF cao nhất =. ; hiệu chuẩn (calibration) =. . AUC không thuộc kế hoạch phân tích thứ cấp này (AUC phù hợp mục tiêu dự báo, không phải mục tiêu phân tích yếu tố liên quan). Firth áp dụng nếu separation VÀ đủ thông tin khoa học để ước lượng ổn định: [Có/Không].*
+*Số biến cố = ___; số biến cố/tham số = ___. Chẩn đoán mô hình: VIF/GVIF cao nhất = —; hiệu chuẩn (calibration) = —. AUC không thuộc kế hoạch phân tích thứ cấp này (AUC phù hợp mục tiêu dự báo, không phải mục tiêu phân tích yếu tố liên quan). Firth áp dụng nếu separation VÀ đủ thông tin khoa học để ước lượng ổn định: [Có/Không].*
 
 ### Bảng 5.5. Phân tích nhạy cảm (tóm tắt độ vững) (n = 1000)
 
 | Kịch bản nhạy cảm | Hiệu ứng (cOR/β/aOR/r) | KTC 95% | Kết luận độ vững |
 |---|---|---|---|
-| Hồi quy tuyến tính robust HC3 (G1 coi liên tục, complete-case) | β =, | (—; —) | So sánh chiều/độ lớn hiệu ứng với mô hình chính (Bảng 5.4) |
-| Đa trọng imputation (MICE ordinal logistic, m =, ; biến nền/phơi nhiễm) | cOR =, | (—; —) | — |
+| Hồi quy tuyến tính robust HC3 (G1 coi liên tục, complete-case) | β = — | (—; —) | So sánh chiều/độ lớn hiệu ứng với mô hình chính (Bảng 5.4) |
+| Đa trọng imputation (MICE ordinal logistic, m = —; biến nền/phơi nhiễm) | cOR = — | (—; —) | — |
 | Partial proportional odds/generalized ordered logit (chỉ nếu Bảng 5.4 vi phạm proportional odds) | hệ số theo ranh giới cắt | (—; —) | — |
-| Kết cục nhị phân ≥4/5 (logistic nhị phân thứ cấp, nếu đủ điều kiện kích hoạt) | aOR =, | (—; —) | — |
-| Logistic Firth (nếu separation ở kết cục nhị phân thứ cấp) | aOR =, | (—; —) | — |
-| Có/không điểm ảnh hưởng lớn | cOR =, | (—; —) | — |
-| Loại trừ phiếu có hỗ trợ ghi (mode_tra_loi = 2/3), chỉ giữ tự điền | cOR =, | (—; —) | — |
-| Đối chiếu hội tụ: tương quan G1 vs SHLNBChung_TinhToan (r Pearson/Spearman) | r =, | (—; —) | — |
+| Kết cục nhị phân ≥4/5 (logistic nhị phân thứ cấp, nếu đủ điều kiện kích hoạt) | aOR = — | (—; —) | — |
+| Logistic Firth (nếu separation ở kết cục nhị phân thứ cấp) | aOR = — | (—; —) | — |
+| Có/không điểm ảnh hưởng lớn | cOR = — | (—; —) | — |
+| Loại trừ phiếu có hỗ trợ ghi (mode_tra_loi = 2/3), chỉ giữ tự điền | cOR = — | (—; —) | — |
+| Đối chiếu hội tụ: tương quan G1 vs SHLNBChung_TinhToan (r Pearson/Spearman) | r = — | (—; —) | — |
+
+### Bảng 5.6. Tỷ lệ đáp ứng và dữ liệu thiếu (CROSS mục 12–13, 20) (n = 1000)
+
+Bảng này phục vụ yêu cầu báo cáo riêng của chuẩn CROSS mà STROBE không bao gồm: tỷ lệ đáp ứng phải nêu kèm công thức tính, và dữ liệu thiếu phải báo ở mức từng mục chứ không chỉ ở mức phiếu. Ba mã thiếu được báo tách riêng theo quy ước ở mục 4.10 (7 = không áp dụng · 8 = không biết/không nhớ · 9 = không trả lời), vì gộp chung sẽ che mất khác biệt giữa "dịch vụ không dùng đến" và "từ chối trả lời".
+
+| Chỉ số | Định nghĩa/cách tính | Toàn mẫu | Ghi chú |
+|---|---|---|---|
+| Tỷ lệ đồng ý tham gia | Đồng ý ÷ được mời | —% (—; —) | Theo bước 4–5 sơ đồ luồng |
+| Tỷ lệ hoàn thành phiếu | Nộp phiếu ÷ đồng ý | —% (—; —) | — |
+| Tỷ lệ phiếu hợp lệ | PhieuHopLe ÷ nộp phiếu | —% (—; —) | Ngưỡng ≥ 80% mục/lĩnh vực, mục 4.10 |
+| Tỷ lệ đáp ứng chung | Phiếu hợp lệ ÷ được mời | —% (—; —) | Chỉ số báo cáo chính của CROSS |
+| Lý do từ chối | Phân bố lý do ghi ở sổ nhật ký | — (—%) | Nếu người bệnh nêu; không truy hỏi |
+| Thiếu mã 7 (không áp dụng) | Số mục/tổng mục áp dụng | —% | Cao nhất dự kiến ở A3, A4, C8, D2, D3 |
+| Thiếu mã 8 (không biết/không nhớ) | Số mục/tổng mục | —% | — |
+| Thiếu mã 9 (không trả lời) | Số mục/tổng mục | —% | Chỉ báo né tránh câu hỏi nhạy cảm |
+| Mục có tỷ lệ thiếu cao nhất | Tên mục và tỷ lệ | — (—%) | Đưa vào bàn luận về công cụ |
+| Thiếu ở biến phơi nhiễm chính | `thoigian_cho` không ghép được từ HIS | —% | Quyết định complete-case hay MICE, mục 4.10 |
+
+*So sánh người trả lời và người từ chối chỉ thực hiện trên các biến quan sát được mà không cần hỏi (khung giờ, ngày trong tuần), vì nhóm nghiên cứu không thu thập dữ liệu của người từ chối. Đây là giới hạn đã biết của thiết kế và được nêu ở phần Bàn luận.*
 
 ### Sơ đồ luồng tham gia (STROBE flow diagram, dạng bảng/văn bản)
 
 Các bước tuyển chọn được trình bày dưới đây với placeholder số lượng, để cập nhật khi có dữ liệu thực:
 
-1. Người bệnh được sàng lọc theo dòng khám tại Khoa C1a (n =,)
-2. → Đủ điều kiện chọn vào theo tiêu chuẩn 4.3.1/4.3.2 (n =,)
-3. → Được chọn theo hệ thống (người thứ *k*, mục 4.4.2) (n =,)
-4. → Được mời tham gia (n =,)
-5. → Từ chối (n =,) / Đồng ý (n =,)
-6. → Nộp phiếu khảo sát (n =,)
-7. → Phiếu hợp lệ (PhieuHopLe, đạt ngưỡng ≥ 80% mục/lĩnh vực hợp lệ, mục 4.10) (n =,)
-8. → Đưa vào phân tích chính (n =,)
+1. Người bệnh được sàng lọc theo dòng khám tại Khoa C1a (n = —)
+2. → Đủ điều kiện chọn vào theo tiêu chuẩn 4.3.1/4.3.2 (n = —)
+3. → Được chọn theo hệ thống (người thứ *k*, mục 4.4.2) (n = —)
+4. → Được mời tham gia (n = —)
+5. → Từ chối (n = —) / Đồng ý (n = —)
+6. → Nộp phiếu khảo sát (n = —)
+7. → Phiếu hợp lệ (PhieuHopLe, đạt ngưỡng ≥ 80% mục/lĩnh vực hợp lệ, mục 4.10) (n = —)
+8. → Đưa vào phân tích chính (n = —)
 
 ---
 
@@ -715,7 +737,7 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 
 # 7. TÀI LIỆU THAM KHẢO
 
-*Định dạng Vancouver. Toàn bộ 20 tài liệu có PMID (kèm DOI khi xác minh được) đã được đối chiếu với PubMed (tiêu đề · tạp chí · năm · tác giả đầu; mục [19] bổ sung ở vòng rà soát phương pháp gần nhất, mục [20] bổ sung ở vòng phản biện độc lập 07/07/2026, cả hai đã xác minh qua PubMed E-utilities trước khi thêm vào danh mục); bảng đối chiếu nguồn (PMID/DOI, nội dung trích, vị trí) được lưu trong hồ sơ nội bộ của đề tài.*
+*Định dạng Vancouver. Toàn bộ 21 tài liệu có PMID (kèm DOI khi xác minh được) đã được đối chiếu với PubMed (tiêu đề · tạp chí · năm · tác giả đầu; mục [19] bổ sung ở vòng rà soát phương pháp gần nhất, mục [20] bổ sung ở vòng phản biện độc lập 07/07/2026, mục [21] bổ sung ở vòng rà chuẩn báo cáo 31/07/2026, cả ba đã xác minh qua PubMed E-utilities trước khi thêm vào danh mục); bảng đối chiếu nguồn (PMID/DOI, nội dung trích, vị trí) được lưu trong hồ sơ nội bộ của đề tài.*
 
 1. Thach Phuong N, Vu Hoang P, Mac Dang T, et al. Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities. Hosp Top. 2021;101(2):73-83. doi:10.1080/00185868.2021.1969871. PMID: 34445940.
 2. Quyen BTT, Ha NT, Van Minh H. Outpatient satisfaction with primary health care services in Vietnam: Multilevel analysis results from The Vietnam Health Facilities Assessment 2015. Health Psychol Open. 2021;8(1):20551029211015117. doi:10.1177/20551029211015117. PMID: 34017606.
@@ -737,6 +759,7 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 18. Karahalios A, Baglietto L, Carlin JB, et al. A review of the reporting and handling of missing data in cohort studies with repeated assessment of exposure measures. BMC Med Res Methodol. 2012;12:96. doi:10.1186/1471-2288-12-96. PMID: 22784200.
 19. Green SB. How Many Subjects Does It Take To Do A Regression Analysis. Multivariate Behavioral Research. 1991;26(3):499-510. doi:10.1207/s15327906mbr2603_7. PMID: 26776715.
 20. Bender R, Grouven U. Ordinal logistic regression in medical research. J R Coll Physicians Lond. 1997;31(5):546-551. PMID: 9429194.
+21. Sharma A, Minh Duc NT, Luu Lam Thang T, et al. A Consensus-Based Checklist for Reporting of Survey Studies (CROSS). J Gen Intern Med. 2021;36(10):3179-3187. doi:10.1007/s11606-021-06737-1. PMID: 33886027.
 
 **Văn bản pháp quy và thang đo (không có PMID/DOI):**
 
@@ -813,7 +836,7 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 
 ---
 
-# PHỤ LỤC B. BẢN THÔNG TIN & ĐỒNG THUẬN THAM GIA (ICF – TIẾNG VIỆT), *[DỰ THẢO v1.0, chờ Hội đồng phê duyệt]*
+# PHỤ LỤC B. BẢN THÔNG TIN & ĐỒNG THUẬN THAM GIA (ICF, TIẾNG VIỆT) *[DỰ THẢO v1.0, chờ Hội đồng phê duyệt]*
 
 > TÀI LIỆU GIẤY RIÊNG, ĐỘC LẬP với Phiếu khảo sát (Phụ lục C) (đối chiếu phản biện độc lập 07/07/2026 (P0-9): đây **không còn** là "Phần 5 của phiếu khảo sát" như thiết kế trước), mà là một tờ ICF in riêng, có tên/chữ ký, thu và lưu tách biệt vật lý ngay từ đầu. Phiếu khảo sát (Phụ lục C) chỉ mang mã nghiên cứu, không tên/chữ ký, và không dùng chung một mã định danh với ICF này. Không có bảng ghép nối hai tài liệu theo từng cá nhân cụ thể (mục 4.9, 4.11).
 
@@ -862,7 +885,7 @@ Tên/chữ ký người giải thích/thu thập số liệu: ………………
 
 ---
 
-# PHỤ LỤC C. BỘ CÔNG CỤ. TOÀN VĂN "PHIẾU KHẢO SÁT Ý KIẾN NGƯỜI BỆNH NGOẠI TRÚ". *[DỰ THẢO v_pilot. CHỜ HỘI ĐỒNG CHUYÊN GIA + COGNITIVE INTERVIEW + PILOT, xem mục 4.5.1/4.5.3/4.9, CHƯA PHẢI vFinal]*
+# PHỤ LỤC C. BỘ CÔNG CỤ: TOÀN VĂN "PHIẾU KHẢO SÁT Ý KIẾN NGƯỜI BỆNH NGOẠI TRÚ" *[DỰ THẢO v_pilot, CHỜ HỘI ĐỒNG CHUYÊN GIA + COGNITIVE INTERVIEW + PILOT, xem mục 4.5.1/4.5.3/4.9, CHƯA PHẢI vFinal]*
 
 Đây là bộ câu hỏi **tự xây dựng** cho đề tài này (không phải Mẫu số 2, xem so sánh ở mục 3.2.1, 4.5.1). Bản gốc lấy từ phiếu "hoàn chỉnh, có số thứ tự phiếu" do chủ nhiệm cung cấp (2026-07-06); không có nội dung nào được suy đoán hay dựng thay. Toàn văn dưới đây đã qua một vòng chỉnh sửa item theo phản biện độc lập 07/07/2026 (tách mã thiếu 7/8/9, thêm nhánh "không áp dụng", đổi C8 sang hành vi quan sát được, làm rõ mục 10 Phần 1, mở rộng mục 1 Phần 1 thành ba mức, bỏ Phần 5 ra khỏi phiếu, chuyển thành tài liệu đồng thuận riêng ở Phụ lục B, mục 4.11), đây vẫn là bản đưa vào hội đồng chuyên gia + cognitive interview + pilot (mục 4.5.1), **chưa** phải phiên bản khóa cuối (vFinal); phiên bản khóa cuối chỉ chốt sau khi hoàn tất pha phát triển công cụ.
 
