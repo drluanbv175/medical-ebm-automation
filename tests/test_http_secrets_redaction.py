@@ -72,6 +72,12 @@ def test_redact_is_case_and_separator_insensitive():
     assert "SECRET2" not in _redact("...&api-key=SECRET2&db=pubmed")
 
 
+def test_redact_strips_ncbi_email_from_exception_url():
+    safe = _redact("...?db=pubmed&email=doctor%40example.com&id=20332511")
+    assert "doctor%40example.com" not in safe
+    assert "email=***" in safe
+
+
 def test_permanent_4xx_httperror_does_not_leak_api_key_in_message():
     """Lỗi vĩnh viễn (401 sai key…) raise thẳng ra caller — exception PHẢI đã được che
     trước khi rời HttpClient, vì caller (vd resolve_pmids()) log thẳng exc."""

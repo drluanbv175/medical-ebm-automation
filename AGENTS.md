@@ -87,6 +87,8 @@ chore: maintenance work
 - Do not commit secrets (`.env` is git-ignored and read-blocked)
 - Do not work outside the requested scope
 - Do not change security-sensitive settings unless explicitly requested
+- Do not mark evidence surveillance deployed when online canary, fresh weekly/monthly runtime status, alert, rollback, two shadow cycles, doctor UAT, or operations approval is missing
+- Do not bridge `PARTIAL/FAIL` surveillance output into EBM_MASTER or advance its watermark
 
 > **Note**: This is a solo project — direct pushes to `main` are allowed.
 

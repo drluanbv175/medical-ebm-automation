@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "kind": "outpatient_evidence_surveillance_deployment_contract",
+  "deployment_mode": "candidate_only_doctor_review_required",
+  "minimum_live_sources": {
+    "identifier_verification": [
+      "pubmed",
+      "europepmc",
+      "crossref"
+    ],
+    "drug_safety": [
+      "openfda"
+    ]
+  },
+  "runtime_freshness_days": {
+    "weekly": 8,
+    "monthly": 35,
+    "online_canary": 2
+  },
+  "minimum_human_validation": {
+    "source_sample_size": 5,
+    "shadow_cycles": 2,
+    "required_roles": [
+      "doctor",
+      "operations"
+    ],
+    "required_drills": [
+      "scheduler_trigger",
+      "alert_delivery",
+      "rollback_restore"
+    ]
+  },
+  "hard_stops": [
+    "MOCK_DETECTED_IN_LIVE",
+    "ONLINE_SOURCE_CANARY_FAILED",
+    "ONLINE_DASHBOARD_GATE_FAILED",
+    "SOURCE_HEALTH_PARTIAL_OR_FAIL",
+    "HUB_BRIDGE_RELEASED_AFTER_UPSTREAM_FAILURE",
+    "SCHEDULER_NOT_LOADED_OR_PATH_DRIFT",
+    "RUNTIME_STATUS_MISSING_OR_STALE",
+    "ALERT_CHANNEL_NOT_VERIFIED",
+    "ROLLBACK_DRILL_NOT_VERIFIED",
+    "SHADOW_RUN_INCOMPLETE",
+    "DOCTOR_UAT_NOT_APPROVED",
+    "OPERATIONS_APPROVAL_MISSING"
+  ],
+  "prohibited": {
+    "clinical_auto_apply": true,
+    "real_patient_data": true,
+    "treat_candidate_as_recommendation": true,
+    "advance_watermark_after_partial_run": true
+  },
+  "release_state": "READY_FOR_CONTROLLED_DEPLOYMENT",
+  "disclaimer": "Cần bác sĩ kiểm chứng. Triển khai chỉ ở chế độ ứng viên, không tự đổi thực hành."
+}

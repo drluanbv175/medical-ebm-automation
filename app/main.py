@@ -42,13 +42,14 @@ def cmd_run_pipeline() -> Dict:
     return run_pipeline()
 
 
-def cmd_live_update(max_results_per_query: int = 8) -> Dict:
+def cmd_live_update(max_results_per_query: int = 8, *, strict_source_health: bool = True) -> Dict:
     """Luồng cập nhật THỰC TẾ hằng tuần: quét API thật toàn bộ nguồn đang bật,
     chạy pipeline, lưu DB và sinh đầy đủ báo cáo (EBM tuần + an toàn thuốc + kháng sinh).
 
     Tạm ép USE_MOCK_SOURCES=false cho lần chạy này (khôi phục sau khi xong).
     Khuyến nghị điền NCBI_EMAIL/OPENALEX_EMAIL/UNPAYWALL_EMAIL trong .env để gọi
-    lịch sự đúng chuẩn (polite pool). Nguồn lỗi sẽ tự fallback mock & ghi Source Log.
+    lịch sự đúng chuẩn (polite pool). Nguồn lỗi được ghi Source Log và làm trạng thái
+    PARTIAL/FAIL; strict mode tuyệt đối không dùng mock để phát hành hoặc nối sang Hub.
     """
     from app.config import settings
 
@@ -56,7 +57,10 @@ def cmd_live_update(max_results_per_query: int = 8) -> Dict:
     previous = settings.use_mock_sources
     settings.use_mock_sources = False
     try:
-        stats = run_pipeline(max_results_per_query=max_results_per_query)
+        stats = run_pipeline(
+            max_results_per_query=max_results_per_query,
+            strict_source_health=strict_source_health,
+        )
     finally:
         settings.use_mock_sources = previous
 
@@ -72,19 +76,32 @@ def cmd_live_update(max_results_per_query: int = 8) -> Dict:
     docx = export_weekly_ebm_docx()
     if docx:
         reports["weekly_docx"] = str(docx)
-    # Gửi cảnh báo nếu có mục mới ưu tiên cao (tự bỏ qua nếu chưa cấu hình email/webhook).
-    from app.services.notify import notify_high_priority_new
-    notify = notify_high_priority_new(days=7)
+    source_health = dict(stats.get("source_health") or {})
+    deployment_status = str(source_health.get("status") or "FAIL")
+    # Không gửi cảnh báo nội dung khi lượt quét không đầy đủ: tránh biến dữ liệu PARTIAL
+    # thành thông điệp có vẻ đã bao quát. launchd vẫn nhận mã thoát khác 0 để báo lỗi vận hành.
+    if deployment_status == "PASS":
+        from app.services.notify import notify_high_priority_new
+        notify = notify_high_priority_new(days=7)
+    else:
+        notify = {
+            "status": "blocked",
+            "reason": f"source_health_{deployment_status.lower()}",
+        }
     # Dịch trước (cache) nội dung dashboard -> bác sĩ mở Dark Analyst là hiện NGAY (việt hoá đủ).
-    try:
-        from app.reports.evidence_workbench import prewarm_translations
-        warmed = prewarm_translations(per_area=10)
-    except Exception:  # pragma: no cover
-        warmed = 0
+    warmed = 0
+    if deployment_status == "PASS":
+        try:
+            from app.reports.evidence_workbench import prewarm_translations
+            warmed = prewarm_translations(per_area=10)
+        except Exception:  # pragma: no cover
+            warmed = 0
     return {"mode": "live", "pipeline": stats,
             "new_this_run": stats.get("new_items"),
             "new_in_digest": alert["total_new"], "notify": notify, "reports": reports,
-            "prewarmed_topics": warmed}
+            "prewarmed_topics": warmed,
+            "deployment_status": deployment_status,
+            "bridge_allowed": deployment_status == "PASS"}
 
 
 def cmd_alert(days: int = 7) -> Dict:

@@ -23,6 +23,6 @@ class SourceLog(Base):
     api_endpoint: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     query: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     record_count: Mapped[int] = mapped_column(Integer, default=0)
-    status: Mapped[str] = mapped_column(String(32), default="ok")  # ok|error|mock
+    status: Mapped[str] = mapped_column(String(32), default="ok")  # ok|degraded|error|mock
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     mode: Mapped[str] = mapped_column(String(16), default="live")  # live|mock

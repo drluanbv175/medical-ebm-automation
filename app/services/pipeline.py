@@ -49,7 +49,8 @@ def score_item(item: Dict) -> Dict:
 def run_pipeline(records: Optional[List[RawRecord]] = None,
                  max_results_per_query: int = 10,
                  incremental: bool = True,
-                 window_days: Optional[int] = None) -> Dict[str, int]:
+                 window_days: Optional[int] = None,
+                 strict_source_health: bool = False) -> Dict[str, object]:
     """Chạy toàn bộ pipeline. Trả về thống kê số lượng theo phân loại.
 
     incremental: nếu True (mặc định) và đang ở chế độ live, chỉ LẤY bài mới kể từ
@@ -67,9 +68,52 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
     run_id = run_state.start_run(mode=mode, window_days=window_days,
                                  since_date=since_date, until_date=None)
 
+    source_health: dict = {"status": "NOT_APPLICABLE", "reason": "records_injected"}
     if records is None:
+        source_health = {}
         records = ingest_all(max_results_per_query=max_results_per_query,
-                             since_date=since_date)
+                             since_date=since_date, diagnostics=source_health)
+        if mode == "mock":
+            source_health = {
+                **source_health,
+                "status": "DEMO",
+                "reason": "USE_MOCK_SOURCES=true; không dùng để xác nhận triển khai",
+            }
+
+    # Mock lẫn vào live hoặc mất độ phủ nguồn là lỗi cứng. Ở strict mode không ghi các
+    # candidate này vào kho; Source Log/PipelineRun vẫn giữ bằng chứng lỗi để audit.
+    if strict_source_health and mode == "live" and source_health.get("status") == "FAIL":
+        stats: Dict[str, object] = {
+            "total": len(records),
+            "unique_records": 0,
+            "primary": 0,
+            "duplicates": 0,
+            "actionable": 0,
+            "need_full_text": 0,
+            "watch_only": 0,
+            "excluded": 0,
+            "inserted": 0,
+            "updated": 0,
+            "new_items": 0,
+            "new_actionable": 0,
+            "new_drug_safety": 0,
+            "run_id": run_id,
+            "mode": mode,
+            "since_date": since_date,
+            "source_health": source_health,
+            "release_status": "BLOCKED_SOURCE_HEALTH_FAIL",
+        }
+        run_state.finish_run(
+            run_id,
+            total_fetched=len(records),
+            new_items=0,
+            new_actionable=0,
+            new_drug_safety=0,
+            stats=stats,
+            status="error",
+        )
+        logger.error("Pipeline bị chặn trước persist: source health FAIL (%s)", source_health)
+        return stats
 
     # 2) Normalize
     normalized_all: List[Dict] = [normalize(r) for r in records]
@@ -83,12 +127,13 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
     primary_positions, links = deduplicate(normalized)
     primary_set = set(primary_positions)
 
-    stats = {"total": len(normalized_all), "unique_records": len(normalized),
+    stats: Dict[str, object] = {"total": len(normalized_all), "unique_records": len(normalized),
              "primary": len(primary_positions), "duplicates": len(links),
              "actionable": 0, "need_full_text": 0, "watch_only": 0,
              "excluded": 0, "inserted": 0, "updated": 0,
              "new_items": 0, "new_actionable": 0, "new_drug_safety": 0,
-             "run_id": run_id, "mode": mode, "since_date": since_date}
+             "run_id": run_id, "mode": mode, "since_date": since_date,
+             "source_health": source_health}
 
     persisted_ids: List[Optional[int]] = [None] * len(normalized)
 
@@ -142,11 +187,16 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
         ))
 
     # 7b) Ghi nhận kết thúc lần chạy (watermark).
-    run_state.finish_run(run_id, total_fetched=stats["total"],
-                         new_items=stats["new_items"],
-                         new_actionable=stats["new_actionable"],
-                         new_drug_safety=stats["new_drug_safety"],
-                         stats=stats, status="ok")
+    source_status = str(source_health.get("status") or "NOT_APPLICABLE")
+    run_status = "partial" if source_status == "PARTIAL" else "ok"
+    stats["release_status"] = (
+        "BLOCKED_SOURCE_HEALTH_PARTIAL" if source_status == "PARTIAL" else "READY_FOR_REVIEW_QUEUE"
+    )
+    run_state.finish_run(run_id, total_fetched=int(stats["total"]),
+                         new_items=int(stats["new_items"]),
+                         new_actionable=int(stats["new_actionable"]),
+                         new_drug_safety=int(stats["new_drug_safety"]),
+                         stats=stats, status=run_status)
 
     # 7c) Archive processed snapshot (không ghi đè)
     _archive_processed(normalized, stats)

@@ -28,5 +28,5 @@ class PipelineRun(Base):
     new_items: Mapped[int] = mapped_column(Integer, default=0)
     new_actionable: Mapped[int] = mapped_column(Integer, default=0)
     new_drug_safety: Mapped[int] = mapped_column(Integer, default=0)
-    status: Mapped[str] = mapped_column(String(16), default="running")   # running|ok|error
+    status: Mapped[str] = mapped_column(String(16), default="running")   # running|ok|partial|error
     stats: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)

@@ -1,10 +1,10 @@
 # GIÁM SÁT CHỨNG CỨ / TỰ CẬP NHẬT CÓ KIỂM SOÁT — NỘI TỔNG QUÁT NGOẠI TRÚ
 
 > Tài liệu tham chiếu dùng chung (giao thức cấp prompt). Mục đích: theo dõi XU HƯỚNG chứng cứ/khuyến cáo cho các nhóm bệnh nội khoa ngoại trú thường gặp, **tự cập nhật nhưng AN TOÀN** — mọi thay đổi thực hành phải **bác sĩ duyệt**; agent **KHÔNG tự sửa nội dung lâm sàng** trong bất kỳ agent nào.
-> Đồng bộ với: `cap-nhat-guideline.md`, `huong-dan-lam-sang.md`, `tra-cuu-chung-cu.md`, `tham-dinh-grade-nnt.md`, `_SO-EBM-MASTER.md`, hub `EBM_MASTER/`, `_HIEN-PHAP-LIEM-CHINH.md`, `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`. Cập nhật 2026-06-13.
+> Đồng bộ với: `cap-nhat-guideline.md`, `huong-dan-lam-sang.md`, `tra-cuu-chung-cu.md`, `tham-dinh-grade-nnt.md`, `_SO-EBM-MASTER.md`, hub `EBM_MASTER/`, `_HIEN-PHAP-LIEM-CHINH.md`, `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`. Cập nhật 2026-08-01.
 
 ## ⚠️ GIỚI HẠN BẢN CHẤT (đọc trước — KHÔNG nói quá)
-Đây là **cơ chế cấp prompt do MÔ HÌNH thực thi TRONG MỘT PHIÊN** khi được gọi (thủ công hoặc qua tác vụ định kỳ có lịch). **KHÔNG** phải phần mềm chạy nền, **KHÔNG** daemon/cron tự dò mạng ngoài phiên, **KHÔNG** tự kích hoạt nếu không có phiên Claude. Hiệu lực phụ thuộc việc mô hình tuân thủ tài liệu này + có connector web/PubMed sống. Thiếu connector → báo **PARTIAL**, KHÔNG kết luận "không có cập nhật".
+Hệ có **hai tầng tách vai**: (1) engine phần mềm `medical-ebm-automation/scripts/weekly_safety.sh` và `monthly_update.sh` thu thập ứng viên theo launchd; (2) routine/agent trong tài liệu này thẩm định, phân loại và trình bác sĩ. Engine có thể chạy không cần phiên Claude, nhưng **không được gọi là đã triển khai** chỉ vì plist đã load. Trạng thái release duy nhất do `medical-ebm-automation/tools/verify_evidence_surveillance_deployment.py --online` quyết định; thiếu canary online, runtime status còn mới, alert, rollback, hai chu kỳ shadow hoặc UAT bác sĩ/vận hành → **BLOCKED_FOR_DEPLOYMENT**. Thiếu connector → **PARTIAL**, KHÔNG kết luận "không có cập nhật" và KHÔNG nối Hub.
 
 ## NGUYÊN TẮC AN TOÀN TỐI THƯỢNG (bất biến)
 1. **Chỉ ĐỀ XUẤT, không tự áp dụng.** Mọi phát hiện vào hàng "chờ bác sĩ duyệt" (CỔNG A lâm sàng + CỔNG B sổ cái). Agent **không** chỉnh nội dung khuyến cáo/ngưỡng/liều trong các agent lâm sàng (`ke-don-an-toan`, `huong-dan-lam-sang`, `tham-dinh-grade-nnt`, …) — chỉ ghi phát hiện vào sổ cái + báo cáo.
@@ -48,7 +48,7 @@ Phân tầng theo thứ bậc chứng cứ: **(1) guideline hội chuyên ngành
 > **Quy tắc URL:** KHÔNG dán URL/endpoint nếu không chắc. Cách tra an toàn: vào trang "guidelines"/"standards" của hội tương ứng, hoặc tìm trên PubMed theo tên hội + chủ đề + năm. Mọi endpoint cụ thể chưa xác minh → `[CẦN KIỂM CHỨNG]`.
 
 ## C. QUY TRÌNH MỖI LẦN CHẠY
-**BƯỚC 0 — Kiểm tiền đề:** (a) kiểm connector web/PubMed sống → thiếu thì PARTIAL; (b) mở `_SO-EBM-MASTER.md`, đọc **mốc lần dò trước** (`last_sweep_date`) của từng nhóm; (c) nhắc lại: đây là ĐỀ XUẤT, không tự đổi thực hành.
+**BƯỚC 0 — Kiểm tiền đề:** (a) đọc `source_health.status` của lượt engine; chỉ `PASS` mới được chuyển Track A/Hub, `PARTIAL/FAIL` phải chặn phát hành; (b) khi kiểm triển khai chạy canary `verify_evidence_surveillance_deployment.py --runtime-canary --online`; (c) mở `_SO-EBM-MASTER.md`, đọc **mốc lần dò trước** (`last_sweep_date`) của từng nhóm; (d) nhắc lại: đây là ĐỀ XUẤT, không tự đổi thực hành.
 
 1. **Xác định cửa sổ thời gian:** với mỗi nhóm (mục A), lấy `since = last_sweep_date` (nhóm chưa từng dò → mặc định dò 12 tháng gần nhất, ghi rõ).
 2. **Dò cập nhật KỂ TỪ mốc đó** cho từng nhóm:
@@ -64,7 +64,7 @@ Phân tầng theo thứ bậc chứng cứ: **(1) guideline hội chuyên ngành
    - **[ĐÁNG ĐỔI THỰC HÀNH – CẦN BS DUYỆT]** — guideline neo đổi khuyến cáo, hoặc RCT/SR lớn nhất quán đủ tác động.
    - **[THEO DÕI THÊM]** — tín hiệu mới nhưng chứng cứ chưa đủ chắc / mâu thuẫn / chờ guideline xác nhận.
    - **[KHÔNG ĐỔI]** — tái bản hình thức, không thay đổi thực hành.
-5. **Ghi sổ + báo cáo** (mục D) → cập nhật `last_sweep_date` của các nhóm đã dò.
+5. **Ghi sổ + báo cáo** (mục D) → chỉ cập nhật `last_sweep_date` của nhóm quét `PASS`; nhóm lỗi giữ nguyên mốc để lượt sau quét bù.
 
 ## D. ĐẦU RA & QUY TẮC AN TOÀN
 
@@ -89,7 +89,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ### D3. Quy tắc an toàn (nhắc lại — bất biến)
 - **TUYỆT ĐỐI không** sửa nội dung khuyến cáo trong các agent lâm sàng. Chỉ ghi sổ + báo cáo + đẩy hàng chờ duyệt.
 - Không kết luận nhân quả từ thiết kế quan sát; không "đổi thực hành" thay bác sĩ.
-- Connector thiếu → PARTIAL; không suy ra "không có cập nhật".
+- Connector/source-health thiếu → PARTIAL; không suy ra "không có cập nhật", không gửi cảnh báo nội dung và không chạy `bridge_to_ebm_master.py`.
 - Mọi số hiệu/phiên bản/năm phải xác minh; thiếu → nhãn `[CẦN KIỂM CHỨNG]` / `[CẦN XÁC NHẬN TẠI ĐƠN VỊ]`.
 
 ## E. UỶ THÁC AGENT/SKILL (bản đồ gọi)
@@ -103,8 +103,12 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 | Ghi quyết định/mốc cổng | agent `so-cai-ghi-nho` + `_SO-EBM-MASTER.md` |
 | Người cao tuổi đa thuốc (Beers/STOPP-START) | skill `nguoi-cao-tuoi-da-benh-da-thuoc` |
 
-## F. CHẠY ĐỊNH KỲ
-Giao thức này được gọi bởi một **tác vụ định kỳ** (vd hằng tuần/tháng). Lịch chạy thật do bác sĩ tạo qua công cụ tác vụ định kỳ — **[CẦN XÁC NHẬN TẠI ĐƠN VỊ]**. Mỗi lần chạy theo đúng mục C, ghi theo mục D.
+## F. CHẠY ĐỊNH KỲ VÀ CỔNG TRIỂN KHAI
+- Owner thu thập duy nhất: `weekly_safety.sh` (tuần) + `monthly_update.sh` (tháng). `giam-sat-chung-cu` không quét trùng; nó nhận candidate queue để thẩm định. `tong-hop-chung-cu-hang-tuan` chỉ tóm tắt queue; `uptodate` chỉ quản lý closed-loop/Hub.
+- Mỗi script gọi `run.py live-update` strict: mock trong live, thiếu độ phủ nguồn hoặc `PARTIAL/FAIL` trả mã khác 0; bridge sang Hub bị chặn và runtime status JSON ghi FAIL.
+- Canary không ghi DB/Hub: `bash scripts/weekly_safety.sh --canary` và `bash scripts/monthly_update.sh --canary`.
+- Cổng đầy đủ: `python tools/verify_evidence_surveillance_deployment.py --online`. Chỉ trạng thái `READY_FOR_CONTROLLED_DEPLOYMENT` mới cho phép triển khai chế độ **candidate-only**.
+- UAT bắt buộc: mở/đối chiếu ít nhất 5 nguồn thật; gửi/nhận alert thử; trigger lịch; drill restore hash-match; tối thiểu 2 chu kỳ shadow không lỗi/không auto-apply; bác sĩ + vận hành cùng duyệt. Agent không tự điền PASS hoặc ký thay.
 
 ## Ranh giới
 Đây là cơ chế **giám sát + đề xuất**, KHÔNG ra quyết định lâm sàng cho một người bệnh cụ thể (việc đó: `dieu-phoi-lam-sang`), KHÔNG viết tổng quan/bản thảo (cụm nghiên cứu), KHÔNG phải Dashboard Master quản trị (`dashboard-master-ebm-ngoai-tru`). Tuân `_HIEN-PHAP-LIEM-CHINH.md` + `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`. Kết: **"Cần bác sĩ kiểm chứng."**

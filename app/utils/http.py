@@ -25,7 +25,10 @@ logger = get_logger(__name__)
 # sang header) sẽ lọt nguyên văn vào data/archive/app.log/stdout ngay khi có lỗi mạng thật
 # (401 sai key/429 hết lượt retry/timeout) — tái hiện được: gọi HttpClient với api_key giả
 # tới NCBI thật, HTTPError trả về chứa "...&api_key=FAKESECRETKEY..." nguyên văn.
-_SENSITIVE_QUERY_RE = re.compile(r"((?:api[_-]?key)=)[^&\s]+", re.IGNORECASE)
+_SENSITIVE_QUERY_RE = re.compile(
+    r"((?:api[_-]?key|email)=)[^&\s]+",
+    re.IGNORECASE,
+)
 
 
 def _redact(text: str) -> str:
@@ -114,6 +117,33 @@ class HttpClient:
         )
         self.cache_ttl = settings.http_cache_ttl if cache_ttl is None else cache_ttl
         self.min_interval = settings.http_min_interval if min_interval is None else min_interval
+        # Telemetry chỉ chứa trạng thái kỹ thuật, tuyệt đối không giữ URL/query có thể có API key.
+        # Ingestion dùng các bộ đếm này để không ghi nhầm lỗi live thành request "ok".
+        self.request_count = 0
+        self.success_count = 0
+        self.failure_count = 0
+        self.transient_failure_count = 0
+        self.cache_hit_count = 0
+        self.last_error = ""
+        self.last_status_code: Optional[int] = None
+
+    def health_snapshot(self) -> Dict[str, Any]:
+        """Trả telemetry không chứa secret để Source Log và deployment gate sử dụng."""
+        return {
+            "request_count": self.request_count,
+            "success_count": self.success_count,
+            "failure_count": self.failure_count,
+            "transient_failure_count": self.transient_failure_count,
+            "cache_hit_count": self.cache_hit_count,
+            "last_error": self.last_error,
+            "last_status_code": self.last_status_code,
+        }
+
+    def _record_terminal_failure(self, exc: Exception, status_code: Optional[int] = None) -> None:
+        """Ghi một lỗi cuối cùng sau khi retry đã hết; thông báo luôn được che secret."""
+        self.failure_count += 1
+        self.last_error = _redact(f"{exc.__class__.__name__}: {exc}")[:500]
+        self.last_status_code = status_code
 
     def get_json(
         self,
@@ -139,11 +169,16 @@ class HttpClient:
         use_cache: bool,
         want: str,
     ) -> Any:
+        self.request_count += 1
         key = _cache_key(method, url, params)
         if use_cache and self.cache_ttl != 0:
             cached = _read_cache(key, self.cache_ttl)
             if cached is not None:
                 logger.debug("Cache hit: %s", url)
+                self.cache_hit_count += 1
+                self.success_count += 1
+                self.last_error = ""
+                self.last_status_code = 200
                 return cached["json"] if want == "json" else cached["text"]
 
         # 4xx vĩnh viễn: retry vô ích, bỏ ngay lần đầu.
@@ -166,6 +201,7 @@ class HttpClient:
                 )
             except requests.RequestException as exc:
                 last_exc = exc
+                self.transient_failure_count += 1
                 wait = self._backoff_wait(attempt, None)
                 logger.warning(
                     "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
@@ -178,13 +214,22 @@ class HttpClient:
             # Lỗi vĩnh viễn → raise ngay, KHÔNG rơi vào retry (bay thẳng ra ngoài vòng lặp).
             if resp.status_code in _PERMANENT_STATUS:
                 logger.warning("HTTP %s (lỗi vĩnh viễn) từ %s – bỏ qua", resp.status_code, url)
-                _raise_for_status_redacted(resp)
+                try:
+                    _raise_for_status_redacted(resp)
+                except requests.HTTPError as exc:
+                    self._record_terminal_failure(exc, resp.status_code)
+                    raise
             if resp.status_code in _RETRYABLE_STATUS and attempt_retryable >= _MAX_RETRYABLE_RETRIES:
                 logger.warning("HTTP %s từ %s — đã hết hạn mức retry, bỏ qua.", resp.status_code, url)
-                _raise_for_status_redacted(resp)
+                try:
+                    _raise_for_status_redacted(resp)
+                except requests.HTTPError as exc:
+                    self._record_terminal_failure(exc, resp.status_code)
+                    raise
 
             # Rate limit / lỗi tạm thời → backoff có giới hạn tối đa rồi thử lại.
             if resp.status_code in _RETRYABLE_STATUS:
+                self.transient_failure_count += 1
                 attempt_retryable += 1
                 wait = self._backoff_wait(attempt, resp)
                 logger.warning(
@@ -205,6 +250,7 @@ class HttpClient:
                     payload = {"json": None, "text": data}
             except (requests.RequestException, ValueError) as exc:
                 last_exc = exc
+                self.transient_failure_count += 1
                 wait = self._backoff_wait(attempt, None)
                 logger.warning(
                     "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
@@ -216,9 +262,14 @@ class HttpClient:
 
             if use_cache and self.cache_ttl != 0:
                 _write_cache(key, payload)
+            self.success_count += 1
+            self.last_error = ""
+            self.last_status_code = resp.status_code
             return data
 
-        raise RuntimeError(f"Gọi API thất bại sau {settings.http_max_retries} lần: {url}") from last_exc
+        terminal = RuntimeError(f"Gọi API thất bại sau {settings.http_max_retries} lần: {url}")
+        self._record_terminal_failure(terminal)
+        raise terminal from last_exc
 
     def _backoff_wait(self, attempt: int, resp: Optional[requests.Response]) -> float:
         # Giới hạn tối đa 30s để không chặn startup quá lâu (vd BMJ Retry-After: 600)

@@ -6,7 +6,7 @@ Cách dùng:
     python run.py init            # chỉ tạo database
     python run.py seed            # nạp dữ liệu mẫu (mock pipeline + scores + projects)
     python run.py pipeline        # chạy pipeline EBM (theo USE_MOCK_SOURCES)
-    python run.py live-update     # QUÉT API THẬT (chỉ bài MỚI) + bản tin cảnh báo + báo cáo
+    python run.py live-update     # QUÉT API THẬT; PARTIAL/FAIL trả mã khác 0, không cho nối Hub
     python run.py alert [số_ngày] # bản tin "Cảnh báo mới trong N ngày" (mặc định 7)
     python run.py notify [số_ngày]# GỬI cảnh báo email/webhook nếu có mục mới ưu tiên cao
     python run.py report          # chạy pipeline + xuất báo cáo tuần (md/html/docx)
@@ -63,7 +63,10 @@ def main() -> int:
 
     elif cmd == "live-update":
         from app.main import cmd_live_update
-        _print(cmd_live_update())
+        result = cmd_live_update(strict_source_health=True)
+        _print(result)
+        if result.get("deployment_status") != "PASS":
+            return 2
 
     elif cmd == "alert":
         from app.main import cmd_alert

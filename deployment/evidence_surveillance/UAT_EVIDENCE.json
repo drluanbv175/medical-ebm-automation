@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "kind": "outpatient_evidence_surveillance_uat_evidence",
+  "environment": "local_mac_candidate_only",
+  "source_sample_review": [],
+  "scheduler_trigger": {
+    "status": "PENDING",
+    "weekly_runtime_status_path": "",
+    "monthly_runtime_status_path": ""
+  },
+  "alert_delivery": {
+    "status": "PENDING",
+    "channel": "",
+    "tested_at": "",
+    "evidence_note": ""
+  },
+  "rollback_restore": {
+    "status": "PENDING",
+    "tested_at": "",
+    "backup_path": "",
+    "restore_hash_match": false
+  },
+  "shadow_run": {
+    "status": "PENDING",
+    "cycles": 0,
+    "failed_cycles": 0,
+    "auto_apply_observed": false,
+    "evidence_paths": []
+  },
+  "doctor_approval": {
+    "approved": false,
+    "approved_by_role": "doctor",
+    "approved_at": "",
+    "scope": "candidate_only"
+  },
+  "operations_approval": {
+    "approved": false,
+    "approved_by_role": "operations",
+    "approved_at": "",
+    "scope": "scheduler_alert_backup_rollback"
+  },
+  "clinical_auto_apply": false,
+  "real_patient_data": false,
+  "disclaimer": "Cần bác sĩ kiểm chứng. Không tự điền PASS hoặc phê duyệt thay người có thẩm quyền."
+}

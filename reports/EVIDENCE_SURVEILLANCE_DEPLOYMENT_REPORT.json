@@ -1,0 +1,104 @@
+{
+  "kind": "outpatient_evidence_surveillance_deployment_verification",
+  "generated_at": "2026-08-01T05:31:02+00:00",
+  "deployment_status": "BLOCKED_FOR_DEPLOYMENT",
+  "deployment_allowed": false,
+  "runtime_canary": false,
+  "contract_check": false,
+  "online": true,
+  "failure_count": 2,
+  "human_gate_count": 1,
+  "checks": [
+    {
+      "check_id": "ESD01",
+      "title": "Hợp đồng triển khai",
+      "phase": "static",
+      "status": "PASS",
+      "evidence": "schema=1.0.0; missing=[]; mode=candidate_only_doctor_review_required",
+      "limitation": "Contract chứng minh ranh giới và điều kiện release, không chứng minh runtime đã chạy thật."
+    },
+    {
+      "check_id": "ESD02",
+      "title": "Đồng bộ scanner skill/runtime",
+      "phase": "static",
+      "status": "PASS",
+      "evidence": "files=3/3; hashes=1; missing=[]",
+      "limitation": "Hash đồng nhất không thay xác minh nguồn online."
+    },
+    {
+      "check_id": "ESD03",
+      "title": "Runtime fail-closed",
+      "phase": "static",
+      "status": "PASS",
+      "evidence": "đủ marker",
+      "limitation": "Kiểm marker được bổ sung bằng test hành vi; không tự coi marker là UAT."
+    },
+    {
+      "check_id": "ESD04",
+      "title": "Pipeline Evidence Workbench offline",
+      "phase": "static",
+      "status": "PASS",
+      "evidence": "Markdown: <WORKSPACE>/reports/CLINICAL_EVIDENCE_UPDATE_PIPELINE.md / JSON: <WORKSPACE>/reports/CLINICAL_EVIDENCE_UPDATE_PIPELINE.json / Cần bác sĩ kiểm chứng. Đây là kiểm chứng kỹ thuật/offline của pipeline cập nhật chứng cứ, không thay xác minh online, rà an toàn thuốc hoặc quyết định lâm sàng.",
+      "limitation": "Fixture offline không chứng minh PMID/DOI phân giải được tại thời điểm triển khai."
+    },
+    {
+      "check_id": "ESD05",
+      "title": "Scheduler launchd",
+      "phase": "static",
+      "status": "PASS",
+      "evidence": "com.medicalebm.weeklysafety:runs = 0; com.medicalebm.monthlyupdate:runs = 0",
+      "limitation": "Job loaded và đúng path chưa chứng minh job đã hoàn tất một chu kỳ thành công."
+    },
+    {
+      "check_id": "ESD06",
+      "title": "Canary nguồn online",
+      "phase": "online",
+      "status": "PASS",
+      "evidence": "pubmed:found=True,health=ok; europepmc:found=True,health=ok; crossref:found=True,health=ok; openfda:found=True,health=ok",
+      "limitation": "Canary chỉ kiểm định danh cố định; không thay rà toàn bộ nguồn của từng chủ đề."
+    },
+    {
+      "check_id": "ESD07",
+      "title": "Scanner PubMed online",
+      "phase": "online",
+      "status": "PASS",
+      "evidence": "status=PASS; topics=2; failed=0; candidates=2; errors=[]",
+      "limitation": "Hai query canary không thay độ phủ toàn watchlist hoặc thẩm định Track A."
+    },
+    {
+      "check_id": "ESD08",
+      "title": "Dashboard strict source online",
+      "phase": "online",
+      "status": "PASS",
+      "evidence": "overall=PASS; online=True; dashboard_gate=PASS",
+      "limitation": "Fixture online không thay double-review của mẫu nội dung lâm sàng thật."
+    },
+    {
+      "check_id": "ESD09",
+      "title": "Lịch sử runtime tuần/tháng",
+      "phase": "runtime",
+      "status": "FAIL",
+      "evidence": "weekly:missing; monthly:missing",
+      "limitation": "Cần ít nhất các lượt chạy thật còn mới; canary thủ công không thay lịch sử này."
+    },
+    {
+      "check_id": "ESD10",
+      "title": "Cấu hình kênh cảnh báo",
+      "phase": "runtime",
+      "status": "FAIL",
+      "evidence": "email_ready=False; webhook_ready=False",
+      "limitation": "Chỉ kiểm cấu hình có mặt, UAT vẫn phải chứng minh gửi/nhận thật."
+    },
+    {
+      "check_id": "ESD11",
+      "title": "UAT và phê duyệt",
+      "phase": "human",
+      "status": "HUMAN_GATE",
+      "evidence": "valid_source_samples=0; missing=['SOURCE_SAMPLE_REVIEW', 'SCHEDULER_TRIGGER', 'ALERT_DELIVERY', 'ROLLBACK_RESTORE', 'SHADOW_RUN', 'DOCTOR_APPROVAL', 'OPERATIONS_APPROVAL']",
+      "limitation": "Đây là cổng người thật; agent chỉ kiểm bằng chứng, không tự ký hoặc tự điền PASS."
+    }
+  ],
+  "clinical_auto_apply": false,
+  "real_patient_data_allowed": false,
+  "disclaimer": "Cần bác sĩ kiểm chứng. Cổng này chỉ cho phép triển khai chế độ ứng viên; không tự áp dụng lâm sàng và không dùng dữ liệu bệnh nhân thật."
+}
