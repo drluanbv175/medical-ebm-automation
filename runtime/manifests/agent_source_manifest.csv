@@ -12,8 +12,8 @@ path,sha256,size_bytes
 .claude/agents/dau-man-tinh.md,b0d0b68db13a61c1a70f09e0a7b76a377a8fdf6d70998e6d22c7123ee204c1ad,22555
 .claude/agents/dien-giai-can-lam-sang.md,8bc9ef089ced60e3c9c4fa0ea61b36b1c941b0f41c3e0e9aa3f5adf3bc1b5f69,16367
 .claude/agents/dien-giai-ket-qua.md,fafac164057eca205789d93f22c173905b746182ebcc9564d0cbaad52195adb3,12155
-.claude/agents/dieu-phoi-lam-sang.md,8ad6c5718cf2888b3068f7104121c9bd73130bd73b524c6d9a3ceafc097e9bbc,28627
-.claude/agents/dieu-phoi-nghien-cuu.md,bd3e34f485fdf281d879fdc254a0f9f65489582beb0190da74e98e279d8e7389,50559
+.claude/agents/dieu-phoi-lam-sang.md,6c2b3cc1b65842779595ea3bb98120456555819696861bef8c18b64a5f86249b,29107
+.claude/agents/dieu-phoi-nghien-cuu.md,dc049d04d9d3be24703d703c498739567cb7d1081bf3a38d22366a3e96019ffa,51178
 .claude/agents/du-phong-tam-soat.md,37f1d6cdc5f1fc19bcddfcf3d3daa76c9b8a472ef4066b008f6cfcea51b8e366,14747
 .claude/agents/hieu-dinh-song-ngu.md,09852205d9486d4edf1e6afc70efa2d36b7fcd202023d1b2bbded67ba6eef97e,12064
 .claude/agents/huong-dan-lam-sang.md,05d1440f538c908ad892b4c645301365e4e0b0a848c7b8a4e2b0596c8b25cbd5,11236
@@ -36,7 +36,7 @@ path,sha256,size_bytes
 .claude/agents/quyet-dinh-chung.md,d6d356990ed772221c2cc6187a354048bd5bc559534d5650fac0432fa526fb8d,11023
 .claude/agents/sang-loc-co-do.md,c90c33eb93f51cc54233ae43e4907270816016c67c55aba82315f91c9c91c5d4,25439
 .claude/agents/so-cai-ghi-nho.md,899c7afb5a14acd6e6e2d9381dad944cad797cabdfaae5e2c36c326b2eaaa06c,17452
-.claude/agents/tham-dinh-dau-ra.md,83926ed575987a5627a8c8483b99260ba9c8076154ea966cb669f3d8722935c7,34416
+.claude/agents/tham-dinh-dau-ra.md,042101ab7ea5f0b16dbc1563a73e8bca23c04489b773c154701ffb1bdb68a709,34688
 .claude/agents/tham-dinh-do-chinh-xac-chan-doan.md,03142470e236822e529c44c96d7d6c65b594bc58fa7dbe3dd99e4849b8b81af9,17898
 .claude/agents/tham-dinh-grade-nnt.md,cdac5906576ab7c64b4043630a4366ef4aff3930d4070affb84a84c21081a521,20396
 .claude/agents/tham-dinh-phe-binh.md,0eb4bb47b96dde471be97b7cf5dc21b89e834dd97ddeb2ead09d5ebe0e577c79,14326
