@@ -31,6 +31,13 @@ data/tiktok/20*
 .ruff_cache/
 projects/
 
+# Kho làm việc tạm của skill understand-anything (2026-08-02): thư mục .ua/ chứa
+# cache phân tích (intermediate/, tmp/, log stderr) — ~5 MB rác sinh lại được từ
+# mã nguồn, không phải nội dung dự án. Chưa từng được .gitignore bắt nên một lần
+# "git add -A" là đưa cả đống vào lịch sử; thêm rule tường minh thay vì trông chờ
+# người gõ lệnh nhớ loại trừ tay.
+.ua/
+
 # Harness runtime artifacts
 .claude/state/
 .claude/logs/

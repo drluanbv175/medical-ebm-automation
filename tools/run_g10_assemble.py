@@ -40,6 +40,7 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import g9_quality_gate as G9Q  # noqa: E402
 import g10_quality_gate as G10Q  # noqa: E402
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — 4 mã thoát)
 import research_study_spec as RS  # noqa: E402
@@ -983,15 +984,10 @@ def build_gate_table(cps, meta=None) -> str:
             source_cell = (srcs + "; " if srcs else "") + note
         lines.append(f"| {sg} | {name} | {state} | {product} | {source_cell} |")
     lines.append("")
-    lines.append("**Năm cổng CỨNG của vòng đời nghiên cứu (không được tự vượt):**\n")
-    signals = S.real_world_signals(cps, meta)
+    lines.append("**Sáu cổng CỨNG của vòng đời nghiên cứu (không được tự vượt):**\n")
     for pg, why in S.PIPELINE_HARD_GATES.items():
-        if pg == "DATA_LOCK":
-            st = S.GATE_STATE_LOCKED if signals["db_locked"] else S.GATE_STATE_MISSING
-            label = "dữ liệu thật"
-        else:
-            st = S.normalize_pipeline_gate_state(pg, cps.get(pg), meta)
-            label = f"pipeline {pg}"
+        st = S.normalize_pipeline_gate_state(pg, cps.get(pg), meta)
+        label = f"pipeline {pg}"
         lines.append(f"- {label}: {st} — {why}")
     lines.append("")
     return "\n".join(lines)
@@ -2319,7 +2315,7 @@ def main() -> int:
     # (chữ ký, xem gate_contract.py) — vẫn XUẤT file (bác sĩ có thể cần xem nháp),
     # nhưng KHÔNG báo "sẵn sàng"/exit 0 nếu G9 chưa thật sự có phê duyệt.
     #
-    # Hợp đồng G9-2026.1 khóa đúng checkpoint chứa manifest toàn gói và chấm trực
+    # Hợp đồng G9 hiện hành khóa đúng checkpoint chứa manifest toàn gói và chấm trực
     # tiếp readiness/từng author_ref/G8/A12. Checkpoint cũ giữ đường tương thích
     # chỉ để không phá hồ sơ lịch sử; phê duyệt G9 mới qua approve_gate.py luôn
     # bắt buộc G9_checkpoint.json và trạng thái READY.
@@ -2342,14 +2338,14 @@ def main() -> int:
         if _reason:
             print(f"\n⚠️  LÝ DO CỔNG G9 KHÔNG ĐẠT: {_reason}")
         print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: G9 chưa đạt hợp đồng liêm chính công bố")
-        print("   G9-2026.1 hoặc chưa có phê duyệt PI hợp lệ trên đúng checkpoint.")
+        print(f"   {G9Q.QUALITY_CONTRACT_VERSION} hoặc chưa có phê duyệt PI hợp lệ trên đúng checkpoint.")
         print("   Chạy tools/g9_quality_gate.py, xử lý mọi tiêu chí, rồi PI TỰ TAY")
         print("   chạy approve_gate.py --gate G9; không nhờ agent. Tài liệu chỉ là")
         print("   BẢN NHÁP để rà soát — KHÔNG dùng để nộp tạp chí/hội đồng khi ở trạng")
         print("   thái này. Nếu chỉ muốn xem trước, thêm --i-know-g9-not-signed.")
         _mark_g10_blocked(
             GC.REASON_MISSING_INTEGRITY,
-            "G9 chưa đạt hợp đồng G9-2026.1 và/hoặc chưa có phê duyệt PI hợp lệ.",
+            f"G9 chưa đạt hợp đồng {G9Q.QUALITY_CONTRACT_VERSION} và/hoặc chưa có phê duyệt PI hợp lệ.",
             f"python tools/approve_gate.py --study {study} --gate G9 "
             f"--artifact {g9_artifact.name} --reviewer-role PI",
         )
@@ -2364,7 +2360,7 @@ def main() -> int:
 
     # Hồ sơ lịch sử G9 chỉ ký file A10 riêng lẻ không ràng buộc manuscript,
     # readiness, A12 và G8. Giữ tương thích cho fixture synthetic, nhưng đề tài
-    # thật phải nâng lên G9-2026.1 trước khi được phép đi vào khóa phát hành G10.
+    # thật phải nâng lên hợp đồng G9 hiện hành trước khi được phép khóa G10.
     if (
         g9_signed
         and not g9_has_quality_contract
@@ -2376,7 +2372,7 @@ def main() -> int:
             f"python tools/g9_quality_gate.py --study {study}",
         )
         _apply_submission_status_banner([
-            "> 🚧 **BẢN NHÁP — G9 CẦN NÂNG LÊN HỢP ĐỒNG G9-2026.1.** "
+            f"> 🚧 **BẢN NHÁP — G9 CẦN NÂNG LÊN HỢP ĐỒNG {G9Q.QUALITY_CONTRACT_VERSION}.** "
             "Chữ ký trên file A10 lịch sử không đủ để khóa gói phát hành G10. "
             "KHÔNG dùng tài liệu này để nộp.",
         ])

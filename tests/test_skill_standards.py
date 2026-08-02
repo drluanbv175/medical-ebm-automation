@@ -27,9 +27,9 @@ class TestCanonShape:
             f"P{i:02d}" for i in range(1, 21)
         ]
 
-    def test_five_hard_gates(self):
+    def test_six_hard_gates_match_runtime_contract(self):
         assert tuple(S.PIPELINE_HARD_GATES) == (
-            "G2", "G4", "DATA_LOCK", "G8", "G9",
+            "G2", "G4", "G5", "G8", "G9", "G10",
         )
 
     def test_10_skill_gates(self):

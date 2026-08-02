@@ -23,6 +23,7 @@ if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
 import g4_quality_gate as G4Q  # noqa: E402
+
 from tests.test_g4_quality_gate import (  # noqa: E402
     _filled_comparative_sap,
     _g3_checkpoint,

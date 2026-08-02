@@ -370,7 +370,7 @@ def test_g9_blocked_quality_gate_is_visible_not_silently_passed(tmp_path):
     """Cùng lớp lỗi G7-F2, phát hiện thêm ở G9: artifact quality_report ĐÃ đăng
     ký required=True nhưng thiếu nhánh phân loại đọc quality_gate.status."""
     _cp(tmp_path, "G9", {
-        "quality_contract_version": "G9-2026.1",
+        "quality_contract_version": "G9-2026.2",
         "quality_gate": {"status": "BLOCKED", "pending_actions": []},
     })
     (tmp_path / "G9_A10_AUTHOR_INTEGRITY_AUTO-G9-BLOCK.md").write_text(

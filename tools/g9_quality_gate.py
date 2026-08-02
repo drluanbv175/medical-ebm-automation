@@ -23,6 +23,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
@@ -33,7 +34,7 @@ STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT = "DRAFT_READY_NEEDS_REAL_ATTESTATIONS"
 STATUS_READY = "READY_FOR_G9_PI_APPROVAL"
 STATUS_LOCKED = "PASS_G9_PUBLICATION_INTEGRITY_LOCKED"
-QUALITY_CONTRACT_VERSION = "G9-2026.1"
+QUALITY_CONTRACT_VERSION = "G9-2026.2"
 
 READINESS_JSON = "G9_PUBLICATION_READINESS.json"
 REPORT_JSON = "G9_QUALITY_REPORT.json"
@@ -82,6 +83,18 @@ STANDARDS_BASIS = (
     {
         "standard": "ICMJE Clinical Trials and Data Sharing",
         "scope": "Đăng ký và tuyên bố chia sẻ dữ liệu thử nghiệm lâm sàng",
+        "url": (
+            "https://www.icmje.org/recommendations/browse/publishing-and-editorial-"
+            "issues/clinical-trial-registration.html"
+        ),
+    },
+    {
+        "standard": "ICMJE Authors' Access to Data, updated January 2026",
+        "scope": (
+            "Mọi tác giả có thể rà dữ liệu hỗ trợ kết quả; ít nhất một tác giả "
+            "phù hợp truy cập dữ liệu gốc và tham gia phân tích; hợp đồng tài trợ "
+            "không hạn chế quyền truy cập hoặc độc lập công bố"
+        ),
         "url": (
             "https://www.icmje.org/recommendations/browse/publishing-and-editorial-"
             "issues/clinical-trial-registration.html"
@@ -287,6 +300,19 @@ def build_readiness_template(
             "access_mechanism": None,
             "registry_statement_consistent": False,
         },
+        "data_access_governance": {
+            "all_authors_can_review_supporting_data": False,
+            "primary_data_access_author_ref": None,
+            "primary_data_access_confirmed": False,
+            "analysis_participation_confirmed": False,
+            "academic_nonacademic_collaboration": None,
+            "primary_data_access_author_is_academic": None,
+            "sponsored_research": None,
+            "sponsor_agreement_preserves_data_access": False,
+            "sponsor_agreement_preserves_publication_independence": False,
+            "sponsor_agreement_evidence_ref": None,
+            "confirmed_at": None,
+        },
         "publication_integrity": {
             "original_work_confirmed": False,
             "duplicate_submission_absent": False,
@@ -361,7 +387,7 @@ def write_readiness_template(
     n_authors: int,
     target_journal: str = "",
 ) -> Path:
-    """Ghi template mới nhưng không đè xác nhận đời thực đã có."""
+    """Ghi hoặc nâng schema template mà không đè xác nhận đời thực đã có."""
     path = out_dir / READINESS_JSON
     existing = _read_json(path)
     authors = existing.get("authors")
@@ -384,15 +410,33 @@ def write_readiness_template(
             or len(authors) != max(1, int(n_authors))
         )
     )
+    template = build_readiness_template(study, n_authors, target_journal)
     if not existing or (author_count_changed and not has_real_attestation):
         path.write_text(
             json.dumps(
-                build_readiness_template(study, n_authors, target_journal),
+                template,
                 ensure_ascii=False,
                 indent=2,
             ),
             encoding="utf-8",
         )
+    elif not author_count_changed:
+        migrated = deepcopy(existing)
+
+        def fill_missing(target: Dict[str, Any], defaults: Mapping[str, Any]) -> None:
+            for key, default in defaults.items():
+                if key not in target:
+                    target[key] = deepcopy(default)
+                elif isinstance(target[key], dict) and isinstance(default, Mapping):
+                    fill_missing(target[key], default)
+
+        fill_missing(migrated, template)
+        migrated["schema_version"] = QUALITY_CONTRACT_VERSION
+        if migrated != existing:
+            path.write_text(
+                json.dumps(migrated, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
     return path
 
 
@@ -538,6 +582,46 @@ def _data_availability_ok(payload: Mapping[str, Any]) -> tuple[bool, str]:
     elif decision == "NOT_SHARED_WITH_JUSTIFICATION":
         trial_ok = _real_text(value.get("access_criteria"))
     return base and trial_ok, f"decision={decision or 'missing'}; trial_detail={trial_ok}"
+
+
+def data_access_governance_ok(
+    payload: Mapping[str, Any],
+    author_refs: set[str],
+) -> tuple[bool, str]:
+    """Kiểm nghĩa vụ quyền truy cập dữ liệu mới của ICMJE 1/2026."""
+    value = payload.get("data_access_governance")
+    value = value if isinstance(value, Mapping) else {}
+    author_ref = str(value.get("primary_data_access_author_ref") or "").strip()
+    collaboration = value.get("academic_nonacademic_collaboration")
+    sponsored = value.get("sponsored_research")
+    base_ok = all(
+        (
+            value.get("all_authors_can_review_supporting_data") is True,
+            author_ref in author_refs,
+            value.get("primary_data_access_confirmed") is True,
+            value.get("analysis_participation_confirmed") is True,
+            isinstance(collaboration, bool),
+            isinstance(sponsored, bool),
+            _iso_date(value.get("confirmed_at")),
+        )
+    )
+    collaboration_ok = (
+        collaboration is False
+        or value.get("primary_data_access_author_is_academic") is True
+    )
+    sponsor_ok = sponsored is False or all(
+        (
+            value.get("sponsor_agreement_preserves_data_access") is True,
+            value.get("sponsor_agreement_preserves_publication_independence") is True,
+            _real_text(value.get("sponsor_agreement_evidence_ref")),
+        )
+    )
+    ok = base_ok and collaboration_ok and sponsor_ok
+    return ok, (
+        f"author_ref={author_ref or 'missing'}; all_authors_review="
+        f"{value.get('all_authors_can_review_supporting_data')}; "
+        f"collaboration_ok={collaboration_ok}; sponsored={sponsored}; sponsor_ok={sponsor_ok}"
+    )
 
 
 def _publication_integrity_ok(payload: Mapping[str, Any]) -> tuple[bool, str]:
@@ -772,7 +856,7 @@ def evaluate_study(
     rows.append(
         _criterion(
             "G9-AUTO-01",
-            "Checkpoint và hồ sơ readiness đúng schema G9-2026.1",
+            f"Checkpoint và hồ sơ readiness đúng schema {QUALITY_CONTRACT_VERSION}",
             "PASS" if structure_ok else "BLOCK",
             f"checkpoint={bool(checkpoint)}; readiness={bool(readiness)}; schema={readiness.get('schema_version')}",
             "Chạy lại run_g9_auto.py; không ký file tự tạo hoặc schema không hợp lệ.",
@@ -916,6 +1000,21 @@ def evaluate_study(
             "PASS" if data_ok else "REVIEW",
             data_evidence,
             "Chốt quyết định chia sẻ và chi tiết ICMJE; không để UNDECIDED.",
+        )
+    )
+
+    access_ok, access_evidence = data_access_governance_ok(readiness, author_refs)
+    rows.append(
+        _criterion(
+            "G9-HUMAN-05A",
+            "Quyền tác giả truy cập dữ liệu và độc lập phân tích/công bố theo ICMJE 1/2026",
+            "PASS" if access_ok else "REVIEW",
+            access_evidence,
+            (
+                "Xác nhận mọi tác giả có thể rà dữ liệu hỗ trợ; chỉ định author_ref đã "
+                "truy cập dữ liệu gốc và tham gia phân tích; nếu có tài trợ, dẫn chiếu "
+                "hợp đồng bảo toàn quyền truy cập và độc lập công bố."
+            ),
         )
     )
 

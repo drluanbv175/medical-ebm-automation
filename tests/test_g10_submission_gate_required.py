@@ -693,7 +693,7 @@ class TestModernG10ReleaseContract:
             _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
             g9_path = d / "G9_checkpoint.json"
             g9 = json.loads(g9_path.read_text(encoding="utf-8"))
-            g9["quality_contract_version"] = "G9-2026.1"
+            g9["quality_contract_version"] = "G9-2026.2"
             g9_path.write_text(json.dumps(g9, ensure_ascii=False), encoding="utf-8")
             monkeypatch.setattr(
                 GC, "g9_quality_contract_satisfied", lambda *_a, **_k: True

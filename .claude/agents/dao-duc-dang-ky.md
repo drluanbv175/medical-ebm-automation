@@ -319,6 +319,15 @@ Criteria · 15. Study Type · 16. Date of First Enrolment · 17. Target Sample S
 Status · 19. Primary Outcome(s) · 20. Key Secondary Outcomes · 21. Ethics Review · 22. Completion
 Date · 23. Summary Results · 24. IPD Sharing Statement
 
+> **Bốn trường khoa học là điều kiện trạng thái, không phải chỗ trống trang trí:** mục 13
+> Intervention(s), 14 Inclusion/Exclusion, 19 Primary Outcome(s) và 20 Secondary Outcomes
+> phải được nạp từ `study_meta.gate_params.G0/G1` do PI đã pin. Với RCT, mục 13 cần cả can
+> thiệp và đối chứng; mục 14 cần cả tiêu chí chọn và loại; mục 19 cần tên, thước đo và thời
+> điểm; nếu không có kết cục phụ phải ghi quyết định tường minh như "None prespecified".
+> Thiếu bất kỳ mục nào làm `G2-AUTO-08` REVIEW và trạng thái vẫn DRAFT. `G2-AUTO-09` cũng
+> REVIEW khi tham chiếu Hội đồng Đạo đức chỉ là fallback; người dùng phải cung cấp tham chiếu
+> rõ nguồn. Agent không tự suy các trường này từ văn xuôi để làm xanh cổng.
+
 > **WHO ICTRP KHÔNG phải một registry để đăng ký trực tiếp (2026-07-07):** ICTRP là cổng TÌM KIẾM/gộp dữ liệu từ các registry thành viên (primary registry mạng lưới WHO), KHÔNG nhận đăng ký trực tiếp. Mục "Nơi đăng ký" PHẢI nêu tên MỘT registry chính danh cụ thể (ClinicalTrials.gov/ANZCTR/DRKS/ISRCTN hoặc registry trong nước phù hợp) — không để "ICTRP hoặc registry phù hợp" như một lựa chọn (A)/(B) còn bỏ ngỏ. Với nghiên cứu QUAN SÁT/không can thiệp mà KHÔNG có registry quốc gia phù hợp → dùng nền tảng cụ thể **OSF Registries** (registries.osf.io) thay vì bỏ ngỏ.
 
 ---
@@ -411,7 +420,7 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 
 ## TIÊU CHÍ QUA CỔNG G2
 
-**Đạt G2 (AI side):** 8 tài liệu hoàn chỉnh · checklist nộp đủ mục · ICF đúng 7 mục Helsinki · DMP đủ Luật 91/2025 · khai báo COI/AI · thông tin liên hệ Hội đồng · không PII · không số phê duyệt bịa.
+**Đạt G2 (AI side):** 8 tài liệu hoàn chỉnh · checklist nộp đủ mục · WHO TRDS 1.3.1 đủ 24 mục và các mục khoa học 13/14/19/20 lấy từ quyết định PI đã pin · tham chiếu Hội đồng rõ nguồn · ICF đúng 7 mục Helsinki · DMP đủ Luật 91/2025 · khai báo COI/AI · không PII · không số phê duyệt bịa.
 
 **Mở khóa thật (human side):** bác sĩ nộp hồ sơ → Hội đồng phê duyệt → cung cấp số IRB thật → agent ghi G2_STATUS: LOCKED vào checkpoint (nội dung tham khảo).
 

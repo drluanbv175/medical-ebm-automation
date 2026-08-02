@@ -78,7 +78,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
             checkpoint["quality_contract_version"] = f"G{index}-2026.1"
             checkpoint["quality_gate"] = {"status": quality_status}
         if index == 9:
-            checkpoint["quality_contract_version"] = "G9-2026.1"
+            checkpoint["quality_contract_version"] = "G9-2026.2"
         (out_dir / f"G{index}_checkpoint.json").write_text(
             json.dumps(checkpoint, ensure_ascii=False),
             encoding="utf-8",

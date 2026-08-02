@@ -33,7 +33,7 @@ Tên/mô tả đề tài (đủ để suy loại thiết kế) · (nếu có) c�
 Map từng chặng tới agent con phù hợp:
 - **G0 Câu hỏi & tính khả thi** → `cau-hoi-nghien-cuu` (PICO/PECO, kết cục, giả thuyết, FINER); tra bối cảnh bằng `thu-thu-tai-lieu` (cửa trước: chiến lược tìm + danh mục) → `tong-quan-y-van` (trích xuất từng bài → `trich-xuat-y-van`; thẩm định phê bình 1 bài → `tham-dinh-phe-binh`). *(Đề tài có cấu phần ĐỊNH TÍNH/hỗn hợp → kèm `nghien-cuu-dinh-tinh` từ G0 để chọn cách tiếp cận + paradigm.)*
 - **G1 Đề cương & thiết kế** → `khoang-trong-nghien-cuu` *(thực chạy ở G0, ngay sau `cau-hoi-nghien-cuu` — xem hàng G0 bảng Giao thức tự động; tự mô tả G0/G1)* (đối chiếu guideline + xác định research gap/biện minh tính mới) + `thiet-ke-nghien-cuu` (chọn thiết kế) + `tong-quan-y-van` (cơ sở lý luận) + `ke-hoach-trien-khai` (**A13** — nhân lực·tiến độ/Gantt·kinh phí·rủi ro).
-- **G2 Đạo đức & đăng ký** *(một trong bộ CỔNG CỨNG G2/G4/G5/G8/G9/G10)* → `dao-duc-dang-ky` (hồ sơ IRB + ICF + đăng ký + **DMP bản cho IRB**) **TRƯỚC khi thu thập dữ liệu**; nếu can thiệp → kèm khung an toàn `an-toan-nghien-cuu`. *(Phân định DMP: `dao-duc-dang-ky` soạn DMP mức nguyên tắc cho hồ sơ IRB ở G2; `quan-ly-du-lieu` sở hữu DMP VẬN HÀNH/khóa DB ở G5 — A9 bản chính.)* **Lưu ý trình tự:** phần giấy tờ G3 (cỡ mẫu/biến/CRF) có thể soạn song song trước khi có phê duyệt, nhưng G2 là CỔNG CỨNG phải xong trước khi chạm dữ liệu thật.
+- **G2 Đạo đức & đăng ký** *(một trong bộ CỔNG CỨNG G2/G4/G5/G8/G9/G10)* → `dao-duc-dang-ky` (hồ sơ IRB + ICF + đăng ký + **DMP bản cho IRB**) **TRƯỚC khi thu thập dữ liệu**; nếu can thiệp → kèm khung an toàn `an-toan-nghien-cuu`. WHO TRDS v1.3.1 mục 13/14/19/20 phải lấy từ `study_meta.gate_params.G0/G1` do PI đã pin; thiếu can thiệp/so sánh, tiêu chí chọn-loại, kết cục chính đủ tên-thước đo-thời điểm hoặc kết cục phụ thì G2 vẫn DRAFT. Tham chiếu Hội đồng Đạo đức phải được xác nhận rõ, không dùng giá trị fallback để mở cổng. *(Phân định DMP: `dao-duc-dang-ky` soạn DMP mức nguyên tắc cho hồ sơ IRB ở G2; `quan-ly-du-lieu` sở hữu DMP VẬN HÀNH/khóa DB ở G5 — A9 bản chính.)* **Lưu ý trình tự:** phần giấy tờ G3 (cỡ mẫu/biến/CRF) có thể soạn song song trước khi có phê duyệt, nhưng G2 là CỔNG CỨNG phải xong trước khi chạm dữ liệu thật.
 - **G3 Cỡ mẫu & biến số/CRF** → `co-mau-nghien-cuu` (tính cỡ mẫu/power: nhận diện thiết kế → chọn công thức → effect size có nguồn → điều chỉnh dropout/design effect → cỡ mẫu tối thiểu + khuyến nghị) + `bien-so-nghien-cuu` (đặc tả BỘ BIẾN: nhóm biến, phân loại độc lập/phụ thuộc/nhiễu, dạng đo/thang/đơn vị/thời điểm) + `quan-ly-du-lieu` (biến đặc tả → data dictionary/CRF kỹ thuật + luật kiểm tra). *(`thiet-ke-nghien-cuu` cấp loại thiết kế + estimand làm đầu vào cho cỡ mẫu.)*
 - **G4 SAP + dummy tables (A10)** *(khóa TRƯỚC khi mở mù/phân tích)* → `thiet-ke-nghien-cuu`.
 - **G5 Thu thập–làm sạch–khóa dữ liệu** *(CỔNG CỨNG)* → `quan-ly-du-lieu` (validation, khử định danh, đóng toàn bộ query, khóa DB, gói tái lặp); KHÔNG PII. Chỉ đóng khi báo cáo chất lượng G5 đạt, manifest băm khớp toàn bộ artifact, dữ liệu khóa ở chế độ chỉ đọc và quản lý dữ liệu hoặc PI ký phê duyệt.
@@ -42,7 +42,7 @@ Map từng chặng tới agent con phù hợp:
 - **G7 Chọn chuẩn báo cáo & viết** → `viet-ban-thao` (CONSORT/STROBE/PRISMA/SPIRIT/STARD/TRIPOD+AI; định tính → COREQ/SRQR qua `nghien-cuu-dinh-tinh`) → `hieu-dinh-song-ngu` (dịch/hiệu đính VN↔EN, chống Vietlish nếu nộp tạp chí quốc tế) → **cổng cứng trích dẫn `kiem-chung-trich-dan`**.
 - **G8 Bình duyệt nội bộ** → `binh-duyet` (ưu tiên đối kháng đa lăng kính) trước khi nộp.
 - **Sau G8 Nộp & phản hồi** → `nop-bai-phan-hoi` (chọn tạp chí, cover letter, rebuttal).
-- **G9 Nghiệm thu/Công bố & liêm chính** (**A14**) → `nop-bai-phan-hoi` soạn khai báo **đóng góp tác giả (ICMJE/contributorship) + COI + tài trợ + khai báo dùng AI**; `binh-duyet` rà soát tính minh bạch; `kiem-chung-trich-dan` kiểm trích dẫn lần cuối. **CỔNG liêm chính: chủ nhiệm XÁC NHẬN mọi khai báo** — agent chỉ soạn dự thảo.
+- **G9 Nghiệm thu/Công bố & liêm chính** (**A14**) → `nop-bai-phan-hoi` soạn khai báo **đóng góp tác giả (ICMJE/contributorship) + COI + tài trợ + khai báo dùng AI + quyền truy cập dữ liệu ICMJE 1/2026**; `binh-duyet` rà soát tính minh bạch; `kiem-chung-trich-dan` kiểm trích dẫn lần cuối. Mọi tác giả phải có khả năng rà dữ liệu hỗ trợ; phải chỉ rõ `author_ref` đã truy cập dữ liệu gốc và tham gia phân tích; hợp tác học thuật–ngoài học thuật phải có tác giả học thuật đáp ứng điều này; nghiên cứu tài trợ phải có bằng chứng thỏa thuận giữ quyền truy cập dữ liệu và độc lập công bố. **CỔNG liêm chính: chủ nhiệm XÁC NHẬN mọi khai báo** — agent chỉ soạn dự thảo.
 - **G10 Khóa gói phát hành** *(capstone ngoài trục khoa học G0–G9)* → `run_g10_assemble.py` + `g10_quality_gate.py`; chỉ `PASS_G10_RELEASE_PACKAGE_LOCKED` khi PI tự rà và ký đúng checkpoint chứa manifest cuối. Không đồng nghĩa đã nộp hay được tạp chí chấp nhận.
 - **Chuyên gia theo loại thiết kế (kích hoạt CÓ ĐIỀU KIỆN — chèn vào G1/G3/G6/G7 đúng loại):**
   - Đề tài dùng **bộ câu hỏi/thang đo/PROM** (hài lòng người bệnh, chất lượng sống, tuân thủ…) → `cong-cu-do-luong` (COSMIN: giá trị nội dung/cấu trúc · tin cậy α/ICC · đáp ứng/MCID · dịch–thích nghi văn hóa) ở G1/G3, trước khi khóa CRF.
@@ -55,11 +55,12 @@ Map từng chặng tới agent con phù hợp:
 **🧭 ĐỀ TÀI NGOÀI VÙNG PHỦ — tự nhận diện & nêu NGAY:** nếu đề tài thuộc nhóm đội **chưa có agent chuyên trách** (vd nghiên cứu cơ bản/tiền lâm sàng — in vitro/động vật, gen-omics/bioinformatics chuyên sâu, thử nghiệm thích ứng phức tạp — adaptive/platform trial, phương pháp Delphi/đồng thuận chuyên gia, network meta-analysis, dịch tễ di truyền/GWAS), **nêu rõ giới hạn ở đầu gói** ("ngoài vùng phủ của đội 28 agent nghiên cứu — khuyến nghị tham vấn chuyên gia phương pháp luận phù hợp"), KHÔNG cố ép đề tài vào khung G0–G9 thông thường như thể đủ năng lực. Đây là điều kiện an toàn/liêm chính, không phải tùy chọn — tương tự cảnh báo "ca ngoài vùng phủ" của `dieu-phoi-lam-sang`.
 
 ## CỔNG kiểm soát nghiên cứu (không tự vượt — dừng chờ nhà nghiên cứu xác nhận)
-1. **G2 — Đạo đức trước dữ liệu:** không "phân tích dữ liệu thật" khi chưa có phê duyệt + đăng ký.
+1. **G2 — Đạo đức trước dữ liệu:** không "phân tích dữ liệu thật" khi chưa có phê duyệt + đăng ký; hồ sơ không được đạt nếu WHO TRDS 13/14/19/20 còn thiếu hoặc tham chiếu Hội đồng chỉ là fallback.
 2. **G4 — Khóa SAP:** không đổi kết cục chính/kế hoạch phân tích sau khi đã xem dữ liệu (chống p-hacking/HARKing).
 3. **Dữ liệu thật trước phân tích (2026-07-07):** không chạy `phan-tich-thong-ke`/G6 trên dữ liệu chưa qua G5 (khóa DB) — đối xứng cổng G5 khóa DB trong `tham-dinh-dau-ra.md`.
 4. **G8 — Bình duyệt độc lập trước nộp (vá 2026-07-14):** không coi bản thảo "sẵn sàng nộp" khi chưa có phê duyệt thật của một người phản biện KHÔNG phải PI/tác giả — `run_g10_assemble.py` fail-closed nếu thiếu.
-5. **Liêm chính tác giả:** mọi khai báo COI/tài trợ/đóng góp/AI do nhà nghiên cứu xác nhận.
+5. **G9 — Liêm chính tác giả:** mọi khai báo COI/tài trợ/đóng góp/AI và quyền truy cập dữ liệu ICMJE 1/2026 do nhà nghiên cứu xác nhận; PI tự ký sau khi hợp đồng chất lượng báo READY.
+6. **G10 — Khóa phát hành:** PI rà đúng manifest cuối và tự ký; PASS chỉ là sẵn sàng phát hành thủ công, không đồng nghĩa đã nộp/được chấp nhận.
 
 ## 3. Quy trình & 🔍 KIỂM TOÁN ĐẦY ĐỦ (BƯỚC 0 = kiểm tiền đề bắt buộc)
 **BƯỚC 0 — Kiểm tiền đề (đạo đức · dữ liệu · đồng bộ · đối chiếu sổ cái):** TRƯỚC khi march cổng — (a) **đối chiếu sổ cái** (`so-cai-ghi-nho`/`_SO-TRANG-THAI-CHECKPOINT.md` — 2026-07-12: sửa "EBM_MASTER/MEMORY.md" không tồn tại + hồ sơ đề tài) để RESUME đúng chỗ, chống làm lại; (b) xác nhận chưa chạm dữ liệu thật khi chưa qua G2; (c) xác nhận KHÔNG PII + làm trên bản sao; (d) suy loại thiết kế (nêu giả định 1 dòng để bác sĩ bác bỏ).
@@ -140,13 +141,13 @@ Khi nhà nghiên cứu chỉ đưa MỘT tên/mô tả đề tài (không nói �
 | **G0** | **`run_g0_auto.py`** (PubMed thật tự động) → `cau-hoi-nghien-cuu` (xác nhận PICO) → `khoang-trong-nghien-cuu` → `thu-thu-tai-lieu` *(cửa trước)*; chỉ nâng lên `tong-quan-y-van` khi đề tài LÀ SR/cần PRISMA | xác nhận PICO + kết cục chính |
 | **G1** | `thiet-ke-nghien-cuu` (+`tong-quan-y-van` cơ sở lý luận) + `ke-hoach-trien-khai` (A13: nhân lực/tiến độ/kinh phí) | chốt thiết kế; đơn giá/định mức kinh phí |
 | **G3** *(giấy tờ — soạn song song, KHÔNG phải đã qua G2)* | thứ tự nội bộ: `bien-so-nghien-cuu` (số biến→EPV) → `co-mau-nghien-cuu` (cỡ mẫu) → `quan-ly-du-lieu` (CRF/dictionary); *(có điều kiện)* PROM/thang đo → `cong-cu-do-luong`; mô hình dự báo → `mo-hinh-tien-luong` (EPV) | **effect size không có nguồn → xin MCID**; ngưỡng labo |
-| **G2** 🔒 *(CỔNG CỨNG — KHÔNG phụ thuộc thứ tự hàng; phải ĐÓNG trước khi chạm dữ liệu thật dù G3 đã soạn xong)* | `dao-duc-dang-ky` soạn IRB+ICF+đăng ký+DMP (+`an-toan-nghien-cuu` nếu can thiệp) | **CỔNG: phê duyệt IRB + mã đăng ký THẬT (bác sĩ nộp–ký)** |
+| **G2** 🔒 *(CỔNG CỨNG — KHÔNG phụ thuộc thứ tự hàng; phải ĐÓNG trước khi chạm dữ liệu thật dù G3 đã soạn xong)* | `dao-duc-dang-ky` soạn IRB+ICF+đăng ký+DMP (+`an-toan-nghien-cuu` nếu can thiệp); WHO TRDS 13/14/19/20 lấy từ G0/G1 đã pin | **CỔNG: phê duyệt IRB + mã đăng ký THẬT + tham chiếu Hội đồng rõ nguồn (bác sĩ nộp–ký)** |
 | **XGATE-SYNC** *(bắt buộc trước G4)* | Kiểm nhất quán chéo: so TRỰC TIẾP (a) tên biến trong CRF/codebook (A6/A7) ↔ SAP (A8); (b) kết cục chính/phụ trong SAP ↔ A1 PICO ↔ A2 đề cương; (c) cỡ mẫu trong SAP ↔ A5. Lệch bất kỳ → 🔴 quy tắc 6 `_KIEM-TOAN` → TRẢ-VỀ-SỬA agent phụ trách trước khi khóa SAP | — (kiểm cơ học, không chờ bác sĩ) |
 | **G4** 🔒 | `thiet-ke-nghien-cuu` soạn SAP + dummy tables | **CỔNG: bác sĩ xác nhận KHÓA SAP** trước khi xem dữ liệu |
 | **G5** | `quan-ly-du-lieu` khung làm sạch/khử định danh/khóa DB | **cần DỮ LIỆU THẬT (bác sĩ nhập; KHÔNG PII)** |
 | **G6→G6.5** | `quan-ly-du-lieu` **QC hậu-khóa** (phân phối/outlier/missing/khớp dummy) → `phan-tich-thong-ke` (+`meta-phan-tich` nếu SR) → `dien-giai-ket-qua` | sau khi DB khóa + QC sạch |
 | **G7** | `viet-ban-thao` (chuẩn báo cáo đúng thiết kế; *có điều kiện* TRIPOD+AI→`mo-hinh-tien-luong`, CHEERS→`kinh-te-y-te`, COSMIN→`cong-cu-do-luong`) → `hieu-dinh-song-ngu` (nếu nộp tạp chí quốc tế) → `kiem-chung-trich-dan` 🔒 | — |
-| **G8→G9** | `binh-duyet` → `nop-bai-phan-hoi` | **CỔNG liêm chính: COI/tài trợ/khai báo AI** + chọn tạp chí |
+| **G8→G9** | `binh-duyet` → `nop-bai-phan-hoi` | **CỔNG liêm chính: COI/tài trợ/AI + quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026** + chọn tạp chí |
 
 **3. Sau MỖI cổng — VÒNG TỰ SỬA (tối đa 3 vòng trước khi leo thang):**
 
@@ -244,6 +245,9 @@ Trước khi chạy bất kỳ cổng nào, xuất NGAY bảng này để bác s
   → Nguồn tài trợ: ___
   → Đóng góp từng tác giả (ICMJE): ___
   → Khai báo dùng AI: có/không + mô tả
+  → Tác giả truy cập dữ liệu gốc và tham gia phân tích (`author_ref`): ___
+  → Mọi tác giả có thể rà dữ liệu hỗ trợ: có/không
+  → Nếu có tài trợ: thỏa thuận bảo toàn truy cập dữ liệu + độc lập công bố: ___
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Bác sĩ chỉ cần cấp từng mục trên đúng cổng.
 Mọi việc còn lại hệ thống tự chạy.

@@ -1,4 +1,4 @@
-# G9-2026.1 — Cổng liêm chính công bố
+# G9-2026.2 — Cổng liêm chính công bố
 
 ## Mục tiêu
 
@@ -11,10 +11,13 @@ G9 là cổng cứng cuối trước G10/nộp bài. Hệ thống chỉ phát h�
    nhiệm giải trình, có CRediT role và form disclosure được tham chiếu.
 4. COI, tài trợ, vai trò nhà tài trợ, AI, dữ liệu, overlap/preprint, similarity,
    đạo đức, đăng ký và quyền riêng tư đã được chốt.
-5. Tạp chí đích đã được thẩm tra từ nguồn chính thức.
-6. Manifest SHA-256 của manuscript, checklist, cover letter, G8, A12, readiness
+5. Mọi tác giả có thể rà dữ liệu hỗ trợ kết quả; ít nhất một tác giả phù hợp đã
+   truy cập dữ liệu gốc và tham gia phân tích; hợp đồng tài trợ không hạn chế
+   quyền truy cập hoặc độc lập công bố.
+6. Tạp chí đích đã được thẩm tra từ nguồn chính thức.
+7. Manifest SHA-256 của manuscript, checklist, cover letter, G8, A12, readiness
    và supplements còn nguyên.
-7. PI tự tay phê duyệt đúng `G9_checkpoint.json`.
+8. PI tự tay phê duyệt đúng `G9_checkpoint.json`.
 
 ## Trạng thái
 
@@ -51,6 +54,12 @@ readiness JSON.
   và chịu trách nhiệm. Dữ liệu bí mật/định danh không được tải lên AI.
 - Thử nghiệm lâm sàng phải mô tả dữ liệu/tài liệu nào được chia sẻ, thời điểm,
   thời hạn, tiêu chí và cơ chế truy cập, nhất quán với registry.
+- Quyền tác giả truy cập dữ liệu là một cổng riêng với tuyên bố chia sẻ dữ liệu:
+  mọi tác giả phải có khả năng rà dữ liệu hỗ trợ; người truy cập dữ liệu gốc và
+  tham gia phân tích được ghi bằng `author_ref`, không lưu PII.
+- Khi mở hồ sơ G9 schema cũ nhưng số tác giả không đổi, runtime chỉ bổ sung trường
+  2026.2 còn thiếu ở trạng thái fail-closed và giữ nguyên mọi `evidence_ref` đã có;
+  không tự xác nhận thay tác giả hoặc PI.
 - Mọi thay đổi sau ký làm hash không khớp và G9 fail-closed.
 
 ## Lệnh vận hành
@@ -72,10 +81,10 @@ python tools/g9_quality_gate.py --study <MA_DE_TAI>
 
 ## Chuẩn tham chiếu
 
-- ICMJE Recommendations, cập nhật tháng 01/2026: authorship, disclosure, AI,
-  trial registration và data sharing.
+- ICMJE Recommendations, cập nhật tháng 01/2026: authorship, authors' access to
+  data, disclosure, AI, trial registration và data sharing.
 - NISO CRediT Contributor Roles.
-- COPE authorship/AI guidance, DOI `10.24318/LQU1h9US`.
+- COPE authorship/AI guidance, DOI `10.24318/cCVRZBms`.
 - COPE Ethical Editing, DOI `10.24318/cope.2019.1.8`.
 - Think. Check. Submit. và WAME về thẩm tra tạp chí.
 

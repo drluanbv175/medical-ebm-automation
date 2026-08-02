@@ -1,4 +1,4 @@
-"""Kiểm thử đối kháng cho hợp đồng liêm chính công bố G9-2026.1."""
+"""Kiểm thử đối kháng cho hợp đồng liêm chính công bố G9 hiện hành."""
 
 from __future__ import annotations
 
@@ -86,6 +86,18 @@ def _complete_readiness(study: str, n_authors: int = 2) -> dict:
             "clinical_trial": False,
             "what_data": "Deidentified aggregate analysis dataset and code.",
             "access_mechanism": "Controlled test repository record.",
+        }
+    )
+    value["data_access_governance"].update(
+        {
+            "all_authors_can_review_supporting_data": True,
+            "primary_data_access_author_ref": "AUTHOR-01",
+            "primary_data_access_confirmed": True,
+            "analysis_participation_confirmed": True,
+            "academic_nonacademic_collaboration": False,
+            "primary_data_access_author_is_academic": None,
+            "sponsored_research": False,
+            "confirmed_at": now,
         }
     )
     value["publication_integrity"].update(
@@ -245,6 +257,23 @@ def _patch_upstream(monkeypatch, approvals: dict[str, bool] | None = None) -> di
     return state
 
 
+def test_readiness_schema_migration_preserves_real_attestations(tmp_path: Path) -> None:
+    study = "PYTEST-G9-MIGRATION"
+    readiness = _complete_readiness(study)
+    readiness["schema_version"] = "G9-2026.1"
+    readiness.pop("data_access_governance")
+    evidence_ref = readiness["authors"][0]["attestation_evidence_ref"]
+    _write_json(tmp_path / G9Q.READINESS_JSON, readiness)
+
+    G9Q.write_readiness_template(tmp_path, study, 2, "Journal of Test Medicine")
+    migrated = json.loads((tmp_path / G9Q.READINESS_JSON).read_text(encoding="utf-8"))
+
+    assert migrated["schema_version"] == G9Q.QUALITY_CONTRACT_VERSION
+    assert migrated["authors"][0]["attestation_evidence_ref"] == evidence_ref
+    assert migrated["data_access_governance"]["primary_data_access_confirmed"] is False
+    assert migrated["data_access_governance"]["sponsored_research"] is None
+
+
 def _evaluate_ready(tmp_path: Path, monkeypatch, study: str = "PYTEST-G9Q") -> tuple[Path, dict]:
     out_dir = tmp_path / "exports" / study
     _prepare_study(out_dir, study)
@@ -318,6 +347,56 @@ def test_clinical_trial_requires_full_icmje_data_sharing_detail(tmp_path, monkey
     report = G9Q.evaluate_study("PYTEST-G9Q-TRIAL", out_dir, repo_root=tmp_path)
     row = next(x for x in report["automatic_criteria"] if x["id"] == "G9-HUMAN-05")
     assert row["status"] == "REVIEW"
+
+
+def test_icmje_2026_requires_primary_data_access_and_analysis_participation(
+    tmp_path, monkeypatch
+):
+    out_dir = tmp_path / "exports" / "PYTEST-G9Q-DATA-ACCESS"
+    _prepare_study(out_dir, "PYTEST-G9Q-DATA-ACCESS")
+    readiness = json.loads((out_dir / G9Q.READINESS_JSON).read_text(encoding="utf-8"))
+    readiness["data_access_governance"]["analysis_participation_confirmed"] = False
+    _write_json(out_dir / G9Q.READINESS_JSON, readiness)
+    _patch_upstream(monkeypatch)
+
+    report = G9Q.evaluate_study(
+        "PYTEST-G9Q-DATA-ACCESS", out_dir, repo_root=tmp_path
+    )
+
+    row = next(x for x in report["automatic_criteria"] if x["id"] == "G9-HUMAN-05A")
+    assert row["status"] == "REVIEW"
+    assert report["status"] != G9Q.STATUS_READY
+
+
+def test_sponsored_research_requires_access_and_publication_independence_evidence(
+    tmp_path, monkeypatch
+):
+    out_dir = tmp_path / "exports" / "PYTEST-G9Q-SPONSOR-ACCESS"
+    _prepare_study(out_dir, "PYTEST-G9Q-SPONSOR-ACCESS")
+    readiness = json.loads((out_dir / G9Q.READINESS_JSON).read_text(encoding="utf-8"))
+    readiness["data_access_governance"]["sponsored_research"] = True
+    _write_json(out_dir / G9Q.READINESS_JSON, readiness)
+    _patch_upstream(monkeypatch)
+
+    report = G9Q.evaluate_study(
+        "PYTEST-G9Q-SPONSOR-ACCESS", out_dir, repo_root=tmp_path
+    )
+
+    row = next(x for x in report["automatic_criteria"] if x["id"] == "G9-HUMAN-05A")
+    assert row["status"] == "REVIEW"
+    readiness["data_access_governance"].update(
+        {
+            "sponsor_agreement_preserves_data_access": True,
+            "sponsor_agreement_preserves_publication_independence": True,
+            "sponsor_agreement_evidence_ref": "SPONSOR-AGREEMENT-REF-001",
+        }
+    )
+    _write_json(out_dir / G9Q.READINESS_JSON, readiness)
+    report = G9Q.evaluate_study(
+        "PYTEST-G9Q-SPONSOR-ACCESS", out_dir, repo_root=tmp_path
+    )
+    row = next(x for x in report["automatic_criteria"] if x["id"] == "G9-HUMAN-05A")
+    assert row["status"] == "PASS"
 
 
 def test_similarity_requires_human_policy_not_universal_percentage(tmp_path, monkeypatch):

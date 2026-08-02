@@ -75,13 +75,13 @@ Tiêu chuẩn loại trừ gồm: từ chối tham gia; không đủ năng lực
 
 ## 2.4. Cỡ mẫu và cách chọn mẫu
 
-Cỡ mẫu nghiên cứu là 1000, do Hội đồng ấn định. Con số này được biện minh như sau.
+Cỡ mẫu nghiên cứu là 1000, tính từ mức sai số tuyệt đối đã ấn định trước khi thu thập, và thống nhất với chỉ tiêu Hội đồng.
 
-Cỡ mẫu tối thiểu cho Mục tiêu 1 áp dụng công thức ước lượng một tỷ lệ theo độ chính xác của Lwanga và Lemeshow.[7] Với mức ý nghĩa 0,05, tỷ lệ ước lượng p = 0,50 (giá trị làm phương sai đạt cực đại, do đó cho cỡ mẫu lớn nhất khi chưa biết tỷ lệ thật) và sai số cho phép d = 0,05, cỡ mẫu tối thiểu là 385. Dự phòng 15% cho phiếu không trả lời hoặc phiếu lỗi, cỡ mẫu cho riêng Mục tiêu 1 khoảng 453.
+Cỡ mẫu tối thiểu cho Mục tiêu 1 áp dụng công thức ước lượng một tỷ lệ theo độ chính xác của Lwanga và Lemeshow.[7] Với mức ý nghĩa 0,05, tỷ lệ ước lượng p = 0,50 (giá trị làm phương sai đạt cực đại, do đó cho cỡ mẫu lớn nhất khi chưa biết tỷ lệ thật) và sai số cho phép d = 0,05, cỡ mẫu tối thiểu là 385; dự phòng 15% cho phiếu không trả lời hoặc phiếu lỗi, cỡ mẫu ở mức này khoảng 453. Đề tài không dừng ở mức thường quy này mà đặt mục tiêu độ chính xác cao hơn, d = 0,031, cho n = 1,96² × 0,50 × 0,50 / 0,031² ≈ 999,4, làm tròn thành 1000 người bệnh. Mức sai số d = 0,031 được ấn định trước khi thu thập, không suy ngược từ một chỉ tiêu hành chính.
 
-Với Mục tiêu 2, kết cục phân tích chính là một biến thứ hạng năm mức, phân tích bằng hồi quy logistic thứ tự. Chưa có công thức đơn giản được đồng thuận rộng rãi cho cỡ mẫu của mô hình này. Chúng tôi áp dụng quy tắc mở rộng số biến cố trên mỗi tham số của hồi quy logistic nhị phân[8] sang mô hình thứ tự theo hướng dẫn thực hành của Bender và Grouven.[9] Ràng buộc chặt nhất rơi vào mức ít gặp nhất trong năm mức của kết cục, và cần được rà lại bằng dữ liệu mô tả thật ngay khi có.
+Với Mục tiêu 2, kết cục phân tích chính là một biến thứ hạng năm mức, phân tích bằng hồi quy logistic thứ tự. Có công thức cỡ mẫu chuyên biệt cho dữ liệu phân loại có thứ tự dưới giả định tỷ lệ chênh không đổi, do Whitehead dẫn xuất cho đúng tình huống phân tích bằng hồi quy logistic thứ tự, kèm bàn luận ảnh hưởng của số mức, sai phân loại và phân tầng.[8] Cỡ mẫu hiệu dụng trong khung này phụ thuộc toàn bộ phân bố biên của kết cục, không phải số quan sát ở một ô đơn lẻ. Quy tắc cũ mở rộng số biến cố trên mỗi tham số (EPV ≥ 10) của hồi quy logistic nhị phân[9] sang mô hình thứ tự đã bị đặt lại vấn đề bằng mô phỏng và không còn được đề tài dùng làm căn cứ chính.[10] Kết quả tính theo công thức Whitehead, cùng giả định phân bố năm mức của kết cục và tỷ số chênh tối thiểu đáng quan tâm cho mỗi 15 phút chờ thêm, được ghi vào kế hoạch phân tích thống kê trước khi khóa.
 
-Ở cỡ mẫu 1000, nửa rộng khoảng tin cậy 95% của ước lượng tỷ lệ đạt khoảng ±3,1% khi p = 0,5, chặt hơn mức thường quy ±5%. Đây là lý do cỡ mẫu kế hoạch lớn hơn mức tối thiểu theo lý thuyết: nó tạo biên an toàn cho một kết cục thứ hạng có khả năng lệch phân bố.
+Kết cục thứ hạng của Mục tiêu 2 có khả năng lệch phân bố (hiệu ứng trần, mục 2.7); ở cỡ mẫu 1000, nửa rộng khoảng tin cậy 95% của ước lượng tỷ lệ đạt khoảng ±3,1%, tạo thêm biên an toàn cho tình huống lệch phân bố đó.
 
 Chọn mẫu hệ thống phân tầng theo ngày trong tuần và khung giờ khám. Trong mỗi tầng, bước nhảy được tính bằng số người đủ điều kiện dự kiến chia cho số người cần mời. Một người chuyên trách theo dõi số thứ tự dòng người bệnh trong từng tầng và không kiêm nhiệm việc phát hay thu phiếu. Trước khi thu thập chính thức, nhóm nghiên cứu tổ chức một buổi chạy thử toàn bộ quy trình; buổi này đóng vai cổng quyết định tính khả thi chứ không chỉ là diễn tập. Nếu chạy thử cho thấy quy trình không khả thi, nghiên cứu dừng lại để sửa quy trình rồi chạy thử lại, thay vì đổi thiết kế lấy mẫu giữa chừng.
 
@@ -91,7 +91,7 @@ Công cụ thu thập là bộ câu hỏi do nhóm nghiên cứu tự xây dựn
 
 Sáu lĩnh vực gồm khả năng tiếp cận dịch vụ; cơ sở vật chất và phương tiện phục vụ; thái độ ứng xử và năng lực chuyên môn của nhân viên y tế; sự minh bạch thông tin và thủ tục; kết quả cung cấp dịch vụ; và chi phí dịch vụ. Năm lĩnh vực đầu tương thích về khái niệm với khung của Bộ Y tế; lĩnh vực chi phí là bổ sung riêng, phù hợp bối cảnh khối khám theo yêu cầu tự chi trả.
 
-Vì đây là bộ câu hỏi tự xây dựng, dùng lần đầu, nghiên cứu không lấy hệ số tin cậy nội tại trên mẫu chính làm bằng chứng giá trị nội dung duy nhất. Một pha phát triển và kiểm định công cụ được thực hiện trước khi thu thập mẫu chính, theo bốn bước bắt buộc: lập bảng truy xuất nguồn gốc cho từng mục; hội đồng chuyên gia gồm 5–7 người chấm mức liên quan từng mục để tính chỉ số giá trị nội dung ở cấp mục và cấp thang, với ngưỡng đạt theo Polit và Beck;[10] phỏng vấn nhận thức 10–15 người bệnh để kiểm cách hiểu câu chữ; và nghiên cứu thử tại thực địa với khoảng 50–100 người. Chỉ sau khi hoàn tất bốn bước này, phiên bản cuối của công cụ mới được khóa.
+Vì đây là bộ câu hỏi tự xây dựng, dùng lần đầu, nghiên cứu không lấy hệ số tin cậy nội tại trên mẫu chính làm bằng chứng giá trị nội dung duy nhất. Một pha phát triển và kiểm định công cụ được thực hiện trước khi thu thập mẫu chính, theo bốn bước bắt buộc: lập bảng truy xuất nguồn gốc cho từng mục; hội đồng chuyên gia gồm 5–7 người chấm mức liên quan từng mục để tính chỉ số giá trị nội dung ở cấp mục và cấp thang, với ngưỡng đạt theo Polit và Beck;[11] phỏng vấn nhận thức 10–15 người bệnh để kiểm cách hiểu câu chữ; và nghiên cứu thử tại thực địa với khoảng 50–100 người. Chỉ sau khi hoàn tất bốn bước này, phiên bản cuối của công cụ mới được khóa.
 
 Ba mã dữ liệu thiếu được tách riêng thay vì gộp chung: không áp dụng hoặc không sử dụng dịch vụ; không biết hoặc không nhớ; và không trả lời. Việc tách giúp phân biệt trường hợp người bệnh không dùng dịch vụ với trường hợp từ chối trả lời, hai tình huống mang ý nghĩa khác hẳn nhau khi diễn giải.
 
@@ -115,7 +115,7 @@ Kế hoạch phân tích được khóa trước khi mở dữ liệu. Mức ý 
 
 Với Mục tiêu 1, nghiên cứu trình bày cả trung bình kèm độ lệch chuẩn và trung vị kèm khoảng tứ phân vị của điểm hài lòng, ước lượng tỷ lệ hài lòng chung và theo từng lĩnh vực kèm khoảng tin cậy 95% theo phương pháp Wilson score, và báo phần trăm đạt điểm sàn cùng điểm trần mỗi lĩnh vực.
 
-Với Mục tiêu 2, bước đơn biến dùng để sàng lọc và báo cáo thô. Phân tích chính là hồi quy logistic thứ tự đa biến trên kết cục hài lòng chung, báo tỷ số chênh chung hiệu chỉnh kèm khoảng tin cậy 95%. Giả định tỷ lệ chênh không đổi được kiểm định trước khi diễn giải hệ số như một tỷ số chênh chung duy nhất; nếu vi phạm, mô hình chuyển sang dạng tỷ lệ chênh riêng phần. Tính phi tuyến của thời gian chờ được kiểm bằng spline khối hạn chế ba nút hoặc phân tích theo phân vị. Hồi quy tuyến tính với sai số chuẩn vững, coi kết cục là liên tục, chỉ dùng làm phân tích nhạy cảm.
+Với Mục tiêu 2, bước đơn biến dùng để sàng lọc và báo cáo thô. Phân tích chính là hồi quy logistic thứ tự đa biến trên kết cục hài lòng chung, báo tỷ số chênh chung hiệu chỉnh kèm khoảng tin cậy 95%. Giả định tỷ lệ chênh không đổi được kiểm định trước khi diễn giải hệ số như một tỷ số chênh chung duy nhất; nếu vi phạm, mô hình chuyển sang dạng tỷ lệ chênh riêng phần theo từng ranh giới cắt.[12] Tính phi tuyến của thời gian chờ được kiểm bằng spline khối hạn chế ba nút hoặc phân tích theo phân vị. Hồi quy tuyến tính với sai số chuẩn vững, coi kết cục là liên tục, chỉ dùng làm phân tích nhạy cảm.
 
 Ngưỡng nhị phân hóa "hài lòng" được ấn định trước khi thu thập số liệu và không thay đổi sau khi nhìn dữ liệu; nghiên cứu không dùng ngưỡng theo trung vị mẫu. Dữ liệu thiếu xử lý theo kế hoạch định trước: phân tích trên bộ đầy đủ khi tỷ lệ thiếu dưới 5%, và đa trọng imputation cho biến nền cùng biến phơi nhiễm khi cao hơn. Ý kiến ở câu hỏi mở được mã hóa độc lập bởi hai người, bất đồng đưa ra hòa giải, và trích dẫn đã khử định danh.
 
@@ -192,9 +192,11 @@ Giao thức trình bày một nghiên cứu cắt ngang có phân tích nhằm �
 5. Tran BX, Dang AK, Vu GT, et al. Patient satisfaction with HIV services in Vietnam: Status, service models and association with treatment outcome. PLoS One. 2019;14(11):e0223723. doi:10.1371/journal.pone.0223723. PMID: 31703089.
 6. Sharma A, Minh Duc NT, Luu Lam Thang T, et al. A Consensus-Based Checklist for Reporting of Survey Studies (CROSS). J Gen Intern Med. 2021;36(10):3179-3187. doi:10.1007/s11606-021-06737-1. PMID: 33886027.
 7. Lwanga SK, Lemeshow S. Sample size determination in health studies: a practical manual. Geneva: World Health Organization; 1991.
-8. Peduzzi P, Concato J, Kemper E, et al. A simulation study of the number of events per variable in logistic regression analysis. J Clin Epidemiol. 1996;49(12):1373-9. doi:10.1016/s0895-4356(96)00236-3. PMID: 8970487.
-9. Bender R, Grouven U. Ordinal logistic regression in medical research. J R Coll Physicians Lond. 1997;31(5):546-551. PMID: 9429194.
-10. Polit DF, Beck CT, Owen SV. Is the CVI an acceptable indicator of content validity? Appraisal and recommendations. Res Nurs Health. 2007;30(4):459-67. doi:10.1002/nur.20199. PMID: 17654487.
+8. Whitehead J. Sample size calculations for ordered categorical data. Stat Med. 1993;12(24):2257-71. doi:10.1002/sim.4780122404. PMID: 8134732.
+9. Peduzzi P, Concato J, Kemper E, et al. A simulation study of the number of events per variable in logistic regression analysis. J Clin Epidemiol. 1996;49(12):1373-9. doi:10.1016/s0895-4356(96)00236-3. PMID: 8970487.
+10. van Smeden M, de Groot JAH, Moons KGM, et al. No rationale for 1 variable per 10 events criterion for binary logistic regression analysis. BMC Med Res Methodol. 2016;16(1):163. doi:10.1186/s12874-016-0267-3. PMID: 27881078.
+11. Polit DF, Beck CT, Owen SV. Is the CVI an acceptable indicator of content validity? Appraisal and recommendations. Res Nurs Health. 2007;30(4):459-67. doi:10.1002/nur.20199. PMID: 17654487.
+12. Bender R, Grouven U. Ordinal logistic regression in medical research. J R Coll Physicians Lond. 1997;31(5):546-551. PMID: 9429194.
 
 ---
 

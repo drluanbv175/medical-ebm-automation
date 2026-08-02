@@ -172,6 +172,33 @@ def _g2_meta(meta: Mapping[str, Any]) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
 
 
+def _gate_meta(meta: Optional[Mapping[str, Any]], gate: str) -> Mapping[str, Any]:
+    """Đọc dữ kiện đã được pin ở một cổng, không suy diễn từ văn bản tự do."""
+    if not isinstance(meta, Mapping):
+        return {}
+    params = meta.get("gate_params")
+    if not isinstance(params, Mapping):
+        return {}
+    value = params.get(gate)
+    return value if isinstance(value, Mapping) else {}
+
+
+def _real_text(value: Any) -> Optional[str]:
+    text = str(value or "").strip()
+    if not text or re.search(r"\[(?:CẦN|CAN|TBD|TODO|PENDING)", text, re.IGNORECASE):
+        return None
+    return text
+
+
+def _real_text_list(value: Any) -> list[str]:
+    if isinstance(value, str):
+        text = _real_text(value)
+        return [text] if text else []
+    if not isinstance(value, (list, tuple)):
+        return []
+    return [text for item in value if (text := _real_text(item))]
+
+
 def strip_attestation(package_text: str) -> str:
     """Bỏ phụ lục attestation cũ để tính hash và ghi lại idempotent."""
     marker_index = package_text.rfind(ATTESTATION_BEGIN)
@@ -223,8 +250,9 @@ def build_registration_draft(
     n_target: Optional[int],
     out_dir: Path,
     generated_at: str,
+    meta: Optional[Mapping[str, Any]] = None,
 ) -> Path:
-    """Sinh bản nháp WHO TRDS 1.3.1 đủ 24 mục, không lưu PII."""
+    """Sinh WHO TRDS 1.3.1 từ dữ kiện PI đã pin; thiếu thì giữ trống."""
     design_type = {
         "rct": "Interventional",
         "cohort": "Observational",
@@ -245,6 +273,45 @@ def build_registration_draft(
         "qualitative": "Health services research",
         "sr_ma": "Evidence synthesis",
     }.get(design_code, "Other")
+
+    g0 = _gate_meta(meta, "G0")
+    g1 = _gate_meta(meta, "G1")
+    intervention = (
+        _real_text(g1.get("intervention_or_exposure"))
+        or _real_text(g0.get("intervention"))
+    )
+    comparator = _real_text(g1.get("comparator")) or _real_text(g0.get("comparison"))
+    inclusion = _real_text_list(g1.get("inclusion_criteria"))
+    exclusion = _real_text_list(g1.get("exclusion_criteria"))
+    primary_outcome = (
+        _real_text(g1.get("primary_outcome"))
+        or _real_text(g0.get("primary_outcome"))
+    )
+    primary_measure = _real_text(g0.get("primary_outcome_measure"))
+    primary_timepoint = _real_text(g0.get("primary_outcome_timepoint"))
+    secondary_outcomes = _real_text_list(g1.get("secondary_outcomes"))
+    if not secondary_outcomes:
+        secondary_outcomes = [
+            item
+            for item in _real_text_list(g0.get("outcomes"))
+            if not primary_outcome or item.casefold() != primary_outcome.casefold()
+        ]
+
+    if design_code == "rct":
+        intervention_value: Any = {
+            "intervention": intervention,
+            "comparator": comparator,
+        }
+    else:
+        intervention_value = {
+            "assigned_intervention": "Not applicable - no prospectively assigned intervention",
+            "exposure_or_index_test": intervention,
+        }
+    primary_outcome_value = {
+        "name": primary_outcome,
+        "measure": primary_measure,
+        "timepoint": primary_timepoint,
+    }
 
     values = {
         1: None,
@@ -270,8 +337,11 @@ def build_registration_draft(
         # điểm AN TOÀN (không bịa nội dung mới — cùng một chuỗi đã tin cậy ở
         # mục 9/10), bác sĩ xác nhận/chỉnh sửa trước khi đăng ký.
         12: topic,
-        13: None,
-        14: {"inclusion": None, "exclusion": None},
+        13: intervention_value,
+        14: {
+            "inclusion": inclusion or None,
+            "exclusion": exclusion or None,
+        },
         15: {
             "design": design_type,
             "primary_purpose": primary_purpose,
@@ -280,8 +350,8 @@ def build_registration_draft(
         16: None,
         17: n_target,
         18: "Not yet recruiting",
-        19: None,
-        20: None,
+        19: primary_outcome_value,
+        20: secondary_outcomes or None,
         21: {"status": "Not approved", "approval_date": None, "committee_ref": None},
         22: None,
         23: {
@@ -311,6 +381,11 @@ def build_registration_draft(
             }
             for number in range(1, WHO_TRDS_ITEM_COUNT + 1)
         ],
+        "scientific_fields_source": {
+            "source": "study_meta.gate_params.G0/G1",
+            "pi_pinned_only": True,
+            "auto_filled_items": [13, 14, 19, 20],
+        },
         "no_pii_note": (
             "Thông tin liên hệ cá nhân phải điền trực tiếp trên registry công khai; "
             "không lưu PII trong artifact pipeline."
@@ -388,6 +463,61 @@ def _registration_draft_errors(document: Mapping[str, Any]) -> list[str]:
                     "(chạy lại với --topic thật hoặc chạy G0 trước)"
                 )
     return errors
+
+
+def _who_trds_value_empty(value: Any) -> bool:
+    if isinstance(value, Mapping):
+        return all(_who_trds_value_empty(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return all(_who_trds_value_empty(item) for item in value)
+    return not bool(_real_text(value))
+
+
+def scientific_registration_item_gaps(
+    document: Mapping[str, Any],
+    design_code: str,
+) -> list[str]:
+    """Liệt kê mục WHO TRDS khoa học chưa đủ, dùng chung cho G2 và verifier."""
+    items = document.get("items")
+    rows = items if isinstance(items, list) else []
+    by_number = {
+        item.get("number"): item
+        for item in rows
+        if isinstance(item, Mapping)
+    }
+
+    def _item_empty(number: int, value: Any) -> bool:
+        if number == 13 and design_code == "rct":
+            return not (
+                isinstance(value, Mapping)
+                and _real_text(value.get("intervention"))
+                and _real_text(value.get("comparator"))
+            )
+        if number == 14:
+            return not (
+                isinstance(value, Mapping)
+                and not _who_trds_value_empty(value.get("inclusion"))
+                and not _who_trds_value_empty(value.get("exclusion"))
+            )
+        if number == 19:
+            return not (
+                isinstance(value, Mapping)
+                and _real_text(value.get("name"))
+                and _real_text(value.get("measure"))
+                and _real_text(value.get("timepoint"))
+            )
+        return _who_trds_value_empty(value)
+
+    return [
+        f"#{number} {name}"
+        for number, name in (
+            (13, "Intervention(s)"),
+            (14, "Key Inclusion and Exclusion Criteria"),
+            (19, "Primary Outcome(s)"),
+            (20, "Key Secondary Outcomes"),
+        )
+        if _item_empty(number, by_number.get(number, {}).get("value"))
+    ]
 
 
 def unresolved_critical_placeholders(package_text: str) -> list[str]:
@@ -650,40 +780,12 @@ def evaluate_g2_quality(
         "Bổ sung giám sát AE/SAE, DSMB/DMC và stopping rules cho thử nghiệm.",
     ))
 
-    # SỬA 2026-07-30 (audit toàn diện G0-G10, G2-F4 phần còn lại — REVIEW-only,
-    # KHÔNG BLOCK): sau khi mục 9/10/12 (G2-F1) đã được vá dùng `topic`, 4 mục
-    # WHO TRDS còn lại rơi None THẬT SỰ là thiếu dữ liệu khoa học của đề tài:
-    # #13 Intervention(s), #14 Key Inclusion/Exclusion Criteria, #19 Primary
-    # Outcome(s), #20 Key Secondary Outcomes. Các mục None KHÁC (1,2,3,4,6,16,
-    # 21 sub-field,22,23,24) là ĐÚNG CHỦ Ý (registry-assigned lúc đăng ký thật/
-    # hậu-nghiên-cứu), không phải khoảng trống. build_registration_draft()
-    # hiện chỉ nhận (study,topic,design_code,design_primary,risk,n_target,
-    # out_dir,generated_at) — không có PICO thật từ G1 checkpoint; thêm tham
-    # số + sửa call site (tools/run_g2_auto.py) là thay đổi LỚN hơn phạm vi
-    # bản vá này, nên chỉ THÊM tiêu chí REVIEW nhắc bác sĩ điền, không tự suy
-    # luận nội dung khoa học (tránh bịa).
-    def _who_trds_value_empty(value: Any) -> bool:
-        if isinstance(value, Mapping):
-            return not any(
-                isinstance(v, str) and v.strip() for v in value.values()
-            )
-        return not (isinstance(value, str) and value.strip())
-
-    reg_items_by_number = {
-        item.get("number"): item
-        for item in (registration.get("items") or [])
-        if isinstance(item, Mapping)
-    }
-    still_empty_scientific = [
-        f"#{number} {name}"
-        for number, name in (
-            (13, "Intervention(s)"),
-            (14, "Key Inclusion and Exclusion Criteria"),
-            (19, "Primary Outcome(s)"),
-            (20, "Key Secondary Outcomes"),
-        )
-        if _who_trds_value_empty(reg_items_by_number.get(number, {}).get("value"))
-    ]
+    # WHO TRDS 13/14/19/20 chỉ được điền từ StudyMeta do PI xác nhận. Thiếu
+    # bất kỳ mục nào vẫn là REVIEW và nay tham gia quyết định trạng thái G2.
+    still_empty_scientific = scientific_registration_item_gaps(
+        registration,
+        design_code,
+    )
     automatic.append(_criterion(
         "G2-AUTO-08",
         "Mục khoa học WHO TRDS (can thiệp/tiêu chí/kết cục) đã có nội dung thật",
@@ -757,7 +859,7 @@ def evaluate_g2_quality(
     # hợp CLI thật test_human_cli_valid_g2_flow_updates_checkpoint_to_pass đỏ
     # trước khi thêm loại trừ này). Tiêu chí vẫn xuất hiện trong report để bác
     # sĩ thấy và điền — chỉ không gate tiến trình cổng.
-    _NON_BLOCKING_CRITERIA = ("G2-AUTO-08", "G2-AUTO-09")
+    _NON_BLOCKING_CRITERIA: tuple[str, ...] = ()
     _status_driving = [row for row in automatic if row["id"] not in _NON_BLOCKING_CRITERIA]
     auto_blocked = any(row["status"] == "BLOCK" for row in _status_driving)
     auto_review = any(row["status"] == "REVIEW" for row in _status_driving)

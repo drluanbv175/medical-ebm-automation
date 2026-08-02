@@ -116,6 +116,8 @@ def build_part1_icmje(n_authors: int, study: str) -> str:
         "> Tất cả 4 tiêu chí phải đạt ĐỦ mới là Tác giả.",
         "> CRediT mô tả vai trò đóng góp nhưng không thay thế 4 tiêu chí ICMJE.",
         "> Đóng góp chỉ đáp ứng 1-2 tiêu chí -> ghi trong Lời cảm ơn (Acknowledgment).",
+        "> ICMJE 01/2026: mọi tác giả phải có khả năng rà dữ liệu hỗ trợ kết quả;",
+        "> ít nhất một tác giả phải truy cập dữ liệu gốc và tham gia phân tích.",
         "",
         "### Bảng Tiêu chuẩn Tác giả ICMJE",
         "",
@@ -150,6 +152,7 @@ def build_part1_icmje(n_authors: int, study: str) -> str:
             "Methodology, Writing – original draft]",
             "- Tư cách tác giả: ☐ ĐỦ CẢ 4 tiêu chí -> LÀ TÁC GIẢ  "
             "☐ Không đủ -> ghi Acknowledgment",
+            "- Có khả năng rà dữ liệu hỗ trợ kết quả: ☐ Có  ☐ Không",
             f"- Chữ ký xác nhận: _______________  Ngày: ___/___/{_YEAR}",
             "",
         ]
@@ -174,6 +177,14 @@ def build_part1_icmje(n_authors: int, study: str) -> str:
         lines.append(f"| {role} | {row} |")
 
     lines += [
+        "",
+        "### Xác nhận quyền truy cập dữ liệu và độc lập công bố",
+        "",
+        "- Author ref đã truy cập dữ liệu gốc và tham gia phân tích: [CẦN — AUTHOR-__]",
+        "- Nếu hợp tác học thuật/ngoài học thuật: tác giả trên thuộc đơn vị học thuật: ☐ Có ☐ Không áp dụng",
+        "- Nghiên cứu có nhà tài trợ: ☐ Có ☐ Không",
+        "- Nếu có: hợp đồng bảo toàn quyền truy cập dữ liệu và độc lập công bố: ☐ Có ☐ Không",
+        "- Mã tham chiếu hợp đồng/xác nhận (không PII): [CẦN — EVIDENCE-REF]",
         "",
         f"*[DRAFT — Cần tất cả {n_authors} tác giả ký xác nhận trước khi nộp bài.]*",
         "",
@@ -862,6 +873,11 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         "    ☐ Chưa chọn  ☐ Đã chọn Option [A/B/C]",
         ni_gate_block,
         "",
+        "A7. Quyền truy cập dữ liệu theo ICMJE 01/2026 đã xác nhận",
+        "    ☐ Mọi tác giả có thể rà dữ liệu hỗ trợ kết quả",
+        "    ☐ Ít nhất một tác giả truy cập dữ liệu gốc và tham gia phân tích",
+        "    ☐ Hợp đồng tài trợ không hạn chế truy cập dữ liệu/độc lập công bố (nếu áp dụng)",
+        "",
         "NHÓM B — TIỀN ĐỀ CỔNG TRƯỚC (phải LOCKED trước G9)",
         "─────────────────────────────────────────────",
         "B1. G2 (Đạo đức) = LOCKED",
@@ -1349,7 +1365,7 @@ def main():
 
     header = "\n".join([
         "# A10 — GÓI LIÊM CHÍNH TÁC GIẢ (AUTHOR INTEGRITY PACKAGE)",
-        "> Tên file A10 được giữ để tương thích pipeline cũ; hợp đồng G9-2026.1",
+        f"> Tên file A10 được giữ để tương thích pipeline cũ; hợp đồng {G9Q.QUALITY_CONTRACT_VERSION}",
         "> dùng checkpoint/readiness có cấu trúc làm nguồn quyết định.",
         f"**Mã đề tài:** {study}",
         f"**Số tác giả:** {n_authors}",

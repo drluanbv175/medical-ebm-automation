@@ -1736,7 +1736,7 @@ def main():
     # ── Bước 2: Risk profile ──
     print("\n⚖️  Bước 2/7: Xác định mức nguy cơ và lộ trình IRB...")
     risk = get_risk_profile(design_code, design_primary)
-    GC.ensure_study_meta(
+    _study_meta_for_g2 = GC.ensure_study_meta(
         out_dir,
         seed={"title": topic, "design_code": design_code},
     )
@@ -1789,6 +1789,7 @@ def main():
         n_target=n_adjusted or None,
         out_dir=out_dir,
         generated_at=datetime.now().isoformat(),
+        meta=_study_meta_for_g2,
     )
     print(f"  → WHO TRDS 24 mục: {registration_path}")
 

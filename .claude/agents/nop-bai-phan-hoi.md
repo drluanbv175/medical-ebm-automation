@@ -32,7 +32,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận yêu cầu 
 | MODULE | Tác vụ |
 |--------|--------|
 | M1 | BƯỚC 0: kiểm tiền đề G9 — bản thảo đã qua `kiem-chung-trich-dan` + `binh-duyet`; G4_STATUS=LOCKED + G5_STATUS=LOCKED; nhắc mọi khai báo chờ chủ nhiệm xác nhận |
-| M2 | Soạn BỘ KHAI BÁO LIÊM CHÍNH ICMJE+COPE: bảng CRediT 14 vai trò · khai báo COI từng tác giả · khai báo AI · Data Availability Statement · Ethics Statement |
+| M2 | Soạn BỘ KHAI BÁO LIÊM CHÍNH ICMJE+COPE: bảng CRediT 14 vai trò · khai báo COI từng tác giả · khai báo AI · Data Availability Statement · quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026 · Ethics Statement |
 | M3 | Checklist chống predatory (10 điểm, tự soạn — tham khảo Think.Check.Submit) + đề xuất 3 tạp chí phù hợp (chỉ mục/phạm vi/IF [CẦN KIỂM]) |
 | M4 | Soạn cover letter (mẫu 5 đoạn tự đề xuất, dựa trên NỘI DUNG ICMJE khuyến nghị khai báo trong thư ngỏ — ICMJE không quy định cứng cấu trúc "5 đoạn") và template phản hồi phản biện (Rebuttal) điểm-theo-điểm, RỒI mới chốt checklist đóng gói nộp (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8: trước đây checklist đóng gói — có mục "☐ Cover letter" — được liệt ở M3, TRƯỚC khi M4 soạn cover letter; nay soạn thư trước để checklist có cái thật để đối chiếu) |
 | M5 | ⛔ CỔNG CỨNG G9: dừng — chờ bác sĩ ký 3 xác nhận (COI · đồng thuận tác giả · không đăng kép); sau ký → ghi G9_STATUS=LOCKED + kích hoạt Final Readiness Report |
@@ -86,6 +86,16 @@ Tiêu chí tác giả ICMJE — TẤT CẢ 4 tiêu chí phải đạt:
   ④ Đồng ý chịu trách nhiệm về mọi khía cạnh của công trình
 Không đủ 4 tiêu chí → ghi vào Lời cảm ơn, KHÔNG ghi là tác giả
 ```
+
+### A2. QUYỀN TRUY CẬP DỮ LIỆU VÀ ĐỘC LẬP VỚI NHÀ TÀI TRỢ (ICMJE cập nhật 1/2026)
+
+Trước khi PI ký G9, điền `data_access_governance` trong
+`G9_PUBLICATION_READINESS.json`: xác nhận mọi tác giả có thể rà dữ liệu hỗ trợ kết quả;
+chỉ rõ một `author_ref` đã truy cập dữ liệu gốc và tham gia phân tích; nếu là hợp tác học
+thuật–ngoài học thuật, người đó phải là tác giả học thuật; nếu có tài trợ, gắn
+`sponsor_agreement_evidence_ref` chứng minh thỏa thuận không hạn chế quyền truy cập dữ liệu
+hoặc độc lập công bố. Không lưu tên/email/PII trong JSON. Thiếu một xác nhận làm
+`G9-HUMAN-05A` REVIEW và cổng không thể READY.
 
 ### B. KHAI BÁO COI (theo mẫu ICMJE Disclosure Form — bảng PHẲNG 13 mục, hiện hành từ 6/2021)
 
@@ -353,9 +363,10 @@ Trân trọng, [Tên tác giả liên hệ]
 > tác giả/guarantor đã chốt và không còn tranh chấp; (3) khai AI đủ tools/purposes/
 > confirmed_at (ICMJE Mục V, không chỉ "có dùng AI hay không"); (4) Data Availability
 > Statement đủ chi tiết ICMJE cho thử nghiệm lâm sàng (không nhận "chưa quyết định");
-> (5) liêm chính công bố (similarity/image integrity/kết quả khớp phân tích khóa ở G6);
-> (6) venue due diligence (URL https, phạm vi, phí, lưu trữ, rút bài, indexing);
-> (7) ethics/privacy cuối; (8) manifest SHA-256 ràng buộc toàn gói còn nguyên; (9) PI ký
+> (5) quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026; (6) liêm chính công
+> bố (similarity/image integrity/kết quả khớp phân tích khóa ở G6); (7) venue due diligence
+> (URL https, phạm vi, phí, lưu trữ, rút bài, indexing); (8) ethics/privacy cuối;
+> (9) manifest SHA-256 ràng buộc toàn gói còn nguyên; (10) PI ký
 > đúng `G9_checkpoint.json`. Chạy `g9_quality_gate.py` TRƯỚC khi đọc "TIÊU CHÍ QUA CỔNG
 > G9" bên dưới để biết CHÍNH XÁC còn thiếu gì — mục dưới đây là hướng dẫn soạn thảo, không
 > phải danh sách đầy đủ điều kiện ký.
@@ -364,7 +375,7 @@ Trân trọng, [Tên tác giả liên hệ]
 
 ## TIÊU CHÍ QUA CỔNG G9
 
-**Đạt G9 (AI side):** Bảng CRediT 14 vai trò · khai báo COI mỗi tác giả · khai báo AI · Data Availability Statement · Ethics Statement · checklist chống predatory · 3 tạp chí đề xuất · cover letter · checklist đóng gói hoàn chỉnh.
+**Đạt G9 (AI side):** Bảng CRediT 14 vai trò · khai báo COI mỗi tác giả · khai báo AI · Data Availability Statement · quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026 · Ethics Statement · checklist chống predatory · 3 tạp chí đề xuất · cover letter · checklist đóng gói hoàn chỉnh.
 
 **Mở khóa thật (human side):** bác sĩ ký xác nhận 3 mục → agent ghi G9=LOCKED → xuất Final Readiness Report.
 

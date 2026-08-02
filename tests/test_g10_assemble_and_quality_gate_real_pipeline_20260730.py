@@ -32,6 +32,7 @@ if str(TOOLS_DIR) not in sys.path:
 
 import g10_quality_gate as G10Q  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
+
 from tests.test_g10_assemble import _write_cross_sectional_fixture  # noqa: E402
 
 

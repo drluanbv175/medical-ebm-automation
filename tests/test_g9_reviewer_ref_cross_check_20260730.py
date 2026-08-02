@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -25,8 +24,9 @@ TOOLS_DIR = REPO_ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
-from tests.test_g9_quality_gate import _evaluate_ready  # noqa: E402
 import g9_quality_gate as G9Q  # noqa: E402
+
+from tests.test_g9_quality_gate import _evaluate_ready  # noqa: E402
 
 
 def _write_ledger(out_dir: Path, records: list[dict]) -> None:

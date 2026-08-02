@@ -440,14 +440,18 @@ for _pg, _sgs in PIPELINE_TO_SKILL_GATE.items():
         SKILL_TO_PIPELINE_GATE.setdefault(_sg, []).append(_pg)
 
 
-# Năm CỔNG CỨNG của vòng đời nghiên cứu: không được tự vượt. DATA_LOCK là
-# sự kiện đời thực, không phải pipeline G5 (G5 chỉ sinh công cụ/CRF/script).
+# Sáu CỔNG CỨNG của vòng đời nghiên cứu: không được tự vượt. Danh sách này
+# phải khớp gate_contract.py; G5 là cổng khóa dữ liệu thật và G10 là capstone.
 PIPELINE_HARD_GATES = {
     "G2": "Đạo đức IRB — cần số phê duyệt thật từ Hội đồng Đạo đức",
     "G4": "Khoá SAP — cần chữ ký SAP Lock Certificate",
-    "DATA_LOCK": "Dữ liệu thật — phải làm sạch, giải quyết query và khóa trước phân tích chính",
+    "G5": "Dữ liệu thật — phải làm sạch, giải quyết query và khóa trước phân tích chính",
     "G8": "Bình duyệt độc lập — cần người phản biện độc lập phê duyệt đúng vai trò",
-    "G9": "Liêm chính tác giả — cần tất cả tác giả ký ICMJE + PI ký liêm chính",
+    "G9": (
+        "Liêm chính tác giả — cần xác nhận từng tác giả, quyền truy cập dữ liệu "
+        "ICMJE 1/2026 và PI ký liêm chính"
+    ),
+    "G10": "Khóa gói phát hành — cần PI rà và ký đúng manifest cuối",
 }
 
 
@@ -724,6 +728,7 @@ def real_world_signals(checkpoints: Dict[str, Dict],
     g5 = checkpoints.get("G5") or {}
     g8 = checkpoints.get("G8") or {}
     g9 = checkpoints.get("G9") or {}
+    g10 = checkpoints.get("G10") or {}
 
     if g2.get("quality_contract_version"):
         quality = g2.get("quality_gate")
@@ -853,9 +858,43 @@ def real_world_signals(checkpoints: Dict[str, Dict],
             g9.get("submission_package_ready") is True and _guardrail_passed(g9)
         ) or bool(meta.get("integrity_signed"))
 
+    if g10.get("quality_contract_version"):
+        study = str(g10.get("study") or "").strip()
+        if study and re.fullmatch(r"[\w-]+", study):
+            root = Path(__file__).resolve().parents[1]
+            default_out = root / "exports" / study
+            if default_out.exists():
+                try:
+                    import g10_quality_gate as G10Q  # noqa: PLC0415
+
+                    live = G10Q.evaluate_study(
+                        study,
+                        default_out,
+                        repo_root=root,
+                        write=False,
+                    )
+                    release = live.get("status") == G10Q.STATUS_LOCKED
+                except (ImportError, OSError, RuntimeError, ValueError):
+                    release = False
+            else:
+                release = (
+                    meta.get("g10_quality_status")
+                    == "PASS_G10_RELEASE_PACKAGE_LOCKED"
+                )
+        else:
+            release = (
+                meta.get("g10_quality_status")
+                == "PASS_G10_RELEASE_PACKAGE_LOCKED"
+            )
+    else:
+        release = (
+            g10.get("release_package_locked") is True
+            and _guardrail_passed(g10)
+        ) or bool(meta.get("g10_release_locked"))
+
     return {"irb_approved": irb, "sap_locked": sap, "db_locked": db,
             "results_final": results, "peer_review_approved": peer,
-            "integrity_signed": integ}
+            "integrity_signed": integ, "release_locked": release}
 
 
 def normalize_pipeline_gate_state(pipeline_gate: str, cp: Optional[Dict],
@@ -883,6 +922,8 @@ def normalize_pipeline_gate_state(pipeline_gate: str, cp: Optional[Dict],
     if pipeline_gate == "G8" and sig["peer_review_approved"]:
         return GATE_STATE_LOCKED
     if pipeline_gate == "G9" and sig["integrity_signed"]:
+        return GATE_STATE_LOCKED
+    if pipeline_gate == "G10" and sig["release_locked"]:
         return GATE_STATE_LOCKED
 
     return GATE_STATE_DRAFT if _guardrail_passed(cp) else GATE_STATE_PENDING

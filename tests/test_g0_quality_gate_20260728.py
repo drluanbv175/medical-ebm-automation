@@ -625,7 +625,10 @@ def test_evaluate_study_doc_lap_cap_nhat_quality_gate_vao_checkpoint(tmp_path):
     report = G0Q.evaluate_study("ZZ-REFRESH", out_dir, write=True)
 
     after = json.loads(cp_path.read_text(encoding="utf-8"))
-    assert "quality_gate" in after,         "evaluate_study(write=True) phải ghi lại quality_gate vào CHÍNH checkpoint "         "trên đĩa, không chỉ vào G0_QUALITY_REPORT.json/.md"
+    assert "quality_gate" in after, (
+        "evaluate_study(write=True) phải ghi lại quality_gate vào CHÍNH checkpoint "
+        "trên đĩa, không chỉ vào G0_QUALITY_REPORT.json/.md"
+    )
     assert after["quality_gate"]["status"] == report["status"]
     assert after["quality_gate"]["contract_version"] == G0Q.QUALITY_CONTRACT_VERSION
     assert after["quality_gate"]["pending_actions"] == report["pending_actions"]
@@ -644,7 +647,9 @@ def test_evaluate_study_no_write_khong_dung_toi_checkpoint(tmp_path):
 
     G0Q.evaluate_study("ZZ-NOWRITE", out_dir, write=False)
 
-    assert cp_path.read_text(encoding="utf-8") == raw_before,         "write=False (--no-write) không được ghi đè checkpoint"
+    assert cp_path.read_text(encoding="utf-8") == raw_before, (
+        "write=False (--no-write) không được ghi đè checkpoint"
+    )
     assert not (out_dir / "G0_QUALITY_REPORT.json").exists()
 
 
@@ -667,7 +672,9 @@ def test_refresh_checkpoint_khong_ghi_de_needs_input_nang_hon_da_co(tmp_path):
     # nếu không, needs_input "giữ nguyên" chỉ vì KHÔNG AI đụng vào checkpoint, chứ
     # không phải vì guard hoạt động đúng).
     assert "quality_gate" in after
-    assert after["needs_input"]["reason_code"] == GC.REASON_MISSING_PUBMED,         "needs_input nặng hơn (0 PMID) bị PICO-chưa-chốt ghi đè nhầm"
+    assert after["needs_input"]["reason_code"] == GC.REASON_MISSING_PUBMED, (
+        "needs_input nặng hơn (0 PMID) bị PICO-chưa-chốt ghi đè nhầm"
+    )
 
 
 def test_g0_quality_gate_cli_doc_lap_cung_cap_nhat_checkpoint(tmp_path):
@@ -679,7 +686,9 @@ def test_g0_quality_gate_cli_doc_lap_cung_cap_nhat_checkpoint(tmp_path):
         [PYTHON, str(TOOLS_DIR / "g0_quality_gate.py"), "--study", "ZZ-CLI"],
         cwd=tmp_path, env=env, capture_output=True, text=True, timeout=60,
     )
-    assert proc.returncode in (GC.EXIT_OK, GC.EXIT_BLOCKED, GC.EXIT_GUARDRAIL_FAIL),         proc.stdout[-800:] + proc.stderr[-800:]
+    assert proc.returncode in (GC.EXIT_OK, GC.EXIT_BLOCKED, GC.EXIT_GUARDRAIL_FAIL), (
+        proc.stdout[-800:] + proc.stderr[-800:]
+    )
     cp = json.loads(
         (tmp_path / "exports" / "ZZ-CLI" / "G0_checkpoint.json").read_text(encoding="utf-8")
     )
