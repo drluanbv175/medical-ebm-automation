@@ -5,6 +5,13 @@
 
 COMPLETION_SYNC_FAIL_CLOSED=1
 
+# Cac script kiem tra deu IN tieng Viet. Tren Windows, stdout cua python mac dinh
+# la cp1252 nen chi rieng viec in mot dong da nem UnicodeEncodeError -> hook ket
+# luan "con lech" va CHAN COMMIT du khong co drift nao (03/08/2026, giong het loi
+# da va o hook repo goc). Ep UTF-8; tren macOS/Linux khong doi gi.
+export PYTHONUTF8=1
+export PYTHONIOENCODING=utf-8
+
 REPO_ROOT=$(git rev-parse --show-toplevel)
 WORKSPACE_ROOT=${EBM_WORKSPACE_ROOT:-$(cd "$REPO_ROOT/.." && pwd)}
 ROOT_HOOK="$WORKSPACE_ROOT/.githooks/pre-commit"

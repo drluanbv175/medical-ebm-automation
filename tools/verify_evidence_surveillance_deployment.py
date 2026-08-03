@@ -173,8 +173,15 @@ def _schedule_specs() -> dict[str, tuple[Path, Path]]:
 
 def _check_scheduler_loaded() -> Check:
     if sys.platform != "darwin":
+        # HUMAN_GATE chứ KHÔNG phải FAIL: máy không phải macOS thì chưa có scheduler
+        # tương đương — đó là việc người phải làm, không phải hợp đồng bị hỏng.
+        # Vẫn chặn triển khai thật (human gate ⇒ deployment_allowed=False), nhưng
+        # --contract-check chỉ đếm FAIL nên không còn chặn oan. Trước 03/08/2026 mục
+        # này trả FAIL, khiến pre-commit CHẶN MỌI COMMIT trên máy Windows chỉ vì máy
+        # không phải macOS, dù không có drift nào.
         return Check(
-            "ESD05", "Scheduler launchd", "static", FAIL, "Không chạy trên macOS",
+            "ESD05", "Scheduler launchd", "static", HUMAN_GATE,
+            f"Không chạy trên macOS (nền tảng: {sys.platform})",
             "Triển khai máy khác cần scheduler tương đương và UAT riêng.",
         )
     failures: list[str] = []
