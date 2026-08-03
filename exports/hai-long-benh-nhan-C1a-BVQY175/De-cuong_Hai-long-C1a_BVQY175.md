@@ -220,9 +220,9 @@ Phiếu không bị loại chỉ vì thiếu biến nền (tuổi, học vấn, 
 
 **Cỡ mẫu tối thiểu cho Mục tiêu 1 (ước lượng một tỷ lệ theo độ chính xác)** áp dụng công thức của Lwanga & Lemeshow.[13]
 
-n₀ = Z²₁₋α/₂ · p(1 − p) / d²
+n₀ = Z^{2}_{1−α/2} · p(1 − p) / d²
 
-với Z₁₋α/₂ = 1,96 (α = 0,05 hai đuôi), tỷ lệ hài lòng kỳ vọng p = 0,50 (giá trị thận trọng cho cỡ mẫu tối đa vì p(1 − p) đạt cực đại tại p = 0,5, khi chưa có số liệu pilot), và sai số tuyệt đối d = 0,05. Kết quả:
+với Z_{1−α/2} = 1,96 (α = 0,05 hai đuôi), tỷ lệ hài lòng kỳ vọng p = 0,50 (giá trị thận trọng cho cỡ mẫu tối đa vì p(1 − p) đạt cực đại tại p = 0,5, khi chưa có số liệu pilot), và sai số tuyệt đối d = 0,05. Kết quả:
 
 Ở mức thường quy d = 0,05: n₀ = 1,96² × 0,50 × 0,50 / 0,05² = 384,16 → n₁ = 385 (chưa bù không trả lời). Dự phòng tỷ lệ không trả lời/phiếu lỗi 15%, cỡ mẫu ở mức này ≈ 385 / (1 − 0,15) ≈ 453.
 
@@ -238,7 +238,7 @@ Cần nói rõ trình tự để tránh hiểu nhầm: con số 1000 là kết q
 
 Dạng tổng quát của công thức, viết theo biến phơi nhiễm *X* bất kỳ:
 
-n = 3 (z₁₋α/₂ + z₁₋β)² / [ (1 − Σpᵢ³) · β² · Var(X) · (1 − R²) ]
+n = 3 (z_{1−α/2} + z_{1−β})² / [ (1 − Σpᵢ³) · β² · Var(X) · (1 − R²) ]
 
 trong đó β = log(OR) trên mỗi đơn vị của *X*; Var(X) là phương sai của biến phơi nhiễm tính theo cùng đơn vị; và (1 − R²) hiệu chỉnh cho phần phương sai của *X* bị các đồng biến giải thích (R² là hệ số xác định của mô hình hồi quy *X* theo các đồng biến; 1/(1 − R²) chính là hệ số phóng đại phương sai VIF). Khi *X* nhị phân với tỷ lệ *f*, Var(X) = *f*(1 − *f*) và công thức thu về đúng dạng hai nhóm quen thuộc của Whitehead; ở đây *X* là thời gian chờ liên tục, đơn vị 15 phút, nên Var(X) = (SD/15)².
 

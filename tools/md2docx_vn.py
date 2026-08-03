@@ -177,6 +177,159 @@ def _flag_color(bracket_text: str):
     return _FLAG_COLOR_URGENT if _URGENT_FLAG_SUBSTRING in inner else _FLAG_COLOR_NORMAL
 
 
+# --- Chỉ số trên/dưới: Times New Roman KHÔNG có glyph cho phần lớn khối
+# "Superscript and Subscript" (U+2070–U+209F). Ký tự ₀₁₂₋⁴ trong nguồn Markdown
+# vì thế rơi vào font thay thế của Word, hiển thị lệch cỡ hoặc thành ô vuông.
+# Bẫy dễ bỏ sót: ² và ³ (U+00B2/00B3, khối Latin-1) LẠI có glyph, nên cùng một
+# tài liệu hiển thị không đồng nhất. Cách xử lý: tách thành run riêng mang thuộc
+# tính vertAlign của Word, in bằng chữ số ASCII (luôn có glyph) — vừa hết lỗi
+# thiếu glyph, vừa cho kiểu chữ nhất quán do chính Word canh.
+_SUPERSCRIPT_MAP = {
+    "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5",
+    "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9",
+    "⁺": "+", "⁻": "−", "⁼": "=", "⁽": "(", "⁾": ")", "ⁿ": "n", "ⁱ": "i",
+}
+_SUBSCRIPT_MAP = {
+    "₀": "0", "₁": "1", "₂": "2", "₃": "3", "₄": "4", "₅": "5",
+    "₆": "6", "₇": "7", "₈": "8", "₉": "9",
+    "₊": "+", "₋": "−", "₌": "=", "₍": "(", "₎": ")",
+    "ₐ": "a", "ₑ": "e", "ₒ": "o", "ₓ": "x", "ᵢ": "i", "ⱼ": "j",
+    "ₖ": "k", "ₗ": "l", "ₘ": "m", "ₙ": "n", "ₚ": "p", "ₛ": "s", "ₜ": "t",
+}
+# Ký tự không thuộc chỉ số nhưng Times New Roman vẫn thiếu glyph -> thay bằng
+# ký tự tương đương thị giác CÓ glyph (đã đối chiếu trực tiếp bảng cmap của font).
+_GLYPH_SUBSTITUTE = {
+    "☐": "□",    # U+2610 BALLOT BOX        -> U+25A1 ô vuông rỗng
+    "☑": "■",    # U+2611 đã tick           -> U+25A0 ô vuông đặc
+    "☒": "■",    # U+2612 đã gạch chéo      -> ô vuông đặc
+    "∎": "■",    # U+220E END OF PROOF      -> ô vuông đặc
+    "✅": "■",    # U+2705 dấu tick đậm      -> ô vuông đặc (Times KHÔNG có glyph tick nào)
+    "⚠": "‼",    # U+26A0 biển cảnh báo     -> U+203C hai chấm than
+    "\ufe0f": "",  # VARIATION SELECTOR-16 — bộ chọn hiển thị emoji, vô nghĩa khi
+                    # không có font emoji; để lại sẽ thành ô vuông trống.
+}
+
+# Phát hiện ký tự không hiển thị được: ưu tiên đối chiếu BẢNG GLYPH THẬT của
+# font đích (chính xác tuyệt đối, cần fontTools). Nếu không có fontTools thì lùi
+# về danh sách khối Unicode hay thiếu glyph ở font có chân — kém chính xác hơn
+# nhưng vẫn bắt được phần lớn. Đoán theo khối KHÔNG đủ: U+23F1 (đồng hồ bấm giờ)
+# nằm ở khối "Miscellaneous Technical" mà một danh sách khối viết tay dễ bỏ sót.
+_RISKY_BLOCKS = (
+    (0x2070, 0x209F),   # Superscripts and Subscripts
+    (0x2300, 0x23FF),   # Miscellaneous Technical
+    (0x2600, 0x26FF),   # Miscellaneous Symbols
+    (0x2700, 0x27BF),   # Dingbats
+    (0x2B00, 0x2BFF),   # Miscellaneous Symbols and Arrows
+    (0x1F300, 0x1FAFF), # Emoji
+    (0xFE00, 0xFE0F),   # Variation Selectors
+)
+_MAC_FONT_DIR = "/System/Library/Fonts/Supplemental"
+_glyph_canh_bao: Dict[str, int] = {}
+_cmap_cache: Dict[str, Optional[frozenset]] = {}
+
+
+def _font_cmap(font_name: str) -> Optional[frozenset]:
+    """Tập codepoint có glyph ở CẢ 4 kiểu (thường/đậm/nghiêng/đậm nghiêng) của
+    font. None nếu không đọc được font (thiếu fontTools, hoặc máy khác macOS) —
+    khi đó bên gọi lùi về heuristic khối Unicode."""
+    if font_name in _cmap_cache:
+        return _cmap_cache[font_name]
+    ket_qua: Optional[frozenset] = None
+    try:
+        from fontTools.ttLib import TTFont  # phụ thuộc TUỲ CHỌN
+        giao: Optional[set] = None
+        for hau_to in ("", " Bold", " Italic", " Bold Italic"):
+            duong_dan = f"{_MAC_FONT_DIR}/{font_name}{hau_to}.ttf"
+            if not Path(duong_dan).exists():
+                giao = None
+                break
+            f = TTFont(duong_dan, fontNumber=0)
+            s: set = set()
+            for tb in f["cmap"].tables:
+                s |= set(tb.cmap.keys())
+            giao = s if giao is None else (giao & s)
+        if giao:
+            ket_qua = frozenset(giao)
+    except Exception:
+        ket_qua = None
+    _cmap_cache[font_name] = ket_qua
+    return ket_qua
+
+
+def _ghi_nhan_ky_tu_rui_ro(text: str) -> None:
+    """Gom ký tự có nguy cơ không hiển thị được, để cảnh báo một lần khi xuất xong."""
+    cmap = _font_cmap(_active_profile["font"])
+    for c in text:
+        if c in "\n\r\t":
+            continue
+        # Ký tự chỉ số Unicode sẽ được _add_text đổi thành run vertAlign in bằng
+        # chữ số ASCII, nên KHÔNG cảnh báo dù font thiếu glyph cho dạng dựng sẵn.
+        if c in _SUPERSCRIPT_MAP or c in _SUBSCRIPT_MAP:
+            continue
+        o = ord(c)
+        thieu = (o not in cmap) if cmap is not None else \
+                any(lo <= o <= hi for lo, hi in _RISKY_BLOCKS)
+        if thieu:
+            _glyph_canh_bao[c] = _glyph_canh_bao.get(c, 0) + 1
+# Chỉ số NHIỀU KÝ TỰ không có dạng Unicode (vd Z₁₋α/₂: α và "/" không tồn tại ở
+# khối chỉ số dưới) -> viết `Z_{1−α/2}` trong nguồn Markdown. Cú pháp `_{...}` và
+# `^{...}` theo quy ước LaTeX, ai đọc công thức thống kê cũng hiểu, và tránh được
+# cảnh nửa chỉ số nửa cỡ thường mà ký tự Unicode rời gây ra.
+_VERTALIGN_RE = re.compile(
+    r"(_\{[^{}]+\}|\^\{[^{}]+\}|"
+    "[" + "".join(_SUPERSCRIPT_MAP) + "]+|[" + "".join(_SUBSCRIPT_MAP) + "]+)"
+)
+
+
+def _font_safe(text: str) -> str:
+    """Thay ký tự không có glyph trong font đích bằng ký tự tương đương, rồi ghi
+    nhận ký tự rủi ro CÒN LẠI để cảnh báo khi xuất xong."""
+    for xau, thay in _GLYPH_SUBSTITUTE.items():
+        text = text.replace(xau, thay)
+    _ghi_nhan_ky_tu_rui_ro(text)
+    return text
+
+
+def _set_vert_align(run, kieu: str) -> None:
+    """Đặt w:vertAlign = superscript | subscript cho 1 run."""
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    rpr = run._element.get_or_add_rPr()
+    el = OxmlElement("w:vertAlign")
+    el.set(qn("w:val"), kieu)
+    rpr.append(el)
+
+
+def _add_text(paragraph, text, size=None, bold=False, italic=False, color=None):
+    """Thêm text vào paragraph, tự tách ký tự chỉ số trên/dưới thành run
+    vertAlign riêng. Thay cho cặp `_set_run_font(paragraph.add_run(text), ...)`
+    ở mọi nơi in văn bản người đọc nhìn thấy."""
+    text = _font_safe(text)
+    for phan in _VERTALIGN_RE.split(text):
+        if not phan:
+            continue
+        if phan.startswith("_{") and phan.endswith("}"):
+            run = paragraph.add_run(phan[2:-1])
+            _set_run_font(run, size, bold=bold, italic=italic, color=color)
+            _set_vert_align(run, "subscript")
+        elif phan.startswith("^{") and phan.endswith("}"):
+            run = paragraph.add_run(phan[2:-1])
+            _set_run_font(run, size, bold=bold, italic=italic, color=color)
+            _set_vert_align(run, "superscript")
+        elif phan[0] in _SUPERSCRIPT_MAP:
+            run = paragraph.add_run("".join(_SUPERSCRIPT_MAP[c] for c in phan))
+            _set_run_font(run, size, bold=bold, italic=italic, color=color)
+            _set_vert_align(run, "superscript")
+        elif phan[0] in _SUBSCRIPT_MAP:
+            run = paragraph.add_run("".join(_SUBSCRIPT_MAP[c] for c in phan))
+            _set_run_font(run, size, bold=bold, italic=italic, color=color)
+            _set_vert_align(run, "subscript")
+        else:
+            _set_run_font(paragraph.add_run(phan), size, bold=bold, italic=italic,
+                          color=color)
+
+
 def _set_run_font(run, size=None, bold=False, italic=False, color=None):
     """Ép font (kể cả eastAsia) cho 1 run — đọc từ _active_profile (vá 2026-07-15,
     xem resolve_journal_profile). size=None -> cỡ thân bài của hồ sơ đang áp.
@@ -304,14 +457,14 @@ def _add_inline_runs(paragraph, text, size=None, bold=False, italic=False):
         if not part:
             continue
         if part.startswith("**") and part.endswith("**") and len(part) > 4:
-            _set_run_font(paragraph.add_run(part[2:-2]), size, bold=True, italic=italic)
+            _add_text(paragraph, part[2:-2], size, bold=True, italic=italic)
         elif part.startswith("[") and part.endswith("]") and _looks_like_flag(part):
-            _set_run_font(paragraph.add_run(part), size, bold=True, italic=True,
-                         color=_flag_color(part))
+            _add_text(paragraph, part, size, bold=True, italic=True,
+                      color=_flag_color(part))
         elif part.startswith("*") and part.endswith("*") and len(part) > 2:
-            _set_run_font(paragraph.add_run(part[1:-1]), size, bold=bold, italic=True)
+            _add_text(paragraph, part[1:-1], size, bold=bold, italic=True)
         else:
-            _set_run_font(paragraph.add_run(part), size, bold=bold, italic=italic)
+            _add_text(paragraph, part, size, bold=bold, italic=italic)
 
 
 def _spacing(paragraph, before=0, after=8, line=1.5, align=None):
@@ -404,7 +557,7 @@ def _render_title_page(doc, tp: Dict):
     def line(text, size, bold=True, after=6, align=A.CENTER):
         p = doc.add_paragraph()
         _spacing(p, before=0, after=after, line=1.3, align=align)
-        _set_run_font(p.add_run(text), size, bold=bold)
+        _add_text(p, text, size, bold=bold)
 
     for org in tp.get("org_lines", []):
         line(org, 14)
@@ -442,7 +595,7 @@ def _insert_journal_verification_warning(doc, profile: Dict) -> None:
     )
     p = doc.add_paragraph()
     _spacing(p, before=0, after=14, line=1.3, align=A.JUSTIFY)
-    _set_run_font(p.add_run(msg), bold=True, italic=True, color=_FLAG_COLOR_URGENT)
+    _add_text(p, msg, bold=True, italic=True, color=_FLAG_COLOR_URGENT)
 
 
 def _init_document(title_page: Optional[Dict], profile: Optional[Dict] = None):
@@ -497,6 +650,7 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         _needs_verification_warning()), tài liệu xuất ra sẽ có thêm 1 đoạn cảnh
         báo đỏ/đậm "[CẦN XÁC MINH TRƯỚC KHI NỘP]" ngay đầu nội dung.
     """
+    _glyph_canh_bao.clear()
     from docx.enum.text import WD_ALIGN_PARAGRAPH as A
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
@@ -533,14 +687,14 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         if stripped.startswith("### "):
             p = doc.add_paragraph()
             _spacing(p, before=10, after=6, line=1.3)
-            _set_run_font(p.add_run(_strip_md(stripped[4:])), bold=True, italic=True)
+            _add_text(p, _strip_md(stripped[4:]), bold=True, italic=True)
             i += 1
             continue
 
         if stripped.startswith("## "):
             p = doc.add_paragraph()
             _spacing(p, before=14, after=8, line=1.3)
-            _set_run_font(p.add_run(_strip_md(stripped[3:])), 14, bold=True)
+            _add_text(p, _strip_md(stripped[3:]), 14, bold=True)
             i += 1
             continue
 
@@ -550,7 +704,7 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
             first_h1 = False
             p = doc.add_paragraph()
             _spacing(p, before=0, after=16, line=1.3, align=A.CENTER)
-            _set_run_font(p.add_run(_strip_md(stripped[2:])), 16, bold=True)
+            _add_text(p, _strip_md(stripped[2:]), 16, bold=True)
             i += 1
             continue
 
@@ -563,7 +717,7 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         if stripped.startswith("$$"):
             p = doc.add_paragraph()
             _spacing(p, before=6, after=6, line=1.3, align=A.CENTER)
-            _set_run_font(p.add_run(_clean_formula(stripped)), italic=True)
+            _add_text(p, _clean_formula(stripped), italic=True)
             i += 1
             continue
 
@@ -589,6 +743,15 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         i += 1
 
     doc.save(str(out_path))
+    if _glyph_canh_bao:
+        import sys
+        chi_tiet = ", ".join(f"{c!r} (U+{ord(c):04X}) x{n}"
+                             for c, n in sorted(_glyph_canh_bao.items(),
+                                                key=lambda kv: -kv[1]))
+        print(f"CẢNH BÁO: {out_path} còn ký tự có thể KHÔNG hiển thị được trong "
+              f"font có chân (Times New Roman thiếu glyph): {chi_tiet}. "
+              f"Bổ sung vào _GLYPH_SUBSTITUTE hoặc sửa nguồn Markdown.",
+              file=sys.stderr)
     return out_path
 
 
