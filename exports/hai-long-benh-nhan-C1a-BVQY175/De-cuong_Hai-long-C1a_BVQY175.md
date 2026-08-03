@@ -244,7 +244,7 @@ trong đó β = log(OR) trên mỗi đơn vị của *X*; Var(X) là phương sa
 
 **Kết quả tính.** Với α = 0,05 hai phía, power 80%, R² = 0,20 (VIF = 1,25), và ba giả định phân bố năm mức của G1 phủ dải lệch trần dự kiến:
 
-*Bảng 4.3. Tỷ số chênh nhỏ nhất phát hiện được cho mỗi 15 phút chờ thêm, ở n = 1000.*
+*Bảng 4.1. Tỷ số chênh nhỏ nhất phát hiện được cho mỗi 15 phút chờ thêm, ở n = 1000.*
 
 | Giả định phân bố G1 (mức 1→5) | 1 − Σpᵢ³ | SD chờ 20 phút | SD chờ 30 phút | SD chờ 40 phút |
 |---|---|---|---|---|
@@ -252,15 +252,15 @@ trong đó β = log(OR) trên mỗi đơn vị của *X*; Var(X) là phương sa
 | Lệch trần vừa — 2/5/18/45/30% | 0,876 | 1,147 | 1,096 | 1,071 |
 | Lệch trần nhẹ — 3/7/25/42/23% | 0,898 | 1,145 | 1,095 | 1,070 |
 
-*Bảng 4.4. Cỡ mẫu cần thiết theo tỷ số chênh tối thiểu đáng quan tâm (phân bố lệch trần mạnh, kịch bản bất lợi nhất trong ba kịch bản).*
+*Bảng 4.2. Cỡ mẫu cần thiết theo tỷ số chênh tối thiểu đáng quan tâm (phân bố lệch trần mạnh, kịch bản bất lợi nhất trong ba kịch bản). Mọi ô làm tròn LÊN theo quy ước cỡ mẫu.*
 
 | SD thời gian chờ | OR = 1,10 | OR = 1,15 | OR = 1,20 | OR = 1,25 |
 |---|---|---|---|---|
-| 20 phút | 2161 | 1005 | 590 | 394 |
-| 30 phút | 960 | 447 | 262 | 175 |
-| 40 phút | 540 | 251 | 148 | 99 |
+| 20 phút | 2161 | 1005 | 591 | 395 |
+| 30 phút | 961 | 447 | 263 | 176 |
+| 40 phút | 541 | 252 | 148 | 99 |
 
-**Đọc hai bảng này thế nào.** Ở n = 1000, nghiên cứu phát hiện được tỷ số chênh khoảng 1,07–1,15 cho mỗi 15 phút chờ thêm, tùy độ phân tán thực tế của thời gian chờ. Quy sang mức dễ hình dung hơn: với SD 30 phút, OR = 1,098 mỗi 15 phút tương đương OR ≈ 1,43 cho mỗi giờ chờ thêm. Đây là hiệu ứng nhỏ, tức n = 1000 dư sức cho Mục tiêu 2 dưới mọi kịch bản đã xét, trừ trường hợp thời gian chờ ít phân tán (SD ≤ 20 phút) *và* hiệu ứng thật dưới OR = 1,15 mỗi 15 phút. Kết luận này ngược với lo ngại thường gặp rằng cỡ mẫu ấn định theo Mục tiêu 1 sẽ thiếu cho Mục tiêu 2: ở đây ràng buộc chặt hơn nằm ở Mục tiêu 1 (độ chính xác ước lượng tỷ lệ), không phải Mục tiêu 2.
+**Đọc hai bảng này thế nào.** Ở n = 1000, nghiên cứu phát hiện được tỷ số chênh khoảng 1,07–1,15 cho mỗi 15 phút chờ thêm, tùy độ phân tán thực tế của thời gian chờ. Quy sang mức dễ hình dung hơn: với SD 30 phút, OR = 1,098 mỗi 15 phút tương đương OR ≈ 1,45 cho mỗi giờ chờ thêm (1,098⁴). Đây là hiệu ứng nhỏ, tức n = 1000 dư sức cho Mục tiêu 2 dưới mọi kịch bản đã xét, trừ trường hợp thời gian chờ ít phân tán (SD ≤ 20 phút) *và* hiệu ứng thật dưới OR = 1,15 mỗi 15 phút. Kết luận này ngược với lo ngại thường gặp rằng cỡ mẫu ấn định theo Mục tiêu 1 sẽ thiếu cho Mục tiêu 2: ở đây ràng buộc chặt hơn nằm ở Mục tiêu 1 (độ chính xác ước lượng tỷ lệ), không phải Mục tiêu 2.
 
 **Ba giới hạn của phép tính này, phải nêu khi trình Hội đồng.** (a) Ba phân bố G1 là giả định, chọn để phủ dải lệch trần theo y văn ngoại trú Việt Nam (73–85% hài lòng)[2] chứ không phải số liệu từ nghiên cứu thử của chính khoa; bảng cho thấy kết quả rất ít nhạy với lựa chọn này (1 − Σpᵢ³ chỉ dao động 0,844–0,898), nên đây không phải điểm yếu lớn. (b) SD của thời gian chờ tại Khoa C1a chưa biết; ba mốc 20/30/40 phút là dải khảo sát, và trị số thật cần lấy từ HIS ở buổi dry-run. Đây là tham số ảnh hưởng mạnh nhất tới kết quả. (c) Phép tính chưa tính hiệu ứng thiết kế do gom cụm theo bàn khám (mục 4.5.1, 4.10): với phơi nhiễm ở cấp cá thể như thời gian chờ, hệ số phóng đại nhỏ hơn nhiều so với ước lượng cấp cụm, nhưng không bằng 1. Ba mục này được thống kê viên xác nhận và ghi vào SAP trước khi khóa; con số cuối cùng đưa vào hồ sơ Hội đồng là con số thống kê viên chạy lại và ký, phép tính ở đây là bản nháp để rút ngắn công việc đó, không thay thế nó.
 
@@ -270,7 +270,7 @@ Cần ghi nhận hai giới hạn của cách làm cũ để không lặp lại:
 
 Kết cục nhị phân "hài lòng/chưa hài lòng" chỉ là kết cục thứ cấp/mô tả (mục 4.5.2). Trong trường hợp thực hiện hồi quy logistic nhị phân cho kết cục thứ cấp này, quy tắc áp dụng cũng là tối thiểu ~10 biến cố trên mỗi tham số (events-per-parameter ≥ 10).[14] Cần lưu ý một nghịch lý phương pháp: khi tỷ lệ hài lòng cao (theo y văn ngoại trú Việt Nam thường 73–85%),[2] nhóm "chưa hài lòng" nhỏ, khiến ràng buộc events-per-parameter trở nên chặt hơn. Với giả định tỷ lệ "chưa hài lòng" ≈ 15% (hài lòng ≈ 85%), mô hình khoảng 8–10 tham số cần khoảng 534–667 đối tượng; nếu hài lòng ≈ 90% (chưa hài lòng ≈ 10%) và mô hình khoảng 10 tham số thì cần khoảng 1000.
 
-**Kết luận về cỡ mẫu:** Với n phân tích mục tiêu là 1.000, nghiên cứu có độ chính xác tốt cho Mục tiêu 1 và dư lực thống kê cho Mục tiêu 2 (Bảng 4.3, 4.4). Đối với mô hình chính (logistic thứ tự trên outcome G1), số tham số được giới hạn theo danh mục biến định trước và tính khả thi thực tế, và điểm cần theo dõi là số quan sát ở mức ít gặp nhất của G1 (rà lại bằng dữ liệu mô tả thật ngay khi có). Đối với hồi quy logistic nhị phân thứ cấp, số tham số chỉ được xác định sau khi biết số trường hợp chưa hài lòng; nếu số biến cố không đủ, phân tích logistic đa biến sẽ không thực hiện hoặc sẽ rút gọn theo kế hoạch đã khóa.
+**Kết luận về cỡ mẫu:** Với n phân tích mục tiêu là 1.000, nghiên cứu có độ chính xác tốt cho Mục tiêu 1 và dư lực thống kê cho Mục tiêu 2 (Bảng 4.1, 4.2). Đối với mô hình chính (logistic thứ tự trên outcome G1), số tham số được giới hạn theo danh mục biến định trước và tính khả thi thực tế, và điểm cần theo dõi là số quan sát ở mức ít gặp nhất của G1 (rà lại bằng dữ liệu mô tả thật ngay khi có). Đối với hồi quy logistic nhị phân thứ cấp, số tham số chỉ được xác định sau khi biết số trường hợp chưa hài lòng; nếu số biến cố không đủ, phân tích logistic đa biến sẽ không thực hiện hoặc sẽ rút gọn theo kế hoạch đã khóa.
 
 **Về con số ±3,1% và điều kiện đi kèm.** Ở n = 1000, nửa rộng khoảng tin cậy 95% cho một tỷ lệ là ±3,1% khi p = 0,5. Con số này giả định lấy mẫu ngẫu nhiên đơn giản và các quan sát độc lập. Điều kiện thứ hai không đúng ở đây: mức hài lòng gom cụm theo bàn khám (mục 4.5.1). Với hệ số tương quan nội cụm ICC và cỡ cụm trung bình *m*, hiệu ứng thiết kế DE = 1 + (*m* − 1)·ICC làm cỡ mẫu hiệu dụng giảm còn n/DE:
 
@@ -284,7 +284,7 @@ Nghĩa là độ chính xác thật của Mục tiêu 1 nhiều khả năng nằ
 
 Bảng độ nhạy dưới đây minh họa các giả định chi phối cỡ mẫu để làm rõ vì sao n = 1000 là dư an toàn.
 
-*Bảng 4.1. Cỡ mẫu tối thiểu cho Mục tiêu 1 theo p và d (chưa bù không trả lời).*
+*Bảng 4.3. Cỡ mẫu tối thiểu cho Mục tiêu 1 theo p và d (chưa bù không trả lời).*
 
 | p (tỷ lệ hài lòng kỳ vọng) | d = 0,03 | d = 0,04 | d = 0,05 |
 |---|---|---|---|
@@ -293,7 +293,7 @@ Bảng độ nhạy dưới đây minh họa các giả định chi phối cỡ 
 | 0,85 (mục tiêu QĐ 56 đến 2025) | 545 | 307 | 196 |
 | 0,90 (mục tiêu QĐ 56 đến 2030) | 385 | 217 | 139 |
 
-*Bảng 4.2. Cỡ mẫu tối thiểu cho kết cục nhị phân thứ cấp (hồi quy logistic) theo số tham số của mô hình và tỷ lệ "chưa hài lòng" (10 biến cố/tham số).*
+*Bảng 4.4. Cỡ mẫu tối thiểu cho kết cục nhị phân thứ cấp (hồi quy logistic) theo số tham số của mô hình và tỷ lệ "chưa hài lòng" (10 biến cố/tham số).*
 
 | Tỷ lệ "chưa hài lòng" | 5 tham số | 8 tham số | 10 tham số | 12 tham số | 15 tham số |
 |---|---|---|---|---|---|
@@ -308,7 +308,7 @@ Toàn bộ tính toán được thực hiện bằng Python (scipy.stats, statsm
 
 Áp dụng chọn mẫu hệ thống PHÂN TẦNG (stratified systematic sampling) trên dòng người bệnh hoàn tất lượt khám tại Khoa C1a, phân tầng theo ngày trong tuần × khung giờ khám. Khoa có dòng người bệnh liên tục và có số thứ tự khám, tạo thành một khung mẫu động tự nhiên phù hợp với chọn mẫu hệ thống, đồng thời loại bỏ được nguồn sai lệch lớn nhất và khó kiểm soát nhất ở khảo sát hài lòng phòng khám, việc điều tra viên "tự chọn" đối tượng dễ tính.
 
-*Bảng 4.2b. Tham số quy đổi cỡ mẫu cần tiếp cận.*
+*Bảng 4.4b. Tham số quy đổi cỡ mẫu cần tiếp cận.*
 
 | Tham số | Giá trị |
 |---|---|
@@ -455,7 +455,7 @@ Bộ biến số của phiếu khảo sát không có ô tên, căn cước côn
 
 ### 4.6.1. Biến kết cục (phụ thuộc)
 
-*Bảng 4.3. Biến kết cục.*
+*Bảng 4.5. Biến kết cục.*
 
 | Tên biến | Nhãn | Loại đo | Cách đo/mã hóa |
 |---|---|---|---|
@@ -471,7 +471,7 @@ Các biến phái sinh (`A_Mean`…`F_Mean`, `SHLNBChung_TinhToan`, `SHLNBChung_
 
 ### 4.6.2. Biến độc lập (yếu tố liên quan – Mục tiêu 2)
 
-*Bảng 4.4. Biến độc lập.*
+*Bảng 4.6. Biến độc lập.*
 
 | Nhóm | Tên biến | Nhãn | Loại đo | Mã hóa/đơn vị |
 |---|---|---|---|---|
@@ -552,7 +552,7 @@ Như vậy chỉ nhân sự được ủy quyền của Phòng CNTT/QLCL bệnh 
 
 Khảo sát hài lòng đặc biệt dễ bị thiên kiến chiều lòng/mong muốn xã hội (social desirability bias) và thiên kiến lịch sự với người phục vụ (courtesy bias), làm điểm dồn về mức cao (ceiling effect), giảm phương sai và che giấu các điểm cần cải tiến.[20] Để kiểm soát, đề tài áp dụng cách thu thập tự điền ẩn danh kết hợp hòm phiếu kín, thay cho phỏng vấn mặt-đối-mặt bởi nhân viên khoa.
 
-*Bảng 4.5. Cơ chế kiểm soát thiên kiến chiều lòng.*
+*Bảng 4.7. Cơ chế kiểm soát thiên kiến chiều lòng.*
 
 | Cơ chế | Mô tả | Nhắm vào sai lệch |
 |---|---|---|
@@ -565,9 +565,9 @@ Khảo sát hài lòng đặc biệt dễ bị thiên kiến chiều lòng/mong 
 
 ## 4.8. Sai số và biện pháp khống chế sai số
 
-Ngoài cơ chế kiểm soát thiên kiến chiều lòng đã trình bày ở mục 4.7 (Bảng 4.5), các nhóm sai lệch khác của nghiên cứu và chiến lược kiểm soát tương ứng được tổng hợp trong Bảng 4.6 dưới đây.
+Ngoài cơ chế kiểm soát thiên kiến chiều lòng đã trình bày ở mục 4.7 (Bảng 4.7), các nhóm sai lệch khác của nghiên cứu và chiến lược kiểm soát tương ứng được tổng hợp trong Bảng 4.8 dưới đây.
 
-*Bảng 4.6. Các nhóm sai lệch khác và chiến lược kiểm soát.*
+*Bảng 4.8. Các nhóm sai lệch khác và chiến lược kiểm soát.*
 
 | Nhóm sai lệch | Biểu hiện trong đề tài | Chiến lược kiểm soát |
 |---|---|---|
@@ -954,12 +954,12 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 13. Whitehead J. Sample size calculations for ordered categorical data. Stat Med. 1993;12(24):2257-71. doi:10.1002/sim.4780122404. PMID: 8134732.
 14. Peduzzi P, Concato J, Kemper E, et al. A simulation study of the number of events per variable in logistic regression analysis. J Clin Epidemiol. 1996;49(12):1373-9. doi:10.1016/s0895-4356(96)00236-3. PMID: 8970487.
 15. van Smeden M, de Groot JAH, Moons KGM, et al. No rationale for 1 variable per 10 events criterion for binary logistic regression analysis. BMC Med Res Methodol. 2016;16(1):163. doi:10.1186/s12874-016-0267-3. PMID: 27881078.
-16. Green SB. How Many Subjects Does It Take To Do A Regression Analysis. Multivariate Behavioral Research. 1991;26(3):499-510. doi:10.1207/s15327906mbr2603_7. PMID: 26776715.
+16. Green SB. How Many Subjects Does It Take To Do A Regression Analysis. Multivariate Behav Res. 1991;26(3):499-510. doi:10.1207/s15327906mbr2603_7. PMID: 26776715.
 17. Polit DF, Beck CT, Owen SV. Is the CVI an acceptable indicator of content validity? Appraisal and recommendations. Res Nurs Health. 2007;30(4):459-67. doi:10.1002/nur.20199. PMID: 17654487.
 18. Mokkink LB, Terwee CB, Patrick DL, et al. The COSMIN study reached international consensus on taxonomy, terminology, and definitions of measurement properties for health-related patient-reported outcomes. J Clin Epidemiol. 2010;63(7):737-45. doi:10.1016/j.jclinepi.2010.02.006. PMID: 20494804.
 19. Terwee CB, Bot SD, de Boer MR, et al. Quality criteria were proposed for measurement properties of health status questionnaires. J Clin Epidemiol. 2006;60(1):34-42. doi:10.1016/j.jclinepi.2006.03.012. PMID: 17161752.
 20. Badejo MA, Ramtin S, Rossano A, et al. Does Adjusting for Social Desirability Reduce Ceiling Effects and Increase Variation of Patient-Reported Experience Measures?. J Patient Exp. 2022;9:23743735221079144. doi:10.1177/23743735221079144. PMID: 35155757.
-21. Bender R, Grouven U. Ordinal logistic regression in medical research. J R Coll Physicians Lond. 1997;31(5):546-551. PMID: 9429194.
+21. Bender R, Grouven U. Ordinal logistic regression in medical research. J R Coll Physicians Lond. 1997;31(5):546-51. PMID: 9429194.
 22. Heinze G, Schemper M. A solution to the problem of separation in logistic regression. Stat Med. 2002;21(16):2409-19. doi:10.1002/sim.1047. PMID: 12210625.
 23. Karahalios A, Baglietto L, Carlin JB, et al. A review of the reporting and handling of missing data in cohort studies with repeated assessment of exposure measures. BMC Med Res Methodol. 2012;12:96. doi:10.1186/1471-2288-12-96. PMID: 22784200.
 24. Rubin DB. Multiple Imputation for Nonresponse in Surveys. New York: John Wiley & Sons; 1987. doi:10.1002/9780470316696.
