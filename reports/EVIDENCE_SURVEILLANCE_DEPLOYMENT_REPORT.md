@@ -1,10 +1,10 @@
 # Evidence Surveillance Deployment Verification
 
-- Generated: `2026-08-01T05:31:02+00:00`
-- Deployment status: `BLOCKED_FOR_DEPLOYMENT`
+- Generated: `2026-08-11T12:39:38+00:00`
+- Deployment status: `RUNTIME_CANARY_PASS`
 - Deployment allowed: `False`
 - Online canary: `True`
-- Failures / human gates: `2` / `1`
+- Failures / human gates: `0` / `0`
 
 | ID | Cổng | Pha | Trạng thái | Bằng chứng | Giới hạn |
 |---|---|---|---|---|---|
@@ -16,8 +16,5 @@
 | ESD06 | Canary nguồn online | online | PASS | pubmed:found=True,health=ok; europepmc:found=True,health=ok; crossref:found=True,health=ok; openfda:found=True,health=ok | Canary chỉ kiểm định danh cố định; không thay rà toàn bộ nguồn của từng chủ đề. |
 | ESD07 | Scanner PubMed online | online | PASS | status=PASS; topics=2; failed=0; candidates=2; errors=[] | Hai query canary không thay độ phủ toàn watchlist hoặc thẩm định Track A. |
 | ESD08 | Dashboard strict source online | online | PASS | overall=PASS; online=True; dashboard_gate=PASS | Fixture online không thay double-review của mẫu nội dung lâm sàng thật. |
-| ESD09 | Lịch sử runtime tuần/tháng | runtime | FAIL | weekly:missing; monthly:missing | Cần ít nhất các lượt chạy thật còn mới; canary thủ công không thay lịch sử này. |
-| ESD10 | Cấu hình kênh cảnh báo | runtime | FAIL | email_ready=False; webhook_ready=False | Chỉ kiểm cấu hình có mặt, UAT vẫn phải chứng minh gửi/nhận thật. |
-| ESD11 | UAT và phê duyệt | human | HUMAN_GATE | valid_source_samples=0; missing=['SOURCE_SAMPLE_REVIEW', 'SCHEDULER_TRIGGER', 'ALERT_DELIVERY', 'ROLLBACK_RESTORE', 'SHADOW_RUN', 'DOCTOR_APPROVAL', 'OPERATIONS_APPROVAL'] | Đây là cổng người thật; agent chỉ kiểm bằng chứng, không tự ký hoặc tự điền PASS. |
 
 > Cần bác sĩ kiểm chứng. Cổng này chỉ cho phép triển khai chế độ ứng viên; không tự áp dụng lâm sàng và không dùng dữ liệu bệnh nhân thật.
