@@ -14,7 +14,28 @@ from dotenv import load_dotenv
 # Thư mục gốc của project (medical-ebm-automation/)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Nạp .env nếu có (không lỗi nếu thiếu)
+# Kho secrets NGOÀI OneDrive — nguồn ưu tiên, xem nguyên tắc secrets ở CLAUDE.md.
+#
+# VÌ SAO CẦN (vá 12/08/2026): trên Mac, `medical-ebm-automation/.env` là một
+# SYMLINK trỏ về đây. OneDrive đồng bộ symlink Unix sang Windows thành một file
+# text chứa đúng dòng đường dẫn macOS, nên trên Windows `load_dotenv` đọc ra rác
+# và KHÔNG nạp được biến nào. Hệ quả im lặng và nguy hiểm: `USE_MOCK_SOURCES` rơi
+# về mặc định True ⇒ mọi lời gọi nguồn y văn trả DỮ LIỆU GIẢ, còn `NCBI_EMAIL`
+# rỗng ⇒ không tra cứu RÚT BÀI thật được. Cảnh báo duy nhất lúc đó là một dòng
+# logger.info mà không ai thấy khi chạy routine.
+#
+# Đọc thẳng kho secrets nên KHÔNG cần symlink đi qua OneDrive nữa, và cùng một
+# đường dẫn (`~/.ebm-secrets/`) dùng được trên cả macOS lẫn Windows.
+#
+# Thứ tự nạp có chủ ý: biến môi trường THẬT (nếu đã đặt ở tầng OS/CI) luôn thắng,
+# rồi tới kho secrets, cuối cùng mới tới `.env` trong repo — vì `.env` chính là
+# file dễ bị OneDrive làm hỏng nhất. `load_dotenv` mặc định không ghi đè biến đã
+# có, nên chỉ cần nạp theo đúng thứ tự này.
+_SECRETS_ENV = Path.home() / ".ebm-secrets" / "medical-ebm-automation.env"
+if _SECRETS_ENV.exists():
+    load_dotenv(_SECRETS_ENV)
+
+# Nạp .env trong repo nếu có (không lỗi nếu thiếu; không ghi đè thứ đã nạp ở trên)
 load_dotenv(BASE_DIR / ".env")
 
 

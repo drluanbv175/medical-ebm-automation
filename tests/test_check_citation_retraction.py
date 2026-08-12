@@ -126,10 +126,33 @@ class TestParseRetractionXmlOffline:
         assert res["28698191"]["status"] == "ok"
         assert res["99999999"]["status"] == "unresolved"
 
-    def test_malformed_xml_returns_unresolved_not_crash(self):
+    def test_malformed_xml_returns_unknown_fetch_error_not_crash(self):
+        """XML hỏng = KHÔNG ĐỌC ĐƯỢC, không phải 'PubMed không có bản ghi'.
+
+        SỬA 12/08/2026: test này trước đây khoá hành vi trả "unresolved", mà theo
+        docstring của check_retraction_status(), "unresolved" nghĩa là PubMed không
+        có bản ghi cho PMID ⇒ NGHI TRÍCH DẪN MA. Gặp thật trên máy Windows: NCBI trả
+        trang chặn HTML thay vì XML, parse hỏng, và 18 PMID vừa được chính PubMed xác
+        minh là CÓ THẬT ở bước trước bị báo hàng loạt là "nghi trích dẫn ma". Báo động
+        giả kiểu này còn tệ hơn không kiểm, vì nó làm mất niềm tin vào cảnh báo thật.
+
+        Hai tình huống phải TÁCH BẠCH và test riêng:
+          • không đọc được phản hồi  → unknown_fetch_error (chưa biết gì)
+          • đọc được, PubMed không có bản ghi → unresolved (nghi trích dẫn ma)
+        Test ngay dưới (`test_pmid_not_in_response_marked_unresolved`) khoá vế thứ hai.
+        """
         res = PubMedClient._parse_retraction_xml("<not><valid", ["1"])
-        assert res["1"]["status"] == "unresolved"
+        assert res["1"]["status"] == "unknown_fetch_error"
         assert "reason" in res["1"]
+
+    def test_trang_chan_cua_ncbi_khong_bi_coi_la_trich_dan_ma(self):
+        """NCBI trả HTML 'Blocked Diagnostic' — phải nhận ra là bị chặn, không kết luận."""
+        html = ('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN">'
+                "<html><body><h1>NCBI - WWW Error Blocked Diagnostic</h1></body></html>")
+        res = PubMedClient._parse_retraction_xml(html, ["29405329", "38614110"])
+        for pmid in ("29405329", "38614110"):
+            assert res[pmid]["status"] == "unknown_fetch_error"
+            assert "CHẶN" in res[pmid]["reason"]
 
     def test_empty_pmid_list_returns_empty_dict(self):
         client = PubMedClient()

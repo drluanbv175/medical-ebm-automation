@@ -193,9 +193,16 @@ class PubMedClient(SourceClient):
                                       hoặc PublicationType="Retracted Publication"
           "expression_of_concern"  — RefType="ExpressionOfConcernIn" (cảnh báo nhẹ hơn)
           "ok"                     — tra được, không có tín hiệu trên
-          "unresolved"             — PubMed không trả bản ghi cho PMID này (nghi ma)
+          "unresolved"             — PubMed trả XML hợp lệ nhưng KHÔNG có bản ghi
+                                      cho PMID này (nghi trích dẫn ma)
           "unknown_mock_or_no_email" — KHÔNG tra cứu thật được (mock/thiếu NCBI_EMAIL/
                                       lỗi mạng) — PHẢI coi là CHƯA XÁC MINH, không phải "ok".
+          "unknown_fetch_error"    — gọi được nhưng KHÔNG đọc được phản hồi (mạng cắt
+                                      giữa chừng, NCBI trả trang chặn thay vì XML).
+                                      PHẢI coi là CHƯA XÁC MINH — KHÁC "unresolved":
+                                      ở đây ta không biết gì cả, không có cơ sở nghi
+                                      trích dẫn ma. Tách ra 12/08/2026 sau khi trạng
+                                      thái gộp gây báo động giả cho 18 PMID có thật.
         """
         if not pmids:
             return {}
@@ -227,11 +234,36 @@ class PubMedClient(SourceClient):
     @staticmethod
     def _parse_retraction_xml(xml_text: str, requested_pmids: List[str]) -> Dict[str, dict]:
         results: Dict[str, dict] = {}
+
+        # NCBI đôi lúc trả HTTP 200 kèm TRANG HTML "WWW Error Blocked Diagnostic"
+        # thay vì XML — hay gặp khi gọi nhiều từ một IP dùng chung (mạng bệnh viện)
+        # mà không có NCBI_API_KEY. Nhận ra sớm để nói đúng nguyên nhân và cách sửa,
+        # thay vì để nó rơi xuống nhánh "parse XML lỗi" mơ hồ (thêm 12/08/2026).
+        dau = (xml_text or "").lstrip()[:400].lower()
+        if dau.startswith("<!doctype html") or "blocked diagnostic" in dau:
+            logger.warning("[pubmed] NCBI trả trang CHẶN thay vì XML — cần NCBI_API_KEY")
+            return {pmid: {"status": "unknown_fetch_error",
+                           "reason": "NCBI đang CHẶN máy/IP này (WWW Error Blocked "
+                                     "Diagnostic). Đăng ký NCBI_API_KEY miễn phí và đặt "
+                                     "vào .env để nâng hạn mức; KHÔNG kết luận gì về PMID."}
+                    for pmid in requested_pmids}
+
         try:
             root = _safe_fromstring(xml_text)
         except (ET.ParseError, ValueError) as exc:
+            # SỬA 12/08/2026: trước đây trả "unresolved" — mà theo docstring của
+            # check_retraction_status(), "unresolved" nghĩa là PUBMED KHÔNG CÓ bản
+            # ghi cho PMID này, tức NGHI TRÍCH DẪN MA. Lỗi parse XML là chuyện hoàn
+            # toàn khác: response bị cắt giữa chừng do mạng chập chờn, hoặc NCBI trả
+            # trang chặn thay vì XML. Gộp hai thứ vào một status khiến công cụ gọi
+            # nó báo "nghi trích dẫn ma" cho CẢ 18 PMID vốn vừa được chính PubMed
+            # xác minh là có thật ở bước trước — báo động giả hàng loạt, và loại báo
+            # động này còn tệ hơn không kiểm vì nó làm người ta mất tin vào cảnh báo
+            # thật. Nay tách thành status riêng, và caller phải coi là CHƯA KIỂM.
             logger.warning("[pubmed] parse XML (retraction) lỗi/không an toàn: %s", exc)
-            return {pmid: {"status": "unresolved", "reason": f"parse XML lỗi: {exc}"}
+            return {pmid: {"status": "unknown_fetch_error",
+                           "reason": f"không đọc được phản hồi PubMed ({exc}) — "
+                                     f"KHÔNG kết luận gì về PMID này"}
                     for pmid in requested_pmids}
         found = set()
         for art in root.findall(".//PubmedArticle"):
