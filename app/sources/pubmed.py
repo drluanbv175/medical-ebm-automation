@@ -48,6 +48,64 @@ OBSERVATIONAL_FILTER = (
 )
 
 
+def _own_article_doi(art: ET.Element) -> Optional[str]:
+    """Lấy DOI CỦA CHÍNH BÀI trong một phần tử `<PubmedArticle>`.
+
+    ★ VÁ 2026-08-14 — TRẢ VỀ DOI CỦA BÀI KHÁC. Hai chỗ parse (`_parse_efetch`,
+    `_parse_metadata_xml`) trước đây dùng `art.findall(".//ArticleId")`: trục
+    `.//` quét TOÀN BỘ cây con nên với tới cả
+    `PubmedData/ReferenceList/Reference/ArticleIdList/ArticleId` — tức DOI của
+    những bài nằm trong DANH MỤC THAM KHẢO. Vòng lặp lại KHÔNG `break`, nên giá
+    trị bị GHI ĐÈ tới cuối và bên thắng cuộc là tài liệu tham khảo CUỐI CÙNG
+    (không phải cái đầu tiên như thoạt tưởng).
+
+    Đo thật trên PMID 30267080 (Choi và cs., "Risk of Hepatocellular Carcinoma
+    in Patients Treated With Entecavir vs Tenofovir…", JAMA Oncology 2019):
+    parser cũ trả `10.1159/000096313` — tiền tố 10.1159 là nhà xuất bản Karger,
+    thuộc tham khảo thứ 31 (PMID 17164558) — thay vì DOI thật
+    `10.1001/jamaoncol.2018.4070`. Quét 10 PMID có thật: 3 bài sai, và đều là
+    những bài PubMed có trả kèm `<ReferenceList>` chứa DOI. Đó là lý do lỗi ẩn
+    mình lâu: bản ghi không kèm ReferenceList vẫn cho DOI đúng.
+
+    Vì sao đáng sửa: DOI này chảy thẳng vào cổng A12
+    (`tools/check_citations.py`, `tools/check_citation_retraction.py`) để đối
+    chiếu Crossref. DOI của bài KHÁC làm việc đối chiếu báo "không khớp" trên
+    một trích dẫn lành — hoặc tệ hơn, khớp trót lọt với một bài không liên quan.
+    Báo động giả nặng hơn không kiểm (xem CLAUDE.md).
+
+    Chỉ đọc hai vị trí của CHÍNH bài, TUYỆT ĐỐI không dùng trục `.//`:
+      1) `PubmedData/ArticleIdList` — vị trí chuẩn của bộ định danh chính bài;
+      2) `MedlineCitation/Article/ELocationID[@EIdType="doi"]` — dự phòng cho
+         bản ghi thiếu (1); bỏ qua mục `ValidYN="N"` vì đó là DOI mà chính
+         PubMed đánh dấu SAI.
+    Lấy giá trị hợp lệ ĐẦU TIÊN rồi dừng — không để ghi đè như trước.
+    """
+    for el in art.findall("PubmedData/ArticleIdList/ArticleId"):
+        if el.get("IdType") == "doi":
+            value = (el.text or "").strip()
+            if value:
+                return value
+    for el in art.findall("MedlineCitation/Article/ELocationID"):
+        if el.get("EIdType") == "doi" and (el.get("ValidYN") or "Y").upper() != "N":
+            value = (el.text or "").strip()
+            if value:
+                return value
+    return None
+
+
+def _own_article_pmid(art: ET.Element) -> Optional[str]:
+    """Lấy PMID CỦA CHÍNH BÀI — cùng họ lỗi với `_own_article_doi()`.
+
+    `.//PMID` cũng chạm được `MedlineCitation/CommentsCorrectionsList/
+    CommentsCorrections/PMID` (PMID của thông báo rút bài, bài bình luận…).
+    Hiện `findtext` trả bản ghi ĐẦU TIÊN theo thứ tự tài liệu nên vẫn đúng —
+    `MedlineCitation/PMID` đứng trước — tức đây là siết phòng xa, KHÔNG phải
+    vá một lỗi đang xảy ra. Vẫn giữ `.//PMID` làm đường lui để không thể hồi
+    quy nếu gặp bản ghi có cấu trúc lạ.
+    """
+    return art.findtext("MedlineCitation/PMID") or art.findtext(".//PMID")
+
+
 class PubMedClient(SourceClient):
     name = "pubmed"
     endpoint = ESEARCH
@@ -148,17 +206,16 @@ class PubMedClient(SourceClient):
             logger.warning("[pubmed] parse XML lỗi/không an toàn: %s", exc)
             return records
         for art in root.findall(".//PubmedArticle"):
-            pmid = art.findtext(".//PMID")
+            pmid = _own_article_pmid(art)
             title = art.findtext(".//ArticleTitle") or ""
             abstract = " ".join(t.text or "" for t in art.findall(".//AbstractText"))
             journal = art.findtext(".//Journal/Title")
             year = art.findtext(".//PubDate/Year")
             pubtypes = [pt.text for pt in art.findall(".//PublicationType") if pt.text]
             mesh = [m.text for m in art.findall(".//MeshHeading/DescriptorName") if m.text]
-            doi = None
-            for el in art.findall(".//ArticleId"):
-                if el.get("IdType") == "doi":
-                    doi = el.text
+            # DOI của CHÍNH bài — KHÔNG quét `.//` để khỏi nhặt phải DOI trong
+            # danh mục tham khảo (xem `_own_article_doi`, vá 2026-08-14).
+            doi = _own_article_doi(art)
             authors = ", ".join(
                 f"{a.findtext('LastName') or ''} {a.findtext('Initials') or ''}".strip()
                 for a in art.findall(".//Author")[:5]
@@ -396,7 +453,7 @@ class PubMedClient(SourceClient):
                     for pmid in requested_pmids}
         found = set()
         for art in root.findall(".//PubmedArticle"):
-            pmid = art.findtext(".//PMID")
+            pmid = _own_article_pmid(art)
             if not pmid:
                 continue
             found.add(pmid)
@@ -404,10 +461,9 @@ class PubMedClient(SourceClient):
             journal = (art.findtext(".//Journal/Title") or "").strip()
             year = (art.findtext(".//PubDate/Year")
                     or art.findtext(".//PubDate/MedlineDate") or "").strip()
-            doi = None
-            for el in art.findall(".//ArticleId"):
-                if el.get("IdType") == "doi":
-                    doi = (el.text or "").strip() or None
+            # DOI của CHÍNH bài — KHÔNG quét `.//` để khỏi nhặt phải DOI trong
+            # danh mục tham khảo (xem `_own_article_doi`, vá 2026-08-14).
+            doi = _own_article_doi(art)
             authors = ", ".join(
                 f"{a.findtext('LastName') or ''} {a.findtext('Initials') or ''}".strip()
                 for a in art.findall(".//Author")[:5]
