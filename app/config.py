@@ -88,6 +88,44 @@ CLINICAL_AREAS: Dict[str, List[str]] = {
     "Cấp cứu ban đầu": ["anaphylaxis management", "sepsis early recognition"],
     "Tâm thần": ["major depressive disorder guideline", "generalized anxiety disorder",
                  "antidepressant treatment", "bipolar disorder management"],
+
+    # -----------------------------------------------------------------------
+    # QUÉT THEO TÊN TẠP CHÍ — thêm 13/08/2026
+    #
+    # VÌ SAO CÓ: 11 nhóm bên trên quét theo CHỦ ĐỀ (45 từ khoá). Một bài NEJM
+    # hay Lancet quan trọng về chủ đề NGOÀI 45 từ khoá đó sẽ không bao giờ được
+    # tìm thấy. Nhóm này đóng đúng khoảng trống ấy: quét theo TẠP CHÍ, bất kể
+    # chủ đề.
+    #
+    # VÌ SAO KHÔNG DÙNG RSS: đã kiểm thật ngày 13/08/2026 — cả 10 feed ứng viên
+    # đều bị chặn: Lancet 403 · Annals of Internal Medicine 403 · Cochrane 403 ·
+    # NICE 403 · CHEST 403 · USPSTF/Circulation/Diabetes Care/Blood 404. Nhà
+    # xuất bản chặn truy cập tự động. Cùng lý do mà feed hiệp hội tim mạch đã
+    # phải đi vòng qua PubMed từ trước.
+    #
+    # Cú pháp `[ta]` (journal title abbreviation) đã kiểm chạy thật trên PubMed.
+    # Lọc thêm theo publication type để chỉ lấy loại ĐỔI THỰC HÀNH, tránh kéo
+    # về toàn bộ mục lục tạp chí (thư bạn đọc, xã luận, tin ngắn).
+    # -----------------------------------------------------------------------
+    "Tạp chí hàng đầu": [
+        '"N Engl J Med"[ta] AND (guideline[pt] OR practice guideline[pt] OR '
+        'randomized controlled trial[pt] OR meta-analysis[pt])',
+        '"Lancet"[ta] AND (guideline[pt] OR practice guideline[pt] OR '
+        'randomized controlled trial[pt] OR meta-analysis[pt])',
+        '"JAMA"[ta] AND (guideline[pt] OR practice guideline[pt] OR '
+        'randomized controlled trial[pt] OR meta-analysis[pt])',
+        '"BMJ"[ta] AND (guideline[pt] OR practice guideline[pt] OR '
+        'randomized controlled trial[pt] OR meta-analysis[pt])',
+        '"Ann Intern Med"[ta] AND (guideline[pt] OR practice guideline[pt] OR '
+        'randomized controlled trial[pt] OR meta-analysis[pt])',
+    ],
+
+    # Nguồn tổng quan hệ thống và khuyến cáo chính thức mà RSS bị chặn.
+    "Tổng quan hệ thống & khuyến cáo": [
+        '"Cochrane Database Syst Rev"[ta]',
+        'NICE guidance[ti] OR "National Institute for Health and Care Excellence"[cn]',
+        '"US Preventive Services Task Force"[cn] AND recommendation[ti]',
+    ],
 }
 
 # Trọng số nguồn guideline chính thống (ảnh hưởng tới scoring).

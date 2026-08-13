@@ -8,6 +8,7 @@ dung vào safety_signal. Guideline: suy study_type từ tiêu đề (classify_me
 """
 from __future__ import annotations
 
+import re
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from email.utils import parsedate_to_datetime
@@ -23,6 +24,81 @@ from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+
+# --------------------------------------------------------------------------
+# Phân loại cảnh báo cơ quan quản lý — vá 13/08/2026
+#
+# VÌ SAO CÓ: feed `fda_recalls` là "FDA Recalls, Market Withdrawals & Safety
+# Alerts" — nó trả TOÀN BỘ thu hồi của FDA: thực phẩm, thiết bị y tế và thuốc.
+# Nhưng `_to_record()` gắn `clinical_area="An toàn thuốc"` cho CẢ FEED, nên báo
+# cáo An toàn thuốc hằng tuần bị lấp đầy bởi thu hồi salsa, phô mai chay, ớt
+# jalapeño, bột rau.
+#
+# Đo thật trên bản tin 13/08/2026: trong 40 mục "cảnh báo an toàn thuốc CHÍNH
+# THỨC mới" chỉ có 8 mục liên quan thuốc; 22 là thực phẩm, 12 là thiết bị. Cảnh
+# báo THẬT đáng đọc — "Domperidone: chống chỉ định mới ở u tuỷ thượng thận"
+# (MHRA) — bị chôn giữa các vụ thu hồi thực phẩm.
+#
+# Đây đúng lớp lỗi đã ghi thành bài học trong dự án: nhiễu làm người ta quen bỏ
+# qua, rồi bỏ sót cảnh báo thật.
+#
+# NGUYÊN TẮC AN TOÀN: khi KHÔNG CHẮC thì giữ là "thuoc". Bỏ sót một cảnh báo
+# thuốc nguy hiểm hơn nhiều so với để lọt một mục nhiễu — nên bộ lọc này cố ý
+# thiên về giữ lại, chỉ loại khi có dấu hiệu RÕ RÀNG là thực phẩm/thiết bị.
+#
+# Thiết bị và thực phẩm KHÔNG bị vứt bỏ: chúng vẫn được nạp và tra cứu được,
+# chỉ tách khỏi báo cáo An toàn thuốc. Bơm insulin rò rỉ vẫn liên quan trực
+# tiếp tới bệnh nhân đái tháo đường.
+# --------------------------------------------------------------------------
+
+NHAN_CANH_BAO = {
+    "thuoc": "An toàn thuốc",
+    "thiet_bi": "An toàn thiết bị y tế",
+    "thuc_pham": "Thu hồi thực phẩm",
+}
+
+# Đường dẫn là tín hiệu ĐÁNG TIN NHẤT — FDA tách sẵn theo mục.
+_URL_THIET_BI = re.compile(r"/medical-devices?/", re.I)
+_URL_THUOC = re.compile(r"/drug-safety-update/|/drugs/|/vaccines", re.I)
+
+# Chỉ những dấu hiệu RÕ RÀNG là thực phẩm. Cố ý KHÔNG bắt "recall" trần —
+# thuốc cũng bị thu hồi (vd Gas-X softgels).
+_TP = re.compile(
+    r"\b(undeclared (milk|egg|soy|peanut|wheat|allergen)|allergy alert|listeria|"
+    r"salmonella|e\.? ?coli|salsa|guacamole|pico de gallo|cheese|cheddar|yogurt|"
+    r"produce|jalapeno|pepper[s]? because|green powder|frozen|seafood|shellfish|"
+    r"ice cream|snack|cereal|infant formula|baby food|beverage|juice|"
+    # Thức ăn thú cưng và mỹ phẩm — FDA quản cả hai, nên chúng lọt vào feed
+    # recalls chung. Phát hiện thêm khi rà bản tin 13/08 (Oma's Pride Woof
+    # Complete = thức ăn chó; Schwarzkopf = thuốc nhuộm tóc).
+    r"pet food|dog food|cat food|treats for (dogs|cats)|raw pet|kibble|"
+    r"canine|feline|equine|veterinary|"
+    r"shampoo|conditioner|hair (color|dye|care)|cosmetic|lotion|deodorant|"
+    r"sunscreen|toothpaste|body wash)\b", re.I)
+
+_TB = re.compile(
+    r"\b(device|resuscitation system|anesthesia (delivery|kit)|breathing circuit|"
+    r"ankle replacement|catheter|convenience kit|carestation|ventilator|"
+    r"infusion (set|pump)|spinal tray|insulin pump|glucose monitor|pacemaker|"
+    r"stent|implant|surgical|endoscope|dialysis machine)\b", re.I)
+
+
+def phan_loai_canh_bao(tieu_de: str, url: str, tom_tat: str = "") -> str:
+    """Trả 'thuoc' | 'thiet_bi' | 'thuc_pham' cho một mục cảnh báo.
+
+    Thứ tự: đường dẫn (đáng tin nhất) → từ khoá tiêu đề → mặc định 'thuoc'.
+    """
+    if _URL_THUOC.search(url):
+        return "thuoc"
+    if _URL_THIET_BI.search(url):
+        return "thiet_bi"
+    van_ban = f"{tieu_de} {tom_tat[:400]}"
+    if _TB.search(van_ban):
+        return "thiet_bi"
+    if _TP.search(van_ban):
+        return "thuc_pham"
+    return "thuoc"          # fail-safe: không chắc thì giữ trong nhóm thuốc
 
 
 def _localname(tag: str) -> str:
@@ -126,14 +202,19 @@ class RSSFeedClient(SourceClient):
     def _to_record(self, title: str, url: Optional[str], pub_date: Optional[str],
                    summary: str) -> RawRecord:
         if self.feed.kind == "drug_safety":
+            # Phân loại TỪNG MỤC, không gắn nhãn cả feed (vá 13/08/2026).
+            loai = phan_loai_canh_bao(title, url or "", summary)
             return RawRecord(
-                source=self.name, source_type="drug_safety", title=title,
+                source=self.name,
+                source_type="drug_safety" if loai == "thuoc" else "safety_other",
+                title=title,
                 journal_or_organization=self.feed.org, publication_date=pub_date,
                 url=url, document_type="regulatory safety communication",
-                study_type="regulatory_alert", clinical_area="An toàn thuốc",
+                study_type="regulatory_alert", clinical_area=NHAN_CANH_BAO[loai],
                 safety_signal=(summary[:300] or title),
                 abstract=summary or None,
-                raw={"_feed": self.feed.id, "_org": self.feed.org},
+                raw={"_feed": self.feed.id, "_org": self.feed.org,
+                     "_phan_loai": loai},
                 ingest_query=f"feed:{self.feed.id}", api_endpoint=self.feed.url,
             )
         # guideline / nguồn chất lượng cao

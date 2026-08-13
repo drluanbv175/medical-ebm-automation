@@ -156,11 +156,20 @@ def match_authority_source(*parts: object) -> AuthoritySource | None:
     Với viết tắt dễ nhầm (WHO/ADA/ACC...), chỉ nên truyền journal/organization/source
     trước title để giảm dương tính giả. Hàm vẫn dùng ranh giới từ, không khớp trong từ dài.
     """
-    blobs = [_norm(part) for part in parts if str(part or "").strip()]
+    # VÁ 13/08/2026 — LỖI GIẢ ĐỊNH THEO VỊ TRÍ. Bản cũ lọc phần rỗng TRƯỚC rồi mới
+    # cắt `blobs[:2]`, nên khi một tham số giữa rỗng thì tham số sau TRƯỢT lên vị trí
+    # được coi là "primary". Ca thật đã đo: detect_official_org(journal="J Surg",
+    # authors=None, title="patients who underwent surgery") → authors bị lọc, TITLE
+    # trượt vào vị trí 2 ⇒ chữ "who" trong câu tiếng Anh khớp alias WHO ⇒ một bài
+    # thường bị phân loại là Tổ chức Y tế Thế giới, tức được NÂNG thành nguồn chính
+    # thức. Đúng loại dương tính giả mà lớp alias mơ hồ sinh ra để chặn.
+    # Sửa: giữ NGUYÊN vị trí (đệm chuỗi rỗng), rồi mới lấy 2 vị trí đầu.
+    raw = [_norm(part) if str(part or "").strip() else "" for part in parts]
+    blobs = [b for b in raw if b]
     if not blobs:
         return None
     combined = " | ".join(blobs)
-    primary_blob = " | ".join(blobs[:2])
+    primary_blob = " | ".join(b for b in raw[:2] if b)
     for source in TRUSTED_AUTHORITY_SOURCES:
         for alias in source.aliases:
             blob = primary_blob if alias.casefold() in _AMBIGUOUS_SHORT_ALIASES else combined
