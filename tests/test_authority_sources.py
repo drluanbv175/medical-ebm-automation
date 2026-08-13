@@ -4,7 +4,12 @@ from datetime import date
 
 from app.scoring import evidence_quality_score, practice_change_score, reliability_tier
 from app.services.filtering import classify
-from app.sources.authority import match_authority_source, trusted_source_names
+from app.sources.authority import (
+    assess_source_universe_coverage,
+    match_authority_source,
+    source_universe_report,
+    trusted_source_names,
+)
 from tools.verify_direct_clinical_practice_readiness import evaluate_card
 
 
@@ -92,3 +97,44 @@ def test_direct_readiness_accepts_authority_registry_source_but_keeps_doctor_gat
     assert "source_type_not_high_authority" not in result.blockers
     assert "missing_doctor_gate_evidence" in result.blockers
     assert result.status == "BLOCKED_FOR_DIRECT_USE"
+
+
+def test_source_universe_documents_all_required_evidence_layers():
+    report = source_universe_report()
+
+    assert "bibliographic_core" in report
+    assert "guideline_authority" in report
+    assert "trial_registries" in report
+    assert "drug_safety" in report
+    assert "retraction_and_integrity" in report
+    assert "pubmed" in report["bibliographic_core"]["sources"]
+    assert "clinicaltrials" in report["trial_registries"]["sources"]
+    assert "openfda" in report["drug_safety"]["sources"]
+
+
+def test_source_universe_coverage_separates_required_from_discovery_only():
+    coverage = assess_source_universe_coverage([
+        "pubmed",
+        "europepmc",
+        "crossref",
+        "openalex",
+        "guideline_feeds",
+        "nejm",
+        "clinicaltrials",
+        "openfda",
+        "pubmed_retraction",
+        "unpaywall",
+    ])
+
+    assert coverage["status"] == "PASS"
+    assert coverage["missing_required_layers"] == []
+    assert "trial_registries" in coverage["discovery_only_layers"]
+    assert coverage["layers"]["trial_registries"]["status"] == "PASS"
+
+
+def test_source_universe_coverage_fails_closed_without_guideline_and_safety_layers():
+    coverage = assess_source_universe_coverage(["pubmed", "europepmc", "crossref", "openalex"])
+
+    assert coverage["status"] == "PARTIAL"
+    assert "guideline_authority" in coverage["missing_required_layers"]
+    assert "drug_safety" in coverage["missing_required_layers"]

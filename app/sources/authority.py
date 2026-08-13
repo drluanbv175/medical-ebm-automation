@@ -21,6 +21,16 @@ class AuthoritySource:
     score_bonus: int
 
 
+@dataclass(frozen=True)
+class EvidenceSourceLayer:
+    layer_id: str
+    label: str
+    purpose: str
+    sources: tuple[str, ...]
+    minimum_live_sources: int
+    clinical_use: str  # source_of_record | crosscheck | discovery_only | safety
+
+
 TRUSTED_AUTHORITY_SOURCES: tuple[AuthoritySource, ...] = (
     # Synthesis / evidence bodies
     AuthoritySource("Cochrane", "synthesis", "S", ("cochrane", "cochrane database syst rev"), 6),
@@ -52,6 +62,77 @@ TRUSTED_AUTHORITY_SOURCES: tuple[AuthoritySource, ...] = (
     AuthoritySource("ASH/ISTH", "guideline_body", "A", ("ash", "isth", "american society of hematology", "international society on thrombosis"), 5),
     AuthoritySource("AGS", "guideline_body", "A", ("ags", "american geriatrics society", "beers criteria"), 5),
     AuthoritySource("ATS/ERS/BTS", "guideline_body", "A", ("ats", "ers", "bts", "american thoracic society", "european respiratory society", "british thoracic society", "thorax"), 5),
+)
+
+EVIDENCE_SOURCE_UNIVERSE: tuple[EvidenceSourceLayer, ...] = (
+    EvidenceSourceLayer(
+        "bibliographic_core",
+        "Bibliographic and identifier core",
+        "Find peer-reviewed biomedical records and cross-check PMID/DOI metadata.",
+        ("pubmed", "europepmc", "crossref", "openalex"),
+        3,
+        "crosscheck",
+    ),
+    EvidenceSourceLayer(
+        "guideline_authority",
+        "Guideline, HTA and official society sources",
+        "Find source-of-record recommendations, HTA decisions, and official statements.",
+        (
+            "guideline_feeds", "cochrane", "nice", "uspstf", "who", "cdc",
+            "acc_aha", "esc", "ada_easd", "kdigo", "gina", "gold", "idsa",
+            "eular_acr", "acg_aga_asge", "aasld_easl", "ash_isth", "ags",
+            "ats_ers_bts", "moh_vietnam",
+        ),
+        1,
+        "source_of_record",
+    ),
+    EvidenceSourceLayer(
+        "high_impact_journals",
+        "High-impact journal discovery",
+        "Detect practice-changing RCTs, reviews, and guideline publications in major journals.",
+        (
+            "nejm", "lancet", "jama", "bmj", "annals_internal_medicine",
+            "nature_medicine", "circulation", "jacc", "diabetes_care",
+            "kidney_international", "gut", "chest", "blood",
+        ),
+        1,
+        "crosscheck",
+    ),
+    EvidenceSourceLayer(
+        "trial_registries",
+        "Trial registry discovery",
+        "Find ongoing/completed trials and posted results; registry alone is not efficacy evidence.",
+        ("clinicaltrials", "who_ictrp", "eu_clinical_trials", "isrctn"),
+        1,
+        "discovery_only",
+    ),
+    EvidenceSourceLayer(
+        "drug_safety",
+        "Drug safety and pharmacovigilance",
+        "Find official safety alerts, label changes, recalls, and pharmacovigilance signals.",
+        (
+            "openfda", "feed_fda_medwatch", "feed_fda_recalls", "feed_mhra_dsu",
+            "ema_prac", "dailymed", "drugs_at_fda", "lactmed", "who_vigiaccess",
+        ),
+        1,
+        "safety",
+    ),
+    EvidenceSourceLayer(
+        "retraction_and_integrity",
+        "Retraction and publication integrity",
+        "Check whether cited papers are retracted, withdrawn, corrected, or expression-of-concern affected.",
+        ("pubmed_retraction", "crossmark", "publisher_page", "retraction_watch"),
+        1,
+        "crosscheck",
+    ),
+    EvidenceSourceLayer(
+        "full_text_and_citation_context",
+        "Full text and citation context",
+        "Find legal OA full text and citation context for appraisal, without replacing source-of-record checks.",
+        ("unpaywall", "semantic_scholar", "publisher_full_text", "pmc_full_text"),
+        1,
+        "discovery_only",
+    ),
 )
 
 _AMBIGUOUS_SHORT_ALIASES = {
@@ -98,6 +179,53 @@ def trusted_source_query_terms() -> list[str]:
     for source in TRUSTED_AUTHORITY_SOURCES:
         out.extend(alias for alias in source.aliases if len(alias) > 3)
     return sorted(set(out))
+
+
+def source_universe_names() -> list[str]:
+    names: list[str] = []
+    for layer in EVIDENCE_SOURCE_UNIVERSE:
+        names.extend(layer.sources)
+    return sorted(set(names))
+
+
+def source_universe_report() -> dict[str, dict[str, object]]:
+    return {
+        layer.layer_id: {
+            "label": layer.label,
+            "purpose": layer.purpose,
+            "sources": list(layer.sources),
+            "minimum_live_sources": layer.minimum_live_sources,
+            "clinical_use": layer.clinical_use,
+        }
+        for layer in EVIDENCE_SOURCE_UNIVERSE
+    }
+
+
+def assess_source_universe_coverage(healthy_sources: Iterable[str]) -> dict[str, object]:
+    healthy = {str(source or "").casefold() for source in healthy_sources}
+    layers: dict[str, dict[str, object]] = {}
+    missing_required_layers: list[str] = []
+    discovery_only_layers: list[str] = []
+    for layer in EVIDENCE_SOURCE_UNIVERSE:
+        matched = sorted(source for source in layer.sources if source.casefold() in healthy)
+        status = "PASS" if len(matched) >= layer.minimum_live_sources else "PARTIAL"
+        if status != "PASS" and layer.clinical_use in {"source_of_record", "crosscheck", "safety"}:
+            missing_required_layers.append(layer.layer_id)
+        if layer.clinical_use == "discovery_only":
+            discovery_only_layers.append(layer.layer_id)
+        layers[layer.layer_id] = {
+            "status": status,
+            "healthy": matched,
+            "expected": list(layer.sources),
+            "minimum_live_sources": layer.minimum_live_sources,
+            "clinical_use": layer.clinical_use,
+        }
+    return {
+        "status": "PASS" if not missing_required_layers else "PARTIAL",
+        "missing_required_layers": missing_required_layers,
+        "discovery_only_layers": discovery_only_layers,
+        "layers": layers,
+    }
 
 
 def authority_breakdown_for(parts: Iterable[object]) -> tuple[AuthoritySource | None, dict[str, float]]:

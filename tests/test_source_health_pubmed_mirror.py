@@ -28,6 +28,7 @@ def test_pubmed_outage_can_pass_when_europepmc_and_crossref_mirror_are_healthy()
     assert health["status"] == "PASS"
     assert health["degraded_required_sources"] == []
     assert health["mirror_notices"] == ["PUBMED_EUTILS_MIRRORED_BY_EUROPEPMC_AND_CROSSREF"]
+    assert health["source_universe"]["layers"]["bibliographic_core"]["status"] == "PARTIAL"
 
 
 def test_pubmed_outage_fails_without_required_mirror():
@@ -46,3 +47,28 @@ def test_pubmed_outage_fails_without_required_mirror():
     assert health["status"] == "FAIL"
     assert "pubmed" in health["degraded_required_sources"]
     assert "DISCOVERY_CORE_COVERAGE_INSUFFICIENT" in health["hard_fail_reasons"]
+
+
+def test_source_health_reports_broad_source_universe_when_layers_are_present():
+    health = summarize_source_health(
+        [
+            _log("pubmed", "ok", 10),
+            _log("europepmc", "ok", 10),
+            _log("crossref", "ok", 10),
+            _log("openalex", "ok", 10),
+            _log("feed_nejm_current", "ok", 2),
+            _log("feed_fda_medwatch", "ok", 2),
+            _log("feed_mhra_dsu", "ok", 2),
+            _log("clinicaltrials", "ok", 4),
+            _log("openfda", "ok", 3),
+        ],
+        expected_api_sources=["pubmed", "europepmc", "crossref", "openalex", "clinicaltrials"],
+        expected_feed_sources=["feed_nejm_current", "feed_fda_medwatch", "feed_mhra_dsu"],
+        safety_enabled=True,
+    )
+
+    universe = health["source_universe"]
+    assert universe["layers"]["bibliographic_core"]["status"] == "PASS"
+    assert universe["layers"]["guideline_authority"]["status"] == "PASS"
+    assert universe["layers"]["drug_safety"]["status"] == "PASS"
+    assert universe["layers"]["trial_registries"]["status"] == "PASS"

@@ -17,6 +17,7 @@ from app.config import CLINICAL_AREAS, settings
 from app.database import session_scope
 from app.models import SourceLog
 from app.sources import get_enabled_sources
+from app.sources.authority import assess_source_universe_coverage
 from app.sources.base import RawRecord
 from app.sources.openfda import OpenFDAClient
 from app.utils.logging_config import get_logger
@@ -116,6 +117,13 @@ def summarize_source_health(
         name for name in guideline_expected
         if source_rows.get(name, {}).get("health") in {"ok", "degraded"}
     ]
+    healthy_sources = [
+        name for name, item in source_rows.items()
+        if item.get("health") in {"ok", "degraded"}
+    ]
+    if any(name.startswith("feed_") for name in healthy_sources):
+        healthy_sources.append("guideline_feeds")
+    source_universe = assess_source_universe_coverage(healthy_sources)
 
     mock_sources = sorted(name for name, item in source_rows.items() if item["health"] == "mock")
     hard_fail_reasons: list[str] = []
@@ -172,6 +180,7 @@ def summarize_source_health(
         "discovery_core": {"expected": discovery_expected, "healthy": discovery_healthy},
         "safety": {"expected": sorted(safety_expected), "healthy": safety_healthy},
         "guideline": {"expected": guideline_expected, "healthy": guideline_healthy},
+        "source_universe": source_universe,
         "sources": source_rows,
     }
 
