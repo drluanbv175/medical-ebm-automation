@@ -43,15 +43,20 @@ class PubMedLiveAdapter(LiveSourceAdapter):
             return SourceMetadata(found=False, raw={"source_name": self.source_name, "reason": "pmid_required"})
         if not settings.ncbi_email:
             return _unavailable(self.source_name, "ncbi_email_required")
-        xml_text = self.http.get_text(
-            EFETCH,
-            params={"db": "pubmed", "id": pmid, "retmode": "xml", "email": settings.ncbi_email},
-        )
+        try:
+            xml_text = self.http.get_text(
+                EFETCH,
+                params={"db": "pubmed", "id": pmid, "retmode": "xml", "email": settings.ncbi_email},
+            )
+        except Exception:
+            return self._lookup_via_europepmc(pmid)
         title = (
             xml_text.split("<ArticleTitle>", 1)[1].split("</ArticleTitle>", 1)[0]
             if "<ArticleTitle>" in xml_text
             else ""
         )
+        if not title:
+            return self._lookup_via_europepmc(pmid)
         year = xml_text.split("<Year>", 1)[1].split("</Year>", 1)[0] if "<Year>" in xml_text else ""
         return SourceMetadata(
             found=bool(title),
@@ -59,6 +64,26 @@ class PubMedLiveAdapter(LiveSourceAdapter):
             year_or_version=year,
             source_type="article",
             raw={"source_name": self.source_name, "pmid": pmid},
+        )
+
+    def _lookup_via_europepmc(self, pmid: str) -> SourceMetadata:
+        data = self.http.get_json(
+            "https://www.ebi.ac.uk/europepmc/webservices/rest/search",
+            params={"query": f"EXT_ID:{pmid} AND SRC:MED", "format": "json", "pageSize": 1},
+        )
+        item = (data.get("resultList", {}).get("result") or [{}])[0]
+        return SourceMetadata(
+            found=bool(item.get("title")),
+            title=str(item.get("title") or ""),
+            authors_or_organization=str(item.get("authorString") or ""),
+            year_or_version=str(item.get("firstPublicationDate") or item.get("pubYear") or ""),
+            source_type=str(item.get("pubType") or "article"),
+            raw={
+                "source_name": self.source_name,
+                "pmid": pmid,
+                "fallback_source": "Europe PMC",
+                "fallback_reason": "NCBI_EFETCH_UNAVAILABLE_OR_UNPARSABLE",
+            },
         )
 
 

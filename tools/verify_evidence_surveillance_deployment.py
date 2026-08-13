@@ -63,6 +63,13 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _read_text_or_error(path: Path) -> tuple[str, str | None]:
+    try:
+        return path.read_text(encoding="utf-8", errors="ignore"), None
+    except OSError as exc:
+        return "", f"{path.name}:unreadable:{exc}"
+
+
 def _sanitize_local_paths(value: str) -> str:
     """Không ghi tên tài khoản hoặc đường dẫn máy cá nhân vào bằng chứng chia sẻ."""
     return value.replace(str(ROOT), "<WORKSPACE>").replace(str(Path.home()), "<HOME>")
@@ -114,11 +121,22 @@ def _check_tool_mirrors() -> Check:
         ROOT / "EBM-Dashboards" / "tools" / "surveillance_scan.py",
     ]
     missing = [str(path) for path in paths if not path.exists()]
-    hashes = {_sha256(path) for path in paths if path.exists()}
-    ok = not missing and len(hashes) == 1
+    unreadable: list[str] = []
+    hashes: set[str] = set()
+    for path in paths:
+        if not path.exists():
+            continue
+        try:
+            hashes.add(_sha256(path))
+        except OSError as exc:
+            unreadable.append(f"{path}: {exc}")
+    ok = not missing and not unreadable and len(hashes) == 1
     return Check(
         "ESD02", "Đồng bộ scanner skill/runtime", "static", PASS if ok else FAIL,
-        f"files={len(paths) - len(missing)}/3; hashes={len(hashes)}; missing={missing}",
+        (
+            f"files={len(paths) - len(missing)}/3; hashes={len(hashes)}; "
+            f"missing={missing}; unreadable={unreadable}"
+        ),
         "Hash đồng nhất không thay xác minh nguồn online.",
     )
 
@@ -138,7 +156,13 @@ def _check_runtime_code() -> Check:
     }
     missing: list[str] = []
     for path, markers in requirements.items():
-        text = path.read_text(encoding="utf-8", errors="ignore") if path.exists() else ""
+        if not path.exists():
+            missing.append(f"{path.name}:missing_file")
+            continue
+        text, error = _read_text_or_error(path)
+        if error:
+            missing.append(error)
+            continue
         missing.extend(f"{path.name}:{marker}" for marker in markers if marker not in text)
     return Check(
         "ESD03", "Runtime fail-closed", "static", PASS if not missing else FAIL,
@@ -420,7 +444,10 @@ def _check_uat(contract: dict, uat_path: Path) -> Check:
 
 
 def run_verification(*, online: bool, runtime_canary: bool, contract_check: bool, uat_path: Path) -> dict:
-    contract = _load_json(CONTRACT_PATH) if CONTRACT_PATH.exists() else {}
+    try:
+        contract = _load_json(CONTRACT_PATH) if CONTRACT_PATH.exists() else {}
+    except ValueError:
+        contract = {}
     checks = [
         _check_contract(),
         _check_tool_mirrors(),
@@ -526,6 +553,19 @@ def _write_atomic(path: Path, content: str) -> None:
             os.unlink(temp_name)
 
 
+def _print_json(report: dict) -> None:
+    text = json.dumps(report, ensure_ascii=False, indent=2)
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        stdout_buffer = getattr(sys.stdout, "buffer", None)
+        if stdout_buffer is None:
+            print(json.dumps(report, ensure_ascii=True, indent=2))
+        else:
+            stdout_buffer.write(text.encode("utf-8", errors="replace") + b"\n")
+            stdout_buffer.flush()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--online", action="store_true")
@@ -548,7 +588,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not args.no_write:
         _write_atomic(Path(args.out_json), json.dumps(report, ensure_ascii=False, indent=2) + "\n")
         _write_atomic(Path(args.out_md), markdown_report(report))
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    _print_json(report)
     if args.contract_check:
         return 0 if report["failure_count"] == 0 else 1
     if args.runtime_canary:

@@ -1,0 +1,5640 @@
+{
+  "kind": "direct_clinical_practice_readiness_report",
+  "generated_at": "2026-08-13T14:40:48",
+  "today": "2026-08-13",
+  "freshness_days": 90,
+  "system_status": "DIRECT_USE_QUEUE_READY_WITH_BLOCKED_APPLY_ITEMS",
+  "auto_apply_allowed": false,
+  "doctor_final_decision_required": true,
+  "total_cards": 1147,
+  "ready_for_physician_direct_use": 194,
+  "review_required": 749,
+  "blocked_apply_items": 204,
+  "ready_cards": [
+    {
+      "card_id": "EVID-2026-0002",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i (dapagliflozin) làm chậm tiến triển CKD — DAPA-CKD",
+      "source_date": "2020",
+      "review_date": "2026-06-09",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0003",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i (empagliflozin) làm chậm tiến triển CKD — EMPA-KIDNEY",
+      "source_date": "2023",
+      "review_date": "2026-06-09",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0006",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Kiểm soát đường huyết tích cực để dự phòng bệnh thần kinh",
+      "source_date": "2012",
+      "review_date": "2026-06-09",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0007",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thuốc đầu tay điều trị đau do bệnh đa dây thần kinh ĐTĐ (PDN)",
+      "source_date": "2022",
+      "review_date": "2026-06-09",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0008",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "So sánh đối đầu amitriptyline – duloxetine – pregabalin và phối hợp (OPTION-DM)",
+      "source_date": "2022",
+      "review_date": "2026-06-09",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0083",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Bộ ba ICS/LABA/LAMA một bình hít giảm đợt cấp và nhập viện (IMPACT)",
+      "source_date": "2018",
+      "review_date": "2026-06-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0130",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Nhắc qua tin nhắn SMS / app điện thoại (mobile health)",
+      "source_date": "2024",
+      "review_date": "2026-06-11",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0133",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Dược sĩ + mô hình IMB ở COPD/hen (kỹ thuật hít + tuân thủ)",
+      "source_date": "2020",
+      "review_date": "2026-06-11",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0149",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA / đột quỵ nhẹ — đánh giá khẩn, không trì hoãn",
+      "source_date": "2021",
+      "review_date": "2026-06-11",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0152",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Mục tiêu huyết áp <130/80 (dự phòng tiên phát) — Class 1",
+      "source_date": "2024",
+      "review_date": "2026-06-11",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0159",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "KHÔNG tầm soát hẹp ĐM cảnh ở người KHÔNG triệu chứng",
+      "source_date": "2021",
+      "review_date": "2026-06-11",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0160",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Kháng kết tập tiểu cầu + kiểm soát yếu tố nguy cơ = điều trị nội khoa tối ưu",
+      "source_date": "2023",
+      "review_date": "2026-06-11",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0167",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA / đột quỵ nhẹ: DAPT clopidogrel + aspirin khởi trị sớm 21 ngày",
+      "source_date": "2018",
+      "review_date": "2026-06-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0168",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Mở rộng cửa sổ DAPT tới 72 giờ (đột quỵ nhẹ/TIA xơ vữa) — INSPIRES",
+      "source_date": "2023",
+      "review_date": "2026-06-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0169",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Đột quỵ do RUNG NHĨ: khởi đầu kháng đông SỚM (≤4 ngày) là an toàn — OPTIMAS",
+      "source_date": "2024",
+      "review_date": "2026-06-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0170",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khẳng định bằng phân tích gộp dữ liệu cá thể — CATALYST",
+      "source_date": "2025",
+      "review_date": "2026-06-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0177",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Gói chăm sóc tích hợp INTERACT3 cải thiện kết cục chức năng",
+      "source_date": "2023",
+      "review_date": "2026-06-14",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0192",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Thang điểm MAGGIC — mô hình tiên lượng đa biến (mọi EF)",
+      "source_date": "2013",
+      "review_date": "2026-06-15",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0194",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "NT-proBNP/BNP là yếu tố tiên lượng độc lập mạnh (phân tích gộp 76 178 BN)",
+      "source_date": "2021",
+      "review_date": "2026-06-15",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0200",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Hẹp ĐM nội sọ có triệu chứng 70–99% — không stent thường quy, ưu tiên nội khoa tích cực",
+      "source_date": "2022",
+      "review_date": "2026-06-17",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0214",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Deprescribing BZD & PPI ở NCT: >50% là ứng viên",
+      "source_date": "2024",
+      "review_date": "2026-06-28",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0218",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SELECT — Semaglutide 2.4 mg giảm MACE 20% ở béo phì + CVD, không có T2DM",
+      "source_date": "2023",
+      "review_date": "2026-06-28",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0227",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Cường giáp → Rung nhĩ / Suy tim cung lượng cao",
+      "source_date": "2017",
+      "review_date": "2026-06-30",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0233",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Nguy cơ tim mạch ở RA cao hơn cả đái tháo đường typ 2",
+      "source_date": "2019",
+      "review_date": "2026-07-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0234",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Kiểm soát viêm (MTX/TNFi) giảm biến cố tim mạch; corticoid & NSAID làm tăng",
+      "source_date": "2015",
+      "review_date": "2026-07-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0240",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hướng dẫn HS Bắc Mỹ — Phần I: chẩn đoán, đánh giá & xử trí bổ trợ/thủ thuật",
+      "source_date": "2019",
+      "review_date": "2026-07-06",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0245",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "AAP 2017 — adrenaline cấp cứu ban đầu & khó khăn liều ở trẻ nhỏ <15kg",
+      "source_date": "2017",
+      "review_date": "2026-07-06",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0253",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Chẹn beta sau nhồi máu cơ tim ở bệnh nhân COPD — cohort an toàn",
+      "source_date": "2024",
+      "review_date": "2026-07-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0254",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Chẹn beta ở bệnh nhân HFrEF kèm COPD — giảm tử vong, không tăng đợt cấp nặng",
+      "source_date": "2025",
+      "review_date": "2026-07-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0255",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Chẹn beta chọn lọc tim không ảnh hưởng FEV1/đáp ứng giãn phế quản",
+      "source_date": "2005",
+      "review_date": "2026-07-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0259",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SUMMIT — an toàn tim mạch của ICS/LABA ở COPD nguy cơ tim mạch cao",
+      "source_date": "2016",
+      "review_date": "2026-07-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0260",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "LAMA hít và biến cố tim mạch — tín hiệu ban đầu đã được TIOSPIR giải quyết",
+      "source_date": "2008–2013",
+      "review_date": "2026-07-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0264",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Corticosteroid TOÀN THÂN trong đợt cấp COPD làm tăng rõ nguy cơ tăng đường huyết",
+      "source_date": "2014",
+      "review_date": "2026-07-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0267",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Lợi ích tim mạch-thận của SGLT2i KHÔNG đổi dù bệnh nhân có COPD (phân tích dưới nhóm định trước)",
+      "source_date": "2022–2023",
+      "review_date": "2026-07-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0268",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hội chứng chuyển hóa rất thường gặp ở bệnh nhân COPD (~37–46%)",
+      "source_date": "2025",
+      "review_date": "2026-07-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0275",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng THỨ PHÁT sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0276",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao đưa LDL-C <1,8 mmol/L sau đột quỵ xơ vữa",
+      "source_date": "2021",
+      "review_date": "2026-07-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0286",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Hẹp CÓ triệu chứng 70–99%: CEA có lợi giảm đột quỵ cùng bên",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0292",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA = cảnh báo đột quỵ: đánh giá khẩn, không cho về theo dõi đơn thuần",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0293",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng THỨ PHÁT sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0294",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao đưa LDL-C <1,8 mmol/L sau đột quỵ xơ vữa",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0300",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA = cảnh báo đột quỵ: đánh giá khẩn, không cho về theo dõi đơn thuần",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0301",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng THỨ PHÁT sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0302",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao đưa LDL-C <1,8 mmol/L sau đột quỵ xơ vữa",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0306",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "RAAS inhibitor (ACEi/ARB) + kiểm soát huyết áp — nền tảng",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0312",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "ATS 2025: Corticosteroid chỉ cho CAP NẶNG (nhập viện ICU)",
+      "source_date": "2025/2026",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0313",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EMPA-KIDNEY — Empagliflozin giảm tiến triển thận bất kể T2DM (HR 0.72)",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0315",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "FLOW — Semaglutide 1 mg/tuần: lần đầu GLP-1 RA có lợi ích thận trực tiếp ở CKD + T2DM (HR 0.76)",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0319",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "ACP NMA 2026: semaglutide & tirzepatide tốt nhất về giảm cân & kết cục",
+      "source_date": "2026",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0321",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "STOPP/START v3 (2023): 133 STOPP + 57 START criteria — tăng 67%",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0322",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA / đột quỵ nhẹ — đánh giá khẩn, không trì hoãn",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0323",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "DAPT ngắn hạn (aspirin + clopidogrel) cho đột quỵ nhẹ / TIA nguy cơ cao",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0324",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao, mục tiêu LDL <70 mg/dL",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0325",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Kháng đông đường uống cho rung nhĩ (DOAC ưu tiên)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0326",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Mục tiêu huyết áp <130/80 mmHg (dự phòng thứ phát)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0327",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Mục tiêu huyết áp <130/80 (dự phòng tiên phát) — Class 1",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0335",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024: Corticoid ngắn hạn làm cầu nối — KHÔNG điều trị dài hạn",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0336",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024: Treat-to-Target (T2T) — đo hoạt tính bệnh & điều chỉnh linh hoạt",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0338",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "MRA (spironolactone/eplerenone) — Double benefit trong HFrEF + PA: Trụ cột HF đồng thời điều trị đặc hiệu PA",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0347",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "MTX phối hợp glucocorticoid liều thấp NGẮN HẠN (bắc cầu)",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0359",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Kháng kết tập tiểu cầu + kiểm soát yếu tố nguy cơ = điều trị nội khoa tối ưu",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0361",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Hẹp CÓ triệu chứng 70–99%: CEA có lợi giảm đột quỵ cùng bên",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0367",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA = cảnh báo đột quỵ: đánh giá khẩn, không cho về theo dõi đơn thuần",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0368",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng THỨ PHÁT sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0369",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao đưa LDL-C <1,8 mmol/L sau đột quỵ xơ vữa",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0376",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA = cảnh báo đột quỵ: đánh giá khẩn, không cho về theo dõi đơn thuần",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0377",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng THỨ PHÁT sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0378",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao đưa LDL-C <1,8 mmol/L sau đột quỵ xơ vữa",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0384",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i (dapagliflozin) làm chậm tiến triển CKD — DAPA-CKD",
+      "source_date": "2020",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0386",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "RAAS inhibitor (ACEi/ARB) + kiểm soát huyết áp — nền tảng",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0388",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thuốc đầu tay điều trị đau do bệnh đa dây thần kinh ĐTĐ (PDN)",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0393",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Bộ ba ICS/LABA/LAMA một bình hít giảm đợt cấp và nhập viện (IMPACT)",
+      "source_date": "2018",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0395",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA / đột quỵ nhẹ — đánh giá khẩn, không trì hoãn",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0396",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "DAPT ngắn hạn (aspirin + clopidogrel) cho đột quỵ nhẹ / TIA nguy cơ cao",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0398",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao, mục tiêu LDL <70 mg/dL",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0399",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Kháng đông đường uống cho rung nhĩ (DOAC ưu tiên)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0400",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Mục tiêu huyết áp <130/80 (dự phòng tiên phát) — Class 1",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0406",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024: Corticoid ngắn hạn làm cầu nối — KHÔNG điều trị dài hạn",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0408",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "MTX phối hợp glucocorticoid liều thấp NGẮN HẠN (bắc cầu)",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0414",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Kháng kết tập tiểu cầu + kiểm soát yếu tố nguy cơ = điều trị nội khoa tối ưu",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0417",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Hẹp CÓ triệu chứng 70–99%: CEA có lợi giảm đột quỵ cùng bên",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0423",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA = cảnh báo đột quỵ: đánh giá khẩn, không cho về theo dõi đơn thuần",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0424",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng THỨ PHÁT sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0425",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao đưa LDL-C <1,8 mmol/L sau đột quỵ xơ vữa",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0433",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA = cảnh báo đột quỵ: đánh giá khẩn, không cho về theo dõi đơn thuần",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0434",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng THỨ PHÁT sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0435",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao đưa LDL-C <1,8 mmol/L sau đột quỵ xơ vữa",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0442",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thuốc đầu tay điều trị đau do bệnh đa dây thần kinh ĐTĐ (PDN)",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0445",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "ATS 2025: Corticosteroid chỉ cho CAP NẶNG (nhập viện ICU)",
+      "source_date": "2025/2026",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0447",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "FLOW — Semaglutide 1 mg/tuần: lần đầu GLP-1 RA có lợi ích thận trực tiếp ở CKD + T2DM (HR 0.76)",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0451",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "ACP NMA 2026: semaglutide & tirzepatide tốt nhất về giảm cân & kết cục",
+      "source_date": "2026",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0453",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "STOPP/START v3 (2023): 133 STOPP + 57 START criteria — tăng 67%",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0454",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA / đột quỵ nhẹ — đánh giá khẩn, không trì hoãn",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0455",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "DAPT ngắn hạn (aspirin + clopidogrel) cho đột quỵ nhẹ / TIA nguy cơ cao",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0456",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao, mục tiêu LDL <70 mg/dL",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0457",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Mục tiêu huyết áp <130/80 mmHg (dự phòng thứ phát)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0458",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Mục tiêu huyết áp <130/80 (dự phòng tiên phát) — Class 1",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0465",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024: Treat-to-Target (T2T) — đo hoạt tính bệnh & điều chỉnh linh hoạt",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0467",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "MRA (spironolactone/eplerenone) — Double benefit trong HFrEF + PA: Trụ cột HF đồng thời điều trị đặc hiệu PA",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0470",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "MTX phối hợp glucocorticoid liều thấp NGẮN HẠN (bắc cầu)",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0479",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Kháng kết tập tiểu cầu + kiểm soát yếu tố nguy cơ = điều trị nội khoa tối ưu",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0481",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Hẹp CÓ triệu chứng 70–99%: CEA có lợi giảm đột quỵ cùng bên",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0487",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA = cảnh báo đột quỵ: đánh giá khẩn, không cho về theo dõi đơn thuần",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0488",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng THỨ PHÁT sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0489",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao đưa LDL-C <1,8 mmol/L sau đột quỵ xơ vữa",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0496",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA = cảnh báo đột quỵ: đánh giá khẩn, không cho về theo dõi đơn thuần",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0497",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng THỨ PHÁT sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0498",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao đưa LDL-C <1,8 mmol/L sau đột quỵ xơ vữa",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0504",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i (dapagliflozin) làm chậm tiến triển CKD — DAPA-CKD",
+      "source_date": "2020",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0506",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "RAAS inhibitor (ACEi/ARB) + kiểm soát huyết áp — nền tảng",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0508",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thuốc đầu tay điều trị đau do bệnh đa dây thần kinh ĐTĐ (PDN)",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0513",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Bộ ba ICS/LABA/LAMA một bình hít giảm đợt cấp và nhập viện (IMPACT)",
+      "source_date": "2018",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0515",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TIA / đột quỵ nhẹ — đánh giá khẩn, không trì hoãn",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0516",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "DAPT ngắn hạn (aspirin + clopidogrel) cho đột quỵ nhẹ / TIA nguy cơ cao",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0518",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao, mục tiêu LDL <70 mg/dL",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0519",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Kháng đông đường uống cho rung nhĩ (DOAC ưu tiên)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0520",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Mục tiêu huyết áp <130/80 (dự phòng tiên phát) — Class 1",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0526",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024: Corticoid ngắn hạn làm cầu nối — KHÔNG điều trị dài hạn",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0528",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "MTX phối hợp glucocorticoid liều thấp NGẮN HẠN (bắc cầu)",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0542",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Methotrexate ở CKD: độc tính tăng ~2 lần, tăng theo mức giảm eGFR",
+      "source_date": "2023",
+      "review_date": "2026-07-14",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0544",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "RA làm tăng ~48% nguy cơ biến cố tim mạch",
+      "source_date": "2012",
+      "review_date": "2026-07-14",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0546",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Kiểm soát viêm đạt đích là can thiệp tim mạch; methotrexate là neo điều trị",
+      "source_date": "2023 (cập nhật 2022)",
+      "review_date": "2026-07-14",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0547",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Statin theo guideline dân số chung; LDL là đích (TRACE RA)",
+      "source_date": "2019",
+      "review_date": "2026-07-14",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0552",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TAF giảm độc tính xương/thận rõ rệt so với TDF (không thua kém về hiệu quả)",
+      "source_date": "2016",
+      "review_date": "2026-07-16",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0556",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Tầm soát HCC mỗi 6 tháng bằng siêu âm+AFP giảm tử vong 37%",
+      "source_date": "2004 (RCT nền tảng) / 2023 (guidance hiện hành)",
+      "review_date": "2026-07-16",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0557",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Tầm soát 3 tháng không cải thiện phát hiện HCC nhỏ so với 6 tháng",
+      "source_date": "2011",
+      "review_date": "2026-07-16",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0558",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "TDF/TAF từ tuần 28 dự phòng lây truyền mẹ-con khi DNA>200.000 IU/mL",
+      "source_date": "2025 / 2024",
+      "review_date": "2026-07-16",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0561",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Không điều trị trẻ em ở pha dung nạp miễn dịch",
+      "source_date": "—",
+      "review_date": "2026-07-16",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0566",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Xơ gan mất bù — điều trị ngay, vô thời hạn, bất kể ALT/DNA/HBeAg",
+      "source_date": "2018",
+      "review_date": "2026-07-16",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0570",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Tương tác TDF/TAF với ritonavir/cobicistat (booster ART)",
+      "source_date": "2013-2018",
+      "review_date": "2026-07-16",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0659",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Tương tác TDF/TAF với NSAID và thuốc độc thận khác",
+      "source_date": "2006 / 2013 / hiện hành",
+      "review_date": "2026-07-17",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0665",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2025 update: Corticoid ngắn hạn làm cầu nối — KHÔNG điều trị dài hạn",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-17",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0671",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "VKDT tăng nguy cơ tim mạch ~48% — cần đánh giá quản lý chủ động",
+      "source_date": "2012 / 2017",
+      "review_date": "2026-07-17",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0674",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Loãng xương ở VKDT: tăng nguy cơ gãy xương, dự phòng theo GIOP",
+      "source_date": "2018 / 2023 (bản 2022)",
+      "review_date": "2026-07-17",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0675",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Sàng lọc lao tiềm ẩn — IGRA ưu tiên hơn Mantoux ở bệnh nhân VKDT",
+      "source_date": "2022",
+      "review_date": "2026-07-17",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0676",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Sàng lọc và dự phòng tái hoạt viêm gan B trước b/tsDMARD — khuyến cáo phân tầng ACR 2021",
+      "source_date": "2021",
+      "review_date": "2026-07-17",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0680",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Cho con bú: thuốc tương thích khi đang điều trị VKDT",
+      "source_date": "2024 (đăng 2025)",
+      "review_date": "2026-07-17",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0681",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Tiêm chủng ở bệnh nhân dùng thuốc ức chế miễn dịch — nguyên tắc EULAR",
+      "source_date": "2019 (đăng 2020)",
+      "review_date": "2026-07-17",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0689",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Định nghĩa & phân loại suy tim theo EF (chuẩn thống nhất)",
+      "source_date": "2021",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0690",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thuật toán chẩn đoán HFpEF (HFA-PEFF)",
+      "source_date": "2019",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0691",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "ARNI ưu tiên hơn ACEi ở HFrEF (PARADIGM-HF)",
+      "source_date": "2014",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0692",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Chẹn beta giảm tử vong ở HFrEF (CIBIS-II)",
+      "source_date": "1999",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0693",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "MRA ở HFrEF triệu chứng nhẹ (EMPHASIS-HF)",
+      "source_date": "2011",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0694",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i ở HFrEF (DAPA-HF)",
+      "source_date": "2019",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0695",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khởi trị SONG SONG 4 trụ cột thay vì tuần tự",
+      "source_date": "2021",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0699",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i ở HFpEF (EMPEROR-Preserved)",
+      "source_date": "2021",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0700",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i giảm biến cố toàn phổ EF (phân tích gộp 5 RCT)",
+      "source_date": "2022",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0708",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Chẹn beta chọn lọc AN TOÀN ở COPD (Cochrane)",
+      "source_date": "2005",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0709",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Điều trị nền 4 trụ cột (ARNI + chẹn beta + MRA + SGLT2i) — đòn bẩy tiên lượng lớn nhất ở HFrEF",
+      "source_date": "2020",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0710",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "ESC 2023 Focused Update — SGLT2i loại I cho mọi kiểu hình EF (HFpEF không còn",
+      "source_date": "2023",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0711",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "MAGGIC risk score — công cụ tiên lượng kiểm định rộng nhất (AUC 0,84 dự báo tử vong 1 năm)",
+      "source_date": "2022",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0716",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "AHA/ACC/HFSA 2022 — khung giai đoạn A–D & GDMT (guideline Hoa Kỳ tham chiếu)",
+      "source_date": "2022",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0725",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Sumatriptan cắt cơn migraine cấp (Cochrane SR)",
+      "source_date": "2014",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0726",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Zolmitriptan cắt cơn migraine cấp (Cochrane SR)",
+      "source_date": "2014",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0727",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Ibuprofen cắt cơn migraine cấp (Cochrane SR)",
+      "source_date": "2013",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0728",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Kết hợp Sumatriptan+Naproxen cắt cơn migraine",
+      "source_date": "2007",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0731",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dự phòng migraine nhóm cổ điển (AAN)",
+      "source_date": "2012",
+      "review_date": "2026-07-18",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0752",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "AGS Beers Criteria 2023: danh mục thuốc cần tránh ở NCT (≥65 tuổi)",
+      "source_date": "2023",
+      "review_date": "2026-07-23",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0754",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2025 update: Treat-to-Target (T2T) — đo hoạt tính bệnh & điều chỉnh linh hoạt",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-23",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0755",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Thận trọng JAK inhibitor: tăng MACE, huyết khối, ung thư ở nhóm nguy cơ",
+      "source_date": "2022",
+      "review_date": "2026-07-23",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0756",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i ở suy tim kèm bệnh thận mạn (EMPA-KIDNEY)",
+      "source_date": "2023",
+      "review_date": "2026-07-23",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0762",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Nguy cơ tim mạch ở VKDT cao hơn cả đái tháo đường typ 2",
+      "source_date": "2019",
+      "review_date": "2026-07-23",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0763",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Kiểm soát viêm giảm biến cố tim mạch; corticoid & NSAID làm tăng",
+      "source_date": "2015",
+      "review_date": "2026-07-23",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0764",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Statin theo nguy cơ tim mạch tổng thể; LDL là đích điều trị (TRACE RA)",
+      "source_date": "2019",
+      "review_date": "2026-07-23",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0775",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "ROSIER — sàng lọc đột quỵ tại cấp cứu, phân biệt giả đột quỵ",
+      "source_date": "2005",
+      "review_date": "2026-07-24",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0779",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung dự phòng thứ phát tổng quát sau đột quỵ/TIA (nền tảng)",
+      "source_date": "2021",
+      "review_date": "2026-07-24",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0780",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao bất kể LDL nền — GRADE Evidence-to-Decision",
+      "source_date": "2020",
+      "review_date": "2026-07-24",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0781",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "DAPT ngắn hạn (aspirin+clopidogrel) cho đột quỵ nhẹ/TIA nguy cơ cao (POINT)",
+      "source_date": "2018",
+      "review_date": "2026-07-24",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0783",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "CHA₂DS₂-VASc — chỉ định kháng đông dự phòng đột quỵ trong rung nhĩ",
+      "source_date": "2010",
+      "review_date": "2026-07-24",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0784",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "HAS-BLED — rà yếu tố chảy máu sửa được, KHÔNG loại trừ kháng đông",
+      "source_date": "2010",
+      "review_date": "2026-07-24",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0786",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "VKA bắt buộc thay DOAC ở van tim cơ học (RE-ALIGN)",
+      "source_date": "2013",
+      "review_date": "2026-07-24",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0794",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Huyết khối tĩnh mạch não — chẩn đoán và kháng đông (chủ đề trước đây chưa có trong bản hợp nhất)",
+      "source_date": "2017",
+      "review_date": "2026-07-24",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0809",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Empagliflozin giảm tử vong tim mạch/nhập viện ở HFrEF — EMPEROR-Reduced",
+      "source_date": "2020",
+      "review_date": "2026-08-04",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0810",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Empagliflozin có lợi ở suy tim phân suất tống máu BẢO TỒN — EMPEROR-Preserved",
+      "source_date": "2021",
+      "review_date": "2026-08-04",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0811",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dapagliflozin có lợi ở HFmrEF và HFpEF — DELIVER",
+      "source_date": "2022",
+      "review_date": "2026-08-04",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0843",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thiếu máu thiếu sắt chưa rõ nguyên nhân - bắt buộc soi tiêu hóa hai chiều ở nhóm nguy cơ",
+      "source_date": "2021",
+      "review_date": "2026-08-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0849",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Ngưỡng truyền máu hạn chế 7-8 g/dL là chuẩn cho hầu hết bệnh cảnh",
+      "source_date": "2021",
+      "review_date": "2026-08-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0852",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Việt Nam - phải nghĩ tới thalassemia trước khi kết luận thiếu sắt",
+      "source_date": "2022",
+      "review_date": "2026-08-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0857",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Đa hồng cầu thật - giữ hematocrit dưới 45% làm giảm rõ tử vong tim mạch và huyết khối",
+      "source_date": "2013",
+      "review_date": "2026-08-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0858",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Đa hồng cầu thật - aspirin liều thấp cho mọi bệnh nhân không chống chỉ định",
+      "source_date": "2004",
+      "review_date": "2026-08-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0859",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Phân tầng nguy cơ đa hồng cầu thật và chỉ định thuốc giảm tế bào",
+      "source_date": "2024 (xuất bản trực tuyến 2023)",
+      "review_date": "2026-08-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0864",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Đa hồng cầu KHÔNG có đột biến JAK2 - KHÔNG dùng thuốc giảm tế bào",
+      "source_date": "2026 (xuất bản trực tuyến 2025-10-22)",
+      "review_date": "2026-08-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0865",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Đa hồng cầu do THUỐC - testosterone, thuốc ức chế SGLT2 và thuốc kích thích tạo hồng cầu",
+      "source_date": "2026 (xuất bản trực tuyến 2025-10-22)",
+      "review_date": "2026-08-05",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0878",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Chẹn beta ở người suy tim phân suất tống máu giảm KÈM COPD — dùng theo chỉ định tim mạch chuẩn",
+      "source_date": "2025",
+      "review_date": "2026-08-10",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0943",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "① KHÔNG có đường dùng, liều hay thời gian nào loại trừ được nguy cơ — tiêm nội khớp cao nhất (52,2%), đường hít vẫn 6,8%",
+      "source_date": "2015",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0948",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "① Thuốc ức chế điểm kiểm soát miễn dịch: viêm tuyến yên tăng gấp 2,2 lần khi phối hợp — nhưng dữ liệu về suy thượng thận NGUYÊN PHÁT quá ít để kết luận",
+      "source_date": "2018",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0950",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "② Đái tháo đường KÈM bệnh Addison: nguy cơ tử vong cao gấp 3,89 lần người đái tháo đường đơn thuần — chết nhiều vì NHIỄM TRÙNG",
+      "source_date": "2017",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0951",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "② Hội chứng đa tuyến tự miễn quyết định tiên lượng: tử vong gấp 4,6 lần ở típ 1 so với 2,1 lần ở típ 2",
+      "source_date": "2008",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0957",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "④ Cơn suy thượng thận vẫn xảy ra 8,3 lần/100 bệnh nhân-năm DÙ ĐÃ được giáo dục — khoảng 6% số cơn dẫn tới tử vong",
+      "source_date": "2015",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0998",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Vận động là khuyến cáo MẠNH duy nhất của ACR 2022 — 27 khuyến cáo còn lại đều chỉ ở mức có điều kiện",
+      "source_date": "2023",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0999",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR: đau lan toả còn dai dẳng dù đã kiểm soát viêm tốt KHÔNG phải chỉ định leo thang thuốc",
+      "source_date": "2018",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1000",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Vận động giảm mệt mỏi ở mức tương đương thuốc sinh học — và Cochrane KHÔNG tìm thấy tác hại nào",
+      "source_date": "2013",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1038",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Diệt H. pylori LÀM GIẢM ung thư dạ dày và tử vong do ung thư dạ dày",
+      "source_date": "2020",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1096",
+      "status": "READY_FOR_PHYSICIAN_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "DỰ PHÒNG TÁI HOẠT HBV, SAU GHÉP GAN và các nhóm đặc biệt khác — phần EASL 2025 bao phủ mà AASLD 2025 không",
+      "source_date": "2025",
+      "review_date": "2026-08-12",
+      "blockers": [],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    }
+  ],
+  "blocked_apply_cards": [
+    {
+      "card_id": "EVID-2026-0001",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Chẩn đoán & phân giai đoạn CKD (eGFR + albumin niệu)",
+      "source_date": "2024",
+      "review_date": "2026-06-09",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0004",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Finerenone ở CKD do ĐTĐ type 2 — FIDELIO-DKD",
+      "source_date": "2020",
+      "review_date": "2026-06-09",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0005",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Tầm soát & chẩn đoán bệnh thần kinh ngoại biên đối xứng xa (DSPN)",
+      "source_date": "2026",
+      "review_date": "2026-06-09",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0074",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Finerenone ở suy tim LVEF ≥40% (HFmrEF/HFpEF) — FINEARTS-HF",
+      "source_date": "2024",
+      "review_date": "2026-06-09",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0075",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Semaglutide ở ĐTĐ type 2 có bệnh thận mạn — FLOW",
+      "source_date": "2024",
+      "review_date": "2026-06-09",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0077",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "AGS Beers 2023 — rà soát thuốc nên tránh ở người cao tuổi",
+      "source_date": "2023",
+      "review_date": "2026-06-09",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0078",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "STOPP/START phiên bản 3 — rà soát kê đơn ở người cao tuổi",
+      "source_date": "2023",
+      "review_date": "2026-06-09",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0088",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Phục hồi chức năng hô hấp sau đợt cấp giảm tái nhập viện",
+      "source_date": "2016",
+      "review_date": "2026-06-10",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0092",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Trị liệu lỗi phát âm tồn dư ở thiếu niên & người lớn — tổng quan hệ thống",
+      "source_date": "2023",
+      "review_date": "2026-06-10",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0093",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Trị liệu cấu âm trực tiếp cường độ cao (BArT) cải thiện độ rõ lời nói — RCT",
+      "source_date": "2021",
+      "review_date": "2026-06-10",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0131",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Can thiệp do dược sĩ dẫn dắt ở người cao tuổi",
+      "source_date": "2021",
+      "review_date": "2026-06-11",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0132",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Đơn giản hóa phác đồ — viên phối hợp liều cố định (polypill)",
+      "source_date": "2024",
+      "review_date": "2026-06-11",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0153",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hẹp ĐM cảnh CÓ triệu chứng 50–99% — tái thông sớm, CEA ưu tiên",
+      "source_date": "2021–2023",
+      "review_date": "2026-06-11",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0185",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Methotrexate là thuốc nền tảng (anchor), khởi đầu sớm",
+      "source_date": "2021",
+      "review_date": "2026-06-11",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0187",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Tiêu sợi huyết tĩnh mạch & lấy huyết khối — khung cửa sổ thời gian",
+      "source_date": "2019",
+      "review_date": "2026-06-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0165",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Tenecteplase 0,25 mg/kg — tương đương/ưu tiên hơn alteplase (tiện dùng)",
+      "source_date": "2024",
+      "review_date": "2026-06-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0166",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Lấy huyết khối cơ học cho NHỒI MÁU LÕI LỚN (mở rộng chỉ định)",
+      "source_date": "2023",
+      "review_date": "2026-06-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0171",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Tìm nguyên nhân: cụm xét nghiệm năng suất cao cho ĐDTK đối xứng ngọn chi",
+      "source_date": "2009",
+      "review_date": "2026-06-13",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0172",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Duloxetine 60 mg — hiệu quả định lượng (NNT)",
+      "source_date": "2014",
+      "review_date": "2026-06-13",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0176",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung xử trí ICH tự phát — hướng dẫn cập nhật nhất",
+      "source_date": "2022",
+      "review_date": "2026-06-14",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0178",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hạ HA trong ICH cấp: mục tiêu ~130–140 mmHg, tránh hạ quá mạnh",
+      "source_date": "2016",
+      "review_date": "2026-06-14",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0182",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SAH do phình mạch: xử lý phình SỚM + nimodipine uống",
+      "source_date": "2023",
+      "review_date": "2026-06-14",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0189",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "NP & biến số lâm sàng để phân tầng tiên lượng (ESC 2021)",
+      "source_date": "2021",
+      "review_date": "2026-06-15",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0190",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dùng thang điểm nguy cơ đã thẩm định + biomarker để ước tính tiên lượng (ACC/AHA/HFSA 2022)",
+      "source_date": "2022",
+      "review_date": "2026-06-15",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0191",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Lên liều nhanh GDMT + theo dõi sát sau xuất viện cải thiện tiên lượng (ESC 2023 Focused Update)",
+      "source_date": "2023",
+      "review_date": "2026-06-15",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0196",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Tiên lượng CÓ THỂ CẢI THIỆN — lên liều nhanh GDMT sau xuất viện (STRONG-HF)",
+      "source_date": "2022",
+      "review_date": "2026-06-15",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0213",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Umbrella review 2026: Pharmacist-led + multidisciplinary review giảm thuốc bất hợp lý & té ngã",
+      "source_date": "2026",
+      "review_date": "2026-06-28",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0216",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024 RA: MTX là anchor drug + Treat-to-Target làm nền",
+      "source_date": "2024",
+      "review_date": "2026-06-28",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0217",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Phân giai đoạn CKM (AHA 2023) — Khung chẩn đoán và phân tầng chiến lược",
+      "source_date": "2023",
+      "review_date": "2026-06-28",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0220",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "KDIGO 2022 — Khuyến cáo Mạnh: SGLT2i cho CKD với hoặc không có T2DM (eGFR ≥ 20)",
+      "source_date": "2022",
+      "review_date": "2026-06-28",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0228",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Suy giáp → Cơ tim bệnh giãn (Hypothyroid DCM) — REVERSIBLE với Levothyroxine",
+      "source_date": "2012",
+      "review_date": "2026-06-30",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0229",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Cường aldosteron nguyên phát (PA) — Sàng lọc ARR bắt buộc: THA kháng trị / THA + hạ K",
+      "source_date": "2016",
+      "review_date": "2026-06-30",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0230",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "low",
+      "topic": "Suy thượng thận (AI) — Nhận biết tại ngoại trú; Khủng hoảng = Cấp cứu tuyệt đối",
+      "source_date": "2016",
+      "review_date": "2026-06-30",
+      "blockers": [
+        "grade_not_direct_ready:low",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0231",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "U tủy thượng thận/paraganglioma (PPGL) — Tam chứng + Metanephrines + α-BLOCKER TRƯỚC β-blocker (tuyệt đối)",
+      "source_date": "2014",
+      "review_date": "2026-06-30",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0232",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "RA/viêm khớp viêm có nguy cơ tim mạch tăng — cần đánh giá & quản lý nguy cơ CV chủ động",
+      "source_date": "2017",
+      "review_date": "2026-07-05",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0241",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hướng dẫn HS Bắc Mỹ — Phần II: xử trí y khoa theo bậc (kháng sinh → nội tiết → sinh học)",
+      "source_date": "2019",
+      "review_date": "2026-07-06",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0242",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hướng dẫn HS Australasian 2024/2025 — điều trị tích cực sớm, tránh đơn trị kéo dài",
+      "source_date": "2025",
+      "review_date": "2026-07-06",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0244",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "EAACI cập nhật 2021 — tiêu chuẩn chẩn đoán lâm sàng + adrenaline tiêm bắp hàng đầu",
+      "source_date": "2022",
+      "review_date": "2026-07-06",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0270",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2022 update RA: MTX là anchor drug + Treat-to-Target làm nền",
+      "source_date": "2022",
+      "review_date": "2026-07-10",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0274",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dự phòng TIÊN PHÁT đột quỵ — khung khuyến cáo cập nhật nhất",
+      "source_date": "2024",
+      "review_date": "2026-07-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0279",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "ICH do warfarin (VKA): đảo ngược ngay bằng 4F-PCC + vitamin K1 TM",
+      "source_date": "2022",
+      "review_date": "2026-07-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0281",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Finasteride & Dutasteride — cảnh báo tác dụng phụ tâm thần (trầm cảm, ý tưởng tự sát) và rối loạn chức năng tình dục",
+      "source_date": "2026-05-11",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "missing_pmid_doi_or_trusted_official_url",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0282",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Thuốc xịt/nhỏ mũi chứa xylometazoline/oxymetazoline — nguy cơ nghẹt mũi dội ngược, viêm mũi do thuốc, quen thuốc khi lạm dụng; giới hạn dùng tối đa 5 ngày",
+      "source_date": "2026-04-30",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "missing_pmid_doi_or_trusted_official_url"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0283",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao — nền tảng dự phòng đột quỵ ở bệnh ĐM cảnh xơ vữa",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0288",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Thời điểm tái thông: trong vòng 2 tuần sau TIA/đột quỵ nhẹ không tàn phế",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0296",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung xử trí ICH tự phát — hướng dẫn cập nhật nhất",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0297",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "ICH do warfarin (VKA): đảo ngược ngay bằng 4F-PCC + vitamin K1 TM",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0304",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung xử trí ICH tự phát — hướng dẫn cập nhật nhất",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0305",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "ICH do warfarin (VKA): đảo ngược ngay bằng 4F-PCC + vitamin K1 TM",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0309",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "ATS 2025 CAP: kháng sinh ≥3 ngày (tối thiểu) khi đạt ổn định lâm sàng",
+      "source_date": "2025/2026",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0314",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "DAPA-CKD — Dapagliflozin giảm kết cục thận–tim mạch ở CKD ± T2DM (HR 0.61)",
+      "source_date": "2020",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0332",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024 RA: MTX là anchor drug + Treat-to-Target làm nền",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0333",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024: leo thang bDMARD/JAKi khi MTX thất bại — lộ trình theo nguy cơ",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0345",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Điều trị đau theo NHÓM thuốc; KHÔNG dùng opioid",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0346",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Tầm soát hằng năm + kiểm soát đường huyết; cân nhắc phối hợp thuốc giảm đau",
+      "source_date": "2026",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0348",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Treat-to-target: đặt mục tiêu lui bệnh/hoạt tính thấp, đánh giá định kỳ",
+      "source_date": "2025 / 2021",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0349",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thất bại MTX + tiên lượng xấu → thêm bDMARD (hoặc JAKi sau cân nhắc nguy cơ)",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0352",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Sàng lọc bắt buộc trước b/tsDMARD: lao tiềm ẩn, HBV/HCV, vắc-xin",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0354",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Semaglutide ở ĐTĐ type 2 có bệnh thận mạn — FLOW",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0355",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "STOPP/START phiên bản 3 — rà soát kê đơn ở người cao tuổi",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0358",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao — nền tảng dự phòng đột quỵ ở bệnh ĐM cảnh xơ vữa",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0363",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Thời điểm tái thông: trong vòng 2 tuần sau TIA/đột quỵ nhẹ không tàn phế",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0366",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dự phòng TIÊN PHÁT đột quỵ — khung khuyến cáo cập nhật nhất",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0372",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung xử trí ICH tự phát — hướng dẫn cập nhật nhất",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0375",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dự phòng TIÊN PHÁT đột quỵ — khung khuyến cáo cập nhật nhất",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0381",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung xử trí ICH tự phát — hướng dẫn cập nhật nhất",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0383",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Chẩn đoán & phân giai đoạn CKD (eGFR + albumin niệu)",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0385",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Finerenone ở CKD do ĐTĐ type 2 — FIDELIO-DKD",
+      "source_date": "2020",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0387",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Tầm soát & chẩn đoán bệnh thần kinh ngoại biên đối xứng xa (DSPN)",
+      "source_date": "2026",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0390",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "ATS 2025 CAP: kháng sinh ≥3 ngày (tối thiểu) khi đạt ổn định lâm sàng",
+      "source_date": "2025/2026",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0402",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hẹp ĐM cảnh CÓ triệu chứng 50–99% — tái thông sớm, CEA ưu tiên",
+      "source_date": "2021–2023",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0404",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024 RA: MTX là anchor drug + Treat-to-Target làm nền",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0405",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024: leo thang bDMARD/JAKi khi MTX thất bại — lộ trình theo nguy cơ",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0407",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "NP & biến số lâm sàng để phân tầng tiên lượng (ESC 2021)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0409",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Treat-to-target: đặt mục tiêu lui bệnh/hoạt tính thấp, đánh giá định kỳ",
+      "source_date": "2025 / 2021",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0410",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thất bại MTX + tiên lượng xấu → thêm bDMARD (hoặc JAKi sau cân nhắc nguy cơ)",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0413",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao — nền tảng dự phòng đột quỵ ở bệnh ĐM cảnh xơ vữa",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0422",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dự phòng TIÊN PHÁT đột quỵ — khung khuyến cáo cập nhật nhất",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0428",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung xử trí ICH tự phát — hướng dẫn cập nhật nhất",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0429",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "ICH do warfarin (VKA): đảo ngược ngay bằng 4F-PCC + vitamin K1 TM",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0432",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dự phòng TIÊN PHÁT đột quỵ — khung khuyến cáo cập nhật nhất",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0438",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung xử trí ICH tự phát — hướng dẫn cập nhật nhất",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0439",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "ICH do warfarin (VKA): đảo ngược ngay bằng 4F-PCC + vitamin K1 TM",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0440",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Chẩn đoán & phân giai đoạn CKD (eGFR + albumin niệu)",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0443",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "ATS 2025 CAP: kháng sinh ≥3 ngày (tối thiểu) khi đạt ổn định lâm sàng",
+      "source_date": "2025/2026",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0446",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "DAPA-CKD — Dapagliflozin giảm kết cục thận–tim mạch ở CKD ± T2DM (HR 0.61)",
+      "source_date": "2020",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0462",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024 RA: MTX là anchor drug + Treat-to-Target làm nền",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0463",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024: leo thang bDMARD/JAKi khi MTX thất bại — lộ trình theo nguy cơ",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0468",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Điều trị đau theo NHÓM thuốc; KHÔNG dùng opioid",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0469",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Tầm soát hằng năm + kiểm soát đường huyết; cân nhắc phối hợp thuốc giảm đau",
+      "source_date": "2026",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0471",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Treat-to-target: đặt mục tiêu lui bệnh/hoạt tính thấp, đánh giá định kỳ",
+      "source_date": "2025 / 2021",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0472",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thất bại MTX + tiên lượng xấu → thêm bDMARD (hoặc JAKi sau cân nhắc nguy cơ)",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0473",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Sàng lọc bắt buộc trước b/tsDMARD: lao tiềm ẩn, HBV/HCV, vắc-xin",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0474",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Semaglutide ở ĐTĐ type 2 có bệnh thận mạn — FLOW",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0475",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "STOPP/START phiên bản 3 — rà soát kê đơn ở người cao tuổi",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0478",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Statin cường độ cao — nền tảng dự phòng đột quỵ ở bệnh ĐM cảnh xơ vữa",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0483",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Thời điểm tái thông: trong vòng 2 tuần sau TIA/đột quỵ nhẹ không tàn phế",
+      "source_date": "2023",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0486",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dự phòng TIÊN PHÁT đột quỵ — khung khuyến cáo cập nhật nhất",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0492",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung xử trí ICH tự phát — hướng dẫn cập nhật nhất",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0495",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dự phòng TIÊN PHÁT đột quỵ — khung khuyến cáo cập nhật nhất",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0501",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung xử trí ICH tự phát — hướng dẫn cập nhật nhất",
+      "source_date": "2022",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0503",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Chẩn đoán & phân giai đoạn CKD (eGFR + albumin niệu)",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0505",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Finerenone ở CKD do ĐTĐ type 2 — FIDELIO-DKD",
+      "source_date": "2020",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0507",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Tầm soát & chẩn đoán bệnh thần kinh ngoại biên đối xứng xa (DSPN)",
+      "source_date": "2026",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0510",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "ATS 2025 CAP: kháng sinh ≥3 ngày (tối thiểu) khi đạt ổn định lâm sàng",
+      "source_date": "2025/2026",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0522",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hẹp ĐM cảnh CÓ triệu chứng 50–99% — tái thông sớm, CEA ưu tiên",
+      "source_date": "2021–2023",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0524",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024 RA: MTX là anchor drug + Treat-to-Target làm nền",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0525",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2024: leo thang bDMARD/JAKi khi MTX thất bại — lộ trình theo nguy cơ",
+      "source_date": "2024",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0527",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "NP & biến số lâm sàng để phân tầng tiên lượng (ESC 2021)",
+      "source_date": "2021",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0529",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Treat-to-target: đặt mục tiêu lui bệnh/hoạt tính thấp, đánh giá định kỳ",
+      "source_date": "2025 / 2021",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0530",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thất bại MTX + tiên lượng xấu → thêm bDMARD (hoặc JAKi sau cân nhắc nguy cơ)",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-13",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0543",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "low",
+      "topic": "Theo dõi eGFR & cá thể hóa DMARD theo chức năng thận",
+      "source_date": "2021",
+      "review_date": "2026-07-14",
+      "blockers": [
+        "grade_not_direct_ready:low",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0545",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Bác sĩ điều trị RA chịu trách nhiệm quản lý nguy cơ tim mạch; nhân ×1.5 thang điểm",
+      "source_date": "2017 (cập nhật 2015/2016)",
+      "review_date": "2026-07-14",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0549",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Chỉ định điều trị kháng virus theo AASLD 2018",
+      "source_date": "2018",
+      "review_date": "2026-07-16",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0554",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Peginterferon chống chỉ định ở xơ gan mất bù",
+      "source_date": "2018 / 2015",
+      "review_date": "2026-07-16",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0559",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "RCT nền tảng: TDF giảm lây truyền mẹ-con từ 18% xuống 5%",
+      "source_date": "2016",
+      "review_date": "2026-07-16",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0560",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "HBIG + vắc-xin sơ sinh trong 12 giờ đầu cho mọi trẻ sinh từ mẹ HBsAg(+)",
+      "source_date": "2024",
+      "review_date": "2026-07-16",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0563",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Chỉnh liều TDF/Entecavir theo CrCl — nguồn nhãn thuốc FDA",
+      "source_date": "hiện hành",
+      "review_date": "2026-07-16",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "missing_pmid_doi_or_trusted_official_url"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0564",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "TAF không chỉnh liều nếu CrCl≥15 hoặc lọc máu chu kỳ ổn định",
+      "source_date": "2022 (bản đã tra cứu)",
+      "review_date": "2026-07-16",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "missing_pmid_doi_or_trusted_official_url"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0569",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "ART phải chứa 2 thuốc hoạt tính kép chống HBV ở người đồng nhiễm HIV-HBV",
+      "source_date": "2018",
+      "review_date": "2026-07-16",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0658",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Thuốc kháng virus theo tuổi ở trẻ em — khác biệt EMA vs FDA",
+      "source_date": "2021",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0660",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "low",
+      "topic": "Toan lactic — nguy cơ tăng khi MELD≥20 ở bệnh nhân dùng NA",
+      "source_date": "2018",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:low"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0661",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Phân tầng nguy cơ tái hoạt HBV khi hóa trị/ức chế miễn dịch",
+      "source_date": "2021",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0663",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2025 update RA: MTX là anchor drug + Treat-to-Target làm nền",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0664",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "EULAR 2025 update: leo thang bDMARD/JAKi khi MTX thất bại — lộ trình theo nguy cơ",
+      "source_date": "2025 (đăng 2026)",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0666",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Tiêu chuẩn phân loại ACR/EULAR 2010 cho VKDT",
+      "source_date": "2010",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0667",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "RF và Anti-CCP (ACPA): độ chính xác chẩn đoán và giá trị tiên lượng",
+      "source_date": "2007",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0669",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Chẩn đoán phân biệt: VKDT với viêm khớp vảy nến (PsA)",
+      "source_date": "2018",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0670",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Thang đo hoạt tính bệnh DAS28, CDAI, SDAI: công thức và ngưỡng",
+      "source_date": "2006",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0677",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "JAK inhibitor và nguy cơ ác tính — cảnh báo hộp đen FDA/EMA",
+      "source_date": "2021-2022",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0679",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thai kỳ: thuốc an toàn và chống chỉ định — EULAR 2024 update",
+      "source_date": "2024 (đăng 2025)",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0686",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "low",
+      "topic": "VKDT và bệnh gan mạn: hiệu chỉnh methotrexate theo ACR 2021 (NAFLD, ghi chú viêm gan C)",
+      "source_date": "2021",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:low"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0687",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Leflunomide và độc tính gan: chống chỉ định, ngưỡng ngưng thuốc, quy trình thải thuốc",
+      "source_date": "Hiện hành",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "missing_pmid_doi_or_trusted_official_url"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0688",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "low",
+      "topic": "Quản lý thuốc chống thấp khớp quanh phẫu thuật (chu phẫu) — ACR/AAHKS 2022",
+      "source_date": "2022",
+      "review_date": "2026-07-17",
+      "blockers": [
+        "grade_not_direct_ready:low"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0717",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Ottawa SAH Rule — loại trừ xuất huyết dưới nhện",
+      "source_date": "2013",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0718",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Khung sàng lọc cờ đỏ SNNOOP10",
+      "source_date": "2019",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0719",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Độ chính xác chẩn đoán của SNNOOP10 (kiểm định tiến cứu)",
+      "source_date": "2024",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0720",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Tiêu chuẩn phân loại đau đầu ICHD-3",
+      "source_date": "2018",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0721",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Chỉ định hình ảnh học trong đau đầu (ACR Appropriateness Criteria)",
+      "source_date": "2019",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0722",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Choosing Wisely — hạn chế hình ảnh học không cần thiết trong đau đầu",
+      "source_date": "2013",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0723",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Guideline GRADE cắt cơn migraine cấp (SISC+IHS)",
+      "source_date": "2025",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0724",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Đồng thuận AHS về điều trị cắt cơn migraine",
+      "source_date": "2021",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0736",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Điều trị đau đầu căng cơ mạn tính (TTH)",
+      "source_date": "2010",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0737",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Guideline điều trị cluster headache (EAN 2023)",
+      "source_date": "2023",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0738",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Oxy 100% cắt cơn cluster headache",
+      "source_date": "2009",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0740",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Chiến lược xử trí đau đầu do lạm dụng thuốc (MOH)",
+      "source_date": "2020",
+      "review_date": "2026-07-18",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0761",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Sàng lọc lao tiềm ẩn và viêm gan B trước b/tsDMARD — tổng quan quy trình",
+      "source_date": "2025 / 2020",
+      "review_date": "2026-07-23",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0767",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Nhồi máu não cấp: tái tưới máu và xử trí ban đầu",
+      "source_date": "2026",
+      "review_date": "2026-07-23",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0768",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Dự phòng tái phát sau đột quỵ hoặc thiếu máu não thoáng qua",
+      "source_date": "2021",
+      "review_date": "2026-07-23",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0769",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Xuất huyết não tự phát: kiểm soát huyết áp và đảo ngược kháng đông",
+      "source_date": "2022",
+      "review_date": "2026-07-23",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0770",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Xuất huyết dưới nhện do phình mạch",
+      "source_date": "2023",
+      "review_date": "2026-07-23",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0771",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Dự phòng nguyên phát đột quỵ",
+      "source_date": "2024",
+      "review_date": "2026-07-23",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0772",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Rung nhĩ: kháng đông phòng đột quỵ",
+      "source_date": "2023",
+      "review_date": "2026-07-23",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0773",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Huyết khối tĩnh mạch não",
+      "source_date": "2017",
+      "review_date": "2026-07-23",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0774",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Đột quỵ trong thai kỳ và hậu sản",
+      "source_date": "2026",
+      "review_date": "2026-07-23",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0776",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "NIHSS + mRS — định lượng độ nặng cấp và kết cục chức năng dài hạn",
+      "source_date": "1989",
+      "review_date": "2026-07-24",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0787",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Xử trí xuất huyết não tự phát — khung tổng quát (huyết áp, đảo ngược, phẫu thuật)",
+      "source_date": "2022",
+      "review_date": "2026-07-24",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0792",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Cập nhật khung xử trí nhồi máu não cấp 2026 — mở rộng chỉ định tiêu sợi huyết/lấy huyết khối",
+      "source_date": "2026",
+      "review_date": "2026-07-24",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0793",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Khung tổng quát chẩn đoán-điều trị rung nhĩ (nền cho quyết định kháng đông)",
+      "source_date": "2023",
+      "review_date": "2026-07-24",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0802",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Định nghĩa toàn cầu THỨ HAI về suy tim (2026): bỏ ngưỡng LVEF cứng, còn 3 nhóm",
+      "source_date": "06/2026",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0803",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "HFpEF là hội chứng ĐA HỆ THỐNG, không phải một bệnh tim đơn thuần (ACC 2026)",
+      "source_date": "07/2026",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0804",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Chẩn đoán suy tim: triệu chứng/dấu hiệu + peptide lợi niệu + siêu âm tim",
+      "source_date": "2021 (bản cập nhật ESC dự kiến trình bày tại ESC Congress 08/2026)",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0805",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i thành khuyến cáo Class I cho HFmrEF và HFpEF (ESC cập nhật 2023)",
+      "source_date": "2023",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0806",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Bốn trụ cột GDMT cho HFrEF — khởi trị SỚM và ĐỒNG THỜI, không tuần tự",
+      "source_date": "2022",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0807",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "ARNI (sacubitril/valsartan) vượt trội enalapril ở HFrEF — PARADIGM-HF",
+      "source_date": "2014",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0808",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Dapagliflozin giảm biến cố ở HFrEF, có hay không có đái tháo đường — DAPA-HF",
+      "source_date": "2019",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0813",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Tăng liều GDMT NHANH ngay sau nhập viện là an toàn và hiệu quả — STRONG-HF",
+      "source_date": "2022",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0836",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "NGƯỜI CAO TUỔI/SUY YẾU: phục hồi chức năng thể lực sớm sau nhập viện — REHAB-HF",
+      "source_date": "2021",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0837",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "BỆNH THẬN MẠN + suy tim: SGLT2i bảo vệ thận bất kể có đái tháo đường hay không",
+      "source_date": "2022",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0838",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "NƠI NGUỒN LỰC HẠN CHẾ: khung thích ứng guideline suy tim (rất sát bối cảnh Việt Nam)",
+      "source_date": "06/2026",
+      "review_date": "2026-08-04",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0842",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Chẩn đoán thiếu sắt bằng xét nghiệm - ferritin là chỉ dấu đầu tay nhưng phải đọc kèm tình trạng viêm",
+      "source_date": "2021",
+      "review_date": "2026-08-05",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0848",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Sắt tĩnh mạch cho suy tim kèm thiếu sắt - giảm nhập viện và tử vong tim mạch",
+      "source_date": "2025",
+      "review_date": "2026-08-05",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0851",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thiếu máu trước mổ - phát hiện và xử trí trước khi lên bàn",
+      "source_date": "2024",
+      "review_date": "2026-08-05",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0856",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Đa hồng cầu thật (bệnh Vaquez) - ngưỡng chẩn đoán và vai trò trung tâm của JAK2",
+      "source_date": "2024 (xuất bản trực tuyến 2023)",
+      "review_date": "2026-08-05",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0869",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Bỏ thuốc lá — can thiệp DUY NHẤT đã chứng minh giảm tử vong dài hạn ở người tắc nghẽn đường thở",
+      "source_date": "2005",
+      "review_date": "2026-08-10",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0870",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Phục hồi chức năng hô hấp SAU đợt cấp — chứng cứ mạnh nhất về chất lượng sống và khả năng gắng sức",
+      "source_date": "2016 (bản cập nhật lần 4)",
+      "review_date": "2026-08-10",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0871",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Vắc-xin cúm — giảm mạnh nhập viện ở người có bệnh phổi hoặc tim mạn",
+      "source_date": "2024",
+      "review_date": "2026-08-10",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0872",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Bộ ba thuốc hít GIẢM TỬ VONG so với đôi giãn phế quản ở người nguy cơ đợt cấp cao (IMPACT)",
+      "source_date": "2020",
+      "review_date": "2026-08-10",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0877",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "CPAP ở người chồng lấp COPD và ngưng thở khi ngủ — nhóm được điều trị không còn nguy cơ vượt trội",
+      "source_date": "2010",
+      "review_date": "2026-08-10",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0888",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Nhận diện suy tim tiến triển để chuyển tuyến ĐÚNG LÚC, trước khi quá muộn",
+      "source_date": "2018",
+      "review_date": "2026-08-10",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0889",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Phân suất tống máu hồi phục KHÔNG có nghĩa đã khỏi — ngưng thuốc thì gần nửa tái phát",
+      "source_date": "2018",
+      "review_date": "2026-08-10",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0891",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Phục hồi chức năng hô hấp CẢI THIỆN lo âu và trầm cảm — hiệu quả trung bình đến lớn",
+      "source_date": "2019",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0893",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hỗ trợ dinh dưỡng — chỉ có lợi ở người COPD SUY DINH DƯỠNG, không phải mọi người bệnh",
+      "source_date": "2012 (bản cập nhật lần 3)",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0920",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Nguyên tắc dẫn đường của Hội Lão khoa Hoa Kỳ cho người cao tuổi đa bệnh lý — khung nền, thay việc cộng dồn guideline đơn bệnh",
+      "source_date": "2012",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0921",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "NICE NG56 — hướng dẫn quốc gia về đánh giá và quản lý đa bệnh lý, trọng tâm giảm gánh nặng điều trị",
+      "source_date": "Xuất bản 21 tháng 9 năm 2016",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0924",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Thang suy yếu lâm sàng (Clinical Frailty Scale) — đánh giá được trong 1–2 phút, tiên đoán tử vong tốt hơn thang nhận thức, chức năng hay bệnh đồng mắc",
+      "source_date": "2005 (bản gốc 7 bậc)",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0926",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Tiêu chí Beers 2023 của Hội Lão khoa Hoa Kỳ — danh mục thuốc NÊN TRÁNH ở người từ 65 tuổi",
+      "source_date": "Bản cập nhật 2023 (bản trước: 2019)",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0928",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Ở người cao tuổi cộng đồng, THIẾU SÓT kê đơn phổ biến hơn kê thừa — và thuốc không phù hợp gắn với tăng nhập viện và suy giảm chức năng",
+      "source_date": "2025",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0930",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "GIÁO DỤC TRỰC TIẾP NGƯỜI BỆNH để ngưng benzodiazepine — số người cần điều trị chỉ là 4 (thử nghiệm EMPOWER)",
+      "source_date": "2014",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0931",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Phơi nhiễm thuốc KHÁNG CHOLINERGIC gắn với tăng nguy cơ sa sút trí tuệ — phần quy thuộc quần thể 10,3%",
+      "source_date": "2019",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0935",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "ADA 2026 Mục 13 — người cao tuổi đái tháo đường: đích điều trị phân tầng theo tình trạng sức khoẻ, tránh hạ đường huyết là ưu tiên",
+      "source_date": "Bản 2026 (cập nhật hằng năm) — đã kiểm là bản mới nhất trên PubMed ngày 11 tháng 8 năm 2026",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0936",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "Hạ huyết áp TÍCH CỰC ở người ≥75 tuổi CÒN ĐI LẠI ĐƯỢC giảm biến cố tim mạch và tử vong, KHÔNG làm tăng té ngã gây chấn thương (SPRINT)",
+      "source_date": "2016",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0938",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "THỜI GIAN ĐẾN LỢI ÍCH của statin dự phòng tiên phát: 2,5 năm để tránh 1 biến cố tim mạch trên 100 người điều trị",
+      "source_date": "2021",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0939",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "PHÒNG NGÃ — kê TẬP LUYỆN đạt khuyến cáo mức B; gói can thiệp đa yếu tố chỉ mức C (USPSTF 2024)",
+      "source_date": "2024 (thay bản 2018)",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0942",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "① Hướng dẫn chung ĐẦU TIÊN của hai hiệp hội về suy thượng thận DO GLUCOCORTICOID — ít nhất 1% dân số đang có nguy cơ",
+      "source_date": "2024",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0967",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Người bệnh suy tim ở nông thôn có kết cục xấu hơn thành thị",
+      "source_date": "05/2026",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-0974",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "high",
+      "topic": "SGLT2i — khẳng định lại lợi ích trên tử vong và nhập viện, gộp 15 thử nghiệm",
+      "source_date": "05/2026",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1070",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Khung điều trị viêm gan B mạn mới nhất theo GRADE — AASLD-IDSA 2025, sáu câu hỏi PICO",
+      "source_date": "2025",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1072",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "Hướng dẫn thực hành lâm sàng EASL 2025 về quản lý nhiễm virus viêm gan B",
+      "source_date": "2025",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1092",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "mod",
+      "topic": "THAI KỲ — TDF hoặc TAF từ tuần 28 khi HBV DNA trên 200.000 IU/mL (khuyến cáo MẠNH của AASLD-IDSA 2025)",
+      "source_date": "2025",
+      "review_date": "2026-08-12",
+      "blockers": [
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1171",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Hội Tiêu hoá Hoa Kỳ 2021 — dùng CHIẾN LƯỢC CHẨN ĐOÁN DƯƠNG TÍNH theo tiêu chuẩn triệu chứng, thay cho chẩn đoán loại trừ",
+      "source_date": "2021 (guideline đầu tiên của ACG về IBS; 25 câu hỏi lâm sàng, phương pháp GRADE, đồng thuận Delphi cải biên)",
+      "review_date": "2026-08-13",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1172",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Hội Tiêu hoá Anh 2021 — IBS được xếp lại là RỐI LOẠN TƯƠNG TÁC RUỘT–NÃO, kèm bộ khuyến cáo GRADE dựa trên phân tích gộp mạng lưới cập nhật",
+      "source_date": "2021 (bản cập nhật đầu tiên kể từ guideline BSG năm 2007)",
+      "review_date": "2026-08-13",
+      "blockers": [
+        "grade_not_direct_ready:na"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1177",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Chất xơ HOÀ TAN (ispaghula/psyllium) — lựa chọn chất xơ duy nhất được khuyến cáo MẠNH; chất xơ không hoà tan làm nặng triệu chứng",
+      "source_date": "2022–2023 (đồng thuận Delphi, 27 phát biểu, phương pháp GRADE, đồng thuận đạt trên 80% cho toàn bộ)",
+      "review_date": "2026-08-13",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    },
+    {
+      "card_id": "EVID-2026-1178",
+      "status": "BLOCKED_FOR_DIRECT_USE",
+      "decision": "apply",
+      "grade_level": "na",
+      "topic": "Chế độ ăn ÍT FODMAP — khuyến cáo MẠNH nhưng phải dùng ĐỦ 3 PHA và giới hạn pha hạn chế trong 4–6 tuần",
+      "source_date": "ACG 2021; AGA Clinical Practice Update về ăn uống trong IBS 2022",
+      "review_date": "2026-08-13",
+      "blockers": [
+        "grade_not_direct_ready:na",
+        "unresolved_review_marker_present"
+      ],
+      "warnings": [
+        "legacy_doctor_curated_without_signed_approval_id"
+      ]
+    }
+  ],
+  "blocker_counts": {
+    "decision_not_apply:consider": 605,
+    "decision_not_apply:notyet": 144,
+    "grade_not_direct_ready:low": 88,
+    "grade_not_direct_ready:na": 293,
+    "grade_not_direct_ready:vlow": 18,
+    "missing_doctor_gate_evidence": 206,
+    "missing_pmid_doi_or_trusted_official_url": 32,
+    "source_date_too_far_in_future": 2,
+    "source_type_not_high_authority": 1,
+    "unresolved_review_marker_present": 547,
+    "verification_not_confirmed": 151
+  },
+  "disclaimer": "Cần bác sĩ kiểm chứng. Không tự động áp dụng cho bệnh nhân hoặc ghi EMR/HIS."
+}

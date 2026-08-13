@@ -1,0 +1,83 @@
+{
+  "kind": "clinical_production_control_plane_report",
+  "generated_at": "2026-08-13T07:40:57+00:00",
+  "overall_status": "CONTROLLED_AUTOMATION_READY_WITH_HUMAN_GATES",
+  "fail_count": 0,
+  "human_gate_count": 2,
+  "offline_controlled_automation_available": true,
+  "auto_repair_available": true,
+  "auto_agent_generation_available": true,
+  "clinical_orchestration_available": true,
+  "clinical_evidence_update_pipeline_available": true,
+  "clinical_production_allowed": false,
+  "real_patient_data_allowed": false,
+  "auto_apply_allowed": false,
+  "checks": [
+    {
+      "check_id": "CP1",
+      "status": "PASS",
+      "title": "Tự sửa chữa có trần và fail-closed",
+      "evidence": [
+        "tools\\retry_loop.py",
+        ".claude\\agents\\_TU-CHINH-SUA-PROTOCOL.md",
+        ".claude\\agents\\_TU-SUA-CHUA-PROTOCOL.md"
+      ],
+      "proves": "Retry loop phân loại lỗi tự sửa/leo thang/chờ input thật, không vòng lặp vô hạn.",
+      "limitation": "Không tự sửa lỗi cần người thật như PII, sai guideline nguy hiểm, IRB, SAP hoặc dữ liệu thật.",
+      "human_action": "Bác sĩ/phụ trách phải xử lý các lỗi ESCALATE_HARD và WAIT_INPUT."
+    },
+    {
+      "check_id": "CP2",
+      "status": "HUMAN_GATE",
+      "title": "Tự sinh agent có duyệt",
+      "evidence": [
+        "tools\\generate_agent.py",
+        ".claude\\agents\\_TU-SINH-AGENT.md"
+      ],
+      "proves": "Agent sinh tự động luôn có nhãn PROPOSED, guardrail, PMID/DOI rule và disclaimer.",
+      "limitation": "Agent mới chỉ là bản đề xuất; không tự thành agent production hoặc tự vượt Cổng A/B/G.",
+      "human_action": "Bác sĩ duyệt nội dung/nguồn trước khi bỏ nhãn PROPOSED hoặc dùng chính thức."
+    },
+    {
+      "check_id": "CP3",
+      "status": "PASS",
+      "title": "Điều phối lâm sàng EBM có checkpoint và guardrail cuối",
+      "evidence": [
+        ".claude\\agents\\dieu-phoi-lam-sang.md",
+        ".claude\\agents\\tham-dinh-dau-ra.md",
+        "tools\\clinical_checkpoint.py"
+      ],
+      "proves": "Nhạc trưởng lâm sàng có Cổng A/B, completeness C1-C9 và máy kiểm không cho qua cổng khi còn lỗi đỏ.",
+      "limitation": "Không thay bác sĩ đánh giá ca bệnh thật; chỉ kiểm khung điều phối và checkpoint.",
+      "human_action": "Bác sĩ vẫn phải duyệt Cổng A trước khi áp dụng cho bệnh nhân và Cổng B trước khi ghi sổ cái."
+    },
+    {
+      "check_id": "CP4",
+      "status": "PASS",
+      "title": "Pipeline cập nhật chứng cứ lâm sàng được nối vào kiểm toàn hệ",
+      "evidence": [
+        "tools\\verify_clinical_evidence_update_pipeline.py",
+        "tools\\upgrade_verify.py",
+        "EBM_MASTER\\tools\\sync_all.py",
+        "tools\\verify_direct_clinical_practice_readiness.py"
+      ],
+      "proves": "Dashboard Evidence Workbench, thư viện, phái sinh và sync hub có verifier trong upgrade cycle.",
+      "limitation": "Dashboard thật vẫn cần verify online, rà nguồn, an toàn thuốc và bác sĩ duyệt trước khi áp dụng.",
+      "human_action": "Bác sĩ duyệt nguồn/khuyến cáo trước khi chuyển thẻ sang áp dụng."
+    },
+    {
+      "check_id": "CP5",
+      "status": "HUMAN_GATE",
+      "title": "Ranh giới production và dữ liệu thật vẫn fail-closed",
+      "evidence": [
+        "tools\\verify_personal_production_hardening.py",
+        "tools\\run_controlled_automation_cycle.py",
+        "docs\\PERSONAL_PRODUCTION_HARDENING_SOP.md"
+      ],
+      "proves": "Control-plane có thể tự động hóa việc chuẩn bị/kiểm tra nhưng không tự bật dữ liệu bệnh nhân thật.",
+      "limitation": "Production thật cần UAT, security/legal review, backup/restore drill, actor thật và go-live signoff.",
+      "human_action": "Hoàn tất evidence package và phê duyệt thật trước bất kỳ dữ liệu bệnh nhân thật nào."
+    }
+  ],
+  "disclaimer": "Cần bác sĩ kiểm chứng. Đây là kiểm control-plane kỹ thuật/offline; không thay UAT, phê duyệt bảo mật/pháp lý, thẩm định lâm sàng hoặc quyết định điều trị."
+}

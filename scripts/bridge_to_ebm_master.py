@@ -29,6 +29,17 @@ HUB = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 sys.path.insert(0, os.path.join(HUB, "tools"))
 from ledger_ids import assert_unique, max_seq  # isort: skip  # noqa: E402 — vá 2026-07-17: seq=len(cards) từng gây trùng id thật (xem ledger_ids.py)
 
+
+def ensure_utf8_console() -> None:
+    """Giữ các lần chạy trực tiếp trên Windows PowerShell/cp1252 không crash vì tiếng Việt."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            encoding = (getattr(stream, "encoding", "") or "").lower()
+            if encoding and "utf" not in encoding and hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, OSError, ValueError):
+            continue
+
 GRADE_MAP = {  # operational_evidence_level / official_grade → gradeLevel chuẩn EBM_MASTER
     "high": "high", "moderate": "mod", "mod": "mod", "low": "low", "very low": "vlow", "vlow": "vlow",
 }
@@ -71,6 +82,8 @@ def key_of(card):
 
 
 def main():
+    ensure_utf8_console()
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--today", default="")
     ap.add_argument("--regen", action="store_true", help="sinh lại EBM_WEBAPP.html sau khi nối")

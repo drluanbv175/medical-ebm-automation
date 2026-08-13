@@ -132,10 +132,24 @@ def summarize_source_health(
     if guideline_expected and not guideline_healthy:
         hard_fail_reasons.append("GUIDELINE_SOURCE_COVERAGE_MISSING")
 
-    degraded_required = sorted(
-        name for name in set(discovery_expected) | safety_expected
-        if source_rows.get(name, {}).get("health") in {"degraded", "unavailable"}
-    )
+    mirror_notices: list[str] = []
+    degraded_required: list[str] = []
+    for name in sorted(set(discovery_expected) | safety_expected):
+        health = source_rows.get(name, {}).get("health")
+        if health not in {"degraded", "unavailable"}:
+            continue
+        # PubMed E-utilities thỉnh thoảng trả HTML/429/abuse gate dù PMID vẫn đối chiếu được
+        # qua Europe PMC MEDLINE. Chỉ coi là dự phòng đủ khi CẢ Europe PMC và Crossref còn khỏe:
+        # Europe PMC giữ PMID/MEDLINE, Crossref giữ DOI/publisher metadata. Nếu thiếu một trong hai,
+        # vẫn PARTIAL để không xanh giả.
+        if (
+            name == "pubmed"
+            and source_rows.get("europepmc", {}).get("health") in {"ok", "degraded"}
+            and source_rows.get("crossref", {}).get("health") in {"ok", "degraded"}
+        ):
+            mirror_notices.append("PUBMED_EUTILS_MIRRORED_BY_EUROPEPMC_AND_CROSSREF")
+            continue
+        degraded_required.append(name)
     redundancy_warnings: list[str] = []
     if len(safety_healthy) < min(2, len(safety_expected)):
         redundancy_warnings.append("SAFETY_REDUNDANCY_LOW")
@@ -152,6 +166,7 @@ def summarize_source_health(
         "status": overall,
         "hard_fail_reasons": hard_fail_reasons,
         "warnings": redundancy_warnings,
+        "mirror_notices": mirror_notices,
         "degraded_required_sources": degraded_required,
         "total_records": total_records,
         "discovery_core": {"expected": discovery_expected, "healthy": discovery_healthy},

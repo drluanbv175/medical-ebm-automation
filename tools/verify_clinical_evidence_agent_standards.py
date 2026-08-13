@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -39,6 +40,17 @@ DISCLAIMER = (
     "Cần bác sĩ kiểm chứng. Đây là kiểm chuẩn agent/pipeline kỹ thuật; không thay "
     "xác minh nguồn online, thẩm định chuyên môn, hoặc quyết định áp dụng lâm sàng."
 )
+
+
+def ensure_utf8_console() -> None:
+    """Giữ các lần chạy trực tiếp trên Windows PowerShell/cp1252 không crash vì tiếng Việt."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            encoding = (getattr(stream, "encoding", "") or "").lower()
+            if encoding and "utf" not in encoding and hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, OSError, ValueError):
+            continue
 
 
 @dataclass(frozen=True)
@@ -1879,6 +1891,8 @@ def markdown_report(report: dict) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    ensure_utf8_console()
+
     parser = argparse.ArgumentParser(description="Verify clinical evidence update agent standards.")
     parser.add_argument("--json", action="store_true", help="Print full JSON report")
     parser.add_argument("--write", action="store_true", help="Write JSON/Markdown reports")

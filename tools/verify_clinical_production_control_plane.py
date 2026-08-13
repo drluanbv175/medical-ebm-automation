@@ -18,7 +18,7 @@ import importlib.util
 import json
 import sys
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -239,7 +239,8 @@ def _check_evidence_update_pipeline_wiring() -> ControlPlaneCheck:
     pipeline = ROOT_TOOLS / "verify_clinical_evidence_update_pipeline.py"
     upgrade = ROOT_TOOLS / "upgrade_verify.py"
     sync_all = ROOT / "EBM_MASTER" / "tools" / "sync_all.py"
-    evidence = [pipeline, upgrade, sync_all]
+    direct_gate = TOOLS / "verify_direct_clinical_practice_readiness.py"
+    evidence = [pipeline, upgrade, sync_all, direct_gate]
     errors: list[str] = []
     for path in evidence:
         if not path.exists():
@@ -266,6 +267,55 @@ def _check_evidence_update_pipeline_wiring() -> ControlPlaneCheck:
     )
     if not ok_pipeline:
         errors.append("clinical_evidence_pipeline_missing:" + ",".join(missing))
+    if direct_gate.exists():
+        direct = _load_module("verify_control_plane_direct_practice_readiness", direct_gate)
+        synthetic = {
+            "evidence_cards": [
+                {
+                    "id": "SYN-READY",
+                    "topic": "Synthetic direct-ready guideline",
+                    "date_source": "2026",
+                    "date_added": "2026-08-13",
+                    "source": {
+                        "agency": "KDIGO",
+                        "title": "Synthetic guideline source",
+                        "pmid": "38490803",
+                        "doi": "10.1016/j.kint.2023.10.018",
+                        "type": "guideline/RCT",
+                    },
+                    "provenance": "from_doctor_master",
+                    "verification_status": "verified",
+                    "gradeLevel": "high",
+                    "decision": "apply",
+                    "references": ["PMID:38490803", "DOI:10.1016/j.kint.2023.10.018"],
+                },
+                {
+                    "id": "SYN-ENGINE",
+                    "topic": "Synthetic engine candidate",
+                    "date_source": "2026",
+                    "date_added": "2026-08-13",
+                    "source": {
+                        "agency": "KDIGO",
+                        "title": "Synthetic guideline source",
+                        "pmid": "38490803",
+                        "doi": "10.1016/j.kint.2023.10.018",
+                        "type": "guideline/RCT",
+                    },
+                    "provenance": "from_engine",
+                    "verification_status": "verified",
+                    "gradeLevel": "high",
+                    "decision": "consider",
+                    "references": ["PMID:38490803", "DOI:10.1016/j.kint.2023.10.018"],
+                },
+            ]
+        }
+        direct_report = direct.evaluate_master(synthetic, today=date(2026, 8, 13))
+        if direct_report.get("auto_apply_allowed") is not False:
+            errors.append("direct_gate_allows_auto_apply")
+        if direct_report.get("ready_for_physician_direct_use") != 1:
+            errors.append("direct_gate_does_not_promote_doctor_verified_apply")
+        if direct_report.get("review_required") != 1:
+            errors.append("direct_gate_does_not_hold_engine_candidates_for_review")
     return ControlPlaneCheck(
         check_id="CP4",
         status=FAIL if errors else PASS,
