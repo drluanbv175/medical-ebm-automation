@@ -12,6 +12,8 @@ from __future__ import annotations
 import re
 from typing import Optional
 
+from app.sources.authority import match_authority_source
+
 # Viết tắt ngắn dễ trùng từ tiếng Anh thông thường (who/Canada/vaccine...). Các tín hiệu này
 # CHỈ khớp trong trường journal/organization, không khớp trong tiêu đề/tác giả.
 _AMBIGUOUS_ORG_SIGNALS = {"who", "ada", "acc", "esc", "es", "acr", "ema", "easl", "gold", "cdc"}
@@ -106,6 +108,10 @@ def detect_official_org(title: Optional[str], journal: Optional[str] = None,
     Khớp theo RANH GIỚI TỪ để 'who' không trúng 'patients who', 'acc' không trúng
     'vaccine'. Viết tắt dễ nhầm chỉ khớp trong trường journal/organization.
     """
+    authority = match_authority_source(journal, authors, title)
+    if authority:
+        return authority.name
+
     journal_blob = (journal or "").lower()
     full_blob = " ".join(x for x in (journal, title, authors) if x).lower()
     for signal, name in OFFICIAL_ORG_SIGNALS.items():

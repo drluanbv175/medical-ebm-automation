@@ -66,6 +66,27 @@ def test_summarize_falls_back_with_explicit_source_label(monkeypatch):
     assert candidates[0].source == "Europe PMC fallback for PMID"
 
 
+def test_scanner_labels_trusted_authority_sources():
+    scanner = _load_scanner()
+
+    candidates = scanner.summarize(
+        ["42119588"],
+        fetch_json=lambda _url: {
+            "result": {
+                "uids": ["42119588"],
+                "42119588": {
+                    "title": "Multicenter randomized outpatient trial",
+                    "pubdate": "2026 Aug",
+                    "source": "The Lancet",
+                },
+            }
+        },
+    )
+
+    assert candidates[0].journal_or_organization == "The Lancet"
+    assert candidates[0].authority_source == "The Lancet"
+
+
 def test_pubmed_live_adapter_falls_back_to_europepmc_for_pmid(monkeypatch):
     from app.config import settings
     from app.evidence.live_adapters.registry_adapters import PubMedLiveAdapter

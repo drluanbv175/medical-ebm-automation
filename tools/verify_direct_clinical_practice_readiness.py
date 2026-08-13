@@ -22,6 +22,11 @@ from urllib.parse import urlparse
 
 REPO = Path(__file__).resolve().parents[1]
 ROOT = REPO.parent
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
+
+from app.sources.authority import match_authority_source
+
 DEFAULT_MASTER = ROOT / "EBM_MASTER" / "EBM_MASTER.json"
 DEFAULT_JSON = REPO / "reports" / "DIRECT_CLINICAL_PRACTICE_READINESS.json"
 DEFAULT_MD = REPO / "reports" / "DIRECT_CLINICAL_PRACTICE_READINESS.md"
@@ -232,6 +237,14 @@ def _has_doctor_gate_evidence(card: Mapping[str, Any]) -> tuple[bool, list[str]]
 
 def _has_trusted_source_type(card: Mapping[str, Any]) -> bool:
     source = _card_source(card)
+    if match_authority_source(
+        source.get("agency"),
+        source.get("journal_or_organization"),
+        source.get("title"),
+        card.get("topic"),
+        card.get("critical_appraisal"),
+    ):
+        return True
     joined = " ".join(
         str(value or "")
         for value in (

@@ -71,12 +71,18 @@ def evidence_quality_score(item: Dict) -> Tuple[float, Dict[str, float]]:
         breakdown["has_grade"] = 4
 
     # Nguồn từ tổ chức/tạp chí chính thống (ESC, AHA, NICE, NEJM, Lancet...)
-    from app.sources.classify_meta import detect_official_org
-    org = detect_official_org(item.get("title"), item.get("journal_or_organization"),
-                              item.get("authors"))
-    if org:
-        breakdown["official_source"] = 3
-        item.setdefault("_detected_org", org)
+    from app.sources.authority import authority_breakdown_for
+    authority, authority_breakdown = authority_breakdown_for((
+        item.get("journal_or_organization"),
+        item.get("source"),
+        item.get("authors"),
+        item.get("title"),
+    ))
+    if authority:
+        breakdown.update(authority_breakdown)
+        item.setdefault("_detected_org", authority.name)
+        item.setdefault("_authority_tier", authority.tier)
+        item.setdefault("_authority_category", authority.category)
 
     # Nguy cơ bias rõ
     if any(k in text for k in ("retrospective", "single-center", "single center",
