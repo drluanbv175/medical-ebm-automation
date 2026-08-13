@@ -19,6 +19,10 @@ data/reports/*
 data/exports/*
 data/archive/*
 data/tiktok/20*
+# Bản chụp Retraction Watch (Crossref, CC0) — ~50 MB, SINH LẠI ĐƯỢC bằng
+# `python tools/tai_retraction_watch.py`. Là cache dữ liệu, không phải mã nguồn:
+# commit vào git sẽ phình repo vĩnh viễn mỗi lần làm mới 30 ngày/lần.
+data/retraction_watch/
 !data/tiktok/queue.txt
 !data/**/.gitkeep
 .DS_Store

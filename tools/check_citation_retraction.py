@@ -53,15 +53,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import gate_contract as GC  # noqa: E402  (ký receipt bằng khóa cục bộ dùng chung với G2/G4/G8/G9)
 
-from app.sources.pubmed import PubMedClient  # noqa: E402
+from app.sources.retraction_chain import RetractionChain  # noqa: E402
 
-_PROBLEM_STATUSES = {"retracted", "expression_of_concern", "unresolved", "unknown_mock_or_no_email"}
+# SỬA 14/08/2026 — LỖI FAIL-OPEN TRONG CỔNG AN TOÀN, đã tái hiện được:
+# `unknown_fetch_error` ra đời 12/08 để tách "KHÔNG BIẾT" khỏi "nghi trích dẫn ma",
+# nhưng tập này KHÔNG được cập nhật theo. Hệ quả đo thật hôm nay: khi NCBI trả trang
+# chặn (đúng tình trạng máy này), MỌI PMID nhận `unknown_fetch_error` ⇒ không cái nào
+# bị tính là "vấn đề" ⇒ `all_clean=True` được ghi VÀ KÝ vào A12_RETRACTION_RECEIPT.json,
+# CLI in "✅ Không phát hiện rút bài" và thoát 0. `run_g10_assemble.py` (dòng ~1895) chỉ
+# chặn khi `all_clean is not True`, nên gói nộp đi qua cổng A12 trong khi KHÔNG một
+# trích dẫn nào thực sự được kiểm.
+# Đây đúng lớp lỗi CLAUDE.md ghi ngày 12/08 (một cổng báo "đạt" vì chưa hề chạy tới
+# luật cần chạy), chỉ khác chỗ phát bệnh. "Không kiểm được" PHẢI là một VẤN ĐỀ.
+_PROBLEM_STATUSES = {"retracted", "expression_of_concern", "unresolved",
+                     "unknown_mock_or_no_email", "unknown_fetch_error"}
 
 _STATUS_LABEL = {
     "retracted": "🔴 ĐÃ BỊ RÚT",
     "expression_of_concern": "🟡 EXPRESSION OF CONCERN",
     "unresolved": "🔴 KHÔNG XÁC MINH ĐƯỢC (nghi ma/PMID sai)",
     "unknown_mock_or_no_email": "⚠️  KHÔNG TRA CỨU ĐƯỢC (mock/thiếu NCBI_EMAIL/lỗi mạng)",
+    "unknown_fetch_error": "⚠️  KHÔNG KIỂM ĐƯỢC (nguồn không trả lời được — CHƯA xác minh)",
     "ok": "✅ OK",
 }
 
@@ -146,8 +158,10 @@ def main() -> int:
         print("✗ --pmids rỗng — không có gì để kiểm.")
         return 1
 
-    client = PubMedClient()
-    results = client.check_retraction_status(pmids)
+    # Chuỗi 3 tầng (Retraction Watch ngoại tuyến → NCBI → Europe PMC) thay cho lời gọi
+    # NCBI đơn độc, để một nhà cung cấp chặn không còn giết cả năng lực kiểm rút bài.
+    # Luật gộp ở `app/sources/retraction_chain.py`; hợp đồng 6 trạng thái giữ nguyên.
+    results = RetractionChain().check(pmids)
 
     if args.study.strip():
         receipt_path = write_retraction_receipt(args.study, pmids, results)
@@ -159,7 +173,9 @@ def main() -> int:
         print(json.dumps(results, ensure_ascii=False, indent=2))
         return 1 if any(v.get("status") in _PROBLEM_STATUSES for v in results.values()) else 0
 
-    print(f"Kiểm rút bài/expression of concern cho {len(pmids)} PMID (nguồn: PubMed E-utilities thật)\n")
+    da_thu = next((v.get("sources_tried") for v in results.values() if v.get("sources_tried")), [])
+    print(f"Kiểm rút bài/expression of concern cho {len(pmids)} PMID")
+    print(f"Nguồn đã hỏi (chuỗi 3 tầng): {', '.join(da_thu) if da_thu else '(không có)'}\n")
     any_problem = False
     for pmid in pmids:
         info = results.get(pmid, {"status": "unresolved", "reason": "không có kết quả"})
@@ -174,8 +190,25 @@ def main() -> int:
         elif status == "expression_of_concern" and info.get("expression_of_concern_notice"):
             n = info["expression_of_concern_notice"]
             line += f"\n      → Thông báo: PMID {n.get('pmid')} — {n.get('citation')}"
-        elif status in ("unresolved", "unknown_mock_or_no_email") and info.get("reason"):
+        elif status in ("unresolved", "unknown_mock_or_no_email",
+                        "unknown_fetch_error") and info.get("reason"):
             line += f"\n      → {info['reason']}"
+        # Khi phán quyết đến từ nền ngoại tuyến, `retraction_notice` rỗng — in NGUYÊN
+        # lý do của Retraction Watch, đừng để bác sĩ chỉ thấy "🔴 ĐÃ BỊ RÚT" trơ trọi.
+        # Phân biệt này có hậu quả thật: "Retract and Replace" nghĩa là bài đã được
+        # SỬA và đăng lại, khác hẳn một bài bị rút bỏ hẳn — xử lý giống nhau là sai.
+        if status in ("retracted", "expression_of_concern") and info.get("nature"):
+            line += (f"\n      → {info['nature']} ngày {info.get('retraction_date', '?')}"
+                     f" — {info.get('journal', '?')}")
+            if info.get("reason"):
+                line += f"\n      → Lý do: {info['reason'].rstrip(';').replace(';', '; ')}"
+            if info.get("notice_pmid") or info.get("notice_doi"):
+                line += (f"\n      → Thông báo: PMID {info.get('notice_pmid') or '—'}"
+                         f" / doi:{info.get('notice_doi') or '—'}")
+        if info.get("source"):
+            line += f"\n      (nguồn kết luận: {info['source']})"
+        if info.get("ghi_chu"):
+            line += f"\n      ⚠ {info['ghi_chu']}"
         print(line)
 
     print()
