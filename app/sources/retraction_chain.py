@@ -32,8 +32,19 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from app.sources.europepmc import EuropePMCClient
-from app.sources.pubmed import PubMedClient
+# Hai tầng TRỰC TUYẾN cần requests/defusedxml (chỉ venv có). Hook SessionStart và
+# chốt kiểm chạy python3 HỆ THỐNG ⇒ tầng nào thiếu thư viện thì VẮNG MẶT CÓ KHAI
+# BÁO — chuỗi vẫn sống bằng tầng nền ngoại tuyến (thuần stdlib), đúng lý do tồn
+# tại của thiết kế đa tầng. Vắng mặt ≠ "ok": PMID không kết luận được vẫn giữ
+# KHÔNG BIẾT (fail-closed), xem nhánh 3 của `_gop`.
+try:
+    from app.sources.europepmc import EuropePMCClient
+except ModuleNotFoundError:
+    EuropePMCClient = None  # type: ignore[assignment, misc]
+try:
+    from app.sources.pubmed import PubMedClient
+except ModuleNotFoundError:
+    PubMedClient = None  # type: ignore[assignment, misc]
 from app.sources.retraction_watch import RetractionWatchIndex
 from app.utils.logging_config import get_logger
 
@@ -49,11 +60,14 @@ class RetractionChain:
     """Hỏi lần lượt 3 nguồn rồi gộp theo luật bất đối xứng ở docstring đầu file."""
 
     def __init__(self, rw: Optional[RetractionWatchIndex] = None,
-                 pubmed: Optional[PubMedClient] = None,
-                 europepmc: Optional[EuropePMCClient] = None) -> None:
+                 pubmed=None, europepmc=None) -> None:
         self.rw = rw if rw is not None else RetractionWatchIndex()
-        self.pubmed = pubmed if pubmed is not None else PubMedClient()
-        self.europepmc = europepmc if europepmc is not None else EuropePMCClient()
+        # Tầng trực tuyến chỉ dựng được khi thư viện có mặt; thiếu → None và
+        # `check()` coi tầng đó là "chưa hỏi được" (không bao giờ là "ok").
+        self.pubmed = pubmed if pubmed is not None else (
+            PubMedClient() if PubMedClient is not None else None)
+        self.europepmc = europepmc if europepmc is not None else (
+            EuropePMCClient() if EuropePMCClient is not None else None)
 
     # ------------------------------------------------------------------
     def check(self, pmids: List[str]) -> Dict[str, dict]:
@@ -77,16 +91,23 @@ class RetractionChain:
                         "Chạy: python tools/tai_retraction_watch.py")
 
         # Tầng 1 — NCBI. Vẫn hỏi trước: khi chạy được thì nó là nguồn đầy đủ nhất
-        # (có CommentsCorrections gốc kèm PMID thông báo rút bài).
-        da_thu.append("pubmed")
-        pm = self.pubmed.check_retraction_status(pmids)
+        # (có CommentsCorrections gốc kèm PMID thông báo rút bài). Tầng không dựng
+        # được (thiếu thư viện — chạy python3 hệ thống) thì KHÔNG ghi vào
+        # `sources_tried`: chưa hỏi thì không được kể là đã thử.
+        pm: Dict[str, dict] = {}
+        if self.pubmed is not None:
+            da_thu.append("pubmed")
+            pm = self.pubmed.check_retraction_status(pmids)
+        else:
+            logger.info("[retraction_chain] tầng NCBI vắng mặt (thiếu thư viện — "
+                        "python3 hệ thống?) — chỉ còn nền ngoại tuyến + Europe PMC")
 
         # Tầng 2 — Europe PMC, CHỈ hỏi cho PMID mà tầng 1 không kết luận được.
         # Hỏi thừa vừa tốn mạng vừa dễ tạo bất đồng giả giữa hai nguồn.
         con_thieu = [p for p in pmids
                      if pm.get(p, {}).get("status", "unknown_fetch_error") in KHONG_BIET]
         ep: Dict[str, dict] = {}
-        if con_thieu:
+        if con_thieu and self.europepmc is not None:
             da_thu.append("europepmc")
             logger.info("[retraction_chain] tầng 1 câm cho %d/%d PMID → hỏi Europe PMC",
                         len(con_thieu), len(pmids))

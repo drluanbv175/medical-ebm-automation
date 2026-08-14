@@ -9,7 +9,34 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:
+    # Hook SessionStart và các chốt kiểm (chot_hoi_quy_bai_hoc, canary…) chạy bằng
+    # python3 HỆ THỐNG — không phải venv ~/.ebm-venv — nên không có python-dotenv.
+    # Trước 15/08/2026, import cứng ở đây làm chết MỌI `from app.sources import ...`
+    # dưới python3 ⇒ chuỗi kiểm RÚT BÀI âm thầm rơi về "chưa kiểm" (BH34/BH43 đỏ).
+    # Bản thay thế thuần stdlib giữ đúng ngữ nghĩa đang dùng trong file này:
+    # KHÔNG ghi đè biến đã có (override=False), file thiếu thì im lặng bỏ qua.
+    def load_dotenv(dotenv_path=None, **_bo_qua):  # type: ignore[misc]
+        if not dotenv_path:
+            return False
+        try:
+            van_ban = Path(dotenv_path).read_text(encoding="utf-8-sig", errors="replace")
+        except OSError:
+            return False
+        for dong in van_ban.splitlines():
+            dong = dong.strip()
+            if not dong or dong.startswith("#") or "=" not in dong:
+                continue
+            if dong.startswith("export "):
+                dong = dong[len("export "):]
+            khoa, _, gia_tri = dong.partition("=")
+            khoa = khoa.strip()
+            gia_tri = gia_tri.strip().strip('"').strip("'")
+            if khoa and khoa not in os.environ:
+                os.environ[khoa] = gia_tri
+        return True
 
 # Thư mục gốc của project (medical-ebm-automation/)
 BASE_DIR = Path(__file__).resolve().parent.parent
