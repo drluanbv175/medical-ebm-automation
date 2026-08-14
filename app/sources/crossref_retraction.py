@@ -51,6 +51,22 @@ NHAN_QUAN_NGAI = {"expression_of_concern", "expression of concern", "concern"}
 # làm bác sĩ quen bỏ qua cảnh báo thật.
 
 
+# Dấu hiệu "RÚT RỒI ĐĂNG LẠI BẢN ĐÃ SỬA" — KHÁC HẲN rút bỏ hẳn, và phải nói khác.
+# Ở dạng này bài đã được sửa rồi công bố lại, thường ở CÙNG DOI/PMID; PubMed không
+# gắn publication type 'Retracted Publication' và không có dòng 'RIN'. Gọi nó là
+# "đã bị rút — không dùng" là NÓI SAI về một trích dẫn hợp lệ, và mỗi lần cảnh báo
+# sai như vậy lại dạy người đọc bỏ qua cảnh báo thật.
+# Việc cần làm ở dạng này là ĐỐI CHIẾU số liệu với bản đã sửa, không phải bỏ mục.
+_RUT_VA_THAY = ("retraction and replacement", "retract and replace",
+                "retracted and replaced", "retract-and-replace")
+
+
+def la_rut_va_thay(*van_ban: str) -> bool:
+    """Có phải dạng rút-rồi-đăng-lại không? Đọc tiêu đề thông báo / lý do Retraction Watch."""
+    gop = " ".join(v or "" for v in van_ban).lower()
+    return any(k in gop for k in _RUT_VA_THAY)
+
+
 def _chuan_hoa(nhan: str) -> str:
     return (nhan or "").strip().lower().replace("-", "_")
 
@@ -113,9 +129,21 @@ class CrossrefRetraction:
 
             if any(t == "retracted" for t, _ in nang):
                 thong_bao = next(x for t, x in nang if t == "retracted")
+                # Đọc TIÊU ĐỀ thông báo để phân biệt "rút bỏ hẳn" với "rút rồi đăng lại
+                # bản đã sửa". Chỉ tốn thêm MỘT lời gọi, và chỉ khi đã có tín hiệu rút
+                # bài — tức rất hiếm. Không đọc tiêu đề thì hệ nói sai về một trích dẫn
+                # hợp lệ, và cảnh báo sai làm hỏng giá trị của cảnh báo đúng.
+                tieu_de_tb = ""
+                try:
+                    tb = self._lay(thong_bao) or {}
+                    tieu_de_tb = (tb.get("title") or [""])[0]
+                except Exception:  # noqa: BLE001 — không đọc được thì giữ mức chung
+                    pass
                 ra[d] = {"status": "retracted", "source": "crossref",
                          "reason": "Crossref: updated-by retraction",
                          "notice_doi": thong_bao,
+                         "notice_title": tieu_de_tb,
+                         "retract_and_replace": la_rut_va_thay(tieu_de_tb),
                          "title": (m.get("title") or [""])[0]}
             elif nang:
                 ra[d] = {"status": "expression_of_concern", "source": "crossref",

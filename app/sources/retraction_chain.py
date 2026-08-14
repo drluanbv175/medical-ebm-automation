@@ -118,6 +118,19 @@ class RetractionChain:
                             "retraction_date": rw.get("retraction_date"),
                             "reason": rw.get("reason"),
                         }
+                    # PHÂN BIỆT "rút bỏ hẳn" với "RÚT RỒI ĐĂNG LẠI BẢN ĐÃ SỬA".
+                    # Retraction Watch ghi dạng này trong `reason` (vd "Error in Data;
+                    # Retract and Replace;"). Ở dạng đó bài đã được sửa rồi công bố lại,
+                    # thường CÙNG DOI/PMID — PubMed không gắn 'Retracted Publication'
+                    # và không có dòng 'RIN'. Gọi chung là "đã bị rút, không dùng" là
+                    # nói sai về một trích dẫn hợp lệ; việc cần làm là ĐỐI CHIẾU số liệu
+                    # với bản đã sửa, không phải bỏ mục. Vẫn giữ status 'retracted' để
+                    # cổng còn chặn (fail-closed) — chỉ CÂU CHỮ đổi.
+                    from app.sources.crossref_retraction import la_rut_va_thay  # noqa: PLC0415
+                    if la_rut_va_thay((rw or {}).get("reason", ""),
+                                      kq.get("notice_title", ""),
+                                      kq.get("reason", "")):
+                        ra["retract_and_replace"] = True
                     return ra
 
         # 2. ÂM TÍNH hoặc "nghi ma" — chỉ nguồn SỐNG mới được nói, theo thứ tự ưu tiên.
