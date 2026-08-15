@@ -1161,6 +1161,78 @@ def _signature_payload(gate_id: str, study: str, evidence_hash: str, timestamp_u
     ]).encode("utf-8")
 
 
+# ── ED25519 — CHỮ KÝ BẤT ĐỐI XỨNG (nâng cấp B, bác sĩ duyệt tường minh 15/08/2026
+# qua AskUserQuestion «B. Ed25519») ───────────────────────────────────────────
+# VÌ SAO: HMAC là mật mã ĐỐI XỨNG — máy xác minh buộc phải GIỮ khóa đã ký, nên hệ
+# không bao giờ chứng minh được «người ký độc lập với chủ nhiệm» (giới hạn tự khai
+# từ 27/07/2026). Ed25519 tách đôi: người duyệt giữ khóa RIÊNG (~/.ebm-secrets/
+# gate_ed25519_<NHÓM>.key — có thể nằm trên MÁY KHÁC của họ), repo chỉ giữ khóa
+# CÔNG (config/gate_ed25519_pubkeys/ — công khai, track git được). Máy xác minh
+# không cầm bất kỳ bí mật nào ⇒ chữ ký hợp lệ LÀ bằng chứng có người-giữ-khóa-riêng
+# tham gia. Tương thích ngược tuyệt đối: scheme "ed1" sống CẠNH "v4"; máy không có
+# khóa ed thì mọi hành vi giữ nguyên như trước.
+_ED_SIGNATURE_SCHEME = "ed1"
+_ED_PRIVATE_DIR = Path.home() / ".ebm-secrets"
+_ED_PUBLIC_DIR = Path(__file__).resolve().parents[1] / "config" / "gate_ed25519_pubkeys"
+
+
+def _ed_private_path(group: str) -> Path:
+    return _ED_PRIVATE_DIR / f"gate_ed25519_{group}.key"
+
+
+def _ed_public_path(group: str) -> Path:
+    return _ED_PUBLIC_DIR / f"{group}.pub"
+
+
+def ed25519_private_key_available(group: str) -> bool:
+    return bool(group) and _ed_private_path(group).exists()
+
+
+def _load_ed_private(group: str):
+    """Khóa riêng Ed25519 của nhóm — None nếu không có/không đọc được/thiếu thư viện."""
+    try:
+        from cryptography.hazmat.primitives.serialization import load_pem_private_key
+        p = _ed_private_path(group)
+        if not p.exists():
+            return None
+        return load_pem_private_key(p.read_bytes(), password=None)
+    except Exception:  # noqa: BLE001 — thiếu lib/khóa hỏng đều = «không ký được», fail-closed
+        return None
+
+
+def _load_ed_public(group: str):
+    try:
+        from cryptography.hazmat.primitives.serialization import load_pem_public_key
+        p = _ed_public_path(group)
+        if not p.exists():
+            return None
+        return load_pem_public_key(p.read_bytes())
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def sign_approval_ed25519(gate_id: str, study: str, evidence_hash: str,
+                          timestamp_utc: str, *, reviewer_role: str = "",
+                          reviewer_ref: str = "", decision: str = "",
+                          is_synthetic: bool = False,
+                          prev_hash: str = "") -> Optional[str]:
+    """Ký Ed25519 trên CÙNG payload với HMAC (đổi payload là vô hiệu chữ ký chéo).
+    Chuỗi: "ed1:role:<hex>". Ed25519 LUÔN phạm vi 'role' — không có tầng khóa chung,
+    vì toàn bộ ý nghĩa của nó là danh tính riêng từng nhóm vai trò."""
+    group = role_group_for(reviewer_role) or ""
+    if not group:
+        return None
+    priv = _load_ed_private(group)
+    if priv is None:
+        return None
+    payload = _signature_payload(gate_id, study, evidence_hash, timestamp_utc, group,
+                                 reviewer_ref, decision, is_synthetic, prev_hash)
+    try:
+        return f"{_ED_SIGNATURE_SCHEME}:{_SIGNATURE_SCOPE_ROLE}:{priv.sign(payload).hex()}"
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: str, *,
                   reviewer_role: str = "", reviewer_ref: str = "",
                   decision: str = "", is_synthetic: bool = False,
@@ -1171,8 +1243,19 @@ def sign_approval(gate_id: str, study: str, evidence_hash: str, timestamp_utc: s
     Chuỗi trả về: "v2:<phạm_vi>:<hex>" — phạm_vi 'role' nghĩa là ký bằng khóa riêng của
     nhóm stakeholder (tách vai trò thật), 'shared' nghĩa là ký bằng khóa chung của máy.
     Phạm vi nằm NGAY TRONG chữ ký để mọi nơi đọc ledger nói đúng mức bảo đảm, thay vì
-    ngầm hiểu mọi chữ ký đều là bằng chứng độc lập."""
+    ngầm hiểu mọi chữ ký đều là bằng chứng độc lập.
+
+    NÂNG CẤP B (15/08/2026): nếu nhóm vai trò CÓ khóa riêng Ed25519 trên máy này thì
+    ưu tiên ký "ed1" (bằng chứng mạnh hơn — xác minh không cần bí mật); không có thì
+    giữ nguyên đường HMAC như trước, không đổi hành vi máy cũ."""
     group = role_group_for(reviewer_role) or ""
+    if group and ed25519_private_key_available(group):
+        ed = sign_approval_ed25519(gate_id, study, evidence_hash, timestamp_utc,
+                                   reviewer_role=reviewer_role, reviewer_ref=reviewer_ref,
+                                   decision=decision, is_synthetic=is_synthetic,
+                                   prev_hash=prev_hash)
+        if ed:
+            return ed
     key, scope = _load_signing_key(group or None)
     if not key:
         return None
@@ -1224,14 +1307,30 @@ def _record_reviewer_ref(record: Dict[str, Any]) -> Tuple[str, bool]:
 
 
 def signature_scope(record: Dict[str, Any]) -> Optional[str]:
-    """Phạm vi khóa đã ký bản ghi ('role' | 'shared'), None nếu không có/không đúng định dạng."""
+    """Phạm vi khóa đã ký bản ghi ('role' | 'shared'), None nếu không có/không đúng định dạng.
+    Nhận cả hai scheme: "v4" (HMAC) và "ed1" (Ed25519 — luôn 'role'; xem thêm
+    signature_scheme() khi cần phân biệt mức bảo đảm)."""
     sig = record.get("approver_signature")
     if not isinstance(sig, str):
         return None
     parts = sig.split(":")
-    if len(parts) != 3 or parts[0] != _SIGNATURE_SCHEME:
+    if len(parts) != 3 or parts[0] not in (_SIGNATURE_SCHEME, _ED_SIGNATURE_SCHEME):
+        return None
+    if parts[0] == _ED_SIGNATURE_SCHEME and parts[1] != _SIGNATURE_SCOPE_ROLE:
         return None
     return parts[1] if parts[1] in (_SIGNATURE_SCOPE_ROLE, _SIGNATURE_SCOPE_SHARED) else None
+
+
+def signature_scheme(record: Dict[str, Any]) -> Optional[str]:
+    """'v4' (HMAC — máy xác minh phải giữ khóa) | 'ed1' (Ed25519 — xác minh bằng khóa
+    CÔNG, bằng chứng độc lập thật) | None. Cho các nơi công bố mức bảo đảm (G8/G10)."""
+    sig = record.get("approver_signature")
+    if not isinstance(sig, str):
+        return None
+    parts = sig.split(":")
+    if len(parts) != 3 or parts[0] not in (_SIGNATURE_SCHEME, _ED_SIGNATURE_SCHEME):
+        return None
+    return parts[0]
 
 
 def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
@@ -1254,11 +1353,37 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
     if not isinstance(sig, str) or not sig:
         return False
     parts = sig.split(":")
-    if len(parts) != 3 or parts[0] != _SIGNATURE_SCHEME:
+    if len(parts) != 3 or parts[0] not in (_SIGNATURE_SCHEME, _ED_SIGNATURE_SCHEME):
         return False
     claimed_scope, mac_hex = parts[1], parts[2]
     if claimed_scope not in (_SIGNATURE_SCOPE_ROLE, _SIGNATURE_SCOPE_SHARED):
         return False
+    if parts[0] == _ED_SIGNATURE_SCHEME:
+        # NHÁNH ED25519 (nâng cấp B): xác minh bằng khóa CÔNG của nhóm — máy này
+        # không cần giữ bí mật nào. ed1 chỉ hợp lệ ở phạm vi 'role'; sai nhóm/sai
+        # payload/chữ ký hỏng đều False, không ném (chốt fail-closed).
+        if claimed_scope != _SIGNATURE_SCOPE_ROLE or not mac_hex or not mac_hex.isascii():
+            return False
+        reviewer_ref, ref_ok = _record_reviewer_ref(record)
+        if not ref_ok:
+            return False
+        role_raw = record.get("reviewer_role", "")
+        group = role_group_for(role_raw if isinstance(role_raw, str) else "") or ""
+        pub = _load_ed_public(group) if group else None
+        if pub is None:
+            return False
+        try:
+            pub.verify(bytes.fromhex(mac_hex),
+                       _signature_payload(str(record.get("gate_id", "") or ""), study,
+                                          str(record.get("evidence_hash", "") or ""),
+                                          str(record.get("timestamp_utc", "") or ""),
+                                          group, reviewer_ref,
+                                          str(record.get("decision", "") or ""),
+                                          bool(record.get("is_synthetic")),
+                                          str(record.get("prev_hash") or "")))
+            return True
+        except Exception:  # noqa: BLE001 — InvalidSignature/hex hỏng/kiểu sai đều = False
+            return False
     # compare_digest CHỈ nhận chuỗi ASCII — chặn sớm thay vì để nó ném TypeError.
     if not mac_hex or not mac_hex.isascii():
         return False

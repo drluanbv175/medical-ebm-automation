@@ -60,7 +60,53 @@ def main() -> int:
                     help="Tạo KHÓA RIÊNG cho một nhóm stakeholder (khuyến nghị mạnh cho IRB và "
                          "INDEPENDENT_PEER_REVIEWER — 2 vai trò bắt buộc phải độc lập với chủ nhiệm "
                          "đề tài). Không truyền = tạo khóa CHUNG của máy.")
+    ap.add_argument("--ed25519", action="store_true",
+                    help="NÂNG CẤP B (15/08/2026): tạo CẶP KHÓA Ed25519 cho nhóm --role. "
+                         "Người duyệt giữ file .key (có thể đem sang máy khác/USB); repo chỉ "
+                         "giữ khóa CÔNG — máy xác minh không cầm bí mật nào, chữ ký trở "
+                         "thành bằng chứng độc lập THẬT. Bắt buộc kèm --role.")
     args = ap.parse_args()
+
+    if args.ed25519:
+        if not args.role:
+            print("✗ --ed25519 bắt buộc kèm --role <NHÓM> (ý nghĩa của nó là danh tính riêng).")
+            return 2
+        try:
+            from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+            from cryptography.hazmat.primitives.serialization import (
+                Encoding,
+                NoEncryption,
+                PrivateFormat,
+                PublicFormat,
+            )
+        except ImportError:
+            print("✗ Thiếu thư viện `cryptography` — cài venv chuẩn rồi chạy lại.")
+            return 2
+        priv_path = _KEY_PATH.parent / f"gate_ed25519_{args.role}.key"
+        pub_dir = BASE / "config" / "gate_ed25519_pubkeys"
+        pub_path = pub_dir / f"{args.role}.pub"
+        if priv_path.exists() or pub_path.exists():
+            print(f"✋ Đã có khóa Ed25519 cho {args.role} ({priv_path.name} / {pub_path.name}).")
+            print("   KHÔNG ghi đè — đổi khóa là vô hiệu chữ ký cũ; tự tay xóa trước nếu chắc chắn.")
+            return 0
+        priv = Ed25519PrivateKey.generate()
+        priv_path.parent.mkdir(parents=True, exist_ok=True)
+        pub_dir.mkdir(parents=True, exist_ok=True)
+        priv_path.write_bytes(priv.private_bytes(Encoding.PEM, PrivateFormat.PKCS8,
+                                                 NoEncryption()))
+        try:
+            lock_owner_exclusive(priv_path, writable=True)
+        except (OSError, RuntimeError):
+            pass
+        pub_path.write_bytes(priv.public_key().public_bytes(
+            Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
+        print(f"✅ Đã tạo cặp khóa Ed25519 cho {args.role}:")
+        print(f"   • Khóa RIÊNG (bí mật): {priv_path} — GIAO CHO NGƯỜI DUYỆT GIỮ;")
+        print("     muốn độc lập thật thì chuyển sang máy/USB của họ rồi XÓA khỏi máy này.")
+        print(f"   • Khóa CÔNG: {pub_path} — commit vào repo được (an toàn, công khai).")
+        print("   Từ giờ approve_gate.py TỰ ƯU TIÊN ký ed1 cho nhóm này khi thấy khóa riêng.")
+        return 0
+
     key_path = _key_path_for(args.role)
 
     print("=" * 70)

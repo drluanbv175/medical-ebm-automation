@@ -41,10 +41,21 @@ EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 MAILTO = "bsluanbv175@gmail.com"
 
 
-def _goi(url: str) -> bytes:
+def _goi(url: str, thu: int = 3) -> bytes:
+    """GET có RETRY — đo thật 15/08: kho 600 PMID chết giữa chừng ở file thứ 17 vì
+    một IncompleteRead đơn lẻ (mạng nháy), mất cả lượt chạy dài. Mạng nháy là
+    thường lệ ở lô lớn; lỗi lần cuối mới được ném ra."""
+    import http.client
     req = urllib.request.Request(url, headers={"User-Agent": f"EBM-toan-van-oa/1.0 ({MAILTO})"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return r.read()
+    loi: Exception | None = None
+    for lan in range(thu):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return r.read()
+        except (urllib.error.URLError, OSError, http.client.HTTPException) as e:
+            loi = e
+            time.sleep(1.5 * (lan + 1))
+    raise loi  # type: ignore[misc]
 
 
 def pmids_tu_g0(study: str) -> list[str]:
@@ -75,16 +86,24 @@ def _parse_linksets(d: dict) -> dict[str, str]:
     return ra
 
 
-def lien_ket_pmc(pmids: list[str]) -> dict[str, str]:
-    """PMID → PMCID qua elink (lô một lần). Vắng mặt = KHÔNG có bản PMC."""
-    if not pmids:
-        return {}
-    # Bẫy elink kinh điển (đo thật 15/08: 1/8 thay vì 6/8): gộp ID bằng dấu phẩy
-    # làm NCBI TRỘN links vào một linkset — mất ánh xạ theo-từng-ID. Lặp `&id=`
-    # cho từng mã thì mỗi ID một linkset riêng, ánh xạ đúng.
-    u = (f"{EUTILS}/elink.fcgi?dbfrom=pubmed&db=pmc&retmode=json"
-         + "".join(f"&id={p}" for p in pmids) + f"&tool=ebm&email={MAILTO}")
-    return _parse_linksets(json.loads(_goi(u).decode("utf-8", "replace")))
+def lien_ket_pmc(pmids: list[str], co_lo: int = 50) -> dict[str, str]:
+    """PMID → PMCID qua elink, CHIA LÔ. Vắng mặt = KHÔNG có bản PMC.
+
+    Hai bẫy elink đã đo thật, đừng gỡ:
+    - 15/08 sáng: gộp ID bằng dấu phẩy làm NCBI TRỘN links vào một linkset —
+      mất ánh xạ theo-từng-ID (1/8 thay vì 6/8). Phải lặp `&id=` từng mã.
+    - 15/08 chiều: lặp `&id=` cho ~600 mã trong MỘT URL → NCBI trả HTTPError
+      (URL quá dài) — cả kho dashboard không gom được bài nào. Chia lô ≤50,
+      nghỉ 0.34s giữa lô (đúng nhịp E-utilities không khoá)."""
+    ra: dict[str, str] = {}
+    for i in range(0, len(pmids), max(1, co_lo)):
+        lo = pmids[i:i + co_lo]
+        u = (f"{EUTILS}/elink.fcgi?dbfrom=pubmed&db=pmc&retmode=json"
+             + "".join(f"&id={p}" for p in lo) + f"&tool=ebm&email={MAILTO}")
+        ra.update(_parse_linksets(json.loads(_goi(u).decode("utf-8", "replace"))))
+        if i + co_lo < len(pmids):
+            time.sleep(0.34)
+    return ra
 
 
 def tai_toan_van(pmcid: str) -> bytes | None:
