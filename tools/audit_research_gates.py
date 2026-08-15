@@ -336,6 +336,15 @@ GATE_ARTIFACT_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
     ],
     "G6": [
         {
+            # PHA R LÔ R1 (15/08/2026): lớp quality-gate cuối cùng còn thiếu —
+            # required=False cùng lý do G3/G8 (fixture verify_research_gate_contracts
+            # chỉ dựng artifact chính; nâng bắt buộc phải sửa đồng thời cả hai file).
+            "key": "g6_quality_report",
+            "label": "Báo cáo chất lượng G6 (script ↔ SAP đã khoá)",
+            "patterns": ["G6_QUALITY_REPORT.json"],
+            "required": False,
+        },
+        {
             "key": "analysis_scripts",
             "label": "Analysis scripts/syntax",
             "patterns": ["G6_A7_ANALYSIS_SCRIPTS_*.md", "14_Analysis_Syntax.md"],

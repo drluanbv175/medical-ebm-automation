@@ -3052,6 +3052,20 @@ def main():
     }
     cp_path = out / "G6_checkpoint.json"
     cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # HỢP ĐỒNG CHẤT LƯỢNG G6 (PHA R LÔ R1, 15/08/2026) — tự chạy như G3/G8:
+    # đối chiếu script ↔ SAP đã khoá (seed/alpha/kết cục/subgroup/thứ tự khoá).
+    # CỐ Ý không đổi exit-code của run_g6_auto (hợp đồng cũ nhiều test dựa vào);
+    # kết quả in ra + ghi G6_QUALITY_REPORT.{json,md} + checkpoint["quality_gate"].
+    try:
+        import importlib.util as _ilu
+        _sp = _ilu.spec_from_file_location("g6qg", Path(__file__).resolve().parent / "g6_quality_gate.py")
+        _qg = _ilu.module_from_spec(_sp)
+        _sp.loader.exec_module(_qg)
+        _bao = _qg.evaluate_study(study)
+        print(f"\n🔎 G6 QUALITY: {_bao['status']} (chi tiết: G6_QUALITY_REPORT.md)")
+    except Exception as _exc:  # noqa: BLE001 — lớp chấm không được giết cổng sinh
+        print(f"\n⚠ G6 QUALITY không chạy được: {_exc} — chạy tay: python3 tools/g6_quality_gate.py --study {study}")
     print(f"\n💾 Checkpoint: {cp_path.name}")
 
     # ─── Tóm tắt ───
