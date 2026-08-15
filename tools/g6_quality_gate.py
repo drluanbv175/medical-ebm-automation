@@ -72,6 +72,12 @@ def evaluate_study(study: str, write: bool = True) -> dict:
         add("G6-AUTO-00", False, f"thiếu {', '.join(thieu)} — không có gì để đối chiếu", True)
         return _finish(study, thu_muc, "BLOCKED", ket, write)
     art = art_p.read_text(encoding="utf-8", errors="replace")
+    # Script thân nằm ở exports/<study>/scripts/*.R|*.py — artifact md chỉ là bìa.
+    # Bản đầu chỉ đọc md nên báo «không set.seed» trong khi template R có
+    # `SEED <- 2026` (bắt được khi chạy trên đề tài sống 15/08 — bug #2 của gate).
+    for sf in sorted((thu_muc / "scripts").glob("*")):
+        if sf.suffix in (".R", ".py", ".r"):
+            art += "\n" + sf.read_text(encoding="utf-8", errors="replace")
     sap = sap_p.read_text(encoding="utf-8", errors="replace")
     try:
         cp = json.loads(cp_p.read_text(encoding="utf-8"))
@@ -91,7 +97,10 @@ def evaluate_study(study: str, write: bool = True) -> dict:
         gc = ilu.module_from_spec(spec)
         sys.modules["gc_g6"] = gc
         spec.loader.exec_module(gc)
-        if gc.ledger_approved(study, "G4"):
+        # ledger_approved đòi (study, gate, artifact_path) — ràng chữ ký vào ĐÚNG
+        # file SAP hiện tại; bản đầu gọi thiếu tham số → TypeError bị nuốt và cổng
+        # luôn rơi fallback (bắt được khi chạy trên đề tài sống 15/08).
+        if gc.ledger_approved(study, "G4", str(sap_p)):
             bang_chung_g4 = "ledger (chữ ký thật)"
     except Exception:  # noqa: BLE001 — thiếu khoá/ledger không được giết cổng chấm
         bang_chung_g4 = None
@@ -107,7 +116,7 @@ def evaluate_study(study: str, write: bool = True) -> dict:
     # ── G6-AUTO-02: SEED script ↔ SAP §10 ────────────────────────────────────
     sap10 = _sec(sap, 10)
     seed_sap = re.search(r"set\.seed\((\d+)\)|seed\D{0,12}(\d{3,6})", sap10)
-    seed_art = re.findall(r"set\.seed\((\d+)\)", art)
+    seed_art = re.findall(r"set\.seed\((\d+)\)", art) + re.findall(r"SEED\s*<-\s*(\d+)", art)
     if "[CẦN" in sap10 and not seed_sap:
         add("G6-AUTO-02", None, "SAP §10 seed còn [CẦN BÁC SĨ ẤN ĐỊNH] — chưa đối chiếu được")
         trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
