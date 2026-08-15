@@ -51,6 +51,17 @@ fi
 "$PY" "$PROJ/../tools/build_antifacts.py" >> "$LOG" 2>&1
 rc4=$?; [ "$rc4" -ne 0 ] && { echo "  ⚠ Bước (4) build_antifacts thất bại (mã thoát $rc4)" >> "$LOG"; rc_all=1; }
 
+# (5)(6) PHỤ TRỢ — nâng cấp A+D 15/08/2026 (bác sĩ duyệt), CỐ Ý không tính vào
+# rc_all/--critical: kho toàn văn OA tươi dần và cầu NC⇄LS canh nền đề tài là
+# việc TÍCH LŨY — một tuần lỡ vì mạng PMC không được phép làm lượt giám sát
+# an toàn thuốc mang nhãn FAIL (nhiễu đỏ dạy người ta bỏ màu đỏ).
+# (5) làm tươi kho toàn văn OA dùng chung (chặn trần 150 PMID/lượt cho nhẹ)
+"$PY" "$PROJ/../tools/gom_toan_van_dashboard.py" --gioi-han 150 >> "$LOG" 2>&1 \
+  || echo "  (5) gom_toan_van phụ trợ không hoàn tất — sẽ tự bù lượt sau" >> "$LOG"
+# (6) cầu nghiên cứu ⇄ lâm sàng: nền đề tài thật vào sổ canh + cảnh báo rút bài
+"$PY" "$PROJ/../tools/cau_noi_nghien_cuu_lam_sang.py" >> "$LOG" 2>&1 \
+  || echo "  (6) cau_noi phụ trợ không hoàn tất — sẽ tự bù lượt sau" >> "$LOG"
+
 "$PY" tools/record_evidence_surveillance_run.py \
   --cadence weekly --started-at "$STARTED_AT" --log "$LOG" \
   --critical "live_update=$rc1" --critical "safety_reports=$rc2" \

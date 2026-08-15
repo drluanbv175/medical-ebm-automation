@@ -3,7 +3,10 @@ from pathlib import Path
 
 # ruff: noqa: E402,E501
 
-ROOT = Path(r"C:\Users\Admin\OneDrive\Claude AI")
+# VÁ 15/08/2026 (chốt kiem_tuong_thich_da_nen bắt được — 🔴 duy nhất toàn kho):
+# ROOT ghi cứng C:\Users\Admin\... nên tool CHƯA TỪNG chạy được trên Mac — đúng
+# họ lỗi ensure_strict_source/run_retraction_and_med_safety đã vá 12-13/08.
+ROOT = Path(__file__).resolve().parents[2]
 REPO = ROOT / "medical-ebm-automation"
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
