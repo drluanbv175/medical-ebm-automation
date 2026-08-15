@@ -139,8 +139,12 @@ def main() -> int:
             "Đọc bản trình bày: https://pmc.ncbi.nlm.nih.gov/articles/PMC<id>/ . "
             "Cần bác sĩ kiểm chứng."]
     bc.write_text("\n".join(dong) + "\n", encoding="utf-8")
+    try:
+        duong_in = bc.resolve().relative_to(EXPORTS.parent)
+    except ValueError:  # --out là đường dẫn tương đối/ngoài repo — in nguyên trạng
+        duong_in = bc
     print(f"  OA {len(co_oa)}/{len(pmids)} · không-OA {len(khong_oa)} · "
-          f"không-PMC {len(khong_pmc)} → {bc.relative_to(EXPORTS.parent)}")
+          f"không-PMC {len(khong_pmc)} → {duong_in}")
     return 0
 
 
