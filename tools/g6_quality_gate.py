@@ -108,7 +108,10 @@ def evaluate_study(study: str, write: bool = True) -> dict:
         # ledger_approved đòi (study, gate, artifact_path) — ràng chữ ký vào ĐÚNG
         # file SAP hiện tại; bản đầu gọi thiếu tham số → TypeError bị nuốt và cổng
         # luôn rơi fallback (bắt được khi chạy trên đề tài sống 15/08).
-        if gc.ledger_approved(study, "G4", str(sap_p)):
+        # Chữ ký hàm là (gate_id, study, artifact) — GATE TRƯỚC. Bản vá 15/08 buổi
+        # sáng gọi ngược thứ tự nên vĩnh viễn False (study bị đọc làm gate_id) —
+        # lộ ra khi march demo; đúng lớp «đọc kỹ chữ ký hàm trước khi gọi».
+        if gc.ledger_approved("G4", study, str(sap_p)):
             bang_chung_g4 = "ledger (chữ ký thật)"
     except Exception:  # noqa: BLE001 — thiếu khoá/ledger không được giết cổng chấm
         bang_chung_g4 = None

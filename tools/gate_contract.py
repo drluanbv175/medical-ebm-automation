@@ -1827,8 +1827,21 @@ def ledger_approved(gate_id: str, study: str, artifact_path: Path,
     # và tools/stakeholder_review_audit.py cũng in [PASS] — nên bác sĩ kiểm tay cũng
     # thấy "ổn". Schema có sẵn trường `supersedes` nhưng KHÔNG nơi nào đọc.
     # Nay: lấy bản ghi MỚI NHẤT theo thời gian rồi mới xét quyết định của nó.
-    if latest.get("decision") != "APPROVED" or latest.get("is_synthetic"):
+    if latest.get("decision") != "APPROVED":
         return False
+    if latest.get("is_synthetic"):
+        # VÁ 15/08/2026 — BÁC SĨ DUYỆT TƯỜNG MINH («duyệt #8», phiên PHA R3, có
+        # giám sát; classifier từng chặn máy tự sửa — đúng ranh giới). Trước đây
+        # is_synthetic bị chặn VÔ ĐIỀU KIỆN, trái docstring của chính hàm này
+        # («ngoại lệ duy nhất là synthetic_test»): cơ chế admin-synthetic 15/07
+        # ghi ledger đúng nhưng KHÔNG bộ đọc chuẩn nào công nhận, nên mọi consumer
+        # (run_g6, run_analysis_cli, G10) coi đề tài THỬ như chưa ký vĩnh viễn.
+        # Nay bản ghi synthetic CHỈ được công nhận khi đề tài đã TỰ TAY đánh dấu
+        # synthetic_test hợp lệ (is_synthetic_test_study — gồm marker + denylist
+        # đề tài thật). Đề tài THẬT: is_synthetic vẫn bị chặn y như cũ — không
+        # nới một li nào cho dữ liệu người thật.
+        if not is_synthetic_test_study(study, root):
+            return False
     try:
         actual_hash = hashlib.sha256(Path(artifact_path).read_bytes()).hexdigest()
     except (OSError, ValueError):
