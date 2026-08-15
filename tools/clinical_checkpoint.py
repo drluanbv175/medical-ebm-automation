@@ -27,6 +27,14 @@ import json
 import re
 from dataclasses import dataclass, field
 
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 
 class CheckpointFormatError(ValueError):
     """Khối checkpoint không đúng schema — công cụ TỪ CHỐI đọc thay vì đoán mò."""

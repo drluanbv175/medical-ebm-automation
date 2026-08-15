@@ -55,6 +55,14 @@ from typing import Dict, Optional
 import gate_contract as _gate_contract
 import normal_dist as _normal_dist
 
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 
 class ClinicalCalcError(ValueError):
     """Input ngoài miền hợp lệ hoặc thiếu tham số bắt buộc — KHÔNG tự điền mặc định."""

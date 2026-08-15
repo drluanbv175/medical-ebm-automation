@@ -25,7 +25,7 @@ ROOT = REPO.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from app.sources.authority import match_authority_source
+from app.sources.authority import match_authority_source  # noqa: E402
 
 DEFAULT_MASTER = ROOT / "EBM_MASTER" / "EBM_MASTER.json"
 DEFAULT_JSON = REPO / "reports" / "DIRECT_CLINICAL_PRACTICE_READINESS.json"
@@ -361,7 +361,11 @@ def evaluate_master(
     cards = master.get("evidence_cards", [])
     if not isinstance(cards, list):
         cards = []
-    results = [evaluate_card(card, today=today, freshness_days=freshness_days) for card in cards if isinstance(card, Mapping)]
+    results = [
+        evaluate_card(card, today=today, freshness_days=freshness_days)
+        for card in cards
+        if isinstance(card, Mapping)
+    ]
     counts = Counter(result.status for result in results)
     blocker_counts: Counter[str] = Counter()
     for result in results:

@@ -854,7 +854,7 @@ def build_operational_completeness_policy() -> OperationalCompletenessPolicy:
             "final_guardrail R1-R7 + Q1-Q7",
         ],
         completeness_evidence=[
-            "upgrade_verify.py PASS 24/24",
+            "upgrade_verify.py requires 28/28 PASS before technical release",
             "sync_agents_to_codex.py --check PASS",
             "check_claude_codex_sync_health.py PASS",
             "verify_clinical_evidence_agent_standards.py fail_count=0",
@@ -1600,7 +1600,7 @@ def _check_operational_completeness_policy() -> StandardCheck:
         "question_frame_policy",
         "conflicting_evidence_policy",
         "final_guardrail R1-R7 + Q1-Q7",
-        "upgrade_verify.py PASS 24/24",
+        "upgrade_verify.py requires 28/28 PASS before technical release",
         "verify_clinical_production_control_plane.py keeps production blocked",
         "doctor_review_packet present before clinical use",
         "Real patient data ingestion",

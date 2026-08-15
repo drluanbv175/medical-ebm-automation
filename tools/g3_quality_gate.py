@@ -55,6 +55,14 @@ from typing import Any, Mapping, Optional, Sequence
 import gate_contract as GC
 import skill_standards as S
 
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT_PARAMS = "DRAFT_NEEDS_HUMAN_PARAMETERS"
 STATUS_DRAFT_REVIEW = "DRAFT_READY_NEEDS_STATISTICIAN_REVIEW"

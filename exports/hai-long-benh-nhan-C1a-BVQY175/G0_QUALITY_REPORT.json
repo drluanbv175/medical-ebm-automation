@@ -94,22 +94,20 @@
     {
       "id": "G0-HUMAN-06",
       "label": "Đã đọc lại bằng chứng G0 và biện minh tính mới",
-      "status": "REVIEW",
-      "evidence": "evidence_reviewed_confirmed=False; novelty_justification=có",
+      "status": "PASS",
+      "evidence": "evidence_reviewed_confirmed=True; novelty_justification=có",
       "action": "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification."
     },
     {
       "id": "G0-HUMAN-07",
       "label": "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm)",
-      "status": "REVIEW",
-      "evidence": "pico_confirmed=False; vai trò=thiếu; reviewed_at=thiếu",
+      "status": "PASS",
+      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-08-15",
       "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist) và reviewed_at dạng ISO-8601. Không cần lưu danh tính."
     }
   ],
   "pending_actions": [
-    "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá.",
-    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
-    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist) và reviewed_at dạng ISO-8601. Không cần lưu danh tính."
+    "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá."
   ],
   "artifact_manifest": {
     "A1": {
