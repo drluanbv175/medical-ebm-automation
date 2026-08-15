@@ -1,0 +1,64 @@
+{
+  "archive_record_type": "FRESH_ARCHIVE_ACCEPTANCE",
+  "phase": "R2.0",
+  "phase_name": "Validated EDC Synthetic Lifecycle Harness",
+  "date_utc": "2026-06-28",
+  "prior_phase_commit": "88661b9",
+  "suite_result": {
+    "total_passed": 1003,
+    "total_failed": 0,
+    "total_skipped": 5,
+    "new_tests_this_phase": 75,
+    "regression_failures": 0
+  },
+  "new_source_modules": [
+    "research_project/synthetic_edc_core.py",
+    "research_project/synthetic_edc_lifecycle.py",
+    "research_project/synthetic_edc_query.py"
+  ],
+  "new_test_files": [
+    "tests/test_r2_0_synthetic_edc_core.py",
+    "tests/test_r2_0_synthetic_edc_lifecycle.py"
+  ],
+  "new_evidence_files": [
+    "release_evidence/R2_0/R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md",
+    "release_evidence/R2_0/R2_0_TEST_REPORT.md",
+    "release_evidence/R2_0/R2_0_FRESH_ARCHIVE_ACCEPTANCE.json",
+    "release_evidence/R2_0/R2_0_FREEZE_SUMMARY.md"
+  ],
+  "hygiene_check": {
+    "new_source_modules_count": 3,
+    "max_allowed": 3,
+    "within_limit": true,
+    "new_test_files_count": 2,
+    "max_test_files_allowed": 2,
+    "test_files_within_limit": true,
+    "no_dashboard_created": true,
+    "no_duplicate_modules": true,
+    "no_network_calls": true,
+    "no_pii": true,
+    "no_real_research_data": true
+  },
+  "capabilities_implemented": [
+    "CRF version registry",
+    "Data dictionary validation",
+    "Synthetic record schema validation",
+    "Edit-check engine",
+    "Data freeze simulation",
+    "Data lock simulation (authority required)",
+    "Controlled export manifest (LOCKED only)",
+    "Audit and provenance linkage",
+    "Backup/restore simulation with hash verification",
+    "Query lifecycle (OPEN→ANSWERED→CLOSED/CANCELLED)",
+    "Controlled correction with mandatory reason",
+    "Protocol deviation tracking (MINOR/MAJOR/CRITICAL)"
+  ],
+  "global_invariants": {
+    "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+    "real_research_data": "BLOCKED",
+    "production_edc": "NOT IMPLEMENTED — EXTERNAL",
+    "pii": "NONE",
+    "network_calls": "NONE"
+  },
+  "disclaimer": "Cần bác sĩ kiểm chứng. All outputs are DRAFT — REQUIRE HUMAN REVIEW."
+}

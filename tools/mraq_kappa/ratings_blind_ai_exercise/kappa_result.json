@@ -1,0 +1,168 @@
+{
+  "raters": [
+    "agent_rater_1",
+    "agent_rater_2",
+    "agent_rater_3"
+  ],
+  "method": "fleiss",
+  "n_cases_common": 53,
+  "n_cases_incomplete": 0,
+  "incomplete_cases": {},
+  "overall_kappa": 0.7488151658767773,
+  "overall_interpretation": "pass (κ≥0.60, đồng thuận đáng kể)",
+  "n_agree": 47,
+  "n_disagree": 6,
+  "agree_case_ids": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "B1",
+    "B2",
+    "B3",
+    "B4",
+    "B5",
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C7",
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D6",
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E7",
+    "F1",
+    "F2",
+    "F3",
+    "F7",
+    "G1",
+    "G2",
+    "G3",
+    "G4",
+    "G5",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "I1",
+    "I2",
+    "I3",
+    "I4",
+    "I5"
+  ],
+  "disagree_cases": [
+    {
+      "case_id": "C6",
+      "scores": {
+        "agent_rater_1": "3",
+        "agent_rater_2": "2",
+        "agent_rater_3": "3"
+      },
+      "spread": 1
+    },
+    {
+      "case_id": "D5",
+      "scores": {
+        "agent_rater_1": "2",
+        "agent_rater_2": "1",
+        "agent_rater_3": "2"
+      },
+      "spread": 1
+    },
+    {
+      "case_id": "D7",
+      "scores": {
+        "agent_rater_1": "2",
+        "agent_rater_2": "2",
+        "agent_rater_3": "3"
+      },
+      "spread": 1
+    },
+    {
+      "case_id": "F4",
+      "scores": {
+        "agent_rater_1": "2",
+        "agent_rater_2": "3",
+        "agent_rater_3": "2"
+      },
+      "spread": 1
+    },
+    {
+      "case_id": "F5",
+      "scores": {
+        "agent_rater_1": "3",
+        "agent_rater_2": "2",
+        "agent_rater_3": "2"
+      },
+      "spread": 1
+    },
+    {
+      "case_id": "F6",
+      "scores": {
+        "agent_rater_1": "3",
+        "agent_rater_2": "3",
+        "agent_rater_3": "2"
+      },
+      "spread": 1
+    }
+  ],
+  "by_domain": {
+    "A": {
+      "n_cases": 5,
+      "kappa": 1.0,
+      "note": "excellent (κ≥0.80, gần như hoàn toàn đồng thuận)"
+    },
+    "B": {
+      "n_cases": 5,
+      "kappa": 1.0,
+      "note": "excellent (κ≥0.80, gần như hoàn toàn đồng thuận)"
+    },
+    "C": {
+      "n_cases": 7,
+      "kappa": 0.7857142857142857,
+      "note": "pass (κ≥0.60, đồng thuận đáng kể)"
+    },
+    "D": {
+      "n_cases": 7,
+      "kappa": 0.65,
+      "note": "pass (κ≥0.60, đồng thuận đáng kể)"
+    },
+    "E": {
+      "n_cases": 7,
+      "kappa": 1.0,
+      "note": "excellent (κ≥0.80, gần như hoàn toàn đồng thuận)"
+    },
+    "F": {
+      "n_cases": 7,
+      "kappa": 0.21250000000000027,
+      "note": "yếu (0≤κ<0.40) — nên bàn lại tiêu chí"
+    },
+    "G": {
+      "n_cases": 5,
+      "kappa": 1.0,
+      "note": "excellent (κ≥0.80, gần như hoàn toàn đồng thuận)"
+    },
+    "H": {
+      "n_cases": 5,
+      "kappa": 1.0,
+      "note": "excellent (κ≥0.80, gần như hoàn toàn đồng thuận)"
+    },
+    "I": {
+      "n_cases": 5,
+      "kappa": 1.0,
+      "note": "excellent (κ≥0.80, gần như hoàn toàn đồng thuận)"
+    }
+  },
+  "disclaimer": "Cần bác sĩ / người chấm kiểm chứng lại danh sách case bất đồng trước khi cập nhật điểm chính thức. Công cụ không tự chấm case nào."
+}

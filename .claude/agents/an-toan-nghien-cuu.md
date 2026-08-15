@@ -54,12 +54,16 @@ Thiết kế: ☐ QUAN SÁT ☐ CAN THIỆP
 
 BIẾN CỐ BẤT LỢI (AE — Adverse Event):
   Định nghĩa: Bất kỳ biến cố y tế bất lợi nào xảy ra ở người tham gia sau khi nhận can thiệp,
-  KHÔNG nhất thiết có quan hệ nhân quả với can thiệp (ICH-GCP E6(R3) §1.2)
+  KHÔNG nhất thiết có quan hệ nhân quả với can thiệp (ICH-GCP E6(R3), mục Glossary —
+  KHÔNG phải §1.2 như bản trước ghi; §1.2 là "Responsibilities" thuộc IRB/IEC, đã kiểm
+  chứng trực tiếp bản PDF chính thức 2026-07-11)
   Nguồn ghi nhận: ___
   Khoảng thời gian theo dõi: ___
 
 BIẾN CỐ BẤT LỢI NGHIÊM TRỌNG (SAE — Serious Adverse Event):
-  Định nghĩa (ICH E2A §3): Biến cố thỏa BẤT KỲ tiêu chí nào:
+  Định nghĩa (ICH E2A §II.B "Serious Adverse Event or Adverse Drug Reaction" — KHÔNG phải
+  §3 như bản trước ghi; mục 3 trong văn bản gốc là "Unexpected Adverse Drug Reaction", đã
+  kiểm chứng trực tiếp bản PDF chính thức 2026-07-11): Biến cố thỏa BẤT KỲ tiêu chí nào:
   ☐ Tử vong
   ☐ Nguy hiểm tính mạng
   ☐ Cần nhập viện / kéo dài nhập viện
@@ -68,16 +72,32 @@ BIẾN CỐ BẤT LỢI NGHIÊM TRỌNG (SAE — Serious Adverse Event):
   ☐ Biến cố quan trọng về y tế (medical important event — theo đánh giá điều tra viên)
 
 SUSAR (Suspected Unexpected Serious Adverse Reaction):
-  = SAE + Quan hệ nhân quả "có thể" hoặc "chắc chắn" + KHÔNG trong Investigator's Brochure/SmPC
+  = SAE + Quan hệ nhân quả "Có thể" HOẶC "Có khả năng" HOẶC "Chắc chắn" (mọi mức TRỪ "Không
+    liên quan" và "Ít có khả năng" — đúng khái niệm ICH E2A "reasonable possibility of a
+    causal relationship", SỬA 2026-07-23 vòng lặp kiểm tra-hoàn thiện vòng 12: bản cũ chỉ lấy
+    2 đầu "có thể"/"chắc chắn", bỏ sót mức giữa "Có khả năng/Probable" — sẽ bỏ sót báo cáo
+    nhanh SUSAR cho một biến cố điều tra viên đánh giá nhân quả ở mức Probable)
+  + KHÔNG trong Investigator's Brochure/SmPC
 
-PHÂN ĐỘ NẶNG (CTCAE nếu phù hợp):
+PHÂN ĐỘ NẶNG (CTCAE nếu phù hợp — độc lập với trục Quan hệ nhân quả bên dưới):
   Grade 1: Nhẹ — không triệu chứng / triệu chứng nhẹ
-  Grade 2: Trung bình — hạn chế hoạt động bình thường
-  Grade 3: Nặng — hạn chế hoạt động sinh hoạt
+  Grade 2: Trung bình — hạn chế hoạt động sinh hoạt CÔNG CỤ (instrumental ADL — nấu ăn, mua
+    sắm, quản lý tiền, việc nhà...), can thiệp tối thiểu/không xâm lấn
+  Grade 3: Nặng — hạn chế hoạt động TỰ CHĂM SÓC (self-care ADL — tắm rửa, mặc đồ, ăn uống,
+    dùng thuốc) VÀ/HOẶC cần nhập viện/kéo dài nhập viện, gây tàn phế, chưa đe dọa tính mạng
   Grade 4: Nguy hiểm tính mạng — cần can thiệp khẩn cấp
-  Grade 5: Tử vong liên quan can thiệp
+  Grade 5: Tử vong liên quan BIẾN CỐ (AE) — ĐỘC LẬP với đánh giá quan hệ nhân quả với can
+    thiệp (xem mục Quan hệ nhân quả riêng bên dưới; SỬA 2026-07-23 vòng 12: bản cũ ghi "tử
+    vong liên quan can thiệp" — lẫn trục độ nặng với trục nhân quả, 2 trục ĐỘC LẬP theo đúng
+    thiết kế CTCAE, có thể khiến bỏ sót Grade 5 cho ca tử vong chưa xác định nhân quả)
   Phiên bản CTCAE dùng: ___ (nêu rõ vì phân độ thay đổi giữa phiên bản)
-  Nguồn: NCI CTCAE v5.0 (ctep.cancer.gov/protocoldevelopment/electronic_applications/ctc.htm)
+  Nguồn: NCI CTCAE v6.0 cho đề tài MỚI (phát hành 2025; mốc NCI CTEP/DCP áp dụng cho thử
+  nghiệm mới ĐƯỢC NHẮM (targeted) 01/01/2026 nhưng CHÍNH nguồn dctd.cancer.gov ghi rõ mốc
+  này PHỤ THUỘC vào việc phần mềm bắt buộc (Rave ALS 7.2) đã phát hành hay chưa — xác nhận
+  qua dctd.cancer.gov 2026-07-21: KHÔNG coi 01/01/2026 là ngày chắc chắn, kiểm tra thông báo
+  chính thức mới nhất của CTEP/DCP tại thời điểm dùng) — v5.0 chỉ còn dùng cho đề tài
+  ĐANG chạy đã bắt đầu trước khi có v6.0 (không bắt buộc chuyển đổi ngược)
+  (dctd.cancer.gov/research/ctep-trials/for-sites/adverse-events)
 
 QUAN HỆ NHÂN QUẢ (Attribution):
   ☐ Không liên quan (Unrelated)
@@ -101,9 +121,9 @@ QUY TRÌNH THU THẬP AE:
 TIMELINE BÁO CÁO (theo ICH E6(R3) + TT43/2024/TT-BYT):
 | Loại biến cố | Thời hạn báo cáo ban đầu | Báo cáo theo dõi | Đến ai |
 |-------------|------------------------|-----------------|-------|
-| SAE gây tử vong | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày kể từ biết | 15 ngày | IRB + Sponsor |
+| SAE gây tử vong | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày kể từ biết | 8 ngày bổ sung (tổng ≤15 ngày kể từ lúc biết — ICH E2A mục III.B.1; **sửa 2026-07-26, vòng lặp vòng 27, phát hiện HIGH:** bản cũ ghi "15 ngày" ở cột này — nếu hiểu là 15 ngày CỘNG THÊM sau báo cáo ban đầu thì tổng lên tới 22 ngày, sai gần gấp đôi so với deadline thật của ICH E2A cho biến cố tử vong; toàn văn ICH E2A mục III.B.1 quy định 7 ngày ban đầu + 8 ngày bổ sung = tổng 15 ngày TÍNH TỪ LÚC BIẾT) | IRB + Sponsor |
 | SAE không gây tử vong | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày | 15 ngày | IRB + Sponsor |
-| SUSAR | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày | 30 ngày | IRB + Cơ quan QLNN |
+| SUSAR | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày | [CẦN CHỦ NHIỆM/NHÀ TÀI TRỢ XÁC NHẬN — **sửa 2026-07-26, vòng lặp vòng 27, phát hiện HIGH:** bản cũ ghi cứng "30 ngày" nhưng ICH E2A KHÔNG có mốc 30 ngày nào cho SUSAR; chỉ có 15 ngày một lần (SUSAR không tử vong/không nguy hiểm tính mạng) hoặc 7+8=15 ngày (SUSAR tử vong/nguy hiểm tính mạng, xem hàng trên) — "30 ngày" không có cơ sở trong ICH E2A lẫn TT43/2024/TT-BYT (thông tư không tự đặt số ngày cụ thể)] | IRB + Cơ quan QLNN |
 | AE Grade 3-4 | [CẦN CHỦ NHIỆM XÁC NHẬN] ngày | — | Ghi nhận + DSMB |
 
 Biểu mẫu báo cáo:
@@ -182,6 +202,11 @@ THÀNH PHẦN DSMB (nếu CÓ):
   Bao gồm: ☐ Chuyên gia lâm sàng ☐ Nhà thống kê độc lập ☐ Chuyên gia đạo đức
   Thành viên: [CẦN CHỦ NHIỆM CHỈ ĐỊNH]
   Chủ tịch DSMB: ___
+  KHAI BÁO ĐỘC LẬP + XUNG ĐỘT LỢI ÍCH từng thành viên (SPIRIT 2025 mục 28a — bắt
+  buộc, vá 2026-07-17 round audit đối kháng 4): mỗi thành viên DSMB ký xác nhận
+  KHÔNG có quan hệ tài chính/học thuật/nhân sự với nhóm nghiên cứu hoặc nhà tài
+  trợ có thể ảnh hưởng tính khách quan — [CẦN mẫu khai báo riêng cho từng thành
+  viên, tương tự Tài liệu 8 khai báo COI tác giả ở `dao-duc-dang-ky`].
 
 TẦN SUẤT HỌP:
   Họp định kỳ: Sau khi ___ % tuyển xong (vd sau 25%, 50%, 75%)
@@ -273,8 +298,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

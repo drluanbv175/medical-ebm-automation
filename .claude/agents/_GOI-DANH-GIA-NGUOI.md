@@ -61,7 +61,7 @@ Chấm 1 (rất kém) → 5 (rất tốt) cho mỗi tiêu chí:
 3. ✅ **ĐÃ XONG** — 2 file chấm SẴN CÓ ĐỦ 50 dòng (case_id + tóm tắt + khuyến nghị agent đã điền, chỉ còn cột chấm để trống cho người chấm):
    - Phần A (κ): `tools/eval/templates/expert_kappa_50cases.csv` — 50 dòng, cột `expert1/expert2/expert3/ghi_chu` trống.
    - Phần B (Likert): `tools/eval/templates/likert_50cases.csv` — 150 dòng (50 ca × 3 bác sĩ BS1/BS2/BS3), cột `c1..c5` trống.
-   - Đã smoke-test `human_eval_score.py` đọc đúng cả 2 file (không lỗi "nhãn lạ"); đã vá lỗi tool coi cột `summary`/`agent_rec` là nhãn chuyên gia.
+   - Đã vá lỗi tool coi cột `summary`/`agent_rec` là nhãn chuyên gia. **2026-07-12: phát hiện + vá lỗi KHÁC** — chạy đúng lệnh trên đúng 2 file này (trước khi vá) crash ngay `ValueError: Nhãn lạ 'C01'`, vì file CSV có BOM (`﻿case_id`) nhưng `human_eval_score.py::load_kappa`/`load_likert` mở bằng `encoding="utf-8"` (không phải `utf-8-sig`), khiến tên cột đầu bị đổi thành `'﻿case_id'` không khớp danh sách loại trừ cột. Đã sửa cả 2 hàm dùng `encoding="utf-8-sig"`; xác nhận lại bằng test tay với dữ liệu κ giả có nhãn thật (`--kappa ... --selftest` chạy đúng, không còn lỗi "Nhãn lạ").
 4. ⛔ **CHỈ BẠN LÀM ĐƯỢC TỪ ĐÂY:** gửi 2 file trên cho **3 chuyên gia lâm sàng độc lập** (không liên quan xây hệ) chấm **MÙ** (không biết đâu là đầu ra AI) → họ điền trực tiếp vào 2 file CSV (không đổi cấu trúc cột).
 5. Thu lại 2 CSV đã điền → chạy `python3 tools/eval/human_eval_score.py --kappa <file>.csv --likert <file>.csv` → κ + Likert.
 6. Điền kết quả vào `_CHUAN-CAFES.md` (P3.2, P4.2). Ca "AI nguy hiểm" → xử lý ngay theo critical safety.

@@ -1,0 +1,31 @@
+trace_id,governance_requirement,source,gate_blocking,pack_document,current_status,notes
+TM-01,Ethics committee approval of study protocol,Helsinki Declaration / Vietnamese Circular 29/2020/TT-BYT,ETH-01,R_GOV_1_ETHICS_REVIEW_READINESS_DOSSIER.md,READY_FOR_EXTERNAL_REVIEW — not yet submitted,Ethics body must approve; cannot be self-certified
+TM-02,Consent or waiver decision,Helsinki Declaration / Ethics committee,ETH-01,R_GOV_1_CONSENT_OR_WAIVER_ASSESSMENT_TEMPLATE.md,TO BE DETERMINED BY COMPETENT ETHICS BODY,Ethics committee decision only
+TM-03,Risk-benefit proportionality assessment,Ethics committee / IRB,ETH-01,R_GOV_1_ETHICS_RISK_BENEFIT_AND_PRIVACY_ASSESSMENT.md,PREPARED — ethics committee must confirm,Preparation complete; committee decision pending
+TM-04,Privacy and data protection review (Decree 13/2023),Vietnamese Decree 13/2023/ND-CP; DPO,ETH-01 + HOSP-01,R_GOV_1_ETHICS_RISK_BENEFIT_AND_PRIVACY_ASSESSMENT.md §4,NOT COMPLETED,DPIA required before data access
+TM-05,Study protocol approval,Ethics committee,ETH-01,R_GOV_1_ETHICS_SUBMISSION_CHECKLIST.md,NOT PREPARED,Protocol not yet written
+TM-06,Statistical Analysis Plan (SAP) lock,ICH E6; GCP,ETH-01 + HOSP-01,R_GOV_1_MASTER_EXTERNAL_DEPENDENCY_REGISTER.csv GOV-EXT-18,NOT LOCKED,Must be locked before data access
+TM-07,Study registration (clinical trial registry),ICMJE; WHO ICTRP,ETH-01,R_GOV_1_MASTER_EXTERNAL_DEPENDENCY_REGISTER.csv GOV-EXT-14,NOT REGISTERED,Required before or at ethics approval
+TM-08,Institutional authorization for research and data access,Hospital Director / Research Management Office,HOSP-01,R_GOV_1_HOSPITAL_AUTHORIZATION_READINESS_DOSSIER.md,READY_FOR_EXTERNAL_REVIEW — not yet submitted,Requires ETH-01 PASS first
+TM-09,Data Access Agreement signed,Hospital Data Owner + PI + Legal,HOSP-01,R_GOV_1_MASTER_EXTERNAL_DEPENDENCY_REGISTER.csv GOV-EXT-09,NOT SIGNED,Required before any data access
+TM-10,eHospital read-only boundary approved by hospital,Hospital Data Owner / IT,HOSP-01,R_GOV_1_EHOSPITAL_READ_ONLY_BOUNDARY_PROPOSAL.md,READY_FOR_EXTERNAL_REVIEW — design only; not approved,eHospital integration NOT IMPLEMENTED
+TM-11,SSO / institutional identity implemented and approved,Hospital IT / Institutional IT,HOSP-01,R_GOV_1_HOSPITAL_INFORMATION_SECURITY_AND_INCIDENT_PLAN.md,NOT IMPLEMENTED,ACT-R1-03; R1.3 prerequisite
+TM-12,MFA enrolled for all users,Hospital IT,HOSP-01,R_GOV_1_HOSPITAL_INFORMATION_SECURITY_AND_INCIDENT_PLAN.md,NOT IMPLEMENTED,R1.3 prerequisite
+TM-13,Production WORM audit trail (PROD-AUD-01),Regulatory requirement; ALCOA+; GCP,HOSP-01,R_GOV_1_HOSPITAL_AUTHORIZATION_CHECKLIST.md; ACT-R1-01,OPEN — NOT IMPLEMENTED,ACT-R1-01 + ACT-R1-04 blocking
+TM-14,Production RBAC enforcement,GCP; data governance,HOSP-01,R_GOV_1_HOSPITAL_AUTHORIZATION_CHECKLIST.md,NOT IMPLEMENTED,R1.3 prerequisite
+TM-15,Encryption at rest confirmed,IT security; data protection,HOSP-01,R_GOV_1_HOSPITAL_INFORMATION_SECURITY_AND_INCIDENT_PLAN.md,NOT CONFIRMED,Before any data access
+TM-16,IT security review passed,Hospital IT Security Officer,HOSP-01,R_GOV_1_HOSPITAL_INFORMATION_SECURITY_AND_INCIDENT_PLAN.md §5,NOT DONE,External IT officer action
+TM-17,Pseudonymization service confirmed,Hospital IT / Data Owner,HOSP-01,R_GOV_1_HOSPITAL_DATA_ACCESS_AND_SYSTEM_USE_REQUEST.md §3,NOT CONFIRMED,Hospital IT must attest
+TM-18,Role and approval matrix approved by hospital,Hospital authority,HOSP-01,R_GOV_1_HOSPITAL_ROLE_AND_APPROVAL_MATRIX.md,PREPARED — not yet approved,Hospital decision required
+TM-19,Independent assessor designated by institution,Research institution / Research Management Office,IQ-01,R_GOV_1_INDEPENDENT_ASSESSOR_SCOPE_OF_WORK.md,NOT DESIGNATED,Institution action required
+TM-20,Assessor COI declaration accepted,Assessor + Institution,IQ-01,R_GOV_1_INDEPENDENCE_AND_CONFLICT_OF_INTEREST_TEMPLATE.md,NOT COMPLETED,Prerequisite before evidence transmitted
+TM-21,Assessor verifies test suite independently,Independent Assessor,IQ-01,R_GOV_1_VALIDATION_EVIDENCE_CATALOG.csv E32,NOT CONDUCTED,1049/0/5 result to be independently verified
+TM-22,Assessor reviews in-scope evidence (QS-01 to QS-18),Independent Assessor,IQ-01,R_GOV_1_SECURITY_AND_TECHNICAL_QUALIFICATION_SCOPE.md,NOT REVIEWED,All 18 in-scope domains pending assessor review
+TM-23,Qualification decision issued by assessor,Independent Assessor,IQ-01,R_GOV_1_INDEPENDENT_QUALIFICATION_DECISION_TEMPLATE.md,NOT ISSUED,No decision issued; no assessor designated
+TM-24,Independence confirmed (not PI / not developer / no COI),Institution,IQ-01,R_GOV_1_INDEPENDENT_QUALIFICATION_READINESS_DOSSIER.md §2,NOT CONFIRMED,Independence rule binding
+TM-25,External evidence import protocol followed,R-GOV.1,ALL,R_GOV_1_EXTERNAL_EVIDENCE_IMPORT_PROTOCOL.md,PROTOCOL ESTABLISHED,Import steps defined; no external evidence yet received
+TM-26,All external dependency statuses do not exceed READY_FOR_EXTERNAL_REVIEW,R-GOV.1 state model,ALL,R_GOV_1_EXTERNAL_DECISION_STATE_MODEL.md,COMPLIANT,All 3 decisions correctly at READY_FOR_EXTERNAL_REVIEW
+TM-27,No prohibited approval states (AUTO_APPROVED etc.) in any document,R-GOV.1 governance model,ALL,R_GOV_1_EXTERNAL_DECISION_STATE_MODEL.md §3,COMPLIANT — none present,Verified by R-GOV.1 document review
+TM-28,Open actions (ACT-R1-01 through ACT-R1-05) remain OPEN,GATE-R1.1 ACCEPTED_WITH_ACTIONS,ALL,R1_1_4_ACTION_AND_RESIDUAL_RISK_REGISTER.md,ALL OPEN,Cannot be closed by R-GOV.1 documentation
+TM-29,Global qualification verdict: NO-GO,R-GOV.1; PROGRAM; GATE-R1.1,ALL,R_GOV_1_FREEZE_SUMMARY.md,NO-GO — confirmed,Invariant throughout; cannot be changed by documentation
+TM-30,GCP training confirmed for all team members,GCP / ICH E6,HOSP-01,R_GOV_1_MASTER_EXTERNAL_DEPENDENCY_REGISTER.csv GOV-EXT-16,NOT CONFIRMED,Training certificates required

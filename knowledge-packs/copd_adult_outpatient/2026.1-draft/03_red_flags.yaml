@@ -1,0 +1,24 @@
+red_flags:
+  - id: rf_acute_exacerbation_severe
+    name: "Đợt cấp COPD nặng"
+    triggers: ["khó thở tăng mạnh không đáp ứng với thuốc giãn phế quản", "SpO2 < 88%", "thở nhanh > 30/phút", "co kéo cơ hô hấp phụ", "lú lẫn, ngủ gà"]
+    action: "CHUYỂN CẤP CỨU NGAY — nguy cơ suy hô hấp"
+    priority: CRITICAL
+
+  - id: rf_respiratory_failure
+    name: "Suy hô hấp cấp/mạn mất bù"
+    triggers: ["SpO2 < 85% mặc dù thở oxy", "rối loạn ý thức", "phù chi + tĩnh mạch cổ nổi"]
+    action: "CHUYỂN CẤP CỨU — xét thở máy không xâm nhập"
+    priority: CRITICAL
+
+  - id: rf_hemoptysis_significant
+    name: "Ho ra máu đáng kể"
+    triggers: ["ho ra máu > 100 mL/24h", "ho ra máu kéo dài không giải thích được"]
+    action: "Chụp CT ngực, nội soi phế quản — loại trừ ung thư phổi, lao"
+    priority: HIGH
+
+  - id: rf_weight_loss_dyspnea_change
+    name: "Sụt cân + thay đổi triệu chứng đột ngột"
+    triggers: ["sụt > 5% cân nặng trong 3 tháng + khó thở thay đổi kiểu mới", "đau ngực mới"]
+    action: "Loại trừ ung thư phổi — CT ngực, tư vấn chuyên gia"
+    priority: HIGH

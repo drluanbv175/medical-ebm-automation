@@ -1,0 +1,13 @@
+follow_up_rules:
+  - rule_id: htn_fu_review_bp_response
+    description: "Draft theo dõi phải nhắc bác sĩ tái đánh giá huyết áp và bối cảnh dung nạp/tuân thủ theo guideline được xác minh."
+    approval_status: pending
+    release: blocked
+  - rule_id: htn_fu_safety_monitoring
+    description: "Nếu có thuốc, draft phải yêu cầu medication safety review; không tự đặt lịch xét nghiệm cụ thể khi chưa có nguồn/duyệt."
+    approval_status: pending
+    release: blocked
+  - rule_id: htn_fu_escalation
+    description: "Red flag hoặc kiểm soát không phù hợp với bối cảnh phải đưa vào hàng review/chuyển tuyến."
+    approval_status: pending
+    release: blocked

@@ -1,0 +1,8 @@
+{
+  "kind": "knowledge_pack_update_queue",
+  "generated_at": "2026-08-10T12:03:34.245443+00:00",
+  "lookback_days": 7,
+  "review_policy": "review_only_no_auto_apply",
+  "total_items": 0,
+  "items": []
+}

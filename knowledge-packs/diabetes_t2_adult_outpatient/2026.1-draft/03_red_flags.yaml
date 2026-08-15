@@ -1,0 +1,49 @@
+red_flags:
+  - id: rf_dka_hhs
+    name: "Nghi DKA hoặc HHS"
+    triggers:
+      - "buồn nôn nôn nhiều"
+      - "đau bụng kèm glucose cao"
+      - "thở nhanh sâu (Kussmaul)"
+      - "rối loạn ý thức"
+      - "glucose > 33 mmol/L"
+    action: "CHUYỂN CẤP CỨU NGAY — không xử trí ngoại trú"
+    priority: CRITICAL
+
+  - id: rf_severe_hypoglycemia
+    name: "Hạ đường huyết nặng"
+    triggers:
+      - "mất ý thức hoặc co giật do hạ đường"
+      - "glucose < 3.0 mmol/L kèm triệu chứng nặng"
+      - "không đáp ứng glucose uống"
+    action: "CHUYỂN CẤP CỨU — tiêm glucagon hoặc glucose IV"
+    priority: CRITICAL
+
+  - id: rf_acute_foot
+    name: "Bàn chân đái tháo đường nhiễm trùng/hoại tử"
+    triggers:
+      - "vết thương bàn chân không lành > 2 tuần"
+      - "đỏ nóng sưng bàn chân kèm sốt"
+      - "hoại tử hoặc mô đen bàn chân"
+    action: "Chuyển tuyến khẩn — nghi nhiễm trùng nặng hoặc thiếu máu chi"
+    priority: HIGH
+
+  - id: rf_acute_cardiac
+    name: "Nghi biến cố tim mạch cấp"
+    triggers:
+      - "đau ngực"
+      - "khó thở đột ngột"
+      - "yếu liệt nửa người"
+    action: "CHUYỂN CẤP CỨU NGAY — ưu tiên xử trí tim mạch"
+    priority: CRITICAL
+
+  - id: rf_acute_kidney
+    name: "Suy thận cấp"
+    triggers:
+      - "thiểu niệu vô niệu"
+      - "creatinine tăng đột ngột > 2x baseline"
+      - "kali máu > 6.0 mmol/L"
+    action: "Chuyển tuyến khẩn — đánh giá AKI, xem xét ngưng metformin/SGLT2i"
+    priority: HIGH
+
+disclaimer: "DRAFT REVIEW-ONLY. Không thay thế phán đoán lâm sàng."

@@ -1,0 +1,60 @@
+recommendations:
+  - claim_id: af_stroke_risk_cha2ds2vasc
+    guideline: "ESC AF Guidelines 2024 (Eur Heart J 2024)"
+    recommendation_text_draft: |
+      Đánh giá nguy cơ đột quỵ bằng CHA₂DS₂-VASc:
+      - C: Suy tim (1đ); H: THA (1đ); A: Tuổi ≥ 75 (2đ); D: ĐTĐ (1đ)
+      - S: Tiền sử đột quỵ/TIA/thuyên tắc (2đ); V: Bệnh mạch máu (1đ); A: Tuổi 65-74 (1đ); Sc: Nữ (1đ)
+      Ngưỡng kháng đông (ESC 2024):
+      - Nam: CHA₂DS₂-VASc ≥ 1 → CƯƠNG QUYẾT CHỈ ĐỊNH kháng đông
+      - Nữ: CHA₂DS₂-VASc ≥ 2 → chỉ định kháng đông
+      Điểm 0 (nam) hoặc 1 (nữ, do giới): KHÔNG cần kháng đông.
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: af_anticoagulation_doac
+    guideline: "ESC 2024; RE-LY, ROCKET-AF, ARISTOTLE, ENGAGE AF-TIMI 48"
+    recommendation_text_draft: |
+      DOAC (kháng đông trực tiếp) ưu tiên hơn warfarin trong AF không do van tim:
+      - Dabigatran (150 mg x2 hoặc 110 mg x2), Rivaroxaban (20 mg x1), Apixaban (5 mg x2), Edoxaban (60 mg x1)
+      - Apixaban: ít chảy máu tiêu hóa nhất trong các DOAC — ưu tiên ở nguy cơ cao chảy máu GI
+      - Không dùng DOAC trong AF do van tim (hẹp van 2 lá nặng, van tim cơ học) — CHỈ warfarin
+      - KHÔNG phối hợp DOAC + kháng kết tập tiểu cầu kép (DAPT) trừ khi có chỉ định stenting khẩn
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: af_rate_control
+    guideline: "ESC 2024; RACE II trial"
+    recommendation_text_draft: |
+      Kiểm soát tần số thất (Rate control) ở AF mạn:
+      - Mục tiêu nhịp thất lúc nghỉ: < 110 lần/phút (lenient control — RACE II)
+      - Thuốc: beta-blocker (ưu tiên) hoặc diltiazem/verapamil (không suy tim); digoxin (thêm vào nếu chưa đủ)
+      - KHÔNG dùng diltiazem/verapamil khi EF < 40%
+      - Mục tiêu chặt hơn (< 80 lần/phút) chỉ khi có triệu chứng rõ ràng do nhịp nhanh
+    evidence_grade: "I B"
+    approval_status: pending
+
+  - claim_id: af_rhythm_control
+    guideline: "ESC 2024; EAST-AFNET 4; CABANA"
+    recommendation_text_draft: |
+      Kiểm soát nhịp (Rhythm control) — cân nhắc sớm ở bệnh nhân có triệu chứng hoặc mới phát hiện:
+      - EAST-AFNET 4: kiểm soát nhịp sớm (trong 1 năm phát hiện) giảm kết cục tim mạch so kiểm soát tần số đơn thuần
+      - Thuốc chống loạn nhịp: flecainide/propafenone (không có bệnh tim thực thể); amiodarone (suy tim, IHD)
+      - Triệt đốt (catheter ablation): hiệu quả hơn thuốc trong duy trì nhịp xoang — xem xét sớm ở HFrEF (CASTLE-AF)
+      - Không giảm liều kháng đông khi đang kiểm soát nhịp — nguy cơ đột quỵ vẫn còn
+    evidence_grade: "IIa B"
+    approval_status: pending
+
+  - claim_id: af_monitoring
+    guideline: "ESC 2024"
+    recommendation_text_draft: |
+      Theo dõi định kỳ AF ngoại trú:
+      - Mỗi 3-6 tháng: ECG, nhịp tim, HA, đánh giá tác dụng phụ thuốc
+      - eGFR + điện giải mỗi 6-12 tháng (điều chỉnh liều DOAC)
+      - DOAC: rivaroxaban/apixaban/edoxaban — chức năng thận mỗi năm hoặc khi có thay đổi lâm sàng
+      - Dabigatran: nhạy cảm nhất với thận — eGFR < 50 giảm liều; eGFR < 30 tránh dùng
+      - Đánh giá nguy cơ chảy máu HAS-BLED: điểm cao → tối ưu hoá yếu tố sửa đổi được, KHÔNG dừng kháng đông
+    evidence_grade: "I C"
+    approval_status: pending
+
+disclaimer: "DRAFT REVIEW-ONLY. Quyết định kháng đông và chiến lược nhịp cần bác sĩ tim mạch."

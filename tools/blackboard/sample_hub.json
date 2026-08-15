@@ -1,4 +1,0 @@
-{"meta":{"schema_version":"1.0"},"evidence_cards":[
-  {"id":"EVID-2026-0001","date_added":"2026-06-13","topic":"SGLT2i trong suy tim EF giảm","source":{"agency":"ESC","pmid":"38123456","doi":"","url":"","type":"guideline"},"recommendation":"khuyến cáo dùng","verification_status":"đã xác minh","provenance":"from_doctor_master","impact":"apply"},
-  {"id":"EVID-2026-0002","date_added":"2026-06-13","topic":"Tầm soát ung thư đại trực tràng","source":{"agency":"","pmid":"","doi":"","url":""},"verification_status":"chưa xác minh","provenance":""}
-]}

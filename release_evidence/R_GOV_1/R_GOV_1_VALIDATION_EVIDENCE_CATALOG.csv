@@ -1,0 +1,33 @@
+evidence_id,phase,artifact_type,file_path,description,test_count,pass_count,fail_count,status,available_for_assessor,notes
+E01,R1.1,Source module,research_project/rbac_engine.py,Offline RBAC policy engine — role/permission model,N/A,N/A,N/A,COMMITTED,YES,Offline test harness — not production RBAC
+E02,R1.1,Source module,research_project/separation_of_duties.py,SoD policy enforcement — dual-role prohibition and delegation controls,N/A,N/A,N/A,COMMITTED,YES,Offline test harness
+E03,R1.1,Source module,research_project/audit_chain.py,Tamper-evident local hash-chain — NOT WORM; NOT production audit trail,N/A,N/A,N/A,COMMITTED,YES,TAMPER_EVIDENT_LOCAL_SIMULATION_NOT_WORM
+E04,R1.1,Test file,tests/test_r1_1_rbac.py,RBAC policy tests — role assignment and permission enforcement,~50,~50,0,PASS,YES,Offline; MRAQ_OFFLINE_CI=1
+E05,R1.1,Test file,tests/test_r1_1_separation_of_duties.py,SoD tests — dual-role and delegation scenarios,~40,~40,0,PASS,YES,Offline
+E06,R1.1,Test file,tests/test_r1_1_audit_chain.py,Audit chain tests — tamper detection; not WORM,~30,~30,0,PASS,YES,Offline
+E07,R1.1,Evidence doc,release_evidence/R1_1/R1_1_4_HUMAN_GOVERNANCE_DECISION_RECORD.md,Human governance decision — GATE-R1.1 ACCEPTED_WITH_ACTIONS (Dr Luân; SELF_REVIEW),N/A,N/A,N/A,COMPLETE,YES,decision_id VL-GATE-R1.1-2026-002
+E08,R1.1,Evidence doc,release_evidence/R1_1/R1_1_4_GATE_R1_1_STATUS_UPDATE.md,Gate status — ACCEPTED_WITH_ACTIONS; 5 open actions,N/A,N/A,N/A,COMPLETE,YES,SELF_REVIEW; independence not established
+E09,R1.1,Evidence doc,release_evidence/R1_1/R1_1_4_ACTION_AND_RESIDUAL_RISK_REGISTER.md,5 open actions and 4 residual risks,N/A,N/A,N/A,COMPLETE,YES,All 5 actions OPEN
+E10,R1.1,Evidence doc,release_evidence/R1_1/R1_1_4_R1_2_DESIGN_ONLY_AUTHORIZATION.md,Design-only authorization for R1.2,N/A,N/A,N/A,COMPLETE,YES,AUTHORIZED_FOR_DESIGN_ONLY
+E11,R1.1,Evidence doc,release_evidence/R1_1/R1_1_4_R1_2_SCOPE_LOCK.md,Scope lock binding R1.2 to design-only,N/A,N/A,N/A,COMPLETE,YES,ACT-R1-03 enforced
+E12,R1.2,Source module,research_project/identity_adapter_contract.py,Identity adapter contract — AuthenticationContext; IdentityProviderAdapterInterface; SyntheticIdentityAdapter,N/A,N/A,N/A,COMMITTED,YES,NOT_IMPLEMENTED constants present
+E13,R1.2,Test file,tests/test_r1_2_identity_contract.py,Identity contract tests — 29 tests,29,29,0,PASS,YES,Offline; MFA NOT_IMPLEMENTED verified
+E14,R1.3,Source module,research_project/audit_retention_contract.py,Audit retention contract — WriteReceipt fake-WORM guard; RetentionPolicy; WormRetentionProviderInterface,N/A,N/A,N/A,COMMITTED,YES,FAKE_WORM disclaimer enforced
+E15,R1.3,Test file,tests/test_r1_3_audit_retention_contract.py,Audit retention tests — 32 tests; WORM guard verified,32,32,0,PASS,YES,WriteReceipt rejects is_worm_confirmed=True
+E16,R2.0,Source module,research_project/synthetic_edc_core.py,Synthetic EDC core — CRF versioning; data dictionary; validation,N/A,N/A,N/A,COMMITTED,YES,Synthetic/non-production
+E17,R2.0,Source module,research_project/synthetic_edc_lifecycle.py,EDC lifecycle — record status; audit log; data freeze/lock; export management,N/A,N/A,N/A,COMMITTED,YES,Export gated to LOCKED records only
+E18,R2.0,Source module,research_project/synthetic_edc_query.py,EDC query management — query lifecycle; correction management; deviation registry,N/A,N/A,N/A,COMMITTED,YES,Corrective action mandatory for deviations
+E19,R2.0,Test file,tests/test_r2_0_synthetic_edc_core.py,EDC core tests — 36 tests,36,36,0,PASS,YES,Offline
+E20,R2.0,Test file,tests/test_r2_0_synthetic_edc_lifecycle.py,EDC lifecycle tests — 39 tests,39,39,0,PASS,YES,Export gating verified
+E21,R3.0,Evidence doc,release_evidence/R3_0/ (multiple),Study operations compliance documents — monitoring plan; SOP; deviation templates; GCP alignment,N/A,N/A,N/A,COMPLETE,YES,Design documents; no real study running
+E22,R4.0,Source module,research_project/ehospital_boundary_contract.py,eHospital read-only boundary contract — domain whitelist/blocklist; PII key guard; zero-write interface,N/A,N/A,N/A,COMMITTED,YES,NOT IMPLEMENTED; design/contract only
+E23,R4.0,Test file,tests/test_r4_0_ehospital_boundary.py,eHospital boundary tests — 46 tests; PII guard; zero-write verified,46,46,0,PASS,YES,Offline; no real HIS connection
+E24,R5.0,Evidence doc,release_evidence/PROGRAM/RESEARCH_OS_PRODUCTION_READINESS_GAP_REGISTER.csv,32 production readiness gaps identified,N/A,N/A,N/A,COMPLETE,YES,All gaps documented; many OPEN
+E25,R5.0,Evidence doc,release_evidence/PROGRAM/RESEARCH_OS_EXTERNAL_DEPENDENCY_REGISTER.md,18 external dependencies identified,N/A,N/A,N/A,COMPLETE,YES,All external; none self-closeable
+E26,R6.0,Evidence doc,release_evidence/PROGRAM/RESEARCH_OS_GO_NO_GO_MASTER_REGISTER.md,Master NO-GO verdict,N/A,N/A,N/A,COMPLETE,YES,NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE
+E27,R6.0,Evidence doc,release_evidence/PROGRAM/RESEARCH_OS_FINAL_TRACEABILITY_MATRIX.csv,40-row requirement-to-test traceability matrix,N/A,N/A,N/A,COMPLETE,YES,All rows traced
+E28,PROGRAM,Evidence doc,release_evidence/PROGRAM/RESEARCH_OS_COMPLETION_CONTROL.md,Program completion control document,N/A,N/A,N/A,COMPLETE,YES,Final program handover
+E29,PROGRAM,Evidence doc,release_evidence/PROGRAM/RESEARCH_OS_HANDOVER_PACK.md,Handover instructions for next phase,N/A,N/A,N/A,COMPLETE,YES,
+E30,R-GOV.1,Governance pack,release_evidence/R_GOV_1/ (this directory),Governance readiness pack — ethics/hospital/qualification dossiers,N/A,N/A,N/A,IN PROGRESS,YES,All files READY_FOR_EXTERNAL_REVIEW
+E31,SYSTEM,Agent manifest,runtime/manifests/agent_source_manifest.csv,48 agents manifest — all_hash_verified=True,N/A,N/A,N/A,PASS,YES,Required 4 agents enforced
+E32,SYSTEM,Test aggregate,ALL,Total test suite — MRAQ_OFFLINE_CI=1,1049,1049,0,PASS,YES,5 skipped; 0 failed; 1 warning

@@ -1,0 +1,39 @@
+{
+  "artifactKind": "PRISMA_ROLLBACK_EVIDENCE_REPORT",
+  "artifactVersion": 1,
+  "workflowActionName": "approveCarePlanVersion",
+  "databaseScope": "ISOLATED_TEST_DATABASE",
+  "productionDataPresent": false,
+  "migration": {
+    "migrationName": "202606190001_audit_log_hash_chain_hardening",
+    "auditLogHardeningApplied": false
+  },
+  "auditMutationProbe": {
+    "updateBlocked": false,
+    "deleteBlocked": false,
+    "observedErrorCode": null
+  },
+  "rollbackProbes": {
+    "FAIL_BEFORE_BUSINESS_WRITE": {
+      "status": "NOT_RUN",
+      "businessWriteCountAfterRollback": null,
+      "auditLogCountAfterRollback": null,
+      "observedTrace": []
+    },
+    "FAIL_AFTER_BUSINESS_WRITE_BEFORE_AUDIT": {
+      "status": "NOT_RUN",
+      "businessWriteCountAfterRollback": null,
+      "auditLogCountAfterRollback": null,
+      "observedTrace": []
+    },
+    "FAIL_AFTER_AUDIT_BEFORE_COMMIT": {
+      "status": "NOT_RUN",
+      "businessWriteCountAfterRollback": null,
+      "auditLogCountAfterRollback": null,
+      "observedTrace": []
+    }
+  },
+  "evidenceArtifact": null,
+  "reviewerSignoff": null,
+  "productionCommitRequested": false
+}

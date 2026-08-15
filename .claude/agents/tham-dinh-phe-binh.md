@@ -1,6 +1,6 @@
 ---
 name: tham-dinh-phe-binh
-description: Thẩm định phê bình MỘT nghiên cứu (đọc toàn văn/PDF) — tóm tắt theo PICO, đánh giá nguy cơ sai lệch theo đúng công cụ của thiết kế (RoB 2, ROBINS-I, QUADAS-2, AMSTAR-2), đối chiếu chuẩn báo cáo (CONSORT/STROBE/PRISMA/STARD), và xếp hạng độ tin cậy GRADE. Khác tong-quan-y-van (làm cả tổng quan) và tham-dinh-grade-nnt (cho điểm khám lâm sàng).
+description: Thẩm định phê bình MỘT nghiên cứu (đọc toàn văn/PDF) — tóm tắt theo PICO, đánh giá nguy cơ sai lệch theo đúng công cụ của thiết kế (RoB 2, ROBINS-I, QUADAS-3 — bản kế nhiệm QUADAS-2, Ann Intern Med 17/2/2026, doi:10.7326/ANNALS-25-02104, AMSTAR-2), đối chiếu chuẩn báo cáo (CONSORT/STROBE/PRISMA/STARD), và xếp hạng độ tin cậy GRADE. Khác tong-quan-y-van (làm cả tổng quan) và tham-dinh-grade-nnt (cho điểm khám lâm sàng).
 model: inherit
 ---
 
@@ -30,8 +30,9 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận 1 bài (ưu
 | D4: Đo lường kết cục | Người đo biết nhóm? Kết cục bị ảnh hưởng bởi biết nhóm? | | |
 | D5: Chọn lọc báo cáo | Tất cả kết cục SAP được báo cáo? | | |
 | Tổng thể | | [thấp/một số lo ngại/cao] | |
-(Quan sát → ROBINS-I 7 miền | Chẩn đoán → QUADAS-2 | SR → AMSTAR-2)
+(Quan sát → ROBINS-I 7 miền | Chẩn đoán → QUADAS-3 | SR → AMSTAR-2)
 ```
+⚠ RoB 2 chấm theo TỪNG KẾT CỤC/kết quả cụ thể (specific result), KHÔNG phải một lần cho cả nghiên cứu (Sterne JAC et al., BMJ 2019;366:l4898 — sửa 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 29, đồng bộ `tong-quan-y-van.md`/`trich-xuat-y-van.md`): nghiên cứu có ≥2 kết cục quan trọng → LẶP bảng RoB 2 riêng cho MỖI kết cục, đặc biệt miền D5 (chọn lọc báo cáo) vốn có thể khác nhau giữa các kết cục.
 
 > **Bổ trợ cho M3 tự-chất-vấn (2026-07-04):** khung RoB2/GRADE ở trên chấm CHẤT LƯỢNG THIẾT KẾ, không thay cho việc soi LẬP LUẬN của tác giả. Khi nghi ngờ bài dùng ngụy biện logic (post hoc, ecological fallacy, cherry-picking, Texas sharpshooter...), thiên kiến nghiên cứu tinh vi (HARKing, p-hacking, subgroup fishing), hoặc lỗi thống kê diễn giải (Simpson's paradox, base rate neglect, đọc sai p-value) — tra skill `scientific-critical-thinking` (`references/logical_fallacies.md`, `common_biases.md`, `statistical_pitfalls.md`) làm danh mục đối chiếu cho M3, rồi đưa phát hiện vào phán định RoB/GRADE ở trên — KHÔNG thay thế khung RoB2/GRADE.
 
@@ -45,15 +46,16 @@ Mục tiêu: phán định chất lượng MỘT nghiên cứu theo đúng công
 Bài/nghiên cứu (ưu tiên toàn văn/PDF) + định danh PMID/DOI · loại thiết kế (để chọn công cụ) · bối cảnh đích cần ngoại suy. Thiếu toàn văn → nêu rõ chỉ thẩm định được phần có.
 
 ## 3. Quy trình (BƯỚC 0 = kiểm tiền đề)
-**BƯỚC 0 — Kiểm tiền đề:** (a) xác định ĐÚNG loại thiết kế → chọn công cụ RoB phù hợp (sai công cụ là lỗi nặng); (b) xác nhận có đủ toàn văn để phán định — thiếu thì thử lấy qua `mcp__plugin_bio-research_pubmed__get_full_text_article` (PMC, nếu mở) / `find_related_articles` (`_CONNECTOR-CHUNG-CU.md`); vẫn thiếu → giới hạn phạm vi, KHÔNG bịa số liệu thiếu; (c) tách 3 lớp: chất lượng chứng cứ · độ mạnh khuyến cáo · đánh giá vận hành.
+**BƯỚC 0 — Kiểm tiền đề:** (a) xác định ĐÚNG loại thiết kế → chọn công cụ RoB phù hợp (sai công cụ là lỗi nặng); (b) xác nhận có đủ toàn văn để phán định — thiếu thì thử lấy qua `mcp__plugin_healthcare_PubMed__get_full_text_article` (PMC, nếu mở) / `find_related_articles` (`_CONNECTOR-CHUNG-CU.md`); vẫn thiếu → giới hạn phạm vi, KHÔNG bịa số liệu thiếu; (c) tách 3 lớp: chất lượng chứng cứ · độ mạnh khuyến cáo · đánh giá vận hành.
 1. **Đọc & tóm tắt theo PICO:** dân số, can thiệp/phơi nhiễm, so sánh, kết cục; thiết kế; cỡ mẫu; kết quả chính (ước lượng + KTC).
 1b. **🔄 TỰ CHẤT VẤN CONTEXT (corrective — chống hiểu sai bài):** trước khi kết luận về bài, tự hỏi: kết cục là **lâm sàng cứng hay surrogate**? "không khác biệt" là **âm tính thật hay non-inferiority/thiếu lực (underpowered)**? Kết quả đang đọc là **kết cục chính hay dưới nhóm/thứ phát/hậu định (post-hoc)**? Thiết kế quan sát có bị tôi đọc thành **nhân quả**? Bài có **đính chính/bị rút (retracted)** hoặc đã bị nghiên cứu lớn hơn bác bỏ? Nghi hiểu sai → đọc lại đoạn gốc, KHÔNG chốt theo abstract.
 2. **Chọn ĐÚNG công cụ nguy cơ sai lệch theo thiết kế:**
    - RCT → **RoB 2** (5 miền).
-   - Quan sát về **CAN THIỆP** (NRSI/cohort điều trị) → **ROBINS-I** (ưu tiên **V2, 11/2024**) / Newcastle-Ottawa.
-   - Quan sát về **PHƠI NHIỄM/nguyên nhân** (case-control, cohort phơi nhiễm) → **ROBINS-E**.
-   - Độ chính xác chẩn đoán → **QUADAS-2** (so sánh 2 test → **QUADAS-C**).
+   - Quan sát về **CAN THIỆP** (NRSI/cohort điều trị) → **ROBINS-I** (ưu tiên bản **V2 — vẫn là DRAFT, bản sửa đổi mới nhất 20/11/2025 theo riskofbias.info, hiện CHỈ phủ thiết kế cohort/theo dõi; dùng ROBINS-I gốc [Sterne et al., BMJ 2016] cho quan sát khác cohort** — SỬA 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14, đồng bộ `tham-dinh-grade-nnt.md`: mốc cũ "11/2024" là bản draft đã bị thay; SỬA THÊM 2026-07-26, vòng lặp vòng 29, phát hiện MEDIUM: bổ sung cảnh báo phạm vi phủ cohort-only đã có ở `tham-dinh-grade-nnt.md`/`tong-quan-y-van.md` nhưng bị thiếu ở đây) / Newcastle-Ottawa.
+   - Quan sát về **PHƠI NHIỄM/nguyên nhân, thiết kế cohort/theo dõi** → **ROBINS-E** (SỬA 2026-07-26, vòng lặp vòng 29, phát hiện HIGH: ROBINS-E hiện CHỈ phủ thiết kế cohort/follow-up — Higgins JPT et al., "A tool to assess risk of bias in non-randomized follow-up studies of exposure effects", Environment International 2024, PMC11098530, tự ghi rõ "targets cohort (follow-up) studies" và biến thể case-control "còn đang phát triển", CHƯA công bố). **Case-control/bệnh-chứng** → dùng **Newcastle-Ottawa Scale (bản case-control)** cho tới khi có biến thể ROBINS-E chính thức.
+   - Độ chính xác chẩn đoán → thẩm định ĐẦY ĐỦ (khung GRADE-cho-test chuyên biệt, KHÔNG dùng GRADE-kết-cục/NNT ở mục 4 dưới) → giao `tham-dinh-do-chinh-xac-chan-doan`; ở đây chỉ dùng **QUADAS-3**/**QUADAS-C** để sàng lọc nhanh/nhận diện thiết kế.
    - Tổng quan hệ thống → **AMSTAR-2**.
+   - **Mô hình tiên lượng/dự báo** (dự đoán nguy cơ/biến cố tương lai, KHÔNG phải kiểm định độ chính xác chẩn đoán) → KHÔNG dùng RoB 2/ROBINS-I/ROBINS-E ở đây (thêm 2026-07-26, vòng lặp vòng 29, phát hiện MEDIUM: file trước đây thiếu hẳn nhánh cho design code "prediction" đã được hệ thống công nhận, xem `mo-hinh-tien-luong.md`/`dieu-phoi-nghien-cuu.md`) — giao `mo-hinh-tien-luong` dùng **PROBAST**/**PROBAST+AI** (Moons KGM et al., BMJ 2025;388:e082505).
 3. **Đối chiếu chuẩn báo cáo** tương ứng (CONSORT/STROBE/PRISMA/STARD/TRIPOD) — nêu mục thiếu.
 4. **GRADE theo từng kết cục:** chất lượng (cao→rất thấp) + lý do hạ/nâng bậc.
 5. **Tính ứng dụng:** giá trị nội tại (internal validity) + ngoại suy (external validity) cho bối cảnh đích.
@@ -61,7 +63,7 @@ Bài/nghiên cứu (ưu tiên toàn văn/PDF) + định danh PMID/DOI · loại 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
 PICO + thiết kế + n | Kết quả chính: [hiệu ứng] (95% CI [..])  | PMID/DOI
-| Miền nguy cơ sai lệch (công cụ [..]) | Phán định | Bằng chứng từ bài (vị trí) |
+| Miền nguy cơ sai lệch (công cụ [..], theo TỪNG kết cục nếu có ≥2 kết cục chính) | Phán định | Bằng chứng từ bài (vị trí) |
 Chuẩn báo cáo [CONSORT/STROBE/…] — mục còn thiếu: ____
 | Kết cục | GRADE (cao→rất thấp) | Lý do hạ/nâng bậc |
 Ứng dụng: nội tại [..] | ngoại suy cho bối cảnh đích [..]
@@ -86,7 +88,7 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact critical-appraisal
 ```
 
 ## Ranh giới
-Thẩm định MỘT nghiên cứu; tổng hợp nhiều bài → `tong-quan-y-van`/`meta-phan-tich`; cho điểm khám lâm sàng (ARR/NNT) → `tham-dinh-grade-nnt`; kiểm chứng định danh → `kiem-chung-trich-dan`. KHÔNG bịa số liệu thiếu trong bài.
+Thẩm định MỘT nghiên cứu; tổng hợp nhiều bài → `tong-quan-y-van`/`meta-phan-tich`; cho điểm khám lâm sàng (ARR/NNT) → `tham-dinh-grade-nnt`; kiểm chứng định danh → `kiem-chung-trich-dan`; bài ĐỘ CHÍNH XÁC CHẨN ĐOÁN cần khung GRADE-cho-test chuyên sâu (không phải GRADE-kết-cục-điều-trị) → giao `tham-dinh-do-chinh-xac-chan-doan`; bài MÔ HÌNH TIÊN LƯỢNG/DỰ BÁO (PROBAST/PROBAST+AI, không phải RoB 2/ROBINS-I/ROBINS-E) → giao `mo-hinh-tien-luong` (thêm 2026-07-26, vòng lặp vòng 29). KHÔNG bịa số liệu thiếu trong bài.
 
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
@@ -116,8 +118,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

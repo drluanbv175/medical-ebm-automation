@@ -1,0 +1,24 @@
+red_flags:
+  - id: rf_pathological_fracture
+    name: "Gãy xương bệnh lý nghi ngờ u di căn"
+    triggers: ["đau xương dữ dội không chấn thương rõ ràng", "đau tăng về đêm", "tiền sử ung thư", "đau cột sống lan xuống tứ chi/bí tiểu-bí đại tiện"]
+    action: "CHỤP X-QUANG/MRI KHẨN — loại trừ u di căn xương, hội chứng chùm đuôi ngựa"
+    priority: CRITICAL
+
+  - id: rf_cauda_equina_vertebral_fracture
+    name: "Hội chứng chùm đuôi ngựa do gãy đốt sống"
+    triggers: ["gãy đốt sống + yếu liệt hai chân + bí tiểu/bí đại tiện + tê tầng sinh môn"]
+    action: "CHUYỂN KHẨN NGOẠI THẦN KINH/CỘT SỐNG — phẫu thuật giải ép cấp"
+    priority: CRITICAL
+
+  - id: rf_hypercalcemia_severe
+    name: "Tăng canxi máu nặng (khi điều trị với calci/vitD liều cao)"
+    triggers: ["canxi ion hoá > 1.5 mmol/L hoặc canxi toàn phần > 3.0 mmol/L", "nôn nhiều, lú lẫn, đa niệu"]
+    action: "Ngưng bổ sung canxi + vitamin D; bù dịch; xét nhập viện"
+    priority: HIGH
+
+  - id: rf_ons_jaw
+    name: "Hoại tử xương hàm (ONJ) khi dùng bisphosphonate/denosumab"
+    triggers: ["đau hàm sau nhổ răng không lành", "lộ xương hàm", "sưng/rò mủ vùng hàm không giải thích"]
+    action: "Ngưng thuốc (nếu an toàn), chuyên gia răng hàm mặt/nha khoa"
+    priority: HIGH

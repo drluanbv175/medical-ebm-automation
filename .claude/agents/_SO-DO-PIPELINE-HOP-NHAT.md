@@ -3,6 +3,8 @@
 > Sổ tham chiếu hạ tầng (`_*`) — **KHÔNG phải agent** (không tính vào bộ đếm agent). Tạo 2026-06-14.
 > Gộp hai luồng (Lâm sàng 5 bước · Nghiên cứu G0–G9) vào **một khung dùng chung**: cùng cổng vào · cùng luật nền · cùng guardrail · cùng sổ cái · cùng hàng đợi phê duyệt.
 > Đồng bộ: `README.md`, `HUONG-DAN-VAN-HANH.md`, `_HIEN-PHAP-LIEM-CHINH.md` §2, `dieu-phoi-lam-sang.md`, `dieu-phoi-nghien-cuu.md`.
+> **Tra cứu chứng cứ sống trong cả 2 luồng đi qua connector MCP** — bản đồ agent↔connector riêng ở
+> `_CONNECTOR-CHUNG-CU.md` (thêm 2026-07-31, audit tích hợp plugin).
 > **"Cần bác sĩ kiểm chứng."**
 
 ---
@@ -59,7 +61,9 @@ Hai luồng khác nhau ở phần GIỮA (nội dung chuyên môn) nhưng **chia
         ┌───────────────────────────────────────────────────────────────────────────┐
         │ L4  HÀNG ĐỢI PHÊ DUYỆT  (mọi đầu ra dừng tại đây — agent CHỈ đề xuất)      │
         │   Cổng A  quyết định lâm sàng   │   Cổng B  ghi EBM_MASTER                 │
-        │   Cổng G  G2 · G4 · G9 (nghiên cứu)                                        │
+        │   Cổng G  G2 · G4 · Dữ liệu thật trước phân tích · G9 (nghiên cứu — 4 cổng,│
+        │           2026-07-12: sửa "3 cổng", thiếu DỪNG 3 — xem README.md/dieu-phoi-│
+        │           nghien-cuu.md)                                                   │
         │              ▼ BÁC SĨ DUYỆT ▼                                              │
         │   DUYỆT → "áp dụng"/ghi xác minh   ·   TỪ CHỐI → trả về   ·   HOÃN → chờ   │
         └───────────────────────────────────────┬───────────────────────────────────┘
@@ -94,8 +98,8 @@ Mỗi sản phẩm (thẻ chứng cứ · gói quyết định lâm sàng · art
 | `tra-ve-sua` | Guardrail bắt 🔴 | `tham-dinh-dau-ra` | — |
 | `cho-duyet` | Qua guardrail, đợi bác sĩ | guardrail ĐẠT | `chưa xác minh` |
 | `duyet` | Bác sĩ chấp thuận | **BÁC SĨ** | `đã xác minh` |
-| `tu-choi` | Bác sĩ bác bỏ | **BÁC SĨ** | `bác bỏ` (lưu vết) |
-| `hoan` | Chờ thêm dữ kiện/đời thực | **BÁC SĨ** | `chờ — [lý do]` |
+| `tu-choi` | Bác sĩ bác bỏ | **BÁC SĨ** | `chưa xác minh` (lưu vết ở trạng thái `tu-choi`, KHÔNG có giá trị `verification_status` riêng — 2026-07-12: sửa "bác bỏ", KHÔNG nằm trong enum 3 giá trị hợp lệ của `validate_ledger.py`/`_SO-EBM-MASTER.md`) |
+| `hoan` | Chờ thêm dữ kiện/đời thực | **BÁC SĨ** | `đang xác minh` (2026-07-12: sửa "chờ — [lý do]", KHÔNG nằm trong enum hợp lệ; lý do hoãn ghi ở trường ghi chú riêng, không nhét vào `verification_status`) |
 
 > **Bất biến:** agent **chỉ** đưa mục tới `cho-duyet`. Ba trạng thái `duyet`/`tu-choi`/`hoan` là **đặc quyền bác sĩ** (Cổng A/B/G). Không agent nào tự chuyển sang `duyet`.
 
@@ -107,6 +111,7 @@ Mỗi sản phẩm (thẻ chứng cứ · gói quyết định lâm sàng · art
 | **Cổng B** | Lâm sàng + Nghiên cứu | bác sĩ duyệt ghi thẻ vào EBM_MASTER ở trạng thái "đã xác minh" |
 | **G2** 🔒 | Nghiên cứu | có **phê duyệt IRB + mã đăng ký THẬT** (bác sĩ nộp–ký) trước khi chạm dữ liệu thật |
 | **G4** 🔒 | Nghiên cứu | bác sĩ xác nhận **KHÓA SAP** trước khi xem dữ liệu |
+| **DỪNG 3** 🔒 *(2026-07-12: bổ sung, thiếu ở bản trước)* | Nghiên cứu | **dữ liệu THẬT** (không phải giả lập) đã sẵn sàng trước khi chạy phân tích xác nhận — `approval_ledger` chặn (xem `_ledger_approved()` trong `run_stats_analysis.py`/`run_g9_auto.py`) |
 | **G9** 🔒 | Nghiên cứu | **chủ nhiệm XÁC NHẬN** khai báo tác giả/COI/tài trợ/**dùng AI** (A14) |
 
 ---
@@ -118,7 +123,7 @@ Mỗi sản phẩm (thẻ chứng cứ · gói quyết định lâm sàng · art
 | Nhạc trưởng | `dieu-phoi-lam-sang` | `dieu-phoi-nghien-cuu` |
 | An toàn trước tiên | **Bước 0: cờ đỏ** (`sang-loc-co-do`) | **Bước 0: RESUME** + chưa chạm dữ liệu thật khi chưa G2 |
 | Thân | 5 bước EBM | G0–G9 + 18 artifact A1–A18 |
-| Cổng cứng | Cổng A | G2 · G4 · G9 (+ A12 kiểm trích dẫn) |
+| Cổng cứng | Cổng A | G2 · G4 · G5 khóa dữ liệu thật trước phân tích · G8 · G9 · G10 PI khóa gói phát hành (+ A12 kiểm trích dẫn) |
 | Guardrail cuối | `tham-dinh-dau-ra` (chung) | `tham-dinh-dau-ra` (chung) |
 | Điểm dừng phê duyệt | Cổng A + Cổng B | Cổng G + Cổng B |
 | Sổ cái | EBM_MASTER (thẻ chứng cứ) | EBM_MASTER + hồ sơ đề tài (mốc cổng) |
@@ -129,7 +134,7 @@ Mỗi sản phẩm (thẻ chứng cứ · gói quyết định lâm sàng · art
 - [ ] Mọi luồng đi qua **L3 guardrail** trước **L4 hàng đợi** — không đường tắt.
 - [ ] Agent **chỉ** đưa mục tới `cho-duyet`; `duyet`/`tu-choi`/`hoan` là đặc quyền bác sĩ.
 - [ ] Cờ đỏ (lâm sàng) xuất hiện **ĐẦU** đầu ra, trước mọi phân tích EBM.
-- [ ] Cổng cứng nghiên cứu (G2·G4·G9) không tự vượt; nêu **chính xác cần bác sĩ cấp gì**.
+- [ ] Cổng cứng nghiên cứu (G2·G4·G5 khóa dữ liệu thật trước phân tích·G8·G9·G10 PI khóa gói phát hành) không tự vượt; nêu **chính xác người có thẩm quyền phải cấp gì**.
 - [ ] Mọi mục vào sổ cái: `verification_status="chưa xác minh"`, append-only + backup.
 - [ ] Mỗi đầu ra y khoa kèm **PMID/DOI** + **"Cần bác sĩ kiểm chứng."**
 

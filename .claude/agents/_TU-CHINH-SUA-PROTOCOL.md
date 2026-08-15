@@ -50,12 +50,18 @@
 | **R1** | Thiếu PMID/DOI cho khẳng định y khoa | `tra-cuu-chung-cu` + `kiem-chung-trich-dan` | ✅ | Bổ nguồn thật; nếu không tìm được → gắn `[CẦN KIỂM CHỨNG]` |
 | **R1b** | Lách nhãn `[CẦN…]` tràn lan | Agent gốc (viết lại có nguồn) | ✅ | Yêu cầu bổ nguồn ≥1 PMID/DOI thật cho từng khẳng định cốt lõi |
 | **R2** | PII phát hiện | **DỪNG NGAY — leo thang** | ❌ | Không retry; nêu rõ dòng/trường có PII; bác sĩ phải xử lý |
-| **R3** | Vượt cổng cứng (G2/G4/G9) | **DỪNG NGAY — leo thang** | ❌ | Không retry; nêu cổng bị vượt + artifact vi phạm |
+| **R3** | Vượt cổng cứng (G2/G4/G5/G8/G9/G10) | **DỪNG NGAY — leo thang** | ❌ | Không retry; nêu cổng bị vượt + artifact vi phạm |
 | **R4** | Tự gán GRADE không nguồn | `tham-dinh-grade-nnt` (re-grade) hoặc xóa nhãn | ✅ | Xóa GRADE label; dùng `gradeLevel:'na'` |
 | **R5** | Trộn độ chắc chứng cứ & độ mạnh KCáo | Agent gốc (tách rõ hai trục) | ✅ | Thêm chú thích phân biệt |
 | **R6** | Thiếu nhãn `[CẦN…]` ở chỗ thiếu | Agent gốc (gắn nhãn đúng chỗ) | ✅ | Tìm tất cả giá trị trống/giả định → gắn nhãn |
 | **R7** | Thiếu disclaimer | Agent gốc (thêm disclaimer) | ✅ | Nhanh nhất — thêm "Cần bác sĩ kiểm chứng." |
 | **R8** | p-value đơn độc không kèm CI | `phan-tich-thong-ke` (bổ CI) | ✅ | Yêu cầu effect size + 95% CI |
+| **R9** *(2026-07-12: bổ sung, thiếu từ trước — thêm vào `retry_loop.py` 2026-07-04)* | Nguồn thiếu năm/phiên bản | `tra-cuu-chung-cu` (bổ năm/phiên bản) | ✅ | Nối `tools/eval/run_eval.py::source_has_year` |
+| **R10** | Kháng sinh không xét WHO AWaRe | `ke-don-an-toan` | ✅ | Nối `run_eval.py::who_aware_if_antibiotic` |
+| **R11** | Suy nhân quả vượt thiết kế cắt ngang/quan sát | **DỪNG NGAY — leo thang** | ❌ | Không retry; nêu rõ thiết kế không đỡ kết luận nhân quả |
+| **R12** | Thiếu cờ đỏ/safety-net bắt buộc (Q3/Q5) | **DỪNG NGAY — leo thang** | ❌ | Không retry; an toàn bệnh nhân |
+| **R13** | Thiếu câu hỏi an toàn bắt buộc (S1 tự sát/S2 thai kỳ/S3 khởi trị chống trầm cảm-giải lo âu — S3 thêm 2026-07-24 vòng 24) | **DỪNG NGAY — leo thang** | ❌ | `sang-loc-co-do` + `ke-don-an-toan` hỏi lại; đối xứng `_CAU-HOI-AN-TOAN-BAT-BUOC.md` |
+| **R14** *(thêm 2026-07-07)* | Thiếu rà an toàn kê đơn (tương tác/CCĐ/chỉnh liều) | **DỪNG NGAY — leo thang** | ❌ | `ke-don-an-toan`; HARD-RED đối xứng R12/R13 |
 | **XGATE-a** | Tên biến CRF ≠ SAP | `bien-so-nghien-cuu` → `quan-ly-du-lieu` | ✅ | Đồng bộ từ codebook chuẩn → SAP |
 | **XGATE-b** | Kết cục SAP ≠ PICO A1 | `thiet-ke-nghien-cuu` (chỉnh SAP) | ✅ | Ưu tiên A1 đã chốt làm gốc |
 | **XGATE-c** | Cỡ mẫu SAP ≠ A5 | `co-mau-nghien-cuu` (cập nhật) | ✅ | Sync số từ tính toán chính xác |

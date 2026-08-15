@@ -1,0 +1,71 @@
+recommendations:
+  - claim_id: copd_diagnosis_spirometry
+    guideline: "GOLD 2025 Report (Global Initiative for Chronic Obstructive Lung Disease)"
+    recommendation_text_draft: |
+      Chẩn đoán COPD bắt buộc qua đo hô hấp ký (spirometry):
+      - FEV1/FVC post-bronchodilator < 0.70 = tắc nghẽn không hồi phục hoàn toàn
+      - GOLD phân loại mức độ tắc nghẽn: GOLD 1 (FEV1 ≥ 80%) đến GOLD 4 (FEV1 < 30%)
+      - Nhóm ABC (GOLD 2025): dựa trên triệu chứng (CAT hoặc mMRC) và tiền sử đợt cấp
+        • Nhóm A: ít triệu chứng, không đợt cấp
+        • Nhóm B: nhiều triệu chứng, không đợt cấp
+        • Nhóm E (thay C+D): ≥ 2 đợt cấp/năm hoặc ≥ 1 nhập viện
+    evidence_grade: "Level of evidence A"
+    approval_status: pending
+
+  - claim_id: copd_bronchodilator_therapy
+    guideline: "GOLD 2025"
+    recommendation_text_draft: |
+      Thuốc giãn phế quản: nền tảng điều trị ổn định:
+      - Nhóm A: 1 thuốc giãn phế quản tác dụng dài (LAMA hoặc LABA)
+      - Nhóm B: ưu tiên LAMA (tiotropium > ipratropium) — giảm đợt cấp tốt hơn LABA
+      - Nhóm E: LAMA + LABA (dual bronchodilator) — xem xét thêm ICS nếu eosinophil > 300/µL hoặc tiền sử hen
+      LAMA ưu tiên hơn LABA đơn trong giảm đợt cấp (UPLIFT, POET-COPD).
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: copd_ics_use
+    guideline: "GOLD 2025; IMPACT, ETHOS, TRIBUTE trials"
+    recommendation_text_draft: |
+      ICS (corticosteroid hít) — không dùng đơn trị, chỉ phối hợp:
+      - THÊM ICS khi: eosinophil máu > 300 tế bào/µL, hoặc tiền sử hen phế quản
+      - Triple therapy (LAMA + LABA + ICS) > LAMA + LABA trong nhóm E có eosinophil cao
+      - TRÁNH ICS khi: eosinophil < 100/µL, tiền sử viêm phổi tái phát do ICS
+      - Không có bằng chứng ICS đơn độc có lợi trong COPD không có thành phần hen.
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: copd_smoking_cessation
+    guideline: "GOLD 2025"
+    recommendation_text_draft: |
+      Cai thuốc lá — can thiệp quan trọng nhất làm chậm suy giảm FEV1:
+      - Tư vấn 5A (Ask, Advise, Assess, Assist, Arrange) tại mỗi lần khám
+      - Varenicline (hoặc cytisine) + tư vấn: hiệu quả nhất
+      - NRT (nicotine replacement therapy): ưu tiên nếu không có varenicline
+      - Bupropion: lựa chọn thay thế
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: copd_vaccination
+    guideline: "GOLD 2025; CDC/WHO"
+    recommendation_text_draft: |
+      Tiêm ngừa bắt buộc ở COPD:
+      - Cúm hàng năm (giảm đợt cấp và tử vong)
+      - Pneumococcal (PCV15 hoặc PCV20 + PPSV23)
+      - COVID-19: theo khuyến cáo hiện hành
+      - RSV vaccine: khuyến cáo ở ≥ 60 tuổi (2024-2025)
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: copd_monitoring
+    guideline: "GOLD 2025"
+    recommendation_text_draft: |
+      Theo dõi COPD ngoại trú:
+      - Đo SpO2 tại mỗi lần khám; SpO2 lúc nghỉ < 88% → xét liệu pháp oxy dài hạn (LTOT)
+      - Spirometry: mỗi 1-2 năm để đánh giá tiến triển
+      - Đếm số đợt cấp/năm và độ nặng → điều chỉnh bậc trị
+      - Đánh giá CAT score hoặc mMRC mỗi lần khám
+      - LTOT: khi PaO2 < 55 mmHg hoặc SpO2 ≤ 88% lúc nghỉ — ≥ 15 giờ/ngày
+    evidence_grade: "I A"
+    approval_status: pending
+
+disclaimer: "DRAFT REVIEW-ONLY. COPD cần spirometry xác nhận; không chẩn đoán chỉ qua lâm sàng."

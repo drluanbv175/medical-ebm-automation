@@ -15,7 +15,13 @@ python medical-ebm-automation/tools/run_g9_auto.py \
     [--n-authors <so_tac_gia>] [--target-journal "Tên tạp chí đích"]
 # Tự động: đọc checkpoint G0-G8 → sinh bộ khai báo liêm chính ICMJE+COPE
 #           (CRediT · COI · AI · Data Availability · Ethics Statement)
-#           → A15 .md + .docx + G9_checkpoint.json
+#           → A14 .md + .docx + G9_checkpoint.json
+#           (2026-07-11: sửa "A15" — đó là mã của binh-duyet/G8 theo crosswalk; đúng
+#           mã của bộ khai báo liêm chính G9 này là A14. Script thật hiện đặt tên file
+#           "G9_A10_AUTHOR_INTEGRITY_..." — LỆCH khỏi crosswalk theo kiểu hệ thống, vì
+#           mọi run_gN_auto.py đều đánh số A-code cũ kiểu "gate N → A(N+1)" thay vì mã
+#           crosswalk hiện hành; đối chiếu nội dung file, đừng tin tên file. Xem task
+#           theo dõi sửa code: task_3ee574ed.)
 ```
 **Sau khi chạy**, đối chiếu với G9 PHẦN 1–4 bên dưới; chờ bác sĩ ký 3 xác nhận trước khi mở khóa G9 thật.
 
@@ -26,9 +32,9 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận yêu cầu 
 | MODULE | Tác vụ |
 |--------|--------|
 | M1 | BƯỚC 0: kiểm tiền đề G9 — bản thảo đã qua `kiem-chung-trich-dan` + `binh-duyet`; G4_STATUS=LOCKED + G5_STATUS=LOCKED; nhắc mọi khai báo chờ chủ nhiệm xác nhận |
-| M2 | Soạn BỘ KHAI BÁO LIÊM CHÍNH ICMJE+COPE: bảng CRediT 14 vai trò · khai báo COI từng tác giả · khai báo AI · Data Availability Statement · Ethics Statement |
-| M3 | Checklist Think.Check.Submit (10 điểm) + đề xuất 3 tạp chí phù hợp (chỉ mục/phạm vi/IF [CẦN KIỂM]) + checklist đóng gói nộp |
-| M4 | Soạn cover letter (5 đoạn chuẩn ICMJE) và template phản hồi phản biện (Rebuttal) điểm-theo-điểm |
+| M2 | Soạn BỘ KHAI BÁO LIÊM CHÍNH ICMJE+COPE: bảng CRediT 14 vai trò · khai báo COI từng tác giả · khai báo AI · Data Availability Statement · quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026 · Ethics Statement |
+| M3 | Checklist chống predatory (10 điểm, tự soạn — tham khảo Think.Check.Submit) + đề xuất 3 tạp chí phù hợp (chỉ mục/phạm vi/IF [CẦN KIỂM]) |
+| M4 | Soạn cover letter (mẫu 5 đoạn tự đề xuất, dựa trên NỘI DUNG ICMJE khuyến nghị khai báo trong thư ngỏ — ICMJE không quy định cứng cấu trúc "5 đoạn") và template phản hồi phản biện (Rebuttal) điểm-theo-điểm, RỒI mới chốt checklist đóng gói nộp (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8: trước đây checklist đóng gói — có mục "☐ Cover letter" — được liệt ở M3, TRƯỚC khi M4 soạn cover letter; nay soạn thư trước để checklist có cái thật để đối chiếu) |
 | M5 | ⛔ CỔNG CỨNG G9: dừng — chờ bác sĩ ký 3 xác nhận (COI · đồng thuận tác giả · không đăng kép); sau ký → ghi G9_STATUS=LOCKED + kích hoạt Final Readiness Report |
 
 ## Luật nền
@@ -45,9 +51,9 @@ Bất biến cứng: KHÔNG bịa IF/quartile · KHÔNG nộp trùng lặp nhi�
 
 ---
 
-## G9 PHẦN 1 — BỘ KHAI BÁO LIÊM CHÍNH TÁC GIẢ (ICMJE + COPE 2024)
+## G9 PHẦN 1 — BỘ KHAI BÁO LIÊM CHÍNH TÁC GIẢ (ICMJE Recommendations cập nhật 1/2026, Mục V "Use of Artificial Intelligence in Publishing" — thay vị trí AI-không-được-là-tác-giả đơn lẻ trước đây; Mục V.A bắt buộc khai báo dùng AI TẠI HAI NƠI: cover letter VÀ mục phù hợp trong bản thảo, không khai báo có thể bị coi là hành vi sai trái khoa học theo Mục III.A/III.B + COPE Position Statement "Authorship and AI tools" 13/2/2023, vẫn là vị trí hình thức hiện hành của COPE — vá 2026-07-17, round audit đối kháng 4, xác minh trực tiếp qua icmje.org)
 
-### A. BẢNG ICMJE CRediT TAXONOMY (14 vai trò)
+### A. BẢNG CRediT TAXONOMY (14 vai trò — CASRAI/NISO ANSI Z39.104-2022, KHÔNG phải chuẩn ICMJE; dùng SONG SONG với 4 tiêu chí tác giả ICMJE bên dưới — CRediT mô tả AI LÀM GÌ, ICMJE quyết định AI LÀ tác giả)
 
 Soạn bảng điền sẵn cho đề tài — bác sĩ chỉ cần tích vai trò:
 
@@ -81,17 +87,45 @@ Tiêu chí tác giả ICMJE — TẤT CẢ 4 tiêu chí phải đạt:
 Không đủ 4 tiêu chí → ghi vào Lời cảm ơn, KHÔNG ghi là tác giả
 ```
 
-### B. KHAI BÁO COI (ICMJE Disclosure Form — 5 lĩnh vực)
+### A2. QUYỀN TRUY CẬP DỮ LIỆU VÀ ĐỘC LẬP VỚI NHÀ TÀI TRỢ (ICMJE cập nhật 1/2026)
+
+Trước khi PI ký G9, điền `data_access_governance` trong
+`G9_PUBLICATION_READINESS.json`: xác nhận mọi tác giả có thể rà dữ liệu hỗ trợ kết quả;
+chỉ rõ một `author_ref` đã truy cập dữ liệu gốc và tham gia phân tích; nếu là hợp tác học
+thuật–ngoài học thuật, người đó phải là tác giả học thuật; nếu có tài trợ, gắn
+`sponsor_agreement_evidence_ref` chứng minh thỏa thuận không hạn chế quyền truy cập dữ liệu
+hoặc độc lập công bố. Không lưu tên/email/PII trong JSON. Thiếu một xác nhận làm
+`G9-HUMAN-05A` REVIEW và cổng không thể READY.
+
+### B. KHAI BÁO COI (theo mẫu ICMJE Disclosure Form — bảng PHẲNG 13 mục, hiện hành từ 6/2021)
+
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 30, phát hiện HIGH: bản cũ ghi "5 lĩnh vực" + khẳng định sai mục "Intellectual Property" gộp cả copyright — đó là cấu trúc form CŨ đã bị chính ICMJE thay thế >4 năm trước (xem icmje.org/news-and-editorials/updated_disclosure_form_2021.html). Đã xác minh bằng tải trực tiếp file .docx chính thức đang sống tại icmje.org/downloads/coi_disclosure.docx: form thật là MỘT bảng phẳng liệt kê đúng 13 mục đánh số, KHÔNG chia "lĩnh vực" có tên, KHÔNG có mục nào tên "Intellectual Property" — mục 8 chỉ ghi "Patents planned, issued or pending" (không nhắc copyright); "Royalties or licenses" là mục 3 TÁCH BIỆT khỏi patent. Mẫu dưới đây là bản RÚT GỌN nội bộ tham khảo cho đủ 13 mục — agent LUÔN phải nhắc bác sĩ tải và điền TRỰC TIẾP file .docx chính thức tại icmje.org/downloads/coi_disclosure.docx làm bản khai chính thức, không coi mẫu này là bản thay thế đầy đủ.)*
 
 ```
 ════════════════════════════════════════════════════════
 KHAI BÁO XUNG ĐỘT LỢI ÍCH — [Họ tên tác giả] — [Ngày]
 ════════════════════════════════════════════════════════
-(Điền riêng cho từng tác giả — 12 tháng qua tính đến ngày nộp)
+(Điền riêng cho từng tác giả — mục 1 "All support for the present manuscript" KHÔNG giới
+hạn thời gian [từ lúc thai nghén/thiết kế NC]; các mục 2-13 khai quan hệ CHỈ LIÊN QUAN chủ
+đề trong 36 tháng qua tính đến ngày nộp — BẢN KHAI CHÍNH THỨC phải dùng đúng file .docx tại
+icmje.org/downloads/coi_disclosure.docx, mẫu dưới đây chỉ tham khảo)
 
-1. TÀI CHÍNH TỪ TỔ CHỨC THƯƠNG MẠI liên quan đến chủ đề bài:
+1. TÀI CHÍNH TỪ TỔ CHỨC THƯƠNG MẠI liên quan đến chủ đề bài — tích các mục áp dụng
+   (khớp đúng 13 mục ICMJE, không gộp/bỏ mục nào):
    ☐ Không có
-   ☐ Có: Tổ chức: ___ | Loại: ☐ Tài trợ NC ☐ Phí tư vấn ☐ Cổ phần ☐ Thù lao ☐ Patent
+   ☐ Có — Tổ chức: ___ | Loại:
+     ☐ Tài trợ NC/hợp đồng (Grants/contracts)
+     ☐ Bản quyền/giấy phép (Royalties or licenses — TÁCH BIỆT khỏi patent)
+     ☐ Phí tư vấn (Consulting fees)
+     ☐ Thù lao/honoraria cho bài giảng (Payment or honoraria)
+     ☐ Phí làm chứng chuyên gia (Payment for expert testimony)
+     ☐ Hỗ trợ đi họp/du lịch (Support for attending meetings or travel)
+     ☐ Patent đang chờ/đã cấp (Patents planned, issued or pending)
+     ☐ Tham gia DSMB/Ban tư vấn (Participation on a DSMB or Advisory Board)
+     ☐ Vai trò lãnh đạo/ủy thác — có trả lương HOẶC không (Leadership or fiduciary role)
+     ☐ Cổ phần/quyền chọn cổ phần (Stock or stock options)
+     ☐ Nhận thiết bị/vật tư/thuốc/quà tặng (Receipt of equipment, materials, drugs, or gifts)
+     ☐ Khác (Other financial or non-financial interests): ___
 
 2. TÀI CHÍNH TỪ TỔ CHỨC KHÔNG liên quan đến chủ đề:
    ☐ Không có  ☐ Có: ___
@@ -110,7 +144,7 @@ KHAI BÁO XUNG ĐỘT LỢI ÍCH — [Họ tên tác giả] — [Ngày]
 [Tạo bản riêng cho mỗi tác giả]
 ```
 
-### C. KHAI BÁO SỬ DỤNG AI (COPE 2024 + ICMJE)
+### C. KHAI BÁO SỬ DỤNG AI (COPE Position Statement "Authorship and AI tools" 13/2/2023 + ICMJE)
 
 ```
 KHAI BÁO SỬ DỤNG TRÍ TUỆ NHÂN TẠO
@@ -165,7 +199,10 @@ was conducted in accordance with the Declaration of Helsinki."
 
 ## G9 PHẦN 2 — CHỌN TẠP CHÍ VÀ ĐÓNG GÓI
 
-### Checklist Think.Check.Submit (10 điểm)
+### Checklist chống tạp chí predatory (tự soạn — tham khảo tinh thần Think.Check.Submit + tiêu chí Beall/COPE)
+
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 30, phát hiện MEDIUM: bản cũ gắn nhãn danh sách 10 mục TỰ SOẠN này là "Checklist Think.Check.Submit (10 điểm)" — sai nguồn/số lượng. Checklist CHÍNH THỨC của sáng kiến Think.Check.Submit (thinkchecksubmit.org/journals/) chỉ có ĐÚNG 7 câu hỏi, không hỏi trực tiếp về Retraction Watch hay "email mời chào không mong muốn" như 10 mục dưới đây. Nội dung từng mục vẫn hợp lý/hữu ích, chỉ đổi tên cho đúng nguồn — không gắn thương hiệu "Think.Check.Submit" cho một checklist khác số lượng.)*
+
 ```
 ☐ 1. Ban biên tập có tên thật, xác minh được?
 ☐ 2. Chính sách peer-review rõ ràng?
@@ -201,7 +238,7 @@ Tạp chí trong nước VN: ☐ Y học TP.HCM ☐ Tạp chí NCKH BQP ☐ VMJ 
 ☐ Khai báo AI
 ☐ Data Availability Statement
 ☐ Danh sách gợi ý reviewer (>=3) + danh sách loại trừ
-☐ Cover letter
+☐ Cover letter (soạn theo mẫu ở G9 PHẦN 3 bên dưới TRƯỚC khi tick mục này — SỬA 2026-07-22 vòng 8)
 ```
 
 > **"Bản thảo đúng format" theo venue cụ thể (2026-07-04):** một khi tạp chí đích đã chọn ở M3, dùng skill `venue-templates` (`.tex` thật cho Nature/Science/PLOS/Elsevier/NeurIPS/NSF/NIH... + `scripts/validate_format.py`) để định dạng/kiểm khớp giới hạn từ, kiểu trích dẫn, cấu trúc đúng yêu cầu venue đó — thay vì tự đoán format.
@@ -233,7 +270,12 @@ dựa trên scope và đối tượng đọc giả của tạp chí].
 §4 CAM KẾT LIÊM CHÍNH
 Xác nhận: (1) bài là nguyên bản, chưa nộp nơi nào khác; (2) tất cả
 tác giả đọc và đồng ý bản cuối; (3) không có COI ảnh hưởng kết quả;
-(4) mọi khai báo đạo đức/COI/AI/dữ liệu đính kèm bản thảo.
+(4) mọi khai báo đạo đức/COI/dữ liệu đính kèm bản thảo; (5) sử dụng
+công nghệ AI (LLM/chatbot/tạo ảnh) trong quá trình soạn bản thảo này:
+[Có/Không — nếu Có, nêu công cụ + mục đích, chi tiết đầy đủ ở Phần 4
+khai báo AI đính kèm] — khai NGAY TRONG cover letter theo ICMJE Mục
+V.A (bắt buộc khai ở CẢ cover letter LẪN bản thảo, không chỉ "đính
+kèm riêng" — vá 2026-07-17, round audit đối kháng 4).
 
 §5 REVIEWER (tùy chọn)
 Đề xuất: 1. [Tên, đơn vị, email] — chuyên môn: ___
@@ -304,11 +346,36 @@ Trân trọng, [Tên tác giả liên hệ]
 ╚══════════════════════════════════════════════════════╝
 ```
 
+> **Cổng thật đòi ledger có chữ ký, khối trên chỉ mô tả checkpoint text tham khảo (vá
+> 2026-07-12/2026-07-14):** `tools/run_g10_assemble.py` (bước "sẵn sàng nộp bài") fail-closed
+> đòi CẢ HAI — G8 (bình duyệt độc lập, người phản biện không phải PI/tác giả tự chạy
+> `approve_gate.py --gate G8 --reviewer-role "PHAN_BIEN_DOC_LAP"`) VÀ G9 (PI tự chạy
+> `approve_gate.py --gate G9 --reviewer-role "PI"`) — thiếu 1 trong 2 vẫn báo "CHƯA SẴN
+> SÀNG NỘP BÀI". Agent KHÔNG tự chạy 2 lệnh này thay người thật.
+
+> **"3 xác nhận" ở trên là 3 mục ĐẦU DÒNG của doctrine, KHÔNG phải toàn bộ điều kiện ký
+> thật (tài liệu hóa 2026-07-30, đóng khoảng trống G9-F2 — trước đây file này chưa hề
+> nhắc tới `g9_quality_gate.py` dù G0/G3/G8 đều có mục doctrine riêng cùng ngày xây lớp
+> đó):** `approve_gate.py --gate G9` CHỈ nhận chữ ký khi
+> `python tools/g9_quality_gate.py --study <mã>` trả `READY_FOR_G9_PI_APPROVAL` — đòi
+> **9 nhóm tiêu chí người thật**, không phải 3: (1) đủ 4 tiêu chí ICMJE + CRediT + COI +
+> `evidence_ref` cho TỪNG tác giả riêng biệt (không phải một xác nhận gộp); (2) thứ tự
+> tác giả/guarantor đã chốt và không còn tranh chấp; (3) khai AI đủ tools/purposes/
+> confirmed_at (ICMJE Mục V, không chỉ "có dùng AI hay không"); (4) Data Availability
+> Statement đủ chi tiết ICMJE cho thử nghiệm lâm sàng (không nhận "chưa quyết định");
+> (5) quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026; (6) liêm chính công
+> bố (similarity/image integrity/kết quả khớp phân tích khóa ở G6); (7) venue due diligence
+> (URL https, phạm vi, phí, lưu trữ, rút bài, indexing); (8) ethics/privacy cuối;
+> (9) manifest SHA-256 ràng buộc toàn gói còn nguyên; (10) PI ký
+> đúng `G9_checkpoint.json`. Chạy `g9_quality_gate.py` TRƯỚC khi đọc "TIÊU CHÍ QUA CỔNG
+> G9" bên dưới để biết CHÍNH XÁC còn thiếu gì — mục dưới đây là hướng dẫn soạn thảo, không
+> phải danh sách đầy đủ điều kiện ký.
+
 ---
 
 ## TIÊU CHÍ QUA CỔNG G9
 
-**Đạt G9 (AI side):** Bảng CRediT 14 vai trò · khai báo COI mỗi tác giả · khai báo AI · Data Availability Statement · Ethics Statement · checklist Think.Check.Submit · 3 tạp chí đề xuất · cover letter · checklist đóng gói hoàn chỉnh.
+**Đạt G9 (AI side):** Bảng CRediT 14 vai trò · khai báo COI mỗi tác giả · khai báo AI · Data Availability Statement · quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026 · Ethics Statement · checklist chống predatory · 3 tạp chí đề xuất · cover letter · checklist đóng gói hoàn chỉnh.
 
 **Mở khóa thật (human side):** bác sĩ ký xác nhận 3 mục → agent ghi G9=LOCKED → xuất Final Readiness Report.
 
@@ -343,8 +410,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

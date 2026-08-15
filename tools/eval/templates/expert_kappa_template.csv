@@ -1,5 +1,0 @@
-case_id,summary,agent_rec,expert1,expert2,expert3,ghi_chu
-C01,(tóm tắt ca ẩn danh - KHÔNG PII),(khuyến nghị của agent),,,,
-C02,,,,,
-# expert1/2/3 điền MỘT trong: khop_hoan_toan | khop_phan_lon | khac_biet_nho | khac_biet_lon | ai_nguy_hiem
-# Chấm MÙ (chuyên gia không biết đâu là đầu ra AI). Đủ 50 dòng C01..C50.

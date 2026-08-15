@@ -1,0 +1,46 @@
+red_flags:
+  # ── CRITICAL — dừng phác đồ ngoại trú, chuyển cấp cứu ngay ─────────────────
+  - red_flag_id: dys_rf_rhabdomyolysis
+    label: "Nghi tiêu cơ vân (rhabdomyolysis) — đau cơ dữ dội + nước tiểu nâu/đỏ + yếu cơ nặng"
+    severity: CRITICAL
+    gate: STOP_STATIN_IMMEDIATELY
+    action: "NGỪNG statin/fibrate ngay. Chuyển cấp cứu khẩn: CK, creatinine, myoglobin niệu, bù dịch tĩnh mạch. Không tái dùng statin đến khi loại trừ."
+    referral_level: emergency_referral
+    notes: "CK > 10x ULN kèm triệu chứng hoặc bất kỳ mức nào kèm myoglobinuria → ngừng ngay. Risk tăng: fibrate + statin, CYP3A4 inhibitors (clarithromycin, itraconazole, ciclosporin) + simvastatin/lovastatin, gemfibrozil + statin."
+
+  - red_flag_id: dys_rf_acute_pancreatitis
+    label: "Viêm tụy cấp nghi do tăng triglyceride nặng (TG > 10 mmol/L = 886 mg/dL)"
+    severity: CRITICAL
+    gate: STOP_OUTPATIENT_PATHWAY
+    action: "Chuyển nhập viện khẩn. Nhịn ăn, bù dịch, insulin truyền tĩnh mạch nếu TG cực cao. Không dùng fibrate đường uống khi viêm tụy cấp đang tiến triển."
+    referral_level: emergency_referral
+    notes: "TG > 5.6 mmol/L (500 mg/dL) → nguy cơ viêm tụy tăng mạnh. TG > 10 mmol/L → khẩn cấp."
+
+  - red_flag_id: dys_rf_acute_liver_injury
+    label: "Tổn thương gan cấp nghi do thuốc — ALT/AST > 3x ULN có triệu chứng (vàng da, đau hạ sườn phải, mệt)"
+    severity: CRITICAL
+    gate: STOP_STATIN_IMMEDIATELY
+    action: "NGỪNG statin. Xét nghiệm LFT, PT, bilirubin. Chuyển chuyên khoa tiêu hóa/gan mật nếu nghi drug-induced liver injury (DILI)."
+    referral_level: urgent_referral
+
+  # ── HIGH — cần xử lý trong 24-48h ──────────────────────────────────────────
+  - red_flag_id: dys_rf_severe_hypertriglyceridemia
+    label: "Tăng triglyceride nặng (TG > 5.6 mmol/L = 500 mg/dL) không có triệu chứng"
+    severity: HIGH
+    gate: URGENT_EVALUATION
+    action: "Cần xử lý trong 24-48h: loại trừ nguyên nhân thứ phát (ĐTĐ mất kiểm soát, suy giáp, thuốc), chỉnh chế độ ăn ngay, cân nhắc fibrate. Theo dõi TG 4-6 tuần."
+    referral_level: urgent_outpatient
+
+  - red_flag_id: dys_rf_familial_hypercholesterolemia
+    label: "Nghi tăng cholesterol gia đình (FH) — LDL-C > 5 mmol/L (190 mg/dL) + tiền sử gia đình hoặc xanthoma/xanthelasma"
+    severity: HIGH
+    gate: SPECIALIST_REFERRAL
+    action: "Áp dụng tiêu chí Dutch Lipid Clinic Network để phân loại. Chuyển nội tiết/tim mạch. Tầm soát gia đình bậc 1. Cần statin liều cao ± ezetimibe ± PCSK9i."
+    referral_level: specialist_referral
+
+  - red_flag_id: dys_rf_myopathy_without_rhabdomyolysis
+    label: "Đau cơ/yếu cơ mới xuất hiện sau khi bắt đầu statin (không đủ tiêu chí rhabdomyolysis)"
+    severity: HIGH
+    gate: EVALUATE_BEFORE_CONTINUING
+    action: "Đo CK. Nếu CK < 4x ULN và triệu chứng nhẹ: cân nhắc giảm liều hoặc đổi statin (pravastatin/fluvastatin ít myopathy hơn). Nếu CK 4-10x ULN: ngừng statin và xem xét lại nguyên nhân."
+    referral_level: outpatient_evaluation

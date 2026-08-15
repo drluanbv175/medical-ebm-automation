@@ -1,0 +1,69 @@
+recommendations:
+  # MỤC TIÊU ĐIỀU TRỊ (ADA 2025 + IDF 2023)
+  - claim_id: dm2_glycemic_targets
+    guideline: "ADA Standards of Care 2025 (Diabetes Care 2025;48:S1)"
+    recommendation_text_draft: |
+      Mục tiêu HbA1c cá thể hóa:
+      - HbA1c < 7.0% (53 mmol/mol): phần lớn người lớn không có nguy cơ hạ đường huyết cao
+      - HbA1c < 8.0%: người cao tuổi, tuổi thọ ngắn, bệnh đồng mắc nặng, nguy cơ hạ đường huyết cao
+      - HbA1c < 6.5%: có thể đặt ở người trẻ, mới chẩn đoán, không dùng SU/insulin, mong muốn bệnh nhân
+      Glucose sau ăn 2h: < 10 mmol/L (đích phụ nếu HbA1c chưa đạt dù glucose đói đạt)
+    evidence_grade: "A (ADA 2025)"
+    approval_status: pending
+    verification_status: DRAFT
+
+  # THUỐC ĐẦU TAY
+  - claim_id: dm2_first_line_metformin
+    guideline: "ADA 2025 Section 9; ESC Diabetes Guidelines 2023"
+    recommendation_text_draft: |
+      Metformin vẫn là thuốc đầu tay ở người ĐTĐ type 2 không có chống chỉ định:
+      - Bắt đầu liều thấp: 500 mg x 1-2 lần/ngày, tăng dần sau 1-2 tuần
+      - Liều đích: 1000 mg x 2 lần/ngày (tối đa 2550 mg/ngày)
+      - Uống trong bữa ăn để giảm tác dụng phụ tiêu hóa
+      Cần kiểm tra eGFR trước khi dùng; điều chỉnh/ngưng nếu eGFR giảm.
+    evidence_grade: "A"
+    approval_status: pending
+    verification_status: DRAFT
+
+  # SGLT2 INHIBITORS — ƯU TIÊN CAO
+  - claim_id: dm2_sglt2i_cardiovascular_renal
+    guideline: "ADA 2025 Section 9; ESC Heart Failure 2024; KDIGO Diabetes CKD 2022"
+    recommendation_text_draft: |
+      SGLT2i (empagliflozin, dapagliflozin, canagliflozin) được ưu tiên thêm vào Metformin khi:
+      - Có bệnh tim mạch xơ vữa đã thiết lập (ASCVD): giảm biến cố CV và nhập viện suy tim
+      - Suy tim với EF giảm hoặc bảo tồn: giảm nhập viện và tử vong CV
+      - CKD (eGFR ≥ 20, ACR ≥ 200 mg/g): dapagliflozin/empagliflozin làm chậm tiến triển thận
+      Lưu ý: tăng nguy cơ nhiễm trùng sinh dục; không dùng khi eGFR < 20; theo dõi DKA euglycemic ở type 1.
+    evidence_grade: "A"
+    approval_status: pending
+    verification_status: DRAFT
+
+  # GLP-1 RA — ƯU TIÊN CAO
+  - claim_id: dm2_glp1ra_cardiovascular_weight
+    guideline: "ADA 2025 Section 9; LEADER, SUSTAIN-6, REWIND trials"
+    recommendation_text_draft: |
+      GLP-1 RA (semaglutide, liraglutide, dulaglutide) được ưu tiên khi:
+      - Có ASCVD hoặc nguy cơ CV cao: liraglutide, semaglutide, albiglutide (giảm MACE)
+      - Cần giảm cân đáng kể: semaglutide (tiêm hoặc uống) giảm 10-15% cân nặng
+      - Không muốn tiêm: semaglutide uống (Rybelsus) hiệu quả tương đương
+      Lưu ý: buồn nôn thường gặp đầu điều trị; chống chỉ định trong tiền sử ung thư tuyến giáp tủy.
+    evidence_grade: "A"
+    approval_status: pending
+    verification_status: DRAFT
+
+  # THEO DÕI ĐỊNH KỲ
+  - claim_id: dm2_monitoring_schedule
+    guideline: "ADA 2025 Section 4 và 9"
+    recommendation_text_draft: |
+      Lịch theo dõi định kỳ ĐTĐ type 2 ngoại trú ổn định:
+      - HbA1c: mỗi 3 tháng khi chưa đạt mục tiêu; mỗi 6 tháng khi đạt ổn định
+      - Creatinine/eGFR + ACR nước tiểu: ít nhất 1 lần/năm
+      - Lipid máu: ít nhất 1 lần/năm
+      - Huyết áp: mỗi lần khám
+      - Khám bàn chân: ít nhất 1 lần/năm (soi mạch, cảm giác, vết thương)
+      - Khám mắt (đáy mắt): ít nhất 1-2 năm/lần tùy tình trạng
+    evidence_grade: "A"
+    approval_status: pending
+    verification_status: DRAFT
+
+disclaimer: "DRAFT REVIEW-ONLY. Liều và phác đồ cụ thể cần bác sĩ kiểm chứng và điều chỉnh theo từng bệnh nhân."

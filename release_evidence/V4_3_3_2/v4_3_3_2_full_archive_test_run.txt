@@ -1,0 +1,19 @@
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 28%]
+........................................................................ [ 37%]
+........................................................................ [ 47%]
+................................s....................................... [ 56%]
+........................................................................ [ 66%]
+........................................................................ [ 75%]
+........................................................................ [ 85%]
+........................................ssss............................ [ 94%]
+.........................................                                [100%]
+=============================== warnings summary ===============================
+../../../../../../../../../Users/nguyenluan/.ebm-venv/lib/python3.9/site-packages/urllib3/__init__.py:35
+  /Users/nguyenluan/.ebm-venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /private/tmp/claude-501/-Users-nguyenluan-Library-CloudStorage-OneDrive-Personal-Claude-AI/17799845-77e5-4db9-9336-87709fdaa140/scratchpad/v4_3_3_2_full_fresh/results/v4_3_3_2_full_archive_junit.xml -
+756 passed, 5 skipped, 1 warning in 6.04s

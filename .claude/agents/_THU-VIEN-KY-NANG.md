@@ -38,6 +38,11 @@
 | Hình thức hóa giả thuyết cạnh tranh + cơ chế + chấm 7 tiêu chí chất lượng (testability/falsifiability/parsimony/explanatory power/scope/consistency/novelty) trước khi chọn thiết kế | `hypothesis-generation` | `cau-hoi-nghien-cuu` (G0, sau PICO+H0/H1 thô) → `thiet-ke-nghien-cuu` (G1, trước khi chọn thiết kế/estimand) |
 | Xây mô hình tiên lượng bằng HỌC MÁY thật trên dữ liệu EHR (MIMIC/eICU/OMOP), hoặc tra/đối chiếu mã THUỐC ATC↔NDC↔RxNorm/mã bệnh ICD↔CCS khi kê đơn | `pyhealth` (`references/medcode.md` InnerMap/CrossMap — offline; cần cài PyTorch nếu train model) | `mo-hinh-tien-luong` (nhánh ML của M5 — hiện chỉ có code R cho calibration/DCA) và agent `ke-don-an-toan` (+ skill `ke-don-an-toan-benh-man` — **là skill, KHÔNG phải agent riêng**, dùng bổ trợ agent `ke-don-an-toan`) cho mã ATC/NDC/RxNorm/CCS — MCP ICD-10-CM/PCS sẵn có KHÔNG phủ mã thuốc |
 | Viết IMRAD theo chuẩn báo cáo | `scientific-writing` | `viet-ban-thao` |
+| *(2026-07-12, thêm 4 dòng — 4 agent sau chỉ có ĐÚNG MỘT đường vào qua `dieu-phoi-nghien-cuu`, dễ lọt nếu câu hỏi bác sĩ không dùng từ khóa hiển nhiên; thêm bảng tra này làm đường phát hiện thứ 2, độc lập với suy luận ngữ cảnh của nhạc trưởng)* | | |
+| "Có đáng tiền không" / chi phí–hiệu quả / tác động ngân sách / CEA/CUA/QALY/BIA cho đề tài | — (agent tự làm theo CHEERS 2022/ISPOR BIA GPP II) | `kinh-te-y-te` (G1/G7) |
+| Đề tài dùng bộ câu hỏi/thang đo cần kiểm định (hài lòng, chất lượng sống, tuân thủ) — COSMIN | — (agent tự làm theo COSMIN) | `cong-cu-do-luong` (G1/G3) |
+| "Tổ chức thực hiện đề tài thế nào" / nhân lực-RACI / tiến độ-Gantt / dự trù kinh phí (sau khi chốt thiết kế) | — (agent tự làm) | `ke-hoach-trien-khai` (A13, G1) |
+| Đề tài có cấu phần định tính/phỏng vấn/nhóm tiêu điểm/hỗn hợp (trải nghiệm, rào cản, ý nghĩa) | — (agent tự làm theo COREQ/SRQR) | `nghien-cuu-dinh-tinh` |
 | Bình duyệt trước nộp | `peer-review` | `binh-duyet` |
 | Sản phẩm đào tạo/slide/Word/PDF | `dao-tao-slide-tai-lieu-y-khoa`, `pptx`/`docx`/`pdf`/`xlsx` | (đầu ra) — gọi sau khi nội dung đã chốt |
 

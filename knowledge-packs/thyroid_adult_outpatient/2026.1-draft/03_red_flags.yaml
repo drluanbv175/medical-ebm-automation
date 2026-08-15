@@ -1,0 +1,24 @@
+red_flags:
+  - id: rf_thyroid_storm
+    name: "Cơn bão giáp (Thyroid Storm)"
+    triggers: ["sốt cao > 39°C + nhịp tim > 140/phút + kích thích, lú lẫn", "nôn, tiêu chảy + suy tim", "tiền sử cường giáp chưa kiểm soát + nhiễm trùng/phẫu thuật/sang chấn"]
+    action: "CHUYỂN CẤP CỨU NGAY — Borio-Wartofsky score; ICU"
+    priority: CRITICAL
+
+  - id: rf_myxedema_coma
+    name: "Hôn mê phù niêm (Myxedema Coma)"
+    triggers: ["suy giáp nặng + rối loạn ý thức", "hạ thân nhiệt", "hạ natri máu nặng", "ngưng levothyroxine kéo dài"]
+    action: "CHUYỂN CẤP CỨU NGAY — levothyroxine IV + hydrocortisone + hỗ trợ hô hấp"
+    priority: CRITICAL
+
+  - id: rf_agranulocytosis_thionamide
+    name: "Mất bạch cầu hạt do thuốc kháng giáp"
+    triggers: ["sốt đột ngột + đau họng dữ dội khi đang dùng PTU hoặc methimazole", "trong vài tuần đầu đến 3 tháng điều trị"]
+    action: "NGƯNG NGAY thuốc kháng giáp, CÔNG THỨC MÁU KHẨN — bạch cầu hạt < 500/µL: nhập viện, cách ly"
+    priority: CRITICAL
+
+  - id: rf_thyroid_nodule_suspicious
+    name: "Nhân giáp nghi ngờ ác tính"
+    triggers: ["nhân tăng kích thước nhanh", "nhân cứng chắc, dính, không đau", "hạch cổ kèm theo", "giọng khàn mới, khó nuốt"]
+    action: "Siêu âm tuyến giáp + FNA (chọc hút kim nhỏ) khẩn; hội chẩn nội tiết/ung bướu"
+    priority: HIGH

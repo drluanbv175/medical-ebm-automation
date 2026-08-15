@@ -1,0 +1,45 @@
+path,tracked_status,size_group,category,reason,retention_period,cleanup_action,recovery_location,requires_human_review
+runtime/,TRACKED,medium,KEEP_ACTIVE_SOURCE,Core runtime package — agent_registry policy_gate workflow_state_machine,PERMANENT,NONE,git history,false
+runtime/manifests/agent_source_manifest.csv,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,Agent manifest — 48 rows — verified by verify_manifest_registry.py,PERMANENT,NONE,git history,false
+research_project/,TRACKED,medium,KEEP_ACTIVE_SOURCE,V4.3.3 13-module dossier package — new in e57058f,PERMANENT,NONE,git history,false
+research_studio/,TRACKED,medium,KEEP_ACTIVE_SOURCE,Research studio governance layer,PERMANENT,NONE,git history,false
+research_automation/,TRACKED,medium,KEEP_ACTIVE_SOURCE,Automation pipeline layer,PERMANENT,NONE,git history,false
+tests/,TRACKED,large,KEEP_ACTIVE_TEST,746 deterministic offline tests,PERMANENT,NONE,git history,false
+scripts/,TRACKED,small,KEEP_ACTIVE_SOURCE,verify_manifest_registry.py bridge_to_ebm_master.py etc,PERMANENT,NONE,git history,false
+app/,TRACKED,large,KEEP_ACTIVE_SOURCE,Streamlit dashboard + clinical modules,PERMANENT,NONE,git history,false
+.github/workflows/offline-ci.yml,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,CI pipeline — offline tests,PERMANENT,NONE,git history,false
+.claude/agents/,TRACKED,medium,KEEP_MANIFEST_OR_CONFIG,74 agent .md files — source of truth,PERMANENT,NONE,git history,false
+.claude/memory/,TRACKED,small,KEEP_CURRENT_DOCUMENTATION,Claude memory patterns and decisions,PERMANENT,NONE,git history,false
+dashboard_mockups/templates/,TRACKED,medium,KEEP_ACTIVE_SOURCE,EW and DA dashboard templates,PERMANENT,NONE,git history,false
+automation_schedule.yaml,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,Schedule config,PERMANENT,NONE,git history,false
+research_project_request.yaml,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,V4.3.3 project request schema,PERMANENT,NONE,git history,false
+V4_3_3_EXECUTIVE_SUMMARY.md,TRACKED,small,KEEP_RELEASE_EVIDENCE,V4.3.3 frozen release evidence,PERMANENT,NONE,git history,false
+V4_3_3_TEST_REPORT.md,TRACKED,small,KEEP_RELEASE_EVIDENCE,V4.3.3 test evidence with real counts,PERMANENT,NONE,git history,false
+V4_3_3_FRESH_ARCHIVE_ACCEPTANCE.json,TRACKED,small,KEEP_RELEASE_EVIDENCE,V4.3.3 acceptance JSON — SHA256 archive,PERMANENT,NONE,git history,false
+V4_3_3_GIT_BASELINE_VERIFICATION.md,TRACKED,small,KEEP_RELEASE_EVIDENCE,V4.3.3 git baseline verification,PERMANENT,NONE,git history,false
+V4_3_3_FREEZE_SUMMARY.md,TRACKED,small,KEEP_RELEASE_EVIDENCE,V4.3.3 freeze summary — PASS verdict,PERMANENT,NONE,git history,false
+results/v4_3_3_fresh_archive_*.txt,TRACKED,small,KEEP_RELEASE_EVIDENCE,Raw logs from V4.3.3.1 hermetic archive run,PERMANENT,NONE,git history,false
+AGENTS.md,TRACKED,small,KEEP_CURRENT_DOCUMENTATION,Agent team map and routing,PERMANENT,NONE,git history,false
+CLAUDE.md,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,Claude Code instructions,PERMANENT,NONE,git history,false
+Plans.md,TRACKED,small,KEEP_CURRENT_DOCUMENTATION,Sprint plans,PERMANENT,NONE,git history,false
+README.md,TRACKED,small,KEEP_CURRENT_DOCUMENTATION,Project README,PERMANENT,NONE,git history,false
+harness.toml,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,Test harness config,PERMANENT,NONE,git history,false
+requirements.txt,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,Python dependencies,PERMANENT,NONE,git history,false
+ruff.toml,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,Linter config,PERMANENT,NONE,git history,false
+library.json,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,Evidence library index,PERMANENT,NONE,git history,false
+config/,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,App configuration,PERMANENT,NONE,git history,false
+docs/,TRACKED,medium,KEEP_CURRENT_DOCUMENTATION,System documentation,PERMANENT,NONE,git history,false
+data/,TRACKED,medium,KEEP_ACTIVE_SOURCE,Reference data and processed outputs,PERMANENT,NONE,git history,false
+evidence/,TRACKED,medium,KEEP_ACTIVE_SOURCE,EBM evidence files and guidelines,PERMANENT,NONE,git history,false
+exports/,TRACKED,medium,KEEP_ACTIVE_SOURCE,Export outputs,PERMANENT,NONE,git history,false
+knowledge-packs/,TRACKED,small,KEEP_ACTIVE_SOURCE,Clinical knowledge packs,PERMANENT,NONE,git history,false
+chronic-care-clinic-os/,TRACKED,large,KEEP_ACTIVE_SOURCE,Chronic care subproject (separate git repo),PERMANENT,NONE,git history,false
+.env.example,TRACKED,small,KEEP_MANIFEST_OR_CONFIG,Secret template — no real secrets,PERMANENT,NONE,git history,false
+MRAQ100_AUDIT/,UNTRACKED,small,QUARANTINE_REVIEW_REQUIRED,Untracked audit directory — contains MRAQ_V4_X_SELF_REASSESSMENT.md; scope not verified,REVIEW_REQUIRED,NONE_until_reviewed,local only,true
+.mypy_cache/,UNTRACKED,128MB,DELETE_SAFE_CACHE,mypy type-check cache — fully regenerable; 128MB largest cache,TRANSIENT,DELETE_OR_GITIGNORE,regenerate with mypy,false
+.ruff_cache/,UNTRACKED,small,DELETE_SAFE_CACHE,ruff lint cache — fully regenerable,TRANSIENT,DELETE_OR_GITIGNORE,regenerate with ruff check,false
+.pytest_cache/,UNTRACKED,small,DELETE_SAFE_CACHE,pytest cache — fully regenerable,TRANSIENT,DELETE_OR_GITIGNORE,regenerate with pytest,false
+.DS_Store (root),UNTRACKED,tiny,DELETE_SAFE_CACHE,macOS Finder metadata — no data content,TRANSIENT,DELETE_OR_GITIGNORE,auto-regenerated by macOS,false
+.DS_Store (docs/ tests/evals/),UNTRACKED,tiny,DELETE_SAFE_CACHE,macOS Finder metadata in subdirs,TRANSIENT,DELETE_OR_GITIGNORE,auto-regenerated by macOS,false
+templates/,UNTRACKED,unknown,QUARANTINE_REVIEW_REQUIRED,Untracked templates dir — content not verified,REVIEW_REQUIRED,NONE_until_reviewed,local only,true
+out/,UNTRACKED,unknown,QUARANTINE_REVIEW_REQUIRED,Untracked out/ dir — likely build output but not confirmed,REVIEW_REQUIRED,NONE_until_reviewed,local only,true

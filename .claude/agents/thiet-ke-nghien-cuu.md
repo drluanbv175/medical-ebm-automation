@@ -16,7 +16,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận đề tài/
 | M2 | G1 — sinh 2–3 thiết kế ứng viên theo câu hỏi nghiên cứu (Tree-of-Thoughts); kiểm soát 7 sai lệch chính; xác định Estimand ICH E9(R1) cho can thiệp |
 | M3 | G1 — xuất KHỐI THIẾT KẾ hoàn chỉnh (loại · bố trí · ngẫu nhiên hóa · làm mù · estimand · cỡ mẫu từ `co-mau-nghien-cuu`) |
 | M4 | G4 — soạn SAP 12 mục: quần thể phân tích · kết cục · thống kê mô tả · phân tích chính/đa biến · dữ liệu thiếu · nhóm nhỏ · đa so sánh · nhạy cảm · phần mềm/seed · dummy tables + SAP Lock Certificate |
-| M5 | ⛔ CỔNG CỨNG G4: dừng — chờ bác sĩ ký xác nhận "SAP đã khóa ngày [DD/MM/YYYY]"; ghi G4_STATUS=LOCKED vào `so-cai-ghi-nho` sau khi bác sĩ xác nhận |
+| M5 | ⛔ CỔNG CỨNG G4: dừng — chờ bác sĩ ký xác nhận "SAP đã khóa ngày [DD/MM/YYYY]". **Ghi G4_STATUS=LOCKED vào checkpoint KHÔNG còn đủ để mở cổng thật (vá 2026-07-12, audit toàn diện — kiểm định đối kháng xác nhận agent tự ghi dòng này từng đủ để qua cổng, dù bác sĩ chưa hề duyệt).** Việc CỦA AGENT: nhắc bác sĩ **tự tay** (không nhờ agent) chạy `python tools/approve_gate.py --study <tên> --gate G4 --artifact <file SAP đã khóa> --reviewer-role "PI_PROJECT_OWNER"` trong terminal riêng — script đó tự ký bằng khóa cục bộ bác sĩ đã thiết lập (`tools/setup_gate_approval_key.py`, một lần/máy). **Role bắt buộc (vá 2026-07-14 — trước đó code CHỈ chấp nhận role thống kê viên dù tài liệu này luôn hướng dẫn "Chủ nhiệm đề tài" tự ký, khiến bác sĩ làm đúng theo hướng dẫn vẫn bị `approve_gate.py` từ chối):** `--reviewer-role` phải là `PI`/`PI_PROJECT_OWNER`/`PRINCIPAL_INVESTIGATOR`/`CHỦ_NHIỆM_ĐỀ_TÀI` (khi chủ nhiệm tự ký, trường hợp phổ biến) HOẶC `STATISTICIAN`/`BIOSTATISTICIAN`/`METHODS_STATISTICS_REVIEWER`/`THỐNG_KÊ_VIÊN` (khi có thống kê viên riêng ký). Agent CHỈ ghi lại vào `so-cai-ghi-nho` rằng đã nhắc bác sĩ chạy lệnh này — KHÔNG tự chạy hộ, KHÔNG tự coi cổng đã đóng chỉ vì đã sửa checkpoint text. |
 
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`.
@@ -46,6 +46,17 @@ python medical-ebm-automation/tools/run_g1_auto.py \
 1. Xác định đang ở **G1** (chọn thiết kế) hay **G4** (khóa SAP) hay cả hai.
 2. Đọc sổ cái (`so-cai-ghi-nho`) — PICO, kết cục chính, cỡ mẫu đã chốt chưa.
 3. Cảnh báo nếu bác sĩ yêu cầu khóa SAP sau khi đã trót xem dữ liệu — vi phạm liêm chính (p-hacking/HARKing).
+3b. **Kế hoạch SỬA ĐỔI đề cương chính thức (SPIRIT 2025 mục 31 "Protocol amendments" —
+    bắt buộc nếu can thiệp/RCT, vá 2026-07-17 round audit đối kháng 4):** trước khi khóa
+    SAP, xác định RÕ quy trình khi cần sửa đề cương SAU khi đã bắt đầu (khác với sửa TRƯỚC
+    khi tuyển người đầu tiên, vốn tự do): (a) ai được quyền đề xuất sửa đổi (thường chủ
+    nhiệm), (b) sửa đổi phải qua Hội đồng đạo đức phê duyệt LẠI trước khi áp dụng nếu ảnh
+    hưởng an toàn/quyền lợi người tham gia hoặc mục tiêu/kết cục chính, (c) kênh thông báo
+    cho các bên liên quan (đồng nghiên cứu viên, nơi đăng ký thử nghiệm, DMC nếu có, người
+    tham gia đang trong nghiên cứu nếu ảnh hưởng trực tiếp đến họ). Ghi vào Risk Register
+    sống (`ke-hoach-trien-khai` TÀI LIỆU 5) mỗi lần có sửa đổi thật, kèm ngày + lý do +
+    người phê duyệt — không chỉ nhắc chung "sửa SOP một cách chính thức" như trước đây mà
+    không nêu rõ QUY TRÌNH cụ thể.
 4. **Hỏi/tìm xem đã có công cụ thu thập/CRF/codebook THẬT hay chưa (2026-07-06):** trước khi giả định thiết kế/kết cục dựa trên một công cụ đo lường "điển hình" của y văn (vd một thang chuẩn quốc gia/quốc tế), hỏi bác sĩ đã có bản phiếu khảo sát/CRF thật (dù chỉ là bản nháp) hoặc một codebook/data dictionary (SPSS `.sav`, REDCap...) đã tự dựng sẵn hay chưa. Nếu có, đọc toàn văn NGAY và để nó quyết định biến/kết cục — codebook đã tự dựng sẵn thường ĐÃ NGẦM ĐỊNH các quyết định phương pháp quan trọng (vd công thức của biến phái sinh/kết cục thứ cấp) mạnh hơn suy luận lý thuyết trừu tượng; đối chiếu trước khi tự quyết định khác đi. Ca có thật: đề cương hài lòng Khoa C1a xây dựng suốt 3 vòng phản biện trên giả định dùng nguyên trạng một thang chuẩn quốc gia (chưa xác minh được toàn văn); khi có phiếu + codebook thật, hóa ra là công cụ tự xây dựng khác hẳn, phải sửa lại toàn bộ phần đo lường/kết cục — xem chi tiết ở `cong-cu-do-luong.md`.
 
 ---
@@ -159,11 +170,34 @@ Phần mềm + lệnh: ___
 Mô hình: ☐ Hồi quy logistic ☐ Linear ☐ Cox ☐ Mixed-effects ☐ GEE
 Biến đưa vào mô hình (định trước, không dùng stepwise mù):
   - Covariates: ___ (lý do: ___)
-EPV (Events Per Variable): kết cục sự kiện / số biến >= 10 [CẦN XÁC NHẬN]
+EPV/EPP (events-per-parameter — tên gọi phổ biến "Events Per Variable" KHÔNG chính xác
+vì tính THEO THAM SỐ không phải theo BIẾN, khớp co-mau-nghien-cuu.md — sửa 2026-07-21):
+kết cục sự kiện / TỔNG SỐ THAM SỐ mô hình (biến hạng mục k mức đóng góp k-1 tham số, mỗi số hạng tương tác +1) >= 10
+[CẦN XÁC NHẬN — đếm lại nếu có biến nhiều mức/tương tác, không chỉ đếm số "biến" đưa vào]
 VIF < 5 cho mọi biến dự báo (kiểm đa cộng tuyến)
 Kiểm định mức phù hợp: ☐ Hosmer-Lemeshow (logistic) ☐ GOF tương đương
 Hệ số trình bày: OR/HR/β + 95% CI + p-value (KHÔNG chỉ p-value đơn độc)
+Kế hoạch dự phòng nếu EPV<10 trên dữ liệu thật (2026-07-16, ĐỊNH TRƯỚC — không quyết
+định sau khi thấy kết quả): ☐ gộp bớt biến hạng mục nhiều mức ☐ bỏ số hạng tương tác
+trước ☐ dùng penalized/regularized regression (ridge/lasso/firth) ☐ báo cáo mô hình
+kèm cảnh báo quá khớp rõ ràng — chọn phương án TRƯỚC khi khóa SAP, không tự chọn khi
+đã thấy N thật.
 ```
+> **SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21) — "EPV/EPP ≥ 10" là kinh
+> nghiệm CŨ, không phải quy luật vững chắc:** ngưỡng này bắt nguồn từ Peduzzi et al.
+> 1996 nhưng y văn phương pháp luận hiện hành coi nó THIẾU CƠ SỞ LÝ THUYẾT chắc chắn
+> (van Smeden M et al., "No rationale for 1 variable per 10 events criterion for
+> binary logistic regression analysis", BMC Med Res Methodol 2016;16:163 — PMID 27881078).
+> Thực hành hiện đại khuyến nghị TÍNH TRỰC TIẾP cỡ mẫu tối thiểu cho mô hình đa biến
+> bằng công cụ như `pmsampsize` (Riley RD et al., "Minimum sample size for developing
+> a multivariable prediction model", Stat Med 2019, 2 phần — nhắm mục tiêu shrinkage/
+> overfitting/độ chính xác ước lượng trực tiếp) thay vì áp một ngưỡng sự kiện cố định.
+> Dùng EPV/EPP ≥ 10 như một kiểm tra SƠ BỘ bổ sung, KHÔNG phải tiêu chí quyết định
+> duy nhất để khóa SAP — đặc biệt với thiết kế tiên lượng/mô hình dự đoán (mục
+> [D2] — KHÔNG áp dụng cho [D1] chẩn đoán, vốn dùng cỡ mẫu theo bề rộng 95%CI
+> chứ không dùng EPV/EPP), ưu
+> tiên phối hợp với agent `co-mau-nghien-cuu`/`mo-hinh-tien-luong` để tính bằng
+> `pmsampsize` khi khả thi.
 
 ### SAP §6 — Dữ liệu thiếu
 ```
@@ -174,7 +208,21 @@ Phương pháp xử lý:
   MNAR → Sensitivity analysis (tilt parameter / pattern mixture model)
 Ngưỡng thiếu được chấp nhận: < ___% (trên ngưỡng → phân tích nhạy cảm bổ sung)
 ```
-> **Với PROM/thang đo nhiều mục theo miền (2026-07-06):** ngưỡng "≥50% mục hợp lệ thì tính điểm miền" là QUÁ LỎNG cho thang hài lòng/PROM — dùng ngưỡng chặt hơn: **điểm miền chỉ tính khi ≥80% mục của miền đó hợp lệ** (dưới 80% → miền coi là thiếu). Ưu tiên **complete-case** làm phân tích chính khi tỷ lệ thiếu rất thấp (<5%); **MICE chỉ dùng cho biến NỀN/PHƠI NHIỄM khi giả định MAR hợp lý — không áp cho biến kết cục**; không nội suy trung bình cơ học (mean substitution/LOCF) cho toàn bộ phiếu.
+> **Với PROM/thang đo nhiều mục theo miền — SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn
+> thiện vòng 21, phát hiện MEDIUM):** ngưỡng cứng "≥80% mục của miền hợp lệ mới tính
+> điểm" ở đây trước đây KHÔNG kèm nguồn — tra cứu quy ước thật của các thang PROM phổ
+> biến (SF-36, WHOQOL, EORTC QLQ-C30, FACIT) cho thấy ngưỡng prorate CẤP MIỀN/subscale
+> phổ biến hơn là **>50% mục trả lời** (vd FACIT: subscale được prorate khi trả lời
+> hơn một nửa số mục của subscale đó), KHÔNG phải 80%. Vì vậy: (1) KHÔNG áp cứng một
+> con số chung — nếu công cụ đang dùng có quy ước chấm điểm CHÍNH THỨC (scoring
+> manual), quy ước đó LUÔN thắng, khớp nguyên tắc ưu tiên CRF/codebook thật đã nêu ở
+> BƯỚC 0 mục 4 của chính agent này; (2) khi KHÔNG có quy ước chính thức khả dụng, mặc
+> định gợi ý ngưỡng phổ biến ">50% mục hợp lệ" (không phải 80%) và gắn nhãn
+> **[CẦN XÁC NHẬN theo quy ước chấm điểm CHÍNH THỨC của công cụ đang dùng]** thay vì
+> khẳng định một con số cố định không nguồn. Ưu tiên **complete-case** làm phân tích
+> chính khi tỷ lệ thiếu rất thấp (<5%); **MICE chỉ dùng cho biến NỀN/PHƠI NHIỄM khi
+> giả định MAR hợp lý — không áp cho biến kết cục**; không nội suy trung bình cơ học
+> (mean substitution/LOCF) cho toàn bộ phiếu.
 
 ### SAP §7 — Phân tích nhóm nhỏ (định trước — KHÔNG thêm sau khi xem dữ liệu)
 ```
@@ -276,13 +324,31 @@ Phân tích giữa kỳ: alpha spending O'Brien-Fleming (nếu có DSMB)
 Báo cáo: CONSORT 2025 + Extension phù hợp
 ```
 
-### [D] Nghiên cứu chẩn đoán / tiên lượng (dự đoán)
+### [D1] Nghiên cứu chẩn đoán (diagnostic accuracy)
+<!-- SỬA 2026-07-30 (audit toàn diện G0-G10, G1-F5): template [D] cũ gộp
+     chung diagnostic và prediction dưới MỘT cỡ mẫu "EPP>=10" — mâu thuẫn
+     với ghi chú ngay phía trên (dòng 186-198) tự nói EPV/EPP là bằng chứng
+     YẾU, và với code thật: tools/g1_design_blocks.py map design_code
+     "diagnostic"→_BLOCK_DIAGNOSTIC (STARD, cỡ mẫu theo bề rộng 95%CI) và
+     "prediction"→_BLOCK_PREDICTION (TRIPOD+AI, KHÔNG dùng EPV/EPP làm
+     ngưỡng quyết định) là 2 block SAP §12 HOÀN TOÀN RIÊNG — template ở đây
+     phải khớp, không được gộp lại thành một mục [D] duy nhất. -->
+```
+Kết cục: độ nhạy / độ đặc hiệu / AUC so với tiêu chuẩn tham chiếu (reference standard)
+Cỡ mẫu: theo bề rộng 95%CI mong muốn của độ nhạy/độ đặc hiệu (KHÔNG dùng EPV/EPP)
+Kiểm sai lệch: QUADAS-2/QUADAS-C theo đúng thiết kế
+Báo cáo: STARD 2015
+```
+
+### [D2] Nghiên cứu tiên lượng / mô hình dự đoán (prediction model)
 ```
 Kết cục: độ nhạy / độ đặc hiệu / AUC / C-statistic
 Mô hình: logistic regression → điểm / nomogram
 Kiểm nội giá trị: bootstrap (B=200) → optimism-corrected C-statistic
 Kiểm hiệu chuẩn: calibration plot + Hosmer-Lemeshow
-Cỡ mẫu: EPP >= 10 (Events Per Predictor Parameter)
+Cỡ mẫu: KHÔNG dùng EPV/EPP >= 10 làm ngưỡng quyết định duy nhất (bằng
+        chứng yếu — PMID 27881078); ưu tiên pmsampsize/Riley 2019, EPV chỉ
+        là kiểm sơ bộ bổ sung
 Báo cáo: TRIPOD+AI (2024)
 ```
 
@@ -339,6 +405,10 @@ Báo cáo: TRIPOD+AI (2024)
 ╚══════════════════════════════════════════════════════╝
 ```
 
+> **Cổng thật đòi ledger có chữ ký (vá 2026-07-12/2026-07-14), khối trên chỉ mô tả checkpoint
+> text tham khảo:** xem M5 ở bảng đầu file — lệnh `approve_gate.py --gate G4` thật cần thêm
+> `--reviewer-role` đúng nhóm (PI/chủ nhiệm HOẶC thống kê viên, cả hai đều hợp lệ từ 2026-07-14).
+
 Xuất Word:
 ```bash
 python tools/gen_research_docx.py --study "<TEN>" --artifact sap
@@ -383,8 +453,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

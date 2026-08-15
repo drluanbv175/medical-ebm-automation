@@ -1,0 +1,61 @@
+{
+  "archive_record_type": "FRESH_ARCHIVE_ACCEPTANCE",
+  "phase": "R1.2",
+  "phase_name": "Identity Integration Design Only",
+  "date_utc": "2026-06-28",
+  "baseline_commit": "e806e0e",
+  "suite_result": {
+    "total_passed": 896,
+    "total_failed": 0,
+    "total_skipped": 5,
+    "new_tests_this_phase": 29,
+    "regression_failures": 0
+  },
+  "new_source_modules": [
+    "research_project/identity_adapter_contract.py"
+  ],
+  "new_test_files": [
+    "tests/test_r1_2_identity_contract.py"
+  ],
+  "new_evidence_files": [
+    "release_evidence/R1_2/R1_2_IDENTITY_INTEGRATION_ARCHITECTURE.md",
+    "release_evidence/R1_2/R1_2_AUTHENTICATED_AUDIT_CONTRACT.md",
+    "release_evidence/R1_2/R1_2_RBAC_PERSISTENCE_DESIGN.md",
+    "release_evidence/R1_2/R1_2_SESSION_AND_REVOCATION_REQUIREMENTS.md",
+    "release_evidence/R1_2/R1_2_SYNTHETIC_IDENTITY_CONTRACT_TEST_PLAN.md",
+    "release_evidence/R1_2/R1_2_TEST_REPORT.md",
+    "release_evidence/R1_2/R1_2_FRESH_ARCHIVE_ACCEPTANCE.json",
+    "release_evidence/R1_2/R1_2_FREEZE_SUMMARY.md"
+  ],
+  "hygiene_check": {
+    "new_source_modules_count": 1,
+    "max_allowed": 3,
+    "within_limit": true,
+    "new_test_files_count": 1,
+    "max_test_files_allowed": 2,
+    "test_files_within_limit": true,
+    "no_dashboard_created": true,
+    "no_duplicate_modules": true,
+    "no_network_calls": true,
+    "no_pii": true,
+    "no_real_credentials": true
+  },
+  "global_invariants": {
+    "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+    "institutional_sso": "DESIGN ONLY",
+    "mfa": "DESIGN ONLY",
+    "authenticated_production_identity": "NOT IMPLEMENTED",
+    "production_audit_attribution": "NOT IMPLEMENTED",
+    "production_worm_retention": "NOT IMPLEMENTED",
+    "real_research_execution": "BLOCKED",
+    "independent_qualification": "NOT ESTABLISHED"
+  },
+  "open_dependencies": [
+    "Institutional SSO provider — EXTERNAL NOT PROVIDED",
+    "MFA service — EXTERNAL NOT PROVIDED",
+    "Session store — EXTERNAL NOT PROVIDED",
+    "User account registry — EXTERNAL NOT PROVIDED",
+    "Role-to-user mapping service — EXTERNAL NOT PROVIDED"
+  ],
+  "disclaimer": "Cần bác sĩ kiểm chứng. All outputs are DRAFT — REQUIRE HUMAN REVIEW."
+}

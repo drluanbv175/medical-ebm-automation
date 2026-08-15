@@ -1,0 +1,2014 @@
+
+
+## G0 — Câu hỏi nghiên cứu, PECO, FINER
+# CỔNG G0 — CÂU HỎI NGHIÊN CỨU
+
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+
+**Loại nghiên cứu:** Mô tả cắt ngang (cross-sectional) có cấu phần phân tích yếu tố liên quan — **KHÔNG phải nghiên cứu can thiệp**. Do đó dùng khung **PO** (Population–Outcome) cho mục tiêu mô tả và **PECO** (Population–Exposure–Comparator–Outcome) cho mục tiêu phân tích; **không ép PICO can thiệp**.
+
+> Ghi chú nền tảng (nguồn thật): Thiết kế cắt ngang + phân tích yếu tố liên quan bằng hồi quy là chuẩn phổ biến cho đề tài hài lòng bệnh nhân ngoại trú. Theo PubMed:
+> - Nghiên cứu đa cơ sở tại Việt Nam dùng thang hài lòng 4 lĩnh vực + hồi quy tuyến tính đa biến; nhóm ngoại trú, dùng dịch vụ theo yêu cầu, ở tỉnh khác có mức hài lòng thấp hơn — [DOI](https://doi.org/10.1080/00185868.2021.1969871) (PMID 34445940).
+> - Khảo sát ngoại trú tại BV tuyến cuối VN dùng **SERVQUAL** hiệu chỉnh (5 nhân tố: tin cậy, đáp ứng, đảm bảo, cảm thông, hữu hình) + Cronbach alpha + EFA + hồi quy đa biến — [DOI](https://doi.org/10.3390/healthcare10101945) (PMID 36292392).
+> - Cắt ngang OPD tuyến ba: **thang Likert 5 mức**, kiểm định chi-square theo giới/nơi ở/thời gian chờ — [DOI](https://doi.org/10.7759/cureus.77345) (PMID 39944421).
+> - Cắt ngang: hài lòng phân "tốt/kém" theo trung vị, **hồi quy logistic nhị phân đa biến**; yếu tố liên quan: học vấn, khoảng cách, thời gian chờ — [DOI](https://doi.org/10.1136/bmjopen-2024-093501) (PMID 40295132).
+
+---
+
+## 1. Bối cảnh & khoảng trống
+
+Khoa C1a là đơn vị khám **ngoại trú theo yêu cầu (dịch vụ)** thuộc bệnh viện quân y tuyến cuối. Hài lòng người bệnh là chỉ số chất lượng dịch vụ và là yêu cầu quản lý chất lượng bệnh viện tại Việt Nam. Khoảng trống cụ thể của **khoa/đơn vị này** (mức hài lòng thực tế và yếu tố nào chi phối trong bối cảnh dịch vụ theo yêu cầu + đặc thù quân y) là `[CẦN KIỂM CHỨNG]` — chưa có bằng chứng công bố riêng cho đơn vị này để khẳng định "chưa từng có ai làm"; tránh phóng đại tính mới.
+
+---
+
+## 2. Chuẩn hóa câu hỏi nghiên cứu
+
+### Mục tiêu 1 — MÔ TẢ (khung PO)
+
+| Thành tố | Nội dung |
+|---|---|
+| **P (Quần thể)** | **Quần thể đích:** bệnh nhân đến khám chữa bệnh ngoại trú theo yêu cầu tại các cơ sở dịch vụ tương tự. **Quần thể nghiên cứu:** bệnh nhân (hoặc người nhà đại diện hợp lệ nếu bệnh nhân không tự trả lời được) đến khám tại Khoa C1a trong khoảng thời gian thu thập [CẦN BÁC SĨ ẤN ĐỊNH: thời gian], đủ tiêu chí chọn/loại [CẦN BÁC SĨ ẤN ĐỊNH]. |
+| **O (Kết cục)** | Mức độ hài lòng chung + hài lòng theo từng khía cạnh dịch vụ, đo bằng bộ công cụ đã chọn (mục 3). |
+
+> **Câu hỏi nghiên cứu 1 (1 câu):** *Mức độ hài lòng chung và theo từng khía cạnh (tiếp cận – thủ tục/minh bạch thông tin – cơ sở vật chất – thái độ & năng lực nhân viên y tế – kết quả dịch vụ) của bệnh nhân khám chữa bệnh ngoại trú tại Khoa C1a, Trung tâm C1, Bệnh viện Quân y 175 là bao nhiêu?*
+
+### Mục tiêu 2 — PHÂN TÍCH YẾU TỐ LIÊN QUAN (khung PECO)
+
+| Thành tố | Nội dung |
+|---|---|
+| **P (Quần thể)** | Như Mục tiêu 1. |
+| **E (Phơi nhiễm/Yếu tố tiềm năng)** | Các nhóm yếu tố **liên quan** (không phải can thiệp) — danh mục ứng viên cần bác sĩ chốt ở G1: **(a) Đặc điểm bệnh nhân:** tuổi, giới, học vấn, nghề nghiệp, nơi cư trú (cùng/khác tỉnh), đối tượng chi trả (BHYT/dịch vụ/quân nhân–thân nhân), số lần đã khám tại khoa; **(b) Đặc điểm lần khám:** thời gian chờ, chuyên khoa khám, khung giờ, có làm CLS hay không. *Neo bằng chứng: học vấn, khoảng cách/nơi ở, thời gian chờ, nhóm đối tượng (ngoại trú/theo yêu cầu/khác tỉnh) đã được ghi nhận liên quan hài lòng — PMID 34445940, 39944421, 40295132.* |
+| **C (So sánh)** | Nội tại giữa các phân nhóm phơi nhiễm (vd: chờ ≤ ngưỡng vs > ngưỡng; cùng tỉnh vs khác tỉnh; nhóm học vấn…). Ngưỡng cắt cụ thể [CẦN BÁC SĨ ẤN ĐỊNH]. |
+| **O (Kết cục)** | Tình trạng hài lòng (nhị phân "hài lòng/chưa hài lòng" theo ngưỡng đã định — mục 3), hoặc điểm hài lòng liên tục. |
+
+> **Câu hỏi nghiên cứu 2 (1 câu):** *Trong số bệnh nhân khám chữa bệnh ngoại trú tại Khoa C1a, những yếu tố nào (đặc điểm bệnh nhân và đặc điểm lần khám) có liên quan đến mức độ hài lòng của họ?*
+
+---
+
+## 3. Định nghĩa kết cục đo lường được
+
+**Thang đo — CẦN BÁC SĨ ẤN ĐỊNH lựa chọn 1 trong các phương án có nguồn (KHÔNG tự chọn thay):**
+
+- **Phương án A — Bộ công cụ Bộ Y tế Việt Nam:** Mẫu phiếu khảo sát hài lòng người bệnh **ngoại trú** ban hành kèm quyết định của Bộ Y tế (thường trích dẫn Quyết định 3869/QĐ-BYT năm 2019; **thang Likert 5 mức**). *`[CẦN KIỂM CHỨNG]` số hiệu/năm/nội dung chính xác của văn bản đối chiếu bản gốc trước khi dùng — chưa xác minh được toàn văn qua nguồn học thuật ở bước này.*
+- **Phương án B — SERVQUAL hiệu chỉnh (5 nhân tố):** đã dùng cho ngoại trú BV tuyến cuối VN, có kiểm định Cronbach alpha + EFA — [DOI](https://doi.org/10.3390/healthcare10101945) (PMID 36292392).
+- **Phương án C — Thang hài lòng 4 lĩnh vực (minh bạch thông tin/thủ tục; cơ sở–trang thiết bị; thái độ–năng lực NVYT; kết quả dịch vụ), Cronbach alpha ~0,94** — [DOI](https://doi.org/10.1080/00185868.2021.1969871) (PMID 34445940).
+
+**Định nghĩa "hài lòng" (ngưỡng) — [CẦN BÁC SĨ ẤN ĐỊNH], gắn với thang đã chọn.** Các cách vận hành có nguồn:
+- Likert 5 mức → gộp mức 4–5 ("hài lòng"/"rất hài lòng") là "hài lòng"; hoặc
+- Điểm trung bình từng mục/tổng ≥ ngưỡng (vd ≥ 4/5); hoặc
+- Nhị phân "tốt/kém" theo **trung vị** điểm tổng (cách của PMID 40295132).
+- Đơn vị đo: điểm Likert 1–5; thời điểm đo: ngay sau khi hoàn tất lần khám (cross-sectional 1 lần/đối tượng).
+
+> ⚠️ **KHÔNG tự điền** con số ngưỡng, số nhân tố, hệ số Cronbach mục tiêu, hay tỷ lệ hài lòng kỳ vọng. Mọi giá trị số phải do bác sĩ ấn định hoặc lấy từ pilot: `[CẦN DỮ LIỆU PILOT]`.
+
+### Kết cục chính và phụ
+
+- **Kết cục CHÍNH (1):** **Tỷ lệ bệnh nhân "hài lòng chung"** (theo định nghĩa/ngưỡng đã chọn ở trên) với hoạt động khám chữa bệnh tại Khoa C1a. — phục vụ trực tiếp Mục tiêu 1 và là biến kết cục cho Mục tiêu 2.
+- **Kết cục PHỤ:**
+  1. Tỷ lệ/điểm hài lòng theo từng **khía cạnh/tiểu thang** của bộ công cụ.
+  2. Điểm hài lòng chung dạng **liên tục** (trung bình ± SD) — dùng cho mô tả và cho lựa chọn phân tích hồi quy tuyến tính.
+  3. (Mục tiêu 2) **Độ mạnh liên quan** giữa từng yếu tố và tình trạng hài lòng (OR/β hiệu chỉnh, KTC 95%).
+
+---
+
+## 4. Giả thuyết (cho Mục tiêu 2)
+
+- **H0:** Không có mối liên quan giữa (các) yếu tố khảo sát và mức độ hài lòng của bệnh nhân (OR = 1 / β = 0).
+- **H1:** Có ít nhất một yếu tố khảo sát liên quan đến mức độ hài lòng (OR ≠ 1 / β ≠ 0).
+- **Chiều hiệu ứng kỳ vọng + căn cứ (định hướng, KHÔNG phải kết luận):**
+  - Thời gian chờ **dài hơn** → hài lòng **thấp hơn** (PMID 39944421, 40295132).
+  - Bệnh nhân **khác tỉnh / dùng dịch vụ theo yêu cầu / khó chi trả** → hài lòng **thấp hơn** (PMID 34445940).
+  - Khoảng cách đến cơ sở **xa hơn** → hài lòng **thấp hơn** (PMID 40295132).
+  - Học vấn: chiều liên quan **không nhất quán** giữa các nghiên cứu → để **hai phía** (PMID 39944421, 40295132).
+  - *Lưu ý: đây là nghiên cứu phân tích quan sát → chỉ kết luận "liên quan", KHÔNG suy nhân quả.*
+
+---
+
+## 5. Kiểm khả thi FINER
+
+| Tiêu chí | Đánh giá | Rủi ro / lưu ý |
+|---|---|---|
+| **F — Feasible (Khả thi)** | Cao. Đối tượng sẵn có tại khoa; bộ công cụ có sẵn (BYT/SERVQUAL); phân tích cắt ngang không cần theo dõi dọc. | Cỡ mẫu cho Mục tiêu 2 phụ thuộc số yếu tố đưa vào mô hình (quy tắc EPV cho hồi quy logistic) — **[CẦN TÍNH CỠ MẪU]** ở agent `co-mau-nghien-cuu`. Nguy cơ thiếu người trả lời nếu khung thời gian ngắn → nêu ở G1. Nguồn lực (thời gian/kinh phí/nhân lực khảo sát) **[CẦN DỮ LIỆU]**. |
+| **I — Interesting (Đáng quan tâm)** | Có. Kết quả trực tiếp phục vụ cải tiến chất lượng dịch vụ của khoa. | — |
+| **N — Novel (Mới)** | Vừa phải. Chủ đề phổ biến; điểm mới là **bối cảnh cụ thể**: khoa khám theo yêu cầu của BV **quân y** tuyến cuối. Không phóng đại "lần đầu". | `[CẦN KIỂM CHỨNG]` liệu đã có khảo sát nội bộ trước đó tại C1a/BV175 chưa. |
+| **E — Ethical (Đạo đức)** | Rủi ro thấp: khảo sát tự nguyện, ẩn danh. | **Bắt buộc:** không thu thập PII; đồng thuận tham gia; **cần phê duyệt Hội đồng đạo đức/lãnh đạo BV175** trước thu thập → là **cổng cứng G2**. Nhạy cảm: đặc thù quân đội → tuân thủ quy định bảo mật của đơn vị. |
+| **R — Relevant (Thiết thực)** | Cao. Gắn với quản lý chất lượng bệnh viện và ra quyết định cải tiến. | — |
+
+---
+
+## 6. Loại thiết kế gợi ý (sơ bộ — chuyển `thiet-ke-nghien-cuu` quyết định chi tiết)
+
+- **Thiết kế:** Nghiên cứu **mô tả cắt ngang có phân tích** (analytical cross-sectional).
+- **Chuẩn báo cáo:** **STROBE** (cross-sectional).
+- **Hướng phân tích dự kiến (để G1/SAP chốt):** mô tả tần số/tỷ lệ + trung bình±SD (Mục tiêu 1); kiểm định thô (chi-square/t-test/ANOVA) rồi **hồi quy logistic đa biến** (nếu kết cục nhị phân) hoặc **hồi quy tuyến tính đa biến** (nếu điểm liên tục) cho Mục tiêu 2 — phù hợp thông lệ các nghiên cứu nêu trên (PMID 36292392, 40295132).
+- Đề tài **không có cấu phần định tính** rõ ràng ở mô tả hiện tại; nếu bổ sung phỏng vấn sâu → kèm agent `nghien-cuu-dinh-tinh`.
+
+---
+
+## 7. Danh mục cần chốt trước khi qua G1
+
+**[CẦN BÁC SĨ ẤN ĐỊNH]:** (1) chọn bộ công cụ A/B/C; (2) định nghĩa ngưỡng "hài lòng"; (3) danh mục yếu tố đưa vào phân tích + ngưỡng cắt biến liên tục; (4) tiêu chí chọn/loại đối tượng; (5) khung thời gian & địa điểm thu thập; (6) xác nhận PICO/PECO + **kết cục chính**.
+**[CẦN DỮ LIỆU / PILOT]:** tỷ lệ hài lòng kỳ vọng cho tính cỡ mẫu; Cronbach alpha khi Việt hóa/hiệu chỉnh công cụ.
+**[CẦN KIỂM CHỨNG]:** số hiệu/năm văn bản BYT về mẫu phiếu; tình trạng khảo sát nội bộ trước đó tại C1a.
+**Cổng cứng phía trước:** G2 (đạo đức — phê duyệt hội đồng/lãnh đạo BV175).
+
+---
+
+## Tiêu chí qua cổng G0 — Tự đối chiếu
+
+- ✅ Câu hỏi PO/PECO 1 câu rõ cho **cả hai** mục tiêu.
+- ✅ Kết cục chính đo được (Likert, ngưỡng cần bác sĩ ấn định — đã nêu các phương án có nguồn).
+- ✅ Giả thuyết H0/H1 + chiều kỳ vọng có căn cứ nguồn.
+- ✅ FINER đánh giá từng tiêu chí + rủi ro khả thi.
+- ✅ Loại thiết kế gợi ý + chuẩn báo cáo.
+- ⏳ **Cần bác sĩ xác nhận PICO/PECO + kết cục chính trước khi sang G1.**
+
+---
+
+### Chốt kiểm liêm chính (tự soi trước khi phát hành)
+
+- Nguồn: mọi số/khung yếu tố/công cụ đều gắn PMID/DOI thật; không số liệu bịa; các chỗ thiếu dữ liệu gắn nhãn `[CẦN...]`. ✅
+- PII: không thu thập/không tạo thông tin định danh. ✅
+- Không tự "áp dụng" hay vượt cổng đạo đức; chỉ đề xuất câu hỏi. ✅
+- Tách rõ: đây là câu hỏi/thiết kế, chưa gán mức chứng cứ. ✅
+
+*Theo PubMed — các nguồn đối chiếu: [PMID 34445940](https://doi.org/10.1080/00185868.2021.1969871), [PMID 36292392](https://doi.org/10.3390/healthcare10101945), [PMID 31703089](https://doi.org/10.1371/journal.pone.0223723), [PMID 39944421](https://doi.org/10.7759/cureus.77345), [PMID 40295132](https://doi.org/10.1136/bmjopen-2024-093501).*
+
+**Cần bác sĩ kiểm chứng.**
+
+
+## G0 — Khoảng trống nghiên cứu & tính mới
+? ARTIFACT G0 — KHOẢNG TRỐNG NGHIÊN CỨU & ĐỊNH VỊ VĂN BẢN/GUIDELINE
+
+# G0 · Định vị & Khoảng trống nghiên cứu
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm khám bệnh và điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+**Thiết kế đầu vào:** Mô tả cắt ngang (Mục tiêu 1) + cấu phần phân tích yếu tố liên quan (Mục tiêu 2). **Dân số đích:** Người bệnh khám ngoại trú tại một khoa "khám theo yêu cầu"/dịch vụ của bệnh viện quân y tuyến cuối.
+**Trạng thái connector:** ĐẦY ĐỦ cho phần y văn quốc tế và văn bản Bộ Y tế (PubMed + tra cứu văn bản pháp quy đã xác minh). ⚠ **PARTIAL cho grey literature nội địa**: các nghiên cứu đăng trên tạp chí Việt Nam mới xác minh được ở mức **tiêu đề/tóm tắt qua web-search**, chưa đọc toàn văn — cần bác sĩ đối chiếu bản gốc trước khi trích số liệu.
+
+---
+
+## 1. Tình hình nghiên cứu hài lòng người bệnh NGOẠI TRÚ
+
+### 1.1. Việt Nam — chủ đề đã "chín", nhiều bằng chứng
+Sự hài lòng người bệnh ngoại trú ở Việt Nam đã được nghiên cứu rộng và ở nhiều tuyến. Theo dữ liệu tra cứu từ PubMed:
+
+| Bối cảnh (VN) | Phát hiện then chốt liên quan đề tài | Nguồn (PMID · DOI) |
+|---|---|---|
+| Đa cơ sở, Hà Nội (n=108) | 23,2% hài lòng hoàn toàn; **người dùng dịch vụ "theo yêu cầu" (on-demand), người ngoại trú, người ở tỉnh khác có mức hài lòng THẤP HƠN** — tín hiệu trực tiếp cho khối C1a | PMID 34445940 · [DOI 10.1080/00185868.2021.1969871](https://doi.org/10.1080/00185868.2021.1969871) |
+| Chăm sóc ban đầu, toàn quốc (VHFA 2015, n=4.372 ngoại trú) | Tỷ lệ hài lòng cao (85% CHC, 73% BV huyện); **thời gian chờ dài → ít hài lòng hơn** | PMID 34017606 · [DOI 10.1177/20551029211015117](https://doi.org/10.1177/20551029211015117) |
+| Bệnh Tim Hà Nội, nội-ngoại trú (n=600) | Ngoại trú hài lòng thấp hơn nội trú; domain "thời gian chờ" thấp nhất ở ngoại trú; **có đồng tác giả từ Bệnh viện 103 (Học viện Quân y)** | PMID 32584904 · [DOI 10.1371/journal.pone.0235333](https://doi.org/10.1371/journal.pone.0235333) |
+| Cấp phát thuốc BHYT ngoại trú, BV Chợ Rẫy (n=210) | Dùng **SERVQUAL hiệu chỉnh** (5 yếu tố, 26 biến), điểm hài lòng trung bình 3,42/5 | PMID 36292392 · [DOI 10.3390/healthcare10101945](https://doi.org/10.3390/healthcare10101945) |
+| ARV ngoại trú (8 phòng khám, n=1.133) | Hài lòng cao (65,5–82,5%); "thủ tục hành chính/thời gian chờ" điểm thấp nhất | PMID 31703089 · [DOI 10.1371/journal.pone.0223723](https://doi.org/10.1371/journal.pone.0223723) |
+| Quản lý đau mạn, BV Lão khoa TW (n=495) | Ngoại trú kém hài lòng hơn nội trú ở "thông tin cung cấp" | PMID 33116425 · [DOI 10.2147/PPA.S265873](https://doi.org/10.2147/PPA.S265873) |
+
+**Hàm ý:** ở Việt Nam, ngoại trú thường hài lòng thấp hơn nội trú; các "điểm đau" lặp lại là **thời gian chờ, thủ tục hành chính, thông tin, cơ sở vật chất, chi phí** — đây là các miền/biến ứng viên cho Mục tiêu 2.
+
+### 1.2. Quốc tế — mô hình SERVQUAL là chuẩn phổ biến cho ngoại trú
+Mô hình khoảng cách chất lượng dịch vụ (SERVQUAL, 5 chiều: hữu hình/tin cậy/đáp ứng/đảm bảo/cảm thông) được dùng rộng rãi để đo hài lòng ngoại trú:
+- Ả Rập Xê Út, ngoại trú BV (n=306): kỳ vọng > cảm nhận ở cả 5 chiều, khoảng cách có ý nghĩa thống kê — PMID 27052285 · [DOI 10.15537/smj.2016.4.14835](https://doi.org/10.15537/smj.2016.4.14835)
+- Iran, nhà thuốc ngoại trú BV (n=300): mô hình SERVQUAL 6 chiều — PMID 35201321 · [DOI 10.1093/ijpp/riac004](https://doi.org/10.1093/ijpp/riac004)
+- Ethiopia, dược ngoại trú (n=794): SERVQUAL, điểm cảm nhận 3,1/5 — PMID 33947728 · [DOI 10.1136/bmjopen-2020-042853](https://doi.org/10.1136/bmjopen-2020-042853)
+
+---
+
+## 2. Các BỘ CÔNG CỤ đo lường (đã xác minh)
+
+### 2.1. Công cụ Bộ Y tế — ⚠ **CẢNH BÁO CỨNG: có thay đổi văn bản, KHÔNG dùng bản 2019 cho ngoại trú**
+
+| Văn bản | Nội dung | Hiệu lực với phiếu HÀI LÒNG NGOẠI TRÚ | Nguồn |
+|---|---|---|---|
+| **QĐ 3869/QĐ-BYT (28/8/2019)** | Ban hành 5 mẫu phiếu + hướng dẫn khảo sát hài lòng người bệnh & NVYT (gồm "Phiếu khảo sát ý kiến người bệnh **ngoại trú**") | ⛔ **Mẫu phiếu số 1 & số 2 (nội trú, ngoại trú) ĐÃ BỊ THAY THẾ** | [3869/QĐ-BYT (thuvienphapluat)](https://thuvienphapluat.vn/van-ban/The-thao-Y-te/Quyet-dinh-3869-QD-BYT-2019-mau-phieu-va-huong-dan-khao-sat-hai-long-nguoi-benh-nhan-vien-y-te-425072.aspx) |
+| **QĐ 56/QĐ-BYT (08/01/2024)** | "Hướng dẫn phương pháp đo lường sự hài lòng của người dân đối với dịch vụ y tế công **giai đoạn 2024–2030**"; ban hành 3 mẫu phiếu mới (nội trú, **ngoại trú**, tiêm chủng mở rộng); **bãi bỏ QĐ 4448/QĐ-BYT (2013)** và **thay Mẫu phiếu số 1, số 2 của QĐ 3869/QĐ-BYT** | ✅ **Đây là công cụ ngoại trú hiện hành** | [56/QĐ-BYT (qlcl.net)](https://qlcl.net/van-ban/56qd-byt) · [luatvietnam](https://luatvietnam.vn/y-te/quyet-dinh-845-qd-byt-2025-danh-gia-chat-luong-benh-vien-va-khao-sat-hai-long-voi-benh-vien-y-hoc-co-truyen-393264-d1.html) |
+| **QĐ 3652/QĐ-BYT (2024)** | Nội dung kiểm tra, đánh giá chất lượng BV & khảo sát hài lòng NB/NVYT **năm 2024–2025** | Khung vận hành khảo sát năm | [3652/QĐ-BYT (qlcl/clbv)](https://luatvietnam.vn/y-te/quyet-dinh-3652-qd-byt-2024-noi-dung-kiem-tra-danh-gia-chat-luong-benh-vien-377899-d1.html) |
+
+> **KHUYẾN NGHỊ CHO THIẾT KẾ (chuyển `thiet-ke-nghien-cuu`):** Bộ công cụ nền nên dựa trên **mẫu phiếu ngoại trú của QĐ 56/QĐ-BYT (2024)** (hiện hành), KHÔNG dùng mẫu 2019 đã bị thay. Nếu đề cương đã lỡ trích QĐ 3869 làm công cụ ngoại trú → cần sửa. `[CẦN BÁC SĨ ẤN ĐỊNH]` việc chốt phiên bản phiếu + có bổ sung biến đặc thù "khám theo yêu cầu/quân y" hay không.
+
+### 2.2. Thang đo quốc tế đã xác minh
+
+| Thang đo | Bản chất | Ghi chú xác minh | Nguồn |
+|---|---|---|---|
+| **PSQ-18** (Short-Form Patient Satisfaction Questionnaire) | Bản rút gọn 18 mục của PSQ-III; 7 miền (general satisfaction, technical quality, interpersonal manner, communication, financial aspects, time spent, accessibility/convenience) | Được mô tả rõ là **"PSQ-18 scale developed by Marshall and Hays"**; đã có bản dịch–chuẩn hóa đa ngôn ngữ (vd Bengali 2026) | PMID 32110572 · [DOI 10.4103/jfmpc.jfmpc_526_19](https://doi.org/10.4103/jfmpc.jfmpc_526_19); PMID 19709315 · [DOI 10.1111/j.1369-7625.2009.00557.x](https://doi.org/10.1111/j.1369-7625.2009.00557.x); PMID 41645935 · [DOI 10.1108/IJHCQA-07-2025-0100](https://doi.org/10.1108/IJHCQA-07-2025-0100) |
+| **SERVQUAL** (mô hình khoảng cách 5 chiều) | Đo khoảng cách kỳ vọng–cảm nhận về chất lượng dịch vụ | Áp dụng rộng cho ngoại trú (xem §1.2, §1.1) | PMID 36292392, 35201321, 27052285, 33947728 (DOI ở trên) |
+
+> **Lưu ý liêm chính:** bản gốc PSQ-18 (Marshall GN, Hays RD, RAND, 1994) là tài liệu RAND, **không nằm trong PubMed** nên tôi chỉ xác nhận được **gián tiếp** qua các bài trích dẫn/dịch thuật ở trên. `[CẦN KIỂM CHỨNG]` nếu muốn dẫn trực tiếp bản gốc 1994 → phải lấy đúng RAND report/DOI gốc, KHÔNG suy đoán số hiệu.
+
+---
+
+## 3. Khoảng trống theo BỐI CẢNH ĐẶC THÙ (khối "khám theo yêu cầu" + QUÂN Y)
+
+**Đã có nghiên cứu về khối "khám theo yêu cầu"/dịch vụ ở Việt Nam** (⚠ mức tiêu đề/tóm tắt, chưa đọc toàn văn — cần đối chiếu bản gốc):
+- Khoa điều trị theo yêu cầu, BV Phụ sản TW (2021) — [Tạp chí Y học VN](https://tapchiyhocvietnam.vn/index.php/vmj/article/view/2219)
+- Yếu tố liên quan hài lòng khám bệnh yêu cầu, Khoa Khám bệnh BV ĐK tỉnh Thái Bình (2024, mô tả cắt ngang, n≈309) — [Tạp chí Y học VN](https://tapchiyhocvietnam.vn/index.php/vmj/article/view/10302)
+- Hài lòng dịch vụ KCB Khoa Răng, **BV Trung ương Quân đội 108 (2023)** — [Tạp chí Nghiên cứu Y học](https://tapchinghiencuuyhoc.vn/index.php/tcncyh/article/view/2194)
+
+**Do đó khoảng trống KHÔNG phải "chưa ai nghiên cứu khối dịch vụ".** Khoảng trống thực sự, thu hẹp lại, là:
+1. **Chưa tìm thấy nghiên cứu đã công bố, được kiểm chứng, đặc thù cho Bệnh viện Quân y 175 / Khoa Khám bệnh C1a / Trung tâm C1** (tra PubMed "patient satisfaction Vietnam military hospital 175" → **0 kết quả**). Đây là gap **cơ sở-cụ thể (site-specific / bối cảnh)**, không phải gap chủ đề.
+2. **Giao thoa ba đặc thù ít được lập bản đồ đồng thời:** (a) khối **khám theo yêu cầu/dịch vụ** (chi trả cao, kỳ vọng cao) × (b) môi trường **bệnh viện quân y** (đặc thù tổ chức, đối tượng gồm cả quân nhân/thân nhân/dân sự) × (c) **tuyến cuối tại TP.HCM**. Bằng chứng hiện có gợi ý nhóm dùng dịch vụ theo yêu cầu lại hài lòng THẤP hơn (PMID 34445940) — một nghịch lý đáng kiểm chứng ngay tại C1a.
+3. **Cập nhật theo công cụ/chuẩn mới:** phần lớn nghiên cứu VN trước 2024 dùng phiếu QĐ 3869 (2019); một khảo sát 2024–2025 theo **QĐ 56/QĐ-BYT** tại khối dịch vụ quân y là đóng góp cập nhật.
+
+---
+
+## 4. Kết luận G0 (điền theo mẫu)
+
+**Trạng thái câu hỏi:** *Đã được trả lời ở mức chủ đề & phương pháp* (hài lòng ngoại trú, cả khối dịch vụ, đã có nhiều nghiên cứu VN + quốc tế; công cụ chuẩn hóa sẵn có) — **nhưng CÒN GAP ở bối cảnh cơ sở-cụ thể** (BVQY 175/C1a chưa có bằng chứng công bố kiểm chứng). Bằng chứng then chốt: PMID 34445940; PMID 34017606; PMID 32584904.
+
+**PHÁT BIỂU RESEARCH GAP (1–2 câu):** Mặc dù hài lòng người bệnh ngoại trú và khối "khám theo yêu cầu" đã được nghiên cứu ở nhiều bệnh viện Việt Nam, chưa có nghiên cứu công bố, kiểm chứng nào lập bản đồ mức độ hài lòng và yếu tố liên quan **đặc thù cho một khoa khám theo yêu cầu trong bệnh viện quân y tuyến cuối** (Khoa C1a, BVQY 175) — nơi giao thoa kỳ vọng dịch vụ cao với đặc thù tổ chức quân y, và nơi bằng chứng hiện có gợi ý nhóm dùng dịch vụ theo yêu cầu có thể hài lòng thấp hơn.
+
+**Loại gap:** BỐI CẢNH / CƠ SỞ-CỤ THỂ (site-specific) + CẬP NHẬT CÔNG CỤ (chuyển từ QĐ 3869 sang QĐ 56/2024). *Không phải* gap kết cục mới hay gap phương pháp mới.
+
+**Novelty:** **"MỞ RỘNG / NHÂN RỘNG vào bối cảnh mới"** (replication-in-new-setting), KHÔNG phải "mới về chủ đề/phương pháp". Không nên phóng đại là "lần đầu nghiên cứu hài lòng khối dịch vụ".
+
+**Ý nghĩa:**
+- *Khoa học:* bổ sung dữ liệu cơ sở về hài lòng khối khám theo yêu cầu trong môi trường quân y — mảnh còn thiếu trên bản đồ y văn VN; kiểm chứng nghịch lý "dịch vụ theo yêu cầu ↔ hài lòng thấp hơn".
+- *Thực tiễn/chính sách:* cung cấp bằng chứng tại chỗ để C1/C1a cải tiến (thường trúng vào thời gian chờ, thủ tục, thông tin, cơ sở vật chất, chi phí — theo mẫu hình lặp lại của y văn VN); đồng thời là dữ liệu phục vụ khung kiểm tra chất lượng BV theo QĐ 3652/QĐ-BYT (2024–2025).
+
+**Connector:** ⚠ **PARTIAL** — y văn quốc tế + văn bản BYT: đầy đủ, đã xác minh; grey literature tạp chí VN: mới ở mức tiêu đề/tóm tắt, **cần đọc toàn văn để trích số liệu nền**.
+
+---
+
+## 5. Bàn giao & việc cần chốt
+- **Sang `thiet-ke-nghien-cuu`:** chốt công cụ = **mẫu phiếu ngoại trú QĐ 56/QĐ-BYT (2024)** làm nền (có thể bổ sung miền SERVQUAL/PSQ-18 nếu muốn so sánh quốc tế); xác định biến độc lập cho Mục tiêu 2 từ mẫu hình y văn (thời gian chờ, thủ tục, thông tin, thái độ NVYT, cơ sở vật chất, chi phí, BHYT/tự chi trả, nơi cư trú, quân nhân/dân sự).
+- **Sang `thu-thu-tai-lieu`/`tong-quan-y-van`:** đọc toàn văn 3 nghiên cứu VN khối dịch vụ (BV Phụ sản TW 2021, BV ĐK Thái Bình 2024, BV TWQĐ 108 2023) để lấy số liệu nền & bộ biến đã dùng; truy bản gốc PSQ-18 (Marshall & Hays 1994, RAND) nếu cần dẫn trực tiếp.
+
+**Các mục [CẦN…]:**
+- `[CẦN BÁC SĨ ẤN ĐỊNH]` phiên bản mẫu phiếu (QĐ 56/2024 vs. bổ sung thang quốc tế) và bộ biến độc lập Mục tiêu 2.
+- `[CẦN DỮ LIỆU]` số liệu nền hài lòng từ toàn văn các nghiên cứu VN khối dịch vụ (để tính cỡ mẫu ở G1).
+- `[CẦN KIỂM CHỨNG]` bản gốc RAND của PSQ-18 nếu trích trực tiếp; xác nhận không có văn bản/nghiên cứu nội bộ BVQY 175 đã làm chủ đề này (chống trùng lặp cấp cơ sở).
+
+---
+*Không tạo/không lưu thông tin định danh bệnh nhân (PII). Mọi số liệu nền chỉ trích khi có nguồn; các ô chưa có dữ liệu thật để [CẦN…], không điền số giả.*
+
+**Cần bác sĩ kiểm chứng.**
+
+
+## G1 — Thiết kế nghiên cứu
+# CỔNG G1 — THIẾT KẾ NGHIÊN CỨU
+
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+
+**Vai trò cổng:** Đây là **G1 — CHỐT THIẾT KẾ**, KHÔNG phải G4 (khóa SAP). Vì vậy chưa khóa kết cục chính/kế hoạch phân tích; artifact này chỉ *đề xuất* khung thiết kế để bác sĩ xác nhận. Cỡ mẫu chi tiết **giao G3 (`co-mau-nghien-cuu`)** — G1 chỉ cấp *loại thiết kế + biến kết cục + đơn vị đo* làm đầu vào.
+
+> **Kiểm tiền đề cổng (BƯỚC 0):** (1) Đây là nghiên cứu **quan sát**, không can thiệp → **KHÔNG cần estimand ICH E9(R1)** (nêu gọn ở §7). (2) Chưa chạm dữ liệu thật → không có rủi ro "khóa kế hoạch sau khi xem dữ liệu". (3) PECO/kết cục chính đã phác ở G0 nhưng **chưa được bác sĩ xác nhận** → đánh dấu `[CẦN BÁC SĨ ẤN ĐỊNH]` ở các ô số/ngưỡng.
+
+---
+
+## 1. KHẲNG ĐỊNH & BIỆN MINH THIẾT KẾ
+
+**Thiết kế chốt:** **Nghiên cứu MÔ TẢ CẮT NGANG CÓ PHÂN TÍCH** (analytical / analytic cross-sectional study).
+**Design code (chuẩn báo cáo):** **STROBE — cross-sectional** (checklist 22 mục; 18 mục chung + 4 mục riêng cho cắt ngang) — von Elm E và cs., 2007/2008, [DOI 10.1016/j.jclinepi.2007.11.008](https://doi.org/10.1016/j.jclinepi.2007.11.008) (PMID 18313558). *(Theo PubMed.)*
+
+**Vì sao thiết kế cắt ngang là ĐÚNG cho cả hai mục tiêu:**
+
+| Mục tiêu | Bản chất câu hỏi | Vì sao cắt ngang phù hợp |
+|---|---|---|
+| **MT1 — Mô tả** | Ước lượng **tỷ lệ/điểm hài lòng** tại một thời điểm | Cắt ngang là thiết kế chuẩn để ước lượng **tỷ lệ hiện mắc (prevalence)** của một trạng thái (ở đây: "hài lòng") trong quần thể — đo 1 lần/đối tượng, không cần theo dõi dọc. |
+| **MT2 — Phân tích yếu tố liên quan** | Tìm **mối liên quan** giữa đặc điểm BN/lần khám và hài lòng | Cắt ngang cho phép đo đồng thời phơi nhiễm và kết cục → tính **OR/β hiệu chỉnh**. Đủ cho mục tiêu "liên quan", **KHÔNG suy nhân quả** (phơi nhiễm & kết cục đo cùng lúc → không xác lập trình tự thời gian). |
+
+**Đây là thông lệ đã được xác lập** cho chủ đề hài lòng ngoại trú: các nghiên cứu cùng loại tại Việt Nam và quốc tế dùng đúng khung này (mô tả tần số/tỷ lệ + hồi quy đa biến cho yếu tố liên quan) — theo PubMed: PMID 34445940 [DOI 10.1080/00185868.2021.1969871](https://doi.org/10.1080/00185868.2021.1969871); PMID 36292392 [DOI 10.3390/healthcare10101945](https://doi.org/10.3390/healthcare10101945); PMID 39944421 [DOI 10.7759/cureus.77345](https://doi.org/10.7759/cureus.77345); PMID 40295132 [DOI 10.1136/bmjopen-2024-093501](https://doi.org/10.1136/bmjopen-2024-093501).
+
+> ⚠️ **Giới hạn thiết kế phải ghi rõ ở Bàn luận (STROBE mục 19–20):** (a) không suy nhân quả; (b) **thiên kiến sống sót/người còn lui tới** — chỉ bắt được BN *đang đến khám*, bỏ sót người đã bỏ khoa vì không hài lòng → có thể *ước lượng vượt* mức hài lòng thật; (c) trần điểm (ceiling effect) do thiên kiến chiều lòng (xem §5).
+
+---
+
+## 🌳 SUY LUẬN ĐA NHÁNH — có nên chọn thiết kế khác không?
+
+Trước khi "khóa sớm" vào cắt ngang, đối chiếu các thiết kế khả dĩ:
+
+| Thiết kế ứng viên | Phù hợp câu hỏi | Kiểm soát sai lệch | Khả thi/đạo đức | Lực dự kiến | Chọn/Loại (lý do) |
+|---|---|---|---|---|---|
+| **Cắt ngang có phân tích** | Cao — trả lời trực tiếp cả MT1 (tỷ lệ) và MT2 (liên quan) | Trung bình — kiểm soát nhiễu bằng hồi quy đa biến; không kiểm soát được chiều thời gian | Cao — 1 lần đo, đối tượng sẵn có | Đủ cho tỷ lệ + hồi quy nếu đạt cỡ mẫu (G3) | ✅ **CHỌN** — cân bằng tốt nhất phù hợp–khả thi cho câu hỏi mô tả + liên quan |
+| **Đoàn hệ tiến cứu** (theo dõi hài lòng theo thời gian/sau nhiều lần khám) | Vừa — trả lời được "thay đổi hài lòng", nhưng câu hỏi hiện tại là *mức hiện tại*, không phải diễn tiến | Tốt hơn về chiều thời gian | Thấp — tốn thời gian/nguồn lực; BN ngoại trú dịch vụ khó theo dõi dọc | Cao nhưng chậm | ✂️ **LOẠI** — vượt nhu cầu câu hỏi; không khả thi trong khung nguồn lực một khoa |
+| **Bệnh–chứng** (so "hài lòng" vs "không hài lòng" truy hồi phơi nhiễm) | Thấp — kết cục hài lòng phổ biến, không hiếm → bệnh–chứng không có lợi thế; khó định nghĩa "ca/chứng" khách quan | Dễ nhiễu sai lệch nhớ lại | Vừa | Thấp cho mục tiêu mô tả tỷ lệ | ✂️ **LOẠI** — sai công cụ cho câu hỏi tỷ lệ; MT1 không thể trả lời bằng case-control |
+| **Định tính/hỗn hợp** (phỏng vấn sâu bổ trợ) | Bổ trợ — làm giàu "vì sao" | — | Vừa | — | ◻️ **TÙY CHỌN** — không thay cắt ngang; nếu bác sĩ muốn chiều sâu "vì sao chưa hài lòng" thì thêm cấu phần định tính (kèm `nghien-cuu-dinh-tinh`, chuẩn COREQ). Mặc định: KHÔNG bắt buộc. |
+
+**Chốt:** Thiết kế thắng = **cắt ngang có phân tích**. Lý do: là thiết kế duy nhất trả lời trực tiếp *cả* MT1 (ước lượng tỷ lệ hiện tại) *và* MT2 (yếu tố liên quan) trong ràng buộc nguồn lực một khoa, đúng thông lệ y văn cùng chủ đề. **Quay lui/đánh đổi đã cân nhắc:** chấp nhận mất khả năng suy nhân quả và chiều thời gian (đổi lấy tính khả thi) — bù bằng ghi rõ giới hạn + kiểm soát nhiễu bằng hồi quy đa biến.
+
+---
+
+## 2. ĐỊA ĐIỂM · KHUNG THỜI GIAN · QUẦN THỂ · TIÊU CHUẨN CHỌN/LOẠI
+
+### 2.1. Địa điểm
+Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 (TP. Hồ Chí Minh) — đơn vị khám **ngoại trú theo yêu cầu (dịch vụ)**.
+
+### 2.2. Khung thời gian
+`[CẦN BÁC SĨ ẤN ĐỊNH]` khoảng thời gian thu thập (đề xuất: một giai đoạn liên tục đủ dài để phủ **các khung giờ/ngày trong tuần khác nhau**, tránh chỉ lấy giờ/ngày cao điểm hoặc thấp điểm → giảm sai lệch chọn mẫu theo thời điểm). Con số tuần/tháng cụ thể do bác sĩ chốt theo lịch khoa và cỡ mẫu G3.
+
+### 2.3. Quần thể
+
+| Cấp | Định nghĩa |
+|---|---|
+| **Quần thể đích** | Bệnh nhân khám chữa bệnh ngoại trú theo yêu cầu (dịch vụ) tại các cơ sở tương tự. |
+| **Quần thể nghiên cứu (khả cận)** | Bệnh nhân đến khám tại Khoa C1a trong khung thời gian thu thập, đủ tiêu chuẩn chọn/loại. |
+| **Đơn vị quan sát** | Một lượt khám của một bệnh nhân; **1 đối tượng vào nghiên cứu 1 lần** (tránh trùng lặp nếu BN đến nhiều lần trong kỳ — quy tắc chống trùng `[CẦN BÁC SĨ ẤN ĐỊNH]`, đề xuất: chỉ tính lần khám đầu tiên gặp ĐTV trong kỳ). |
+
+### 2.4. Tiêu chuẩn chọn vào (đề xuất — bác sĩ chốt)
+- Bệnh nhân **hoàn tất lượt khám** tại Khoa C1a trong khung thời gian thu thập (đo sau khám để phản ánh trọn trải nghiệm).
+- Tuổi `[CẦN BÁC SĨ ẤN ĐỊNH]` (đề xuất ≥ 18; nếu nhận < 18 → cần cơ chế người đại diện + đồng thuận phù hợp).
+- **Đồng ý tham gia** (tự nguyện, sau khi được giải thích).
+- Đủ năng lực trả lời (nhận thức/ngôn ngữ); nếu không → người nhà đại diện hợp lệ trả lời thay `[CẦN BÁC SĨ ẤN ĐỊNH]` có chấp nhận đại diện hay không, vì đại diện làm thay đổi cấu trúc kết cục.
+
+### 2.5. Tiêu chuẩn loại trừ (đề xuất — bác sĩ chốt)
+- Từ chối tham gia hoặc không hoàn tất phiếu ở mức tối thiểu cần thiết.
+- Cấp cứu/tình trạng không phù hợp trả lời khảo sát.
+- **Nhân viên y tế của chính khoa/BV đi khám** (xung đột, thiên lệch đánh giá) — cân nhắc loại.
+- Đã tham gia nghiên cứu này ở lượt trước trong cùng kỳ (chống trùng lặp).
+
+> Mọi ngưỡng số (tuổi, số tuần, quy tắc chống trùng) là `[CẦN BÁC SĨ ẤN ĐỊNH]` — KHÔNG tự điền số giả.
+
+---
+
+## 3. PHƯƠNG PHÁP CHỌN MẪU
+
+### 3.1. So sánh 3 phương pháp
+
+| Phương pháp | Ưu điểm | Nhược điểm | Phù hợp phòng khám đông? |
+|---|---|---|---|
+| **Thuận tiện (convenience)** | Nhanh, rẻ, dễ triển khai khi đông | **Sai lệch chọn mẫu cao** — ĐTV dễ chọn người "dễ tính/rảnh/thân thiện"; kém đại diện; khó khái quát | Dễ làm nhưng **yếu về giá trị** |
+| **Hệ thống (systematic)** | Gần ngẫu nhiên, **giảm sai lệch chọn chủ quan của ĐTV**, dễ vận hành tại quầy đông (chọn theo bước k trên dòng bệnh nhân/số thứ tự) | Cần khung mẫu là **dòng bệnh nhân theo thứ tự**; rủi ro trùng chu kỳ ẩn (periodicity) nếu bước k trùng nhịp nào đó | ✅ **Rất phù hợp** dòng bệnh nhân liên tục có số thứ tự |
+| **Ngẫu nhiên đơn/phân tầng** | Chuẩn vàng về đại diện | Cần **khung mẫu đầy đủ trước** (danh sách toàn bộ BN trong kỳ) — thường **không có sẵn theo thời gian thực** tại phòng khám; khó triển khai tại quầy đông | Khó — vướng khung mẫu |
+
+### 3.2. CHỌN: **Chọn mẫu HỆ THỐNG** (systematic sampling)
+
+**Biện minh cho bối cảnh phòng khám đông:** Khoa C1a có **dòng bệnh nhân liên tục và có số thứ tự khám** → sẵn một "khung mẫu động" tự nhiên. Chọn hệ thống lấy mỗi người thứ **k** theo số thứ tự (hoặc theo thứ tự hoàn tất khám), với:
+- **Bước nhảy k = (ước lượng tổng lượt khám trong kỳ) ÷ (cỡ mẫu cần)** — con số `[CẦN DỮ LIỆU: lưu lượng khám/kỳ của khoa]` và `[CẦN CỠ MẪU từ G3]`; **KHÔNG tự điền k**.
+- **Điểm khởi đầu ngẫu nhiên** trong khoảng [1, k] (bốc số/bảng số ngẫu nhiên) → giảm thiên lệch điểm bắt đầu.
+- **Phủ đều khung giờ/ngày** (áp dụng k xuyên suốt các ca/ngày khảo sát) → tránh dồn vào giờ cao điểm.
+
+**Ưu điểm quyết định so với thuận tiện:** loại bỏ việc ĐTV "tự chọn" đối tượng — đây là nguồn sai lệch chọn mẫu lớn nhất và khó kiểm soát nhất ở khảo sát hài lòng phòng khám.
+
+**Phương án dự phòng (ghi trong đề cương):** nếu lưu lượng quá cao khiến không kịp mời đủ theo bước k (một ĐTV không phục vụ kịp), cho phép **hệ thống theo cụm thời gian** (chọn tất cả BN hoàn tất khám trong các *khung giờ được bốc ngẫu nhiên*) — vẫn khách quan hơn thuận tiện. Nếu buộc phải dùng thuận tiện do ràng buộc thực địa → **khai báo minh bạch** là hạn chế (STROBE mục 9, 22).
+
+> Cỡ mẫu và bước k **do G3 (`co-mau-nghien-cuu`) cấp**. G1 chỉ cấp: thiết kế = cắt ngang; kết cục = tỷ lệ hài lòng (nhị phân) và/hoặc điểm hài lòng (liên tục); số biến độc lập dự kiến cho MT2 (chi phối EPV của hồi quy logistic).
+
+---
+
+## 4. CÁCH THU THẬP & KIỂM SOÁT THIÊN KIẾN CHIỀU LÒNG (SOCIAL DESIRABILITY)
+
+### 4.1. Vấn đề cốt lõi
+Khảo sát hài lòng đặc biệt dễ bị **thiên kiến chiều lòng / mong muốn xã hội (social desirability bias)** và **thiên kiến lịch sự với người phục vụ (courtesy bias)** → điểm dồn về mức cao (**ceiling effect**), giảm phương sai, che giấu điểm cần cải tiến. Theo PubMed:
+- Điều chỉnh theo mức social desirability làm **giảm ceiling effect** của thang hài lòng (từ ~47–81% xuống ~2,5%) — Badejo và cs., 2022, [DOI 10.1177/23743735221079144](https://doi.org/10.1177/23743735221079144) (PMID 35155757).
+- Đo tự báo cáo (self-report) chênh so với đo khách quan bên ngoài → biểu hiện **thiên kiến chiều lòng** — Surchat và cs., 2022, [DOI 10.3399/BJGP.2021.0193](https://doi.org/10.3399/BJGP.2021.0193) (PMID 34990388).
+- Phương pháp khảo sát truyền thống có hạn chế cố hữu là **social desirability bias** — Verhoef và cs., 2014, [DOI 10.2196/jmir.3024](https://doi.org/10.2196/jmir.3024) (PMID 24566844).
+
+### 4.2. Cách thu thập được CHỌN & lý do
+
+**Ưu tiên: TỰ ĐIỀN (self-administered) ẩn danh + HÒM PHIẾU kín**, thay vì phỏng vấn mặt-đối-mặt bởi nhân viên khoa.
+
+| Cơ chế kiểm soát | Mô tả | Nhắm vào sai lệch nào |
+|---|---|---|
+| **Tự điền ẩn danh** | BN tự điền phiếu, KHÔNG ghi danh tính; phiếu không có ô tên/mã BN | Chiều lòng, courtesy bias |
+| **Hòm phiếu kín** | Bỏ phiếu vào hòm niêm phong đặt nơi kín đáo (không có NVYT đứng cạnh) | Áp lực xã hội tại chỗ |
+| **ĐTV độc lập, KHÔNG thuộc Khoa C1a** | Người thu thập không phải bác sĩ/điều dưỡng đang khám cho BN đó; tốt nhất là ĐTV ngoài khoa (sinh viên/nhân sự trung lập được tập huấn) | Courtesy bias với người vừa phục vụ mình |
+| **Tách thời điểm & không gian đo khỏi buồng khám** | Điền sau khi rời buồng khám, tại khu vực chờ ra về | Sợ ảnh hưởng lần khám sau |
+| **Nhấn mạnh khuyết danh + không ảnh hưởng điều trị** | Câu mở đầu phiếu cam kết ẩn danh, tự nguyện, không ảnh hưởng quyền lợi/khám sau | Giảm động cơ trả lời "làm hài lòng" |
+| **Hỗ trợ đọc phiếu cho người khó tự điền — bởi ĐTV trung lập** | Với BN hạn chế đọc/viết, ĐTV độc lập đọc & ghi trung lập, không gợi ý đáp án | Giữ bao phủ mà không tái nhập courtesy bias |
+
+**Vì sao KHÔNG mặc định phỏng vấn bởi nhân viên khoa:** phỏng vấn trực tiếp bởi người vừa khám/điều trị là nguồn courtesy bias mạnh nhất → đẩy điểm hài lòng lên giả tạo.
+
+> **Tùy chọn nâng cao (không bắt buộc, để bác sĩ cân nhắc ở G4):** lồng một thang đo **xu hướng chiều lòng ngắn** để hiệu chỉnh/độ nhạy — có bằng chứng làm giảm ceiling effect (PMID 35155757). Nếu dùng, phải là công cụ có nguồn đã kiểm định `[CẦN KIỂM CHỨNG công cụ + bản Việt hóa]` — **KHÔNG tự chế thang**.
+
+---
+
+## 5. BẢNG SAI LỆCH CẦN KIỂM SOÁT & CHIẾN LƯỢC
+
+| Nhóm sai lệch | Biểu hiện cụ thể trong đề tài này | Chiến lược kiểm soát (ở thiết kế/thu thập) |
+|---|---|---|
+| **Sai lệch chọn mẫu (selection)** | ĐTV chọn người "dễ tính"; chỉ lấy giờ cao/thấp điểm; bỏ sót BN đã rời khoa vì bất mãn (survivor) | Chọn **hệ thống** bước k + điểm bắt đầu ngẫu nhiên; **phủ đều khung giờ/ngày trong tuần**; ghi **sổ nhật ký từ chối** (số mời/số đồng ý) để tính tỷ lệ đáp ứng & mô tả người từ chối (STROBE mục 13) |
+| **Sai lệch thông tin — chiều lòng/lịch sự (social desirability/courtesy)** | Điểm dồn về "hài lòng/rất hài lòng", ceiling effect | Tự điền **ẩn danh** + **hòm phiếu kín** + **ĐTV độc lập ngoài khoa** + tách khỏi buồng khám (xem §4). Nguồn: PMID 35155757, 34990388, 24566844 |
+| **Sai lệch nhớ lại (recall)** | BN quên chi tiết trải nghiệm nếu đo trễ | Đo **ngay sau khi hoàn tất lượt khám** (cùng ngày, tại chỗ) → tối thiểu khoảng nhớ |
+| **Sai lệch người phỏng vấn (interviewer)** | ĐTV gợi ý/diễn giải đáp án, khác nhau giữa các ĐTV | **Tập huấn ĐTV theo quy trình chuẩn hóa**; kịch bản trung lập; ưu tiên tự điền để giảm tương tác; giám sát chất lượng |
+| **Sai lệch công cụ (instrument/measurement)** | Câu hỏi mơ hồ, dịch không chuẩn, thang không kiểm định | Dùng **mẫu phiếu ngoại trú QĐ 56/QĐ-BYT (2024)** làm nền (đã neo ở G0); nếu bổ sung miền → **pilot + kiểm định** (Cronbach alpha) `[CẦN DỮ LIỆU PILOT]`; giao `cong-cu-do-luong`/`bien-so-nghien-cuu` chuẩn hóa |
+| **Nhiễu (confounding) — MT2** | Tuổi/học vấn/nơi ở/thời gian chờ đồng thời liên quan yếu tố khác và hài lòng | **Đo đầy đủ biến gây nhiễu đã biết** (danh mục G0) + **hồi quy đa biến** hiệu chỉnh (kế hoạch chốt ở G4/SAP). Chọn biến hiệu chỉnh dựa lý thuyết/DAG, tránh over-adjustment |
+| **Sai lệch do thiếu dữ liệu (missing/non-response)** | Bỏ trống mục, từ chối tham gia | Thiết kế phiếu ngắn gọn, rõ; theo dõi **tỷ lệ đáp ứng**; cơ chế xử lý thiếu **định trước ở SAP (G4)** — KHÔNG quyết ở G1 |
+
+---
+
+## 6. CHUẨN BÁO CÁO ÁP DỤNG
+
+**STROBE — phiên bản cross-sectional** (checklist 22 mục). Von Elm E và cs., [DOI 10.1016/j.jclinepi.2007.11.008](https://doi.org/10.1016/j.jclinepi.2007.11.008) (PMID 18313558). *(Theo PubMed.)*
+- Bám các mục then chốt cho thiết kế này: **mục 4** (thiết kế), **mục 5** (bối cảnh/địa điểm/thời gian), **mục 6** (đối tượng, tiêu chuẩn chọn/loại, *nguồn & phương pháp chọn mẫu*), **mục 9** (nỗ lực kiểm soát sai lệch), **mục 10** (cỡ mẫu — từ G3), **mục 11** (biến định lượng/ngưỡng — từ G1/G4), **mục 13** (số người tham gia/từ chối — *sổ nhật ký đáp ứng*), **mục 22** (nguồn tài trợ).
+- Nếu thêm cấu phần **định tính** → bổ sung **COREQ**. Nếu định vị là **cải tiến chất lượng** → cân nhắc **SQUIRE** (chọn 1 chuẩn chính theo bản chất công bố; giao `viet-ban-thao`).
+
+---
+
+## 7. BÀN GIAO CỔNG & DANH MỤC CẦN CHỐT
+
+**Đầu ra G1 (KHỐI THIẾT KẾ) — dán vào protocol:**
+- **Loại thiết kế:** cắt ngang có phân tích (STROBE cross-sectional).
+- **Kiểm soát sai lệch:** chọn mẫu hệ thống; tự điền ẩn danh + hòm phiếu + ĐTV độc lập (chống chiều lòng); hồi quy đa biến (khử nhiễu).
+- **Estimand (ICH E9-R1):** *không áp dụng* — nghiên cứu quan sát, không có can thiệp/biến cố xen ngang cần chiến lược estimand.
+- **Biến kết cục cấp cho G3:** (a) *nhị phân* — tỷ lệ "hài lòng chung" (ngưỡng `[CẦN BÁC SĨ ẤN ĐỊNH]`); (b) *liên tục* — điểm hài lòng trung bình ± SD.
+
+**Chuyển tiếp:**
+- → **G3 `co-mau-nghien-cuu`:** tính cỡ mẫu cho MT1 (ước lượng 1 tỷ lệ, cần *p kỳ vọng* `[CẦN DỮ LIỆU PILOT / CẦN BÁC SĨ ẤN ĐỊNH]`, độ chính xác d, α) **và** MT2 (EPV cho hồi quy logistic theo *số biến độc lập* — danh mục G0). Cấp lại **n và bước k**.
+- → **`bien-so-nghien-cuu` / `cong-cu-do-luong`:** đặc tả biến & CRF theo mẫu phiếu QĐ 56/2024; kế hoạch pilot + Cronbach alpha.
+- → **G2 `dao-duc-dang-ky` (CỔNG CỨNG kế tiếp):** hồ sơ Hội đồng đạo đức/lãnh đạo BVQY 175; bản đồng thuận; cam kết ẩn danh/không PII; lưu ý đặc thù quân đội.
+- → **G4 `SAP` (khóa sau):** chốt kết cục chính, mô hình hồi quy định trước, xử lý dữ liệu thiếu, kiểm soát đa so sánh, phân tích nhạy cảm — **KHÔNG khóa ở G1**.
+
+**Các mục `[CẦN…]` còn treo:**
+- `[CẦN BÁC SĨ ẤN ĐỊNH]`: khung thời gian; tuổi tối thiểu & cơ chế đại diện; quy tắc chống trùng; ngưỡng "hài lòng"; danh mục & ngưỡng cắt biến độc lập MT2; có dùng thang đo chiều lòng bổ trợ hay không.
+- `[CẦN DỮ LIỆU]`: lưu lượng khám/kỳ của khoa (để tính k); tỷ lệ hài lòng kỳ vọng (tính cỡ mẫu); Cronbach alpha pilot.
+- `[CẦN KIỂM CHỨNG]`: bản Việt hóa/kiểm định của bất kỳ thang bổ sung ngoài phiếu QĐ 56/2024.
+
+---
+
+## Tiêu chí qua cổng G1 — Tự đối chiếu
+
+- ✅ Thiết kế phù hợp câu hỏi (cắt ngang phân tích cho MT1 + MT2), có design code + biện minh + đối chiếu đa nhánh.
+- ✅ Nêu nguồn sai lệch (chọn mẫu, thông tin/chiều lòng, nhớ lại, phỏng vấn, công cụ, nhiễu, thiếu dữ liệu) + chiến lược từng loại.
+- ✅ Estimand: xác nhận *không áp dụng* (quan sát) — có nêu lý do.
+- ✅ Địa điểm/thời gian/quần thể/tiêu chuẩn chọn-loại đầy đủ (số cụ thể để `[CẦN BÁC SĨ ẤN ĐỊNH]`).
+- ✅ Phương pháp chọn mẫu: so sánh 3 lựa chọn, chọn 1 (hệ thống) + biện minh phòng khám đông + dự phòng.
+- ✅ Chuẩn báo cáo STROBE cross-sectional.
+- ⏳ **Cần bác sĩ xác nhận** các ô `[CẦN…]` trước khi sang G3 (cỡ mẫu) và G2 (đạo đức — cổng cứng).
+
+---
+
+### Chốt kiểm liêm chính (tự soi trước khi phát hành)
+
+- **R1 Nguồn/không bịa:** mọi neo phương pháp (STROBE, thiên kiến chiều lòng, thông lệ thiết kế) gắn PMID/DOI thật đã tra PubMed; con số ngưỡng/cỡ mẫu/k **không tự điền** → `[CẦN…]`. ✅
+- **R2 PII:** thiết kế *chủ động loại PII* (phiếu ẩn danh, không ô tên/mã BN, tách bảng định danh). ✅
+- **R3 Cổng:** không vượt cổng đạo đức (G2) hay khóa SAP (G4); chỉ đề xuất thiết kế. ✅
+- **R4/R5:** không gán mức chứng cứ; tách rõ *đề xuất thiết kế* với *kết luận*; đây là quan sát → chỉ "liên quan", không nhân quả. ✅
+- **R6 Nhãn [CẦN…]:** mọi chỗ thiếu dữ liệu đã gắn nhãn. ✅
+- **R7 Disclaimer:** có. ✅
+
+*Theo PubMed — nguồn đối chiếu chính: STROBE [PMID 18313558](https://doi.org/10.1016/j.jclinepi.2007.11.008); thiên kiến chiều lòng/PREM [PMID 35155757](https://doi.org/10.1177/23743735221079144), [PMID 34990388](https://doi.org/10.3399/BJGP.2021.0193), [PMID 24566844](https://doi.org/10.2196/jmir.3024); thông lệ thiết kế hài lòng ngoại trú VN [PMID 34445940](https://doi.org/10.1080/00185868.2021.1969871), [PMID 36292392](https://doi.org/10.3390/healthcare10101945), [PMID 39944421](https://doi.org/10.7759/cureus.77345), [PMID 40295132](https://doi.org/10.1136/bmjopen-2024-093501).*
+
+**Cần bác sĩ kiểm chứng.**
+
+
+## G1 — Công cụ đo hài lòng (COSMIN)
+# CỔNG G1 — CÔNG CỤ ĐO LƯỜNG HÀI LÒNG NGƯỜI BỆNH (theo COSMIN)
+
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+
+**Vai trò cổng:** Agent Công cụ đo lường (Measurement/PROM) — làm cho *con số hài lòng* trở nên đáng tin bằng cách gắn nó với **bằng chứng đo lường theo COSMIN**. Artifact này *đề xuất* công cụ + *kế hoạch kiểm định*; KHÔNG khóa SAP (G4), KHÔNG chạy phân tích chính.
+
+> **⚠️ XÁC MINH VĂN BẢN BỘ Y TẾ (bắt buộc đọc trước):** Nhiệm vụ yêu cầu "ưu tiên mẫu phiếu ngoại trú của **QĐ 3869/QĐ-BYT (2019)** — xác minh trước khi trích". **KẾT QUẢ XÁC MINH: KHÔNG dùng bản 2019 làm công cụ ngoại trú hiện hành.** Theo tra cứu văn bản pháp quy, **Quyết định 56/QĐ-BYT ngày 08/01/2024** ("Hướng dẫn phương pháp đo lường sự hài lòng của người dân đối với dịch vụ y tế công giai đoạn 2024–2030") đã **bãi bỏ QĐ 3869/QĐ-BYT (28/8/2019)** và ban hành bộ mẫu phiếu mới (gồm phiếu **ngoại trú**). Do đó **công cụ nền = mẫu phiếu ngoại trú của QĐ 56/QĐ-BYT (2024)**, không phải phiếu 2019. *(Nguồn: [thuvienphapluat — QĐ 56/QĐ-BYT 2024](https://thuvienphapluat.vn/van-ban/Bo-may-hanh-chinh/Quyet-dinh-56-QD-BYT-2024-phuong-phap-do-luong-hai-long-cua-nguoi-dan-doi-voi-dich-vu-y-te-cong-594500.aspx); [clbv.vn](https://clbv.vn/van-ban/56qd-byt).)* `[CẦN BÁC SĨ ẤN ĐỊNH]` đối chiếu **toàn văn phụ lục phiếu ngoại trú QĐ 56/2024** để chốt chính xác số miền/số câu/thang điểm trước khi in phiếu — nội dung chi tiết từng câu của phụ lục chưa trích được qua nguồn học thuật ở bước này.
+
+---
+
+## 0. Nền COSMIN — khung tham chiếu của toàn artifact
+
+Toàn bộ kế hoạch kiểm định bám **phân loại thuộc tính đo lường COSMIN** (3 miền: *Reliability, Validity, Responsiveness*) — chuẩn hóa thuật ngữ/định nghĩa quốc tế. *(Theo PubMed: Mokkink LB và cs., COSMIN taxonomy, J Clin Epidemiol 2010 — [DOI 10.1016/j.jclinepi.2010.02.006](https://doi.org/10.1016/j.jclinepi.2010.02.006), PMID 20494804.)* Ngưỡng "đạt" của từng thuộc tính neo theo **tiêu chí chất lượng Terwee** *(Terwee CB và cs., J Clin Epidemiol 2007 — [DOI 10.1016/j.jclinepi.2006.03.012](https://doi.org/10.1016/j.jclinepi.2006.03.012), PMID 17161752)* và **CVI của Polit & Beck** *(Res Nurs Health 2007 — [DOI 10.1002/nur.20199](https://doi.org/10.1002/nur.20199), PMID 17654487)*.
+
+**Quyết định "dùng lại vs dựng mới":**
+
+| Kịch bản | Yêu cầu COSMIN | Áp cho đề tài này |
+|---|---|---|
+| **Dùng lại nguyên bản công cụ đã kiểm định trong ĐÚNG quần thể/ngôn ngữ** | Chỉ cần trích bằng chứng đo lường sẵn có + kiểm định lại tối thiểu (α) trong mẫu | Áp cho phần lõi nếu dùng phiếu QĐ 56/2024 đúng như ban hành |
+| **Thích nghi văn hóa chéo / dịch một công cụ nước ngoài** | Quy trình dịch chuẩn (forward → back → hội đồng → pretest nhận thức) + **kiểm định lại đầy đủ** trong quần thể đích | Áp nếu chọn PSQ-18/SERVQUAL |
+| **Tự dựng / bổ sung item đặc thù** | **Đầy đủ COSMIN**: CVI → EFA/CFA → α/ω → ICC → floor/ceiling | Áp nếu bổ sung miền đặc thù "khám theo yêu cầu/quân y" ngoài phiếu chuẩn |
+
+> **Liêm chính then chốt:** phiếu QĐ 56/2024 là **công cụ đo do BYT ban hành** — được phép dùng, KHÔNG tự ý sửa/xóa item của bản chuẩn. Nếu **thêm** item đặc thù → phần thêm phải qua kiểm định COSMIN đầy đủ và báo cáo tách bạch.
+
+---
+
+## 1. ĐỀ XUẤT CÔNG CỤ — 3 phương án (bác sĩ chọn, KHÔNG tự chọn thay)
+
+### Phương án A (KHUYẾN NGHỊ NỀN) — Mẫu phiếu ngoại trú **QĐ 56/QĐ-BYT (2024)**
+
+- **Bản chất:** công cụ đo hài lòng người bệnh ngoại trú **hiện hành, do Bộ Y tế ban hành**; là chuẩn bắt buộc cho khảo sát chất lượng bệnh viện tại Việt Nam giai đoạn 2024–2030.
+- **Ưu điểm:** quyền dùng rõ ràng (văn bản công); so sánh được với dữ liệu chất lượng BV toàn quốc; hợp khung kiểm tra chất lượng năm (QĐ 3652/QĐ-BYT 2024–2025).
+- **Việc bắt buộc:** `[CẦN BÁC SĨ ẤN ĐỊNH]` trích **đúng toàn văn phụ lục phiếu ngoại trú** để khóa số miền/số câu/thang điểm; **kiểm định lại nội bộ tối thiểu** (Cronbach α trong mẫu C1a — vì α phụ thuộc quần thể, KHÔNG "mượn" α của mẫu khác).
+
+### Phương án B — **PSQ-18** (Short-Form Patient Satisfaction Questionnaire, Marshall & Hays)
+
+- **Bản chất:** 18 mục, **7 miền** (hài lòng chung; chất lượng kỹ thuật; cách ứng xử liên cá nhân; giao tiếp; khía cạnh tài chính; thời gian dành cho bệnh nhân; khả năng tiếp cận/thuận tiện). Thang Likert 5 mức (rất đồng ý → rất không đồng ý), có item đảo chiều.
+- **Bằng chứng tâm lý trắc THẬT (đã kiểm định, trích để tham chiếu — KHÔNG phải α của mẫu ta):**
+  - Bản Bengali (Bangladesh, n=130): α ~0,99; ICC test–retest 0,90–0,99; I-CVI/S-CVI = 1 — *(Sinha S và cs., Int J Health Care Qual Assur 2026 — [DOI 10.1108/IJHCQA-07-2025-0100](https://doi.org/10.1108/IJHCQA-07-2025-0100), PMID 41645935)*.
+  - Bản Tây Ban Nha (da liễu, n=240): α 0,834; CFA phù hợp mô hình gốc; ICC test–retest > 0,8 — *(Iglesias-Puzas Á và cs., J Healthc Qual Res 2021 — [DOI 10.1016/j.jhqr.2021.04.004](https://doi.org/10.1016/j.jhqr.2021.04.004), PMID 34053882)*.
+  - Tổng quan tính thích nghi/đáng tin của PSQ-18 qua nhiều bối cảnh — *(Thayaparan AJ, Mahdi E, Med Educ Online 2013 — [DOI 10.3402/meo.v18i0.21747](https://doi.org/10.3402/meo.v18i0.21747), PMID 23883565)*.
+- **Ràng buộc COSMIN:** chưa tìm thấy **bản Việt hóa đã kiểm định** của PSQ-18 → nếu chọn, **bắt buộc thích nghi văn hóa chéo + kiểm định lại đầy đủ** (mục 4). `[CẦN KIỂM CHỨNG]` bản gốc RAND (Marshall GN, Hays RD, 1994) + quyền sử dụng/điều kiện license nếu trích trực tiếp — bản gốc là tài liệu RAND, KHÔNG nằm trong PubMed nên chỉ xác nhận gián tiếp qua các bài dịch trên.
+
+### Phương án C — **SERVQUAL hiệu chỉnh** (mô hình 5 chiều: tin cậy · đáp ứng · đảm bảo · cảm thông · hữu hình)
+
+- **Bằng chứng tại Việt Nam, ngoại trú, tuyến cuối:** bản SERVQUAL hiệu chỉnh 5 nhân tố/26 biến; có kiểm định **α + EFA**; điểm hài lòng chung TB 3,42/5 (SD 0,79) — *(Nguyen BQ, Nguyen CTT, Healthcare (Basel) 2022 — [DOI 10.3390/healthcare10101945](https://doi.org/10.3390/healthcare10101945), PMID 36292392)*.
+- **Lưu ý:** SERVQUAL đo *khoảng cách kỳ vọng–cảm nhận* (2 lượt hỏi) → dài hơn, phức tạp hơn khi tự điền tại phòng khám đông; cân nhắc gánh nặng trả lời.
+
+### Phương án tham chiếu bổ sung — Thang hài lòng **4 miền** đã dùng ở VN
+Minh bạch thông tin & thủ tục · cơ sở–trang thiết bị · thái độ–năng lực NVYT · kết quả dịch vụ; α báo cáo 0,94 — *(Thach Phuong N và cs., Hosp Top 2021 — [DOI 10.1080/00185868.2021.1969871](https://doi.org/10.1080/00185868.2021.1969871), PMID 34445940)*. Có thể dùng để đối chiếu cấu trúc miền.
+
+> **Khuyến nghị tổng hợp:** **A làm nền** (hợp lệ pháp lý + so sánh được), tùy chọn **lồng thêm vài miền của B hoặc C** nếu bác sĩ muốn so sánh quốc tế — nhưng mọi phần **thêm/dịch** kích hoạt quy trình kiểm định đầy đủ ở mục 4. **Quyết định cuối = [CẦN BÁC SĨ ẤN ĐỊNH].**
+
+---
+
+## 2. CẤU TRÚC MIỀN DỰ KIẾN · THANG · CÁCH TÍNH ĐIỂM · NGƯỠNG "HÀI LÒNG"
+
+### 2.1. Cấu trúc miền dự kiến (khung để đối chiếu với phụ lục QĐ 56/2024)
+
+Năm miền dịch vụ thường gặp ở khảo sát ngoại trú (dựa mẫu hình y văn VN — PMID 34445940, 36292392 — và cấu trúc phiếu BYT), dùng làm **khung dự kiến**; số miền/câu **chính thức lấy từ phụ lục QĐ 56/2024**:
+
+| # | Miền dự kiến | Ví dụ nội dung phản ánh |
+|---|---|---|
+| 1 | **Khả năng tiếp cận** | chỉ dẫn, biển báo, đặt lịch/lấy số, thời gian chờ khám/CLS |
+| 2 | **Minh bạch thông tin & thủ tục khám chữa bệnh** | công khai quy trình, giải thích, hướng dẫn thủ tục hành chính/BHYT |
+| 3 | **Cơ sở vật chất & phương tiện phục vụ** | phòng chờ, vệ sinh, trang thiết bị, tiện nghi |
+| 4 | **Thái độ ứng xử & năng lực chuyên môn của NVYT** | tôn trọng, lắng nghe, giải thích, kỹ năng chuyên môn |
+| 5 | **Kết quả cung cấp dịch vụ** | đáp ứng mong đợi, chi phí hợp lý, sẵn sàng quay lại/giới thiệu |
+
+> `[CẦN BÁC SĨ ẤN ĐỊNH]` chốt số miền/số câu **đúng theo phụ lục QĐ 56/2024**; nếu có **bổ sung miền đặc thù** (kỳ vọng dịch vụ theo yêu cầu, đặc thù quân y) → phần thêm là **cấu phần tự dựng** phải qua CVI + EFA/CFA.
+
+### 2.2. Thang trả lời
+
+- **Likert 5 mức** (thông lệ phiếu BYT & y văn VN — PMID 39944421 dùng Likert 5 mức; PMID 34445940/36292392 dùng thang điểm 5). Ví dụ neo: 1 = Rất không hài lòng … 5 = Rất hài lòng.
+- **Số mức chính thức** `[CẦN BÁC SĨ ẤN ĐỊNH]` theo phụ lục QĐ 56/2024 (một số phiếu BYT dùng thang 5, cần đối chiếu bản gốc).
+- Đơn vị đo: điểm Likert 1–5/mục. Thời điểm đo: **ngay sau khi hoàn tất lượt khám** (cắt ngang, 1 lần/đối tượng).
+
+### 2.3. Cách tính điểm (các quy ước có nguồn — bác sĩ chọn 1)
+
+- **Điểm miền** = trung bình các mục thuộc miền (giữ thang 1–5) → so sánh giữa các miền, chỉ ra "điểm đau".
+- **Điểm hài lòng chung** = trung bình toàn bộ mục **hoặc** trung bình các điểm miền (định trước ở SAP). Trình bày TB ± SD (biến liên tục).
+- **Item đảo chiều** (nếu dùng PSQ-18): phải **đảo mã trước khi tính** — quy tắc đảo mã `[CẦN BÁC SĨ ẤN ĐỊNH]` ghi vào data dictionary.
+
+### 2.4. Định nghĩa NGƯỠNG "hài lòng" (các cách vận hành có nguồn — chọn 1, KHÔNG tự điền số)
+
+| Cách vận hành | Mô tả | Nguồn tham chiếu |
+|---|---|---|
+| **Gộp mức đỉnh Likert** | "Hài lòng" = chọn mức 4–5 ("hài lòng"/"rất hài lòng"); báo cáo % theo từng mục/miền/chung | Thông lệ phiếu Likert 5 mức (PMID 39944421) |
+| **Ngưỡng điểm trung bình** | "Hài lòng" nếu điểm TB (mục/miền/tổng) ≥ ngưỡng (vd ≥ 4/5) | Thông lệ; ngưỡng cụ thể `[CẦN BÁC SĨ ẤN ĐỊNH]` |
+| **Nhị phân theo trung vị** | Chia "tốt/kém" theo **trung vị** điểm tổng của chính mẫu | PMID 40295132 (cách phân nhị phân theo trung vị) |
+| **Ngưỡng chính sách BYT** | Đối chiếu mục tiêu QĐ 56/2024 (hài lòng ≥ 85% đến 2025, ≥ 90% đến 2030) — dùng để *bàn luận*, không thay định nghĩa kết cục | QĐ 56/QĐ-BYT 2024 |
+
+> ⚠️ **KHÔNG tự điền** con số ngưỡng, tỷ lệ hài lòng kỳ vọng, hay hệ số α "mục tiêu". Ngưỡng kết cục nhị phân là **quyết định phương pháp có hệ quả lớn cho MT2** → phải định trước ở **SAP (G4)**, gắn `[CẦN BÁC SĨ ẤN ĐỊNH]`. Tỷ lệ hài lòng kỳ vọng để tính cỡ mẫu = `[CẦN DỮ LIỆU PILOT]` hoặc lấy từ y văn nền có nguồn.
+
+---
+
+## 3. QUY TRÌNH THÍCH NGHI VĂN HÓA (chỉ kích hoạt nếu chọn B/C hoặc bổ sung item)
+
+Nếu dùng **PSQ-18/SERVQUAL** (gốc tiếng Anh) hoặc **thêm item mới**, bắt buộc theo quy trình dịch chuẩn (nguyên tắc ISPOR/Beaton; đã áp dụng trong các validation PSQ-18 trích ở trên — PMID 41645935, 34053882):
+
+1. **Dịch xuôi (forward)** độc lập ≥ 2 người → bản tổng hợp.
+2. **Dịch ngược (back-translation)** bởi người bản ngữ độc lập, không xem bản gốc → đối chiếu.
+3. **Hội đồng chuyên gia** hòa giải khác biệt, đánh giá **tương đương ngữ nghĩa/khái niệm/văn hóa**.
+4. **Pretest nhận thức (cognitive interviewing)** trên `[CẦN BÁC SĨ ẤN ĐỊNH: đề xuất ~5–10]` bệnh nhân đại diện → chỉnh câu khó hiểu.
+5. **Kiểm định lại đầy đủ** trong quần thể C1a (mục 4) — vì thuộc tính đo lường **không chuyển giao tự động** giữa ngôn ngữ/quần thể.
+
+> Trạng thái hiện tại: **chưa thực hiện** (đề cương). Nếu chọn Phương án A nguyên bản tiếng Việt → **bỏ qua bước dịch**, chỉ cần kiểm định lại nội bộ.
+
+---
+
+## 4. KẾ HOẠCH KIỂM ĐỊNH THEO COSMIN (điền sẵn ngưỡng + nguồn + cỡ mẫu)
+
+**Bảng kế hoạch phân tích — cỡ mẫu phối hợp `co-mau-nghien-cuu` (G3):**
+
+| Thuộc tính đo lường (COSMIN) | Phương pháp / chỉ số | Ngưỡng "đạt" (NGUỒN) | Cỡ mẫu cần | Trạng thái |
+|---|---|---|---|---|
+| **Giá trị nội dung** (content validity) | Hội đồng chuyên gia chấm độ liên quan → **I-CVI, S-CVI** | **I-CVI ≥ 0,78** (3–5 chuyên gia); S-CVI/Ave ≥ 0,90 *(Polit & Beck 2007, PMID 17654487)* | **≥ 5 chuyên gia** *(Polit & Beck 2007)* | `[CHỜ]` — chỉ cần nếu thêm/dịch item |
+| **Giá trị cấu trúc** (structural validity) | **EFA** (thăm dò) → **CFA** (khẳng định); chỉ số phù hợp mô hình | CFA: **CFI ≥ 0,95**, **RMSEA ≤ 0,06**, SRMR ≤ 0,08 *(ngưỡng phù hợp mô hình quy ước; Terwee 2007 yêu cầu factor analysis đủ mẫu, PMID 17161752)* | **≥ ~200** (hoặc ≥ 5–10 đối tượng/biến quan sát) *(Terwee 2007, PMID 17161752)* — con số chốt ở G3 | `[CẦN DỮ LIỆU]` |
+| **Tin cậy nội bộ** (internal consistency) | **Cronbach's α** (và **McDonald's ω** nếu tải nhân tố không đều) theo từng miền | **α (và ω) 0,70–0,95** cho mỗi miền đơn chiều *(Terwee 2007, PMID 17161752)*; > 0,95 gợi ý dư thừa item | ≥ 100 (thường gộp với mẫu EFA/CFA) | **[CẦN DỮ LIỆU PILOT]** — α thực tế của mẫu C1a chưa có |
+| **Độ tin cậy lặp lại** (test–retest reliability) | **ICC** (agreement, 2-way) trên nhóm nhỏ đo lại | **ICC ≥ 0,70** *(Terwee 2007, PMID 17161752)*; nhiều nghiên cứu PROM đặt ≥ 0,75 | **≥ 50** (khuyến nghị COSMIN cho reliability) | `[CẦN DỮ LIỆU PILOT]` — cần khoảng cách đo lại phù hợp (đủ để quên câu trả lời nhưng chưa đổi trải nghiệm; đề xuất ~1–2 tuần) `[CẦN BÁC SĨ ẤN ĐỊNH]` |
+| **Sai số đo** (measurement error) | **SEM** = SD × √(1−ICC); **SDC** = 1,96 × √2 × SEM | Diễn giải cùng ICC; SDC < MIC nếu có *(Terwee 2007, PMID 17161752)* | gộp với nhóm test–retest | `[CẦN DỮ LIỆU]` |
+| **Giá trị hội tụ–phân biệt** (construct validity, hypotheses testing) | Tương quan với biến giả thuyết định trước (vd điểm hài lòng ↔ "sẵn sàng quay lại") + **known-groups** | **≥ 75% giả thuyết định trước được xác nhận** *(Terwee 2007, PMID 17161752)*; hướng/độ mạnh tương quan định trước | ≥ 100 | `[CẦN DỮ LIỆU]` — danh mục giả thuyết `[CẦN BÁC SĨ ẤN ĐỊNH]` |
+| **Đáp ứng + MCID** (responsiveness) | *KHÔNG áp dụng* cho thiết kế cắt ngang đo 1 lần | — | — | **N/A** — chỉ cần nếu đo thay đổi (không phải mục tiêu đề tài) |
+| **Hiệu ứng sàn/trần** (floor/ceiling) | % đối tượng đạt điểm **min**/**max** của thang/miền | **< 15%** ở mỗi cực *(Terwee 2007, PMID 17161752)* | gộp với mẫu chính | `[CẦN DỮ LIỆU]` — dự báo **nguy cơ ceiling cao** ở khảo sát hài lòng (xem cảnh báo dưới) |
+| **Dữ liệu thiếu / tính khả thi** | % missing/mục; thời gian điền; tỷ lệ đáp ứng | Mô tả; missing thấp; khả thi tại quầy | mẫu chính | `[CẦN DỮ LIỆU]` |
+
+> **Cảnh báo ceiling effect (liên thông G1 thiết kế):** khảo sát hài lòng rất dễ dồn điểm về mức cao (chiều lòng/lịch sự) → **vi phạm ngưỡng < 15%** và làm giảm phương sai, che điểm cần cải tiến. Biện pháp ở khâu thu thập (tự điền ẩn danh, hòm phiếu kín, ĐTV độc lập) đã nêu ở G1 thiết kế; nếu ceiling vẫn cao → báo cáo minh bạch là hạn chế đo lường, cân nhắc thang chiều lòng bổ trợ đã kiểm định `[CẦN KIỂM CHỨNG công cụ]`.
+
+> **Cỡ mẫu:** mọi con số (≥200 cho CFA, ≥50 cho test–retest…) là **khuyến nghị nền có nguồn**; **cỡ mẫu chính thức do `co-mau-nghien-cuu` (G3) cấp**, cân đối với cỡ mẫu cho MT1 (ước lượng 1 tỷ lệ) và MT2 (EPV hồi quy logistic).
+
+---
+
+## 5. NGUYÊN TẮC CHỐNG BỊA SỐ (bắt buộc)
+
+- **KHÔNG bịa hệ số α/ICC/CVI:** mọi hệ số thực tế của mẫu C1a để **`[CẦN DỮ LIỆU PILOT]`**. Các α/ICC trích ở mục 1 là **của mẫu khác** (Bengali, Tây Ban Nha, Chợ Rẫy…) — chỉ để tham chiếu tính khả thi, **KHÔNG được gán cho công cụ của ta**.
+- α phụ thuộc quần thể → **phải tính lại** trong mẫu C1a dù dùng công cụ đã kiểm định nơi khác.
+- Không tự "chốt công cụ tốt" khi chưa có bằng chứng đo lường thực trên mẫu C1a.
+
+---
+
+## 6. BÀN GIAO & DANH MỤC CẦN CHỐT
+
+**Đầu ra khối công cụ đo — dán vào protocol:**
+- **Công cụ nền:** phiếu ngoại trú **QĐ 56/QĐ-BYT (2024)** (KHÔNG dùng bản 2019 đã bãi bỏ); tùy chọn lồng miền PSQ-18/SERVQUAL nếu muốn so sánh quốc tế.
+- **Thang:** Likert 5 mức (đối chiếu phụ lục); cách tính điểm miền + chung; ngưỡng "hài lòng" định trước ở SAP.
+- **Kế hoạch kiểm định COSMIN:** CVI (nếu thêm/dịch) → EFA/CFA → α/ω → ICC + SEM/SDC → hội tụ–phân biệt/known-groups → floor/ceiling → missing.
+
+**Chuyển tiếp:**
+- → **`co-mau-nghien-cuu` (G3):** cấp cỡ mẫu cho từng thuộc tính (CFA ≥200/EPV; test–retest ≥50) đồng bộ cỡ mẫu MT1/MT2.
+- → **`bien-so-nghien-cuu` / `quan-ly-du-lieu`:** đưa từng item vào **CRF ẩn danh** + data dictionary (quy tắc đảo mã, mã hóa Likert, quy tắc missing) — **KHÔNG có ô định danh (PII)**.
+- → **`phan-tich-thong-ke`:** chạy α/ω, EFA/CFA, ICC trên **dữ liệu thật** (agent này chỉ lập kế hoạch, không chạy số chính).
+- → **`viet-ban-thao`:** mục "Công cụ đo & thuộc tính đo lường" theo STROBE mục 8 (đo lường) + báo cáo COSMIN; nêu giới hạn "công cụ chỉ có giá trị đã kiểm định trong quần thể/ngôn ngữ này".
+
+**Các mục `[CẦN…]` còn treo:**
+- `[CẦN BÁC SĨ ẤN ĐỊNH]`: chọn A/B/C (+ có bổ sung item đặc thù?); trích toàn văn phụ lục phiếu QĐ 56/2024; số mức Likert; quy ước tính điểm; **ngưỡng "hài lòng"**; danh mục giả thuyết hội tụ–phân biệt; khoảng cách test–retest; quy tắc đảo mã.
+- `[CẦN DỮ LIỆU PILOT]`: **Cronbach α/ω, ICC, CVI, % floor/ceiling** thực tế của mẫu C1a; tỷ lệ hài lòng kỳ vọng cho cỡ mẫu.
+- `[CẦN KIỂM CHỨNG]`: bản gốc RAND PSQ-18 (Marshall & Hays 1994) + quyền dùng nếu trích trực tiếp; nội dung chi tiết phụ lục phiếu ngoại trú QĐ 56/2024 đối chiếu bản gốc; bản Việt hóa kiểm định của bất kỳ thang bổ sung.
+
+---
+
+## 7. Tiêu chí qua cổng — Tự đối chiếu (SELF-CHECK)
+
+```
+✦ SELF-CHECK cong-cu-do-luong — Cổng G1 (COSMIN):
+  ĐÃ ĐẠT:
+   - Construct (hài lòng, đa miền) + quần thể đích rõ; quyết định dùng-lại/dựng-mới có khung.
+   - Xác minh văn bản BYT: 3869/2019 ĐÃ BỊ BÃI BỎ → dùng QĐ 56/2024 (đã sửa giả định của nhiệm vụ).
+   - 3 phương án công cụ + bằng chứng tâm lý trắc THẬT có PMID/DOI (PSQ-18, SERVQUAL VN, thang 4 miền VN).
+   - Cấu trúc miền + thang Likert + cách tính điểm + các định nghĩa ngưỡng (đều gắn [CẦN ẤN ĐỊNH]).
+   - Kế hoạch kiểm định COSMIN đủ thuộc tính: ngưỡng có nguồn (Terwee 2007, Polit&Beck 2007, COSMIN 2010) + cỡ mẫu cần.
+   - Quy trình thích nghi văn hóa chéo (nếu B/C) + quy trình kiểm định bắt buộc nếu tự dựng.
+   - KHÔNG bịa α/ICC: số thực tế → [CẦN DỮ LIỆU PILOT]; α mẫu khác chỉ tham chiếu.
+   - Không PII; disclaimer; bàn giao rõ.
+  CÒN THIẾU (phụ thuộc input thật):
+   - Toàn văn phụ lục phiếu QĐ 56/2024 (số miền/câu chính xác) — [CẦN BÁC SĨ ẤN ĐỊNH].
+   - Cỡ mẫu chốt (G3) + hệ số thực (pilot).
+  KẾT: ĐẠT TỰ KIỂM (đầu ra là kế hoạch/đề xuất; các ô số đúng quy tắc để [CẦN...], không điền số giả).
+```
+
+### Chốt kiểm liêm chính (2 lớp)
+- **R1 Nguồn/không bịa:** mọi ngưỡng/bằng chứng gắn PMID/DOI thật đã tra PubMed; văn bản BYT xác minh qua nguồn pháp quy; hệ số thực để `[CẦN...]`. ✅
+- **R2 PII:** công cụ + CRF thiết kế ẩn danh, không ô định danh. ✅
+- **R3 Cổng:** không khóa SAP (G4), không vượt cổng đạo đức (G2); chỉ đề xuất công cụ + kế hoạch. ✅
+- **R4/R5:** không tự gán "công cụ tốt"; tách rõ *bằng chứng của mẫu khác* với *chưa có bằng chứng trên mẫu ta*; α không chuyển giao tự động. ✅
+- **R6 Nhãn [CẦN…]:** đầy đủ. ✅ **R7 Disclaimer:** có. ✅
+
+---
+*Theo PubMed — nguồn đối chiếu chính: COSMIN taxonomy [PMID 20494804](https://doi.org/10.1016/j.jclinepi.2010.02.006); Terwee quality criteria [PMID 17161752](https://doi.org/10.1016/j.jclinepi.2006.03.012); Polit & Beck CVI [PMID 17654487](https://doi.org/10.1002/nur.20199); PSQ-18 [PMID 41645935](https://doi.org/10.1108/IJHCQA-07-2025-0100), [PMID 34053882](https://doi.org/10.1016/j.jhqr.2021.04.004), [PMID 23883565](https://doi.org/10.3402/meo.v18i0.21747); SERVQUAL VN [PMID 36292392](https://doi.org/10.3390/healthcare10101945); thang 4 miền VN [PMID 34445940](https://doi.org/10.1080/00185868.2021.1969871). Văn bản: QĐ 56/QĐ-BYT (08/01/2024) bãi bỏ QĐ 3869/QĐ-BYT (2019).*
+
+**Cần bác sĩ kiểm chứng.**
+
+
+## G1 — Bộ biến số & CRF
+# CỔNG G3 — BỘ BIẾN SỐ & ĐẦU VÀO CRF/REDCap
+
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+
+**Thiết kế:** Mô tả cắt ngang có phân tích (analytical cross-sectional) — chuẩn báo cáo **STROBE cross-sectional** (PMID 18313558). MT1 mô tả (điểm/tỷ lệ hài lòng); MT2 phân tích yếu tố liên quan (hồi quy đa biến — chỉ kết luận *liên quan*, KHÔNG nhân quả).
+
+**Vai trò cổng:** Agent Biến số — *đặc tả bộ biến* (nhóm · vai trò · dạng đo · thang · thời điểm · mã hóa · phái sinh) làm bản lề giữa công cụ đo (G1 COSMIN) và CRF/data dictionary (`quan-ly-du-lieu`, G5) + cỡ mẫu (`co-mau-nghien-cuu`, G3) + SAP (G4). **KHÔNG dựng data dictionary kỹ thuật/luật kiểm tra range-logic/CRF cuối/khử định danh** (→ `quan-ly-du-lieu`); **KHÔNG tính cỡ mẫu/khóa SAP/chọn mô hình** (→ `co-mau`/`thiet-ke`). Mỗi biến có *lý do tồn tại*; biến không gắn PICO/kết cục/nhiễu/mô tả mẫu → đề xuất LOẠI.
+
+> **⚠️ RÀNG BUỘC CỨNG VỀ CÔNG CỤ (kế thừa G1 COSMIN):** Bộ biến kết cục dưới đây bám **khung 5 miền dự kiến**; **số MIỀN, số CÂU/miền, số mức thang Likert CHÍNH THỨC phải trích ĐÚNG phụ lục phiếu ngoại trú QĐ 56/QĐ-BYT (2024)** — hiện hành, đã thay mẫu ngoại trú của QĐ 3869/2019. Các ô số item để trống `[CẦN BÁC SĨ ẤN ĐỊNH — theo phụ lục QĐ 56/2024]`. **KHÔNG bịa số câu, không tự chế item.**
+
+---
+
+## PHẦN 0 — TỔNG QUAN NHÓM BIẾN (chống thiếu / chống thừa)
+
+| Nhóm biến | Có áp dụng? | Vai trò tổng thể | Ghi chú |
+|---|---|---|---|
+| **A. Định danh & vận hành phiếu** (KHÔNG PII) | ✅ | Quản trị, chống trùng | Mã giả danh, không tên/mã BN thật |
+| **B. Nhân khẩu học** | ✅ | Độc lập / mô tả mẫu (MT2) | Tuổi, giới, học vấn, nghề, nơi ở |
+| **C. Đối tượng & chi trả** | ✅ | Độc lập (MT2) | Quân/dân, hình thức chi trả — đặc thù khối dịch vụ + quân y |
+| **D. Đặc điểm lần khám** | ✅ | Độc lập (MT2) | Lần đầu/tái khám, chuyên khoa, **thời gian chờ**, số quầy, khung giờ, có CLS |
+| **E. Biến KẾT CỤC — điểm hài lòng** | ✅ | **Phụ thuộc (kết cục)** | Điểm từng miền + điểm tổng + biến nhị phân phái sinh |
+| **F. Biến chất lượng đo lường (COSMIN)** | ◻️ Tùy chọn | Kiểm định công cụ | Item đảo mã, thang chiều lòng bổ trợ (nếu dùng) |
+| **G. Bệnh nền / lâm sàng / CLS / hình ảnh** | ⛔ **KHÔNG áp dụng** | — | Đề tài đo *trải nghiệm dịch vụ*, không đo bệnh lý → **loại để chống phình CRF**. Chỉ giữ "lý do khám/chuyên khoa" ở mức nhóm |
+| **H. Biến sống còn / time-to-event** | ⛔ **KHÔNG áp dụng** | — | Cắt ngang 1 lần đo, không có biến cố theo thời gian |
+| **I. An toàn AE/SAE** | ⛔ **KHÔNG áp dụng** | — | Không can thiệp |
+
+---
+
+## PHẦN 1 — KHỐI BIẾN KẾT CỤC (E) — trọng tâm MT1 + biến phụ thuộc MT2
+
+### 1.1. Điểm từng item → điểm từng MIỀN → điểm TỔNG (biến gốc + phái sinh)
+
+| Tên biến | Nhãn | Loại đo / thang | Đơn vị | Thời điểm | Nguồn | Phái sinh (công thức) | Mã thiếu |
+|---|---|---|---|---|---|---|---|
+| `hl_m{d}_i{k}` | Điểm item k thuộc miền d (từng câu của phiếu) | **Thứ hạng** (Likert) — *ordinal* | Điểm 1–5 (đối chiếu phụ lục) | Ngay sau lượt khám | Tự điền, phiếu QĐ 56/2024 | Gốc (nhập trực tiếp) | 9 = không trả lời |
+| `hl_diem_mien{d}` | Điểm trung bình MIỀN d | Khoảng/tỷ lệ (điểm gộp) — coi *scale* | Điểm 1–5 | (tính) | Phái sinh | = trung bình các `hl_m{d}_i{k}` hợp lệ của miền d **(quy tắc tối thiểu số item hợp lệ [CẦN BÁC SĨ ẤN ĐỊNH], vd ≥50% item])** | (rỗng nếu không đủ item) |
+| `hl_diem_tong` | Điểm hài lòng CHUNG | Khoảng/tỷ lệ | Điểm 1–5 | (tính) | Phái sinh | = trung bình toàn bộ item hợp lệ **HOẶC** trung bình các `hl_diem_mien{d}` — **chọn 1, khóa ở SAP** `[CẦN BÁC SĨ ẤN ĐỊNH]` | (rỗng) |
+
+> **Miền dự kiến (khung để đối chiếu phụ lục — SỐ ITEM để trống):**
+> | d | Miền | Số item |
+> |---|---|---|
+> | 1 | Khả năng tiếp cận (chỉ dẫn, lấy số, thời gian chờ) | `[theo phụ lục]` |
+> | 2 | Minh bạch thông tin & thủ tục KCB | `[theo phụ lục]` |
+> | 3 | Cơ sở vật chất & phương tiện phục vụ | `[theo phụ lục]` |
+> | 4 | Thái độ ứng xử & năng lực chuyên môn NVYT | `[theo phụ lục]` |
+> | 5 | Kết quả cung cấp dịch vụ | `[theo phụ lục]` |
+>
+> Nguồn khung miền: mẫu hình y văn VN (PMID 34445940, 36292392) + cấu trúc phiếu BYT. **Số miền/câu chính thức = phụ lục QĐ 56/2024** `[CẦN KIỂM CHỨNG]`.
+
+### 1.2. Biến KẾT CỤC CHÍNH — nhị phân "hài lòng / chưa hài lòng" (PHÁI SINH — nêu rõ công thức)
+
+| Tên biến | Nhãn | Loại đo | Mã hóa | Công thức phái sinh (chọn 1 — [CẦN BÁC SĨ ẤN ĐỊNH], khóa SAP G4) |
+|---|---|---|---|---|
+| `hl_hailong_nhiphan` | Tình trạng hài lòng chung (nhị phân) — **kết cục chính MT2** | **Danh định nhị phân** | 1 = Hài lòng · 0 = Chưa hài lòng | **PA1 — Gộp đỉnh Likert:** "hài lòng" nếu đa số/tất cả item ở mức 4–5 (quy tắc gộp cụ thể `[CẦN ẤN ĐỊNH]`) — thông lệ Likert (PMID 39944421). **PA2 — Ngưỡng điểm TB:** `hl_hailong_nhiphan = 1` nếu `hl_diem_tong ≥ C` (C = ngưỡng, vd 4/5) `[CẦN ẤN ĐỊNH]`. **PA3 — Trung vị:** `=1` nếu `hl_diem_tong ≥` trung vị mẫu (PMID 40295132). |
+
+> ⚠️ **Cảnh báo phương pháp:** ngưỡng nhị phân hóa là *quyết định có hệ quả lớn cho MT2* (đổi ngưỡng → đổi OR). **Phải định trước ở SAP (G4)**, không chọn sau khi xem dữ liệu (chống HARKing). PA3 (trung vị) chỉ chốt được sau khi có dữ liệu → nếu chọn PA3 phải **định trước quy tắc** (dùng trung vị mẫu) chứ không phải chọn ngưỡng tùy nghi. Ưu tiên **giữ điểm liên tục** (`hl_diem_tong`) cho phân tích chính để tránh mất thông tin; biến nhị phân là phụ trợ.
+
+### 1.3. Kết cục PHỤ (liên tục & theo miền)
+
+| Tên biến | Nhãn | Loại đo | Vai trò |
+|---|---|---|---|
+| `hl_diem_tong` | Điểm hài lòng chung liên tục | Khoảng/tỷ lệ | Kết cục phụ MT1 + **biến phụ thuộc cho hồi quy tuyến tính** MT2 (nếu chọn mô hình tuyến tính) |
+| `hl_diem_mien{d}` | Điểm từng miền | Khoảng/tỷ lệ | Mô tả "điểm đau" theo miền (MT1) |
+| `hl_hailong_mien{d}_nhiphan` | Hài lòng theo từng miền (nhị phân) | Danh định | Kết cục phụ mô tả (tùy chọn) — cùng quy tắc ngưỡng với 1.2 |
+
+---
+
+## PHẦN 2 — KHỐI BIẾN ĐỘC LẬP / YẾU TỐ LIÊN QUAN (MT2)
+
+> **Vai trò:** tất cả là **biến độc lập (yếu tố liên quan)** cho MT2. Việc phân loại *nhiễu vs điều chỉnh hiệu quả vs trung gian* nêu ở Phần 4 (DAG) → chuyển `thiet-ke-nghien-cuu` chốt **tập biến hiệu chỉnh tối thiểu**. **KHÔNG hiệu chỉnh biến trung gian/collider.**
+
+### B. Nhân khẩu học
+
+| Tên biến | Nhãn | Loại đo / thang | Đơn vị | Giá trị / mã hóa | Neo chuẩn | Mã thiếu | BB/TC | Lý do (gắn MT) |
+|---|---|---|---|---|---|---|---|---|
+| `tuoi` | Tuổi | **Tỷ lệ** (liên tục) | năm | số nguyên; khoảng hợp lý [CẦN ẤN ĐỊNH, vd 18–110] | — | 999 | BB | Nhiễu/độc lập; nơi khác thấy liên quan hài lòng (PMID 40295132). Giữ **liên tục**; nhóm hóa (nếu cần) → biến phái sinh `tuoi_nhom` với ngưỡng `[CẦN ẤN ĐỊNH]` |
+| `tuoi_nhom` | Nhóm tuổi (phái sinh) | Thứ hạng | — | vd <30/30–44/45–59/≥60 `[CẦN ẤN ĐỊNH]` | — | — | TC | = phân nhóm từ `tuoi`; chỉ mô tả, ưu tiên giữ liên tục trong mô hình |
+| `gioi` | Giới tính | **Danh định** | — | 1=Nam · 2=Nữ · 3=Khác `[CẦN ẤN ĐỊNH]` | — | 9 | BB | Độc lập MT2; kiểm định theo giới đã dùng (PMID 39944421) |
+| `hocvan` | Trình độ học vấn | **Thứ hạng** | — | vd 1=≤Tiểu học · 2=THCS · 3=THPT · 4=Trung cấp/CĐ · 5=ĐH trở lên `[CẦN ẤN ĐỊNH danh mục]` | — | 9 | BB | Độc lập; liên quan hài lòng **không nhất quán chiều** (PMID 39944421, 40295132) → để hai phía |
+| `nghenghiep` | Nghề nghiệp | **Danh định** | — | danh mục nội bộ `[CẦN ẤN ĐỊNH]` (vd cán bộ/hưu trí/lao động tự do/công nhân/khác) | — | 9 | TC | Mô tả mẫu; cân nhắc gộp nhóm nếu ô nhỏ |
+| `noicutru` | Nơi cư trú (cùng/khác tỉnh) | **Danh định** | — | 1=Cùng TP.HCM · 2=Tỉnh khác `[CẦN ẤN ĐỊNH]` | — | 9 | BB | Độc lập; nhóm ở tỉnh khác hài lòng thấp hơn (PMID 34445940, 40295132). *Tùy chọn:* `khoangcach_km` liên tục nếu thu được |
+
+### C. Đối tượng & hình thức chi trả (đặc thù khối dịch vụ + quân y)
+
+| Tên biến | Nhãn | Loại đo | Giá trị / mã hóa | Mã thiếu | BB/TC | Lý do |
+|---|---|---|---|---|---|---|
+| `doituong_qd` | Đối tượng quân/dân | **Danh định** | 1=Quân nhân · 2=Thân nhân quân nhân · 3=Dân sự/dịch vụ `[CẦN ẤN ĐỊNH]` | 9 | BB | Đặc thù BVQY; độc lập MT2 — kiểm chứng nghịch lý "dịch vụ theo yêu cầu ↔ hài lòng?" |
+| `hinhthuc_chitra` | Hình thức chi trả | **Danh định** | 1=BHYT · 2=Tự nguyện/dịch vụ · 3=Kết hợp · 4=Khác `[CẦN ẤN ĐỊNH]` | 9 | BB | Độc lập; nhóm dùng dịch vụ theo yêu cầu hài lòng thấp hơn (PMID 34445940) |
+| `solankham_khoa` | Số lần đã khám tại khoa | **Tỷ lệ** (rời rạc) HOẶC thứ hạng | số lần; hoặc 1=Lần đầu/2=2–3/3=≥4 `[CẦN ẤN ĐỊNH]` | 999 | TC | Độc lập; quen thuộc dịch vụ có thể liên quan kỳ vọng/hài lòng |
+
+### D. Đặc điểm lần khám
+
+| Tên biến | Nhãn | Loại đo / thang | Đơn vị | Giá trị / mã hóa | Neo chuẩn | Mã thiếu | BB/TC | Lý do / Người đo–độ tin cậy |
+|---|---|---|---|---|---|---|---|---|
+| `lankham` | Lần đầu / tái khám | **Danh định** | — | 1=Lần đầu · 2=Tái khám | — | 9 | BB | Độc lập MT2 |
+| `chuyenkhoa` | Chuyên khoa khám | **Danh định** | — | danh mục nội bộ khoa C1a `[CẦN ẤN ĐỊNH]` | *(danh mục nội bộ, KHÔNG ép ICD — biến hành chính)* | 9 | BB | Mô tả + độc lập; kiểm soát khác biệt theo chuyên khoa |
+| `thoigian_cho` | **Thời gian chờ** khám | **Tỷ lệ** (liên tục) | phút | số ≥0; khoảng hợp lý `[CẦN ẤN ĐỊNH]` | — | 999 | BB | **Yếu tố liên quan mạnh & nhất quán** (PMID 39944421, 40295132). **Nguồn đo `[CẦN ẤN ĐỊNH]`: (a) tự báo cáo — nguy cơ sai lệch nhớ/ước lượng; (b) mốc thời gian HIS (lấy số → gọi khám) — khách quan hơn.** Định nghĩa mốc đầu/cuối phải ghi rõ (SOP đo → `quan-ly-du-lieu`) |
+| `thoigian_cho_nhom` | Nhóm thời gian chờ (phái sinh) | Thứ hạng | — | ngưỡng cắt `[CẦN ẤN ĐỊNH]` (vd ≤30/31–60/>60 phút) | — | — | TC | = phân nhóm từ `thoigian_cho`; ưu tiên giữ liên tục trong mô hình; nhóm hóa chỉ để mô tả/so sánh |
+| `so_quay_buoc` | Số bước/quầy phải qua | **Tỷ lệ** (rời rạc) | số quầy | số nguyên ≥0 | — | 999 | TC | Đại diện "phức tạp quy trình"; độc lập tùy chọn |
+| `khunggio_kham` | Khung giờ khám | **Danh định/thứ hạng** | — | 1=Sáng sớm · 2=Cuối buổi sáng · 3=Đầu chiều · 4=Cuối chiều `[CẦN ẤN ĐỊNH]` | — | 9 | TC | Kiểm soát dồn giờ cao điểm; đồng thời là biến chọn mẫu (phủ đều khung giờ) |
+| `co_cls` | Có làm cận lâm sàng | **Danh định** | — | 1=Có · 0=Không | — | 9 | TC | Có CLS làm dài trải nghiệm/thời gian chờ → độc lập tùy chọn |
+
+> **Chống thừa (đề xuất LOẠI/để TÙY CHỌN):** `nghenghiep`, `solankham_khoa`, `so_quay_buoc`, `khunggio_kham`, `co_cls`, `tuoi_nhom`, `thoigian_cho_nhom` gắn TC vì độ ưu tiên thấp hơn / phái sinh / dễ thiếu — **đưa vào mô hình MT2 chỉ khi bác sĩ chốt** và cân đối EPV. Nhóm hóa biến liên tục (`tuoi_nhom`, `thoigian_cho_nhom`) **mất thông tin** → chỉ dùng mô tả, giữ bản liên tục cho mô hình.
+
+---
+
+## PHẦN 3 — KHỐI A (VẬN HÀNH PHIẾU — KHÔNG PII) & KHỐI F (đo lường, tùy chọn)
+
+### A. Định danh giả danh & vận hành (do `quan-ly-du-lieu` quản; KHÔNG có ô tên/mã BN/CCCD/BHYT/SĐT/địa chỉ)
+
+| Tên biến | Nhãn | Loại | Giá trị | Ghi chú |
+|---|---|---|---|---|
+| `ma_phieu` | Mã phiếu giả danh | Danh định | vd C1a-0001… | **Không** liên kết định danh; chống trùng |
+| `ngay_ks` | Ngày khảo sát | Ngày | dd/mm/yyyy | Mô tả phân bố thời gian (STROBE mục 5, 13) — *không* phải PII |
+| `dtv_ma` | Mã ĐTV thu thập | Danh định | mã hóa ĐTV | Kiểm interviewer effect; ĐTV độc lập ngoài khoa |
+| `kenh_thu` | Kênh thu thập | Danh định | 1=Tự điền hòm phiếu · 2=ĐTV đọc hỗ trợ | Kiểm sai lệch cách thu |
+
+> **Nhật ký từ chối/không đáp ứng (STROBE mục 13)** — thuộc *sổ vận hành*, KHÔNG phải biến cá nhân: số mời, số đồng ý, lý do từ chối (nhóm). Giao `quan-ly-du-lieu`. Cần cho **bàn sai lệch không đáp ứng** (danh mục RIÊNG cắt ngang).
+
+### F. Biến chất lượng đo lường / COSMIN (TÙY CHỌN — chỉ nếu lồng thang ngoài phiếu chuẩn)
+
+| Tên biến | Nhãn | Ghi chú |
+|---|---|---|
+| `hl_item_daoma_*` | Item đảo chiều (nếu lồng PSQ-18) | **Quy tắc đảo mã `[CẦN ẤN ĐỊNH]` ghi vào data dictionary** — PSQ-18 có item nghịch đảo (PMID 41645935). Nhập RAW, đảo mã ở bước tính điểm (biến phái sinh), KHÔNG nhập tay điểm đã đảo |
+| `sdb_*` | Thang xu hướng chiều lòng (nếu dùng) | Chỉ dùng công cụ đã kiểm định + Việt hóa `[CẦN KIỂM CHỨNG]`; giúp giảm ceiling (PMID 35155757 — nêu ở G1 thiết kế). KHÔNG tự chế thang |
+
+---
+
+## PHẦN 4 — PHÂN LOẠI VAI TRÒ NHÂN QUẢ (DAG) — chuyển `thiet-ke-nghien-cuu`
+
+> Cắt ngang → phơi nhiễm & kết cục đo **cùng lúc** → chỉ *liên quan*, không nhân quả. DAG dưới là **định hướng chọn biến hiệu chỉnh**, cần bác sĩ/`thiet-ke` chốt **tập hiệu chỉnh tối thiểu**; đề xuất vẽ DAG chính thức (nguyên lý Hernán & Robins, *Causal Inference* `[CẦN KIỂM CHỨNG bản/năm]`).
+
+| Biến | Vai trò đề xuất | Xử lý dự kiến |
+|---|---|---|
+| `tuoi`, `gioi`, `hocvan`, `noicutru`, `doituong_qd`, `hinhthuc_chitra` | **Nhiễu tiềm năng** (liên quan cả đặc điểm lần khám lẫn hài lòng) | **Hiệu chỉnh** trong mô hình đa biến |
+| `thoigian_cho` | **Độc lập chính** (yếu tố dịch vụ có thể can thiệp được) | Đưa vào mô hình; xét **điều chỉnh hiệu quả** theo nhóm (vd tương tác với `noicutru`/`doituong_qd`) — định trước phân tích dưới nhóm nếu có |
+| `co_cls`, `so_quay_buoc` | **Có thể TRUNG GIAN** (nằm trên đường: quy trình → thời gian chờ → hài lòng) | **CẢNH BÁO over-adjustment:** nếu là trung gian của hiệu ứng `thoigian_cho` → KHÔNG hiệu chỉnh khi ước lượng hiệu ứng tổng của thời gian chờ. `[CẦN `thiet-ke` chốt qua DAG]` |
+| `khunggio_kham` | Nhiễu/độc lập | Cân nhắc; cũng là biến thiết kế chọn mẫu |
+
+**Điều chỉnh hiệu quả (effect modifier) cần định trước (nếu có):** hiệu ứng của `thoigian_cho` lên hài lòng có thể khác giữa nhóm `doituong_qd` (kỳ vọng dịch vụ cao) → **định trước số hạng tương tác / phân tầng ở SAP**, KHÔNG "hiệu chỉnh cho mất".
+
+**Kiểm đa cộng tuyến (danh mục RIÊNG cắt ngang):** trước khóa mô hình, kiểm **VIF/đa cộng tuyến** (vd `thoigian_cho` ↔ `so_quay_buoc` ↔ `co_cls`) → `phan-tich-thong-ke` theo SAP.
+
+---
+
+## PHẦN 5 — GỢI Ý CHO EDC (REDCap/Castor) → đầu vào cho `quan-ly-du-lieu`
+
+| Biến | Field type REDCap | Validation gợi ý (do `quan-ly-du-lieu` dựng luật) | Branching / Calc |
+|---|---|---|---|
+| `tuoi` | text (number, integer) | min/max `[CẦN ẤN ĐỊNH]` | — |
+| `gioi`, `noicutru`, `doituong_qd`, `hinhthuc_chitra`, `lankham`, `co_cls` | radio | danh sách mã cố định | — |
+| `hocvan`, `khunggio_kham`, `chuyenkhoa`, `nghenghiep` | dropdown/radio | danh mục | `chuyenkhoa` = dropdown danh mục nội bộ |
+| `thoigian_cho`, `so_quay_buoc`, `solankham_khoa` | text (number) | ≥0; khoảng hợp lý | `co_cls` = 0 → có thể ẩn nhánh CLS |
+| `hl_m{d}_i{k}` (từng item) | radio (Likert 1–5) | 1–5 | — |
+| `hl_diem_mien{d}`, `hl_diem_tong` | **calc field** | (không nhập tay) | **@CALC** = trung bình item hợp lệ; **KHÔNG nhập tay biến tính được** |
+| `hl_hailong_nhiphan` | **calc field** | (không nhập tay) | công thức theo PA đã chốt (SAP) |
+
+> **Biến phái sinh KHÔNG nhập tay** (`hl_diem_mien{d}`, `hl_diem_tong`, `hl_hailong_nhiphan`, `tuoi_nhom`, `thoigian_cho_nhom`): dựng **calc field** — nêu công thức + biến nguồn (Phần 1). Quy tắc missing/tối thiểu số item hợp lệ để tính điểm miền → `quan-ly-du-lieu` đưa vào data dictionary.
+
+**Neo từ vựng chuẩn:** đề tài là PROM hành chính/trải nghiệm → **phần lớn biến KHÔNG có mã LOINC/ICD/MedDRA phù hợp** (không ép mã cho biến nhân khẩu/dịch vụ). `chuyenkhoa` neo bằng **danh mục nội bộ khoa C1a**, không phải ICD-10 (biến hành chính, không phải chẩn đoán). Nếu sau này thu "chẩn đoán/lý do khám" → mới neo ICD-10; hiện KHÔNG có biến đó → `[CẦN BÁC SĨ ẤN ĐỊNH nếu bổ sung]`. **KHÔNG bịa mã.**
+
+---
+
+## PHẦN 6 — BÀN GIAO & CẢNH BÁO
+
+### Bàn giao
+- **→ `co-mau-nghien-cuu` (G3, khép mắt xích bien-so→co-mau):** **Số biến độc lập dự kiến vào mô hình MT2 = `[CẦN CHỐT]`** (đếm từ danh mục BB Phần 2 sau khi bác sĩ chọn) → tính **EPV** cho hồi quy logistic (nguyên tắc ≥10 biến cố/biến — PMID 8970487). Kết cục: (a) nhị phân `hl_hailong_nhiphan`; (b) liên tục `hl_diem_tong`.
+- **→ `cong-cu-do-luong` (COSMIN):** từng item vào kế hoạch kiểm định (Cronbach α/ω theo miền, EFA/CFA, floor/ceiling) **trước khi khóa CRF** — kết cục là PROM.
+- **→ `quan-ly-du-lieu` (G5):** dựng data dictionary/codebook kỹ thuật + **luật kiểm tra range/logic** (bien-so KHÔNG tự dựng) + calc field + khử định danh + CRF cuối + SOP đo `thoigian_cho`.
+- **→ `thiet-ke-nghien-cuu` (G4/SAP):** chốt **định nghĩa ngưỡng "hài lòng"** (khóa TRƯỚC dữ liệu), tập biến hiệu chỉnh tối thiểu (DAG), số hạng tương tác/phân tầng, xử lý missing, VIF.
+
+### Cảnh báo bộ biến
+- 🟡 **Số item mỗi miền còn TRỐNG** — phụ thuộc phụ lục QĐ 56/2024 `[CẦN KIỂM CHỨNG]`; bảng biến là **giàn giáo** cho đến khi khóa số câu.
+- 🟡 **Biến đề xuất LOẠI/TC** (chống phình): `nghenghiep`, `so_quay_buoc`, `khunggio_kham`, `co_cls`, `solankham_khoa` — chỉ giữ vào mô hình nếu bác sĩ chốt + đủ EPV.
+- 🔴 **Chưa có** quyết định ngưỡng nhị phân + nguồn đo thời gian chờ + danh mục mã hóa (học vấn/nghề/chuyên khoa/đối tượng) → chặn khóa CRF cho tới khi bác sĩ ấn định.
+- ✅ Đủ nhóm biến gắn MT1/MT2; mỗi biến có vai trò + loại đo + thang + đơn vị + thời điểm + nguồn + mã thiếu; biến phái sinh nêu công thức; không PII; không có khối sống còn/AE (đúng thiết kế).
+
+---
+
+### Chốt kiểm liêm chính (tự soi 2 lớp)
+- **R1 Nguồn/không bịa:** thang/ngưỡng/yếu tố liên quan gắn PMID/DOI thật; số miền/câu/ngưỡng để `[CẦN…]`, KHÔNG điền số giả; neo mã chỉ nêu nơi có, không ép ICD cho biến hành chính. ✅
+- **R2 PII:** bộ biến thiết kế ẩn danh — không ô tên/mã BN/CCCD/BHYT/SĐT/địa chỉ; định danh giả danh tách riêng do `quan-ly-du-lieu`. ✅
+- **R3 Cổng:** không khóa SAP (G4), không tính cỡ mẫu, không dựng luật kiểm tra/CRF cuối; chỉ đặc tả biến + cấp đầu vào. ✅
+- **R4/R5:** không gán mức chứng cứ; nêu rõ cắt ngang → *liên quan*, không nhân quả; tách biến gốc vs phái sinh; cảnh báo over-adjustment (trung gian) & mất thông tin khi nhóm hóa. ✅
+- **R6 Nhãn [CẦN…]:** đầy đủ. **R7 Disclaimer:** có. ✅
+
+*Theo PubMed — nguồn chính: STROBE [PMID 18313558]; yếu tố liên quan hài lòng ngoại trú VN [PMID 34445940], [PMID 36292392], [PMID 39944421], [PMID 40295132]; PSQ-18/COSMIN [PMID 41645935], [PMID 20494804], [PMID 17161752]; EPV [PMID 8970487]. Văn bản: QĐ 56/QĐ-BYT (08/01/2024) — công cụ ngoại trú hiện hành.*
+
+**Cần bác sĩ kiểm chứng.**
+
+
+## G1 — Kế hoạch triển khai (A13)
+# CỔNG G1 — KẾ HOẠCH TRIỂN KHAI (Artifact A13)
+## + Project Charter (A1b) + Risk Register SỐNG (A13b)
+
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+
+**Vai trò cổng:** Đây là **A13 — KẾ HOẠCH TỔ CHỨC THỰC HIỆN** (nhân lực · tiến độ · kinh phí · rủi ro) tại **G1**. KHÔNG quyết khoa học (thiết kế/SAP), KHÔNG soạn hồ sơ đạo đức (thuộc G2 `dao-duc-dang-ky`), KHÔNG thiết kế CRF (thuộc `quan-ly-du-lieu`). Chỉ lo phần TỔ CHỨC.
+
+---
+
+## 🔎 BƯỚC 0 — KIỂM TIỀN ĐỀ
+
+| Tiền đề | Trạng thái | Ghi chú |
+|---|---|---|
+| Thiết kế đã chốt | ✅ | Mô tả **cắt ngang có phân tích** (STROBE cross-sectional) — từ G1 `thiet-ke-nghien-cuu`. |
+| Cỡ mẫu đã có | ⏳ **CHƯA** | Cỡ mẫu (MT1: ước lượng 1 tỷ lệ; MT2: EPV cho hồi quy logistic) **giao G3 `co-mau-nghien-cuu`**. → Mọi con số phụ thuộc n (số phiếu in, thù lao ĐTV, công nhập liệu, thời lượng thu thập, bước k) để **[CẦN DỮ LIỆU: cỡ mẫu G3]** — KHÔNG tự điền. |
+| Neo mốc theo cổng cứng | ✅ | **G2 (đạo đức)** và **G4 (khóa SAP)** là 2 mốc cứng. **KHÔNG xếp thu thập/tuyển đối tượng trước khi có phê duyệt G2.** |
+| Chạm dữ liệu thật chưa | ❌ Chưa | Không có rủi ro rò rỉ PII ở giai đoạn kế hoạch; thiết kế phiếu ẩn danh (đã neo ở G1). |
+
+> **Nguyên tắc neo tiến độ:** mọi mốc là **tương đối theo cổng** (T0 = ngày phê duyệt đạo đức G2), KHÔNG hứa ngày dương lịch tuyệt đối cho khâu cần phê duyệt chưa có.
+
+---
+
+## 1. PROJECT CHARTER (A1b) — HIẾN CHƯƠNG ĐỀ TÀI (1 trang)
+
+**Bối cảnh & lý do:** Khoa C1a là đơn vị khám ngoại trú **theo yêu cầu (dịch vụ)** thuộc BVQY 175 (tuyến cuối, TP.HCM). Hài lòng người bệnh là chỉ số chất lượng bắt buộc theo khung quản lý chất lượng bệnh viện của Bộ Y tế. Chưa có nghiên cứu công bố, kiểm chứng đặc thù cho C1a/BVQY 175 (gap cơ sở-cụ thể — từ G0). *(Trỏ A1 câu hỏi nghiên cứu; A2 thiết kế.)*
+
+**Mục tiêu (SMART):**
+
+| # | Mục tiêu | S (cụ thể) | M (đo được) | A (khả thi) | R (thiết thực) | T (thời hạn) |
+|---|---|---|---|---|---|---|
+| **MT1 (chính)** | Xác định mức độ hài lòng của bệnh nhân KCB tại C1a | Tỷ lệ "hài lòng chung" + điểm hài lòng theo khía cạnh | % hài lòng (KTC 95%); điểm TB±SD | Đối tượng sẵn có; công cụ có sẵn | Dữ liệu nền cải tiến chất lượng | Hoàn tất trong kỳ thu thập [CẦN CHỦ NHIỆM ẤN ĐỊNH] |
+| **MT2 (phụ)** | Đánh giá một số yếu tố liên quan mức hài lòng | OR/β hiệu chỉnh cho từng yếu tố | OR/β + KTC 95%, p | Hồi quy đa biến; đủ EPV nếu đạt cỡ mẫu | Chỉ ra điểm cần can thiệp | Cùng kỳ phân tích sau khóa SAP (G4) |
+
+**Phạm vi:**
+- **TRONG phạm vi:** bệnh nhân khám ngoại trú tại Khoa C1a trong kỳ thu thập; đo hài lòng 1 lần/đối tượng; phân tích mô tả + yếu tố liên quan.
+- **NGOÀI phạm vi:** các khoa/trung tâm khác của BVQY 175; bệnh nhân nội trú; theo dõi dọc/diễn tiến hài lòng theo thời gian; can thiệp cải tiến (đây là nghiên cứu quan sát, không can thiệp); **không suy nhân quả**.
+
+**Governance & người chịu trách nhiệm:**
+- **Chủ nhiệm đề tài:** [CẦN CHỦ NHIỆM ẤN ĐỊNH: họ tên/chức danh] — chịu trách nhiệm cuối cùng về khoa học, đạo đức, tài chính, tiến độ.
+- **Cơ quan chủ trì:** Bệnh viện Quân y 175 (Trung tâm C1 / Khoa C1a).
+- **Phê duyệt cổng cứng:** Hội đồng Đạo đức trong nghiên cứu y sinh học + lãnh đạo BVQY 175 (G2); đặc thù quân đội → tuân thủ quy định bảo mật của đơn vị.
+
+**Milestone theo cổng:** G0 (câu hỏi ✅) → G1 (thiết kế ✅ + kế hoạch A13 = artifact này) → **G2 (đạo đức — CỨNG)** → G3 (cỡ mẫu) → **G4 (khóa SAP — CỨNG)** → G5 (thu thập) → G6 (làm sạch·khóa dữ liệu) → G7 (phân tích) → G8 (bản thảo) → G9 (nghiệm thu/công bố).
+
+**Liên kết Risk Register:** xem §5 (A13b) — sổ SỐNG, rà lại sau MỖI cổng.
+
+---
+
+## 2. NHÂN LỰC & PHÂN CÔNG (RACI)
+
+**Chú thích RACI:** R = Thực hiện (Responsible) · A = Chịu trách nhiệm cuối/duyệt (Accountable) · C = Tham vấn (Consulted) · I = Được thông báo (Informed).
+
+| Vai trò | Nhiệm vụ chính theo cổng | R/A/C/I | **Độc lập bắt buộc?** |
+|---|---|---|---|
+| **Chủ nhiệm đề tài** | Định hướng khoa học; duyệt đề cương; ký hồ sơ đạo đức (G2); duyệt SAP (G4); duyệt kinh phí; nghiệm thu (G9) | **A** (toàn đề tài) | — (là người chịu trách nhiệm) |
+| **Thư ký đề tài / điều phối** | Quản lý tài liệu, lịch, sổ cái tiến độ; theo dõi mốc cổng; tổng hợp Risk Register | **R** điều phối; C với chủ nhiệm | Không |
+| **Điều tra viên (ĐTV) phát/thu phiếu** | Mời đối tượng theo bước k; phát phiếu tự điền; hỗ trợ đọc phiếu trung lập; quản hòm phiếu; ghi sổ nhật ký từ chối (G5) | **R** thu thập | ✅ **CÓ — KHÔNG thuộc Khoa C1a** (chống thiên kiến lịch sự/chiều lòng; đã neo ở G1) |
+| **Người nhập liệu** | Nhập phiếu vào cơ sở dữ liệu theo CRF/data dictionary; nhập đôi (double-entry) nếu chọn (G6) | **R** nhập liệu; C với nhà thống kê | Nên khác ĐTV (giảm lỗi hệ thống) |
+| **Giám sát chất lượng (QC)** | Kiểm tra ngẫu nhiên phiếu/nhập liệu; giám sát tuân thủ quy trình chọn mẫu; đối chiếu tỷ lệ đáp ứng (G5–G6) | **R** QC; C với chủ nhiệm | Nên độc lập với ĐTV |
+| **Nhà thống kê / phân tích** | Góp ý cỡ mẫu (G3); viết & khóa SAP (G4); phân tích mô tả + hồi quy (G7) | **R** phân tích; A về tính đúng thống kê | ✅ **Khuyến nghị độc lập** với người thu thập (tránh xung đột phân tích theo ý muốn) |
+
+**Số nhân lực thực tế mỗi vai trò:** [CẦN CHỦ NHIỆM ẤN ĐỊNH: số ĐTV, số người nhập liệu…] — phụ thuộc cỡ mẫu (G3) và lưu lượng khám/ngày của khoa.
+
+> **Ghi chú độc lập (nhất quán với G1):** ĐTV độc lập ngoài khoa và nhà thống kê độc lập là **yêu cầu kiểm soát sai lệch**, không chỉ là phân công hành chính. Đây KHÔNG phải thử nghiệm mù nên **không có vai trò "người làm mù"**.
+
+---
+
+## 3. TIẾN ĐỘ (TIMELINE / GANTT MÔ TẢ) — NEO THEO CỔNG
+
+**Quy ước mốc:** **T0 = ngày Hội đồng Đạo đức/lãnh đạo BVQY 175 phê duyệt (hoàn tất G2).** Các pha *trước* T0 tính lùi; các pha *từ* T0 tính tiến. **KHÔNG thu thập dữ liệu trước T0.** Thời lượng cụ thể (tuần/tháng) = [CẦN CHỦ NHIỆM ẤN ĐỊNH] theo lịch khoa + [CẦN DỮ LIỆU: cỡ mẫu G3].
+
+### 3.1. Bảng mốc công việc
+
+| # | Công việc | Cổng | Bắt đầu (tương đối) | Thời lượng | **Phụ thuộc cứng** |
+|---|---|---|---|---|---|
+| 1 | Chốt câu hỏi + gap | G0 | Đã xong | — | — |
+| 2 | Chốt thiết kế + kế hoạch A13 (bản này) | G1 | Đang | [ấn định] | — |
+| 3 | Tính cỡ mẫu + bước k | G3 | Song song / sau G1 | [ấn định] | Cần *p kỳ vọng* [CẦN DỮ LIỆU PILOT] + số biến MT2 |
+| 4 | Đặc tả biến + CRF + phiếu (QĐ 56/2024) + **pilot** công cụ | (chuẩn bị) | Sau G1 | [ấn định] | Có thể chạy song song, nhưng **thu thập chính chờ G2** |
+| 5 | **Hồ sơ đạo đức → phê duyệt** | **G2 (CỨNG)** | Sau khi đủ hồ sơ | [ấn định] | Đề cương + phiếu + bản đồng thuận hoàn chỉnh |
+| 6 | **Khóa SAP** (kết cục chính, mô hình, xử lý thiếu) | **G4 (CỨNG)** | Sau G2, **trước khi chạm dữ liệu** | [ấn định] | Phải xong **trước** phân tích |
+| 7 | **Thu thập dữ liệu tại C1a** | G5 | **T0 trở đi** (sau G2) | [CẦN DỮ LIỆU: cỡ mẫu G3] | ⛔ **KHÔNG bắt đầu trước G2**; phủ đều khung giờ/ngày trong tuần |
+| 8 | Nhập liệu + làm sạch + **khóa dữ liệu** | G6 | Cuốn chiếu / sau thu thập | [ấn định] | Sau/song song thu thập; khóa dữ liệu **trước** phân tích |
+| 9 | Phân tích (mô tả + hồi quy) | G7 | Sau khóa dữ liệu | [ấn định] | ⛔ **Chỉ sau khi SAP khóa (G4) + dữ liệu khóa (G6)** |
+| 10 | Viết bản thảo (STROBE) | G8 | Sau phân tích | [ấn định] | — |
+| 11 | Nghiệm thu / công bố | G9 | Sau bản thảo | [ấn định] | Liêm chính tác giả/COI/khai báo AI |
+
+### 3.2. Gantt văn bản (thời lượng để trống → chủ nhiệm điền)
+
+```
+Cổng:      G0  G1  G3  G2*   G4*    G5(thu thập)   G6      G7     G8    G9
+           ─────────────────────────────────────────────────────────────────
+Câu hỏi    ██
+Thiết kế       ██
+Cỡ mẫu           ██
+Chuẩn bị          ████  (phiếu/CRF/pilot — song song, KHÔNG thu thập)
+Đạo đức              ██████  ← MỐC CỨNG G2 (T0)
+SAP                        ████  ← MỐC CỨNG G4 (khóa trước dữ liệu)
+Thu thập                        ████████████ (dài phụ thuộc cỡ mẫu)
+Nhập/làm sạch                        ██████ (cuốn chiếu → khóa dữ liệu)
+Phân tích                                   ██████ (sau khóa SAP+dữ liệu)
+Viết bản thảo                                     ████
+Nghiệm thu                                            ████
+(* = cổng cứng; độ dài các thanh do chủ nhiệm ấn định)
+```
+
+> **Ràng buộc bất biến trên Gantt:** (a) thanh "Thu thập" **không được bắt đầu trước khi thanh "Đạo đức" kết thúc**; (b) thanh "Phân tích" **không được bắt đầu trước khi "SAP" (G4) và "khóa dữ liệu" (G6) hoàn tất**. Vi phạm 2 ràng buộc này là lỗi liêm chính, không phải chỉ lỗi tiến độ.
+
+---
+
+## 4. DỰ TRÙ KINH PHÍ
+
+> **Khung tham chiếu định mức (nguồn thật):** với nhiệm vụ KH&CN có sử dụng NSNN, khung định mức xây dựng/phân bổ/quyết toán dự toán là **Thông tư liên tịch 55/2015/TTLT-BTC-BKHCN (22/04/2015)** và **Thông tư 03/2023/TT-BTC (ban hành 10/01/2023, hiệu lực 26/02/2023)**. Đây là định mức **tối đa/khung**; địa phương và đơn vị **tự phê duyệt định mức** trong phạm vi quản lý và khả năng ngân sách. **Do đó mọi đơn giá cụ thể áp dụng cho BVQY 175 phụ thuộc quy chế chi tiêu nội bộ + nguồn tài trợ của đề tài → để [CẦN CHỦ NHIỆM ẤN ĐỊNH]. KHÔNG bịa số tiền.**
+
+| Nhóm chi | Số lượng | Đơn giá (nguồn) | Thành tiền |
+|---|---|---|---|
+| **In ấn phiếu khảo sát** (phiếu QĐ 56/2024 + bản dự phòng) | = cỡ mẫu G3 × (1 + tỷ lệ hao/từ chối) → [CẦN DỮ LIỆU: cỡ mẫu G3] | [CẦN CHỦ NHIỆM ẤN ĐỊNH] (đơn giá in/quy chế chi tiêu nội bộ) | [CẦN DỮ LIỆU] |
+| **In bản thông tin + phiếu đồng thuận (ICF)** | ≈ số đối tượng tiếp cận | [CẦN CHỦ NHIỆM ẤN ĐỊNH] | [CẦN DỮ LIỆU] |
+| **Thù lao ĐTV phát/thu phiếu** | số ĐTV × số ngày/công [CẦN CHỦ NHIỆM ẤN ĐỊNH] | [CẦN CHỦ NHIỆM ẤN ĐỊNH] (TT 55/2015 & 03/2023, khung tối đa; quy chế nội bộ) | [CẦN DỮ LIỆU] |
+| **Thù lao giám sát chất lượng (QC)** | số công QC | [CẦN CHỦ NHIỆM ẤN ĐỊNH] | [CẦN DỮ LIỆU] |
+| **Công nhập liệu** (nhập đôi nếu chọn) | = số phiếu × (1 hoặc 2 lần nhập) | [CẦN CHỦ NHIỆM ẤN ĐỊNH] (định mức nhập liệu/phiếu) | [CẦN DỮ LIỆU] |
+| **Phần mềm thống kê** | 1 (nếu cần bản có phí; hoặc dùng R/JASP miễn phí → 0) | [CẦN CHỦ NHIỆM ẤN ĐỊNH] (bản quyền SPSS/Stata nếu dùng) | [CẦN DỮ LIỆU] |
+| **Thù lao nhà thống kê/phân tích** | công phân tích | [CẦN CHỦ NHIỆM ẤN ĐỊNH] (chuyên gia phân tích, TT 03/2023) | [CẦN DỮ LIỆU] |
+| **Văn phòng phẩm / hòm phiếu / vật tư thu thập** | theo nhu cầu | [CẦN CHỦ NHIỆM ẤN ĐỊNH] | [CẦN DỮ LIỆU] |
+| **Chi họp hội đồng / thẩm định đề cương** (nếu có) | theo quy định | [CẦN CHỦ NHIỆM ẤN ĐỊNH] (TT 03/2023) | [CẦN DỮ LIỆU] |
+| **Phí công bố / APC** (nếu đăng tạp chí có phí) | 1 bài | [CẦN CHỦ NHIỆM ẤN ĐỊNH] (chi công bố — TTLT 55/2015) | [CẦN DỮ LIỆU] |
+| **Dự phòng** | theo tỷ lệ quy định | [CẦN CHỦ NHIỆM ẤN ĐỊNH] (% dự phòng theo quy chế) | [CẦN DỮ LIỆU] |
+| **TỔNG CỘNG** | | | **[CẦN CHỦ NHIỆM ẤN ĐỊNH — tổng dự toán]** |
+
+> **Lưu ý liêm chính tài chính:** bảng trên là **khung nhóm chi dán được vào đề cương**; toàn bộ ô đơn giá/thành tiền để **[CẦN CHỦ NHIỆM ẤN ĐỊNH]** vì (1) chưa có cỡ mẫu G3, (2) đơn giá phụ thuộc quy chế chi tiêu nội bộ BVQY 175 và nguồn tài trợ. **Không con số nào được điền giả.** Nếu đề tài dùng nguồn ngân sách quốc phòng/đơn vị chứ không phải NSNN KH&CN thông thường → khung định mức áp dụng có thể khác → [CẦN CHỦ NHIỆM ẤN ĐỊNH nguồn tài trợ + quy chế áp dụng].
+
+---
+
+## 5. RISK REGISTER SỐNG (A13b) + CAPA
+
+> **Sổ SỐNG — rà lại sau MỖI cổng** (không phải bảng tĩnh một lần). Sau mỗi cổng, cập nhật cột *Trạng thái + ngày*; lưu phiên bản qua `so-cai-ghi-nho` để truy vết. **Mức = Xác suất × Hậu quả** (Thấp/TB/Cao — định tính; ngưỡng định lượng nếu có → [CẦN CHỦ NHIỆM ẤN ĐỊNH]).
+
+| # | Rủi ro | Loại | Mức (XS×HQ) | Giảm thiểu | **CAPA** (Khắc phục / Phòng ngừa) | Trạng thái + ngày | Chủ trì |
+|---|---|---|---|---|---|---|---|
+| R1 | **Tỷ lệ từ chối cao** → mẫu thiếu đại diện, kéo dài thu thập | Tiến độ + chọn mẫu | Cao | Phiếu ngắn, tự điền ẩn danh, giải thích không ảnh hưởng quyền lợi; ghi sổ nhật ký từ chối | KP: nới khung thời gian / bổ sung ĐTV. PN: kịch bản mời chuẩn hóa; chọn khung giờ ít áp lực | [Mở — rà lại sau G2/G5] | ĐTV + Thư ký |
+| R2 | **Thiếu ĐTV / ĐTV nghỉ giữa chừng** | Tiến độ + nhân lực | TB–Cao | Tuyển dự phòng; tập huấn ≥ số tối thiểu +1 | KP: điều ĐTV dự phòng. PN: danh sách ĐTV dự bị + tài liệu tập huấn chuẩn | [Mở — rà lại sau G5] | Chủ nhiệm |
+| R3 | **Biến động lưu lượng bệnh nhân theo mùa** (mùa thấp điểm → tuyển chậm; cao điểm → ĐTV không kịp bước k) | Tiến độ + chọn mẫu | TB | Ước lưu lượng theo mùa [CẦN DỮ LIỆU khoa]; phương án hệ thống theo cụm thời gian (đã neo G1) | KP: kéo dài kỳ thu thập để phủ đủ mùa. PN: lịch thu thập trải nhiều tuần/tháng | [Mở — rà lại sau G3/G5] | Thư ký + ĐTV |
+| R4 | **Thiên kiến chiều lòng / ceiling effect** → điểm hài lòng ảo cao | Thống kê + công cụ | Cao | Tự điền ẩn danh + hòm phiếu kín + ĐTV độc lập ngoài khoa + tách buồng khám (đã neo G1) | KP: phân tích nhạy cảm; báo cáo tỷ lệ đáp ứng. PN: cân nhắc thang chiều lòng bổ trợ (G4, nếu chọn) | [Mở — rà lại sau G4/G7] | Nhà thống kê |
+| R5 | **Chờ phê duyệt đạo đức lâu (G2)** → trượt toàn bộ tiến độ | Tiến độ + đạo đức | Cao | Chuẩn bị hồ sơ đầy đủ sớm; chạy song song việc chuẩn bị phiếu/CRF | KP: dời T0, cập nhật Gantt. PN: checklist hồ sơ G2 trước khi nộp | [Mở — rà lại tại G2] | Chủ nhiệm |
+| R6 | **Rò rỉ PII / vi phạm ẩn danh** | Đạo đức + PII | Cao (hậu quả) | Phiếu không ô tên/mã BN; hòm kín; không lưu định danh | KP: hủy dữ liệu vi phạm, báo hội đồng. PN: kiểm tra phiếu không chứa PII trước in hàng loạt | [Mở — rà lại tại G2/G6] | Chủ nhiệm + QC |
+| R7 | **Đặc thù bảo mật quân đội** → hạn chế công bố/số liệu | Liêm chính + governance | TB | Xin phép công bố sớm; xác định dữ liệu được phép | KP: điều chỉnh phạm vi công bố. PN: xác nhận quy định đơn vị trước G2 | [Mở — rà lại tại G2/G9] | Chủ nhiệm |
+| R8 | **Cỡ mẫu không đủ EPV cho MT2** → hồi quy quá tải biến | Thống kê | TB | Cỡ mẫu G3 tính theo EPV; giới hạn số biến mô hình | KP: giảm biến / gộp biến theo SAP. PN: khóa danh mục biến MT2 ở G4 | [Mở — rà lại tại G3/G4] | Nhà thống kê |
+| R9 | **Dữ liệu thiếu / phiếu bỏ trống mục** | Dữ liệu | TB | Phiếu rõ; nhắc hoàn tất; theo dõi tỷ lệ thiếu | KP: xử lý thiếu theo SAP (định trước). PN: quy tắc missing khóa ở G4 | [Mở — rà lại tại G4/G6] | Nhà thống kê + Nhập liệu |
+| R10 | **Trùng đối tượng** (BN khám nhiều lần trong kỳ) | Dữ liệu + chọn mẫu | Thấp–TB | Quy tắc chống trùng (chỉ lần đầu gặp ĐTV) [CẦN CHỦ NHIỆM ẤN ĐỊNH] | KP: loại bản ghi trùng khi làm sạch. PN: ghi mã lượt/quy tắc chống trùng trong SOP | [Mở — rà lại tại G5/G6] | ĐTV + Nhập liệu |
+
+> **Lịch rà soát sổ SỐNG:** sau **mỗi cổng** (G2, G3, G4, G5, G6, G7, G8, G9) → mở lại bảng này, cập nhật trạng thái/ngày, thêm rủi ro mới phát sinh, giao `so-cai-ghi-nho` lưu phiên bản.
+
+---
+
+## 6. ĐẦU VÀO ĐỜI THỰC CẦN CHỦ NHIỆM CẤP
+
+| Nhóm | Mục cần cấp |
+|---|---|
+| **Tài chính** | Nguồn tài trợ (NSNN KH&CN / ngân sách đơn vị / quốc phòng…); quy chế chi tiêu nội bộ BVQY 175; đơn giá in/nhập liệu/thù lao ĐTV/QC/thống kê; % dự phòng; có phí công bố/APC không; tổng trần dự toán |
+| **Nhân lực** | Số ĐTV (độc lập ngoài khoa), số người nhập liệu, người QC, nhà thống kê; danh sách dự phòng |
+| **Tiến độ** | Khung thời gian thu thập (theo lịch khoa); lưu lượng khám/ngày & theo mùa (để tính bước k và thời lượng); ngày dự kiến nộp hồ sơ G2 |
+| **Chọn mẫu / vận hành** | Quy tắc chống trùng; tuổi tối thiểu & cơ chế đại diện; ngưỡng "hài lòng"; danh mục & ngưỡng cắt biến MT2 (nhất quán với G1) |
+
+**Phụ thuộc cổng khác (không thuộc A13):**
+- **G3 `co-mau-nghien-cuu`:** cỡ mẫu MT1 + MT2 → cấp lại n & bước k (khóa nhiều ô [CẦN DỮ LIỆU] ở §3, §4).
+- **G2 `dao-duc-dang-ky`:** hồ sơ đạo đức, bản đồng thuận (không thuộc A13).
+- **G4 SAP:** khóa kết cục chính, mô hình, xử lý thiếu, ngưỡng "hài lòng".
+
+---
+
+## Tiêu chí qua cổng G1 (A13) — Tự đối chiếu
+
+- ✅ **Project Charter (A1b):** bối cảnh · mục tiêu SMART (MT1 chính/MT2 phụ) · phạm vi trong/ngoài · governance/chủ nhiệm · milestone theo cổng · liên kết Risk Register.
+- ✅ **Bảng RACI:** 6 vai trò, nhiệm vụ theo cổng, đánh dấu vai trò độc lập bắt buộc (ĐTV ngoài khoa, nhà thống kê).
+- ✅ **Gantt neo cổng** + mốc phụ thuộc cứng **G2** (không thu thập trước đạo đức) và **G4** (không phân tích trước khóa SAP).
+- ✅ **Bảng kinh phí dán được vào đề cương** — đơn giá có **khung nguồn** (TTLT 55/2015, TT 03/2023) nhưng mọi con số cụ thể đánh dấu **[CẦN CHỦ NHIỆM ẤN ĐỊNH]**; KHÔNG bịa số tiền.
+- ✅ **Risk Register SỐNG (A13b) + CAPA** — 10 rủi ro xuyên vòng đời, có trạng thái+ngày, chủ trì, lịch rà lại sau mỗi cổng.
+- ✅ **Danh sách đầu vào cần chủ nhiệm** đầy đủ.
+- ⏳ Sau khi chủ nhiệm chốt → giao `so-cai-ghi-nho` lưu **A1b / A13 / A13b**.
+
+### Chốt kiểm liêm chính (tự soi trước khi phát hành)
+
+- **Nguồn/không bịa:** khung định mức tài chính gắn **văn bản thật** (TTLT 55/2015/TTLT-BTC-BKHCN 22/04/2015; TT 03/2023/TT-BTC 10/01/2023, hiệu lực 26/02/2023); mọi đơn giá/tổng tiền/cỡ mẫu **không tự điền** → [CẦN CHỦ NHIỆM ẤN ĐỊNH] / [CẦN DỮ LIỆU]. ✅
+- **PII:** kế hoạch chủ động loại PII (phiếu ẩn danh, hòm kín, không lưu định danh). ✅
+- **Cổng:** không vượt cổng đạo đức (G2) hay khóa SAP (G4); tiến độ neo cổng, không hứa ngày dương lịch cho khâu cần phê duyệt chưa có. ✅
+- **Ranh giới:** không quyết khoa học, không soạn hồ sơ đạo đức, không thiết kế CRF — chỉ tổ chức thực hiện. ✅
+
+---
+*Không tạo/không lưu thông tin định danh bệnh nhân (PII). Mọi con số tài chính/cỡ mẫu chỉ điền khi chủ nhiệm ấn định hoặc có nguồn định mức; các ô chưa có dữ liệu thật để [CẦN…], không điền số giả.*
+
+**Cần bác sĩ kiểm chứng.**
+
+
+## G2 — Hồ sơ đạo đức & đăng ký [DỰ THẢO — CHỜ HĐĐĐ]
+# CỔNG G2 — HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU
+
+> ## 🔒 [DỰ THẢO — CHỜ HỘI ĐỒNG ĐẠO ĐỨC BỆNH VIỆN QUÂN Y 175 PHÊ DUYỆT]
+> **Toàn bộ tài liệu dưới đây là BẢN DỰ THẢO (Phiên bản 1.0, ngày 05/07/2026).**
+> **CHƯA được phê duyệt · CHƯA được đăng ký · CHƯA được phép thu thập dữ liệu.**
+> Không tài liệu nào trong gói này được hiểu là "đã được chấp thuận". Mọi số phê duyệt (số IRB), mã đăng ký để trống `[CẦN BỔ SUNG khi có thật]` — **KHÔNG bịa**.
+> **Điều kiện cổng cứng G2:** phải có **phê duyệt của Hội đồng Đạo đức trong nghiên cứu y sinh học BVQY 175 (và cấp có thẩm quyền của đơn vị) TRƯỚC KHI** thu thập bất kỳ dữ liệu người tham gia nào (G5).
+
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+
+**Loại nghiên cứu:** Mô tả cắt ngang có phân tích (analytical cross-sectional) — **KHÔNG can thiệp** · khảo sát ẩn danh, tự điền · nguy cơ tối thiểu.
+
+---
+
+## 🔎 BƯỚC 0 — KIỂM TIỀN ĐỀ CỔNG (bắt buộc trước mọi soạn thảo)
+
+| # | Tiền đề | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | **Chưa thu thập dữ liệu thật** | ✅ Xác nhận (G0/G1 xong, chưa chạm dữ liệu) | Nếu đã lỡ thu thập → vi phạm tiền đề G2, phải khai báo minh bạch, KHÔNG "đăng ký hồi tố che giấu". |
+| 2 | **Phân loại nghiên cứu** | ✅ Quan sát, không can thiệp | Khảo sát hài lòng ẩn danh → hồ sơ IRB + ICF **đơn giản hơn** can thiệp; **KHÔNG kèm** khung an toàn `an-toan-nghien-cuu` (không có thủ thuật/AE). |
+| 3 | **Mức nguy cơ** | ✅ **Nguy cơ tối thiểu** (minimal risk) | Không thủ thuật xâm lấn; rủi ro chính = quyền riêng tư/tâm lý → xử lý bằng ẩn danh + tự nguyện. Diện xét **rút gọn (expedited)** hay đầy đủ do Hội đồng BVQY 175 quyết `[CẦN HỘI ĐỒNG XÁC ĐỊNH]`. |
+| 4 | **Có thuộc diện đăng ký bắt buộc?** | ✅ **KHÔNG bắt buộc** | Nghiên cứu **thuần quan sát**, nhà nghiên cứu **không phân bổ can thiệp** → theo định nghĩa thử nghiệm lâm sàng của WHO/ICMJE, **không thuộc diện đăng ký bắt buộc**. Đăng ký là **tùy chọn/khuyến khích** (xem §4). |
+| 5 | **Hội đồng đạo đức sẽ nộp** | `[CẦN BÁC SĨ/CHỦ NHIỆM XÁC NHẬN]` | Đề xuất: Hội đồng Đạo đức trong nghiên cứu y sinh học **cấp cơ sở BVQY 175** + phê duyệt lãnh đạo BV; đặc thù quân đội → tuân quy định bảo mật của đơn vị. |
+
+> **Căn cứ pháp lý & chuẩn quốc tế đã kiểm chứng (05/07/2026):**
+> - **Tuyên ngôn Helsinki (WMA, bản sửa đổi 2024)** — khung đạo đức nghiên cứu y sinh trên người hiện hành, thay bản 2013 ([WMA/CITI 2024](https://about.citiprogram.org/blog/key-changes-in-the-2024-revision-of-the-declaration-of-helsinki/); [PMC11671210](https://pmc.ncbi.nlm.nih.gov/articles/PMC11671210/)). `[CẦN KIỂM CHỨNG]` đối chiếu bản toàn văn WMA để trích đúng số điều.
+> - **CIOMS 2016** — Hướng dẫn đạo đức quốc tế cho nghiên cứu y sinh liên quan con người (nghiên cứu dữ liệu/khảo sát, miễn/rút gọn đồng thuận có điều kiện).
+> - **ICH-GCP** — áp cho thử nghiệm; nghiên cứu quan sát tham chiếu nguyên tắc chung.
+> - **VN — TT 43/2024/TT-BYT** (ban hành 12/12/2024, **hiệu lực 01/02/2025**), quy định thành lập/tổ chức/hoạt động Hội đồng đạo đức trong nghiên cứu y sinh học, **thay TT 04/2020/TT-BYT** ([thuvienphapluat](https://thuvienphapluat.vn/van-ban/Bo-may-hanh-chinh/Thong-tu-43-2024-TT-BYT-thanh-lap-Hoi-dong-dao-duc-trong-nghien-cuu-y-sinh-hoc-635867.aspx); [luatvietnam](https://luatvietnam.vn/y-te/thong-tu-43-2024-tt-byt-to-chuc-va-hoat-dong-cua-hoi-dong-dao-duc-trong-nghien-cuu-y-sinh-hoc-380339-d1.html)).
+> - **VN — Luật Khám bệnh, chữa bệnh 15/2023/QH15** (hiệu lực 01/01/2024): người bệnh có **quyền chấp nhận/từ chối** tham gia nghiên cứu y sinh liên quan KCB; bảo mật thông tin bệnh án ([toàn văn Chính phủ](https://xaydungchinhsach.chinhphu.vn/toan-van-luat-15-2023-qh15-kham-benh-chua-benh-119231127164453959.htm)).
+> - **VN — Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15** (thông qua 26/6/2025, **hiệu lực 01/01/2026 — ĐANG CÓ HIỆU LỰC**) + **NĐ 356/2025/NĐ-CP** (ban hành 31/12/2025, hiệu lực 01/01/2026, **thay NĐ 13/2023**) ([thuvienphapluat NĐ 356](https://thuvienphapluat.vn/van-ban/Quyen-dan-su/Nghi-dinh-356-2025-ND-CP-huong-dan-Luat-Bao-ve-du-lieu-ca-nhan-687428.aspx); [Bộ Công an](https://bocongan.gov.vn/chinh-sach-phap-luat/bai-viet/luat-bao-ve-du-lieu-ca-nhan-chinh-thuc-co-hieu-luc-thi-hanh-tu-ngay-01-01-2026-1767186124)). *Lưu ý: agent header ghi "hiệu lực" cần cập nhật — Luật 91/2025 nay ĐÃ có hiệu lực.*
+> - `[CẦN XÁC NHẬN TẠI ĐƠN VỊ]` quy chế Hội đồng đạo đức cơ sở BVQY 175 + quy định bảo mật quân đội áp dụng.
+
+---
+
+## 📦 TÀI LIỆU 1 — ĐƠN XIN PHÊ DUYỆT NGHIÊN CỨU (DRAFT — chờ ký)
+
+```
+═══════════════════════════════════════════════════════════════
+     ĐƠN XIN PHÊ DUYỆT NGHIÊN CỨU Y SINH HỌC
+     [DỰ THẢO — Phiên bản 1.0, ngày ___/___/2026 — chờ ký & nộp]
+═══════════════════════════════════════════════════════════════
+Kính gửi: Hội đồng Đạo đức trong nghiên cứu y sinh học
+          — Bệnh viện Quân y 175  [CẦN XÁC NHẬN tên/cấp Hội đồng]
+Đồng kính gửi: Ban Giám đốc / Lãnh đạo BVQY 175 (phê duyệt triển khai)
+
+Người đề nghị (Chủ nhiệm đề tài): [CẦN BỔ SUNG: họ tên]
+Chức vụ/đơn vị công tác: [CẦN BỔ SUNG]
+Trung tâm C1 / Khoa Khám bệnh C1a — Bệnh viện Quân y 175
+
+TÊN ĐỀ TÀI: Đánh giá sự hài lòng của bệnh nhân trong hoạt động
+khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và
+Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+
+Loại nghiên cứu: Mô tả cắt ngang có phân tích (quan sát, KHÔNG can thiệp)
+Chuẩn báo cáo: STROBE (cross-sectional)
+Dân số tham gia: Bệnh nhân khám ngoại trú theo yêu cầu tại Khoa C1a
+Cỡ mẫu dự kiến: [CẦN BỔ SUNG — từ G3 co-mau-nghien-cuu]
+Địa điểm: Khoa Khám bệnh C1a, Trung tâm C1, BVQY 175
+Thời gian dự kiến: [CẦN BỔ SUNG] đến [CẦN BỔ SUNG]
+Công cụ đo: Phiếu khảo sát hài lòng người bệnh NGOẠI TRÚ theo
+            QĐ 56/QĐ-BYT (2024) — hiện hành (ẩn danh, tự điền)
+Mức nguy cơ: TỐI THIỂU (khảo sát ẩn danh, không thủ thuật)
+Nguồn tài trợ: [CẦN BỔ SUNG — hoặc "không có tài trợ ngoài" nếu đúng]
+Xung đột lợi ích (COI): [CẦN BỔ SUNG — xem Tài liệu 8]
+Đăng ký nghiên cứu: KHÔNG bắt buộc (nghiên cứu quan sát); dự kiến
+   [☐ không đăng ký / ☐ đăng ký tự nguyện tại ___] — xem Tài liệu 9
+
+Chúng tôi cam kết thực hiện nghiên cứu tuân thủ Tuyên ngôn Helsinki
+(WMA 2024), CIOMS 2016, Thông tư 43/2024/TT-BYT, Luật Khám bệnh chữa
+bệnh 15/2023/QH15 và Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15; KHÔNG
+thu thập dữ liệu định danh trực tiếp; KHÔNG bắt đầu thu thập trước khi
+được Hội đồng phê duyệt.
+
+Kèm theo hồ sơ: [liệt kê theo Checklist — Tài liệu 7]
+
+Chủ nhiệm đề tài: ______________  (Ký, ghi rõ họ tên)   Ngày: ___/___/2026
+Xác nhận của Thủ trưởng đơn vị: ______________            Ngày: ___/___/2026
+═══════════════════════════════════════════════════════════════
+```
+
+---
+
+## 📦 TÀI LIỆU 2 — TÓM TẮT ĐỀ CƯƠNG CHO HỘI ĐỒNG (lay summary, ≤ 1 trang)
+
+```
+TÓM TẮT ĐỀ CƯƠNG NGHIÊN CỨU (ngôn ngữ hành chính) — [DỰ THẢO v1.0]
+
+1. VẤN ĐỀ & LÝ DO CẦN THIẾT
+   Hài lòng người bệnh là chỉ số chất lượng dịch vụ y tế theo khung
+   quản lý chất lượng bệnh viện của Bộ Y tế. Chưa có nghiên cứu công bố,
+   kiểm chứng đặc thù cho Khoa C1a/BVQY 175 (khối khám theo yêu cầu của
+   bệnh viện quân y tuyến cuối). Kết quả phục vụ cải tiến chất lượng dịch vụ.
+
+2. MỤC TIÊU CỤ THỂ
+   MT1 (mô tả): Xác định mức độ hài lòng của bệnh nhân KCB tại Khoa C1a.
+   MT2 (phân tích): Đánh giá một số yếu tố liên quan đến mức độ hài lòng.
+
+3. ĐỐI TƯỢNG (tiêu chí chọn/loại — chi tiết ở đề cương G1)
+   Chọn: bệnh nhân hoàn tất lượt khám ngoại trú tại C1a trong kỳ thu thập,
+   ≥ [CẦN BỔ SUNG] tuổi, đồng ý tham gia, đủ năng lực trả lời.
+   Loại: từ chối tham gia; cấp cứu/không phù hợp trả lời; nhân viên y tế
+   của chính khoa đi khám; đã tham gia ở lượt trước trong kỳ (chống trùng).
+
+4. PHƯƠNG PHÁP & QUY TRÌNH
+   Thiết kế cắt ngang; chọn mẫu HỆ THỐNG (bước k, điểm bắt đầu ngẫu nhiên);
+   phiếu ẩn danh TỰ ĐIỀN bỏ vào HÒM PHIẾU KÍN; điều tra viên độc lập
+   NGOÀI khoa hỗ trợ; đo 1 lần ngay sau khi hoàn tất lượt khám.
+
+5. RỦI RO TIỀM TÀNG & BIỆN PHÁP BẢO VỆ
+   Nguy cơ TỐI THIỂU. Rủi ro chính: (a) e ngại ảnh hưởng chăm sóc nếu
+   đánh giá thật → cam kết ẩn danh + tự nguyện + không ảnh hưởng quyền lợi;
+   (b) lộ quyền riêng tư → KHÔNG thu thập thông tin định danh; hòm phiếu kín.
+
+6. LỢI ÍCH MONG ĐỢI
+   Không có lợi ích cá nhân trực tiếp. Lợi ích cộng đồng: dữ liệu nền để
+   khoa/bệnh viện cải tiến chất lượng dịch vụ khám chữa bệnh.
+
+7. BẢO MẬT DỮ LIỆU
+   Khảo sát ẩn danh; không ô định danh; dữ liệu mã hóa, lưu trữ an toàn,
+   chỉ nhóm nghiên cứu truy cập; công bố dạng TỔNG HỢP. Theo Luật 91/2025.
+
+8. KẾT QUẢ ĐẦU RA DỰ KIẾN
+   Báo cáo nghiệm thu + bản thảo công bố (STROBE); khuyến nghị cải tiến
+   chất lượng cho Trung tâm C1/Khoa C1a.
+```
+
+---
+
+## 📦 TÀI LIỆU 3 — BẢNG ĐÁNH GIÁ RỦI RO–LỢI ÍCH
+
+```
+BẢNG ĐÁNH GIÁ RỦI RO–LỢI ÍCH — [DỰ THẢO v1.0]
+```
+
+| # | Rủi ro tiềm tàng | Xác suất | Mức độ | Biện pháp giảm thiểu | Lợi ích bù đắp |
+|---|---|---|---|---|---|
+| 1 | Người bệnh e ngại đánh giá thật sẽ ảnh hưởng đến việc chăm sóc/lần khám sau | Trung bình | Nhẹ | Cam kết **ẩn danh + tự nguyện**; câu mở đầu phiếu ghi rõ "không ảnh hưởng quyền lợi/chăm sóc"; ĐTV **độc lập ngoài khoa**; điền sau khi rời buồng khám | Dữ liệu trung thực phục vụ cải tiến |
+| 2 | Lộ thông tin/quyền riêng tư | Rất thấp | Trung bình | **KHÔNG thu thập PII định danh**; phiếu không ô tên/mã BN/CCCD/BHYT/SĐT/địa chỉ; **hòm phiếu kín**; mã hóa & lưu trữ an toàn (Luật 91/2025) | — |
+| 3 | Mất thời gian của người bệnh (bất tiện) | Thấp | Rất nhẹ | Phiếu ngắn gọn (~[CẦN BỔ SUNG] phút); điền tại khu chờ ra về, không kéo dài thời gian khám | Đóng góp cải tiến dịch vụ |
+| 4 | Khó chịu tâm lý khi trả lời câu nhạy cảm (nếu có) | Thấp | Nhẹ | Có quyền bỏ trống câu bất kỳ / dừng bất cứ lúc nào; không câu hỏi ép buộc | — |
+
+```
+PHÂN LOẠI NGUY CƠ TỔNG THỂ:  ☑ Tối thiểu (minimal risk)
+   ☐ Nhỏ hơn tối thiểu   ☐ Lớn hơn tối thiểu
+→ Đề xuất diện xét: RÚT GỌN (expedited) — [CẦN HỘI ĐỒNG BVQY 175 XÁC ĐỊNH
+   diện xét chính thức theo TT 43/2024/TT-BYT]
+```
+
+---
+
+## 📦 TÀI LIỆU 4 — PHIẾU THÔNG TIN & ĐỒNG THUẬN THAM GIA (ICF — TIẾNG VIỆT)
+
+> **Điều chỉnh cho khảo sát ẩn danh:** vì phiếu **ẩn danh, tự điền, nguy cơ tối thiểu**, cơ chế đồng thuận phù hợp là **đồng thuận ngụ ý qua hành vi nộp phiếu** sau khi đọc Bản thông tin (implied consent) — người tham gia **KHÔNG ký tên** để giữ tính ẩn danh. Hội đồng có thể chấp thuận **miễn chữ ký đồng thuận** (waiver of documentation of consent) cho khảo sát ẩn danh nguy cơ tối thiểu theo CIOMS 2016/Helsinki 2024. `[CẦN HỘI ĐỒNG BVQY 175 PHÊ DUYỆT hình thức đồng thuận: ngụ ý qua nộp phiếu vs. có ký].`
+
+```
+══════════════════════════════════════════════════════════════════
+   BẢN THÔNG TIN DÀNH CHO NGƯỜI THAM GIA & ĐỒNG THUẬN
+   [DỰ THẢO — Phiên bản 1.0, ngày ___/___/2026 — chờ Hội đồng phê duyệt]
+
+   Đề tài: Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám
+   chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm C1, Bệnh viện Quân y 175.
+   Mã nghiên cứu: ______ [CẦN BỔ SUNG khi có phê duyệt IRB]
+══════════════════════════════════════════════════════════════════
+
+Kính chào Quý Ông/Bà,
+Chúng tôi trân trọng mời Ông/Bà tham gia một khảo sát ngắn về mức độ
+hài lòng đối với dịch vụ khám chữa bệnh tại Khoa. Xin đọc kỹ thông tin
+sau trước khi quyết định. Việc tham gia là HOÀN TOÀN TỰ NGUYỆN.
+
+1. MỤC ĐÍCH
+   Khảo sát nhằm tìm hiểu mức độ hài lòng của người bệnh và các yếu tố
+   liên quan, để Khoa/Bệnh viện CẢI TIẾN chất lượng phục vụ. Nghiên cứu
+   do [đơn vị — CẦN BỔ SUNG] thực hiện.
+
+2. QUY TRÌNH
+   Nếu đồng ý, Ông/Bà tự điền một phiếu khảo sát ẩn danh (khoảng
+   [CẦN BỔ SUNG] phút) sau khi hoàn tất lượt khám, rồi bỏ vào HÒM PHIẾU
+   KÍN. Chỉ tham gia MỘT LẦN. Không có thủ thuật hay xét nghiệm nào thêm.
+
+3. TÍNH ẨN DANH — KHÔNG GHI DANH TÍNH
+   Phiếu KHÔNG hỏi tên, số hồ sơ, số CCCD, số thẻ BHYT, số điện thoại hay
+   địa chỉ của Ông/Bà. Không ai có thể biết phiếu nào là của Ông/Bà.
+
+4. RỦI RO & BẤT TIỆN
+   Rủi ro rất thấp. Có thể mất vài phút thời gian. Ông/Bà có thể bỏ trống
+   bất kỳ câu nào hoặc dừng bất cứ lúc nào.
+
+5. LỢI ÍCH
+   Không có lợi ích cá nhân trực tiếp. Ý kiến của Ông/Bà giúp Khoa/Bệnh
+   viện phục vụ tốt hơn cho người bệnh.
+
+6. BẢO MẬT
+   Dữ liệu được giữ kín, mã hóa và lưu trữ an toàn theo Luật Bảo vệ dữ
+   liệu cá nhân số 91/2025/QH15. Chỉ nhóm nghiên cứu được truy cập. Kết quả
+   công bố dưới dạng SỐ LIỆU TỔNG HỢP, không nêu danh tính bất kỳ ai.
+
+7. QUYỀN TỰ NGUYỆN & KHÔNG ẢNH HƯỞNG CHĂM SÓC
+   Tham gia là HOÀN TOÀN TỰ NGUYỆN. Nếu Ông/Bà KHÔNG tham gia hoặc dừng
+   giữa chừng, việc khám chữa bệnh và mọi quyền lợi của Ông/Bà tại Bệnh
+   viện KHÔNG bị ảnh hưởng gì (Luật Khám bệnh, chữa bệnh 15/2023/QH15).
+   Vì phiếu ẩn danh, sau khi đã bỏ phiếu vào hòm sẽ không thể rút lại
+   phiếu cụ thể của Ông/Bà (do không thể xác định phiếu nào là của ai).
+
+8. THÔNG TIN LIÊN HỆ
+   Thắc mắc về nghiên cứu:
+      Chủ nhiệm đề tài: [CẦN BỔ SUNG]
+      Điện thoại: [CẦN BỔ SUNG]   Email: [CẦN BỔ SUNG]
+   Thắc mắc/khiếu nại về quyền của người tham gia:
+      Hội đồng Đạo đức BVQY 175: [CẦN BỔ SUNG]  Điện thoại: [CẦN BỔ SUNG]
+
+──────────────────────────────────────────────────────────────────
+XÁC NHẬN ĐỒNG THUẬN (ẩn danh — KHÔNG ký tên để giữ ẩn danh):
+
+   ☐ Tôi đã đọc/được giải thích và hiểu thông tin trên. Tôi TỰ NGUYỆN
+     tham gia bằng cách hoàn thành và bỏ phiếu vào hòm.
+
+   (Việc hoàn thành và nộp phiếu được xem là đồng thuận tham gia.)
+
+[TÙY CHỌN — nếu Hội đồng yêu cầu lưu bằng chứng đồng thuận tách rời:
+ phát Bản thông tin rời để người tham gia giữ; ô tick ở trên nằm trên
+ tờ RỜI khỏi phiếu trả lời để không phá vỡ tính ẩn danh.]
+══════════════════════════════════════════════════════════════════
+```
+
+> **Đối chiếu 8 yếu tố thông tin của Helsinki/CIOMS trong ICF này:** ✅ mục đích · ✅ quy trình · ✅ rủi ro/bất tiện · ✅ lợi ích · ✅ bảo mật · ✅ tự nguyện & không ảnh hưởng chăm sóc/rút lui · ✅ liên hệ (nhóm NC + Hội đồng) · ✅ ẩn danh/xử lý dữ liệu. *Đặc thù ẩn danh: rút lui phiếu cụ thể không khả thi sau khi nộp — đã nêu minh bạch, đúng chuẩn.*
+
+---
+
+## 📦 TÀI LIỆU 5 — ICF TIẾNG ANH (chỉ khi nộp tạp chí quốc tế)
+
+`[TÙY CHỌN]` Bản dịch trung thành từ ICF tiếng Việt ở Tài liệu 4, ghi rõ *"English translation of the Vietnamese Participant Information & Consent form — for journal submission only. Not the operative consent document."* — soạn khi có nhu cầu công bố quốc tế; hiện `[CẦN BÁC SĨ QUYẾT ĐỊNH có cần không]`.
+
+---
+
+## 📦 TÀI LIỆU 6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DMP — CẤP ĐỘ IRB)
+
+> **Ranh giới:** đây là DMP **mức IRB** (đủ để Hội đồng thẩm định bảo mật). DMP **vận hành chi tiết + khóa DB** thuộc `quan-ly-du-lieu` (G5) — KHÔNG trùng lặp ở đây.
+
+```
+KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp độ IRB  [DỰ THẢO v1.0]
+(Theo Luật 91/2025/QH15 + NĐ 356/2025/NĐ-CP + Luật KCB 15/2023/QH15)
+──────────────────────────────────────────────────────────────────
+1. LOẠI DỮ LIỆU
+   - Dữ liệu khảo sát ẩn danh: điểm hài lòng (Likert), đặc điểm nhân khẩu
+     KHÔNG định danh (nhóm tuổi/giới/học vấn/nơi ở cùng-khác tỉnh/đối tượng
+     chi trả) + đặc điểm lần khám (thời gian chờ, chuyên khoa...).
+   - LOẠI TRỪ PII: KHÔNG thu thập tên, số hồ sơ bệnh án, CCCD, số BHYT,
+     SĐT, địa chỉ chi tiết, ngày sinh đầy đủ. Chỉ dùng mã phiếu giả danh
+     (vd C1a-0001) không liên kết định danh.
+
+2. THU THẬP
+   - Công cụ: phiếu giấy tự điền (phiếu QĐ 56/QĐ-BYT 2024) bỏ hòm phiếu kín;
+     [hoặc nhập vào EDC/REDCap nếu chọn — CẦN BỔ SUNG].
+   - Ai truy cập dữ liệu thô: chỉ nhóm nghiên cứu được ủy quyền
+     [danh sách CẦN BỔ SUNG].
+
+3. KHỬ ĐỊNH DANH
+   - Bản chất ẩn danh ngay từ thu thập (không có định danh để khử).
+   - Mã phiếu giả danh chỉ để chống trùng/quản trị, KHÔNG có bảng liên kết
+     tới danh tính. (Không tồn tại bảng liên kết định danh.)
+
+4. LƯU TRỮ
+   - Nơi lưu: [máy chủ nội bộ BVQY 175 / ổ cứng mã hóa — CẦN BỔ SUNG];
+     KHÔNG lưu trên cloud công cộng không kiểm soát.
+   - Bảo mật: mật khẩu + mã hóa; truy cập hạn chế theo vai trò.
+   - Thời gian lưu: ___ năm sau khi kết thúc/nghiệm thu
+     [CẦN BỔ SUNG theo quy định lưu trữ y tế + quy chế BVQY 175].
+
+5. CHIA SẺ / MỞ DỮ LIỆU (FAIR ở mức phù hợp)
+   ☐ Không chia sẻ ngoài nhóm (lý do: đặc thù bảo mật quân đội — nếu áp dụng)
+   ☐ Chia sẻ dữ liệu TỔNG HỢP/ẩn danh theo yêu cầu hợp lý (cần thỏa thuận)
+   → [CẦN CHỦ NHIỆM + ĐƠN VỊ QUYẾT ĐỊNH; lưu ý quy định bảo mật quân đội]
+
+6. XỬ LÝ SỰ CỐ DỮ LIỆU
+   Quy trình báo cáo nếu nghi rò rỉ, theo NĐ 356/2025/NĐ-CP [CẦN ĐỐI CHIẾU
+   điều khoản + thời hạn thông báo cụ thể với bản NĐ 356 chính thức].
+
+7. KẾT THÚC NGHIÊN CỨU
+   Hủy/lưu trữ dữ liệu theo quy định lưu trữ y tế + quy chế đơn vị.
+──────────────────────────────────────────────────────────────────
+```
+
+---
+
+## 📦 TÀI LIỆU 7 — CHECKLIST HỒ SƠ NỘP HỘI ĐỒNG ĐẠO ĐỨC
+
+```
+CHECKLIST HỒ SƠ NỘP — Hội đồng Đạo đức BVQY 175
+(dựa theo TT 43/2024/TT-BYT — [CẦN ĐỐI CHIẾU danh mục cụ thể của Hội đồng cơ sở])
+
+☐ Đơn xin phê duyệt (ký chủ nhiệm + xác nhận thủ trưởng đơn vị)  [TL1]
+☐ Tóm tắt đề cương (lay summary ≤ 1 trang)                        [TL2]
+☐ Đề cương nghiên cứu đầy đủ (từ G0/G1: thiết kế, biến số, cỡ mẫu G3)
+☐ Bảng đánh giá rủi ro–lợi ích                                    [TL3]
+☐ Bản thông tin & Phiếu đồng thuận tham gia (ICF tiếng Việt, DRAFT) [TL4]
+☐ Mẫu PHIẾU KHẢO SÁT sẽ dùng (phiếu ngoại trú QĐ 56/QĐ-BYT 2024)
+☐ CV chủ nhiệm + nghiên cứu viên chính (cập nhật ≤ 2 năm)
+☐ Khai báo COI + nguồn tài trợ + sử dụng AI                       [TL8]
+☐ Kế hoạch quản lý dữ liệu (DMP mức IRB)                          [TL6]
+☐ [Nếu cần] Văn bản đồng ý của lãnh đạo Khoa C1a/Trung tâm C1
+☐ [Nếu đăng ký tự nguyện] Kế hoạch/bằng chứng đăng ký              [TL9]
+☐ [KHÔNG áp dụng] Hồ sơ an toàn AE/SAE (vì không can thiệp)
+☐ [KHÔNG áp dụng] Bằng chứng đăng ký bắt buộc (vì quan sát, không bắt buộc)
+
+Số bản nộp: ___  [CẦN XÁC NHẬN tại Hội đồng cơ sở BVQY 175]
+Ngày dự kiến nộp: ___/___/2026  [CẦN CHỦ NHIỆM ẤN ĐỊNH]
+```
+
+---
+
+## 📦 TÀI LIỆU 8 — KHAI BÁO XUNG ĐỘT LỢI ÍCH + TÀI TRỢ + SỬ DỤNG AI
+
+```
+KHAI BÁO COI, TÀI TRỢ & SỬ DỤNG AI (theo ICMJE — rút gọn)  [DRAFT v1.0]
+Chủ nhiệm đề tài: [CẦN BỔ SUNG]   |   Ngày khai báo: ___/___/2026
+
+A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH:
+   ☐ Không có   ☐ Có → [liệt kê: tổ chức, loại lợi ích, giá trị]
+   [CẦN CHỦ NHIỆM KHAI]
+
+B. XUNG ĐỘT PHI TÀI CHÍNH:
+   ☐ Không có   ☐ Có → [quan hệ, lợi ích học thuật...]
+   ⚠ Lưu ý đặc thù: nhóm nghiên cứu thuộc chính đơn vị được đánh giá
+     (Khoa C1a/BVQY 175) → tiềm ẩn xung đột "tự đánh giá chất lượng cơ sở
+     của mình". BIỆN PHÁP: dùng ĐTV độc lập ngoài khoa + phân tích khách
+     quan + công bố trung thực kể cả điểm chưa hài lòng. [CẦN KHAI + nêu
+     biện pháp giảm thiểu]
+
+C. NGUỒN TÀI TRỢ: [CẦN BỔ SUNG — hoặc "không có tài trợ bên ngoài"]
+
+D. VAI TRÒ NHÀ TÀI TRỢ (nếu có): có can thiệp vào thiết kế/thu thập/phân
+   tích/báo cáo không? [CẦN BỔ SUNG]
+
+E. SỬ DỤNG AI:  ☑ Có
+   Công cụ: trợ lý AI (Claude) hỗ trợ SOẠN THẢO khung hồ sơ/đề cương.
+   Mục đích: hỗ trợ soạn nháp tài liệu hành chính/đề cương; KHÔNG tạo dữ
+   liệu, KHÔNG phân tích dữ liệu người tham gia.
+   Cam kết: "Tôi đã/sẽ kiểm chứng toàn bộ nội dung AI hỗ trợ; AI KHÔNG
+   được ghi là tác giả." [CẦN CHỦ NHIỆM XÁC NHẬN & KÝ]
+
+Chữ ký chủ nhiệm: ______________   Ngày: ___/___/2026
+[Mỗi đồng tác giả khai báo riêng]
+```
+
+---
+
+## 📦 TÀI LIỆU 9 — ĐĂNG KÝ NGHIÊN CỨU (phân loại + khuyến nghị đúng mức)
+
+### 9.1. Nghiên cứu này có BẮT BUỘC đăng ký không? → **KHÔNG**
+
+| Tiêu chí phân loại | Kết quả | Căn cứ |
+|---|---|---|
+| Có phân bổ **can thiệp** cho người tham gia không? | **KHÔNG** — thuần quan sát | Định nghĩa "thử nghiệm lâm sàng" của WHO/ICMJE yêu cầu *prospectively assigns participants to interventions* → nghiên cứu này KHÔNG thỏa → **không thuộc diện đăng ký bắt buộc** ([ICMJE FAQ Clinical Trials Registration](https://www.icmje.org/about-icmje/faqs/clinical-trials-registration/)) |
+| Bắt buộc đăng ký tại VN? | **KHÔNG** đối với nghiên cứu quan sát | Đăng ký thử nghiệm là yêu cầu cho **thử nghiệm lâm sàng** (do MOH/ASTT quản); khảo sát quan sát không thuộc diện bắt buộc ([ClinRegs — Vietnam](https://clinregs.niaid.nih.gov/country/vietnam)) |
+
+### 9.2. Khuyến nghị đăng ký (TÙY CHỌN — không bắt buộc, nêu đúng mức)
+
+- **Đăng ký tự nguyện để tăng minh bạch:** dù không bắt buộc, có thể đăng ký tiến cứu trên **WHO ICTRP-registry** (vd một Primary Registry của WHO) hoặc **ClinicalTrials.gov** (mục Observational) *trước khi thu thập* để chống thiên lệch báo cáo và thuận lợi khi công bố quốc tế. Đây là **khuyến khích**, không phải điều kiện cổng.
+- **PROSPERO — KHÔNG áp dụng:** PROSPERO chỉ dành cho tổng quan hệ thống/meta-analysis, không phải khảo sát nguyên phát → không dùng.
+- **Nếu chọn đăng ký tự nguyện:** điền bộ **WHO Trial Registration Data Set** (khung dưới đây), để trống trường chưa có; **mã đăng ký = `[CẦN BỔ SUNG khi đăng ký thật]`** — KHÔNG bịa.
+
+```
+BỘ TRƯỜNG WHO TRIAL REGISTRATION DATA SET (nếu đăng ký tự nguyện) — DRAFT
+ 1. Primary registry & ID: [CẦN BỔ SUNG khi đăng ký]
+ 2. Date of registration: [CẦN BỔ SUNG — phải TRƯỚC thu thập nếu đăng ký]
+ 3. Secondary IDs: [nếu có]
+ 4. Source(s) of funding: [CẦN BỔ SUNG]
+ 5. Primary sponsor: Bệnh viện Quân y 175 (Trung tâm C1)
+ 6. Contact for public/scientific queries: [CẦN BỔ SUNG]
+ 7. Public title: Khảo sát hài lòng người bệnh ngoại trú tại Khoa C1a, BVQY 175
+ 8. Scientific title: Nghiên cứu mô tả cắt ngang mức độ hài lòng và yếu tố
+    liên quan của bệnh nhân KCB ngoại trú theo yêu cầu tại Khoa C1a, BVQY 175
+ 9. Countries of recruitment: Việt Nam
+10. Health condition/problem: Chất lượng dịch vụ / hài lòng người bệnh (không phải bệnh lý)
+11. Intervention: KHÔNG CÓ (nghiên cứu quan sát)
+12. Key inclusion criteria: BN hoàn tất lượt khám ngoại trú tại C1a, ≥[CẦN BỔ SUNG] tuổi, đồng ý
+13. Key exclusion criteria: từ chối; cấp cứu/không đủ năng lực trả lời; NVYT của khoa; trùng lượt
+14. Study type: Observational, cross-sectional (analytical)
+15. Date of first enrollment: [CẦN BỔ SUNG — sau khi có phê duyệt IRB]
+16. Target sample size: [CẦN BỔ SUNG — từ G3]
+17. Recruitment status: Not yet recruiting (chưa bắt đầu — chờ phê duyệt)
+18. Primary outcome: Tỷ lệ/điểm hài lòng chung của người bệnh
+    (+ Key secondary: điểm hài lòng theo từng miền; yếu tố liên quan)
+```
+
+---
+
+## 🔓 CƠ CHẾ MỞ KHÓA CỔNG G2 (điều kiện cổng cứng)
+
+```
+╔════════════════════════════════════════════════════════════════╗
+║   ĐỂ MỞ CỔNG G2 — CHỦ NHIỆM CUNG CẤP (do người thật cấp):     ║
+║   1. Số phê duyệt của Hội đồng Đạo đức BVQY 175: ___          ║
+║   2. Ngày phê duyệt: ___/___/20__                             ║
+║   3. Phiên bản ICF được duyệt: ___                            ║
+║   4. (Nếu đăng ký tự nguyện) Mã đăng ký + ngày: ___           ║
+╠════════════════════════════════════════════════════════════════╣
+║   → Ghi vào _SO-TRANG-THAI-CHECKPOINT.md:                     ║
+║       G2_STATUS: LOCKED                                       ║
+║       G2_IRB_NUMBER: ___   G2_APPROVAL_DATE: ___             ║
+║       G2_ICF_VERSION: ___                                    ║
+╠════════════════════════════════════════════════════════════════╣
+║   TRƯỚC KHI LOCKED: chỉ được soạn hồ sơ; KHÔNG thu thập/      ║
+║   phân tích dữ liệu người tham gia THẬT (G5 bị chặn).         ║
+╚════════════════════════════════════════════════════════════════╝
+```
+
+> **KHÔNG bịa số phê duyệt/mã đăng ký.** Các số này CHỈ do Hội đồng/đơn vị cấp và do chủ nhiệm nhập sau khi có thật.
+
+---
+
+## ✅ TIÊU CHÍ QUA CỔNG G2 — TỰ ĐỐI CHIẾU
+
+```
+✦ SELF-CHECK dao-duc-dang-ky — Cổng G2:
+  ĐÃ ĐẠT (AI side):
+   - Bộ hồ sơ IRB đủ: Đơn (TL1) · Tóm tắt (TL2) · Bảng rủi ro-lợi ích (TL3)
+     · ICF tiếng Việt phù hợp khảo sát ẩn danh (TL4) · DMP mức IRB (TL6)
+     · Checklist nộp (TL7) · Khai báo COI/tài trợ/AI (TL8) · Đăng ký (TL9).
+   - ICF đủ 8 yếu tố Helsinki/CIOMS; điều chỉnh đúng cho ẩn danh (đồng thuận
+     ngụ ý, không ký để giữ ẩn danh, nêu minh bạch giới hạn rút lui).
+   - Đăng ký nêu ĐÚNG MỨC: quan sát → KHÔNG bắt buộc; khuyến nghị tự nguyện
+     WHO ICTRP/ClinicalTrials.gov; PROSPERO không áp dụng. (Đã xác minh
+     ICMJE/WHO + ClinRegs VN.)
+   - DMP phù hợp Luật 91/2025 + NĐ 356/2025 (đang có hiệu lực từ 01/01/2026).
+   - Mọi tài liệu đóng dấu [DỰ THẢO v1.0 — chờ phê duyệt]; KHÔNG PII;
+     KHÔNG bịa số IRB/mã đăng ký (để [CẦN BỔ SUNG]).
+   - COI nêu rõ rủi ro "tự đánh giá cơ sở của mình" + biện pháp giảm thiểu.
+   - Đúng ranh giới: không kèm an-toan-nghien-cuu (không can thiệp); DMP
+     vận hành/khóa DB để lại cho quan-ly-du-lieu (G5).
+  CÒN THIẾU (phụ thuộc input thật — [CẦN BỔ SUNG]):
+   - Cỡ mẫu (G3); tên/liên hệ chủ nhiệm & Hội đồng; nguồn tài trợ; thời gian
+     thu thập; thời gian lưu trữ; diện xét của Hội đồng; nội dung phụ lục
+     phiếu QĐ 56/2024; số phê duyệt IRB & mã đăng ký (do người thật cấp).
+   - [CẦN KIỂM CHỨNG] số điều Helsinki 2024 + điều khoản/thời hạn báo cáo
+     sự cố của NĐ 356/2025 khi đối chiếu bản chính thức.
+  KẾT: ĐẠT TỰ KIỂM (AI side). Mở khóa THẬT chờ human: nộp → Hội đồng
+       BVQY 175 phê duyệt → cung cấp số IRB → G2_STATUS: LOCKED.
+```
+
+### Chốt kiểm liêm chính (Lớp 1 R1–R7)
+- **R1 Nguồn/không bịa:** chuẩn quốc tế + văn bản VN gắn nguồn thật đã tra (Helsinki 2024, CIOMS, ICMJE, TT43/2024, Luật 15/2023, Luật 91/2025 + NĐ 356/2025); **KHÔNG bịa** số IRB/mã đăng ký → `[CẦN BỔ SUNG]`. ✅
+- **R2 PII:** ICF + DMP + phiếu **chủ động loại PII** (không ô tên/mã BN/CCCD/BHYT/SĐT/địa chỉ); ẩn danh từ gốc. ✅
+- **R3 Cổng:** KHÔNG tuyên bố đã phê duyệt/đăng ký; **cổng cứng G2** chặn thu thập dữ liệu thật cho tới khi có phê duyệt; đăng ký nêu đúng mức (không ép bắt buộc). ✅
+- **R4/R5:** không tự gán "đã được chấp thuận"; tách rõ *dự thảo AI soạn* với *quyết định của Hội đồng*; phân biệt bắt buộc vs khuyến nghị đăng ký. ✅
+- **R6 Nhãn [CẦN…]:** mọi ô thiếu dữ liệu thật đã gắn nhãn. ✅
+- **R7 Disclaimer:** có (dưới đây). ✅
+
+---
+
+**Disclaimer:** *Tài liệu này do AI hỗ trợ soạn thảo, là BẢN DỰ THẢO (v1.0). Cần chủ nhiệm/bác sĩ kiểm chứng, bổ sung, chỉnh sửa và ký; và phải được Hội đồng Đạo đức trong nghiên cứu y sinh học Bệnh viện Quân y 175 (cùng cấp có thẩm quyền của đơn vị) phê duyệt TRƯỚC KHI thu thập bất kỳ dữ liệu người tham gia nào.*
+
+**Cần bác sĩ kiểm chứng.**
+
+
+## G3 — Cỡ mẫu & power
+# CỔNG G3 — TÍNH CỠ MẪU
+
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+
+**Thiết kế (từ G1):** Mô tả cắt ngang có phân tích (analytical cross-sectional) — chuẩn báo cáo **STROBE cross-sectional** (PMID 18313558, [DOI](https://doi.org/10.1016/j.jclinepi.2007.11.008)). **Giả thuyết:** MT1 = ước lượng (không so sánh); MT2 = kiểm định mối liên quan (hai đuôi, **superiority-style**, KHÔNG phải non-inferiority) → dùng α hai đuôi, không có biên Δ.
+
+**Vai trò cổng:** Đây là **G3 — CỠ MẪU/POWER**, đứng trước G4 (khóa SAP). Con số ở đây là đầu vào cho protocol + SAP; agent này **KHÔNG khóa kết cục chính, KHÔNG chọn mô hình cuối** (→ G4). Mọi phép tính đã **chạy thật** bằng Python (`scipy.stats` + `statsmodels.stats.power`) và kiểm chứng chéo (nửa rộng CI).
+
+---
+
+## 🔎 BƯỚC 0 — KIỂM TIỀN ĐỀ
+
+| Tiền đề | Trạng thái | Ghi chú |
+|---|---|---|
+| PICO/PECO + kết cục chính | ✅ (từ G0) | Kết cục chính = **tỷ lệ "hài lòng chung"** (nhị phân) + điểm hài lòng liên tục (phụ) |
+| Loại thiết kế + estimand | ✅ (từ G1) | Cắt ngang phân tích; quan sát → **không cần estimand ICH E9(R1)** |
+| Giả thuyết superiority vs NI/equivalence | ✅ | MT2 = kiểm định liên quan hai đuôi (không phải NI/equivalence) → **không dùng biên Δ** |
+| Cỡ mẫu đã tính ở phiên trước? | ❌ Chưa | Đây là lần tính đầu (checkpoint chưa có A5 power) |
+| Có p/effect size THẬT từ pilot? | ❌ Chưa có pilot | → MT1 mặc định **p=0,5 (thận trọng)**; MT2 effect size **[CẦN ẤN ĐỊNH]** |
+
+> ⚠️ **KHÔNG bịa số.** Trong toàn bộ artifact: mọi *tỷ lệ nền/effect size* đều (a) gắn PMID/DOI thật, (b) là con số **thận trọng có biện minh** (p=0,5), hoặc (c) đánh dấu `[CẦN BÁC SĨ ẤN ĐỊNH]`. Các bảng "so sánh 2 tỷ lệ" là **MINH HOẠ** vì chưa có effect size thật cho đúng cặp biến của đề tài.
+
+---
+
+## 1. MỤC TIÊU 1 — ƯỚC LƯỢNG MỘT TỶ LỆ (độ chính xác)
+
+### 1.1. Công thức (WHO / Lwanga–Lemeshow 1991)
+
+$$n_0 = \frac{Z_{1-\alpha/2}^{2}\cdot p\,(1-p)}{d^{2}}$$
+
+| Tham số | Ký hiệu | Giá trị dùng | Căn cứ / nguồn |
+|---|---|---|---|
+| Mức ý nghĩa | α | 0,05 (hai đuôi) | Quy ước; $Z_{1-\alpha/2} = 1,96$ |
+| Tỷ lệ hài lòng kỳ vọng | p | **0,50** (mặc định thận trọng) | **[CẦN BÁC SĨ ẤN ĐỊNH]** — chưa có pilot. Chọn 0,5 vì $p(1-p)$ **cực đại tại 0,5** → cỡ mẫu **lớn nhất/an toàn nhất**. Nếu muốn p khác phải có nguồn (pilot/y văn) |
+| Sai số tuyệt đối | d | **0,05** | **[CẦN BÁC SĨ ẤN ĐỊNH]** — nửa rộng khoảng tin cậy 95% mong muốn (± 5%) |
+
+### 1.2. Phép tính (đã chạy thật)
+
+Với p=0,50, d=0,05:
+$$n_0 = \frac{1,96^2 \times 0,50 \times 0,50}{0,05^2} = \frac{3,8416 \times 0,25}{0,0025} = 384,16 \Rightarrow \boxed{n_1 = 385}$$
+
+**Kiểm chứng chéo (statsmodels):** với n=385, p=0,5 → nửa rộng CI Wald = $1,96\sqrt{0,5\times0,5/385}$ = **0,0499 ≈ 0,05** ✅ (đúng mục tiêu). Nếu p thật cao hơn (vd 0,85), cùng n=385 cho nửa rộng CI chỉ **0,036** → càng chính xác (p=0,5 là kịch bản khó nhất).
+
+> **n₁ = 385** (chưa hiệu chỉnh không trả lời) — kịch bản mặc định thận trọng.
+
+---
+
+## 2. MỤC TIÊU 2 — CỠ MẪU CHO PHÂN TÍCH YẾU TỐ LIÊN QUAN
+
+MT2 có **hai đường tính** tuỳ mô hình bác sĩ chốt ở G4. Trình cả hai; **đường EPV logistic là ràng buộc thực tế** vì mô hình dự kiến là hồi quy logistic đa biến (thông lệ y văn: PMID 40295132 [DOI](https://doi.org/10.1136/bmjopen-2024-093501); PMID 34017606 [DOI](https://doi.org/10.1177/20551029211015117)).
+
+### 2a. Đường 1 — SO SÁNH 2 TỶ LỆ (2-proportion z-test)
+
+Dùng nếu phân tích chính là so tỷ lệ hài lòng giữa 2 phân nhóm (vd chờ ≤30 vs >30 phút). Công thức qua **effect size Cohen's h**, α=0,05 hai đuôi, phân bổ 1:1, giải bằng `statsmodels`.
+
+> ⚠️ **CHƯA có effect size THẬT** cho đúng cặp yếu tố × hài lòng của đề tài này → bảng dưới là **MINH HOẠ** để bác sĩ chọn kịch bản có ý nghĩa lâm sàng (MCID) hoặc lấy từ pilot. **KHÔNG dùng số "đẹp" nếu không có nguồn.**
+
+**Bảng minh hoạ n/nhóm (α=0,05 hai đuôi, 1:1):**
+
+| p₁ vs p₂ (2 nhóm) | Cohen's h | n/nhóm (power 80%) | Tổng (80%) | n/nhóm (power 90%) | Tổng (90%) |
+|---|---|---|---|---|---|
+| 0,90 vs 0,75 | 0,404 | 97 | 194 | 129 | 258 |
+| 0,85 vs 0,70 | 0,364 | 119 | 238 | 159 | 318 |
+| 0,80 vs 0,65 | 0,339 | 137 | 274 | 184 | 368 |
+| 0,90 vs 0,80 | 0,284 | 195 | 390 | 261 | 522 |
+| 0,85 vs 0,75 | 0,252 | 248 | 496 | 332 | 664 |
+
+*Đọc bảng:* chênh lệch càng nhỏ → cần cỡ mẫu càng lớn. Nếu MT2 chỉ cần phát hiện khác biệt lớn (≥15 điểm %) thì 200–370 tổng là đủ; khác biệt nhỏ (10 điểm %) đẩy tổng lên 390–664.
+
+### 2b. Đường 2 — HỒI QUY LOGISTIC ĐA BIẾN (EPV ≥ 10) — **RÀNG BUỘC QUYẾT ĐỊNH**
+
+Quy tắc **events-per-variable ≥ 10** (Peduzzi và cs. 1996, PMID 8970487, [DOI](https://doi.org/10.1016/s0895-4356.96.00236-3)):
+
+$$N = \frac{k \times \text{EPV}}{p_{\text{biến cố}}}, \quad p_{\text{biến cố}} = \min(p_{\text{hài lòng}},\ 1-p_{\text{hài lòng}})$$
+
+trong đó **k = số biến độc lập** trong mô hình `[CẦN CHỐT từ bien-so-nghien-cuu]`, và **biến cố = nhóm ít hơn** (thường là "chưa hài lòng").
+
+> 🔴 **PHÁT HIỆN THEN CHỐT (cảnh báo cỡ mẫu):** y văn VN cho thấy tỷ lệ hài lòng ngoại trú **thường cao (73–85%)** — PMID 34017606 (CHC 85%, BV huyện 73%); mục tiêu chính sách QĐ 56/2024 còn đặt ≥85%. Khi hài lòng cao thì nhóm **"chưa hài lòng" nhỏ (10–15%)** → EPV cần **N rất lớn** (vì biến cố hiếm). **Chính MT2b, không phải MT1, mới là ràng buộc chi phối cỡ mẫu.**
+
+**Bảng N (MT2b) theo số biến k × tỷ lệ biến cố (EPV=10):**
+
+| Tỷ lệ "chưa hài lòng" | k=5 | k=8 | k=10 | k=12 | k=15 |
+|---|---|---|---|---|---|
+| 0,10 (nếu HL≈90%) | 500 | 800 | **1000** | 1200 | 1500 |
+| 0,15 (nếu HL≈85%) | 334 | **534** | **667** | 800 | 1000 |
+| 0,266 (nếu HL≈73,4% — PMID 34017606) | 188 | 301 | 376 | 452 | 564 |
+| 0,50 (cân bằng) | 100 | 160 | 200 | 240 | 300 |
+
+*Đọc bảng:* nếu hài lòng ~85% và mô hình có 8–10 biến → cần **534–667**; nếu hài lòng ~90% và 10 biến → cần **1000**. Chỉ khi biến cố cân bằng (0,5) thì N mới nhỏ (100–300).
+
+---
+
+## 3. TỔNG HỢP: n = max(n₁, n₂) + HIỆU CHỈNH KHÔNG TRẢ LỜI
+
+**Bước điều chỉnh (theo thứ tự chuẩn G3):**
+1. **FPC (quần thể hữu hạn):** quần thể bệnh nhân đến khám trong kỳ là **lớn/không xác định trước** (dòng bệnh nhân liên tục) → **KHÔNG áp FPC**. (Chỉ áp nếu bác sĩ giới hạn khảo sát trong một khung hữu hạn xác định, vd toàn bộ N lượt khám của 1 tháng cụ thể → khi đó `n_FPC = n/(1+n/N)`.)
+2. **Design effect:** chọn mẫu **hệ thống trên dòng bệnh nhân** (từ G1), **không phải lấy mẫu cụm** → DE = 1, **không nhân DE**.
+3. **Dropout/không trả lời (áp sau cùng):** $n_{\text{khuyến nghị}} = n / (1 - r)$.
+
+**Kịch bản chủ đạo** (mặc định thận trọng, chờ bác sĩ chốt):
+
+| Thành phần | Giá trị | Nguồn/ghi chú |
+|---|---|---|
+| n₁ (MT1, p=0,5, d=0,05) | 385 | WHO/Lwanga-Lemeshow |
+| n₂b (MT2b, k=8, "chưa HL"=0,15) | 534 | EPV=10 (PMID 8970487) |
+| n₂b (MT2b, k=10, "chưa HL"=0,15) | 667 | EPV=10 |
+| **n tối thiểu = max(n₁, n₂)** | **534–667** (tuỳ k) | MT2b chi phối |
+
+**Sau hiệu chỉnh không trả lời:**
+
+| Tỷ lệ không trả lời r | n=385 (chỉ MT1) | n=534 (max, k=8) | n=667 (max, k=10) |
+|---|---|---|---|
+| 10% | 428 | 594 | 742 |
+| **15% (mặc định)** | **453** | **629** | **785** |
+| 20% | 482 | 668 | 834 |
+
+> Công thức: $n/(1-r)$, làm tròn lên. Ví dụ n=667, r=15% → $667/0,85 = 784,7 → 785$.
+
+---
+
+## 4. BẢNG ĐỘ NHẠY (để bác sĩ thấy giả định chi phối kết quả)
+
+### 4.1. MT1 — n theo p × d (chưa hiệu chỉnh)
+
+| p (tỷ lệ HL kỳ vọng) | d=0,03 | d=0,04 | d=0,05 |
+|---|---|---|---|
+| **0,50** (thận trọng, không nguồn) | 1068 | 601 | **385** |
+| 0,85 (mục tiêu QĐ56 đến 2025) | 545 | 307 | 196 |
+| 0,90 (mục tiêu QĐ56 đến 2030) | 385 | 217 | 139 |
+| 0,734 (VHFA VN — PMID 34017606) | 834 | 469 | 301 |
+
+### 4.2. MT2b — N theo k × tỷ lệ biến cố (EPV=10) — xem bảng §2b.
+
+**Kết luận độ nhạy:** biến giả định **có ảnh hưởng lớn nhất** không phải p của MT1 mà là **tỷ lệ "chưa hài lòng" và số biến k của MT2b**. Nếu hài lòng thực sự cao (~90%) và mô hình nhiều biến (≥10), cỡ mẫu khả thi trong một kỳ khảo sát có thể **không đủ EPV** → xem cảnh báo §6.
+
+---
+
+## 📋 5. KHỐI CỠ MẪU DÁN VÀO ĐỀ CƯƠNG (chuẩn STROBE — mục Phương pháp)
+
+> **Cỡ mẫu.** Nghiên cứu mô tả cắt ngang có phân tích, tính cỡ mẫu cho hai mục tiêu. **Mục tiêu 1 (ước lượng tỷ lệ hài lòng)** áp dụng công thức ước lượng một tỷ lệ theo độ chính xác (Lwanga & Lemeshow, WHO 1991): n₀ = Z²₁₋α/₂·p(1−p)/d², với Z₁₋α/₂ = 1,96 (α = 0,05 hai đuôi), tỷ lệ hài lòng kỳ vọng p = 0,50 (giá trị thận trọng cho cỡ mẫu tối đa do chưa có số liệu pilot; **[CẦN BÁC SĨ ẤN ĐỊNH]** nếu dùng p có nguồn), và sai số tuyệt đối d = 0,05. Kết quả n₁ = 385. **Mục tiêu 2 (yếu tố liên quan)** dự kiến phân tích bằng hồi quy logistic đa biến; cỡ mẫu bảo đảm quy tắc tối thiểu 10 biến cố cho mỗi biến độc lập (EPV ≥ 10; Peduzzi và cs., 1996): N = k·EPV/p_biến_cố, với k là số biến độc lập đưa vào mô hình **[CẦN CHỐT: k ≈ __ biến]** và p_biến_cố là tỷ lệ nhóm "chưa hài lòng" (nhóm ít hơn). Với k = 8–10 biến và giả định tỷ lệ "chưa hài lòng" ≈ 15% (tương ứng hài lòng ≈ 85% theo mẫu hình y văn ngoại trú Việt Nam), n₂ = 534–667. Cỡ mẫu nghiên cứu lấy giá trị lớn hơn: n = max(n₁, n₂) = **534–667**. Dự phòng tỷ lệ không trả lời/phiếu lỗi 15%, cỡ mẫu khuyến nghị = n/(1−0,15) = **629–785** đối tượng (tối thiểu 453 nếu chỉ phục vụ Mục tiêu 1). Đối tượng được chọn bằng phương pháp **chọn mẫu hệ thống** trên dòng bệnh nhân hoàn tất lượt khám, với bước nhảy k xác định theo lưu lượng khám thực tế của khoa **[CẦN DỮ LIỆU lưu lượng]** và điểm khởi đầu ngẫu nhiên. Toàn bộ tính toán thực hiện bằng Python (scipy.stats, statsmodels 0.14).
+
+**Tóm tắt số dán bảng:**
+
+| Chỉ tiêu | Giá trị |
+|---|---|
+| **Cỡ mẫu tối thiểu (đủ lực)** | **534–667** (max của MT1 & MT2b; tuỳ k=8–10) — *nếu chỉ MT1: 385* |
+| **Cỡ mẫu khuyến nghị (dự phòng 15% không trả lời)** | **629–785** — *nếu chỉ MT1: 453* |
+| Công thức MT1 | n = Z²p(1−p)/d² (WHO/Lwanga-Lemeshow) |
+| Công thức MT2 | EPV ≥ 10 (Peduzzi 1996) / hoặc 2-proportion z-test |
+| Phần mềm | Python: scipy.stats, statsmodels.stats.power |
+| α · power | 0,05 (hai đuôi) · 80% (MT1 độ chính xác; MT2 khuyến nghị 90% nếu là phân tích trọng điểm) |
+
+---
+
+## 6. CẢNH BÁO & KHUYẾN NGHỊ
+
+🔴 **Nghịch lý "hài lòng cao ⇒ cỡ mẫu lớn":** nếu tỷ lệ hài lòng thực ≈ 85–90% (rất có thể, theo y văn VN và bối cảnh dịch vụ theo yêu cầu), nhóm "chưa hài lòng" nhỏ khiến MT2 (logistic đa biến) cần **534–1000+** đối tượng để đủ EPV. **MT2, không phải MT1, là ràng buộc cỡ mẫu.** Nếu chỉ tính theo MT1 (385) sẽ **thiếu lực cho MT2**.
+
+🟡 **Nếu cỡ mẫu khả thi < yêu cầu EPV**, các lối ra (theo thứ tự ưu tiên):
+1. **Giảm số biến k** trong mô hình (chọn biến theo lý thuyết/DAG, gộp nhóm) — cách rẻ nhất; khóa danh mục biến ở G4.
+2. **Giữ kết cục liên tục** (điểm hài lòng tổng) + **hồi quy tuyến tính đa biến** thay vì nhị phân hoá → tránh mất thông tin và tránh vấn đề biến cố hiếm (thông lệ PMID 34445940, 36292392). Khi đó ràng buộc là ~10–15 quan sát/biến trên thang liên tục, nhẹ hơn EPV nhị phân.
+3. **Kéo dài kỳ thu thập / đa khung giờ** để đạt N.
+4. **Hạ EPV xuống có kiểm soát** (một số tài liệu chấp nhận EPV 5–9 với hiệu chỉnh) — **chỉ khi nhà thống kê đồng ý**, ghi rõ hạn chế.
+
+🟡 **Effect size MT2 (đường 2-proportion) hiện là MINH HOẠ** — trước khi khóa SAP phải thay bằng: (a) hiệu ứng từ **pilot** của chính đề tài, (b) **MCID** do bác sĩ ấn định, hoặc (c) hiệu ứng có nguồn PMID/DOI. **KHÔNG lấy số trong bảng minh hoạ làm giả định chính thức.**
+
+🟡 **Nếu nâng cấp thành nghiên cứu trọng điểm/công bố:** cần **nhà thống kê độc lập** xác nhận lại tính toán (đặc biệt lựa chọn k, ngưỡng nhị phân, và quyết định liên tục vs nhị phân).
+
+---
+
+## 7. BÀN GIAO
+
+- **→ `thiet-ke-nghien-cuu` / SAP (G4):** khóa (a) kết cục chính = tỷ lệ hài lòng hay điểm liên tục; (b) **ngưỡng nhị phân hoá** (chi phối p_biến_cố); (c) danh mục biến MT2 (chốt k); (d) chọn mô hình logistic vs tuyến tính. Sau khi chốt, cỡ mẫu có thể **tính lại chính xác** (thay k và p_biến_cố thật vào §3).
+- **→ `so-cai-ghi-nho`:** lưu **A5 (power)** — tham số + kết quả (n₁=385; n₂b theo k; n cuối = max; công thức; phần mềm; các ô [CẦN…]).
+- **→ Kế hoạch triển khai (A13):** cập nhật số phiếu in = cỡ mẫu khuyến nghị × (1 + hao); bước nhảy k = lưu lượng khám ÷ cỡ mẫu.
+
+---
+
+## Tiêu chí qua cổng G3 — Tự đối chiếu
+
+- ✅ Chọn đúng công thức theo thiết kế + giả thuyết: MT1 = 1-proportion (độ chính xác, WHO); MT2 = EPV logistic (Peduzzi 1996) + 2-proportion (minh hoạ).
+- ✅ Phân biệt superiority (MT2 hai đuôi) vs NI/equivalence — xác nhận **không** dùng biên Δ.
+- ✅ Mọi tham số có nguồn (PMID/DOI thật) hoặc đánh dấu `[CẦN BÁC SĨ ẤN ĐỊNH]`; p=0,5 có biện minh (phương sai cực đại); effect size 2-proportion khai báo là minh hoạ.
+- ✅ Nêu công thức + phần mềm (scipy/statsmodels); **chạy thật**, kiểm chứng chéo nửa rộng CI.
+- ✅ Báo cỡ mẫu **tối thiểu** (534–667) **và khuyến nghị** (629–785, hiệu chỉnh 15% không trả lời); nêu rõ FPC không áp, DE=1.
+- ✅ Bảng độ nhạy (MT1 theo p×d; MT2b theo k×biến cố; 2-proportion theo power 80/90%).
+- ✅ Cảnh báo thiếu lực (nghịch lý hài lòng cao) + lối ra; nêu cần nhà thống kê độc lập nếu trọng điểm.
+
+### Chốt kiểm liêm chính (tự soi 2 lớp)
+- **R1 Nguồn/không bịa:** tỷ lệ nền gắn PMID/DOI thật (34017606, 34445940, 36292392, 40295132, 8970487); effect size chưa có nguồn → đánh dấu minh hoạ/`[CẦN ẤN ĐỊNH]`; **KHÔNG điền số đẹp**. Đã ghi rõ PMID 40295132 là Sierra Leone (không phải VN), chỉ tham chiếu phương pháp. ✅
+- **R2 PII:** không có/không tạo dữ liệu định danh. ✅
+- **R3 Cổng:** không khóa SAP (G4), không chọn mô hình cuối; chỉ cấp con số cỡ mẫu. ✅
+- **R4/R5:** không gán mức chứng cứ; tách rõ số thận trọng vs số minh hoạ vs số cần ấn định; cắt ngang → chỉ "liên quan". ✅
+- **R6 Nhãn [CẦN…]:** đầy đủ (p, d, k, ngưỡng nhị phân, effect size, tỷ lệ không trả lời, lưu lượng khoa). **R7 Disclaimer:** có. ✅
+
+*Theo PubMed — nguồn: MT1 công thức WHO (Lwanga & Lemeshow 1991); tỷ lệ hài lòng ngoại trú VN [PMID 34017606](https://doi.org/10.1177/20551029211015117), [PMID 34445940](https://doi.org/10.1080/00185868.2021.1969871), [PMID 36292392](https://doi.org/10.3390/healthcare10101945); phương pháp phân nhị phân + logistic [PMID 40295132](https://doi.org/10.1136/bmjopen-2024-093501) (Sierra Leone, tham chiếu phương pháp); EPV≥10 [PMID 8970487](https://doi.org/10.1016/s0895-4356(96)00236-3); STROBE [PMID 18313558](https://doi.org/10.1016/j.jclinepi.2007.11.008).*
+
+**Cần bác sĩ kiểm chứng.**
+
+
+## G4 — Kế hoạch phân tích thống kê (SAP) + Dummy tables [DỰ THẢO — CHỜ KHÓA]
+# CỔNG G4 — KẾ HOẠCH PHÂN TÍCH THỐNG KÊ (SAP) + DUMMY TABLES
+
+> ## 🔒 [DỰ THẢO SAP v1.0 — CHỜ KHÓA (đóng băng/ký) TRƯỚC KHI MỞ DỮ LIỆU]
+> **Ngày dự thảo:** 05/07/2026 · **Trạng thái:** DỰ THẢO — CHƯA KHÓA · **Dữ liệu:** CHƯA thu thập, CHƯA xem.
+> Tài liệu này phải được **chủ nhiệm + nhà thống kê ký và ghi "KHÓA ngày ___"** *trước khi* thu thập/mở bất kỳ dữ liệu nào. **Không tuyên bố đã khóa hay đã có dữ liệu.** Sau khi khóa: **KHÔNG đổi kết cục chính, ngưỡng nhị phân, mô hình chính** (chống p-hacking/HARKing). Mọi phân tích phát sinh sau khi xem dữ liệu phải gắn nhãn **THĂM DÒ (exploratory)**.
+
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.
+
+**Thiết kế (kế thừa G1):** Mô tả cắt ngang có phân tích (analytical cross-sectional) — chuẩn báo cáo **STROBE cross-sectional** (von Elm và cs.; theo PubMed, PMID 18313558, [DOI](https://doi.org/10.1016/j.jclinepi.2007.11.008)). Quan sát → chỉ kết luận **liên quan**, KHÔNG nhân quả.
+
+**Kết cục (kế thừa G0/G1/G3):** CHÍNH = tỷ lệ "hài lòng chung" (nhị phân) — ngưỡng nhị phân hóa `[CẦN BÁC SĨ ẤN ĐỊNH — khóa tại đây]`; PHỤ = điểm hài lòng chung liên tục (TB±SD / trung vị[IQR]) + điểm/tỷ lệ theo từng miền. Công cụ = phiếu ngoại trú **QĐ 56/QĐ-BYT (2024)** (hiện hành).
+
+---
+
+## 🔎 BƯỚC 0 — KIỂM TIỀN ĐỀ CỔNG G4 (bất biến liêm chính)
+
+| # | Tiền đề | Trạng thái | Ghi chú |
+|---|---|---|---|
+| 1 | **CHƯA xem/mở dữ liệu thật** | ✅ Xác nhận | SAP chỉ hợp lệ khi khóa TRƯỚC dữ liệu. Nếu đã lỡ xem dữ liệu → **KHÔNG được khóa SAP** (vi phạm liêm chính); phải khai báo minh bạch. |
+| 2 | Kết cục chính đã xác định | ✅ (G0) | Tỷ lệ hài lòng chung (nhị phân) + điểm liên tục (phụ). |
+| 3 | Thiết kế + không cần estimand | ✅ (G1) | Quan sát, không can thiệp → không cần estimand ICH E9(R1). |
+| 4 | Cỡ mẫu đã tính | ✅ (G3) | n tối thiểu 534–667 (max MT1 & MT2b, EPV≥10); khuyến nghị 629–785 (dự phòng 15% không trả lời). MT2b chi phối. |
+| 5 | Các ô cần bác sĩ ấn định TRƯỚC khi khóa | ⏳ **CÒN TREO** | (a) **ngưỡng nhị phân "hài lòng"**; (b) danh mục biến MT2 + tập hiệu chỉnh tối thiểu (DAG); (c) mô hình chính logistic vs tuyến tính; (d) mã hóa biến. Xem §9. |
+
+> ⚠️ **KHÔNG bịa số.** Toàn bộ SAP: mọi ngưỡng/hệ số/tỷ lệ đều (a) gắn PMID/DOI thật, hoặc (b) đánh dấu `[CẦN BÁC SĨ ẤN ĐỊNH]` / `[CẦN DỮ LIỆU PILOT]`. Dummy tables chỉ chứa **placeholder** (—, XX,X), tuyệt đối không số giả.
+
+---
+
+## 1. NGUYÊN TẮC PHÂN TÍCH CHUNG (định trước)
+
+1. **Mức ý nghĩa:** α = **0,05 hai đuôi** (nhất quán G3). Khoảng tin cậy **95%** báo cho MỌI ước lượng.
+2. **QUY TẮC VÀNG — CẤM p-value đơn độc:** mọi so sánh/liên quan **luôn báo kèm HIỆU ỨNG (tỷ lệ, hiệu số tỷ lệ, OR, β, hệ số tương quan) + KTC 95%**; p chỉ là bổ trợ, không bao giờ đứng một mình. Diễn giải theo **độ lớn hiệu ứng + độ bất định (KTC)**, không "săn dấu sao".
+3. **Định trước vs thăm dò:** mọi phân tích trong SAP này là **PRE-SPECIFIED (định trước)**. Bất kỳ phân tích nào nảy sinh sau khi xem dữ liệu = **EXPLORATORY (thăm dò)** — gắn nhãn rõ, không trình bày như xác nhận giả thuyết.
+4. **Phần mềm:** **R (≥ 4.3)** — gói `stats`, `car` (VIF), `rms`/`ResourceSelection` (hiệu chuẩn/Hosmer–Lemeshow), `logistf` (Firth), `mice` (đa trọng imputation), `psych`/`lavaan` (α/EFA-CFA nếu chạy COSMIN). **Hoặc Stata ≥ 18** (`logistic`, `firthlogit`, `mi impute`, `estat gof`). SPSS chấp nhận nếu bác sĩ quen — nêu rõ phiên bản. **[CẦN BÁC SĨ ẤN ĐỊNH phần mềm cuối].** Ghi phiên bản + gói trong bản thảo (tái lập).
+5. **Làm tròn:** tỷ lệ 1 chữ số thập phân (XX,X%); điểm Likert 2 chữ số (X,XX); OR/β 2 chữ số + KTC 95%; p báo trị số thực đến 3 chữ số (p = 0,00X), không viết "p < 0,05" trơ.
+6. **Tái lập:** cố định seed ngẫu nhiên cho các thủ tục có yếu tố ngẫu nhiên (MI, bootstrap nếu dùng); lưu script.
+
+---
+
+## 2. MỤC TIÊU 1 — MÔ TẢ MỨC ĐỘ HÀI LÒNG (định trước)
+
+### 2.1. Kiểm tra phân phối TRƯỚC khi chọn thống kê mô tả
+
+Cho **điểm hài lòng liên tục** (từng miền `hl_diem_mien{d}` và tổng `hl_diem_tong`):
+
+- **Cách kiểm phân phối định trước:** kết hợp (a) **trực quan** — histogram + Q–Q plot (ưu tiên, không phụ thuộc cỡ mẫu); (b) **định lượng** — độ lệch (skewness)/độ nhọn (kurtosis); (c) kiểm định chuẩn **Shapiro–Wilk** (n ≤ ~2.000) *chỉ để tham khảo* — với n lớn kiểm định quá nhạy (bắt lệch nhỏ vô nghĩa) nên **quyết định dựa chủ yếu vào trực quan + skewness**, không máy móc theo p của Shapiro.
+- **Quy tắc chọn thước đo (định trước):**
+  - Phân phối **xấp xỉ đối xứng/chuẩn** → **trung bình ± SD**.
+  - Phân phối **lệch** (thường gặp ở thang hài lòng do ceiling effect) → **trung vị [khoảng tứ phân vị IQR]**.
+  - **Báo cả hai** trong dummy Bảng 2 để minh bạch; chọn thước đo chính theo quy tắc trên, khóa tại đây.
+- **Ceiling effect (kế thừa cảnh báo G1/COSMIN):** báo **% đạt điểm sàn/trần** mỗi miền; nếu > 15% (ngưỡng Terwee — theo PubMed, PMID 17161752, [DOI](https://doi.org/10.1016/j.jclinepi.2006.03.012)) → ghi là hạn chế đo lường, ưu tiên trung vị[IQR] + phân tích nhạy cảm (§6).
+
+### 2.2. Ước lượng TỶ LỆ hài lòng + 95% CI (kết cục chính MT1)
+
+- **Tỷ lệ "hài lòng"** (chung và từng miền) = tỷ lệ đối tượng đạt định nghĩa "hài lòng" đã khóa `[CẦN BÁC SĨ ẤN ĐỊNH ngưỡng]`.
+- **KTC 95% cho tỷ lệ:** dùng **phương pháp Wilson score** (chính xác hơn Wald khi tỷ lệ gần 0/1 — rất phù hợp vì hài lòng thường cao ~85%). Wald có thể cho cận > 100% hoặc < 0% khi tỷ lệ cực đoan → **không dùng Wald cho tỷ lệ cực đoan**. *(Neo phương pháp: kiểm chứng chéo cỡ mẫu ở G3 đã dùng nửa rộng CI Wald cho p=0,5; ở đây để BÁO CÁO tỷ lệ quan sát dùng Wilson vì robust hơn ở đuôi.)*
+- Báo: **tỷ lệ (%) + KTC 95% Wilson** cho hài lòng chung và từng miền (dummy Bảng 2).
+
+### 2.3. Mô tả điểm theo miền
+
+- Điểm từng miền + tổng: TB±SD **và** trung vị[IQR] (theo §2.1); xếp hạng miền để chỉ "điểm đau" (miền điểm thấp nhất) — **mô tả, không kiểm định thứ hạng** trừ khi định trước.
+- Trình bày phân bố mức Likert 1–5 mỗi mục (n, %) nếu cần chi tiết (phụ lục).
+
+---
+
+## 3. MỤC TIÊU 2 — PHÂN TÍCH YẾU TỐ LIÊN QUAN (định trước)
+
+### 3.0. Kết cục & mô hình chính (khóa tại đây)
+
+- **Kết cục chính MT2:** `hl_hailong_nhiphan` (nhị phân: 1=hài lòng, 0=chưa hài lòng) → **hồi quy logistic đa biến**, báo **OR hiệu chỉnh (aOR) + KTC 95%**.
+- **Nhánh dự phòng ĐỊNH TRƯỚC (không phải chọn sau khi xem dữ liệu):** nếu (i) tỷ lệ "chưa hài lòng" quá nhỏ khiến **không đủ EPV** cho số biến cần (cảnh báo G3: hài lòng cao → biến cố hiếm), **hoặc** (ii) bác sĩ chốt kết cục chính là **điểm liên tục** → dùng **hồi quy tuyến tính đa biến** trên `hl_diem_tong` (báo **β + KTC 95%**), sau khi kiểm giả định tuyến tính (§3.4b). **Chọn nhánh nào là quyết định KHÓA ở G4**, ghi rõ tiêu chí kích hoạt để tránh HARKing. `[CẦN BÁC SĨ ẤN ĐỊNH: logistic (nhị phân) làm chính, hay tuyến tính (liên tục) làm chính]`.
+
+> Neo thông lệ: hồi quy logistic đa biến cho yếu tố liên quan hài lòng ngoại trú — theo PubMed, PMID 40295132 ([DOI](https://doi.org/10.1136/bmjopen-2024-093501)); hồi quy tuyến tính/điểm liên tục — PMID 34445940 ([DOI](https://doi.org/10.1080/00185868.2021.1969871)), PMID 36292392 ([DOI](https://doi.org/10.3390/healthcare10101945)).
+
+### 3.1. Phân tích ĐƠN BIẾN (bước sàng lọc + báo cáo thô)
+
+| Loại biến độc lập | Kết cục nhị phân "hài lòng" | Kết cục điểm liên tục (nhánh dự phòng) |
+|---|---|---|
+| **Danh định/thứ hạng** (giới, học vấn, nơi ở, đối tượng chi trả, chuyên khoa, nhóm thời gian chờ…) | **χ²** (Pearson); **Fisher exact** khi ô kỳ vọng < 5 (bảng thưa/ô nhỏ) → báo **tỷ lệ hài lòng theo nhóm + hiệu số/OR thô + KTC 95%** | **t-test độc lập** (2 nhóm) / **ANOVA một chiều** (≥3 nhóm) nếu điểm phân phối chuẩn; **Mann–Whitney U** / **Kruskal–Wallis** nếu lệch → báo **hiệu số trung vị/TB + KTC 95%** |
+| **Liên tục** (tuổi, thời gian chờ) | So sánh phân phối biến liên tục giữa 2 nhóm hài lòng: **t-test** (chuẩn) / **Mann–Whitney U** (lệch); và/hoặc **logistic đơn biến** báo **OR thô/1 đơn vị + KTC 95%** | **Tương quan Pearson** (chuẩn) / **Spearman** (lệch) + KTC 95%; và/hoặc hồi quy tuyến tính đơn biến (β + KTC 95%) |
+
+- **CẤM p đơn độc:** mọi ô đơn biến báo hiệu ứng (tỷ lệ nhóm, OR thô, hiệu số TB/trung vị) **+ KTC 95%**, kèm p.
+- **Kiểm định 2 đuôi**, α = 0,05.
+
+### 3.2. CHIẾN LƯỢC CHỌN BIẾN VÀO MÔ HÌNH ĐA BIẾN (định trước — chống p-hacking)
+
+**Nguyên tắc chủ đạo: chọn biến theo LÝ THUYẾT/DAG, KHÔNG chọn tự động thuần dữ liệu (stepwise).**
+
+1. **Tập biến bắt buộc (forced-in) — hiệu chỉnh tối thiểu theo DAG** (kế thừa `bien-so`/`thiet-ke`): các biến gây nhiễu đã biết + biến quan tâm chính (thời gian chờ), giữ trong mô hình bất kể ý nghĩa thống kê. Danh mục cụ thể + tập hiệu chỉnh tối thiểu `[CẦN BÁC SĨ/thiet-ke CHỐT qua DAG — khóa tại đây]`.
+2. **Ứng viên bổ sung:** biến có liên quan trên lý thuyết. **Ngưỡng đưa vào từ đơn biến = p < 0,20** (ngưỡng rộng kinh điển để không bỏ sót nhiễu; KHÔNG dùng 0,05) — **hoặc** đưa vào theo lý thuyết bất kể p. Ghi rõ tiêu chí đã khóa.
+3. **KHÔNG dùng stepwise tự động làm phân tích chính** (gây bias lựa chọn, KTC quá hẹp, khó tái lập). Nếu muốn tham khảo → gắn nhãn **THĂM DÒ**.
+4. **Trần số biến theo EPV:** tổng số tham số ước lượng (kể cả bậc tự do của biến hạng mục) **≤ số biến cố / 10** (EPV≥10; Peduzzi và cs. — theo PubMed, PMID 8970487, [DOI](https://doi.org/10.1016/s0895-4356(96)00236-3)). Nếu thiếu chỗ → **gộp nhóm biến hạng mục / ưu tiên biến forced-in / bỏ ứng viên yếu**, khóa danh mục tại đây. *Nới EPV (5–9) chỉ khi nhà thống kê đồng ý, đặc biệt cho phân tích nhạy cảm* — theo PubMed, Vittinghoff & McCulloch, PMID 17182981 ([DOI](https://doi.org/10.1093/aje/kwk052)).
+5. **Biến trung gian/collider KHÔNG hiệu chỉnh** (cảnh báo over-adjustment từ `bien-so`): vd `co_cls`, `so_quay_buoc` có thể nằm trên đường thời-gian-chờ → hài lòng → **không đưa vào khi ước lượng hiệu ứng tổng của thời gian chờ**. Quyết định qua DAG `[CẦN thiet-ke CHỐT]`.
+
+### 3.3. XỬ LÝ NHIỄU (confounding)
+
+- Hiệu chỉnh bằng **đưa đồng thời** tập biến nhiễu định trước vào mô hình đa biến (không dựa ý nghĩa thống kê để loại nhiễu).
+- **Điều chỉnh hiệu quả (effect modification) định trước:** nghi ngờ hiệu ứng `thoigian_cho` khác nhau giữa nhóm `doituong_qd` (kỳ vọng dịch vụ cao) → **định trước 1 số hạng tương tác** `thoigian_cho × doituong_qd` (hoặc phân tầng). **Chỉ kiểm tương tác đã định trước**; tương tác khác = THĂM DÒ. Báo **OR/β của số hạng tương tác + KTC 95%** (không chỉ p).
+- **KHÔNG hiệu chỉnh biến trung gian** để "khử cho mất" hiệu ứng (đã nêu §3.2.5).
+
+### 3.4a. KIỂM ĐỊNH GIẢ ĐỊNH — MÔ HÌNH LOGISTIC (định trước)
+
+| Giả định/Chẩn đoán | Phương pháp | Ngưỡng/Xử lý (định trước) |
+|---|---|---|
+| **Đa cộng tuyến** | **VIF** (hoặc GVIF cho biến hạng mục; dùng GVIF^(1/2df)) | VIF > 5 → xem xét; **> 10 → xử lý** (gộp/bỏ biến trùng lặp, vd `thoigian_cho`↔`so_quay_buoc`↔`co_cls`). Ghi quyết định. |
+| **Tuyến tính của log-odds theo biến LIÊN TỤC** | Box–Tidwell, hoặc so với dạng spline/đa thức, hoặc phân nhóm kiểm | Nếu vi phạm → biến đổi (log) / dùng spline / nhóm hóa có căn cứ (khóa cách xử lý) |
+| **Phù hợp/hiệu chuẩn mô hình** | **Hosmer–Lemeshow** goodness-of-fit (nhóm g=10) *có cảnh báo hạn chế* + **đồ thị hiệu chuẩn (calibration)** + phân biệt **C-statistic (AUC)** | H–L p **lớn** = không bằng chứng thiếu phù hợp (không diễn giải như "mô hình tốt"); ưu tiên đồ thị hiệu chuẩn vì H–L nhạy với cỡ nhóm. Báo AUC + KTC 95% |
+| **Quan sát ảnh hưởng lớn** | Cook's distance, dfbeta, standardized residuals | Rà điểm cực đoan; **KHÔNG loại tùy tiện** — chỉ loại nếu lỗi dữ liệu xác minh được (ghi lại), nếu không → phân tích nhạy cảm có/không điểm đó |
+| **Separation / biến cố hiếm** (hài lòng cao → "chưa hài lòng" ít) | Phát hiện: hệ số/SE khổng lồ, không hội tụ | **Dùng hồi quy logistic Firth (penalized ML)** cho ước lượng hữu hạn + KTC hồ sơ (profile likelihood) — theo PubMed, Heinze & Schemper, PMID 12210625 ([DOI](https://doi.org/10.1002/sim.1047)). Định trước là **phương án xử lý separation**, không phải đổi mô hình sau khi xem dữ liệu |
+
+### 3.4b. KIỂM ĐỊNH GIẢ ĐỊNH — MÔ HÌNH TUYẾN TÍNH (nhánh dự phòng, định trước)
+
+- **Tuyến tính** (residual vs fitted), **phương sai đồng nhất** (đồ thị scale–location; nếu vi phạm → **sai số chuẩn robust HC3** hoặc biến đổi kết cục), **phân phối phần dư** (Q–Q plot), **đa cộng tuyến** (VIF như trên), **điểm ảnh hưởng** (Cook's distance). Báo **β + KTC 95%** cho mỗi biến, R²/R² hiệu chỉnh.
+
+### 3.5. XỬ LÝ DỮ LIỆU THIẾU (missing data — định trước)
+
+1. **Mô tả trước:** báo **% thiếu theo từng biến** + **cơ chế nghi ngờ** — phân loại **MCAR / MAR / MNAR** (nêu giả định rõ, không mặc định). Kiểm mẫu hình thiếu (so đặc điểm nhóm thiếu vs không thiếu) — mô tả, không "chứng minh" MAR (không kiểm định được MNAR từ dữ liệu quan sát).
+2. **Phương pháp chính (định trước):**
+   - Nếu **thiếu ít** (vd < 5% mỗi biến, tổng nhỏ) và nghi **MCAR** → **complete-case (phân tích ca đầy đủ)** làm chính, chấp nhận mất ít lực. Ngưỡng % `[CẦN BÁC SĨ ẤN ĐỊNH]`.
+   - Nếu **thiếu đáng kể** (≥ ngưỡng) và hợp lý **MAR** → **đa trọng imputation (Multiple Imputation by Chained Equations, MICE)**, m ≥ 20 bộ (hoặc m ≈ % thiếu), gộp theo **quy tắc Rubin**; đưa các biến kết cục + biến phân tích vào mô hình imputation. Báo minh bạch theo hướng dẫn Sterne và cs. (BMJ 2009;338:b2393) — neo qua tổng quan PubMed PMID 22784200 ([DOI](https://doi.org/10.1186/1471-2288-12-96)).
+   - **KHÔNG dùng** thay giá trị bằng trung bình đơn (mean substitution), LOCF, hay missing-indicator làm phân tích chính (gây bias — nêu trong tổng quan trên).
+3. **Quy tắc điểm miền khi thiếu item lẻ:** tính điểm miền nếu ≥ [50%] item hợp lệ (quy tắc `[CẦN BÁC SĨ ẤN ĐỊNH]`, kế thừa `bien-so`), nếu không → điểm miền = thiếu.
+4. **Phân tích nhạy cảm cho giả định thiếu (§6):** so complete-case vs MI; nếu nghi MNAR → phân tích nhạy cảm mẫu hình (pattern-mixture / delta-adjustment) — gắn nhãn định trước.
+
+### 3.6. KIỂM SOÁT ĐA SO SÁNH (định trước)
+
+- **Kết cục chính (tỷ lệ hài lòng chung / mô hình đa biến chính):** **KHÔNG chỉnh α** — 1 kết cục chính, giữ α = 0,05.
+- **Nhiều kết cục phụ / nhiều miền / nhiều yếu tố trong MT2:** để tránh lạm phát sai số loại I khi báo nhiều liên quan, áp **kiểm soát tỷ lệ phát hiện sai (FDR — Benjamini–Hochberg)** cho **họ kiểm định đơn biến MT2** (báo cả p thô và p hiệu chỉnh). *Bonferroni/Holm* dự phòng nếu số kiểm định nhỏ và cần kiểm soát chặt FWER. **Chọn chiến lược nào phải khóa ở đây**, nhất quán với α ở G3. `[CẦN BÁC SĨ ẤN ĐỊNH: FDR-BH (mặc định đề xuất) vs Holm]`.
+- **Nguyên tắc:** mọi liên quan MT2 vẫn báo **hiệu ứng + KTC 95%** (KTC không bị "chỉnh" theo cách che giấu độ lớn); hiệu chỉnh đa so sánh áp cho p, ghi rõ.
+
+---
+
+## 4. PHÂN TÍCH NHÓM NHỎ (SUBGROUP) — định trước
+
+- **Chỉ 1 phân nhóm định trước** (nếu có): hiệu ứng thời gian chờ theo `doituong_qd` (quân nhân/thân nhân/dịch vụ) — trùng số hạng tương tác §3.3. Báo ước lượng theo tầng + **kiểm tương tác (p tương tác) + hiệu ứng từng tầng + KTC 95%**.
+- Mọi phân nhóm khác = **THĂM DÒ**, tạo giả thuyết, không kết luận xác nhận. **KHÔNG "săn" phân nhóm có ý nghĩa.**
+
+---
+
+## 5. TÓM TẮT ĐỐI CHIẾU MỤC TIÊU ↔ PHÂN TÍCH (khóa)
+
+| Mục tiêu | Kết cục | Thống kê chính (định trước) | Hiệu ứng báo cáo (BẮT BUỘC kèm) |
+|---|---|---|---|
+| **MT1** mô tả | Tỷ lệ hài lòng chung + theo miền | Tỷ lệ + **KTC 95% Wilson** | % (KTC 95%) |
+| **MT1** mô tả | Điểm hài lòng miền/tổng | TB±SD **hoặc** trung vị[IQR] theo phân phối (§2.1) | điểm ± SD / trung vị [IQR]; % floor–ceiling |
+| **MT2** phân tích | Hài lòng (nhị phân) | Đơn biến χ²/Fisher → **logistic đa biến** | **aOR + KTC 95%** (+ p) |
+| **MT2** dự phòng | Điểm hài lòng (liên tục) | Đơn biến t/Mann–Whitney·tương quan → **tuyến tính đa biến** | **β + KTC 95%** (+ p) |
+
+---
+
+## 6. PHÂN TÍCH NHẠY CẢM (sensitivity — định trước)
+
+1. **Dữ liệu thiếu:** complete-case **vs** đa trọng imputation (MICE) — so hướng/độ lớn hiệu ứng.
+2. **Ngưỡng nhị phân hóa:** lặp mô hình chính với ≥1 định nghĩa "hài lòng" thay thế (vd mức 4–5 vs điểm TB ≥ ngưỡng vs trung vị) → kiểm độ vững của aOR. *(Vì ngưỡng có hệ quả lớn — cảnh báo G3.)*
+3. **Ceiling effect:** nếu >15% điểm trần → phân tích trên điểm liên tục (tuyến tính) song song với nhị phân; cân nhắc thang chiều lòng bổ trợ nếu đã thu (`[CẦN KIỂM CHỨNG công cụ]`).
+4. **Separation:** logistic thường vs **Firth** (PMID 12210625) → so ước lượng.
+5. **Điểm ảnh hưởng:** mô hình có/không quan sát ảnh hưởng lớn (chỉ loại nếu lỗi dữ liệu).
+6. **EPV:** mô hình đầy đủ vs mô hình rút gọn (ưu tiên biến forced-in) nếu EPV eo hẹp.
+
+> Mọi phân tích nhạy cảm **định trước**; kết quả không làm thay đổi kết cục/mô hình chính đã khóa — chỉ đánh giá độ vững.
+
+---
+
+## 7. BỘ DUMMY TABLES (TABLE SHELLS) — bảng TRỐNG, đúng thứ tự báo cáo
+
+> Chỉ **placeholder** (—, XX,X, [ ]); KHÔNG số giả. Số cột/hàng phần hài lòng khóa theo **phụ lục QĐ 56/2024** `[CẦN KIỂM CHỨNG số miền/câu]`. Biến MT2 khóa theo danh mục đã ấn định.
+
+### Bảng 1 — Đặc điểm nền của mẫu nghiên cứu (n = ___)
+
+| Đặc điểm | Phân nhóm | n (%) hoặc TB±SD / trung vị[IQR] |
+|---|---|---|
+| Tuổi (năm) | — | —  ± —  /  — [—; —] |
+| Nhóm tuổi | <30 / 30–44 / 45–59 / ≥60 `[CẦN ẤN ĐỊNH]` | — (—%) |
+| Giới | Nam / Nữ / Khác | — (—%) |
+| Học vấn | ≤Tiểu học / THCS / THPT / TC-CĐ / ≥ĐH `[danh mục CẦN ẤN ĐỊNH]` | — (—%) |
+| Nghề nghiệp | [danh mục] | — (—%) |
+| Nơi cư trú | Cùng TP.HCM / Tỉnh khác | — (—%) |
+| Đối tượng | Quân nhân / Thân nhân / Dân sự-dịch vụ | — (—%) |
+| Hình thức chi trả | BHYT / Tự nguyện-dịch vụ / Kết hợp / Khác | — (—%) |
+| Lần khám | Lần đầu / Tái khám | — (—%) |
+| Chuyên khoa | [danh mục nội bộ C1a] | — (—%) |
+| Thời gian chờ (phút) | — | —  ± —  /  — [—; —] |
+| Có làm CLS | Có / Không | — (—%) |
+| Khung giờ khám | Sáng sớm / Cuối sáng / Đầu chiều / Cuối chiều | — (—%) |
+
+*Chú thích: dữ liệu thiếu (nếu có) báo riêng theo biến. TB±SD hay trung vị[IQR] chọn theo phân phối (§2.1).*
+
+### Bảng 2 — Mức độ hài lòng theo miền và chung (MT1) (n = ___)
+
+| Miền hài lòng | Điểm TB ± SD | Trung vị [IQR] | % sàn (min) | % trần (max) | Tỷ lệ "hài lòng" % (KTC 95% Wilson) |
+|---|---|---|---|---|---|
+| 1. Khả năng tiếp cận | — ± — | — [—; —] | —% | —% | —% (—; —) |
+| 2. Minh bạch thông tin & thủ tục | — ± — | — [—; —] | —% | —% | —% (—; —) |
+| 3. Cơ sở vật chất & phương tiện | — ± — | — [—; —] | —% | —% | —% (—; —) |
+| 4. Thái độ ứng xử & năng lực NVYT | — ± — | — [—; —] | —% | —% | —% (—; —) |
+| 5. Kết quả cung cấp dịch vụ | — ± — | — [—; —] | —% | —% | —% (—; —) |
+| **Hài lòng CHUNG (kết cục chính MT1)** | **— ± —** | **— [—; —]** | **—%** | **—%** | **—% (—; —)** |
+
+*Số miền theo phụ lục QĐ 56/2024 `[CẦN KIỂM CHỨNG]`. "Hài lòng" theo ngưỡng đã khóa `[CẦN ẤN ĐỊNH]`.*
+
+### Bảng 3 — Phân tích ĐƠN BIẾN yếu tố liên quan hài lòng (MT2) (n = ___)
+
+| Yếu tố | Phân nhóm | Tỷ lệ hài lòng % (KTC 95%) | OR thô (KTC 95%) | p | p hiệu chỉnh (FDR/Holm) |
+|---|---|---|---|---|---|
+| Nhóm tuổi | [nhóm] | —% (—; —) | — (—; —) | 0,00X | 0,00X |
+| Giới | Nam / Nữ | —% (—; —) | — (—; —) [ref] | 0,00X | 0,00X |
+| Học vấn | [nhóm] | —% (—; —) | — (—; —) | 0,00X | 0,00X |
+| Nơi cư trú | Cùng / Khác tỉnh | —% (—; —) | — (—; —) | 0,00X | 0,00X |
+| Đối tượng | [nhóm] | —% (—; —) | — (—; —) | 0,00X | 0,00X |
+| Hình thức chi trả | [nhóm] | —% (—; —) | — (—; —) | 0,00X | 0,00X |
+| Thời gian chờ | (liên tục /1 phút) | — | — (—; —) | 0,00X | 0,00X |
+| Nhóm thời gian chờ | ≤30 / 31–60 / >60 `[CẦN ẤN ĐỊNH]` | —% (—; —) | — (—; —) | 0,00X | 0,00X |
+| Lần khám | Lần đầu / Tái khám | —% (—; —) | — (—; —) | 0,00X | 0,00X |
+| Chuyên khoa | [danh mục] | —% (—; —) | — (—; —) | 0,00X | 0,00X |
+
+*Danh định/thứ hạng: χ² (Fisher nếu ô kỳ vọng<5). Liên tục: t/Mann–Whitney và/hoặc OR thô/đơn vị. CẤM p đơn độc — luôn kèm hiệu ứng + KTC 95%.*
+
+### Bảng 3b (nhánh dự phòng — nếu kết cục liên tục) — Đơn biến với điểm hài lòng
+
+| Yếu tố | Hiệu số TB/trung vị (KTC 95%) hoặc r (KTC 95%) | p |
+|---|---|---|
+| [từng biến] | — (—; —) | 0,00X |
+
+### Bảng 4 — Mô hình ĐA BIẾN hồi quy LOGISTIC yếu tố liên quan hài lòng (MT2) (n = ___; số biến cố = ___; EPV = ___)
+
+| Biến độc lập (đã khóa) | Phân nhóm (ref) | aOR | KTC 95% | p |
+|---|---|---|---|---|
+| [Biến forced-in 1] | [ref] | — | (—; —) | 0,00X |
+| [Biến forced-in 2] | [ref] | — | (—; —) | 0,00X |
+| Thời gian chờ | /1 phút (hoặc nhóm) | — | (—; —) | 0,00X |
+| Nơi cư trú | Khác tỉnh (ref: cùng) | — | (—; —) | 0,00X |
+| Đối tượng | [nhóm] | — | (—; —) | 0,00X |
+| [Số hạng tương tác định trước] | Thời gian chờ × Đối tượng | — | (—; —) | 0,00X |
+| … | … | — | (—; —) | 0,00X |
+
+*Chẩn đoán mô hình (báo kèm): VIF/GVIF cao nhất = —; Hosmer–Lemeshow χ²=—, p=—; AUC=— (KTC 95% —; —); n đưa vào mô hình=— (complete-case) / MI m=—. Firth áp dụng nếu separation: [Có/Không].*
+
+### Bảng 4b (nhánh dự phòng — nếu kết cục liên tục) — Đa biến hồi quy TUYẾN TÍNH
+
+| Biến độc lập | β (KTC 95%) | p |
+|---|---|---|
+| [từng biến] | — (—; —) | 0,00X |
+
+*R² hiệu chỉnh = —; kiểm giả định: đồng nhất phương sai [đạt/robust HC3], VIF max = —.*
+
+### Bảng 5 — Phân tích NHẠY CẢM (tóm tắt độ vững) (n = ___)
+
+| Kịch bản nhạy cảm | Hiệu ứng chính (aOR/β) | KTC 95% | Kết luận độ vững |
+|---|---|---|---|
+| Chính (complete-case) | — | (—; —) | — |
+| Đa trọng imputation (MICE, m=—) | — | (—; —) | — |
+| Ngưỡng "hài lòng" thay thế | — | (—; —) | — |
+| Logistic Firth (nếu separation) | — | (—; —) | — |
+| Có/không điểm ảnh hưởng lớn | — | (—; —) | — |
+
+---
+
+## 8. BÀN GIAO CỔNG
+
+- **→ `phan-tich-thong-ke` (G7 — SAU khi DB khóa G6):** chạy đúng SAP đã khóa; báo hiệu ứng + KTC 95%; đánh dấu mọi thứ ngoài SAP là THĂM DÒ.
+- **→ `quan-ly-du-lieu` (G5/G6):** bảo đảm biến/mã hóa/calc field khớp SAP; khóa DB TRƯỚC phân tích; cung cấp % thiếu theo biến.
+- **→ `co-mau-nghien-cuu` (G3):** sau khi khóa k (số biến) + p_biến_cố (ngưỡng nhị phân) → **tính lại cỡ mẫu chính xác**, cập nhật protocol.
+- **→ `viet-ban-thao` (G8):** Methods theo STROBE mục 12 (phương pháp thống kê) trích nguyên SAP; báo cáo đầy đủ chẩn đoán mô hình + nhạy cảm.
+- **→ `so-cai-ghi-nho`:** lưu **A_SAP v1.0** + trạng thái CHỜ KHÓA; sau khi ký ghi "SAP_STATUS: LOCKED, ngày ___".
+
+---
+
+## 9. DANH MỤC PHẢI ẤN ĐỊNH TRƯỚC KHI KHÓA (cổng cứng G4)
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  ĐỂ KHÓA SAP — BÁC SĨ/NHÀ THỐNG KÊ CHỐT (TRƯỚC KHI MỞ DỮ LIỆU):  ║
+║  1. Ngưỡng nhị phân "hài lòng chung" (định nghĩa kết cục chính)   ║
+║  2. Mô hình chính: logistic (nhị phân) HAY tuyến tính (liên tục) ║
+║     + tiêu chí kích hoạt nhánh dự phòng                          ║
+║  3. Danh mục biến MT2 + tập hiệu chỉnh tối thiểu (DAG) + biến     ║
+║     forced-in + số hạng tương tác định trước                     ║
+║  4. Ngưỡng đưa biến từ đơn biến (đề xuất p<0,20) + trần EPV       ║
+║  5. Chiến lược đa so sánh: FDR-BH (đề xuất) vs Holm/Bonferroni    ║
+║  6. Quy tắc dữ liệu thiếu: ngưỡng % chuyển complete-case→MI;      ║
+║     m của MICE; quy tắc % item tối thiểu tính điểm miền           ║
+║  7. Phần mềm cuối (R / Stata / SPSS) + phiên bản                  ║
+║  8. Mã hóa danh mục (học vấn/nghề/chuyên khoa/đối tượng/nhóm      ║
+║     tuổi/nhóm thời gian chờ)                                      ║
+║  → Ghi vào _SO-TRANG-THAI-CHECKPOINT.md:                         ║
+║     G4_STATUS: LOCKED   G4_SAP_VERSION: ___  G4_LOCK_DATE: ___   ║
+╠══════════════════════════════════════════════════════════════════╣
+║  TRƯỚC KHI LOCKED: KHÔNG mở/xem dữ liệu; KHÔNG chạy phân tích     ║
+║  chính (G7 bị chặn).                                             ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+**[CẦN DỮ LIỆU PILOT]:** phân phối điểm (để xác nhận TB vs trung vị); % floor/ceiling thực; Cronbach α mẫu C1a; tỷ lệ "chưa hài lòng" thực (chi phối EPV & cỡ mẫu chính xác) — *lấy sau pilot, KHÔNG dùng để đổi kết cục/mô hình chính đã khóa.*
+
+**[CẦN KIỂM CHỨNG]:** số miền/câu/mức thang của phụ lục phiếu ngoại trú QĐ 56/2024 (khóa cấu trúc Bảng 2).
+
+---
+
+## ✅ TIÊU CHÍ QUA CỔNG G4 — TỰ ĐỐI CHIẾU
+
+```
+✦ SELF-CHECK SAP — Cổng G4:
+  ĐÃ ĐẠT (AI side — bản DỰ THẢO):
+   - Đóng khung [DỰ THẢO — CHỜ KHÓA]; nêu rõ phải khóa TRƯỚC dữ liệu; KHÔNG
+     tuyên bố đã khóa/đã có dữ liệu; nhắc bất biến "không xem dữ liệu trước khi khóa".
+   - Mô tả mẫu: Bảng 1 đặc điểm nền.
+   - MT1: kiểm phân phối (trực quan+skewness+Shapiro tham khảo) → TB±SD/trung vị[IQR];
+     tỷ lệ hài lòng + KTC 95% Wilson; % floor/ceiling.
+   - MT2: đơn biến χ²/Fisher·t/Mann–Whitney → đa biến LOGISTIC (aOR+95%CI);
+     nhánh dự phòng tuyến tính (β+95%CI) ĐỊNH TRƯỚC; chọn biến theo DAG (không stepwise);
+     xử lý nhiễu + tương tác định trước; VIF, Hosmer–Lemeshow+hiệu chuẩn+AUC, Firth khi separation.
+   - Dữ liệu thiếu: nêu CƠ CHẾ (MCAR/MAR/MNAR) → complete-case/MICE(Rubin) + nhạy cảm.
+   - Đa so sánh: FDR-BH/Holm cho họ MT2; kết cục chính giữ α=0,05; khớp α ở G3.
+   - CẤM p đơn độc: mọi bảng báo hiệu ứng + KTC 95%.
+   - Nhóm nhỏ + nhạy cảm định trước; phân biệt pre-specified vs exploratory.
+   - 6 dummy tables trống đúng thứ tự (nền → hài lòng miền/tổng → đơn biến → đa biến → nhạy cảm),
+     chỉ placeholder, KHÔNG số giả.
+   - Phần mềm R/Stata + gói nêu rõ.
+  CÒN THIẾU (phụ thuộc bác sĩ/pilot — [CẦN...]):
+   - 8 mục ấn định để KHÓA (§9); phụ lục QĐ 56/2024; số liệu pilot.
+  KẾT: ĐẠT TỰ KIỂM (đầu ra là DỰ THẢO SAP; các ô số đúng quy tắc để [CẦN...],
+       không số giả; chờ human ký KHÓA trước khi mở dữ liệu).
+```
+
+### Chốt kiểm liêm chính (Lớp 1 R1–R7)
+- **R1 Nguồn/không bịa:** mọi neo phương pháp gắn PMID/DOI thật đã tra PubMed (STROBE 18313558; EPV 8970487; nới EPV 17182981; Firth 12210625; MI reporting 22784200/Sterne 2009; Terwee ceiling 17161752; thông lệ hài lòng VN 40295132, 34445940, 36292392). Ngưỡng/tham số chưa có → `[CẦN…]`; dummy tables chỉ placeholder. ✅
+- **R2 PII:** phân tích trên biến ẩn danh; không ô/không tạo định danh. ✅
+- **R3 Cổng:** đóng khung DỰ THẢO CHỜ KHÓA; không tuyên bố đã khóa/đã có dữ liệu; nêu bất biến không xem dữ liệu trước khi khóa; G7 bị chặn tới khi LOCKED. ✅
+- **R4/R5:** không gán mức chứng cứ; tách rõ pre-specified vs exploratory; cắt ngang → chỉ "liên quan", không nhân quả. ✅
+- **R6 Nhãn [CẦN…]:** đầy đủ (8 mục khóa + pilot + phụ lục). ✅
+- **R7 Disclaimer:** có (dưới). ✅
+
+---
+*Theo PubMed — nguồn phương pháp: STROBE [PMID 18313558](https://doi.org/10.1016/j.jclinepi.2007.11.008); EPV≥10 [PMID 8970487](https://doi.org/10.1016/s0895-4356(96)00236-3); nới EPV [PMID 17182981](https://doi.org/10.1093/aje/kwk052); Firth cho separation [PMID 12210625](https://doi.org/10.1002/sim.1047); báo cáo dữ liệu thiếu/MI (Sterne 2009 b2393) qua [PMID 22784200](https://doi.org/10.1186/1471-2288-12-96); ceiling/Terwee [PMID 17161752](https://doi.org/10.1016/j.jclinepi.2006.03.012); thông lệ phân tích hài lòng ngoại trú [PMID 40295132](https://doi.org/10.1136/bmjopen-2024-093501), [PMID 34445940](https://doi.org/10.1080/00185868.2021.1969871), [PMID 36292392](https://doi.org/10.3390/healthcare10101945). Công cụ kết cục: QĐ 56/QĐ-BYT (2024).*
+
+**Cần bác sĩ kiểm chứng.**

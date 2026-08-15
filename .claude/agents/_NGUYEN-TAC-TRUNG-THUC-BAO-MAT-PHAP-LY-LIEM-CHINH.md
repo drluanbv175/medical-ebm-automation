@@ -38,7 +38,7 @@ Checklist:
 | Lĩnh vực | Văn bản hiện hành (đã kiểm chứng 2026-06-13) | Hiệu lực |
 |---|---|---|
 | Bảo vệ dữ liệu cá nhân | **Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15** (thông qua 26/6/2025) + **Nghị định 356/2025/NĐ-CP** (31/12/2025) hướng dẫn | từ **01/01/2026** |
-| (tiền thân về DLCN) | **Nghị định 13/2023/NĐ-CP** về bảo vệ dữ liệu cá nhân | từ 01/7/2023 — phần không trái Luật 91/2025 `[CẦN KIỂM CHỨNG hiệu lực còn lại]` |
+| (tiền thân về DLCN, ĐÃ HẾT HIỆU LỰC) | **Nghị định 13/2023/NĐ-CP** về bảo vệ dữ liệu cá nhân | hiệu lực 01/7/2023 → **hết hiệu lực HOÀN TOÀN từ 01/01/2026**, thay thế trọn vẹn bởi Luật 91/2025 + NĐ 356/2025 ở dòng trên (2026-07-11: sửa — trước ghi sai "phần không trái Luật 91/2025 vẫn hiệu lực"; xác nhận qua thuvienphapluat.vn + lntpartners.com, không có cơ chế giữ hiệu lực một phần) |
 | Khám bệnh, chữa bệnh (bảo mật thông tin người bệnh, hồ sơ bệnh án) | **Luật Khám bệnh, chữa bệnh số 15/2023/QH15** + **Nghị định 96/2023/NĐ-CP** (30/12/2023) | từ **01/01/2024** |
 | Đạo đức nghiên cứu y sinh học (Hội đồng đạo đức) | **Thông tư 43/2024/TT-BYT** (12/12/2024) — *thay* Thông tư 04/2020/TT-BYT | từ **01/02/2025** |
 | Quy chế Hội đồng đạo đức cơ sở · quy định bảo mật/CNTT nội bộ · quy trình lưu trữ hồ sơ | quy định nội bộ của đơn vị triển khai | `[CẦN XÁC NHẬN TẠI ĐƠN VỊ]` |

@@ -1,0 +1,111 @@
+{
+  "document": "R1_1_2_FRESH_ARCHIVE_ACCEPTANCE.json",
+  "date": "2026-06-28",
+  "phase": "R1.1.2 — Phase G + H",
+  "branch": "feat/r1-1-2-design-gap-remediation",
+  "baseline_tag": "r1.1-frozen",
+  "baseline_commit": "9fdfdffed90cb38d2dc56f6cf8604223c4e6d70e",
+  "status": "DRAFT — REQUIRE HUMAN REVIEW",
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+
+  "suite_run": {
+    "command": "MRAQ_OFFLINE_CI=1 ~/.ebm-venv/bin/python -m pytest --tb=short -q",
+    "working_directory": "medical-ebm-automation/",
+    "total_passed": 867,
+    "total_failed": 0,
+    "total_skipped": 5,
+    "total_warnings": 1,
+    "warning_detail": "urllib3 v2 / LibreSSL 2.8.3 version mismatch — does not affect test logic",
+    "result": "PASS"
+  },
+
+  "baseline_comparison": {
+    "r1_1_frozen_passed": 836,
+    "r1_1_2_new_tests": 31,
+    "r1_1_2_total": 867,
+    "regression_vs_baseline": 0,
+    "new_failures": 0
+  },
+
+  "hermetic_verification": {
+    "mraq_offline_ci_flag": true,
+    "network_calls_in_suite": 0,
+    "pii_in_fixtures": 0,
+    "production_connectors": 0,
+    "all_events_is_synthetic_true": true,
+    "all_events_production_valid_false": true
+  },
+
+  "new_test_file": {
+    "path": "tests/test_r1_1_2_gap_remediation.py",
+    "test_classes": 8,
+    "test_count": 31,
+    "gaps_covered": ["G-01", "G-02", "G-03", "WORM-01-12", "DEL-01-08", "INV-01-02"]
+  },
+
+  "t14_fix": {
+    "file": "tests/test_r1_1_offline_rbac_synthetic_identity.py",
+    "gap": "G-04",
+    "change": "assertion tightened from reason_code in (EXPIRED_ROLE, ROLE_NOT_PERMITTED) to reason_code == EXPIRED_ROLE",
+    "passes": true
+  },
+
+  "source_files_modified": [
+    {
+      "file": "research_project/project_audit_attribution.py",
+      "changes": [
+        "Module label: R1.1.2 Tamper-Evident Local Audit Ledger Simulation",
+        "PROD_AUD_01_WORM_DEPENDENCY = NOT_IMPLEMENTED",
+        "LOCAL_LEDGER_CLASSIFICATION = TAMPER_EVIDENT_LOCAL_SIMULATION_NOT_WORM",
+        "SyntheticAuditEvent.sequence_number field (1-based monotonic)",
+        "to_dict() includes sequence_number and local_ledger_classification",
+        "verify_hash_chain(): 4 new checks (sequence discontinuity, duplicate event_id, out-of-order, first-seq!=1)",
+        "AuditAttributionLedger.record(): assigns sequence_number = len(all_events) + 1",
+        "AuditAttributionLedger.ledger_root_hash(): SHA-256 of recomputed event hashes",
+        "AuditAttributionLedger.create_checkpoint(): point-in-time snapshot with WORM dependency marker"
+      ]
+    },
+    {
+      "file": "research_project/project_delegation_registry.py",
+      "changes": [
+        "DelegationReasonCode enum (9 values)",
+        "DelegationDecision dataclass (11 fields + to_dict())",
+        "evaluate_delegation_action() function (8-step evaluation order)"
+      ]
+    },
+    {
+      "file": "tests/test_r1_1_offline_rbac_synthetic_identity.py",
+      "changes": [
+        "T14 assertion: reason_code == SoDViolation.EXPIRED_ROLE.value (G-04 fix)"
+      ]
+    }
+  ],
+
+  "deferred_items": {
+    "PROD_AUD_01": {
+      "status": "DEFERRED_TO_PRODUCTION_QUALIFICATION",
+      "milestone": "R1.3",
+      "reason": "Requires WORM-capable retention, off-system backup, retention policy — cannot be closed with offline tests"
+    },
+    "production_rbac_enforcement": {
+      "status": "DEFERRED_TO_PRODUCTION_QUALIFICATION",
+      "milestone": "R1.3"
+    },
+    "independent_pentest_IQ20": {
+      "status": "DEFERRED_TO_PRODUCTION_QUALIFICATION",
+      "milestone": "R1.5"
+    }
+  },
+
+  "invariants_unchanged": {
+    "institutional_sso": "NOT IMPLEMENTED",
+    "mfa": "NOT IMPLEMENTED",
+    "authenticated_identity": "NOT IMPLEMENTED",
+    "production_audit_attribution": "NOT IMPLEMENTED",
+    "electronic_signature": "NOT IMPLEMENTED",
+    "ethics_irb_approval": "NOT IMPLEMENTED",
+    "independent_review": "NOT IMPLEMENTED",
+    "real_research_execution": "BLOCKED",
+    "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE"
+  }
+}

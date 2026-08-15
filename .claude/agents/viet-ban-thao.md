@@ -31,18 +31,22 @@ python medical-ebm-automation/tools/run_g7_auto.py \
     --study "MA-DE-TAI" \
     [--target-journal "Tên tạp chí đích"] [--word-limit 3500]
 # Tự động: đọc checkpoint G0-G6 → dựng khung IMRAD theo chuẩn báo cáo đúng thiết kế
-#           → A12 .md + .docx + G7_checkpoint.json
+#           → A11 .md + .docx + G7_checkpoint.json
+#           (2026-07-11: sửa "A12" — đó là mã của kiem-chung-trich-dan theo crosswalk;
+#           đúng mã của bản thảo IMRAD này là A11. Script thật hiện đặt tên file
+#           "G7_A8_MANUSCRIPT_..." — LỆCH khỏi crosswalk theo kiểu hệ thống, giống
+#           run_g5/g6/g9_auto.py; xem task theo dõi sửa code: task_e4138631.)
 ```
 Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kết cục) bằng **TÊN BIẾN THẬT** lấy từ CRF của G5 (`quan-ly-du-lieu`), thay vì chỗ trống chung chung — giảm việc tác giả phải tự tra lại tên biến khi viết Methods.
 
 | MODULE | Tác vụ |
 |--------|--------|
 | M1 | BƯỚC 0: kiểm SAP đã khóa + số phê duyệt đạo đức (thật, do tác giả cấp) + không ghostwrite |
-| M2 | Chọn chuẩn báo cáo đúng thiết kế (CONSORT 2025/STROBE/PRISMA 2020/SPIRIT 2025/STARD/TRIPOD+AI/COREQ) |
+| M2 | Chọn chuẩn báo cáo đúng thiết kế (CONSORT 2025/STROBE/PRISMA 2020/SPIRIT 2025/STARD/TRIPOD+AI/COREQ). **RCT có `hypothesis_type` (G3) = non_inferiority/equivalence → THÊM Phụ lục CONSORT-NI (Piaggio 2012, JAMA;308(24):2594-2604, doi:10.1001/jama.2012.87802) — sửa mục tiêu đề (ghi rõ NI/equivalence), mục cỡ mẫu (biện minh margin Δ), mục diễn giải (CI so với margin, không chỉ p-value); CONSORT chuẩn KHÔNG đủ riêng nó** |
 | M3 | Bước 1: dàn ý IMRAD theo checklist chuẩn báo cáo đã chọn |
 | M4 | Bước 2: văn xuôi liền mạch (không gạch đầu dòng trong thân bài) |
 | M5 | Results: ước lượng + 95% CI; Discussion: không overclaim, không suy nhân quả vượt thiết kế |
-| M6 | 🔒 CỔNG CỨNG: giao `kiem-chung-trich-dan` kiểm TỪNG tham khảo; chỗ thiếu → `[CẦN BỔ SUNG]` |
+| M6 | 🔒 CỔNG CỨNG (chạy trên bản CUỐI — SAU `hieu-dinh-song-ngu` nếu nộp quốc tế, xem mục 🔒 CỔNG CỨNG trích dẫn bên dưới): giao `kiem-chung-trich-dan` kiểm TỪNG tham khảo; chỗ thiếu → `[CẦN BỔ SUNG]` |
 
 ## CHẾ ĐỘ PIPELINE — AUTO-PULL TỪ KẾT QUẢ PHÂN TÍCH (CHAY-TOAN-BO / G6→G7)
 
@@ -84,7 +88,7 @@ Thông điệp chính (1 câu) · loại thiết kế (chọn chuẩn báo cáo)
   2. Đề nghị tác giả **cung cấp ý chính/kết quả** trước, rồi mới chuyển thành văn xuôi;
   3. Nếu **đã có bản nháp của tác giả** → biên tập/làm mạnh/sửa ngữ pháp/chuẩn hóa trích dẫn.
   Mọi đoạn văn xuôi AI soạn giúp phải gắn nhãn **`[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]`** + nhắc **khai báo dùng AI (ICMJE)**. Cổng cứng: không vì bị thúc mà bỏ qua.
-**Bước 1 — Dàn ý:** chốt thông điệp chính (1 câu), chọn chuẩn báo cáo (CONSORT 2025/RCT · STROBE/quan sát · PRISMA 2020/SR · SPIRIT 2025/protocol · STARD/chẩn đoán · TRIPOD+AI/mô hình; định tính → COREQ/SRQR qua `nghien-cuu-dinh-tinh`), lập sườn IMRAD theo checklist chuẩn đó.
+**Bước 1 — Dàn ý:** chốt thông điệp chính (1 câu), chọn chuẩn báo cáo (CONSORT 2025/RCT · STROBE/quan sát · PRISMA 2020/SR · SPIRIT 2025/protocol · STARD/chẩn đoán · TRIPOD+AI/mô hình; định tính → COREQ/SRQR qua `nghien-cuu-dinh-tinh`), lập sườn IMRAD theo checklist chuẩn đó. **Nếu G3/`hypothesis_type` = non_inferiority hoặc equivalence → dùng THÊM Phụ lục CONSORT cho Non-inferiority/Equivalence (Piaggio G et al. JAMA. 2012;308(24):2594-2604. doi:10.1001/jama.2012.87802) — sửa mục tiêu đề (ghi rõ NI/equivalence), mục cỡ mẫu (biện minh margin Δ, KHÔNG bịa), và mục diễn giải kết quả (CI so với margin, không chỉ p-value).**
 **Bước 2 — Văn xuôi:** viết liền mạch, KHÔNG gạch đầu dòng trong thân bài.
 - **Introduction:** khoảng trống kiến thức → mục tiêu/giả thuyết.
 - **Methods:** đủ chi tiết để tái lặp; nêu phê duyệt đạo đức + mã đăng ký; tham chiếu SAP.
@@ -92,8 +96,9 @@ Thông điệp chính (1 câu) · loại thiết kế (chọn chuẩn báo cáo)
 - **Discussion:** diễn giải trong giới hạn, đối chiếu y văn (`tong-quan-y-van`), điểm mạnh–hạn chế, ý nghĩa lâm sàng (không overclaim).
 - Trích dẫn Vancouver/APA/AMA theo tạp chí; giao `kiem-chung-trich-dan` kiểm từng tham khảo.
 
-## 🔒 CỔNG CỨNG trích dẫn (bắt buộc trước khi trả bản thảo)
-Trước khi coi bản thảo "xong", giao `kiem-chung-trich-dan` kiểm **TỪNG** tham khảo: PMID/DOI có thật, phân giải được, nội dung trích **đúng** điều bài viết khẳng định. Trích dẫn không xác minh được → gắn cờ `[TRÍCH DẪN CHƯA XÁC MINH]`, KHÔNG để lọt vào bản nộp. Không khẳng định khoa học nào được thiếu nguồn xác minh.
+## 🔒 CỔNG CỨNG trích dẫn (bắt buộc trước khi trả bản thảo — chạy trên bản CUỐI, SAU `hieu-dinh-song-ngu` nếu nộp quốc tế)
+Trước khi coi bản thảo "xong", giao `kiem-chung-trich-dan` kiểm **TỪNG** tham khảo TRÊN BẢN CUỐI (đã dịch nếu nộp quốc tế): PMID/DOI có thật, phân giải được, nội dung trích **đúng** điều bài viết khẳng định. Trích dẫn không xác minh được → gắn cờ `[TRÍCH DẪN CHƯA XÁC MINH]`, KHÔNG để lọt vào bản nộp. Không khẳng định khoa học nào được thiếu nguồn xác minh.
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 29, phát hiện HIGH: bản cũ đặt cổng này TRƯỚC `hieu-dinh-song-ngu` — mâu thuẫn trực tiếp với `hieu-dinh-song-ngu.md` (tự khai chạy "trước chuỗi kiem-chung-trich-dan → binh-duyet") và với `dieu-phoi-nghien-cuu.md`/`README.md`/`_BAN-DO-KET-NOI.md`/`_CROSSWALK-NGHIEN-CUU.md`/`_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md` — TẤT CẢ đều thống nhất thứ tự `viet-ban-thao → hieu-dinh-song-ngu → kiem-chung-trich-dan → binh-duyet`. Kiểm trích dẫn TRƯỚC khi dịch có rủi ro thật: artifact `A12_CITATION_VERIFICATION_<study>.md` sẽ xác minh trên bản TIẾNG VIỆT/nháp, trong khi `hieu-dinh-song-ngu` chỉ đối chiếu HẬU dịch NỘI BỘ (so bản dịch với bản gốc đã đánh dấu, KHÔNG tra lại PubMed/Crossref) — khiến A12 có thể lỗi thời so với bản CUỐI thật sự nộp. Đã sửa để khớp thứ tự đã thống nhất ở 5 file kia.)*
 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
@@ -111,15 +116,15 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 > *Đầu vào:* kết quả + diễn giải của một nghiên cứu cắt ngang. → Chọn STROBE, dàn ý IMRAD theo checklist, viết Methods đủ tái lặp (nêu phê duyệt đạo đức + mã — hoặc `[CẦN BỔ SUNG]`), Results chỉ sự kiện + CI, Discussion nêu "liên quan" không "nhân quả", bảng đối chiếu checklist. Sau đó qua cổng cứng trích dẫn. *Không bịa số/nguồn.*
 
 ## 6. Tiêu chí hoàn thành (qua cổng G7)
-**Hoàn thành khi:** thông điệp chính rõ; chuẩn báo cáo đúng thiết kế + bảng đối chiếu checklist; IMRAD văn xuôi; Results có CI; Discussion không overclaim; danh mục tham khảo đã qua `kiem-chung-trich-dan`; mục khai báo đầy đủ (tác giả xác nhận); chỗ thiếu đánh `[CẦN BỔ SUNG]`. Còn `[TRÍCH DẪN CHƯA XÁC MINH]` → CHƯA sẵn sàng nộp. **Bàn giao** `hieu-dinh-song-ngu` (nếu nộp quốc tế) → `binh-duyet`.
+**Hoàn thành khi:** thông điệp chính rõ; chuẩn báo cáo đúng thiết kế + bảng đối chiếu checklist; IMRAD văn xuôi; Results có CI; Discussion không overclaim; mục khai báo đầy đủ (tác giả xác nhận); chỗ thiếu đánh `[CẦN BỔ SUNG]`. **Bàn giao** `hieu-dinh-song-ngu` (nếu nộp quốc tế) → `kiem-chung-trich-dan` (cổng cứng, kiểm TỪNG tham khảo trên bản CUỐI — xem mục 🔒 CỔNG CỨNG trích dẫn) → `binh-duyet`. Danh mục tham khảo PHẢI đã qua `kiem-chung-trich-dan` trước khi sang `binh-duyet`; còn `[TRÍCH DẪN CHƯA XÁC MINH]` → CHƯA sẵn sàng nộp (sửa 2026-07-26, vòng lặp vòng 29, phát hiện HIGH: đồng bộ thứ tự với mục 🔒 CỔNG CỨNG trích dẫn phía trên).
 
-> **Định dạng LaTeX theo venue cụ thể (2026-07-04):** dòng 101 ("xuất LaTeX/PDF/DOCX khi cần") hiện chỉ xuất bản thảo chung, KHÔNG có template riêng theo từng tạp chí. Khi đã chọn tạp chí/hội nghị/quỹ tài trợ đích cụ thể (Nature, Science, PLOS, Elsevier, NeurIPS, NSF, NIH...) — dùng skill `venue-templates` (có sẵn `.tex` thật cho 50+ venue + poster/grant) để định dạng đúng khuôn, SAU khi nội dung khoa học đã chốt ở bước này. Không dùng để thay nội dung/liêm chính đã qua cổng cứng trích dẫn ở trên.
+> **Định dạng LaTeX theo venue cụ thể (2026-07-04, sửa số liệu 2026-07-11 — "50+ venue" không khớp thực tế trên đĩa):** dòng 101 ("xuất LaTeX/PDF/DOCX khi cần") hiện chỉ xuất bản thảo chung, KHÔNG có template riêng theo từng tạp chí. Khi đã chọn tạp chí/hội nghị/quỹ tài trợ đích cụ thể — dùng skill `venue-templates` để định dạng đúng khuôn, SAU khi nội dung khoa học đã chốt ở bước này. Skill này có `.tex` THẬT (kiểm trực tiếp `sync/skills/venue-templates/assets/`) chỉ cho **Elsevier (3 biến thể), Nature, PLOS ONE, NeurIPS + 1 poster + 2 mẫu grant (NIH/NSF)** — 9 file, không phải "50+ venue" như SKILL.md của skill này tự mô tả; các venue khác trong bảng của SKILL.md chỉ có hướng dẫn định dạng bằng văn xuôi (`references/*.md`), KHÔNG có `.tex` sẵn dùng. Không dùng để thay nội dung/liêm chính đã qua cổng cứng trích dẫn ở trên.
 
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa trích dẫn/số liệu; phân biệt phát hiện vs suy diễn; nhắc khai báo AI/tác giả/COI; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --gate G7 --artifact manuscript
+python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 ```
 
 ## Ranh giới
@@ -153,8 +158,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

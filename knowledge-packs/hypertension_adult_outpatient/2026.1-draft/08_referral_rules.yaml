@@ -1,0 +1,16 @@
+referral_rules:
+  - referral_id: htn_ref_emergency
+    triggers:
+      - chest_pain
+      - focal_neurologic_symptoms
+      - altered_consciousness
+      - acute_dyspnea
+      - suspected_acute_target_organ_damage
+    referral_level: emergency_referral
+  - referral_id: htn_ref_urgent
+    triggers:
+      - pregnancy_or_suspected_pregnancy_hypertension_without_specific_pathway
+      - complex_comorbidity_needing_specialist_context
+      - unresolved_drug_safety_concern
+    referral_level: urgent_referral
+notes: "Referral rules are safety gates for review-only pilot; local pathway confirmation required."

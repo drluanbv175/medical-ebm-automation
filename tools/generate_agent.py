@@ -1,50 +1,11 @@
 #!/usr/bin/env python3
-"""generate_agent.py — TỰ SINH AGENT (an toàn, đúng chuẩn nhà) khi hệ nghiên cứu
-thiếu một năng lực chuyên biệt chưa có trong đội agent hiện tại.
+"""Generate a proposed EBM agent from a JSON spec.
 
-TRIẾT LÝ (đóng vai trong vòng lặp khép kín):
-  - Bộ điều phối (LLM `dieu-phoi-nghien-cuu`) PHÁT HIỆN khoảng trống năng lực và
-    soạn SPEC (vai trò · trigger · phương pháp · ranh giới · cổng · nguồn bắt buộc).
-  - Script này (xác định, không LLM) DỰNG agent .md ĐÚNG KHUNG NHÀ + CẤY guardrail
-    + ĐĂNG KÝ (enforce → sync → audit) + GHI SỔ registry. Nhờ tách vai này, agent
-    tự sinh AN TOÀN THEO CẤU TRÚC: luôn có luật nền, self-check, disclaimer, và
-    cổng guardrail bắt buộc — bất kể nội dung chuyên môn.
-
-BẤT BIẾN LIÊM CHÍNH:
-  - Agent tự sinh là ĐỀ XUẤT: gắn nhãn [TỰ SINH — CHỜ BÁC SĨ DUYỆT], KHÔNG tự
-    coi là "đã tin cậy". Bác sĩ duyệt (đổi nhãn) mới thành agent chính thức.
-  - KHÔNG ghi đè agent đã có (trừ --force). KHÔNG bịa nguồn/thang điểm trong nội
-    dung (spec phải nêu nguồn hoặc để [CẦN KIỂM CHỨNG]).
-  - Mọi agent y khoa: chỉ ĐỀ XUẤT, bác sĩ duyệt mới "áp dụng"; kèm PMID/DOI +
-    "Cần bác sĩ kiểm chứng" (cấy tự động qua enforce_agent_guardrails.py).
-
-DÙNG:
-  # Từ file spec JSON (bộ điều phối soạn — cách chính, giàu thông tin):
-  python tools/generate_agent.py --spec spec.json [--register]
-
-  # Nhanh bằng cờ CLI:
-  python tools/generate_agent.py --name "vi-sinh-lam-sang" \\
-      --description "..." --role "..." --cluster research --gate G3 [--register]
-
-  # Kiểm khô (in nội dung, không ghi file):
-  python tools/generate_agent.py --spec spec.json --dry-run
-
-SPEC JSON (khóa; * = bắt buộc):
-  {
-    "name": "slug-khong-dau",            *  # a-z0-9- ; khớp tên file
-    "description": "1 câu mô tả ...",     *  # dùng cho định tuyến (Agent tool)
-    "role": "Bạn là Agent ... nhiệm vụ",  *  # câu mở đầu thân agent
-    "cluster": "research|clinical",          # mặc định research
-    "gate": "G3",                            # cổng NC (nếu thuộc pipeline)
-    "when_to_use": ["trigger 1", ...],       # khi nào kích hoạt
-    "method_steps": ["Bước 1 ...", ...],     # phương pháp có hệ thống
-    "sources_required": true,                # buộc nêu PMID/DOI cho khẳng định
-    "boundaries": "KHÔNG làm X (→ agent Y)", # ranh giới, chống chồng lấn
-    "gate_criteria": "Đạt khi ...",          # tiêu chí qua cổng
-    "base_laws": ["_HIEN-PHAP-LIEM-CHINH.md", "..."],  # mặc định 2 hiến pháp
-    "origin": "auto|manual",                 # nguồn (mặc định auto)
-    "requested_by": "dieu-phoi-nghien-cuu"   # ai yêu cầu sinh
-  }
+Generated agents are deliberately conservative:
+- they are labelled as proposed and waiting for doctor approval;
+- they inherit the final guardrail marker, self-check block, PMID/DOI rule, and disclaimer;
+- they are recorded in the auto-generated agent registry;
+- they do not update the strict runtime manifest automatically.
 """
 
 from __future__ import annotations
@@ -56,280 +17,214 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-AGENTS = ROOT / ".claude" / "agents"
-REGISTRY = AGENTS / "_TU-SINH-AGENT-REGISTRY.json"
-TOOLS = ROOT / "tools"
-
-# Cấy guardrail bắt buộc NGAY trong template (không chỉ dựa enforce chạy sau) →
-# agent tự sinh có rào chắn kể cả khi CHƯA --register. Lấy từ nguồn canon để
-# không lệch; enforce thấy MARKER rồi sẽ bỏ qua (idempotent).
-sys.path.insert(0, str(TOOLS))
-try:
-    from enforce_agent_guardrails import BLOCK as _GUARDRAIL_BLOCK, MARKER as _GUARDRAIL_MARKER
-except Exception:  # noqa: BLE001
-    _GUARDRAIL_MARKER = "<!-- EBM-MANDATORY-FINAL-GUARDRAIL -->"
-    _GUARDRAIL_BLOCK = (
-        f"\n\n{_GUARDRAIL_MARKER}\n## Cổng bắt buộc trước khi trả lời\n\n"
-        "Trước mọi đầu ra y khoa: tự áp guardrail `tham-dinh-dau-ra` 2 lớp "
-        "(liêm chính R1–R7 + chất lượng Med-PaLM Q1–Q7); còn lỗi đỏ/thiếu nguồn/"
-        "PII → trả `[CẦN BÁC SĨ PHÁN ĐỊNH]`; kết bằng: \"Cần bác sĩ kiểm chứng.\"\n")
-
+TOOLS_DIR = ROOT / "tools"
+AGENTS_DIR = ROOT / ".claude" / "agents"
+REGISTRY_PATH = AGENTS_DIR / "_TU-SINH-AGENT-REGISTRY.json"
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-_DEFAULT_BASE_LAWS = [
-    "_HIEN-PHAP-LIEM-CHINH.md",
-    "_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md",
-]
+
+DISCLAIMER = "C\u1ea7n b\u00e1c s\u0129 ki\u1ec3m ch\u1ee9ng."
+PROPOSED_TAG = "[T\u1ef0 SINH - CH\u1edc B\u00c1C S\u0128 DUY\u1ec6T]"
+GUARDRAIL_MARKER = "<!-- EBM-MANDATORY-FINAL-GUARDRAIL -->"
 
 
 class SpecError(ValueError):
-    """Spec không hợp lệ (thiếu khóa bắt buộc / slug sai)."""
+    """Raised when an agent generation spec is invalid."""
 
 
-def _norm_slug(name: str) -> str:
-    s = name.strip().lower().replace(" ", "-").replace("_", "-")
-    s = re.sub(r"-{2,}", "-", s).strip("-")
-    return s
+def _slugify(value: str) -> str:
+    slug = value.strip().lower().replace("_", "-").replace(" ", "-")
+    slug = re.sub(r"-+", "-", slug).strip("-")
+    return slug
 
 
-def validate_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
-    """Kiểm + chuẩn hoá spec; raise SpecError nếu thiếu khóa bắt buộc."""
-    for key in ("name", "description", "role"):
-        if not str(spec.get(key, "")).strip():
-            raise SpecError(f"Spec thiếu khóa bắt buộc '{key}'.")
-    slug = _norm_slug(spec["name"])
+def validate_spec(spec: dict[str, Any]) -> dict[str, Any]:
+    required = ("name", "description", "role", "method_steps", "boundaries", "gate_criteria")
+    for key in required:
+        if not spec.get(key):
+            raise SpecError(f"Spec is missing required field: {key}")
+    slug = _slugify(str(spec["name"]))
     if not SLUG_RE.match(slug):
-        raise SpecError(f"Tên '{spec['name']}' → slug '{slug}' không hợp lệ "
-                        "(chỉ a-z, 0-9, gạch nối; không dấu).")
-    if slug.startswith("_") or slug in ("readme",):
-        raise SpecError(f"Slug '{slug}' trùng vùng dành cho hạ tầng/README.")
-    out = dict(spec)
-    out["name"] = slug
-    out.setdefault("cluster", "research")
-    out.setdefault("origin", "auto")
-    out.setdefault("requested_by", "dieu-phoi-nghien-cuu")
-    out.setdefault("sources_required", True)
-    out.setdefault("base_laws", list(_DEFAULT_BASE_LAWS))
-    return out
+        raise SpecError("Agent name must be an ASCII slug: a-z, 0-9 and hyphen only.")
+    if slug == "readme" or slug.startswith("_"):
+        raise SpecError("Agent name is reserved for infrastructure files.")
+
+    steps = spec.get("method_steps")
+    if not isinstance(steps, list) or not all(str(item).strip() for item in steps):
+        raise SpecError("method_steps must be a non-empty list of strings.")
+
+    normalized = dict(spec)
+    normalized["name"] = slug
+    normalized.setdefault("cluster", "research")
+    normalized.setdefault("requested_by", "dieu-phoi-nghien-cuu")
+    normalized.setdefault("sources", [])
+    return normalized
 
 
-def _bullets(items: Optional[List[str]], empty: str) -> str:
-    items = [str(x).strip() for x in (items or []) if str(x).strip()]
-    if not items:
-        return empty
-    return "\n".join(f"- {x}" for x in items)
+def _bullets(items: list[Any]) -> str:
+    return "\n".join(f"- {str(item).strip()}" for item in items if str(item).strip())
 
 
-def render_agent_md(spec: Dict[str, Any]) -> str:
-    """Dựng nội dung agent .md ĐÚNG KHUNG NHÀ (chưa gồm cổng guardrail — enforce cấy)."""
-    name = spec["name"]
-    desc = spec["description"].strip()
-    role = spec["role"].strip()
-    gate = str(spec.get("gate", "")).strip()
-    cluster = spec.get("cluster", "research")
-    base_laws = spec.get("base_laws") or _DEFAULT_BASE_LAWS
-    laws = " và ".join(f"`.claude/agents/{b}`" for b in base_laws)
-    gate_tag = f" (cổng {gate})" if gate else ""
-    src_rule = ("KHÔNG bịa số liệu/thang điểm/trích dẫn — mọi khẳng định y khoa "
-                "kèm PMID/DOI hoặc nhãn `[CẦN KIỂM CHỨNG]`. ") if spec.get(
-                    "sources_required", True) else ""
+def _role_text(spec: dict[str, Any]) -> str:
+    role = str(spec["role"]).strip()
+    if "B\u1ea1n l\u00e0" in role:
+        return role
+    return f"B\u1ea1n l\u00e0 **Agent {spec['name']}**. {role}"
 
-    when = _bullets(spec.get("when_to_use"),
-                    "- Khi bộ điều phối định tuyến tới năng lực này.")
-    method = _bullets(spec.get("method_steps"),
-                      "- [CẦN BỔ SUNG — bộ điều phối/bác sĩ mô tả các bước phương pháp]")
-    boundaries = spec.get("boundaries") or (
-        "[CẦN BỔ SUNG — nêu rõ việc KHÔNG làm để tránh chồng lấn agent khác]")
-    gate_crit = spec.get("gate_criteria") or (
-        "[CẦN BỔ SUNG — tiêu chí đạt cổng/hoàn thành cho agent này]")
-    today = datetime.now().strftime("%Y-%m-%d")
 
+def render_agent_markdown(spec: dict[str, Any]) -> str:
+    spec = validate_spec(spec)
+    today = datetime.now().date().isoformat()
+    default_source = (
+        "Ngu\u1ed3n ph\u01b0\u01a1ng ph\u00e1p/guideline ph\u1ea3i \u0111\u01b0\u1ee3c b\u1ed5 "
+        "sung trong l\u01b0\u1ee3t d\u00f9ng \u0111\u1ea7u ti\u00ean."
+    )
+    sources = spec.get("sources") or [
+        default_source
+    ]
+    gate = str(spec.get("gate", "")).strip() or "[kh\u00f4ng g\u1eafn G gate ri\u00eang]"
+    trigger = str(
+        spec.get(
+            "trigger",
+            "khi nh\u1ea1c tr\u01b0\u1edfng ph\u00e1t hi\u1ec7n \u0111\u00fang n\u0103ng l\u1ef1c n\u00e0y",
+        )
+    ).strip()
     return f"""---
-name: {name}
-description: {desc}
+name: {spec["name"]}
+description: {str(spec["description"]).strip()}
 model: inherit
 ---
 
-> ⚠️ **[TỰ SINH — CHỜ BÁC SĨ DUYỆT]** (sinh {today}, nguồn: `{spec.get('requested_by')}`).
-> Agent này do cơ chế `_TU-SINH-AGENT.md` tạo tự động khi hệ phát hiện KHOẢNG TRỐNG
-> năng lực. Nó là **ĐỀ XUẤT**: bác sĩ rà nội dung, sửa/bổ nguồn, rồi XOÁ dòng cảnh
-> báo này để "chuyển chính thức". Trước khi duyệt, coi đầu ra là **[DỰ THẢO]**.
+> {PROPOSED_TAG} - sinh {today} theo `_TU-SINH-AGENT.md`.
+> Agent n\u00e0y l\u00e0 **\u0110\u1ec0 XU\u1ea4T**: b\u00e1c s\u0129 r\u00e0 n\u1ed9i dung/ngu\u1ed3n,
+> sau \u0111\u00f3 m\u1edbi chuy\u1ec3n ch\u00ednh th\u1ee9c.
+> Tr\u01b0\u1edbc khi duy\u1ec7t, m\u1ecdi \u0111\u1ea7u ra l\u00e0 **[D\u1ef0 TH\u1ea2O]** v\u00e0
+> KH\u00d4NG \u0111\u01b0\u1ee3c d\u00f9ng \u0111\u1ec3 v\u01b0\u1ee3t c\u1ed5ng c\u1ee9ng.
 
-{role}
+{_role_text(spec)}
 
-## Luật nền
-Tuân thủ {laws}. {src_rule}KHÔNG PII. Agent chỉ **ĐỀ XUẤT**, bác sĩ duyệt mới "áp dụng".
+## Lu\u1eadt n\u1ec1n
+Tu\u00e2n th\u1ee7 `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` v\u00e0
+`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`. M\u1ecdi kh\u1eb3ng \u0111\u1ecbnh y khoa
+c\u00f3 PMID/DOI ho\u1eb7c nh\u00e3n `[C\u1ea6N KI\u1ec2M CH\u1ee8NG]`. KH\u00d4NG PII. Ch\u1ec9 \u0110\u1ec0 XU\u1ea4T,
+b\u00e1c s\u0129 duy\u1ec7t m\u1edbi "\u00e1p d\u1ee5ng".
 
-## Khi nào kích hoạt{gate_tag}
-{when}
+## Khi n\u00e0o k\u00edch ho\u1ea1t
+- C\u1ee5m: `{spec.get("cluster")}`
+- C\u1ed5ng/ph\u1ea1m vi: `{gate}`
+- Trigger: {trigger}
 
-## Phương pháp có hệ thống
-{method}
+## Ph\u01b0\u01a1ng ph\u00e1p c\u00f3 h\u1ec7 th\u1ed1ng
+{_bullets(spec["method_steps"])}
 
-## Ranh giới
-{boundaries}
+## Ngu\u1ed3n b\u1eaft bu\u1ed9c
+{_bullets(list(sources))}
 
-## Tiêu chí hoàn thành / qua cổng
-{gate_crit}
+## Ranh gi\u1edbi
+{str(spec["boundaries"]).strip()}
 
-## BƯỚC TỰ KIỂM — trước khi trả đầu ra
-1. Đối chiếu với **TIÊU CHÍ HOÀN THÀNH** của agent này.
-2. Thiếu sót tự giải được → sửa ngay trong lần trả này.
-3. Thiếu sót phụ thuộc input thật (IRB/data/SAP lock/nguồn) → gắn `[CẦN BỔ SUNG]`.
-4. Chỉ trả khi self-check PASS; còn 🔴 → áp vòng tự sửa (`_TU-CHINH-SUA-PROTOCOL.md` §4).
+## Ti\u00eau ch\u00ed ho\u00e0n th\u00e0nh / qua c\u1ed5ng
+{str(spec["gate_criteria"]).strip()}
 
-```
-✦ SELF-CHECK {name}:
-  ĐÃ ĐẠT: [liệt kê tiêu chí đã đáp ứng]
-  CÒN THIẾU: [liệt kê hoặc "không có"]
-  KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
-```
-{_GUARDRAIL_BLOCK}"""
+## B\u01af\u1edaC T\u1ef0 KI\u1ec2M - tr\u01b0\u1edbc khi tr\u1ea3 \u0111\u1ea7u ra
+1. \u0110\u00e3 \u0111\u1ed1i chi\u1ebfu \u0111\u00fang ph\u01b0\u01a1ng ph\u00e1p v\u00e0 ranh gi\u1edbi.
+2. \u0110\u00e3 ghi ngu\u1ed3n PMID/DOI ho\u1eb7c nh\u00e3n `[C\u1ea6N KI\u1ec2M CH\u1ee8NG]`.
+3. Kh\u00f4ng c\u00f3 PII, kh\u00f4ng v\u01b0\u1ee3t C\u1ed5ng A/B/G.
+4. C\u00f2n l\u1ed7i \u0111\u1ecf ho\u1eb7c c\u1ea7n input \u0111\u1eddi th\u1ef1c -> d\u1eebng v\u00e0
+   n\u00eau 1 h\u00e0nh \u0111\u1ed9ng b\u00e1c s\u0129 c\u1ea7n l\u00e0m.
 
+{GUARDRAIL_MARKER}
+## C\u1ed5ng b\u1eaft bu\u1ed9c tr\u01b0\u1edbc khi tr\u1ea3 l\u1eddi
 
-def _load_registry() -> Dict[str, Any]:
-    if REGISTRY.exists():
-        try:
-            return json.loads(REGISTRY.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            pass
-    return {"generated": []}
+Tr\u01b0\u1edbc m\u1ecdi \u0111\u1ea7u ra y khoa: t\u1ef1 \u00e1p guardrail `tham-dinh-dau-ra` 2 l\u1edbp
+(li\u00eam ch\u00ednh R1-R7 + ch\u1ea5t l\u01b0\u1ee3ng Med-PaLM Q1-Q7 khi l\u00e0 g\u00f3i l\u00e2m s\u00e0ng).
+C\u00f2n l\u1ed7i \u0111\u1ecf/thi\u1ebfu ngu\u1ed3n/PII -> kh\u00f4ng ph\u00e1t h\u00e0nh
+nh\u01b0 khuy\u1ebfn c\u00e1o.
+K\u1ebft th\u00fac: "{DISCLAIMER}"
+"""
 
 
-def _append_registry(spec: Dict[str, Any], path: Path) -> None:
-    reg = _load_registry()
-    reg.setdefault("generated", [])
-    reg["generated"] = [g for g in reg["generated"] if g.get("name") != spec["name"]]
-    reg["generated"].append({
+def _load_registry() -> dict[str, Any]:
+    if not REGISTRY_PATH.exists():
+        return {"generated": []}
+    try:
+        data = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {"generated": []}
+    return data if isinstance(data, dict) else {"generated": []}
+
+
+def _write_registry(spec: dict[str, Any], path: Path) -> None:
+    data = _load_registry()
+    generated = data.get("generated", [])
+    if not isinstance(generated, list):
+        generated = []
+    generated = [item for item in generated if not isinstance(item, dict) or item.get("name") != spec["name"]]
+    generated.append({
         "name": spec["name"],
-        "description": spec["description"],
         "cluster": spec.get("cluster"),
         "gate": spec.get("gate", ""),
-        "origin": spec.get("origin", "auto"),
         "requested_by": spec.get("requested_by"),
-        "created": datetime.now().isoformat(timespec="seconds"),
-        "status": "PROPOSED — CHỜ BÁC SĨ DUYỆT",
-        "file": str(path.relative_to(ROOT)),
+        "status": "PROPOSED_WAITING_DOCTOR_APPROVAL",
+        "file": str(path.relative_to(ROOT)).replace("\\", "/"),
+        "created_at": datetime.now().isoformat(timespec="seconds"),
     })
-    REGISTRY.write_text(json.dumps(reg, ensure_ascii=False, indent=2), encoding="utf-8")
+    data["generated"] = generated
+    REGISTRY_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def _run(cmd: List[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, timeout=300)
-
-
-def register_and_sync() -> Dict[str, Any]:
-    """Chạy enforce (cấy guardrail) → sync Codex → check → audit. Trả tóm tắt."""
-    py = sys.executable
-    steps = {
-        "enforce": [py, str(TOOLS / "enforce_agent_guardrails.py")],
-        "sync": [py, str(TOOLS / "sync_agents_to_codex.py")],
-        "check": [py, str(TOOLS / "sync_agents_to_codex.py"), "--check"],
-        "audit": [py, str(TOOLS / "audit_ebm_system.py")],
-    }
-    result: Dict[str, Any] = {}
-    for stage, cmd in steps.items():
-        if not Path(cmd[1]).exists():
-            result[stage] = {"skipped": f"không thấy {cmd[1]}"}
-            continue
-        proc = _run(cmd)
-        result[stage] = {"rc": proc.returncode,
-                         "tail": "\n".join(proc.stdout.splitlines()[-4:])}
-    return result
-
-
-def generate(spec: Dict[str, Any], *, register: bool = False,
-             force: bool = False, dry_run: bool = False) -> Dict[str, Any]:
+def generate_agent(spec: dict[str, Any], *, force: bool = False, dry_run: bool = False) -> dict[str, Any]:
     spec = validate_spec(spec)
-    path = AGENTS / f"{spec['name']}.md"
-    md = render_agent_md(spec)
-
+    content = render_agent_markdown(spec)
+    out_path = AGENTS_DIR / f"{spec['name']}.md"
     if dry_run:
-        print(md)
-        return {"name": spec["name"], "dry_run": True, "path": str(path)}
+        return {"path": str(out_path), "content": content, "written": False}
+    if out_path.exists() and not force:
+        raise SpecError(f"Agent already exists: {out_path}")
+    AGENTS_DIR.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(content, encoding="utf-8", newline="\n")
+    _write_registry(spec, out_path)
+    return {"path": str(out_path), "written": True}
 
-    if path.exists() and not force:
-        raise SpecError(f"Agent '{spec['name']}' đã tồn tại tại {path} — dùng "
-                        "--force nếu THỰC SỰ muốn ghi đè (cẩn trọng: mất nội dung cũ).")
 
-    AGENTS.mkdir(parents=True, exist_ok=True)
-    path.write_text(md, encoding="utf-8")
-    _append_registry(spec, path)
-    out: Dict[str, Any] = {"name": spec["name"], "path": str(path.relative_to(ROOT)),
-                           "registered": False}
-    print(f"✅ Đã sinh agent (ĐỀ XUẤT): {path.relative_to(ROOT)}")
-    print(f"   Ghi registry: {REGISTRY.relative_to(ROOT)}")
+def _run_optional_register_checks() -> list[dict[str, Any]]:
+    commands = [
+        [sys.executable, str(TOOLS_DIR / "agent_gate_governance.py")],
+        [sys.executable, str(ROOT / "scripts" / "verify_manifest_registry.py")],
+    ]
+    results: list[dict[str, Any]] = []
+    for command in commands:
+        if not Path(command[1]).exists():
+            results.append({"command": command, "skipped": True})
+            continue
+        proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        results.append({"command": command, "returncode": proc.returncode, "stdout_tail": proc.stdout[-800:]})
+    return results
 
-    if register:
-        print("🔧 Đăng ký: enforce → sync → check → audit ...")
-        res = register_and_sync()
-        out["registered"] = True
-        out["register_result"] = res
-        for stage, r in res.items():
-            rc = r.get("rc")
-            mark = "✅" if rc in (0, None) else "❌"
-            print(f"   {mark} {stage}: rc={rc}")
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Generate a proposed EBM agent from a spec JSON file.")
+    parser.add_argument("--spec", required=True, help="Path to JSON spec")
+    parser.add_argument("--force", action="store_true", help="overwrite an existing proposed agent")
+    parser.add_argument("--dry-run", action="store_true", help="render without writing")
+    parser.add_argument("--register", action="store_true", help="run governance checks after writing")
+    parser.add_argument("--json", action="store_true", help="emit JSON result")
+    args = parser.parse_args(argv)
+
+    spec_path = Path(args.spec)
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    result = generate_agent(spec, force=args.force, dry_run=args.dry_run)
+    if args.register and not args.dry_run:
+        result["register_checks"] = _run_optional_register_checks()
+        result["register_note"] = (
+            "Proposed agent was written and checked. Runtime manifest approval remains a separate human-governed step."
+        )
+    if args.json:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
-        print("   ↪ Chưa đăng ký. Chạy lại với --register, hoặc thủ công:")
-        print("       python tools/enforce_agent_guardrails.py")
-        print("       python tools/sync_agents_to_codex.py && "
-              "python tools/sync_agents_to_codex.py --check")
-        print("       python tools/audit_ebm_system.py")
-    print("   ⚠ Agent ở trạng thái [TỰ SINH — CHỜ BÁC SĨ DUYỆT]. "
-          "Bác sĩ rà + xoá dòng cảnh báo để chuyển chính thức.")
-    print("   Cần bác sĩ kiểm chứng.")
-    return out
-
-
-def _spec_from_args(a: argparse.Namespace) -> Dict[str, Any]:
-    if a.spec:
-        data = json.loads(Path(a.spec).read_text(encoding="utf-8"))
-        # cho phép ghi đè bằng cờ CLI nếu có
-        for k in ("name", "description", "role", "cluster", "gate"):
-            v = getattr(a, k.replace("-", "_"), None)
-            if v:
-                data[k] = v
-        return data
-    return {
-        "name": a.name, "description": a.description, "role": a.role,
-        "cluster": a.cluster, "gate": a.gate,
-        "when_to_use": a.when or [], "method_steps": a.method or [],
-        "boundaries": a.boundaries, "gate_criteria": a.gate_criteria,
-        "origin": a.origin, "requested_by": a.requested_by,
-    }
-
-
-def main() -> int:
-    ap = argparse.ArgumentParser(description="Tự sinh agent đúng chuẩn nhà + đăng ký.")
-    ap.add_argument("--spec", help="Đường dẫn file spec JSON")
-    ap.add_argument("--name")
-    ap.add_argument("--description")
-    ap.add_argument("--role")
-    ap.add_argument("--cluster", default="research", choices=["research", "clinical"])
-    ap.add_argument("--gate", default="")
-    ap.add_argument("--when", action="append", help="Trigger (lặp nhiều lần)")
-    ap.add_argument("--method", action="append", help="Bước phương pháp (lặp)")
-    ap.add_argument("--boundaries", default="")
-    ap.add_argument("--gate-criteria", dest="gate_criteria", default="")
-    ap.add_argument("--origin", default="auto")
-    ap.add_argument("--requested-by", dest="requested_by", default="dieu-phoi-nghien-cuu")
-    ap.add_argument("--register", action="store_true",
-                    help="Chạy enforce+sync+check+audit sau khi sinh")
-    ap.add_argument("--force", action="store_true", help="Ghi đè agent trùng tên")
-    ap.add_argument("--dry-run", action="store_true", help="In nội dung, không ghi file")
-    a = ap.parse_args()
-
-    if not a.spec and not (a.name and a.description and a.role):
-        ap.error("Cần --spec HOẶC đủ (--name --description --role).")
-
-    try:
-        spec = _spec_from_args(a)
-        generate(spec, register=a.register, force=a.force, dry_run=a.dry_run)
-    except (SpecError, json.JSONDecodeError, OSError) as e:
-        print(f"❌ LỖI: {e}")
-        return 1
+        print(json.dumps({k: v for k, v in result.items() if k != "content"}, ensure_ascii=False, indent=2))
     return 0
 
 

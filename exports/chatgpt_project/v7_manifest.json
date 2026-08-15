@@ -1,0 +1,387 @@
+{
+  "approval_queue_count": 1,
+  "contains_pii": false,
+  "environment": "review",
+  "failed_runs_count": 6,
+  "files": {
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/clinical_content/hypertension_pilot_pathway_builder.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "e5acb80ad58ad1081d9e72d88ae9068321c260986c7d0bbcf5d5bef70d198d10"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/clinical_content/hypertension_pilot_pathway_release_gate.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "0c2bacedc45b90d0a77de86b6f2113dbe0a59be8f987dfa51661f40e0937c000"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/clinical_content/hypertension_pilot_pathway_validator.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "2e09ad3c6ddfbd4de0ba11a80f452755bfee231478cc30012c17b4a024aa8b2c"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/clinical_content/phase_2c_vignettes.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "3beceb9847e188b53d8cd76085a543ad4cea30170e69795f6a7513b7b226783b"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/evidence/document_provenance.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "65cc515121b5c641e3a199f62e2a28caeb70771e064f980453c61a402cf1f156"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/evidence/hypertension_local_adaptation.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "6408ac2ae723670738c108f061a3a3f1f305b3c1d2c945e5303b425f36e74a75"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/evidence/manual_source_import.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "872fd5cb50af586db9d68c90d1c62587de12c9328cc0d4d46a9fe91bf0656807"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/evidence/phase_2d_claim_mapping_validator.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "cfa058ee471c9cadcfd8a2d8b05958d07cd2d63983b1ac9773833de7429ec6b3"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/evidence/phase_2d_pack_readiness.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "6bbbf9a94e6e8d283e129ba1c93b16fea4aaac7686031b6f6b5f5130c2813b8a"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/evidence/phase_2d_review_workflow.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "1f2b0d52eb008e98462d51af293307fd804ddf77e98e825a69e731c84ee4d25d"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/app/evidence/source_snapshot.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "f2573078bc013f4994056f91e435acfd84a67f0e32e03dd4fffe9a8d1999477c"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/config/phase_2c_pilot_selection.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "9250109e89bee776e51a103954ed45a73aa3df43384dfa50565df521052ee760"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_GO_NO_GO.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "0ef08c1c78cc77d83bbd13c095aad92ee12ba40a20d0dacae3ddaa9716619812"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_HYPERTENSION_SELECTION_RECORD.json": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "565134a1b98bc234abfff3397d5cee2a33f99e0838fb0c72d428681795ff0d87"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_IMPLEMENTATION_REPORT.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "38a69519a2317f31d9b4882f1fdc16499ab5e3de10543ff20f543bd4994c3d9c"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_LIVE_SOURCE_REPORT.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "63f6b5ddaf92c5efa53a0f219c2f03b9b22ea12d6ff84a127a0cfc786e49dae1"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_PACK_SELECTION_STATUS.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "64554c000a3a52917fc3874f7e57a2f0fe886be04ad1c812a893886dd494b2be"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_PATHWAY_VALIDATION.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "5de2d309b8ba599005502162d295c9ec4720ea0b63abea5212d82a0e3154b699"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_RESEARCHOS_METADATA_PILOT.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "b7654d191528fcea4ee8afc19f8e6644580b8b4320d91a2edcbfea20c90c6d7d"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_RESEARCH_GATES.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "9a266367ad01a5d5a6785c1df9e79896493f0ec515523482194cf6048e56529d"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_RESEARCH_TRACEABILITY.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "0174525c6ccf764d198310597fb2ea4c84990d88f8cbc58d15a30c320bfae231"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_SHADOW_PILOT_PROTOCOL.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "3540700f3610906e2904fdae160600ad2675d39d46b9804d1145b0d66b1a7276"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2C_SYNTHETIC_VIGNETTE_REPORT.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "070273530cc8705110101d26d010cebe580f618d824ab16ebccebbd726757d47"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_APPROVAL_READINESS.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "3f859fff689aec9bd40deff25806eaa92327f581eda2ed8e82bf91cb4e88eaee"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_EVIDENCE_DOSSIER_REPORT.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "77b96c699f79483bc2b4cf76f6c962ccabac5d8e6c08f96d8d5dddd7e423a359"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_GO_NO_GO.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "d1e1dbce2f22e1709a9bd332e0596b7a4334f75fd97d68a686daac5c82e1120e"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_HYPERTENSION_PACK_APPROVAL_CHECKLIST.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "afa8c3d42cf465ffb921235640db86ce2a6e48c3dc65b96023aa37e947c711b2"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_HYPERTENSION_PACK_APPROVAL_DOSSIER.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "903a0fa38ecdb0a64e13d0f2e7b4494b69d64f192010929ee2dfeaa9ce0fcea3"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_IMPLEMENTATION_REPORT.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "091e22862b4286c68f52f2adc86f3a02b5aed81218a79951aa393110d016f1e2"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_PHYSICIAN_REVIEW_FORM.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "9c406a16327c6b75192dc3097610e8290d206e8644fc303d6cd1128c066c84d7"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_RESEARCHOS_DATA_BOUNDARY.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "341de63ffe47c2222cfe1174921a363727fd9d911649ea28921a1962aca50bfa"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_RESEARCHOS_METADATA_READINESS.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "d3b71b3f1a02fceb4f571f267aab5cabd00c341a85cca7eda7731e2fe249625b"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_SHADOW_PILOT_APPROVAL_FORM.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "7576bdbee43ef6b0e35e80cadae6d29fc5610733f2d3364c0173b0da2c7bd452"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_SHADOW_PILOT_CASE_FORM.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "8cf7334411cc164d7680986fb9b9564f1fec376f8c138f05a8075408aa30a1f2"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_SHADOW_PILOT_READINESS.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "15974eca268fa8417fbc47c270bc914e3687282add14a2c7c721b38121325d19"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/docs/system-v7/PHASE_2D_SHADOW_PIL_READINESS_CHECKLIST.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "de1c757764b309ca5ee5b92b556a422878f8cc9ce2214dfa4eeb7493564c2042"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/01_scope.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "1f3c23acf79849935fe6d046ca11372e7926856f665bbb6070422da9c1981a21"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/02_input_requirements.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "02fc006186f2b4976892b06aceb0abb89b62786bea6d7dfd546aa344b89d784c"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/03_red_flags.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "9ba82fa4e3c629d3c975c557964827fded779c72cd796275bef0fd584f0af25f"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/04_pathway_rules.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "089f6fdfcbcb31bd291cb07e136ba6b068e4383b9bd914b538c2a07de9daebdd"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/05_recommendations.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "2338a8da230bf99801a807c77a1c1b860f0091b14e533ab796eca8c6bad685a8"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/06_drug_safety_rules.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "fc220ade06ccbb533b43172506c0b3c510b569caf5485dc7393a7503f704f691"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/07_follow_up_rules.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "f26f3473ddaf4c50496742e888b781ffad47ec2f9019940d979277b7d9955db4"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/08_referral_rules.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "c99197bc7de6ce0d69f1805775e0c78e9fcd60a2730d16fe2714ab56a8d4b9a1"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/09_local_adaptation.yaml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "0cf37a647fe9fc4d9ad9f3df01b438614afe9b515b49b287f9e7b06b744a43d5"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/10_evidence_manifest.json": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "d8eb49e1790effbf6a931ab59ee73cdd0870818397fd4d5891a19381c998e007"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/11_test_cases.json": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "7b7c6b90fae457bdde81918c2a68d44201855dcbee36380843b18bcbf258480b"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/12_change_log.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "dddcbb86a5981bdc2b6ed49035e8178217ee3c0c001e768668118070c373970d"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/13_approval_record.json": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "531c0ae51fc556700c81047c2851399cc8e6fd3aea0b9a01294b744f0cef13e1"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/evidence_dossier/00_EVIDENCE_REGISTER.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "85bab65be98c4ef6f43bf37cb050df5ae01ca75e7a58c09cd345c16519cfceca"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/evidence_dossier/01_CLAIM_TO_SOURCE_MATRIX.xlsx": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "a0c05714208f1239fc4505fd71bd35c3ec65b92e4c102ee32617996dc26e38fe"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/evidence_dossier/02_SOURCE_IMPORT_LOG.json": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "a1ed740a7fc0a884c94586ec5455a561cba7fc827b872b50bf4639c258b10055"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/evidence_dossier/03_SOURCE_VERIFICATION_LOG.json": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "caf618dc6b119913a193184b28c11e170631d025767cb95a0ecaa0a4f4042e3a"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/evidence_dossier/04_CONFLICT_REGISTER.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "410f8037a6b729c6742e27b4949939b4e9c477f71af5c2acac7c45459b67c6da"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/evidence_dossier/05_FRESHNESS_REGISTER.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "10a80e31d24bf1963bdba2f0ec7bbbead16955a458fe03430802d30a834e59a2"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/evidence_dossier/06_RETRACTION_CORRECTION_REGISTER.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "a76b8f65ffaefb07339ec18cefcaab529002811d82c2f5849d5005abe5dc5052"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/evidence_dossier/07_UNVERIFIED_CLAIMS.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "c98d3dc8a874f291c44d069967e89c44541ca8e81353291fafdbc9cab3e06718"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/knowledge-packs/hypertension_adult_outpatient/2026.1-draft/evidence_dossier/08_EVIDENCE_REVIEW_SUMMARY.md": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "266c4c311b7715211a629cc3fcd228686e39e93f4da8aaf219b34c0738385c39"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/ruff.toml": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "28de15e9a57c677655d032c750ea3d4fc513d975f4b68f676b245eaa5be09789"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/scripts/phase_2c_live_source_validation.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "90e614be9e55bb9a03849fc640f704c69a27a7cf5a55a3e844593a4640406232"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/scripts/phase_2d_import_official_source.py": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "3f06fc55c419c3194b96ec1d87852772e744cb7afe821c570d1ebb29b89a8ae6"
+    },
+    "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal(2)/Claude AI/medical-ebm-automation/tests/evals/clinical_safety/vignettes/phase_2c_minimum_vignettes.json": {
+      "allowed": true,
+      "classification": "safe_context",
+      "reasons": [],
+      "sha256": "3330b658446539348b35076ac340fb7fa9e4b8c56039e12732f2c1bdd56f1da1"
+    }
+  },
+  "generated_at": "2026-06-18T14:47:24.213956+00:00",
+  "recommendation_unapproved_count": 3,
+  "retracted_sources_count": 0,
+  "safe_to_upload": true,
+  "sha256": "f3e1925be24711d9ac71e17ddae30032b82c12f1fd75b7cfb4aa2f3bdac21f7a",
+  "stale_sources_count": 0,
+  "system_version": "EBM_OS_V7_PHASE_2D_HYPERTENSION_REVIEW_ONLY"
+}

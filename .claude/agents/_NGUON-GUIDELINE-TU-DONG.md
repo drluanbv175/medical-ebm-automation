@@ -9,7 +9,8 @@
 Bất kỳ agent nào cần khuyến cáo/guideline (`tra-cuu-chung-cu`, `tham-dinh-grade-nnt`, `huong-dan-lam-sang`,
 `khoang-trong-nghien-cuu`) mà **không tìm/không trích dẫn được bản guideline mới nhất** (hoặc nghi bản đang
 dùng đã lỗi thời) → BÀN GIAO cho **`cap-nhat-guideline`** chạy quy trình mục 3. KHÔNG được tự kết luận
-"không có cập nhật" hay tự bịa nội dung guideline.
+"không có cập nhật" hay tự bịa nội dung guideline. Cả 4 agent trên nay đều đã gắn dòng bàn giao này
+(2026-07-12: bổ sung cho `khoang-trong-nghien-cuu.md` M2 — trước đó thiếu, xem mục 6).
 
 ## 2. SỔ ĐĂNG KÝ NGUỒN NEO (defined sources) — đã kiểm domain 2026-07-04
 > **Danh mục ĐẦY ĐỦ** (hiệp hội/HTA/tạp chí đỉnh/an toàn thuốc + domain + truy cập + lưu ý): **`_CONNECTOR-CHUNG-CU.md` §1bis** (SSOT). Bảng dưới là **nguồn NEO theo chuyên khoa** để `cap-nhat-guideline` quét cập nhật. Quét trang "guidelines/recommendations/latest" chính thức + bản ghi PubMed/DOI của bản công bố. **Thứ tự: nguồn chính thống trước, PubMed đối chiếu (§2bis).**
@@ -33,6 +34,7 @@ dùng đã lỗi thời) → BÀN GIAO cho **`cap-nhat-guideline`** chạy quy t
 *(Mở rộng = thêm dòng; KHÔNG thêm nguồn không chính thống. ⚠ **ECRI Guidelines Trust hiện OFFLINE (2026)** — dùng NICE/G-I-N/hội chuyên khoa thay.)*
 
 ## 3. QUY TRÌNH TỰ CẬP NHẬT (cap-nhat-guideline thực thi)
+0. **(2026-07-12: bổ sung bước bị thiếu) Cột mốc nội bộ — BẮT BUỘC, chạy TRƯỚC bước 1:** `python3 EBM_MASTER/tools/guideline_baseline.py`. `cap-nhat-guideline.md` đánh dấu đây là "⛔ CỘT MỐC BẮT BUỘC (chạy TRƯỚC khi dựa vào kiến thức nền — không ngoại lệ)", module M0, đứng TRƯỚC cả bước quét nguồn neo — file luật nền này trước đó bỏ sót bước 0, khiến mô tả quy trình không khớp quy trình thật của agent nó chi phối.
 1. **Quét nguồn neo** liên quan chủ đề bằng `WebFetch`/`WebSearch` trang chính thức + PubMed/Crossref cho bản công bố.
 2. **Đối chiếu mốc:** phiên bản/năm mới so với bản đang dùng; xác định thay đổi THỰC SỰ (không chỉ tái bản).
 3. **XÁC MINH:** mỗi mục có **URL chính thức + PMID/DOI** phân giải được (qua `kiem-chung-trich-dan`). Không xác minh được → KHÔNG nạp.
@@ -52,5 +54,8 @@ dùng đã lỗi thời) → BÀN GIAO cho **`cap-nhat-guideline`** chạy quy t
 - **Daemon 24/7 thật sự không cần mở app:** cần `claude` CLI + API key + launchd (đã bàn — **có phí**). CHƯA bật theo lựa chọn của bác sĩ.
 > Không có "crawler nền vô hình" nào khác ngoài 3 cơ chế trên — đây là giới hạn thật, không phóng đại.
 
-## 6. WIRE (việc còn lại)
-Thêm 1 dòng "Fallback guideline" vào `tra-cuu-chung-cu` · `tham-dinh-grade-nnt` · `huong-dan-lam-sang`: *"Không trích dẫn được guideline mới nhất → bàn giao `cap-nhat-guideline` theo `_NGUON-GUIDELINE-TU-DONG.md`."* (Hoãn cho tới khi đợt nâng cấp song song lắng, tránh đụng file.)
+## 6. WIRE
+**2026-07-12: sửa — ĐÃ XONG cả 4/4, không phải việc tồn đọng.** `tra-cuu-chung-cu` (dòng 75) ·
+`tham-dinh-grade-nnt` (dòng 127) · `huong-dan-lam-sang` (dòng 65) đã có dòng "Fallback guideline"
+bàn giao `cap-nhat-guideline" từ trước; `khoang-trong-nghien-cuu.md` M2 vừa được bổ sung cùng ngày
+(trước đó là agent duy nhất thiếu, xem mục 1).

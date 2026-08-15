@@ -1,0 +1,18 @@
+pack_id: heart_failure_adult_outpatient
+version: 2026.1-draft
+status: draft_review_only
+topic: "Suy tim mạn tính người lớn ngoại trú ổn định"
+applies_to:
+  - adults_18_plus
+  - outpatient_setting
+  - confirmed_heart_failure_stable
+  - HFrEF_or_HFmrEF_or_HFpEF
+does_not_apply_to:
+  - acute_decompensated_heart_failure
+  - cardiogenic_shock
+  - acute_pulmonary_edema
+  - new_onset_HF_not_yet_evaluated
+  - pregnancy
+clinical_release_allowed: false
+prescription_generation_allowed: false
+disclaimer: "DRAFT REVIEW-ONLY."

@@ -1,0 +1,59 @@
+recommendations:
+  - claim_id: hf_classification
+    guideline: "ESC Heart Failure Guidelines 2024 (Eur Heart J 2024)"
+    recommendation_text_draft: |
+      Phân loại suy tim theo EF:
+      - HFrEF: EF < 40% — bằng chứng điều trị mạnh nhất
+      - HFmrEF: EF 40-49% — điều trị tương tự HFrEF
+      - HFpEF: EF ≥ 50% — kiểm soát yếu tố nguy cơ, SGLT2i
+      Phân độ NYHA (I-IV) để theo dõi đáp ứng điều trị.
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: hf_hfref_four_pillars
+    guideline: "ESC 2024; PARADIGM-HF, DAPA-HF, EMPEROR-Reduced, EMPHASIS-HF"
+    recommendation_text_draft: |
+      HFrEF — 4 trụ cột điều trị (Fantastic Four), tất cả đều giảm tử vong:
+      1. ACEi/ARB hoặc ARNI (sacubitril/valsartan — PARADIGM-HF): ưu tiên ARNI nếu dung nạp
+      2. Beta-blocker (carvedilol, bisoprolol, metoprolol succinate): bắt đầu liều thấp, tăng dần
+      3. MRA (spironolactone, eplerenone): thêm khi EF < 35% và NYHA II-IV, theo dõi kali/thận
+      4. SGLT2i (dapagliflozin 10 mg hoặc empagliflozin 10 mg): giảm nhập viện và tử vong CV
+      Mục tiêu: tối ưu hóa cả 4 nhóm thuốc trước khi xem xét device therapy.
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: hf_diuretic
+    guideline: "ESC 2024"
+    recommendation_text_draft: |
+      Lợi tiểu quai (furosemide) để kiểm soát triệu chứng ứ dịch:
+      - Liều điều chỉnh theo cân nặng và triệu chứng (không có liều cố định)
+      - Mục tiêu: không còn phù, không khó thở khi nằm, cân nặng ổn định
+      - Theo dõi: điện giải, creatinine mỗi 1-2 tuần khi điều chỉnh liều
+      Không dùng lợi tiểu như điều trị nền khi không có ứ dịch.
+    evidence_grade: "I B"
+    approval_status: pending
+
+  - claim_id: hf_hfpef_management
+    guideline: "ESC 2024; EMPEROR-Preserved, DELIVER trials"
+    recommendation_text_draft: |
+      HFpEF (EF ≥ 50%) — chưa có điều trị nào giảm tử vong rõ ràng ngoại trừ:
+      - SGLT2i (empagliflozin/dapagliflozin): giảm nhập viện suy tim (EMPEROR-Preserved, DELIVER) — Khuyến cáo IIa A (ESC 2024)
+      - Kiểm soát tích cực các bệnh đồng mắc: HA, ĐTĐ, rung nhĩ, béo phì, thiếu máu
+      - Lợi tiểu: chỉ khi có triệu chứng ứ dịch
+      - GLP-1RA (semaglutide): giảm triệu chứng ở HFpEF béo phì (STEP-HFpEF)
+    evidence_grade: "IIa A"
+    approval_status: pending
+
+  - claim_id: hf_monitoring
+    guideline: "ESC 2024"
+    recommendation_text_draft: |
+      Theo dõi định kỳ suy tim ngoại trú ổn định:
+      - Lâm sàng: cân nặng hàng ngày tại nhà (tăng > 2 kg/2 ngày → liên hệ bác sĩ)
+      - Siêu âm tim: sau 3-6 tháng tối ưu hóa điều trị để đánh giá phục hồi EF
+      - Điện giải + creatinine: mỗi 3-6 tháng (hoặc sau mỗi lần điều chỉnh thuốc)
+      - NT-proBNP/BNP: hỗ trợ theo dõi đáp ứng điều trị
+      - Tái khám: 2 tuần sau thay đổi thuốc; ổn định mỗi 3-6 tháng
+    evidence_grade: "I C"
+    approval_status: pending
+
+disclaimer: "DRAFT REVIEW-ONLY. Quyết định điều trị suy tim cần bác sĩ tim mạch."

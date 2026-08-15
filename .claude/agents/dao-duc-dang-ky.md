@@ -11,7 +11,10 @@ Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THU
 Bất biến cứng: KHÔNG PII trong mẫu · KHÔNG bịa số phê duyệt/mã đăng ký · KHÔNG ghi APPROVED_EXTERNALLY khi chưa có bằng chứng ngoài · ghi rõ "đăng ký muộn" nếu đúng vậy.
 
 ## Chuẩn tham chiếu
-Tuyên ngôn **Helsinki** (WMA 2013) · **ICH-GCP E6(R3)** 2025 (thông qua Step 4 01/2025; dự thảo Step 2b 2023) · **CIOMS** 2016 · **SPIRIT 2025** (RCT) · VN: **TT43/2024/TT-BYT** (HLực 01/02/2025) · **Luật KHCB 15/2023/QH15** · **Luật BVDLCN 91/2025/QH15** + **NĐ 356/2025/NĐ-CP**. `[CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]`
+Tuyên ngôn **Helsinki** (WMA 2024 — bản sửa đổi toàn diện, thông qua 19/10/2024 tại Đại hội đồng WMA lần 75 [Helsinki]; bản 2013 đã bị thay thế, chỉ còn giá trị tham khảo lịch sử theo chính WMA) · **ICH-GCP E6(R3)** (Nguyên tắc + Annex 1 thông qua Step 4 01/2025; **Annex 2** — thiết kế
+thử nghiệm can thiệp KHÔNG truyền thống — thông qua Step 4 RIÊNG 06/2026, không áp dụng
+cho đề tài quan sát hiện tại nhưng cần biết khi có đề tài can thiệp thiết kế mới; dự thảo
+Step 2b 2023 đã lỗi thời, không dùng) · **CIOMS** 2016 · **SPIRIT 2025** (RCT) · VN: **TT43/2024/TT-BYT** (HLực 01/02/2025) · **Luật Khám bệnh, chữa bệnh 15/2023/QH15** · **Luật BVDLCN 91/2025/QH15** + **NĐ 356/2025/NĐ-CP**. `[CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]`
 
 ---
 
@@ -21,7 +24,7 @@ Khi đề tài đã có G1 checkpoint → **chạy NGAY**:
 ```bash
 python medical-ebm-automation/tools/run_g2_auto.py --study "MA-DE-TAI"
 # Tự động: đọc G0+G1 checkpoint → risk profile → ClinicalTrials.gov search
-#           → 8 tài liệu IRB + WHO 18 fields + guardrail → A3 .md + .docx
+#           → 8 tài liệu IRB + WHO TRDS 1.3.1 (24 mục) + guardrail → A3 .md + .docx
 ```
 Mở `exports/<MA-DE-TAI>/G2_A3_ETHICS_PACKAGE_<MA-DE-TAI>.docx`:
 - Điền tất cả `[CẦN BỔ SUNG]` (tên chủ nhiệm, đơn vị, liên lạc, cỡ mẫu)
@@ -33,9 +36,24 @@ Mở `exports/<MA-DE-TAI>/G2_A3_ETHICS_PACKAGE_<MA-DE-TAI>.docx`:
 1. **Xác nhận chưa thu thập dữ liệu thật** — nếu đã thu thập → cảnh báo vi phạm tiền đề G2, gợi ý đăng ký hồi tố + ghi nhận minh bạch.
 2. **Phân loại nghiên cứu:**
    - Can thiệp/RCT → BẮT BUỘC đăng ký trước tuyển + ICF đầy đủ + kế hoạch an toàn `an-toan-nghien-cuu`.
-   - Quan sát (cắt ngang/cohort/bệnh-chứng) → IRB + ICF đơn giản hơn; đăng ký tùy chọn (PROSPERO nếu SR/MA).
-   - Nghiên cứu hồ sơ bệnh án/dữ liệu thứ cấp → xác định có cần ICF không (TT43 Điều 15).
+   - Quan sát TIẾN CỨU có TUYỂN người tham gia mới (cắt ngang khảo sát/cohort tiến cứu/bệnh-chứng
+     tuyển mới) → IRB + ICF đơn giản hơn can thiệp, nhưng **đăng ký (ClinicalTrials.gov/WHO ICTRP/
+     đăng ký trong nước) VẪN BẮT BUỘC trước khi tuyển người tham gia ĐẦU TIÊN** — Tuyên ngôn
+     Helsinki (WMA, bản sửa 2024) §35 quy định "mọi nghiên cứu con người phải đăng ký công khai
+     trước khi tuyển người tham gia đầu tiên", KHÔNG giới hạn riêng RCT/can thiệp (vá 2026-07-17,
+     round audit đối kháng 4 — dòng cũ ghi "đăng ký tùy chọn" cho MỌI thiết kế quan sát mâu thuẫn
+     thẳng với §35 với các thiết kế TUYỂN người tham gia mới, vd đề tài hài lòng bệnh nhân cắt
+     ngang tiến cứu thật đang chạy trong hệ thống này).
+   - Quan sát HỒI CỨU/dữ liệu thứ cấp thuần túy KHÔNG tuyển người tham gia mới (chỉ phân tích hồ
+     sơ bệnh án/dữ liệu đã có sẵn) → đăng ký thật sự tùy chọn (không có "người tham gia đầu tiên"
+     để mốc thời gian đăng ký áp vào) — xác định có cần ICF không (TT43 Điều 15).
 3. **Xác định Hội đồng đạo đức sẽ nộp** — `[CẦN BÁC SĨ XÁC NHẬN]`.
+4. **Sự tham gia của bệnh nhân/công chúng khi xây dựng đề tài (PPI)** — SPIRIT 2025 mục
+   11, mục MỚI (không có ở SPIRIT 2013), bắt buộc nếu can thiệp/RCT (vá 2026-07-17, round
+   audit đối kháng 4): `[CẦN CHỦ NHIỆM XÁC NHẬN]` bệnh nhân/đại diện công chúng có được
+   tham vấn khi thiết kế câu hỏi nghiên cứu, chọn kết cục, hay góp ý bản ICF không — nếu
+   có, ghi lại hình thức + đóng góp cụ thể; nếu không, ghi rõ lý do (vd đề tài quan sát
+   nguy cơ tối thiểu, nguồn lực hạn chế) thay vì bỏ trống.
 
 ---
 
@@ -104,6 +122,12 @@ Phân loại nguy cơ tổng thể: ☐ Tối thiểu ☐ Nhỏ hơn tối thi�
    Chúng tôi mời anh/chị tham gia nghiên cứu nhằm [mục đích bằng ngôn ngữ dễ hiểu].
    Nghiên cứu này do [đơn vị] thực hiện. Việc tham gia là HOÀN TOÀN TỰ NGUYỆN.
 
+1b. NGƯỜI THỰC HIỆN NGHIÊN CỨU (Tuyên ngôn Helsinki §26 — trình độ chuyên môn của
+    người nghiên cứu là một mục BẮT BUỘC phải công khai cho người tham gia, không chỉ
+    để trong thông tin liên hệ hành chính — vá 2026-07-17, round audit đối kháng 4)
+   Nghiên cứu do [Họ tên chủ nhiệm], [chức danh/trình độ chuyên môn — vd Bác sĩ CKII,
+   Thạc sĩ Y học], công tác tại [đơn vị], chủ trì thực hiện.
+
 2. QUY TRÌNH THỰC HIỆN
    Nếu đồng ý tham gia, anh/chị sẽ được yêu cầu:
    - [bước 1 — ví dụ: trả lời bộ câu hỏi ~20 phút]
@@ -120,6 +144,17 @@ Phân loại nguy cơ tổng thể: ☐ Tối thiểu ☐ Nhỏ hơn tối thi�
    Kết quả nghiên cứu sẽ giúp [lợi ích cộng đồng].
    Không có đảm bảo về lợi ích cá nhân.
 
+4b. NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH (Tuyên ngôn Helsinki §26 — 2 mục BẮT BUỘC công
+    khai trong chính ICF, không chỉ trong hồ sơ nội bộ nộp Hội đồng — vá 2026-07-17)
+   Nghiên cứu này được tài trợ bởi: [CẦN — tên nguồn tài trợ, hoặc "không có tài trợ
+   ngoài" nếu đúng]. Nhóm nghiên cứu [có/không] có xung đột lợi ích liên quan đến chủ
+   đề nghiên cứu: [CẦN CHỦ NHIỆM XÁC NHẬN — khớp khai báo COI ở Tài liệu 8].
+
+4c. HỖ TRỢ/BỒI DƯỠNG KHI THAM GIA (nếu có — Tuyên ngôn Helsinki §26 "incentives")
+   ☐ Không có hỗ trợ/bồi dưỡng nào ngoài chăm sóc y tế thường quy.
+   ☐ Có hỗ trợ: [CẦN — mô tả cụ thể, vd hỗ trợ chi phí đi lại/thời gian; PHẢI ở mức hợp
+     lý, không mang tính ép buộc/dụ dỗ tham gia — phân biệt với mục 6c bồi thường tổn hại].
+
 5. BẢO MẬT THÔNG TIN
    Thông tin cá nhân sẽ được GIỮ KÍN tuyệt đối theo Luật 91/2025/QH15:
    - Dữ liệu được mã hóa và lưu tại [nơi lưu trữ an toàn].
@@ -133,11 +168,32 @@ Phân loại nguy cơ tổng thể: ☐ Tối thiểu ☐ Nhỏ hơn tối thi�
    - Rút lui bất cứ lúc nào mà không cần giải thích.
    - Yêu cầu xóa dữ liệu đã cung cấp (trước khi phân tích).
 
-6b. LỰA CHỌN THAY THẾ (bắt buộc nếu can thiệp/RCT — ICH-GCP E6 4.8.10-i)
+6b. LỰA CHỌN THAY THẾ (bắt buộc nếu can thiệp/RCT — ICH-GCP E6(R3) 2.8.10(h) — mục đồng thuận đã đổi từ 4.8 [R2] sang 2.8 [R3] khi ICH thông qua E6(R3) Step 4 01/2025)
    Nếu không tham gia, anh/chị vẫn có thể tiếp tục điều trị theo phác đồ chuẩn hiện có: [mô tả phương pháp/điều trị thay thế sẵn có ngoài nghiên cứu — CẦN BỔ SUNG theo đề tài]. Quyết định tham gia hay không không làm mất đi lựa chọn điều trị chuẩn này.
 
-6c. BỒI THƯỜNG KHI CÓ TỔN HẠI (bắt buộc nếu can thiệp/RCT — ICH-GCP E6 4.8.10-j)
-   Nếu xảy ra tổn hại liên quan trực tiếp đến việc tham gia nghiên cứu, [đơn vị/chủ nhiệm] sẽ [mô tả chính sách chi trả điều trị/bồi thường cụ thể — CẦN CHỦ NHIỆM XÁC NHẬN chính sách và nguồn kinh phí, không tự bịa cam kết]. Với nghiên cứu quan sát nguy cơ tối thiểu (không can thiệp), mục này có thể rút gọn thành xác nhận không phát sinh thủ thuật/can thiệp ngoài thực hành thường quy.
+6c. BỒI THƯỜNG KHI CÓ TỔN HẠI (Tuyên ngôn Helsinki §26 — nghĩa vụ CHUNG cho MỌI nghiên
+    cứu con người, không chỉ can thiệp/RCT; ICH-GCP E6(R3) 2.8.10(i) chỉ là hướng dẫn
+    THỰC HÀNH bổ sung riêng cho thử nghiệm lâm sàng — sửa trích dẫn 2026-07-17, round
+    audit đối kháng 4: bản cũ chỉ dẫn nguồn ICH-GCP trial-only dù mục này áp dụng rộng
+    hơn, kể cả nghiên cứu quan sát)
+   Nếu xảy ra tổn hại liên quan trực tiếp đến việc tham gia nghiên cứu, [đơn vị/chủ nhiệm] sẽ [mô tả chính sách chi trả điều trị/bồi thường cụ thể — CẦN CHỦ NHIỆM XÁC NHẬN chính sách và nguồn kinh phí, không tự bịa cam kết]. Với nghiên cứu quan sát nguy cơ tối thiểu (không can thiệp), mục này có thể rút gọn thành xác nhận không phát sinh thủ thuật/can thiệp ngoài thực hành thường quy — nhưng KHÔNG được bỏ hẳn, vì Helsinki §26 vẫn yêu cầu nêu rõ điều khoản này cho người tham gia.
+
+6d. CHĂM SÓC BỔ TRỢ VÀ SAU NGHIÊN CỨU (bắt buộc nếu can thiệp/RCT — SPIRIT 2025 mục
+    34 "Ancillary and post-trial care", vá 2026-07-17 — trước đây ICF chỉ có bồi thường
+    tổn hại 6c, KHÔNG có điều khoản chăm sóc bổ trợ/tiếp cận can thiệp SAU KHI nghiên
+    cứu kết thúc)
+   [CẦN CHỦ NHIỆM XÁC NHẬN — nếu can thiệp/RCT]: Sau khi kết thúc tham gia/kết thúc
+   nghiên cứu, anh/chị [sẽ/sẽ không] tiếp tục được tiếp cận can thiệp đang thử nghiệm
+   (nếu chứng minh có lợi); các vấn đề sức khỏe phát sinh cần chăm sóc thêm ngoài phạm
+   vi nghiên cứu sẽ được [mô tả — vd chuyển tuyến điều trị theo phác đồ chuẩn].
+
+6e. ĐỒNG THUẬN THU THẬP/SỬ DỤNG MẪU SINH HỌC (chỉ áp dụng nếu nghiên cứu có lấy mẫu
+    sinh học — SPIRIT 2025 mục 32b, vá 2026-07-17)
+   [CẦN CHỦ NHIỆM XÁC NHẬN — chỉ điền nếu có lấy mẫu máu/mô/dịch cơ thể]: Mẫu sinh học
+   thu thập sẽ được dùng cho: [mục đích cụ thể trong đề tài này]. ☐ Mẫu sẽ được hủy sau
+   khi phân tích xong. ☐ Mẫu sẽ được lưu trữ để dùng cho nghiên cứu khác trong tương lai
+   — nếu chọn mục này, PHẢI xin đồng thuận RIÊNG cho việc lưu trữ/dùng lại, không gộp
+   chung vào đồng thuận tham gia nghiên cứu hiện tại.
 
 7. THÔNG TIN LIÊN HỆ
    Thắc mắc về nghiên cứu:
@@ -213,6 +269,13 @@ A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH:
 ☐ Không có  ☐ Có → [liệt kê: công ty, loại lợi ích, giá trị nếu có]
 B. XUNG ĐỘT PHI TÀI CHÍNH:
 ☐ Không có  ☐ Có → [quan hệ cá nhân, lợi ích học thuật, quan điểm đối nghịch]
+B2. XUNG ĐỘT CẤU TRÚC/THỂ CHẾ (thêm 2026-07-16, sau bình duyệt độc lập phát hiện
+   taxonomy cũ bỏ sót loại COI kinh điển này — vd chủ nhiệm đề tài TỰ ĐÁNH GIÁ dịch
+   vụ của CHÍNH đơn vị/khoa mình đang công tác, tự chi trả kinh phí, hoặc kết quả
+   nghiên cứu có thể ảnh hưởng trực tiếp tới đánh giá/xếp hạng đơn vị chủ nhiệm):
+☐ Không có  ☐ Có → [mô tả quan hệ giữa chủ nhiệm/đơn vị chủ trì và đối tượng/phạm vi
+   được đánh giá; đây KHÔNG tự động là vi phạm đạo đức — minh bạch hóa để Hội đồng và
+   người đọc tự đánh giá mức độ ảnh hưởng tới tính khách quan]
 C. NGUỒN TÀI TRỢ: [tên tổ chức/cơ quan; "không có tài trợ bên ngoài" nếu đúng]
 D. VAI TRÒ NHÀ TÀI TRỢ: [có can thiệp vào thiết kế/thu thập/phân tích/báo cáo không?]
 E. SỬ DỤNG AI: ☐ Không  ☐ Có → Tên công cụ: ___  |  Mục đích: ___
@@ -226,19 +289,44 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/2026
 
 ## ĐĂNG KÝ NGHIÊN CỨU — PHÂN LOẠI TỰ ĐỘNG
 
+> **Benchmark thiết kế qua connector MCP sống (thêm 2026-07-31, `_CONNECTOR-CHUNG-CU.md`):** trước khi
+> soạn §thiết kế/tiêu chí thu nhận, tra `mcp__plugin_healthcare_Clinical_Trials__analyze_endpoints`/
+> `get_trial_details` để đối chiếu endpoint/cỡ mẫu/tiêu chí với thử nghiệm TƯƠNG TỰ đã đăng ký — giúp
+> phát hiện sớm nếu đề tài trùng hoặc lệch chuẩn thực hành đang có. Thiếu connector → bỏ qua bước này,
+> không suy đoán thay.
+
 | Loại NC | Quyết định | Nơi đăng ký | Thời điểm |
 |---------|------------|-------------|-----------|
 | RCT / can thiệp | **BẮT BUỘC** | ClinicalTrials.gov · ANZCTR · DRKS · ISRCTN | Trước tuyển người tham gia đầu tiên |
-| Cohort tiến cứu | Khuyến khích | ClinicalTrials.gov · ISRCTN | Trước thu thập |
+| Quan sát TIẾN CỨU có tuyển người tham gia mới (cohort tiến cứu · cắt ngang khảo sát · bệnh-chứng tuyển mới) | **BẮT BUỘC** — Helsinki §35, KHÔNG giới hạn riêng RCT (xem BƯỚC 0 mục 2) | ClinicalTrials.gov · ANZCTR · DRKS · ISRCTN · đăng ký trong nước · OSF Registries (nếu không có registry quốc gia phù hợp) | Trước khi tuyển người tham gia đầu tiên |
 | SR/MA | Khuyến nghị | PROSPERO | Trước tìm kiếm |
-| Cắt ngang / hồi cứu | Tùy chọn | — | — |
+| Quan sát HỒI CỨU/dữ liệu thứ cấp thuần túy, KHÔNG tuyển người tham gia mới | Tùy chọn (không có "người tham gia đầu tiên" để mốc thời gian áp vào) | — | — |
 
-**18 trường WHO Trial Registration Data Set** (soạn sẵn, điền `[CẦN BỔ SUNG]` cho trường chưa biết):
-1. Primary registry & ID · 2. Date of registration · 3. Secondary IDs · 4. Source of funding
-5. PI contact · 6. Research contact · 7. Public title · 8. Scientific title
-9. Countries of recruitment · 10. Health condition · 11. Intervention · 12. Key inclusion criteria
-13. Key exclusion criteria · 14. Study type · 15. Date of first enrollment · 16. Target sample size
-17. Recruitment status · 18. Primary outcome · (+Key secondary outcomes)
+**WHO Trial Registration Data Set v1.3.1 — 24 mục bắt buộc** (khớp ĐÚNG hằng số
+`WHO_TRDS_LABELS`/`WHO_TRDS_ITEM_COUNT` trong `tools/g2_quality_gate.py` — nguồn xác định duy nhất
+cho danh sách này; soạn sẵn, điền `[CẦN BỔ SUNG]` cho trường chưa biết — SỬA 2026-07-30, audit toàn
+diện G0-G10 mục G2-F3: bản liệt kê cũ ghi "20 trường/21 dòng thao tác" theo cách đếm CŨ (tách riêng
+Key Inclusion/Key Exclusion Criteria thành 2 dòng); mã nguồn thật đã dùng ĐÚNG WHO TRDS **v1.3.1
+(24 mục)** — gộp Key Inclusion/Exclusion Criteria thành 1 mục (#14) và có 4 mục mà bản liệt kê cũ
+bỏ sót hẳn: Ethics Review (#21), Completion Date (#22), Summary Results (#23), IPD Sharing
+Statement (#24); đã xác minh ngoài qua who.int ở audit gốc, không cần verify lại):
+1. Primary Registry and Trial Identifying Number · 2. Date of Registration in Primary Registry ·
+3. Secondary Identifying Numbers · 4. Source(s) of Monetary or Material Support · 5. Primary
+Sponsor · 6. Secondary Sponsor(s) · 7. Contact for Public Queries · 8. Contact for Scientific
+Queries · 9. Public Title · 10. Scientific Title · 11. Countries of Recruitment · 12. Health
+Condition(s) or Problem(s) Studied · 13. Intervention(s) · 14. Key Inclusion and Exclusion
+Criteria · 15. Study Type · 16. Date of First Enrolment · 17. Target Sample Size · 18. Recruitment
+Status · 19. Primary Outcome(s) · 20. Key Secondary Outcomes · 21. Ethics Review · 22. Completion
+Date · 23. Summary Results · 24. IPD Sharing Statement
+
+> **Bốn trường khoa học là điều kiện trạng thái, không phải chỗ trống trang trí:** mục 13
+> Intervention(s), 14 Inclusion/Exclusion, 19 Primary Outcome(s) và 20 Secondary Outcomes
+> phải được nạp từ `study_meta.gate_params.G0/G1` do PI đã pin. Với RCT, mục 13 cần cả can
+> thiệp và đối chứng; mục 14 cần cả tiêu chí chọn và loại; mục 19 cần tên, thước đo và thời
+> điểm; nếu không có kết cục phụ phải ghi quyết định tường minh như "None prespecified".
+> Thiếu bất kỳ mục nào làm `G2-AUTO-08` REVIEW và trạng thái vẫn DRAFT. `G2-AUTO-09` cũng
+> REVIEW khi tham chiếu Hội đồng Đạo đức chỉ là fallback; người dùng phải cung cấp tham chiếu
+> rõ nguồn. Agent không tự suy các trường này từ văn xuôi để làm xanh cổng.
 
 > **WHO ICTRP KHÔNG phải một registry để đăng ký trực tiếp (2026-07-07):** ICTRP là cổng TÌM KIẾM/gộp dữ liệu từ các registry thành viên (primary registry mạng lưới WHO), KHÔNG nhận đăng ký trực tiếp. Mục "Nơi đăng ký" PHẢI nêu tên MỘT registry chính danh cụ thể (ClinicalTrials.gov/ANZCTR/DRKS/ISRCTN hoặc registry trong nước phù hợp) — không để "ICTRP hoặc registry phù hợp" như một lựa chọn (A)/(B) còn bỏ ngỏ. Với nghiên cứu QUAN SÁT/không can thiệp mà KHÔNG có registry quốc gia phù hợp → dùng nền tảng cụ thể **OSF Registries** (registries.osf.io) thay vì bỏ ngỏ.
 
@@ -274,11 +362,11 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact ethics
 ---
 
 ### TÀI LIỆU 9 — ICF WAIVER (có điều kiện — chỉ khi nghiên cứu dữ liệu THỨ CẤP / không tiếp xúc người tham gia trực tiếp)
-Kích hoạt khi Intake Audit mục [6] = "thứ cấp" hoặc "đã khóa". KHÔNG áp khi có tiếp xúc người tham gia trực tiếp.
+Kích hoạt theo cờ `risk["icf_waiver_eligible"]` gắn TĨNH theo `design_code` (SỬA 2026-07-24, vòng lặp kiểm tra-hoàn thiện vòng 15 — trước mô tả sai cơ chế "Intake Audit mục [6]", một khái niệm KHÔNG tồn tại trong code; `tools/run_g2_auto.py::RISK_PROFILES` thật gán `icf_waiver_eligible=True` cho `sr_ma`/`cross_sectional`/`prediction`, bất kể đề tài THẬT SỰ dùng dữ liệu thứ cấp hay đang tiến cứu tuyển người tham gia mới): MỌI đề tài `cross_sectional`/`prediction` đều tự động nhận DRAFT "Yêu cầu miễn ICF", kèm cảnh báo BẮT BUỘC bác sĩ tự xác nhận nghiên cứu THẬT SỰ không thu thập dữ liệu định danh mới nào trước khi dùng — KHÔNG áp khi có tiếp xúc người tham gia trực tiếp thu thập dữ liệu mới có định danh, dù `design_code` rơi vào 3 nhóm trên.
 ```
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request) — DRAFT Phiên bản 1.0
 ═══════════════════════════════════════════════════════
-Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki WMA 2013 §29
+Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki WMA 2024 §32 (Nghiên cứu dùng vật liệu/dữ liệu người có thể định danh — số mục không đổi từ bản 2013)
 Tên đề tài: ___   |   Chủ nhiệm: ___   |   Ngày: ___/___/20__
 
 CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
@@ -332,12 +420,14 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 
 ## TIÊU CHÍ QUA CỔNG G2
 
-**Đạt G2 (AI side):** 8 tài liệu hoàn chỉnh · checklist nộp đủ mục · ICF đúng 7 mục Helsinki · DMP đủ Luật 91/2025 · khai báo COI/AI · thông tin liên hệ Hội đồng · không PII · không số phê duyệt bịa.
+**Đạt G2 (AI side):** 8 tài liệu hoàn chỉnh · checklist nộp đủ mục · WHO TRDS 1.3.1 đủ 24 mục và các mục khoa học 13/14/19/20 lấy từ quyết định PI đã pin · tham chiếu Hội đồng rõ nguồn · ICF đúng 7 mục Helsinki · DMP đủ Luật 91/2025 · khai báo COI/AI · không PII · không số phê duyệt bịa.
 
-**Mở khóa thật (human side):** bác sĩ nộp hồ sơ → Hội đồng phê duyệt → cung cấp số IRB thật → agent ghi G2_STATUS: LOCKED.
+**Mở khóa thật (human side):** bác sĩ nộp hồ sơ → Hội đồng phê duyệt → cung cấp số IRB thật → agent ghi G2_STATUS: LOCKED vào checkpoint (nội dung tham khảo).
+
+**Vá 2026-07-12 (audit toàn diện cổng G0-G9):** ghi `G2_STATUS: LOCKED` vào checkpoint KHÔNG còn tự mở cổng thật — kiểm định đối kháng xác nhận agent tự ghi dòng này từng đủ để các script phân tích dữ liệu thật (`run_stats_analysis.py`) chạy trót lọt, dù chưa hề có phê duyệt IRB thật. Cổng THẬT nay đòi `approval_ledger.json` có chữ ký (xem `tools/gate_contract.py::ledger_approved`). Việc CỦA AGENT khi có số IRB thật: nhắc bác sĩ **tự tay** chạy `python tools/approve_gate.py --study <tên> --gate G2 --artifact <hồ sơ đạo đức>` trong terminal riêng (không nhờ agent chạy hộ — nếu agent chạy hộ, chữ ký vẫn được tạo nhưng mất ý nghĩa "một người ngoài agent đã xác nhận"). Cần khóa ký đã thiết lập một lần bằng `tools/setup_gate_approval_key.py` (bác sĩ tự chạy).
 
 ## Ranh giới
-KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
+KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
@@ -367,8 +457,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

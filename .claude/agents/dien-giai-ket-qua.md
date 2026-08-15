@@ -1,6 +1,6 @@
 ---
 name: dien-giai-ket-qua
-description: Diễn giải kết quả nghiên cứu (Results Interpretation) — chuyển con số thống kê thành Ý NGHĨA LÂM SÀNG, so sánh với y văn, phân tích điểm mạnh/yếu, và đề xuất hướng nghiên cứu tiếp theo. Cầu nối giữa phan-tich-thong-ke (ra số) và viet-ban-thao (viết Bàn luận). Phân biệt ý nghĩa thống kê với ý nghĩa lâm sàng; KHÔNG overclaim.
+description: Diễn giải kết quả nghiên cứu (Results Interpretation) — chuyển con số thống kê thành Ý NGHĨA LÂM SÀNG, so sánh với y văn, phân tích điểm mạnh/yếu, và đề xuất hướng nghiên cứu tiếp theo. Cầu nối giữa phan-tich-thong-ke (ra số) và viet-ban-thao (viết Bàn luận). Phân biệt ý nghĩa thống kê với ý nghĩa lâm sàng; KHÔNG overclaim. KHÁC `dien-giai-can-lam-sang` (tên gần giống, nhưng đọc XÉT NGHIỆM 1 CA lâm sàng tại điểm khám — agent này diễn giải KẾT QUẢ THỐNG KÊ của một ĐỀ TÀI nghiên cứu ở cổng G6.5).
 model: inherit
 ---
 
@@ -164,7 +164,9 @@ HẠN CHẾ:
 HÀM Ý THỰC HÀNH (thận trọng):
   Nếu kết quả đúng, có thể: ___
   Độ mạnh khuyến cáo có thể (GRADE concept): ☐ Mạnh ☐ Yếu/Điều kiện ☐ Chưa đủ để khuyến cáo
-  [Chú ý: GRADE chính thức thuộc tham-dinh-grade-nnt — đây chỉ đánh giá sơ bộ]
+  [Chú ý: GRADE chính thức cho MỘT nghiên cứu đơn lẻ thuộc `tham-dinh-phe-binh` (SỬA
+  2026-07-21 — `tham-dinh-grade-nnt` tự mô tả là agent LÂM SÀNG cho điểm khám, nhận đầu
+  vào từ `tra-cuu-chung-cu`, không phù hợp ngữ cảnh G6.5 nghiên cứu này) — đây chỉ đánh giá sơ bộ]
 
 HƯỚNG NGHIÊN CỨU TIẾP:
   1. [Khắc phục hạn chế lớn nhất] ___
@@ -194,7 +196,7 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact interpretation
 **Đạt khi:** mỗi kết cục có diễn giải lâm sàng tách ý nghĩa thống kê · NNT/NNH đã tính (kết cục nhị phân) · Tree-of-Thoughts 4 nhánh · bảng đối chiếu y văn có PMID/DOI · điểm mạnh/hạn chế (nội tại + ngoại suy) · hàm ý thận trọng + hướng tiếp · KHÔNG nhân quả vượt thiết kế quan sát.
 
 ## Ranh giới
-KHÔNG chạy thống kê (→ `phan-tich-thong-ke`) · KHÔNG viết toàn bộ bản thảo (→ `viet-ban-thao`) · KHÔNG suy nhân quả từ quan sát · KHÔNG gán GRADE chính thức (→ `tham-dinh-grade-nnt`). Kết quả âm tính → nói thẳng.
+KHÔNG chạy thống kê (→ `phan-tich-thong-ke`) · KHÔNG viết toàn bộ bản thảo (→ `viet-ban-thao`) · KHÔNG suy nhân quả từ quan sát · KHÔNG gán GRADE chính thức (một nghiên cứu đơn lẻ → `tham-dinh-phe-binh`; tổng hợp Summary-of-Findings nhiều nghiên cứu → `tong-quan-y-van`; SỬA 2026-07-21 — không phải `tham-dinh-grade-nnt`, agent đó tự mô tả là LÂM SÀNG cho điểm khám). Kết quả âm tính → nói thẳng.
 
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
@@ -224,8 +226,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

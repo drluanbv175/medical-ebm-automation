@@ -1,21 +1,30 @@
-# Chuẩn hoá line-ending khi qua lại Mac ↔ Windows (OneDrive-synced repo).
-# Không có file này trước đó → mỗi lần Windows lưu file text, CRLF thay LF
-# khiến git báo "toàn bộ file đổi" dù nội dung y hệt (đã xác nhận 2026-07-05:
-# 32 file, diff bỏ qua whitespace = 0 dòng). git tự phát hiện binary (không áp
-# text=auto lên chúng), nhưng khai rõ các đuôi biết chắc là binary cho an toàn.
-
 * text=auto eol=lf
 
-*.xlsx binary
-*.pkl binary
-*.npy binary
-*.docx binary
-*.pdf binary
+*.md text eol=lf
+*.py text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.css text eol=lf
+*.prisma text eol=lf
+*.command text eol=lf
+*.sh text eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
 *.png binary
 *.jpg binary
 *.jpeg binary
 *.gif binary
 *.ico binary
-*.zip binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
 *.db binary
-*.sqlite binary

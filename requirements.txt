@@ -1,0 +1,46 @@
+# Build tooling — ghim sàn để venv MỚI không kế thừa setuptools cũ dính CVE
+# (58.0.4 -> 78.1.1 vá 2026-07-15, xem reports/DEPENDENCY_AUDIT_2026-07-15.md).
+# Đây là công cụ build/interpreter, KHÔNG phải thư viện app import — ghim ở đây chỉ để
+# `pip install -r requirements.txt` trên venv mới cũng nhận bản đã vá.
+setuptools>=78.1.1
+
+# Core
+python-dotenv>=1.0.1
+SQLAlchemy>=2.0.30
+requests>=2.32.0
+pydantic>=2.7.0
+defusedxml>=0.7.1   # parse XML an toàn (chống XXE/billion-laughs) cho pubmed/rss
+mcp>=1.27,<2        # MCP server chỉ đọc cho ChatGPT App (stable v1.x)
+
+# Scheduler
+APScheduler>=3.10.4
+
+# Dashboard
+streamlit>=1.36.0
+pandas>=2.2.0
+plotly>=5.22.0
+
+# Statistical analysis (run_stats_analysis.py)
+scipy>=1.13.0
+statsmodels>=0.14.0
+lifelines>=0.30.0   # Cox PH + Kaplan-Meier cho thiết kế sống còn (--time/--event, vá 2026-07-15)
+matplotlib>=3.9.0   # tuỳ chọn — vẽ đường cong Kaplan-Meier (script vẫn chạy nếu thiếu)
+
+# Reports / export
+Jinja2>=3.1.4
+deep-translator>=1.11.4
+python-docx>=1.1.2
+openpyxl>=3.1.5
+markdown>=3.6
+
+# Sinh ảnh slideshow TikTok (photo mode)
+Pillow>=10.0.0
+# Ghép video TikTok (kèm sẵn ffmpeg tĩnh; giọng đọc dùng macOS `say`)
+imageio-ffmpeg>=0.4.9
+
+# Testing
+pytest>=8.2.0
+responses>=0.25.0
+
+# Lint (dev) — cấu hình ở ruff.toml
+ruff>=0.15.0

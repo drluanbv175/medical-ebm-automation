@@ -1,0 +1,62 @@
+{
+  "acceptance_id": "FSA-V4332-2026-06-28-FULL",
+  "utc_timestamp": "2026-06-28T10:00:00Z",
+  "git_commit": "0ce0d472f3c739806a59c2c066948fe7a11f954f",
+  "git_commit_short": "0ce0d47",
+  "git_commit_message": "chore: apply linter improvement to test_v4332_inv0_no_api_imports",
+  "git_tag_baseline": "v4.3.3.2",
+  "archive_filename": "v4_3_3_2_baseline.tar",
+  "archive_sha256": "591a1a8981704b03ff5eb85d7bb380224514c58fde7be3474286790fc70beaf1",
+  "archive_size_bytes": 5980160,
+  "fresh_archive_root": "/tmp/.../v4_3_3_2_full_fresh/extracted/medical-ebm-automation",
+  "used_only_source_inside_archive": true,
+  "archive_symlinks": 0,
+  "archive_file_count": 722,
+
+  "manifest_verify": "PASS",
+  "registry_verify": "PASS",
+  "registry_agent_count": 48,
+  "manifest_hash": "all_hash_verified=True",
+
+  "collected": 761,
+  "passed": 756,
+  "failed": 0,
+  "skipped": 5,
+  "exit_code": 0,
+  "duration_seconds": 6,
+  "python_version": "3.9.6",
+  "pytest_version": "8.4.2",
+
+  "consistency_check": "761 = 756 + 0 + 5 PASS",
+
+  "network_attempts": 0,
+  "api_attempts": 0,
+  "real_pii_inputs": 0,
+  "synthetic_pii_guard_cases": 3,
+  "production_connector_attempts": 0,
+
+  "project_init_result": "PASS — exit 0",
+  "project_build_result": "PASS — 19/19 artifacts DRAFT created, exit 0",
+  "project_qa_result": "PASS — 14 PASS, 0 FAIL, 1 WARN (D-R8 REQUIRE_HUMAN_EVIDENCE_INPUT), exit 0",
+  "project_review_pack_result": "PASS — 5 decisions generated, exit 0",
+  "project_reproducibility_result": "PASS — 19/19 artifacts present, exit 0",
+
+  "d_r13_safe_instruction_result": "PASS — 8/8 safe texts returned False (no false positive)",
+  "d_r13_structured_action_block_result": "PASS — 10/10 action cases returned True (BLOCK)",
+  "d_r13_overall": "PASS",
+
+  "d_r8_empty_manifest_result": "PASS — GateStatus=WARN, state=REQUIRE_HUMAN_EVIDENCE_INPUT",
+  "d_r8_retracted_result": "PASS — GateStatus=FAIL, state=BLOCK",
+  "d_r8_manual_review_result": "PASS — GateStatus=WARN, state=REQUIRE_HUMAN_REVIEW",
+  "d_r8_unverified_evidence_result": "WARN+REQUIRE_HUMAN_REVIEW (no bare WARN)",
+  "d_r8_verified_evidence_result": "PASS — GateStatus=PASS, state=PASS",
+  "d_r8_overall": "PASS",
+
+  "final_verdict": "PASS — V4.3.3.2 GATE CORRECTIONS AND REPOSITORY RATIONALIZATION BASELINE FROZEN",
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+  "real_research_execution": "BLOCKED",
+  "external_release_submission": "BLOCKED",
+  "live_agent_behavior": "NOT VERIFIED",
+  "api_connectivity": "NOT RUN",
+  "independent_review": "NOT ESTABLISHED"
+}

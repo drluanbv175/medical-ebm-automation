@@ -1,0 +1,10 @@
+=== Phase 5: D-R8 EVIDENCE-STATE VALIDATION ===
+D-R8 STATE MACHINE:
+  [OK] empty_manifest: GateStatus=WARN state=REQUIRE_HUMAN_EVIDENCE_INPUT
+  [OK] retracted: GateStatus=FAIL state=BLOCK
+  [OK] manual_review: GateStatus=WARN state=REQUIRE_HUMAN_REVIEW
+  [OK] verified: GateStatus=PASS state=PASS
+
+D-R8 EVIDENCE-STATE VALIDATION: PASS
+No bare WARN without semantic state: True
+d_r8_exit: 0

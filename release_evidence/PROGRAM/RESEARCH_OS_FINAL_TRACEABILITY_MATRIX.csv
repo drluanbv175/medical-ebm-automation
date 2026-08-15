@@ -1,0 +1,42 @@
+requirement_id,requirement_description,phase,source_module,test_file,test_count,evidence_doc,status
+REQ-R1.2-01,Identity adapter interface with 5 abstract methods,R1.2,research_project/identity_adapter_contract.py,tests/test_r1_2_identity_contract.py,5,R1_2_IDENTITY_INTEGRATION_ARCHITECTURE.md,VERIFIED
+REQ-R1.2-02,AuthenticationContext dataclass with 9 validated fields,R1.2,research_project/identity_adapter_contract.py,tests/test_r1_2_identity_contract.py,10,R1_2_AUTHENTICATED_AUDIT_CONTRACT.md,VERIFIED
+REQ-R1.2-03,SyntheticIdentityAdapter — mfa_satisfied always False,R1.2,research_project/identity_adapter_contract.py,tests/test_r1_2_identity_contract.py,6,R1_2_SYNTHETIC_IDENTITY_CONTRACT_TEST_PLAN.md,VERIFIED
+REQ-R1.2-04,No network imports in identity module,R1.2,research_project/identity_adapter_contract.py,tests/test_r1_2_identity_contract.py,3,R1_2_TEST_REPORT.md,VERIFIED
+REQ-R1.2-05,NOT_IMPLEMENTED constants for SSO/MFA/session store,R1.2,research_project/identity_adapter_contract.py,tests/test_r1_2_identity_contract.py,3,R1_2_AUTHENTICATED_AUDIT_CONTRACT.md,VERIFIED
+REQ-R1.2-06,SyntheticAdapter attribution_mode = SYNTHETIC,R1.2,research_project/identity_adapter_contract.py,tests/test_r1_2_identity_contract.py,5,R1_2_RBAC_PERSISTENCE_DESIGN.md,VERIFIED
+REQ-R1.3-01,WormRetentionProviderInterface with 8 abstract methods,R1.3,research_project/audit_retention_contract.py,tests/test_r1_3_audit_retention_contract.py,8,R1_3_IMMUTABLE_RETENTION_PROVIDER_CONTRACT.md,VERIFIED
+REQ-R1.3-02,WriteReceipt rejects is_worm_confirmed=True with FAKE disclaimer,R1.3,research_project/audit_retention_contract.py,tests/test_r1_3_audit_retention_contract.py,4,R1_3_PROD_AUD_01_ARCHITECTURE.md,VERIFIED
+REQ-R1.3-03,RetentionPolicy default periods (7/10/15 years),R1.3,research_project/audit_retention_contract.py,tests/test_r1_3_audit_retention_contract.py,4,R1_3_RETENTION_POLICY_REQUIREMENTS.md,VERIFIED
+REQ-R1.3-04,Legal hold create/release with authority required,R1.3,research_project/audit_retention_contract.py,tests/test_r1_3_audit_retention_contract.py,6,R1_3_PROD_AUD_01_ARCHITECTURE.md,VERIFIED
+REQ-R1.3-05,LOCAL_LEDGER_CLASSIFICATION constant present,R1.3,research_project/audit_retention_contract.py,tests/test_r1_3_audit_retention_contract.py,2,R1_3_WORM_SOLUTION_DESIGN.md,VERIFIED
+REQ-R2.0-01,CRF version registry with lock mechanism,R2.0,research_project/synthetic_edc_core.py,tests/test_r2_0_synthetic_edc_core.py,8,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-02,DataDictionary validates field types/ranges/categoricals,R2.0,research_project/synthetic_edc_core.py,tests/test_r2_0_synthetic_edc_core.py,9,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-03,EditCheckEngine with per-field and full-record checks,R2.0,research_project/synthetic_edc_core.py,tests/test_r2_0_synthetic_edc_core.py,9,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-04,SyntheticRecord lifecycle DRAFT→ACTIVE→FROZEN→LOCKED,R2.0,research_project/synthetic_edc_lifecycle.py,tests/test_r2_0_synthetic_edc_lifecycle.py,11,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-05,EDCAuditLog provenance for all events,R2.0,research_project/synthetic_edc_lifecycle.py,tests/test_r2_0_synthetic_edc_lifecycle.py,4,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-06,DataFreezeManager — LOCKED record blocks freeze,R2.0,research_project/synthetic_edc_lifecycle.py,tests/test_r2_0_synthetic_edc_lifecycle.py,5,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-07,DataLockManager — authority required for lock,R2.0,research_project/synthetic_edc_lifecycle.py,tests/test_r2_0_synthetic_edc_lifecycle.py,5,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-08,ExportManager — only LOCKED records exportable,R2.0,research_project/synthetic_edc_lifecycle.py,tests/test_r2_0_synthetic_edc_lifecycle.py,4,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-09,SyntheticBackupManager — hash verification,R2.0,research_project/synthetic_edc_lifecycle.py,tests/test_r2_0_synthetic_edc_lifecycle.py,6,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-10,QueryLifecycleManager — OPEN→ANSWERED→CLOSED / CANCELLED,R2.0,research_project/synthetic_edc_query.py,tests/test_r2_0_synthetic_edc_lifecycle.py,8,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-11,CorrectionManager — reason mandatory,R2.0,research_project/synthetic_edc_query.py,tests/test_r2_0_synthetic_edc_lifecycle.py,4,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R2.0-12,DeviationRegistry — MAJOR/CRITICAL filter,R2.0,research_project/synthetic_edc_query.py,tests/test_r2_0_synthetic_edc_lifecycle.py,3,R2_0_EDC_SYNTHETIC_LIFECYCLE_OVERVIEW.md,VERIFIED
+REQ-R3.0-01,Ethics/IRB requirements documented (Vietnamese regulatory framework),R3.0,— (doc only),— (doc only),0,R3_0_ETHICS_AND_IRB_REQUIREMENTS.md,DOCUMENTED
+REQ-R3.0-02,Informed consent framework (13 ICF elements per ICH-GCP E6 R2),R3.0,— (doc only),— (doc only),0,R3_0_INFORMED_CONSENT_FRAMEWORK.md,DOCUMENTED
+REQ-R3.0-03,Monitoring plan template (SDV scope / escalation triggers),R3.0,— (doc only),— (doc only),0,R3_0_MONITORING_PLAN_TEMPLATE.md,DOCUMENTED
+REQ-R3.0-04,Study operations SOP (enrollment / AE reporting / closure),R3.0,— (doc only),— (doc only),0,R3_0_STUDY_OPERATIONS_SOP.md,DOCUMENTED
+REQ-R3.0-05,Study Activation Gate — 12 conditions all CLOSED,R3.0,— (doc only),— (doc only),0,R3_0_STUDY_ACTIVATION_GATE.md,DOCUMENTED — GATE CLOSED
+REQ-R4.0-01,EHospitalReadOnlyBoundaryInterface — zero write methods,R4.0,research_project/ehospital_boundary_contract.py,tests/test_r4_0_ehospital_boundary.py,1,R4_0_EHOSPITAL_BOUNDARY_ARCHITECTURE.md,VERIFIED
+REQ-R4.0-02,ExtractRequest requires non-empty ethics_approval_ref,R4.0,research_project/ehospital_boundary_contract.py,tests/test_r4_0_ehospital_boundary.py,1,R4_0_EHOSPITAL_BOUNDARY_ARCHITECTURE.md,VERIFIED
+REQ-R4.0-03,ExtractRecord rejects PII key names in data dict,R4.0,research_project/ehospital_boundary_contract.py,tests/test_r4_0_ehospital_boundary.py,3,R4_0_PSEUDONYMIZATION_REQUIREMENTS.md,VERIFIED
+REQ-R4.0-04,PERMITTED_READ_DOMAINS and BLOCKED_READ_DOMAINS are disjoint,R4.0,research_project/ehospital_boundary_contract.py,tests/test_r4_0_ehospital_boundary.py,1,R4_0_DATA_DOMAIN_WHITELIST.md,VERIFIED
+REQ-R4.0-05,PseudonymizedSubject requires 64-char SHA-256 hex pseudo_id,R4.0,research_project/ehospital_boundary_contract.py,tests/test_r4_0_ehospital_boundary.py,6,R4_0_PSEUDONYMIZATION_REQUIREMENTS.md,VERIFIED
+REQ-R4.0-06,Unapproved extract raises PermissionError,R4.0,research_project/ehospital_boundary_contract.py,tests/test_r4_0_ehospital_boundary.py,2,R4_0_EHOSPITAL_BOUNDARY_ARCHITECTURE.md,VERIFIED
+REQ-R4.0-07,Blocked domains rejected by ExtractRequest,R4.0,research_project/ehospital_boundary_contract.py,tests/test_r4_0_ehospital_boundary.py,2,R4_0_DATA_DOMAIN_WHITELIST.md,VERIFIED
+REQ-R5.0-01,Qualification framework (IQ/OQ/PQ/SQ) documented,R5.0,— (doc only),— (doc only),0,R5_0_QUALIFICATION_FRAMEWORK.md,DOCUMENTED
+REQ-R5.0-02,System qualification scope defined,R5.0,— (doc only),— (doc only),0,R5_0_SYSTEM_QUALIFICATION_SCOPE.md,DOCUMENTED
+REQ-R5.0-03,Qualification test plan with IQ/OQ/PQ/SQ scripts,R5.0,— (doc only),— (doc only),0,R5_0_QUALIFICATION_TEST_PLAN.md,DOCUMENTED — NOT EXECUTED
+REQ-R5.0-04,Qualification gap register — 10 gaps all OPEN,R5.0,— (doc only),— (doc only),0,R5_0_QUALIFICATION_GAP_REGISTER.md,DOCUMENTED — ALL OPEN
+REQ-R6.0-01,Level-A retrospective pilot protocol,R6.0,— (doc only),— (doc only),0,R6_0_RETROSPECTIVE_PILOT_PROTOCOL.md,DOCUMENTED
+REQ-R6.0-02,Pilot Activation Gate — 36 compound conditions all CLOSED,R6.0,— (doc only),— (doc only),0,R6_0_PILOT_ACTIVATION_GATE.md,DOCUMENTED — GATE CLOSED

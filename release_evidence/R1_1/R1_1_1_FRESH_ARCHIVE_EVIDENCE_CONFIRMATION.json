@@ -1,0 +1,88 @@
+{
+  "document": "R1_1_1_FRESH_ARCHIVE_EVIDENCE_CONFIRMATION.json",
+  "phase": "R1.1.1",
+  "date": "2026-06-28",
+  "purpose": "Re-verify hermetic reproducibility of r1.1-frozen archive for Validation Evidence Pack",
+  "status": "DRAFT — REQUIRE HUMAN REVIEW",
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+
+  "archive_identification": {
+    "git_tag": "r1.1-frozen",
+    "git_commit": "9fdfdffed90cb38d2dc56f6cf8604223c4e6d70e",
+    "archive_filename": "r1_1_fresh_archive_20260628_112421.tar.gz",
+    "archive_sha256": "0523a9667c439628b6b5d223a3b7c5984a0e7d383831c2cbebf0c0fa11853007",
+    "archive_size_bytes": 1504708
+  },
+
+  "environment": {
+    "used_only_source_inside_archive": true,
+    "env_vars_unset_before_run": [
+      "ANTHROPIC_API_KEY",
+      "OPENAI_API_KEY",
+      "EHOSPITAL_ENABLED",
+      "MRAQ_ENABLE_EHOSPITAL_SYNTHETIC_TEST"
+    ],
+    "env_var_set": "MRAQ_OFFLINE_CI=1",
+    "python_interpreter": "~/.ebm-venv/bin/python",
+    "platform": "darwin"
+  },
+
+  "manifest_verification": {
+    "manifest_path_in_repo": true,
+    "manifest_self_check": "MATCH",
+    "manifest_rows": 48,
+    "registry_agent_count": 48,
+    "all_hash_verified": true,
+    "hash_mismatches": 0,
+    "missing_agent_paths": 0,
+    "required_4_enforced_and_present": true,
+    "result": "PASS"
+  },
+
+  "test_execution": {
+    "command": "MRAQ_OFFLINE_CI=1 ~/.ebm-venv/bin/python -m pytest --tb=short -q",
+    "collected": 841,
+    "passed": 836,
+    "failed": 0,
+    "skipped": 5,
+    "warnings": 1,
+    "exit_code": 0,
+    "r1_1_specific_tests_passed": 39,
+    "r1_1_specific_tests_failed": 0
+  },
+
+  "hermetic_invariants": {
+    "network_attempts": 0,
+    "api_attempts": 0,
+    "real_pii_inputs": 0,
+    "production_connector_attempts": 0,
+    "sso_ldap_oauth_calls": 0,
+    "ehospital_calls": 0,
+    "external_db_calls": 0
+  },
+
+  "conditions_met": {
+    "failed_equals_zero": true,
+    "hash_mismatches_equals_zero": true,
+    "missing_agent_paths_equals_zero": true,
+    "network_attempts_equals_zero": true,
+    "api_attempts_equals_zero": true,
+    "real_pii_inputs_equals_zero": true,
+    "production_connector_attempts_equals_zero": true
+  },
+
+  "overall_result": "PASS",
+
+  "security_invariants_confirmed": {
+    "no_sso_ldap_oauth_network": true,
+    "no_real_credentials": true,
+    "no_pii": true,
+    "no_patient_data": true,
+    "synthetic_only": true,
+    "production_valid_false_on_all_audit_events": true,
+    "is_synthetic_true_on_all_actors": true,
+    "no_qualified_state_change": true
+  },
+
+  "note": "This JSON is a machine-readable evidence record only. All conclusions require human Validation Lead review. Claude Code must not make or simulate the Validation Lead decision."
+}

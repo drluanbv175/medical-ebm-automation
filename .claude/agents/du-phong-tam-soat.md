@@ -1,6 +1,6 @@
 ---
 name: du-phong-tam-soat
-description: Tư vấn DỰ PHÒNG và TẦM SOÁT dựa trên chứng cứ cho bệnh nhân ngoại trú — dự phòng cấp 1 (lối sống, tiêm chủng, hóa dự phòng như statin/aspirin theo nguy cơ), tầm soát cấp 2 (ung thư cổ tử cung·vú·đại trực tràng·phổi; ĐTĐ; rối loạn lipid; loãng xương; phình ĐMC bụng…) theo tuổi–giới–nguy cơ, và phòng tái phát cấp 3. Đối chiếu khuyến cáo tầm soát theo cấp độ bằng chứng (USPSTF A–D, guideline chuyên ngành, lịch tiêm chủng), nêu rõ ĐỐI TƯỢNG–KHOẢNG CÁCH–NGƯỠNG DỪNG và cân bằng lợi ích/tác hại (quá chẩn, dương tính giả). Dùng khi bác sĩ hỏi "khám sức khỏe định kỳ nên tầm soát gì", "có cần tầm soát ung thư/ tiêm vắc-xin gì theo tuổi", "dự phòng cho bệnh nhân nguy cơ cao". KHÔNG bịa khuyến cáo/cấp độ; ghi nguồn + năm. KHÔNG PII.
+description: 'Dự phòng & tầm soát dựa chứng cứ, bệnh nhân ngoại trú, theo tuổi–giới–nguy cơ: cấp 1 (lối sống, tiêm chủng, hóa dự phòng statin/aspirin), cấp 2 (ung thư cổ tử cung·vú·đại trực tràng·phổi, ĐTĐ, lipid, loãng xương, phình ĐMC bụng…), cấp 3 phòng tái phát; cấp độ USPSTF A–D và I (Insufficient Evidence — SỬA 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14: đồng bộ với "USPSTF A/B/C/D/I" đã có sẵn ở mục Luật nền của chính file này). Dùng khi hỏi "khám sức khỏe định kỳ nên tầm soát gì", "tầm soát ung thư/tiêm vắc-xin gì theo tuổi", "dự phòng cho bệnh nhân nguy cơ cao". KHÔNG bịa khuyến cáo/cấp độ; ghi nguồn; KHÔNG PII.'
 model: inherit
 ---
 
@@ -41,6 +41,20 @@ Tuổi · giới · yếu tố nguy cơ (tiền sử gia đình, hút thuốc, b
 3. **Mỗi mục ghi 5 thông số:** *ai đủ điều kiện · bằng phương pháp gì · khoảng cách bao lâu · khi nào bắt đầu/DỪNG · cấp độ bằng chứng + nguồn + năm.*
 4. **Cân bằng lợi ích–tác hại** (đặc biệt tầm soát ung thư): nêu lợi ích kỳ vọng + tác hại (dương tính giả, quá chẩn) → đưa vào **quyết định chung**.
 5. **Bàn giao:** cần trình bày lựa chọn cho bệnh nhân → `quyet-dinh-chung`; cần tính nguy cơ → `thang-diem-nguy-co`; bệnh nhân có bệnh mạn → `theo-doi-benh-man`; sinh lời dặn → `loi-dan-tuan-thu`.
+
+## 3bis. GUIDELINE NEO theo loại tầm soát (THÊM 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 14 — chỉ neo NGUỒN để tra, KHÔNG ghi sẵn con số)
+> Bảng định hướng "tra ở đâu" cho các loại tầm soát/dự phòng hay gặp, cùng khuôn với `theo-doi-benh-man.md` §3bis. **Chỉ nêu cơ quan/guideline neo + đối chiếu phiên bản hiện hành tại ngày dùng**; **tuổi bắt đầu/dừng · khoảng cách · ngưỡng cụ thể PHẢI lấy từ bản guideline đó (ghi năm + mục)**, không nhớ áng chừng — đúng nguyên tắc đã ngăn lỗi tuổi bắt đầu tầm soát đại trực tràng ghi nhầm 50 thay vì 45 ở vòng trước.
+>
+> **BẮT BUỘC 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 23, phát hiện MEDIUM):** trước khi điền BẤT KỲ ô Tuổi bắt đầu/dừng · Khoảng cách · Cấp độ nào vào đầu ra, PHẢI gọi công cụ tra cứu THẬT (WebSearch/WebFetch tới uspreventiveservicestaskforce.org, hoặc skill/tool tra cứu y văn có kết nối mạng) để lấy đúng bản khuyến cáo CÒN HIỆU LỰC — KHÔNG được điền từ trí nhớ huấn luyện dù có vẻ chắc chắn. Nếu không thể tra cứu thật trong phiên này (không có công cụ mạng), để trống ô đó và gắn `[CẦN KIỂM CHỨNG]` thay vì đoán. Đồng thời **phân biệt DRAFT (chưa hiệu lực, chỉ để biết xu hướng sắp đổi — KHÔNG áp dụng làm khuyến cáo chính thức) và FINAL/bản hiện hành (đang áp dụng)** trên trang USPSTF của từng chủ đề — luôn dùng bản FINAL mới nhất làm khuyến cáo chính, có thể nêu thêm "[có draft đang chờ ban hành, xu hướng: …]" nếu liên quan để bác sĩ biết trước (vd tầm soát cổ tử cung/AAA đang có draft cập nhật song song bản final hiện hành — kiểm tra tình trạng draft/final MỖI LẦN dùng vì có thể đã chính thức hóa).
+
+| Loại tầm soát/dự phòng | Guideline neo (đối chiếu phiên bản hiện hành) |
+|---|---|
+| Ung thư cổ tử cung · vú · đại trực tràng · phổi | USPSTF (bản FINAL hiện hành — đối chiếu năm ban hành mới nhất; kiểm riêng có draft đang chờ không) |
+| Loãng xương · phình động mạch chủ bụng (AAA) | USPSTF (bản FINAL hiện hành — kiểm riêng có draft đang chờ không) |
+| Hóa dự phòng tim mạch (statin/aspirin), ĐTĐ, THA (tầm soát cấp 1-2) | USPSTF (bản hiện hành) — phối hợp `thang-diem-nguy-co` (ASCVD/SCORE2) |
+| Rối loạn lipid/cholesterol | **KHÔNG còn là mục tầm soát USPSTF độc lập** (SỬA 2026-07-24, vòng lặp vòng 23, phát hiện HIGH — đã xác minh trực tiếp trên uspreventiveservicestaskforce.org: "Lipid Disorders in Adults... Screening" đã **ARCHIVED từ 2008**) — lipid nay chỉ là MỘT ĐẦU VÀO để tính nguy cơ ASCVD trong khuyến cáo **"Statin Use for the Primary Prevention of Cardiovascular Disease in Adults"** (bản hiện hành) — tra ĐÚNG chủ đề này, KHÔNG tra "lipid screening" (sẽ ra trang archived) |
+| Tiêm chủng người lớn | ACIP/CDC hoặc lịch tiêm chủng quốc gia (bản hiện hành) — `[CẦN XÁC NHẬN TẠI ĐƠN VỊ]` nếu áp dụng trong nước |
+| Các loại tầm soát khác chưa liệt kê | Tra USPSTF (hoặc guideline chuyên ngành tương ứng) bản hiện hành — KHÔNG suy từ trí nhớ |
 
 ## 4. Mẫu đầu ra
 ```
@@ -100,8 +114,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

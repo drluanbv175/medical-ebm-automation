@@ -1,0 +1,200 @@
+{
+  "contract_version": "G2-2026.1",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "gate": "G2",
+  "status": "DRAFT_NEEDS_HUMAN_COMPLETION",
+  "package_checks_passed": true,
+  "package_ready_for_submission": false,
+  "human_approval_complete": false,
+  "automatic_criteria": [
+    {
+      "id": "G2-AUTO-01",
+      "label": "Guardrail liêm chính G2 sạch",
+      "status": "PASS",
+      "evidence": "guardrail_passed=True",
+      "action": "Sửa PII, nguồn, disclaimer hoặc tuyên bố vượt cổng trước khi nộp."
+    },
+    {
+      "id": "G2-AUTO-02",
+      "label": "G1 đã được PI/methodologist xác nhận",
+      "status": "REVIEW",
+      "evidence": "G1 quality status=DRAFT_READY_NEEDS_HUMAN_REVIEW",
+      "action": "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa."
+    },
+    {
+      "id": "G2-AUTO-03",
+      "label": "Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc",
+      "status": "PASS",
+      "evidence": "đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI",
+      "action": "Sinh lại hoặc bổ sung phần hồ sơ bị thiếu."
+    },
+    {
+      "id": "G2-AUTO-04",
+      "label": "WHO TRDS 1.3.1 đủ 24 mục",
+      "status": "PASS",
+      "evidence": "24/24 mục đúng số và nhãn",
+      "action": "Sinh lại bản đăng ký từ nguồn WHO TRDS hiện hành."
+    },
+    {
+      "id": "G2-AUTO-05",
+      "label": "Không còn placeholder khoa học/vận hành trọng yếu",
+      "status": "REVIEW",
+      "evidence": "còn 71 dòng [CẦN] ngoài các dòng chỉ chứa PII",
+      "action": "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted."
+    },
+    {
+      "id": "G2-AUTO-06",
+      "label": "Thiết kế và lộ trình đạo đức không còn mơ hồ",
+      "status": "PASS",
+      "evidence": "design_code=cross_sectional; ambiguous=False",
+      "action": "PI/methodologist xác nhận thiết kế rồi tính lại lộ trình IRB."
+    },
+    {
+      "id": "G2-AUTO-07",
+      "label": "Kế hoạch an toàn tương xứng thiết kế",
+      "status": "PASS",
+      "evidence": "không phải RCT; kế hoạch an toàn điều chỉnh theo nguy cơ",
+      "action": "Bổ sung giám sát AE/SAE, DSMB/DMC và stopping rules cho thử nghiệm."
+    },
+    {
+      "id": "G2-AUTO-08",
+      "label": "Mục khoa học WHO TRDS (can thiệp/tiêu chí/kết cục) đã có nội dung thật",
+      "status": "REVIEW",
+      "evidence": "còn trống: #13 Intervention(s), #14 Key Inclusion and Exclusion Criteria, #19 Primary Outcome(s), #20 Key Secondary Outcomes",
+      "action": "Điền Intervention(s)/Inclusion-Exclusion/Primary-Secondary Outcome từ PICO thật của đề tài (checkpoint G1) trước khi đăng ký thật."
+    },
+    {
+      "id": "G2-AUTO-09",
+      "label": "Mã Hội đồng Đạo đức tách biệt khỏi định danh người duyệt chung",
+      "status": "PASS",
+      "evidence": "ethics_committee_ref_source=chưa có attestation",
+      "action": "Ký lại bằng approve_gate.py --gate G2 kèm --g2-ethics-committee-ref để tách mã hội đồng khỏi --reviewer-ref dùng chung."
+    }
+  ],
+  "human_approval_criteria": [
+    {
+      "id": "G2-HUMAN-01",
+      "label": "Quyết định IRB/IEC có số, ngày, hiệu lực, phạm vi và phiên bản",
+      "status": "REVIEW",
+      "evidence": "Chưa có phụ lục quyết định IRB có cấu trúc",
+      "action": "Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py."
+    },
+    {
+      "id": "G2-HUMAN-02",
+      "label": "Approval ledger đúng vai trò IRB và khớp hash artifact",
+      "status": "REVIEW",
+      "evidence": "ledger_approved=False",
+      "action": "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt."
+    }
+  ],
+  "unresolved_critical_placeholders": [
+    "| Đăng ký nghiên cứu | BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG], ClinicalTrials.g",
+    "Chức vụ: [CẦN BỔ SUNG]",
+    "Thời gian nghiên cứu: [CẦN — từ ___/___/2026 đến ___/___/____]",
+    "Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]",
+    "Đăng ký nghiên cứu: [CẦN — ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)]",
+    "[CẦN BỔ SUNG: lý do cần nghiên cứu thêm tại bối cảnh Việt Nam]",
+    "Quy trình: [CẦN MÔ TẢ ngắn gọn theo PICO]",
+    "[CẦN BỔ SUNG tạp chí/hội nghị mục tiêu]",
+    "| Trực tiếp với NTG | [CẦN BỔ SUNG — xác định xem có lợi ích trực tiếp không] |",
+    "`[CẦN BÁC SĨ XÁC NHẬN bảng rủi ro phù hợp với đề tài thật]`",
+    "Đơn vị thực hiện: [CẦN BỔ SUNG]",
+    "[CẦN MÔ TẢ bằng ngôn ngữ đơn giản — không dùng thuật ngữ khó]",
+    "môn, vd Bác sĩ CKII/Thạc sĩ Y học], công tác tại [CẦN — đơn vị], chủ trì",
+    "☐ Bước 1: [CẦN MÔ TẢ — ví dụ: ký phiếu đồng thuận này]",
+    "☐ Bước 2: [CẦN — ví dụ: trả lời bộ câu hỏi ~20 phút]",
+    "Tổng thời gian tham gia ước tính: [CẦN — ví dụ: 12 tháng]",
+    "Số lần đến cơ sở y tế: [CẦN — ví dụ: 3 lần]",
+    "Chi phí điều trị biến cố liên quan nghiên cứu: [CẦN XÁC NHẬN].",
+    "Lợi ích trực tiếp: [CẦN — ví dụ: không có lợi ích y khoa trực tiếp; góp ý giúp cải thiện chất lượng dịch vụ — KHÔNG có can thiệp/thủ thuật y khoa nào thực hiện thêm ngoài quy trình khám/chăm sóc thường quy]",
+    "Nghiên cứu này được tài trợ bởi: [CẦN, tên nguồn tài trợ, hoặc \"không có",
+    "tài trợ ngoài\" nếu đúng]. Nhóm nghiên cứu [CẦN — có/không] có xung đột",
+    "☐ Có hỗ trợ: [CẦN, mô tả cụ thể, vd hỗ trợ chi phí đi lại/thời gian;",
+    "Dữ liệu được mã hóa và lưu tại [CẦN, máy chủ bảo mật/",
+    "Dữ liệu nhận dạng được xóa/ẩn danh hóa trong vòng [CẦN] năm",
+    "(do tính ẩn danh, ghi rõ chính sách) [CẦN XÁC NHẬN]",
+    "[CẦN — đơn vị/chủ nhiệm] sẽ [CẦN CHỦ NHIỆM XÁC NHẬN, mô tả chính sách",
+    "Hội đồng Đạo đức: [CẦN — Tên HĐ cơ sở]",
+    "[CẦN BÁC SĨ LIỆT KÊ CỤ THỂ theo đề tài]",
+    "☐ [CẦN XÁC NHẬN]",
+    "Nơi lưu: [CẦN, máy chủ nội bộ / OneDrive institutional",
+    "Sao lưu: [CẦN — ví dụ: hàng ngày/tuần, 2 bản độc lập]",
+    "☐ Không chia sẻ (lý do: [CẦN])",
+    "☐ Mở hoàn toàn sau ẩn danh hóa (tại: [CẦN — OSF/Zenodo...])",
+    "[CẦN BÁC SĨ CHỌN VÀ BIỆN MINH]",
+    "Quy trình: [CẦN BỔ SUNG quy trình cụ thể của đơn vị]",
+    "SỐ BẢN NỘP: ___ [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]",
+    "Chức vụ: [CẦN BỔ SUNG] | Đơn vị: [CẦN BỔ SUNG]",
+    "Tài trợ chính: [CẦN BỔ SUNG — \"Không có tài trợ bên ngoài\" nếu đúng]",
+    "Tài trợ bổ sung: [CẦN BỔ SUNG]",
+    "Số hợp đồng (nếu có): [CẦN BỔ SUNG]",
+    "Tên công cụ: Claude AI (EBM Copilot) · [CẦN BỔ SUNG thêm nếu có]",
+    "Người kiểm tra đầu ra: [CẦN — tên nghiên cứu viên phụ trách]",
+    "> `[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`",
+    "Chủ nhiệm: [CẦN BỔ SUNG]",
+    "Loại dữ liệu: [CẦN BÁC SĨ MÔ TẢ — dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát nặc danh]",
+    "**Thời điểm:** BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG]",
+    "> hệ thống không tra được hai nguồn đầu vì không có API mở. [CẦN BÁC SĨ TỰ TRA]",
+    "[CẦN — sẽ có sau khi đăng ký: NCT_______ / ANZCTR_____]",
+    "[CẦN — ngày đăng ký thành công]",
+    "Số phê duyệt IRB: [CẦN sau khi nhận]",
+    "PROSPERO (nếu SR): [CẦN]",
+    "[CẦN BỔ SUNG — tên tổ chức tài trợ hoặc \"None\"]",
+    "[CẦN — tên pháp nhân/tổ chức chịu trách nhiệm]",
+    "[CẦN BỔ SUNG]",
+    "[CẦN BỔ SUNG — ngôn ngữ không chuyên]",
+    "Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]",
+    "[CẦN — từ PICO P: ví dụ Heart failure with preserved EF / HFpEF]",
+    "[CẦN — từ PICO I: ví dụ SGLT2 inhibitor (empagliflozin 10mg OD)]",
+    "Comparator: [CẦN — từ PICO C]",
+    "Inclusion: [CẦN BỔ SUNG — từ protocol/PICO P]",
+    "Exclusion: [CẦN BỔ SUNG — từ protocol]",
+    "[CẦN — chỉ tuyển sau phê duyệt và đăng ký: ___/___/2026]",
+    "[CẦN — tên kết cục + thước đo + thời điểm từ G0/G1]",
+    "[CẦN — tên kết cục + thước đo + thời điểm từ SAP]",
+    "Approval date: [CẦN sau quyết định IRB]",
+    "Ethics committee: [CẦN mã/tên đơn vị; không lưu PII cá nhân]",
+    "[CẦN — ngày hoàn tất dự kiến; cập nhật ngày thật khi kết thúc]",
+    "[CẦN CẬP NHẬT sau nghiên cứu, ngày đăng kết quả/tác phẩm,",
+    "Plan to share de-identified IPD: [CẦN — Yes/No]",
+    "What/when/how/with whom/purpose: [CẦN — kế hoạch cụ thể]",
+    "\"DRAFT, Điền trường còn [CẦN] trước khi gửi đăng ký.\""
+  ],
+  "pending_actions": [
+    "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.",
+    "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted.",
+    "Điền Intervention(s)/Inclusion-Exclusion/Primary-Secondary Outcome từ PICO thật của đề tài (checkpoint G1) trước khi đăng ký thật.",
+    "Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.",
+    "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt."
+  ],
+  "attestation": {},
+  "standards_basis": [
+    {
+      "standard": "WMA Declaration of Helsinki 2024",
+      "scope": "Ethics review, consent, protocol amendments and registration before recruitment",
+      "url": "https://www.wma.net/policies-post/wma-declaration-of-helsinki/"
+    },
+    {
+      "standard": "ICH E6(R3)",
+      "scope": "IRB/IEC, informed consent, safety and protocol control for clinical trials",
+      "url": "https://database.ich.org/sites/default/files/ICH_E6%28R3%29_Step4_FinalGuideline_2025_0106.pdf"
+    },
+    {
+      "standard": "WHO Trial Registration Data Set 1.3.1",
+      "scope": "24 data items for complete trial registration",
+      "url": "https://www.who.int/tools/clinical-trials-registry-platform/network/who-data-set"
+    },
+    {
+      "standard": "Thông tư 43/2024/TT-BYT",
+      "scope": "Tổ chức và hoạt động Hội đồng Đạo đức trong nghiên cứu y sinh học tại Việt Nam",
+      "url": "https://vbpl.vn/TW/Pages/vbpq-van-ban-goc.aspx?ItemID=172919"
+    },
+    {
+      "standard": "Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP",
+      "scope": "Bảo vệ dữ liệu cá nhân tại Việt Nam",
+      "url": "https://vanban.chinhphu.vn/?classid=1&docid=214590&pageid=27160&typegroup="
+    }
+  ],
+  "scope_statement": "PASS_G2_APPROVED chỉ xác nhận dấu vết IRB/IEC, phiên bản và đăng ký đã cung cấp cho hệ thống. HMAC cục bộ không tự chứng minh tính độc lập của Hội đồng; hồ sơ gốc và quyết định thật vẫn phải được kiểm tra.",
+  "disclaimer": "Cần bác sĩ kiểm chứng."
+}

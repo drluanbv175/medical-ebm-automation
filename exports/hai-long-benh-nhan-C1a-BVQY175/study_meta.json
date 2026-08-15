@@ -1,0 +1,162 @@
+{
+  "title": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối",
+  "topic": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối",
+  "query_en": "patient satisfaction outpatient department Vietnam hospital",
+  "base_query": "patient satisfaction outpatient department Vietnam hospital",
+  "irb_approved": false,
+  "sap_lock_date": null,
+  "data_lock_date": null,
+  "results_final": false,
+  "integrity_signed": false,
+  "gate_params": {
+    "G0": {
+      "population": "Người bệnh ngoại trú từ đủ 18 tuổi trở lên (kể cả phụ nữ mang thai), đủ sức khỏe và năng lực nhận thức/ngôn ngữ để trả lời, đã cơ bản hoàn thành quy trình khám tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, và đồng ý tham gia tự nguyện (mục 4.3.1 đề cương)",
+      "intervention": "Không có can thiệp — nghiên cứu quan sát. Phơi nhiễm trung tâm của Mục tiêu 2 là thời gian chờ khám đo theo mốc HIS/eHospital, báo hiệu ứng theo mỗi 15 phút chờ thêm (mục 4.6.3 đề cương)",
+      "comparison": "Không có nhóm so sánh ngoài — thiết kế mô tả cắt ngang có phân tích; Mục tiêu 2 so sánh giữa các mức phơi nhiễm trong cùng một mẫu",
+      "outcomes": [
+        "G1 — mức hài lòng chung hỏi trực tiếp, thang thứ hạng 1-5 (kết cục chính của cả MT1 và MT2)",
+        "Điểm hài lòng theo 6 lĩnh vực A-F (30 mục Likert 5 mức)",
+        "Tỷ lệ hài lòng theo ngưỡng cố định G1 >= 4/5 (kết cục nhị phân thứ cấp)"
+      ],
+      "primary_outcome": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep)",
+      "primary_outcome_measure": "Thang thứ hạng Likert 5 mức (1 = Rất không hài lòng ... 5 = Rất hài lòng); phân tích chính bằng hồi quy logistic thứ tự proportional odds, báo tỷ số chênh chung hiệu chỉnh kèm KTC 95%",
+      "primary_outcome_timepoint": "Đo một lần, ngay sau khi người bệnh cơ bản hoàn thành quy trình khám trong cùng lần khám",
+      "hypothesis_h0": null,
+      "hypothesis_h1": null,
+      "expected_direction": null,
+      "test_type": "descriptive",
+      "question_type": "descriptive",
+      "finer_feasible": null,
+      "finer_interesting": null,
+      "finer_novel": null,
+      "finer_ethical": null,
+      "finer_relevant": null,
+      "evidence_reviewed_confirmed": false,
+      "novelty_justification": "[DỰ THẢO — CHỜ BÁC SĨ ĐỌC 12 PMID Ở §3 CỦA A1 RỒI CHỐT] Tính mới ở mức mở rộng/nhân rộng vào bối cảnh mới (replication), không phải mới về chủ đề hay phương pháp: chưa tìm thấy nghiên cứu công bố, được kiểm chứng, đặc thù cho một khoa khám theo yêu cầu trong bệnh viện quân y tuyến cuối. Kèm đóng góp về công cụ: bộ phiếu chung của Bộ Y tế không có lĩnh vực riêng cho chi phí dịch vụ theo yêu cầu (mục 3.4, 3.5 đề cương)",
+      "pico_confirmed": false,
+      "reviewed_by_role": null,
+      "reviewed_at": null
+    },
+    "G1": {
+      "protocol_version": "1.0",
+      "design": "cross_sectional",
+      "design_confirmed": false,
+      "design_rationale": "Mô tả cắt ngang có phân tích. MT1 cần ước lượng tỷ lệ hiện mắc của một trạng thái (hài lòng) nên cắt ngang là thiết kế chuẩn; MT2 đo đồng thời phơi nhiễm và kết cục để ước lượng mối liên quan. Đã cân nhắc và loại đoàn hệ tiến cứu (vượt nhu cầu câu hỏi, không khả thi nguồn lực trong phạm vi một khoa) và bệnh chứng (không phù hợp cho câu hỏi ước lượng tỷ lệ). Không áp dụng khung estimand ICH E9(R1) vì là quan sát không can thiệp (mục 4.1 đề cương)",
+      "objectives": [
+        "MT1 (mô tả): Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175",
+        "MT2 (phân tích): Đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175"
+      ],
+      "research_question": "Mức độ hài lòng của người bệnh ngoại trú tại Khoa Khám bệnh C1a là bao nhiêu, và những yếu tố nào liên quan đến mức độ hài lòng đó?",
+      "primary_outcome": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep)",
+      "secondary_outcomes": [
+        "Điểm hài lòng theo 6 lĩnh vực A-F (30 mục Likert 5 mức)",
+        "Tỷ lệ hài lòng theo ngưỡng cố định G1 >= 4/5 (kết cục nhị phân thứ cấp, chỉ thực hiện nếu đủ điều kiện kích hoạt)",
+        "Điểm hài lòng chung tính toán SHLNBChung_TinhToan (kết cục đối chiếu/hội tụ)"
+      ],
+      "population": "Người bệnh ngoại trú từ đủ 18 tuổi trở lên (kể cả phụ nữ mang thai), đủ sức khỏe và năng lực nhận thức/ngôn ngữ để trả lời, đã cơ bản hoàn thành quy trình khám tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, và đồng ý tham gia tự nguyện (mục 4.3.1 đề cương)",
+      "inclusion_criteria": [
+        "Người bệnh ngoại trú từ đủ 18 tuổi trở lên (bao gồm cả phụ nữ mang thai)",
+        "Đủ sức khỏe, tỉnh táo và đủ năng lực nhận thức/ngôn ngữ để trả lời",
+        "Đã cơ bản hoàn thành quy trình khám tại Khoa C1a (đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT)",
+        "Đồng ý tham gia tự nguyện sau khi được giải thích"
+      ],
+      "exclusion_criteria": [
+        "Từ chối tham gia",
+        "Không đủ năng lực trả lời (cấp cứu, suy giảm nhận thức, rào cản ngôn ngữ không khắc phục được)",
+        "Nhân viên y tế của chính khoa/bệnh viện đi khám (nguy cơ xung đột/thiên lệch đánh giá)",
+        "Đã tham gia nghiên cứu này ở lượt trước trong cùng kỳ (chống trùng)",
+        "Phiếu khuyết dữ liệu vượt ngưỡng cho phép (biến PhieuHopLe, mục 4.10)"
+      ],
+      "setting": "Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — khối khám ngoại trú theo yêu cầu (dịch vụ) tại bệnh viện quân y tuyến cuối",
+      "study_period": "Năm 2026. [CẦN CHỦ NHIỆM ẤN ĐỊNH] ngày bắt đầu cụ thể — phụ thuộc ngày duyệt đạo đức, ngày hoàn tất pha phát triển công cụ và ngày hoàn tất đăng ký nghiên cứu trên OSF Registries",
+      "intervention_or_exposure": "Không can thiệp. Phơi nhiễm trung tâm của MT2: thời gian chờ khám theo mốc HIS/eHospital, báo hiệu ứng theo mỗi 15 phút chờ thêm; kiểm phi tuyến bằng restricted cubic spline 3 nút (mục 4.6.3, 4.10)",
+      "comparator": "N/A — thiết kế mô tả cắt ngang, không có nhóm so sánh ngoài. MT2 so sánh giữa các mức phơi nhiễm trong cùng một mẫu bằng hồi quy đa biến",
+      "recruitment_strategy": "Chọn mẫu hệ thống PHÂN TẦNG theo ngày trong tuần × khung giờ khám, bước nhảy k_h = N_h/n_h (số đủ điều kiện dự kiến chia số cần mời trong tầng h). Một người chuyên trách đếm số thứ tự dòng người bệnh trong từng tầng, không kiêm nhiệm phát/thu phiếu. Có dry-run là cổng quyết định tính khả thi trước thu thập chính thức (mục 4.4.2)",
+      "follow_up_schedule": "N/A — cắt ngang, đo một lần trên mỗi đối tượng ngay sau khi cơ bản hoàn thành quy trình khám",
+      "central_phenomenon": null,
+      "qualitative_approach": null,
+      "data_collection_method": null,
+      "saturation_criterion": null,
+      "information_sources": [],
+      "search_strategy": null,
+      "search_last_date": null,
+      "study_selection_process": null,
+      "estimand": {
+        "population": null,
+        "treatment_condition": null,
+        "variable": null,
+        "intercurrent_events_strategy": null,
+        "population_summary_measure": null
+      },
+      "bias_controls_confirmed": false,
+      "protocol_core_confirmed": false,
+      "feasibility_confirmed": false,
+      "evidence_review_confirmed": false,
+      "reviewed_by_role": null,
+      "reviewed_at": null
+    },
+    "G2": {
+      "protocol_version": "1.0",
+      "icf_version": "1.0",
+      "recruitment_mode": null,
+      "registration_required": null,
+      "registration_registry": null,
+      "registration_id": null,
+      "registration_date": null,
+      "first_enrolment_date": null,
+      "icf_waiver_requested": false,
+      "safety_plan_required": null
+    },
+    "G7": {
+      "title": null,
+      "authors": null,
+      "target_journal": null,
+      "author_contributions": null,
+      "coi_declared": null,
+      "funding_declared": null,
+      "data_sharing_statement": null,
+      "ai_use_declared": null,
+      "manuscript_reviewed_confirmed": false,
+      "reviewed_by_role": null,
+      "reviewed_at": null
+    },
+    "G3": {
+      "effect_size": 0.5,
+      "effect_type": "PREVALENCE",
+      "dropout": 0.15,
+      "p_event": 0.3,
+      "sd": null,
+      "confirmed_n": 1000,
+      "prevalence_source": "Quy ước thận trọng p = 0,50 — giá trị làm phương sai p(1-p) lớn nhất nên cho cỡ mẫu lớn nhất; dùng khi chưa có ước lượng tỷ lệ hài lòng tại chính Khoa C1a. Nguồn công thức: Lwanga SK, Lemeshow S. Sample size determination in health studies: a practical manual. WHO, 1991 (mục 4.4.1 đề cương)",
+      "dropout_source": "Dự phòng 15% cho phiếu không trả lời hoặc phiếu lỗi, do nhóm nghiên cứu ấn định theo kinh nghiệm vận hành khảo sát tại phòng khám (mục 4.4.1 đề cương). Con số này sẽ được đối chiếu lại bằng tỷ lệ không trả lời quan sát được ở pilot n≈50-100 trước khi khóa SAP; cờ assumptions_confirmed giữ ở False cho tới khi đối chiếu xong.",
+      "powered_for_outcome": "Cỡ mẫu tính cho KẾT CỤC MT1: tỷ lệ hài lòng chung (G1 >= 4/5), ước lượng theo độ chính xác với nửa rộng KTC 95% là ±5%. MT2 (hồi quy logistic thứ tự trên G1) KHÔNG dùng công thức này; ràng buộc của MT2 là số quan sát ở mức ít gặp nhất của G1 theo quy tắc EPV, cần rà lại bằng Bảng 5.2 khi có dữ liệu thật (mục 4.4.1)",
+      "software": "Python 3.14 (scipy.stats, statsmodels 0.14); đối chiếu chéo bằng nửa rộng KTC 95%",
+      "hypothesis_type": "descriptive_precision",
+      "effect_source_confirmed": false,
+      "assumptions_confirmed": false,
+      "hypothesis_confirmed": false,
+      "recruitment_feasibility_confirmed": false,
+      "reviewed_by_role": null,
+      "reviewed_at": null,
+      "effect_source": "Không áp dụng theo thiết kế: đây là nghiên cứu MÔ TẢ, cỡ mẫu tính theo ĐỘ CHÍNH XÁC của ước lượng một tỷ lệ (Lwanga & Lemeshow, WHO 1991), không theo hiệu quả can thiệp. Tham số thay thế effect size là tỷ lệ hiện mắc ước lượng p = 0,50 — xem prevalence_source."
+    },
+    "G4": {
+      "epv_vif_reviewed": false,
+      "missing_data_mechanism_confirmed": false,
+      "subgroup_multiplicity_predefined_confirmed": false,
+      "reviewed_by_role": null,
+      "reviewed_at": null
+    }
+  },
+  "design_code": "cross_sectional",
+  "administrative": {
+    "principal_investigator": "Nguyễn Hà Luân",
+    "pi_title": null,
+    "pi_unit": "Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175",
+    "pi_phone": null,
+    "pi_email": null,
+    "irb_name": "Hội đồng Y đức Bệnh viện Quân y 175",
+    "irb_contact": null,
+    "sponsor": "Không có tài trợ bên ngoài — kinh phí tự túc (chủ nhiệm đề tài tự chi trả)"
+  }
+}

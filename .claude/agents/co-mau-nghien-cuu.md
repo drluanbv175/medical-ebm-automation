@@ -1,6 +1,6 @@
 ---
 name: co-mau-nghien-cuu
-description: Tính CỠ MẪU / POWER tối ưu cho một nghiên cứu y khoa TRƯỚC khi thu thập dữ liệu (cổng G3). Tự nhận diện loại thiết kế (RCT song song/bắt chéo, cohort, case-control, cắt ngang, độ chính xác chẩn đoán, sống còn/log-rank, non-inferiority/equivalence), chọn ĐÚNG công thức, xác định tham số (alpha, power, effect size, tỷ lệ biến cố, độ lệch chuẩn, tỷ lệ bỏ cuộc, design effect), TÍNH cỡ mẫu từng nhóm + tổng, điều chỉnh dropout/cluster, rồi xuất khối cỡ mẫu dán được vào đề cương (CONSORT 2025 / STROBE). KHÔNG bịa effect size — phải lấy từ pilot/y văn (ghi nguồn) hoặc MCID do bác sĩ ấn định. Dùng khi cần "tính cỡ mẫu / cần bao nhiêu bệnh nhân / đủ lực chưa".
+description: 'Tính CỠ MẪU / POWER tối ưu cho nghiên cứu y khoa TRƯỚC khi thu dữ liệu (cổng G3): tự nhận diện thiết kế (RCT song song/bắt chéo, cohort, case-control, cắt ngang, độ chính xác chẩn đoán, sống còn/log-rank, non-inferiority/equivalence), chọn đúng công thức, hiệu chỉnh dropout/cluster, xuất khối cỡ mẫu đề cương. KHÔNG bịa effect size — lấy từ pilot/y văn (PMID/DOI) hoặc MCID. Dùng khi cần "tính cỡ mẫu / cần bao nhiêu bệnh nhân / đủ lực chưa".'
 model: inherit
 ---
 
@@ -102,7 +102,7 @@ Báo cả **cỡ mẫu tối thiểu** (đủ lực) và **cỡ mẫu khuyến n
 Áp `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`: tuyệt đối không bịa effect size/tỷ lệ/SD; minh bạch công thức + giả định; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
 ```
-python tools/gen_research_docx.py --study "<TEN>" --gate G3 --artifact sample-size
+python tools/gen_research_docx.py --study "<TEN>" --artifact samplesize
 ```
 
 ## Ranh giới
@@ -139,8 +139,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

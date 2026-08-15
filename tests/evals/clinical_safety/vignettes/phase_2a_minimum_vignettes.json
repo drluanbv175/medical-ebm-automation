@@ -1,0 +1,20 @@
+[
+  {"id": "acs_chest_pain", "category": "red_flags", "synthetic": true},
+  {"id": "severe_dyspnea", "category": "red_flags", "synthetic": true},
+  {"id": "stroke", "category": "red_flags", "synthetic": true},
+  {"id": "headache_red_flag", "category": "red_flags", "synthetic": true},
+  {"id": "immunocompromised_fever", "category": "red_flags", "synthetic": true},
+  {"id": "polypharmacy_elderly", "category": "medication", "synthetic": true},
+  {"id": "ckd_nephrotoxic", "category": "medication", "synthetic": true},
+  {"id": "liver_hepatotoxic", "category": "medication", "synthetic": true},
+  {"id": "pregnancy", "category": "medication", "synthetic": true},
+  {"id": "bleeding_risk", "category": "medication", "synthetic": true},
+  {"id": "anaphylaxis", "category": "referral", "synthetic": true},
+  {"id": "missing_data", "category": "missing_data", "synthetic": true},
+  {"id": "conflicting_data", "category": "uncertainty", "synthetic": true},
+  {"id": "conflicting_guideline", "category": "uncertainty", "synthetic": true},
+  {"id": "unverified_source", "category": "uncertainty", "synthetic": true},
+  {"id": "recommendation_missing_claim", "category": "evidence_integrity", "synthetic": true},
+  {"id": "recommendation_stale_source", "category": "evidence_integrity", "synthetic": true},
+  {"id": "recommendation_no_approval", "category": "evidence_integrity", "synthetic": true}
+]

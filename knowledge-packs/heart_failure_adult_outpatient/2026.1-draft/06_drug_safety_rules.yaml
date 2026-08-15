@@ -1,0 +1,44 @@
+drug_safety_rules:
+  - drug: "ACE inhibitor (enalapril, ramipril, lisinopril)"
+    rules:
+      - "Chống chỉ định: tiền sử phù mạch do ACEi, mang thai, hẹp động mạch thận hai bên"
+      - "Kali > 5.0 mmol/L: không khởi trị; kali > 5.5: ngưng tạm thời"
+      - "eGFR < 30: giảm liều 50%; < 15: tránh dùng hoặc chuyên gia thận"
+      - "Tăng creatinine 20-30% so baseline trong 1-2 tuần đầu: chấp nhận được, tiếp tục theo dõi"
+      - "Tăng creatinine > 50%: ngưng, đánh giá lại"
+
+  - drug: "ARNI — Sacubitril/Valsartan (Entresto)"
+    rules:
+      - "KHÔNG phối hợp với ACEi — nguy cơ phù mạch cao; phải nghỉ ACEi ≥ 36 giờ trước khi chuyển"
+      - "Chống chỉ định: tiền sử phù mạch, mang thai, eGFR < 30 ml/min"
+      - "Theo dõi huyết áp: có thể hạ HA nhiều hơn ACEi — bắt đầu liều thấp"
+      - "Theo dõi kali + creatinine: tương tự ACEi/ARB"
+
+  - drug: "Beta-blocker (carvedilol, bisoprolol, metoprolol succinate)"
+    rules:
+      - "Chỉ khởi trị khi bệnh nhân ổn định, không ứ dịch nhiều"
+      - "KHÔNG dùng trong suy tim mất bù cấp, nhịp tim < 50/phút, block AV độ 2-3 (không có máy tạo nhịp), suyễn nặng"
+      - "Bắt đầu liều rất thấp (carvedilol 3.125 mg x2/ngày; bisoprolol 1.25 mg/ngày), tăng mỗi 2-4 tuần"
+      - "Không ngưng đột ngột — có thể gây cơn đau thắt ngực bùng phát"
+
+  - drug: "MRA — Spironolactone, Eplerenone"
+    rules:
+      - "Chống chỉ định: kali > 5.0 mmol/L, eGFR < 30 ml/min"
+      - "Theo dõi kali + creatinine: 1 tuần, 4 tuần sau khởi trị, sau đó mỗi 3-6 tháng"
+      - "Spironolactone: gynecomastia, rối loạn kinh nguyệt — xem xét đổi sang eplerenone"
+      - "Phối hợp với ACEi/ARB/ARNI: nguy cơ tăng kali cao hơn — theo dõi sát"
+
+  - drug: "SGLT2i — Dapagliflozin 10 mg, Empagliflozin 10 mg"
+    rules:
+      - "KHÔNG dùng khi eGFR < 20 ml/min (dapagliflozin) hoặc < 20 (empagliflozin)"
+      - "Ngưng trước phẫu thuật ≥ 3 ngày — nguy cơ nhiễm toan ceton euglycemia"
+      - "Nhiễm toan ceton euglycemia: có thể xảy ra dù glucose không cao — nhận biết triệu chứng"
+      - "Nhiễm khuẩn đường sinh dục: vệ sinh cá nhân, theo dõi"
+      - "Hạ huyết áp tư thế: đặc biệt ở người cao tuổi, bệnh nhân đang dùng lợi tiểu"
+
+  - drug: "Furosemide (lợi tiểu quai)"
+    rules:
+      - "Theo dõi điện giải (kali, natri, magie) + creatinine định kỳ"
+      - "Hạ kali: bổ sung kali hoặc phối hợp MRA"
+      - "KHÔNG dùng liều cố định — điều chỉnh theo triệu chứng và cân nặng"
+      - "Dùng quá mức: mất nước, suy thận tiền thận, kích hoạt hệ RAAS"

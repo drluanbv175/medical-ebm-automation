@@ -1,0 +1,24 @@
+required_inputs:
+  - age_group
+  - outpatient_stability_status
+  - blood_pressure_measurement_context
+  - repeat_measurement_or_home_ambulatory_context
+  - red_flag_screen
+  - pregnancy_or_reproductive_status_if_relevant
+  - current_medications
+  - comorbidity_flags
+  - cardiovascular_risk_context
+  - kidney_function_context_if_available
+  - diabetes_or_ckd_status_if_available
+  - evidence_snapshot_id
+missing_input_gate: WAITING_FOR_INPUT
+forbidden_inputs:
+  - patient_name
+  - date_of_birth
+  - phone_number
+  - address
+  - medical_record_number
+  - exact_visit_date
+  - photo
+  - free_text_containing_identifiers
+notes: "Không dùng dữ liệu định danh; không tự suy đoán input còn thiếu."

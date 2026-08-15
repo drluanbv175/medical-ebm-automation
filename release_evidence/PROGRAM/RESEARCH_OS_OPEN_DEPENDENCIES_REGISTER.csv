@@ -1,0 +1,16 @@
+dependency_id,dependency_name,phase_first_identified,phase_blocking,owner,status,resolution_path,last_updated
+DEP-01,Institutional SSO provider (SAML2/OIDC/LDAP),R1.2,R1.3,Dr Luân / IT,EXTERNAL — NOT PROVIDED,Institutional IT engagement required before R1.3 production implementation,2026-06-28
+DEP-02,MFA service (TOTP/FIDO2/SMS),R1.2,R1.3,Dr Luân / IT,EXTERNAL — NOT PROVIDED,Institutional IT engagement required; cannot implement without MFA service,2026-06-28
+DEP-03,Session store (Redis/PostgreSQL),R1.2,R1.3,Dr Luân / IT,EXTERNAL — NOT PROVIDED,Server infrastructure decision required,2026-06-28
+DEP-04,User account registry,R1.2,R1.3,Dr Luân / IT,EXTERNAL — NOT PROVIDED,Linked to institutional IdP setup,2026-06-28
+DEP-05,Role-to-user mapping service,R1.2,R1.3,Dr Luân / IT,EXTERNAL — NOT PROVIDED,Linked to institutional IdP + RBAC service,2026-06-28
+DEP-06,WORM-capable storage provider,R1.3,R1.3,Dr Luân,EXTERNAL — NOT PROVIDED,Vendor selection required (AWS S3 Object Lock / Azure WORM / on-prem),2026-06-28
+DEP-07,Off-system backup service,R1.3,R1.3,Dr Luân,EXTERNAL — NOT PROVIDED,Institutional backup infrastructure decision required,2026-06-28
+DEP-08,Production RBAC service / database,R1.3,R1.3,Dr Luân / IT,EXTERNAL — NOT PROVIDED,Linked to production database provisioning,2026-06-28
+DEP-09,Ethics/IRB committee approval,R3.0,R3.0,Dr Luân,EXTERNAL — NOT PROVIDED,Formal IRB submission required; cannot self-approve,2026-06-28
+DEP-10,Institutional research data governance policy,R4.0,R4.0,Dr Luân / Institution,EXTERNAL — NOT PROVIDED,Data governance committee engagement required,2026-06-28
+DEP-11,eHospital HIS/LIS/PACS API access,R4.0,R4.0,Dr Luân / IT,EXTERNAL — NOT PROVIDED,Read-only API credentials + governance approval required,2026-06-28
+DEP-12,Pseudonymization key management service,R4.0,R4.0,Dr Luân / IT,EXTERNAL — NOT PROVIDED,Linked to data governance and institutional key management,2026-06-28
+DEP-13,Independent security assessor (IQ-20),R5.0,R5.0,Dr Luân,EXTERNAL — NOT PROVIDED,External security assessment firm engagement required; cannot self-assess,2026-06-28
+DEP-14,De-identified research dataset (Level-A pilot),R6.0,R6.0,Dr Luân / Ethics committee,EXTERNAL — NOT PROVIDED,Requires ethics approval (DEP-09) + data governance (DEP-10),2026-06-28
+DEP-15,Institutional pilot authorization (Level-A),R6.0,R6.0,Dr Luân / Institutional authority,EXTERNAL — NOT PROVIDED,Formal institutional authorization required; cannot self-authorize,2026-06-28

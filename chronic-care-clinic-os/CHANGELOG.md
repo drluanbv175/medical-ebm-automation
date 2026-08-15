@@ -1,0 +1,32 @@
+# Changelog
+
+## 0.2.0 - 2026-06-19
+
+- Them care orchestration engine de tao hang doi care gaps tu risk, lab, thuoc, tai kham, sau xuat vien va care plan.
+- Them trang `/command-center` cho dieu phoi lien phong ban theo SLA, role phu trach va muc uu tien.
+- Them chronic care program registry va trang `/programs` de theo doi bao phu chuong trinh, monitor sap den han/qua han/thieu du lieu.
+- Them pre-visit packet va trang `/visits/prep` de chuan bi checklist truoc kham, lab/thuoc can xem va cau hoi dieu duong.
+- Them care plan draft workspace tren `/care-plans` de tao ban nhap sau kham can bac si duyet, gom muc tieu, monitor, lab, thuoc, chuyen tuyen, loi dan va safety-netting.
+- Them care plan approval package preview-only de kiem tra gate phe duyet, tao CarePlanVersion preview va AuditLog preview truoc khi co server action ghi that.
+- Them patient education release package cho `/handouts`, chi cho in loi dan khi template da duyet, care plan APPROVED va consent hop le.
+- Them workflow action contracts preview-only cho ky duyet care plan va phat hanh loi dan, lam cau noi cho server actions co audit/persistence sau nay.
+- Them audit ledger hash-chain preview cho `/admin/audit` de khoa bat bien append-only truoc khi wire server actions that.
+- Them persistent AuditLog write contract voi sequence/previousHash/eventHash, insert-only policy va yeu cau transaction chung voi business write.
+- Noi workflow action contracts voi RBAC/backend guard de khoa role, permission va organization/site scope truoc khi ghi that.
+- Them write action registry tren `/admin/settings` de theo doi nut/luong ghi nao da guard, placeholder hoac bi chan production.
+- Chuyen action `/overdue` nhan task goi nhac sang guarded preview contract voi RBAC, consent/template gate va audit preview.
+- Chuyen action `/appointments` tao hen sang guarded preview contract voi RBAC, audit preview va chan ngay hen qua khu.
+- Chuyen action tao care plan draft trong `/patients/[id]` sang guarded preview contract voi RBAC, audit preview va yeu cau bac si phe duyet rieng.
+- Chuyen action tao education template draft trong `/admin/templates` sang guarded preview contract voi RBAC, audit preview va approval rieng truoc khi dung.
+- Chuyen action dang ky nguoi benh trong `/patients` sang guarded preview contract voi RBAC, consent gate va audit preview; chua ghi DB production.
+- Chuyen action tao clinical rule draft trong `/admin/rules` sang guarded preview contract voi RBAC, audit preview va approval rieng truoc khi active rule engine.
+- Chuyen action moi nguoi dung trong `/admin/users` sang guarded preview contract voi RBAC, scope guard va audit preview; chua ghi DB hoac gui email.
+- Cap nhat trang tong quan va task page dung hang doi dieu phoi tu dong.
+- Them test khoa chan an toan: khong tu dong dieu tri, khong gui tin nhan dieu tri va moi gap lam sang can bac si xac nhan.
+
+## 0.1.0 - 2026-06-18
+
+- Khoi tao Chronic Care Clinic OS MVP.
+- Them tai lieu Pha 0, kien truc, schema, backlog, security va clinical safety.
+- Them Next.js app skeleton, Prisma schema, seed demo, RBAC, risk engine va dashboard.
+- Them offline tests va implementation status.

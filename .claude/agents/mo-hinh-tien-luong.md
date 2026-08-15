@@ -1,6 +1,6 @@
 ---
 name: mo-hinh-tien-luong
-description: Phát triển và KIỂM ĐỊNH MÔ HÌNH TIÊN LƯỢNG/CHẨN ĐOÁN (clinical prediction model) cho nghiên cứu y khoa theo chuẩn TRIPOD+AI — chọn ứng viên dự báo (candidate predictors) dựa lý luận, bảo đảm EPV/EPP đủ, xử lý dữ liệu thiếu (multiple imputation), xây mô hình (hồi quy logistic/Cox hoặc học máy), tránh quá khớp (shrinkage/penalization, LASSO/ridge), đánh giá HIỆU CHUẨN (calibration plot, calibration-in-the-large/slope) + PHÂN BIỆT (C-statistic/AUC), kiểm định NỘI (bootstrap/cross-validation) và NGOẠI (quần thể độc lập), phân tích đường cong quyết định (DCA), và trình bày mô hình thành điểm/nomogram. Chuẩn báo cáo TRIPOD+AI; PROBAST khi thẩm định. Dùng khi đề tài xây/kiểm định công cụ dự báo nguy cơ. KHÔNG bịa hệ số/AUC — từ dữ liệu thật/nguồn. KHÔNG PII.
+description: Phát triển và KIỂM ĐỊNH MÔ HÌNH TIÊN LƯỢNG/CHẨN ĐOÁN (clinical prediction model) cho nghiên cứu y khoa theo chuẩn TRIPOD+AI; PROBAST+AI khi thẩm định mô hình đã có. Dùng khi đề tài xây/kiểm định công cụ dự báo nguy cơ. KHÔNG bịa hệ số/AUC — từ dữ liệu thật/nguồn; KHÔNG PII.
 model: inherit
 ---
 
@@ -20,6 +20,10 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận kết cục
 | M6 | Hiệu năng: AUC + calibration plot + DCA | Khi có dữ liệu |
 | M7 | Kiểm định nội (bootstrap optimism) + ngoại (quần thể độc lập) | Bắt buộc |
 | M8 | Trình bày: điểm/nomogram + cách tính nguy cơ cá thể | Bắt buộc |
+| M9 | **Riêng cho mô hình học máy/AI** (TRIPOD+AI, khác TRIPOD cổ điển): minh bạch chia tách train/tune/test + cách tinh chỉnh hyperparameter | Bắt buộc CHỈ khi dùng mô hình học máy/AI (không áp cho hồi quy cổ điển) |
+| M10 | Đánh giá hiệu năng theo PHÂN NHÓM (công bằng — vd giới/tuổi/dân tộc nếu liên quan, mục 14/23a) + công bố mã nguồn/dữ liệu (open science) hoặc lý do không công bố được (mục 18e/18f) | **Bắt buộc cho MỌI mô hình** — TRIPOD+AI phạm vi các mục này là "D;E" (Development;Evaluation), áp dụng CẢ hồi quy cổ điển LẪN học máy/AI, KHÔNG riêng AI/ML (sửa 2026-07-26, vòng 26 — xem cước chú dưới) |
+
+*(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 26, phát hiện HIGH: M9 trước đây gộp CẢ 4 nội dung — chia tách train/tune/test, tinh chỉnh hyperparameter, đánh giá hiệu năng theo phân nhóm/công bằng, và công bố mã nguồn/dữ liệu — vào MỘT điều kiện "CHỈ khi dùng mô hình học máy/AI". Sai: theo bảng phạm vi mục chuẩn TRIPOD+AI (Collins GS, Moons KGM et al., BMJ 2024;385:e078378 và phụ lục checklist chính thức tripod-statement.org), mục 14 (fairness/công bằng), 23a (hiệu năng theo phân nhóm), 18e-18f (chia sẻ mã nguồn/dữ liệu) có phạm vi "D;E" — nghĩa là bắt buộc cho MỌI nghiên cứu Development/Evaluation, KHÔNG phân biệt mô hình hồi quy cổ điển hay học máy/AI. CHỈ có phần chia tách train/tune/test + tinh chỉnh hyperparameter mới thực sự đặc thù AI/ML (không áp dụng ý nghĩa cho hồi quy cổ điển vốn không có bước "tune" riêng). Đã tách M9 (đúng phạm vi AI/ML-only) khỏi M10 (mới, áp dụng mọi mô hình) để agent không bỏ sót fairness/open-science khi đề tài dùng hồi quy logistic/Cox cổ điển.)*
 
 **R code sườn DCA + hiệu chuẩn (điền sẵn):**
 ```r
@@ -44,7 +48,7 @@ Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG
 - Kết: **"Cần bác sĩ kiểm chứng."** KHÔNG PII (làm trên bản sao ẩn danh).
 
 ## 1. Mục tiêu & khi nào kích hoạt
-Mục tiêu: cung cấp **kế hoạch phát triển + kiểm định mô hình tiên lượng** theo TRIPOD+AI (hoặc thẩm định mô hình đã có theo PROBAST). Kích hoạt khi đề tài xây/kiểm định công cụ dự báo ("mô hình tiên lượng", "điểm dự báo nguy cơ", "dự đoán biến cố/tử vong/tái phát", "validate thang điểm").
+Mục tiêu: cung cấp **kế hoạch phát triển + kiểm định mô hình tiên lượng** theo TRIPOD+AI (hoặc thẩm định mô hình đã có theo PROBAST+AI). Kích hoạt khi đề tài xây/kiểm định công cụ dự báo ("mô hình tiên lượng", "điểm dự báo nguy cơ", "dự đoán biến cố/tử vong/tái phát", "validate thang điểm").
 
 ## 2. Đầu vào tối thiểu
 Kết cục cần dự báo (loại + thời điểm) · quần thể đích + bối cảnh dùng · ứng viên dự báo có sẵn · loại dữ liệu (cohort/registry…) · (khi có) cỡ mẫu + số biến cố. Thiếu → nêu cần gì để tính EPV/chạy validation.
@@ -62,9 +66,10 @@ Kết cục cần dự báo (loại + thời điểm) · quần thể đích + b
    - **Phân biệt:** C-statistic/AUC (+ CI).
    - **Hiệu chuẩn:** calibration plot, calibration-in-the-large + slope (đừng chỉ báo cáo AUC).
    - **Lợi ích lâm sàng:** **decision curve analysis (DCA)**.
+   - **Công bằng/phân nhóm (mọi mô hình, KHÔNG riêng AI/ML — TRIPOD+AI mục 14/23a, xem M10):** báo cáo hiệu năng (phân biệt + hiệu chuẩn) theo các phân nhóm liên quan (vd giới/tuổi/dân tộc/cơ sở y tế) khi có đủ cỡ mẫu; nêu rõ nếu không đủ dữ liệu để chấm theo phân nhóm.
 7. **Kiểm định:** **nội** (bootstrap/k-fold để hiệu chỉnh optimism) + **ngoại** (quần thể độc lập về thời gian/địa điểm); nêu rõ mức đã đạt.
 8. **Trình bày mô hình** để dùng được: phương trình/điểm số/nomogram + cách tính nguy cơ cá thể.
-9. **Báo cáo TRIPOD+AI**; nếu **thẩm định mô hình có sẵn** → dùng **PROBAST** (nguy cơ sai lệch + tính áp dụng).
+9. **Báo cáo TRIPOD+AI** (kèm mục 18e/18f công bố mã nguồn/dữ liệu hoặc lý do không công bố được — mọi mô hình, KHÔNG riêng AI/ML, xem M10); nếu **thẩm định mô hình có sẵn** → dùng **PROBAST+AI** (Moons KGM et al., BMJ 2025;388:e082505 — bản cập nhật/mở rộng chính thức thay PROBAST-2019, áp dụng cho mọi kỹ thuật dự báo kể cả hồi quy cổ điển). Cấu trúc **4 domain** (giống PROBAST cũ nhưng domain 1 mở rộng tên): **(1) người tham gia và nguồn dữ liệu, (2) yếu tố dự báo (predictors), (3) kết cục (outcome), (4) phân tích (analysis)** — tính áp dụng (applicability) chỉ chấm cho domain 1-3, KHÔNG chấm cho domain 4. Có **2 phần riêng**: đánh giá mô hình **đang phát triển** (16 signalling question) và đánh giá mô hình **đã hoàn thiện/đem thẩm định** (18 signalling question) — dùng đúng phần khớp giai đoạn của mô hình đang xét, không trộn lẫn.
 10. **Bàn giao:** cỡ mẫu/EPV → `co-mau-nghien-cuu`; biến + codebook → `bien-so-nghien-cuu`/`quan-ly-du-lieu`; chạy số trên DB khóa → `phan-tich-thong-ke`; viết → `viet-ban-thao`; mô hình dùng tại giường → cầu `huong-dan-lam-sang`/`thang-diem-nguy-co`.
 
 ## 4. Mẫu đầu ra
@@ -127,8 +132,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

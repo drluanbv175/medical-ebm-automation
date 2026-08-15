@@ -1,0 +1,42 @@
+{
+  "golden_id": "GOLDEN-G6-001",
+  "gate": "G6",
+  "function": "multivariate_model",
+  "scenario": "Hồi quy logistic đa biến trên dataset synthetic không PII: outcome nhị phân, exposure chính, hiệu chỉnh age/bmi/sex; EPV đủ và mô hình hội tụ.",
+  "input": {
+    "data": {
+      "kind": "binary_logistic_seeded",
+      "seed": 20260716,
+      "n": 360,
+      "intercept": -1.0,
+      "coefficients": {
+        "exposure": 0.85,
+        "age_centered": 0.012,
+        "bmi_centered": 0.025,
+        "sex": 0.18
+      }
+    },
+    "outcome_col": "outcome",
+    "group_col": "exposure",
+    "covariates": ["age", "bmi", "sex"],
+    "outcome_type": "binary"
+  },
+  "expected_output": {
+    "model": "logistic",
+    "n": 360,
+    "aic": 464.36,
+    "results": [
+      {"variable": "exposure", "OR_adj": 2.429, "CI_95": [1.555, 3.795], "p": 0.0001},
+      {"variable": "age", "OR_adj": 1.03, "CI_95": [1.006, 1.055], "p": 0.0143},
+      {"variable": "bmi", "OR_adj": 1.002, "CI_95": [0.933, 1.075], "p": 0.9606},
+      {"variable": "sex", "OR_adj": 0.816, "CI_95": [0.524, 1.271], "p": 0.3681}
+    ],
+    "convergence": true
+  },
+  "expected_output_source": "Chạy trực tiếp tools/run_stats_analysis.py::multivariate_model() trong venv dự án trên dataset synthetic sinh bằng seed 20260716; dữ liệu không PII, không phải dữ liệu bệnh nhân; output đã được làm tròn bởi chính hàm sản xuất.",
+  "verified_2026-07-16": "Tái lập bằng pytest tests/test_golden.py::test_golden_case_output_matches_expected[golden_g6_logistic] sau khi thêm runner G6. Đây là mốc hồi quy kỹ thuật, không phải kết quả nghiên cứu lâm sàng.",
+  "approved_by_pi": false,
+  "approved_by": null,
+  "approved_date": null,
+  "notes_for_pi": "PI/thống kê viên cần xác nhận kịch bản logistic synthetic này đủ đại diện cho kiểm thử G6 thường quy hay chưa trước khi coi AC-04 đóng. AI chỉ dựng mốc hồi quy kỹ thuật và không tự đặt approved_by_pi=true."
+}

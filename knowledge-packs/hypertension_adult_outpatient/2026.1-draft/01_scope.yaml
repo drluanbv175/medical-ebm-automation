@@ -1,0 +1,24 @@
+pack_id: hypertension_adult_outpatient
+version: 2026.1-draft
+status: draft_review_only
+topic: "Tăng huyết áp người lớn ngoại trú ổn định"
+applies_to:
+  - adults
+  - outpatient_setting
+  - suspected_or_confirmed_hypertension
+  - clinically_stable
+  - physician_supervised_shadow_mode
+does_not_apply_to:
+  - emergency_or_acute_instability
+  - suspected_acute_target_organ_damage
+  - pregnancy_or_suspected_pregnancy_hypertension_without_specific_pathway
+  - acute_dyspnea
+  - chest_pain
+  - focal_neurologic_symptoms
+  - altered_consciousness
+  - any_red_flag_in_pack
+clinical_release_allowed: false
+patient_facing_output_allowed: false
+emr_write_allowed: false
+prescription_generation_allowed: false
+disclaimer: "DRAFT REVIEW-ONLY. Cần bác sĩ kiểm chứng trước khi áp dụng lâm sàng."

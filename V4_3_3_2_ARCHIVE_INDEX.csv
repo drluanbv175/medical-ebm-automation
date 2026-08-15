@@ -1,0 +1,2 @@
+archive_id,archive_path_outside_repo,archive_sha256,archive_size_bytes,included_files_count,source_paths,reason_for_archive,recovery_instructions
+ARCH-V4332-001,N/A — cache_only_no_archive_needed,N/A,132075520,4,.mypy_cache/ .ruff_cache/ .pytest_cache/ .DS_Store_files,Whitelist cache items — fully regenerable; no unique data; deleted not archived,mypy / ruff check / pytest / macOS Finder will auto-recreate

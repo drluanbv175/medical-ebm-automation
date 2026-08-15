@@ -1,0 +1,40 @@
+drug_safety_rules:
+  - drug: "Apixaban (Eliquis)"
+    rules:
+      - "Liều chuẩn: 5 mg x2/ngày; giảm còn 2.5 mg x2 khi ≥ 2 trong 3 tiêu chí: tuổi ≥ 80, cân nặng ≤ 60 kg, creatinine ≥ 133 µmol/L"
+      - "eGFR < 25 hoặc creatinine > 265 µmol/L: tránh dùng"
+      - "Không có thuốc giải đặc hiệu đã được phê duyệt rộng rãi tại Việt Nam — andexanet alfa (nếu có)"
+      - "Ít tương tác thuốc nhất trong nhóm DOAC — ít ảnh hưởng bởi P-gp/CYP3A4 so dabigatran/rivaroxaban"
+
+  - drug: "Dabigatran (Pradaxa)"
+    rules:
+      - "eGFR < 30: CHỐNG CHỈ ĐỊNH (tích lũy cao, thải qua thận 80%)"
+      - "eGFR 30-50: liều 110 mg x2/ngày (không dùng 150 mg)"
+      - "Thuốc giải đặc hiệu: idarucizumab (Praxbind) — có thể được dùng khi xuất huyết nặng"
+      - "Tương tác P-gp: rifampicin (giảm nồng độ), amiodarone, verapamil, dronedarone (tăng nồng độ)"
+      - "Uống nguyên viên — KHÔNG nghiền nát (tăng hấp thụ 75% gây xuất huyết)"
+      - "Lưu trữ: viên nang dạng gốc, không sang hộp khác — nhạy cảm với ẩm"
+
+  - drug: "Rivaroxaban (Xarelto)"
+    rules:
+      - "Uống kèm bữa ăn lớn (tăng hấp thụ 39%)"
+      - "eGFR < 15: tránh dùng; eGFR 15-49: giảm 20 mg → 15 mg/ngày"
+      - "Tương tác mạnh: ketoconazole, ritonavir (tăng nồng độ); rifampicin (giảm mạnh)"
+
+  - drug: "Warfarin"
+    rules:
+      - "AF do van tim (hẹp 2 lá, van cơ học): BẮT BUỘC dùng warfarin, KHÔNG thay bằng DOAC"
+      - "Mục tiêu INR: 2.0-3.0 (van cơ học 2 lá: 2.5-3.5)"
+      - "Tương tác: RẤT NHIỀU — kháng sinh, NSAIDs, amiodarone, thực phẩm vitamin K"
+      - "Theo dõi INR: mỗi tuần khi mới bắt đầu; mỗi 4-6 tuần khi ổn định"
+      - "TTR (Time in Therapeutic Range) mục tiêu > 70% mới cân nhắc chuyển DOAC"
+
+  - drug: "Amiodarone (kiểm soát nhịp)"
+    rules:
+      - "Độc tính đa cơ quan — chỉ dùng khi không có lựa chọn khác hoặc suy tim nặng"
+      - "Theo dõi bắt buộc: TSH (mỗi 6 tháng), chức năng gan (mỗi 6 tháng), X-quang phổi (mỗi năm)"
+      - "Tương tác warfarin: tăng INR đáng kể — giảm liều warfarin 30-50% khi khởi đầu amiodarone"
+      - "Tương tác digoxin: tăng nồng độ digoxin — giảm liều digoxin 50%"
+      - "Tương tác DOAC: tăng nồng độ dabigatran và rivaroxaban — thận trọng"
+      - "QT kéo dài: theo dõi ECG, tránh phối hợp với thuốc kéo dài QT khác"
+      - "Mang thai: CHỐNG CHỈ ĐỊNH"

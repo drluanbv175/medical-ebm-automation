@@ -1,0 +1,21 @@
+{
+  "golden_id": "GOLDEN-G7-001",
+  "gate": "G7",
+  "function": "guardrail_g7",
+  "scenario": "2 bản thảo tổng hợp (không PII, không phải đề tài thật): 1 bản CỐ Ý phạm R2/R3/R4/R5/R6/R7, 1 bản SẠCH tuân thủ đủ 7 quy tắc",
+  "input": {
+    "bad_manuscript": "Kết quả sơ bộ: HR=0.65 (95%CI 0.50-0.85). Trạng thái hiện tại: LOCKED.\nĐăng ký: NCT12345678\n",
+    "good_manuscript": "DRAFT — bản thảo sơ bộ, DRAFT, chưa nộp chính thức.\nCần bác sĩ kiểm chứng toàn bộ nội dung trước khi sử dụng.\nKết quả: [CẦN KẾT QUẢ THẬT — HR sẽ điền sau khi khóa SAP và phân tích thật]  [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...] [CẦN...]\n"
+  },
+  "expected_output": {
+    "bad_manuscript_error_count": 5,
+    "bad_manuscript_error_codes": ["R2", "R3", "R4", "R5", "R7"],
+    "good_manuscript_error_count": 0
+  },
+  "verified_2026-07-06": "Chạy trực tiếp guardrail_g7() trên 2 văn bản trên (tools/run_g7_auto.py, không sửa code) → bad: đúng 6 lỗi (R2 NCT tự gán, R3 tự claim LOCKED, R4 thiếu DRAFT, R5 hardcode HR/CI, R6 thiếu [CẦN...], R7 thiếu disclaimer — R1 PII không kích hoạt vì không có PII); good: 0 lỗi. Kết quả này là hành vi THẬT của code hiện tại, không suy đoán.",
+  "updated_2026-07-28": "R6 KHÔNG CÒN là lỗi đỏ — số kỳ vọng đổi 6 → 5. Lý do: quy tắc R6 cũ ('có ≥15 ô [CẦN...] thì PASS, ít hơn thì LỖI ĐỎ') có logic NGƯỢC — bản thảo càng nhiều chỗ trống càng dễ qua, còn bản thảo ĐÃ HOÀN THIỆN (bác sĩ điền hết, sẵn sàng nộp) bị chính guardrail CHẶN. Dấu vết của lỗi này còn nằm ngay trong fixture: 'good_manuscript' ở trên phải nhồi 15 chuỗi '[CẦN...]' vô nghĩa chỉ để qua được R6. Một quy tắc liêm chính không được phạt việc hoàn thành công việc. R6 nay ĐẾM ô trống để theo dõi tiến độ (cảnh báo, không phải lỗi) và cảnh báo riêng khi mục KẾT QUẢ có số liệu mà không còn ô [CẦN KẾT QUẢ THẬT]; việc phán 'còn trống bao nhiêu thì chưa được nộp' chuyển sang tools/g7_quality_gate.py — nơi đọc bản thảo TỪ ĐĨA nên thấy được cả phần bác sĩ viết tay. Xác minh lại: chạy guardrail_g7() trên đúng 2 văn bản trên.",
+  "approved_by_pi": false,
+  "approved_by": null,
+  "approved_date": null,
+  "notes_for_pi": "Đây là golden test cho GUARDRAIL VĂN BẢN (kiểm tra format/liêm chính bản thảo — không phải nội dung khoa học/thống kê). Kết quả 6 lỗi / 0 lỗi là hành vi thật của guardrail_g7() hôm nay, có thể xác minh lại bất kỳ lúc nào bằng cách chạy lại 2 đoạn văn bản trên. PI cần xác nhận: (1) 7 quy tắc R1-R7 hiện tại có đủ để bắt các lỗi liêm chính bản thảo quan trọng nhất chưa, (2) có cần thêm quy tắc nào không, rồi ký approved_by/approved_date."
+}

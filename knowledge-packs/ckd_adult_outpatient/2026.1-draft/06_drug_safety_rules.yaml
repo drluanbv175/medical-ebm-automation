@@ -1,0 +1,40 @@
+drug_safety_rules:
+  - drug: "Metformin"
+    rules:
+      - "eGFR 45-60: tiếp tục, theo dõi sát; eGFR 30-44: giảm liều, xem xét nguy cơ/lợi ích"
+      - "eGFR < 30: CHỐNG CHỈ ĐỊNH — nguy cơ nhiễm toan lactic"
+      - "Ngưng khi nhập viện, AKI, phẫu thuật lớn, dùng thuốc cản quang iod"
+
+  - drug: "SGLT2i (dapagliflozin, empagliflozin)"
+    rules:
+      - "eGFR < 20: không dùng để điều trị đái tháo đường; tác dụng bảo vệ thận giảm < 25"
+      - "Hạ đường huyết: ít khi hạ đường huyết — không cần giảm liều dựa trên eGFR"
+      - "Ngưng trước thủ thuật ≥ 3 ngày — nguy cơ nhiễm toan ceton euglycemia"
+      - "Nhiễm khuẩn niệu: CKD không làm tăng nguy cơ thêm đáng kể — điều trị nếu có triệu chứng"
+
+  - drug: "NSAIDs (ibuprofen, diclofenac, naproxen)"
+    rules:
+      - "TRÁNH DÙNG ở CKD G3b trở lên — gây co mạch cầu thận, AKI cấp"
+      - "CKD G1-G3a: dùng ngắn hạn, liều thấp, theo dõi creatinine"
+      - "Không phối hợp NSAIDs + ACEi + lợi tiểu (triple whammy — nguy cơ AKI rất cao)"
+
+  - drug: "Thuốc cản quang iod (CT scan, thông tim)"
+    rules:
+      - "eGFR < 30: nguy cơ AKI tương phản cao — tham khảo thận học trước thủ thuật"
+      - "Hydrate trước và sau — nước muối đẳng trương IV ưu tiên hơn bicarbonate"
+      - "Ngưng metformin 48h trước, chỉ tái dùng khi creatinine ổn định"
+      - "Tránh Gadolinium liều cao ở CKD G4-G5 — nguy cơ xơ hóa hệ thống do thận (NSF)"
+
+  - drug: "Kháng sinh điều chỉnh liều theo thận"
+    rules:
+      - "Aminoglycoside (gentamicin): TRÁNH DÙNG ở CKD — nephrotoxic"
+      - "Ciprofloxacin: eGFR < 30 — giảm liều 50%"
+      - "Amoxicillin-clavulanate: eGFR < 30 — điều chỉnh theo hướng dẫn"
+      - "Nitrofurantoin: eGFR < 30 — KHÔNG HIỆU QUẢ và có hại"
+      - "Trimethoprim: tăng creatinine giả do ức chế bài tiết tubular — không phải AKI thật"
+
+  - drug: "Thuốc kháng kali (patiromer, SZC — sodium zirconi cyclosilicate)"
+    rules:
+      - "Chỉ định khi tăng kali mạn tính cần duy trì ACEi/ARB/MRA"
+      - "Không dùng SZC trong AKI cấp cần can thiệp khẩn"
+      - "Theo dõi hạ kali và hạ magie"

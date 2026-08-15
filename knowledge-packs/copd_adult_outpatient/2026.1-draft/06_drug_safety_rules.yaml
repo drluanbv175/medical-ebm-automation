@@ -1,0 +1,34 @@
+drug_safety_rules:
+  - drug: "LAMA — Tiotropium, Umeclidinium, Glycopyrronium"
+    rules:
+      - "Tiotropium Respimat (2.5 µg): ưu tiên hơn HandiHaler 18 µg về an toàn tim mạch (TIOSPIR)"
+      - "Chống chỉ định tương đối: glaucoma góc đóng không kiểm soát, bí tiểu nặng"
+      - "Tác dụng phụ: khô miệng, bí tiểu, táo bón — không phổ biến"
+      - "eGFR < 50: tiotropium có thể tích lũy — thận trọng"
+
+  - drug: "LABA — Salmeterol, Formoterol, Indacaterol, Olodaterol"
+    rules:
+      - "Không dùng đơn trị trong COPD khi không có tiền sử hen (tăng đợt cấp nhẹ hơn LAMA)"
+      - "Tim mạch: thận trọng ở nhịp tim nhanh, loạn nhịp — không phải chống chỉ định tuyệt đối"
+      - "Hạ kali: hiếm gặp với liều thông thường; thận trọng khi dùng kèm thiazide"
+
+  - drug: "ICS — Fluticasone, Budesonide, Beclomethasone (phối hợp)"
+    rules:
+      - "Viêm phổi: tăng nguy cơ ở COPD (TORCH, INSPIRE) — không dùng khi eosinophil < 100"
+      - "Không ngưng ICS đột ngột ở bệnh nhân đang dùng lâu dài — có thể gây đợt cấp"
+      - "Candida miệng: súc miệng sau mỗi lần hít"
+      - "Loãng xương: bổ sung calcium + vitamin D khi dùng ICS liều cao kéo dài"
+
+  - drug: "Theophylline"
+    rules:
+      - "Chỉ dùng khi không có LAMA/LABA hoặc bổ sung — hiệu quả kém hơn, khoảng trị liệu hẹp"
+      - "Nồng độ điều trị: 8-12 µg/mL; độc tính (buồn nôn, loạn nhịp, co giật) > 20 µg/mL"
+      - "Tương tác: ciprofloxacin, erythromycin, rifampicin làm thay đổi nồng độ đáng kể"
+      - "eGFR < 30: giảm liều, theo dõi nồng độ"
+
+  - drug: "Azithromycin (dự phòng đợt cấp)"
+    rules:
+      - "Chỉ định khi ≥ 2 đợt cấp/năm mặc dù tối ưu thuốc hít — KHÔNG dùng đại trà"
+      - "QTc kéo dài: kiểm tra ECG trước dùng; không dùng khi QTc > 450 ms"
+      - "Điếc: nguy cơ mất thính giác với dùng lâu dài — theo dõi"
+      - "Vi khuẩn đề kháng macrolide: cân nhắc test nhanh MAC trước khi bắt đầu"

@@ -1,0 +1,282 @@
+"""HTTP client tiện ích với retry/backoff, rate-limit handling và cache file đơn giản.
+
+Thiết kế nhỏ gọn, không phụ thuộc thư viện retry ngoài, để dễ kiểm soát và test.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+import time
+from pathlib import Path
+from typing import Any, Dict, Optional
+from urllib.parse import urlparse
+
+import requests
+
+from app.config import settings
+from app.utils.logging_config import get_logger
+
+logger = get_logger(__name__)
+
+# Audit 2026-07-11: requests tự nhúng URL ĐẦY ĐỦ (kèm query string, gồm cả api_key) vào
+# thông báo exception (HTTPError/ConnectionError…) — nếu không che, khóa API (vd
+# NCBI_API_KEY, chỉ chấp nhận qua query param theo thiết kế E-utilities, không thể chuyển
+# sang header) sẽ lọt nguyên văn vào data/archive/app.log/stdout ngay khi có lỗi mạng thật
+# (401 sai key/429 hết lượt retry/timeout) — tái hiện được: gọi HttpClient với api_key giả
+# tới NCBI thật, HTTPError trả về chứa "...&api_key=FAKESECRETKEY..." nguyên văn.
+_SENSITIVE_QUERY_RE = re.compile(
+    r"((?:api[_-]?key|email)=)[^&\s]+",
+    re.IGNORECASE,
+)
+
+
+def _redact(text: str) -> str:
+    """Che giá trị tham số nhạy cảm trong một chuỗi URL/thông báo lỗi trước khi ghi log."""
+    return _SENSITIVE_QUERY_RE.sub(r"\1***", text)
+
+
+def _raise_for_status_redacted(resp: "requests.Response") -> None:
+    """resp.raise_for_status() nhưng che tham số nhạy cảm trong thông báo lỗi trước khi
+    exception rời khỏi HttpClient — nơi gọi (vd resolve_pmids() ở evidence_workbench.py)
+    log thẳng exc, không đi qua http.py nữa nên phải che tại nguồn."""
+    try:
+        resp.raise_for_status()
+    except requests.HTTPError as exc:
+        raise requests.HTTPError(_redact(str(exc)), response=resp) from None
+
+_CACHE_DIR = settings.raw_dir / "_http_cache"
+_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+# Thời điểm request gần nhất theo host, để giãn cách chủ động (NCBI etiquette).
+_last_request_at: Dict[str, float] = {}
+
+
+def _throttle(url: str, min_interval: float) -> None:
+    """Ngủ vừa đủ để 2 request cùng host cách nhau >= min_interval giây."""
+    if min_interval <= 0:
+        return
+    host = urlparse(url).netloc
+    last = _last_request_at.get(host)
+    now = time.monotonic()
+    if last is not None:
+        elapsed = now - last
+        if elapsed < min_interval:
+            time.sleep(min_interval - elapsed)
+    _last_request_at[host] = time.monotonic()
+
+
+def _cache_key(method: str, url: str, params: Optional[Dict[str, Any]]) -> str:
+    raw = f"{method}|{url}|{json.dumps(params or {}, sort_keys=True)}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _cache_path(key: str) -> Path:
+    return _CACHE_DIR / f"{key}.json"
+
+
+def _read_cache(key: str, ttl: int) -> Optional[Dict[str, Any]]:
+    path = _cache_path(key)
+    if not path.exists():
+        return None
+    age = time.time() - path.stat().st_mtime
+    if ttl >= 0 and age > ttl:
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _write_cache(key: str, payload: Dict[str, Any]) -> None:
+    try:
+        _cache_path(key).write_text(json.dumps(payload), encoding="utf-8")
+    except OSError as exc:  # pragma: no cover
+        logger.warning("Không ghi được cache: %s", exc)
+
+
+class HttpClient:
+    """Wrapper requests có retry/backoff + cache GET.
+
+    Tham số:
+        cache_ttl: thời gian cache (giây). -1 = cache vĩnh viễn, 0 = không cache.
+    """
+
+    def __init__(
+        self,
+        default_headers: Optional[Dict[str, str]] = None,
+        cache_ttl: Optional[int] = None,
+        min_interval: Optional[float] = None,
+    ) -> None:
+        self.session = requests.Session()
+        if default_headers:
+            self.session.headers.update(default_headers)
+        self.session.headers.setdefault(
+            "User-Agent",
+            f"medical-ebm-automation/0.1 (mailto:{settings.ncbi_email or settings.openalex_email or 'unknown'})",
+        )
+        self.cache_ttl = settings.http_cache_ttl if cache_ttl is None else cache_ttl
+        self.min_interval = settings.http_min_interval if min_interval is None else min_interval
+        # Telemetry chỉ chứa trạng thái kỹ thuật, tuyệt đối không giữ URL/query có thể có API key.
+        # Ingestion dùng các bộ đếm này để không ghi nhầm lỗi live thành request "ok".
+        self.request_count = 0
+        self.success_count = 0
+        self.failure_count = 0
+        self.transient_failure_count = 0
+        self.cache_hit_count = 0
+        self.last_error = ""
+        self.last_status_code: Optional[int] = None
+
+    def health_snapshot(self) -> Dict[str, Any]:
+        """Trả telemetry không chứa secret để Source Log và deployment gate sử dụng."""
+        return {
+            "request_count": self.request_count,
+            "success_count": self.success_count,
+            "failure_count": self.failure_count,
+            "transient_failure_count": self.transient_failure_count,
+            "cache_hit_count": self.cache_hit_count,
+            "last_error": self.last_error,
+            "last_status_code": self.last_status_code,
+        }
+
+    def _record_terminal_failure(self, exc: Exception, status_code: Optional[int] = None) -> None:
+        """Ghi một lỗi cuối cùng sau khi retry đã hết; thông báo luôn được che secret."""
+        self.failure_count += 1
+        self.last_error = _redact(f"{exc.__class__.__name__}: {exc}")[:500]
+        self.last_status_code = status_code
+
+    def get_json(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = None,
+        use_cache: bool = True,
+    ) -> Dict[str, Any]:
+        return self._request("GET", url, params=params, use_cache=use_cache, want="json")
+
+    def get_text(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = None,
+        use_cache: bool = True,
+    ) -> str:
+        return self._request("GET", url, params=params, use_cache=use_cache, want="text")
+
+    def _request(
+        self,
+        method: str,
+        url: str,
+        params: Optional[Dict[str, Any]],
+        use_cache: bool,
+        want: str,
+    ) -> Any:
+        self.request_count += 1
+        key = _cache_key(method, url, params)
+        if use_cache and self.cache_ttl != 0:
+            cached = _read_cache(key, self.cache_ttl)
+            if cached is not None:
+                logger.debug("Cache hit: %s", url)
+                self.cache_hit_count += 1
+                self.success_count += 1
+                self.last_error = ""
+                self.last_status_code = 200
+                return cached["json"] if want == "json" else cached["text"]
+
+        # 4xx vĩnh viễn: retry vô ích, bỏ ngay lần đầu.
+        _PERMANENT_STATUS = (400, 401, 403, 404, 410)
+        # Lỗi tạm thời (429 rate-limit, 500/502/503/504 server) — chỉ thử lại 1 lần rồi bỏ.
+        # Quan trọng khi ingestion gọi HÀNG CHỤC query liên tiếp tới cùng một nguồn (vd 45 query
+        # theo CLINICAL_AREAS): nếu nguồn đó đang lỗi/quá tải, retry đủ http_max_retries cho MỖI
+        # query sẽ nhân số phút chờ lên hàng chục lần (từng gây treo thật ở OpenAlex 503 và BMJ 429).
+        _RETRYABLE_STATUS = (429, 500, 502, 503, 504)
+        _MAX_RETRYABLE_RETRIES = 1
+
+        attempt = 0
+        attempt_retryable = 0
+        last_exc: Optional[Exception] = None
+        while attempt <= settings.http_max_retries:
+            try:
+                _throttle(url, self.min_interval)
+                resp = self.session.request(
+                    method, url, params=params, timeout=settings.http_timeout
+                )
+            except requests.RequestException as exc:
+                last_exc = exc
+                self.transient_failure_count += 1
+                wait = self._backoff_wait(attempt, None)
+                logger.warning(
+                    "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
+                    url, _redact(str(exc)), wait, attempt + 1,
+                )
+                time.sleep(wait)
+                attempt += 1
+                continue
+
+            # Lỗi vĩnh viễn → raise ngay, KHÔNG rơi vào retry (bay thẳng ra ngoài vòng lặp).
+            if resp.status_code in _PERMANENT_STATUS:
+                logger.warning("HTTP %s (lỗi vĩnh viễn) từ %s – bỏ qua", resp.status_code, url)
+                try:
+                    _raise_for_status_redacted(resp)
+                except requests.HTTPError as exc:
+                    self._record_terminal_failure(exc, resp.status_code)
+                    raise
+            if resp.status_code in _RETRYABLE_STATUS and attempt_retryable >= _MAX_RETRYABLE_RETRIES:
+                logger.warning("HTTP %s từ %s — đã hết hạn mức retry, bỏ qua.", resp.status_code, url)
+                try:
+                    _raise_for_status_redacted(resp)
+                except requests.HTTPError as exc:
+                    self._record_terminal_failure(exc, resp.status_code)
+                    raise
+
+            # Rate limit / lỗi tạm thời → backoff có giới hạn tối đa rồi thử lại.
+            if resp.status_code in _RETRYABLE_STATUS:
+                self.transient_failure_count += 1
+                attempt_retryable += 1
+                wait = self._backoff_wait(attempt, resp)
+                logger.warning(
+                    "HTTP %s từ %s, thử lại sau %.1fs (lần %d)",
+                    resp.status_code, url, wait, attempt + 1,
+                )
+                time.sleep(wait)
+                attempt += 1
+                continue
+
+            try:
+                _raise_for_status_redacted(resp)
+                if want == "json":
+                    data = resp.json()
+                    payload = {"json": data, "text": None}
+                else:
+                    data = resp.text
+                    payload = {"json": None, "text": data}
+            except (requests.RequestException, ValueError) as exc:
+                last_exc = exc
+                self.transient_failure_count += 1
+                wait = self._backoff_wait(attempt, None)
+                logger.warning(
+                    "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
+                    url, _redact(str(exc)), wait, attempt + 1,
+                )
+                time.sleep(wait)
+                attempt += 1
+                continue
+
+            if use_cache and self.cache_ttl != 0:
+                _write_cache(key, payload)
+            self.success_count += 1
+            self.last_error = ""
+            self.last_status_code = resp.status_code
+            return data
+
+        terminal = RuntimeError(f"Gọi API thất bại sau {settings.http_max_retries} lần: {url}")
+        self._record_terminal_failure(terminal)
+        raise terminal from last_exc
+
+    def _backoff_wait(self, attempt: int, resp: Optional[requests.Response]) -> float:
+        # Giới hạn tối đa 30s để không chặn startup quá lâu (vd BMJ Retry-After: 600)
+        _MAX_WAIT = 30.0
+        if resp is not None and "Retry-After" in resp.headers:
+            try:
+                return min(float(resp.headers["Retry-After"]), _MAX_WAIT)
+            except ValueError:
+                pass
+        return min(settings.http_backoff_factor * (2 ** attempt), _MAX_WAIT)

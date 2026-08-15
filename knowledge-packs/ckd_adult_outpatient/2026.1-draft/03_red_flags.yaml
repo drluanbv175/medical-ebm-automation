@@ -1,0 +1,30 @@
+red_flags:
+  - id: rf_aki_on_ckd
+    name: "AKI trên nền CKD"
+    triggers: ["creatinine tăng > 50% so baseline trong < 7 ngày", "giảm nước tiểu đột ngột", "phù tăng nhanh sau dùng NSAIDs/thuốc cản quang/ACEi"]
+    action: "ĐÁNH GIÁ CẤP — ngưng nephrotoxins, xét nhập viện"
+    priority: CRITICAL
+
+  - id: rf_hyperkalemia_dangerous
+    name: "Tăng kali nguy hiểm"
+    triggers: ["kali > 6.0 mmol/L", "yếu cơ lan toả", "ECG: sóng T cao nhọn, QRS giãn rộng"]
+    action: "CHUYỂN CẤP CỨU NGAY — Tăng kali đe doạ tính mạng"
+    priority: CRITICAL
+
+  - id: rf_pulmonary_edema_uremia
+    name: "Phù phổi do tăng urê máu"
+    triggers: ["khó thở tăng đột ngột + creatinine rất cao + thiểu/vô niệu"]
+    action: "CHUYỂN CẤP CỨU — có thể cần lọc thận khẩn"
+    priority: CRITICAL
+
+  - id: rf_severe_anemia_ckd
+    name: "Thiếu máu nặng"
+    triggers: ["Hgb < 8 g/dL kèm triệu chứng (khó thở, đau ngực)", "Hgb giảm nhanh > 2 g/dL trong 1 tháng"]
+    action: "Đánh giá nguyên nhân, xét truyền máu hoặc nhập viện"
+    priority: HIGH
+
+  - id: rf_nephrotic_nephritic
+    name: "Hội chứng thận hư/thận viêm cấp mới"
+    triggers: ["protein niệu tăng đột ngột > 3.5 g/24h kèm phù, giảm albumin", "tiểu máu đại thể mới + creatinine tăng nhanh"]
+    action: "Xét chuyển thận học để sinh thiết thận"
+    priority: HIGH

@@ -1,0 +1,309 @@
+"""Policy engine bảo vệ liêm chính khoa học và an toàn lâm sàng V7.
+
+File này được app/chatgpt_app/server.py import (qua agents.py/knowledge.py) và phục vụ
+kết nối MCP sống (Codex desktop + Secure MCP Tunnel). Sửa ở đây KHÔNG tự áp dụng cho
+kết nối tunnel đang chạy (tiến trình dài hạn, không hot-reload) — .githooks/post-commit
+tự động `launchctl kickstart -k` sau mỗi commit chạm file này để nạp code mới; nhánh
+Codex desktop tự nhận code mới mỗi "Tác vụ mới" (spawn tiến trình riêng), không cần hook.
+"""
+from __future__ import annotations
+
+import re
+import unicodedata
+from dataclasses import dataclass, field
+from typing import Any, Iterable, List, Mapping, Optional
+
+from app.core.feature_flags import merge_feature_flags
+
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 4, phát hiện MEDIUM):
+# email PLACEHOLDER trong tài liệu hướng dẫn (vd README.md dòng mẫu
+# "NCBI_EMAIL=ban@email.com") trước đây bị coi là PII thật, loại README.md
+# (tài liệu onboarding quan trọng nhất) khỏi corpus phục vụ ChatGPT. Domain
+# đã liệt kê là placeholder chuẩn, KHÔNG bao giờ là email cá nhân thật.
+_EMAIL = re.compile(r"\b[\w.+-]+@([\w-]+\.[\w.-]+)\b")
+_PLACEHOLDER_EMAIL_DOMAINS = {
+    "example.com", "email.com", "yourdomain.com", "domain.com", "test.com",
+    "yourcompany.com", "mycompany.com", "acme.com",
+}
+
+
+def _has_non_placeholder_email(text: str) -> bool:
+    for m in _EMAIL.finditer(text):
+        if m.group(1).lower() not in _PLACEHOLDER_EMAIL_DOMAINS:
+            return True
+    return False
+_PHONE = re.compile(r"(?<!\d)(?:\+?84|0)\d{8,10}(?!\d)")
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện HIGH): _MRN
+# trước đây KHÔNG có "cccd"/"cmnd"/"căn cước"/"patient id"/"bệnh nhân" — các
+# nhãn này CHỈ được app/chatgpt_app/knowledge.py::SENSITIVE_ID_PATTERN nhận
+# diện riêng (qua _matches_sensitive_id()). 7+ module khác (safety/red_team,
+# clinical_content/shadow_pilot, clinical_content/phase_2c_shadow,
+# safety/evaluation_suite, chronic_care/service, chronic_care/synthetic_cases…)
+# CHỈ gọi contains_pii_text() một mình — không có _matches_sensitive_id() đi
+# kèm — nên "CCCD: 012345678901"/"Patient ID: X" lọt qua hoàn toàn ở các
+# module đó dù bị chặn đúng ở agents.py/knowledge.py. Gộp nhãn vào ĐÂY để mọi
+# caller của contains_pii_text() được bảo vệ như nhau, không phụ thuộc có
+# nhớ gọi thêm _matches_sensitive_id() hay không.
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 4, phát hiện HIGH):
+# "số bệnh nhân" bỏ khỏi nhánh "số\s*(...)" — cụm này trong tiếng Việt y khoa
+# CỰC KỲ thường có nghĩa "số LƯỢNG bệnh nhân" (vd "Số bệnh nhân: 1000 tham
+# gia nghiên cứu"), không phải mã định danh cá nhân. "mã bệnh nhân" giữ
+# nguyên vì KHÔNG mơ hồ (luôn chỉ mã định danh, không bao giờ chỉ số lượng).
+_MRN = re.compile(
+    r"\b(?:mrn|cccd|cmnd|căn\s*cước|patient\s*id"
+    r"|mã\s*(?:bn|hs|hồ\s*sơ|bệnh\s*án|người\s*bệnh|bệnh\s*nhân)"
+    r"|số\s*(?:hồ\s*sơ|bệnh\s*án))"
+    r"(?:\s*[:#]\s*[\w-]{4,}|\s+[A-Z0-9-]*\d[A-Z0-9-]{3,})\b",
+    re.I,
+)
+_DOB = re.compile(
+    # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện LOW):
+    # thêm `\s*` quanh mỗi dấu phân cách "/"/"-" để bắt DOB viết có khoảng
+    # trắng quanh dấu ("15 - 07 - 1980") — bản vá CRITICAL trước (bỏ collapse
+    # cho _DOB) chỉ xử lý trường hợp dấu phân cách sát chữ số, không xử lý
+    # trường hợp có khoảng trắng đệm quanh dấu.
+    r"\b(?:dob|ngày\s*sinh)\s*[:#]?\s*\d{1,2}\s*[/-]\s*\d{1,2}\s*[/-]\s*\d{2,4}\b"
+    r"|\b(?:sn|sinh\s*năm|năm\s*sinh)\s*[:#]?\s*(?:19|20)\d{2}\b",
+    re.I,
+)
+# Địa chỉ cư trú: nhãn thường gặp trong ghi chú lâm sàng VN + có số gần đó (số nhà/khu vực).
+# SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 4, phát hiện HIGH):
+# "trú tại" khớp NHẦM cụm y khoa cực kỳ phổ biến "ngoại trú tại"/"nội trú
+# tại" (khám ngoại trú/nội trú TẠI một khoa/bệnh viện — không phải địa chỉ
+# cư trú) vì âm tiết tiếng Việt cách nhau bằng khoảng trắng nên "trú tại" là
+# chuỗi con của cả hai. Đã xác nhận thực nghiệm: câu thật trong
+# docs/system-v7/PHASE_2B_RESEARCHOS_PILOT.md ("...người bệnh ngoại trú tại
+# Khoa Khám bệnh...") bị chặn nhầm, loại tài liệu đó khỏi corpus ChatGPT phục
+# vụ. Thêm lookbehind loại trừ "ngoại "/"nội " đứng ngay trước "trú".
+# SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 23, phát hiện qua hồi quy
+# thật khi sửa doctrine agent lâm sàng): "ngụ" bắt được cả cụm CỰC KỲ phổ biến
+# "ngụ ý" (nghĩa "ngầm hiểu là", không liên quan cư trú) — một câu văn khoa
+# học/kỹ thuật bình thường như "...ngụ ý rằng liều X là 5mg..." (chứa chữ số
+# trong 60 ký tự sau) bị chặn nhầm là địa chỉ cư trú, loại cả agent doctrine
+# khỏi corpus ChatGPT. Thêm lookahead loại trừ "ngụ" khi theo sau ngay là "ý".
+_ADDRESS = re.compile(
+    r"\b(?:ngụ(?!\s*ý\b)|(?<!ngoại )(?<!nội )trú\s*tại|địa\s*chỉ)\b[^.\n]{0,60}\d", re.I)
+# Họ Việt Nam phổ biến + đệm giới tính + tên/chữ viết tắt — bắt kiểu ghi tên bệnh nhân phổ
+# biến nhất ("Nguyễn Văn A", "Trần Thị B..."), kể cả khi dùng làm ví dụ/placeholder thật.
+_VN_NAME = re.compile(
+    r"\b(?:Nguyễn|Trần|Lê|Phạm|Hoàng|Huỳnh|Phan|Vũ|Võ|Đặng|Bùi|Đỗ|Hồ|Ngô|Dương|Lý)\s+"
+    r"(?:Văn|Thị|Hữu|Thanh|Xuân|Minh|Đức|Ngọc|Thành|Anh)\s+[A-ZĐ][\wÀ-ỹ]*\b"
+)
+
+
+def _collapse_digit_separators(text: str) -> str:
+    """Xóa khoảng trắng/chấm/gạch NẰM GIỮA hai chữ số để bắt SĐT/mã số viết tách nhóm
+    (vd '090 123 4567', '012.345.678.901') — các định dạng thật bác sĩ hay gõ tự nhiên
+    mà _PHONE/_MRN gốc (chỉ khớp chuỗi số liền mạch) bỏ sót."""
+    return re.sub(r"(?<=\d)[\s.-]+(?=\d)", "", text)
+
+
+# Dãy chữ số dài đứng MỘT MÌNH, LIỀN MẠCH (không tách nhóm) — CCCD (12 số)/
+# CMND cũ (9 số)/số BHYT không kèm nhãn ("mã hồ sơ", "SĐT"...) đứng trước rơi
+# ngoài phạm vi _PHONE (yêu cầu tiền tố 0/+84 và đúng 9-11 số) lẫn _MRN (yêu
+# cầu nhãn đứng trước). CỐ Ý so trên bản GỐC (KHÔNG gộp dấu phân cách như
+# _PHONE/_MRN): thử trên _collapse_digit_separators() từng gây SAI DƯƠNG TÍNH
+# với DOI/NCT ID/mã lesson dạng ngày-số hợp lệ của chính hệ thống (đã xác
+# nhận thực nghiệm — vd DOI có đoạn '.2021.09.006' gộp số thành '202109006',
+# mã lesson '2026-07-08-01' gộp thành '2026070801') vì các định dạng đó dùng
+# dấu chấm/gạch ngang làm phân cách CÓ Ý NGHĨA giữa các đoạn số ngắn, khác
+# hẳn CCCD/BHYT vốn LUÔN được viết liền một dãy số duy nhất không phân cách.
+# CHỈ dùng cho contains_bare_id_number() bên dưới — KHÔNG gộp vào
+# contains_pii_text() dùng chung cho toàn hệ thống.
+_BARE_LONG_DIGITS = re.compile(r"(?<!\d)\d{9,13}(?!\d)")
+
+# SỬA 2026-07-22 (vòng lặp kiểm tra-hoàn thiện vòng 9, phát hiện MEDIUM): _BARE_LONG_DIGITS
+# khớp cả phần số của một OpenAlex work ID hợp lệ (vd "W2001233144" — chữ "W" + 10 chữ số),
+# gây sai dương tính chặn nhầm câu hỏi nghiên cứu hợp lệ trích dẫn OpenAlex — một nguồn
+# chứng cứ miễn phí CHÍNH THỐNG của hệ thống này (app/sources/openalex.py), không phải PII.
+# Loại trừ hẹp: chỉ khi digit-run đứng NGAY SAU ký tự "W" hoa và KHÔNG có chữ/số nào khác
+# đứng trước "W" đó (tránh loại trừ nhầm một số CCCD/BHYT tình cờ có "W" đứng trước — dù
+# CCCD/BHYT tiếng Việt không dùng tiền tố "W").
+_OPENALEX_WORK_ID_PREFIX = re.compile(r"(?<![A-Za-z0-9])W\d{9,13}(?!\d)")
+
+
+def contains_bare_id_number(text: str) -> bool:
+    """Bắt số CCCD/CMND/BHYT viết TRẦN không kèm nhãn (vd 'BN số 012345678901',
+    'BHYT GD4790123456789'). Hẹp có chủ đích — xem chú thích _BARE_LONG_DIGITS
+    về lý do KHÔNG gộp vào contains_pii_text() và vì sao KHÔNG dùng bản đã gộp
+    dấu phân cách. Loại trừ OpenAlex work ID (vd 'W2001233144') — xem chú thích
+    _OPENALEX_WORK_ID_PREFIX."""
+    normalized = unicodedata.normalize("NFC", text or "")
+    for match in _BARE_LONG_DIGITS.finditer(normalized):
+        start = match.start()
+        if start > 0 and normalized[start - 1] == "W":
+            preceding_char_ok = start == 1 or not normalized[start - 2].isalnum()
+            if preceding_char_ok and _OPENALEX_WORK_ID_PREFIX.match(normalized, start - 1):
+                continue
+        return True
+    return False
+
+
+@dataclass(frozen=True)
+class PolicyViolation:
+    code: str
+    severity: str
+    message: str
+    remediation: str
+
+
+@dataclass(frozen=True)
+class PolicyDecision:
+    allowed: bool
+    violations: List[PolicyViolation] = field(default_factory=list)
+
+    @property
+    def blockers(self) -> List[PolicyViolation]:
+        return [v for v in self.violations if v.severity in {"block", "critical"}]
+
+    def require_allowed(self) -> None:
+        if not self.allowed:
+            codes = ", ".join(v.code for v in self.blockers)
+            raise PermissionError(f"Policy blocked: {codes}")
+
+
+def contains_pii_text(text: str) -> bool:
+    # Chuẩn hóa NFC trước khi so khớp: _MRN/_DOB liệt kê nhãn tiếng Việt có dấu ở dạng tổ hợp
+    # sẵn (NFC); văn bản NFD (chữ nền + dấu rời) khớp trượt và lọt qua mọi cổng dùng hàm này
+    # (export_policy.classify_export_file, shadow-pilot/red-team scan...) mà không báo lỗi.
+    normalized = unicodedata.normalize("NFC", text or "")
+    collapsed = _collapse_digit_separators(normalized)
+    # _PHONE/_MRN cần bản đã gộp số để bắt SĐT/mã hồ sơ viết tách nhóm ("090 123 4567").
+    # NGƯỢC LẠI _DOB/_ADDRESS/_VN_NAME/_EMAIL phải so trên bản GỐC: gộp số sẽ xóa mất dấu
+    # gạch ngang có Ý NGHĨA PHÂN CÁCH của ngày sinh dạng số ("15-07-1980" -> "15071980"),
+    # làm _DOB không còn khớp được (hồi quy đã tìm thấy 2026-07-20/21: contains_pii_text
+    # trả False cho DOB dạng gạch ngang trong khi vẫn đúng cho dạng gạch chéo).
+    if any(pattern.search(collapsed) for pattern in (_PHONE, _MRN)):
+        return True
+    if _has_non_placeholder_email(normalized):
+        return True
+    return any(pattern.search(normalized) for pattern in (_DOB, _ADDRESS, _VN_NAME))
+
+
+def _context_text(context: Mapping[str, Any]) -> str:
+    parts: List[str] = []
+    for key in ("text", "prompt", "content", "clinical_note", "patient_context"):
+        value = context.get(key)
+        if isinstance(value, str):
+            parts.append(value)
+    return "\n".join(parts)
+
+
+class PolicyEngine:
+    """Đánh giá policy dạng deterministic, không gọi AI."""
+
+    def evaluate(self, context: Mapping[str, Any]) -> PolicyDecision:
+        flags = merge_feature_flags(context.get("feature_flags") or {})
+        violations: List[PolicyViolation] = []
+        action = str(context.get("action") or "").lower()
+        lane = str(context.get("lane") or "").lower()
+
+        if context.get("contains_pii") or contains_pii_text(_context_text(context)):
+            violations.append(PolicyViolation(
+                "EBM-V7-P001",
+                "block",
+                "Phát hiện hoặc nghi ngờ PII trong gói xử lý.",
+                "Loại bỏ định danh cá nhân, dùng mã ca ẩn danh rồi chạy lại.",
+            ))
+
+        if context.get("claim_text") and not context.get("evidence_trace_ids"):
+            violations.append(PolicyViolation(
+                "EBM-V7-P002",
+                "block",
+                "Claim/chứng cứ chưa có traceability ID.",
+                "Gắn PMID/DOI/URL hoặc chuyển vào quarantine thay vì phát hành.",
+            ))
+
+        if context.get("recommendation_text") and not context.get("claim_id"):
+            violations.append(PolicyViolation(
+                "EBM-V7-P003",
+                "block",
+                "Recommendation card chưa liên kết claim đã thẩm định.",
+                "Tạo claim registry entry trước khi tạo khuyến nghị.",
+            ))
+
+        if context.get("citation_required") and not context.get("citation_verified"):
+            violations.append(PolicyViolation(
+                "EBM-V7-P004",
+                "block",
+                "Nguồn trích dẫn chưa được xác minh.",
+                "Xác minh PMID/DOI/URL hoặc gắn nhãn [CẦN XÁC MINH].",
+            ))
+
+        if context.get("assigned_grade") and not context.get("grade_source"):
+            violations.append(PolicyViolation(
+                "EBM-V7-P005",
+                "block",
+                "Có phân hạng độ mạnh nhưng thiếu nguồn gốc phân hạng.",
+                "Tách grade chính thức của guideline khỏi đánh giá vận hành nội bộ.",
+            ))
+
+        if action in {"clinical_release", "publish_clinical", "apply_recommendation"}:
+            if not context.get("physician_approved"):
+                violations.append(PolicyViolation(
+                    "EBM-V7-P006",
+                    "block",
+                    "Đầu ra lâm sàng chưa được bác sĩ duyệt.",
+                    "Đưa về cổng review, chỉ phát hành sau phê duyệt.",
+                ))
+            if not flags.get("v7_clinical_release", False):
+                violations.append(PolicyViolation(
+                    "EBM-V7-P007",
+                    "block",
+                    "Clinical release V7 đang tắt bằng feature flag.",
+                    "Bật flag có kiểm soát sau khi shadow mode đạt chuẩn.",
+                ))
+
+        if action == "research_official_analysis" and not context.get("data_locked"):
+            violations.append(PolicyViolation(
+                "EBM-V7-P008",
+                "block",
+                "Phân tích chính thức trước khi khóa dữ liệu/SAP.",
+                "Khóa SAP và data lock trước khi chạy phân tích chính thức.",
+            ))
+
+        if context.get("dashboard_integrity_passed") is False:
+            violations.append(PolicyViolation(
+                "EBM-V7-P009",
+                "block",
+                "Dashboard chưa qua cổng verify_dashboard.",
+                "Chạy verify_dashboard và sync hub trước khi đưa vào thư viện.",
+            ))
+
+        if action in {"chatgpt_export", "export"}:
+            if not flags.get("v7_chatgpt_project_export", False):
+                violations.append(PolicyViolation(
+                    "EBM-V7-P010",
+                    "block",
+                    "ChatGPT project export đang tắt bằng feature flag.",
+                    "Bật flag sau khi manifest export đã được review.",
+                ))
+            if context.get("export_contains_raw_dataset") or context.get("export_contains_pii"):
+                violations.append(PolicyViolation(
+                    "EBM-V7-P011",
+                    "block",
+                    "Gói export chứa dữ liệu thô hoặc PII.",
+                    "Chỉ export schema, tài liệu, agent, dashboard đã khử định danh.",
+                ))
+
+        if lane == "clinical" and context.get("red_flag_unresolved"):
+            violations.append(PolicyViolation(
+                "EBM-V7-P012",
+                "critical",
+                "Cờ đỏ lâm sàng chưa được xử trí/escalate.",
+                "Nêu cờ đỏ ngay và chuyển bác sĩ trước mọi tổng hợp thường quy.",
+            ))
+
+        return PolicyDecision(allowed=not any(v.severity in {"block", "critical"} for v in violations),
+                              violations=violations)
+
+    def merge(self, decisions: Iterable[PolicyDecision]) -> PolicyDecision:
+        violations: List[PolicyViolation] = []
+        for decision in decisions:
+            violations.extend(decision.violations)
+        return PolicyDecision(allowed=not any(v.severity in {"block", "critical"} for v in violations),
+                              violations=violations)
+
+
+def evaluate_policy(context: Mapping[str, Any], engine: Optional[PolicyEngine] = None) -> PolicyDecision:
+    return (engine or PolicyEngine()).evaluate(context)

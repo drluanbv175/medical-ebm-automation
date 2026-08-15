@@ -1,0 +1,14 @@
+{
+  "golden_id": "GOLDEN-G3-002",
+  "gate": "G3",
+  "function": "n_continuous_md",
+  "scenario": "So sánh 2 trung bình độc lập, kết cục liên tục (vd thang đau NRS) — Cohen's d=1.0 (effect lớn), alpha=0.05 hai phía, power=80%",
+  "input": {"md": 1.0, "sd": 1.0, "alpha": 0.05, "power": 0.80},
+  "expected_output": {"n_per_group": 16},
+  "expected_output_source": "Machin D, Campbell MJ, et al. Sample Size Tables for Clinical Studies. Bảng chuẩn Cohen d=1.0, alpha=0.05, power=80% → n=16/nhóm (công thức n=2×(SD/MD)²×(zα/2+zβ)²).",
+  "verified_2026-07-06": "Xác nhận bằng tay: chạy trực tiếp n_continuous_md(md=1.0, sd=1.0, alpha=0.05, power=0.80) sau khi vá lỗi hồi quy hệ số-2 trong z() (xem commit fix(G3) 2026-07-06) → kết quả 16, khớp đúng bảng Cohen/Machin.",
+  "approved_by_pi": false,
+  "approved_by": null,
+  "approved_date": null,
+  "notes_for_pi": "Giá trị 16 khớp bảng chuẩn Cohen d=1.0 (kinh điển, không phải suy đoán AI) và khớp lại bằng chạy code thật ngày 2026-07-06. PI cần xác nhận kịch bản (effect size lớn d=1.0) có đại diện đúng cho loại đề tài RCT kết cục liên tục thường gặp tại phòng khám hay không — với effect size nhỏ hơn (d=0.5, thực tế phổ biến hơn) n sẽ lớn hơn nhiều (~63-64/nhóm, cũng đã xác minh khớp bảng Cohen trong test_gate_g3_formulas.py). Ký approved_by/approved_date trước khi coi AC-04 closed cho case này."
+}

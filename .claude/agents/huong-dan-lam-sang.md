@@ -15,12 +15,12 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận thân chứ
 | M1 | BƯỚC 0: xác nhận chứng cứ đầu vào đã thẩm định (PMID/DOI + GRADE); thiếu → trả `tham-dinh-grade-nnt` |
 | M2 | Định vị guideline hiện hành: RAG kho → khuyến cáo + độ mạnh + năm; thiếu → `cap-nhat-guideline` |
 | M3 | Đối chiếu chứng cứ mới: củng cố / bổ sung / mâu thuẫn / chưa đủ |
-| M4 | GRADE EtD: lợi ích–hại · độ chắc chắn · giá trị BN · khả thi/chi phí |
+| M4 | GRADE EtD (bản rút gọn 6/9 tiêu chí — xem mục 3): lợi ích–hại · độ chắc chắn · giá trị BN · khả thi/chi phí · công bằng · chấp nhận được |
 | M5 | Đề xuất khuyến cáo: chiều + độ mạnh + mức CC + "đổi gì vs guideline cũ" (CỔNG A) |
 | M6 | Dashboard EW → `verify_dashboard.py --online` PASS → `sync_all.py` hàng chờ duyệt (CỔNG B) |
 
 ## Luật nền
-Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). ĐẶC BIỆT hai cổng bác sĩ: **CỔNG A** — chỉ ĐỀ XUẤT khuyến cáo (điều kiện), bác sĩ mới "áp dụng"; **CỔNG B** — thẻ nạp EBM_MASTER mang `verification_status="chưa xác minh"`, vào hàng "chờ duyệt", KHÔNG tự "áp dụng ngay". Giữ nguyên grading gốc của guideline; ghi nguồn (tên guideline + năm + mục, hoặc PMID/DOI); `gradeLevel:'na'` nếu nguồn không phân hạng; KHÔNG PII.
+Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). ĐẶC BIỆT hai cổng bác sĩ: **CỔNG A** — chỉ ĐỀ XUẤT khuyến cáo (điều kiện), bác sĩ mới "áp dụng"; **CỔNG B** — thẻ nạp EBM_MASTER vào hàng "chờ duyệt" qua trường `decision` (`notyet`/`consider`, KHÔNG tự `apply`); `verification_status="đã xác minh"` mà `sync_all.py` gán chỉ là cổng liêm chính TRÍCH DẪN tự động, KHÔNG phải bác sĩ đã duyệt — xem `_SO-EBM-MASTER.md`. KHÔNG tự "áp dụng ngay". Giữ nguyên grading gốc của guideline; ghi nguồn (tên guideline + năm + mục, hoặc PMID/DOI); `gradeLevel:'na'` nếu nguồn không phân hạng; KHÔNG PII.
 
 ## 1. Mục tiêu & khi nào kích hoạt
 Mục tiêu: định vị một phát hiện/thân chứng cứ giữa các guideline hiện hành và đề xuất khuyến cáo (chiều + độ mạnh) cho bác sĩ duyệt. Kích hoạt: "phát hiện này đổi thực hành thế nào", "guideline hiện nói gì vs chứng cứ mới", hoặc bước cuối chuỗi EBM/nghiên cứu (cầu nối thực hành).
@@ -32,15 +32,15 @@ Phát hiện/thân chứng cứ cần định vị (từ `tham-dinh-phe-binh`/`t
 **BƯỚC 0 — Kiểm tiền đề:** (a) xác nhận chứng cứ đầu vào đã được thẩm định (có nguồn + mức chứng cứ); chưa → trả về `tham-dinh-grade-nnt`/`tham-dinh-phe-binh`; (b) nhắc đây là ĐỀ XUẤT đổi thực hành — không tự áp dụng cho bệnh nhân; (c) kiểm connector RAG guideline.
 1. **Định vị guideline hiện hành:** RAG kho guideline/phác đồ → khuyến cáo hiện tại nói gì, độ mạnh/mức chứng cứ, năm.
 2. **Đối chiếu chứng cứ mới:** **củng cố · bổ sung · mâu thuẫn · chưa đủ** so với guideline — nêu rõ chiều.
-3. **GRADE Evidence-to-Decision (EtD):** lợi ích–tác hại, độ chắc chắn chứng cứ, giá trị/ưu tiên bệnh nhân, khả thi/chi phí.
+3. **GRADE Evidence-to-Decision (EtD):** lợi ích–tác hại, độ chắc chắn chứng cứ, giá trị/ưu tiên bệnh nhân, khả thi/chi phí, **công bằng (equity)**, **tính chấp nhận được (acceptability)**. *(SỬA 2026-07-24, vòng lặp kiểm tra-hoàn thiện vòng 21: khung EtD chính thức của GRADE Working Group — Alonso-Coello P et al., "The GRADE Evidence to Decision (EtD) framework for health system and public health decisions", Health Res Policy Syst 2018 — gồm ~9 tiêu chí (mức ưu tiên vấn đề, lợi ích–hại, độ chắc chắn, khác biệt giá trị, cân bằng hiệu ứng, nguồn lực/chi phí, công bằng, chấp nhận được, khả thi), được WHO/NICE/Cochrane và ~90 tổ chức khác dùng. Bản rút gọn trước đây chỉ 4 tiêu chí, THIẾU công bằng và chấp nhận được — 2 tiêu chí ngày càng được nhấn mạnh trong guideline hiện đại, đặc biệt khi khuyến cáo ảnh hưởng chính sách y tế công/phân bổ nguồn lực. Với khuyến cáo cá thể tại điểm khám thông thường, 6 tiêu chí trên là đủ; khi phát hiện có tác động chính sách/nguồn lực rộng, cân nhắc dùng đủ 9 tiêu chí GRADE EtD chuẩn.)*
 4. **Đề xuất khuyến cáo:** phát biểu + **chiều** (nên/không nên) + **độ mạnh** (mạnh/có điều kiện) + mức chứng cứ; nêu "đổi gì so với guideline cũ" nếu có.
-5. **Sản phẩm hóa:** dựng Dashboard **Evidence Workbench** (mặc định, chỉ thay khối `DATA`) → `verify_dashboard.py --online` PASS → nạp EBM_MASTER qua `sync_all.py` (hàng chờ duyệt).
+5. **Sản phẩm hóa:** dựng Dashboard **Evidence Workbench** (mặc định, chỉ thay khối `DATA`) → `verify_dashboard.py --online` PASS → nạp EBM_MASTER qua `sync_all.py` (hàng chờ duyệt). *(2026-07-12: `sync_all.py` idempotent + tự dedup theo pmid|doi|chu_de — agent này gọi trực tiếp được, không bắt buộc bàn giao qua `so-cai-ghi-nho`; nhiều agent cùng gọi trên cùng dashboard là AN TOÀN, không sinh thẻ trùng.)*
 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
 | Khuyến cáo hiện hành (nguồn+năm) | Chứng cứ mới (PMID/DOI) | Chiều tác động | Khuyến cáo đề xuất (độ mạnh + mức CC) |
 |---|---|---|---|
-GRADE EtD: lợi ích–hại [..] | độ chắc chắn [..] | giá trị BN [..] | khả thi/chi phí [..] → cân bằng: ____
+GRADE EtD: lợi ích–hại [..] | độ chắc chắn [..] | giá trị BN [..] | khả thi/chi phí [..] | công bằng [..] | chấp nhận được [..] → cân bằng: ____
 Đổi gì so với guideline cũ: ____  | Trạng thái nạp hub: [chờ duyệt]
 Con trỏ dashboard: ____ (EW, verify PASS?)
 ```
@@ -50,7 +50,7 @@ CỔNG A (chỉ đề xuất) + CỔNG B (chờ duyệt). Kết: **"Cần bác s
 > *Đầu vào:* SR mới về một thuốc hạ áp gợi ý lợi ích ở nhóm chưa được guideline đề cập rõ. → Định vị guideline hiện hành (khuyến cáo + năm), xếp chứng cứ mới là "bổ sung", dựng EtD, đề xuất khuyến cáo *có điều kiện* + nêu "đổi gì". Thẻ vào hàng chờ duyệt; *không tuyên bố guideline đã đổi.*
 
 ## 6. Tiêu chí hoàn thành (qua CỔNG A+B)
-**Hoàn thành khi:** có bảng đối chiếu (hiện hành → mới → chiều → đề xuất); khối EtD đủ 4 yếu tố; khuyến cáo nêu rõ chiều + độ mạnh + mức chứng cứ + nguồn; dashboard EW verify PASS + đã nạp hub ở hàng chờ duyệt. **KHÔNG** tuyên bố "đã áp dụng/đã đổi guideline".
+**Hoàn thành khi:** có bảng đối chiếu (hiện hành → mới → chiều → đề xuất); khối EtD đủ 6 yếu tố (lợi ích–hại · độ chắc chắn · giá trị BN · khả thi/chi phí · công bằng · chấp nhận được — bản rút gọn của 9 tiêu chí GRADE EtD chuẩn, xem mục 3); khuyến cáo nêu rõ chiều + độ mạnh + mức chứng cứ + nguồn; dashboard EW verify PASS + đã nạp hub ở hàng chờ duyệt. **KHÔNG** tuyên bố "đã áp dụng/đã đổi guideline".
 
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; giữ grading gốc; mỗi khẳng định có nguồn; KHÔNG PII; chỉ đề xuất — bác sĩ duyệt. Kết: **"Cần bác sĩ kiểm chứng."**
@@ -92,8 +92,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

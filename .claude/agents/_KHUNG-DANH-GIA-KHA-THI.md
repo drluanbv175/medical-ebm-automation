@@ -52,8 +52,8 @@ Bốn lớp, xếp từ mạnh→bổ trợ. **Không lớp nào cần ≥2 ngư
 - **Chạy lại 2026-07-10:** `python tools/eval/cafes_suite.py` → **PASS** (bắt đúng agent đúng; FAIL agent bỏ sót RF-03; FAIL agent phủ định cấp cứu/CCĐ). Đây là **bằng chứng không-cần-người**, tái lập được mọi lúc.
 - Đây là các trục **CRITICAL** — và tất cả ĐẠT. An toàn bệnh nhân cốt lõi không phụ thuộc κ.
 
-### Lớp 2 — Phản biện ĐỘC LẬP bằng AI (độc lập TIẾN TRÌNH, không độc lập họ-mô-hình)
-- `tham-dinh-dau-ra` chạy như **subagent ngữ cảnh tách** (mặc định khi có Agent/Task tool) — scorecard 2026-07-08 đo **11/11** nhóm lỗi bị bắt ở lớp này.
+### Lớp 2 — Phản biện ĐỘC LẬP bằng AI (độc lập NGỮ CẢNH — 2026-07-12: sửa "TIẾN TRÌNH", khớp `_KIEM-DUYET-DOC-LAP.md`/`tham-dinh-dau-ra.md` — không độc lập họ-mô-hình)
+- `tham-dinh-dau-ra` chạy như **subagent ngữ cảnh tách** (mặc định khi có Agent/Task tool) — scorecard 2026-07-08 đo **9/11** nhóm lỗi có bằng chứng bắt ở lớp này (2026-07-12: sửa "11/11" — chính scorecard đó tự mâu thuẫn nội bộ, nhóm 2/3 LỌT ở CODE chưa từng được kiểm ở AGENT; xem ghi chú trong `assurance/SCORECARD_2026-07-08.md`).
 - **Giới hạn ghi rõ:** cùng họ mô hình → **giảm mù chung, KHÔNG khử** thiên lệch hệ thống (`_KIEM-DUYET-DOC-LAP.md`). Đây là độc-lập-MỘT-PHẦN, KHÔNG thay chuyên gia người thứ hai. **Không được gọi là "independent review" theo nghĩa MRAQ.**
 
 ### Lớp 3 — Duyệt-ĐƠN-NGƯỜI có cấu trúc (bác sĩ tự làm — KHẢ THI)
@@ -119,7 +119,7 @@ phải nút thắt "đánh giá người", mà là bất biến "người giữ 
 
 ## 7. BẤT BIẾN GIỮ NGUYÊN
 - KHÔNG bịa κ/điểm; KHÔNG tự ký/tự APPROVE cổng MRAQ; KHÔNG gọi phản biện-AI là "independent review".
-- 2 Cổng bác sĩ (A quyết định · B ghi sổ cái) + 4 điểm dừng cứng nghiên cứu (G2/G4/dữ liệu thật/liêm chính) **nguyên vẹn**.
+- 2 Cổng bác sĩ (A quyết định · B ghi sổ cái) + 6 điểm dừng cứng nghiên cứu (G2/G4/G5 khóa dữ liệu thật/G8 bình duyệt độc lập/G9 liêm chính/G10 PI khóa gói phát hành) **nguyên vẹn**.
 - Tier S hợp lệ **CHỈ KHI** bác sĩ duyệt từng đầu ra. Tự trị/xuất bản ⇒ Tier R.
 
 > **"Cần bác sĩ kiểm chứng."** Khung này điều chỉnh PHẠM VI đánh giá cho khả thi, KHÔNG hạ chuẩn an toàn.

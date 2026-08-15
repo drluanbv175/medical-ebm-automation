@@ -14,9 +14,26 @@ python medical-ebm-automation/tools/run_g8_auto.py \
     --study "MA-DE-TAI" \
     [--target-journal "Tên tạp chí đích"] [--impact-factor <so>]
 # Tự động: đọc checkpoint G0-G7 → kiểm tra toàn diện trước nộp bài
-#           → A14 .md + .docx + G8_checkpoint.json
+#           → A15 .md + .docx + G8_checkpoint.json
+#           (2026-07-11: sửa "A14" — đó là mã của nop-bai-phan-hoi/G9 theo crosswalk;
+#           đúng mã của bình duyệt nội bộ G8 này là A15. Script thật hiện đặt tên file
+#           "G8_A9_PRESUBMISSION_..." — LỆCH khỏi crosswalk theo kiểu hệ thống, giống
+#           run_g5/g6/g9_auto.py; xem task theo dõi sửa code: task_e4138631.)
+# TỰ ĐỘNG kèm theo (2026-07-28): bước cuối của run_g8_auto.py tự chạy
+#           tools/g8_quality_gate.py, ghi exports/<mã>/G8_QUALITY_REPORT.{json,md} —
+#           lớp này kiểm NỘI DUNG (vệt công cụ nội bộ, kết cục chính có đổi so với SAP,
+#           khai báo ICMJE) mà A9 tự kiểm không kiểm được. Đọc báo cáo này TRƯỚC khi bắt
+#           đầu 3 lăng kính bên dưới — nó cho biết phần nào máy đã bắt được rồi.
 ```
 **Sau khi chạy**, đối chiếu kết quả với 3 LĂNG KÍNH bên dưới để bổ sung nhận xét phản biện chi tiết.
+
+> **Quan trọng — artifact A9 KHÔNG PHẢI nhận xét phản biện.** A9 là bản TỰ KIỂM do
+> chính `run_g8_auto.py` sinh từ checkpoint G0-G7 (kiểm toán pipeline + checklist +
+> gợi ý tạp chí) — nó không chứa một dòng phát hiện/khuyến nghị nào của bạn. Sau khi
+> hoàn tất TỔNG HỢP bên dưới, **PHẢI lưu phần đó thành file riêng**
+> `exports/<mã>/G8_PEER_REVIEW_REPORT_<mã>.md` — đây là bằng chứng NỘI DUNG mà
+> `g8_quality_gate.py` đòi hỏi (tiêu chí G8-HUMAN-01); thiếu file này, cổng dừng ở
+> `READY_FOR_INDEPENDENT_REVIEW`, không lên được `PASS_G8_REVIEW_RECORDED` dù đã ký.
 
 > **Chấm điểm ĐỊNH LƯỢNG (2026-07-04):** `run_g8_auto.py` chỉ đếm nhị phân — kết quả dạng "X/30 mục đạt" theo 4 nhóm gộp (Pipeline/Khoa học/Liêm chính/Trình bày), KHÔNG có thang điểm liên tục theo từng chiều học thuật. Khi cần chấm ĐỊNH LƯỢNG chi tiết hơn (0-5 theo problem formulation/lit review/methodology/data/analysis/results/writing/citations, có trọng số riêng từng chiều, ra 1 con số tổng hợp để SO SÁNH tiến bộ giữa các bản sửa) — dùng skill `scholar-evaluation` (`scripts/calculate_scores.py`) SONG SONG với 3 lăng kính định tính ở trên, KHÔNG thay thế.
 
@@ -86,7 +103,7 @@ Câu hỏi kiểm tra:
      [Chỉ báo p-value là LỖI — ICMJE + APA Style]
      Nhận xét: ___
 
-□ 3. Kết cục chính có bị đổi so với SAP/đăng ký không? (HARKing)
+□ 3. Kết cục chính có bị đổi so với SAP/đăng ký không? (đổi kết cục / outcome switching / selective outcome reporting — sửa 2026-07-26, vòng lặp vòng 28, phát hiện MEDIUM: bản cũ gán nhãn "HARKing" cho mục này là SAI thuật ngữ; HARKing — Hypothesizing After the Results are Known, Kerr 1998 — là hiện tượng trình bày một giả thuyết hình thành SAU khi biết kết quả như thể có TRƯỚC trong phần Đặt vấn đề, KHÁC với việc đổi kết cục chính đã đăng ký, vốn thuộc domain 5 Cochrane RoB "selective reporting")
      SAP đăng ký: ___ | Kết cục trong bài: ___ | Khớp không: ___
      Nhận xét: ___
 
@@ -119,7 +136,7 @@ Góp ý nhỏ: ___
 Câu hỏi kiểm tra:
 
 □ 1. Đối chiếu checklist chuẩn báo cáo:
-     Thiết kế: ___ → Checklist: ☐ CONSORT 2025 ☐ SPIRIT 2025 ☐ STROBE ☐ PRISMA 2020 ☐ STARD ☐ TRIPOD+AI ☐ COREQ
+     Thiết kế: ___ → Checklist: ☐ CONSORT 2025 ☐ SPIRIT 2025 ☐ STROBE ☐ PRISMA 2020 ☐ STARD ☐ TRIPOD+AI ☐ COREQ (phỏng vấn/nhóm tiêu điểm) ☐ SRQR (định tính nói chung — sửa 2026-07-26, vòng lặp vòng 28, phát hiện MEDIUM: bản cũ thiếu SRQR dù chính hệ thống này, vd `tools/run_g1_auto.py`, đã định nghĩa design_code="qualitative" dùng "COREQ (phỏng vấn/nhóm) / SRQR (định tính nói chung)")
      | Mục checklist | Ở đoạn/trang | Đầy đủ? | Thiếu gì? |
      |--------------|-------------|---------|---------|
      | [Mục 1: Title/Abstract] | | | |
@@ -199,9 +216,20 @@ Lăng kính 1 (Phương pháp): ☐ PASS ☐ Lỗi nhỏ ☐ Lỗi nghiêm trọ
 Lăng kính 2 (Thống kê): ☐ PASS ☐ Lỗi nhỏ ☐ Lỗi nghiêm trọng
 Lăng kính 3 (Liêm chính): ☐ PASS ☐ Lỗi nhỏ ☐ Lỗi nghiêm trọng
 
+════════ KHAI BÁO CỦA NGƯỜI PHẢN BIỆN (bắt buộc — ICMJE Mục V.B + §II.B.1.b) ════════
+[Người phản biện tự điền — KHÔNG phải agent điền hộ]
+Xung đột lợi ích với nhóm nghiên cứu: ☐ Không có ☐ Có (ghi rõ): ___
+Có phải đồng tác giả/cấp trên/cấp dưới trực tiếp của tác giả không: ☐ Không ☐ Có
+Có dùng AI khi phản biện không: ☐ Không ☐ Có (tên công cụ + mục đích): ___
+Cam kết KHÔNG tải bản thảo lên công cụ AI thiếu bảo đảm bảo mật khi chưa được
+tạp chí/chủ nhiệm cho phép: ☐ Xác nhận
+
 Kết luận tổng thể: sẵn sàng nộp / cần sửa thêm trước khi nộp
 ════════════════════════════════════════════════════════════════
 ```
+
+**Lưu file này** thành `exports/<mã>/G8_PEER_REVIEW_REPORT_<mã>.md` — đây là artifact
+`g8_quality_gate.py` đòi hỏi làm bằng chứng NỘI DUNG (khác A9 tự kiểm do máy sinh).
 
 ---
 
@@ -214,12 +242,51 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact review
 
 ## TIÊU CHÍ QUA CỔNG G8
 
-**Đạt G8 khi:** 3 lăng kính đã chạy đầy đủ · lỗi nghiêm trọng tách riêng, dẫn vị trí cụ thể · checklist chuẩn báo cáo đối chiếu · trích dẫn nghi vấn đã gắn cờ giao `kiem-chung-trich-dan` · câu hỏi cho tác giả · khuyến nghị rõ ràng (accept/revise/reject) · đã rà sạch vệt công cụ nội bộ (Lăng kính 3, mục 8).
+**Đạt G8 khi:** 3 lăng kính đã chạy đầy đủ · lỗi nghiêm trọng tách riêng, dẫn vị trí cụ thể · checklist chuẩn báo cáo đối chiếu · trích dẫn nghi vấn đã gắn cờ giao `kiem-chung-trich-dan` · câu hỏi cho tác giả · khuyến nghị rõ ràng (accept/revise/reject) · đã rà sạch vệt công cụ nội bộ (Lăng kính 3, mục 8) · đã lưu `G8_PEER_REVIEW_REPORT_<mã>.md` · đã khai COI/độc lập/AI của chính người phản biện.
 
 **Nguyên tắc mặc định nghi ngờ:** lỗi không loại trừ được → coi là CÒN TỒN TẠI cho tới khi tác giả phản bác có nguồn.
 
+**Kiểm lại bằng máy (tùy chọn, không thay 3 lăng kính):**
+```bash
+python medical-ebm-automation/tools/g8_quality_gate.py --study "MA-DE-TAI"
+```
+Chấm lại từ artifact đã có — hữu ích sau khi bổ sung `G8_PEER_REVIEW_REPORT` hoặc sau khi
+chủ nhiệm điền thêm `gate_params.G8` (primary_outcome, ai_use_declared, registration_id,
+data_sharing_statement...). Trạng thái đạt là `PASS_G8_REVIEW_RECORDED` — **CỐ Ý không
+mang chữ "ĐỘC LẬP"**, xem mục kế tiếp.
+
+## CƠ CHẾ MỞ KHÓA G8 (vá 2026-07-14 — nâng cấp kiểm soát PI/IRB/thống kê viên/phản biện)
+
+`run_g8_auto.py` (BƯỚC 0) chỉ SOẠN báo cáo TỰ KIỂM (A9/`G8_A9_PRESUBMISSION_<tên>.md`) từ
+checkpoint G0-G7 — đây KHÔNG phải nhận xét phản biện (xem `G8_PEER_REVIEW_REPORT` ở trên) và
+càng không phải phê duyệt thật. Trước 2026-07-14, G8 hoàn toàn KHÔNG có cổng cứng nào (không
+nằm trong `--gate` choices của `approve_gate.py`) — không gì chặn nếu bỏ qua bình duyệt mà
+march thẳng sang G9/nộp bài. Nay `tools/run_g10_assemble.py` (bước lắp ráp CUỐI trước "sẵn
+sàng nộp bài") xác minh THẬT qua `approval_ledger.json` (xem `tools/gate_contract.py::
+ledger_approved`), y hệt cơ chế G2/G4/G9.
+
+**Giới hạn PHẢI nói thẳng khi báo cáo cho bác sĩ (2026-07-28, xây `g8_quality_gate.py`):**
+chữ ký G8 dùng HMAC — mật mã ĐỐI XỨNG, nên máy xác minh buộc phải giữ đúng khóa đã ký. Trên
+một máy đơn, cấu hình khả thi nhất lại chính là cấu hình một người giữ đủ mọi khóa (IRB, thống
+kê viên, phản biện, PI). Vì vậy một chữ ký G8 hợp lệ CHỈ chứng minh "một người truy cập được
+khóa đã xác nhận artifact này", KHÔNG chứng minh người ký khác chủ nhiệm đề tài. Đừng nói
+"đã có bình duyệt độc lập" — nói "đã có phê duyệt ký hợp lệ, vai trò khai là phản biện độc
+lập; tính độc lập THẬT cần bằng chứng ngoài hệ (email mời phản biện, biên bản hội đồng)".
+
+**Mở khóa thật (human side):** một người phản biện ĐỘC LẬP (không phải PI/tác giả — code
+fail-closed từ chối role PI/STATISTICIAN/IRB cho cổng này) đọc báo cáo A9 + tự đọc bản thảo,
+rồi **tự tay** chạy trong terminal riêng:
+```
+python tools/approve_gate.py --study <tên> --gate G8 \
+    --artifact exports/<tên>/G8_A9_PRESUBMISSION_<tên>.md \
+    --reviewer-role "PHAN_BIEN_DOC_LAP" --reviewer-ref "<mã/tên viết tắt>"
+```
+KHÔNG nhờ agent chạy hộ (chữ ký vẫn tạo được nhưng mất ý nghĩa "một người ngoài agent đã
+xác nhận"). Cần khóa ký đã thiết lập một lần bằng `tools/setup_gate_approval_key.py`
+(bác sĩ tự chạy — xem `dao-duc-dang-ky.md` mục tương tự cho G2).
+
 ## Ranh giới
-KHÔNG tự sửa bản thảo (→ `viet-ban-thao` sửa) · KHÔNG chạy cổng cứng trích dẫn (→ `kiem-chung-trich-dan`) · giữ vai phản biện độc lập — không "tự khen bài mình".
+KHÔNG tự sửa bản thảo (→ `viet-ban-thao` sửa) · KHÔNG chạy cổng cứng trích dẫn (→ `kiem-chung-trich-dan`) · giữ vai phản biện độc lập — không "tự khen bài mình" · KHÔNG tự chạy `tools/approve_gate.py` thay người phản biện thật.
 
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
@@ -249,8 +316,11 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."

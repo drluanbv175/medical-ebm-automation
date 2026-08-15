@@ -1,0 +1,26 @@
+red_flags:
+  - red_flag_id: htn_rf_chest_pain
+    label: "Đau ngực hoặc nghi hội chứng vành cấp"
+    gate: STOP_OUTPATIENT_PATHWAY
+    referral_level: emergency_referral
+  - red_flag_id: htn_rf_neuro_deficit
+    label: "Triệu chứng thần kinh khu trú hoặc nghi đột quỵ/TIA"
+    gate: STOP_OUTPATIENT_PATHWAY
+    referral_level: emergency_referral
+  - red_flag_id: htn_rf_altered_consciousness
+    label: "Giảm tri giác, lú lẫn cấp, co giật"
+    gate: STOP_OUTPATIENT_PATHWAY
+    referral_level: emergency_referral
+  - red_flag_id: htn_rf_acute_dyspnea
+    label: "Khó thở cấp hoặc phù phổi nghi ngờ"
+    gate: STOP_OUTPATIENT_PATHWAY
+    referral_level: emergency_referral
+  - red_flag_id: htn_rf_pregnancy
+    label: "Thai kỳ/nghi thai kỳ với tăng huyết áp, chưa có pathway chuyên biệt"
+    gate: STOP_OUTPATIENT_PATHWAY
+    referral_level: urgent_referral
+  - red_flag_id: htn_rf_acute_target_organ_damage
+    label: "Nghi tổn thương cơ quan đích cấp"
+    gate: STOP_OUTPATIENT_PATHWAY
+    referral_level: emergency_referral
+note: "Danh sách red flag dùng để chặn outpatient pathway; không thay thế đánh giá cấp cứu của bác sĩ."

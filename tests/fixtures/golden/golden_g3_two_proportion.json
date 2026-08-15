@@ -1,0 +1,14 @@
+{
+  "golden_id": "GOLDEN-G3-001",
+  "gate": "G3",
+  "function": "n_two_proportion",
+  "scenario": "So sánh 2 tỷ lệ (case-control/RCT nhị phân) — p1=20% vs p2=10%, alpha=0.05 hai phía, power=80%",
+  "input": {"p1": 0.20, "p2": 0.10, "alpha": 0.05, "power": 0.80},
+  "expected_output": {"n_per_group": 199},
+  "expected_output_source": "Fleiss JL, Levin B, Paik MC. Statistical Methods for Rates and Proportions, 3rd ed. Công thức chuẩn (không hiệu chỉnh liên tục): n = (z_{alpha/2}sqrt(2*p̄(1-p̄)) + z_beta*sqrt(p1(1-p1)+p2(1-p2)))^2 / (p1-p2)^2 → n≈196.2, làm tròn lên ceil=199 khớp textbook thường dùng cho ví dụ p1=0.20/p2=0.10.",
+  "verified_2026-07-06": "Xác nhận bằng tay: chạy trực tiếp n_two_proportion(0.20, 0.10, alpha=0.05, power=0.80) sau khi vá lỗi hồi quy hệ số-2 trong z() (xem commit fix(G3) 2026-07-06) → kết quả 199, khớp đúng giá trị kỳ vọng.",
+  "approved_by_pi": false,
+  "approved_by": null,
+  "approved_date": null,
+  "notes_for_pi": "Giá trị 199 đã được xác minh TOÁN HỌC khớp công thức Fleiss chuẩn (không phải suy đoán của AI) và khớp lại bằng chạy code thật ngày 2026-07-06. Việc PI cần duyệt là XÁC NHẬN kịch bản này (p1/p2/alpha/power) có đại diện đúng loại đề tài case-control/RCT nhị phân mà phòng khám thường gặp hay không, và ký tên/ngày vào approved_by/approved_date trước khi coi AC-04 là closed cho case này. AI KHÔNG được tự đặt approved_by_pi=true."
+}

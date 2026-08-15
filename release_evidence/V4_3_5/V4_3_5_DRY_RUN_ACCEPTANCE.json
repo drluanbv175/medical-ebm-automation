@@ -1,0 +1,81 @@
+{
+  "acceptance_id": "V4.3.5-DRA-20260628",
+  "version": "4.3.5",
+  "date": "2026-06-28",
+  "status": "DRAFT — REQUIRE HUMAN REVIEW",
+  "qualification": "NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE",
+
+  "dry_run_scenario": {
+    "project_id": "SYNTH-DRY-RUN-V435",
+    "sources": 3,
+    "source_breakdown": {
+      "HUMAN_VERIFIED": 1,
+      "UNVERIFIED": 1,
+      "RETRACTED": 1
+    },
+    "claims": 3,
+    "claim_breakdown": {
+      "SUPPORTED_BY_HUMAN_VERIFIED_EVIDENCE": 1,
+      "BLOCKED_UNVERIFIED_EVIDENCE": 1,
+      "BLOCKED_RETRACTED_EVIDENCE": 1
+    }
+  },
+
+  "invariant_checks": {
+    "human_provided_only_enforced": true,
+    "auto_verification_forbidden": true,
+    "retracted_blocks_d_r8": true,
+    "d_r8_status_on_retracted": "FAIL",
+    "d_r8_gate_state_on_retracted": "BLOCK",
+    "unverified_blocks_claim": true,
+    "retracted_blocks_claim": true,
+    "verified_supports_claim": true,
+    "review_queue_routes_to_evidence_citation_reviewer": true,
+    "ledger_append_only_verified": true,
+    "no_pii_in_outputs": true,
+    "no_api_calls": true,
+    "no_network_calls": true,
+    "disclaimer_in_audit_output": true
+  },
+
+  "test_results": {
+    "v4_3_5_suite_passed": 20,
+    "v4_3_5_suite_failed": 0,
+    "full_suite_passed": 794,
+    "full_suite_skipped": 7,
+    "full_suite_failed": 0,
+    "regression_failures": 0
+  },
+
+  "modules_added": [
+    "research_project/project_claim_traceability.py"
+  ],
+  "modules_extended": [
+    "research_project/project_evidence_intake.py",
+    "research_project/project_qa_runner.py",
+    "research_project/project_cli.py",
+    "research_project/__init__.py"
+  ],
+  "cli_commands_added": [
+    "project-evidence-import",
+    "project-evidence-list",
+    "project-claim-register",
+    "project-claim-audit"
+  ],
+  "backward_compat": {
+    "d_r8_legacy_csv_preserved": true,
+    "existing_tests_unaffected": true,
+    "mraq_score_unchanged": true
+  },
+
+  "mandatory_assertions": {
+    "no_real_research_execution": true,
+    "no_external_release_submission": true,
+    "no_api_connectivity": true,
+    "no_independent_review_established": true,
+    "reviewer_identity_not_authenticated": true,
+    "all_outputs_draft_require_human_review": true
+  },
+
+  "final_verdict": "PASS"
+}

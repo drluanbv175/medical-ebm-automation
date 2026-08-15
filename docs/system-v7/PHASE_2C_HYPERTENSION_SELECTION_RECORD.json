@@ -1,0 +1,14 @@
+{
+  "record_type": "phase_2c_pack_selection",
+  "selected_pack": "hypertension_adult_outpatient",
+  "topic_label_vi": "Tăng huyết áp người lớn ngoại trú ổn định",
+  "environment": "review",
+  "status": "pending",
+  "clinical_release_allowed": false,
+  "patient_facing_allowed": false,
+  "emr_write_allowed": false,
+  "raw_dataset_export_allowed": false,
+  "approval_scope": "Cho phép chuẩn bị hạ tầng review-only cho pack tăng huyết áp; chưa cho phép build/finalize guideline lâm sàng thật.",
+  "pii_present": false,
+  "notes": "Cần bác sĩ/system owner phê duyệt rõ ràng trước khi tạo real Clinical Knowledge Pack 2026.1."
+}

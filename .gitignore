@@ -1,45 +1,138 @@
-# Repo này CHỈ theo dõi hệ agent+skill EBM (không phải toàn bộ thư mục "Claude AI"):
-#   .claude/agents/  sync/skills/  tools/  CLAUDE.md
-# Mọi thứ khác ở gốc (medical-ebm-automation/ đã có git riêng — 2.3GB, dashboard,
-# video TikTok, evidence pack .zip, sổ cái EBM_MASTER...) CỐ Ý bị loại trừ.
-#
-# KHÔNG track .Codex/ (và .codex/ — Windows git core.ignorecase=true nên 2 thư mục
-# này bị coi là cùng 1 pattern, không thể phân biệt qua .gitignore): .Codex/agents/*.toml
-# chỉ là bản mirror TỰ SINH từ .claude/agents/*.md qua tools/sync_agents_to_codex.py —
-# tái tạo lại bất cứ lúc nào bằng lệnh đó, không cần version-control bản sinh ra.
-
-# 1) Ignore tất cả ở gốc trước
-/*
-
-# 2) Chỉ un-ignore đúng phạm vi hệ agent+skill
-!/.claude/
-!/sync/
-!/tools/
-!/CLAUDE.md
-!/VERSION
-!/CHANGELOG.md
-!/.gitignore
-!/.gitattributes
-
-# 3) Bên trong .claude/: CHỈ track agents/ (bỏ session/state/settings.local/launch — runtime cục bộ)
-/.claude/*
-!/.claude/agents/
-# 3b) .claude/agents/.claude/ là thư mục rác thừa kế (sessions/state cũ), không phải nội dung agent
-/.claude/agents/.claude/
-
-# 4) Bên trong sync/: CHỈ track skills/ (bỏ memory/ — bộ nhớ cá nhân, khác phạm vi)
-/sync/*
-!/sync/skills/
-
-# 5) Rác chung mọi nơi
-**/__pycache__/
-**/*.pyc
-**/.DS_Store
-**/Thumbs.db
-**/*.bak-*
 .env
-.env.*
-!.env.example
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.pytest-tmp/
+.venv/
+venv/
+**/node_modules/
+**/.next/
+**/.pnpm-store/
+**/coverage/
+**/dist/
+**/*.tsbuildinfo
+*.db
+data/raw/*
+data/processed/*
+data/reports/*
+data/exports/*
+data/archive/*
+data/tiktok/20*
+# Bản chụp Retraction Watch (Crossref, CC0) — ~50 MB, SINH LẠI ĐƯỢC bằng
+# `python tools/tai_retraction_watch.py`. Là cache dữ liệu, không phải mã nguồn:
+# commit vào git sẽ phình repo vĩnh viễn mỗi lần làm mới 30 ngày/lần.
+data/retraction_watch/
+!data/tiktok/queue.txt
+!data/**/.gitkeep
+.DS_Store
+._*
+.streamlit/
+.env.bak.*
 
-# Bộ nhớ Claude mirror — đồng bộ qua OneDrive (Mac↔Windows), KHÔNG commit lên GitHub
-memory-sync/
+# V4.3.3.2 additions — cache and runtime output
+.mypy_cache/
+.ruff_cache/
+projects/
+
+# Kho làm việc tạm của skill understand-anything (2026-08-02): thư mục .ua/ chứa
+# cache phân tích (intermediate/, tmp/, log stderr) — ~5 MB rác sinh lại được từ
+# mã nguồn, không phải nội dung dự án. Chưa từng được .gitignore bắt nên một lần
+# "git add -A" là đưa cả đống vào lịch sử; thêm rule tường minh thay vì trông chờ
+# người gõ lệnh nhớ loại trừ tay.
+.ua/
+
+# Harness runtime artifacts
+.claude/state/
+.claude/logs/
+.claude/sessions/
+.claude/worktrees/
+.claude/settings.local.json
+.claude/agent-memory/
+.claude/launch.json
+**/.claude/state/
+**/.claude/sessions/
+**/.claude/logs/
+state.db
+out/
+
+# Export tái sinh từ scripts/gen_evidence_brief.py
+evidence/reviews/*.docx
+evidence/reviews/*.pdf
+
+# Chỉ mục dashboard sinh tự động; bản dùng chung nằm trong ../EBM-Dashboards/.
+/evidence-library.html
+/library.json
+
+# Danh mục thư viện thật — JSON lớn (~2MB), tái sinh bằng scripts/build_library_catalog.py.
+# Giữ CATALOG.md (duyệt được) trong git; bỏ JSON máy-đọc.
+evidence/external-library/catalog.json
+
+# Codex agent sync — sinh tự động từ .claude/agents/*.md; không edit tay.
+.codex/
+
+# Kết quả CI tự động sinh (daily/weekly scripts) — không commit vào git.
+# Frozen evidence (v4_3_3_*) vẫn được tracked; chỉ bỏ output chạy hàng ngày.
+results/daily_*.txt
+results/daily_*.json
+results/weekly_*.txt
+results/weekly_*.xml
+results/weekly_*.json
+results/research_studio_dashboard.html
+
+# Báo cáo hardening cá nhân sinh lại mỗi lần chạy verifier; không commit timestamp động.
+reports/PERSONAL_PRODUCTION_HARDENING_REPORT.*
+
+# === CLINICAL SAFETY HARDENING 2026-06-28 ===
+# .env variants (bare '.env' already covered above)
+.env.*
+.env.local
+.env.production
+.env.development
+.env.staging
+*.secret
+
+# Secrets & credential directories
+secrets/
+
+# Patient & identifiable data — NEVER commit (privacy/HIPAA compliance)
+patient_data/
+patient-data/
+identifiable_data/
+clinical_exports/
+research_exports/
+
+# Logs — general (harness-specific .claude/logs/ already covered above)
+logs/
+*.log
+
+# Cache and temp — general (.mypy_cache/.ruff_cache already covered above)
+cache/
+tmp/
+.tmp/
+*.tmp
+
+# Windows OS artifacts
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === 2026-07-04: khớp lại pattern export nghiên cứu ===
+# Thư mục "exports/" (không phải "data/exports/" hay "research_exports/" cũ) là nơi
+# pipeline G0-G10 hiện ghi de cương/SAP/manuscript nháp theo đề tài — cùng loại nội
+# dung mà "research_exports/"/"clinical_exports/" ở trên vốn định loại trừ, nhưng lệch
+# tên nên chưa từng được .gitignore bắt. Giữ file trên đĩa (OneDrive vẫn đồng bộ được),
+# chỉ không đưa vào lịch sử git/remote — nhất quán với chủ đích "NEVER commit" đã có.
+/exports/
+
+# Thư mục rác: bản sao cây thư mục tuyệt đối kiểu Mac (Library/, Users/nguyenluan/...)
+# bị tạo nhầm bên trong runtime/pycache/ (không phải bytecode cache thật — không có
+# file .pyc nào bên trong, chỉ có cây thư mục rỗng do lỗi path tuyệt đối).
+runtime/pycache/
+
+# LESSONS ledger (2026-07-08, BL taxonomy) — sổ append-only sống ở OneDrive, không
+# cần lịch sử git riêng (giống quy ước LEDGER_HOI_TU.md ở repo gốc "Claude AI").
+# .claude/agents/_LESSONS-LEDGER-TAXONOMY.md §3 nói rõ file này KHÔNG git-track —
+# thêm rule tường minh ở đây thay vì chỉ ghi trong comment (2026-07-09).
+/LEDGER_LESSONS.jsonl
+/LEDGER_HOI_TU.md

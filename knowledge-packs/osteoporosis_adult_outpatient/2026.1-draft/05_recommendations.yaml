@@ -1,0 +1,67 @@
+recommendations:
+  - claim_id: osteo_diagnosis_dxa
+    guideline: "IOF/NOF/ISCD Guidelines 2023; WHO criteria"
+    recommendation_text_draft: |
+      Chẩn đoán loãng xương qua đo mật độ xương (DXA):
+      - T-score ≤ -2.5: Loãng xương; -2.5 đến -1.0: Thiếu xương; > -1.0: Bình thường
+      - Vị trí đo: cột sống thắt lưng L1-L4 và cổ xương đùi
+      - FRAX: công cụ đánh giá nguy cơ gãy xương 10 năm (nhập T-score cổ xương đùi)
+      Chỉ định DXA: phụ nữ ≥ 65 tuổi; nam ≥ 70; phụ nữ 50-64 có yếu tố nguy cơ; bất kỳ ai sau gãy xương mềm.
+    evidence_grade: "Grade A"
+    approval_status: pending
+
+  - claim_id: osteo_frax_treatment_threshold
+    guideline: "IOF 2023; NOF guidelines; NOGG UK"
+    recommendation_text_draft: |
+      Ngưỡng điều trị theo FRAX (áp dụng khi không có DXA):
+      - Điều trị khi: T-score ≤ -2.5, HOẶC tiền sử gãy xương mềm (hip/vertebra), HOẶC FRAX nguy cơ gãy xương lớn ≥ 20%
+      - Thiếu xương (T-score -1 đến -2.5): điều trị nếu FRAX nguy cơ gãy háng ≥ 3%
+      Lưu ý: FRAX chưa được validate đầy đủ cho quần thể Việt Nam — dùng thận trọng.
+    evidence_grade: "Grade B"
+    approval_status: pending
+
+  - claim_id: osteo_bisphosphonate_first_line
+    guideline: "IOF 2023; ASBMR; ENDOCRINE SOCIETY"
+    recommendation_text_draft: |
+      Bisphosphonate — lựa chọn đầu tay ở hầu hết bệnh nhân:
+      - Alendronate: 70 mg/tuần uống (phổ biến, chi phí thấp)
+      - Risedronate: 35 mg/tuần hoặc 150 mg/tháng
+      - Zoledronic acid: 5 mg IV mỗi năm (khi không uống được)
+      - Giảm gãy cột sống 40-70%, gãy háng 30-40% (RR) — NNT ~60-90/3 năm cho gãy cột sống
+      Drug holiday: sau 3-5 năm alendronate/risedronate hoặc 3 năm zoledronate — xem xét nghỉ thuốc ở nguy cơ thấp.
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: osteo_denosumab
+    guideline: "IOF 2023; FREEDOM trial"
+    recommendation_text_draft: |
+      Denosumab (Prolia) 60 mg SC mỗi 6 tháng:
+      - Ưu tiên khi: không dung nạp bisphosphonate, CKD G3b-G4, hoặc cần tăng mật độ xương nhanh
+      - KHÔNG ngưng đột ngột — nguy cơ rebound fracture nghiêm trọng sau ngưng nếu không có bisphosphonate thay thế
+      - Sau ngưng denosumab → PHẢI bắt đầu bisphosphonate (6-12 tháng sau liều cuối)
+      - Hạ canxi máu: theo dõi canxi huyết thanh; đảm bảo đủ vitamin D trước khi dùng
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: osteo_calcium_vitd
+    guideline: "IOF 2023; Endocrine Society"
+    recommendation_text_draft: |
+      Calcium và Vitamin D — nền tảng hỗ trợ, không thay thế điều trị đặc hiệu:
+      - Calcium: 1000-1200 mg/ngày (ưu tiên từ thực phẩm; bổ sung nếu chế độ ăn thiếu)
+      - Vitamin D: 800-1000 IU/ngày; mục tiêu 25-OH-vitD huyết thanh > 30 ng/mL (75 nmol/L)
+      Calcium uống > 1500 mg/ngày: không khuyến cáo (nguy cơ sỏi thận và có thể tăng nguy cơ tim mạch không rõ ràng).
+    evidence_grade: "I A"
+    approval_status: pending
+
+  - claim_id: osteo_fall_prevention
+    guideline: "IOF 2023"
+    recommendation_text_draft: |
+      Phòng ngã — quan trọng ngang điều trị dược lý:
+      - Bài tập tăng sức cơ + thăng bằng (Tai Chi, yoga, đề kháng)
+      - Kiểm tra và sửa môi trường sống (thảm trơn, ánh sáng, tay vịn)
+      - Đánh giá thuốc gây hạ HA tư thế, an thần, mất ngủ — giảm/ngưng nếu an toàn
+      - Vitamin D đủ liều (phòng yếu cơ)
+    evidence_grade: "I B"
+    approval_status: pending
+
+disclaimer: "DRAFT REVIEW-ONLY. Test HLA-B*5801 trước bisphosphonate IV không cần thiết; trước denosumab cần kiểm tra canxi."

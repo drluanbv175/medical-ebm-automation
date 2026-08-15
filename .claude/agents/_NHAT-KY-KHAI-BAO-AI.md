@@ -22,9 +22,11 @@
 
 | # | Ngày | Công cụ + model/phiên bản | Agent/skill | Việc cụ thể | Đầu vào (đã khử PII?) | Đầu ra | Người kiểm chứng | Cổng/Artifact |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 2026-__-__ | Claude (Opus 4.x) | `thu-thu-tai-lieu` | dựng chiến lược tìm + danh mục TLTK | từ khóa/PICO (không PII) ✅ | danh mục 20 bài | BS Luân | A1/G0 |
+| 1 | 2026-__-__ | Claude (Opus 4.x) | `cau-hoi-nghien-cuu` | dựng câu hỏi PICO/PECO + FINER | vấn đề lâm sàng thô (không PII) ✅ | câu hỏi PICO đã chuẩn hoá | BS Luân | A1/G0 |
 | 2 | | | | | | | | |
 | 3 | | | | | | | | |
+
+> **2026-07-11: sửa dòng ví dụ #1** — bản cũ gán mã "A1/G0" cho `thu-thu-tai-lieu`/việc "dựng chiến lược tìm + danh mục TLTK", nhưng theo bản đồ A1–A18 canonical (`dieu-phoi-nghien-cuu.md`), A1 = PICO/FINER do `cau-hoi-nghien-cuu` phụ trách; `thu-thu-tai-lieu` không sở hữu mã A-code nào trong bảng canonical (việc tìm TLTK gần artifact A2b "Evidence Ledger", do `tong-quan-y-van`+`trich-xuat-y-van` phụ trách). Ví dụ sai có thể khiến người dùng khác sao chép cách gắn mã sai vào nhật ký thật.
 
 **Quy ước cột:**
 - **Đầu vào (đã khử PII?):** xác nhận dữ liệu đưa vào KHÔNG chứa PII (theo `_QUAN-TRI-DU-LIEU-PII.md`); nếu là dữ liệu nghiên cứu thật → ghi rõ đã qua G2 + khử định danh.

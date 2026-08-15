@@ -1,0 +1,38 @@
+# Ruff lint config (task 0.2 + 3.1).
+# Lỗi thực (import thừa, biến thừa, semicolon, tên mơ hồ) đã sửa thật.
+# line-length=120: chuẩn hợp lý cho codebase nhiều chuỗi tiếng Việt.
+target-version = "py39"
+line-length = 120
+extend-exclude = ["data", ".venv", "venv", "out", ".claude", "templates"]
+
+[lint]
+# Bộ rule an toàn: lỗi cú pháp/logic (F), pycodestyle (E,W), sắp xếp import (I).
+# FA102 (KHÔNG phải FA100 — đó chỉ là gợi ý style "Optional[X] có thể viết gọn
+# X | None", không phải bug): FA102 bắt ĐÚNG lớp lỗi cú pháp PEP604 "X | None"
+# dùng TRỰC TIẾP mà thiếu "from __future__ import annotations" — với
+# target-version=py39 ở trên, rule này bắt đúng lỗi làm crash thật "TypeError:
+# unsupported operand type(s) for |" trên máy còn chạy Python 3.9 (phát hiện
+# 2026-07-15 khi 1 phiên khác viết code giả định Python 3.10+ mà không kiểm tra
+# máy Mac vẫn 3.9.6 — 2 file, đã vá, giờ rule này chặn tái diễn).
+select = ["E", "F", "W", "I", "FA102"]
+
+[lint.per-file-ignores]
+# File DỮ LIỆU/NỘI DUNG: chuỗi lâm sàng (mô tả, nguồn trích dẫn) & fixture dài là
+# hợp lệ; KHÔNG bẻ dòng để tránh làm sai nội dung y khoa.
+"app/clinical_scores/verified.py" = ["E501"]
+"app/sources/_fixtures.py" = ["E501"]
+# Chronic Care synthetic shadow module có nhiều chuỗi lâm sàng/narrative dài đang ở nhánh khác;
+# giữ nguyên nội dung để không làm sai fixture khi chạy kiểm định Phase 2D.
+"app/chronic_care/*.py" = ["E501", "I001"]
+"tests/test_phase_3a_chronic_care_*.py" = ["E501", "I001"]
+# Sinh HTML/CSS template: chuỗi style/markup dài, bẻ dòng gây rối & rủi ro.
+"app/social/package.py" = ["E501"]
+# Research automation generators contain long Vietnamese clinical/research templates.
+# Keep templates intact; enforce syntax/import/unused-variable rules separately.
+"research_project/project_crf_builder.py" = ["E501"]
+"research_project/project_reporting_planner.py" = ["E501"]
+"tools/app_data_analysis.py" = ["E501"]
+"tools/run_g*_auto.py" = ["E501"]
+"tools/run_pipeline_integrated.py" = ["E501"]
+"tools/scaffold_research_project.py" = ["E501"]
+"tests/test_r1_1_offline_rbac_synthetic_identity.py" = ["E501"]

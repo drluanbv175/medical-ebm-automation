@@ -1,0 +1,24 @@
+red_flags:
+  - id: rf_hemodynamic_instability
+    name: "Rung nhĩ gây mất ổn định huyết động"
+    triggers: ["HA tâm thu < 90 mmHg + rung nhĩ nhanh", "mất ý thức/tiền ngất", "đau ngực kiểu thiếu máu cơ tim", "phù phổi cấp"]
+    action: "CHUYỂN CẤP CỨU NGAY — cần sốc điện đồng bộ khẩn cấp"
+    priority: CRITICAL
+
+  - id: rf_stroke_tia
+    name: "Đột quỵ/TIA trên nền rung nhĩ"
+    triggers: ["yếu liệt chi đột ngột", "nói khó/không nói được", "méo miệng mới", "mù một mắt thoáng qua"]
+    action: "CHUYỂN CẤP CỨU NGAY — đột quỵ cấp, kích hoạt protocol stroke"
+    priority: CRITICAL
+
+  - id: rf_wpw_preexcitation
+    name: "Tiền kích thích (WPW) + rung nhĩ"
+    triggers: ["QRS giãn rộng + không đều + nhịp nhanh", "đặc biệt ở bệnh nhân trẻ không có bệnh tim rõ"]
+    action: "CHUYỂN CẤP CỨU — không dùng digitalis/verapamil/diltiazem (gây rung thất)"
+    priority: CRITICAL
+
+  - id: rf_bleeding_on_anticoagulation
+    name: "Chảy máu nặng khi đang dùng kháng đông"
+    triggers: ["tiêu máu hoặc nôn máu", "tiểu máu đại thể", "đột ngột đau đầu dữ dội", "bầm máu lan rộng"]
+    action: "NGƯNG KHÁNG ĐÔNG, CHUYỂN CẤP CỨU — xét dùng thuốc giải độc (idarucizumab, andexanet alfa)"
+    priority: CRITICAL

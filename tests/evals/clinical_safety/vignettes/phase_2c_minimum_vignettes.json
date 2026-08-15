@@ -1,0 +1,7 @@
+[
+  {"topic": "hypertension_adult_outpatient", "group": "routine", "count": 10, "synthetic": true},
+  {"topic": "hypertension_adult_outpatient", "group": "missing_data", "count": 8, "synthetic": true},
+  {"topic": "hypertension_adult_outpatient", "group": "red_flag_referral", "count": 5, "synthetic": true},
+  {"topic": "hypertension_adult_outpatient", "group": "medication_risk", "count": 4, "synthetic": true},
+  {"topic": "hypertension_adult_outpatient", "group": "evidence_conflict_or_source_unavailable", "count": 3, "synthetic": true}
+]
