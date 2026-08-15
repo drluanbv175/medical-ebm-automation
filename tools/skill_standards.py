@@ -28,11 +28,12 @@ chính thức; nếu chưa kiểm được thì giữ nguyên cờ [CẦN KIỂM
 from __future__ import annotations
 
 import re
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
         _s_r4.reconfigure(encoding="utf-8")

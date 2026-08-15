@@ -62,29 +62,31 @@ import hashlib
 import json
 import re
 import sys
-from datetime import datetime, timezone
-from pathlib import Path
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+from datetime import datetime, timezone
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import g2_quality_gate as G2Q  # noqa: E402 — cần sys.path.insert trước
+import g4_quality_gate as G4Q  # noqa: E402 — cần sys.path.insert trước
+import g5_quality_gate as G5Q  # noqa: E402 — cần sys.path.insert trước
+import g9_quality_gate as G9Q  # noqa: E402 — cần sys.path.insert trước
+import g10_quality_gate as G10Q  # noqa: E402 — cần sys.path.insert trước
+import gate_contract as GC  # noqa: E402 — cần sys.path.insert trước
+
+from app.utils.console import configure_unicode_console  # noqa: E402 — cần sys.path.insert trước
+from runtime.approval_ledger import ApprovalLedger, LedgerLockInvalidated  # noqa: E402 — cần sys.path.insert trước
+from runtime.schemas import ApprovalDecisionEnum  # noqa: E402 — cần sys.path.insert trước
+
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
         _s_r4.reconfigure(encoding="utf-8")
     except (AttributeError, ValueError):
         pass
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import g2_quality_gate as G2Q
-import g4_quality_gate as G4Q
-import g5_quality_gate as G5Q
-import g9_quality_gate as G9Q
-import g10_quality_gate as G10Q
-import gate_contract as GC
-
-from app.utils.console import configure_unicode_console
-from runtime.approval_ledger import ApprovalLedger, LedgerLockInvalidated
-from runtime.schemas import ApprovalDecisionEnum
 
 # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện HIGH): trước
 # đây KHÔNG có chỗ nào trong chuỗi khóa G4 thật (approve_gate.py →

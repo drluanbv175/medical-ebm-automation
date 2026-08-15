@@ -29,12 +29,13 @@ import re
 import shutil
 import stat
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
-import sys as _sys_r4
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
         _s_r4.reconfigure(encoding="utf-8")

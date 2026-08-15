@@ -47,6 +47,9 @@ cho thiết kế sống còn, matplotlib (tuỳ chọn) để vẽ đường con
 import argparse
 import json
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 import warnings
 from datetime import datetime
 from pathlib import Path
@@ -54,8 +57,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
-import sys as _sys_r4
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
         _s_r4.reconfigure(encoding="utf-8")

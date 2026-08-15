@@ -51,10 +51,11 @@ import json
 import os
 import re
 import sys
-from collections import OrderedDict
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+from collections import OrderedDict
+
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
         _s_r4.reconfigure(encoding="utf-8")
