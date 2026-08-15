@@ -936,6 +936,41 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
     else:
         warnings.append(f"R1 ✅ {n_pmid} PMIDs thật từ PubMed")
 
+    # R1C — RÚT BÀI ngay tại cửa nhận G0 (PHA R4, 15/08/2026). Trước đây G0 tin
+    # PMID còn hiệu lực: đề tài demo đầu tiên đi qua với một Expression-of-Concern
+    # trong nền y văn mà không dòng nào nói ra (chỉ lộ khi kiểm tay). Cùng triết lý
+    # BH37 bên lâm sàng: độ tin cậy gắn NGAY lúc nhận. Luật gộp bất đối xứng giữ
+    # nguyên: retracted ⇒ FAIL (không dựng đề tài trên bài đã rút); EoC ⇒ cảnh báo
+    # đỏ; không tra được ⇒ «chưa kiểm», TUYỆT ĐỐI không mặc định ok (BH08/27).
+    if n_pmid:
+        try:
+            import sys as _sys
+            _sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+            from app.sources.retraction_chain import RetractionChain  # noqa: PLC0415
+            _kq = RetractionChain().check([str(p) for p in results.get("all_pmids", [])])
+            _rut = {p: v for p, v in _kq.items() if v.get("status") == "retracted"}
+            _eoc = {p: v for p, v in _kq.items()
+                    if v.get("status") == "expression_of_concern"}
+            _chua = sum(1 for v in _kq.values()
+                        if "unknown" in str(v.get("status")) or v.get("status") == "unresolved")
+            if _rut:
+                errors.append(
+                    "R1C 🔴 NỀN Y VĂN CÓ BÀI ĐÃ RÚT: "
+                    + ", ".join(f"PMID {p}" for p in sorted(_rut))
+                    + " — không dựng câu hỏi nghiên cứu trên bài đã rút; thay nguồn rồi chạy lại G0.")
+            if _eoc:
+                warnings.append(
+                    "R1C ⚠️🔴 Expression of Concern trong nền y văn: "
+                    + ", ".join(f"PMID {p}" for p in sorted(_eoc))
+                    + " — đọc lại thông báo trước khi dựa vào các bài này.")
+            warnings.append(
+                f"R1C ✅ kiểm rút bài {len(_kq)} PMID nền: "
+                f"{len(_kq) - len(_rut) - len(_eoc) - _chua} ok · {len(_rut)} rút · "
+                f"{len(_eoc)} EoC · {_chua} chưa kiểm được (không mặc định ok)")
+        except Exception as _exc:  # noqa: BLE001 — lỗi hạ tầng không giết G0, nhưng PHẢI LỘ RA
+            warnings.append(f"R1C ⚠️ CHƯA KIỂM ĐƯỢC rút bài ({type(_exc).__name__}) — "
+                            "«chưa kiểm» ≠ «không có»; chạy lại khi mạng ổn.")
+
     # R1B — SỬA: một số truy vấn con (sr_ma/rct/guideline/recent_5yr) có thể
     # lỗi mạng/timeout/rate-limit riêng lẻ mà tổng PMID vẫn >0 (từ các query
     # còn lại) — trước đây lỗi này chỉ in console rồi mất, khiến n_sr/n_rct
