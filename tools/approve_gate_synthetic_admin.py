@@ -23,12 +23,15 @@ An toàn — 3 lớp kiểm tra, TẤT CẢ phải qua (không lớp nào một 
     kỹ thuật thêm — mục đích là buộc người/agent gọi phải ĐỌC docstring này
     trước khi tự động hóa lệnh, giống quy ước --i-confirm-* đã có trong dự án).
 
-Mỗi bản ghi ghi vào approval_ledger.json mang is_synthetic=False (để
-gate_contract.ledger_approved() coi là ĐÃ DUYỆT — pipeline thực sự đi tiếp,
-khác hẳn ledger.make_synthetic_approval() dùng cho mô phỏng RBAC, thứ CỐ TÌNH
-is_synthetic=True để KHÔNG BAO GIỜ mở được cổng thật) nhưng field `scope` LUÔN
-mang tiền tố [ADMIN-SYNTHETIC-BYPASS] để không thể nhầm là phê duyệt người
-thật khi đọc lại ledger sau này.
+Mỗi bản ghi ghi vào approval_ledger.json mang is_synthetic=True — ĐÚNG SỰ THẬT
+(VÁ #10, bác sĩ duyệt tường minh 15/08/2026 qua AskUserQuestion «4. Vá #10»).
+Trước đó ghi False để ledger_approved() coi là đã duyệt; từ bản vá #8 (15/08/2026)
+ledger_approved() CÔNG NHẬN entry is_synthetic=True khi và chỉ khi đề tài đã được
+mark_study_synthetic đánh dấu — tức pipeline demo vẫn đi tiếp, còn một entry bị
+sao chép/giả mạo vào ledger của ĐỀ TÀI THẬT (không mang marker) sẽ bị TỪ CHỐI.
+Ghi False như cũ là nói dối trong sổ cái và làm nhánh bảo vệ #8 nằm im.
+Field `scope` vẫn LUÔN mang tiền tố [ADMIN-SYNTHETIC-BYPASS] để không thể nhầm
+là phê duyệt người thật khi đọc lại ledger sau này.
 
 Dùng:
     python3 tools/approve_gate_synthetic_admin.py --study TEST-ADMIN-BYPASS-DEMO \\
@@ -216,7 +219,7 @@ def _approve_all_gates(ledger, gates, artifact_map, study_dir, study_name) -> in
         role = _ROLE_FOR_GATE[gate_id]
         signature = GC.sign_approval(gate_id, study_name, evidence_hash, timestamp_utc,
                                      reviewer_role=role, reviewer_ref=_REVIEWER_REF,
-                                     decision="APPROVED", is_synthetic=False)
+                                     decision="APPROVED", is_synthetic=True)
         scope = (
             f"[ADMIN-SYNTHETIC-BYPASS] Tự động duyệt {gate_id} qua "
             "tools/approve_gate_synthetic_admin.py — CHỈ hợp lệ vì đề tài "
@@ -234,6 +237,11 @@ def _approve_all_gates(ledger, gates, artifact_map, study_dir, study_name) -> in
             approver_signature=signature,
             timestamp_utc=timestamp_utc,
         )
+        # VÁ #10 (bác sĩ duyệt 15/08/2026): bản ghi phải KHAI THẬT là mô phỏng.
+        # make_human_approval cố định is_synthetic=False (đúng cho người thật);
+        # ở đây lật cờ TRƯỚC khi ghi để khớp payload đã ký is_synthetic=True ở trên
+        # — lệch một trong hai vế là verify_approval_signature trượt (fail-closed).
+        record.is_synthetic = True
         added, reason = ledger.add_approval(record, created_by_agent=False)
         if not added:
             print(f"✗ [{gate_id}] TỪ CHỐI ghi ledger: {reason}")

@@ -55,6 +55,26 @@ def pmids_tu_g0(study: str) -> list[str]:
                                                                     errors="replace"))))
 
 
+def _parse_linksets(d: dict) -> dict[str, str]:
+    """Bóc PMID→PMCID từ JSON elink. TÁCH RIÊNG để test được không cần mạng.
+
+    🔴 CHỈ nhận linkname == "pubmed_pmc" (CHÍNH bài đó trong PMC). Bẫy đo thật
+    15/08 — nguy hiểm nhất từ đầu dự án toàn văn: bài KHÔNG có trong PMC (vd
+    Polit & Beck 17654487) vẫn trả linkset `pubmed_pmc_refs` = danh sách các bài
+    TRÍCH DẪN nó (1.678 link!); bản đầu của hàm vơ mọi dbto=="pmc" nên đã gắn
+    TOÀN VĂN CỦA BÀI KHÁC vào PMID gốc — mọi phép đọc/đối chiếu hạ nguồn chạy
+    trên văn bản sai mà không hề báo lỗi. Chính vòng thẩm định toàn văn (⚪ hàng
+    loạt ở ngưỡng kinh điển 0,78) mới lộ ra."""
+    ra: dict[str, str] = {}
+    for ls in d.get("linksets", []):
+        pm = (ls.get("ids") or [None])[0]
+        for db in ls.get("linksetdbs", []):
+            if (db.get("dbto") == "pmc" and db.get("linkname") == "pubmed_pmc"
+                    and db.get("links")):
+                ra[str(pm)] = str(db["links"][0])
+    return ra
+
+
 def lien_ket_pmc(pmids: list[str]) -> dict[str, str]:
     """PMID → PMCID qua elink (lô một lần). Vắng mặt = KHÔNG có bản PMC."""
     if not pmids:
@@ -64,14 +84,7 @@ def lien_ket_pmc(pmids: list[str]) -> dict[str, str]:
     # cho từng mã thì mỗi ID một linkset riêng, ánh xạ đúng.
     u = (f"{EUTILS}/elink.fcgi?dbfrom=pubmed&db=pmc&retmode=json"
          + "".join(f"&id={p}" for p in pmids) + f"&tool=ebm&email={MAILTO}")
-    d = json.loads(_goi(u).decode("utf-8", "replace"))
-    ra: dict[str, str] = {}
-    for ls in d.get("linksets", []):
-        pm = (ls.get("ids") or [None])[0]
-        for db in ls.get("linksetdbs", []):
-            if db.get("dbto") == "pmc" and db.get("links"):
-                ra[str(pm)] = str(db["links"][0])
-    return ra
+    return _parse_linksets(json.loads(_goi(u).decode("utf-8", "replace")))
 
 
 def tai_toan_van(pmcid: str) -> bytes | None:

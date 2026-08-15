@@ -280,7 +280,11 @@ def test_admin_bypass_records_carry_distinguishing_marker(tmp_path, monkeypatch)
         assert len(records) == 1
         assert records[0]["scope"].startswith("[ADMIN-SYNTHETIC-BYPASS]")
         assert records[0]["reviewer_identity_reference"] == "ADMIN_SYNTHETIC_BYPASS_TOOL"
-        assert records[0]["is_synthetic"] is False  # cố ý False — xem docstring tool
+        # VÁ #10 (15/08/2026, bác sĩ duyệt tường minh): bản ghi mô phỏng phải KHAI
+        # THẬT is_synthetic=True; ledger_approved() vẫn công nhận vì đề tài đã mark
+        # synthetic_test (nhánh #8), còn entry chép sang đề tài KHÔNG marker bị từ
+        # chối — kỳ vọng False cũ là di sản thiết kế trước #8, nay là nói dối sổ cái.
+        assert records[0]["is_synthetic"] is True
     finally:
         _rmtree_retry(d)
 
