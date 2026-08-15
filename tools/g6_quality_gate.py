@@ -75,9 +75,17 @@ def evaluate_study(study: str, write: bool = True) -> dict:
     # Script thân nằm ở exports/<study>/scripts/*.R|*.py — artifact md chỉ là bìa.
     # Bản đầu chỉ đọc md nên báo «không set.seed» trong khi template R có
     # `SEED <- 2026` (bắt được khi chạy trên đề tài sống 15/08 — bug #2 của gate).
+    art_chinh = art  # phần soi HARKing §7 — KHÔNG gồm script độ nhạy
     for sf in sorted((thu_muc / "scripts").glob("*")):
         if sf.suffix in (".R", ".py", ".r"):
-            art += "\n" + sf.read_text(encoding="utf-8", errors="replace")
+            noi_dung_sf = sf.read_text(encoding="utf-8", errors="replace")
+            art += "\n" + noi_dung_sf
+            # sensitivity_* thuộc phạm vi SAP §9 (độ nhạy) — subgroup trong đó là
+            # thăm dò theo thiết kế template, KHÔNG phải claim §7. Gộp vào phép soi
+            # §7 tạo dương tính giả cho MỌI đề tài SAP §7 trống (bắt được nhờ test
+            # hồi quy 15/08 — cổng từng chụp mũ HARKing oan 2 fixture lành).
+            if not sf.name.startswith("sensitivity"):
+                art_chinh += "\n" + noi_dung_sf
     sap = sap_p.read_text(encoding="utf-8", errors="replace")
     try:
         cp = json.loads(cp_p.read_text(encoding="utf-8"))
@@ -173,8 +181,9 @@ def evaluate_study(study: str, write: bool = True) -> dict:
     sap7 = _bo_dau(_sec(sap, 7))
     khoi_sub = re.findall(r"(?:PHÂN TÍCH NHÓM CON|subgroup)[^\n]*\n(?:#[^\n]*\n)*", art, re.I)
     sub_art = set(re.findall(r"subgroup[_ ]?(?:var|bien)?\s*(?:=|:|<-)\s*['\"]?([a-z0-9_]{3,})",
-                             _bo_dau(art)))
-    la_posthoc = "post-hoc" in _bo_dau(art) or "post hoc" in _bo_dau(art)
+                             _bo_dau(art_chinh)))
+    la_posthoc = any(x in _bo_dau(art_chinh) for x in
+                     ("post-hoc", "post hoc", "tham do", "exploratory"))
     ngoai = [s for s in sub_art if s not in sap7]
     if ngoai and not la_posthoc:
         add("G6-AUTO-05", False,
