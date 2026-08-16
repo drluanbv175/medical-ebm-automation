@@ -41,8 +41,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest ruff
+          pip install -r requirements.lock.txt  # LOCK — cùng toolchain 2 máy thật; requirements.txt vẫn thả nổi ruff>=0.15
 
       - name: Lint (ruff) — bao gồm FA102 chặn cú pháp PEP604 vỡ trên Python 3.9
         run: ruff check .
@@ -93,8 +92,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest ruff
+          pip install -r requirements.lock.txt  # LOCK — cùng toolchain 2 máy thật; requirements.txt vẫn thả nổi ruff>=0.15
 
       - name: Lint (ruff)
         run: ruff check .
