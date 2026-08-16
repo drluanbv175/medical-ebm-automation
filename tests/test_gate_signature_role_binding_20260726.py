@@ -158,7 +158,7 @@ def _write_ledger_records(root: Path, study: str, records: list) -> None:
     dau — approve_gate.py va ApprovalLedger.to_file() tu lam, nen test ghi JSON tho
     phai lam theo; neu khong la dang mo phong mot trang thai KHONG THE xay ra that."""
     (root / "exports" / study / "approval_ledger.json").write_text(
-        json.dumps(records), encoding="utf-8"
+        json.dumps(records), encoding="utf-8", newline="\n"
     )
     GC.write_ledger_seal(study, records, repo_root=root)
 
@@ -912,7 +912,7 @@ def test_denylisted_real_study_cannot_be_bypassed_by_path_variants(tmp_path, mon
     study_dir = tmp_path / "exports" / REAL_STUDY
     study_dir.mkdir(parents=True, exist_ok=True)
     (study_dir / "study_meta.json").write_text(
-        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8"
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n"
     )
     artifact, evidence_hash = _study_with_artifact(tmp_path, REAL_STUDY)
     _write_ledger(tmp_path, REAL_STUDY, {
@@ -933,7 +933,7 @@ def test_study_path_escaping_exports_is_rejected(tmp_path):
     outside = tmp_path / "ngoai_exports"
     outside.mkdir(parents=True, exist_ok=True)
     (outside / "study_meta.json").write_text(
-        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8"
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n"
     )
     (tmp_path / "exports").mkdir(parents=True, exist_ok=True)
     for variant in (str(outside), "../ngoai_exports", "", "   "):

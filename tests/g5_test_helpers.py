@@ -119,7 +119,7 @@ def write_g5_toolkit(
     )
     (out_dir / f"G5_A6_DATA_MGMT_{study}.md").write_text(
         dmp,
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     headers = [
         "Variable / Field Name",
@@ -179,11 +179,11 @@ def write_g5_toolkit(
     scripts.mkdir(exist_ok=True)
     (scripts / "data_cleaning.py").write_text(
         "# Fixture; không xử lý dữ liệu thật.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     (scripts / "data_quality_report.py").write_text(
         "# Fixture; không xử lý dữ liệu thật.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     today = datetime.now().date().isoformat()
     operational = {
@@ -217,7 +217,7 @@ def write_g5_toolkit(
     }
     (out_dir / G5Q.OPERATIONAL_READINESS_JSON).write_text(
         json.dumps(operational, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     checkpoint = {
         "gate": "G5",
@@ -229,7 +229,7 @@ def write_g5_toolkit(
     }
     (out_dir / "G5_checkpoint.json").write_text(
         json.dumps(checkpoint, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     return dictionary_path
 
@@ -282,12 +282,12 @@ def prepare_upstream_approvals(
     """
     (out_dir / "G2_checkpoint.json").write_text(
         json.dumps({"g2_status": "LOCKED"}, ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     g2_artifact = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     g2_artifact.write_text(
         "Hồ sơ đạo đức fixture tổng hợp. Cần bác sĩ kiểm chứng.",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     append_signed_approval(
         study,
@@ -314,7 +314,7 @@ def prepare_upstream_approvals(
                                           "primary": "Cohort tiến cứu", "ambiguous": False}},
                 ensure_ascii=False,
             ),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
 
     g3_fields = {
@@ -341,7 +341,7 @@ def prepare_upstream_approvals(
              "g4_sap_version": "1.0", "design_code": design_code, "guardrail": "✅ PASS"},
             ensure_ascii=False,
         ),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     meta = GC.ensure_study_meta(out_dir)

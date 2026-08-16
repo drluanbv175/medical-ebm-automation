@@ -68,7 +68,7 @@ def test_dictionary_blocks_direct_identifiers_without_false_positive_on_drug_nam
             "drug_name,meds,text,Tên thuốc,\n"
             "patient_name,admin,text,Họ tên,y\n"
         ),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     result = G5Q._read_redcap_dictionary(path)
     issues = " ".join(result["issues"])
@@ -149,7 +149,7 @@ def test_unknown_query_status_invalidates_existing_lock(tmp_path, monkeypatch):
     query_path = out_dir / cleaning["query_log"]
     query_path.write_text(
         query_path.read_text(encoding="utf-8").replace("closed", "mystery"),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     report = G5Q.evaluate_study(
@@ -210,7 +210,7 @@ def test_operational_evidence_tamper_invalidates_g5(tmp_path, monkeypatch):
     operations["backup_restore_test"]["evidence_ref"] = "PYTEST-BACKUP-TAMPERED"
     operations_path.write_text(
         json.dumps(operations, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     # Kẻ sửa đồng thời cả file vận hành và manifest vẫn không được qua, vì
     # checkpoint đã ký giữ hash gốc của toàn bộ chuỗi provenance.
@@ -219,7 +219,7 @@ def test_operational_evidence_tamper_invalidates_g5(tmp_path, monkeypatch):
     manifest["operational_readiness_sha256"] = G5Q._sha256(operations_path)
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     report = G5Q.evaluate_study(

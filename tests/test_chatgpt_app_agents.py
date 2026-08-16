@@ -117,7 +117,7 @@ def test_agent_source_with_phone_beyond_classify_sample_is_blocked(tmp_path: Pat
     agent_dir = tmp_path / ".claude/agents"
     agent_dir.mkdir(parents=True)
     (agent_dir / "demo-phone.md").write_text(
-        "# Demo\n\nLiên hệ hỗ trợ: 090 123 4567\n", encoding="utf-8"
+        "# Demo\n\nLiên hệ hỗ trợ: 090 123 4567\n", encoding="utf-8", newline="\n"
     )
     with pytest.raises(KeyError):
         SafeAgentCatalog(tmp_path).get_payload("demo-phone")
@@ -134,7 +134,7 @@ def test_agent_source_with_bare_unlabeled_id_is_blocked(tmp_path: Path) -> None:
     agent_dir.mkdir(parents=True)
     (agent_dir / "vi-du-agent.md").write_text(
         "# Vi du Agent\n\nMa tham chieu ho so kiem thu: 012345678901 dung de doi chieu vi du.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     with pytest.raises(KeyError):
         SafeAgentCatalog(tmp_path).get_payload("vi-du-agent")

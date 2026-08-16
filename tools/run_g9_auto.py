@@ -1463,7 +1463,7 @@ def main():
                 "",
             ]
         ),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     readiness_path = G9Q.write_readiness_template(
         out_dir,

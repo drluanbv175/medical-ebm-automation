@@ -210,7 +210,7 @@ def test_sap_version_mismatch_no_longer_blocks_truthful_amendment(tmp_path):
     out_dir = tmp_path / "exports" / study
     out_dir.mkdir(parents=True)
     (out_dir / "G4_checkpoint.json").write_text(
-        json.dumps({"g4_sap_version": "1.0"}, ensure_ascii=False), encoding="utf-8"
+        json.dumps({"g4_sap_version": "1.0"}, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
 
     kwargs = _lock_kwargs(qlog)
@@ -237,7 +237,7 @@ def test_sap_version_dishonest_match_recorded_but_not_specially_flagged(tmp_path
     out_dir = tmp_path / "exports" / study
     out_dir.mkdir(parents=True)
     (out_dir / "G4_checkpoint.json").write_text(
-        json.dumps({"g4_sap_version": "1.0"}, ensure_ascii=False), encoding="utf-8"
+        json.dumps({"g4_sap_version": "1.0"}, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
 
     manifest = LAD.lock_dataset(

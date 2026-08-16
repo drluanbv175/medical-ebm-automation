@@ -720,7 +720,7 @@ def lock_dataset(
         checkpoint["g5_status"] = "PENDING"
     checkpoint_path.write_text(
         json.dumps(checkpoint, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     quality = G5Q.evaluate_study(
         study_id,

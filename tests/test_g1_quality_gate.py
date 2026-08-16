@@ -526,7 +526,7 @@ def test_main_checkpoint_reports_draft_instead_of_false_pass(tmp_path, monkeypat
     g0["study"] = study
     (study_dir / "G0_checkpoint.json").write_text(
         json.dumps(g0, ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["run_g1_auto.py", "--study", study])
@@ -569,7 +569,7 @@ def test_system_audit_respects_g1_quality_status(tmp_path):
                 "pending_actions": ["PI/methodologist xác nhận thiết kế."],
             },
         }),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     report = ARG.audit_gates("AUDIT-G1", out_dir=tmp_path, write=False)

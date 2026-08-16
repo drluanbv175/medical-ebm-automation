@@ -947,7 +947,7 @@ def main() -> int:
         template = build_evidence_template()
         args.init_evidence_template.write_text(
             json.dumps(template, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
         validation = validate_evidence_package(template)
         print(f"template={args.init_evidence_template}")

@@ -1604,7 +1604,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     spec_payload["_evaluation"] = spec_evaluation
     spec_path.write_text(
         json.dumps(spec_payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     decision_path = out_dir / f"GOI_QUYET_DINH_{study}.md"

@@ -871,7 +871,7 @@ def evaluate_g4_quality(
 def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -> Path:
     out_dir = Path(out_dir)
     (out_dir / "G4_QUALITY_REPORT.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
     )
     lines = [
         f"# BÁO CÁO CHẤT LƯỢNG G4 (KHÓA SAP) — {study}",
@@ -957,7 +957,7 @@ def refresh_checkpoint(*, study: str, out_dir: Path, report: Mapping[str, Any],
     artifacts["quality_report"] = str(quality_report_path)
     checkpoint["disclaimer"] = "Cần bác sĩ kiểm chứng."
     checkpoint_path.write_text(
-        json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
     )
     return checkpoint_path
 

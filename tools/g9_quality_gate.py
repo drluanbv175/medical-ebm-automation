@@ -427,7 +427,7 @@ def write_readiness_template(
                 ensure_ascii=False,
                 indent=2,
             ),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
     elif not author_count_changed:
         migrated = deepcopy(existing)
@@ -444,7 +444,7 @@ def write_readiness_template(
         if migrated != existing:
             path.write_text(
                 json.dumps(migrated, ensure_ascii=False, indent=2),
-                encoding="utf-8",
+                encoding="utf-8", newline="\n"
             )
     return path
 
@@ -1258,7 +1258,7 @@ def evaluate_study(
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / REPORT_JSON).write_text(
             json.dumps(report, ensure_ascii=False, indent=2),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
         _write_markdown(out_dir / REPORT_MD, report)
         meta_for_write = GC.ensure_study_meta(out_dir)
@@ -1276,7 +1276,7 @@ def evaluate_study(
             checkpoint["submission_package_ready"] = status == STATUS_READY
             checkpoint_path.write_text(
                 json.dumps(checkpoint, ensure_ascii=False, indent=2),
-                encoding="utf-8",
+                encoding="utf-8", newline="\n"
             )
     return report
 

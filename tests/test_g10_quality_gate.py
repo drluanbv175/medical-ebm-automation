@@ -81,7 +81,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
             checkpoint["quality_contract_version"] = "G9-2026.2"
         (out_dir / f"G{index}_checkpoint.json").write_text(
             json.dumps(checkpoint, ensure_ascii=False),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
 
     g10_checkpoint = {
@@ -99,7 +99,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
     }
     (out_dir / G10Q.CHECKPOINT_JSON).write_text(
         json.dumps(g10_checkpoint, ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     (out_dir / G10Q.READINESS_JSON).write_text(
         json.dumps(_complete_readiness(study), ensure_ascii=False, indent=2),
@@ -126,7 +126,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
             "<w:document><w:body><w:p>Final protocol</w:p></w:body></w:document>",
         )
     (out_dir / f"STUDY_SPEC_{study}.json").write_text(
-        json.dumps({"complete": True}), encoding="utf-8"
+        json.dumps({"complete": True}), encoding="utf-8", newline="\n"
     )
 
 
@@ -195,7 +195,7 @@ def test_file_change_after_lock_is_blocked(tmp_path, monkeypatch):
     )
     approval["g10"] = True
     (tmp_path / f"GOI_QUYET_DINH_{study}.md").write_text(
-        "Changed after approval.\n", encoding="utf-8"
+        "Changed after approval.\n", encoding="utf-8", newline="\n"
     )
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=False)
     assert report["status"] == G10Q.STATUS_BLOCKED
@@ -273,7 +273,7 @@ def test_contact_pii_in_release_document_is_blocked(tmp_path, monkeypatch):
     approval = {"g10": False}
     _patch_upstream(monkeypatch, approval)
     (tmp_path / f"GOI_QUYET_DINH_{study}.md").write_text(
-        "Contact: investigator@example.org\n", encoding="utf-8"
+        "Contact: investigator@example.org\n", encoding="utf-8", newline="\n"
     )
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
@@ -308,7 +308,7 @@ def test_placeholder_keeps_external_package_in_draft(tmp_path, monkeypatch):
     readiness["release"]["purpose"] = "ETHICS_SUBMISSION"
     readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8", newline="\n")
     (tmp_path / f"DE_CUONG_THONG_NHAT_{study}.md").write_text(
-        "Protocol still has [CẦN BỔ SUNG].\n", encoding="utf-8"
+        "Protocol still has [CẦN BỔ SUNG].\n", encoding="utf-8", newline="\n"
     )
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
@@ -401,7 +401,7 @@ def test_approve_gate_signs_ready_g10_checkpoint_only_in_synthetic_test(
             },
             ensure_ascii=False,
         ),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     monkeypatch.setattr(
         APPROVE.G10Q,

@@ -67,7 +67,7 @@ class TestG9Auto02RefreshesGuardrailInsteadOfTrustingStaleCache:
         out_dir = tmp_path / "exports" / study
         out_dir.mkdir(parents=True)
         (out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(
-            self._CLEAN_A10 + "\nCCCD 012345678901 phát hiện.\n", encoding="utf-8"
+            self._CLEAN_A10 + "\nCCCD 012345678901 phát hiện.\n", encoding="utf-8", newline="\n"
         )
         import json
         (out_dir / G9Q.CHECKPOINT_JSON).write_text(json.dumps({
@@ -88,7 +88,7 @@ class TestG9Auto02RefreshesGuardrailInsteadOfTrustingStaleCache:
         out_dir = tmp_path / "exports" / study
         out_dir.mkdir(parents=True)
         (out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(
-            self._CLEAN_A10, encoding="utf-8"
+            self._CLEAN_A10, encoding="utf-8", newline="\n"
         )
         import json
         (out_dir / G9Q.CHECKPOINT_JSON).write_text(json.dumps({

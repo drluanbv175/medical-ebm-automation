@@ -147,7 +147,7 @@ def test_v4332_dr8_retracted_state(tmp_path):
     manifest.write_text(
         "evidence_id,pmid,doi,title,status\n"
         "EV001,12345678,,Retracted Study,RETRACTED\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     cfg = _make_config()
@@ -174,7 +174,7 @@ def test_v4332_dr8_manual_review_state(tmp_path):
     manifest.write_text(
         "evidence_id,pmid,doi,title,status\n"
         "EV001,11111111,,Unverified Study,MANUAL_REVIEW_REQUIRED\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     cfg = _make_config()
@@ -196,7 +196,7 @@ def test_v4332_dr8_verified_state(tmp_path):
     manifest.write_text(
         "evidence_id,pmid,doi,title,status\n"
         "EV001,22222222,,Verified Study,VERIFIED_BY_HUMAN\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     cfg = _make_config()

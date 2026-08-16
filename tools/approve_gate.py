@@ -570,7 +570,7 @@ def main() -> int:
         g10_checkpoint["gate_status"] = G10Q.STATUS_READY
         artifact_path.write_text(
             json.dumps(g10_checkpoint, ensure_ascii=False, indent=2),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
         evidence_content = artifact_path.read_text(encoding="utf-8")
 

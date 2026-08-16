@@ -1721,7 +1721,7 @@ def write_operational_readiness_template(out_dir: Path) -> Path:
     }
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     return path
 

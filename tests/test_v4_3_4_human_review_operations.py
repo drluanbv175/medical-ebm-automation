@@ -85,7 +85,7 @@ def _populate_project_dir(project_dir: pathlib.Path, config: ProjectConfig) -> N
         fpath.parent.mkdir(parents=True, exist_ok=True)
         fpath.write_text(
             f"# {art_id.value}\n{RHI} Nội dung cần PI điền.\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
 
 

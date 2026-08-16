@@ -95,7 +95,7 @@ def test_ready_checkpoint_missing_required_artifact_is_actionable(tmp_path):
 def test_dependency_readiness_surfaces_missing_analysis_locks(tmp_path):
     _cp(tmp_path, "G6", {})
     (tmp_path / "G6_A7_ANALYSIS_SCRIPTS_AUTO.md").write_text(
-        "analysis syntax", encoding="utf-8"
+        "analysis syntax", encoding="utf-8", newline="\n"
     )
     _write_json(tmp_path / "study_meta.json", {"irb_approved": True})
 
@@ -151,7 +151,7 @@ def test_action_queue_routes_new_study_to_agent_g0(tmp_path):
 def test_action_queue_marks_dependency_blocks_as_human_evidence(tmp_path):
     _cp(tmp_path, "G6", {})
     (tmp_path / "G6_A7_ANALYSIS_SCRIPTS_AUTO.md").write_text(
-        "analysis syntax", encoding="utf-8"
+        "analysis syntax", encoding="utf-8", newline="\n"
     )
     _write_json(tmp_path / "study_meta.json", {"irb_approved": True})
 
@@ -209,19 +209,19 @@ def test_next_agent_action_does_not_skip_human_gate_blocker(tmp_path):
     })
     (tmp_path / "G0_A1_PICO_FINER_AUTO.md").write_text("PICO", encoding="utf-8", newline="\n")
     (tmp_path / "G1_A2_PROTOCOL_DESIGN_AUTO.md").write_text(
-        "design rationale", encoding="utf-8"
+        "design rationale", encoding="utf-8", newline="\n"
     )
     (tmp_path / "G1_A1b_PROJECT_CHARTER_AUTO.md").write_text(
-        "project charter", encoding="utf-8"
+        "project charter", encoding="utf-8", newline="\n"
     )
     (tmp_path / "G1_A2b_EVIDENCE_LEDGER_AUTO.md").write_text(
-        "evidence ledger", encoding="utf-8"
+        "evidence ledger", encoding="utf-8", newline="\n"
     )
     (tmp_path / "G1_A13_IMPLEMENTATION_PLAN_AUTO.md").write_text(
-        "implementation plan", encoding="utf-8"
+        "implementation plan", encoding="utf-8", newline="\n"
     )
     (tmp_path / "G1_A13b_RISK_REGISTER_AUTO.md").write_text(
-        "risk register", encoding="utf-8"
+        "risk register", encoding="utf-8", newline="\n"
     )
     (tmp_path / "G2_A3_ETHICS_PACKAGE_AUTO.md").write_text("ethics", encoding="utf-8", newline="\n")
 

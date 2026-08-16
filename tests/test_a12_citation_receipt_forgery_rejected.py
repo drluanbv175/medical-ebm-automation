@@ -31,7 +31,7 @@ def _write_clean_artifact(out_dir: Path, study: str) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
         "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
 
@@ -47,7 +47,7 @@ def _write_forged_receipt(out_dir: Path, study: str, pmids: list[str]) -> None:
         "results": {p: {"status": "ok"} for p in pmids},
     }
     (out_dir / "A12_RETRACTION_RECEIPT.json").write_text(
-        json.dumps(receipt, ensure_ascii=False), encoding="utf-8"
+        json.dumps(receipt, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
 
 

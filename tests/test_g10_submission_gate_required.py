@@ -104,7 +104,7 @@ def _write_clean_citation_artifact(d: Path, study: str) -> None:
         "DANH SÁCH 🔴 BẮT BUỘC xử lý: KHÔNG CÓ\n"
         "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴\n"
         "Cần bác sĩ kiểm chứng.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     _write_matching_retraction_receipt(d, study, pmids)
 
@@ -143,7 +143,7 @@ def _write_matching_retraction_receipt(
     if signature:
         receipt["receipt_signature"] = signature
     (d / "A12_RETRACTION_RECEIPT.json").write_text(
-        json.dumps(receipt, ensure_ascii=False), encoding="utf-8"
+        json.dumps(receipt, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
 
 
@@ -171,7 +171,7 @@ def _write_matching_metadata_receipt(
     if signature:
         receipt["receipt_signature"] = signature
     (d / "A12_METADATA_RECEIPT.json").write_text(
-        json.dumps(receipt, ensure_ascii=False), encoding="utf-8"
+        json.dumps(receipt, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
 
 
@@ -320,7 +320,7 @@ class TestCitationVerificationGate:
             self._sign_g8_g9(d, study)
             (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
                 "[⚠ PARTIAL — connector PubMed/Crossref không sẵn]\nCần bác sĩ kiểm chứng.\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n"
             )
             rc = _run_main(study)
             assert rc == GC.EXIT_BLOCKED
@@ -347,7 +347,7 @@ class TestCitationVerificationGate:
                 + "\n".join(f"PMID {pmid}: ✅ OK" for pmid in pmids) + "\n"
                 "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN\n"
                 "Cần bác sĩ kiểm chứng.\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n"
             )
             _write_matching_retraction_receipt(d, study, pmids)
             rc = _run_main(study)
@@ -367,7 +367,7 @@ class TestCitationVerificationGate:
                 "DANH SÁCH 🔴 BẮT BUỘC xử lý: #1 PMID không tra ra\n"
                 "KẾT QUẢ CỔNG A12: CÒN 🔴 CHƯA XỬ LÝ — CHƯA ĐẠT\n"
                 "Cần bác sĩ kiểm chứng.\n",
-                encoding="utf-8",
+                encoding="utf-8", newline="\n"
             )
             rc = _run_main(study)
             assert rc == GC.EXIT_BLOCKED
@@ -431,7 +431,7 @@ class TestCitationRetractionReceiptGate:
             "DANH SÁCH 🔴 BẮT BUỘC xử lý: KHÔNG CÓ\n"
             "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴\n"
             "Cần bác sĩ kiểm chứng.\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
 
     def test_blocks_when_artifact_says_verified_but_receipt_missing(self, tmp_path, monkeypatch):
@@ -688,7 +688,7 @@ class TestModernG10ReleaseContract:
             _write_clean_citation_artifact(d, study)
             g8_content = "PRESUBMISSION REVIEW — synthetic"
             (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(
-                g8_content, encoding="utf-8"
+                g8_content, encoding="utf-8", newline="\n"
             )
             _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
             g9_path = d / "G9_checkpoint.json"
@@ -763,10 +763,10 @@ class TestModernG10ReleaseContract:
             g8_content = "PRESUBMISSION REVIEW — legacy synthetic fixture"
             g9_content = "AUTHOR INTEGRITY — legacy synthetic fixture"
             (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(
-                g8_content, encoding="utf-8"
+                g8_content, encoding="utf-8", newline="\n"
             )
             (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(
-                g9_content, encoding="utf-8"
+                g9_content, encoding="utf-8", newline="\n"
             )
             _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
             _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
@@ -797,7 +797,7 @@ class TestPmidCoverageExtractionHardened:
         d = _study_dir(study)
         try:
             (d / f"DE_CUONG_THONG_NHAT_{study}.md").write_text(
-                "| 1 | Trích | ✅ | | 23456789 |\n", encoding="utf-8"
+                "| 1 | Trích | ✅ | | 23456789 |\n", encoding="utf-8", newline="\n"
             )
             pmids = G10._extract_pmids_from_final_document(study, d)
             assert "23456789" in pmids, "final-doc phải bắt PMID trong ô-bảng (đối xứng artifact)"

@@ -404,7 +404,7 @@ def build_registration_draft(
     path = Path(out_dir) / f"G2_REGISTRATION_DRAFT_{study}.json"
     path.write_text(
         json.dumps(document, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     return path
 
@@ -917,7 +917,7 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
     json_path = out_dir / "G2_QUALITY_REPORT.json"
     json_path.write_text(
         json.dumps(report, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     lines = [
         f"# G2 QUALITY REPORT — {study}",
@@ -1003,7 +1003,7 @@ def refresh_checkpoint(
     checkpoint["disclaimer"] = "Cần bác sĩ kiểm chứng."
     checkpoint_path.write_text(
         json.dumps(checkpoint, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     return checkpoint_path
 

@@ -460,7 +460,7 @@ class TestApproveGateEndToEnd:
         artifact = study_dir / "G5_checkpoint.json"
         artifact.write_text(
             json.dumps({"g5_status": "LOCKED"}),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
         res = self._run(
             "--study",

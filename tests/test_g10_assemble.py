@@ -86,7 +86,7 @@ def _write_cross_sectional_fixture(d: Path, specialty="generic",
             },
             ensure_ascii=False,
         ),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
 

@@ -90,7 +90,7 @@ def test_pii_like_document_is_blocked(tmp_path: Path) -> None:
     docs.mkdir()
     (docs / "unsafe.md").write_text(
         "# Ca bệnh\nCCCD: 012345678901",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     assert _index(tmp_path).search("")["results"] == []
@@ -106,7 +106,7 @@ def test_served_document_with_bare_unlabeled_id_is_blocked(tmp_path: Path) -> No
     docs.mkdir()
     (docs / "ghi_chu.md").write_text(
         "# Ghi chu\nSo tham chieu noi bo cua ho so: 012345678901 duoc dung de doi chieu.",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     result = _index(tmp_path).search("ghi chu ho so")
@@ -258,7 +258,7 @@ def test_get_system_status_survives_malformed_manifest_count_field(tmp_path: Pat
     manifest_dir = tmp_path / "exports" / "chatgpt_project"
     manifest_dir.mkdir(parents=True)
     (manifest_dir / "v7_manifest.json").write_text(
-        json.dumps({"retracted_sources_count": "not-a-number", "files": []}), encoding="utf-8"
+        json.dumps({"retracted_sources_count": "not-a-number", "files": []}), encoding="utf-8", newline="\n"
     )
     monkeypatch.setattr(srv.INDEX, "root", tmp_path)
 

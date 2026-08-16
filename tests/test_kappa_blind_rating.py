@@ -176,7 +176,7 @@ def test_load_rating_csv_and_json_roundtrip(tmp_path):
     json_path = tmp_path / "rating_bs_binh.json"
     json_path.write_text(
         json.dumps([{"case_id": "A1", "score": 3, "notes": "có log thật"}], ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     r_csv = K.load_rating_csv(str(csv_path))
@@ -190,10 +190,10 @@ def test_load_rating_csv_and_json_roundtrip(tmp_path):
 def test_discover_rating_files_and_full_pipeline(tmp_path):
     """Test end-to-end: 2 file rating thật trong thư mục -> build_report() chạy được."""
     (tmp_path / "rating_bs_an.csv").write_text(
-        "case_id,score,notes\nA1,2,\nA2,3,\nB1,2,\n", encoding="utf-8"
+        "case_id,score,notes\nA1,2,\nA2,3,\nB1,2,\n", encoding="utf-8", newline="\n"
     )
     (tmp_path / "rating_bs_binh.csv").write_text(
-        "case_id,score,notes\nA1,2,\nA2,2,\nB1,2,\n", encoding="utf-8"
+        "case_id,score,notes\nA1,2,\nA2,2,\nB1,2,\n", encoding="utf-8", newline="\n"
     )
 
     report = K.build_report(str(tmp_path), categories=K.DEFAULT_CATEGORIES)

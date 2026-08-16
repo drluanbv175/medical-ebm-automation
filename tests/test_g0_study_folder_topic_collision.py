@@ -26,7 +26,7 @@ def _seed_g0_checkpoint(d: Path, topic: str) -> None:
     d.mkdir(parents=True, exist_ok=True)
     (d / "G0_checkpoint.json").write_text(
         json.dumps({"study": d.name, "topic": topic}, ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
 

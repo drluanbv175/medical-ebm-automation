@@ -49,7 +49,7 @@ def _write_forged_ledger(root: Path, study: str, *, gate_id: str = "G2",
         # KHÔNG có approver_signature — kẻ giả mạo không có khóa ký thật.
     }
     (study_dir / "approval_ledger.json").write_text(
-        json.dumps([forged_record]), encoding="utf-8"
+        json.dumps([forged_record]), encoding="utf-8", newline="\n"
     )
     # Niem phong: tu 2026-07-27 so cai khong rong ma thieu con dau la BAT THUONG.
     GC.write_ledger_seal(study, [forged_record], repo_root=root)
@@ -103,7 +103,7 @@ def test_explicitly_marked_synthetic_study_still_passes_without_key(tmp_path, mo
     study = "de-tai-tong-hop-da-danh-dau"
     artifact = _write_forged_ledger(tmp_path, study)
     (tmp_path / "exports" / study / "study_meta.json").write_text(
-        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8"
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n"
     )
 
     assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is True
@@ -116,7 +116,7 @@ def test_synthetic_marking_cannot_rescue_a_denylisted_real_study(tmp_path, monke
 
     artifact = _write_forged_ledger(tmp_path, REAL_STUDY)
     (tmp_path / "exports" / REAL_STUDY / "study_meta.json").write_text(
-        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8"
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n"
     )
 
     assert GC.ledger_approved("G2", REAL_STUDY, artifact, repo_root=tmp_path) is False

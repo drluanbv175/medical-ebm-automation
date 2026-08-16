@@ -344,7 +344,7 @@ class RetryLoop:
             log_file = self.log_dir / f"retry_audit_{self.study}_{self.gate}_{ts}.json"
             log_file.write_text(
                 json.dumps(self._audit, ensure_ascii=False, indent=2),
-                encoding="utf-8"
+                encoding="utf-8", newline="\n"
             )
 
 
