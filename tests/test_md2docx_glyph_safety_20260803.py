@@ -25,10 +25,9 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
 docx = pytest.importorskip("docx", reason="cần python-docx")
+import md2docx_vn as M  # noqa: E402
 from docx import Document  # noqa: E402
 from docx.oxml.ns import qn  # noqa: E402
-
-import md2docx_vn as M  # noqa: E402
 
 
 def _xuat(md: str, tmp_path: Path, ten: str = "thu"):
