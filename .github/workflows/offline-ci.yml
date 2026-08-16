@@ -46,6 +46,12 @@ jobs:
       - name: Lint (ruff) — bao gồm FA102 chặn cú pháp PEP604 vỡ trên Python 3.9
         run: ruff check .
 
+      # 16/08: khoá quy ước giành được từ chiến dịch CRLF (592 điểm) vào CI —
+      # trước đây bất biến newline vùng ký chỉ được canh trên máy bác sĩ (chốt
+      # workspace ngoài repo); máy/người khác đẩy code là mù.
+      - name: Bất biến newline vùng chuỗi-ký (chống CRLF phá hash trên Windows)
+        run: python tools/kiem_newline_vung_ky.py
+
       - name: Run hermetic offline tests (network blocked)
         run: bash scripts/run_offline_ci.sh
 
@@ -96,6 +102,9 @@ jobs:
 
       - name: Lint (ruff)
         run: ruff check .
+
+      - name: Bất biến newline vùng chuỗi-ký (chống CRLF phá hash trên Windows)
+        run: python tools/kiem_newline_vung_ky.py
 
       - name: Run hermetic offline tests (network blocked, Windows)
         run: bash scripts/run_offline_ci.sh
