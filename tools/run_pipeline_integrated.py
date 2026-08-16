@@ -727,7 +727,7 @@ def main():
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
     output_file = output_dir / f"DE_CUONG_16_MUC_TICH_HOP_{study_id}_{timestamp}.md"
-    output_file.write_text(proposal_text, encoding="utf-8")
+    output_file.write_text(proposal_text, encoding="utf-8", newline="\n")
 
     print("\n[XONG] Đề cương 16-mục đã được tổng hợp:")
     print(f"  → {output_file}")

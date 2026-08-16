@@ -37,7 +37,7 @@ from tests.test_g10_assemble import _write_cross_sectional_fixture  # noqa: E402
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-g10-submission-key", encoding="utf-8")
+    key_path.write_text("pytest-g10-submission-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
@@ -78,7 +78,7 @@ def _write_ledger_approval(d: Path, gate_id: str, artifact_content: str, reviewe
     ledger_path = d / "approval_ledger.json"
     existing = json.loads(ledger_path.read_text(encoding="utf-8")) if ledger_path.exists() else []
     existing.append(record)
-    ledger_path.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8")
+    ledger_path.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8", newline="\n")
     # Niem phong (2026-07-27): so cai khong rong ma thieu con dau la BAT THUONG.
     GC.write_ledger_seal(d.name, existing, repo_root=REPO_ROOT)
 
@@ -111,7 +111,7 @@ def _write_clean_citation_artifact(d: Path, study: str) -> None:
 
 def _g7_seed_pmids(d: Path) -> list[str]:
     try:
-        cp = json.loads((d / "G7_checkpoint.json").read_text(encoding="utf-8"))
+        cp = json.loads((d / "G7_checkpoint.json").read_text(encoding="utf-8", newline="\n"))
     except (OSError, json.JSONDecodeError):
         return []
     values = cp.get("pmids_used_as_seed") or []
@@ -185,7 +185,7 @@ def _run_main(study: str, extra_args: list[str] | None = None) -> int:
 
 
 def _read_g10_needs_input(d: Path) -> dict:
-    cp = json.loads((d / "G10_checkpoint.json").read_text(encoding="utf-8"))
+    cp = json.loads((d / "G10_checkpoint.json").read_text(encoding="utf-8", newline="\n"))
     assert GC.is_blocked(cp)
     return cp["needs_input"]
 
@@ -200,7 +200,7 @@ class TestG8SubmissionGate:
             _write_clean_citation_artifact(d, study)
             # Chỉ ký G9, CỐ Ý bỏ trống G8 — phải vẫn bị chặn vì thiếu G8.
             g9_content = "AUTHOR INTEGRITY — nội dung giả lập test"
-            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8")
+            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8", newline="\n")
             _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
             rc = _run_main(study)
             assert rc == GC.EXIT_BLOCKED
@@ -218,7 +218,7 @@ class TestG8SubmissionGate:
             _write_cross_sectional_fixture(d)
             _write_clean_citation_artifact(d, study)
             g8_content = "PRESUBMISSION REVIEW — nội dung giả lập test"
-            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8")
+            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8", newline="\n")
             _write_ledger_approval(d, "G8", g8_content, "PI_PROJECT_OWNER")  # sai role cố ý
             rc = _run_main(study)
             assert rc == GC.EXIT_BLOCKED
@@ -234,8 +234,8 @@ class TestG8SubmissionGate:
             _write_clean_citation_artifact(d, study)
             g8_content = "PRESUBMISSION REVIEW — nội dung giả lập test"
             g9_content = "AUTHOR INTEGRITY — nội dung giả lập test"
-            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8")
-            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8")
+            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8", newline="\n")
+            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8", newline="\n")
             _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
             _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
             rc = _run_main(study)
@@ -290,8 +290,8 @@ class TestCitationVerificationGate:
     def _sign_g8_g9(self, d: Path, study: str) -> None:
         g8_content = "PRESUBMISSION REVIEW — nội dung giả lập test"
         g9_content = "AUTHOR INTEGRITY — nội dung giả lập test"
-        (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8")
-        (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8")
+        (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8", newline="\n")
+        (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8", newline="\n")
         _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
         _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
 
@@ -415,8 +415,8 @@ class TestCitationRetractionReceiptGate:
     def _sign_g8_g9(self, d: Path, study: str) -> None:
         g8_content = "PRESUBMISSION REVIEW — nội dung giả lập test"
         g9_content = "AUTHOR INTEGRITY — nội dung giả lập test"
-        (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8")
-        (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8")
+        (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8", newline="\n")
+        (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8", newline="\n")
         _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
         _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
 
@@ -478,9 +478,9 @@ class TestCitationRetractionReceiptGate:
             self._write_verified_artifact(d, study, ["12345678"])
             _write_matching_retraction_receipt(d, study, ["12345678"])
             receipt_path = d / "A12_RETRACTION_RECEIPT.json"
-            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8", newline="\n"))
             receipt["pmids_hash"] = "0" * 64
-            receipt_path.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8")
+            receipt_path.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8", newline="\n")
             rc = _run_main(study)
             assert rc == GC.EXIT_BLOCKED
         finally:
@@ -494,7 +494,7 @@ class TestCitationRetractionReceiptGate:
             _write_cross_sectional_fixture(d, pmids=["12345678"])
             self._sign_g8_g9(d, study)
             self._write_verified_artifact(d, study, ["12345678"])
-            (d / "A12_RETRACTION_RECEIPT.json").write_text("{ not valid json", encoding="utf-8")
+            (d / "A12_RETRACTION_RECEIPT.json").write_text("{ not valid json", encoding="utf-8", newline="\n")
             rc = _run_main(study)
             assert rc == GC.EXIT_BLOCKED
         finally:
@@ -615,7 +615,7 @@ class TestCitationMetadataGate:
             rp = d / "A12_METADATA_RECEIPT.json"
             receipt = json.loads(rp.read_text(encoding="utf-8"))
             receipt["pmids_checked"] = ["12345678", "99999999"]  # thêm PMID không kiểm
-            rp.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8")
+            rp.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8", newline="\n")
             ok, reason = G10.metadata_verification_ok("PYTEST-META-T5", d, {"12345678"})
             assert not ok
             assert "pmids_hash không khớp" in reason
@@ -645,7 +645,7 @@ class TestCitationMetadataGate:
             rp = d / "A12_METADATA_RECEIPT.json"
             receipt = json.loads(rp.read_text(encoding="utf-8"))
             receipt["receipt_signature"] = "deadbeef" * 8  # chữ ký giả
-            rp.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8")
+            rp.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8", newline="\n")
             ok, reason = G10.metadata_verification_ok("PYTEST-META-T7", d, {"12345678"})
             assert not ok
             assert "chữ ký" in reason
@@ -661,8 +661,8 @@ class TestCitationMetadataGate:
             _write_cross_sectional_fixture(d)
             g8_content = "PRESUBMISSION REVIEW — nội dung giả lập test"
             g9_content = "AUTHOR INTEGRITY — nội dung giả lập test"
-            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8")
-            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8")
+            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8", newline="\n")
+            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8", newline="\n")
             _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
             _write_ledger_approval(d, "G9", g9_content, "PI_PROJECT_OWNER")
             _write_clean_citation_artifact(d, study)
@@ -692,9 +692,9 @@ class TestModernG10ReleaseContract:
             )
             _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
             g9_path = d / "G9_checkpoint.json"
-            g9 = json.loads(g9_path.read_text(encoding="utf-8"))
+            g9 = json.loads(g9_path.read_text(encoding="utf-8", newline="\n"))
             g9["quality_contract_version"] = "G9-2026.2"
-            g9_path.write_text(json.dumps(g9, ensure_ascii=False), encoding="utf-8")
+            g9_path.write_text(json.dumps(g9, ensure_ascii=False), encoding="utf-8", newline="\n")
             monkeypatch.setattr(
                 GC, "g9_quality_contract_satisfied", lambda *_a, **_k: True
             )
@@ -756,7 +756,7 @@ class TestModernG10ReleaseContract:
             meta_path = d / "study_meta.json"
             meta = json.loads(meta_path.read_text(encoding="utf-8"))
             meta["study_kind"] = "real_research"
-            meta_path.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+            meta_path.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
             _write_clean_citation_artifact(d, study)
             pmids = _g7_seed_pmids(d)
             _write_matching_metadata_receipt(d, study, pmids)

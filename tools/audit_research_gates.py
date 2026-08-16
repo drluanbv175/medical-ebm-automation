@@ -1985,13 +1985,13 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         "> Cần bác sĩ kiểm chứng. Cổng cứng không được tự vượt.",
         "",
     ])
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     return path
 
 
 def _write_json(out_dir: Path, report: Dict[str, Any]) -> Path:
     path = out_dir / REPORT_JSON
-    path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
 
 
@@ -2004,7 +2004,7 @@ def _write_action_queue_json(out_dir: Path, report: Dict[str, Any]) -> Path:
         "resume_contract": report["resume_contract"],
         "items": report.get("action_queue") or [],
     }
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
 
 
@@ -2030,7 +2030,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any],
         "note": "Audit điều hướng; không thay thế phê duyệt IRB/SAP/data lock/liêm chính thật.",
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def audit_gates(study: str, *, out_dir: Optional[Path] = None,

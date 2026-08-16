@@ -784,7 +784,7 @@ def _documents_clean(files: Mapping[str, Optional[Path]]) -> tuple[bool, str, bo
     for key in ("integrity_package", "manuscript", "reporting_checklist", "cover_letter"):
         path = files[key]
         try:
-            text = path.read_text(encoding="utf-8")
+            text = path.read_text(encoding="utf-8", newline="\n")
         except (OSError, UnicodeDecodeError):
             return False, f"unreadable={key}", True
         if _PLACEHOLDER_RE.search(text):
@@ -834,7 +834,7 @@ def _write_markdown(path: Path, report: Mapping[str, Any]) -> None:
             "",
         ]
     )
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def evaluate_study(

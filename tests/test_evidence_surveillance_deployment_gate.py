@@ -54,7 +54,7 @@ def test_complete_uat_requires_five_doctor_reviewed_sources(tmp_path: Path) -> N
         "real_patient_data": False,
     }
     path = tmp_path / "uat.json"
-    path.write_text(json.dumps(payload), encoding="utf-8")
+    path.write_text(json.dumps(payload), encoding="utf-8", newline="\n")
 
     result = V._check_uat(_contract(), path)
 
@@ -71,7 +71,7 @@ def test_uat_fails_if_auto_apply_was_observed(tmp_path: Path) -> None:
         "auto_apply_observed": True,
     }
     path = tmp_path / "uat.json"
-    path.write_text(json.dumps(payload), encoding="utf-8")
+    path.write_text(json.dumps(payload), encoding="utf-8", newline="\n")
 
     result = V._check_uat(_contract(), path)
 

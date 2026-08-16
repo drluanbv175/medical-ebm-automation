@@ -1598,7 +1598,7 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
     cp_path = out_dir / "G2_checkpoint.json"
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
 
 
@@ -1787,7 +1787,7 @@ def main():
     # điền và mọi số liệu (tools/vn_prose_style.py).
     artifact_md = _VNSTYLE.clean_generated_prose(artifact_md)
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
-    md_path.write_text(artifact_md, encoding="utf-8")
+    md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
     registration_path = G2Q.build_registration_draft(
         study=study,

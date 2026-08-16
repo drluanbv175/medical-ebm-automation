@@ -1895,7 +1895,7 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
     cp_path = out_dir / "G1_checkpoint.json"
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
 
 
@@ -2015,7 +2015,7 @@ def main():
         meta=meta,
     )
     md_path = out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
-    md_path.write_text(artifact_md, encoding="utf-8")
+    md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path}")
     detected_modules = detect_specialist_modules(topic)
     if detected_modules:

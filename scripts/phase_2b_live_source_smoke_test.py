@@ -56,7 +56,8 @@ def _write_reports(report: Mapping[str, object], output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     json_path = output_dir / "phase_2b_live_source_smoke_report.json"
     md_path = output_dir / "phase_2b_live_source_smoke_report.md"
-    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
+    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8",
+        newline="\n")
     rows = report.get("results", [])
     lines = [
         "# Phase 2B Live Source Smoke Report",
@@ -72,7 +73,7 @@ def _write_reports(report: Mapping[str, object], output_dir: Path) -> None:
             lines.append(
                 f"| {row.get('source')} | {row.get('status')} | {row.get('safe')} | {reasons} |"
             )
-    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
 def main() -> int:

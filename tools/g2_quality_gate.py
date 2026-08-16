@@ -671,7 +671,7 @@ def evaluate_g2_quality(
     package_path = Path(package_path)
     registration_path = Path(registration_path)
     package_text = (
-        package_path.read_text(encoding="utf-8")
+        package_path.read_text(encoding="utf-8", newline="\n")
         if package_path.exists()
         else ""
     )
@@ -955,7 +955,7 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
         "> Cần bác sĩ kiểm chứng.",
     ])
     md_path = out_dir / "G2_QUALITY_REPORT.md"
-    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return md_path
 
 

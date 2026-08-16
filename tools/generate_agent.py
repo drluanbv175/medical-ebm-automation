@@ -172,7 +172,7 @@ def _write_registry(spec: dict[str, Any], path: Path) -> None:
         "created_at": datetime.now().isoformat(timespec="seconds"),
     })
     data["generated"] = generated
-    REGISTRY_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    REGISTRY_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def generate_agent(spec: dict[str, Any], *, force: bool = False, dry_run: bool = False) -> dict[str, Any]:
@@ -214,7 +214,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     spec_path = Path(args.spec)
-    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    spec = json.loads(spec_path.read_text(encoding="utf-8", newline="\n"))
     result = generate_agent(spec, force=args.force, dry_run=args.dry_run)
     if args.register and not args.dry_run:
         result["register_checks"] = _run_optional_register_checks()

@@ -23,7 +23,7 @@ import run_pipeline as ORCH  # noqa: E402
 
 def _write_cp(d: Path, gate: str, data: dict, mtime: float = None):
     p = d / f"{gate}_checkpoint.json"
-    p.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    p.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8", newline="\n")
     if mtime is not None:
         os.utime(p, (mtime, mtime))
     return p
@@ -152,7 +152,7 @@ class TestG1DesignPin:
     def test_read_pinned_design(self, tmp_path):
         import run_g1_auto as G1
         (tmp_path / "study_meta.json").write_text(
-            json.dumps({"design_code": "cross_sectional"}), encoding="utf-8")
+            json.dumps({"design_code": "cross_sectional"}), encoding="utf-8", newline="\n")
         assert G1._read_pinned_design(tmp_path) == "cross_sectional"
 
     def test_apply_design_pin_overrides(self, tmp_path):
@@ -175,7 +175,7 @@ class TestG1DesignPin:
         rơi vào nhánh mặc định sai thiết kế (đúng lớp bug đã vá cho G10)."""
         import run_g1_auto as G1
         (tmp_path / "study_meta.json").write_text(
-            json.dumps({"design_code": "qual"}), encoding="utf-8")
+            json.dumps({"design_code": "qual"}), encoding="utf-8", newline="\n")
         assert G1._read_pinned_design(tmp_path) == "qualitative"
 
     def test_read_pinned_design_canonicalizes_sr_alias_to_sr_ma_not_systematic_review(self, tmp_path):
@@ -186,10 +186,10 @@ class TestG1DesignPin:
         'sr_ma' hiện có — tệ hơn cả bug gốc."""
         import run_g1_auto as G1
         (tmp_path / "study_meta.json").write_text(
-            json.dumps({"design_code": "sr"}), encoding="utf-8")
+            json.dumps({"design_code": "sr"}), encoding="utf-8", newline="\n")
         assert G1._read_pinned_design(tmp_path) == "sr_ma"
         (tmp_path / "study_meta.json").write_text(
-            json.dumps({"design_code": "SR_MA"}), encoding="utf-8")
+            json.dumps({"design_code": "SR_MA"}), encoding="utf-8", newline="\n")
         assert G1._read_pinned_design(tmp_path) == "sr_ma"
 
     def test_read_pinned_design_canonicalizes_rct_and_diagnostic_aliases(self, tmp_path):
@@ -203,7 +203,7 @@ class TestG1DesignPin:
             ("cross_sectional_descriptive", "cross_sectional"),
         ):
             (tmp_path / "study_meta.json").write_text(
-                json.dumps({"design_code": raw}), encoding="utf-8")
+                json.dumps({"design_code": raw}), encoding="utf-8", newline="\n")
             assert G1._read_pinned_design(tmp_path) == expected, f"{raw} -> {expected}"
 
     def test_read_pinned_design_leaves_already_canonical_codes_unchanged(self, tmp_path):
@@ -211,7 +211,7 @@ class TestG1DesignPin:
         for code in ("rct", "cohort", "case_control", "cross_sectional",
                      "diagnostic", "sr_ma", "prediction", "qualitative"):
             (tmp_path / "study_meta.json").write_text(
-                json.dumps({"design_code": code}), encoding="utf-8")
+                json.dumps({"design_code": code}), encoding="utf-8", newline="\n")
             assert G1._read_pinned_design(tmp_path) == code
 
     def test_apply_design_pin_with_qual_alias_end_to_end_matches_g10_qualitative_branch(self, tmp_path):
@@ -221,7 +221,7 @@ class TestG1DesignPin:
         import run_g10_assemble as G10
 
         (tmp_path / "study_meta.json").write_text(
-            json.dumps({"design_code": "qual"}), encoding="utf-8")
+            json.dumps({"design_code": "qual"}), encoding="utf-8", newline="\n")
         pinned = G1._read_pinned_design(tmp_path)
         inferred = {"internal_code": "cohort", "primary": "Cohort",
                     "reporting_standard": "STROBE", "rationale": "auto"}

@@ -100,12 +100,12 @@ def _mk_upstream(study_dir: Path):
     (study_dir / "G0_checkpoint.json").write_text(json.dumps({
         "study": study_dir.name, "gate": "G0",
         "topic": "Tìm hiểu rào cản tuân thủ thuốc ở bệnh nhân mạn tính",
-    }, ensure_ascii=False), encoding="utf-8")
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
     (study_dir / "G1_checkpoint.json").write_text(json.dumps({
         "study": study_dir.name, "gate": "G1",
         "design": {"internal_code": "qualitative", "primary": "Nghiên cứu Định tính (Qualitative Research)",
                    "reporting_standard": "COREQ (phỏng vấn/nhóm tiêu điểm) / SRQR (định tính nói chung)"},
-    }, ensure_ascii=False), encoding="utf-8")
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 # ── G1: infer_study_design() — paradigm marker phải thắng domain marker ──────────

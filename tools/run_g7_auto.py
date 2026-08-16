@@ -1867,7 +1867,7 @@ def write_checkpoint(
         "disclaimer":   "Cần bác sĩ kiểm chứng. KHÔNG nộp tạp chí trước khi điền kết quả thật.",
     }
     cp_path = out_dir / "G7_checkpoint.json"
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
 
 
@@ -2108,7 +2108,7 @@ def main() -> None:
             _old = md_path.read_text(encoding="utf-8")
             _bak = out_dir / (f"G7_A8_MANUSCRIPT_{study}"
                               f".bak-{datetime.now():%Y%m%d-%H%M%S}.md")
-            _bak.write_text(_old, encoding="utf-8")
+            _bak.write_text(_old, encoding="utf-8", newline="\n")
             _n_written = len(re.findall(r"\[CẦN", _old))
             print(f"  ↩ Đã sao lưu bản thảo cũ: {_bak.name} "
                   f"(bản cũ còn {_n_written} ô [CẦN…])")
@@ -2116,7 +2116,7 @@ def main() -> None:
                   "bản mới là KHUNG sinh lại, không chứa nội dung bạn viết.")
         except OSError as _e:
             print(f"  ⚠ Không sao lưu được bản thảo cũ ({_e}) — vẫn tiếp tục ghi đè")
-    md_path.write_text(artifact, encoding="utf-8")
+    md_path.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"  → {md_path} ({len(artifact)//1000}KB, ~{len(artifact.split())} từ)")
 
     # ── Bước 7: Guardrail ──
@@ -2189,7 +2189,7 @@ def main() -> None:
     }.get(quality["status"], "DRAFT — CHỜ KẾT QUẢ THẬT + tác giả chốt (gate_params.G7)")
     if quality.get("needs_input"):
         _cp["needs_input"] = quality["needs_input"]
-    cp_path.write_text(json.dumps(_cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(_cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # ── Tóm tắt ──
     n_can_total   = len(re.findall(r'\[CẦN', artifact))

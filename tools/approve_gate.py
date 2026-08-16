@@ -423,7 +423,7 @@ def main() -> int:
             print("   Không ghi ledger và không tự suy diễn quyết định IRB.")
             return 1
         evidence_content = prepared or evidence_content
-        artifact_path.write_text(evidence_content, encoding="utf-8")
+        artifact_path.write_text(evidence_content, encoding="utf-8", newline="\n")
 
     if args.gate == "G4":
         still_draft = _g4_sections_still_draft(evidence_content)
@@ -572,7 +572,7 @@ def main() -> int:
             json.dumps(g10_checkpoint, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
-        evidence_content = artifact_path.read_text(encoding="utf-8")
+        evidence_content = artifact_path.read_text(encoding="utf-8", newline="\n")
 
     ledger_path = study_dir / "approval_ledger.json"
 

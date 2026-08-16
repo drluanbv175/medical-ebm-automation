@@ -4,20 +4,10 @@ from __future__ import annotations
 
 import csv
 import json
-import os as _os_winci
 import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-
-import pytest as _pytest_winci
-
-# WINDOWS-CI (16/08/2026): cùng họ CRLF làm lệch hash ký (xem ghi chú ở
-# test_g2_quality_gate) — skip HẸP nt+MRAQ_OFFLINE_CI, mọi máy thật giữ nguyên.
-pytestmark = _pytest_winci.mark.skipif(
-    _os_winci.name == "nt" and _os_winci.environ.get("MRAQ_OFFLINE_CI") == "1",
-    reason="CRLF làm lệch hash ký trên runner Windows — chờ chuẩn hoá newline khi sinh artifact",
-)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = REPO_ROOT / "tools"
@@ -37,7 +27,7 @@ from tests.g5_test_helpers import (  # noqa: E402
 
 
 def _write_json(path: Path, value: dict) -> None:
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def _complete_readiness(study: str, n_authors: int = 2) -> dict:

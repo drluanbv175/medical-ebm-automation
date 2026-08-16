@@ -133,7 +133,7 @@ def main() -> int:
 
     key_path.parent.mkdir(parents=True, exist_ok=True)
     key = secrets.token_hex(32)
-    key_path.write_text(key, encoding="utf-8")
+    key_path.write_text(key, encoding="utf-8", newline="\n")
     try:
         # 600 (POSIX) / ACL owner-exclusive (Windows, qua icacls) — chỉ chủ sở hữu
         lock_owner_exclusive(key_path, writable=True)

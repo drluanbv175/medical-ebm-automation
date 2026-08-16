@@ -577,7 +577,7 @@ def main():
             ],
         }
         (out / "G4_checkpoint.json").write_text(
-            json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+            json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
         print(f"   → {GC.blocked_detail(cp)}")
         print("   💾 Đã ghi G4_checkpoint.json (BLOCKED) để pipeline đọc remediation.")
         raise SystemExit(GC.EXIT_BLOCKED)
@@ -594,7 +594,7 @@ def main():
     # trước khi ghi. keep_box=True: khung của SAP LOCK CERTIFICATE đóng vai con
     # dấu, giữ nguyên có chủ đích (tools/vn_prose_style.py).
     artifact = _VNSTYLE.clean_generated_prose(artifact, keep_box=True)
-    md.write_text(artifact, encoding="utf-8")
+    md.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
 
     print("🛡️  Kiểm guardrail...")
@@ -626,7 +626,7 @@ def main():
         "lock_instruction": "Để mở G4: ký SAP Lock Certificate → cung cấp ngày ký → ghi G4_STATUS=LOCKED",
     }
     cp_path = out / "G4_checkpoint.json"
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     print(f"💾 Lưu: {cp_path}")
     # Vá 2026-07-11 (vòng 9): trước đây banner "HOÀN THÀNH" in vô điều kiện + exit code luôn
     # 0 dù guardrail có lỗi thật (errors không rỗng) — checkpoint ĐÃ ghi đúng "guardrail":

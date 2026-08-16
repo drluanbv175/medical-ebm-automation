@@ -74,11 +74,11 @@ class TestG9Auto02RefreshesGuardrailInsteadOfTrustingStaleCache:
             "gate": "G9", "study": study,
             "quality_contract_version": G9Q.QUALITY_CONTRACT_VERSION,
             "guardrail": {"passed": True, "errors": [], "warnings": []},
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         (out_dir / G9Q.READINESS_JSON).write_text(json.dumps({
             "schema_version": G9Q.QUALITY_CONTRACT_VERSION, "study": study,
             "disclaimer": "Cần bác sĩ kiểm chứng.",
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         report = G9Q.evaluate_study(study, out_dir, repo_root=tmp_path, write=False)
         row = _row(report, "G9-AUTO-02")
         assert row["status"] == "BLOCK"
@@ -95,11 +95,11 @@ class TestG9Auto02RefreshesGuardrailInsteadOfTrustingStaleCache:
             "gate": "G9", "study": study,
             "quality_contract_version": G9Q.QUALITY_CONTRACT_VERSION,
             "guardrail": {"passed": False, "errors": ["R1 lỗi cũ"], "warnings": []},
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         (out_dir / G9Q.READINESS_JSON).write_text(json.dumps({
             "schema_version": G9Q.QUALITY_CONTRACT_VERSION, "study": study,
             "disclaimer": "Cần bác sĩ kiểm chứng.",
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         report = G9Q.evaluate_study(study, out_dir, repo_root=tmp_path, write=False)
         row = _row(report, "G9-AUTO-02")
         assert row["status"] == "PASS"

@@ -315,7 +315,7 @@ class TestApprovalLedgerPersistence:
 
     def test_from_file_corrupt_returns_empty_no_raise(self, tmp_path):
         p = tmp_path / "approval_ledger.json"
-        p.write_text("{ đây không phải JSON hợp lệ", encoding="utf-8")
+        p.write_text("{ đây không phải JSON hợp lệ", encoding="utf-8", newline="\n")
         loaded = ApprovalLedger.from_file(p)
         assert loaded.count() == 0  # 1 dòng hỏng KHÔNG được làm sập cả ledger
 
@@ -387,7 +387,7 @@ class TestApproveGateEndToEnd:
         artifact = study_dir / "G4_A5_SAP_FINAL.md"
         # Nội dung tiếng Việt có dấu (đa byte UTF-8) — bẫy điển hình của text-vs-bytes.
         artifact.write_text("# SAP đã khóa\nƯớc lượng hiệu quả HR=0,74 (khoảng tin cậy).",
-                            encoding="utf-8")
+                            encoding="utf-8", newline="\n")
         res = self._run("--study", self._STUDY, "--gate", "G4",
                         "--artifact", str(artifact),
                         "--reviewer-role", "METHODS_STATISTICS_REVIEWER",
@@ -417,7 +417,7 @@ class TestApproveGateEndToEnd:
         ký khi không có thống kê viên riêng — xem thiet-ke-nghien-cuu.md) — vai
         KHÔNG liên quan tới G4 (vd IRB) vẫn phải bị từ chối."""
         artifact = study_dir / "G4_A5_SAP_FINAL.md"
-        artifact.write_text("# SAP đã khóa\nNội dung test.", encoding="utf-8")
+        artifact.write_text("# SAP đã khóa\nNội dung test.", encoding="utf-8", newline="\n")
         res = self._run("--study", self._STUDY, "--gate", "G4",
                         "--artifact", str(artifact),
                         "--reviewer-role", "IRB", "--reviewer-ref", "IRB-01")
@@ -429,7 +429,7 @@ class TestApproveGateEndToEnd:
         đó bác sĩ tự ký khóa SAP đúng theo hướng dẫn doctrine vẫn bị từ chối vì
         code fail-closed chỉ chấp nhận thống kê viên (lệch code/doctrine thật)."""
         artifact = study_dir / "G4_A5_SAP_FINAL.md"
-        artifact.write_text("# SAP đã khóa\nNội dung test.", encoding="utf-8")
+        artifact.write_text("# SAP đã khóa\nNội dung test.", encoding="utf-8", newline="\n")
         res = self._run("--study", self._STUDY, "--gate", "G4",
                         "--artifact", str(artifact),
                         "--reviewer-role", "PI", "--reviewer-ref", "PI-01")
@@ -437,7 +437,7 @@ class TestApproveGateEndToEnd:
 
     def test_approve_gate_g5_rejects_arbitrary_artifact(self, study_dir):
         artifact = study_dir / "tu-khai-g5.md"
-        artifact.write_text("Tự khai đã khóa.", encoding="utf-8")
+        artifact.write_text("Tự khai đã khóa.", encoding="utf-8", newline="\n")
         res = self._run(
             "--study",
             self._STUDY,
@@ -481,7 +481,7 @@ class TestApproveGateEndToEnd:
     def test_approve_gate_missing_study_dir_exits_nonzero(self, tmp_path):
         # Đề tài chưa có thư mục exports/<study> → từ chối (không tự tạo phê duyệt khống).
         artifact = tmp_path / "art.md"
-        artifact.write_text("noi dung", encoding="utf-8")
+        artifact.write_text("noi dung", encoding="utf-8", newline="\n")
         res = self._run("--study", "__khong_ton_tai_9z9z__", "--gate", "G4",
                         "--artifact", str(artifact),
                         "--reviewer-role", "PI", "--reviewer-ref", "PI-01")

@@ -17,25 +17,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os as _os_winci
 import subprocess
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-
-import pytest as _pytest_winci
-
-# WINDOWS-CI (16/08/2026 — PHÁT HIỆN THẬT, không phải nhiễu): Python/Windows dịch
-# \n→CRLF khi write_text, nên chuỗi «ký hash → sinh lại artifact» lệch byte và
-# ledger_approved fail. Máy Windows THẬT của bác sĩ chưa từng chạy nhóm test này
-# (suite xanh 15/07 có trước). Việc sửa gốc đã vào hàng: chuẩn hoá newline="\n"
-# toàn bộ chỗ sinh artifact. Skip HẸP: chỉ Windows + CI hermetic; ubuntu-CI và
-# mọi máy thật vẫn chạy đủ — không mất tín hiệu ở nơi đang tin cậy được.
-pytestmark = _pytest_winci.mark.skipif(
-    _os_winci.name == "nt" and _os_winci.environ.get("MRAQ_OFFLINE_CI") == "1",
-    reason="CRLF làm lệch hash ký trên runner Windows — chờ chuẩn hoá newline khi sinh artifact",
-)
 
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -51,7 +37,7 @@ from tests.g5_test_helpers import prepare_locked_g5_study  # noqa: E402
 
 def _configure_test_signing_key(tmp_path, monkeypatch) -> None:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-design-gate-key", encoding="utf-8")
+    key_path.write_text("pytest-design-gate-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
@@ -70,7 +56,7 @@ def _approve_g2_g4_g5(study: str) -> None:
             "G5": "DATA_GOVERNANCE_QA_REVIEWER",
         }
         artifact = study_dir / artifact_rel
-        artifact.write_text(content, encoding="utf-8")
+        artifact.write_text(content, encoding="utf-8", newline="\n")
         timestamp_utc = datetime.now(timezone.utc).isoformat()
         evidence_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
         signature = GC.sign_approval(gate_id, study, evidence_hash, timestamp_utc,
@@ -102,7 +88,7 @@ def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
 
 
 def _csv(path: Path, text: str) -> Path:
-    path.write_text(text.strip() + "\n", encoding="utf-8")
+    path.write_text(text.strip() + "\n", encoding="utf-8", newline="\n")
     return path
 
 
@@ -135,7 +121,7 @@ def _lock_study(study: str, tmp_path: Path, g1_checkpoint: dict) -> Path:
     study_dir = REPO_ROOT / "exports" / study
     study_dir.mkdir(parents=True, exist_ok=True)
     (study_dir / "G1_checkpoint.json").write_text(
-        json.dumps(g1_checkpoint), encoding="utf-8")
+        json.dumps(g1_checkpoint), encoding="utf-8", newline="\n")
     clean = _clean_dataset(tmp_path / f"{study}_df_clean.csv")
     locked_path, _ = prepare_locked_g5_study(
         study, clean, exports_root=REPO_ROOT / "exports",

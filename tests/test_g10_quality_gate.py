@@ -7,24 +7,10 @@ người thật. Test chấm trực tiếp artifact hiện hành, không tin rep
 from __future__ import annotations
 
 import json
-import os as _os_winci
 import shutil
 import sys
 import zipfile
 from pathlib import Path
-
-import pytest as _pytest_winci
-
-# WINDOWS-CI (16/08/2026 — PHÁT HIỆN THẬT, không phải nhiễu): Python/Windows dịch
-# \n→CRLF khi write_text, nên chuỗi «ký hash → sinh lại artifact» lệch byte và
-# ledger_approved fail. Máy Windows THẬT của bác sĩ chưa từng chạy nhóm test này
-# (suite xanh 15/07 có trước). Việc sửa gốc đã vào hàng: chuẩn hoá newline="\n"
-# toàn bộ chỗ sinh artifact. Skip HẸP: chỉ Windows + CI hermetic; ubuntu-CI và
-# mọi máy thật vẫn chạy đủ — không mất tín hiệu ở nơi đang tin cậy được.
-pytestmark = _pytest_winci.mark.skipif(
-    _os_winci.name == "nt" and _os_winci.environ.get("MRAQ_OFFLINE_CI") == "1",
-    reason="CRLF làm lệch hash ký trên runner Windows — chờ chuẩn hoá newline khi sinh artifact",
-)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TOOLS = Path(__file__).resolve().parents[1] / "tools"
@@ -131,7 +117,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
         "A12_METADATA_RECEIPT.json": "{}\n",
     }
     for name, content in text_files.items():
-        (out_dir / name).write_text(content, encoding="utf-8")
+        (out_dir / name).write_text(content, encoding="utf-8", newline="\n")
     with zipfile.ZipFile(
         out_dir / f"DE_CUONG_THONG_NHAT_{study}.docx", "w"
     ) as archive:
@@ -259,7 +245,7 @@ def test_legacy_g1_quality_contract_cannot_be_silently_grandfathered(
     g1 = json.loads(g1_path.read_text(encoding="utf-8"))
     g1.pop("quality_contract_version", None)
     g1.pop("quality_gate", None)
-    g1_path.write_text(json.dumps(g1, ensure_ascii=False), encoding="utf-8")
+    g1_path.write_text(json.dumps(g1, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
     assert report["status"] == G10Q.STATUS_DRAFT
@@ -274,7 +260,7 @@ def test_contact_pii_in_readiness_is_blocked(tmp_path, monkeypatch):
     readiness_path = tmp_path / G10Q.READINESS_JSON
     readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
     readiness["release"]["owner_ref"] = "doctor@example.org"
-    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8")
+    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
     assert report["status"] == G10Q.STATUS_BLOCKED
@@ -304,7 +290,7 @@ def test_path_traversal_and_false_submission_claim_are_blocked(tmp_path, monkeyp
     readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
     readiness["additional_artifacts"] = ["../outside.txt"]
     readiness["automation_limits"]["external_submission_performed_by_g10"] = True
-    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8")
+    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
     assert report["status"] == G10Q.STATUS_BLOCKED
@@ -320,7 +306,7 @@ def test_placeholder_keeps_external_package_in_draft(tmp_path, monkeypatch):
     readiness_path = tmp_path / G10Q.READINESS_JSON
     readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
     readiness["release"]["purpose"] = "ETHICS_SUBMISSION"
-    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8")
+    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8", newline="\n")
     (tmp_path / f"DE_CUONG_THONG_NHAT_{study}.md").write_text(
         "Protocol still has [CẦN BỔ SUNG].\n", encoding="utf-8"
     )
@@ -370,7 +356,7 @@ def test_approve_gate_rejects_non_checkpoint_artifact_for_g10(monkeypatch):
     out_dir.mkdir(parents=True)
     try:
         wrong = out_dir / "G10_QUALITY_REPORT.md"
-        wrong.write_text("Synthetic report.", encoding="utf-8")
+        wrong.write_text("Synthetic report.", encoding="utf-8", newline="\n")
         argv = sys.argv
         sys.argv = [
             "approve_gate.py",
@@ -401,7 +387,7 @@ def test_approve_gate_signs_ready_g10_checkpoint_only_in_synthetic_test(
     shutil.rmtree(out_dir, ignore_errors=True)
     out_dir.mkdir(parents=True)
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-g10-quality-key", encoding="utf-8")
+    key_path.write_text("pytest-g10-quality-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
     checkpoint_path = out_dir / G10Q.CHECKPOINT_JSON
     checkpoint_path.write_text(

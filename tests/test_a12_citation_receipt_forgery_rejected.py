@@ -53,7 +53,7 @@ def _write_forged_receipt(out_dir: Path, study: str, pmids: list[str]) -> None:
 
 def test_forged_receipt_rejected_when_key_configured(tmp_path, monkeypatch):
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-real-key", encoding="utf-8")
+    key_path.write_text("pytest-real-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     out_dir = tmp_path / "exports" / REAL_STUDY
@@ -88,7 +88,7 @@ def test_legitimate_signed_receipt_still_passes(tmp_path, monkeypatch):
     được lỗi này: 3 test khác trong test_check_citation_retraction.py fail vì REPO_ROOT bị
     đổi vĩnh viễn). monkeypatch tự phục hồi giá trị gốc khi test này kết thúc."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-real-key", encoding="utf-8")
+    key_path.write_text("pytest-real-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
     monkeypatch.setattr(CCR, "REPO_ROOT", tmp_path)
 

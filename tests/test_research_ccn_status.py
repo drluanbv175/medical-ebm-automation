@@ -103,10 +103,10 @@ def _write_fixtures(tmp_path: Path):
     open_csv = tmp_path / "open_deps.csv"
     ext_md = tmp_path / "ext_deps.md"
     auto_md = tmp_path / "auto_gap.md"
-    gap_csv.write_text(FIXTURE_GAP_REGISTER_CSV, encoding="utf-8")
-    open_csv.write_text(FIXTURE_OPEN_DEPS_CSV, encoding="utf-8")
-    ext_md.write_text(FIXTURE_EXT_DEPS_MD, encoding="utf-8")
-    auto_md.write_text(FIXTURE_AUTO_GAP_MD, encoding="utf-8")
+    gap_csv.write_text(FIXTURE_GAP_REGISTER_CSV, encoding="utf-8", newline="\n")
+    open_csv.write_text(FIXTURE_OPEN_DEPS_CSV, encoding="utf-8", newline="\n")
+    ext_md.write_text(FIXTURE_EXT_DEPS_MD, encoding="utf-8", newline="\n")
+    auto_md.write_text(FIXTURE_AUTO_GAP_MD, encoding="utf-8", newline="\n")
     return gap_csv, open_csv, ext_md, auto_md
 
 

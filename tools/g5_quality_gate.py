@@ -426,7 +426,7 @@ def _write_markdown(path: Path, report: Mapping[str, Any]) -> None:
     actions = report.get("actions") or ["Không có."]
     lines.extend(f"- {action}" for action in actions)
     lines.extend(["", "Cần bác sĩ kiểm chứng.", ""])
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def evaluate_study(

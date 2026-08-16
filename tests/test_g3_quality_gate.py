@@ -826,7 +826,7 @@ def test_ghi_bao_cao_ra_ca_json_va_markdown(tmp_path):
     md_path = G3Q.write_quality_report("TEST-G3", tmp_path, report)
     assert md_path.exists()
     assert (tmp_path / "G3_QUALITY_REPORT.json").exists()
-    text = md_path.read_text(encoding="utf-8")
+    text = md_path.read_text(encoding="utf-8", newline="\n")
     assert "Cần bác sĩ kiểm chứng" in text
     assert "G3-AUTO-05" in text
     assert "PMID:30560792" in text
@@ -836,7 +836,7 @@ def test_cap_nhat_checkpoint_giu_nguyen_khoa_downstream(tmp_path):
     """run_g4_auto đọc đúng các khóa này để dựng SAP — không được đụng vào."""
     checkpoint_path = tmp_path / "G3_checkpoint.json"
     original = _checkpoint(confirmed_n=1200, hypothesis_type="non_inferiority", margin=0.1)
-    checkpoint_path.write_text(json.dumps(original, ensure_ascii=False), encoding="utf-8")
+    checkpoint_path.write_text(json.dumps(original, ensure_ascii=False), encoding="utf-8", newline="\n")
     report = _evaluate(tmp_path, checkpoint=original)
     G3Q.refresh_checkpoint(
         study="TEST-G3",
@@ -915,7 +915,7 @@ class TestPipelineThatKhongDungFixtureGia:
                 cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
             )
             assert result.returncode == 0, result.stdout + result.stderr
-            report = json.loads((study_dir / "G3_QUALITY_REPORT.json").read_text(encoding="utf-8"))
+            report = json.loads((study_dir / "G3_QUALITY_REPORT.json").read_text(encoding="utf-8", newline="\n"))
             row = next(r for r in report["automatic_criteria"] if r["id"] == "G3-AUTO-10")
             assert row["status"] == "PASS", row
             assert "CONSORT 2025" in (study_dir / f"G3_A4_SAMPLE_SIZE_{study}.md").read_text(encoding="utf-8")
@@ -980,7 +980,7 @@ class TestPipelineThatKhongDungFixtureGia:
                 cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
             )
             assert result2.returncode == 0, result2.stdout + result2.stderr
-            report2 = json.loads((study_dir / "G3_QUALITY_REPORT.json").read_text(encoding="utf-8"))
+            report2 = json.loads((study_dir / "G3_QUALITY_REPORT.json").read_text(encoding="utf-8", newline="\n"))
             row2 = next(r for r in report2["automatic_criteria"] if r["id"] == "G3-AUTO-17")
             assert row2["status"] == "PASS", row2
         finally:

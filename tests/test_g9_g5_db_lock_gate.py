@@ -31,7 +31,7 @@ import run_g9_auto as G9  # noqa: E402
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-g9-g5-key", encoding="utf-8")
+    key_path.write_text("pytest-g9-g5-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
@@ -54,7 +54,7 @@ def _study_dir(name: str) -> Path:
 
 def _write_g5_artifact_and_locked_text(study: str, d: Path) -> str:
     g5_content = "DATA MGMT — nội dung giả lập test (biên bản khóa CSDL)"
-    (d / f"G5_A6_DATA_MGMT_{study}.md").write_text(g5_content, encoding="utf-8")
+    (d / f"G5_A6_DATA_MGMT_{study}.md").write_text(g5_content, encoding="utf-8", newline="\n")
     return g5_content
 
 
@@ -78,7 +78,7 @@ def _write_ledger_approval(d: Path, gate_id: str, artifact_content: str) -> None
     ledger_path = d / "approval_ledger.json"
     existing = json.loads(ledger_path.read_text(encoding="utf-8")) if ledger_path.exists() else []
     existing.append(record)
-    ledger_path.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8")
+    ledger_path.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8", newline="\n")
     # Niem phong (2026-07-27): so cai khong rong ma thieu con dau la BAT THUONG.
     GC.write_ledger_seal(d.name, existing, repo_root=REPO_ROOT)
 

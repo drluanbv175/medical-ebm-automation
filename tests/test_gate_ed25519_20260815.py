@@ -130,7 +130,7 @@ def test_khong_co_khoa_ed_thi_duong_v4_giu_nguyen(tmp_path, monkeypatch):
     monkeypatch.setattr(GC, "_ED_PUBLIC_DIR", tmp_path / "trong")
     monkeypatch.setenv("PYTEST_CURRENT_TEST", "x")  # _test_context_active
     khoa = tmp_path / "hmac_key"
-    khoa.write_text("k" * 64, encoding="utf-8")
+    khoa.write_text("k" * 64, encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(khoa))
     sig = GC.sign_approval("G2", STUDY, "a" * 64, "2026-08-15T00:00:00+00:00",
                            reviewer_role=ROLE, reviewer_ref="REF-ED-1",

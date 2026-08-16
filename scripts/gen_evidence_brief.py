@@ -100,7 +100,7 @@ def write_docx(path: Path) -> None:
 
 if __name__ == "__main__":
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(build(), encoding="utf-8")
+    OUT.write_text(build(), encoding="utf-8", newline="\n")
     n_updated = sum(1 for s in VERIFIED_SCORES if s["score_id"] in UPDATED)
     print(f"✅ Đã sinh {OUT.relative_to(ROOT)}")
     if "--docx" in sys.argv:

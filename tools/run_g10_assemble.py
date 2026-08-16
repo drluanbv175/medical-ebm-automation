@@ -1597,7 +1597,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     body_md = "\n".join(parts)
 
     md_path = out_dir / f"DE_CUONG_THONG_NHAT_{study}.md"
-    md_path.write_text(body_md, encoding="utf-8")
+    md_path.write_text(body_md, encoding="utf-8", newline="\n")
 
     spec_path = out_dir / f"STUDY_SPEC_{study}.json"
     spec_payload = dict(study_spec)
@@ -1608,7 +1608,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     )
 
     decision_path = out_dir / f"GOI_QUYET_DINH_{study}.md"
-    decision_path.write_text(decision_md, encoding="utf-8")
+    decision_path.write_text(decision_md, encoding="utf-8", newline="\n")
     readiness_path = G10Q.ensure_readiness(study, out_dir)
 
     docx_path = None
@@ -1714,7 +1714,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     }
     cp_path = out_dir / "G10_checkpoint.json"
     cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2),
-                       encoding="utf-8")
+                       encoding="utf-8", newline="\n")
 
     return {
         "md": md_path,
@@ -2218,7 +2218,7 @@ def main() -> int:
             current = md_path.read_text(encoding="utf-8")
             if not current.startswith(banner_lines[0]):
                 updated = banner + current
-                md_path.write_text(updated, encoding="utf-8")
+                md_path.write_text(updated, encoding="utf-8", newline="\n")
                 if result.get("docx"):
                     import md2docx_vn
 
@@ -2240,7 +2240,7 @@ def main() -> int:
                                 G10Q.READINESS_JSON, G10Q.CHECKPOINT_JSON],
         )
         result["checkpoint"].write_text(
-            json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+            json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # Vá 2026-07-15 (Ngày 1 lộ trình 7 ngày — reports/LO_TRINH_7_NGAY_NGHIEN_CUU_Y_KHOA
     # _2026-07-14.md): trích dẫn (cổng A12, agent `kiem-chung-trich-dan`) trước đây

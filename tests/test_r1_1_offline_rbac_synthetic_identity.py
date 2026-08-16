@@ -670,7 +670,7 @@ class TestT26_HashChainTamper:
         first_event = json.loads(lines[0])
         first_event["reason"] = "TAMPERED_REASON"
         lines[0] = json.dumps(first_event)
-        ledger_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        ledger_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
         # Verify should now FAIL
         new_ledger = AuditAttributionLedger(ledger_path)

@@ -237,21 +237,21 @@ def test_evaluate_study_doc_ban_thao_TU_DIA(tmp_path):
     d.mkdir(parents=True)
     for gate, cp in _cps().items():
         (d / f"{gate}_checkpoint.json").write_text(
-            json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+            json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
     (d / "study_meta.json").write_text(
-        json.dumps(_meta_confirmed(), ensure_ascii=False), encoding="utf-8")
+        json.dumps(_meta_confirmed(), ensure_ascii=False), encoding="utf-8", newline="\n")
     (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
-        "Đã xác minh 10/10 PMID.", encoding="utf-8")
+        "Đã xác minh 10/10 PMID.", encoding="utf-8", newline="\n")
     md = d / f"G7_A8_MANUSCRIPT_{study}.md"
 
     # Lần 1 — bản khung, còn ô [CẦN KẾT QUẢ THẬT]
-    md.write_text(_manuscript(with_results=False), encoding="utf-8")
+    md.write_text(_manuscript(with_results=False), encoding="utf-8", newline="\n")
     r1 = G7Q.evaluate_study(study, d)
     assert r1["status"] == G7Q.STATUS_DRAFT_READY
     assert r1["placeholder_counts"]["results"] > 0
 
     # Lần 2 — bác sĩ đã điền kết quả thật vào CHÍNH file đó
-    md.write_text(_manuscript(with_results=True), encoding="utf-8")
+    md.write_text(_manuscript(with_results=True), encoding="utf-8", newline="\n")
     r2 = G7Q.evaluate_study(study, d)
     assert r2["status"] == G7Q.STATUS_CONFIRMED, r2["pending_actions"]
     assert r2["placeholder_counts"]["results"] == 0
@@ -274,11 +274,11 @@ def test_evaluate_study_khong_tin_guardrail_cache_khi_ban_thao_bi_chen_PII_va_so
     d.mkdir(parents=True)
     for gate, cp in _cps().items():
         (d / f"{gate}_checkpoint.json").write_text(
-            json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+            json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
     (d / "study_meta.json").write_text(
-        json.dumps(_meta_confirmed(), ensure_ascii=False), encoding="utf-8")
+        json.dumps(_meta_confirmed(), ensure_ascii=False), encoding="utf-8", newline="\n")
     (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
-        "Đã xác minh 10/10 PMID.", encoding="utf-8")
+        "Đã xác minh 10/10 PMID.", encoding="utf-8", newline="\n")
 
     # Checkpoint CACHE nói guardrail đã "✅ PASS" từ lần sinh khung ban đầu —
     # cùng giá trị _cps() vẫn dùng cho các test khác trong file này.
@@ -289,7 +289,7 @@ def test_evaluate_study_khong_tin_guardrail_cache_khi_ban_thao_bi_chen_PII_va_so
         "Cần bác sĩ kiểm chứng.\n"
     )
     md = d / f"G7_A8_MANUSCRIPT_{study}.md"
-    md.write_text(fabricated, encoding="utf-8")
+    md.write_text(fabricated, encoding="utf-8", newline="\n")
 
     report = G7Q.evaluate_study(study, d, write=False)
     row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-00")
@@ -505,13 +505,13 @@ def test_evaluate_study_tinh_design_drift_song_tu_G1_G2_tren_dia(tmp_path):
     cps["G7"] = dict(cps["G7"], design_drift_warning="cảnh báo lệch CŨ, đã hết hạn")
     for gate, cp in cps.items():
         (d / f"{gate}_checkpoint.json").write_text(
-            json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+            json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
     (d / "study_meta.json").write_text(
-        json.dumps(_meta_confirmed(), ensure_ascii=False), encoding="utf-8")
+        json.dumps(_meta_confirmed(), ensure_ascii=False), encoding="utf-8", newline="\n")
     (d / f"A12_CITATION_VERIFICATION_{study}.md").write_text(
-        "Đã xác minh 10/10 PMID.", encoding="utf-8")
+        "Đã xác minh 10/10 PMID.", encoding="utf-8", newline="\n")
     (d / f"G7_A8_MANUSCRIPT_{study}.md").write_text(
-        _manuscript(with_results=True), encoding="utf-8")
+        _manuscript(with_results=True), encoding="utf-8", newline="\n")
 
     report = G7Q.evaluate_study(study, d, write=False)
     row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-01b")

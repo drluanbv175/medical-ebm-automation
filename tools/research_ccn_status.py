@@ -542,7 +542,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.out_md:
         args.out_md.parent.mkdir(parents=True, exist_ok=True)
-        args.out_md.write_text(report + "\n", encoding="utf-8")
+        args.out_md.write_text(report + "\n", encoding="utf-8", newline="\n")
         print(f"\n(Đã ghi báo cáo ra: {args.out_md})", file=sys.stderr)
 
     return 0

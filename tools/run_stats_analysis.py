@@ -1331,14 +1331,14 @@ def main():
         miss_txt += "\nChi tiết:\n"
         for col, info in miss["variables_with_missing"].items():
             miss_txt += f"  {col}: {info['n_missing']} thiếu ({info['pct']}%)\n"
-    (prefix.parent / f"{args.gate}_missing_data_summary.txt").write_text(miss_txt, encoding="utf-8")
+    (prefix.parent / f"{args.gate}_missing_data_summary.txt").write_text(miss_txt, encoding="utf-8", newline="\n")
     print(f"✓ Phân tích dữ liệu thiếu: {miss['pct_complete']}% hoàn chỉnh")
 
     # 4. Bảng 1
     if args.group and args.group in df.columns:
         t1 = table1_descriptive(df, args.group, vars_for_t1)
         t1_txt = format_table1_text(t1)
-        (prefix.parent / f"{args.gate}_table1_descriptive.txt").write_text(t1_txt, encoding="utf-8")
+        (prefix.parent / f"{args.gate}_table1_descriptive.txt").write_text(t1_txt, encoding="utf-8", newline="\n")
         summary["table1"] = {"n_per_group": t1["n_per_group"]}
         print(f"✓ Bảng 1: {len(t1['rows'])} biến, {len(t1['groups'])} nhóm")
 
@@ -1347,7 +1347,7 @@ def main():
         res = compare_primary_outcome(df, args.outcome, args.group, args.outcome_type)
         hypothesis_interp = interpret_hypothesis_type(res, hypothesis_type, hypothesis_margin)
         res_txt = format_outcome_text(res, args.outcome, hypothesis_interp)
-        (prefix.parent / f"{args.gate}_table2_main_outcome.txt").write_text(res_txt, encoding="utf-8")
+        (prefix.parent / f"{args.gate}_table2_main_outcome.txt").write_text(res_txt, encoding="utf-8", newline="\n")
         summary["primary_outcome"] = res
         if hypothesis_interp:
             summary["hypothesis_interpretation"] = hypothesis_interp
@@ -1360,7 +1360,7 @@ def main():
         # 6. Đa biến
         mv = multivariate_model(df, args.outcome, args.group, covariates, args.outcome_type)
         mv_txt = format_multivariate_text(mv)
-        (prefix.parent / f"{args.gate}_table4_multivariate.txt").write_text(mv_txt, encoding="utf-8")
+        (prefix.parent / f"{args.gate}_table4_multivariate.txt").write_text(mv_txt, encoding="utf-8", newline="\n")
         summary["multivariate"] = mv
         print(f"✓ Mô hình đa biến: {mv.get('model','?')} ({mv.get('n','?')} quan sát)")
 
@@ -1375,14 +1375,14 @@ def main():
         else:
             mi_txt = format_mi_text(mi, mv)
             (prefix.parent / f"{args.gate}_table5_multiple_imputation.txt").write_text(
-                mi_txt, encoding="utf-8")
+                mi_txt, encoding="utf-8", newline="\n")
             print(f"✓ Multiple imputation (m={mi['n_imputations']}): "
                   f"{mi['n_missing_rows']}/{mi['n_total']} hàng thiếu được impute")
 
         # 7. Script R tái lặp
         r_script = generate_r_script(args.study, args.gate, args.outcome,
                                       args.group, covariates, args.outcome_type)
-        (prefix.parent / f"{args.gate}_analysis_syntax.R").write_text(r_script, encoding="utf-8")
+        (prefix.parent / f"{args.gate}_analysis_syntax.R").write_text(r_script, encoding="utf-8", newline="\n")
         print("✓ Script R tái lặp đã tạo")
 
     # 5b/6b/7b. Thiết kế sống còn (Cox PH + Kaplan-Meier) — vá 2026-07-15
@@ -1405,7 +1405,7 @@ def main():
         surv_hyp_interp = interpret_hypothesis_type({"outcome_type": "survival"},
                                                      hypothesis_type, hypothesis_margin)
         surv_txt = format_survival_text(surv, km, surv_hyp_interp)
-        (prefix.parent / f"{args.gate}_table3_survival.txt").write_text(surv_txt, encoding="utf-8")
+        (prefix.parent / f"{args.gate}_table3_survival.txt").write_text(surv_txt, encoding="utf-8", newline="\n")
         summary["survival"] = surv
         summary["kaplan_meier"] = km
         if surv_hyp_interp.get("note"):
@@ -1418,12 +1418,12 @@ def main():
 
         r_script_surv = _generate_r_script_survival(
             args.study, args.gate, args.time, args.event, args.group, covariates)
-        (prefix.parent / f"{args.gate}_survival_syntax.R").write_text(r_script_surv, encoding="utf-8")
+        (prefix.parent / f"{args.gate}_survival_syntax.R").write_text(r_script_surv, encoding="utf-8", newline="\n")
         print("✓ Script R (sống còn) tái lặp đã tạo")
 
     # 8. JSON summary (cho agent)
     json_path = prefix.parent / f"{args.gate}_analysis_summary.json"
-    json_path.write_text(json.dumps(_json_safe(summary), ensure_ascii=False, indent=2), encoding="utf-8")
+    json_path.write_text(json.dumps(_json_safe(summary), ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     print(f"\n{'='*60}")
     print(f"✅ HOÀN THÀNH — Đầu ra tại: {out_dir}/")

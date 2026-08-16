@@ -318,11 +318,11 @@ def write_brief_outputs(brief: str, now: datetime | None = None) -> tuple[Path, 
 
     RESULTS_DIR.mkdir(exist_ok=True)
     fixed_output = RESULTS_DIR / "daily_ebm_brief.md"
-    fixed_output.write_text(brief, encoding="utf-8")
+    fixed_output.write_text(brief, encoding="utf-8", newline="\n")
 
     EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
     dated_output = EXPORTS_DIR / f"EBM_SANG_{run_at.strftime('%Y-%m-%d')}.md"
-    dated_output.write_text(brief, encoding="utf-8")
+    dated_output.write_text(brief, encoding="utf-8", newline="\n")
     write_brief_manifest(fixed_output=fixed_output, dated_output=dated_output, run_at=run_at)
 
     return fixed_output, dated_output
@@ -349,10 +349,10 @@ def write_brief_manifest(
         "safety_note": "Review-only draft brief. Not a clinical release package.",
     }
     fixed_manifest = RESULTS_DIR / "daily_ebm_brief_manifest.json"
-    fixed_manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    fixed_manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     dated_manifest = EXPORTS_DIR / f"EBM_SANG_{run_at.strftime('%Y-%m-%d')}_manifest.json"
-    dated_manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    dated_manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return fixed_manifest, dated_manifest
 
 

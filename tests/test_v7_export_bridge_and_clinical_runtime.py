@@ -13,7 +13,7 @@ from app.patient_education.patient_education import create_leaflet
 
 def test_export_policy_blocks_raw_data_and_allows_safe_markdown(tmp_path):
     safe = tmp_path / "safe.md"
-    safe.write_text("Tài liệu agent EBM đã khử định danh. PMID 12345678.", encoding="utf-8")
+    safe.write_text("Tài liệu agent EBM đã khử định danh. PMID 12345678.", encoding="utf-8", newline="\n")
     raw = tmp_path / "dataset.db"
     raw.write_bytes(b"sqlite-like")
 
@@ -47,7 +47,7 @@ def test_export_policy_blocks_bare_national_id_labels(tmp_path):
         "mã bệnh nhân: 012345678901",
     ):
         f = tmp_path / "demo.md"
-        f.write_text(text, encoding="utf-8")
+        f.write_text(text, encoding="utf-8", newline="\n")
         decision = classify_export_file(f)
         assert not decision.allowed, f"Không chặn được: {text!r}"
         assert "pii_like_text" in decision.reasons
@@ -55,7 +55,7 @@ def test_export_policy_blocks_bare_national_id_labels(tmp_path):
 
 def test_chatgpt_bridge_requires_feature_flag_and_writes_manifest(tmp_path):
     safe = tmp_path / "agent.md"
-    safe.write_text("Agent EBM export. Cần bác sĩ kiểm chứng.", encoding="utf-8")
+    safe.write_text("Agent EBM export. Cần bác sĩ kiểm chứng.", encoding="utf-8", newline="\n")
 
     with pytest.raises(PermissionError):
         prepare_chatgpt_project_export(tmp_path, [safe], feature_flags={})

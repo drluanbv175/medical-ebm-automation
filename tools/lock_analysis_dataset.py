@@ -387,7 +387,7 @@ def _build_blockers(
 
 def _write_manifest(out_dir: Path, manifest: Dict[str, Any]) -> Path:
     path = out_dir / "DATA_LOCK_manifest.json"
-    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
 
 
@@ -423,7 +423,7 @@ def _write_lock_memo(out_dir: Path, manifest: Dict[str, Any]) -> Path:
         lines.extend(["## Lý do chưa khóa", ""])
         lines.extend(f"- {b}" for b in manifest["blockers"])
         lines.append("")
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     return path
 
 
@@ -458,7 +458,7 @@ def _update_meta(out_dir: Path, manifest: Dict[str, Any],
         if isinstance(intake, dict):
             intake["db_locked"] = True
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def lock_dataset(

@@ -105,7 +105,7 @@ class TestTichHopThatG5SinhG6DocLai:
             "/ / / / / / /\n"
         )
         p = tmp_path / "legacy.csv"
-        p.write_text(old_text, encoding="utf-8")
+        p.write_text(old_text, encoding="utf-8", newline="\n")
         v = G6.detect_variables_from_redcap(p)
         assert v["exposure"] == "exposure_group"
         assert v["outcome"] == "outcome_event"
@@ -123,13 +123,13 @@ class TestDoanDelimiterBangSoCot:
             '"a","f1","","radio","nhan a"\n'
         )
         p = tmp_path / "x.csv"
-        p.write_text(text, encoding="utf-8")
+        p.write_text(text, encoding="utf-8", newline="\n")
         v = G6.detect_variables_from_redcap(p)
         assert v["all_vars"] == ["a"], v
 
     def test_dong_dau_khong_tach_duoc_gi_roi_ve_dau_phay(self, tmp_path):
         p = tmp_path / "single.csv"
-        p.write_text("onlyonecolumn\nrow1value\n", encoding="utf-8")
+        p.write_text("onlyonecolumn\nrow1value\n", encoding="utf-8", newline="\n")
         v = G6.detect_variables_from_redcap(p)
         assert v["all_vars"] == ["row1value"]
 

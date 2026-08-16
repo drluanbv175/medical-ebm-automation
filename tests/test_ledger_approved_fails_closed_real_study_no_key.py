@@ -36,7 +36,7 @@ def _write_forged_ledger(root: Path, study: str, *, gate_id: str = "G2",
     study_dir = root / "exports" / study
     study_dir.mkdir(parents=True, exist_ok=True)
     artifact = study_dir / "artifact.md"
-    artifact.write_text("noi dung artifact that", encoding="utf-8")
+    artifact.write_text("noi dung artifact that", encoding="utf-8", newline="\n")
     evidence_hash = hashlib.sha256(artifact.read_bytes()).hexdigest()
     forged_record = {
         "gate_id": gate_id,
@@ -126,14 +126,14 @@ def test_real_study_still_approved_when_signature_actually_valid(tmp_path, monke
     """Đối chứng: fail-closed chỉ áp dụng khi CHƯA có khóa — một khi máy CÓ khóa và bản ghi
     được ký ĐÚNG (qua sign_approval thật), đề tài thật vẫn duyệt được bình thường."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-real-study-key", encoding="utf-8")
+    key_path.write_text("pytest-real-study-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
     assert GC.signing_key_configured() is True
 
     study_dir = tmp_path / "exports" / REAL_STUDY
     study_dir.mkdir(parents=True, exist_ok=True)
     artifact = study_dir / "artifact.md"
-    artifact.write_text("noi dung artifact that", encoding="utf-8")
+    artifact.write_text("noi dung artifact that", encoding="utf-8", newline="\n")
     evidence_hash = hashlib.sha256(artifact.read_bytes()).hexdigest()
     timestamp = "2026-07-16T00:00:00Z"
     # SỬA 2026-07-26: chữ ký nay bind cả reviewer_role + reviewer_ref, nên phải ký ĐÚNG
@@ -150,7 +150,7 @@ def test_real_study_still_approved_when_signature_actually_valid(tmp_path, monke
         "timestamp_utc": timestamp, "reviewer_ref": "bac-si-that",
         "approver_signature": signature,
     }
-    (study_dir / "approval_ledger.json").write_text(json.dumps([record]), encoding="utf-8")
+    (study_dir / "approval_ledger.json").write_text(json.dumps([record]), encoding="utf-8", newline="\n")
     GC.write_ledger_seal(REAL_STUDY, [record], repo_root=tmp_path)
 
     assert GC.ledger_approved("G2", REAL_STUDY, artifact, repo_root=tmp_path) is True

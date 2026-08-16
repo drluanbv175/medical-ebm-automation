@@ -118,7 +118,7 @@ def test_morning_brief_surveillance_section_reads_pack_update_queue(tmp_path, mo
                 "title": "KDIGO update",
             },
         ]
-    }, ensure_ascii=False), encoding="utf-8")
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     updates = gen_morning_brief.check_surveillance_updates()
 

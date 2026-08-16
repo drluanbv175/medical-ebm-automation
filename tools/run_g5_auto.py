@@ -1131,7 +1131,7 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list) -> 
         '        "=" * 60,\n'
         '    ]\n'
         '    report_text = "\\n".join(lines)\n'
-        '    out_path.write_text(report_text, encoding="utf-8")\n'
+        '    out_path.write_text(report_text, encoding="utf-8", newline="\n")\n'
         '    print(report_text)\n'
         '    print(f"\\n-> Da luu bao cao: {out_path}")\n\n\n'
         'def main():\n'
@@ -2054,7 +2054,7 @@ def write_docx(artifact: str, path: Path) -> bool:
 def load_cp(p) -> dict:
     p = Path(p)
     if p.exists():
-        with open(p, encoding="utf-8") as f:
+        with open(p, encoding="utf-8", newline="\n") as f:
             return json.load(f)
     return {}
 
@@ -2242,7 +2242,7 @@ def main():
         hypothesis_type=hypothesis_type, margin=margin,
     )
     md = out / f"G5_A6_DATA_MGMT_{study}.md"
-    md.write_text(artifact, encoding="utf-8")
+    md.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
 
     # Sinh REDCap CSV
@@ -2263,13 +2263,13 @@ def main():
     # Sinh data_cleaning.py
     cleaning_script = gen_data_cleaning_script(study, design_code, rows)
     cleaning_path = scripts_dir / "data_cleaning.py"
-    cleaning_path.write_text(cleaning_script, encoding="utf-8")
+    cleaning_path.write_text(cleaning_script, encoding="utf-8", newline="\n")
     print(f"  → Script sinh: {cleaning_path}")
 
     # Sinh data_quality_report.py
     dqr_script = gen_data_quality_report_script(study, design_code, rows)
     dqr_path = scripts_dir / "data_quality_report.py"
-    dqr_path.write_text(dqr_script, encoding="utf-8")
+    dqr_path.write_text(dqr_script, encoding="utf-8", newline="\n")
     print(f"  → Script sinh: {dqr_path}")
 
     # Sinh DOCX
@@ -2310,7 +2310,7 @@ def main():
         ],
     }
     cp_path = out / "G5_checkpoint.json"
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     print(f"💾 Checkpoint: {cp_path}")
 
     quality_gate = G5Q.evaluate_study(

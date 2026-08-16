@@ -124,7 +124,7 @@ def test_v4332_dr8_empty_manifest_state(tmp_path):
     ev_dir = tmp_path / "evidence"
     ev_dir.mkdir()
     manifest = ev_dir / "evidence_manifest.csv"
-    manifest.write_text("evidence_id,pmid,doi,title,status\n", encoding="utf-8")
+    manifest.write_text("evidence_id,pmid,doi,title,status\n", encoding="utf-8", newline="\n")
 
     cfg = _make_config()
     runner = ProjectQARunner(tmp_path, cfg)

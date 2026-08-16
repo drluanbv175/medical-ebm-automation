@@ -130,9 +130,9 @@ class TestMaThietKeTuG2KhongBiEngineChayThatBoQua:
         d = tmp_path / "exports" / "S"
         d.mkdir(parents=True)
         if g1 is not None:
-            (d / "G1_checkpoint.json").write_text(json.dumps(g1), encoding="utf-8")
+            (d / "G1_checkpoint.json").write_text(json.dumps(g1), encoding="utf-8", newline="\n")
         if g2 is not None:
-            (d / "G2_checkpoint.json").write_text(json.dumps(g2), encoding="utf-8")
+            (d / "G2_checkpoint.json").write_text(json.dumps(g2), encoding="utf-8", newline="\n")
         return d
 
     def test_g2_thang_g1_khi_hai_ben_lech(self, tmp_path):

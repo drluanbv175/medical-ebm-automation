@@ -44,20 +44,20 @@ def _make_sandbox(tmp_path: Path):
     stub_dir = tmp_path / "stub"
     stub_dir.mkdir()
     launchctl = stub_dir / "launchctl"
-    launchctl.write_text(_FAKE_LAUNCHCTL, encoding="utf-8")
+    launchctl.write_text(_FAKE_LAUNCHCTL, encoding="utf-8", newline="\n")
     launchctl.chmod(0o755)
     marker_log = tmp_path / "kickstart.log"
-    marker_log.write_text("", encoding="utf-8")
+    marker_log.write_text("", encoding="utf-8", newline="\n")
 
     repo = tmp_path / "repo"
     (repo / "app/chatgpt_app").mkdir(parents=True)
     (repo / "app/core").mkdir(parents=True)
     (repo / "tools").mkdir(parents=True)
-    (repo / "app/chatgpt_app/agents.py").write_text("def foo():\n    return 1\n", encoding="utf-8")
-    (repo / "app/chatgpt_app/server.py").write_text("def bar():\n    return 2\n", encoding="utf-8")
-    (repo / "app/core/policy_engine.py").write_text("X = 1\n", encoding="utf-8")
-    (repo / "app/core/export_policy.py").write_text("Y = 2\n", encoding="utf-8")
-    (repo / "tools/run_chatgpt_mcp_stdio.py").write_text("Z = 3\n", encoding="utf-8")
+    (repo / "app/chatgpt_app/agents.py").write_text("def foo():\n    return 1\n", encoding="utf-8", newline="\n")
+    (repo / "app/chatgpt_app/server.py").write_text("def bar():\n    return 2\n", encoding="utf-8", newline="\n")
+    (repo / "app/core/policy_engine.py").write_text("X = 1\n", encoding="utf-8", newline="\n")
+    (repo / "app/core/export_policy.py").write_text("Y = 2\n", encoding="utf-8", newline="\n")
+    (repo / "tools/run_chatgpt_mcp_stdio.py").write_text("Z = 3\n", encoding="utf-8", newline="\n")
 
     import os
     env = dict(os.environ)
@@ -83,7 +83,7 @@ def test_valid_repo_triggers_kickstart_and_writes_marker(tmp_path: Path) -> None
 
 def test_syntax_broken_file_skips_kickstart_and_does_not_write_marker(tmp_path: Path) -> None:
     repo, fake_home, marker_log, env = _make_sandbox(tmp_path)
-    (repo / "app/chatgpt_app/server.py").write_text("def bar(\n    return 2\n", encoding="utf-8")
+    (repo / "app/chatgpt_app/server.py").write_text("def bar(\n    return 2\n", encoding="utf-8", newline="\n")
 
     result = _run(repo, env)
 

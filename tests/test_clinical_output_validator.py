@@ -169,7 +169,7 @@ def test_cli_returns_json_and_nonzero_when_blocked(tmp_path: Path):
     packet = copy.deepcopy(_approved_packet())
     packet["outpatient_apply_review"]["local_applicability_status"] = "needs_unit_confirmation"
     packet_path = tmp_path / "packet.json"
-    packet_path.write_text(json.dumps(packet, ensure_ascii=False), encoding="utf-8")
+    packet_path.write_text(json.dumps(packet, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     completed = subprocess.run(
         [sys.executable, "scripts/verify_clinical_output_gate.py", str(packet_path)],

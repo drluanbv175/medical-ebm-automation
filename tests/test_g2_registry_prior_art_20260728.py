@@ -55,7 +55,7 @@ def _write_g0_checkpoint(study_dir: Path, *, topic: str, base_query: str | None)
         cp["base_query"] = base_query
     study_dir.mkdir(parents=True, exist_ok=True)
     (study_dir / "G0_checkpoint.json").write_text(
-        json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 class _RecordingHttp:

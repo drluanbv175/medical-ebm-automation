@@ -1289,7 +1289,7 @@ def write_g9_checkpoint(
     }
 
     cp_path = out_dir / "G9_checkpoint.json"
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
 
 
@@ -1448,7 +1448,7 @@ def main():
     # ── Bước 3: Lưu Markdown ──
     print("\n💾 Bước 3/6: Lưu A10 Markdown...")
     md_path = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
-    md_path.write_text(artifact, encoding="utf-8")
+    md_path.write_text(artifact, encoding="utf-8", newline="\n")
     cover_letter_path = out_dir / f"G9_COVER_LETTER_{study}.md"
     cover_letter_path.write_text(
         "\n".join(

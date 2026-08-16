@@ -2985,7 +2985,7 @@ def main():
     generated_paths = []
     for filename, code in scripts_to_write.items():
         p = scripts_dir / filename
-        p.write_text(code, encoding="utf-8")
+        p.write_text(code, encoding="utf-8", newline="\n")
         generated_paths.append(str(p))
         print(f"  → {filename} ({len(code)//1024 or 1}KB)")
 
@@ -2993,7 +2993,7 @@ def main():
     print("\n  🐍 Sinh run_analysis_cli.py (Python CLI đầy đủ)...")
     cli_code = make_run_analysis_cli(v, n_adjusted, study, design_code, effect_type)
     cli_path = scripts_dir / "run_analysis_cli.py"
-    cli_path.write_text(cli_code, encoding="utf-8")
+    cli_path.write_text(cli_code, encoding="utf-8", newline="\n")
     generated_paths.append(str(cli_path))
     print(f"  → run_analysis_cli.py ({len(cli_code)//1024}KB)")
 
@@ -3001,7 +3001,7 @@ def main():
     print("  🔬 Sinh sensitivity_analysis.py...")
     sens_code = make_sensitivity_analysis(v, study, design_code)
     sens_path = scripts_dir / "sensitivity_analysis.py"
-    sens_path.write_text(sens_code, encoding="utf-8")
+    sens_path.write_text(sens_code, encoding="utf-8", newline="\n")
     generated_paths.append(str(sens_path))
     print(f"  → sensitivity_analysis.py ({len(sens_code)//1024}KB)")
 
@@ -3014,7 +3014,7 @@ def main():
     )
 
     md_path = out / f"G6_A7_ANALYSIS_SCRIPTS_{study}.md"
-    md_path.write_text(artifact, encoding="utf-8")
+    md_path.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"\n  → A7 Markdown: {md_path.name} ({len(artifact)//1024}KB)")
 
     # ─── Guardrail ───
@@ -3060,7 +3060,7 @@ def main():
         "artifact":          str(md_path),
     }
     cp_path = out / "G6_checkpoint.json"
-    cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # HỢP ĐỒNG CHẤT LƯỢNG G6 (PHA R LÔ R1, 15/08/2026) — tự chạy như G3/G8:
     # đối chiếu script ↔ SAP đã khoá (seed/alpha/kết cục/subgroup/thứ tự khoá).

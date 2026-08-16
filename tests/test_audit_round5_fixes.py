@@ -202,10 +202,10 @@ class TestG10SubmissionStatusBanner:
             _write_cross_sectional_fixture(d)
             _write_clean_citation_artifact(d, study)
             g8_content = "PRESUBMISSION REVIEW — test"
-            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8")
+            (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(g8_content, encoding="utf-8", newline="\n")
             _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
             g9_content = "AUTHOR INTEGRITY — test"
-            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8")
+            (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(g9_content, encoding="utf-8", newline="\n")
             _write_ledger_approval(d, "G9", g9_content, "PI")
             rc = _run_main(study)
             assert rc == 0
@@ -232,7 +232,7 @@ class TestG10DoiOnlyCitationWarning:
                 "Nguồn bổ sung: DOI 10.1016/S0140-6736(20)30183-5 (preprint, khong PMID).\n"
                 "Cần bác sĩ kiểm chứng.",
             )
-            artifact_path.write_text(text, encoding="utf-8")
+            artifact_path.write_text(text, encoding="utf-8", newline="\n")
             ok, reason = G10.citation_verification_ok(study, d)
             assert ok, reason
             captured = capsys.readouterr()

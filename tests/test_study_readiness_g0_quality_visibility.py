@@ -30,7 +30,7 @@ import study_readiness as SR  # noqa: E402
 def _write_g0_checkpoint(d: Path, payload: dict | None = None) -> Path:
     d.mkdir(parents=True, exist_ok=True)
     cp = d / "G0_checkpoint.json"
-    cp.write_text(json.dumps(payload or {}, ensure_ascii=False), encoding="utf-8")
+    cp.write_text(json.dumps(payload or {}, ensure_ascii=False), encoding="utf-8", newline="\n")
     return cp
 
 
@@ -89,6 +89,6 @@ def test_checkpoint_json_hong_khong_lam_crash_toan_bo_lenh(tmp_path):
     """File hỏng phải fail-soft (coi như checkpoint cũ), không được ném exception
     và làm crash toàn bộ study_readiness.py."""
     tmp_path.mkdir(parents=True, exist_ok=True)
-    (tmp_path / "G0_checkpoint.json").write_text("{ khong phai json hop le", encoding="utf-8")
+    (tmp_path / "G0_checkpoint.json").write_text("{ khong phai json hop le", encoding="utf-8", newline="\n")
     _, _, state = _g0_row(tmp_path)
     assert "chưa có lớp chất lượng" in state

@@ -68,7 +68,7 @@ def _chained_ledger(root: Path, study: str, artifact_hash: str, entries) -> list
 
 def _write_chained(root: Path, study: str, chain: list, *, reseal: bool = True) -> None:
     (root / "exports" / study / "approval_ledger.json").write_text(
-        json.dumps(chain), encoding="utf-8")
+        json.dumps(chain), encoding="utf-8", newline="\n")
     if reseal:
         GC.write_ledger_seal(study, chain, repo_root=root)
 
@@ -78,7 +78,7 @@ def test_deleting_the_revocation_from_the_end_is_now_detected(tmp_path, monkeypa
     CUỐI sổ cái để mở lại một cổng đã đóng. Chuỗi băm một mình không thấy (phần còn lại
     vẫn là chuỗi hoàn hảo) — phải có CON DẤU làm mốc neo ngoài file."""
     key = tmp_path / "gate_approval_key"
-    key.write_text("pytest-chain-key", encoding="utf-8")
+    key.write_text("pytest-chain-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
     study = "de-tai-cat-duoi"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
@@ -105,7 +105,7 @@ def test_deleting_the_revocation_from_the_end_is_now_detected(tmp_path, monkeypa
 def test_reordering_or_deleting_a_middle_record_breaks_the_chain(tmp_path, monkeypatch):
     """Xóa Ở GIỮA và đảo thứ tự — chuỗi băm bắt được ngay, không cần tới con dấu."""
     key = tmp_path / "gate_approval_key"
-    key.write_text("pytest-chain-key", encoding="utf-8")
+    key.write_text("pytest-chain-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
     study = "de-tai-dut-xich"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
@@ -131,7 +131,7 @@ def test_legacy_unchained_ledger_is_not_locked_out(tmp_path, monkeypatch):
     có con dấu) vẫn dùng được bình thường. Coi chúng là "đứt xích" sẽ khóa oan mọi đề tài
     cũ — đúng lỗi "siết quá tay" đã mắc ba lần trong đợt này."""
     key = tmp_path / "gate_approval_key"
-    key.write_text("pytest-chain-key", encoding="utf-8")
+    key.write_text("pytest-chain-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key))
     study = "de-tai-so-cai-cu"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
@@ -145,7 +145,7 @@ def _study_with_artifact(root: Path, study: str) -> tuple[Path, str]:
     study_dir = root / "exports" / study
     study_dir.mkdir(parents=True, exist_ok=True)
     artifact = study_dir / "artifact.md"
-    artifact.write_text("noi dung artifact", encoding="utf-8")
+    artifact.write_text("noi dung artifact", encoding="utf-8", newline="\n")
     return artifact, hashlib.sha256(artifact.read_bytes()).hexdigest()
 
 
@@ -170,7 +170,7 @@ def test_signature_signed_as_pi_cannot_be_relabelled_as_irb(tmp_path, monkeypatc
     chính mình rồi đổi nhãn reviewer_role thành IRB trong ledger JSON. Trước bản vá điều
     này TRÓT LỌT vì role không nằm trong nội dung được ký."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-thu-nghiem-role-binding"
@@ -197,7 +197,7 @@ def test_reviewer_ref_tampering_invalidates_signature(tmp_path, monkeypatch):
     """reviewer_ref cũng nằm trong payload — đổi danh tính người duyệt sau khi ký thì
     chữ ký phải mất hiệu lực (trước đây đổi thoải mái, chữ ký vẫn khớp)."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-thu-nghiem-ref-binding"
@@ -219,7 +219,7 @@ def test_reviewer_ref_tampering_invalidates_signature(tmp_path, monkeypatch):
 def test_matching_role_and_ref_still_verifies(tmp_path, monkeypatch):
     """Đối chứng dương tính: ký đúng + ghi đúng thì vẫn qua (bản vá không chặn oan)."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-thu-nghiem-hop-le"
@@ -246,7 +246,7 @@ def test_env_key_override_ignored_outside_test_context(tmp_path, monkeypatch):
     pytest, hàm này vốn đã trả False). Khi đó override phải bị bỏ qua hoàn toàn và hệ
     quay về khóa mặc định ~/.ebm-secrets/gate_approval_key."""
     fake_key = tmp_path / "khoa-tu-tao"
-    fake_key.write_text("khoa-cua-ke-tan-cong", encoding="utf-8")
+    fake_key.write_text("khoa-cua-ke-tan-cong", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(fake_key))
 
     # Trong pytest: override CÓ tác dụng (đó là mục đích hợp lệ duy nhất của biến này).
@@ -265,8 +265,8 @@ def test_per_role_key_produces_role_scoped_signature(tmp_path, monkeypatch):
     trò thật) thay vì 'shared' — để downstream nói đúng sự thật thay vì ngầm định mọi chữ
     ký đều tương đương."""
     base_key = tmp_path / "gate_approval_key"
-    base_key.write_text("khoa-chung", encoding="utf-8")
-    (tmp_path / "gate_approval_key_IRB").write_text("khoa-rieng-cua-hoi-dong", encoding="utf-8")
+    base_key.write_text("khoa-chung", encoding="utf-8", newline="\n")
+    (tmp_path / "gate_approval_key_IRB").write_text("khoa-rieng-cua-hoi-dong", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(base_key))
 
     study = "de-tai-co-khoa-rieng"
@@ -289,9 +289,9 @@ def test_role_scoped_signature_rejected_when_role_key_disappears(tmp_path, monke
     """Chống HẠ CẤP: bản ghi tự khai phạm vi 'role' mà máy hiện không còn khóa riêng của
     nhóm đó → từ chối, KHÔNG lặng lẽ chấp nhận bằng khóa chung."""
     base_key = tmp_path / "gate_approval_key"
-    base_key.write_text("khoa-chung", encoding="utf-8")
+    base_key.write_text("khoa-chung", encoding="utf-8", newline="\n")
     role_key = tmp_path / "gate_approval_key_IRB"
-    role_key.write_text("khoa-rieng-cua-hoi-dong", encoding="utf-8")
+    role_key.write_text("khoa-rieng-cua-hoi-dong", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(base_key))
 
     study = "de-tai-mat-khoa-rieng"
@@ -368,7 +368,7 @@ def test_later_signed_rejection_revokes_earlier_approval(tmp_path, monkeypatch):
     chọn argparse hợp lệ — tức quy trình được hỗ trợ, không phải thủ thuật), và
     stakeholder_review_audit.py cũng in [PASS] nên bác sĩ kiểm tay cũng thấy "ổn"."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-bi-rut-phe-duyet"
@@ -407,7 +407,7 @@ def test_tampered_revocation_fails_closed_not_erased(tmp_path, monkeypatch):
     không hợp lệ) ⇒ CHƯA DUYỆT. Hướng sai lệch này AN TOÀN: kẻ tấn công chỉ làm cổng ĐÓNG
     oan — bác sĩ thấy ngay và kiểm được ledger — chứ không MỞ được cổng đã thu hồi."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-thu-hoi-bi-pha"
@@ -455,9 +455,9 @@ def test_resigning_locally_recovers_a_gate_poisoned_by_foreign_or_legacy_records
     NÓ THU HỒI. Nên bản ghi lạ CŨ HƠN phê duyệt hợp lệ mới nhất không thể là thu hồi bị
     giấu — chỉ là dấu vết lịch sử. ⇒ KÝ LẠI TRÊN MÁY NÀY luôn là đường phục hồi."""
     key_old = tmp_path / "key_cu"
-    key_old.write_text("khoa-cu-hoac-may-khac", encoding="utf-8")
+    key_old.write_text("khoa-cu-hoac-may-khac", encoding="utf-8", newline="\n")
     key_now = tmp_path / "key_moi"
-    key_now.write_text("khoa-may-nay", encoding="utf-8")
+    key_now.write_text("khoa-may-nay", encoding="utf-8", newline="\n")
     study = "de-tai-phuc-hoi"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
 
@@ -510,7 +510,7 @@ def test_non_dict_ledger_row_does_not_crash_the_ledger_reader():
     d = Path(tempfile.mkdtemp())
     p = d / "approval_ledger.json"
     for payload in ('["chuoi rac", 123, null]', '[{"gate_id": "G2"}, "rac"]'):
-        p.write_text(payload, encoding="utf-8")
+        p.write_text(payload, encoding="utf-8", newline="\n")
         ledger = ApprovalLedger.from_file(p)   # không được ném
         assert isinstance(ledger, ApprovalLedger)
         ledger.to_file(p)                       # và ghi lại không mất dòng nào
@@ -535,9 +535,9 @@ def test_two_machine_ledger_still_works_and_retag_still_blocked(tmp_path, monkey
     thử chỉ khớp khi bản ghi VỐN LÀ của cổng này rồi bị đổi nhãn — bắt được đổi nhãn sang
     tên BẤT KỲ, kể cả tên cổng không tồn tại, mà không đụng bản ghi của máy khác."""
     key_a = tmp_path / "key_mac"
-    key_a.write_text("khoa-may-mac", encoding="utf-8")
+    key_a.write_text("khoa-may-mac", encoding="utf-8", newline="\n")
     key_b = tmp_path / "key_win"
-    key_b.write_text("khoa-may-windows", encoding="utf-8")
+    key_b.write_text("khoa-may-windows", encoding="utf-8", newline="\n")
     study = "de-tai-hai-may"
     artifact, evidence_hash = _study_with_artifact(tmp_path, study)
 
@@ -582,7 +582,7 @@ def test_revocation_cannot_be_hidden_by_retagging_or_retyping_the_record(tmp_pat
     file thì hệ KHÔNG phát hiện được. Muốn chống được cần sổ cái có CHUỖI BĂM LIÊN KẾT
     (mỗi bản ghi ký kèm hash bản trước) — thay đổi kiến trúc, cần bác sĩ quyết."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-giau-thu-hoi"
@@ -630,7 +630,7 @@ def test_ledger_write_does_not_delete_unparsable_records(tmp_path):
     # Gỡ khóa `scope` — chữ ký KHÔNG bị ảnh hưởng vì scope không nằm trong payload.
     recs = json.loads(ledger_p.read_text(encoding="utf-8"))
     del recs[0]["scope"]
-    ledger_p.write_text(json.dumps(recs), encoding="utf-8")
+    ledger_p.write_text(json.dumps(recs), encoding="utf-8", newline="\n")
 
     # Bác sĩ phê duyệt một cổng KHÁC — thao tác hoàn toàn bình thường.
     second = ApprovalLedger.from_file(ledger_p)
@@ -651,7 +651,7 @@ def test_block_reason_distinguishes_never_approved_revoked_and_tampered(tmp_path
     (phải hỏi lại hội đồng) và "sổ cái BỊ SỬA" (phải điều tra) — rồi mặc định hiểu là ca
     đầu và dùng cờ --i-know-*-not-signed cho xong. Mỗi tình huống phải có lý do riêng."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-chan-doan-ly-do"
@@ -679,7 +679,7 @@ def test_block_reason_distinguishes_never_approved_revoked_and_tampered(tmp_path
     # Nội dung bị sửa sau khi duyệt — phải nói rõ là "đổi sau khi duyệt", không phải
     # "chưa duyệt", để bác sĩ biết cần trình lại bản đã sửa cho người duyệt.
     _write_ledger_records(tmp_path, study, [approved])
-    artifact.write_text("noi dung DA BI SUA", encoding="utf-8")
+    artifact.write_text("noi dung DA BI SUA", encoding="utf-8", newline="\n")
     reason = GC.gate_block_reason("G2", study, artifact, repo_root=tmp_path) or ""
     assert "ĐÃ ĐỔI SAU KHI DUYỆT" in reason
 
@@ -689,7 +689,7 @@ def test_tie_on_identical_timestamp_resolves_to_rejection(tmp_path, monkeypatch)
     hay đóng. Trước đây sorted() ổn định nên đảo 2 dòng JSON là lật được cổng mà không
     đổi một byte đã ký nào. Nay hòa thì ưu tiên TỪ CHỐI (hướng an toàn)."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-hoa-thoi-diem"
@@ -709,7 +709,7 @@ def test_scope_disclosure_cannot_be_silenced_by_unsigned_record(tmp_path, monkey
     tự khai "v3:role:..." là tắt được cảnh báo "cổng này ký bằng khóa CHUNG" trong gói
     nộp — vô hiệu hóa đúng tính năng minh bạch vừa thêm, KHÔNG cần khóa."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-bi-tat-canh-bao"
@@ -739,7 +739,7 @@ def test_synthetic_approval_is_not_published_as_signed_scope(tmp_path, monkeypat
     đạo đức chỉ có phê duyệt MÔ PHỎNG. Trong hồ sơ nghiên cứu người thật, dòng đó đọc
     thành "cổng đạo đức đã có phê duyệt mật mã" — sai sự thật theo hướng nguy hiểm nhất."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-chi-co-phe-duyet-mo-phong"
@@ -769,7 +769,7 @@ def test_composed_path_and_symlink_evasion_is_blocked(tmp_path):
     real = exports / "du-lieu-noi-bo-2026"
     real.mkdir()
     (real / "study_meta.json").write_text(
-        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8")
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n")
     (exports / REAL_STUDY).symlink_to(real.name)
 
     for variant in (REAL_STUDY, f"./{REAL_STUDY}", f"{REAL_STUDY}/", f"{REAL_STUDY}/.",
@@ -787,7 +787,7 @@ def test_denylisted_name_in_middle_of_symlink_chain_is_blocked(tmp_path):
     final = exports / "ten-vo-hai"
     final.mkdir()
     (final / "study_meta.json").write_text(
-        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8")
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n")
     (exports / REAL_STUDY).symlink_to(final.name)   # chặng giữa mang tên bị cấm
     (exports / "loi-vao").symlink_to(REAL_STUDY)     # chặng đầu vô hại
 
@@ -805,7 +805,7 @@ def test_legitimate_study_name_containing_denylisted_substring_still_works(tmp_p
     d = exports / ok_name
     d.mkdir()
     (d / "study_meta.json").write_text(
-        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8")
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n")
 
     real_dir, err = GC.resolve_synthetic_study_dir(ok_name, tmp_path)
     assert err is None and real_dir is not None, f"CHẶN OAN: {err}"
@@ -824,7 +824,7 @@ def test_signed_rejection_cannot_be_flipped_to_approval(tmp_path, monkeypatch):
     KHÔNG cần biết khóa. Hệ báo "đã qua cổng đạo đức" trong khi hồ sơ thật là ĐÃ BỊ TỪ
     CHỐI — cách tệ nhất để đánh lừa bác sĩ."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-bi-tu-choi"
@@ -850,7 +850,7 @@ def test_synthetic_only_approval_cannot_be_flipped_to_real(tmp_path, monkeypatch
     """Cùng lớp lỗi với is_synthetic: một phê duyệt CHỈ dành cho dữ liệu thử nghiệm
     không được lật thành phê duyệt cho đề tài thật bằng cách sửa một cờ boolean."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-synthetic-bi-lat"
@@ -880,15 +880,15 @@ def test_symlink_laundering_of_denylisted_name_is_blocked(tmp_path, monkeypatch)
     real_dir = exports / "du-lieu-noi-bo-2026"
     real_dir.mkdir()
     (real_dir / "study_meta.json").write_text(
-        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8")
+        json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n")
     artifact = real_dir / "artifact.md"
-    artifact.write_text("noi dung", encoding="utf-8")
+    artifact.write_text("noi dung", encoding="utf-8", newline="\n")
     evidence_hash = hashlib.sha256(artifact.read_bytes()).hexdigest()
     (real_dir / "approval_ledger.json").write_text(json.dumps([{
         "gate_id": "G2", "decision": "APPROVED", "is_synthetic": False,
         "reviewer_role": "IRB", "evidence_hash": evidence_hash,
         "timestamp_utc": TIMESTAMP, "reviewer_identity_reference": "bia",
-    }]), encoding="utf-8")
+    }]), encoding="utf-8", newline="\n")
 
     # "Giặt tên": symlink mang tên đề tài THẬT trỏ vào thư mục tên khác.
     (exports / REAL_STUDY).symlink_to(real_dir.name)
@@ -945,7 +945,7 @@ def test_record_carrying_two_conflicting_identities_is_rejected(tmp_path, monkey
     reviewer_identity_reference và reviewer_ref KHÁC NHAU thì chữ ký ký theo một cái,
     còn sổ cái hiển thị cái kia → truy vết "ai đã duyệt" sai. Phải từ chối."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-hai-danh-tinh"
@@ -969,7 +969,7 @@ def test_record_declaring_agent_authorship_is_rejected(tmp_path, monkeypatch):
     tạo" nhưng bộ lọc CHƯA BAO GIỜ kiểm — bản ghi created_by_agent=true kèm chữ ký hợp lệ
     vẫn qua. Nay có kiểm thật (giới hạn: chỉ chặn bản ghi TRUNG THỰC tự khai)."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     for field in ("created_by_agent", "reviewer_agent", "artifact_creator_agent"):
@@ -993,7 +993,7 @@ def test_malformed_ledger_returns_false_not_exception(tmp_path, monkeypatch):
     """RED-TEAM VÒNG 2: ledger dị dạng từng ném AttributeError/TypeError — biến chốt
     FAIL-CLOSED thành CRASH pipeline. Chốt kiểm phải luôn trả True/False."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-ledger-di-dang"
@@ -1002,14 +1002,14 @@ def test_malformed_ledger_returns_false_not_exception(tmp_path, monkeypatch):
 
     for payload in ('{"gate_id": "G2"}', '["chuoi", null, 123]', 'null', '"chi la chuoi"',
                     '[{"gate_id": "G2", "decision": "APPROVED", "reviewer_role": 12345}]'):
-        ledger_p.write_text(payload, encoding="utf-8")
+        ledger_p.write_text(payload, encoding="utf-8", newline="\n")
         assert GC.ledger_approved("G2", study, artifact, repo_root=tmp_path) is False, payload
 
 
 def test_non_ascii_mac_returns_false_not_typeerror(tmp_path, monkeypatch):
     """RED-TEAM VÒNG 2: hmac.compare_digest ném TypeError với chuỗi ngoài ASCII."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-mac-phi-ascii"
@@ -1033,7 +1033,7 @@ def test_legacy_v1_bare_hex_signature_no_longer_accepted(tmp_path, monkeypatch):
     né hoàn toàn phần ràng buộc role vừa thêm."""
     import hmac as _hmac
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-shared-key", encoding="utf-8")
+    key_path.write_text("pytest-shared-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
     study = "de-tai-chu-ky-cu"

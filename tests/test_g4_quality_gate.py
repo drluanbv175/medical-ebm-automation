@@ -198,10 +198,10 @@ def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch, role: str | None = None) -> Path:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-g4-quality-key", encoding="utf-8")
+    key_path.write_text("pytest-g4-quality-key", encoding="utf-8", newline="\n")
     if role:
         (tmp_path / f"gate_approval_key_{role}").write_text(
-            f"pytest-g4-quality-key-{role}", encoding="utf-8")
+            f"pytest-g4-quality-key-{role}", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
     return key_path
 
@@ -646,17 +646,17 @@ def _seed_g0_g1_g3(study_dir: Path, *, alpha: float = 0.05) -> None:
     study_dir.mkdir(parents=True, exist_ok=True)
     (study_dir / "G0_checkpoint.json").write_text(json.dumps({
         "gate": "G0", "topic": "Đề tài kiểm định G4", "guardrail": {"passed": True},
-    }), encoding="utf-8")
+    }), encoding="utf-8", newline="\n")
     (study_dir / "G1_checkpoint.json").write_text(json.dumps({
         "gate": "G1",
         "design": {"internal_code": "rct", "primary": "RCT song song",
                    "reporting_standard": "CONSORT 2025", "ambiguous": False},
-    }), encoding="utf-8")
+    }), encoding="utf-8", newline="\n")
     (study_dir / "G3_checkpoint.json").write_text(json.dumps({
         "gate": "G3", "design_code": "rct", "alpha": alpha, "power": 0.8,
         "n_adjusted": 400, "confirmed_n": None, "effect_val": 0.7, "effect_type": "RR",
         "hypothesis_type": "superiority", "margin": None, "sd": None, "guardrail": "✅ PASS",
-    }), encoding="utf-8")
+    }), encoding="utf-8", newline="\n")
 
 
 def test_pipeline_that_g4_moi_sinh_la_draft_needs_human_content():
@@ -704,7 +704,7 @@ def test_pipeline_that_ky_bang_khoa_vai_tro_dat_locked_va_ghi_g4_lock_date(tmp_p
         text = artifact_path.read_text(encoding="utf-8")
         for old, new in _COMPARATIVE_FILLS:
             text = text.replace(old, new)
-        artifact_path.write_text(text, encoding="utf-8")
+        artifact_path.write_text(text, encoding="utf-8", newline="\n")
 
         meta = GC.ensure_study_meta(d)
         meta["gate_params"]["G4"].update({
@@ -712,7 +712,8 @@ def test_pipeline_that_ky_bang_khoa_vai_tro_dat_locked_va_ghi_g4_lock_date(tmp_p
             "subgroup_multiplicity_predefined_confirmed": True,
             "reviewed_by_role": "STATISTICIAN", "reviewed_at": "2026-07-29T08:00:00+00:00",
         })
-        (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8",
+            newline="\n")
 
         sign = subprocess.run(
             [PYTHON, str(TOOLS_DIR / "approve_gate.py"), "--study", study, "--gate", "G4",
@@ -761,7 +762,7 @@ def test_pipeline_that_g3_chay_lai_sau_khi_ky_bi_phat_hien_qua_g4_quality_gate(t
         g3_path = d / "G3_checkpoint.json"
         g3 = json.loads(g3_path.read_text(encoding="utf-8"))
         g3["alpha"] = 0.10
-        g3_path.write_text(json.dumps(g3), encoding="utf-8")
+        g3_path.write_text(json.dumps(g3), encoding="utf-8", newline="\n")
 
         quality = subprocess.run(
             [PYTHON, str(TOOLS_DIR / "g4_quality_gate.py"), "--study", study],

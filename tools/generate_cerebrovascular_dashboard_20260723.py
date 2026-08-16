@@ -260,7 +260,7 @@ DATA = {
 
 def main() -> None:
     HTML_PATH.parent.mkdir(parents=True, exist_ok=True)
-    HTML_PATH.write_text(render_html(DATA, TEMPLATE), encoding="utf-8")
+    HTML_PATH.write_text(render_html(DATA, TEMPLATE), encoding="utf-8", newline="\n")
     print(HTML_PATH)
 
 

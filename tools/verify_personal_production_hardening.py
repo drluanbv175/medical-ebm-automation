@@ -925,8 +925,8 @@ def markdown_report(report: dict) -> str:
 
 def write_reports(report: dict, json_path: Path = DEFAULT_JSON, md_path: Path = DEFAULT_MD) -> None:
     json_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    md_path.write_text(markdown_report(report), encoding="utf-8")
+    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    md_path.write_text(markdown_report(report), encoding="utf-8", newline="\n")
 
 
 def main() -> int:

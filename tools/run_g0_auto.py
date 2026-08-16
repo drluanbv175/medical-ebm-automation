@@ -1318,7 +1318,7 @@ def write_checkpoint(study_name: str, out_dir: Path, results: dict,
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
     cp_path = out_dir / "G0_checkpoint.json"
-    cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
 
 
@@ -1387,7 +1387,7 @@ def main():
             "guardrail": {"passed": False, "n_errors": 1,
                           "errors": ["R1 🔴 Không có chủ đề — không có nguồn nào để tra"]},
             "disclaimer": "Cần bác sĩ kiểm chứng.",
-        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        }, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
         print("🚧 G0 DỪNG: --topic rỗng. Đã ghi checkpoint BLOCKED tại "
               f"{out_dir / 'G0_checkpoint.json'}")
         return GC.EXIT_BLOCKED
@@ -1451,11 +1451,11 @@ def main():
     if md_path.exists():
         backup = out_dir / f"G0_A1_PICO_FINER_{study}.bak-{datetime.now():%Y%m%d-%H%M%S}.md"
         try:
-            backup.write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8")
+            backup.write_text(md_path.read_text(encoding="utf-8", newline="\n"), encoding="utf-8")
             print(f"  ↩ Đã sao lưu bản A1 cũ: {backup.name}")
         except OSError as e:
             print(f"  ⚠ Không sao lưu được bản A1 cũ ({e}) — vẫn tiếp tục ghi đè")
-    md_path.write_text(artifact_md, encoding="utf-8")
+    md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path}")
 
     # 6. Guardrail
@@ -1511,7 +1511,7 @@ def main():
             must_not_fabricate=["PMID"],
             study_meta_patch={"query_en": "<từ khóa PubMed tiếng Anh>"},
         )
-        cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+        cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
         print("  🚧 G0 DỪNG: 0 PMID — cần --query-en (hệ KHÔNG bịa PMID).")
 
     # Lưu JSON kết quả PubMed thô
@@ -1536,7 +1536,7 @@ def main():
                           for r in results.get("observational", [])],
         "true_counts": results.get("true_counts", {}),
     }
-    raw_path.write_text(json.dumps(raw_results, ensure_ascii=False, indent=2), encoding="utf-8")
+    raw_path.write_text(json.dumps(raw_results, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # ── HỢP ĐỒNG CHẤT LƯỢNG G0 (mới 2026-07-28) ──────────────────────────────
     # G0 từng là cổng DUY NHẤT không có bước này: nó in "✅ G0 HOÀN THÀNH" và thoát
@@ -1560,7 +1560,7 @@ def main():
     # bị chặn vì lý do nặng hơn (0 PMID) — không đè lý do dừng gốc.
     if not blocked and quality.get("needs_input"):
         cp["needs_input"] = quality["needs_input"]
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # Tóm tắt cuối — banner NÓI ĐÚNG trạng thái, không còn "HOÀN THÀNH" vô điều kiện.
     print(f"\n{'='*65}")

@@ -48,7 +48,7 @@ def test_search_blocks_pii_query_labeled_id() -> None:
 def test_search_and_fetch_use_standard_shapes(tmp_path: Path) -> None:
     docs = tmp_path / "docs"
     docs.mkdir()
-    (docs / "guide.md").write_text("# Hướng dẫn EBM\n\nCổng duyệt bác sĩ.", encoding="utf-8")
+    (docs / "guide.md").write_text("# Hướng dẫn EBM\n\nCổng duyệt bác sĩ.", encoding="utf-8", newline="\n")
 
     index = _index(tmp_path)
     result = index.search("EBM bác sĩ")
@@ -65,8 +65,8 @@ def test_search_and_fetch_use_standard_shapes(tmp_path: Path) -> None:
 def test_secret_and_raw_dataset_are_never_indexed(tmp_path: Path) -> None:
     docs = tmp_path / "docs"
     docs.mkdir()
-    (docs / "safe.md").write_text("# Safe\nNo identifiers.", encoding="utf-8")
-    (tmp_path / ".env").write_text("OPENAI_API_KEY=secret", encoding="utf-8")
+    (docs / "safe.md").write_text("# Safe\nNo identifiers.", encoding="utf-8", newline="\n")
+    (tmp_path / ".env").write_text("OPENAI_API_KEY=secret", encoding="utf-8", newline="\n")
     (docs / "patients.sqlite").write_bytes(b"not a real database")
 
     ids = {item["id"] for item in _index(tmp_path).search("")["results"]}
@@ -75,8 +75,8 @@ def test_secret_and_raw_dataset_are_never_indexed(tmp_path: Path) -> None:
 
 
 def test_fetch_blocks_path_traversal_and_non_allowlisted_file(tmp_path: Path) -> None:
-    (tmp_path / "README.md").write_text("# Public", encoding="utf-8")
-    (tmp_path / "private.txt").write_text("not allowlisted", encoding="utf-8")
+    (tmp_path / "README.md").write_text("# Public", encoding="utf-8", newline="\n")
+    (tmp_path / "private.txt").write_text("not allowlisted", encoding="utf-8", newline="\n")
     index = _index(tmp_path)
 
     with pytest.raises(KeyError):
@@ -148,7 +148,7 @@ def test_mcp_tool_contract_is_read_only_and_company_knowledge_compatible() -> No
 def test_local_git_ref_is_detected_without_subprocess(tmp_path: Path) -> None:
     git_dir = tmp_path / ".git"
     git_dir.mkdir()
-    (git_dir / "HEAD").write_text("ref: refs/heads/feat/chatgpt-app\n", encoding="utf-8")
+    (git_dir / "HEAD").write_text("ref: refs/heads/feat/chatgpt-app\n", encoding="utf-8", newline="\n")
 
     assert _local_git_ref(tmp_path) == "feat/chatgpt-app"
 
@@ -161,7 +161,7 @@ def test_fetch_text_includes_inline_disclaimer(tmp_path: Path) -> None:
     thường render `text` làm nội dung; đầu ra y khoa luôn kèm disclaimer."""
     docs = tmp_path / "docs"
     docs.mkdir()
-    (docs / "g.md").write_text("# Hướng dẫn\nNội dung y khoa.", encoding="utf-8")
+    (docs / "g.md").write_text("# Hướng dẫn\nNội dung y khoa.", encoding="utf-8", newline="\n")
     fetched = _index(tmp_path).fetch("docs/g.md")
     assert "Cần bác sĩ kiểm chứng" in fetched["text"]
     assert fetched["text"].index("Cần bác sĩ") < fetched["text"].index("Nội dung y khoa")
@@ -174,12 +174,12 @@ def test_pii_in_document_tail_beyond_scan_window_is_blocked(tmp_path: Path) -> N
     docs.mkdir()
     body = "# An toàn\n" + ("nội dung sạch. " * 15000) + "\nCCCD: 012345678901\n"
     assert len(body) > 200_000  # PII nằm SAU cửa sổ quét cũ
-    (docs / "big.md").write_text(body, encoding="utf-8")
+    (docs / "big.md").write_text(body, encoding="utf-8", newline="\n")
     assert _index(tmp_path).search("")["results"] == []
 
 
 def test_system_status_invariants_are_locked(tmp_path: Path) -> None:
-    (tmp_path / "README.md").write_text("# X", encoding="utf-8")
+    (tmp_path / "README.md").write_text("# X", encoding="utf-8", newline="\n")
     s = _index(tmp_path).system_status()
     assert s["mode"] == "governed_orchestration_review"
     assert s["writes_enabled"] == "agent_mirror_sync_only_with_explicit_confirmation"
@@ -211,7 +211,7 @@ def test_yaml_knowledge_pack_with_pii_is_blocked(tmp_path: Path) -> None:
     """Lớp PII thứ cấp phải áp cho cả .yaml (knowledge-packs), không chỉ .md."""
     kp = tmp_path / "knowledge-packs" / "sub"
     kp.mkdir(parents=True)
-    (kp / "pack.yaml").write_text("title: x\nnote: 'CCCD 012345678901'\n", encoding="utf-8")
+    (kp / "pack.yaml").write_text("title: x\nnote: 'CCCD 012345678901'\n", encoding="utf-8", newline="\n")
     assert _index(tmp_path).search("")["results"] == []
 
 

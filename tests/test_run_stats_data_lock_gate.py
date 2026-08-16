@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import os as _os_winci
 import shutil
 import stat
 import subprocess
@@ -11,15 +10,6 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-
-import pytest as _pytest_winci
-
-# WINDOWS-CI (16/08/2026): cùng họ CRLF làm lệch hash ký (xem ghi chú ở
-# test_g2_quality_gate) — skip HẸP nt+MRAQ_OFFLINE_CI, mọi máy thật giữ nguyên.
-pytestmark = _pytest_winci.mark.skipif(
-    _os_winci.name == "nt" and _os_winci.environ.get("MRAQ_OFFLINE_CI") == "1",
-    reason="CRLF làm lệch hash ký trên runner Windows — chờ chuẩn hoá newline khi sinh artifact",
-)
 
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -37,7 +27,7 @@ from tests.g5_test_helpers import (  # noqa: E402
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-data-lock-key", encoding="utf-8")
+    key_path.write_text("pytest-data-lock-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
@@ -61,7 +51,7 @@ def _approve_g2_g4_g5(study: str) -> None:
             "G5": "DATA_GOVERNANCE_QA_REVIEWER",
         }
         artifact = study_dir / artifact_rel
-        artifact.write_text(content, encoding="utf-8")
+        artifact.write_text(content, encoding="utf-8", newline="\n")
         timestamp_utc = datetime.now(timezone.utc).isoformat()
         evidence_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
         signature = GC.sign_approval(gate_id, study, evidence_hash, timestamp_utc,
@@ -93,7 +83,7 @@ def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
 
 
 def _csv(path: Path, text: str) -> Path:
-    path.write_text(text.strip() + "\n", encoding="utf-8")
+    path.write_text(text.strip() + "\n", encoding="utf-8", newline="\n")
     return path
 
 

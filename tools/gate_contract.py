@@ -577,7 +577,7 @@ def ensure_study_meta(out_dir: Path, *, seed: Optional[Dict[str, Any]] = None,
                         changed = True
 
     if changed or not p.exists():
-        p.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        p.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return meta
 
 
@@ -1520,7 +1520,7 @@ def write_ledger_seal(study: str, records: Any, repo_root: Optional[Path] = None
         "tip_hash": tip,
         "sealed_at_utc": sealed_at,
         "seal_signature": sig,
-    }, ensure_ascii=False, indent=2), encoding="utf-8")
+    }, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return True
 
 

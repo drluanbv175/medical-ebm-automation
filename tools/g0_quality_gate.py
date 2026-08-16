@@ -588,7 +588,7 @@ def write_quality_report(study: str, out_dir: Path,
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "G0_QUALITY_REPORT.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     def _rows(key: str) -> List[str]:
         out = []
@@ -673,7 +673,7 @@ def write_quality_report(study: str, out_dir: Path,
     ])
 
     md_path = out_dir / "G0_QUALITY_REPORT.md"
-    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return md_path
 
 
@@ -707,7 +707,7 @@ def refresh_checkpoint(*, study: str, out_dir: Path,
     if report.get("needs_input") and not already_blocked_on_pubmed:
         checkpoint["needs_input"] = report["needs_input"]
     checkpoint_path.write_text(
-        json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return checkpoint_path
 
 

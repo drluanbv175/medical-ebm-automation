@@ -464,7 +464,7 @@ def _write_query_log(path: Path, issues: List[Dict[str, Any]]) -> Path:
 
 def _write_json(path: Path, payload: Dict[str, Any]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
 
 
@@ -483,7 +483,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any], report_path: Path) -> No
         "note": "Làm sạch trên bản sao; query mở phải được đóng trước data lock.",
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def clean_dataset(study: str, data_path: Path, *,

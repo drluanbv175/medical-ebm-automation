@@ -1391,7 +1391,7 @@ def main():
         hypothesis_type=args.hypothesis_type,
     )
     md_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md"
-    md_path.write_text(artifact, encoding="utf-8")
+    md_path.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path} ({len(artifact)//1000}KB)")
 
     print("🛡️  Bước 5/6: Kiểm guardrail R1-R7...")
@@ -1605,7 +1605,7 @@ def main():
     if need is not None:
         cp["needs_input"] = need
     cp_path = out_dir / "G3_checkpoint.json"
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     print("💾 Ghi checkpoint G3...")
     print(f"  → Lưu: {cp_path}")
     # ── HỢP ĐỒNG CHẤT LƯỢNG G3 ────────────────────────────────────────────

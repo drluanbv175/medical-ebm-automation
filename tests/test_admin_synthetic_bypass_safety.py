@@ -80,7 +80,7 @@ def _study_dir(name: str) -> Path:
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-admin-bypass-key", encoding="utf-8")
+    key_path.write_text("pytest-admin-bypass-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
@@ -119,7 +119,7 @@ def test_admin_approve_refuses_study_without_synthetic_marker():
     study = "PYTEST-ADMIN-BYPASS-T3"
     d = _study_dir(study)
     try:
-        (d / "study_meta.json").write_text(json.dumps({"title": "demo"}), encoding="utf-8")
+        (d / "study_meta.json").write_text(json.dumps({"title": "demo"}), encoding="utf-8", newline="\n")
         res = _run_admin_approve(study, "--i-confirm-synthetic-admin-bypass")
         assert res.returncode != 0
         assert "study_kind=synthetic_test" in res.stdout
@@ -201,7 +201,7 @@ def test_mark_refuses_study_with_real_progress_flags_already_set():
     d = _study_dir(study)
     try:
         (d / "study_meta.json").write_text(
-            json.dumps({"title": "demo", "irb_approved": True}), encoding="utf-8")
+            json.dumps({"title": "demo", "irb_approved": True}), encoding="utf-8", newline="\n")
         res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
         assert res.returncode != 0
         assert "dấu hiệu tiến độ THẬT" in res.stdout
@@ -217,7 +217,7 @@ def test_mark_refuses_study_with_real_ledger_approval_already_present(tmp_path, 
     d = _study_dir(study)
     try:
         _configure_test_signing_key(tmp_path, monkeypatch)
-        (d / "study_meta.json").write_text(json.dumps({"title": "demo"}), encoding="utf-8")
+        (d / "study_meta.json").write_text(json.dumps({"title": "demo"}), encoding="utf-8", newline="\n")
         evidence = "ETHICS PACKAGE THẬT — đã duyệt (giả lập test)"
         import hashlib
         evidence_hash = hashlib.sha256(evidence.encode()).hexdigest()
@@ -229,7 +229,7 @@ def test_mark_refuses_study_with_real_ledger_approval_already_present(tmp_path, 
             "artifact_creator_agent": None, "reviewer_agent": None,
             "is_synthetic": False, "approver_signature": None,
         }
-        (d / "approval_ledger.json").write_text(json.dumps([record]), encoding="utf-8")
+        (d / "approval_ledger.json").write_text(json.dumps([record]), encoding="utf-8", newline="\n")
         res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
         assert res.returncode != 0
         assert "phê duyệt THẬT" in res.stdout
@@ -246,7 +246,7 @@ def test_full_success_path_marks_and_approves_all_four_gates(tmp_path, monkeypat
     d = _study_dir(study)
     try:
         _configure_test_signing_key(tmp_path, monkeypatch)
-        (d / "study_meta.json").write_text(json.dumps({"title": "demo tổng hợp"}), encoding="utf-8")
+        (d / "study_meta.json").write_text(json.dumps({"title": "demo tổng hợp"}), encoding="utf-8", newline="\n")
 
         mark_res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
         assert mark_res.returncode == 0
@@ -272,7 +272,7 @@ def test_admin_bypass_records_carry_distinguishing_marker(tmp_path, monkeypatch)
     d = _study_dir(study)
     try:
         _configure_test_signing_key(tmp_path, monkeypatch)
-        (d / "study_meta.json").write_text(json.dumps({"title": "demo"}), encoding="utf-8")
+        (d / "study_meta.json").write_text(json.dumps({"title": "demo"}), encoding="utf-8", newline="\n")
         assert _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study").returncode == 0
         assert _run_admin_approve(study, "--gates", "G2",
                                   "--i-confirm-synthetic-admin-bypass").returncode == 0
@@ -342,7 +342,7 @@ def test_mark_refuses_absolute_path_escaping_exports(tmp_path):
     bị containment chặn (thư mục giải ra không phải con trực tiếp của exports/)."""
     outside = tmp_path / "decoy-outside-exports"
     outside.mkdir()
-    (outside / "study_meta.json").write_text(json.dumps({"title": "decoy"}), encoding="utf-8")
+    (outside / "study_meta.json").write_text(json.dumps({"title": "decoy"}), encoding="utf-8", newline="\n")
     res = _run_mark(str(outside), "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
     assert res.returncode != 0
     assert "con TRỰC TIẾP của" in res.stdout
@@ -354,7 +354,7 @@ def test_admin_approve_refuses_absolute_path_escaping_exports(tmp_path):
     outside = tmp_path / "decoy-outside-exports2"
     outside.mkdir()
     (outside / "study_meta.json").write_text(
-        json.dumps({"title": "decoy", "study_kind": "synthetic_test"}), encoding="utf-8")
+        json.dumps({"title": "decoy", "study_kind": "synthetic_test"}), encoding="utf-8", newline="\n")
     res = _run_admin_approve(str(outside), "--i-confirm-synthetic-admin-bypass")
     assert res.returncode != 0
     assert "con TRỰC TIẾP của" in res.stdout
@@ -379,7 +379,7 @@ def test_mark_refuses_symlink_escaping_exports(tmp_path):
     (resolve theo symlink → parent không phải exports/)."""
     outside = tmp_path / "symlink-target-outside"
     outside.mkdir()
-    (outside / "study_meta.json").write_text(json.dumps({"title": "decoy"}), encoding="utf-8")
+    (outside / "study_meta.json").write_text(json.dumps({"title": "decoy"}), encoding="utf-8", newline="\n")
     link = REPO_ROOT / "exports" / "PYTEST-ADMIN-BYPASS-T19-LINK"
     if link.exists() or link.is_symlink():
         link.unlink()
@@ -409,7 +409,7 @@ def test_mark_refuses_study_carrying_real_institution_org_lines():
         (d / "study_meta.json").write_text(json.dumps({
             "title": "Bí danh giả lập mang danh viện thật",
             "org_lines": ["BỆNH VIỆN QUÂN Y 175", "TRUNG TÂM KHÁM BỆNH VÀ ĐIỀU TRỊ THEO YÊU CẦU C1"],
-        }, ensure_ascii=False), encoding="utf-8")
+        }, ensure_ascii=False), encoding="utf-8", newline="\n")
         res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
         assert res.returncode != 0
         assert "CƠ SỞ Y TẾ THẬT" in res.stdout
@@ -431,7 +431,7 @@ def test_mark_refuses_study_with_real_institution_name_in_title_but_no_org_lines
         (d / "study_meta.json").write_text(json.dumps({
             "title": "Khảo sát hài lòng người bệnh tại Bệnh viện Đa khoa Tỉnh X",
             "org_lines": None,
-        }, ensure_ascii=False), encoding="utf-8")
+        }, ensure_ascii=False), encoding="utf-8", newline="\n")
         res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
         assert res.returncode != 0
         assert "CƠ SỞ Y TẾ THẬT" in res.stdout
@@ -451,7 +451,7 @@ def test_mark_allows_study_with_generic_title_and_no_institution_name():
     try:
         (d / "study_meta.json").write_text(json.dumps({
             "title": "Yếu tố nguy cơ nhiễm khuẩn vết mổ sau phẫu thuật thay khớp háng",
-        }, ensure_ascii=False), encoding="utf-8")
+        }, ensure_ascii=False), encoding="utf-8", newline="\n")
         res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
         assert res.returncode == 0
         meta = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
@@ -475,7 +475,7 @@ def test_mark_refuses_institution_name_in_nfd_unicode_form():
         nfd_title = unicodedata.normalize("NFD", nfc_title)
         assert nfc_title != nfd_title, "fixture lỗi: chuỗi này không có gì để NFD hóa khác NFC"
         (d / "study_meta.json").write_text(
-            json.dumps({"title": nfd_title}, ensure_ascii=False), encoding="utf-8")
+            json.dumps({"title": nfd_title}, ensure_ascii=False), encoding="utf-8", newline="\n")
         res = _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study")
         assert res.returncode != 0, "Title dạng NFD né được heuristic — hồi quy lỗ hổng NFD"
         assert "CƠ SỞ Y TẾ THẬT" in res.stdout
@@ -492,12 +492,12 @@ def test_admin_approve_refuses_artifact_outside_study_dir(tmp_path, monkeypatch)
     d = _study_dir(study)
     try:
         _configure_test_signing_key(tmp_path, monkeypatch)
-        (d / "study_meta.json").write_text(json.dumps({"title": "demo"}), encoding="utf-8")
+        (d / "study_meta.json").write_text(json.dumps({"title": "demo"}), encoding="utf-8", newline="\n")
         assert _run_mark(study, "--i-confirm-this-is-synthetic-test-data-not-a-real-study").returncode == 0
         outside_file = tmp_path / "other_study_artifact.md"
-        outside_file.write_text("tài liệu đề tài KHÁC", encoding="utf-8")
+        outside_file.write_text("tài liệu đề tài KHÁC", encoding="utf-8", newline="\n")
         amap = tmp_path / "amap.json"
-        amap.write_text(json.dumps({"G2": str(outside_file)}), encoding="utf-8")
+        amap.write_text(json.dumps({"G2": str(outside_file)}), encoding="utf-8", newline="\n")
         res = _run_admin_approve(study, "--gates", "G2", "--artifacts", str(amap),
                                  "--i-confirm-synthetic-admin-bypass")
         assert res.returncode != 0

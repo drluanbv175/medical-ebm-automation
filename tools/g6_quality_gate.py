@@ -254,14 +254,14 @@ def _finish(study: str, thu_muc: Path, trang_thai: str, ket: list[dict],
                          "thống kê viên. Cần bác sĩ kiểm chứng."}
     if write and thu_muc.exists():
         (thu_muc / "G6_QUALITY_REPORT.json").write_text(
-            json.dumps(bao, ensure_ascii=False, indent=1), encoding="utf-8")
+            json.dumps(bao, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
         dong = [f"# G6 QUALITY — {study}: **{trang_thai}**", ""]
         for k in ket:
             dau = {True: "✅", False: "❌", None: "◌"}[k["pass"]]
             dong.append(f"- {dau} `{k['id']}`{' 🔴' if k['blocking'] and k['pass'] is False else ''}: {k['detail']}")
         dong.append(f"\n> {bao['disclaimer']}")
         (thu_muc / "G6_QUALITY_REPORT.md").write_text("\n".join(dong) + "\n",
-                                                      encoding="utf-8")
+                                                      encoding="utf-8", newline="\n")
         cpp = thu_muc / "G6_checkpoint.json"
         if cpp.exists():
             try:
@@ -269,7 +269,7 @@ def _finish(study: str, thu_muc: Path, trang_thai: str, ket: list[dict],
                 cp["quality_gate"] = {"status": trang_thai, "version": VERSION,
                                       "at": bao["generated_at"]}
                 cpp.write_text(json.dumps(cp, ensure_ascii=False, indent=1),
-                               encoding="utf-8")
+                               encoding="utf-8", newline="\n")
             except ValueError:
                 pass
     return bao

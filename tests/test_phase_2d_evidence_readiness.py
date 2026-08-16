@@ -84,7 +84,7 @@ def test_phase_2d_evidence_dossier_files_exist_and_current_pack_is_not_ready():
 
 def test_phase_2d_manual_source_import_blocks_missing_hash_and_allows_complete_html_snapshot(tmp_path):
     source = tmp_path / "official.html"
-    source.write_text("<html><h1>Official guideline</h1></html>", encoding="utf-8")
+    source.write_text("<html><h1>Official guideline</h1></html>", encoding="utf-8", newline="\n")
 
     blocked = import_official_source({
         "source_file": str(source),

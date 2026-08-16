@@ -22,21 +22,12 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os as _os_winci
 import shutil
 import sys
 import time
 from pathlib import Path
 
 import pytest
-import pytest as _pytest_winci
-
-# WINDOWS-CI (16/08/2026): cùng họ CRLF làm lệch hash ký (xem ghi chú ở
-# test_g2_quality_gate) — skip HẸP nt+MRAQ_OFFLINE_CI, mọi máy thật giữ nguyên.
-pytestmark = _pytest_winci.mark.skipif(
-    _os_winci.name == "nt" and _os_winci.environ.get("MRAQ_OFFLINE_CI") == "1",
-    reason="CRLF làm lệch hash ký trên runner Windows — chờ chuẩn hoá newline khi sinh artifact",
-)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = REPO_ROOT / "tools"
@@ -73,7 +64,7 @@ def _write_locked_manifest(study_dir: Path, locked_csv_content: str) -> Path:
     lock_dir.mkdir(parents=True, exist_ok=True)
     sha = hashlib.sha256(locked_csv_content.encode()).hexdigest()
     locked_path = lock_dir / f"clean.{sha[:12]}.locked.csv"
-    locked_path.write_text(locked_csv_content, encoding="utf-8")
+    locked_path.write_text(locked_csv_content, encoding="utf-8", newline="\n")
     manifest = {
         "kind": "analysis_dataset_lock_manifest",
         "status": "LOCKED_FOR_ANALYSIS",
@@ -82,7 +73,7 @@ def _write_locked_manifest(study_dir: Path, locked_csv_content: str) -> Path:
         "sha256": sha,
     }
     (study_dir / "DATA_LOCK_manifest.json").write_text(
-        json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
+        json.dumps(manifest, ensure_ascii=False), encoding="utf-8", newline="\n")
     return locked_path
 
 
@@ -110,7 +101,7 @@ def test_generated_template_blocks_arbitrary_csv_but_accepts_locked_one(
     try:
         locked_path = _write_locked_manifest(d, "arm,outcome,fu,age\n1,1,10,60\n0,0,12,55\n")
         other_csv = d / "some_other_dredged_subset.csv"
-        other_csv.write_text("arm,outcome,fu,age\n1,1,99,99\n", encoding="utf-8")
+        other_csv.write_text("arm,outcome,fu,age\n1,1,99,99\n", encoding="utf-8", newline="\n")
 
         if maker == "cli":
             code = G6.make_run_analysis_cli(_V, 60, study, design_code, effect_type)
@@ -137,7 +128,7 @@ def test_missing_manifest_blocks_even_with_a_real_csv():
     d = _study_dir(study)
     try:
         any_csv = d / "data.csv"
-        any_csv.write_text("arm,outcome,fu,age\n1,1,10,60\n", encoding="utf-8")
+        any_csv.write_text("arm,outcome,fu,age\n1,1,10,60\n", encoding="utf-8", newline="\n")
         code = G6.make_run_analysis_cli(_V, 60, study, "cohort", "HR")
         require_locked = _load_require_locked_dataset(code, d)
         with pytest.raises(SystemExit):
@@ -155,7 +146,7 @@ def test_tampered_locked_file_after_lock_is_blocked_by_checksum_mismatch():
     try:
         locked_path = _write_locked_manifest(d, "arm,outcome,fu,age\n1,1,10,60\n")
         # Sửa file khóa SAU khi manifest đã ghi sha256 của nội dung GỐC.
-        locked_path.write_text("arm,outcome,fu,age\n1,1,999,999\n", encoding="utf-8")
+        locked_path.write_text("arm,outcome,fu,age\n1,1,999,999\n", encoding="utf-8", newline="\n")
         code = G6.make_run_analysis_cli(_V, 60, study, "cohort", "HR")
         require_locked = _load_require_locked_dataset(code, d)
         with pytest.raises(SystemExit):

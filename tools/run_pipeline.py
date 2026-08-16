@@ -480,7 +480,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
     }
     # Ghi report.
     (out_dir / "pipeline_run_report.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return report
 
 

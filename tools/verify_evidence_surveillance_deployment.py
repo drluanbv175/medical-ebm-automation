@@ -297,7 +297,7 @@ def _check_online_scanner() -> Check:
                 {"topic": "Canary guideline", "query": "hypertension guideline", "active": True},
                 {"topic": "Canary safety", "query": "warfarin drug safety", "active": True},
             ]
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         ok, detail = _run([
             sys.executable, str(scanner), "--watchlist", str(watchlist),
             "--days", "30", "--max", "1", "--report", str(report_path),

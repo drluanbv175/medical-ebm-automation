@@ -34,7 +34,7 @@ def configure_test_signing_key(
 ) -> Path:
     """Tạo khóa HMAC tạm trong pytest; không dùng cho nghiên cứu thật."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text(key_text, encoding="utf-8")
+    key_path.write_text(key_text, encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
     return key_path
 
@@ -302,7 +302,7 @@ def prepare_upstream_approvals(
     g1_path = out_dir / "G1_checkpoint.json"
     if g1_path.exists():
         try:
-            existing_g1 = json.loads(g1_path.read_text(encoding="utf-8"))
+            existing_g1 = json.loads(g1_path.read_text(encoding="utf-8", newline="\n"))
         except (json.JSONDecodeError, OSError, UnicodeDecodeError):
             existing_g1 = {}
         design_code = ((existing_g1.get("design") or {}).get("internal_code")) or "cohort"
@@ -323,7 +323,7 @@ def prepare_upstream_approvals(
         "hypothesis_type": "superiority", "margin": None, "sd": None, "guardrail": "✅ PASS",
     }
     (out_dir / "G3_checkpoint.json").write_text(
-        json.dumps(g3_fields, ensure_ascii=False), encoding="utf-8")
+        json.dumps(g3_fields, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     sap_text = G4.generate(
         study, f"Đề tài fixture tổng hợp {study}", design_code, "Cohort tiến cứu",
@@ -333,7 +333,7 @@ def prepare_upstream_approvals(
     for old, new in _G4_SAP_FILLS:
         sap_text = sap_text.replace(old, new)
     g4_artifact = out_dir / f"G4_A5_SAP_FINAL_{study}.md"
-    g4_artifact.write_text(sap_text, encoding="utf-8")
+    g4_artifact.write_text(sap_text, encoding="utf-8", newline="\n")
 
     (out_dir / "G4_checkpoint.json").write_text(
         json.dumps(
@@ -353,7 +353,7 @@ def prepare_upstream_approvals(
         "reviewed_at": "2026-07-30T08:00:00+00:00",
     })
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # Khóa RIÊNG nhóm STATISTICIAN — bắt buộc để G4-HUMAN-02 (mức bảo đảm khóa
     # ký) đạt PASS; ký bằng khóa CHUNG chỉ đạt REVIEW nên KHÔNG BAO GIỜ tới
@@ -362,7 +362,7 @@ def prepare_upstream_approvals(
     if base_key:
         role_key_path = Path(base_key).with_name(Path(base_key).name + "_STATISTICIAN")
         if not role_key_path.exists():
-            role_key_path.write_text("pytest-g4-statistician-role-key", encoding="utf-8")
+            role_key_path.write_text("pytest-g4-statistician-role-key", encoding="utf-8", newline="\n")
 
     append_signed_approval(
         study,

@@ -241,7 +241,7 @@ def main() -> int:
         print(render_text(overview))
 
     if args.out_md:
-        Path(args.out_md).write_text(render_md(overview), encoding="utf-8")
+        Path(args.out_md).write_text(render_md(overview), encoding="utf-8", newline="\n")
         print(f"\n📄 Đã ghi: {args.out_md}")
 
     return 0

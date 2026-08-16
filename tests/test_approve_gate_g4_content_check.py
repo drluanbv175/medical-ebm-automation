@@ -94,7 +94,7 @@ def test_cli_refuses_to_sign_fresh_sap_and_writes_no_ledger(tmp_path, monkeypatc
     study_dir.mkdir(parents=True)
     try:
         artifact_path = study_dir / f"G4_A5_SAP_FINAL_{study}.md"
-        artifact_path.write_text(_fresh_sap(), encoding="utf-8")
+        artifact_path.write_text(_fresh_sap(), encoding="utf-8", newline="\n")
         ledger_path = study_dir / "approval_ledger.json"
         assert not ledger_path.exists()
 

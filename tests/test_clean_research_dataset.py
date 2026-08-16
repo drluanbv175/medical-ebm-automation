@@ -15,7 +15,7 @@ from tests.test_g10_assemble import _write_cross_sectional_fixture  # noqa: E402
 
 
 def _csv(path: Path, text: str) -> Path:
-    path.write_text(text.strip() + "\n", encoding="utf-8")
+    path.write_text(text.strip() + "\n", encoding="utf-8", newline="\n")
     return path
 
 
@@ -30,7 +30,7 @@ def _dict_json(path: Path) -> Path:
             {"name": "primary_outcome", "type": "integer", "required": True, "min": 0, "max": 1},
         ],
     }
-    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8", newline="\n")
     return path
 
 
@@ -173,7 +173,7 @@ def test_g10_mentions_cleaning_report_and_open_query_count(tmp_path):
         }
     }
     (study_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     res = G10.assemble("STUDY", study_dir)
     text = res["md"].read_text(encoding="utf-8")

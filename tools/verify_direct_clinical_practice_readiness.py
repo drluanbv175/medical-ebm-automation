@@ -446,8 +446,8 @@ def main(argv: list[str] | None = None) -> int:
     report = evaluate_master(_load_master(args.master), today=today, freshness_days=args.freshness_days)
     if args.write:
         DEFAULT_JSON.parent.mkdir(parents=True, exist_ok=True)
-        DEFAULT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        DEFAULT_MD.write_text(markdown_report(report), encoding="utf-8")
+        DEFAULT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+        DEFAULT_MD.write_text(markdown_report(report), encoding="utf-8", newline="\n")
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:

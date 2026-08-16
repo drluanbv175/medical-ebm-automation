@@ -154,7 +154,7 @@ def _process_with_encoding(data_path: Path, output_path: Path,
 def _write_report(out_dir: Path, report: Dict[str, Any]) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / REPORT_NAME
-    path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
 
 
@@ -173,7 +173,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any], report_path: Path) -> No
         "note": "Báo cáo không lưu giá trị PII; chỉ lưu số lượng/cột/mẫu xử lý.",
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def deidentify_dataset(study: str, data_path: Path, *,

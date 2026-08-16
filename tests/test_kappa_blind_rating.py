@@ -210,14 +210,14 @@ def test_discover_rating_files_and_full_pipeline(tmp_path):
 
 
 def test_discover_rating_files_rejects_duplicate_rater(tmp_path):
-    (tmp_path / "rating_bs_an.csv").write_text("case_id,score\nA1,2\n", encoding="utf-8")
-    (tmp_path / "rating_bs_an.json").write_text('{"A1": 2}', encoding="utf-8")
+    (tmp_path / "rating_bs_an.csv").write_text("case_id,score\nA1,2\n", encoding="utf-8", newline="\n")
+    (tmp_path / "rating_bs_an.json").write_text('{"A1": 2}', encoding="utf-8", newline="\n")
     with pytest.raises(K.RatingError):
         K.discover_rating_files(str(tmp_path))
 
 
 def test_load_all_ratings_requires_at_least_two_files(tmp_path):
-    (tmp_path / "rating_solo.csv").write_text("case_id,score\nA1,2\n", encoding="utf-8")
+    (tmp_path / "rating_solo.csv").write_text("case_id,score\nA1,2\n", encoding="utf-8", newline="\n")
     with pytest.raises(K.RatingError):
         K.load_all_ratings(str(tmp_path))
 

@@ -139,7 +139,7 @@ def _build_case(tmp_path: Path, meta=None, g0=None, design_value=None):
         generated_at="2026-07-27T10:00:00+07:00",
     )
     a2_path = tmp_path / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
-    a2_path.write_text(_a2_text(), encoding="utf-8")
+    a2_path.write_text(_a2_text(), encoding="utf-8", newline="\n")
     paths = {"A2": a2_path, **supporting}
     texts = {key: path.read_text(encoding="utf-8") for key, path in paths.items()}
     identifiers = G1Q.collect_evidence_identifiers(
@@ -546,7 +546,7 @@ def test_main_checkpoint_reports_draft_instead_of_false_pass(tmp_path, monkeypat
         result = G1.main()
 
     checkpoint = json.loads(
-        (study_dir / "G1_checkpoint.json").read_text(encoding="utf-8")
+        (study_dir / "G1_checkpoint.json").read_text(encoding="utf-8", newline="\n")
     )
     assert result["status"] == G1Q.STATUS_DRAFT_READY
     assert checkpoint["quality_gate"]["status"] == G1Q.STATUS_DRAFT_READY
