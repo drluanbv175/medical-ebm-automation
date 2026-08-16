@@ -1,6 +1,6 @@
 {
   "kind": "outpatient_evidence_surveillance_deployment_verification",
-  "generated_at": "2026-08-11T12:39:38+00:00",
+  "generated_at": "2026-08-16T03:53:25+00:00",
   "deployment_status": "RUNTIME_CANARY_PASS",
   "deployment_allowed": false,
   "runtime_canary": true,
@@ -22,7 +22,7 @@
       "title": "Đồng bộ scanner skill/runtime",
       "phase": "static",
       "status": "PASS",
-      "evidence": "files=3/3; hashes=1; missing=[]",
+      "evidence": "files=3/3; hashes=1; missing=[]; unreadable=[]",
       "limitation": "Hash đồng nhất không thay xác minh nguồn online."
     },
     {
@@ -46,8 +46,8 @@
       "title": "Scheduler launchd",
       "phase": "static",
       "status": "PASS",
-      "evidence": "com.medicalebm.weeklysafety:runs = 0; com.medicalebm.monthlyupdate:runs = 0",
-      "limitation": "Job loaded và đúng path chưa chứng minh job đã hoàn tất một chu kỳ thành công."
+      "evidence": "claude_task:thu-thap-tuan-an-toan-thuoc; claude_task:cap-nhat-thang-ebm; com.medicalebm.weeklysafety:legacy_retired; com.medicalebm.monthlyupdate:legacy_retired",
+      "limitation": "Đăng ký lịch (Claude task/launchd) chưa chứng minh một chu kỳ đã chạy trọn thành công."
     },
     {
       "check_id": "ESD06",
