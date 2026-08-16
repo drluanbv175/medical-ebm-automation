@@ -5,6 +5,19 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+
+import pytest  # noqa: E402 — guard đặt sau REPO để dùng Path đã có
+
+# CI HERMETIC ĐƠN-REPO (16/08/2026): bộ kiểm này chấm chuẩn trên TOÀN WORKSPACE
+# (.claude/agents + tools/ ở thư mục MẸ) — checkout một-repo không có chúng nên
+# tool fail-closed ĐÚNG THIẾT KẾ và test đỏ oan. Skip CÓ KHAI BÁO, không giả đạt:
+# phán quyết chuẩn-agent chỉ có nghĩa khi đứng trong workspace thật (máy bác sĩ).
+_WORKSPACE_ME = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.skipif(
+    not (_WORKSPACE_ME / ".claude" / "agents").is_dir(),
+    reason="cần workspace gốc (.claude/agents ở thư mục mẹ) — CI checkout đơn-repo không chấm được chuẩn agent",
+)
+
 MODULE_PATH = REPO / "tools" / "verify_clinical_production_control_plane.py"
 FIXED_NOW = "2026-07-16T00:00:00+00:00"
 
