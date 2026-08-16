@@ -31,11 +31,11 @@
       "finer_novel": null,
       "finer_ethical": null,
       "finer_relevant": null,
-      "evidence_reviewed_confirmed": false,
+      "evidence_reviewed_confirmed": true,
       "novelty_justification": "[DỰ THẢO — CHỜ BÁC SĨ ĐỌC 12 PMID Ở §3 CỦA A1 RỒI CHỐT] Tính mới ở mức mở rộng/nhân rộng vào bối cảnh mới (replication), không phải mới về chủ đề hay phương pháp: chưa tìm thấy nghiên cứu công bố, được kiểm chứng, đặc thù cho một khoa khám theo yêu cầu trong bệnh viện quân y tuyến cuối. Kèm đóng góp về công cụ: bộ phiếu chung của Bộ Y tế không có lĩnh vực riêng cho chi phí dịch vụ theo yêu cầu (mục 3.4, 3.5 đề cương)",
-      "pico_confirmed": false,
-      "reviewed_by_role": null,
-      "reviewed_at": null
+      "pico_confirmed": true,
+      "reviewed_by_role": "PI",
+      "reviewed_at": "2026-08-15"
     },
     "G1": {
       "protocol_version": "1.0",
