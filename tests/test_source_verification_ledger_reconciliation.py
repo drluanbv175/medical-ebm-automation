@@ -6,6 +6,15 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
+# CI ĐƠN-REPO (16/08/2026): file này NẠP công cụ của workspace gốc ngay lúc
+# import — thiếu workspace thì phải skip Ở MỨC MODULE trước dòng nạp
+# (pytestmark không cứu được lỗi collection). Máy bác sĩ chạy đủ.
+if not (Path(__file__).resolve().parents[2] / "tools").is_dir():
+    pytest.skip("cần workspace gốc (tools/ ở thư mục mẹ) — CI checkout đơn-repo",
+                allow_module_level=True)
+
 MODULE_PATH = Path(__file__).resolve().parents[2] / "tools" / "so_xac_minh_nguon.py"
 SPEC = importlib.util.spec_from_file_location("so_xac_minh_nguon_reconciliation", MODULE_PATH)
 MODULE = importlib.util.module_from_spec(SPEC)
