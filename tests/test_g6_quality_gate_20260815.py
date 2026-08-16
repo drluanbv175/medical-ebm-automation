@@ -12,6 +12,14 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
+# CI KHÔNG có exports/ (gitignore — dữ liệu đề tài đi OneDrive): fixture demo
+# ZZREB2/ZZPHA không tồn tại trong checkout → skip mức module CÓ KHAI BÁO.
+if not (Path(__file__).resolve().parents[1] / "exports" / "ZZREB2-G6-SAPDRIFT").is_dir():
+    pytest.skip("cần fixture exports/ (OneDrive, ngoài git) — CI checkout không có",
+                allow_module_level=True)
+
 HERE = Path(__file__).resolve().parents[1]
 
 
