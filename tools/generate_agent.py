@@ -214,7 +214,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     spec_path = Path(args.spec)
-    spec = json.loads(spec_path.read_text(encoding="utf-8", newline="\n"))
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
     result = generate_agent(spec, force=args.force, dry_run=args.dry_run)
     if args.register and not args.dry_run:
         result["register_checks"] = _run_optional_register_checks()

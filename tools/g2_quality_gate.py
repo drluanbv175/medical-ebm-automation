@@ -671,7 +671,7 @@ def evaluate_g2_quality(
     package_path = Path(package_path)
     registration_path = Path(registration_path)
     package_text = (
-        package_path.read_text(encoding="utf-8", newline="\n")
+        package_path.read_text(encoding="utf-8")
         if package_path.exists()
         else ""
     )

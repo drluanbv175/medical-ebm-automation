@@ -546,7 +546,7 @@ def test_main_checkpoint_reports_draft_instead_of_false_pass(tmp_path, monkeypat
         result = G1.main()
 
     checkpoint = json.loads(
-        (study_dir / "G1_checkpoint.json").read_text(encoding="utf-8", newline="\n")
+        (study_dir / "G1_checkpoint.json").read_text(encoding="utf-8")
     )
     assert result["status"] == G1Q.STATUS_DRAFT_READY
     assert checkpoint["quality_gate"]["status"] == G1Q.STATUS_DRAFT_READY

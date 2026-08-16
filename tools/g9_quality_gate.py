@@ -784,7 +784,7 @@ def _documents_clean(files: Mapping[str, Optional[Path]]) -> tuple[bool, str, bo
     for key in ("integrity_package", "manuscript", "reporting_checklist", "cover_letter"):
         path = files[key]
         try:
-            text = path.read_text(encoding="utf-8", newline="\n")
+            text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             return False, f"unreadable={key}", True
         if _PLACEHOLDER_RE.search(text):

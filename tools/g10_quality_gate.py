@@ -443,7 +443,7 @@ def _documents_clean(
     for key in ("final_protocol_md", "decision_package"):
         path = files[key]
         try:
-            text = path.read_text(encoding="utf-8", newline="\n")
+            text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             return False, f"unreadable_text={key}", True
         if _PLACEHOLDER_RE.search(text):

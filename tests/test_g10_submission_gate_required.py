@@ -111,7 +111,7 @@ def _write_clean_citation_artifact(d: Path, study: str) -> None:
 
 def _g7_seed_pmids(d: Path) -> list[str]:
     try:
-        cp = json.loads((d / "G7_checkpoint.json").read_text(encoding="utf-8", newline="\n"))
+        cp = json.loads((d / "G7_checkpoint.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return []
     values = cp.get("pmids_used_as_seed") or []
@@ -185,7 +185,7 @@ def _run_main(study: str, extra_args: list[str] | None = None) -> int:
 
 
 def _read_g10_needs_input(d: Path) -> dict:
-    cp = json.loads((d / "G10_checkpoint.json").read_text(encoding="utf-8", newline="\n"))
+    cp = json.loads((d / "G10_checkpoint.json").read_text(encoding="utf-8"))
     assert GC.is_blocked(cp)
     return cp["needs_input"]
 
@@ -478,7 +478,7 @@ class TestCitationRetractionReceiptGate:
             self._write_verified_artifact(d, study, ["12345678"])
             _write_matching_retraction_receipt(d, study, ["12345678"])
             receipt_path = d / "A12_RETRACTION_RECEIPT.json"
-            receipt = json.loads(receipt_path.read_text(encoding="utf-8", newline="\n"))
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
             receipt["pmids_hash"] = "0" * 64
             receipt_path.write_text(json.dumps(receipt, ensure_ascii=False), encoding="utf-8", newline="\n")
             rc = _run_main(study)
@@ -692,7 +692,7 @@ class TestModernG10ReleaseContract:
             )
             _write_ledger_approval(d, "G8", g8_content, "PHAN_BIEN_DOC_LAP")
             g9_path = d / "G9_checkpoint.json"
-            g9 = json.loads(g9_path.read_text(encoding="utf-8", newline="\n"))
+            g9 = json.loads(g9_path.read_text(encoding="utf-8"))
             g9["quality_contract_version"] = "G9-2026.2"
             g9_path.write_text(json.dumps(g9, ensure_ascii=False), encoding="utf-8", newline="\n")
             monkeypatch.setattr(

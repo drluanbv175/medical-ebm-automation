@@ -648,7 +648,7 @@ def test_ghi_bao_cao_ra_ca_json_va_markdown(tmp_path):
     md_path = G8Q.write_quality_report("TEST-G8", tmp_path, report)
     assert md_path.exists()
     assert (tmp_path / "G8_QUALITY_REPORT.json").exists()
-    text = md_path.read_text(encoding="utf-8", newline="\n")
+    text = md_path.read_text(encoding="utf-8")
     assert "Cần bác sĩ kiểm chứng" in text
     assert "G8-AUTO-05" in text
 
@@ -663,7 +663,7 @@ def test_cap_nhat_checkpoint_giu_nguyen_khoa_downstream(tmp_path):
         study="TEST-G8", out_dir=tmp_path, report=report,
         quality_report_path=tmp_path / "G8_QUALITY_REPORT.md",
     )
-    updated = json.loads((tmp_path / "G8_checkpoint.json").read_text(encoding="utf-8", newline="\n"))
+    updated = json.loads((tmp_path / "G8_checkpoint.json").read_text(encoding="utf-8"))
     for key in ("pipeline_pass_count", "reporting_standard", "design_code"):
         assert updated[key] == original[key], key
     assert updated["quality_gate"]["status"] == report["status"]

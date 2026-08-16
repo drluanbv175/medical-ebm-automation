@@ -215,5 +215,5 @@ if __name__ == "__main__":
 
     src = Path(sys.argv[1])
     dst = Path(sys.argv[2]) if len(sys.argv) > 2 else src
-    dst.write_text(clean_generated_prose(src.read_text(encoding="utf-8", newline="\n")), encoding="utf-8")
+    dst.write_text(clean_generated_prose(src.read_text(encoding="utf-8")), encoding="utf-8")
     print(f"Đã làm sạch văn phong: {dst}")

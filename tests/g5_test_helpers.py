@@ -302,7 +302,7 @@ def prepare_upstream_approvals(
     g1_path = out_dir / "G1_checkpoint.json"
     if g1_path.exists():
         try:
-            existing_g1 = json.loads(g1_path.read_text(encoding="utf-8", newline="\n"))
+            existing_g1 = json.loads(g1_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError, UnicodeDecodeError):
             existing_g1 = {}
         design_code = ((existing_g1.get("design") or {}).get("internal_code")) or "cohort"

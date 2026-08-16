@@ -572,7 +572,7 @@ def main() -> int:
             json.dumps(g10_checkpoint, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
-        evidence_content = artifact_path.read_text(encoding="utf-8", newline="\n")
+        evidence_content = artifact_path.read_text(encoding="utf-8")
 
     ledger_path = study_dir / "approval_ledger.json"
 

@@ -151,7 +151,7 @@ def test_draft_chain_stops_before_data_without_human_approvals(smoke_study):
         )
 
     # Xác nhận G3 tính ra cỡ mẫu dương hợp lệ.
-    g3 = json.loads((STUDY_DIR / "G3_checkpoint.json").read_text(encoding="utf-8", newline="\n"))
+    g3 = json.loads((STUDY_DIR / "G3_checkpoint.json").read_text(encoding="utf-8"))
     assert g3.get("n_adjusted", 0) > 0
 
     # Hồ sơ G2 tự sinh chỉ là hồ sơ nháp, không được tự nhận đã có IRB thật.

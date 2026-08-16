@@ -101,7 +101,7 @@ class TestAssemble:
         res = G10.assemble("FIXT", cross_sectional_study)
         assert res["md"].exists()
         assert res["checkpoint"].exists()
-        cp = json.loads(res["checkpoint"].read_text(encoding="utf-8", newline="\n"))
+        cp = json.loads(res["checkpoint"].read_text(encoding="utf-8"))
         assert cp["gate"] == "G10"
         assert cp["n_de_cuong_sections"] == 16
 

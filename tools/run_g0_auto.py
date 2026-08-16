@@ -1451,7 +1451,7 @@ def main():
     if md_path.exists():
         backup = out_dir / f"G0_A1_PICO_FINER_{study}.bak-{datetime.now():%Y%m%d-%H%M%S}.md"
         try:
-            backup.write_text(md_path.read_text(encoding="utf-8", newline="\n"), encoding="utf-8")
+            backup.write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8")
             print(f"  ↩ Đã sao lưu bản A1 cũ: {backup.name}")
         except OSError as e:
             print(f"  ⚠ Không sao lưu được bản A1 cũ ({e}) — vẫn tiếp tục ghi đè")
