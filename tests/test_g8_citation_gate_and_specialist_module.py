@@ -21,6 +21,7 @@ g8_g9_remaining_depth, 2 phát hiện HIGH + 1 MEDIUM):
 """
 from __future__ import annotations
 
+import os
 import shutil
 import sys
 import time
@@ -31,9 +32,18 @@ TOOLS_DIR = REPO_ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+import pytest  # noqa: E402
 import run_g8_auto as G8  # noqa: E402
 
 from tests.test_g10_submission_gate_required import _write_clean_citation_artifact  # noqa: E402
+
+# HERMETIC (16/08/2026): 2 điểm dưới đây gọi MẠNG THẬT (A12 xác minh trích dẫn
+# sống); CI chặn outbound nên fail-closed ĐÚNG và test đỏ oan. Đánh dấu HẸP —
+# phần còn lại của module vẫn chạy trong CI.
+_CAN_MANG = pytest.mark.skipif(
+    os.environ.get("MRAQ_OFFLINE_CI") == "1",
+    reason="cần mạng outbound thật — hermetic CI chặn socket",
+)
 
 
 def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
@@ -68,6 +78,7 @@ _REPORTING = {"standard_name": "STROBE 2007", "score_pct": 80, "checked": 4, "to
 _STAT_CHECK = G8.check_statistical_integrity(_BASE_GATES)
 
 
+@_CAN_MANG
 class TestCitationCheckUsesRealA12Gate:
     def test_no_a12_artifact_means_pmid_item_fails_despite_g0_existing(self):
         study = "PYTEST-G8-A12-T1"
@@ -254,6 +265,7 @@ class TestPresubmissionCoiCoverLetterUseRealGateParams:
         )
         assert self._cover_item(result)["passed"] is True
 
+    @_CAN_MANG
     def test_ceiling_now_above_threshold_with_realistic_complete_study(self):
         """Đóng CHẶT bug ceiling=threshold: với mọi mục THẬT SỰ khả thi đạt
         True (bao gồm COI/Cover-letter qua gate_params.G8 mới), tổng điểm

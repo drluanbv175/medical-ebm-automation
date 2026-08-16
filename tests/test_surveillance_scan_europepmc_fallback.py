@@ -9,6 +9,15 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest  # noqa: E402 — guard sau import gốc
+
+# CI HERMETIC ĐƠN-REPO (16/08/2026): cần ../EBM-Dashboards của workspace gốc —
+# checkout một-repo không có. Skip CÓ KHAI BÁO; máy bác sĩ chạy đủ.
+pytestmark = pytest.mark.skipif(
+    not (Path(__file__).resolve().parents[2] / "EBM-Dashboards").is_dir(),
+    reason="cần workspace gốc (EBM-Dashboards ở thư mục mẹ) — CI đơn-repo",
+)
+
 
 def _load_scanner():
     path = Path(__file__).resolve().parents[2] / "EBM-Dashboards" / "tools" / "surveillance_scan.py"

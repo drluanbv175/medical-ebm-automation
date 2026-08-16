@@ -4,12 +4,21 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 from pathlib import Path
 
 import pytest
 
 from app.chatgpt_app.knowledge import SafeKnowledgeIndex, json_text
 from app.chatgpt_app.server import _local_git_ref, mcp
+
+# HERMETIC (16/08/2026): bộ này gọi MẠNG THẬT (tool contract sống); CI chặn
+# outbound nên fail-closed ĐÚNG và test đỏ oan. Skip CÓ KHAI BÁO dưới
+# MRAQ_OFFLINE_CI — máy bác sĩ (có mạng) vẫn chạy thật.
+pytestmark = pytest.mark.skipif(
+    os.environ.get("MRAQ_OFFLINE_CI") == "1",
+    reason="cần mạng outbound thật — hermetic CI chặn socket",
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
