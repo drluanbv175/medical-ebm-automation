@@ -12,7 +12,7 @@
 | Thiết kế | Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence) |
 | Mức nguy cơ | **TỐI THIỂU** |
 | Lộ trình IRB | **EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)** |
-| Đăng ký nghiên cứu | BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG], ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới) |
+| Đăng ký nghiên cứu | BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập: TIẾN CỨU — khảo sát nặc danh người tham gia mới tại điểm khám (đề cương §4.1–4.3), ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới) |
 | ICF bắt buộc |  Có |
 | Chuẩn báo cáo | STROBE |
 
@@ -42,7 +42,7 @@ THÔNG TIN TỔNG QUAN:
  Lộ trình xét duyệt đề nghị: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)
  Dân số tham gia: Người bệnh ngoại trú từ đủ 18 tuổi trở lên (kể cả phụ nữ mang thai), đủ sức khỏe và năng lực nhận thức/ngôn ngữ để trả lời, đã cơ bản hoàn thành quy trình khám tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, và đồng ý tham gia tự nguyện (mục 4.3.1 đề cương)
  Cỡ mẫu dự kiến: 1000
- Thời gian nghiên cứu: [CẦN — từ ___/___/2026 đến ___/___/____]
+ Thời gian nghiên cứu: bắt đầu SAU phê duyệt IRB — một giai đoạn liên tục phủ đều khung giờ/ngày trong tuần (đề cương §4.2); ngày cụ thể [BÁC SĨ ĐIỀN theo lịch khoa]
  Nguồn tài trợ: Không có tài trợ bên ngoài, kinh phí tự túc (chủ nhiệm đề tài tự chi trả)
  Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
  Đăng ký nghiên cứu: [CẦN — ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)]
@@ -85,7 +85,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
 1. VẤN ĐỀ NGHIÊN CỨU VÀ LÝ DO CẦN THIẾT:
  Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
  Bằng chứng hiện có (từ PubMed): 0 SR/MA · 0 RCT (mức: CÓ NỀN QUAN SÁT, ~12 NC quan sát, chưa có RCT/SR).
- [CẦN BỔ SUNG: lý do cần nghiên cứu thêm tại bối cảnh Việt Nam]
+ Khảo sát PubMed có hồ sơ trong G0: SR/MA 0 · RCT 0 · guideline 0 · 12 nghiên cứu quan sát (chủ yếu bối cảnh dân sự/quốc tế) — chưa có dữ liệu ở mô hình khám-theo-yêu-cầu tại bệnh viện quân y tuyến cuối Việt Nam, với bộ công cụ tự xây được kiểm định tâm trắc và phân tích yếu tố liên quan bằng hồi quy thứ tự (đề cương §3.5).
 
 2. MỤC TIÊU CỤ THỂ:
  2.1 MT1 (mô tả): Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
@@ -100,7 +100,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
  Thiết kế: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
  Chuẩn báo cáo: STROBE
  Nơi thực hiện: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh. Khối khám ngoại trú theo yêu cầu (dịch vụ) tại bệnh viện quân y tuyến cuối
- Quy trình: [CẦN MÔ TẢ ngắn gọn theo PICO]
+ Quy trình: phát phiếu khảo sát NẶC DANH tự điền (30 mục Likert thuộc 6 lĩnh vực A–F + mục hài lòng chung G1) cho người bệnh ngoại trú ≥18 tuổi ngay sau khi hoàn tất lượt khám tại Khoa C1a; trả lời một lần ~15–20 phút; KHÔNG can thiệp y khoa, KHÔNG lấy mẫu sinh học
 
 5. RỦI RO TIỀM TÀNG VÀ BIỆN PHÁP BẢO VỆ:
  Mức nguy cơ tổng thể: TỐI THIỂU
@@ -136,7 +136,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
 
 | | **Lợi ích bù đắp** |
 |---|---|
-| Trực tiếp với NTG | [CẦN BỔ SUNG — xác định xem có lợi ích trực tiếp không] |
+| Trực tiếp với NTG | KHÔNG có lợi ích y khoa trực tiếp; đóng góp ý kiến giúp cải thiện chất lượng phục vụ cho chính người bệnh và người bệnh sau |
 | Cộng đồng/y tế | Cung cấp dữ liệu tỷ lệ hiện mắc/tỷ lệ các yếu tố liên quan tại địa phương; chi phí thấp |
 
 **Kết luận:** Lợi ích dự kiến của nghiên cứu **vượt trội** nguy cơ tiềm tàng.
@@ -156,7 +156,7 @@ Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
 ---
 
 TÊN ĐỀ TÀI: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
-Đơn vị thực hiện: [CẦN BỔ SUNG]
+Đơn vị thực hiện: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 (TP. Hồ Chí Minh)
 Chủ nhiệm đề tài: Nguyễn Hà Luân
 
 ---
@@ -166,7 +166,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
 1. MỤC ĐÍCH NGHIÊN CỨU
  Chúng tôi kính mời anh/chị tham gia nghiên cứu nhằm:
- [CẦN MÔ TẢ bằng ngôn ngữ đơn giản — không dùng thuật ngữ khó]
+ Chúng tôi muốn tìm hiểu ông/bà hài lòng đến đâu về lần khám hôm nay — từ khâu đón tiếp, thời gian chờ, nơi khám, đến bác sĩ, điều dưỡng và kết quả — để bệnh viện phục vụ tốt hơn.
  Ví dụ: "Tìm hiểu xem thuốc/can thiệp X có giúp cải thiện tình
  trạng [bệnh] ở người bệnh như anh/chị không."
 
@@ -179,17 +179,17 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
 1b. NGƯỜI THỰC HIỆN NGHIÊN CỨU
  Nghiên cứu do [CẦN — họ tên chủ nhiệm], [CẦN, chức danh/trình độ chuyên
- môn, vd Bác sĩ CKII/Thạc sĩ Y học], công tác tại [CẦN — đơn vị], chủ trì
+ môn, vd Bác sĩ CKII/Thạc sĩ Y học], công tác tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175, chủ trì
  thực hiện.
 
 2. QUY TRÌNH THỰC HIỆN NẾU ĐỒNG Ý THAM GIA
  Nếu anh/chị đồng ý, chúng tôi sẽ yêu cầu:
- ☐ Bước 1: [CẦN MÔ TẢ — ví dụ: ký phiếu đồng thuận này]
- ☐ Bước 2: [CẦN — ví dụ: trả lời bộ câu hỏi ~20 phút]
+ ☐ Bước 1: đọc thông tin này và xác nhận đồng ý tham gia (theo hình thức đồng thuận được Hội đồng phê duyệt cho khảo sát nặc danh)
+ ☐ Bước 2: tự điền bộ câu hỏi ~15–20 phút, MỘT lần duy nhất
 
 
- Tổng thời gian tham gia ước tính: [CẦN — ví dụ: 12 tháng]
- Số lần đến cơ sở y tế: [CẦN — ví dụ: 3 lần]
+ Tổng thời gian tham gia ước tính: ~15–20 phút, trong MỘT lần duy nhất (không theo dõi thêm)
+ Số lần đến cơ sở y tế: 0 lần thêm — thực hiện ngay trong lượt khám thường quy
 
  Chúng tôi sẽ cố gắng lên lịch hẹn trùng với lần tái khám
  thường quy để giảm bất tiện cho anh/chị.
@@ -200,10 +200,10 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
  Nếu có bất kỳ vấn đề sức khỏe nào liên quan đến nghiên cứu,
  xin liên hệ ngay chủ nhiệm đề tài (số điện thoại bên dưới).
- Chi phí điều trị biến cố liên quan nghiên cứu: [CẦN XÁC NHẬN].
+ Chi phí điều trị biến cố liên quan nghiên cứu: Không áp dụng — nghiên cứu chỉ khảo sát ý kiến, không can thiệp y khoa nên không phát sinh biến cố điều trị liên quan [BÁC SĨ RÀ].
 
 4. LỢI ÍCH KỲ VỌNG
- Lợi ích trực tiếp: [CẦN — ví dụ: không có lợi ích y khoa trực tiếp; góp ý giúp cải thiện chất lượng dịch vụ — KHÔNG có can thiệp/thủ thuật y khoa nào thực hiện thêm ngoài quy trình khám/chăm sóc thường quy]
+ Lợi ích trực tiếp: không có lợi ích y khoa trực tiếp; ý kiến của ông/bà giúp cải thiện chất lượng dịch vụ khám bệnh — KHÔNG có can thiệp/thủ thuật y khoa nào thực hiện thêm ngoài quy trình khám/chăm sóc thường quy
  Lợi ích cộng đồng: Cung cấp dữ liệu tỷ lệ hiện mắc/tỷ lệ các yếu tố liên quan tại địa phương; chi phí thấp
 
  Chúng tôi KHÔNG đảm bảo lợi ích cá nhân từ việc tham gia.
@@ -227,7 +227,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
  ổ cứng mã hóa tại đơn vị]
  Chỉ nhóm nghiên cứu được phép truy cập dữ liệu danh tính
  Kết quả công bố dùng dữ liệu TỔNG HỢP, KHÔNG tiết lộ danh tính
- Dữ liệu nhận dạng được xóa/ẩn danh hóa trong vòng [CẦN] năm
+ Dữ liệu nhận dạng: KHÔNG THU THẬP — phiếu nặc danh ngay từ khâu phát, không tồn tại dữ liệu danh tính cần xóa
  sau khi kết thúc nghiên cứu theo quy định lưu trữ y tế
  Trong trường hợp rò rỉ, anh/chị sẽ được thông báo NGAY KHI XÁC NHẬN
  (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP, 
@@ -242,7 +242,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
  đến dịch vụ y tế đang nhận
  Anh/chị có thể RÚT LUI bất kỳ lúc nào, không cần giải thích
  Nếu rút lui, dữ liệu đã thu thập: ☐ sẽ bị xóa ☐ vẫn dùng
- (do tính ẩn danh, ghi rõ chính sách) [CẦN XÁC NHẬN]
+ (do tính nặc danh: SAU khi nộp phiếu không thể rút riêng phiếu của ông/bà vì không có cách nhận dạng; ông/bà có toàn quyền từ chối hoặc dừng bất kỳ lúc nào TRƯỚC khi nộp) [BÁC SĨ RÀ]
 
 
 6c. BỒI THƯỜNG KHI CÓ TỔN HẠI
@@ -357,11 +357,11 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  ☐ Cận lâm sàng (xét nghiệm, hình ảnh), mã hóa
  ☐ Kết quả điều tra/khảo sát, ẩn danh hoặc giả danh
  ☐ Dữ liệu thứ cấp (hồ sơ bệnh án), mã giả danh
- [CẦN BÁC SĨ LIỆT KÊ CỤ THỂ theo đề tài]
+ ☑ DUY NHẤT: kết quả khảo sát nặc danh (phiếu tự điền, không định danh) — không dùng hồ sơ bệnh án [BÁC SĨ RÀ]
 
 2. THU THẬP:
  Công cụ: ☐ REDCap ☐ Google Forms (institutional) ☐ Phiếu giấy
- ☐ [CẦN XÁC NHẬN]
+ ☑ Phiếu giấy (nặc danh, tự điền tại khoa) [BÁC SĨ RÀ — nếu dùng thêm bản điện tử thì tick bổ sung]
  Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép
  Phê duyệt quyền: Chủ nhiệm đề tài
 
@@ -481,7 +481,7 @@ D. VAI TRÒ NHÀ TÀI TRỢ:
 E. SỬ DỤNG CÔNG CỤ AI TRONG NGHIÊN CỨU:
  ☐ Không sử dụng công cụ AI nào
  ☐ Có sử dụng:
- Tên công cụ: Claude AI (EBM Copilot) · [CẦN BỔ SUNG thêm nếu có]
+ Tên công cụ: Claude AI (EBM Copilot) · Không dùng công cụ AI nào khác
  Mục đích: Hỗ trợ soạn hồ sơ G2 · tổng quan y văn · thống kê
  Người kiểm tra đầu ra: [CẦN — tên nghiên cứu viên phụ trách]
 
@@ -518,7 +518,7 @@ CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
 ☑ Không khả thi/không cần thiết yêu cầu ICF đầy đủ (khảo sát nặc danh hoặc dữ liệu đã có sẵn)
 
 ĐẢM BẢO BẢO MẬT:
-Loại dữ liệu: [CẦN BÁC SĨ MÔ TẢ — dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát nặc danh]
+Loại dữ liệu: Khảo sát NẶC DANH người tham gia mới (phiếu tự điền; KHÔNG dùng hồ sơ bệnh án/dữ liệu thứ cấp)
 Mã hóa: Không cần (không có PII)
 Quyền truy cập: Chỉ nhóm nghiên cứu
 Kế hoạch hủy: Lưu trữ 5 năm sau công bố theo quy định
@@ -537,7 +537,7 @@ Chữ ký chủ nhiệm: [CẦN KÝ] | Ngày: ___/___/2026
 ## ĐĂNG KÝ NGHIÊN CỨU, 24 MỤC WHO TRIAL REGISTRATION DATA SET 1.3.1
 
 **Nơi đăng ký đề nghị:** ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)
-**Thời điểm:** BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG]
+**Thời điểm:** BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập: TIẾN CỨU — khảo sát nặc danh người tham gia mới ⇒ đăng ký BẮT BUỘC TRƯỚC người tham gia đầu tiên
 
 **Nghiên cứu tương tự đã đăng ký (prior art, tra thật trên ClinicalTrials.gov API v2):**
 > **ĐÃ TRA THẬT ngày 2026-07-31** trên ClinicalTrials.gov API v2 với truy vấn `patient satisfaction outpatient department Vietnam hospital`. **0 hồ sơ khớp**, trong đó **0 đang/sắp tuyển**. Tra lại: https://clinicaltrials.gov/search?term=patient+satisfaction+outpatient+department+Vietnam+hospital
@@ -562,16 +562,16 @@ Trường 2, Date of registration in primary registry:
 
 Trường 3, Secondary IDs (nếu có):
  Số phê duyệt IRB: [CẦN sau khi nhận]
- PROSPERO (nếu SR): [CẦN]
+ PROSPERO (nếu SR): Không áp dụng — không phải tổng quan hệ thống
 
 Trường 4, Source(s) of monetary or material support:
  [CẦN BỔ SUNG — tên tổ chức tài trợ hoặc "None"]
 
 Trường 5, Primary sponsor:
- [CẦN — tên pháp nhân/tổ chức chịu trách nhiệm]
+ Bệnh viện Quân y 175 (Military Hospital 175), TP. Hồ Chí Minh [BÁC SĨ RÀ]
 
 Trường 6, Secondary sponsor(s) (nếu có):
- [CẦN BỔ SUNG]
+ Không có (None)
 
 Trường 7, Contact for public queries:
  [ĐIỀN TRỰC TIẾP TRÊN REGISTRY, không lưu PII trong hệ thống]
@@ -580,24 +580,24 @@ Trường 8, Contact for scientific queries:
  [ĐIỀN TRỰC TIẾP TRÊN REGISTRY, không lưu PII trong hệ thống]
 
 Trường 9, Public title (tiêu đề công khai, dễ hiểu):
- [CẦN BỔ SUNG — ngôn ngữ không chuyên]
+ Patient satisfaction with on-demand outpatient care at a tertiary military hospital in Vietnam: a cross-sectional survey
 
 Trường 10, Scientific title (tiêu đề khoa học):
  Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 
 Trường 11, Countries of recruitment:
- Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]
+ Vietnam (VN) — Ho Chi Minh City
 
 Trường 12, Health condition(s) studied:
- [CẦN — từ PICO P: ví dụ Heart failure with preserved EF / HFpEF]
+ Adult outpatients (≥18 years, including pregnant women) attending the on-demand outpatient clinic C1a, Military Hospital 175
 
 Trường 13, Intervention(s):
- [CẦN — từ PICO I: ví dụ SGLT2 inhibitor (empagliflozin 10mg OD)]
- Comparator: [CẦN — từ PICO C]
+ Not applicable — observational cross-sectional survey (anonymous self-administered satisfaction questionnaire: 30 Likert items across 6 domains A–F plus overall item G1)
+ Comparator: None (single-group observational survey)
 
 Trường 14, Key inclusion and exclusion criteria:
- Inclusion: [CẦN BỔ SUNG — từ protocol/PICO P]
- Exclusion: [CẦN BỔ SUNG — từ protocol]
+ Inclusion: outpatients ≥18 years (including pregnant women); alert with adequate cognitive/language capacity to respond; completed the clinic visit; agreed to participate (đề cương §4.3.1)
+ Exclusion: refusal; inability to respond (emergency status, cognitive impairment, unresolvable language barrier); healthcare staff of the hospital attending as patients; prior participation in the same period; questionnaires exceeding the three pre-specified missing-data thresholds (đề cương §4.3.2)
 
 Trường 15, Study type:
  Observational ·
@@ -615,10 +615,10 @@ Trường 18, Recruitment status:
  Not yet recruiting
 
 Trường 19, Primary outcome(s):
- [CẦN — tên kết cục + thước đo + thời điểm từ G0/G1]
+ Overall patient satisfaction — single ordinal item G1 (5-point Likert), measured ONCE immediately after the index clinic visit
 
 Trường 20, Key secondary outcomes:
- [CẦN — tên kết cục + thước đo + thời điểm từ SAP]
+ Satisfaction scores per domain A–F; distribution across satisfaction levels; factors associated with overall satisfaction (ordinal logistic regression per locked SAP) — same single time point
 
 Trường 21, Ethics review:
  Status: Not approved
