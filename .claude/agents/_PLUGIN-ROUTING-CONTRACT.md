@@ -51,7 +51,7 @@ xác minh trước khi vào kho):
 |---|---|---|---|
 | **aipoch 8 planner đặc thù** (MR · FAERS · đơn tế bào · đa omics · tái định vị thuốc · QTL · độc chất mạng · biomarker tiên lượng) | `thiet-ke-nghien-cuu` (dưới nhạc trưởng `dieu-phoi-nghien-cuu`) | G0–G1, `specialty_planning_worker` | Đây là 8 mảng hệ agent KHÔNG có; bản kế hoạch plugin trả về phải được chủ chuẩn hoá theo khung G0–G10 rồi mới thành artifact |
 | **meta-pipe từng bước** (`ma-search-bibliography` · `ma-screening-quality` · `ma-meta-analysis`) | `tong-quan-y-van` / `meta-phan-tich` | SEARCH_PLAN · SCREENING_DRAFT · SYNTHESIS_DRAFT, `pipeline_step_worker` | CỐ Ý không khai `ma-end-to-end` làm worker — nó tự điều phối trọn chuỗi nên dễ tranh owner; bác sĩ gọi đích danh thì vẫn chạy DƯỚI owner, không thay owner |
-| **pubmed-search MCP** (`pubmed-quick-search` · `pubmed-systematic-search`) | `tra-cuu-chung-cu` / `thu-thu-tai-lieu` | DISCOVERY · METADATA · SEARCH_PLAN | Chính danh hoá đường tra dùng nhiều nhất kho (1322 lượt); kết quả tra vẫn qua thứ bậc nguồn của owner |
+| **pubmed-search MCP** (`pubmed-quick-search` · `pubmed-systematic-search`) | `tra-cuu-chung-cu` / `thu-thu-tai-lieu` | DISCOVERY · METADATA · SEARCH_PLAN | Chính danh hoá đường tra dùng nhiều nhất kho (1322 lượt); kết quả tra vẫn qua thứ bậc nguồn của owner· ĐÃ CANARY 16/08/2026: lượt unified_search thật đầu tiên (GONB-migraine-ED) trả đúng AHS 2025 đang dùng + phát hiện RCT 2025 mới (PMID 41100185) làm ứng viên — dây worker→owner→candidate hoạt động |
 
 | Bioinformatics chuyên sâu | `specialist-escalation` | Bio Research | Ngoài vùng phủ lõi; cần chuyên gia phù hợp |
 
