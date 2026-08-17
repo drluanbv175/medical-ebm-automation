@@ -25,6 +25,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = REPO_ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
@@ -36,6 +38,20 @@ TIMESTAMP = "2026-07-26T00:00:00Z"
 # Đề tài NGƯỜI THẬT trong gate_contract.REAL_STUDY_DENYLIST — chỉ dùng làm TÊN trong
 # tmp_path, KHÔNG bao giờ đụng exports/ thật.
 REAL_STUDY = "hai-long-benh-nhan-C1a-BVQY175"
+
+
+def _symlink_or_skip(link: Path, target: str) -> None:
+    """Tạo symlink cho kịch bản tấn công "giặt tên". Windows chưa cấp quyền
+    SeCreateSymbolicLink (WinError 1314 — cần Developer Mode hoặc admin) thì skip
+    thay vì fail: kẻ tấn công trên máy đó cũng cần đúng quyền ấy mới dựng được
+    symlink, và test vẫn chạy đủ trên CI/máy có quyền (cùng khuôn với
+    test_admin_synthetic_bypass_safety.py T19)."""
+    try:
+        link.symlink_to(target)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows chưa cấp quyền tạo symlink (WinError 1314)")
+        raise
 
 
 # ── SỔ CÁI CHUỖI BĂM + CON DẤU (2026-07-27) — đóng lỗ hổng IM LẶNG cuối cùng ──
@@ -770,7 +786,7 @@ def test_composed_path_and_symlink_evasion_is_blocked(tmp_path):
     real.mkdir()
     (real / "study_meta.json").write_text(
         json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n")
-    (exports / REAL_STUDY).symlink_to(real.name)
+    _symlink_or_skip(exports / REAL_STUDY, real.name)
 
     for variant in (REAL_STUDY, f"./{REAL_STUDY}", f"{REAL_STUDY}/", f"{REAL_STUDY}/.",
                     f"{REAL_STUDY}/../{REAL_STUDY}", f".//{REAL_STUDY}", f"{REAL_STUDY}//"):
@@ -788,8 +804,8 @@ def test_denylisted_name_in_middle_of_symlink_chain_is_blocked(tmp_path):
     final.mkdir()
     (final / "study_meta.json").write_text(
         json.dumps({"study_kind": "synthetic_test"}), encoding="utf-8", newline="\n")
-    (exports / REAL_STUDY).symlink_to(final.name)   # chặng giữa mang tên bị cấm
-    (exports / "loi-vao").symlink_to(REAL_STUDY)     # chặng đầu vô hại
+    _symlink_or_skip(exports / REAL_STUDY, final.name)   # chặng giữa mang tên bị cấm
+    _symlink_or_skip(exports / "loi-vao", REAL_STUDY)    # chặng đầu vô hại
 
     real_dir, err = GC.resolve_synthetic_study_dir("loi-vao", tmp_path)
     assert real_dir is None and err, "LỌT qua chặng giữa"
@@ -891,7 +907,7 @@ def test_symlink_laundering_of_denylisted_name_is_blocked(tmp_path, monkeypatch)
     }]), encoding="utf-8", newline="\n")
 
     # "Giặt tên": symlink mang tên đề tài THẬT trỏ vào thư mục tên khác.
-    (exports / REAL_STUDY).symlink_to(real_dir.name)
+    _symlink_or_skip(exports / REAL_STUDY, real_dir.name)
 
     assert GC.is_synthetic_test_study(REAL_STUDY, tmp_path) is False
     assert GC.ledger_approved("G2", REAL_STUDY, artifact, repo_root=tmp_path) is False
