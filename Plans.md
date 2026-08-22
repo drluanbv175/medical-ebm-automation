@@ -121,6 +121,24 @@ không bị trôi/sai khi sửa về sau.
 | 6.4 | **Dựng lại chỉ mục RAG toàn văn** — chỉ mục cũ hơn kho (giác quan ⑤) | `tu_de_xuat_viec.py` hết báo mục RAG | — | `cc:done` (178 bài → 23.939 đoạn) |
 
 
+## Sprint 7 — Sửa 39 phát hiện đã được bác sĩ duyệt (23/08)
+
+> Bác sĩ duyệt toàn bộ 39 phát hiện của Sprint 6 (31 trên 4 bài thật + 8 trên bài viêm gan B)
+> và giao sửa «một cách tốt nhất cho hệ thống». Luật thi công rút từ các vòng trước:
+> tự xác minh NGUỒN trước khi áp từng mục · ≥2 mục cùng khối ⇒ VIẾT LẠI TRỌN KHỐI (skill v1.7)
+> · sửa một mệnh đề ⇒ GREP CẢ BÀI tìm câu cùng khẳng định · sau sửa BẮT BUỘC một lượt thẩm
+> định độc lập (BH66) · điều kiện dừng = không còn phát hiện nào do vòng sửa gây ra.
+
+| Task | Nội dung | DoD | Depends | Status |
+|---|---|---|---|---|
+| 7.1 | Sửa 8 phát hiện + 2 quan sát bài **tuyến giáp** (nặng nhất: ngừng ATD sai cửa sổ thai kỳ; corticoid trước RAI mất nhánh yếu tố nguy cơ; AIT thiếu lối thoát cấp cứu) | cổng trích dẫn ĐẠT; changelog trong bài; mục không xác minh được thì KHÔNG áp và khai rõ | — | `cc:todo` |
+| 7.2 | Sửa 9 phát hiện bài **VKDT tổng quan** (điền 4/4 ô ACR từ toàn văn tại chỗ; corticoid «cùng hướng» sai; ngoại lệ suy tim/nhiễm trùng/NTM; lối ra lao-HBV; phép hội + hút thuốc) | như 7.1 | — | `cc:todo` |
+| 7.3 | Sửa 7 phát hiện bài **SGLT2i đa hồng cầu** (nguồn [4] bị đảo chiều; tách 2 danh sách nguy cơ; «đỉnh 9 tháng»; vế RCT-null; bộ loại trừ; lối ra ngừng thuốc có kiểm soát) | như 7.1; [2][3] tường phí ⇒ chỉ hedge, không khẳng định thêm | — | `cc:todo` |
+| 7.4 | Sửa 7 phát hiện bài **ĐTĐ2-CKD** (1A→2B sai quần thể; Figure 48 lấy nhầm cột; RASi chỉ định vs liều; điều kiện kali finerenone; lối ra RASi; mức statin) | như 7.1 | — | `cc:todo` |
+| 7.5 | Sửa 8 phát hiện bài **viêm gan B** (thống nhất «hoặc» ngưỡng EASL ở cả 3 chỗ; phanh EASL defer/other-causes; đảo lại câu phủ định về [5]; lệnh cấm ngừng ở HBeAg+; mẫu số [4]) | như 7.1 | — | `cc:todo` |
+| 7.6 | **Thẩm định độc lập cả 5 bài sau sửa** — mỗi bài một agent mới; điều kiện hội tụ: không còn phát hiện nào do vòng sửa 23/08 gây ra | báo cáo hội tụ từng bài; tồn dư (nếu có) sửa tiếp rồi soi lại | 7.1–7.5 | `cc:todo` |
+
+
 ## Archive
 
 ---
