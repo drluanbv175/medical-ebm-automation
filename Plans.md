@@ -117,7 +117,7 @@ không bị trôi/sai khi sửa về sau.
 |---|---|---|---|---|
 | 6.1 | **Canary đầu-cuối cho chuỗi cổng NGHIÊN CỨU G0–G10.** Gài N lỗi BIẾT TRƯỚC vào một đề tài tổng hợp rồi đòi các quality gate phải CHẶN. Đối xứng với `thu_dau_cuoi_chung_cu.py` bên chứng cứ. `[tdd:required]` | Chạy ngoại tuyến < 30s, không PII, không đụng đề tài thật; mỗi lỗi gài có mã + lý do lịch sử; **kiểm bằng đột biến**: tắt một luật gate ⇒ canary đỏ đúng chỗ; nối vào `chot_hoi_quy_bai_hoc.py` | — | `cc:done` [4c9ebb7] (BH72; đột biến trên đĩa: tắt G4-AUTO-03 ⇒ đỏ 7/9, exit 1) |
 | 6.2 | **Quét 4 bài tổng thuật THẬT theo 3 lớp lỗi ⑨⑩⑪** (`TT_dtd2-ckd`, `TT_sglt2i-da-hong-cau`, `TT_tuyen-giap`, `TT_vkdt-tong-quan`). Đây là bài bác sĩ dùng thật, chưa từng soi; tiền lệ: 14 phát hiện / 4 bài bench | Báo cáo có trích nguyên văn cho từng phát hiện; KHÔNG tự đổi `decision`/mức khuyến cáo; mọi mục ghi rõ hướng hại | — | `cc:done` — **31 phát hiện · 15 nặng**; báo cáo `EBM-Dashboards/derivatives/QUET-LOP-LOI-MOI_BAI-THAT_2026-08-22.md` |
-| 6.3 | **Thẩm định độc lập bài viêm gan B** — cả hai lượt soi vòng trước đều chết (lỗi API, giới hạn phiên) nên bài này chưa từng được soi trọn vẹn sau khi sửa 5 lỗi | Soi đủ 11 lớp lỗi; xác nhận riêng nhánh HBsAg dương/âm; nêu rõ lỗi nào do vòng sửa gây ra | 6.2 | `cc:todo` |
+| 6.3 | **Thẩm định độc lập bài viêm gan B** — cả hai lượt soi vòng trước đều chết (lỗi API, giới hạn phiên) nên bài này chưa từng được soi trọn vẹn sau khi sửa 5 lỗi | Soi đủ 11 lớp lỗi; xác nhận riêng nhánh HBsAg dương/âm; nêu rõ lỗi nào do vòng sửa gây ra | 6.2 | `cc:done` — 5/5 mục sửa vòng trước ĐÚNG NGUỒN; **8 phát hiện mới** (2 do chính vòng sửa, 2 nặng có từ trước chưa ai chạm); CHƯA hội tụ |
 | 6.4 | **Dựng lại chỉ mục RAG toàn văn** — chỉ mục cũ hơn kho (giác quan ⑤) | `tu_de_xuat_viec.py` hết báo mục RAG | — | `cc:done` (178 bài → 23.939 đoạn) |
 
 
@@ -142,6 +142,6 @@ TDD tags: `[tdd:required]` = viết test thất bại trước; `[tdd:skip:<lý 
 
 ## Last Update
 
-- **Updated at**: 2026-07-31 (harness-sync, retroactive)
+- **Updated at**: 2026-08-22 (harness-loop, Sprint 6 hoàn tất 4/4)
 - **Last session owner**: Claude Code
 - **Branch**: feat/r1-1-2-design-gap-remediation
