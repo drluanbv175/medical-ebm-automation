@@ -160,6 +160,6 @@ TDD tags: `[tdd:required]` = viết test thất bại trước; `[tdd:skip:<lý 
 
 ## Last Update
 
-- **Updated at**: 2026-08-22 (harness-loop, Sprint 6 hoàn tất 4/4)
+- **Updated at**: 2026-08-23 (harness-loop, Sprint 7 hoàn tất 6/6 + CI xanh lần đầu sau 5 lần đỏ liên tiếp)
 - **Last session owner**: Claude Code
 - **Branch**: feat/r1-1-2-design-gap-remediation
