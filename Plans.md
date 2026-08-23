@@ -152,7 +152,7 @@ không bị trôi/sai khi sửa về sau.
 
 | Task | Nội dung | DoD | Depends | Status |
 |---|---|---|---|---|
-| 8.1 | `[tdd:skip:api-migration-existing-tests-cover-behavior]` Đổi `src.getdata()` → `src.get_flattened_data()` tại `app/integrations/image_reading.py:74` (hàm `strip_exif`). `Image.Image.getdata` sẽ bị Pillow gỡ bỏ 2027-10-15 (`DeprecationWarning` đã thấy trong `pytest`); `get_flattened_data()` không tham số `band` trả cùng dạng tuple pixel, đã xác nhận bằng docstring + Pillow 12.2.0 cài sẵn trong venv. | `pytest tests/test_image_reading.py -q` PASS, không còn DeprecationWarning liên quan `getdata` trong output; `pytest -q` toàn repo vẫn 3136 passed, 0 fail; `ruff check .` sạch | — | `cc:todo` |
+| 8.1 | `[tdd:skip:api-migration-existing-tests-cover-behavior]` Đổi `src.getdata()` → `src.get_flattened_data()` tại `app/integrations/image_reading.py:74` (hàm `strip_exif`). `Image.Image.getdata` sẽ bị Pillow gỡ bỏ 2027-10-15 (`DeprecationWarning` đã thấy trong `pytest`); `get_flattened_data()` không tham số `band` trả cùng dạng tuple pixel, đã xác nhận bằng docstring + Pillow 12.2.0 cài sẵn trong venv. | `pytest tests/test_image_reading.py -q` PASS, không còn DeprecationWarning liên quan `getdata` trong output; `pytest -q` toàn repo vẫn 3136 passed, 0 fail; `ruff check .` sạch | — | `cc:done` — 9/9 test PASS kể cả với `-W error::DeprecationWarning`; ruff sạch; pytest toàn repo 3136 passed/0 fail (150s) |
 
 ## Archive
 
