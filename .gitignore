@@ -106,6 +106,9 @@ research_exports/
 logs/
 *.log
 
+# harness-loop worker worktrees (git worktree scratch dir — auto-created, not source)
+.harness-worktrees/
+
 # Cache and temp — general (.mypy_cache/.ruff_cache already covered above)
 cache/
 tmp/
