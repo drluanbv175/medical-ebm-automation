@@ -136,7 +136,7 @@ không bị trôi/sai khi sửa về sau.
 | 7.3 | Sửa 7 phát hiện bài **SGLT2i đa hồng cầu** (nguồn [4] bị đảo chiều; tách 2 danh sách nguy cơ; «đỉnh 9 tháng»; vế RCT-null; bộ loại trừ; lối ra ngừng thuốc có kiểm soát) | như 7.1; [2][3] tường phí ⇒ chỉ hedge, không khẳng định thêm | — | `cc:done` — 7/7; cổng ĐẠT |
 | 7.4 | Sửa 7 phát hiện bài **ĐTĐ2-CKD** (1A→2B sai quần thể; Figure 48 lấy nhầm cột; RASi chỉ định vs liều; điều kiện kali finerenone; lối ra RASi; mức statin) | như 7.1 | — | `cc:done` — 7/7 (session limit ngắt giữa chừng lần 1, agent thứ hai hoàn tất phần thiếu); cổng ĐẠT |
 | 7.5 | Sửa 8 phát hiện bài **viêm gan B** (thống nhất «hoặc» ngưỡng EASL ở cả 3 chỗ; phanh EASL defer/other-causes; đảo lại câu phủ định về [5]; lệnh cấm ngừng ở HBeAg+; mẫu số [4]) | như 7.1 | — | `cc:done` — 8/8; 1 lỗi cổng do trích cả số trích dẫn nội bộ [59] của nguồn [5] — đã gỡ; cổng ĐẠT |
-| 7.6 | **Thẩm định độc lập cả 5 bài sau sửa** — mỗi bài một agent mới; điều kiện hội tụ: không còn phát hiện nào do vòng sửa 23/08 gây ra | báo cáo hội tụ từng bài; tồn dư (nếu có) sửa tiếp rồi soi lại | 7.1–7.5 | `cc:todo` |
+| 7.6 | **Thẩm định độc lập cả 5 bài sau sửa** — mỗi bài một agent mới; điều kiện hội tụ: không còn phát hiện nào do vòng sửa 23/08 gây ra | báo cáo hội tụ từng bài; tồn dư (nếu có) sửa tiếp rồi soi lại | 7.1–7.5 | `cc:done` — VKDT sạch ngay; tuyến giáp 2 lỗi thật (câu tự mâu thuẫn TR4/EU-TIRADS, thiếu nhánh "bệnh mắt không hoạt động"), SGLT2i 2 điểm nhẹ (trích [1] quá rộng cho "hút thuốc", gộp p-value 3 nhóm), CKD 1 khoảng hở trích trang (thiếu S158/S214) — cả 5 đã vá + verify chéo lần 2, cổng ĐẠT cả 5, hội tụ |
 
 
 ## Archive
