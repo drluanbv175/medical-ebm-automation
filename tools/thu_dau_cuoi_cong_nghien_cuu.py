@@ -43,9 +43,8 @@ Mã thoát: 0 = mọi lỗi gài đều bị đúng cổng bắt; khác 0 = có 
 
 from __future__ import annotations
 
-import copy
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 
@@ -61,10 +60,9 @@ if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
 import g3_quality_gate as G3Q  # noqa: E402
-import run_g3_auto as G3  # noqa: E402
 import g4_quality_gate as G4Q  # noqa: E402
-import run_g4_auto as G4  # noqa: E402
 import g8_quality_gate as G8Q  # noqa: E402
+import run_g4_auto as G4  # noqa: E402
 
 STUDY = "CANARY-NC-6.1"
 

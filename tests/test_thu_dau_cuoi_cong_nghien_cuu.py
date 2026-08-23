@@ -18,8 +18,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = REPO_ROOT / "tools"
 PYTHON = sys.executable
@@ -28,11 +26,9 @@ for _p in (str(REPO_ROOT), str(TOOLS_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-import thu_dau_cuoi_cong_nghien_cuu as CANARY  # noqa: E402
-import g3_quality_gate as G3Q  # noqa: E402
 import g4_quality_gate as G4Q  # noqa: E402
 import g8_quality_gate as G8Q  # noqa: E402
-
+import thu_dau_cuoi_cong_nghien_cuu as CANARY  # noqa: E402
 
 # ════════════════════════════════════════════════════════════════════════════
 # 1. Hợp đồng danh sách lỗi gài — không được rỗng, không được trùng mã
