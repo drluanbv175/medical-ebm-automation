@@ -138,6 +138,21 @@ không bị trôi/sai khi sửa về sau.
 | 7.5 | Sửa 8 phát hiện bài **viêm gan B** (thống nhất «hoặc» ngưỡng EASL ở cả 3 chỗ; phanh EASL defer/other-causes; đảo lại câu phủ định về [5]; lệnh cấm ngừng ở HBeAg+; mẫu số [4]) | như 7.1 | — | `cc:done` — 8/8; 1 lỗi cổng do trích cả số trích dẫn nội bộ [59] của nguồn [5] — đã gỡ; cổng ĐẠT |
 | 7.6 | **Thẩm định độc lập cả 5 bài sau sửa** — mỗi bài một agent mới; điều kiện hội tụ: không còn phát hiện nào do vòng sửa 23/08 gây ra | báo cáo hội tụ từng bài; tồn dư (nếu có) sửa tiếp rồi soi lại | 7.1–7.5 | `cc:done` — VKDT sạch ngay; tuyến giáp 2 lỗi thật (câu tự mâu thuẫn TR4/EU-TIRADS, thiếu nhánh "bệnh mắt không hoạt động"), SGLT2i 2 điểm nhẹ (trích [1] quá rộng cho "hút thuốc", gộp p-value 3 nhóm), CKD 1 khoảng hở trích trang (thiếu S158/S214) — cả 5 đã vá + verify chéo lần 2, cổng ĐẠT cả 5, hội tụ |
 
+---
+
+## Sprint 8 — Dọn nợ kỹ thuật nhỏ phát hiện qua audit toàn diện 23/08
+
+> Mở 23/08/2026 theo yêu cầu bác sĩ (`/harness-plan`, sau khi `/harness-work` không có
+> gì trong hàng đợi). Nguồn việc: `tools/upgrade_verify.py` (28/28 PASS) + `pytest` toàn
+> repo (3136 passed, 0 fail) — hệ thống sạch, chỉ lộ ra đúng 1 nợ kỹ thuật nhẹ qua
+> warning. **Spec skip reason**: không đổi hành vi người dùng thấy được, không đụng
+> API/data model/quyền/billing/tích hợp ngoài — chỉ đổi lời gọi API nội bộ Pillow sang
+> tên không bị deprecate, giữ nguyên đầu ra pixel. `team_validation_mode:
+> not_required_lightweight` (1 file, rủi ro thấp, không ảnh hưởng product behavior).
+
+| Task | Nội dung | DoD | Depends | Status |
+|---|---|---|---|---|
+| 8.1 | `[tdd:skip:api-migration-existing-tests-cover-behavior]` Đổi `src.getdata()` → `src.get_flattened_data()` tại `app/integrations/image_reading.py:74` (hàm `strip_exif`). `Image.Image.getdata` sẽ bị Pillow gỡ bỏ 2027-10-15 (`DeprecationWarning` đã thấy trong `pytest`); `get_flattened_data()` không tham số `band` trả cùng dạng tuple pixel, đã xác nhận bằng docstring + Pillow 12.2.0 cài sẵn trong venv. | `pytest tests/test_image_reading.py -q` PASS, không còn DeprecationWarning liên quan `getdata` trong output; `pytest -q` toàn repo vẫn 3136 passed, 0 fail; `ruff check .` sạch | — | `cc:todo` |
 
 ## Archive
 
