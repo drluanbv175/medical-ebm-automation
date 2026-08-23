@@ -131,11 +131,11 @@ không bị trôi/sai khi sửa về sau.
 
 | Task | Nội dung | DoD | Depends | Status |
 |---|---|---|---|---|
-| 7.1 | Sửa 8 phát hiện + 2 quan sát bài **tuyến giáp** (nặng nhất: ngừng ATD sai cửa sổ thai kỳ; corticoid trước RAI mất nhánh yếu tố nguy cơ; AIT thiếu lối thoát cấp cứu) | cổng trích dẫn ĐẠT; changelog trong bài; mục không xác minh được thì KHÔNG áp và khai rõ | — | `cc:todo` |
-| 7.2 | Sửa 9 phát hiện bài **VKDT tổng quan** (điền 4/4 ô ACR từ toàn văn tại chỗ; corticoid «cùng hướng» sai; ngoại lệ suy tim/nhiễm trùng/NTM; lối ra lao-HBV; phép hội + hút thuốc) | như 7.1 | — | `cc:todo` |
-| 7.3 | Sửa 7 phát hiện bài **SGLT2i đa hồng cầu** (nguồn [4] bị đảo chiều; tách 2 danh sách nguy cơ; «đỉnh 9 tháng»; vế RCT-null; bộ loại trừ; lối ra ngừng thuốc có kiểm soát) | như 7.1; [2][3] tường phí ⇒ chỉ hedge, không khẳng định thêm | — | `cc:todo` |
-| 7.4 | Sửa 7 phát hiện bài **ĐTĐ2-CKD** (1A→2B sai quần thể; Figure 48 lấy nhầm cột; RASi chỉ định vs liều; điều kiện kali finerenone; lối ra RASi; mức statin) | như 7.1 | — | `cc:todo` |
-| 7.5 | Sửa 8 phát hiện bài **viêm gan B** (thống nhất «hoặc» ngưỡng EASL ở cả 3 chỗ; phanh EASL defer/other-causes; đảo lại câu phủ định về [5]; lệnh cấm ngừng ở HBeAg+; mẫu số [4]) | như 7.1 | — | `cc:todo` |
+| 7.1 | Sửa 8 phát hiện + 2 quan sát bài **tuyến giáp** (nặng nhất: ngừng ATD sai cửa sổ thai kỳ; corticoid trước RAI mất nhánh yếu tố nguy cơ; AIT thiếu lối thoát cấp cứu) | cổng trích dẫn ĐẠT; changelog trong bài; mục không xác minh được thì KHÔNG áp và khai rõ | — | `cc:done` — 8/8 + 2/2 quan sát, 0 khong_ap; cổng ĐẠT |
+| 7.2 | Sửa 9 phát hiện bài **VKDT tổng quan** (điền 4/4 ô ACR từ toàn văn tại chỗ; corticoid «cùng hướng» sai; ngoại lệ suy tim/nhiễm trùng/NTM; lối ra lao-HBV; phép hội + hút thuốc) | như 7.1 | — | `cc:done` — 9/9; cổng ĐẠT |
+| 7.3 | Sửa 7 phát hiện bài **SGLT2i đa hồng cầu** (nguồn [4] bị đảo chiều; tách 2 danh sách nguy cơ; «đỉnh 9 tháng»; vế RCT-null; bộ loại trừ; lối ra ngừng thuốc có kiểm soát) | như 7.1; [2][3] tường phí ⇒ chỉ hedge, không khẳng định thêm | — | `cc:done` — 7/7; cổng ĐẠT |
+| 7.4 | Sửa 7 phát hiện bài **ĐTĐ2-CKD** (1A→2B sai quần thể; Figure 48 lấy nhầm cột; RASi chỉ định vs liều; điều kiện kali finerenone; lối ra RASi; mức statin) | như 7.1 | — | `cc:done` — 7/7 (session limit ngắt giữa chừng lần 1, agent thứ hai hoàn tất phần thiếu); cổng ĐẠT |
+| 7.5 | Sửa 8 phát hiện bài **viêm gan B** (thống nhất «hoặc» ngưỡng EASL ở cả 3 chỗ; phanh EASL defer/other-causes; đảo lại câu phủ định về [5]; lệnh cấm ngừng ở HBeAg+; mẫu số [4]) | như 7.1 | — | `cc:done` — 8/8; 1 lỗi cổng do trích cả số trích dẫn nội bộ [59] của nguồn [5] — đã gỡ; cổng ĐẠT |
 | 7.6 | **Thẩm định độc lập cả 5 bài sau sửa** — mỗi bài một agent mới; điều kiện hội tụ: không còn phát hiện nào do vòng sửa 23/08 gây ra | báo cáo hội tụ từng bài; tồn dư (nếu có) sửa tiếp rồi soi lại | 7.1–7.5 | `cc:todo` |
 
 
