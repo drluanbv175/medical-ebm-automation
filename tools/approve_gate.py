@@ -73,6 +73,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import g2_quality_gate as G2Q  # noqa: E402 — cần sys.path.insert trước
 import g4_quality_gate as G4Q  # noqa: E402 — cần sys.path.insert trước
 import g5_quality_gate as G5Q  # noqa: E402 — cần sys.path.insert trước
+import g8_quality_gate as G8Q  # noqa: E402 — cần sys.path.insert trước
 import g9_quality_gate as G9Q  # noqa: E402 — cần sys.path.insert trước
 import g10_quality_gate as G10Q  # noqa: E402 — cần sys.path.insert trước
 import gate_contract as GC  # noqa: E402 — cần sys.path.insert trước
@@ -425,6 +426,34 @@ def main() -> int:
         evidence_content = prepared or evidence_content
         artifact_path.write_text(evidence_content, encoding="utf-8", newline="\n")
 
+        # SỬA 2026-08-24 (audit đa-agent G0-G10): trước đây tiêu chí đầy đủ của
+        # G2Q (24 mục WHO TRDS, guardrail, đăng ký...) chỉ được gọi SAU khi ledger
+        # đã ghi (dòng advisory cuối file) — thuần báo cáo, không chặn được gì.
+        # Nay gọi TRƯỚC khi ghi ledger, NGAY SAU khi attestation vừa ghi vào file
+        # (nên G2Q đọc đúng bản mới nhất). Chỉ chặn ở auto_blocked/auto_review
+        # (BLOCKED/DRAFT) — không đòi ledger_approved=True (vòng lặp: ledger chưa
+        # ghi ở bước này) nên status tối đa đạt được ở đây là PENDING, đúng ý nghĩa.
+        try:
+            g2_report = G2Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=False,
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"✗ TỪ CHỐI ký G2 — không thẩm định được hồ sơ: {exc}")
+            return 1
+        if g2_report.get("status") in (G2Q.STATUS_BLOCKED, G2Q.STATUS_DRAFT):
+            print(
+                "✗ TỪ CHỐI ký G2 — hồ sơ chưa qua đủ tiêu chí tự động "
+                f"(trạng thái hiện tại: {g2_report.get('status', 'UNKNOWN')})."
+            )
+            for item in g2_report.get("automatic_criteria", []):
+                if item.get("status") != "PASS":
+                    print(f"   - {item.get('id')}: {item.get('label')} ({item.get('evidence')})")
+            print("   Không ghi ledger; xử lý hết mục BLOCK/REVIEW ở trên trước khi ký.")
+            return 1
+
     if args.gate == "G4":
         still_draft = _g4_sections_still_draft(evidence_content)
         if still_draft:
@@ -435,6 +464,33 @@ def main() -> int:
             print("   (khóa mật mã bảo vệ TÍNH TOÀN VẸN nội dung, không tự đảm bảo nội dung có ý nghĩa).")
             print("   Không ghi ledger để tránh SAP rỗng bị coi là đã khóa.")
             return 1
+        # SỬA 2026-08-24 (audit đa-agent G0-G10): tương tự G2 — G4Q (12 tiêu chí,
+        # gồm G4-AUTO-03 đối chiếu SAP đã ký với G3_checkpoint.json HIỆN TẠI và
+        # G4-AUTO-09 chặn thiếu margin NI/equivalence) trước đây chỉ chạy SAU khi
+        # đã ghi ledger. Nay gọi TRƯỚC — status TỐI ĐA đạt được ở đây là READY_
+        # FOR_SIGNATURE (human_complete đòi ledger_signed=True, chưa xảy ra ở bước
+        # này) nên đây đúng là ngưỡng cần đạt trước khi cho ký, giống khuôn G5/G9/G10.
+        if args.decision == "APPROVED":
+            try:
+                g4_report = G4Q.evaluate_study(
+                    args.study,
+                    study_dir,
+                    repo_root=Path(__file__).resolve().parents[1],
+                    write=False,
+                )
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                print(f"✗ TỪ CHỐI ký G4 — không thẩm định được SAP: {exc}")
+                return 1
+            if g4_report.get("status") in (G4Q.STATUS_BLOCKED, G4Q.STATUS_DRAFT):
+                print(
+                    "✗ TỪ CHỐI ký G4 — SAP chưa qua đủ tiêu chí tự động "
+                    f"(trạng thái hiện tại: {g4_report.get('status', 'UNKNOWN')})."
+                )
+                for item in g4_report.get("automatic_criteria", []):
+                    if item.get("status") != "PASS":
+                        print(f"   - {item.get('id')}: {item.get('label')} ({item.get('evidence')})")
+                print("   Không ghi ledger; xử lý hết mục BLOCK/REVIEW ở trên trước khi ký.")
+                return 1
 
     if args.gate == "G5" and args.decision == "APPROVED":
         expected_artifact = study_dir / "G5_checkpoint.json"
@@ -478,6 +534,58 @@ def main() -> int:
                     f"({item.get('evidence')})"
                 )
             print("   Không ghi ledger; phải xử lý hết lỗi dữ liệu trước.")
+            return 1
+
+    # THÊM 2026-08-24 (audit đa-agent G0-G10, phát hiện NGHIÊM TRỌNG): G8 (bình
+    # duyệt độc lập) trước đây KHÔNG có bất kỳ chốt chất lượng nào — g8_quality_
+    # gate.py tồn tại, logic đúng, có test, nhưng approve_gate.py chưa từng import
+    # hay gọi nó. Ai giữ khóa vai trò PHAN_BIEN/PEER_REVIEWER có thể ký "đã bình
+    # duyệt độc lập" mà không cần đáp ứng bất kỳ tiêu chí nào — kể cả tự duyệt cho
+    # chính đề tài mình đứng tên thống kê viên (G4), hoặc trước khi cổng kiểm rút
+    # bài A12 từng chạy. evaluate_g8_quality() tự đọc ledger để tính G8-HUMAN-03/04
+    # (mức bảo đảm khóa, reviewer_ref không trùng cổng khác) — hai tiêu chí này
+    # LUÔN "REVIEW" khi gọi TRƯỚC lúc ghi ledger (chưa có gì để đối chiếu), nên
+    # STATUS_REVIEWED (PASS_G8_REVIEW_RECORDED) không bao giờ đạt được ở bước
+    # này — status TỐI ĐA hợp lệ trước khi ký là STATUS_PENDING (PENDING_REAL_
+    # REVIEW_SIGNATURE, đúng tên gọi). STATUS_READY (READY_FOR_INDEPENDENT_REVIEW)
+    # nghĩa là CHƯA có bản nhận xét phản biện thật — vẫn bị từ chối, vì mục đích
+    # của chốt này chính là đòi bản nhận xét thật tồn tại trước khi cho ký.
+    if args.gate == "G8" and args.decision == "APPROVED":
+        expected_artifact = study_dir / G8Q.presubmission_artifact_name(args.study)
+        try:
+            artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
+        except OSError:
+            artifact_matches = False
+        if not artifact_matches:
+            print(
+                "✗ TỪ CHỐI ký G8 — artifact phải là "
+                f"{expected_artifact.name} trong đúng thư mục đề tài."
+            )
+            print("   Chỉ bản tự kiểm G0-G7 này ràng buộc đúng nội dung được bình duyệt.")
+            return 1
+        try:
+            g8_report = G8Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=False,
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"✗ TỪ CHỐI ký G8 — không thẩm định được hồ sơ: {exc}")
+            return 1
+        _g8_status = g8_report.get("status")
+        if _g8_status not in (G8Q.STATUS_PENDING, G8Q.STATUS_REVIEWED):
+            print(
+                "✗ TỪ CHỐI ký G8 — hồ sơ chưa sẵn sàng để ký "
+                f"(trạng thái hiện tại: {_g8_status or 'UNKNOWN'})."
+            )
+            if _g8_status == G8Q.STATUS_READY:
+                print("   Thiếu bản nhận xét phản biện THẬT (G8_PEER_REVIEW_REPORT_<study>.md)")
+                print("   — máy KHÔNG được tự sinh nội dung này thay người phản biện.")
+            for item in g8_report.get("automatic_criteria", []):
+                if item.get("status") != "PASS":
+                    print(f"   - {item.get('id')}: {item.get('label')} ({item.get('evidence')})")
+            print("   Không ghi ledger; người phản biện phải hoàn tất bản nhận xét thật trước khi ký.")
             return 1
 
     if args.gate == "G9" and args.decision == "APPROVED":
@@ -716,6 +824,17 @@ def main() -> int:
             print(f"   G5 quality status: {report['status']}")
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G5 quality report: {exc}")
+    elif args.gate == "G8":
+        try:
+            report = G8Q.evaluate_study(
+                args.study,
+                study_dir,
+                repo_root=Path(__file__).resolve().parents[1],
+                write=True,
+            )
+            print(f"   G8 quality status: {report['status']}")
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"⚠️  Đã ghi ledger nhưng chưa cập nhật được G8 quality report: {exc}")
     elif args.gate == "G9":
         try:
             report = G9Q.evaluate_study(

@@ -154,6 +154,25 @@ không bị trôi/sai khi sửa về sau.
 |---|---|---|---|---|
 | 8.1 | `[tdd:skip:api-migration-existing-tests-cover-behavior]` Đổi `src.getdata()` → `src.get_flattened_data()` tại `app/integrations/image_reading.py:74` (hàm `strip_exif`). `Image.Image.getdata` sẽ bị Pillow gỡ bỏ 2027-10-15 (`DeprecationWarning` đã thấy trong `pytest`); `get_flattened_data()` không tham số `band` trả cùng dạng tuple pixel, đã xác nhận bằng docstring + Pillow 12.2.0 cài sẵn trong venv. | `pytest tests/test_image_reading.py -q` PASS, không còn DeprecationWarning liên quan `getdata` trong output; `pytest -q` toàn repo vẫn 3136 passed, 0 fail; `ruff check .` sạch | — | `cc:done` — 9/9 test PASS kể cả với `-W error::DeprecationWarning`; ruff sạch; pytest toàn repo 3136 passed/0 fail (150s) |
 
+---
+
+## Sprint 9 — Audit đa-agent 5 trục theo yêu cầu bác sĩ (24/08): G0-G10 tự động · cổng tra cứu · nguồn chứng cứ · mẫu cập nhật · tầng agent
+
+> Mở 24/08/2026 theo `/harness-loop` với mục tiêu rộng của bác sĩ: "đảm bảo hệ nghiên cứu +
+> cập nhật chứng cứ đã hoàn thiện tốt nhất". Phóng 5 agent audit song song (chỉ đo lường,
+> không sửa) rồi lập Sprint theo phát hiện thật, không tự bịa việc. Kết quả 5 trục:
+> ① G0-G10 — 🔴 2 lỗ hổng thật (xem 9.1) · ② cổng tra cứu — 🟢 sạch ở lõi · ③ nguồn chứng cứ
+> mới nhất — 🟢 tốt (0/63 quá hạn đỏ) · ④ mẫu cập nhật — 🟢 sạch ở lõi, 66/67 lệch vỏ CSS ·
+> ⑤ tầng agent doctrine — 🟢 sạch, không trôi tụt (74/74 bài học BH01-74 không tái phát).
+
+| Task | Nội dung | DoD | Depends | Status |
+|---|---|---|---|---|
+| 9.1 | **[NGHIÊM TRỌNG] Vá cổng G8/G2/G4 thiếu chốt chất lượng trước khi ký.** G8 (bình duyệt độc lập) KHÔNG có bất kỳ chốt nào — `g8_quality_gate.py` tồn tại, đúng logic, có test, nhưng `approve_gate.py` chưa từng import/gọi nó; ai giữ khóa vai trò PHAN_BIEN ký được "đã bình duyệt độc lập" mà không cần bản nhận xét thật, kể cả tự duyệt cho chính đề tài mình đứng tên G4. G2/G4: 24 mục WHO TRDS + 12 tiêu chí SAP chỉ chạy SAU khi đã ghi ledger (advisory). Nối `G8Q/G2Q/G4Q.evaluate_study(write=False)` vào ĐÚNG TRƯỚC bước ghi ledger, khuôn theo G5/G9/G10 đã có; G8 chấp nhận status∈{PENDING,REVIEWED}, G4 chấp nhận READY, G2 từ chối khi BLOCKED/DRAFT. `[tdd:required]` | 8 test mới `tests/test_approve_gate_quality_gate_wiring_20260824.py` PASS; **kiểm bằng đột biến**: tắt từng chốt (G8/G4/G2) ⇒ đúng test tương ứng đỏ, khôi phục ⇒ xanh lại; 2 test cũ `test_approval_ledger.py` (dùng SAP tối giản) sửa lại dùng SAP thật qua `run_g4_auto.py`; toàn repo `pytest` 3144 passed/0 fail; `ruff check` sạch | — | `cc:done` — 5 điểm sửa trong `approve_gate.py` (import G8Q; chốt trước-ký G2/G4/G8 mới; advisory report sau-ký G8); đột biến xác nhận cả 3 chốt đều bắt đúng lỗi mô phỏng |
+| 9.2 | Đồng bộ vỏ CSS/HTML/JS của 66/67 dashboard (98,5%) về đúng template hiện hành — cơ chế "sửa template → chạy lại reskin" chưa thực thi sau lần sửa template gần nhất (18/08). `[tdd:skip:content-preserving-tooling-already-exists]` | `tools/reskin_dashboards.py --dry-run` báo 0/67 hoặc gần 0 cần reskin sau khi chạy thật; khối `DATA` mọi dashboard KHÔNG đổi (chỉ vỏ); `verify_dashboard.py --online` vẫn PASS trên mẫu đã kiểm ở audit trục ④ | — | `cc:todo` |
+| 9.3 | Dựng lại `EBM-Dashboards/derivatives/DAT-CANH-CHUNG-CU-MOI_*.md` — bản hiện tại (16/08) đã lỗi thời 8 ngày, ghi 123/168 trong khi số đo thật 24/08 là 114/157. `[tdd:skip:report-regen]` | File mới sinh ra khớp số đo `kiem_chung_cu_vuot_qua.py` chạy lại; KHÔNG tự đổi `decision`/`gradeLevel` nào | — | `cc:todo` |
+| 9.4 | Cập nhật CLAUDE.md gốc mục "Lệnh" — tài liệu hiện chỉ liệt kê G0/G3/G4/G8/G9 có `gN_quality_gate.py` riêng, thực tế CẢ 11 cổng G0→G10 đã có (xác nhận qua audit trục ①, tài liệu lạc hậu theo hướng TỐT hơn mô tả). `[tdd:skip:docs-only]` | Đoạn "Lệnh" liệt kê đủ G0-G10; tránh lập kế hoạch trùng lặp "xây quality gate cho G1/G2/G5/G6/G7/G10" trong tương lai vì tưởng chưa có | — | `cc:todo` |
+| 9.5 | (Recommended, effort cao hơn) Mở rộng canary BH72 (`thu_dau_cuoi_cong_nghien_cuu.py`) để gọi qua đúng CLI `approve_gate.py --gate G2/G4/G8` thay vì gọi thẳng `evaluate_gN_quality()` — canary hiện chứng minh "logic tính điểm đúng" nhưng KHÔNG chứng minh "dây nối vào chữ ký thật đúng" (chính là khoảng trống mà 9.1 vừa vá). `[tdd:required]` | Canary mở rộng bắt được lỗi 9.1 nếu tái diễn (kiểm bằng đột biến: revert tạm 9.1 ⇒ canary đỏ) | 9.1 | `cc:todo` |
+
 ## Archive
 
 ---
