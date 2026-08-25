@@ -174,6 +174,20 @@ không bị trôi/sai khi sửa về sau.
 | 9.4 | Cập nhật CLAUDE.md gốc mục "Lệnh" — tài liệu hiện chỉ liệt kê G0/G3/G4/G8/G9 có `gN_quality_gate.py` riêng, thực tế CẢ 11 cổng G0→G10 đã có (xác nhận qua audit trục ①, tài liệu lạc hậu theo hướng TỐT hơn mô tả). `[tdd:skip:docs-only]` | Đoạn "Lệnh" liệt kê đủ G0-G10; tránh lập kế hoạch trùng lặp "xây quality gate cho G1/G2/G5/G6/G7/G10" trong tương lai vì tưởng chưa có | — | `cc:done` — thêm mục "AUDIT ĐA-AGENT G0-G10 24/08/2026" vào CLAUDE.md gốc (commit `0f1fa3c`), đính chính đủ 11 cổng + ghi lại phát hiện 9.1 + tóm tắt 4 trục còn lại |
 | 9.5 | (Recommended, effort cao hơn) Mở rộng canary BH72 (`thu_dau_cuoi_cong_nghien_cuu.py`) để gọi qua đúng CLI `approve_gate.py --gate G2/G4/G8` thay vì gọi thẳng `evaluate_gN_quality()` — canary hiện chứng minh "logic tính điểm đúng" nhưng KHÔNG chứng minh "dây nối vào chữ ký thật đúng" (chính là khoảng trống mà 9.1 vừa vá). `[tdd:required]` | Canary mở rộng bắt được lỗi 9.1 nếu tái diễn (kiểm bằng đột biến: revert tạm 9.1 ⇒ canary đỏ) | 9.1 | `cc:todo` |
 
+---
+
+## Sprint 10 — Điều tra + sửa 8 lỗi trích dẫn phát hiện ở 9.6 (24/08, bác sĩ duyệt tiếp tục)
+
+> Mở theo chỉ thị "tiếp tục hoàn thiện" của bác sĩ sau khi Sprint 9 báo cáo 8 lỗi cứng.
+> 5 agent điều tra song song (1 agent/dashboard), mỗi agent PHẢI tự tra PMID qua công cụ
+> thật rồi phân loại (A) báo động giả hay (B) tráo PMID thật trước khi được phép sửa —
+> không cho sửa mù quáng theo đúng số báo lỗi.
+
+| Task | Nội dung | DoD | Depends | Status |
+|---|---|---|---|---|
+| 10.1 | Điều tra + xử lý 8 lỗi cứng của 9.6 trên 5 dashboard. `[tdd:skip:content-fix-not-code]` | Verify độc lập lại cả 5 (không tin lời agent) PASS 0 lỗi cứng; KHÔNG đổi `pmid`/`doi`/`decision`/`gradeLevel` nào trong mọi case (A) | 9.6 | `cc:done` — **KẾT QUẢ BẤT NGỜ: CẢ 8/8 LỖI ĐỀU LÀ (A) BÁO ĐỘNG GIẢ, 0/8 là tráo PMID thật.** Mọi PMID/DOI đã tự tra qua PubMed E-utilities thật, khớp tuyệt đối nội dung item — chỉ sửa `references[]`/`source`/`dateVersion` cho đầy đủ/đúng trình bày, KHÔNG đổi bất kỳ `pmid`/`doi`/`decision`/`gradeLevel` nào. Chi tiết: Uptodate_W29 ITEM-01 — `source` viết tắt "ACC/AHA" thiếu 9 hiệp hội đồng thuận khác trong tên guideline dài, đã bổ sung tên đầy đủ. CAP_ATS2025 ITEM-03 — `references[0]` thiếu hẳn tiêu đề bài báo (3 item khác cùng nguồn có đủ), đã bổ sung. COPD_TimMachNoiTiet — 4/4 lỗi cùng nguyên nhân (item viết tiếng Việt nên heuristic đếm từ khóa tiếng Anh trong `references` không đủ) + ITEM-11 thêm lỗi trình bày `dateVersion:"2008–2013"` (khoảng năm) bị đọc nhầm năm đầu, sửa thành "2013 (tín hiệu ban đầu 2008 đã được giải quyết)". MachMauNao_DongMachCanh ITEM-13 (mức nghi ngờ cao nhất, trùng 0% từ khóa) — vẫn là báo động giả: nội dung khớp gần nguyên văn abstract PMID 34153348, chỉ do `references` rút gọn thiếu tiêu đề. ViemKhopDangThap ITEM-07 — xác nhận độc lập đúng lỗi gõ nhầm năm "2025"→"2022". Verify chéo lần cuối (tôi tự chạy, không tin lời agent): cả 5/5 dashboard PASS 0 lỗi cứng đồng thời trong cùng 1 lượt. Đang quét lại toàn kho 67 dashboard lần 2 để xác nhận không sinh lỗi mới (xem 10.2). |
+| 10.2 | **[Phát hiện về CHÍNH CÔNG CỤ, chưa sửa — cần bác sĩ quyết]** `_title_overlap_ratio()` trong `EBM-Dashboards/tools/verify_dashboard.py` (dòng ~1087) đếm từ khóa **tiếng Anh** có nghĩa của tiêu đề PubMed thật xuất hiện trong text item; khi `--strict-sources` bật, dưới ngưỡng 25% bị nâng từ cảnh báo thành **lỗi cứng chặn phát hành** (dòng ~1236-1243, đúng thiết kế có chủ ý, không phải bug logic). Nhưng dashboard của dự án này viết **tiếng Việt** — heuristic có tỷ lệ báo động giả rất cao khi `references[]` không chép đủ tiêu đề gốc tiếng Anh. Bằng chứng thực nghiệm: **8/8 lần thử nghiệm thực tế (10.1) đều là báo động giả**, 0 lần là lỗi thật. `[tdd:skip:proposal-only-not-implemented]` | Không tự sửa code — chỉ đề xuất qua Plans.md, chờ bác sĩ quyết hướng (nới ngưỡng khi DOI đã khớp xác nhận / bắt buộc `references[]` luôn có tiêu đề gốc ở khâu soạn / giữ nguyên) | 10.1 | `cc:todo` — chờ bác sĩ quyết, KHÔNG tự nới lỏng cổng liêm chính mà chưa xác nhận |
+
 ## Archive
 
 ---
