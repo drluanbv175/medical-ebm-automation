@@ -1053,11 +1053,24 @@ def evaluate_study(
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)
+        # VÁ 26/08/2026: out_dir luôn TUYỆT ĐỐI (repo_root / "exports" / study),
+        # nên report_path cũng tuyệt đối — nhưng run_g2_auto.py (tool sinh artifact,
+        # dùng Path("exports") / study tương đối theo CWD) ghi field CÙNG TÊN
+        # artifacts["quality_report"] dạng tương đối. Chạy công cụ này (đúng thiết
+        # kế: chấm lại, không tự phê duyệt) sẽ âm thầm thay đường dẫn tương đối
+        # sạch bằng đường dẫn tuyệt đối RIÊNG CỦA MÁY NÀY trong checkpoint dùng
+        # chung qua git — đúng họ lỗi BH06 (không đường dẫn cứng của một máy).
+        # Chỉ đổi CHUỖI được ghi vào checkpoint; write_quality_report() ở trên vẫn
+        # ghi file thật bằng out_dir tuyệt đối, không đổi hành vi I/O.
+        try:
+            recorded_path = report_path.relative_to(repo_root)
+        except ValueError:
+            recorded_path = report_path
         refresh_checkpoint(
             study=study,
             out_dir=out_dir,
             report=report,
-            quality_report_path=report_path,
+            quality_report_path=recorded_path,
         )
     return report
 

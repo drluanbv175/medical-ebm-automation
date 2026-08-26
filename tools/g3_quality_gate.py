@@ -1640,11 +1640,21 @@ def evaluate_study(
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)
+        # VÁ 26/08/2026 (cùng họ lỗi BH06 với g2/g4/g8_quality_gate.py): out_dir ở
+        # đây luôn tuyệt đối (main() truyền repo_root/"exports"/study) nên
+        # report_path cũng tuyệt đối. Hàm này không nhận repo_root riêng, nhưng
+        # out_dir.parent.parent == repo_root đúng theo cách out_dir được dựng —
+        # chỉ đổi CHUỖI ghi vào checkpoint sang tương đối, không đổi hành vi ghi
+        # file thật.
+        try:
+            recorded_path = report_path.relative_to(out_dir.parent.parent)
+        except ValueError:
+            recorded_path = report_path
         refresh_checkpoint(
             study=study,
             out_dir=out_dir,
             report=report,
-            quality_report_path=report_path,
+            quality_report_path=recorded_path,
         )
     return report
 

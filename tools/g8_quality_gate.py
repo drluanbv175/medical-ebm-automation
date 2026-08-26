@@ -1079,9 +1079,16 @@ def evaluate_study(study: str, out_dir: Path, *, repo_root: Optional[Path] = Non
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)
+        # VÁ 26/08/2026 (cùng họ lỗi BH06 với g2/g4_quality_gate.py): out_dir luôn
+        # tuyệt đối nên report_path cũng tuyệt đối — chỉ đổi CHUỖI ghi vào
+        # checkpoint sang tương đối với repo_root, không đổi hành vi ghi file thật.
+        try:
+            recorded_path = report_path.relative_to(repo_root)
+        except ValueError:
+            recorded_path = report_path
         refresh_checkpoint(
             study=study, out_dir=out_dir, report=report,
-            quality_report_path=report_path,
+            quality_report_path=recorded_path,
         )
     return report
 
