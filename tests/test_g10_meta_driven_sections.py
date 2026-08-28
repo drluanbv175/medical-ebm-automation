@@ -29,7 +29,7 @@ from test_g10_assemble import _write_cross_sectional_fixture  # noqa: E402
 
 
 def _write_meta(d: Path, meta: dict) -> None:
-    (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+    (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 @pytest.fixture
@@ -130,7 +130,7 @@ class TestConfirmedNSurfacedInAssembledDoc:
         cp = json.loads(cp_path.read_text(encoding="utf-8"))
         cp["confirmed_n"] = 1000
         cp["confirmed_n_adequate"] = True
-        cp_path.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+        cp_path.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
 
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
@@ -144,7 +144,7 @@ class TestConfirmedNSurfacedInAssembledDoc:
         cp = json.loads(cp_path.read_text(encoding="utf-8"))
         cp["confirmed_n"] = 50
         cp["confirmed_n_adequate"] = False
-        cp_path.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+        cp_path.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
 
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")

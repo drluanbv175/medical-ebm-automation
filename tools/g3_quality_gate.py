@@ -48,12 +48,21 @@ import argparse
 import hashlib
 import json
 import re
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
 import gate_contract as GC
 import skill_standards as S
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT_PARAMS = "DRAFT_NEEDS_HUMAN_PARAMETERS"
@@ -1501,7 +1510,7 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
     out_dir = Path(out_dir)
     json_path = out_dir / "G3_QUALITY_REPORT.json"
     json_path.write_text(
-        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
     )
 
     lines = [
@@ -1567,7 +1576,7 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
         ]
     )
     md_path = out_dir / "G3_QUALITY_REPORT.md"
-    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return md_path
 
 
@@ -1607,7 +1616,7 @@ def refresh_checkpoint(
     artifacts["quality_report"] = str(quality_report_path)
     checkpoint["disclaimer"] = "Cần bác sĩ kiểm chứng."
     checkpoint_path.write_text(
-        json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
     )
     return checkpoint_path
 
@@ -1631,11 +1640,21 @@ def evaluate_study(
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)
+        # VÁ 26/08/2026 (cùng họ lỗi BH06 với g2/g4/g8_quality_gate.py): out_dir ở
+        # đây luôn tuyệt đối (main() truyền repo_root/"exports"/study) nên
+        # report_path cũng tuyệt đối. Hàm này không nhận repo_root riêng, nhưng
+        # out_dir.parent.parent == repo_root đúng theo cách out_dir được dựng —
+        # chỉ đổi CHUỖI ghi vào checkpoint sang tương đối, không đổi hành vi ghi
+        # file thật.
+        try:
+            recorded_path = report_path.relative_to(out_dir.parent.parent)
+        except ValueError:
+            recorded_path = report_path
         refresh_checkpoint(
             study=study,
             out_dir=out_dir,
             report=report,
-            quality_report_path=report_path,
+            quality_report_path=recorded_path,
         )
     return report
 

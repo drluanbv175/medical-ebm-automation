@@ -38,8 +38,17 @@ import argparse
 import json
 import re
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 import unicodedata
 from pathlib import Path
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -126,7 +135,7 @@ def _write_meta_locked(meta_path: Path, meta: dict, fd, lock_path: Path) -> None
             f"Khóa study_meta.json đã bị VÔ HIỆU HÓA giữa chừng (file .lock bị xóa/thay khi "
             f"tool đang chạy) — TỪ CHỐI ghi để tránh mất cập nhật: {meta_path}. Chạy lại lệnh."
         )
-    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def _do_mark(study_dir: Path, meta_path: Path, args, fd, lock_path: Path) -> int:

@@ -38,7 +38,16 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from pathlib import Path
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -185,6 +194,21 @@ def main(argv: list[str] | None = None) -> int:
         _seal_ok, _seal_why = GC.verify_ledger_seal(args.study, _raw, repo_root=_REPO_ROOT)
         if _chain_ok and _seal_ok:
             print("\n🔏 TOÀN VẸN SỔ CÁI: ✅ chuỗi băm liền mạch, con dấu niêm phong khớp.")
+            # NÂNG CẤP TẦNG-1 16/08/2026: nói RÕ mỗi cổng ký bằng SCHEME nào —
+            # «ed1» = Ed25519, xác minh bằng khoá CÔNG (độc lập thật) · «v4» =
+            # HMAC (máy xác minh phải giữ khoá — KHÔNG chứng minh độc lập).
+            # Mức bảo đảm khác nhau thì phải đọc được khác nhau, không ngầm hiểu.
+            _theo_cong: dict[str, str] = {}
+            for _r in _raw:
+                if isinstance(_r, dict) and _r.get("gate_id"):
+                    _sch = GC.signature_scheme(_r)
+                    if _sch:
+                        _theo_cong[str(_r["gate_id"])] = _sch
+            if _theo_cong:
+                _mo_ta = {"ed1": "ed1 (Ed25519 — độc lập thật)",
+                          "v4": "v4 (HMAC — chưa chứng minh độc lập)"}
+                print("   Scheme ký theo cổng: " + " · ".join(
+                    f"{g}={_mo_ta.get(s, s)}" for g, s in sorted(_theo_cong.items())))
         else:
             print("\n⛔ TOÀN VẸN SỔ CÁI: BẤT THƯỜNG — kết quả stakeholder bên dưới KHÔNG "
                   "đáng tin cho tới khi xử lý xong:")

@@ -27,7 +27,7 @@ from tests.g5_test_helpers import (  # noqa: E402
 
 
 def _write_json(path: Path, value: dict) -> None:
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def _complete_readiness(study: str, n_authors: int = 2) -> dict:
@@ -172,7 +172,7 @@ def _prepare_study(out_dir: Path, study: str, n_authors: int = 2) -> None:
     ):
         (out_dir / name).write_text(
             f"{gate} final synthetic package. Cần bác sĩ kiểm chứng.",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
     for name in (
         f"G7_A8_MANUSCRIPT_{study}.md",
@@ -181,7 +181,7 @@ def _prepare_study(out_dir: Path, study: str, n_authors: int = 2) -> None:
     ):
         (out_dir / name).write_text(
             "Final synthetic publication document. Cần bác sĩ kiểm chứng.",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
     # SỬA 2026-07-30 (G9-F5): G9-AUTO-02 nay chạy LẠI guardrail_check_g9() trên
     # file A10 THẬT thay vì tin checkpoint["guardrail"] cache — fixture cũ chỉ
@@ -202,7 +202,7 @@ def _prepare_study(out_dir: Path, study: str, n_authors: int = 2) -> None:
         "## PHẦN 7\nĐã điền đầy đủ.\n\n"
         "## PHẦN 8 — HARD GATE\nDRAFT — CHỜ ký PI.\n\n"
         "Cần bác sĩ kiểm chứng.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     _write_json(out_dir / "A12_RETRACTION_RECEIPT.json", {"all_clean": True})
     _write_json(out_dir / "A12_METADATA_RECEIPT.json", {"all_resolved": True})
@@ -502,7 +502,7 @@ def test_pi_approval_on_checkpoint_locks_then_manuscript_tamper_blocks(
     manuscript = out_dir / "G7_A8_MANUSCRIPT_PYTEST-G9Q-TAMPER.md"
     manuscript.write_text(
         manuscript.read_text(encoding="utf-8") + "\nChanged after PI approval.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     tampered = G9Q.evaluate_study(
         "PYTEST-G9Q-TAMPER", out_dir, repo_root=tmp_path
@@ -639,7 +639,7 @@ def test_full_signed_chain_reaches_locked_with_real_g5_evaluator(tmp_path, monke
     g8_artifact = study_dir / f"G8_A9_PRESUBMISSION_{study}.md"
     g8_artifact.write_text(
         "Independent presubmission review final. Cần bác sĩ kiểm chứng.",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     append_signed_approval(
         study,
@@ -655,7 +655,7 @@ def test_full_signed_chain_reaches_locked_with_real_g5_evaluator(tmp_path, monke
     ):
         (study_dir / name).write_text(
             "Final synthetic publication document. Cần bác sĩ kiểm chứng.",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
     # SỬA 2026-07-30 (G9-F5): xem chú thích tương tự trong _prepare_study() —
     # G9-AUTO-02 nay chạy lại guardrail_check_g9() trên file A10 thật.
@@ -671,7 +671,7 @@ def test_full_signed_chain_reaches_locked_with_real_g5_evaluator(tmp_path, monke
         "## PHẦN 7\nĐã điền đầy đủ.\n\n"
         "## PHẦN 8 — HARD GATE\nDRAFT — CHỜ ký PI.\n\n"
         "Cần bác sĩ kiểm chứng.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     _write_json(study_dir / "A12_RETRACTION_RECEIPT.json", {"all_clean": True})
     _write_json(study_dir / "A12_METADATA_RECEIPT.json", {"all_resolved": True})

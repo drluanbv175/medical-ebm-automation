@@ -144,7 +144,7 @@ class TestRctOrRrBranch:
             study_dir.mkdir(parents=True)
             (study_dir / "G1_checkpoint.json").write_text(
                 '{"design": {"internal_code": "rct", "primary": "RCT song song"}}',
-                encoding="utf-8")
+                encoding="utf-8", newline="\n")
             result = subprocess.run(
                 [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"),
                  "--study", study, "--effect-size", "0.7", "--effect-type", "RR", "--p0", "0.30"],

@@ -61,7 +61,7 @@ def test_freshness_label_uses_real_mtime(tmp_path):
     from datetime import datetime
 
     f = tmp_path / "brief.md"
-    f.write_text("nội dung", encoding="utf-8")
+    f.write_text("nội dung", encoding="utf-8", newline="\n")
     expected = datetime.fromtimestamp(f.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
     assert geb.freshness_label(f) == expected
 

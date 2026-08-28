@@ -89,15 +89,11 @@
   "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
   "quality_gate": {
-    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "status": "PASS_G0_CONFIRMED",
     "contract_version": "G0-2026.1",
     "automated_checks_passed": true,
-    "human_confirmation_complete": false,
-    "pending_actions": [
-      "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá.",
-      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
-      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist) và reviewed_at dạng ISO-8601. Không cần lưu danh tính."
-    ]
+    "human_confirmation_complete": true,
+    "pending_actions": []
   },
   "needs_input": {
     "blocked": true,

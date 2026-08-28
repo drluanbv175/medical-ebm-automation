@@ -37,7 +37,7 @@ def _run(*extra, study="__g2gate_pytest__"):
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-g2-gate-key", encoding="utf-8")
+    key_path.write_text("pytest-g2-gate-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
@@ -48,7 +48,7 @@ def _write_real_approval(study: str, gate_id: str, artifact_rel: str, content: s
     study_dir.mkdir(parents=True, exist_ok=True)
     artifact = study_dir / artifact_rel
     artifact.parent.mkdir(parents=True, exist_ok=True)
-    artifact.write_text(content, encoding="utf-8")
+    artifact.write_text(content, encoding="utf-8", newline="\n")
     ledger_path = study_dir / "approval_ledger.json"
     ledger = ApprovalLedger.from_file(ledger_path)
     timestamp_utc = datetime.now(timezone.utc).isoformat()

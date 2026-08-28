@@ -668,7 +668,7 @@ def build_supporting_artifacts(
         "A13b": out_dir / f"G1_A13b_RISK_REGISTER_{study}.md",
     }
     for key, path in paths.items():
-        path.write_text(contents[key], encoding="utf-8")
+        path.write_text(contents[key], encoding="utf-8", newline="\n")
     return paths
 
 
@@ -1243,7 +1243,7 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
     json_path = out_dir / "G1_QUALITY_REPORT.json"
     json_path.write_text(
         json.dumps(report, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     lines = [
@@ -1306,5 +1306,5 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
         "> Cần bác sĩ kiểm chứng.",
     ])
     md_path = out_dir / "G1_QUALITY_REPORT.md"
-    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return md_path

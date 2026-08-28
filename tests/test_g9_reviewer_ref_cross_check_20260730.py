@@ -31,7 +31,7 @@ from tests.test_g9_quality_gate import _evaluate_ready  # noqa: E402
 
 def _write_ledger(out_dir: Path, records: list[dict]) -> None:
     (out_dir / "approval_ledger.json").write_text(
-        json.dumps(records, ensure_ascii=False), encoding="utf-8"
+        json.dumps(records, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
 
 

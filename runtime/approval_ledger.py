@@ -358,7 +358,7 @@ class ApprovalLedger:
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
         tmp = p.with_suffix(p.suffix + ".tmp")
-        tmp.write_text(self.export_json(), encoding="utf-8")
+        tmp.write_text(self.export_json(), encoding="utf-8", newline="\n")
         os.replace(tmp, p)  # ghi nguyên tử — tránh file nửa vời nếu crash giữa chừng
         # NIÊM PHONG LẠI ngay sau mỗi lần ghi (2026-07-27). Con dấu là mốc neo NGOÀI file
         # — thứ duy nhất phát hiện được việc CẮT ĐUÔI sổ cái (xóa bản ghi cuối, thường là

@@ -34,7 +34,7 @@ def configure_test_signing_key(
 ) -> Path:
     """Tạo khóa HMAC tạm trong pytest; không dùng cho nghiên cứu thật."""
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text(key_text, encoding="utf-8")
+    key_path.write_text(key_text, encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
     return key_path
 
@@ -119,7 +119,7 @@ def write_g5_toolkit(
     )
     (out_dir / f"G5_A6_DATA_MGMT_{study}.md").write_text(
         dmp,
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     headers = [
         "Variable / Field Name",
@@ -179,11 +179,11 @@ def write_g5_toolkit(
     scripts.mkdir(exist_ok=True)
     (scripts / "data_cleaning.py").write_text(
         "# Fixture; không xử lý dữ liệu thật.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     (scripts / "data_quality_report.py").write_text(
         "# Fixture; không xử lý dữ liệu thật.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     today = datetime.now().date().isoformat()
     operational = {
@@ -217,7 +217,7 @@ def write_g5_toolkit(
     }
     (out_dir / G5Q.OPERATIONAL_READINESS_JSON).write_text(
         json.dumps(operational, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     checkpoint = {
         "gate": "G5",
@@ -229,7 +229,7 @@ def write_g5_toolkit(
     }
     (out_dir / "G5_checkpoint.json").write_text(
         json.dumps(checkpoint, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     return dictionary_path
 
@@ -282,12 +282,12 @@ def prepare_upstream_approvals(
     """
     (out_dir / "G2_checkpoint.json").write_text(
         json.dumps({"g2_status": "LOCKED"}, ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     g2_artifact = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     g2_artifact.write_text(
         "Hồ sơ đạo đức fixture tổng hợp. Cần bác sĩ kiểm chứng.",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     append_signed_approval(
         study,
@@ -314,7 +314,7 @@ def prepare_upstream_approvals(
                                           "primary": "Cohort tiến cứu", "ambiguous": False}},
                 ensure_ascii=False,
             ),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
 
     g3_fields = {
@@ -323,7 +323,7 @@ def prepare_upstream_approvals(
         "hypothesis_type": "superiority", "margin": None, "sd": None, "guardrail": "✅ PASS",
     }
     (out_dir / "G3_checkpoint.json").write_text(
-        json.dumps(g3_fields, ensure_ascii=False), encoding="utf-8")
+        json.dumps(g3_fields, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     sap_text = G4.generate(
         study, f"Đề tài fixture tổng hợp {study}", design_code, "Cohort tiến cứu",
@@ -333,7 +333,7 @@ def prepare_upstream_approvals(
     for old, new in _G4_SAP_FILLS:
         sap_text = sap_text.replace(old, new)
     g4_artifact = out_dir / f"G4_A5_SAP_FINAL_{study}.md"
-    g4_artifact.write_text(sap_text, encoding="utf-8")
+    g4_artifact.write_text(sap_text, encoding="utf-8", newline="\n")
 
     (out_dir / "G4_checkpoint.json").write_text(
         json.dumps(
@@ -341,7 +341,7 @@ def prepare_upstream_approvals(
              "g4_sap_version": "1.0", "design_code": design_code, "guardrail": "✅ PASS"},
             ensure_ascii=False,
         ),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     meta = GC.ensure_study_meta(out_dir)
@@ -353,7 +353,7 @@ def prepare_upstream_approvals(
         "reviewed_at": "2026-07-30T08:00:00+00:00",
     })
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # Khóa RIÊNG nhóm STATISTICIAN — bắt buộc để G4-HUMAN-02 (mức bảo đảm khóa
     # ký) đạt PASS; ký bằng khóa CHUNG chỉ đạt REVIEW nên KHÔNG BAO GIỜ tới
@@ -362,7 +362,7 @@ def prepare_upstream_approvals(
     if base_key:
         role_key_path = Path(base_key).with_name(Path(base_key).name + "_STATISTICIAN")
         if not role_key_path.exists():
-            role_key_path.write_text("pytest-g4-statistician-role-key", encoding="utf-8")
+            role_key_path.write_text("pytest-g4-statistician-role-key", encoding="utf-8", newline="\n")
 
     append_signed_approval(
         study,

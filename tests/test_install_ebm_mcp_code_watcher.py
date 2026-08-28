@@ -23,8 +23,8 @@ import install_ebm_mcp_code_watcher as WATCHER  # noqa: E402
 def test_watched_relative_includes_non_py_files_under_chatgpt_app(tmp_path: Path) -> None:
     chatgpt_app_dir = tmp_path / "app/chatgpt_app"
     chatgpt_app_dir.mkdir(parents=True)
-    (chatgpt_app_dir / "server.py").write_text("# demo\n", encoding="utf-8")
-    (chatgpt_app_dir / "prompts.json").write_text("{}", encoding="utf-8")
+    (chatgpt_app_dir / "server.py").write_text("# demo\n", encoding="utf-8", newline="\n")
+    (chatgpt_app_dir / "prompts.json").write_text("{}", encoding="utf-8", newline="\n")
 
     watched = WATCHER._watched_relative(tmp_path)
 
@@ -35,7 +35,7 @@ def test_watched_relative_includes_non_py_files_under_chatgpt_app(tmp_path: Path
 def test_watched_relative_excludes_pycache_and_directories(tmp_path: Path) -> None:
     chatgpt_app_dir = tmp_path / "app/chatgpt_app"
     chatgpt_app_dir.mkdir(parents=True)
-    (chatgpt_app_dir / "agents.py").write_text("# demo\n", encoding="utf-8")
+    (chatgpt_app_dir / "agents.py").write_text("# demo\n", encoding="utf-8", newline="\n")
     pycache = chatgpt_app_dir / "__pycache__"
     pycache.mkdir()
     (pycache / "agents.cpython-312.pyc").write_bytes(b"\x00")
@@ -65,8 +65,8 @@ def test_build_plist_passes_repo_root_as_program_argument(tmp_path: Path) -> Non
     for rel in WATCHER.WATCHED_STANDALONE:
         p = tmp_path / rel
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text("# demo\n", encoding="utf-8")
-    (tmp_path / "app/chatgpt_app/server.py").write_text("# demo\n", encoding="utf-8")
+        p.write_text("# demo\n", encoding="utf-8", newline="\n")
+    (tmp_path / "app/chatgpt_app/server.py").write_text("# demo\n", encoding="utf-8", newline="\n")
 
     payload = WATCHER.build_plist(tmp_path)
 
@@ -82,7 +82,7 @@ def test_install_local_files_locks_down_permissions(tmp_path: Path) -> None:
     dụng lớp khóa quyền đã vá cho CÙNG thư mục đó."""
     script = tmp_path / "src" / "watch_restart_ebm_tunnel.sh"
     script.parent.mkdir(parents=True)
-    script.write_text("#!/bin/zsh\necho ok\n", encoding="utf-8")
+    script.write_text("#!/bin/zsh\necho ok\n", encoding="utf-8", newline="\n")
 
     installed_launcher = tmp_path / "installed" / "watch-restart-ebm-tunnel"
     logs_dir = tmp_path / "AppSupport" / "tunnel-client" / "logs"

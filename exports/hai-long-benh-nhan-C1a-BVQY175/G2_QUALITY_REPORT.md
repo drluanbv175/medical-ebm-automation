@@ -11,7 +11,7 @@
 | G2-AUTO-02 | G1 đã được PI/methodologist xác nhận | REVIEW | G1 quality status=DRAFT_READY_NEEDS_HUMAN_REVIEW |
 | G2-AUTO-03 | Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc | PASS | đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI |
 | G2-AUTO-04 | WHO TRDS 1.3.1 đủ 24 mục | PASS | 24/24 mục đúng số và nhãn |
-| G2-AUTO-05 | Không còn placeholder khoa học/vận hành trọng yếu | REVIEW | còn 71 dòng [CẦN] ngoài các dòng chỉ chứa PII |
+| G2-AUTO-05 | Không còn placeholder khoa học/vận hành trọng yếu | REVIEW | còn 38 dòng [CẦN] ngoài các dòng chỉ chứa PII |
 | G2-AUTO-06 | Thiết kế và lộ trình đạo đức không còn mơ hồ | PASS | design_code=cross_sectional; ambiguous=False |
 | G2-AUTO-07 | Kế hoạch an toàn tương xứng thiết kế | PASS | không phải RCT; kế hoạch an toàn điều chỉnh theo nguy cơ |
 | G2-AUTO-08 | Mục khoa học WHO TRDS (can thiệp/tiêu chí/kết cục) đã có nội dung thật | REVIEW | còn trống: #13 Intervention(s), #14 Key Inclusion and Exclusion Criteria, #19 Primary Outcome(s), #20 Key Secondary Outcomes |

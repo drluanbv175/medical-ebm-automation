@@ -172,7 +172,7 @@ def _write_registry(spec: dict[str, Any], path: Path) -> None:
         "created_at": datetime.now().isoformat(timespec="seconds"),
     })
     data["generated"] = generated
-    REGISTRY_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    REGISTRY_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def generate_agent(spec: dict[str, Any], *, force: bool = False, dry_run: bool = False) -> dict[str, Any]:

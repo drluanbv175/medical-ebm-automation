@@ -52,8 +52,17 @@ import argparse
 import json
 import re
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 # Thư mục gốc
 BASE = Path(__file__).resolve().parent.parent
@@ -718,7 +727,7 @@ def main():
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
     output_file = output_dir / f"DE_CUONG_16_MUC_TICH_HOP_{study_id}_{timestamp}.md"
-    output_file.write_text(proposal_text, encoding="utf-8")
+    output_file.write_text(proposal_text, encoding="utf-8", newline="\n")
 
     print("\n[XONG] Đề cương 16-mục đã được tổng hợp:")
     print(f"  → {output_file}")

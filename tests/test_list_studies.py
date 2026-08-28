@@ -19,7 +19,7 @@ import list_studies as LS  # noqa: E402
 
 def _write_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 def test_scan_study_reads_topic_from_study_meta_first(tmp_path):
@@ -43,7 +43,7 @@ def test_scan_study_falls_back_to_g0_checkpoint_when_no_study_meta(tmp_path):
 def test_scan_study_unrecognized_when_no_meta_or_checkpoint(tmp_path):
     d = tmp_path / "STUDY-UNKNOWN"
     d.mkdir(parents=True)
-    (d / "some_random_file.txt").write_text("noise", encoding="utf-8")
+    (d / "some_random_file.txt").write_text("noise", encoding="utf-8", newline="\n")
     row = LS.scan_study(d)
     assert row["recognized"] is False
     assert row["topic"] is None
@@ -54,7 +54,7 @@ def test_furthest_gate_picks_highest_existing_checkpoint(tmp_path):
     d = tmp_path / "STUDY-C"
     d.mkdir(parents=True)
     for n in (0, 1, 2, 5):
-        (d / f"G{n}_checkpoint.json").write_text("{}", encoding="utf-8")
+        (d / f"G{n}_checkpoint.json").write_text("{}", encoding="utf-8", newline="\n")
     assert LS._furthest_gate(d) == "G5"
 
 
@@ -72,7 +72,7 @@ def test_scan_all_classifies_recognized_vs_unknown_vs_empty(tmp_path, monkeypatc
 
     unknown = tmp_path / "UNKNOWN-STUFF"
     unknown.mkdir(parents=True)
-    (unknown / "readme.md").write_text("not a study", encoding="utf-8")
+    (unknown / "readme.md").write_text("not a study", encoding="utf-8", newline="\n")
 
     empty = tmp_path / "EMPTY-ORPHAN"
     empty.mkdir(parents=True)
@@ -118,7 +118,7 @@ def test_print_detail_shows_gate_progress(tmp_path, monkeypatch, capsys):
     d = tmp_path / "STUDY-D"
     _write_json(d / "study_meta.json", {"topic": "Đề tài D", "irb_approved": True})
     for n in (0, 1, 2):
-        (d / f"G{n}_checkpoint.json").write_text("{}", encoding="utf-8")
+        (d / f"G{n}_checkpoint.json").write_text("{}", encoding="utf-8", newline="\n")
 
     rc = LS.print_detail("STUDY-D")
     out = capsys.readouterr().out

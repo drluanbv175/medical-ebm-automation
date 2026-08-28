@@ -343,7 +343,7 @@ class TestWriteRetractionReceipt:
         mang thêm chữ ký HMAC (cùng khóa cục bộ dùng cho phê duyệt G2/G4/G8/G9) khi
         máy đang chạy có cấu hình khóa."""
         key_path = tmp_path / "gate_approval_key"
-        key_path.write_text("pytest-ccr-key", encoding="utf-8")
+        key_path.write_text("pytest-ccr-key", encoding="utf-8", newline="\n")
         monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
         study = "PYTEST-CCR-RECEIPT-SIG1"
         _rm_study_dir(study)

@@ -605,11 +605,11 @@ def _seed_out_dir_for_evaluate_study(tmp_path, study="ZZ-REFRESH", *,
     if checkpoint_extra:
         cp.update(checkpoint_extra)
     (out_dir / "G0_checkpoint.json").write_text(
-        json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+        json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
     (out_dir / "study_meta.json").write_text(
-        json.dumps({"gate_params": {"G0": {}}}), encoding="utf-8")
+        json.dumps({"gate_params": {"G0": {}}}), encoding="utf-8", newline="\n")
     (out_dir / f"G0_A1_PICO_FINER_{study}.md").write_text(
-        _artifact_text(), encoding="utf-8")
+        _artifact_text(), encoding="utf-8", newline="\n")
     return out_dir
 
 

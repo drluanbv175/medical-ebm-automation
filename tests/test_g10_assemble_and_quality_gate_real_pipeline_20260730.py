@@ -154,7 +154,7 @@ class TestFinalTechnicalCompletionAndStructuralSectionsNeverPermanentlyBlock:
             "org_lines": ["Khoa Nội tiết, Bệnh viện XYZ"],
             "place_year": "TP.HCM - 2026",
         })
-        meta_path.write_text(_json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+        meta_path.write_text(_json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
         result = G10.assemble("FIXT", tmp_path)
         return Path(result["md"]).read_text(encoding="utf-8")
 

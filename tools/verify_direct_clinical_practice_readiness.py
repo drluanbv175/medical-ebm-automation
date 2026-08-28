@@ -25,7 +25,7 @@ ROOT = REPO.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from app.sources.authority import match_authority_source
+from app.sources.authority import match_authority_source  # noqa: E402
 
 DEFAULT_MASTER = ROOT / "EBM_MASTER" / "EBM_MASTER.json"
 DEFAULT_JSON = REPO / "reports" / "DIRECT_CLINICAL_PRACTICE_READINESS.json"
@@ -361,7 +361,11 @@ def evaluate_master(
     cards = master.get("evidence_cards", [])
     if not isinstance(cards, list):
         cards = []
-    results = [evaluate_card(card, today=today, freshness_days=freshness_days) for card in cards if isinstance(card, Mapping)]
+    results = [
+        evaluate_card(card, today=today, freshness_days=freshness_days)
+        for card in cards
+        if isinstance(card, Mapping)
+    ]
     counts = Counter(result.status for result in results)
     blocker_counts: Counter[str] = Counter()
     for result in results:
@@ -442,8 +446,8 @@ def main(argv: list[str] | None = None) -> int:
     report = evaluate_master(_load_master(args.master), today=today, freshness_days=args.freshness_days)
     if args.write:
         DEFAULT_JSON.parent.mkdir(parents=True, exist_ok=True)
-        DEFAULT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        DEFAULT_MD.write_text(markdown_report(report), encoding="utf-8")
+        DEFAULT_JSON.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+        DEFAULT_MD.write_text(markdown_report(report), encoding="utf-8", newline="\n")
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:

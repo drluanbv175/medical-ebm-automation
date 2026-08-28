@@ -139,7 +139,7 @@ def _build_case(tmp_path: Path, meta=None, g0=None, design_value=None):
         generated_at="2026-07-27T10:00:00+07:00",
     )
     a2_path = tmp_path / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
-    a2_path.write_text(_a2_text(), encoding="utf-8")
+    a2_path.write_text(_a2_text(), encoding="utf-8", newline="\n")
     paths = {"A2": a2_path, **supporting}
     texts = {key: path.read_text(encoding="utf-8") for key, path in paths.items()}
     identifiers = G1Q.collect_evidence_identifiers(
@@ -526,7 +526,7 @@ def test_main_checkpoint_reports_draft_instead_of_false_pass(tmp_path, monkeypat
     g0["study"] = study
     (study_dir / "G0_checkpoint.json").write_text(
         json.dumps(g0, ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["run_g1_auto.py", "--study", study])
@@ -569,7 +569,7 @@ def test_system_audit_respects_g1_quality_status(tmp_path):
                 "pending_actions": ["PI/methodologist xác nhận thiết kế."],
             },
         }),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
     report = ARG.audit_gates("AUDIT-G1", out_dir=tmp_path, write=False)

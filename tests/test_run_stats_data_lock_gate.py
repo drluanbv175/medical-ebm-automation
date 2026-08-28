@@ -27,7 +27,7 @@ from tests.g5_test_helpers import (  # noqa: E402
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-data-lock-key", encoding="utf-8")
+    key_path.write_text("pytest-data-lock-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
@@ -51,7 +51,7 @@ def _approve_g2_g4_g5(study: str) -> None:
             "G5": "DATA_GOVERNANCE_QA_REVIEWER",
         }
         artifact = study_dir / artifact_rel
-        artifact.write_text(content, encoding="utf-8")
+        artifact.write_text(content, encoding="utf-8", newline="\n")
         timestamp_utc = datetime.now(timezone.utc).isoformat()
         evidence_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
         signature = GC.sign_approval(gate_id, study, evidence_hash, timestamp_utc,
@@ -83,7 +83,7 @@ def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
 
 
 def _csv(path: Path, text: str) -> Path:
-    path.write_text(text.strip() + "\n", encoding="utf-8")
+    path.write_text(text.strip() + "\n", encoding="utf-8", newline="\n")
     return path
 
 

@@ -44,13 +44,13 @@ def _mk_upstream(study_dir: Path, effect_samples):
         "study": study_dir.name, "gate": "G0",
         "topic": "Tác dụng can thiệp X lên kết cục Y ở bệnh nhân ngoại trú",
         "base_query": "intervention X outcome Y",
-    }, ensure_ascii=False), encoding="utf-8")
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
     (study_dir / "G1_checkpoint.json").write_text(json.dumps({
         "study": study_dir.name, "gate": "G1",
         "design": {"internal_code": "cohort", "primary": "Cohort tiến cứu",
                    "reporting_standard": "STROBE 2007"},
         "effect_size_samples": effect_samples,
-    }, ensure_ascii=False), encoding="utf-8")
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 def _run(script: str, study: str, extra=None):
@@ -160,7 +160,7 @@ def test_ensure_study_meta_non_destructive(study_dir):
     p = study_dir / "study_meta.json"
     j = json.loads(p.read_text(encoding="utf-8"))
     j["gate_params"]["G3"]["effect_size"] = 0.6
-    p.write_text(json.dumps(j, ensure_ascii=False), encoding="utf-8")
+    p.write_text(json.dumps(j, ensure_ascii=False), encoding="utf-8", newline="\n")
     m2 = GC.ensure_study_meta(study_dir, seed={"title": "T2"})
     assert m2["gate_params"]["G3"]["effect_size"] == 0.6
     assert m2["title"] == "T"  # title đã có → không đè bằng "T2"

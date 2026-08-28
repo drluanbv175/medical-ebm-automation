@@ -34,10 +34,10 @@ def _cp(d: Path, g1: str | None = None, g2: str | None = None) -> Path:
     d.mkdir(parents=True, exist_ok=True)
     if g1 is not None:
         (d / "G1_checkpoint.json").write_text(
-            json.dumps({"design": {"internal_code": g1}}), encoding="utf-8")
+            json.dumps({"design": {"internal_code": g1}}), encoding="utf-8", newline="\n")
     if g2 is not None:
         (d / "G2_checkpoint.json").write_text(
-            json.dumps({"design_code": g2}), encoding="utf-8")
+            json.dumps({"design_code": g2}), encoding="utf-8", newline="\n")
     return d
 
 
@@ -71,8 +71,8 @@ def test_corrupt_checkpoints_do_not_crash(tmp_path):
     cho ledger_approved(): một ngoại lệ lọt ra sẽ thành crash pipeline giữa chừng."""
     d = tmp_path / "hong"
     d.mkdir()
-    (d / "G1_checkpoint.json").write_text("{khong phai json", encoding="utf-8")
-    (d / "G2_checkpoint.json").write_text(json.dumps(["mot danh sach"]), encoding="utf-8")
+    (d / "G1_checkpoint.json").write_text("{khong phai json", encoding="utf-8", newline="\n")
+    (d / "G2_checkpoint.json").write_text(json.dumps(["mot danh sach"]), encoding="utf-8", newline="\n")
     code, _warn = GC.resolve_design_code(d)
     assert code == "cohort"
 

@@ -19,7 +19,7 @@ import scaffold_research_project as SCAF  # noqa: E402
 def _write_cp(study_dir: Path, gate: str, data: dict):
     study_dir.mkdir(parents=True, exist_ok=True)
     (study_dir / f"{gate}_checkpoint.json").write_text(
-        json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        json.dumps(data, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 class TestLastGateToken:
@@ -56,7 +56,7 @@ class TestRowStatus:
 
     def test_corrupt_checkpoint_json_is_red_not_crash(self, tmp_path):
         tmp_path.mkdir(exist_ok=True)
-        (tmp_path / "G0_checkpoint.json").write_text("{not valid json", encoding="utf-8")
+        (tmp_path / "G0_checkpoint.json").write_text("{not valid json", encoding="utf-8", newline="\n")
         assert SCAF._row_status("G0", tmp_path) == "🔴 Chưa có"
 
 
@@ -109,7 +109,7 @@ class TestPreservedNote:
             "> Bản THẬT nằm ở nơi khác — đó mới là nguồn sự thật để nộp/dùng.\n"
         )
         original = f"# STUDY INDEX — X\n> Cập nhật: cũ\n\n{note}\n## 20 File chuẩn\n\n(bảng cũ)\n"
-        (tmp_path / "STUDY_INDEX.md").write_text(original, encoding="utf-8")
+        (tmp_path / "STUDY_INDEX.md").write_text(original, encoding="utf-8", newline="\n")
 
         SCAF.regenerate_study_index("X", tmp_path, "X")
         text = (tmp_path / "STUDY_INDEX.md").read_text(encoding="utf-8")
@@ -120,7 +120,7 @@ class TestPreservedNote:
     def test_no_warning_block_no_crash(self, tmp_path):
         (tmp_path / "STUDY_INDEX.md").write_text(
             "# STUDY INDEX — Y\n> Cập nhật: cũ\n\n## 20 File chuẩn\n\n(bảng cũ)\n",
-            encoding="utf-8")
+            encoding="utf-8", newline="\n")
         SCAF.regenerate_study_index("Y", tmp_path, "Y")
         text = (tmp_path / "STUDY_INDEX.md").read_text(encoding="utf-8")
         assert "⚠️" not in text

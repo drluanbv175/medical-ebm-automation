@@ -38,14 +38,14 @@ def _seed_g0_g1(study_dir: Path, design_code: str) -> None:
     study_dir.mkdir(parents=True, exist_ok=True)
     (study_dir / "G0_checkpoint.json").write_text(
         json.dumps({"gate": "G0", "topic": "Đề tài kiểm định", "guardrail": {"passed": True}}),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     (study_dir / "G1_checkpoint.json").write_text(
         json.dumps({
             "gate": "G1",
             "design": {"internal_code": design_code, "primary": design_code, "ambiguous": False},
         }),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -169,7 +169,7 @@ def _evaluate(tmp_path: Path, *, checkpoint=None, meta=None, artifact=None, g1=T
     study = "TEST-G3"
     artifact_path = tmp_path / f"G3_A4_SAMPLE_SIZE_{study}.md"
     artifact_path.write_text(
-        _artifact() if artifact is None else artifact, encoding="utf-8"
+        _artifact() if artifact is None else artifact, encoding="utf-8", newline="\n"
     )
     return G3Q.evaluate_g3_quality(
         study=study,
@@ -836,7 +836,7 @@ def test_cap_nhat_checkpoint_giu_nguyen_khoa_downstream(tmp_path):
     """run_g4_auto đọc đúng các khóa này để dựng SAP — không được đụng vào."""
     checkpoint_path = tmp_path / "G3_checkpoint.json"
     original = _checkpoint(confirmed_n=1200, hypothesis_type="non_inferiority", margin=0.1)
-    checkpoint_path.write_text(json.dumps(original, ensure_ascii=False), encoding="utf-8")
+    checkpoint_path.write_text(json.dumps(original, ensure_ascii=False), encoding="utf-8", newline="\n")
     report = _evaluate(tmp_path, checkpoint=original)
     G3Q.refresh_checkpoint(
         study="TEST-G3",
@@ -866,13 +866,13 @@ def test_cap_nhat_checkpoint_giu_nguyen_khoa_downstream(tmp_path):
 def test_evaluate_study_chay_tron_ven_tren_thu_muc_that(tmp_path):
     study = "TEST-G3"
     (tmp_path / f"G3_A4_SAMPLE_SIZE_{study}.md").write_text(
-        _artifact(base_cell=1178), encoding="utf-8"
+        _artifact(base_cell=1178), encoding="utf-8", newline="\n"
     )
     (tmp_path / "G3_checkpoint.json").write_text(
         json.dumps(_checkpoint(), ensure_ascii=False), encoding="utf-8"
     )
     (tmp_path / "G1_checkpoint.json").write_text(
-        json.dumps({"gate": "G1"}, ensure_ascii=False), encoding="utf-8"
+        json.dumps({"gate": "G1"}, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
     (tmp_path / "study_meta.json").write_text(
         json.dumps(_full_meta(), ensure_ascii=False), encoding="utf-8"
@@ -973,7 +973,7 @@ class TestPipelineThatKhongDungFixtureGia:
                 json.dumps({"gate_params": {"G3": {
                     "saturation_stopping_rule": "Dừng khi 3 cuộc phỏng vấn liên tiếp không sinh mã mới",
                 }}}),
-                encoding="utf-8",
+                encoding="utf-8", newline="\n"
             )
             result2 = subprocess.run(
                 [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"), "--study", study, "--confirmed-n", "20"],

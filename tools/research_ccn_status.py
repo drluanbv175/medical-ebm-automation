@@ -55,9 +55,18 @@ import argparse
 import csv
 import re
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Set
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 BASE = Path(__file__).resolve().parents[1]          # medical-ebm-automation/
 WORKSPACE_ROOT = BASE.parent                          # .../OneDrive/Claude AI/
@@ -533,7 +542,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.out_md:
         args.out_md.parent.mkdir(parents=True, exist_ok=True)
-        args.out_md.write_text(report + "\n", encoding="utf-8")
+        args.out_md.write_text(report + "\n", encoding="utf-8", newline="\n")
         print(f"\n(Đã ghi báo cáo ra: {args.out_md})", file=sys.stderr)
 
     return 0

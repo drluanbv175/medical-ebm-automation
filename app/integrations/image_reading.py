@@ -73,7 +73,7 @@ def strip_exif(image: "bytes | str") -> bytes:
     src = Image.open(image if isinstance(image, str) else io.BytesIO(image))
     fmt = src.format or "PNG"
     clean = Image.new(src.mode, src.size)
-    clean.putdata(list(src.getdata()))  # chỉ chép pixel → rụng toàn bộ metadata
+    clean.putdata(list(src.get_flattened_data()))  # chỉ chép pixel → rụng toàn bộ metadata
     buf = io.BytesIO()
     clean.save(buf, format=fmt)
     return buf.getvalue()

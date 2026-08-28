@@ -22,8 +22,17 @@ import argparse
 import json
 import re
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 # Them thu muc goc du an vao sys.path
 BASE = Path(__file__).resolve().parent.parent
@@ -2011,7 +2020,7 @@ def write_g8_checkpoint(
     }
 
     cp_path = out_dir / "G8_checkpoint.json"
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
 
 
@@ -2194,7 +2203,7 @@ def main():
 
     # Luu artifact .md
     md_path = out_dir / f"G8_A9_PRESUBMISSION_{study}.md"
-    md_path.write_text(artifact_md, encoding="utf-8")
+    md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"\n  -> Luu A9 Markdown: {md_path.name} ({len(artifact_md)//1000}KB)")
 
     # Xuat DOCX

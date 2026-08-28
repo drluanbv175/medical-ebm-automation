@@ -111,7 +111,7 @@ def test_phase_2a_export_blocks_raw_dataset_file(tmp_path):
 
 def test_phase_2a_unapproved_recommendation_is_review_only_warning(tmp_path):
     safe = tmp_path / "recommendation.md"
-    safe.write_text("Draft recommendation. Cần bác sĩ kiểm chứng.", encoding="utf-8")
+    safe.write_text("Draft recommendation. Cần bác sĩ kiểm chứng.", encoding="utf-8", newline="\n")
 
     export = prepare_chatgpt_project_export(
         tmp_path,

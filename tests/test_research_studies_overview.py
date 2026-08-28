@@ -22,7 +22,7 @@ import research_studies_overview as OV  # noqa: E402
 def _write_cp(study_dir: Path, gate: str, data: dict, mtime: float = None):
     study_dir.mkdir(parents=True, exist_ok=True)
     p = study_dir / f"{gate}_checkpoint.json"
-    p.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    p.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8", newline="\n")
     if mtime is not None:
         os.utime(p, (mtime, mtime))
     return p
@@ -32,7 +32,7 @@ class TestFindStudyDirs:
     def test_only_dirs_with_checkpoints_count(self, tmp_path):
         _write_cp(tmp_path / "REAL-STUDY", "G0", {"gate": "G0"})
         (tmp_path / "NOT-A-STUDY").mkdir()  # thư mục rỗng, không checkpoint
-        (tmp_path / "NOT-A-STUDY" / "notes.txt").write_text("x", encoding="utf-8")
+        (tmp_path / "NOT-A-STUDY" / "notes.txt").write_text("x", encoding="utf-8", newline="\n")
         found = OV.find_study_dirs(tmp_path, exclude=None)
         names = [d.name for d in found]
         assert "REAL-STUDY" in names
@@ -108,7 +108,7 @@ class TestStudySummary:
         d = tmp_path / "S6"
         _write_cp(d, "G0", {"topic": "chủ đề G0"})
         (d / "study_meta.json").write_text(
-            json.dumps({"title": "chủ đề chính thức"}), encoding="utf-8")
+            json.dumps({"title": "chủ đề chính thức"}), encoding="utf-8", newline="\n")
         s = OV.study_summary(d)
         assert s["topic"] == "chủ đề chính thức"
 

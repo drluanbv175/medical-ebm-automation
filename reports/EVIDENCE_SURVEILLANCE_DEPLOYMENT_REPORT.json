@@ -1,13 +1,13 @@
 {
   "kind": "outpatient_evidence_surveillance_deployment_verification",
-  "generated_at": "2026-08-11T12:39:38+00:00",
-  "deployment_status": "RUNTIME_CANARY_PASS",
+  "generated_at": "2026-08-26T11:37:08+00:00",
+  "deployment_status": "BLOCKED_FOR_DEPLOYMENT",
   "deployment_allowed": false,
-  "runtime_canary": true,
+  "runtime_canary": false,
   "contract_check": false,
   "online": true,
-  "failure_count": 0,
-  "human_gate_count": 0,
+  "failure_count": 1,
+  "human_gate_count": 1,
   "checks": [
     {
       "check_id": "ESD01",
@@ -22,7 +22,7 @@
       "title": "Đồng bộ scanner skill/runtime",
       "phase": "static",
       "status": "PASS",
-      "evidence": "files=3/3; hashes=1; missing=[]",
+      "evidence": "files=3/3; hashes=1; missing=[]; unreadable=[]",
       "limitation": "Hash đồng nhất không thay xác minh nguồn online."
     },
     {
@@ -46,8 +46,8 @@
       "title": "Scheduler launchd",
       "phase": "static",
       "status": "PASS",
-      "evidence": "com.medicalebm.weeklysafety:runs = 0; com.medicalebm.monthlyupdate:runs = 0",
-      "limitation": "Job loaded và đúng path chưa chứng minh job đã hoàn tất một chu kỳ thành công."
+      "evidence": "claude_task:thu-thap-tuan-an-toan-thuoc; claude_task:cap-nhat-thang-ebm; com.medicalebm.weeklysafety:legacy_retired; com.medicalebm.monthlyupdate:legacy_retired",
+      "limitation": "Đăng ký lịch (Claude task/launchd) chưa chứng minh một chu kỳ đã chạy trọn thành công."
     },
     {
       "check_id": "ESD06",
@@ -62,7 +62,7 @@
       "title": "Scanner PubMed online",
       "phase": "online",
       "status": "PASS",
-      "evidence": "status=PASS; topics=2; failed=0; candidates=2; errors=[]",
+      "evidence": "status=PASS; topics=2; failed=0; candidates=3; errors=[]",
       "limitation": "Hai query canary không thay độ phủ toàn watchlist hoặc thẩm định Track A."
     },
     {
@@ -72,6 +72,30 @@
       "status": "PASS",
       "evidence": "overall=PASS; online=True; dashboard_gate=PASS",
       "limitation": "Fixture online không thay double-review của mẫu nội dung lâm sàng thật."
+    },
+    {
+      "check_id": "ESD09",
+      "title": "Lịch sử runtime tuần/tháng",
+      "phase": "runtime",
+      "status": "PASS",
+      "evidence": "weekly:status=PASS,age=2.0d; monthly:status=PASS,age=13.0d",
+      "limitation": "Cần ít nhất các lượt chạy thật còn mới; canary thủ công không thay lịch sử này."
+    },
+    {
+      "check_id": "ESD10",
+      "title": "Cấu hình kênh cảnh báo",
+      "phase": "runtime",
+      "status": "FAIL",
+      "evidence": "email_ready=False; webhook_ready=False",
+      "limitation": "Chỉ kiểm cấu hình có mặt, UAT vẫn phải chứng minh gửi/nhận thật."
+    },
+    {
+      "check_id": "ESD11",
+      "title": "UAT và phê duyệt",
+      "phase": "human",
+      "status": "HUMAN_GATE",
+      "evidence": "valid_source_samples=0; missing=['SOURCE_SAMPLE_REVIEW', 'SCHEDULER_TRIGGER', 'ALERT_DELIVERY', 'ROLLBACK_RESTORE', 'SHADOW_RUN', 'DOCTOR_APPROVAL', 'OPERATIONS_APPROVAL']",
+      "limitation": "Đây là cổng người thật; agent chỉ kiểm bằng chứng, không tự ký hoặc tự điền PASS."
     }
   ],
   "clinical_auto_apply": false,

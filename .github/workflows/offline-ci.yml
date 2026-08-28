@@ -41,11 +41,16 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest ruff
+          pip install -r requirements.lock.txt  # LOCK — cùng toolchain 2 máy thật; requirements.txt vẫn thả nổi ruff>=0.15
 
       - name: Lint (ruff) — bao gồm FA102 chặn cú pháp PEP604 vỡ trên Python 3.9
         run: ruff check .
+
+      # 16/08: khoá quy ước giành được từ chiến dịch CRLF (592 điểm) vào CI —
+      # trước đây bất biến newline vùng ký chỉ được canh trên máy bác sĩ (chốt
+      # workspace ngoài repo); máy/người khác đẩy code là mù.
+      - name: Bất biến newline vùng chuỗi-ký (chống CRLF phá hash trên Windows)
+        run: python tools/kiem_newline_vung_ky.py
 
       - name: Run hermetic offline tests (network blocked)
         run: bash scripts/run_offline_ci.sh
@@ -55,4 +60,58 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: offline-ci-results
+          path: results/
+
+  # NÂNG CẤP TẦNG-1 15-16/08/2026 (bác sĩ duyệt): chạy CÙNG bộ test hermetic trên
+  # WINDOWS — họ lỗi «viết cho một máy, gãy im lặng trên máy kia» tái phát ≥6 lần
+  # (đường dẫn cứng · os.getuid · cp1252 · python3-literal); chốt đa nền quét TĨNH
+  # bắt được mẫu, còn job này bắt HÀNH VI thật mỗi lần push. Tái dùng NGUYÊN
+  # run_offline_ci.sh (chặn mạng ở tầng socket Python — portable), chỉ đổi
+  # PYTHON=python (Windows không có tên lệnh python3) + ép UTF-8.
+  offline-hermetic-tests-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      MRAQ_OFFLINE_CI: "1"
+      USE_MOCK_SOURCES: "true"
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+      PYTHON: "python"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fail-closed — cấm API key trong môi trường CI offline
+        run: |
+          if [ -n "${ANTHROPIC_API_KEY:-}" ] || [ -n "${OPENAI_API_KEY:-}" ]; then
+            echo "OFFLINE CI HERMETIC VIOLATION: API key được set." >&2
+            exit 2
+          fi
+          echo "OK — no API key present."
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock.txt  # LOCK — cùng toolchain 2 máy thật; requirements.txt vẫn thả nổi ruff>=0.15
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Bất biến newline vùng chuỗi-ký (chống CRLF phá hash trên Windows)
+        run: python tools/kiem_newline_vung_ky.py
+
+      - name: Run hermetic offline tests (network blocked, Windows)
+        run: bash scripts/run_offline_ci.sh
+
+      - name: Upload offline CI results (Windows)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-ci-results-windows
           path: results/

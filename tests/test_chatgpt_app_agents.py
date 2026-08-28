@@ -101,8 +101,8 @@ def test_agent_source_with_nfd_pii_is_blocked(tmp_path: Path) -> None:
     agent_dir = tmp_path / ".claude/agents"
     agent_dir.mkdir(parents=True)
     body_nfc = "# Demo\n\ncăn cước: ABC123456\n"
-    (agent_dir / "demo-nfd.md").write_text(unicodedata.normalize("NFD", body_nfc), encoding="utf-8")
-    (agent_dir / "demo-nfc.md").write_text(body_nfc, encoding="utf-8")
+    (agent_dir / "demo-nfd.md").write_text(unicodedata.normalize("NFD", body_nfc), encoding="utf-8", newline="\n")
+    (agent_dir / "demo-nfc.md").write_text(body_nfc, encoding="utf-8", newline="\n")
 
     catalog = SafeAgentCatalog(tmp_path)
     with pytest.raises(KeyError):
@@ -117,7 +117,7 @@ def test_agent_source_with_phone_beyond_classify_sample_is_blocked(tmp_path: Pat
     agent_dir = tmp_path / ".claude/agents"
     agent_dir.mkdir(parents=True)
     (agent_dir / "demo-phone.md").write_text(
-        "# Demo\n\nLiên hệ hỗ trợ: 090 123 4567\n", encoding="utf-8"
+        "# Demo\n\nLiên hệ hỗ trợ: 090 123 4567\n", encoding="utf-8", newline="\n"
     )
     with pytest.raises(KeyError):
         SafeAgentCatalog(tmp_path).get_payload("demo-phone")
@@ -134,7 +134,7 @@ def test_agent_source_with_bare_unlabeled_id_is_blocked(tmp_path: Path) -> None:
     agent_dir.mkdir(parents=True)
     (agent_dir / "vi-du-agent.md").write_text(
         "# Vi du Agent\n\nMa tham chieu ho so kiem thu: 012345678901 dung de doi chieu vi du.\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     with pytest.raises(KeyError):
         SafeAgentCatalog(tmp_path).get_payload("vi-du-agent")
@@ -202,7 +202,7 @@ def test_synchronize_redacts_pii_like_subprocess_output(monkeypatch, tmp_path: P
     ):
         script = root / name
         script.parent.mkdir(parents=True, exist_ok=True)
-        script.write_text("print('ok')\n", encoding="utf-8")
+        script.write_text("print('ok')\n", encoding="utf-8", newline="\n")
 
     class _FakeCompleted:
         returncode = 0
@@ -237,7 +237,7 @@ def test_synchronize_handles_subprocess_timeout_without_leaking_local_paths(
     ):
         script = root / name
         script.parent.mkdir(parents=True, exist_ok=True)
-        script.write_text("print('ok')\n", encoding="utf-8")
+        script.write_text("print('ok')\n", encoding="utf-8", newline="\n")
 
     def _raise_timeout(*a, **k):
         raise subprocess_module.TimeoutExpired(cmd=["python3", "/Users/luan/secret/path.py"], timeout=180)
@@ -265,7 +265,7 @@ def test_synchronize_handles_missing_python_executable_without_leaking_paths(
     ):
         script = root / name
         script.parent.mkdir(parents=True, exist_ok=True)
-        script.write_text("print('ok')\n", encoding="utf-8")
+        script.write_text("print('ok')\n", encoding="utf-8", newline="\n")
 
     def _raise_not_found(*a, **k):
         raise FileNotFoundError("[Errno 2] No such file or directory: '/Users/luan/.ebm-venv/bin/python'")

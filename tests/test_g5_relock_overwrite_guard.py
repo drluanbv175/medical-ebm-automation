@@ -38,7 +38,7 @@ import gate_contract as GC  # noqa: E402
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-g5-relock-key", encoding="utf-8")
+    key_path.write_text("pytest-g5-relock-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
@@ -84,7 +84,7 @@ def _sign(study_dir: Path, gate_id: str, artifact_path: Path, reviewer_role: str
         "approver_signature": signature,
     }
     existing.append(record)
-    ledger_path.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8")
+    ledger_path.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8", newline="\n")
     GC.write_ledger_seal(study_dir.name, existing, repo_root=REPO_ROOT)
 
 
@@ -102,7 +102,7 @@ def test_g5_da_ky_duyet_tu_choi_chay_lai_khong_dung_toi_checkpoint(tmp_path, mon
         _configure_test_signing_key(tmp_path, monkeypatch)
 
         g4_artifact = d / f"G4_A5_SAP_FINAL_{study}.md"
-        g4_artifact.write_text("SAP FINAL — nội dung đã khóa (giả lập test)", encoding="utf-8")
+        g4_artifact.write_text("SAP FINAL — nội dung đã khóa (giả lập test)", encoding="utf-8", newline="\n")
         _sign(d, "G4", g4_artifact, "METHODS_STATISTICS_REVIEWER")
 
         g5_checkpoint = d / "G5_checkpoint.json"
@@ -113,7 +113,7 @@ def test_g5_da_ky_duyet_tu_choi_chay_lai_khong_dung_toi_checkpoint(tmp_path, mon
             "database_lock_status": "LOCKED",
         }
         g5_checkpoint.write_text(
-            json.dumps(locked_content, ensure_ascii=False, indent=2), encoding="utf-8")
+            json.dumps(locked_content, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
         before_bytes = g5_checkpoint.read_bytes()
         _sign(d, "G5", g5_checkpoint, "DATA_GOVERNANCE_QA_REVIEWER")
 

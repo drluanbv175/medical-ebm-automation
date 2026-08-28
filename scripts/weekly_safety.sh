@@ -58,6 +58,10 @@ rc4=$?; [ "$rc4" -ne 0 ] && { echo "  ⚠ Bước (4) build_antifacts thất b�
 # (5) làm tươi kho toàn văn OA dùng chung (chặn trần 150 PMID/lượt cho nhẹ)
 "$PY" "$PROJ/../tools/gom_toan_van_dashboard.py" --gioi-han 150 >> "$LOG" 2>&1 \
   || echo "  (5) gom_toan_van phụ trợ không hoàn tất — sẽ tự bù lượt sau" >> "$LOG"
+# (5b) chỉ mục RAG ngữ nghĩa phải TƯƠI theo kho — gom thêm bài mà không dựng lại
+# thì lớp hỏi-đáp âm thầm mù phần mới (đúng họ BH41: có công cụ mà dây không nối)
+"$PY" "$PROJ/../tools/rag_toan_van.py" --dung-index >> "$LOG" 2>&1 \
+  || echo "  (5b) dựng chỉ mục RAG không hoàn tất — sẽ tự bù lượt sau" >> "$LOG"
 # (6) cầu nghiên cứu ⇄ lâm sàng: nền đề tài thật vào sổ canh + cảnh báo rút bài
 "$PY" "$PROJ/../tools/cau_noi_nghien_cuu_lam_sang.py" >> "$LOG" 2>&1 \
   || echo "  (6) cau_noi phụ trợ không hoàn tất — sẽ tự bù lượt sau" >> "$LOG"

@@ -23,11 +23,20 @@ from __future__ import annotations
 
 import json
 import logging
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Callable, Optional
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 logger = logging.getLogger(__name__)
 
@@ -335,7 +344,7 @@ class RetryLoop:
             log_file = self.log_dir / f"retry_audit_{self.study}_{self.gate}_{ts}.json"
             log_file.write_text(
                 json.dumps(self._audit, ensure_ascii=False, indent=2),
-                encoding="utf-8"
+                encoding="utf-8", newline="\n"
             )
 
 

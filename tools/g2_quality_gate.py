@@ -18,11 +18,20 @@ import argparse
 import hashlib
 import json
 import re
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from datetime import date
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
 import gate_contract as GC
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT = "DRAFT_NEEDS_HUMAN_COMPLETION"
@@ -395,7 +404,7 @@ def build_registration_draft(
     path = Path(out_dir) / f"G2_REGISTRATION_DRAFT_{study}.json"
     path.write_text(
         json.dumps(document, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     return path
 
@@ -908,7 +917,7 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
     json_path = out_dir / "G2_QUALITY_REPORT.json"
     json_path.write_text(
         json.dumps(report, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     lines = [
         f"# G2 QUALITY REPORT — {study}",
@@ -946,7 +955,7 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
         "> Cần bác sĩ kiểm chứng.",
     ])
     md_path = out_dir / "G2_QUALITY_REPORT.md"
-    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return md_path
 
 
@@ -994,7 +1003,7 @@ def refresh_checkpoint(
     checkpoint["disclaimer"] = "Cần bác sĩ kiểm chứng."
     checkpoint_path.write_text(
         json.dumps(checkpoint, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     return checkpoint_path
 
@@ -1044,11 +1053,24 @@ def evaluate_study(
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)
+        # VÁ 26/08/2026: out_dir luôn TUYỆT ĐỐI (repo_root / "exports" / study),
+        # nên report_path cũng tuyệt đối — nhưng run_g2_auto.py (tool sinh artifact,
+        # dùng Path("exports") / study tương đối theo CWD) ghi field CÙNG TÊN
+        # artifacts["quality_report"] dạng tương đối. Chạy công cụ này (đúng thiết
+        # kế: chấm lại, không tự phê duyệt) sẽ âm thầm thay đường dẫn tương đối
+        # sạch bằng đường dẫn tuyệt đối RIÊNG CỦA MÁY NÀY trong checkpoint dùng
+        # chung qua git — đúng họ lỗi BH06 (không đường dẫn cứng của một máy).
+        # Chỉ đổi CHUỖI được ghi vào checkpoint; write_quality_report() ở trên vẫn
+        # ghi file thật bằng out_dir tuyệt đối, không đổi hành vi I/O.
+        try:
+            recorded_path = report_path.relative_to(repo_root)
+        except ValueError:
+            recorded_path = report_path
         refresh_checkpoint(
             study=study,
             out_dir=out_dir,
             report=report,
-            quality_report_path=report_path,
+            quality_report_path=recorded_path,
         )
     return report
 

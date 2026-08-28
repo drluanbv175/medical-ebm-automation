@@ -22,8 +22,17 @@ import argparse
 import json
 import re
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -719,7 +728,7 @@ def regenerate_study_index(study_name: str, out_dir: Path, study_slug: str | Non
         "```\n",
         "\n> Cần bác sĩ kiểm chứng. KHÔNG PII.\n",
     ]
-    out_path.write_text("".join(lines), encoding="utf-8")
+    out_path.write_text("".join(lines), encoding="utf-8", newline="\n")
     return out_path
 
 
@@ -753,7 +762,7 @@ def scaffold(study_name: str, base_dir: str = None, with_docx: bool = True):
             f"**Tạo:** {today}\n\n"
             f"---\n\n"
         )
-        md_path.write_text(header + body, encoding="utf-8")
+        md_path.write_text(header + body, encoding="utf-8", newline="\n")
         created_md.append(md_fname)
         print(f"  [MD ] {md_fname}")
 

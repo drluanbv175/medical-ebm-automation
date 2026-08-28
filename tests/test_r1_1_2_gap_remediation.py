@@ -451,7 +451,7 @@ class TestWORM_CheckpointAndRootHash:
             second = json.loads(lines[1])
             second["reason"] = "TAMPERED"
             lines[1] = json.dumps(second)
-            audit_ledger._path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            audit_ledger._path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
         root_after = audit_ledger.ledger_root_hash()
         assert root_before != root_after
 

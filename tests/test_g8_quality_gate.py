@@ -561,10 +561,10 @@ def test_evaluate_study_tich_hop_tu_tinh_lech_thiet_ke_tu_checkpoint_that(tmp_pa
     out_dir = tmp_path / "exports" / study
     out_dir.mkdir(parents=True)
     (out_dir / "G1_checkpoint.json").write_text(
-        json.dumps({"design": {"internal_code": "cohort"}}), encoding="utf-8"
+        json.dumps({"design": {"internal_code": "cohort"}}), encoding="utf-8", newline="\n"
     )
     (out_dir / "G2_checkpoint.json").write_text(
-        json.dumps({"design_code": "rct"}), encoding="utf-8"
+        json.dumps({"design_code": "rct"}), encoding="utf-8", newline="\n"
     )
     report = G8Q.evaluate_study(study, out_dir, repo_root=tmp_path, write=False)
     row = _row(report, "G8-AUTO-11")
@@ -577,10 +577,10 @@ def test_evaluate_study_tich_hop_khong_lech_thi_g8_auto_11_dat(tmp_path):
     out_dir = tmp_path / "exports" / study
     out_dir.mkdir(parents=True)
     (out_dir / "G1_checkpoint.json").write_text(
-        json.dumps({"design": {"internal_code": "cohort"}}), encoding="utf-8"
+        json.dumps({"design": {"internal_code": "cohort"}}), encoding="utf-8", newline="\n"
     )
     (out_dir / "G2_checkpoint.json").write_text(
-        json.dumps({"design_code": "cohort"}), encoding="utf-8"
+        json.dumps({"design_code": "cohort"}), encoding="utf-8", newline="\n"
     )
     report = G8Q.evaluate_study(study, out_dir, repo_root=tmp_path, write=False)
     row = _row(report, "G8-AUTO-11")
@@ -656,7 +656,7 @@ def test_ghi_bao_cao_ra_ca_json_va_markdown(tmp_path):
 def test_cap_nhat_checkpoint_giu_nguyen_khoa_downstream(tmp_path):
     original = _checkpoint(pipeline_pass_count=7, reporting_standard="CONSORT 2025")
     (tmp_path / "G8_checkpoint.json").write_text(
-        json.dumps(original, ensure_ascii=False), encoding="utf-8"
+        json.dumps(original, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
     report = _evaluate()
     G8Q.refresh_checkpoint(

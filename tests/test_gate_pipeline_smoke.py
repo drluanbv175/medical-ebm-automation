@@ -109,7 +109,7 @@ def smoke_study():
     _rmtree_retry(STUDY_DIR)
     STUDY_DIR.mkdir(parents=True, exist_ok=True)
     (STUDY_DIR / "G0_checkpoint.json").write_text(
-        json.dumps(FIXTURE_G0_CHECKPOINT, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(FIXTURE_G0_CHECKPOINT, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
     )
     try:
         yield STUDY

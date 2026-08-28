@@ -8,8 +8,17 @@ import json
 import math
 import re
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 BASE = Path(__file__).resolve().parent.parent
 TOOLS = Path(__file__).resolve().parent
@@ -1382,7 +1391,7 @@ def main():
         hypothesis_type=args.hypothesis_type,
     )
     md_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md"
-    md_path.write_text(artifact, encoding="utf-8")
+    md_path.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path} ({len(artifact)//1000}KB)")
 
     print("🛡️  Bước 5/6: Kiểm guardrail R1-R7...")
@@ -1596,7 +1605,7 @@ def main():
     if need is not None:
         cp["needs_input"] = need
     cp_path = out_dir / "G3_checkpoint.json"
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     print("💾 Ghi checkpoint G3...")
     print(f"  → Lưu: {cp_path}")
     # ── HỢP ĐỒNG CHẤT LƯỢNG G3 ────────────────────────────────────────────

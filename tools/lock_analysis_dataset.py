@@ -29,9 +29,18 @@ import re
 import shutil
 import stat
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
@@ -378,7 +387,7 @@ def _build_blockers(
 
 def _write_manifest(out_dir: Path, manifest: Dict[str, Any]) -> Path:
     path = out_dir / "DATA_LOCK_manifest.json"
-    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
 
 
@@ -414,7 +423,7 @@ def _write_lock_memo(out_dir: Path, manifest: Dict[str, Any]) -> Path:
         lines.extend(["## Lý do chưa khóa", ""])
         lines.extend(f"- {b}" for b in manifest["blockers"])
         lines.append("")
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     return path
 
 
@@ -449,7 +458,7 @@ def _update_meta(out_dir: Path, manifest: Dict[str, Any],
         if isinstance(intake, dict):
             intake["db_locked"] = True
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def lock_dataset(
@@ -711,7 +720,7 @@ def lock_dataset(
         checkpoint["g5_status"] = "PENDING"
     checkpoint_path.write_text(
         json.dumps(checkpoint, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     quality = G5Q.evaluate_study(
         study_id,

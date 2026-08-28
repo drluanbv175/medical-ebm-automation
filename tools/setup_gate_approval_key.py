@@ -29,7 +29,16 @@ from __future__ import annotations
 import argparse
 import secrets
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from pathlib import Path
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
@@ -124,7 +133,7 @@ def main() -> int:
 
     key_path.parent.mkdir(parents=True, exist_ok=True)
     key = secrets.token_hex(32)
-    key_path.write_text(key, encoding="utf-8")
+    key_path.write_text(key, encoding="utf-8", newline="\n")
     try:
         # 600 (POSIX) / ACL owner-exclusive (Windows, qua icacls) — chỉ chủ sở hữu
         lock_owner_exclusive(key_path, writable=True)

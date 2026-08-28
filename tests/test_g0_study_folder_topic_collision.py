@@ -26,7 +26,7 @@ def _seed_g0_checkpoint(d: Path, topic: str) -> None:
     d.mkdir(parents=True, exist_ok=True)
     (d / "G0_checkpoint.json").write_text(
         json.dumps({"study": d.name, "topic": topic}, ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
 
@@ -68,6 +68,6 @@ def test_no_warning_for_new_or_empty_study_folder(tmp_path, capsys):
 def test_no_crash_on_malformed_checkpoint(tmp_path, capsys):
     d = tmp_path / "STUDY-BAD"
     d.mkdir(parents=True, exist_ok=True)
-    (d / "G0_checkpoint.json").write_text("{not valid json", encoding="utf-8")
+    (d / "G0_checkpoint.json").write_text("{not valid json", encoding="utf-8", newline="\n")
     _warn_if_topic_collision(d, "Đề tài bất kỳ")  # không được raise
     assert "CẢNH BÁO" not in capsys.readouterr().out

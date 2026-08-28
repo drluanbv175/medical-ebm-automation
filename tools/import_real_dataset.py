@@ -23,10 +23,19 @@ import re
 import shutil
 import stat
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
@@ -252,7 +261,7 @@ def _write_query_log(path: Path, issues: List[Dict[str, Any]]) -> None:
 
 def _write_manifest(out_dir: Path, manifest: Dict[str, Any]) -> Path:
     path = out_dir / "DATA_INTAKE_manifest.json"
-    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
 
 
@@ -271,7 +280,7 @@ def _update_study_meta(out_dir: Path, manifest: Dict[str, Any], manifest_path: P
         "note": "Dữ liệu thật đã nhập nhưng CHƯA khóa DB; không phân tích chính cho tới khi có lock memo.",
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def import_dataset(study: str, data_path: Path, *,

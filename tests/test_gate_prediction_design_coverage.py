@@ -50,12 +50,12 @@ def _mk_upstream(study_dir: Path, effect_samples):
         "study": study_dir.name, "gate": "G0",
         "topic": "Xây dựng mô hình tiên lượng nguy cơ tái nhập viện ở bệnh nhân suy tim",
         "base_query": "prediction model heart failure readmission risk",
-    }, ensure_ascii=False), encoding="utf-8")
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
     (study_dir / "G1_checkpoint.json").write_text(json.dumps({
         "study": study_dir.name, "gate": "G1",
         "design": {"internal_code": "prediction", "primary": "Mô hình tiên lượng"},
         "effect_size_samples": effect_samples,
-    }, ensure_ascii=False), encoding="utf-8")
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 def _run(script: str, study: str, extra=None):

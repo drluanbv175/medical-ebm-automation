@@ -73,11 +73,11 @@ def _write_cross_sectional_fixture(d: Path, specialty="generic",
     }
     for g, cp in cps.items():
         (d / f"{g}_checkpoint.json").write_text(
-            json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+            json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
     # G0_pubmed_raw.json: nguồn PubMed THẬT — để R4 đối chiếu (raw-verified).
     raw = {"pmids": pmids, "results": [{"pmid": p} for p in pmids]}
     (d / "G0_pubmed_raw.json").write_text(
-        json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+        json.dumps(raw, ensure_ascii=False), encoding="utf-8", newline="\n")
     (d / "study_meta.json").write_text(
         json.dumps(
             {
@@ -86,7 +86,7 @@ def _write_cross_sectional_fixture(d: Path, specialty="generic",
             },
             ensure_ascii=False,
         ),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
 
 
@@ -239,7 +239,7 @@ class TestValidatorCatchesFabrication:
         # Chèn 1 PMID KHÔNG có trong checkpoint -> phải bị bắt.
         text = res["md"].read_text(encoding="utf-8")
         text += "\n\nTham khảo giả: PMID: 99999999 (bịa).\n"
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("99999999" in e for e in report["errors"])
@@ -248,7 +248,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text += "\n\nGhi chú: [CẦN LÀM NGAY LẬP TỨC] nhãn tự chế.\n"
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R3" in e for e in report["errors"])
@@ -268,7 +268,7 @@ class TestValidatorCatchesFabrication:
             "của nghiên cứu phụ thuộc chủ yếu vào con số này, nên nhờ "
             "thống kê viên đối chiếu lại bằng phần mềm chuyên dụng.]\n"
         )
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert report["checks"]["R3_valid_tags"] == "PASS"
 
@@ -278,7 +278,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text += "\n\n[CẦN GẤP RÚT XỬ LÝ]\n"
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R3" in e for e in report["errors"])
@@ -288,7 +288,7 @@ class TestValidatorCatchesFabrication:
         text = res["md"].read_text(encoding="utf-8")
         # Xoá heading mục 8 (Cỡ mẫu) -> validator phải báo thiếu.
         text = text.replace("# 8. Cỡ mẫu", "# 8888. Cỡ mẫu XXX")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R1" in e for e in report["errors"])
@@ -298,7 +298,7 @@ class TestValidatorCatchesFabrication:
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("# Danh mục bảng và hình chuẩn xuất bản",
                             "# Danh mục bị đổi tên")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R7" in e for e in report["errors"])
@@ -307,7 +307,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("| Hình 2 |", "| Hình X |")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("Hình 2" in e for e in report["errors"])
@@ -317,7 +317,7 @@ class TestValidatorCatchesFabrication:
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("# Ma trận tuân thủ tiêu chuẩn quốc tế",
                             "# Ma trận bị đổi tên")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R8" in e for e in report["errors"])
@@ -326,7 +326,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("ICH-GCP", "ICH G_C_P")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("ICH-GCP" in e for e in report["errors"])
@@ -336,7 +336,7 @@ class TestValidatorCatchesFabrication:
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("# Bảng kiểm hoàn thành kỹ thuật",
                             "# Bảng kiểm bị đổi tên")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R9" in e for e in report["errors"])
@@ -345,7 +345,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("Báo cáo phản biện ba vai trò", "Báo cáo phản biện")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("Báo cáo phản biện ba vai trò" in e for e in report["errors"])
@@ -354,7 +354,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text += "\n\nKết luận điều hành: HOÀN THÀNH KỸ THUẬT.\n"
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R10" in e for e in report["errors"])
@@ -364,7 +364,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text += "\n\nKết luận điều hành: CHƯA HOÀN THÀNH KỸ THUẬT.\n"
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert report["passed"], report["errors"]
 
@@ -378,11 +378,11 @@ class TestValidatorCatchesFabrication:
             "integrity_signed": True,
         }
         (cross_sectional_study / "study_meta.json").write_text(
-            json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+            json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text += "\n\nKết luận điều hành: HOÀN THÀNH KỸ THUẬT.\n"
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert report["passed"], report["errors"]
         assert report["checks"]["R10_no_false_completion"].startswith("PASS")
@@ -392,7 +392,7 @@ class TestValidatorCatchesFabrication:
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("# Danh sách thông tin còn thiếu và quyết định cần xác nhận",
                             "# Danh sách bị đổi tên")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R11" in e for e in report["errors"])
@@ -401,7 +401,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("`results_final`", "`ket_qua_that`")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("results_final" in e for e in report["errors"])
@@ -411,7 +411,7 @@ class TestValidatorCatchesFabrication:
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("# Kiểm soát phiên bản và lịch sử thay đổi",
                             "# Kiểm soát bị đổi tên")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R12" in e for e in report["errors"])
@@ -420,7 +420,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("Người phê duyệt/chủ nhiệm", "Người ký")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("Người phê duyệt/chủ nhiệm" in e for e in report["errors"])
@@ -430,7 +430,7 @@ class TestValidatorCatchesFabrication:
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("# Ma trận truy xuất mục tiêu-biến-công cụ-phân tích-bảng",
                             "# Ma trận truy xuất bị đổi tên")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("R13" in e for e in report["errors"])
@@ -439,7 +439,7 @@ class TestValidatorCatchesFabrication:
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         text = text.replace("Phân tích định trước", "Phân tích dự kiến")
-        res["md"].write_text(text, encoding="utf-8")
+        res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]
         assert any("Phân tích định trước" in e for e in report["errors"])
@@ -457,7 +457,7 @@ class TestValidatorCatchesFabrication:
         # Ghi đè raw để CHỈ chứa 1/2 PMID -> PMID kia thành seed-only.
         (tmp_path / "G0_pubmed_raw.json").write_text(
             json.dumps({"pmids": ["40995744"], "results": [{"pmid": "40995744"}]}),
-            encoding="utf-8")
+            encoding="utf-8", newline="\n")
         res = G10.assemble("FIXT", tmp_path)
         report = check_de_cuong.validate(res["md"], tmp_path)
         assert report["passed"]  # không fail (đề cương đã gắn nhãn cần kiểm chứng)

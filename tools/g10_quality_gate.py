@@ -29,12 +29,21 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 import gate_contract as GC
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT = "DRAFT_ASSEMBLED_NEEDS_COMPLETION"
@@ -508,7 +517,7 @@ def _write_markdown(path: Path, report: Mapping[str, Any]) -> None:
             "",
         ]
     )
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def evaluate_study(
@@ -895,7 +904,7 @@ def evaluate_study(
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / REPORT_JSON).write_text(
             json.dumps(report, ensure_ascii=False, indent=2),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
         _write_markdown(out_dir / REPORT_MD, report)
         meta = GC.ensure_study_meta(out_dir)
@@ -914,7 +923,7 @@ def evaluate_study(
             checkpoint["release_package_locked"] = False
             checkpoint_path.write_text(
                 json.dumps(checkpoint, ensure_ascii=False, indent=2),
-                encoding="utf-8",
+                encoding="utf-8", newline="\n"
             )
     return report
 

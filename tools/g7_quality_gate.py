@@ -54,9 +54,18 @@ import hashlib
 import json
 import re
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -526,7 +535,7 @@ def write_quality_report(study: str, out_dir: Path,
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "G7_QUALITY_REPORT.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     def _rows(key: str) -> List[str]:
         return [
@@ -588,7 +597,7 @@ def write_quality_report(study: str, out_dir: Path,
                   "", "> Cần bác sĩ kiểm chứng."])
 
     md_path = out_dir / "G7_QUALITY_REPORT.md"
-    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return md_path
 
 

@@ -92,7 +92,7 @@ def _write_markdown(rows: List[Mapping[str, object]], output: Path, topic: str, 
             "{claim_location_present} | {retraction_status} | {verification_status} | {last_verified_at} | "
             "{cache_status} | {error_reason} |".format(**row)
         )
-    output.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    output.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
 def main() -> int:

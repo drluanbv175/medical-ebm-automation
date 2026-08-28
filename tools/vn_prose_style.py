@@ -27,6 +27,15 @@ from __future__ import annotations
 
 import re
 
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 __all__ = ["clean_generated_prose"]
 
 _LETTER = re.compile(r"[A-Za-zÀ-ỹ]")
@@ -206,5 +215,5 @@ if __name__ == "__main__":
 
     src = Path(sys.argv[1])
     dst = Path(sys.argv[2]) if len(sys.argv) > 2 else src
-    dst.write_text(clean_generated_prose(src.read_text(encoding="utf-8")), encoding="utf-8")
+    dst.write_text(clean_generated_prose(src.read_text(encoding="utf-8", newline="\n")), encoding="utf-8")
     print(f"Đã làm sạch văn phong: {dst}")

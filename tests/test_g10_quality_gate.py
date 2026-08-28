@@ -81,7 +81,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
             checkpoint["quality_contract_version"] = "G9-2026.2"
         (out_dir / f"G{index}_checkpoint.json").write_text(
             json.dumps(checkpoint, ensure_ascii=False),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
 
     g10_checkpoint = {
@@ -99,7 +99,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
     }
     (out_dir / G10Q.CHECKPOINT_JSON).write_text(
         json.dumps(g10_checkpoint, ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     (out_dir / G10Q.READINESS_JSON).write_text(
         json.dumps(_complete_readiness(study), ensure_ascii=False, indent=2),
@@ -117,7 +117,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
         "A12_METADATA_RECEIPT.json": "{}\n",
     }
     for name, content in text_files.items():
-        (out_dir / name).write_text(content, encoding="utf-8")
+        (out_dir / name).write_text(content, encoding="utf-8", newline="\n")
     with zipfile.ZipFile(
         out_dir / f"DE_CUONG_THONG_NHAT_{study}.docx", "w"
     ) as archive:
@@ -126,7 +126,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
             "<w:document><w:body><w:p>Final protocol</w:p></w:body></w:document>",
         )
     (out_dir / f"STUDY_SPEC_{study}.json").write_text(
-        json.dumps({"complete": True}), encoding="utf-8"
+        json.dumps({"complete": True}), encoding="utf-8", newline="\n"
     )
 
 
@@ -195,7 +195,7 @@ def test_file_change_after_lock_is_blocked(tmp_path, monkeypatch):
     )
     approval["g10"] = True
     (tmp_path / f"GOI_QUYET_DINH_{study}.md").write_text(
-        "Changed after approval.\n", encoding="utf-8"
+        "Changed after approval.\n", encoding="utf-8", newline="\n"
     )
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=False)
     assert report["status"] == G10Q.STATUS_BLOCKED
@@ -245,7 +245,7 @@ def test_legacy_g1_quality_contract_cannot_be_silently_grandfathered(
     g1 = json.loads(g1_path.read_text(encoding="utf-8"))
     g1.pop("quality_contract_version", None)
     g1.pop("quality_gate", None)
-    g1_path.write_text(json.dumps(g1, ensure_ascii=False), encoding="utf-8")
+    g1_path.write_text(json.dumps(g1, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
     assert report["status"] == G10Q.STATUS_DRAFT
@@ -260,7 +260,7 @@ def test_contact_pii_in_readiness_is_blocked(tmp_path, monkeypatch):
     readiness_path = tmp_path / G10Q.READINESS_JSON
     readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
     readiness["release"]["owner_ref"] = "doctor@example.org"
-    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8")
+    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
     assert report["status"] == G10Q.STATUS_BLOCKED
@@ -273,7 +273,7 @@ def test_contact_pii_in_release_document_is_blocked(tmp_path, monkeypatch):
     approval = {"g10": False}
     _patch_upstream(monkeypatch, approval)
     (tmp_path / f"GOI_QUYET_DINH_{study}.md").write_text(
-        "Contact: investigator@example.org\n", encoding="utf-8"
+        "Contact: investigator@example.org\n", encoding="utf-8", newline="\n"
     )
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
@@ -290,7 +290,7 @@ def test_path_traversal_and_false_submission_claim_are_blocked(tmp_path, monkeyp
     readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
     readiness["additional_artifacts"] = ["../outside.txt"]
     readiness["automation_limits"]["external_submission_performed_by_g10"] = True
-    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8")
+    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
     assert report["status"] == G10Q.STATUS_BLOCKED
@@ -306,9 +306,9 @@ def test_placeholder_keeps_external_package_in_draft(tmp_path, monkeypatch):
     readiness_path = tmp_path / G10Q.READINESS_JSON
     readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
     readiness["release"]["purpose"] = "ETHICS_SUBMISSION"
-    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8")
+    readiness_path.write_text(json.dumps(readiness, ensure_ascii=False), encoding="utf-8", newline="\n")
     (tmp_path / f"DE_CUONG_THONG_NHAT_{study}.md").write_text(
-        "Protocol still has [CẦN BỔ SUNG].\n", encoding="utf-8"
+        "Protocol still has [CẦN BỔ SUNG].\n", encoding="utf-8", newline="\n"
     )
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
@@ -356,7 +356,7 @@ def test_approve_gate_rejects_non_checkpoint_artifact_for_g10(monkeypatch):
     out_dir.mkdir(parents=True)
     try:
         wrong = out_dir / "G10_QUALITY_REPORT.md"
-        wrong.write_text("Synthetic report.", encoding="utf-8")
+        wrong.write_text("Synthetic report.", encoding="utf-8", newline="\n")
         argv = sys.argv
         sys.argv = [
             "approve_gate.py",
@@ -387,7 +387,7 @@ def test_approve_gate_signs_ready_g10_checkpoint_only_in_synthetic_test(
     shutil.rmtree(out_dir, ignore_errors=True)
     out_dir.mkdir(parents=True)
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-g10-quality-key", encoding="utf-8")
+    key_path.write_text("pytest-g10-quality-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
     checkpoint_path = out_dir / G10Q.CHECKPOINT_JSON
     checkpoint_path.write_text(
@@ -401,7 +401,7 @@ def test_approve_gate_signs_ready_g10_checkpoint_only_in_synthetic_test(
             },
             ensure_ascii=False,
         ),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n"
     )
     monkeypatch.setattr(
         APPROVE.G10Q,

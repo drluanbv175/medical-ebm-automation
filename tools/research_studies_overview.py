@@ -33,8 +33,17 @@ import argparse
 import json
 import re
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 from pathlib import Path
 from typing import Dict, List, Optional
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
@@ -232,7 +241,7 @@ def main() -> int:
         print(render_text(overview))
 
     if args.out_md:
-        Path(args.out_md).write_text(render_md(overview), encoding="utf-8")
+        Path(args.out_md).write_text(render_md(overview), encoding="utf-8", newline="\n")
         print(f"\n📄 Đã ghi: {args.out_md}")
 
     return 0

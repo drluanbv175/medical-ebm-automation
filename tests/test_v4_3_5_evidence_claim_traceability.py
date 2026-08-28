@@ -447,7 +447,7 @@ def test_t12_claim_no_pii(tmp_path):
 def test_t13_dr8_empty_ledger_require_human_evidence_input(tmp_path):
     """D-R8 V4.3.5: ledger rỗng → WARN + REQUIRE_HUMAN_EVIDENCE_INPUT."""
     project_dir = _make_project_dir(tmp_path)
-    (project_dir / EVIDENCE_SOURCE_LEDGER_FILENAME).write_text("", encoding="utf-8")
+    (project_dir / EVIDENCE_SOURCE_LEDGER_FILENAME).write_text("", encoding="utf-8", newline="\n")
     runner = _make_runner(project_dir)
     result = runner._dr8_evidence_status()
     assert result.status == GateStatus.WARN

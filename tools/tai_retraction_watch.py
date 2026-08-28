@@ -133,14 +133,14 @@ def tai(email: str) -> int:
     # biến một bài đã bị rút thành không có phán quyết.
     THU_MUC.mkdir(parents=True, exist_ok=True)
     tam = CSV_MAC_DINH.with_suffix(".csv.tmp")
-    tam.write_text(van_ban, encoding="utf-8")
+    tam.write_text(van_ban, encoding="utf-8", newline="\n")
     tam.replace(CSV_MAC_DINH)
     META_MAC_DINH.write_text(json.dumps({
         "tai_ve_luc": datetime.now(timezone.utc).isoformat(),
         "nguon": ENDPOINT,
         "giay_phep": "CC0 — Retraction Watch / Crossref",
         "so_dong": so_dong,
-    }, ensure_ascii=False, indent=2), encoding="utf-8")
+    }, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     idx = RetractionWatchIndex()
     print(f"✅ Đã tải {so_dong} dòng → {CSV_MAC_DINH.relative_to(REPO)}")

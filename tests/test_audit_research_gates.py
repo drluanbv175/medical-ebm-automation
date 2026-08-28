@@ -12,7 +12,7 @@ import gate_contract as GC  # noqa: E402
 
 
 def _write_json(path: Path, payload: dict) -> Path:
-    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8", newline="\n")
     return path
 
 
@@ -67,7 +67,7 @@ def test_hard_gate_locks_when_meta_signal_is_present(tmp_path):
 def test_gate_requirement_manifest_detects_artifact_and_metadata(tmp_path):
     _cp(tmp_path, "G0", {})
     _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
-    (tmp_path / "G0_A1_PICO_FINER_AUTO.md").write_text("PICO", encoding="utf-8")
+    (tmp_path / "G0_A1_PICO_FINER_AUTO.md").write_text("PICO", encoding="utf-8", newline="\n")
 
     report = ARG.audit_gates("AUTO-MANIFEST", out_dir=tmp_path, write=False)
     g0 = next(row for row in report["pipeline_gates"] if row["gate"] == "G0")
@@ -95,7 +95,7 @@ def test_ready_checkpoint_missing_required_artifact_is_actionable(tmp_path):
 def test_dependency_readiness_surfaces_missing_analysis_locks(tmp_path):
     _cp(tmp_path, "G6", {})
     (tmp_path / "G6_A7_ANALYSIS_SCRIPTS_AUTO.md").write_text(
-        "analysis syntax", encoding="utf-8"
+        "analysis syntax", encoding="utf-8", newline="\n"
     )
     _write_json(tmp_path / "study_meta.json", {"irb_approved": True})
 
@@ -151,7 +151,7 @@ def test_action_queue_routes_new_study_to_agent_g0(tmp_path):
 def test_action_queue_marks_dependency_blocks_as_human_evidence(tmp_path):
     _cp(tmp_path, "G6", {})
     (tmp_path / "G6_A7_ANALYSIS_SCRIPTS_AUTO.md").write_text(
-        "analysis syntax", encoding="utf-8"
+        "analysis syntax", encoding="utf-8", newline="\n"
     )
     _write_json(tmp_path / "study_meta.json", {"irb_approved": True})
 
@@ -207,23 +207,23 @@ def test_next_agent_action_does_not_skip_human_gate_blocker(tmp_path):
             },
         },
     })
-    (tmp_path / "G0_A1_PICO_FINER_AUTO.md").write_text("PICO", encoding="utf-8")
+    (tmp_path / "G0_A1_PICO_FINER_AUTO.md").write_text("PICO", encoding="utf-8", newline="\n")
     (tmp_path / "G1_A2_PROTOCOL_DESIGN_AUTO.md").write_text(
-        "design rationale", encoding="utf-8"
+        "design rationale", encoding="utf-8", newline="\n"
     )
     (tmp_path / "G1_A1b_PROJECT_CHARTER_AUTO.md").write_text(
-        "project charter", encoding="utf-8"
+        "project charter", encoding="utf-8", newline="\n"
     )
     (tmp_path / "G1_A2b_EVIDENCE_LEDGER_AUTO.md").write_text(
-        "evidence ledger", encoding="utf-8"
+        "evidence ledger", encoding="utf-8", newline="\n"
     )
     (tmp_path / "G1_A13_IMPLEMENTATION_PLAN_AUTO.md").write_text(
-        "implementation plan", encoding="utf-8"
+        "implementation plan", encoding="utf-8", newline="\n"
     )
     (tmp_path / "G1_A13b_RISK_REGISTER_AUTO.md").write_text(
-        "risk register", encoding="utf-8"
+        "risk register", encoding="utf-8", newline="\n"
     )
-    (tmp_path / "G2_A3_ETHICS_PACKAGE_AUTO.md").write_text("ethics", encoding="utf-8")
+    (tmp_path / "G2_A3_ETHICS_PACKAGE_AUTO.md").write_text("ethics", encoding="utf-8", newline="\n")
 
     report = ARG.audit_gates("AUTO-HUMAN-BLOCK", out_dir=tmp_path, write=False)
 
@@ -296,7 +296,7 @@ def test_g0_draft_quality_gate_is_visible_not_silently_ready(tmp_path):
         },
     })
     _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
-    (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-DRAFT.md").write_text("PICO", encoding="utf-8")
+    (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-DRAFT.md").write_text("PICO", encoding="utf-8", newline="\n")
 
     report = ARG.audit_gates("AUTO-G0-DRAFT", out_dir=tmp_path, write=False)
     g0 = next(row for row in report["pipeline_gates"] if row["gate"] == "G0")
@@ -307,7 +307,7 @@ def test_g0_draft_quality_gate_is_visible_not_silently_ready(tmp_path):
 
 def test_g0_blocked_quality_gate_is_visible(tmp_path):
     _cp(tmp_path, "G0", {"quality_gate": {"status": "BLOCKED", "pending_actions": []}})
-    (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-BLOCK.md").write_text("PICO", encoding="utf-8")
+    (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-BLOCK.md").write_text("PICO", encoding="utf-8", newline="\n")
 
     report = ARG.audit_gates("AUTO-G0-BLOCK", out_dir=tmp_path, write=False)
     g0 = next(row for row in report["pipeline_gates"] if row["gate"] == "G0")
@@ -321,7 +321,7 @@ def test_g0_checkpoint_truoc_2026_khong_bi_hoi_to(tmp_path):
     nguyên hành vi cũ — không bị nhánh mới hồi tố phán BLOCK/NEEDS_REAL oan."""
     _cp(tmp_path, "G0", {})
     _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
-    (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-LEGACY.md").write_text("PICO", encoding="utf-8")
+    (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-LEGACY.md").write_text("PICO", encoding="utf-8", newline="\n")
 
     report = ARG.audit_gates("AUTO-G0-LEGACY", out_dir=tmp_path, write=False)
     g0 = next(row for row in report["pipeline_gates"] if row["gate"] == "G0")
@@ -339,7 +339,7 @@ def test_g7_blocked_quality_gate_is_visible_not_silently_passed(tmp_path):
         "quality_gate": {"status": "BLOCKED", "pending_actions": []},
     })
     (tmp_path / "G7_A8_MANUSCRIPT_AUTO-G7-BLOCK.md").write_text(
-        "bản thảo có nội dung đã bị chặn bởi lớp chất lượng", encoding="utf-8")
+        "bản thảo có nội dung đã bị chặn bởi lớp chất lượng", encoding="utf-8", newline="\n")
 
     report = ARG.audit_gates("AUTO-G7-BLOCK", out_dir=tmp_path, write=False)
     g7 = next(row for row in report["pipeline_gates"] if row["gate"] == "G7")
@@ -357,7 +357,7 @@ def test_g7_needs_real_quality_gate_is_visible(tmp_path):
         },
     })
     (tmp_path / "G7_A8_MANUSCRIPT_AUTO-G7-DRAFT.md").write_text(
-        "bản thảo khung", encoding="utf-8")
+        "bản thảo khung", encoding="utf-8", newline="\n")
 
     report = ARG.audit_gates("AUTO-G7-DRAFT", out_dir=tmp_path, write=False)
     g7 = next(row for row in report["pipeline_gates"] if row["gate"] == "G7")
@@ -374,7 +374,7 @@ def test_g9_blocked_quality_gate_is_visible_not_silently_passed(tmp_path):
         "quality_gate": {"status": "BLOCKED", "pending_actions": []},
     })
     (tmp_path / "G9_A10_AUTHOR_INTEGRITY_AUTO-G9-BLOCK.md").write_text(
-        "hồ sơ liêm chính", encoding="utf-8")
+        "hồ sơ liêm chính", encoding="utf-8", newline="\n")
     _write_json(tmp_path / "G9_PUBLICATION_READINESS.json", {})
 
     report = ARG.audit_gates("AUTO-G9-BLOCK", out_dir=tmp_path, write=False)

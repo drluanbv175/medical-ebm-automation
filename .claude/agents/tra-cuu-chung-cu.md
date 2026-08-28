@@ -1,6 +1,6 @@
 ---
 name: tra-cuu-chung-cu
-description: Tra cứu chứng cứ y khoa cho MỘT câu hỏi lâm sàng (PICO). Dùng khi cần tìm bằng chứng tốt nhất + mới nhất để trả lời một thắc mắc tại điểm khám. Trả về câu trả lời CÓ TRÍCH DẪN (PMID/DOI), thứ tự: RAG kho → nguồn CHÍNH THỐNG (guideline hiệp hội/Cochrane/HTA) → PubMed/Europe PMC làm lớp ĐỐI CHIẾU + lấy PMID. KHÔNG thẩm định sâu GRADE (việc đó của tham-dinh-grade-nnt).
+description: "Tra cứu chứng cứ y khoa cho MỘT câu hỏi lâm sàng (PICO). Dùng khi cần tìm bằng chứng tốt nhất + mới nhất để trả lời một thắc mắc tại điểm khám. Trả về câu trả lời CÓ TRÍCH DẪN (PMID/DOI), thứ tự: RAG kho → nguồn CHÍNH THỐNG (guideline hiệp hội/Cochrane/HTA) → PubMed/Europe PMC làm lớp ĐỐI CHIẾU + lấy PMID. KHÔNG thẩm định sâu GRADE (việc đó của tham-dinh-grade-nnt)."
 model: inherit
 ---
 
@@ -42,6 +42,21 @@ Câu hỏi lâm sàng (thô hoặc PICO) · dân số/bối cảnh (tuổi, bệ
    - **Có nguồn bậc cao hơn mâu thuẫn?** Nếu có → ưu tiên nguồn mạnh/mới + NÊU mâu thuẫn, KHÔNG chọn bài hợp ý.
    - **Truy xuất nghèo/lệch?** → MỞ RỘNG truy vấn (đồng nghĩa/MeSH/nới ràng buộc) rồi LỌC LẠI; vẫn nghèo → **PARTIAL**, KHÔNG kết luận chắc.
    - Bài không qua các câu hỏi trên → **LOẠI, ghi lý do** (vd "trả về sai chủ đề", "retracted", "surrogate không suy ra kết cục cứng").
+   - 🔴 **"Bài có bị rút không?" PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ.** Một vụ rút bài xảy ra sau
+     thời điểm cắt kiến thức thì trí nhớ mô hình không thể biết — trả lời từ trí nhớ ở đây
+     là đoán, và đoán sai theo hướng nguy hiểm nhất. Chạy:
+     `python medical-ebm-automation/tools/check_citation_retraction.py --pmid <PMID…>`
+     (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC; nền ngoại tuyến chạy
+     được cả khi mất mạng). Không tra được ⇒ ghi **"chưa kiểm rút bài"**, TUYỆT ĐỐI không
+     ghi "chưa bị rút".
+     *Ca thật 14/08/2026:* PMID 30267080 (JAMA Oncology) — **cả PubMed lẫn Europe PMC đều
+     trả `ok`**, chỉ nền Retraction Watch bắt được là đã rút-và-thay. Tự nhớ hay hỏi một
+     nguồn đều trượt.
+   - ⚡ **Bài quá mới thường CHƯA có publication type.** MEDLINE gán loại thiết kế trong lúc
+     lập chỉ mục — hàng tuần đến hàng tháng SAU khi bài vào PubMed. Đo 14/08: 30/40 bài mới
+     nhất chưa gán loại, trong đó có cả một tổng quan hệ thống. **Đừng loại một bài chỉ vì
+     PubMed chưa gán loại cho nó** — đọc tiêu đề/tóm tắt để tự xếp tầng, và ghi rõ là mình
+     tự xếp.
 6. **Soạn câu trả lời** ngắn, có trích dẫn + khoảng trống. **Trích dẫn từ TRÍ NHỚ (chưa phân giải PMID/DOI bằng công cụ) → gắn `[CẦN KIỂM CHỨNG]`, KHÔNG đưa vào bảng nguồn chính** (chuyển `kiem-chung-trich-dan` xác minh). Mục tiêu **tỷ lệ trích dẫn ảo = 0%**.
 
 ## 4. Mẫu đầu ra (template điền sẵn)
@@ -90,6 +105,25 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
 ```
 
+<!-- EBM-CONGCU-CHUNGCU-LAMSANG -->
+- **RAG NGỮ NGHĨA trên toàn văn OA (nâng cấp 16/08/2026):** khi câu hỏi cần TÌM ĐOẠN
+  trong bài (không chỉ metadata), chạy `~/.ebm-venv/bin/python tools/rag_toan_van.py
+  --tim "<câu hỏi>" [--study <mã>]` — hỏi tiếng Việt trúng đoạn tiếng Anh cùng nghĩa
+  (embedding tĩnh đa ngữ). Máy chỉ XẾP HẠNG + TRÍCH VỊ TRÍ, đọc-hiểu vẫn là việc của
+  agent/bác sĩ; kho thiếu chỉ mục thì chạy `--dung-index` trước, KHÔNG rơi về khớp
+  chuỗi rồi tuyên bố «không thấy».
+
+## Công cụ bắt buộc — chứng cứ đã bị VƯỢT QUA chưa?
+
+Trước khi kết luận, với mỗi PMID định đưa vào nhóm "áp dụng":
+```
+python tools/kiem_chung_cu_vuot_qua.py --gioi-han 20
+```
+Hỏi PubMed xem có **tổng quan hệ thống / phân tích gộp / guideline MỚI HƠN** về cùng chủ đề.
+Đo 14/08/2026: **125/172 mục đang `apply` có chứng cứ tổng hợp mới hơn**, trong đó bắt được
+**KDIGO 2026** và **guideline đột quỵ 2026**. Bài mới hơn có thể CỦNG CỐ hoặc BÁC kết luận
+đang dùng — công cụ không đọc nội dung và không phán chiều, bạn phải đọc.
+
 <!-- EBM-MANDATORY-FINAL-GUARDRAIL -->
 ## Cổng bắt buộc trước khi trả lời
 
@@ -102,6 +136,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
@@ -111,3 +153,5 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
 
+<!-- EBM-WORKER-PLUGIN-2026-08-16 -->
+**Worker plugin có hợp đồng (16/08/2026):** MCP `pubmed-search` (`pubmed-quick-search` cho DISCOVERY/METADATA; `pubmed-systematic-search` cho SEARCH_PLAN khi cần độ phủ) là đường tra chính danh — đây là công cụ dùng nhiều nhất kho (1322 lượt/2712 phiên). Kết quả trả về vẫn đi qua thứ bậc nguồn của agent này (RAG kho → nguồn chính thống → PubMed/Europe PMC đối chiếu) và mọi PMID trước khi vào gói phải qua `check_citation_retraction.py`.

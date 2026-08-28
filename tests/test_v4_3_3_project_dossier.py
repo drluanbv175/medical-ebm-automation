@@ -400,7 +400,7 @@ def test_25_qa_dr10_fails_on_pii_artifact(tmp_projects):
     # Inject PII vào protocol
     protocol_path = tmp_projects / "QA-025" / ARTIFACT_FILENAME[ArtifactID.PROTOCOL_DRAFT]
     original = protocol_path.read_text("utf-8")
-    protocol_path.write_text(original + "\nPatient: patient_id=BN001", encoding="utf-8")
+    protocol_path.write_text(original + "\nPatient: patient_id=BN001", encoding="utf-8", newline="\n")
 
     result = run_project_qa(tmp_projects / "QA-025", cfg, save_report=False)
     dr10 = next(r for r in result.gate_results if r.gate_id == "D-R10")
@@ -416,7 +416,7 @@ def test_26_qa_dr9_fails_on_fabrication(tmp_projects):
     # Inject fabrication marker
     charter_path = tmp_projects / "QA-026" / ARTIFACT_FILENAME[ArtifactID.RESEARCH_CHARTER]
     original = charter_path.read_text("utf-8")
-    charter_path.write_text(original + "\nFABRICATED results here", encoding="utf-8")
+    charter_path.write_text(original + "\nFABRICATED results here", encoding="utf-8", newline="\n")
 
     result = run_project_qa(tmp_projects / "QA-026", cfg, save_report=False)
     dr9 = next(r for r in result.gate_results if r.gate_id == "D-R9")

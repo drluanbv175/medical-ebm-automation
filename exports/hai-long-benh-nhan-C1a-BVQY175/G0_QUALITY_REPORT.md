@@ -1,6 +1,6 @@
 # BÁO CÁO CHẤT LƯỢNG G0 — hai-long-benh-nhan-C1a-BVQY175
 
-**Trạng thái:** `DRAFT_READY_NEEDS_HUMAN_REVIEW`  ·  **Hợp đồng:** `G0-2026.1`
+**Trạng thái:** `PASS_G0_CONFIRMED`  ·  **Hợp đồng:** `G0-2026.1`
 
 > G0 = cổng CÂU HỎI NGHIÊN CỨU. `DRAFT_READY_NEEDS_HUMAN_REVIEW` là kết quả
 > ĐÚNG của một lần chạy tự động — không phải lỗi. Chỉ `PASS_G0_CONFIRMED`
@@ -24,14 +24,9 @@
 | G0-HUMAN-02 | Kết cục CHÍNH duy nhất, đo được, có thời điểm | PASS | 1 kết cục chính, có thang đo và thời điểm đo |
 | G0-HUMAN-03 | Giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định | PASS | test_type=descriptive; H0=thiếu; H1=thiếu; chiều=thiếu |
 | G0-HUMAN-04 | Loại câu hỏi đã xác định | PASS | question_type=descriptive |
-| G0-HUMAN-05 | FINER đánh giá đủ từng tiêu chí (5/5) | REVIEW | thiếu: feasible, interesting, novel, ethical, relevant |
-| G0-HUMAN-06 | Đã đọc lại bằng chứng G0 và biện minh tính mới | REVIEW | evidence_reviewed_confirmed=False; novelty_justification=có |
-| G0-HUMAN-07 | Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm) | REVIEW | pico_confirmed=False; vai trò=thiếu; reviewed_at=thiếu |
-
-## Việc còn lại trước khi được ghi PASS_G0_CONFIRMED
-1. Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá.
-2. Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.
-3. Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist) và reviewed_at dạng ISO-8601. Không cần lưu danh tính.
+| G0-HUMAN-05 | FINER đánh giá đủ từng tiêu chí (5/5) | PASS | 5/5 tiêu chí có kết luận |
+| G0-HUMAN-06 | Đã đọc lại bằng chứng G0 và biện minh tính mới | PASS | evidence_reviewed_confirmed=True; novelty_justification=có |
+| G0-HUMAN-07 | Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm) | PASS | pico_confirmed=True; vai trò=pi; reviewed_at=2026-08-15 |
 
 ## Chuẩn báo cáo DỰ KIẾN (G1 quyết định chính thức)
 - Mã thiết kế suy từ gợi ý G0: `rct`

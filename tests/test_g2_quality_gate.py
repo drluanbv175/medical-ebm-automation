@@ -128,7 +128,7 @@ def _attestation(study: str, package_text: str, **overrides) -> dict:
 def _evaluate(tmp_path: Path, package_text: str, *, ledger=True, meta=None):
     study = "TEST-G2"
     package_path = tmp_path / f"G2_A3_ETHICS_PACKAGE_{study}.md"
-    package_path.write_text(package_text, encoding="utf-8")
+    package_path.write_text(package_text, encoding="utf-8", newline="\n")
     registration_path = _write_registration(tmp_path, study)
     return G2Q.evaluate_g2_quality(
         study=study,
@@ -214,7 +214,7 @@ def test_g2_auto_08_blocks_approval_when_scientific_items_are_missing(tmp_path):
     signed = G2Q.append_attestation(base, _attestation("TEST-G2", base))
     study = "TEST-G2"
     package_path = tmp_path / f"G2_A3_ETHICS_PACKAGE_{study}.md"
-    package_path.write_text(signed, encoding="utf-8")
+    package_path.write_text(signed, encoding="utf-8", newline="\n")
     registration_path = G2Q.build_registration_draft(
         study=study,
         topic="Can thiệp X ở người trưởng thành",
@@ -266,10 +266,10 @@ def test_g2_auto_08_passes_when_scientific_items_filled(tmp_path):
                 "inclusion": ["Tuổi >= 18", "Chẩn đoán xác định"],
                 "exclusion": ["Chống chỉ định thuốc nghiên cứu"],
             }
-    registration_path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    registration_path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     package_path = tmp_path / f"G2_A3_ETHICS_PACKAGE_{study}.md"
-    package_path.write_text(_package(), encoding="utf-8")
+    package_path.write_text(_package(), encoding="utf-8", newline="\n")
     report = G2Q.evaluate_g2_quality(
         study=study,
         design_code="rct",
@@ -327,7 +327,7 @@ def test_cli_g2_ethics_committee_ref_flag_records_explicit_source(tmp_path):
     study_dir.mkdir(parents=True)
     try:
         package_path = study_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
-        package_path.write_text(_package(), encoding="utf-8")
+        package_path.write_text(_package(), encoding="utf-8", newline="\n")
         _write_registration(study_dir, study)
         (study_dir / "G1_checkpoint.json").write_text(
             json.dumps(_g1_confirmed(), ensure_ascii=False), encoding="utf-8"
@@ -347,7 +347,7 @@ def test_cli_g2_ethics_committee_ref_flag_records_explicit_source(tmp_path):
             encoding="utf-8",
         )
         key_path = tmp_path / "gate_approval_key"
-        key_path.write_text("pytest-g2-ethics-ref-key", encoding="utf-8")
+        key_path.write_text("pytest-g2-ethics-ref-key", encoding="utf-8", newline="\n")
         env = os.environ.copy()
         env["EBM_GATE_KEY_PATH"] = str(key_path)
         result = subprocess.run(
@@ -509,7 +509,7 @@ def test_prepare_g2_refuses_unresolved_scientific_placeholders(tmp_path):
     study = "TEST-G2"
     artifact = tmp_path / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     content = _package() + "\nKết cục: [CẦN — xác định]\n"
-    artifact.write_text(content, encoding="utf-8")
+    artifact.write_text(content, encoding="utf-8", newline="\n")
     args = argparse.Namespace(
         study=study,
         reviewer_ref="IRB-UNIT-01",
@@ -551,7 +551,7 @@ def test_human_cli_valid_g2_flow_updates_checkpoint_to_pass(tmp_path):
     study_dir.mkdir(parents=True)
     try:
         package_path = study_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
-        package_path.write_text(_package(), encoding="utf-8")
+        package_path.write_text(_package(), encoding="utf-8", newline="\n")
         _write_registration(study_dir, study)
         (study_dir / "G1_checkpoint.json").write_text(
             json.dumps(_g1_confirmed(), ensure_ascii=False),
@@ -573,7 +573,7 @@ def test_human_cli_valid_g2_flow_updates_checkpoint_to_pass(tmp_path):
             encoding="utf-8",
         )
         key_path = tmp_path / "gate_approval_key"
-        key_path.write_text("pytest-g2-quality-key", encoding="utf-8")
+        key_path.write_text("pytest-g2-quality-key", encoding="utf-8", newline="\n")
         env = os.environ.copy()
         env["EBM_GATE_KEY_PATH"] = str(key_path)
         result = subprocess.run(

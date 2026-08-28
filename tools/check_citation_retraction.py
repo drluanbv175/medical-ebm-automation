@@ -138,7 +138,7 @@ def write_retraction_receipt(study_raw: str, pmids: List[str], results: Dict[str
     if signature:
         receipt["receipt_signature"] = signature
     receipt_path = out_dir / "A12_RETRACTION_RECEIPT.json"
-    receipt_path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2), encoding="utf-8")
+    receipt_path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return receipt_path
 
 

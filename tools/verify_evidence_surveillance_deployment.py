@@ -208,11 +208,27 @@ def _check_scheduler_loaded() -> Check:
             f"Không chạy trên macOS (nền tảng: {sys.platform})",
             "Triển khai máy khác cần scheduler tương đương và UAT riêng.",
         )
+    # ĐỔI BỘ LỊCH 15/08/2026 (bác sĩ duyệt «A. Lịch nền thật thay launchd»):
+    # launchd chết EX_CONFIG vì TCC chặn đọc ~/Library/CloudStorage (đo thật:
+    # runs=1 nhưng stdout/stderr 0 byte từ tháng 6 — «đạt-giả»). Bộ lịch CHÍNH
+    # nay là tác vụ Claude (chạy trong ngữ cảnh có quyền OneDrive); plist launchd
+    # đã đổi đuôi .disabled. Hợp đồng: CÓ tác vụ Claude đăng ký ⇒ đạt yêu cầu
+    # lịch nền; launchd nếu CÒN thì vẫn kiểm như cũ; thiếu CẢ HAI ⇒ FAIL.
+    claude_tasks = {
+        "thu-thap-tuan-an-toan-thuoc": Path.home() / ".claude" / "scheduled-tasks"
+        / "thu-thap-tuan-an-toan-thuoc" / "SKILL.md",
+        "cap-nhat-thang-ebm": Path.home() / ".claude" / "scheduled-tasks"
+        / "cap-nhat-thang-ebm" / "SKILL.md",
+    }
+    co_claude = [ten for ten, p in claude_tasks.items() if p.exists()]
     failures: list[str] = []
-    evidence: list[str] = []
+    evidence: list[str] = [f"claude_task:{ten}" for ten in co_claude]
     for label, (plist_path, script_path) in _schedule_specs().items():
         if not plist_path.exists():
-            failures.append(f"{label}:missing_plist")
+            if len(co_claude) == len(claude_tasks):
+                evidence.append(f"{label}:legacy_retired")
+            else:
+                failures.append(f"{label}:missing_plist_va_thieu_claude_task")
             continue
         try:
             with plist_path.open("rb") as handle:
@@ -224,7 +240,7 @@ def _check_scheduler_loaded() -> Check:
         if str(script_path) not in args or payload.get("WorkingDirectory") != str(REPO):
             failures.append(f"{label}:path_drift")
         proc = subprocess.run(
-            ["launchctl", "print", f"gui/{os.getuid()}/{label}"],
+            ["launchctl", "print", f"gui/{getattr(os, 'getuid', lambda: 0)()}/{label}"],
             capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if proc.returncode != 0:
@@ -235,7 +251,7 @@ def _check_scheduler_loaded() -> Check:
     return Check(
         "ESD05", "Scheduler launchd", "static", PASS if not failures else FAIL,
         "; ".join(evidence + failures),
-        "Job loaded và đúng path chưa chứng minh job đã hoàn tất một chu kỳ thành công.",
+        "Đăng ký lịch (Claude task/launchd) chưa chứng minh một chu kỳ đã chạy trọn thành công.",
     )
 
 
@@ -281,7 +297,7 @@ def _check_online_scanner() -> Check:
                 {"topic": "Canary guideline", "query": "hypertension guideline", "active": True},
                 {"topic": "Canary safety", "query": "warfarin drug safety", "active": True},
             ]
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         ok, detail = _run([
             sys.executable, str(scanner), "--watchlist", str(watchlist),
             "--days", "30", "--max", "1", "--report", str(report_path),

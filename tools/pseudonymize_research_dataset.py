@@ -296,7 +296,7 @@ def _process_with_encoding(data_path: Path, output_path: Path, mapping_dir: Path
 
 
 def _write_json(path: Path, payload: Dict[str, Any]) -> Path:
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
 
 
@@ -331,7 +331,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any], report_path: Path) -> No
         ),
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 def pseudonymize_dataset(study: str, data_path: Path, *,

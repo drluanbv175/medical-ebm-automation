@@ -170,7 +170,7 @@ def main() -> int:
             "[CẦN XÁC NHẬN TẠI ĐƠN VỊ]. Độ phủ thấp là SỰ THẬT về OA, không phải lỗi. "
             "Đọc bản trình bày: https://pmc.ncbi.nlm.nih.gov/articles/PMC<id>/ . "
             "Cần bác sĩ kiểm chứng."]
-    bc.write_text("\n".join(dong) + "\n", encoding="utf-8")
+    bc.write_text("\n".join(dong) + "\n", encoding="utf-8", newline="\n")
     try:
         duong_in = bc.resolve().relative_to(EXPORTS.parent)
     except ValueError:  # --out là đường dẫn tương đối/ngoài repo — in nguyên trạng

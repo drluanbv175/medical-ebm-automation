@@ -195,7 +195,7 @@ def test_validator_requires_all_protocol_rows(study_dir):
     result = G10.assemble("FIXT", study_dir)
     text = result["md"].read_text(encoding="utf-8")
     text = text.replace("| P10 |", "| PX10 |")
-    result["md"].write_text(text, encoding="utf-8")
+    result["md"].write_text(text, encoding="utf-8", newline="\n")
 
     report = check_de_cuong.validate(result["md"], study_dir)
     assert not report["passed"]
@@ -209,7 +209,7 @@ def test_validator_catches_false_scientific_completeness(study_dir):
         "**Kết luận nội dung khoa học:** CHƯA ĐỦ",
         "**Kết luận nội dung khoa học:** ĐỦ DỮ LIỆU",
     )
-    result["md"].write_text(text, encoding="utf-8")
+    result["md"].write_text(text, encoding="utf-8", newline="\n")
 
     report = check_de_cuong.validate(result["md"], study_dir)
     assert not report["passed"]
@@ -225,7 +225,7 @@ def test_validator_requires_every_open_decision(study_dir):
     first_missing = spec["_evaluation"]["missing_requirements"][0]["id"]
     text = result["md"].read_text(encoding="utf-8")
     text = text.replace(f"| {first_missing} |", "| REMOVED |", 1)
-    result["md"].write_text(text, encoding="utf-8")
+    result["md"].write_text(text, encoding="utf-8", newline="\n")
 
     report = check_de_cuong.validate(result["md"], study_dir)
     assert not report["passed"]

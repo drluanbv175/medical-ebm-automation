@@ -48,11 +48,20 @@ import json
 import os
 import re
 import sys
+
+# Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
+import sys as _sys_r4
 import time
 import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
+    try:
+        _s_r4.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 # Thêm thư mục cha vào sys.path để import app modules
 _REPO_ROOT = Path(__file__).parent.parent
@@ -1309,7 +1318,7 @@ def write_checkpoint(study_name: str, out_dir: Path, results: dict,
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
     cp_path = out_dir / "G0_checkpoint.json"
-    cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
 
 
@@ -1378,7 +1387,7 @@ def main():
             "guardrail": {"passed": False, "n_errors": 1,
                           "errors": ["R1 🔴 Không có chủ đề — không có nguồn nào để tra"]},
             "disclaimer": "Cần bác sĩ kiểm chứng.",
-        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        }, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
         print("🚧 G0 DỪNG: --topic rỗng. Đã ghi checkpoint BLOCKED tại "
               f"{out_dir / 'G0_checkpoint.json'}")
         return GC.EXIT_BLOCKED
@@ -1442,11 +1451,11 @@ def main():
     if md_path.exists():
         backup = out_dir / f"G0_A1_PICO_FINER_{study}.bak-{datetime.now():%Y%m%d-%H%M%S}.md"
         try:
-            backup.write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8")
+            backup.write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
             print(f"  ↩ Đã sao lưu bản A1 cũ: {backup.name}")
         except OSError as e:
             print(f"  ⚠ Không sao lưu được bản A1 cũ ({e}) — vẫn tiếp tục ghi đè")
-    md_path.write_text(artifact_md, encoding="utf-8")
+    md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path}")
 
     # 6. Guardrail
@@ -1502,7 +1511,7 @@ def main():
             must_not_fabricate=["PMID"],
             study_meta_patch={"query_en": "<từ khóa PubMed tiếng Anh>"},
         )
-        cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+        cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
         print("  🚧 G0 DỪNG: 0 PMID — cần --query-en (hệ KHÔNG bịa PMID).")
 
     # Lưu JSON kết quả PubMed thô
@@ -1527,7 +1536,7 @@ def main():
                           for r in results.get("observational", [])],
         "true_counts": results.get("true_counts", {}),
     }
-    raw_path.write_text(json.dumps(raw_results, ensure_ascii=False, indent=2), encoding="utf-8")
+    raw_path.write_text(json.dumps(raw_results, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # ── HỢP ĐỒNG CHẤT LƯỢNG G0 (mới 2026-07-28) ──────────────────────────────
     # G0 từng là cổng DUY NHẤT không có bước này: nó in "✅ G0 HOÀN THÀNH" và thoát
@@ -1551,7 +1560,7 @@ def main():
     # bị chặn vì lý do nặng hơn (0 PMID) — không đè lý do dừng gốc.
     if not blocked and quality.get("needs_input"):
         cp["needs_input"] = quality["needs_input"]
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8")
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # Tóm tắt cuối — banner NÓI ĐÚNG trạng thái, không còn "HOÀN THÀNH" vô điều kiện.
     print(f"\n{'='*65}")
@@ -1589,6 +1598,23 @@ def main():
         print(f"\n  Bước kế: chạy G1 (thiet-ke-nghien-cuu) cho đề tài {study}.")
     print("\n  Cần bác sĩ kiểm chứng.")
     print(f"{'='*65}\n")
+
+    # ── NÂNG CẤP C (15/08/2026, bác sĩ duyệt): G0 xong là TỰ GOM TOÀN VĂN OA ─
+    # cho nền y văn vừa dựng — đề tài mới nhận trọn sức mạnh đọc-bài-hộ/
+    # đối-chiếu-số ngay từ cửa (C1a phải chạy tay mới có). FAIL-SOFT tuyệt đối:
+    # gom là TIỆN ÍCH, không phải điều kiện cổng — lỗi mạng không được đổi
+    # mã thoát/trạng thái G0. Bỏ qua dưới pytest (không gọi mạng trong test).
+    if not blocked and "PYTEST_CURRENT_TEST" not in os.environ:
+        try:
+            import subprocess as _sp
+            _r = _sp.run([sys.executable, str(Path(__file__).parent / "gom_toan_van_oa.py"),
+                          "--study", study], capture_output=True, text=True, timeout=600)
+            _dong = [x for x in (_r.stdout or "").splitlines() if "OA " in x or "🔴" in x]
+            if _dong:
+                print(f"  📚 Toàn văn OA: {_dong[-1].strip()}")
+        except Exception as _e:  # noqa: BLE001 — tiện ích không được giết cổng
+            print(f"  📚 Toàn văn OA: chưa gom được lượt này ({type(_e).__name__}) — "
+                  "chạy lại: python3 tools/gom_toan_van_oa.py --study " + study)
 
     # Mã thoát rời nghĩa theo gate_contract:
     #   3 = artifact vi phạm liêm chính / kiểm tự động của G0 chưa sạch

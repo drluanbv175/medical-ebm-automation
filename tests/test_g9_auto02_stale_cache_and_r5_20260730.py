@@ -67,18 +67,18 @@ class TestG9Auto02RefreshesGuardrailInsteadOfTrustingStaleCache:
         out_dir = tmp_path / "exports" / study
         out_dir.mkdir(parents=True)
         (out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(
-            self._CLEAN_A10 + "\nCCCD 012345678901 phát hiện.\n", encoding="utf-8"
+            self._CLEAN_A10 + "\nCCCD 012345678901 phát hiện.\n", encoding="utf-8", newline="\n"
         )
         import json
         (out_dir / G9Q.CHECKPOINT_JSON).write_text(json.dumps({
             "gate": "G9", "study": study,
             "quality_contract_version": G9Q.QUALITY_CONTRACT_VERSION,
             "guardrail": {"passed": True, "errors": [], "warnings": []},
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         (out_dir / G9Q.READINESS_JSON).write_text(json.dumps({
             "schema_version": G9Q.QUALITY_CONTRACT_VERSION, "study": study,
             "disclaimer": "Cần bác sĩ kiểm chứng.",
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         report = G9Q.evaluate_study(study, out_dir, repo_root=tmp_path, write=False)
         row = _row(report, "G9-AUTO-02")
         assert row["status"] == "BLOCK"
@@ -88,18 +88,18 @@ class TestG9Auto02RefreshesGuardrailInsteadOfTrustingStaleCache:
         out_dir = tmp_path / "exports" / study
         out_dir.mkdir(parents=True)
         (out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(
-            self._CLEAN_A10, encoding="utf-8"
+            self._CLEAN_A10, encoding="utf-8", newline="\n"
         )
         import json
         (out_dir / G9Q.CHECKPOINT_JSON).write_text(json.dumps({
             "gate": "G9", "study": study,
             "quality_contract_version": G9Q.QUALITY_CONTRACT_VERSION,
             "guardrail": {"passed": False, "errors": ["R1 lỗi cũ"], "warnings": []},
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         (out_dir / G9Q.READINESS_JSON).write_text(json.dumps({
             "schema_version": G9Q.QUALITY_CONTRACT_VERSION, "study": study,
             "disclaimer": "Cần bác sĩ kiểm chứng.",
-        }), encoding="utf-8")
+        }), encoding="utf-8", newline="\n")
         report = G9Q.evaluate_study(study, out_dir, repo_root=tmp_path, write=False)
         row = _row(report, "G9-AUTO-02")
         assert row["status"] == "PASS"

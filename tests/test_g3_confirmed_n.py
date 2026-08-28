@@ -34,13 +34,13 @@ def _mk_upstream(study_dir: Path):
         "study": study_dir.name, "gate": "G0",
         "topic": "Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh",
         "base_query": "patient satisfaction outpatient",
-    }, ensure_ascii=False), encoding="utf-8")
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
     (study_dir / "G1_checkpoint.json").write_text(json.dumps({
         "study": study_dir.name, "gate": "G1",
         "design": {"internal_code": "cross_sectional", "primary": "Cắt ngang mô tả",
                    "reporting_standard": "STROBE"},
         "effect_size_samples": [],
-    }, ensure_ascii=False), encoding="utf-8")
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 def _run(study: str, extra=None):

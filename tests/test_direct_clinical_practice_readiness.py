@@ -5,7 +5,6 @@ import sys
 from datetime import date
 from pathlib import Path
 
-
 MODULE_PATH = Path(__file__).resolve().parents[1] / "tools" / "verify_direct_clinical_practice_readiness.py"
 spec = importlib.util.spec_from_file_location("verify_direct_clinical_practice_readiness", MODULE_PATH)
 module = importlib.util.module_from_spec(spec)
@@ -94,7 +93,10 @@ def test_apply_card_with_stale_review_date_is_blocked_for_latest_gate():
 
 def test_apply_card_with_pii_marker_is_blocked_but_study_dates_are_allowed():
     safe_date = module.evaluate_card(_card(recommendation="Trial dates 10/07/2026 were reported."), today=TODAY)
-    unsafe_identifier = module.evaluate_card(_card(recommendation="Synthetic text with CCCD 012345678901."), today=TODAY)
+    unsafe_identifier = module.evaluate_card(
+        _card(recommendation="Synthetic text with CCCD 012345678901."),
+        today=TODAY,
+    )
 
     assert safe_date.status == module.READY
     assert unsafe_identifier.status == module.BLOCKED

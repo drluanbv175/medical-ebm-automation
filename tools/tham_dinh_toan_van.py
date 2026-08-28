@@ -219,7 +219,7 @@ def main() -> int:
     ]
     out.write_text("\n".join(header + dong_bc +
                              ["", "> Máy chỉ ĐO và BÁO. Cần bác sĩ kiểm chứng."]) + "\n",
-                   encoding="utf-8")
+                   encoding="utf-8", newline="\n")
     print(f"THẨM ĐỊNH TOÀN VĂN: {n_so} câu mang số — ✓ {ket['khop']} · 🟠 {ket['motphan']} · "
           f"⚪ {ket['khongneu']} · 🔒 {ket['thieuoa']} (+{ket['dinhtinh']} câu định tính)")
     print(f"  → {out}")

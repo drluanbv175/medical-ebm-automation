@@ -426,7 +426,7 @@ def _write_markdown(path: Path, report: Mapping[str, Any]) -> None:
     actions = report.get("actions") or ["Không có."]
     lines.extend(f"- {action}" for action in actions)
     lines.extend(["", "Cần bác sĩ kiểm chứng.", ""])
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def evaluate_study(
@@ -776,7 +776,7 @@ def evaluate_study(
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / REPORT_JSON).write_text(
             json.dumps(report, ensure_ascii=False, indent=2),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
         _write_markdown(out_dir / REPORT_MD, report)
         meta_for_write = GC.ensure_study_meta(out_dir)
@@ -786,7 +786,7 @@ def evaluate_study(
             real_lock["g5_quality_status"] = status
         (out_dir / "study_meta.json").write_text(
             json.dumps(meta_for_write, ensure_ascii=False, indent=2),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n"
         )
 
         # Không sửa checkpoint sau khi đã ký: sửa dù chỉ một byte sẽ làm ledger
@@ -805,7 +805,7 @@ def evaluate_study(
             )
             checkpoint_path.write_text(
                 json.dumps(checkpoint, ensure_ascii=False, indent=2),
-                encoding="utf-8",
+                encoding="utf-8", newline="\n"
             )
     return report
 

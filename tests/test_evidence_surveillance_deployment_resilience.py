@@ -21,7 +21,7 @@ def _pass_check(check_id: str) -> verifier.Check:
 
 def test_contract_read_error_is_reported_fail_closed(monkeypatch, tmp_path):
     contract_path = tmp_path / "DEPLOYMENT_CONTRACT.json"
-    contract_path.write_text("{}", encoding="utf-8")
+    contract_path.write_text("{}", encoding="utf-8", newline="\n")
 
     def fake_load_json(path):
         if path == contract_path:

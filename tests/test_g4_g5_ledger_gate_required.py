@@ -35,7 +35,7 @@ import gate_contract as GC  # noqa: E402
 
 def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
     key_path = tmp_path / "gate_approval_key"
-    key_path.write_text("pytest-g4-g5-key", encoding="utf-8")
+    key_path.write_text("pytest-g4-g5-key", encoding="utf-8", newline="\n")
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
@@ -61,15 +61,15 @@ def _write_locked_checkpoints(study_dir: Path) -> Path:
     """Ghi G4/G5 checkpoint với trạng thái LOCKED (text tự do) + 1 artifact SAP giả
     làm nội dung để hash — trả về đường dẫn artifact đó."""
     (study_dir / "G2_checkpoint.json").write_text(
-        json.dumps({"g2_status": "LOCKED"}, ensure_ascii=False), encoding="utf-8")
+        json.dumps({"g2_status": "LOCKED"}, ensure_ascii=False), encoding="utf-8", newline="\n")
     (study_dir / "G4_checkpoint.json").write_text(
-        json.dumps({"g4_status": "LOCKED"}, ensure_ascii=False), encoding="utf-8")
+        json.dumps({"g4_status": "LOCKED"}, ensure_ascii=False), encoding="utf-8", newline="\n")
     (study_dir / "G5_checkpoint.json").write_text(
-        json.dumps({"g5_status": "LOCKED"}, ensure_ascii=False), encoding="utf-8")
+        json.dumps({"g5_status": "LOCKED"}, ensure_ascii=False), encoding="utf-8", newline="\n")
     g2_artifact = study_dir / f"G2_A3_ETHICS_PACKAGE_{study_dir.name}.md"
-    g2_artifact.write_text("ETHICS PACKAGE — nội dung đã duyệt (giả lập test)", encoding="utf-8")
+    g2_artifact.write_text("ETHICS PACKAGE — nội dung đã duyệt (giả lập test)", encoding="utf-8", newline="\n")
     artifact = study_dir / f"G4_A5_SAP_FINAL_{study_dir.name}.md"
-    artifact.write_text("SAP FINAL — nội dung đã khóa (giả lập test)", encoding="utf-8")
+    artifact.write_text("SAP FINAL — nội dung đã khóa (giả lập test)", encoding="utf-8", newline="\n")
     return artifact
 
 
@@ -102,7 +102,7 @@ def _write_ledger_approval(study_dir: Path, gate_id: str, artifact_content: str)
     if ledger_path.exists():
         existing = json.loads(ledger_path.read_text(encoding="utf-8"))
     existing.append(record)
-    ledger_path.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8")
+    ledger_path.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8", newline="\n")
     # Niem phong (2026-07-27): so cai khong rong ma thieu con dau la BAT THUONG.
     GC.write_ledger_seal(study_dir.name, existing, repo_root=REPO_ROOT)
 
@@ -264,7 +264,7 @@ def test_tampered_artifact_after_approval_still_blocked(tmp_path, monkeypatch):
         g5_artifact = d / "G5_checkpoint.json"
         _write_ledger_approval(d, "G5", g5_artifact.read_text(encoding="utf-8"))
         # ...rồi SỬA artifact SAU khi đã "duyệt" — mô phỏng giả mạo/chỉnh sửa hậu duyệt.
-        artifact.write_text("SAP FINAL — NỘI DUNG ĐÃ BỊ SỬA SAU KHI DUYỆT", encoding="utf-8")
+        artifact.write_text("SAP FINAL — NỘI DUNG ĐÃ BỊ SỬA SAU KHI DUYỆT", encoding="utf-8", newline="\n")
         res = _run_stats(study)
         assert "DỪNG" in res.stdout, (
             f"Artifact bị sửa sau khi duyệt (hash lệch) phải bị CHẶN — nếu lọt qua "
