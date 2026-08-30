@@ -803,6 +803,70 @@ def _readiness_has_contact_pii(readiness_path: Path) -> bool:
     return bool(_EMAIL_RE.search(text) or _PHONE_RE.search(text))
 
 
+# THÊM 2026-08-30 (audit cổng, khoảng hở #5): đọc NGƯỢC trạng thái tick ☐/☑
+# của mục "Phần 8 — Hard Gate" trong A10. Chỉ đếm ☑/☒/[x] — các ký tự bác sĩ
+# gõ THAY cho ☐ khi tích tay; CỐ Ý không đếm ✅ vì template run_g9_auto.py tự
+# in ✅ cho trạng thái cổng dẫn xuất (G2/G4...) ngay trong artifact — đếm nó là
+# tự-dương-tính (cùng họ tautology đã vá ở G3/G8).
+_PART8_HEADER_RE = re.compile(r"ph[ầa]n\s*8", re.IGNORECASE)
+_PART8_TICKED_RE = re.compile(r"[☑☒]|\[[xX]\]")
+
+
+def _part8_tick_state(a10_path: Path) -> tuple[Optional[bool], int, int]:
+    """Trả (tìm_thấy_mục_Phần_8, số_ô_đã_tích, số_ô_còn_trống).
+
+    ``None`` ở phần tử đầu nghĩa là KHÔNG đọc được (file thiếu / đổi khuôn) —
+    khác với "đọc được nhưng 0 tick"; người gọi không được gộp hai trạng thái
+    này (bài học BH08: không biến CHƯA BIẾT thành CÓ VẤN ĐỀ hay ngược lại).
+    """
+    try:
+        text = a10_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return (None, 0, 0)
+    m = _PART8_HEADER_RE.search(text)
+    if not m:
+        return (None, 0, 0)
+    # Phần 8 là mục cuối của A10 theo thiết kế run_g9_auto.py — lấy từ header
+    # tới hết file; nếu khuôn đổi (Phần 8 không còn cuối) thì tick của mục sau
+    # cũng bị đếm, nhưng đó là sai lệch về phía CẢNH BÁO THÊM chứ không im lặng.
+    section = text[m.start():]
+    ticked = len(_PART8_TICKED_RE.findall(section))
+    unticked = section.count("☐") + section.count("[ ]")
+    return (True, ticked, unticked)
+
+
+def _part8_consistency(
+    found: Optional[bool],
+    ticked: int,
+    unticked: int,
+    pre_pending: bool,
+    approved: bool,
+) -> tuple[str, str]:
+    """Phán quyết chỉ-dấu G9-AUTO-08 — hàm THUẦN để test đủ 4 nhánh.
+
+    Hai chiều lệch tờ-giấy ↔ hồ-sơ-điện-tử; mọi nhánh đều REVIEW (advisory),
+    không bao giờ BLOCK — tờ Phần 8 là bản tóm tắt, không phải cổng.
+    """
+    if found is None:
+        return "REVIEW", (
+            "không đọc được mục 'Phần 8' trong A10 (file thiếu hoặc đổi khuôn) — "
+            "chưa biết trạng thái tick, KHÔNG suy đoán"
+        )
+    if ticked and pre_pending and not approved:
+        return "REVIEW", (
+            f"tờ Phần 8 đã tích {ticked} ô nhưng hồ sơ điện tử còn tiêu chí "
+            "chưa đạt — tờ giấy không phải cổng, cổng thật đọc gate_params/JSON"
+        )
+    if approved and ticked == 0:
+        return "REVIEW", (
+            f"sổ cái đã ký G9 nhưng tờ Phần 8 chưa tích ô nào (☐ còn {unticked}) "
+            "— bản in không còn khớp hồ sơ"
+        )
+    return "PASS", (
+        f"tick ☑/☒/[x]={ticked}, ☐ còn {unticked}; nhất quán với hồ sơ điện tử"
+    )
+
+
 def _write_markdown(path: Path, report: Mapping[str, Any]) -> None:
     lines = [
         "# BÁO CÁO CHẤT LƯỢNG G9",
@@ -1068,9 +1132,10 @@ def evaluate_study(
     # nội bộ/nhà tài trợ duyệt nội dung trước khi nộp. Trước bản vá này, đây là
     # khoảng trống THẬT duy nhất trong Phần 8 (NHÓM A/B/C đều đã có ánh xạ điện
     # tử qua các tiêu chí khác). Tờ giấy Phần 8 vẫn là bản TÓM TẮT cho bác sĩ
-    # đọc — xác nhận thật vẫn qua gate_params/JSON như mọi G9-HUMAN khác, KHÔNG
-    # phải cơ chế đọc ngược tick ☐/☑ trên bản in/Word (việc đó là quyết định UX
-    # khác, để ngỏ cho tới khi có yêu cầu rõ).
+    # đọc — xác nhận thật vẫn qua gate_params/JSON như mọi G9-HUMAN khác.
+    # CẬP NHẬT 2026-08-30: cơ chế đọc ngược tick ☐/☑ (trước đây "để ngỏ cho
+    # tới khi có yêu cầu rõ") nay ĐÃ CÓ ở G9-AUTO-08 dưới — advisory-only,
+    # không thay xác nhận điện tử.
     institutional_ok, institutional_evidence = _institutional_ok(readiness)
     rows.append(
         _criterion(
@@ -1202,6 +1267,37 @@ def evaluate_study(
         )
     )
 
+    # THÊM 2026-08-30 (audit cổng, khoảng hở #5): cơ chế ĐỌC NGƯỢC tick ☐/☑
+    # của checklist "Phần 8 — Hard Gate" — đóng đúng khoảng trống mà chú thích
+    # G9-HUMAN-11 từng ghi "để ngỏ cho tới khi có yêu cầu rõ" (yêu cầu rõ: chỉ
+    # thị bác sĩ 30/08 «các khoảng hở... hoàn thiện cho xanh»). Tờ Phần 8 vẫn
+    # KHÔNG phải cổng — tiêu chí này chỉ soi HAI chiều lệch giữa tờ giấy và hồ
+    # sơ điện tử: (a) tờ đã tích mà tiêu chí điện tử còn thiếu — bác sĩ tưởng
+    # xong nhưng cổng thật chưa được nạp; (b) sổ cái đã ký mà tờ chưa tích ô
+    # nào — bản in không còn khớp hồ sơ. pre_rows_pending phải tính TRƯỚC khi
+    # append tiêu chí này (tự tham chiếu là vòng lặp).
+    a10_for_part8 = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
+    part8_found, part8_ticked, part8_unticked = _part8_tick_state(a10_for_part8)
+    pre_rows_pending = any(
+        row["status"] != "PASS" and row["id"] not in ("G9-HUMAN-09", "G9-HUMAN-10")
+        for row in rows
+    )
+    part8_status, part8_evidence = _part8_consistency(
+        part8_found, part8_ticked, part8_unticked, pre_rows_pending, g9_approved
+    )
+    rows.append(
+        _criterion(
+            "G9-AUTO-08",
+            "Đọc ngược tick ☐/☑ tờ 'Phần 8 — Hard Gate' và đối chiếu hồ sơ điện tử (chỉ dấu)",
+            part8_status,
+            part8_evidence,
+            (
+                "Đồng bộ tờ Phần 8 với gate_params/G9_PUBLICATION_READINESS.json; "
+                "tờ giấy là bản tóm tắt cho bác sĩ, cổng thật đọc JSON."
+            ),
+        )
+    )
+
     # G9-HUMAN-10 CỐ Ý không gate STATUS_LOCKED (loại trừ khỏi non_pi_pending
     # cùng G9-HUMAN-09): g9_ref chỉ có giá trị SAU KHI G9 đã ký, nên nếu tiêu
     # chí này gate LOCKED, một đề tài sẽ KHÔNG BAO GIỜ đạt READY_FOR_G9_PI_
@@ -1210,9 +1306,14 @@ def evaluate_study(
     # cảnh báo độc lập" riêng. Đây vẫn là tín hiệu THẬT hiển thị trong báo cáo
     # (không bị ẩn), chỉ không tự động chặn khóa — cùng tinh thần "chỉ dấu,
     # không phải phán quyết" mà G8-HUMAN-04 đã ghi.
+    # G9-AUTO-08 cũng ADVISORY-ONLY (cùng danh sách loại trừ): gate hoá tín
+    # hiệu tờ-giấy sẽ (a) lật trạng thái đề tài ĐÃ khóa từ trước — hồi quy
+    # thật với mọi consumer của G9Q, và (b) phạt chính việc bác sĩ tích tờ
+    # sớm — đúng lỗi "phạt người điền thật" đã phải vá ở G8 R6 (2026-07-30).
     any_block = any(row["status"] == "BLOCK" for row in rows)
     non_pi_pending = any(
-        row["status"] != "PASS" and row["id"] not in ("G9-HUMAN-09", "G9-HUMAN-10")
+        row["status"] != "PASS"
+        and row["id"] not in ("G9-HUMAN-09", "G9-HUMAN-10", "G9-AUTO-08")
         for row in rows
     )
     if any_block:
