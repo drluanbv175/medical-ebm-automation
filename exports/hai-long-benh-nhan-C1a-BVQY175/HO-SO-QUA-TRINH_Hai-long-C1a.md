@@ -39,6 +39,8 @@ Ba con số đáng nhớ:
 | 4.5. Liêm chính cuối | Kiểm lại từ đầu, độc lập | Bắt thêm 4 lỗi, sau đó đạt |
 | 5. Hoàn thiện | Xuất bản Word | 3 tài liệu chính |
 | 6. Hồ sơ quá trình | Tài liệu này | |
+| 7. Tổng quan hoàn thiện (30/08/2026) | Rà sống 23/23 trích dẫn, thêm 4 nguồn xác minh [26]–[29], sửa 6 lỗi liêm chính | Đề cương mục 3 + `.docx` dựng lại |
+| 8. Đồng bộ SAP máy-đọc (30/08/2026) | Chép Phụ lục A/4.3/4.6 vào `G4_A5_SAP_FINAL` v1.1; cổng G4 chấm lại: 12/13 tiêu chí tự động PASS; đặc tả 12 biến codebook 63→75 | SAP chờ chủ nhiệm chốt `chuyenkhoa` + ký; `_bo-sung-codebook_12-bien.md` |
 
 **Vòng bình duyệt đã đổi hướng đề tài ở ba chỗ.** Thứ nhất, cỡ mẫu cho Mục tiêu 2 trước đó dựa trên một khẳng định sai rằng chưa có công thức đồng thuận cho hồi quy logistic thứ tự; thực tế có Whitehead 1993, và khi tính ra thì n = 1000 dư sức chứ không thiếu. Thứ hai, mức hài lòng gom cụm theo bàn khám nhưng đề cương không thu biến chùm, mà đây là loại thiếu sót không sửa được sau khi thu thập. Thứ ba, bộ câu hỏi thiếu chính những thuộc tính định nghĩa nên khối khám theo yêu cầu, và thiếu biến kỳ vọng mà chính phần Đặt vấn đề viện dẫn.
 

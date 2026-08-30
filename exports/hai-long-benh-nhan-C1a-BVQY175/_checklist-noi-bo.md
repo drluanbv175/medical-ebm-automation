@@ -73,3 +73,28 @@ _Hồ sơ nội bộ (không nộp Hội đồng). Cập nhật 2026-07-07 sau v
 - DMP: REDCap ưu tiên (EpiData dự phòng có điều kiện) + nhập đôi 100%; audit trail/data query log; chủ nhiệm = data controller.
 - STROBE flow diagram (mục 5, có thêm bước lọc `PhieuHopLe`). Thuật ngữ PREM (không PROM); SERVQUAL [4] chỉ trích đúng phạm vi, chỉ dùng đối chiếu Tổng quan.
 - Bản nộp đã rà soát loại bỏ toàn bộ tham chiếu công cụ/quy trình nội bộ (tên file, "agent", disclaimer AI) khỏi thân đề cương — các tham chiếu đó chỉ còn ở hồ sơ nội bộ (file này).
+
+---
+
+## Nhật ký 2026-08-30 — SAP máy-đọc (G4_A5) đã ĐỒNG BỘ từ Phụ lục A; codebook 63→75 đã có bản đặc tả sẵn-áp
+
+**Đã làm (máy, không chạm quyết định lâm sàng):**
+- `G4_A5_SAP_FINAL_*.md` v1.1: 12 mục chép nguyên từ Phụ lục A/mục 4.3/4.6 đề cương (kết cục chính G1
+  logistic thứ tự · 3 ngưỡng loại phiếu · tập forced-in theo DAG · trung gian không hiệu chỉnh ·
+  complete-case chính + MICE nhạy cảm · gom cụm `ma_ban_kham` · R ≥ 4.3 + packages · seed đề xuất
+  20260830). Cổng chấm lại: **12/13 tiêu chí tự động PASS** (kể cả G4-AUTO-03 đối chiếu §12↔G3 sống
+  và G4-AUTO-11 khớp kết cục đã chốt); G4-AUTO-10 giữ REVIEW ĐÚNG vì §5 còn một [CẦN] thật (dưới).
+- `_bo-sung-codebook_12-bien.md`: đặc tả 12 biến mới (63→75) đủ trường nhập thẳng SPSS Variable View,
+  kèm 2 phương án mã hóa multi-select cho `lydo_chon_theoyeucau` và biến phái sinh `chenh_kyvong`.
+- `.docx` SAP sinh lại từ chính bản .md (một nguồn, nhiều bản phái sinh).
+
+**Còn treo — đúng thẩm quyền chủ nhiệm, máy KHÔNG tự điền:**
+- [ ] `chuyenkhoa`: Khoa C1a có vận hành phân biệt được theo chuyên khoa/phòng khám không?
+      (đây là [CẦN] duy nhất còn lại ở §5 SAP — chốt xong thì G4-AUTO-10 xanh)
+- [ ] Chốt phương án mã hóa multi-select (a) 2 cột hay (b) 8 cột nhị phân cho `lydo_chon_theoyeucau`
+- [ ] Thêm 12 biến vào `.sav` trên máy thật theo bản đặc tả (trước khi in phiếu chính thức)
+- [ ] Xác nhận/thay seed đề xuất khi ký; điền `gate_params.G4` (epv_vif_reviewed ·
+      missing_data_mechanism_confirmed · subgroup_multiplicity_predefined_confirmed ·
+      reviewed_by_role/reviewed_at) rồi ký `approve_gate.py --gate G4`
+- [ ] Sau khi G4 ký: chạy `run_g5_auto.py` — data dictionary REDCap sinh TỰ ĐỘNG (G5 fail-closed
+      đòi chữ ký G4 thật, vá 2026-07-27; không lách)
