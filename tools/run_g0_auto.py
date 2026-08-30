@@ -1086,14 +1086,32 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
     # GIỚI HẠN THẬT (không giấu): đây là đánh đổi precision/recall có chủ ý,
     # không giải quyết triệt để bài toán phân biệt câu-hỏi-vs-chỉ-thị bằng
     # regex thuần (không có bộ phân tích ngữ nghĩa tiếng Việt nào làm ground
-    # truth) — một chỉ thị lâm sàng thật lồng trong vỏ câu hỏi (vd "Có nên kê
-    # ngay 500mg X cho bệnh nhân tại phòng cấp cứu không?") từ nay sẽ LỌT qua
-    # R5, khác trước đây.
+    # truth).
+    # THU HẸP LỖ LÁCH 2026-08-30 (audit cổng, khoảng hở #4): ví dụ bypass từng
+    # ghi ở đây ("Có nên kê ngay 500mg X cho bệnh nhân tại phòng cấp cứu
+    # không?" LỌT qua R5 vì có vỏ câu hỏi) nay bị bắt lại bằng luật HẸP: câu
+    # DẠNG CÂU HỎI vẫn bị coi là chỉ thị lâm sàng khi hội đủ CẢ HAI dấu hiệu
+    # (a) động từ y lệnh đi liền "ngay" (kê/cho/dùng/chỉ định/tiêm/truyền
+    # ngay) VÀ (b) liều CỤ THỂ (số + đơn vị mg/mcg/g/ml/UI...). Đòi cả hai vì
+    # từng dấu hiệu riêng lẻ đều xuất hiện trong PICO hợp lệ: "bắt đầu kháng
+    # sinh ngay hay trì hoãn" là timing-PICO không liều; "aspirin 81mg để dự
+    # phòng tiên phát" là liều không y lệnh tức thời. Đánh đổi còn lại (nói
+    # thật): một timing-PICO hiếm viết đúng kiểu "kê ngay <liều>" sẽ bị nhắc
+    # viết lại theo khung quần thể — đó là chủ đích của R5, không phải tác
+    # dụng phụ.
     _clinical_advice_re = re.compile(
         r"nên (kê|dùng|chỉ định|điều trị|cho bệnh nhân)|khuyến cáo (dùng|điều trị)|"
         r"chỉ định cho bệnh nhân"
     )
+    _r5_imperative_ngay_re = re.compile(
+        r"(kê|cho|dùng|chỉ định|tiêm|truyền)\s+ngay\b"
+    )
+    # artifact_normalized đã lower() nên đơn vị viết thường (ui/iu đủ phủ UI/IU).
+    _r5_dose_re = re.compile(
+        r"\d+([.,]\d+)?\s*(mg|mcg|µg|ug|g|ml|l|đơn vị|ui|iu)\b"
+    )
     _clinical_advice = None
+    _clinical_advice_via_dose = False
     for _m in _clinical_advice_re.finditer(artifact_normalized):
         _sent_start = max(
             artifact_normalized.rfind(".", 0, _m.start()),
@@ -1113,13 +1131,25 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
             or _sentence.rstrip().rstrip(".!?").endswith("không")
             or "?" in _sentence
         )
-        if not _is_question:
+        # Luật hẹp 2026-08-30: vỏ câu hỏi KHÔNG miễn trừ khi câu mang y lệnh
+        # liều tức thời (cả hai regex cùng khớp — xem chú thích trên).
+        _imperative_dose = bool(
+            _r5_imperative_ngay_re.search(_sentence)
+            and _r5_dose_re.search(_sentence)
+        )
+        if not _is_question or _imperative_dose:
             _clinical_advice = _m
+            _clinical_advice_via_dose = _is_question and _imperative_dose
             break
     if _clinical_advice:
+        _via = (
+            " — vỏ câu hỏi nhưng mang y lệnh liều tức thời"
+            if _clinical_advice_via_dose
+            else ""
+        )
         errors.append(
             "R5 🔴 Artifact G0 chứa khuyến cáo ĐIỀU TRỊ cho bệnh nhân — G0 chỉ đặt câu "
-            f"hỏi nghiên cứu, không phải cổng lâm sàng (khớp: '{_clinical_advice.group(0)}')"
+            f"hỏi nghiên cứu, không phải cổng lâm sàng (khớp: '{_clinical_advice.group(0)}'{_via})"
         )
     else:
         warnings.append("R5 ✅ Không trộn trục khuyến cáo lâm sàng vào cổng nghiên cứu")
