@@ -106,6 +106,26 @@ class TestAdvisoryOnlyIntegration:
             assert row["status"] == "REVIEW", row
         assert report["status"] == G9Q.STATUS_READY
 
+    def test_forced_review_never_gates_ready(self, tmp_path, monkeypatch):
+        """Ghim TRỰC TIẾP thuộc tính advisory-only: ép G9-AUTO-08 = REVIEW
+        trong một đề tài mọi-tiêu-chí-khác-PASS, trạng thái PHẢI giữ READY.
+        (Không thể tạo REVIEW tự nhiên ở đề tài sạch mà không phá tiêu chí
+        khác — cắt header PHẦN 8 sẽ làm guardrail R6 đỏ lây sang G9-AUTO-02,
+        nên ép qua monkeypatch là đường đo sạch duy nhất.)"""
+        out_dir, _ = _evaluate_ready(tmp_path, monkeypatch)
+        monkeypatch.setattr(
+            G9Q,
+            "_part8_consistency",
+            lambda *a, **k: ("REVIEW", "ép REVIEW để kiểm advisory-only"),
+        )
+        report = G9Q.evaluate_study(
+            "PYTEST-G9Q", out_dir, repo_root=tmp_path, write=True
+        )
+        assert _row(report, "G9-AUTO-08")["status"] == "REVIEW"
+        assert report["status"] == G9Q.STATUS_READY, (
+            "REVIEW của G9-AUTO-08 không bao giờ được đổi trạng thái cổng"
+        )
+
     def test_paper_ahead_of_machine_flagged_without_changing_status(
         self, tmp_path, monkeypatch
     ):
