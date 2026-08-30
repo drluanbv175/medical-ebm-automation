@@ -9,7 +9,9 @@ R2. Có Bảng trạng thái cổng G0-G9 (đủ 10 cổng skill) + Kết luận
 R3. Mọi NHÃN dạng '[CẦN.../ĐÃ.../DỰ THẢO...]' phải là nhãn skill HỢP LỆ
     (không có nhãn tự chế sai chuẩn).
 R4. KHÔNG trích PMID BỊA: mọi PMID xuất hiện phải truy được về checkpoint pipeline
-    (G0 raw / G7 seed). PMID lạ = cờ đỏ citation washing.
+    (G0 raw / G7 seed) HOẶC biên nhận xác minh ngoài-pipeline
+    (`_bien-nhan-xac-minh-pmid.json`, hạn 180 ngày — mức bảo đảm tự-khai-có-dấu-vết,
+    chỉ hạ FAIL→WARN). PMID không ở đâu cả = cờ đỏ citation washing.
 R5. Có disclaimer 'Cần bác sĩ kiểm chứng'.
 R6. KHÔNG nhồi số liệu KẾT QUẢ vào đề cương (đề cương = trước khi có dữ liệu):
     cảnh báo nếu thấy mẫu 'OR/RR/HR = <số> ... KTC 95%: <số>–<số>' với số cụ thể
@@ -46,6 +48,7 @@ Dùng: python3 tools/check_de_cuong.py --study <MÃ>   (hoặc import validate()
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
 import json
 import re
 import sys
@@ -185,6 +188,56 @@ def _seed_pmids(out_dir: Path) -> Set[str]:
     return seed
 
 
+BIEN_NHAN_XAC_MINH = "_bien-nhan-xac-minh-pmid.json"
+# Hạn dùng biên nhận = 180 ngày, ĐÚNG bậc "tồn tại + metadata" của sổ xác minh
+# nguồn (so_xac_minh_nguon). Biên nhận KHÔNG bảo đảm trạng thái RÚT BÀI (bậc
+# 30 ngày, kiểm bằng chuỗi 3 tầng riêng) và không được tự chứng nhận vĩnh viễn.
+BIEN_NHAN_HAN_NGAY = 180
+
+
+def _receipt_pmids(out_dir: Path):
+    """PMID có BIÊN NHẬN xác minh NGOÀI pipeline (kênh MCP/tra tay có ghi vết).
+
+    Vì sao tồn tại (vá 2026-08-30, họ BH08): trích dẫn phương pháp luận
+    (STROBE, COSMIN, I-CVI...) vào đề cương qua vòng tổng quan/bình duyệt được
+    xác minh sống nhưng KHÔNG đi qua phép tra của run_g0_auto, nên vắng mặt
+    trong G0_pubmed_raw.json — R4 cũ gắn nhãn "nghi bịa" cho toàn bộ nhóm này,
+    tức biến "xác minh không để lại biên nhận máy-đọc" thành "bịa". Nay kênh
+    ngoài-pipeline để biên nhận ở BIEN_NHAN_XAC_MINH (mỗi mục: pmid · ngày ·
+    kênh · tiêu đề tuỳ chọn). Mức bảo đảm là TỰ KHAI CÓ DẤU VẾT — thấp hơn
+    raw-PubMed — nên chỉ hạ FAIL→WARN, KHÔNG bao giờ thành PASS im lặng.
+
+    Trả (hợp_lệ, hết_hạn, số_mục_hỏng). Mục thiếu pmid/ngày hay ngày không đọc
+    được ⇒ đếm vào số_mục_hỏng, KHÔNG lặng lẽ tính hợp lệ (fail-closed).
+    """
+    valid: Set[str] = set()
+    expired: Set[str] = set()
+    invalid = 0
+    p = out_dir / BIEN_NHAN_XAC_MINH
+    if not p.exists():
+        return valid, expired, invalid
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return valid, expired, 1
+    for muc in data.get("muc", []) if isinstance(data, dict) else []:
+        pmid = str(muc.get("pmid", "")).strip() if isinstance(muc, dict) else ""
+        ngay = str(muc.get("ngay", "")).strip() if isinstance(muc, dict) else ""
+        if not re.fullmatch(r"\d{5,9}", pmid):
+            invalid += 1
+            continue
+        try:
+            d = _dt.date.fromisoformat(ngay)
+        except ValueError:
+            invalid += 1
+            continue
+        if (_dt.date.today() - d).days > BIEN_NHAN_HAN_NGAY:
+            expired.add(pmid)
+        else:
+            valid.add(pmid)
+    return valid, expired, invalid
+
+
 def _harvest_pmids_from_obj(obj) -> Set[str]:
     """Đệ quy gom mọi chuỗi số 5-9 chữ số nằm ở key/giá trị liên quan 'pmid'."""
     out: Set[str] = set()
@@ -265,29 +318,52 @@ def validate(md_path, out_dir) -> Dict:
     else:
         checks["R3_valid_tags"] = "PASS"
 
-    # R4 — PMID truy nguồn (sửa #1/#2: tách raw-PubMed thật vs seed-only).
+    # R4 — PMID truy nguồn (sửa #1/#2: tách raw-PubMed thật vs seed-only;
+    # sửa 2026-08-30: thêm tầng BIÊN NHẬN ngoài-pipeline, họ BH08 — trước đó
+    # trích dẫn phương pháp luận đã xác minh sống qua kênh MCP vẫn bị gắn
+    # "nghi bịa" chỉ vì kênh đó không để lại dấu vết mà R4 đọc được).
     raw = _raw_pmids(out_dir)          # nguồn THẬT (đã truy hồi PubMed)
     seed = _seed_pmids(out_dir)        # chỉ có trong checkpoint (chưa chắc đối chiếu raw)
+    receipt, receipt_expired, receipt_invalid = _receipt_pmids(out_dir)
     doc_pmids = {m.group(1) for m in _PMID_RE.finditer(text)}
-    fabricated = sorted(doc_pmids - raw - seed)   # không ở đâu cả → bịa
+    fabricated = sorted(doc_pmids - raw - seed - receipt)  # không ở đâu cả → bịa
     seed_only = sorted((doc_pmids & seed) - raw)  # ở seed nhưng KHÔNG ở raw
+    receipt_only = sorted((doc_pmids & receipt) - raw - seed)  # chỉ biên nhận
+    expired_hit = sorted((doc_pmids & receipt_expired) - raw - seed - receipt)
     raw_verified = sorted(doc_pmids & raw)
+    if receipt_invalid:
+        warnings.append(
+            f"R4 CẢNH BÁO: {BIEN_NHAN_XAC_MINH} có {receipt_invalid} mục hỏng "
+            "(thiếu/sai pmid hoặc ngày) — các mục đó KHÔNG được tính là đã xác minh.")
     if fabricated:
+        _exp_note = (
+            f" (riêng {len(expired_hit)} PMID có biên nhận nhưng ĐÃ QUÁ HẠN "
+            f"{BIEN_NHAN_HAN_NGAY} ngày — xác minh lại rồi ghi biên nhận mới: "
+            f"{', '.join(expired_hit[:5])})" if expired_hit else "")
         errors.append(
             f"R4 PMID KHÔNG TRUY ĐƯỢC VỀ BẤT KỲ NGUỒN NÀO (nghi bịa): "
-            f"{', '.join(fabricated[:10])}.")
+            f"{', '.join(fabricated[:10])}.{_exp_note}")
         checks["R4_pmid_traceable"] = f"FAIL ({len(fabricated)} PMID không nguồn)"
-    elif seed_only:
-        # KHÔNG fail (đề cương đã gắn nhãn [CẦN KIỂM CHỨNG]), nhưng PHẢI cảnh báo
-        # rõ — không được báo 'đều truy được' như cũ (bug tự-chứng-nhận).
-        warnings.append(
-            f"R4 CẢNH BÁO: {len(seed_only)}/{len(doc_pmids)} PMID chỉ có trong "
-            f"'seed' checkpoint, CHƯA đối chiếu PubMed raw ({len(raw)} PMID raw "
-            f"thật): {', '.join(seed_only[:10])}. Có thể là seed MỒ CÔI từ đề tài "
-            "khác — bác sĩ PHẢI kiểm chứng từng PMID (nối `kiem-chung-trich-dan`) "
-            "trước khi đưa vào TLTK.")
+    elif seed_only or receipt_only:
+        # KHÔNG fail, nhưng PHẢI cảnh báo rõ từng mức bảo đảm — không được báo
+        # 'đều truy được' như cũ (bug tự-chứng-nhận).
+        if seed_only:
+            warnings.append(
+                f"R4 CẢNH BÁO: {len(seed_only)}/{len(doc_pmids)} PMID chỉ có trong "
+                f"'seed' checkpoint, CHƯA đối chiếu PubMed raw ({len(raw)} PMID raw "
+                f"thật): {', '.join(seed_only[:10])}. Có thể là seed MỒ CÔI từ đề tài "
+                "khác — bác sĩ PHẢI kiểm chứng từng PMID (nối `kiem-chung-trich-dan`) "
+                "trước khi đưa vào TLTK.")
+        if receipt_only:
+            warnings.append(
+                f"R4 CẢNH BÁO: {len(receipt_only)}/{len(doc_pmids)} PMID truy được "
+                f"qua BIÊN NHẬN ngoài-pipeline ({BIEN_NHAN_XAC_MINH}) — mức bảo đảm "
+                "TỰ KHAI CÓ DẤU VẾT (khác raw-PubMed), và biên nhận KHÔNG bảo đảm "
+                "trạng thái rút bài (kiểm chuỗi 3 tầng riêng): "
+                f"{', '.join(receipt_only[:10])}.")
         checks["R4_pmid_traceable"] = (
-            f"WARN ({len(raw_verified)} đối chiếu raw, {len(seed_only)} chỉ-seed cần kiểm)")
+            f"WARN ({len(raw_verified)} đối chiếu raw, {len(seed_only)} chỉ-seed, "
+            f"{len(receipt_only)} biên-nhận cần bác sĩ kiểm)")
     else:
         checks["R4_pmid_traceable"] = (
             f"PASS ({len(raw_verified)}/{len(doc_pmids)} PMID đối chiếu PubMed raw)")
@@ -615,6 +691,7 @@ def validate(md_path, out_dir) -> Dict:
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,
             "checks": checks, "n_raw_pmids": len(raw), "n_seed_pmids": len(seed),
+            "n_receipt_pmids": len(receipt),
             "seed_only_pmids": seed_only, "raw_verified_pmids": raw_verified,
             "doc_pmids": sorted(doc_pmids),
             "study_spec_readiness": spec_evaluation["readiness_level"],

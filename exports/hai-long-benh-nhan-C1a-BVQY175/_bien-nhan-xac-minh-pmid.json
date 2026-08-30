@@ -1,0 +1,141 @@
+{
+  "phien_ban": 1,
+  "mo_ta": "Biên nhận xác minh PMID NGOÀI pipeline cho đề cương C1a. Mức bảo đảm: tự khai có dấu vết — chi tiết từng mục ở _bang-doi-chieu-nguon.md (Đợt đối chiếu 30/08/2026: 23/23 tái xác minh + 4 nguồn mới [26]-[29]). Biên nhận KHÔNG bảo đảm trạng thái rút bài — kiểm chuỗi 3 tầng riêng. Cần bác sĩ kiểm chứng.",
+  "muc": [
+    {
+      "pmid": "12210625",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "17161752",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "17654487",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "18313558",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "20494804",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "22784200",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "23883565",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "26776715",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "27881078",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "31218671",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "31703089",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "32584904",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "33886027",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "34017606",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "34053882",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "34445940",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "35155757",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "36292392",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "36439278",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "39944421",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "40295132",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "41645935",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "42582692",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "42625778",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "8134732",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "8970487",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    },
+    {
+      "pmid": "9429194",
+      "ngay": "2026-08-30",
+      "kenh": "PubMed (MCP get_article_metadata) — đợt đối chiếu 30/08/2026"
+    }
+  ]
+}

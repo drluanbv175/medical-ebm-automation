@@ -79,3 +79,15 @@ dẫn theo cảnh báo này; chạy lại trên máy thật có mạng nếu c�
 `check_de_cuong.py` là chốt cho khuôn `DE_CUONG_THONG_NHAT_*` (G10) — các FAIL khuôn mẫu
 R1/R2/R7–R16 với đề cương C1a (khuôn học thuật nộp hội đồng, đã cố ý gỡ tham chiếu công cụ
 nội bộ) là LỆCH HỢP ĐỒNG TÀI LIỆU, không phải lỗi nội dung; đừng "sửa" đề cương theo khuôn đó.
+
+⛔ **ĐÍNH CHÍNH cùng ngày 30/08 — ghi chú ngay trên GIẢI THÍCH SAI CƠ CHẾ, kết luận vẫn đúng.**
+Đọc mã R4 (`check_de_cuong.py` dòng ~269) cho thấy R4 KHÔNG gọi mạng: nó truy PMID về
+**biên nhận pipeline** (`G0_pubmed_raw.json` + seed checkpoint). 10 PMID bị gắn nhãn vì chúng
+vào đề cương qua vòng tổng quan/bình duyệt — xác minh SỐNG qua kênh PubMed-MCP nhưng kênh đó
+**không để lại biên nhận máy-đọc** nào cho R4 thấy. Vế «do container không có đường ra NCBI»
+là suy đoán sai của tôi; vế «các PMID này có thật, đừng xoá» vẫn đúng (6/6 mẫu kiểm chéo khớp).
+**Đã vá tận gốc cùng ngày:** R4 thêm tầng biên nhận ngoài-pipeline
+(`_bien-nhan-xac-minh-pmid.json`, hạn 180 ngày, mức bảo đảm «tự khai có dấu vết» — chỉ hạ
+FAIL→WARN, không bao giờ PASS im lặng; hồi quy `tests/test_check_de_cuong_receipt_20260830.py`,
+2 phép đột biến đều bị bắt). Biên nhận cho 27 PMID của đợt đối chiếu 30/08 đã sinh; R4 trên
+C1a nay: WARN «4 raw · 2 chỉ-seed (26776715, 27881078 — bác sĩ kiểm) · 21 biên-nhận».
