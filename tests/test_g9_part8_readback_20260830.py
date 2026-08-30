@@ -42,7 +42,7 @@ class TestPart8TickStateParser:
 
     def test_file_without_part8_header_returns_none(self, tmp_path: Path):
         p = tmp_path / "a10.md"
-        p.write_text("# A10\n☑ tick lạc ngoài mục\n", encoding="utf-8")
+        p.write_text("# A10\n☑ tick lạc ngoài mục\n", encoding="utf-8", newline="\n")
         assert G9Q._part8_tick_state(p)[0] is None
 
     def test_counts_tick_variants_but_not_template_checkmark(self, tmp_path: Path):
@@ -57,6 +57,7 @@ class TestPart8TickStateParser:
             "☐ Chưa nộp  ☐ Đã nộp\n"
             "| Trạng thái G2 | ✅ Có |\n",  # ✅ của template — cấm đếm
             encoding="utf-8",
+            newline="\n",
         )
         found, ticked, unticked = G9Q._part8_tick_state(p)
         assert found is True
@@ -140,7 +141,9 @@ class TestAdvisoryOnlyIntegration:
         readiness = json.loads(readiness_path.read_text(encoding="utf-8"))
         readiness["authors"][0]["coi_form_completed"] = False
         readiness_path.write_text(
-            json.dumps(readiness, ensure_ascii=False, indent=2), encoding="utf-8"
+            json.dumps(readiness, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+            newline="\n",
         )
         # Tích tờ Phần 8 trên A10 (thêm mục nếu fixture chưa có).
         a10 = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
@@ -148,7 +151,7 @@ class TestAdvisoryOnlyIntegration:
         if not G9Q._PART8_HEADER_RE.search(text):
             text += "\n## Phần 8 — Tiêu chí Cổng G9 (Hard Gate)\n☐ Chưa ký\n"
         text += "\n☑ Đã ký đầy đủ\n☑ Đã kiểm chứng đầy đủ\n"
-        a10.write_text(text, encoding="utf-8")
+        a10.write_text(text, encoding="utf-8", newline="\n")
 
         report = G9Q.evaluate_study(study, out_dir, repo_root=tmp_path, write=True)
         row = _row(report, "G9-AUTO-08")
