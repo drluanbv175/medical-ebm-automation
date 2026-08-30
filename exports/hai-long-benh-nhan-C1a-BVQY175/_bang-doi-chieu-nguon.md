@@ -66,3 +66,16 @@ thật trước khi nộp]; trạng thái hiện tại ghi đúng là "chưa ki�
 
 _Đối chiếu bởi phiên làm việc 30/08/2026 theo yêu cầu «đánh giá chi tiết và hoàn thiện phần
 tổng quan tài liệu». Cần bác sĩ kiểm chứng._
+
+## Ghi chú 30/08/2026 — R4 của `check_de_cuong.py` báo "nghi bịa 10 PMID" là BÁO ĐỘNG GIẢ trong sandbox
+
+Chạy `check_de_cuong.py` trên đề cương C1a trong container không có đường ra NCBI trực tiếp:
+R4 gắn nhãn «PMID KHÔNG TRUY ĐƯỢC VỀ BẤT KỲ NGUỒN NÀO (nghi bịa)» cho 10 PMID — trong đó có
+31218671 (Bull, vừa xác minh sống cùng ngày) và STROBE 18313558. Kiểm chéo ngay qua PubMed
+(kênh MCP còn hoạt động): **6/6 mẫu thử đều CÓ THẬT, metadata khớp danh mục** (17654487 Polit
+I-CVI · 34017606 Quyên VN · 18313558 STROBE · 20494804 COSMIN · 23883565 PSQ-18 · 33886027
+CROSS). Kết luận: «không truy được» trong sandbox ≠ «bịa» — họ lỗi BH08. KHÔNG xoá/sửa trích
+dẫn theo cảnh báo này; chạy lại trên máy thật có mạng nếu cần R4 sạch. Cũng lưu ý:
+`check_de_cuong.py` là chốt cho khuôn `DE_CUONG_THONG_NHAT_*` (G10) — các FAIL khuôn mẫu
+R1/R2/R7–R16 với đề cương C1a (khuôn học thuật nộp hội đồng, đã cố ý gỡ tham chiếu công cụ
+nội bộ) là LỆCH HỢP ĐỒNG TÀI LIỆU, không phải lỗi nội dung; đừng "sửa" đề cương theo khuôn đó.
