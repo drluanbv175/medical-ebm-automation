@@ -1615,17 +1615,28 @@ def main():
     # tách bạch "máy đã tính được N" với "thống kê viên/chủ nhiệm đã xác nhận
     # từng giả định".
     #
-    # CỐ Ý KHÔNG đổi `exit_code`: mã thoát của G3 là hợp đồng đang được 19 file
-    # test và chuỗi run_pipeline/pipeline_freshness dựa vào. Kết luận chất lượng
-    # được ghi vào checkpoint + G3_QUALITY_REPORT.{json,md} và IN RA, không nuốt
-    # im lặng. Việc có nên nâng quality BLOCKED thành mã thoát khác hay không là
-    # quyết định đổi QUY TRÌNH, thuộc thẩm quyền bác sĩ.
+    # ĐỔI QUY TRÌNH 2026-08-30 — BÁC SĨ ĐÃ QUYẾT «nâng G3 thành chặn cứng»
+    # (trả lời AskUserQuestion, đợt «hoàn thiện cho xanh»; ghi chú cũ ở đây
+    # từng CỐ Ý không đổi mã thoát và để ngỏ đúng quyết định này cho bác sĩ).
+    # Luật mới, hẹp có chủ ý:
+    # - quality BLOCKED (một tiêu chí tự động BLOCK — mâu thuẫn cứng như
+    #   NI/equivalence không có biên Δ) ⇒ một lượt lẽ ra EXIT_OK KHÔNG được
+    #   báo thành công nữa: nâng lên EXIT_GUARDRAIL_FAIL (3, mã đã có sẵn
+    #   trong hợp đồng — không phát minh mã mới, consumer khỏi đổi).
+    # - exit_code đã là 2/3 thì giữ nguyên: pipeline vốn đã dừng, đổi 2→3 chỉ
+    #   làm sai NGHĨA (2 = chờ input đời thực, không phải vi phạm).
+    # - DRAFT_NEEDS_HUMAN_PARAMETERS / DRAFT_READY... giữ mã cũ — đó là kết
+    #   quả ĐÚNG của lượt tự động đầu tiên, không phải lỗi.
+    # - Fail-closed cả khi CHÍNH lớp chấm crash: từ khi cổng này gánh việc
+    #   chặn, một exception nuốt im lặng là fail-open kiểu BH27 (cổng "đạt"
+    #   vì chưa hề chạy tới luật cần chạy) — lượt EXIT_OK cũng phải nâng 3.
     quality = None
+    quality_eval_error = None
     try:
         quality = G3Q.evaluate_study(study, out_dir, write=True)
-    except Exception as exc:  # pragma: no cover - không để lớp phụ giết cổng chính
+    except Exception as exc:  # noqa: BLE001 - fail-closed, không nuốt im lặng
+        quality_eval_error = exc
         print(f"  ⚠️ Không chấm được hợp đồng chất lượng G3: {exc}")
-
     if exit_code == GC.EXIT_BLOCKED:
         print(f"\n🚧 G3 DỪNG — {study} (cần input đời thực, hệ KHÔNG tự vượt)")
         print(f"  → {GC.blocked_detail(cp)}")
@@ -1645,6 +1656,22 @@ def main():
             print(f"      {row['status']:6} {row['id']} — {row['label']}")
         if len(pending) > 5:
             print(f"      … và {len(pending) - 5} mục nữa — xem G3_QUALITY_REPORT.md")
+    # Phán quyết CUỐI của luật chặn cứng — in sau cùng để không bị dòng
+    # "✅ G3 TÍNH XONG" phía trên gây hiểu nhầm là đã qua.
+    if exit_code == GC.EXIT_OK:
+        if quality is not None and quality.get("status") == G3Q.STATUS_BLOCKED:
+            exit_code = GC.EXIT_GUARDRAIL_FAIL
+            print(
+                "\n⛔ HỢP ĐỒNG CHẤT LƯỢNG G3: BLOCKED — chặn cứng theo quyết "
+                "định bác sĩ 30/08/2026 (mã thoát 3). Xem G3_QUALITY_REPORT.md."
+            )
+        elif quality is None:
+            exit_code = GC.EXIT_GUARDRAIL_FAIL
+            print(
+                "\n⛔ Lớp chấm chất lượng G3 KHÔNG chạy được "
+                f"({quality_eval_error}) — fail-closed, không báo thành công "
+                "khi luật chưa hề chạy (mã thoát 3)."
+            )
     return exit_code
 
 if __name__ == "__main__":

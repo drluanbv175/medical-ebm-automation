@@ -121,6 +121,9 @@ class TestG3ChecktpointWritesHypothesisFields:
         import shutil
         if study_dir.exists():
             shutil.rmtree(study_dir, ignore_errors=True)
+        # THÊM 2026-08-30 (G3 chặn cứng): cần G0/G1 thật, không mặc-định-im-lặng.
+        from tests.test_g3_ni_fleiss_fpc_cluster_rct_or_rr import _mk_upstream_rct
+        _mk_upstream_rct(study_dir)
         try:
             result = subprocess.run(
                 [sys.executable, str(TOOLS_DIR / "run_g3_auto.py"),

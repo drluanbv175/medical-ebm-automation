@@ -8,6 +8,12 @@ theo thống kê). --confirmed-n ghi SONG SONG cả hai — KHÔNG thay thế c�
 — và cảnh báo khi N chốt thấp hơn N tối thiểu (nguy cơ underpowered).
 
 Test cấp CLI (subprocess) theo đúng quy ước của test_gate_blocked_contract.py.
+
+SỬA FIXTURE 2026-08-30 (G3 nâng thành chặn cứng theo quyết định bác sĩ):
+fixture cũ nhét OR vào thiết kế cắt ngang — đúng kiểu "nhét tỷ lệ p vào ô
+--effect-size" mà bản vá 31/07 sinh --prevalence/--precision để thay; dưới
+chế độ tư vấn nó vẫn exit 0, nay G3-AUTO-03 BLOCK thật nên fixture phải
+hợp lệ về chất lượng. Ý đồ test (ghi nhận confirmed_n) giữ nguyên.
 """
 from __future__ import annotations
 
@@ -86,7 +92,7 @@ class TestConfirmedNAdequate:
     def test_confirmed_n_recorded_in_checkpoint(self, study_dir):
         _mk_upstream(study_dir)
         res = _run(study_dir.name, [
-            "--effect-size", "0.5", "--effect-type", "OR", "--dropout", "0.1",
+            "--prevalence", "0.5", "--precision", "0.05", "--dropout", "0.1",
             "--confirmed-n", "1000",
         ])
         assert res.returncode == GC.EXIT_OK, res.stdout[-1500:]
@@ -98,7 +104,7 @@ class TestConfirmedNAdequate:
     def test_artifact_shows_adat_and_margin_of_error(self, study_dir):
         _mk_upstream(study_dir)
         _run(study_dir.name, [
-            "--effect-size", "0.5", "--effect-type", "OR", "--dropout", "0.1",
+            "--prevalence", "0.5", "--precision", "0.05", "--dropout", "0.1",
             "--confirmed-n", "1000",
         ])
         text = _load_artifact(study_dir, study_dir.name)
@@ -110,7 +116,7 @@ class TestConfirmedNAdequate:
     def test_pinned_to_study_meta_and_restored_on_rerun(self, study_dir):
         _mk_upstream(study_dir)
         _run(study_dir.name, [
-            "--effect-size", "0.5", "--effect-type", "OR", "--dropout", "0.1",
+            "--prevalence", "0.5", "--precision", "0.05", "--dropout", "0.1",
             "--confirmed-n", "1000",
         ])
         meta = GC.load_study_meta(study_dir)
@@ -130,7 +136,7 @@ class TestConfirmedNUnderpowered:
     def test_confirmed_n_below_minimum_flags_warning(self, study_dir):
         _mk_upstream(study_dir)
         res = _run(study_dir.name, [
-            "--effect-size", "0.5", "--effect-type", "OR", "--dropout", "0.1",
+            "--prevalence", "0.5", "--precision", "0.05", "--dropout", "0.1",
             "--confirmed-n", "50",
         ])
         assert res.returncode == GC.EXIT_OK, res.stdout[-1500:]
@@ -148,7 +154,7 @@ class TestConfirmedNAbsentUnchanged:
     def test_no_confirmed_n_section_when_absent(self, study_dir):
         _mk_upstream(study_dir)
         res = _run(study_dir.name, [
-            "--effect-size", "0.5", "--effect-type", "OR", "--dropout", "0.1",
+            "--prevalence", "0.5", "--precision", "0.05", "--dropout", "0.1",
         ])
         assert res.returncode == GC.EXIT_OK, res.stdout[-1500:]
         cp = _load_cp(study_dir)

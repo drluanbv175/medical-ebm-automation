@@ -39,6 +39,30 @@ if str(TOOLS_DIR) not in sys.path:
 import run_g3_auto as G3  # noqa: E402
 
 
+def _mk_upstream_rct(study_dir):
+    """G0+G1 tối thiểu (thiết kế RCT THẬT, không mặc-định-im-lặng).
+
+    THÊM 2026-08-30 (G3 nâng thành chặn cứng theo quyết định bác sĩ): các
+    test CLI ở đây từng chạy G3 KHÔNG có G0/G1 thượng nguồn — G3-AUTO-01
+    chấm BLOCKED đúng luật, và dưới chế độ tư vấn thì exit 0 che mất điều
+    đó. Ý đồ test (kiểm CÔNG THỨC qua CLI) giữ nguyên; fixture phải hợp lệ.
+    """
+    import json as _json
+    study_dir.mkdir(parents=True, exist_ok=True)
+    (study_dir / "G0_checkpoint.json").write_text(_json.dumps({
+        "study": study_dir.name, "gate": "G0",
+        "topic": "Can thiệp X so với chứng trên kết cục nhị phân Y",
+        "base_query": "intervention X outcome Y trial",
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
+    (study_dir / "G1_checkpoint.json").write_text(_json.dumps({
+        "study": study_dir.name, "gate": "G1",
+        "design": {"internal_code": "rct", "primary": "RCT song song",
+                   "reporting_standard": "CONSORT 2025"},
+        "effect_size_samples": [],
+    }, ensure_ascii=False), encoding="utf-8", newline="\n")
+
+
+
 def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
     for _ in range(attempts):
         if not d.exists():
@@ -80,6 +104,7 @@ class TestNonInferiority:
         study = "TEST-VONG15-NI-CLI"
         study_dir = REPO_ROOT / "exports" / study
         _rmtree_retry(study_dir)
+        _mk_upstream_rct(study_dir)
         try:
             result = subprocess.run(
                 [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"),
@@ -208,6 +233,7 @@ class TestFpcAndClusterDesignEffect:
         study = "TEST-VONG15-FPC-CLUSTER-CLI"
         study_dir = REPO_ROOT / "exports" / study
         _rmtree_retry(study_dir)
+        _mk_upstream_rct(study_dir)
         try:
             result = subprocess.run(
                 [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"),
