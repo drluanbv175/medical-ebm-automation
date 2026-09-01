@@ -57,41 +57,34 @@ xác minh trước khi vào kho):
 
 Chi tiết allowlist từng worker/stage nằm trong JSON canonical, không sao chép lại vào agent.
 
-### 2-bis. Provider ĐƯỢC BIẾT nhưng KHÔNG bind worker (rà 2026-08-10)
+### 2-bis. Provider biết đến nhưng chưa bind worker (rà 2026-09-01)
 
-Registry khai `unbound_providers`: `aipoch-medical-research`, `openmed-skills`, `medsci-project`,
-`meta-pipe`, `pubmed-search`, `mattpocock-skills`, `humanizer`, `healthcare`. Chúng **đang bật**
-trong `~/.claude/settings.json` nên vẫn hiện trong danh sách skill mỗi phiên, nhưng **không được
-bind vào bất kỳ capability nào** ⇒ `resolve()` trả `blocked_requests`, kể cả khi bị gọi đích danh.
+Registry chỉ còn năm provider `unbound_providers`: `openmed-skills`, `medsci-project`,
+`mattpocock-skills`, `humanizer`, `healthcare`. AIPOCH, Meta-pipe và PubMed đã có binding
+chính danh tại mục 2b nên CẤM đồng thời nằm trong danh sách unbound; verifier phải fail khi
+một provider vừa bound vừa unbound.
 
-Lý do khai tường minh thay vì để "tên lạ → chặn": các plugin này chiếm phần lớn bề mặt ứng cử
-(riêng `aipoch` đóng góp 47/53 công cụ mang chữ "thiết kế nghiên cứu", 21/25 "viết bản thảo",
-15/21 "chọn tạp chí"). Quét 2712 transcript cho thấy **0 lượt gọi** cho aipoch, openmed,
-medsci-project, mattpocock, pubmed-search — tính đến nay chúng làm tăng bề mặt ứng cử mà chưa
-tạo ra đóng góp đo được. `healthcare` là ngoại lệ về mặt dữ liệu: MCP PubMed của nó có 310 lượt
-gọi thật, nhưng đó là **truy cập dữ liệu**, không phải worker của capability có cổng.
+Provider unbound vẫn có thể hiện trong runtime nhưng không được tự chen vào capability có cổng.
+Muốn dùng làm worker chính thức phải thêm binding có owner, stage và điều kiện chọn rõ ràng vào
+JSON canonical, sau đó chạy `verify_plugin_orchestration.py`.
 
-⚠️ **"0 lượt gọi" nói về TẦN SUẤT DÙNG, KHÔNG nói plugin hỏng.** Đã kiểm ngược lại 10/08:
-aipoch có 605/605 SKILL.md hợp lệ, manifest khai đủ, nạp bình thường mỗi phiên — **đang chạy
-tốt**. Không-bind ở đây là quyết định ĐIỀU PHỐI (giữ việc có cổng cho chủ duy nhất), không phải
-phán quyết về chất lượng plugin. Một plugin có thể chưa được gọi chỉ vì khó tìm giữa 846 skill.
-
-Muốn dùng một plugin trong nhóm này cho việc có cổng: bác sĩ phải **thêm binding có chủ đích**
-vào JSON canonical rồi chạy lại `verify_plugin_orchestration.py`. Không tự động, không ngầm định.
-
-⚠️ **Giới hạn phải nhớ:** cơ chế `resolve()` ở đây chỉ chạy trong `tools/orchestrator/` — vốn
-**tách rời khỏi luồng agent thật**. Luật ràng buộc luồng thật nằm ở bảng định tuyến trong
-`CLAUDE.md` (mục "Định tuyến khi nhiều công cụ cùng nhận một việc"). Sửa một nơi phải sửa cả hai.
+**Giới hạn thực thi:** `tools/orchestrator/` nay định tuyến phân cấp tới từng agent/bước, lọc
+worker chuyên biệt bằng cue, kiểm `SKILL.md` thật và ghi `LOCAL_FALLBACK` khi thiếu plugin.
+Nó vẫn không tự gọi LLM bên ngoài nếu runtime không cung cấp executor; trong Claude/Codex,
+nhạc trưởng thực hiện worker qua skill/tool đang khả dụng của phiên. Không được biến plan/dry-run
+thành tuyên bố "đã chạy".
 
 ## 3. Thuật toán định tuyến bắt buộc
 
 1. Phân loại intent bằng `tools/orchestrator/intent.py`.
 2. Phân giải capability bằng `PluginOwnershipRegistry.resolve_for_intent()`.
-3. Ghi checkpoint `plugin_routing`: capability, owner, worker được phép, cổng và rule.
-4. Owner dựng plan. Plugin chỉ được gọi ở `allowed_stages` và phải trả provenance envelope.
-5. Owner hợp nhất, loại trùng, giải quyết mâu thuẫn và giữ nguyên nhãn bất định.
-6. `tham-dinh-dau-ra` kiểm nguồn, PII, quyền sở hữu và cổng; sau đó mới bàn giao.
-7. Capability không biết hoặc worker ngoài allowlist → `BLOCKED_UNKNOWN_CAPABILITY` hoặc
+3. Tại mỗi bước/agent, phân giải capability hẹp hơn; chỉ chọn worker chuyên biệt khi cue khớp.
+4. Kiểm worker thật trong đúng provider; thiếu → `LOCAL_FALLBACK`, không giả vờ đã gọi plugin.
+5. Ghi checkpoint `plugin_routing`: capability, owner, worker, khả dụng, cổng và rule.
+6. Owner dựng plan. Plugin chỉ được gọi ở `allowed_stages` và phải trả provenance envelope.
+7. Owner hợp nhất, loại trùng, giải quyết mâu thuẫn và giữ nguyên nhãn bất định.
+8. `tham-dinh-dau-ra` kiểm nguồn, PII, quyền sở hữu và cổng; lỗi sửa được re-route tối đa 3 vòng.
+9. Capability không biết hoặc worker ngoài allowlist → `BLOCKED_UNKNOWN_CAPABILITY` hoặc
    `READY_WITH_BLOCKED_WORKERS`; không fallback sang pipeline plugin tự trị.
 
 ## 4. Provenance envelope tối thiểu của worker

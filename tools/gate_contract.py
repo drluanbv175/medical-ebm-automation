@@ -1205,8 +1205,24 @@ _ED_PRIVATE_DIR = Path.home() / ".ebm-secrets"
 _ED_PUBLIC_DIR = Path(__file__).resolve().parents[1] / "config" / "gate_ed25519_pubkeys"
 
 
+def _ed_private_dir() -> Path:
+    """Thư mục khóa riêng Ed25519, có cô lập tuyệt đối khi chạy kiểm thử.
+
+    ``EBM_GATE_KEY_PATH`` chỉ có hiệu lực trong pytest (xem ``_base_key_path``). Khi
+    biến này được dùng, khóa Ed25519 cũng phải nằm cạnh khóa HMAC tạm thay vì rơi về
+    ``~/.ebm-secrets``. Nếu không, nhánh ưu tiên Ed25519 có thể vô tình ký bằng khóa
+    thật của máy phát triển, làm kiểm thử phụ thuộc môi trường và chạm vào bí mật thật.
+
+    Ngoài ngữ cảnh kiểm thử, biến môi trường vẫn bị bỏ qua hoàn toàn và đường dẫn vận
+    hành giữ nguyên. Việc tách hàm cũng giữ khả năng monkeypatch ``_ED_PRIVATE_DIR``
+    cho các kiểm thử Ed25519 chuyên biệt.
+    """
+    override = os.environ.get(_SIGNING_KEY_ENV) if _test_context_active() else None
+    return Path(override).parent if override else _ED_PRIVATE_DIR
+
+
 def _ed_private_path(group: str) -> Path:
-    return _ED_PRIVATE_DIR / f"gate_ed25519_{group}.key"
+    return _ed_private_dir() / f"gate_ed25519_{group}.key"
 
 
 def _ed_public_path(group: str) -> Path:
