@@ -450,24 +450,13 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
 def _sap_declares_ordinal(out_dir: Path, study: str) -> bool:
     """SAP đã khoá có khai mô hình CHÍNH là hồi quy logistic THỨ TỰ không?
 
-    Vì sao đọc SAP thay vì suy từ dữ liệu (2026-09-01): số mức mã nguyên trong
-    REDCap là điều kiện CẦN chứ không ĐỦ cho tính thứ bậc (biến danh định nhiều
-    mức cũng mã số nguyên) — suy từ mã số là ĐOÁN, đúng loại việc doctrine cấm.
-    SAP §4 là nơi thống kê viên/chủ nhiệm ĐÃ TUYÊN BỐ mô hình và bị khoá bằng
-    chữ ký G4, nên nó là thẩm quyền duy nhất; G6 chỉ THI HÀNH SAP (cùng lý lẽ
-    G6-AUTO-02/03 đối chiếu seed/alpha với SAP sống). Thiếu file SAP → False
-    (fail-closed về hành vi cũ: logistic nhị phân), không đoán.
+    SỬA 2026-09-01 (cùng ngày ra đời): thân hàm CHUYỂN VỀ
+    `gate_contract.sap_declares_ordinal()` — một nguồn dùng chung cho G6 lẫn
+    G7, để hai cổng không giữ hai bản chép tay của cùng một regex (hai bản là
+    nguồn trôi dạt). Giữ tên wrapper này vì test/doc đã tham chiếu; toàn bộ
+    lý lẽ "SAP là thẩm quyền, không suy từ mã số mức" xem docstring bên GC.
     """
-    sap_path = out_dir / f"G4_A5_SAP_FINAL_{study}.md"
-    if not sap_path.exists():
-        return False
-    try:
-        sap = sap_path.read_text(encoding="utf-8")
-    except OSError:
-        return False
-    return bool(re.search(
-        r"proportional\s+odds|logistic\s+th[ưứ]\s*t[ựụ]|h[ồo]i\s+quy\s+th[ưứ]\s+b[ậa]c|ordinal\s+logistic",
-        sap, re.I))
+    return GC.sap_declares_ordinal(out_dir, study)
 
 
 # ─────────────────────────────────────────────

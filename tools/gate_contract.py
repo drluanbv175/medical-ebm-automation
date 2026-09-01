@@ -28,6 +28,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import sys
 import unicodedata
 from datetime import datetime, timezone
@@ -629,6 +630,34 @@ def resolve_design_code(out_dir: Path, default: str = "cohort") -> Tuple[str, Op
                     "Nếu SAI, chạy lại G1/G2 cho khớp TRƯỚC khi đi tiếp — mã thiết kế quyết "
                     "định chuẩn báo cáo (CONSORT/STROBE/PRISMA…) và công thức cỡ mẫu.")
     return (g2 or g1 or default), None
+
+
+def sap_declares_ordinal(out_dir: Path, study: str) -> bool:
+    """SAP đã khoá (G4) có khai mô hình CHÍNH là hồi quy logistic THỨ TỰ không?
+
+    ★ NGUỒN DUY NHẤT dùng chung cho G6 (sinh script R) và G7 (gợi ý phương pháp
+    trong bản thảo) — thêm 2026-09-01 khi chuyển từ run_g6_auto.py về đây để
+    hai cổng không giữ hai bản chép tay của cùng một regex (hai bản là nguồn
+    trôi dạt: sửa một bên thì bên kia âm thầm rẽ nhánh khác — đúng lớp lỗi
+    "2 lớp xử lý tách rời nhau" đã vá nhiều lần ở G6).
+
+    Vì sao đọc SAP thay vì suy từ dữ liệu: số mức mã nguyên trong REDCap là
+    điều kiện CẦN chứ không ĐỦ cho tính thứ bậc (biến danh định nhiều mức cũng
+    mã số nguyên) — suy từ mã số là ĐOÁN. SAP §4 là nơi thống kê viên/chủ nhiệm
+    ĐÃ TUYÊN BỐ mô hình và bị khoá bằng chữ ký G4, nên nó là thẩm quyền duy
+    nhất; các cổng sau chỉ THI HÀNH SAP. Thiếu file SAP → False (fail-closed
+    về hành vi mặc định của từng cổng), không đoán.
+    """
+    sap_path = Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md"
+    if not sap_path.exists():
+        return False
+    try:
+        sap = sap_path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return bool(re.search(
+        r"proportional\s+odds|logistic\s+th[ưứ]\s*t[ựụ]|h[ồo]i\s+quy\s+th[ưứ]\s+b[ậa]c|ordinal\s+logistic",
+        sap, re.I))
 
 
 def load_study_meta(out_dir: Path) -> Dict[str, Any]:

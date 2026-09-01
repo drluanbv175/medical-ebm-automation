@@ -959,10 +959,17 @@ def generate_manuscript(
     table1_shell: str = "[CẦN KẾT QUẢ THẬT]",
     crf_blocks: Optional[dict] = None,
     bias_controls: Optional[list] = None,
+    outcome_ordinal: bool = False,
 ) -> str:
     """
     Sinh toàn bộ bản thảo IMRAD skeleton A8.
     Phần Results và Conclusions chỉ có placeholder [CẦN KẾT QUẢ THẬT].
+
+    outcome_ordinal (thêm 2026-09-01): SAP đã khoá khai mô hình thứ bậc
+    (main() tính qua gate_contract.sap_declares_ordinal — CÙNG thẩm quyền với
+    nhánh sinh script proportional odds của G6) → gợi ý phương pháp trong
+    Methods phải nói "logistic thứ tự (cOR)" thay vì rơi về câu trung tính,
+    nếu không hai cổng kể hai chuyện khác nhau về cùng một SAP.
     """
     crf_blocks = crf_blocks or {}
     # SỬA: has_crf = bool(crf_blocks) sai — build_exposure_outcome_blocks()
@@ -1075,7 +1082,29 @@ def generate_manuscript(
         "RR": "log-binomial/Poisson regression (kết cục nhị phân)",
         "ARR%": "so sánh hai tỷ lệ + hồi quy nhị phân",
         "AUC": "phân tích ROC/AUC (độ chính xác chẩn đoán)",
+        # THÊM 2026-09-01: PREVALENCE (cắt ngang tính cỡ mẫu theo độ chính
+        # xác — Lwanga & Lemeshow) trước đây rơi về câu trung tính, tức đề
+        # tài thật đầu tiên đi hết G0-G4 (C1a) không nhận được gợi ý nào.
+        "PREVALENCE": "ước lượng tỷ lệ hiện hành + KTC 95% (Wilson); "
+                      "mô hình liên hệ theo SAP §4",
     }.get(effect_type, "phương pháp thống kê phù hợp thiết kế")
+    # THÊM 2026-09-01: SAP khai mô hình THỨ BẬC → gợi ý phải khớp script mà
+    # G6 thật sự sinh (proportional odds), không rơi về câu theo effect_type —
+    # effect_type là estimand TÍNH CỠ MẪU (G3), không phải mô hình phân tích.
+    if outcome_ordinal:
+        _method_hint = ("hồi quy logistic THỨ TỰ / proportional odds — cOR + KTC 95%, "
+                        "SE robust theo cụm; kiểm Brant TRƯỚC khi diễn giải cOR "
+                        "(SAP §4 đã khai mô hình thứ bậc; script: G6 03_analysis.R)")
+    # Dòng "Phương pháp chính" của Methods §6: khi SAP khai mô hình thứ bậc,
+    # khung câu "theo effect_type=… gợi ý" gây nhiễu — effect_type là estimand
+    # TÍNH CỠ MẪU (G3), không phải mô hình phân tích — nên đổi vế dẫn cho đúng
+    # nguồn thẩm quyền. Tính TRƯỚC thành biến vì phần tử Methods bên dưới là
+    # chuỗi ghép liền nhiều literal (chèn biểu thức có ngoặc vào giữa sẽ phá
+    # cú pháp ghép).
+    _method_line = (
+        f"Phương pháp chính: [CẦN — từ SAP §4; SAP đã khai mô hình thứ bậc → gợi ý: {_method_hint}]. "
+        if outcome_ordinal else
+        f"Phương pháp chính: [CẦN — từ SAP §4; theo effect_type={effect_type} gợi ý: {_method_hint}]. ")
 
     # ── Chuẩn bị snippet cho Discussion §2 (đối chiếu y văn) ──
     lit_compare_lines = []
@@ -1276,7 +1305,7 @@ def generate_manuscript(
         "**§6 Phân tích thống kê:**  ",
         f"Phân tích theo {sap_lock_text}. "
         "Phần mềm: [CẦN — R/Stata/SPSS phiên bản]. "
-        f"Phương pháp chính: [CẦN — từ SAP §4; theo effect_type={effect_type} gợi ý: {_method_hint}]. "
+        + _method_line +
         "Phân tích độ nhạy: [CẦN — từ SAP]. "
         "Dữ liệu thiếu: [CẦN — multiple imputation m=20 hoặc complete case]. "
         "Ngưỡng ý nghĩa thống kê: α = " + str(alpha) + " (two-sided); "
@@ -2069,6 +2098,10 @@ def main() -> None:
         table1_shell=table1_shell,
         crf_blocks=crf_blocks,
         bias_controls=bias_controls,
+        # THÊM 2026-09-01: cùng thẩm quyền SAP với nhánh proportional odds
+        # của G6 — hai cổng phải kể MỘT chuyện về mô hình phân tích chính.
+        outcome_ordinal=(design_code == "cross_sectional"
+                         and GC.sap_declares_ordinal(out_dir, study)),
     )
 
     # ── Bước 5: Bảng số từ + checklist ──
