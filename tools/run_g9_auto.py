@@ -44,6 +44,7 @@ _TOOLS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(_TOOLS_DIR))
 
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g9_quality_gate as G9Q  # noqa: E402
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — chỉ dùng load_study_meta)
 
@@ -1119,7 +1120,7 @@ def export_docx_g9(artifact_md: str, study: str, out_dir: Path) -> Optional[Path
             elif stripped.startswith("|"):
                 p = doc.add_paragraph(stripped)
                 if p.runs:
-                    p.runs[0].font.name = "Courier New"
+                    _CTB.dat_font_ma_nguon(p)  # vá 01/09: font đơn cách chỉ cho đoạn này
                     p.runs[0].font.size = Pt(8)
             elif stripped:
                 p = doc.add_paragraph(line)
@@ -1130,6 +1131,7 @@ def export_docx_g9(artifact_md: str, study: str, out_dir: Path) -> Optional[Path
                         run.bold = True
 
         docx_path = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.docx"
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(docx_path)
         return docx_path
 

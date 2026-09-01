@@ -42,6 +42,7 @@ _REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G0)
@@ -1502,7 +1503,7 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
                 pass
             elif stripped.startswith("|"):
                 p = doc.add_paragraph(stripped)
-                p.runs[0].font.name = "Courier New"
+                _CTB.dat_font_ma_nguon(p)  # vá 01/09: font đơn cách chỉ cho đoạn này
                 p.runs[0].font.size = Pt(8) if len(stripped) > 100 else Pt(9)
             elif stripped:
                 p = doc.add_paragraph(line)
@@ -1513,6 +1514,7 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
                     if "DRAFT" in run.text:
                         run.font.bold = True
         docx_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study_name}.docx"
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(docx_path)
         return docx_path
     except ImportError:

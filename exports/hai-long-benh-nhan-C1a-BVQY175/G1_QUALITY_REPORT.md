@@ -31,8 +31,8 @@
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A2 | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `909e12423cf8594c01eee7e2b95a9d63e80ad30f33e7e38ef5b1c0270bd341d8` |
-| A1b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `6eb5c214ad5993dc59be03e810f2359f8105a6b0504f850b91099c43d5e4f38d` |
+| A2 | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `cb0b06e23c41816855e90871c3d3d311a26d2346163682962fb9ab25ab0babc6` |
+| A1b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `0e45015bb6026bb177a03d46a02a2c45ff69503f5f61d0e9e8ca24d8a4f43ec4` |
 | A2b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `3a5c2b81e95e088bc63ca18a178a3d76841f397f22eeea3feae2c21b8df9494d` |
 | A13 | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `5de5087b086310a566d9e16cb13df4ce9a41b5060d585b2ef8560af52dfefcd9` |
 | A13b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `0377a5b111bcdab3f45deed30eb0e2cf00b370585801b3b761daf71c64c8be49` |

@@ -25,6 +25,7 @@ TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(TOOLS))
 
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g3_quality_gate as G3Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G3)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import skill_standards as S  # noqa: E402  (bản đồ chuẩn báo cáo theo thiết kế)
@@ -796,6 +797,7 @@ def write_docx(artifact, out_path):
                 run.font.color.rgb = RGBColor(0xCC, 0x44, 0x00)
             elif line.strip():
                 doc.add_paragraph(line)
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(out_path)
         return True
     except ImportError:

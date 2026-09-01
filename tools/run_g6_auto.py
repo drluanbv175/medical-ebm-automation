@@ -30,6 +30,7 @@ BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 # ─────────────────────────────────────────────
@@ -2745,6 +2746,7 @@ def write_docx(artifact: str, path: Path) -> bool:
                 doc.add_paragraph(line, style="No Spacing")
             else:
                 doc.add_paragraph(line)
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(path)
         return True
     except Exception:

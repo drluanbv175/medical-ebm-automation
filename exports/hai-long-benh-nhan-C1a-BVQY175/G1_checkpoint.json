@@ -3,7 +3,7 @@
   "gate": "G1",
   "gate_status": "DRAFT_READY — KIỂM TỰ ĐỘNG ĐÃ CHẠY; G1 CHƯA ĐƯỢC PI/METHODOLOGIST XÁC NHẬN",
   "automation_status": "AUTOMATED_CHECKS_PASS",
-  "generated_at": "2026-09-01T13:13:11.891723",
+  "generated_at": "2026-09-01T23:40:47.067135",
   "question_type": "descriptive",
   "design": {
     "primary": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)",
@@ -198,11 +198,11 @@
     "artifact_manifest": {
       "A2": {
         "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "909e12423cf8594c01eee7e2b95a9d63e80ad30f33e7e38ef5b1c0270bd341d8"
+        "sha256": "cb0b06e23c41816855e90871c3d3d311a26d2346163682962fb9ab25ab0babc6"
       },
       "A1b": {
         "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "6eb5c214ad5993dc59be03e810f2359f8105a6b0504f850b91099c43d5e4f38d"
+        "sha256": "0e45015bb6026bb177a03d46a02a2c45ff69503f5f61d0e9e8ca24d8a4f43ec4"
       },
       "A2b": {
         "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",

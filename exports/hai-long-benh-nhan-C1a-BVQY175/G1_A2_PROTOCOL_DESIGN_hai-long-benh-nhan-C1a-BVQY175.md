@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-09-01 13:12 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
+> Tạo tự động: 2026-09-01 23:39 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,7 +15,7 @@
 - Mã đề tài: `hai-long-benh-nhan-C1a-BVQY175`
 - Tên đề tài: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-09-01 13:12
+- Ngày tạo/cập nhật: 2026-09-01 23:39
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: [CẦN BỔ SUNG]
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN BỔ SUNG]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch

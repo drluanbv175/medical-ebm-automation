@@ -385,6 +385,11 @@ class ResearchDocxGenerator:
     def _save(self, doc, artifact_code, artifact_key):
         fname  = f"{artifact_code}_{artifact_key.upper()}_{self.study_slug}.docx"
         fpath  = self.out_dir / fname
+        # 01/09/2026: font đã là Times New Roman 13pt (BODY_PT) — chỉ cần bước
+        # LÀM SẠCH ký tự trang trí (emoji/khung/mũi tên) trước khi lưu, cùng một
+        # cỗ máy với 9 cổng còn lại (chuan_trinh_bay).
+        import chuan_trinh_bay as _CTB
+        _CTB.ap_dinh_dang_tai_lieu(doc, co_chu=self.BODY_PT)
         doc.save(str(fpath))
         print(f"✓ {fname}")
         return str(fpath)

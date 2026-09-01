@@ -79,6 +79,7 @@ from app.sources.pubmed import PUBTYPE_FILTER as PM_PUBTYPE_FILTER  # noqa: E402
 from app.sources.pubmed import PubMedClient  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # thư mục tools/
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g0_quality_gate as G0Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G0)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG + study_meta dùng chung)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G2)
@@ -1240,6 +1241,7 @@ def export_docx(artifact_md: str, study_name: str, out_dir: Path) -> Optional[Pa
                         run.font.bold = True
 
         docx_path = out_dir / f"G0_A1_PICO_FINER_{study_name}.docx"
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(docx_path)
         return docx_path
     except ImportError:

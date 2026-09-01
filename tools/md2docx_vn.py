@@ -751,6 +751,10 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         _add_inline_runs(p, stripped)
         i += 1
 
+    # 01/09/2026: làm sạch ký tự trang trí (emoji/khung/mũi tên) — font đã theo
+    # hồ sơ tạp chí ở trên nên CHỈ làm sạch, không áp lại cỡ chữ.
+    import chuan_trinh_bay as _CTB
+    _CTB.lam_sach_tai_lieu(doc)
     doc.save(str(out_path))
     if _glyph_canh_bao:
         import sys
