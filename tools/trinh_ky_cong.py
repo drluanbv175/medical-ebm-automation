@@ -111,7 +111,11 @@ def soan_lenh(gate: str, study: str, artifact: Path, tra_loi: dict) -> list:
 
 def _hoi(cau: str, bat_buoc: bool = True, kiem=None) -> str:
     while True:
-        gia_tri = input(f"  {cau}: ").strip()
+        try:
+            gia_tri = input(f"  {cau}: ").strip()
+        except EOFError:
+            print("\n  ⛔ Mất kênh nhập (EOF) — không có người thật trả lời. Dừng, không ký.")
+            raise SystemExit(2) from None
         if not gia_tri:
             if not bat_buoc:
                 return ""
@@ -129,7 +133,11 @@ def _hoi_chon(cau: str, lua_chon: list) -> str:
     for i, lc in enumerate(lua_chon, 1):
         print(f"    {i}) {lc}")
     while True:
-        so = input("  Chọn số: ").strip()
+        try:
+            so = input("  Chọn số: ").strip()
+        except EOFError:
+            print("\n  ⛔ Mất kênh nhập (EOF) — không có người thật trả lời. Dừng, không ký.")
+            raise SystemExit(2) from None
         if so.isdigit() and 1 <= int(so) <= len(lua_chon):
             return lua_chon[int(so) - 1]
         print("  ✗ Gõ đúng một số trong danh sách.")
@@ -183,8 +191,14 @@ def main() -> int:
     ap.add_argument("--gate", required=True, choices=["G2", "G8"])
     args = ap.parse_args()
 
-    if not sys.stdin.isatty():
-        print("⛔ Phiên không tương tác (stdin bị pipe/agent điều khiển).")
+    # Rào người-thật: đòi CẢ stdin LẪN stdout là terminal. Chỉ kiểm stdin là
+    # FAIL-OPEN trên Windows — đo thật trên CI 01/09/2026: thiết bị NUL là
+    # character device nên isatty(stdin=DEVNULL) trả True và tool chạy tiếp
+    # (đúng họ BH05 "chạy được ở đây ≠ chạy được ở kia"). Agent/pipe luôn bắt
+    # output nên stdout-không-phải-tty chặn được nhánh đó trên mọi nền; nhánh
+    # NUL-cả-hai-đầu còn lại chết ở EOF của input() (đã fail-closed trong _hoi).
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        print("⛔ Phiên không tương tác (stdin/stdout bị pipe hoặc agent điều khiển).")
         print("   Trợ lý trình-ký chỉ chạy khi NGƯỜI DUYỆT ngồi tại bàn phím —")
         print("   đó là toàn bộ giá trị của chữ ký. Mở Terminal và tự chạy.")
         return 2
