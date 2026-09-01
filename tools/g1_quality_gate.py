@@ -1308,3 +1308,58 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
     md_path = out_dir / "G1_QUALITY_REPORT.md"
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return md_path
+
+
+def main() -> int:
+    """CLI đọc lại KẾT QUẢ ĐÃ CHẤM của G1 — vá 01/09/2026 (kiểm toàn diện).
+
+    ★ VÌ SAO TỒN TẠI: G1 là cổng DUY NHẤT trong 11 cổng không có CLI — gọi
+    `python3 tools/g1_quality_gate.py --study X` trước bản vá này thì Python
+    chỉ import module rồi THOÁT 0 IM LẶNG, bỏ qua toàn bộ đối số: người gọi
+    đọc mã thoát 0 tưởng «đã chấm, sạch» trong khi KHÔNG một luật nào chạy —
+    đúng họ «yên tâm giả» (BH32) và «công cụ vẫn chạy, thứ cần kiểm thì không
+    bao giờ được kiểm».
+
+    Giới hạn TRUNG THỰC: evaluate_g1_quality() cần bộ input mà chỉ
+    run_g1_auto.py lắp được (artifact_texts, evidence_identifiers…) — CLI này
+    vì thế KHÔNG chấm lại, nó đọc G1_QUALITY_REPORT.json ĐÃ LƯU và nói rõ
+    điều đó; muốn CHẤM LẠI thì chạy lại run_g1_auto.py (tự chấm ở bước cuối).
+    Thiếu báo cáo → mã 2, không bao giờ im lặng thoát 0.
+    """
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Đọc kết quả hợp đồng chất lượng cổng G1 (đã lưu)")
+    ap.add_argument("--study", required=True, help="Mã đề tài")
+    a = ap.parse_args()
+    study = re.sub(r"[^\w\-]", "_", a.study.strip().replace(" ", "-"))
+    out_dir = Path(__file__).resolve().parent.parent / "exports" / study
+    bao_path = out_dir / "G1_QUALITY_REPORT.json"
+    if not bao_path.exists():
+        print(f"⛔ Chưa có {bao_path.name} cho đề tài '{study}' — G1 chưa từng được chấm.")
+        print("   Chạy: python3 tools/run_g1_auto.py --study", study)
+        return 2
+    try:
+        bao = json.loads(bao_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        print(f"⛔ Không đọc được {bao_path.name}: {e}")
+        return 2
+    status = str(bao.get("status") or "KHÔNG RÕ")
+    print(f"G1 QUALITY [{study}]: {status}")
+    print("  (kết quả ĐÃ LƯU từ lượt run_g1_auto gần nhất — muốn CHẤM LẠI: "
+          "python3 tools/run_g1_auto.py --study " + study + ")")
+    for nhom, ten in (("automatic_criteria", "Tiêu chí máy"), ("human_criteria", "Xác nhận người thật")):
+        muc = bao.get(nhom) or []
+        print(f"  — {ten}: {len(muc)} mục")
+        for c in muc:
+            st = str(c.get("status") or "")
+            dau = {"PASS": "✅", "BLOCK": "❌"}.get(st, "◌")
+            chi_tiet = str(c.get('evidence') or c.get('detail') or c.get('label') or '')[:100]
+            print(f"    {dau} {c.get('id')}: {chi_tiet}")
+    for hanh_dong in (bao.get("pending_actions") or [])[:8]:
+        print(f"  → CẦN: {str(hanh_dong)[:110]}")
+    print("Cần bác sĩ kiểm chứng.")
+    return {STATUS_BLOCKED: 3, STATUS_DRAFT_READY: 2, STATUS_CONFIRMED: 0}.get(status, 2)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -377,6 +377,24 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
             continue
         if _score(var, label, _OUTCOME_KEYWORDS) > 0:
             continue
+        # THÊM 2026-09-01 (kiểm toàn diện): Section Header khai TƯỜNG MINH vai
+        # trò hiệu chỉnh ("Biến hiệu chỉnh…", "forced-in", "covariate") → nhận
+        # THẲNG làm covariate — tín hiệu CẤU TRÚC thắng từ khoá, cùng lý lẽ đã
+        # dùng cho exposure/outcome ở trên. Vì sao cần: bộ từ khoá _DEMO/_LAB/
+        # _COMORBID nghiêng tiếng Anh (age/sex/bmi…), dictionary đề tài thật
+        # đặt tên tiếng Việt (tuoi/gioitinh/noicutru…) sẽ trượt hết → template
+        # rơi về "age + sex + bmi" SAI TÊN trên chính đề tài có bộ biến riêng.
+        if _section_is(section, "hiệu chỉnh", "forced-in", "covariate") and not _section_is(
+                section, "không hiệu chỉnh", "khong hieu chinh"):
+            covariate_found.append(var)
+            continue
+        # Loại trừ cấu trúc đối xứng: section khai RÕ "không hiệu chỉnh mô
+        # hình chính" / "thăm dò" / "không vào mô hình" → KHÔNG là covariate
+        # dù từ khoá có khớp (đề cương C1a khai co_cls/so_quay_buoc đúng kiểu
+        # này — đưa vào mô hình chính là trái điều đề cương đã khoá).
+        if _section_is(section, "không hiệu chỉnh", "thăm dò", "không vào mô hình",
+                       "text tự do", "mô tả"):
+            continue
         is_demo    = _score(var, label, _DEMO_KEYWORDS) > 0
         is_lab     = _score(var, label, _LAB_KEYWORDS) > 0
         is_comorbid = _score(var, label, _COMORBID_KEYWORDS) > 0
