@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-07-31 20:53 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
+> Tạo tự động: 2026-09-01 13:12 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,7 +15,7 @@
 - Mã đề tài: `hai-long-benh-nhan-C1a-BVQY175`
 - Tên đề tài: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-07-31 20:53
+- Ngày tạo/cập nhật: 2026-09-01 13:12
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: [CẦN BỔ SUNG]
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN BỔ SUNG]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
@@ -31,7 +31,7 @@
 - Mục tiêu: MT1 (mô tả): Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175; MT2 (phân tích): Đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 - Câu hỏi nghiên cứu/PICO-PECO-PIRD: Mức độ hài lòng của người bệnh ngoại trú tại Khoa Khám bệnh C1a là bao nhiêu, và những yếu tố nào liên quan đến mức độ hài lòng đó?
 - Giả thuyết chính và hướng hiệu ứng: [CẦN BỔ SUNG]
-- Kết cục chính neo mục tiêu: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep)
+- Kết cục chính neo mục tiêu: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)
 
 ### 0.4 Thiết kế, địa điểm và thời gian
 - Thiết kế đã chọn: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
@@ -55,10 +55,10 @@
 
 
 ### 0.7 Kết cục và lịch đánh giá
-- Kết cục chính: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep)
-- Định nghĩa/công cụ/đơn vị đo: [CẦN BỔ SUNG]
-- Thời điểm đánh giá chính: [CẦN BỔ SUNG]
-- Loại dữ liệu/thước đo: [CẦN BỔ SUNG]
+- Kết cục chính: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)
+- Định nghĩa/công cụ/đơn vị đo: Mục đơn Likert 5 mức — nguyên văn C.3: 'Nói chung, Ông/Bà hài lòng ở mức độ nào với tất cả các dịch vụ đã nhận được tại Khoa Khám bệnh trong lần khám này?'; KHÔNG tính từ trung bình lĩnh vực A–F (chống part-whole bias, mục 4.6.3)
+- Thời điểm đánh giá chính: Đo MỘT lần ngay sau khi cơ bản hoàn thành quy trình khám — đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT (mục 4.3.1); cắt ngang, không theo dõi dọc
+- Loại dữ liệu/thước đo: Thứ hạng (ordinal) 5 mức 1–5 — GIỮ nguyên thứ hạng trong mô hình chính (logistic thứ tự/proportional odds, SAP §2/§4); ngưỡng nhị phân thứ cấp KHÓA TRƯỚC: hài lòng = G1 ≥ 4/5
 - Kết cục phụ: Điểm hài lòng theo 6 lĩnh vực A-F (30 mục Likert 5 mức); Tỷ lệ hài lòng theo ngưỡng cố định G1 >= 4/5 (kết cục nhị phân thứ cấp, chỉ thực hiện nếu đủ điều kiện kích hoạt); Điểm hài lòng chung tính toán SHLNBChung_TinhToan (kết cục đối chiếu/hội tụ)
 - Lịch theo dõi/đánh giá: N/A — cắt ngang, đo một lần trên mỗi đối tượng ngay sau khi cơ bản hoàn thành quy trình khám
 
@@ -236,7 +236,7 @@ Hoặc: Linear regression → β (95%CI) nếu kết cục liên tục
 VIF < 5 (kiểm đa cộng tuyến); Hosmer-Lemeshow (logistic)
 α (hai đuôi): 0.05 [CẦN XÁC NHẬN THEO GIẢ THUYẾT]
 Hiệu ứng trình bày: [OR/HR/RR/MD + 95%CI] — KHÔNG chỉ p-value
-Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: 20260731 [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
+Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: 20260901 [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
 ```
 
 ### SAP §5 — Phân tích đa biến (Mục tiêu 2 — nếu có)
@@ -289,7 +289,7 @@ Mọi phân tích phải định trước hoặc gắn nhãn hậu nghiệm/thă
 ```
 Phần mềm chính: ☐ R v___  ☐ Stata v___  ☐ SPSS v___
 R packages dự kiến: tableone, car [CẦN BÁC SĨ XÁC NHẬN — gợi ý theo thiết kế cross_sectional]
-Random seed: 20260731 [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
+Random seed: 20260901 [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
 Script phân tích: lưu tại exports/hai-long-benh-nhan-C1a-BVQY175/scripts/ — versioned cùng protocol
 ```
 
@@ -377,7 +377,7 @@ cỡ mẫu đã đến từ đâu (STROBE mục 10), chọn MỘT trong ba đư�
 ╠══════════════════════════════════════════════════════════════╣
 ║  Đề tài: hai-long-benh-nhan-C1a-BVQY175                        ║
 ║  Phiên bản SAP: 1.0                                         ║
-║  Ngày soạn SAP: 2026-07-31                                    ║
+║  Ngày soạn SAP: 2026-09-01                                    ║
 ║  Trạng thái dữ liệu lúc khóa: CHƯA CÓ / CHƯA XEM          ║
 ║                                                              ║
 ║  Kết cục chính (KHÔNG đổi sau khóa):                       ║

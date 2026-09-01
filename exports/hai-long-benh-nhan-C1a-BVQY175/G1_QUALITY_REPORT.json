@@ -87,8 +87,8 @@
     {
       "id": "G1-HUMAN-02",
       "label": "Mục tiêu và kết cục chính vận hành đã chốt",
-      "status": "REVIEW",
-      "evidence": "objectives=đủ; outcome_name=có; measure=thiếu; timepoint=thiếu; type=thiếu",
+      "status": "PASS",
+      "evidence": "objectives=đủ; outcome_name=có; measure=có; timepoint=có; type=có",
       "action": "Điền objectives và primary_outcome gồm tên, định nghĩa/công cụ đo, thời điểm và loại dữ liệu."
     },
     {
@@ -136,7 +136,6 @@
   ],
   "pending_actions": [
     "Điền design_code/gate_params.G1.design và design_confirmed=true.",
-    "Điền objectives và primary_outcome gồm tên, định nghĩa/công cụ đo, thời điểm và loại dữ liệu.",
     "Điền population, inclusion/exclusion criteria, recruitment_strategy, setting và study_period.",
     "PI/methodologist rà toàn bộ protocol core, bảng bias và tính khả thi rồi bật ba cờ xác nhận.",
     "Evidence reviewer/PI xác nhận nội dung nguồn và khoảng trống.",
@@ -145,15 +144,15 @@
   "artifact_manifest": {
     "A2": {
       "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "95026d294466fd7bced6fb7249c784df79a8602e3ed2102b22c7909557175107"
+      "sha256": "909e12423cf8594c01eee7e2b95a9d63e80ad30f33e7e38ef5b1c0270bd341d8"
     },
     "A1b": {
       "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "29384c97c7e907d213ed81495dfdf0ef6b943a36d0152ae2ad4069c5bd5eaa3a"
+      "sha256": "6eb5c214ad5993dc59be03e810f2359f8105a6b0504f850b91099c43d5e4f38d"
     },
     "A2b": {
       "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "5066abe7d535d221f76336f963eab2114f751f3d8ca119504141270e8992c728"
+      "sha256": "3a5c2b81e95e088bc63ca18a178a3d76841f397f22eeea3feae2c21b8df9494d"
     },
     "A13": {
       "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -161,7 +160,7 @@
     },
     "A13b": {
       "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "ee4142804669315d6fd1e27a4e7a5c67d44e4c09b08a52043950a81e03df52ca"
+      "sha256": "0377a5b111bcdab3f45deed30eb0e2cf00b370585801b3b761daf71c64c8be49"
     }
   },
   "standards_basis": [

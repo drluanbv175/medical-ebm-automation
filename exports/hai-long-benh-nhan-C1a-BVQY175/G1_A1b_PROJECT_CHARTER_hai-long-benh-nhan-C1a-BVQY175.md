@@ -1,5 +1,5 @@
 # PROJECT CHARTER (A1b) — hai-long-benh-nhan-C1a-BVQY175
-> [DỰ THẢO] Sinh tự động 2026-07-31 20:53; không thay xác nhận của PI/methodologist.
+> [DỰ THẢO] Sinh tự động 2026-09-01 13:12; không thay xác nhận của PI/methodologist.
 
 ## Phạm vi
 - Tên/chủ đề: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
@@ -11,7 +11,7 @@
 
 ## Mục tiêu SMART
 - Mục tiêu: MT1 (mô tả): Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175; MT2 (phân tích): Đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
-- Kết cục chính neo mục tiêu: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep)
+- Kết cục chính neo mục tiêu: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)
 
 ## Governance
 | Quyết định | Vai trò chịu trách nhiệm | Bằng chứng |

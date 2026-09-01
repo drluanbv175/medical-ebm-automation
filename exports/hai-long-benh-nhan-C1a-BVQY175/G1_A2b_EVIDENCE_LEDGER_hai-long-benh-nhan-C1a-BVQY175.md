@@ -4,7 +4,7 @@
 ## Chiến lược tìm kiếm
 - Nguồn tối thiểu: PubMed + ít nhất một nguồn phù hợp khác.
 - Truy vấn G0: `patient satisfaction outpatient department Vietnam hospital`
-- Ngày rà: 2026-07-31
+- Ngày rà: 2026-09-01
 - Giới hạn truy xuất/recall: [CẦN XÁC NHẬN]
 
 ## Bảng Evidence Ledger

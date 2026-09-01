@@ -47,7 +47,12 @@
         "MT2 (phân tích): Đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175"
       ],
       "research_question": "Mức độ hài lòng của người bệnh ngoại trú tại Khoa Khám bệnh C1a là bao nhiêu, và những yếu tố nào liên quan đến mức độ hài lòng đó?",
-      "primary_outcome": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep)",
+      "primary_outcome": {
+        "name": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)",
+        "measure": "Mục đơn Likert 5 mức — nguyên văn C.3: 'Nói chung, Ông/Bà hài lòng ở mức độ nào với tất cả các dịch vụ đã nhận được tại Khoa Khám bệnh trong lần khám này?'; KHÔNG tính từ trung bình lĩnh vực A–F (chống part-whole bias, mục 4.6.3)",
+        "timepoint": "Đo MỘT lần ngay sau khi cơ bản hoàn thành quy trình khám — đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT (mục 4.3.1); cắt ngang, không theo dõi dọc",
+        "type": "Thứ hạng (ordinal) 5 mức 1–5 — GIỮ nguyên thứ hạng trong mô hình chính (logistic thứ tự/proportional odds, SAP §2/§4); ngưỡng nhị phân thứ cấp KHÓA TRƯỚC: hài lòng = G1 ≥ 4/5"
+      },
       "secondary_outcomes": [
         "Điểm hài lòng theo 6 lĩnh vực A-F (30 mục Likert 5 mức)",
         "Tỷ lệ hài lòng theo ngưỡng cố định G1 >= 4/5 (kết cục nhị phân thứ cấp, chỉ thực hiện nếu đủ điều kiện kích hoạt)",

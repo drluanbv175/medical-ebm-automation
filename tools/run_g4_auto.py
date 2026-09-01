@@ -469,6 +469,11 @@ def write_docx(artifact, path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--study", required=True)
+    # THÊM 2026-09-01 (kiểm toàn diện): cờ ghi đè CÓ CHỦ ĐÍCH cho rào chống
+    # đè SAP đã biên tập (xem khối rào trước md.write_text bên dưới).
+    parser.add_argument("--regenerate-sap", action="store_true",
+                        help="Ép sinh lại SAP từ template dù bản đang có đầy đủ hơn "
+                             "(bản cũ vẫn được sao lưu .bak-* trước khi đè)")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
@@ -594,6 +599,28 @@ def main():
     # trước khi ghi. keep_box=True: khung của SAP LOCK CERTIFICATE đóng vai con
     # dấu, giữ nguyên có chủ đích (tools/vn_prose_style.py).
     artifact = _VNSTYLE.clean_generated_prose(artifact, keep_box=True)
+    # ★ RÀO CHỐNG ĐÈ MẤT SAP ĐÃ BIÊN TẬP (kiểm toàn diện 01/09/2026): trước
+    # bản vá này md.write_text() đè VÔ ĐIỀU KIỆN — không sao lưu, không rào.
+    # Ca thật suýt xảy ra: SAP v1.1 của C1a (12 mục đồng bộ từ đề cương đã
+    # duyệt, 12/13 tiêu chí G4 PASS) sẽ bị thay bằng template [CẦN] trống nếu
+    # ai chạy lại G4 — kể cả chỉ để xoá cảnh báo freshness của run_pipeline.
+    # Luật nội dung 21/08 (họ BH71): bản đích ĐẦY ĐỦ HƠN bản máy sắp sinh
+    # (ÍT nhãn [CẦN hơn) → TỪ CHỐI đè; chỉ người thật quyết bằng
+    # --regenerate-sap (vẫn sao lưu .bak-* trước). SAP cũ KÉM đầy đủ hơn →
+    # đè như cũ nhưng nay LUÔN có .bak-* (cùng khuôn G0 đã làm từ 28/07).
+    if md.exists():
+        ban_cu = md.read_text(encoding="utf-8")
+        bak = md.with_name(md.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
+        bak.write_text(ban_cu, encoding="utf-8", newline="\n")
+        print(f"  → Sao lưu SAP hiện có: {bak.name}")
+        if (ban_cu.count("[CẦN") < artifact.count("[CẦN")
+                and not getattr(args, "regenerate_sap", False)):
+            print("⛔ TỪ CHỐI đè SAP: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh "
+                  f"({ban_cu.count('[CẦN')} vs {artifact.count('[CẦN')} nhãn [CẦN...]) — "
+                  "nhiều khả năng đã được bác sĩ/thống kê viên biên tập.")
+            print("   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: thêm cờ --regenerate-sap "
+                  "(bản cũ vẫn được sao lưu .bak-* ở trên).")
+            raise SystemExit(GC.EXIT_BLOCKED)
     md.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
 
