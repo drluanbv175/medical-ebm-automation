@@ -1,9 +1,9 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-09-02T07:46:27",
+  "generated_at": "2026-09-02T07:55:57",
   "tong": {
     "xanh": 42,
-    "vang": 39,
+    "vang": 38,
     "do": 0,
     "trang": 0
   },
@@ -16,7 +16,7 @@
       "④": "🟢"
     },
     "G1": {
-      "①": "🟡",
+      "①": "🟢",
       "②": "🟡",
       "③": "🟡",
       "④": "🟢"
@@ -139,15 +139,6 @@
     },
     {
       "cong": "G1",
-      "truc": "①",
-      "muc": "🟡",
-      "nhan": "Độ tươi (theo mtime): CŨ hơn thượng nguồn",
-      "bang_chung": "G1 sinh TRƯỚC thượng nguồn G0 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
-      "hanh_dong": "chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …)",
-      "may_sua": false
-    },
-    {
-      "cong": "G1",
       "truc": "②",
       "muc": "🟡",
       "nhan": "Hợp đồng chất lượng G1",
@@ -187,7 +178,7 @@
       "truc": "③",
       "muc": "🟢",
       "nhan": "G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
-      "bang_chung": "[CẦN còn 62",
+      "bang_chung": "[CẦN còn 50",
       "hanh_dong": "",
       "may_sua": false
     },
@@ -213,7 +204,7 @@
       "cong": "G1",
       "truc": "③",
       "muc": "🟡",
-      "nhan": "Còn 178 nhãn [CẦN…] trong 5 file",
+      "nhan": "Còn 166 nhãn [CẦN…] trong 5 file",
       "bang_chung": "thẩm quyền chủ nhiệm/thống kê viên",
       "hanh_dong": "điền rồi chạy lại quality gate của cổng",
       "may_sua": false
@@ -277,7 +268,7 @@
       "truc": "①",
       "muc": "🟡",
       "nhan": "Độ tươi (theo mtime): CŨ hơn thượng nguồn",
-      "bang_chung": "G2 sinh TRƯỚC thượng nguồn G0 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
+      "bang_chung": "G2 sinh TRƯỚC thượng nguồn G0, G1 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
       "hanh_dong": "chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …)",
       "may_sua": false
     },

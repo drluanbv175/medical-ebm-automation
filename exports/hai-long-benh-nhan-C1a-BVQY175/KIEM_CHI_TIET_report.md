@@ -1,11 +1,11 @@
 # Kiểm chi tiết hệ nghiên cứu — hai-long-benh-nhan-C1a-BVQY175
 
-Sinh lúc 2026-09-02T07:46:27. Chỉ ĐO và BÁO. 🟡 là việc của người thật, không phải lỗi. Cần bác sĩ kiểm chứng.
+Sinh lúc 2026-09-02T07:55:57. Chỉ ĐO và BÁO. 🟡 là việc của người thật, không phải lỗi. Cần bác sĩ kiểm chứng.
 
 | Cổng | ① Tự động | ② Chuẩn | ③ Tài liệu | ④ Trình bày | ⑤ Điểm dừng người |
 |---|---|---|---|---|---|
 | G0 | 🟢 | 🟢 | 🟡 | 🟢 | · |
-| G1 | 🟡 | 🟡 | 🟡 | 🟢 | · |
+| G1 | 🟢 | 🟡 | 🟡 | 🟢 | · |
 | G2 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
 | G3 | 🟡 | 🟡 | 🟡 | 🟢 | · |
 | G4 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
@@ -16,7 +16,7 @@ Sinh lúc 2026-09-02T07:46:27. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G9 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
 | G10 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
 
-**Tổng:** 🟢 42 · 🟡 39 · 🔴 0 · ⚪ 0 — mã thoát 1
+**Tổng:** 🟢 42 · 🟡 38 · 🔴 0 · ⚪ 0 — mã thoát 1
 
 ## Chi tiết
 
@@ -28,22 +28,21 @@ Sinh lúc 2026-09-02T07:46:27. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G0 | ③ | 🟡 | Còn 24 nhãn [CẦN…] trong 1 file | thẩm quyền chủ nhiệm/thống kê viên | điền rồi chạy lại quality gate của cổng |
 | G0 | ④ | 🟢 | G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt | 0 ký tự trang trí |  |
 | G1 | ① | 🟢 | Checkpoint có, guardrail PASS | G1_checkpoint.json |  |
-| G1 | ① | 🟡 | Độ tươi (theo mtime): CŨ hơn thượng nguồn | G1 sinh TRƯỚC thượng nguồn G0 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống) | chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …) |
 | G1 | ② | 🟡 | Hợp đồng chất lượng G1 | DRAFT_READY_NEEDS_HUMAN_REVIEW (bản đã lưu — chấm lại = chạy run_g1_auto); tự động FAIL 0 · REVIEW 0 · người 5 treo | người thật điền study_meta.json → gate_params.G1: G1-HUMAN-01, G1-HUMAN-03, G1-HUMAN-06, G1-HUMAN-07, G1-HUMAN-08 |
 | G1 | ② | 🟢 | Chuẩn báo cáo STROBE được đề cương gọi tên | thiết kế cross_sectional |  |
 | G1 | ③ | 🟢 | G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 89 |  |
 | G1 | ③ | 🟢 | G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 2 |  |
-| G1 | ③ | 🟢 | G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 62 |  |
+| G1 | ③ | 🟢 | G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 50 |  |
 | G1 | ③ | 🟢 | G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 19 |  |
 | G1 | ③ | 🟢 | G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 6 |  |
-| G1 | ③ | 🟡 | Còn 178 nhãn [CẦN…] trong 5 file | thẩm quyền chủ nhiệm/thống kê viên | điền rồi chạy lại quality gate của cổng |
+| G1 | ③ | 🟡 | Còn 166 nhãn [CẦN…] trong 5 file | thẩm quyền chủ nhiệm/thống kê viên | điền rồi chạy lại quality gate của cổng |
 | G1 | ④ | 🟢 | G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G1 | ④ | 🟢 | G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G1 | ④ | 🟢 | G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G1 | ④ | 🟢 | G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G1 | ④ | 🟢 | G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G2 | ① | 🟢 | Checkpoint có, guardrail PASS | G2_checkpoint.json |  |
-| G2 | ① | 🟡 | Độ tươi (theo mtime): CŨ hơn thượng nguồn | G2 sinh TRƯỚC thượng nguồn G0 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống) | chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …) |
+| G2 | ① | 🟡 | Độ tươi (theo mtime): CŨ hơn thượng nguồn | G2 sinh TRƯỚC thượng nguồn G0, G1 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống) | chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …) |
 | G2 | ② | 🟡 | Hợp đồng chất lượng G2 | DRAFT_NEEDS_HUMAN_COMPLETION (chấm sống); tự động FAIL 0 · REVIEW 3 · người 2 treo | người thật điền study_meta.json → gate_params.G2: G2-AUTO-02, G2-AUTO-05, G2-AUTO-08, G2-HUMAN-01, G2-HUMAN-02 |
 | G2 | ③ | 🟢 | G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 49 |  |
 | G2 | ③ | 🟡 | Còn 49 nhãn [CẦN…] trong 1 file | thẩm quyền chủ nhiệm/thống kê viên | điền rồi chạy lại quality gate của cổng |

@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-09-01 23:39 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
+> Tạo tự động: 2026-09-02 07:55 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,7 +15,7 @@
 - Mã đề tài: `hai-long-benh-nhan-C1a-BVQY175`
 - Tên đề tài: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-09-01 23:39
+- Ngày tạo/cập nhật: 2026-09-02 07:55
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: [CẦN BỔ SUNG]
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN BỔ SUNG]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
@@ -236,7 +236,7 @@ Hoặc: Linear regression → β (95%CI) nếu kết cục liên tục
 VIF < 5 (kiểm đa cộng tuyến); Hosmer-Lemeshow (logistic)
 α (hai đuôi): 0.05 [CẦN XÁC NHẬN THEO GIẢ THUYẾT]
 Hiệu ứng trình bày: [OR/HR/RR/MD + 95%CI] — KHÔNG chỉ p-value
-Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: 20260901 [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
+Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: 20260902 [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
 ```
 
 ### SAP §5 — Phân tích đa biến (Mục tiêu 2 — nếu có)
@@ -289,7 +289,7 @@ Mọi phân tích phải định trước hoặc gắn nhãn hậu nghiệm/thă
 ```
 Phần mềm chính: ☐ R v___  ☐ Stata v___  ☐ SPSS v___
 R packages dự kiến: tableone, car [CẦN BÁC SĨ XÁC NHẬN — gợi ý theo thiết kế cross_sectional]
-Random seed: 20260901 [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
+Random seed: 20260902 [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
 Script phân tích: lưu tại exports/hai-long-benh-nhan-C1a-BVQY175/scripts/ — versioned cùng protocol
 ```
 
@@ -377,7 +377,7 @@ cỡ mẫu đã đến từ đâu (STROBE mục 10), chọn MỘT trong ba đư�
 ╠══════════════════════════════════════════════════════════════╣
 ║  Đề tài: hai-long-benh-nhan-C1a-BVQY175                        ║
 ║  Phiên bản SAP: 1.0                                         ║
-║  Ngày soạn SAP: 2026-09-01                                    ║
+║  Ngày soạn SAP: 2026-09-02                                    ║
 ║  Trạng thái dữ liệu lúc khóa: CHƯA CÓ / CHƯA XEM          ║
 ║                                                              ║
 ║  Kết cục chính (KHÔNG đổi sau khóa):                       ║

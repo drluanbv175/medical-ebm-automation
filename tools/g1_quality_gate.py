@@ -459,6 +459,51 @@ def _primary_outcome(meta: Mapping[str, Any]) -> Any:
     return _first_present(meta.get("primary_outcome"), g1.get("primary_outcome"))
 
 
+def _metadata_tu_g0(out_dir: Path) -> Dict[str, str]:
+    """Bảng PMID → «Tiêu đề — Tạp chí (Năm)» lấy từ CHÍNH kết quả tìm PubMed của G0.
+
+    ★ ĐO 02/09/2026 trên đề tài thật C1a: sổ chứng cứ A2b để 12 dòng
+    «[CẦN TRÍCH XUẤT METADATA]» — tức việc TAY của chủ nhiệm — trong khi đủ tiêu
+    đề/tạp chí/năm của ĐÚNG 12 PMID đó đã nằm sẵn trong `G0_pubmed_raw.json` CÙNG
+    THƯ MỤC, do chính G0 tra về trong cùng dây chuyền (đo được 12/12 phủ). Cùng
+    lượt sinh, những PMID có effect size thì title ĐƯỢC điền, số còn lại thì
+    không — tức năng lực đã có, chỉ thiếu một đoạn dây. Đây là kiểu «tự động hoá
+    dở dang» đắt nhất: nó đẩy sang người thật một việc máy vừa làm xong ở dòng trên.
+
+    Ranh giới cố ý: KHÔNG gọi mạng (đọc file đã có), KHÔNG suy đoán — PMID không
+    có bản ghi thì GIỮ NGUYÊN nhãn [CẦN. Chỉ cột METADATA; trích xuất dữ liệu,
+    thẩm định RoB và xác nhận nội dung vẫn là việc người thật.
+    """
+    raw_path = Path(out_dir) / "G0_pubmed_raw.json"
+    try:
+        raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    bang: Dict[str, str] = {}
+    for nhom in raw.values():
+        if not isinstance(nhom, list):
+            continue
+        for r in nhom:
+            if not isinstance(r, dict):
+                continue
+            pmid = str(r.get("pmid") or "").strip()
+            tieu_de = _o_bang(r.get("title"))
+            if not pmid or not tieu_de:
+                continue
+            tap_chi = _o_bang(r.get("journal"))
+            nam = _o_bang(r.get("year"))
+            duoi = f"{tap_chi} ({nam})" if tap_chi and nam else (tap_chi or (f"({nam})" if nam else ""))
+            bang[pmid] = f"{tieu_de} — {duoi}" if duoi else tieu_de
+    return bang
+
+
+def _o_bang(gia_tri: Any) -> str:
+    """Chuỗi an toàn cho MỘT ô bảng markdown — dấu `|` trong tiêu đề sẽ phá cột."""
+    return " ".join(str(gia_tri or "").split()).replace("|", "/")
+
+
 def build_supporting_artifacts(
     *,
     study: str,
@@ -539,11 +584,16 @@ def build_supporting_artifacts(
             )
         )
     effect_pmids = {str(effect.get("pmid") or "").strip() for effect in effects}
+    meta_g0 = _metadata_tu_g0(out_dir)
+    n_tu_g0 = 0
     for pmid in identifiers["pmids"]:
         if pmid in effect_pmids:
             continue
+        md = meta_g0.get(str(pmid))
+        if md:
+            n_tu_g0 += 1
         evidence_rows.append(
-            f"| PMID:{pmid} | [CẦN TRÍCH XUẤT METADATA] | "
+            f"| PMID:{pmid} | {md or '[CẦN TRÍCH XUẤT METADATA]'} | "
             "[CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | "
             "[CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |"
         )
@@ -564,9 +614,14 @@ def build_supporting_artifacts(
         gap_text = "\n".join(f"- {item}" for item in gap_lines)
     else:
         gap_text = "- [CẦN BỔ SUNG sau tổng quan có hệ thống]"
+    ghi_chu_md = (
+        f"> Cột **Metadata**: {n_tu_g0} dòng điền TỰ ĐỘNG từ kết quả tìm PubMed của G0 "
+        "(`G0_pubmed_raw.json`) — chỉ là tiêu đề/tạp chí/năm, KHÔNG phải thẩm định. "
+        "Các cột còn lại vẫn là việc người thật.\n"
+    ) if n_tu_g0 else ""
     evidence = f"""# EVIDENCE LEDGER (A2b) — {study}
 > [DỰ THẢO] Không tự gán GRADE; chưa đọc toàn văn phải giữ nhãn [CẦN].
-
+{ghi_chu_md}
 ## Chiến lược tìm kiếm
 - Nguồn tối thiểu: PubMed + ít nhất một nguồn phù hợp khác.
 - Truy vấn G0: `{query}`

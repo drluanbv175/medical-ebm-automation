@@ -31,11 +31,11 @@
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A2 | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `cb0b06e23c41816855e90871c3d3d311a26d2346163682962fb9ab25ab0babc6` |
-| A1b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `0e45015bb6026bb177a03d46a02a2c45ff69503f5f61d0e9e8ca24d8a4f43ec4` |
-| A2b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `3a5c2b81e95e088bc63ca18a178a3d76841f397f22eeea3feae2c21b8df9494d` |
+| A2 | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `39d53fc57bc8bb197d52bf2e717bb56788aec94613ce9377203d9c1e5b6db6b9` |
+| A1b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `c17800419d16758195b7af4776b2442c19d02e04b9a40b41b8533c8bd34e50b9` |
+| A2b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `4c14bc86d0d94ad24b58b924159e49cd083921d8ff449b7de8b7f8d97d4bccf7` |
 | A13 | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `5de5087b086310a566d9e16cb13df4ce9a41b5060d585b2ef8560af52dfefcd9` |
-| A13b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `0377a5b111bcdab3f45deed30eb0e2cf00b370585801b3b761daf71c64c8be49` |
+| A13b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `354392396e57941f3a4c002f05b3e795d7f658d828cac0ed6cade894ca38684d` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |
