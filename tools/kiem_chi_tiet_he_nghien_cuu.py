@@ -540,6 +540,26 @@ def kiem_cong(gate: str, study: str, out_dir: Path, cps: dict[str, dict[str, Any
         mau, ly = trang_thai_chuoi(gate, cps, ky)
         m.append(Muc(gate, "①", mau, "Cổng chưa chạy", ly,
                      f"python3 tools/{SCRIPT_CONG[gate]} --study {study}" if mau == DO else "", mau == DO))
+        # ★ ĐO 02/09/2026 (vòng rà 4): C1a có G6a_ANALYSIS/G6b_INTERPRETATION/
+        # G6d_CLINICAL-GUIDELINE/G9_READINESS.docx TRÊN ĐĨA dù G6_checkpoint.json
+        # và G9_checkpoint.json KHÔNG TỒN TẠI — gen_research_docx.py sinh được
+        # artifact "trông như" sản phẩm thật của một cổng CHƯA TỪNG CHẠY (không
+        # guardrail, không checkpoint, không dấu vết nào khác). Một chủ nhiệm mở
+        # thư mục exports/<mã>/ thấy "G9_READINESS_....docx" hoàn toàn có lý do
+        # để tin G9 đã chạy — cùng họ báo động giả mà vòng 2b vừa vá ở TẦNG CÔNG
+        # CỤ (bảng điểm cho thư mục lạ); đây là cùng họ đó nhưng ở TẦNG FILE bên
+        # trong một đề tài THẬT. Nội dung xác minh: 100% khung placeholder
+        # "[CẦN CHỦ NHIỆM XÁC NHẬN] Chủ nhiệm điền nội dung cho phần này." — 0
+        # chữ nào do người viết.
+        if docx_cong.get(gate):
+            ten = ", ".join(p.name for p in docx_cong[gate])
+            m.append(Muc(gate, "①", DO,
+                         f"{gate}: có {len(docx_cong[gate])} bản .docx TRÊN ĐĨA dù cổng CHƯA TỪNG chạy",
+                         f"{ten} — không checkpoint, không guardrail, nghi tài liệu lạc/khung rỗng",
+                         f"xác minh nội dung; nếu chỉ là khung rỗng thì dời sang "
+                         f"exports/{study}/_tai-lieu-mo-coi/ (không xoá — giữ truy vết, tiền tố "
+                         '"_" đã là quy ước NỘI BỘ của verify_exports_integrity.py) để không ai '
+                         "đọc nhầm là cổng đã chạy", True))
     else:
         if GC.is_blocked(cp):
             mau_b, ly_b = trang_thai_chuoi(gate, {g: c for g, c in cps.items() if g != gate}, ky)

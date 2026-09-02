@@ -1,6 +1,6 @@
 # Kiểm chi tiết hệ nghiên cứu — hai-long-benh-nhan-C1a-BVQY175
 
-Sinh lúc 2026-09-02T07:55:57. Chỉ ĐO và BÁO. 🟡 là việc của người thật, không phải lỗi. Cần bác sĩ kiểm chứng.
+Sinh lúc 2026-09-02T08:21:35. Chỉ ĐO và BÁO. 🟡 là việc của người thật, không phải lỗi. Cần bác sĩ kiểm chứng.
 
 | Cổng | ① Tự động | ② Chuẩn | ③ Tài liệu | ④ Trình bày | ⑤ Điểm dừng người |
 |---|---|---|---|---|---|
@@ -10,13 +10,13 @@ Sinh lúc 2026-09-02T07:55:57. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G3 | 🟡 | 🟡 | 🟡 | 🟢 | · |
 | G4 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
 | G5 | 🟡 | 🟡 | 🟡 | · | 🟡 |
-| G6 | 🟡 | 🟡 | 🟡 | 🟢 | · |
+| G6 | 🟡 | 🟡 | 🟡 | · | · |
 | G7 | 🟡 | 🟡 | 🟡 | · | · |
 | G8 | 🟡 | 🟡 | 🟡 | · | 🟡 |
-| G9 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
+| G9 | 🟡 | 🟡 | 🟡 | · | 🟡 |
 | G10 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
 
-**Tổng:** 🟢 42 · 🟡 38 · 🔴 0 · ⚪ 0 — mã thoát 1
+**Tổng:** 🟢 38 · 🟡 38 · 🔴 0 · ⚪ 0 — mã thoát 1
 
 ## Chi tiết
 
@@ -68,9 +68,6 @@ Sinh lúc 2026-09-02T07:55:57. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G6 | ① | 🟡 | Cổng chưa chạy | chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5 |  |
 | G6 | ② | 🟡 | Hợp đồng chất lượng | chưa tới lượt |  |
 | G6 | ③ | 🟡 | Artifact BẮT BUỘC thiếu | analysis_scripts | chưa tới lượt |
-| G6 | ④ | 🟢 | G6a_ANALYSIS_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt | 0 ký tự trang trí |  |
-| G6 | ④ | 🟢 | G6b_INTERPRETATION_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt | 0 ký tự trang trí |  |
-| G6 | ④ | 🟢 | G6d_CLINICAL-GUIDELINE_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt | 0 ký tự trang trí |  |
 | G7 | ① | 🟡 | Cổng chưa chạy | chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5 |  |
 | G7 | ② | 🟡 | Hợp đồng chất lượng | chưa tới lượt |  |
 | G7 | ③ | 🟡 | Artifact BẮT BUỘC thiếu | manuscript | chưa tới lượt |
@@ -81,7 +78,6 @@ Sinh lúc 2026-09-02T07:55:57. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G9 | ① | 🟡 | Cổng chưa chạy | chờ G7 chạy trước → chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5 |  |
 | G9 | ② | 🟡 | Hợp đồng chất lượng | chưa tới lượt |  |
 | G9 | ③ | 🟡 | Artifact BẮT BUỘC thiếu | author_integrity, publication_readiness, quality_report | chưa tới lượt |
-| G9 | ④ | 🟢 | G9_READINESS_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G9 | ⑤ | 🟡 | Chưa có artifact để ký | chưa tới lượt |  |
 | G10 | ① | 🟡 | Checkpoint BLOCKED = từ chối fail-closed ĐÚNG | Trích dẫn (cổng A12) chưa chạy agent `kiem-chung-trich-dan` (thiếu artifact A12). → pytho… · chờ ký thật cổng G8 (PHAN_BIEN / PEER_REVIEWER / EXTERNAL_REVIEWER) — approve_gate.py --gate G8 |  |
 | G10 | ① | 🟡 | Độ tươi (theo mtime): MỒ CÔI (thượng nguồn thiếu) | G10 có checkpoint nhưng thượng nguồn còn THIẾU: G5, G6, G7, G8, G9 — nội dung có khớp hay không xem trục ② (chấm sống) | chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …) |

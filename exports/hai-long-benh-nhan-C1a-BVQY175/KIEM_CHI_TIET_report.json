@@ -1,8 +1,8 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-09-02T07:55:57",
+  "generated_at": "2026-09-02T08:21:35",
   "tong": {
-    "xanh": 42,
+    "xanh": 38,
     "vang": 38,
     "do": 0,
     "trang": 0
@@ -50,8 +50,7 @@
     "G6": {
       "①": "🟡",
       "②": "🟡",
-      "③": "🟡",
-      "④": "🟢"
+      "③": "🟡"
     },
     "G7": {
       "①": "🟡",
@@ -68,7 +67,6 @@
       "①": "🟡",
       "②": "🟡",
       "③": "🟡",
-      "④": "🟢",
       "⑤": "🟡"
     },
     "G10": {
@@ -498,33 +496,6 @@
       "may_sua": false
     },
     {
-      "cong": "G6",
-      "truc": "④",
-      "muc": "🟢",
-      "nhan": "G6a_ANALYSIS_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt",
-      "bang_chung": "0 ký tự trang trí",
-      "hanh_dong": "",
-      "may_sua": false
-    },
-    {
-      "cong": "G6",
-      "truc": "④",
-      "muc": "🟢",
-      "nhan": "G6b_INTERPRETATION_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt",
-      "bang_chung": "0 ký tự trang trí",
-      "hanh_dong": "",
-      "may_sua": false
-    },
-    {
-      "cong": "G6",
-      "truc": "④",
-      "muc": "🟢",
-      "nhan": "G6d_CLINICAL-GUIDELINE_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt",
-      "bang_chung": "0 ký tự trang trí",
-      "hanh_dong": "",
-      "may_sua": false
-    },
-    {
       "cong": "G7",
       "truc": "①",
       "muc": "🟡",
@@ -612,15 +583,6 @@
       "nhan": "Artifact BẮT BUỘC thiếu",
       "bang_chung": "author_integrity, publication_readiness, quality_report",
       "hanh_dong": "chưa tới lượt",
-      "may_sua": false
-    },
-    {
-      "cong": "G9",
-      "truc": "④",
-      "muc": "🟢",
-      "nhan": "G9_READINESS_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
-      "bang_chung": "0 ký tự trang trí",
-      "hanh_dong": "",
       "may_sua": false
     },
     {

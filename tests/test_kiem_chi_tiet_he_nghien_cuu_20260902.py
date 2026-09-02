@@ -244,3 +244,52 @@ class TestTuChoiThuMucKhongPhaiDeTai:
         assert "KHÔNG phải một đề tài nghiên cứu" in r.stdout
         assert "BẢNG ĐIỂM" not in r.stdout, "không được in bảng điểm cho thứ không có cổng nào"
         assert "list_studies.py" in r.stdout, "phải chỉ đường xem danh sách đề tài thật"
+
+
+class TestMoCoiCongChuaTungChay:
+    """Vòng rà 4 (02/09): C1a có G6a/G6b/G6d/G9_READINESS.docx TRÊN ĐĨA dù
+    G6_checkpoint.json và G9_checkpoint.json KHÔNG TỒN TẠI — gen_research_docx.py
+    sinh được artifact "trông như" sản phẩm thật của một cổng CHƯA TỪNG CHẠY.
+    Nội dung xác minh: khung placeholder 100%, không một chữ do người viết.
+    """
+
+    def test_docx_khong_checkpoint_bi_bat_o_truc_1(self, tmp_path):
+        study = "PYTEST-KCT-MOCOI-CONG"
+        d = tmp_path / study
+        d.mkdir()
+        (d / "study_meta.json").write_text(json.dumps({"topic": "X"}), encoding="utf-8", newline="\n")
+        doc = Document()
+        doc.add_paragraph("[CẦN CHỦ NHIỆM XÁC NHẬN] khung rỗng")
+        doc.save(d / f"G6a_ANALYSIS_{study}.docx")
+        r = _run(tmp_path, study)
+        assert r.returncode == 2, r.stdout + r.stderr
+        assert "CHƯA TỪNG chạy" in r.stdout
+        assert "G6a_ANALYSIS" in r.stdout
+        assert "_tai-lieu-mo-coi" in r.stdout, "phải chỉ đúng nơi dời tới"
+        assert _bang_diem(r.stdout)["G6"][0] == K.DO
+
+    def test_co_checkpoint_thi_khong_bao_dong(self, tmp_path):
+        study = "PYTEST-KCT-CO-CHECKPOINT"
+        d = tmp_path / study
+        d.mkdir()
+        (d / "study_meta.json").write_text(json.dumps({"topic": "X"}), encoding="utf-8", newline="\n")
+        (d / "G6_checkpoint.json").write_text(json.dumps({"gate": "G6", "guardrail": {"passed": True}}),
+                                              encoding="utf-8", newline="\n")
+        doc = Document()
+        doc.add_paragraph("nội dung")
+        doc.save(d / f"G6a_ANALYSIS_{study}.docx")
+        r = _run(tmp_path, study)
+        assert "CHƯA TỪNG chạy" not in r.stdout, "cổng ĐÃ có checkpoint — không được báo mồ côi"
+
+    def test_dua_ra_khoi_muc_luc_ngoai_cung_thi_het_bao_dong(self, tmp_path):
+        study = "PYTEST-KCT-DA-DOI"
+        d = tmp_path / study
+        d.mkdir()
+        (d / "study_meta.json").write_text(json.dumps({"topic": "X"}), encoding="utf-8", newline="\n")
+        noi_bo = d / "_tai-lieu-mo-coi"
+        noi_bo.mkdir()
+        doc = Document()
+        doc.add_paragraph("khung rỗng")
+        doc.save(noi_bo / f"G6a_ANALYSIS_{study}.docx")
+        r = _run(tmp_path, study)
+        assert "CHƯA TỪNG chạy" not in r.stdout, "file trong thư mục con không được glob() cấp cao nhặt lại"
