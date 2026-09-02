@@ -1621,6 +1621,12 @@ def main():
                         help="Loại thiết kế (mặc định: đọc từ G1 checkpoint)")
     # Đối xứng với run_g0_auto.py: cho phép chạy hoàn toàn offline. Hồ sơ vẫn sinh
     # ra, nhưng mục prior art được dán nhãn CHƯA TRA ĐƯỢC (không giả vờ đã tra).
+    # THÊM 2026-09-01: rào chống đè hồ sơ đạo đức đã biên tập (xem khối trước
+    # md_path.write_text). Ca thật cùng ngày: tái sinh G2 trên C1a đè mất 45 dòng
+    # ICF/mô tả nghiên cứu đã biên tập tay — cùng nguy cơ đã chặn ở G4.
+    parser.add_argument("--regenerate-artifact", action="store_true",
+                        help="Ép sinh lại hồ sơ đạo đức từ template dù bản đang có đầy đủ hơn "
+                             "(bản cũ vẫn được sao lưu .bak-* trước khi đè)")
     parser.add_argument("--skip-registry", action="store_true",
                         help="Bỏ qua tra ClinicalTrials.gov (offline). Hồ sơ sẽ ghi rõ "
                              "CHƯA TRA ĐƯỢC, không được đọc thành 'chưa ai làm'.")
@@ -1789,6 +1795,25 @@ def main():
     # điền và mọi số liệu (tools/vn_prose_style.py).
     artifact_md = _VNSTYLE.clean_generated_prose(artifact_md)
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    # ★ RÀO CHỐNG ĐÈ MẤT HỒ SƠ ĐẠO ĐỨC ĐÃ BIÊN TẬP (01/09/2026) — cùng luật với
+    # SAP ở G4: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh (ít nhãn [CẦN hơn) → TỪ
+    # CHỐI đè, mã 2; muốn sinh lại có chủ đích → --regenerate-artifact; mọi lần
+    # đè đều sao lưu .bak-* trước. Ca thật: tái sinh G2 trên C1a đè mất 45 dòng
+    # ICF/mô tả nghiên cứu/khảo sát PubMed đã biên tập tay — file vẫn hợp lệ,
+    # guardrail vẫn PASS, chỉ có người đọc kỹ mới thấy nội dung đã bay.
+    if md_path.exists():
+        ban_cu = md_path.read_text(encoding="utf-8")
+        bak = md_path.with_name(md_path.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
+        bak.write_text(ban_cu, encoding="utf-8", newline="\n")
+        print(f"  → Sao lưu hồ sơ đạo đức hiện có: {bak.name}")
+        if (ban_cu.count("[CẦN") < artifact_md.count("[CẦN")
+                and not getattr(args, "regenerate_artifact", False)):
+            print("⛔ TỪ CHỐI đè hồ sơ đạo đức: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh "
+                  f"({ban_cu.count('[CẦN')} vs {artifact_md.count('[CẦN')} nhãn [CẦN...]) — "
+                  "nhiều khả năng đã được bác sĩ biên tập.")
+            print("   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: thêm cờ --regenerate-artifact "
+                  "(bản cũ vẫn được sao lưu .bak-* ở trên).")
+            raise SystemExit(GC.EXIT_BLOCKED)
     md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
     registration_path = G2Q.build_registration_draft(
