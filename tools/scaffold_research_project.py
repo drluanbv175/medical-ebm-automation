@@ -13,8 +13,12 @@ Sử dụng:
     ├── 01_Project_Charter.md + .docx
     ├── ...
     └── 20_Final_Readiness_Report.md + .docx
-    + STUDY_INDEX.md   (chỉ mục nội bộ, trạng thái từng file)
-    + Makefile.md      (gợi ý lệnh cho từng cổng G)
+    + STUDY_INDEX.md   (chỉ mục nội bộ, trạng thái từng file — bao gồm gợi ý
+                        lệnh xuất .docx cho từng cổng G, xem mục "## Lệnh xuất
+                        .docx từng cổng"; 2026-09-02, vòng rà 7: dòng cũ ở đây
+                        hứa một file "Makefile.md" riêng — KHÔNG code nào từng
+                        sinh ra nó, gợi ý lệnh đã nằm sẵn trong STUDY_INDEX.md)
+    + study_meta.json  (PIN gate_params + cờ đời-thực, xem ensure_study_meta())
 """
 from __future__ import annotations
 
