@@ -64,6 +64,7 @@ sys.path.insert(0, str(BASE))
 import audit_research_gates as ARG  # noqa: E402
 import chuan_trinh_bay as CTB  # noqa: E402
 import gate_contract as GC  # noqa: E402
+import list_studies as LS  # noqa: E402
 import pipeline_freshness as PF  # noqa: E402
 import skill_standards as SS  # noqa: E402
 import verify_exports_integrity as VEI  # noqa: E402
@@ -728,6 +729,31 @@ def bang_diem(muc: list[Muc]) -> dict[str, dict[str, str]]:
     return bd
 
 
+def la_de_tai_nghien_cuu(out_dir: Path) -> tuple[bool, str]:
+    """Thư mục này có phải ĐỀ TÀI nghiên cứu không — dùng CHUNG luật của list_studies.
+
+    ★ ĐO 02/09/2026 (vòng rà 2): chạy công cụ trên `exports/chatgpt_project` và
+    `exports/phase_2b` — một là scaffold dự án, một là báo cáo smoke test, KHÔNG
+    thư mục nào là đề tài — thì vẫn ra bảng điểm đầy đủ 11 cổng, 38 🟡, kèm một 🔴
+    «G0 chưa chạy — máy làm được» và lời khuyên chạy `run_g0_auto` trên chúng. Một
+    bảng điểm trông có thẩm quyền cho thứ không có cổng nào chính là báo động giả
+    họ BH08 — và đó đúng là thứ bác sĩ gặp ngay lần gõ nhầm mã đề tài đầu tiên.
+
+    KHÔNG viết luật nhận diện thứ hai: gọi thẳng `list_studies.scan_study()`
+    (topic trong study_meta/G0_checkpoint, hoặc có G0_checkpoint) — hai bản chép
+    tay của cùng một luật là nguồn trôi dạt.
+    """
+    try:
+        row = LS.scan_study(out_dir)
+    except Exception as e:  # noqa: BLE001 — không nhận diện được thì nói ra, không đoán
+        return False, f"không đọc được thư mục: {type(e).__name__}"
+    if row.get("recognized"):
+        return True, str(row.get("topic") or "(chưa có chủ đề)")
+    n = row.get("n_files", 0)
+    return False, (f"{n} file nhưng KHÔNG có chủ đề trong study_meta.json và KHÔNG có "
+                   "G0_checkpoint.json" if n else "thư mục RỖNG")
+
+
 def kiem_de_tai(study: str, out_dir: Path, *, canary: bool = True) -> dict[str, Any]:
     cps = ARG._load_checkpoints(out_dir)
     ky = {g: da_ky(g, study, out_dir)[0] for g in CONG_CUNG}
@@ -814,6 +840,16 @@ def main() -> int:
     out_dir = root / study
     if not out_dir.is_dir():
         print(f"🔴 Không có thư mục đề tài: {out_dir}")
+        return 3
+    la, vi_sao = la_de_tai_nghien_cuu(out_dir)
+    if not la:
+        print(f"🔴 `{study}` KHÔNG phải một đề tài nghiên cứu — {vi_sao}.")
+        print("   Công cụ này chấm 11 cổng G0-G10 của MỘT đề tài; chấm một thư mục không")
+        print("   có cổng nào sẽ cho bảng điểm trông có thẩm quyền mà vô nghĩa (báo động")
+        print("   giả). Xem danh sách đề tài thật: python3 tools/list_studies.py")
+        print("   Nếu đây ĐÚNG là đề tài mới: chạy G0 trước —")
+        print(f'     python3 tools/run_g0_auto.py --study {study} --topic "<chủ đề>"')
+        print("Cần bác sĩ kiểm chứng.")
         return 3
     try:
         r = kiem_de_tai(study, out_dir, canary=not a.khong_canary)

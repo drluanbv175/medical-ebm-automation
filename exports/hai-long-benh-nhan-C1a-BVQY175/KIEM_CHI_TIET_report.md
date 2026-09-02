@@ -1,6 +1,6 @@
 # Kiểm chi tiết hệ nghiên cứu — hai-long-benh-nhan-C1a-BVQY175
 
-Sinh lúc 2026-09-02T07:20:40. Chỉ ĐO và BÁO. 🟡 là việc của người thật, không phải lỗi. Cần bác sĩ kiểm chứng.
+Sinh lúc 2026-09-02T07:46:27. Chỉ ĐO và BÁO. 🟡 là việc của người thật, không phải lỗi. Cần bác sĩ kiểm chứng.
 
 | Cổng | ① Tự động | ② Chuẩn | ③ Tài liệu | ④ Trình bày | ⑤ Điểm dừng người |
 |---|---|---|---|---|---|

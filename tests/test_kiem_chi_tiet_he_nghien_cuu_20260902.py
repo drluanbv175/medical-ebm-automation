@@ -137,9 +137,18 @@ def test_checkpoint_tu_mau_thuan_bi_bat_ma_2(tmp_path):
     assert _bang_diem(r.stdout)["G0"][0] == K.DO
 
 
-def test_de_tai_trong_g0_do_cong_sau_vang(tmp_path):
-    study = "PYTEST-KCT-TRONG"
-    (tmp_path / study).mkdir()
+def test_de_tai_moi_g0_do_cong_sau_vang(tmp_path):
+    """Đề tài ĐÃ ghim chủ đề trong study_meta nhưng chưa chạy cổng nào.
+
+    Fixture sửa 02/09 (vòng rà 2): bản đầu dùng thư mục RỖNG — nay thư mục rỗng bị
+    TỪ CHỐI đúng (không phải đề tài, mã 3). Khẳng định gốc giữ NGUYÊN, không nới:
+    chỉ cổng ĐẦU chuỗi máy-làm-được-mà-chưa-chạy mới đỏ, cổng sau vàng.
+    """
+    study = "PYTEST-KCT-MOI"
+    d = tmp_path / study
+    d.mkdir()
+    (d / "study_meta.json").write_text(json.dumps({"topic": "Đề tài mới ghim chủ đề"}),
+                                       encoding="utf-8", newline="\n")
     r = _run(tmp_path, study)
     assert r.returncode == 2, r.stdout + r.stderr
     bd = _bang_diem(r.stdout)
@@ -199,3 +208,39 @@ class TestDocxMoCoi:
         assert "G6a_ANALYSIS" in r.stdout
         assert "KHÔNG có .md nguồn" in r.stdout, "phải chỉ đúng cách sửa (chạy lại bộ sinh)"
         assert _bang_diem(r.stdout)["G6"][3] == K.DO
+
+
+class TestTuChoiThuMucKhongPhaiDeTai:
+    """Đo 02/09 (vòng rà 2): chạy trên exports/chatgpt_project và exports/phase_2b —
+    hai thư mục KHÔNG phải đề tài — vẫn ra bảng điểm 11 cổng, 38 🟡 và một 🔴 «G0 chưa
+    chạy, máy làm được» kèm lời khuyên chạy run_g0_auto trên chúng. Bảng điểm trông có
+    thẩm quyền cho thứ không có cổng nào = báo động giả BH08, gặp ngay lần gõ nhầm mã.
+    """
+
+    def test_nhan_dien_dung_ba_truong_hop(self, tmp_path):
+        co_g0 = tmp_path / "co-g0"
+        co_g0.mkdir()
+        (co_g0 / "G0_checkpoint.json").write_text('{"topic": "X"}', encoding="utf-8", newline="\n")
+        assert K.la_de_tai_nghien_cuu(co_g0)[0] is True
+
+        la = tmp_path / "thu-muc-la"
+        la.mkdir()
+        (la / "README.md").write_text("x", encoding="utf-8", newline="\n")
+        ok, vi_sao = K.la_de_tai_nghien_cuu(la)
+        assert ok is False and "G0_checkpoint.json" in vi_sao
+
+        rong = tmp_path / "rong"
+        rong.mkdir()
+        ok, vi_sao = K.la_de_tai_nghien_cuu(rong)
+        assert ok is False and "RỖNG" in vi_sao
+
+    def test_cli_tu_choi_ma_3_va_khong_in_bang_diem(self, tmp_path):
+        study = "PYTEST-KCT-KHONG-PHAI-DE-TAI"
+        d = tmp_path / study
+        d.mkdir()
+        (d / "bao_cao_smoke.json").write_text("{}", encoding="utf-8", newline="\n")
+        r = _run(tmp_path, study)
+        assert r.returncode == 3, r.stdout + r.stderr
+        assert "KHÔNG phải một đề tài nghiên cứu" in r.stdout
+        assert "BẢNG ĐIỂM" not in r.stdout, "không được in bảng điểm cho thứ không có cổng nào"
+        assert "list_studies.py" in r.stdout, "phải chỉ đường xem danh sách đề tài thật"
