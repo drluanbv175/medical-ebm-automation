@@ -556,7 +556,12 @@ Rà sau mỗi cổng G (G2, G4, G6, G9) — điền ngày cập nhật gần nh�
 """),
 
     ("19", "Research_Integrity_Audit",
-     "G7-G9", "checklist", "Kiểm toán liêm chính nghiên cứu",
+     # 2026-09-02 (vòng rà 6): TỪNG dùng chung khóa "checklist" với hàng 17
+     # (Reporting_Checklist) — hai khái niệm khác hẳn nhau (chuẩn báo cáo vs
+     # kiểm toán completeness), gây STUDY_INDEX ghi trùng tên .docx và lần
+     # generate() thứ hai ghi đè .docx của hàng 17 trên đĩa. Xem comment tại
+     # khóa "integrity-audit" trong gen_research_docx.py::ARTIFACT_MAP.
+     "G7-G9", "integrity-audit", "Kiểm toán liêm chính nghiên cứu",
      """## 1. Kiểm toán completeness A1–A18
 
 | Mã | Artifact | Trạng thái | Ghi chú |

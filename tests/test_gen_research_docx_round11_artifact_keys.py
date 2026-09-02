@@ -86,11 +86,13 @@ class TestRound11NewArtifactKeys:
     def test_no_code_collision_with_existing_22_keys(self):
         """32 khóa nghiên cứu (22 cũ + 10 mới vòng 11) + 4 khóa lâm sàng (vòng
         15) + 2 khóa lâm sàng bổ sung (vòng 16 — evidence-search/clinical-
-        case-summary bị bỏ sót ở vòng 15) = 38 — phải có mã code riêng biệt,
-        không trùng."""
+        case-summary bị bỏ sót ở vòng 15) + 1 khóa "integrity-audit" (vòng rà 6,
+        2026-09-02 — tách khỏi "checklist" mà hàng 19 SCAFFOLD_FILES từng dùng
+        chung với hàng 17, xem test_scaffold_checklist_vs_integrity_audit_
+        distinct_20260902.py) = 39 — phải có mã code riêng biệt, không trùng."""
         codes = [v[0] for v in G.ARTIFACT_MAP.values()]
         assert len(codes) == len(set(codes)), "Có mã artifact_code bị trùng trong ARTIFACT_MAP"
-        assert len(G.ARTIFACT_MAP) == 38
+        assert len(G.ARTIFACT_MAP) == 39
 
 
 class TestThuThuTaiLieuLiteratureListFix:

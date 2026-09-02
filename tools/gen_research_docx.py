@@ -116,6 +116,19 @@ ARTIFACT_MAP = {
     "citation-check":     ("G7d", "G7-G8🔒", "Kiểm chứng trích dẫn học thuật (A12 — cổng cứng chống trích dẫn ma)"),
     "study-log":          ("G9a", "G9", "Sổ cái & Bàn giao lưu trữ đề tài (A18 — Final Handover Log)"),
 
+    # SỬA 2026-09-02 (vòng rà 6, kiểm chi tiết hệ nghiên cứu): scaffold_research_
+    # project.py hàng "19" (Research_Integrity_Audit.md — kiểm toán completeness
+    # A1-A18) từng dùng LẠI khóa "checklist" của hàng "17" (Reporting_Checklist.md
+    # — bảng chuẩn báo cáo CONSORT/STROBE/PRISMA). Khác 2 cặp trùng khóa còn lại
+    # trong SCAFFOLD_FILES (03/04 "literature", 11/15 "sap") — cả hai đó có CHỦ Ý,
+    # tiêu đề/nội dung artifact đã gộp cả hai khái niệm — cặp "checklist" là lỗi
+    # thật: tiêu đề của khóa "checklist" chỉ nói "CONSORT/STROBE/PRISMA", không hề
+    # nhắc completeness audit. Hệ quả: STUDY_INDEX.md ghi CÙNG MỘT tên .docx kỳ
+    # vọng cho 2 mục 17/19 khác nội dung, và generate("checklist") gọi lần 2 (từ
+    # hàng 19) ghi đè .docx của lần 1 trên đĩa. Thêm khóa riêng cho hàng 19.
+    "integrity-audit":    ("G9b", "G7-G9",
+                           "Kiểm toán liêm chính & completeness đề tài (A1–A18)"),
+
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, dimension
     # workflow_agents_a): 4 khóa LÂM SÀNG (Cổng A/B — KHÔNG thuộc chuỗi cổng
     # G0-G9 nghiên cứu) mà quyet-dinh-chung.md/loi-dan-tuan-thu.md/
@@ -399,9 +412,10 @@ class ResearchDocxGenerator:
     def generate(self, artifact_key: str, content: dict = None) -> str:
         """Điểm vào chính — tự chọn generator theo artifact_key.
 
-        - Khóa thuộc len(ARTIFACT_MAP) artifact NGHIÊN CỨU chuẩn (32, sau vòng lặp
-          kiểm tra-hoàn thiện vòng 11 — trước đó 22, xem comment ở ARTIFACT_MAP) → generator
-          chuyên biệt (hoặc generic).
+        - Khóa thuộc len(ARTIFACT_MAP) artifact chuẩn (39 tại 2026-09-02, xem lịch
+          sử tăng dần ở các comment trong ARTIFACT_MAP — 22 gốc → 32 (vòng 11) →
+          38 (vòng 15-16, thêm khóa lâm sàng) → 39 (vòng rà 6, "integrity-audit"))
+          → generator chuyên biệt (hoặc generic).
         - Khóa NGOÀI danh mục → KHÔNG sập: dùng mẫu CHUNG (generic) + in cảnh báo
           (fail-soft, không im lặng) để lệnh minh họa chạy được thay vì ValueError.
           Sửa 2026-07-19 (audit vòng 3, D4): nguồn khóa sai KHÔNG chỉ agent lâm
