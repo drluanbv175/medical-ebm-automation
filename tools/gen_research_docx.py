@@ -451,10 +451,12 @@ class ResearchDocxGenerator:
 
     # ── Generic (dùng khi chưa có generator chuyên biệt) ───────────────────
 
-    def _gen_generic(self, code, gate, title, content: dict):
-        doc = self._new_doc()
-        self._header_block(doc, code, gate, title)
+    def _render_kv_body(self, doc, content: dict):
+        """Render content{section_title: list|dict|str} thành đoạn/bảng/gạch đầu dòng.
 
+        Tách riêng khỏi _gen_generic để _gen_review (G8) dùng lại được mà không
+        chép lại logic — tránh 2 bản có thể lệch nhau khi sửa sau này.
+        """
         if content:
             for section_title, section_body in content.items():
                 self._h(doc, section_title, level=2)
@@ -471,6 +473,11 @@ class ResearchDocxGenerator:
                 doc.add_paragraph("")
         else:
             self._flag(doc, "Chủ nhiệm điền nội dung cho phần này.")
+
+    def _gen_generic(self, code, gate, title, content: dict):
+        doc = self._new_doc()
+        self._header_block(doc, code, gate, title)
+        self._render_kv_body(doc, content)
 
         self._disclaimer(doc)
         try:
@@ -877,6 +884,22 @@ class ResearchDocxGenerator:
     def _gen_dmp(self, code, gate, title, content: dict):
         doc = self._new_doc()
         self._header_block(doc, code, gate, title)
+        # 2026-09-02 (vòng rà 5, tiếp nối task_a5fde306 2026-07-12): G5 khác G2/G4 —
+        # cổng khóa chống p-hacking (run_g6_auto.py::_load_cp("G5")) không hash file
+        # .md/.docx nào của DMP, nó đọc THẲNG exports/<đề tài>/G5_checkpoint.json (do
+        # run_g5_auto.py ghi) để biết dữ liệu đã khóa (LOCKED) hay chưa. Vì vậy KHÔNG
+        # dùng lại nguyên văn câu "artifact chính thức... được approve_gate.py hash" của
+        # G2/G4 — câu đó sai với G5 (không có gì để hash ngoài chính checkpoint).
+        self._p(doc,
+            "⚠ Đây là bản DỰ THẢO scaffold (gen_research_docx.py), không phản ánh trạng "
+            "thái khóa dữ liệu THẬT. Cổng chống p-hacking (run_g6_auto.py) không đọc file "
+            "này — nó đọc THẲNG exports/<đề tài>/G5_checkpoint.json (do "
+            "`python tools/run_g5_auto.py` ghi) để biết dữ liệu đã LOCKED hay chưa. File "
+            "này để soạn thảo/tham khảo nội dung DMP; ĐỪNG suy ra dữ liệu đã khóa chỉ vì "
+            "file .docx này tồn tại — kiểm G5_checkpoint.json thật hoặc chạy "
+            "`python tools/g5_quality_gate.py --study <mã>`.",
+            bold=True, color=self.ORANGE, size=11)
+        doc.add_paragraph("")
         sections = [
             ("1. Mô tả dữ liệu & định dạng",     "data_description"),
             ("2. Thu thập & nhập liệu",            "collection"),
@@ -917,11 +940,62 @@ class ResearchDocxGenerator:
         self._disclaimer(doc)
         return self._save(doc, code, "manuscript")
 
+    # ── G8: Bình duyệt nội bộ ────────────────────────────────────────────────
+
+    def _gen_review(self, code, gate, title, content: dict):
+        # 2026-09-02 (vòng rà 5, tiếp nối task_a5fde306 2026-07-12): "review" trước đây
+        # KHÔNG có hàm _gen_ riêng — rơi vào _gen_generic() và không mang cảnh báo nào,
+        # dù G8 là 1 trong 6 cổng CỨNG (chữ ký ledger). Khác G5/G9 (hash checkpoint), G8
+        # GIỐNG G2/G4: cổng hash một artifact .md thật —
+        # exports/<đề tài>/G8_A9_PRESUBMISSION_<đề tài>.md do run_g8_auto.py sinh — nên
+        # dùng lại NGUYÊN VĂN kiểu cảnh báo của G2/G4 (Variant A), không phải kiểu G5/G9.
+        doc = self._new_doc()
+        self._header_block(doc, code, gate, title)
+        self._p(doc,
+            "⚠ Đây là bản DỰ THẢO scaffold (gen_research_docx.py) — KHÔNG phải artifact "
+            "chính thức mà cổng khóa G8 (bình duyệt độc lập) hash để ký ledger. Artifact "
+            "chính thức là exports/<đề tài>/G8_A9_PRESUBMISSION_<đề tài>.md do "
+            "`python tools/run_g8_auto.py` sinh, được `tools/approve_gate.py --gate G8` "
+            "hash để ghi vào approval_ledger.json. File .docx này KHÔNG chứa nhận xét "
+            "phản biện thật — nhận xét thật phải là một artifact riêng, "
+            "G8_PEER_REVIEW_REPORT_<đề tài>.md, do NGƯỜI phản biện viết theo mẫu "
+            "binh-duyet.md. Dùng file này để soạn thảo/tham khảo, KHÔNG dùng thay cho "
+            "artifact do run_g8_auto.py sinh khi cần qua cổng G8.",
+            bold=True, color=self.ORANGE, size=11)
+        doc.add_paragraph("")
+
+        self._render_kv_body(doc, content)
+
+        self._disclaimer(doc)
+        return self._save(doc, code, "review")
+
     # ── G9: Final Readiness Report ───────────────────────────────────────────
 
     def _gen_readiness(self, code, gate, title, content: dict):
         doc = self._new_doc()
         self._header_block(doc, code, gate, title)
+        # 2026-09-02 (vòng rà 5 — cùng phát hiện đã sửa ở _GHI-CHU.md của
+        # hai-long-benh-nhan-C1a-BVQY175/_tai-lieu-mo-coi/ ngày 02/09/2026): hàm này
+        # dựng doc từ `content` do người GỌI truyền vào; gọi generate("readiness") mà
+        # không truyền content thật (như đã xảy ra thật trên C1a) thì mọi trường ở trên
+        # rơi về mặc định NOT READY/🔴 CHƯA ĐÓNG — file trông như một báo cáo thật nhưng
+        # không đo gì cả. Cổng khóa chống p-hacking cho vòng đời KHÔNG đọc file này:
+        # run_g10_assemble.py hash THẲNG exports/<đề tài>/G9_checkpoint.json. Và pipeline
+        # G9 THẬT ghi một file HOÀN TOÀN KHÁC — G9_PUBLICATION_READINESS.json (qua
+        # g9_quality_gate.write_readiness_template()) — không bao giờ chạm vào
+        # G9_READINESS_<đề tài>.docx này.
+        self._p(doc,
+            "⚠ Đây là bản DỰ THẢO scaffold (gen_research_docx.py). Nếu được gọi không kèm "
+            "dữ liệu thật, mọi trường bên dưới MẶC ĐỊNH về NOT READY/🔴 CHƯA ĐÓNG — đừng "
+            "đọc đó là kết quả đo thật. Cổng thật không đọc file .docx này: trạng thái "
+            "khóa được `run_g10_assemble.py` xác minh qua exports/<đề tài>/"
+            "G9_checkpoint.json, và báo cáo sẵn sàng nghiệm thu THẬT của G9 là file KHÁC — "
+            "exports/<đề tài>/G9_PUBLICATION_READINESS.json (sinh bởi "
+            "`python tools/g9_quality_gate.py --study <mã>`). Muốn biết đề tài có THẬT SỰ "
+            "sẵn sàng không, đọc hai file đó hoặc chạy "
+            "`python tools/kiem_chi_tiet_he_nghien_cuu.py --study <mã>`.",
+            bold=True, color=self.ORANGE, size=11)
+        doc.add_paragraph("")
 
         verdict = content.get("verdict", "NOT READY")
         verdict_color = (self.GREEN if verdict == "READY"
