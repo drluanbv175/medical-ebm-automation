@@ -1,8 +1,8 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-09-02T02:35:05",
+  "generated_at": "2026-09-02T07:20:40",
   "tong": {
-    "xanh": 38,
+    "xanh": 42,
     "vang": 39,
     "do": 0,
     "trang": 0
@@ -50,7 +50,8 @@
     "G6": {
       "①": "🟡",
       "②": "🟡",
-      "③": "🟡"
+      "③": "🟡",
+      "④": "🟢"
     },
     "G7": {
       "①": "🟡",
@@ -67,6 +68,7 @@
       "①": "🟡",
       "②": "🟡",
       "③": "🟡",
+      "④": "🟢",
       "⑤": "🟡"
     },
     "G10": {
@@ -220,7 +222,16 @@
       "cong": "G1",
       "truc": "④",
       "muc": "🟢",
-      "nhan": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "nhan": "G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
       "bang_chung": "0 ký tự trang trí",
       "hanh_dong": "",
       "may_sua": false
@@ -238,25 +249,16 @@
       "cong": "G1",
       "truc": "④",
       "muc": "🟢",
+      "nhan": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "④",
+      "muc": "🟢",
       "nhan": "G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
-      "bang_chung": "0 ký tự trang trí",
-      "hanh_dong": "",
-      "may_sua": false
-    },
-    {
-      "cong": "G1",
-      "truc": "④",
-      "muc": "🟢",
-      "nhan": "G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
-      "bang_chung": "0 ký tự trang trí",
-      "hanh_dong": "",
-      "may_sua": false
-    },
-    {
-      "cong": "G1",
-      "truc": "④",
-      "muc": "🟢",
-      "nhan": "G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
       "bang_chung": "0 ký tự trang trí",
       "hanh_dong": "",
       "may_sua": false
@@ -505,6 +507,33 @@
       "may_sua": false
     },
     {
+      "cong": "G6",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G6a_ANALYSIS_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G6",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G6b_INTERPRETATION_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G6",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G6d_CLINICAL-GUIDELINE_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
       "cong": "G7",
       "truc": "①",
       "muc": "🟡",
@@ -596,6 +625,15 @@
     },
     {
       "cong": "G9",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G9_READINESS_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G9",
       "truc": "⑤",
       "muc": "🟡",
       "nhan": "Chưa có artifact để ký",
@@ -679,7 +717,7 @@
       "cong": "G10",
       "truc": "④",
       "muc": "🟢",
-      "nhan": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "nhan": "Bai-bao-giao-thuc_Hai-long-C1a_BVQY175.docx: Times New Roman 13pt",
       "bang_chung": "0 ký tự trang trí",
       "hanh_dong": "",
       "may_sua": false
@@ -688,7 +726,7 @@
       "cong": "G10",
       "truc": "④",
       "muc": "🟢",
-      "nhan": "Bai-bao-giao-thuc_Hai-long-C1a_BVQY175.docx: Times New Roman 13pt",
+      "nhan": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
       "bang_chung": "0 ký tự trang trí",
       "hanh_dong": "",
       "may_sua": false

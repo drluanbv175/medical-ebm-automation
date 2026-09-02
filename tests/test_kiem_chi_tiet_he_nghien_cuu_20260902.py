@@ -146,3 +146,56 @@ def test_de_tai_trong_g0_do_cong_sau_vang(tmp_path):
     assert bd["G0"][0] == K.DO, bd
     assert bd["G1"][0] == K.VANG and bd["G5"][0] == K.VANG and bd["G10"][0] == K.VANG, bd
     assert "Cần bác sĩ kiểm chứng" in r.stdout
+
+
+class TestDocxMoCoi:
+    """Điểm mù vòng rà thứ hai (02/09): .docx KHÔNG có .md đi kèm từng thoát mọi phép kiểm.
+
+    Đo trên C1a: 4 bản do gen_research_docx sinh thẳng từ checkpoint (G6a/G6b/G6d/
+    G9_READINESS) chưa từng bị soi lần nào; 3/4 còn thân bài 11pt + ký tự trang trí.
+    """
+
+    def test_gom_docx_theo_tien_to_ten_file(self, tmp_path):
+        for ten in ("G6a_ANALYSIS_X.docx", "G1_A2_PROTOCOL_DESIGN_X.docx",
+                    "G10_GOI_NOP_X.docx", "DE_CUONG_THONG_NHAT_X.docx"):
+            (tmp_path / ten).write_bytes(b"x")
+        theo = K.docx_theo_cong(tmp_path)
+        assert [p.name for p in theo["G6"]] == ["G6a_ANALYSIS_X.docx"]
+        assert [p.name for p in theo["G1"]] == ["G1_A2_PROTOCOL_DESIGN_X.docx"]
+        assert sorted(p.name for p in theo["G10"]) == ["DE_CUONG_THONG_NHAT_X.docx",
+                                                       "G10_GOI_NOP_X.docx"], "tài liệu gói nộp về G10"
+
+    def test_docx_mo_coi_sai_chuan_van_bi_bat(self, tmp_path):
+        dx = tmp_path / "G6a_ANALYSIS_X.docx"
+        doc = Document()
+        doc.styles["Normal"].font.size = Pt(11)
+        doc.add_paragraph("⚠ Tài liệu nháp " * 20)
+        doc.save(dx)
+        assert not dx.with_suffix(".md").exists()
+        r = K.danh_gia_docx(None, dx)
+        assert r[0][0] == K.DO and r[0][3] is True, r
+        assert "cỡ thân bài" in r[0][2] and "ký tự trang trí" in r[0][2], r[0][2]
+
+    def test_mo_coi_dat_chuan_thi_xanh_va_khong_doi_mtime(self, tmp_path):
+        dx = tmp_path / "G6a_ANALYSIS_X.docx"
+        doc = Document()
+        doc.add_paragraph("Nội dung nháp " * 20)
+        C.ap_dinh_dang_tai_lieu(doc)
+        doc.save(dx)
+        r = K.danh_gia_docx(None, dx)
+        assert [x[0] for x in r] == [K.XANH], r
+
+    def test_bao_cao_bat_mo_coi_va_chi_dung_cach_sua(self, tmp_path):
+        study = "PYTEST-KCT-MOCOI"
+        d = tmp_path / study
+        d.mkdir()
+        (d / "G0_checkpoint.json").write_text(json.dumps({"gate": "G0"}), encoding="utf-8", newline="\n")
+        doc = Document()
+        doc.styles["Normal"].font.size = Pt(11)
+        doc.add_paragraph("⚠ nháp " * 20)
+        doc.save(d / f"G6a_ANALYSIS_{study}.docx")
+        r = _run(tmp_path, study)
+        assert r.returncode == 2, r.stdout + r.stderr
+        assert "G6a_ANALYSIS" in r.stdout
+        assert "KHÔNG có .md nguồn" in r.stdout, "phải chỉ đúng cách sửa (chạy lại bộ sinh)"
+        assert _bang_diem(r.stdout)["G6"][3] == K.DO

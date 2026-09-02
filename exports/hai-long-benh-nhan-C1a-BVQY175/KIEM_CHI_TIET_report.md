@@ -1,6 +1,6 @@
 # Kiểm chi tiết hệ nghiên cứu — hai-long-benh-nhan-C1a-BVQY175
 
-Sinh lúc 2026-09-02T02:35:05. Chỉ ĐO và BÁO. 🟡 là việc của người thật, không phải lỗi. Cần bác sĩ kiểm chứng.
+Sinh lúc 2026-09-02T07:20:40. Chỉ ĐO và BÁO. 🟡 là việc của người thật, không phải lỗi. Cần bác sĩ kiểm chứng.
 
 | Cổng | ① Tự động | ② Chuẩn | ③ Tài liệu | ④ Trình bày | ⑤ Điểm dừng người |
 |---|---|---|---|---|---|
@@ -10,13 +10,13 @@ Sinh lúc 2026-09-02T02:35:05. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G3 | 🟡 | 🟡 | 🟡 | 🟢 | · |
 | G4 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
 | G5 | 🟡 | 🟡 | 🟡 | · | 🟡 |
-| G6 | 🟡 | 🟡 | 🟡 | · | · |
+| G6 | 🟡 | 🟡 | 🟡 | 🟢 | · |
 | G7 | 🟡 | 🟡 | 🟡 | · | · |
 | G8 | 🟡 | 🟡 | 🟡 | · | 🟡 |
-| G9 | 🟡 | 🟡 | 🟡 | · | 🟡 |
+| G9 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
 | G10 | 🟡 | 🟡 | 🟡 | 🟢 | 🟡 |
 
-**Tổng:** 🟢 38 · 🟡 39 · 🔴 0 · ⚪ 0 — mã thoát 1
+**Tổng:** 🟢 42 · 🟡 39 · 🔴 0 · ⚪ 0 — mã thoát 1
 
 ## Chi tiết
 
@@ -37,11 +37,11 @@ Sinh lúc 2026-09-02T02:35:05. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G1 | ③ | 🟢 | G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 19 |  |
 | G1 | ③ | 🟢 | G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 6 |  |
 | G1 | ③ | 🟡 | Còn 178 nhãn [CẦN…] trong 5 file | thẩm quyền chủ nhiệm/thống kê viên | điền rồi chạy lại quality gate của cổng |
-| G1 | ④ | 🟢 | G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
-| G1 | ④ | 🟢 | G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
-| G1 | ④ | 🟢 | G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G1 | ④ | 🟢 | G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G1 | ④ | 🟢 | G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
+| G1 | ④ | 🟢 | G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
+| G1 | ④ | 🟢 | G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
+| G1 | ④ | 🟢 | G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G2 | ① | 🟢 | Checkpoint có, guardrail PASS | G2_checkpoint.json |  |
 | G2 | ① | 🟡 | Độ tươi (theo mtime): CŨ hơn thượng nguồn | G2 sinh TRƯỚC thượng nguồn G0 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống) | chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …) |
 | G2 | ② | 🟡 | Hợp đồng chất lượng G2 | DRAFT_NEEDS_HUMAN_COMPLETION (chấm sống); tự động FAIL 0 · REVIEW 3 · người 2 treo | người thật điền study_meta.json → gate_params.G2: G2-AUTO-02, G2-AUTO-05, G2-AUTO-08, G2-HUMAN-01, G2-HUMAN-02 |
@@ -69,6 +69,9 @@ Sinh lúc 2026-09-02T02:35:05. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G6 | ① | 🟡 | Cổng chưa chạy | chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5 |  |
 | G6 | ② | 🟡 | Hợp đồng chất lượng | chưa tới lượt |  |
 | G6 | ③ | 🟡 | Artifact BẮT BUỘC thiếu | analysis_scripts | chưa tới lượt |
+| G6 | ④ | 🟢 | G6a_ANALYSIS_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt | 0 ký tự trang trí |  |
+| G6 | ④ | 🟢 | G6b_INTERPRETATION_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt | 0 ký tự trang trí |  |
+| G6 | ④ | 🟢 | G6d_CLINICAL-GUIDELINE_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt | 0 ký tự trang trí |  |
 | G7 | ① | 🟡 | Cổng chưa chạy | chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5 |  |
 | G7 | ② | 🟡 | Hợp đồng chất lượng | chưa tới lượt |  |
 | G7 | ③ | 🟡 | Artifact BẮT BUỘC thiếu | manuscript | chưa tới lượt |
@@ -79,6 +82,7 @@ Sinh lúc 2026-09-02T02:35:05. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G9 | ① | 🟡 | Cổng chưa chạy | chờ G7 chạy trước → chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5 |  |
 | G9 | ② | 🟡 | Hợp đồng chất lượng | chưa tới lượt |  |
 | G9 | ③ | 🟡 | Artifact BẮT BUỘC thiếu | author_integrity, publication_readiness, quality_report | chưa tới lượt |
+| G9 | ④ | 🟢 | G9_READINESS_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G9 | ⑤ | 🟡 | Chưa có artifact để ký | chưa tới lượt |  |
 | G10 | ① | 🟡 | Checkpoint BLOCKED = từ chối fail-closed ĐÚNG | Trích dẫn (cổng A12) chưa chạy agent `kiem-chung-trich-dan` (thiếu artifact A12). → pytho… · chờ ký thật cổng G8 (PHAN_BIEN / PEER_REVIEWER / EXTERNAL_REVIEWER) — approve_gate.py --gate G8 |  |
 | G10 | ① | 🟡 | Độ tươi (theo mtime): MỒ CÔI (thượng nguồn thiếu) | G10 có checkpoint nhưng thượng nguồn còn THIẾU: G5, G6, G7, G8, G9 — nội dung có khớp hay không xem trục ② (chấm sống) | chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …) |
@@ -88,8 +92,8 @@ Sinh lúc 2026-09-02T02:35:05. Chỉ ĐO và BÁO. 🟡 là việc của ngườ
 | G10 | ③ | 🟢 | Bai-bao-giao-thuc_Hai-long-C1a_BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 4 |  |
 | G10 | ③ | 🟢 | De-cuong_Hai-long-C1a_BVQY175.md: 5 luật liêm chính sạch | [CẦN còn 4 |  |
 | G10 | ③ | 🟡 | Còn 74 nhãn [CẦN…] trong 3 file | thẩm quyền chủ nhiệm/thống kê viên | điền rồi chạy lại quality gate của cổng |
-| G10 | ④ | 🟢 | DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G10 | ④ | 🟢 | Bai-bao-giao-thuc_Hai-long-C1a_BVQY175.docx: Times New Roman 13pt | 0 ký tự trang trí |  |
+| G10 | ④ | 🟢 | DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G10 | ④ | 🟢 | De-cuong_Hai-long-C1a_BVQY175.docx: Times New Roman 13pt/bảng 11pt | 0 ký tự trang trí |  |
 | G10 | ⑤ | 🟡 | Sổ cái: chưa ký | chưa có sổ cái phê duyệt (approval_ledger.json) cho đề tài này | PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR — tools/trinh_ky_cong.py hoặc approve_gate.py --gate G10 |
 | HỆ | S | 🟢 | 11/11 script cổng + approve_gate + gate_contract biên dịch | 13/13 biên dịch sạch |  |

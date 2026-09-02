@@ -48,7 +48,7 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 for _s in (sys.stdout, sys.stderr):
     try:
@@ -317,11 +317,39 @@ def _co_than_cho_phep(md_name: str) -> set[int]:
     return cho
 
 
-def danh_gia_docx(md: Path, docx: Path) -> list[tuple[str, str, str, bool]]:
-    """→ danh sách (màu, nhãn, bằng chứng, máy_sửa) cho một cặp .md/.docx."""
+def docx_theo_cong(out_dir: Path) -> dict[str, list[Path]]:
+    """MỌI .docx trong thư mục đề tài, gom theo cổng theo tiền tố tên file.
+
+    ★ ĐIỂM MÙ ĐÃ ĐO 02/09/2026 (chính công cụ này, vòng rà thứ hai): bản đầu chỉ
+    soi .docx CÓ .md đi kèm, nên 4 bản trong đề tài thật C1a — G6a_ANALYSIS,
+    G6b_INTERPRETATION, G6d_CLINICAL-GUIDELINE, G9_READINESS, do
+    gen_research_docx sinh THẲNG từ checkpoint chứ không qua .md — chưa từng bị
+    kiểm một lần nào; đo lại thì 3/4 còn thân bài 11pt và ký tự trang trí. Đúng
+    họ lỗi mà công cụ này sinh ra để bắt: cổng vẫn chạy, vẫn in kết quả hợp lệ,
+    nhưng thứ cần kiểm thì không bao giờ được kiểm.
+
+    Tên không mang tiền tố cổng (DE_CUONG_THONG_NHAT, De-cuong, Bai-bao-giao-thuc)
+    xếp vào G10 — chúng là tài liệu của gói nộp.
+    """
+    theo: dict[str, list[Path]] = {}
+    for p in sorted(out_dir.glob("*.docx")):
+        m = re.match(r"^G(\d{1,2})[_a-z]", p.name)
+        gate = f"G{m.group(1)}" if m and f"G{m.group(1)}" in CONG else "G10"
+        theo.setdefault(gate, []).append(p)
+    return theo
+
+
+def danh_gia_docx(md: Optional[Path], docx: Path) -> list[tuple[str, str, str, bool]]:
+    """→ danh sách (màu, nhãn, bằng chứng, máy_sửa) cho một bản .docx.
+
+    md=None nghĩa là bản MỒ CÔI (không có .md nguồn — do bộ sinh dựng thẳng từ
+    checkpoint). Vẫn kiểm đủ chuẩn trình bày; chỉ khác ở cách sửa: phải chạy
+    lại bộ sinh của cổng, không dùng được xuat_docx_chuan --file (cần .md).
+    """
     out: list[tuple[str, str, str, bool]] = []
     if not docx.exists():
-        return [(DO, f"{md.name}: THIẾU bản .docx", "chưa render", True)]
+        ten = md.name if md else docx.name
+        return [(DO, f"{ten}: THIẾU bản .docx", "chưa render", True)]
     d = kiem_docx(docx)
     if d.get("khong_do_duoc"):
         return [(TRANG, f"{docx.name}: không đo được", d["khong_do_duoc"], False)]
@@ -332,7 +360,7 @@ def danh_gia_docx(md: Path, docx: Path) -> list[tuple[str, str, str, bool]]:
         loi.append("font lạ " + ", ".join(f"{k}({v})" for k, v in list(d["font_la"].items())[:3]))
     if d["ti_le_font_ma"] > 0.10:
         loi.append(f"font đơn cách chiếm {d['ti_le_font_ma']:.0%} (>10%)")
-    cho = _co_than_cho_phep(md.name)
+    cho = _co_than_cho_phep((md or docx).name)
     if d["co_than_uu_the"] is not None and int(d["co_than_uu_the"]) not in cho:
         loi.append(f"cỡ thân bài {d['co_than_uu_the']:g}pt (chuẩn {sorted(cho)})")
     if d["co_bang_uu_the"] is not None and int(d["co_bang_uu_the"]) not in {int(CTB.CO_CHU_BANG), *cho}:
@@ -345,6 +373,8 @@ def danh_gia_docx(md: Path, docx: Path) -> list[tuple[str, str, str, bool]]:
         out.append((XANH, f"{docx.name}: {d['font_uu_the']} {d['co_than_uu_the']:g}pt"
                     + (f"/bảng {d['co_bang_uu_the']:g}pt" if d["co_bang_uu_the"] else ""),
                     "0 ký tự trang trí", False))
+    if md is None:
+        return out
     try:
         if docx.stat().st_mtime + 2 < md.stat().st_mtime:
             out.append((VANG, f"{docx.name}: bản in CŨ HƠN nội dung .md", "mtime docx < md", True))
@@ -498,7 +528,8 @@ def kiem_he_thong(canary: bool) -> list[Muc]:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def kiem_cong(gate: str, study: str, out_dir: Path, cps: dict[str, dict[str, Any]],
-              ky: dict[str, bool], tuoi: dict[str, Any]) -> list[Muc]:
+              ky: dict[str, bool], tuoi: dict[str, Any],
+              docx_cong: dict[str, list[Path]]) -> list[Muc]:
     m: list[Muc] = []
     cp = cps.get(gate)
     da_chay = cp is not None
@@ -615,15 +646,21 @@ def kiem_cong(gate: str, study: str, out_dir: Path, cps: dict[str, dict[str, Any
     if not md_files and da_chay and not rd["missing_required"]:
         m.append(Muc(gate, "③", VANG, "Không có artifact .md để soi", "cổng chỉ có checkpoint/json"))
 
-    # ④ TRÌNH BÀY — .docx của mỗi artifact
-    for p in md_files:
-        for mau, nhan, bc, ms in danh_gia_docx(p, p.with_suffix(".docx")):
+    # ④ TRÌNH BÀY — MỌI .docx của cổng, KỂ CẢ bản không có .md (điểm mù 02/09)
+    for dx in docx_cong.get(gate, []):
+        md = dx.with_suffix(".md")
+        co_md = md.exists()
+        for mau, nhan, bc, ms in danh_gia_docx(md if co_md else None, dx):
             hd = ""
-            if mau == DO:
-                hd = f"python3 tools/xuat_docx_chuan.py --file exports/{study}/{p.name}"
-            elif mau == VANG:
-                hd = f"python3 tools/xuat_docx_chuan.py --file exports/{study}/{p.name}"
+            if mau in (DO, VANG):
+                hd = (f"python3 tools/xuat_docx_chuan.py --file exports/{study}/{md.name}"
+                      if co_md else
+                      f"chạy lại bộ sinh của {gate} (gen_research_docx.py) — bản này KHÔNG có .md nguồn")
             m.append(Muc(gate, "④", mau, nhan, bc, hd, ms))
+    for pmd in md_files:  # chiều ngược: có .md mà chưa render .docx
+        if not pmd.with_suffix(".docx").exists():
+            m.append(Muc(gate, "④", DO, f"{pmd.name}: THIẾU bản .docx", "chưa render",
+                         f"python3 tools/xuat_docx_chuan.py --file exports/{study}/{pmd.name}", True))
 
     # ⑤ ĐIỂM DỪNG NGƯỜI — cổng cứng
     if gate in CONG_CUNG:
@@ -695,9 +732,10 @@ def kiem_de_tai(study: str, out_dir: Path, *, canary: bool = True) -> dict[str, 
     cps = ARG._load_checkpoints(out_dir)
     ky = {g: da_ky(g, study, out_dir)[0] for g in CONG_CUNG}
     tuoi = PF.stale_report(out_dir)
+    dx_cong = docx_theo_cong(out_dir)
     muc: list[Muc] = []
     for g in CONG:
-        muc.extend(kiem_cong(g, study, out_dir, cps, ky, tuoi))
+        muc.extend(kiem_cong(g, study, out_dir, cps, ky, tuoi, dx_cong))
     muc.extend(kiem_he_thong(canary))
     dem = Counter(x.muc for x in muc)
     exit_code = 2 if dem[DO] else (1 if dem[VANG] else 0)
