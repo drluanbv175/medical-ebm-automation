@@ -1813,6 +1813,8 @@ def main():
                   "nhiều khả năng đã được bác sĩ biên tập.")
             print("   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: thêm cờ --regenerate-artifact "
                   "(bản cũ vẫn được sao lưu .bak-* ở trên).")
+            print("   Chỉ cần bản .docx CHUẨN TRÌNH BÀY từ bản đã biên tập (không sinh lại nội dung):\n"
+                  f"     python3 tools/xuat_docx_chuan.py --study {study}")
             raise SystemExit(GC.EXIT_BLOCKED)
     md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
