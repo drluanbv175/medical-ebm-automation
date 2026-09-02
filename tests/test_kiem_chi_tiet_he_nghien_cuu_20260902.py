@@ -1,0 +1,148 @@
+"""Hồi quy: kiem_chi_tiet_he_nghien_cuu — ghép 5 trục × 11 cổng, luật màu BH08, mã thoát.
+
+Vì sao có (02/09/2026, Prompt audit/09 repo gốc): muốn biết «hệ đã tự động và đúng
+chuẩn ở TỪNG cổng chưa» phải chạy tay ≥7 công cụ rời rạc rồi tự ghép — mỗi lần ghép
+là một lần bỏ sót. Khoá bốn hành vi của bộ ghép:
+1. Tiêu chí quality gate tách MÁY/NGƯỜI đúng (HUMAN FAIL vẫn là việc người, không đỏ máy).
+2. .docx sai font/cỡ/ký tự trang trí ⇒ 🔴 máy-sửa-được; .docx qua chuan_trinh_bay ⇒ 🟢.
+3. Chuỗi cổng: chỉ cổng ĐẦU máy-làm-được-mà-chưa-chạy đỏ; cổng sau chờ theo chuỗi = vàng;
+   cổng chờ chữ ký thật = vàng (không phải lỗi).
+4. Checkpoint tự mâu thuẫn (needs_input.blocked mà quality_gate đã PASS) ⇒ 🔴, mã 2;
+   đề tài không tồn tại ⇒ mã 3, không im lặng.
+"""
+
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+from docx import Document
+from docx.shared import Pt
+
+TOOLS = Path(__file__).resolve().parent.parent / "tools"
+sys.path.insert(0, str(TOOLS))
+import chuan_trinh_bay as C  # noqa: E402
+import kiem_chi_tiet_he_nghien_cuu as K  # noqa: E402
+
+
+def test_phan_loai_tieu_chi_tach_may_va_nguoi():
+    rep = {
+        "status": "DRAFT",
+        "automatic_criteria": [
+            {"id": "G4-AUTO-01", "status": "PASS"},
+            {"id": "G4-AUTO-02", "status": "FAIL"},
+            {"id": "G4-AUTO-03", "status": "REVIEW"},
+        ],
+        "approval_criteria": [
+            {"id": "G4-HUMAN-01", "status": "REVIEW"},
+            {"id": "G4-HUMAN-02", "status": "FAIL"},
+        ],
+        "checks": [  # khuôn G6
+            {"id": "G6-AUTO-05", "pass": False, "blocking": True},
+            {"id": "G6-AUTO-06", "pass": None},
+            {"id": "G6-AUTO-07", "pass": True},
+        ],
+    }
+    pl = K.phan_loai_tieu_chi(rep)
+    assert pl["auto_do"] == ["G4-AUTO-02", "G6-AUTO-05"]
+    assert pl["auto_vang"] == ["G4-AUTO-03", "G6-AUTO-06"]
+    assert pl["nguoi_vang"] == ["G4-HUMAN-01"]
+    assert pl["nguoi_do"] == ["G4-HUMAN-02"], "HUMAN FAIL là việc người thật, không được lẫn vào auto_do"
+
+
+def test_mau_trang_thai():
+    assert K.mau_trang_thai("PASS_G0_CONFIRMED") == K.XANH
+    assert K.mau_trang_thai("PASS_G4_SAP_LOCKED") == K.XANH
+    assert K.mau_trang_thai("BLOCKED") == K.DO
+    assert K.mau_trang_thai("DRAFT_NEEDS_HUMAN_CONTENT") == K.VANG
+    assert K.mau_trang_thai("READY_FOR_SIGNATURE") == K.VANG
+    assert K.mau_trang_thai(None) == K.TRANG
+
+
+def test_docx_sai_chuan_do_docx_chuan_xanh(tmp_path):
+    md = tmp_path / "G2_A3_ETHICS_PACKAGE_X.md"
+    md.write_text("# Hồ sơ\n", encoding="utf-8", newline="\n")
+    docx = md.with_suffix(".docx")
+    # (a) thiếu .docx → đỏ, máy sửa được
+    r = K.danh_gia_docx(md, docx)
+    assert r[0][0] == K.DO and r[0][3] is True
+    # (b) .docx sai: Courier New 9pt + ký tự trang trí
+    doc = Document()
+    doc.styles["Normal"].font.name = "Courier New"
+    doc.styles["Normal"].font.size = Pt(9)
+    doc.add_paragraph("✅ Đã duyệt nội dung " * 20)
+    doc.save(docx)
+    r = K.danh_gia_docx(md, docx)
+    assert r[0][0] == K.DO and r[0][3] is True
+    bc = r[0][2]
+    assert "font ưu thế" in bc and "cỡ thân bài" in bc and "ký tự trang trí" in bc, bc
+    # (c) .docx đi qua chuan_trinh_bay → xanh
+    doc = Document()
+    doc.add_paragraph("✅ Nội dung chuẩn " * 20)
+    t = doc.add_table(rows=1, cols=1)
+    t.rows[0].cells[0].text = "ô bảng"
+    C.ap_dinh_dang_tai_lieu(doc)
+    doc.save(docx)
+    r = K.danh_gia_docx(md, docx)
+    assert r[0][0] == K.XANH, r
+    assert all(x[0] != K.DO for x in r)
+
+
+def test_trang_thai_chuoi_chi_cong_dau_do():
+    m0, _ = K.trang_thai_chuoi("G0", {}, {})
+    assert m0 == K.DO, "G0 không có tiền đề — máy làm được mà chưa chạy"
+    m1, ly1 = K.trang_thai_chuoi("G1", {}, {})
+    assert m1 == K.VANG and "G0" in ly1, "cổng sau chờ theo chuỗi — không dựng bức tường đỏ"
+    m5, ly5 = K.trang_thai_chuoi("G5", {"G4": {}}, {"G4": False})
+    assert m5 == K.VANG and "G4" in ly5, "chờ chữ ký thật là việc người, không phải lỗi"
+    m5b, _ = K.trang_thai_chuoi("G5", {"G4": {}}, {"G4": True})
+    assert m5b == K.DO, "G4 đã ký mà G5 chưa chạy — máy làm được"
+
+
+def _run(root: Path, study: str, *extra: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(TOOLS / "kiem_chi_tiet_he_nghien_cuu.py"), "--study", study,
+         "--exports-root", str(root), "--no-write", "--khong-canary", *extra],
+        capture_output=True, text=True, timeout=300, encoding="utf-8")
+
+
+def _bang_diem(stdout: str) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {}
+    sau = stdout.split("BẢNG ĐIỂM", 1)[1] if "BẢNG ĐIỂM" in stdout else ""
+    for line in sau.splitlines():
+        m = re.match(r"\s+(G\d{1,2})\s+(.*)$", line)
+        if m:
+            out[m.group(1)] = m.group(2).split()
+    return out
+
+
+def test_de_tai_khong_ton_tai_ma_3(tmp_path):
+    r = _run(tmp_path, "KHONG-TON-TAI-KCT")
+    assert r.returncode == 3, r.stdout + r.stderr
+
+
+def test_checkpoint_tu_mau_thuan_bi_bat_ma_2(tmp_path):
+    study = "PYTEST-KCT-MAU-THUAN"
+    d = tmp_path / study
+    d.mkdir()
+    (d / "G0_checkpoint.json").write_text(json.dumps({
+        "gate": "G0", "guardrail": {"passed": True},
+        "needs_input": {"blocked": True, "reason_code": "MISSING_PICO", "human_message": "PICO chưa chốt"},
+        "quality_gate": {"status": "PASS_G0_CONFIRMED"},
+    }), encoding="utf-8", newline="\n")
+    r = _run(tmp_path, study)
+    assert r.returncode == 2, r.stdout + r.stderr
+    assert "TỰ MÂU THUẪN" in r.stdout
+    assert _bang_diem(r.stdout)["G0"][0] == K.DO
+
+
+def test_de_tai_trong_g0_do_cong_sau_vang(tmp_path):
+    study = "PYTEST-KCT-TRONG"
+    (tmp_path / study).mkdir()
+    r = _run(tmp_path, study)
+    assert r.returncode == 2, r.stdout + r.stderr
+    bd = _bang_diem(r.stdout)
+    assert bd["G0"][0] == K.DO, bd
+    assert bd["G1"][0] == K.VANG and bd["G5"][0] == K.VANG and bd["G10"][0] == K.VANG, bd
+    assert "Cần bác sĩ kiểm chứng" in r.stdout
