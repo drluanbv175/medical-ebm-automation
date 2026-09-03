@@ -89,10 +89,13 @@ class TestRound11NewArtifactKeys:
         case-summary bị bỏ sót ở vòng 15) + 1 khóa "integrity-audit" (vòng rà 6,
         2026-09-02 — tách khỏi "checklist" mà hàng 19 SCAFFOLD_FILES từng dùng
         chung với hàng 17, xem test_scaffold_checklist_vs_integrity_audit_
-        distinct_20260902.py) = 39 — phải có mã code riêng biệt, không trùng."""
+        distinct_20260902.py) = 39, + 14 khóa lâm sàng (Workflow đối kháng
+        đa-agent 2026-09-03, phát hiện #5 — xem
+        test_gen_research_docx_workflow_20260903_finding5.py, khóa CA5..CA18)
+        = 53 — phải có mã code riêng biệt, không trùng."""
         codes = [v[0] for v in G.ARTIFACT_MAP.values()]
         assert len(codes) == len(set(codes)), "Có mã artifact_code bị trùng trong ARTIFACT_MAP"
-        assert len(G.ARTIFACT_MAP) == 39
+        assert len(G.ARTIFACT_MAP) == 53
 
 
 class TestThuThuTaiLieuLiteratureListFix:

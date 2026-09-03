@@ -152,6 +152,42 @@ ARTIFACT_MAP = {
     # CUỐI CÙNG sau Cổng B — tham chiếu khóa không tồn tại).
     "evidence-search":      ("CA3", "A", "Tóm tắt tra cứu chứng cứ điểm khám (PICO)"),
     "clinical-case-summary": ("CA4", "A-B", "Tóm tắt gói quyết định ca lâm sàng"),
+
+    # SỬA 2026-09-03 (Workflow đối kháng đa-agent, phát hiện #5): 14 khóa LÂM
+    # SÀNG bị 14 agent doctrine khác nhau tham chiếu qua `--artifact <khóa>`
+    # nhưng chưa từng có trong ARTIFACT_MAP — cùng lớp lỗi "mất định danh cổng,
+    # rơi về generic GX" đã vá ở vòng 11/15/16, lần này bị bỏ sót vì các agent
+    # này được thêm SAU các đợt vá trước (đo bằng grep thật `--artifact
+    # ([\w-]+)` trên toàn bộ .claude/agents/*.md, đối chiếu với ARTIFACT_MAP:
+    # 43 khóa được tham chiếu, 2 khớp là false positive — "exports" ở
+    # binh-duyet.md là tham số đường dẫn của approve_gate.py (khác CLI, khác
+    # hợp đồng), "bilingual-editing" ở hieu-dinh-song-ngu.md là ghi chú LỊCH SỬ
+    # tự khai đã BỎ khóa đó — còn lại đúng 14 khóa thật). Cả 14 đều là agent
+    # HỖ TRỢ CA NGOẠI TRÚ, chỉ ĐỀ XUẤT ở Cổng A (đã xác nhận từng file: câu
+    # "chỉ ĐỀ XUẤT (Cổng A)" xuất hiện tường minh), tiếp nối dãy mã CA sau CA4.
+    "anticoagulation-plan":        ("CA5",  "A",
+                                     "Kế hoạch kháng đông ngoại trú — chọn thuốc · liều theo CrCl "
+                                     "· bắc cầu · đảo ngược"),
+    "chronic-disease":             ("CA6",  "A",
+                                     "Kế hoạch theo dõi & điều trị theo mục tiêu bệnh mạn tính (Treat-to-Target)"),
+    "chronic-pain":                ("CA7",  "A", "Kế hoạch quản lý đau mạn tính đa mô thức"),
+    "depression-anxiety":          ("CA8",  "A",
+                                     "Tiếp cận trầm cảm & lo âu theo chăm sóc bậc thang (PHQ-9/GAD-7)"),
+    "diagnostic-accuracy-appraisal": ("CA9", "A",
+                                       "Thẩm định độ chính xác chẩn đoán (QUADAS-2/QUADAS-C "
+                                       "· STARD 2015 · GRADE-cho-test)"),
+    "grade-etd":                   ("CA10", "A", "Thẩm định GRADE & NNT/NNH — khối Evidence-to-Decision"),
+    "history-exam":                ("CA11", "A",
+                                     "Khai thác bệnh sử & khám lâm sàng có trọng điểm (SOCRATES/OPQRST/ROS)"),
+    "lab-interpretation":          ("CA12", "A", "Diễn giải kết quả cận lâm sàng & cờ giá trị nguy kịch"),
+    "medication-safety":           ("CA13", "A", "Rà soát an toàn kê đơn — tương tác · chống chỉ định · chỉnh liều"),
+    "palliative-care":             ("CA14", "A",
+                                     "Kế hoạch chăm sóc giảm nhẹ — kiểm soát triệu chứng & mục tiêu chăm sóc"),
+    "pico-clinical":               ("CA15", "A", "Câu hỏi PICO tại điểm khám"),
+    "prevention-screening":        ("CA16", "A", "Kế hoạch dự phòng & tầm soát theo tuổi–giới–nguy cơ"),
+    "probabilistic-dx":            ("CA17", "A",
+                                     "Suy luận chẩn đoán theo xác suất (Bayes — LR/ngưỡng test–treat)"),
+    "risk-score":                  ("CA18", "A", "Áp dụng thang điểm/công cụ nguy cơ lâm sàng đã kiểm định"),
 }
 
 
