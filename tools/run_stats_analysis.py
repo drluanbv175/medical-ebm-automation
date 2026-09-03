@@ -163,6 +163,12 @@ def detect_normality(series: pd.Series) -> bool:
 def analyze_missingness(df: pd.DataFrame) -> dict:
     """Báo cáo tỷ lệ thiếu cho từng cột."""
     n = len(df)
+    # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện MEDIUM): đây là
+    # bước ĐẦU TIÊN trong main() (ngay sau load_data()), trước đây n==0 (file --data
+    # chỉ có header, có thể do export nhầm từ bước khóa dữ liệu) làm `n_miss / n`
+    # ném ZeroDivisionError thô, không có try/except bao quanh ⇒ crash toàn bộ script.
+    if n == 0:
+        return {"error": "Dataset rỗng (0 dòng) — kiểm tra lại file --data hoặc bước khóa dữ liệu."}
     missing = {}
     for col in df.columns:
         n_miss = df[col].isna().sum()
@@ -192,7 +198,16 @@ def _missing_recommendation(missing: dict, n: int) -> str:
 
 
 def _json_safe(obj):
-    """Chuyển kiểu numpy/pandas sang JSON thuần để summary không crash."""
+    """Chuyển kiểu numpy/pandas sang JSON thuần để summary không crash.
+
+    SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện HIGH): trước đây
+    NaN/Inf/-Inf (numpy HAY float thuần) đi thẳng vào json.dumps() mặc định
+    (allow_nan=True) — Python ghi ra token `NaN`/`Infinity`/`-Infinity`, KHÔNG hợp lệ
+    theo RFC 8259, làm hỏng mọi trình phân tích JSON nghiêm ngặt đọc lại
+    G6_analysis_summary.json (file agent viet-ban-thao tiêu thụ). Chặn ở lớp
+    sanitize DUY NHẤT này — vá tận gốc là lọc Inf trước khi tính thống kê (xem
+    _finite_only), lớp này là hàng rào SAU CÙNG phòng khi giá trị không hữu hạn lọt
+    qua từ một nhánh chưa lọc."""
     if isinstance(obj, dict):
         return {str(k): _json_safe(v) for k, v in obj.items()}
     if isinstance(obj, list):
@@ -201,11 +216,28 @@ def _json_safe(obj):
         return [_json_safe(v) for v in obj]
     if isinstance(obj, (np.integer,)):
         return int(obj)
-    if isinstance(obj, (np.floating,)):
-        return float(obj)
+    if isinstance(obj, (np.floating, float)):
+        f = float(obj)
+        return f if np.isfinite(f) else None
     if isinstance(obj, (np.bool_,)):
         return bool(obj)
     return obj
+
+
+def _finite_only(s: pd.Series) -> tuple[pd.Series, int]:
+    """Loại giá trị KHÔNG HỮU HẠN (Inf/-Inf) khỏi một series ĐÃ dropna() — trả về
+    series đã lọc + số lượng giá trị bị loại (0 = không có gì bị loại).
+
+    SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện HIGH): trước đây
+    chỉ .dropna() lọc NaN, không lọc Inf — một giá trị Inf (biến dẫn xuất kiểu
+    BMI=cân_nặng/chiều_cao² khi chiều cao=0, hoặc lỗi chuyển đơn vị) làm mean()/std()
+    trả inf/nan, lan tới MD/CI/p-value mà KHÔNG có cảnh báo nào — kết quả sai này bị
+    ghi thẳng vào báo cáo cạnh dòng "[BÁC SĨ KIỂM TRA]" như thể không có vấn đề gì."""
+    if s.empty:
+        return s, 0
+    finite_mask = np.isfinite(s.astype(float))
+    n_dropped = int((~finite_mask).sum())
+    return (s[finite_mask], n_dropped) if n_dropped else (s, 0)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -215,8 +247,17 @@ def _json_safe(obj):
 def _compare_continuous(a: pd.Series, b: pd.Series) -> dict:
     """t-test hoặc Mann-Whitney tuỳ phân phối. Trả về p, MD (95%CI)."""
     a, b = a.dropna(), b.dropna()
+    a, n_inf_a = _finite_only(a)
+    b, n_inf_b = _finite_only(b)
+    warning = None
+    if n_inf_a or n_inf_b:
+        warning = (f"Đã loại {n_inf_a + n_inf_b} giá trị Inf/-Inf không hữu hạn trước khi "
+                   f"so sánh — kiểm tra dữ liệu nguồn.")
     if len(a) < 2 or len(b) < 2:
-        return {"p": None, "effect": "N/A", "test": "N/A"}
+        r = {"p": None, "effect": "N/A", "test": "N/A"}
+        if warning:
+            r["warning"] = warning
+        return r
     normal_a = detect_normality(a) if HAS_SCIPY else True
     normal_b = detect_normality(b) if HAS_SCIPY else True
     if normal_a and normal_b and HAS_SCIPY:
@@ -240,13 +281,16 @@ def _compare_continuous(a: pd.Series, b: pd.Series) -> dict:
         df_ws = (v1 + v2) ** 2 / (v1**2 / (len(a) - 1) + v2**2 / (len(b) - 1))
         t_crit = sp_stats.t.ppf(0.975, df_ws)
         ci = (round(md - t_crit * se, 3), round(md + t_crit * se, 3))
-        return {"p": round(float(p), 4), "effect": f"MD={md:.3f} (95%CI {ci[0]}–{ci[1]})", "test": "Welch's t-test"}
+        r = {"p": round(float(p), 4), "effect": f"MD={md:.3f} (95%CI {ci[0]}–{ci[1]})", "test": "Welch's t-test"}
     elif HAS_SCIPY:
         u, p = sp_stats.mannwhitneyu(a, b, alternative="two-sided")
         med_diff = a.median() - b.median()
-        return {"p": round(float(p), 4), "effect": f"Median diff={med_diff:.3f}", "test": "Mann-Whitney"}
+        r = {"p": round(float(p), 4), "effect": f"Median diff={med_diff:.3f}", "test": "Mann-Whitney"}
     else:
-        return {"p": None, "effect": f"Mean diff={a.mean() - b.mean():.3f}", "test": "basic"}
+        r = {"p": None, "effect": f"Mean diff={a.mean() - b.mean():.3f}", "test": "basic"}
+    if warning:
+        r["warning"] = warning
+    return r
 
 
 def _compare_categorical(col: pd.Series, grp: pd.Series) -> dict:
@@ -277,11 +321,27 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list) -> dict:
         if vtype == "continuous":
             for g in groups:
                 s = grp_data[g].dropna()
+                # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện HIGH):
+                # một biến nền chỉ được ghi nhận ở MỘT nhánh (quy trình thu thập khác
+                # nhau giữa 2 nhóm/site) khiến nhóm còn lại s rỗng — trước đây
+                # detect_normality([])/s.mean() trên series rỗng crash hoặc trả NaN
+                # âm thầm. Cùng đợt: lọc Inf/-Inf (biến dẫn xuất lỗi, vd BMI khi chiều
+                # cao=0) trước khi tính mean/std — trước đây không lọc, Inf lan vào
+                # Bảng 1 mà không cảnh báo.
+                if s.empty:
+                    row[f"grp_{g}"] = "N/A (0 quan sát)"
+                    continue
+                s, n_inf = _finite_only(s)
+                if s.empty:
+                    row[f"grp_{g}"] = "N/A (toàn bộ giá trị không hữu hạn)"
+                    continue
                 normal = detect_normality(s) if HAS_SCIPY else True
                 if normal:
                     row[f"grp_{g}"] = f"{s.mean():.2f} ± {s.std():.2f}"
                 else:
                     row[f"grp_{g}"] = f"{s.median():.2f} [{s.quantile(.25):.2f}–{s.quantile(.75):.2f}]"
+                if n_inf:
+                    row[f"grp_{g}"] += f" (⚠loại {n_inf} giá trị Inf)"
             if len(groups) == 2 and HAS_SCIPY:
                 comp = _compare_continuous(grp_data[groups[0]], grp_data[groups[1]])
                 row["p"] = comp["p"]
@@ -290,6 +350,13 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list) -> dict:
             for g in groups:
                 s = grp_data[g].dropna()
                 if vtype == "binary":
+                    # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện HIGH):
+                    # trước đây max(s.dropna().unique()) trên s RỖNG (biến chỉ được ghi
+                    # nhận ở MỘT nhánh — vd cờ bệnh đồng mắc, giới tính) ném ValueError
+                    # ('max() arg is an empty sequence') thô, không try/except.
+                    if s.empty:
+                        row[f"grp_{g}"] = "N/A (0 quan sát)"
+                        continue
                     # Vá 2026-07-14: .unique() trả về ExtensionArray (vd ArrowStringArray
                     # cho dtype "str" mới của pandas 3.x khi cột nhị phân là chữ, "Yes"/"No")
                     # — các ExtensionArray này không có .max(). dùng max() builtin (dựa vào
@@ -334,6 +401,20 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
     if outcome_type == "binary":
         n0, e0 = len(s0), int(s0.sum())
         n1, e1 = len(s1), int(s1.sum())
+        # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện CRITICAL):
+        # đây là bước tính KẾT CỤC CHÍNH của G6, gọi trực tiếp trong main() KHÔNG có
+        # try/except bao quanh — trước đây n0==0 hoặc n1==0 (một nhánh mất dấu theo
+        # dõi/kết cục không được đánh giá TOÀN BỘ ở nhánh đó — kịch bản lâm sàng thực
+        # tế) làm `e0 / n0` ném ZeroDivisionError thô, dừng CẢ pipeline giữa chừng
+        # (Bảng 1 đã ghi ra trước đó vẫn dở dang, Bảng 4/5 không bao giờ được tạo).
+        if n0 == 0 or n1 == 0:
+            trong = ", ".join(f"'{g}'" for g, n in ((g0, n0), (g1, n1)) if n == 0)
+            return {
+                "error": f"Nhóm {trong} không còn quan sát nào cho kết cục '{outcome_col}' "
+                         f"sau khi loại giá trị thiếu (n=0) — không thể tính OR/RD.",
+                "note": "[CẦN BIOSTATISTICIAN — kiểm tra dữ liệu, có thể do mất dấu theo dõi/"
+                        "kết cục không được đánh giá ở nhánh này]",
+            }
         p0, p1 = e0 / n0, e1 / n1
         result["group_0"] = {"n": n0, "events": e0, "pct": round(p0 * 100, 1)}
         result["group_1"] = {"n": n1, "events": e1, "pct": round(p1 * 100, 1)}
@@ -362,13 +443,25 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
             result["p_value"] = round(float(p), 4)
             result["test"] = "Chi-square"
     else:
+        # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện HIGH): lọc
+        # Inf/-Inf TRƯỚC khi tính mean/sd trực tiếp ở đây — trước đây chỉ
+        # _compare_continuous() nội bộ mới thấy Inf (qua comp), còn group_0/group_1/
+        # md_crude tính THẲNG trên s0/s1 chưa lọc vẫn ra inf/nan không cảnh báo.
+        s0f, n_inf0 = _finite_only(s0)
+        s1f, n_inf1 = _finite_only(s1)
         comp = _compare_continuous(s0, s1)
-        result["group_0"] = {"n": len(s0), "mean": round(s0.mean(), 3), "sd": round(s0.std(), 3)}
-        result["group_1"] = {"n": len(s1), "mean": round(s1.mean(), 3), "sd": round(s1.std(), 3)}
-        result["md_crude"] = round(s1.mean() - s0.mean(), 3)
+        result["group_0"] = {"n": len(s0f), "mean": round(s0f.mean(), 3), "sd": round(s0f.std(), 3)}
+        result["group_1"] = {"n": len(s1f), "mean": round(s1f.mean(), 3), "sd": round(s1f.std(), 3)}
+        result["md_crude"] = round(s1f.mean() - s0f.mean(), 3)
         result["effect"] = comp["effect"]
         result["p_value"] = comp["p"]
         result["test"] = comp["test"]
+        if n_inf0 or n_inf1:
+            result["data_quality_warning"] = (
+                f"Đã loại {n_inf0 + n_inf1} giá trị Inf/-Inf (không hữu hạn) khỏi "
+                f"'{outcome_col}' trước khi tính — kiểm tra dữ liệu nguồn (có thể do lỗi "
+                f"tính toán/chuyển đơn vị)."
+            )
 
     return result
 
@@ -675,9 +768,19 @@ def kaplan_meier_summary(df: pd.DataFrame, time_col: str, event_col: str,
     groups = sorted(df[group_col].dropna().unique())
     per_group = {}
     fitted = {}
+    warnings_km: list[str] = []
     for g in groups:
         sub = df[df[group_col] == g][[time_col, event_col]].dropna()
         if sub.empty:
+            # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện MEDIUM):
+            # trước đây `continue` lặng lẽ bỏ qua nhóm này — format_survival_text()
+            # chỉ lặp qua các khóa CÒN LẠI trong km['groups'], nên báo cáo Bảng 3 chỉ
+            # hiện MỘT nhóm với vẻ ngoài bình thường, không dấu hiệu gì cho biết nhóm
+            # kia đã bị loại vì thiếu 100% dữ liệu thời gian/biến cố.
+            warnings_km.append(
+                f"Nhóm '{g}' không có quan sát hợp lệ cho {time_col}/{event_col} — "
+                f"đã LOẠI khỏi phân tích Kaplan-Meier."
+            )
             continue
         kmf = KaplanMeierFitter()
         kmf.fit(sub[time_col], event_observed=sub[event_col], label=str(g))
@@ -694,6 +797,8 @@ def kaplan_meier_summary(df: pd.DataFrame, time_col: str, event_col: str,
         }
 
     result = {"groups": per_group}
+    if warnings_km:
+        result["warnings"] = warnings_km
     if len(groups) == 2:
         g0, g1 = groups
         s0 = df[df[group_col] == g0][[time_col, event_col]].dropna()
@@ -778,6 +883,8 @@ def format_outcome_text(res: dict, outcome_col: str, hypothesis_interp: dict = N
         lines.append(f"  {res.get('effect', 'N/A')}")
     if "p_value" in res:
         lines.append(f"  p = {res['p_value']} ({res.get('test','')})")
+    if res.get("data_quality_warning"):
+        lines.append(f"  ⚠ {res['data_quality_warning']} [CẦN BIOSTATISTICIAN XÁC NHẬN]")
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện HIGH):
     # xem interpret_hypothesis_type() — chỉ xuất hiện khi G3 thiết kế NI/
     # equivalence, KHÔNG đổi gì cho đề tài superiority (mặc định, đa số).
@@ -883,6 +990,8 @@ def format_survival_text(res: dict, km: dict = None, hypothesis_interp: dict = N
             lines.append(f"    Log-rank p = {km['logrank_p']}")
         if km.get("plot_path"):
             lines.append(f"    Đường cong: {km['plot_path']}")
+        for w in km.get("warnings", []):
+            lines.append(f"    ⚠ {w} [CẦN BIOSTATISTICIAN XÁC NHẬN]")
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện HIGH):
     # xem chú thích ở điểm gọi (main()) — nhánh sống còn trước đây không hề
     # diễn giải hypothesis_type/margin dù đã đọc từ G3 checkpoint.
@@ -1320,38 +1429,64 @@ def main():
     }
 
     # 3. Dữ liệu thiếu
-    miss = analyze_missingness(df)
+    # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện MEDIUM+CRITICAL+
+    # HIGH): 3 bước dưới đây (dữ liệu thiếu, Bảng 1, kết cục chính) trước đây gọi
+    # TRỰC TIẾP không try/except — một lỗi CỤC BỘ (dataset rỗng, một nhóm mất 100%
+    # dữ liệu ở MỘT biến/kết cục) sẽ giết TOÀN BỘ pipeline, kể cả các bước SAU đó
+    # (Bảng 4/5, JSON summary) vốn không liên quan gì tới lỗi đó. Mỗi bước nay tự
+    # bọc try/except CỤ THỂ cho lỗi ĐÃ BIẾT (ZeroDivisionError/ValueError) — không
+    # nuốt lỗi LẠ (bare except) để không che mất bug thật khác.
+    try:
+        miss = analyze_missingness(df)
+    except (ZeroDivisionError, ValueError) as exc:
+        miss = {"error": f"Lỗi tính dữ liệu thiếu: {exc}"}
     summary["missing_data"] = miss
-    miss_txt = (
-        f"TÓM TẮT DỮ LIỆU THIẾU\n{'='*50}\n"
-        f"Tổng n = {miss['n_total']} | Hoàn chỉnh = {miss['n_complete_cases']} ({miss['pct_complete']}%)\n"
-        f"Khuyến nghị: {miss['recommendation']}\n"
-    )
-    if miss["variables_with_missing"]:
-        miss_txt += "\nChi tiết:\n"
-        for col, info in miss["variables_with_missing"].items():
-            miss_txt += f"  {col}: {info['n_missing']} thiếu ({info['pct']}%)\n"
+    if miss.get("error"):
+        miss_txt = f"TÓM TẮT DỮ LIỆU THIẾU\n{'='*50}\nLỖI: {miss['error']}\n"
+        print(f"✗ Phân tích dữ liệu thiếu THẤT BẠI: {miss['error']}")
+    else:
+        miss_txt = (
+            f"TÓM TẮT DỮ LIỆU THIẾU\n{'='*50}\n"
+            f"Tổng n = {miss['n_total']} | Hoàn chỉnh = {miss['n_complete_cases']} ({miss['pct_complete']}%)\n"
+            f"Khuyến nghị: {miss['recommendation']}\n"
+        )
+        if miss["variables_with_missing"]:
+            miss_txt += "\nChi tiết:\n"
+            for col, info in miss["variables_with_missing"].items():
+                miss_txt += f"  {col}: {info['n_missing']} thiếu ({info['pct']}%)\n"
+        print(f"✓ Phân tích dữ liệu thiếu: {miss['pct_complete']}% hoàn chỉnh")
     (prefix.parent / f"{args.gate}_missing_data_summary.txt").write_text(miss_txt, encoding="utf-8", newline="\n")
-    print(f"✓ Phân tích dữ liệu thiếu: {miss['pct_complete']}% hoàn chỉnh")
 
     # 4. Bảng 1
     if args.group and args.group in df.columns:
-        t1 = table1_descriptive(df, args.group, vars_for_t1)
-        t1_txt = format_table1_text(t1)
+        try:
+            t1 = table1_descriptive(df, args.group, vars_for_t1)
+            t1_txt = format_table1_text(t1)
+            summary["table1"] = {"n_per_group": t1["n_per_group"]}
+            print(f"✓ Bảng 1: {len(t1['rows'])} biến, {len(t1['groups'])} nhóm")
+        except (ZeroDivisionError, ValueError) as exc:
+            t1_txt = f"BẢNG 1 — ĐẶC ĐIỂM MẪU\nLỖI: {exc}\n[CẦN BIOSTATISTICIAN XÁC NHẬN]"
+            summary["table1"] = {"error": str(exc)}
+            print(f"✗ Bảng 1 THẤT BẠI: {exc}")
         (prefix.parent / f"{args.gate}_table1_descriptive.txt").write_text(t1_txt, encoding="utf-8", newline="\n")
-        summary["table1"] = {"n_per_group": t1["n_per_group"]}
-        print(f"✓ Bảng 1: {len(t1['rows'])} biến, {len(t1['groups'])} nhóm")
 
     # 5. Kết cục chính
     if args.outcome and args.group and args.outcome in df.columns:
-        res = compare_primary_outcome(df, args.outcome, args.group, args.outcome_type)
+        try:
+            res = compare_primary_outcome(df, args.outcome, args.group, args.outcome_type)
+        except (ZeroDivisionError, ValueError) as exc:
+            res = {"error": f"Lỗi tính kết cục chính: {exc}",
+                   "note": "[CẦN BIOSTATISTICIAN — kiểm tra dữ liệu]"}
         hypothesis_interp = interpret_hypothesis_type(res, hypothesis_type, hypothesis_margin)
         res_txt = format_outcome_text(res, args.outcome, hypothesis_interp)
         (prefix.parent / f"{args.gate}_table2_main_outcome.txt").write_text(res_txt, encoding="utf-8", newline="\n")
         summary["primary_outcome"] = res
         if hypothesis_interp:
             summary["hypothesis_interpretation"] = hypothesis_interp
-        print(f"✓ Kết cục chính ({res.get('outcome_type','')}): p={res.get('p_value','?')}")
+        if res.get("error"):
+            print(f"✗ Kết cục chính THẤT BẠI: {res['error']}")
+        else:
+            print(f"✓ Kết cục chính ({res.get('outcome_type','')}): p={res.get('p_value','?')}")
         # SỬA 2026-07-24 (vòng lặp vòng 22): dùng .get("note") thay vì
         # .get("hypothesis_type") — xem chú thích tương ứng trong format_outcome_text().
         if hypothesis_interp.get("note"):
