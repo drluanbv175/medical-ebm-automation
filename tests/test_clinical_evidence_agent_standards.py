@@ -234,8 +234,8 @@ def test_international_standard_profile_maps_core_clinical_ebm_standards() -> No
     assert "RoB 2" in profile["appraisal_tools"]["rct"]
     assert "ROBINS-I" in profile["appraisal_tools"]["nonrandomized_intervention"]
     assert "ROBINS-E" in profile["appraisal_tools"]["harm_or_etiology"]
-    assert "QUADAS-2" in profile["appraisal_tools"]["diagnostic_accuracy"]
-    assert "QUADAS-C" in profile["appraisal_tools"]["diagnostic_accuracy"]
+    assert "QUADAS-3" in profile["appraisal_tools"]["diagnostic_accuracy"]
+    assert any("QUADAS-C" in item for item in profile["appraisal_tools"]["diagnostic_accuracy"])
     assert "PROBAST" in profile["appraisal_tools"]["prediction_model"]
     assert any("GRADE Evidence-to-Decision" in item for item in profile["certainty_and_decision"])
     assert any("GRADE-ADOLOPMENT" in item for item in profile["certainty_and_decision"])
@@ -332,7 +332,7 @@ def test_question_frame_policy_locks_frame_tool_and_effect_measure_choice() -> N
     assert frame_map["harm_or_etiology"]["frame"] == "PECO"
     assert "ROBINS-E" in frame_map["harm_or_etiology"]["appraisal_tools"]
     assert frame_map["diagnostic_accuracy"]["frame"] == "PIRT"
-    assert "QUADAS-2" in frame_map["diagnostic_accuracy"]["appraisal_tools"]
+    assert "QUADAS-3" in frame_map["diagnostic_accuracy"]["appraisal_tools"]
     assert "STARD" in frame_map["diagnostic_accuracy"]["reporting"]
     assert frame_map["prognosis"]["frame"] == "PROGRESS/PICOTS"
     assert "PROBAST" in frame_map["prognosis"]["appraisal_tools"]

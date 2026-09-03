@@ -88,7 +88,7 @@ BƯỚC E (bàn giao): nêu cổng kế tiếp + cần bác sĩ cấp gì
 | `literature` | G0c | G0-G1 | Tổng quan y văn & Evidence Ledger |
 | `research-gap` | G0d | G0-G1 | Đối chiếu khoảng trống nghiên cứu (Research Gap Analysis) |
 | `extraction` | G0e | G0-G1 | Bảng trích xuất dữ liệu nghiên cứu (Data Extraction Table) |
-| `critical-appraisal` | G0f | G0-G1 | Thẩm định phê bình một nghiên cứu (RoB 2/ROBINS-I/AMSTAR-2/QUADAS-2 · GRADE) |
+| `critical-appraisal` | G0f | G0-G1 | Thẩm định phê bình một nghiên cứu (RoB 2/ROBINS-I/AMSTAR-2/QUADAS-3 · GRADE) |
 | `protocol` | G1a | G1 | Đề cương & Thiết kế nghiên cứu |
 | `charter` | G1b | G1 | Project Charter |
 | `plan` | G1c | G1 | Kế hoạch triển khai |

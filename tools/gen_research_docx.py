@@ -107,7 +107,7 @@ ARTIFACT_MAP = {
     "research-gap":       ("G0d", "G0-G1", "Đối chiếu khoảng trống nghiên cứu (Research Gap Analysis)"),
     "extraction":         ("G0e", "G0-G1", "Bảng trích xuất dữ liệu nghiên cứu (Data Extraction Table)"),
     "critical-appraisal": ("G0f", "G0-G1",
-                           "Thẩm định phê bình một nghiên cứu (RoB 2/ROBINS-I/AMSTAR-2/QUADAS-2 · GRADE)"),
+                           "Thẩm định phê bình một nghiên cứu (RoB 2/ROBINS-I/AMSTAR-2/QUADAS-3 · GRADE)"),
     "qualitative-design": ("G1e", "G1", "Thiết kế nghiên cứu định tính/hỗn hợp (COREQ/SRQR)"),
     "safety-monitoring":  ("G2a", "G2", "Kế hoạch giám sát an toàn — AE/SAE · DSMB · Stopping Rules"),
     "prediction-model":   ("G6c", "G6", "Mô hình tiên lượng/chẩn đoán (TRIPOD+AI/PROBAST+AI)"),

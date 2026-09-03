@@ -16,6 +16,16 @@ thử nghiệm can thiệp KHÔNG truyền thống — thông qua Step 4 RIÊNG 
 cho đề tài quan sát hiện tại nhưng cần biết khi có đề tài can thiệp thiết kế mới; dự thảo
 Step 2b 2023 đã lỗi thời, không dùng) · **CIOMS** 2016 · **SPIRIT 2025** (RCT) · VN: **TT43/2024/TT-BYT** (HLực 01/02/2025) · **Luật Khám bệnh, chữa bệnh 15/2023/QH15** · **Luật BVDLCN 91/2025/QH15** + **NĐ 356/2025/NĐ-CP**. `[CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]`
 
+### ICH E6(R3) Annex 2 — hợp đồng chạy được tại G1/G2
+
+Nếu RCT có `decentralised`, `pragmatic` và/hoặc `rwd`, PI/methodologist phải khai
+`study_meta.gate_params.G1.annex2` với `applicable: true` và `methodologies`. G1 kiểm
+fitness-for-purpose, gánh nặng/khả năng tiếp cận, vai trò giám sát, luồng an toàn và kiểm
+soát riêng từng phương pháp; G2 kiểm thông tin cho IRB, eConsent/xác minh danh tính,
+lựa chọn không số hóa, DHT, privacy/confidentiality, quyền dùng RWD và data governance.
+Thiếu trường thật hoặc còn nhãn `[CẦN...]` → `BLOCK`, không được mở G1/G2. Hợp đồng code:
+`medical-ebm-automation/tools/annex2_quality_gate.py`; nguồn ICH Step 4 03/06/2026.
+
 ---
 
 ## 🤖 BƯỚC 0 — G2 FULL AUTO (chạy TRƯỚC khi soạn thủ công)

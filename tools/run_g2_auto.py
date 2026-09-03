@@ -697,7 +697,7 @@ Population: [CẦN — PICO P]
 Intervention/Exposure: [CẦN — PICO I/E]
 Comparator: [CẦN — PICO C]
 Outcomes: Primary — [CẦN — PICO O] | Secondary — [CẦN]
-Risk of bias: [RoB 2 / ROBINS-I / QUADAS-2]
+Risk of bias: [RoB 2 / ROBINS-I / QUADAS-3 hiện hành; QUADAS-2 chỉ tương thích ngược]
 Reporting standard: PRISMA 2020
 Start date: [CẦN]
 Expected completion: [CẦN]
