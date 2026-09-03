@@ -1,6 +1,6 @@
 # Evidence Surveillance Deployment Verification
 
-- Generated: `2026-08-26T11:37:08+00:00`
+- Generated: `2026-09-02T21:25:24+00:00`
 - Deployment status: `BLOCKED_FOR_DEPLOYMENT`
 - Deployment allowed: `False`
 - Online canary: `True`
@@ -14,9 +14,9 @@
 | ESD04 | Pipeline Evidence Workbench offline | static | PASS | Markdown: <WORKSPACE>/reports/CLINICAL_EVIDENCE_UPDATE_PIPELINE.md / JSON: <WORKSPACE>/reports/CLINICAL_EVIDENCE_UPDATE_PIPELINE.json / Cần bác sĩ kiểm chứng. Đây là kiểm chứng kỹ thuật/offline của pipeline cập nhật chứng cứ, không thay xác minh online, rà an toàn thuốc hoặc quyết định lâm sàng. | Fixture offline không chứng minh PMID/DOI phân giải được tại thời điểm triển khai. |
 | ESD05 | Scheduler launchd | static | PASS | claude_task:thu-thap-tuan-an-toan-thuoc; claude_task:cap-nhat-thang-ebm; com.medicalebm.weeklysafety:legacy_retired; com.medicalebm.monthlyupdate:legacy_retired | Đăng ký lịch (Claude task/launchd) chưa chứng minh một chu kỳ đã chạy trọn thành công. |
 | ESD06 | Canary nguồn online | online | PASS | pubmed:found=True,health=ok; europepmc:found=True,health=ok; crossref:found=True,health=ok; openfda:found=True,health=ok | Canary chỉ kiểm định danh cố định; không thay rà toàn bộ nguồn của từng chủ đề. |
-| ESD07 | Scanner PubMed online | online | PASS | status=PASS; topics=2; failed=0; candidates=3; errors=[] | Hai query canary không thay độ phủ toàn watchlist hoặc thẩm định Track A. |
+| ESD07 | Scanner PubMed online | online | PASS | status=PASS; topics=2; failed=0; candidates=2; errors=[] | Hai query canary không thay độ phủ toàn watchlist hoặc thẩm định Track A. |
 | ESD08 | Dashboard strict source online | online | PASS | overall=PASS; online=True; dashboard_gate=PASS | Fixture online không thay double-review của mẫu nội dung lâm sàng thật. |
-| ESD09 | Lịch sử runtime tuần/tháng | runtime | PASS | weekly:status=PASS,age=2.0d; monthly:status=PASS,age=13.0d | Cần ít nhất các lượt chạy thật còn mới; canary thủ công không thay lịch sử này. |
+| ESD09 | Lịch sử runtime tuần/tháng | runtime | PASS | weekly:status=PASS,age=1.8d; monthly:status=PASS,age=1.4d | Cần ít nhất các lượt chạy thật còn mới; canary thủ công không thay lịch sử này. |
 | ESD10 | Cấu hình kênh cảnh báo | runtime | FAIL | email_ready=False; webhook_ready=False | Chỉ kiểm cấu hình có mặt, UAT vẫn phải chứng minh gửi/nhận thật. |
 | ESD11 | UAT và phê duyệt | human | HUMAN_GATE | valid_source_samples=0; missing=['SOURCE_SAMPLE_REVIEW', 'SCHEDULER_TRIGGER', 'ALERT_DELIVERY', 'ROLLBACK_RESTORE', 'SHADOW_RUN', 'DOCTOR_APPROVAL', 'OPERATIONS_APPROVAL'] | Đây là cổng người thật; agent chỉ kiểm bằng chứng, không tự ký hoặc tự điền PASS. |
 

@@ -74,7 +74,7 @@ BẢNG BAYES:
 Hai ngưỡng: test=[..%] · điều trị=[..%] (căn cứ/giả định: ____)
 Hậu nghiệm rơi vào: [dưới test / giữa / trên điều trị]
 → KHUYẾN NGHỊ HÀNH ĐỘNG (CỔNG A): [trấn an+safety-netting / test ___ / điều trị]
-Độ tin cậy chỉ số (BẮT BUỘC nhận xét): [QUADAS-2 cho nghiên cứu nguồn Se/Sp/LR — có / CẦN NGUỒN] | tham số thiếu: [CẦN NGUỒN]
+Độ tin cậy chỉ số (BẮT BUỘC nhận xét): [QUADAS-3 hiện hành cho từng ước lượng Se/Sp/LR — có / CẦN NGUỒN; QUADAS-2 chỉ tương thích ngược] | tham số thiếu: [CẦN NGUỒN]
 ```
 Kết: **"Cần bác sĩ kiểm chứng."**
 
@@ -98,7 +98,7 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact probabilistic-dx
 - Nhận câu hỏi loại **chẩn đoán** từ `pico-lam-sang`; chỉ số test (Se/Sp/LR) lấy có nguồn qua `tra-cuu-chung-cu` (kèm PMID/DOI).
 - **Đọc–mô tả panel xét nghiệm/ECG có hệ thống → `dien-giai-can-lam-sang`;** agent này chỉ NHẬN kết quả đã diễn giải để áp Bayes (pretest→LR→hậu nghiệm→ngưỡng test–treat), KHÔNG tự đọc/gom panel.
 - **KHÔNG kê đơn, KHÔNG chấm GRADE chứng cứ điều trị, KHÔNG ghi sổ cái** → `ke-don-an-toan`, `tham-dinh-grade-nnt`, `so-cai-ghi-nho`. Vượt ngưỡng điều trị → bàn giao nhánh điều trị của `dieu-phoi-lam-sang`.
-- **KHÔNG thẩm định CHẤT LƯỢNG một nghiên cứu độ chính xác chẩn đoán** (QUADAS-2/QUADAS-C/GRADE-cho-test — khác việc ÁP Se/Sp/LR đã có sẵn của agent này) *(2026-07-12)* → `tham-dinh-do-chinh-xac-chan-doan`.
+- **KHÔNG thẩm định CHẤT LƯỢNG một nghiên cứu độ chính xác chẩn đoán** (QUADAS-3 hiện hành; QUADAS-2 tương thích ngược/QUADAS-C/GRADE-cho-test — khác việc ÁP Se/Sp/LR đã có sẵn của agent này) → `tham-dinh-do-chinh-xac-chan-doan`.
 
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
@@ -136,4 +136,3 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
-

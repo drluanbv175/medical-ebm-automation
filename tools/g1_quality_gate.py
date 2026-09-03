@@ -25,6 +25,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
+import annex2_quality_gate as A2X
 import skill_standards as S
 
 STATUS_BLOCKED = "BLOCKED"
@@ -114,6 +115,11 @@ _STANDARDS_BASIS = (
         "standard": "CONSORT 2025",
         "scope": "Báo cáo kết quả thử nghiệm ngẫu nhiên",
         "doi": "10.1136/bmj-2024-081123",
+    },
+    {
+        "standard": A2X.VERSION,
+        "scope": "Thử nghiệm có yếu tố phi tập trung, pragmatic và/hoặc RWD",
+        "url": A2X.SOURCE_URL,
     },
     {
         "standard": "PRISMA-P 2015",
@@ -814,6 +820,20 @@ def evaluate_g1_quality(
         "PASS" if canonical_ok else "BLOCK",
         f"internal_code={internal!r}",
         "Chọn một mã thiết kế canonical được hệ hỗ trợ.",
+    ))
+
+    annex2 = A2X.evaluate(meta, internal, "G1")
+    annex2_issues = annex2["errors"] + annex2["missing"]
+    automatic.append(_criterion(
+        "G1-AUTO-02b",
+        f"{A2X.VERSION}: thiết kế phương pháp mới đủ fitness-for-purpose và giám sát",
+        "BLOCK" if annex2["status"] == "BLOCK" else "PASS",
+        (
+            "; ".join(annex2_issues)
+            if annex2_issues
+            else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}"
+        ),
+        "Điền study_meta.gate_params.G1.annex2 theo phương pháp đã chọn; không mở G1 khi thiếu.",
     ))
 
     reporting = str(design.get("reporting_standard") or "")

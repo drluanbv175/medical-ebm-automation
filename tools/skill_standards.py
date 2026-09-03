@@ -163,7 +163,7 @@ DESIGN_PROTOCOL_REQUIREMENTS: Dict[str, Tuple[str, ...]] = {
         "Index test, reference standard và ngưỡng định trước",
         "Blinding giữa index test/reference standard",
         "Spectrum/verification bias và bảng 2x2",
-        "STARD",
+        "STARD/STARD-AI khi phù hợp; QUADAS-3 hiện hành ở mức từng ước lượng",
     ),
     "prediction": (
         "Định nghĩa target outcome và thời điểm dự báo",
@@ -500,7 +500,7 @@ REPORTING_STANDARDS: Dict[str, Dict[str, str]] = {
     "diagnostic": {
         "primary": "STARD",
         "protocol": "Protocol định trước/đăng ký nếu thích hợp",
-        "extra": "QUADAS-2/QUADAS-C khi thẩm định sai lệch",
+        "extra": "QUADAS-3 hiện hành ở mức từng ước lượng; QUADAS-2/QUADAS-C chỉ tương thích ngược",
     },
     "prediction": {
         "primary": "TRIPOD+AI",
@@ -510,7 +510,7 @@ REPORTING_STANDARDS: Dict[str, Dict[str, str]] = {
     "systematic_review": {
         "primary": "PRISMA 2020",
         "protocol": "PRISMA-P; đăng ký PROSPERO/OSF nếu phù hợp",
-        "extra": "RoB 2/ROBINS-I/QUADAS-2/AMSTAR 2/ROBIS; GRADE cho độ chắc chắn",
+        "extra": "RoB 2/ROBINS-I/QUADAS-3/AMSTAR 2/ROBIS; GRADE cho độ chắc chắn",
     },
     "qualitative": {
         "primary": "COREQ (phỏng vấn/focus group) hoặc SRQR",

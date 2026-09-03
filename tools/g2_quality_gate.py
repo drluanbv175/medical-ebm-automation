@@ -25,6 +25,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
+import annex2_quality_gate as A2X
 import gate_contract as GC
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
@@ -84,6 +85,11 @@ STANDARDS_BASIS = (
         "standard": "ICH E6(R3)",
         "scope": "IRB/IEC, informed consent, safety and protocol control for clinical trials",
         "url": "https://database.ich.org/sites/default/files/ICH_E6%28R3%29_Step4_FinalGuideline_2025_0106.pdf",
+    },
+    {
+        "standard": A2X.VERSION,
+        "scope": "IRB/IEC, consent, privacy và data governance cho decentralised/pragmatic/RWD trials",
+        "url": A2X.SOURCE_URL,
     },
     {
         "standard": f"WHO Trial Registration Data Set {WHO_TRDS_VERSION}",
@@ -698,6 +704,20 @@ def evaluate_g2_quality(
         "PASS" if g1_status == "PASS_G1_CONFIRMED" else "REVIEW",
         f"G1 quality status={g1_status or 'thiếu'}",
         "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.",
+    ))
+
+    annex2 = A2X.evaluate(meta, design_code, "G2")
+    annex2_issues = annex2["errors"] + annex2["missing"]
+    automatic.append(_criterion(
+        "G2-AUTO-02b",
+        f"{A2X.VERSION}: IRB/consent/privacy/data governance đủ cho phương pháp mới",
+        "BLOCK" if annex2["status"] == "BLOCK" else "PASS",
+        (
+            "; ".join(annex2_issues)
+            if annex2_issues
+            else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}"
+        ),
+        "Hoàn thiện khối annex2 trong study_meta trước khi nộp/khóa G2.",
     ))
 
     # LƯU Ý PHẠM VI (audit toàn diện G0-G10, 2026-07-30, G2-F1): generate_g2_

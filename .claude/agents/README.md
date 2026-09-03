@@ -39,7 +39,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 | `chan-doan-xac-suat` | Suy luận chẩn đoán theo Bayes: pretest → LR → hậu nghiệm → ngưỡng test–treat | Câu hỏi CHẨN ĐOÁN: "có nên làm xét nghiệm gì", "khả năng bệnh X", "đủ chắc để điều trị chưa" |
 | `thang-diem-nguy-co` | Chọn–áp–diễn giải **thang/công cụ nguy cơ đã kiểm định** (CHA₂DS₂-VASc·HAS-BLED·ASCVD·Wells·CURB-65·FRAX·MELD…) → điểm + nguy cơ tuyệt đối + ngưỡng (không bịa điểm/ngưỡng) | "Tính thang điểm gì", "nguy cơ … bao nhiêu %", "có cần kháng đông/statin theo nguy cơ" |
 | `tham-dinh-grade-nnt` | Chấm GRADE + NNT/NNH + EtD | Đã có nguồn, cần thẩm định |
-| `tham-dinh-do-chinh-xac-chan-doan` | **Thẩm định nghiên cứu ĐỘ CHÍNH XÁC CHẨN ĐOÁN** (QUADAS-2/QUADAS-C + GRADE-cho-test + STARD; diễn giải Se/Sp/LR/PPV-NPV kèm prevalence; sai lệch spectrum/verification/incorporation) — nhánh CHẨN ĐOÁN của bước Thẩm định | "Nghiên cứu về test này đáng tin không / Se-Sp-LR có vững không / QUADAS-2 cho bài chẩn đoán" |
+| `tham-dinh-do-chinh-xac-chan-doan` | **Thẩm định nghiên cứu ĐỘ CHÍNH XÁC CHẨN ĐOÁN** (QUADAS-3 hiện hành; QUADAS-2 tương thích ngược/QUADAS-C + GRADE-cho-test + STARD/STARD-AI; theo từng ước lượng) | "Nghiên cứu về test này đáng tin không / Se-Sp-LR có vững không / QUADAS-3 cho bài chẩn đoán" |
 | `quyet-dinh-chung` | Cá thể hóa + quyết định chung (lợi ích–nguy cơ–bất định) | Trình bày lựa chọn cho BN cùng quyết |
 | `ke-don-an-toan` | Rà tương tác/đa thuốc/chỉnh liều/chống chỉ định | Trước khi chốt đơn |
 | `quan-ly-khang-dong` | **Quản lý kháng đông trọn vòng** (rung nhĩ không do van/VTE/van tim): cân nguy cơ huyết khối–chảy máu · chọn VKA vs DOAC theo chỉ định · nguyên tắc chỉnh liều theo eGFR–cân nặng–tuổi · bắc cầu quanh thủ thuật · đảo ngược khi chảy máu (KHÔNG bịa liều; số cụ thể qua `ke-don-an-toan`) | "Chọn kháng đông nào / liều DOAC theo eGFR / bắc cầu quanh thủ thuật / đảo ngược kháng đông / INR đích / chuyển VKA↔DOAC" |
@@ -60,7 +60,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 | `khoang-trong-nghien-cuu` | Đối chiếu câu hỏi với guideline + xác định research gap/novelty | Biện minh tính mới đề tài (G0/G1) |
 | `tong-quan-y-van` | Tổng quan hệ thống PRISMA | Rà soát bằng chứng cho đề tài/công bố |
 | `trich-xuat-y-van` | Trích xuất 1 bài → bảng chuẩn (PICO, hiệu ứng, RoB) | Đọc nhanh/dựng bảng trích xuất cho SR |
-| `tham-dinh-phe-binh` | Thẩm định 1 bài (đọc PDF, RoB2 RCT/ROBINS-I V2 quan sát can thiệp/ROBINS-E phơi nhiễm/AMSTAR-2 SR/QUADAS-2 chẩn đoán, GRADE) | Phê bình chất lượng một nghiên cứu |
+| `tham-dinh-phe-binh` | Thẩm định 1 bài (RoB 2/ROBINS-I V2/ROBINS-E/AMSTAR-2/QUADAS-3 hiện hành, GRADE) | Phê bình chất lượng một nghiên cứu |
 | `thiet-ke-nghien-cuu` | Thiết kế · estimand · khóa SAP · dummy tables (trước G4) | Lập kế hoạch nghiên cứu |
 | `co-mau-nghien-cuu` | Tính CỠ MẪU/POWER (G3): nhận diện thiết kế → chọn công thức (2 tỷ lệ/2 trung bình·log-rank·Se-Sp·NI/equivalence·EPV) → effect size có nguồn → dropout/design effect → cỡ mẫu tối thiểu + khuyến nghị + bảng độ nhạy | "Cần bao nhiêu bệnh nhân / đủ lực chưa / tính cỡ mẫu" |
 | `phan-tich-thong-ke` | Phân tích theo SAP đã khóa, trên DB đã khóa (G6) | Sau khi dữ liệu khóa |
@@ -156,7 +156,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 | "Tôi có một bệnh nhân… / khám ca này" | `dieu-phoi-lam-sang` | tự chạy bước 0 cờ đỏ → 5 bước EBM |
 | "Có nguy hiểm không / khi nào chuyển viện / đừng bỏ sót gì" | `sang-loc-co-do` | bước 0, ưu tiên an toàn |
 | "Có nên làm xét nghiệm gì / khả năng bệnh X / đủ chắc để điều trị chưa" | `chan-doan-xac-suat` | Bayes + ngưỡng test–treat |
-| "Nghiên cứu về test này đáng tin không / Se-Sp-LR có vững không / QUADAS-2 cho bài chẩn đoán" | `tham-dinh-do-chinh-xac-chan-doan` | QUADAS-2/QUADAS-C + GRADE-cho-test + STARD; áp ca qua `chan-doan-xac-suat` |
+| "Nghiên cứu về test này đáng tin không / Se-Sp-LR có vững không / QUADAS-3 cho bài chẩn đoán" | `tham-dinh-do-chinh-xac-chan-doan` | QUADAS-3 hiện hành; QUADAS-2 tương thích ngược/QUADAS-C + GRADE-cho-test + STARD/STARD-AI; áp ca qua `chan-doan-xac-suat` |
 | "Đọc giúp bộ kết quả này / kết quả có nguy hiểm không / cần làm thêm XN gì" | `dien-giai-can-lam-sang` | quét giá trị nguy kịch → gom nhóm → bước kế tiếp |
 | "Cần hỏi gì–khám gì cho ca này / khai thác bệnh sử" | `khai-thac-benh-su-kham` | bước Hỏi–Khám, trước chẩn đoán |
 | "Tính thang điểm gì / nguy cơ … bao nhiêu % / cần kháng đông–statin theo nguy cơ" | `thang-diem-nguy-co` | thang đã kiểm định → điểm + nguy cơ tuyệt đối |

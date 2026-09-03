@@ -52,8 +52,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # DUNG agent, không chỉ khi số lượng đổi → chạy
 # `scripts/regenerate_agent_manifest.py --write` rồi dán giá trị self-check mới
 # vào đây MỖI LẦN sync agent .md đã sửa sang medical-ebm-automation/.claude/agents/.
+# Tái khóa 2026-09-03: 6 agent được nâng ICH E6(R3) Annex 2/QUADAS-3 v1.2
+# và hợp đồng điều phối khép kín; số lượng vẫn giữ nguyên 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "0b396b28cf8d60523009283e1af91f0b2e4ff35a6bf0710ca8fef27752374995"
+    "e69302d5fcff4c6c7e89d27d75315f7f7fcd8294f506bc20f9ec927801433eb9"
 )
 
 MINIMUM_AGENT_COUNT = 50

@@ -327,7 +327,8 @@ def grade_rating(design: str, risk_of_bias: int = 0, inconsistency: int = 0,
     design="dta" (2026-07-12, task_5a25a9c7): độ chính xác chẩn đoán (diagnostic test
     accuracy) — nghiên cứu cắt ngang/đoàn hệ so sánh trực tiếp index test với reference
     standard. Bắt đầu CAO (giống RCT — xác minh PMID:32060007, KHÔNG suy đoán), hạ bậc
-    theo CÙNG 5 domain nhưng risk_of_bias chấm bằng QUADAS-2 (không phải RoB 2). KHÔNG
+    theo CÙNG 5 domain nhưng risk_of_bias chấm bằng QUADAS-3 hiện hành (không phải RoB 2;
+    QUADAS-2 chỉ tương thích ngược). KHÔNG
     áp yếu tố nâng bậc observational (large_effect/dose_response/confounding) — nguồn
     GRADE-DTA không định nghĩa các yếu tố này cho thiết kế DTA.
 
@@ -368,7 +369,8 @@ def grade_rating(design: str, risk_of_bias: int = 0, inconsistency: int = 0,
         },
         "note": ("Kết quả TỔNG HỢP từ đánh giá domain do bác sĩ/nguồn cung cấp theo thuật "
                  "toán chính thức GRADE — công cụ KHÔNG tự chấm risk-of-bias/inconsistency."
-                 + (" Với design='dta': risk_of_bias chấm bằng QUADAS-2 (không phải RoB 2)."
+                 + (" Với design='dta': risk_of_bias chấm bằng QUADAS-3 hiện hành "
+                    "(không phải RoB 2; QUADAS-2 chỉ tương thích ngược)."
                     if design == "dta" else "")),
     }
 

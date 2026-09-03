@@ -436,7 +436,7 @@ def build_international_standard_profile() -> InternationalStandardProfile:
             "rct": ["RoB 2"],
             "nonrandomized_intervention": ["ROBINS-I"],
             "harm_or_etiology": ["ROBINS-E"],
-            "diagnostic_accuracy": ["QUADAS-2", "QUADAS-C"],
+            "diagnostic_accuracy": ["QUADAS-3", "QUADAS-C (tương thích ngược)"],
             "prognosis": ["QUIPS"],
             "prediction_model": ["PROBAST", "PROBAST-AI when applicable"],
             "prevalence": ["JBI prevalence checklist"],
@@ -672,7 +672,7 @@ def build_question_frame_policy() -> QuestionFramePolicy:
                 "frame": "PIRT",
                 "best_design": ["cross-sectional diagnostic accuracy study"],
                 "reporting": ["STARD"],
-                "appraisal_tools": ["QUADAS-2", "QUADAS-C"],
+                "appraisal_tools": ["QUADAS-3", "QUADAS-C (tương thích ngược)"],
                 "effect_measures": ["sensitivity", "specificity", "LR+", "LR-", "AUC"],
                 "dashboard_fields": ["frame", "frameLabels", "effectText"],
             },
@@ -722,7 +722,7 @@ def build_question_frame_policy() -> QuestionFramePolicy:
             "Select appraisal tool from frame_map before synthesis",
             "Use PICO(T)(S) for intervention questions only unless a rationale is documented",
             "Use PECO/ROBINS-E for harm or etiology questions",
-            "Use PIRT with QUADAS-2/STARD for diagnostic accuracy; do not use RoB 2/CONSORT",
+            "Use PIRT with QUADAS-3/STARD for diagnostic accuracy; do not use RoB 2/CONSORT",
             "Use PROGRESS/PICOTS with QUIPS or PROBAST for prognosis or prediction",
             "Use CoCoPop/JBI prevalence for prevalence questions",
             "Use SPIDER with qualitative appraisal for qualitative experience questions",
@@ -732,7 +732,7 @@ def build_question_frame_policy() -> QuestionFramePolicy:
             "If frame or tool is uncertain, label [CẦN BỔ SUNG] and block practice-changing recommendation",
         ],
         misuse_examples=[
-            "Diagnostic accuracy summarized as treatment PICO without PIRT/QUADAS-2",
+            "Diagnostic accuracy summarized as treatment PICO without PIRT/QUADAS-3",
             "Guideline appraisal done with RoB 2 instead of AGREE II/AGREE-REX",
             "Prediction model reported as diagnostic test without PROBAST/TRIPOD",
             "Harm signal interpreted as efficacy RCT without PECO/ROBINS-E",
@@ -1239,7 +1239,7 @@ def _check_international_standard_profile() -> StandardCheck:
         "RoB 2",
         "ROBINS-I",
         "ROBINS-E",
-        "QUADAS-2",
+        "QUADAS-3",
         "QUADAS-C",
         "QUIPS",
         "PROBAST",
@@ -1443,7 +1443,7 @@ def _check_question_frame_policy() -> StandardCheck:
         "CoCoPop",
         "SPIDER",
         "ECLIPSE",
-        "QUADAS-2",
+        "QUADAS-3",
         "STARD",
         "QUIPS",
         "PROBAST",
@@ -1482,8 +1482,8 @@ def _check_question_frame_policy() -> StandardCheck:
         if key not in policy.frame_map:
             missing.append(f"missing question frame mapping: {key}")
     diagnostic_tools = policy.frame_map.get("diagnostic_accuracy", {}).get("appraisal_tools", [])
-    if "QUADAS-2" not in diagnostic_tools:
-        missing.append("diagnostic accuracy must map to QUADAS-2")
+    if "QUADAS-3" not in diagnostic_tools:
+        missing.append("diagnostic accuracy must map to QUADAS-3")
     intervention_tools = policy.frame_map.get("intervention", {}).get("appraisal_tools", [])
     if "RoB 2" not in intervention_tools or "AMSTAR 2" not in intervention_tools:
         missing.append("intervention must map to RoB 2 and AMSTAR 2")

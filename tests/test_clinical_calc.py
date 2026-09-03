@@ -243,11 +243,11 @@ def test_grade_dta_starts_high_like_rct_not_low_like_observational():
     assert r["final_level"] == 4
 
 
-def test_grade_dta_downgraded_by_quadas2_risk_of_bias():
-    # risk_of_bias ở đây được chấm bằng QUADAS-2 (không phải RoB 2) — cùng thang 0/1/2.
+def test_grade_dta_downgraded_by_quadas3_risk_of_bias():
+    # risk_of_bias ở đây được chấm bằng QUADAS-3 hiện hành (không phải RoB 2).
     r = CC.grade_rating(design="dta", risk_of_bias=1)
     assert r["final_level"] == 3
-    assert "QUADAS-2" in r["note"]
+    assert "QUADAS-3" in r["note"]
 
 
 def test_grade_dta_downgraded_by_indirectness_and_imprecision():
