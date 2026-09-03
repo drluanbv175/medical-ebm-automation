@@ -1119,6 +1119,52 @@ def per_role_key_available(role_group: str) -> bool:
     return bool(key) and scope == _SIGNATURE_SCOPE_ROLE
 
 
+def _all_stakeholder_role_groups() -> Tuple[str, ...]:
+    """Tất cả nhóm stakeholder từng xuất hiện trong _GATE_REQUIRED_STAKEHOLDERS, thứ
+    tự cố định (không phụ thuộc thứ tự dict) — dùng để dò khóa riêng mà không cần
+    liệt kê tay một danh sách thứ hai có thể lệch khỏi danh sách gốc."""
+    groups = {g for reqs in _GATE_REQUIRED_STAKEHOLDERS.values() for g in reqs}
+    return tuple(sorted(groups))
+
+
+def any_signing_key_available() -> bool:
+    """True nếu máy này có BẤT KỲ khóa ký nào dùng được — khóa CHUNG hoặc khóa RIÊNG
+    của bất kỳ nhóm stakeholder nào (IRB/STATISTICIAN/DATA_MANAGER/PI/
+    INDEPENDENT_PEER_REVIEWER).
+
+    2026-09-02 (vòng rà toàn diện, phát hiện qua workflow đối kháng): trước bản vá này,
+    _diagnose_gate_records() và verify_ledger_seal() dùng `signing_key_configured(None)`
+    — hàm đó CHỈ kiểm khóa CHUNG (role_group=None bỏ qua hẳn nhánh khóa riêng trong
+    _load_signing_key) — làm cờ "máy có khóa ký không" cho quyết định fail-closed TOÀN
+    CỤC. Hệ quả: một bác sĩ làm ĐÚNG khuyến nghị mạnh nhất của chính hệ thống
+    (setup_gate_approval_key.py --role, tách khóa theo từng vai trò, không giữ khóa
+    chung) khiến CẢ 6 cổng cứng vĩnh viễn fail-closed, kèm thông điệp SAI SỰ THẬT
+    ("máy này CHƯA cấu hình khóa ký... chạy tools/setup_gate_approval_key.py" — dù họ
+    ĐÃ chạy đúng lệnh đó). `per_role_key_available()` đã tồn tại sẵn và đúng — chỉ là
+    không có nơi nào gọi nó ở lớp quyết định toàn cục. Hàm này KHÔNG thay verify_
+    approval_signature() cho TỪNG bản ghi (hàm đó đã tự đúng, tự tra group từ
+    reviewer_role của chính bản ghi) — chỉ sửa đúng CỜ TOÀN CỤC "có nên thử xác minh
+    hay không"."""
+    if signing_key_configured(None):
+        return True
+    return any(per_role_key_available(g) for g in _all_stakeholder_role_groups())
+
+
+def _any_configured_role_group() -> str:
+    """Tên nhóm stakeholder ĐẦU TIÊN (thứ tự cố định của _all_stakeholder_role_groups())
+    có khóa RIÊNG dùng được trên máy này, hoặc "" nếu không nhóm nào có.
+
+    Dùng khi cần MỘT danh tính ký cụ thể cho việc không gắn với một vai trò cố định
+    (như niêm phong sổ cái — xem write_ledger_seal) trên máy CHỈ có khóa riêng, không có
+    khóa chung. Tên nhóm trả về là chính alias-tự-thân trong _STAKEHOLDER_ROLE_ALIASES
+    (vd "IRB") nên truyền thẳng làm reviewer_role cho sign_approval() sẽ tự tra đúng lại
+    nhóm đó qua role_group_for()."""
+    for g in _all_stakeholder_role_groups():
+        if per_role_key_available(g):
+            return g
+    return ""
+
+
 def chain_prev_hash(record: Optional[Dict[str, Any]]) -> str:
     """Vân tay của một bản ghi, dùng làm mắt xích cho bản ghi KẾ TIẾP trong sổ cái.
 
@@ -1551,10 +1597,18 @@ def write_ledger_seal(study: str, records: Any, repo_root: Optional[Path] = None
 
     Con dấu ghi (số bản ghi, vân tay đuôi) và được KÝ. Kẻ không có khóa muốn cắt đuôi
     trót lọt thì phải làm giả con dấu — bất khả. Xóa luôn file dấu cũng không thoát: sổ
-    cái có bản ghi v4 mà THIẾU dấu chính là một bất thường (xem verify_ledger_seal)."""
+    cái có bản ghi v4 mà THIẾU dấu chính là một bất thường (xem verify_ledger_seal).
+
+    2026-09-02: máy CHỈ có khóa RIÊNG theo vai trò (không có khóa chung) vẫn phải niêm
+    phong được — dùng _any_configured_role_group() để chọn một nhóm có khóa, ký bằng
+    khóa đó, và GHI LẠI nhóm đã dùng vào con dấu (sealed_by_role_group) để
+    verify_ledger_seal() biết tra khóa nào. Con dấu cũ (trước bản vá này) không có
+    trường này ⇒ mặc định "" ⇒ vẫn xác minh đúng như cũ bằng khóa chung."""
     count, tip = compute_ledger_tip(records)
     sealed_at = datetime.now(timezone.utc).isoformat()
-    sig = sign_approval(_SEAL_GATE_ID, str(study), tip, sealed_at, decision=str(count))
+    seal_role = "" if signing_key_configured(None) else _any_configured_role_group()
+    sig = sign_approval(_SEAL_GATE_ID, str(study), tip, sealed_at,
+                        reviewer_role=seal_role, decision=str(count))
     if not sig:
         return False
     p = ledger_seal_path(study, repo_root)
@@ -1565,6 +1619,7 @@ def write_ledger_seal(study: str, records: Any, repo_root: Optional[Path] = None
         "tip_hash": tip,
         "sealed_at_utc": sealed_at,
         "seal_signature": sig,
+        "sealed_by_role_group": seal_role,
     }, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return True
 
@@ -1588,7 +1643,13 @@ def verify_ledger_seal(study: str, records: Any,
     # Đường phục hồi vẫn rõ ràng: ký lại bằng approve_gate.py sẽ niêm phong lại.
     if not isinstance(records, list) or not records:
         return True, None          # sổ cái rỗng — chưa có gì để niêm phong
-    if not signing_key_configured(None):
+    # 2026-09-02: any_signing_key_available() — KHÔNG dùng signing_key_configured(None)
+    # (chỉ biết khóa CHUNG). Máy chỉ có khóa RIÊNG theo vai trò vẫn niêm phong được
+    # (xem write_ledger_seal) nên cũng phải xác minh được — dùng signing_key_configured(None)
+    # ở đây sẽ khiến verify_ledger_seal() luôn trả (True, None) "bỏ qua" trên đúng những
+    # máy vừa được write_ledger_seal() sửa để ký thành công — con dấu ký xong không bao
+    # giờ được xác minh, một lỗ hổng khác của cùng gốc.
+    if not any_signing_key_available():
         # Máy chưa có khóa thì KHÔNG niêm phong được mà cũng không xác minh được dấu.
         # Đòi con dấu ở đây là chặn oan; đường fail-closed cho trường hợp này đã do
         # quy tắc "chưa có khóa ⇒ chỉ đề tài synthetic_test mới đi tiếp" lo (xem
@@ -1613,10 +1674,13 @@ def verify_ledger_seal(study: str, records: Any,
         "gate_id": _SEAL_GATE_ID, "evidence_hash": str(seal.get("tip_hash") or ""),
         "timestamp_utc": str(seal.get("sealed_at_utc") or ""),
         "decision": str(seal.get("record_count")),
-        "reviewer_role": "", "reviewer_identity_reference": "",
+        # sealed_by_role_group: mới thêm 2026-09-02, vắng mặt ở con dấu cũ ⇒ "" (mặc
+        # định cũ) — con dấu cũ luôn ký bằng khóa chung nên hành vi xác minh giữ nguyên.
+        "reviewer_role": str(seal.get("sealed_by_role_group") or ""),
+        "reviewer_identity_reference": "",
         "approver_signature": seal.get("seal_signature"),
     }
-    if signing_key_configured(None) and not verify_approval_signature(probe, str(study)):
+    if any_signing_key_available() and not verify_approval_signature(probe, str(study)):
         return False, (f"chữ ký của {p.name} KHÔNG xác minh được bằng khóa trên máy này "
                        "(dấu bị sửa, hoặc niêm phong ở máy/khóa khác)")
     if int(seal.get("record_count") or -1) != count or str(seal.get("tip_hash")) != tip:
@@ -1682,7 +1746,9 @@ def _diagnose_gate_records(records: Any, gate_id: str, study: str,
     if not isinstance(records, list):
         return None, "approval_ledger.json không phải danh sách bản ghi (file hỏng?)"
 
-    key_available = signing_key_configured(None)
+    # 2026-09-02: any_signing_key_available() — KHÔNG dùng signing_key_configured(None)
+    # (chỉ biết khóa CHUNG) — xem docstring any_signing_key_available().
+    key_available = any_signing_key_available()
 
     # ★★ VÁ 2026-07-27 vòng 6 — QUÉT TOÀN SỔ CÁI TRƯỚC KHI LỌC THEO CỔNG.
     # Vòng kiểm định thứ năm phá được vòng 5 ở đúng chỗ này: bộ lọc `gate_id` chạy TRƯỚC
