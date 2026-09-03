@@ -75,13 +75,10 @@ class RetractionChain:
             return {}
         pmids = [str(p).strip() for p in pmids if str(p).strip()]
 
-        da_thu: List[str] = []
-
         # Tầng 0 — ngoại tuyến. Chạy TRƯỚC vì không tốn mạng và không thể hỏng.
         rw_co = self.rw.san_sang()
         rw_verdict: Dict[str, dict] = {}
         if rw_co:
-            da_thu.append("retraction_watch")
             for p in pmids:
                 bg = self.rw.tra(p)
                 if bg:
@@ -96,24 +93,61 @@ class RetractionChain:
         # `sources_tried`: chưa hỏi thì không được kể là đã thử.
         pm: Dict[str, dict] = {}
         if self.pubmed is not None:
-            da_thu.append("pubmed")
             pm = self.pubmed.check_retraction_status(pmids)
         else:
             logger.info("[retraction_chain] tầng NCBI vắng mặt (thiếu thư viện — "
                         "python3 hệ thống?) — chỉ còn nền ngoại tuyến + Europe PMC")
 
+        # THÊM 2026-09-03 (Workflow đối kháng đa-agent, phát hiện #3): 'unresolved'
+        # bị loại khỏi KHONG_BIET nên trước đây KHÔNG BAO GIỜ kích hoạt Europe PMC
+        # — kể cả khi 'unresolved' là do LỖI TẦNG API của NCBI (HTTP 200 hợp lệ
+        # nhưng KHÔNG chứa PubmedArticle nào cho CẢ LÔ — xem docstring
+        # PubMedClient._parse_retraction_xml) chứ không phải PMID thật sự không
+        # tồn tại. Nhánh xử lý bất đồng "một nguồn lấy được bản ghi, nguồn kia bảo
+        # không có" trong _gop() (nhánh co_ma bên dưới) vì thế là DEAD CODE — ep
+        # không bao giờ được truyền dữ liệu cho một PMID có pm.status='unresolved'.
+        # Chỉ kích hoạt khi TOÀN BỘ lô cùng 'unresolved' — đúng dấu hiệu lỗi tầng
+        # API mà chính pubmed.py mô tả ("nghi lỗi API nếu NHIỀU PMID cùng lô đều
+        # 'unresolved'") — để không gọi Europe PMC tràn lan cho từng trích dẫn ma
+        # lẻ tẻ thật sự không tồn tại trong một lô phần lớn vẫn giải quyết được.
+        toan_bo_unresolved = bool(pmids) and all(
+            pm.get(p, {}).get("status") == "unresolved" for p in pmids
+        )
+        trang_thai_can_kiem_cheo = set(KHONG_BIET)
+        if toan_bo_unresolved:
+            trang_thai_can_kiem_cheo.add("unresolved")
+
         # Tầng 2 — Europe PMC, CHỈ hỏi cho PMID mà tầng 1 không kết luận được.
         # Hỏi thừa vừa tốn mạng vừa dễ tạo bất đồng giả giữa hai nguồn.
         con_thieu = [p for p in pmids
-                     if pm.get(p, {}).get("status", "unknown_fetch_error") in KHONG_BIET]
+                     if pm.get(p, {}).get("status", "unknown_fetch_error")
+                     in trang_thai_can_kiem_cheo]
+        con_thieu_tap = set(con_thieu)
         ep: Dict[str, dict] = {}
         if con_thieu and self.europepmc is not None:
-            da_thu.append("europepmc")
             logger.info("[retraction_chain] tầng 1 câm cho %d/%d PMID → hỏi Europe PMC",
                         len(con_thieu), len(pmids))
             ep = self.europepmc.check_retraction_status(con_thieu)
 
-        return {p: self._gop(p, rw_verdict.get(p), pm.get(p), ep.get(p), da_thu)
+        # SỬA 2026-09-03 (Workflow đối kháng đa-agent, phát hiện #4): `sources_tried`
+        # trước đây là MỘT list dùng CHUNG cho cả lô — một PMID được pubmed trả lời
+        # dứt khoát (vd 'ok') và KHÔNG hề được hỏi Europe PMC vẫn bị ghi
+        # 'sources_tried': [...,'europepmc'], làm sai lệch bằng chứng máy-kiểm
+        # trong receipt A12 đã ký (receipt tuyên bố một nguồn đã được tra trong khi
+        # thực tế chưa từng gọi). Nay tính ĐÚNG theo từng PMID: retraction_watch/
+        # pubmed đã hỏi ĐỒNG LOẠT cho cả lô (an toàn để dùng chung), europepmc chỉ
+        # ghi cho đúng PMID nằm trong con_thieu — nơi nó THẬT SỰ được gọi.
+        def _nguon_da_thu(p: str) -> List[str]:
+            ds: List[str] = []
+            if rw_co:
+                ds.append("retraction_watch")
+            if self.pubmed is not None:
+                ds.append("pubmed")
+            if self.europepmc is not None and p in con_thieu_tap:
+                ds.append("europepmc")
+            return ds
+
+        return {p: self._gop(p, rw_verdict.get(p), pm.get(p), ep.get(p), _nguon_da_thu(p))
                 for p in pmids}
 
     # ------------------------------------------------------------------
