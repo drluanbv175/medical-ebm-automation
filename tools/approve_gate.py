@@ -455,6 +455,32 @@ def main() -> int:
             return 1
 
     if args.gate == "G4":
+        # THÊM 2026-09-03 (Workflow đối kháng đa-agent): nhánh G4 là nhánh DUY NHẤT
+        # trong 6 cổng cứng thiếu phép so khớp đường dẫn artifact canonical mà
+        # G5/G8/G9/G10 đều có (G2 có cơ chế tương đương qua _prepare_g2_attestation).
+        # Không có chốt này thì --artifact <file bất kỳ> vẫn ký được: chữ ký/con dấu
+        # đúng về mặt mật mã nhưng evidence_hash không khớp NỘI DUNG SAP THẬT — phá
+        # vỡ bất biến "evidence_hash = SHA256 của ĐÚNG nội dung file --artifact" mà
+        # chính docstring đầu file này tuyên bố áp dụng cho MỌI cổng. G4Q.evaluate_
+        # study() bên dưới vẫn đọc đúng SAP thật (đường dẫn canonical, tách khỏi
+        # evidence_content) nên hướng lệch là fail-closed (G4 không bao giờ LOCKED),
+        # nhưng một bản ghi ràng buộc-sai-nội-dung vẫn nằm vĩnh viễn trong sổ cái đã
+        # niêm phong, gây nhiễu sổ audit. Đặt TRƯỚC _g4_sections_still_draft, không
+        # gắn điều kiện decision=="APPROVED" (khác G5/G8/G9/G10): SAP là artifact
+        # DUY NHẤT hợp lệ cho cổng này bất kể quyết định ký hay từ chối.
+        expected_artifact = study_dir / G4Q.sap_artifact_name(args.study)
+        try:
+            artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
+        except OSError:
+            artifact_matches = False
+        if not artifact_matches:
+            print(
+                "✗ TỪ CHỐI ký G4 — artifact phải là "
+                f"{expected_artifact.name} trong đúng thư mục đề tài."
+            )
+            print("   Không cho dùng file tự chọn để thay thế SAP thật đã khóa.")
+            return 1
+
         still_draft = _g4_sections_still_draft(evidence_content)
         if still_draft:
             print("✗ TỪ CHỐI ký G4 — SAP còn placeholder '[CẦN' chưa điền ở mục bắt buộc:")
