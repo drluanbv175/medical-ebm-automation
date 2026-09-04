@@ -1876,7 +1876,23 @@ def _diagnose_gate_records(records: Any, gate_id: str, study: str,
     for ts, problem in suspects:
         # Bản ghi lạ KHÔNG phân giải được thời điểm ⇒ không loại trừ được khả năng nó mới
         # hơn ⇒ vẫn khóa (fail-closed đúng chỗ, không phải khóa tràn lan).
-        if newest_verified_ts is None or ts is None or ts > newest_verified_ts:
+        #
+        # ★★ VÁ 2026-09-04 (Workflow đối kháng đa-agent, phát hiện HIGH) — biên `>` cũ để
+        # HÒA lọt qua như "cũ hơn, an toàn để bỏ qua". Đã tái hiện bằng thực nghiệm: một
+        # bản ghi REJECTED CÓ CHỮ KÝ HỢP LỆ, chuỗi băm đúng, nhưng reviewer_role sai nhóm
+        # cổng (rơi vào `suspects` vì lý do đó, KHÔNG phải bị giả mạo) — mang ĐÚNG
+        # timestamp_utc với bản APPROVED nó thu hồi (HÒA giây) — trước bản vá này lọt qua
+        # điều kiện `ts > newest_verified_ts` (False khi bằng nhau) mà KHÔNG một cảnh báo
+        # BẤT THƯỜNG nào: `ledger_approved()` trả True, `gate_block_reason()` trả None,
+        # y hệt như bản REJECTED đó chưa từng tồn tại. Đây là chính lỗ hổng "phê duyệt
+        # chống-sửa-đổi, thu hồi XÓA-ĐƯỢC" (vòng 5, dòng ~1555 phía trên) tái xuất hiện ở
+        # RANH GIỚI HÒA GIÂY — cùng một lớp bug với tie-break "HÒA thì ưu tiên REJECTED"
+        # đã áp cho các bản ghi VERIFIED phía dưới (dòng ~1890): một HÒA giữa bản đã xác
+        # minh và một suspect phải được xử lý CÙNG một hướng an toàn, không phải ngược
+        # nhau. Đổi `>` (loại trừ HÒA) thành `>=` (HÒA vẫn tính là "không cũ hơn" ⇒ vẫn
+        # khóa) — một suspect có timestamp bằng đúng bản mới nhất KHÔNG được coi là chắc
+        # chắn cũ hơn nữa.
+        if newest_verified_ts is None or ts is None or ts >= newest_verified_ts:
             return None, (
                 f"BẤT THƯỜNG — {problem}. Bản ghi này KHÔNG cũ hơn phê duyệt hợp lệ mới nhất, "
                 "nên không loại trừ được khả năng nó đang che giấu một quyết định THU HỒI. "
