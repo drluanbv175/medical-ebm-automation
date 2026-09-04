@@ -54,8 +54,13 @@ def _sec(sap: str, so: int) -> str:
     return m.group(0) if m else ""
 
 
-def evaluate_study(study: str, write: bool = True) -> dict:
-    thu_muc = EXPORTS / study
+def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True) -> dict:
+    """`out_dir`: thư mục đề tài — mặc định EXPORTS/study (đề tài thật). Truyền rõ
+    khi gọi từ công cụ kiểm dùng --exports-root khác (vd
+    tools/kiem_chi_tiet_he_nghien_cuu.py) — thiếu tham số này trước đây khiến G6
+    là cổng DUY NHẤT trong 11 cổng luôn đọc exports/<study> THẬT bất kể caller
+    muốn kiểm thư mục nào (Workflow đối kháng đa-agent vòng 2, 2026-09-04)."""
+    thu_muc = Path(out_dir) if out_dir is not None else EXPORTS / study
     ket: list[dict] = []
     trang_thai = "READY_FOR_STATISTICIAN_REVIEW"
 

@@ -212,7 +212,16 @@ def _cham_song(gate: str, study: str, out_dir: Path) -> tuple[dict[str, Any] | N
         if "write" in params:
             kw["write"] = False
         if "repo_root" in params:
-            kw["repo_root"] = BASE
+            # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, HIGH): trước đây
+            # hardcode BASE (repo THẬT) — khi --exports-root trỏ ra thư mục khác
+            # (chính cờ --help ghi "cho kiểm thử"), G4/G8's ledger_records() nội bộ
+            # (đối chiếu reviewer_ref chéo cổng) vẫn đọc sổ cái/checkpoint ở
+            # BASE/exports/<study> THẬT thay vì cạnh out_dir đang được kiểm. Suy
+            # repo_root từ out_dir — đúng quy ước out_dir=<repo>/exports/<study> mà
+            # chính --exports-root dùng (root=<đường dẫn>, out_dir=root/study), và
+            # khớp cách g4/g8/g9_quality_gate.py tự suy repo_root khi không được
+            # truyền (out_dir.parent.parent).
+            kw["repo_root"] = out_dir.parent.parent
         with contextlib.redirect_stdout(io.StringIO()):
             rep = fn(study, **kw)
         return (rep if isinstance(rep, dict) else None), "chấm sống"
@@ -395,10 +404,18 @@ def da_ky(gate: str, study: str, out_dir: Path) -> tuple[bool, str | None]:
     art = out_dir / ARTIFACT_KY[gate].format(s=study)
     if not art.exists():
         return False, None
+    # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, HIGH): trước đây
+    # repo_root=BASE cố định (repo THẬT) — trục ⑤ (điểm dừng người) là hàm DUY
+    # NHẤT tính "đã ký" cho cả 6 cổng cứng, nên khi --exports-root trỏ ra thư mục
+    # khác, sổ cái được đọc luôn là BASE/exports/<study>/approval_ledger.json
+    # (dữ liệu SẢN XUẤT thật) thay vì sổ cái nằm cạnh artifact trong out_dir đang
+    # được kiểm — một đề tài fixture đã ký thật vẫn báo "chưa ai duyệt". Suy
+    # repo_root từ out_dir, cùng khuôn đã dùng cho _cham_song().
+    repo_root = out_dir.parent.parent
     try:
-        if GC.ledger_approved(gate, study, art, repo_root=BASE):
-            return True, GC.approving_signature_scope(gate, study, repo_root=BASE)
-        return False, GC.gate_block_reason(gate, study, art, repo_root=BASE) or "chưa ai duyệt"
+        if GC.ledger_approved(gate, study, art, repo_root=repo_root):
+            return True, GC.approving_signature_scope(gate, study, repo_root=repo_root)
+        return False, GC.gate_block_reason(gate, study, art, repo_root=repo_root) or "chưa ai duyệt"
     except Exception as e:  # noqa: BLE001 — sổ cái dị dạng phải hiện ra
         return False, f"sổ cái dị dạng: {type(e).__name__}"
 
