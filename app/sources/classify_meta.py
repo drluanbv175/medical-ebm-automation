@@ -108,7 +108,19 @@ def detect_official_org(title: Optional[str], journal: Optional[str] = None,
     Khớp theo RANH GIỚI TỪ để 'who' không trúng 'patients who', 'acc' không trúng
     'vaccine'. Viết tắt dễ nhầm chỉ khớp trong trường journal/organization.
     """
-    authority = match_authority_source(journal, authors, title)
+    # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, MEDIUM) — `authors` là
+    # TÊN NGƯỜI, không phải tên tổ chức, nhưng match_authority_source() coi 2
+    # tham số ĐẦU là "primary" (nơi bí danh viết tắt NGẮN/mơ hồ như WHO/ESC/
+    # ASH/GOLD được phép khớp). Truyền authors ở vị trí 1 khiến nó lọt vào
+    # primary — một tác giả tên "Ash" (họ tiếng Anh có thật) bị nhận nhầm
+    # thành ASH/ISTH (Hội Huyết học Mỹ), tên "Gold" bị nhận nhầm thành GOLD
+    # (tổ chức COPD) — dù bài không liên quan gì tới hai lĩnh vực đó. Chèn
+    # None ở vị trí 1 để CHỈ journal còn nằm trong primary (an toàn cho bí
+    # danh mơ hồ, đúng như docstring match_authority_source() đã dặn); authors
+    # + title vẫn được đối chiếu qua blob tổng hợp cho bí danh DÀI/không mơ
+    # hồ (vd tác giả tập thể "World Health Organization"), chỉ không còn
+    # được dùng để khớp bí danh ngắn dễ trùng tên người.
+    authority = match_authority_source(journal, None, authors, title)
     if authority:
         return authority.name
 
