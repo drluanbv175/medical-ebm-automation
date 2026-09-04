@@ -418,7 +418,7 @@ class ChronicCareService:
             enrollments_by_program=by_program,
             risk_counts=risk_counts,
             open_tasks=len([t for t in self.tasks.values() if t.status == "OPEN"]),
-            overdue_tasks=len([t for t in self.tasks.values() if t.status == "OPEN" and t.priority in {"HIGH", "URGENT"}]),
+            overdue_tasks=len([t for t in self.tasks.values() if t.status == "OPEN" and _is_task_overdue(t)]),
             physician_review_pending=len([t for t in self.tasks.values() if t.status == "OPEN" and t.assigned_role == "physician"]),
             care_plan_draft_pending=len([p for p in self.plan_drafts.values() if p.status == "PENDING_REVIEW"]),
             post_discharge_synthetic_cases=len([e for e in self.enrollments.values() if e.program_code == "POST_DISCHARGE_REVIEW_PROGRAM"]),
@@ -529,10 +529,20 @@ class ChronicCareService:
         return ""
 
     def _policy_export(self, payload: Mapping[str, object]) -> None:
+        # SỬA 2026-09-04 (Workflow đối kháng đa-agent, phát hiện MEDIUM) — trước
+        # đây hardcode {"v7_chatgpt_project_export": True} bất kể self.feature_flags
+        # THẬT của service đang là gì. PolicyEngine.evaluate() gộp action "export"
+        # và "chatgpt_export" vào CÙNG luật P010 (đọc chính flag này) — nên đây
+        # không phải trùng tên tình cờ mà là CÙNG cổng an toàn với
+        # app/export_bridge/chatgpt_project_bridge.py (bản đó truyền đúng
+        # `feature_flags` thật, không hardcode). Cờ mặc định AN TOÀN là False
+        # (DEFAULT_FEATURE_FLAGS), nên bản cũ khiến cổng P010 KHÔNG BAO GIỜ chặn
+        # được xuất báo cáo tổng hợp — xác nhận bằng thực nghiệm: ChronicCareService()
+        # mặc định (flag=False) vẫn export_aggregate_json() thành công.
         text = repr(payload)
         decision = self.policy_engine.evaluate({
             "action": "export",
-            "feature_flags": {"v7_chatgpt_project_export": True},
+            "feature_flags": self.feature_flags,
             "export_contains_raw_dataset": False,
             "export_contains_pii": contains_pii_text(text),
             "text": text,
@@ -605,6 +615,27 @@ def _metric(code: str, name: str, numerator: int, denominator: int, start: str, 
         measurement_period_start=start,
         measurement_period_end=end,
     )
+
+
+def _is_task_overdue(task: ChronicCareTask) -> bool:
+    """`due_at` của việc đã QUA HIỆN TẠI chưa — thứ chữ "overdue" thực sự nói.
+
+    SỬA 2026-09-04 (Workflow đối kháng đa-agent, phát hiện MEDIUM) — trước đây
+    `overdue_tasks` trong dashboard_state() đo `priority in {"HIGH","URGENT"}`
+    thay vì đo NGÀY. Xác nhận bằng thực nghiệm: một việc REVIEW_OVERDUE_CASE
+    với priority LOW (bệnh nhân GREEN, xem rules.py::_priority_for) và due_at
+    quá khứ 5 ngày KHÔNG được đếm (0), trong khi 3 việc HIGH/URGENT có due_at
+    3 NGÀY TRONG TƯƠNG LAI (mọi create_task() luôn đặt due_at = now+3 ngày)
+    VẪN bị đếm là "overdue". Fail-closed như rules.py đã làm với chính
+    due_at: rỗng/không parse được → KHÔNG coi là quá hạn (tránh dương tính
+    giả từ dữ liệu hỏng, không phải bằng chứng đã quá hạn)."""
+    if not task.due_at:
+        return False
+    try:
+        due = datetime.fromisoformat(task.due_at)
+    except ValueError:
+        return False
+    return due < datetime.now(timezone.utc)
 
 
 def _now() -> str:
