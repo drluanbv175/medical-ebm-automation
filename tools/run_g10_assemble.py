@@ -28,6 +28,7 @@ Chạy:  python3 tools/run_g10_assemble.py --study KKB-HAI-LONG-2026
 from __future__ import annotations
 
 import argparse
+import hashlib
 import hmac
 import json
 import re
@@ -49,6 +50,7 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import g8_quality_gate as G8Q  # noqa: E402
 import g9_quality_gate as G9Q  # noqa: E402
 import g10_quality_gate as G10Q  # noqa: E402
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — 4 mã thoát)
@@ -2116,6 +2118,11 @@ def main() -> int:
                     help="Vẫn lắp ráp dù G8 (bình duyệt độc lập) chưa có phê duyệt "
                          "thật — CHỈ dùng để xem trước bản NHÁP, KHÔNG dùng bản xuất "
                          "ra khi cờ này bật để nộp bài.")
+    ap.add_argument("--i-know-g8-manuscript-changed", action="store_true",
+                    help="Vẫn lắp ráp dù bản thảo (G7_A8_MANUSCRIPT) đã đổi SAU KHI "
+                         "G8 (bình duyệt độc lập) đã ký — chữ ký hiện có không còn "
+                         "ràng buộc nội dung bản thảo hiện tại. CHỈ dùng để xem trước "
+                         "bản NHÁP, KHÔNG dùng bản xuất ra khi cờ này bật để nộp bài.")
     ap.add_argument("--i-know-citations-not-verified", action="store_true",
                     help="Vẫn lắp ráp dù trích dẫn (cổng A12, agent "
                          "`kiem-chung-trich-dan`) chưa được xác minh sạch — CHỈ dùng "
@@ -2316,6 +2323,62 @@ def main() -> int:
     if not g8_signed and args.i_know_g8_not_signed:
         bypass_notes.append("Cổng G8 (bình duyệt độc lập) bị BỎ QUA bằng --i-know-g8-not-signed: "
                              "chưa có phê duyệt thật trong approval_ledger.json.")
+
+    # THÊM 2026-09-04 (vá lỗ hổng: chữ ký G8 không ràng buộc bản thảo thật).
+    # g8_signed=True ở trên CHỈ chứng minh A9 (G8_A9_PRESUBMISSION_<study>.md --
+    # bản TỰ KIỂM do máy sinh) không bị sửa kể từ lúc ký; nó KHÔNG chứng minh bản
+    # thảo G7_A8_MANUSCRIPT_<study>.md mà GÓI NÀY đang lắp ráp để xuất còn giống
+    # bản mà người phản biện đã đọc lúc A9 được sinh -- đúng kịch bản của phát
+    # hiện: hiệu số bị đổi/trích dẫn đã rút được thêm vào/cảnh báo an toàn bị xóa
+    # SAU KHI ký, và chữ ký vẫn "hợp lệ" vì nó chưa từng băm bản thảo. run_g8_auto.py
+    # nay nhúng SHA-256 bản thảo vào A9 tại thời điểm sinh (g8_quality_gate.py::
+    # _trich_hash_ban_thao_da_ky() trích lại). G10 là điểm THỰC SỰ khóa gói trước
+    # khi xuất cho hội đồng/tạp chí -- kiểm ở approve_gate.py (trước khi ký) không
+    # đủ vì không có gì buộc bác sĩ chạy lại evaluate_study() sau khi sửa bản thảo
+    # nếu chữ ký cũ vẫn còn trong ledger.
+    if g8_signed:
+        _g8_a9_text = ""
+        try:
+            _g8_a9_text = g8_artifact.read_text(encoding="utf-8") if g8_artifact.exists() else ""
+        except (OSError, UnicodeDecodeError):
+            _g8_a9_text = ""
+        _embedded_hash = G8Q._trich_hash_ban_thao_da_ky(_g8_a9_text)
+        _manuscript_for_hash = out_dir / f"G7_A8_MANUSCRIPT_{study}.md"
+        _live_hash = None
+        try:
+            _mtxt = _manuscript_for_hash.read_text(encoding="utf-8") if _manuscript_for_hash.exists() else ""
+        except (OSError, UnicodeDecodeError):
+            _mtxt = ""
+        if _mtxt.strip():
+            _live_hash = hashlib.sha256(_mtxt.encode("utf-8")).hexdigest()
+        if _embedded_hash and _live_hash and _embedded_hash != _live_hash:
+            if not args.i_know_g8_manuscript_changed:
+                print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: bản thảo đã bị sửa SAU KHI G8 được ký —")
+                print("   chữ ký G8 hiện có KHÔNG còn ràng buộc nội dung bản thảo đang có.")
+                print(f"   Hash bản thảo lúc A9 được ký: {_embedded_hash[:12]}…")
+                print(f"   Hash bản thảo hiện tại:        {_live_hash[:12]}…")
+                print("   Sinh lại A9 (run_g8_auto.py) rồi mời phản biện ký lại G8.")
+                print("   Nếu chỉ muốn xem trước, thêm --i-know-g8-manuscript-changed.")
+                _mark_g10_blocked(
+                    GC.REASON_MANUSCRIPT_CHANGED_AFTER_PEER_REVIEW,
+                    "Bản thảo (G7_A8_MANUSCRIPT) đã bị sửa sau khi G8 (bình duyệt độc lập) "
+                    "đã ký — chữ ký hiện có không còn ràng buộc nội dung bản thảo hiện tại.",
+                    f"python tools/run_g8_auto.py --study {study}  # sinh lại A9 co nhung "
+                    f"hash moi, roi moi phan bien ky lai: python tools/approve_gate.py "
+                    f"--study {study} --gate G8 --artifact {g8_artifact.name} "
+                    "--reviewer-role PHAN_BIEN_DOC_LAP",
+                )
+                _apply_submission_status_banner([
+                    "> 🚧 **BẢN NHÁP — CHƯA SẴN SÀNG NỘP.** Bản thảo đã đổi sau khi G8 "
+                    "(bình duyệt độc lập) ký — chữ ký hiện có không còn ràng buộc nội dung "
+                    "bản thảo hiện tại. KHÔNG dùng tài liệu này để nộp Hội đồng/tạp chí.",
+                ])
+                return GC.EXIT_BLOCKED
+            bypass_notes.append(
+                "Bản thảo đã đổi SAU KHI G8 ký (bị BỎ QUA bằng --i-know-g8-manuscript-changed): "
+                f"hash lúc ký {_embedded_hash[:12]}… ≠ hash hiện tại {_live_hash[:12]}… — chữ ký "
+                "G8 hiện có không còn ràng buộc nội dung bản thảo hiện tại."
+            )
 
     # Vá 2026-07-12 (audit toàn diện cổng G0-G9): G10 là bước lắp ráp CUỐI trước khi
     # tài liệu này có thể bị hiểu nhầm là "sẵn sàng nộp" — nhưng G9 (liêm chính tác

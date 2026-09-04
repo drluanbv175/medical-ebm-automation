@@ -54,6 +54,7 @@ Giới hạn đã biết (ghi rõ để không ai đọc nhầm)
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 
@@ -253,6 +254,22 @@ def _read_text(path: Path) -> str:
         return Path(path).read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return ""
+
+
+# Khớp đúng nhãn máy-đọc-được mà run_g8_auto.py::generate_a9_artifact() nhúng
+# vào A9 -- xem comment tại chỗ ở đó. Đổi định dạng dòng đó bắt buộc phải sửa
+# regex này theo, nếu không G8-AUTO-12 sẽ luôn REVIEW ("chưa nhúng hash") dù
+# nhãn có mặt.
+_MANUSCRIPT_HASH_RE = re.compile(
+    r"Hash SHA-256 bản thảo đã ràng buộc[^:]*:\*\*\s*`([0-9a-f]{64})`", re.IGNORECASE
+)
+
+
+def _trich_hash_ban_thao_da_ky(presubmission_text: str) -> Optional[str]:
+    """Trích hash SHA-256 bản thảo đã nhúng trong A9 -- None nếu không thấy
+    (artifact định dạng cũ trước bản vá này, hoặc chưa có bản thảo lúc sinh)."""
+    m = _MANUSCRIPT_HASH_RE.search(presubmission_text or "")
+    return m.group(1) if m else None
 
 
 def _g8_meta(meta: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -761,6 +778,69 @@ def evaluate_g8_quality(
         "G1 suy luận và G2 (nơi bác sĩ có thể truyền --design tường minh) lệch nhau — "
         "chạy lại G1/G2 cho khớp trước khi tin design_code dùng ở G8-AUTO-07/08. Xem "
         "gate_contract.py::resolve_design_code().",
+    ))
+
+    # ── G8-AUTO-12 — chữ ký G8 phải ràng buộc ĐÚNG bản thảo hiện tại ────────
+    # THÊM 2026-09-04 (vá lỗ hổng: chữ ký G8 chỉ băm A9 -- bản TỰ KIỂM do máy
+    # sinh -- KHÔNG BAO GIỜ băm G7_A8_MANUSCRIPT_<study>.md; bản thảo có thể bị
+    # sửa SAU KHI ký (đổi hiệu số, thêm trích dẫn đã rút, xóa cảnh báo an toàn)
+    # mà chữ ký vẫn báo "hợp lệ", và không có kiểm tra nào ở downstream (kể cả
+    # run_g10_assemble.py) từng phát hiện việc này). run_g8_auto.py nay nhúng
+    # SHA-256 của bản thảo NGAY LÚC sinh A9 -- kiểm ở đây là đối chiếu hash đã
+    # nhúng (tại thời điểm A9 được ký) với hash SỐNG của manuscript_text hiện
+    # tại (đọc tươi từ đĩa ở evaluate_study()).
+    #
+    # Mức nghiêm trọng CÓ CHỦ Ý phân theo ledger_signed: sửa bản thảo TRƯỚC KHI
+    # ký là hoạt động soạn thảo bình thường (REVIEW, không chặn) -- nguy hiểm
+    # thật chỉ xảy ra SAU khi đã ký (BLOCK), đúng kịch bản mà module này sinh
+    # ra để bắt.
+    #
+    # SỬA (cùng ngày, phát hiện qua chạy bộ test hồi quy đầy đủ): nhánh
+    # "không tìm thấy hash nhúng" BAN ĐẦU trả REVIEW -- nhưng auto_review =
+    # any(status=="REVIEW") kéo TOÀN BỘ report["status"] về STATUS_DRAFT vô
+    # điều kiện (dòng ~921), nên MỌI đề tài đã ký G8 THẬT TRƯỚC bản vá này
+    # (100% số đề tài đang có, vì khả năng nhúng hash chỉ vừa ra đời) sẽ đồng
+    # loạt tụt từ PASS_G8_REVIEW_RECORDED xuống DRAFT_NEEDS_HUMAN_COMPLETION
+    # dù nội dung không đổi gì -- đúng lớp lỗi BH08 mà chính comment cũ ở đây
+    # định tránh (biến "chưa biết" thành "có vấn đề"), chỉ là áp nhầm hướng.
+    # 6 test hồi quy cũ (test_g8_quality_gate.py) bắt được ngay. G8-AUTO-02 đã
+    # sẵn REVIEW khi thiếu bản thảo -- không cần G8-AUTO-12 lặp lại tín hiệu
+    # đó. PASS ở đây chỉ có nghĩa "không có gì để đối chiếu", KHÔNG phải "đã
+    # xác nhận an toàn"; bảo vệ THẬT cho kịch bản tráo bản thảo sau ký nằm ở
+    # cổng CHẶN CỨNG run_g10_assemble.py (độc lập với report["status"] này).
+    _embedded_hash = _trich_hash_ban_thao_da_ky(presubmission_text)
+    _live_hash = (
+        hashlib.sha256(manuscript_text.encode("utf-8")).hexdigest()
+        if manuscript_text.strip() else None
+    )
+    if _embedded_hash is None:
+        hash_status = "PASS"
+        hash_evidence = (
+            "A9 chưa nhúng hash bản thảo (artifact định dạng cũ trước bản vá 2026-09-04, "
+            "hoặc chưa có bản thảo lúc sinh A9) — không có gì để đối chiếu ở lớp này; "
+            "chạy lại run_g8_auto.py để sinh A9 có nhúng hash và có được bảo vệ này. "
+            "Cổng chặn THẬT cho việc bản thảo bị sửa sau ký là run_g10_assemble.py."
+        )
+    elif _live_hash is None:
+        hash_status = "REVIEW"
+        hash_evidence = f"bản thảo không còn tồn tại/rỗng trên đĩa, A9 đã nhúng hash {_embedded_hash[:12]}…"
+    elif _embedded_hash == _live_hash:
+        hash_status = "PASS"
+        hash_evidence = f"hash khớp ({_live_hash[:12]}…) — bản thảo không đổi kể từ lúc A9 được sinh"
+    else:
+        hash_status = "BLOCK" if ledger_signed else "REVIEW"
+        hash_evidence = (
+            f"bản thảo đã bị sửa SAU KHI A9 được sinh: hash nhúng {_embedded_hash[:12]}… "
+            f"≠ hash hiện tại {_live_hash[:12]}…"
+            + (" — VÀ G8 ĐÃ ĐƯỢC KÝ trên bản A9 cũ: chữ ký không còn ràng buộc bản thảo đang có"
+               if ledger_signed else " (chưa ký — sửa bản thảo trước khi ký là bình thường)")
+        )
+    automatic.append(_criterion(
+        "G8-AUTO-12",
+        "Chữ ký G8 ràng buộc ĐÚNG nội dung bản thảo hiện tại (không chỉ bản tự kiểm A9)",
+        hash_status,
+        hash_evidence,
+        "Sinh lại A9 (run_g8_auto.py) rồi ký lại G8 sau bất kỳ thay đổi nào vào bản thảo.",
     ))
 
     # ── Tầng BẰNG CHỨNG BÌNH DUYỆT NGƯỜI THẬT ──────────────────────────────
