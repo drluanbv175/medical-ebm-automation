@@ -106,6 +106,28 @@ def _own_article_pmid(art: ET.Element) -> Optional[str]:
     return art.findtext("MedlineCitation/PMID") or art.findtext(".//PMID")
 
 
+# SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2): dò trang CHẶN của NCBI dùng
+# CHUNG cho mọi hàm parse tiêu thụ phản hồi efetch. Trước bản vá, chỉ
+# `_parse_retraction_xml()` có bước dò này (thêm 12/08/2026) — `_parse_metadata_xml()`
+# (hàm chị em, cùng tiêu thụ MỘT response trong `check_citations()`) KHÔNG có, nên khi
+# NCBI trả trang "WWW Error Blocked Diagnostic" (HTTP 200 hợp lệ, không lỗi parse XML),
+# `_parse_metadata_xml()` parse "thành công" ra 0 <PubmedArticle> rồi gán MỌI PMID
+# status='unresolved' kèm lý do "PMID có thể sai/không tồn tại" — đúng loại báo động
+# giả mà bản vá 12/08 mô tả cho hàm chị em, chỉ là ở một hàm khác chưa được vá theo.
+# Trích thành hàm dùng chung để một bản vá tương lai không còn bị bỏ sót kiểu này
+# (bài học BH39: thêm luật ở một chỗ phải lan sang mọi nơi tiêu thụ cùng dữ liệu).
+def _trang_chan_ncbi(xml_text: str) -> bool:
+    """True nếu response là trang HTML chặn của NCBI, không phải XML dữ liệu thật."""
+    dau = (xml_text or "").lstrip()[:400].lower()
+    return dau.startswith("<!doctype html") or "blocked diagnostic" in dau
+
+
+_LY_DO_NCBI_CHAN = (
+    "NCBI đang CHẶN máy/IP này (WWW Error Blocked Diagnostic). Đăng ký "
+    "NCBI_API_KEY miễn phí và đặt vào .env để nâng hạn mức; KHÔNG kết luận gì về PMID."
+)
+
+
 class PubMedClient(SourceClient):
     name = "pubmed"
     endpoint = ESEARCH
@@ -295,14 +317,11 @@ class PubMedClient(SourceClient):
         # NCBI đôi lúc trả HTTP 200 kèm TRANG HTML "WWW Error Blocked Diagnostic"
         # thay vì XML — hay gặp khi gọi nhiều từ một IP dùng chung (mạng bệnh viện)
         # mà không có NCBI_API_KEY. Nhận ra sớm để nói đúng nguyên nhân và cách sửa,
-        # thay vì để nó rơi xuống nhánh "parse XML lỗi" mơ hồ (thêm 12/08/2026).
-        dau = (xml_text or "").lstrip()[:400].lower()
-        if dau.startswith("<!doctype html") or "blocked diagnostic" in dau:
+        # thay vì để nó rơi xuống nhánh "parse XML lỗi" mơ hồ (thêm 12/08/2026; trích
+        # thành hàm dùng chung `_trang_chan_ncbi()` 04/09/2026 — xem comment tại đó).
+        if _trang_chan_ncbi(xml_text):
             logger.warning("[pubmed] NCBI trả trang CHẶN thay vì XML — cần NCBI_API_KEY")
-            return {pmid: {"status": "unknown_fetch_error",
-                           "reason": "NCBI đang CHẶN máy/IP này (WWW Error Blocked "
-                                     "Diagnostic). Đăng ký NCBI_API_KEY miễn phí và đặt "
-                                     "vào .env để nâng hạn mức; KHÔNG kết luận gì về PMID."}
+            return {pmid: {"status": "unknown_fetch_error", "reason": _LY_DO_NCBI_CHAN}
                     for pmid in requested_pmids}
 
         try:
@@ -445,11 +464,27 @@ class PubMedClient(SourceClient):
     @staticmethod
     def _parse_metadata_xml(xml_text: str, requested_pmids: List[str]) -> Dict[str, dict]:
         results: Dict[str, dict] = {}
+
+        # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2): hàm chị em
+        # `_parse_retraction_xml()` đã dò trang chặn NCBI từ 12/08/2026, hàm này thì
+        # chưa — xem comment tại `_trang_chan_ncbi()`.
+        if _trang_chan_ncbi(xml_text):
+            logger.warning("[pubmed] NCBI trả trang CHẶN thay vì XML — cần NCBI_API_KEY")
+            return {pmid: {"status": "unknown_fetch_error", "reason": _LY_DO_NCBI_CHAN}
+                    for pmid in requested_pmids}
+
         try:
             root = _safe_fromstring(xml_text)
         except (ET.ParseError, ValueError) as exc:
+            # SỬA 2026-09-04: trước đây trả "unresolved" — cùng loại nhầm lẫn mà hàm
+            # chị em _parse_retraction_xml() đã vá 12/08/2026 (xem comment ở đó):
+            # "unresolved" nghĩa là PubMed KHÔNG CÓ bản ghi (nghi trích dẫn ma), còn
+            # lỗi parse XML (mạng cắt giữa chừng, response hỏng) không kết luận được
+            # gì về PMID. Đổi sang "unknown_fetch_error" cho nhất quán.
             logger.warning("[pubmed] parse XML (metadata) lỗi/không an toàn: %s", exc)
-            return {pmid: {"status": "unresolved", "reason": f"parse XML lỗi: {exc}"}
+            return {pmid: {"status": "unknown_fetch_error",
+                           "reason": f"không đọc được phản hồi PubMed ({exc}) — "
+                                     f"KHÔNG kết luận gì về PMID này"}
                     for pmid in requested_pmids}
         found = set()
         for art in root.findall(".//PubmedArticle"):
