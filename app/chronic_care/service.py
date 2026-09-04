@@ -209,13 +209,19 @@ class ChronicCareService:
                 claim_reference_ids=[] if case.synthetic_status_fields.get("claim_status") == "MISSING" else ["claim_synthetic_verified"],
             )
             for action in evaluate_chronic_care_rules(case):
-                assert_rule_approved_for_test(action.rule_id)
+                assert_rule_approved_for_test(action.rule_id, action)
                 if action.action_type == "CREATE_TASK":
                     self.create_task(enrollment.id, action.task_type, action.priority, action.owner_role)
                     if action.task_type == "REVIEW_OVERDUE_CASE":
                         self.add_timeline(enrollment.id, "FOLLOW_UP_OVERDUE", "rule", action.rule_id, "Synthetic follow-up overdue detected")
                     if action.metadata.get("safety_queue_item"):
                         self.add_timeline(enrollment.id, "ESCALATION_CREATED", "rule", action.rule_id, "Synthetic RED risk review item")
+                    # SỬA 2026-09-04 — cờ metadata này trước đây được SINH ra
+                    # (rules.py::CC-005) nhưng KHÔNG NƠI NÀO đọc, nên "yêu cầu
+                    # bác sĩ review" chỉ tồn tại trong dataclass, không tạo dấu
+                    # vết nào trong timeline/audit trail của ca bệnh.
+                    if action.metadata.get("physician_review_required"):
+                        self.add_timeline(enrollment.id, "PHYSICIAN_REVIEW_REQUIRED", "rule", action.rule_id, "Synthetic post-discharge task requires physician review per rule approval_requirement")
 
     def create_enrollment(self, case: SyntheticChronicCareCase, actor: str = "system") -> ChronicCareEnrollment:
         self._ensure_no_pii(case.searchable_text())
