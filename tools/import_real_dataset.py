@@ -73,6 +73,25 @@ PII_HEADER_TOKENS = {
 }
 VALUE_PATTERNS = {
     "email": re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I),
+    # THÊM 2026-09-04 (Workflow đối kháng đa-agent vòng 3, CRITICAL): NGÀY THÁNG.
+    # HIPAA Safe Harbor liệt "mọi thành phần ngày tháng gắn với một cá nhân — trừ
+    # năm — gồm ngày sinh, ngày nhập viện, ngày xuất viện" là ĐỊNH DANH TRỰC TIẾP,
+    # nhưng VALUE_PATTERNS trước đây KHÔNG có mục nào cho ngày tháng. Hậu quả đo
+    # được: một ô ghi chú tự do (header không gợi ý PII, vd cột "notes"/"ghi_chu")
+    # chứa "BN sinh ngày 15/07/1980, nhập viện 03/03/2024" lọt qua CẢ _scan_csv()
+    # (cổng tiếp nhận, BLOCKED_PII_OR_UNSAFE lẽ ra phải bật) LẪN _redact_value() —
+    # deidentify_research_dataset.py VÀ pseudonymize_research_dataset.py CÙNG dùng
+    # chung dict này (RDI.VALUE_PATTERNS) — khiến báo cáo khử định danh khẳng định
+    # SAI `output_pii_scan.passed: true` trong khi ngày sinh vẫn còn nguyên trong
+    # file xuất ra. CỐ Ý RỘNG hơn `_DOB` của app/core/policy_engine.py (đòi nhãn
+    # "dob"/"ngày sinh" đứng trước ngày): ở ĐÂY hậu quả một trận dương tính giả chỉ
+    # là "ô bị chặn/redact để người xem lại tay" (không xoá âm thầm một phần văn
+    # bản như policy_engine), nên bắt LUÔN mọi ngày dd/mm/yyyy (mọi dấu / - .) và
+    # yyyy-mm-dd (ISO) có năm 19xx/20xx, không đòi nhãn đứng trước.
+    "date": re.compile(
+        r"(?<!\d)(?:\d{1,2}[/\-.]\d{1,2}[/\-.](?:19|20)\d{2}"
+        r"|(?:19|20)\d{2}[/\-]\d{1,2}[/\-]\d{1,2})(?!\d)"
+    ),
     # CCCD/CMND viết theo NHÓM 3 chữ số cách nhau bởi khoảng trắng/chấm/gạch (cách viết
     # phổ biến trên giấy tờ thật, vd "012 345 678 901") — trước đây chỉ bắt chuỗi LIỀN.
     # ĐẶT TRƯỚC phone_vn có chủ đích: một CCCD 12 số bắt đầu bằng "0" cũng "trông giống"
