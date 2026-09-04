@@ -399,8 +399,33 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
     result = {"outcome_type": outcome_type, "groups": [str(g0), str(g1)]}
 
     if outcome_type == "binary":
-        n0, e0 = len(s0), int(s0.sum())
-        n1, e1 = len(s1), int(s1.sum())
+        # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 3, phát hiện CRITICAL):
+        # `int(s.sum())` đếm biến cố ĐÚNG DUY NHẤT khi mã hoá là literal 0=không biến
+        # cố / 1=biến cố. detect_var_type() chỉ đòi ĐÚNG 2 giá trị khác nhau — không
+        # đòi hai giá trị đó là {0,1} — nên mọi kiểu mã hoá 2 mức khác (REDCap 1/2,
+        # 0/2, chuỗi "0"/"1" object dtype…) lọt qua "binary" mà .sum() tính SAI: với
+        # 1/2 hay 0/2 thì .sum() cộng dồn CẢ MÃ "không biến cố" vào; với chuỗi thì
+        # .sum() nối chuỗi (Series.sum() trên object dtype = string concatenation),
+        # int() trên chuỗi số nối vẫn thành công ⇒ ra số biến cố phi lý (vd
+        # events=1010000000) mà KHÔNG báo lỗi/cảnh báo nào — con số sai này đi thẳng
+        # vào G6_table2_main_outcome.txt/G6_analysis_summary.json, nguồn mà
+        # viet-ban-thao đọc làm kết cục chính. table1_descriptive() (dòng ~365) đã
+        # có đúng cách làm — đếm số lần xuất hiện của giá trị LỚN NHẤT trong 2 giá
+        # trị khác nhau — nhưng chưa từng được áp cho hàm này. Dùng lại CHÍNH quy
+        # ước đó ở đây để nhất quán trong cùng file, và xác định "giá trị biến cố"
+        # trên TOÀN BỘ cột (không riêng từng nhóm) — nếu suy trên từng nhóm riêng,
+        # một nhóm mà toàn bộ quan sát đều "không biến cố" sẽ khiến max() của CHÍNH
+        # nhóm đó nhận nhầm mã "không biến cố" làm mã "biến cố".
+        gia_tri_khac_nhau = df[outcome_col].dropna().unique()
+        if len(gia_tri_khac_nhau) != 2:
+            return {
+                "error": f"Kết cục nhị phân '{outcome_col}' có {len(gia_tri_khac_nhau)} giá trị "
+                         f"khác nhau (cần đúng 2): {sorted(str(v) for v in gia_tri_khac_nhau)} "
+                         "— kiểm tra mã hoá dữ liệu trước khi tính OR/RD.",
+            }
+        gia_tri_bien_co = max(gia_tri_khac_nhau)
+        n0, e0 = len(s0), int((s0 == gia_tri_bien_co).sum())
+        n1, e1 = len(s1), int((s1 == gia_tri_bien_co).sum())
         # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện CRITICAL):
         # đây là bước tính KẾT CỤC CHÍNH của G6, gọi trực tiếp trong main() KHÔNG có
         # try/except bao quanh — trước đây n0==0 hoặc n1==0 (một nhánh mất dấu theo
