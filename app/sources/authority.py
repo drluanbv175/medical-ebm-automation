@@ -206,7 +206,15 @@ EVIDENCE_SOURCE_UNIVERSE: tuple[EvidenceSourceLayer, ...] = (
 )
 
 _AMBIGUOUS_SHORT_ALIASES = {
-    "who", "ada", "acc", "aha", "esc", "acr", "ema", "ash", "ags", "gold", "gut",
+    # "nice" thêm 2026-09-04 (Workflow đối kháng đa-agent, phát hiện MEDIUM) —
+    # bí danh của NICE (UK guideline body, tier S) TRÙNG một từ tiếng Anh
+    # thông dụng. Trước khi vá, alias không nằm trong tập này thì được đối
+    # chiếu với `combined` (GỘP CẢ title) thay vì chỉ `primary_blob` — xác
+    # nhận bằng thực nghiệm: match_authority_source('BMJ Case Reports',
+    # 'A nice review of unusual presentations in diabetes') trả về NICE dù
+    # bài không liên quan gì tới cơ quan này. Cùng họ lỗi với "ash"/"gold"
+    # (tên người trùng bí danh tổ chức) đã vá cùng ngày ở classify_meta.py.
+    "who", "ada", "acc", "aha", "esc", "acr", "ema", "ash", "ags", "gold", "gut", "nice",
 }
 
 

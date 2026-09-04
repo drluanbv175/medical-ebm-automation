@@ -16,7 +16,15 @@ from app.sources.authority import match_authority_source
 
 # Viết tắt ngắn dễ trùng từ tiếng Anh thông thường (who/Canada/vaccine...). Các tín hiệu này
 # CHỈ khớp trong trường journal/organization, không khớp trong tiêu đề/tác giả.
-_AMBIGUOUS_ORG_SIGNALS = {"who", "ada", "acc", "esc", "es", "acr", "ema", "easl", "gold", "cdc"}
+# "nice" thêm 2026-09-04 (Workflow đối kháng đa-agent, phát hiện MEDIUM) — cùng
+# lỗi đã vá ở app/sources/authority.py::_AMBIGUOUS_SHORT_ALIASES: xác nhận bằng
+# thực nghiệm detect_official_org(title='A nice case series...', journal='BMJ
+# Case Reports') trả về 'NICE' (UK guideline body) trước khi vá, dù bài không
+# liên quan gì tới cơ quan này — "nice" là tín hiệu trùng CẢ HAI sổ (sổ này và
+# sổ trong authority.py) nên phải vá cả hai: vá một nơi không đóng được lỗ hổng
+# ở tầng detect_official_org(), vì hàm đó rơi xuống nhánh OFFICIAL_ORG_SIGNALS
+# này ngay khi authority.py không khớp (journal không chứa "nice").
+_AMBIGUOUS_ORG_SIGNALS = {"who", "ada", "acc", "esc", "es", "acr", "ema", "easl", "gold", "cdc", "nice"}
 
 # Server preprint phổ biến (loại khỏi phần thay đổi thực hành).
 _PREPRINT = ("medrxiv", "biorxiv", "ssrn", "preprint", "preprints.org",
