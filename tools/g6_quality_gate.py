@@ -42,6 +42,23 @@ HERE = Path(__file__).resolve().parent
 EXPORTS = HERE.parent / "exports"
 VERSION = "1.0.0"
 
+# VÁ 2026-09-04 (Workflow đối kháng đa-agent vòng 3, HIGH) — mẫu tên file GIẢ ĐỊNH của
+# G6-AUTO-06 (*KET_QUA*/*RESULTS*/stats_output*) KHÔNG khớp bất kỳ file thật nào mà
+# tools/run_stats_analysis.py — cỗ máy phân tích DUY NHẤT của repo — thực sự ghi ra
+# (`{gate}_table1_descriptive.txt`, `{gate}_table2_main_outcome.txt`, …). Kết quả: luật
+# sinh ra để bắt "đã chạy phân tích TRƯỚC khi khoá dữ liệu" (đúng kịch bản HARKing/
+# p-hacking mà docstring module này khai là lý do tồn tại) là NO-OP VĨNH VIỄN trên dây
+# chuyền thật — luôn báo PASS "chưa có file kết quả chạy thật" dù file kết quả THẬT đang
+# nằm ngay trên đĩa. Danh sách dưới đây chép ĐÚNG hậu tố mà run_stats_analysis.py::main()
+# ghi (khoảng dòng 1483-1586) — không dùng tiền tố `{gate}` cứng vì cổng này phải bắt
+# được kết quả bất kể chạy dưới nhãn G6/G7/gate nào khác.
+_MAU_KET_QUA_THAT_SU = (
+    "*_table1_descriptive.txt", "*_table2_main_outcome.txt", "*_table3_survival.txt",
+    "*_table4_multivariate.txt", "*_table5_multiple_imputation.txt",
+    "*_missing_data_summary.txt", "*_analysis_summary.json",
+    "*_analysis_syntax.R", "*_survival_syntax.R",
+)
+
 
 def _bo_dau(s: str) -> str:
     s = unicodedata.normalize("NFD", s or "")
@@ -207,8 +224,7 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True) 
     _ = khoi_sub  # giữ cho mở rộng sau; không dùng để quyết định
 
     # ── G6-AUTO-06: kỷ luật DATA LOCK khi ĐÃ có kết quả chạy thật ───────────
-    kq = sorted(thu_muc.glob("*KET_QUA*")) + sorted(thu_muc.glob("*RESULTS*")) \
-        + sorted(thu_muc.glob("stats_output*"))
+    kq = sorted({p for mau in _MAU_KET_QUA_THAT_SU for p in thu_muc.glob(mau)})
     g5cp = thu_muc / "G5_checkpoint.json"
     if not kq:
         add("G6-AUTO-06", True, "chưa có file kết quả chạy thật — chưa áp kiểm thứ tự khoá "
