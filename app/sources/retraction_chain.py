@@ -147,14 +147,52 @@ class RetractionChain:
                 ds.append("europepmc")
             return ds
 
-        return {p: self._gop(p, rw_verdict.get(p), pm.get(p), ep.get(p), _nguon_da_thu(p))
+        # THÊM 2026-09-04 (vá cờ retract_and_replace không hoạt động): pm/ep chỉ
+        # từng trả `retraction_notice.citation` — một chuỗi trích dẫn THÔ (tạp
+        # chí/năm/số trang), KHÔNG BAO GIỜ mang tiêu đề — nên la_rut_va_thay()
+        # trong _gop() trước đây CHỈ có thể bắt cụm "retract and replace" qua
+        # rw.reason (Retraction Watch ngoại tuyến, làm mới 30 ngày/lần). Một PMID
+        # vừa bị rút mà RW CHƯA kịp crawl, hoặc RW dùng cụm từ khác, khiến cờ IM
+        # LẶNG không bao giờ bật dù status vẫn đúng "retracted" (fail-closed vẫn
+        # giữ, chỉ mất phần CÂU CHỮ phân biệt "rút bỏ hẳn" với "rút rồi đăng lại
+        # bản đã sửa"). Tra thêm TIÊU ĐỀ của chính thông báo rút bài — đúng cách
+        # crossref_retraction.py đã làm cho DOI — CHỈ khi đã có tín hiệu rút bài
+        # thật (rất hiếm trong một lô), một lệnh CHUNG cho cả lô thay vì từng PMID.
+        notice_pmids: set[str] = set()
+        for nguon in (pm, ep):
+            for kq in nguon.values():
+                if kq.get("status") == "retracted":
+                    nid = (kq.get("retraction_notice") or {}).get("pmid")
+                    if nid:
+                        notice_pmids.add(str(nid))
+        notice_titles: Dict[str, str] = {}
+        if notice_pmids:
+            ds_notice = sorted(notice_pmids)
+            if self.pubmed is not None:
+                for npid, m in self.pubmed.fetch_metadata(ds_notice).items():
+                    if m.get("status") == "resolved" and m.get("title"):
+                        notice_titles[npid] = m["title"]
+            con_thieu_tieu_de = [p for p in ds_notice if p not in notice_titles]
+            if con_thieu_tieu_de and self.europepmc is not None:
+                notice_titles.update(self.europepmc.fetch_notice_titles(con_thieu_tieu_de))
+
+        return {p: self._gop(p, rw_verdict.get(p), pm.get(p), ep.get(p), _nguon_da_thu(p),
+                             notice_titles)
                 for p in pmids}
 
     # ------------------------------------------------------------------
     @staticmethod
     def _gop(pmid: str, rw: Optional[dict], pm: Optional[dict],
-             ep: Optional[dict], da_thu: List[str]) -> dict:
-        """Gộp phán quyết của 3 nguồn cho MỘT PMID."""
+             ep: Optional[dict], da_thu: List[str],
+             notice_titles: Optional[Dict[str, str]] = None) -> dict:
+        """Gộp phán quyết của 3 nguồn cho MỘT PMID.
+
+        `notice_titles` (thêm 2026-09-04): {pmid_thông_báo: tiêu_đề}, tra SỐNG
+        qua PubMed.fetch_metadata()/EuropePMCClient.fetch_notice_titles() cho
+        PMID của CHÍNH thông báo rút bài — xem check() ở trên. Trước bản vá này
+        la_rut_va_thay() chỉ đọc được rw.reason (Retraction Watch ngoại tuyến);
+        pm/ep không bao giờ mang tiêu đề thông báo nên hai đối số kia luôn rỗng."""
+        notice_titles = notice_titles or {}
         nen = {"sources_tried": list(da_thu)}
 
         # 1. DƯƠNG TÍNH thắng tất cả, theo mức nặng: rút bài > expression of concern.
@@ -182,9 +220,11 @@ class RetractionChain:
                     # với bản đã sửa, không phải bỏ mục. Vẫn giữ status 'retracted' để
                     # cổng còn chặn (fail-closed) — chỉ CÂU CHỮ đổi.
                     from app.sources.crossref_retraction import la_rut_va_thay  # noqa: PLC0415
+                    notice_pmid = str((kq.get("retraction_notice") or {}).get("pmid") or "")
                     if la_rut_va_thay((rw or {}).get("reason", ""),
                                       kq.get("notice_title", ""),
-                                      kq.get("reason", "")):
+                                      kq.get("reason", ""),
+                                      notice_titles.get(notice_pmid, "")):
                         ra["retract_and_replace"] = True
                     return ra
 
