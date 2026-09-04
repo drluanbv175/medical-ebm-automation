@@ -119,14 +119,29 @@ _UNSUPPORTED_CLAIM_PATTERNS: Sequence[tuple[str, str, str]] = (
     # thêm biến thể viết tắt "IRB" — trước đây chỉ khớp "Hội đồng Đạo đức",
     # bỏ lọt 2 câu khẳng định thật ở run_g7_auto.py (dòng ~1398, ~1333 trước
     # khi vá) dùng chữ "IRB" thay vì "Hội đồng Đạo đức".
-    (r"được\s+(?:Hội\s*đồng\s*Đạo\s*đức|IRB|Ethics\s*Committee)\s+phê\s*duyệt", "irb_approved",
+    #
+    # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2 — G7-AUTO-06 bị vượt
+    # qua bằng cách diễn đạt tự nhiên): 4 regex trước đây đòi cụm từ LIỀN KỀ
+    # cứng nhắc — không cho chèn thêm chữ (tên bệnh viện, số quyết định…) và
+    # không có từ đồng nghĩa. Câu thật "Đề tài đã được Hội đồng Đạo đức Bệnh
+    # viện Quân y 175 phê duyệt." (chèn tên tổ chức, đúng cách viết tự nhiên
+    # nhất cho tổ chức của repo này) trước đây LỌT hoàn toàn qua regex #1.
+    # Nay dùng cửa sổ ký tự giới hạn `[^.\n]{0,N}?` (cùng khuôn với R4/R5 của
+    # guardrail_check_g1 trong run_g1_auto.py) để cho phép chèn văn bản mô tả
+    # giữa thực thể và động từ, và thêm từ đồng nghĩa (chấp thuận/thông qua/
+    # đồng ý) cho khẳng định IRB. Đây là lớp phòng thủ CUỐI nên thiên về
+    # recall cao — chấp nhận vài false positive REVIEW còn hơn để lọt một
+    # khẳng định bịa đặt thật.
+    (r"được\s+(?:Hội\s*đồng\s*Đạo\s*đức|IRB|Ethics\s*Committee)[^.\n]{0,60}?"
+     r"(?:phê\s*duyệt|chấp\s*thuận|thông\s*qua|đồng\s*ý)", "irb_approved",
      "khẳng định đã được Hội đồng Đạo đức/IRB phê duyệt"),
-    (r"đã\s+được\s+đăng\s*ký\s+(?:tại|trên)\s+ClinicalTrials", "registered",
+    (r"đã\s+(?:được\s+)?đăng\s*ký[^.\n]{0,20}?ClinicalTrials", "registered",
      "khẳng định đã đăng ký ClinicalTrials.gov"),
-    (r"SAP\s+đã\s+(?:được\s+)?khóa|kế\s*hoạch\s*phân\s*tích\s+đã\s+khóa|"
+    (r"SAP[^.\n]{0,30}?đã\s+(?:được\s+)?khóa|"
+     r"kế\s*hoạch\s*phân\s*tích[^.\n]{0,30}?đã\s+khóa|"
      r"SAP\s+khóa\s+trước\s+khi\s+xem\s+dữ\s+liệu", "sap_locked",
      "khẳng định đã khóa SAP"),
-    (r"cơ\s*sở\s*dữ\s*liệu\s+đã\s+(?:được\s+)?khóa|dữ\s*liệu\s+đã\s+khóa", "db_locked",
+    (r"(?:cơ\s*sở\s*dữ\s*liệu|dữ\s*liệu)[^.\n]{0,30}?đã\s+(?:được\s+)?khóa", "db_locked",
      "khẳng định đã khóa cơ sở dữ liệu"),
 )
 
