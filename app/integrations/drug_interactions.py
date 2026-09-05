@@ -78,14 +78,31 @@ def _norm(s: str) -> str:
 
 
 def _mentions(text: str, term: str) -> bool:
-    """term (hoặc từ gốc hoạt chất) xuất hiện như một TỪ trong text (không phân biệt hoa/thường)."""
+    """term (hoặc từ gốc hoạt chất) xuất hiện như một TỪ trong text (không phân biệt hoa/thường).
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 17) — ngưỡng gốc `len(c) >= 4`
+    khiến MỌI tên/viết tắt thuốc ≤3 ký tự trở thành KHÔNG BAO GIỜ khớp được, kể cả
+    khi `\\b…\\b` đã khớp CHÍNH XÁC một từ trong nhãn. "ASA" (viết tắt lâm sàng rất
+    phổ biến của aspirin) là ví dụ điển hình: `candidates = {"asa"}` (từ gốc trùng
+    cả cụm vì chỉ có 1 từ) → bị lọc hết bởi `len(c) >= 4` → `any(...)` rỗng →
+    `_mentions()` LUÔN trả False, dù nhãn ghi đúng "…concomitant use with ASA…".
+    Tái hiện: `screen_regimen(["warfarin", "ASA"])` trên nhãn warfarin có câu nhắc
+    "ASA" trong mục tương tác → 0 cờ interaction được sinh ra — sàng lọc tương tác
+    bỏ sót HOÀN TOÀN mà không có tín hiệu lỗi/`not_found`/`lookup_failed` nào, vì
+    `screen_pair()` chỉ đơn giản không thấy khớp.
+    Ranh giới `\\b` đã tự bảo vệ khỏi khớp substring giả (vd "asa" sẽ KHÔNG khớp
+    bên trong "causally" vì không đứng ở ranh giới từ) — nên ngưỡng độ dài chỉ còn
+    cần chặn các trường hợp cực ngắn, cực chung chung (1-2 ký tự như "a", "in", "of"
+    có nguy cơ khớp ngẫu nhiên cao ngay cả khi đã có `\\b`). Hạ ngưỡng xuống 3 để
+    cho qua các viết tắt thuốc thật (ASA, MTX…) mà vẫn giữ lá chắn cho từ 1-2 ký tự.
+    """
     text_l = text.lower()
     term_l = _norm(term)
     if not term_l:
         return False
     # Khớp cả cụm và từ gốc đầu tiên (vd 'metoprolol tartrate' → 'metoprolol').
     candidates = {term_l, term_l.split(" ")[0]}
-    return any(re.search(rf"\b{re.escape(c)}\b", text_l) for c in candidates if len(c) >= 4)
+    return any(re.search(rf"\b{re.escape(c)}\b", text_l) for c in candidates if len(c) >= 3)
 
 
 class DrugSafetyChecker:
@@ -131,6 +148,19 @@ class DrugSafetyChecker:
             except Exception as exc:  # noqa: BLE001
                 logger.warning("[drug] lỗi tra nhãn %r (%s): %s", drug, field, exc)
                 raise DrugInteractionError(f"Lỗi tra nhãn openFDA cho {drug!r}: {exc}") from exc
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 17) — `data.get(...)`
+            # ngay dưới giả định `get_json()` LUÔN trả về dict khi không ném exception.
+            # Một phản hồi bất thường (body rỗng đọc thành None, proxy không chuẩn,
+            # cache lỗi…) khiến `data` là `None`/list/chuỗi → `.get()` ném `AttributeError`
+            # THÔ, không bị `except DrugInteractionError` ở `screen_regimen()` bắt được
+            # → sập TOÀN BỘ lượt sàng lọc đơn thuốc (mọi thuốc khác trong đơn cũng mất
+            # kết quả), thay vì chỉ ghi nhận `lookup_failed` cho riêng thuốc này.
+            if not isinstance(data, dict):
+                logger.warning("[drug] phản hồi bất thường (không phải dict, %s) khi tra "
+                                "nhãn %r (%s)", type(data).__name__, drug, field)
+                raise DrugInteractionError(
+                    f"Phản hồi openFDA không hợp lệ cho {drug!r} (field {field}): "
+                    f"kiểu {type(data).__name__}, cần dict")
             results = data.get("results") or []
             if results:
                 return self._parse_label(drug, results[0])

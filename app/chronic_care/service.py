@@ -369,7 +369,25 @@ class ChronicCareService:
         if blocked:
             draft.status = "BLOCKED"
             draft.blocked_reason = blocked
-            self.unverified_evidence_released += 1
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 17) — bản gốc
+            # tăng `unverified_evidence_released` (đọc bởi dashboard_state()
+            # để quyết định production_block_status="SHADOW PILOT BLOCKED")
+            # ngay TẠI NHÁNH BLOCK — tức đúng lúc hệ thống NGĂN THÀNH CÔNG
+            # việc duyệt, không có gì được "released" cả. Dòng raise ngay bên
+            # dưới đảm bảo draft KHÔNG BAO GIỜ chuyển sang APPROVED_FOR_SHADOW
+            # trong nhánh này, nên đây không phải một vi phạm an toàn — nó là
+            # cổng đang hoạt động đúng thiết kế. Hệ quả: mọi lần bác sĩ (theo
+            # đúng gợi ý "required_action": "physician_review" của
+            # `_physician_row()`) mở một draft đang BLOCKED để duyệt sẽ tự
+            # kích một báo động sai ở TẦNG DASHBOARD, không phân biệt được với
+            # một lần bypass thật (`approval_bypass`/`clinical_release_flag_
+            # bypass`). Tái hiện: seed_synthetic_cases() → approve_care_plan_
+            # draft(một draft BLOCKED) → PermissionError đúng như thiết kế,
+            # nhưng dashboard_state().production_block_status vẫn nhảy sang
+            # "SHADOW PILOT BLOCKED" dù KHÔNG có gì được duyệt/phát hành. Bỏ
+            # dòng tăng bộ đếm này — các bộ đếm vi phạm THẬT khác
+            # (`approval_bypass`, `clinical_release_flag_bypass` ở
+            # `_care_plan_blocked_reason()`) không đổi.
             self._audit(reviewer_role, "approve_care_plan_draft_blocked", "ChronicCarePlanDraft", draft.id, before=before, after=asdict(draft), blocked=blocked)
             raise PermissionError(blocked)
         approval = self.approval_center.submit(self.run_packet.run_id, "chronic_care_plan_draft", draft.goal_summary)
