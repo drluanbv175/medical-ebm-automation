@@ -34,6 +34,18 @@ This file contains only Claude Code-specific instructions.
 - **Evidence surveillance deployment**: `weekly_safety.sh`/`monthly_update.sh` là owner thu thập duy nhất. `PARTIAL/FAIL` phải giữ watermark, chặn `bridge_to_ebm_master.py` và không gửi cảnh báo nội dung. Chạy `python tools/verify_evidence_surveillance_deployment.py --online`; chỉ `READY_FOR_CONTROLLED_DEPLOYMENT` mới cho phép candidate-only. Claude Code không tự điền UAT, alert/rollback/shadow evidence hoặc phê duyệt để làm xanh cổng.
 - **⚠️ Sau khi đồng bộ agent .md đã sửa vào `medical-ebm-automation/.claude/agents/` (bản in-repo dùng bởi `runtime/agent_registry.py` FULL_SCOPE_A):** BẮT BUỘC chạy `python3 scripts/regenerate_agent_manifest.py --write` rồi dán giá trị self-check SHA-256 in ra vào hằng số `MANIFEST_SELF_CHECK_SHA256` trong `runtime/agent_registry.py` — **kể cả khi số lượng agent KHÔNG đổi**, vì manifest khóa hash theo NỘI DUNG từng file, không chỉ số lượng. Quên bước này → hàng chục test `test_v4_*`/`test_offline_workflow_integration.py` fail với "agent hash mismatch" (đã xảy ra ≥2 lần, 2026-07-05). Chạy `pytest` sau mỗi lần sync để bắt sớm nếu quên.
 - **Secrets**: live in `.env` outside OneDrive, symlinked into the repo if needed. Never commit or print them.
+- **⚠️ Phiên Claude Code Remote (cloud) đính kèm NHIỀU repo (`medical-ebm-automation` + repo gốc EBM
+  qua `add_repo`) — mọi lệnh `../tools/...` ở file này ĐỨNG YÊN dựa trên cấu trúc LỒNG NHAU thật
+  trên OneDrive (repo gốc EBM ở ngoài, `medical-ebm-automation/` là thư mục con). Trong phiên cloud,
+  `add_repo` nhân bản hai repo thành thư mục LIỀN KỀ PHẲNG dưới `/home/user/` (không lồng nhau) —
+  đo được cụ thể: `python ../tools/audit_ebm_system.py` chạy từ đây ném `FileNotFoundError` vì
+  `/home/user/tools` không tồn tại; đường đúng là `../<tên-thư-mục-repo-EBM-gốc>/tools/...` (thêm một
+  khúc tên repo — dùng `ls /home/user/` để biết tên thật, đừng giả định). Cùng nguyên nhân, hook
+  `SessionStart` của repo EBM gốc (khai `.claude/settings.json` bên đó) KHÔNG tự chạy khi repo đó
+  không phải "primary" của phiên — phải chạy TAY
+  `bash /home/user/<tên-thư-mục-repo-EBM-gốc>/.claude/hooks/session-start.sh` sau khi cả hai repo đã
+  gắn. Chi tiết + bằng chứng đo được: xem BH99 trong `CLAUDE.md` của repo EBM gốc. Vấn đề này CHỈ ở
+  phiên cloud nhiều-repo — không ảnh hưởng máy Mac/Windows.
 
 ---
 
