@@ -511,17 +511,38 @@ class ChronicCareService:
     def _physician_row(self, enrollment: ChronicCareEnrollment) -> Mapping[str, object]:
         risks = [draft for draft in self.risk_drafts.values() if draft.enrollment_id == enrollment.id]
         plans = [draft for draft in self.plan_drafts.values() if draft.enrollment_id == enrollment.id]
+        latest_risk = risks[-1] if risks else None
         plan = plans[-1] if plans else None
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 9) — bản gốc dùng
+        # `enrollment.current_risk_status` (đặt DUY NHẤT một lần lúc
+        # `create_enrollment()`, không bao giờ đổi) để quyết định "còn cần bác
+        # sĩ xem lại không". `review_risk_draft()` đúng khi cập nhật
+        # `draft.risk_status` (PENDING_REVIEW -> APPROVED_FOR_SHADOW/REJECTED)
+        # nhưng KHÔNG đụng tới `enrollment.current_risk_status` — nên hàng đợi
+        # xét duyệt của bác sĩ KHÔNG BAO GIỜ hết một ca RED/YELLOW dù đã duyệt
+        # hay từ chối. Xác nhận bằng thực nghiệm: seed 1 ca RED, review_risk_
+        # draft(approve=False) -> risk_draft_status đổi đúng thành REJECTED,
+        # nhưng safety_flags/required_action vẫn "red_review"/"physician_
+        # review" y hệt trước khi duyệt. Dùng đúng bản ghi risk draft MỚI
+        # NHẤT (đã có sẵn ở `risk_draft_status` phía trên) làm nguồn sự thật
+        # thay vì trường tĩnh của enrollment — còn PENDING_REVIEW mới cần
+        # hành động, đã duyệt/từ chối thì hết.
+        needs_risk_review = bool(
+            latest_risk and latest_risk.risk_label in {"RED", "YELLOW"}
+            and latest_risk.risk_status == "PENDING_REVIEW"
+        )
         return {
             "synthetic_id": enrollment.patient_reference_id,
             "program": enrollment.program_code,
-            "risk_draft_status": risks[-1].risk_status if risks else "none",
+            "risk_draft_status": latest_risk.risk_status if latest_risk else "none",
             "care_plan_draft_status": plan.status if plan else "none",
             "evidence_status": "complete" if plan and plan.evidence_reference_ids else "missing",
             "claim_status": "complete" if plan and plan.claim_reference_ids else "missing",
             "approval_status": "shadow_only",
-            "safety_flags": "red_review" if enrollment.current_risk_status == "RED" else "",
-            "required_action": "physician_review" if enrollment.current_risk_status in {"RED", "YELLOW"} or (plan and plan.status in {"PENDING_REVIEW", "BLOCKED"}) else "none",
+            "safety_flags": "red_review" if latest_risk and latest_risk.risk_label == "RED"
+            and latest_risk.risk_status == "PENDING_REVIEW" else "",
+            "required_action": "physician_review" if needs_risk_review
+            or (plan and plan.status in {"PENDING_REVIEW", "BLOCKED"}) else "none",
             "blocked_reason": plan.blocked_reason if plan else "",
             "last_updated": _now(),
         }
