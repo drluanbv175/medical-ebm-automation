@@ -51,7 +51,16 @@ def classify_export_file(path: Path) -> ExportFileDecision:
     # không phải chủ đích của hàm dùng chung này. Đọc TOÀN VĂN thay vì mẫu 200KB đầu:
     # caller có thể phục vụ file lớn hơn 200KB (agents.py tới 256KB, knowledge.py tới
     # 512KB) khiến PII ở phần đuôi lọt qua nếu chỉ lấy mẫu.
-    if path.is_file() and suffix in {".md", ".txt", ".html", ".json", ".toml", ".py", ".yaml", ".yml"}:
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 11) — .csv/.tsv thêm vào tập
+    # quét: trước đây KHÔNG nằm trong RESTRICTED_SUFFIXES (dữ liệu thô nhị phân) LẪN
+    # tập quét PII ở đây, nên một file .csv chứa PII thật (vd
+    # exports/hai-long-benh-nhan-C1a-BVQY175/_bo-bien-rieng.csv) bị phân loại
+    # 'safe_context'/allowed=True VÀ được tính sẵn sha256 (tín hiệu "đã được duyệt xuất")
+    # — trong khi CÙNG nội dung trong file .txt bị chặn đúng ('sensitive_text'). CSV/TSV
+    # là văn bản thuần (không cần thư viện nhị phân như .parquet/.dta), nên xếp vào tập
+    # quét PII, không phải RESTRICTED_SUFFIXES.
+    if path.is_file() and suffix in {".md", ".txt", ".html", ".json", ".toml", ".py", ".yaml", ".yml",
+                                      ".csv", ".tsv"}:
         try:
             sample = path.read_text(encoding="utf-8", errors="ignore")
             if contains_pii_text(sample):
