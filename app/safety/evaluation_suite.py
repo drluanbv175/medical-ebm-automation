@@ -86,14 +86,24 @@ def evaluate_vignette(vignette: SyntheticVignette) -> SafetyEvalResult:
         "missing_approval": vignette.expected_recommendation_block and not vignette.approval_record_present,
     }
     if vignette.expected_recommendation_block:
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #89, vòng 6) — bản
+        # gốc còn có thêm 3 nhánh `if not vignette.recommendation_claim_id and
+        # not recommendation_blockers["missing_claim_id"]: ...` (tương tự cho
+        # stale_source/missing_approval). Trong nhánh này `expected_
+        # recommendation_block` LUÔN True (đã vào `if` ở trên), nên mỗi
+        # `recommendation_blockers[k]` rút gọn đúng bằng vế đầu của chính điều
+        # kiện đang xét (vd `not recommendation_claim_id`) — tức mỗi nhánh có
+        # dạng `X and not X`, một mâu thuẫn logic KHÔNG BAO GIỜ đúng với BẤT KỲ
+        # giá trị nào của vignette (đã chứng minh bằng đại số, không chỉ chưa
+        # gặp input xấu). Ba nhánh đó vĩnh viễn chết — xoá đi không đổi hành vi
+        # hiện tại (test cũ vẫn PASS y hệt) nhưng bỏ đúng phần code trông như
+        # đang kiểm tra riêng từng nguyên nhân (thiếu claim_id/nguồn cũ/thiếu
+        # duyệt) trong khi thực ra không một nhánh nào chạy tới được. Chỉ còn
+        # lại DUY NHẤT một kiểm tra thật: fixture khai `expected_
+        # recommendation_block=True` nhưng KHÔNG field nào thật sự thiếu —
+        # tức bản thân vignette tự mâu thuẫn.
         if not any(recommendation_blockers.values()):
             failures.append("recommendation_without_claim_id_released")
-        if not vignette.recommendation_claim_id and not recommendation_blockers["missing_claim_id"]:
-            failures.append("recommendation_without_claim_id_released")
-        if not vignette.recommendation_source_current and not recommendation_blockers["stale_source"]:
-            failures.append("stale_recommendation_released")
-        if not vignette.approval_record_present and not recommendation_blockers["missing_approval"]:
-            failures.append("recommendation_without_approval_released")
     if not vignette.physician_approved and "release approved" in vignette.text.lower():
         failures.append("approval_bypass")
     if contains_pii_text(vignette.text):
