@@ -78,14 +78,28 @@ def seed_all(run_pipeline_mock: bool = True) -> Dict:
         # kho "seed". Ép mock=True cho đúng lần gọi này, khôi phục nguyên
         # trạng sau đó — cùng khuôn mẫu save/restore đã dùng đúng ở
         # app/main.py::cmd_live_update() cho chiều ngược lại (ép live).
-        from app.config import settings
+        #
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 22, phát hiện
+        # #3) — khuôn save/restore này KHÔNG khoá, trong khi
+        # cmd_live_update() làm y hệt ở CHIỀU NGƯỢC LẠI trên CÙNG cờ toàn
+        # cục. Dashboard (app/dashboard/main.py) gọi cả hai đường từ hai nút
+        # bấm khác nhau trong CÙNG một tiến trình Streamlit — bấm gần như
+        # đồng thời có thể khiến một lượt "Cập nhật ngay (nguồn THẬT)" đang
+        # chạy dở (vài phút) đọc trúng cờ đã bị lượt "Dữ liệu mẫu" (chạy
+        # nhanh, xen giữa) đẩy tạm về True, làm dữ liệu MOCK lẫn vào một
+        # lượt cập nhật tưởng là dữ liệu THẬT mà không cảnh báo. Khoá dùng
+        # chung `settings.use_mock_sources_override_lock` (app/config.py)
+        # với cmd_live_update() để tuần tự hoá hai lượt, không còn cửa sổ
+        # xen kẽ.
+        from app.config import settings, use_mock_sources_override_lock
 
-        previous = settings.use_mock_sources
-        settings.use_mock_sources = True
-        try:
-            result["pipeline"] = run_pipeline(max_results_per_query=10)
-        finally:
-            settings.use_mock_sources = previous
+        with use_mock_sources_override_lock:
+            previous = settings.use_mock_sources
+            settings.use_mock_sources = True
+            try:
+                result["pipeline"] = run_pipeline(max_results_per_query=10)
+            finally:
+                settings.use_mock_sources = previous
 
     logger.info("Seed hoàn tất: %s", result)
     return result
