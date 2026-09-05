@@ -87,8 +87,18 @@ def practice_change_score(item: Dict) -> Tuple[float, Dict[str, float]]:
         breakdown["score_tool"] = 5
 
     # Trừ điểm cho nguồn không nên đổi thực hành
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 19) — thiếu
+    # "expert_opinion": app.scoring.evidence_quality.DESIGN_BASE xếp
+    # expert_opinion=20 THẤP HƠN case_series=25/narrative_review=25 (đúng
+    # thứ bậc GRADE — ý kiến chuyên gia yếu hơn case series), nhưng tuple
+    # này (quyết định điểm practice_change_score) lại KHÔNG phạt
+    # expert_opinion trong khi CÓ phạt case_series -25 -> một bản ghi
+    # expert_opinion không có tín hiệu gì khác vẫn giữ nguyên
+    # practice_change_score=15 (other_base) trong khi case_series cùng điều
+    # kiện bị hạ xuống 0 -- ĐẢO NGƯỢC đúng thứ bậc mà DESIGN_BASE đã xếp.
     if study_type in ("preprint", "animal_invitro", "case_series",
-                      "retrospective_single_center", "narrative_review", "editorial"):
+                      "retrospective_single_center", "narrative_review", "editorial",
+                      "expert_opinion"):
         breakdown["weak_design_penalty"] = -25
 
     score = max(0.0, min(100.0, sum(breakdown.values())))
