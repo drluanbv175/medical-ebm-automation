@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from app.sources._fixtures import mock_records_for
+from app.sources._fixtures import MOCK_EVIDENCE, mock_records_for
 from app.sources.base import RawRecord, SourceClient
 from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
@@ -23,9 +23,19 @@ class ClinicalTrialsClient(SourceClient):
     def search(self, query: str, clinical_area: Optional[str] = None,
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
         if self.use_mock:
-            # Chỉ trả các bản ghi có NCT trong pool mock.
-            recs = mock_records_for(self.name, query, clinical_area, max_results)
-            return [r for r in recs if r.nct_id]
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #89, vòng 6):
+            # bản gốc gọi `mock_records_for(..., max_results)` trên TOÀN BỘ
+            # `MOCK_EVIDENCE` rồi mới lọc `r.nct_id` — nhưng
+            # `mock_records_for()` CẮT ở đúng `max_results` bản ghi khớp
+            # TRƯỚC KHI hàm này kịp lọc theo NCT. Nếu `max_results` bản ghi
+            # khớp ĐẦU TIÊN (theo thứ tự trong pool) không có NCT, một thử
+            # nghiệm THẬT SỰ khớp truy vấn nhưng nằm SAU vị trí cắt không
+            # bao giờ được thấy — `search(..., max_results=1)` có thể trả 0
+            # bản ghi dù pool có thử nghiệm khớp. Sửa: lọc pool theo NCT
+            # TRƯỚC khi truyền vào `mock_records_for()`, để phép cắt xảy ra
+            # trên đúng tập ứng viên (chỉ bản ghi có NCT).
+            pool_co_nct = [item for item in MOCK_EVIDENCE if item.get("nct_id")]
+            return mock_records_for(self.name, query, clinical_area, max_results, pool=pool_co_nct)
         try:
             params = {"query.term": query, "pageSize": max_results, "format": "json"}
             if since_date:

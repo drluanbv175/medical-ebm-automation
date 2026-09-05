@@ -180,3 +180,43 @@ class TestClinicalTrialsBanGhiHongKhongLamRotCaTrang:
         client.use_mock = False
         monkeypatch.setattr(client.http, "get_json", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("net down")))
         assert client.search("test query") == []
+
+
+class TestClinicalTrialsMockMaxResultsCatTruocLocNct:
+    """Hồi quy phát hiện của Workflow đối kháng đa-agent 2026-09-05 (vòng 6,
+    task #89) trong `ClinicalTrialsClient.search()` (nhánh mock) —
+    `mock_records_for()` cắt ở đúng `max_results` bản ghi khớp TRƯỚC KHI
+    hàm này lọc theo NCT, nên `max_results` nhỏ có thể bỏ lỡ một thử nghiệm
+    THẬT SỰ khớp truy vấn nhưng nằm sau vị trí cắt trong pool.
+
+    BẢN VÁ: lọc pool theo NCT TRƯỚC khi truyền vào `mock_records_for()`, để
+    phép cắt max_results xảy ra trên đúng tập ứng viên (chỉ bản ghi có NCT).
+    """
+
+    def test_max_results_nho_van_thay_dung_thu_nghiem_khop(self):
+        client = ClinicalTrialsClient()
+        client.use_mock = True
+        out = client.search("guideline patients disease", max_results=1)
+        assert len(out) == 1, (
+            f"kỳ vọng thấy đúng 1 thử nghiệm khớp truy vấn dù max_results=1, "
+            f"thực tế: {len(out)} bản ghi"
+        )
+        assert out[0].nct_id == "NCT03594110"
+
+    def test_max_results_lon_van_ra_ket_qua_giong_max_results_nho(self):
+        """Đối chứng — kết quả không phụ thuộc max_results khi số thử
+        nghiệm khớp thật sự ít hơn max_results (không có gì để cắt oan)."""
+        client = ClinicalTrialsClient()
+        client.use_mock = True
+        small = client.search("guideline patients disease", max_results=1)
+        large = client.search("guideline patients disease", max_results=8)
+        assert {r.nct_id for r in small} == {r.nct_id for r in large}
+
+    def test_moi_ban_ghi_tra_ve_deu_co_nct_id(self):
+        """Đối chứng bắt buộc — hành vi gốc (chỉ trả bản ghi có NCT) không
+        đổi sau bản vá."""
+        client = ClinicalTrialsClient()
+        client.use_mock = True
+        out = client.search("disease", max_results=20)
+        assert out
+        assert all(r.nct_id for r in out)
