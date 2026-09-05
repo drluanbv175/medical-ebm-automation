@@ -62,7 +62,7 @@ class TestBuildSourceSnapshotTrucTiepPhanBietNoneVaChuoiRong:
 
     def test_access_date_none_tu_dien_hom_nay(self, tmp_path):
         source = tmp_path / "a.html"
-        source.write_text("<html></html>", encoding="utf-8")
+        source.write_text("<html></html>", encoding="utf-8", newline="\n")
         snap = build_source_snapshot(
             source,
             source_origin_url="https://example.org",
@@ -74,7 +74,7 @@ class TestBuildSourceSnapshotTrucTiepPhanBietNoneVaChuoiRong:
 
     def test_access_date_chuoi_rong_giu_nguyen_rong_khong_bi_dien_hom_nay(self, tmp_path):
         source = tmp_path / "b.html"
-        source.write_text("<html></html>", encoding="utf-8")
+        source.write_text("<html></html>", encoding="utf-8", newline="\n")
         snap = build_source_snapshot(
             source,
             source_origin_url="https://example.org",
@@ -89,7 +89,7 @@ class TestBuildSourceSnapshotTrucTiepPhanBietNoneVaChuoiRong:
 
     def test_access_date_khong_truyen_gi_tu_dien_hom_nay(self, tmp_path):
         source = tmp_path / "c.html"
-        source.write_text("<html></html>", encoding="utf-8")
+        source.write_text("<html></html>", encoding="utf-8", newline="\n")
         snap = build_source_snapshot(
             source,
             source_origin_url="https://example.org",
@@ -106,7 +106,7 @@ class TestImportOfficialSourceThieuImportDateKhongBiaNgay:
 
     def test_thieu_import_date_bi_block_va_snapshot_access_date_rong(self, tmp_path):
         source = tmp_path / "guideline.html"
-        source.write_text("<html><h1>Official guideline</h1></html>", encoding="utf-8")
+        source.write_text("<html><h1>Official guideline</h1></html>", encoding="utf-8", newline="\n")
         result = import_official_source(_metadata(source, import_date=""))
 
         assert result.imported is False
@@ -124,7 +124,7 @@ class TestImportOfficialSourceCoImportDateVanGhiDungGiaTri:
 
     def test_co_import_date_snapshot_access_date_khop_dung_gia_tri(self, tmp_path):
         source = tmp_path / "guideline2.html"
-        source.write_text("<html><h1>Official guideline</h1></html>", encoding="utf-8")
+        source.write_text("<html><h1>Official guideline</h1></html>", encoding="utf-8", newline="\n")
         result = import_official_source(_metadata(source, import_date="2026-06-18"))
 
         assert result.snapshot is not None

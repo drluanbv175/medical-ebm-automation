@@ -312,6 +312,7 @@ def ensure_readiness(study: str, out_dir: Path) -> Path:
         path.write_text(
             json.dumps(build_readiness_template(study), ensure_ascii=False, indent=2),
             encoding="utf-8",
+            newline="\n",
         )
     return path
 

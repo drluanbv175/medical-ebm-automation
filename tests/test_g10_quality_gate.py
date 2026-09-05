@@ -103,7 +103,7 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
     )
     (out_dir / G10Q.READINESS_JSON).write_text(
         json.dumps(_complete_readiness(study), ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n",
     )
 
     text_files = {
@@ -335,7 +335,7 @@ def test_missing_human_readiness_stays_draft(tmp_path, monkeypatch):
     _patch_upstream(monkeypatch, approval)
     (tmp_path / G10Q.READINESS_JSON).write_text(
         json.dumps(G10Q.build_readiness_template(study), ensure_ascii=False),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n",
     )
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
     assert report["status"] == G10Q.STATUS_DRAFT

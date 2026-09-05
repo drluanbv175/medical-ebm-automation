@@ -52,7 +52,7 @@ from app.clinical_content.hypertension_pilot_pathway_release_gate import (  # no
 
 def _write_manifest(tmp_path: Path, claims: list) -> Path:
     manifest = tmp_path / "10_evidence_manifest.json"
-    manifest.write_text(json.dumps({"claims": claims}), encoding="utf-8")
+    manifest.write_text(json.dumps({"claims": claims}), encoding="utf-8", newline="\n")
     return manifest
 
 
