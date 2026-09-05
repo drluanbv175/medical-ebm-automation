@@ -89,10 +89,16 @@ def validate_shadow_approval_record(record: Mapping[str, object]) -> List[str]:
     for field_name in sorted(REQUIRED_APPROVAL_FIELDS):
         if not record.get(field_name):
             issues.append(f"missing_approval_field:{field_name}")
-    if record.get("generated_by_system") is True:
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 13) — `is True` chỉ khớp
+    # ĐÚNG literal bool True, bỏ lọt mọi giá trị truthy khác (`1`, `"yes"`, `"true"`)
+    # mà một bản ghi JSON/YAML nhập tay hoàn toàn có thể mang. Đây là hai cổng AN
+    # TOÀN chặn bản ghi phê duyệt tự động sinh hoặc bản ghi cho phép phát hành lâm
+    # sàng lọt vào luồng shadow-review — dùng truthy thường (không phải identity)
+    # để không bỏ sót giá trị đánh dấu hợp lệ nhưng không phải literal True.
+    if record.get("generated_by_system"):
         issues.append("approval_record_must_not_be_auto_generated")
     if record.get("approval_decision") not in {"approved_for_shadow_review", "rejected", "needs_revision"}:
         issues.append("approval_decision_not_allowed")
-    if record.get("clinical_release") is True:
+    if record.get("clinical_release"):
         issues.append("clinical_release_not_allowed")
     return issues
