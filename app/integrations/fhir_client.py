@@ -97,9 +97,20 @@ class FhirClient:
 
     def search_resources(self, resource_type: str,
                          params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
-        """Trả danh sách resource (rút từ Bundle.entry)."""
+        """Trả danh sách resource (rút từ Bundle.entry).
+
+        SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 17) — bản gốc
+        `"resource" in e` giả định MỌI phần tử `entry` là dict. Bundle là dữ
+        liệu từ MÁY CHỦ FHIR THẬT (EMR/HIS ngoài dự án, theo đúng docstring
+        module) — một entry không tuân thủ spec (không phải dict) làm câu
+        lệnh ném lỗi (`TypeError` nếu là số, hoặc âm thầm bỏ sót nếu là chuỗi
+        do `in` đổi nghĩa thành kiểm tra substring), MẤT TOÀN BỘ resource hợp
+        lệ khác trong cùng Bundle — kể cả những cái đứng trước/sau entry lỗi.
+        Nay bỏ qua CHỈ entry không phải dict, giữ nguyên mọi resource hợp lệ.
+        """
         bundle = self.search(resource_type, params)
-        return [e["resource"] for e in bundle.get("entry", []) if "resource" in e]
+        return [e["resource"] for e in bundle.get("entry", [])
+                if isinstance(e, dict) and "resource" in e]
 
     # -- Ghi (mặc định CẤM) --------------------------------------------
     def create(self, resource_type: str, resource: Dict[str, Any]) -> Dict[str, Any]:
@@ -126,10 +137,17 @@ def extract_medication_requests(resources: List[Dict[str, Any]]) -> List[Dict[st
     """Rút danh sách thuốc gọn từ MedicationRequest → nối được sang skill ke-don-an-toan.
 
     KHÔNG kèm thông tin định danh bệnh nhân.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 17) — bản gốc gọi thẳng
+    `r.get(...)` giả định mọi phần tử `resources` là dict. Cùng lớp lỗi "một
+    bản ghi hỏng làm rớt cả lô" đã gặp ở `europepmc.py`/`pubmed.py`: một
+    resource không tuân thủ spec (không phải dict) từ máy chủ FHIR thật ném
+    `AttributeError`, làm MẤT TOÀN BỘ đơn thuốc hợp lệ khác trong cùng danh
+    sách. Nay bỏ qua chỉ resource không phải dict.
     """
     out: List[Dict[str, Any]] = []
     for r in resources:
-        if r.get("resourceType") != "MedicationRequest":
+        if not isinstance(r, dict) or r.get("resourceType") != "MedicationRequest":
             continue
         mcc = r.get("medicationCodeableConcept") or {}
         med = mcc.get("text") or " / ".join(
