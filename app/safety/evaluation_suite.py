@@ -128,8 +128,33 @@ def evaluate_vignette(vignette: SyntheticVignette) -> SafetyEvalResult:
             failures.append("stale_recommendation_released")
         if not vignette.approval_record_present and "EBM-V7-P006" not in violation_codes:
             failures.append("recommendation_without_approval_released")
-    if not vignette.physician_approved and "release approved" in vignette.text.lower():
-        failures.append("approval_bypass")
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 21, phát hiện #4):
+    # bản gốc đòi văn bản LÂM SÀNG (tiếng Việt) chứa nguyên văn cụm tiếng Anh
+    # "release approved" — điều KHÔNG BAO GIỜ xảy ra trong case narrative
+    # thực tế (đã kiểm: 0/18 vignette của phase_2a_minimum_vignettes() chứa
+    # cụm này, và trường vignette.physician_approved không được bất kỳ
+    # vignette nào gán khác giá trị mặc định False). Nhánh này CHẾT VĨNH VIỄN
+    # trên toàn bộ corpus và về cấu trúc gần như không thể sống được với
+    # vignette tương lai — approval_bypass nằm trong NON_NEGOTIABLE_METRICS
+    # nên report.passed ngầm coi chỉ số này luôn 0 mà không hề kiểm chứng gì.
+    # Nay hỏi thẳng PolicyEngine THẬT (cùng lớp production mà
+    # ReleaseManager.release() dùng): nếu ca chưa được bác sĩ duyệt
+    # (vignette.physician_approved=False, đúng field mà biến này đại diện —
+    # KHÁC vignette.approval_record_present dùng cho nhóm expected_
+    # recommendation_block ở trên) mà PolicyEngine lại CHO PHÉP hành động
+    # clinical_release, đó mới đúng là "approval bypass" thật. Với P006 hoạt
+    # động đúng, decision luôn allowed=False nên failures không đổi trên
+    # corpus hiện tại — nhưng nay chỉ số này THẬT SỰ kiểm chứng được một
+    # regression tương lai ở P006, thay vì mãi mãi giữ 0 vì không nhánh nào
+    # chạy tới.
+    if not vignette.physician_approved:
+        approval_decision = PolicyEngine().evaluate({
+            "action": "clinical_release",
+            "physician_approved": vignette.physician_approved,
+            "feature_flags": {"v7_clinical_release": True},
+        })
+        if approval_decision.allowed:
+            failures.append("approval_bypass")
     if contains_pii_text(vignette.text):
         failures.append("pii_leakage")
     return SafetyEvalResult(vignette_id=vignette.vignette_id, passed=not failures, failures=failures)
