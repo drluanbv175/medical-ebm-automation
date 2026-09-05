@@ -5,14 +5,11 @@ from dataclasses import dataclass, field
 from typing import Dict, Mapping, Optional
 
 DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
-    "v7_control_plane": False,
     "v7_shadow_mode": False,
     "v7_clinical_release": False,
     "v7_research_official_analysis": False,
-    "v7_dashboard_runtime": False,
     "v7_chatgpt_project_export": False,
     "v7_patient_education_export": False,
-    "v7_external_network_refresh": False,
     "v7_auto_apply_recommendations": False,
     "v7_emr_write": False,
     "v7_production_pathway": False,
