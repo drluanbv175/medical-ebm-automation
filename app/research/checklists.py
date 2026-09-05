@@ -38,7 +38,28 @@ ACCEPTANCE_CHECKLIST: List[str] = [
 
 # --- Gợi ý phân tích thống kê theo thiết kế nghiên cứu --------------------------
 # Khóa khớp lỏng theo từ trong study_design.
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 16) — stats_suggestions()
+# dừng ở match ĐẦU TIÊN theo THỨ TỰ KHAI BÁO dict. Một thiết kế "nested
+# case-control" (bệnh-chứng lồng trong một cohort có sẵn — rất phổ biến
+# trong dịch tễ học) chứa CẢ HAI từ khóa "cohort"/"thuần tập" LẪN
+# "case-control"/"bệnh chứng". Khi "cohort" được khai báo TRƯỚC
+# "case-control" trong dict, hàm trả nhầm gợi ý của cohort (RR/Cox/Kaplan-
+# Meier) cho một thiết kế thực ra cần gợi ý của case-control (OR/hồi quy
+# logistic/ghép cặp) — sai phương pháp thống kê được đề xuất cho một thiết
+# kế dịch tễ phổ biến. Đặt thiết kế CỤ THỂ hơn (case-control, rct) TRƯỚC
+# thiết kế TỔNG QUÁT hơn (cohort, cross-sectional) để khớp đúng ưu tiên.
 _STATS_BY_DESIGN: Dict[str, List[str]] = {
+    "case-control": [
+        "Tỷ số chênh (OR) qua hồi quy logistic (đơn & đa biến).",
+        "Kiểm soát nhiễu: ghép cặp (matching) và/hoặc hiệu chỉnh đa biến.",
+        "Báo cáo theo STROBE (case-control).",
+    ],
+    "rct": [
+        "Phân tích theo ý định điều trị (ITT) là chính; per-protocol là phụ.",
+        "So sánh kết cục chính: t-test/Mann-Whitney hoặc Chi-square; ước lượng hiệu quả + KTC 95%.",
+        "Điều chỉnh biến nền nếu phân tầng; phân tích sống còn nếu kết cục thời gian-đến-biến cố.",
+        "Báo cáo theo CONSORT 2025; đăng ký thử nghiệm; tính ARR/RRR/NNT.",
+    ],
     "cross-sectional": [
         "Mô tả: tần số/tỷ lệ (biến định tính), trung bình±SD hoặc trung vị (IQR) (định lượng).",
         "So sánh nhóm: Chi-square/Fisher (định tính); t-test/Mann-Whitney (2 nhóm); ANOVA/Kruskal-Wallis (≥3 nhóm).",
@@ -50,17 +71,6 @@ _STATS_BY_DESIGN: Dict[str, List[str]] = {
         "Phân tích sống còn: Kaplan-Meier + log-rank; hồi quy Cox (HR) cho thời gian đến biến cố.",
         "Kiểm soát nhiễu: hồi quy đa biến / điểm xu hướng (propensity score) nếu phù hợp.",
         "Báo cáo theo STROBE (cohort).",
-    ],
-    "case-control": [
-        "Tỷ số chênh (OR) qua hồi quy logistic (đơn & đa biến).",
-        "Kiểm soát nhiễu: ghép cặp (matching) và/hoặc hiệu chỉnh đa biến.",
-        "Báo cáo theo STROBE (case-control).",
-    ],
-    "rct": [
-        "Phân tích theo ý định điều trị (ITT) là chính; per-protocol là phụ.",
-        "So sánh kết cục chính: t-test/Mann-Whitney hoặc Chi-square; ước lượng hiệu quả + KTC 95%.",
-        "Điều chỉnh biến nền nếu phân tầng; phân tích sống còn nếu kết cục thời gian-đến-biến cố.",
-        "Báo cáo theo CONSORT 2025; đăng ký thử nghiệm; tính ARR/RRR/NNT.",
     ],
     "descriptive": [
         "Thống kê mô tả: tần số/tỷ lệ, trung bình±SD, trung vị (IQR).",
