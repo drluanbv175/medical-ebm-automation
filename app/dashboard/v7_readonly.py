@@ -52,6 +52,21 @@ def build_v7_readonly_snapshot() -> V7ReadOnlySnapshot:
     ]
     if missing_tables:
         blocked.append("governance_schema_not_migrated")
+    # GHI CHÚ 2026-09-05 (Workflow đối kháng đa-agent, vòng 12) — nhánh
+    # "shadow_mode_enabled_read_only" ở dưới KHÔNG BAO GIỜ đạt được với cách nối dây
+    # hiện tại: `merge_feature_flags()` ở trên tự ép `"v7_shadow_mode": False` làm
+    # override, và không nơi nào khác trong repo (kể cả app/config.py) đọc một giá trị
+    # THẬT cho cờ này từ env/DB/settings — grep xác nhận `v7_shadow_mode` chỉ xuất hiện ở
+    # `DEFAULT_FEATURE_FLAGS` (cũng False) và đúng 2 dòng này. Khác các cờ rủi ro cao
+    # khác bị ép False CÓ CHỦ Ý ở trên (clinical_release/emr_write/production_pathway —
+    # đúng ý "trang này chỉ báo sẵn sàng schema, không phải cổng bật rủi ro thật"), shadow
+    # mode CHÍNH LÀ năng lực trang này được sinh ra để báo trạng thái — tự ép về False làm
+    # `shadow_mode_status` vĩnh viễn kẹt ở "ready_flag_off", và
+    # `tests/test_phase_2a_dashboard_readonly.py` chấp nhận cả hai giá trị nên không bắt
+    # được việc nhánh kia chết. Không tự bịa nguồn đọc thật ở đây (chưa có cơ chế cấu
+    # hình động nào cho feature flag trong toàn repo — bịa sẽ là phát minh kiến trúc mới
+    # ngoài phạm vi một lần vá lỗi, cùng nguyên tắc đã áp cho EBM-V7-P009 ở
+    # app/core/policy_engine.py vòng 11).
     shadow_status = "ready_flag_off"
     if flags.get("v7_shadow_mode") is True and not missing_tables:
         shadow_status = "shadow_mode_enabled_read_only"
