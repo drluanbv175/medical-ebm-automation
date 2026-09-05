@@ -18,7 +18,15 @@ class RetryPolicy:
         return tuple(values)
 
     def should_retry(self, attempt: int, retryable: bool = True) -> bool:
-        return retryable and attempt < self.max_attempts
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 11) — trước đây so với
+        # self.max_attempts, LỆCH MỘT so với delays() (vốn cố ý trả max_attempts-1
+        # phần tử: N lần thử cần N-1 khoảng chờ). Với max_attempts=3, should_retry(2)
+        # trả True trong khi delays() chỉ có 2 phần tử (chỉ số 0,1) — caller dùng
+        # đúng quy ước "attempt là chỉ số cho delays()[attempt]" sẽ bị IndexError ở
+        # lần thử thứ 4 (vượt quá 3 lần đã cấu hình). Trừ thêm 1 để hai hàm khớp số:
+        # attempt hợp lệ để còn được retry (và tra delays()[attempt] an toàn) chỉ còn
+        # 0..max_attempts-2.
+        return retryable and attempt < self.max_attempts - 1
 
 
 def retryable_status_codes() -> Iterable[int]:

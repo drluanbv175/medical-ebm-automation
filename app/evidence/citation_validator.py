@@ -5,8 +5,15 @@ import re
 from dataclasses import dataclass
 from typing import Mapping
 
-_PMID = re.compile(r"^\d{4,9}$")
-_DOI = re.compile(r"^10\.\d{4,9}/\S+$", re.I)
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 13) — thêm re.ASCII: mặc định
+# `\d` của Python khớp MỌI ký tự thuộc phạm trù Unicode "chữ số thập phân" (Nd), không
+# chỉ 0-9 ASCII — vd chữ số full-width "１２３４５６７８" hay chữ số Ả Rập-Ấn Độ
+# "١٢٣٤٥٦٧٨" đều khớp `^\d{4,9}$`. Một PMID/mã đăng ký DOI dạng này KHÔNG PHẢI định
+# danh thật (PubMed E-utilities/DOI registry chỉ nhận chữ số ASCII) nhưng vẫn được
+# validate_identifier() báo valid=True — một "định danh trông hợp lệ nhưng sai dạng"
+# lọt qua đúng kiểu lỗi đã sửa cho sha256 ở manual_source_import.py cùng vòng trước.
+_PMID = re.compile(r"^\d{4,9}$", re.ASCII)
+_DOI = re.compile(r"^10\.\d{4,9}/\S+$", re.I | re.ASCII)
 
 
 @dataclass(frozen=True)
