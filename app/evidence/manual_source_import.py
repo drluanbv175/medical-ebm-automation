@@ -30,7 +30,17 @@ def import_official_source(metadata: Mapping[str, object]) -> ManualSourceImport
     if not expected_sha:
         issues.append("sha256_required")
     actual_sha = file_sha256(source_file)
-    if expected_sha and expected_sha != actual_sha:
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #91, vòng 6): so
+    # sánh chuỗi thô `!=` nhạy hoa/thường, nhưng `file_sha256()` LUÔN trả hex
+    # CHỮ THƯỜNG (`hashlib.sha256(...).hexdigest()`). Công cụ tính hash phổ
+    # biến trên Windows (`Get-FileHash -Algorithm SHA256` của PowerShell —
+    # nền vận hành chính của repo này theo CLAUDE.md) in hex CHỮ HOA. Một
+    # curator dán `--sha256 3A7BD3E2...` (hoa) cho một file có hash thật
+    # `3a7bd3e2...` (cùng giá trị, khác chữ hoa/thường) sẽ bị báo
+    # `sha256_mismatch` và BLOCKED — một tài liệu nguyên vẹn, đúng hash, bị
+    # từ chối chỉ vì khác cách viết hoa/thường. Chuẩn hoá về chữ thường
+    # trước khi so sánh.
+    if expected_sha and expected_sha.lower() != actual_sha.lower():
         issues.append("sha256_mismatch")
 
     suffix = source_file.suffix.lower()
