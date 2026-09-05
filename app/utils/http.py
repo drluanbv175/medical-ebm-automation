@@ -214,8 +214,6 @@ class HttpClient:
                 self.last_status_code = 200
                 return cached["json"] if want == "json" else cached["text"]
 
-        # 4xx vĩnh viễn: retry vô ích, bỏ ngay lần đầu.
-        _PERMANENT_STATUS = (400, 401, 403, 404, 410)
         # Lỗi tạm thời (429 rate-limit, 500/502/503/504 server) — chỉ thử lại 1 lần rồi bỏ.
         # Quan trọng khi ingestion gọi HÀNG CHỤC query liên tiếp tới cùng một nguồn (vd 45 query
         # theo CLINICAL_AREAS): nếu nguồn đó đang lỗi/quá tải, retry đủ http_max_retries cho MỖI
@@ -244,8 +242,25 @@ class HttpClient:
                 attempt += 1
                 continue
 
-            # Lỗi vĩnh viễn → raise ngay, KHÔNG rơi vào retry (bay thẳng ra ngoài vòng lặp).
-            if resp.status_code in _PERMANENT_STATUS:
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 22, phát hiện #2):
+            # trước đây chỉ đúng 5 mã (400/401/403/404/410) được coi là "vĩnh
+            # viễn". Mọi mã lỗi KHÁC không nằm trong danh sách đó VÀ cũng
+            # không nằm trong _RETRYABLE_STATUS (vd 402, 405, 406, 409, 415,
+            # 422, 423, 428, 431, 451, 501, 505...) rơi thẳng vào nhánh
+            # try/except cuối cùng (dòng ~276) — vốn để bắt lỗi PARSE JSON/kết
+            # nối SAU KHI status đã "coi là OK". Vì requests.HTTPError là
+            # subclass của requests.RequestException, exception đó bị đối xử
+            # y như lỗi tạm thời: retry đủ settings.http_max_retries lần rồi
+            # cuối cùng raise một RuntimeError CHUNG CHUNG, mất luôn status
+            # code thật (last_status_code không được cập nhật ở nhánh đó) —
+            # đúng ngược với chính ý định "4xx vĩnh viễn: retry vô ích, bỏ
+            # ngay lần đầu" mà comment gốc tự khai. Với ingestion chạy hàng
+            # chục query liên tiếp, một endpoint trả mã lỗi ngoài 2 danh sách
+            # gây treo lặp lại nhiều phút — đúng sự cố mà _MAX_RETRYABLE_
+            # RETRIES được viết ra để tránh, nhưng lọt qua đường vòng này.
+            # Nay MỌI mã lỗi (>=400) không thuộc _RETRYABLE_STATUS đều coi là
+            # vĩnh viễn — raise ngay, giữ đúng status code thật.
+            if resp.status_code >= 400 and resp.status_code not in _RETRYABLE_STATUS:
                 logger.warning("HTTP %s (lỗi vĩnh viễn) từ %s – bỏ qua", resp.status_code, url)
                 try:
                     _raise_for_status_redacted(resp)
