@@ -10,8 +10,14 @@ from __future__ import annotations
 from typing import Dict
 
 # Các thiết kế bị loại khỏi phần "thay đổi thực hành" -> D.
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 19) — thiếu
+# "expert_opinion": app.scoring.evidence_quality.DESIGN_BASE xếp
+# expert_opinion=20 (yếu, cùng nhóm với editorial=15/narrative_review=25),
+# nhưng tập này trước đây bỏ sót nó -> một bản ghi expert_opinion không rơi
+# vào nhánh chặn Tier D ở đây, trong khi editorial/narrative_review (cùng
+# nhóm chứng cứ yếu) bị chặn. Thêm vào để khớp đúng thứ bậc DESIGN_BASE.
 EXCLUDED_DESIGNS = {
-    "preprint", "animal_invitro", "editorial", "narrative_review",
+    "preprint", "animal_invitro", "editorial", "narrative_review", "expert_opinion",
 }
 
 
