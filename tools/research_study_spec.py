@@ -39,7 +39,13 @@ def is_present(value: Any) -> bool:
     if isinstance(value, bool):
         return value
     if isinstance(value, (int, float)):
-        return value > 0
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 23, phát hiện #1):
+        # bản gốc dùng `value > 0`, coi số 0 (một giá trị THẬT, hợp lệ — vd
+        # kinh phí=0 cho nghiên cứu hồi cứu không tốn chi phí, dropout=0%)
+        # ngang hàng với "chưa nhập". `None` đã bị loại ở nhánh trên, nên
+        # MỌI số thật còn lại (kể cả 0 và số âm) đều là dữ liệu đã có —
+        # không được đoán thêm điều kiện "dương mới tính là có".
+        return True
     if isinstance(value, str):
         text = value.strip()
         lowered = text.lower()
@@ -327,6 +333,20 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
             "assumptions_source": _first(
                 sample_meta.get("assumptions_source"),
                 raw.get("sample_size_assumption_source"),
+                # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 23, phát
+                # hiện #2): `g3` ở đây là G3_checkpoint.json (do
+                # run_g3_auto.py ghi) — file đó KHÔNG BAO GIỜ chứa
+                # effect_source/assumption_source (đã xác nhận bằng grep:
+                # 0 lần ghi). Nguồn giả định cỡ mẫu mà bác sĩ THẬT SỰ xác
+                # nhận nằm ở study_meta.json → gate_params.G3.effect_source
+                # (xem tools/g3_quality_gate.py::_g3_meta(), G3-AUTO-05) —
+                # một object KHÁC hẳn `g3` (checkpoint) mà build_study_spec()
+                # nhận riêng qua tham số `meta`/`raw`. Hai dòng g3.get(...)
+                # cũ là dead fallback trên object sai; đã thêm đúng đường
+                # dẫn thật, GIỮ NGUYÊN 2 fallback cũ (không phá test hiện có
+                # dùng schema phẳng sample_size_assumption_source).
+                _get(raw, "gate_params", "G3", "effect_source"),
+                _get(raw, "gate_params", "G3", "assumption_source"),
                 g3.get("effect_source"),
                 g3.get("assumption_source"),
             ),
