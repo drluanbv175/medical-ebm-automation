@@ -24,7 +24,18 @@ from app.sources.authority import match_authority_source
 # sổ trong authority.py) nên phải vá cả hai: vá một nơi không đóng được lỗ hổng
 # ở tầng detect_official_org(), vì hàm đó rơi xuống nhánh OFFICIAL_ORG_SIGNALS
 # này ngay khi authority.py không khớp (journal không chứa "nice").
-_AMBIGUOUS_ORG_SIGNALS = {"who", "ada", "acc", "esc", "es", "acr", "ema", "easl", "gold", "cdc", "nice"}
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 20) — "circulation"/
+# "gina"/"hepatology" thêm vào: CÙNG lớp lỗi với "nice" ở trên (bản sao
+# RIÊNG của cùng danh sách chống-mơ-hồ, phải vá đồng thời với
+# authority.py::_AMBIGUOUS_SHORT_ALIASES vì detect_official_org() gọi
+# match_authority_source() TRƯỚC, chỉ rơi xuống OFFICIAL_ORG_SIGNALS này khi
+# authority.py không khớp — vá một nơi không đóng được lỗ hổng ở tầng này).
+# Xác nhận sống: detect_official_org('Collateral circulation after stroke: a
+# single-center retrospective study', 'Local Journal of Physiology', 'Doe A')
+# trả 'ACC/AHA' và detect_official_org('A cohort study...', 'Local Journal',
+# 'Rossi Gina') trả 'GINA' trước khi vá, dù cả hai bài không liên quan.
+_AMBIGUOUS_ORG_SIGNALS = {"who", "ada", "acc", "esc", "es", "acr", "ema", "easl", "gold", "cdc", "nice",
+                          "circulation", "gina", "hepatology"}
 
 # Server preprint phổ biến (loại khỏi phần thay đổi thực hành).
 _PREPRINT = ("medrxiv", "biorxiv", "ssrn", "preprint", "preprints.org",

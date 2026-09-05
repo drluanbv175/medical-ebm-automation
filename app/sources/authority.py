@@ -215,6 +215,21 @@ _AMBIGUOUS_SHORT_ALIASES = {
     # bài không liên quan gì tới cơ quan này. Cùng họ lỗi với "ash"/"gold"
     # (tên người trùng bí danh tổ chức) đã vá cùng ngày ở classify_meta.py.
     "who", "ada", "acc", "aha", "esc", "acr", "ema", "ash", "ags", "gold", "gut", "nice",
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 20) — 6 alias DÀI
+    # (>4 ký tự, nên tên tập "SHORT" không còn khớp nghĩa đen — giữ tên để
+    # không phá vỡ chỗ tham chiếu, nhưng ý nghĩa thật là "MƠ HỒ") vẫn là từ
+    # tiếng Anh/thuật ngữ y khoa thông dụng, trùng bí danh tổ chức uy tín:
+    # "circulation" (ACC/AHA — cũng là từ y khoa phổ biến "tuần hoàn bàng
+    # hệ"), "thorax" (ATS/ERS/BTS — tên bộ phận cơ thể, "lồng ngực"), "gina"
+    # (GINA — tên người phổ biến), "hepatology"/"gastroenterology" (AASLD/
+    # EASL và ACG/AGA/ASGE — tên CHUYÊN KHOA y học, xuất hiện trong vô số bài
+    # không liên quan tới hai tổ chức này), "lancet" (The Lancet — cũng là
+    # tên dụng cụ y khoa phổ biến, "kim chích máu mao mạch"). Xác nhận sống:
+    # authority_breakdown_for((..., 'Collateral circulation after stroke: a
+    # single-center retrospective study')) trả về ACC/AHA tier A (+5 điểm)
+    # trước khi vá, dù bài không liên quan gì tới hội tim mạch Hoa Kỳ; tương
+    # tự cho 5 alias còn lại (thorax/gina/hepatology/gastroenterology/lancet).
+    "circulation", "thorax", "gina", "hepatology", "gastroenterology", "lancet",
 }
 
 
