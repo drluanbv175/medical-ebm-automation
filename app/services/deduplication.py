@@ -49,10 +49,26 @@ def _same_version(a: Dict, b: Dict) -> bool:
     """False nếu 2 mục khác NĂM xuất bản hoặc khác guideline_version -> KHÔNG gộp.
 
     Tránh gộp nhầm ESC 2020 với ESC 2024, hay 2 RCT title gần giống nhưng khác phiên bản.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 14) — điều kiện gốc
+    `if ya and yb and ya != yb` chỉ chặn khi CẢ HAI bên đều có năm và khác
+    nhau; khi CHỈ MỘT bên thiếu `publication_date` (thật sự xảy ra:
+    app/sources/rss_feed.py trả None khi feed thiếu tag ngày/không parse
+    được, và guideline nạp qua RSS không bao giờ gán `guideline_version`),
+    điều kiện tự rơi vào "coi là cùng version" — trái docstring của chính
+    hàm này. Nay tách rõ: CẢ HAI cùng thiếu năm (không đủ dữ kiện ở CẢ hai
+    phía) vẫn giữ hành vi cũ — dựa hẳn vào ngưỡng title similarity 0.92
+    (đã có test `test_dedup_by_title_similarity` phủ đúng trường hợp này);
+    CHỈ MỘT bên có năm thì KHÔNG đủ căn cứ xác nhận cùng version qua tiêu
+    đề — trả False (fail-closed), tránh gộp nhầm 2 mục có thể khác năm mà
+    một bên chỉ thiếu dữ liệu ngày.
     """
     ya = (a.get("publication_date") or "")[:4]
     yb = (b.get("publication_date") or "")[:4]
-    if ya and yb and ya != yb:
+    if ya and yb:
+        if ya != yb:
+            return False
+    elif ya or yb:
         return False
     va = (a.get("guideline_version") or "").strip().lower()
     vb = (b.get("guideline_version") or "").strip().lower()

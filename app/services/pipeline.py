@@ -215,11 +215,26 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
         ))
 
     # 7b) Ghi nhận kết thúc lần chạy (watermark).
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 14) — ternary gốc chỉ phân
+    # biệt "PARTIAL" với "mọi giá trị khác", BỎ SÓT "FAIL": khi strict_source_health
+    # =False (giá trị MẶC ĐỊNH, dùng ở job_daily()/job_weekly() tự động) và nguồn
+    # sập hoàn toàn (status="FAIL"), lần chạy này vẫn bị gán status="ok". Vì
+    # run_state.compute_since_date() chỉ đọc PipelineRun.status=="ok" để tính
+    # watermark cho lần live-pull kế tiếp, một lần chạy FAIL (không lấy được bản
+    # ghi thật nào) sẽ đẩy watermark nhảy qua đúng khoảng thời gian outage — mọi
+    # guideline/cảnh báo an toàn thuốc công bố trong khoảng đó KHÔNG BAO GIỜ được
+    # ingest lại. Thêm nhánh FAIL tường minh, đối xứng với nhánh strict đã có ở
+    # trên (status="error").
     source_status = str(source_health.get("status") or "NOT_APPLICABLE")
-    run_status = "partial" if source_status == "PARTIAL" else "ok"
-    stats["release_status"] = (
-        "BLOCKED_SOURCE_HEALTH_PARTIAL" if source_status == "PARTIAL" else "READY_FOR_REVIEW_QUEUE"
-    )
+    if source_status == "FAIL":
+        run_status = "error"
+        stats["release_status"] = "BLOCKED_SOURCE_HEALTH_FAIL"
+    elif source_status == "PARTIAL":
+        run_status = "partial"
+        stats["release_status"] = "BLOCKED_SOURCE_HEALTH_PARTIAL"
+    else:
+        run_status = "ok"
+        stats["release_status"] = "READY_FOR_REVIEW_QUEUE"
     run_state.finish_run(run_id, total_fetched=int(stats["total"]),
                          new_items=int(stats["new_items"]),
                          new_actionable=int(stats["new_actionable"]),
