@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import subprocess
 import sys
 from datetime import date
@@ -67,6 +68,24 @@ def sha256_file(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
+def doc_design_code(study_dir: Path) -> str:
+    """Đọc design_code từ G2_checkpoint.json — logic khớp NGUYÊN VĂN
+    approve_gate.py (đổi ở đó thì đổi ở đây theo).
+
+    SỬA vòng 25 (2026-09-05, phát hiện #2): trước bản vá, phong_van_g2()
+    không hề biết design_code nên không bao giờ hỏi --g2-first-search-date —
+    trường mà approve_gate.py BẮT BUỘC khi design_code == "sr_ma". Hậu quả:
+    người ký một đề tài SR/MA trả lời hết toàn bộ phỏng vấn (10+ câu), gõ
+    đúng "KY THAT", rồi mới bị approve_gate từ chối ở PHÚT CHÓT vì thiếu
+    đúng cờ mà trợ lý trình-ký lẽ ra phải hỏi từ đầu.
+    """
+    try:
+        checkpoint = json.loads((study_dir / "G2_checkpoint.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        checkpoint = {}
+    return str(checkpoint.get("design_code") if isinstance(checkpoint, dict) else "").strip()
+
+
 def soan_lenh(gate: str, study: str, artifact: Path, tra_loi: dict) -> list:
     """Soạn vector đối số approve_gate từ câu trả lời phỏng vấn (thuần, test được).
 
@@ -97,6 +116,7 @@ def soan_lenh(gate: str, study: str, artifact: Path, tra_loi: dict) -> list:
             ("g2_valid_until", "--g2-valid-until"),
             ("g2_icf_version", "--g2-icf-version"),
             ("g2_approval_scope", "--g2-approval-scope"),
+            ("g2_first_search_date", "--g2-first-search-date"),
         ]
         for khoa, co in don_gian:
             gia_tri = str(tra_loi.get(khoa, "") or "").strip()
@@ -143,7 +163,7 @@ def _hoi_chon(cau: str, lua_chon: list) -> str:
         print("  ✗ Gõ đúng một số trong danh sách.")
 
 
-def phong_van_g2() -> dict:
+def phong_van_g2(study_dir: Path) -> dict:
     print("\n── PHỎNG VẤN G2 — chép ĐÚNG từ quyết định của Hội đồng, không suy đoán ──")
     tl: dict = {}
     tl["reviewer_ref"] = _hoi("Người ký (tên/mã định danh, vd HĐĐĐ-BVQY175/Nguyễn Văn A)")
@@ -173,6 +193,11 @@ def phong_van_g2() -> dict:
         tl["g2_registration_date"] = _hoi("Ngày đăng ký (YYYY-MM-DD)", kiem=hop_le_ngay)
     else:
         tl["g2_registration_status"] = "NOT_REQUIRED"
+    if doc_design_code(study_dir) == "sr_ma":
+        tl["g2_first_search_date"] = _hoi(
+            "SR/MA — ngày BẮT ĐẦU tìm kiếm y văn hệ thống (YYYY-MM-DD, mốc PROSPERO/protocol)",
+            kiem=hop_le_ngay,
+        )
     tl["g2_approval_scope"] = _hoi("Phạm vi phê duyệt (Enter để bỏ qua)", bat_buoc=False)
     return tl
 
@@ -239,7 +264,7 @@ def main() -> int:
             return 2
         print(f"  Nhận xét phản biện: {bb} (SHA256 {sha256_file(bb)[:16]}…)")
 
-    tra_loi = phong_van_g2() if args.gate == "G2" else phong_van_g8()
+    tra_loi = phong_van_g2(study_dir) if args.gate == "G2" else phong_van_g8()
     lenh = soan_lenh(args.gate, args.study, artifact, tra_loi)
 
     # ── Bước 3: XÁC NHẬN của người thật rồi mới ký ──────────────────────────
