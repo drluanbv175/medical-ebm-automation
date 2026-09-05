@@ -51,7 +51,18 @@ class LiveSourceAdapter(SourceLookupAdapter):
         key = citation_cache_key(self.source_name, identifiers)
         cached = self.cache.get(key)
         if cached is not None and cached.payload:
-            self.monitor.success(self.source_name)
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 12) — trước đây LUÔN gọi
+            # monitor.success() khi có cache hit, kể cả khi payload đã lưu là kết quả
+            # UNAVAILABLE (vd thiếu NCBI_EMAIL — lỗi cấu hình dai dẳng, không phải ngoại
+            # lệ tạm thời). Cache TTL tới 24h, nên health_status bị "lành" giả ngay từ
+            # lượt tra thứ hai và giữ nguyên "ok" suốt thời gian đó dù nguồn vẫn hỏng —
+            # bảng Source Health không còn phản ánh đúng thực trạng. Nhánh không-cache
+            # (dưới) đã đúng khi rẽ theo source.unavailable; nhánh cache phải làm giống
+            # hệt.
+            if cached.payload.get("unavailable"):
+                self.monitor.failure(self.source_name, cached.error_state or "source_unavailable")
+            else:
+                self.monitor.success(self.source_name)
             payload = dict(cached.payload)
             payload.setdefault("raw", {})
             payload["raw"] = {**dict(payload.get("raw") or {}), "cache_key": cached.cache_key}
