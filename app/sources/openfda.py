@@ -18,6 +18,20 @@ logger = get_logger(__name__)
 EVENT = "https://api.fda.gov/drug/event.json"
 
 
+def _escape_lucene_phrase(text: str) -> str:
+    """Thoát dấu `\\` và `"` trước khi nhét vào một cụm trích dẫn Lucene.
+
+    openFDA (nền Elasticsearch) dùng cú pháp truy vấn Lucene: `field:"cụm từ"`
+    là khớp NGUYÊN CỤM. Bên trong cụm trích dẫn, chỉ gạch chéo ngược và `"`
+    có ý nghĩa cú pháp (theo chuẩn Lucene) — một dấu `"` chưa thoát sẽ ĐÓNG
+    cụm trích dẫn SỚM, phần còn lại của `text` rơi ra ngoài và bị Lucene diễn giải
+    như CÚ PHÁP TRUY VẤN THÊM (có thể gồm toán tử `AND`/`OR`, ký tự đại diện,
+    hoặc bộ lọc trường khác `field:value`) thay vì dữ liệu văn bản thuần —
+    đúng lớp lỗi "query injection" qua chuỗi định dạng không thoát ký tự.
+    """
+    return text.replace("\\", "\\\\").replace('"', '\\"')
+
+
 class OpenFDAClient(SourceClient):
     name = "openfda"
     endpoint = EVENT
@@ -36,7 +50,13 @@ class OpenFDAClient(SourceClient):
                 r.ingest_query = query
             return recs
         try:
-            params = {"search": f'patient.drug.medicinalproduct:"{query}"',
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #75) — trước bản
+            # vá, `query` được nhét THẲNG vào cụm trích dẫn Lucene, không thoát
+            # dấu `"`. Một tên thuốc/chuỗi truy vấn chứa `"` sẽ đóng cụm trích
+            # dẫn sớm, phần còn lại rơi ra ngoài và bị openFDA diễn giải như cú
+            # pháp truy vấn thêm — xem `_escape_lucene_phrase()` để biết cơ chế.
+            query_an_toan = _escape_lucene_phrase(query)
+            params = {"search": f'patient.drug.medicinalproduct:"{query_an_toan}"',
                       "count": "patient.reaction.reactionmeddrapt.exact", "limit": max_results}
             data = self.http.get_json(EVENT, params=params)
             self.save_raw(query, data)
