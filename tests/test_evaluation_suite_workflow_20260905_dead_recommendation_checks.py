@@ -49,6 +49,21 @@ mutate ĐÚNG dòng còn sống (not any → any) để xác nhận test CÓ kh�
 lỗi thật; (b) TestBaLoaiBoKhongDoiHanhVi — khôi phục 3 nhánh đã xoá và xác
 nhận hành vi (bao gồm cả 3 vignette tham chiếu của phase_2a_minimum_
 vignettes()) không đổi, chứng minh thực nghiệm rằng việc xoá là an toàn.
+
+CẬP NHẬT 2026-09-05 (task #90 — quyết định sản phẩm mà bản vá trên đã
+`spawn_task` xin bác sĩ chọn): bác sĩ chọn "nối PolicyEngine thật" (Phương án
+1/3). `evaluate_vignette()` nay gọi thẳng `PolicyEngine.evaluate()` thay vì tự
+so trường của vignette với nhau — xem `app/safety/evaluation_suite.py::
+_recommendation_release_context()` và bộ test riêng
+`tests/test_evaluation_suite_recommendation_policy_wiring_20260905.py` (3 test
+negative-control chứng minh 2 chỉ số từng "chết" nay THẬT SỰ khác 0 được khi
+PolicyEngine hồi quy). Hai lớp dưới đây được cập nhật lại đúng như dự đoán
+trong docstring gốc của chúng ("PHẢI được xem lại... lúc đó test này sẽ FAIL
+và đó là tín hiệu ĐÚNG để cập nhật, không phải hồi quy") — xem chú thích cập
+nhật tại từng lớp. `TestBaVignetteThamChieuKhongBiGanCoSai` KHÔNG đổi gì: cả 4
+test vẫn PASS y hệt với PolicyEngine thật, vì PolicyEngine đúng đắn xác nhận
+đúng 1 thiếu sót thật của mỗi vignette (đã kiểm bằng thực nghiệm, không suy
+đoán).
 """
 from __future__ import annotations
 
@@ -73,12 +88,20 @@ def _vignette(**overrides) -> SyntheticVignette:
 
 
 class TestKiemTraFixtureTuMauThuanConSong:
-    """★★★ Kiểm tra DUY NHẤT còn sống trong khối `expected_recommendation_
-    block` — khai `expected_recommendation_block=True` nhưng KHÔNG trường
-    nào thật sự thiếu (claim_id có, source current, approval có) là một
-    fixture tự mâu thuẫn, phải bị gắn cờ."""
+    """CẬP NHẬT 2026-09-05: lớp này từng kiểm tra DUY NHẤT còn sống của bản vá
+    dead-code (`not any(recommendation_blockers.values())`) — một phép SO
+    CHÍNH VIGNETTE VỚI CHÍNH NÓ, không gọi hàm quyết định phát hành nào. Sau
+    khi nối PolicyEngine thật, phép so-với-chính-nó đó đã bị THAY THẾ hoàn
+    toàn (không còn `recommendation_blockers`/`not any(...)` nữa), nên hành
+    vi đúng bây giờ là: một vignette khai `expected_recommendation_block=True`
+    nhưng có ĐỦ claim_id/nguồn mới/approval — tức PolicyEngine THẬT không tìm
+    thấy vi phạm nào — thì KHÔNG còn lý do để gắn cờ (không có 'giá trị của
+    chính nó' để tự mâu thuẫn nữa; ground-truth so với quyết định PolicyEngine
+    khớp nhau: cả hai đều nói 'không sao'). Đổi assertion cho khớp, KHÔNG xoá
+    test — đây là tín hiệu ĐÚNG để cập nhật đã được ghi trước trong docstring
+    gốc của lớp `TestGioiHanThatCuaThietKeHienTai`, không phải hồi quy."""
 
-    def test_fixture_tu_mau_thuan_bi_gan_co(self):
+    def test_fixture_du_truong_khong_con_bi_gan_co_sai_khi_policyengine_that_dong_y(self):
         v = _vignette(
             expected_recommendation_block=True,
             recommendation_claim_id="claim_ok",
@@ -86,8 +109,8 @@ class TestKiemTraFixtureTuMauThuanConSong:
             approval_record_present=True,
         )
         result = evaluate_vignette(v)
-        assert "recommendation_without_claim_id_released" in result.failures
-        assert not result.passed
+        assert "recommendation_without_claim_id_released" not in result.failures
+        assert result.passed
 
     def test_khong_expected_block_thi_khong_kiem_tra_gi(self):
         """Đối chứng — `expected_recommendation_block=False` (mặc định) thì
@@ -146,15 +169,20 @@ class TestBaVignetteThamChieuKhongBiGanCoSai:
 
 
 class TestGioiHanThatCuaThietKeHienTai:
-    """Ghi lại (không phải khẳng định là đúng) một giới hạn THẬT của thiết kế
-    hiện tại: `stale_recommendation_released` và `recommendation_without_
-    approval_released` không bao giờ được ghi nhận bởi bất kỳ đường nào của
-    `evaluate_vignette()` — kể cả sau bản vá này. Test này PHẢI được xem lại
-    nếu ai đó sau này nối `evaluate_vignette()` với một cơ chế "release" thật
-    (xem spawn_task đã gửi bác sĩ) — lúc đó test này sẽ FAIL và đó là tín
-    hiệu ĐÚNG để cập nhật lại, không phải hồi quy."""
+    """ĐÃ CẬP NHẬT 2026-09-05 (đúng như tự dự đoán trong docstring gốc của lớp
+    này). Tên lớp GIỮ NGUYÊN để tra lại lịch sử được dễ, nhưng ý nghĩa đã đổi
+    hẳn: trước đây 2 test dưới đây chứng minh `stale_recommendation_released`/
+    `recommendation_without_approval_released` không bao giờ khác 0 — vì 3
+    nhánh gán nhãn là mã CHẾT. Sau khi nối PolicyEngine thật, HAI TEST NÀY
+    (từng fixture có ĐÚNG MỘT thiếu sót thật) vẫn PASS y hệt — nhưng nay vì lý
+    do ĐÚNG: PolicyEngine THẬT nhận ra thiếu sót (P004/P006 tương ứng) và
+    đúng-đắn KHÔNG cần eval tự gắn thêm nhãn nữa (bảo vệ đã có ở tầng chính
+    sách). Đây KHÔNG còn là giới hạn — là hành vi đúng cần giữ nguyên. Muốn
+    thấy 2 chỉ số này THẬT SỰ khác 0 khi có hồi quy, xem 3 test negative-
+    control (giả lập PolicyEngine luôn cho qua) ở
+    `tests/test_evaluation_suite_recommendation_policy_wiring_20260905.py`."""
 
-    def test_stale_source_rieng_khong_bao_gio_tu_sinh_nhan_rieng(self):
+    def test_stale_source_khong_can_eval_tu_gan_nhan_khi_policyengine_that_da_bat(self):
         v = _vignette(
             expected_recommendation_block=True,
             recommendation_claim_id="claim_ok",
@@ -164,7 +192,7 @@ class TestGioiHanThatCuaThietKeHienTai:
         result = evaluate_vignette(v)
         assert "stale_recommendation_released" not in result.failures
 
-    def test_missing_approval_rieng_khong_bao_gio_tu_sinh_nhan_rieng(self):
+    def test_missing_approval_khong_can_eval_tu_gan_nhan_khi_policyengine_that_da_bat(self):
         v = _vignette(
             expected_recommendation_block=True,
             recommendation_claim_id="claim_ok",
