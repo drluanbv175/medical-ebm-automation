@@ -144,6 +144,19 @@ def check_trial_registry(base_query: str, max_results: int = 5) -> dict:
         out["checked"] = isinstance(out["n_trials"], int)
     except Exception as e:  # noqa: BLE001 — mọi lỗi đều phải thành "CHƯA TRA", không thành 0
         out["error"] = f"{type(e).__name__}: {e}"
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 23, phát hiện #4):
+        # hàm gọi API 2 lần tuần tự — `n_trials` (dòng ~115) được gán NGAY
+        # từ lệnh gọi ĐẦU, trước khi lệnh gọi THỨ HAI (dòng ~136, lấy
+        # n_active) chạy. Nếu lệnh gọi thứ hai raise (mất mạng/timeout giữa
+        # chừng), nhánh except này chạy nhưng `n_trials`/`trials` đã có giá
+        # trị THẬT từ lệnh gọi đầu — vi phạm đúng hợp đồng mà chính
+        # empty_registry() khai: "checked=False → n_trials PHẢI là None
+        # (không phải một số)". Reset về đúng trạng thái "chưa tra" của
+        # empty_registry() để `out` không rơi vào trạng thái nội tại mâu
+        # thuẫn (checked=False nhưng n_trials có giá trị thật).
+        out["n_trials"] = None
+        out["n_active"] = None
+        out["trials"] = []
     if out["checked"]:
         out["error"] = None
     return out
