@@ -40,7 +40,21 @@ def _text(item: Dict, *keys: str) -> str:
 def evidence_quality_score(item: Dict) -> Tuple[float, Dict[str, float]]:
     breakdown: Dict[str, float] = {}
     study_type = (item.get("study_type") or "").lower()
-    base = DESIGN_BASE.get(study_type, 40)
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 10) — mặc định cũ là
+    # 40, CAO HƠN 6 thiết kế đã biết và tự khai là YẾU
+    # (case_series/narrative_review=25, expert_opinion=20, editorial=15,
+    # preprint=10, animal_invitro=5). `classify_meta.py` tự khai ý định:
+    # "Khi không đủ tín hiệu -> trả None để pipeline xử lý THẬN TRỌNG (điểm
+    # THẤP)" — mặc định 40 làm NGƯỢC lại đúng ý định đó, thưởng cho việc
+    # KHÔNG xác định được thiết kế hơn là phạt việc thành thật khai yếu.
+    # Xác nhận sống: cùng title/abstract, chỉ đổi study_type=None vs
+    # "case_series" -> None cho eq=45/tier C trong khi case_series cho
+    # eq=30/tier C — và None còn cao hơn cả editorial/preprint/animal_invitro
+    # (đều tier D). Đưa về 0 — thấp hơn MỌI thiết kế đã đặt tên, đúng tinh
+    # thần "không biết gì thì không được cộng điểm mặc định"; các cộng điểm
+    # khác (đa trung tâm, outcome cứng, uy tín nguồn...) vẫn cộng bình
+    # thường nếu văn bản có tín hiệu thật.
+    base = DESIGN_BASE.get(study_type, 0)
     breakdown["base_design"] = float(base)
 
     text = _text(item, "title", "abstract", "document_type")
