@@ -202,7 +202,18 @@ def deidentify_dataset(study: str, data_path: Path, *,
 
     last_decode_error: Optional[UnicodeDecodeError] = None
     if blocker is None:
-        for encoding in ("utf-8-sig", "latin-1"):
+        # SỬA vòng 25 (2026-09-05): "latin-1" (ISO-8859-1) ánh xạ MỌI byte 0x00-0xFF
+        # sang một ký tự Unicode hợp lệ — về mặt kỹ thuật KHÔNG BAO GIỜ ném
+        # UnicodeDecodeError. Vì đây từng là lượt thử CUỐI trong vòng lặp, nhánh
+        # blocker = "decode_error..." bên dưới là CODE CHẾT — không thể kích hoạt
+        # trong bất kỳ hoàn cảnh nào. Hậu quả: một CSV lưu bằng Windows-1252 (rất
+        # phổ biến với dữ liệu tiếng Việt xuất từ Excel/REDCap cũ trên Windows) bị
+        # "latin-1" đọc thành công nhưng SAI (mojibake) mà không có cảnh báo nào —
+        # công cụ vẫn báo DEIDENTIFIED_READY_FOR_INTAKE trên dữ liệu đã hỏng ngầm.
+        # Bỏ "latin-1" để lời hứa "decode_error: hãy xuất lại CSV UTF-8" của chính
+        # docstring thật sự có hiệu lực — CSV không phải UTF-8 hợp lệ bị CHẶN thay
+        # vì bị âm thầm đọc sai, khớp triết lý fail-closed của toàn bộ 2 file PII.
+        for encoding in ("utf-8-sig",):
             try:
                 process = _process_with_encoding(data_path, output_path, encoding)
                 blocker = process.get("blocker")
