@@ -869,13 +869,13 @@ def test_evaluate_study_chay_tron_ven_tren_thu_muc_that(tmp_path):
         _artifact(base_cell=1178), encoding="utf-8", newline="\n"
     )
     (tmp_path / "G3_checkpoint.json").write_text(
-        json.dumps(_checkpoint(), ensure_ascii=False), encoding="utf-8"
+        json.dumps(_checkpoint(), ensure_ascii=False), encoding="utf-8", newline="\n"
     )
     (tmp_path / "G1_checkpoint.json").write_text(
         json.dumps({"gate": "G1"}, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
     (tmp_path / "study_meta.json").write_text(
-        json.dumps(_full_meta(), ensure_ascii=False), encoding="utf-8"
+        json.dumps(_full_meta(), ensure_ascii=False), encoding="utf-8", newline="\n"
     )
     report = G3Q.evaluate_study(study, tmp_path, write=True)
     assert report["status"] == G3Q.STATUS_CONFIRMED

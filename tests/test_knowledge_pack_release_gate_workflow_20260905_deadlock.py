@@ -81,14 +81,14 @@ def _flip_to_fully_approved_for_release(pack_dir: Path) -> None:
     scope = yaml.safe_load(scope_path.read_text(encoding="utf-8"))
     scope["status"] = "approved_for_release"
     scope["clinical_release_allowed"] = True
-    scope_path.write_text(yaml.safe_dump(scope, allow_unicode=True), encoding="utf-8")
+    scope_path.write_text(yaml.safe_dump(scope, allow_unicode=True), encoding="utf-8", newline="\n")
 
     approval_path = version_dir / "13_approval_record.json"
     approval = json.loads(approval_path.read_text(encoding="utf-8"))
     approval["status"] = "approved"
     approval["clinical_release_allowed"] = True
     approval["next_review_due"] = "2027-06-18"
-    approval_path.write_text(json.dumps(approval, ensure_ascii=False, indent=2), encoding="utf-8")
+    approval_path.write_text(json.dumps(approval, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     manifest_path = version_dir / "10_evidence_manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -97,7 +97,7 @@ def _flip_to_fully_approved_for_release(pack_dir: Path) -> None:
         claim["verification_status"] = "VERIFIED"
         claim["approval_status"] = "approved"
         claim["release"] = "allowed"
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
 class TestPackDaDuyetDayDuKhongConBiKhoaVinhVien:
@@ -166,7 +166,7 @@ class TestPackConDraftVaChuaDuocDuyetVanBiChanNhuCu:
         scope = yaml.safe_load(scope_path.read_text(encoding="utf-8"))
         scope["status"] = "approved_for_release"
         scope["clinical_release_allowed"] = True
-        scope_path.write_text(yaml.safe_dump(scope, allow_unicode=True), encoding="utf-8")
+        scope_path.write_text(yaml.safe_dump(scope, allow_unicode=True), encoding="utf-8", newline="\n")
 
         result = assess_pack_release_readiness(pack_dir, VERSION_DIR)
         blockers = {f"{issue.file}:{issue.message}" for issue in result.blockers}

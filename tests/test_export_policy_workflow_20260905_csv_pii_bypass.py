@@ -40,7 +40,7 @@ class TestCsvTsvChuaPiiBiChanDungNhuTxt:
 
     def test_csv_chua_pii_bi_chan(self, tmp_path):
         path = tmp_path / "benh_nhan.csv"
-        path.write_text(_PII_ROW, encoding="utf-8")
+        path.write_text(_PII_ROW, encoding="utf-8", newline="\n")
 
         decision = classify_export_file(path)
 
@@ -51,7 +51,7 @@ class TestCsvTsvChuaPiiBiChanDungNhuTxt:
 
     def test_tsv_chua_pii_bi_chan(self, tmp_path):
         path = tmp_path / "benh_nhan.tsv"
-        path.write_text(_PII_ROW.replace(",", "\t"), encoding="utf-8")
+        path.write_text(_PII_ROW.replace(",", "\t"), encoding="utf-8", newline="\n")
 
         decision = classify_export_file(path)
 
@@ -61,8 +61,8 @@ class TestCsvTsvChuaPiiBiChanDungNhuTxt:
     def test_csv_va_txt_cung_noi_dung_cho_ket_qua_giong_nhau(self, tmp_path):
         csv_path = tmp_path / "a.csv"
         txt_path = tmp_path / "a.txt"
-        csv_path.write_text(_PII_ROW, encoding="utf-8")
-        txt_path.write_text(_PII_ROW, encoding="utf-8")
+        csv_path.write_text(_PII_ROW, encoding="utf-8", newline="\n")
+        txt_path.write_text(_PII_ROW, encoding="utf-8", newline="\n")
 
         csv_decision = classify_export_file(csv_path)
         txt_decision = classify_export_file(txt_path)
@@ -77,7 +77,7 @@ class TestCsvKhongCoPiiVanAnToanNhuCu:
 
     def test_csv_khong_pii_van_safe_context(self, tmp_path):
         path = tmp_path / "thong_ke_chung.csv"
-        path.write_text("nam,so_ca,ty_le\n2025,120,0.34\n2026,98,0.29\n", encoding="utf-8")
+        path.write_text("nam,so_ca,ty_le\n2025,120,0.34\n2026,98,0.29\n", encoding="utf-8", newline="\n")
 
         decision = classify_export_file(path)
 

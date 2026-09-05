@@ -486,7 +486,7 @@ def test_30_cli_project_status_lists_all(tmp_projects):
                 "draft_only": True,
                 "human_review_required": True,
             }),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         exit_code = researchctl_main([
             "--projects-root", str(tmp_projects),
