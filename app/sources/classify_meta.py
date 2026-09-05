@@ -48,7 +48,23 @@ _COHORT = ("prospective cohort", "cohort study", "longitudinal cohort",
            "registry", "population-based cohort")
 
 _CASE = ("case report", "case series", "case-report")
-_EDITORIAL = ("editorial", "commentary", "viewpoint", "perspective", "letter to the editor")
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 20) — "perspective" (đơn)
+# đã bị bỏ khỏi tuple substring: nó khớp bừa vào "perspectives" (số nhiều) —
+# một mẫu tiêu đề CỰC KỲ phổ biến của nghiên cứu ĐỊNH TÍNH/khảo sát ("Patient
+# perspectives on...", "Provider perspectives on...") hoàn toàn không phải xã
+# luận. Xác nhận sống: infer_study_type("Patient perspectives on telehealth
+# for chronic disease management: a qualitative study", "journal-article",
+# "BMC Health Services Research") trả "editorial" trước khi vá -> qua
+# reliability.EXCLUDED_DESIGNS -> Tier D -> filtering.EXCLUDED_STUDY_TYPES
+# loại bài khỏi báo cáo chính với lý do sai sự thật ("không dùng để thay đổi
+# thực hành"). Regex `_PERSPECTIVE_DON_RE` đòi ranh giới từ ở CUỐI (không
+# theo sau bởi ký tự chữ/số) nên vẫn khớp "perspective" số ít đứng một mình
+# (thường đúng là bài quan điểm/xã luận, vd "Diabetes prevention: a clinical
+# perspective") mà KHÔNG khớp "perspectives" số nhiều. Các từ khóa còn lại
+# trong tuple này KHÔNG đổi — chúng không có cùng kiểu nhập nhằng số ít/số
+# nhiều (vd "commentary"/"commentaries" vẫn cùng một thể loại xã luận).
+_EDITORIAL = ("editorial", "commentary", "viewpoint", "letter to the editor")
+_PERSPECTIVE_DON_RE = re.compile(r"\bperspective\b")
 _NARRATIVE = ("narrative review", "review of the literature", "scoping review")
 
 # Tổ chức/tạp chí chính thống -> nhận diện theo chuỗi con (lowercase).
@@ -96,7 +112,7 @@ def infer_study_type(title: Optional[str], document_type: Optional[str] = None,
         return "cohort"
     if any(k in blob for k in _CASE):
         return "case_series"
-    if any(k in blob for k in _EDITORIAL):
+    if any(k in blob for k in _EDITORIAL) or _PERSPECTIVE_DON_RE.search(blob):
         return "editorial"
     if any(k in blob for k in _NARRATIVE):
         return "narrative_review"
