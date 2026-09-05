@@ -65,6 +65,15 @@ def load_hypertension_claim_links(manifest_path: Path = MANIFEST_PATH) -> List[H
     data = json.loads(manifest_path.read_text(encoding="utf-8"))
     links: List[HypertensionClaimLink] = []
     for claim in data.get("claims", []):
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 15) — thiếu
+        # isinstance() khiến MỘT claim hỏng (null/không phải object do lỗi
+        # curator gõ tay JSON) làm crash toàn bộ hàm, kéo theo build_
+        # hypertension_review_pathway() chết luôn cả các claim hợp lệ khác
+        # trong CÙNG manifest. Module song song app/evidence/hypertension_
+        # local_adaptation.py đọc CÙNG file này đã có đúng phòng vệ này —
+        # bỏ qua bản ghi hỏng, không crash cả batch.
+        if not isinstance(claim, Mapping):
+            continue
         links.append(
             HypertensionClaimLink(
                 claim_id=str(claim.get("claim_id", "")),

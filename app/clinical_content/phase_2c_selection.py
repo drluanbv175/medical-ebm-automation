@@ -37,6 +37,15 @@ class Phase2CPackSelection:
             reasons.append("selected_pack_missing")
         elif self.selected_pack not in ALLOWED_PHASE_2C_PACKS:
             reasons.append("selected_pack_not_allowed")
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 15) —
+        # approved_for_real_pack_build đòi physician_approval_required
+        # phải True, nhưng blocked_reasons trước đây không hề kiểm field
+        # này: khi curator/YAML tắt nhầm cờ này (physician_approval_
+        # required=False) trong khi mọi field khác hợp lệ, pathway build
+        # vẫn bị chặn ĐÚNG (an toàn) nhưng blocked_reasons trả về RỖNG —
+        # người xem log/CI không biết vì sao bị chặn.
+        if not self.physician_approval_required:
+            reasons.append("physician_approval_required_flag_is_false")
         if not self.approval_record_path:
             reasons.append("approval_record_missing")
         elif self.approval_status != "approved":
