@@ -64,11 +64,29 @@ _URL_THUOC = re.compile(r"/drug-safety-update/|/drugs/|/vaccines", re.I)
 
 # Chỉ những dấu hiệu RÕ RÀNG là thực phẩm. Cố ý KHÔNG bắt "recall" trần —
 # thuốc cũng bị thu hồi (vd Gas-X softgels).
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 20) — bỏ 4 từ khóa "produce"
+# /"juice"/"beverage"/"frozen": chúng KHÔNG phải dấu hiệu RÕ RÀNG là thực phẩm
+# như đúng nguyên tắc của bộ lọc này đòi hỏi — cả bốn đều là từ/thuật ngữ dùng
+# thường xuyên trong chính văn phong cảnh báo AN TOÀN THUỐC: "produce" là ĐỘNG
+# TỪ phổ biến ("can produce severe hypoglycaemia"), "juice" xuất hiện trong
+# cảnh báo tương tác kinh điển "grapefruit juice" (statin/thuốc chẹn kênh
+# canxi), "beverage" là từ chung cho "tránh đồ uống có cồn/caffein khi dùng
+# thuốc X", "frozen" trùng thuật ngữ lâm sàng "frozen shoulder" (đông cứng
+# khớp vai/viêm dính bao khớp — tác dụng phụ đã ghi nhận của một số thuốc).
+# Xác nhận sống: phan_loai_canh_bao("FDA MedWatch: Insulin glargine dosing
+# errors", url_thuoc, "Errors in dose selection can produce severe
+# hypoglycaemia...") trả "thuc_pham" trước khi vá — cảnh báo hạ đường huyết
+# do insulin bị dán nhãn "Thu hồi thực phẩm" và biến mất khỏi mục an toàn
+# thuốc của báo cáo tuần. Các tín hiệu thực phẩm CÒN LẠI (listeria,
+# salmonella, undeclared milk/egg..., salsa, cheese, jalapeno, ice cream...)
+# đã đủ đặc hiệu để bắt các cảnh báo thu hồi thực phẩm thật — một bản tin thu
+# hồi nước trái cây/đồ uống thật hầu như luôn kèm một trong các tín hiệu đó
+# (vd "listeria", "undeclared allergen") nên không mất độ phủ thực chất.
 _TP = re.compile(
     r"\b(undeclared (milk|egg|soy|peanut|wheat|allergen)|allergy alert|listeria|"
     r"salmonella|e\.? ?coli|salsa|guacamole|pico de gallo|cheese|cheddar|yogurt|"
-    r"produce|jalapeno|pepper[s]? because|green powder|frozen|seafood|shellfish|"
-    r"ice cream|snack|cereal|infant formula|baby food|beverage|juice|"
+    r"jalapeno|pepper[s]? because|green powder|seafood|shellfish|"
+    r"ice cream|snack|cereal|infant formula|baby food|"
     # Thức ăn thú cưng và mỹ phẩm — FDA quản cả hai, nên chúng lọt vào feed
     # recalls chung. Phát hiện thêm khi rà bản tin 13/08 (Oma's Pride Woof
     # Complete = thức ăn chó; Schwarzkopf = thuốc nhuộm tóc).
