@@ -7,6 +7,21 @@ from typing import List, Mapping
 from app.clinical_content.pilot_pathway_builder import ReviewOnlyPathway
 from app.core.feature_flags import merge_feature_flags
 
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 15) — gate này trước
+# đây chỉ kiểm 2/5 cờ nguy hiểm, trong khi module song song cho
+# hypertension (hypertension_pilot_pathway_release_gate.py::RISKY_FLAGS)
+# đã kiểm đủ 5. Bỏ sót v7_emr_write/v7_production_pathway/v7_patient_
+# education_export khiến blocked_reasons — thứ dashboard/audit đọc để
+# biết "vì sao/những rủi ro nào đang bật" — im lặng hoàn toàn khi 3 cờ đó
+# đang bật, dù kết luận cuối (allowed=False) vẫn đúng nhờ dòng chặn cứng.
+RISKY_FLAGS = {
+    "v7_clinical_release",
+    "v7_patient_education_export",
+    "v7_emr_write",
+    "v7_production_pathway",
+    "v7_auto_apply_recommendations",
+}
+
 
 @dataclass(frozen=True)
 class PathwayReleaseGateResult:
@@ -23,10 +38,9 @@ def evaluate_phase_2c_release_gate(
 ) -> PathwayReleaseGateResult:
     flags = merge_feature_flags(feature_flags)
     reasons: List[str] = []
-    if flags.get("v7_clinical_release"):
-        reasons.append("clinical_release_flag_must_remain_false")
-    if flags.get("v7_auto_apply_recommendations"):
-        reasons.append("auto_apply_must_remain_false")
+    for flag in sorted(RISKY_FLAGS):
+        if flags.get(flag):
+            reasons.append(f"risky_flag_must_remain_false:{flag}")
     if not pathway.review_only:
         reasons.append("pathway_not_review_only")
     if pathway.can_create_prescription:
