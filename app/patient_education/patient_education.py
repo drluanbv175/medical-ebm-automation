@@ -12,7 +12,16 @@ class PatientEducationLeaflet:
     approved_by_physician: bool
 
     def can_export(self) -> bool:
-        return self.approved_by_physician and "Cần bác sĩ kiểm chứng" in self.body
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 9) — `approved_by_
+        # physician` khai kiểu `bool` nhưng Python không ép kiểu ở runtime;
+        # `and` dùng TRUTHINESS nên một giá trị chuỗi non-empty mang Ý NGHĨA
+        # "chưa duyệt" (vd "chưa duyệt"/"no"/"false" — hoàn toàn khả dĩ nếu
+        # một lớp deserialize JSON/form tương lai truyền nhầm kiểu) vẫn được
+        # coi là True, cho phép xuất nội dung giáo dục bệnh nhân CHƯA được
+        # bác sĩ duyệt. Đây là cổng an toàn DUY NHẤT của toàn dataclass, nên
+        # dùng identity `is True` — an toàn hơn theo đúng hướng cần: từ chối
+        # xuất khi giá trị không phải bool thật, thay vì đoán ý định.
+        return self.approved_by_physician is True and "Cần bác sĩ kiểm chứng" in self.body
 
 
 def create_leaflet(
