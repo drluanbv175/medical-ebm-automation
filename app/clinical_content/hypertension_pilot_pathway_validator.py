@@ -27,8 +27,46 @@ class HypertensionPathwayValidationResult:
     red_flags_present: List[str] = field(default_factory=list)
 
 
+def _has_value(value: object) -> bool:
+    """`value not in (None, "", [], {})` mà chuỗi CHỈ TOÀN KHOẢNG TRẮNG cũng
+    coi là RỖNG.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #92, vòng 7, phát
+    hiện #5) — bản gốc chỉ loại chuỗi rỗng tuyệt đối (`""`); một giá trị
+    `"   "` (dấu cách do lỗi nhập liệu/mặc định của form web) KHÁC `""` nên
+    vẫn được `_present_fields()` tính là "đã điền", làm `missing_inputs`
+    BỎ LỌT một `required_inputs` thực chất còn trống — sai NGƯỢC chiều an
+    toàn (hard-stop "missing_required_input" không kích hoạt dù dữ liệu
+    lâm sàng chưa có nội dung thật)."""
+    if isinstance(value, str):
+        return value.strip() != ""
+    return value not in (None, [], {})
+
+
 def _present_fields(payload: Mapping[str, object]) -> set[str]:
-    return {key for key, value in payload.items() if value not in (None, "", [], {})}
+    return {key for key, value in payload.items() if _has_value(value)}
+
+
+def _is_true_flag(value: object) -> bool:
+    """Coi `value` là cờ TRUE mà KHÔNG dựa vào identity `is True`.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #92, vòng 7, phát
+    hiện #4) — `red_flag_screen` khai kiểu `Mapping[str, object]` (không
+    ép `bool`, xem `phase_2c_shadow.py::Phase2CShadowCase`), nên một
+    producer tuân thủ ĐÚNG type hint đó được quyền gửi `1`/`1.0` cho "có
+    cờ đỏ". Bản gốc dùng `value is True` — kiểm IDENTITY, không phải
+    EQUALITY — nên `1 is True` cho `False` dù `1 == True`; một cờ đỏ
+    dương tính hợp lệ (vd "chest_pain_or_suspected_acute_coronary_
+    syndrome": 1) bị BỎ LỌT, khiến pathway KHÔNG dừng dù đáng lẽ phải
+    `STOP_OUTPATIENT_PATHWAY` — sai NGƯỢC chiều an toàn. Cố ý KHÔNG coi
+    chuỗi non-empty là true (vd "false" là chuỗi khác rỗng) — chỉ mở
+    rộng cho bool/số, không suy đoán cú pháp chuỗi mà repo chưa có bằng
+    chứng nào dùng tới."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value == 1
+    return False
 
 
 def validate_hypertension_review_pathway(
@@ -78,8 +116,10 @@ def validate_hypertension_review_pathway(
         missing_inputs = [field for field in pathway.required_inputs if field not in present]
         red_flag_screen = clinical_payload.get("red_flag_screen", {})
         if isinstance(red_flag_screen, Mapping):
-            red_flags_present = sorted(str(flag) for flag, value in red_flag_screen.items() if value is True)
-        elif red_flag_screen is True:
+            red_flags_present = sorted(
+                str(flag) for flag, value in red_flag_screen.items() if _is_true_flag(value)
+            )
+        elif _is_true_flag(red_flag_screen):
             red_flags_present = ["red_flag_screen_positive"]
 
     if red_flags_present:
