@@ -197,16 +197,41 @@ class GuidelineRssLiveAdapter(LiveSourceAdapter):
         title_hint = identifiers.get("title") or identifiers.get("query") or ""
         if not url and not title_hint:
             return SourceMetadata(found=False, raw={"source_name": self.source_name, "reason": "url_or_title_required"})
-        for item in [*GUIDELINE_FEEDS, *DRUG_SAFETY_FEEDS]:
-            if (url and item.url == url) or (title_hint and title_hint.casefold() in item.name.casefold()):
-                return SourceMetadata(
-                    found=True,
-                    title=item.name,
-                    authors_or_organization=item.org,
-                    year_or_version="",
-                    source_type="guideline",
-                    raw={"source_name": self.source_name, "url": item.url, "feed_id": item.id},
-                )
+        all_feeds = [*GUIDELINE_FEEDS, *DRUG_SAFETY_FEEDS]
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #91, vòng 6) — bản
+        # gốc duyệt danh sách MỘT LẦN, khớp bất kỳ item nào thoả URL CHÍNH
+        # XÁC HOẶC tiêu đề chứa chuỗi con `title_hint`, trả về item ĐẦU TIÊN
+        # thoả điều kiện ĐÓ (OR). `app/sources/feeds.py` có hàng chục feed
+        # tên chứa "BMJ" (bmj_ebm, thorax_bmj, heart_bmj...) — nếu caller
+        # truyền ĐÚNG URL của một feed đứng SAU trong danh sách kèm
+        # title_hint chung chung ("BMJ"), vòng lặp gặp feed "BMJ" ĐẦU TIÊN
+        # (khớp qua title_hint) TRƯỚC KHI tới đúng feed khớp URL, trả về SAI
+        # nguồn dù caller đã cung cấp URL chính xác — nói sai provenance
+        # (tên tạp chí/tổ chức) cho một trích dẫn. Sửa: khớp URL CHÍNH XÁC
+        # (tín hiệu mạnh hơn hẳn) trên TOÀN BỘ danh sách TRƯỚC, chỉ lùi về
+        # khớp chuỗi con theo title_hint khi không có URL nào khớp.
+        if url:
+            for item in all_feeds:
+                if item.url == url:
+                    return SourceMetadata(
+                        found=True,
+                        title=item.name,
+                        authors_or_organization=item.org,
+                        year_or_version="",
+                        source_type="guideline",
+                        raw={"source_name": self.source_name, "url": item.url, "feed_id": item.id},
+                    )
+        if title_hint:
+            for item in all_feeds:
+                if title_hint.casefold() in item.name.casefold():
+                    return SourceMetadata(
+                        found=True,
+                        title=item.name,
+                        authors_or_organization=item.org,
+                        year_or_version="",
+                        source_type="guideline",
+                        raw={"source_name": self.source_name, "url": item.url, "feed_id": item.id},
+                    )
         return SourceMetadata(found=False, raw={"source_name": self.source_name, "reason": "not_found"})
 
 
