@@ -262,6 +262,16 @@ class PolicyEngine:
                 "Khóa SAP và data lock trước khi chạy phân tích chính thức.",
             ))
 
+        # GHI CHÚ 2026-09-05 (Workflow đối kháng đa-agent, vòng 11) — LUẬT NÀY KHÔNG BAO GIỜ
+        # THẤY KHÓA "dashboard_integrity_passed" TRONG THỰC TẾ: grep toàn repo xác nhận 0 nơi
+        # nào gán khóa này vào context trước khi gọi evaluate() (chronic_care/chatgpt_app/
+        # safety/clinical_content/export_bridge — mọi caller thật của PolicyEngine hiện có —
+        # đều không truyền khóa này). Kết quả kiểm chứng thật của tool `verify_dashboard.py`
+        # thuộc pipeline RIÊNG (EBM-Dashboards/), tách biệt khỏi package app/ này, và chưa có
+        # cầu nối nào đưa kết quả đó vào context ở đây. Luật P009 vì vậy KHÔNG PHẢI cổng
+        # dashboard-integrity đang hoạt động — nó là mã chờ sẵn cho một lần nối dây trong
+        # tương lai. Không tự bịa cầu nối ở đây (bịa điều kiện giả cho hệ thống chưa nối là
+        # đúng loại lỗi "return sớm che 73 mục" đã ghi trong CLAUDE.md) — chỉ ghi thật.
         if context.get("dashboard_integrity_passed") is False:
             violations.append(PolicyViolation(
                 "EBM-V7-P009",
