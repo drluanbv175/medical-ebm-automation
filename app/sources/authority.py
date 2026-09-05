@@ -160,10 +160,27 @@ EVIDENCE_SOURCE_UNIVERSE: tuple[EvidenceSourceLayer, ...] = (
         "high_impact_journals",
         "High-impact journal discovery",
         "Detect practice-changing RCTs, reviews, and guideline publications in major journals.",
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 20) — tên tầng cũ
+        # ("nejm", "jama", "bmj", "lancet", "circulation", "gut"...) là tên
+        # KHÁI NIỆM/tạp chí, KHÔNG khớp tên connector THẬT mà production sinh
+        # ra. app/services/ingestion.py::summarize_source_health() truyền
+        # healthy_sources vào assess_source_universe_coverage() dùng
+        # SourceClient.name (pubmed/crossref/...) hoặc f"feed_{feed.id}" cho
+        # RSS — tra app/sources/feeds.py thì id thật là "nejm_current"/"jacc"/
+        # "gut_bmj"/"jama"/"bmj_recent"/"bmj_ebm"/"ard_bmj"/"thorax_bmj", tức
+        # tên healthy_sources THẬT là "feed_nejm_current"/"feed_jacc"/...
+        # Xác nhận sống: assess_source_universe_coverage() với healthy_sources
+        # chứa ĐỦ 4 feed tạp chí lớn thật (feed_nejm_current/feed_jacc/
+        # feed_gut_bmj/feed_jama) vẫn trả layers['high_impact_journals']
+        # ['healthy']==[] trước khi vá — tầng này VĨNH VIỄN PARTIAL bất kể hệ
+        # thống khoẻ mạnh tới đâu, không phân biệt được "feed chết thật" với
+        # "tên sai quy ước". "lancet"/"annals_internal_medicine"/
+        # "nature_medicine"/"circulation"/"diabetes_care"/
+        # "kidney_international"/"chest"/"blood" KHÔNG có feed tương ứng
+        # trong feeds.py nên bị bỏ (không bịa feed không tồn tại).
         (
-            "nejm", "lancet", "jama", "bmj", "annals_internal_medicine",
-            "nature_medicine", "circulation", "jacc", "diabetes_care",
-            "kidney_international", "gut", "chest", "blood",
+            "feed_nejm_current", "feed_jama", "feed_bmj_recent", "feed_bmj_ebm",
+            "feed_jacc", "feed_gut_bmj", "feed_thorax_bmj", "feed_ard_bmj",
         ),
         1,
         "crosscheck",
@@ -191,6 +208,24 @@ EVIDENCE_SOURCE_UNIVERSE: tuple[EvidenceSourceLayer, ...] = (
         "retraction_and_integrity",
         "Retraction and publication integrity",
         "Check whether cited papers are retracted, withdrawn, corrected, or expression-of-concern affected.",
+        # GHI CHÚ 2026-09-05 (Workflow đối kháng đa-agent, vòng 20) — KHÁC với
+        # "high_impact_journals" ở trên (đã vá cùng ngày, tên khớp connector
+        # thật), 4 tên trong tầng này ("pubmed_retraction", "crossmark",
+        # "publisher_page", "retraction_watch") KHÔNG khớp và KHÔNG THỂ khớp
+        # bất kỳ SourceClient.name/feed id thật nào — cơ chế kiểm rút bài thật
+        # (app/sources/retraction_chain.py::RetractionChain, gồm 3 tầng
+        # Retraction Watch ngoại tuyến/NCBI/Europe PMC) là một hệ THEO-YÊU-CẦU
+        # (chạy khi có PMID cần kiểm), không phải SourceClient được
+        # app/services/ingestion.py::summarize_source_health() poll định kỳ
+        # và đưa vào healthy_sources — nên tầng này sẽ VĨNH VIỄN PARTIAL trên
+        # dữ liệu production thật, bất kể RetractionChain có khoẻ hay không.
+        # CỐ Ý CHƯA VÁ: nối tầng này vào assess_source_universe_coverage() cần
+        # xây MỚI cơ chế RetractionChain tự báo cáo health vào source_rows —
+        # đó là đổi kiến trúc, không phải sửa lỗi mã. Độ tươi/khả dụng thật
+        # của kiểm rút bài đã có kênh đo RIÊNG và đúng hơn:
+        # tools/so_xac_minh_nguon.py + tools/chu_trinh_chung_cu.py (bước ①,
+        # theo CLAUDE.md) — đọc kết quả kiểm rút bài ở đó, không phải ở
+        # assess_source_universe_coverage()['layers']['retraction_and_integrity'].
         ("pubmed_retraction", "crossmark", "publisher_page", "retraction_watch"),
         1,
         "crosscheck",

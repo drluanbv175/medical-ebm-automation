@@ -113,13 +113,22 @@ def test_source_universe_documents_all_required_evidence_layers():
 
 
 def test_source_universe_coverage_separates_required_from_discovery_only():
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 20, phát hiện #4) —
+    # "nejm" đổi thành "feed_nejm_current": tên "nejm" trần KHÔNG PHẢI tên
+    # healthy_sources mà production thật sinh ra (RSS feed sinh
+    # f"feed_{feed.id}", và id thật trong feeds.py là "nejm_current", không
+    # phải "nejm") — test cũ vô tình PASS nhờ input giả không đại diện thực
+    # tế, đúng nguyên nhân khiến app/sources/authority.py::EVIDENCE_SOURCE_
+    # UNIVERSE["high_impact_journals"] không bao giờ PASS trên dữ liệu thật
+    # dù feed NEJM đang khoẻ mạnh. Đã vá layer đó khớp tên connector thật;
+    # test này cập nhật input theo đúng cùng lý do.
     coverage = assess_source_universe_coverage([
         "pubmed",
         "europepmc",
         "crossref",
         "openalex",
         "guideline_feeds",
-        "nejm",
+        "feed_nejm_current",
         "clinicaltrials",
         "openfda",
         "pubmed_retraction",
