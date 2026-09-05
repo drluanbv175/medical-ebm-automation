@@ -66,8 +66,23 @@ _VN_MARKS = set("ăâđêôơưĂÂĐÊÔƠƯàáạảãằắặẳẵầấ�
 
 
 def _looks_vietnamese(text: str) -> bool:
-    """Nếu văn bản đã chứa dấu tiếng Việt -> coi như tiếng Việt, khỏi dịch."""
-    return any(c in _VN_MARKS for c in text)
+    """Nếu văn bản đã ĐỦ MẬT ĐỘ dấu tiếng Việt -> coi như tiếng Việt, khỏi dịch.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 14) — bản gốc chỉ cần
+    MỘT ký tự dấu tiếng Việt trong CẢ đoạn để coi toàn bộ là "đã tiếng Việt".
+    Một câu tiếng Anh chứa MỘT tên riêng có dấu (tác giả/tổ chức Việt Nam —
+    hoàn toàn hợp lý với abstract y khoa hướng tới bác sĩ Việt Nam, vd
+    "...led by Nguyễn Văn A...") bị coi là "đã tiếng Việt" và
+    translate_vi()/translate_vi_batch() bỏ qua không dịch, dù câu gần như
+    toàn bộ là tiếng Anh. Nay đòi MẬT ĐỘ tối thiểu (≥3 ký tự dấu, hoặc tỉ lệ
+    >2% độ dài) trước khi coi là tiếng Việt — một tên riêng lẻ không đủ kích
+    hoạt, nhưng một câu THẬT SỰ tiếng Việt (mật độ dấu cao) vẫn được nhận
+    diện đúng như cũ.
+    """
+    n = sum(1 for c in text if c in _VN_MARKS)
+    if n == 0:
+        return False
+    return n >= 3 or (len(text) > 0 and n / len(text) > 0.02)
 
 
 def _is_degenerate(vi: str) -> bool:
