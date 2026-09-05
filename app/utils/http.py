@@ -26,8 +26,16 @@ logger = get_logger(__name__)
 # sang header) sẽ lọt nguyên văn vào data/archive/app.log/stdout ngay khi có lỗi mạng thật
 # (401 sai key/429 hết lượt retry/timeout) — tái hiện được: gọi HttpClient với api_key giả
 # tới NCBI thật, HTTPError trả về chứa "...&api_key=FAKESECRETKEY..." nguyên văn.
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 16) — regex gốc chỉ che
+# `api_key=`/`email=`, nhưng 2 nguồn BẬT MẶC ĐỊNH (Crossref, OpenAlex —
+# xem app/sources/crossref.py, app/sources/openalex.py) dùng tên tham số
+# `mailto` (đúng chuẩn "polite pool" của cả 2 API), không phải `email`.
+# Một lỗi HTTP (404/429/timeout — rất phổ biến khi ingest hàng chục query)
+# làm lộ nguyên văn địa chỉ email vận hành viên trong exception message,
+# lọt vào SourceLog.error_message rồi vào export_source_log_csv() — đúng
+# lớp dữ liệu mà cơ chế redact này được xây ra để bảo vệ.
 _SENSITIVE_QUERY_RE = re.compile(
-    r"((?:api[_-]?key|email)=)[^&\s]+",
+    r"((?:api[_-]?key|email|mailto)=)[^&\s]+",
     re.IGNORECASE,
 )
 

@@ -67,7 +67,25 @@ def seed_all(run_pipeline_mock: bool = True) -> Dict:
     result["projects"] = len(SAMPLE_PROJECTS)
 
     if run_pipeline_mock:
-        result["pipeline"] = run_pipeline(max_results_per_query=10)
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 16) — tên tham
+        # số `run_pipeline_mock` + docstring hàm ("nạp dữ liệu mẫu") ngụ ý
+        # sẽ chạy pipeline ở chế độ MOCK an toàn, nhưng run_pipeline() tự
+        # quyết định mock/live HOÀN TOÀN dựa vào settings.use_mock_sources
+        # — hàm này trước đây không hề đọc/ghi cờ đó. Nếu vận hành viên đã
+        # cấu hình USE_MOCK_SOURCES=false (trạng thái production bình
+        # thường sau khi điền NCBI_EMAIL để chạy live), lệnh "seed dữ liệu
+        # mẫu" sẽ âm thầm gọi API THẬT, tốn quota và trộn dữ liệu live vào
+        # kho "seed". Ép mock=True cho đúng lần gọi này, khôi phục nguyên
+        # trạng sau đó — cùng khuôn mẫu save/restore đã dùng đúng ở
+        # app/main.py::cmd_live_update() cho chiều ngược lại (ép live).
+        from app.config import settings
+
+        previous = settings.use_mock_sources
+        settings.use_mock_sources = True
+        try:
+            result["pipeline"] = run_pipeline(max_results_per_query=10)
+        finally:
+            settings.use_mock_sources = previous
 
     logger.info("Seed hoàn tất: %s", result)
     return result
