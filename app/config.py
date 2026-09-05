@@ -298,3 +298,24 @@ class Settings:
 # Singleton tiện dùng khắp nơi.
 settings = Settings()
 settings.ensure_dirs()
+
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 22) — `settings.use_mock_
+# sources` là cờ TOÀN CỤC dùng chung một tiến trình. Hai nơi ép tạm rồi khôi
+# phục cờ này để chạy MỘT lượt pipeline theo đúng chế độ mong muốn:
+#   app/main.py::cmd_live_update()   — ép use_mock_sources=False (chạy live)
+#   app/utils/seed.py::seed_all()    — ép use_mock_sources=True  (chạy mock)
+# Cả hai đều dùng khuôn đọc-lưu-ghi-chạy-khôi phục KHÔNG khoá trên biến toàn
+# cục này. `app/dashboard/main.py` gọi CẢ HAI đường từ hai nút bấm khác nhau
+# trong CÙNG một tiến trình Streamlit (nhiều tab/phiên chia sẻ bộ nhớ) — nếu
+# hai người dùng (hoặc cùng người, 2 tab) bấm gần như đồng thời, một lượt
+# "Cập nhật ngay (nguồn THẬT)" đang chạy dở (comment UI tự ghi "có thể vài
+# phút") có thể đọc trúng cờ đã bị lượt "Dữ liệu mẫu" (chạy nhanh, xen giữa)
+# đẩy tạm về True — dữ liệu MOCK lẫn vào một lượt cập nhật tưởng là dữ liệu
+# THẬT mà không có cảnh báo nào (mode/source_health của run_pipeline() vẫn
+# ghi nhãn "live" vì được chốt MỘT LẦN ở đầu hàm, trong khi từng SourceClient
+# khởi tạo SAU ĐÓ đọc lại cờ toàn cục SỐNG — xem app/sources/base.py::
+# SourceClient.__init__). Khoá này tuần tự hoá TOÀN BỘ khối ép-cờ-rồi-chạy-
+# pipeline ở CẢ HAI nơi, để không còn cửa sổ hai lượt xen kẽ nhau.
+import threading as _threading  # noqa: E402
+
+use_mock_sources_override_lock = _threading.Lock()

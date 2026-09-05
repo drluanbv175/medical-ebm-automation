@@ -22,7 +22,18 @@ _SEC_TITLE_END = _re.compile(r"\s*<\s*/\s*(?:st|title)\s*>\s*", _I)
 _ABSTRACT_LABEL = _re.compile(r'<\s*abstracttext\b[^>]*\blabel\s*=\s*"([^"]+)"[^>]*>', _I)
 _BLOCK_BOUNDARY = _re.compile(r"<\s*/?\s*(?:sec|p|abstracttext|div|br|h[1-6])\s*/?\s*>", _I)
 _LIST_ITEM = _re.compile(r"<\s*li(?:st-item)?\b[^>]*>\s*", _I)
-_ANY_TAG = _re.compile(r"<[^>]+>")
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 22, phát hiện #1):
+# `<[^>]+>` khớp từ ký tự "<" ĐẦU TIÊN tới ký tự ">" GẦN NHẤT sau đó, bất kể
+# nội dung ở giữa có phải là thẻ hay không. Nguồn JSON (openFDA/
+# ClinicalTrials.gov v2/OpenAlex/Crossref) dùng "<"/">" literal cho SO SÁNH
+# NGƯỠNG LÂM SÀNG ("eGFR <90 and >30 mL/min") — cực kỳ phổ biến trong
+# eligibilityCriteria — bị hiểu nhầm là một cặp thẻ và bị XOÁ SẠCH, không
+# exception, không log, làm sai lệch tiêu chí lâm sàng một cách ÂM THẦM.
+# Một tên thẻ HTML/XML thật LUÔN bắt đầu bằng chữ cái ngay sau "<" (hoặc "/"
+# cho thẻ đóng) — không bao giờ bắt đầu bằng chữ số/khoảng trắng-rồi-số như
+# trong so sánh toán học. Thêm ràng buộc này để KHÔNG khớp "<90"/">30" mà
+# vẫn khớp đúng mọi thẻ thật (<sec>, </sec>, <a href="...">, <br/>...).
+_ANY_TAG = _re.compile(r"<\s*/?\s*[A-Za-z][^>]*>")
 _MULTISPACE = _re.compile(r"[ \t]+")
 _SPACE_NL = _re.compile(r"[ \t]*\n[ \t]*")
 _MULTINL = _re.compile(r"\n{3,}")
