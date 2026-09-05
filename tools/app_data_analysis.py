@@ -180,9 +180,18 @@ def run_cohort(df, exposure, outcome, time_col, covariates):
             "p":    s["p"].to_dict(),
         }
         results["cox_available"] = True
+        # SỬA vòng 24 (2026-09-05): run_logistic()/run_linear() đều set results["available"]
+        # khi thành công — export_docx() gate ở "if analysis_res and analysis_res.get('available')"
+        # chỉ đọc khóa này. run_cohort() trước đây KHÔNG BAO GIỜ set "available" (chỉ có
+        # cox_available/km_available) nên gate luôn False cho thiết kế cohort dù Cox regression
+        # chạy thành công — "Bảng 2 — Kết quả phân tích chính" trong .docx xuất ra LUÔN RỖNG,
+        # không có cảnh báo nào, dù màn hình Streamlit (dòng ~605, đọc cox_available riêng) vẫn
+        # hiển thị đúng kết quả.
+        results["available"] = True
     except Exception as e:
         results["cox_available"] = False
         results["km_available"] = False
+        results["available"] = False
         results["error"] = str(e)
     return results
 
@@ -430,7 +439,10 @@ def export_docx(study, design, tab1_df, analysis_res, locked: bool = False):
                 lo = analysis_res["cox"]["lower"][var]
                 hi = analysis_res["cox"]["upper"][var]
                 p  = analysis_res["cox"]["p"][var]
-            doc.add_paragraph(f"  {var}: HR = {hr:.3f} (95%CI {lo:.3f}–{hi:.3f}), p = {p:.3f}")
+                # SỬA vòng 24 (2026-09-05): dòng doc.add_paragraph() trước đây thụt lề NGANG
+                # hàng với "for" (ngoài vòng lặp) nên chỉ covariate CUỐI CÙNG được in ra —
+                # mọi covariate khác (kể cả biến phơi nhiễm chính) bị mất khỏi .docx.
+                doc.add_paragraph(f"  {var}: HR = {hr:.3f} (95%CI {lo:.3f}–{hi:.3f}), p = {p:.3f}")
         elif "coef" in analysis_res:
             for var,val in analysis_res["coef"].items():
                 if var == "Intercept":
