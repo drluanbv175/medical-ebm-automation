@@ -16,8 +16,17 @@ EXCLUDED_STUDY_TYPES = {
 EXCLUDE_KEYWORDS = ("advertisement", "press release", "quảng cáo", "company pr")
 
 # Từ khóa nhận diện chủ đề kháng sinh (dùng CHUNG cho báo cáo + dashboard, tránh trùng lặp).
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 14) — từ khóa đơn "aware"
+# nhằm bắt phân loại WHO AWaRe (Access/Watch/Reserve) nhưng sau khi lowercase
+# trở thành substring khớp bất kỳ văn bản nào chứa từ tiếng Anh phổ biến
+# "aware"/"awareness" (vd "Clinicians should be aware of the risk of falls
+# in elderly patients on benzodiazepines" — hoàn toàn không liên quan kháng
+# sinh) — dương tính giả gây nhiễu mục kháng sinh của báo cáo tuần/dashboard.
+# Thay bằng cụm đặc hiệu cho đúng cách các bài kháng sinh thật nhắc tới
+# khung phân loại này.
 ANTIBIOTIC_KEYWORDS = ("antibiotic", "antimicrobial", "stewardship",
-                       "kháng sinh", "aware", "pneumonia")
+                       "kháng sinh", "aware classification", "access, watch, reserve",
+                       "pneumonia")
 
 
 def is_antibiotic_text(*parts) -> bool:
