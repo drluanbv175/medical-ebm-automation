@@ -46,6 +46,45 @@ def score_item(item: Dict) -> Dict:
     return item
 
 
+def _decorate_item(item: Dict, is_primary: bool) -> Dict:
+    """Gắn điểm/phân loại (bản chính) hoặc reset về "không áp dụng" (bản
+    trùng) cho MỘT item đã normalize. Mutates & returns `item`.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 9) — bản gốc (nhánh
+    `else` inline trong vòng lặp của `run_pipeline()`) chỉ reset
+    `classification`/`is_actionable`/`actionable_reason`; `normalize()`
+    không đặt `reason_for_exclusion`/`evidence_quality_score`/
+    `practice_change_score`/`reliability_tier`/`operational_evidence_level`/
+    `synthesis` — các trường đó CHỈ được gán ở nhánh `is_primary` — nên
+    `item` ở nhánh trùng KHÔNG hề chứa các khoá đó, và `_upsert()` (chỉ
+    `setattr()` khoá THẬT SỰ có mặt trong payload) không có gì để ghi đè.
+    Hậu quả: một bản ghi từng là PRIMARY ở lần chạy TRƯỚC (đã scoring/
+    synthesize/loại vì lý do X) mà lần này bị xếp thành duplicate GIỮ
+    NGUYÊN điểm số/lý do loại/synthesis CŨ trên hàng DB dù `classification`
+    đã đổi đúng thành "duplicate" — dashboard hiện một bản ghi "duplicate"
+    kèm lý do loại trừ/điểm số của một phân loại đã không còn đúng. Reset
+    TƯỜNG MINH cả 6 trường về None khi không phải bản chính."""
+    if is_primary:
+        score_item(item)
+        classification, actionable, a_reason, x_reason = classify(item)
+        item["classification"] = classification
+        item["is_actionable"] = actionable
+        item["actionable_reason"] = a_reason or None
+        item["reason_for_exclusion"] = x_reason or None
+        item["synthesis"] = synthesize(item)
+    else:
+        item["classification"] = "duplicate"
+        item["is_actionable"] = False
+        item["actionable_reason"] = None
+        item["reason_for_exclusion"] = None
+        item["evidence_quality_score"] = None
+        item["practice_change_score"] = None
+        item["reliability_tier"] = None
+        item["operational_evidence_level"] = None
+        item["synthesis"] = None
+    return item
+
+
 def run_pipeline(records: Optional[List[RawRecord]] = None,
                  max_results_per_query: int = 10,
                  incremental: bool = True,
@@ -140,21 +179,10 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
     with session_scope() as s:
         for pos, item in enumerate(normalized):
             is_primary = pos in primary_set
-            # 4-5) Score + classify + synthesize chỉ cho record chính.
+            # 4-5) Score + classify + synthesize (bản chính) hoặc reset (bản trùng).
+            _decorate_item(item, is_primary)
             if is_primary:
-                score_item(item)
-                classification, actionable, a_reason, x_reason = classify(item)
-                item["classification"] = classification
-                item["is_actionable"] = actionable
-                item["actionable_reason"] = a_reason or None
-                item["reason_for_exclusion"] = x_reason or None
-                item["synthesis"] = synthesize(item)
-                stats[classification] = stats.get(classification, 0) + 1
-            else:
-                # Bản trùng: không phân loại, reset cờ để không mang giá trị cũ.
-                item["classification"] = "duplicate"
-                item["is_actionable"] = False
-                item["actionable_reason"] = None
+                stats[item["classification"]] = stats.get(item["classification"], 0) + 1
 
             db_obj, created = _upsert(s, item, is_primary, run_id)
             persisted_ids[pos] = db_obj.id

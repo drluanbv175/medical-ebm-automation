@@ -93,6 +93,25 @@ def _own_article_doi(art: ET.Element) -> Optional[str]:
     return None
 
 
+def _full_text(elem: Optional[ET.Element]) -> str:
+    """Nối TOÀN BỘ văn bản trong một phần tử XML, kể cả bên trong thẻ con.
+
+    SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, phát hiện HIGH) —
+    `.text`/`findtext()` chỉ trả phần văn bản đứng TRƯỚC thẻ con ĐẦU TIÊN.
+    XML PubMed thường chứa thẻ lồng (`<i>`/`<b>`/`<sub>`/`<sup>`) ngay trong
+    ArticleTitle/AbstractText cho tên gen/thuốc/công thức hoá học — xác nhận
+    bằng thực nghiệm: tiêu đề "Test article about <i>BRCA1</i> mutation" đọc
+    bằng `.text` chỉ ra "Test article about " (mất "BRCA1 mutation"); abstract
+    có `<b>significant</b> reduction of 45% (95% CI 30-60%)` chỉ ra "We found
+    a " — MẤT TRẮNG toàn bộ số liệu, không có ngoại lệ nào báo. Tiêu đề/abstract
+    cụt đi thẳng vào cổng kiểm trích dẫn A12 và bị `kiem_so_lieu.py` đọc nhầm
+    thành "⚪ tóm tắt không nêu" (an toàn nhưng sai) thay vì so được số thật.
+    `itertext()` duyệt cả thẻ con nên không mất nội dung."""
+    if elem is None:
+        return ""
+    return "".join(elem.itertext())
+
+
 def _own_article_pmid(art: ET.Element) -> Optional[str]:
     """Lấy PMID CỦA CHÍNH BÀI — cùng họ lỗi với `_own_article_doi()`.
 
@@ -229,8 +248,8 @@ class PubMedClient(SourceClient):
             return records
         for art in root.findall(".//PubmedArticle"):
             pmid = _own_article_pmid(art)
-            title = art.findtext(".//ArticleTitle") or ""
-            abstract = " ".join(t.text or "" for t in art.findall(".//AbstractText"))
+            title = _full_text(art.find(".//ArticleTitle"))
+            abstract = " ".join(_full_text(t) for t in art.findall(".//AbstractText"))
             journal = art.findtext(".//Journal/Title")
             year = art.findtext(".//PubDate/Year")
             pubtypes = [pt.text for pt in art.findall(".//PublicationType") if pt.text]
@@ -492,7 +511,7 @@ class PubMedClient(SourceClient):
             if not pmid:
                 continue
             found.add(pmid)
-            title = (art.findtext(".//ArticleTitle") or "").strip()
+            title = _full_text(art.find(".//ArticleTitle")).strip()
             journal = (art.findtext(".//Journal/Title") or "").strip()
             year = (art.findtext(".//PubDate/Year")
                     or art.findtext(".//PubDate/MedlineDate") or "").strip()

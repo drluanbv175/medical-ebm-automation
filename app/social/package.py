@@ -15,6 +15,7 @@ Nguồn chủ đề:
 """
 from __future__ import annotations
 
+import html as html_lib
 import json
 import re
 import unicodedata
@@ -26,13 +27,21 @@ from app.config import settings
 from app.reports.weekly_ebm import build_weekly_data
 from app.social import render as render_mod
 from app.social import video as video_mod
-from app.social.content import build_manual_post, build_post, render_caption
+from app.social.content import build_manual_post, build_post, eligible_for_post, render_caption
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
 TIKTOK_DIR = settings.data_dir / "tiktok"
 QUEUE_PATH = TIKTOK_DIR / "queue.txt"
+
+
+def _esc(s):
+    """Escape HTML cho text nguồn NGOÀI (tiêu đề/tên tạp chí PubMed/RSS) trước
+    khi ghép vào `index.html` — cùng lý do và cùng khuôn `_esc()` đã dùng ở
+    `app/reports/weekly_ebm.py`/`app/reports/exporters.py`: chặn HTML/script
+    lẫn vào tiêu đề (vd "LDL-C &lt;70 mg/dL") hoặc trích dẫn adversarial."""
+    return html_lib.escape(s) if isinstance(s, str) else s
 
 
 def _slug(text: str, maxlen: int = 50) -> str:
@@ -60,16 +69,41 @@ def select_rows(limit: int = 5, include_watch: bool = False,
     Không trùng id. Lọc 'excluded'.
     """
     data = build_weekly_data()
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 8) — `data["all_rows"]`/
+    # `data["new_items"]` CỐ Ý không lọc `is_mock` (xem docstring `build_weekly_
+    # data()`/`_keep()` trong weekly_ebm.py — đó là view sổ sách, chỉ `executive`/
+    # `actionable_checklist` mới lọc sẵn). `select_rows()` trước đây không tự lọc
+    # lại nên một bản ghi DEMO còn sót trong DB (đúng kịch bản banner "đã LOẠI
+    # khỏi danh sách" ở app/dashboard/main.py) vẫn lọt qua nhánh `new_items` vào
+    # gói nội dung TikTok — nội dung minh hoạ/giả có thể được đóng gói như chứng
+    # cứ thật rồi đăng cho bệnh nhân xem. Dùng ĐÚNG quy tắc suy `exclude_mock`
+    # mà `build_weekly_data()` tự dùng khi không truyền tham số, để không có
+    # đường nào tạo ra hai định nghĩa "mock" khác nhau trong cùng dây chuyền.
+    exclude_mock = not settings.use_mock_sources
     by_id = {r["id"]: r for r in data["all_rows"]}
     queue = _read_queue()
 
     picked: List[Dict] = []
     seen = set()
 
-    def _add(row: Dict):
-        if row and row["id"] not in seen and row.get("classification") != "excluded":
-            seen.add(row["id"])
-            picked.append(row)
+    def _add(row: Dict, *, check_kind: bool = False):
+        if not row or row["id"] in seen or row.get("classification") == "excluded":
+            return
+        if exclude_mock and row.get("is_mock"):
+            return
+        # SỬA cùng đợt — `include_watch` trước đây được khai báo làm tham số
+        # nhưng KHÔNG hề dùng trong thân hàm; việc lọc "watch" (chứng cứ yếu,
+        # mặc định không đăng) chỉ chạy ở `generate_tiktok_batch()` SAU KHI
+        # `picked` đã bị cắt còn `limit*3` phần tử — nếu nhóm dẫn đầu (điểm
+        # `practice_change_score` cao) đa số là "watch", lô bài trả về ít hơn
+        # hẳn `limit` dù còn nhiều mục "recommendation" nằm sâu hơn chưa từng
+        # được xét tới. Áp bộ lọc NGAY tại bước chọn (chỉ cho 3 nhánh tự động
+        # ở dưới — hàng đợi TAY là lựa chọn tường minh của bác sĩ, không áp
+        # bộ lọc phỏng đoán "đủ mạnh").
+        if check_kind and not include_watch and eligible_for_post(row)["kind"] == "watch":
+            return
+        seen.add(row["id"])
+        picked.append(row)
 
     # 1) Hàng đợi tay (id chính xác hoặc khớp tiêu đề).
     for token in queue:
@@ -86,11 +120,11 @@ def select_rows(limit: int = 5, include_watch: bool = False,
         # 2) Actionable mới tuần này -> 3) actionable -> 4) điểm cao.
         for r in data["new_items"]:
             if r.get("is_actionable"):
-                _add(r)
+                _add(r, check_kind=True)
         for r in data["actionable_checklist"]:
-            _add(r)
+            _add(r, check_kind=True)
         for r in data["executive"]:
-            _add(r)
+            _add(r, check_kind=True)
 
     picked = picked[: max(limit * 3, limit)]  # dư ra để bù row build_post trả None
 
@@ -200,24 +234,35 @@ def _script_md(post: Dict) -> str:
 
 
 def _write_index_html(batch_dir: Path, items: List[Dict], stamp: str) -> Path:
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 8) — title/source/ids
+    # đều bắt nguồn từ tiêu đề/tên tạp chí NGOÀI (PubMed/RSS, xem
+    # `app/social/content.py::build_post` <- row["title"]/row["source"]),
+    # cùng lớp dữ liệu mà `app/reports/weekly_ebm.py` đã escape từ 2026-07-11
+    # để chặn XSS — nhưng trang xem trước này ghép f-string thẳng, không qua
+    # `_esc()` nào. Một tiêu đề chứa `&lt;script&gt;…&lt;/script&gt;` (hoàn
+    # toàn khả dĩ từ một feed RSS/nguồn bị xâm phạm) sẽ CHẠY khi bác sĩ mở
+    # `index.html`. `it['slug']`/`it['slides']`/`it['video']` sinh NỘI BỘ
+    # bằng `_slug()` (chỉ còn [a-zA-Z0-9-]) nên không cần escape — escape
+    # thêm vào đường dẫn `href`/`src` sẽ làm hỏng liên kết.
     cards = []
     for it in items:
         thumb = ""
         if it["slides"]:
             thumb = (f"<img src='{it['slug']}/{it['slides'][0]}' "
                      f"style='width:200px;border-radius:12px;border:1px solid #ddd'>")
-        ids = " · ".join(it["ids"]) if it["ids"] else ""
+        ids = " · ".join(_esc(i) for i in it["ids"]) if it["ids"] else ""
         kind_color = "#0c4a6e" if it["kind"] == "recommendation" else "#92400e"
         video_link = (f" · <a href='{it['slug']}/{it['video']}'>🎬 video.mp4</a>"
                       if it.get("video") else "")
+        title = _esc(it["title_vi"]) or _esc(it["title_en"])
         cards.append(f"""
         <div class='card'>
           <div class='thumb'>{thumb}</div>
           <div class='meta'>
-            <span class='badge' style='background:{kind_color}'>{it['kind']}</span>
-            <span class='area'>{it['area']} · Tier {it['tier'] or '?'}</span>
-            <h3>{it['title_vi'] or it['title_en']}</h3>
-            <p class='src'>📚 {it['source']} {('— ' + ids) if ids else ''}</p>
+            <span class='badge' style='background:{kind_color}'>{_esc(it['kind'])}</span>
+            <span class='area'>{_esc(it['area'])} · Tier {_esc(it['tier']) or '?'}</span>
+            <h3>{title}</h3>
+            <p class='src'>📚 {_esc(it['source'])} {('— ' + ids) if ids else ''}</p>
             <p class='files'>🖼️ {it['n_slides']} ảnh{video_link} ·
                <a href='{it['slug']}/caption.txt'>caption.txt</a> ·
                <a href='{it['slug']}/script.md'>script.md</a> ·

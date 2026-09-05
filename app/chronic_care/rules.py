@@ -108,10 +108,32 @@ def evaluate_chronic_care_rules(case: SyntheticChronicCareCase, now: datetime | 
     return actions
 
 
-def assert_rule_approved_for_test(rule_id: str) -> None:
+def assert_rule_approved_for_test(rule_id: str, action: RuleAction | None = None) -> None:
     rule = CHRONIC_CARE_RULES[rule_id]
     if not rule.approved_by or rule.status not in {"approved_for_test", "approved_for_shadow"}:
         raise PermissionError(f"Rule {rule_id} is not approved for test/shadow execution")
+    # SỬA 2026-09-04 (Workflow đối kháng đa-agent) — trường `approval_requirement`
+    # của ChronicCareRule (vd CC-005: "physician_review_required", khác 4 luật
+    # còn lại đều "approved_shadow_rule") CHƯA TỪNG được hàm này đọc — chỉ
+    # `approved_by`/`status` được kiểm, nên khai báo yêu cầu MẠNH HƠN của một
+    # luật không tạo ra khác biệt nào so với luật thường. Đây KHÔNG phải lỗi
+    # cô lập: CC-005 cũng tự gắn `metadata={"physician_review_required": True}`
+    # vào chính RuleAction nó sinh ra (đặt tên GIỐNG HỆT giá trị của
+    # `approval_requirement`) — dấu hiệu rõ ràng ý định ban đầu là hai nơi khai
+    # phải KHỚP NHAU, chỉ là chưa có chỗ nào đối chiếu. Nay đối chiếu: luật khai
+    # `physician_review_required` mà action sinh ra KHÔNG mang cờ tương ứng
+    # (hoặc ngược lại) là hai nơi khai LỆCH NHAU — chặn cứng thay vì âm thầm bỏ
+    # qua sự lệch đó, đúng nguyên tắc BH39 (một trường được khai báo phải có
+    # nơi kiểm THẬT, không chỉ nằm trong dataclass để trang trí).
+    if action is not None:
+        rule_needs_physician = rule.approval_requirement == "physician_review_required"
+        action_flags_physician = bool(action.metadata.get("physician_review_required"))
+        if rule_needs_physician != action_flags_physician:
+            raise PermissionError(
+                f"Rule {rule_id} khai approval_requirement={rule.approval_requirement!r} "
+                f"nhưng action tạo ra {'CÓ' if action_flags_physician else 'KHÔNG'} mang cờ "
+                "physician_review_required trong metadata — hai nơi khai lệch nhau"
+            )
 
 
 def _priority_for(risk_label: str) -> str:

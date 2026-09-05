@@ -69,8 +69,22 @@ class RunPacket:
     def __post_init__(self) -> None:
         if not self.objective.strip():
             raise ValueError("RunPacket.objective không được rỗng")
-        if self.lane in {Lane.CLINICAL, Lane.RESEARCH, Lane.DASHBOARD} and not self.trace_ids:
-            object.__setattr__(self, "trace_ids", [])
+        # ĐÁNH GIÁ 2026-09-05 (Workflow đối kháng đa-agent, task #73) — đã gỡ một
+        # nhánh chết ở đây: `if lane in {...} and not self.trace_ids:
+        # object.__setattr__(self, "trace_ids", [])`. Điều kiện chỉ đúng khi
+        # `trace_ids` đã rỗng (falsy), và hành động gán lại đúng giá trị RỖNG
+        # — không khác gì giữ nguyên. `RunPacket` chỉ được dựng qua
+        # `new_run_packet()` (nơi DUY NHẤT gọi hàm khởi tạo trực tiếp trong toàn
+        # repo), và hàm đó LUÔN chuẩn hoá `trace_ids=list(trace_ids or [])`
+        # trước khi truyền vào — nên `self.trace_ids` không bao giờ là `None`
+        # ở đây trên bất kỳ đường mã thật nào. Nhánh này không hề "bắt buộc
+        # CLINICAL/RESEARCH/DASHBOARD phải có trace_ids" như tên các Lane gợi
+        # ý — nó không kiểm tra, không cảnh báo, không raise: một cách chấp
+        # nhận VÔ ĐIỀU KIỆN. Không thêm enforcement thật (vd raise khi rỗng):
+        # `ChronicCareService.__init__` — người gọi CLINICAL-lane DUY NHẤT
+        # trong repo — không truyền `trace_ids`, nên chặn cứng ở đây sẽ phá vỡ
+        # toàn bộ module chronic_care mà không có yêu cầu nào (test/doctrine)
+        # từng đòi hỏi điều đó — đúng nguyên tắc không tự bịa yêu cầu mới.
 
     def to_dict(self) -> Dict[str, Any]:
         return {

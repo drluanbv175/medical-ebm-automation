@@ -33,7 +33,19 @@ def build_live_adapter_registry(
     cache: InMemoryCitationCache | None = None,
     monitor: SourceHealthMonitor | None = None,
 ) -> Dict[str, LiveSourceAdapter]:
-    selected = list(sources or ADAPTER_CLASSES.keys())
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #91, vòng 6): `sources
+    # or ADAPTER_CLASSES.keys()` gộp làm một hai trạng thái KHÁC NHAU —
+    # "không truyền `sources`" (`None`, nên hiểu là "chọn tất cả") và "truyền
+    # danh sách RỖNG một cách tường minh" (`[]`, nên hiểu là "chọn KHÔNG
+    # adapter nào") — vì cả hai đều falsy. `scripts/phase_2b_live_source_
+    # smoke_test.py --sources ","` (hoặc bất kỳ giá trị chỉ toàn dấu phẩy/
+    # khoảng trắng) tự lọc ra `selected = []` rồi gọi
+    # `build_live_adapter_registry([])`, kỳ vọng "không chạy adapter nào" —
+    # nhưng bản gốc âm thầm mở rộng thành CẢ 7 adapter, khiến một smoke test
+    # có bộ lọc rỗng vẫn gọi mạng thật tới PubMed/Crossref/OpenAlex/OpenFDA...
+    # và báo cáo như thể đã kiểm đủ nguồn. Sửa: phân biệt tường minh bằng
+    # `is None`.
+    selected = list(sources) if sources is not None else list(ADAPTER_CLASSES.keys())
     shared_cache = cache or InMemoryCitationCache()
     shared_monitor = monitor or SourceHealthMonitor()
     return {

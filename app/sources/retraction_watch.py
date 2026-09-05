@@ -144,17 +144,24 @@ class RetractionWatchIndex:
         if not self.nap():
             return None
         pmid = str(pmid).strip()
-        if pmid in self._phuc_hoi and pmid not in self._chi_muc:
-            # Đã bị rút rồi được PHỤC HỒI: không kết luận, để nguồn sống nói.
+        if pmid in self._phuc_hoi:
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #89, vòng 6):
+            # bản gốc chỉ trả None khi PMID CHỈ có dòng phục hồi, KHÔNG có
+            # dòng rút bài/EoC nào khác (`pmid not in self._chi_muc`). Nhưng
+            # kịch bản THẬT — và cũng là kịch bản phổ biến nhất của Retraction
+            # Watch — là CẢ HAI dòng cùng tồn tại cho một PMID (rút bài trước,
+            # phục hồi sau). Khi đó guard cũ KHÔNG fire, hàm rơi xuống trả
+            # nguyên `status: "retracted"` (chỉ gắn kèm một khoá `canh_bao`
+            # không ai bắt buộc phải đọc) — đúng điều docstring đầu file tự
+            # khai là "nói SAI hẳn". Nay hễ có dòng phục hồi cho PMID này —
+            # bất kể có dòng rút bài kèm theo hay không — đều KHÔNG kết luận,
+            # để nguồn sống (PubMed/Europe PMC) nói tiếp.
             return None
         ban_ghi = self._chi_muc.get(pmid)
         if ban_ghi is None:
             return None
         kq = dict(ban_ghi)
         kq["source"] = "retraction_watch"
-        if pmid in self._phuc_hoi:
-            kq["canh_bao"] = ("Retraction Watch có CẢ dòng phục hồi (reinstatement) cho "
-                              "PMID này — cần bác sĩ đọc nguyên văn thông báo")
         return kq
 
     def so_ban_ghi(self) -> int:

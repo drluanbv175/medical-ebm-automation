@@ -55,6 +55,7 @@ class ApprovalCenter:
         item = self._require_item(approval_id)
         if reviewer_role not in {"physician", "principal_investigator", "system_owner"}:
             raise PermissionError("Chỉ reviewer có thẩm quyền mới được approve")
+        self._require_pending(item)
         item.status = ReviewStatus.APPROVED
         item.reviewed_at = datetime.now(timezone.utc).isoformat()
         item.reviewer_role = reviewer_role
@@ -71,6 +72,7 @@ class ApprovalCenter:
         # thẳng reject() mà quên kiểm role riêng).
         if reviewer_role not in {"physician", "principal_investigator", "system_owner"}:
             raise PermissionError("Chỉ reviewer có thẩm quyền mới được reject")
+        self._require_pending(item)
         item.status = ReviewStatus.REJECTED
         item.reviewed_at = datetime.now(timezone.utc).isoformat()
         item.reviewer_role = reviewer_role
@@ -85,3 +87,25 @@ class ApprovalCenter:
         if item is None:
             raise KeyError(f"Không tìm thấy approval_id={approval_id}")
         return item
+
+    def _require_pending(self, item: ApprovalItem) -> None:
+        """SỬA 2026-09-04 (Workflow đối kháng đa-agent) — trước bản vá, `approve()`
+        và `reject()` ghi đè `item.status`/`reviewer_role`/`reviewer_note`/
+        `reviewed_at` VÔ ĐIỀU KIỆN, không kiểm trạng thái hiện tại. Một item đã
+        REJECTED có thể bị gọi `approve()` lần nữa và lặng lẽ biến thành APPROVED
+        (hoặc ngược lại), xoá mất dấu vết ai đã quyết định lần đầu — đúng lớp lỗi
+        đã vá trước đó ở `tools/gate_contract.py` (tie-break cho phép xoá bản ghi
+        REJECTED của cổng nghiên cứu G0-G10). `ApprovalCenter` là sổ audit-trail
+        (`reviewer_role`/`reviewed_at`/`reviewer_note`), không phải một biến cờ —
+        một quyết định đã có (APPROVED hoặc REJECTED) là TRẠNG THÁI CUỐI, không
+        được ghi đè lặng lẽ bởi một lệnh gọi khác. Mọi caller hiện tại (chronic_care/
+        service.py) chỉ gọi approve()/reject() ĐÚNG MỘT LẦN trên mỗi `approval_id`
+        vừa `submit()` nên hành vi hiện tại không đổi; đây là lưới an toàn cho
+        caller tương lai gọi lặp hoặc gọi nhầm trên item đã quyết định.
+        """
+        if item.status is not ReviewStatus.PENDING:
+            raise PermissionError(
+                f"approval_id={item.approval_id} đã ở trạng thái "
+                f"{item.status.value} (bởi {item.reviewer_role}, lúc "
+                f"{item.reviewed_at}) — không được ghi đè quyết định đã có"
+            )

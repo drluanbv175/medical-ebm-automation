@@ -5,6 +5,7 @@ liên kết OA cho bản ghi đã có. Trả về URL OA nếu có.
 """
 from __future__ import annotations
 
+import urllib.parse
 from typing import List, Optional
 
 from app.config import settings
@@ -34,7 +35,20 @@ class UnpaywallClient(SourceClient):
         if self.use_mock or not settings.unpaywall_email or not doi:
             return None
         try:
-            data = self.http.get_json(f"{BASE}/{doi}",
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #74) — trước bản
+            # vá, `doi` được ghép THẲNG vào path bằng f-string, không URL-encode.
+            # Xác nhận bằng thực nghiệm (requests.Request(...).prepare().url):
+            # một DOI chứa "#" bị requests hiểu là URL FRAGMENT và bị CẮT KHỎI
+            # request thật gửi đi (tra nhầm DOI đã bị cắt cụt mà không có lỗi
+            # nào báo); một DOI chứa "?" bị gộp lẫn vào query string, có thể va
+            # chạm với params={"email": ...}. `urllib.parse.quote(doi, safe="/")`
+            # thoát mọi ký tự có thể phá cấu trúc URL trong khi GIỮ NGUYÊN dấu
+            # "/" nội tại của DOI (khác `crossref_retraction.py::_lay()` dùng
+            # `safe=""` — API Crossref coi TOÀN BỘ DOI là một đoạn path duy nhất
+            # nên cần mã hoá cả dấu "/", còn API Unpaywall v2 giữ dấu "/" giữa
+            # tiền tố/hậu tố DOI ở dạng thường như tài liệu chính thức của họ).
+            doi_an_toan = urllib.parse.quote(doi, safe="/")
+            data = self.http.get_json(f"{BASE}/{doi_an_toan}",
                                       params={"email": settings.unpaywall_email})
             loc = data.get("best_oa_location") or {}
             return loc.get("url")

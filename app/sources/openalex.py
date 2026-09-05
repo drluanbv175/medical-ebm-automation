@@ -34,8 +34,20 @@ class OpenAlexClient(SourceClient):
                 params["mailto"] = settings.openalex_email
             data = self.http.get_json(WORKS, params=params)
             self.save_raw(query, data)
-            out: List[RawRecord] = []
-            for w in data.get("results", []):
+        except Exception as exc:  # pragma: no cover
+            logger.warning("[openalex] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
+            return []
+
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #89, vòng 6) — cùng
+        # họ lỗi đã vá ở europepmc.py (task #83): tách vòng lặp phân tích khỏi
+        # try/except của lệnh gọi mạng. Đã tái hiện thực nghiệm: OpenAlex có
+        # thể trả `"concepts": null` cho một work (khoá có mặt, giá trị None,
+        # không rơi vào default của .get()) — `None[:5]` ném TypeError, và bản
+        # gốc để lỗi đó bay ra khối except NGOÀI, xoá sạch mọi work khác đã
+        # phân tích thành công trong CÙNG trang.
+        out: List[RawRecord] = []
+        for w in data.get("results", []):
+            try:
                 doi = (w.get("doi") or "").replace("https://doi.org/", "") or None
                 title = w.get("title") or ""
                 journal = ((w.get("primary_location") or {}).get("source") or {}
@@ -51,10 +63,10 @@ class OpenAlexClient(SourceClient):
                     doi=doi, document_type=w.get("type"),
                     study_type=infer_study_type(title, w.get("type"), journal, src_tag),
                     clinical_area=clinical_area, url=w.get("id"),
-                    keywords=[c.get("display_name") for c in w.get("concepts", [])[:5]],
+                    keywords=[c.get("display_name") for c in (w.get("concepts") or [])[:5]],
                     ingest_query=query, api_endpoint=WORKS,
                 ))
-            return out
-        except Exception as exc:  # pragma: no cover
-            logger.warning("[openalex] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
-            return []
+            except Exception as exc:  # pragma: no cover
+                logger.warning("[openalex] bỏ qua 1 bản ghi hỏng trong trang kết quả (query=%r): %s", query, exc)
+                continue
+        return out

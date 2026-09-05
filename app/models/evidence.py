@@ -60,7 +60,21 @@ class EvidenceItem(Base):
     evidence_quality_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     practice_change_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     reliability_tier: Mapped[Optional[str]] = mapped_column(String(4), index=True, nullable=True)  # A|B|C|D
-    operational_evidence_level: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)   # High|Moderate|Low
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 10) — cột từng khai
+    # String(16), nhưng `app/scoring/operational_level.py::operational_
+    # evidence_level()` thực tế trả "High (operational)"/"Moderate
+    # (operational)"/"Low (operational)" (17-22 ký tự) ở NHÁNH PHỔ BIẾN NHẤT
+    # (mọi bản ghi không có official_grade — tức không phải guideline nhập
+    # tay), và nhánh "Theo nguồn: <official_grade>" có thể dài tới 44 ký tự
+    # (official_grade tự nó đã là String(32)). SQLite bỏ qua giới hạn VARCHAR
+    # nên lỗi im lặng trên máy hiện tại, nhưng docstring đầu file
+    # `app/database.py` tự khai ý định "nâng cấp PostgreSQL dễ dàng" — trên
+    # Postgres, VARCHAR(16) được THI HÀNH THẬT, mọi lần ghi bản ghi không có
+    # official_grade (đa số) sẽ vỡ `DataError: value too long`. Đổi sang
+    # Text (không giới hạn) — cùng kiểu đã dùng cho các trường mô tả khác
+    # trong model này (reason_for_exclusion, safety_signal...).
+    # High|Moderate|Low (+ hậu tố operational/theo nguồn)
+    operational_evidence_level: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     # GRADE chính thức nếu có
     official_grade: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
 

@@ -112,6 +112,21 @@ def _as_list(value: Any, *, field_name: str, blockers: list[str]) -> list[Any]:
     return []
 
 
+def _str_field(mapping: Mapping[str, Any], key: str, default: str = "") -> str:
+    """`str(mapping.get(key, default))` mà JSON `null` TƯỜNG MINH cũng nhận `default`.
+
+    SỬA 2026-09-04 (Workflow đối kháng đa-agent, phát hiện HIGH): `.get(key, default)`
+    chỉ thay `default` khi KEY VẮNG MẶT — một giá trị `null` hiện diện (rất bình
+    thường khi một producer JSON serialize field tùy chọn thành `null` thay vì bỏ
+    hẳn field) khiến `.get()` trả về `None`, và `str(None)` == `"None"` — một chuỗi
+    KHÁC RỖNG, làm mọi kiểm tra rỗng/thành-viên phía sau đọc nhầm thành "có giá trị
+    thật". Ba chỗ dùng hàm này (source_id/source_type, source_status,
+    human_approval_id) đều là gate an toàn lâm sàng — `null` tường minh trước đây
+    lách qua DỄ HƠN cả việc bỏ trống field, đúng ngược chiều an toàn."""
+    value = mapping.get(key)
+    return str(value) if value is not None else default
+
+
 def validate_clinical_output_packet(packet: Mapping[str, Any]) -> ClinicalOutputValidationResult:
     """Kiểm liệu một clinical output có được coi là actionable hay không.
 
@@ -145,11 +160,11 @@ def validate_clinical_output_packet(packet: Mapping[str, Any]) -> ClinicalOutput
         blockers.append("evidence_basis_empty")
     for idx, raw_item in enumerate(evidence_basis, start=1):
         item = _as_mapping(raw_item, field_name=f"evidence_basis[{idx}]", blockers=blockers)
-        source_id = str(item.get("source_id", "")).strip()
-        source_type = str(item.get("source_type", "")).strip()
+        source_id = _str_field(item, "source_id").strip()
+        source_type = _str_field(item, "source_type").strip()
         if not source_id or not source_type:
             blockers.append(f"evidence_source_missing:{idx}")
-        status = str(item.get("source_status", "unknown"))
+        status = _str_field(item, "source_status", "unknown")
         if status in BLOCKING_SOURCE_STATUSES:
             blockers.append(f"source_status_blocks:{idx}:{status}")
         if item.get("decision") == "apply" and item.get("grade_level") in WEAK_APPLY_GRADES:
@@ -211,7 +226,7 @@ def validate_clinical_output_packet(packet: Mapping[str, Any]) -> ClinicalOutput
     audit = _as_mapping(packet.get("audit_trail"), field_name="audit_trail", blockers=blockers)
     if audit.get("guardrail_result") != "PASS":
         blockers.append("guardrail_not_passed")
-    if not str(audit.get("human_approval_id", "")).strip():
+    if not _str_field(audit, "human_approval_id").strip():
         blockers.append("missing_human_approval_id")
 
     allowed = not blockers

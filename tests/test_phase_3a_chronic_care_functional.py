@@ -61,7 +61,12 @@ def test_care_plan_draft_blocks_missing_evidence_and_approves_shadow_when_comple
 
 
 def test_quality_metrics_dashboard_and_aggregate_export() -> None:
-    service = ChronicCareService()
+    # SỬA 2026-09-04 (Workflow đối kháng đa-agent) — trước bản vá
+    # `_policy_export()` hardcode cờ True nên test này (vô tình) không kiểm
+    # được cổng an toàn P010 thật. Nay flag mặc định False chặn export đúng
+    # thiết kế; bật tường minh ở đây để giữ nguyên MỤC ĐÍCH gốc của test
+    # (kiểm quality metrics + xuất báo cáo), không phải kiểm cổng an toàn.
+    service = ChronicCareService(feature_flags={"v7_chatgpt_project_export": True})
     service.seed_synthetic_cases()
     state = service.dashboard_state()
     rows = snapshot_to_rows(state)

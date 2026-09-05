@@ -37,8 +37,18 @@ class SemanticScholarClient(SourceClient):
                 params["year"] = f"{since_date[:4]}-"
             data = self.http.get_json(SEARCH, params=params)
             self.save_raw(query, data)
-            out: List[RawRecord] = []
-            for p in data.get("data", []):
+        except Exception as exc:  # pragma: no cover
+            logger.warning("[semantic_scholar] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
+            return []
+
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #89, vòng 6) — cùng
+        # họ lỗi đã vá ở europepmc.py (task #83): tách vòng lặp phân tích bản
+        # ghi khỏi try/except của lệnh gọi mạng, vì S2 có thể trả "authors":
+        # None cho một số bản ghi — một bản ghi hỏng trước đây làm mất TOÀN BỘ
+        # trang, nay chỉ mất đúng bản ghi đó.
+        out: List[RawRecord] = []
+        for p in data.get("data", []):
+            try:
                 ext = p.get("externalIds") or {}
                 ptypes = p.get("publicationTypes") or []
                 title = p.get("title") or ""
@@ -58,7 +68,8 @@ class SemanticScholarClient(SourceClient):
                     url=f"https://www.semanticscholar.org/paper/{p.get('paperId')}",
                     ingest_query=query, api_endpoint=SEARCH,
                 ))
-            return out
-        except Exception as exc:  # pragma: no cover
-            logger.warning("[semantic_scholar] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
-            return []
+            except Exception as exc:  # pragma: no cover
+                logger.warning(
+                    "[semantic_scholar] bỏ qua 1 bản ghi hỏng trong trang kết quả (query=%r): %s", query, exc)
+                continue
+        return out

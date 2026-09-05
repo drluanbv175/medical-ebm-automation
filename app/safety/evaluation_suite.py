@@ -112,6 +112,14 @@ def evaluate_vignette(vignette: SyntheticVignette) -> SafetyEvalResult:
     if not vignette.evidence_verified and not uncertainty.escalate:
         failures.append("unverified_evidence_released")
     if vignette.expected_recommendation_block:
+        # SỬA 2026-09-05: hợp nhất hai bản vá của cùng một phát hiện (task #89/#90,
+        # vòng 6). Bản trên origin (dc0fda9) chỉ xoá 3 nhánh chết an toàn, GIỮ
+        # NGUYÊN hành vi cũ và chủ động không nối PolicyEngine vì đó là quyết định
+        # sản phẩm cần bác sĩ chọn (đã spawn_task riêng). Bác sĩ đã chọn "Nối
+        # PolicyEngine thật" — bản dưới đây thay thế toàn bộ khối cũ (kể cả nhánh
+        # fixture-tự-mâu-thuẫn mà dc0fda9 giữ lại) bằng phép đối chiếu ground-truth
+        # của vignette với quyết định THẬT của PolicyEngine.evaluate(), nên không
+        # còn cần `recommendation_blockers` (đã bỏ) hay nhánh "not any(...)" nữa.
         decision = PolicyEngine().evaluate(_recommendation_release_context(vignette))
         violation_codes = {violation.code for violation in decision.violations}
         if not vignette.recommendation_claim_id and "EBM-V7-P003" not in violation_codes:

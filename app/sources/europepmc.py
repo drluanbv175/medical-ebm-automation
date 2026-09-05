@@ -51,8 +51,24 @@ class EuropePMCClient(SourceClient):
                       "resultType": "core"}
             data = self.http.get_json(SEARCH, params=params)
             self.save_raw(query, data)
-            out: List[RawRecord] = []
-            for r in data.get("resultList", {}).get("result", []):
+        except Exception as exc:  # pragma: no cover
+            logger.warning("[europepmc] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
+            return []
+
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #83, MEDIUM) — bản gốc
+        # bọc CẢ vòng lặp phân tích bản ghi vào CÙNG try/except với lệnh gọi mạng ở
+        # trên. Một phần tử hỏng (vd `r=None`, hoặc thiếu trường khiến `_infer_
+        # study_type()` ném lỗi) làm exception bay ra khỏi vòng lặp, bị khối
+        # except NGOÀI bắt và trả `[]` — XOÁ SẠCH mọi bản ghi đã phân tích THÀNH
+        # CÔNG trước đó trong cùng trang, không chỉ phần tử hỏng. Tệ hơn: tầng
+        # theo dõi sức khoẻ nguồn (`app/services/ingestion.py::_fetch()`) đọc
+        # trạng thái qua bộ đếm HTTP (`HttpClient.health_snapshot()`), và cuộc gọi
+        # mạng ở trên ĐÃ THÀNH CÔNG trước khi vòng lặp phân tích mới hỏng — nên
+        # `_fetch()` vẫn ghi `status="ok"` dù `record_count=0`, che mất lỗi thật.
+        # Sửa: cô lập TỪNG bản ghi — một phần tử hỏng chỉ mất đúng phần tử đó.
+        out: List[RawRecord] = []
+        for r in data.get("resultList", {}).get("result", []):
+            try:
                 pubtype = r.get("pubType") or ""
                 journal = r.get("journalTitle") or ""
                 out.append(RawRecord(
@@ -68,10 +84,11 @@ class EuropePMCClient(SourceClient):
                     url=f"https://europepmc.org/article/{r.get('source')}/{r.get('id')}",
                     ingest_query=query, api_endpoint=SEARCH,
                 ))
-            return out
-        except Exception as exc:  # pragma: no cover
-            logger.warning("[europepmc] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
-            return []
+            except Exception as exc:  # pragma: no cover
+                logger.warning("[europepmc] bỏ qua 1 bản ghi hỏng trong trang kết quả "
+                               "(query=%r): %s", query, exc)
+                continue
+        return out
 
     # -- Kiểm rút bài DỰ PHÒNG khi NCBI chặn (thêm 2026-08-14) ---------------
     def check_retraction_status(self, pmids: List[str]) -> Dict[str, dict]:

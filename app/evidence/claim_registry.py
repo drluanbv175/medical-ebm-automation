@@ -59,8 +59,16 @@ class ClaimRegistry:
             raise ValueError("Claim bắt buộc có ít nhất một evidence_id")
         for evidence_id in evidence_ids:
             record = self.evidence_registry.get(evidence_id)
-            if record.status == EvidenceStatus.QUARANTINED or not record.has_traceability:
-                raise ValueError(f"Evidence {evidence_id} chưa đủ truy nguyên")
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #85) — bản gốc chỉ
+            # chặn QUARANTINED, KHÔNG chặn RETRACTED/SUPERSEDED. Rút bài/thay thế
+            # KHÔNG xoá `has_traceability` (PMID/DOI vẫn còn) nên một claim có thể
+            # được đăng ký dựa trên chứng cứ ĐÃ RÚT BÀI mà không bị chặn.
+            if record.status in (EvidenceStatus.QUARANTINED, EvidenceStatus.RETRACTED,
+                                  EvidenceStatus.SUPERSEDED) or not record.has_traceability:
+                raise ValueError(
+                    f"Evidence {evidence_id} không đủ điều kiện làm căn cứ cho claim "
+                    f"(trạng thái: {record.status.value})"
+                )
         if grade_label != "ungraded" and not grade_source:
             raise ValueError("Không được tự gán grade nếu thiếu grade_source")
         claim = ClaimRecord(
