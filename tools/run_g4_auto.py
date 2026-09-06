@@ -332,6 +332,15 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "### §1 QUẦN THỂ PHÂN TÍCH",
         "",
         f"- **Quần thể chính:** {pop}  ",
+        # THÊM 06/09/2026 (bác sĩ: "Điền phần Can thiệp và đối chứng"): SAP chỉ
+        # định nghĩa quần thể phân tích theo NHÓM (ITT/PP), không mô tả can
+        # thiệp/đối chứng LÀ GÌ — nội dung đó đã có ở đề cương §6.2 (TIDieR,
+        # commit 8bc39e2). Trỏ NGƯỢC sang đó thay vì chép lại: hai nơi cùng một
+        # sự thật dễ lệch nhau khi sửa một bên (đúng lý do 15b/15c ở §13-15 chỉ
+        # trỏ sang, không lặp). Chỉ RCT — thiết kế khác không có can thiệp.
+        *(["- **Mô tả can thiệp/đối chứng (TIDieR):** xem đề cương thống nhất "
+           "§6.2 Can thiệp và đối chứng — không lặp lại ở đây để tránh hai nơi "
+           "cùng một sự thật dễ lệch nhau.  "] if design_code == "rct" else []),
         (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
          (f"- **Cỡ mẫu cuối:** N = {n_adjusted} (alpha={alpha}, power={int(power*100)}%)  " if n_adjusted
           else "- **Cỡ mẫu:** [CẦN từ G3]  ")),

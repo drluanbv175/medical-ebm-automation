@@ -119,3 +119,37 @@ class TestPreSignatureGateUnaffected:
         # kê ở đây — chúng không nằm trong _G4_REQUIRED_SECTIONS, tức không
         # đổi ngưỡng chặn ký hiện có.
         assert not any(s.startswith(("§13", "§14", "§15")) for s in still_draft)
+
+
+class TestSection1PointsToProtocolIntervention:
+    """§1 nay trỏ NGƯỢC sang đề cương §6.2 cho mô tả can thiệp/đối chứng (TIDieR)
+    — bác sĩ theo dõi "Điền phần Can thiệp và đối chứng" 06/09/2026, sau khi §6.2
+    (commit 8bc39e2) đã là nơi CANONICAL cho nội dung đó. SAP không lặp lại mô tả
+    TIDieR — chỉ trỏ sang, đúng nguyên tắc "một sự thật, một chỗ" đã dùng cho
+    15b/15c (§13-15 trỏ ngược lại §1, xem test ở trên)."""
+
+    def test_rct_section1_cross_references_protocol_6_2(self):
+        text = _gen("rct")
+        body1 = G4Q._section_body(text, "§1")
+        assert "đề cương thống nhất" in body1 and "§6.2" in body1
+        assert "TIDieR" in body1
+        # Dòng tham chiếu KHÔNG phải placeholder — không được đếm là "còn thiếu".
+        assert "[CẦN" not in body1.split("Mô tả can thiệp/đối chứng")[1].split("\n")[0]
+
+    def test_cross_sectional_section1_has_no_intervention_pointer(self):
+        text = _gen("cross_sectional", "Cắt ngang mô tả")
+        body1 = G4Q._section_body(text, "§1")
+        assert "TIDieR" not in body1 and "§6.2" not in body1
+
+    def test_still_draft_flags_1_for_existing_placeholders_regardless_of_pointer(self):
+        """Đột biến-ý-nghĩa: dòng tham chiếu mới KHÔNG được vô tình làm §1 biến
+        mất khỏi danh sách còn thiếu — "Tiêu chí nhận/loại" vẫn [CẦN] nguyên."""
+        text = _gen("rct")
+        still_draft = AG._g4_sections_still_draft(text)
+        labels = {re.match(r"(§\d+)", s).group(1) for s in still_draft}
+        assert "§1" in labels
+
+    def test_section_12_boundary_unaffected_by_new_line_in_section_1(self):
+        text = _gen("rct")
+        parsed = G4Q.parse_signed_numbers(text)
+        assert parsed["found"] is True and parsed["n"] == 400
