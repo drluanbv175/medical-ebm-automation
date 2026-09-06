@@ -34,10 +34,16 @@ class ResearchCompletionReport:
 
     @property
     def structurally_complete(self) -> bool:
-        return not self.missing_artifacts and all(
-            not reason.startswith("ARTIFACT_")
-            for reason in self.reason_codes
-        )
+        # Vá 2026-09-06 (audit vòng 37, phát hiện #4): bản cũ chỉ kiểm
+        # missing_artifacts + tiền tố "ARTIFACT_", bỏ sót các tiền tố khác mà
+        # evaluate_research_completion() dùng để tính decision=BLOCK
+        # ("MISSING_", "PROJECT_", "REAL_", "EXTERNAL_", "GATE_AGENT_MATRIX:")
+        # — vd một project còn ở workflow_state=INTAKE (chưa DRAFT_COMPLETE)
+        # với đủ artifact vẫn báo structurally_complete=True dù decision=BLOCK
+        # với reason PROJECT_NOT_DRAFT_COMPLETE. Định nghĩa lại bằng đúng
+        # decision đã tính, tránh hai nơi mã hoá cùng một khái niệm rồi lệch
+        # nhau lần nữa khi danh sách tiền tố đổi trong tương lai.
+        return self.decision != ResearchGateDecision.BLOCK
 
 
 def _artifact_issue(a: ResearchArtifact) -> list[str]:

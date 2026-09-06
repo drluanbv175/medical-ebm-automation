@@ -21,7 +21,6 @@ _boundary = DataBoundary()
 
 # Marker synthetic (chỉ dùng trong fixture để kích hoạt gate; KHÔNG phải dữ liệu thật)
 RETRACTION_MARKER = "RETRACTION_MARKER"
-REAL_DATA_MARKERS = ("REAL_PATIENT_DATA", "REAL_DATA_MARKER", "LIVE_DATABASE", "EHOSPITAL_CONNECT")
 
 
 class ResearchGateDecision(str, enum.Enum):
@@ -135,8 +134,13 @@ def gr6_reporting_completeness(p: ResearchProject, reporting: dict) -> GateResul
 # ── G-R7: citation / retraction integrity ─────────────────────────────────────
 
 def gr7_citation_retraction(output: dict) -> GateResult:
-    text = _boundary._to_scannable(output)
-    if RETRACTION_MARKER in text or "retracted" in text.lower():
+    # Vá 2026-09-06 (audit vòng 37, phát hiện #1): so sánh cũ "RETRACTION_MARKER
+    # in text" phân biệt hoa/thường tuyệt đối — bất kỳ cách viết nào khác đúng
+    # case ("retraction_marker", "Retraction_Marker"...) lọt qua thành PASS, dù
+    # vế "retracted" ở sau không bắt được (khác chuỗi, không phải biến thể case
+    # của sentinel). Chuẩn hoá cả hai vế về .lower(), giống cách gr9 đã làm đúng.
+    text_low = _boundary._to_scannable(output).lower()
+    if RETRACTION_MARKER.lower() in text_low or "retracted" in text_low:
         return _review("G-R7", "RETRACTION_DETECTED",
                        "Tài liệu nghi bị rút — cần người kiểm chứng trước khi dùng")
     found, reason = _boundary.check_fabricated_citation(output)
@@ -151,8 +155,15 @@ def gr8_no_fabrication(output: dict) -> GateResult:
     found, reason = _boundary.check_fabricated_data(output)
     if found:
         return _block("G-R8", f"FABRICATED_DATA:{reason}")
+    # Vá 2026-09-06 (audit vòng 37, phát hiện #3): điều kiện lọc thêm
+    # "FABRICATED" in reason_c bỏ sót nhánh CITATION_DOI_NOT_VERIFIED của
+    # check_fabricated_citation() (found_c=True nhưng reason không chứa chữ
+    # "FABRICATED") — gr8 tự nhận tên "no_fabrication" nhưng không tự đứng
+    # vững nếu thiếu found_c đơn thuần. Trong 2 caller thật hiện có, lỗi này
+    # bị gr7_citation_retraction (chạy cùng output, BLOCK vô điều kiện với
+    # found_c bất kỳ reason nào) che khuất — sửa để gr8 không phụ thuộc gr7.
     found_c, reason_c = _boundary.check_fabricated_citation(output)
-    if found_c and "FABRICATED" in reason_c:
+    if found_c:
         return _block("G-R8", f"FABRICATED_CITATION:{reason_c}")
     return _ok("G-R8")
 
@@ -160,11 +171,19 @@ def gr8_no_fabrication(output: dict) -> GateResult:
 # ── G-R9: no PII / no real data (conservative block) ──────────────────────────
 
 def gr9_no_pii_no_real_data(output: dict) -> GateResult:
-    # Real-data markers → BLOCK
-    text = _boundary._to_scannable(output)
-    for m in REAL_DATA_MARKERS:
-        if m.lower() in text.lower():
-            return _block("G-R9", f"REAL_DATA_MARKER:{m}")
+    # Real-data / production-connector markers → BLOCK. Vá 2026-09-06 (audit
+    # vòng 37, phát hiện #2): REAL_DATA_MARKERS trước đây là danh sách tay chỉ
+    # 4 marker, lệch với nguồn canonical DataBoundary._PRODUCTION_CONNECTOR_MARKERS
+    # (8 marker) mà chính research_preflight.py trong cùng thư mục đã dùng đúng —
+    # HIS_CONNECT/EMR_CONNECT/LIS_CONNECT/PACS_CONNECT/PRODUCTION_MODE lọt qua
+    # hoàn toàn. Gọi thẳng check_production_connector()/check_raw_data_write()
+    # thay vì duy trì danh sách tay thứ hai, để không lệch nhau nữa.
+    found_conn, reason_conn = _boundary.check_production_connector(output)
+    if found_conn:
+        return _block("G-R9", f"REAL_DATA_MARKER:{reason_conn}")
+    found_raw, reason_raw = _boundary.check_raw_data_write(output)
+    if found_raw:
+        return _block("G-R9", f"REAL_DATA_MARKER:{reason_raw}")
     # PII → BLOCK (conservative). LƯU Ý: regex KHÔNG bắt được toàn bộ PII —
     # nguyên tắc bảo thủ: nghi ngờ thì chặn; người duyệt vẫn phải kiểm thủ công.
     pii, reason = _boundary.check_pii_in_output(output)
