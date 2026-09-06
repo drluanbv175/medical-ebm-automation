@@ -177,7 +177,15 @@ def _check_disclaimer(path: Path, text: str, rep: Report) -> None:
 # Cố ý KHÔNG bắt "dãy 10 chữ số": PMID, mã DOI và số tiền đều rơi vào mẫu đó,
 # nhiễu nhiều hơn tín hiệu. Ba mẫu dưới đây máy nhận ra không nhầm.
 _PII = [
-    (re.compile(r"\b(?:0|\+84)\d{9,10}\b"), "số điện thoại"),
+    # SỬA vòng 26 (2026-09-05): \b không khớp được ngay trước "+" (dấu "+"
+    # không phải \w, và ký tự đứng trước nó trong văn bản thật — khoảng
+    # trắng, dấu ":", đầu dòng — cũng không phải \w, nên KHÔNG có ranh giới
+    # từ ở đó) ⇒ nhánh "+84..." của regex cũ KHÔNG BAO GIỜ khớp trong bất kỳ
+    # cách viết số điện thoại quốc tế thông thường nào (đã kiểm chứng bằng
+    # thực nghiệm: "+84912345678" không khớp, "0912345678" vẫn khớp bình
+    # thường). Dùng lookaround dựa trên chữ số thay vì \b — cùng cách
+    # clinical_checkpoint.py đã làm cho SĐT_VN.
+    (re.compile(r"(?<!\d)(?:0|\+84)\d{9,10}(?!\d)"), "số điện thoại"),
     (re.compile(r"\b\d{12}\b"), "số căn cước công dân 12 chữ số"),
     (re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+"), "địa chỉ email"),
 ]
