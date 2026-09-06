@@ -693,6 +693,17 @@ def refresh_checkpoint(*, study: str, out_dir: Path,
     out_dir = Path(out_dir)
     checkpoint_path = out_dir / "G0_checkpoint.json"
     checkpoint = _read_json(checkpoint_path)
+    # Vá 2026-09-06 (audit vòng 33, phát hiện #1 — CRITICAL): mọi cổng chị em
+    # (G1/G2/G3/G4/G5/G8/G9) ghi "quality_contract_version" Ở CẤP CAO NHẤT của
+    # checkpoint (sibling của "quality_gate"), và tools/g10_quality_gate.py
+    # (G10-AUTO-02B) đọc ĐÚNG khóa cấp cao đó để quyết định checkpoint có
+    # "hiện hành" hay "lịch sử" (legacy). Trước bản vá, G0 CHỈ ghi
+    # "contract_version" LỒNG bên trong "quality_gate" — không bao giờ có khóa
+    # cấp cao — nên G10 luôn xếp G0 vào legacy_quality dù đề tài đã
+    # PASS_G0_CONFIRMED thật, khiến modern_quality_ok/non_pi_pending không bao
+    # giờ đạt và G10 KHÔNG BAO GIỜ đạt READY_FOR_G10_PI_RELEASE_APPROVAL cho
+    # bất kỳ đề tài nào — cổng phát hành cuối cùng bị chặn oan vĩnh viễn.
+    checkpoint["quality_contract_version"] = QUALITY_CONTRACT_VERSION
     checkpoint["quality_gate"] = {
         "status": report["status"],
         "contract_version": report.get("contract_version"),

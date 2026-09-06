@@ -1581,6 +1581,13 @@ def main():
         cp = json.loads(cp_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         cp = {}
+    # Vá 2026-09-06 (audit vòng 33, phát hiện #1 — CRITICAL, cùng lỗi với
+    # g0_quality_gate.py::refresh_checkpoint()): thiếu khóa cấp cao nhất
+    # "quality_contract_version" mà G10-AUTO-02B (tools/g10_quality_gate.py)
+    # dùng để nhận diện checkpoint "hiện hành" — xem comment đầy đủ ở
+    # refresh_checkpoint(). Không thêm ở đây thì G10 vẫn chặn oan vĩnh viễn dù
+    # đã sửa nhánh chấm-lại-độc-lập, vì đây là đường CHẠY TRỌN G0 mặc định.
+    cp["quality_contract_version"] = quality.get("contract_version")
     cp["quality_gate"] = {
         "status": quality["status"],
         "contract_version": quality.get("contract_version"),
