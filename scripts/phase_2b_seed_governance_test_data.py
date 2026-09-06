@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tempfile
 from pathlib import Path
 from typing import Dict
 
@@ -104,9 +105,16 @@ def seed_governance_test_data(database_url: str) -> Dict[str, object]:
         }
 
 
+# Vá 2026-09-06 (audit vòng 34, phát hiện #2 — HIGH, cùng lỗi với
+# phase_2b_migrate_test_db.py/phase_2b_rollback_test_db.py): "/private/tmp"
+# hardcode kiểu macOS làm script crash trên Linux khi không truyền
+# --database-url.
+_DEFAULT_DATABASE_URL = f"sqlite:///{Path(tempfile.gettempdir()) / 'ebm_phase_2b_governance.db'}"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Seed Phase 2B governance test data")
-    parser.add_argument("--database-url", default="sqlite:////private/tmp/ebm_phase_2b_governance.db")
+    parser.add_argument("--database-url", default=_DEFAULT_DATABASE_URL)
     args = parser.parse_args()
     result = seed_governance_test_data(args.database_url)
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
