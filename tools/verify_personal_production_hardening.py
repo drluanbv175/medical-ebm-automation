@@ -877,7 +877,14 @@ def evaluate_all(
         "human_gate_count": human_gate_count,
         "evidence_package_summary": asdict(evidence_summary),
         "clinical_production_allowed": False,
-        "real_patient_data_allowed": False if human_gate_count or fail_count else False,
+        # SỬA vòng 26 (2026-09-05): trước là "False if human_gate_count or
+        # fail_count else False" — cả hai nhánh đều trả False, điều kiện
+        # không bao giờ ảnh hưởng tới giá trị (code chết/tautology). Không
+        # đổi hành vi (kết quả luôn False cả trước và sau, khớp cách các
+        # module chị em verify_clinical_production_control_plane.py và
+        # verify_evidence_surveillance_deployment.py hard-code sẵn) — chỉ
+        # bỏ nhánh điều kiện vô nghĩa để không gây hiểu lầm là có logic ở đây.
+        "real_patient_data_allowed": False,
         "checks": [asdict(item) for item in checks],
         "disclaimer": DISCLAIMER,
     }
