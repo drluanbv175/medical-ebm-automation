@@ -1068,7 +1068,18 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
                 "real_signal": None,
                 "stale": stale,
                 "orphan": orphan,
-                "can_auto_run": True,
+                # Vá 2026-09-06 (audit vòng 32, phát hiện #2): đây là nhánh
+                # BLOCKED DUY NHẤT trong toàn hàm này từng đặt can_auto_run=True
+                # — mọi nhánh BLOCKED khác (G0/G2/G3/G4/G7/G8/G9, kể cả nhánh
+                # NEEDS_REAL ngay bên dưới của CHÍNH G1) đều đặt False. Hệ quả:
+                # _build_action_queue()/_build_resume_contract() tính
+                # automation_level="AUTO_RUN_ALLOWED" cho G1 dù G1_QUALITY_REPORT
+                # đang BLOCKED — một tiến trình tự động đọc resume_contract có
+                # thể tự chạy lại G1 mà không cần người rà một nội dung tự mâu
+                # thuẫn/lỗi liêm chính. Đổi về False để nhất quán với mọi cổng
+                # khác — không có lý do khác biệt nào được ghi lại trong lịch
+                # sử/comment tại đây.
+                "can_auto_run": False,
                 "next_action": f"Sửa lỗi trong G1_QUALITY_REPORT rồi chạy lại: {default_command}",
                 **extras,
             }
