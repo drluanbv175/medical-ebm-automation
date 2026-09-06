@@ -15,7 +15,10 @@ if str(ROOT) not in sys.path:
 from sqlalchemy import create_engine, inspect  # noqa: E402
 
 from app.governance.migrations import GOVERNANCE_TABLES, create_governance_schema  # noqa: E402
-from scripts.phase_2b_seed_governance_test_data import seed_governance_test_data  # noqa: E402
+from scripts.phase_2b_seed_governance_test_data import (  # noqa: E402
+    is_production_database,
+    seed_governance_test_data,
+)
 
 # Vá 2026-09-06 (audit vòng 34, phát hiện #2 — HIGH): "/private/tmp" là
 # symlink-target đặc thù macOS ("/tmp" -> "/private/tmp"); trên Linux (môi
@@ -47,7 +50,9 @@ def main() -> int:
         "missing_after": missing_after,
         "migration_passed": not missing_after,
         "seed": seed,
-        "production_database_touched": False,
+        # Vá 2026-09-06 (audit vòng 42, phát hiện #2 — HIGH): trước đây literal
+        # hardcode False, không phải kết quả so sánh — xem is_production_database().
+        "production_database_touched": is_production_database(database_url),
     }
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     passed = (

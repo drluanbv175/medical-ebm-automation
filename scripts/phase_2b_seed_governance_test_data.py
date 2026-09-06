@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 
+from app.config import settings  # noqa: E402
 from app.core.approval_service import ApprovalCenter  # noqa: E402
 from app.core.release_manager import ReleaseManager  # noqa: E402
 from app.core.run_packet import Lane, new_run_packet  # noqa: E402
@@ -23,6 +24,40 @@ from app.core.run_state_machine import InvalidTransition, RunState  # noqa: E402
 from app.governance.migrations import create_governance_schema  # noqa: E402
 from app.governance.repository import GovernanceRepository  # noqa: E402
 from app.models.governance_v7 import AuditEventRecord, IncidentRecord, ReleaseManifestRecord  # noqa: E402
+from runtime.data_boundary import DataBoundary  # noqa: E402
+
+
+def _resolve_sqlite_path(database_url: str) -> Path | None:
+    """Trả về đường dẫn TUYỆT ĐỐI nếu `database_url` là sqlite file URL
+    (``sqlite:///...``), ngược lại None (vd Postgres/MySQL — không áp dụng
+    logic file path)."""
+    prefix = "sqlite:///"
+    if not database_url.startswith(prefix):
+        return None
+    raw_path = database_url[len(prefix):]
+    path = Path(raw_path)
+    if not path.is_absolute():
+        path = ROOT / path
+    return path.resolve()
+
+
+def is_production_database(database_url: str) -> bool:
+    """So sánh THẬT `database_url` với DATABASE_URL production đang cấu hình
+    (`app.config.settings.database_url`) — KHÔNG suy đoán.
+
+    Vá 2026-09-06 (audit vòng 42, phát hiện #2 — HIGH): cả 3 script
+    phase_2b_*.py từng in cứng `"production_database_touched": False` — một
+    hằng số Python literal, không phải kết quả so sánh — nên trường "bảo đảm
+    an toàn" này LUÔN báo an toàn bất kể --db-path/--database-url thực sự
+    trỏ đi đâu, kể cả khi trỏ thẳng vào chính production DB
+    (`data/medical_ebm.db`, mặc định của `Settings.database_url`)."""
+    target = _resolve_sqlite_path(database_url)
+    production = _resolve_sqlite_path(settings.database_url)
+    if target is not None and production is not None:
+        return target == production
+    # Không phải sqlite file URL ở một hoặc cả hai bên (vd Postgres): so sánh
+    # nguyên chuỗi kết nối đã chuẩn hoá — không suy đoán "an toàn" khi không chắc.
+    return database_url.strip() == settings.database_url.strip()
 
 
 def seed_governance_test_data(database_url: str) -> Dict[str, object]:
@@ -32,6 +67,18 @@ def seed_governance_test_data(database_url: str) -> Dict[str, object]:
     packet = new_run_packet(Lane.CLINICAL, "Phase 2B synthetic shadow migration test")
     release_blocked = False
     invalid_transition_blocked = False
+    # Vá 2026-09-06 (audit vòng 42, phát hiện #1 — HIGH): TRƯỚC bản vá,
+    # incident_id="inc_phase_2b_seed" là literal hardcode, trong khi
+    # IncidentRecord.incident_id có ràng buộc unique=True (app/models/
+    # governance_v7.py). Script mặc định ghi vào MỘT file DB CỐ ĐỊNH,
+    # KHÔNG tự xoá giữa các lần chạy (_DEFAULT_DATABASE_URL bên dưới) — lần
+    # chạy seed thứ hai trở đi (kể cả gián tiếp qua
+    # phase_2b_migrate_test_db.py không kèm --fresh) crash
+    # sqlite3.IntegrityError. packet.run_id (uuid4 mới mỗi lần gọi
+    # new_run_packet — xem app/core/run_packet.py) là duy nhất per-run, nên
+    # dẫn incident_id từ đó làm script idempotent trên cùng một file DB.
+    incident_id = f"inc_{packet.run_id}"
+    incident_title = "Synthetic incident for rollback readiness"
 
     with session_factory() as session:
         repo = GovernanceRepository(session)
@@ -48,9 +95,9 @@ def seed_governance_test_data(database_url: str) -> Dict[str, object]:
             invalid_transition_blocked = True
         approval_record = repo.create_approval(packet.run_id, "limited_shadow_pilot", "Synthetic draft only")
         session.add(IncidentRecord(
-            incident_id="inc_phase_2b_seed",
+            incident_id=incident_id,
             run_id=packet.run_id,
-            title="Synthetic incident for rollback readiness",
+            title=incident_title,
             severity="low",
             status="open",
             created_by="test_runner",
@@ -92,6 +139,20 @@ def seed_governance_test_data(database_url: str) -> Dict[str, object]:
         session.commit()
 
         audit_count = session.query(AuditEventRecord).count()
+        # Vá 2026-09-06 (audit vòng 42, phát hiện #2 — HIGH): TRƯỚC bản vá,
+        # "contains_pii": False là literal hardcode — không phải kết quả
+        # quét thật, nên trường "bảo đảm không PII" này LUÔN báo sạch bất kể
+        # nội dung thực sự ghi vào DB là gì. Nay quét THẬT bằng DataBoundary
+        # (bộ dò PII dùng chung của repo, runtime/data_boundary.py) trên
+        # đúng chuỗi văn bản đã ghi vào các bản ghi ở trên.
+        written_text = "\n".join([
+            packet.objective,
+            incident_id,
+            incident_title,
+            release.release_id,
+            approval_record.approval_id,
+        ])
+        contains_pii, _pii_reason = DataBoundary().check_pii_in_output(written_text)
         return {
             "run_id": run.run_id,
             "approval_id": approval_record.approval_id,
@@ -101,7 +162,7 @@ def seed_governance_test_data(database_url: str) -> Dict[str, object]:
             "unapproved_release_blocked": release_blocked,
             "approved_release_allowed_in_test": True,
             "audit_count": audit_count,
-            "contains_pii": False,
+            "contains_pii": contains_pii,
         }
 
 

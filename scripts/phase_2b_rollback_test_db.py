@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 from sqlalchemy import create_engine, inspect, text  # noqa: E402
 
 from app.governance.migrations import GOVERNANCE_TABLES, create_governance_schema  # noqa: E402
+from scripts.phase_2b_seed_governance_test_data import is_production_database  # noqa: E402
 
 # Vá 2026-09-06 (audit vòng 34, phát hiện #2 — HIGH, cùng lỗi với
 # phase_2b_migrate_test_db.py): "/private/tmp" hardcode kiểu macOS làm script
@@ -43,7 +44,10 @@ def main() -> int:
         "rollback_passed": rollback_passed,
         "reapply_passed": not missing_after_reapply,
         "missing_after_reapply": missing_after_reapply,
-        "production_database_touched": False,
+        # Vá 2026-09-06 (audit vòng 42, phát hiện #2 — HIGH, cùng lỗi với
+        # phase_2b_migrate_test_db.py): trước đây literal hardcode False,
+        # không phải kết quả so sánh — xem is_production_database().
+        "production_database_touched": is_production_database(database_url),
     }
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result["rollback_passed"] and result["reapply_passed"] else 1
