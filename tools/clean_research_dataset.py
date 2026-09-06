@@ -93,6 +93,18 @@ def _truthy(value: Any) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "y", "x", "required", "bat_buoc"}
 
 
+def _first_declared(*values: Any) -> Any:
+    """Trả giá trị ĐẦU TIÊN thực sự được khai báo (khác None và khác chuỗi rỗng),
+    None nếu không giá trị nào. KHÔNG dùng `or` ở đây: với `or`, một ngưỡng min/max
+    hợp lệ bằng số 0 (JSON int/float, vd biến nhị phân 0/1) là falsy trong Python nên
+    bị coi như "chưa khai" và rơi xuống lựa chọn kế tiếp — mất NGƯỠNG THẬT một cách
+    im lặng, không phải chỉ mất một giá trị hiển thị."""
+    for value in values:
+        if value is not None and value != "":
+            return value
+    return None
+
+
 def _split_list(value: Any) -> List[str]:
     if value is None:
         return []
@@ -182,9 +194,13 @@ def _normalise_rule(raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             or normalized.get("required_field")
             or normalized.get("bat_buoc")
         ),
-        "min": normalized.get("min") or normalized.get("text_validation_min"),
-        "max": normalized.get("max") or normalized.get("text_validation_max"),
+        "min": _first_declared(normalized.get("min"), normalized.get("text_validation_min")),
+        "max": _first_declared(normalized.get("max"), normalized.get("text_validation_max")),
         "allowed": allowed_values,
+        "is_id": _truthy(
+            normalized.get("is_id")
+            or normalized.get("identifier")
+        ),
         "date_format": str(normalized.get("date_format") or "%Y-%m-%d").strip(),
     }
     return rule
