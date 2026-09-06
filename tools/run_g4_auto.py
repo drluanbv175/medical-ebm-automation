@@ -249,6 +249,52 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "",
         ]
 
+    # THÊM 2026-09-06 (bác sĩ duyệt "thêm mục 13–15 có điều kiện" sau khi đo SAP
+    # thiếu 4 mục SPIRIT 2025 CHỈ áp dụng cho RCT — 0 lần xuất hiện trong file
+    # này: 28b phân tích giữa kỳ/quy tắc dừng, 28a hội đồng theo dõi dữ liệu
+    # (DMC/DSMB), 17 định nghĩa/đánh giá tổn hại, 15b/15c ngừng-đổi can thiệp
+    # và tuân thủ. CHỈ cho RCT (`design_code == "rct"`, cùng quy ước literal đã
+    # dùng xuyên suốt hàm này cho "qualitative") — nối SAU §12, KHÔNG đánh số
+    # lại §1-§12: `approve_gate._g4_sections_still_draft` và
+    # `g4_quality_gate._section_body`/`parse_signed_numbers` đều tìm biên §12
+    # bằng regex `^#{2,3}\s+§\d`, nên chèn giữa hoặc đổi số sẽ làm vỡ cổng
+    # đang chạy (SAP là tài liệu ĐƯỢC KÝ VÀ KHOÁ). §13/§14/§15 KHÔNG nằm trong
+    # `_G4_REQUIRED_SECTIONS` — chỉ là nội dung thêm để bác sĩ/DMC điền, không
+    # đổi ngưỡng chặn ký hiện có (đó là quyết định RIÊNG, chưa được yêu cầu).
+    sap_sections_13_to_15 = [
+        "",
+        "### §13 PHÂN TÍCH GIỮA KỲ VÀ QUY TẮC DỪNG (SPIRIT 2025 mục 28b)",
+        "",
+        "- **Có phân tích giữa kỳ:** [CẦN BÁC SĨ/THỐNG KÊ VIÊN — có/không; nếu có, số lần và mốc "
+        "(thời gian hoặc % cỡ mẫu đã thu)]  ",
+        "- **Quy tắc dừng (stopping rule):** [CẦN — vd O'Brien-Fleming/Pocock, ngưỡng alpha spending]  ",
+        "- **Ai xem kết quả giữa kỳ và ai quyết định dừng:** [CẦN — thường là DMC/DSMB độc lập, "
+        "KHÔNG phải nghiên cứu viên chính]  ",
+        "- Nếu KHÔNG có phân tích giữa kỳ: [CẦN — nêu lý do, vd thời gian theo dõi ngắn/cỡ mẫu nhỏ/"
+        "can thiệp nguy cơ thấp]  ",
+        "",
+        "### §14 HỘI ĐỒNG THEO DÕI DỮ LIỆU (DMC/DSMB, SPIRIT 2025 mục 28a)",
+        "",
+        "- **Có DMC/DSMB:** [CẦN — có/không]  ",
+        "- **Thành phần và vai trò:** [CẦN — số thành viên, chuyên môn, cơ chế báo cáo]  ",
+        "- **Độc lập với nhà tài trợ/nghiên cứu viên:** [CẦN — xác nhận độc lập + khai xung đột "
+        "lợi ích]  ",
+        "- **Điều lệ (charter):** [CẦN — trích dẫn/đính kèm, hoặc ghi rõ chưa lập và vì sao]  ",
+        "- Nếu KHÔNG cần DMC/DSMB: [CẦN — giải thích lý do được chấp nhận theo SPIRIT 2025, vd "
+        "can thiệp nguy cơ thấp/thời gian ngắn]  ",
+        "",
+        "### §15 TỔN HẠI; NGỪNG/ĐỔI CAN THIỆP VÀ TUÂN THỦ (SPIRIT 2025 mục 17, 15b, 15c)",
+        "",
+        "- **Định nghĩa tổn hại (harms):** [CẦN — thang phân độ biến cố bất lợi dùng, vd CTCAE]  ",
+        "- **Cách đánh giá:** [CẦN — hệ thống (hỏi chủ động mỗi lần khám) hay không hệ thống "
+        "(người tham gia tự báo cáo)]  ",
+        "- **Tiêu chí ngừng/đổi can thiệp cho MỘT người tham gia:** [CẦN — vd đổi liều khi có tác "
+        "dụng phụ, tiêu chí rút khỏi nghiên cứu — khác quy tắc dừng CẢ nghiên cứu ở §13]  ",
+        "- **Chiến lược cải thiện và theo dõi tuân thủ:** [CẦN — vd đếm viên thuốc hoàn trả, số "
+        "buổi tham dự]  ",
+        "",
+    ]
+
     lines = [
         "# A5 — SAP FINAL + SAP LOCK CERTIFICATE (DRAFT — CHỜ BÁC SĨ KÝ)",
         f"**Đề tài:** {topic}  ",
@@ -281,7 +327,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
         "---",
         "",
-        "## PHẦN 3 — SAP 12 MỤC CUỐI",
+        f"## PHẦN 3 — SAP {'15' if design_code == 'rct' else '12'} MỤC CUỐI",
         "",
         "### §1 QUẦN THỂ PHÂN TÍCH",
         "",
@@ -364,6 +410,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         # tái tạo/kiểm chứng cỡ mẫu kết cục liên tục (effect_type=MD).
         [f"- **Độ lệch chuẩn (SD) kết cục:** {sd:.2f}  " if sd else "- **SD kết cục:** [CẦN từ G3 — bắt buộc khi effect_type=MD]  "]
         if effect_type == "MD" else []
+    ) + (
+        sap_sections_13_to_15 if design_code == "rct" else []
     ) + [
         "",
         "---",
