@@ -69,9 +69,19 @@ def _load_json(p: Path) -> dict:
     if not p.exists():
         return {}
     try:
-        return json.loads(p.read_text(encoding="utf-8"))
+        data = json.loads(p.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return {}
+    # Vá 2026-09-06 (audit vòng 33, phát hiện #3 — HIGH): trước đây hàm này
+    # trả thẳng kết quả json.loads() mà không kiểm isinstance(dict) — khác
+    # với quy ước an toàn CÙNG TÊN hàm ở g0_quality_gate.py/g10_quality_gate.py
+    # (::_read_json, đã kiểm dict từ trước). Một checkpoint hỏng nhưng vẫn là
+    # JSON hợp lệ dạng khác (vd mảng [1,2,3]) sẽ được coi là checkpoint hợp
+    # lệ, khiến GC.is_blocked() gọi .get() trên list → AttributeError, sập cả
+    # study_summary() của MỘT đề tài — và vì build_overview() không cô lập
+    # từng đề tài (xem bên dưới), lỗi đó sập LUÔN báo cáo tổng quan của MỌI
+    # đề tài khác đang chạy song song.
+    return data if isinstance(data, dict) else {}
 
 
 def find_study_dirs(exports_dir: Path, exclude: Optional[str]) -> List[Path]:
@@ -157,7 +167,27 @@ def study_summary(out_dir: Path) -> Dict[str, object]:
 
 def build_overview(exports_dir: Path, exclude: Optional[str]) -> Dict[str, object]:
     dirs = find_study_dirs(exports_dir, exclude)
-    studies = [study_summary(d) for d in dirs]
+    studies = []
+    for d in dirs:
+        # Vá 2026-09-06 (audit vòng 33, phát hiện #3 — HIGH): trước bản vá,
+        # vòng lặp này KHÔNG cô lập từng đề tài — một study_summary(d) ném
+        # lỗi (checkpoint hỏng dạng khác-dict, quyền đọc file…) sập TOÀN BỘ
+        # danh sách [study_summary(d) for d in dirs], khiến báo cáo tổng
+        # quan cho MỌI đề tài khác đang chạy song song cũng biến mất — trái
+        # ngược trực tiếp mục đích chính của công cụ (dòng 4: "bác sĩ có thể
+        # chạy song song nhiều đề tài") và nguyên tắc minh bạch đã khai ở
+        # đầu file ("in ra TẤT CẢ những gì tìm thấy"). Đề tài lỗi vẫn phải
+        # HIỆN RA (không âm thầm bỏ qua) kèm lý do, để bác sĩ biết mà xử lý.
+        try:
+            studies.append(study_summary(d))
+        except Exception as exc:  # noqa: BLE001
+            studies.append({
+                "study": d.name, "topic": "", "current_gate": None,
+                "gates_present": [], "n_gates": 0, "fresh": False,
+                "stale_gates": [], "orphan_gates": [], "blocked": True,
+                "blocked_detail": f"🔴 LỖI ĐỌC ĐỀ TÀI: {type(exc).__name__}: {exc}",
+                "last_updated_epoch": None, "hard_gates": [],
+            })
     studies.sort(key=lambda s: (s["last_updated_epoch"] or 0), reverse=True)
     return {
         "n_studies": len(studies),

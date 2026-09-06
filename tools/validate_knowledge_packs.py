@@ -14,7 +14,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from app.services.knowledge_pack_schema import validate_pack_version  # noqa: E402
+from app.services.knowledge_pack_schema import (  # noqa: E402
+    KnowledgePackSchemaIssue,
+    KnowledgePackSchemaResult,
+    validate_pack_version,
+)
 from app.utils.console import configure_unicode_console  # noqa: E402
 
 
@@ -36,7 +40,27 @@ def main() -> int:
         print(f"FAIL: no knowledge packs found in {packs_dir}")
         return 1
 
-    results = [validate_pack_version(pack_dir, args.version) for pack_dir in pack_dirs]
+    # Vá 2026-09-06 (audit vòng 33, phát hiện #4 — HIGH): trước đây vòng lặp
+    # này KHÔNG cô lập từng pack — một pack có cấu trúc thư mục lỗi (vd
+    # "2026.1-draft" tồn tại dưới dạng FILE thay vì thư mục, dễ xảy ra do
+    # merge lỗi/thao tác tay nhầm/đồng bộ OneDrive dở dang) khiến
+    # validate_pack_version() ném NotADirectoryError (version_path.iterdir()
+    # trên một file) — sập TOÀN BỘ lệnh, không pack nào (kể cả các pack hợp
+    # lệ khác) được validate hay báo cáo. Một pack lỗi giờ vẫn hiện ra như
+    # FAIL kèm lý do, thay vì kéo sập cả lô.
+    results = []
+    for pack_dir in pack_dirs:
+        try:
+            results.append(validate_pack_version(pack_dir, args.version))
+        except OSError as exc:
+            results.append(KnowledgePackSchemaResult(
+                pack_id=pack_dir.name,
+                version_dir=args.version,
+                issues=[KnowledgePackSchemaIssue(
+                    file=args.version,
+                    message=f"Không đọc được cấu trúc thư mục: {type(exc).__name__}: {exc}",
+                )],
+            ))
     for result in results:
         status = "PASS" if result.ok else "FAIL"
         print(f"{status}: {result.pack_id} ({result.version_dir})")

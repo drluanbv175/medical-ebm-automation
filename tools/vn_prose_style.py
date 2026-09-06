@@ -79,6 +79,26 @@ _STATUS_LABEL = re.compile(
     r"\[(?:CẦN|ĐÃ|DỰ THẢO|BẢN NHÁP|LƯU Ý|TÊN ĐƠN VỊ|ref)[^\]]*\]", re.IGNORECASE
 )
 
+# Vá 2026-09-06 (audit vòng 33, phát hiện #2 — HIGH): một dấu — đứng NGAY
+# CẠNH (trước HOẶC sau) toán tử so sánh/thống kê "=" hoặc "±" luôn là Ô TRỐNG
+# CHỜ ĐIỀN theo đúng 2 trong 3 idiom chính docstring module này liệt kê
+# ("n = —", "— ± —") — bất kể phía có chữ liền kề trên trục còn lại. Luật
+# "cả hai bên đều trống" bên dưới KHÔNG BAO GIỜ đúng cho các dấu — này trong
+# thực tế:
+#   - dấu — SAU toán tử: đơn vị đo lường ("năm", "bệnh nhân", "tuần"…) luôn
+#     đứng ngay sau, nên phía phải luôn có chữ (vd "— ± — năm" → "— ±, năm").
+#   - dấu — TRƯỚC toán tử "±": khi câu không có dấu ngăn (":", xuống dòng…)
+#     ngay trước, từ đứng trước dấu — cũng có chữ (vd "tuổi — ± — năm" —
+#     dấu — thứ nhất có "tuổi" liền kề bên trái).
+# Cả hai chiều đều được bảo vệ VÔ ĐIỀU KIỆN một khi đã xác định đứng cạnh
+# toán tử, không cần soi chữ ở phía còn lại. HAI regex TÁCH RIÊNG (không gộp
+# bằng "|") vì cụm "— ± —" có CẢ HAI dấu — cùng cạnh một ký tự "±" duy nhất —
+# gộp chung một finditer() sẽ khiến dấu ± bị "tiêu thụ" bởi lần khớp thứ
+# nhất, làm lần khớp thứ hai (dấu — còn lại) không bao giờ được tìm thấy vì
+# re.finditer() không cho phép khớp chồng lấp.
+_VALUE_SLOT_BEFORE_OPERATOR = re.compile(r"(—)\s*[=±]")
+_VALUE_SLOT_AFTER_OPERATOR = re.compile(r"[=±]\s*(—)")
+
 
 def _mask_placeholders(text: str) -> tuple[str, list[str]]:
     kept: list[str] = []
@@ -89,9 +109,15 @@ def _mask_placeholders(text: str) -> tuple[str, list[str]]:
 
     text = _STATUS_LABEL.sub(hide, text)
 
+    protected = {m.start(1) for m in _VALUE_SLOT_BEFORE_OPERATOR.finditer(text)}
+    protected |= {m.start(1) for m in _VALUE_SLOT_AFTER_OPERATOR.finditer(text)}
+
     out = []
     for i, ch in enumerate(text):
-        if ch == "—" and not _has_letter_near(text, i, -1) and not _has_letter_near(text, i, 1):
+        if ch == "—" and (
+            i in protected
+            or (not _has_letter_near(text, i, -1) and not _has_letter_near(text, i, 1))
+        ):
             kept.append(ch)
             out.append(f"\x00{len(kept) - 1}\x00")
         else:
