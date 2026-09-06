@@ -257,6 +257,14 @@ _RENDERERS = {
 def human_markers(body: dict) -> List[str]:
     """Liệt kê đường dẫn chứa REQUIRE_HUMAN_* (để tổng hợp missing fields)."""
     out: List[str] = []
+    # Vá 2026-09-06 (audit vòng 38, phát hiện #3): render() tự khai đây là lớp
+    # "defense-in-depth" cho trường hợp bị gọi TRỰC TIẾP, bỏ qua project_intake/
+    # research_preflight — khi đó body chỉ có CONTENT_BLOCKED=True (KHÔNG phải
+    # chuỗi REQUIRE_HUMAN_*), nên vòng walk() bên dưới không bao giờ bắt được,
+    # và human_markers() trả [] y hệt một draft sạch bình thường — mất đúng tín
+    # hiệu "nội dung không an toàn" mà lớp phòng thủ này sinh ra để giữ.
+    if body.get(CONTENT_BLOCKED):
+        out.append(f"{CONTENT_BLOCKED}={body.get('unsafe_content_reasons')}")
 
     def walk(prefix, v):
         if isinstance(v, str) and v in (REQUIRE_INPUT, REQUIRE_REVIEW):
