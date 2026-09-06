@@ -197,13 +197,27 @@ def to_lesson_code(rcode: str) -> str | None:
 
 
 def classify_error(code: str, message: str = "") -> ErrorItem:
-    """Tạo ErrorItem từ error code, tra ROUTING TABLE."""
+    """Tạo ErrorItem từ error code, tra ROUTING TABLE.
+
+    VÁ 2026-09-06 (vòng 29, phát hiện CRITICAL): mã lỗi CHƯA có trong
+    ERROR_ROUTING_TABLE trước đây mặc định rơi về AUTO_FIX — tức "tự sửa được,
+    không cần dừng". Đây CHÍNH LÀ nguyên nhân gốc mà comment ở bảng trên đã ghi
+    lại 2 lần (thiếu R14, rồi thiếu STD-REPORT/STAT-MISMATCH/AI-DISCLOSE): mỗi
+    lần một guardrail mới sinh ra một mã CHƯA kịp đăng ký, RetryLoop.run() coi
+    đó là lỗi tự sửa và đưa vào vòng tự sửa tối đa max_retries lần thay vì dừng
+    ngay báo bác sĩ — trong khi bản chất lỗi (PII lộ, vượt cổng, thiếu safety-net)
+    có thể nghiêm trọng ngang R2/R3. Cả hai lần trước chỉ vá bằng cách thêm ĐÚNG
+    entry đó vào bảng, không sửa cơ chế fallback gốc — nên mã kế tiếp chưa đăng
+    ký vẫn lặp lại y hệt lỗi. Nay mã KHÔNG có trong bảng mặc định ESCALATE_HARD
+    (dừng ngay, báo người) thay vì AUTO_FIX — fail-closed cho cái CHƯA BIẾT,
+    đúng nguyên tắc đã áp dụng ở mọi nơi khác trong hệ (BH08: thiếu thông tin
+    không phải bằng chứng an toàn)."""
     routing = ERROR_ROUTING_TABLE.get(code)
     if routing:
         severity, fix_agent = routing
     else:
-        severity = ErrorSeverity.AUTO_FIX
-        fix_agent = "agent-goc"
+        severity = ErrorSeverity.ESCALATE_HARD
+        fix_agent = "DỪNG NGAY — mã lỗi chưa đăng ký trong ERROR_ROUTING_TABLE, cần bác sĩ/kỹ thuật xem trực tiếp"
     return ErrorItem(code=code, message=message, severity=severity, fix_agent=fix_agent)
 
 
