@@ -327,6 +327,7 @@ def sec_thietke(cps, meta) -> str:
     design = _g(cps["G1"], "design", "primary", default=TAG_BS)
     code = _g(cps["G1"], "design", "internal_code",
               default=_g(cps["G3"], "design_code", default=None))
+    canon_code = S.canonical_design_code(code)
     rs = S.reporting_standards_for(code)
     alt = _g(cps["G1"], "design", "alternative_1", default=None)
     txt = [
@@ -345,7 +346,74 @@ def sec_thietke(cps, meta) -> str:
         f"**Bối cảnh/cơ sở nghiên cứu:** {_text(setting, TAG_DV)}.  \n"
         f"**Thời gian nghiên cứu:** {_text(period, TAG_DV)}.\n"
     )
+    if canon_code == "rct":
+        txt.append(_sec_thietke_rct_subsections(meta))
     return "\n".join(txt)
+
+
+def _sec_thietke_rct_subsections(meta) -> str:
+    """§6.2-§6.5 CÓ ĐIỀU KIỆN, CHỈ RCT (SPIRIT 2025 9b/11/15a/15d/18/21a/21b/22/23/24a-c).
+
+    THÊM 06/09/2026 (bác sĩ: "đảm bảo hoàn thiện... đạt tiêu chuẩn quốc tế/qui
+    định hiện hành"). Trước đây §6 chỉ có tên thiết kế + bối cảnh — 12 mục
+    SPIRIT về can thiệp/đối chứng, ngẫu nhiên hoá, làm mù và lịch trình KHÔNG có
+    chỗ trong VĂN BẢN đề cương, dù `exposure_intervention`/`design_specific` đã
+    tồn tại trong StudySpec để nuôi "quyết định còn treo" R01-R03
+    (`_DESIGN_FIELD_REQUIREMENTS["rct"]`) — bác sĩ điền xong dữ liệu vẫn KHÔNG
+    thấy nó xuất hiện trong đề cương thật (đúng họ lỗi "hai module viết cho
+    nhau mà chưa từng nối" đã gặp ở G3 PREVALENCE 31/07). Tái dùng CHÍNH các
+    trường đó (không tạo namespace mới) — điền qua `missing_requirements()`
+    giờ cũng làm đổi văn bản này.
+
+    Số tiểu mục PHÁI SINH từ vị trí HIỆN TẠI của §6 qua
+    `de_cuong_dynamic_sub_heading` — §6 đổi số thì tiểu mục tự theo, không viết
+    cứng "6.x". 15b/15c (tiêu chí ngừng/đổi can thiệp, chiến lược tuân thủ) đã
+    có SAP §13-15 chi tiết hơn — ở đây chỉ trỏ sang, tránh hai nơi [CẦN] cùng
+    một nội dung dễ lệch nhau.
+    """
+    ei = meta.get("exposure_intervention") if isinstance(meta.get("exposure_intervention"), dict) else {}
+    ds = meta.get("design_specific") if isinstance(meta.get("design_specific"), dict) else {}
+    key = "thietke"
+    return "\n".join([
+        "",
+        S.de_cuong_dynamic_sub_heading(key, "2", "Can thiệp và đối chứng (TIDieR)"),
+        "",
+        f"**Mô tả can thiệp (đủ chi tiết để tái lập — SPIRIT 15a):** "
+        f"{_text(ei.get('description'), TAG_BS)}\n",
+        f"**Đối chứng/comparator:** {_text(ei.get('comparator'), TAG_BS)}\n",
+        f"**Lý do chọn comparator (SPIRIT 9b):** "
+        f"{_text(ei.get('comparator_rationale'), TAG_BS)}\n",
+        f"**Điều trị đi kèm được phép/cấm (SPIRIT 15d):** "
+        f"{_text(ei.get('concomitant_care'), TAG_BS)}\n",
+        "> Tiêu chí ngừng/đổi can thiệp cho một người tham gia và chiến lược "
+        "cải thiện/theo dõi tuân thủ (SPIRIT 15b/15c) — xem SAP §15 "
+        "(`G4_A5_SAP_FINAL`), không lặp lại ở đây.\n",
+        "",
+        S.de_cuong_dynamic_sub_heading(key, "3", "Ngẫu nhiên hoá, phân bổ và làm mù"),
+        "",
+        f"**Sinh trình tự ngẫu nhiên (SPIRIT 21a):** "
+        f"{_text(ds.get('randomization'), TAG_BS)}\n",
+        f"**Loại ngẫu nhiên hoá/phân tầng (SPIRIT 21b):** "
+        f"{_text(ds.get('randomization_type'), TAG_BS)}\n",
+        f"**Cơ chế che giấu phân bổ (SPIRIT 22):** "
+        f"{_text(ds.get('allocation_concealment'), TAG_BS)}\n",
+        f"**Ai được tiếp cận trình tự phân bổ (SPIRIT 23):** "
+        f"{_text(ds.get('allocation_access'), TAG_BS)}\n",
+        f"**Ai bị làm mù và cách làm mù (SPIRIT 24a/24b):** "
+        f"{_text(ds.get('blinding_who'), TAG_BS)} — {_text(ds.get('blinding_how'), TAG_BS)}\n",
+        f"**Điều kiện/quy trình mở mù (SPIRIT 24c):** "
+        f"{_text(ds.get('unblinding_procedure'), TAG_BS)}\n",
+        "",
+        S.de_cuong_dynamic_sub_heading(key, "4", "Lịch trình nghiên cứu"),
+        "",
+        f"**Lịch tuyển mẫu/can thiệp/đánh giá (sơ đồ SPIRIT, mục 18):** "
+        f"{_text(ds.get('schedule'), TAG_BS)}\n",
+        "",
+        S.de_cuong_dynamic_sub_heading(key, "5", "Sự tham gia của bệnh nhân/cộng đồng (PPI)"),
+        "",
+        f"**Kế hoạch PPI trong thiết kế, triển khai, báo cáo (SPIRIT 11):** "
+        f"{_text(ds.get('ppi_plan'), TAG_BS)}\n",
+    ])
 
 
 def sec_doituong(cps, meta) -> str:
@@ -1249,7 +1317,24 @@ def build_display_items(cps, meta=None) -> str:
 
 
 def build_international_compliance(cps, meta=None) -> str:
-    """Ma trận tuân thủ quốc tế cho bản báo cáo/bài báo cuối cùng."""
+    """Ma trận tuân thủ quốc tế cho bản báo cáo/bài báo cuối cùng.
+
+    SỬA 06/09/2026 (phát hiện qua chính bộ test §6.2-6.5 mới): `check_de_cuong`
+    R8 đòi chuỗi TIẾNG VIỆT "minh bạch" xuất hiện Ở ĐÂU ĐÓ trong tài liệu, nhưng
+    dòng lưu ý bên dưới từng viết "transparency" (tiếng Anh).
+    Đo kỹ hơn (đừng lặp lại "6/8 thiếu" — con số ĐẦU TIÊN đo được, đã bị chính
+    phép đột biến trong `tests/test_r8_minh_bach_all_designs_20260906.py` bác
+    bỏ): "minh bạch" thật ra đến từ HAI nguồn khác nhau, không nguồn nào đủ cho
+    mọi thiết kế — (a) `reporting_standards_for("cohort"/"cross_sectional")
+    ["protocol"]` (2 thiết kế) và (b) nhánh FALLBACK của `build_protocol_checklist()`
+    ("thiết kế này không có checklist ĐỀ CƯƠNG theo từng mục"), thêm CÙNG SÁNG
+    NAY, TÌNH CỜ cũng chứa "minh bạch" (che thêm case_control/diagnostic/
+    prediction/qualitative). CHỈ **rct** (có nhánh SPIRIT riêng) và
+    **systematic_review** (có nhánh "PRISMA-P thiếu" riêng) — hai thiết kế bỏ
+    qua CẢ HAI nguồn trên — thật sự phụ thuộc dòng lưu ý này. Đã sửa: dòng lưu ý
+    UNCONDITIONAL (mọi thiết kế) nay có cả "minh bạch" lẫn "transparency", đóng
+    đúng lỗ hổng cho rct/systematic_review mà không phụ thuộc các nguồn tình cờ.
+    """
     code = S.canonical_design_code(_design_code(cps))
     std = S.reporting_standards_for(code)
     primary = std["primary"]
@@ -1274,8 +1359,8 @@ def build_international_compliance(cps, meta=None) -> str:
     lines.append(
         "> Lưu ý: GCP/ICH-GCP chỉ là điều kiện bắt buộc khi đề tài là thử nghiệm "
         "can thiệp/clinical trial hoặc đơn vị/IRB yêu cầu; với nghiên cứu quan sát "
-        "vẫn giữ Helsinki, bảo mật dữ liệu, protocol/SAP, transparency và "
-        "reproducibility như điều kiện tối thiểu.\n"
+        "vẫn giữ Helsinki, bảo mật dữ liệu, protocol/SAP, minh bạch (transparency) "
+        "và khả năng tái lập (reproducibility) như điều kiện tối thiểu.\n"
     )
     return "\n".join(lines)
 

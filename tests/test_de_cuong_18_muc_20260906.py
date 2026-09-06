@@ -88,7 +88,7 @@ class TestCoverageMatrixAndValidator:
         rep = check_de_cuong.validate(res["md"], study_dir)
         assert rep["passed"], rep["errors"]
         assert rep["checks"]["R1_sections"].startswith("PASS")
-        assert rep["checks"]["R14_protocol_core_coverage"] == "PASS (đủ P01-P23)"
+        assert rep["checks"]["R14_protocol_core_coverage"] == "PASS (đủ P01-P24)"
 
     def test_r1_still_bites_when_a_new_section_is_removed(self, study_dir):
         """Đột biến có chủ ý: xoá tiêu đề mục 3 ⇒ R1 phải đỏ và gọi đúng tên mục thiếu."""

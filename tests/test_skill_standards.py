@@ -42,12 +42,13 @@ class TestCanonShape:
         with pytest.raises(KeyError):
             S.de_cuong_heading("khong_ton_tai")
 
-    def test_23_protocol_core_items(self):
+    def test_24_protocol_core_items(self):
         # 20 → 23 (06/09/2026): P21 tổng quan, P22 khung lý thuyết, P23 dự kiến kết quả.
-        # Mã P là hợp đồng dữ liệu: chỉ thêm cuối, không đánh số lại.
-        assert len(S.PROTOCOL_CORE_ITEMS) == 23
+        # 23 → 24 (06/09/2026, cùng ngày): P24 can thiệp/đối chứng/ngẫu nhiên hoá
+        # (chỉ RCT). Mã P là hợp đồng dữ liệu: chỉ thêm cuối, không đánh số lại.
+        assert len(S.PROTOCOL_CORE_ITEMS) == 24
         assert [item_id for item_id, _ in S.PROTOCOL_CORE_ITEMS] == [
-            f"P{i:02d}" for i in range(1, 24)
+            f"P{i:02d}" for i in range(1, 25)
         ]
 
     def test_six_hard_gates_match_runtime_contract(self):

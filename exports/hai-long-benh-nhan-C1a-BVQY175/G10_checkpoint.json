@@ -1,7 +1,7 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-09-06T03:51:02.355347",
+  "generated_at": "2026-09-06T04:59:47.373990",
   "gate_status": "BLOCKED — chờ input đời-thực",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
@@ -20,7 +20,7 @@
       "R11_missing_information": "PASS (thiếu sót/cổng chờ được liệt kê với ảnh hưởng và phương án an toàn)",
       "R12_document_control": "PASS (phiên bản/ngày/nguồn thay đổi/người duyệt/nhật ký hiện rõ)",
       "R13_traceability_matrix": "PASS (mục tiêu-biến-công cụ-phân tích-bảng được nối trong một ma trận)",
-      "R14_protocol_core_coverage": "PASS (đủ P01-P23)",
+      "R14_protocol_core_coverage": "PASS (đủ P01-P24)",
       "R15_semantic_consistency": "PASS",
       "R16_decision_package": "PASS",
       "R17_scientific_readiness": "PASS (trung thực: còn quyết định khoa học mở)",
@@ -48,7 +48,7 @@
   ],
   "document_control": {
     "document_version": "[DỰ THẢO]",
-    "document_date": "2026-09-06 03:51",
+    "document_date": "2026-09-06 04:59",
     "requires_change_history": true,
     "status": "[DỰ THẢO]"
   },
@@ -66,8 +66,8 @@
     "readiness_level": "STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS",
     "scientific_content_complete": false,
     "protocol_content_complete": false,
-    "protocol_complete_items": 1,
-    "protocol_total_items": 23,
+    "protocol_complete_items": 2,
+    "protocol_total_items": 24,
     "missing_requirement_ids": [
       "D02",
       "D03",
@@ -137,7 +137,7 @@
   "release_package_ready": false,
   "release_package_locked": false,
   "n_de_cuong_sections": 18,
-  "n_protocol_core_items": 23,
+  "n_protocol_core_items": 24,
   "disclaimer": "Cần bác sĩ kiểm chứng.",
   "needs_input": {
     "blocked": true,

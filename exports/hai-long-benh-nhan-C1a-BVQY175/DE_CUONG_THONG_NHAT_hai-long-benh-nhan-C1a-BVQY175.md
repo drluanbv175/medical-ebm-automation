@@ -2,7 +2,7 @@
 
 ---
 
-> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) lắp ráp TỰ ĐỘNG lúc 2026-09-06 03:51 từ checkpoint G0–G9 của đề tài `hai-long-benh-nhan-C1a-BVQY175`, theo mẫu 18 chương và ma trận bao phủ 23 thành phần protocol lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, 12 PMID) lấy TỪ pipeline — không bịa. Mọi chỗ còn thiếu dữ liệu/thẩm quyền sẽ được đánh dấu NGAY TẠI ĐÓ bằng một trong các nhãn quy ước của skill (CẦN BỔ SUNG · CẦN XÁC NHẬN TẠI ĐƠN VỊ · DỰ THẢO · CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — luôn đặt trong ngoặc vuông tại đúng vị trí thiếu). **Văn xuôi học thuật (Đặt vấn đề, Tổng quan, Bàn luận) do bác sĩ/agent viết riêng — G10 chỉ dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.
+> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) lắp ráp TỰ ĐỘNG lúc 2026-09-06 04:59 từ checkpoint G0–G9 của đề tài `hai-long-benh-nhan-C1a-BVQY175`, theo mẫu 18 chương và ma trận bao phủ 24 thành phần protocol lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, 12 PMID) lấy TỪ pipeline — không bịa. Mọi chỗ còn thiếu dữ liệu/thẩm quyền sẽ được đánh dấu NGAY TẠI ĐÓ bằng một trong các nhãn quy ước của skill (CẦN BỔ SUNG · CẦN XÁC NHẬN TẠI ĐƠN VỊ · DỰ THẢO · CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — luôn đặt trong ngoặc vuông tại đúng vị trí thiếu). **Văn xuôi học thuật (Đặt vấn đề, Tổng quan, Bàn luận) do bác sĩ/agent viết riêng — G10 chỉ dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.
 
 
 # Kiểm soát phiên bản và lịch sử thay đổi
@@ -12,7 +12,7 @@ Mục này bắt buộc cho tài liệu chính của nghiên cứu. Mọi chỉn
 | Trường kiểm soát | Giá trị | Quy tắc an toàn |
 |---|---|---|
 | Phiên bản tài liệu | [DỰ THẢO] | Nếu thay đổi mục tiêu, thiết kế, kết cục, SAP hoặc consent sau khi đã duyệt thì phải lập amendment. |
-| Ngày tạo/cập nhật | 2026-09-06 03:51 | Ngày do hệ thống ghi hoặc chủ nhiệm cung cấp; kiểm lại trước khi nộp. |
+| Ngày tạo/cập nhật | 2026-09-06 04:59 | Ngày do hệ thống ghi hoặc chủ nhiệm cung cấp; kiểm lại trước khi nộp. |
 | Nguồn thay đổi | Checkpoint G0, G1, G2, G3, G4; SAP version 1.0 | Chỉ dùng nguồn có trace; không sửa tay ngoài pipeline mà không ghi nhật ký. |
 | Người soạn/cập nhật | [CẦN BỔ SUNG] | Người thật chịu trách nhiệm rà soát. |
 | Người phê duyệt/chủ nhiệm | [CẦN BỔ SUNG] | Cần tên/vai trò thật; nếu chưa có chữ ký/xác nhận sẽ tự mang nhãn quy ước tương ứng ở cột bên trái. |
@@ -21,7 +21,7 @@ Mục này bắt buộc cho tài liệu chính của nghiên cứu. Mọi chỉn
 ## Nhật ký thay đổi
 | Phiên bản | Ngày | Nguồn thay đổi | Nội dung thay đổi | Người phê duyệt/chủ nhiệm |
 |---|---|---|---|---|
-| [DỰ THẢO] | 2026-09-06 03:51 | G10 assembler từ G0, G1, G2, G3, G4 | Lắp ráp đề cương thống nhất, bảng cổng, bảng/hình, compliance, kiểm hoàn thành và thiếu sót còn lại. | [CẦN BỔ SUNG] |
+| [DỰ THẢO] | 2026-09-06 04:59 | G10 assembler từ G0, G1, G2, G3, G4 | Lắp ráp đề cương thống nhất, bảng cổng, bảng/hình, compliance, kiểm hoàn thành và thiếu sót còn lại. | [CẦN BỔ SUNG] |
 
 > Nếu không có nhật ký thay đổi, mọi đầu ra chỉ là bản nháp có kiểm soát; không được coi là bản đã phê duyệt hoặc đã khóa.
 
@@ -328,9 +328,9 @@ Tuân thủ Tuyên ngôn Helsinki 2024, ICH-GCP, Thông tư 43/2024/TT-BYT [CẦ
 > [CẦN BỔ SUNG]: Tài liệu tham khảo TIẾNG VIỆT (luận văn/tạp chí trong nước) hệ thống tra cứu tự động (PubMed) không tiếp cận đủ — bác sĩ bổ sung.
 
 
-# Ma trận bao phủ 23 thành phần protocol lõi
+# Ma trận bao phủ 24 thành phần protocol lõi
 
-Bố cục 18 chương được chấp nhận khi toàn bộ 23 thành phần nội dung dưới đây có vị trí, dữ liệu và nguồn truy xuất. `ĐỦ DỮ LIỆU DỰ THẢO` không đồng nghĩa đã được IRB/chủ nhiệm phê duyệt.
+Bố cục 18 chương được chấp nhận khi toàn bộ 24 thành phần nội dung dưới đây có vị trí, dữ liệu và nguồn truy xuất. `ĐỦ DỮ LIỆU DỰ THẢO` không đồng nghĩa đã được IRB/chủ nhiệm phê duyệt.
 
 | Mã | Thành phần protocol | Trạng thái | Còn thiếu | Nguồn |
 |---|---|---|---|---|
@@ -357,8 +357,9 @@ Bố cục 18 chương được chấp nhận khi toàn bộ 23 thành phần n�
 | P21 | Tổng quan tài liệu: tổng hợp nghiên cứu trước, điểm đồng thuận và bất đồng | THIẾU | Tổng hợp nghiên cứu trước; Điểm đồng thuận/bất đồng | study_meta/G0-G1 (Evidence Ledger A2b) |
 | P22 | Khung lý thuyết hoặc mô hình khái niệm (hoặc nêu rõ không áp dụng, có lý do) | THIẾU | Khung lý thuyết/mô hình khái niệm (hoặc lý do không áp dụng) | study_meta |
 | P23 | Dự kiến kết quả và khung bảng trống (dummy tables), không số liệu | THIẾU | Khung bảng trống (dummy tables); Tóm tắt kết quả dự kiến — không số liệu | study_meta/G4 (SAP §11) + danh mục bảng/hình G10 |
+| P24 | Can thiệp/đối chứng (TIDieR), ngẫu nhiên hoá-làm mù và lịch trình — chỉ RCT (hoặc nêu rõ không áp dụng, có lý do) | ĐỦ DỮ LIỆU DỰ THẢO | — | study_meta (exposure_intervention/design_specific) — chỉ RCT, tự ĐẠT cho thiết kế khác (không áp dụng) |
 
-**Tổng hợp:** 1/23 thành phần đủ dữ liệu dự thảo; trạng thái `STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS`.
+**Tổng hợp:** 2/24 thành phần đủ dữ liệu dự thảo; trạng thái `STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS`.
 
 # Kiểm định nhất quán khoa học
 
@@ -433,7 +434,7 @@ Ma trận này là cầu nối bắt buộc giữa đề cương, CRF/codebook, 
 
 **Điều kiện xuất bản tối thiểu:** bản thảo chỉ được xem là sẵn sàng khi reporting checklist đúng thiết kế đã điền, IRB/EC và consent/waiver có bằng chứng thật, SAP đã khóa trước phân tích, dataset phân tích đã khóa, data availability + code availability rõ ràng, COI/funding/AI disclosure đầy đủ, và toàn bộ bảng/hình có nguồn sinh tái lập.
 
-> Lưu ý: GCP/ICH-GCP chỉ là điều kiện bắt buộc khi đề tài là thử nghiệm can thiệp/clinical trial hoặc đơn vị/IRB yêu cầu; với nghiên cứu quan sát vẫn giữ Helsinki, bảo mật dữ liệu, protocol/SAP, transparency và reproducibility như điều kiện tối thiểu.
+> Lưu ý: GCP/ICH-GCP chỉ là điều kiện bắt buộc khi đề tài là thử nghiệm can thiệp/clinical trial hoặc đơn vị/IRB yêu cầu; với nghiên cứu quan sát vẫn giữ Helsinki, bảo mật dữ liệu, protocol/SAP, minh bạch (transparency) và khả năng tái lập (reproducibility) như điều kiện tối thiểu.
 
 # Checklist chuẩn đề cương theo từng mục
 
@@ -571,7 +572,7 @@ Mục này gom các thiếu sót còn lại thành hành động an toàn. Nếu
 # Gói quyết định hoàn thiện đề cương — hai-long-benh-nhan-C1a-BVQY175
 
 **Mức hiện tại:** STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS.  
-**Bao phủ protocol:** 1/23 thành phần đủ dữ liệu dự thảo.
+**Bao phủ protocol:** 2/24 thành phần đủ dữ liệu dự thảo.
 
 ## Quyết định khoa học/hành chính còn thiếu
 

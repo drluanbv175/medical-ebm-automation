@@ -48,7 +48,9 @@
   },
   "exposure_intervention": {
     "description": null,
-    "comparator": null
+    "comparator": null,
+    "comparator_rationale": null,
+    "concomitant_care": null
   },
   "outcomes": {
     "primary": {},
@@ -156,7 +158,9 @@
     "provided": []
   },
   "traceability": [],
-  "design_specific": {},
+  "design_specific": {
+    "not_applicable_rationale": "Thiết kế cross_sectional không có can thiệp/ngẫu nhiên hoá/làm mù — các mục SPIRIT 2025 9b/11/15a/15d/18/21-24 không áp dụng."
+  },
   "provenance": {
     "study_meta": "study_meta.json",
     "checkpoints": [
@@ -396,10 +400,17 @@
           "Tóm tắt kết quả dự kiến — không số liệu"
         ],
         "source": "study_meta/G4 (SAP §11) + danh mục bảng/hình G10"
+      },
+      {
+        "id": "P24",
+        "title": "Can thiệp/đối chứng (TIDieR), ngẫu nhiên hoá-làm mù và lịch trình — chỉ RCT (hoặc nêu rõ không áp dụng, có lý do)",
+        "status": "ĐỦ DỮ LIỆU DỰ THẢO",
+        "missing": [],
+        "source": "study_meta (exposure_intervention/design_specific) — chỉ RCT, tự ĐẠT cho thiết kế khác (không áp dụng)"
       }
     ],
-    "protocol_complete_items": 1,
-    "protocol_total_items": 23,
+    "protocol_complete_items": 2,
+    "protocol_total_items": 24,
     "missing_requirements": [
       {
         "id": "D02",

@@ -153,7 +153,7 @@ def test_complete_meta_reaches_full_protocol_content(study_dir):
     spec = RS.build_study_spec("FIXT", cps, meta)
     evaluation = RS.evaluate_study_spec(spec, cps, meta)
 
-    assert evaluation["protocol_complete_items"] == len(RS.S.PROTOCOL_CORE_ITEMS) == 23
+    assert evaluation["protocol_complete_items"] == len(RS.S.PROTOCOL_CORE_ITEMS) == 24
     assert evaluation["protocol_content_complete"] is True
     assert evaluation["scientific_content_complete"] is True
     assert not [
@@ -192,7 +192,7 @@ def test_g10_creates_study_spec_and_decision_package(study_dir):
     checkpoint = json.loads(
         result["checkpoint"].read_text(encoding="utf-8")
     )
-    assert checkpoint["n_protocol_core_items"] == len(RS.S.PROTOCOL_CORE_ITEMS) == 23
+    assert checkpoint["n_protocol_core_items"] == len(RS.S.PROTOCOL_CORE_ITEMS) == 24
     assert checkpoint["study_spec"]["schema_version"] == RS.SCHEMA_VERSION
     assert checkpoint["artifacts"]["study_spec_json"].endswith(
         "STUDY_SPEC_FIXT.json"

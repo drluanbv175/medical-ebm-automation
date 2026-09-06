@@ -1,7 +1,7 @@
 # Gói quyết định hoàn thiện đề cương — hai-long-benh-nhan-C1a-BVQY175
 
 **Mức hiện tại:** STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS.  
-**Bao phủ protocol:** 1/23 thành phần đủ dữ liệu dự thảo.
+**Bao phủ protocol:** 2/24 thành phần đủ dữ liệu dự thảo.
 
 ## Quyết định khoa học/hành chính còn thiếu
 

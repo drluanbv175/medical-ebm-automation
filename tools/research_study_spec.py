@@ -204,6 +204,15 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
         intervention.get("comparator"),
         pico.get("c"),
     )
+    # THÊM 06/09/2026 (bác sĩ: "đảm bảo hoàn thiện... đạt tiêu chuẩn quốc tế"):
+    # SPIRIT 2025 mục 9b (lý do chọn comparator) + 15d (điều trị đi kèm được
+    # phép/cấm) — trước đây KHÔNG có chỗ chứa nào trong `sec_thietke()` (§6 chỉ
+    # có tên thiết kế). Dùng CHUNG khối exposure_intervention đã có (cùng khái
+    # niệm PICO I/C với intervention/comparator ở trên), không tạo namespace mới.
+    exposure_intervention["comparator_rationale"] = _first(
+        raw.get("comparator_rationale"), intervention.get("comparator_rationale"))
+    exposure_intervention["concomitant_care"] = _first(
+        raw.get("concomitant_care_policy"), intervention.get("concomitant_care"))
 
     instrument = _as_dict(raw.get("instrument"), text_key="name")
     variables = _first(raw.get("variables"), _get(g5, "crf_columns"))
@@ -233,6 +242,51 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
         g6.get("design_code"),
     ))
     reporting = S.reporting_standards_for(design_code)
+
+    # THÊM 06/09/2026: bổ sung field cho `design_specific` — trước đây chỉ
+    # `_DESIGN_FIELD_REQUIREMENTS["rct"]` tra `randomization`/`allocation_
+    # concealment`/`harms`/`stopping_rules` để liệt "quyết định còn treo"
+    # (R01-R03), nhưng KHÔNG nơi nào trong `run_g10_assemble.py` render các
+    # field này vào văn bản đề cương thật — bác sĩ điền xong vẫn không thấy
+    # trong §6. Bổ sung field mù/lịch trình/PPI còn thiếu + fallback tên phẳng
+    # (design_specific là dict PASSTHROUGH, không có logic chuẩn hoá nào khác).
+    for _key, _aliases in (
+        ("randomization", ("randomization_sequence_method", "randomization_method")),
+        ("randomization_type", ("randomization_type",)),
+        ("allocation_concealment", ("allocation_concealment_mechanism",)),
+        ("allocation_access", ("allocation_access_control",)),
+        ("blinding_who", ("blinding_who",)),
+        ("blinding_how", ("blinding_how",)),
+        ("unblinding_procedure", ("unblinding_procedure",)),
+        ("harms", ("harms_definition",)),
+        ("stopping_rules", ("stopping_rules",)),
+        ("schedule", ("schedule_description",)),
+        ("ppi_plan", ("ppi_plan",)),
+    ):
+        if is_present(design_specific.get(_key)):
+            continue
+        for _alias in _aliases:
+            if is_present(raw.get(_alias)):
+                design_specific[_key] = raw.get(_alias)
+                break
+            # Bác sĩ có thể nest TÊN DÀI (giữ nguyên, không đổi tên) ngay dưới
+            # design_specific.* thay vì key ngắn chuẩn hoá — chấp nhận cả hai.
+            if _alias != _key and is_present(design_specific.get(_alias)):
+                design_specific[_key] = design_specific.get(_alias)
+                break
+    # Thiết kế quan sát KHÔNG có ngẫu nhiên hoá/làm mù/can thiệp — sự thật CẤU
+    # TRÚC suy trực tiếp từ design_code (không phải nội dung lâm sàng bịa), CÙNG
+    # khuôn với `theory.not_applicable_rationale` (P22) và các cờ *_not_applicable
+    # của run_g3_auto.py/run_g4_auto.py. RCT thì KHÔNG tự gán — phải điền thật.
+    if design_code and design_code != "rct":
+        design_specific["not_applicable_rationale"] = (
+            f"Thiết kế {design_code} không có can thiệp/ngẫu nhiên hoá/làm mù — "
+            "các mục SPIRIT 2025 9b/11/15a/15d/18/21-24 không áp dụng."
+        )
+    else:
+        design_specific["not_applicable_rationale"] = _first(
+            raw.get("intervention_design_not_applicable"),
+            design_specific.get("not_applicable_rationale"))
 
     spec = {
         "schema_version": SCHEMA_VERSION,
@@ -666,6 +720,12 @@ _PROTOCOL_RULES: Dict[str, Tuple[Tuple[str, Tuple[str, ...]], ...]] = {
         ("Khung bảng trống (dummy tables)", ("expected_results.table_shells",)),
         ("Tóm tắt kết quả dự kiến — không số liệu", ("expected_results.summary",)),
     ),
+    "P24": (
+        ("Mô tả can thiệp/đối chứng (TIDieR) hoặc không áp dụng",
+         ("exposure_intervention.description", "design_specific.not_applicable_rationale")),
+        ("Ngẫu nhiên hoá/làm mù hoặc không áp dụng",
+         ("design_specific.randomization", "design_specific.not_applicable_rationale")),
+    ),
 }
 
 _PROTOCOL_SOURCES = {
@@ -692,6 +752,8 @@ _PROTOCOL_SOURCES = {
     "P21": "study_meta/G0-G1 (Evidence Ledger A2b)",
     "P22": "study_meta",
     "P23": "study_meta/G4 (SAP §11) + danh mục bảng/hình G10",
+    "P24": "study_meta (exposure_intervention/design_specific) — chỉ RCT, "
+           "tự ĐẠT cho thiết kế khác (không áp dụng)",
 }
 
 
@@ -1010,6 +1072,20 @@ def meta_for_render(meta: Optional[dict], spec: dict) -> dict:
     for key, value in defaults.items():
         if key not in out and is_present(value):
             out[key] = value
+    # THÊM 06/09/2026 (SPIRIT 2025 9b/11/15a/15d/18/21-24) — GHI ĐÈ, không theo
+    # luật "if key not in out" ở trên. Lý do: `out` khởi tạo từ BẢN SAO của
+    # `meta` thô, mà `design_specific` HẦU NHƯ LUÔN đã tồn tại sẵn trong
+    # study_meta.json thật (bác sĩ đặt trực tiếp) — luật "chỉ điền khi thiếu"
+    # khiến `sec_thietke()` mãi mãi đọc bản THÔ chưa qua alias-hoá/tự-suy
+    # not_applicable_rationale của `build_study_spec()`, dù `spec["design_specific"]`
+    # đã có đủ dữ liệu (đo được: quá trình debug 06/09/2026 phát hiện đúng ca này
+    # — bản ghi đè bằng tay không bao giờ tới nơi render). `spec["design_specific"]`
+    # luôn là SUPERSET của bản thô (chỉ CỘNG thêm alias/not_applicable_rationale,
+    # không bao giờ bớt) nên ghi đè vô điều kiện là AN TOÀN, không mất dữ liệu.
+    if is_present(spec.get("exposure_intervention")):
+        out["exposure_intervention"] = spec["exposure_intervention"]
+    if is_present(spec.get("design_specific")):
+        out["design_specific"] = spec["design_specific"]
     return out
 
 

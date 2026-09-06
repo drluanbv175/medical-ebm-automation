@@ -6,8 +6,9 @@ tuân thủ ĐÚNG mẫu/checklist của skill một cách tự động, thay v�
 đối chiếu thủ công mỗi lần. Bao gồm:
 
 - 5 NHÃN TRẠNG THÁI bắt buộc khi soạn hồ sơ.
-- Mẫu ĐỀ CƯƠNG 18 mục và 23 thành phần protocol lõi (nâng 06/09/2026 từ 16/20:
+- Mẫu ĐỀ CƯƠNG 18 mục và 24 thành phần protocol lõi (nâng 06/09/2026 từ 16/20:
   thêm Tổng quan tài liệu & khung lý thuyết, Dự kiến kết quả & khung bảng trống;
+  cùng ngày thêm P24 can thiệp/đối chứng-ngẫu nhiên hoá-làm mù chỉ RCT;
   xem CHANGELOG_V10.md của skill).
 - Định nghĩa 10 CỔNG CHẤT LƯỢNG của skill (G0-G9): điều kiện tối thiểu + sản
   phẩm bắt buộc (SKILL.md).
@@ -139,6 +140,19 @@ def de_cuong_sub_heading(key: str, index: int) -> str:
     _, _, subs = de_cuong_section(key)
     return f"## {subs[index]}"
 
+
+def de_cuong_dynamic_sub_heading(key: str, suffix: str, title: str) -> str:
+    """Tiêu đề cấp 2 PHÁI SINH từ số mục cha hiện tại + hậu tố tự do, vd
+    '## 6.2. Can thiệp và đối chứng (TIDieR)' khi `key='thietke'`, `suffix='2'`.
+
+    KHÁC `de_cuong_sub_heading()`: không đòi đăng ký trước trong
+    `DE_CUONG_SECTIONS[i][2]` — dùng cho tiểu mục CÓ ĐIỀU KIỆN theo thiết kế
+    (vd chỉ RCT mới có ngẫu nhiên hoá/làm mù), nên KHÔNG bị validator/test coi
+    là "luôn phải có" ở mọi thiết kế. Vẫn PHÁI SINH số cha từ khoá ổn định —
+    mục cha đổi số thì tiểu mục tự theo, không viết cứng số nguyên."""
+    num, _, _ = de_cuong_section(key)
+    return f"## {num}.{suffix}. {title}"
+
 # Phụ lục bắt buộc kèm đề cương (templates/01 §Phụ lục).
 DE_CUONG_PHU_LUC: List[str] = [
     "Ma trận mục tiêu – biến – phân tích – bảng",
@@ -180,6 +194,12 @@ PROTOCOL_CORE_ITEMS: Tuple[Tuple[str, str], ...] = (
     ("P21", "Tổng quan tài liệu: tổng hợp nghiên cứu trước, điểm đồng thuận và bất đồng"),
     ("P22", "Khung lý thuyết hoặc mô hình khái niệm (hoặc nêu rõ không áp dụng, có lý do)"),
     ("P23", "Dự kiến kết quả và khung bảng trống (dummy tables), không số liệu"),
+    # THÊM 06/09/2026: SPIRIT 2025 mục 9b/11/15a/15d/18/21-24 (can thiệp/đối
+    # chứng TIDieR, ngẫu nhiên hoá, làm mù, lịch trình, PPI) — trước đây §6
+    # chỉ có tên thiết kế, không có chỗ cho các mục này. Chỉ RCT; thiết kế
+    # khác hợp lệ khi nêu rõ không áp dụng (khuôn giống P22).
+    ("P24", "Can thiệp/đối chứng (TIDieR), ngẫu nhiên hoá-làm mù và lịch trình "
+            "— chỉ RCT (hoặc nêu rõ không áp dụng, có lý do)"),
 )
 
 # Các nội dung phải được làm rõ thêm theo thiết kế. Đây là bản đồ tối thiểu để
@@ -1098,7 +1118,7 @@ if __name__ == "__main__":
     print("=== skill_standards.py — tự kiểm ===")
     print(f"Số nhãn trạng thái hợp lệ: {len(VALID_STATUS_TAGS)}")
     print(f"Số mục đề cương: {len(DE_CUONG_SECTIONS)} (cần = 18)")
-    print(f"Số thành phần protocol lõi: {len(PROTOCOL_CORE_ITEMS)} (cần = 23)")
+    print(f"Số thành phần protocol lõi: {len(PROTOCOL_CORE_ITEMS)} (cần = 24)")
     print(f"Số cổng skill: {len(SKILL_GATES)} (cần = 10)")
     print(f"Số mã thiết kế có chuẩn báo cáo: {len(REPORTING_STANDARDS)}")
     print(f"Số mốc sẵn sàng: {len(READINESS_MILESTONES)}")
