@@ -46,6 +46,9 @@ class DelegationStatus(str, Enum):
     """Vòng đời của một delegation record."""
     PROPOSED = "PROPOSED"
     ACTIVE = "ACTIVE"
+    # Vá 2026-09-06 (audit vòng 40, phát hiện #2): record đã activate() (status
+    # thô = ACTIVE) nhưng now < effective_from_utc — chưa tới ngày hiệu lực.
+    PENDING_EFFECTIVE = "PENDING_EFFECTIVE"
     EXPIRED = "EXPIRED"
     REVOKED = "REVOKED"
     REJECTED = "REJECTED"
@@ -62,6 +65,9 @@ class DelegationReasonCode(str, Enum):
     DELEGATION_DISABLED_ACTOR = "DELEGATION_DISABLED_ACTOR"
     DELEGATION_PERMITTED = "DELEGATION_PERMITTED"
     DELEGATION_NOT_FOUND = "DELEGATION_NOT_FOUND"
+    # Vá 2026-09-06 (audit vòng 40, phát hiện #2b): actor_reference không khớp
+    # delegatee_synthetic_actor_id của chính delegation.
+    DELEGATION_ACTOR_MISMATCH = "DELEGATION_ACTOR_MISMATCH"
 
 
 # ---------------------------------------------------------------------------
@@ -113,11 +119,20 @@ class DelegationRecord:
             return self.status
         if self.status == DelegationStatus.PROPOSED.value:
             return DelegationStatus.PROPOSED.value
-        # ACTIVE → có thể EXPIRED
+        # ACTIVE → có thể PENDING_EFFECTIVE (chưa tới effective_from) hoặc EXPIRED.
+        # Vá 2026-09-06 (audit vòng 40, phát hiện #2): trước đây hàm này KHÔNG
+        # BAO GIỜ đọc effective_from_utc (khác is_active() vốn kiểm cả hai đầu
+        # mốc) — một delegation activate() sớm, trước ngày hiệu lực, vẫn báo
+        # ACTIVE ngay khi status thô = ACTIVE, dù chưa tới effective_from_utc.
         now = now_utc or datetime.now(timezone.utc)
+        start = datetime.fromisoformat(self.effective_from_utc)
         end = datetime.fromisoformat(self.effective_until_utc)
+        if start.tzinfo is None:
+            start = start.replace(tzinfo=timezone.utc)
         if end.tzinfo is None:
             end = end.replace(tzinfo=timezone.utc)
+        if now < start:
+            return DelegationStatus.PENDING_EFFECTIVE.value
         if now > end:
             return DelegationStatus.EXPIRED.value
         return DelegationStatus.ACTIVE.value
@@ -404,8 +419,9 @@ def evaluate_delegation_action(
 
     Reason codes:
       DELEGATION_NOT_FOUND      — delegation_id không tồn tại
+      DELEGATION_ACTOR_MISMATCH — actor_reference khác delegatee_synthetic_actor_id
       DELEGATION_REVOKED        — delegation đã bị thu hồi
-      DELEGATION_NOT_ACTIVE     — delegation chưa ACTIVE (PROPOSED/REJECTED)
+      DELEGATION_NOT_ACTIVE     — delegation chưa ACTIVE (PROPOSED/REJECTED/PENDING_EFFECTIVE)
       DELEGATION_EXPIRED        — delegation đã quá effective_until_utc
       DELEGATION_FORBIDDEN_AUTHORITY — action trong FORBIDDEN_ACTIONS_ALL_ROLES
       DELEGATION_SCOPE_EXCEEDED — action không trong permitted_actions
@@ -436,6 +452,14 @@ def evaluate_delegation_action(
 
     effective_until = record.effective_until_utc
 
+    # Vá 2026-09-06 (audit vòng 40, phát hiện #2b): actor_reference trước đây
+    # KHÔNG BAO GIỜ được đối chiếu với delegatee_synthetic_actor_id — bất kỳ
+    # actor nào cũng được đánh giá y như đang tự nhận là người được ủy quyền,
+    # dù hàm tự khai "evaluate liệu MỘT ACTOR có được phép thực hiện action".
+    if actor_reference != record.delegatee_synthetic_actor_id:
+        return _block(DelegationReasonCode.DELEGATION_ACTOR_MISMATCH,
+                      "DELEGATION_POLICY-ACTOR_MISMATCH", effective_until)
+
     # Terminal states
     if record.status == DelegationStatus.REVOKED.value:
         return _block(DelegationReasonCode.DELEGATION_REVOKED,
@@ -449,8 +473,11 @@ def evaluate_delegation_action(
         return _block(DelegationReasonCode.DELEGATION_NOT_ACTIVE,
                       "DELEGATION_POLICY-NOT_ACTIVATED", effective_until)
 
-    # ACTIVE — check expiry
+    # ACTIVE — check effective window
     live_status = record.compute_status(now_utc)
+    if live_status == DelegationStatus.PENDING_EFFECTIVE.value:
+        return _block(DelegationReasonCode.DELEGATION_NOT_ACTIVE,
+                      "DELEGATION_POLICY-PENDING_EFFECTIVE", effective_until)
     if live_status == DelegationStatus.EXPIRED.value:
         return _block(DelegationReasonCode.DELEGATION_EXPIRED,
                       "DELEGATION_POLICY-EXPIRED", effective_until)

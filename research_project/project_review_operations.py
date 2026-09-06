@@ -841,6 +841,7 @@ def build_revision_plan(
 
     stale_set: set = set()
     downstream_map: Dict[str, List[str]] = {}
+    all_downstream_union: Dict[str, ArtifactID] = {}
 
     for r in revision_items:
         try:
@@ -851,9 +852,17 @@ def build_revision_plan(
         downstream_names = [a.value for a in downstream]
         downstream_map[r.artifact_id] = downstream_names
         stale_set.update(downstream_names)
+        for a in downstream:
+            all_downstream_union[a.value] = a
 
-        # Đánh dấu STALE trong VERSION_REGISTER nếu có
-        _mark_stale_in_register(project_dir, downstream)
+    # Đánh dấu STALE trong VERSION_REGISTER — MỘT LẦN cho TOÀN BỘ hợp các
+    # downstream của mọi revision item (vá 2026-09-06, audit vòng 40, phát
+    # hiện #1): gọi bên trong vòng lặp trước đây khiến _mark_stale_in_register
+    # ghi xong ở lần gọi ĐẦU TIÊN rồi guard "đã có heading" chặn mọi lần gọi
+    # SAU — downstream của các revision item còn lại (2 trở đi) bị mất hoàn
+    # toàn khỏi CHANGE_IMPACT_REPORT dù stale_set trả về cho caller vẫn ĐÚNG.
+    if all_downstream_union:
+        _mark_stale_in_register(project_dir, list(all_downstream_union.values()))
 
     revision_items_data = []
     for r in revision_items:
