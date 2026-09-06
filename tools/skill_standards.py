@@ -714,13 +714,23 @@ def _status_is_locked(status: Optional[str]) -> bool:
 
     Sửa bug substring (kiểm định đối kháng #7): 'UNLOCKED'/'NOT LOCKED'/'CHƯA
     LOCKED'/'PENDING ... LOCKED' KHÔNG được coi là đã khoá. Dùng ranh giới từ.
+
+    Sửa 2026-09-06 (audit vòng 31): ranh giới từ `\\b` coi `_` là ký tự "từ"
+    (thuộc `\\w`), nên `\\bLOCKED\\b` KHÔNG khớp với chính giá trị THẬT mà
+    tools/lock_analysis_dataset.py ghi vào `database_lock_status` khi khóa dữ
+    liệu thành công — `LOCKED_STATUS = "LOCKED_FOR_ANALYSIS"` (dòng 53, 621,
+    697 của file đó). Kết quả: một checkpoint G5 hợp lệ (đường tương thích khi
+    thiếu `quality_contract_version`) mang đúng giá trị đã khóa thật vẫn bị
+    báo "CHƯA khóa". Đổi sang ranh giới CHỮ CÁI (không tính `_`/số): "LOCKED"
+    không được có chữ cái NGAY TRƯỚC/SAU — vẫn loại đúng "BLOCKED..." (B là
+    chữ cái liền trước) và "UNLOCKED" (đã bị chặn ở lớp phủ định phía trên).
     """
     if not status:
         return False
     up = str(status).upper()
     if any(neg in up for neg in ("UNLOCK", "NOT LOCK", "CHƯA", "PENDING", "SẼ ")):
         return False
-    return re.search(r"\bLOCKED\b", up) is not None
+    return re.search(r"(?<![A-Z])LOCKED(?![A-Z])", up) is not None
 
 
 # ── Tín hiệu THỰC-TẾ (real-world) — nền tảng của mọi kết luận 'KHOÁ' ─────────
