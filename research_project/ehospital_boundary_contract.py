@@ -136,6 +136,24 @@ class ExtractRequest:
             )
 
 
+def _find_pii_keys_recursive(obj: Any, pii_keys: frozenset) -> set:
+    """Duyệt đệ quy dict/list để tìm khoá PII ở BẤT KỲ cấp lồng nhau nào.
+
+    Vá 2026-09-06 (audit vòng 39, phát hiện #9): xem chú thích tại nơi gọi
+    trong ExtractRecord.__post_init__.
+    """
+    found: set = set()
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if isinstance(k, str) and k.lower() in pii_keys:
+                found.add(k)
+            found |= _find_pii_keys_recursive(v, pii_keys)
+    elif isinstance(obj, list):
+        for item in obj:
+            found |= _find_pii_keys_recursive(item, pii_keys)
+    return found
+
+
 @dataclass
 class ExtractRecord:
     """
@@ -167,11 +185,16 @@ class ExtractRecord:
             raise ValueError("pseudo_id must be non-empty")
         if self.domain not in PERMITTED_READ_DOMAINS:
             raise ValueError(f"domain '{self.domain}' is not in PERMITTED_READ_DOMAINS")
-        # PII key check
-        found_pii = {k for k in self.data if k.lower() in self._PII_KEYS}
+        # PII key check. Vá 2026-09-06 (audit vòng 39, phát hiện #9): bản cũ
+        # chỉ duyệt khoá CẤP 1 của self.data — PII nằm trong dict lồng bên
+        # trong một khoá vô hại (vd {"nested": {"name": ...}}) lọt qua hoàn
+        # toàn dù docstring của class cam kết "must not contain PII keys".
+        # Nay duyệt đệ quy mọi khoá ở mọi cấp lồng nhau (dict trong dict,
+        # dict trong list).
+        found_pii = sorted(_find_pii_keys_recursive(self.data, self._PII_KEYS))
         if found_pii:
             raise ValueError(
-                f"ExtractRecord.data contains potential PII keys: {sorted(found_pii)}"
+                f"ExtractRecord.data contains potential PII keys: {found_pii}"
             )
         if not self.is_pseudonymized:
             raise ValueError("is_pseudonymized must be True")

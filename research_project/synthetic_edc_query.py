@@ -133,6 +133,11 @@ class QueryLifecycleManager:
         q = self._get(query_id)
         if q.status == QueryStatus.CLOSED:
             raise ValueError(f"Query {query_id} is already CLOSED — cannot cancel")
+        # Vá 2026-09-06 (audit vòng 39, phát hiện #7): thiếu chặn đối xứng
+        # cho CANCELLED — một query đã hủy có thể bị "hủy lại" với actor/reason
+        # khác, ghi đè cancellation_reason/closed_by gốc.
+        if q.status == QueryStatus.CANCELLED:
+            raise ValueError(f"Query {query_id} is already CANCELLED — cannot cancel again")
         if not reason:
             raise ValueError("cancellation reason must be non-empty")
         q.status = QueryStatus.CANCELLED

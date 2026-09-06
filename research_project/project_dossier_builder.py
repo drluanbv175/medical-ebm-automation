@@ -402,10 +402,10 @@ class ProjectDossierBuilder:
             "|----------|-------|-------|---------------|",
             f"| {RHI} | — | — | — |",
             "",
-            "## Figure 1 — {RHI}: Mô tả hình dự kiến",
+            f"## Figure 1 — {RHI}: Mô tả hình dự kiến",
             f"{RHI}: Mô tả nội dung, trục, chú thích.",
             "",
-            "## Figure 2 — {RHI}",
+            f"## Figure 2 — {RHI}",
             f"{RHI}",
             "",
             "> Ghi chú: Mọi ô '—' cần PI điền sau khi có dữ liệu THẬT (nếu thực thi). "

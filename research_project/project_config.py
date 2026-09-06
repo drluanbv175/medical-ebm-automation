@@ -12,6 +12,7 @@ import dataclasses
 import enum
 import hashlib
 import json
+import re
 from typing import Dict, List, Optional
 
 # ---------------------------------------------------------------------------
@@ -250,21 +251,34 @@ def contains_external_action(text: str) -> bool:
     return any(m.lower() in low for m in _EXTERNAL_ACTION_MARKERS)
 
 
+# Ranh giới mệnh đề trong một dòng: dấu câu tách câu/vế, hoặc liên từ tương
+# phản ("nhưng"/"but"/"however") — dùng để KHÔNG cho phủ định ở một vế loang
+# sang marker hành động thật ở vế khác cùng dòng (vá 2026-09-06, audit vòng
+# 39, phát hiện #5: "Nghiên cứu này không thu thập dữ liệu thật nhưng nhóm
+# sẽ submit bản thảo..." — "không" thuộc mệnh đề đầu, "submit" thuộc mệnh đề
+# sau do "nhưng" nối lại; kiểm phủ định trên CẢ DÒNG khiến "submit" thật lọt
+# qua D-R13 vì có "không" ở đâu đó trên cùng dòng).
+_CLAUSE_SPLIT_RE = re.compile(r"[,;:.!?]|\bnhưng\b|\bbut\b|\bhowever\b", re.IGNORECASE)
+
+
 def contains_external_action_positive(text: str) -> bool:
     """Trả True nếu có external action THẬT (không phải instruction cấm/cảnh báo).
 
-    Duyệt từng dòng: dòng có action marker + ngữ cảnh phủ định → bỏ qua (an toàn).
-    Chỉ FAIL khi tìm thấy marker không bị phủ định → action thật cần chặn.
+    Duyệt từng dòng rồi từng MỆNH ĐỀ trong dòng (tách theo dấu câu/liên từ
+    tương phản): mệnh đề có action marker + ngữ cảnh phủ định TRONG CÙNG
+    mệnh đề đó → bỏ qua (an toàn). Chỉ FAIL khi tìm thấy marker không bị phủ
+    định trong cùng mệnh đề → action thật cần chặn.
     Dùng cho gate D-R13 để tránh false positive từ template safety instructions.
     """
     for line in text.splitlines():
-        line_low = line.lower()
-        if not any(m.lower() in line_low for m in _EXTERNAL_ACTION_MARKERS):
-            continue
-        # Dòng có marker — kiểm ngữ cảnh phủ định
-        is_negated = any(neg in line_low for neg in _EXTERNAL_ACTION_NEGATION_CONTEXT)
-        if not is_negated:
-            return True  # Action thật, không bị phủ định
+        for clause in _CLAUSE_SPLIT_RE.split(line):
+            clause_low = clause.lower()
+            if not any(m.lower() in clause_low for m in _EXTERNAL_ACTION_MARKERS):
+                continue
+            # Mệnh đề có marker — kiểm ngữ cảnh phủ định TRONG CÙNG mệnh đề
+            is_negated = any(neg in clause_low for neg in _EXTERNAL_ACTION_NEGATION_CONTEXT)
+            if not is_negated:
+                return True  # Action thật, không bị phủ định
     return False
 
 
@@ -274,11 +288,19 @@ def contains_real_data(text: str) -> bool:
 
 
 def scrub_pii(text: str) -> str:
-    """Xoá chuỗi PII; chỉ dùng cho audit log — KHÔNG in ra output."""
+    """Xoá chuỗi PII; chỉ dùng cho audit log — KHÔNG in ra output.
+
+    Vá 2026-09-06 (audit vòng 39, phát hiện #10): bản cũ gán
+    `result = result.lower().replace(...)` mỗi vòng lặp — hạ chữ thường
+    TOÀN BỘ chuỗi, không chỉ phần PII, và làm hỏng phần văn bản còn lại
+    (vd "Patient Name" viết hoa không khớp marker "name" viết thường nên
+    KHÔNG bị che, nhưng vẫn bị hạ chữ thường theo hiệu ứng phụ). Nay chỉ
+    thay thế đúng đoạn khớp marker (không phân biệt hoa/thường), giữ
+    nguyên phần còn lại của chuỗi.
+    """
     result = text
     for m in _PII_MARKERS:
-        if m in result.lower():
-            result = result.lower().replace(m, "[SCRUBBED]")
+        result = re.sub(re.escape(m), "[SCRUBBED]", result, flags=re.IGNORECASE)
     return result
 
 
