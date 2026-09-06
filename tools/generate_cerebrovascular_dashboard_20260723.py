@@ -6,8 +6,16 @@ from pathlib import Path
 # VÁ 15/08/2026 (chốt kiem_tuong_thich_da_nen bắt được — 🔴 duy nhất toàn kho):
 # ROOT ghi cứng C:\Users\Admin\... nên tool CHƯA TỪNG chạy được trên Mac — đúng
 # họ lỗi ensure_strict_source/run_retraction_and_med_safety đã vá 12-13/08.
-ROOT = Path(__file__).resolve().parents[2]
-REPO = ROOT / "medical-ebm-automation"
+# VÁ vòng 27 (2026-09-06): bản vá 15/08 thay MỘT hardcode (path Windows tuyệt
+# đối) bằng MỘT hardcode khác — tính ROOT (thư mục CHA của repo) rồi ghép cứng
+# chuỗi "medical-ebm-automation" để suy ngược lại vị trí repo, chỉ đúng NẾU
+# thư mục checkout thực sự tên đúng y hệt vậy (worktree/clone tên khác sẽ
+# ModuleNotFoundError khi import app.reports.evidence_workbench). Dùng đúng
+# quy ước bất biến-tên mà tools/verify_evidence_surveillance_deployment.py và
+# tools/verify_clinical_evidence_agent_standards.py đã dùng: REPO trước
+# (không phụ thuộc tên thư mục), ROOT suy từ REPO (không phải ngược lại).
+REPO = Path(__file__).resolve().parents[1]
+ROOT = REPO.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
