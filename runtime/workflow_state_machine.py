@@ -129,8 +129,14 @@ class WorkflowStateMachine:
                 self._history.append(t)
                 return t
 
-        # 3. Kiểm tra evidence_reference không rỗng
-        if not evidence_reference or evidence_reference.strip() in ("", "none"):
+        # 3. Kiểm tra evidence_reference không rỗng.
+        # Vá 2026-09-06 (audit vòng 36, phát hiện #4): so sánh cũ không
+        # .lower() trước khi so với "none", chỉ khớp chữ thường tuyệt đối.
+        # Một caller lỡ truyền evidence_reference=str(x) với x is None (mẫu
+        # lỗi tự nhiên khi optional field chưa gán) tạo ra chuỗi "None" (N
+        # hoa) — không khớp "none" — guard KHÔNG chặn, cho phép transition
+        # với "bằng chứng" thực chất là chuỗi rác từ str(None).
+        if not evidence_reference or evidence_reference.strip().lower() in ("", "none"):
             t = WorkflowTransition(
                 prior_state=prior_state,
                 requested_state=requested_state,
