@@ -1257,6 +1257,16 @@ def _check_international_standard_profile() -> StandardCheck:
         for token in required_tokens
         if token not in profile_text
     ]
+    # Vá 2026-09-06 (audit vòng 31, phát hiện #2): TRƯỚC bản vá, mọi tiêu chí
+    # của hàm này chỉ đối chiếu `required_tokens` với chính `profile_text` —
+    # cả hai đều là literal Python trong CÙNG FILE, nên chỉ FAIL khi có lỗi
+    # gõ giữa hai đoạn code, KHÔNG BAO GIỜ phát hiện được nếu tài liệu doctrine
+    # thật (SKILL.md/references) đã mất nội dung về các chuẩn này. Thêm kiểm
+    # NỘI DUNG THẬT trên tài liệu tham chiếu (cùng khuôn `_check_agents()`).
+    missing.extend(_missing_tokens(
+        SKILL_ROOT / "references" / "02-cong-cu-tham-dinh-va-grade.md",
+        ("AGREE II", "AMSTAR 2", "RoB 2"),
+    ))
     if profile.status != "MAPPED_WITH_DOCTOR_GATE":
         missing.append(f"unexpected profile status: {profile.status}")
     if "diagnostic_accuracy" not in profile.appraisal_tools:
@@ -1333,6 +1343,12 @@ def _check_source_authority_registry() -> StandardCheck:
         for token in required_tokens
         if token not in text
     ]
+    # Vá 2026-09-06 (audit vòng 31, phát hiện #2) — xem chú thích tại
+    # _check_international_standard_profile(): thêm kiểm NỘI DUNG THẬT.
+    missing.extend(_missing_tokens(
+        SKILL_ROOT / "references" / "01-nguon-va-xac-minh.md",
+        ("Cochrane", "USPSTF", "NICE", "Consensus"),
+    ))
     if registry.status != "AUTHORITY_TIERED_WITH_CROSSCHECK":
         missing.append(f"unexpected registry status: {registry.status}")
     for tier in (
@@ -1401,6 +1417,12 @@ def _check_evidence_currency_policy() -> StandardCheck:
         for token in required_tokens
         if token not in text
     ]
+    # Vá 2026-09-06 (audit vòng 31, phát hiện #2) — xem chú thích tại
+    # _check_international_standard_profile(): thêm kiểm NỘI DUNG THẬT.
+    missing.extend(_missing_tokens(
+        SKILL_ROOT / "SKILL.md",
+        ("verify_dashboard.py --online --strict-sources", "PARTIAL"),
+    ))
     if policy.status != "CURRENCY_CONTROLLED_WITH_RETRACTION_CHECK":
         missing.append(f"unexpected policy status: {policy.status}")
     if policy.recency_windows_days["drug_safety_or_regulatory_alert"] > 7:
@@ -1467,6 +1489,12 @@ def _check_question_frame_policy() -> StandardCheck:
         for token in required_tokens
         if token not in text
     ]
+    # Vá 2026-09-06 (audit vòng 31, phát hiện #2) — xem chú thích tại
+    # _check_international_standard_profile(): thêm kiểm NỘI DUNG THẬT.
+    missing.extend(_missing_tokens(
+        SKILL_ROOT / "references" / "07-mo-hinh-cau-hoi-va-khung-thay-the.md",
+        ("PICO(T)(S)", "PECO", "SPIDER", "ECLIPSE", "CoCoPop"),
+    ))
     if policy.status != "FRAME_TOOL_LOCKED_BY_QUESTION_TYPE":
         missing.append(f"unexpected policy status: {policy.status}")
     for key in (
@@ -1543,6 +1571,9 @@ def _check_conflicting_evidence_policy() -> StandardCheck:
         for token in required_tokens
         if token not in text
     ]
+    # Vá 2026-09-06 (audit vòng 31, phát hiện #2) — xem chú thích tại
+    # _check_international_standard_profile(): thêm kiểm NỘI DUNG THẬT.
+    missing.extend(_missing_tokens(SKILL_ROOT / "SKILL.md", ("nêu cả hai chiều",)))
     if policy.status != "CONFLICTS_MUST_BE_MAPPED_BEFORE_PRACTICE_CHANGE":
         missing.append(f"unexpected policy status: {policy.status}")
     for key in (
@@ -1617,6 +1648,20 @@ def _check_operational_completeness_policy() -> StandardCheck:
         for token in required_tokens
         if token not in text
     ]
+    # Vá 2026-09-06 (audit vòng 31, phát hiện #2) — xem chú thích tại
+    # _check_international_standard_profile(): thêm kiểm NỘI DUNG THẬT. Dùng
+    # verify_clinical_production_control_plane.py (cùng repo, qua TOOLS —
+    # KHÔNG dùng "tools/upgrade_verify.py": file đó nằm ở workspace GỐC, một
+    # repo Git RIÊNG so với medical-ebm-automation, và trên phiên cloud hai
+    # repo không chắc có cùng thư mục cha để _rel()/Path suy ra được — cùng
+    # giới hạn đã ghi nhận ở việc "ban_sao_tran.py chưa nhận diện sibling
+    # checkout trên phiên cloud"; ràng buộc vào đường dẫn đó sẽ khiến chốt
+    # này tự FAIL sai trên máy/phiên không có cả hai repo, chứ không phải bắt
+    # đúng lỗi thật).
+    missing.extend(_missing_tokens(
+        REPO / "tools" / "verify_clinical_production_control_plane.py",
+        ("production", "real patient data"),
+    ))
     if policy.status != "TECHNICAL_COMPLETENESS_WITH_DOCTOR_GATE_NOT_CLINICAL_PRODUCTION":
         missing.append(f"unexpected policy status: {policy.status}")
     for module in (
