@@ -476,7 +476,11 @@ def main() -> int:
                 res = nnt_from_or(args.cer, args.orr, args.or_ci_lower, args.or_ci_upper)
             elif args.rr is not None:
                 res = nnt_from_rr(args.cer, args.rr, args.rr_ci_lower, args.rr_ci_upper)
-            elif args.eer is not None and args.n_control and args.n_experimental:
+            elif (
+                args.eer is not None
+                and args.n_control is not None
+                and args.n_experimental is not None
+            ):
                 events_c = round(args.cer * args.n_control)
                 events_e = round(args.eer * args.n_experimental)
                 res = nnt_from_counts(events_c, args.n_control, events_e, args.n_experimental, args.alpha)
