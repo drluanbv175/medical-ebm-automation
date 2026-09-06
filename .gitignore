@@ -79,6 +79,7 @@ results/weekly_*.txt
 results/weekly_*.xml
 results/weekly_*.json
 results/research_studio_dashboard.html
+results/knowledge_pack_update_queue.json
 
 # Báo cáo hardening cá nhân sinh lại mỗi lần chạy verifier; không commit timestamp động.
 reports/PERSONAL_PRODUCTION_HARDENING_REPORT.*
