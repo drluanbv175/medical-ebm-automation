@@ -26,8 +26,17 @@ from .schemas import (
 
 logger = logging.getLogger(__name__)
 
-# Thư mục chứa agent .md specs (thư mục gốc OneDrive / .claude/agents)
-_AGENTS_DIR = Path(__file__).parent.parent.parent / ".claude" / "agents"
+# Thư mục chứa agent .md specs (gốc repo / .claude/agents).
+# Vá 2026-09-06 (audit vòng 36, phát hiện #1): bản cũ dùng
+# `.parent.parent.parent` (BA lần) — __file__ = runtime/claude_api_runtime.py
+# nên .parent = runtime/, .parent.parent = GỐC REPO (nơi thật sự có
+# .claude/agents/*.md, 84 file); .parent.parent.parent trỏ LÊN TRÊN gốc
+# repo, ra thư mục hoàn toàn không tồn tại. _load_agent_spec() vì vậy
+# LUÔN LUÔN rơi vào fallback generic 1 dòng ("Agent: <id>\nVai trò: trợ
+# lý EBM y khoa tổng quát") — không exception, không log (path.exists()
+# chỉ trả False) — nên system_prompt gọi Claude API thật không bao giờ
+# mang nội dung/ràng buộc hành vi thật của agent trong .claude/agents/.
+_AGENTS_DIR = Path(__file__).parent.parent / ".claude" / "agents"
 
 _DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 _MAX_TOKENS = 2048
@@ -155,8 +164,16 @@ class ClaudeApiRuntime(AgentRuntime):
                     system=system_prompt,
                     messages=[{"role": "user", "content": user_message}],
                 )
-                response_text = message.content[0].text + _DISCLAIMER_SUFFIX
-                policy = _evaluate_live_output(response_text)
+                # Vá 2026-09-06 (audit vòng 36, phát hiện #2): PHẢI chấm điểm
+                # trên văn bản GỐC của model (chưa nối _DISCLAIMER_SUFFIX) —
+                # _DISCLAIMER_SUFFIX tự nó chứa "Cần bác sĩ kiểm chứng", nên
+                # nối TRƯỚC rồi mới gọi _evaluate_live_output() khiến
+                # has_disclaimer luôn True bất kể model có thật sự tự đưa
+                # disclaimer hay không, vô hiệu hoá guard REVIEW_REQUIRED
+                # (tuyên bố lâm sàng quá tự tin, không disclaimer thật).
+                raw_text = message.content[0].text
+                policy = _evaluate_live_output(raw_text)
+                response_text = raw_text + _DISCLAIMER_SUFFIX
                 return self._wrap_response(
                     agent_id=agent_id,
                     fixture_id=fixture_id,

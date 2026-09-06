@@ -249,9 +249,22 @@ class PolicyGateEngine:
         )
 
     def _check_gate_a_clinical(self, context, ledger, fixture, ts) -> GateDecision:
-        """Gate A: Clinical application gate — cần bác sĩ phê duyệt."""
-        approval = ledger.check_has_approval("GATE_A")
-        if approval is None:
+        """Gate A: Clinical application gate — cần bác sĩ phê duyệt.
+
+        Vá 2026-09-06 (audit vòng 36, phát hiện #3): dùng ledger.has_gate_a()
+        (đã vá ở vòng 35 để lọc is_synthetic — xem
+        runtime/approval_ledger.py::_has_non_synthetic_approval) thay vì tự
+        gọi lại check_has_approval() thô. Bản cũ chấp nhận approval SYNTHETIC
+        làm phê duyệt lâm sàng thật — tái lặp đúng lỗi đã vá ở file "anh em"
+        approval_ledger.py, đúng mẫu "sửa 1 chỗ quên chỗ anh em" mà chính
+        approval_ledger.py đã tự cảnh báo trong nhiều comment khác. KHÔNG áp
+        cùng cách cho _check_gate_b_ledger(): hàm đó kiểm TOÀN VẸN evidence_
+        hash của TOÀN BỘ ledger (test_gate_b_ledger_clean dùng approval gate
+        "G2" để kiểm GATE_B) — một Ý NGHĨA "GATE_B" khác hẳn has_gate_b()
+        ("đã có phê duyệt ghi sổ cái GATE_B chưa"), nên không rõ ràng đây là
+        bug hay thiết kế cố ý khác; sửa nhầm ý đồ có thể phá vỡ hành vi mong
+        muốn của một cổng tổng quát."""
+        if not ledger.has_gate_a():
             return GateDecision(
                 gate_id="GATE_A",
                 decision=GateDecisionEnum.REQUIRE_HUMAN_APPROVAL,
