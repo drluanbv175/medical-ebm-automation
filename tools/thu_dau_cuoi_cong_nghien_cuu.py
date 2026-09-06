@@ -731,7 +731,16 @@ def _wiring_seed_g8(study_dir: Path) -> Path:
 
 
 def _wiring_seed_g4(study_dir: Path) -> Path:
-    artifact = study_dir / "G4_A5_SAP_FINAL.md"
+    # SỬA vòng 27 (2026-09-06): tên cũ "G4_A5_SAP_FINAL.md" thiếu hậu tố
+    # "_{study}" — approve_gate.py so khớp artifact với
+    # G4Q.sap_artifact_name(args.study) TRƯỚC KHI gọi G4Q.evaluate_study()
+    # bị patch (dòng ~521-536), nên với tên sai này approve_gate LUÔN từ
+    # chối ngay ở bước so tên file, KHÔNG BAO GIỜ chạm tới patch —
+    # caught=True bị suy ra từ lý do SAI (đúng lớp lỗi tautology BH72 mà
+    # module này sinh ra để triệt tiêu, nay tái phát ngay trong chính nó).
+    # Dùng đúng hàm hợp đồng dùng chung, khớp cách _wiring_seed_g8() đã
+    # làm đúng với G8Q.presubmission_artifact_name().
+    artifact = study_dir / G4Q.sap_artifact_name(study_dir.name)
     artifact.write_text(_g4_filled_sap(), encoding="utf-8", newline="\n")
     return artifact
 
