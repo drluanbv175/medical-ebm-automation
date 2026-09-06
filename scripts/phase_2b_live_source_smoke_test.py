@@ -52,6 +52,32 @@ def _evidence_payload(source_name: str, identifiers: Mapping[str, str]) -> Dict[
     return payload
 
 
+def _is_safe(result_status: CitationVerificationStatus, health_status: str) -> bool:
+    """True nếu KHÔNG có tổ hợp nguy hiểm: nguồn unavailable/timeout mà
+    verifier vẫn báo VERIFIED (đúng điều policy
+    "unavailable_or_timeout_must_not_be_verified" của báo cáo này cấm).
+
+    Vá 2026-09-06 (audit vòng 34, phát hiện #4 — tautology). Biểu thức CŨ:
+        result.status is not CitationVerificationStatus.VERIFIED
+        or result.safe_for_verified_evidence
+    là HẰNG ĐÚNG với MỌI status: `safe_for_verified_evidence` được định
+    nghĩa CHÍNH XÁC bằng `status is VERIFIED` (xem
+    CitationVerificationResult.safe_for_verified_evidence trong
+    app/evidence/citation_verification.py) — đặt X = (status is VERIFIED),
+    biểu thức cũ là "(not X) or X", luôn True bất kể nguồn có
+    unavailable/timeout hay không. Vì vậy `unsafe` trong main() KHÔNG BAO
+    GIỜ trở thành True và smoke test không bao giờ bắt được điều nó tuyên
+    bố kiểm (`policy: unavailable_or_timeout_must_not_be_verified`).
+
+    Bản vá đối chiếu ĐÚNG tín hiệu mà policy khai: health_status THẬT của
+    adapter (do SourceHealthMonitor.failure() ghi khi lookup ném exception/
+    timeout, hoặc source tự báo unavailable — xem
+    app/evidence/live_adapters/base.py) với status verifier trả về.
+    """
+    source_unavailable = health_status == "unavailable"
+    return not (source_unavailable and result_status is CitationVerificationStatus.VERIFIED)
+
+
 def _write_reports(report: Mapping[str, object], output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     json_path = output_dir / "phase_2b_live_source_smoke_report.json"
@@ -97,7 +123,7 @@ def main() -> int:
         identifiers = DEFAULT_IDENTIFIERS.get(source_name, {})
         verifier = CitationVerifier(adapter, today=date.today())
         result = verifier.verify(_evidence_payload(source_name, identifiers))
-        safe_status = result.status is not CitationVerificationStatus.VERIFIED or result.safe_for_verified_evidence
+        safe_status = _is_safe(result.status, adapter.health.health_status)
         if not safe_status:
             unsafe = True
         results.append({
