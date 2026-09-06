@@ -482,12 +482,19 @@ class ProjectQARunner:
     def _dr9_no_fabrication(self) -> QualityGateResult:
         gid = "D-R9"
         violations: List[str] = []
-        for art_id in (ArtifactID.PROTOCOL_DRAFT, ArtifactID.SAP_DRAFT,
-                       ArtifactID.RESEARCH_CHARTER):
+        # Vá 2026-09-06 (audit vòng 41, phát hiện #3): trước đây chỉ quét 3/19
+        # artifact (PROTOCOL_DRAFT/SAP_DRAFT/RESEARCH_CHARTER), bỏ sót
+        # MANUSCRIPT_OUTLINE_DRAFT — nơi văn bản bản thảo kèm trích dẫn/PMID
+        # thực sự nằm — trong khi D-R10 (PII) và D-R13 (external-action) đều
+        # quét TOÀN BỘ ArtifactID. Nay quét đủ như hai gate anh em.
+        for art_id in ArtifactID:
             path = self._dir / ARTIFACT_FILENAME[art_id]
             if not path.exists():
                 continue
-            content = path.read_bytes().decode("utf-8", errors="replace")
+            try:
+                content = path.read_bytes().decode("utf-8", errors="replace")
+            except Exception:
+                continue
             if contains_fabrication(content):
                 violations.append(ARTIFACT_FILENAME[art_id])
 
@@ -498,7 +505,7 @@ class ProjectQARunner:
                 details=str(violations))
 
         return QualityGateResult(gid, GateStatus.PASS,
-            "Không phát hiện fabrication marker trong các artifact chính.")
+            "Không phát hiện fabrication marker trong tất cả artifact.")
 
     # ------------------------------------------------------------------
     # D-R10 — Không có PII trong artifact

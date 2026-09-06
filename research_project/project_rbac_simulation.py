@@ -148,6 +148,23 @@ _RESEARCH_CONTENT_APPROVAL_ACTIONS: FrozenSet[str] = frozenset({
     "LOCK_RESEARCH_DATA",
 })
 
+# Vá 2026-09-06 (audit vòng 41, phát hiện #1): các role review ĐỘC LẬP mà
+# RBAC_POLICY[PI] tự khai (comment "SELF_REVIEW only; SoD guard blocks
+# independent claim" ngay dưới đây) — nếu cùng một actor giữ ĐỒNG THỜI role
+# PI và một trong các role này, họ không được ghi nhận attestation review/
+# evidence (SoD-06 CONFLICTING_ROLES_SAME_ACTOR, xem evaluate_rbac Guard 6).
+# Trước bản vá, SoD-06 chỉ tồn tại trong enum SoDViolation, không guard nào
+# thực thi — mâu thuẫn trực tiếp với câu chữ tự khai ở trên.
+_INDEPENDENT_REVIEWER_ROLES: FrozenSet[str] = frozenset({
+    ResearchRole.METHODS_STATISTICS_REVIEWER.value,
+    ResearchRole.EVIDENCE_CITATION_REVIEWER.value,
+    ResearchRole.DATA_GOVERNANCE_QA_REVIEWER.value,
+})
+_CONFLICTING_ROLE_ACTIONS: FrozenSet[str] = frozenset({
+    "RECORD_REVIEW_ATTESTATION",
+    "RECORD_EVIDENCE_ATTESTATION",
+})
+
 # Mapping role → set of permitted actions
 RBAC_POLICY: Dict[str, FrozenSet[str]] = {
     ResearchRole.PI.value: frozenset({
@@ -239,6 +256,25 @@ class RoleAssignment:
             exp = exp.replace(tzinfo=timezone.utc)
         return now > exp
 
+    def is_effective(self, now_utc: Optional[datetime] = None) -> bool:
+        """Trả True nếu role assignment ĐANG trong cửa sổ hiệu lực: đã tới
+        assigned_at_utc VÀ chưa is_expired().
+
+        Vá 2026-09-06 (audit vòng 41, phát hiện #2): is_expired() CHỈ kiểm
+        mốc kết thúc (expires_at_utc) — cả active_roles() lẫn vòng lặp
+        per-role trong evaluate_rbac() từng dùng "not is_expired()" làm điều
+        kiện "còn hiệu lực", nên một role assignment với assigned_at_utc còn
+        ở TƯƠNG LAI (chưa tới ngày bắt đầu) vẫn được coi là đang hoạt động
+        ngay hôm nay.
+        """
+        now = now_utc or datetime.now(timezone.utc)
+        start = datetime.fromisoformat(self.assigned_at_utc)
+        if start.tzinfo is None:
+            start = start.replace(tzinfo=timezone.utc)
+        if now < start:
+            return False
+        return not self.is_expired(now_utc)
+
 
 @dataclass
 class SyntheticActor:
@@ -269,7 +305,7 @@ class SyntheticActor:
         """Trả về danh sách role còn hiệu lực."""
         return [
             ra.role for ra in self.role_assignments
-            if not ra.is_expired(now_utc)
+            if ra.is_effective(now_utc)
         ]
 
     def to_dict(self) -> dict:
@@ -423,11 +459,11 @@ def evaluate_rbac(
         return _block(SoDViolation.EXPIRED_ROLE.value, "SOD-07-NO-ACTIVE-ROLE")
 
     # Guard 7: Check if any of the active roles is expired for this evaluation
-    # (re-check per-role expiry to ensure correct expiry block per role)
+    # (re-check per-role effective window to ensure correct expiry block per role)
     has_valid_role_for_action = False
     for ra in actor.role_assignments:
-        if ra.is_expired(now_utc):
-            continue  # skip expired role assignments
+        if not ra.is_effective(now_utc):
+            continue  # skip role assignments chưa hiệu lực hoặc đã hết hạn
         role = ra.role
         permitted = RBAC_POLICY.get(role, frozenset())
         if action in permitted:
@@ -466,6 +502,19 @@ def evaluate_rbac(
         if action == ResearchAction.RECORD_EVIDENCE_ATTESTATION.value and ctx.is_own_source:
             return _block(SoDViolation.EVIDENCE_REVIEWER_SELF_ATTEST.value,
                           "SOD-05-ECR-SELF-ATTEST")
+
+    # Guard 6: Cùng actor giữ ĐỒNG THỜI role PI và một role review độc lập
+    # không được ghi nhận attestation review/evidence. Vá 2026-09-06 (audit
+    # vòng 41, phát hiện #1): SoD-06 CONFLICTING_ROLES_SAME_ACTOR tồn tại
+    # trong enum từ trước nhưng CHƯA TỪNG có guard nào thực thi — mâu thuẫn
+    # với chính câu chữ RBAC_POLICY[PI] tự khai ("SoD guard blocks
+    # independent claim") và với "SoD matrix: DEFINED (8 guards implemented)"
+    # ở release_evidence/R1_1/R1_1_ROLE_POLICY_REFERENCE.md.
+    if (ResearchRole.PI.value in active_roles
+            and any(r in active_roles for r in _INDEPENDENT_REVIEWER_ROLES)
+            and action in _CONFLICTING_ROLE_ACTIONS):
+        return _block(SoDViolation.CONFLICTING_ROLES_SAME_ACTOR.value,
+                      "SOD-06-CONFLICTING-ROLES-SAME-ACTOR")
 
     # Final RBAC policy check
     if not has_valid_role_for_action:
