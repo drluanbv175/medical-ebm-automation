@@ -765,6 +765,22 @@ def scaffold(study_name: str, base_dir: str = None, with_docx: bool = True):
         md_fname = f"{num}_{fname}.md"
         md_path  = out / md_fname
 
+        # Vá 2026-09-06 (audit vòng 32, phát hiện #3 — CRITICAL): TRƯỚC bản
+        # vá, vòng lặp này LUÔN write_text() đè lên file .md dù đã tồn tại —
+        # gọi lại scaffold() trên MỘT đề tài đang chạy dở (gõ nhầm mã trùng,
+        # hoặc tưởng lệnh idempotent như regenerate_study_index()) xóa sạch
+        # PICO/SAP/ICF/... bác sĩ đã điền, thay lại bằng placeholder gốc,
+        # KHÔNG cảnh báo, KHÔNG backup. Comment ở dưới (study_meta.json) đã
+        # tự khẳng định "Tạo non-destructive (không đè nếu bác sĩ đã điền)"
+        # — nhưng lời hứa đó CHƯA từng áp cho vòng lặp .md/.docx này. Nay bỏ
+        # qua ĐÚNG entry (md + docx cùng cặp) khi file .md đã tồn tại, giữ
+        # đúng lời hứa "non-destructive" cho MỌI file scaffold sinh ra, không
+        # chỉ study_meta.json.
+        if md_path.exists():
+            created_md.append(md_fname)
+            print(f"  [SKIP] {md_fname} đã tồn tại — giữ nguyên (không ghi đè nội dung đã điền)")
+            continue
+
         header = (
             f"# {num}. {title.upper()}\n\n"
             f"> **Đề tài:** {study_name}  |  **Cổng:** {gate}  |  "
