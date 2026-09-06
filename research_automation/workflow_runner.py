@@ -130,8 +130,20 @@ class WorkflowRunner:
             # Chỉ merge kết quả của lần thử THẮNG (dù blocked giữa chừng hay thành
             # công trọn vẹn) vào registry dùng chung — register() đã idempotent
             # theo artifact_id nên gọi lại an toàn.
-            for art in proj_result.artifacts:
-                self.artifacts.register(art)
+            # Vá 2026-09-06 (audit vòng 38, phát hiện #2): bản cũ gọi register()
+            # rồi VỨT giá trị trả về, sau đó lặp lại trên `proj_result.artifacts`
+            # (object CỤC BỘ vừa build ở scratch registry của _do(), KHÔNG PHẢI
+            # object THẬT đang nằm trong self.artifacts). Khi artifact_id đã tồn
+            # tại từ một run TRƯỚC với NỘI DUNG KHÁC (cùng project_id, request
+            # khác đủ để có request_hash khác → không bị idempotency guard chặn),
+            # register() âm thầm giữ bản CŨ (đúng thiết kế đã ghi trong docstring
+            # của nó) — nhưng rec.artifact_hashes[...] vẫn ghi hash của bản MỚI
+            # chưa bao giờ thực sự được lưu, và review_queue nhận thêm MỘT item
+            # trùng cho cùng artifact_id không có nội dung mới để duyệt. Dùng
+            # GIÁ TRỊ TRẢ VỀ của register() (object THẬT đang lưu) cho mọi bước
+            # sau, và bỏ qua hash/review-item khi register() không nhận bản mới
+            # (registered_art is not art → nội dung này chưa từng được lưu).
+            registered = [self.artifacts.register(art) for art in proj_result.artifacts]
             rec.draft_transitions = [dataclasses.asdict(t) for t in proj_result.history]
 
             if proj_result.blocked:
@@ -143,7 +155,13 @@ class WorkflowRunner:
 
             # ── 7. Template + quality gates + review queue ────────────────────
             review_items = []
-            for art in proj_result.artifacts:
+            for art, stored in zip(proj_result.artifacts, registered):
+                if stored is not art:
+                    # artifact_id đã có nội dung khác được lưu trước đó — bản
+                    # vừa build KHÔNG được ghi (register() giữ bản cũ). Không có
+                    # gì mới để hash/duyệt; tạo review item ở đây sẽ là bản sao
+                    # trùng cho đúng artifact_id không có nội dung mới.
+                    continue
                 # artifact hash (truy nguyên)
                 rec.artifact_hashes[art.artifact_id] = RunRegistry.hash_obj(art.to_dict())
                 rec.agent_hashes[art.source_agent_id] = art.source_agent_hash or "NONE"
