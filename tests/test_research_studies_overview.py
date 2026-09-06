@@ -79,6 +79,11 @@ class TestStudySummary:
         d = tmp_path / "S3"
         _write_cp(d, "G0", {"gate": "G0"}, mtime=base)
         _write_cp(d, "G1", {"gate": "G1"}, mtime=base + 10000)
+        # G2 PHẢI có mặt (vòng 26: pipeline_freshness.GATE_DEPS["G3"] nay
+        # gồm G2, khớp gate_contract.resolve_design_code() thật) — thiếu
+        # G2 sẽ rơi vào nhánh orphan_downstream TRƯỚC KHI kịp kiểm stale,
+        # che mất chính điều test này muốn khoá.
+        _write_cp(d, "G2", {"gate": "G2"}, mtime=base + 2)
         _write_cp(d, "G3", {"gate": "G3"}, mtime=base + 5)  # cũ hơn G1 nhiều
         s = OV.study_summary(d)
         assert s["fresh"] is False
