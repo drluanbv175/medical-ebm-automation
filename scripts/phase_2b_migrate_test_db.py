@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,10 +17,18 @@ from sqlalchemy import create_engine, inspect  # noqa: E402
 from app.governance.migrations import GOVERNANCE_TABLES, create_governance_schema  # noqa: E402
 from scripts.phase_2b_seed_governance_test_data import seed_governance_test_data  # noqa: E402
 
+# Vá 2026-09-06 (audit vòng 34, phát hiện #2 — HIGH): "/private/tmp" là
+# symlink-target đặc thù macOS ("/tmp" -> "/private/tmp"); trên Linux (môi
+# trường CI/dev/server thật của repo này) thư mục "/private" không tồn tại
+# -> chạy script không kèm --db-path (cách gọi ngắn gọn thông thường) sẽ
+# crash OperationalError ngay khi mở file, không migrate được gì.
+# tempfile.gettempdir() tự resolve đúng thư mục tạm theo từng hệ điều hành.
+_DEFAULT_DB_PATH = str(Path(tempfile.gettempdir()) / "ebm_phase_2b_governance.db")
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Phase 2B test DB migration")
-    parser.add_argument("--db-path", default="/private/tmp/ebm_phase_2b_governance.db")
+    parser.add_argument("--db-path", default=_DEFAULT_DB_PATH)
     parser.add_argument("--fresh", action="store_true", help="Remove existing isolated test DB first")
     args = parser.parse_args()
     db_path = Path(args.db_path)

@@ -82,8 +82,16 @@ def main() -> int:
             current_content = SCOPE_A_MANIFEST_PATH.read_text(encoding="utf-8")
         except OSError as exc:
             problems.append(f"không đọc được manifest hiện tại: {exc}")
-            current_content = ""
-        if current_content and current_content != content:
+            current_content = None
+        # Vá 2026-09-06 (audit vòng 34, phát hiện #3 — guard tautology): điều
+        # kiện cũ dùng "current_content and current_content != content" — khi
+        # file manifest bị ghi đè thành RỖNG (0 byte, do lỗi ghi dở/disk
+        # full/thao tác nhầm) thì current_content == "" là falsy, biểu thức
+        # short-circuit về False MÀ KHÔNG hề so sánh nội dung, nên một manifest
+        # rỗng lọt qua --check thành "CHECK PASS" (đã tái hiện thật: làm rỗng
+        # manifest_source rồi chạy --check vẫn báo PASS). current_content=None
+        # (thay vì "") đánh dấu riêng ca "không đọc được file", tránh báo trùng.
+        if current_content is not None and current_content != content:
             problems.append("manifest hiện tại khác nội dung sinh lại từ .claude/agents")
         if self_hash != MANIFEST_SELF_CHECK_SHA256:
             problems.append("MANIFEST_SELF_CHECK_SHA256 không khớp manifest sinh lại")
