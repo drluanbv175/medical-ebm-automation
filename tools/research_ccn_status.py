@@ -200,6 +200,26 @@ _NEGATIVE_STATUS_MARKERS = ["not ", "chưa ", "khong ", "không ", "open", "mở
 _POSITIVE_STATUS_MARKERS = ["closed", "đã đóng", "da dong", "resolved", "hoàn thành",
                              "hoan thanh", "done", "issued", "signed", "engaged",
                              "written", "obtained", "provided"]
+# Tiền tố phủ định DÍNH LIỀN (không có khoảng trắng) trước một từ khoá KHẲNG ĐỊNH —
+# vá 2026-09-06 (vòng 29, phát hiện MEDIUM-HIGH): _NEGATIVE_STATUS_MARKERS chỉ bắt
+# phủ định TÁCH RỜI ("not ", "chưa "...), nên "UNRESOLVED" không khớp marker phủ
+# định nào nhưng LẠI khớp "resolved" (marker khẳng định) qua `in` — is_closed_status
+# trả True cho một trạng thái CÒN MỞ, ngược hẳn nguyên tắc "không suy diễn CLOSED từ
+# chuỗi phủ định" mà chính docstring khối này khai. Cùng họ rủi ro với "unsigned"/
+# "undone"/"unwritten"/"unobtained"/"unprovided"/"unissued"/"unengaged" — mọi từ
+# khẳng định tiếng Anh trong danh sách trên đều có thể bị phủ định bằng tiền tố "un"
+# dính liền theo đúng cách tương tự, không chỉ riêng "resolved".
+_NEGATION_PREFIXES_ATTACHED = ("un", "non", "ir")
+
+
+def _has_unnegated_positive_marker(s: str) -> bool:
+    for marker in _POSITIVE_STATUS_MARKERS:
+        pattern = "".join(
+            f"(?<!{re.escape(prefix)})" for prefix in _NEGATION_PREFIXES_ATTACHED
+        ) + re.escape(marker)
+        if re.search(pattern, s):
+            return True
+    return False
 
 
 def is_closed_status(status_text: str) -> bool:
@@ -208,7 +228,7 @@ def is_closed_status(status_text: str) -> bool:
         return False
     if any(m in s for m in _NEGATIVE_STATUS_MARKERS):
         return False
-    return any(m in s for m in _POSITIVE_STATUS_MARKERS)
+    return _has_unnegated_positive_marker(s)
 
 
 # ----------------------------------------------------------------------------
