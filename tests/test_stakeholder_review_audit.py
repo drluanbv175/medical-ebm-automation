@@ -25,31 +25,45 @@ if str(_REPO_ROOT) not in sys.path:
 
 import stakeholder_review_audit as SRA  # noqa: E402
 
-from runtime.approval_ledger import ApprovalLedger  # noqa: E402
+from tests.g5_test_helpers import (  # noqa: E402
+    append_signed_approval,
+    configure_test_signing_key,
+)
 
 _STUDY = "__stakeholder_audit_selftest_delete_me__"
 
 
 @pytest.fixture()
-def study_with_valid_ledger():
-    """Đề tài có approval_ledger.json THẬT với đúng 1 gate (G2/IRB) đã duyệt hợp lệ,
-    3 gate còn lại (G4/G8/G9) chưa có approval nào."""
+def study_with_valid_ledger(tmp_path, monkeypatch):
+    """Đề tài có approval_ledger.json THẬT với đúng 1 gate (G2/IRB) đã duyệt hợp lệ —
+    CÓ CHỮ KÝ THẬT và artifact G2 thật trên đĩa khớp evidence_hash — 3 gate còn lại
+    (G4/G8/G9) chưa có approval nào.
+
+    VÁ 2026-09-06 (vòng 28, phát hiện #1): TRƯỚC bản vá của
+    tools/stakeholder_review_audit.py, fixture này chỉ ghi một bản ghi KHÔNG chữ ký
+    và KHÔNG artifact thật trên đĩa — đủ để ApprovalLedger.stakeholder_gate_status()
+    (nguồn CŨ, không xác minh chữ ký) báo [PASS], nhưng KHÔNG phải một phê duyệt THẬT
+    theo gate_contract.gate_block_reason() (nguồn mà tools/approve_gate.py dùng để
+    chặn thật). Sau khi _print_real_ledger_status() chuyển sang dùng
+    gate_block_reason() làm nguồn quyết định, một fixture "hợp lệ" phải phản ánh ĐÚNG
+    một phê duyệt thật: có ký (configure_test_signing_key + append_signed_approval,
+    mẫu dùng chung với tests/test_g4_quality_gate.py, tests/test_g9_quality_gate.py…)
+    và artifact khớp hash — đúng thứ approve_gate.py thật sự đòi hỏi."""
     study_dir = _REPO_ROOT / "exports" / _STUDY
     if study_dir.exists():
         shutil.rmtree(study_dir)
     study_dir.mkdir(parents=True)
+    configure_test_signing_key(tmp_path, monkeypatch)
     try:
-        ledger = ApprovalLedger()
-        record = ApprovalLedger.make_human_approval(
-            gate_id="G2",
-            reviewer_role="IRB_ETHICS_COMMITTEE",
-            reviewer_ref="IRB-AUDIT-TEST-01",
-            scope="Stakeholder review audit self-test",
-            evidence_content="Ethics committee letter — self test content",
+        artifact = study_dir / f"G2_A3_ETHICS_PACKAGE_{_STUDY}.md"
+        artifact.write_text(
+            "Ethics committee letter — self test content\nCần bác sĩ kiểm chứng.\n",
+            encoding="utf-8",
+            newline="\n",
         )
-        ok, reason = ledger.add_approval(record)
-        assert ok, reason
-        ledger.to_file(study_dir / "approval_ledger.json")
+        append_signed_approval(
+            _STUDY, artifact, "G2", "IRB_ETHICS_COMMITTEE", repo_root=_REPO_ROOT
+        )
         yield _STUDY
     finally:
         shutil.rmtree(study_dir, ignore_errors=True)
@@ -85,7 +99,13 @@ class TestValidLedgerReporting:
         out = capsys.readouterr().out
         assert exit_code == 2
         assert "[BLOCKED] G9" in out
-        assert "MISSING_REQUIRED_STAKEHOLDER" in out
+        # VÁ 2026-09-06 (vòng 28): lý do nay đến từ GC.gate_block_reason() (nguồn thật),
+        # KHÔNG còn từ ApprovalLedger.stakeholder_gate_status() (nguồn không xác minh
+        # chữ ký) — chuỗi "MISSING_REQUIRED_STAKEHOLDER" chỉ tồn tại ở nguồn cũ. Không
+        # có approval G9 nào trong ledger NÊN gate_block_reason() không thấy bản ghi
+        # nào khớp gate_id="G9" — nhưng vì G9_checkpoint.json cũng chưa từng được tạo
+        # trong fixture này, lý do THẬT SỰ chặn còn sớm hơn: thiếu artifact.
+        assert "không thấy artifact cần đối chiếu" in out
 
 
 class TestMissingLedger:
