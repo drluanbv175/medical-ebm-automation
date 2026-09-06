@@ -1430,6 +1430,40 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
                 **extras,
             }
 
+    # Vá 2026-09-06 (audit vòng 32): G6 có `quality_gate` riêng
+    # (tools/g6_quality_gate.py::_finish() ghi cp["quality_gate"] = {"status": ...}
+    # NGAY TRONG checkpoint, cùng khuôn G0 — không có `quality_contract_version`
+    # cấp cao như G2/G3/G4/G7/G8/G9), nhưng TRƯỚC bản vá G6 không có nhánh riêng
+    # nào đọc khối này — rơi thẳng vào nhánh REAL_SIGNAL_BY_PIPELINE_GATE bên
+    # dưới, vốn CHỈ nhìn tín hiệu `db_locked` (suy từ checkpoint G5, không hề
+    # đọc checkpoint G6). Hậu quả xác nhận bằng chạy thật: G6-AUTO-06 (chạy
+    # phân tích TRƯỚC khi khoá dữ liệu — vi phạm DATA LOCK) đặt
+    # quality_gate.status="BLOCKED" trong G6_checkpoint.json, nhưng đài kiểm
+    # soát vẫn báo "LOCKED_REAL_SIGNAL"/"Không cần hành động" nếu G5 đã khoá —
+    # một vi phạm tiền đăng ký nghiêm trọng bị lờ hoàn toàn. Thêm nhánh riêng
+    # cho G6, ĐÚNG khuôn G0 (chỉ chặn khi BLOCKED — các trạng thái khác của
+    # quality_gate vẫn rơi vào nhánh REAL_SIGNAL_BY_PIPELINE_GATE như cũ, giữ
+    # nguyên hành vi hiện có cho phần chưa bị lỗi này).
+    if gate == "G6" and isinstance(cp.get("quality_gate"), dict):
+        quality = cp["quality_gate"]
+        if quality.get("status") == "BLOCKED":
+            return {
+                "gate": gate,
+                "label": PIPELINE_GATE_LABELS[gate],
+                "status": STATUS_GUARDRAIL_FAIL,
+                "guardrail": guardrail,
+                "checkpoint": str(checkpoint_path),
+                "real_signal": None,
+                "stale": stale,
+                "orphan": orphan,
+                "can_auto_run": False,
+                "next_action": (
+                    "Sửa lỗi trong G6_QUALITY_REPORT rồi chạy lại "
+                    f"`python3 tools/g6_quality_gate.py --study {study}`."
+                ),
+                **extras,
+            }
+
     if gate in REAL_SIGNAL_BY_PIPELINE_GATE:
         signal_key, signal_label = REAL_SIGNAL_BY_PIPELINE_GATE[gate]
         locked = bool(signals.get(signal_key))
