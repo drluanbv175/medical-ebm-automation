@@ -52,6 +52,10 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import g4_quality_gate as G4Q  # noqa: E402
+import g8_quality_gate as G8Q  # noqa: E402
+import g9_quality_gate as G9Q  # noqa: E402
+import g10_quality_gate as G10Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 
 from app.utils.console import configure_unicode_console  # noqa: E402
@@ -132,17 +136,61 @@ def _print_research_project_result(result: dict) -> None:
         print(f"[research_project/] Kết quả không xác định: {result}")
 
 
-def _print_real_ledger_status(approval_ledger: ApprovalLedger, gates: tuple[str, ...]) -> bool:
-    """In trạng thái THẬT (nguồn sự thật chính) cho từng gate. Trả True nếu TẤT CẢ
-    gate được hỏi đều satisfied."""
+def _gate_artifact_path(gate_id: str, study: str, study_dir: Path) -> Path:
+    """Tên artifact CHUẨN mà tools/approve_gate.py đối chiếu cho từng cổng trước khi
+    coi là đã duyệt — PHẢI khớp Y HỆT hằng số/hàm hợp đồng của từng cổng, không tự
+    suy tên (xem CLAUDE.md mục "5 nhánh mồ côi" và bài học BH72: sai tên artifact là
+    cách chắc chắn nhất để một lớp kiểm không bao giờ chạm việc xác minh thật)."""
+    if gate_id == "G2":
+        return study_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    if gate_id == "G4":
+        return study_dir / G4Q.sap_artifact_name(study)
+    if gate_id == "G5":
+        return study_dir / "G5_checkpoint.json"
+    if gate_id == "G8":
+        return study_dir / G8Q.presubmission_artifact_name(study)
+    if gate_id == "G9":
+        return study_dir / G9Q.CHECKPOINT_JSON
+    if gate_id == "G10":
+        return study_dir / G10Q.CHECKPOINT_JSON
+    raise ValueError(f"stakeholder_review_audit.py chưa biết tên artifact chuẩn cho cổng {gate_id!r}")
+
+
+def _print_real_ledger_status(
+    approval_ledger: ApprovalLedger, gates: tuple[str, ...], study: str, repo_root: Path
+) -> bool:
+    """In trạng thái THẬT cho từng gate. Trả True nếu TẤT CẢ gate được hỏi đều satisfied.
+
+    VÁ 2026-09-06 (vòng 28 — phát hiện #1, NGHIÊM TRỌNG): TRƯỚC bản vá, hàm này lấy
+    satisfied/reason DUY NHẤT từ approval_ledger.stakeholder_gate_status(gate_id) —
+    hàm đó (runtime/approval_ledger.py::check_required_stakeholder_approval) lọc bản
+    ghi theo gate_id/is_synthetic/self-review/reviewer_role nhưng KHÔNG BAO GIỜ gọi
+    GC.verify_approval_signature(). Hậu quả: một bản ghi APPROVED KHÔNG có chữ ký
+    (hoặc chữ ký sai/không khớp khóa nào) vẫn được công cụ này báo [PASS], trong khi
+    GC.ledger_approved()/gate_block_reason() — nguồn sự thật THẬT mà
+    tools/approve_gate.py và tools/run_g10_assemble.py dùng để CHẶN THẬT — coi cổng đó
+    CHƯA duyệt. Một công cụ "chỉ để xem" nói ngược với cổng thật còn nguy hiểm hơn
+    không có công cụ nào, vì bác sĩ tin vào con số nó in ra.
+
+    Nay satisfied/reason lấy từ GC.gate_block_reason(gate_id, study, artifact_path,
+    repo_root) — CÙNG một hàm mà pipeline thật dùng để chặn, nên không thể còn lệch
+    nữa theo thiết kế (không phải theo từng trường hợp test). stakeholder_gate_status()
+    chỉ còn được gọi ĐỂ LẤY THÊM chi tiết hiển thị (required_stakeholder/approval_id/
+    reviewer_role) — KHÔNG BAO GIỜ dùng để quyết định satisfied/exit code."""
     print("\n[ApprovalLedger — nguồn sự thật thật] Trạng thái stakeholder theo gate:")
     all_satisfied = True
+    study_dir = repo_root / "exports" / study
     for gate_id in gates:
         status = approval_ledger.stakeholder_gate_status(gate_id)
-        satisfied = bool(status.get("satisfied"))
+        artifact_path = _gate_artifact_path(gate_id, study, study_dir)
+        reason = GC.gate_block_reason(gate_id, study, artifact_path, repo_root=repo_root)
+        satisfied = reason is None
         all_satisfied = all_satisfied and satisfied
         tag = "PASS" if satisfied else "BLOCKED"
-        print(f"    [{tag}] {gate_id} — cần: {status.get('required_stakeholder')} — lý do: {status.get('reason')}")
+        print(
+            f"    [{tag}] {gate_id} — cần: {status.get('required_stakeholder')} — "
+            f"lý do: {'OK' if satisfied else reason}"
+        )
         if satisfied:
             print(f"          approval_id={status.get('approval_id')} reviewer_role={status.get('reviewer_role')}")
     return all_satisfied
@@ -222,7 +270,7 @@ def main(argv: list[str] | None = None) -> int:
     _print_research_project_result(rp_result)
 
     # Bước 3 — nguồn sự thật CHÍNH, luôn chạy dù bước 2 thành công hay thất bại.
-    all_satisfied = _print_real_ledger_status(approval_ledger, gates)
+    all_satisfied = _print_real_ledger_status(approval_ledger, gates, args.study, _REPO_ROOT)
 
     print(
         "\nCần bác sĩ kiểm chứng. Script này CHỈ ĐỂ XEM — không có run_g*_auto.py nào "
