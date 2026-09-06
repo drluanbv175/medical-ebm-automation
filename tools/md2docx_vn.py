@@ -503,17 +503,28 @@ def _strip_md(text: str) -> str:
 
 
 def _clean_formula(text: str) -> str:
+    """Dọn cú pháp LaTeX của khối `$$...$$` thành văn bản đọc được, rồi giao
+    cho `_add_text()` (gọi ngay sau ở nơi dùng). GIỮ NGUYÊN `_{...}`/`^{...}`
+    — đó là cú pháp chỉ số NHIỀU KÝ TỰ mà `_VERTALIGN_RE`/`_add_text()` cần
+    (xem docstring ngay trên `_VERTALIGN_RE`, vd `Z_{1-α/2}`). Bản trước xóa
+    braces của `_{...}` NGAY TẠI ĐÂY (và của cả `^{...}` qua .replace cuối vô
+    điều kiện) nên tới `_add_text()` không còn dấu hiệu nào để dựng run
+    `vertAlign` thật — chỉ số nhiều ký tự trong công thức hiển thị PHẲNG như
+    chữ thường (vd "Z_1-alpha/2" thay vì Z với "1-α/2" hạ chỉ số thật)."""
     text = text.strip()
     if text.startswith("$$") and text.endswith("$$"):
         text = text[2:-2]
     subs = [
         (r"\\frac\{([^{}]+)\}\{([^{}]+)\}", r"(\1) / (\2)"),
         (r"\\times", "×"), (r"\\cdot", "·"), (r"\\alpha", "α"),
-        (r"\\approx", "≈"), (r"_\{([^{}]+)\}", r"_\1"), (r"\\%", "%"),
+        (r"\\approx", "≈"), (r"\\%", "%"),
     ]
     for pat, rep in subs:
         text = re.sub(pat, rep, text)
-    return text.replace("{", "").replace("}", "").strip()
+    # Chỉ dọn braces KHÔNG thuộc `_{...}`/`^{...}` (còn sót từ LaTeX chưa được
+    # thay ở trên, vd `\text{...}`) — braces NGAY SAU `_`/`^` được giữ nguyên.
+    text = re.sub(r"(?<![_^])\{([^{}]*)\}", r"\1", text)
+    return text.strip()
 
 
 def _parse_table(lines: List[str], start: int):
