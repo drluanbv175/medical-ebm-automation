@@ -660,7 +660,17 @@ def _row_status(gate_field: str, out_dir: Path) -> str:
         cp = json.loads(cp_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return "🔴 Chưa có"
-    if _GC.is_blocked(cp):
+    # Vá 2026-09-06 (audit vòng 32, phát hiện #4): `_GC.is_blocked(cp)` CHỈ đọc
+    # `needs_input.blocked` — không hề nhìn tới `guardrail`. Mọi run_gN_auto.py
+    # thật (G0/G1/G2/G7/G8/G9) đều ghi `guardrail` dưới dạng
+    # {"passed": bool, "errors": [...]}, không phải chuỗi/nhãn trạng thái —
+    # nên chỉ cần đọc đúng khóa `passed` này để bắt lỗi liêm chính (vd PII bị
+    # phát hiện, vi phạm R2) mà KHÔNG kèm needs_input.blocked. Trước bản vá,
+    # một checkpoint như vậy báo "✅ Xong" trên STUDY_INDEX.md dù artifact
+    # tương ứng đang bị chặn vì lỗi liêm chính thật sự.
+    guardrail = cp.get("guardrail")
+    guardrail_failed = isinstance(guardrail, dict) and guardrail.get("passed") is False
+    if _GC.is_blocked(cp) or guardrail_failed:
         return "🚧 Dự thảo — chờ input"
     return "✅ Xong"
 
