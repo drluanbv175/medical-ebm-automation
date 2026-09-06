@@ -211,7 +211,7 @@ def sec_tomtat(cps, meta) -> str:
         )
     )
     return (
-        "# 1. Tóm tắt\n\n"
+        f"{S.de_cuong_heading('tomtat')}\n\n"
         f"**Đề tài:** {topic}\n\n"
         f"**Thiết kế:** {design} (chuẩn báo cáo {std}).  \n"
         f"**Cỡ mẫu dự kiến:** {n_txt}.  \n"
@@ -237,7 +237,7 @@ def sec_datvande(cps, meta) -> str:
         else ""
     )
     return (
-        "# 2. Đặt vấn đề\n\n"
+        f"{S.de_cuong_heading('datvande')}\n\n"
         f"Mức độ chứng cứ hiện có (tự động từ G0): **{ev}**, dựa trên "
         f"{n_sr} tài liệu PubMed liên quan đã truy hồi.\n\n"
         "Khoảng trống nghiên cứu (tự động từ G0):\n\n"
@@ -258,7 +258,7 @@ def sec_cauhoi(cps, meta) -> str:
     # theo ĐÚNG pattern meta-driven đã có ở sec_muctieu (aim/objectives).
     qtype = _g(cps["G1"], "question_type", default=TAG_BS)
     lines = [
-        "# 3. Câu hỏi nghiên cứu và giả thuyết\n",
+        f"{S.de_cuong_heading('cauhoi')}\n",
         f"**Loại câu hỏi (tự động từ G1):** {qtype}.\n",
     ]
     if meta.get("research_question") or meta.get("pico") or meta.get("hypothesis"):
@@ -309,10 +309,10 @@ def sec_cauhoi(cps, meta) -> str:
 def sec_muctieu(cps, meta) -> str:
     objs = meta.get("objectives") or []
     aim = meta.get("aim")
-    lines = ["# 4. Mục tiêu\n"]
-    lines.append("## 4.1. Mục tiêu chung\n")
+    lines = [f"{S.de_cuong_heading('muctieu')}\n"]
+    lines.append(f"{S.de_cuong_sub_heading('muctieu', 0)}\n")
     lines.append((aim + "\n") if aim else f"{TAG_BS} — mục tiêu chung của đề tài.\n")
-    lines.append("## 4.2. Mục tiêu cụ thể\n")
+    lines.append(f"{S.de_cuong_sub_heading('muctieu', 1)}\n")
     if objs:
         for i, o in enumerate(objs, 1):
             lines.append(f"{i}. {o}")
@@ -330,7 +330,7 @@ def sec_thietke(cps, meta) -> str:
     rs = S.reporting_standards_for(code)
     alt = _g(cps["G1"], "design", "alternative_1", default=None)
     txt = [
-        "# 5. Thiết kế và bối cảnh\n",
+        f"{S.de_cuong_heading('thietke')}\n",
         f"**Thiết kế (tự động từ G1):** {design}.\n",
         f"**Mã thiết kế nội bộ:** `{code}`.\n",
         f"**Chuẩn báo cáo chính:** {rs['primary']}.  ",
@@ -372,13 +372,13 @@ def sec_doituong(cps, meta) -> str:
     )
     draft_note = f"> {_META_DRAFT_NOTE}\n\n" if (inclusion or exclusion or sampling) else ""
     return (
-        "# 6. Đối tượng nghiên cứu\n\n"
+        f"{S.de_cuong_heading('doituong')}\n\n"
         f"{draft_note}"
-        "## 6.1. Tiêu chuẩn chọn\n\n"
+        f"{S.de_cuong_sub_heading('doituong', 0)}\n\n"
         f"{inclusion_txt}\n\n"
-        "## 6.2. Tiêu chuẩn loại\n\n"
+        f"{S.de_cuong_sub_heading('doituong', 1)}\n\n"
         f"{exclusion_txt}\n\n"
-        "## 6.3. Tuyển mẫu\n\n"
+        f"{S.de_cuong_sub_heading('doituong', 2)}\n\n"
         f"{sampling_txt}\n"
     )
 
@@ -389,7 +389,7 @@ def sec_bienso(cps, meta) -> str:
     generic = _g(cps["G5"], "specialty_is_generic_placeholder", default=False)
     specialty = _g(cps["G5"], "specialty", default="generic")
     lines = [
-        "# 7. Biến số và kết cục\n",
+        f"{S.de_cuong_heading('bienso')}\n",
         f"**Bộ biến số CRF/REDCap (tự động từ G5):** {n_rows} biến, "
         f"chuyên khoa nhận diện = `{specialty}`.\n",
     ]
@@ -449,7 +449,7 @@ def sec_bienso(cps, meta) -> str:
 def sec_comau(cps, meta) -> str:
     g3 = cps["G3"]
     if not g3:
-        return ("# 8. Cỡ mẫu\n\n"
+        return (f"{S.de_cuong_heading('comau')}\n\n"
                 f"{TAG_BS} — chưa có checkpoint G3 (cỡ mẫu).\n")
     n_per = _g(g3, "n_per_group", default="?")
     n_total = _g(g3, "n_total", default="?")
@@ -485,7 +485,7 @@ def sec_comau(cps, meta) -> str:
         else:
             confirmed_block = f"\n**N thực tế đã chốt (bác sĩ/chủ nhiệm quyết định):** **{confirmed_n}**.\n"
     return (
-        "# 8. Cỡ mẫu\n\n"
+        f"{S.de_cuong_heading('comau')}\n\n"
         f"**Công thức áp dụng (tự động từ G3):** {formula}.\n\n"
         f"- Mức ý nghĩa α = {alpha}; lực mẫu (power) = {power}.\n"
         f"- Cỡ mẫu tối thiểu tính được: **{n_total}**{per_group}.\n"
@@ -521,7 +521,7 @@ def sec_congcu(cps, meta) -> str:
     qc_plan = meta.get("quality_control") or meta.get("qc_plan")
     pilot = meta.get("pilot") or meta.get("pilot_plan")
     return (
-        "# 9. Công cụ và quy trình thu thập\n\n"
+        f"{S.de_cuong_heading('congcu')}\n\n"
         f"{instrument_txt}\n"
         f"**Nguồn dữ liệu:** {_text(data_source)}.  \n"
         f"**Quy trình thu thập:** {_text(procedure)}.  \n"
@@ -632,7 +632,7 @@ def sec_quantri_dulieu(cps, meta) -> str:
             "--confirm-sap-locked`.\n\n"
         )
     return (
-        "# 10. Quản trị dữ liệu và bảo mật\n\n"
+        f"{S.de_cuong_heading('quantri_dulieu')}\n\n"
         f"**Trạng thái khoá cơ sở dữ liệu (tự động từ G5):** {lock}.\n\n"
         f"{pseudo_txt}"
         f"{deid_txt}"
@@ -673,7 +673,7 @@ def sec_sap(cps, meta) -> str:
     # tệ hơn là không ai nhận ra.
     if code == "qualitative":
         return (
-            "# 11. Kế hoạch phân tích thống kê\n\n"
+            f"{S.de_cuong_heading('sap')}\n\n"
             f"**Phiên bản SAP (tự động từ G4):** {ver} — trạng thái: {status}.\n\n"
             "**Không áp dụng phân tích thống kê suy diễn (nghiên cứu ĐỊNH TÍNH):**\n"
             "- Phân tích chính: mã hóa chủ đề (thematic/framework analysis) — mã "
@@ -705,7 +705,7 @@ def sec_sap(cps, meta) -> str:
     )
     if RS.is_present(analysis.get("primary_method")):
         return (
-            "# 11. Kế hoạch phân tích thống kê\n\n"
+            f"{S.de_cuong_heading('sap')}\n\n"
             f"**Phiên bản SAP (tự động từ G4):** {ver} — trạng thái: {status}.\n\n"
             f"- **Kết cục chính trong SAP:** {_text(analysis.get('primary_outcome'))}.\n"
             f"- **Phân tích chính định trước:** {_text(analysis.get('primary_method'))}.\n"
@@ -720,7 +720,7 @@ def sec_sap(cps, meta) -> str:
             f"Mã thiết kế `{code}`.\n"
         )
     return (
-        "# 11. Kế hoạch phân tích thống kê\n\n"
+        f"{S.de_cuong_heading('sap')}\n\n"
         f"**Phiên bản SAP (tự động từ G4):** {ver} — trạng thái: {status}.\n\n"
         "**Phân tích dự kiến (định trước):**\n"
         "- Mô tả: tần số/tỷ lệ (biến định tính), TB±ĐLC hoặc trung vị (IQR) tuỳ "
@@ -740,7 +740,7 @@ def sec_sailech(cps, meta) -> str:
     bias = meta.get("bias") if isinstance(meta.get("bias"), dict) else {}
     if RS.is_present(bias):
         return (
-            "# 12. Sai lệch và kiểm soát\n\n"
+            f"{S.de_cuong_heading('sailech')}\n\n"
             f"**Công cụ/khung phù hợp thiết kế:** {rs['extra']}.\n\n"
             f"**Nguy cơ sai lệch đã xác định:** {_text(bias.get('risks'))}.\n\n"
             f"**Biện pháp giảm thiểu:** {_text(bias.get('mitigations'))}.\n\n"
@@ -748,7 +748,7 @@ def sec_sailech(cps, meta) -> str:
             "được ghi amendment/deviation và đánh giá ảnh hưởng.\n"
         )
     return (
-        "# 12. Sai lệch và kiểm soát\n\n"
+        f"{S.de_cuong_heading('sailech')}\n\n"
         f"**Công cụ đánh giá nguy cơ sai lệch phù hợp thiết kế:** {rs['extra']}.\n\n"
         "**Các loại sai số cần khống chế:** sai số chọn mẫu, sai số thông tin, "
         "sai số nhớ lại, nhiễu (confounding); và — với nghiên cứu hài lòng/khảo "
@@ -776,7 +776,7 @@ def sec_daoduc(cps, meta) -> str:
                      "Đạo đức và nhận số thật trước khi thu thập dữ liệu.")
     ethics = meta.get("ethics") if isinstance(meta.get("ethics"), dict) else {}
     return (
-        "# 13. Đạo đức nghiên cứu\n\n"
+        f"{S.de_cuong_heading('daoduc')}\n\n"
         f"**Phân loại nguy cơ (tự động từ G2):** {risk}.  \n"
         f"**Lộ trình thẩm định:** {route}.  \n"
         f"**Đăng ký nghiên cứu:** {reg} ({reg_where}).\n\n"
@@ -809,7 +809,7 @@ def sec_phobien(cps, meta) -> str:
     dissemination = registration.get("dissemination") or meta.get("dissemination_plan")
     registration_plan = registration.get("plan")
     return (
-        "# 14. Kế hoạch phổ biến kết quả/ứng dụng\n\n"
+        f"{S.de_cuong_heading('phobien')}\n\n"
         f"**Kế hoạch đăng ký/preregistration:** {_text(registration_plan)}.\n\n"
         f"**Kế hoạch phổ biến/chuyển giao:** {_text(dissemination)}."
         f"{js_txt}\n"
@@ -819,7 +819,7 @@ def sec_phobien(cps, meta) -> str:
 def sec_tiendo(cps, meta) -> str:
     resources = meta.get("resources") if isinstance(meta.get("resources"), dict) else {}
     return (
-        "# 15. Tiến độ và nguồn lực\n\n"
+        f"{S.de_cuong_heading('tiendo')}\n\n"
         f"**Nhân lực & phân công:** {_text(resources.get('team'))}.\n\n"
         f"**Tiến độ theo mốc cổng G0–G9:** {_text(resources.get('timeline'))}.\n\n"
         f"**Dự trù kinh phí:** {_text(resources.get('budget'))} — đơn giá/định mức do chủ nhiệm ấn định, "
@@ -835,7 +835,7 @@ def sec_tltk(cps, meta) -> str:
             if pid not in pmids:
                 pmids.append(str(pid))
     # G0 có thể lưu PMID trong pubmed_results — nhưng schema hiện chỉ đếm số.
-    lines = ["# 16. Tài liệu tham khảo Vancouver/NLM\n"]
+    lines = [f"{S.de_cuong_heading('tltk')}\n"]
     if pmids:
         lines.append(
             "Danh sách PMID hạt giống (tự động từ G0/G7). Đây là ĐỊNH DANH THẬT "
@@ -853,10 +853,112 @@ def sec_tltk(cps, meta) -> str:
     return "\n".join(lines)
 
 
+def sec_tongquan(cps, meta) -> str:
+    """§3 Tổng quan tài liệu và khung lý thuyết — THÊM 06/09/2026 (khuôn 18 mục).
+
+    Vì sao có: khuôn 16 mục cũ không có chương Tổng quan (hội đồng đạo đức/khoa học
+    trong nước và SPIRIT 2025 "Background and rationale" đều đòi) và không có chỗ
+    cho khung lý thuyết/mô hình khái niệm (bắt buộc với đề tài HSR/hành vi/định
+    tính). Đo trên C1a: bản đề cương viết tay đã có đủ (§3.1–3.5) nhưng bản G10 lắp
+    ráp thì không — hai bản "sống" song song, đúng thứ templates/01 cảnh báo.
+    G10 chỉ dựng khung + nhồi DỮ LIỆU THẬT (số tài liệu, mức chứng cứ, sổ Evidence
+    Ledger A2b, trường study_meta) — văn xuôi tổng hợp do `tong-quan-y-van`/bác sĩ
+    viết; G10 không tự viết để tránh bịa nội dung y văn.
+    """
+    g0 = cps.get("G0") or {}
+    n_pmids = _g(g0, "pubmed_results", "n_pmids",
+                 default=_g(g0, "n_pmids", default="?"))
+    n_sr = _g(g0, "n_sr", default=_g(g0, "pubmed_results", "n_sr", default="?"))
+    n_rct = _g(g0, "n_rct", default=_g(g0, "pubmed_results", "n_rct", default="?"))
+    ev = _g(g0, "evidence_level", default=TAG_BS)
+    lit = meta.get("literature") if isinstance(meta.get("literature"), dict) else {}
+    theory = meta.get("theory") if isinstance(meta.get("theory"), dict) else {}
+    ledger = lit.get("ledger_artifact") or _g(
+        cps.get("G1"), "artifacts", "A2b_evidence_ledger", default=None
+    )
+    ledger_txt = (
+        f"`{ledger}`" if RS.is_present(ledger)
+        else "Evidence Ledger A2b (sinh ở G1; mỗi dòng một PMID/DOI)"
+    )
+    framework = theory.get("framework")
+    na_rationale = theory.get("not_applicable_rationale")
+    if RS.is_present(framework):
+        framework_txt = _text(framework)
+    elif RS.is_present(na_rationale):
+        framework_txt = f"Không áp dụng — lý do: {_text(na_rationale)}"
+    else:
+        framework_txt = (
+            f"{TAG_BS} (nêu khung dùng để chọn biến và giải thích kết quả — vd "
+            "Donabedian, SERVQUAL, mô hình hành vi, khung sinh lý bệnh; thiết kế "
+            "thuần sinh học/dược lý ghi rõ \"không áp dụng\" kèm lý do, không bỏ trống)"
+        )
+    return (
+        f"{S.de_cuong_heading('tongquan')}\n\n"
+        f"**Bằng chứng đã truy hồi (tự động từ G0):** {n_pmids} tài liệu PubMed liên "
+        f"quan; {n_sr} tổng quan hệ thống; {n_rct} RCT; mức chứng cứ hiện có: **{ev}**. "
+        f"Nguồn truy xuất từng bài: {ledger_txt}.\n\n"
+        f"**Tổng hợp các nghiên cứu trước (theo nhóm thiết kế/quần thể/công cụ):** "
+        f"{_text(lit.get('summary'))}\n\n"
+        f"**Điểm đồng thuận trong y văn:** {_text(lit.get('consensus'))}\n\n"
+        f"**Điểm bất đồng/mâu thuẫn và lý giải khả dĩ:** {_text(lit.get('disagreements'))}\n\n"
+        "**Khoảng trống nghiên cứu:** xem mục 2 (không lặp lại).\n\n"
+        f"**Điểm khác biệt/tính mới của đề tài so với nghiên cứu gần nhất:** "
+        f"{_text(lit.get('novelty'))}\n\n"
+        f"**Khung lý thuyết / mô hình khái niệm:** {framework_txt}\n\n"
+        "> Quy tắc: mọi khẳng định về một bài phải truy được PMID/DOI đã xác minh "
+        "(`kiem-chung-trich-dan`) và đã tra rút bài bằng `check_citation_retraction.py`; "
+        "không tra được thì ghi \"chưa kiểm rút bài\", KHÔNG ghi \"chưa bị rút\". "
+        "Văn xuôi tổng hợp do `tong-quan-y-van`/bác sĩ soạn — G10 không tự viết.\n"
+    )
+
+
+def sec_dukien_ketqua(cps, meta) -> str:
+    """§13 Dự kiến kết quả và khung bảng trống — THÊM 06/09/2026 (khuôn 18 mục).
+
+    Đề cương là KẾ HOẠCH: mục này không chứa số liệu (luật R6 của check_de_cuong
+    chặn `OR/RR/HR = <số>`), chỉ trình bày KHUNG bảng/hình sẽ điền sau khi có dữ
+    liệu thật — khớp Ma trận mục tiêu–biến–phân tích–bảng, SAP §11 DUMMY TABLES
+    (G4) và Danh mục bảng/hình chuẩn xuất bản (phần sau của đề cương).
+    """
+    code = S.canonical_design_code(_design_code(cps))
+    std = S.reporting_standards_for(code)
+    er = (meta.get("expected_results")
+          if isinstance(meta.get("expected_results"), dict) else {})
+    shells = [s for s in (er.get("table_shells") or []) if RS.is_present(s)]
+    if shells:
+        shell_lines = "\n".join(f"- {_text(s)} — ô số liệu để trống `___`" for s in shells)
+    else:
+        shell_lines = (
+            f"- {TAG_BS}: khai `table_shells` trong study_meta.json (tối thiểu Bảng 1 "
+            "đặc điểm nền · Bảng 2 kết cục chính · Bảng 3 mô hình chính), mỗi mục "
+            "tiêu cụ thể ở mục 5 có ít nhất một bảng/hình tương ứng."
+        )
+    sap_version = _g(cps.get("G4"), "g4_sap_version", default=None)
+    sap_txt = (
+        f"SAP phiên bản {sap_version} §11 DUMMY TABLES (artifact G4)"
+        if RS.is_present(sap_version) else "SAP §11 DUMMY TABLES (sinh ở G4)"
+    )
+    return (
+        f"{S.de_cuong_heading('dukien_ketqua')}\n\n"
+        "**Nguyên tắc:** không có số liệu, kể cả số \"ước lượng\"/\"kỳ vọng\"; mọi ô "
+        "để trống `___`, ghi rõ đơn vị, n và 95% CI cho từng cột. Con số xuất hiện "
+        "ở đây sẽ bị cổng kiểm đề cương cảnh báo (R6) — cách sửa là xoá số.\n\n"
+        f"**Tóm tắt kết quả dự kiến (dạng câu hỏi sẽ trả lời, không số):** "
+        f"{_text(er.get('summary'))}\n\n"
+        "**Khung bảng trống theo ma trận mục tiêu – biến – phân tích – bảng:**\n\n"
+        f"{shell_lines}\n\n"
+        f"**Khung chi tiết:** {sap_txt}; danh mục Bảng 1/2 · Hình 1/2 bắt buộc ở phần "
+        "\"Danh mục bảng và hình chuẩn xuất bản\".\n\n"
+        f"**Sơ đồ luồng người tham gia:** theo chuẩn báo cáo {std['primary']} "
+        f"(Hình 1) — dạng khung, chưa có con số; kế hoạch: {_text(er.get('flow_diagram'))}\n"
+    )
+
+
 SECTION_BUILDERS = [
-    sec_tomtat, sec_datvande, sec_cauhoi, sec_muctieu, sec_thietke,
+    sec_tomtat, sec_datvande, sec_tongquan, sec_cauhoi, sec_muctieu, sec_thietke,
     sec_doituong, sec_bienso, sec_comau, sec_congcu, sec_quantri_dulieu,
-    sec_sap, sec_sailech, sec_daoduc, sec_phobien, sec_tiendo, sec_tltk,
+    sec_sap, sec_dukien_ketqua, sec_sailech, sec_daoduc, sec_phobien, sec_tiendo,
+    sec_tltk,
 ]
 
 
@@ -918,12 +1020,16 @@ def build_study_map(spec: dict, evaluation: dict) -> str:
 
 
 def build_protocol_coverage(evaluation: dict) -> str:
-    """Ma trận chứng minh đề cương 16 chương bao phủ đủ 20 nội dung protocol."""
+    """Ma trận chứng minh đề cương (len(DE_CUONG_SECTIONS) chương) bao phủ đủ mọi
+    thành phần protocol (len(PROTOCOL_CORE_ITEMS)). Con số in ra lấy từ canon —
+    check_de_cuong R14 khớp tiêu đề bằng \\d+ nên đổi khuôn không gãy validator."""
+    n_ch = len(S.DE_CUONG_SECTIONS)
+    n_items = len(S.PROTOCOL_CORE_ITEMS)
     lines = [
-        "# Ma trận bao phủ 20 thành phần protocol lõi\n",
-        "Bố cục 16 chương được chấp nhận khi toàn bộ 20 thành phần nội dung dưới "
-        "đây có vị trí, dữ liệu và nguồn truy xuất. `ĐỦ DỮ LIỆU DỰ THẢO` không "
-        "đồng nghĩa đã được IRB/chủ nhiệm phê duyệt.\n",
+        f"# Ma trận bao phủ {n_items} thành phần protocol lõi\n",
+        f"Bố cục {n_ch} chương được chấp nhận khi toàn bộ {n_items} thành phần nội "
+        "dung dưới đây có vị trí, dữ liệu và nguồn truy xuất. `ĐỦ DỮ LIỆU DỰ THẢO` "
+        "không đồng nghĩa đã được IRB/chủ nhiệm phê duyệt.\n",
         "| Mã | Thành phần protocol | Trạng thái | Còn thiếu | Nguồn |",
         "|---|---|---|---|---|",
     ]
@@ -1174,6 +1280,62 @@ def build_international_compliance(cps, meta=None) -> str:
     return "\n".join(lines)
 
 
+def build_protocol_checklist(cps, meta=None) -> str:
+    """Checklist chuẩn ĐỀ CƯƠNG theo từng mục (THÊM 06/09/2026, Task #5).
+
+    Trước đó G1-AUTO-03b chỉ kiểm TÊN chuẩn protocol khớp thiết kế; không nơi nào
+    liệt kê từng item để bác sĩ tick. Với RCT: in đủ 34 mục/53 dòng SPIRIT 2025
+    (nguyên văn tiếng Anh, sinh từ bài E&E chính thức — tools/protocol_checklist_items.py)
+    kèm vị trí gợi ý trong khuôn 18 mục; trạng thái luôn là xác nhận thủ công —
+    G10 KHÔNG tự tick. Thiết kế chưa có danh mục item trong kho (PRISMA-P) hoặc
+    không có checklist protocol theo mục (quan sát) thì NÓI RÕ, không giả vờ có.
+    """
+    import protocol_checklist_items as PCI
+
+    code = S.canonical_design_code(_design_code(cps))
+    std = S.reporting_standards_for(code)
+    lines = [
+        "# Checklist chuẩn đề cương theo từng mục\n",
+        f"**Thiết kế chuẩn hoá:** `{code or TAG_BS}`.  ",
+        f"**Chuẩn đề cương/protocol áp dụng:** {std['protocol']}.\n",
+    ]
+    found = PCI.items_for_design(code)
+    if found:
+        name, items, prov = found
+        lines.append(
+            f"Danh mục {prov['n_items']} mục / {prov['n_rows']} dòng của **{name}** — "
+            f"nguyên văn tiếng Anh, nguồn: {prov['items_source']} (statement: "
+            f"{prov['statement']}); lấy về {prov['retrieved']}. Cột *vị trí gợi ý* ánh "
+            "xạ sang khuôn đề cương 18 mục là diễn giải của hệ thống — bác sĩ/methodologist "
+            "xác nhận từng dòng; G10 không tự tick.\n"
+        )
+        lines += [
+            "| Mục | Nội dung (nguyên văn) | Vị trí gợi ý trong đề cương | Trạng thái |",
+            "|---|---|---|---|",
+        ]
+        for item_id, text, hint in items:
+            lines.append(
+                f"| {item_id} | {text.replace('|', '/')} | {hint} | {TAG_MANUAL} |"
+            )
+        lines.append("")
+        return "\n".join(lines)
+    missing = PCI.missing_item_list_reason(code)
+    if missing:
+        name, reason = missing
+        lines.append(
+            f"Chuẩn áp dụng là **{name}** nhưng kho CHƯA có danh mục item chính thức: "
+            f"{reason}\n"
+        )
+        return "\n".join(lines)
+    lines.append(
+        "Thiết kế này không có checklist ĐỀ CƯƠNG theo từng mục được chấp nhận rộng "
+        f"rãi ({std['primary']} là chuẩn BÁO CÁO, dùng ở bản thảo G7). Yêu cầu tối "
+        "thiểu vẫn là: protocol định trước, đăng ký khi cần minh bạch, SAP khóa "
+        "trước khi xem dữ liệu — xem *Ma trận tuân thủ tiêu chuẩn quốc tế*.\n"
+    )
+    return "\n".join(lines)
+
+
 def build_final_technical_completion(cps, meta=None) -> str:
     """Bảng kiểm cuối trước khi tuyên bố hoàn thành kỹ thuật."""
     # SỬA 2026-07-31 (audit tautology vòng 2, cùng loại lỗi "tautology ngược"
@@ -1403,7 +1565,8 @@ def build_front_note(study: str, cps, meta, generated: str | None = None) -> str
     return (
         f"> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) "
         f"lắp ráp TỰ ĐỘNG lúc {generated} từ checkpoint G0–G9 của đề tài "
-        f"`{study}`, theo mẫu 16 chương và ma trận bao phủ 20 thành phần protocol "
+        f"`{study}`, theo mẫu {len(S.DE_CUONG_SECTIONS)} chương và ma trận bao phủ "
+        f"{len(S.PROTOCOL_CORE_ITEMS)} thành phần protocol "
         "lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. "
         "Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, "
         f"{n_pmids} PMID) lấy TỪ pipeline — không bịa. "
@@ -1423,6 +1586,40 @@ def build_front_note(study: str, cps, meta, generated: str | None = None) -> str
         "dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm "
         "chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.\n"
     )
+
+
+def build_abbreviations(meta) -> str:
+    """Danh mục chữ viết tắt — trang sơ bộ của hồ sơ trình hội đồng (THÊM 06/09/2026).
+
+    Chỉ in bảng khi study_meta có `abbreviations` (dict {viết tắt: nghĩa} hoặc list
+    [{"viet_tat"/"abbr": ..., "nghia"/"meaning": ...}]). Không có thì in một dòng
+    hướng dẫn KHÔNG mang nhãn ngoặc vuông — đề cương không dùng chữ viết tắt là
+    hợp lệ, không được biến thành placeholder chặn G10-AUTO-09. Không bịa chữ tắt.
+    """
+    raw = meta.get("abbreviations")
+    rows: List[tuple] = []
+    if isinstance(raw, dict):
+        rows = [(k, v) for k, v in raw.items() if RS.is_present(k)]
+    elif isinstance(raw, list):
+        for item in raw:
+            if isinstance(item, dict):
+                k = item.get("viet_tat") or item.get("abbr") or item.get("abbreviation")
+                v = item.get("nghia") or item.get("meaning") or item.get("definition")
+                if RS.is_present(k):
+                    rows.append((k, v))
+    lines = ["# Danh mục chữ viết tắt\n"]
+    if rows:
+        lines += ["| Viết tắt | Nghĩa đầy đủ |", "|---|---|"]
+        for k, v in sorted(rows, key=lambda r: str(r[0]).casefold()):
+            lines.append(f"| {k} | {_text(v)} |")
+    else:
+        lines.append(
+            "Chưa khai `abbreviations` trong study_meta.json. Nếu đề cương dùng từ ba "
+            "chữ viết tắt trở lên, bổ sung danh mục này trước khi nộp hội đồng; nếu "
+            "không dùng, để nguyên dòng này."
+        )
+    lines.append("")
+    return "\n".join(lines)
 
 
 def build_document_control(study: str, cps, meta, generated: str | None = None) -> str:
@@ -1566,13 +1763,15 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     parts.append("")
     parts.append(build_document_control(study, cps, meta, generated=generated_display))
     parts.append("")
+    parts.append(build_abbreviations(meta))
+    parts.append("")
     parts.append(build_study_map(study_spec, spec_evaluation))
     parts.append("")
     # Bảng trạng thái + kết luận sẵn sàng đặt ĐẦU để bác sĩ thấy bức tranh thật.
     parts.append(build_gate_table(cps, meta))
     parts.append(build_readiness(cps, meta, study=study))
     parts.append("---\n")
-    # 16 mục đề cương.
+    # Các mục đề cương cấp 1 — thứ tự và số hiệu = skill_standards.DE_CUONG_SECTIONS.
     for builder in SECTION_BUILDERS:
         parts.append(builder(cps, meta))
         parts.append("")
@@ -1583,6 +1782,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     parts.append(build_traceability_matrix(cps, meta))
     parts.append(build_display_items(cps, meta))
     parts.append(build_international_compliance(cps, meta))
+    parts.append(build_protocol_checklist(cps, meta))
     parts.append(build_final_technical_completion(cps, meta))
     parts.append(build_missing_information(cps, meta, spec_evaluation))
     decision_md = RS.decision_package_markdown(study, study_spec, spec_evaluation)

@@ -1,13 +1,13 @@
 # STUDY INDEX — hai-long-benh-nhan-C1a-BVQY175
-> Cập nhật: 2026-09-01 · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có (không phải cố định lúc scaffold)
+> Cập nhật: 2026-09-06 · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có (không phải cố định lúc scaffold)
 
 ## 20 File chuẩn
 
 | # | File MD | File DOCX | Cổng | Artifact | Trạng thái |
 |---|---------|----------|------|---------|------------|
-| 00 | 00_Research_Intake_Feasibility_Audit.md | G0a_INTAKE_hai-long-benh-nhan-C1a-BVQY175.docx | G0 | `intake` | 🚧 Dự thảo — chờ input |
+| 00 | 00_Research_Intake_Feasibility_Audit.md | G0a_INTAKE_hai-long-benh-nhan-C1a-BVQY175.docx | G0 | `intake` | ✅ Xong |
 | 01 | 01_Project_Charter.md | G1b_CHARTER_hai-long-benh-nhan-C1a-BVQY175.docx | G1 | `charter` | ✅ Xong |
-| 02 | 02_Research_Question_and_PICO.md | G0b_PICO_hai-long-benh-nhan-C1a-BVQY175.docx | G0 | `pico` | 🚧 Dự thảo — chờ input |
+| 02 | 02_Research_Question_and_PICO.md | G0b_PICO_hai-long-benh-nhan-C1a-BVQY175.docx | G0 | `pico` | ✅ Xong |
 | 03 | 03_Evidence_Ledger.md | G0c_LITERATURE_hai-long-benh-nhan-C1a-BVQY175.docx | G0-G1 | `literature` | ✅ Xong |
 | 04 | 04_Literature_Review.md | G0c_LITERATURE_hai-long-benh-nhan-C1a-BVQY175.docx | G0-G1 | `literature` | ✅ Xong |
 | 05 | 05_Protocol.md | G1a_PROTOCOL_hai-long-benh-nhan-C1a-BVQY175.docx | G1 | `protocol` | ✅ Xong |
@@ -24,7 +24,7 @@
 | 16 | 16_IMRAD_Manuscript.md | G7a_MANUSCRIPT_hai-long-benh-nhan-C1a-BVQY175.docx | G7 | `manuscript` | 🔴 Chưa có |
 | 17 | 17_Reporting_Checklist.md | G7b_CHECKLIST_hai-long-benh-nhan-C1a-BVQY175.docx | G7 | `checklist` | 🔴 Chưa có |
 | 18 | 18_Risk_Register.md | G1d_RISK_hai-long-benh-nhan-C1a-BVQY175.docx | G1+G7 | `risk` | 🔴 Chưa có |
-| 19 | 19_Research_Integrity_Audit.md | G7b_CHECKLIST_hai-long-benh-nhan-C1a-BVQY175.docx | G7-G9 | `checklist` | 🔴 Chưa có |
+| 19 | 19_Research_Integrity_Audit.md | G9b_INTEGRITY-AUDIT_hai-long-benh-nhan-C1a-BVQY175.docx | G7-G9 | `integrity-audit` | 🔴 Chưa có |
 | 20 | 20_Final_Readiness_Report.md | G9_READINESS_hai-long-benh-nhan-C1a-BVQY175.docx | G9 | `readiness` | 🔴 Chưa có |
 
 ## Lệnh xuất .docx từng cổng

@@ -2,7 +2,7 @@
 
 ---
 
-> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) lắp ráp TỰ ĐỘNG lúc 2026-09-01 12:34 từ checkpoint G0–G9 của đề tài `hai-long-benh-nhan-C1a-BVQY175`, theo mẫu 16 chương và ma trận bao phủ 20 thành phần protocol lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, 12 PMID) lấy TỪ pipeline — không bịa. Mọi chỗ còn thiếu dữ liệu/thẩm quyền sẽ được đánh dấu NGAY TẠI ĐÓ bằng một trong các nhãn quy ước của skill (CẦN BỔ SUNG · CẦN XÁC NHẬN TẠI ĐƠN VỊ · DỰ THẢO · CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — luôn đặt trong ngoặc vuông tại đúng vị trí thiếu). **Văn xuôi học thuật (Đặt vấn đề, Tổng quan, Bàn luận) do bác sĩ/agent viết riêng — G10 chỉ dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.
+> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) lắp ráp TỰ ĐỘNG lúc 2026-09-06 03:51 từ checkpoint G0–G9 của đề tài `hai-long-benh-nhan-C1a-BVQY175`, theo mẫu 18 chương và ma trận bao phủ 23 thành phần protocol lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, 12 PMID) lấy TỪ pipeline — không bịa. Mọi chỗ còn thiếu dữ liệu/thẩm quyền sẽ được đánh dấu NGAY TẠI ĐÓ bằng một trong các nhãn quy ước của skill (CẦN BỔ SUNG · CẦN XÁC NHẬN TẠI ĐƠN VỊ · DỰ THẢO · CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — luôn đặt trong ngoặc vuông tại đúng vị trí thiếu). **Văn xuôi học thuật (Đặt vấn đề, Tổng quan, Bàn luận) do bác sĩ/agent viết riêng — G10 chỉ dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.
 
 
 # Kiểm soát phiên bản và lịch sử thay đổi
@@ -12,7 +12,7 @@ Mục này bắt buộc cho tài liệu chính của nghiên cứu. Mọi chỉn
 | Trường kiểm soát | Giá trị | Quy tắc an toàn |
 |---|---|---|
 | Phiên bản tài liệu | [DỰ THẢO] | Nếu thay đổi mục tiêu, thiết kế, kết cục, SAP hoặc consent sau khi đã duyệt thì phải lập amendment. |
-| Ngày tạo/cập nhật | 2026-09-01 12:34 | Ngày do hệ thống ghi hoặc chủ nhiệm cung cấp; kiểm lại trước khi nộp. |
+| Ngày tạo/cập nhật | 2026-09-06 03:51 | Ngày do hệ thống ghi hoặc chủ nhiệm cung cấp; kiểm lại trước khi nộp. |
 | Nguồn thay đổi | Checkpoint G0, G1, G2, G3, G4; SAP version 1.0 | Chỉ dùng nguồn có trace; không sửa tay ngoài pipeline mà không ghi nhật ký. |
 | Người soạn/cập nhật | [CẦN BỔ SUNG] | Người thật chịu trách nhiệm rà soát. |
 | Người phê duyệt/chủ nhiệm | [CẦN BỔ SUNG] | Cần tên/vai trò thật; nếu chưa có chữ ký/xác nhận sẽ tự mang nhãn quy ước tương ứng ở cột bên trái. |
@@ -21,9 +21,14 @@ Mục này bắt buộc cho tài liệu chính của nghiên cứu. Mọi chỉn
 ## Nhật ký thay đổi
 | Phiên bản | Ngày | Nguồn thay đổi | Nội dung thay đổi | Người phê duyệt/chủ nhiệm |
 |---|---|---|---|---|
-| [DỰ THẢO] | 2026-09-01 12:34 | G10 assembler từ G0, G1, G2, G3, G4 | Lắp ráp đề cương thống nhất, bảng cổng, bảng/hình, compliance, kiểm hoàn thành và thiếu sót còn lại. | [CẦN BỔ SUNG] |
+| [DỰ THẢO] | 2026-09-06 03:51 | G10 assembler từ G0, G1, G2, G3, G4 | Lắp ráp đề cương thống nhất, bảng cổng, bảng/hình, compliance, kiểm hoàn thành và thiếu sót còn lại. | [CẦN BỔ SUNG] |
 
 > Nếu không có nhật ký thay đổi, mọi đầu ra chỉ là bản nháp có kiểm soát; không được coi là bản đã phê duyệt hoặc đã khóa.
+
+
+# Danh mục chữ viết tắt
+
+Chưa khai `abbreviations` trong study_meta.json. Nếu đề cương dùng từ ba chữ viết tắt trở lên, bổ sung danh mục này trước khi nộp hội đồng; nếu không dùng, để nguyên dòng này.
 
 
 # Bản đồ đề tài
@@ -107,7 +112,26 @@ Khoảng trống nghiên cứu (tự động từ G0):
 > [CẦN BỔ SUNG]: Phần đặt vấn đề dạng VĂN XUÔI HỌC THUẬT (tầm quan trọng lâm sàng, bối cảnh Việt Nam/đơn vị, lập luận tính cần thiết) do agent `viet-ban-thao`/`tong-quan-y-van` hoặc bác sĩ soạn — G10 không tự viết để tránh bịa bối cảnh. Số liệu Việt Nam/đơn vị phải có nguồn thật.
 
 
-# 3. Câu hỏi nghiên cứu và giả thuyết
+# 3. Tổng quan tài liệu và khung lý thuyết
+
+**Bằng chứng đã truy hồi (tự động từ G0):** 12 tài liệu PubMed liên quan; 0 tổng quan hệ thống; 0 RCT; mức chứng cứ hiện có: **CÓ NỀN QUAN SÁT — ~12 NC quan sát, chưa có RCT/SR**. Nguồn truy xuất từng bài: `exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md`.
+
+**Tổng hợp các nghiên cứu trước (theo nhóm thiết kế/quần thể/công cụ):** [CẦN BỔ SUNG]
+
+**Điểm đồng thuận trong y văn:** [CẦN BỔ SUNG]
+
+**Điểm bất đồng/mâu thuẫn và lý giải khả dĩ:** [CẦN BỔ SUNG]
+
+**Khoảng trống nghiên cứu:** xem mục 2 (không lặp lại).
+
+**Điểm khác biệt/tính mới của đề tài so với nghiên cứu gần nhất:** Đã có nhiều nghiên cứu quan sát: KHÔNG phải khoảng trống. Cần đọc kỹ nhóm này trước khi biện minh tính mới; hướng khả dĩ là SR/MA tổng hợp chúng, hoặc nghiên cứu ở quần thể/bối cảnh chưa được phủ.
+
+**Khung lý thuyết / mô hình khái niệm:** [CẦN BỔ SUNG] (nêu khung dùng để chọn biến và giải thích kết quả — vd Donabedian, SERVQUAL, mô hình hành vi, khung sinh lý bệnh; thiết kế thuần sinh học/dược lý ghi rõ "không áp dụng" kèm lý do, không bỏ trống)
+
+> Quy tắc: mọi khẳng định về một bài phải truy được PMID/DOI đã xác minh (`kiem-chung-trich-dan`) và đã tra rút bài bằng `check_citation_retraction.py`; không tra được thì ghi "chưa kiểm rút bài", KHÔNG ghi "chưa bị rút". Văn xuôi tổng hợp do `tong-quan-y-van`/bác sĩ soạn — G10 không tự viết.
+
+
+# 4. Câu hỏi nghiên cứu và giả thuyết
 
 **Loại câu hỏi (tự động từ G1):** descriptive.
 
@@ -116,18 +140,18 @@ Khoảng trống nghiên cứu (tự động từ G0):
 **Giả thuyết:** [CẦN BỔ SUNG] (với nghiên cứu mô tả có thể không cần giả thuyết kiểm định; với nghiên cứu phân tích: nêu H0/H1).
 
 
-# 4. Mục tiêu
+# 5. Mục tiêu
 
-## 4.1. Mục tiêu chung
+## 5.1. Mục tiêu chung
 
 [CẦN BỔ SUNG] — mục tiêu chung của đề tài.
 
-## 4.2. Mục tiêu cụ thể
+## 5.2. Mục tiêu cụ thể
 
 [CẦN BỔ SUNG] — liệt kê các mục tiêu cụ thể (đánh số). Nếu đã có trong study_meta.json sẽ tự điền.
 
 
-# 5. Thiết kế và bối cảnh
+# 6. Thiết kế và bối cảnh
 
 **Thiết kế (tự động từ G1):** Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence).
 
@@ -143,22 +167,22 @@ Khoảng trống nghiên cứu (tự động từ G0):
 **Thời gian nghiên cứu:** [CẦN XÁC NHẬN TẠI ĐƠN VỊ].
 
 
-# 6. Đối tượng nghiên cứu
+# 7. Đối tượng nghiên cứu
 
-## 6.1. Tiêu chuẩn chọn
+## 7.1. Tiêu chuẩn chọn
 
 [CẦN BỔ SUNG] — bác sĩ xác định tiêu chuẩn nhận (tuổi, tình trạng, đồng thuận...).
 
-## 6.2. Tiêu chuẩn loại
+## 7.2. Tiêu chuẩn loại
 
 [CẦN BỔ SUNG] — bác sĩ xác định tiêu chuẩn loại trừ.
 
-## 6.3. Tuyển mẫu
+## 7.3. Tuyển mẫu
 
 [CẦN BỔ SUNG] — phương pháp chọn mẫu (thuận tiện/ngẫu nhiên hệ thống/phân tầng...) và quy trình tuyển. Cỡ mẫu xem Mục 8.
 
 
-# 7. Biến số và kết cục
+# 8. Biến số và kết cục
 
 **Bộ biến số CRF/REDCap (tự động từ G5):** 0 biến, chuyên khoa nhận diện = `generic`.
 
@@ -170,7 +194,7 @@ Khoảng trống nghiên cứu (tự động từ G0):
 Với thang đo/PROM: bổ sung quyền sử dụng, quy tắc chấm điểm và COSMIN khi phát triển/thích nghi/thẩm định công cụ.
 
 
-# 8. Cỡ mẫu
+# 9. Cỡ mẫu
 
 **Công thức áp dụng (tự động từ G3):** Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác (Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): tỷ lệ hiện mắc ước lượng p=0.50, sai số cho phép d=0.05, alpha=0.05.
 
@@ -183,7 +207,7 @@ Với thang đo/PROM: bổ sung quyền sử dụng, quy tắc chấm điểm v�
 > Lưu ý: nếu effect size/tỷ lệ giả định lấy từ y văn, PHẢI ghi PMID/DOI nguồn ([CẦN BỔ SUNG]). G3 dùng quy ước thận trọng khi chưa có ước tính từ khảo sát tương tự tại cơ sở.
 
 
-# 9. Công cụ và quy trình thu thập
+# 10. Công cụ và quy trình thu thập
 
 **Công cụ đo lường:** [CẦN BỔ SUNG] — bác sĩ CUNG CẤP bộ công cụ ĐÃ KIỂM ĐỊNH (không tự chế). Với PROM/thang đo: quy trình dịch–thích nghi văn hoá + kiểm định COSMIN (nối `cong-cu-do-luong`).
 
@@ -198,7 +222,7 @@ Với thang đo/PROM: bổ sung quyền sử dụng, quy tắc chấm điểm v�
 **Pilot/thử nghiệm công cụ:** [CẦN BỔ SUNG] — nêu đối tượng/số lượng, khả năng hiểu, thời gian, lỗi logic, thay đổi và ảnh hưởng protocol/ethics.
 
 
-# 10. Quản trị dữ liệu và bảo mật
+# 11. Quản trị dữ liệu và bảo mật
 
 **Trạng thái khoá cơ sở dữ liệu (tự động từ G5):** [CẦN BỔ SUNG].
 
@@ -217,7 +241,7 @@ Với thang đo/PROM: bổ sung quyền sử dụng, quy tắc chấm điểm v�
 **Kế hoạch quản trị dữ liệu chi tiết (DMP):** [CẦN XÁC NHẬN TẠI ĐƠN VỊ] — đã có bản nháp ở G2 (TL6). Bác sĩ xác nhận nơi lưu trữ, thời hạn, phân quyền tại đơn vị.
 
 
-# 11. Kế hoạch phân tích thống kê
+# 12. Kế hoạch phân tích thống kê
 
 **Phiên bản SAP (tự động từ G4):** 1.0 — trạng thái: PENDING — CHỜ BÁC SĨ KÝ SAP.
 
@@ -229,7 +253,22 @@ Với thang đo/PROM: bổ sung quyền sử dụng, quy tắc chấm điểm v�
 > Cổng cứng: SAP phải được KÝ KHOÁ (G4 Lock Certificate) TRƯỚC khi xem dữ liệu. Mã thiết kế `cross_sectional` quyết định test phù hợp (nối `thiet-ke-nghien-cuu`/`phan-tich-thong-ke`).
 
 
-# 12. Sai lệch và kiểm soát
+# 13. Dự kiến kết quả và khung bảng trống
+
+**Nguyên tắc:** không có số liệu, kể cả số "ước lượng"/"kỳ vọng"; mọi ô để trống `___`, ghi rõ đơn vị, n và 95% CI cho từng cột. Con số xuất hiện ở đây sẽ bị cổng kiểm đề cương cảnh báo (R6) — cách sửa là xoá số.
+
+**Tóm tắt kết quả dự kiến (dạng câu hỏi sẽ trả lời, không số):** [CẦN BỔ SUNG]
+
+**Khung bảng trống theo ma trận mục tiêu – biến – phân tích – bảng:**
+
+- [CẦN BỔ SUNG]: khai `table_shells` trong study_meta.json (tối thiểu Bảng 1 đặc điểm nền · Bảng 2 kết cục chính · Bảng 3 mô hình chính), mỗi mục tiêu cụ thể ở mục 5 có ít nhất một bảng/hình tương ứng.
+
+**Khung chi tiết:** SAP phiên bản 1.0 §11 DUMMY TABLES (artifact G4); danh mục Bảng 1/2 · Hình 1/2 bắt buộc ở phần "Danh mục bảng và hình chuẩn xuất bản".
+
+**Sơ đồ luồng người tham gia:** theo chuẩn báo cáo STROBE (Hình 1) — dạng khung, chưa có con số; kế hoạch: [CẦN BỔ SUNG]
+
+
+# 14. Sai lệch, hạn chế và kiểm soát
 
 **Công cụ đánh giá nguy cơ sai lệch phù hợp thiết kế:** CROSS (nếu là khảo sát); COSMIN nếu phát triển/thẩm định thang đo; RECORD nếu dùng dữ liệu bệnh án/HIS/EMR; ROBINS-E tuỳ câu hỏi.
 
@@ -238,7 +277,7 @@ Với thang đo/PROM: bổ sung quyền sử dụng, quy tắc chấm điểm v�
 **Biện pháp khống chế cụ thể tại đơn vị:** [CẦN BỔ SUNG] (chuẩn hoá công cụ, tập huấn điều tra viên, ẩn danh, tự điền phiếu, giám sát chéo...).
 
 
-# 13. Đạo đức nghiên cứu
+# 15. Đạo đức nghiên cứu
 
 **Phân loại nguy cơ (tự động từ G2):** TỐI THIỂU.  
 **Lộ trình thẩm định:** EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu).  
@@ -266,14 +305,14 @@ Số phê duyệt IRB: [CẦN XÁC NHẬN TẠI ĐƠN VỊ] — CHƯA có, phả
 Tuân thủ Tuyên ngôn Helsinki 2024, ICH-GCP, Thông tư 43/2024/TT-BYT [CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC]. ICF đồng thuận tham gia; tự nguyện; ẩn danh; bảo mật.
 
 
-# 14. Kế hoạch phổ biến kết quả/ứng dụng
+# 16. Kế hoạch phổ biến kết quả/ứng dụng
 
 **Kế hoạch đăng ký/preregistration:** [CẦN BỔ SUNG].
 
 **Kế hoạch phổ biến/chuyển giao:** [CẦN BỔ SUNG].
 
 
-# 15. Tiến độ và nguồn lực
+# 17. Tiến độ và nguồn lực
 
 **Nhân lực & phân công:** [CẦN BỔ SUNG].
 
@@ -282,16 +321,16 @@ Tuân thủ Tuyên ngôn Helsinki 2024, ICH-GCP, Thông tư 43/2024/TT-BYT [CẦ
 **Dự trù kinh phí:** [CẦN BỔ SUNG] — đơn giá/định mức do chủ nhiệm ấn định, KHÔNG bịa số tiền.
 
 
-# 16. Tài liệu tham khảo Vancouver/NLM
+# 18. Tài liệu tham khảo Vancouver/NLM
 
 [CẦN BỔ SUNG] — chưa có PMID hạt giống trong checkpoint.
 
 > [CẦN BỔ SUNG]: Tài liệu tham khảo TIẾNG VIỆT (luận văn/tạp chí trong nước) hệ thống tra cứu tự động (PubMed) không tiếp cận đủ — bác sĩ bổ sung.
 
 
-# Ma trận bao phủ 20 thành phần protocol lõi
+# Ma trận bao phủ 23 thành phần protocol lõi
 
-Bố cục 16 chương được chấp nhận khi toàn bộ 20 thành phần nội dung dưới đây có vị trí, dữ liệu và nguồn truy xuất. `ĐỦ DỮ LIỆU DỰ THẢO` không đồng nghĩa đã được IRB/chủ nhiệm phê duyệt.
+Bố cục 18 chương được chấp nhận khi toàn bộ 23 thành phần nội dung dưới đây có vị trí, dữ liệu và nguồn truy xuất. `ĐỦ DỮ LIỆU DỰ THẢO` không đồng nghĩa đã được IRB/chủ nhiệm phê duyệt.
 
 | Mã | Thành phần protocol | Trạng thái | Còn thiếu | Nguồn |
 |---|---|---|---|---|
@@ -310,13 +349,16 @@ Bố cục 16 chương được chấp nhận khi toàn bộ 20 thành phần n�
 | P13 | Thu thập dữ liệu và quản lý chất lượng | THIẾU | Công cụ/nguồn dữ liệu; Quy trình thu thập; Kiểm soát chất lượng/pilot | study_meta/G5 |
 | P14 | Quản trị dữ liệu và bảo mật | THIẾU | Kế hoạch dữ liệu; Lưu trữ/phân quyền; Khử định danh | study_meta/G2/G5 |
 | P15 | Kế hoạch phân tích thống kê | MỘT PHẦN | Phân tích chính; Dữ liệu thiếu | study_meta/G4/G6 |
-| P16 | Sai lệch và biện pháp giảm thiểu | THIẾU | Nguy cơ sai lệch; Biện pháp giảm thiểu | study_meta/G1 |
+| P16 | Sai lệch, hạn chế dự kiến và biện pháp giảm thiểu | THIẾU | Nguy cơ sai lệch; Biện pháp giảm thiểu; Phạm vi và hạn chế dự kiến | study_meta/G1 |
 | P17 | Đạo đức và an toàn | THIẾU | Đánh giá lợi ích-nguy cơ; Đồng thuận; Bảo mật/an toàn | study_meta/G2 |
 | P18 | Đăng ký và phổ biến kết quả | MỘT PHẦN | Phổ biến kết quả | study_meta/G2/G8 |
 | P19 | Tiến độ, nhân lực và kinh phí | THIẾU | Tiến độ; Nhân lực; Kinh phí | study_meta |
 | P20 | Tài liệu tham khảo và phụ lục | MỘT PHẦN | Tài liệu tham khảo | G0/G7 + phụ lục G10 |
+| P21 | Tổng quan tài liệu: tổng hợp nghiên cứu trước, điểm đồng thuận và bất đồng | THIẾU | Tổng hợp nghiên cứu trước; Điểm đồng thuận/bất đồng | study_meta/G0-G1 (Evidence Ledger A2b) |
+| P22 | Khung lý thuyết hoặc mô hình khái niệm (hoặc nêu rõ không áp dụng, có lý do) | THIẾU | Khung lý thuyết/mô hình khái niệm (hoặc lý do không áp dụng) | study_meta |
+| P23 | Dự kiến kết quả và khung bảng trống (dummy tables), không số liệu | THIẾU | Khung bảng trống (dummy tables); Tóm tắt kết quả dự kiến — không số liệu | study_meta/G4 (SAP §11) + danh mục bảng/hình G10 |
 
-**Tổng hợp:** 1/20 thành phần đủ dữ liệu dự thảo; trạng thái `STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS`.
+**Tổng hợp:** 1/23 thành phần đủ dữ liệu dự thảo; trạng thái `STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS`.
 
 # Kiểm định nhất quán khoa học
 
@@ -392,6 +434,13 @@ Ma trận này là cầu nối bắt buộc giữa đề cương, CRF/codebook, 
 **Điều kiện xuất bản tối thiểu:** bản thảo chỉ được xem là sẵn sàng khi reporting checklist đúng thiết kế đã điền, IRB/EC và consent/waiver có bằng chứng thật, SAP đã khóa trước phân tích, dataset phân tích đã khóa, data availability + code availability rõ ràng, COI/funding/AI disclosure đầy đủ, và toàn bộ bảng/hình có nguồn sinh tái lập.
 
 > Lưu ý: GCP/ICH-GCP chỉ là điều kiện bắt buộc khi đề tài là thử nghiệm can thiệp/clinical trial hoặc đơn vị/IRB yêu cầu; với nghiên cứu quan sát vẫn giữ Helsinki, bảo mật dữ liệu, protocol/SAP, transparency và reproducibility như điều kiện tối thiểu.
+
+# Checklist chuẩn đề cương theo từng mục
+
+**Thiết kế chuẩn hoá:** `cross_sectional`.  
+**Chuẩn đề cương/protocol áp dụng:** Protocol định trước; đăng ký nếu cần minh bạch.
+
+Thiết kế này không có checklist ĐỀ CƯƠNG theo từng mục được chấp nhận rộng rãi (STROBE là chuẩn BÁO CÁO, dùng ở bản thảo G7). Yêu cầu tối thiểu vẫn là: protocol định trước, đăng ký khi cần minh bạch, SAP khóa trước khi xem dữ liệu — xem *Ma trận tuân thủ tiêu chuẩn quốc tế*.
 
 # Bảng kiểm hoàn thành kỹ thuật
 
@@ -514,13 +563,15 @@ Mục này gom các thiếu sót còn lại thành hành động an toàn. Nếu
 | Quyết định `D14` | Sai lệch và biện pháp giảm thiểu; thiếu `bias.risks, bias.mitigations` | Protocol chưa đủ nội dung khoa học để thẩm định chính thức. | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. | Chủ nhiệm + phương pháp |
 | Quyết định `D15` | Consent, lợi ích-nguy cơ và bảo mật; thiếu `ethics.consent | population.consent, ethics.benefit_risk, ethics.privacy` | Protocol chưa đủ nội dung khoa học để thẩm định chính thức. | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. | Chủ nhiệm + Hội đồng đạo đức |
 | Quyết định `D16` | Tiến độ, nhân lực và kinh phí; thiếu `resources.timeline, resources.team, resources.budget` | Protocol chưa đủ nội dung khoa học để thẩm định chính thức. | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. | Chủ nhiệm/đơn vị |
+| Quyết định `D17` | Tổng quan tài liệu và khung lý thuyết (hoặc lý do không áp dụng); thiếu `literature.summary, theory.framework | theory.not_applicable_rationale` | Protocol chưa đủ nội dung khoa học để thẩm định chính thức. | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. | Chủ nhiệm + EBM specialist |
+| Quyết định `D18` | Dự kiến kết quả: khung bảng trống theo ma trận truy xuất, không số liệu; thiếu `expected_results.table_shells | expected_results.summary` | Protocol chưa đủ nội dung khoa học để thẩm định chính thức. | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. | Thống kê viên/chủ nhiệm |
 
 > Nếu tiếp tục khi còn thiếu thông tin trong bảng này, đầu ra phải ghi **CHƯA HOÀN THÀNH KỸ THUẬT** và không được dùng như bản nộp chính thức.
 
 # Gói quyết định hoàn thiện đề cương — hai-long-benh-nhan-C1a-BVQY175
 
 **Mức hiện tại:** STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS.  
-**Bao phủ protocol:** 1/20 thành phần đủ dữ liệu dự thảo.
+**Bao phủ protocol:** 1/23 thành phần đủ dữ liệu dự thảo.
 
 ## Quyết định khoa học/hành chính còn thiếu
 
@@ -539,6 +590,8 @@ Mục này gom các thiếu sót còn lại thành hành động an toàn. Nếu
 | D14 | Sai lệch và biện pháp giảm thiểu | `bias.risks, bias.mitigations` | Chủ nhiệm + phương pháp | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
 | D15 | Consent, lợi ích-nguy cơ và bảo mật | `ethics.consent | population.consent, ethics.benefit_risk, ethics.privacy` | Chủ nhiệm + Hội đồng đạo đức | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
 | D16 | Tiến độ, nhân lực và kinh phí | `resources.timeline, resources.team, resources.budget` | Chủ nhiệm/đơn vị | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
+| D17 | Tổng quan tài liệu và khung lý thuyết (hoặc lý do không áp dụng) | `literature.summary, theory.framework | theory.not_applicable_rationale` | Chủ nhiệm + EBM specialist | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
+| D18 | Dự kiến kết quả: khung bảng trống theo ma trận truy xuất, không số liệu | `expected_results.table_shells | expected_results.summary` | Thống kê viên/chủ nhiệm | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
 
 ## Vấn đề ngữ nghĩa
 

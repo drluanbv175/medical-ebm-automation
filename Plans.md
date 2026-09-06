@@ -215,6 +215,26 @@ không bị trôi/sai khi sửa về sau.
 > commit, nhưng CHƯA có xác nhận CI xanh cho các commit này tại thời điểm ghi. Không phải
 > lỗi code; cần bác sĩ kiểm tra billing/quota Actions.
 
+## Sprint 12 — Khuôn đề cương đạt chuẩn: 18 mục · checklist SPIRIT 2025 · Mục lục .docx (06/09)
+
+> Ghi nhận cùng lúc với việc gộp (merge) nhánh `claude/multi-platform-plugin-sync-cslwb0` vào
+> `feat/r1-1-2-design-gap-remediation` — sprint này chạy trên nhánh cslwb0, song song với
+> Sprint 11 trên nhánh làm việc chính, nên đánh số lại 12.x để không trùng 11.x đã có. Bác sĩ
+> đưa một hướng dẫn viết luận văn rồi hỏi «cấu trúc đề cương của hệ đã theo chuẩn tốt nhất
+> chưa», sau đó yêu cầu «đảm bảo một hệ thống với mẫu đề cương, bài báo và mọi thứ đạt chuẩn».
+> Đo trước khi sửa: khuôn G10 mạnh hơn ở phương pháp/quản trị nhưng thiếu bốn thứ mọi hội
+> đồng đều đòi (tổng quan y văn, khung lý thuyết, dự kiến kết quả + bảng trống, mục lục).
+
+| Task | Nội dung | DoD | Depends | Status |
+|---|---|---|---|---|
+| 12.1 | Khuôn đề cương 16→18 mục, thành phần lõi 20→23 (P21 tổng quan · P22 khung lý thuyết · P23 dự kiến kết quả), đồng bộ MỌI nơi tiêu thụ: `skill_standards` · `research_study_spec` (D17/D18) · `run_g10_assemble` · `check_de_cuong` (R1/R14). Đánh số qua KHOÁ BỀN (`de_cuong_heading(key)`), bỏ 18 chỗ viết cứng `"# 8. Cỡ mẫu"`. `[tdd:required]` | Chốt so DÃY H1 với canon (không đếm chuỗi); đột biến viết-cứng-số ⇒ đỏ | — | `cc:done` — `tests/test_de_cuong_18_muc_20260906.py` 10 test. Đột biến đầu KHÔNG bắt được vì tôi đột biến nhầm nhánh `return` của `sec_comau` (fixture đi nhánh kia) — làm lại đúng nhánh thì đỏ ngay |
+| 12.2 | `tools/protocol_checklist_items.py`: danh mục SPIRIT 2025 nguyên văn (34 mục/53 dòng) SINH TỰ ĐỘNG từ toàn văn PMC bài E&E chính thức; G10 in bảng cho RCT, nói rõ cột «vị trí gợi ý» là diễn giải của hệ và không tự tick. `[tdd:required]` | Provenance truy được (PMID/DOI/PMC); thiết kế quan sát và SR/MA KHÔNG bị bịa checklist | 12.1 | `cc:done` — `tests/test_protocol_checklist_spirit_2025_20260906.py`. **Chính test bắt lỗi tôi vừa tạo:** bảng tra khoá theo bí danh `sr_ma` trong khi G10 chuẩn hoá về `systematic_review` trước khi tra ⇒ nhánh PRISMA-P không bao giờ chạy tới. Nay tra qua `canonical_design_code()` + `assert` khoá phải là mã canon. **PRISMA-P 2015 CHƯA có danh mục item** (nguồn chính thức không lấy được ở phiên này) — nói thẳng, không bịa |
+| 12.3 | R18 mới trong `check_de_cuong`: đề cương RCT thiếu bảng checklist ⇒ CẢNH BÁO, KHÔNG chặn (bản lắp trước 06/09 chưa có bảng, nội dung không vì thế sai). `[tdd:required]` | Xoá bảng khỏi đề cương RCT ⇒ WARN, không vào `errors` | 12.2 | `cc:done` — đột biến «R18 không bao giờ cảnh báo» ⇒ đỏ đúng |
+| 12.4 | MỤC LỤC tự động trong .docx (`_add_toc`, chỉ cho tài liệu có trang bìa). `[tdd:required]` | Trường TOC + `w:updateFields` còn trong file cuối | — | `cc:done` — lộ lỗi thật: `chuan_trinh_bay.lam_sach_tai_lieu` gán `run.text` cho MỌI run, mà setter python-docx DỰNG LẠI run ⇒ xoá `fldChar`/`instrText`, trường Mục lục biến mất ngay sau khi chèn (footer sống sót chỉ vì bộ làm sạch không quét footer). Nay bỏ qua run mang mã trường, chỉ gán khi văn bản THẬT SỰ đổi |
+| 12.5 | Cảnh báo glyph .docx đang mô tả bản THÔ, không mô tả file người đọc mở (in «còn 🚧» trong khi file cuối chỉ có «[Đang dừng]»). `[tdd:required]` | Hết báo động giả NHƯNG chốt 03/08 vẫn xanh | 12.4 | `cc:done` — TÁCH hai bộ đếm: còn trong file cuối ⇒ CẢNH BÁO · đã được bộ làm sạch đổi/gỡ ⇒ GHI CHÚ. `test_md2docx_glyph_safety_20260803.py` xanh nguyên — sửa báo động giả mà làm câm chốt an toàn thì không phải sửa |
+| 12.6 | ĐO SAP 12 mục so với SPIRIT 2025 — chỉ đo, KHÔNG đổi cấu trúc đã ký. `[tdd:skip:measurement-only]` | Nêu khoảng trống kèm bằng chứng grep; không tự sửa SAP | 12.2 | `cc:done` — SAP phủ đủ 27a-d cho quan sát; với RCT thiếu **28b** (giữa kỳ + quy tắc dừng) · **28a** (DMC) · **17** (định nghĩa/đánh giá tổn hại) · **15b/15c** — cả bốn **0 lần** xuất hiện trong `run_g4_auto.py`. KHÔNG tự sửa: SAP được KÝ và KHOÁ ở G4, `G4-AUTO-03` đọc §12 bằng regex nên đánh số lại là làm vỡ cổng. Đề xuất §13–§15 CÓ ĐIỀU KIỆN chỉ cho RCT, nối SAU §12 — chờ bác sĩ/thống kê viên quyết |
+| 12.7 | Lắp lại đề cương đề tài THẬT C1a và kiểm. `[tdd:skip:verification-only]` | 18 mục · P01–P23 · các luật PASS · liêm chính nội dung sạch | 12.1-12.5 | `cc:done` — 18/18 mục, P01–P23, R1–R17 PASS, R18 = `N/A` (cắt ngang KHÔNG có checklist đề cương theo mục — STROBE là chuẩn BÁO CÁO), `verify_exports_integrity` sạch, .docx có Mục lục, hết cảnh báo glyph giả. `STUDY_INDEX.md` tự làm mới theo checkpoint THẬT nên vài dòng đổi trạng thái — bản trên đĩa (01/09) lạc hậu so với mã master vừa hợp nhất, không phải đổi nội dung khoa học |
+
 ---
 
 ## Archive
@@ -238,6 +258,6 @@ TDD tags: `[tdd:required]` = viết test thất bại trước; `[tdd:skip:<lý 
 
 ## Last Update
 
-- **Updated at**: 2026-09-04 (harness-sync — Sprint 11 ghi nhận 47 commit chưa phản ánh kể từ Sprint 10; 11.7 = 40 phát hiện thật của Workflow đối kháng đa-agent vòng 2, đã push, CI đang treo do hạ tầng ngoài phạm vi code)
+- **Updated at**: 2026-09-06 (Sprint 12 hoàn tất 7/7 trên nhánh cslwb0 — khuôn đề cương 18 mục, checklist SPIRIT 2025, Mục lục .docx; 7 phép đột biến đều bắt đúng — gộp vào nhánh chính sau Sprint 11/harness-sync 04/09)
 - **Last session owner**: Claude Code
 - **Branch**: feat/r1-1-2-design-gap-remediation

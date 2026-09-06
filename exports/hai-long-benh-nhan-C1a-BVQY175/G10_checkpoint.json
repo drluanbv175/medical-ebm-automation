@@ -1,13 +1,13 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-09-01T12:34:26.758957",
+  "generated_at": "2026-09-06T03:51:02.355347",
   "gate_status": "BLOCKED — chờ input đời-thực",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
     "passed": true,
     "checks": {
-      "R1_16_sections": "PASS (đủ 16 mục)",
+      "R1_sections": "PASS (đủ 18 mục)",
       "R2_gate_table": "PASS (10 cổng + 4 mốc)",
       "R3_valid_tags": "PASS",
       "R4_pmid_traceable": "PASS (0/0 PMID đối chiếu PubMed raw)",
@@ -20,10 +20,11 @@
       "R11_missing_information": "PASS (thiếu sót/cổng chờ được liệt kê với ảnh hưởng và phương án an toàn)",
       "R12_document_control": "PASS (phiên bản/ngày/nguồn thay đổi/người duyệt/nhật ký hiện rõ)",
       "R13_traceability_matrix": "PASS (mục tiêu-biến-công cụ-phân tích-bảng được nối trong một ma trận)",
-      "R14_protocol_core_coverage": "PASS (đủ P01-P20)",
+      "R14_protocol_core_coverage": "PASS (đủ P01-P23)",
       "R15_semantic_consistency": "PASS",
       "R16_decision_package": "PASS",
-      "R17_scientific_readiness": "PASS (trung thực: còn quyết định khoa học mở)"
+      "R17_scientific_readiness": "PASS (trung thực: còn quyết định khoa học mở)",
+      "R18_protocol_checklist": "N/A (thiết kế không có checklist đề cương theo mục trong kho)"
     },
     "errors": [],
     "warnings": [],
@@ -47,7 +48,7 @@
   ],
   "document_control": {
     "document_version": "[DỰ THẢO]",
-    "document_date": "2026-09-01 12:34",
+    "document_date": "2026-09-06 03:51",
     "requires_change_history": true,
     "status": "[DỰ THẢO]"
   },
@@ -66,7 +67,7 @@
     "scientific_content_complete": false,
     "protocol_content_complete": false,
     "protocol_complete_items": 1,
-    "protocol_total_items": 20,
+    "protocol_total_items": 23,
     "missing_requirement_ids": [
       "D02",
       "D03",
@@ -80,7 +81,9 @@
       "D13",
       "D14",
       "D15",
-      "D16"
+      "D16",
+      "D17",
+      "D18"
     ],
     "semantic_error_codes": []
   },
@@ -133,8 +136,8 @@
   },
   "release_package_ready": false,
   "release_package_locked": false,
-  "n_de_cuong_sections": 16,
-  "n_protocol_core_items": 20,
+  "n_de_cuong_sections": 18,
+  "n_protocol_core_items": 23,
   "disclaimer": "Cần bác sĩ kiểm chứng.",
   "needs_input": {
     "blocked": true,

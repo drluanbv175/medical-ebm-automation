@@ -32,6 +32,14 @@ def _load_checkpoints(path: Path) -> dict:
 def _complete_meta() -> dict:
     return {
         "title": "Khảo sát kết cục ngoại trú",
+        # THÊM 06/09/2026 — khuôn 18 mục / 23 thành phần (P21–P23 + P16.limitations).
+        "literature_review": "Tổng hợp 12 nghiên cứu quan sát tại Việt Nam và khu vực về kết cục ngoại trú.",
+        "literature_consensus": "Đồng thuận: thời gian chờ và giao tiếp là yếu tố liên quan mạnh nhất.",
+        "literature_disagreements": "Bất đồng: vai trò của chi phí tự trả khác nhau giữa các bối cảnh.",
+        "theoretical_framework": "Khung Donabedian (cấu trúc–quy trình–kết quả) kết hợp SERVQUAL.",
+        "expected_results": "Chỉ khung bảng theo ma trận truy xuất; không có số liệu.",
+        "table_shells": ["Bảng 1. Đặc điểm nền", "Bảng 2. Kết cục chính", "Bảng 3. Mô hình chính"],
+        "limitations": "Cắt ngang một trung tâm; không suy diễn nhân quả; nguy cơ sai lệch không trả lời.",
         "document_version": "1.0-draft",
         "document_date": "2026-07-23",
         "summary": "Đề cương cắt ngang đánh giá kết cục chính tại phòng khám.",
@@ -145,7 +153,7 @@ def test_complete_meta_reaches_full_protocol_content(study_dir):
     spec = RS.build_study_spec("FIXT", cps, meta)
     evaluation = RS.evaluate_study_spec(spec, cps, meta)
 
-    assert evaluation["protocol_complete_items"] == 20
+    assert evaluation["protocol_complete_items"] == len(RS.S.PROTOCOL_CORE_ITEMS) == 23
     assert evaluation["protocol_content_complete"] is True
     assert evaluation["scientific_content_complete"] is True
     assert not [
@@ -184,7 +192,7 @@ def test_g10_creates_study_spec_and_decision_package(study_dir):
     checkpoint = json.loads(
         result["checkpoint"].read_text(encoding="utf-8")
     )
-    assert checkpoint["n_protocol_core_items"] == 20
+    assert checkpoint["n_protocol_core_items"] == len(RS.S.PROTOCOL_CORE_ITEMS) == 23
     assert checkpoint["study_spec"]["schema_version"] == RS.SCHEMA_VERSION
     assert checkpoint["artifacts"]["study_spec_json"].endswith(
         "STUDY_SPEC_FIXT.json"

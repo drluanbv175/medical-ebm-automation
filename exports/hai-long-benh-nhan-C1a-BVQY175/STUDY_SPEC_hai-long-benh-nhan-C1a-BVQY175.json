@@ -98,9 +98,26 @@
     "multiplicity": null,
     "software": null
   },
+  "literature": {
+    "summary": null,
+    "consensus": null,
+    "disagreements": null,
+    "novelty": "Đã có nhiều nghiên cứu quan sát: KHÔNG phải khoảng trống. Cần đọc kỹ nhóm này trước khi biện minh tính mới; hướng khả dĩ là SR/MA tổng hợp chúng, hoặc nghiên cứu ở quần thể/bối cảnh chưa được phủ.",
+    "ledger_artifact": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md"
+  },
+  "theory": {
+    "framework": null,
+    "not_applicable_rationale": null
+  },
+  "expected_results": {
+    "summary": null,
+    "table_shells": [],
+    "flow_diagram": null
+  },
   "bias": {
     "risks": null,
-    "mitigations": null
+    "mitigations": null,
+    "limitations": null
   },
   "ethics": {
     "risk_level": "TỐI THIỂU",
@@ -302,11 +319,12 @@
       },
       {
         "id": "P16",
-        "title": "Sai lệch và biện pháp giảm thiểu",
+        "title": "Sai lệch, hạn chế dự kiến và biện pháp giảm thiểu",
         "status": "THIẾU",
         "missing": [
           "Nguy cơ sai lệch",
-          "Biện pháp giảm thiểu"
+          "Biện pháp giảm thiểu",
+          "Phạm vi và hạn chế dự kiến"
         ],
         "source": "study_meta/G1"
       },
@@ -349,10 +367,39 @@
           "Tài liệu tham khảo"
         ],
         "source": "G0/G7 + phụ lục G10"
+      },
+      {
+        "id": "P21",
+        "title": "Tổng quan tài liệu: tổng hợp nghiên cứu trước, điểm đồng thuận và bất đồng",
+        "status": "THIẾU",
+        "missing": [
+          "Tổng hợp nghiên cứu trước",
+          "Điểm đồng thuận/bất đồng"
+        ],
+        "source": "study_meta/G0-G1 (Evidence Ledger A2b)"
+      },
+      {
+        "id": "P22",
+        "title": "Khung lý thuyết hoặc mô hình khái niệm (hoặc nêu rõ không áp dụng, có lý do)",
+        "status": "THIẾU",
+        "missing": [
+          "Khung lý thuyết/mô hình khái niệm (hoặc lý do không áp dụng)"
+        ],
+        "source": "study_meta"
+      },
+      {
+        "id": "P23",
+        "title": "Dự kiến kết quả và khung bảng trống (dummy tables), không số liệu",
+        "status": "THIẾU",
+        "missing": [
+          "Khung bảng trống (dummy tables)",
+          "Tóm tắt kết quả dự kiến — không số liệu"
+        ],
+        "source": "study_meta/G4 (SAP §11) + danh mục bảng/hình G10"
       }
     ],
     "protocol_complete_items": 1,
-    "protocol_total_items": 20,
+    "protocol_total_items": 23,
     "missing_requirements": [
       {
         "id": "D02",
@@ -480,6 +527,25 @@
           "resources.budget"
         ],
         "owner": "Chủ nhiệm/đơn vị",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D17",
+        "label": "Tổng quan tài liệu và khung lý thuyết (hoặc lý do không áp dụng)",
+        "paths": [
+          "literature.summary",
+          "theory.framework | theory.not_applicable_rationale"
+        ],
+        "owner": "Chủ nhiệm + EBM specialist",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D18",
+        "label": "Dự kiến kết quả: khung bảng trống theo ma trận truy xuất, không số liệu",
+        "paths": [
+          "expected_results.table_shells | expected_results.summary"
+        ],
+        "owner": "Thống kê viên/chủ nhiệm",
         "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
       }
     ],

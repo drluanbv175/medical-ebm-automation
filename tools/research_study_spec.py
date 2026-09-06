@@ -412,6 +412,48 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
             "software": _first(analysis_meta.get("software"),
                                raw.get("analysis_software")),
         },
+        # THÊM 06/09/2026 (khuôn 18 mục / 23 thành phần): ba khối nội dung mà
+        # khuôn cũ không có chỗ chứa. Chỉ ĐỌC từ study_meta/checkpoint — không bịa.
+        "literature": {
+            "summary": _first(raw.get("literature_review"),
+                              raw.get("literature_summary"),
+                              _get(raw, "literature", "summary")),
+            "consensus": _first(raw.get("literature_consensus"),
+                                _get(raw, "literature", "consensus")),
+            "disagreements": _first(raw.get("literature_disagreements"),
+                                    raw.get("conflicting_evidence"),
+                                    _get(raw, "literature", "disagreements")),
+            "novelty": _first(raw.get("novelty"), raw.get("differentiation"),
+                              _get(raw, "literature", "novelty"),
+                              g0.get("novelty_concern")),
+            "ledger_artifact": _first(
+                _get(g1, "artifacts", "A2b_evidence_ledger"),
+                _get(g1, "artifacts", "A2b_markdown"),
+                _get(g1, "artifacts", "A2b"),
+            ),
+        },
+        "theory": {
+            "framework": _first(raw.get("theoretical_framework"),
+                                raw.get("conceptual_framework"),
+                                _get(raw, "theory", "framework")),
+            # Thiết kế thuần sinh học/dược lý có thể KHÔNG dựa khung lý thuyết —
+            # nhưng phải NÓI RA kèm lý do, không để trống.
+            "not_applicable_rationale": _first(
+                raw.get("theoretical_framework_not_applicable"),
+                _get(raw, "theory", "not_applicable_rationale"),
+            ),
+        },
+        "expected_results": {
+            "summary": _first(raw.get("expected_results"),
+                              raw.get("anticipated_results"),
+                              _get(raw, "expected_results_block", "summary")),
+            "table_shells": _as_list(_first(raw.get("table_shells"),
+                                            raw.get("dummy_tables"),
+                                            _get(raw, "expected_results_block",
+                                                 "table_shells"))),
+            "flow_diagram": _first(raw.get("flow_diagram_plan"),
+                                   raw.get("participant_flow_plan")),
+        },
         "bias": {
             "risks": _first(bias_meta.get("risks"), raw.get("bias_risks")),
             "mitigations": _first(
@@ -419,6 +461,10 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
                 raw.get("bias_controls"),
                 raw.get("bias_mitigation"),
             ),
+            # THÊM 06/09/2026: phạm vi & hạn chế dự kiến (mục 14 khuôn mới; P16).
+            "limitations": _first(bias_meta.get("limitations"),
+                                  raw.get("limitations"),
+                                  raw.get("scope_limitations")),
         },
         "ethics": {
             "risk_level": _first(ethics_meta.get("risk_level"),
@@ -583,6 +629,7 @@ _PROTOCOL_RULES: Dict[str, Tuple[Tuple[str, Tuple[str, ...]], ...]] = {
     "P16": (
         ("Nguy cơ sai lệch", ("bias.risks",)),
         ("Biện pháp giảm thiểu", ("bias.mitigations",)),
+        ("Phạm vi và hạn chế dự kiến", ("bias.limitations",)),
     ),
     "P17": (
         ("Đánh giá lợi ích-nguy cơ", ("ethics.benefit_risk",)),
@@ -604,6 +651,20 @@ _PROTOCOL_RULES: Dict[str, Tuple[Tuple[str, Tuple[str, ...]], ...]] = {
     "P20": (
         ("Tài liệu tham khảo", ("references.pmids", "references.dois")),
         ("Phụ lục", ("appendices.required",)),
+    ),
+    # THÊM 06/09/2026 — khuôn 18 mục.
+    "P21": (
+        ("Tổng hợp nghiên cứu trước", ("literature.summary",)),
+        ("Điểm đồng thuận/bất đồng", ("literature.consensus",
+                                      "literature.disagreements")),
+    ),
+    "P22": (
+        ("Khung lý thuyết/mô hình khái niệm (hoặc lý do không áp dụng)",
+         ("theory.framework", "theory.not_applicable_rationale")),
+    ),
+    "P23": (
+        ("Khung bảng trống (dummy tables)", ("expected_results.table_shells",)),
+        ("Tóm tắt kết quả dự kiến — không số liệu", ("expected_results.summary",)),
     ),
 }
 
@@ -628,11 +689,14 @@ _PROTOCOL_SOURCES = {
     "P18": "study_meta/G2/G8",
     "P19": "study_meta",
     "P20": "G0/G7 + phụ lục G10",
+    "P21": "study_meta/G0-G1 (Evidence Ledger A2b)",
+    "P22": "study_meta",
+    "P23": "study_meta/G4 (SAP §11) + danh mục bảng/hình G10",
 }
 
 
 def protocol_coverage(spec: dict) -> List[dict]:
-    """Đánh giá đủ/một phần/thiếu cho 20 thành phần protocol."""
+    """Đánh giá đủ/một phần/thiếu cho từng thành phần protocol (len(PROTOCOL_CORE_ITEMS))."""
     rows: List[dict] = []
     for item_id, title in S.PROTOCOL_CORE_ITEMS:
         rules = _PROTOCOL_RULES[item_id]
@@ -697,6 +761,14 @@ _BASE_REQUIREMENTS: Tuple[
     ("D16", "Tiến độ, nhân lực và kinh phí",
      (("resources.timeline",), ("resources.team",), ("resources.budget",)),
      "Chủ nhiệm/đơn vị"),
+    # THÊM 06/09/2026 — khuôn 18 mục: hai quyết định khoa học hội đồng luôn hỏi.
+    ("D17", "Tổng quan tài liệu và khung lý thuyết (hoặc lý do không áp dụng)",
+     (("literature.summary",),
+      ("theory.framework", "theory.not_applicable_rationale")),
+     "Chủ nhiệm + EBM specialist"),
+    ("D18", "Dự kiến kết quả: khung bảng trống theo ma trận truy xuất, không số liệu",
+     (("expected_results.table_shells", "expected_results.summary"),),
+     "Thống kê viên/chủ nhiệm"),
 )
 
 _DESIGN_FIELD_REQUIREMENTS: Dict[
@@ -927,6 +999,9 @@ def meta_for_render(meta: Optional[dict], spec: dict) -> dict:
         "pilot": _get(spec, "data_collection", "pilot"),
         "analysis": spec.get("analysis"),
         "bias": spec.get("bias"),
+        "literature": spec.get("literature"),
+        "theory": spec.get("theory"),
+        "expected_results": spec.get("expected_results"),
         "ethics": spec.get("ethics"),
         "registration": spec.get("registration_dissemination"),
         "resources": spec.get("resources"),

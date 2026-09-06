@@ -78,7 +78,10 @@ class TestDoiTuongMetaDriven:
     def test_placeholder_when_meta_absent(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
-        assert "## 6.1. Tiêu chuẩn chọn\n\n[CẦN BỔ SUNG]" in text
+        # Tiểu mục lấy qua canon (06/09/2026: "6.1." → "7.1." khi khuôn lên 18 mục).
+        sub = G10.S.de_cuong_sub_heading("doituong", 0)
+        assert sub.endswith("Tiêu chuẩn chọn")
+        assert f"{sub}\n\n[CẦN BỔ SUNG]" in text
 
     def test_inclusion_exclusion_rendered_when_provided(self, cross_sectional_study):
         _write_meta(cross_sectional_study, {

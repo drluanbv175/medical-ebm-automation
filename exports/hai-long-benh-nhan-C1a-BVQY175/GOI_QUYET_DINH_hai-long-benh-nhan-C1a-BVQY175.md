@@ -1,7 +1,7 @@
 # Gói quyết định hoàn thiện đề cương — hai-long-benh-nhan-C1a-BVQY175
 
 **Mức hiện tại:** STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS.  
-**Bao phủ protocol:** 1/20 thành phần đủ dữ liệu dự thảo.
+**Bao phủ protocol:** 1/23 thành phần đủ dữ liệu dự thảo.
 
 ## Quyết định khoa học/hành chính còn thiếu
 
@@ -20,6 +20,8 @@
 | D14 | Sai lệch và biện pháp giảm thiểu | `bias.risks, bias.mitigations` | Chủ nhiệm + phương pháp | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
 | D15 | Consent, lợi ích-nguy cơ và bảo mật | `ethics.consent | population.consent, ethics.benefit_risk, ethics.privacy` | Chủ nhiệm + Hội đồng đạo đức | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
 | D16 | Tiến độ, nhân lực và kinh phí | `resources.timeline, resources.team, resources.budget` | Chủ nhiệm/đơn vị | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
+| D17 | Tổng quan tài liệu và khung lý thuyết (hoặc lý do không áp dụng) | `literature.summary, theory.framework | theory.not_applicable_rationale` | Chủ nhiệm + EBM specialist | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
+| D18 | Dự kiến kết quả: khung bảng trống theo ma trận truy xuất, không số liệu | `expected_results.table_shells | expected_results.summary` | Thống kê viên/chủ nhiệm | Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10. |
 
 ## Vấn đề ngữ nghĩa
 

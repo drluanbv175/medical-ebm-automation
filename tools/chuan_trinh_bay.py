@@ -135,16 +135,16 @@ def ap_dinh_dang_tai_lieu(doc: Any, co_chu: int = CO_CHU_CHUAN,
             continue
     for p in doc.paragraphs:
         for r in p.runs:
-            if lam_sach and r.text:
-                r.text = lam_sach_van_ban(r.text)
+            if lam_sach:
+                _lam_sach_run(r)      # giữ run mang mã trường (vá 06/09/2026)
             _dat(r, co_chu)
     for bang in doc.tables:
         for hang in bang.rows:
             for o in hang.cells:
                 for p in o.paragraphs:
                     for r in p.runs:
-                        if lam_sach and r.text:
-                            r.text = lam_sach_van_ban(r.text)
+                        if lam_sach:
+                            _lam_sach_run(r)
                         _dat(r, CO_CHU_BANG)
     return doc
 
@@ -162,22 +162,48 @@ def dat_font_ma_nguon(p: Any, co_chu: int = 9) -> None:
         r.font.size = Pt(co_chu)
 
 
+def _run_chua_ma_truong(r: Any) -> bool:
+    """True nếu run mang mã trường Word (TOC, PAGE, REF…): fldChar/instrText.
+
+    Vá 06/09/2026: setter `run.text = …` của python-docx DỰNG LẠI run — xoá mọi
+    con không phải w:t — nên một lần "làm sạch" là mất trường Mục lục vừa chèn
+    (trường số trang ở footer sống sót chỉ vì bộ làm sạch không quét footer).
+    Run mang mã trường không bao giờ là ký tự trang trí: bỏ qua nguyên run.
+    """
+    try:
+        from docx.oxml.ns import qn
+    except ImportError:          # không có python-docx thì cũng không có run nào
+        return False
+    el = r._r
+    return (el.find(qn("w:fldChar")) is not None
+            or el.find(qn("w:instrText")) is not None)
+
+
+def _lam_sach_run(r: Any) -> None:
+    """Làm sạch một run — chỉ ghi lại khi văn bản THẬT SỰ đổi và run không mang
+    mã trường (mỗi lần gán là một lần dựng lại run, không gán vô cớ)."""
+    if not r.text or _run_chua_ma_truong(r):
+        return
+    sach = lam_sach_van_ban(r.text)
+    if sach != r.text:
+        r.text = sach
+
+
 def lam_sach_tai_lieu(doc: Any) -> Any:
     """CHỈ làm sạch ký tự trang trí trong mọi run/ô bảng — KHÔNG đụng font/cỡ.
 
     Dành cho bộ render đã tự quản font theo HỒ SƠ TẠP CHÍ (md2docx_vn: G7 bản
     thảo, G10 gói nộp) — áp font chuẩn 13pt lên đó sẽ đè hồ sơ 12pt/cách dòng
-    2.0 của tạp chí, sai theo chiều ngược lại.
+    2.0 của tạp chí, sai theo chiều ngược lại. Run mang mã trường (Mục lục, số
+    trang) được giữ nguyên — xem _run_chua_ma_truong.
     """
     for p in doc.paragraphs:
         for r in p.runs:
-            if r.text:
-                r.text = lam_sach_van_ban(r.text)
+            _lam_sach_run(r)
     for bang in doc.tables:
         for hang in bang.rows:
             for o in hang.cells:
                 for p in o.paragraphs:
                     for r in p.runs:
-                        if r.text:
-                            r.text = lam_sach_van_ban(r.text)
+                        _lam_sach_run(r)
     return doc

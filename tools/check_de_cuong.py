@@ -4,7 +4,8 @@
 Chạy sau khi run_g10_assemble.py lắp ráp, TRƯỚC khi giao cho bác sĩ. Bắt các
 lỗi liêm chính/cấu trúc mà mắt thường dễ bỏ sót:
 
-R1. ĐỦ 16 MỤC của mẫu đề cương skill (templates/01).
+R1. ĐỦ MỌI MỤC CẤP 1 của mẫu đề cương skill (templates/01) — số mục lấy từ
+    skill_standards.DE_CUONG_SECTIONS (18 từ 06/09/2026; trước đó 16).
 R2. Có Bảng trạng thái cổng G0-G9 (đủ 10 cổng skill) + Kết luận sẵn sàng (4 mốc).
 R3. Mọi NHÃN dạng '[CẦN.../ĐÃ.../DỰ THẢO...]' phải là nhãn skill HỢP LỆ
     (không có nhãn tự chế sai chuẩn).
@@ -31,13 +32,18 @@ R12. Có kiểm soát phiên bản và lịch sử thay đổi: phiên bản, ng
      thay đổi và người phê duyệt/chủ nhiệm phải hiện rõ trong đầu ra chính.
 R13. Có ma trận truy xuất mục tiêu-biến-công cụ-phân tích-bảng để đồng bộ
      protocol, CRF/codebook, SAP, bảng/hình và kết luận.
-R14. Có ma trận bao phủ đủ 20 thành phần protocol lõi, không đánh đồng 16 tiêu
-     đề với độ đầy đủ nội dung.
+R14. Có ma trận bao phủ đủ MỌI thành phần protocol lõi (PROTOCOL_CORE_ITEMS —
+     23 từ 06/09/2026; trước đó 20), không đánh đồng số tiêu đề với độ đầy đủ
+     nội dung.
 R15. Không có mâu thuẫn ngữ nghĩa nghiêm trọng giữa thiết kế, kết cục chính,
      CRF, cỡ mẫu và SAP.
 R16. Có một gói quyết định hợp nhất liệt kê mọi trường khoa học còn thiếu.
 R17. Không tự tuyên bố nội dung khoa học đầy đủ khi StudySpec vẫn thiếu quyết
      định cốt lõi hoặc còn lỗi ngữ nghĩa.
+R18. (CẢNH BÁO, thêm 06/09/2026) Thiết kế có checklist đề cương theo mục (RCT →
+     SPIRIT 2025, 34 mục/53 dòng từ bài E&E chính thức) phải in đủ bảng item;
+     thiết kế không có checklist như vậy (quan sát) hoặc kho chưa có danh mục
+     (PRISMA-P) ghi N/A — không bịa.
 
 Trả về report dict{passed, errors[], warnings[], checks{}}. Lỗi R1-R5, R7-R17 = ĐỎ
 (passed=False). R6 = cảnh báo (không chặn, vì một số tham số giả định hợp lệ).
@@ -270,7 +276,10 @@ def validate(md_path, out_dir) -> Dict:
     warnings: List[str] = []
     checks: Dict[str, str] = {}
 
-    # R1 — đủ 16 mục.
+    # R1 — đủ mọi mục cấp 1 (số mục = len(DE_CUONG_SECTIONS); 18 từ 06/09/2026).
+    # Khoá kiểm đổi tên "R1_16_sections" → "R1_sections" cùng ngày: tên cũ ghim
+    # con số vào hợp đồng, nên lần đổi khuôn nào cũng phải đổi tên khoá — sai chỗ.
+    n_sections = len(S.DE_CUONG_SECTIONS)
     missing_sections = []
     for num, title, _sub in S.DE_CUONG_SECTIONS:
         # Heading dạng "# {num}. {title}" — khớp linh hoạt dấu cách.
@@ -280,9 +289,11 @@ def validate(md_path, out_dir) -> Dict:
             missing_sections.append(f"{num}. {title}")
     if missing_sections:
         errors.append(f"R1 THIẾU MỤC ĐỀ CƯƠNG: {', '.join(missing_sections)}")
-        checks["R1_16_sections"] = f"FAIL (thiếu {len(missing_sections)})"
+        checks["R1_sections"] = (
+            f"FAIL (thiếu {len(missing_sections)}/{n_sections} mục)"
+        )
     else:
-        checks["R1_16_sections"] = "PASS (đủ 16 mục)"
+        checks["R1_sections"] = f"PASS (đủ {n_sections} mục)"
 
     # R2 — bảng cổng + kết luận sẵn sàng.
     n_skill_gates_in_table = sum(
@@ -586,9 +597,13 @@ def validate(md_path, out_dir) -> Dict:
         checks["R13_traceability_matrix"] = (
             "PASS (mục tiêu-biến-công cụ-phân tích-bảng được nối trong một ma trận)")
 
-    # R14 — đủ 20 thành phần protocol lõi, độc lập với bố cục 16 chương.
+    # R14 — đủ mọi thành phần protocol lõi, độc lập với bố cục chương.
+    # Tiêu đề ma trận mang CON SỐ (G10 in len(PROTOCOL_CORE_ITEMS)); regex nhận
+    # \d+ để validator không gãy khi số thành phần đổi (20 → 23 ngày 06/09/2026).
+    n_items = len(S.PROTOCOL_CORE_ITEMS)
+    last_item_id = S.PROTOCOL_CORE_ITEMS[-1][0]
     has_protocol_matrix = re.search(
-        r"^#\s*Ma trận bao phủ 20 thành phần protocol lõi\b",
+        r"^#\s*Ma trận bao phủ \d+ thành phần protocol lõi\b",
         text,
         re.MULTILINE,
     )
@@ -598,7 +613,7 @@ def validate(md_path, out_dir) -> Dict:
     ]
     if not has_protocol_matrix:
         errors.append(
-            "R14 THIẾU mục 'Ma trận bao phủ 20 thành phần protocol lõi'."
+            f"R14 THIẾU mục 'Ma trận bao phủ {n_items} thành phần protocol lõi'."
         )
         checks["R14_protocol_core_coverage"] = "FAIL (thiếu ma trận)"
     elif missing_protocol_items:
@@ -606,10 +621,10 @@ def validate(md_path, out_dir) -> Dict:
             "R14 MA TRẬN PROTOCOL thiếu: " + ", ".join(missing_protocol_items)
         )
         checks["R14_protocol_core_coverage"] = (
-            f"FAIL (thiếu {len(missing_protocol_items)}/20 mục)"
+            f"FAIL (thiếu {len(missing_protocol_items)}/{n_items} mục)"
         )
     else:
-        checks["R14_protocol_core_coverage"] = "PASS (đủ P01-P20)"
+        checks["R14_protocol_core_coverage"] = f"PASS (đủ P01-{last_item_id})"
 
     # R15 — kiểm mâu thuẫn ngữ nghĩa từ cùng StudySpec mà assembler sử dụng.
     spec = RS.build_study_spec(md_path.stem, cps, meta)
@@ -687,6 +702,47 @@ def validate(md_path, out_dir) -> Dict:
         checks["R17_scientific_readiness"] = (
             "PASS (trung thực: còn quyết định khoa học mở)"
         )
+
+    # R18 — CẢNH BÁO (không chặn): thiết kế có checklist đề cương theo mục (RCT →
+    # SPIRIT 2025) phải in đủ bảng item. Cố ý KHÔNG fail-closed: đề cương lắp trước
+    # 06/09/2026 chưa có bảng này, và thiếu bảng không làm nội dung khoa học sai —
+    # nó chỉ làm hội đồng khó tick. Dùng cùng nguồn item với G10 (một sự thật).
+    try:
+        import protocol_checklist_items as PCI
+        design_code = (spec.get("design") or {}).get("code")
+        found = PCI.items_for_design(design_code)
+        if found:
+            name, items, _prov = found
+            has_block = re.search(
+                r"^#\s*Checklist chuẩn đề cương theo từng mục\b", text, re.MULTILINE
+            )
+            missing_items = [
+                item_id for item_id, _t, _h in items
+                if not re.search(rf"^\|\s*{re.escape(item_id)}\s*\|", text, re.MULTILINE)
+            ]
+            if not has_block:
+                warnings.append(
+                    f"R18 THIẾU bảng checklist {name} theo từng mục cho thiết kế "
+                    f"`{design_code}` — chạy lại G10 để sinh."
+                )
+                checks["R18_protocol_checklist"] = "WARN (thiếu bảng)"
+            elif missing_items:
+                warnings.append(
+                    f"R18 bảng {name} thiếu {len(missing_items)}/{len(items)} dòng: "
+                    + ", ".join(missing_items[:8])
+                    + ("…" if len(missing_items) > 8 else "")
+                )
+                checks["R18_protocol_checklist"] = (
+                    f"WARN (thiếu {len(missing_items)}/{len(items)} dòng)"
+                )
+            else:
+                checks["R18_protocol_checklist"] = f"PASS ({name}: đủ {len(items)} dòng)"
+        else:
+            checks["R18_protocol_checklist"] = (
+                "N/A (thiết kế không có checklist đề cương theo mục trong kho)"
+            )
+    except ImportError:
+        checks["R18_protocol_checklist"] = "N/A (thiếu module protocol_checklist_items)"
 
     passed = len(errors) == 0
     return {"passed": passed, "errors": errors, "warnings": warnings,
