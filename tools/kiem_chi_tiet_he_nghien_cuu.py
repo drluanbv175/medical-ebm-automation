@@ -83,10 +83,17 @@ ARTIFACT_KY = {
     "G10": "G10_checkpoint.json",
 }
 # Điều kiện để một cổng CHẠY MÁY được: cp:X = X đã có checkpoint · ky:X = X đã ký thật.
+# G6 đòi CẢ BA — không chỉ G5: _check_sap_db_locked() trong run_g6_auto.py (chốt
+# fail-closed THẬT trước khi chạy hồi quy trên dữ liệu đã khóa) tự SystemExit
+# ngay nếu G2 (IRB) chưa ledger_approved, hoặc G4 (SAP)/G5 (khóa DB) chưa đủ cả
+# hai. Trước bản vá, TIEN_DE["G6"] chỉ khai "ky:G5" nên trang_thai_chuoi() có
+# thể trả 🔴 "mọi tiền đề đã đủ — máy làm được" ngay cả khi G2 CHƯA ký — một
+# tín hiệu "sẵn sàng chạy" giả, vì chạy run_g6_auto.py thật lúc đó sẽ chết ngay
+# ở dòng "DUNG: G2 (phe duyet dao duc/IRB) chua xac nhan LOCKED...".
 TIEN_DE = {
     "G0": [], "G1": ["cp:G0"], "G2": ["cp:G1"], "G3": ["cp:G1"], "G4": ["cp:G3"],
-    "G5": ["ky:G4"], "G6": ["ky:G5"], "G7": ["cp:G6"], "G8": ["cp:G7"], "G9": ["cp:G7"],
-    "G10": ["ky:G8", "ky:G9"],
+    "G5": ["ky:G4"], "G6": ["ky:G2", "ky:G4", "ky:G5"], "G7": ["cp:G6"], "G8": ["cp:G7"],
+    "G9": ["cp:G7"], "G10": ["ky:G8", "ky:G9"],
 }
 # Tài liệu NỘP do agent/bác sĩ soạn (ngoài artifact cổng) — bắt buộc có bản .docx
 TAI_LIEU_NOP_PREFIX = ("DE_CUONG_THONG_NHAT_", "De-cuong_", "Bai-bao-giao-thuc_")

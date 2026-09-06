@@ -19,6 +19,7 @@ Mã thoát: 0 = chạy trọn (kể cả 0%% OA — độ phủ thấp là SỰ 
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import re
 import sys
@@ -45,7 +46,6 @@ def _goi(url: str, thu: int = 3) -> bytes:
     """GET có RETRY — đo thật 15/08: kho 600 PMID chết giữa chừng ở file thứ 17 vì
     một IncompleteRead đơn lẻ (mạng nháy), mất cả lượt chạy dài. Mạng nháy là
     thường lệ ở lô lớn; lỗi lần cuối mới được ném ra."""
-    import http.client
     req = urllib.request.Request(url, headers={"User-Agent": f"EBM-toan-van-oa/1.0 ({MAILTO})"})
     loi: Exception | None = None
     for lan in range(thu):
@@ -107,11 +107,17 @@ def lien_ket_pmc(pmids: list[str], co_lo: int = 50) -> dict[str, str]:
 
 
 def tai_toan_van(pmcid: str) -> bytes | None:
-    """Toàn văn JATS XML từ PMC. PMC chặn/không OA → None (không đoán)."""
+    """Toàn văn JATS XML từ PMC. PMC chặn/không OA → None (không đoán).
+
+    Bắt CẢ `http.client.HTTPException` (gồm `IncompleteRead`) — `_goi()` có
+    thể ném lỗi này sau khi hết 3 lần retry (đúng sự cố 15/08 đã ghi trong
+    docstring của `_goi()`), và nó KHÔNG phải lớp con của `OSError`/
+    `URLError`. Thiếu nhánh này thì một mạng nháy giữa batch sẽ làm crash cả
+    lượt gom thay vì trả `None` đúng hợp đồng của hàm."""
     u = f"{EUTILS}/efetch.fcgi?db=pmc&id={pmcid}&retmode=xml&tool=ebm&email={MAILTO}"
     try:
         xml = _goi(u)
-    except (urllib.error.URLError, OSError):
+    except (urllib.error.URLError, OSError, http.client.HTTPException):
         return None
     # Bài PMC KHÔNG thuộc tập OA trả về stub không có <body> — đó là «không lấy
     # được hợp pháp», phải phân biệt với bài OA thật (có thân bài).
@@ -139,7 +145,7 @@ def main() -> int:
     print(f"«Đọc bài hộ» — {len(pmids)} PMID nền · nguồn HỢP PHÁP duy nhất: PMC Open Access")
     try:
         anh_xa = lien_ket_pmc(pmids)
-    except (urllib.error.URLError, OSError, ValueError) as exc:
+    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as exc:
         print(f"🔴 HẠ TẦNG: elink không trả lời ({type(exc).__name__}) — chưa gom được, "
               "KHÔNG kết luận gì về độ phủ OA.")
         return 2

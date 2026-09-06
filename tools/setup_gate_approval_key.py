@@ -56,7 +56,13 @@ _KEY_PATH = Path.home() / ".ebm-secrets" / "gate_approval_key"
 # đơn giản là giữ ở nơi khác, chỉ mở khi có người đó thật sự duyệt) là tách vai trò trở
 # thành bằng chứng THẬT. Không bắt buộc — không tạo thì hệ vẫn chạy bằng khóa chung,
 # nhưng approve_gate.py sẽ NÓI RÕ mức bảo đảm thấp hơn thay vì im lặng.
-_ROLE_GROUPS = ("IRB", "STATISTICIAN", "INDEPENDENT_PEER_REVIEWER", "PI")
+# PHẢI khớp đúng TẬP HỢP nhóm stakeholder trong gate_contract.py::_GATE_REQUIRED_
+# STAKEHOLDERS (G2→IRB · G4→STATISTICIAN/PI · G5→DATA_MANAGER/PI · G8→
+# INDEPENDENT_PEER_REVIEWER · G9/G10→PI). Vá 2026-09-06 (audit vòng 30): bản
+# trước THIẾU "DATA_MANAGER", nên bác sĩ muốn tạo khóa RIÊNG cho vai trò quản trị
+# dữ liệu (bắt buộc cho cổng G5 — khóa DB) bị argparse từ chối "invalid choice"
+# dù đây là một nhóm stakeholder CÓ THẬT và BẮT BUỘC theo hợp đồng cổng.
+_ROLE_GROUPS = ("IRB", "STATISTICIAN", "DATA_MANAGER", "INDEPENDENT_PEER_REVIEWER", "PI")
 
 
 def _key_path_for(role: str | None) -> Path:
