@@ -296,11 +296,41 @@ class ApprovalLedger:
 
     def has_gate_a(self) -> bool:
         """GATE_A = cổng áp dụng lâm sàng (dieu-phoi-lam-sang)."""
-        return self.check_has_approval("GATE_A") is not None
+        return self._has_non_synthetic_approval("GATE_A")
 
     def has_gate_b(self) -> bool:
         """GATE_B = cổng ghi sổ cái (so-cai-ghi-nho)."""
-        return self.check_has_approval("GATE_B") is not None
+        return self._has_non_synthetic_approval("GATE_B")
+
+    def _has_non_synthetic_approval(
+        self,
+        gate_id: str,
+        decision: ApprovalDecisionEnum = ApprovalDecisionEnum.APPROVED,
+    ) -> bool:
+        """Như check_has_approval() nhưng LOẠI BỎ approval synthetic.
+
+        Vá 2026-09-06 (audit vòng 35, phát hiện #2): has_gate_a()/has_gate_b()
+        trước đây gọi thẳng check_has_approval(), khác 3 hàm has_* chị em
+        (has_ethics_approval/has_sap_lock/has_pi_signoff — cả ba đều qua
+        check_required_stakeholder_approval(), lọc `is_synthetic` tường
+        minh). Đã tái hiện: make_synthetic_approval(gate_id="GATE_A", ...)
+        rồi add_approval() khiến has_gate_a() trả True, dù docstring của
+        make_synthetic_approval khẳng định "KHÔNG BAO GIỜ bị nhầm là phê
+        duyệt người". Không dùng check_required_stakeholder_approval() ở
+        đây được: "GATE_A"/"GATE_B" (cổng lâm sàng, KHÁC 6 cổng G0–G10
+        nghiên cứu) không có mặt trong tools/gate_contract.py::
+        _GATE_REQUIRED_STAKEHOLDERS, nên hàm đó sẽ fallback nguyên xi về
+        check_has_approval() — không lọc gì thêm, tức "sửa" theo cách đó
+        sẽ là no-op câm lặng. Không lọc thêm agent-created/self-review ở
+        đây vì add_approval() đã chặn hai điều đó NGAY TỪ LÚC THÊM VÀO
+        ledger (khác is_synthetic — được PHÉP thêm có chủ đích, để mô
+        phỏng trong Research Studio, chỉ cần bị loại khi ĐẾM là đã duyệt).
+        """
+        candidates = [
+            r for r in self._records
+            if r.gate_id == gate_id and not getattr(r, "is_synthetic", False)
+        ]
+        return self._latest_if_not_superseded(candidates, decision) is not None
 
     # ── Integrity ─────────────────────────────────────────────────────────────
 
