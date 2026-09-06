@@ -48,30 +48,6 @@ TRUSTED_SOURCE_TERMS = (
     "drug safety",
     "hta",
 )
-TRUSTED_AGENCY_TERMS = (
-    "kdigo",
-    "nejm",
-    "n engl j med",
-    "lancet",
-    "jama",
-    "bmj",
-    "cochrane",
-    "nice",
-    "who",
-    "cdc",
-    "fda",
-    "ema",
-    "mhra",
-    "acg",
-    "aga",
-    "esc",
-    "aha",
-    "acc",
-    "ada",
-    "easl",
-    "aasld",
-    "gold",
-)
 TRUSTED_OFFICIAL_HOSTS = (
     "who.int",
     "cdc.gov",
@@ -255,7 +231,17 @@ def _has_trusted_source_type(card: Mapping[str, Any]) -> bool:
         )
     )
     compact = _norm(joined)
-    return any(term in compact for term in TRUSTED_SOURCE_TERMS + TRUSTED_AGENCY_TERMS)
+    # VÁ 2026-09-06 (vòng 29, phát hiện HIGH): nhánh này TRƯỚC ĐÂY còn tra thêm
+    # TRUSTED_AGENCY_TERMS (đã xoá) bằng khớp chuỗi con `in` KHÔNG có ranh giới
+    # từ — tái diễn CHÍNH lỗ hổng mà match_authority_source() ở trên đã được vá
+    # để chống (xem app/sources/authority.py::_AMBIGUOUS_SHORT_ALIASES, vòng
+    # 20/2026-09-05). Mọi tên viết tắt trong TRUSTED_AGENCY_TERMS cũ (esc, acc,
+    # aga, who, gold, ada, aha...) đều ĐÃ có mặt trong TRUSTED_AUTHORITY_SOURCES
+    # với khớp ranh giới từ đúng đắn ở lời gọi match_authority_source() phía
+    # trên — nên nhánh substring thô này chỉ THÊM lại đúng lỗ hổng đã vá, không
+    # thêm được năng lực phát hiện nào mới. Chỉ còn TRUSTED_SOURCE_TERMS (các từ
+    # mô tả THIẾT KẾ nghiên cứu — dài, không trùng từ tiếng Anh thông dụng).
+    return any(term in compact for term in TRUSTED_SOURCE_TERMS)
 
 
 def _has_explicit_day_or_month(value: Any) -> bool:
