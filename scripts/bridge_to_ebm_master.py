@@ -22,10 +22,19 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+from pathlib import Path
 
 # Hub gộp vào thư mục chung "Claude AI" (2026-06-11). Tự suy theo vị trí script để di động Mac↔Windows:
 # script ở Claude AI/medical-ebm-automation/scripts/ → lên 2 cấp = Claude AI/ → /EBM_MASTER
-HUB = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "EBM_MASTER")
+# VÁ 07/09/2026 (cùng đợt tools/ban_sao_tran.py bên repo drluanbv175/ebm-drluanbv175):
+# 3 lần dirname() giả định "Claude AI" (workspace gốc) nằm LỒNG 2 cấp trên script —
+# đúng máy thật, SAI trên phiên cloud (medical-ebm-automation là ANH EM của
+# workspace gốc). Dùng resolve_workspace_root() — xem tools/_workspace_root.py.
+_REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_REPO / "tools"))
+from _workspace_root import resolve_workspace_root  # noqa: E402
+
+HUB = os.path.join(str(resolve_workspace_root(_REPO)), "EBM_MASTER")
 sys.path.insert(0, os.path.join(HUB, "tools"))
 from ledger_ids import assert_unique, max_seq  # isort: skip  # noqa: E402 — vá 2026-07-17: seq=len(cards) từng gây trùng id thật (xem ledger_ids.py)
 

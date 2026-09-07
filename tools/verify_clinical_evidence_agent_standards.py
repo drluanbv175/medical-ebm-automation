@@ -24,7 +24,10 @@ from pathlib import Path
 from typing import Iterable
 
 REPO = Path(__file__).resolve().parents[1]
-ROOT = REPO.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _workspace_root import resolve_workspace_root  # noqa: E402
+
+ROOT = resolve_workspace_root(REPO)
 AGENTS = REPO / ".claude" / "agents"
 ROOT_TOOLS = ROOT / "tools"
 SKILL_ROOT = ROOT / "sync" / "skills" / "cap-nhat-chung-cu-y-khoa"

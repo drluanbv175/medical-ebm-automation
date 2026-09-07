@@ -14,8 +14,15 @@ from pathlib import Path
 # quy ước bất biến-tên mà tools/verify_evidence_surveillance_deployment.py và
 # tools/verify_clinical_evidence_agent_standards.py đã dùng: REPO trước
 # (không phụ thuộc tên thư mục), ROOT suy từ REPO (không phải ngược lại).
+# VÁ 07/09/2026: `ROOT = REPO.parent` giả định REPO nằm LỒNG bên trong workspace
+# gốc — đúng máy thật, SAI trên phiên cloud (REPO là ANH EM của workspace gốc
+# dưới cùng thư mục cha). Dùng resolve_workspace_root() — xem
+# tools/_workspace_root.py để biết chi tiết.
 REPO = Path(__file__).resolve().parents[1]
-ROOT = REPO.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _workspace_root import resolve_workspace_root  # noqa: E402
+
+ROOT = resolve_workspace_root(REPO)
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 

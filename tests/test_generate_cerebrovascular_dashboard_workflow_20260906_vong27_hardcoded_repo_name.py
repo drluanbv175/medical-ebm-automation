@@ -44,7 +44,19 @@ chất của lỗi portability (chỉ lộ ra khi TÊN THƯ MỤC khác đi). V�
 - TestMinhHoaCongThucCuSaiKhiDoiTenCheckout minh hoạ CƠ CHẾ (phép tính
   đường dẫn thuần, không đụng module thật) để người đọc hiểu TẠI SAO —
   nó luôn pass bất kể trạng thái module thật, không phải bằng chứng
-  mutation test."""
+  mutation test.
+
+★ VÁ 07/09/2026 (cùng đợt tools/ban_sao_tran.py bên repo drluanbv175/
+ebm-drluanbv175) — `test_root_la_cha_cua_repo` được sửa lại: `ROOT` KHÔNG
+còn LUÔN LUÔN bằng `REPO.parent` nữa. Bản vá 15/08 (khoá bởi test này)
+đúng cho máy thật (REPO nằm LỒNG trong workspace gốc) nhưng SAI trên
+phiên cloud (REPO là ANH EM của workspace gốc dưới cùng thư mục cha —
+`REPO.parent` chỉ là thư mục chứa CẢ HAI, không có `tools/`, `sync/`
+nào). `ROOT` nay tính qua `resolve_workspace_root()` (dò `sync/` — nội
+dung, không phải tên) nên có thể khác `REPO.parent` khi REPO là sibling.
+Test cũ khoá đúng công thức lồng, nhưng công thức đó chỉ còn ĐÚNG MỘT
+TRƯỜNG HỢP trong hai; đã sửa để khoá đúng lời gọi `resolve_workspace_root`
+thay vì so sánh trực tiếp với `REPO.parent`."""
 from __future__ import annotations
 
 import sys
@@ -56,6 +68,7 @@ if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
 import generate_cerebrovascular_dashboard_20260723 as DASH  # noqa: E402
+from _workspace_root import resolve_workspace_root  # noqa: E402
 
 
 class TestRepoKhongPhuThuocTenThuMuc:
@@ -67,7 +80,9 @@ class TestRepoKhongPhuThuocTenThuMuc:
         assert DASH.REPO == module_path.parents[1]
 
     def test_root_la_cha_cua_repo(self):
-        assert DASH.ROOT == DASH.REPO.parent
+        # VÁ 07/09/2026: ROOT tính qua resolve_workspace_root() (dò `sync/`),
+        # KHÔNG còn luôn bằng REPO.parent — xem ghi chú giới hạn ở đầu file.
+        assert DASH.ROOT == resolve_workspace_root(DASH.REPO)
 
     def test_repo_ton_tai_that_tren_dia(self):
         assert DASH.REPO.exists() and DASH.REPO.is_dir()

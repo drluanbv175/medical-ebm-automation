@@ -21,7 +21,10 @@ from typing import Any, Mapping, Sequence
 from urllib.parse import urlparse
 
 REPO = Path(__file__).resolve().parents[1]
-ROOT = REPO.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _workspace_root import resolve_workspace_root  # noqa: E402
+
+ROOT = resolve_workspace_root(REPO)
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 

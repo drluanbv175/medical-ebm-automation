@@ -69,10 +69,15 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
         pass
 
 BASE = Path(__file__).resolve().parents[1]          # medical-ebm-automation/
-WORKSPACE_ROOT = BASE.parent                          # .../OneDrive/Claude AI/
 
 sys.path.insert(0, str(BASE / "tools"))
+from _workspace_root import resolve_workspace_root  # noqa: E402
 from gate_contract import ensure_utf8_stdout  # noqa: E402
+
+# VÁ 07/09/2026: `BASE.parent` giả định BASE nằm LỒNG trong workspace gốc ("Claude
+# AI") — đúng máy thật, SAI trên phiên cloud (BASE là ANH EM của workspace gốc
+# dưới cùng thư mục cha). Xem tools/_workspace_root.py.
+WORKSPACE_ROOT = resolve_workspace_root(BASE)         # .../OneDrive/Claude AI/
 
 DEFAULT_GAP_REGISTER = BASE / "release_evidence" / "PROGRAM" / "RESEARCH_OS_PRODUCTION_READINESS_GAP_REGISTER.csv"
 DEFAULT_OPEN_DEPS = BASE / "release_evidence" / "PROGRAM" / "RESEARCH_OS_OPEN_DEPENDENCIES_REGISTER.csv"

@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import sys
 import unicodedata
 from datetime import date
 from pathlib import Path
@@ -31,7 +32,15 @@ from app.utils.text import clean_text
 logger = get_logger(__name__)
 
 # Mẫu chuẩn + thư mục xuất (chung OneDrive, đồng bộ Mac↔Windows)
-_ROOT = BASE_DIR.parent
+# VÁ 07/09/2026 (cùng đợt tools/ban_sao_tran.py bên repo drluanbv175/ebm-drluanbv175):
+# `BASE_DIR.parent` giả định BASE_DIR (=REPO) nằm LỒNG trong workspace gốc — đúng
+# máy thật, SAI trên phiên cloud (REPO là ANH EM của workspace gốc dưới cùng thư
+# mục cha). Dùng resolve_workspace_root() — xem tools/_workspace_root.py.
+if str(BASE_DIR / "tools") not in sys.path:
+    sys.path.insert(0, str(BASE_DIR / "tools"))
+from _workspace_root import resolve_workspace_root  # noqa: E402
+
+_ROOT = resolve_workspace_root(BASE_DIR)
 # V4.3.2.1 (reproducibility): ưu tiên template VENDORED trong repo (để `git archive`
 # tự-chứa); fallback OneDrive-root khi chạy ngoài archive. CHỈ path resolution —
 # KHÔNG đổi render logic.
