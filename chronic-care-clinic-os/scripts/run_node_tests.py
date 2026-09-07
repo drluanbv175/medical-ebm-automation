@@ -18,13 +18,16 @@ def main() -> int:
     if not mjs_test_files and not ts_test_files:
         raise SystemExit("No Node test files found.")
     node = str(find_node())
-    mjs_result = subprocess.run(
-        [node, "--test", *[str(path) for path in mjs_test_files]],
-        cwd=ROOT,
-        check=False,
-    )
-    if mjs_result.returncode != 0 or not ts_test_files:
-        return mjs_result.returncode
+    if mjs_test_files:
+        mjs_result = subprocess.run(
+            [node, "--test", *[str(path) for path in mjs_test_files]],
+            cwd=ROOT,
+            check=False,
+        )
+        if mjs_result.returncode != 0:
+            return mjs_result.returncode
+    if not ts_test_files:
+        return 0
 
     with tempfile.TemporaryDirectory(prefix="ccos-node-tests-") as temp_dir:
         out_dir = Path(temp_dir)
