@@ -130,7 +130,7 @@ class TestMainPhatHienDungViPhamThatTrenFileThat:
         target = tmp_path / "tools" / "gia_lap_dung_chuan.py"
         target.write_text(
             'def f(src, dst):\n'
-            '    dst.write_text(g(src.read_text(encoding="utf-8")), '
+            '    dst.write_text(g(src.read_text(encoding="utf-8")), '  # da-nen: bo-qua: chuoi mau cho scanner
             'encoding="utf-8", newline="\\n")\n',
             encoding="utf-8", newline="\n",
         )

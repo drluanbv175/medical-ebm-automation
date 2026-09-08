@@ -43,7 +43,7 @@ def _dung_bo_ba_toi_thieu(thu_muc: Path, study: str) -> None:
         "# Script phân tích\n(placeholder)\n", encoding="utf-8")
     (thu_muc / f"G4_A5_SAP_FINAL_{study}.md").write_text(
         "# SAP\n(placeholder)\n", encoding="utf-8")
-    (thu_muc / "G6_checkpoint.json").write_text(json.dumps({}), encoding="utf-8")
+    (thu_muc / "G6_checkpoint.json").write_text(json.dumps({}), encoding="utf-8", newline="\n")
 
 
 def _tim_auto06(bao: dict) -> dict:
@@ -64,7 +64,7 @@ class TestAuto06BatDuocFileKetQuaThatSu:
             _dung_bo_ba_toi_thieu(thu_muc, study)
             # Tên file THẬT do run_stats_analysis.py ghi — KHÔNG chứa "KET_QUA"/
             # "RESULTS", không bắt đầu bằng "stats_output".
-            (thu_muc / f"{study}_table2_main_outcome.txt").write_text("x", encoding="utf-8")
+            (thu_muc / f"{study}_table2_main_outcome.txt").write_text("x", encoding="utf-8", newline="\n")
             # KHÔNG có G5_checkpoint.json ⇒ chưa từng khoá dữ liệu.
             bao = m.evaluate_study(study, out_dir=thu_muc, write=False)
         chk = _tim_auto06(bao)
@@ -86,7 +86,7 @@ class TestAuto06BatDuocFileKetQuaThatSu:
             with tempfile.TemporaryDirectory() as td:
                 thu_muc = Path(td)
                 _dung_bo_ba_toi_thieu(thu_muc, study)
-                (thu_muc / f"{study}_{suffix}").write_text("x", encoding="utf-8")
+                (thu_muc / f"{study}_{suffix}").write_text("x", encoding="utf-8", newline="\n")
                 bao = m.evaluate_study(study, out_dir=thu_muc, write=False)
             chk = _tim_auto06(bao)
             assert chk["pass"] is False, f"{suffix}: {chk}"
@@ -120,9 +120,9 @@ class TestAuto06KetQuaSauKhoaVanPass:
         with tempfile.TemporaryDirectory() as td:
             thu_muc = Path(td)
             _dung_bo_ba_toi_thieu(thu_muc, study)
-            (thu_muc / "G5_checkpoint.json").write_text(json.dumps({}), encoding="utf-8")
+            (thu_muc / "G5_checkpoint.json").write_text(json.dumps({}), encoding="utf-8", newline="\n")
             time.sleep(0.05)
-            (thu_muc / f"{study}_table2_main_outcome.txt").write_text("x", encoding="utf-8")
+            (thu_muc / f"{study}_table2_main_outcome.txt").write_text("x", encoding="utf-8", newline="\n")
             bao = m.evaluate_study(study, out_dir=thu_muc, write=False)
         chk = _tim_auto06(bao)
         assert chk["pass"] is True, chk
