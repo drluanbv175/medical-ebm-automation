@@ -1,0 +1,12 @@
+{
+  "job": "daily_integrity",
+  "ok": true,
+  "findings": [],
+  "detail": {
+    "parts": {
+      "manifest_integrity": true,
+      "registry": true,
+      "untracked_critical": true
+    }
+  }
+}
