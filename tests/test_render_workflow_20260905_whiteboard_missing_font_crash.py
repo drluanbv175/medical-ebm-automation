@@ -67,11 +67,24 @@ class TestWhiteboardKhongCrashKhiThieuFontRieng:
             "thay vì trả [] theo đúng cam kết an toàn của module"
         )
 
-    def test_moi_truong_that_khong_co_font_whiteboard_khong_crash(self, tmp_path):
-        """Đối chứng trên MÔI TRƯỜNG THẬT (không mock): sandbox CI này không
-        có 2 font macOS riêng cho whiteboard — render_slides() phải tự trả
-        [] mà không ném ngoại lệ, dù available() có True hay False."""
+    def test_moi_truong_that_khong_co_font_whiteboard_khong_crash(
+        self, monkeypatch, tmp_path
+    ):
+        """Đối chứng với whiteboard_available()/render_slides() THẬT (không
+        mock 2 hàm này, khác ca ở trên) — chỉ ép ĐƯỜNG DẪN font whiteboard
+        (_WB_TITLE/_WB_BODY) trỏ vào nơi chắc chắn không tồn tại.
+
+        KHÔNG dựa vào việc máy chạy test "vốn không có" 2 font macOS riêng:
+        Brush Script.ttf và ChalkboardSE.ttc là font hệ thống MẶC ĐỊNH của
+        mọi bản cài macOS (thư mục Supplemental), nên giả định "sandbox này
+        không có" chỉ đúng trên CI Linux tối giản — SAI trên máy Mac thật,
+        nơi cả hai file luôn tồn tại và khiến bản test cũ (gọi thẳng
+        render_slides() không ép gì) render ảnh THẬT thay vì trả []."""
+        monkeypatch.setattr(render, "_WB_TITLE", str(tmp_path / "khong-ton-tai-title.ttf"))
+        monkeypatch.setattr(render, "_WB_BODY", str(tmp_path / "khong-ton-tai-body.ttc"))
+
         result = render.render_slides(_minimal_post(), tmp_path, style="whiteboard")
+
         assert result == []
 
 
@@ -107,10 +120,17 @@ class TestClinicalStyleKhongDoiHanhVi:
     """Đối chứng bắt buộc — style="clinical" (mặc định) không bị ảnh hưởng
     bởi nhánh mới thêm cho "whiteboard"."""
 
-    def test_clinical_style_van_tra_rong_dung_nhu_cu_khi_thieu_font(self, tmp_path):
-        # Môi trường thật của sandbox này không có font clinical hợp lệ trong
-        # _FONT_CANDIDATES mặc định (không set TIKTOK_FONT) -> available()=False
-        # -> hành vi gốc (không đổi bởi bản vá) là trả [].
+    def test_clinical_style_van_tra_rong_dung_nhu_cu_khi_thieu_font(
+        self, monkeypatch, tmp_path
+    ):
+        # available() THẬT (không mock) phải trả False khi không có font hợp
+        # lệ trong _FONT_CANDIDATES -> hành vi gốc (không đổi bởi bản vá) là
+        # trả []. Ép hẳn _FONT_CANDIDATES về một đường dẫn chắc chắn không
+        # tồn tại, KHÔNG dựa vào giả định "máy chạy test thiếu Arial/Arial
+        # Unicode": Arial.ttf là font hệ thống mặc định của MỌI macOS
+        # (Supplemental), nên giả định đó chỉ đúng trên CI Linux tối giản —
+        # sai trên máy Mac thật, nơi available()=True và hàm render ảnh THẬT.
+        monkeypatch.setattr(render, "_FONT_CANDIDATES", [str(tmp_path / "khong-ton-tai.ttf")])
         result = render.render_slides(_minimal_post(), tmp_path, style="clinical")
         assert result == []
 
