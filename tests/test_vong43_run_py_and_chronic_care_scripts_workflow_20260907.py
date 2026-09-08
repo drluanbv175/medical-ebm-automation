@@ -309,7 +309,7 @@ class TestPhatHien3RunPyDossierMaThoat:
         import run
 
         fake_path = tmp_path / "Research_Dossier_TEST.md"
-        fake_path.write_text("nội dung giả", encoding="utf-8")
+        fake_path.write_text("nội dung giả", encoding="utf-8", newline="\n")
         monkeypatch.setattr(sys, "argv", ["run.py", "dossier", "DE-TAI-THAT-001"])
         monkeypatch.setattr(app.research, "export_research_dossier", lambda project_id, **kw: fake_path)
 

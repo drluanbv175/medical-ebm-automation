@@ -111,9 +111,18 @@ def _g4_sections_still_draft(content: str) -> list[str]:
     """Trả về danh sách mục §N BẮT BUỘC của SAP còn placeholder '[CẦN' chưa
     điền. Thiết kế không có một mục nào đó (vd định tính dùng §5 CHIẾN LƯỢC
     MÃ HÓA thay vì PHÂN TÍCH ĐA BIẾN — vẫn đánh số §5) không bị coi là lỗi
-    riêng biệt; chỉ mục THẬT SỰ tồn tại mà còn placeholder mới bị chặn."""
+    riêng biệt; chỉ mục THẬT SỰ tồn tại mà còn placeholder mới bị chặn.
+
+    NGOẠI LỆ (BH97, 02/09/2026): nếu KHÔNG MỘT mục bắt buộc nào được tìm thấy
+    trong toàn bộ tài liệu, đây không còn là "thiết kế bỏ qua một vài mục" —
+    đó là một tài liệu RỖNG hoặc sai khuôn hoàn toàn. `if start is None:
+    continue` cũ để lọt trường hợp này (0/4 mục ⇒ still_draft=[] ⇒ SAP rỗng
+    ký được), và chữ ký mật mã của G4 chỉ bảo vệ TOÀN VẸN nội dung đã ký,
+    không bảo đảm nội dung đó KHÔNG RỖNG. Ranh giới: VẮNG MỘT VÀI mục (cho
+    qua, biến thể thiết kế hợp lệ) khác VẮNG SẠCH toàn bộ (chặn)."""
     lines = content.splitlines()
     still_draft = []
+    tim_thay = 0
     for section_num, label in _G4_REQUIRED_SECTIONS.items():
         start = None
         for i, line in enumerate(lines):
@@ -122,6 +131,7 @@ def _g4_sections_still_draft(content: str) -> list[str]:
                 break
         if start is None:
             continue
+        tim_thay += 1
         end = len(lines)
         for j in range(start + 1, len(lines)):
             if re.match(r'^#{2,3}\s+§\d', lines[j]):
@@ -130,6 +140,9 @@ def _g4_sections_still_draft(content: str) -> list[str]:
         body = "\n".join(lines[start:end])
         if "[CẦN" in body:
             still_draft.append(f"{section_num} ({label})")
+    if tim_thay == 0:
+        return [f"{so_muc} ({nhan}) — VẮNG SẠCH, tài liệu không có mục bắt buộc nào"
+                for so_muc, nhan in _G4_REQUIRED_SECTIONS.items()]
     return still_draft
 
 

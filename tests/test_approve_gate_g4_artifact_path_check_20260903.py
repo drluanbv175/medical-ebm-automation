@@ -59,9 +59,23 @@ _STUDY = "PYTEST-G4-ARTIFACT-PATH-20260903"
 
 _CLEAN_SAP = (
     "# SAP đã khóa\n"
-    "Không còn placeholder '[CẦN' ở bất kỳ mục nào — nội dung SẠCH để cô lập "
-    "phép kiểm artifact-path khỏi _g4_sections_still_draft (đã có test riêng "
-    "ở test_approve_gate_g4_content_check.py)."
+    # Ghi chú đặt TRƯỚC mọi mục §N — nếu đặt SAU §10 (mục cuối, không còn mục nào
+    # theo sau để chặn biên) thì câu ví dụ minh hoạ dưới đây, dù chỉ TRÍCH DẪN
+    # chuỗi placeholder trong ngoặc kép, vẫn bị _g4_sections_still_draft quét vào
+    # THÂN của §10 và tự chặn — vì hàm chỉ so khớp chuỗi con, không phân biệt
+    # trích dẫn minh hoạ với placeholder thật.
+    "Nội dung SẠCH (không còn placeholder kiểu ngoặc vuông ở bất kỳ mục nào) để "
+    "cô lập phép kiểm artifact-path khỏi _g4_sections_still_draft (đã có test "
+    "riêng ở test_approve_gate_g4_content_check.py). Đủ cả 4 mục §1/§2/§5/§10 "
+    "(không 'vắng sạch' theo BH97) — mục đích ở đây là điền, không phải bỏ trống.\n"
+    "## §1 Tiêu chí nhận/loại (Quần thể phân tích)\n"
+    "Người lớn ≥18 tuổi, đã ký ICF.\n"
+    "## §2 Kết cục chính\n"
+    "Tỷ lệ đáp ứng tại tuần 12.\n"
+    "## §5 Covariates/Phân tích đa biến\n"
+    "Tuổi, giới, mức độ nặng nền.\n"
+    "## §10 Phần mềm + seed\n"
+    "Python 3.12, seed=42.\n"
 )
 
 
