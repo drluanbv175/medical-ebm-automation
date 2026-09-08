@@ -35,8 +35,11 @@ sys.path.insert(0, str(_REPO / "tools"))
 from _workspace_root import resolve_workspace_root  # noqa: E402
 
 HUB = os.path.join(str(resolve_workspace_root(_REPO)), "EBM_MASTER")
-sys.path.insert(0, os.path.join(HUB, "tools"))
-from ledger_ids import assert_unique, max_seq  # isort: skip  # noqa: E402 — vá 2026-07-17: seq=len(cards) từng gây trùng id thật (xem ledger_ids.py)
+# VÁ 08/09/2026: import ledger_ids ở MODULE LEVEL crash ModuleNotFoundError khi
+# EBM_MASTER vắng (gốc dữ liệu ngoài git, KHÔNG BAO GIỜ có trên checkout git-only)
+# — trước cả khi main()'s existence-check (dòng ~108, "Không thấy sổ cái") có cơ
+# hội chạy. Đẩy import xuống main(), SAU khi đã xác nhận master_path tồn tại; cả
+# hai điểm dùng thật (assert_unique/max_seq) đều nằm sau điểm kiểm đó.
 
 
 def ensure_utf8_console() -> None:
@@ -108,6 +111,12 @@ def main():
     if not os.path.exists(master_path):
         print("Không thấy sổ cái:", master_path)
         return 1
+
+    sys.path.insert(0, os.path.join(HUB, "tools"))
+    from ledger_ids import (  # noqa: E402 — vá 2026-07-17: seq=len(cards) từng gây trùng id thật (xem ledger_ids.py); lùi xuống đây 08/09/2026 để existence-check ở trên chạy trước
+        assert_unique,
+        max_seq,
+    )
 
     con = sqlite3.connect("file:%s?mode=ro" % db, uri=True)
     con.row_factory = sqlite3.Row
