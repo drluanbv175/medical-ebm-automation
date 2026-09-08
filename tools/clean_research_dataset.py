@@ -537,8 +537,30 @@ def clean_dataset(study: str, data_path: Path, *,
     dictionary = {"variables": [], "id_column": None, "missing_tokens": []}
     dictionary_blocker = None
 
+    # THỨ TỰ ĐẢO 08/09/2026: dictionary được nạp TRƯỚC quét PII (cũ: nạp SAU, khi
+    # quét PII đã chặn xong). Lý do: mẫu PII "date" (RDI.VALUE_PATTERNS, thêm
+    # 04/09) áp cho MỌI cột không phân biệt — kể cả cột chính dictionary này khai
+    # `"type": "date"` (biến ngày lâm sàng NGHIÊN CỨU CẦN GIỮ, vd ngày khám, khác
+    # hẳn ngày lẫn trong ghi chú tự do mà mẫu đó sinh ra để bắt). Trước bản vá,
+    # dictionary_path TỰ NÓ đã có sẵn trong tham số hàm này — chỉ là bị nạp SAU
+    # bước cần nó, nên không bao giờ có cơ hội dùng tới. Không đổi hành vi khi
+    # `dictionary_path=None` (mặc định của mọi caller hiện có): dictionary rỗng,
+    # date_columns rỗng, quét PII giống hệt trước.
     if blocker is None:
-        pii_profile = RDI._scan_csv(data_path, max_scan_rows=max_scan_rows)
+        dictionary = _load_dictionary(Path(dictionary_path) if dictionary_path else None)
+        dictionary_blocker = dictionary.get("blocker")
+        if dictionary_blocker:
+            blocker = str(dictionary_blocker)
+
+    date_columns = frozenset(
+        RDI._normalize_header(str(rule["name"]))
+        for rule in (dictionary.get("variables") or [])
+        if isinstance(rule, dict) and rule.get("type") == "date" and rule.get("name")
+    )
+
+    if blocker is None:
+        pii_profile = RDI._scan_csv(data_path, max_scan_rows=max_scan_rows,
+                                    exempt_date_columns=date_columns)
         pii_issues = list(pii_profile.get("issues") or [])
         pii_scan = {
             "passed": not pii_issues,
@@ -548,12 +570,6 @@ def clean_dataset(study: str, data_path: Path, *,
         }
         if pii_issues:
             blocker = "pii_detected_before_cleaning"
-
-    if blocker is None:
-        dictionary = _load_dictionary(Path(dictionary_path) if dictionary_path else None)
-        dictionary_blocker = dictionary.get("blocker")
-        if dictionary_blocker:
-            blocker = str(dictionary_blocker)
 
     if blocker is None:
         try:

@@ -36,6 +36,7 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import clean_research_dataset as CLEAN  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import import_real_dataset as RDI  # noqa: E402
 from secure_permissions import lock_owner_exclusive  # noqa: E402
@@ -158,11 +159,35 @@ def _secure_file(path: Path) -> None:
     lock_owner_exclusive(path, writable=True)
 
 
-def _redact_value(value: Any) -> Tuple[str, List[Dict[str, str]]]:
+def _declared_date_columns(dictionary_path: Optional[Path]) -> frozenset:
+    """Tên cột (đã CHUẨN HOÁ qua `RDI._normalize_header`) mà data dictionary khai
+    `"type": "date"` — TÁI DÙNG `CLEAN._load_dictionary()` của
+    `clean_research_dataset.py` thay vì tự viết parser thứ hai. Hai module đọc
+    CÙNG một dictionary theo CÙNG một cách: khoảng trống ngày 08/09/2026 xảy ra vì
+    module này (pseudonymize, chạy TRƯỚC) không hề biết dictionary tồn tại, trong
+    khi module kia (clean, chạy SAU) đòi đúng cột đó phải còn nguyên là ngày hợp
+    lệ — hai module "viết cho nhau" mà chưa từng nối. `dictionary_path=None` (mặc
+    định của mọi caller hiện có) trả về tập RỖNG — hành vi CŨ, không đổi."""
+    if dictionary_path is None:
+        return frozenset()
+    loaded = CLEAN._load_dictionary(Path(dictionary_path))
+    return frozenset(
+        RDI._normalize_header(str(rule["name"]))
+        for rule in (loaded.get("variables") or [])
+        if rule.get("type") == "date" and rule.get("name")
+    )
+
+
+def _redact_value(value: Any, *, skip_date_pattern: bool = False) -> Tuple[str, List[Dict[str, str]]]:
     text = "" if value is None else str(value)
     redactions: List[Dict[str, str]] = []
     redacted = text
     for label, pattern in RDI.VALUE_PATTERNS.items():
+        # Ngoại lệ CÓ CHỦ Ý, hẹp: chỉ bỏ qua mẫu "date" — mọi mẫu khác (email/SĐT/
+        # CCCD) vẫn quét đủ, kể cả trên cột đã khai là ngày (phòng khi dữ liệu bị
+        # nhập nhầm cột). Xem docstring `_declared_date_columns`.
+        if label == "date" and skip_date_pattern:
+            continue
         matches = list(pattern.finditer(redacted))
         if not matches:
             continue
@@ -194,7 +219,8 @@ def _readable_blocker(data_path: Path, output_path: Path,
 
 
 def _process_with_encoding(data_path: Path, output_path: Path, mapping_dir: Path,
-                           encoding: str, id_prefix: str) -> Dict[str, Any]:
+                           encoding: str, id_prefix: str,
+                           date_columns: frozenset = frozenset()) -> Dict[str, Any]:
     row_count = 0
     redacted_cells_by_column: Dict[str, int] = {}
     redacted_patterns_by_column: Dict[str, Dict[str, int]] = {}
@@ -221,6 +247,7 @@ def _process_with_encoding(data_path: Path, output_path: Path, mapping_dir: Path
                 "redacted_patterns_by_column": {},
                 "linkage_rows": 0,
                 "redaction_rows": 0,
+                "date_columns_exempted": [],
             }
 
         dropped_columns = [
@@ -258,7 +285,9 @@ def _process_with_encoding(data_path: Path, output_path: Path, mapping_dir: Path
                 for col in pii_columns:
                     link_row[col] = str((row or {}).get(col) or "")
                 for col in keep_columns:
-                    redacted, redactions = _redact_value((row or {}).get(col))
+                    skip_date = RDI._normalize_header(col) in date_columns
+                    redacted, redactions = _redact_value(
+                        (row or {}).get(col), skip_date_pattern=skip_date)
                     out_row[col] = redacted
                     if redactions:
                         redacted_cells_by_column[col] = redacted_cells_by_column.get(col, 0) + 1
@@ -299,6 +328,13 @@ def _process_with_encoding(data_path: Path, output_path: Path, mapping_dir: Path
         "redacted_patterns_by_column": redacted_patterns_by_column,
         "linkage_rows": row_count,
         "redaction_rows": len(redaction_rows),
+        # Cột THẬT SỰ có mặt trong dataset này và được miễn mẫu "date" — không phải
+        # toàn bộ tập dictionary khai (dictionary có thể khai nhiều cột hơn cột thật
+        # có trong file này). Ghi ra để report công khai không im lặng về một quyết
+        # định nới luật an toàn (không họ BH nào của repo này cho phép nới im lặng).
+        "date_columns_exempted": sorted(
+            col for col in keep_columns if RDI._normalize_header(col) in date_columns
+        ),
     }
 
 
@@ -349,12 +385,32 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
                          max_scan_rows: int = 5000,
                          id_prefix: str = "PSN",
                          retention_months: Optional[int] = None,
-                         retention_owner: Optional[str] = None) -> Dict[str, Any]:
+                         retention_owner: Optional[str] = None,
+                         dictionary_path: Optional[Path] = None) -> Dict[str, Any]:
     """Tạo dataset pseudonymized và bảng ánh xạ bảo vệ riêng.
 
     `retention_months`/`retention_owner`: hạn lưu bảng ánh xạ + người chịu trách nhiệm
     xóa khi hết hạn — do PI/protocol/DMP ấn định, KHÔNG có mặc định tự chọn. Thiếu một
     trong hai bị coi là chưa ấn định (xem `_resolve_retention_policy`).
+
+    `dictionary_path` (08/09/2026, tuỳ chọn — mặc định None, KHÔNG đổi hành vi cũ):
+    data dictionary JSON/CSV cùng khuôn với `clean_research_dataset.py`. Cột nào
+    được khai `"type": "date"` thì mẫu PII "date" (bắt MỌI chuỗi dạng ngày tháng,
+    thêm 04/09 để chặn ngày rò rỉ trong ô ghi chú tự do) sẽ KHÔNG áp cho giá trị
+    của CHÍNH cột đó — cột vẫn được quét đủ mọi mẫu PII khác (email/SĐT/CCCD).
+    Không truyền dictionary = pseudonymize không biết cột nào là ngày đã khai,
+    mẫu "date" áp cho MỌI cột như trước — an toàn mặc định không đổi cho bất kỳ
+    caller nào chưa cập nhật.
+
+    VÌ SAO CẦN: trước bản vá này, một cột đã khai `"type": "date"` trong data
+    dictionary (biến ngày lâm sàng NGHIÊN CỨU CẦN GIỮ, vd ngày khám/ngày biến cố
+    — khác hẳn ngày sinh/ngày lẫn trong ghi chú tự do, thứ mẫu "date" 04/09 sinh
+    ra để bắt) vẫn bị xoá giá trị y hệt PII thật, vì bước pseudonymize chạy TRƯỚC
+    và không hề biết dictionary tồn tại — hai module "viết cho nhau" mà chưa
+    từng nối, cùng họ lỗi PREVALENCE/SPIRIT canon-key đã gặp nhiều lần trong repo
+    này. Hậu quả: MỌI nghiên cứu có biến ngày (rất phổ biến — thời gian-đến-biến-
+    cố, cửa sổ theo dõi) đi qua pseudonymize sẽ mất ngày, rồi bị chặn ở bước làm
+    sạch dữ liệu vì "ngày không hợp lệ" — dù dữ liệu gốc hoàn toàn đúng.
     """
     study_id = RDI._sanitize_study(study)
     data_path = Path(data_path)
@@ -368,6 +424,7 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
     retention_policy = _resolve_retention_policy(created_dt, retention_months, retention_owner)
     source_hash = RDI._sha256_file(data_path) if data_path.exists() else "missing"
     mapping_dir = mapping_root / study_id / source_hash[:12]
+    date_columns = _declared_date_columns(dictionary_path)
 
     blocker = _readable_blocker(data_path, output_path, mapping_root, exports_root)
     process: Dict[str, Any] = {
@@ -379,6 +436,7 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
         "redacted_patterns_by_column": {},
         "linkage_rows": 0,
         "redaction_rows": 0,
+        "date_columns_exempted": [],
     }
 
     last_decode_error: Optional[UnicodeDecodeError] = None
@@ -397,7 +455,8 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
         for encoding in ("utf-8-sig",):
             try:
                 process = _process_with_encoding(
-                    data_path, output_path, mapping_dir, encoding, id_prefix)
+                    data_path, output_path, mapping_dir, encoding, id_prefix,
+                    date_columns=date_columns)
                 blocker = process.get("blocker")
                 last_decode_error = None
                 break
@@ -413,7 +472,8 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
     pseudonymized_path: Optional[Path] = None
     output_sha256: Optional[str] = None
     if blocker is None and output_path.exists():
-        scan = RDI._scan_csv(output_path, max_scan_rows=max_scan_rows)
+        scan = RDI._scan_csv(output_path, max_scan_rows=max_scan_rows,
+                            exempt_date_columns=date_columns)
         issues = list(scan.get("issues") or [])
         output_scan = {
             "passed": not issues,
@@ -466,6 +526,10 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
         "redacted_cell_count": sum(int(n) for n in redacted_cells_by_column.values()),
         "redacted_cells_by_column": redacted_cells_by_column,
         "redacted_patterns_by_column": process.get("redacted_patterns_by_column") or {},
+        # Cột đã khai "type": "date" trong dictionary VÀ có mặt thật trong dataset
+        # này — mẫu PII "date" KHÔNG áp cho giá trị của các cột này (mọi mẫu PII
+        # khác vẫn áp đủ). Rỗng nếu không truyền dictionary_path (hành vi cũ).
+        "date_columns_exempted_from_date_pattern": process.get("date_columns_exempted") or [],
         "generated_subject_id": "study_subject_id",
         "protected_mapping_created": protected_mapping_created,
         "mapping_location": "[PROTECTED_EXTERNAL_ROOT]",
@@ -499,6 +563,7 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
             pseudonymized_path,
             exports_root=exports_root,
             max_scan_rows=max_scan_rows,
+            exempt_date_columns=date_columns,
         )
         report["then_import"] = {
             "status": intake["status"],
@@ -544,6 +609,12 @@ def main() -> int:
         help="Người/vai trò chịu trách nhiệm xóa bảng ánh xạ khi hết hạn lưu — do PI "
              "ấn định. Phải đi kèm --retention-months.",
     )
+    parser.add_argument(
+        "--dictionary", default=None,
+        help="Data dictionary JSON/CSV tùy chọn (cùng khuôn clean_research_dataset.py). "
+             "Cột khai \"type\": \"date\" sẽ KHÔNG bị xoá giá trị bởi mẫu PII \"date\" — "
+             "mọi mẫu PII khác (email/SĐT/CCCD) vẫn áp đủ. Không truyền = hành vi cũ.",
+    )
     args = parser.parse_args()
     if args.retention_months is not None and args.retention_months <= 0:
         parser.error("--retention-months phải > 0")
@@ -558,6 +629,7 @@ def main() -> int:
         id_prefix=args.id_prefix,
         retention_months=args.retention_months,
         retention_owner=args.retention_owner,
+        dictionary_path=Path(args.dictionary) if args.dictionary else None,
     )
     print(f"PSEUDONYMIZATION: {report['status']}")
     print(
@@ -567,6 +639,9 @@ def main() -> int:
             redacted=report["redacted_cell_count"],
         )
     )
+    if report.get("date_columns_exempted_from_date_pattern"):
+        print("date_columns_exempted (mẫu \"date\" không áp — mọi mẫu PII khác vẫn áp): "
+              + ", ".join(report["date_columns_exempted_from_date_pattern"]))
     # Chỉ in TRẠNG THÁI + ngày — không in tên/vai trò người phụ trách ra stdout (có thể
     # bị log/capture ngoài ý muốn), đúng nguyên tắc "report công khai không lộ chi tiết
     # vận hành" đã áp dụng cho mapping_location.

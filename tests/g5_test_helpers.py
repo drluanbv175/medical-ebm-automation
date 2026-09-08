@@ -95,8 +95,20 @@ def write_g5_toolkit(
     out_dir: Path,
     *,
     id_field: str = "record_id",
+    extra_date_columns: frozenset[str] = frozenset(),
 ) -> Path:
-    """Tạo bộ DMP/dictionary/script tối thiểu nhưng hợp lệ cho fixture."""
+    """Tạo bộ DMP/dictionary/script tối thiểu nhưng hợp lệ cho fixture.
+
+    `extra_date_columns`: tên các cột NGHIÊN CỨU (vd `visit_date`) mà
+    `source_data` có sẵn và đã được khai tường minh kiểu "date" ở một
+    dictionary khác (vd data_dictionary.json của pipeline pseudonymize) —
+    được ghi THÊM vào chính dictionary REDCap canonical này (không tạo
+    dictionary thứ hai) để `RDI.import_dataset()`/`CLEAN.clean_dataset()`/
+    `LAD.lock_dataset()` MIỄN mẫu PII "date" cho đúng cột đó, đồng thời
+    `g5_quality_gate.evaluate_study()` — vốn đọc CHÍNH file này ở đường dẫn
+    canonical để chấm G5-AUTO-02..09 — vẫn thấy MỘT dictionary duy nhất,
+    không lệch hash với bước intake/clean/lock.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     dmp = "\n".join(
         [
@@ -158,6 +170,13 @@ def write_g5_toolkit(
         ("follow_time", "text", "", "number", "0", ""),
         ("event_flag", "radio", "0, Kiểm duyệt | 1, Biến cố", "", "", ""),
     ]
+    declared_names = {name for name, *_ in rows}
+    for extra_name in sorted(extra_date_columns):
+        if extra_name in declared_names:
+            continue
+        # validation "date_ymd" -> _normalise_rule() trong clean_research_dataset.py
+        # đọc thành type="date" (bắt đầu bằng "date_"); đúng khuôn REDCap thật.
+        rows.append((extra_name, "text", "", "date_ymd", "", ""))
     with dictionary_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=headers)
         writer.writeheader()
@@ -380,8 +399,18 @@ def prepare_locked_g5_study(
     exports_root: Path,
     repo_root: Path,
     approve_g5: bool = True,
+    extra_date_columns: frozenset[str] = frozenset(),
 ) -> tuple[Path, dict]:
-    """Chạy intake -> cleaning -> lock -> approval G5 cho dữ liệu tổng hợp."""
+    """Chạy intake -> cleaning -> lock -> approval G5 cho dữ liệu tổng hợp.
+
+    `extra_date_columns`: tên cột NGHIÊN CỨU trong `source_data` đã khai
+    tường minh kiểu "date" ở nơi khác (vd data_dictionary.json của pipeline
+    pseudonymize) — được ghi vào CHÍNH dictionary REDCap canonical mà
+    `write_g5_toolkit()` sinh ra, để cả bước quét PII (intake/clean/lock)
+    LẪN `g5_quality_gate.evaluate_study()` (vốn đọc dictionary ở đường dẫn
+    canonical để chấm G5-AUTO-02..09) đều thấy ĐÚNG MỘT dictionary — tránh
+    lệch hash nếu dùng hai file dictionary khác nhau cho hai việc.
+    """
     out_dir = exports_root / study
     with Path(source_data).open("r", encoding="utf-8-sig", newline="") as handle:
         source_fields = set(csv.DictReader(handle).fieldnames or [])
@@ -396,10 +425,23 @@ def prepare_locked_g5_study(
         study,
         out_dir,
         id_field=id_field,
+        extra_date_columns=extra_date_columns,
     )
     prepare_upstream_approvals(study, out_dir, repo_root=repo_root)
 
-    intake = RDI.import_dataset(study, source_data, exports_root=exports_root)
+    loaded_dictionary = CLEAN._load_dictionary(dictionary_path)
+    exempt_date_columns = frozenset(
+        RDI._normalize_header(str(rule["name"]))
+        for rule in (loaded_dictionary.get("variables") or [])
+        if isinstance(rule, dict) and rule.get("type") == "date" and rule.get("name")
+    )
+
+    intake = RDI.import_dataset(
+        study,
+        source_data,
+        exports_root=exports_root,
+        exempt_date_columns=exempt_date_columns,
+    )
     assert intake["status"] == RDI.READY_STATUS, intake
     raw_path = out_dir / intake["raw_readonly_path"]
     cleaning = CLEAN.clean_dataset(
