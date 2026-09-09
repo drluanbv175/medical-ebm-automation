@@ -96,7 +96,7 @@ class TestCoverageMatrixAndValidator:
         text = res["md"].read_text(encoding="utf-8")
         mutated = text.replace(S.de_cuong_heading("tongquan"), "# 3. Mục bị đổi tên")
         mutated_path = study_dir / "DE_CUONG_THONG_NHAT_FIXT.md"
-        mutated_path.write_text(mutated, encoding="utf-8")
+        mutated_path.write_text(mutated, encoding="utf-8", newline="\n")
         rep = check_de_cuong.validate(mutated_path, study_dir)
         assert not rep["passed"]
         assert any("3. Tổng quan tài liệu và khung lý thuyết" in e for e in rep["errors"])
@@ -106,7 +106,7 @@ class TestCoverageMatrixAndValidator:
         text = res["md"].read_text(encoding="utf-8")
         mutated = re.sub(r"^\|\s*P22\s*\|.*$", "", text, flags=re.MULTILINE)
         mutated_path = study_dir / "DE_CUONG_THONG_NHAT_FIXT.md"
-        mutated_path.write_text(mutated, encoding="utf-8")
+        mutated_path.write_text(mutated, encoding="utf-8", newline="\n")
         rep = check_de_cuong.validate(mutated_path, study_dir)
         assert not rep["passed"]
         assert any("R14" in e and "P22" in e for e in rep["errors"])

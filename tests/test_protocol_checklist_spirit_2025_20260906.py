@@ -39,11 +39,11 @@ def _retarget_design(d: Path, code: str) -> None:
             cp["design"]["reporting_standard"] = "CONSORT 2025" if code == "rct" else cp["design"]["reporting_standard"]
         else:
             cp["design_code"] = code
-        p.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+        p.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
     mp = d / "study_meta.json"
     meta = json.loads(mp.read_text(encoding="utf-8"))
     meta["design_code"] = code
-    mp.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+    mp.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 class TestItemModule:
