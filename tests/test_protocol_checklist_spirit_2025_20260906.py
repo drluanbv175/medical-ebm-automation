@@ -39,11 +39,11 @@ def _retarget_design(d: Path, code: str) -> None:
             cp["design"]["reporting_standard"] = "CONSORT 2025" if code == "rct" else cp["design"]["reporting_standard"]
         else:
             cp["design_code"] = code
-        p.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8")
+        p.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
     mp = d / "study_meta.json"
     meta = json.loads(mp.read_text(encoding="utf-8"))
     meta["design_code"] = code
-    mp.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+    mp.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 class TestItemModule:
@@ -124,7 +124,7 @@ class TestG10Emission:
         text = md.read_text(encoding="utf-8")
         head, _sep, tail = text.partition("# Checklist chuẩn đề cương theo từng mục")
         tail = tail.split("\n# ", 1)[1] if "\n# " in tail else ""
-        md.write_text(head + ("# " + tail if tail else ""), encoding="utf-8")
+        md.write_text(head + ("# " + tail if tail else ""), encoding="utf-8", newline="\n")
         rep = check_de_cuong.validate(md, tmp_path)
         assert rep["checks"]["R18_protocol_checklist"].startswith("WARN")
         assert any(w.startswith("R18") for w in rep["warnings"])

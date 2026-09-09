@@ -239,7 +239,7 @@ class TestPhatHien2FindTscChonDungBanMoiNhat:
         for v in versions:
             tsc_path = pnpm_dir / f"typescript@{v}" / "node_modules" / "typescript" / "bin"
             tsc_path.mkdir(parents=True)
-            (tsc_path / "tsc").write_text("#!/usr/bin/env node\n", encoding="utf-8")
+            (tsc_path / "tsc").write_text("#!/usr/bin/env node\n", encoding="utf-8", newline="\n")
         return tmp_path
 
     def test_chon_ban_10_thay_vi_ban_9(self, ccos_scripts, tmp_path, monkeypatch):
@@ -273,7 +273,7 @@ class TestDoiChungFindTscMotBanVanDung:
         pnpm_dir = tmp_path / "node_modules" / ".pnpm"
         tsc_path = pnpm_dir / "typescript@5.7.2" / "node_modules" / "typescript" / "bin"
         tsc_path.mkdir(parents=True)
-        (tsc_path / "tsc").write_text("#!/usr/bin/env node\n", encoding="utf-8")
+        (tsc_path / "tsc").write_text("#!/usr/bin/env node\n", encoding="utf-8", newline="\n")
         monkeypatch.setattr(typecheck_app, "ROOT", tmp_path)
         result = typecheck_app.find_tsc()
         assert "typescript@5.7.2" in str(result)

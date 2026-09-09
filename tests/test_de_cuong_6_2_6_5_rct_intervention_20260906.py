@@ -85,7 +85,7 @@ class TestRctGetsInterventionSubsections:
             "schedule_description": "Xem Hình 1 — sơ đồ SPIRIT",
             "ppi_plan": "Tham vấn nhóm bệnh nhân khi thiết kế bộ câu hỏi",
         }
-        mp.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+        mp.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
 
         res = G10.assemble("FIXT", tmp_path)
         block6 = _block6(res["md"].read_text(encoding="utf-8"))
@@ -172,7 +172,7 @@ class TestValidatorAndCoverageIntegration:
             "schedule_description": "Hình 1",
             "ppi_plan": "Tham vấn nhóm bệnh nhân",
         }
-        mp.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+        mp.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
         res = G10.assemble("FIXT", tmp_path)
         rep = check_de_cuong.validate(res["md"], tmp_path)
         assert rep["passed"], rep["errors"]
