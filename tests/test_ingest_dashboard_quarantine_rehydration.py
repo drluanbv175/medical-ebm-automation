@@ -11,11 +11,16 @@ import pytest
 # CI ĐƠN-REPO (16/08/2026): file này NẠP công cụ của workspace gốc ngay lúc
 # import — thiếu workspace thì phải skip Ở MỨC MODULE trước dòng nạp
 # (pytestmark không cứu được lỗi collection). Máy bác sĩ chạy đủ.
-if not (Path(__file__).resolve().parents[2] / "tools").is_dir():
-    pytest.skip("cần workspace gốc (tools/ ở thư mục mẹ) — CI checkout đơn-repo",
+# SỬA 09/09/2026: guard cũ kiểm `tools/` (thư mục MẸ có sẵn, không liên quan) thay vì
+# `EBM_MASTER/tools/ingest_dashboard.py` (thứ THẬT SỰ nạp ngay sau) — hai đường lệch
+# nhau nên container chỉ có `tools/` (không có `EBM_MASTER/`, vốn nằm ngoài git) vẫn
+# đi qua guard rồi vỡ FileNotFoundError ở bước import, thay vì skip có khai báo.
+TOOLS = Path(__file__).resolve().parents[2] / "EBM_MASTER" / "tools"
+if not (TOOLS / "ingest_dashboard.py").is_file():
+    pytest.skip("cần workspace gốc (EBM_MASTER/tools/ingest_dashboard.py ở thư mục mẹ) — "
+                "CI checkout đơn-repo hoặc EBM_MASTER nằm ngoài git",
                 allow_module_level=True)
 
-TOOLS = Path(__file__).resolve().parents[2] / "EBM_MASTER" / "tools"
 sys.path.insert(0, str(TOOLS))
 SPEC = importlib.util.spec_from_file_location("ingest_dashboard_rehydration", TOOLS / "ingest_dashboard.py")
 MODULE = importlib.util.module_from_spec(SPEC)
