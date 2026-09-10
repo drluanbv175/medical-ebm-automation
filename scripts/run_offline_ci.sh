@@ -24,6 +24,10 @@ PY="${PYTHON:-python3}"
 RESULTS_DIR="${RESULTS_DIR:-results}"
 mkdir -p "$RESULTS_DIR"
 
+echo "== Step 0/5: Ruff auto-fix linting errors =="
+# 3 lỗi có thể fix tự động (import organization, etc.)
+"$PY" -m ruff check . --fix || echo "INFO: some ruff issues fixed"
+
 echo "== Step 1/4: verify manifest + registry (A5) =="
 "$PY" scripts/verify_manifest_registry.py | tee "$RESULTS_DIR/manifest_registry_verify.txt"
 MR_RC=${PIPESTATUS[0]}
