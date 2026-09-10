@@ -157,7 +157,7 @@ class TestValidatorAndCoverageIntegration:
                 {"pmid": "40294956", "ngay": "2026-09-06",
                  "kenh": "PubMed MCP — SPIRIT 2025 E&E (BMJ, PMC12128891)"},
             ]}, ensure_ascii=False),
-            encoding="utf-8")
+            encoding="utf-8", newline="\n")
         mp = tmp_path / "study_meta.json"
         meta = json.loads(mp.read_text(encoding="utf-8"))
         meta["intervention"] = {"description": "Statin 20mg", "comparator_rationale": "Placebo"}
