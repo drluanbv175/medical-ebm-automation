@@ -393,6 +393,43 @@ def evaluate_operational_readiness(path: Path) -> Dict[str, Any]:
     }
 
 
+_NGUONG_NOI_DUNG_THAT_SAU_NHAN = 20  # ký tự, sau khi đã bỏ mọi placeholder
+
+
+def _dmp_noi_dung_thieu_duoi_nhan(dmp_text: str, tokens: Iterable[str]) -> list:
+    """Với MỖI nhãn trong `tokens` đã XUẤT HIỆN trong `dmp_text`, kiểm đoạn văn bản
+    NGAY SAU nhãn đó tới nhãn KẾ TIẾP (theo đúng vị trí thật trong văn bản, không
+    theo thứ tự khai trong tuple) — hoặc hết văn bản nếu là nhãn cuối. Trả về danh
+    sách nhãn mà đoạn đó RỖNG hoặc chỉ toàn placeholder `[CẦN...]`/`[REQUIRE_HUMAN...]`.
+
+    Sinh ra để đóng khoảng trống G5-F3 (audit 2026-07-30, vá thật 10/09/2026): trước
+    đây G5-AUTO-03 chỉ hỏi "nhãn có xuất hiện ở đâu đó trong toàn văn bản không" —
+    một DMP mà mọi mục đều rỗng/placeholder vẫn PASS miễn 11 chuỗi nhãn còn nằm đâu
+    đó (vd trong mục lục). Khoá này đòi thêm NỘI DUNG THẬT đứng ngay sau nhãn, theo
+    đúng khuôn BH97 (`approve_gate._g4_sections_still_draft`): phân biệt "còn thiếu
+    một vài mục" (không bắt ở đây — G5-AUTO-03 chỉ xét 11 nhãn bắt buộc) với
+    "nhãn có mặt nhưng thân mục trống rỗng" (BLOCK).
+
+    Không tính token VẮNG MẶT hoàn toàn ở đây — đã có `missing_dmp` xử lý riêng.
+    """
+    lower = dmp_text.casefold()
+    positions = []
+    for tok in tokens:
+        idx = lower.find(tok.casefold())
+        if idx != -1:
+            positions.append((idx, tok))
+    positions.sort(key=lambda cap: cap[0])
+    thieu_noi_dung = []
+    for i, (idx, tok) in enumerate(positions):
+        start = idx + len(tok)
+        end = positions[i + 1][0] if i + 1 < len(positions) else len(dmp_text)
+        than_muc = dmp_text[start:end]
+        that = re.sub(r"\[(CẦN|REQUIRE_HUMAN)[^\]]*\]", "", than_muc, flags=re.IGNORECASE).strip()
+        if len(that) < _NGUONG_NOI_DUNG_THAT_SAU_NHAN:
+            thieu_noi_dung.append(tok)
+    return thieu_noi_dung
+
+
 def _contains_placeholder(paths: Iterable[Path]) -> bool:
     for path in paths:
         try:
@@ -518,27 +555,37 @@ def evaluate_study(
         )
     )
 
-    # LƯU Ý PHẠM VI (audit toàn diện G0-G10, 2026-07-30, G5-F3 — MEDIUM):
-    # _REQUIRED_DMP_TOKENS là 11 TIÊU ĐỀ MỤC cố định mà generate_artifact()
-    # luôn in vô điều kiện (không phụ thuộc design_code/specialty/rows) — nên
-    # tiêu chí này chỉ chứng minh "văn bản có đủ tiêu đề mục", KHÔNG chứng
-    # minh nội dung DƯỚI mỗi mục đã được điền thật (một DMP toàn placeholder
-    # rỗng vẫn PASS). Có giá trị THẬT ở kịch bản cấu trúc bị xóa/cắt sau khi
-    # sinh — không phải kiểm chất lượng nội dung cho đề tài cụ thể.
+    # LƯU Ý PHẠM VI (audit toàn diện G0-G10, 2026-07-30, G5-F3 — MEDIUM).
+    # ⛔ ĐÃ VÁ 10/09/2026 (audit toàn diện hệ nghiên cứu, xác nhận độc lập lỗ hổng
+    # vẫn còn nguyên tính đến hôm đó): trước đây _REQUIRED_DMP_TOKENS chỉ hỏi "11
+    # tiêu đề mục cố định có xuất hiện ĐÂU ĐÓ trong toàn văn bản không" — bộ sinh
+    # `generate_artifact()` luôn in đủ 11 nhãn vô điều kiện nên tiêu chí này CHƯA
+    # BAO GIỜ có thể BLOCK về mặt cấu trúc, kể cả khi thân mỗi mục toàn placeholder
+    # rỗng. Nay gọi thêm `_dmp_noi_dung_thieu_duoi_nhan()` (khuôn BH97: phân biệt
+    # "thiếu nhãn" khỏi "có nhãn nhưng thân mục rỗng") — luật CÓ THỂ BLOCK thật, đã
+    # kiểm bằng đột biến (xem tests/test_g5_auto03_content_check_20260910.py).
     missing_dmp = [
         token for token in _REQUIRED_DMP_TOKENS if token.casefold() not in dmp_text.casefold()
     ]
+    content_thieu = _dmp_noi_dung_thieu_duoi_nhan(dmp_text, _REQUIRED_DMP_TOKENS)
+    thieu_tong = missing_dmp or content_thieu
+    if missing_dmp:
+        bang_chung = "thiếu nhãn: " + ", ".join(missing_dmp)
+    elif content_thieu:
+        bang_chung = "có nhãn nhưng thân mục rỗng/chỉ placeholder: " + ", ".join(content_thieu)
+    else:
+        bang_chung = (
+            "đủ 11 nhãn + nội dung thật dưới mỗi nhãn "
+            "(capture/QC/audit/privacy/access/backup/retention/lock/sharing)"
+        )
     automatic.append(
         _criterion(
             "G5-AUTO-03",
-            "DMP phủ vòng đời dữ liệu theo ICH E6(R3)",
-            "BLOCK" if missing_dmp else "PASS",
-            (
-                "thiếu: " + ", ".join(missing_dmp)
-                if missing_dmp
-                else "đủ capture/QC/audit/privacy/access/backup/retention/lock/sharing"
-            ),
-            "Bổ sung các phần vòng đời dữ liệu còn thiếu vào DMP.",
+            "DMP phủ vòng đời dữ liệu theo ICH E6(R3), có NỘI DUNG thật dưới mỗi nhãn",
+            "BLOCK" if thieu_tong else "PASS",
+            bang_chung,
+            "Bổ sung nhãn còn thiếu và/hoặc viết nội dung thật (không chỉ [CẦN...]) "
+            "dưới các phần vòng đời dữ liệu trong DMP.",
         )
     )
 

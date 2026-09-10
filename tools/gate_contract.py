@@ -1280,6 +1280,23 @@ def ed25519_private_key_available(group: str) -> bool:
     return bool(group) and _ed_private_path(group).exists()
 
 
+def _fail_closed_on_crypto_error(exc: BaseException) -> None:
+    """Rào chung cho 4 điểm nạp/ký/xác minh Ed25519 trong module này.
+
+    Bắt ``BaseException``, không chỉ ``Exception``: khi thư viện ``cryptography``
+    cài HỎNG NỬA CHỪNG (có gói, thiếu ``_cffi_backend``), backend Rust ném
+    ``pyo3_runtime.PanicException`` — lớp đó kế thừa THẲNG ``BaseException``, nên
+    ``except Exception`` không bắt được và làm chết cả tiến trình ngay trong hàm
+    tự khai "fail-closed" (BH99 phần A — rào từng khai "đã vá 02/09" nhưng chưa
+    từng landed trên mã sống, đo lại 10/09/2026 mới vá thật). Luôn ném lại
+    ``KeyboardInterrupt``/``SystemExit``: đây là fail-closed cho lỗi thư viện,
+    không phải lá chắn nuốt tín hiệu ngắt của người dùng khi chạy tương tác
+    (vd nút "Phat Khoa Ed25519.command").
+    """
+    if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+        raise exc
+
+
 def _load_ed_private(group: str):
     """Khóa riêng Ed25519 của nhóm — None nếu không có/không đọc được/thiếu thư viện."""
     try:
@@ -1288,7 +1305,8 @@ def _load_ed_private(group: str):
         if not p.exists():
             return None
         return load_pem_private_key(p.read_bytes(), password=None)
-    except Exception:  # noqa: BLE001 — thiếu lib/khóa hỏng đều = «không ký được», fail-closed
+    except BaseException as _exc:  # noqa: BLE001 — thiếu lib/khóa hỏng đều = «không ký được», fail-closed (BH99-A)
+        _fail_closed_on_crypto_error(_exc)
         return None
 
 
@@ -1299,7 +1317,8 @@ def _load_ed_public(group: str):
         if not p.exists():
             return None
         return load_pem_public_key(p.read_bytes())
-    except Exception:  # noqa: BLE001
+    except BaseException as _exc:  # noqa: BLE001 — BH99-A
+        _fail_closed_on_crypto_error(_exc)
         return None
 
 
@@ -1321,7 +1340,8 @@ def sign_approval_ed25519(gate_id: str, study: str, evidence_hash: str,
                                  reviewer_ref, decision, is_synthetic, prev_hash)
     try:
         return f"{_ED_SIGNATURE_SCHEME}:{_SIGNATURE_SCOPE_ROLE}:{priv.sign(payload).hex()}"
-    except Exception:  # noqa: BLE001
+    except BaseException as _exc:  # noqa: BLE001 — BH99-A
+        _fail_closed_on_crypto_error(_exc)
         return None
 
 
@@ -1474,7 +1494,8 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
                                           bool(record.get("is_synthetic")),
                                           str(record.get("prev_hash") or "")))
             return True
-        except Exception:  # noqa: BLE001 — InvalidSignature/hex hỏng/kiểu sai đều = False
+        except BaseException as _exc:  # noqa: BLE001 — InvalidSignature/hex hỏng/kiểu sai đều = False; BH99-A
+            _fail_closed_on_crypto_error(_exc)
             return False
     # compare_digest CHỈ nhận chuỗi ASCII — chặn sớm thay vì để nó ném TypeError.
     if not mac_hex or not mac_hex.isascii():

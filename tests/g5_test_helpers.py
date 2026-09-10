@@ -110,19 +110,46 @@ def write_g5_toolkit(
     không lệch hash với bước intake/clean/lock.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
+    # NỘI DUNG THẬT (không chỉ nhãn trần) sau mỗi mục bắt buộc — kể từ khi
+    # G5-AUTO-03 được vá 10/09/2026 để đòi thân mục có nội dung, không chỉ
+    # đếm nhãn có mặt (đóng tautology G5-F3, xem g5_quality_gate.py). Fixture
+    # cũ chỉ liệt 11 nhãn trần liên tiếp — hợp lệ cho các test khác trong chuỗi
+    # G5 nhưng KHÔNG còn qua được chính luật nó phải PASS; sửa fixture cho hợp
+    # lệ theo đúng tiền lệ BH97 (không nới lỏng luật để fixture cũ qua được).
     dmp = "\n".join(
         [
             "# Kế hoạch quản lý dữ liệu kiểm thử",
-            "CẤU TRÚC CRF",
-            "REDCAP DATA DICTIONARY",
-            "LUẬT KIỂM TRA DỮ LIỆU",
-            "AUDIT TRAIL",
-            "KHỬ ĐỊNH DANH",
-            "PHÂN QUYỀN",
-            "SAO LƯU và kiểm thử phục hồi",
-            "LƯU TRỮ và hủy dữ liệu",
-            "KHÓA CƠ SỞ DỮ LIỆU",
-            "CHIA SẺ DỮ LIỆU theo FAIR",
+            "",
+            "## CẤU TRÚC CRF",
+            "CRF kiểm thử gồm mã đối tượng, ngày khám và kết cục chính; xem dictionary đính kèm.",
+            "",
+            "## REDCAP DATA DICTIONARY",
+            "File dictionary CSV liệt kê tên biến, loại dữ liệu, nhãn và phạm vi hợp lệ.",
+            "",
+            "## LUẬT KIỂM TRA DỮ LIỆU",
+            "Áp dụng range-check và logic-check cho biến số/biến ngày trước khi khóa dữ liệu.",
+            "",
+            "## AUDIT TRAIL",
+            "Mọi thay đổi giá trị lưu bản gốc, lý do sửa, thời điểm và người thực hiện.",
+            "",
+            "## KHỬ ĐỊNH DANH",
+            "Bảng ánh xạ định danh tách khỏi dataset phân tích, không đưa PII vào bản chạy thống kê.",
+            "",
+            "## PHÂN QUYỀN",
+            "Truy cập theo nguyên tắc tối thiểu cần biết; người phân tích chỉ nhận bản đã khóa.",
+            "",
+            "## SAO LƯU và kiểm thử phục hồi",
+            "Sao lưu định kỳ có mã hóa, đã thử khôi phục thành công trong môi trường kiểm thử.",
+            "",
+            "## LƯU TRỮ và hủy dữ liệu",
+            "Thời hạn lưu trữ và hủy theo chính sách đơn vị, có ghi rõ người chịu trách nhiệm.",
+            "",
+            "## KHÓA CƠ SỞ DỮ LIỆU",
+            "Checklist khóa DB đã hoàn tất, có chữ ký người khóa và người chứng kiến.",
+            "",
+            "## CHIA SẺ DỮ LIỆU theo FAIR",
+            "Chia sẻ dữ liệu tuân thủ FAIR khi được phép, không công khai dữ liệu nhạy cảm.",
+            "",
             "Áp dụng ICH E6(R3), CDISC CDASH và FDA electronic records 2024.",
             "PMID: 26978244; DOI: 10.1038/sdata.2016.18.",
             "Cần bác sĩ kiểm chứng.",

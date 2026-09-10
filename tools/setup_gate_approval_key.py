@@ -104,7 +104,20 @@ def main() -> int:
             print(f"✋ Đã có khóa Ed25519 cho {args.role} ({priv_path.name} / {pub_path.name}).")
             print("   KHÔNG ghi đè — đổi khóa là vô hiệu chữ ký cũ; tự tay xóa trước nếu chắc chắn.")
             return 0
-        priv = Ed25519PrivateKey.generate()
+        try:
+            priv = Ed25519PrivateKey.generate()
+        except BaseException as _exc:  # noqa: BLE001 — BH99-A
+            # `pyo3_runtime.PanicException` (cryptography cài HỎNG NỬA CHỪNG — có
+            # gói, thiếu `_cffi_backend`) kế thừa THẲNG BaseException, không qua
+            # Exception, nên khác hẳn ImportError ở trên (nghĩa là "thiếu hẳn").
+            # Luôn ném lại tín hiệu ngắt của người dùng — đây không phải lá chắn.
+            if isinstance(_exc, (KeyboardInterrupt, SystemExit)):
+                raise
+            print(f"✗ Thư viện `cryptography` ĐÃ CÀI nhưng HỎNG NỬA CHỪNG "
+                  f"({type(_exc).__name__}: {_exc}).")
+            print("   Khác với thiếu hẳn — sửa bằng: "
+                  "pip install --force-reinstall cffi cryptography")
+            return 2
         priv_path.parent.mkdir(parents=True, exist_ok=True)
         pub_dir.mkdir(parents=True, exist_ok=True)
         priv_path.write_bytes(priv.private_bytes(Encoding.PEM, PrivateFormat.PKCS8,
