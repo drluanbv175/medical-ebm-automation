@@ -142,7 +142,9 @@ def gia_lap_wrapper_va_worktree(tmp_path):
     assert _git(workspace, "init", "-q", env=env).returncode == 0
     assert _git(workspace, "config", "user.name", "pytest", env=env).returncode == 0
     assert _git(workspace, "config", "user.email", "pytest@example.invalid", env=env).returncode == 0
-    (workspace / "sentinel.txt").write_text("noi dung THAT cua workspace\n", encoding="utf-8")
+    (workspace / "sentinel.txt").write_text(
+        "noi dung THAT cua workspace\n", encoding="utf-8", newline="\n"
+    )
     assert _git(workspace, "add", "sentinel.txt", env=env).returncode == 0
     assert _git(workspace, "commit", "-q", "-m", "khoi tao workspace", env=env).returncode == 0
 
@@ -155,6 +157,7 @@ def gia_lap_wrapper_va_worktree(tmp_path):
         f'git diff --name-only -- sentinel.txt > "{marker}" 2>&1\n'
         "exit 0\n",
         encoding="utf-8",
+        newline="\n",
     )
     root_hook.chmod(0o755)
 
@@ -167,7 +170,9 @@ def gia_lap_wrapper_va_worktree(tmp_path):
     hooks_dir = repo / ".githooks"
     hooks_dir.mkdir()
     wrapper_dst = hooks_dir / "pre-commit"
-    wrapper_dst.write_text(WRAPPER_HOOK_SRC.read_text(encoding="utf-8"), encoding="utf-8")
+    wrapper_dst.write_text(
+        WRAPPER_HOOK_SRC.read_text(encoding="utf-8"), encoding="utf-8", newline="\n"
+    )
     wrapper_dst.chmod(0o755)
 
     # Wrapper that (sau khi goi ROOT_HOOK) con tu chay them
@@ -178,14 +183,16 @@ def gia_lap_wrapper_va_worktree(tmp_path):
     # giu tin hieu kiem tra CHI o cho ROOT_HOOK so sanh dung/sai INDEX.
     (repo / "scripts").mkdir()
     (repo / "scripts" / "regenerate_agent_manifest.py").write_text(
-        "import sys\nsys.exit(0)\n", encoding="utf-8"
+        "import sys\nsys.exit(0)\n", encoding="utf-8", newline="\n"
     )
     (repo / "tools").mkdir()
     (repo / "tools" / "agent_gate_governance.py").write_text(
-        "import sys\nsys.exit(0)\n", encoding="utf-8"
+        "import sys\nsys.exit(0)\n", encoding="utf-8", newline="\n"
     )
 
-    (repo / "sentinel.txt").write_text("noi dung KHAC cua repo long ben trong\n", encoding="utf-8")
+    (repo / "sentinel.txt").write_text(
+        "noi dung KHAC cua repo long ben trong\n", encoding="utf-8", newline="\n"
+    )
     add = _git(
         repo, "add", "sentinel.txt", ".githooks/pre-commit",
         "scripts/regenerate_agent_manifest.py", "tools/agent_gate_governance.py",
@@ -275,7 +282,7 @@ class TestBanVaThatSuCanThiet:
         noi_dung = wrapper_trong_wt.read_text(encoding="utf-8")
         assert DONG_UNSET in noi_dung, "fixture chua dung wrapper that? cau truc da doi?"
         noi_dung_cu = noi_dung.replace(DONG_UNSET, "", 1)
-        wrapper_trong_wt.write_text(noi_dung_cu, encoding="utf-8")
+        wrapper_trong_wt.write_text(noi_dung_cu, encoding="utf-8", newline="\n")
         wrapper_trong_wt.chmod(0o755)
 
         ket_qua = _goi_wrapper_voi_moi_truong_ro_ri(wt, admin_dir, env)
