@@ -21,10 +21,10 @@
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
-    "@auth/prisma-adapter": "^2.7.4",
+    "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^6.1.0",
-    "next": "^15.1.3",
-    "next-auth": "^5.0.0-beta.25",
+    "next": "^15.5.24",
+    "next-auth": "^5.0.0-beta.32",
     "prisma": "^6.1.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
