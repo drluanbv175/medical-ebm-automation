@@ -25,6 +25,8 @@ select = ["E", "F", "W", "I", "FA102"]
 # giữ nguyên nội dung để không làm sai fixture khi chạy kiểm định Phase 2D.
 "app/chronic_care/*.py" = ["E501", "I001"]
 "tests/test_phase_3a_chronic_care_*.py" = ["E501", "I001"]
+# Test giữ nguyên các dòng source mẫu dài để tái hiện phân biệt comment/string.
+"tests/test_kiem_newline_vung_ky_mask_comment_vs_string_20260912.py" = ["E501"]
 # Sinh HTML/CSS template: chuỗi style/markup dài, bẻ dòng gây rối & rủi ro.
 "app/social/package.py" = ["E501"]
 # Research automation generators contain long Vietnamese clinical/research templates.
