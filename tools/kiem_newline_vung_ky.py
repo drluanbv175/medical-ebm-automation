@@ -31,28 +31,42 @@ CAY = ("tools", "runtime", "tests", "scripts")
 MIEN_TRU = "da-nen: bo-qua"
 
 
-def _tim_loi_goi_write_text(text: str) -> list[tuple[int, int, str, str]]:
-    """Tìm mọi lời gọi `.write_text(...)` trong `text` bằng cách ĐẾM NGOẶC THẬT
-    (khớp mọi cấp lồng), thay cho regex cũ `\\.write_text\\((?:[^()]|\\([^()]*\\))*?\\)`
-    vốn chỉ khớp được đúng 1 CẤP ngoặc lồng bên trong. Một lời gọi có ≥2 cấp
-    lồng — vd `write_text(f(g(x)), encoding="utf-8")` — hoàn toàn KHÔNG được
-    regex cũ tìm thấy (không phải khớp sai, mà là finditer() bỏ qua occurrence
-    đó), nên vi phạm "thiếu newline=" thật ẩn trong lời gọi kiểu này lọt qua CI
-    mà không có cảnh báo nào.
+def _dung_offset_dong_cot(text: str):
+    """Trả về hàm đổi toạ độ `tokenize` (dòng 1-based, cột 0-based) thành
+    offset ký tự tuyệt đối trong `text`. `text` LUÔN được dựng bằng
+    `"\\n".join(...)` (xem `_mask()`/`main()`), nên tách lại bằng
+    `text.split("\\n")` khớp CHÍNH XÁC ranh giới dòng gốc, không lệch."""
+    dong = text.split("\n")
+    bat_dau: list[int] = [0]
+    for ln in dong:
+        bat_dau.append(bat_dau[-1] + len(ln) + 1)
 
-    Trả thêm `outer` — nội dung CHỈ ở cấp ngoài cùng của write_text() (nội dung
-    bên trong mọi lời gọi lồng bên trong bị lược bỏ, chỉ giữ dấu ngoặc rỗng
-    "()" đánh dấu vị trí). Bắt buộc phải tách riêng: nếu một hàm LỒNG BÊN
-    TRONG (vd `src.read_text(encoding="utf-8", newline="\\n")`) tình cờ có
-    kwarg `newline=`, kiểm tra "newline=" in <toàn bộ chuỗi khớp> sẽ SAI —
-    nhận nhầm write_text() NGOÀI CÙNG là đã có newline= trong khi nó không hề
-    có, y hệt bug thật đang tồn tại ở tools/vn_prose_style.py:218
-    (`dst.write_text(clean_generated_prose(src.read_text(..., newline="\\n")),
-    encoding="utf-8")` — outer write_text KHÔNG có newline=, chỉ inner
-    read_text mới có). Luật kiểm vi phạm PHẢI soi trên `outer`, KHÔNG soi trên
-    chuỗi khớp đầy đủ.
+    def doi(vi_tri: tuple[int, int]) -> int:
+        dong_so, cot = vi_tri
+        return bat_dau[dong_so - 1] + cot
 
-    Trả về (vị trí bắt đầu, vị trí kết thúc, chuỗi khớp đầy đủ, outer)."""
+    return doi
+
+
+def _tim_loi_goi_write_text_ngay_tho(text: str) -> list[tuple[int, int, str, str]]:
+    """Bản CŨ — ĐẾM NGOẶC THEO KÝ TỰ THÔ trên `text`. CHỈ dùng khi `text`
+    không tokenize được (file đã lỗi cú pháp từ trước khiến `_mask()` phải
+    hạ về `_mask_ngay_tho`, xem `_tim_loi_goi_write_text()`) — còn hơn không
+    quét được gì cho một file đã hỏng cú pháp.
+
+    KHÔNG dùng cho đường đi bình thường: đây CHÍNH LÀ nguồn của bug đã vá ở
+    bản tokenize-hoá bên dưới — một dấu '(' NẰM BÊN TRONG một chuỗi (string
+    literal) bị đếm y hệt một dấu '(' mở lời gọi lồng thật, đẩy `depth` lố
+    một cấp cho phần còn lại của lời gọi. Ca cụ thể (bằng chứng thực
+    nghiệm, không phải giả định — xác nhận qua ba lượt rà độc lập trong một
+    Workflow đối kháng khi kiểm một thay đổi khác):
+    `dst.write_text(clean(src.read_text(x, "see foo(bar")), encoding="utf-8",
+    newline="\\n")` — dấu '(' trong chuỗi `"see foo(bar"` làm `encoding=` và
+    `newline=` phía sau — vốn ở CẤP NGOÀI CÙNG thật sự của `write_text()` —
+    bị đếm nhầm là nằm trong lời gọi lồng bên trong, nên `outer` mất cả hai
+    kwarg đó dù `write_text()` NGOÀI CÙNG thật sự thiếu `newline=`: vi phạm
+    thật trở nên vô hình (false negative), ngược hướng an toàn của một
+    checker sinh ra để KHÔNG được bỏ sót loại vi phạm này."""
     ra: list[tuple[int, int, str, str]] = []
     tim = ".write_text("
     i = 0
@@ -77,6 +91,91 @@ def _tim_loi_goi_write_text(text: str) -> list[tuple[int, int, str, str]]:
                 outer_chars.append(ch)
             j += 1
         ra.append((idx, j, text[idx:j], "".join(outer_chars)))
+        i = j
+    return ra
+
+
+def _tim_loi_goi_write_text(text: str) -> list[tuple[int, int, str, str]]:
+    """Tìm mọi lời gọi `.write_text(...)` trong `text` bằng `tokenize` —
+    cùng module chuẩn của Python mà `_mask()` đã dùng — thay cho việc ĐẾM
+    NGOẶC THEO KÝ TỰ THÔ (nay là `_tim_loi_goi_write_text_ngay_tho()`, chỉ
+    còn dùng làm dự phòng, xem docstring hàm đó để biết ca lỗi cụ thể).
+
+    VÌ SAO ĐẾM KÝ TỰ THÔ KHÔNG ĐỦ (bug đã vá, phát hiện qua ba lượt rà độc
+    lập trong một Workflow đối kháng kiểm một thay đổi khác): nếu một đối
+    số CHUỖI của một lời gọi LỒNG BÊN TRONG chứa một dấu '(' không cân —
+    vd `dst.write_text(clean(src.read_text(x, "see foo(bar")),
+    encoding="utf-8", newline="\\n")` — bộ đếm ký tự thô không phân biệt
+    được dấu '(' đó với một dấu '(' MỞ LỜI GỌI LỒNG THẬT, nên `depth` bị
+    đẩy lố một cấp cho toàn bộ phần còn lại của lời gọi: `encoding=` và
+    `newline=` phía sau (vốn ở đúng CẤP NGOÀI CÙNG của `write_text()`) bị
+    coi là nằm trong lời gọi lồng, khiến `outer` mất cả hai — vi phạm thật
+    (thiếu `newline=` ở `write_text()` ngoài cùng) trở nên vô hình, đúng
+    chiều NGUY HIỂM nhất cho một checker sinh ra để không được bỏ sót loại
+    vi phạm này.
+
+    `tokenize` khớp mọi cấp ngoặc lồng bằng cách chỉ đếm token OP `(`/`)` —
+    một dấu '(' bên trong một STRING token KHÔNG BAO GIỜ là một OP token
+    riêng (nó chỉ là một phần nội dung nguyên văn của MỘT token STRING duy
+    nhất), nên không thể bị fooled theo cách bộ đếm ký tự thô mắc phải —
+    đúng NGUYÊN TẮC `_mask()` đã dùng để phân biệt '#' trong comment thật
+    với '#' nằm trong string literal (xem docstring `_mask()` ở trên).
+
+    Trả thêm `outer` — nội dung CHỈ ở cấp ngoài cùng của write_text() (nội
+    dung bên trong mọi lời gọi lồng bên trong bị lược bỏ, chỉ giữ dấu ngoặc
+    "()" đánh dấu vị trí, ghép trực tiếp từ `tok.string` của từng token ở
+    cấp ngoài cùng — không chèn khoảng trắng giữa các token, vì luật kiểm ở
+    `main()` so khớp CHÍNH XÁC chuỗi con `'encoding="utf-8"'`/`"newline="`
+    liền nhau như trong mã nguồn thật; chèn khoảng trắng sẽ làm gãy phép so
+    khớp đó). Lý do bắt buộc tách `outer` khỏi chuỗi khớp đầy đủ: xem
+    `TestNewlineTrongLoiGoiLongKhongDuocTinhChoOuterCall` ở
+    tests/test_kiem_newline_vung_ky_workflow_20260905_vong24_nested_write_text.py.
+
+    Trả về (vị trí bắt đầu, vị trí kết thúc, chuỗi khớp đầy đủ, outer). Nếu
+    `text` không tokenize được (chỉ xảy ra khi `_mask()` đã phải hạ về
+    `_mask_ngay_tho` cho một file lỗi cú pháp từ trước), hạ về
+    `_tim_loi_goi_write_text_ngay_tho()` — còn hơn không quét được gì."""
+    try:
+        cac_token = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except (tokenize.TokenError, IndentationError, SyntaxError, ValueError):
+        return _tim_loi_goi_write_text_ngay_tho(text)
+
+    doi = _dung_offset_dong_cot(text)
+    ra: list[tuple[int, int, str, str]] = []
+    so_token = len(cac_token)
+    i = 0
+    while i < so_token - 2:
+        tok_cham, tok_ten, tok_ngoac = cac_token[i], cac_token[i + 1], cac_token[i + 2]
+        la_loi_goi_write_text = (
+            tok_cham.type == tokenize.OP and tok_cham.string == "."
+            and tok_ten.type == tokenize.NAME and tok_ten.string == "write_text"
+            and tok_ngoac.type == tokenize.OP and tok_ngoac.string == "("
+        )
+        if not la_loi_goi_write_text:
+            i += 1
+            continue
+
+        start = doi(tok_cham.start)
+        end = doi(tok_ngoac.end)  # dự phòng nếu không tìm được ngoặc đóng khớp
+        depth = 1
+        outer_chars: list[str] = []
+        j = i + 3
+        while j < so_token and depth > 0:
+            tok = cac_token[j]
+            if tok.type == tokenize.OP and tok.string == "(":
+                if depth == 1:
+                    outer_chars.append("(")
+                depth += 1
+            elif tok.type == tokenize.OP and tok.string == ")":
+                depth -= 1
+                if depth == 1:
+                    outer_chars.append(")")
+                if depth == 0:
+                    end = doi(tok.end)
+            elif depth == 1:
+                outer_chars.append(tok.string)
+            j += 1
+        ra.append((start, end, text[start:end], "".join(outer_chars)))
         i = j
     return ra
 
