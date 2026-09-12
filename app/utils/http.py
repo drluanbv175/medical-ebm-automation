@@ -59,11 +59,12 @@ _CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Thời điểm request gần nhất theo host, để giãn cách chủ động (NCBI etiquette).
 _last_request_at: Dict[str, float] = {}
-# Khoá bảo vệ _last_request_at — xem lý do trong docstring _throttle().
+# Khoá ngắn chỉ bảo vệ việc tạo khoá riêng cho từng host.
 _throttle_lock = threading.Lock()
+_throttle_host_locks: Dict[str, threading.Lock] = {}
 
 
-def _throttle(url: str, min_interval: float) -> None:
+def _throttle(url: str, min_interval: float) -> float:
     """Ngủ vừa đủ để 2 request cùng host cách nhau >= min_interval giây.
 
     SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #84, MEDIUM) — bản gốc đọc
@@ -77,26 +78,29 @@ def _throttle(url: str, min_interval: float) -> None:
     cách NCBI etiquette mà comment ở `_FEED_WORKERS` tự khai ("tránh 429 từ host
     dùng chung như bmj.com").
 
-    Sửa: khoá phần TÍNH-VÀ-ĐẶT-TRƯỚC mốc kế tiếp thành một khối NGUYÊN TỬ (đọc,
-    tính thời gian cần đợi, GHI NGAY mốc dự kiến TRONG khoá) — luồng gọi ngay sau
-    sẽ đọc trúng mốc đã được đẩy tới, không đọc trúng mốc CŨ. `time.sleep()` cố ý
-    nằm NGOÀI khoá: giữ khoá trong lúc ngủ sẽ biến throttle theo-từng-host thành
-    một điểm nghẽn TOÀN CỤC, chặn cả các host KHÁC đang throttle độc lập cùng lúc.
+    SỬA 2026-09-12: cách đặt-trước mốc rồi ngủ ngoài khoá vẫn có thể cho hai request
+    dồn sát nhau nếu một luồng thức dậy muộn do scheduler (thấy rõ trên Windows).
+    Mỗi host nay có khoá riêng: cùng host ngủ tuần tự và chốt mốc THỰC sau khi ngủ;
+    host khác vẫn chạy độc lập, không bị một khoá toàn cục chặn. Hàm trả mốc được
+    cấp phép để test đo ngay bên trong ranh giới throttle, không bị scheduler chen
+    vào giữa lúc hàm trả về và lúc test gọi `time.monotonic()`.
     """
     if min_interval <= 0:
-        return
+        return time.monotonic()
     host = urlparse(url).netloc
     with _throttle_lock:
+        host_lock = _throttle_host_locks.setdefault(host, threading.Lock())
+
+    with host_lock:
         last = _last_request_at.get(host)
         now = time.monotonic()
-        wait = 0.0
         if last is not None:
-            elapsed = now - last
-            if elapsed < min_interval:
-                wait = min_interval - elapsed
-        _last_request_at[host] = now + wait
-    if wait > 0:
-        time.sleep(wait)
+            deadline = last + min_interval
+            while now < deadline:
+                time.sleep(deadline - now)
+                now = time.monotonic()
+        _last_request_at[host] = now
+        return now
 
 
 def _cache_key(method: str, url: str, params: Optional[Dict[str, Any]]) -> str:
