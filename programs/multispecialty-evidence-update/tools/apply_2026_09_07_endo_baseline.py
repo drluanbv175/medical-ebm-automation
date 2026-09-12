@@ -5,7 +5,6 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-
 ROOT = Path(__file__).resolve().parents[3] if "programs" in Path(__file__).parts else Path.cwd()
 BOOK = ROOT / "programs/multispecialty-evidence-update/workbook/04_DASHBOARD_DANH_MUC_EBM.xlsx"
 REVIEW_DATE = datetime(2026, 9, 7)

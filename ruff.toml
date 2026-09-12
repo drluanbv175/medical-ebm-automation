@@ -27,6 +27,10 @@ select = ["E", "F", "W", "I", "FA102"]
 "tests/test_phase_3a_chronic_care_*.py" = ["E501", "I001"]
 # Sinh HTML/CSS template: chuỗi style/markup dài, bẻ dòng gây rối & rủi ro.
 "app/social/package.py" = ["E501"]
+# Script nạp dữ liệu cho workbook chứa chuỗi chứng cứ, URL và công thức Excel dài.
+# Giữ nguyên nội dung y khoa; các luật cú pháp/import/biến thừa vẫn được kiểm đầy đủ.
+"programs/multispecialty-evidence-update/tools/apply_2026_09_01_card_outcomes_update.py" = ["E501"]
+"programs/multispecialty-evidence-update/tools/apply_2026_09_07_endo_baseline.py" = ["E501"]
 # Research automation generators contain long Vietnamese clinical/research templates.
 # Keep templates intact; enforce syntax/import/unused-variable rules separately.
 "research_project/project_crf_builder.py" = ["E501"]
