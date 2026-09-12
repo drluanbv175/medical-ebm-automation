@@ -29,6 +29,12 @@ if OFFLINE_CI:
             f"{_forbidden_keys} — offline CI cấm dùng API key / runtime live."
         )
 
+    # Defense-in-depth cho lần chạy local: `app.database` bên dưới sẽ import
+    # `app.config`, nơi `.env` ngoài OneDrive được nạp. Biến rỗng vẫn được xem là
+    # đã khai báo nên python-dotenv (override=False) không thể nạp secret trở lại.
+    os.environ["ANTHROPIC_API_KEY"] = ""
+    os.environ["OPENAI_API_KEY"] = ""
+
     import socket as _socket
 
     def _blocked_connect(*_a, **_k):

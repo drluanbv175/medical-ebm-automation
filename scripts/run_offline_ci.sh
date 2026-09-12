@@ -15,6 +15,12 @@ if [[ -n "${ANTHROPIC_API_KEY:-}" || -n "${OPENAI_API_KEY:-}" ]]; then
   exit 2
 fi
 
+# Giữ hai khóa hiện diện nhưng rỗng trong suốt tiến trình. `app.config` có thể
+# nạp `.env` ở máy phát triển; để biến hoàn toàn vắng sẽ cho phép python-dotenv
+# đưa secret trở lại sau chốt trên và làm CI local không còn hermetic.
+export ANTHROPIC_API_KEY=""
+export OPENAI_API_KEY=""
+
 # 2) Bật chế độ hermetic + ép mock sources; KHÔNG bật eHospital synthetic flag.
 export MRAQ_OFFLINE_CI=1
 export USE_MOCK_SOURCES=true
@@ -23,17 +29,6 @@ unset MRAQ_ENABLE_EHOSPITAL_SYNTHETIC_TEST || true
 PY="${PYTHON:-python3}"
 RESULTS_DIR="${RESULTS_DIR:-results}"
 mkdir -p "$RESULTS_DIR"
-
-echo "== Step 0/5: Ruff auto-fix linting errors =="
-# 3 lỗi có thể fix tự động (import organization, etc.)
-"$PY" -m ruff check . --fix --config /dev/null 2>&1 || {
-  RC=$?
-  if [[ $RC -eq 1 ]]; then
-    echo "INFO: some ruff issues fixed"
-  else
-    echo "WARN: ruff returned non-standard exit code $RC (expected 0 or 1)" >&2
-  fi
-}
 
 echo "== Step 1/4: verify manifest + registry (A5) =="
 "$PY" scripts/verify_manifest_registry.py | tee "$RESULTS_DIR/manifest_registry_verify.txt"
