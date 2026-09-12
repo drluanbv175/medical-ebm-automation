@@ -12,15 +12,15 @@ mới, mỗi luồng tự tính "đủ giãn cách" một cách ĐỘC LẬP r�
 đồng thời — đánh bại đúng mục đích giãn cách mà comment ở `_FEED_WORKERS` tự khai
 ("tránh 429 từ host dùng chung như bmj.com").
 
-BẢN VÁ: khoá phần TÍNH-VÀ-ĐẶT-TRƯỚC mốc kế tiếp thành một khối nguyên tử (đọc,
-tính thời gian cần đợi, GHI NGAY mốc dự kiến TRONG khoá) — luồng gọi ngay sau sẽ
-đọc trúng mốc đã được đẩy tới. `time.sleep()` nằm NGOÀI khoá — không biến throttle
-theo-từng-host thành điểm nghẽn toàn cục.
+BẢN VÁ 2026-09-12: mỗi host có một khoá riêng. Các luồng cùng host ngủ tuần tự và
+chốt mốc thực sau khi ngủ; các host khác vẫn chạy độc lập. Cách này vừa đóng đua
+TOCTOU, vừa tránh việc các mốc đặt trước bị dồn sát khi scheduler đánh thức một
+luồng muộn trên Windows.
 
 Nguyên tắc viết test: dựng N luồng THẬT (không mock thời gian) gọi `_throttle()`
-đồng thời cho CÙNG một host, đo khoảng cách thời gian thực tế giữa các lần "hoàn
-tất throttle" — phải luôn cách nhau ≥ min_interval, không phụ thuộc việc luồng nào
-chạy trước. Không grep chuỗi trong mã nguồn.
+đồng thời cho CÙNG một host, đo các mốc cấp phép do chính `_throttle()` trả về —
+phải luôn cách nhau ≥ min_interval, không phụ thuộc scheduler chen vào sau khi hàm
+trả về. Không grep chuỗi trong mã nguồn.
 """
 from __future__ import annotations
 
@@ -50,9 +50,11 @@ class TestThrottleKhongDuaKhiNhieuLuongCungHost:
         khoa_ghi = threading.Lock()
 
         def _goi():
-            http._throttle("https://cung-host.example/x", min_interval)
+            moc_cap_phep = http._throttle(
+                "https://cung-host.example/x", min_interval
+            )
             with khoa_ghi:
-                moc_hoan_tat.append(time.monotonic())
+                moc_hoan_tat.append(moc_cap_phep)
 
         rao_can = threading.Barrier(n_threads)
 
