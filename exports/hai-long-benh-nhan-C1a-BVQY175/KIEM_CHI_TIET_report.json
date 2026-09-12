@@ -1,11 +1,11 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-09-02T08:21:35",
+  "generated_at": "2026-09-12T15:35:50",
   "tong": {
-    "xanh": 38,
+    "xanh": 39,
     "vang": 38,
     "do": 0,
-    "trang": 0
+    "trang": 1
   },
   "exit_code": 1,
   "bang_diem": {
@@ -77,7 +77,7 @@
       "⑤": "🟡"
     },
     "HỆ": {
-      "S": "🟢"
+      "S": "⚪"
     }
   },
   "muc": [
@@ -329,7 +329,7 @@
       "truc": "①",
       "muc": "🟡",
       "nhan": "Độ tươi (theo mtime): CŨ hơn thượng nguồn",
-      "bang_chung": "G3 sinh TRƯỚC thượng nguồn G0, G1 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
+      "bang_chung": "G3 sinh TRƯỚC thượng nguồn G0, G1, G2 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
       "hanh_dong": "chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …)",
       "may_sua": false
     },
@@ -383,7 +383,7 @@
       "truc": "①",
       "muc": "🟡",
       "nhan": "Độ tươi (theo mtime): CŨ hơn thượng nguồn",
-      "bang_chung": "G4 sinh TRƯỚC thượng nguồn G3 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
+      "bang_chung": "G4 sinh TRƯỚC thượng nguồn G0, G1 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
       "hanh_dong": "chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …)",
       "may_sua": false
     },
@@ -473,7 +473,7 @@
       "truc": "①",
       "muc": "🟡",
       "nhan": "Cổng chưa chạy",
-      "bang_chung": "chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5",
+      "bang_chung": "chờ ký thật cổng G2 (IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE) — approve_gate.py --gate G2",
       "hanh_dong": "",
       "may_sua": false
     },
@@ -500,7 +500,7 @@
       "truc": "①",
       "muc": "🟡",
       "nhan": "Cổng chưa chạy",
-      "bang_chung": "chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5",
+      "bang_chung": "chờ G6 chạy trước → chờ ký thật cổng G2 (IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE) — approve_gate.py --gate G2",
       "hanh_dong": "",
       "may_sua": false
     },
@@ -527,7 +527,7 @@
       "truc": "①",
       "muc": "🟡",
       "nhan": "Cổng chưa chạy",
-      "bang_chung": "chờ G7 chạy trước → chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5",
+      "bang_chung": "chờ G7 chạy trước → chờ G6 chạy trước → chờ ký thật cổng G2 (IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE) — approve_gate.py --gate G2",
       "hanh_dong": "",
       "may_sua": false
     },
@@ -563,7 +563,7 @@
       "truc": "①",
       "muc": "🟡",
       "nhan": "Cổng chưa chạy",
-      "bang_chung": "chờ G7 chạy trước → chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5",
+      "bang_chung": "chờ G7 chạy trước → chờ G6 chạy trước → chờ ký thật cổng G2 (IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE) — approve_gate.py --gate G2",
       "hanh_dong": "",
       "may_sua": false
     },
@@ -635,7 +635,7 @@
       "truc": "③",
       "muc": "🟢",
       "nhan": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
-      "bang_chung": "[CẦN còn 66",
+      "bang_chung": "[CẦN còn 73",
       "hanh_dong": "",
       "may_sua": false
     },
@@ -661,7 +661,7 @@
       "cong": "G10",
       "truc": "③",
       "muc": "🟡",
-      "nhan": "Còn 74 nhãn [CẦN…] trong 3 file",
+      "nhan": "Còn 81 nhãn [CẦN…] trong 3 file",
       "bang_chung": "thẩm quyền chủ nhiệm/thống kê viên",
       "hanh_dong": "điền rồi chạy lại quality gate của cổng",
       "may_sua": false
@@ -689,6 +689,24 @@
       "truc": "④",
       "muc": "🟢",
       "nhan": "De-cuong_Hai-long-C1a_BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "HO-SO-QUA-TRINH_Hai-long-C1a.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "PHAN-HOI-BINH-DUYET_Hai-long-C1a.docx: Times New Roman 13pt/bảng 11pt",
       "bang_chung": "0 ký tự trang trí",
       "hanh_dong": "",
       "may_sua": false
@@ -752,16 +770,16 @@
       "truc": "S",
       "muc": "🟢",
       "nhan": "gen_research_docx.ARTIFACT_MAP ≥ 32 bộ sinh",
-      "bang_chung": "38 khoá",
+      "bang_chung": "53 khoá",
       "hanh_dong": "",
       "may_sua": false
     },
     {
       "cong": "HỆ",
       "truc": "S",
-      "muc": "🟢",
-      "nhan": "Canary: lỗi gài biết trước bị bắt + approve_gate từ chối đúng (G2/G4/G8)",
-      "bang_chung": "gài 9/9 bắt được · dây nối 3/3",
+      "muc": "⚪",
+      "nhan": "Canary",
+      "bang_chung": "bỏ qua theo --khong-canary",
       "hanh_dong": "",
       "may_sua": false
     }
