@@ -19,6 +19,7 @@ Cach dung:
 """
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -40,6 +41,7 @@ TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(TOOLS))
 
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — chỉ dùng load_study_meta)
 
 # SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện HIGH): tái
@@ -1424,6 +1426,8 @@ def generate_a9_artifact(
     impact_factor: float,
     g8_status: str,
     gate_criteria: dict = None,
+    manuscript_sha256: str = None,
+    manuscript_filename: str = None,
 ) -> str:
     """Sinh artifact A9 -- Bao cao toan dien kiem tra truoc nop bai."""
 
@@ -1452,6 +1456,17 @@ def generate_a9_artifact(
     # SỬA: score_label đã tự chứa mẫu số ("18/30") — nối thêm "/30" ở đây
     # tạo ra chuỗi hiển thị sai "18/30/30" cho bác sĩ đọc.
     ln(f"**Điểm tự kiểm:** {presubmission['score_label']} — {presubmission['readiness_note']}")
+    # THÊM (vá chữ ký G8 không ràng buộc bản thảo thật, 2026-09-04): nhúng
+    # SHA-256 của bản thảo NGAY LÚC sinh A9, để chữ ký sẽ ký lên chính artifact
+    # này transitively ràng buộc luôn nội dung bản thảo tại thời điểm bình
+    # duyệt. Nhãn máy-đọc-được (g8_quality_gate.py::_trich_hash_ban_thao_da_ky()
+    # trích lại bằng regex) -- KHÔNG được đổi định dạng dòng này mà không sửa
+    # đồng thời hàm trích ở đó.
+    if manuscript_sha256:
+        ln(f"**Hash SHA-256 bản thảo đã ràng buộc (`{manuscript_filename}`):** `{manuscript_sha256}`")
+    else:
+        ln(f"**Hash SHA-256 bản thảo đã ràng buộc:** CHƯA CÓ BẢN THẢO (`{manuscript_filename}` "
+           "không tồn tại lúc sinh A9) — chữ ký G8 sẽ KHÔNG ràng buộc được nội dung bản thảo.")
     ln()
     ln("> [BẢN NHÁP TỰ ĐỘNG] — Dựa trên checkpoints G0-G7.")
     ln("> Các mục [CAN] yêu cầu bác sĩ/nhóm tác giả hoàn thiện trước khi nộp.")
@@ -1887,6 +1902,7 @@ def export_docx(artifact_md: str, study: str, out_dir: Path):
                         run.font.color.rgb = RGBColor(0xCC, 0x44, 0x00)
 
         docx_path = out_dir / f"G8_A9_PRESUBMISSION_{study}.docx"
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(docx_path)
         return docx_path
     except ImportError:
@@ -2110,6 +2126,18 @@ def main():
     _manuscript_text = (
         _manuscript_path.read_text(encoding="utf-8") if _manuscript_path.exists() else ""
     )
+    # THÊM (vá chữ ký G8 không ràng buộc bản thảo thật, 2026-09-04): băm SHA-256
+    # nội dung bản thảo NGAY LÚC sinh A9 và nhúng vào chính artifact sẽ được ký
+    # -- chữ ký HMAC hiện có (gate_contract.sign_approval()) chỉ băm A9, không
+    # bao giờ đọc G7_A8_MANUSCRIPT_<study>.md, nên bản thảo có thể bị sửa SAU
+    # KHI ký (bỏ cảnh báo an toàn, đổi hiệu số) mà chữ ký vẫn "hợp lệ". Nhúng
+    # hash vào NỘI DUNG A9 khiến chữ ký đã có transitively ràng buộc bản thảo,
+    # không cần đụng vào gate_contract.py (giữ nguyên phạm vi ảnh hưởng tới các
+    # cổng khác = 0). g8_quality_gate.py::G8-AUTO-12 đối chiếu ngược lại.
+    manuscript_sha256 = (
+        hashlib.sha256(_manuscript_text.encode("utf-8")).hexdigest()
+        if _manuscript_path.exists() else None
+    )
     reporting = build_reporting_checklist(
         design_code, gates, specialist_modules=gates.get("G1", {}).get("specialist_modules") or [],
         hypothesis_type=gates.get("G3", {}).get("hypothesis_type") or "superiority",
@@ -2192,6 +2220,7 @@ def main():
         study, run_date, gates, pipeline, reporting, stat_check,
         journal_suggestions, presubmission, args.target_journal, args.impact_factor,
         g8_status, gate_criteria=gate_criteria,
+        manuscript_sha256=manuscript_sha256, manuscript_filename=_manuscript_path.name,
     )
 
     guardrail = guardrail_g8(artifact_md, pipeline)

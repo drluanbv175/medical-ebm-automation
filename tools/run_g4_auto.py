@@ -25,6 +25,7 @@ TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(TOOLS))
 
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
 
@@ -248,6 +249,52 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "",
         ]
 
+    # THÊM 2026-09-06 (bác sĩ duyệt "thêm mục 13–15 có điều kiện" sau khi đo SAP
+    # thiếu 4 mục SPIRIT 2025 CHỈ áp dụng cho RCT — 0 lần xuất hiện trong file
+    # này: 28b phân tích giữa kỳ/quy tắc dừng, 28a hội đồng theo dõi dữ liệu
+    # (DMC/DSMB), 17 định nghĩa/đánh giá tổn hại, 15b/15c ngừng-đổi can thiệp
+    # và tuân thủ. CHỈ cho RCT (`design_code == "rct"`, cùng quy ước literal đã
+    # dùng xuyên suốt hàm này cho "qualitative") — nối SAU §12, KHÔNG đánh số
+    # lại §1-§12: `approve_gate._g4_sections_still_draft` và
+    # `g4_quality_gate._section_body`/`parse_signed_numbers` đều tìm biên §12
+    # bằng regex `^#{2,3}\s+§\d`, nên chèn giữa hoặc đổi số sẽ làm vỡ cổng
+    # đang chạy (SAP là tài liệu ĐƯỢC KÝ VÀ KHOÁ). §13/§14/§15 KHÔNG nằm trong
+    # `_G4_REQUIRED_SECTIONS` — chỉ là nội dung thêm để bác sĩ/DMC điền, không
+    # đổi ngưỡng chặn ký hiện có (đó là quyết định RIÊNG, chưa được yêu cầu).
+    sap_sections_13_to_15 = [
+        "",
+        "### §13 PHÂN TÍCH GIỮA KỲ VÀ QUY TẮC DỪNG (SPIRIT 2025 mục 28b)",
+        "",
+        "- **Có phân tích giữa kỳ:** [CẦN BÁC SĨ/THỐNG KÊ VIÊN — có/không; nếu có, số lần và mốc "
+        "(thời gian hoặc % cỡ mẫu đã thu)]  ",
+        "- **Quy tắc dừng (stopping rule):** [CẦN — vd O'Brien-Fleming/Pocock, ngưỡng alpha spending]  ",
+        "- **Ai xem kết quả giữa kỳ và ai quyết định dừng:** [CẦN — thường là DMC/DSMB độc lập, "
+        "KHÔNG phải nghiên cứu viên chính]  ",
+        "- Nếu KHÔNG có phân tích giữa kỳ: [CẦN — nêu lý do, vd thời gian theo dõi ngắn/cỡ mẫu nhỏ/"
+        "can thiệp nguy cơ thấp]  ",
+        "",
+        "### §14 HỘI ĐỒNG THEO DÕI DỮ LIỆU (DMC/DSMB, SPIRIT 2025 mục 28a)",
+        "",
+        "- **Có DMC/DSMB:** [CẦN — có/không]  ",
+        "- **Thành phần và vai trò:** [CẦN — số thành viên, chuyên môn, cơ chế báo cáo]  ",
+        "- **Độc lập với nhà tài trợ/nghiên cứu viên:** [CẦN — xác nhận độc lập + khai xung đột "
+        "lợi ích]  ",
+        "- **Điều lệ (charter):** [CẦN — trích dẫn/đính kèm, hoặc ghi rõ chưa lập và vì sao]  ",
+        "- Nếu KHÔNG cần DMC/DSMB: [CẦN — giải thích lý do được chấp nhận theo SPIRIT 2025, vd "
+        "can thiệp nguy cơ thấp/thời gian ngắn]  ",
+        "",
+        "### §15 TỔN HẠI; NGỪNG/ĐỔI CAN THIỆP VÀ TUÂN THỦ (SPIRIT 2025 mục 17, 15b, 15c)",
+        "",
+        "- **Định nghĩa tổn hại (harms):** [CẦN — thang phân độ biến cố bất lợi dùng, vd CTCAE]  ",
+        "- **Cách đánh giá:** [CẦN — hệ thống (hỏi chủ động mỗi lần khám) hay không hệ thống "
+        "(người tham gia tự báo cáo)]  ",
+        "- **Tiêu chí ngừng/đổi can thiệp cho MỘT người tham gia:** [CẦN — vd đổi liều khi có tác "
+        "dụng phụ, tiêu chí rút khỏi nghiên cứu — khác quy tắc dừng CẢ nghiên cứu ở §13]  ",
+        "- **Chiến lược cải thiện và theo dõi tuân thủ:** [CẦN — vd đếm viên thuốc hoàn trả, số "
+        "buổi tham dự]  ",
+        "",
+    ]
+
     lines = [
         "# A5 — SAP FINAL + SAP LOCK CERTIFICATE (DRAFT — CHỜ BÁC SĨ KÝ)",
         f"**Đề tài:** {topic}  ",
@@ -280,11 +327,20 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
         "---",
         "",
-        "## PHẦN 3 — SAP 12 MỤC CUỐI",
+        f"## PHẦN 3 — SAP {'15' if design_code == 'rct' else '12'} MỤC CUỐI",
         "",
         "### §1 QUẦN THỂ PHÂN TÍCH",
         "",
         f"- **Quần thể chính:** {pop}  ",
+        # THÊM 06/09/2026 (bác sĩ: "Điền phần Can thiệp và đối chứng"): SAP chỉ
+        # định nghĩa quần thể phân tích theo NHÓM (ITT/PP), không mô tả can
+        # thiệp/đối chứng LÀ GÌ — nội dung đó đã có ở đề cương §6.2 (TIDieR,
+        # commit 8bc39e2). Trỏ NGƯỢC sang đó thay vì chép lại: hai nơi cùng một
+        # sự thật dễ lệch nhau khi sửa một bên (đúng lý do 15b/15c ở §13-15 chỉ
+        # trỏ sang, không lặp). Chỉ RCT — thiết kế khác không có can thiệp.
+        *(["- **Mô tả can thiệp/đối chứng (TIDieR):** xem đề cương thống nhất "
+           "§6.2 Can thiệp và đối chứng — không lặp lại ở đây để tránh hai nơi "
+           "cùng một sự thật dễ lệch nhau.  "] if design_code == "rct" else []),
         (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
          (f"- **Cỡ mẫu cuối:** N = {n_adjusted} (alpha={alpha}, power={int(power*100)}%)  " if n_adjusted
           else "- **Cỡ mẫu:** [CẦN từ G3]  ")),
@@ -363,6 +419,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         # tái tạo/kiểm chứng cỡ mẫu kết cục liên tục (effect_type=MD).
         [f"- **Độ lệch chuẩn (SD) kết cục:** {sd:.2f}  " if sd else "- **SD kết cục:** [CẦN từ G3 — bắt buộc khi effect_type=MD]  "]
         if effect_type == "MD" else []
+    ) + (
+        sap_sections_13_to_15 if design_code == "rct" else []
     ) + [
         "",
         "---",
@@ -455,6 +513,7 @@ def write_docx(artifact, path):
                 p.add_run(line).font.color.rgb = RGBColor(0xCC, 0x44, 0x00)
             elif line.strip():
                 doc.add_paragraph(line)
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(path)
         return True
     except ImportError:
@@ -469,6 +528,11 @@ def write_docx(artifact, path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--study", required=True)
+    # THÊM 2026-09-01 (kiểm toàn diện): cờ ghi đè CÓ CHỦ ĐÍCH cho rào chống
+    # đè SAP đã biên tập (xem khối rào trước md.write_text bên dưới).
+    parser.add_argument("--regenerate-sap", action="store_true",
+                        help="Ép sinh lại SAP từ template dù bản đang có đầy đủ hơn "
+                             "(bản cũ vẫn được sao lưu .bak-* trước khi đè)")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
@@ -594,6 +658,30 @@ def main():
     # trước khi ghi. keep_box=True: khung của SAP LOCK CERTIFICATE đóng vai con
     # dấu, giữ nguyên có chủ đích (tools/vn_prose_style.py).
     artifact = _VNSTYLE.clean_generated_prose(artifact, keep_box=True)
+    # ★ RÀO CHỐNG ĐÈ MẤT SAP ĐÃ BIÊN TẬP (kiểm toàn diện 01/09/2026): trước
+    # bản vá này md.write_text() đè VÔ ĐIỀU KIỆN — không sao lưu, không rào.
+    # Ca thật suýt xảy ra: SAP v1.1 của C1a (12 mục đồng bộ từ đề cương đã
+    # duyệt, 12/13 tiêu chí G4 PASS) sẽ bị thay bằng template [CẦN] trống nếu
+    # ai chạy lại G4 — kể cả chỉ để xoá cảnh báo freshness của run_pipeline.
+    # Luật nội dung 21/08 (họ BH71): bản đích ĐẦY ĐỦ HƠN bản máy sắp sinh
+    # (ÍT nhãn [CẦN hơn) → TỪ CHỐI đè; chỉ người thật quyết bằng
+    # --regenerate-sap (vẫn sao lưu .bak-* trước). SAP cũ KÉM đầy đủ hơn →
+    # đè như cũ nhưng nay LUÔN có .bak-* (cùng khuôn G0 đã làm từ 28/07).
+    if md.exists():
+        ban_cu = md.read_text(encoding="utf-8")
+        bak = md.with_name(md.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
+        bak.write_text(ban_cu, encoding="utf-8", newline="\n")
+        print(f"  → Sao lưu SAP hiện có: {bak.name}")
+        if (ban_cu.count("[CẦN") < artifact.count("[CẦN")
+                and not getattr(args, "regenerate_sap", False)):
+            print("⛔ TỪ CHỐI đè SAP: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh "
+                  f"({ban_cu.count('[CẦN')} vs {artifact.count('[CẦN')} nhãn [CẦN...]) — "
+                  "nhiều khả năng đã được bác sĩ/thống kê viên biên tập.")
+            print("   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: thêm cờ --regenerate-sap "
+                  "(bản cũ vẫn được sao lưu .bak-* ở trên).")
+            print("   Chỉ cần bản .docx CHUẨN TRÌNH BÀY từ bản đã biên tập (không sinh lại nội dung):\n"
+                  f"     python3 tools/xuat_docx_chuan.py --study {study}")
+            raise SystemExit(GC.EXIT_BLOCKED)
     md.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
 

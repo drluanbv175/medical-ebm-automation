@@ -128,11 +128,39 @@ def norm(s):
     return s
 
 
+def _boundary_before_ok(name_norm, kw, start):
+    """Ký tự ngay TRƯỚC vị trí khớp (nếu có) không phải chữ/số ASCII."""
+    if start <= 0:
+        return True
+    before = name_norm[start - 1]
+    return not (before.isalpha() or before.isdigit())
+
+
 def classify(name_norm, table, default=None):
     for label, kws in table:
         for kw in kws:
-            if kw.strip() and kw in name_norm:
-                return label
+            if not kw.strip():
+                continue
+            # Vá 2026-09-06 (audit vòng 34, phát hiện #5): so khớp CHUỖI CON
+            # thuần (`kw in name_norm`) không có ranh giới bên TRÁI cho từ
+            # khóa chỉ có khoảng trắng ở CUỐI (vd "af " nhận diện rung nhĩ/AF,
+            # "tha " nhận diện tăng huyết áp/THA trong danh mục Tim mạch) —
+            # một họ (surname) hay từ bất kỳ KẾT THÚC bằng đúng 2 ký tự đó,
+            # theo sau một khoảng trắng, sẽ khớp NHẦM dù không liên quan
+            # chuyên khoa. Ca thật đã tái hiện: "BS Graf bai giang than
+            # kinh.pdf" — rõ ràng là tài liệu THẦN KINH (có ghi "than kinh"
+            # ngay trong tên) — bị phân vào "Tim mạch" chỉ vì "Graf " chứa
+            # "af ", và Tim mạch được kiểm TRƯỚC Thần kinh trong SPECIALTY.
+            # Với từ khóa dạng "xxx " (khoảng trắng CUỐI, KHÔNG có ở đầu —
+            # từ khóa có cả hai như " esc " vốn đã an toàn), chỉ nhận khớp
+            # khi ký tự ngay trước đó không phải chữ/số (đứng đầu chuỗi hoặc
+            # sau một ranh giới không phải chữ-số).
+            needs_left_boundary = kw.endswith(" ") and not kw.startswith(" ")
+            idx = name_norm.find(kw)
+            while idx != -1:
+                if not needs_left_boundary or _boundary_before_ok(name_norm, kw, idx):
+                    return label
+                idx = name_norm.find(kw, idx + 1)
     return default
 
 

@@ -73,6 +73,25 @@ PII_HEADER_TOKENS = {
 }
 VALUE_PATTERNS = {
     "email": re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I),
+    # THÊM 2026-09-04 (Workflow đối kháng đa-agent vòng 3, CRITICAL): NGÀY THÁNG.
+    # HIPAA Safe Harbor liệt "mọi thành phần ngày tháng gắn với một cá nhân — trừ
+    # năm — gồm ngày sinh, ngày nhập viện, ngày xuất viện" là ĐỊNH DANH TRỰC TIẾP,
+    # nhưng VALUE_PATTERNS trước đây KHÔNG có mục nào cho ngày tháng. Hậu quả đo
+    # được: một ô ghi chú tự do (header không gợi ý PII, vd cột "notes"/"ghi_chu")
+    # chứa "BN sinh ngày 15/07/1980, nhập viện 03/03/2024" lọt qua CẢ _scan_csv()
+    # (cổng tiếp nhận, BLOCKED_PII_OR_UNSAFE lẽ ra phải bật) LẪN _redact_value() —
+    # deidentify_research_dataset.py VÀ pseudonymize_research_dataset.py CÙNG dùng
+    # chung dict này (RDI.VALUE_PATTERNS) — khiến báo cáo khử định danh khẳng định
+    # SAI `output_pii_scan.passed: true` trong khi ngày sinh vẫn còn nguyên trong
+    # file xuất ra. CỐ Ý RỘNG hơn `_DOB` của app/core/policy_engine.py (đòi nhãn
+    # "dob"/"ngày sinh" đứng trước ngày): ở ĐÂY hậu quả một trận dương tính giả chỉ
+    # là "ô bị chặn/redact để người xem lại tay" (không xoá âm thầm một phần văn
+    # bản như policy_engine), nên bắt LUÔN mọi ngày dd/mm/yyyy (mọi dấu / - .) và
+    # yyyy-mm-dd (ISO) có năm 19xx/20xx, không đòi nhãn đứng trước.
+    "date": re.compile(
+        r"(?<!\d)(?:\d{1,2}[/\-.]\d{1,2}[/\-.](?:19|20)\d{2}"
+        r"|(?:19|20)\d{2}[/\-]\d{1,2}[/\-]\d{1,2})(?!\d)"
+    ),
     # CCCD/CMND viết theo NHÓM 3 chữ số cách nhau bởi khoảng trắng/chấm/gạch (cách viết
     # phổ biến trên giấy tờ thật, vd "012 345 678 901") — trước đây chỉ bắt chuỗi LIỀN.
     # ĐẶT TRƯỚC phone_vn có chủ đích: một CCCD 12 số bắt đầu bằng "0" cũng "trông giống"
@@ -141,7 +160,21 @@ def _header_issue(column: str) -> Optional[str]:
     return None
 
 
-def _scan_csv(path: Path, *, max_scan_rows: int = 5000) -> Dict[str, Any]:
+def _scan_csv(path: Path, *, max_scan_rows: int = 5000,
+              exempt_date_columns: frozenset = frozenset()) -> Dict[str, Any]:
+    """Quét CSV tìm PII. `exempt_date_columns` (tên cột đã CHUẨN HOÁ qua
+    `_normalize_header`) là NGOẠI LỆ CÓ CHỦ Ý, TẮT theo mặc định: chỉ bỏ qua mẫu
+    "date" — vẫn quét đủ mọi mẫu khác (email/SĐT/CCCD) — cho đúng những cột mà một
+    NGƯỜI GỌI đã tường minh khai là biến ngày lâm sàng cần giữ (vd `visit_date` đã
+    khai `"type": "date"` trong data dictionary). Không truyền gì = hành vi CŨ,
+    không đổi cho bất kỳ lời gọi nào chưa cập nhật.
+
+    VÌ SAO CẦN (08/09/2026): mẫu "date" trong VALUE_PATTERNS (thêm 04/09, chặn
+    ngày ẩn trong ô ghi chú tự do — đúng, phải giữ) áp dụng cho MỌI cột không phân
+    biệt, nên một cột ngày khám đã khai kiểu "date" trong dictionary — dữ liệu
+    NGHIÊN CỨU cần giữ, không phải PII rò rỉ — vẫn bị chặn y hệt PII thật. Tham số
+    này KHÔNG áp cho `import_dataset()` khi gọi trực tiếp trên file THÔ (mặc định
+    rỗng ở đó) — chỉ có tác dụng khi CALLER tường minh biết cột nào là ngày đã khai."""
     issues: List[Dict[str, Any]] = []
     row_count = 0
     columns: List[str] = []
@@ -185,7 +218,10 @@ def _scan_csv(path: Path, *, max_scan_rows: int = 5000) -> Dict[str, Any]:
                         text = str(value or "").strip()
                         if not text:
                             continue
+                        col_is_exempt_date = _normalize_header(col) in exempt_date_columns
                         for label, pattern in VALUE_PATTERNS.items():
+                            if label == "date" and col_is_exempt_date:
+                                continue
                             if pattern.search(text):
                                 issues.append({
                                     "severity": "blocker",
@@ -285,8 +321,14 @@ def _update_study_meta(out_dir: Path, manifest: Dict[str, Any], manifest_path: P
 
 def import_dataset(study: str, data_path: Path, *,
                    exports_root: Optional[Path] = None,
-                   max_scan_rows: int = 5000) -> Dict[str, Any]:
-    """Nhập 1 CSV đã khử định danh. Trả manifest máy-đọc-được."""
+                   max_scan_rows: int = 5000,
+                   exempt_date_columns: frozenset = frozenset()) -> Dict[str, Any]:
+    """Nhập 1 CSV đã khử định danh. Trả manifest máy-đọc-được.
+
+    `exempt_date_columns`: xem docstring `_scan_csv`. RỖNG theo mặc định — file
+    THÔ đi thẳng vào cổng này (không qua pseudonymize trước) vẫn bị quét NGHIÊM
+    NGẶT như cũ; chỉ `pseudonymize_dataset(..., then_import=True)` mới truyền vào,
+    vì CHỈ nơi đó mới biết cột nào đã được khai là biến ngày lâm sàng hợp lệ."""
     study_id = _sanitize_study(study)
     data_path = Path(data_path)
     exports_root = Path(exports_root) if exports_root else BASE / "exports"
@@ -313,7 +355,8 @@ def import_dataset(study: str, data_path: Path, *,
         })
         profile = {"rows": 0, "columns": [], "issues": issues}
     else:
-        profile = _scan_csv(data_path, max_scan_rows=max_scan_rows)
+        profile = _scan_csv(data_path, max_scan_rows=max_scan_rows,
+                            exempt_date_columns=exempt_date_columns)
         issues = list(profile["issues"])
 
     query_log = out_dir / "04_query_logs" / "data_intake_query_log.csv"

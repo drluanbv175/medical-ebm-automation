@@ -104,7 +104,7 @@ template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIA
 | `nghien-cuu-dinh-tinh` | G0 (chọn paradigm/cách tiếp cận) → G7 (COREQ/SRQR khi viết) — sửa 2026-07-26, vòng lặp vòng 31, phát hiện MEDIUM: bản cũ ghi "G1" không khớp 2 điểm gọi thật trong `dieu-phoi-nghien-cuu.md` | hỗ trợ vai 1/4 | COREQ/SRQR — không thuộc 1 trong 20 file gốc (SPEC không có cấu phần định tính riêng) |
 | `kinh-te-y-te` | G1 (thiết kế cấu phần chi phí) · G7 (bàn luận) | hỗ trợ vai 3 | CHEERS 2022/ISPOR BIA GPP II — SPEC gốc không có nhánh kinh tế y tế |
 | `dien-giai-ket-qua` | G6→G7 (sau phân tích, trước viết Bàn luận) | hỗ trợ vai 2/3 | Cầu nối `phan-tich-thong-ke`→`viet-ban-thao`; SPEC gốc gộp việc này vào Manuscript (A11), không tách agent riêng |
-| `tham-dinh-do-chinh-xac-chan-doan` | G0–G1 (thẩm định 1 bài) — **thuộc Cụm Lâm sàng theo README.md**, không phải 1/28 agent Cụm Nghiên cứu | hỗ trợ vai 2 (song song `tham-dinh-phe-binh`) | Thêm 2026-07-04; làm thẩm định NGHIÊN CỨU độ chính xác chẩn đoán (QUADAS-2/STARD) dù xếp cụm lâm sàng — dùng được cả khi thẩm định 1 bài cho đề tài nghiên cứu |
+| `tham-dinh-do-chinh-xac-chan-doan` | G0–G1 (thẩm định 1 bài) — **thuộc Cụm Lâm sàng theo README.md**, không phải 1/28 agent Cụm Nghiên cứu | hỗ trợ vai 2 (song song `tham-dinh-phe-binh`) | Thẩm định NGHIÊN CỨU độ chính xác chẩn đoán bằng QUADAS-3 hiện hành + STARD/STARD-AI; QUADAS-2/QUADAS-C chỉ tương thích ngược |
 
 ---
 

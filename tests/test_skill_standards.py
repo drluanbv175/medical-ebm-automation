@@ -18,13 +18,37 @@ import skill_standards as S  # noqa: E402
 
 
 class TestCanonShape:
-    def test_16_de_cuong_sections(self):
-        assert len(S.DE_CUONG_SECTIONS) == 16
+    def test_18_de_cuong_sections(self):
+        # NÂNG 16 → 18 (06/09/2026): thêm §3 Tổng quan & khung lý thuyết, §13 Dự kiến
+        # kết quả & khung bảng trống. Số hiệu phải liên tục 1..18 đúng thứ tự.
+        assert len(S.DE_CUONG_SECTIONS) == 18
+        assert [num for num, _, _ in S.DE_CUONG_SECTIONS] == [
+            str(i) for i in range(1, 19)
+        ]
+        assert S.DE_CUONG_SECTIONS[2][1] == "Tổng quan tài liệu và khung lý thuyết"
+        assert S.DE_CUONG_SECTIONS[12][1] == "Dự kiến kết quả và khung bảng trống"
 
-    def test_20_protocol_core_items(self):
-        assert len(S.PROTOCOL_CORE_ITEMS) == 20
+    def test_section_keys_align_and_helpers_render_canonical_numbers(self):
+        assert len(S.DE_CUONG_SECTION_KEYS) == len(S.DE_CUONG_SECTIONS)
+        assert S.de_cuong_heading("tongquan") == "# 3. Tổng quan tài liệu và khung lý thuyết"
+        assert S.de_cuong_heading("tltk") == "# 18. Tài liệu tham khảo Vancouver/NLM"
+        assert S.de_cuong_sub_heading("muctieu", 0) == "## 5.1. Mục tiêu chung"
+        assert S.de_cuong_sub_heading("doituong", 2) == "## 7.3. Tuyển mẫu"
+        # Tiểu mục phải mang đúng số của mục cha (bắt lỗi đánh số lại thiếu tiểu mục).
+        for num, _title, subs in S.DE_CUONG_SECTIONS:
+            for sub in subs:
+                assert sub.startswith(f"{num}."), f"tiểu mục '{sub}' lệch số mục cha {num}"
+        import pytest
+        with pytest.raises(KeyError):
+            S.de_cuong_heading("khong_ton_tai")
+
+    def test_24_protocol_core_items(self):
+        # 20 → 23 (06/09/2026): P21 tổng quan, P22 khung lý thuyết, P23 dự kiến kết quả.
+        # 23 → 24 (06/09/2026, cùng ngày): P24 can thiệp/đối chứng/ngẫu nhiên hoá
+        # (chỉ RCT). Mã P là hợp đồng dữ liệu: chỉ thêm cuối, không đánh số lại.
+        assert len(S.PROTOCOL_CORE_ITEMS) == 24
         assert [item_id for item_id, _ in S.PROTOCOL_CORE_ITEMS] == [
-            f"P{i:02d}" for i in range(1, 21)
+            f"P{i:02d}" for i in range(1, 25)
         ]
 
     def test_six_hard_gates_match_runtime_contract(self):

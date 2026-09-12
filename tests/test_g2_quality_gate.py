@@ -330,10 +330,10 @@ def test_cli_g2_ethics_committee_ref_flag_records_explicit_source(tmp_path):
         package_path.write_text(_package(), encoding="utf-8", newline="\n")
         _write_registration(study_dir, study)
         (study_dir / "G1_checkpoint.json").write_text(
-            json.dumps(_g1_confirmed(), ensure_ascii=False), encoding="utf-8"
+            json.dumps(_g1_confirmed(), ensure_ascii=False), encoding="utf-8", newline="\n"
         )
         (study_dir / "study_meta.json").write_text(
-            json.dumps(_meta(), ensure_ascii=False), encoding="utf-8"
+            json.dumps(_meta(), ensure_ascii=False), encoding="utf-8", newline="\n"
         )
         (study_dir / "G2_checkpoint.json").write_text(
             json.dumps({
@@ -344,7 +344,7 @@ def test_cli_g2_ethics_committee_ref_flag_records_explicit_source(tmp_path):
                 "guardrail": {"passed": True, "errors": []},
                 "artifacts": {"A3_markdown": str(package_path)},
             }, ensure_ascii=False),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         key_path = tmp_path / "gate_approval_key"
         key_path.write_text("pytest-g2-ethics-ref-key", encoding="utf-8", newline="\n")
@@ -555,11 +555,11 @@ def test_human_cli_valid_g2_flow_updates_checkpoint_to_pass(tmp_path):
         _write_registration(study_dir, study)
         (study_dir / "G1_checkpoint.json").write_text(
             json.dumps(_g1_confirmed(), ensure_ascii=False),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         (study_dir / "study_meta.json").write_text(
             json.dumps(_meta(), ensure_ascii=False),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         (study_dir / "G2_checkpoint.json").write_text(
             json.dumps({
@@ -570,7 +570,7 @@ def test_human_cli_valid_g2_flow_updates_checkpoint_to_pass(tmp_path):
                 "guardrail": {"passed": True, "errors": []},
                 "artifacts": {"A3_markdown": str(package_path)},
             }, ensure_ascii=False),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         key_path = tmp_path / "gate_approval_key"
         key_path.write_text("pytest-g2-quality-key", encoding="utf-8", newline="\n")

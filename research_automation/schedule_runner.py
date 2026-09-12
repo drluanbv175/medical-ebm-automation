@@ -14,6 +14,7 @@ import pathlib
 from typing import List, Optional
 
 from runtime.agent_registry import (
+    IN_REPO_MANIFEST_PATH,
     MANIFEST_SELF_CHECK_SHA256,
     MINIMUM_AGENT_COUNT,
     REQUIRED_AGENTS,
@@ -51,7 +52,15 @@ def check_manifest_integrity(expected_sha: Optional[str] = None) -> JobReport:
     if actual != expected:
         ok = False
         findings.append(f"MANIFEST_HASH_MISMATCH:{actual[:12]}!={expected[:12]}")
-    in_repo = "medical-ebm-automation/runtime/manifests" in str(mb).replace("\\", "/")
+    # Vá 2026-09-06 (audit vòng 38, phát hiện #4): bản cũ so chuỗi con
+    # "medical-ebm-automation/runtime/manifests" — literal TÊN THƯ MỤC
+    # checkout, không phải vị trí thật của manifest. Repo clone/checkout vào
+    # thư mục tên khác (fork, CI runner, worktree, mount point đổi tên) khiến
+    # manifest ĐÚNG NỘI DUNG/HASH vẫn bị báo MANIFEST_NOT_IN_REPO — false
+    # positive không liên quan gì tới toàn vẹn thật của file. So sánh bằng vị
+    # trí thật (IN_REPO_MANIFEST_PATH tính từ Path(__file__) của chính
+    # agent_registry.py, không phụ thuộc tên thư mục checkout).
+    in_repo = mb.resolve() == IN_REPO_MANIFEST_PATH.resolve()
     if not in_repo:
         ok = False
         findings.append("MANIFEST_NOT_IN_REPO")

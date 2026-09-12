@@ -123,7 +123,7 @@ def _grade_source(r) -> str:
             "KHÔNG phải phân hạng GRADE chính thức của nguồn")
 
 
-def _reference(r) -> str:
+def _reference(r, resolved: Optional[set] = None) -> str:
     parts = []
     if r.authors:
         parts.append(str(r.authors).strip().rstrip("."))
@@ -134,7 +134,15 @@ def _reference(r) -> str:
     if tail:
         parts.append(tail)
     ids = []
-    if r.pmid:
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #92, vòng 7) — bản
+    # gốc luôn thêm "PMID {r.pmid}" vào đây bất kể `resolve_pmids()` có xác
+    # minh được hay không, trong khi `item["pmid"]` (ở `_item_to_data()`)
+    # đã đúng khi CHỈ gắn PMID nếu `resolved is None or str(r.pmid) in
+    # resolved`. Một PMID không phân giải được (giả/sai) vì thế bị SUPPRESS
+    # đúng ở `item["pmid"]` nhưng vẫn hiện NGUYÊN VĂN trong `references` —
+    # đúng trường mà comment tại chỗ gọi là "để truy nguyên" — như thể đã
+    # được xác minh. Áp CÙNG điều kiện gating ở đây.
+    if r.pmid and (resolved is None or str(r.pmid) in resolved):
         ids.append(f"PMID {r.pmid}")
     if r.doi:
         ids.append(f"doi:{r.doi}")
@@ -234,7 +242,7 @@ def _item_to_data(r, idx: int, resolved: Optional[set] = None, vi: bool = True) 
         "monitoring": _vi(sig_en, vi) or "Theo dõi theo nguồn gốc.",
         "vn": "[CẦN XÁC NHẬN TẠI ĐƠN VỊ] đối chiếu sẵn có thuốc/xét nghiệm, chi phí/BHYT, "
               "phác đồ Bộ Y tế và năng lực tuyến khám trước khi áp dụng.",
-        "references": [_reference(r)],  # references GIỮ nguyên văn (Vancouver) để truy nguyên
+        "references": [_reference(r, resolved)],  # references GIỮ nguyên văn (Vancouver) để truy nguyên
     }
     # Hiệu số có cấu trúc -> số gọn + forest plot (template tự vẽ). KHÔNG dịch (là số).
     if eff:

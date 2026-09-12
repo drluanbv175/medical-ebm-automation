@@ -111,9 +111,18 @@ def _g4_sections_still_draft(content: str) -> list[str]:
     """Trả về danh sách mục §N BẮT BUỘC của SAP còn placeholder '[CẦN' chưa
     điền. Thiết kế không có một mục nào đó (vd định tính dùng §5 CHIẾN LƯỢC
     MÃ HÓA thay vì PHÂN TÍCH ĐA BIẾN — vẫn đánh số §5) không bị coi là lỗi
-    riêng biệt; chỉ mục THẬT SỰ tồn tại mà còn placeholder mới bị chặn."""
+    riêng biệt; chỉ mục THẬT SỰ tồn tại mà còn placeholder mới bị chặn.
+
+    NGOẠI LỆ (BH97, 02/09/2026): nếu KHÔNG MỘT mục bắt buộc nào được tìm thấy
+    trong toàn bộ tài liệu, đây không còn là "thiết kế bỏ qua một vài mục" —
+    đó là một tài liệu RỖNG hoặc sai khuôn hoàn toàn. `if start is None:
+    continue` cũ để lọt trường hợp này (0/4 mục ⇒ still_draft=[] ⇒ SAP rỗng
+    ký được), và chữ ký mật mã của G4 chỉ bảo vệ TOÀN VẸN nội dung đã ký,
+    không bảo đảm nội dung đó KHÔNG RỖNG. Ranh giới: VẮNG MỘT VÀI mục (cho
+    qua, biến thể thiết kế hợp lệ) khác VẮNG SẠCH toàn bộ (chặn)."""
     lines = content.splitlines()
     still_draft = []
+    tim_thay = 0
     for section_num, label in _G4_REQUIRED_SECTIONS.items():
         start = None
         for i, line in enumerate(lines):
@@ -122,6 +131,7 @@ def _g4_sections_still_draft(content: str) -> list[str]:
                 break
         if start is None:
             continue
+        tim_thay += 1
         end = len(lines)
         for j in range(start + 1, len(lines)):
             if re.match(r'^#{2,3}\s+§\d', lines[j]):
@@ -130,6 +140,9 @@ def _g4_sections_still_draft(content: str) -> list[str]:
         body = "\n".join(lines[start:end])
         if "[CẦN" in body:
             still_draft.append(f"{section_num} ({label})")
+    if tim_thay == 0:
+        return [f"{so_muc} ({nhan}) — VẮNG SẠCH, tài liệu không có mục bắt buộc nào"
+                for so_muc, nhan in _G4_REQUIRED_SECTIONS.items()]
     return still_draft
 
 
@@ -155,14 +168,37 @@ def _prepare_g2_attestation(
     Trả ``(nội_dung_mới, lỗi)``. Hàm không ký và không ghi ledger.
     """
     errors: list[str] = []
-    try:
-        artifact_path.resolve().relative_to(study_dir.resolve())
-    except ValueError:
-        errors.append("Artifact G2 phải nằm trong đúng thư mục exports/<study>")
 
+    # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2): trước đây kiểm tra
+    # containment (nằm-trong-cây study_dir) ∧ tên file — nghĩa là một file MANG
+    # ĐÚNG TÊN canonical đặt trong một THƯ MỤC CON bất kỳ của study_dir (vd
+    # exports/<study>/thu-muc-con/G2_A3_ETHICS_PACKAGE_<study>.md) vẫn qua được,
+    # trong khi vị trí canonical thật (out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    # — nơi DUY NHẤT mà g2/g5/g9/g10_quality_gate.py, run_g6_auto.py,
+    # run_stats_analysis.py, gen_research_docx.py đọc, không glob) chưa từng bị
+    # đụng tới. Ký thành công trên file decoy đó ghi một bản ghi ledger đã niêm
+    # phong với evidence_hash KHÔNG khớp nội dung file canonical — đúng loại
+    # "nhiễu sổ audit" mà chốt full-path của G4/G5/G8/G9/G10 sinh ra để chặn,
+    # nhưng G2 bị bỏ sót vì bị coi nhầm là "đã có cơ chế tương đương". Nay đổi
+    # ĐIỀU KIỆN QUYẾT ĐỊNH thành so khớp TOÀN ĐƯỜNG DẪN, cùng khuôn 5 cổng kia;
+    # giữ hai thông điệp lỗi riêng biệt (ngoài cây hoàn toàn vs đúng cây nhưng
+    # sai vị trí/tên) để dễ chẩn đoán hơn khi bị từ chối.
     expected_name = f"G2_A3_ETHICS_PACKAGE_{args.study}.md"
-    if artifact_path.name != expected_name:
-        errors.append(f"Artifact G2 phải là {expected_name}")
+    expected_artifact = study_dir / expected_name
+    try:
+        artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
+    except OSError:
+        artifact_matches = False
+    if not artifact_matches:
+        try:
+            artifact_path.resolve().relative_to(study_dir.resolve())
+        except (OSError, ValueError):
+            errors.append("Artifact G2 phải nằm trong đúng thư mục exports/<study>")
+        else:
+            errors.append(
+                f"Artifact G2 phải là {expected_name} trong đúng thư mục đề tài "
+                "(không được ở thư mục con)"
+            )
 
     required = (
         ("g2_approval_number", "số quyết định/phê duyệt IRB"),
@@ -454,7 +490,60 @@ def main() -> int:
             print("   Không ghi ledger; xử lý hết mục BLOCK/REVIEW ở trên trước khi ký.")
             return 1
 
+    # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, phát hiện phụ, LOW):
+    # khối trên chỉ chạy khi decision=="APPROVED" — với REJECTED/CONDITIONAL,
+    # G2 (và tương tự G5/G8/G9/G10 bên dưới) trước đây KHÔNG kiểm tra --artifact
+    # nào cả: ký được với MỘT FILE BẤT KỲ, ở BẤT KỲ ĐÂU trên đĩa, nội dung không
+    # liên quan gì tới hồ sơ đang bị từ chối, vẫn ghi ledger + niêm phong thành
+    # công. Không mở được cổng (REJECTED không bao giờ làm ledger_approved() trả
+    # True) nhưng evidence_hash của một bản ghi THU HỒI mất hết ý nghĩa "nội dung
+    # nào bị từ chối" — sổ audit không còn trả lời được câu đó. File canonical vẫn
+    # là đại diện DUY NHẤT hợp lệ cho MỌI quyết định trên cổng này, kể cả từ chối,
+    # nên vẫn ràng buộc path — không gọi lại _prepare_g2_attestation (chỉ dành cho
+    # APPROVED: đòi đủ metadata phê duyệt IRB và ghi attestation vào file, vô nghĩa
+    # khi từ chối).
+    if args.gate == "G2" and args.decision != "APPROVED":
+        expected_artifact = study_dir / f"G2_A3_ETHICS_PACKAGE_{args.study}.md"
+        try:
+            artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
+        except OSError:
+            artifact_matches = False
+        if not artifact_matches:
+            print(
+                "✗ TỪ CHỐI ghi quyết định G2 — artifact phải là "
+                f"{expected_artifact.name} trong đúng thư mục đề tài."
+            )
+            print("   Quyết định (kể cả từ chối) phải ràng buộc vào đúng hồ sơ đạo đức, không phải file tự chọn.")
+            return 1
+
     if args.gate == "G4":
+        # THÊM 2026-09-03 (Workflow đối kháng đa-agent): nhánh G4 là nhánh DUY NHẤT
+        # trong 6 cổng cứng thiếu phép so khớp đường dẫn artifact canonical mà
+        # G5/G8/G9/G10 đều có (G2 có cơ chế tương đương qua _prepare_g2_attestation,
+        # SỬA 2026-09-04: nay full-path cho cả APPROVED lẫn REJECTED/CONDITIONAL).
+        # Không có chốt này thì --artifact <file bất kỳ> vẫn ký được: chữ ký/con dấu
+        # đúng về mặt mật mã nhưng evidence_hash không khớp NỘI DUNG SAP THẬT — phá
+        # vỡ bất biến "evidence_hash = SHA256 của ĐÚNG nội dung file --artifact" mà
+        # chính docstring đầu file này tuyên bố áp dụng cho MỌI cổng. G4Q.evaluate_
+        # study() bên dưới vẫn đọc đúng SAP thật (đường dẫn canonical, tách khỏi
+        # evidence_content) nên hướng lệch là fail-closed (G4 không bao giờ LOCKED),
+        # nhưng một bản ghi ràng buộc-sai-nội-dung vẫn nằm vĩnh viễn trong sổ cái đã
+        # niêm phong, gây nhiễu sổ audit. Đặt TRƯỚC _g4_sections_still_draft, không
+        # gắn điều kiện decision=="APPROVED" (khác G5/G8/G9/G10): SAP là artifact
+        # DUY NHẤT hợp lệ cho cổng này bất kể quyết định ký hay từ chối.
+        expected_artifact = study_dir / G4Q.sap_artifact_name(args.study)
+        try:
+            artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
+        except OSError:
+            artifact_matches = False
+        if not artifact_matches:
+            print(
+                "✗ TỪ CHỐI ký G4 — artifact phải là "
+                f"{expected_artifact.name} trong đúng thư mục đề tài."
+            )
+            print("   Không cho dùng file tự chọn để thay thế SAP thật đã khóa.")
+            return 1
+
         still_draft = _g4_sections_still_draft(evidence_content)
         if still_draft:
             print("✗ TỪ CHỐI ký G4 — SAP còn placeholder '[CẦN' chưa điền ở mục bắt buộc:")
@@ -492,7 +581,14 @@ def main() -> int:
                 print("   Không ghi ledger; xử lý hết mục BLOCK/REVIEW ở trên trước khi ký.")
                 return 1
 
-    if args.gate == "G5" and args.decision == "APPROVED":
+    if args.gate == "G5":
+        # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, LOW): chốt path
+        # trước đây chỉ chạy khi APPROVED — REJECTED/CONDITIONAL ký được với
+        # MỘT FILE BẤT KỲ (kể cả ngoài exports/<study>), làm evidence_hash của
+        # bản ghi thu hồi mất ý nghĩa "nội dung nào bị từ chối". Nay ràng buộc
+        # path KHÔNG điều kiện theo decision; chấm chất lượng (G5Q.evaluate_
+        # study) vẫn CHỈ chạy khi APPROVED — chấm tiêu chí "sẵn sàng khóa" cho
+        # một quyết định từ chối là vô nghĩa.
         expected_artifact = study_dir / "G5_checkpoint.json"
         try:
             artifact_matches = (
@@ -502,39 +598,40 @@ def main() -> int:
             artifact_matches = False
         if not artifact_matches:
             print(
-                "✗ TỪ CHỐI ký G5 — artifact phải là "
+                "✗ TỪ CHỐI ghi quyết định G5 — artifact phải là "
                 f"{expected_artifact.name} trong đúng thư mục đề tài."
             )
             print("   Không cho dùng file tự chọn để thay thế hồ sơ khóa dữ liệu.")
             return 1
-        try:
-            g5_report = G5Q.evaluate_study(
-                args.study,
-                study_dir,
-                repo_root=Path(__file__).resolve().parents[1],
-                write=False,
-            )
-        except (OSError, ValueError, json.JSONDecodeError) as exc:
-            print(f"✗ TỪ CHỐI ký G5 — không thẩm định được hồ sơ: {exc}")
-            return 1
-        if g5_report.get("status") != G5Q.STATUS_READY:
-            print(
-                "✗ TỪ CHỐI ký G5 — hồ sơ chưa ở trạng thái "
-                f"{G5Q.STATUS_READY}."
-            )
-            print(f"   Trạng thái hiện tại: {g5_report.get('status', 'UNKNOWN')}")
-            blocked = [
-                item
-                for item in g5_report.get("automatic_criteria", [])
-                if item.get("status") == "BLOCK"
-            ]
-            for item in blocked[:10]:
-                print(
-                    f"   - {item.get('id')}: {item.get('label')} "
-                    f"({item.get('evidence')})"
+        if args.decision == "APPROVED":
+            try:
+                g5_report = G5Q.evaluate_study(
+                    args.study,
+                    study_dir,
+                    repo_root=Path(__file__).resolve().parents[1],
+                    write=False,
                 )
-            print("   Không ghi ledger; phải xử lý hết lỗi dữ liệu trước.")
-            return 1
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                print(f"✗ TỪ CHỐI ký G5 — không thẩm định được hồ sơ: {exc}")
+                return 1
+            if g5_report.get("status") != G5Q.STATUS_READY:
+                print(
+                    "✗ TỪ CHỐI ký G5 — hồ sơ chưa ở trạng thái "
+                    f"{G5Q.STATUS_READY}."
+                )
+                print(f"   Trạng thái hiện tại: {g5_report.get('status', 'UNKNOWN')}")
+                blocked = [
+                    item
+                    for item in g5_report.get("automatic_criteria", [])
+                    if item.get("status") == "BLOCK"
+                ]
+                for item in blocked[:10]:
+                    print(
+                        f"   - {item.get('id')}: {item.get('label')} "
+                        f"({item.get('evidence')})"
+                    )
+                print("   Không ghi ledger; phải xử lý hết lỗi dữ liệu trước.")
+                return 1
 
     # THÊM 2026-08-24 (audit đa-agent G0-G10, phát hiện NGHIÊM TRỌNG): G8 (bình
     # duyệt độc lập) trước đây KHÔNG có bất kỳ chốt chất lượng nào — g8_quality_
@@ -550,7 +647,9 @@ def main() -> int:
     # REVIEW_SIGNATURE, đúng tên gọi). STATUS_READY (READY_FOR_INDEPENDENT_REVIEW)
     # nghĩa là CHƯA có bản nhận xét phản biện thật — vẫn bị từ chối, vì mục đích
     # của chốt này chính là đòi bản nhận xét thật tồn tại trước khi cho ký.
-    if args.gate == "G8" and args.decision == "APPROVED":
+    if args.gate == "G8":
+        # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, LOW): path check
+        # nay KHÔNG điều kiện theo decision (cùng lý do đã ghi ở nhánh G5).
         expected_artifact = study_dir / G8Q.presubmission_artifact_name(args.study)
         try:
             artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
@@ -558,37 +657,40 @@ def main() -> int:
             artifact_matches = False
         if not artifact_matches:
             print(
-                "✗ TỪ CHỐI ký G8 — artifact phải là "
+                "✗ TỪ CHỐI ghi quyết định G8 — artifact phải là "
                 f"{expected_artifact.name} trong đúng thư mục đề tài."
             )
             print("   Chỉ bản tự kiểm G0-G7 này ràng buộc đúng nội dung được bình duyệt.")
             return 1
-        try:
-            g8_report = G8Q.evaluate_study(
-                args.study,
-                study_dir,
-                repo_root=Path(__file__).resolve().parents[1],
-                write=False,
-            )
-        except (OSError, ValueError, json.JSONDecodeError) as exc:
-            print(f"✗ TỪ CHỐI ký G8 — không thẩm định được hồ sơ: {exc}")
-            return 1
-        _g8_status = g8_report.get("status")
-        if _g8_status not in (G8Q.STATUS_PENDING, G8Q.STATUS_REVIEWED):
-            print(
-                "✗ TỪ CHỐI ký G8 — hồ sơ chưa sẵn sàng để ký "
-                f"(trạng thái hiện tại: {_g8_status or 'UNKNOWN'})."
-            )
-            if _g8_status == G8Q.STATUS_READY:
-                print("   Thiếu bản nhận xét phản biện THẬT (G8_PEER_REVIEW_REPORT_<study>.md)")
-                print("   — máy KHÔNG được tự sinh nội dung này thay người phản biện.")
-            for item in g8_report.get("automatic_criteria", []):
-                if item.get("status") != "PASS":
-                    print(f"   - {item.get('id')}: {item.get('label')} ({item.get('evidence')})")
-            print("   Không ghi ledger; người phản biện phải hoàn tất bản nhận xét thật trước khi ký.")
-            return 1
+        if args.decision == "APPROVED":
+            try:
+                g8_report = G8Q.evaluate_study(
+                    args.study,
+                    study_dir,
+                    repo_root=Path(__file__).resolve().parents[1],
+                    write=False,
+                )
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                print(f"✗ TỪ CHỐI ký G8 — không thẩm định được hồ sơ: {exc}")
+                return 1
+            _g8_status = g8_report.get("status")
+            if _g8_status not in (G8Q.STATUS_PENDING, G8Q.STATUS_REVIEWED):
+                print(
+                    "✗ TỪ CHỐI ký G8 — hồ sơ chưa sẵn sàng để ký "
+                    f"(trạng thái hiện tại: {_g8_status or 'UNKNOWN'})."
+                )
+                if _g8_status == G8Q.STATUS_READY:
+                    print("   Thiếu bản nhận xét phản biện THẬT (G8_PEER_REVIEW_REPORT_<study>.md)")
+                    print("   — máy KHÔNG được tự sinh nội dung này thay người phản biện.")
+                for item in g8_report.get("automatic_criteria", []):
+                    if item.get("status") != "PASS":
+                        print(f"   - {item.get('id')}: {item.get('label')} ({item.get('evidence')})")
+                print("   Không ghi ledger; người phản biện phải hoàn tất bản nhận xét thật trước khi ký.")
+                return 1
 
-    if args.gate == "G9" and args.decision == "APPROVED":
+    if args.gate == "G9":
+        # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, LOW): path check
+        # nay KHÔNG điều kiện theo decision (cùng lý do đã ghi ở nhánh G5).
         expected_artifact = study_dir / G9Q.CHECKPOINT_JSON
         try:
             artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
@@ -596,37 +698,43 @@ def main() -> int:
             artifact_matches = False
         if not artifact_matches:
             print(
-                "✗ TỪ CHỐI ký G9 — artifact phải là "
+                "✗ TỪ CHỐI ghi quyết định G9 — artifact phải là "
                 f"{expected_artifact.name} trong đúng thư mục đề tài."
             )
             print("   Gói A10 riêng lẻ không ràng buộc manuscript/readiness/G8/A12.")
             return 1
-        try:
-            g9_report = G9Q.evaluate_study(
-                args.study,
-                study_dir,
-                repo_root=Path(__file__).resolve().parents[1],
-                write=False,
-            )
-        except (OSError, ValueError, json.JSONDecodeError) as exc:
-            print(f"✗ TỪ CHỐI ký G9 — không thẩm định được hồ sơ: {exc}")
-            return 1
-        if g9_report.get("status") != G9Q.STATUS_READY:
-            print(
-                "✗ TỪ CHỐI ký G9 — hồ sơ chưa ở trạng thái "
-                f"{G9Q.STATUS_READY}."
-            )
-            print(f"   Trạng thái hiện tại: {g9_report.get('status', 'UNKNOWN')}")
-            for item in g9_report.get("automatic_criteria", []):
-                if item.get("status") != "PASS":
-                    print(
-                        f"   - {item.get('id')}: {item.get('label')} "
-                        f"({item.get('evidence')})"
-                    )
-            print("   Không ghi ledger; PI phải kiểm đủ form thật của từng tác giả.")
-            return 1
+        if args.decision == "APPROVED":
+            try:
+                g9_report = G9Q.evaluate_study(
+                    args.study,
+                    study_dir,
+                    repo_root=Path(__file__).resolve().parents[1],
+                    write=False,
+                )
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                print(f"✗ TỪ CHỐI ký G9 — không thẩm định được hồ sơ: {exc}")
+                return 1
+            if g9_report.get("status") != G9Q.STATUS_READY:
+                print(
+                    "✗ TỪ CHỐI ký G9 — hồ sơ chưa ở trạng thái "
+                    f"{G9Q.STATUS_READY}."
+                )
+                print(f"   Trạng thái hiện tại: {g9_report.get('status', 'UNKNOWN')}")
+                for item in g9_report.get("automatic_criteria", []):
+                    if item.get("status") != "PASS":
+                        print(
+                            f"   - {item.get('id')}: {item.get('label')} "
+                            f"({item.get('evidence')})"
+                        )
+                print("   Không ghi ledger; PI phải kiểm đủ form thật của từng tác giả.")
+                return 1
 
-    if args.gate == "G10" and args.decision == "APPROVED":
+    if args.gate == "G10":
+        # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, LOW): path check
+        # nay KHÔNG điều kiện theo decision (cùng lý do đã ghi ở nhánh G5); phần
+        # chấm chất lượng + dọn needs_input/gate_status vẫn CHỈ chạy khi APPROVED
+        # (dọn trạng thái chờ trước khi ký là bước chuẩn bị cho việc KÝ, không áp
+        # dụng khi từ chối).
         expected_artifact = study_dir / G10Q.CHECKPOINT_JSON
         try:
             artifact_matches = artifact_path.resolve() == expected_artifact.resolve()
@@ -634,53 +742,54 @@ def main() -> int:
             artifact_matches = False
         if not artifact_matches:
             print(
-                "✗ TỪ CHỐI ký G10 — artifact phải là "
+                "✗ TỪ CHỐI ghi quyết định G10 — artifact phải là "
                 f"{expected_artifact.name} trong đúng thư mục đề tài."
             )
             print("   Chỉ checkpoint này ràng buộc manifest của toàn bộ gói phát hành.")
             return 1
-        try:
-            g10_report = G10Q.evaluate_study(
-                args.study,
-                study_dir,
-                repo_root=Path(__file__).resolve().parents[1],
-                write=False,
+        if args.decision == "APPROVED":
+            try:
+                g10_report = G10Q.evaluate_study(
+                    args.study,
+                    study_dir,
+                    repo_root=Path(__file__).resolve().parents[1],
+                    write=False,
+                )
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                print(f"✗ TỪ CHỐI ký G10 — không thẩm định được gói cuối: {exc}")
+                return 1
+            if g10_report.get("status") != G10Q.STATUS_READY:
+                print(
+                    "✗ TỪ CHỐI ký G10 — gói chưa ở trạng thái "
+                    f"{G10Q.STATUS_READY}."
+                )
+                print(f"   Trạng thái hiện tại: {g10_report.get('status', 'UNKNOWN')}")
+                for item in g10_report.get("automatic_criteria", []):
+                    if item.get("status") != "PASS":
+                        print(
+                            f"   - {item.get('id')}: {item.get('label')} "
+                            f"({item.get('evidence')})"
+                        )
+                print("   Không ghi ledger; PI phải rà đúng gói cuối và xử lý hết mục còn lại.")
+                return 1
+            # Dọn tín hiệu BLOCKED trước khi ký. Đây vẫn là thay đổi TRƯỚC chữ ký;
+            # manifest G10 không chứa chính checkpoint nên không tạo vòng hash.
+            # Sau bước này, hash ledger ràng buộc đúng bytes không còn needs_input cũ.
+            try:
+                g10_checkpoint = json.loads(artifact_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                print("✗ TỪ CHỐI ký G10 — không đọc được checkpoint để dọn trạng thái chờ.")
+                return 1
+            if not isinstance(g10_checkpoint, dict):
+                print("✗ TỪ CHỐI ký G10 — checkpoint không phải JSON object.")
+                return 1
+            g10_checkpoint.pop("needs_input", None)
+            g10_checkpoint["gate_status"] = G10Q.STATUS_READY
+            artifact_path.write_text(
+                json.dumps(g10_checkpoint, ensure_ascii=False, indent=2),
+                encoding="utf-8", newline="\n"
             )
-        except (OSError, ValueError, json.JSONDecodeError) as exc:
-            print(f"✗ TỪ CHỐI ký G10 — không thẩm định được gói cuối: {exc}")
-            return 1
-        if g10_report.get("status") != G10Q.STATUS_READY:
-            print(
-                "✗ TỪ CHỐI ký G10 — gói chưa ở trạng thái "
-                f"{G10Q.STATUS_READY}."
-            )
-            print(f"   Trạng thái hiện tại: {g10_report.get('status', 'UNKNOWN')}")
-            for item in g10_report.get("automatic_criteria", []):
-                if item.get("status") != "PASS":
-                    print(
-                        f"   - {item.get('id')}: {item.get('label')} "
-                        f"({item.get('evidence')})"
-                    )
-            print("   Không ghi ledger; PI phải rà đúng gói cuối và xử lý hết mục còn lại.")
-            return 1
-        # Dọn tín hiệu BLOCKED trước khi ký. Đây vẫn là thay đổi TRƯỚC chữ ký;
-        # manifest G10 không chứa chính checkpoint nên không tạo vòng hash.
-        # Sau bước này, hash ledger ràng buộc đúng bytes không còn needs_input cũ.
-        try:
-            g10_checkpoint = json.loads(artifact_path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-            print("✗ TỪ CHỐI ký G10 — không đọc được checkpoint để dọn trạng thái chờ.")
-            return 1
-        if not isinstance(g10_checkpoint, dict):
-            print("✗ TỪ CHỐI ký G10 — checkpoint không phải JSON object.")
-            return 1
-        g10_checkpoint.pop("needs_input", None)
-        g10_checkpoint["gate_status"] = G10Q.STATUS_READY
-        artifact_path.write_text(
-            json.dumps(g10_checkpoint, ensure_ascii=False, indent=2),
-            encoding="utf-8", newline="\n"
-        )
-        evidence_content = artifact_path.read_text(encoding="utf-8")
+            evidence_content = artifact_path.read_text(encoding="utf-8")
 
     ledger_path = study_dir / "approval_ledger.json"
 

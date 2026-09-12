@@ -33,11 +33,21 @@ def parse_drug_list(text: str) -> List[str]:
 
 
 def warning_style(wtype: str) -> Tuple[str, str]:
-    """Trả (nhãn hiển thị, biến màu nền) cho một loại cảnh báo thuốc."""
+    """Trả (nhãn hiển thị, biến màu nền) cho một loại cảnh báo thuốc.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 12) — thêm "warning": loại này do
+    `DrugSafetyChecker.screen_pair()` (app/integrations/drug_interactions.py) sinh ra cho
+    mục "warnings_and_cautions"/"warnings" của nhãn openFDA, nhưng trước đây KHÔNG có
+    entry riêng ở đây nên rơi vào fallback trung tính (wtype, "#F1EFE8") — cùng màu xám
+    dùng cho "not_found"/"lookup_failed" — khiến một cảnh báo/thận trọng CÓ THẬT trên nhãn
+    thuốc hiển thị y hệt "không tra được", và nhãn hiện ra là chuỗi nội bộ "warning" thay
+    vì tiếng Việt.
+    """
     return {
         "boxed_warning": ("Cảnh báo đóng khung", "#FCEBEB"),
         "contraindication": ("Chống chỉ định", "#FCEBEB"),
         "interaction": ("Tương tác — cần rà", "#FAEEDA"),
+        "warning": ("Cảnh báo/thận trọng — cần rà", "#FAEEDA"),
         "not_found": ("Không tìm thấy nhãn", "#F1EFE8"),
         "lookup_failed": ("Lỗi tra cứu", "#F1EFE8"),
     }.get(wtype, (wtype, "#F1EFE8"))
@@ -71,7 +81,13 @@ def _tab_drug(st) -> None:
             except Exception as exc:  # noqa: BLE001
                 st.error(f"Lỗi tra cứu: {exc}")
                 return
-        flags = [w for w in warns if w["type"] in ("interaction", "contraindication", "boxed_warning")]
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 12) — thêm "warning": trước đây
+        # thiếu loại này nên một cảnh báo/thận trọng THẬT từ nhãn openFDA (mục
+        # warnings_and_cautions/warnings, screen_pair() ở drug_interactions.py) vẫn hiện
+        # banner XANH "Không có cờ" ngay phía trên chính cảnh báo đó — mâu thuẫn trực tiếp
+        # với nội dung hiển thị bên dưới.
+        flags = [w for w in warns
+                 if w["type"] in ("interaction", "contraindication", "boxed_warning", "warning")]
         if not flags:
             st.success(f"Không có cờ từ nhãn openFDA cho: {', '.join(drugs)} "
                        "(KHÔNG kết luận an toàn — cần bác sĩ kiểm chứng).")

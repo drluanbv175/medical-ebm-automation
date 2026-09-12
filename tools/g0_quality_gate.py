@@ -693,6 +693,17 @@ def refresh_checkpoint(*, study: str, out_dir: Path,
     out_dir = Path(out_dir)
     checkpoint_path = out_dir / "G0_checkpoint.json"
     checkpoint = _read_json(checkpoint_path)
+    # Vá 2026-09-06 (audit vòng 33, phát hiện #1 — CRITICAL): mọi cổng chị em
+    # (G1/G2/G3/G4/G5/G8/G9) ghi "quality_contract_version" Ở CẤP CAO NHẤT của
+    # checkpoint (sibling của "quality_gate"), và tools/g10_quality_gate.py
+    # (G10-AUTO-02B) đọc ĐÚNG khóa cấp cao đó để quyết định checkpoint có
+    # "hiện hành" hay "lịch sử" (legacy). Trước bản vá, G0 CHỈ ghi
+    # "contract_version" LỒNG bên trong "quality_gate" — không bao giờ có khóa
+    # cấp cao — nên G10 luôn xếp G0 vào legacy_quality dù đề tài đã
+    # PASS_G0_CONFIRMED thật, khiến modern_quality_ok/non_pi_pending không bao
+    # giờ đạt và G10 KHÔNG BAO GIỜ đạt READY_FOR_G10_PI_RELEASE_APPROVAL cho
+    # bất kỳ đề tài nào — cổng phát hành cuối cùng bị chặn oan vĩnh viễn.
+    checkpoint["quality_contract_version"] = QUALITY_CONTRACT_VERSION
     checkpoint["quality_gate"] = {
         "status": report["status"],
         "contract_version": report.get("contract_version"),
@@ -702,10 +713,26 @@ def refresh_checkpoint(*, study: str, out_dir: Path,
     }
     # Không để needs_input (PICO chưa chốt) ghi đè needs_input NẶNG HƠN đã có
     # (0 PMID) — mirror đúng guard `if not blocked and ...` của run_g0_auto.py.
-    existing_reason = ((checkpoint.get("needs_input") or {}).get("reason_code"))
+    existing = checkpoint.get("needs_input")
+    existing = existing if isinstance(existing, dict) else {}
+    existing_reason = existing.get("reason_code")
     already_blocked_on_pubmed = existing_reason == GC.REASON_MISSING_PUBMED
     if report.get("needs_input") and not already_blocked_on_pubmed:
         checkpoint["needs_input"] = report["needs_input"]
+    elif (report.get("status") == STATUS_CONFIRMED and existing.get("blocked")
+          and existing_reason == GC.REASON_MISSING_PICO):
+        # SỬA 02/09/2026 (kiểm chi tiết 5 trục, lần chạy đầu trên C1a): bác sĩ đã chốt
+        # PICO — hợp đồng trả PASS_G0_CONFIRMED — nhưng cờ chặn MISSING_PICO từ lượt chạy
+        # đầu vẫn nằm lại trong checkpoint ⇒ GC.is_blocked() vẫn True, đài kiểm soát
+        # (audit_research_gates) vẫn đòi "chốt PICO" và study_readiness/kiểm chi tiết nói
+        # ngược nhau về CÙNG một cổng. Hai lớp kể hai chuyện. Giữ bản ghi để truy vết,
+        # chỉ gỡ cờ chặn và ghi rõ ai/khi nào gỡ. Cờ MISSING_PUBMED KHÔNG gỡ ở đây —
+        # 0 PMID không thể được "xác nhận" qua.
+        checkpoint["needs_input"] = {
+            **existing, "blocked": False,
+            "resolved_by": "g0_quality_gate.refresh_checkpoint",
+            "resolved_at": datetime.now().isoformat(timespec="seconds"),
+        }
     checkpoint_path.write_text(
         json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return checkpoint_path

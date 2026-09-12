@@ -96,6 +96,31 @@ class EvidenceRegistry:
             return self.quarantined_records[evidence_id]
         raise KeyError(evidence_id)
 
+    def apply(self, record: EvidenceRecord) -> EvidenceRecord:
+        """Ghi ĐÈ một bản ghi ĐÃ TỒN TẠI sau một bước chuyển trạng thái lifecycle
+        (verify/retract/supersede — xem `app/evidence/evidence_lifecycle.py`).
+
+        SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 10, task #95) —
+        `verify_evidence()`/`retract_evidence()`/`supersede_evidence()` trước đây
+        là hàm THUẦN (`dataclasses.replace()`), chỉ trả về BẢN SAO mới mà KHÔNG
+        BAO GIỜ ghi ngược vào `self.records`. Hệ quả: `registry.get(id)` sau khi
+        gọi `retract_evidence()` vẫn trả về bản ghi CŨ (chưa rút bài) trừ khi
+        caller tự tay gọi lại `register()`/gán trực tiếp — không có gì bắt buộc
+        hay nhắc việc đó, nên một lần rút bài/thay thế có thể bị "mất" hoàn toàn
+        khỏi góc nhìn của `registry`/`ClaimRegistry.register_claim()` (vẫn coi
+        chứng cứ là hợp lệ). Hàm này là điểm ghi ĐÈ DUY NHẤT dùng chung, đối xứng
+        với `register()` nhưng cho một bản ghi ĐÃ CÓ evidence_id (không tạo id
+        mới): giữ nguyên bất biến `has_traceability` quyết định bản ghi thuộc
+        `records` hay `quarantined_records`, dọn khỏi dict còn lại nếu có.
+        """
+        if not record.has_traceability:
+            self.records.pop(record.evidence_id, None)
+            self.quarantined_records[record.evidence_id] = record
+        else:
+            self.quarantined_records.pop(record.evidence_id, None)
+            self.records[record.evidence_id] = record
+        return record
+
     def verified_trace_ids(self) -> List[str]:
         return [record.traceability_id for record in self.records.values() if record.status == EvidenceStatus.VERIFIED]
 

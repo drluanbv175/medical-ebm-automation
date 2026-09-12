@@ -1,13 +1,13 @@
 {
   "kind": "outpatient_evidence_surveillance_deployment_verification",
-  "generated_at": "2026-08-16T03:53:25+00:00",
-  "deployment_status": "RUNTIME_CANARY_PASS",
+  "generated_at": "2026-09-02T21:25:24+00:00",
+  "deployment_status": "BLOCKED_FOR_DEPLOYMENT",
   "deployment_allowed": false,
-  "runtime_canary": true,
+  "runtime_canary": false,
   "contract_check": false,
   "online": true,
-  "failure_count": 0,
-  "human_gate_count": 0,
+  "failure_count": 1,
+  "human_gate_count": 1,
   "checks": [
     {
       "check_id": "ESD01",
@@ -72,6 +72,30 @@
       "status": "PASS",
       "evidence": "overall=PASS; online=True; dashboard_gate=PASS",
       "limitation": "Fixture online không thay double-review của mẫu nội dung lâm sàng thật."
+    },
+    {
+      "check_id": "ESD09",
+      "title": "Lịch sử runtime tuần/tháng",
+      "phase": "runtime",
+      "status": "PASS",
+      "evidence": "weekly:status=PASS,age=1.8d; monthly:status=PASS,age=1.4d",
+      "limitation": "Cần ít nhất các lượt chạy thật còn mới; canary thủ công không thay lịch sử này."
+    },
+    {
+      "check_id": "ESD10",
+      "title": "Cấu hình kênh cảnh báo",
+      "phase": "runtime",
+      "status": "FAIL",
+      "evidence": "email_ready=False; webhook_ready=False",
+      "limitation": "Chỉ kiểm cấu hình có mặt, UAT vẫn phải chứng minh gửi/nhận thật."
+    },
+    {
+      "check_id": "ESD11",
+      "title": "UAT và phê duyệt",
+      "phase": "human",
+      "status": "HUMAN_GATE",
+      "evidence": "valid_source_samples=0; missing=['SOURCE_SAMPLE_REVIEW', 'SCHEDULER_TRIGGER', 'ALERT_DELIVERY', 'ROLLBACK_RESTORE', 'SHADOW_RUN', 'DOCTOR_APPROVAL', 'OPERATIONS_APPROVAL']",
+      "limitation": "Đây là cổng người thật; agent chỉ kiểm bằng chứng, không tự ký hoặc tự điền PASS."
     }
   ],
   "clinical_auto_apply": false,

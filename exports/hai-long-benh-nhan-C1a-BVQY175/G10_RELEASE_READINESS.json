@@ -1,0 +1,52 @@
+{
+  "schema_version": "G10-2026.1",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "status": "DRAFT_ASSEMBLED_NEEDS_COMPLETION",
+  "release": {
+    "purpose": null,
+    "package_version": null,
+    "target_system_or_recipient_ref": null,
+    "target_requirements_checked": false,
+    "prepared_at": null,
+    "owner_ref": null,
+    "change_log_reviewed": false,
+    "final_files_confirmed": false,
+    "no_unresolved_critical_issues": false,
+    "prepared_for_pi_review": false
+  },
+  "cross_document_consistency": {
+    "protocol_sap_consistent": false,
+    "registry_protocol_consistent_or_not_applicable": false,
+    "manuscript_results_consistent": false,
+    "ethics_consent_consistent": false,
+    "reporting_checklist_complete": false,
+    "analysis_deviations_disclosed_or_none": false,
+    "data_code_statements_consistent": false
+  },
+  "privacy_and_permissions": {
+    "no_direct_identifiers_confirmed": false,
+    "residual_reidentification_risk_reviewed": false,
+    "access_controls_confirmed": false,
+    "external_release_permissions_confirmed": false
+  },
+  "archive_and_reproducibility": {
+    "archive_location_ref": null,
+    "retention_policy_ref": null,
+    "software_environment_captured": false,
+    "data_dictionary_included_or_not_applicable": false,
+    "audit_trail_preserved": false,
+    "responsible_owner_ref": null
+  },
+  "additional_artifacts": [],
+  "automation_limits": {
+    "external_submission_performed_by_g10": false,
+    "receipt_or_acceptance_claimed_by_g10": false
+  },
+  "pi_release_approval": {
+    "required": true,
+    "artifact": "G10_checkpoint.json",
+    "completed_by_system": false
+  },
+  "pii_policy": "Chỉ dùng mã tham chiếu; không ghi tên đầy đủ hoặc thông tin liên hệ.",
+  "disclaimer": "Cần bác sĩ kiểm chứng."
+}

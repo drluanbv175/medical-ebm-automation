@@ -65,12 +65,22 @@ from app.sources.pubmed import PubMedClient  # noqa: E402
 # trùng/không thay thế được chữ ký receipt rút bài (payload ký gồm gate_id).
 METADATA_GATE_ID = "A12META"
 
-_PROBLEM_STATUSES = {"unresolved", "unknown_mock_or_no_email"}
+# SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2): sau khi app.sources.pubmed.
+# PubMedClient._parse_metadata_xml() được dạy dò trang chặn NCBI (trước đó chỉ hàm
+# chị em _parse_retraction_xml() biết), fetch_metadata() có thể trả status mới
+# "unknown_fetch_error" (chặn IP/lỗi parse) — set này PHẢI cập nhật theo, nếu không
+# tool sẽ FAIL-OPEN: any_problem không bật, và khi NCBI chặn TOÀN BỘ lô, CLI in
+# "✅ Mọi PMID đã phân giải được metadata gốc" — SAI hoàn toàn, không PMID nào thật
+# sự phân giải được. all_resolved (dòng dùng cho receipt A12) không bị ảnh hưởng vì
+# nó đã kiểm dương tính == "resolved", nhưng _PROBLEM_STATUSES là danh sách CHẶN nên
+# phải liệt kê đủ mọi trạng thái không phải "resolved".
+_PROBLEM_STATUSES = {"unresolved", "unknown_mock_or_no_email", "unknown_fetch_error"}
 
 _STATUS_LABEL = {
     "resolved": "✅ PHÂN GIẢI ĐƯỢC",
     "unresolved": "🔴 KHÔNG PHÂN GIẢI ĐƯỢC (nghi ma/PMID sai)",
     "unknown_mock_or_no_email": "⚠️  KHÔNG TRA CỨU ĐƯỢC (mock/thiếu NCBI_EMAIL/lỗi mạng)",
+    "unknown_fetch_error": "⚠️  KHÔNG TRA CỨU ĐƯỢC (NCBI chặn IP hoặc lỗi phản hồi — KHÔNG kết luận gì về PMID)",
 }
 
 

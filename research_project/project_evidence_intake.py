@@ -147,11 +147,15 @@ class EvidenceIntake:
         )
 
         items = self.load_all()
-        # Kiểm tra trùng
+        # Kiểm tra trùng. Vá 2026-09-06 (audit vòng 39, phát hiện #6): so với
+        # item.provided_pmid_or_doi ĐÃ CHUẨN HOÁ (item lưu marker khi rỗng,
+        # xem dòng khởi tạo EvidenceItem ở trên) — trước đây so với tham số
+        # provided_pmid_or_doi GỐC còn rỗng, không bao giờ khớp bản ghi cũ đã
+        # có marker, khiến guard chống trùng vô hiệu khi PMID/DOI rỗng.
         for existing in items:
             if (
                 existing.source_description == source_description
-                and existing.provided_pmid_or_doi == provided_pmid_or_doi
+                and existing.provided_pmid_or_doi == item.provided_pmid_or_doi
             ):
                 return EvidenceIntakeResult(
                     decision="BLOCKED",

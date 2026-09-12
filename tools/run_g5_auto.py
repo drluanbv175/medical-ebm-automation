@@ -25,6 +25,7 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / "tools"))
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g5_quality_gate as G5Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 
@@ -848,6 +849,30 @@ VALIDATION_RULES = [
 # AUTO-GENERATED PYTHON SCRIPTS
 # ---------------------------------------------------------------------------
 
+def _range_lines_tu_rows(rows: list, da_co: set, nhay: str = '"') -> list:
+    """Gặt range check TRỰC TIẾP từ cột min/max của CRF rows (r[8]/r[9]).
+
+    THÊM 2026-09-01 (kiểm toàn diện): docstring của gen_data_quality_report_
+    script tự nhận «build RANGE_CHECKS động từ CRF thật (rows)» nhưng code chỉ
+    lọc bảng VALIDATION_RULES TĨNH theo tên biến — với BỘ BIẾN RIÊNG của đề tài
+    (tên không trùng bảng tĩnh nào) thì 0 range check được sinh dù dictionary
+    đã khai min/max tường minh (vd tuoi 18–120). `da_co` = tên biến đã có từ
+    VALIDATION_RULES (bảng tĩnh thắng — nó mang ngưỡng lâm sàng tinh hơn).
+    """
+    lines: list = []
+    for r in rows:
+        var, vtype, vmin, vmax = r[0], r[7], r[8], r[9]
+        if var in da_co or vtype not in ("number", "integer"):
+            continue
+        try:
+            lo = float(str(vmin).replace(",", "."))
+            hi = float(str(vmax).replace(",", "."))
+        except (TypeError, ValueError):
+            continue
+        lines.append(f"    ({nhay}{var}{nhay}, {lo}, {hi}),")
+    return lines
+
+
 def gen_data_cleaning_script(study: str, design_code: str, rows: list) -> str:
     """Sinh data_cleaning.py đọc REDCap export và làm sạch theo CRF dictionary."""
     col_names    = [r[0] for r in rows]
@@ -867,6 +892,10 @@ def gen_data_cleaning_script(study: str, design_code: str, rows: list) -> str:
                 range_lines.append(f"    ('{var}', {lo}, {hi}),")
             except ValueError:
                 pass
+    # THÊM 2026-09-01: gặt thêm min/max khai TRỰC TIẾP trong CRF rows —
+    # bảng VALIDATION_RULES tĩnh không biết biến của bộ biến riêng.
+    _da_co = {vr[0] for vr in VALIDATION_RULES}
+    range_lines += _range_lines_tu_rows(rows, _da_co, nhay="'")
     range_checks_str = "\n".join(range_lines) if range_lines else "    # (Thêm range check cho thiết kế này)"
 
     # SỬA: date_pairs trước đây hardcode cứng 3 cặp riêng của bundle
@@ -1044,6 +1073,10 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list) -> 
                 range_lines.append(f'    ("{var}", {lo}, {hi}),')
             except ValueError:
                 pass
+    # THÊM 2026-09-01: cùng bản vá gặt min/max từ CRF rows như bên
+    # gen_data_cleaning_script (xem docstring _range_lines_tu_rows).
+    _da_co = {vr[0] for vr in VALIDATION_RULES}
+    range_lines += _range_lines_tu_rows(rows, _da_co, nhay='"')
     range_checks_str = "\n".join(range_lines) if range_lines else "    # (Chưa có range check cho thiết kế/chuyên khoa này)"
 
     template = (
@@ -1731,6 +1764,7 @@ def write_operational_readiness_template(out_dir: Path) -> Path:
 # ---------------------------------------------------------------------------
 
 _SPECIALTY_LABELS = {
+    "bo_bien_rieng":                 "BỘ BIẾN RIÊNG của đề tài (_bo-bien-rieng.csv — không dùng bundle)",
     "cardiology_hf":                 "Tim mạch / Suy tim",
     "metabolic_diabetes":            "Chuyển hóa / Đái tháo đường",
     "nephrology_ckd":                "Thận / Bệnh thận mạn (CKD)",
@@ -2039,6 +2073,7 @@ def write_docx(artifact: str, path: Path) -> bool:
                 doc.add_paragraph(stripped, style="List Bullet")
             else:
                 doc.add_paragraph(stripped)
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(path)
         return True
     except ImportError:
@@ -2057,6 +2092,118 @@ def load_cp(p) -> dict:
         with open(p, encoding="utf-8", newline="\n") as f:
             return json.load(f)
     return {}
+
+
+BO_BIEN_RIENG_TEN_FILE = "_bo-bien-rieng.csv"
+
+# 10 cột BẮT BUỘC (theo TÊN, không theo vị trí) mà file khai bộ biến riêng phải
+# có — trùng đúng header generate_csv() xuất ra, nên file do G5 sinh có thể
+# chỉnh tay rồi nạp ngược lại (round-trip).
+_BO_BIEN_COT_BAT_BUOC = [
+    "Variable / Field Name", "Form Name", "Section Header", "Field Type",
+    "Field Label", "Choices, Calculations, OR Slider Labels", "Field Note",
+    "Text Validation Type OR Show Slider Number",
+    "Text Validation Min", "Text Validation Max",
+]
+
+_BO_BIEN_FIELD_TYPES = {
+    "text", "notes", "radio", "dropdown", "checkbox", "yesno", "truefalse",
+    "calc", "file", "slider", "descriptive", "sql",
+}
+
+
+def nap_bo_bien_rieng(out_dir: Path, study: str):
+    """Nạp BỘ BIẾN RIÊNG của đề tài từ `exports/<study>/_bo-bien-rieng.csv`.
+
+    ★ VÌ SAO TỒN TẠI (kiểm toàn diện 01/09/2026 — đúng lớp bực bội «xử lý số
+    liệu chưa hoàn thiện» của bác sĩ): trước hàm này, run_g5_auto CHỈ sinh
+    dictionary từ bundle chuyên khoa đóng hộp, không có đường nào nạp bộ biến
+    mà tầng `bien-so-nghien-cuu` đã đặc tả cho ĐỀ TÀI CỤ THỂ. Hệ quả đo được
+    trên đề tài thật C1a: bundle patient_satisfaction đặt `wait_time_min`/
+    `overall_satisfaction_score` trong khi SAP đã khoá cam kết `thoigian_cho`/
+    `ma_ban_kham`/`mode_tra_loi`/G1 5 mức — mọi script hạ nguồn (01_cleaning,
+    03_analysis, CLI) sinh trên TÊN SAI và bác sĩ phải sửa tay từng chỗ. Tầng
+    đặc tả biến và tầng dictionary bị đứt mạch — «2 lớp tách rời nhau».
+
+    Hợp đồng:
+    - File VẮNG MẶT → trả None (dùng bundle như cũ — tương thích ngược 100%).
+    - File CÓ MẶT → nó là NGUỒN DUY NHẤT; hỏng cấu trúc thì DỪNG HẲN
+      SystemExit(2) kèm lý do — TUYỆT ĐỐI không âm thầm rơi về bundle
+      (rơi im lặng nghĩa là bác sĩ tưởng dictionary mang biến của mình
+      trong khi nó mang biến template — đúng họ lỗi «hỏng im lặng»).
+    - Định dạng: CSV 18 cột chuẩn REDCap (đúng header generate_csv xuất);
+      map theo TÊN cột nên thừa/thiếu cột phụ không sao, thiếu cột bắt buộc
+      thì dừng. Trả list tuple 12 trường khớp mọi consumer hiện có
+      (generate_csv · gen_data_cleaning_script · gen_data_quality_report_script
+      · artifact) — nhờ vậy script làm sạch + kiểm range TỰ ĐỘNG dùng đúng
+      biến thật của đề tài, không cần sửa consumer nào.
+    """
+    duong = Path(out_dir) / BO_BIEN_RIENG_TEN_FILE
+    if not duong.exists():
+        return None
+    loi: list = []
+    try:
+        with duong.open(encoding="utf-8-sig", newline="") as f:
+            doc = csv.DictReader(f)
+            header = [h.strip() for h in (doc.fieldnames or [])]
+            thieu = [c for c in _BO_BIEN_COT_BAT_BUOC if c not in header]
+            if thieu:
+                raise SystemExit(
+                    f"⛔ {BO_BIEN_RIENG_TEN_FILE} thiếu cột bắt buộc: {', '.join(thieu)}\n"
+                    "   Header phải đúng 18 cột REDCap chuẩn (chép từ file "
+                    f"G5_REDCap_dictionary_{study}.csv mà G5 sinh ra rồi sửa nội dung).")
+            rows: list = []
+            ten_da_gap: set = set()
+            for i, r in enumerate(doc, start=2):
+                var = (r.get("Variable / Field Name") or "").strip()
+                if not var:
+                    continue  # dòng trống — bỏ qua, không phải lỗi
+                if not re.fullmatch(r"[a-z][a-z0-9_]*", var):
+                    loi.append(f"dòng {i}: tên biến '{var}' sai quy tắc REDCap "
+                               "(chữ thường, bắt đầu bằng chữ, chỉ a-z0-9_)")
+                    continue
+                if var in ten_da_gap:
+                    loi.append(f"dòng {i}: tên biến '{var}' TRÙNG — REDCap sẽ từ chối import")
+                    continue
+                ten_da_gap.add(var)
+                ftype = (r.get("Field Type") or "").strip().lower()
+                if ftype not in _BO_BIEN_FIELD_TYPES:
+                    loi.append(f"dòng {i}: Field Type '{ftype}' không hợp lệ REDCap "
+                               f"(nhận: {', '.join(sorted(_BO_BIEN_FIELD_TYPES))})")
+                    continue
+                label = (r.get("Field Label") or "").strip()
+                if not label:
+                    loi.append(f"dòng {i}: biến '{var}' thiếu Field Label")
+                    continue
+                req = (r.get("Required Field?") or "").strip().lower()
+                rows.append((
+                    var,
+                    (r.get("Form Name") or "").strip() or "Main",
+                    (r.get("Section Header") or "").strip(),
+                    ftype,
+                    label,
+                    (r.get("Choices, Calculations, OR Slider Labels") or "").strip(),
+                    (r.get("Field Note") or "").strip(),
+                    (r.get("Text Validation Type OR Show Slider Number") or "").strip(),
+                    (r.get("Text Validation Min") or "").strip(),
+                    (r.get("Text Validation Max") or "").strip(),
+                    "y" if req in ("y", "yes", "1", "true") else "n",
+                    (r.get("Branching Logic (Show field only if...)") or "").strip(),
+                ))
+    except OSError as e:
+        raise SystemExit(f"⛔ Không đọc được {duong}: {e}") from e
+    if loi:
+        chi_tiet = "\n".join("   - " + m for m in loi[:12])
+        raise SystemExit(
+            f"⛔ {BO_BIEN_RIENG_TEN_FILE} có {len(loi)} lỗi cấu trúc — DỪNG, không rơi về "
+            f"bundle (rơi im lặng là bác sĩ nhận dictionary SAI biến mà không biết):\n{chi_tiet}")
+    if not rows:
+        raise SystemExit(f"⛔ {BO_BIEN_RIENG_TEN_FILE} không có dòng biến hợp lệ nào — DỪNG.")
+    if rows[0][0] != "record_id":
+        # REDCap đòi record_id là trường ĐẦU TIÊN — thiếu thì import gãy ngay.
+        rows.insert(0, ("record_id", rows[0][1], "", "text", "Mã bản ghi (tự sinh)",
+                        "", "", "", "", "", "y", ""))
+    return rows
 
 
 def main():
@@ -2183,14 +2330,27 @@ def main():
 
     # Xây CRF theo thiết kế + chuyên khoa nhận diện từ topic (KHÔNG cứng hóa
     # field của 1 đề tài mẫu cho mọi chủ đề khác — xem detect_specialty())
-    rows, specialty = build_redcap_rows(design_code, topic)
+    # THÊM 2026-09-01 (kiểm toàn diện): BỘ BIẾN RIÊNG của đề tài thắng bundle —
+    # tầng bien-so-nghien-cuu đặc tả biến cho đề tài cụ thể, G5 phải THI HÀNH
+    # bộ đó chứ không thay bằng template chuyên khoa. File hỏng → nap_bo_bien_
+    # rieng tự DỪNG mã 2 (không âm thầm rơi về bundle).
+    rows_rieng = nap_bo_bien_rieng(out, study)
+    if rows_rieng is not None:
+        rows, specialty = rows_rieng, "bo_bien_rieng"
+        print(f"  → CRF: dùng BỘ BIẾN RIÊNG của đề tài ({BO_BIEN_RIENG_TEN_FILE}, "
+              f"{len(rows)} biến) — KHÔNG dùng bundle chuyên khoa")
+    else:
+        rows, specialty = build_redcap_rows(design_code, topic)
 
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20): "nối thêm, không
     # thay thế" — cùng khuôn run_g7_auto.py/run_g8_auto.py/run_g9_auto.py đã
     # áp dụng cho checklist báo cáo CHEERS khi economic là cấu phần CỘNG THÊM
     # (design_code chính không phải "economic" nhưng G1 phát hiện tín hiệu
     # kinh tế y tế trong chủ đề, vd RCT có tiểu mục chi phí-hiệu quả).
-    if "economic" in specialist_modules and design_code != "economic":
+    # bo_bien_rieng là nguồn DUY NHẤT — không nối thêm field template nào vào
+    # bộ biến đề tài tự khai (muốn có cấu phần kinh tế thì khai trong file).
+    if ("economic" in specialist_modules and design_code != "economic"
+            and specialty != "bo_bien_rieng"):
         # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH,
         # tự phát hiện lỗi do CHÍNH bản vá vòng 20 gây ra): _ECONOMIC_FIELDS tự
         # khai "record_id" riêng (dùng khi design_code chính LÀ "economic",
@@ -2218,7 +2378,7 @@ def main():
     # cấu trúc KHÔNG bắt được (chỉ kiểm placeholder/PII/disclaimer). Cảnh báo để
     # bác sĩ không bị đánh lừa rằng CRF đã đúng — KHÔNG tự đổi field (an toàn:
     # chỉ nhắc, việc đổi thuộc bác sĩ). Kiểm định đối kháng vòng 2.
-    if g3_effect_type == "MD" and specialty != "musculoskeletal_pain":
+    if g3_effect_type == "MD" and specialty not in ("musculoskeletal_pain", "bo_bien_rieng"):
         print("  ⚠️  effect_type=MD (kết cục LIÊN TỤC theo G3) nhưng bundle "
               f"'{_SPECIALTY_LABELS.get(specialty, specialty)}' mặc định field kết cục chính "
               "kiểu NHỊ PHÂN/biến cố — bác sĩ PHẢI thay bằng field số (liên tục) đo lường "

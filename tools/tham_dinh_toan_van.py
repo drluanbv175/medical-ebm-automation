@@ -120,8 +120,24 @@ def main() -> int:
     if not doc.exists():
         print(f"🔴 Không đọc được {doc}")
         return 1
-    xmls = {re.search(r"PMID-(\d+)_", f.name).group(1): f
-            for f in kho.glob("PMID-*.xml")} if kho.exists() else {}
+    # SỬA vòng 25 (2026-09-05): kho.glob("PMID-*.xml") chấp nhận MỌI file khớp tiền tố
+    # "PMID-" + hậu tố ".xml" (lỏng), nhưng regex trích PMID đòi khuôn chặt hơn
+    # "PMID-<số>_...xml". Trước đây .group(1) gọi ngay không kiểm None — một file
+    # khớp glob nhưng không khớp regex (vd "PMID-19393038.xml" thiếu "_PMC...", do
+    # một lần gom toàn văn thất bại một phần hoặc bác sĩ tự đổi tên) ném
+    # AttributeError ngay trong dict-comprehension, sập cả main() trước khi vào bất
+    # kỳ try/except nào — mất kết quả thẩm định của MỌI PMID hợp lệ khác trong kho.
+    # Đúng lỗi đã vá ở file song sinh doc_toan_van.py — nay áp cùng cách xử lý: bỏ
+    # qua đúng MỘT file lỗi, có cảnh báo, không dừng cả vòng lặp.
+    xmls: dict[str, Path] = {}
+    if kho.exists():
+        for f in kho.glob("PMID-*.xml"):
+            m = re.search(r"PMID-(\d+)_", f.name)
+            if m is None:
+                print(f"⚠️  Bỏ qua {f.name} — tên file không đúng khuôn PMID-<số>_...xml.",
+                      file=sys.stderr)
+                continue
+            xmls[m.group(1)] = f
     if not xmls:
         print(f"🔴 Chưa có kho toàn văn cho {a.study} — chạy gom_toan_van_oa trước.")
         return 1

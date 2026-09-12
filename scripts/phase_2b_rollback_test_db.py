@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,11 +15,17 @@ if str(ROOT) not in sys.path:
 from sqlalchemy import create_engine, inspect, text  # noqa: E402
 
 from app.governance.migrations import GOVERNANCE_TABLES, create_governance_schema  # noqa: E402
+from scripts.phase_2b_seed_governance_test_data import is_production_database  # noqa: E402
+
+# Vá 2026-09-06 (audit vòng 34, phát hiện #2 — HIGH, cùng lỗi với
+# phase_2b_migrate_test_db.py): "/private/tmp" hardcode kiểu macOS làm script
+# crash trên Linux khi không truyền --db-path.
+_DEFAULT_DB_PATH = str(Path(tempfile.gettempdir()) / "ebm_phase_2b_governance.db")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Phase 2B test DB rollback")
-    parser.add_argument("--db-path", default="/private/tmp/ebm_phase_2b_governance.db")
+    parser.add_argument("--db-path", default=_DEFAULT_DB_PATH)
     args = parser.parse_args()
     db_path = Path(args.db_path)
     database_url = f"sqlite:///{db_path}"
@@ -37,7 +44,10 @@ def main() -> int:
         "rollback_passed": rollback_passed,
         "reapply_passed": not missing_after_reapply,
         "missing_after_reapply": missing_after_reapply,
-        "production_database_touched": False,
+        # Vá 2026-09-06 (audit vòng 42, phát hiện #2 — HIGH, cùng lỗi với
+        # phase_2b_migrate_test_db.py): trước đây literal hardcode False,
+        # không phải kết quả so sánh — xem is_production_database().
+        "production_database_touched": is_production_database(database_url),
     }
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result["rollback_passed"] and result["reapply_passed"] else 1

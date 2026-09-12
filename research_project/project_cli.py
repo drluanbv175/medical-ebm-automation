@@ -148,7 +148,12 @@ def _build_parser() -> argparse.ArgumentParser:
     # project-qa
     p_qa = sub.add_parser("project-qa", help="Chạy 15 draft quality gate (D-R1..D-R15)")
     p_qa.add_argument("--project-id", required=True)
-    p_qa.add_argument("--save-report", action="store_true", default=True,
+    # Vá 2026-09-06 (audit vòng 39, phát hiện #4): action="store_true" chỉ có
+    # thể bật True, mà default đã là True — user không có cách nào truyền
+    # False qua CLI dù run_project_qa(save_report=False) là behavior hợp lệ
+    # (đã được test thật dùng). BooleanOptionalAction cho cả --save-report và
+    # --no-save-report.
+    p_qa.add_argument("--save-report", action=argparse.BooleanOptionalAction, default=True,
                       help="Lưu kết quả vào PROJECT_QA_REPORT")
     p_qa.set_defaults(func=_cmd_qa)
 
@@ -161,7 +166,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # project-review-pack
     p_rp = sub.add_parser("project-review-pack", help="Tạo gói human review")
     p_rp.add_argument("--project-id", required=True)
-    p_rp.add_argument("--run-qa-first", action="store_true", default=True)
+    p_rp.add_argument("--run-qa-first", action=argparse.BooleanOptionalAction, default=True)
     p_rp.set_defaults(func=_cmd_review_pack)
 
     # project-change-impact

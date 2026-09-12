@@ -1,0 +1,160 @@
+{
+  "gate": "G10",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "generated_at": "2026-09-06T04:59:47.373990",
+  "gate_status": "BLOCKED — chờ input đời-thực",
+  "quality_contract_version": "G10-2026.1",
+  "guardrail": {
+    "passed": true,
+    "checks": {
+      "R1_sections": "PASS (đủ 18 mục)",
+      "R2_gate_table": "PASS (10 cổng + 4 mốc)",
+      "R3_valid_tags": "PASS",
+      "R4_pmid_traceable": "PASS (0/0 PMID đối chiếu PubMed raw)",
+      "R5_disclaimer": "PASS",
+      "R6_no_results": "PASS",
+      "R7_display_items": "PASS (Bảng 1/2 + Hình 1/2 + checklist)",
+      "R8_international_compliance": "PASS (reporting + ICH-GCP/IRB + SAP + transparency + reproducibility)",
+      "R9_technical_completion": "PASS (10 bước + 16 đầu ra + kiểm định cuối + quy tắc hoàn thành)",
+      "R10_no_false_completion": "PASS (không tự tuyên bố hoàn thành kỹ thuật)",
+      "R11_missing_information": "PASS (thiếu sót/cổng chờ được liệt kê với ảnh hưởng và phương án an toàn)",
+      "R12_document_control": "PASS (phiên bản/ngày/nguồn thay đổi/người duyệt/nhật ký hiện rõ)",
+      "R13_traceability_matrix": "PASS (mục tiêu-biến-công cụ-phân tích-bảng được nối trong một ma trận)",
+      "R14_protocol_core_coverage": "PASS (đủ P01-P24)",
+      "R15_semantic_consistency": "PASS",
+      "R16_decision_package": "PASS",
+      "R17_scientific_readiness": "PASS (trung thực: còn quyết định khoa học mở)",
+      "R18_protocol_checklist": "N/A (thiết kế không có checklist đề cương theo mục trong kho)"
+    },
+    "errors": [],
+    "warnings": [],
+    "study_spec_readiness": "STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS",
+    "scientific_content_complete": false,
+    "protocol_content_complete": false
+  },
+  "checkpoints_present": [
+    "G0",
+    "G1",
+    "G2",
+    "G3",
+    "G4"
+  ],
+  "checkpoints_missing": [
+    "G5",
+    "G6",
+    "G7",
+    "G8",
+    "G9"
+  ],
+  "document_control": {
+    "document_version": "[DỰ THẢO]",
+    "document_date": "2026-09-06 04:59",
+    "requires_change_history": true,
+    "status": "[DỰ THẢO]"
+  },
+  "real_world_signals": {
+    "irb_approved": false,
+    "sap_locked": false,
+    "db_locked": false,
+    "results_final": false,
+    "peer_review_approved": false,
+    "integrity_signed": false,
+    "release_locked": false
+  },
+  "study_spec": {
+    "schema_version": "1.0",
+    "readiness_level": "STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS",
+    "scientific_content_complete": false,
+    "protocol_content_complete": false,
+    "protocol_complete_items": 2,
+    "protocol_total_items": 24,
+    "missing_requirement_ids": [
+      "D02",
+      "D03",
+      "D05",
+      "D06",
+      "D07",
+      "D08",
+      "D10",
+      "D11",
+      "D12",
+      "D13",
+      "D14",
+      "D15",
+      "D16",
+      "D17",
+      "D18"
+    ],
+    "semantic_error_codes": []
+  },
+  "skill_gate_states": {
+    "G0": "DỰ THẢO (ĐẠT guardrail)",
+    "G1": "DỰ THẢO (ĐẠT guardrail)",
+    "G2": "DỰ THẢO (ĐẠT guardrail)",
+    "G3": "DỰ THẢO (ĐẠT guardrail)",
+    "G4": "THIẾU",
+    "G5": "THIẾU",
+    "G6": "THIẾU",
+    "G7": "THIẾU",
+    "G8": "THIẾU",
+    "G9": "THIẾU"
+  },
+  "readiness": [
+    {
+      "moc": "Sẵn sàng nộp Hội đồng đạo đức",
+      "dat": "ĐẠT (dự thảo — chờ bác sĩ điền/nộp)",
+      "chi_tiet": "Hồ sơ đạo đức + protocol ở dạng dự thảo đầy đủ; bác sĩ điền nốt rồi nộp XIN phê duyệt"
+    },
+    {
+      "moc": "Sẵn sàng triển khai (thu thập dữ liệu)",
+      "dat": "CHƯA ĐẠT",
+      "chi_tiet": "BẮT BUỘC có phê duyệt Hội đồng Đạo đức THẬT (tín hiệu irb_approved) + công cụ/SOP dự thảo đầy đủ | Chặn bởi: thiếu phê duyệt IRB thật; cổng skill G4 (Công cụ): THIẾU; cổng skill G5 (Triển khai): THIẾU"
+    },
+    {
+      "moc": "Sẵn sàng phân tích chính",
+      "dat": "CHƯA ĐẠT",
+      "chi_tiet": "BẮT BUỘC SAP đã ký khoá (sap_locked) VÀ dữ liệu đã khoá thật (db_locked) — khớp SKILL.md §Kết luận | Chặn bởi: thiếu SAP đã ký khoá; thiếu dữ liệu đã khoá thật; cổng skill G6 (Dữ liệu): THIẾU"
+    },
+    {
+      "moc": "Sẵn sàng nộp công bố/nghiệm thu",
+      "dat": "CHƯA ĐẠT",
+      "chi_tiet": "BẮT BUỘC có kết quả phân tích THẬT, bình duyệt độc lập đúng vai trò và gói liêm chính đã ký | Chặn bởi: thiếu kết quả phân tích thật (bác sĩ xác nhận); thiếu bình duyệt độc lập đã phê duyệt đúng vai trò; thiếu gói liêm chính đã ký; cổng skill G7 (Phân tích): THIẾU; cổng skill G8 (Báo cáo): THIẾU; cổng skill G9 (Công bố/ứng dụng): THIẾU"
+    }
+  ],
+  "artifacts": {
+    "de_cuong_md": "exports/hai-long-benh-nhan-C1a-BVQY175/DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
+    "de_cuong_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
+    "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
+    "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
+    "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json"
+  },
+  "quality_gate": {
+    "status": "DRAFT_ASSEMBLED_NEEDS_COMPLETION",
+    "report": "G10_QUALITY_REPORT.json",
+    "human_approval_valid": false,
+    "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10"
+  },
+  "release_package_ready": false,
+  "release_package_locked": false,
+  "n_de_cuong_sections": 18,
+  "n_protocol_core_items": 24,
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_CITATION_VERIFICATION",
+    "human_message": "Trích dẫn (cổng A12) chưa chạy agent `kiem-chung-trich-dan` (thiếu artifact A12).",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "python tools/check_citations.py --study hai-long-benh-nhan-C1a-BVQY175 --pmids <...>",
+      "study_meta_patch": {},
+      "must_not_fabricate": [
+        "approval_ledger.json",
+        "A12_RETRACTION_RECEIPT.json",
+        "A12_METADATA_RECEIPT.json",
+        "G10_RELEASE_READINESS.json",
+        "G10_checkpoint.json"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}

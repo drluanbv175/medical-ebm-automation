@@ -99,6 +99,29 @@ def _require_finite(name: str, value: float) -> float:
     return value
 
 
+_BOOL_CLI_TRUE = {"true", "1", "yes", "y"}
+_BOOL_CLI_FALSE = {"false", "0", "no", "n"}
+
+
+def _parse_bool_cli(s: str) -> bool:
+    """`type=` callable cho cờ CLI boolean lâm sàng — vá 2026-09-04 (audit đối kháng):
+    bản cũ `lambda s: s.lower() == "true"` coi MỌI chuỗi khác "true" là False, kể cả
+    "1"/"yes"/lỗi gõ — `--dialysis-2x-past-week 1` và `--dialysis-2x-past-week yes` ÂM
+    THẦM trở thành False (score MELD sai — creatinine không bị ép về 4.0 mg/dL theo quy
+    ước OPTN cho bệnh nhân đang lọc máu ≥2 lần/tuần), không một cảnh báo/lỗi nào.
+    Đúng nguyên tắc của module này (RiskScoreError: "TỪ CHỐI tính thay vì bịa giá trị
+    mặc định") — input KHÔNG nhận diện được phải làm CLI báo lỗi rõ ràng, không được
+    âm thầm đoán thành False."""
+    v = s.strip().lower()
+    if v in _BOOL_CLI_TRUE:
+        return True
+    if v in _BOOL_CLI_FALSE:
+        return False
+    raise argparse.ArgumentTypeError(
+        f"{s!r} không phải giá trị boolean hợp lệ — dùng true/false (hoặc 1/0, yes/no)."
+    )
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # CHA₂DS₂-VASc — Lip GY et al. Chest. 2010;137(2):263-72.
 # ═══════════════════════════════════════════════════════════════════════════
@@ -471,7 +494,7 @@ def main() -> int:
     md.add_argument("--bilirubin", type=float, required=True)
     md.add_argument("--inr", type=float, required=True)
     md.add_argument("--creatinine", type=float, required=True)
-    md.add_argument("--dialysis-2x-past-week", type=lambda s: s.lower() == "true",
+    md.add_argument("--dialysis-2x-past-week", type=_parse_bool_cli,
                     default=False, dest="dialysis")
     md.add_argument("--json", action="store_true")
 

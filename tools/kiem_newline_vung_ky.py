@@ -14,7 +14,6 @@ Mã thoát: 0 sạch · 2 có vi phạm (CI đỏ). Cần bác sĩ kiểm chứn
 """
 from __future__ import annotations
 
-import re
 import sys
 from pathlib import Path
 
@@ -27,8 +26,56 @@ for _s in (sys.stdout, sys.stderr):
 REPO = Path(__file__).resolve().parents[1]
 CAY = ("tools", "runtime", "tests", "scripts")
 MIEN_TRU = "da-nen: bo-qua"
-# khối write_text trọn vẹn (đa dòng, ngoặc lồng 1 mức) có encoding mà thiếu newline
-MAU = re.compile(r'\.write_text\((?:[^()]|\([^()]*\))*?\)', re.S)
+
+
+def _tim_loi_goi_write_text(text: str) -> list[tuple[int, int, str, str]]:
+    """Tìm mọi lời gọi `.write_text(...)` trong `text` bằng cách ĐẾM NGOẶC THẬT
+    (khớp mọi cấp lồng), thay cho regex cũ `\\.write_text\\((?:[^()]|\\([^()]*\\))*?\\)`
+    vốn chỉ khớp được đúng 1 CẤP ngoặc lồng bên trong. Một lời gọi có ≥2 cấp
+    lồng — vd `write_text(f(g(x)), encoding="utf-8")` — hoàn toàn KHÔNG được
+    regex cũ tìm thấy (không phải khớp sai, mà là finditer() bỏ qua occurrence
+    đó), nên vi phạm "thiếu newline=" thật ẩn trong lời gọi kiểu này lọt qua CI
+    mà không có cảnh báo nào.
+
+    Trả thêm `outer` — nội dung CHỈ ở cấp ngoài cùng của write_text() (nội dung
+    bên trong mọi lời gọi lồng bên trong bị lược bỏ, chỉ giữ dấu ngoặc rỗng
+    "()" đánh dấu vị trí). Bắt buộc phải tách riêng: nếu một hàm LỒNG BÊN
+    TRONG (vd `src.read_text(encoding="utf-8", newline="\\n")`) tình cờ có
+    kwarg `newline=`, kiểm tra "newline=" in <toàn bộ chuỗi khớp> sẽ SAI —
+    nhận nhầm write_text() NGOÀI CÙNG là đã có newline= trong khi nó không hề
+    có, y hệt bug thật đang tồn tại ở tools/vn_prose_style.py:218
+    (`dst.write_text(clean_generated_prose(src.read_text(..., newline="\\n")),
+    encoding="utf-8")` — outer write_text KHÔNG có newline=, chỉ inner
+    read_text mới có). Luật kiểm vi phạm PHẢI soi trên `outer`, KHÔNG soi trên
+    chuỗi khớp đầy đủ.
+
+    Trả về (vị trí bắt đầu, vị trí kết thúc, chuỗi khớp đầy đủ, outer)."""
+    ra: list[tuple[int, int, str, str]] = []
+    tim = ".write_text("
+    i = 0
+    while True:
+        idx = text.find(tim, i)
+        if idx == -1:
+            break
+        j = idx + len(tim)
+        depth = 1
+        outer_chars: list[str] = []
+        while j < len(text) and depth > 0:
+            ch = text[j]
+            if ch == "(":
+                if depth == 1:
+                    outer_chars.append("(")
+                depth += 1
+            elif ch == ")":
+                depth -= 1
+                if depth == 1:
+                    outer_chars.append(")")
+            elif depth == 1:
+                outer_chars.append(ch)
+            j += 1
+        ra.append((idx, j, text[idx:j], "".join(outer_chars)))
+        i = j
+    return ra
 
 
 def _mask(dong: list[str]) -> list[str]:
@@ -69,13 +116,12 @@ def main() -> int:
             n += 1
             goc = p.read_text(encoding="utf-8", errors="replace").splitlines()
             text = "\n".join(_mask(goc))
-            for m in MAU.finditer(text):
-                s = m.group(0)
-                if 'encoding="utf-8"' not in s or "newline=" in s:
+            for start, _end, s, outer in _tim_loi_goi_write_text(text):
+                if 'encoding="utf-8"' not in outer or "newline=" in outer:
                     continue
                 # miễn trừ phải soi trên DÒNG GỐC — _mask đã cắt chú thích,
                 # nên tìm marker trong khối match (bản che) sẽ không bao giờ thấy
-                d1 = text[:m.start()].count("\n")
+                d1 = text[:start].count("\n")
                 d2 = d1 + s.count("\n")
                 if any(MIEN_TRU in goc[i] for i in range(d1, min(d2 + 1, len(goc)))):
                     continue

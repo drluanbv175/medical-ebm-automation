@@ -24,8 +24,31 @@ def _esc(s):
     return html_lib.escape(s) if isinstance(s, str) else s
 
 
+def _esc_deep(value):
+    """SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #92, vòng 7) — như
+    `_esc()` nhưng đệ quy vào dict/list. `synthesis` (app/services/
+    synthesis.py::synthesize()) là DUY NHẤT trong `_row()` chưa qua `_esc()`,
+    dù nó ghép NGUYÊN VĂN `title`/`abstract`/`reason_for_exclusion`/
+    `safety_signal` — CÙNG nhóm nguồn NGOÀI (PubMed/RSS/openFDA) mà mọi
+    trường khác trong hàm này đã escape từ 2026-07-11 để chặn XSS. Một
+    title/abstract chứa `<script>` sẽ được `synthesize()` chép thẳng vào
+    `cau_hoi_lam_sang`/`thong_tin_moi`/`canh_bao_can_trong`/`ly_do_chua_doi_
+    thuc_hanh`, rồi `render_markdown()` ghép các trường đó vào Markdown mà
+    `markdown.markdown()` GIỮ NGUYÊN HTML thô — chạy được trong trình duyệt
+    của bác sĩ mở báo cáo tuần. `synthesis` còn có 2 trường LỒNG
+    (`diem_chinh`/`pico`: Dict[str, List[str]], trích nguyên văn từ
+    abstract) nên cần đệ quy, không chỉ escape phẳng."""
+    if isinstance(value, str):
+        return _esc(value)
+    if isinstance(value, dict):
+        return {k: _esc_deep(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_esc_deep(v) for v in value]
+    return value
+
+
 def _row(r: EvidenceItem, new_run_ids=None) -> Dict:
-    syn = r.synthesis or {}
+    syn = _esc_deep(r.synthesis or {})
     is_new = bool(new_run_ids) and r.first_seen_run_id in new_run_ids
     return {
         "is_new": is_new,
@@ -69,16 +92,36 @@ def build_weekly_data(new_window_days: int = 7, exclude_mock=None) -> Dict:
                      if r.source_type == "drug_safety" or r.safety_signal]
         antibiotic_rows = [_row(r, new_run_ids) for r in primary if _is_antibiotic(r)]
 
-    by_area: Dict[str, List[Dict]] = {}
-    for row in rows:
-        by_area.setdefault(row["clinical_area"], []).append(row)
-
     # LIÊM CHÍNH: ở chế độ LIVE, bản ghi mock/demo KHÔNG được trình bày như khuyến cáo thật.
     def _keep(r):
         return (not exclude_mock) or (not r["is_mock"])
-    actionable = [r for r in rows if r["is_actionable"] and _keep(r)]
-    not_yet = [r for r in rows
-               if r["classification"] in ("watch_only", "need_full_text") and _keep(r)]
+
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #92, vòng 7) — bản
+    # gốc chỉ áp `_keep()` cho `actionable`/`not_yet`, TRONG KHI `by_area`
+    # (mục 2, bảng theo chuyên khoa), `executive` (mục 1, tóm tắt 15 mục
+    # đầu), `drug_safety` (mục 4), `antibiotics` (mục 5) và `references`
+    # (mục 9, danh mục Vancouver) đều dựng từ `rows`/`drug_rows`/
+    # `antibiotic_rows` CHƯA LỌC — một bản ghi mock/demo còn sót trong DB ở
+    # chế độ LIVE (kịch bản mà chính `is_mock` cột DB và
+    # `knowledge_pack_surveillance.py::is_mock.is_(False)` đã lường trước)
+    # sẽ hiện như cảnh báo an toàn thuốc/trích dẫn THẬT ở 5 trong 9 mục của
+    # báo cáo, dù comment ngay phía trên khẳng định "KHÔNG được trình bày
+    # như khuyến cáo thật". Lọc MỘT LẦN ở đây rồi dựng MỌI mục trình bày từ
+    # tập đã lọc; `all_rows`/`excluded`/`new_items`/`mock_count` CỐ Ý giữ
+    # nguyên trên `rows` chưa lọc — đây là các view sổ sách/thống kê
+    # (app/social/package.py dùng `all_rows` để tra id, không phải trình
+    # bày như khuyến cáo), không phải nội dung trình bày cho bác sĩ.
+    live_rows = [r for r in rows if _keep(r)]
+    live_drug_rows = [r for r in drug_rows if _keep(r)]
+    live_antibiotic_rows = [r for r in antibiotic_rows if _keep(r)]
+
+    by_area: Dict[str, List[Dict]] = {}
+    for row in live_rows:
+        by_area.setdefault(row["clinical_area"], []).append(row)
+
+    actionable = [r for r in live_rows if r["is_actionable"]]
+    not_yet = [r for r in live_rows
+               if r["classification"] in ("watch_only", "need_full_text")]
     excluded = [r for r in rows if r["classification"] == "excluded"]
     new_items = [r for r in rows if r["is_new"]]
     mock_count = sum(1 for r in rows if r["is_mock"])
@@ -88,14 +131,14 @@ def build_weekly_data(new_window_days: int = 7, exclude_mock=None) -> Dict:
         "new_window_days": new_window_days,
         "all_rows": rows,
         "by_area": by_area,
-        "executive": rows[:15],
+        "executive": live_rows[:15],
         "new_items": new_items,
         "actionable_checklist": actionable,
-        "drug_safety": drug_rows,
-        "antibiotics": antibiotic_rows,
+        "drug_safety": live_drug_rows,
+        "antibiotics": live_antibiotic_rows,
         "not_yet_change": not_yet,
         "excluded": excluded,
-        "references": [r for r in rows if r["classification"] != "excluded"],
+        "references": [r for r in live_rows if r["classification"] != "excluded"],
         "mock_count": mock_count,
         "counts": {
             "total": len(rows), "new": len(new_items), "actionable": len(actionable),

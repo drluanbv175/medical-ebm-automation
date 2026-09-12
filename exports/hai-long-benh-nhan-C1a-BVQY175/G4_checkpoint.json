@@ -17,5 +17,197 @@
     "Điền §10 phần mềm + seed",
     "Ký SAP Lock Certificate → cung cấp ngày ký"
   ],
-  "lock_instruction": "Để mở G4: ký SAP Lock Certificate → cung cấp ngày ký → ghi G4_STATUS=LOCKED"
+  "lock_instruction": "Để mở G4: ký SAP Lock Certificate → cung cấp ngày ký → ghi G4_STATUS=LOCKED",
+  "quality_contract_version": "G4-2026.1",
+  "quality_gate": {
+    "schema_version": "1.0",
+    "contract_version": "G4-2026.1",
+    "study": "hai-long-benh-nhan-C1a-BVQY175",
+    "gate": "G4",
+    "status": "DRAFT_NEEDS_HUMAN_CONTENT",
+    "automated_checks_passed": true,
+    "sap_ready_for_signature": false,
+    "human_confirmation_complete": false,
+    "signature_scope": null,
+    "automatic_criteria": [
+      {
+        "id": "G4-AUTO-00",
+        "label": "Guardrail liêm chính G4 sạch",
+        "status": "PASS",
+        "evidence": "guardrail_passed=True (chấm lại trên artifact hiện tại, không tin cache)",
+        "action": "Sửa lỗi liêm chính (nguồn, PII, tự claim đã khóa) trước khi chấm chất lượng."
+      },
+      {
+        "id": "G4-AUTO-01",
+        "label": "G4 đã có cỡ mẫu hợp lệ từ G3 (không ở trạng thái BLOCKED)",
+        "status": "PASS",
+        "evidence": "g4_status='PENDING — CHỜ BÁC SĨ KÝ SAP'",
+        "action": "Cấp effect size cho G3 rồi chạy lại G3 → G4 trước khi chấm chất lượng SAP."
+      },
+      {
+        "id": "G4-AUTO-02",
+        "label": "design_code nhất quán giữa G1/G3 (cỡ mẫu) và G4 (SAP)",
+        "status": "PASS",
+        "evidence": "design_code=cross_sectional khớp giữa G1/G3/G4",
+        "action": "Chạy lại đúng thứ tự G1 → G3 → G4 cho cùng một design_code; không trộn hai đề tài."
+      },
+      {
+        "id": "G4-AUTO-03",
+        "label": "Số liệu đã ký (§12) khớp G3_checkpoint.json HIỆN TẠI",
+        "status": "PASS",
+        "evidence": "số liệu ký ở §12 khớp G3_checkpoint.json hiện tại",
+        "action": "SAP bị sửa tay hoặc G3 đã chạy lại với tham số khác SAU khi sinh SAP — chạy lại run_g4_auto.py để sinh SAP mới khớp G3 hiện tại trước khi ký."
+      },
+      {
+        "id": "G4-AUTO-04",
+        "label": "§5 phân tích đa biến có nhắc EPV/EPP/pmsampsize/VIF khi áp dụng",
+        "status": "PASS",
+        "evidence": "§5 có nhắc EPV/EPP/pmsampsize/VIF",
+        "action": "Ghi rõ EPV (Ogundimu 2016, PMID 26964707) hoặc VIF cho từng biến độc lập ở §5."
+      },
+      {
+        "id": "G4-AUTO-05",
+        "label": "§6 dữ liệu thiếu đã điền thật (không chỉ còn nhãn mặc định)",
+        "status": "PASS",
+        "evidence": "§6 đã điền biến imputation và còn nêu cơ chế dữ liệu thiếu",
+        "action": "Điền biến đưa vào mô hình MI ở §6; nếu cơ chế không phải MAR, đổi rõ giả định."
+      },
+      {
+        "id": "G4-AUTO-06",
+        "label": "§8 đa so sánh đã điền; nếu Bonferroni thì alpha điều chỉnh khớp số học",
+        "status": "PASS",
+        "evidence": "§8 đã điền (không dùng Bonferroni hoặc không cần hiệu chỉnh)",
+        "action": "Ghi rõ số kết cục chính + phương pháp hiệu chỉnh; nếu Bonferroni, alpha/n phải khớp §12."
+      },
+      {
+        "id": "G4-AUTO-07",
+        "label": "§7 phân tích nhóm nhỏ/chọn mẫu đã điền (chống HARKing)",
+        "status": "PASS",
+        "evidence": "§7 đã điền",
+        "action": "Điền §7 TRƯỚC khi ký — nhóm nhỏ phải được liệt kê tiền định, không phải sau khi xem dữ liệu."
+      },
+      {
+        "id": "G4-AUTO-08",
+        "label": "§10 phần mềm+seed cụ thể (không phải placeholder bị thay bằng 'OK')",
+        "status": "PASS",
+        "evidence": "§10 có tên+phiên bản phần mềm và seed số nguyên cụ thể",
+        "action": "Ghi tên+phiên bản phần mềm thật (vd 'R v4.3') và một seed số nguyên cụ thể (vd set.seed(2026))."
+      },
+      {
+        "id": "G4-AUTO-09",
+        "label": "Margin(Δ) cho NI/equivalence có giá trị và có nguồn biện minh",
+        "status": "PASS",
+        "evidence": "hypothesis_type=superiority — không cần margin",
+        "action": "Khai gate_params.G3.margin_source + margin_justification (FDA/EMA — hai khung có thể mâu thuẫn, xem STANDARDS_BASIS)."
+      },
+      {
+        "id": "G4-AUTO-10",
+        "label": "Không còn placeholder '[CẦN' ở mục bắt buộc (§1/§2/§5/§10)",
+        "status": "REVIEW",
+        "evidence": "còn placeholder '[CẦN' ở: §5 (Covariates/Phân tích đa biến)",
+        "action": "Điền đủ §1/§2/§5/§10 — approve_gate.py cũng từ chối ký khi còn placeholder ở đây."
+      },
+      {
+        "id": "G4-AUTO-11",
+        "label": "Kết cục chính §2 khớp câu hỏi nghiên cứu đã chốt (G0/G1)",
+        "status": "PASS",
+        "evidence": "kết cục chính §2 chứa 'G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_Truc' đã chốt ở G0/G1",
+        "action": "Đối chiếu §2 với gate_params.G0.primary_outcome/G1.primary_outcome; đổi kết cục chính phải giải trình."
+      }
+    ],
+    "approval_criteria": [
+      {
+        "id": "G4-HUMAN-01",
+        "label": "Sổ cái có phê duyệt G4 hợp lệ đúng vai trò thống kê/PI",
+        "status": "REVIEW",
+        "evidence": "chưa có sổ cái phê duyệt (approval_ledger.json) cho đề tài này",
+        "action": "Thống kê viên/PI tự ký: approve_gate.py --gate G4 --reviewer-role METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR"
+      },
+      {
+        "id": "G4-HUMAN-02",
+        "label": "Mức bảo đảm của khóa ký được nêu đúng (không nói quá)",
+        "status": "REVIEW",
+        "evidence": "chưa xác định phạm vi khóa; khóa riêng nhóm thống kê/PI có sẵn=False",
+        "action": "Tạo khóa riêng: setup_gate_approval_key.py --role STATISTICIAN, và để thống kê viên giữ."
+      },
+      {
+        "id": "G4-HUMAN-03",
+        "label": "Người ký G4 khác người ký các cổng khác (chỉ dấu độc lập)",
+        "status": "REVIEW",
+        "evidence": "chưa có bản ghi phê duyệt G4 để đối chiếu",
+        "action": "Cân nhắc để thống kê viên (không phải người đã ký G2/G8/G9) ký G4."
+      },
+      {
+        "id": "G4-HUMAN-04",
+        "label": "Bác sĩ/thống kê viên xác nhận đã rà EPV/VIF ở §5",
+        "status": "REVIEW",
+        "evidence": "gate_params.G4.epv_vif_reviewed=False",
+        "action": "Đặt gate_params.G4.epv_vif_reviewed=true trong study_meta.json sau khi rà §5."
+      },
+      {
+        "id": "G4-HUMAN-05",
+        "label": "Bác sĩ/thống kê viên xác nhận cơ chế dữ liệu thiếu ở §6",
+        "status": "REVIEW",
+        "evidence": "gate_params.G4.missing_data_mechanism_confirmed=False",
+        "action": "Đặt gate_params.G4.missing_data_mechanism_confirmed=true sau khi rà §6."
+      },
+      {
+        "id": "G4-HUMAN-06",
+        "label": "Subgroup/đa so sánh xác nhận TIỀN ĐỊNH trước khi khóa dữ liệu",
+        "status": "REVIEW",
+        "evidence": "gate_params.G4.subgroup_multiplicity_predefined_confirmed chưa bật",
+        "action": "Đặt gate_params.G4.subgroup_multiplicity_predefined_confirmed=true TRƯỚC khi G5 khóa dữ liệu."
+      },
+      {
+        "id": "G4-HUMAN-07",
+        "label": "reviewed_by_role khớp vai trò bắt buộc của G4",
+        "status": "REVIEW",
+        "evidence": "gate_params.G4.reviewed_by_role='(rỗng)'",
+        "action": "Đặt gate_params.G4.reviewed_by_role đúng nhóm: METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR."
+      }
+    ],
+    "pending_actions": [
+      "Điền đủ §1/§2/§5/§10 — approve_gate.py cũng từ chối ký khi còn placeholder ở đây.",
+      "Thống kê viên/PI tự ký: approve_gate.py --gate G4 --reviewer-role METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR",
+      "Tạo khóa riêng: setup_gate_approval_key.py --role STATISTICIAN, và để thống kê viên giữ.",
+      "Cân nhắc để thống kê viên (không phải người đã ký G2/G8/G9) ký G4.",
+      "Đặt gate_params.G4.epv_vif_reviewed=true trong study_meta.json sau khi rà §5.",
+      "Đặt gate_params.G4.missing_data_mechanism_confirmed=true sau khi rà §6.",
+      "Đặt gate_params.G4.subgroup_multiplicity_predefined_confirmed=true TRƯỚC khi G5 khóa dữ liệu.",
+      "Đặt gate_params.G4.reviewed_by_role đúng nhóm: METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR."
+    ],
+    "standards_basis": [
+      {
+        "standard": "ICH E9(R1) — Addendum on Estimands and Sensitivity Analysis",
+        "scope": "Khớp quần thể phân tích/estimand giữa đề cương và SAP; kế hoạch xử lý intercurrent events",
+        "url": "https://database.ich.org/sites/default/files/E9-R1_Step4_Guideline_2019_1203.pdf"
+      },
+      {
+        "standard": "Ogundimu EO et al. J Clin Epidemiol 2016;76:175-82 (PMID 26964707)",
+        "scope": "Nguồn thật của ngưỡng EPV≥10 cho hồi quy logistic/Cox đa biến",
+        "pmid": "26964707"
+      },
+      {
+        "standard": "van Smeden M et al. BMC Med Res Methodol 2016;16:163 (PMID 27881078)",
+        "scope": "Quy tắc EPV cố định được hỗ trợ YẾU — nên khai kèm cảnh báo, không coi là ngưỡng tuyệt đối",
+        "pmid": "27881078"
+      },
+      {
+        "standard": "van Buuren S, Groothuis-Oudshoorn K. J Stat Softw 2011;45(3) — mice",
+        "scope": "Multiple Imputation dưới giả định MAR; phải khai rõ biến đưa vào mô hình imputation",
+        "url": "https://www.jstatsoft.org/article/view/v045i03"
+      },
+      {
+        "standard": "FDA (2016) / EMA (2005) — hướng dẫn biên non-inferiority — LƯU Ý MÂU THUẪN",
+        "scope": "FDA chấp nhận M2 = tỷ lệ % của M1; EMA nói rõ định nghĩa biên theo tỷ lệ hiệu ứng hoạt-chất-vs-giả-dược là KHÔNG phù hợp — margin cần biện minh lâm sàng + khung pháp lý cụ thể, không chỉ một con số",
+        "url": "https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-choice-non-inferiority-margin_en.pdf"
+      }
+    ],
+    "scope_statement": "PASS_G4_SAP_LOCKED xác nhận: SAP không còn placeholder ở mục bắt buộc, số liệu ký khớp G3_checkpoint.json hiện tại, có phê duyệt ledger đúng vai trò thống kê/PI, và bác sĩ đã tự xác nhận EPV/VIF, cơ chế dữ liệu thiếu, subgroup tiền định. KHÔNG chứng minh nội dung phương pháp luận ĐÚNG về mặt lâm sàng, và (như G8) HMAC đối xứng nên không chứng minh người ký độc lập với chủ nhiệm đề tài. Cổng chặn thật của G4 vẫn là gate_contract.ledger_approved('G4', ...) mà G5/G6/run_stats_analysis.py gọi.",
+    "disclaimer": "Cần bác sĩ kiểm chứng."
+  },
+  "artifacts": {
+    "quality_report": "exports/hai-long-benh-nhan-C1a-BVQY175/G4_QUALITY_REPORT.md"
+  },
+  "disclaimer": "Cần bác sĩ kiểm chứng."
 }

@@ -85,9 +85,22 @@ class DataBoundary:
         for pattern in _PII_PATTERNS:
             scrubbed = pattern.sub("[REDACTED]", scrubbed)
         for sentinel in _PII_SENTINELS:
-            # Thay value sau sentinel key trong JSON-like text
+            # Thay value sau sentinel key trong JSON-like text.
+            # Vá 2026-09-06 (audit vòng 35, phát hiện #1 — CRITICAL, fail-open):
+            # bản cũ viết "\\s" (HAI backslash) bên trong raw f-string
+            # (rf'...') — raw string KHÔNG diễn giải escape nên hai backslash
+            # trong SOURCE giữ nguyên hai backslash lúc runtime, tạo ra pattern
+            # regex khớp "một ký tự backslash literal, rồi chữ s" (\\s theo
+            # nghĩa \-literal + s) thay vì lớp khoảng trắng \s (một backslash).
+            # Vì văn bản JSON thật không chứa backslash ở vị trí ":", regex
+            # KHÔNG BAO GIỜ khớp — toàn bộ vòng lặp thay giá trị theo sentinel
+            # key (patient_id, cccd, cmnd, bhyt, ho_ten_benh_nhan...) là no-op
+            # câm lặng, khiến scrub_pii() fail-open đúng loại dữ liệu nó được
+            # thiết kế riêng để chặn, ngay trước khi audit_logger.py ghi vào
+            # sổ audit append-only. Chỉ cần MỘT backslash "\s" trong raw
+            # string (rf'...\s...') để có đúng lớp khoảng trắng.
             scrubbed = re.sub(
-                rf'("{re.escape(sentinel)}"\\s*:\\s*")[^"]*(")',
+                rf'("{re.escape(sentinel)}"\s*:\s*")[^"]*(")',
                 r'\1[REDACTED]\2',
                 scrubbed,
                 flags=re.IGNORECASE,
@@ -123,20 +136,47 @@ class DataBoundary:
         text = self._to_scannable(output)
         if "FABRICATED_DATA_MARKER" in text:
             return True, "FABRICATED_DATA_SENTINEL"
-        # Thiếu source khi có p_value/result
-        if "p_value" in output and not output.get("source_pmid"):
-            return True, "NO_SOURCE_WITH_STATISTICAL_RESULT"
+        # Thiếu source khi có p_value/result — quét MỌI dict con (đệ quy),
+        # không chỉ cấp 1. Xem chú thích ở _iter_dicts().
+        for d in self._iter_dicts(output):
+            if "p_value" in d and not d.get("source_pmid"):
+                return True, "NO_SOURCE_WITH_STATISTICAL_RESULT"
         return False, "CLEAN"
 
     def check_fabricated_citation(self, output: dict) -> tuple[bool, str]:
         """Review-required nếu citation chưa verified."""
         if "FABRICATED_CITATION_MARKER" in self._to_scannable(output):
             return True, "FABRICATED_CITATION_SENTINEL"
-        if output.get("doi_verified") is False:
-            return True, "CITATION_DOI_NOT_VERIFIED"
+        # Quét MỌI dict con (đệ quy) — xem chú thích ở _iter_dicts().
+        for d in self._iter_dicts(output):
+            if d.get("doi_verified") is False:
+                return True, "CITATION_DOI_NOT_VERIFIED"
         return False, "CLEAN"
 
     # ── helpers ───────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _iter_dicts(obj):
+        """Duyệt ĐỆ QUY mọi dict con (kể cả `obj` chính nó nếu là dict) bên
+        trong một cấu trúc dict/list lồng nhau tuỳ ý.
+
+        Vá 2026-09-06 (audit vòng 35, phát hiện #3 — HIGH): check_fabricated_
+        data()/check_fabricated_citation() trước đây tra trực tiếp
+        `"p_value" in output`/`output.get("doi_verified")` — chỉ thấy key ở
+        CẤP 1 của dict. Một output THẬT có cấu trúc lồng tự nhiên (vd
+        `{"result": {"p_value": 0.03}}`, `{"citation": {"doi_verified":
+        False}}`) sẽ lọt qua hoàn toàn — cùng họ lỗi đã vá ở
+        check_pii_in_output() trong CHÍNH file này (bản cũ "chỉ soát string
+        CẤP CAO NHẤT... bỏ lọt PII thật lồng trong dict/list", xem
+        runtime/controlled_orchestrator.py) nhưng chưa được áp dụng lại cho
+        hai hàm chống dữ liệu/trích dẫn giả này."""
+        if isinstance(obj, dict):
+            yield obj
+            for value in obj.values():
+                yield from DataBoundary._iter_dicts(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                yield from DataBoundary._iter_dicts(item)
 
     @staticmethod
     def _to_scannable(output: dict | str) -> str:

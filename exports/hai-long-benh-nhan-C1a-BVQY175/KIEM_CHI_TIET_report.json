@@ -1,0 +1,770 @@
+{
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "generated_at": "2026-09-02T08:21:35",
+  "tong": {
+    "xanh": 38,
+    "vang": 38,
+    "do": 0,
+    "trang": 0
+  },
+  "exit_code": 1,
+  "bang_diem": {
+    "G0": {
+      "①": "🟢",
+      "②": "🟢",
+      "③": "🟡",
+      "④": "🟢"
+    },
+    "G1": {
+      "①": "🟢",
+      "②": "🟡",
+      "③": "🟡",
+      "④": "🟢"
+    },
+    "G2": {
+      "①": "🟡",
+      "②": "🟡",
+      "③": "🟡",
+      "④": "🟢",
+      "⑤": "🟡"
+    },
+    "G3": {
+      "①": "🟡",
+      "②": "🟡",
+      "③": "🟡",
+      "④": "🟢"
+    },
+    "G4": {
+      "①": "🟡",
+      "②": "🟡",
+      "③": "🟡",
+      "④": "🟢",
+      "⑤": "🟡"
+    },
+    "G5": {
+      "①": "🟡",
+      "②": "🟡",
+      "③": "🟡",
+      "⑤": "🟡"
+    },
+    "G6": {
+      "①": "🟡",
+      "②": "🟡",
+      "③": "🟡"
+    },
+    "G7": {
+      "①": "🟡",
+      "②": "🟡",
+      "③": "🟡"
+    },
+    "G8": {
+      "①": "🟡",
+      "②": "🟡",
+      "③": "🟡",
+      "⑤": "🟡"
+    },
+    "G9": {
+      "①": "🟡",
+      "②": "🟡",
+      "③": "🟡",
+      "⑤": "🟡"
+    },
+    "G10": {
+      "①": "🟡",
+      "②": "🟡",
+      "③": "🟡",
+      "④": "🟢",
+      "⑤": "🟡"
+    },
+    "HỆ": {
+      "S": "🟢"
+    }
+  },
+  "muc": [
+    {
+      "cong": "G0",
+      "truc": "①",
+      "muc": "🟢",
+      "nhan": "Checkpoint có, guardrail PASS",
+      "bang_chung": "G0_checkpoint.json",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G0",
+      "truc": "②",
+      "muc": "🟢",
+      "nhan": "Hợp đồng chất lượng G0",
+      "bang_chung": "PASS_G0_CONFIRMED (chấm sống); tự động FAIL 0 · REVIEW 0 · người 0 treo",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G0",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 24",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G0",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Còn 24 nhãn [CẦN…] trong 1 file",
+      "bang_chung": "thẩm quyền chủ nhiệm/thống kê viên",
+      "hanh_dong": "điền rồi chạy lại quality gate của cổng",
+      "may_sua": false
+    },
+    {
+      "cong": "G0",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "①",
+      "muc": "🟢",
+      "nhan": "Checkpoint có, guardrail PASS",
+      "bang_chung": "G1_checkpoint.json",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng G1",
+      "bang_chung": "DRAFT_READY_NEEDS_HUMAN_REVIEW (bản đã lưu — chấm lại = chạy run_g1_auto); tự động FAIL 0 · REVIEW 0 · người 5 treo",
+      "hanh_dong": "người thật điền study_meta.json → gate_params.G1: G1-HUMAN-01, G1-HUMAN-03, G1-HUMAN-06, G1-HUMAN-07, G1-HUMAN-08",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "②",
+      "muc": "🟢",
+      "nhan": "Chuẩn báo cáo STROBE được đề cương gọi tên",
+      "bang_chung": "thiết kế cross_sectional",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 89",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 2",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 50",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 19",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 6",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Còn 166 nhãn [CẦN…] trong 5 file",
+      "bang_chung": "thẩm quyền chủ nhiệm/thống kê viên",
+      "hanh_dong": "điền rồi chạy lại quality gate của cổng",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G1",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G2",
+      "truc": "①",
+      "muc": "🟢",
+      "nhan": "Checkpoint có, guardrail PASS",
+      "bang_chung": "G2_checkpoint.json",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G2",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Độ tươi (theo mtime): CŨ hơn thượng nguồn",
+      "bang_chung": "G2 sinh TRƯỚC thượng nguồn G0, G1 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
+      "hanh_dong": "chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …)",
+      "may_sua": false
+    },
+    {
+      "cong": "G2",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng G2",
+      "bang_chung": "DRAFT_NEEDS_HUMAN_COMPLETION (chấm sống); tự động FAIL 0 · REVIEW 3 · người 2 treo",
+      "hanh_dong": "người thật điền study_meta.json → gate_params.G2: G2-AUTO-02, G2-AUTO-05, G2-AUTO-08, G2-HUMAN-01, G2-HUMAN-02",
+      "may_sua": false
+    },
+    {
+      "cong": "G2",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 49",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G2",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Còn 49 nhãn [CẦN…] trong 1 file",
+      "bang_chung": "thẩm quyền chủ nhiệm/thống kê viên",
+      "hanh_dong": "điền rồi chạy lại quality gate của cổng",
+      "may_sua": false
+    },
+    {
+      "cong": "G2",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G2",
+      "truc": "⑤",
+      "muc": "🟡",
+      "nhan": "Sổ cái: chưa ký",
+      "bang_chung": "chưa có sổ cái phê duyệt (approval_ledger.json) cho đề tài này",
+      "hanh_dong": "IRB / IRB_ETHICS_COMMITTEE / ETHICS_COMMITTEE — tools/trinh_ky_cong.py hoặc approve_gate.py --gate G2",
+      "may_sua": false
+    },
+    {
+      "cong": "G3",
+      "truc": "①",
+      "muc": "🟢",
+      "nhan": "Checkpoint có, guardrail PASS",
+      "bang_chung": "G3_checkpoint.json",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G3",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Độ tươi (theo mtime): CŨ hơn thượng nguồn",
+      "bang_chung": "G3 sinh TRƯỚC thượng nguồn G0, G1 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
+      "hanh_dong": "chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …)",
+      "may_sua": false
+    },
+    {
+      "cong": "G3",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng G3",
+      "bang_chung": "DRAFT_READY_NEEDS_STATISTICIAN_REVIEW (chấm sống); tự động FAIL 0 · REVIEW 0 · người 6 treo",
+      "hanh_dong": "người thật điền study_meta.json → gate_params.G3: G3-HUMAN-01, G3-HUMAN-02, G3-HUMAN-03, G3-HUMAN-04, G3-HUMAN-05, G3-HUMAN-06",
+      "may_sua": false
+    },
+    {
+      "cong": "G3",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 5",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G3",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Còn 5 nhãn [CẦN…] trong 1 file",
+      "bang_chung": "thẩm quyền chủ nhiệm/thống kê viên",
+      "hanh_dong": "điền rồi chạy lại quality gate của cổng",
+      "may_sua": false
+    },
+    {
+      "cong": "G3",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G4",
+      "truc": "①",
+      "muc": "🟢",
+      "nhan": "Checkpoint có, guardrail PASS",
+      "bang_chung": "G4_checkpoint.json",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G4",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Độ tươi (theo mtime): CŨ hơn thượng nguồn",
+      "bang_chung": "G4 sinh TRƯỚC thượng nguồn G3 (> 120s) → cần chạy lại để đồng bộ dữ liệu mới nhất — nội dung có khớp hay không xem trục ② (chấm sống)",
+      "hanh_dong": "chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …)",
+      "may_sua": false
+    },
+    {
+      "cong": "G4",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng G4",
+      "bang_chung": "DRAFT_NEEDS_HUMAN_CONTENT (chấm sống); tự động FAIL 0 · REVIEW 1 · người 7 treo",
+      "hanh_dong": "người thật điền study_meta.json → gate_params.G4: G4-AUTO-10, G4-HUMAN-01, G4-HUMAN-02, G4-HUMAN-03, G4-HUMAN-04, G4-HUMAN-05",
+      "may_sua": false
+    },
+    {
+      "cong": "G4",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 3",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G4",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Còn 3 nhãn [CẦN…] trong 1 file",
+      "bang_chung": "thẩm quyền chủ nhiệm/thống kê viên",
+      "hanh_dong": "điền rồi chạy lại quality gate của cổng",
+      "may_sua": false
+    },
+    {
+      "cong": "G4",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G4",
+      "truc": "⑤",
+      "muc": "🟡",
+      "nhan": "Sổ cái: chưa ký",
+      "bang_chung": "chưa có sổ cái phê duyệt (approval_ledger.json) cho đề tài này",
+      "hanh_dong": "METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR — tools/trinh_ky_cong.py hoặc approve_gate.py --gate G4",
+      "may_sua": false
+    },
+    {
+      "cong": "G5",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Cổng chưa chạy",
+      "bang_chung": "chờ ký thật cổng G4 (METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G4",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G5",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng",
+      "bang_chung": "chưa tới lượt",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G5",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Artifact BẮT BUỘC thiếu",
+      "bang_chung": "data_management, redcap_dictionary, g5_quality_report",
+      "hanh_dong": "chưa tới lượt",
+      "may_sua": false
+    },
+    {
+      "cong": "G5",
+      "truc": "⑤",
+      "muc": "🟡",
+      "nhan": "Chưa có artifact để ký",
+      "bang_chung": "chưa tới lượt",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G6",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Cổng chưa chạy",
+      "bang_chung": "chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G6",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng",
+      "bang_chung": "chưa tới lượt",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G6",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Artifact BẮT BUỘC thiếu",
+      "bang_chung": "analysis_scripts",
+      "hanh_dong": "chưa tới lượt",
+      "may_sua": false
+    },
+    {
+      "cong": "G7",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Cổng chưa chạy",
+      "bang_chung": "chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G7",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng",
+      "bang_chung": "chưa tới lượt",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G7",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Artifact BẮT BUỘC thiếu",
+      "bang_chung": "manuscript",
+      "hanh_dong": "chưa tới lượt",
+      "may_sua": false
+    },
+    {
+      "cong": "G8",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Cổng chưa chạy",
+      "bang_chung": "chờ G7 chạy trước → chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G8",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng",
+      "bang_chung": "chưa tới lượt",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G8",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Artifact BẮT BUỘC thiếu",
+      "bang_chung": "presubmission",
+      "hanh_dong": "chưa tới lượt",
+      "may_sua": false
+    },
+    {
+      "cong": "G8",
+      "truc": "⑤",
+      "muc": "🟡",
+      "nhan": "Chưa có artifact để ký",
+      "bang_chung": "chưa tới lượt",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G9",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Cổng chưa chạy",
+      "bang_chung": "chờ G7 chạy trước → chờ G6 chạy trước → chờ ký thật cổng G5 (DATA_MANAGER / DATA_GOVERNANCE_QA_REVIEWER / DATA_STEWARD HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR) — approve_gate.py --gate G5",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G9",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng",
+      "bang_chung": "chưa tới lượt",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G9",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Artifact BẮT BUỘC thiếu",
+      "bang_chung": "author_integrity, publication_readiness, quality_report",
+      "hanh_dong": "chưa tới lượt",
+      "may_sua": false
+    },
+    {
+      "cong": "G9",
+      "truc": "⑤",
+      "muc": "🟡",
+      "nhan": "Chưa có artifact để ký",
+      "bang_chung": "chưa tới lượt",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Checkpoint BLOCKED = từ chối fail-closed ĐÚNG",
+      "bang_chung": "Trích dẫn (cổng A12) chưa chạy agent `kiem-chung-trich-dan` (thiếu artifact A12). → pytho… · chờ ký thật cổng G8 (PHAN_BIEN / PEER_REVIEWER / EXTERNAL_REVIEWER) — approve_gate.py --gate G8",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "①",
+      "muc": "🟡",
+      "nhan": "Độ tươi (theo mtime): MỒ CÔI (thượng nguồn thiếu)",
+      "bang_chung": "G10 có checkpoint nhưng thượng nguồn còn THIẾU: G5, G6, G7, G8, G9 — nội dung có khớp hay không xem trục ② (chấm sống)",
+      "hanh_dong": "chạy lại theo chuỗi khi thượng nguồn đã ổn (run_pipeline.py --from …)",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "②",
+      "muc": "🟡",
+      "nhan": "Hợp đồng chất lượng",
+      "bang_chung": "cổng đang BLOCKED — chưa có gì để chấm",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Artifact BẮT BUỘC thiếu",
+      "bang_chung": "quality_report",
+      "hanh_dong": "chưa tới lượt",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 66",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "Bai-bao-giao-thuc_Hai-long-C1a_BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 4",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "③",
+      "muc": "🟢",
+      "nhan": "De-cuong_Hai-long-C1a_BVQY175.md: 5 luật liêm chính sạch",
+      "bang_chung": "[CẦN còn 4",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "③",
+      "muc": "🟡",
+      "nhan": "Còn 74 nhãn [CẦN…] trong 3 file",
+      "bang_chung": "thẩm quyền chủ nhiệm/thống kê viên",
+      "hanh_dong": "điền rồi chạy lại quality gate của cổng",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "Bai-bao-giao-thuc_Hai-long-C1a_BVQY175.docx: Times New Roman 13pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "④",
+      "muc": "🟢",
+      "nhan": "De-cuong_Hai-long-C1a_BVQY175.docx: Times New Roman 13pt/bảng 11pt",
+      "bang_chung": "0 ký tự trang trí",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "G10",
+      "truc": "⑤",
+      "muc": "🟡",
+      "nhan": "Sổ cái: chưa ký",
+      "bang_chung": "chưa có sổ cái phê duyệt (approval_ledger.json) cho đề tài này",
+      "hanh_dong": "PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR — tools/trinh_ky_cong.py hoặc approve_gate.py --gate G10",
+      "may_sua": false
+    },
+    {
+      "cong": "HỆ",
+      "truc": "S",
+      "muc": "🟢",
+      "nhan": "11/11 script cổng + approve_gate + gate_contract biên dịch",
+      "bang_chung": "13/13 biên dịch sạch",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "HỆ",
+      "truc": "S",
+      "muc": "🟢",
+      "nhan": "11/11 gN_quality_gate.py có mặt + có CLI main()",
+      "bang_chung": "11/11",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "HỆ",
+      "truc": "S",
+      "muc": "🟢",
+      "nhan": "approve_gate gọi quality gate của 6 cổng cứng TRƯỚC khi ghi sổ cái",
+      "bang_chung": "G2·G4·G5·G8·G9·G10 đều nối",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "HỆ",
+      "truc": "S",
+      "muc": "🟢",
+      "nhan": "Không bộ sinh .docx nào gán font qua p.style; 11 điểm doc.save đi qua chuan_trinh_bay",
+      "bang_chung": "11/11 nối, 0 vi phạm p.style",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "HỆ",
+      "truc": "S",
+      "muc": "🟢",
+      "nhan": "G5/G6/G10 tự tra sổ cái thượng nguồn (fail-closed tĩnh)",
+      "bang_chung": "3/3 tham chiếu ledger_approved",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "HỆ",
+      "truc": "S",
+      "muc": "🟢",
+      "nhan": "gen_research_docx.ARTIFACT_MAP ≥ 32 bộ sinh",
+      "bang_chung": "38 khoá",
+      "hanh_dong": "",
+      "may_sua": false
+    },
+    {
+      "cong": "HỆ",
+      "truc": "S",
+      "muc": "🟢",
+      "nhan": "Canary: lỗi gài biết trước bị bắt + approve_gate từ chối đúng (G2/G4/G8)",
+      "bang_chung": "gài 9/9 bắt được · dây nối 3/3",
+      "hanh_dong": "",
+      "may_sua": false
+    }
+  ],
+  "disclaimer": "Chỉ ĐO và BÁO. 🟡 là việc của người thật, không phải lỗi. Cần bác sĩ kiểm chứng."
+}

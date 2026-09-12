@@ -175,20 +175,27 @@ def compute_claim_status(
             summary,
         )
 
-    # UNVERIFIED / REQUIRES_HUMAN_REVIEW / NOT_FOUND
+    # UNVERIFIED / REQUIRES_HUMAN_REVIEW / EXCLUDED / NOT_FOUND
+    # Vá 2026-09-06 (audit vòng 39, phát hiện #3): trước đây thiếu
+    # VerificationState.EXCLUDED.value trong danh sách này — một source đã bị
+    # loại (claim_use_allowed=False, xem add_evidence_source()) rơi thẳng
+    # xuống nhánh cuối và được coi là SUPPORTED_BY_HUMAN_VERIFIED_EVIDENCE dù
+    # comment cũ ngay dòng dưới tự khai "(and not EXCLUDED)" mà code chưa
+    # từng lọc điều đó.
     unverified = [
         sid for sid, state in summary.items()
         if state in (
             VerificationState.UNVERIFIED.value,
             VerificationState.REQUIRES_HUMAN_REVIEW.value,
+            VerificationState.EXCLUDED.value,
             "NOT_FOUND",
         )
     ]
     if unverified:
         return (
             ClaimStatus.BLOCKED_UNVERIFIED_EVIDENCE,
-            f"Evidence source chưa được human verified: {unverified}. "
-            "Claim bị block cho đến khi reviewer xác minh.",
+            f"Evidence source chưa được human verified hoặc đã bị loại (EXCLUDED): "
+            f"{unverified}. Claim bị block cho đến khi reviewer xác minh.",
             summary,
         )
 

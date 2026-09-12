@@ -142,8 +142,13 @@ def test_g8_artifact_phai_dung_ten_chuan(monkeypatch, study_dir):
 def test_g4_tu_choi_ky_khi_g4q_bao_blocked(monkeypatch, study_dir):
     """SAP không còn '[CẦN' ở 4 mục bắt buộc (qua được chốt cũ
     _g4_sections_still_draft) NHƯNG G4Q báo BLOCK ở tiêu chí khác (vd EPV/VIF,
-    §12 không khớp G3) — trước bản vá 2026-08-24, ca này ký sạch."""
-    artifact = study_dir / "G4_A5_SAP_FINAL.md"
+    §12 không khớp G3) — trước bản vá 2026-08-24, ca này ký sạch.
+
+    Tên artifact đổi 2026-09-03 sang G4Q.sap_artifact_name(_STUDY) (canonical
+    G4_A5_SAP_FINAL_<study>.md) — bản vá kiểm artifact-path cùng ngày (Workflow
+    đối kháng, phát hiện #1) từ chối tên rút gọn cũ trước khi kịp chạm tới
+    G4Q.evaluate_study()."""
+    artifact = study_dir / G4Q.sap_artifact_name(_STUDY)
     artifact.write_text("# SAP đã khóa\nKhông còn placeholder ở 4 mục chính.",
                         encoding="utf-8", newline="\n")
     monkeypatch.setattr(
@@ -162,9 +167,15 @@ def test_g4_tu_choi_ky_khi_g4q_bao_blocked(monkeypatch, study_dir):
 
 
 def test_g4_cho_phep_ky_khi_g4q_bao_ready(monkeypatch, study_dir):
-    artifact = study_dir / "G4_A5_SAP_FINAL.md"
-    artifact.write_text("# SAP đã khóa\nKhông còn placeholder ở 4 mục chính.",
-                        encoding="utf-8", newline="\n")
+    artifact = study_dir / G4Q.sap_artifact_name(_STUDY)
+    artifact.write_text(
+        "# SAP đã khóa\n"
+        "## §1 Tiêu chí nhận/loại (Quần thể phân tích)\nNgười lớn ≥18 tuổi.\n"
+        "## §2 Kết cục chính\nTỷ lệ đáp ứng tại tuần 12.\n"
+        "## §5 Covariates/Phân tích đa biến\nTuổi, giới, mức độ nặng nền.\n"
+        "## §10 Phần mềm + seed\nPython 3.12, seed=42.\n"
+        "Không còn placeholder ở 4 mục chính (đủ cả 4, không 'vắng sạch' — BH97).",
+        encoding="utf-8", newline="\n")
     monkeypatch.setattr(G4Q, "evaluate_study", lambda *a, **k: _fake_report(G4Q.STATUS_READY))
     rc = _run_main(
         monkeypatch, "--study", _STUDY, "--gate", "G4", "--artifact", str(artifact),

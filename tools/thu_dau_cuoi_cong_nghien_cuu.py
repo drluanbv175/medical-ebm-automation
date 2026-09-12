@@ -687,10 +687,210 @@ def _print_report(result: Mapping[str, Any]) -> None:
     print("=" * 78)
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# Wiring canary — chứng minh DÂY NỐI vào approve_gate.py THẬT (Sprint 9, task
+# 9.5, thêm 2026-08-24). Canary phía trên gọi THẲNG evaluate_gN_quality() —
+# đúng bề mặt logic tính điểm, nhưng KHÔNG đi qua approve_gate.py. Audit đa-
+# agent 24/08 phát hiện: trước bản vá 9.1, approve_gate.py --gate G8 hoàn
+# toàn KHÔNG gọi g8_quality_gate (import thiếu), và G2/G4 chỉ gọi SAU khi đã
+# ghi ledger (advisory, không chặn). Canary gốc KHÔNG THỂ bắt được lỗ hổng
+# này vì nó không chạm approve_gate.py — nếu ai revert bản vá 9.1, canary
+# gốc VẪN XANH. Phần dưới đây gọi approve_gate.main() TRỰC TIẾP (đúng hàm
+# CLI thật, không phải subprocess giả lập) với study/artifact THẬT trong
+# exports/ (dọn sạch bằng try/finally, không đụng đề tài thật — tên study có
+# tiền tố CANARY-WIRING riêng biệt), patch riêng evaluate_study của từng cổng
+# để mô phỏng "cổng báo BLOCKED" — nếu dây nối còn nguyên, approve_gate PHẢI
+# từ chối ghi ledger; nếu dây nối bị đứt (patch không bao giờ được gọi vì
+# approve_gate.py không import/gọi module đó), ledger vẫn được ghi bình
+# thường dù patch trả BLOCKED — đây chính là tín hiệu "dây nối đã đứt".
+# ════════════════════════════════════════════════════════════════════════════
+
+import json as _json  # noqa: E402
+import shutil as _shutil  # noqa: E402
+from unittest import mock as _mock  # noqa: E402
+
+import approve_gate as AG  # noqa: E402
+
+
+@dataclass
+class WiringCheck:
+    code: str
+    gate: str
+    history: str
+    study: str
+    seed: Callable[[Path], Path]  # (study_dir) -> artifact_path đã ghi sẵn nội dung hợp lệ
+    cli_args: Callable[[Path], List[str]]  # (artifact_path) -> list args CLI thêm
+    patch_target: str  # "g8_quality_gate.evaluate_study" | "g4_quality_gate.evaluate_study" | ...
+    patch_report: Dict[str, Any]  # report GIẢ LẬP mà evaluate_study bị patch phải trả về
+
+
+def _wiring_seed_g8(study_dir: Path) -> Path:
+    artifact = study_dir / G8Q.presubmission_artifact_name(study_dir.name)
+    artifact.write_text(_G8_PRESUBMISSION_TEXT, encoding="utf-8", newline="\n")
+    return artifact
+
+
+def _wiring_seed_g4(study_dir: Path) -> Path:
+    # SỬA vòng 27 (2026-09-06): tên cũ "G4_A5_SAP_FINAL.md" thiếu hậu tố
+    # "_{study}" — approve_gate.py so khớp artifact với
+    # G4Q.sap_artifact_name(args.study) TRƯỚC KHI gọi G4Q.evaluate_study()
+    # bị patch (dòng ~521-536), nên với tên sai này approve_gate LUÔN từ
+    # chối ngay ở bước so tên file, KHÔNG BAO GIỜ chạm tới patch —
+    # caught=True bị suy ra từ lý do SAI (đúng lớp lỗi tautology BH72 mà
+    # module này sinh ra để triệt tiêu, nay tái phát ngay trong chính nó).
+    # Dùng đúng hàm hợp đồng dùng chung, khớp cách _wiring_seed_g8() đã
+    # làm đúng với G8Q.presubmission_artifact_name().
+    artifact = study_dir / G4Q.sap_artifact_name(study_dir.name)
+    artifact.write_text(_g4_filled_sap(), encoding="utf-8", newline="\n")
+    return artifact
+
+
+def _wiring_seed_g2(study_dir: Path) -> Path:
+    artifact = study_dir / f"G2_A3_ETHICS_PACKAGE_{study_dir.name}.md"
+    artifact.write_text(
+        "# A3 — HỒ SƠ ĐẠO ĐỨC\nNội dung đầy đủ, không placeholder.\nCần bác sĩ kiểm chứng.\n",
+        encoding="utf-8", newline="\n",
+    )
+    return artifact
+
+
+def build_wiring_checks() -> List[WiringCheck]:
+    """Mỗi check patch evaluate_study của ĐÚNG module mà approve_gate.py phải
+    gọi, ép nó trả BLOCKED — nếu approve_gate.py vẫn ghi ledger (không từ
+    chối), nghĩa là dây nối đã đứt (đúng lỗ hổng 9.1 nếu tái diễn)."""
+    checks: List[WiringCheck] = []
+
+    checks.append(WiringCheck(
+        code="WIRING-G8-BLOCK-NOT-ENFORCED",
+        gate="G8 (bình duyệt độc lập)",
+        history=(
+            "Trước bản vá 2026-08-24 (Sprint 9, task 9.1): approve_gate.py "
+            "hoàn toàn KHÔNG import/gọi g8_quality_gate — ai giữ khóa vai trò "
+            "PHAN_BIEN ký được 'đã bình duyệt độc lập' mà không cần bản nhận "
+            "xét thật, kể cả tự duyệt cho chính đề tài mình đứng tên G4."
+        ),
+        study="CANARY-WIRING-NC-G8",
+        seed=_wiring_seed_g8,
+        cli_args=lambda artifact: [
+            "--study", artifact.parent.name, "--gate", "G8", "--artifact", str(artifact),
+            "--reviewer-role", "PHAN_BIEN", "--reviewer-ref", "REV-WIRING",
+        ],
+        patch_target="approve_gate.G8Q.evaluate_study",
+        patch_report={"status": "BLOCKED", "automatic_criteria": [
+            {"id": "G8-AUTO-99", "label": "giả lập canary", "status": "BLOCK", "evidence": "wiring canary"},
+        ]},
+    ))
+
+    checks.append(WiringCheck(
+        code="WIRING-G4-BLOCK-NOT-ENFORCED",
+        gate="G4 (khóa SAP)",
+        history=(
+            "Trước bản vá 2026-08-24: G4Q (12 tiêu chí, gồm đối chiếu SAP đã "
+            "ký với G3_checkpoint HIỆN TẠI) chỉ chạy SAU khi đã ghi ledger — "
+            "thuần advisory, không chặn được SAP đã trôi khỏi G3 thật."
+        ),
+        study="CANARY-WIRING-NC-G4",
+        seed=_wiring_seed_g4,
+        cli_args=lambda artifact: [
+            "--study", artifact.parent.name, "--gate", "G4", "--artifact", str(artifact),
+            "--reviewer-role", "PI", "--reviewer-ref", "PI-WIRING",
+        ],
+        patch_target="approve_gate.G4Q.evaluate_study",
+        patch_report={"status": "BLOCKED", "automatic_criteria": [
+            {"id": "G4-AUTO-99", "label": "giả lập canary", "status": "BLOCK", "evidence": "wiring canary"},
+        ]},
+    ))
+
+    checks.append(WiringCheck(
+        code="WIRING-G2-BLOCK-NOT-ENFORCED",
+        gate="G2 (đạo đức/đăng ký)",
+        history=(
+            "Trước bản vá 2026-08-24: 24 mục WHO TRDS v1.3.1 (gồm mục "
+            "13/14/19/20) chỉ chạy SAU khi đã ghi ledger — hồ sơ IRB thiếu "
+            "dữ kiện khoa học vẫn ký sạch."
+        ),
+        study="CANARY-WIRING-NC-G2",
+        seed=_wiring_seed_g2,
+        cli_args=lambda artifact: [
+            "--study", artifact.parent.name, "--gate", "G2", "--artifact", str(artifact),
+            "--reviewer-role", "IRB", "--reviewer-ref", "IRB-WIRING",
+            "--g2-approval-number", "IRB-CANARY-001",
+            "--g2-approval-date", "2026-08-01",
+            "--g2-valid-until", "2027-08-01",
+            "--g2-protocol-version", "v1.0",
+            "--g2-icf-version", "v1.0",
+            "--g2-ethics-decision", "APPROVED",
+            "--g2-recruitment-mode", "NOT_APPLICABLE",
+            "--g2-registration-status", "NOT_REQUIRED",
+        ],
+        patch_target="approve_gate.G2Q.evaluate_study",
+        patch_report={"status": "BLOCKED", "automatic_criteria": [
+            {"id": "G2-AUTO-99", "label": "giả lập canary", "status": "BLOCK", "evidence": "wiring canary"},
+        ]},
+    ))
+
+    return checks
+
+
+def run_wiring_canary() -> Dict[str, Any]:
+    results: List[Dict[str, Any]] = []
+    for chk in build_wiring_checks():
+        study_dir = REPO_ROOT / "exports" / chk.study
+        try:
+            _shutil.rmtree(study_dir, ignore_errors=True)
+            study_dir.mkdir(parents=True)
+            artifact = chk.seed(study_dir)
+            argv = ["approve_gate.py", *chk.cli_args(artifact)]
+            _orig_argv = sys.argv
+            sys.argv = argv
+            try:
+                with _mock.patch(chk.patch_target, return_value=chk.patch_report):
+                    rc = AG.main()
+            finally:
+                sys.argv = _orig_argv
+            ledger_path = study_dir / "approval_ledger.json"
+            ledger_has_record = False
+            if ledger_path.exists():
+                try:
+                    records = _json.loads(ledger_path.read_text(encoding="utf-8"))
+                    ledger_has_record = bool(records)
+                except (OSError, ValueError):
+                    ledger_has_record = False
+            # Kỳ vọng: report BLOCKED ⇒ approve_gate PHẢI từ chối (rc != 0 và
+            # KHÔNG ghi ledger). Nếu ledger CÓ bản ghi dù patch trả BLOCKED,
+            # dây nối đã đứt (patch không bao giờ được gọi tới).
+            caught = (rc != 0) and (not ledger_has_record)
+            results.append({
+                "code": chk.code, "gate": chk.gate, "history": chk.history,
+                "returncode": rc, "ledger_has_record": ledger_has_record, "caught": caught,
+            })
+        finally:
+            _shutil.rmtree(study_dir, ignore_errors=True)
+
+    all_caught = all(r["caught"] for r in results)
+    return {"wiring_results": results, "wiring_exit_code": 0 if all_caught else 1}
+
+
+def _print_wiring_report(result: Mapping[str, Any]) -> None:
+    print()
+    print("③ Wiring canary — dây nối vào approve_gate.py THẬT (không chỉ logic nội bộ):")
+    for r in result["wiring_results"]:
+        mark = "✅ BẮT ĐƯỢC" if r["caught"] else "❌ DÂY NỐI ĐỨT"
+        print(f"   [{mark}] {r['code']} — {r['gate']} — rc={r['returncode']}, "
+              f"ledger_has_record={r['ledger_has_record']}")
+        print(f"        Lý do lịch sử: {r['history']}")
+    n_total = len(result["wiring_results"])
+    n_caught = sum(1 for r in result["wiring_results"] if r["caught"])
+    print(f"   Tổng kết wiring: {n_caught}/{n_total} cổng có dây nối còn nguyên.")
+
+
 def main() -> int:
     result = run_canary()
     _print_report(result)
-    return result["exit_code"]
+    wiring = run_wiring_canary()
+    _print_wiring_report(wiring)
+    print("=" * 78)
+    return result["exit_code"] or wiring["wiring_exit_code"]
 
 
 if __name__ == "__main__":

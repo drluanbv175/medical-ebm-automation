@@ -8,13 +8,25 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 from uuid import uuid4
 
-from app.core.policy_engine import _DOB, _EMAIL, _MRN, _PHONE
+from app.core.policy_engine import _ADDRESS, _DOB, _EMAIL, _MRN, _PHONE, _VN_NAME
 
 
 def scrub_pii(value: Any) -> Any:
+    """Khử PII trước khi ghi audit log.
+
+    SỬA 2026-09-04 (audit đối kháng, phát hiện HIGH — task #55): trước bản vá
+    chỉ khử EMAIL/PHONE/MRN/DOB — thiếu `_ADDRESS`/`_VN_NAME`, dù cả hai
+    pattern đã có sẵn trong CÙNG module `policy_engine.py` và được dùng bởi
+    `contains_pii_text()` (hàm chặn ở nơi khác trong hệ). Hậu quả: một ghi chú
+    ("notes"/"payload") chứa tên bệnh nhân ("Nguyễn Văn A") hoặc địa chỉ cư
+    trú ("ngụ 12 Nguyễn Trãi Q1") đi qua `AuditLogger.log()` sẽ bị
+    `contains_pii_text()` CHẶN ở nơi khác trong hệ nhưng lại được GHI NGUYÊN
+    VĂN, không redact, vào chính file audit JSONL — nơi lẽ ra phải an toàn
+    nhất để đọc lại khi điều tra sự cố.
+    """
     if isinstance(value, str):
         text = value
-        for pattern in (_EMAIL, _PHONE, _MRN, _DOB):
+        for pattern in (_EMAIL, _PHONE, _MRN, _DOB, _ADDRESS, _VN_NAME):
             text = pattern.sub("[REDACTED_PII]", text)
         return text
     if isinstance(value, list):

@@ -25,6 +25,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
+import annex2_quality_gate as A2X
 import gate_contract as GC
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
@@ -84,6 +85,11 @@ STANDARDS_BASIS = (
         "standard": "ICH E6(R3)",
         "scope": "IRB/IEC, informed consent, safety and protocol control for clinical trials",
         "url": "https://database.ich.org/sites/default/files/ICH_E6%28R3%29_Step4_FinalGuideline_2025_0106.pdf",
+    },
+    {
+        "standard": A2X.VERSION,
+        "scope": "IRB/IEC, consent, privacy và data governance cho decentralised/pragmatic/RWD trials",
+        "url": A2X.SOURCE_URL,
     },
     {
         "standard": f"WHO Trial Registration Data Set {WHO_TRDS_VERSION}",
@@ -700,6 +706,20 @@ def evaluate_g2_quality(
         "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.",
     ))
 
+    annex2 = A2X.evaluate(meta, design_code, "G2")
+    annex2_issues = annex2["errors"] + annex2["missing"]
+    automatic.append(_criterion(
+        "G2-AUTO-02b",
+        f"{A2X.VERSION}: IRB/consent/privacy/data governance đủ cho phương pháp mới",
+        "BLOCK" if annex2["status"] == "BLOCK" else "PASS",
+        (
+            "; ".join(annex2_issues)
+            if annex2_issues
+            else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}"
+        ),
+        "Hoàn thiện khối annex2 trong study_meta trước khi nộp/khóa G2.",
+    ))
+
     # LƯU Ý PHẠM VI (audit toàn diện G0-G10, 2026-07-30, G2-F1): generate_g2_
     # full_package() in TẤT CẢ marker dưới đây VÔ ĐIỀU KIỆN (không phụ thuộc
     # design_code/dữ liệu bác sĩ), nên tiêu chí này KHÔNG BAO GIỜ tự phát
@@ -1053,11 +1073,24 @@ def evaluate_study(
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)
+        # VÁ 26/08/2026: out_dir luôn TUYỆT ĐỐI (repo_root / "exports" / study),
+        # nên report_path cũng tuyệt đối — nhưng run_g2_auto.py (tool sinh artifact,
+        # dùng Path("exports") / study tương đối theo CWD) ghi field CÙNG TÊN
+        # artifacts["quality_report"] dạng tương đối. Chạy công cụ này (đúng thiết
+        # kế: chấm lại, không tự phê duyệt) sẽ âm thầm thay đường dẫn tương đối
+        # sạch bằng đường dẫn tuyệt đối RIÊNG CỦA MÁY NÀY trong checkpoint dùng
+        # chung qua git — đúng họ lỗi BH06 (không đường dẫn cứng của một máy).
+        # Chỉ đổi CHUỖI được ghi vào checkpoint; write_quality_report() ở trên vẫn
+        # ghi file thật bằng out_dir tuyệt đối, không đổi hành vi I/O.
+        try:
+            recorded_path = report_path.relative_to(repo_root)
+        except ValueError:
+            recorded_path = report_path
         refresh_checkpoint(
             study=study,
             out_dir=out_dir,
             report=report,
-            quality_report_path=report_path,
+            quality_report_path=recorded_path,
         )
     return report
 

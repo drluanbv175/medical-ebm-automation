@@ -207,6 +207,17 @@ def _iso_datetime(value: Any) -> bool:
     return bool(text)
 
 
+# Vá 2026-09-06 (audit vòng 33, phát hiện #5 — LOW/MEDIUM, lỗi tiềm ẩn): so
+# khớp chuỗi con "PASS in status" không có ranh giới từ khiến một giá trị
+# guardrail dạng text mang nghĩa THẤT BẠI nhưng tình cờ chứa chuỗi con "PASS"
+# (vd "BYPASSED", "SURPASSED_THRESHOLD_ERROR") bị chấm PASS sai cho cổng
+# phát hành cuối cùng (G10). Hiện chưa module nào trong repo ghi guardrail
+# dạng text như vậy (mọi checkpoint thật đều dùng dict {"passed": bool}, xử
+# lý ở nhánh "passed" in guardrail phía trên) nên đây là lỗi CHƯA bị kích
+# hoạt bởi dữ liệu sản xuất — vá trước khi có gate/dữ liệu mới kích hoạt nó.
+_PASS_WORD = re.compile(r"\bPASS\b")
+
+
 def _guardrail_ok(checkpoint: Mapping[str, Any]) -> bool:
     guardrail = checkpoint.get("guardrail")
     if isinstance(guardrail, Mapping):
@@ -216,7 +227,7 @@ def _guardrail_ok(checkpoint: Mapping[str, Any]) -> bool:
     else:
         status = str(guardrail or "").upper()
     return bool(
-        ("PASS" in status or "✅" in status or "[OK]" in status)
+        (_PASS_WORD.search(status) or "✅" in status or "[OK]" in status)
         and not any(token in status for token in ("FAIL", "BLOCK", "LỖI", "🔴"))
     )
 
@@ -312,6 +323,7 @@ def ensure_readiness(study: str, out_dir: Path) -> Path:
         path.write_text(
             json.dumps(build_readiness_template(study), ensure_ascii=False, indent=2),
             encoding="utf-8",
+            newline="\n",
         )
     return path
 

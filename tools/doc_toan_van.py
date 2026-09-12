@@ -75,8 +75,21 @@ def main() -> int:
         vi_tri = [m.start() for m in re.finditer(re.escape(truy), vb_bd)][: a.max]
         if not vi_tri:
             continue
-        thay += 1
         pm = re.search(r"PMID-(\d+)_PMC(\d+)", f.name)
+        if pm is None:
+            # SỬA vòng 24 (2026-09-05): glob() ở trên chỉ đòi hỏi tiền tố "PMID-" +
+            # hậu tố ".xml" (lỏng), còn regex này đòi đúng khuôn "PMID-<số>_PMC<số>.xml"
+            # (chặt). Một file khớp glob nhưng không khớp regex (vd bác sĩ tự đổi tên
+            # thành "PMID-19393038_ghichu.xml" để ghi chú riêng) trước đây khiến
+            # pm.group(1) ném AttributeError NGAY LẬP TỨC, làm sập toàn bộ vòng lặp —
+            # không chỉ bỏ qua file lỗi mà còn mất kết quả của MỌI file hợp lệ đứng
+            # sau nó trong danh sách đã sắp xếp. Nay bỏ qua đúng MỘT file, có cảnh báo,
+            # các file khác vẫn được tìm tiếp.
+            print(f"⚠️  Bỏ qua {f.name} — khớp «{a.tim}» nhưng tên file không đúng "
+                  "khuôn PMID-<số>_PMC<số>.xml nên không trích được PMID/PMCID để "
+                  "hiển thị.", file=sys.stderr)
+            continue
+        thay += 1
         print(f"\n📄 PMID {pm.group(1)} (PMC{pm.group(2)}) — {len(vi_tri)} chỗ khớp"
               f" · đọc đủ: https://pmc.ncbi.nlm.nih.gov/articles/PMC{pm.group(2)}/")
         for v in vi_tri:

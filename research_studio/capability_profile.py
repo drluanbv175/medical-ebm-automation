@@ -15,6 +15,10 @@ import dataclasses
 import enum
 from typing import Dict, Tuple
 
+from runtime.data_boundary import DataBoundary
+
+_boundary = DataBoundary()
+
 
 class ExternalActionType(str, enum.Enum):
     SUBMIT = "SUBMIT"
@@ -90,14 +94,15 @@ def check_external_action(agent_id: str, action: ExternalActionType) -> Capabili
 
 
 # Marker output (synthetic) → suy ra ý đồ hành động ngoài để chặn ở tầng output.
+# REAL_DATA_OPERATION KHÔNG nằm trong dict này — xem detect_external_action():
+# dùng nguồn canonical DataBoundary thay vì danh sách tay riêng (đã lệch, xem
+# chú thích ở đó).
 _ACTION_MARKERS = {
     ExternalActionType.SUBMIT: ("AUTO_SUBMIT", "auto_submit", "JOURNAL_SUBMISSION", "submit_to"),
     ExternalActionType.RELEASE: ("EXTERNAL_RELEASE", "auto_release", "PUBLISH_EXTERNAL"),
     ExternalActionType.ETHICS_REGISTRATION: ("ETHICS_REGISTER", "IRB_SUBMIT", "CLINICALTRIALS_REGISTER",
                                              "PROSPERO_REGISTER"),
     ExternalActionType.EXTERNAL_COMMUNICATION: ("SEND_EMAIL", "EXTERNAL_WEBHOOK", "NOTIFY_EXTERNAL"),
-    ExternalActionType.REAL_DATA_OPERATION: ("REAL_PATIENT_DATA", "REAL_DATA_MARKER", "LIVE_DATABASE",
-                                             "EHOSPITAL_CONNECT", "RAW_DATA_WRITE"),
 }
 
 
@@ -110,4 +115,18 @@ def detect_external_action(output) -> Tuple[bool, str]:
         for m in markers:
             if m.lower() in low:
                 return True, f"{action.value}:{m}"
+    # Vá 2026-09-06 (audit vòng 37, phát hiện #2): danh sách tay cũ cho
+    # REAL_DATA_OPERATION ("REAL_PATIENT_DATA", "REAL_DATA_MARKER",
+    # "LIVE_DATABASE", "EHOSPITAL_CONNECT", "RAW_DATA_WRITE") lệch với nguồn
+    # canonical DataBoundary._PRODUCTION_CONNECTOR_MARKERS/_RAW_DATA_WRITE_MARKERS
+    # mà research_preflight.py trong cùng thư mục đã dùng đúng — bỏ sót
+    # HIS_CONNECT/EMR_CONNECT/LIS_CONNECT/PACS_CONNECT/PRODUCTION_MODE/
+    # raw_write/database/patients/write_raw_patient_data. Gọi thẳng
+    # DataBoundary thay vì duy trì danh sách tay thứ hai.
+    found_conn, reason_conn = _boundary.check_production_connector(output)
+    if found_conn:
+        return True, f"{ExternalActionType.REAL_DATA_OPERATION.value}:{reason_conn}"
+    found_raw, reason_raw = _boundary.check_raw_data_write(output)
+    if found_raw:
+        return True, f"{ExternalActionType.REAL_DATA_OPERATION.value}:{reason_raw}"
     return False, "CLEAN"

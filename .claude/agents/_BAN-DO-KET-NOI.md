@@ -70,7 +70,7 @@ G6.5 dien-giai-ket-qua
 G7  viet-ban-thao → hieu-dinh-song-ngu → kiem-chung-trich-dan🔒  (chuẩn riêng: TRIPOD+AI→mo-hinh-tien-luong · CHEERS→kinh-te-y-te · COSMIN→cong-cu-do-luong)
 G8🔒 binh-duyet → (sau G8) nop-bai-phan-hoi
 G9🔒 nop-bai-phan-hoi + binh-duyet + kiem-chung-trich-dan
-Theo loại thiết kế (có điều kiện, chèn G1/G3/G6/G7): cong-cu-do-luong (PROM/COSMIN) · mo-hinh-tien-luong (dự báo/TRIPOD+AI) · kinh-te-y-te (chi phí/CHEERS) · nghien-cuu-dinh-tinh (định tính/COREQ) · tham-dinh-do-chinh-xac-chan-doan (chẩn đoán/QUADAS-2+STARD)
+Theo loại thiết kế (có điều kiện, chèn G1/G3/G6/G7): cong-cu-do-luong (PROM/COSMIN) · mo-hinh-tien-luong (dự báo/TRIPOD+AI) · kinh-te-y-te (chi phí/CHEERS) · nghien-cuu-dinh-tinh (định tính/COREQ) · tham-dinh-do-chinh-xac-chan-doan (chẩn đoán/QUADAS-3+STARD; QUADAS-2 chỉ tương thích ngược)
 Xuyên suốt: so-cai-ghi-nho (ghi sổ cái sau mỗi cổng) ; cầu thực hành: huong-dan-lam-sang
 ```
 

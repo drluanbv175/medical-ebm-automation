@@ -46,6 +46,45 @@ def score_item(item: Dict) -> Dict:
     return item
 
 
+def _decorate_item(item: Dict, is_primary: bool) -> Dict:
+    """Gắn điểm/phân loại (bản chính) hoặc reset về "không áp dụng" (bản
+    trùng) cho MỘT item đã normalize. Mutates & returns `item`.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 9) — bản gốc (nhánh
+    `else` inline trong vòng lặp của `run_pipeline()`) chỉ reset
+    `classification`/`is_actionable`/`actionable_reason`; `normalize()`
+    không đặt `reason_for_exclusion`/`evidence_quality_score`/
+    `practice_change_score`/`reliability_tier`/`operational_evidence_level`/
+    `synthesis` — các trường đó CHỈ được gán ở nhánh `is_primary` — nên
+    `item` ở nhánh trùng KHÔNG hề chứa các khoá đó, và `_upsert()` (chỉ
+    `setattr()` khoá THẬT SỰ có mặt trong payload) không có gì để ghi đè.
+    Hậu quả: một bản ghi từng là PRIMARY ở lần chạy TRƯỚC (đã scoring/
+    synthesize/loại vì lý do X) mà lần này bị xếp thành duplicate GIỮ
+    NGUYÊN điểm số/lý do loại/synthesis CŨ trên hàng DB dù `classification`
+    đã đổi đúng thành "duplicate" — dashboard hiện một bản ghi "duplicate"
+    kèm lý do loại trừ/điểm số của một phân loại đã không còn đúng. Reset
+    TƯỜNG MINH cả 6 trường về None khi không phải bản chính."""
+    if is_primary:
+        score_item(item)
+        classification, actionable, a_reason, x_reason = classify(item)
+        item["classification"] = classification
+        item["is_actionable"] = actionable
+        item["actionable_reason"] = a_reason or None
+        item["reason_for_exclusion"] = x_reason or None
+        item["synthesis"] = synthesize(item)
+    else:
+        item["classification"] = "duplicate"
+        item["is_actionable"] = False
+        item["actionable_reason"] = None
+        item["reason_for_exclusion"] = None
+        item["evidence_quality_score"] = None
+        item["practice_change_score"] = None
+        item["reliability_tier"] = None
+        item["operational_evidence_level"] = None
+        item["synthesis"] = None
+    return item
+
+
 def run_pipeline(records: Optional[List[RawRecord]] = None,
                  max_results_per_query: int = 10,
                  incremental: bool = True,
@@ -140,21 +179,10 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
     with session_scope() as s:
         for pos, item in enumerate(normalized):
             is_primary = pos in primary_set
-            # 4-5) Score + classify + synthesize chỉ cho record chính.
+            # 4-5) Score + classify + synthesize (bản chính) hoặc reset (bản trùng).
+            _decorate_item(item, is_primary)
             if is_primary:
-                score_item(item)
-                classification, actionable, a_reason, x_reason = classify(item)
-                item["classification"] = classification
-                item["is_actionable"] = actionable
-                item["actionable_reason"] = a_reason or None
-                item["reason_for_exclusion"] = x_reason or None
-                item["synthesis"] = synthesize(item)
-                stats[classification] = stats.get(classification, 0) + 1
-            else:
-                # Bản trùng: không phân loại, reset cờ để không mang giá trị cũ.
-                item["classification"] = "duplicate"
-                item["is_actionable"] = False
-                item["actionable_reason"] = None
+                stats[item["classification"]] = stats.get(item["classification"], 0) + 1
 
             db_obj, created = _upsert(s, item, is_primary, run_id)
             persisted_ids[pos] = db_obj.id
@@ -187,11 +215,26 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
         ))
 
     # 7b) Ghi nhận kết thúc lần chạy (watermark).
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 14) — ternary gốc chỉ phân
+    # biệt "PARTIAL" với "mọi giá trị khác", BỎ SÓT "FAIL": khi strict_source_health
+    # =False (giá trị MẶC ĐỊNH, dùng ở job_daily()/job_weekly() tự động) và nguồn
+    # sập hoàn toàn (status="FAIL"), lần chạy này vẫn bị gán status="ok". Vì
+    # run_state.compute_since_date() chỉ đọc PipelineRun.status=="ok" để tính
+    # watermark cho lần live-pull kế tiếp, một lần chạy FAIL (không lấy được bản
+    # ghi thật nào) sẽ đẩy watermark nhảy qua đúng khoảng thời gian outage — mọi
+    # guideline/cảnh báo an toàn thuốc công bố trong khoảng đó KHÔNG BAO GIỜ được
+    # ingest lại. Thêm nhánh FAIL tường minh, đối xứng với nhánh strict đã có ở
+    # trên (status="error").
     source_status = str(source_health.get("status") or "NOT_APPLICABLE")
-    run_status = "partial" if source_status == "PARTIAL" else "ok"
-    stats["release_status"] = (
-        "BLOCKED_SOURCE_HEALTH_PARTIAL" if source_status == "PARTIAL" else "READY_FOR_REVIEW_QUEUE"
-    )
+    if source_status == "FAIL":
+        run_status = "error"
+        stats["release_status"] = "BLOCKED_SOURCE_HEALTH_FAIL"
+    elif source_status == "PARTIAL":
+        run_status = "partial"
+        stats["release_status"] = "BLOCKED_SOURCE_HEALTH_PARTIAL"
+    else:
+        run_status = "ok"
+        stats["release_status"] = "READY_FOR_REVIEW_QUEUE"
     run_state.finish_run(run_id, total_fetched=int(stats["total"]),
                          new_items=int(stats["new_items"]),
                          new_actionable=int(stats["new_actionable"]),

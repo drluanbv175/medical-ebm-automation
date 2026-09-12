@@ -1,0 +1,7 @@
+== V4.3 manifest + registry verify (offline) ==
+manifest_path_in_repo=True :: .../runtime/manifests/agent_source_manifest.csv
+manifest_self_check=MATCH
+agent_count=48 (min=48)
+all_hash_verified=True
+required_4_enforced_and_present=True
+RESULT=PASS

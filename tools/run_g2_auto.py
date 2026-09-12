@@ -42,6 +42,7 @@ _REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G0)
@@ -696,7 +697,7 @@ Population: [CẦN — PICO P]
 Intervention/Exposure: [CẦN — PICO I/E]
 Comparator: [CẦN — PICO C]
 Outcomes: Primary — [CẦN — PICO O] | Secondary — [CẦN]
-Risk of bias: [RoB 2 / ROBINS-I / QUADAS-2]
+Risk of bias: [RoB 2 / ROBINS-I / QUADAS-3 hiện hành; QUADAS-2 chỉ tương thích ngược]
 Reporting standard: PRISMA 2020
 Start date: [CẦN]
 Expected completion: [CẦN]
@@ -1502,7 +1503,7 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
                 pass
             elif stripped.startswith("|"):
                 p = doc.add_paragraph(stripped)
-                p.runs[0].font.name = "Courier New"
+                _CTB.dat_font_ma_nguon(p)  # vá 01/09: font đơn cách chỉ cho đoạn này
                 p.runs[0].font.size = Pt(8) if len(stripped) > 100 else Pt(9)
             elif stripped:
                 p = doc.add_paragraph(line)
@@ -1513,6 +1514,7 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
                     if "DRAFT" in run.text:
                         run.font.bold = True
         docx_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study_name}.docx"
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(docx_path)
         return docx_path
     except ImportError:
@@ -1619,6 +1621,12 @@ def main():
                         help="Loại thiết kế (mặc định: đọc từ G1 checkpoint)")
     # Đối xứng với run_g0_auto.py: cho phép chạy hoàn toàn offline. Hồ sơ vẫn sinh
     # ra, nhưng mục prior art được dán nhãn CHƯA TRA ĐƯỢC (không giả vờ đã tra).
+    # THÊM 2026-09-01: rào chống đè hồ sơ đạo đức đã biên tập (xem khối trước
+    # md_path.write_text). Ca thật cùng ngày: tái sinh G2 trên C1a đè mất 45 dòng
+    # ICF/mô tả nghiên cứu đã biên tập tay — cùng nguy cơ đã chặn ở G4.
+    parser.add_argument("--regenerate-artifact", action="store_true",
+                        help="Ép sinh lại hồ sơ đạo đức từ template dù bản đang có đầy đủ hơn "
+                             "(bản cũ vẫn được sao lưu .bak-* trước khi đè)")
     parser.add_argument("--skip-registry", action="store_true",
                         help="Bỏ qua tra ClinicalTrials.gov (offline). Hồ sơ sẽ ghi rõ "
                              "CHƯA TRA ĐƯỢC, không được đọc thành 'chưa ai làm'.")
@@ -1787,6 +1795,27 @@ def main():
     # điền và mọi số liệu (tools/vn_prose_style.py).
     artifact_md = _VNSTYLE.clean_generated_prose(artifact_md)
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    # ★ RÀO CHỐNG ĐÈ MẤT HỒ SƠ ĐẠO ĐỨC ĐÃ BIÊN TẬP (01/09/2026) — cùng luật với
+    # SAP ở G4: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh (ít nhãn [CẦN hơn) → TỪ
+    # CHỐI đè, mã 2; muốn sinh lại có chủ đích → --regenerate-artifact; mọi lần
+    # đè đều sao lưu .bak-* trước. Ca thật: tái sinh G2 trên C1a đè mất 45 dòng
+    # ICF/mô tả nghiên cứu/khảo sát PubMed đã biên tập tay — file vẫn hợp lệ,
+    # guardrail vẫn PASS, chỉ có người đọc kỹ mới thấy nội dung đã bay.
+    if md_path.exists():
+        ban_cu = md_path.read_text(encoding="utf-8")
+        bak = md_path.with_name(md_path.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
+        bak.write_text(ban_cu, encoding="utf-8", newline="\n")
+        print(f"  → Sao lưu hồ sơ đạo đức hiện có: {bak.name}")
+        if (ban_cu.count("[CẦN") < artifact_md.count("[CẦN")
+                and not getattr(args, "regenerate_artifact", False)):
+            print("⛔ TỪ CHỐI đè hồ sơ đạo đức: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh "
+                  f"({ban_cu.count('[CẦN')} vs {artifact_md.count('[CẦN')} nhãn [CẦN...]) — "
+                  "nhiều khả năng đã được bác sĩ biên tập.")
+            print("   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: thêm cờ --regenerate-artifact "
+                  "(bản cũ vẫn được sao lưu .bak-* ở trên).")
+            print("   Chỉ cần bản .docx CHUẨN TRÌNH BÀY từ bản đã biên tập (không sinh lại nội dung):\n"
+                  f"     python3 tools/xuat_docx_chuan.py --study {study}")
+            raise SystemExit(GC.EXIT_BLOCKED)
     md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
     registration_path = G2Q.build_registration_draft(

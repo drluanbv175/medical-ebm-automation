@@ -25,6 +25,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
+import annex2_quality_gate as A2X
 import skill_standards as S
 
 STATUS_BLOCKED = "BLOCKED"
@@ -114,6 +115,11 @@ _STANDARDS_BASIS = (
         "standard": "CONSORT 2025",
         "scope": "Báo cáo kết quả thử nghiệm ngẫu nhiên",
         "doi": "10.1136/bmj-2024-081123",
+    },
+    {
+        "standard": A2X.VERSION,
+        "scope": "Thử nghiệm có yếu tố phi tập trung, pragmatic và/hoặc RWD",
+        "url": A2X.SOURCE_URL,
     },
     {
         "standard": "PRISMA-P 2015",
@@ -459,6 +465,51 @@ def _primary_outcome(meta: Mapping[str, Any]) -> Any:
     return _first_present(meta.get("primary_outcome"), g1.get("primary_outcome"))
 
 
+def _metadata_tu_g0(out_dir: Path) -> Dict[str, str]:
+    """Bảng PMID → «Tiêu đề — Tạp chí (Năm)» lấy từ CHÍNH kết quả tìm PubMed của G0.
+
+    ★ ĐO 02/09/2026 trên đề tài thật C1a: sổ chứng cứ A2b để 12 dòng
+    «[CẦN TRÍCH XUẤT METADATA]» — tức việc TAY của chủ nhiệm — trong khi đủ tiêu
+    đề/tạp chí/năm của ĐÚNG 12 PMID đó đã nằm sẵn trong `G0_pubmed_raw.json` CÙNG
+    THƯ MỤC, do chính G0 tra về trong cùng dây chuyền (đo được 12/12 phủ). Cùng
+    lượt sinh, những PMID có effect size thì title ĐƯỢC điền, số còn lại thì
+    không — tức năng lực đã có, chỉ thiếu một đoạn dây. Đây là kiểu «tự động hoá
+    dở dang» đắt nhất: nó đẩy sang người thật một việc máy vừa làm xong ở dòng trên.
+
+    Ranh giới cố ý: KHÔNG gọi mạng (đọc file đã có), KHÔNG suy đoán — PMID không
+    có bản ghi thì GIỮ NGUYÊN nhãn [CẦN. Chỉ cột METADATA; trích xuất dữ liệu,
+    thẩm định RoB và xác nhận nội dung vẫn là việc người thật.
+    """
+    raw_path = Path(out_dir) / "G0_pubmed_raw.json"
+    try:
+        raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    bang: Dict[str, str] = {}
+    for nhom in raw.values():
+        if not isinstance(nhom, list):
+            continue
+        for r in nhom:
+            if not isinstance(r, dict):
+                continue
+            pmid = str(r.get("pmid") or "").strip()
+            tieu_de = _o_bang(r.get("title"))
+            if not pmid or not tieu_de:
+                continue
+            tap_chi = _o_bang(r.get("journal"))
+            nam = _o_bang(r.get("year"))
+            duoi = f"{tap_chi} ({nam})" if tap_chi and nam else (tap_chi or (f"({nam})" if nam else ""))
+            bang[pmid] = f"{tieu_de} — {duoi}" if duoi else tieu_de
+    return bang
+
+
+def _o_bang(gia_tri: Any) -> str:
+    """Chuỗi an toàn cho MỘT ô bảng markdown — dấu `|` trong tiêu đề sẽ phá cột."""
+    return " ".join(str(gia_tri or "").split()).replace("|", "/")
+
+
 def build_supporting_artifacts(
     *,
     study: str,
@@ -539,11 +590,16 @@ def build_supporting_artifacts(
             )
         )
     effect_pmids = {str(effect.get("pmid") or "").strip() for effect in effects}
+    meta_g0 = _metadata_tu_g0(out_dir)
+    n_tu_g0 = 0
     for pmid in identifiers["pmids"]:
         if pmid in effect_pmids:
             continue
+        md = meta_g0.get(str(pmid))
+        if md:
+            n_tu_g0 += 1
         evidence_rows.append(
-            f"| PMID:{pmid} | [CẦN TRÍCH XUẤT METADATA] | "
+            f"| PMID:{pmid} | {md or '[CẦN TRÍCH XUẤT METADATA]'} | "
             "[CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | "
             "[CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |"
         )
@@ -564,9 +620,14 @@ def build_supporting_artifacts(
         gap_text = "\n".join(f"- {item}" for item in gap_lines)
     else:
         gap_text = "- [CẦN BỔ SUNG sau tổng quan có hệ thống]"
+    ghi_chu_md = (
+        f"> Cột **Metadata**: {n_tu_g0} dòng điền TỰ ĐỘNG từ kết quả tìm PubMed của G0 "
+        "(`G0_pubmed_raw.json`) — chỉ là tiêu đề/tạp chí/năm, KHÔNG phải thẩm định. "
+        "Các cột còn lại vẫn là việc người thật.\n"
+    ) if n_tu_g0 else ""
     evidence = f"""# EVIDENCE LEDGER (A2b) — {study}
 > [DỰ THẢO] Không tự gán GRADE; chưa đọc toàn văn phải giữ nhãn [CẦN].
-
+{ghi_chu_md}
 ## Chiến lược tìm kiếm
 - Nguồn tối thiểu: PubMed + ít nhất một nguồn phù hợp khác.
 - Truy vấn G0: `{query}`
@@ -759,6 +820,20 @@ def evaluate_g1_quality(
         "PASS" if canonical_ok else "BLOCK",
         f"internal_code={internal!r}",
         "Chọn một mã thiết kế canonical được hệ hỗ trợ.",
+    ))
+
+    annex2 = A2X.evaluate(meta, internal, "G1")
+    annex2_issues = annex2["errors"] + annex2["missing"]
+    automatic.append(_criterion(
+        "G1-AUTO-02b",
+        f"{A2X.VERSION}: thiết kế phương pháp mới đủ fitness-for-purpose và giám sát",
+        "BLOCK" if annex2["status"] == "BLOCK" else "PASS",
+        (
+            "; ".join(annex2_issues)
+            if annex2_issues
+            else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}"
+        ),
+        "Điền study_meta.gate_params.G1.annex2 theo phương pháp đã chọn; không mở G1 khi thiếu.",
     ))
 
     reporting = str(design.get("reporting_standard") or "")
@@ -1308,3 +1383,58 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
     md_path = out_dir / "G1_QUALITY_REPORT.md"
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return md_path
+
+
+def main() -> int:
+    """CLI đọc lại KẾT QUẢ ĐÃ CHẤM của G1 — vá 01/09/2026 (kiểm toàn diện).
+
+    ★ VÌ SAO TỒN TẠI: G1 là cổng DUY NHẤT trong 11 cổng không có CLI — gọi
+    `python3 tools/g1_quality_gate.py --study X` trước bản vá này thì Python
+    chỉ import module rồi THOÁT 0 IM LẶNG, bỏ qua toàn bộ đối số: người gọi
+    đọc mã thoát 0 tưởng «đã chấm, sạch» trong khi KHÔNG một luật nào chạy —
+    đúng họ «yên tâm giả» (BH32) và «công cụ vẫn chạy, thứ cần kiểm thì không
+    bao giờ được kiểm».
+
+    Giới hạn TRUNG THỰC: evaluate_g1_quality() cần bộ input mà chỉ
+    run_g1_auto.py lắp được (artifact_texts, evidence_identifiers…) — CLI này
+    vì thế KHÔNG chấm lại, nó đọc G1_QUALITY_REPORT.json ĐÃ LƯU và nói rõ
+    điều đó; muốn CHẤM LẠI thì chạy lại run_g1_auto.py (tự chấm ở bước cuối).
+    Thiếu báo cáo → mã 2, không bao giờ im lặng thoát 0.
+    """
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Đọc kết quả hợp đồng chất lượng cổng G1 (đã lưu)")
+    ap.add_argument("--study", required=True, help="Mã đề tài")
+    a = ap.parse_args()
+    study = re.sub(r"[^\w\-]", "_", a.study.strip().replace(" ", "-"))
+    out_dir = Path(__file__).resolve().parent.parent / "exports" / study
+    bao_path = out_dir / "G1_QUALITY_REPORT.json"
+    if not bao_path.exists():
+        print(f"⛔ Chưa có {bao_path.name} cho đề tài '{study}' — G1 chưa từng được chấm.")
+        print("   Chạy: python3 tools/run_g1_auto.py --study", study)
+        return 2
+    try:
+        bao = json.loads(bao_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        print(f"⛔ Không đọc được {bao_path.name}: {e}")
+        return 2
+    status = str(bao.get("status") or "KHÔNG RÕ")
+    print(f"G1 QUALITY [{study}]: {status}")
+    print("  (kết quả ĐÃ LƯU từ lượt run_g1_auto gần nhất — muốn CHẤM LẠI: "
+          "python3 tools/run_g1_auto.py --study " + study + ")")
+    for nhom, ten in (("automatic_criteria", "Tiêu chí máy"), ("human_criteria", "Xác nhận người thật")):
+        muc = bao.get(nhom) or []
+        print(f"  — {ten}: {len(muc)} mục")
+        for c in muc:
+            st = str(c.get("status") or "")
+            dau = {"PASS": "✅", "BLOCK": "❌"}.get(st, "◌")
+            chi_tiet = str(c.get('evidence') or c.get('detail') or c.get('label') or '')[:100]
+            print(f"    {dau} {c.get('id')}: {chi_tiet}")
+    for hanh_dong in (bao.get("pending_actions") or [])[:8]:
+        print(f"  → CẦN: {str(hanh_dong)[:110]}")
+    print("Cần bác sĩ kiểm chứng.")
+    return {STATUS_BLOCKED: 3, STATUS_DRAFT_READY: 2, STATUS_CONFIRMED: 0}.get(status, 2)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

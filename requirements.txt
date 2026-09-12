@@ -26,6 +26,12 @@ statsmodels>=0.14.0
 lifelines>=0.30.0   # Cox PH + Kaplan-Meier cho thiết kế sống còn (--time/--event, vá 2026-07-15)
 matplotlib>=3.9.0   # tuỳ chọn — vẽ đường cong Kaplan-Meier (script vẫn chạy nếu thiếu)
 
+# Chữ ký cổng Ed25519 (setup_gate_approval_key --ed25519 / gate_contract scheme "ed1")
+# — có trong requirements.lock.txt từ 15/08/2026 nhưng từng THIẾU ở file nổi này:
+# máy cài venv trước 15/08 (hoặc cài từ file nổi) không phát được khoá, nút
+# «Phat Khoa Ed25519» báo "Thiếu thư viện cryptography" (đo thật trên Mac 01/09/2026).
+cryptography>=44.0.0
+
 # Reports / export
 Jinja2>=3.1.4
 deep-translator>=1.11.4

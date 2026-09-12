@@ -36,3 +36,6 @@ select = ["E", "F", "W", "I", "FA102"]
 "tools/run_pipeline_integrated.py" = ["E501"]
 "tools/scaffold_research_project.py" = ["E501"]
 "tests/test_r1_1_offline_rbac_synthetic_identity.py" = ["E501"]
+# Danh mục item SPIRIT 2025 NGUYÊN VĂN (sinh từ bài E&E chính thức, 06/09/2026): bẻ dòng
+# một câu checklist là sửa dữ liệu chuẩn — cùng lý do với verified.py/_fixtures.py.
+"tools/protocol_checklist_items.py" = ["E501"]

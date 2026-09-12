@@ -107,7 +107,7 @@ ARTIFACT_MAP = {
     "research-gap":       ("G0d", "G0-G1", "Đối chiếu khoảng trống nghiên cứu (Research Gap Analysis)"),
     "extraction":         ("G0e", "G0-G1", "Bảng trích xuất dữ liệu nghiên cứu (Data Extraction Table)"),
     "critical-appraisal": ("G0f", "G0-G1",
-                           "Thẩm định phê bình một nghiên cứu (RoB 2/ROBINS-I/AMSTAR-2/QUADAS-2 · GRADE)"),
+                           "Thẩm định phê bình một nghiên cứu (RoB 2/ROBINS-I/AMSTAR-2/QUADAS-3 · GRADE)"),
     "qualitative-design": ("G1e", "G1", "Thiết kế nghiên cứu định tính/hỗn hợp (COREQ/SRQR)"),
     "safety-monitoring":  ("G2a", "G2", "Kế hoạch giám sát an toàn — AE/SAE · DSMB · Stopping Rules"),
     "prediction-model":   ("G6c", "G6", "Mô hình tiên lượng/chẩn đoán (TRIPOD+AI/PROBAST+AI)"),
@@ -115,6 +115,19 @@ ARTIFACT_MAP = {
     "health-economics":   ("G7c", "G1+G7", "Phân tích kinh tế y tế (CEA/CUA/CBA/BIA — CHEERS 2022/ISPOR BIA GPP II)"),
     "citation-check":     ("G7d", "G7-G8🔒", "Kiểm chứng trích dẫn học thuật (A12 — cổng cứng chống trích dẫn ma)"),
     "study-log":          ("G9a", "G9", "Sổ cái & Bàn giao lưu trữ đề tài (A18 — Final Handover Log)"),
+
+    # SỬA 2026-09-02 (vòng rà 6, kiểm chi tiết hệ nghiên cứu): scaffold_research_
+    # project.py hàng "19" (Research_Integrity_Audit.md — kiểm toán completeness
+    # A1-A18) từng dùng LẠI khóa "checklist" của hàng "17" (Reporting_Checklist.md
+    # — bảng chuẩn báo cáo CONSORT/STROBE/PRISMA). Khác 2 cặp trùng khóa còn lại
+    # trong SCAFFOLD_FILES (03/04 "literature", 11/15 "sap") — cả hai đó có CHỦ Ý,
+    # tiêu đề/nội dung artifact đã gộp cả hai khái niệm — cặp "checklist" là lỗi
+    # thật: tiêu đề của khóa "checklist" chỉ nói "CONSORT/STROBE/PRISMA", không hề
+    # nhắc completeness audit. Hệ quả: STUDY_INDEX.md ghi CÙNG MỘT tên .docx kỳ
+    # vọng cho 2 mục 17/19 khác nội dung, và generate("checklist") gọi lần 2 (từ
+    # hàng 19) ghi đè .docx của lần 1 trên đĩa. Thêm khóa riêng cho hàng 19.
+    "integrity-audit":    ("G9b", "G7-G9",
+                           "Kiểm toán liêm chính & completeness đề tài (A1–A18)"),
 
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, dimension
     # workflow_agents_a): 4 khóa LÂM SÀNG (Cổng A/B — KHÔNG thuộc chuỗi cổng
@@ -139,6 +152,42 @@ ARTIFACT_MAP = {
     # CUỐI CÙNG sau Cổng B — tham chiếu khóa không tồn tại).
     "evidence-search":      ("CA3", "A", "Tóm tắt tra cứu chứng cứ điểm khám (PICO)"),
     "clinical-case-summary": ("CA4", "A-B", "Tóm tắt gói quyết định ca lâm sàng"),
+
+    # SỬA 2026-09-03 (Workflow đối kháng đa-agent, phát hiện #5): 14 khóa LÂM
+    # SÀNG bị 14 agent doctrine khác nhau tham chiếu qua `--artifact <khóa>`
+    # nhưng chưa từng có trong ARTIFACT_MAP — cùng lớp lỗi "mất định danh cổng,
+    # rơi về generic GX" đã vá ở vòng 11/15/16, lần này bị bỏ sót vì các agent
+    # này được thêm SAU các đợt vá trước (đo bằng grep thật `--artifact
+    # ([\w-]+)` trên toàn bộ .claude/agents/*.md, đối chiếu với ARTIFACT_MAP:
+    # 43 khóa được tham chiếu, 2 khớp là false positive — "exports" ở
+    # binh-duyet.md là tham số đường dẫn của approve_gate.py (khác CLI, khác
+    # hợp đồng), "bilingual-editing" ở hieu-dinh-song-ngu.md là ghi chú LỊCH SỬ
+    # tự khai đã BỎ khóa đó — còn lại đúng 14 khóa thật). Cả 14 đều là agent
+    # HỖ TRỢ CA NGOẠI TRÚ, chỉ ĐỀ XUẤT ở Cổng A (đã xác nhận từng file: câu
+    # "chỉ ĐỀ XUẤT (Cổng A)" xuất hiện tường minh), tiếp nối dãy mã CA sau CA4.
+    "anticoagulation-plan":        ("CA5",  "A",
+                                     "Kế hoạch kháng đông ngoại trú — chọn thuốc · liều theo CrCl "
+                                     "· bắc cầu · đảo ngược"),
+    "chronic-disease":             ("CA6",  "A",
+                                     "Kế hoạch theo dõi & điều trị theo mục tiêu bệnh mạn tính (Treat-to-Target)"),
+    "chronic-pain":                ("CA7",  "A", "Kế hoạch quản lý đau mạn tính đa mô thức"),
+    "depression-anxiety":          ("CA8",  "A",
+                                     "Tiếp cận trầm cảm & lo âu theo chăm sóc bậc thang (PHQ-9/GAD-7)"),
+    "diagnostic-accuracy-appraisal": ("CA9", "A",
+                                       "Thẩm định độ chính xác chẩn đoán (QUADAS-2/QUADAS-C "
+                                       "· STARD 2015 · GRADE-cho-test)"),
+    "grade-etd":                   ("CA10", "A", "Thẩm định GRADE & NNT/NNH — khối Evidence-to-Decision"),
+    "history-exam":                ("CA11", "A",
+                                     "Khai thác bệnh sử & khám lâm sàng có trọng điểm (SOCRATES/OPQRST/ROS)"),
+    "lab-interpretation":          ("CA12", "A", "Diễn giải kết quả cận lâm sàng & cờ giá trị nguy kịch"),
+    "medication-safety":           ("CA13", "A", "Rà soát an toàn kê đơn — tương tác · chống chỉ định · chỉnh liều"),
+    "palliative-care":             ("CA14", "A",
+                                     "Kế hoạch chăm sóc giảm nhẹ — kiểm soát triệu chứng & mục tiêu chăm sóc"),
+    "pico-clinical":               ("CA15", "A", "Câu hỏi PICO tại điểm khám"),
+    "prevention-screening":        ("CA16", "A", "Kế hoạch dự phòng & tầm soát theo tuổi–giới–nguy cơ"),
+    "probabilistic-dx":            ("CA17", "A",
+                                     "Suy luận chẩn đoán theo xác suất (Bayes — LR/ngưỡng test–treat)"),
+    "risk-score":                  ("CA18", "A", "Áp dụng thang điểm/công cụ nguy cơ lâm sàng đã kiểm định"),
 }
 
 
@@ -385,6 +434,11 @@ class ResearchDocxGenerator:
     def _save(self, doc, artifact_code, artifact_key):
         fname  = f"{artifact_code}_{artifact_key.upper()}_{self.study_slug}.docx"
         fpath  = self.out_dir / fname
+        # 01/09/2026: font đã là Times New Roman 13pt (BODY_PT) — chỉ cần bước
+        # LÀM SẠCH ký tự trang trí (emoji/khung/mũi tên) trước khi lưu, cùng một
+        # cỗ máy với 9 cổng còn lại (chuan_trinh_bay).
+        import chuan_trinh_bay as _CTB
+        _CTB.ap_dinh_dang_tai_lieu(doc, co_chu=self.BODY_PT)
         doc.save(str(fpath))
         print(f"✓ {fname}")
         return str(fpath)
@@ -394,9 +448,10 @@ class ResearchDocxGenerator:
     def generate(self, artifact_key: str, content: dict = None) -> str:
         """Điểm vào chính — tự chọn generator theo artifact_key.
 
-        - Khóa thuộc len(ARTIFACT_MAP) artifact NGHIÊN CỨU chuẩn (32, sau vòng lặp
-          kiểm tra-hoàn thiện vòng 11 — trước đó 22, xem comment ở ARTIFACT_MAP) → generator
-          chuyên biệt (hoặc generic).
+        - Khóa thuộc len(ARTIFACT_MAP) artifact chuẩn (39 tại 2026-09-02, xem lịch
+          sử tăng dần ở các comment trong ARTIFACT_MAP — 22 gốc → 32 (vòng 11) →
+          38 (vòng 15-16, thêm khóa lâm sàng) → 39 (vòng rà 6, "integrity-audit"))
+          → generator chuyên biệt (hoặc generic).
         - Khóa NGOÀI danh mục → KHÔNG sập: dùng mẫu CHUNG (generic) + in cảnh báo
           (fail-soft, không im lặng) để lệnh minh họa chạy được thay vì ValueError.
           Sửa 2026-07-19 (audit vòng 3, D4): nguồn khóa sai KHÔNG chỉ agent lâm
@@ -446,10 +501,12 @@ class ResearchDocxGenerator:
 
     # ── Generic (dùng khi chưa có generator chuyên biệt) ───────────────────
 
-    def _gen_generic(self, code, gate, title, content: dict):
-        doc = self._new_doc()
-        self._header_block(doc, code, gate, title)
+    def _render_kv_body(self, doc, content: dict):
+        """Render content{section_title: list|dict|str} thành đoạn/bảng/gạch đầu dòng.
 
+        Tách riêng khỏi _gen_generic để _gen_review (G8) dùng lại được mà không
+        chép lại logic — tránh 2 bản có thể lệch nhau khi sửa sau này.
+        """
         if content:
             for section_title, section_body in content.items():
                 self._h(doc, section_title, level=2)
@@ -466,6 +523,11 @@ class ResearchDocxGenerator:
                 doc.add_paragraph("")
         else:
             self._flag(doc, "Chủ nhiệm điền nội dung cho phần này.")
+
+    def _gen_generic(self, code, gate, title, content: dict):
+        doc = self._new_doc()
+        self._header_block(doc, code, gate, title)
+        self._render_kv_body(doc, content)
 
         self._disclaimer(doc)
         try:
@@ -872,6 +934,22 @@ class ResearchDocxGenerator:
     def _gen_dmp(self, code, gate, title, content: dict):
         doc = self._new_doc()
         self._header_block(doc, code, gate, title)
+        # 2026-09-02 (vòng rà 5, tiếp nối task_a5fde306 2026-07-12): G5 khác G2/G4 —
+        # cổng khóa chống p-hacking (run_g6_auto.py::_load_cp("G5")) không hash file
+        # .md/.docx nào của DMP, nó đọc THẲNG exports/<đề tài>/G5_checkpoint.json (do
+        # run_g5_auto.py ghi) để biết dữ liệu đã khóa (LOCKED) hay chưa. Vì vậy KHÔNG
+        # dùng lại nguyên văn câu "artifact chính thức... được approve_gate.py hash" của
+        # G2/G4 — câu đó sai với G5 (không có gì để hash ngoài chính checkpoint).
+        self._p(doc,
+            "⚠ Đây là bản DỰ THẢO scaffold (gen_research_docx.py), không phản ánh trạng "
+            "thái khóa dữ liệu THẬT. Cổng chống p-hacking (run_g6_auto.py) không đọc file "
+            "này — nó đọc THẲNG exports/<đề tài>/G5_checkpoint.json (do "
+            "`python tools/run_g5_auto.py` ghi) để biết dữ liệu đã LOCKED hay chưa. File "
+            "này để soạn thảo/tham khảo nội dung DMP; ĐỪNG suy ra dữ liệu đã khóa chỉ vì "
+            "file .docx này tồn tại — kiểm G5_checkpoint.json thật hoặc chạy "
+            "`python tools/g5_quality_gate.py --study <mã>`.",
+            bold=True, color=self.ORANGE, size=11)
+        doc.add_paragraph("")
         sections = [
             ("1. Mô tả dữ liệu & định dạng",     "data_description"),
             ("2. Thu thập & nhập liệu",            "collection"),
@@ -912,11 +990,62 @@ class ResearchDocxGenerator:
         self._disclaimer(doc)
         return self._save(doc, code, "manuscript")
 
+    # ── G8: Bình duyệt nội bộ ────────────────────────────────────────────────
+
+    def _gen_review(self, code, gate, title, content: dict):
+        # 2026-09-02 (vòng rà 5, tiếp nối task_a5fde306 2026-07-12): "review" trước đây
+        # KHÔNG có hàm _gen_ riêng — rơi vào _gen_generic() và không mang cảnh báo nào,
+        # dù G8 là 1 trong 6 cổng CỨNG (chữ ký ledger). Khác G5/G9 (hash checkpoint), G8
+        # GIỐNG G2/G4: cổng hash một artifact .md thật —
+        # exports/<đề tài>/G8_A9_PRESUBMISSION_<đề tài>.md do run_g8_auto.py sinh — nên
+        # dùng lại NGUYÊN VĂN kiểu cảnh báo của G2/G4 (Variant A), không phải kiểu G5/G9.
+        doc = self._new_doc()
+        self._header_block(doc, code, gate, title)
+        self._p(doc,
+            "⚠ Đây là bản DỰ THẢO scaffold (gen_research_docx.py) — KHÔNG phải artifact "
+            "chính thức mà cổng khóa G8 (bình duyệt độc lập) hash để ký ledger. Artifact "
+            "chính thức là exports/<đề tài>/G8_A9_PRESUBMISSION_<đề tài>.md do "
+            "`python tools/run_g8_auto.py` sinh, được `tools/approve_gate.py --gate G8` "
+            "hash để ghi vào approval_ledger.json. File .docx này KHÔNG chứa nhận xét "
+            "phản biện thật — nhận xét thật phải là một artifact riêng, "
+            "G8_PEER_REVIEW_REPORT_<đề tài>.md, do NGƯỜI phản biện viết theo mẫu "
+            "binh-duyet.md. Dùng file này để soạn thảo/tham khảo, KHÔNG dùng thay cho "
+            "artifact do run_g8_auto.py sinh khi cần qua cổng G8.",
+            bold=True, color=self.ORANGE, size=11)
+        doc.add_paragraph("")
+
+        self._render_kv_body(doc, content)
+
+        self._disclaimer(doc)
+        return self._save(doc, code, "review")
+
     # ── G9: Final Readiness Report ───────────────────────────────────────────
 
     def _gen_readiness(self, code, gate, title, content: dict):
         doc = self._new_doc()
         self._header_block(doc, code, gate, title)
+        # 2026-09-02 (vòng rà 5 — cùng phát hiện đã sửa ở _GHI-CHU.md của
+        # hai-long-benh-nhan-C1a-BVQY175/_tai-lieu-mo-coi/ ngày 02/09/2026): hàm này
+        # dựng doc từ `content` do người GỌI truyền vào; gọi generate("readiness") mà
+        # không truyền content thật (như đã xảy ra thật trên C1a) thì mọi trường ở trên
+        # rơi về mặc định NOT READY/🔴 CHƯA ĐÓNG — file trông như một báo cáo thật nhưng
+        # không đo gì cả. Cổng khóa chống p-hacking cho vòng đời KHÔNG đọc file này:
+        # run_g10_assemble.py hash THẲNG exports/<đề tài>/G9_checkpoint.json. Và pipeline
+        # G9 THẬT ghi một file HOÀN TOÀN KHÁC — G9_PUBLICATION_READINESS.json (qua
+        # g9_quality_gate.write_readiness_template()) — không bao giờ chạm vào
+        # G9_READINESS_<đề tài>.docx này.
+        self._p(doc,
+            "⚠ Đây là bản DỰ THẢO scaffold (gen_research_docx.py). Nếu được gọi không kèm "
+            "dữ liệu thật, mọi trường bên dưới MẶC ĐỊNH về NOT READY/🔴 CHƯA ĐÓNG — đừng "
+            "đọc đó là kết quả đo thật. Cổng thật không đọc file .docx này: trạng thái "
+            "khóa được `run_g10_assemble.py` xác minh qua exports/<đề tài>/"
+            "G9_checkpoint.json, và báo cáo sẵn sàng nghiệm thu THẬT của G9 là file KHÁC — "
+            "exports/<đề tài>/G9_PUBLICATION_READINESS.json (sinh bởi "
+            "`python tools/g9_quality_gate.py --study <mã>`). Muốn biết đề tài có THẬT SỰ "
+            "sẵn sàng không, đọc hai file đó hoặc chạy "
+            "`python tools/kiem_chi_tiet_he_nghien_cuu.py --study <mã>`.",
+            bold=True, color=self.ORANGE, size=11)
+        doc.add_paragraph("")
 
         verdict = content.get("verdict", "NOT READY")
         verdict_color = (self.GREEN if verdict == "READY"

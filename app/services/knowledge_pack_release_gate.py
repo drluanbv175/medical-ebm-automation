@@ -50,9 +50,19 @@ def assess_pack_release_readiness(pack_dir: Path, version_dir: str = "2026.1-dra
     approval_record = _load_json_mapping(version_path / REQUIRED_APPROVAL_FILE)
     evidence_manifest = _load_json_mapping(version_path / REQUIRED_EVIDENCE_MANIFEST)
 
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 14, phát hiện #3) —
+    # dùng `structural_errors`/`structural_ok` (KHÔNG phải `.errors`/`.ok`)
+    # để gom lỗi/quyết định `clinical_release_ready`. `.ok` gồm CẢ 2 luật
+    # draft_state của `_validate_scope()` (status phải == draft_review_only,
+    # mọi cờ an toàn phải False) — đối lập TUYỆT ĐỐI với `_scope_release_issues()`
+    # ngay dưới đây (đòi status != draft_review_only, clinical_release_allowed
+    # phải True). Dùng `.ok` khiến `clinical_release_ready` KHÔNG BAO GIỜ đạt
+    # True dù pack đã được duyệt đầy đủ. `review_ready`/`schema_ok` (field trả
+    # về) vẫn giữ `.ok` — ý nghĩa của chúng ĐÚNG LÀ "còn ở trạng thái draft an
+    # toàn", không đổi.
     issues: List[KnowledgePackReleaseIssue] = [
         KnowledgePackReleaseIssue(issue.file, f"schema:{issue.message}")
-        for issue in schema_result.errors
+        for issue in schema_result.structural_errors
     ]
 
     issues.extend(_scope_release_issues(scope))
@@ -60,7 +70,7 @@ def assess_pack_release_readiness(pack_dir: Path, version_dir: str = "2026.1-dra
     issues.extend(_evidence_manifest_issues(evidence_manifest))
 
     review_ready = schema_result.ok and _draft_safety_flags_are_closed(scope)
-    clinical_release_ready = schema_result.ok and not issues and _clinical_release_flags_are_open(
+    clinical_release_ready = schema_result.structural_ok and not issues and _clinical_release_flags_are_open(
         scope,
         approval_record,
         evidence_manifest,

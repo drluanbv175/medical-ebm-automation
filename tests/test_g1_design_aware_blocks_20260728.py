@@ -192,7 +192,7 @@ class TestDiagnosticVaPrediction:
         assert "BẢNG CHÉO 2×2" in artifacts["diagnostic"]
 
     def test_diagnostic_canh_bao_quadas_la_cong_cu_muc_tong_quan(self, artifacts):
-        """Phát hiện của lượt phản biện độc lập: QUADAS-2/3 là công cụ để NGƯỜI KHÁC
+        """Phát hiện của lượt phản biện độc lập: QUADAS-3 là công cụ để NGƯỜI KHÁC
         thẩm định nghiên cứu gốc, không phải công cụ tự chấm điểm cho chính mình."""
         assert "QUADAS" in artifacts["diagnostic"]
         assert "tự chấm điểm" in artifacts["diagnostic"]

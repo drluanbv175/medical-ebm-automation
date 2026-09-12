@@ -19,10 +19,6 @@ from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-_ANTIBIOTIC_KW = ("antibiotic", "antimicrobial", "stewardship", "kháng sinh",
-                  "aware", "pneumonia", "uti", "urinary tract", "sepsis", "resistance")
-
-
 def _stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d")
 
@@ -133,10 +129,21 @@ def build_antibiotic_data() -> Dict:
 
 
 def _matches_antibiotic(r: EvidenceItem) -> bool:
-    text = " ".join(str(x or "") for x in (
-        r.title, r.abstract, " ".join(r.keywords or []),
-        r.journal_or_organization)).lower()
-    return any(k in text for k in _ANTIBIOTIC_KW)
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 18) — module này tự
+    # duy trì tuple `_ANTIBIOTIC_KW` RIÊNG, độc lập với
+    # `app.services.filtering.ANTIBIOTIC_KEYWORDS` — dù chính comment tại
+    # định nghĩa của list đó ("dùng CHUNG cho báo cáo + dashboard, tránh
+    # trùng lặp") và app/reports/weekly_ebm.py::_is_antibiotic() đã đúng khi
+    # gọi thẳng is_antibiotic_text() thay vì tự chép danh sách. Bản sao ở
+    # đây KHÔNG được cập nhật theo bản vá "aware" → "aware classification"
+    # (vòng 14, task filtering.py) và còn tự thêm "uti" (khớp bừa substring
+    # trong "sol-uti-on", "instit-uti-onal", "sub-stit-uti-on"…), "sepsis",
+    # "resistance" — hai hàm phân loại "có phải bài kháng sinh" trong CÙNG
+    # dây chuyền báo cáo tuần cho ra hai câu trả lời khác nhau cho cùng một
+    # bản ghi. Gọi thẳng hàm chuẩn hoá, bỏ hẳn danh sách trùng lặp.
+    from app.services.filtering import is_antibiotic_text
+    return is_antibiotic_text(r.title, r.abstract, " ".join(r.keywords or []),
+                               r.journal_or_organization)
 
 
 def render_antibiotic_md(data: Dict) -> str:

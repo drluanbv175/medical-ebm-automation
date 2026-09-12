@@ -39,7 +39,12 @@ def test_no_production_flag_activation() -> None:
 
 
 def test_no_approval_or_clinical_release_bypass_in_normal_shadow_run() -> None:
-    service = ChronicCareService()
+    # SỬA 2026-09-04 (Workflow đối kháng đa-agent) — cùng lý do đã ghi ở
+    # test_phase_3a_chronic_care_functional.py: cờ export mặc định nay ĐÚNG
+    # là False (an toàn), nên bật tường minh để giữ nguyên luồng "normal
+    # shadow run" mà test này muốn kiểm (không có bypass phê duyệt/clinical
+    # release), không lẫn với việc kiểm cổng export.
+    service = ChronicCareService(feature_flags={"v7_chatgpt_project_export": True})
     service.seed_synthetic_cases()
     service.export_aggregate_json()
     state = service.dashboard_state()

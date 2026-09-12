@@ -46,6 +46,7 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import clean_research_dataset as CLEAN  # noqa: E402
 import g5_quality_gate as G5Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import import_real_dataset as RDI  # noqa: E402
@@ -569,8 +570,24 @@ def lock_dataset(
             }
 
     locked_at = datetime.now().isoformat(timespec="seconds")
+    # Cột đã khai "type": "date" trong data dictionary (vd visit_date) không
+    # phải PII cần xóa — chỉ miễn mẫu "date", các mẫu PII khác (SĐT/email/CCCD)
+    # vẫn quét bình thường. Cùng cơ chế đã áp cho import_dataset()/clean_dataset()
+    # ở import_real_dataset.py và pseudonymize_research_dataset.py; thiếu bước
+    # này ở đây làm lock_dataset() tự chặn dữ liệu ĐÃ được clean_dataset() cho
+    # qua với đúng dictionary, chỉ vì scan lại một lần nữa mà không biết dictionary.
+    _lock_dictionary = CLEAN._load_dictionary(dictionary_path)
+    _lock_exempt_date_columns = frozenset(
+        RDI._normalize_header(str(rule["name"]))
+        for rule in (_lock_dictionary.get("variables") or [])
+        if isinstance(rule, dict) and rule.get("type") == "date" and rule.get("name")
+    )
     profile = (
-        RDI._scan_csv(clean_data, max_scan_rows=max_scan_rows)
+        RDI._scan_csv(
+            clean_data,
+            max_scan_rows=max_scan_rows,
+            exempt_date_columns=_lock_exempt_date_columns,
+        )
         if clean_data.exists() and clean_data.suffix.lower() in RDI.SUPPORTED_SUFFIXES
         else {"rows": 0, "columns": [], "issues": []}
     )

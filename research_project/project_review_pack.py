@@ -25,7 +25,12 @@ from .project_config import (
 from .project_config import (
     REQUIRE_HUMAN_INPUT_MARKER as RHI,
 )
-from .project_evidence_intake import build_evidence_intake
+from .project_evidence_intake import (
+    EVIDENCE_SOURCE_LEDGER_FILENAME,
+    EvidenceSourceLedger,
+    VerificationState,
+    build_evidence_intake,
+)
 from .project_qa_runner import QARunResult
 
 # ---------------------------------------------------------------------------
@@ -243,6 +248,22 @@ class ReviewPackBuilder:
         return stale
 
     def _count_unverified_evidence(self) -> int:
+        # V4.3.5: nếu evidence_source_ledger.jsonl tồn tại → đếm theo ledger mới,
+        # cùng logic dual-mode mà project_qa_runner.py::_dr8_evidence_status() đã
+        # dùng — sửa bug "sửa 1 chỗ quên chỗ anh em": CLI (`researchctl
+        # project-evidence-import`) chỉ ghi vào ledger mới qua add_evidence_source(),
+        # không bao giờ ghi evidence_manifest.csv cũ, nên bản cũ luôn đếm ra 0.
+        new_ledger_path = self._dir / EVIDENCE_SOURCE_LEDGER_FILENAME
+        if new_ledger_path.exists():
+            sources = EvidenceSourceLedger(self._dir).read_all()
+            return sum(
+                1 for s in sources
+                if s.verification_state in (
+                    VerificationState.UNVERIFIED,
+                    VerificationState.REQUIRES_HUMAN_REVIEW,
+                )
+            )
+
         ev_dir = self._dir / "evidence"
         if not ev_dir.exists():
             return 0

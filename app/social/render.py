@@ -220,6 +220,19 @@ def render_slides(post: Dict, out_dir: Path, style: str = "clinical") -> List[Pa
     if not available():
         return []
     if style == "whiteboard":
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 18) — bản gốc chỉ
+        # kiểm available() (font Arial-kiểu chữ cho style "clinical") rồi gọi
+        # thẳng _render_whiteboard_all(), KHÔNG kiểm whiteboard_available()
+        # (font Brush Script/ChalkboardSE riêng, đường dẫn macOS cứng, không
+        # có biến môi trường ghi đè như _FONT_CANDIDATES). Trên máy không có
+        # 2 font đó (mọi máy không phải macOS, hoặc macOS thiếu font hệ
+        # thống bổ sung), _wb_fonts() ném OSError thô, vi phạm đúng cam kết
+        # an toàn ghi ở docstring module: "nếu thiếu Pillow hoặc font, hàm
+        # trả [] và packager vẫn xuất gói TEXT — không làm vỡ pipeline".
+        # whiteboard_available() đã có sẵn (dùng trong test) nhưng chưa từng
+        # được gọi từ đây.
+        if not whiteboard_available():
+            return []
         return _render_whiteboard_all(post, out_dir)
 
     fonts = _load_fonts()

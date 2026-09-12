@@ -30,6 +30,7 @@ BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 # ─────────────────────────────────────────────
@@ -109,6 +110,12 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
         "covariates":    [],
         "all_vars":      [],
         "detection_log": [],
+        # THÊM 2026-09-01 (nhánh kết cục THỨ BẬC — proportional odds): 3 khoá mới
+        # phải có mặt ở MỌI đường thoát (kể cả early-return khi CSV thiếu/ngắn)
+        # để consumer .get() không phân biệt được "chưa quét" với "quét không ra".
+        "outcome_levels": [],   # mã số các mức của biến kết cục (đọc cột Choices)
+        "cluster_col":    None, # biến cụm (bàn khám/cluster) cho SE robust theo chùm
+        "mode_var":       None, # biến phương thức trả lời (tự điền/hỗ trợ ghi) — SAP §9
     }
 
     if not csv_path.exists():
@@ -191,12 +198,28 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
             section_col = i
             break
 
+    # THÊM 2026-09-01: cột Field Type + Choices — cần cho phát hiện kết cục
+    # THỨ BẬC (số mức từ "1, Rất không hài lòng | ... | 5, Rất hài lòng").
+    # Mặc định 3/5 đúng với CẢ layout REDCap 18 cột chuẩn LẪN định dạng " / "
+    # cũ của G5 (cùng thứ tự: var, form, section, type, label, choices).
+    type_col, choices_col = 3, 5
+    for i, h in enumerate(header_lower):
+        if "field type" in h:
+            type_col = i
+            break
+    for i, h in enumerate(header_lower):
+        if "choices" in h:
+            choices_col = i
+            break
+
     # Nếu dùng " / " delimiter: cột 0=Variable, cột 2=Section, cột 4=Field Label
     # (đúng với định dạng G5 của hệ thống này)
     if delimiter == " / ":
         var_col     = 0
         section_col = 2
         label_col   = 4
+        type_col    = 3
+        choices_col = 5
 
     all_vars = []
     # Biến hành chính không dùng làm predictor
@@ -206,6 +229,12 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
         "protocol_deviation", "ltfu", "censor_reason",
         "ae_any", "ae_grade", "sae_any",   # biến an toàn, không phải covariate lâm sàng
     }
+
+    # Từ điển phụ cho nhánh thứ bậc: field type + choices theo TỪNG biến
+    # (chỉ đọc, không đổi cấu trúc all_vars 3 phần tử mà nhiều vòng lặp
+    # phía dưới và test cũ đang dựa vào).
+    type_by_var: dict = {}
+    choices_by_var: dict = {}
 
     for line in lines[1:]:
         parts = split_row(line)
@@ -218,6 +247,10 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
             continue
         if var_name.lower() in skip_vars:
             continue
+        type_by_var[var_name]    = (parts[type_col].strip().lower()
+                                    if len(parts) > type_col else "")
+        choices_by_var[var_name] = (parts[choices_col].strip()
+                                    if len(parts) > choices_col else "")
         all_vars.append((var_name, label, section))
 
     # Forward-fill Section Header: quy ước REDCap chỉ ghi tên section ở DÒNG
@@ -345,6 +378,24 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
             continue
         if _score(var, label, _OUTCOME_KEYWORDS) > 0:
             continue
+        # THÊM 2026-09-01 (kiểm toàn diện): Section Header khai TƯỜNG MINH vai
+        # trò hiệu chỉnh ("Biến hiệu chỉnh…", "forced-in", "covariate") → nhận
+        # THẲNG làm covariate — tín hiệu CẤU TRÚC thắng từ khoá, cùng lý lẽ đã
+        # dùng cho exposure/outcome ở trên. Vì sao cần: bộ từ khoá _DEMO/_LAB/
+        # _COMORBID nghiêng tiếng Anh (age/sex/bmi…), dictionary đề tài thật
+        # đặt tên tiếng Việt (tuoi/gioitinh/noicutru…) sẽ trượt hết → template
+        # rơi về "age + sex + bmi" SAI TÊN trên chính đề tài có bộ biến riêng.
+        if _section_is(section, "hiệu chỉnh", "forced-in", "covariate") and not _section_is(
+                section, "không hiệu chỉnh", "khong hieu chinh"):
+            covariate_found.append(var)
+            continue
+        # Loại trừ cấu trúc đối xứng: section khai RÕ "không hiệu chỉnh mô
+        # hình chính" / "thăm dò" / "không vào mô hình" → KHÔNG là covariate
+        # dù từ khoá có khớp (đề cương C1a khai co_cls/so_quay_buoc đúng kiểu
+        # này — đưa vào mô hình chính là trái điều đề cương đã khoá).
+        if _section_is(section, "không hiệu chỉnh", "thăm dò", "không vào mô hình",
+                       "text tự do", "mô tả"):
+            continue
         is_demo    = _score(var, label, _DEMO_KEYWORDS) > 0
         is_lab     = _score(var, label, _LAB_KEYWORDS) > 0
         is_comorbid = _score(var, label, _COMORBID_KEYWORDS) > 0
@@ -356,7 +407,75 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
         f"✅ Covariates ({len(covariate_found)}): {', '.join(covariate_found) or 'không phát hiện'}"
     )
 
+    # ── THÊM 2026-09-01: tín hiệu phụ cho nhánh kết cục THỨ BẬC ──────────────
+    # (1) Số mức của biến kết cục — đọc cột Choices ("1, Rất không hài lòng |
+    #     ... | 5, Rất hài lòng"). CHỈ là thông tin mô tả (số mức, ngưỡng gộp
+    #     gợi ý); quyết định "dùng mô hình thứ bậc hay không" KHÔNG suy từ đây
+    #     — mã số nguyên ≥3 mức là điều kiện CẦN chứ không ĐỦ (ethnicity 1-4
+    #     cũng là số nguyên nhưng là biến DANH ĐỊNH). Thẩm quyền khai mô hình
+    #     là SAP đã khoá — xem _sap_declares_ordinal().
+    def _ma_muc(chuoi_choices: str) -> list:
+        """Trả list mã số nguyên của các mức; một mức không phải số → []."""
+        if not chuoi_choices:
+            return []
+        codes = []
+        for phan in chuoi_choices.split("|"):
+            code = phan.split(",", 1)[0].strip()
+            if not re.fullmatch(r"-?\d+", code):
+                return []
+            codes.append(int(code))
+        return sorted(codes)
+
+    out_var = result["outcome"]
+    if out_var in choices_by_var and type_by_var.get(out_var) in ("radio", "dropdown"):
+        muc = _ma_muc(choices_by_var[out_var])
+        if len(muc) >= 3:
+            result["outcome_levels"] = muc
+            result["detection_log"].append(
+                f"✅ Kết cục có {len(muc)} mức mã số ({muc[0]}–{muc[-1]}) — "
+                "đủ điều kiện CẦN cho mô hình thứ bậc (thẩm quyền: SAP đã khoá)")
+
+    # (2) Biến CỤM (bàn khám/site nội bộ) cho SE robust theo chùm. Lưu ý:
+    #     site_id nằm trong skip_vars (biến hành chính) nên không bao giờ được
+    #     chọn ở đây — giới hạn cố ý, đã ghi trong doctrine.
+    _CLUSTER_KEYWORDS = ("ban_kham", "cluster", "cum")
+    _CLUSTER_LABEL_KEYWORDS = ("bàn khám", "cụm")
+    for var, label, _sec in all_vars:
+        if var in {result["exposure"], result["outcome"], result["time_col"]}:
+            continue
+        if _score(var, label, _CLUSTER_KEYWORDS) > 0 or any(
+                kw in label.lower() for kw in _CLUSTER_LABEL_KEYWORDS):
+            result["cluster_col"] = var
+            result["detection_log"].append(f"✅ Biến cụm (SE robust theo chùm): {var}")
+            break
+    # Biến cụm không được đồng thời là covariate cố định (đưa cụm vào công
+    # thức fixed-effect VÀ vcovCL cùng lúc là sai đặc tả mô hình):
+    if result["cluster_col"] and result["cluster_col"] in result["covariates"]:
+        result["covariates"] = [c for c in result["covariates"] if c != result["cluster_col"]]
+        result["detection_log"].append(
+            f"⚠️  {result['cluster_col']} bị loại khỏi covariates — đã dùng làm biến cụm")
+
+    # (3) Biến phương thức trả lời (tự điền vs hỗ trợ ghi) — SAP §9 độ nhạy.
+    _MODE_KEYWORDS = ("mode_tra_loi", "response_mode")
+    for var, label, _sec in all_vars:
+        if _score(var, label, _MODE_KEYWORDS) > 0 or "phương thức trả lời" in label.lower():
+            result["mode_var"] = var
+            result["detection_log"].append(f"✅ Biến phương thức trả lời (độ nhạy §9): {var}")
+            break
+
     return result
+
+
+def _sap_declares_ordinal(out_dir: Path, study: str) -> bool:
+    """SAP đã khoá có khai mô hình CHÍNH là hồi quy logistic THỨ TỰ không?
+
+    SỬA 2026-09-01 (cùng ngày ra đời): thân hàm CHUYỂN VỀ
+    `gate_contract.sap_declares_ordinal()` — một nguồn dùng chung cho G6 lẫn
+    G7, để hai cổng không giữ hai bản chép tay của cùng một regex (hai bản là
+    nguồn trôi dạt). Giữ tên wrapper này vì test/doc đã tham chiếu; toàn bộ
+    lý lẽ "SAP là thẩm quyền, không suy từ mã số mức" xem docstring bên GC.
+    """
+    return GC.sap_declares_ordinal(out_dir, study)
 
 
 # ─────────────────────────────────────────────
@@ -431,7 +550,11 @@ message("=== 00_setup.R hoàn tất === Seed: ", SEED)
 _WRONG_METHOD_DESIGNS = {"cross_sectional", "diagnostic", "prediction", "sr_ma", "qualitative"}
 
 _METHOD_HINT_BY_DESIGN = {
-    "cross_sectional": "hồi quy logistic đa biến (OR)",
+    # SỬA 2026-09-01: thêm vế thứ bậc — hint này cấy vào 01/02/CLI/sensitivity
+    # (khuôn cohort) cho MỌI ca cross_sectional, phải đúng cho cả kết cục nhị
+    # phân LẪN thứ bậc (SAP khai proportional odds → 03_analysis.R là chuẩn).
+    "cross_sectional": "hồi quy logistic đa biến (OR) — kết cục THỨ BẬC thì "
+                       "proportional odds (cOR), xem 03_analysis.R",
     "diagnostic": "ROC/AUC + decision curve analysis (STARD)",
     "prediction": "mô hình tiên lượng (TRIPOD+AI) — KHÔNG phải Cox đơn biến",
     "sr_ma": "tổng hợp bằng chứng (PRISMA) trên bảng STUDY-LEVEL, không phải participant-level",
@@ -2480,6 +2603,33 @@ TABLE_SHELLS = {
 }
 
 
+# THÊM 2026-09-01: bảng shell riêng cho cross-sectional KẾT CỤC THỨ BẬC —
+# không đè key "cross_sectional" trong TABLE_SHELLS (bản nhị phân vẫn là mặc
+# định khi SAP không khai mô hình thứ bậc); generate_artifact() chọn bộ này
+# khi v["outcome_ordinal"] bật, cùng nhánh với _r03_cross_ordinal_with_vars
+# để bảng kết quả và script không nói hai thứ khác nhau.
+TABLE_SHELLS_CROSS_ORDINAL = [
+    ("Bảng 1 — Đặc điểm nền", [
+        ("Biến", "Phơi nhiễm+ (N=[CẦN])", "Phơi nhiễm- (N=[CẦN])", "SMD / p"),
+        ("Tuổi (năm), TB±SD", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
+        ("Giới nữ, n (%)", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
+    ]),
+    ("Bảng 2 — Kết cục chính (Proportional odds — cOR)", [
+        ("Phân tích", "cOR", "95%CI Lower", "95%CI Upper", "p"),
+        ("Thô (univariable)", "[chạy 03_analysis.R]", "[chạy]", "[chạy]", "[chạy]"),
+        ("Hiệu chỉnh (multivariable, forced-in)", "[chạy 03_analysis.R]", "[chạy]", "[chạy]", "[chạy]"),
+        ("SE robust theo cụm (hoặc clmm nếu <15 cụm)", "[chạy 03_analysis.R §2]", "[chạy]", "[chạy]", "[chạy]"),
+    ]),
+    ("Bảng 3 — Giả định & độ nhạy (SAP §5/§9)", [
+        ("Phương pháp", "Ước lượng (95%CI)", "p", "Ghi chú"),
+        ("Brant test (proportional odds)", "—", "[chạy 03_analysis.R §3]", "Vi phạm → partial PO theo biến"),
+        ("Tuyến tính (kết cục coi liên tục, HC3)", "[chạy §6a]", "[chạy]", "Song song, không chi phối kết luận"),
+        ("Loại phiếu hỗ trợ ghi (tự điền thuần)", "[chạy §6b]", "[chạy]", "So chiều + độ lớn cOR"),
+        ("Gộp nhị phân (≥ ngưỡng SAP §9)", "[chạy §6c]", "[chạy]", "CHỈ khi đủ ≥10 biến cố/tham số"),
+    ]),
+]
+
+
 # ─────────────────────────────────────────────
 # HÀM TIỆN ÍCH
 # ─────────────────────────────────────────────
@@ -2596,6 +2746,7 @@ def write_docx(artifact: str, path: Path) -> bool:
                 doc.add_paragraph(line, style="No Spacing")
             else:
                 doc.add_paragraph(line)
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(path)
         return True
     except Exception:
@@ -2655,7 +2806,8 @@ _SCRIPT03_INFO = {
 }
 
 
-def _script03_row(design_code, effect_type, exposure, outcome, time_col):
+def _script03_row(design_code, effect_type, exposure, outcome, time_col,
+                  outcome_ordinal=False):
     """Dòng '03_analysis.R' của PHẦN 3 — khớp ĐÚNG phương pháp thật dùng cho
     từng thiết kế (xem các hàm _r03_*_with_vars và nhánh Cox/regression trong
     _RUN_CLI_TEMPLATE), tránh mâu thuẫn đã bị vòng 5 phát hiện."""
@@ -2663,15 +2815,35 @@ def _script03_row(design_code, effect_type, exposure, outcome, time_col):
         desc, libs = "Cox + KM + MI (m=20)", "survival, survminer, mice"
     elif design_code in ("rct", "cohort") and effect_type == "MD":
         desc, libs = "Hồi quy tuyến tính/ANCOVA + MI (m=20)", "stats, mice, gtsummary"
+    elif design_code == "cross_sectional" and outcome_ordinal:
+        # THÊM 2026-09-01: mô tả phải khớp script thứ bậc THẬT sinh ra —
+        # cùng luật chống "2 lớp tách rời" của vòng 5.
+        desc, libs = ("Proportional odds (cOR) + SE robust cụm + Brant + RCS + MI (m=20)",
+                      "MASS, ordinal, rms, brant, sandwich, mice")
     else:
         desc, libs = _SCRIPT03_INFO.get(design_code, ("[CẦN xác định theo SAP]", "[CẦN]"))
     return f"| `03_analysis.R` | {desc} | {exposure}/{outcome}/{time_col} | {libs} |"
 
 
-def _phan5_checklist(design_code, effect_type):
+def _phan5_checklist(design_code, effect_type, outcome_ordinal=False):
     """Checklist PHẦN 5 — mỗi mục phải THẬT SỰ áp dụng cho phương pháp phân
     tích của thiết kế đó (cox.zph()/KM/E-value chỉ có nghĩa cho mô hình Cox)."""
     ci_line = "- [ ] Mọi ước lượng kèm **95%CI** — KHÔNG báo p-value đơn độc"
+    if design_code == "cross_sectional" and outcome_ordinal:
+        # THÊM 2026-09-01: checklist khớp script thứ bậc thật (Brant/cụm/RCS
+        # thay cho cox.zph/KM vốn vô nghĩa với proportional odds).
+        return [
+            ci_line,
+            "- [ ] **Giả định proportional odds** kiểm bằng Brant TRƯỚC khi diễn giải cOR "
+            "— vi phạm → partial proportional odds (báo hệ số theo từng ranh giới cắt)",
+            "- [ ] **SE robust theo cụm** đã áp; số cụm < 15 → mô hình chặn ngẫu nhiên "
+            "(clmm) là phân tích CHÍNH + báo ICC",
+            "- [ ] **Phi tuyến exposure liên tục** đã kiểm (RCS 3 nút / phân vị)",
+            "- [ ] Báo cáo **complete case** (chính khi thiếu <5%) VÀ **MI (m=20, chỉ covariates)**",
+            "- [ ] **Gộp nhị phân** chỉ chạy khi đủ ≥10 biến cố/tham số — là độ nhạy, "
+            "KHÔNG thay kết cục thứ bậc chính",
+            "- [ ] **Subgroup** chỉ chạy nếu có trong SAP §7 đã khóa",
+        ]
     if _is_cox_like(design_code, effect_type):
         return [
             ci_line,
@@ -2724,15 +2896,23 @@ def generate_artifact(study, topic, design_code, reporting_std,
                       g4_status, run_date, scripts_dir, v: dict) -> str:
     """Sinh A7 artifact đầy đủ — gồm tên biến thật từ REDCap."""
     g4_locked = _is_locked(g4_status)
+    # THÊM 2026-09-01: cờ kết cục thứ bậc (main() đặt từ SAP đã khoá) — mọi
+    # lớp mô tả dưới đây phải rẽ nhánh CÙNG cờ với R_ANALYSIS_MAP_FUNC, nếu
+    # không artifact nói "logistic OR" trong khi script dạy polr (đúng lớp
+    # lỗi "2 lớp tách rời" vòng 5 đã vá).
+    outcome_ordinal = bool(v.get("outcome_ordinal")) and design_code == "cross_sectional"
     # SỬA: fallback về TABLE_SHELLS["cohort"] cho design_code lạ (không nằm
     # trong 6 key đã định nghĩa) sẽ hiện bảng Cox/HR sai — dùng placeholder
     # trung lập [CẦN] thay vì bịa loại phân tích không khớp thiết kế thật.
-    tables = TABLE_SHELLS.get(design_code) or [
-        ("Bảng kết quả — [CẦN] chưa có mẫu bảng cho thiết kế '{}'".format(design_code), [
-            ("Phân tích", "Ước lượng", "95%CI", "p"),
-            ("[CẦN — chọn công thức/bảng phù hợp thiết kế thủ công]", "[CẦN]", "[CẦN]", "[CẦN]"),
-        ]),
-    ]
+    if outcome_ordinal:
+        tables = TABLE_SHELLS_CROSS_ORDINAL
+    else:
+        tables = TABLE_SHELLS.get(design_code) or [
+            ("Bảng kết quả — [CẦN] chưa có mẫu bảng cho thiết kế '{}'".format(design_code), [
+                ("Phân tích", "Ước lượng", "95%CI", "p"),
+                ("[CẦN — chọn công thức/bảng phù hợp thiết kế thủ công]", "[CẦN]", "[CẦN]", "[CẦN]"),
+            ]),
+        ]
 
     exposure  = v["exposure"]
     outcome   = v["outcome"]
@@ -2751,7 +2931,12 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "cohort":          ("Hồi quy tuyến tính/ANCOVA (MD, kết cục liên tục)"
                             if effect_type == "MD"
                             else "Cox proportional hazards + Kaplan-Meier"),
-        "cross_sectional": "Logistic regression (OR 95%CI) / Linear regression (β 95%CI)",
+        # THÊM 2026-09-01: nhãn ĐỘNG theo cờ thứ bậc — trung thực với script
+        # thật (cùng khuôn nhãn động rct/cohort theo effect_type ở trên).
+        "cross_sectional": ("Hồi quy logistic THỨ TỰ / proportional odds (cOR 95%CI) — "
+                            "kết cục giữ nguyên thang thứ bậc, SE robust theo cụm"
+                            if outcome_ordinal
+                            else "Logistic regression (OR 95%CI) / Linear regression (β 95%CI)"),
         "case_control":    "Conditional logistic regression (OR 95%CI)",
         "diagnostic":      "ROC/AUC + Calibration + DCA",
         "sr_ma":           "Random effects meta-analysis REML (meta::metagen/metabin)",
@@ -2818,7 +3003,8 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "| `00_setup.R` | Cài packages R | — | tidyverse, survival, mice, gtsummary |",
         f"| `01_cleaning.R` | Làm sạch, recode biến | {exposure}, {outcome}, {time_col} | tidyverse, REDCapR |",
         f"| `02_tables.R` | Table 1 theo nhóm {exposure} | {', '.join(covars[:4]) if covars else 'age,sex,dm,htn'} | gtsummary, flextable |",
-        _script03_row(design_code, effect_type, exposure, outcome, time_col),
+        _script03_row(design_code, effect_type, exposure, outcome, time_col,
+                      outcome_ordinal=outcome_ordinal),
         f"| `run_analysis_cli.py` | **Python CLI đầy đủ** — chạy ngay với CSV | {exposure}/{outcome}/{time_col} | lifelines, pandas, matplotlib |",
         f"| `sensitivity_analysis.py` | CC vs MI, Subgroup, E-value | {exposure}/{outcome}/{time_col} | lifelines, pandas |",
         "",
@@ -2865,7 +3051,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "",
         "## PHẦN 5 — CHECKLIST TRƯỚC BÁO CÁO",
         "",
-        *_phan5_checklist(design_code, effect_type),
+        *_phan5_checklist(design_code, effect_type, outcome_ordinal=outcome_ordinal),
         "",
         "---",
         "",
@@ -2963,6 +3149,17 @@ def main():
     v = detect_variables_from_redcap(redcap_csv)
     _reject_if_variable_names_invalid(v)
 
+    # THÊM 2026-09-01: cờ kết cục THỨ BẬC — thẩm quyền là SAP đã khoá (G4),
+    # không suy từ mã số mức trong dictionary. Đặt TRƯỚC R_ANALYSIS_MAP_FUNC
+    # và generate_artifact để script + artifact rẽ nhánh CÙNG một cờ.
+    v["outcome_ordinal"] = _sap_declares_ordinal(out, study)
+    if v["outcome_ordinal"] and design_code == "cross_sectional":
+        print("  → Kết cục    : THỨ BẬC theo SAP đã khoá → 03_analysis.R dùng "
+              "proportional odds (cOR), không gộp nhị phân ở phân tích chính")
+        if not v.get("outcome_levels"):
+            print("     ⚠️  SAP khai mô hình thứ bậc nhưng dictionary chưa đọc được "
+                  "số mức của kết cục — kiểm tra cột Choices của biến kết cục.")
+
     print(f"  → Phơi nhiễm : {v['exposure']}")
     print(f"  → Kết cục    : {v['outcome']}")
     print(f"  → Thời gian  : {v['time_col']}")
@@ -3048,6 +3245,10 @@ def main():
             "outcome":    v["outcome"],
             "time_col":   v["time_col"],
             "covariates": v["covariates"],
+            # THÊM 2026-09-01 — dấu vết nhánh thứ bậc cho G7/audit đọc lại:
+            "outcome_ordinal": bool(v.get("outcome_ordinal")),
+            "outcome_levels":  v.get("outcome_levels", []),
+            "cluster_col":     v.get("cluster_col"),
         },
         "scripts_generated": generated_paths,
         "n_scripts":         len(generated_paths),
@@ -3124,6 +3325,13 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
     elif design_code == "rct":
         return _r03_rct_with_vars(v)
     elif design_code == "cross_sectional":
+        # THÊM 2026-09-01: SAP đã khoá khai mô hình thứ bậc (proportional
+        # odds) → sinh nhánh thứ bậc; không có tín hiệu SAP → giữ nguyên
+        # hành vi cũ (logistic nhị phân). Cờ v["outcome_ordinal"] do main()
+        # đặt từ _sap_declares_ordinal() — SAP là thẩm quyền, không đoán từ
+        # mã số mức (điều kiện cần chứ không đủ, xem docstring hàm đó).
+        if v.get("outcome_ordinal"):
+            return _r03_cross_ordinal_with_vars(v)
         return _r03_cross_with_vars(v)
     # THÊM 2026-07-19 (audit vòng 3, D2_prediction_dta_gate_coverage — NGHIÊM
     # TRỌNG): "diagnostic"/"prediction"/"sr_ma" trước đây rơi vào else →
@@ -3284,6 +3492,109 @@ source(here::here("scripts", "00_setup.R"))
 # broom::tidy(glm_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
 message("03_analysis.R (Cross-sectional) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
+"""
+
+
+def _r03_cross_ordinal_with_vars(v: dict) -> str:
+    """THÊM 2026-09-01: cross-sectional kết cục THỨ BẬC — proportional odds (cOR).
+
+    Vì sao tồn tại: trước ngày này generator KHÔNG có nhánh thứ bậc nào
+    (grep polr|ordinal|clm = 0), trong khi SAP đã khoá của đề tài thật đầu
+    tiên đi hết G0-G4 (C1a) khai mô hình CHÍNH là logistic thứ tự trên kết
+    cục 5 mức — tức cổng G6 sẽ sinh script logistic NHỊ PHÂN mâu thuẫn trực
+    tiếp với SAP §4. Cùng lớp lỗi "2 lớp xử lý design_code tách rời nhau"
+    đã vá cho case_control/diagnostic/prediction/sr_ma/qualitative.
+
+    Template phủ ĐỦ các cam kết SAP theo khuôn C1a v1.1 (§4/§5/§6/§9) ở dạng
+    TỔNG QUÁT: polr/orm/clm chính · SE robust theo cụm (vcovCL) · <15 cụm →
+    chặn ngẫu nhiên (clmm) thành phân tích CHÍNH · Brant → partial proportional
+    odds (clm nominal=) · RCS 3 nút cho exposure liên tục · độ nhạy tuyến tính
+    HC3 + loại phiếu hỗ trợ ghi + gộp nhị phân CÓ ĐIỀU KIỆN ≥10 biến cố/tham số.
+    Mọi lệnh mô hình đều comment (#) theo khuôn chung — uncomment khi có dữ
+    liệu thật đã khoá DB (G5).
+    """
+    exposure = v["exposure"]
+    outcome  = v["outcome"]
+    covars   = v["covariates"]
+    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi"
+    muc      = v.get("outcome_levels") or []
+    muc_txt  = (f"{len(muc)} mức: {', '.join(str(m) for m in muc)}"
+                if muc else "[CẦN SỐ MỨC — G5 dictionary chưa có Choices cho kết cục]")
+    muc_vec  = ", ".join(str(m) for m in muc) if muc else "1, 2, 3, 4, 5"
+    # Ngưỡng gộp nhị phân cho độ nhạy (6c): gợi ý mức áp chót trên thang
+    # (vd thang 1-5 → ≥4) — CHỈ là gợi ý đọc lại SAP §9, không phải quyết định.
+    nguong   = str(muc[-2]) if len(muc) >= 2 else "[CẦN NGƯỠNG THEO SAP §9]"
+    cluster  = v.get("cluster_col") or "[CẦN TÊN BIẾN CỤM theo SAP — vd ma_ban_kham]"
+    mode_var = v.get("mode_var") or "[CẦN TÊN BIẾN PHƯƠNG THỨC TRẢ LỜI theo SAP §9 — vd mode_tra_loi]"
+    return f"""\
+# 03_analysis.R — Cross-sectional KẾT CỤC THỨ BẬC (proportional odds → cOR)
+# Biến: exposure={exposure} | kết cục thứ bậc={outcome} ({muc_txt}) | cụm={cluster}
+# SAP đã khoá khai mô hình CHÍNH là hồi quy logistic THỨ TỰ (proportional odds)
+# trên kết cục GIỮ NGUYÊN thang thứ bậc — KHÔNG gộp nhị phân ở phân tích chính
+# (gộp làm mất thông tin và ĐỔI estimand; bản gộp chỉ là độ nhạy có điều kiện).
+source(here::here("scripts", "00_setup.R"))
+
+# Packages RIÊNG cho nhánh thứ bậc — 00_setup.R dùng chung CỐ Ý không cài để
+# khỏi phình môi trường của 7 thiết kế còn lại (MASS có sẵn theo R base-rec):
+pkgs_ordinal <- c("MASS", "ordinal", "rms", "brant")
+to_install_ord <- pkgs_ordinal[!pkgs_ordinal %in% installed.packages()[, "Package"]]
+if (length(to_install_ord) > 0) install.packages(to_install_ord, repos = "https://cran.rstudio.com/")
+suppressPackageStartupMessages(lapply(pkgs_ordinal, require, character.only = TRUE))
+
+# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
+# df${outcome} <- factor(df${outcome}, levels = c({muc_vec}), ordered = TRUE)
+
+# (0) MÔ TẢ — tỷ lệ kết cục mức cao + KTC 95% Wilson (estimand mà G3 tính cỡ
+#     mẫu theo độ chính xác PREVALENCE — báo TRƯỚC mô hình liên hệ):
+# n_cao <- sum(as.numeric(as.character(df${outcome})) >= {nguong}, na.rm = TRUE)
+# Hmisc::binconf(n_cao, sum(!is.na(df${outcome})), method = "wilson")   # tỷ lệ + 95%CI
+
+# (1) MÔ HÌNH CHÍNH — proportional odds, kết cục GIỮ nguyên thang thứ bậc:
+# fit_po <- MASS::polr({outcome} ~ {exposure} + {cov_fml}, data = df, Hess = TRUE)
+# cbind(cOR = exp(coef(fit_po)), exp(confint(fit_po)))   # cOR + 95%CI (profile)
+# Exposure liên tục: báo hiệu ứng theo ĐƠN VỊ LÂM SÀNG CÓ NGHĨA (SAP — vd mỗi
+# 15 phút thời gian chờ: chia biến cho 15 TRƯỚC khi đưa vào mô hình).
+
+# (2) SE ROBUST THEO CỤM `{cluster}` (SAP: BẮT BUỘC mọi kịch bản):
+# lmtest::coeftest(fit_po, vcov = sandwich::vcovCL(fit_po, cluster = ~ {cluster}))
+# n_cum <- dplyr::n_distinct(df${cluster})
+# NẾU n_cum < 15: mô hình thứ bậc HỆ SỐ CHẶN NGẪU NHIÊN trở thành phân tích
+# CHÍNH (SAP §4) — vcovCL ít cụm sẽ dưới-ước lượng SE:
+# fit_re <- ordinal::clmm({outcome} ~ {exposure} + {cov_fml} + (1 | {cluster}), data = df)
+# summary(fit_re)   # kèm báo ICC của kết cục theo cụm
+
+# (3) KIỂM GIẢ ĐỊNH PROPORTIONAL ODDS — TRƯỚC khi diễn giải cOR (SAP §5):
+# brant::brant(fit_po)   # p < 0.05 ở biến nào → biến đó vi phạm
+# Vi phạm → partial proportional odds: thả ràng buộc CHO ĐÚNG biến vi phạm,
+# báo hệ số theo TỪNG ranh giới cắt (generalized ordered logit):
+# fit_ppo <- ordinal::clm({outcome} ~ {exposure} + {cov_fml},
+#                         nominal = ~ bien_vi_pham, data = df)
+
+# (4) PHI TUYẾN exposure liên tục — restricted cubic spline 3 nút (SAP §5):
+# dd <- rms::datadist(df); options(datadist = "dd")
+# fit_rcs <- rms::orm({outcome} ~ rcs({exposure}, 3) + {cov_fml}, data = df)
+# anova(fit_rcs)   # thành phần phi tuyến có ý nghĩa → giữ spline/báo theo phân vị
+
+# (5) ĐA CỘNG TUYẾN (SAP: VIF/GVIF > 10 → xử lý):
+# car::vif(lm(as.numeric({outcome}) ~ {exposure} + {cov_fml}, data = df))  # proxy tuyến tính
+
+# (6) ĐỘ NHẠY theo SAP §9 — song song, KHÔNG chi phối kết luận:
+# (6a) Tuyến tính coi kết cục là liên tục + SE robust HC3 (+ phần dư, Cook's d):
+#   fit_lm <- lm(as.numeric({outcome}) ~ {exposure} + {cov_fml}, data = df)
+#   lmtest::coeftest(fit_lm, vcov = sandwich::vcovHC(fit_lm, type = "HC3"))
+# (6b) Loại phiếu có hỗ trợ ghi (`{mode_var}` = 2/3), chạy lại trên tập tự điền
+#   (`{mode_var}` = 1), so sánh CHIỀU và ĐỘ LỚN cOR với mô hình chính.
+# (6c) Gộp nhị phân ({outcome} >= {nguong}) — CHỈ KHI đủ ≥10 biến cố/tham số
+#   (EPV); KHÔNG ép chạy bằng Firth khi thiếu biến cố (SAP §9):
+#   glm_bin <- glm(I(as.numeric(as.character({outcome})) >= {nguong}) ~ {exposure} + {cov_fml},
+#                  data = df, family = binomial())
+#   broom::tidy(glm_bin, exponentiate = TRUE, conf.int = TRUE)
+
+# (7) DỮ LIỆU THIẾU theo SAP §6: complete-case là phân tích CHÍNH khi thiếu
+#   < 5%; MICE m >= 20 (mice) CHỈ imputation covariates — kết cục làm predictor
+#   nhưng KHÔNG impute kết cục — chạy như độ nhạy.
+
+message("03_analysis.R (cross-sectional, kết cục thứ bậc PO) — Biến: {exposure}/{outcome} | cụm: {cluster} | [CẦN DỮ LIỆU THẬT]")
 """
 
 

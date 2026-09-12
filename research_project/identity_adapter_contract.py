@@ -131,12 +131,20 @@ class SyntheticIdentityAdapter(IdentityProviderAdapterInterface):
     def __init__(self, roles: List[str] | None = None) -> None:
         self._roles = roles or ["VIEWER"]
         self._revoked: set[str] = set()
+        # Vá 2026-09-06 (audit vòng 39, phát hiện #8): trước đây
+        # validate_session() chỉ theo dõi _revoked, không theo dõi session
+        # ĐÃ THỰC SỰ phát hành qua authenticate() — bất kỳ session_id giả
+        # mạo nào (chưa từng cấp) đều trả True miễn chưa bị revoke, mâu
+        # thuẫn trực tiếp với docstring interface ("hợp lệ VÀ chưa bị thu
+        # hồi"). Nay theo dõi tập đã cấp.
+        self._issued: set[str] = set()
 
     def authenticate(self, credential_token: str) -> AuthenticationContext:
         """Trả AuthenticationContext tổng hợp không có xác thực thật."""
         actor_id = f"synthetic_actor_{hashlib.sha256(credential_token.encode()).hexdigest()[:8]}"
         email_hash = hashlib.sha256("synthetic@example.invalid".encode()).hexdigest()
         session_id = str(uuid.uuid4())
+        self._issued.add(session_id)
         return AuthenticationContext(
             actor_id=actor_id,
             email_hash=email_hash,
@@ -150,8 +158,8 @@ class SyntheticIdentityAdapter(IdentityProviderAdapterInterface):
         )
 
     def validate_session(self, session_id: str) -> bool:
-        """Session hợp lệ nếu chưa bị thu hồi trong bộ nhớ tạm."""
-        return session_id not in self._revoked
+        """Session hợp lệ nếu ĐÃ được authenticate() cấp và chưa bị thu hồi."""
+        return session_id in self._issued and session_id not in self._revoked
 
     def revoke_session(self, session_id: str) -> None:
         """Đánh dấu session là đã thu hồi trong bộ nhớ tạm."""

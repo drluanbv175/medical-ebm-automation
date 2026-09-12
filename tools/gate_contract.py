@@ -28,6 +28,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import sys
 import unicodedata
 from datetime import datetime, timezone
@@ -69,6 +70,7 @@ REASON_MISSING_DATA = "MISSING_REAL_DATA"                # G5: chưa có dữ li
 REASON_MISSING_INTEGRITY = "MISSING_INTEGRITY_SIGNATURES"  # G9: chưa ký liêm chính
 REASON_MISSING_CITATION_VERIFICATION = "MISSING_CITATION_VERIFICATION"  # G10: A12 receipt chưa có/chưa sạch
 REASON_MISSING_PEER_REVIEW = "MISSING_PEER_REVIEW_SIGNATURE"  # G10: G8 (bình duyệt độc lập) chưa ký ledger
+REASON_MANUSCRIPT_CHANGED_AFTER_PEER_REVIEW = "MANUSCRIPT_CHANGED_AFTER_PEER_REVIEW"  # G10: bản thảo đổi SAU KHI G8 ký
 REASON_MISSING_RELEASE_READINESS = "MISSING_G10_RELEASE_READINESS"
 REASON_MISSING_RELEASE_APPROVAL = "MISSING_G10_RELEASE_APPROVAL"
 
@@ -631,6 +633,34 @@ def resolve_design_code(out_dir: Path, default: str = "cohort") -> Tuple[str, Op
     return (g2 or g1 or default), None
 
 
+def sap_declares_ordinal(out_dir: Path, study: str) -> bool:
+    """SAP đã khoá (G4) có khai mô hình CHÍNH là hồi quy logistic THỨ TỰ không?
+
+    ★ NGUỒN DUY NHẤT dùng chung cho G6 (sinh script R) và G7 (gợi ý phương pháp
+    trong bản thảo) — thêm 2026-09-01 khi chuyển từ run_g6_auto.py về đây để
+    hai cổng không giữ hai bản chép tay của cùng một regex (hai bản là nguồn
+    trôi dạt: sửa một bên thì bên kia âm thầm rẽ nhánh khác — đúng lớp lỗi
+    "2 lớp xử lý tách rời nhau" đã vá nhiều lần ở G6).
+
+    Vì sao đọc SAP thay vì suy từ dữ liệu: số mức mã nguyên trong REDCap là
+    điều kiện CẦN chứ không ĐỦ cho tính thứ bậc (biến danh định nhiều mức cũng
+    mã số nguyên) — suy từ mã số là ĐOÁN. SAP §4 là nơi thống kê viên/chủ nhiệm
+    ĐÃ TUYÊN BỐ mô hình và bị khoá bằng chữ ký G4, nên nó là thẩm quyền duy
+    nhất; các cổng sau chỉ THI HÀNH SAP. Thiếu file SAP → False (fail-closed
+    về hành vi mặc định của từng cổng), không đoán.
+    """
+    sap_path = Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md"
+    if not sap_path.exists():
+        return False
+    try:
+        sap = sap_path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return bool(re.search(
+        r"proportional\s+odds|logistic\s+th[ưứ]\s*t[ựụ]|h[ồo]i\s+quy\s+th[ưứ]\s+b[ậa]c|ordinal\s+logistic",
+        sap, re.I))
+
+
 def load_study_meta(out_dir: Path) -> Dict[str, Any]:
     """Đọc study_meta.json (dict rỗng nếu không có/lỗi)."""
     p = Path(out_dir) / "study_meta.json"
@@ -1090,6 +1120,52 @@ def per_role_key_available(role_group: str) -> bool:
     return bool(key) and scope == _SIGNATURE_SCOPE_ROLE
 
 
+def _all_stakeholder_role_groups() -> Tuple[str, ...]:
+    """Tất cả nhóm stakeholder từng xuất hiện trong _GATE_REQUIRED_STAKEHOLDERS, thứ
+    tự cố định (không phụ thuộc thứ tự dict) — dùng để dò khóa riêng mà không cần
+    liệt kê tay một danh sách thứ hai có thể lệch khỏi danh sách gốc."""
+    groups = {g for reqs in _GATE_REQUIRED_STAKEHOLDERS.values() for g in reqs}
+    return tuple(sorted(groups))
+
+
+def any_signing_key_available() -> bool:
+    """True nếu máy này có BẤT KỲ khóa ký nào dùng được — khóa CHUNG hoặc khóa RIÊNG
+    của bất kỳ nhóm stakeholder nào (IRB/STATISTICIAN/DATA_MANAGER/PI/
+    INDEPENDENT_PEER_REVIEWER).
+
+    2026-09-02 (vòng rà toàn diện, phát hiện qua workflow đối kháng): trước bản vá này,
+    _diagnose_gate_records() và verify_ledger_seal() dùng `signing_key_configured(None)`
+    — hàm đó CHỈ kiểm khóa CHUNG (role_group=None bỏ qua hẳn nhánh khóa riêng trong
+    _load_signing_key) — làm cờ "máy có khóa ký không" cho quyết định fail-closed TOÀN
+    CỤC. Hệ quả: một bác sĩ làm ĐÚNG khuyến nghị mạnh nhất của chính hệ thống
+    (setup_gate_approval_key.py --role, tách khóa theo từng vai trò, không giữ khóa
+    chung) khiến CẢ 6 cổng cứng vĩnh viễn fail-closed, kèm thông điệp SAI SỰ THẬT
+    ("máy này CHƯA cấu hình khóa ký... chạy tools/setup_gate_approval_key.py" — dù họ
+    ĐÃ chạy đúng lệnh đó). `per_role_key_available()` đã tồn tại sẵn và đúng — chỉ là
+    không có nơi nào gọi nó ở lớp quyết định toàn cục. Hàm này KHÔNG thay verify_
+    approval_signature() cho TỪNG bản ghi (hàm đó đã tự đúng, tự tra group từ
+    reviewer_role của chính bản ghi) — chỉ sửa đúng CỜ TOÀN CỤC "có nên thử xác minh
+    hay không"."""
+    if signing_key_configured(None):
+        return True
+    return any(per_role_key_available(g) for g in _all_stakeholder_role_groups())
+
+
+def _any_configured_role_group() -> str:
+    """Tên nhóm stakeholder ĐẦU TIÊN (thứ tự cố định của _all_stakeholder_role_groups())
+    có khóa RIÊNG dùng được trên máy này, hoặc "" nếu không nhóm nào có.
+
+    Dùng khi cần MỘT danh tính ký cụ thể cho việc không gắn với một vai trò cố định
+    (như niêm phong sổ cái — xem write_ledger_seal) trên máy CHỈ có khóa riêng, không có
+    khóa chung. Tên nhóm trả về là chính alias-tự-thân trong _STAKEHOLDER_ROLE_ALIASES
+    (vd "IRB") nên truyền thẳng làm reviewer_role cho sign_approval() sẽ tự tra đúng lại
+    nhóm đó qua role_group_for()."""
+    for g in _all_stakeholder_role_groups():
+        if per_role_key_available(g):
+            return g
+    return ""
+
+
 def chain_prev_hash(record: Optional[Dict[str, Any]]) -> str:
     """Vân tay của một bản ghi, dùng làm mắt xích cho bản ghi KẾ TIẾP trong sổ cái.
 
@@ -1176,8 +1252,24 @@ _ED_PRIVATE_DIR = Path.home() / ".ebm-secrets"
 _ED_PUBLIC_DIR = Path(__file__).resolve().parents[1] / "config" / "gate_ed25519_pubkeys"
 
 
+def _ed_private_dir() -> Path:
+    """Thư mục khóa riêng Ed25519, có cô lập tuyệt đối khi chạy kiểm thử.
+
+    ``EBM_GATE_KEY_PATH`` chỉ có hiệu lực trong pytest (xem ``_base_key_path``). Khi
+    biến này được dùng, khóa Ed25519 cũng phải nằm cạnh khóa HMAC tạm thay vì rơi về
+    ``~/.ebm-secrets``. Nếu không, nhánh ưu tiên Ed25519 có thể vô tình ký bằng khóa
+    thật của máy phát triển, làm kiểm thử phụ thuộc môi trường và chạm vào bí mật thật.
+
+    Ngoài ngữ cảnh kiểm thử, biến môi trường vẫn bị bỏ qua hoàn toàn và đường dẫn vận
+    hành giữ nguyên. Việc tách hàm cũng giữ khả năng monkeypatch ``_ED_PRIVATE_DIR``
+    cho các kiểm thử Ed25519 chuyên biệt.
+    """
+    override = os.environ.get(_SIGNING_KEY_ENV) if _test_context_active() else None
+    return Path(override).parent if override else _ED_PRIVATE_DIR
+
+
 def _ed_private_path(group: str) -> Path:
-    return _ED_PRIVATE_DIR / f"gate_ed25519_{group}.key"
+    return _ed_private_dir() / f"gate_ed25519_{group}.key"
 
 
 def _ed_public_path(group: str) -> Path:
@@ -1188,6 +1280,23 @@ def ed25519_private_key_available(group: str) -> bool:
     return bool(group) and _ed_private_path(group).exists()
 
 
+def _fail_closed_on_crypto_error(exc: BaseException) -> None:
+    """Rào chung cho 4 điểm nạp/ký/xác minh Ed25519 trong module này.
+
+    Bắt ``BaseException``, không chỉ ``Exception``: khi thư viện ``cryptography``
+    cài HỎNG NỬA CHỪNG (có gói, thiếu ``_cffi_backend``), backend Rust ném
+    ``pyo3_runtime.PanicException`` — lớp đó kế thừa THẲNG ``BaseException``, nên
+    ``except Exception`` không bắt được và làm chết cả tiến trình ngay trong hàm
+    tự khai "fail-closed" (BH99 phần A — rào từng khai "đã vá 02/09" nhưng chưa
+    từng landed trên mã sống, đo lại 10/09/2026 mới vá thật). Luôn ném lại
+    ``KeyboardInterrupt``/``SystemExit``: đây là fail-closed cho lỗi thư viện,
+    không phải lá chắn nuốt tín hiệu ngắt của người dùng khi chạy tương tác
+    (vd nút "Phat Khoa Ed25519.command").
+    """
+    if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+        raise exc
+
+
 def _load_ed_private(group: str):
     """Khóa riêng Ed25519 của nhóm — None nếu không có/không đọc được/thiếu thư viện."""
     try:
@@ -1196,7 +1305,8 @@ def _load_ed_private(group: str):
         if not p.exists():
             return None
         return load_pem_private_key(p.read_bytes(), password=None)
-    except Exception:  # noqa: BLE001 — thiếu lib/khóa hỏng đều = «không ký được», fail-closed
+    except BaseException as _exc:  # noqa: BLE001 — thiếu lib/khóa hỏng đều = «không ký được», fail-closed (BH99-A)
+        _fail_closed_on_crypto_error(_exc)
         return None
 
 
@@ -1207,7 +1317,8 @@ def _load_ed_public(group: str):
         if not p.exists():
             return None
         return load_pem_public_key(p.read_bytes())
-    except Exception:  # noqa: BLE001
+    except BaseException as _exc:  # noqa: BLE001 — BH99-A
+        _fail_closed_on_crypto_error(_exc)
         return None
 
 
@@ -1229,7 +1340,8 @@ def sign_approval_ed25519(gate_id: str, study: str, evidence_hash: str,
                                  reviewer_ref, decision, is_synthetic, prev_hash)
     try:
         return f"{_ED_SIGNATURE_SCHEME}:{_SIGNATURE_SCOPE_ROLE}:{priv.sign(payload).hex()}"
-    except Exception:  # noqa: BLE001
+    except BaseException as _exc:  # noqa: BLE001 — BH99-A
+        _fail_closed_on_crypto_error(_exc)
         return None
 
 
@@ -1382,7 +1494,8 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
                                           bool(record.get("is_synthetic")),
                                           str(record.get("prev_hash") or "")))
             return True
-        except Exception:  # noqa: BLE001 — InvalidSignature/hex hỏng/kiểu sai đều = False
+        except BaseException as _exc:  # noqa: BLE001 — InvalidSignature/hex hỏng/kiểu sai đều = False; BH99-A
+            _fail_closed_on_crypto_error(_exc)
             return False
     # compare_digest CHỈ nhận chuỗi ASCII — chặn sớm thay vì để nó ném TypeError.
     if not mac_hex or not mac_hex.isascii():
@@ -1506,10 +1619,18 @@ def write_ledger_seal(study: str, records: Any, repo_root: Optional[Path] = None
 
     Con dấu ghi (số bản ghi, vân tay đuôi) và được KÝ. Kẻ không có khóa muốn cắt đuôi
     trót lọt thì phải làm giả con dấu — bất khả. Xóa luôn file dấu cũng không thoát: sổ
-    cái có bản ghi v4 mà THIẾU dấu chính là một bất thường (xem verify_ledger_seal)."""
+    cái có bản ghi v4 mà THIẾU dấu chính là một bất thường (xem verify_ledger_seal).
+
+    2026-09-02: máy CHỈ có khóa RIÊNG theo vai trò (không có khóa chung) vẫn phải niêm
+    phong được — dùng _any_configured_role_group() để chọn một nhóm có khóa, ký bằng
+    khóa đó, và GHI LẠI nhóm đã dùng vào con dấu (sealed_by_role_group) để
+    verify_ledger_seal() biết tra khóa nào. Con dấu cũ (trước bản vá này) không có
+    trường này ⇒ mặc định "" ⇒ vẫn xác minh đúng như cũ bằng khóa chung."""
     count, tip = compute_ledger_tip(records)
     sealed_at = datetime.now(timezone.utc).isoformat()
-    sig = sign_approval(_SEAL_GATE_ID, str(study), tip, sealed_at, decision=str(count))
+    seal_role = "" if signing_key_configured(None) else _any_configured_role_group()
+    sig = sign_approval(_SEAL_GATE_ID, str(study), tip, sealed_at,
+                        reviewer_role=seal_role, decision=str(count))
     if not sig:
         return False
     p = ledger_seal_path(study, repo_root)
@@ -1520,6 +1641,7 @@ def write_ledger_seal(study: str, records: Any, repo_root: Optional[Path] = None
         "tip_hash": tip,
         "sealed_at_utc": sealed_at,
         "seal_signature": sig,
+        "sealed_by_role_group": seal_role,
     }, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return True
 
@@ -1543,7 +1665,13 @@ def verify_ledger_seal(study: str, records: Any,
     # Đường phục hồi vẫn rõ ràng: ký lại bằng approve_gate.py sẽ niêm phong lại.
     if not isinstance(records, list) or not records:
         return True, None          # sổ cái rỗng — chưa có gì để niêm phong
-    if not signing_key_configured(None):
+    # 2026-09-02: any_signing_key_available() — KHÔNG dùng signing_key_configured(None)
+    # (chỉ biết khóa CHUNG). Máy chỉ có khóa RIÊNG theo vai trò vẫn niêm phong được
+    # (xem write_ledger_seal) nên cũng phải xác minh được — dùng signing_key_configured(None)
+    # ở đây sẽ khiến verify_ledger_seal() luôn trả (True, None) "bỏ qua" trên đúng những
+    # máy vừa được write_ledger_seal() sửa để ký thành công — con dấu ký xong không bao
+    # giờ được xác minh, một lỗ hổng khác của cùng gốc.
+    if not any_signing_key_available():
         # Máy chưa có khóa thì KHÔNG niêm phong được mà cũng không xác minh được dấu.
         # Đòi con dấu ở đây là chặn oan; đường fail-closed cho trường hợp này đã do
         # quy tắc "chưa có khóa ⇒ chỉ đề tài synthetic_test mới đi tiếp" lo (xem
@@ -1568,10 +1696,13 @@ def verify_ledger_seal(study: str, records: Any,
         "gate_id": _SEAL_GATE_ID, "evidence_hash": str(seal.get("tip_hash") or ""),
         "timestamp_utc": str(seal.get("sealed_at_utc") or ""),
         "decision": str(seal.get("record_count")),
-        "reviewer_role": "", "reviewer_identity_reference": "",
+        # sealed_by_role_group: mới thêm 2026-09-02, vắng mặt ở con dấu cũ ⇒ "" (mặc
+        # định cũ) — con dấu cũ luôn ký bằng khóa chung nên hành vi xác minh giữ nguyên.
+        "reviewer_role": str(seal.get("sealed_by_role_group") or ""),
+        "reviewer_identity_reference": "",
         "approver_signature": seal.get("seal_signature"),
     }
-    if signing_key_configured(None) and not verify_approval_signature(probe, str(study)):
+    if any_signing_key_available() and not verify_approval_signature(probe, str(study)):
         return False, (f"chữ ký của {p.name} KHÔNG xác minh được bằng khóa trên máy này "
                        "(dấu bị sửa, hoặc niêm phong ở máy/khóa khác)")
     if int(seal.get("record_count") or -1) != count or str(seal.get("tip_hash")) != tip:
@@ -1637,7 +1768,9 @@ def _diagnose_gate_records(records: Any, gate_id: str, study: str,
     if not isinstance(records, list):
         return None, "approval_ledger.json không phải danh sách bản ghi (file hỏng?)"
 
-    key_available = signing_key_configured(None)
+    # 2026-09-02: any_signing_key_available() — KHÔNG dùng signing_key_configured(None)
+    # (chỉ biết khóa CHUNG) — xem docstring any_signing_key_available().
+    key_available = any_signing_key_available()
 
     # ★★ VÁ 2026-07-27 vòng 6 — QUÉT TOÀN SỔ CÁI TRƯỚC KHI LỌC THEO CỔNG.
     # Vòng kiểm định thứ năm phá được vòng 5 ở đúng chỗ này: bộ lọc `gate_id` chạy TRƯỚC
@@ -1764,7 +1897,23 @@ def _diagnose_gate_records(records: Any, gate_id: str, study: str,
     for ts, problem in suspects:
         # Bản ghi lạ KHÔNG phân giải được thời điểm ⇒ không loại trừ được khả năng nó mới
         # hơn ⇒ vẫn khóa (fail-closed đúng chỗ, không phải khóa tràn lan).
-        if newest_verified_ts is None or ts is None or ts > newest_verified_ts:
+        #
+        # ★★ VÁ 2026-09-04 (Workflow đối kháng đa-agent, phát hiện HIGH) — biên `>` cũ để
+        # HÒA lọt qua như "cũ hơn, an toàn để bỏ qua". Đã tái hiện bằng thực nghiệm: một
+        # bản ghi REJECTED CÓ CHỮ KÝ HỢP LỆ, chuỗi băm đúng, nhưng reviewer_role sai nhóm
+        # cổng (rơi vào `suspects` vì lý do đó, KHÔNG phải bị giả mạo) — mang ĐÚNG
+        # timestamp_utc với bản APPROVED nó thu hồi (HÒA giây) — trước bản vá này lọt qua
+        # điều kiện `ts > newest_verified_ts` (False khi bằng nhau) mà KHÔNG một cảnh báo
+        # BẤT THƯỜNG nào: `ledger_approved()` trả True, `gate_block_reason()` trả None,
+        # y hệt như bản REJECTED đó chưa từng tồn tại. Đây là chính lỗ hổng "phê duyệt
+        # chống-sửa-đổi, thu hồi XÓA-ĐƯỢC" (vòng 5, dòng ~1555 phía trên) tái xuất hiện ở
+        # RANH GIỚI HÒA GIÂY — cùng một lớp bug với tie-break "HÒA thì ưu tiên REJECTED"
+        # đã áp cho các bản ghi VERIFIED phía dưới (dòng ~1890): một HÒA giữa bản đã xác
+        # minh và một suspect phải được xử lý CÙNG một hướng an toàn, không phải ngược
+        # nhau. Đổi `>` (loại trừ HÒA) thành `>=` (HÒA vẫn tính là "không cũ hơn" ⇒ vẫn
+        # khóa) — một suspect có timestamp bằng đúng bản mới nhất KHÔNG được coi là chắc
+        # chắn cũ hơn nữa.
+        if newest_verified_ts is None or ts is None or ts >= newest_verified_ts:
             return None, (
                 f"BẤT THƯỜNG — {problem}. Bản ghi này KHÔNG cũ hơn phê duyệt hợp lệ mới nhất, "
                 "nên không loại trừ được khả năng nó đang che giấu một quyết định THU HỒI. "

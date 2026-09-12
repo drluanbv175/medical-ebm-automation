@@ -206,6 +206,20 @@ def verify_hash_chain(events: List[dict]) -> tuple[bool, List[str]]:
     seen_event_ids: dict = {}
 
     for i, ev in enumerate(events):
+        # Vá 2026-09-06 (audit vòng 40, phát hiện #3): create_checkpoint()
+        # append một dict KHÁC SCHEMA (không có event_id/audit_event_hash/
+        # previous_event_hash/sequence_number của SyntheticAuditEvent) vào
+        # CÙNG file JSONL. Đưa checkpoint vào vòng lặp kiểm event như một
+        # event thật sinh ra 2 lỗi tamper GIẢ (hash rỗng không khớp, chain
+        # break) CHO CHÍNH checkpoint, rồi còn làm prev_hash/prev_seq bị
+        # checkpoint "xoá" (None/rỗng) nên sự kiện THẬT ngay sau checkpoint
+        # cũng bị báo sai "chain break"/"sequence discontinuity" dù chưa hề
+        # bị sửa. Checkpoint không phải một mắt xích của chuỗi hash sự kiện
+        # nên bị bỏ qua hoàn toàn ở đây; prev_hash/prev_seq giữ nguyên từ sự
+        # kiện THẬT gần nhất.
+        if ev.get("checkpoint_type") == "LEDGER_CHECKPOINT":
+            continue
+
         event_id = ev.get("event_id", f"<idx={i}>")
         stored_hash = ev.get("audit_event_hash", "")
         stored_prev = ev.get("previous_event_hash")
@@ -302,14 +316,26 @@ class AuditAttributionLedger:
         ts = _utc_now()
         event_id = f"AUD-{uuid.uuid4().hex[:12].upper()}"
 
-        # Lấy hash của event cuối + sequence number tiếp theo
-        all_events = self._read_all()
+        # Lấy hash của event THẬT cuối cùng + sequence number tiếp theo.
+        # Vá 2026-09-06 (audit vòng 40, phát hiện #3): trước đây dùng thẳng
+        # self._read_all()[-1] — DÒNG JSONL CUỐI CÙNG bất kể là event hay
+        # checkpoint (create_checkpoint() ghi vào CÙNG file JSONL). Nếu dòng
+        # cuối là checkpoint (không có khoá "audit_event_hash") thì
+        # prev_hash âm thầm rơi về GENESIS thay vì hash của event thật liền
+        # trước, và sequence_number đếm CẢ checkpoint vào — chuỗi hash/
+        # sequence bị đứt thật sự trong dữ liệu lưu (không chỉ báo sai ở
+        # verify_hash_chain()). Nay chỉ đếm/nối chuỗi theo các dòng THẬT là
+        # event (bỏ qua mọi checkpoint).
+        all_lines = self._read_all()
+        prior_events = [
+            e for e in all_lines if e.get("checkpoint_type") != "LEDGER_CHECKPOINT"
+        ]
         prev_hash: Optional[str]
-        if all_events:
-            prev_hash = all_events[-1].get("audit_event_hash", _GENESIS_HASH)
+        if prior_events:
+            prev_hash = prior_events[-1].get("audit_event_hash", _GENESIS_HASH)
         else:
             prev_hash = _GENESIS_HASH
-        next_seq = len(all_events) + 1  # 1-based monotonic sequence
+        next_seq = len(prior_events) + 1  # 1-based monotonic sequence (chỉ event thật)
 
         event = SyntheticAuditEvent(
             event_id=event_id,

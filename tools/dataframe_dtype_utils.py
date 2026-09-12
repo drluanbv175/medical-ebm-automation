@@ -15,12 +15,24 @@ def _is_category_dtype(dtype: object) -> bool:
     return str(dtype) == "category"
 
 
-def text_like_columns(df: pd.DataFrame, *, include_category: bool = False) -> List[str]:
-    """Trả tên cột dạng chuỗi/object và tùy chọn category, không dùng select_dtypes.
+def text_like_columns(df: pd.DataFrame, *, include_category: bool = True) -> List[str]:
+    """Trả tên cột dạng chuỗi/object và (mặc định) category, không dùng select_dtypes.
 
     Lý do: trên các nhánh pandas mới, `select_dtypes(include=["object", "str"])`
     có thể phát warning hoặc TypeError tùy version. Helper này dùng API dtype
     ổn định hơn để không bỏ sót PII trong cột chuỗi.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 23, phát hiện #3):
+    `include_category` trước đây mặc định `False`. `app_data_analysis.py::
+    scan_pii()` — bộ quét PII DUY NHẤT của công cụ — gọi hàm này KHÔNG
+    truyền `include_category=True`, trong khi `table1()` trong cùng file
+    lại truyền `True`, cho thấy cột dtype `category` là tình huống có thật
+    (dữ liệu lâm sàng hay được convert sang category để tiết kiệm bộ nhớ)
+    nhưng bị bỏ sót ngay ở đúng chỗ quan trọng nhất — cột `category` chứa
+    PII (vd họ tên) hoàn toàn không được xét, công cụ báo "sạch" trong khi
+    PII thật vẫn còn. Đổi mặc định thành `True` để khớp đúng mục đích hàm
+    tự công bố ("không bỏ sót PII trong cột chuỗi") — an toàn hơn là mặc
+    định loại trừ.
     """
     cols: List[str] = []
     for col in df.columns:

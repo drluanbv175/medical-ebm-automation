@@ -24,15 +24,23 @@ GC = importlib.util.module_from_spec(spec)
 sys.modules["gc_ed"] = GC
 spec.loader.exec_module(GC)
 
-from cryptography.hazmat.primitives.asymmetric.ed25519 import (  # noqa: E402 — sau nạp GC
-    Ed25519PrivateKey,
-)
-from cryptography.hazmat.primitives.serialization import (  # noqa: E402
-    Encoding,
-    NoEncryption,
-    PrivateFormat,
-    PublicFormat,
-)
+# BH99 (03/09/2026): `cryptography` cài hỏng nửa chừng (có gói, thiếu
+# `_cffi_backend`) ném `pyo3_runtime.PanicException` từ tầng Rust — lớp đó kế
+# thừa THẲNG BaseException, KHÔNG qua Exception, nên `pytest.importorskip()`
+# (chỉ bắt ImportError) KHÔNG cứu được. Không rào ở đây thì panic lọt ra ngoài
+# lúc pytest THU THẬP module, dừng CẢ lượt với "Interrupted: N errors during
+# collection" — mất luôn hàng nghìn test không liên quan, không chỉ module này.
+try:  # noqa: E402 — sau nạp GC
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    from cryptography.hazmat.primitives.serialization import (
+        Encoding,
+        NoEncryption,
+        PrivateFormat,
+        PublicFormat,
+    )
+except BaseException as _loi_crypto:  # noqa: BLE001 — PanicException không phải Exception
+    pytest.skip(f"cryptography không nạp được ({type(_loi_crypto).__name__}): "
+                f"{_loi_crypto}", allow_module_level=True)
 
 ROLE = "IRB_ETHICS_COMMITTEE"
 GROUP = GC.role_group_for(ROLE)

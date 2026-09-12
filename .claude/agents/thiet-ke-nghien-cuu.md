@@ -336,7 +336,7 @@ Báo cáo: CONSORT 2025 + Extension phù hợp
 ```
 Kết cục: độ nhạy / độ đặc hiệu / AUC so với tiêu chuẩn tham chiếu (reference standard)
 Cỡ mẫu: theo bề rộng 95%CI mong muốn của độ nhạy/độ đặc hiệu (KHÔNG dùng EPV/EPP)
-Kiểm sai lệch: QUADAS-2/QUADAS-C theo đúng thiết kế
+Kiểm sai lệch: QUADAS-3 hiện hành (QUADAS-2 chỉ tương thích ngược; QUADAS-C khi phù hợp)
 Báo cáo: STARD 2015
 ```
 

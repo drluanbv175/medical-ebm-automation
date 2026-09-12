@@ -35,8 +35,21 @@ class CrossrefClient(SourceClient):
                 params["mailto"] = settings.openalex_email
             data = self.http.get_json(WORKS, params=params)
             self.save_raw(query, data)
-            out: List[RawRecord] = []
-            for it in data.get("message", {}).get("items", []):
+        except Exception as exc:  # pragma: no cover
+            logger.warning("[crossref] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
+            return []
+
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #89, vòng 6) — cùng
+        # họ lỗi đã vá ở europepmc.py (task #83): vòng lặp phân tích bản ghi
+        # trước đây nằm CHUNG try/except với lệnh gọi mạng, nên MỘT bản ghi có
+        # cấu trúc bất thường (vd Crossref trả "author": None cho bản ghi thiếu
+        # metadata tác giả — có thật trên dữ liệu sống) làm bay AttributeError,
+        # bị khối except NGOÀI bắt và XOÁ SẠCH mọi bản ghi đã phân tích thành
+        # công trước đó trong CÙNG trang. Tách riêng: lỗi một bản ghi chỉ bỏ
+        # qua đúng bản ghi đó.
+        out: List[RawRecord] = []
+        for it in data.get("message", {}).get("items", []):
+            try:
                 title = (it.get("title") or [""])[0]
                 authors = ", ".join(
                     f"{a.get('family', '')} {a.get('given', '')}".strip()
@@ -55,7 +68,7 @@ class CrossrefClient(SourceClient):
                     url=f"https://doi.org/{it.get('DOI')}" if it.get("DOI") else None,
                     ingest_query=query, api_endpoint=WORKS,
                 ))
-            return out
-        except Exception as exc:  # pragma: no cover
-            logger.warning("[crossref] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
-            return []
+            except Exception as exc:  # pragma: no cover
+                logger.warning("[crossref] bỏ qua 1 bản ghi hỏng trong trang kết quả (query=%r): %s", query, exc)
+                continue
+        return out

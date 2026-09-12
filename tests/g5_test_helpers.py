@@ -95,22 +95,61 @@ def write_g5_toolkit(
     out_dir: Path,
     *,
     id_field: str = "record_id",
+    extra_date_columns: frozenset[str] = frozenset(),
 ) -> Path:
-    """Tạo bộ DMP/dictionary/script tối thiểu nhưng hợp lệ cho fixture."""
+    """Tạo bộ DMP/dictionary/script tối thiểu nhưng hợp lệ cho fixture.
+
+    `extra_date_columns`: tên các cột NGHIÊN CỨU (vd `visit_date`) mà
+    `source_data` có sẵn và đã được khai tường minh kiểu "date" ở một
+    dictionary khác (vd data_dictionary.json của pipeline pseudonymize) —
+    được ghi THÊM vào chính dictionary REDCap canonical này (không tạo
+    dictionary thứ hai) để `RDI.import_dataset()`/`CLEAN.clean_dataset()`/
+    `LAD.lock_dataset()` MIỄN mẫu PII "date" cho đúng cột đó, đồng thời
+    `g5_quality_gate.evaluate_study()` — vốn đọc CHÍNH file này ở đường dẫn
+    canonical để chấm G5-AUTO-02..09 — vẫn thấy MỘT dictionary duy nhất,
+    không lệch hash với bước intake/clean/lock.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
+    # NỘI DUNG THẬT (không chỉ nhãn trần) sau mỗi mục bắt buộc — kể từ khi
+    # G5-AUTO-03 được vá 10/09/2026 để đòi thân mục có nội dung, không chỉ
+    # đếm nhãn có mặt (đóng tautology G5-F3, xem g5_quality_gate.py). Fixture
+    # cũ chỉ liệt 11 nhãn trần liên tiếp — hợp lệ cho các test khác trong chuỗi
+    # G5 nhưng KHÔNG còn qua được chính luật nó phải PASS; sửa fixture cho hợp
+    # lệ theo đúng tiền lệ BH97 (không nới lỏng luật để fixture cũ qua được).
     dmp = "\n".join(
         [
             "# Kế hoạch quản lý dữ liệu kiểm thử",
-            "CẤU TRÚC CRF",
-            "REDCAP DATA DICTIONARY",
-            "LUẬT KIỂM TRA DỮ LIỆU",
-            "AUDIT TRAIL",
-            "KHỬ ĐỊNH DANH",
-            "PHÂN QUYỀN",
-            "SAO LƯU và kiểm thử phục hồi",
-            "LƯU TRỮ và hủy dữ liệu",
-            "KHÓA CƠ SỞ DỮ LIỆU",
-            "CHIA SẺ DỮ LIỆU theo FAIR",
+            "",
+            "## CẤU TRÚC CRF",
+            "CRF kiểm thử gồm mã đối tượng, ngày khám và kết cục chính; xem dictionary đính kèm.",
+            "",
+            "## REDCAP DATA DICTIONARY",
+            "File dictionary CSV liệt kê tên biến, loại dữ liệu, nhãn và phạm vi hợp lệ.",
+            "",
+            "## LUẬT KIỂM TRA DỮ LIỆU",
+            "Áp dụng range-check và logic-check cho biến số/biến ngày trước khi khóa dữ liệu.",
+            "",
+            "## AUDIT TRAIL",
+            "Mọi thay đổi giá trị lưu bản gốc, lý do sửa, thời điểm và người thực hiện.",
+            "",
+            "## KHỬ ĐỊNH DANH",
+            "Bảng ánh xạ định danh tách khỏi dataset phân tích, không đưa PII vào bản chạy thống kê.",
+            "",
+            "## PHÂN QUYỀN",
+            "Truy cập theo nguyên tắc tối thiểu cần biết; người phân tích chỉ nhận bản đã khóa.",
+            "",
+            "## SAO LƯU và kiểm thử phục hồi",
+            "Sao lưu định kỳ có mã hóa, đã thử khôi phục thành công trong môi trường kiểm thử.",
+            "",
+            "## LƯU TRỮ và hủy dữ liệu",
+            "Thời hạn lưu trữ và hủy theo chính sách đơn vị, có ghi rõ người chịu trách nhiệm.",
+            "",
+            "## KHÓA CƠ SỞ DỮ LIỆU",
+            "Checklist khóa DB đã hoàn tất, có chữ ký người khóa và người chứng kiến.",
+            "",
+            "## CHIA SẺ DỮ LIỆU theo FAIR",
+            "Chia sẻ dữ liệu tuân thủ FAIR khi được phép, không công khai dữ liệu nhạy cảm.",
+            "",
             "Áp dụng ICH E6(R3), CDISC CDASH và FDA electronic records 2024.",
             "PMID: 26978244; DOI: 10.1038/sdata.2016.18.",
             "Cần bác sĩ kiểm chứng.",
@@ -158,6 +197,13 @@ def write_g5_toolkit(
         ("follow_time", "text", "", "number", "0", ""),
         ("event_flag", "radio", "0, Kiểm duyệt | 1, Biến cố", "", "", ""),
     ]
+    declared_names = {name for name, *_ in rows}
+    for extra_name in sorted(extra_date_columns):
+        if extra_name in declared_names:
+            continue
+        # validation "date_ymd" -> _normalise_rule() trong clean_research_dataset.py
+        # đọc thành type="date" (bắt đầu bằng "date_"); đúng khuôn REDCap thật.
+        rows.append((extra_name, "text", "", "date_ymd", "", ""))
     with dictionary_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=headers)
         writer.writeheader()
@@ -380,8 +426,18 @@ def prepare_locked_g5_study(
     exports_root: Path,
     repo_root: Path,
     approve_g5: bool = True,
+    extra_date_columns: frozenset[str] = frozenset(),
 ) -> tuple[Path, dict]:
-    """Chạy intake -> cleaning -> lock -> approval G5 cho dữ liệu tổng hợp."""
+    """Chạy intake -> cleaning -> lock -> approval G5 cho dữ liệu tổng hợp.
+
+    `extra_date_columns`: tên cột NGHIÊN CỨU trong `source_data` đã khai
+    tường minh kiểu "date" ở nơi khác (vd data_dictionary.json của pipeline
+    pseudonymize) — được ghi vào CHÍNH dictionary REDCap canonical mà
+    `write_g5_toolkit()` sinh ra, để cả bước quét PII (intake/clean/lock)
+    LẪN `g5_quality_gate.evaluate_study()` (vốn đọc dictionary ở đường dẫn
+    canonical để chấm G5-AUTO-02..09) đều thấy ĐÚNG MỘT dictionary — tránh
+    lệch hash nếu dùng hai file dictionary khác nhau cho hai việc.
+    """
     out_dir = exports_root / study
     with Path(source_data).open("r", encoding="utf-8-sig", newline="") as handle:
         source_fields = set(csv.DictReader(handle).fieldnames or [])
@@ -396,10 +452,23 @@ def prepare_locked_g5_study(
         study,
         out_dir,
         id_field=id_field,
+        extra_date_columns=extra_date_columns,
     )
     prepare_upstream_approvals(study, out_dir, repo_root=repo_root)
 
-    intake = RDI.import_dataset(study, source_data, exports_root=exports_root)
+    loaded_dictionary = CLEAN._load_dictionary(dictionary_path)
+    exempt_date_columns = frozenset(
+        RDI._normalize_header(str(rule["name"]))
+        for rule in (loaded_dictionary.get("variables") or [])
+        if isinstance(rule, dict) and rule.get("type") == "date" and rule.get("name")
+    )
+
+    intake = RDI.import_dataset(
+        study,
+        source_data,
+        exports_root=exports_root,
+        exempt_date_columns=exempt_date_columns,
+    )
     assert intake["status"] == RDI.READY_STATUS, intake
     raw_path = out_dir / intake["raw_readonly_path"]
     cleaning = CLEAN.clean_dataset(

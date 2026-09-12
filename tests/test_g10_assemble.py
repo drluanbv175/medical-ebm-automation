@@ -103,9 +103,9 @@ class TestAssemble:
         assert res["checkpoint"].exists()
         cp = json.loads(res["checkpoint"].read_text(encoding="utf-8"))
         assert cp["gate"] == "G10"
-        assert cp["n_de_cuong_sections"] == 16
+        assert cp["n_de_cuong_sections"] == len(S.DE_CUONG_SECTIONS) == 18
 
-    def test_all_16_sections_present(self, cross_sectional_study):
+    def test_all_sections_present(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
         for num, title, _ in S.DE_CUONG_SECTIONS:
@@ -286,8 +286,12 @@ class TestValidatorCatchesFabrication:
     def test_catches_missing_section(self, cross_sectional_study):
         res = G10.assemble("FIXT", cross_sectional_study)
         text = res["md"].read_text(encoding="utf-8")
-        # Xoá heading mục 8 (Cỡ mẫu) -> validator phải báo thiếu.
-        text = text.replace("# 8. Cỡ mẫu", "# 8888. Cỡ mẫu XXX")
+        # Xoá heading mục Cỡ mẫu -> validator phải báo thiếu. Lấy tiêu đề qua canon
+        # (06/09/2026: khuôn 16→18 mục làm "Cỡ mẫu" đổi số; test ghim "# 8." từng
+        # thay thế hụt và ĐẠT SAI — đúng lớp lỗi helper số-mục sinh ra để chặn).
+        heading = S.de_cuong_heading("comau")
+        assert heading in text
+        text = text.replace(heading, "# 8888. Cỡ mẫu XXX")
         res["md"].write_text(text, encoding="utf-8", newline="\n")
         report = check_de_cuong.validate(res["md"], cross_sectional_study)
         assert not report["passed"]

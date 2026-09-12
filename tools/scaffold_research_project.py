@@ -13,8 +13,12 @@ Sử dụng:
     ├── 01_Project_Charter.md + .docx
     ├── ...
     └── 20_Final_Readiness_Report.md + .docx
-    + STUDY_INDEX.md   (chỉ mục nội bộ, trạng thái từng file)
-    + Makefile.md      (gợi ý lệnh cho từng cổng G)
+    + STUDY_INDEX.md   (chỉ mục nội bộ, trạng thái từng file — bao gồm gợi ý
+                        lệnh xuất .docx cho từng cổng G, xem mục "## Lệnh xuất
+                        .docx từng cổng"; 2026-09-02, vòng rà 7: dòng cũ ở đây
+                        hứa một file "Makefile.md" riêng — KHÔNG code nào từng
+                        sinh ra nó, gợi ý lệnh đã nằm sẵn trong STUDY_INDEX.md)
+    + study_meta.json  (PIN gate_params + cờ đời-thực, xem ensure_study_meta())
 """
 from __future__ import annotations
 
@@ -556,7 +560,12 @@ Rà sau mỗi cổng G (G2, G4, G6, G9) — điền ngày cập nhật gần nh�
 """),
 
     ("19", "Research_Integrity_Audit",
-     "G7-G9", "checklist", "Kiểm toán liêm chính nghiên cứu",
+     # 2026-09-02 (vòng rà 6): TỪNG dùng chung khóa "checklist" với hàng 17
+     # (Reporting_Checklist) — hai khái niệm khác hẳn nhau (chuẩn báo cáo vs
+     # kiểm toán completeness), gây STUDY_INDEX ghi trùng tên .docx và lần
+     # generate() thứ hai ghi đè .docx của hàng 17 trên đĩa. Xem comment tại
+     # khóa "integrity-audit" trong gen_research_docx.py::ARTIFACT_MAP.
+     "G7-G9", "integrity-audit", "Kiểm toán liêm chính nghiên cứu",
      """## 1. Kiểm toán completeness A1–A18
 
 | Mã | Artifact | Trạng thái | Ghi chú |
@@ -651,7 +660,17 @@ def _row_status(gate_field: str, out_dir: Path) -> str:
         cp = json.loads(cp_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return "🔴 Chưa có"
-    if _GC.is_blocked(cp):
+    # Vá 2026-09-06 (audit vòng 32, phát hiện #4): `_GC.is_blocked(cp)` CHỈ đọc
+    # `needs_input.blocked` — không hề nhìn tới `guardrail`. Mọi run_gN_auto.py
+    # thật (G0/G1/G2/G7/G8/G9) đều ghi `guardrail` dưới dạng
+    # {"passed": bool, "errors": [...]}, không phải chuỗi/nhãn trạng thái —
+    # nên chỉ cần đọc đúng khóa `passed` này để bắt lỗi liêm chính (vd PII bị
+    # phát hiện, vi phạm R2) mà KHÔNG kèm needs_input.blocked. Trước bản vá,
+    # một checkpoint như vậy báo "✅ Xong" trên STUDY_INDEX.md dù artifact
+    # tương ứng đang bị chặn vì lỗi liêm chính thật sự.
+    guardrail = cp.get("guardrail")
+    guardrail_failed = isinstance(guardrail, dict) and guardrail.get("passed") is False
+    if _GC.is_blocked(cp) or guardrail_failed:
         return "🚧 Dự thảo — chờ input"
     return "✅ Xong"
 
@@ -755,6 +774,22 @@ def scaffold(study_name: str, base_dir: str = None, with_docx: bool = True):
         # ── Markdown file ────────────────────────────────────────────────
         md_fname = f"{num}_{fname}.md"
         md_path  = out / md_fname
+
+        # Vá 2026-09-06 (audit vòng 32, phát hiện #3 — CRITICAL): TRƯỚC bản
+        # vá, vòng lặp này LUÔN write_text() đè lên file .md dù đã tồn tại —
+        # gọi lại scaffold() trên MỘT đề tài đang chạy dở (gõ nhầm mã trùng,
+        # hoặc tưởng lệnh idempotent như regenerate_study_index()) xóa sạch
+        # PICO/SAP/ICF/... bác sĩ đã điền, thay lại bằng placeholder gốc,
+        # KHÔNG cảnh báo, KHÔNG backup. Comment ở dưới (study_meta.json) đã
+        # tự khẳng định "Tạo non-destructive (không đè nếu bác sĩ đã điền)"
+        # — nhưng lời hứa đó CHƯA từng áp cho vòng lặp .md/.docx này. Nay bỏ
+        # qua ĐÚNG entry (md + docx cùng cặp) khi file .md đã tồn tại, giữ
+        # đúng lời hứa "non-destructive" cho MỌI file scaffold sinh ra, không
+        # chỉ study_meta.json.
+        if md_path.exists():
+            created_md.append(md_fname)
+            print(f"  [SKIP] {md_fname} đã tồn tại — giữ nguyên (không ghi đè nội dung đã điền)")
+            continue
 
         header = (
             f"# {num}. {title.upper()}\n\n"

@@ -50,19 +50,31 @@ def cmd_live_update(max_results_per_query: int = 8, *, strict_source_health: boo
     Khuyến nghị điền NCBI_EMAIL/OPENALEX_EMAIL/UNPAYWALL_EMAIL trong .env để gọi
     lịch sự đúng chuẩn (polite pool). Nguồn lỗi được ghi Source Log và làm trạng thái
     PARTIAL/FAIL; strict mode tuyệt đối không dùng mock để phát hành hoặc nối sang Hub.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 22, phát hiện #3) —
+    khuôn ép-cờ-rồi-chạy-pipeline-rồi-khôi-phục này KHÔNG khoá, trong khi
+    app/utils/seed.py::seed_all() làm y hệt ở CHIỀU NGƯỢC LẠI trên CÙNG cờ
+    toàn cục `settings.use_mock_sources`. Dashboard gọi cả hai đường từ hai
+    nút bấm khác nhau trong CÙNG một tiến trình Streamlit — bấm gần như
+    đồng thời có thể khiến lượt cập nhật THẬT (vài phút) đọc trúng cờ đã bị
+    lượt "Dữ liệu mẫu" (chạy nhanh, xen giữa) đẩy tạm về True, làm dữ liệu
+    MOCK lẫn vào một lượt cập nhật tưởng là dữ liệu THẬT mà không cảnh báo.
+    Khoá dùng chung `settings.use_mock_sources_override_lock` với
+    seed_all() để tuần tự hoá hai lượt.
     """
-    from app.config import settings
+    from app.config import settings, use_mock_sources_override_lock
 
     init_db()
-    previous = settings.use_mock_sources
-    settings.use_mock_sources = False
-    try:
-        stats = run_pipeline(
-            max_results_per_query=max_results_per_query,
-            strict_source_health=strict_source_health,
-        )
-    finally:
-        settings.use_mock_sources = previous
+    with use_mock_sources_override_lock:
+        previous = settings.use_mock_sources
+        settings.use_mock_sources = False
+        try:
+            stats = run_pipeline(
+                max_results_per_query=max_results_per_query,
+                strict_source_health=strict_source_health,
+            )
+        finally:
+            settings.use_mock_sources = previous
 
     alert = export_alert_digest(days=7)
     reports = {

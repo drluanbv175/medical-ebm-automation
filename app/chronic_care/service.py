@@ -209,13 +209,19 @@ class ChronicCareService:
                 claim_reference_ids=[] if case.synthetic_status_fields.get("claim_status") == "MISSING" else ["claim_synthetic_verified"],
             )
             for action in evaluate_chronic_care_rules(case):
-                assert_rule_approved_for_test(action.rule_id)
+                assert_rule_approved_for_test(action.rule_id, action)
                 if action.action_type == "CREATE_TASK":
                     self.create_task(enrollment.id, action.task_type, action.priority, action.owner_role)
                     if action.task_type == "REVIEW_OVERDUE_CASE":
                         self.add_timeline(enrollment.id, "FOLLOW_UP_OVERDUE", "rule", action.rule_id, "Synthetic follow-up overdue detected")
                     if action.metadata.get("safety_queue_item"):
                         self.add_timeline(enrollment.id, "ESCALATION_CREATED", "rule", action.rule_id, "Synthetic RED risk review item")
+                    # SỬA 2026-09-04 — cờ metadata này trước đây được SINH ra
+                    # (rules.py::CC-005) nhưng KHÔNG NƠI NÀO đọc, nên "yêu cầu
+                    # bác sĩ review" chỉ tồn tại trong dataclass, không tạo dấu
+                    # vết nào trong timeline/audit trail của ca bệnh.
+                    if action.metadata.get("physician_review_required"):
+                        self.add_timeline(enrollment.id, "PHYSICIAN_REVIEW_REQUIRED", "rule", action.rule_id, "Synthetic post-discharge task requires physician review per rule approval_requirement")
 
     def create_enrollment(self, case: SyntheticChronicCareCase, actor: str = "system") -> ChronicCareEnrollment:
         self._ensure_no_pii(case.searchable_text())
@@ -363,7 +369,25 @@ class ChronicCareService:
         if blocked:
             draft.status = "BLOCKED"
             draft.blocked_reason = blocked
-            self.unverified_evidence_released += 1
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 17) — bản gốc
+            # tăng `unverified_evidence_released` (đọc bởi dashboard_state()
+            # để quyết định production_block_status="SHADOW PILOT BLOCKED")
+            # ngay TẠI NHÁNH BLOCK — tức đúng lúc hệ thống NGĂN THÀNH CÔNG
+            # việc duyệt, không có gì được "released" cả. Dòng raise ngay bên
+            # dưới đảm bảo draft KHÔNG BAO GIỜ chuyển sang APPROVED_FOR_SHADOW
+            # trong nhánh này, nên đây không phải một vi phạm an toàn — nó là
+            # cổng đang hoạt động đúng thiết kế. Hệ quả: mọi lần bác sĩ (theo
+            # đúng gợi ý "required_action": "physician_review" của
+            # `_physician_row()`) mở một draft đang BLOCKED để duyệt sẽ tự
+            # kích một báo động sai ở TẦNG DASHBOARD, không phân biệt được với
+            # một lần bypass thật (`approval_bypass`/`clinical_release_flag_
+            # bypass`). Tái hiện: seed_synthetic_cases() → approve_care_plan_
+            # draft(một draft BLOCKED) → PermissionError đúng như thiết kế,
+            # nhưng dashboard_state().production_block_status vẫn nhảy sang
+            # "SHADOW PILOT BLOCKED" dù KHÔNG có gì được duyệt/phát hành. Bỏ
+            # dòng tăng bộ đếm này — các bộ đếm vi phạm THẬT khác
+            # (`approval_bypass`, `clinical_release_flag_bypass` ở
+            # `_care_plan_blocked_reason()`) không đổi.
             self._audit(reviewer_role, "approve_care_plan_draft_blocked", "ChronicCarePlanDraft", draft.id, before=before, after=asdict(draft), blocked=blocked)
             raise PermissionError(blocked)
         approval = self.approval_center.submit(self.run_packet.run_id, "chronic_care_plan_draft", draft.goal_summary)
@@ -418,7 +442,7 @@ class ChronicCareService:
             enrollments_by_program=by_program,
             risk_counts=risk_counts,
             open_tasks=len([t for t in self.tasks.values() if t.status == "OPEN"]),
-            overdue_tasks=len([t for t in self.tasks.values() if t.status == "OPEN" and t.priority in {"HIGH", "URGENT"}]),
+            overdue_tasks=len([t for t in self.tasks.values() if t.status == "OPEN" and _is_task_overdue(t)]),
             physician_review_pending=len([t for t in self.tasks.values() if t.status == "OPEN" and t.assigned_role == "physician"]),
             care_plan_draft_pending=len([p for p in self.plan_drafts.values() if p.status == "PENDING_REVIEW"]),
             post_discharge_synthetic_cases=len([e for e in self.enrollments.values() if e.program_code == "POST_DISCHARGE_REVIEW_PROGRAM"]),
@@ -505,17 +529,38 @@ class ChronicCareService:
     def _physician_row(self, enrollment: ChronicCareEnrollment) -> Mapping[str, object]:
         risks = [draft for draft in self.risk_drafts.values() if draft.enrollment_id == enrollment.id]
         plans = [draft for draft in self.plan_drafts.values() if draft.enrollment_id == enrollment.id]
+        latest_risk = risks[-1] if risks else None
         plan = plans[-1] if plans else None
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 9) — bản gốc dùng
+        # `enrollment.current_risk_status` (đặt DUY NHẤT một lần lúc
+        # `create_enrollment()`, không bao giờ đổi) để quyết định "còn cần bác
+        # sĩ xem lại không". `review_risk_draft()` đúng khi cập nhật
+        # `draft.risk_status` (PENDING_REVIEW -> APPROVED_FOR_SHADOW/REJECTED)
+        # nhưng KHÔNG đụng tới `enrollment.current_risk_status` — nên hàng đợi
+        # xét duyệt của bác sĩ KHÔNG BAO GIỜ hết một ca RED/YELLOW dù đã duyệt
+        # hay từ chối. Xác nhận bằng thực nghiệm: seed 1 ca RED, review_risk_
+        # draft(approve=False) -> risk_draft_status đổi đúng thành REJECTED,
+        # nhưng safety_flags/required_action vẫn "red_review"/"physician_
+        # review" y hệt trước khi duyệt. Dùng đúng bản ghi risk draft MỚI
+        # NHẤT (đã có sẵn ở `risk_draft_status` phía trên) làm nguồn sự thật
+        # thay vì trường tĩnh của enrollment — còn PENDING_REVIEW mới cần
+        # hành động, đã duyệt/từ chối thì hết.
+        needs_risk_review = bool(
+            latest_risk and latest_risk.risk_label in {"RED", "YELLOW"}
+            and latest_risk.risk_status == "PENDING_REVIEW"
+        )
         return {
             "synthetic_id": enrollment.patient_reference_id,
             "program": enrollment.program_code,
-            "risk_draft_status": risks[-1].risk_status if risks else "none",
+            "risk_draft_status": latest_risk.risk_status if latest_risk else "none",
             "care_plan_draft_status": plan.status if plan else "none",
             "evidence_status": "complete" if plan and plan.evidence_reference_ids else "missing",
             "claim_status": "complete" if plan and plan.claim_reference_ids else "missing",
             "approval_status": "shadow_only",
-            "safety_flags": "red_review" if enrollment.current_risk_status == "RED" else "",
-            "required_action": "physician_review" if enrollment.current_risk_status in {"RED", "YELLOW"} or (plan and plan.status in {"PENDING_REVIEW", "BLOCKED"}) else "none",
+            "safety_flags": "red_review" if latest_risk and latest_risk.risk_label == "RED"
+            and latest_risk.risk_status == "PENDING_REVIEW" else "",
+            "required_action": "physician_review" if needs_risk_review
+            or (plan and plan.status in {"PENDING_REVIEW", "BLOCKED"}) else "none",
             "blocked_reason": plan.blocked_reason if plan else "",
             "last_updated": _now(),
         }
@@ -529,10 +574,20 @@ class ChronicCareService:
         return ""
 
     def _policy_export(self, payload: Mapping[str, object]) -> None:
+        # SỬA 2026-09-04 (Workflow đối kháng đa-agent, phát hiện MEDIUM) — trước
+        # đây hardcode {"v7_chatgpt_project_export": True} bất kể self.feature_flags
+        # THẬT của service đang là gì. PolicyEngine.evaluate() gộp action "export"
+        # và "chatgpt_export" vào CÙNG luật P010 (đọc chính flag này) — nên đây
+        # không phải trùng tên tình cờ mà là CÙNG cổng an toàn với
+        # app/export_bridge/chatgpt_project_bridge.py (bản đó truyền đúng
+        # `feature_flags` thật, không hardcode). Cờ mặc định AN TOÀN là False
+        # (DEFAULT_FEATURE_FLAGS), nên bản cũ khiến cổng P010 KHÔNG BAO GIỜ chặn
+        # được xuất báo cáo tổng hợp — xác nhận bằng thực nghiệm: ChronicCareService()
+        # mặc định (flag=False) vẫn export_aggregate_json() thành công.
         text = repr(payload)
         decision = self.policy_engine.evaluate({
             "action": "export",
-            "feature_flags": {"v7_chatgpt_project_export": True},
+            "feature_flags": self.feature_flags,
             "export_contains_raw_dataset": False,
             "export_contains_pii": contains_pii_text(text),
             "text": text,
@@ -605,6 +660,27 @@ def _metric(code: str, name: str, numerator: int, denominator: int, start: str, 
         measurement_period_start=start,
         measurement_period_end=end,
     )
+
+
+def _is_task_overdue(task: ChronicCareTask) -> bool:
+    """`due_at` của việc đã QUA HIỆN TẠI chưa — thứ chữ "overdue" thực sự nói.
+
+    SỬA 2026-09-04 (Workflow đối kháng đa-agent, phát hiện MEDIUM) — trước đây
+    `overdue_tasks` trong dashboard_state() đo `priority in {"HIGH","URGENT"}`
+    thay vì đo NGÀY. Xác nhận bằng thực nghiệm: một việc REVIEW_OVERDUE_CASE
+    với priority LOW (bệnh nhân GREEN, xem rules.py::_priority_for) và due_at
+    quá khứ 5 ngày KHÔNG được đếm (0), trong khi 3 việc HIGH/URGENT có due_at
+    3 NGÀY TRONG TƯƠNG LAI (mọi create_task() luôn đặt due_at = now+3 ngày)
+    VẪN bị đếm là "overdue". Fail-closed như rules.py đã làm với chính
+    due_at: rỗng/không parse được → KHÔNG coi là quá hạn (tránh dương tính
+    giả từ dữ liệu hỏng, không phải bằng chứng đã quá hạn)."""
+    if not task.due_at:
+        return False
+    try:
+        due = datetime.fromisoformat(task.due_at)
+    except ValueError:
+        return False
+    return due < datetime.now(timezone.utc)
 
 
 def _now() -> str:

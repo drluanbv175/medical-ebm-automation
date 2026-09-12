@@ -96,7 +96,7 @@
     "pending_actions": []
   },
   "needs_input": {
-    "blocked": true,
+    "blocked": false,
     "reason_code": "MISSING_PICO",
     "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (PICO/kết cục chính/FINER còn trống). Hệ KHÔNG tự viết PICO thay bác sĩ.",
     "remediation": {
@@ -116,6 +116,8 @@
         "hypothesis"
       ]
     },
-    "supplied_by": "doctor"
+    "supplied_by": "doctor",
+    "resolved_by": "g0_quality_gate.refresh_checkpoint",
+    "resolved_at": "2026-09-02T02:35:03"
   }
 }

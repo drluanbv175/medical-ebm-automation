@@ -215,6 +215,8 @@ def main() -> int:
         path = export_research_dossier(sys.argv[2])
         _print({"dossier": str(path) if path else None,
                 "note": None if path else "Không tìm thấy đề tài"})
+        if not path:
+            return 1
 
     elif cmd == "zotero-push":
         from app.database import init_db

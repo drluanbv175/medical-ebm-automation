@@ -5,6 +5,7 @@ Từ 14/08/2026 connector này còn giữ vai trò NGUỒN KIỂM RÚT BÀI DỰ
 """
 from __future__ import annotations
 
+import re
 from typing import Dict, List, Optional
 
 from app.sources._fixtures import mock_records_for
@@ -14,6 +15,11 @@ from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+# PMID PubMed luôn là số nguyên dương thuần — bất kỳ ký tự nào khác (đặc biệt
+# dấu ngoặc) có thể phá vỡ cú pháp truy vấn Lucene-like của Europe PMC (xem
+# comment tại điểm dùng trong check_retraction_status()).
+_PMID_HOP_LE = re.compile(r"^\d+$")
 SEARCH = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 
 
@@ -45,8 +51,24 @@ class EuropePMCClient(SourceClient):
                       "resultType": "core"}
             data = self.http.get_json(SEARCH, params=params)
             self.save_raw(query, data)
-            out: List[RawRecord] = []
-            for r in data.get("resultList", {}).get("result", []):
+        except Exception as exc:  # pragma: no cover
+            logger.warning("[europepmc] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
+            return []
+
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #83, MEDIUM) — bản gốc
+        # bọc CẢ vòng lặp phân tích bản ghi vào CÙNG try/except với lệnh gọi mạng ở
+        # trên. Một phần tử hỏng (vd `r=None`, hoặc thiếu trường khiến `_infer_
+        # study_type()` ném lỗi) làm exception bay ra khỏi vòng lặp, bị khối
+        # except NGOÀI bắt và trả `[]` — XOÁ SẠCH mọi bản ghi đã phân tích THÀNH
+        # CÔNG trước đó trong cùng trang, không chỉ phần tử hỏng. Tệ hơn: tầng
+        # theo dõi sức khoẻ nguồn (`app/services/ingestion.py::_fetch()`) đọc
+        # trạng thái qua bộ đếm HTTP (`HttpClient.health_snapshot()`), và cuộc gọi
+        # mạng ở trên ĐÃ THÀNH CÔNG trước khi vòng lặp phân tích mới hỏng — nên
+        # `_fetch()` vẫn ghi `status="ok"` dù `record_count=0`, che mất lỗi thật.
+        # Sửa: cô lập TỪNG bản ghi — một phần tử hỏng chỉ mất đúng phần tử đó.
+        out: List[RawRecord] = []
+        for r in data.get("resultList", {}).get("result", []):
+            try:
                 pubtype = r.get("pubType") or ""
                 journal = r.get("journalTitle") or ""
                 out.append(RawRecord(
@@ -62,10 +84,11 @@ class EuropePMCClient(SourceClient):
                     url=f"https://europepmc.org/article/{r.get('source')}/{r.get('id')}",
                     ingest_query=query, api_endpoint=SEARCH,
                 ))
-            return out
-        except Exception as exc:  # pragma: no cover
-            logger.warning("[europepmc] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
-            return []
+            except Exception as exc:  # pragma: no cover
+                logger.warning("[europepmc] bỏ qua 1 bản ghi hỏng trong trang kết quả "
+                               "(query=%r): %s", query, exc)
+                continue
+        return out
 
     # -- Kiểm rút bài DỰ PHÒNG khi NCBI chặn (thêm 2026-08-14) ---------------
     def check_retraction_status(self, pmids: List[str]) -> Dict[str, dict]:
@@ -90,12 +113,35 @@ class EuropePMCClient(SourceClient):
 
         ket_qua: Dict[str, dict] = {}
         for lo in [pmids[i:i + 50] for i in range(0, len(pmids), 50)]:
-            truy_van = "(" + " OR ".join(f"EXT_ID:{p}" for p in lo) + ") AND SRC:MED"
+            # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, HIGH): trước bản vá,
+            # MỌI phần tử của `lo` được nhúng thẳng vào truy vấn OR mà không kiểm định
+            # dạng — một "PMID" hỏng chứa dấu ')' (lỗi OCR/copy-paste khi trích PMID từ
+            # văn bản) có thể TÁCH cụm `(EXT_ID:a OR EXT_ID:b)` đứng trước nó ra khỏi
+            # ràng buộc `AND SRC:MED` (AND có độ ưu tiên cao hơn OR trong cú pháp
+            # Lucene-like của Europe PMC), làm HỎNG câu truy vấn cho CẢ LÔ, không chỉ
+            # phần tử hỏng. PMID PubMed luôn là chuỗi số nguyên dương thuần — lọc trước
+            # khi dựng truy vấn: phần tử không khớp không được đưa vào OR, gán thẳng
+            # unknown_fetch_error (không lãng phí một lượt gọi mạng cho input chắc
+            # chắn sai) và KHÔNG kết luận gì về PMID đó — không suy ra "unresolved"
+            # (nghi trích dẫn ma), vì lỗi này là lỗi ĐỊNH DẠNG đầu vào, không phải
+            # bằng chứng PubMed/Europe PMC không có bản ghi.
+            valid = [p for p in lo if _PMID_HOP_LE.match(p)]
+            invalid = [p for p in lo if not _PMID_HOP_LE.match(p)]
+            for p in invalid:
+                ket_qua[p] = {"status": "unknown_fetch_error",
+                              "reason": "PMID không đúng định dạng (chỉ chấp nhận chuỗi "
+                                        "số) — không đưa vào truy vấn Europe PMC để tránh "
+                                        "phá vỡ ràng buộc SRC:MED cho các PMID hợp lệ khác "
+                                        "trong cùng lô. KHÔNG kết luận gì về PMID này."}
+            if not valid:
+                continue
+
+            truy_van = "(" + " OR ".join(f"EXT_ID:{p}" for p in valid) + ") AND SRC:MED"
             try:
                 data = self.http.get_json(
                     SEARCH,
                     params={"query": truy_van, "format": "json",
-                            "resultType": "core", "pageSize": len(lo)},
+                            "resultType": "core", "pageSize": len(valid)},
                     # use_cache=False bắt buộc: cache 24h là ĐÚNG cho search() nhưng SAI
                     # cho kiểm rút bài — một bài bị rút trong cửa sổ cache sẽ không bị
                     # phát hiện dù receipt vẫn ghi mốc kiểm MỚI. Cùng lý do đã vá cho
@@ -104,7 +150,7 @@ class EuropePMCClient(SourceClient):
                 )
             except Exception as exc:
                 logger.warning("[europepmc] kiểm rút bài lỗi gọi thật: %s", exc)
-                for p in lo:
+                for p in valid:
                     ket_qua[p] = {"status": "unknown_fetch_error",
                                   "reason": f"không gọi được Europe PMC ({exc}) — "
                                             f"KHÔNG kết luận gì về PMID này"}
@@ -114,7 +160,7 @@ class EuropePMCClient(SourceClient):
             for r in (data.get("resultList", {}) or {}).get("result", []) or []:
                 if r.get("pmid"):
                     thay[str(r["pmid"])] = r
-            for p in lo:
+            for p in valid:
                 ket_qua[p] = self._doc_rut_bai(thay[p]) if p in thay else {
                     "status": "unresolved",
                     "reason": "Europe PMC (chỉ mục MEDLINE) không có bản ghi cho PMID này "
@@ -122,6 +168,47 @@ class EuropePMCClient(SourceClient):
                               "lô bị bỏ sót — nghi lỗi API nếu NHIỀU PMID cùng lô đều vậy)",
                 }
         return ket_qua
+
+    # -- Tra TIÊU ĐỀ thông báo rút bài (thêm 2026-09-04, vá cờ retract_and_replace) --
+    def fetch_notice_titles(self, pmids: List[str]) -> Dict[str, str]:
+        """Tra TIÊU ĐỀ (không phải trạng thái rút bài) cho một lô PMID — dùng để
+        lấy tiêu đề của CHÍNH thông báo rút bài (vd "Notice of Retraction and
+        Replacement…", PMID riêng, khác PMID bài gốc). `check_retraction_status()`
+        chỉ trả `retraction_notice.citation` (RefSource/note — một chuỗi trích dẫn
+        THÔ: tạp chí/năm/số trang, KHÔNG mang tiêu đề), nên `la_rut_va_thay()` ở
+        `retraction_chain.py` không có gì để đọc khi phân biệt "rút bỏ hẳn" với
+        "rút rồi đăng lại bản đã sửa" trừ khi Retraction Watch ngoại tuyến (làm
+        mới 30 ngày/lần) tình cờ đã có đúng cụm từ trong `reason`. Hàm này lấp
+        khoảng đó bằng dữ liệu SỐNG, cùng cách `crossref_retraction.py` đã làm
+        cho DOI (một lệnh gọi thêm, chỉ khi đã có tín hiệu rút bài — rất hiếm).
+
+        THUẦN THÔNG TIN, KHÔNG phải cổng fail-closed: không có 6-trạng-thái như
+        `check_retraction_status()`/`PubMedClient.fetch_metadata()` — PMID không
+        tra được thì đơn giản vắng mặt trong kết quả, KHÔNG suy diễn gì (không
+        PMID nào ở đây quyết định trạng thái rút bài của bài gốc)."""
+        if not pmids:
+            return {}
+        valid = [str(p) for p in pmids if _PMID_HOP_LE.match(str(p))]
+        if not valid or self.use_mock:
+            return {}
+        try:
+            truy_van = "(" + " OR ".join(f"EXT_ID:{p}" for p in valid) + ") AND SRC:MED"
+            data = self.http.get_json(
+                SEARCH,
+                params={"query": truy_van, "format": "json",
+                        "resultType": "core", "pageSize": len(valid)},
+                use_cache=False,
+            )
+        except Exception as exc:  # noqa: BLE001 — best-effort, không phải cổng fail-closed
+            logger.info("[europepmc] fetch_notice_titles lỗi gọi (bỏ qua, không suy diễn): %s", exc)
+            return {}
+        ra: Dict[str, str] = {}
+        for r in (data.get("resultList", {}) or {}).get("result", []) or []:
+            pmid = r.get("pmid")
+            title = r.get("title")
+            if pmid and title:
+                ra[str(pmid)] = title
+        return ra
 
     @staticmethod
     def _doc_rut_bai(r: dict) -> dict:

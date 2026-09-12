@@ -31,10 +31,26 @@ def build_clinical_draft(
         "evidence_trace_ids": list(context.get("evidence_trace_ids") or []),
         "red_flag_unresolved": bool(red_flags),
     })
-    if not decision.allowed and red_flags:
+    if not decision.allowed:
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #87) — bản gốc chỉ
+        # chặn khi `not decision.allowed AND red_flags`, nên một block của
+        # PolicyEngine vì lý do KHÁC cờ đỏ (PII trong case_text — EBM-V7-P001,
+        # thiếu evidence_trace_ids — EBM-V7-P002...) mà không kèm cờ đỏ nào bị
+        # BỎ QUA HOÀN TOÀN — hàm rơi thẳng xuống nhánh sinh "Bản nháp hỗ trợ
+        # quyết định lâm sàng" như thể PolicyEngine chưa từng chặn gì. Sửa:
+        # MỌI quyết định `not decision.allowed` đều chặn workflow thường quy;
+        # nhánh cờ đỏ giữ nguyên thông điệp riêng (test cũ phụ thuộc câu chữ
+        # này), các lý do khác lấy nguyên văn message từ PolicyViolation.
+        if red_flags:
+            return ClinicalDraft(
+                run_id=run_id,
+                summary="Dừng workflow thường quy vì có cờ đỏ; cần bác sĩ đánh giá ngay.",
+                red_flags=red_flags,
+            )
+        reasons = "; ".join(v.message for v in decision.blockers) or "PolicyEngine chặn workflow."
         return ClinicalDraft(
             run_id=run_id,
-            summary="Dừng workflow thường quy vì có cờ đỏ; cần bác sĩ đánh giá ngay.",
+            summary=f"Dừng workflow thường quy: {reasons}",
             red_flags=red_flags,
         )
     if not claim_ids:

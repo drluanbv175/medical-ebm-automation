@@ -19,6 +19,19 @@ def test_v7_feature_flags_default_to_safe_off():
     assert DEFAULT_FEATURE_FLAGS["v7_chatgpt_project_export"] is False
 
 
+def test_dead_v7_flags_removed_2026_09_05():
+    # v7_control_plane / v7_dashboard_runtime / v7_external_network_refresh: audit xác nhận
+    # 0 lượt đọc trong app/scripts/tools/tests và 0 mô tả roadmap trong docs/system-v7/*.md —
+    # bác sĩ chọn gỡ thay vì gắn logic bịa. Khoá lại để 3 khoá này không âm thầm quay lại.
+    for dead_flag in (
+        "v7_control_plane",
+        "v7_dashboard_runtime",
+        "v7_external_network_refresh",
+    ):
+        assert dead_flag not in DEFAULT_FEATURE_FLAGS
+    assert len(DEFAULT_FEATURE_FLAGS) == 9
+
+
 def test_run_packet_and_state_machine_are_explicit():
     packet = new_run_packet(Lane.CLINICAL, "Soạn bản nháp EBM cho ca đã khử định danh")
 

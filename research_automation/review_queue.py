@@ -62,14 +62,33 @@ _NON_HUMAN_REF_TOKENS = frozenset({
 
 def _looks_non_human(ref: str) -> Optional[str]:
     """Trả token phi-người đầu tiên khớp (theo ranh giới token), hoặc None."""
-    tokens = re.split(r"[^a-z0-9]+", ref.lower())
+    tokens = [t for t in re.split(r"[^a-z0-9]+", ref.lower()) if t]
     # Gộp 'dry-run' → 'dryrun' để bắt biến thể có gạch nối.
-    joined = "".join(t for t in tokens if t)
+    joined = "".join(tokens)
     for tok in tokens:
         if tok in _NON_HUMAN_REF_TOKENS:
             return tok
     if "dryrun" in joined or "testbot" in joined:
         return "dryrun/testbot"
+    # Vá 2026-09-06 (audit vòng 38, phát hiện #1): acronym bị TÁCH TỪNG KÝ TỰ
+    # bằng dấu câu ("A.I." → token ["a","i"], "G.P.T." → ["g","p","t"],
+    # "B.O.T." → ["b","o","t"]) lọt qua hoàn toàn — không token đơn lẻ nào
+    # khớp denylist, và cũng không thuộc 2 ngoại lệ dryrun/testbot cũ.
+    # KHÔNG so `entry in joined` cho TOÀN BỘ denylist (thử ban đầu) — sẽ khớp
+    # nhầm "Dr.Abbott" ("abbott" chứa "bot"), đúng vấn đề mà thiết kế theo-
+    # token ban đầu cố tránh (xem docstring _NON_HUMAN_REF_TOKENS). Thay vào
+    # đó chỉ nối các LOẠT TOKEN 1-KÝ-TỰ LIÊN TIẾP (dấu hiệu acronym bị chèn
+    # dấu câu giữa từng chữ) rồi so KHỚP TUYỆT ĐỐI với denylist — tên thật
+    # tách bởi dấu câu luôn cho token nhiều-ký-tự (vd "dr", "abbott"), không
+    # bao giờ tạo loạt token 1-ký-tự liên tiếp dài như vậy.
+    run = ""
+    for tok in [*tokens, ""]:  # "" sentinel để flush loạt cuối
+        if len(tok) == 1:
+            run += tok
+        else:
+            if run in _NON_HUMAN_REF_TOKENS:
+                return run
+            run = ""
     return None
 
 

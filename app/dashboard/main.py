@@ -284,7 +284,16 @@ def render_clinical_application(d: dict) -> None:
     c3.metric("Độ tin cậy", d.get("tier") or "—")
     c4.metric("Mức CC", str(d.get("evidence_level") or "—")[:14])
     if d.get("tier") in _TIER_NOTE:
-        (st.success if d["tier"] == "A" else st.warning if d["tier"] in ("B",)
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 8) — bản gốc chỉ
+        # đặc cách A (success) và B (warning); Tier C VÀ D đều rơi vào
+        # `st.info` (hộp trung tính), dù chính văn bản `_TIER_NOTE["D"]` tự
+        # gắn 🔴 và ghi "loại khỏi áp dụng thực hành" — mức nặng nhất trong 4
+        # tier lại hiện GIỐNG HỆT tier C ("🟠 chỉ theo dõi"), làm một bác sĩ
+        # đọc lướt dễ đánh giá thấp tín hiệu "bị loại" đó. D nay lên
+        # `st.error` để khớp đúng mức nghiêm trọng đã tự khai trong văn bản.
+        (st.success if d["tier"] == "A"
+         else st.warning if d["tier"] in ("B", "C")
+         else st.error if d["tier"] == "D"
          else st.info)(_TIER_NOTE[d["tier"]])
 
     # Làm sạch abstract (gỡ thẻ XML, giải mã &ge;->≥) + TRÍCH nguyên văn (không bịa)

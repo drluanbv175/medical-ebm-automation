@@ -6,7 +6,10 @@ tuân thủ ĐÚNG mẫu/checklist của skill một cách tự động, thay v�
 đối chiếu thủ công mỗi lần. Bao gồm:
 
 - 5 NHÃN TRẠNG THÁI bắt buộc khi soạn hồ sơ.
-- Mẫu ĐỀ CƯƠNG 16 mục và 20 thành phần protocol lõi.
+- Mẫu ĐỀ CƯƠNG 18 mục và 24 thành phần protocol lõi (nâng 06/09/2026 từ 16/20:
+  thêm Tổng quan tài liệu & khung lý thuyết, Dự kiến kết quả & khung bảng trống;
+  cùng ngày thêm P24 can thiệp/đối chứng-ngẫu nhiên hoá-làm mù chỉ RCT;
+  xem CHANGELOG_V10.md của skill).
 - Định nghĩa 10 CỔNG CHẤT LƯỢNG của skill (G0-G9): điều kiện tối thiểu + sản
   phẩm bắt buộc (SKILL.md).
 - BẢN ĐỒ CHUẨN BÁO CÁO theo mã thiết kế (references/02_ban_do_chuan_bao_cao.md).
@@ -69,29 +72,86 @@ def is_valid_status_tag(tag_text: str) -> bool:
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 2. MẪU ĐỀ CƯƠNG 16 MỤC (templates/01_mau_de_cuong_tong_the.md)
+# 2. MẪU ĐỀ CƯƠNG 18 MỤC (templates/01_mau_de_cuong_tong_the.md)
 # ════════════════════════════════════════════════════════════════════════════
+#
+# NÂNG 16 → 18 MỤC (06/09/2026). Đo trên đề tài thật C1a: khuôn 16 mục không có
+# chương "Tổng quan tài liệu" (hội đồng đạo đức/khoa học trong nước và SPIRIT 2025
+# "Background and rationale" đều đòi), không có chỗ cho "khung lý thuyết/mô hình
+# khái niệm" (bắt buộc với đề tài HSR/hành vi/định tính — chính C1a dùng
+# SERVQUAL/PSQ-18) và không có mục "Dự kiến kết quả/khung bảng trống" (quy ước
+# đề cương trong nước). Bản đề cương viết tay của C1a ĐÃ có cả ba, nhưng khuôn
+# canonical + validator chưa đòi ⇒ đề cương do G10 lắp ráp giao hội đồng sẽ thiếu.
+# Đánh số lại toàn bộ mục sau vị trí chèn; MỌI nơi tiêu thụ phải lấy số/tiêu đề
+# qua de_cuong_heading()/de_cuong_sub_heading() — không viết cứng "# 12. ..." nữa.
 
 # Mỗi phần tử: (số mục, tiêu đề, danh sách tiểu mục). Tiểu mục rỗng = không có.
 DE_CUONG_SECTIONS: List[Tuple[str, str, List[str]]] = [
     ("1", "Tóm tắt", []),
     ("2", "Đặt vấn đề", []),
-    ("3", "Câu hỏi nghiên cứu và giả thuyết", []),
-    ("4", "Mục tiêu", ["4.1. Mục tiêu chung", "4.2. Mục tiêu cụ thể"]),
-    ("5", "Thiết kế và bối cảnh", []),
-    ("6", "Đối tượng nghiên cứu",
-     ["6.1. Tiêu chuẩn chọn", "6.2. Tiêu chuẩn loại", "6.3. Tuyển mẫu"]),
-    ("7", "Biến số và kết cục", []),
-    ("8", "Cỡ mẫu", []),
-    ("9", "Công cụ và quy trình thu thập", []),
-    ("10", "Quản trị dữ liệu và bảo mật", []),
-    ("11", "Kế hoạch phân tích thống kê", []),
-    ("12", "Sai lệch và kiểm soát", []),
-    ("13", "Đạo đức nghiên cứu", []),
-    ("14", "Kế hoạch phổ biến kết quả/ứng dụng", []),
-    ("15", "Tiến độ và nguồn lực", []),
-    ("16", "Tài liệu tham khảo Vancouver/NLM", []),
+    ("3", "Tổng quan tài liệu và khung lý thuyết", []),
+    ("4", "Câu hỏi nghiên cứu và giả thuyết", []),
+    ("5", "Mục tiêu", ["5.1. Mục tiêu chung", "5.2. Mục tiêu cụ thể"]),
+    ("6", "Thiết kế và bối cảnh", []),
+    ("7", "Đối tượng nghiên cứu",
+     ["7.1. Tiêu chuẩn chọn", "7.2. Tiêu chuẩn loại", "7.3. Tuyển mẫu"]),
+    ("8", "Biến số và kết cục", []),
+    ("9", "Cỡ mẫu", []),
+    ("10", "Công cụ và quy trình thu thập", []),
+    ("11", "Quản trị dữ liệu và bảo mật", []),
+    ("12", "Kế hoạch phân tích thống kê", []),
+    ("13", "Dự kiến kết quả và khung bảng trống", []),
+    ("14", "Sai lệch, hạn chế và kiểm soát", []),
+    ("15", "Đạo đức nghiên cứu", []),
+    ("16", "Kế hoạch phổ biến kết quả/ứng dụng", []),
+    ("17", "Tiến độ và nguồn lực", []),
+    ("18", "Tài liệu tham khảo Vancouver/NLM", []),
 ]
+
+# Khoá ỔN ĐỊNH cho từng mục (thứ tự = DE_CUONG_SECTIONS). Builder của G10 gọi
+# theo khoá, số mục suy ra từ vị trí ⇒ lần đổi khuôn sau chỉ sửa MỘT chỗ.
+DE_CUONG_SECTION_KEYS: Tuple[str, ...] = (
+    "tomtat", "datvande", "tongquan", "cauhoi", "muctieu", "thietke",
+    "doituong", "bienso", "comau", "congcu", "quantri_dulieu", "sap",
+    "dukien_ketqua", "sailech", "daoduc", "phobien", "tiendo", "tltk",
+)
+assert len(DE_CUONG_SECTION_KEYS) == len(DE_CUONG_SECTIONS), (
+    "DE_CUONG_SECTION_KEYS phải khớp 1-1 với DE_CUONG_SECTIONS"
+)
+
+
+def de_cuong_section(key: str) -> Tuple[str, str, List[str]]:
+    """(số, tiêu đề, tiểu mục) của một mục theo khoá ổn định; KeyError nếu sai khoá."""
+    try:
+        idx = DE_CUONG_SECTION_KEYS.index(key)
+    except ValueError as exc:
+        raise KeyError(f"Khoá mục đề cương không tồn tại: {key!r}") from exc
+    return DE_CUONG_SECTIONS[idx]
+
+
+def de_cuong_heading(key: str) -> str:
+    """Tiêu đề Markdown cấp 1 đúng số hiệu canonical, vd '# 3. Tổng quan tài liệu…'."""
+    num, title, _ = de_cuong_section(key)
+    return f"# {num}. {title}"
+
+
+def de_cuong_sub_heading(key: str, index: int) -> str:
+    """Tiêu đề cấp 2 của tiểu mục thứ `index` (0-based), vd '## 5.1. Mục tiêu chung'."""
+    _, _, subs = de_cuong_section(key)
+    return f"## {subs[index]}"
+
+
+def de_cuong_dynamic_sub_heading(key: str, suffix: str, title: str) -> str:
+    """Tiêu đề cấp 2 PHÁI SINH từ số mục cha hiện tại + hậu tố tự do, vd
+    '## 6.2. Can thiệp và đối chứng (TIDieR)' khi `key='thietke'`, `suffix='2'`.
+
+    KHÁC `de_cuong_sub_heading()`: không đòi đăng ký trước trong
+    `DE_CUONG_SECTIONS[i][2]` — dùng cho tiểu mục CÓ ĐIỀU KIỆN theo thiết kế
+    (vd chỉ RCT mới có ngẫu nhiên hoá/làm mù), nên KHÔNG bị validator/test coi
+    là "luôn phải có" ở mọi thiết kế. Vẫn PHÁI SINH số cha từ khoá ổn định —
+    mục cha đổi số thì tiểu mục tự theo, không viết cứng số nguyên."""
+    num, _, _ = de_cuong_section(key)
+    return f"## {num}.{suffix}. {title}"
 
 # Phụ lục bắt buộc kèm đề cương (templates/01 §Phụ lục).
 DE_CUONG_PHU_LUC: List[str] = [
@@ -103,9 +163,12 @@ DE_CUONG_PHU_LUC: List[str] = [
     "Checklist reporting guideline",
 ]
 
-# Hai mươi thành phần NỘI DUNG của một protocol y khoa. Một đề cương có thể giữ
-# bố cục 16 chương để phù hợp hồ sơ trong nước, nhưng validator phải chứng minh
-# đủ 20 thành phần này; số chương không thay thế độ đầy đủ nội dung.
+# Các thành phần NỘI DUNG của một protocol y khoa (23 từ 06/09/2026; trước đó 20).
+# Một đề cương có thể giữ bố cục chương theo hồ sơ trong nước, nhưng validator phải
+# chứng minh đủ MỌI thành phần này; số chương không thay thế độ đầy đủ nội dung.
+# Mã P là HỢP ĐỒNG DỮ LIỆU (nằm trong study_meta, checkpoint, báo cáo, test):
+# CHỈ THÊM VÀO CUỐI, KHÔNG BAO GIỜ ĐÁNH SỐ LẠI — vì vậy P21–P23 đứng sau P20
+# "Tài liệu tham khảo" dù về nội dung chúng thuộc phần đầu/giữa đề cương.
 PROTOCOL_CORE_ITEMS: Tuple[Tuple[str, str], ...] = (
     ("P01", "Trang bìa, mã đề tài, phiên bản và ngày"),
     ("P02", "Tóm tắt protocol"),
@@ -122,11 +185,21 @@ PROTOCOL_CORE_ITEMS: Tuple[Tuple[str, str], ...] = (
     ("P13", "Thu thập dữ liệu và quản lý chất lượng"),
     ("P14", "Quản trị dữ liệu và bảo mật"),
     ("P15", "Kế hoạch phân tích thống kê"),
-    ("P16", "Sai lệch và biện pháp giảm thiểu"),
+    ("P16", "Sai lệch, hạn chế dự kiến và biện pháp giảm thiểu"),
     ("P17", "Đạo đức và an toàn"),
     ("P18", "Đăng ký và phổ biến kết quả"),
     ("P19", "Tiến độ, nhân lực và kinh phí"),
     ("P20", "Tài liệu tham khảo và phụ lục"),
+    # THÊM 06/09/2026 — ba thành phần khuôn 16 mục/20 thành phần cũ không đòi:
+    ("P21", "Tổng quan tài liệu: tổng hợp nghiên cứu trước, điểm đồng thuận và bất đồng"),
+    ("P22", "Khung lý thuyết hoặc mô hình khái niệm (hoặc nêu rõ không áp dụng, có lý do)"),
+    ("P23", "Dự kiến kết quả và khung bảng trống (dummy tables), không số liệu"),
+    # THÊM 06/09/2026: SPIRIT 2025 mục 9b/11/15a/15d/18/21-24 (can thiệp/đối
+    # chứng TIDieR, ngẫu nhiên hoá, làm mù, lịch trình, PPI) — trước đây §6
+    # chỉ có tên thiết kế, không có chỗ cho các mục này. Chỉ RCT; thiết kế
+    # khác hợp lệ khi nêu rõ không áp dụng (khuôn giống P22).
+    ("P24", "Can thiệp/đối chứng (TIDieR), ngẫu nhiên hoá-làm mù và lịch trình "
+            "— chỉ RCT (hoặc nêu rõ không áp dụng, có lý do)"),
 )
 
 # Các nội dung phải được làm rõ thêm theo thiết kế. Đây là bản đồ tối thiểu để
@@ -163,7 +236,7 @@ DESIGN_PROTOCOL_REQUIREMENTS: Dict[str, Tuple[str, ...]] = {
         "Index test, reference standard và ngưỡng định trước",
         "Blinding giữa index test/reference standard",
         "Spectrum/verification bias và bảng 2x2",
-        "STARD",
+        "STARD/STARD-AI khi phù hợp; QUADAS-3 hiện hành ở mức từng ước lượng",
     ),
     "prediction": (
         "Định nghĩa target outcome và thời điểm dự báo",
@@ -382,7 +455,7 @@ FINAL_REPORT_SECTIONS: Tuple[str, ...] = (
 
 
 def de_cuong_section_titles() -> List[str]:
-    """Trả về danh sách 16 tiêu đề mục chính (dùng cho validator đối chiếu)."""
+    """Trả về danh sách tiêu đề mục cấp 1 (đủ len(DE_CUONG_SECTIONS); validator đối chiếu)."""
     return [f"{num}. {title}" for num, title, _ in DE_CUONG_SECTIONS]
 
 
@@ -500,7 +573,7 @@ REPORTING_STANDARDS: Dict[str, Dict[str, str]] = {
     "diagnostic": {
         "primary": "STARD",
         "protocol": "Protocol định trước/đăng ký nếu thích hợp",
-        "extra": "QUADAS-2/QUADAS-C khi thẩm định sai lệch",
+        "extra": "QUADAS-3 hiện hành ở mức từng ước lượng; QUADAS-2/QUADAS-C chỉ tương thích ngược",
     },
     "prediction": {
         "primary": "TRIPOD+AI",
@@ -510,7 +583,7 @@ REPORTING_STANDARDS: Dict[str, Dict[str, str]] = {
     "systematic_review": {
         "primary": "PRISMA 2020",
         "protocol": "PRISMA-P; đăng ký PROSPERO/OSF nếu phù hợp",
-        "extra": "RoB 2/ROBINS-I/QUADAS-2/AMSTAR 2/ROBIS; GRADE cho độ chắc chắn",
+        "extra": "RoB 2/ROBINS-I/QUADAS-3/AMSTAR 2/ROBIS; GRADE cho độ chắc chắn",
     },
     "qualitative": {
         "primary": "COREQ (phỏng vấn/focus group) hoặc SRQR",
@@ -714,13 +787,23 @@ def _status_is_locked(status: Optional[str]) -> bool:
 
     Sửa bug substring (kiểm định đối kháng #7): 'UNLOCKED'/'NOT LOCKED'/'CHƯA
     LOCKED'/'PENDING ... LOCKED' KHÔNG được coi là đã khoá. Dùng ranh giới từ.
+
+    Sửa 2026-09-06 (audit vòng 31): ranh giới từ `\\b` coi `_` là ký tự "từ"
+    (thuộc `\\w`), nên `\\bLOCKED\\b` KHÔNG khớp với chính giá trị THẬT mà
+    tools/lock_analysis_dataset.py ghi vào `database_lock_status` khi khóa dữ
+    liệu thành công — `LOCKED_STATUS = "LOCKED_FOR_ANALYSIS"` (dòng 53, 621,
+    697 của file đó). Kết quả: một checkpoint G5 hợp lệ (đường tương thích khi
+    thiếu `quality_contract_version`) mang đúng giá trị đã khóa thật vẫn bị
+    báo "CHƯA khóa". Đổi sang ranh giới CHỮ CÁI (không tính `_`/số): "LOCKED"
+    không được có chữ cái NGAY TRƯỚC/SAU — vẫn loại đúng "BLOCKED..." (B là
+    chữ cái liền trước) và "UNLOCKED" (đã bị chặn ở lớp phủ định phía trên).
     """
     if not status:
         return False
     up = str(status).upper()
     if any(neg in up for neg in ("UNLOCK", "NOT LOCK", "CHƯA", "PENDING", "SẼ ")):
         return False
-    return re.search(r"\bLOCKED\b", up) is not None
+    return re.search(r"(?<![A-Z])LOCKED(?![A-Z])", up) is not None
 
 
 # ── Tín hiệu THỰC-TẾ (real-world) — nền tảng của mọi kết luận 'KHOÁ' ─────────
@@ -1034,7 +1117,8 @@ if __name__ == "__main__":
     # Tự kiểm nhanh: in tóm tắt canon để mắt thường soát.
     print("=== skill_standards.py — tự kiểm ===")
     print(f"Số nhãn trạng thái hợp lệ: {len(VALID_STATUS_TAGS)}")
-    print(f"Số mục đề cương: {len(DE_CUONG_SECTIONS)} (cần = 16)")
+    print(f"Số mục đề cương: {len(DE_CUONG_SECTIONS)} (cần = 18)")
+    print(f"Số thành phần protocol lõi: {len(PROTOCOL_CORE_ITEMS)} (cần = 24)")
     print(f"Số cổng skill: {len(SKILL_GATES)} (cần = 10)")
     print(f"Số mã thiết kế có chuẩn báo cáo: {len(REPORTING_STANDARDS)}")
     print(f"Số mốc sẵn sàng: {len(READINESS_MILESTONES)}")

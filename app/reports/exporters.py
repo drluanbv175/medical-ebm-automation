@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
@@ -102,14 +103,27 @@ def export_zotero_bibtex() -> Path:
             EvidenceItem.is_primary_record.is_(True),
             EvidenceItem.classification != "excluded").all()
         for r in rows:
-            key = (r.doi or r.pmid or f"item{r.id}").replace("/", "_").replace(".", "_")
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 18) — `key`
+            # (khóa trích dẫn BibTeX, đứng TRẦN không bọc ngoặc nhọn, ngăn
+            # cách phần còn lại của entry bằng dấu phẩy) chỉ thay `/` và `.`,
+            # còn `doi`/`pmid` được nhét THẲNG vào `doi={...}`/`note={...}`
+            # không qua _esc() — khác với title/authors/journal đã escape.
+            # r.doi/r.pmid là dữ liệu nguồn NGOÀI (PubMed/CrossRef), cùng lớp
+            # "text nguồn NGOÀI" mà _esc()/html.escape() đã được áp dụng
+            # nhiều nơi khác trong module reports/. Một DOI chứa dấu phẩy/
+            # ngoặc nhọn (vd "10.1/abc},note={INJECTED") cắt đứt `key` sớm ở
+            # dấu phẩy rồi chèn một field `note={...}` giả vào giữa entry,
+            # làm hỏng cấu trúc file .bib. Sanitize `key` chỉ giữ ký tự an
+            # toàn cho khóa trích dẫn BibTeX, và escape doi/pmid như các
+            # trường khác.
+            key = re.sub(r"[^A-Za-z0-9_-]", "_", r.doi or r.pmid or f"item{r.id}")
             year = (r.publication_date or "")[:4]
             entries.append(
                 "@article{%s,\n  title={%s},\n  author={%s},\n  journal={%s},\n"
                 "  year={%s},\n  doi={%s},\n  note={PMID:%s}\n}" % (
                     key, _esc(r.title), _esc(r.authors or ""),
                     _esc(r.journal_or_organization or ""), year,
-                    r.doi or "", r.pmid or ""))
+                    _esc(r.doi or ""), _esc(r.pmid or "")))
     path = settings.exports_dir / f"Zotero_Export_{_stamp()}.bib"
     path.write_text("\n\n".join(entries), encoding="utf-8")
     logger.info("Đã xuất BibTeX: %s", path)

@@ -234,6 +234,9 @@ _RISKY_BLOCKS = (
 )
 _MAC_FONT_DIR = "/System/Library/Fonts/Supplemental"
 _glyph_canh_bao: Dict[str, int] = {}
+# Ký tự font thiếu glyph nhưng bộ làm sạch đã đổi/gỡ TRƯỚC khi lưu — báo dạng GHI CHÚ,
+# không phải cảnh báo lỗi (xem _font_safe).
+_glyph_da_lam_sach: Dict[str, int] = {}
 _cmap_cache: Dict[str, Optional[frozenset]] = {}
 
 
@@ -265,8 +268,9 @@ def _font_cmap(font_name: str) -> Optional[frozenset]:
     return ket_qua
 
 
-def _ghi_nhan_ky_tu_rui_ro(text: str) -> None:
+def _ghi_nhan_ky_tu_rui_ro(text: str, bo_dem: Optional[Dict[str, int]] = None) -> None:
     """Gom ký tự có nguy cơ không hiển thị được, để cảnh báo một lần khi xuất xong."""
+    dem = _glyph_canh_bao if bo_dem is None else bo_dem
     cmap = _font_cmap(_active_profile["font"])
     for c in text:
         if c in "\n\r\t":
@@ -279,7 +283,7 @@ def _ghi_nhan_ky_tu_rui_ro(text: str) -> None:
         thieu = (o not in cmap) if cmap is not None else \
                 any(lo <= o <= hi for lo, hi in _RISKY_BLOCKS)
         if thieu:
-            _glyph_canh_bao[c] = _glyph_canh_bao.get(c, 0) + 1
+            dem[c] = dem.get(c, 0) + 1
 # Chỉ số NHIỀU KÝ TỰ không có dạng Unicode (vd Z₁₋α/₂: α và "/" không tồn tại ở
 # khối chỉ số dưới) -> viết `Z_{1−α/2}` trong nguồn Markdown. Cú pháp `_{...}` và
 # `^{...}` theo quy ước LaTeX, ai đọc công thức thống kê cũng hiểu, và tránh được
@@ -292,10 +296,30 @@ _VERTALIGN_RE = re.compile(
 
 def _font_safe(text: str) -> str:
     """Thay ký tự không có glyph trong font đích bằng ký tự tương đương, rồi ghi
-    nhận ký tự rủi ro CÒN LẠI để cảnh báo khi xuất xong."""
+    nhận ký tự rủi ro CÒN LẠI để cảnh báo khi xuất xong.
+
+    06/09/2026 — TÁCH HAI LOẠI thay vì gộp một. Bộ làm sạch
+    `chuan_trinh_bay.lam_sach_tai_lieu` chạy SAU CÙNG (ngay trước doc.save) và đổi
+    🚧/🔴/⛔… thành chữ, gỡ hẳn emoji trang trí. Đo trên C1a: mỗi lần lắp đề cương đều
+    in «còn '🚧' (U+1F6A7) x1» trong khi .docx cuối chỉ có «[Đang dừng]» — cảnh báo mô
+    tả bản THÔ, không mô tả file người đọc mở, tức báo động giả ở MỌI lần xuất (BH08).
+    Nhưng im hẳn về nhóm đó cũng sai: chốt 03/08 sinh ra để người soạn biết nguồn
+    Markdown có ký tự font không có. Nên nay hai bộ đếm:
+      - `_glyph_canh_bao`   : còn trong file cuối, font thiếu glyph -> CẢNH BÁO (như cũ).
+      - `_glyph_da_lam_sach`: bộ làm sạch đã đổi/gỡ trước khi lưu -> GHI CHÚ, không phải lỗi.
+    Phạm vi: bộ làm sạch quét thân bài + bảng, không quét header/footer."""
     for xau, thay in _GLYPH_SUBSTITUTE.items():
         text = text.replace(xau, thay)
-    _ghi_nhan_ky_tu_rui_ro(text)
+    import chuan_trinh_bay as _CTB
+    con_lai: Dict[str, int] = {}
+    _ghi_nhan_ky_tu_rui_ro(_CTB.lam_sach_van_ban(text), con_lai)
+    tho: Dict[str, int] = {}
+    _ghi_nhan_ky_tu_rui_ro(text, tho)
+    for c, n in con_lai.items():
+        _glyph_canh_bao[c] = _glyph_canh_bao.get(c, 0) + n
+    for c, n in tho.items():
+        if c not in con_lai:            # đã bị bộ làm sạch đổi/gỡ
+            _glyph_da_lam_sach[c] = _glyph_da_lam_sach.get(c, 0) + n
     return text
 
 
@@ -459,6 +483,53 @@ def _add_page_number(paragraph):
     run._r.append(end)
 
 
+def _add_toc(doc, levels: str = "1-3") -> None:
+    """Chèn trang MỤC LỤC bằng trường TOC của Word (THÊM 06/09/2026).
+
+    Vì sao: hồ sơ trình hội đồng (đề cương, luận văn) luôn có Mục lục ở trang sơ bộ;
+    trước đó bản .docx xuất ra không có. python-docx không tự tính được số trang, nên
+    chèn TRƯỜNG `TOC \\o "1-3" \\h \\z \\u` + bật `w:updateFields` để Word hỏi cập nhật
+    trường ngay khi mở (hoặc người dùng bấm F9). Nội dung giữ chỗ nói rõ điều đó —
+    không giả vờ mục lục đã dựng sẵn.
+    """
+    from docx.enum.text import WD_ALIGN_PARAGRAPH as A
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    heading = doc.add_paragraph()
+    _spacing(heading, before=0, after=12, line=1.3, align=A.CENTER)
+    _add_text(heading, "MỤC LỤC", 14, bold=True)
+
+    p = doc.add_paragraph()
+    _spacing(p, before=0, after=8, line=1.5)
+    run = p.add_run()
+    _set_run_font(run, size=BODY_PT)
+    begin = OxmlElement("w:fldChar")
+    begin.set(qn("w:fldCharType"), "begin")
+    begin.set(qn("w:dirty"), "true")          # đánh dấu trường cần tính lại
+    instr = OxmlElement("w:instrText")
+    instr.set(qn("xml:space"), "preserve")
+    instr.text = f'TOC \\o "{levels}" \\h \\z \\u'
+    separate = OxmlElement("w:fldChar")
+    separate.set(qn("w:fldCharType"), "separate")
+    placeholder = OxmlElement("w:t")
+    placeholder.set(qn("xml:space"), "preserve")
+    placeholder.text = ("[Mục lục tự động — khi mở bằng Word, chọn Cập nhật trường "
+                        "(hoặc bấm F9 tại đây) để dựng danh sách mục và số trang.]")
+    end = OxmlElement("w:fldChar")
+    end.set(qn("w:fldCharType"), "end")
+    for el in (begin, instr, separate, placeholder, end):
+        run._r.append(el)
+
+    # Bật updateFields để Word đề nghị cập nhật mọi trường khi mở tài liệu.
+    settings = doc.settings.element
+    if settings.find(qn("w:updateFields")) is None:
+        upd = OxmlElement("w:updateFields")
+        upd.set(qn("w:val"), "true")
+        settings.append(upd)
+    _page_break(doc)
+
+
 def _add_inline_runs(paragraph, text, size=None, bold=False, italic=False):
     """Thêm run vào paragraph, xử lý **đậm**/*nghiêng*/[nhãn] (nhãn -> đậm+nghiêng).
     size=None -> _set_run_font tự lấy cỡ thân bài của hồ sơ đang áp (vá 2026-07-15)."""
@@ -503,17 +574,28 @@ def _strip_md(text: str) -> str:
 
 
 def _clean_formula(text: str) -> str:
+    """Dọn cú pháp LaTeX của khối `$$...$$` thành văn bản đọc được, rồi giao
+    cho `_add_text()` (gọi ngay sau ở nơi dùng). GIỮ NGUYÊN `_{...}`/`^{...}`
+    — đó là cú pháp chỉ số NHIỀU KÝ TỰ mà `_VERTALIGN_RE`/`_add_text()` cần
+    (xem docstring ngay trên `_VERTALIGN_RE`, vd `Z_{1-α/2}`). Bản trước xóa
+    braces của `_{...}` NGAY TẠI ĐÂY (và của cả `^{...}` qua .replace cuối vô
+    điều kiện) nên tới `_add_text()` không còn dấu hiệu nào để dựng run
+    `vertAlign` thật — chỉ số nhiều ký tự trong công thức hiển thị PHẲNG như
+    chữ thường (vd "Z_1-alpha/2" thay vì Z với "1-α/2" hạ chỉ số thật)."""
     text = text.strip()
     if text.startswith("$$") and text.endswith("$$"):
         text = text[2:-2]
     subs = [
         (r"\\frac\{([^{}]+)\}\{([^{}]+)\}", r"(\1) / (\2)"),
         (r"\\times", "×"), (r"\\cdot", "·"), (r"\\alpha", "α"),
-        (r"\\approx", "≈"), (r"_\{([^{}]+)\}", r"_\1"), (r"\\%", "%"),
+        (r"\\approx", "≈"), (r"\\%", "%"),
     ]
     for pat, rep in subs:
         text = re.sub(pat, rep, text)
-    return text.replace("{", "").replace("}", "").strip()
+    # Chỉ dọn braces KHÔNG thuộc `_{...}`/`^{...}` (còn sót từ LaTeX chưa được
+    # thay ở trên, vd `\text{...}`) — braces NGAY SAU `_`/`^` được giữ nguyên.
+    text = re.sub(r"(?<![_^])\{([^{}]*)\}", r"\1", text)
+    return text.strip()
 
 
 def _parse_table(lines: List[str], start: int):
@@ -641,6 +723,9 @@ def _init_document(title_page: Optional[Dict], profile: Optional[Dict] = None):
 
     if title_page:
         _render_title_page(doc, title_page)
+        # Chỉ tài liệu có trang bìa (đề cương/hồ sơ trình hội đồng) mới cần Mục lục;
+        # bản thảo nộp tạp chí (không title_page) giữ nguyên bố cục cũ.
+        _add_toc(doc)
     return doc
 
 
@@ -660,6 +745,7 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         báo đỏ/đậm "[CẦN XÁC MINH TRƯỚC KHI NỘP]" ngay đầu nội dung.
     """
     _glyph_canh_bao.clear()
+    _glyph_da_lam_sach.clear()
     from docx.enum.text import WD_ALIGN_PARAGRAPH as A
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
@@ -751,6 +837,10 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         _add_inline_runs(p, stripped)
         i += 1
 
+    # 01/09/2026: làm sạch ký tự trang trí (emoji/khung/mũi tên) — font đã theo
+    # hồ sơ tạp chí ở trên nên CHỈ làm sạch, không áp lại cỡ chữ.
+    import chuan_trinh_bay as _CTB
+    _CTB.lam_sach_tai_lieu(doc)
     doc.save(str(out_path))
     if _glyph_canh_bao:
         import sys
@@ -761,6 +851,14 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
               f"font có chân (Times New Roman thiếu glyph): {chi_tiet}. "
               f"Bổ sung vào _GLYPH_SUBSTITUTE hoặc sửa nguồn Markdown.",
               file=sys.stderr)
+    if _glyph_da_lam_sach:
+        import sys
+        da_sach = ", ".join(f"{c!r} (U+{ord(c):04X}) x{n}"
+                            for c, n in sorted(_glyph_da_lam_sach.items(),
+                                               key=lambda kv: -kv[1]))
+        print(f"GHI CHÚ: nguồn Markdown của {out_path} có ký tự font thiếu glyph "
+              f"nhưng bộ làm sạch ĐÃ đổi/gỡ trước khi lưu — file cuối KHÔNG còn, "
+              f"không cần sửa font: {da_sach}.", file=sys.stderr)
     return out_path
 
 

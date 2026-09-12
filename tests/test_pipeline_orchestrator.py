@@ -43,6 +43,11 @@ class TestFreshnessGuard:
         # G1 sinh SAU G0 tận 1 giờ → G0... không; nhưng nếu G3 sinh TRƯỚC G1 nhiều:
         _write_cp(tmp_path, "G0", {"gate": "G0"}, mtime=base)
         _write_cp(tmp_path, "G1", {"gate": "G1"}, mtime=base + 10000)  # G1 mới hơn nhiều
+        # G2 PHẢI có mặt (vòng 26: GATE_DEPS["G3"] nay gồm G2, khớp
+        # resolve_design_code() thật) — thiếu G2 sẽ rơi vào nhánh
+        # orphan_downstream TRƯỚC KHI kịp kiểm stale, che mất chính điều
+        # test này muốn khoá.
+        _write_cp(tmp_path, "G2", {"gate": "G2"}, mtime=base + 2)
         _write_cp(tmp_path, "G3", {"gate": "G3"}, mtime=base + 5)      # G3 cũ hơn G1
         report = FRESH.stale_report(tmp_path)
         assert "G3" in report["stale_gates"]

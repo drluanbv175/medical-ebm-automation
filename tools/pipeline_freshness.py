@@ -38,14 +38,36 @@ GATE_ORDER = [f"G{i}" for i in range(11)]  # G0..G10
 
 # Cổng -> các cổng THƯỢNG NGUỒN mà nó đọc checkpoint (trực tiếp là đủ; tính bắc
 # cầu qua thứ tự xử lý). Khớp thực tế load_cp(...) trong các run_g*_auto.py.
+#
+# SỬA vòng 26 (2026-09-05, audit đa-agent): bảng này lạc hậu so với những gì
+# các run_g*_auto.py THỰC SỰ đọc — đối chiếu bằng grep trực tiếp trên code
+# sống, không suy đoán từ tài liệu:
+#   - G3 gọi GC.resolve_design_code(out_dir) (run_g3_auto.py dòng ~959), hàm
+#     này đọc CẢ G1_checkpoint.json LẪN G2_checkpoint.json — thiếu G2.
+#   - G4 đọc trực tiếp G0/G1/G3 (run_g4_auto.py dòng 496-498) + gọi
+#     resolve_design_code() đọc thêm G1/G2 (dòng 505) — thiếu CẢ G0, G1, G2.
+#   - G5 đọc trực tiếp G0/G1/G2/G3 (run_g5_auto.py dòng 2287-2290) — thiếu G2.
+#   - G6 đọc trực tiếp G0/G1/G3/G4 (run_g6_auto.py dòng 3109-3112) + gọi
+#     resolve_design_code() đọc thêm G1/G2 (dòng 3125) — thiếu G0, G1, G2, G3, G4.
+# Hậu quả của bảng thiếu: g10_quality_gate.py dùng đúng stale_report() làm
+# tiêu chí BLOCK cứng (G10-AUTO-03) — thiếu deps thật nghĩa là một đề tài mà
+# bác sĩ SỬA thiết kế ở G2 (vd cohort → RCT) SAU KHI đã chạy G3/G4/G5/G6 sẽ
+# đi qua tiêu chí này mà KHÔNG bị chặn, dù chuẩn báo cáo/SAP/script phân
+# tích đang dựa trên thiết kế CŨ — đúng lớp lỗi "G7 seed nhiễm PMID đề tài
+# khác" mà chính module này (xem docstring đầu file) sinh ra để ngăn, nay
+# tái diễn ở trục design_code.
+# Lưu ý: G2<->G3 nay là 2 CHIỀU có chủ ý (G2 nhúng N từ G3, G3 đọc
+# design_code từ G2) — đây KHÔNG phải chu trình lỗi, chỉ là 2 lý do stale
+# ĐỘC LẬP theo 2 hướng khác nhau; find_stale_gates() so sánh mtime từng cặp
+# trực tiếp (không dựng đồ thị/topo sort) nên vòng này không gây vòng lặp.
 GATE_DEPS: Dict[str, List[str]] = {
     "G0": [],
     "G1": ["G0"],
     "G2": ["G0", "G1", "G3"],   # + G3: G2 (đạo đức/ICF) nhúng cỡ mẫu N từ G3
-    "G3": ["G0", "G1"],
-    "G4": ["G3"],
-    "G5": ["G0", "G1", "G3"],
-    "G6": ["G5"],
+    "G3": ["G0", "G1", "G2"],
+    "G4": ["G0", "G1", "G2", "G3"],
+    "G5": ["G0", "G1", "G2", "G3"],
+    "G6": ["G0", "G1", "G2", "G3", "G4", "G5"],
     "G7": ["G0", "G1", "G2", "G3", "G4", "G5", "G6"],
     "G8": ["G7"],
     "G9": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8"],

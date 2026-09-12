@@ -64,8 +64,13 @@ def evaluate_hypertension_release_gate(
             reasons.append(f"claim_location_missing:{link.claim_id}")
         if link.verification_status in {"SOURCE_UNAVAILABLE", "STALE", "RETRACTED", "UNVERIFIED", ""}:
             reasons.append(f"claim_verification_blocks_release:{link.claim_id}:{link.verification_status}")
-        if not link.release_ready:
-            reasons.append(f"claim_not_release_ready:{link.claim_id}")
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 15) — trước đây tự
+    # lặp lại "if not link.release_ready: claim_not_release_ready:..." ở
+    # đây, TÁI TẠO đúng logic đã tính sẵn ở pathway.blocked_release_reasons
+    # (builder). Hai nơi tính cùng một danh sách độc lập nhau tạo nguy cơ
+    # drift nếu một bên được sửa mà bên kia quên theo — dùng thẳng field
+    # đã có thay vì tính lại.
+    reasons.extend(pathway.blocked_release_reasons)
 
     # Phase 2C chỉ cho shadow/review. Clinical production luôn bị chặn.
     reasons.append("clinical_production_release_not_allowed_in_phase_2c")

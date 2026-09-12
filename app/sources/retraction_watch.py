@@ -72,7 +72,25 @@ class RetractionWatchIndex:
 
     # -- trạng thái ------------------------------------------------------
     def san_sang(self) -> bool:
-        return self.csv_path.exists()
+        """True chỉ khi CSV tồn tại VÀ đã nạp được ÍT NHẤT MỘT bản ghi có
+        phán quyết (retracted/expression_of_concern).
+
+        SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 20) — trước đây
+        chỉ kiểm `csv_path.exists()`, không kiểm chỉ mục có bản ghi nào
+        không. Một CSV RỖNG/hỏng/placeholder đồng bộ dở (đúng rủi ro OneDrive
+        mà chính docstring module này đã cảnh báo ở đầu file) vẫn báo sẵn
+        sàng. Hệ quả kép ở app/sources/retraction_chain.py::check(): (a)
+        MỌI PMID nhận "retraction_watch" trong `sources_tried` dù chỉ mục
+        trống — thổi phồng bằng chứng máy-kiểm trong receipt A12 đã ký, CÙNG
+        LỚP LỖI over-claim đã vá cho europepmc (03/09/2026); (b) điều kiện
+        fail-closed `if "retraction_watch" not in da_thu:` hướng dẫn khắc
+        phục (chạy `tools/tai_retraction_watch.py`) KHÔNG BAO GIỜ kích hoạt
+        vì luôn nghĩ đã tra — người vận hành mất manh mối duy nhất để tự sửa
+        khi NCBI chặn IP. Xác nhận sống:
+        RetractionWatchIndex(csv_path='/dev/null').san_sang() trả True trước
+        khi vá dù so_ban_ghi()==0.
+        """
+        return self.nap() and len(self._chi_muc) > 0
 
     def tai_ve_luc(self) -> Optional[datetime]:
         """Mốc TẢI VỀ (không phải mtime — OneDrive đồng bộ làm mtime vô nghĩa)."""
@@ -92,7 +110,10 @@ class RetractionWatchIndex:
     def nap(self) -> bool:
         if self._da_nap:
             return True
-        if not self.san_sang():
+        # Kiểm THẲNG file tồn tại (không gọi san_sang()) — san_sang() nay tự
+        # gọi nap() để biết chỉ mục có bản ghi hay không (xem docstring
+        # san_sang()); gọi ngược lại ở đây sẽ tạo đệ quy vô hạn.
+        if not self.csv_path.exists():
             logger.info("[retraction_watch] chưa có CSV tại %s", self.csv_path)
             return False
         # Bản CSV thật có ô Notes rất dài; nới trần để không vỡ giữa chừng.
@@ -144,17 +165,24 @@ class RetractionWatchIndex:
         if not self.nap():
             return None
         pmid = str(pmid).strip()
-        if pmid in self._phuc_hoi and pmid not in self._chi_muc:
-            # Đã bị rút rồi được PHỤC HỒI: không kết luận, để nguồn sống nói.
+        if pmid in self._phuc_hoi:
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #89, vòng 6):
+            # bản gốc chỉ trả None khi PMID CHỈ có dòng phục hồi, KHÔNG có
+            # dòng rút bài/EoC nào khác (`pmid not in self._chi_muc`). Nhưng
+            # kịch bản THẬT — và cũng là kịch bản phổ biến nhất của Retraction
+            # Watch — là CẢ HAI dòng cùng tồn tại cho một PMID (rút bài trước,
+            # phục hồi sau). Khi đó guard cũ KHÔNG fire, hàm rơi xuống trả
+            # nguyên `status: "retracted"` (chỉ gắn kèm một khoá `canh_bao`
+            # không ai bắt buộc phải đọc) — đúng điều docstring đầu file tự
+            # khai là "nói SAI hẳn". Nay hễ có dòng phục hồi cho PMID này —
+            # bất kể có dòng rút bài kèm theo hay không — đều KHÔNG kết luận,
+            # để nguồn sống (PubMed/Europe PMC) nói tiếp.
             return None
         ban_ghi = self._chi_muc.get(pmid)
         if ban_ghi is None:
             return None
         kq = dict(ban_ghi)
         kq["source"] = "retraction_watch"
-        if pmid in self._phuc_hoi:
-            kq["canh_bao"] = ("Retraction Watch có CẢ dòng phục hồi (reinstatement) cho "
-                              "PMID này — cần bác sĩ đọc nguyên văn thông báo")
         return kq
 
     def so_ban_ghi(self) -> int:

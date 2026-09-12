@@ -65,7 +65,7 @@ def test_sapdrift_seed_bi_bat():
                                           "ZZTEST-G6-SEED-DRIFT-TMP"))
         sap = tmp / "G4_A5_SAP_FINAL_ZZTEST-G6-SEED-DRIFT-TMP.md"
         sap.write_text(re.sub(r"set\.seed\(\d+\)", "set.seed(9999)",
-                              sap.read_text(encoding="utf-8")), encoding="utf-8")
+                              sap.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
         bao = m.evaluate_study("ZZTEST-G6-SEED-DRIFT-TMP", write=False)
         lech = [k for k in bao["checks"] if k["id"] == "G6-AUTO-02"]
         assert bao["status"] == "BLOCKED"

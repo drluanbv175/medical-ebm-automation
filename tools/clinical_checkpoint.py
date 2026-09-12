@@ -24,11 +24,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
 from dataclasses import dataclass, field
+from pathlib import Path
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -70,6 +72,75 @@ REQUIRED_FIELDS = tuple(_FIELD_PATTERNS.keys())
 # _KIEM-DUYET-DOC-LAP.md.
 _GUARDRAIL_FIELD_RE = re.compile(r"-\s*guardrail_dau_ra:\s*(.+)")
 
+# BH98 (02/09/2026): `guardrail_passed` ở trên chỉ đọc chuỗi "ĐẠT" — LỜI TỰ KHAI của
+# mô hình về chính nó, không phân biệt được với một guardrail bị BỎ QUA rồi ghi "ĐẠT"
+# im lặng. Bằng chứng THẬT đã có sẵn: `observability/APPRAISALS.jsonl` do bộ chấm
+# XÁC ĐỊNH `tools/eval/run_eval.py` ghi (không phải LLM tự thuật). Cú pháp trích dẫn:
+# `ĐẠT [bien-nhan: <id>]`. KHÔNG bắt buộc trích (luồng lâm sàng thật hôm nay chưa có
+# đường ghi sổ đó — bắt buộc ngay là fail-closed lên điều kiện bất khả thi); chỉ khi
+# CÓ trích thì mới đối chiếu, và biên nhận trích mà KHÔNG có trong sổ mới bị chặn.
+_RECEIPT_RE = re.compile(r"\[\s*(?:bien-nhan|biên-nhận)\s*:\s*([^\]]+?)\s*\]", re.I)
+
+
+def _duong_dan_so_bien_nhan() -> Path:
+    """Đường dẫn `observability/APPRAISALS.jsonl`. Ưu tiên biến môi trường
+    `EBM_APPRAISALS_PATH` — hai repo lồng nhau qua symlink nên đường dẫn suy từ vị
+    trí file này có thể sai tuỳ cách gọi; biến môi trường cho phép trỏ tay khi bố
+    cục lạ (và là đường DUY NHẤT để test tiêm được sổ giả)."""
+    override = os.environ.get("EBM_APPRAISALS_PATH")
+    if override:
+        return Path(override)
+    return Path(__file__).resolve().parent.parent / "observability" / "APPRAISALS.jsonl"
+
+
+def _so_bien_nhan() -> set[str] | None:
+    """Tập id biên nhận CÓ THẬT trong sổ. Trả **None** — KHÔNG phải tập rỗng — khi
+    sổ không đọc được (vắng mặt/lỗi I/O): None nghĩa là CHƯA BIẾT, tập rỗng nghĩa
+    là ĐÃ ĐỌC và sổ không có id nào. Gộp hai nghĩa này biến CHƯA BIẾT thành CÓ VẤN
+    ĐỀ (BH08) — mọi biên nhận hợp lệ sẽ bị coi là bịa trên máy có bố cục thư mục
+    khác, đúng lỗi mà bản vá này phải tránh."""
+    p = _duong_dan_so_bien_nhan()
+    if not p.is_file():
+        return None
+    ids: set[str] = set()
+    try:
+        text = p.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    for dong in text.splitlines():
+        dong = dong.strip()
+        if not dong:
+            continue
+        try:
+            obj = json.loads(dong)
+        except json.JSONDecodeError:
+            continue
+        i = obj.get("id") if isinstance(obj, dict) else None
+        if isinstance(i, str) and i:
+            ids.add(i)
+    return ids
+
+
+def muc_bao_dam_guardrail(e: CheckpointEntry) -> str:
+    """Mức bảo đảm của `guardrail_dau_ra` — để `format_report` in RA thay vì để
+    chữ "ĐẠT" ngầm hiểu là đã có bằng chứng máy ghi. Ba mức, không suy diễn thêm:
+      CHI_LA_TU_KHAI_CUA_MO_HINH — không dẫn biên nhận (hợp lệ, nhưng chỉ tự khai)
+      CO_BIEN_NHAN_MAY_GHI       — dẫn id, id đó CÓ THẬT trong sổ
+      BIEN_NHAN_KHONG_XAC_MINH_DUOC — dẫn id, id KHÔNG có trong sổ (đã bị chặn ở
+                                       validate_entries dưới dạng GUARDRAIL_RECEIPT_
+                                       UNRESOLVABLE, nhãn ở đây chỉ để hiển thị)
+      CHUA_KIEM_DUOC_SO          — không đọc được sổ, KHÔNG kết luận gì (BH08)
+    """
+    if not e.is_gate_entry:
+        return "KHONG_AP_DUNG"
+    bien_nhan = e.bien_nhan_da_dan
+    if bien_nhan is None:
+        return "CHI_LA_TU_KHAI_CUA_MO_HINH"
+    so = _so_bien_nhan()
+    if so is None:
+        return "CHUA_KIEM_DUOC_SO"
+    return "CO_BIEN_NHAN_MAY_GHI" if bien_nhan in so else "BIEN_NHAN_KHONG_XAC_MINH_DUOC"
+
 _EMPTY_TOKENS = {"", "(không)", "(khong)", "không", "khong", "none", "n/a", "-"}
 _VALID_TASK_TYPES = {"lâm sàng", "lam sang", "nghiên cứu", "nghien cuu"}
 _VALID_GATE_RE = re.compile(r"^(?:G\d{1,2}|A|B)$", re.I)
@@ -110,6 +181,15 @@ class CheckpointEntry:
     @property
     def guardrail_passed(self) -> bool:
         return self.guardrail_dau_ra.strip().upper().startswith("ĐẠT")
+
+    @property
+    def bien_nhan_da_dan(self) -> str | None:
+        """Id biên nhận (`APPRAISALS.jsonl`) mà `guardrail_dau_ra` TRÍCH DẪN, dạng
+        `ĐẠT [bien-nhan: <id>]`. None nếu không dẫn gì — trường hợp đó vẫn HỢP LỆ
+        (BH98: chưa bắt buộc), chỉ là mức bảo đảm thấp hơn (tự khai, không vật
+        đối chứng)."""
+        m = _RECEIPT_RE.search(self.guardrail_dau_ra)
+        return m.group(1).strip() if m else None
 
 
 @dataclass
@@ -214,6 +294,18 @@ def validate_entries(entries: list[CheckpointEntry]) -> list[Violation]:
                 f"guardrail_dau_ra thiếu/chưa ĐẠT ({e.guardrail_dau_ra!r}) — "
                 "tham-dinh-dau-ra PHẢI chạy và ĐẠT trước khi trả gói cho bác sĩ."))
 
+        # BH98: "ĐẠT" trích dẫn biên nhận (`[bien-nhan: <id>]`) mà id đó KHÔNG có
+        # trong observability/APPRAISALS.jsonl là biên nhận BỊA — tạo vẻ ngoài có
+        # bằng chứng máy ghi trong khi không có (cùng lớp BH27). Không trích gì thì
+        # KHÔNG bị chặn (chưa bắt buộc); sổ không đọc được thì KHÔNG kết luận (BH08).
+        if e.is_gate_entry and e.guardrail_passed and e.bien_nhan_da_dan is not None:
+            so = _so_bien_nhan()
+            if so is not None and e.bien_nhan_da_dan not in so:
+                violations.append(Violation(
+                    "GUARDRAIL_RECEIPT_UNRESOLVABLE", e.index, e.case_label,
+                    f"guardrail_dau_ra dẫn biên nhận {e.bien_nhan_da_dan!r} nhưng "
+                    "id đó KHÔNG có trong observability/APPRAISALS.jsonl."))
+
         pii = _scan_pii(e.raw_block)
         if pii:
             violations.append(Violation(
@@ -249,6 +341,13 @@ def format_report(entries: list[CheckpointEntry], violations: list[Violation]) -
             {"code": v.code, "entry_index": v.entry_index,
              "case_label": v.case_label, "message": v.message}
             for v in violations
+        ],
+        # BH98: mức bảo đảm TỪNG khối Cổng A/B — chữ "ĐẠT" một mình không nói được
+        # đó là tự khai hay có vật đối chứng máy ghi; in ra để người đọc thấy rõ.
+        "guardrail_assurance": [
+            {"entry_index": e.index, "case_label": e.case_label,
+             "muc_bao_dam": muc_bao_dam_guardrail(e)}
+            for e in entries if e.is_gate_entry
         ],
         "verdict": "TRẢ-VỀ-SỬA" if violations else "ĐẠT",
     }

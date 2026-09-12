@@ -31,3 +31,63 @@ _Hồ sơ nội bộ (không nộp Hội đồng). Đối chiếu ngày 2026-07-
 - **[19]/[20] phantom citation** — bản nháp Phụ lục A (SAP) từng trích `[19]`/`[20]` vượt ngoài danh mục 18 tài liệu (sót lại từ bản thảo gốc trước khi renumber). Đã sửa về đúng `[17]` (Heinze & Schemper, Firth) và `[18]` (Karahalios, missing data) tại mọi vị trí.
 - Toàn bộ 19 PMID đã đối chiếu **get_article_metadata** (PubMed) — khớp DOI/tạp chí/năm/tác giả đầu; xem log xác minh gốc trong `_workflow_result.json` và transcript phiên làm việc.
 - **Vòng phản biện thứ 3 (2026-07-06, chuyên gia ngoài qua ChatGPT):** phát hiện quy tắc cỡ mẫu "n≥104+p" (hồi quy tuyến tính) được dùng ở vòng 2 mà **chưa có trích dẫn nguồn** — đã xác minh qua PubMed trước khi thêm làm [19] (không phải sau khi đã dùng); đồng thời sửa câu dẫn đầu mục 7 còn ghi sai "18 tài liệu" thành "19 tài liệu" cho khớp danh mục thật.
+
+
+## Đợt đối chiếu 30/08/2026 (phiên hoàn thiện tổng quan tài liệu)
+
+_⚠️ Lưu ý về bảng phía trên: đánh số [1]–[19] của bảng là theo danh mục CŨ trước đợt mở rộng
+lên 25 tài liệu (ví dụ bảng ghi [12]=Peduzzi trong khi danh mục hiện hành là [15]=Peduzzi).
+Bảng được GIỮ NGUYÊN làm hồ sơ lịch sử; tra số hiện hành theo mục 7 của đề cương._
+
+**Kết quả đối chiếu lại toàn bộ:** 23/23 PMID của danh mục [1]–[25] đối chiếu lại metadata
+PubMed (get_article_metadata, kết nối PubMed chính thức) ngày 30/08/2026 — tiêu đề · tạp chí ·
+năm · DOI · tác giả đầu đều khớp; **0 cờ rút bài** trong loại công bố PubMed. Chuỗi kiểm rút
+bài 3 tầng đầy đủ (nền Retraction Watch ngoại tuyến → NCBI → Europe PMC) CHƯA chạy được từ
+phiên cloud (thiếu cache Retraction Watch) — [CẦN chạy `check_citation_retraction.py` trên máy
+thật trước khi nộp]; trạng thái hiện tại ghi đúng là "chưa kiểm rút bài đầy đủ", không phải
+"chưa bị rút".
+
+**Bốn tài liệu bổ sung [26]–[29]** (đều xác minh metadata PubMed 30/08/2026 trước khi thêm):
+
+| # | PMID | DOI | Tác giả đầu (năm) | Vị trí trích | Nội dung được trích |
+|---|---|---|---|---|---|
+| [26] | 31218671 | 10.1111/1475-6773.13187 | Bull C (2019) | §3.1 | Tổng quan hệ thống 88 bộ PREM: 7/10 tiêu chí giá trị–tin cậy không được thực hiện ở quá nửa số công cụ — căn cứ cho mục 4.5.3 |
+| [27] | 36439278 | 10.3389/ijph.2022.1605055 | Duc Thanh N (2022) | §3.1 | Phòng khám đa khoa Hà Nội, khung 5 lĩnh vực BYT: hài lòng chung 53,5%; EFA 5 nhân tố; Cronbach's alpha > 0,9 |
+| [28] | 42625778 | 10.3389/frhs.2026.1844842 | Dang KT (2026) | §3.2.1; §3.3 | Đa trung tâm 2.500 BN ngoại trú, bộ phiếu chuẩn QG 2024 (31 mục/5 lĩnh vực), SEM: nhân viên y tế β=0,43, tiếp cận β=0,30; hài lòng cao hơn ở nhóm có BHYT, nông thôn, tái khám |
+| [29] | 42582692 | 10.1002/hsr2.73018 | Thanh ND (2026) | §3.2.2 | SERVPERF tại BV huyện sau COVID-19 (n=190): 75,3% cảm nhận chất lượng "tốt" |
+
+**Hai chỉnh sửa liêm chính trong đợt này (cùng nguyên tắc với đính chính [4] trước đây):**
+- **[9] rút khỏi bullet học vấn ở §3.3** — tóm tắt PubMed của [9] (Mahajan 2025) nêu thời gian
+  chờ/giao tiếp/vệ sinh và các biến giới tính, nơi cư trú; KHÔNG nêu học vấn. Trích [9] cho ý
+  "học vấn không nhất quán" là trích vượt tóm tắt. [9] vẫn giữ ở ý thời gian chờ (được tóm tắt
+  chống lưng). Muốn khôi phục [9] cho ý học vấn phải đối chiếu TOÀN VĂN trước.
+- **[8] gắn nhãn mức chứng cứ** — loại công bố PubMed của [8] (Thayaparan 2013) là **Letter**;
+  đề cương nay nói rõ đây là thư gửi toà soạn, bằng chứng kiểm định thật nằm ở [6][7].
+
+_Đối chiếu bởi phiên làm việc 30/08/2026 theo yêu cầu «đánh giá chi tiết và hoàn thiện phần
+tổng quan tài liệu». Cần bác sĩ kiểm chứng._
+
+## Ghi chú 30/08/2026 — R4 của `check_de_cuong.py` báo "nghi bịa 10 PMID" là BÁO ĐỘNG GIẢ trong sandbox
+
+Chạy `check_de_cuong.py` trên đề cương C1a trong container không có đường ra NCBI trực tiếp:
+R4 gắn nhãn «PMID KHÔNG TRUY ĐƯỢC VỀ BẤT KỲ NGUỒN NÀO (nghi bịa)» cho 10 PMID — trong đó có
+31218671 (Bull, vừa xác minh sống cùng ngày) và STROBE 18313558. Kiểm chéo ngay qua PubMed
+(kênh MCP còn hoạt động): **6/6 mẫu thử đều CÓ THẬT, metadata khớp danh mục** (17654487 Polit
+I-CVI · 34017606 Quyên VN · 18313558 STROBE · 20494804 COSMIN · 23883565 PSQ-18 · 33886027
+CROSS). Kết luận: «không truy được» trong sandbox ≠ «bịa» — họ lỗi BH08. KHÔNG xoá/sửa trích
+dẫn theo cảnh báo này; chạy lại trên máy thật có mạng nếu cần R4 sạch. Cũng lưu ý:
+`check_de_cuong.py` là chốt cho khuôn `DE_CUONG_THONG_NHAT_*` (G10) — các FAIL khuôn mẫu
+R1/R2/R7–R16 với đề cương C1a (khuôn học thuật nộp hội đồng, đã cố ý gỡ tham chiếu công cụ
+nội bộ) là LỆCH HỢP ĐỒNG TÀI LIỆU, không phải lỗi nội dung; đừng "sửa" đề cương theo khuôn đó.
+
+⛔ **ĐÍNH CHÍNH cùng ngày 30/08 — ghi chú ngay trên GIẢI THÍCH SAI CƠ CHẾ, kết luận vẫn đúng.**
+Đọc mã R4 (`check_de_cuong.py` dòng ~269) cho thấy R4 KHÔNG gọi mạng: nó truy PMID về
+**biên nhận pipeline** (`G0_pubmed_raw.json` + seed checkpoint). 10 PMID bị gắn nhãn vì chúng
+vào đề cương qua vòng tổng quan/bình duyệt — xác minh SỐNG qua kênh PubMed-MCP nhưng kênh đó
+**không để lại biên nhận máy-đọc** nào cho R4 thấy. Vế «do container không có đường ra NCBI»
+là suy đoán sai của tôi; vế «các PMID này có thật, đừng xoá» vẫn đúng (6/6 mẫu kiểm chéo khớp).
+**Đã vá tận gốc cùng ngày:** R4 thêm tầng biên nhận ngoài-pipeline
+(`_bien-nhan-xac-minh-pmid.json`, hạn 180 ngày, mức bảo đảm «tự khai có dấu vết» — chỉ hạ
+FAIL→WARN, không bao giờ PASS im lặng; hồi quy `tests/test_check_de_cuong_receipt_20260830.py`,
+2 phép đột biến đều bị bắt). Biên nhận cho 27 PMID của đợt đối chiếu 30/08 đã sinh; R4 trên
+C1a nay: WARN «4 raw · 2 chỉ-seed (26776715, 27881078 — bác sĩ kiểm) · 21 biên-nhận».

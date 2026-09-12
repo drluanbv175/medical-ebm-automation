@@ -172,8 +172,8 @@ Xử lý kết quả KHÔNG XÁC ĐỊNH (indeterminate) và dữ liệu thiếu
 Cỡ mẫu dự kiến + CÁCH xác định: [CẦN — xem SAP §12] (mục 18)
 Đăng ký: số đăng ký [CẦN] + nơi truy cập đề cương đầy đủ [CẦN] (mục 28 + 29)
 Nguồn tài trợ và vai trò của nhà tài trợ: [CẦN] (mục 30)
-  ⚠ QUADAS-2/QUADAS-3 là công cụ mức TỔNG QUAN HỆ THỐNG để NGƯỜI KHÁC thẩm định
-    nghiên cứu này, KHÔNG phải công cụ tự chấm điểm cho nghiên cứu của chính mình.
+  ⚠ QUADAS-3 hiện hành (QUADAS-2 chỉ tương thích ngược) là công cụ để NGƯỜI THẨM ĐỊNH
+    đánh giá từng ước lượng của nghiên cứu này, KHÔNG phải công cụ để tác giả tự chấm điểm.
     Dùng các miền của nó làm bảng kiểm PHÒNG NGỪA lúc thiết kế là hợp lý; tự tuyên bố
     "nghiên cứu của tôi nguy cơ sai lệch thấp theo QUADAS" thì không."""
 

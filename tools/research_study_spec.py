@@ -39,7 +39,13 @@ def is_present(value: Any) -> bool:
     if isinstance(value, bool):
         return value
     if isinstance(value, (int, float)):
-        return value > 0
+        # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 23, phát hiện #1):
+        # bản gốc dùng `value > 0`, coi số 0 (một giá trị THẬT, hợp lệ — vd
+        # kinh phí=0 cho nghiên cứu hồi cứu không tốn chi phí, dropout=0%)
+        # ngang hàng với "chưa nhập". `None` đã bị loại ở nhánh trên, nên
+        # MỌI số thật còn lại (kể cả 0 và số âm) đều là dữ liệu đã có —
+        # không được đoán thêm điều kiện "dương mới tính là có".
+        return True
     if isinstance(value, str):
         text = value.strip()
         lowered = text.lower()
@@ -198,6 +204,15 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
         intervention.get("comparator"),
         pico.get("c"),
     )
+    # THÊM 06/09/2026 (bác sĩ: "đảm bảo hoàn thiện... đạt tiêu chuẩn quốc tế"):
+    # SPIRIT 2025 mục 9b (lý do chọn comparator) + 15d (điều trị đi kèm được
+    # phép/cấm) — trước đây KHÔNG có chỗ chứa nào trong `sec_thietke()` (§6 chỉ
+    # có tên thiết kế). Dùng CHUNG khối exposure_intervention đã có (cùng khái
+    # niệm PICO I/C với intervention/comparator ở trên), không tạo namespace mới.
+    exposure_intervention["comparator_rationale"] = _first(
+        raw.get("comparator_rationale"), intervention.get("comparator_rationale"))
+    exposure_intervention["concomitant_care"] = _first(
+        raw.get("concomitant_care_policy"), intervention.get("concomitant_care"))
 
     instrument = _as_dict(raw.get("instrument"), text_key="name")
     variables = _first(raw.get("variables"), _get(g5, "crf_columns"))
@@ -227,6 +242,51 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
         g6.get("design_code"),
     ))
     reporting = S.reporting_standards_for(design_code)
+
+    # THÊM 06/09/2026: bổ sung field cho `design_specific` — trước đây chỉ
+    # `_DESIGN_FIELD_REQUIREMENTS["rct"]` tra `randomization`/`allocation_
+    # concealment`/`harms`/`stopping_rules` để liệt "quyết định còn treo"
+    # (R01-R03), nhưng KHÔNG nơi nào trong `run_g10_assemble.py` render các
+    # field này vào văn bản đề cương thật — bác sĩ điền xong vẫn không thấy
+    # trong §6. Bổ sung field mù/lịch trình/PPI còn thiếu + fallback tên phẳng
+    # (design_specific là dict PASSTHROUGH, không có logic chuẩn hoá nào khác).
+    for _key, _aliases in (
+        ("randomization", ("randomization_sequence_method", "randomization_method")),
+        ("randomization_type", ("randomization_type",)),
+        ("allocation_concealment", ("allocation_concealment_mechanism",)),
+        ("allocation_access", ("allocation_access_control",)),
+        ("blinding_who", ("blinding_who",)),
+        ("blinding_how", ("blinding_how",)),
+        ("unblinding_procedure", ("unblinding_procedure",)),
+        ("harms", ("harms_definition",)),
+        ("stopping_rules", ("stopping_rules",)),
+        ("schedule", ("schedule_description",)),
+        ("ppi_plan", ("ppi_plan",)),
+    ):
+        if is_present(design_specific.get(_key)):
+            continue
+        for _alias in _aliases:
+            if is_present(raw.get(_alias)):
+                design_specific[_key] = raw.get(_alias)
+                break
+            # Bác sĩ có thể nest TÊN DÀI (giữ nguyên, không đổi tên) ngay dưới
+            # design_specific.* thay vì key ngắn chuẩn hoá — chấp nhận cả hai.
+            if _alias != _key and is_present(design_specific.get(_alias)):
+                design_specific[_key] = design_specific.get(_alias)
+                break
+    # Thiết kế quan sát KHÔNG có ngẫu nhiên hoá/làm mù/can thiệp — sự thật CẤU
+    # TRÚC suy trực tiếp từ design_code (không phải nội dung lâm sàng bịa), CÙNG
+    # khuôn với `theory.not_applicable_rationale` (P22) và các cờ *_not_applicable
+    # của run_g3_auto.py/run_g4_auto.py. RCT thì KHÔNG tự gán — phải điền thật.
+    if design_code and design_code != "rct":
+        design_specific["not_applicable_rationale"] = (
+            f"Thiết kế {design_code} không có can thiệp/ngẫu nhiên hoá/làm mù — "
+            "các mục SPIRIT 2025 9b/11/15a/15d/18/21-24 không áp dụng."
+        )
+    else:
+        design_specific["not_applicable_rationale"] = _first(
+            raw.get("intervention_design_not_applicable"),
+            design_specific.get("not_applicable_rationale"))
 
     spec = {
         "schema_version": SCHEMA_VERSION,
@@ -327,6 +387,20 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
             "assumptions_source": _first(
                 sample_meta.get("assumptions_source"),
                 raw.get("sample_size_assumption_source"),
+                # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 23, phát
+                # hiện #2): `g3` ở đây là G3_checkpoint.json (do
+                # run_g3_auto.py ghi) — file đó KHÔNG BAO GIỜ chứa
+                # effect_source/assumption_source (đã xác nhận bằng grep:
+                # 0 lần ghi). Nguồn giả định cỡ mẫu mà bác sĩ THẬT SỰ xác
+                # nhận nằm ở study_meta.json → gate_params.G3.effect_source
+                # (xem tools/g3_quality_gate.py::_g3_meta(), G3-AUTO-05) —
+                # một object KHÁC hẳn `g3` (checkpoint) mà build_study_spec()
+                # nhận riêng qua tham số `meta`/`raw`. Hai dòng g3.get(...)
+                # cũ là dead fallback trên object sai; đã thêm đúng đường
+                # dẫn thật, GIỮ NGUYÊN 2 fallback cũ (không phá test hiện có
+                # dùng schema phẳng sample_size_assumption_source).
+                _get(raw, "gate_params", "G3", "effect_source"),
+                _get(raw, "gate_params", "G3", "assumption_source"),
                 g3.get("effect_source"),
                 g3.get("assumption_source"),
             ),
@@ -392,6 +466,48 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
             "software": _first(analysis_meta.get("software"),
                                raw.get("analysis_software")),
         },
+        # THÊM 06/09/2026 (khuôn 18 mục / 23 thành phần): ba khối nội dung mà
+        # khuôn cũ không có chỗ chứa. Chỉ ĐỌC từ study_meta/checkpoint — không bịa.
+        "literature": {
+            "summary": _first(raw.get("literature_review"),
+                              raw.get("literature_summary"),
+                              _get(raw, "literature", "summary")),
+            "consensus": _first(raw.get("literature_consensus"),
+                                _get(raw, "literature", "consensus")),
+            "disagreements": _first(raw.get("literature_disagreements"),
+                                    raw.get("conflicting_evidence"),
+                                    _get(raw, "literature", "disagreements")),
+            "novelty": _first(raw.get("novelty"), raw.get("differentiation"),
+                              _get(raw, "literature", "novelty"),
+                              g0.get("novelty_concern")),
+            "ledger_artifact": _first(
+                _get(g1, "artifacts", "A2b_evidence_ledger"),
+                _get(g1, "artifacts", "A2b_markdown"),
+                _get(g1, "artifacts", "A2b"),
+            ),
+        },
+        "theory": {
+            "framework": _first(raw.get("theoretical_framework"),
+                                raw.get("conceptual_framework"),
+                                _get(raw, "theory", "framework")),
+            # Thiết kế thuần sinh học/dược lý có thể KHÔNG dựa khung lý thuyết —
+            # nhưng phải NÓI RA kèm lý do, không để trống.
+            "not_applicable_rationale": _first(
+                raw.get("theoretical_framework_not_applicable"),
+                _get(raw, "theory", "not_applicable_rationale"),
+            ),
+        },
+        "expected_results": {
+            "summary": _first(raw.get("expected_results"),
+                              raw.get("anticipated_results"),
+                              _get(raw, "expected_results_block", "summary")),
+            "table_shells": _as_list(_first(raw.get("table_shells"),
+                                            raw.get("dummy_tables"),
+                                            _get(raw, "expected_results_block",
+                                                 "table_shells"))),
+            "flow_diagram": _first(raw.get("flow_diagram_plan"),
+                                   raw.get("participant_flow_plan")),
+        },
         "bias": {
             "risks": _first(bias_meta.get("risks"), raw.get("bias_risks")),
             "mitigations": _first(
@@ -399,6 +515,10 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
                 raw.get("bias_controls"),
                 raw.get("bias_mitigation"),
             ),
+            # THÊM 06/09/2026: phạm vi & hạn chế dự kiến (mục 14 khuôn mới; P16).
+            "limitations": _first(bias_meta.get("limitations"),
+                                  raw.get("limitations"),
+                                  raw.get("scope_limitations")),
         },
         "ethics": {
             "risk_level": _first(ethics_meta.get("risk_level"),
@@ -563,6 +683,7 @@ _PROTOCOL_RULES: Dict[str, Tuple[Tuple[str, Tuple[str, ...]], ...]] = {
     "P16": (
         ("Nguy cơ sai lệch", ("bias.risks",)),
         ("Biện pháp giảm thiểu", ("bias.mitigations",)),
+        ("Phạm vi và hạn chế dự kiến", ("bias.limitations",)),
     ),
     "P17": (
         ("Đánh giá lợi ích-nguy cơ", ("ethics.benefit_risk",)),
@@ -584,6 +705,26 @@ _PROTOCOL_RULES: Dict[str, Tuple[Tuple[str, Tuple[str, ...]], ...]] = {
     "P20": (
         ("Tài liệu tham khảo", ("references.pmids", "references.dois")),
         ("Phụ lục", ("appendices.required",)),
+    ),
+    # THÊM 06/09/2026 — khuôn 18 mục.
+    "P21": (
+        ("Tổng hợp nghiên cứu trước", ("literature.summary",)),
+        ("Điểm đồng thuận/bất đồng", ("literature.consensus",
+                                      "literature.disagreements")),
+    ),
+    "P22": (
+        ("Khung lý thuyết/mô hình khái niệm (hoặc lý do không áp dụng)",
+         ("theory.framework", "theory.not_applicable_rationale")),
+    ),
+    "P23": (
+        ("Khung bảng trống (dummy tables)", ("expected_results.table_shells",)),
+        ("Tóm tắt kết quả dự kiến — không số liệu", ("expected_results.summary",)),
+    ),
+    "P24": (
+        ("Mô tả can thiệp/đối chứng (TIDieR) hoặc không áp dụng",
+         ("exposure_intervention.description", "design_specific.not_applicable_rationale")),
+        ("Ngẫu nhiên hoá/làm mù hoặc không áp dụng",
+         ("design_specific.randomization", "design_specific.not_applicable_rationale")),
     ),
 }
 
@@ -608,11 +749,16 @@ _PROTOCOL_SOURCES = {
     "P18": "study_meta/G2/G8",
     "P19": "study_meta",
     "P20": "G0/G7 + phụ lục G10",
+    "P21": "study_meta/G0-G1 (Evidence Ledger A2b)",
+    "P22": "study_meta",
+    "P23": "study_meta/G4 (SAP §11) + danh mục bảng/hình G10",
+    "P24": "study_meta (exposure_intervention/design_specific) — chỉ RCT, "
+           "tự ĐẠT cho thiết kế khác (không áp dụng)",
 }
 
 
 def protocol_coverage(spec: dict) -> List[dict]:
-    """Đánh giá đủ/một phần/thiếu cho 20 thành phần protocol."""
+    """Đánh giá đủ/một phần/thiếu cho từng thành phần protocol (len(PROTOCOL_CORE_ITEMS))."""
     rows: List[dict] = []
     for item_id, title in S.PROTOCOL_CORE_ITEMS:
         rules = _PROTOCOL_RULES[item_id]
@@ -677,6 +823,14 @@ _BASE_REQUIREMENTS: Tuple[
     ("D16", "Tiến độ, nhân lực và kinh phí",
      (("resources.timeline",), ("resources.team",), ("resources.budget",)),
      "Chủ nhiệm/đơn vị"),
+    # THÊM 06/09/2026 — khuôn 18 mục: hai quyết định khoa học hội đồng luôn hỏi.
+    ("D17", "Tổng quan tài liệu và khung lý thuyết (hoặc lý do không áp dụng)",
+     (("literature.summary",),
+      ("theory.framework", "theory.not_applicable_rationale")),
+     "Chủ nhiệm + EBM specialist"),
+    ("D18", "Dự kiến kết quả: khung bảng trống theo ma trận truy xuất, không số liệu",
+     (("expected_results.table_shells", "expected_results.summary"),),
+     "Thống kê viên/chủ nhiệm"),
 )
 
 _DESIGN_FIELD_REQUIREMENTS: Dict[
@@ -907,6 +1061,9 @@ def meta_for_render(meta: Optional[dict], spec: dict) -> dict:
         "pilot": _get(spec, "data_collection", "pilot"),
         "analysis": spec.get("analysis"),
         "bias": spec.get("bias"),
+        "literature": spec.get("literature"),
+        "theory": spec.get("theory"),
+        "expected_results": spec.get("expected_results"),
         "ethics": spec.get("ethics"),
         "registration": spec.get("registration_dissemination"),
         "resources": spec.get("resources"),
@@ -915,6 +1072,20 @@ def meta_for_render(meta: Optional[dict], spec: dict) -> dict:
     for key, value in defaults.items():
         if key not in out and is_present(value):
             out[key] = value
+    # THÊM 06/09/2026 (SPIRIT 2025 9b/11/15a/15d/18/21-24) — GHI ĐÈ, không theo
+    # luật "if key not in out" ở trên. Lý do: `out` khởi tạo từ BẢN SAO của
+    # `meta` thô, mà `design_specific` HẦU NHƯ LUÔN đã tồn tại sẵn trong
+    # study_meta.json thật (bác sĩ đặt trực tiếp) — luật "chỉ điền khi thiếu"
+    # khiến `sec_thietke()` mãi mãi đọc bản THÔ chưa qua alias-hoá/tự-suy
+    # not_applicable_rationale của `build_study_spec()`, dù `spec["design_specific"]`
+    # đã có đủ dữ liệu (đo được: quá trình debug 06/09/2026 phát hiện đúng ca này
+    # — bản ghi đè bằng tay không bao giờ tới nơi render). `spec["design_specific"]`
+    # luôn là SUPERSET của bản thô (chỉ CỘNG thêm alias/not_applicable_rationale,
+    # không bao giờ bớt) nên ghi đè vô điều kiện là AN TOÀN, không mất dữ liệu.
+    if is_present(spec.get("exposure_intervention")):
+        out["exposure_intervention"] = spec["exposure_intervention"]
+    if is_present(spec.get("design_specific")):
+        out["design_specific"] = spec["design_specific"]
     return out
 
 

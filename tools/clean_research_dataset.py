@@ -93,6 +93,18 @@ def _truthy(value: Any) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "y", "x", "required", "bat_buoc"}
 
 
+def _first_declared(*values: Any) -> Any:
+    """Trả giá trị ĐẦU TIÊN thực sự được khai báo (khác None và khác chuỗi rỗng),
+    None nếu không giá trị nào. KHÔNG dùng `or` ở đây: với `or`, một ngưỡng min/max
+    hợp lệ bằng số 0 (JSON int/float, vd biến nhị phân 0/1) là falsy trong Python nên
+    bị coi như "chưa khai" và rơi xuống lựa chọn kế tiếp — mất NGƯỠNG THẬT một cách
+    im lặng, không phải chỉ mất một giá trị hiển thị."""
+    for value in values:
+        if value is not None and value != "":
+            return value
+    return None
+
+
 def _split_list(value: Any) -> List[str]:
     if value is None:
         return []
@@ -182,9 +194,13 @@ def _normalise_rule(raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             or normalized.get("required_field")
             or normalized.get("bat_buoc")
         ),
-        "min": normalized.get("min") or normalized.get("text_validation_min"),
-        "max": normalized.get("max") or normalized.get("text_validation_max"),
+        "min": _first_declared(normalized.get("min"), normalized.get("text_validation_min")),
+        "max": _first_declared(normalized.get("max"), normalized.get("text_validation_max")),
         "allowed": allowed_values,
+        "is_id": _truthy(
+            normalized.get("is_id")
+            or normalized.get("identifier")
+        ),
         "date_format": str(normalized.get("date_format") or "%Y-%m-%d").strip(),
     }
     return rule
@@ -521,8 +537,30 @@ def clean_dataset(study: str, data_path: Path, *,
     dictionary = {"variables": [], "id_column": None, "missing_tokens": []}
     dictionary_blocker = None
 
+    # THỨ TỰ ĐẢO 08/09/2026: dictionary được nạp TRƯỚC quét PII (cũ: nạp SAU, khi
+    # quét PII đã chặn xong). Lý do: mẫu PII "date" (RDI.VALUE_PATTERNS, thêm
+    # 04/09) áp cho MỌI cột không phân biệt — kể cả cột chính dictionary này khai
+    # `"type": "date"` (biến ngày lâm sàng NGHIÊN CỨU CẦN GIỮ, vd ngày khám, khác
+    # hẳn ngày lẫn trong ghi chú tự do mà mẫu đó sinh ra để bắt). Trước bản vá,
+    # dictionary_path TỰ NÓ đã có sẵn trong tham số hàm này — chỉ là bị nạp SAU
+    # bước cần nó, nên không bao giờ có cơ hội dùng tới. Không đổi hành vi khi
+    # `dictionary_path=None` (mặc định của mọi caller hiện có): dictionary rỗng,
+    # date_columns rỗng, quét PII giống hệt trước.
     if blocker is None:
-        pii_profile = RDI._scan_csv(data_path, max_scan_rows=max_scan_rows)
+        dictionary = _load_dictionary(Path(dictionary_path) if dictionary_path else None)
+        dictionary_blocker = dictionary.get("blocker")
+        if dictionary_blocker:
+            blocker = str(dictionary_blocker)
+
+    date_columns = frozenset(
+        RDI._normalize_header(str(rule["name"]))
+        for rule in (dictionary.get("variables") or [])
+        if isinstance(rule, dict) and rule.get("type") == "date" and rule.get("name")
+    )
+
+    if blocker is None:
+        pii_profile = RDI._scan_csv(data_path, max_scan_rows=max_scan_rows,
+                                    exempt_date_columns=date_columns)
         pii_issues = list(pii_profile.get("issues") or [])
         pii_scan = {
             "passed": not pii_issues,
@@ -532,12 +570,6 @@ def clean_dataset(study: str, data_path: Path, *,
         }
         if pii_issues:
             blocker = "pii_detected_before_cleaning"
-
-    if blocker is None:
-        dictionary = _load_dictionary(Path(dictionary_path) if dictionary_path else None)
-        dictionary_blocker = dictionary.get("blocker")
-        if dictionary_blocker:
-            blocker = str(dictionary_blocker)
 
     if blocker is None:
         try:

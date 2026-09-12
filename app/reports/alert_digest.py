@@ -41,8 +41,27 @@ def _ref(r: EvidenceItem) -> str:
 
 
 def _is_regulatory(r: EvidenceItem) -> bool:
+    """True nếu đây là cảnh báo CHÍNH THỨC của cơ quan quản lý (FDA/EMA/MHRA/WHO) — KHÁC tín
+    hiệu FAERS chưa xác minh (source="openfda", spontaneous report, xem app/sources/openfda.py).
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #80, HIGH) — bản gốc:
+        (A == B) or (C in D and E)   # ưu tiên toán tử `and` trước `or` trong Python
+    với D = ("fda", "ema", "mhra", "who", "openfda") và E = bool(r.safety_signal). Mọi bản ghi
+    nguồn openFDA (app/sources/openfda.py::search()) LUÔN có source="openfda" VÀ LUÔN có
+    safety_signal được điền (`f"{count} báo cáo phản ứng..."`) — nên `C in D and E` luôn ĐÚNG
+    cho MỌI bản ghi openFDA, bất kể đó chỉ là một tín hiệu FAERS tự phát CHƯA xác minh. Hậu quả:
+    mọi tín hiệu FAERS bị thăng cấp thành "cảnh báo cơ quan quản lý CHÍNH THỨC – ưu tiên cao
+    nhất" trong bản tin — ngược hẳn nguyên tắc chính module tự khai ở dòng 5 và ở
+    `app/integrations/drug_interactions.py`: "FAERS là báo cáo tự phát... KHÔNG suy luận quan hệ
+    nhân quả".
+
+    Đã đối chiếu với hàm sinh đôi cùng chức năng `app/reports/safety_reports.py::_is_regulatory()`
+    (cùng nguyên tắc phân biệt FAERS/regulatory ở docstring đầu file đó) — hàm đó KHÔNG có
+    "openfda" trong tuple và KHÔNG có mệnh đề `and bool(r.safety_signal)`. Sửa theo đúng hàm đó:
+    bỏ "openfda" khỏi tuple nguồn quy phạm, bỏ mệnh đề an toàn_signal thừa gây sai độ ưu tiên.
+    """
     return (r.study_type or "") == "regulatory_alert" or (r.source or "") in (
-        "fda", "ema", "mhra", "who", "openfda") and bool(r.safety_signal)
+        "fda", "ema", "mhra", "who")
 
 
 def get_new_items(days: int = 7) -> List[EvidenceItem]:

@@ -216,16 +216,32 @@ def main(argv: list[str] | None = None) -> int:
     spec_path = Path(args.spec)
     spec = json.loads(spec_path.read_text(encoding="utf-8"))
     result = generate_agent(spec, force=args.force, dry_run=args.dry_run)
+    register_checks_failed = False
     if args.register and not args.dry_run:
         result["register_checks"] = _run_optional_register_checks()
         result["register_note"] = (
             "Proposed agent was written and checked. Runtime manifest approval remains a separate human-governed step."
         )
+        # SỬA vòng 27 (2026-09-06): trước đây returncode của mỗi lệnh
+        # governance được lưu vào JSON nhưng KHÔNG nơi nào kiểm — main()
+        # luôn return 0 bất kể agent_gate_governance.py/verify_manifest_
+        # registry.py có báo lỗi gì. _TU-SINH-AGENT.md dòng 36-44 khai
+        # "--register" là CÁCH SINH TỐT NHẤT, dùng làm mặc định khi
+        # dieu-phoi-nghien-cuu tự sinh agent — bất kỳ script/CI nào chuỗi
+        # lệnh kiểu "generate_agent.py ... --register && tiếp_tục" sẽ coi
+        # một agent bị governance từ chối là "đã đăng ký thành công".
+        # (skipped=True không có "returncode" ⇒ .get() trả None ⇒ không
+        # tính là lỗi — đúng ý "công cụ vắng mặt không phải bằng chứng có
+        # vấn đề", không phải fail nhầm.)
+        register_checks_failed = any(
+            chk.get("returncode") not in (0, None) for chk in result["register_checks"]
+        )
+        result["register_checks_failed"] = register_checks_failed
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
         print(json.dumps({k: v for k, v in result.items() if k != "content"}, ensure_ascii=False, indent=2))
-    return 0
+    return 1 if register_checks_failed else 0
 
 
 if __name__ == "__main__":

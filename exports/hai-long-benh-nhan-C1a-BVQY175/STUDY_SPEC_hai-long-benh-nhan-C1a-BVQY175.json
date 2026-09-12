@@ -1,0 +1,568 @@
+{
+  "schema_version": "1.0",
+  "study_id": "hai-long-benh-nhan-C1a-BVQY175",
+  "title": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối",
+  "document": {
+    "version": null,
+    "date": null,
+    "status": null
+  },
+  "summary": null,
+  "rationale": {
+    "problem": null,
+    "evidence_gap": [
+      "Chưa có systematic review tổng hợp bằng chứng",
+      "Chưa có RCT kiểm định hiệu quả can thiệp",
+      "Chưa có guideline/khuyến cáo chính thức cho vấn đề này",
+      "Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát"
+    ],
+    "local_context": null
+  },
+  "question": {
+    "text": null,
+    "framework": "PICO/PECO",
+    "pico": {},
+    "hypothesis": null
+  },
+  "objectives": {
+    "general": null,
+    "specific": []
+  },
+  "design": {
+    "code": "cross_sectional",
+    "label": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)",
+    "rationale": "Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Câu hỏi mô tả (tỷ lệ/đặc điểm) → cắt ngang là tiêu chuẩn. Không suy nhân quả từ thiết kế này.",
+    "setting": null,
+    "period": null,
+    "reporting_primary": "STROBE",
+    "protocol_standard": "Protocol định trước; đăng ký nếu cần minh bạch",
+    "additional_standards": "CROSS (nếu là khảo sát); COSMIN nếu phát triển/thẩm định thang đo; RECORD nếu dùng dữ liệu bệnh án/HIS/EMR; ROBINS-E tuỳ câu hỏi"
+  },
+  "population": {
+    "description": null,
+    "inclusion": [],
+    "exclusion": [],
+    "sampling": null,
+    "recruitment": null,
+    "consent": null
+  },
+  "exposure_intervention": {
+    "description": null,
+    "comparator": null,
+    "comparator_rationale": null,
+    "concomitant_care": null
+  },
+  "outcomes": {
+    "primary": {},
+    "secondary": []
+  },
+  "variables": {
+    "items": [],
+    "confounders": [],
+    "effect_modifiers": []
+  },
+  "sample_size": {
+    "calculated_n": 453,
+    "confirmed_n": 1000,
+    "formula": "Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác (Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): tỷ lệ hiện mắc ước lượng p=0.50, sai số cho phép d=0.05, alpha=0.05",
+    "alpha": 0.05,
+    "power": 0.8,
+    "dropout": 0.15,
+    "assumptions": null,
+    "assumptions_source": null,
+    "sampling_sufficiency": null,
+    "confirmed_n_adequate": true
+  },
+  "data_collection": {
+    "instrument": {},
+    "source": null,
+    "procedures": null,
+    "measurement_times": null,
+    "quality_control": null,
+    "pilot": null
+  },
+  "data_governance": {
+    "plan": null,
+    "storage": null,
+    "access": null,
+    "retention": null,
+    "deidentification": null,
+    "missing_data": null
+  },
+  "analysis": {
+    "sap_version": "1.0",
+    "sap_status": "PENDING — CHỜ BÁC SĨ KÝ SAP",
+    "primary_outcome": null,
+    "primary_method": null,
+    "secondary_methods": null,
+    "missing_data": null,
+    "sensitivity": null,
+    "multiplicity": null,
+    "software": null
+  },
+  "literature": {
+    "summary": null,
+    "consensus": null,
+    "disagreements": null,
+    "novelty": "Đã có nhiều nghiên cứu quan sát: KHÔNG phải khoảng trống. Cần đọc kỹ nhóm này trước khi biện minh tính mới; hướng khả dĩ là SR/MA tổng hợp chúng, hoặc nghiên cứu ở quần thể/bối cảnh chưa được phủ.",
+    "ledger_artifact": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md"
+  },
+  "theory": {
+    "framework": null,
+    "not_applicable_rationale": null
+  },
+  "expected_results": {
+    "summary": null,
+    "table_shells": [],
+    "flow_diagram": null
+  },
+  "bias": {
+    "risks": null,
+    "mitigations": null,
+    "limitations": null
+  },
+  "ethics": {
+    "risk_level": "TỐI THIỂU",
+    "irb_route": "EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)",
+    "benefit_risk": null,
+    "consent": null,
+    "privacy": null,
+    "safety": null
+  },
+  "registration_dissemination": {
+    "required": "BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên) — TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới — loại hình thu thập [CẦN BỔ SUNG]",
+    "registry": "ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)",
+    "registration_id": null,
+    "plan": null,
+    "dissemination": null
+  },
+  "resources": {
+    "timeline": null,
+    "team": null,
+    "budget": null
+  },
+  "references": {
+    "pmids": [],
+    "dois": [],
+    "verification_status": null
+  },
+  "appendices": {
+    "required": [
+      "Ma trận mục tiêu – biến – phân tích – bảng",
+      "CRF/phiếu khảo sát",
+      "Phiếu đồng thuận (ICF)",
+      "Data dictionary",
+      "SAP (Kế hoạch phân tích thống kê)",
+      "Checklist reporting guideline"
+    ],
+    "provided": []
+  },
+  "traceability": [],
+  "design_specific": {
+    "not_applicable_rationale": "Thiết kế cross_sectional không có can thiệp/ngẫu nhiên hoá/làm mù — các mục SPIRIT 2025 9b/11/15a/15d/18/21-24 không áp dụng."
+  },
+  "provenance": {
+    "study_meta": "study_meta.json",
+    "checkpoints": [
+      "G0",
+      "G1",
+      "G2",
+      "G3",
+      "G4"
+    ]
+  },
+  "_evaluation": {
+    "schema_version": "1.0",
+    "protocol_coverage": [
+      {
+        "id": "P01",
+        "title": "Trang bìa, mã đề tài, phiên bản và ngày",
+        "status": "MỘT PHẦN",
+        "missing": [
+          "Phiên bản",
+          "Ngày tài liệu"
+        ],
+        "source": "study_meta/G0"
+      },
+      {
+        "id": "P02",
+        "title": "Tóm tắt protocol",
+        "status": "THIẾU",
+        "missing": [
+          "Tóm tắt protocol"
+        ],
+        "source": "study_meta/G10"
+      },
+      {
+        "id": "P03",
+        "title": "Bối cảnh và lý do nghiên cứu",
+        "status": "ĐỦ DỮ LIỆU DỰ THẢO",
+        "missing": [],
+        "source": "study_meta/G0"
+      },
+      {
+        "id": "P04",
+        "title": "Câu hỏi nghiên cứu và giả thuyết",
+        "status": "THIẾU",
+        "missing": [
+          "Câu hỏi nghiên cứu"
+        ],
+        "source": "study_meta/G0-G1"
+      },
+      {
+        "id": "P05",
+        "title": "Mục tiêu chính và mục tiêu phụ",
+        "status": "THIẾU",
+        "missing": [
+          "Mục tiêu"
+        ],
+        "source": "study_meta/G0"
+      },
+      {
+        "id": "P06",
+        "title": "Thiết kế, bối cảnh và thời gian",
+        "status": "MỘT PHẦN",
+        "missing": [
+          "Bối cảnh",
+          "Thời gian"
+        ],
+        "source": "study_meta/G1"
+      },
+      {
+        "id": "P07",
+        "title": "Đối tượng, tiêu chuẩn chọn và loại",
+        "status": "THIẾU",
+        "missing": [
+          "Quần thể",
+          "Tiêu chuẩn chọn",
+          "Tiêu chuẩn loại"
+        ],
+        "source": "study_meta"
+      },
+      {
+        "id": "P08",
+        "title": "Tuyển mẫu và quy trình đồng thuận",
+        "status": "THIẾU",
+        "missing": [
+          "Tuyển/chọn mẫu",
+          "Đồng thuận"
+        ],
+        "source": "study_meta/G2"
+      },
+      {
+        "id": "P09",
+        "title": "Phơi nhiễm, can thiệp hoặc đánh giá",
+        "status": "THIẾU",
+        "missing": [
+          "Phơi nhiễm/can thiệp/đánh giá"
+        ],
+        "source": "study_meta/G1-G2"
+      },
+      {
+        "id": "P10",
+        "title": "Kết cục và định nghĩa vận hành",
+        "status": "THIẾU",
+        "missing": [
+          "Tên kết cục chính",
+          "Định nghĩa vận hành",
+          "Thời điểm đo",
+          "Nguồn đo"
+        ],
+        "source": "study_meta/G5"
+      },
+      {
+        "id": "P11",
+        "title": "Biến số, yếu tố nhiễu và biến tương tác",
+        "status": "THIẾU",
+        "missing": [
+          "Danh mục biến",
+          "Kế hoạch nhiễu/tương tác"
+        ],
+        "source": "study_meta/G5"
+      },
+      {
+        "id": "P12",
+        "title": "Cỡ mẫu và giả định",
+        "status": "MỘT PHẦN",
+        "missing": [
+          "Nguồn giả định"
+        ],
+        "source": "study_meta/G3"
+      },
+      {
+        "id": "P13",
+        "title": "Thu thập dữ liệu và quản lý chất lượng",
+        "status": "THIẾU",
+        "missing": [
+          "Công cụ/nguồn dữ liệu",
+          "Quy trình thu thập",
+          "Kiểm soát chất lượng/pilot"
+        ],
+        "source": "study_meta/G5"
+      },
+      {
+        "id": "P14",
+        "title": "Quản trị dữ liệu và bảo mật",
+        "status": "THIẾU",
+        "missing": [
+          "Kế hoạch dữ liệu",
+          "Lưu trữ/phân quyền",
+          "Khử định danh"
+        ],
+        "source": "study_meta/G2/G5"
+      },
+      {
+        "id": "P15",
+        "title": "Kế hoạch phân tích thống kê",
+        "status": "MỘT PHẦN",
+        "missing": [
+          "Phân tích chính",
+          "Dữ liệu thiếu"
+        ],
+        "source": "study_meta/G4/G6"
+      },
+      {
+        "id": "P16",
+        "title": "Sai lệch, hạn chế dự kiến và biện pháp giảm thiểu",
+        "status": "THIẾU",
+        "missing": [
+          "Nguy cơ sai lệch",
+          "Biện pháp giảm thiểu",
+          "Phạm vi và hạn chế dự kiến"
+        ],
+        "source": "study_meta/G1"
+      },
+      {
+        "id": "P17",
+        "title": "Đạo đức và an toàn",
+        "status": "THIẾU",
+        "missing": [
+          "Đánh giá lợi ích-nguy cơ",
+          "Đồng thuận",
+          "Bảo mật/an toàn"
+        ],
+        "source": "study_meta/G2"
+      },
+      {
+        "id": "P18",
+        "title": "Đăng ký và phổ biến kết quả",
+        "status": "MỘT PHẦN",
+        "missing": [
+          "Phổ biến kết quả"
+        ],
+        "source": "study_meta/G2/G8"
+      },
+      {
+        "id": "P19",
+        "title": "Tiến độ, nhân lực và kinh phí",
+        "status": "THIẾU",
+        "missing": [
+          "Tiến độ",
+          "Nhân lực",
+          "Kinh phí"
+        ],
+        "source": "study_meta"
+      },
+      {
+        "id": "P20",
+        "title": "Tài liệu tham khảo và phụ lục",
+        "status": "MỘT PHẦN",
+        "missing": [
+          "Tài liệu tham khảo"
+        ],
+        "source": "G0/G7 + phụ lục G10"
+      },
+      {
+        "id": "P21",
+        "title": "Tổng quan tài liệu: tổng hợp nghiên cứu trước, điểm đồng thuận và bất đồng",
+        "status": "THIẾU",
+        "missing": [
+          "Tổng hợp nghiên cứu trước",
+          "Điểm đồng thuận/bất đồng"
+        ],
+        "source": "study_meta/G0-G1 (Evidence Ledger A2b)"
+      },
+      {
+        "id": "P22",
+        "title": "Khung lý thuyết hoặc mô hình khái niệm (hoặc nêu rõ không áp dụng, có lý do)",
+        "status": "THIẾU",
+        "missing": [
+          "Khung lý thuyết/mô hình khái niệm (hoặc lý do không áp dụng)"
+        ],
+        "source": "study_meta"
+      },
+      {
+        "id": "P23",
+        "title": "Dự kiến kết quả và khung bảng trống (dummy tables), không số liệu",
+        "status": "THIẾU",
+        "missing": [
+          "Khung bảng trống (dummy tables)",
+          "Tóm tắt kết quả dự kiến — không số liệu"
+        ],
+        "source": "study_meta/G4 (SAP §11) + danh mục bảng/hình G10"
+      },
+      {
+        "id": "P24",
+        "title": "Can thiệp/đối chứng (TIDieR), ngẫu nhiên hoá-làm mù và lịch trình — chỉ RCT (hoặc nêu rõ không áp dụng, có lý do)",
+        "status": "ĐỦ DỮ LIỆU DỰ THẢO",
+        "missing": [],
+        "source": "study_meta (exposure_intervention/design_specific) — chỉ RCT, tự ĐẠT cho thiết kế khác (không áp dụng)"
+      }
+    ],
+    "protocol_complete_items": 2,
+    "protocol_total_items": 24,
+    "missing_requirements": [
+      {
+        "id": "D02",
+        "label": "Câu hỏi nghiên cứu",
+        "paths": [
+          "question.text"
+        ],
+        "owner": "Chủ nhiệm đề tài",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D03",
+        "label": "Mục tiêu chính/cụ thể",
+        "paths": [
+          "objectives.general | objectives.specific"
+        ],
+        "owner": "Chủ nhiệm đề tài",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D05",
+        "label": "Bối cảnh và thời gian",
+        "paths": [
+          "design.setting",
+          "design.period"
+        ],
+        "owner": "Chủ nhiệm/đơn vị",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D06",
+        "label": "Quần thể và tiêu chuẩn chọn/loại",
+        "paths": [
+          "population.description",
+          "population.inclusion",
+          "population.exclusion"
+        ],
+        "owner": "Chủ nhiệm đề tài",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D07",
+        "label": "Phương pháp chọn mẫu/tuyển mẫu",
+        "paths": [
+          "population.sampling | population.recruitment"
+        ],
+        "owner": "Chủ nhiệm đề tài",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D08",
+        "label": "Kết cục chính có định nghĩa, nguồn và thời điểm đo",
+        "paths": [
+          "outcomes.primary.name",
+          "outcomes.primary.definition",
+          "outcomes.primary.source",
+          "outcomes.primary.timepoint"
+        ],
+        "owner": "Chủ nhiệm + thống kê viên",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D10",
+        "label": "Nguồn giả định cỡ mẫu",
+        "paths": [
+          "sample_size.assumptions_source | sample_size.sampling_sufficiency"
+        ],
+        "owner": "Thống kê viên/chủ nhiệm",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D11",
+        "label": "Công cụ hoặc nguồn dữ liệu",
+        "paths": [
+          "data_collection.instrument.name | data_collection.source"
+        ],
+        "owner": "Chủ nhiệm + quản lý dữ liệu",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D12",
+        "label": "Phân tích chính định trước",
+        "paths": [
+          "analysis.primary_method"
+        ],
+        "owner": "Thống kê viên",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D13",
+        "label": "Kế hoạch xử lý dữ liệu thiếu",
+        "paths": [
+          "analysis.missing_data | data_governance.missing_data"
+        ],
+        "owner": "Thống kê viên",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D14",
+        "label": "Sai lệch và biện pháp giảm thiểu",
+        "paths": [
+          "bias.risks",
+          "bias.mitigations"
+        ],
+        "owner": "Chủ nhiệm + phương pháp",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D15",
+        "label": "Consent, lợi ích-nguy cơ và bảo mật",
+        "paths": [
+          "ethics.consent | population.consent",
+          "ethics.benefit_risk",
+          "ethics.privacy"
+        ],
+        "owner": "Chủ nhiệm + Hội đồng đạo đức",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D16",
+        "label": "Tiến độ, nhân lực và kinh phí",
+        "paths": [
+          "resources.timeline",
+          "resources.team",
+          "resources.budget"
+        ],
+        "owner": "Chủ nhiệm/đơn vị",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D17",
+        "label": "Tổng quan tài liệu và khung lý thuyết (hoặc lý do không áp dụng)",
+        "paths": [
+          "literature.summary",
+          "theory.framework | theory.not_applicable_rationale"
+        ],
+        "owner": "Chủ nhiệm + EBM specialist",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      },
+      {
+        "id": "D18",
+        "label": "Dự kiến kết quả: khung bảng trống theo ma trận truy xuất, không số liệu",
+        "paths": [
+          "expected_results.table_shells | expected_results.summary"
+        ],
+        "owner": "Thống kê viên/chủ nhiệm",
+        "action": "Bổ sung/xác nhận trong study_meta.json rồi chạy lại G10."
+      }
+    ],
+    "semantic_issues": [],
+    "scientific_content_complete": false,
+    "protocol_content_complete": false,
+    "readiness_level": "STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS"
+  }
+}

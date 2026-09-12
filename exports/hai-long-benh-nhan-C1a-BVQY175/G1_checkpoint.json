@@ -3,7 +3,7 @@
   "gate": "G1",
   "gate_status": "DRAFT_READY — KIỂM TỰ ĐỘNG ĐÃ CHẠY; G1 CHƯA ĐƯỢC PI/METHODOLOGIST XÁC NHẬN",
   "automation_status": "AUTOMATED_CHECKS_PASS",
-  "generated_at": "2026-07-31T20:53:12.174767",
+  "generated_at": "2026-09-02T07:55:53.355319",
   "question_type": "descriptive",
   "design": {
     "primary": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)",
@@ -141,8 +141,8 @@
       {
         "id": "G1-HUMAN-02",
         "label": "Mục tiêu và kết cục chính vận hành đã chốt",
-        "status": "REVIEW",
-        "evidence": "objectives=đủ; outcome_name=có; measure=thiếu; timepoint=thiếu; type=thiếu",
+        "status": "PASS",
+        "evidence": "objectives=đủ; outcome_name=có; measure=có; timepoint=có; type=có",
         "action": "Điền objectives và primary_outcome gồm tên, định nghĩa/công cụ đo, thời điểm và loại dữ liệu."
       },
       {
@@ -190,7 +190,6 @@
     ],
     "pending_actions": [
       "Điền design_code/gate_params.G1.design và design_confirmed=true.",
-      "Điền objectives và primary_outcome gồm tên, định nghĩa/công cụ đo, thời điểm và loại dữ liệu.",
       "Điền population, inclusion/exclusion criteria, recruitment_strategy, setting và study_period.",
       "PI/methodologist rà toàn bộ protocol core, bảng bias và tính khả thi rồi bật ba cờ xác nhận.",
       "Evidence reviewer/PI xác nhận nội dung nguồn và khoảng trống.",
@@ -199,15 +198,15 @@
     "artifact_manifest": {
       "A2": {
         "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "95026d294466fd7bced6fb7249c784df79a8602e3ed2102b22c7909557175107"
+        "sha256": "39d53fc57bc8bb197d52bf2e717bb56788aec94613ce9377203d9c1e5b6db6b9"
       },
       "A1b": {
         "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "29384c97c7e907d213ed81495dfdf0ef6b943a36d0152ae2ad4069c5bd5eaa3a"
+        "sha256": "c17800419d16758195b7af4776b2442c19d02e04b9a40b41b8533c8bd34e50b9"
       },
       "A2b": {
         "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "5066abe7d535d221f76336f963eab2114f751f3d8ca119504141270e8992c728"
+        "sha256": "4c14bc86d0d94ad24b58b924159e49cd083921d8ff449b7de8b7f8d97d4bccf7"
       },
       "A13": {
         "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -215,7 +214,7 @@
       },
       "A13b": {
         "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "ee4142804669315d6fd1e27a4e7a5c67d44e4c09b08a52043950a81e03df52ca"
+        "sha256": "354392396e57941f3a4c002f05b3e795d7f658d828cac0ed6cade894ca38684d"
       }
     },
     "standards_basis": [
@@ -260,7 +259,6 @@
   },
   "pending_doctor_actions": [
     "Điền design_code/gate_params.G1.design và design_confirmed=true.",
-    "Điền objectives và primary_outcome gồm tên, định nghĩa/công cụ đo, thời điểm và loại dữ liệu.",
     "Điền population, inclusion/exclusion criteria, recruitment_strategy, setting và study_period.",
     "PI/methodologist rà toàn bộ protocol core, bảng bias và tính khả thi rồi bật ba cờ xác nhận.",
     "Evidence reviewer/PI xác nhận nội dung nguồn và khoảng trống.",

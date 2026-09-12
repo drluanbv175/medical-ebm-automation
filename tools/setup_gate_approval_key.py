@@ -56,7 +56,13 @@ _KEY_PATH = Path.home() / ".ebm-secrets" / "gate_approval_key"
 # đơn giản là giữ ở nơi khác, chỉ mở khi có người đó thật sự duyệt) là tách vai trò trở
 # thành bằng chứng THẬT. Không bắt buộc — không tạo thì hệ vẫn chạy bằng khóa chung,
 # nhưng approve_gate.py sẽ NÓI RÕ mức bảo đảm thấp hơn thay vì im lặng.
-_ROLE_GROUPS = ("IRB", "STATISTICIAN", "INDEPENDENT_PEER_REVIEWER", "PI")
+# PHẢI khớp đúng TẬP HỢP nhóm stakeholder trong gate_contract.py::_GATE_REQUIRED_
+# STAKEHOLDERS (G2→IRB · G4→STATISTICIAN/PI · G5→DATA_MANAGER/PI · G8→
+# INDEPENDENT_PEER_REVIEWER · G9/G10→PI). Vá 2026-09-06 (audit vòng 30): bản
+# trước THIẾU "DATA_MANAGER", nên bác sĩ muốn tạo khóa RIÊNG cho vai trò quản trị
+# dữ liệu (bắt buộc cho cổng G5 — khóa DB) bị argparse từ chối "invalid choice"
+# dù đây là một nhóm stakeholder CÓ THẬT và BẮT BUỘC theo hợp đồng cổng.
+_ROLE_GROUPS = ("IRB", "STATISTICIAN", "DATA_MANAGER", "INDEPENDENT_PEER_REVIEWER", "PI")
 
 
 def _key_path_for(role: str | None) -> Path:
@@ -98,7 +104,20 @@ def main() -> int:
             print(f"✋ Đã có khóa Ed25519 cho {args.role} ({priv_path.name} / {pub_path.name}).")
             print("   KHÔNG ghi đè — đổi khóa là vô hiệu chữ ký cũ; tự tay xóa trước nếu chắc chắn.")
             return 0
-        priv = Ed25519PrivateKey.generate()
+        try:
+            priv = Ed25519PrivateKey.generate()
+        except BaseException as _exc:  # noqa: BLE001 — BH99-A
+            # `pyo3_runtime.PanicException` (cryptography cài HỎNG NỬA CHỪNG — có
+            # gói, thiếu `_cffi_backend`) kế thừa THẲNG BaseException, không qua
+            # Exception, nên khác hẳn ImportError ở trên (nghĩa là "thiếu hẳn").
+            # Luôn ném lại tín hiệu ngắt của người dùng — đây không phải lá chắn.
+            if isinstance(_exc, (KeyboardInterrupt, SystemExit)):
+                raise
+            print(f"✗ Thư viện `cryptography` ĐÃ CÀI nhưng HỎNG NỬA CHỪNG "
+                  f"({type(_exc).__name__}: {_exc}).")
+            print("   Khác với thiếu hẳn — sửa bằng: "
+                  "pip install --force-reinstall cffi cryptography")
+            return 2
         priv_path.parent.mkdir(parents=True, exist_ok=True)
         pub_dir.mkdir(parents=True, exist_ok=True)
         priv_path.write_bytes(priv.private_bytes(Encoding.PEM, PrivateFormat.PKCS8,

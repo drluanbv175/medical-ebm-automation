@@ -31,6 +31,12 @@ class KnowledgePackSchemaIssue:
     file: str
     message: str
     severity: str = "error"
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 14) — xem chú thích ở
+    # `_validate_scope()` và `structural_ok`/`structural_errors` dưới đây:
+    # category="draft_state" đánh dấu 2 luật CHỈ có ý nghĩa khi pack CÒN Ở
+    # TRẠNG THÁI DRAFT (status=="draft_review_only" + mọi cờ an toàn False),
+    # tách khỏi luật "structural" (đủ file/đủ trường) áp dụng bất kể trạng thái.
+    category: str = "structural"
 
 
 @dataclass(frozen=True)
@@ -46,6 +52,35 @@ class KnowledgePackSchemaResult:
     @property
     def errors(self) -> List[KnowledgePackSchemaIssue]:
         return [issue for issue in self.issues if issue.severity == "error"]
+
+    @property
+    def structural_errors(self) -> List[KnowledgePackSchemaIssue]:
+        """Lỗi "error" KHÔNG thuộc luật draft_state (đủ file/đủ trường bắt
+        buộc — đúng bất kể pack đang draft hay đã được duyệt phát hành).
+
+        SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 14, phát hiện #3)
+        — `assess_pack_release_readiness()` (knowledge_pack_release_gate.py)
+        từng dùng `.ok` (gồm CẢ luật draft_state) làm điều kiện cho
+        `clinical_release_ready`. Nhưng chính `_validate_scope()` bắt buộc
+        `status=="draft_review_only"` VÀ mọi cờ an toàn phải False, trong
+        khi `_scope_release_issues()` (cùng file release_gate) bắt buộc
+        NGƯỢC LẠI: `status!="draft_review_only"` VÀ `clinical_release_allowed`
+        phải True để coi là sẵn sàng phát hành. Hai điều kiện đối lập tuyệt
+        đối trên CÙNG một cặp trường khiến `clinical_release_ready` KHÔNG
+        BAO GIỜ đạt được `True`, bất kể pack đã được bác sĩ duyệt đầy đủ đến
+        đâu. `structural_errors`/`structural_ok` loại bỏ đúng 2 luật
+        draft_state khỏi điều kiện phát hành, giữ nguyên chúng cho `.ok`/
+        `.errors` (vẫn dùng cho `review_ready` và cho
+        `tools/validate_knowledge_packs.py` — nơi mục đích THẬT SỰ là xác
+        nhận pack còn đúng trạng thái draft an toàn)."""
+        return [
+            issue for issue in self.issues
+            if issue.severity == "error" and issue.category != "draft_state"
+        ]
+
+    @property
+    def structural_ok(self) -> bool:
+        return not self.structural_errors
 
 
 def load_yaml_mapping(path: Path) -> Dict[str, Any]:
@@ -182,11 +217,17 @@ def _validate_scope(scope: Mapping[str, Any], issues: List[KnowledgePackSchemaIs
     for key in ("pack_id", "version", "status", "topic"):
         if not _first_text(scope.get(key)):
             issues.append(KnowledgePackSchemaIssue(file_name, f"missing_required_field:{key}"))
+    # category="draft_state": hai luật này CHỈ đúng khi pack còn ở trạng thái
+    # draft — xem chú thích tại `KnowledgePackSchemaResult.structural_errors`
+    # (vòng 14) về việc `knowledge_pack_release_gate.py` cần loại chúng khỏi
+    # điều kiện phát hành để tránh mâu thuẫn tự-khoá vĩnh viễn.
     if scope.get("status") != "draft_review_only":
-        issues.append(KnowledgePackSchemaIssue(file_name, "status_must_be_draft_review_only"))
+        issues.append(KnowledgePackSchemaIssue(
+            file_name, "status_must_be_draft_review_only", category="draft_state"))
     for key in sorted(SAFETY_FALSE_FIELDS):
         if bool(scope.get(key)):
-            issues.append(KnowledgePackSchemaIssue(file_name, f"safety_field_must_remain_false:{key}"))
+            issues.append(KnowledgePackSchemaIssue(
+                file_name, f"safety_field_must_remain_false:{key}", category="draft_state"))
 
 
 def _validate_nonempty_records(

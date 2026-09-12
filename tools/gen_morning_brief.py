@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
@@ -81,9 +82,29 @@ PACK_LABELS = {
 }
 
 
+_VERSION_DIR_RE = re.compile(r"^(\d+)\.(\d+)")
+
+
+def _version_sort_key(path: Path) -> tuple:
+    """Khoá sắp xếp SỐ HỌC cho tên thư mục dạng "<năm>.<số thứ tự>[-draft]"
+    (vd "2026.1-draft", "2026.10-draft"). VÁ 2026-09-06 (vòng 29, phát hiện
+    MEDIUM): sorted() mặc định so sánh CHUỖI — "2026.2-draft" > "2026.10-draft"
+    theo thứ tự chuỗi (ký tự '2' > '1' ở vị trí thứ 6) dù về số thứ tự phiên
+    bản 2026.10 MỚI HƠN 2026.2. Tên thư mục không khớp mẫu số bị xếp SAU mọi
+    tên khớp mẫu (không được để một tên lạ vô tình thắng một phiên bản thật)."""
+    match = _VERSION_DIR_RE.match(path.name)
+    if not match:
+        return (0, 0, 0, path.name)
+    return (1, int(match.group(1)), int(match.group(2)), path.name)
+
+
 def find_latest_draft(pack_dir: Path) -> Path | None:
     """Tìm thư mục version mới nhất trong một knowledge pack."""
-    versions = sorted([d for d in pack_dir.iterdir() if d.is_dir()], reverse=True)
+    versions = sorted(
+        (d for d in pack_dir.iterdir() if d.is_dir()),
+        key=_version_sort_key,
+        reverse=True,
+    )
     return versions[0] if versions else None
 
 

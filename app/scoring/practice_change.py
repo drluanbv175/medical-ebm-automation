@@ -7,7 +7,23 @@ thang điểm/cut-off.
 """
 from __future__ import annotations
 
+import re
 from typing import Dict, Tuple
+
+from app.services.filtering import is_antibiotic_text
+
+# SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 19) — từ khóa "gan" (bệnh
+# gan/tiếng Việt) trước đây được kiểm bằng substring thô (`"gan" in text`),
+# khớp BỪA bên trong hàng loạt từ tiếng Anh chứa chuỗi con "gan": "organ",
+# "organic", "reorganize", "afghan", "morgan", "arrogant"... — một bài hoàn
+# toàn không liên quan bệnh gan/nhóm dễ tổn thương (vd bàn về "organ
+# transplant" hay "organic compound") vẫn bị cộng breakdown["vulnerable_pop"].
+# `\bgan\b` yêu cầu ranh giới từ ở CẢ hai đầu nên vẫn khớp đúng "gan" đứng
+# một mình trong các cụm tiếng Việt ("bệnh gan", "suy gan", "xơ gan", "viêm
+# gan" — luôn cách nhau bằng khoảng trắng) mà KHÔNG khớp bừa vào giữa một từ
+# tiếng Anh liền mạch như "organ" (trước "gan" trong "organ" là "r", không
+# phải ranh giới từ).
+_GAN_RE = re.compile(r"\bgan\b")
 
 
 def _text(item: Dict, *keys: str) -> str:
@@ -41,9 +57,9 @@ def practice_change_score(item: Dict) -> Tuple[float, Dict[str, float]]:
     if any(k in text for k in ("outpatient", "primary care", "ngoại trú", "community")):
         breakdown["outpatient"] = 8
 
-    # Nhóm dễ tổn thương
+    # Nhóm dễ tổn thương ("gan" kiểm riêng bằng regex ranh giới từ — xem _GAN_RE).
     if any(k in text for k in ("older", "elderly", "ckd", "renal", "hepatic", "cirrhosis",
-                               "polypharmacy", "cao tuổi", "thận", "gan", "đa thuốc")):
+                               "polypharmacy", "cao tuổi", "thận", "đa thuốc")) or _GAN_RE.search(text):
         breakdown["vulnerable_pop"] = 6
 
     # An toàn thuốc / liều / tương tác
@@ -52,7 +68,18 @@ def practice_change_score(item: Dict) -> Tuple[float, Dict[str, float]]:
         breakdown["drug_safety"] = 8
 
     # Kháng sinh
-    if any(k in text for k in ("antibiotic", "antimicrobial", "stewardship", "kháng sinh", "aware")):
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 19) — module này từng
+    # tự duy trì tuple từ khóa RIÊNG kết thúc bằng "aware" (đơn), khớp bừa
+    # bên trong bất kỳ câu tiếng Anh nào chứa "aware"/"awareness" không liên
+    # quan kháng sinh (vd "Clinicians should be aware of falls risk in
+    # elderly patients"). Đây CHÍNH LÀ bug đã được vá ở
+    # app.services.filtering.ANTIBIOTIC_KEYWORDS (vòng 14, "aware" ->
+    # "aware classification") và ở app/reports/safety_reports.py (vòng 18)
+    # — nhưng module này KHÔNG được cập nhật theo vì tự chép danh sách độc
+    # lập thay vì gọi hàm chuẩn. Đổi sang gọi thẳng is_antibiotic_text() để
+    # không còn bản sao trôi dạt (đúng cách weekly_ebm.py đã làm đúng từ đầu).
+    if is_antibiotic_text(item.get("title"), item.get("abstract"),
+                          item.get("document_type"), item.get("safety_signal")):
         breakdown["antibiotic"] = 6
 
     # Thang điểm/cut-off
@@ -60,8 +87,18 @@ def practice_change_score(item: Dict) -> Tuple[float, Dict[str, float]]:
         breakdown["score_tool"] = 5
 
     # Trừ điểm cho nguồn không nên đổi thực hành
+    # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 19) — thiếu
+    # "expert_opinion": app.scoring.evidence_quality.DESIGN_BASE xếp
+    # expert_opinion=20 THẤP HƠN case_series=25/narrative_review=25 (đúng
+    # thứ bậc GRADE — ý kiến chuyên gia yếu hơn case series), nhưng tuple
+    # này (quyết định điểm practice_change_score) lại KHÔNG phạt
+    # expert_opinion trong khi CÓ phạt case_series -25 -> một bản ghi
+    # expert_opinion không có tín hiệu gì khác vẫn giữ nguyên
+    # practice_change_score=15 (other_base) trong khi case_series cùng điều
+    # kiện bị hạ xuống 0 -- ĐẢO NGƯỢC đúng thứ bậc mà DESIGN_BASE đã xếp.
     if study_type in ("preprint", "animal_invitro", "case_series",
-                      "retrospective_single_center", "narrative_review", "editorial"):
+                      "retrospective_single_center", "narrative_review", "editorial",
+                      "expert_opinion"):
         breakdown["weak_design_penalty"] = -25
 
     score = max(0.0, min(100.0, sum(breakdown.values())))

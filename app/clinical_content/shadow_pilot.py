@@ -27,6 +27,28 @@ FORBIDDEN_SHADOW_FIELDS = {
 }
 
 
+def _thu_thap_moi_khoa(obj: object) -> set:
+    """SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #86) — trước đây
+    `validate()` chỉ so `FORBIDDEN_SHADOW_FIELDS` với `set(payload)`, mà
+    `payload` là dict dựng từ CHÍNH TÊN TRƯỜNG CỐ ĐỊNH của dataclass
+    (`shadow_case_id`, `red_flag_screen`...) — những tên này theo cấu trúc
+    KHÔNG BAO GIỜ trùng một tên PII bị cấm, nên `forbidden` luôn là tập rỗng
+    và kiểm tra này chết ngay từ đầu (vô hiệu, không phải chỉ yếu).
+    Sửa: đệ quy thu thập MỌI khoá xuất hiện ở bất kỳ độ sâu nào bên trong
+    các Mapping/list/tuple/set lồng nhau (vd một khoá tên `mrn` bị lỡ nhét
+    vào `medication_context`), rồi mới đem giao với tập cấm — đây mới đúng
+    chỗ một PII-named key có thể lọt vào."""
+    khoa: set = set()
+    if isinstance(obj, Mapping):
+        for k, v in obj.items():
+            khoa.add(str(k))
+            khoa |= _thu_thap_moi_khoa(v)
+    elif isinstance(obj, (list, tuple, set)):
+        for item in obj:
+            khoa |= _thu_thap_moi_khoa(item)
+    return khoa
+
+
 class OverrideReasonCategory(str, Enum):
     INSUFFICIENT_DATA = "insufficient_data"
     CLINICAL_CONTEXT_NOT_CAPTURED = "clinical_context_not_captured"
@@ -65,7 +87,7 @@ class ShadowCaseInput:
             "medication_context": self.medication_context,
             "evidence_snapshot_id": self.evidence_snapshot_id,
         }
-        forbidden = FORBIDDEN_SHADOW_FIELDS & set(payload)
+        forbidden = FORBIDDEN_SHADOW_FIELDS & _thu_thap_moi_khoa(payload)
         if forbidden:
             raise ValueError(f"Shadow input chứa trường PII bị cấm: {sorted(forbidden)}")
         if contains_pii_text(str(payload)):

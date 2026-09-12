@@ -44,6 +44,7 @@ _REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g1_design_blocks as G1D  # noqa: E402  (khối thiết kế + dummy tables theo thiết kế)
 import g1_quality_gate as G1Q  # noqa: E402  (hợp đồng chất lượng riêng G1)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
@@ -132,14 +133,15 @@ BIAS_CONTROLS = {
         ("Observer bias",   "Đọc index test mù với reference standard"),
         ("Partial verification", "Tránh chỉ gửi dương tính để xác nhận → overestimate Se"),
         ("Disease progression", "Index test và reference standard đo ĐỒNG THỜI"),
-        ("Reporting bias",  "STARD checklist + report tất cả ngưỡng đã thử"),
+        ("Analysis bias",   "QUADAS-3: đủ người tham gia, missing data, đúng đơn vị phân tích và cách tính Se/Sp cho từng ước lượng"),
+        ("Reporting bias",  "STARD/STARD-AI + report tất cả ngưỡng đã thử; QUADAS-3 v1.2 cho RoB/applicability"),
     ],
     "sr_ma": [
         ("Publication bias", "Funnel plot + Egger test; search unpublished (clinicaltrials.gov)"),
         ("Search bias",      "≥2 cơ sở dữ liệu; không giới hạn ngôn ngữ; kiểm thư xám"),
         ("Selection bias",   "2 screener độc lập + consensus/third screener khi bất đồng"),
         ("Extraction bias",  "2 người trích xuất độc lập; kappa inter-rater"),
-        ("Assessment bias",  "RoB 2 cho RCT; ROBINS-I cho quan sát; QUADAS-2 cho chẩn đoán"),
+        ("Assessment bias",  "RoB 2 cho RCT; ROBINS-I cho quan sát; QUADAS-3 hiện hành cho chẩn đoán"),
         ("Heterogeneity",    "Định lượng I²/τ²; không gộp khi I² > 75% không có lý do lâm sàng"),
         ("Reporting bias",   "PRISMA 2020 + registrátion (PROSPERO)"),
     ],
@@ -1772,7 +1774,7 @@ def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_c
 def export_docx_g1(artifact_md: str, study_name: str, out_dir: Path) -> Optional[Path]:
     try:
         from docx import Document
-        from docx.shared import Pt, RGBColor
+        from docx.shared import RGBColor
         doc = Document()
         doc.add_heading(f"A2 — THIẾT KẾ NGHIÊN CỨU & SAP | {study_name}", 0)
         doc.add_paragraph(f"[BẢN NHÁP TỰ ĐỘNG] | {datetime.now().strftime('%Y-%m-%d %H:%M')}")
@@ -1787,8 +1789,7 @@ def export_docx_g1(artifact_md: str, study_name: str, out_dir: Path) -> Optional
                 doc.add_heading(line[4:], 3)
             elif line.strip().startswith("|"):
                 p = doc.add_paragraph(line)
-                p.style.font.name = "Courier New"
-                p.style.font.size = Pt(9)
+                _CTB.dat_font_ma_nguon(p)  # vá 01/09: p.style là Normal DÙNG CHUNG — Courier từng lan cả tài liệu
             elif line.strip().startswith("```") or line.strip() == "---":
                 pass
             elif line.strip():
@@ -1798,6 +1799,7 @@ def export_docx_g1(artifact_md: str, study_name: str, out_dir: Path) -> Optional
                         if "[CẦN" in run.text:
                             run.font.color.rgb = RGBColor(0xCC, 0x44, 0x00)
         docx_path = out_dir / f"G1_A2_PROTOCOL_DESIGN_{study_name}.docx"
+        _CTB.ap_dinh_dang_tai_lieu(doc)  # chuẩn trình bày: Times New Roman 13pt + sạch ký tự lạ
         doc.save(docx_path)
         return docx_path
     except ImportError:

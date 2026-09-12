@@ -24,6 +24,8 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional
 
+import requests
+
 from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
 
@@ -41,9 +43,34 @@ _LABEL_SECTIONS = {
     "warnings": "Cảnh báo",
 }
 
+# Mục nào của nhãn được `screen_pair()` đối chiếu chéo (drug_b có bị NHẮC trong đó không) →
+# (type cờ, severity). `boxed_warning` CỐ Ý không nằm ở đây — mục đó được `screen_regimen()`
+# báo riêng theo TỪNG thuốc (không phải theo cặp), vì phần lớn không phrase theo kiểu "dùng
+# cùng thuốc X" mà là cảnh báo chung của chính thuốc đó.
+_CROSS_REFERENCE_SECTIONS = {
+    "drug_interactions": ("interaction", "cần rà"),
+    "contraindications": ("contraindication", "nặng (chống chỉ định)"),
+    "warnings_and_cautions": ("warning", "cần rà (cảnh báo/thận trọng)"),
+    "warnings": ("warning", "cần rà (cảnh báo/thận trọng)"),
+}
+
 
 class DrugInteractionError(RuntimeError):
     """Lỗi khi tra nhãn thuốc openFDA."""
+
+
+def _escape_lucene_phrase(text: str) -> str:
+    """Thoát dấu `\\` và `"` trước khi nhét vào một cụm trích dẫn Lucene.
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #78) — cùng lớp lỗi vừa vá ở
+    `app/sources/openfda.py::_escape_lucene_phrase()` (task #75) nhưng KHÔNG tái dùng hàm đó:
+    hàm đó có tiền tố `_` (nội bộ module), import xuyên module một hàm mang quy ước "riêng tư"
+    sẽ phá vỡ đúng tín hiệu tiền tố đó. openFDA (nền Elasticsearch) dùng cú pháp Lucene
+    `field:"cụm từ"` — một dấu `"` chưa thoát trong tên thuốc sẽ ĐÓNG cụm trích dẫn SỚM, phần
+    còn lại bị diễn giải như cú pháp truy vấn thêm (AND/OR, bộ lọc trường khác) thay vì dữ liệu
+    văn bản thuần.
+    """
+    return text.replace("\\", "\\\\").replace('"', '\\"')
 
 
 def _norm(s: str) -> str:
@@ -51,14 +78,31 @@ def _norm(s: str) -> str:
 
 
 def _mentions(text: str, term: str) -> bool:
-    """term (hoặc từ gốc hoạt chất) xuất hiện như một TỪ trong text (không phân biệt hoa/thường)."""
+    """term (hoặc từ gốc hoạt chất) xuất hiện như một TỪ trong text (không phân biệt hoa/thường).
+
+    SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 17) — ngưỡng gốc `len(c) >= 4`
+    khiến MỌI tên/viết tắt thuốc ≤3 ký tự trở thành KHÔNG BAO GIỜ khớp được, kể cả
+    khi `\\b…\\b` đã khớp CHÍNH XÁC một từ trong nhãn. "ASA" (viết tắt lâm sàng rất
+    phổ biến của aspirin) là ví dụ điển hình: `candidates = {"asa"}` (từ gốc trùng
+    cả cụm vì chỉ có 1 từ) → bị lọc hết bởi `len(c) >= 4` → `any(...)` rỗng →
+    `_mentions()` LUÔN trả False, dù nhãn ghi đúng "…concomitant use with ASA…".
+    Tái hiện: `screen_regimen(["warfarin", "ASA"])` trên nhãn warfarin có câu nhắc
+    "ASA" trong mục tương tác → 0 cờ interaction được sinh ra — sàng lọc tương tác
+    bỏ sót HOÀN TOÀN mà không có tín hiệu lỗi/`not_found`/`lookup_failed` nào, vì
+    `screen_pair()` chỉ đơn giản không thấy khớp.
+    Ranh giới `\\b` đã tự bảo vệ khỏi khớp substring giả (vd "asa" sẽ KHÔNG khớp
+    bên trong "causally" vì không đứng ở ranh giới từ) — nên ngưỡng độ dài chỉ còn
+    cần chặn các trường hợp cực ngắn, cực chung chung (1-2 ký tự như "a", "in", "of"
+    có nguy cơ khớp ngẫu nhiên cao ngay cả khi đã có `\\b`). Hạ ngưỡng xuống 3 để
+    cho qua các viết tắt thuốc thật (ASA, MTX…) mà vẫn giữ lá chắn cho từ 1-2 ký tự.
+    """
     text_l = text.lower()
     term_l = _norm(term)
     if not term_l:
         return False
     # Khớp cả cụm và từ gốc đầu tiên (vd 'metoprolol tartrate' → 'metoprolol').
     candidates = {term_l, term_l.split(" ")[0]}
-    return any(re.search(rf"\b{re.escape(c)}\b", text_l) for c in candidates if len(c) >= 4)
+    return any(re.search(rf"\b{re.escape(c)}\b", text_l) for c in candidates if len(c) >= 3)
 
 
 class DrugSafetyChecker:
@@ -70,16 +114,53 @@ class DrugSafetyChecker:
 
     # -- Tra nhãn 1 thuốc ----------------------------------------------
     def fetch_label(self, drug: str) -> Optional[Dict[str, Any]]:
-        """Lấy các mục an toàn của nhãn FDA cho 1 thuốc (theo generic rồi brand). None nếu không có."""
+        """Lấy các mục an toàn của nhãn FDA cho 1 thuốc (theo generic rồi brand). None nếu không có.
+
+        SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #77, CRITICAL) — bản gốc bắt MỌI
+        exception ở field ĐẦU TIÊN (generic_name) rồi raise ngay, không bao giờ thử field THỨ
+        HAI (brand_name). openFDA trả **HTTP 404** (không phải 200 kèm `results: []`) khi một
+        trường tìm kiếm không khớp bản ghi nào — `HttpClient._request()` xếp 404 vào
+        `_PERMANENT_STATUS` nên `get_json()` raise `requests.HTTPError` ngay từ field đầu. Kết
+        quả: một bác sĩ nhập TÊN BIỆT DƯỢC (vd "Lipitor" thay vì "atorvastatin") sẽ luôn nhận
+        `None` từ field generic_name (404) → hàm dừng NGAY, không bao giờ chạm tới field
+        brand_name lẽ ra khớp được — sàng lọc tương tác/chống chỉ định cho thuốc đó bị bỏ qua
+        HOÀN TOÀN mà không cảnh báo (không phải `not_found`, mà là dừng sớm giữa vòng lặp).
+
+        Sửa: 404 ở MỘT field nghĩa là "trường này không khớp" — không phải lỗi thật — nên tiếp
+        tục thử field kế tiếp. Chỉ exception KHÁC 404 (mạng lỗi, 5xx, timeout…) mới coi là lỗi
+        tra cứu thật và raise `DrugInteractionError` như cũ.
+        """
         if not drug or not drug.strip():
             raise DrugInteractionError("Thiếu tên thuốc.")
+        drug_an_toan = _escape_lucene_phrase(drug.strip())
         for field in ("openfda.generic_name", "openfda.brand_name"):
-            params = {"search": f'{field}:"{drug.strip()}"', "limit": 1}
+            params = {"search": f'{field}:"{drug_an_toan}"', "limit": 1}
             try:
                 data = self.http.get_json(LABEL_API, params=params)
+            except requests.HTTPError as exc:
+                status = exc.response.status_code if exc.response is not None else None
+                if status == 404:
+                    logger.info("[drug] không khớp %r theo %s (404) — thử trường kế tiếp.",
+                                drug, field)
+                    continue
+                logger.warning("[drug] lỗi tra nhãn %r (%s): %s", drug, field, exc)
+                raise DrugInteractionError(f"Lỗi tra nhãn openFDA cho {drug!r}: {exc}") from exc
             except Exception as exc:  # noqa: BLE001
                 logger.warning("[drug] lỗi tra nhãn %r (%s): %s", drug, field, exc)
                 raise DrugInteractionError(f"Lỗi tra nhãn openFDA cho {drug!r}: {exc}") from exc
+            # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 17) — `data.get(...)`
+            # ngay dưới giả định `get_json()` LUÔN trả về dict khi không ném exception.
+            # Một phản hồi bất thường (body rỗng đọc thành None, proxy không chuẩn,
+            # cache lỗi…) khiến `data` là `None`/list/chuỗi → `.get()` ném `AttributeError`
+            # THÔ, không bị `except DrugInteractionError` ở `screen_regimen()` bắt được
+            # → sập TOÀN BỘ lượt sàng lọc đơn thuốc (mọi thuốc khác trong đơn cũng mất
+            # kết quả), thay vì chỉ ghi nhận `lookup_failed` cho riêng thuốc này.
+            if not isinstance(data, dict):
+                logger.warning("[drug] phản hồi bất thường (không phải dict, %s) khi tra "
+                                "nhãn %r (%s)", type(data).__name__, drug, field)
+                raise DrugInteractionError(
+                    f"Phản hồi openFDA không hợp lệ cho {drug!r} (field {field}): "
+                    f"kiểu {type(data).__name__}, cần dict")
             results = data.get("results") or []
             if results:
                 return self._parse_label(drug, results[0])
@@ -111,17 +192,29 @@ class DrugSafetyChecker:
     # -- Sàng lọc cặp & cả đơn -----------------------------------------
     def screen_pair(self, label_a: Dict[str, Any], drug_b_terms: List[str],
                     drug_b_name: str) -> List[Dict[str, Any]]:
-        """Gắn cờ nếu drug_b (theo các tên/hoạt chất) bị NHẮC trong mục tương tác/CCĐ của nhãn A."""
+        """Gắn cờ nếu drug_b (theo các tên/hoạt chất) bị NHẮC trong mục tương tác/CCĐ/cảnh báo
+        & thận trọng của nhãn A.
+
+        SỬA 2026-09-05 (Workflow đối kháng đa-agent, task #79, HIGH) — bản gốc chỉ đối chiếu
+        2/5 mục đã trích ở `_LABEL_SECTIONS` (`drug_interactions`, `contraindications`), bỏ qua
+        HẲN `warnings_and_cautions`/`warnings` dù `_parse_label()` đã trích đủ cả 5 mục và
+        docstring đầu module tự khai "kéo các mục `drug_interactions`, `contraindications`,
+        `boxed_warning`, `warnings`". Nhiều nhãn FDA đặt câu cảnh báo phối hợp thuốc trong mục
+        "Warnings and Precautions" thay vì mục "Drug Interactions" riêng (đặc biệt với thuốc cũ,
+        trước khi FDA chuẩn hoá cấu trúc nhãn theo Physician Labeling Rule) — một cảnh báo phối
+        hợp thuốc THẬT nằm ở đó bị bỏ sót hoàn toàn, không có cờ nào, không có `not_found` nào
+        báo hiệu — im lặng tuyệt đối.
+        """
         flags: List[Dict[str, Any]] = []
-        for key in ("drug_interactions", "contraindications"):
+        for key, (flag_type, severity) in _CROSS_REFERENCE_SECTIONS.items():
             text = label_a["sections"].get(key)
             if not text:
                 continue
             if any(_mentions(text, term) for term in drug_b_terms if term):
                 snippet = self._snippet(text, drug_b_terms)
                 flags.append({
-                    "type": "interaction" if key == "drug_interactions" else "contraindication",
-                    "severity": "cần rà" if key == "drug_interactions" else "nặng (chống chỉ định)",
+                    "type": flag_type,
+                    "severity": severity,
                     "drugs": [label_a["query"], drug_b_name],
                     "detail": f"Nhãn {label_a['query']} ({_LABEL_SECTIONS[key]}) nhắc tới "
                               f"{drug_b_name}: …{snippet}…",
