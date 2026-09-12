@@ -23,6 +23,17 @@ if [ ! -x "$ROOT_HOOK" ]; then
 fi
 
 (
+  # 12/09/2026: trong git worktree LIEN KET, git dat GIT_DIR/GIT_INDEX_FILE (va
+  # cac bien GIT_* khac) tro vao thu muc quan tri cua CHINH worktree nay
+  # (".../medical-ebm-automation/.git/worktrees/<ten>"). Cac bien do la bien moi
+  # truong THAT, ke thua vao tien trinh con ROOT_HOOK ben duoi. Neu khong go bo,
+  # lenh "git rev-parse --show-toplevel" O DAU ROOT_HOOK se doc theo GIT_DIR da
+  # ro ri thay vi theo $PWD, tro NGUOC ve worktree medical-ebm-automation nay —
+  # roi "cd" ve do, xoa het tac dung cua "cd $WORKSPACE_ROOT" vua lam. Ket qua:
+  # moi kiem tra phia sau (dong bo .claude/agents/.Codex/agents/.codex/agents)
+  # chay tren SAI thu muc, sinh canh bao "drift" hang loat khong lien quan gi
+  # toi commit. Go cac bien nay de ROOT_HOOK tu dinh vi lai theo $PWD that.
+  unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_PREFIX GIT_OBJECT_DIRECTORY
   cd "$WORKSPACE_ROOT" || exit 1
   "$ROOT_HOOK"
 )
