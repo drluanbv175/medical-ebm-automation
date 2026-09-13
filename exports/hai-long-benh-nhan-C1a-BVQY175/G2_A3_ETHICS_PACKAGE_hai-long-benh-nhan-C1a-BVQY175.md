@@ -12,7 +12,7 @@
 | Thiết kế | Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence) |
 | Mức nguy cơ | **TỐI THIỂU** |
 | Lộ trình IRB | **EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)** |
-| Đăng ký nghiên cứu | BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập: TIẾN CỨU — khảo sát nặc danh người tham gia mới tại điểm khám (đề cương §4.1–4.3), ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới) |
+| Đăng ký nghiên cứu | BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập: TIẾN CỨU — khảo sát nặc danh người tham gia mới tại điểm khám (đề cương §4.1–4.3), OSF Registries (https://osf.io/registries) (nếu tiến cứu tuyển mới) |
 | ICF bắt buộc |  Có |
 | Chuẩn báo cáo | STROBE |
 
@@ -30,9 +30,9 @@ Kính gửi: Hội đồng Đạo đức Nghiên cứu Y sinh
  Hội đồng Y đức Bệnh viện Quân y 175
 
 Từ: Chủ nhiệm đề tài: Nguyễn Hà Luân
- Chức vụ: [CẦN BỔ SUNG]
+ Chức vụ: Bác sĩ Chuyên khoa I (BS.CKI)
  Đơn vị: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
- Điện thoại: [CẦN BỔ SUNG] | Email: [CẦN BỔ SUNG]
+ Điện thoại: 0971656665 | Email: bsluanbv175@gmail.com
 
 TÊN ĐỀ TÀI: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 
@@ -45,7 +45,7 @@ THÔNG TIN TỔNG QUAN:
  Thời gian nghiên cứu: bắt đầu SAU phê duyệt IRB — một giai đoạn liên tục phủ đều khung giờ/ngày trong tuần (đề cương §4.2); ngày cụ thể [BÁC SĨ ĐIỀN theo lịch khoa]
  Nguồn tài trợ: Không có tài trợ bên ngoài, kinh phí tự túc (chủ nhiệm đề tài tự chi trả)
  Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
- Đăng ký nghiên cứu: [CẦN — ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)]
+ Đăng ký nghiên cứu: [CẦN — OSF Registries (https://osf.io/registries) (nếu tiến cứu tuyển mới)]
 
 CAM KẾT:
  Chúng tôi cam kết thực hiện nghiên cứu theo Tuyên ngôn Helsinki
@@ -178,8 +178,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
  KHÔNG ảnh hưởng đến chất lượng chăm sóc y tế của anh/chị.
 
 1b. NGƯỜI THỰC HIỆN NGHIÊN CỨU
- Nghiên cứu do [CẦN — họ tên chủ nhiệm], [CẦN, chức danh/trình độ chuyên
- môn, vd Bác sĩ CKII/Thạc sĩ Y học], công tác tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175, chủ trì
+ Nghiên cứu do Nguyễn Hà Luân, Bác sĩ Chuyên khoa I (BS.CKI), công tác tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175, chủ trì
  thực hiện.
 
 2. QUY TRÌNH THỰC HIỆN NẾU ĐỒNG Ý THAM GIA
@@ -259,10 +258,10 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
  ─────────────────────────────────────────────────────────
  Thắc mắc về nghiên cứu:                                
  Chủ nhiệm đề tài: Nguyễn Hà Luân                     
- Điện thoại: [CẦN BỔ SUNG] Email: [CẦN BỔ SUNG]     
+ Điện thoại: 0971656665 Email: bsluanbv175@gmail.com     
                                                            
  Thắc mắc về quyền của người tham gia:                  
- Hội đồng Đạo đức: [CẦN — Tên HĐ cơ sở]              
+ Hội đồng Đạo đức: Hội đồng Y đức Bệnh viện Quân y 175              
  Điện thoại: [CẦN BỔ SUNG]                           
  ─────────────────────────────────────────────────────────
 
@@ -453,8 +452,8 @@ SAU KHI NHẬN SỐ PHÊ DUYỆT:
 KHAI BÁO XUNG ĐỘT LỢI ÍCH, TÀI TRỢ VÀ SỬ DỤNG AI
 (Dựa theo ICMJE Form, phiên bản rút gọn cho IRB)
 ---
-Tên chủ nhiệm: [CẦN BỔ SUNG]
-Chức vụ: [CẦN BỔ SUNG] | Đơn vị: [CẦN BỔ SUNG]
+Tên chủ nhiệm: Nguyễn Hà Luân
+Chức vụ: Bác sĩ Chuyên khoa I (BS.CKI) | Đơn vị: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 Ngày khai báo: 31/07/2026
 
 A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (12 tháng gần nhất):
@@ -536,7 +535,7 @@ Chữ ký chủ nhiệm: [CẦN KÝ] | Ngày: ___/___/2026
 
 ## ĐĂNG KÝ NGHIÊN CỨU, 24 MỤC WHO TRIAL REGISTRATION DATA SET 1.3.1
 
-**Nơi đăng ký đề nghị:** ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)
+**Nơi đăng ký đề nghị:** OSF Registries (https://osf.io/registries) (nếu tiến cứu tuyển mới)
 **Thời điểm:** BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập: TIẾN CỨU — khảo sát nặc danh người tham gia mới ⇒ đăng ký BẮT BUỘC TRƯỚC người tham gia đầu tiên
 
 **Nghiên cứu tương tự đã đăng ký (prior art, tra thật trên ClinicalTrials.gov API v2):**
@@ -555,7 +554,7 @@ WHO Trial Registration Data Set 1.3.1, DRAFT Phiên bản 1.0
 ---
 
 Trường 1, Primary registry & Trial ID:
- [CẦN — sẽ có sau khi đăng ký: NCT_______ / ANZCTR_____]
+ [CẦN — sẽ có sau khi đăng ký trên OSF Registries: mã/URL đăng ký dạng osf.io/xxxxx]
 
 Trường 2, Date of registration in primary registry:
  [CẦN — ngày đăng ký thành công]
@@ -702,7 +701,7 @@ tiêu đề, kết quả kiểm THẬT của lần chạy này nằm ở G2_QUAL
 
 **Bước tiếp theo:**
 1. In hồ sơ, ký → nộp Hội đồng Đạo đức (lộ trình: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu))
-2. Đăng ký nghiên cứu: ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)
+2. Đăng ký nghiên cứu: OSF Registries (https://osf.io/registries) (nếu tiến cứu tuyển mới)
 3. Khi nhận quyết định IRB/IEC → người có thẩm quyền tự ghi ledger; hệ thống
  kiểm số/ngày/hiệu lực/phiên bản/đăng ký rồi mới có thể ghi G2 LOCKED
 4. Chạy G3 song song: `python tools/run_g3_auto.py --study hai-long-benh-nhan-C1a-BVQY175`
