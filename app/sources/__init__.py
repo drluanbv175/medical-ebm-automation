@@ -35,6 +35,7 @@ EuropePMCClient = _nap_client("europepmc", "EuropePMCClient")
 OpenAlexClient = _nap_client("openalex", "OpenAlexClient")
 OpenFDAClient = _nap_client("openfda", "OpenFDAClient")
 PubMedClient = _nap_client("pubmed", "PubMedClient")
+ScopusClient = _nap_client("scopus", "ScopusClient")
 SemanticScholarClient = _nap_client("semantic_scholar", "SemanticScholarClient")
 UnpaywallClient = _nap_client("unpaywall", "UnpaywallClient")
 
@@ -53,6 +54,7 @@ def get_enabled_sources() -> List[SourceClient]:
         (settings.enable_clinicaltrials, "ClinicalTrialsClient", ClinicalTrialsClient),
         (settings.enable_openalex, "OpenAlexClient", OpenAlexClient),
         (settings.enable_semantic_scholar, "SemanticScholarClient", SemanticScholarClient),
+        (settings.enable_scopus, "ScopusClient", ScopusClient),
     ]
     ket_qua: List[SourceClient] = []
     for enabled, ten, lop in candidates:
@@ -74,6 +76,7 @@ __all__ = [
     "ClinicalTrialsClient",
     "OpenFDAClient",
     "OpenAlexClient",
+    "ScopusClient",
     "SemanticScholarClient",
     "UnpaywallClient",
     "get_enabled_sources",

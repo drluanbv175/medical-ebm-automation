@@ -189,6 +189,8 @@ class Settings:
         default_factory=lambda: os.getenv("ZOTERO_LIBRARY_TYPE", "user")
     )
     nice_api_key: str = field(default_factory=lambda: os.getenv("NICE_API_KEY", ""))
+    scopus_api_key: str = field(default_factory=lambda: os.getenv("SCOPUS_API_KEY", ""))
+    scopus_insttoken: str = field(default_factory=lambda: os.getenv("SCOPUS_INSTTOKEN", ""))
 
     # Flags bật/tắt nguồn
     enable_pubmed: bool = field(default_factory=lambda: _get_bool("ENABLE_PUBMED", True))
@@ -204,6 +206,11 @@ class Settings:
     )
     enable_openfda: bool = field(default_factory=lambda: _get_bool("ENABLE_OPENFDA", True))
     enable_zotero: bool = field(default_factory=lambda: _get_bool("ENABLE_ZOTERO", False))
+    # Mặc định TẮT (khác PubMed/Crossref/OpenAlex): Scopus (Elsevier) đòi API key
+    # THẬT SỰ bắt buộc — không có key thì 0 quyền truy cập (khác Semantic Scholar,
+    # vẫn chạy được không key ở QPS thấp hơn). Bật bằng ENABLE_SCOPUS=true sau khi
+    # đã có SCOPUS_API_KEY trong ~/.ebm-secrets/medical-ebm-automation.env.
+    enable_scopus: bool = field(default_factory=lambda: _get_bool("ENABLE_SCOPUS", False))
     enable_nice: bool = field(default_factory=lambda: _get_bool("ENABLE_NICE", False))
     enable_drug_safety_feeds: bool = field(
         default_factory=lambda: _get_bool("ENABLE_DRUG_SAFETY_FEEDS", True))

@@ -180,13 +180,14 @@ def _build_source_map():
         OpenAlexClient,
         OpenFDAClient,
         PubMedClient,
+        ScopusClient,
         SemanticScholarClient,
     )
     _SOURCE_MAP.update({
         "pubmed": PubMedClient, "europepmc": EuropePMCClient,
         "crossref": CrossrefClient, "clinicaltrials": ClinicalTrialsClient,
         "openalex": OpenAlexClient, "semantic_scholar": SemanticScholarClient,
-        "openfda": OpenFDAClient,
+        "openfda": OpenFDAClient, "scopus": ScopusClient,
     })
     return _SOURCE_MAP
 
