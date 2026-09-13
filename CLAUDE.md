@@ -70,11 +70,17 @@ This file contains only Claude Code-specific instructions.
   `python run.py test-live dynamed "<từ khoá>"`. 19 test ở `tests/test_dynamed.py` (mutation-tested:
   đã kiểm bằng cách tắt tạm chốt fail-closed thiếu credential — gọi THẬT tới
   `apis.ebsco.com/medsapi-auth/v1/token` với credential rỗng, xác nhận endpoint có thật và trả 401,
-  rồi khôi phục nguyên trạng). **Phạm vi bản đầu: mới nối tầng NGHIÊN CỨU** (`app/sources/`,
-  `run.py test-live`) — CHƯA nối tầng giám sát lâm sàng (`EBM-Dashboards/tools/
-  surveillance_scan.py`), khác Scopus đã có ở cả hai tầng; đó là bước tiếp theo nếu bác sĩ xác nhận
-  connector chạy được thật với credential thật. **CHƯA XÁC NHẬN CHẠY THẬT** — đang chờ bác sĩ đăng
-  ký app EBSCO và dán `DYNAMED_CLIENT_ID`/`DYNAMED_CLIENT_SECRET` thật.
+  rồi khôi phục nguyên trạng). **Đã nối CẢ HAI tầng, cùng ngày** — tầng nghiên cứu
+  (`app/sources/`, `run.py test-live dynamed`) và tầng giám sát lâm sàng (`search_dynamed_lane()`
+  trong `sync/skills/cap-nhat-chung-cu-y-khoa/tools/surveillance_scan.py`, cùng khuôn
+  `search_scopus_lane()`, đồng bộ đủ 3 bản qua `tools/dong_bo_scanner_giam_sat.py`). **KHÁC Scopus
+  ở tầng lâm sàng:** DynaMed không bao giờ có pmid nên chạy CÙNG nhóm với preprint/trials (SAU
+  `gan_do_tin_cay()`, không phải TRƯỚC như Scopus) và `rut_bai` giữ "chua_kiem" vĩnh viễn; gắn nhãn
+  `dynamed_diem_kham`, đã thêm vào danh sách "ngoài PubMed" của `markdown_report()`. 7 test mới ở
+  `tools/test_evidence_surveillance_scan.py` (19/19 pass, kiểm bằng 2 phép đột biến thật). **CHƯA
+  XÁC NHẬN CHẠY THẬT** — cả hai tầng đều chờ bác sĩ đăng ký app EBSCO và dán
+  `DYNAMED_CLIENT_ID`/`DYNAMED_CLIENT_SECRET` thật; tới lúc đó `ENABLE_DYNAMED=false` khiến cả hai
+  tầng tự động im lặng bỏ qua (không coi là lỗi).
 
 ---
 
