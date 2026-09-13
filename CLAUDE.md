@@ -52,6 +52,29 @@ This file contains only Claude Code-specific instructions.
   User-Agent/header không giúp gì. **Tắt VPN thì chạy được ngay**, không cần Institutional Token.
   Nếu gặp lại 403 dạng HTML Cloudflare (không phải JSON lỗi của Elsevier): việc đầu tiên cần hỏi là
   "có đang bật VPN không", trước khi nghi ngờ key hay IP tổ chức.
+  · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026**, theo yêu cầu bác sĩ sau khi xác nhận có tài
+  khoản DynaMed (`app/sources/dynamed.py`) — TẮT mặc định, đòi `ENABLE_DYNAMED=true` +
+  `DYNAMED_CLIENT_ID`/`DYNAMED_CLIENT_SECRET` **thật** trong `~/.ebm-secrets/
+  medical-ebm-automation.env`. **KHÁC HẲN Scopus:** không phải API key đơn giản mà là OAuth2
+  `client_credentials` (đã xác minh trực tiếp qua `developer.ebsco.com/dynamed`, không suy đoán) —
+  đăng ký app tại `.../dynamed/register-app` đòi "Customer ID" + "Group ID" do **đại diện EBSCO
+  cấp riêng**, nghĩa là KHÔNG PHẢI mọi tài khoản DynaMed cá nhân/website đều tự động có quyền gọi
+  API này; **cần bác sĩ tự xác nhận với EBSCO/đơn vị chủ quản** trước khi mong đợi connector chạy
+  được. `DYNAMED_PRODUCT` mặc định `dynamed`, đổi `dynamedex` nếu tài khoản có thêm Micromedex —
+  sai giá trị sẽ bị từ chối cấp token dù client_id/secret đúng.
+  **Giới hạn đã biết:** nguồn TỔNG HỢP THỨ CẤP tại điểm khám (Condition/Drug Monograph…), không có
+  PMID/DOI cho từng mục nên KHÔNG tham gia chuỗi 3 tầng kiểm rút bài của `retraction_chain.py`
+  (giống Scopus/OpenAlex); `fields` tìm kiếm CỐ Ý chỉ xin `title`+`pubType` (không xin nội dung đầy
+  đủ) vì DynaMed có bản quyền EBSCO — kết quả chỉ mang tiêu đề + link, bác sĩ tự mở DynaMed đọc toàn
+  văn, TUYỆT ĐỐI không lưu/chép toàn văn vào file git-tracked. Test nhanh sau khi có credential:
+  `python run.py test-live dynamed "<từ khoá>"`. 19 test ở `tests/test_dynamed.py` (mutation-tested:
+  đã kiểm bằng cách tắt tạm chốt fail-closed thiếu credential — gọi THẬT tới
+  `apis.ebsco.com/medsapi-auth/v1/token` với credential rỗng, xác nhận endpoint có thật và trả 401,
+  rồi khôi phục nguyên trạng). **Phạm vi bản đầu: mới nối tầng NGHIÊN CỨU** (`app/sources/`,
+  `run.py test-live`) — CHƯA nối tầng giám sát lâm sàng (`EBM-Dashboards/tools/
+  surveillance_scan.py`), khác Scopus đã có ở cả hai tầng; đó là bước tiếp theo nếu bác sĩ xác nhận
+  connector chạy được thật với credential thật. **CHƯA XÁC NHẬN CHẠY THẬT** — đang chờ bác sĩ đăng
+  ký app EBSCO và dán `DYNAMED_CLIENT_ID`/`DYNAMED_CLIENT_SECRET` thật.
 
 ---
 

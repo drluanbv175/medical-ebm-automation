@@ -103,8 +103,10 @@ def _throttle(url: str, min_interval: float) -> float:
         return now
 
 
-def _cache_key(method: str, url: str, params: Optional[Dict[str, Any]]) -> str:
-    raw = f"{method}|{url}|{json.dumps(params or {}, sort_keys=True)}"
+def _cache_key(method: str, url: str, params: Optional[Dict[str, Any]],
+               json_body: Optional[Dict[str, Any]] = None) -> str:
+    raw = (f"{method}|{url}|{json.dumps(params or {}, sort_keys=True)}"
+           f"|{json.dumps(json_body or {}, sort_keys=True)}")
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
@@ -198,6 +200,22 @@ class HttpClient:
     ) -> str:
         return self._request("GET", url, params=params, use_cache=use_cache, want="text")
 
+    def post_json(
+        self,
+        url: str,
+        json_body: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+        use_cache: bool = False,
+    ) -> Dict[str, Any]:
+        """POST + đọc JSON. `use_cache` mặc định FALSE (khác GET) vì lần đầu
+        dùng POST trong repo này là gọi endpoint cấp TOKEN OAuth2 (DynaMed) —
+        access_token là bí mật, TUYỆT ĐỐI không được ghi ra cache file trên đĩa
+        (`data/raw/_http_cache/`). Truyền use_cache=True tường minh cho các POST
+        không mang bí mật (vd endpoint tìm kiếm DynaMed, chỉ có query công khai)."""
+        return self._request("POST", url, params=params, use_cache=use_cache,
+                              want="json", json_body=json_body, headers=headers)
+
     def _request(
         self,
         method: str,
@@ -205,9 +223,11 @@ class HttpClient:
         params: Optional[Dict[str, Any]],
         use_cache: bool,
         want: str,
+        json_body: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> Any:
         self.request_count += 1
-        key = _cache_key(method, url, params)
+        key = _cache_key(method, url, params, json_body)
         if use_cache and self.cache_ttl != 0:
             cached = _read_cache(key, self.cache_ttl)
             if cached is not None:
@@ -231,8 +251,17 @@ class HttpClient:
         while attempt <= settings.http_max_retries:
             try:
                 _throttle(url, self.min_interval)
+                # Chỉ thêm json=/headers= khi THẬT SỰ dùng (POST) — giữ nguyên
+                # đúng chữ ký lời gọi cũ (method, url, params=, timeout=) cho
+                # mọi GET hiện có, để không phá vỡ các test/fake session.request
+                # đã viết trước khi có post_json() (chúng không khai kwargs này).
+                extra: Dict[str, Any] = {}
+                if json_body is not None:
+                    extra["json"] = json_body
+                if headers is not None:
+                    extra["headers"] = headers
                 resp = self.session.request(
-                    method, url, params=params, timeout=settings.http_timeout
+                    method, url, params=params, timeout=settings.http_timeout, **extra
                 )
             except requests.RequestException as exc:
                 last_exc = exc
