@@ -45,6 +45,13 @@ This file contains only Claude Code-specific instructions.
   `retraction_chain.py` (giống OpenAlex/Crossref/Semantic Scholar — chỉ PubMed/Europe PMC/
   Retraction Watch offline mới ở trong chuỗi đó). Test nhanh sau khi có key:
   `python run.py test-live scopus "<từ khoá>"`. 14 test ở `tests/test_scopus.py`.
+  **ĐÃ XÁC NHẬN CHẠY THẬT 13/09/2026** (key `EBM-Scopus-Research`, `count=5`, DOI/PMID thật,
+  `is_mock:false`). ⚠️ **Bẫy đã gặp:** bật VPN cá nhân làm MỌI request bị chặn ngay từ Cloudflare
+  (HTML "Attention Required!", HTTP 403 — chặn TRƯỚC khi tới logic xác thực của Elsevier, xác nhận
+  bằng cách đọc thẳng response body chứ không chỉ mã trạng thái) — không phải lỗi key/code, đổi
+  User-Agent/header không giúp gì. **Tắt VPN thì chạy được ngay**, không cần Institutional Token.
+  Nếu gặp lại 403 dạng HTML Cloudflare (không phải JSON lỗi của Elsevier): việc đầu tiên cần hỏi là
+  "có đang bật VPN không", trước khi nghi ngờ key hay IP tổ chức.
 
 ---
 
