@@ -52,35 +52,20 @@ This file contains only Claude Code-specific instructions.
   User-Agent/header không giúp gì. **Tắt VPN thì chạy được ngay**, không cần Institutional Token.
   Nếu gặp lại 403 dạng HTML Cloudflare (không phải JSON lỗi của Elsevier): việc đầu tiên cần hỏi là
   "có đang bật VPN không", trước khi nghi ngờ key hay IP tổ chức.
-  · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026**, theo yêu cầu bác sĩ sau khi xác nhận có tài
-  khoản DynaMed (`app/sources/dynamed.py`) — TẮT mặc định, đòi `ENABLE_DYNAMED=true` +
-  `DYNAMED_CLIENT_ID`/`DYNAMED_CLIENT_SECRET` **thật** trong `~/.ebm-secrets/
-  medical-ebm-automation.env`. **KHÁC HẲN Scopus:** không phải API key đơn giản mà là OAuth2
-  `client_credentials` (đã xác minh trực tiếp qua `developer.ebsco.com/dynamed`, không suy đoán) —
-  đăng ký app tại `.../dynamed/register-app` đòi "Customer ID" + "Group ID" do **đại diện EBSCO
-  cấp riêng**, nghĩa là KHÔNG PHẢI mọi tài khoản DynaMed cá nhân/website đều tự động có quyền gọi
-  API này; **cần bác sĩ tự xác nhận với EBSCO/đơn vị chủ quản** trước khi mong đợi connector chạy
-  được. `DYNAMED_PRODUCT` mặc định `dynamed`, đổi `dynamedex` nếu tài khoản có thêm Micromedex —
-  sai giá trị sẽ bị từ chối cấp token dù client_id/secret đúng.
-  **Giới hạn đã biết:** nguồn TỔNG HỢP THỨ CẤP tại điểm khám (Condition/Drug Monograph…), không có
-  PMID/DOI cho từng mục nên KHÔNG tham gia chuỗi 3 tầng kiểm rút bài của `retraction_chain.py`
-  (giống Scopus/OpenAlex); `fields` tìm kiếm CỐ Ý chỉ xin `title`+`pubType` (không xin nội dung đầy
-  đủ) vì DynaMed có bản quyền EBSCO — kết quả chỉ mang tiêu đề + link, bác sĩ tự mở DynaMed đọc toàn
-  văn, TUYỆT ĐỐI không lưu/chép toàn văn vào file git-tracked. Test nhanh sau khi có credential:
-  `python run.py test-live dynamed "<từ khoá>"`. 19 test ở `tests/test_dynamed.py` (mutation-tested:
-  đã kiểm bằng cách tắt tạm chốt fail-closed thiếu credential — gọi THẬT tới
-  `apis.ebsco.com/medsapi-auth/v1/token` với credential rỗng, xác nhận endpoint có thật và trả 401,
-  rồi khôi phục nguyên trạng). **Đã nối CẢ HAI tầng, cùng ngày** — tầng nghiên cứu
-  (`app/sources/`, `run.py test-live dynamed`) và tầng giám sát lâm sàng (`search_dynamed_lane()`
-  trong `sync/skills/cap-nhat-chung-cu-y-khoa/tools/surveillance_scan.py`, cùng khuôn
-  `search_scopus_lane()`, đồng bộ đủ 3 bản qua `tools/dong_bo_scanner_giam_sat.py`). **KHÁC Scopus
-  ở tầng lâm sàng:** DynaMed không bao giờ có pmid nên chạy CÙNG nhóm với preprint/trials (SAU
-  `gan_do_tin_cay()`, không phải TRƯỚC như Scopus) và `rut_bai` giữ "chua_kiem" vĩnh viễn; gắn nhãn
-  `dynamed_diem_kham`, đã thêm vào danh sách "ngoài PubMed" của `markdown_report()`. 7 test mới ở
-  `tools/test_evidence_surveillance_scan.py` (19/19 pass, kiểm bằng 2 phép đột biến thật). **CHƯA
-  XÁC NHẬN CHẠY THẬT** — cả hai tầng đều chờ bác sĩ đăng ký app EBSCO và dán
-  `DYNAMED_CLIENT_ID`/`DYNAMED_CLIENT_SECRET` thật; tới lúc đó `ENABLE_DYNAMED=false` khiến cả hai
-  tầng tự động im lặng bỏ qua (không coi là lỗi).
+  · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026, GỠ BỎ cùng ngày sau khi xác minh.**
+  Kiểm trực tiếp `developer.ebsco.com/dynamed` xác nhận: đăng ký app MedsAPI **bắt buộc** một
+  Customer ID + Group ID mà tài liệu EBSCO nói rõ "received from your EBSCO representative" —
+  hai ID này được quản trị qua EBSCOadmin (bảng điều khiển của TỔ CHỨC/thư viện), không có luồng
+  tự-cấp cho tài khoản cá nhân, và gói DynaMedex cá nhân ($599/năm) không hề liệt kê API/integration
+  trong danh mục tính năng. Vậy tài khoản DynaMed cá nhân của bác sĩ **không thể tự tạo được** thông
+  tin cần để đăng ký app — không phải lỗi cấu hình, là giới hạn của loại tài khoản. Đã gỡ toàn bộ:
+  `app/sources/dynamed.py`, `tests/test_dynamed.py`, các khóa `DYNAMED_*`/`ENABLE_DYNAMED` ở
+  `app/config.py`/`.env.example`, mục "dynamed" ở `_SOURCE_MAP` (`app/main.py`) và
+  `app/sources/__init__.py`, cùng `search_dynamed_lane()` ở tầng giám sát lâm sàng
+  (`EBM-Dashboards/tools/surveillance_scan.py` và hai bản mirror `sync/skills/*/tools/
+  surveillance_scan.py`) — **giữ nguyên** `search_scopus_lane()`/Scopus, không liên quan tới lý do
+  gỡ DynaMed. Muốn nối lại sau này: cần xác nhận với EBSCO/đại diện bán hàng để được cấp Customer
+  ID + Group ID theo một hợp đồng tổ chức, không phải việc tự làm được từ tài khoản cá nhân.
 
 ---
 

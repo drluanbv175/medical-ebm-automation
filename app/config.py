@@ -191,15 +191,6 @@ class Settings:
     nice_api_key: str = field(default_factory=lambda: os.getenv("NICE_API_KEY", ""))
     scopus_api_key: str = field(default_factory=lambda: os.getenv("SCOPUS_API_KEY", ""))
     scopus_insttoken: str = field(default_factory=lambda: os.getenv("SCOPUS_INSTTOKEN", ""))
-    # DynaMed/DynaMedex (EBSCO) — OAuth2 client_credentials, KHÁC key đơn giản của
-    # Scopus. client_id/client_secret chỉ cấp SAU KHI đăng ký app tại
-    # developer.ebsco.com với Customer ID + Group ID do EBSCO cấp (xem
-    # app/sources/dynamed.py để biết chi tiết đã xác minh).
-    dynamed_client_id: str = field(default_factory=lambda: os.getenv("DYNAMED_CLIENT_ID", ""))
-    dynamed_client_secret: str = field(
-        default_factory=lambda: os.getenv("DYNAMED_CLIENT_SECRET", "")
-    )
-    dynamed_product: str = field(default_factory=lambda: os.getenv("DYNAMED_PRODUCT", "dynamed"))
 
     # Flags bật/tắt nguồn
     enable_pubmed: bool = field(default_factory=lambda: _get_bool("ENABLE_PUBMED", True))
@@ -220,11 +211,6 @@ class Settings:
     # vẫn chạy được không key ở QPS thấp hơn). Bật bằng ENABLE_SCOPUS=true sau khi
     # đã có SCOPUS_API_KEY trong ~/.ebm-secrets/medical-ebm-automation.env.
     enable_scopus: bool = field(default_factory=lambda: _get_bool("ENABLE_SCOPUS", False))
-    # Mặc định TẮT, cùng lý do Scopus: DynaMed đòi client_id/client_secret THẬT
-    # SỰ (OAuth2), không chạy được "ở chế độ giới hạn không key" như Semantic
-    # Scholar. Bật bằng ENABLE_DYNAMED=true sau khi đã có DYNAMED_CLIENT_ID +
-    # DYNAMED_CLIENT_SECRET trong ~/.ebm-secrets/medical-ebm-automation.env.
-    enable_dynamed: bool = field(default_factory=lambda: _get_bool("ENABLE_DYNAMED", False))
     enable_nice: bool = field(default_factory=lambda: _get_bool("ENABLE_NICE", False))
     enable_drug_safety_feeds: bool = field(
         default_factory=lambda: _get_bool("ENABLE_DRUG_SAFETY_FEEDS", True))
