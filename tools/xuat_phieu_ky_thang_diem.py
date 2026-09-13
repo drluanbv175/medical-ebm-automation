@@ -175,7 +175,7 @@ def main() -> int:
 
     noi_dung = sinh_noi_dung()
     args.ra.parent.mkdir(parents=True, exist_ok=True)
-    args.ra.write_text(noi_dung, encoding="utf-8")
+    args.ra.write_text(noi_dung, encoding="utf-8", newline="\n")
     print(f"✅ Đã sinh phiếu ký: {args.ra}")
     print(f"   {len(VERIFIED_SCORES)} thang điểm. Chạy tiếp để có bản .docx Times New Roman:")
     print(f"   python \"{REPO_ROOT.parent}/tools/md_sang_docx_times.py\" \"{args.ra}\"")

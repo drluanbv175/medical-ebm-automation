@@ -209,7 +209,8 @@ def test_nhanh_chua_tung_chay_tra_ve_1(monkeypatch, capsys):
 def test_nhanh_con_han_tra_ve_0(monkeypatch, capsys):
     moc = datetime.now(timezone.utc) - timedelta(days=10)
     CLI.STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    CLI.STATE_PATH.write_text(json.dumps({"checked_at": moc.isoformat()}), encoding="utf-8")
+    CLI.STATE_PATH.write_text(json.dumps({"checked_at": moc.isoformat()}),
+                               encoding="utf-8", newline="\n")
     monkeypatch.setattr(sys, "argv", ["kiem_do_tuoi_thang_diem.py", "--nhanh"])
     rc = CLI.main()
     assert rc == 0
@@ -219,7 +220,8 @@ def test_nhanh_con_han_tra_ve_0(monkeypatch, capsys):
 def test_nhanh_qua_han_tra_ve_1(monkeypatch, capsys):
     moc = datetime.now(timezone.utc) - timedelta(days=CLI.NGUONG_QUA_HAN_NGAY + 5)
     CLI.STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    CLI.STATE_PATH.write_text(json.dumps({"checked_at": moc.isoformat()}), encoding="utf-8")
+    CLI.STATE_PATH.write_text(json.dumps({"checked_at": moc.isoformat()}),
+                               encoding="utf-8", newline="\n")
     monkeypatch.setattr(sys, "argv", ["kiem_do_tuoi_thang_diem.py", "--nhanh"])
     rc = CLI.main()
     out = capsys.readouterr().out
@@ -230,7 +232,8 @@ def test_nhanh_qua_han_tra_ve_1(monkeypatch, capsys):
 def test_nhanh_json_khong_lan_van_ban(monkeypatch, capsys):
     moc = datetime.now(timezone.utc) - timedelta(days=10)
     CLI.STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    CLI.STATE_PATH.write_text(json.dumps({"checked_at": moc.isoformat()}), encoding="utf-8")
+    CLI.STATE_PATH.write_text(json.dumps({"checked_at": moc.isoformat()}),
+                               encoding="utf-8", newline="\n")
     monkeypatch.setattr(sys, "argv", ["kiem_do_tuoi_thang_diem.py", "--nhanh", "--json"])
     rc = CLI.main()
     out = capsys.readouterr().out
@@ -242,7 +245,7 @@ def test_nhanh_json_khong_lan_van_ban(monkeypatch, capsys):
 def test_nhanh_so_hong_tra_ve_2(monkeypatch, capsys):
     CLI.STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     CLI.STATE_PATH.write_text(json.dumps({"checked_at": "khong-phai-ngay-hop-le"}),
-                               encoding="utf-8")
+                               encoding="utf-8", newline="\n")
     monkeypatch.setattr(sys, "argv", ["kiem_do_tuoi_thang_diem.py", "--nhanh"])
     rc = CLI.main()
     assert rc == 2

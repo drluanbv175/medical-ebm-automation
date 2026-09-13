@@ -93,7 +93,8 @@ def _doc_so_cu() -> dict:
 
 def _ghi_so(du_lieu: dict) -> None:
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    STATE_PATH.write_text(json.dumps(du_lieu, ensure_ascii=False, indent=2), encoding="utf-8")
+    STATE_PATH.write_text(json.dumps(du_lieu, ensure_ascii=False, indent=2),
+                           encoding="utf-8", newline="\n")
 
 
 def thu_thap_dinh_danh() -> List[Dict[str, Optional[str]]]:

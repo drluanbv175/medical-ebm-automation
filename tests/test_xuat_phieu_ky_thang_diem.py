@@ -44,7 +44,7 @@ def test_co_state_sach_thi_hien_thi_dung_trang_thai_ok(tmp_path, monkeypatch):
     state_path = tmp_path / "sổ.json"
     hang_muc = [{"score_id": s["score_id"], "ket_qua": {"status": "ok"}} for s in VERIFIED_SCORES]
     state_path.write_text(json.dumps({"checked_at": "2026-09-13T00:00:00+00:00",
-                                       "hang_muc": hang_muc}), encoding="utf-8")
+                                       "hang_muc": hang_muc}), encoding="utf-8", newline="\n")
     monkeypatch.setattr(CLI, "STATE_PATH", state_path)
     noi_dung = CLI.sinh_noi_dung()
     assert "✅ Còn nguyên vẹn" in noi_dung
@@ -57,7 +57,7 @@ def test_thang_bi_rut_bai_hien_ro_canh_bao_do(tmp_path, monkeypatch):
                  "ket_qua": {"status": "retracted" if s["score_id"] == "cha2ds2_vasc" else "ok"}}
                 for s in VERIFIED_SCORES]
     state_path.write_text(json.dumps({"checked_at": "2026-09-13T00:00:00+00:00",
-                                       "hang_muc": hang_muc}), encoding="utf-8")
+                                       "hang_muc": hang_muc}), encoding="utf-8", newline="\n")
     monkeypatch.setattr(CLI, "STATE_PATH", state_path)
     noi_dung = CLI.sinh_noi_dung()
     assert "ĐÃ BỊ RÚT — CẦN RÀ SOÁT TRƯỚC KHI KÝ" in noi_dung
