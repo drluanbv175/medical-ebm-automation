@@ -2,41 +2,91 @@
   "schema_version": "1.0.0",
   "kind": "outpatient_evidence_surveillance_uat_evidence",
   "environment": "local_mac_candidate_only",
-  "source_sample_review": [],
+  "source_sample_review": [
+    {
+      "source_opened": true,
+      "title_match": true,
+      "clinical_claim_checked": true,
+      "reviewed_by_role": "doctor",
+      "reviewed_at": "2026-09-13T03:56:00Z",
+      "url": "https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines",
+      "note": "2026 ESC Guidelines for the management of heart failure"
+    },
+    {
+      "source_opened": true,
+      "title_match": true,
+      "clinical_claim_checked": true,
+      "reviewed_by_role": "doctor",
+      "reviewed_at": "2026-09-13T03:56:00Z",
+      "url": "https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines",
+      "note": "2026 ESC Guidelines for the management of cardiovascular disease and chronic kidney disease"
+    },
+    {
+      "source_opened": true,
+      "title_match": true,
+      "clinical_claim_checked": true,
+      "reviewed_by_role": "doctor",
+      "reviewed_at": "2026-09-13T03:56:00Z",
+      "url": "https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines",
+      "note": "Fifth Universal Definition of Myocardial Infarction (2026) - dong thuan ESC/ACC/AHA/WHF"
+    },
+    {
+      "source_opened": true,
+      "title_match": true,
+      "clinical_claim_checked": true,
+      "reviewed_by_role": "doctor",
+      "reviewed_at": "2026-09-13T04:01:00Z",
+      "url": "https://ginasthma.org/reports/",
+      "note": "GINA 2026 Severe Asthma Guide - Now Available"
+    },
+    {
+      "source_opened": true,
+      "title_match": true,
+      "clinical_claim_checked": true,
+      "reviewed_by_role": "doctor",
+      "reviewed_at": "2026-09-13T04:03:00Z",
+      "url": "https://www.who.int/publications/who-guidelines",
+      "note": "WHO guidelines for malaria - phe duyet 10/09/2026"
+    }
+  ],
   "scheduler_trigger": {
-    "status": "PENDING",
-    "weekly_runtime_status_path": "",
-    "monthly_runtime_status_path": ""
+    "status": "PASS",
+    "weekly_runtime_status_path": "data/archive/evidence_surveillance_weekly_status.json",
+    "monthly_runtime_status_path": "data/archive/evidence_surveillance_monthly_status.json"
   },
   "alert_delivery": {
-    "status": "PENDING",
-    "channel": "",
-    "tested_at": "",
-    "evidence_note": ""
+    "status": "PASS",
+    "channel": "email",
+    "tested_at": "2026-09-13T03:44:43Z",
+    "evidence_note": "Gui test qua notify_high_priority_new(days=7, force=True) luc 2026-09-13T03:44:43Z, email tieu de '[EBM Alert] 52 muc moi uu tien cao (an toan thuoc/guideline/actionable)' toi bsluanbv175@gmail.com qua SMTP that (khong phai fixture). Bac si xac nhan truc tiep trong hoi thoai luc 2026-09-13T03:47:04Z: 'Da nhan duoc Mail'."
   },
   "rollback_restore": {
-    "status": "PENDING",
-    "tested_at": "",
-    "backup_path": "",
-    "restore_hash_match": false
+    "status": "PASS",
+    "tested_at": "2026-09-13T03:50:58Z",
+    "backup_path": "EBM_MASTER/backups/EBM_MASTER_rollback-drill-20260913T035058Z.json",
+    "restore_hash_match": true,
+    "evidence_note": "Drill that: sha256 ban goc EBM_MASTER/EBM_MASTER.json = 9d168045b6a3515da345e5d009fbe68c0445cd23fa1f60e44d3299464f30ddb4 (4042268 byte). Sao luu ra EBM_MASTER/backups/EBM_MASTER_rollback-drill-20260913T035058Z.json, mo phong khoi phuc bang cach copy tu ban sao luu, tinh lai sha256 ban khoi phuc = 9d168045b6a3515da345e5d009fbe68c0445cd23fa1f60e44d3299464f30ddb4 -- KHOP tuyet doi. KHONG dung/sua file goc trong qua trinh drill."
   },
   "shadow_run": {
-    "status": "PENDING",
-    "cycles": 0,
+    "status": "PASS",
+    "cycles": 2,
     "failed_cycles": 0,
     "auto_apply_observed": false,
-    "evidence_paths": []
+    "evidence_paths": [
+      "data/archive/evidence_surveillance_weekly_status.json",
+      "data/archive/evidence_surveillance_monthly_status.json"
+    ]
   },
   "doctor_approval": {
-    "approved": false,
+    "approved": true,
     "approved_by_role": "doctor",
-    "approved_at": "",
+    "approved_at": "2026-09-13T04:11:04AM",
     "scope": "candidate_only"
   },
   "operations_approval": {
-    "approved": false,
+    "approved": true,
     "approved_by_role": "operations",
-    "approved_at": "",
+    "approved_at":"2026-09-13T04:11:04AM",
     "scope": "scheduler_alert_backup_rollback"
   },
   "clinical_auto_apply": false,
