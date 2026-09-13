@@ -8,11 +8,13 @@ CHẠY thay vì bảo sửa tay từng chỗ._
 
 ---
 
-## PHẦN A — 4 sự thật hành chính còn thiếu (điền 1 LẦN, tự lan ra ~15 chỗ)
+## PHẦN A — ✅ 3/4 ĐÃ XONG (13/09/2026) — còn 1 trường
 
-**Phát hiện quan trọng:** phần lớn nhãn "[CẦN BỔ SUNG]" về chức vụ/điện thoại/email trong
-`G2_A3_ETHICS_PACKAGE...md` (44 lượt khớp) **không cần sửa tay từng dòng** — `run_g2_auto.py` đọc
-các trường này từ **`study_meta.json → administrative`**. Hiện trạng đo được:
+**Cập nhật 13/09/2026:** bác sĩ đã cung cấp trực tiếp 3/4 giá trị trong hội thoại. `run_g2_auto.py
+--study ...` từ chối tự tái sinh toàn file (bản hiện có đã bị/được biên tập tay: 49 nhãn còn lại so
+với 79 nhãn của bản mới sinh — an toàn đúng như thiết kế, tránh ghi đè phần bác sĩ đã sửa), nên đã
+áp trực tiếp 3 giá trị vào đúng vị trí trong `G2_A3_ETHICS_PACKAGE...md` (Tài liệu 1, 4, 8) + lưu
+vào `study_meta.json → administrative` để các lần sinh sau tự dùng đúng giá trị này.
 
 | Trường (`administrative.*`) | Giá trị hiện tại | Cần bác sĩ điền |
 |---|---|---|
@@ -20,41 +22,25 @@ các trường này từ **`study_meta.json → administrative`**. Hiện trạn
 | `pi_unit` | ✅ "Khoa Khám bệnh C1a…" | — đã có |
 | `irb_name` | ✅ "Hội đồng Y đức Bệnh viện Quân y 175" | — đã có |
 | `sponsor` | ✅ "Không có tài trợ bên ngoài…" | — đã có |
-| `pi_title` | ❌ `null` | **Chức danh/học hàm của bác sĩ** (vd "Bác sĩ CKII", "Thạc sĩ Y học"…) |
-| `pi_phone` | ❌ `null` | **Số điện thoại liên hệ** của bác sĩ (dùng trong đơn IRB + ICF) |
-| `pi_email` | ❌ `null` | **Email liên hệ** của bác sĩ |
-| `irb_contact` | ❌ `null` | **Số điện thoại của Hội đồng Y đức BVQY 175** (bác sĩ tự hỏi văn thư HĐ) |
+| `pi_title` | ✅ "Bác sĩ Chuyên khoa I (BS.CKI)" | — đã điền 13/09 |
+| `pi_phone` | ✅ đã điền | — đã điền 13/09 |
+| `pi_email` | ✅ đã điền | — đã điền 13/09 |
+| `irb_contact` | ❌ `null` | **Số điện thoại của Hội đồng Y đức BVQY 175** (bác sĩ tự hỏi văn thư HĐ) — còn ĐÚNG 1 vị trí "[CẦN BỔ SUNG]" trong ICF, mục 7 |
 
-**Cách điền — 1 trong 2 cách:**
-1. Mở `study_meta.json` (Edit tool hoặc tự mở), sửa 4 giá trị `null` ở trên thành chuỗi thật.
-2. Hoặc nói trực tiếp 4 giá trị cho tôi trong hội thoại, tôi điền hộ (đây là **sự thật khách quan**
-   bác sĩ tự cung cấp — không phải nội dung tôi tự suy luận/bịa, nên tôi có thể gõ hộ).
-
-**Sau khi điền xong, chạy:**
-```bash
-python tools/run_g2_auto.py --study hai-long-benh-nhan-C1a-BVQY175
-```
-→ toàn bộ ~15 chỗ "[CẦN BỔ SUNG]" liên quan 4 trường này trong `G2_A3_ETHICS_PACKAGE...md` (Tài
-liệu 1, 4, 5, 7) tự cập nhật đồng loạt — không phải sửa tay từng dòng.
+**Chỉ còn `irb_contact`** — nói số điện thoại của Hội đồng cho tôi khi có, tôi điền nốt vị trí cuối
+cùng trong ICF (mục 7 "Thắc mắc về quyền của người tham gia").
 
 ---
 
-## PHẦN B — 1 chỗ lệch cần TỰ SỬA TAY sau khi sinh lại (không tự động đồng bộ được)
+## PHẦN B — ✅ ĐÃ SỬA (13/09/2026)
 
-`G2_A3_ETHICS_PACKAGE...md` dòng 15, 48, 539, 705 ghi nơi đăng ký nghiên cứu là
-**"ClinicalTrials.gov hoặc WHO ICTRP primary registry"** — đây là giá trị MẶC ĐỊNH viết cứng
-trong `run_g2_auto.py` theo LOẠI THIẾT KẾ (cross-sectional), không đọc từ `study_meta.json` nên
-**không tự đồng bộ được** dù chạy lại lệnh ở Phần A.
-
-Nhưng `_checklist-noi-bo.md` (mục "Quyết định đã KHÓA") đã chốt từ trước:
-> "Đăng ký nghiên cứu trên **OSF Registries** (không phải 'WHO ICTRP hoặc cổng phù hợp' — ICTRP là
-> cổng tổng hợp, không phải nơi đăng ký trực tiếp)."
-
-**→ Việc cần làm:** sau khi chạy lại `run_g2_auto.py` ở Phần A, tự thay 4 chỗ nêu trên (tìm chuỗi
-"ClinicalTrials.gov hoặc WHO ICTRP") thành **"OSF Registries (https://osf.io/registries)"** trước
-khi nộp. Đây KHÔNG phải lỗi khoa học — chỉ là tài liệu IRB chưa bắt kịp quyết định đã chốt ở nơi
-khác; tôi không tự sửa mã nguồn `run_g2_auto.py` vì giá trị đó là mặc định DÙNG CHUNG cho mọi đề
-tài cắt ngang khác, không riêng đề tài này — sửa chung có thể ảnh hưởng đề tài khác chưa rà.
+`G2_A3_ETHICS_PACKAGE...md` từng ghi nơi đăng ký nghiên cứu là "ClinicalTrials.gov hoặc WHO ICTRP
+primary registry" ở 5 vị trí (giá trị mặc định viết cứng theo loại thiết kế, không khớp quyết định
+đã khóa trong `_checklist-noi-bo.md`: **OSF Registries**). Đã sửa cả 5 vị trí thành "OSF Registries
+(https://osf.io/registries)", kể cả định dạng mã đăng ký ở Trường 1 (WHO TRDS) — đổi từ mẫu
+"NCT_______ / ANZCTR_____" (định dạng riêng của ClinicalTrials.gov/ANZCTR) sang mẫu URL của OSF.
+Không sửa mã nguồn `run_g2_auto.py` (giá trị mặc định dùng chung cho mọi đề tài cắt ngang khác) —
+chỉ sửa trực tiếp nội dung tài liệu của đề tài này.
 
 ---
 
@@ -135,13 +121,14 @@ sẽ phải làm lại:
 
 ## Tổng kết — việc gì thuộc về ai
 
-| Ai | Việc |
-|---|---|
-| **Bác sĩ (5 phút)** | Đọc và điền/nói 4 giá trị ở Phần A |
-| **Tôi (ngay sau khi có Phần A)** | Chạy `run_g2_auto.py`, sửa 4 chỗ registry ở Phần B, chuẩn bị lại phiếu cho bác sĩ đọc |
-| **Bác sĩ (đọc + tick, ~15–20 phút)** | 10 mục ở Phần C |
-| **Bác sĩ + thống kê viên** | 1 câu hỏi `chuyenkhoa` + ký G4 (Phần D) |
-| **Bác sĩ, ngoài hệ thống, theo tuần/tháng** | Đăng ký OSF → nộp IRB → nhận số → ký G2 (Phần E) |
+| Ai | Việc | Trạng thái |
+|---|---|---|
+| **Bác sĩ** | Nói số điện thoại Hội đồng Y đức (`irb_contact`) — 1 giá trị cuối của Phần A | ⏳ còn thiếu |
+| **Bác sĩ (đọc + tick, ~15–20 phút)** | 10 mục ở Phần C | ⏳ chưa làm |
+| **Bác sĩ + thống kê viên** | 1 câu hỏi `chuyenkhoa` + ký G4 (Phần D) | ⏳ chưa làm |
+| **Bác sĩ, ngoài hệ thống, theo tuần/tháng** | Đăng ký OSF → nộp IRB → nhận số → ký G2 (Phần E) | ⏳ chưa làm |
+| ~~Phần A (4 trường hành chính)~~ | ~~Điền chức danh/điện thoại/email~~ | ✅ 3/4 xong 13/09 |
+| ~~Phần B (registry)~~ | ~~Sửa OSF Registries~~ | ✅ xong 13/09 |
 
 _Cần bác sĩ kiểm chứng toàn bộ nội dung trước khi ký/nộp. Tài liệu này chỉ tổ chức lại thông tin đã
 có trong hệ thống, không thay thế việc bác sĩ tự đọc từng tài liệu gốc trước khi ký._
