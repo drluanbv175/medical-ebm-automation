@@ -4,10 +4,17 @@ Vì sao có: G1-AUTO-03b chỉ kiểm TÊN chuẩn protocol khớp thiết kế;
 kê từng item SPIRIT 2025 để bác sĩ tick. Danh mục 34 mục/53 dòng được sinh TỰ ĐỘNG từ
 toàn văn bài Explanation & Elaboration chính thức (BMJ 2025, PMC12128891) — không gõ
 tay; test này khoá số lượng, tính duy nhất, provenance và việc G10 in đủ cho RCT nhưng
-KHÔNG bịa checklist cho thiết kế không có (quan sát) hoặc kho chưa có (PRISMA-P).
+KHÔNG bịa checklist cho thiết kế không có (quan sát).
+
+CẬP NHẬT 13/09/2026: PRISMA-P 2015 (17 mục/26 dòng, PMID 25554246) đã được thêm vào
+`protocol_checklist_items.py` — bảng checklist trước đó không lấy được (PMC rụng bảng ở
+phiên 06/09) nay đọc trực tiếp trang PMC thành công. Các ca thử vốn khoá hành vi "kho
+CHƯA có PRISMA-P" (`missing_item_list_reason("sr_ma")` trả khác None) đã ĐỔI sang khoá
+hành vi MỚI ĐÚNG: `items_for_design("sr_ma")` trả đủ bảng PRISMA-P, KHÔNG còn rơi vào
+nhánh "chưa có danh mục" — sửa fixture cho hợp lệ với thực tế mới, không nới lỏng luật.
 
 Ba luật khi thêm ca thử: kiểm hành vi bằng mã sống; mỗi ca gắn rủi ro thật (mất dòng
-khi tái sinh module · in checklist sai thiết kế · giả vờ có PRISMA-P); ngoại tuyến.
+khi tái sinh module · in checklist sai thiết kế · giả vờ có chuẩn chưa thật sự có); ngoại tuyến.
 """
 from __future__ import annotations
 
@@ -67,18 +74,20 @@ class TestItemModule:
         assert PCI.items_for_design("rct")[0] == "SPIRIT 2025"
         assert PCI.items_for_design("cross_sectional") is None
         assert PCI.items_for_design(None) is None
-        name, reason = PCI.missing_item_list_reason("sr_ma")
-        assert name == "PRISMA-P 2015" and "KHÔNG dùng danh mục tự nhớ" in reason
+        name, items, _prov = PCI.items_for_design("sr_ma")
+        assert name == "PRISMA-P 2015" and len(items) == 26
+        assert PCI.missing_item_list_reason("sr_ma") is None
 
     def test_aliases_and_canon_codes_route_identically(self):
         """Lỗi thật 06/09/2026: bản đầu khoá lý do PRISMA-P theo bí danh 'sr_ma', trong khi
         G10 chuẩn hoá mã về 'systematic_review' TRƯỚC khi tra ⇒ nhánh đó không bao giờ
-        chạy tới (test sr_ma ở dưới đỏ). Mọi tra cứu phải đi qua canonical_design_code."""
+        chạy tới. Mọi tra cứu phải đi qua canonical_design_code — vẫn đúng sau khi PRISMA-P
+        được thêm 13/09/2026 (chỉ đổi NỘI DUNG khoá tra, không đổi đường tra cứu)."""
         import skill_standards as S
         for alias in ("sr_ma", "sr", "meta_analysis", "systematic_review", "SR_MA"):
-            got = PCI.missing_item_list_reason(alias)
-            assert got is not None and got[0] == "PRISMA-P 2015", alias
-            assert PCI.items_for_design(alias) is None, alias
+            found = PCI.items_for_design(alias)
+            assert found is not None and found[0] == "PRISMA-P 2015", alias
+            assert PCI.missing_item_list_reason(alias) is None, alias
         for alias in ("rct", "rct_parallel", "rct_crossover", "randomized", "RCT"):
             found = PCI.items_for_design(alias)
             assert found is not None and found[0] == "SPIRIT 2025", alias
@@ -130,11 +139,17 @@ class TestG10Emission:
         assert any(w.startswith("R18") for w in rep["warnings"])
         assert not any(e.startswith("R18") for e in rep["errors"])
 
-    def test_sr_ma_says_prisma_p_items_not_in_store(self, tmp_path):
+    def test_sr_ma_gets_full_prisma_p_table_with_manual_status(self, tmp_path):
+        """Cập nhật 13/09/2026 — trước đó khoá hành vi 'kho CHƯA có PRISMA-P'; nay kho ĐÃ
+        có (bảng lấy trực tiếp từ trang PMC PMID 25554246), khoá lại đúng thực tế mới,
+        mirror test_rct_gets_full_spirit_table_with_manual_status."""
         _write_cross_sectional_fixture(tmp_path)
         _retarget_design(tmp_path, "sr_ma")
         res = G10.assemble("FIXT", tmp_path)
         text = res["md"].read_text(encoding="utf-8")
         block = text.split("# Checklist chuẩn đề cương theo từng mục")[1].split("\n# ")[0]
-        assert "PRISMA-P 2015" in block and "CHƯA có danh mục item" in block
-        assert "| 1a |" not in block
+        assert "PRISMA-P 2015" in block and "PMC4320440" in block
+        for item_id, _t, _h in PCI.PRISMA_P_2015_ITEMS:
+            assert re.search(rf"^\|\s*{re.escape(item_id)}\s*\|", block, re.MULTILINE), item_id
+        # G10 KHÔNG tự tick: mọi dòng đều mang nhãn xác nhận thủ công.
+        assert block.count(G10.TAG_MANUAL) == 26

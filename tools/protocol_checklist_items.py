@@ -7,11 +7,14 @@ checklist), trích bằng script từ toàn văn PMC — KHÔNG gõ tay, không 
 nghĩa. Cột "vị trí gợi ý" ánh xạ sang khuôn đề cương 18 mục là DIỄN GIẢI của hệ thống,
 bác sĩ/methodologist xác nhận khi điền checklist.
 
-PRISMA-P 2015 (17 mục / 26 dòng): CHƯA có trong module — toàn văn PMC của bài statement
-(PMC4320440) rụng bảng checklist, bài E&E (PMID 25555855) không có bản PMC, các trang
-prisma-statement.org / equator-network.org bị chặn ở phiên cloud 06/09/2026. Không bịa
-danh mục từ trí nhớ; items_for_design("sr_ma") trả None, missing_item_list_reason("sr_ma")
-trả lý do.
+PRISMA-P 2015 (17 mục / 26 dòng): thêm 13/09/2026 — bảng checklist (Table 3) của bài
+statement lấy nguyên văn được từ trang PMC (PMC4320440), khác phiên 06/09/2026 khi bảng
+bị rụng lúc tải toàn văn; prisma-statement.org/equator-network.org vẫn không truy cập
+được nhưng không còn cần thiết vì PMC đã đủ. Nguyên văn tiếng Anh, không dịch, cùng
+nguyên tắc SPIRIT 2025. Cột "vị trí gợi ý" cho PRISMA-P ánh xạ sang khuôn đề cương 18 mục
+DÙNG CHUNG cho mọi thiết kế (không có khuôn riêng cho tổng quan hệ thống) — với PRISMA-P,
+"tiêu chuẩn chọn/loại" ở §7 là tiêu chuẩn cho NGHIÊN CỨU được đưa vào tổng quan, không
+phải bệnh nhân; đây là DIỄN GIẢI của hệ thống, bác sĩ/methodologist xác nhận từng dòng.
 
 MÃ THIẾT KẾ: mọi tra cứu đi qua skill_standards.canonical_design_code() — pipeline phát
 bí danh ('sr_ma', 'rct_parallel'…) còn khoá ở đây là key CANON ('systematic_review', 'rct').
@@ -97,19 +100,58 @@ SPIRIT_2025_ITEMS: Tuple[Tuple[str, str, str], ...] = (
 
 assert len(SPIRIT_2025_ITEMS) == 53 and len({i for i, _, _ in SPIRIT_2025_ITEMS}) == 53
 
-_PROTOCOL_CHECKLIST_BY_DESIGN = {
-    "rct": ("SPIRIT 2025", SPIRIT_2025_ITEMS, SPIRIT_2025_PROVENANCE),
+PRISMA_P_2015_PROVENANCE = {
+    "standard": "PRISMA-P 2015",
+    "statement": "Moher D, Shamseer L, Clarke M, Ghersi D, Liberati A, Petticrew M, Shekelle P, "
+                 "Stewart LA. Preferred reporting items for systematic review and meta-analysis "
+                 "protocols (PRISMA-P) 2015 statement. Systematic Reviews. 2015;4:1. "
+                 "doi:10.1186/2046-4053-4-1 (PMID 25554246).",
+    "items_source": "Table 3 của chính bài statement trên, đọc trực tiếp trang PMC "
+                    "(PMID 25554246; PMC4320440).",
+    "retrieved": "2026-09-13 qua WebFetch trên trang PMC",
+    "n_items": 17,
+    "n_rows": 26,
+    "wording": "nguyên văn tiếng Anh từ Table 3 của bài statement; không dịch",
 }
 
-_NO_ITEM_LIST_REASON = {
-    # key CANON của skill_standards (bí danh 'sr_ma'/'sr'/'meta_analysis' đều về đây)
-    "systematic_review": (
-        "PRISMA-P 2015",
-        "Chưa có danh mục item trong kho: nguồn chính thức chưa lấy được "
-        "ở phiên 06/09/2026 (bảng checklist rụng khi tải PMC; E&E không có PMC; website bị chặn). "
-        "Điền checklist PRISMA-P từ bản gốc prisma-statement.org — KHÔNG dùng danh mục tự nhớ.",
-    ),
+# (mã mục, nguyên văn tiếng Anh, vị trí gợi ý trong khuôn đề cương 18 mục)
+PRISMA_P_2015_ITEMS: Tuple[Tuple[str, str, str], ...] = (
+    ("1a", "Identify the report as a protocol of a systematic review", "Thông tin kiểm soát · §1"),
+    ("1b", "If the protocol is for an update of a previous systematic review, identify as such", "Thông tin kiểm soát"),
+    ("2", "If registered, provide the name of the registry (e.g., PROSPERO) and registration number", "Thông tin kiểm soát · §15 (đăng ký PROSPERO)"),
+    ("3a", "Provide name, institutional affiliation, and e-mail address of all protocol authors; provide physical mailing address of corresponding author", "Thông tin kiểm soát · §17"),
+    ("3b", "Describe contributions of protocol authors and identify the guarantor of the review", "§17"),
+    ("4", "If the protocol represents an amendment of a previously completed or published protocol, identify as such and list changes; otherwise, state plan for documenting important protocol amendments", "Thông tin kiểm soát"),
+    ("5a", "Indicate sources of financial or other support for the review", "§17"),
+    ("5b", "Provide name for the review funder and/or sponsor", "§17"),
+    ("5c", "Describe roles of funder(s), sponsor(s), and/or institution(s), if any, in developing the protocol", "§17"),
+    ("6", "Describe the rationale for the review in the context of what is already known", "§2 · §3"),
+    ("7", "Provide an explicit statement of the question(s) the review will address with reference to participants, interventions, comparators, and outcomes (PICO)", "§4 · §5"),
+    ("8", "Specify the study characteristics (e.g., PICO, study design, setting, time frame) and report characteristics (e.g., years considered, language, publication status) to be used as criteria for eligibility for the review", "§7 (tiêu chuẩn cho NGHIÊN CỨU đưa vào)"),
+    ("9", "Describe all intended information sources (e.g., electronic databases, contact with study authors, trial registers, or other grey literature sources) with planned dates of coverage", "§10"),
+    ("10", "Present draft of search strategy to be used for at least one electronic database, including planned limits, such that it could be repeated", "§10"),
+    ("11a", "Describe the mechanism(s) that will be used to manage records and data throughout the review", "§11"),
+    ("11b", "State the process that will be used for selecting studies (e.g., two independent reviewers) through each phase of the review (i.e., screening, eligibility, and inclusion in meta-analysis)", "§10 · §14"),
+    ("11c", "Describe planned method of extracting data from reports (e.g., piloting forms, done independently, in duplicate), any processes for obtaining and confirming data from investigators", "§10"),
+    ("12", "List and define all variables for which data will be sought (e.g., PICO items, funding sources), any pre-planned data assumptions and simplifications", "§8"),
+    ("13", "List and define all outcomes for which data will be sought, including prioritization of main and additional outcomes, with rationale", "§8"),
+    ("14", "Describe anticipated methods for assessing risk of bias of individual studies, including whether this will be done at the outcome or study level, or both; state how this information will be used in data synthesis", "§14"),
+    ("15a", "Describe criteria under which study data will be quantitatively synthesized", "§12"),
+    ("15b", "If data are appropriate for quantitative synthesis, describe planned summary measures, methods of handling data, and methods of combining data from studies, including any planned exploration of consistency (e.g., I², Kendall's tau)", "§12"),
+    ("15c", "Describe any proposed additional analyses (e.g., sensitivity or subgroup analyses, meta-regression)", "§12"),
+    ("15d", "If quantitative synthesis is not appropriate, describe the type of summary planned", "§12"),
+    ("16", "Specify any planned assessment of meta-bias(es) (e.g., publication bias across studies, selective reporting within studies)", "§14"),
+    ("17", "Describe how the strength of the body of evidence will be assessed (e.g., GRADE)", "§12 · §13"),
+)
+
+assert len(PRISMA_P_2015_ITEMS) == 26 and len({i for i, _, _ in PRISMA_P_2015_ITEMS}) == 26
+
+_PROTOCOL_CHECKLIST_BY_DESIGN = {
+    "rct": ("SPIRIT 2025", SPIRIT_2025_ITEMS, SPIRIT_2025_PROVENANCE),
+    "systematic_review": ("PRISMA-P 2015", PRISMA_P_2015_ITEMS, PRISMA_P_2015_PROVENANCE),
 }
+
+_NO_ITEM_LIST_REASON: dict = {}
 
 # Mọi key phải là mã CANON — khoá theo bí danh là lỗi đã mắc (xem docstring module)
 assert all(S.canonical_design_code(k) == k for k in _PROTOCOL_CHECKLIST_BY_DESIGN)
@@ -128,5 +170,8 @@ def items_for_design(design_code: Optional[str]):
 def missing_item_list_reason(design_code: Optional[str]):
     """(tên chuẩn, lý do) khi thiết kế CÓ chuẩn protocol nhưng kho CHƯA có danh mục item.
 
-    Nhận cả mã canon ('systematic_review') lẫn bí danh ('sr_ma', 'meta_analysis')."""
+    Sau khi thêm PRISMA-P 2015 (13/09/2026), `_NO_ITEM_LIST_REASON` hiện RỖNG — cả hai
+    thiết kế có chuẩn protocol theo mục (RCT/SPIRIT, tổng quan hệ thống/PRISMA-P) đều đã
+    có danh mục. Hàm và bảng tra vẫn giữ nguyên cơ chế cho thiết kế TƯƠNG LAI có chuẩn
+    protocol nhưng kho chưa kịp lấy danh mục — không xoá, tránh phải viết lại khi cần."""
     return _NO_ITEM_LIST_REASON.get(S.canonical_design_code(design_code) or "")

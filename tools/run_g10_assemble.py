@@ -1330,8 +1330,10 @@ def build_international_compliance(cps, meta=None) -> str:
     ("thiết kế này không có checklist ĐỀ CƯƠNG theo từng mục"), thêm CÙNG SÁNG
     NAY, TÌNH CỜ cũng chứa "minh bạch" (che thêm case_control/diagnostic/
     prediction/qualitative). CHỈ **rct** (có nhánh SPIRIT riêng) và
-    **systematic_review** (có nhánh "PRISMA-P thiếu" riêng) — hai thiết kế bỏ
-    qua CẢ HAI nguồn trên — thật sự phụ thuộc dòng lưu ý này. Đã sửa: dòng lưu ý
+    **systematic_review** (khi đó có nhánh "PRISMA-P thiếu" riêng — từ 13/09/2026
+    có nhánh bảng PRISMA-P ĐẦY ĐỦ thay thế, xem `protocol_checklist_items.py`) —
+    hai thiết kế bỏ qua CẢ HAI nguồn trên — thật sự phụ thuộc dòng lưu ý này lúc
+    đó. Đã sửa: dòng lưu ý
     UNCONDITIONAL (mọi thiết kế) nay có cả "minh bạch" lẫn "transparency", đóng
     đúng lỗ hổng cho rct/systematic_review mà không phụ thuộc các nguồn tình cờ.
     """
