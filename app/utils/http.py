@@ -208,11 +208,11 @@ class HttpClient:
         headers: Optional[Dict[str, str]] = None,
         use_cache: bool = False,
     ) -> Dict[str, Any]:
-        """POST + đọc JSON. `use_cache` mặc định FALSE (khác GET) vì lần đầu
-        dùng POST trong repo này là gọi endpoint cấp TOKEN OAuth2 (DynaMed) —
+        """POST + đọc JSON. `use_cache` mặc định FALSE (khác GET) vì POST trong
+        repo này thường gọi endpoint cấp TOKEN OAuth2 (client_credentials) —
         access_token là bí mật, TUYỆT ĐỐI không được ghi ra cache file trên đĩa
         (`data/raw/_http_cache/`). Truyền use_cache=True tường minh cho các POST
-        không mang bí mật (vd endpoint tìm kiếm DynaMed, chỉ có query công khai)."""
+        không mang bí mật (vd endpoint tìm kiếm chỉ có query công khai)."""
         return self._request("POST", url, params=params, use_cache=use_cache,
                               want="json", json_body=json_body, headers=headers)
 
