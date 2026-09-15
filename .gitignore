@@ -60,6 +60,18 @@ out/
 evidence/reviews/*.docx
 evidence/reviews/*.pdf
 
+# reports/*.docx là bản Word render TỪ .md nguồn cùng tên (vd
+# tools/xuat_phieu_ky_thang_diem.py, md_sang_docx_times.py…) — tái tạo được bằng
+# một lệnh, cùng luật "KHÔNG commit .docx sinh ra" đã áp cho dashboard/* ở repo
+# gốc. Bản .md (nguồn thật, có lịch sử) VẪN track bình thường.
+reports/*.docx
+
+# state/ — sổ trạng thái các job định kỳ (vd tools/kiem_do_tuoi_thang_diem.py ghi
+# state/kiem-thang-diem-quy.json mỗi quý) — dữ liệu tái sinh bằng cách chạy lại
+# job, không phải mã nguồn; cùng kiến trúc "GitHub-cho-code/OneDrive-cho-data"
+# (thêm 16/09/2026, phát hiện qua audit đồng bộ toàn diện).
+/state/
+
 # Chỉ mục dashboard sinh tự động; bản dùng chung nằm trong ../EBM-Dashboards/.
 /evidence-library.html
 /library.json
