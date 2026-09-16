@@ -308,6 +308,41 @@ class HttpClient:
                 self._record_terminal_failure(exc, resp.status_code)
                 raise exc
 
+            # SỬA 2026-09-16 (vòng 2, đo thật ngay sau bản vá ở trên): redirect sang
+            # misuse.ncbi.nlm.nih.gov KHÔNG PHẢI biểu hiện DUY NHẤT của chặn NCBI. Gọi
+            # count_hits() thật hai lần liên tiếp (cùng ngày, cùng query) cho kết quả
+            # KHÁC NHAU: lần đầu/ba raise ngay đúng như bản vá phía trên dự tính, nhưng
+            # lần hai lại rơi trở lại vòng retry 5 lần cũ (~46-53 giây) — trang chặn vẫn
+            # xuất hiện (đã xác nhận bằng cách gọi `session.request()` thủ công ngay sau
+            # đó, cùng tham số, `resp.url` VẪN là misuse.ncbi.nlm.nih.gov) nhưng đường
+            # phát hiện phía trên không bắt được ở lượt đó — khả năng cao do NCBI không
+            # trả redirect/nội dung nhất quán 100% cho một IP đã bị gắn cờ. Vá bằng lớp
+            # phòng thủ THỨ HAI, độc lập với `resp.url`: đọc thẳng THÂN response — cùng
+            # chữ ký trang chặn mà `app/sources/pubmed.py::_trang_chan_ncbi()` đã dùng
+            # cho nhánh efetch (tiêu đề "WWW Error Blocked Diagnostic" hoặc câu "blocked
+            # for possible abuse") — nhưng CỐ Ý chỉ áp dụng khi URL đang gọi thuộc domain
+            # *.ncbi.nlm.nih.gov, để không lặp lại kiểu quá tay mà
+            # test_chuyen_huong_sang_host_khac_khong_trung_bo_loi_misuse() đã canh: một
+            # trang lỗi HTML của host KHÁC (vd trang bảo trì) không được coi là chặn NCBI
+            # chỉ vì thân không phải JSON.
+            if urlparse(url).hostname and urlparse(url).hostname.endswith("ncbi.nlm.nih.gov"):
+                than = (getattr(resp, "text", "") or "")[:400].lower()
+                if "blocked diagnostic" in than or "blocked for possible abuse" in than:
+                    exc = RuntimeError(
+                        "NCBI đã CHẶN mạng này do nghi ngờ lạm dụng/misuse (trang "
+                        "'WWW Error Blocked Diagnostic' trong thân response, không qua "
+                        "redirect sang misuse.ncbi.nlm.nih.gov lần này) — đây là chặn "
+                        "PHÍA MÁY CHỦ NCBI, KHÔNG phải lỗi mạng tạm thời, retry không "
+                        "giúp ích. Nhờ quản trị mạng liên hệ info@ncbi.nlm.nih.gov để "
+                        "xin gỡ chặn, hoặc chờ nhãn misuse tự hết sau một khoảng thời "
+                        "gian không hoạt động."
+                    )
+                    logger.warning(
+                        "NCBI misuse-block qua thân response (bỏ ngay, không retry): %s", url,
+                    )
+                    self._record_terminal_failure(exc, resp.status_code)
+                    raise exc
+
             # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 22, phát hiện #2):
             # trước đây chỉ đúng 5 mã (400/401/403/404/410) được coi là "vĩnh
             # viễn". Mọi mã lỗi KHÁC không nằm trong danh sách đó VÀ cũng

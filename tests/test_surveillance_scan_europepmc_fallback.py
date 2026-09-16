@@ -33,8 +33,8 @@ def test_search_falls_back_to_europepmc_when_pubmed_runtime_fails(monkeypatch):
     scanner = _load_scanner()
     calls: list[tuple[str, int, int]] = []
 
-    def fake_fallback(query: str, days: int, retmax: int) -> list[str]:
-        calls.append((query, days, retmax))
+    def fake_fallback(query: str, days: int, retmax: int, *, loc_thiet_ke: bool = True) -> list[str]:
+        calls.append((query, days, retmax, loc_thiet_ke))
         return ["42119588"]
 
     monkeypatch.setattr(scanner, "search_europe_pmc", fake_fallback)
@@ -47,7 +47,10 @@ def test_search_falls_back_to_europepmc_when_pubmed_runtime_fails(monkeypatch):
     )
 
     assert ids == ["42119588"]
-    assert calls == [("type 2 diabetes guideline", 30, 1)]
+    # Vá 14/09/2026 (BH38 qua đường dự phòng): search() phải CHUYỂN TIẾP
+    # loc_thiet_ke cho search_europe_pmc() khi rơi xuống dự phòng, không được
+    # để tầng "mới nhất" (loc_thiet_ke=False) im lặng biến thành tầng có lọc.
+    assert calls == [("type 2 diabetes guideline", 30, 1, True)]
 
 
 def test_summarize_falls_back_with_explicit_source_label(monkeypatch):

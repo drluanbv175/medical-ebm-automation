@@ -182,3 +182,76 @@ class TestDoiChungKhongTrungBoLoiThat:
         with pytest.raises(RuntimeError, match="misuse"):
             client.get_text("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi")
         assert client.session.calls == 1
+
+
+class TestNcbiMisuseBlockQuaThanResponseKhongRedirect:
+    """★★★ Lớp phòng thủ THỨ HAI, vá 2026-09-16 (vòng 2) — CA THẬT đo được ngay sau
+    khi vòng 1 lên production: gọi count_hits() thật hai lần liên tiếp cùng một query
+    cho hai kết quả khác nhau — lần đầu raise ngay đúng như kỳ vọng, lần sau lại rơi
+    lại vòng retry 5 lần cũ (~46-53s). Gọi lại `session.request()` thủ công ngay sau đó
+    với đúng tham số xác nhận `resp.url` VẪN là misuse.ncbi.nlm.nih.gov — tức bản thân
+    chặn vẫn đang xảy ra, chỉ là đường dò `resp.url` không bắt được ở lượt đó (NCBI
+    không trả redirect/nội dung nhất quán 100% cho một IP đã bị gắn cờ). `resp.url`
+    trong các fixture dưới đây CỐ Ý giữ nguyên URL gốc (không có redirect) để mô phỏng
+    đúng khe hở đã đo được — chỉ thân response mang chữ ký trang chặn."""
+
+    def test_than_response_mang_chu_ky_chan_raise_ngay_khong_redirect(self, _no_real_sleep):
+        client = _client_with(
+            [_FakeResponse(
+                200, _ESEARCH_URL,
+                text_data="<!DOCTYPE html><title>NCBI - WWW Error Blocked Diagnostic</title>",
+            )]
+        )
+        with pytest.raises(RuntimeError, match="misuse"):
+            client.get_json(_ESEARCH_URL)
+        assert client.session.calls == 1
+        assert _no_real_sleep == []
+
+    def test_than_response_cau_blocked_for_possible_abuse_cung_bat_duoc(self):
+        client = _client_with(
+            [_FakeResponse(
+                200, _ESEARCH_URL,
+                text_data="<!doctype html>Your access has been blocked for possible abuse.",
+            )]
+        )
+        with pytest.raises(RuntimeError, match="misuse"):
+            client.get_json(_ESEARCH_URL)
+        assert client.session.calls == 1
+
+    def test_www_ncbi_nlm_nih_gov_cung_duoc_coi_la_host_ncbi(self):
+        """Không chỉ eutils — mọi subdomain *.ncbi.nlm.nih.gov đều phải được soi thân."""
+        url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+        client = _client_with(
+            [_FakeResponse(200, url, text_data="<!doctype html>blocked diagnostic")]
+        )
+        with pytest.raises(RuntimeError, match="misuse"):
+            client.get_json(url)
+        assert client.session.calls == 1
+
+    def test_host_khac_voi_chu_ky_giong_chan_khong_bi_bat_nham(self):
+        """Đối chứng bắt buộc — cùng chữ ký văn bản nhưng ở host KHÔNG phải NCBI thì
+        KHÔNG được coi là chặn NCBI (tránh quá tay, đúng tinh thần
+        test_chuyen_huong_sang_host_khac_khong_trung_bo_loi_misuse ở trên)."""
+        other_url = "https://example.test/api"
+
+        def _resp():
+            return _FakeResponse(
+                200, other_url,
+                json_data=ValueError("Expecting value: line 1 column 1 (char 0)"),
+                text_data="<!doctype html>blocked diagnostic (không liên quan NCBI)",
+            )
+
+        client = _client_with([_resp() for _ in range(5)])
+        with pytest.raises(RuntimeError, match="Gọi API thất bại"):
+            client.get_json(other_url)
+        assert client.session.calls == 5
+
+    def test_ncbi_thanh_cong_binh_thuong_khong_bi_anh_huong_boi_lop_moi(self):
+        """Đối chứng — response NCBI hợp lệ (không mang chữ ký chặn) không bị chặn
+        nhầm bởi lớp phòng thủ mới."""
+        client = _client_with(
+            [_FakeResponse(200, _ESEARCH_URL, json_data={"esearchresult": {"idlist": ["1"]}})]
+        )
+        data = client.get_json(_ESEARCH_URL)
+        assert data == {"esearchresult": {"idlist": ["1"]}}
+        assert client.session.calls == 1
