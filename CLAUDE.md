@@ -52,6 +52,26 @@ This file contains only Claude Code-specific instructions.
   User-Agent/header không giúp gì. **Tắt VPN thì chạy được ngay**, không cần Institutional Token.
   Nếu gặp lại 403 dạng HTML Cloudflare (không phải JSON lỗi của Elsevier): việc đầu tiên cần hỏi là
   "có đang bật VPN không", trước khi nghi ngờ key hay IP tổ chức.
+  · **CORE API (core.ac.uk) — thêm 16/09/2026**, theo yêu cầu "nâng cấp trạng thái tự động" và
+  khảo sát toàn hệ xác định đây là nguồn OA bổ sung cho Unpaywall (>452 triệu bản ghi, >16.000 kho
+  lưu trữ, gồm cả luận văn/báo cáo xám mà Unpaywall không phủ). `app/sources/core_api.py`. TẮT mặc
+  định (`ENABLE_CORE=true` để bật). **KHÁC Scopus: `CORE_API_KEY` KHÔNG bắt buộc** — trang chính
+  thức `core.ac.uk/services/api` tự khai "free API access without registration" (nhịp thấp hơn:
+  1 batch hoặc 5 request đơn/10 giây); có key chỉ tăng nhịp, `search()` không chặn cứng khi thiếu,
+  chỉ cảnh báo. **Đăng ký key: chỉ nhập EMAIL, bấm "REGISTER NOW" trên trang trên — KHÔNG tài
+  khoản/mật khẩu, KHÔNG chờ duyệt, key gửi thẳng qua email** (khác hẳn Epistemonikos/NICE, vốn cần
+  đơn xin và chờ duyệt) — đã xác minh trực tiếp bằng Browser thật 16/09/2026 (Cloudflare chặn
+  urllib/WebFetch headless, cùng lớp chặn đã gặp với ACC/AHA). Endpoint
+  `GET https://api.core.ac.uk/v3/search/works`, xác thực `Authorization: Bearer <key>` (header,
+  không lộ vào query string/log như NCBI). **Giới hạn CHƯA xác minh được (không có key thật để thử
+  lúc viết):** tài liệu Redoc chính thức tự mâu thuẫn giữa camelCase (`yearPublished`, `fullText` —
+  dùng trong cú pháp truy vấn) và snake_case (`published_date`, `document_type` — mẫu response của
+  endpoint lấy 1 bản ghi `/v3/works/{id}`) — `core_api.py::_lay()` thử CẢ HAI dạng khoá nên không vỡ
+  dù bên nào đúng, nhưng cần chạy `python run.py test-live core "<từ khoá>"` một lần sau khi có key
+  thật để đối chiếu `raw`/log, xác nhận field nào các bản ghi TÌM KIẾM thật sự trả về. KHÔNG tham
+  gia chuỗi 3 tầng kiểm rút bài (giống Scopus/OpenAlex/Crossref/Semantic Scholar). 15 test ở
+  `tests/test_core_api.py` — **CHƯA xác nhận chạy thật bằng key thật** (khác Scopus 13/09), chỉ
+  mới kiểm bằng test offline + xác minh docs/đăng ký qua trình duyệt thật.
   · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026, GỠ BỎ cùng ngày sau khi xác minh.**
   Kiểm trực tiếp `developer.ebsco.com/dynamed` xác nhận: đăng ký app MedsAPI **bắt buộc** một
   Customer ID + Group ID mà tài liệu EBSCO nói rõ "received from your EBSCO representative" —

@@ -191,6 +191,10 @@ class Settings:
     nice_api_key: str = field(default_factory=lambda: os.getenv("NICE_API_KEY", ""))
     scopus_api_key: str = field(default_factory=lambda: os.getenv("SCOPUS_API_KEY", ""))
     scopus_insttoken: str = field(default_factory=lambda: os.getenv("SCOPUS_INSTTOKEN", ""))
+    # CORE API (core.ac.uk) — thêm 16/09/2026. Đăng ký miễn phí, tự động qua email,
+    # KHÔNG cần duyệt: https://core.ac.uk/services/api — khác Scopus, key không bắt
+    # buộc (vẫn gọi được ở nhịp thấp theo T&C của CORE nếu thiếu key).
+    core_api_key: str = field(default_factory=lambda: os.getenv("CORE_API_KEY", ""))
 
     # Flags bật/tắt nguồn
     enable_pubmed: bool = field(default_factory=lambda: _get_bool("ENABLE_PUBMED", True))
@@ -211,6 +215,9 @@ class Settings:
     # vẫn chạy được không key ở QPS thấp hơn). Bật bằng ENABLE_SCOPUS=true sau khi
     # đã có SCOPUS_API_KEY trong ~/.ebm-secrets/medical-ebm-automation.env.
     enable_scopus: bool = field(default_factory=lambda: _get_bool("ENABLE_SCOPUS", False))
+    # Mặc định TẮT như Scopus/NICE — CORE hoạt động không cần key (nhịp thấp) nên
+    # KHÔNG chặn cứng khi thiếu CORE_API_KEY như Scopus, chỉ cảnh báo (xem core_api.py).
+    enable_core: bool = field(default_factory=lambda: _get_bool("ENABLE_CORE", False))
     enable_nice: bool = field(default_factory=lambda: _get_bool("ENABLE_NICE", False))
     enable_drug_safety_feeds: bool = field(
         default_factory=lambda: _get_bool("ENABLE_DRUG_SAFETY_FEEDS", True))

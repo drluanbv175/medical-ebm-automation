@@ -175,6 +175,7 @@ def _build_source_map():
         return _SOURCE_MAP
     from app.sources import (
         ClinicalTrialsClient,
+        CoreClient,
         CrossrefClient,
         EuropePMCClient,
         OpenAlexClient,
@@ -187,7 +188,7 @@ def _build_source_map():
         "pubmed": PubMedClient, "europepmc": EuropePMCClient,
         "crossref": CrossrefClient, "clinicaltrials": ClinicalTrialsClient,
         "openalex": OpenAlexClient, "semantic_scholar": SemanticScholarClient,
-        "openfda": OpenFDAClient, "scopus": ScopusClient,
+        "openfda": OpenFDAClient, "scopus": ScopusClient, "core": CoreClient,
     })
     return _SOURCE_MAP
 
