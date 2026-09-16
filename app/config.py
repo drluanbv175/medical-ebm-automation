@@ -195,6 +195,10 @@ class Settings:
     # KHÔNG cần duyệt: https://core.ac.uk/services/api — khác Scopus, key không bắt
     # buộc (vẫn gọi được ở nhịp thấp theo T&C của CORE nếu thiếu key).
     core_api_key: str = field(default_factory=lambda: os.getenv("CORE_API_KEY", ""))
+    # Epistemonikos API — thêm 16/09/2026. KHÁC CORE: KHÔNG tự đăng ký được, phải
+    # gửi email xin cấp token tới dev@epistemonikos.org (xem app/sources/epistemonikos.py).
+    epistemonikos_api_token: str = field(
+        default_factory=lambda: os.getenv("EPISTEMONIKOS_API_TOKEN", ""))
 
     # Flags bật/tắt nguồn
     enable_pubmed: bool = field(default_factory=lambda: _get_bool("ENABLE_PUBMED", True))
@@ -218,6 +222,10 @@ class Settings:
     # Mặc định TẮT như Scopus/NICE — CORE hoạt động không cần key (nhịp thấp) nên
     # KHÔNG chặn cứng khi thiếu CORE_API_KEY như Scopus, chỉ cảnh báo (xem core_api.py).
     enable_core: bool = field(default_factory=lambda: _get_bool("ENABLE_CORE", False))
+    # Mặc định TẮT — đòi EPISTEMONIKOS_API_TOKEN bắt buộc thật (chặn cứng như Scopus,
+    # khác CORE), và token phải xin qua email trước khi có gì để bật.
+    enable_epistemonikos: bool = field(
+        default_factory=lambda: _get_bool("ENABLE_EPISTEMONIKOS", False))
     enable_nice: bool = field(default_factory=lambda: _get_bool("ENABLE_NICE", False))
     enable_drug_safety_feeds: bool = field(
         default_factory=lambda: _get_bool("ENABLE_DRUG_SAFETY_FEEDS", True))

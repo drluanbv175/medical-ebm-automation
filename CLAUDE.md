@@ -70,8 +70,25 @@ This file contains only Claude Code-specific instructions.
   dù bên nào đúng, nhưng cần chạy `python run.py test-live core "<từ khoá>"` một lần sau khi có key
   thật để đối chiếu `raw`/log, xác nhận field nào các bản ghi TÌM KIẾM thật sự trả về. KHÔNG tham
   gia chuỗi 3 tầng kiểm rút bài (giống Scopus/OpenAlex/Crossref/Semantic Scholar). 15 test ở
-  `tests/test_core_api.py` — **CHƯA xác nhận chạy thật bằng key thật** (khác Scopus 13/09), chỉ
-  mới kiểm bằng test offline + xác minh docs/đăng ký qua trình duyệt thật.
+  `tests/test_core_api.py`. **ĐÃ XÁC NHẬN CHẠY THẬT 16/09/2026** — `count=5`, DOI/PMID thật,
+  `is_mock:false`; camelCase (`publishedDate`, `yearPublished`) là dạng THẬT SỰ dùng trong response
+  (đã thấy trực tiếp trong `raw`), nhánh snake_case trong `_lay()` chỉ còn là dự phòng, chưa gỡ vì
+  vô hại.
+  · **Epistemonikos API — thêm 16/09/2026**, cùng đợt với CORE. `app/sources/epistemonikos.py`.
+  TẮT mặc định. **KHÁC CORE: `EPISTEMONIKOS_API_TOKEN` BẮT BUỘC thật** (chặn cứng như Scopus) —
+  và **KHÔNG tự đăng ký được**: tài liệu chính thức (`api.epistemonikos.org`, đọc trực tiếp — trang
+  CHÍNH `epistemonikos.org` bị CloudFront 403 chặn từ mạng này, phải đọc qua subdomain API) ghi
+  nguyên văn *"If you want to register your application and try our API, please contact us [dev at
+  epistemonikos.org]"* — bác sĩ phải tự gửi email xin cấp token, KHÔNG có luồng tự-cấp như CORE.
+  Endpoint `GET https://api.epistemonikos.org/v1/documents/search`, xác thực
+  `Authorization: Token token="<token>"` (KHÁC Bearer của CORE/Scopus). **Giới hạn đã biết:** search
+  không trả DOI/PMID trần — chỉ có `external_links.publisher`/`.pubmed` dạng URL, connector cố trích
+  DOI/PMID từ URL (không đảm bảo, nhiều "publisher" không phải link doi.org); endpoint không hỗ trợ
+  lọc theo năm phía server, `since_date` lọc PHÍA CLIENT; chỉ lấy trang đầu (tối đa 10 bản ghi/lần),
+  chưa phân trang. 16 test ở `tests/test_epistemonikos.py`, dựng từ ĐÚNG ví dụ response thật trích
+  nguyên văn tài liệu (query "adjuvant treatment", total_hits=205) — không bịa cấu trúc. **CHƯA xác
+  nhận chạy thật** (bác sĩ chưa có token lúc viết) — chạy
+  `python run.py test-live epistemonikos "<từ khoá>"` sau khi có token để đối chiếu.
   · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026, GỠ BỎ cùng ngày sau khi xác minh.**
   Kiểm trực tiếp `developer.ebsco.com/dynamed` xác nhận: đăng ký app MedsAPI **bắt buộc** một
   Customer ID + Group ID mà tài liệu EBSCO nói rõ "received from your EBSCO representative" —

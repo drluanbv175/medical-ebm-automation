@@ -177,6 +177,7 @@ def _build_source_map():
         ClinicalTrialsClient,
         CoreClient,
         CrossrefClient,
+        EpistemonikosClient,
         EuropePMCClient,
         OpenAlexClient,
         OpenFDAClient,
@@ -189,6 +190,7 @@ def _build_source_map():
         "crossref": CrossrefClient, "clinicaltrials": ClinicalTrialsClient,
         "openalex": OpenAlexClient, "semantic_scholar": SemanticScholarClient,
         "openfda": OpenFDAClient, "scopus": ScopusClient, "core": CoreClient,
+        "epistemonikos": EpistemonikosClient,
     })
     return _SOURCE_MAP
 
