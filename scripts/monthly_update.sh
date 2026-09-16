@@ -5,7 +5,12 @@
 
 PROJ="$(cd "$(dirname "$0")/.." && pwd)"
 LOG="$PROJ/data/archive/launchd_monthly.log"
+# SỬA 16/09/2026: xem chú thích cùng nội dung trong scripts/weekly_safety.sh —
+# thiếu nhánh Windows (Scripts/python.exe) khiến script rơi về python hệ thống, thiếu thư viện.
 PY="$HOME/.ebm-venv/bin/python"
+if [ ! -x "$PY" ]; then
+  PY="$HOME/.ebm-venv/Scripts/python.exe"
+fi
 if [ ! -x "$PY" ]; then
   PY="$(command -v python3 || command -v python)"
 fi

@@ -9,12 +9,27 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
 REPO = Path(__file__).resolve().parents[1]
+
+
+def _configure_utf8_stdio() -> None:
+    """In JSON tiếng Việt ổn định trên console Windows (mặc định cp1252) — cùng khuôn
+    `audit_ebm_system.configure_utf8_stdio()`. Thiếu bước này, dòng `print(json.dumps(...))`
+    cuối `main()` ném UnicodeEncodeError mỗi khi payload chứa dấu tiếng Việt (vd trong `log`
+    trích từ file log thật) — phát hiện 16/09/2026 khi weekly_safety.sh chạy thật trên Windows:
+    bước (5) ghi trạng thái là bước CUỐI CÙNG của cả lượt, nên crash ở đây làm mất luôn file
+    trạng thái JSON dù 4 bước trước đó đã chạy xong và có kết quả hợp lệ để ghi."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
 
 
 def _parse_steps(values: Iterable[str]) -> dict[str, int]:
@@ -75,6 +90,7 @@ def write_atomic(path: Path, payload: dict) -> None:
 
 
 def main() -> int:
+    _configure_utf8_stdio()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cadence", choices=("weekly", "monthly"), required=True)
     parser.add_argument("--started-at", required=True)

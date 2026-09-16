@@ -5,7 +5,16 @@
 
 PROJ="$(cd "$(dirname "$0")/.." && pwd)"
 LOG="$PROJ/data/archive/launchd_weekly.log"
+# SỬA 16/09/2026 (audit đồng bộ toàn diện): venv Windows dùng layout Scripts/python.exe,
+# không phải bin/python — thiếu nhánh này khiến script LẶNG LẼ rơi về python HỆ THỐNG (thiếu
+# numpy/thư viện NCBI...) mỗi khi chạy qua Git Bash trên Windows, dù venv đã cài đủ. Phát hiện
+# trực tiếp: chạy thật lần đầu trên Windows lộ "ModuleNotFoundError: No module named 'numpy'"
+# ở bước (5b) và "tầng NCBI vắng mặt (thiếu thư viện — python3 hệ thống?)" ở bước (3) — cả hai
+# biến mất sau khi trỏ đúng venv.
 PY="$HOME/.ebm-venv/bin/python"
+if [ ! -x "$PY" ]; then
+  PY="$HOME/.ebm-venv/Scripts/python.exe"
+fi
 if [ ! -x "$PY" ]; then
   PY="$(command -v python3 || command -v python)"
 fi

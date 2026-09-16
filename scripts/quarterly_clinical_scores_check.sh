@@ -17,7 +17,10 @@
 set -u
 HERE="$(cd "$(dirname "$0")/.." && pwd)"     # medical-ebm-automation/
 HUB="$(cd "$HERE/.." && pwd)"                # Claude AI/
+# SỬA 16/09/2026: xem chú thích cùng nội dung trong scripts/weekly_safety.sh —
+# thiếu nhánh Windows (Scripts/python.exe) khiến script rơi về python hệ thống, thiếu thư viện.
 PY="$HOME/.ebm-venv/bin/python"
+[ -x "$PY" ] || PY="$HOME/.ebm-venv/Scripts/python.exe"
 [ -x "$PY" ] || PY="$(command -v python3 || command -v python)"
 LOG="$HERE/data/archive/quarterly_clinical_scores.log"
 mkdir -p "$(dirname "$LOG")"
