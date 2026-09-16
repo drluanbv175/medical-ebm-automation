@@ -275,6 +275,39 @@ class HttpClient:
                 attempt += 1
                 continue
 
+            # SỬA 2026-09-16: NCBI đôi khi CHUYỂN HƯỚNG (302) mọi request
+            # eutils.ncbi.nlm.nih.gov sang misuse.ncbi.nlm.nih.gov/error/abuse.shtml —
+            # trang cảnh báo lạm dụng CHÍNH THỨC, trả về HTTP 200 (không phải 4xx/5xx)
+            # kèm nội dung HTML "NCBI Error Access Denied". Vì status là 200, request
+            # KHÔNG rơi vào hai nhánh retryable/permanent ngay dưới đây; nó chỉ bị bắt
+            # muộn ở `resp.json()` (ValueError vì thân HTML không phải JSON) và từ đó
+            # bị đối xử như lỗi TẠM THỜI — retry đủ `settings.http_max_retries` lần với
+            # backoff mũ (mặc định ~46 giây tổng cộng CHO MỖI truy vấn) dù chặn này
+            # KHÔNG BAO GIỜ tự hết bằng cách gọi lại — đây là chặn IP phía máy chủ
+            # NCBI (nghi ngờ misuse/abuse từ mạng dùng chung), không phải lỗi mạng.
+            # Với pipeline gọi hàng chục truy vấn PubMed liên tiếp, hành vi cũ có thể
+            # tiêu tốn hàng chục phút vô ích trước khi các nguồn dự phòng (Europe PMC,
+            # Retraction Watch ngoại tuyến) được thử. Phát hiện ĐÍCH DANH host đích sau
+            # khi chuyển hướng và bỏ ngay, không retry — để dây chuyền chuyển sang
+            # nguồn khác gần như tức thì. Không thể "sửa" được chặn này bằng mã nguồn:
+            # chỉ NCBI (qua info@ncbi.nlm.nih.gov) hoặc thời gian mới gỡ được.
+            # `getattr(resp, "url", "")` — không `resp.url` trần: response giả trong
+            # nhiều bộ test cũ (test_http_retry.py, ...vong22_unlisted_status...) chỉ
+            # khai status_code/json_data/text/headers, KHÔNG có `.url`. requests.Response
+            # thật LUÔN có `.url`; chỉ fake tối giản trong test mới thiếu — đọc trần sẽ
+            # làm AttributeError bung ra ở toàn bộ test cũ đó (đã tái hiện và xác nhận).
+            if urlparse(getattr(resp, "url", "")).netloc.endswith("misuse.ncbi.nlm.nih.gov"):
+                exc = RuntimeError(
+                    "NCBI đã CHẶN mạng này do nghi ngờ lạm dụng/misuse (chuyển hướng "
+                    "sang misuse.ncbi.nlm.nih.gov) — đây là chặn PHÍA MÁY CHỦ NCBI, "
+                    "KHÔNG phải lỗi mạng tạm thời, retry không giúp ích. Nhờ quản trị "
+                    "mạng liên hệ info@ncbi.nlm.nih.gov để xin gỡ chặn, hoặc chờ nhãn "
+                    "misuse tự hết sau một khoảng thời gian không hoạt động."
+                )
+                logger.warning("NCBI misuse-block (bỏ ngay, không retry): %s", url)
+                self._record_terminal_failure(exc, resp.status_code)
+                raise exc
+
             # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 22, phát hiện #2):
             # trước đây chỉ đúng 5 mã (400/401/403/404/410) được coi là "vĩnh
             # viễn". Mọi mã lỗi KHÁC không nằm trong danh sách đó VÀ cũng
