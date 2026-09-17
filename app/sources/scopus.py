@@ -60,7 +60,10 @@ class ScopusClient(SourceClient):
         if settings.scopus_insttoken:
             headers["X-ELS-Insttoken"] = settings.scopus_insttoken
         headers["Accept"] = "application/json"
-        self.http = HttpClient(default_headers=headers or None)
+        self.http = HttpClient(
+            default_headers=headers or None,
+            bind_interface=settings.scopus_bind_interface or None,
+        )
 
     def search(self, query: str, clinical_area: Optional[str] = None,
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:

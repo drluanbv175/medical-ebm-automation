@@ -7,6 +7,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import socket
+import sys
 import threading
 import time
 from pathlib import Path
@@ -19,6 +21,36 @@ from app.config import settings
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+# Thêm 17/09/2026: ép một HttpClient thoát qua MỘT card mạng vật lý cụ thể, bất kể
+# bảng định tuyến hệ điều hành đang trỏ đi đâu (vd VPN toàn tuyến chiếm route mặc
+# định). Lý do: xác nhận 13/09/2026 (xem medical-ebm-automation/CLAUDE.md, mục
+# "Nguồn dữ liệu" — Scopus) rằng Cloudflare chặn 403 request tới api.elsevier.com
+# khi đi qua IP thoát của VPN cá nhân, TRƯỚC khi chạm logic xác thực của Elsevier —
+# đổi header/User-Agent không giúp gì, và tắt hẳn VPN thì mất bảo vệ VPN cho mọi
+# việc khác đang chạy cùng lúc. IP_BOUND_IF là socket option CHỈ CÓ trên macOS/
+# Darwin (giá trị 25, xem <netinet/in.h>) — đây CHÍNH XÁC là cơ chế `curl
+# --interface <tên-card>` dùng để ép gói tin đi qua một interface nhất định bất kể
+# route mặc định; không có API tương đương SO_BINDTODEVICE của Linux. Python
+# không định nghĩa hằng số này (không có socket.IP_BOUND_IF) nên phải dùng số
+# nguyên đã xác minh trực tiếp từ SDK header, không đoán từ tài liệu web.
+_IP_BOUND_IF = 25  # macOS-only; xem $(xcrun --show-sdk-path)/usr/include/netinet/in.h
+
+
+class _InterfaceBoundHTTPAdapter(requests.adapters.HTTPAdapter):
+    """HTTPAdapter ép mọi kết nối của session thoát qua MỘT card mạng cụ thể.
+
+    Chỉ hỗ trợ macOS/Darwin — nền tảng khác (Windows) không có socket option
+    tương đương đơn giản, và dự án này không cần tính năng này ở đó (chỉ Mac có
+    VPN cá nhân toàn tuyến gây xung đột với Scopus)."""
+
+    def __init__(self, if_index: int, *args: Any, **kwargs: Any) -> None:
+        self._if_index = if_index
+        super().__init__(*args, **kwargs)
+
+    def init_poolmanager(self, *args: Any, **kwargs: Any) -> None:
+        kwargs["socket_options"] = [(socket.IPPROTO_IP, _IP_BOUND_IF, self._if_index)]
+        return super().init_poolmanager(*args, **kwargs)
 
 # Audit 2026-07-11: requests tự nhúng URL ĐẦY ĐỦ (kèm query string, gồm cả api_key) vào
 # thông báo exception (HTTPError/ConnectionError…) — nếu không che, khóa API (vd
@@ -139,6 +171,13 @@ class HttpClient:
 
     Tham số:
         cache_ttl: thời gian cache (giây). -1 = cache vĩnh viễn, 0 = không cache.
+        bind_interface: tên card mạng vật lý (vd "en1") để ép MỌI request của
+            client này thoát qua đúng card đó, bỏ qua bảng định tuyến hệ điều
+            hành. Chỉ dùng khi cần lách một VPN toàn tuyến cho MỘT nguồn cụ thể
+            (xem _InterfaceBoundHTTPAdapter phía trên). None/rỗng = giữ hành vi
+            cũ. Chỉ hỗ trợ macOS/Darwin — nền tảng khác nổ lỗi rõ ràng ngay lúc
+            khởi tạo thay vì âm thầm bỏ qua, để không ai tưởng lầm nó đang hoạt
+            động trên Windows.
     """
 
     def __init__(
@@ -146,6 +185,7 @@ class HttpClient:
         default_headers: Optional[Dict[str, str]] = None,
         cache_ttl: Optional[int] = None,
         min_interval: Optional[float] = None,
+        bind_interface: Optional[str] = None,
     ) -> None:
         self.session = requests.Session()
         if default_headers:
@@ -156,6 +196,25 @@ class HttpClient:
         )
         self.cache_ttl = settings.http_cache_ttl if cache_ttl is None else cache_ttl
         self.min_interval = settings.http_min_interval if min_interval is None else min_interval
+        self.bind_interface = bind_interface or None
+        if self.bind_interface:
+            if sys.platform != "darwin":
+                raise RuntimeError(
+                    f"bind_interface={self.bind_interface!r} chỉ hỗ trợ macOS/Darwin "
+                    f"(IP_BOUND_IF); nền tảng hiện tại là {sys.platform!r}. Bỏ biến môi "
+                    "trường tương ứng (vd SCOPUS_BIND_INTERFACE) trên máy này."
+                )
+            try:
+                if_index = socket.if_nametoindex(self.bind_interface)
+            except OSError as exc:
+                raise RuntimeError(
+                    f"Không tìm thấy card mạng '{self.bind_interface}' để ép thoát qua "
+                    f"(bind_interface) — kiểm lại tên bằng `ifconfig`/`networksetup "
+                    f"-listallhardwareports`: {exc}"
+                ) from exc
+            adapter = _InterfaceBoundHTTPAdapter(if_index)
+            self.session.mount("http://", adapter)
+            self.session.mount("https://", adapter)
         # Telemetry chỉ chứa trạng thái kỹ thuật, tuyệt đối không giữ URL/query có thể có API key.
         # Ingestion dùng các bộ đếm này để không ghi nhầm lỗi live thành request "ok".
         self.request_count = 0

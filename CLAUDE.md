@@ -52,6 +52,29 @@ This file contains only Claude Code-specific instructions.
   User-Agent/header không giúp gì. **Tắt VPN thì chạy được ngay**, không cần Institutional Token.
   Nếu gặp lại 403 dạng HTML Cloudflare (không phải JSON lỗi của Elsevier): việc đầu tiên cần hỏi là
   "có đang bật VPN không", trước khi nghi ngờ key hay IP tổ chức.
+  ✅ **KHÔNG CÒN PHẢI CHỌN GIỮA VPN VÀ SCOPUS — thêm 17/09/2026.** Đo trực tiếp (bật/tắt/kiểm
+  chứng lại VPN Kaspersky, có đối chứng) xác nhận thêm: **NCBI/PubMed chạy TỐT qua VPN**, chỉ riêng
+  Scopus bị Cloudflare chặn theo IP thoát VPN — nghĩa là "tắt VPN" không phải lựa chọn DUY NHẤT, chỉ
+  là lựa chọn ĐƠN GIẢN NHẤT lúc đó. `SCOPUS_BIND_INTERFACE` (env, macOS-only — xem `.env.example`)
+  ép RIÊNG `ScopusClient` thoát qua một card mạng vật lý cụ thể (vd `en1`) bằng socket option
+  `IP_BOUND_IF` (giá trị 25, xác minh trực tiếp từ `$(xcrun --show-sdk-path)/usr/include/netinet/
+  in.h` — Python không định nghĩa hằng số này, đúng cơ chế `curl --interface` dùng trên macOS để
+  bỏ qua bảng định tuyến của VPN mà không cần tắt VPN), bất kể route mặc định của hệ điều hành đang
+  trỏ đi đâu. Cài đặt: `app/utils/http.py::HttpClient(bind_interface=...)` +
+  `app/utils/http.py::_InterfaceBoundHTTPAdapter`, đọc từ `settings.scopus_bind_interface`
+  (`app/config.py`). Rỗng (mặc định) = không đổi hành vi cũ; đặt sai tên card hoặc dùng trên
+  Windows sẽ nổ `RuntimeError` rõ ràng ngay lúc khởi tạo, không âm thầm bỏ qua. 7 test hồi quy ở
+  `tests/test_http_bind_interface_vpn_bypass_20260917.py` (mutation-tested 2 phép: tắt rào kiểm
+  nền tảng · sai hằng số `IP_BOUND_IF` — cả hai đỏ đúng chỗ) + 2 test ở `tests/test_scopus.py`
+  kiểm `ScopusClient` truyền đúng cấu hình.
+  ⚠️ **Giới hạn trung thực, chưa đóng lúc viết:** bộ test trên chỉ xác nhận adapter được MOUNT ĐÚNG
+  với `socket_options` đúng giá trị — **CHƯA xác minh bằng mạng thật** rằng gói tin thực sự thoát
+  qua card đó khi VPN đang bật (lúc vá, VPN Kaspersky trên máy đang thử nghiệm không kết nối lại
+  được — lỗi nội bộ phía Kaspersky, không liên quan đoạn mã này). Xác minh trước khi tin tưởng
+  100%: bật VPN, thêm `SCOPUS_BIND_INTERFACE=<tên card vật lý>` vào
+  `~/.ebm-secrets/medical-ebm-automation.env`, chạy `python run.py test-live scopus` — kỳ vọng
+  `is_mock:false` và không còn 403, trong khi `python run.py test-live pubmed` (không cần đổi gì)
+  vẫn chạy tốt qua VPN như trước.
   · **CORE API (core.ac.uk) — thêm 16/09/2026**, theo yêu cầu "nâng cấp trạng thái tự động" và
   khảo sát toàn hệ xác định đây là nguồn OA bổ sung cho Unpaywall (>452 triệu bản ghi, >16.000 kho
   lưu trữ, gồm cả luận văn/báo cáo xám mà Unpaywall không phủ). `app/sources/core_api.py`. TẮT mặc

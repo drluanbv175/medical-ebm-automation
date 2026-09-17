@@ -191,6 +191,15 @@ class Settings:
     nice_api_key: str = field(default_factory=lambda: os.getenv("NICE_API_KEY", ""))
     scopus_api_key: str = field(default_factory=lambda: os.getenv("SCOPUS_API_KEY", ""))
     scopus_insttoken: str = field(default_factory=lambda: os.getenv("SCOPUS_INSTTOKEN", ""))
+    # Thêm 17/09/2026: khi VPN toàn tuyến bật, Cloudflare chặn 403 request tới
+    # api.elsevier.com TRƯỚC khi tới logic xác thực của Elsevier (đã ghi ở mục
+    # "Nguồn dữ liệu" phía trên, xác nhận 13/09/2026 bằng cách đọc thân response —
+    # HTML "Attention Required!", không phải lỗi JSON của Elsevier). Đặt tên card
+    # mạng vật lý (vd "en1") để ép RIÊNG lưu lượng Scopus thoát qua card đó, bỏ
+    # qua bảng định tuyến của VPN — xem app/utils/http.py::_InterfaceBoundHTTPAdapter.
+    # Rỗng (mặc định) = không đổi hành vi cũ, dùng route mặc định của hệ điều hành.
+    scopus_bind_interface: str = field(
+        default_factory=lambda: os.getenv("SCOPUS_BIND_INTERFACE", ""))
     # CORE API (core.ac.uk) — thêm 16/09/2026. Đăng ký miễn phí, tự động qua email,
     # KHÔNG cần duyệt: https://core.ac.uk/services/api — khác Scopus, key không bắt
     # buộc (vẫn gọi được ở nhịp thấp theo T&C của CORE nếu thiếu key).

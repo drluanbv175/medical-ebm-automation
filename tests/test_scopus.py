@@ -22,10 +22,12 @@ from app.sources.scopus import ScopusClient  # noqa: E402
 
 @pytest.fixture(autouse=True)
 def _don_key_scopus(monkeypatch):
-    """Cô lập scopus_api_key/scopus_insttoken khỏi .env thật của máy đang chạy
-    test — mỗi test tự đặt giá trị nó cần, không phụ thuộc môi trường ngoài."""
+    """Cô lập scopus_api_key/scopus_insttoken/scopus_bind_interface khỏi .env
+    thật của máy đang chạy test — mỗi test tự đặt giá trị nó cần, không phụ
+    thuộc môi trường ngoài."""
     monkeypatch.setattr(settings, "scopus_api_key", "")
     monkeypatch.setattr(settings, "scopus_insttoken", "")
+    monkeypatch.setattr(settings, "scopus_bind_interface", "")
     yield
 
 
@@ -220,3 +222,24 @@ def test_scopus_network_error_returns_empty_list_not_raise(monkeypatch):
     monkeypatch.setattr(client.http, "get_json", fake_get_json_loi)
     recs = client.search("bat_ky_gi")
     assert recs == []
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# Lách VPN toàn tuyến bằng bind_interface (thêm 17/09/2026, xem
+# tests/test_http_bind_interface_vpn_bypass_20260917.py cho hành vi chi tiết
+# của bản thân adapter — ở đây chỉ kiểm ScopusClient TRUYỀN đúng cấu hình)
+# ════════════════════════════════════════════════════════════════════════════
+
+def test_scopus_client_passes_bind_interface_setting_to_http_client(monkeypatch):
+    monkeypatch.setattr(settings, "scopus_bind_interface", "en1")
+    monkeypatch.setattr("sys.platform", "darwin")
+    monkeypatch.setattr("socket.if_nametoindex", lambda name: 9)
+    client = ScopusClient()
+    assert client.http.bind_interface == "en1"
+
+
+def test_scopus_client_default_bind_interface_is_none_unchanged_behavior():
+    """SCOPUS_BIND_INTERFACE không đặt (mặc định rỗng) -> không đổi hành vi cũ,
+    không đòi macOS, không đòi tên card mạng hợp lệ."""
+    client = ScopusClient()
+    assert client.http.bind_interface is None
