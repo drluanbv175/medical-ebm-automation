@@ -8,6 +8,7 @@ from app.config import settings
 from app.evidence.citation_verification import SourceMetadata
 from app.evidence.live_adapters.base import LiveSourceAdapter, LiveSourceConfig
 from app.sources.feeds import DRUG_SAFETY_FEEDS, GUIDELINE_FEEDS
+from app.sources.openfda import _escape_lucene_phrase, get_json_openfda
 from app.sources.pubmed import EFETCH, ESEARCH
 from app.utils.http import HttpClient
 
@@ -245,9 +246,14 @@ class OpenFDALiveAdapter(LiveSourceAdapter):
         drug = identifiers.get("drug_name") or identifiers.get("query")
         if not drug:
             return SourceMetadata(found=False, raw={"source_name": self.source_name, "reason": "drug_name_required"})
-        data = self.http.get_json(
+        # SỬA 2026-09-19: bản cũ nhét `drug` THẲNG vào cụm Lucene, không thoát dấu `"` — cùng
+        # lớp lỗi query-injection đã vá ở OpenFDAClient.search() (task #75) và fetch_label()
+        # (task #77) nhưng bị bỏ sót ở lối gọi thứ ba này. Dùng đúng hàm thoát ký tự đó, và đi
+        # qua `get_json_openfda()` để tự gắn OPENFDA_API_KEY (nếu có) như hai lối kia.
+        data = get_json_openfda(
+            self.http,
             self.config.endpoint,
-            params={"search": f'patient.drug.medicinalproduct:"{drug}"', "limit": 1},
+            {"search": f'patient.drug.medicinalproduct:"{_escape_lucene_phrase(drug)}"', "limit": 1},
         )
         meta = data.get("meta", {})
         found = bool(data.get("results"))

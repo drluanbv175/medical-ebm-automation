@@ -223,8 +223,22 @@ def cmd_test_live(source: str = "europepmc",
             "tier": item["reliability_tier"], "classification": classification,
             "is_mock": rec.raw.get("_mock", False),
         })
-    return {"source": source, "query": query, "live": True,
-            "count": len(results), "results": results}
+    out = {"source": source, "query": query, "live": True,
+           "count": len(results), "results": results}
+    if source == "openfda":
+        # Chỉ báo TRẠNG THÁI — tuyệt đối không in giá trị khoá. Để bác sĩ xác nhận khoá đã nạp VÀ
+        # được FDA chấp nhận mà không phải mở file secrets.
+        from app.config import settings  # noqa: PLC0415
+        from app.sources import openfda as _ofda  # noqa: PLC0415
+        if not settings.openfda_api_key:
+            out["khoa_api_openfda"] = "khong (chay khong khoa)"
+        elif _ofda.trang_thai_khoa == "chap_nhan":
+            out["khoa_api_openfda"] = "co — FDA CHAP NHAN"
+        elif _ofda.trang_thai_khoa == "bi_tu_choi":
+            out["khoa_api_openfda"] = "co — BI TU CHOI (403), kiem lai khoa; da tu lui ve khong khoa"
+        else:
+            out["khoa_api_openfda"] = "co nhung chua goi duoc lan nao (xem log mang)"
+    return out
 
 
 def cmd_export_all() -> Dict:
