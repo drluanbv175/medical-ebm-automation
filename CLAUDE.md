@@ -112,6 +112,37 @@ This file contains only Claude Code-specific instructions.
   nguyên văn tài liệu (query "adjuvant treatment", total_hits=205) — không bịa cấu trúc. **CHƯA xác
   nhận chạy thật** (bác sĩ chưa có token lúc viết) — chạy
   `python run.py test-live epistemonikos "<từ khoá>"` sau khi có token để đối chiếu.
+  · **Consensus API (consensus.app) — thêm 19/09/2026**, bác sĩ đã có khoá gói Free. `app/sources/consensus_api.py`
+  (`GET https://api.consensus.app/v1/search`, header `x-api-key`; endpoint cũ `/v1/quick_search` deprecated,
+  dự kiến gỡ 2027-02-07). TẮT mặc định, `ENABLE_CONSENSUS=true` + `CONSENSUS_API_KEY` (bắt buộc thật, chặn cứng
+  như Scopus). **KHÁC kênh MCP của claude.ai** (`tong-thuat-chung-cu`, `/tra-consensus` — không chia sẻ mã) nhưng
+  CHIA SẺ CHUNG hạn mức lượt gọi tháng của tài khoản. **Không nhầm với nhãn `design:'Consensus'`** (= đồng thuận
+  chuyên gia trong cổng `verify_dashboard`, hoàn toàn khác).
+  **Vai trò: KHÁM PHÁ** (doctrine `_CONNECTOR-CHUNG-CU.md`): bản ghi vào kho như ứng viên, dedup theo DOI với
+  PubMed/Scopus…; muốn TRÍCH phải truy ngược DOI gốc + `kiem-chung-trich-dan`/`verify_dashboard --online`. Connector
+  không nâng/gán mức chứng cứ (bỏ qua `study_type` do Consensus tự gán — chỉ suy từ tiêu đề/tạp chí, R4).
+  **Giới hạn đã biết:** (1) kết quả **KHÔNG có PMID**, chỉ DOI ⇒ chỉ kiểm rút bài qua đường DOI (Crossref
+  `updated-by`, BH33), KHÔNG vào chuỗi 3 tầng PMID của `retraction_chain.py`; (2) gói Free: 30 lượt/tháng (1 lượt =
+  100 bài), ≤20 bài/yêu cầu, không phân trang, không `study_type`/`takeaway`/toàn văn, 1 yêu cầu/giây; (3) lọc
+  theo NĂM (`year_min`) không có ngày/tháng; (4) tham số `medical_mode`/`exclude_preprints` lấy từ README + PR bên
+  thứ ba, chưa có đặc tả OpenAPI gốc (docs.consensus.app/reference trả 403 lúc tra) — sai tham số ⇒ 400/422 nổ to.
+  **Quyết định LƯU TRỮ của bác sĩ (19/09/2026):** điều khoản Consensus về lưu cache/kết quả API KHÔNG tìm thấy ⇒
+  chọn thận trọng: KHÔNG ghi payload ra đĩa (không `save_raw`, `HttpClient(cache_ttl=0)` — cache HTTP mặc định của
+  repo GHI JSON đầy đủ xuống `data/raw/_http_cache/`), KHÔNG lưu `abstract`/`takeaway`/`full_text_chunks` vào bản
+  ghi; chỉ giữ tiêu đề·tác giả·tạp chí·năm·DOI·url·số trích dẫn·tứ phân vị SJR; cache CHỈ trong bộ nhớ (TTL 6 giờ).
+  **HẠN MỨC NỘI BỘ fail-closed:** sổ đếm bền `data/state/consensus_quota.json` (tháng UTC) + trần
+  `CONSENSUS_MONTHLY_CALL_CAP` (mặc định 20, chừa dư cho MCP dùng chung; gói trả phí tự nâng). Chạm trần / sổ hỏng /
+  trần ≤ 0 ⇒ `RuntimeError` ⇒ Source Log `error`, KHÔNG im lặng trả `[]` (BH27/BH08). Nguồn tùy chọn không nằm
+  trong `_DISCOVERY_CORE` nên KHÔNG làm `source_health` PARTIAL/FAIL.
+  **CHƯA làm, có chủ ý:** làn giám sát tuần `search_consensus_lane` trong `surveillance_scan.py` (3 bản đồng bộ) —
+  quét định kỳ ~40+ truy vấn/lượt sẽ ăn hết 30 lượt Free ngay lượt đầu; làm khi có gói trả phí. **Doctrine còn lời cũ:**
+  `.claude/agents/_CONNECTOR-CHUNG-CU.md` §3 và `tools/orchestrator/knowledge.py:52` ghi «loại Consensus vì có
+  upsell» — nói về kênh MCP; API gói Free thì miễn phí nên không trái luật «chỉ nguồn miễn phí», nhưng chưa đồng bộ
+  lại câu chữ (chờ bác sĩ quyết vì đụng doctrine 2 repo). 65 test ở `tests/test_consensus_api_20260919.py`; kiểm đột
+  biến 22 phép trên mã sống, cả 22 đều đỏ đúng chỗ (gồm giữ chỗ hạn mức, khoá luồng, không ghi đĩa, không lưu
+  abstract/takeaway). **CHƯA xác nhận chạy thật** — bác sĩ nạp khoá rồi chạy
+  `python run.py test-live consensus "<từ khoá>"`; dòng `consensus_chan_doan` chỉ cho TÊN trường + số đếm
+  (đặc biệt `so_ban_ghi_co_doi`) để biết gói Free có trả DOI hay không, không lộ khoá/nội dung.
   · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026, GỠ BỎ cùng ngày sau khi xác minh.**
   Kiểm trực tiếp `developer.ebsco.com/dynamed` xác nhận: đăng ký app MedsAPI **bắt buộc** một
   Customer ID + Group ID mà tài liệu EBSCO nói rõ "received from your EBSCO representative" —

@@ -1,25 +1,34 @@
-"""Hồi quy — connector Consensus API (consensus.app), thêm 19/09/2026.
+"""Hồi quy — connector Consensus API (consensus.app), thêm 19/09/2026 (vòng 2 sau bình duyệt độc lập).
 
-Tất cả test OFFLINE (mock `http.get_json`, không gọi mạng, không dùng khoá thật). Điều cần bảo vệ:
-  1. Thiếu khoá ⇒ NỔ TO trước khi tốn lượt; khoá đi bằng HEADER, không bao giờ trong query/URL/cache key.
+Tất cả test OFFLINE (mock `http.get_json` / adapter giả / máy chủ cục bộ 127.0.0.1, không gọi mạng ngoài,
+không dùng khoá thật). Điều cần bảo vệ:
+  1. Thiếu khoá ⇒ NỔ TO trước khi tốn lượt; khoá dị dạng (ký tự vô hình) nổ to bằng thông điệp CỐ ĐỊNH và
+     không bao giờ vào header/log; khoá đi bằng HEADER, không trong query/URL/cache key, và bị gỡ khi chuyển hướng.
   2. Quyết định lưu trữ (bác sĩ, 19/09/2026): KHÔNG lưu abstract/takeaway/full_text_chunks vào bản ghi,
-     KHÔNG ghi payload ra đĩa (không save_raw, không cache HTTP đĩa); cache chỉ trong bộ nhớ.
-  3. Hạn mức tháng nội bộ FAIL-CLOSED: chạm trần / sổ hỏng / cap≤0 ⇒ RuntimeError, không im lặng trả [].
-  4. Lỗi khoá/gói/tham số/hạn mức (400/401/402/403/422/429) nổ to; 5xx/timeout mới trả [] kèm cảnh báo.
-  5. Phản hồi không có mảng `results` KHÔNG được đọc thành «0 kết quả».
+     KHÔNG ghi payload ra đĩa; cache chỉ trong bộ nhớ.
+  3. Hạn mức tháng nội bộ FAIL-CLOSED: chạm trần / sổ hỏng / cap≤0 ⇒ RuntimeError; đếm theo YÊU CẦU THẬT (kể
+     cả retry của HttpClient); an toàn đa luồng + đa TIẾN TRÌNH; sổ NGOÀI cây repo.
+  4. Lỗi khoá/gói/tham số/hạn mức (400/401/402/403/422/429) nổ to; 5xx/timeout mới trả [] kèm cảnh báo;
+     ngoại lệ lạ KHÔNG bị nuốt thành «ok, rỗng».
+  5. Phản hồi hỏng (thiếu `results`, mọi dòng vô dụng, không bản nào có DOI) KHÔNG được đọc thành «0 kết quả».
+  6. Bản ghi vào kho là ứng viên KHÁM PHÁ có DOI: không tự gán loại thiết kế (không lên Tier A nhờ từ «guideline»
+     trong tiêu đề); quét định kỳ bỏ qua nguồn này (Free chỉ 30 lượt/tháng).
 """
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pytest
 import requests
+import requests.adapters
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -39,10 +48,12 @@ CHUNK = "Section: Methods | DOAN_TOAN_VAN_KHONG_DUOC_LUU"
 
 @pytest.fixture(autouse=True)
 def _co_lap(monkeypatch, tmp_path):
-    """Cô lập khỏi .env thật + đặt data_dir tạm (sổ đếm/`raw` không chạm dữ liệu thật)."""
+    """Cô lập khỏi .env thật + đặt data_dir và SỔ ĐẾM vào thư mục tạm (không chạm dữ liệu/sổ thật)."""
     monkeypatch.setattr(settings, "consensus_api_key", "")
     monkeypatch.setattr(settings, "consensus_monthly_call_cap", 20)
+    monkeypatch.setattr(settings, "consensus_trong_quet_dinh_ky", False)
     monkeypatch.setattr(settings, "data_dir", tmp_path)
+    monkeypatch.setattr(settings, "consensus_quota_path", str(tmp_path / "state" / "consensus_quota.json"))
     cs.xoa_bo_nho()
     yield
     cs.xoa_bo_nho()
@@ -121,13 +132,31 @@ class TestKhoaVaTieuDe:
         c.search("aspirin")
         assert c.cac_lan[0]["use_cache"] is False
 
+    @pytest.mark.parametrize("khoa_xau", ["KHOA\u200b", "KHOA\u2019XYZ", "khóa", "ab cd", "ab\tcd", "ab\x00cd"])
+    def test_khoa_di_bao_no_to_thong_diep_co_dinh_khong_ton_luot(self, monkeypatch, caplog, khoa_xau):
+        """Ký tự vô hình/ngoài ASCII (hay dính khi copy từ web) từng làm http.client ném UnicodeEncodeError,
+        bị nuốt thành «ok, 0 bản ghi» sau khi đã trừ lượt (phát hiện của bình duyệt độc lập)."""
+        c = _client(monkeypatch, khoa=khoa_xau)
+        with caplog.at_level("DEBUG"):
+            with pytest.raises(RuntimeError, match="ký tự không hợp lệ") as ei:
+                c.search("aspirin")
+        assert khoa_xau not in str(ei.value) and khoa_xau not in caplog.text
+        assert "x-api-key" not in c.http.session.headers      # khoá dị dạng không được nạp vào header
+        assert not c.cac_lan and cs.so_lan_goi_thang_nay() == 0
+
+    def test_khoa_co_khoang_trang_hai_dau_duoc_cat(self, monkeypatch):
+        c = _client(monkeypatch, khoa=f"  {KHOA}\n")
+        assert c.http.session.headers.get("x-api-key") == KHOA
+        assert c.search("aspirin")
+
 
 class TestThamSo:
     def test_tham_so_chuan(self, monkeypatch):
         c = _client(monkeypatch)
         c.search("Aspirin in CKD", max_results=10, since_date="2026-03-15")
         p = c.cac_lan[0]["params"]
-        assert p == {"query": "Aspirin in CKD", "page_size": 10, "medical_mode": "true",
+        # LUÔN xin trần 20 (1 lượt = 100 bài) rồi cắt ở phía trả về
+        assert p == {"query": "Aspirin in CKD", "page_size": 20, "medical_mode": "true",
                      "exclude_preprints": "true", "year_min": 2026}
         # boolean phải là CHUỖI thường (đã xác nhận với API thật ở PR ToolUniverse #568)
         assert isinstance(p["medical_mode"], str) and isinstance(p["exclude_preprints"], str)
@@ -138,10 +167,11 @@ class TestThamSo:
         assert "year_min" not in c.cac_lan[0]["params"]
 
     @pytest.mark.parametrize("yeu_cau,ky_vong", [(500, 20), (20, 20), (7, 7), (0, 1), (-3, 1)])
-    def test_page_size_bi_chan_o_tran_goi_free(self, monkeypatch, yeu_cau, ky_vong):
-        c = _client(monkeypatch)
-        c.search("x", max_results=yeu_cau)
-        assert c.cac_lan[0]["params"]["page_size"] == ky_vong
+    def test_cat_so_ban_ghi_o_phia_tra_ve_khong_doi_page_size(self, monkeypatch, yeu_cau, ky_vong):
+        c = _client(monkeypatch, {"results": [_bai(i) for i in range(1, 21)]})
+        recs = c.search("x", max_results=yeu_cau)
+        assert len(recs) == ky_vong
+        assert c.cac_lan[0]["params"]["page_size"] == 20
 
     def test_since_date_sai_dinh_dang_khong_lam_no(self, monkeypatch):
         c = _client(monkeypatch)
@@ -174,11 +204,9 @@ class TestChiGiuTruongToiThieu:
         assert r.api_endpoint == cs.SEARCH
         assert r.raw["citation_count"] == 12 and r.raw["sjr_quartile"] == 1
 
-    def test_thieu_url_thi_dung_url_doi_thieu_ca_hai_thi_none(self, monkeypatch):
-        c = _client(monkeypatch, {"results": [_bai(1, url=None), _bai(2, url=None, doi=None)]})
-        a, b = c.search("x")
-        assert a.url == "https://doi.org/10.1000/x1"
-        assert b.url is None and b.doi is None
+    def test_thieu_url_thi_dung_url_doi(self, monkeypatch):
+        c = _client(monkeypatch, {"results": [_bai(1, url=None)]})
+        assert c.search("x")[0].url == "https://doi.org/10.1000/x1"
 
     def test_bo_qua_bai_khong_tieu_de_va_dong_khong_phai_dict(self, monkeypatch):
         c = _client(monkeypatch, {"results": [_bai(1, title="  "), "rac", None, _bai(2)]})
@@ -201,13 +229,61 @@ class TestChiGiuTruongToiThieu:
         c = _client(monkeypatch, {"results": [_bai(1, is_preprint=True)]})
         r = c.search("x")[0]
         assert r.study_type == infer_study_type("Bai thu 1", None, "Lancet", "PPR")
+        assert r.study_type is not None
 
-    def test_study_type_cua_consensus_khong_duoc_dung_de_tu_gan_muc(self, monkeypatch):
-        """Consensus tự gán `study_type` (AI). Hệ chỉ suy từ tiêu đề/tạp chí — không tin nhãn ngoài (R4)."""
-        c = _client(monkeypatch, {"results": [_bai(1, study_type="rct", title="Mot bai binh thuong")]})
+    def test_is_preprint_dang_chuoi_false_khong_bi_coi_la_preprint(self, monkeypatch):
+        c = _client(monkeypatch, {"results": [_bai(1, is_preprint="false")]})
+        assert c.search("x")[0].study_type is None
+
+    @pytest.mark.parametrize("tieu_de", [
+        "Commentary on the 2024 guideline recommendations for atrial fibrillation: should therapy change?",
+        "A randomized controlled trial of empagliflozin", "Systematic review and meta-analysis of statins",
+    ])
+    def test_khong_tu_gan_loai_thiet_ke_tu_tieu_de_hay_nhan_cua_consensus(self, monkeypatch, tieu_de):
+        c = _client(monkeypatch, {"results": [_bai(1, title=tieu_de, study_type="rct")]})
         r = c.search("x")[0]
-        assert r.study_type == infer_study_type("Mot bai binh thuong", None, "Lancet", None)
+        assert r.study_type is None
         assert "rct" not in json.dumps(r.raw)
+
+    def test_khong_len_tier_a_actionable_chi_nho_tu_khoa_trong_tieu_de(self, monkeypatch):
+        """Bản ghi Consensus (không abstract) từng lên Tier A + actionable nhờ 'guideline' trong tiêu đề
+        (đo bằng normalize→score_item→classify của pipeline thật). Nay phải rơi vào Tier C / watch_only."""
+        from app.services.filtering import classify
+        from app.services.normalization import normalize
+        from app.services.pipeline import score_item
+        c = _client(monkeypatch, {"results": [_bai(1, title=(
+            "Commentary on the 2024 guideline recommendations for atrial fibrillation: "
+            "should first-line therapy change in elderly outpatients?"))]})
+        item = normalize(c.search("x")[0])
+        score_item(item)
+        phan_loai, actionable, _, _ = classify(item)
+        assert item["reliability_tier"] != "A"
+        assert phan_loai == "watch_only" and actionable is False
+
+
+class TestDoiBatBuoc:
+    def test_bo_ban_ghi_khong_doi_va_dem_trong_chan_doan(self, monkeypatch):
+        c = _client(monkeypatch, {"results": [_bai(1), _bai(2, doi=None), _bai(3, doi="khong-phai-doi")]})
+        recs = c.search("x")
+        assert [r.doi for r in recs] == ["10.1000/x1"]
+        assert c.chan_doan["so_ban_ghi_bo_vi_thieu_doi"] == 2
+
+    def test_khong_ban_nao_co_doi_thi_no_to_kem_ten_truong(self, monkeypatch):
+        """Tài liệu Consensus ghi «Enterprise includes doi» ⇒ gói Free có thể không trả DOI. Không được đọc
+        thành «không có gì mới» (BH27) cũng không được nhét ứng viên không truy ngược được vào kho."""
+        c = _client(monkeypatch, {"results": [_bai(1, doi=None), _bai(2, doi=None)]})
+        with pytest.raises(RuntimeError, match="KHÔNG bản nào có DOI") as ei:
+            c.search("x")
+        assert "title" in str(ei.value) and ABSTRACT not in str(ei.value)   # chỉ TÊN trường
+        assert cs.so_lan_goi_thang_nay() == 1                               # lượt đã tốn được ghi nhận
+
+    @pytest.mark.parametrize("doi_vao,doi_ra", [
+        ("doi:10.1000/abc", "10.1000/abc"), ("DOI: 10.1000/abc", "10.1000/abc"),
+        ("http://dx.doi.org/10.1000/abc", "10.1000/abc"), (" 10.1000/abc ", "10.1000/abc"),
+    ])
+    def test_chuan_hoa_doi(self, monkeypatch, doi_vao, doi_ra):
+        c = _client(monkeypatch, {"results": [_bai(1, doi=doi_vao)]})
+        assert c.search("x")[0].doi == doi_ra
 
 
 class TestPhanHoiHong:
@@ -227,6 +303,30 @@ class TestPhanHoiHong:
     def test_results_rong_hop_le_tra_rong(self, monkeypatch):
         assert _client(monkeypatch, {"results": []}).search("x") == []
 
+    def test_co_dong_nhung_khong_dong_nao_dung_duoc_thi_no_to(self, monkeypatch):
+        """Schema đổi tên `title` ⇒ trước đây thành «ok, 0 bản ghi» im lặng."""
+        c = _client(monkeypatch, {"results": [{"paper_title": "T"}, {"paper_title": "T2"}]})
+        with pytest.raises(RuntimeError, match="KHÔNG dòng nào dùng được"):
+            c.search("x")
+
+    def test_mot_dong_hong_kieu_khong_huy_ca_lo(self, monkeypatch):
+        c = _client(monkeypatch, {"results": [
+            _bai(1), _bai(2, journal_name={"x": 1}, doi=["10.1/x"], publish_year=2024.0, authors=[{"n": 1}, "A"]),
+            _bai(3, publish_year="2023"),
+        ]})
+        recs = c.search("x")
+        assert [r.title for r in recs] == ["Bai thu 1", "Bai thu 3"]      # dòng 2 không DOI hợp lệ ⇒ bỏ
+        assert recs[1].publication_date == "2023"
+
+    def test_kieu_du_lieu_la_duoc_ep_chat(self, monkeypatch):
+        c = _client(monkeypatch, {"results": [_bai(1, journal_name=["Lancet"], publish_year=2024.0,
+                                                   url="ftp://x", authors=[{"n": 1}, "A", None])]})
+        r = c.search("x")[0]
+        assert r.journal_or_organization is None
+        assert r.publication_date == "2024"          # float nguyên → '2024', không phải '2024.0'
+        assert r.url == "https://doi.org/10.1000/x1"  # url không phải http(s) ⇒ dùng url DOI
+        assert r.authors == "A"
+
 
 class TestLoiHttp:
     @pytest.mark.parametrize("ma", [400, 401, 402, 403, 422, 429])
@@ -243,9 +343,16 @@ class TestLoiHttp:
         assert f"HTTP {ma}" in caplog.text
         assert KHOA not in caplog.text
 
-    def test_loi_ket_noi_tra_rong(self, monkeypatch):
+    def test_loi_ket_noi_cuoi_cung_cua_httpclient_tra_rong(self, monkeypatch):
         c = _client(monkeypatch, loi=RuntimeError("Gọi API thất bại sau 4 lần"))
         assert c.search("x") == []
+
+    def test_ngoai_le_la_khong_bi_nuot_thanh_ok_rong(self, monkeypatch):
+        """UnicodeEncodeError/ValueError… không phải RequestException nên không qua bộ đếm lỗi của
+        HttpClient — nuốt chúng = Source Log `ok` + 0 bản ghi. Phải nổ ra ngoài để `_fetch` ghi `error`."""
+        c = _client(monkeypatch, loi=ValueError("la"))
+        with pytest.raises(ValueError):
+            c.search("x")
 
     def test_khoa_khong_lot_vao_thong_bao_no_to(self, monkeypatch):
         c = _client(monkeypatch, loi=_loi_http(401))
@@ -275,6 +382,111 @@ class TestLoiHttp:
         assert KHOA not in str(ei.value)
         assert KHOA not in caplog.text
         assert KHOA not in c.http.last_error
+
+
+class _AdapterDem(requests.adapters.BaseAdapter):
+    """Adapter giả ở tầng thấp nhất: đếm từng yêu cầu THẬT mà HttpClient gửi (kể cả retry)."""
+
+    def __init__(self, trang_thai: Optional[int] = None, loi: Optional[Exception] = None):
+        super().__init__()
+        self.n = 0
+        self._trang_thai, self._loi = trang_thai, loi
+
+    def send(self, request, **kw):
+        self.n += 1
+        if self._loi is not None:
+            raise self._loi
+        r = requests.Response()
+        r.status_code = self._trang_thai
+        r.url = request.url
+        r._content = b"{}"
+        r.request = request
+        return r
+
+    def close(self):
+        pass
+
+
+class TestDemYeuCauThat:
+    """HttpClient tự retry (429/5xx 1 lần; lỗi kết nối tới `http_max_retries`) nhưng `request_count` chỉ
+    đếm mỗi get_json — sổ đếm từng đếm THIẾU tới 5 lần so với yêu cầu thật (bình duyệt độc lập)."""
+
+    def _client_that(self, monkeypatch, adapter):
+        monkeypatch.setattr("app.utils.http.time.sleep", lambda s: None)   # bỏ backoff
+        monkeypatch.setattr(settings, "consensus_api_key", KHOA)
+        c = ConsensusClient()
+        c.use_mock = False
+        c.http.session.mount("https://", adapter)
+        return c
+
+    def test_timeout_lien_tuc_so_dem_bang_so_yeu_cau_that(self, monkeypatch):
+        ad = _AdapterDem(loi=requests.Timeout("cham"))
+        c = self._client_that(monkeypatch, ad)
+        assert c.search("x") == []
+        assert ad.n >= 2                                   # có retry thật (test có nghĩa)
+        assert cs.so_lan_goi_thang_nay() == ad.n
+
+    def test_5xx_thu_lai_mot_lan_so_dem_bang_hai(self, monkeypatch):
+        ad = _AdapterDem(trang_thai=503)
+        c = self._client_that(monkeypatch, ad)
+        assert c.search("x") == []
+        assert ad.n == 2 and cs.so_lan_goi_thang_nay() == 2
+
+    def test_429_nổ_to_va_dem_du_so_yeu_cau(self, monkeypatch):
+        ad = _AdapterDem(trang_thai=429)
+        c = self._client_that(monkeypatch, ad)
+        with pytest.raises(RuntimeError, match="HTTP 429"):
+            c.search("x")
+        assert cs.so_lan_goi_thang_nay() == ad.n == 2
+
+    def test_thanh_cong_ngay_lan_dau_dem_dung_mot(self, monkeypatch):
+        c = _client(monkeypatch)
+        c.search("x")
+        assert cs.so_lan_goi_thang_nay() == 1
+
+
+class _MayChuGhiHeader(BaseHTTPRequestHandler):
+    da_thay: Dict[int, str] = {}
+    chuyen_toi: str = ""
+
+    def do_GET(self):  # noqa: N802
+        cong = self.server.server_address[1]
+        _MayChuGhiHeader.da_thay[cong] = self.headers.get("x-api-key") or ""
+        if self.path == "/a":
+            self.send_response(302)
+            self.send_header("Location", _MayChuGhiHeader.chuyen_toi)
+            self.end_headers()
+            return
+        body = b'{"results": []}'
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *a):  # im lặng
+        pass
+
+
+class TestKhoaKhongDiTheoChuyenHuong:
+    def test_khoa_bi_go_khi_may_chu_chuyen_huong_sang_host_khac(self, monkeypatch):
+        """`requests` chỉ gỡ `Authorization` khi đổi host, KHÔNG gỡ header tuỳ biến ⇒ `x-api-key` từng lộ
+        sang host đích của chuyển hướng (đo thật bằng hai máy chủ cục bộ)."""
+        a, b = HTTPServer(("127.0.0.1", 0), _MayChuGhiHeader), HTTPServer(("127.0.0.1", 0), _MayChuGhiHeader)
+        for s in (a, b):
+            threading.Thread(target=s.serve_forever, daemon=True).start()
+        try:
+            cong_a, cong_b = a.server_address[1], b.server_address[1]
+            _MayChuGhiHeader.da_thay = {}
+            _MayChuGhiHeader.chuyen_toi = f"http://localhost:{cong_b}/b"      # đổi host (127.0.0.1 → localhost)
+            monkeypatch.setattr(settings, "consensus_api_key", KHOA)
+            c = ConsensusClient()
+            c.http.get_json(f"http://127.0.0.1:{cong_a}/a", use_cache=False)
+            assert _MayChuGhiHeader.da_thay[cong_a] == KHOA        # host gốc nhận khoá
+            assert _MayChuGhiHeader.da_thay[cong_b] == ""          # host đích chuyển hướng KHÔNG nhận
+        finally:
+            a.shutdown()
+            b.shutdown()
 
 
 class TestHanMucThang:
@@ -334,7 +546,7 @@ class TestHanMucThang:
         assert c.search("x") == []
         assert cs.so_lan_goi_thang_nay() == 1
 
-    def test_khong_ghi_duoc_so_dem_thi_dung_lai(self, monkeypatch):
+    def test_khong_ghi_duoc_so_dem_thi_dung_lai_va_khong_de_lai_file_tam(self, monkeypatch):
         c = _client(monkeypatch)
 
         def hong(*a, **k):
@@ -344,8 +556,9 @@ class TestHanMucThang:
         with pytest.raises(RuntimeError, match="không ghi được sổ đếm"):
             c.search("x")
         assert not c.cac_lan
+        assert not list(cs._duong_quota().parent.glob(".cq-*.tmp"))
 
-    def test_dong_thoi_khong_bao_gio_vuot_tran(self, monkeypatch):
+    def test_dong_thoi_nhieu_luong_khong_bao_gio_vuot_tran(self, monkeypatch):
         """30 luồng tranh 10 chỗ ⇒ đúng 10 thành công (khoá + ghi nguyên tử)."""
         monkeypatch.setattr(settings, "consensus_monthly_call_cap", 10)
         ket_qua: List[bool] = []
@@ -365,6 +578,48 @@ class TestHanMucThang:
         assert sum(ket_qua) == 10
         assert cs.so_lan_goi_thang_nay() == 10
 
+    def test_dong_thoi_nhieu_TIEN_TRINH_khong_mat_luot_va_khong_loi_gia(self, monkeypatch, tmp_path):
+        """4 tiến trình Python thật × 15 lần, trần 40: khoá luồng không đủ (đo được: 3 tiến trình × 300 lần
+        cấp 497 nhưng sổ chỉ ghi 392, còn 403 RuntimeError giả do đè file tạm cố định)."""
+        so_path = tmp_path / "shared" / "consensus_quota.json"
+        ma = (
+            "import sys\n"
+            f"sys.path.insert(0, {str(REPO_ROOT)!r})\n"
+            "from app.config import settings\n"
+            "from app.sources import consensus_api as cs\n"
+            "settings.consensus_quota_path = sys.argv[1]\n"
+            "settings.consensus_monthly_call_cap = 40\n"
+            "cap = loi_la = 0\n"
+            "for _ in range(15):\n"
+            "    try:\n"
+            "        cs._giu_cho_luot_goi(); cap += 1\n"
+            "    except RuntimeError as e:\n"
+            "        if 'đã dùng' not in str(e): loi_la += 1\n"
+            "print(cap, loi_la)\n"
+        )
+        cac = [subprocess.Popen([sys.executable, "-c", ma, str(so_path)], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, text=True) for _ in range(4)]
+        ket_qua = []
+        for p in cac:
+            out, err = p.communicate(timeout=120)
+            assert p.returncode == 0, err
+            ket_qua.append(tuple(int(x) for x in out.split()))
+        assert sum(c for c, _ in ket_qua) == 40         # đúng bằng trần: không cấp thừa
+        assert sum(le for _, le in ket_qua) == 0        # không có lỗi giả do đè file tạm
+        monkeypatch.setattr(settings, "consensus_quota_path", str(so_path))
+        assert cs.so_lan_goi_thang_nay() == 40          # sổ không mất lượt nào
+
+    def test_so_mac_dinh_nam_ngoai_cay_repo_va_chung_moi_worktree(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(settings, "consensus_quota_path", "")
+        monkeypatch.setenv("HOME", str(tmp_path / "home"))
+        p = cs._duong_quota()
+        assert p == tmp_path / "home" / ".ebm-state" / "consensus_quota.json"
+        assert REPO_ROOT not in p.parents
+
+    def test_bien_moi_truong_doi_duong_dan_so(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(settings, "consensus_quota_path", str(tmp_path / "khac" / "q.json"))
+        assert cs._duong_quota() == tmp_path / "khac" / "q.json"
+
 
 class TestCacheBoNho:
     def test_cung_truy_van_hai_lan_chi_ton_mot_luot(self, monkeypatch):
@@ -377,12 +632,14 @@ class TestCacheBoNho:
         assert a[0].clinical_area == "Tim mạch" and b[0].clinical_area == "Thận"
         assert b[0].ingest_query == "  aspirin "
 
-    def test_khac_nam_hoac_co_trang_la_khoa_khac(self, monkeypatch):
+    def test_khac_nam_la_khoa_khac_nhung_khac_max_results_thi_dung_chung(self, monkeypatch):
         c = _client(monkeypatch)
         c.search("x", since_date="2025-01-01")
         c.search("x", since_date="2026-01-01")
-        c.search("x", since_date="2026-01-01", max_results=5)
-        assert len(c.cac_lan) == 3
+        assert len(c.cac_lan) == 2
+        c.search("x", since_date="2026-01-01", max_results=5)   # 1 lượt = 100 bài: cùng truy vấn dùng chung
+        c.search("x", since_date="2026-01-01", max_results=12)
+        assert len(c.cac_lan) == 2 and cs.so_lan_goi_thang_nay() == 2
 
     def test_het_han_thi_goi_lai(self, monkeypatch):
         gio = [1000.0]
@@ -410,6 +667,30 @@ class TestCacheBoNho:
         c.search("x")
         assert len(c.cac_lan) == 2
 
+    def test_hai_luong_cung_truy_van_cung_luc_chi_ton_mot_luot(self, monkeypatch):
+        """Single-flight: trước đây cache trống + hai luồng đồng thời ⇒ 2 lần gọi HTTP + 2 lượt."""
+        monkeypatch.setattr(settings, "consensus_api_key", KHOA)
+        c = ConsensusClient()
+        c.use_mock = False
+        so_lan: List[int] = []
+        rao = threading.Barrier(2)
+
+        def cham(url, params=None, use_cache=True):
+            so_lan.append(1)
+            threading.Event().wait(0.3)
+            return {"results": [_bai(1)]}
+
+        monkeypatch.setattr(c.http, "get_json", cham)
+
+        def chay(_):
+            rao.wait()
+            return c.search("Heart Failure")
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            a, b = list(pool.map(chay, range(2)))
+        assert len(so_lan) == 1 and cs.so_lan_goi_thang_nay() == 1
+        assert [r.title for r in a] == [r.title for r in b] == ["Bai thu 1"]
+
 
 class TestKhongGhiDia:
     def test_khong_goi_save_raw_va_khong_tao_thu_muc_raw(self, monkeypatch, tmp_path):
@@ -421,9 +702,9 @@ class TestKhongGhiDia:
         monkeypatch.setattr(ConsensusClient, "save_raw", cam)
         c.search("aspirin")
         assert not (tmp_path / "raw").exists()
-        # chỉ có sổ đếm (số nguyên), không có payload
+        # chỉ có sổ đếm (số nguyên) + file khoá, không có payload, không sót file tạm
         tep = sorted(p.name for p in tmp_path.rglob("*") if p.is_file())
-        assert tep == ["consensus_quota.json"]
+        assert tep == ["consensus_quota.json", "consensus_quota.lock"]
 
 
 class TestChanDoan:
@@ -432,6 +713,7 @@ class TestChanDoan:
         c.search("aspirin")
         d = c.chan_doan
         assert d["tong_ban_ghi"] == 2 and d["so_ban_ghi_co_doi"] == 1
+        assert d["so_ban_ghi_bo_vi_thieu_doi"] == 1 and d["so_dong_bo_vi_sai_dinh_dang"] == 0
         assert "doi" in d["truong_ban_ghi_dau"] and "takeaway" in d["truong_ban_ghi_dau"]
         assert set(d["truong_goc"]) == {"is_end", "page", "results"}
         toan_bo = json.dumps(d, ensure_ascii=False)
@@ -468,6 +750,47 @@ class TestDangKyNguon:
         recs2, log2 = _fetch(c, "warfarin", "Tim mạch", 10)
         assert recs2 == [] and log2["status"] == "error"
         assert "1/1" in log2["error_message"]
+
+    def test_ingestion_ghi_error_khi_ngoai_le_la_thay_vi_ok_rong(self, monkeypatch):
+        from app.services.ingestion import _fetch
+        c = _client(monkeypatch, loi=ValueError("la"))
+        recs, log = _fetch(c, "aspirin", "Tim mạch", 10)
+        assert recs == [] and log["status"] == "error"
+
+
+class TestQuetDinhKy:
+    """Free chỉ 30 lượt/tháng: lượt quét ~53 truy vấn cạn trần 20 ở vài chuyên khoa ĐẦU và không bao giờ
+    chạm tới các chuyên khoa sau. Mặc định quét định kỳ BỎ QUA Consensus; dossier/tài liệu nền vẫn dùng."""
+
+    class _NguonKhac:
+        name = "khac"
+
+    def test_mac_dinh_quet_dinh_ky_bo_qua_consensus_nhung_giu_nguon_khac(self, monkeypatch):
+        from app.services.ingestion import chon_nguon_quet_dinh_ky
+        monkeypatch.setattr(settings, "consensus_api_key", KHOA)
+        c, khac = ConsensusClient(), self._NguonKhac()
+        assert c.chi_theo_yeu_cau is True
+        assert chon_nguon_quet_dinh_ky([khac, c]) == [khac]
+
+    def test_bat_co_trong_quet_dinh_ky_thi_gom_lai(self, monkeypatch):
+        from app.services.ingestion import chon_nguon_quet_dinh_ky
+        monkeypatch.setattr(settings, "consensus_trong_quet_dinh_ky", True)
+        c = ConsensusClient()
+        assert c.chi_theo_yeu_cau is False
+        assert chon_nguon_quet_dinh_ky([c]) == [c]
+
+    def test_ingest_all_that_khong_goi_consensus(self, monkeypatch):
+        """Đi qua ingest_all thật (DB tạm): nguồn Consensus bật nhưng KHÔNG bị gọi, sổ đếm vẫn 0."""
+        from app.services import ingestion
+        c = _client(monkeypatch)
+        monkeypatch.setattr(ingestion, "get_enabled_sources", lambda: [c])
+        monkeypatch.setattr(settings, "enable_openfda", False)
+        monkeypatch.setattr(ingestion, "sweep_source",
+                            lambda client, *a, **k: pytest.fail(f"sweep_source bị gọi cho {client.name}"))
+        from app.database import init_db
+        init_db()
+        ingestion.ingest_all(max_results_per_query=1, areas=[])
+        assert not c.cac_lan and cs.so_lan_goi_thang_nay() == 0
 
 
 class TestTestLive:

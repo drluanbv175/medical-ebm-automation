@@ -219,11 +219,18 @@ class Settings:
     # Consensus API (consensus.app) — thêm 19/09/2026. Khoá tự cấp: đăng nhập Consensus → "API & MCP
     # Dashboard" → Keys (hiện MỘT lần lúc tạo). Gói Free chỉ 30 lượt/tháng, dùng CHUNG với kênh MCP
     # của claude.ai. `consensus_monthly_call_cap` là trần NỘI BỘ (fail-closed, có sổ đếm bền ở
-    # data/state/consensus_quota.json): mặc định 20 để chừa dư cho MCP; ≤0 = chặn hoàn toàn. Gói trả phí
-    # thì tự nâng (vd Pro 500 lượt ⇒ CONSENSUS_MONTHLY_CALL_CAP=450). Xem app/sources/consensus_api.py.
+    # ~/.ebm-state/consensus_quota.json — NGOÀI cây repo/OneDrive, chung mọi worktree cùng máy, đổi bằng
+    # CONSENSUS_QUOTA_PATH): mặc định 20 để chừa dư cho MCP; ≤0 = chặn hoàn toàn. Sổ chỉ chia sẻ trong phạm
+    # vi MỘT MÁY ⇒ hai máy dùng chung một tài khoản thì chia trần. Gói trả phí thì tự nâng (vd Pro 500 lượt
+    # ⇒ CONSENSUS_MONTHLY_CALL_CAP=450). `consensus_trong_quet_dinh_ky` (mặc định False): False ⇒ lượt quét
+    # pipeline định kỳ BỎ QUA Consensus (một lượt quét ~53 truy vấn sẽ cạn trần 20 chỉ ở vài chuyên khoa
+    # đầu); dossier/tài liệu nền đề tài vẫn dùng. Xem app/sources/consensus_api.py.
     consensus_api_key: str = field(default_factory=lambda: os.getenv("CONSENSUS_API_KEY", ""))
     consensus_monthly_call_cap: int = field(
         default_factory=lambda: _get_int("CONSENSUS_MONTHLY_CALL_CAP", 20))
+    consensus_quota_path: str = field(default_factory=lambda: os.getenv("CONSENSUS_QUOTA_PATH", ""))
+    consensus_trong_quet_dinh_ky: bool = field(
+        default_factory=lambda: _get_bool("CONSENSUS_TRONG_QUET_DINH_KY", False))
 
     # Flags bật/tắt nguồn
     enable_pubmed: bool = field(default_factory=lambda: _get_bool("ENABLE_PUBMED", True))

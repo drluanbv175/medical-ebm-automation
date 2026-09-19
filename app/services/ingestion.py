@@ -185,6 +185,19 @@ def summarize_source_health(
     }
 
 
+def chon_nguon_quet_dinh_ky(sources: List[Any]) -> List[Any]:
+    """Bỏ các nguồn tự khai `chi_theo_yeu_cau` (hiện chỉ Consensus, xem app/sources/consensus_api.py) khỏi
+    lượt quét ĐỊNH KỲ: hạn mức của chúng quá nhỏ cho ~53 truy vấn/lượt. Chúng vẫn phục vụ theo yêu cầu
+    (dossier/tài liệu nền đề tài). Nguồn không có thuộc tính này ⇒ giữ nguyên."""
+    giu, bo = [], []
+    for s in sources:
+        (bo if getattr(s, "chi_theo_yeu_cau", False) else giu).append(s)
+    if bo:
+        logger.info("Ingestion: bỏ %s khỏi lượt quét định kỳ (nguồn chỉ phục vụ theo yêu cầu).",
+                    ", ".join(getattr(s, "name", "?") for s in bo))
+    return giu
+
+
 def sweep_source(client, areas: List[str], max_results_per_query: int,
                   since_date: Optional[str] = None, fetch_fn=None) -> Tuple[List[RawRecord], List[dict]]:
     """Quét 1 nguồn API qua mọi (area, query) theo CLINICAL_AREAS — tuần tự, có circuit-breaker.
@@ -229,7 +242,7 @@ def ingest_all(max_results_per_query: int = 10,
     Trả về danh sách RawRecord gộp từ mọi nguồn. Ghi Source Log cho từng lần gọi.
     """
     areas = areas or list(CLINICAL_AREAS.keys())
-    sources = get_enabled_sources()
+    sources = chon_nguon_quet_dinh_ky(get_enabled_sources())
     all_records: List[RawRecord] = []
     all_logs: List[dict] = []
 
