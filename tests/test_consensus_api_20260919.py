@@ -22,7 +22,6 @@ import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -459,48 +458,46 @@ class TestDemYeuCauThat:
         assert cs.so_lan_goi_thang_nay() == 1
 
 
-class _MayChuGhiHeader(BaseHTTPRequestHandler):
-    da_thay: Dict[int, str] = {}
-    chuyen_toi: str = ""
+class _AdapterChuyenHuong(requests.adapters.BaseAdapter):
+    """Adapter giả (KHÔNG mở socket — CI hermetic chặn `socket.connect` kể cả loopback): yêu cầu đầu trả 302
+    sang host KHÁC, yêu cầu sau trả 200; ghi lại header `x-api-key` mà mỗi bước nhận được."""
 
-    def do_GET(self):  # noqa: N802
-        cong = self.server.server_address[1]
-        _MayChuGhiHeader.da_thay[cong] = self.headers.get("x-api-key") or ""
-        if self.path == "/a":
-            self.send_response(302)
-            self.send_header("Location", _MayChuGhiHeader.chuyen_toi)
-            self.end_headers()
-            return
-        body = b'{"results": []}'
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+    def __init__(self, dich: str):
+        super().__init__()
+        self.dich = dich
+        self.da_gui: List[tuple] = []
 
-    def log_message(self, *a):  # im lặng
+    def send(self, request, **kw):
+        self.da_gui.append((request.url, request.headers.get("x-api-key")))
+        r = requests.Response()
+        r.request, r.url = request, request.url
+        if len(self.da_gui) == 1:
+            r.status_code = 302
+            r.headers["Location"] = self.dich
+            r._content = b""
+        else:
+            r.status_code = 200
+            r._content = b'{"results": []}'
+        return r
+
+    def close(self):
         pass
 
 
 class TestKhoaKhongDiTheoChuyenHuong:
     def test_khoa_bi_go_khi_may_chu_chuyen_huong_sang_host_khac(self, monkeypatch):
         """`requests` chỉ gỡ `Authorization` khi đổi host, KHÔNG gỡ header tuỳ biến ⇒ `x-api-key` từng lộ
-        sang host đích của chuyển hướng (đo thật bằng hai máy chủ cục bộ)."""
-        a, b = HTTPServer(("127.0.0.1", 0), _MayChuGhiHeader), HTTPServer(("127.0.0.1", 0), _MayChuGhiHeader)
-        for s in (a, b):
-            threading.Thread(target=s.serve_forever, daemon=True).start()
-        try:
-            cong_a, cong_b = a.server_address[1], b.server_address[1]
-            _MayChuGhiHeader.da_thay = {}
-            _MayChuGhiHeader.chuyen_toi = f"http://localhost:{cong_b}/b"      # đổi host (127.0.0.1 → localhost)
-            monkeypatch.setattr(settings, "consensus_api_key", KHOA)
-            c = ConsensusClient()
-            c.http.get_json(f"http://127.0.0.1:{cong_a}/a", use_cache=False)
-            assert _MayChuGhiHeader.da_thay[cong_a] == KHOA        # host gốc nhận khoá
-            assert _MayChuGhiHeader.da_thay[cong_b] == ""          # host đích chuyển hướng KHÔNG nhận
-        finally:
-            a.shutdown()
-            b.shutdown()
+        sang host đích của chuyển hướng (đo thật bằng hai máy chủ cục bộ; ở đây chạy lại đúng logic chuyển
+        hướng của `requests.Session` qua adapter giả để không cần socket)."""
+        monkeypatch.setattr(settings, "consensus_api_key", KHOA)
+        ad = _AdapterChuyenHuong("http://host-khac.example/b")
+        c = ConsensusClient()
+        c.http.session.mount("http://", ad)
+        c.http.get_json("http://host-goc.example/a", use_cache=False)
+        assert len(ad.da_gui) == 2
+        assert ad.da_gui[0][1] == KHOA            # host gốc nhận khoá
+        assert ad.da_gui[1][0] == "http://host-khac.example/b"
+        assert ad.da_gui[1][1] is None            # host đích của chuyển hướng KHÔNG nhận khoá
 
 
 class TestHanMucThang:
@@ -549,7 +546,7 @@ class TestHanMucThang:
     def test_so_dem_hong_thi_no_to_khong_doan(self, monkeypatch, noi_dung):
         path = cs._duong_quota()
         path.parent.mkdir(parents=True)
-        path.write_text(noi_dung, encoding="utf-8")
+        path.write_text(noi_dung, encoding="utf-8", newline="\n")
         c = _client(monkeypatch)
         with pytest.raises(RuntimeError, match="sổ đếm"):
             c.search("x")
@@ -625,7 +622,7 @@ class TestHanMucThang:
 
     def test_so_mac_dinh_nam_ngoai_cay_repo_va_chung_moi_worktree(self, monkeypatch, tmp_path):
         monkeypatch.setattr(settings, "consensus_quota_path", "")
-        monkeypatch.setenv("HOME", str(tmp_path / "home"))
+        monkeypatch.setattr(Path, "home", lambda: tmp_path / "home")   # Windows dùng USERPROFILE, không dùng HOME
         p = cs._duong_quota()
         assert p == tmp_path / "home" / ".ebm-state" / "consensus_quota.json"
         assert REPO_ROOT not in p.parents
