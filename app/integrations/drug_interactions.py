@@ -26,6 +26,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from app.sources.openfda import get_json_openfda
 from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
 
@@ -136,7 +137,7 @@ class DrugSafetyChecker:
         for field in ("openfda.generic_name", "openfda.brand_name"):
             params = {"search": f'{field}:"{drug_an_toan}"', "limit": 1}
             try:
-                data = self.http.get_json(LABEL_API, params=params)
+                data = get_json_openfda(self.http, LABEL_API, params)
             except requests.HTTPError as exc:
                 status = exc.response.status_code if exc.response is not None else None
                 if status == 404:

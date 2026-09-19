@@ -189,6 +189,13 @@ class Settings:
         default_factory=lambda: os.getenv("ZOTERO_LIBRARY_TYPE", "user")
     )
     nice_api_key: str = field(default_factory=lambda: os.getenv("NICE_API_KEY", ""))
+    # Thêm 19/09/2026 — openFDA chạy được KHÔNG khoá (240 lượt/phút + 1.000 lượt/ngày theo IP),
+    # nên khoá chỉ là TUỲ CHỌN: có thì gửi kèm `api_key=` ở cả 3 nơi gọi api.fda.gov (connector
+    # FAERS, tra nhãn thuốc, live adapter) để nâng trần ngày lên 120.000 lượt/khoá (trần phút vẫn
+    # 240; số đo từ open.fda.gov/apis/authentication ngày 19/09/2026) — quan trọng khi nhiều máy
+    # cùng đi ra một IP NAT của bệnh viện (đúng kịch bản NCBI bị đánh dấu misuse 16/09/2026).
+    # Rỗng (mặc định) = hành vi cũ, không đổi. Đăng ký khoá miễn phí ở trang nói trên.
+    openfda_api_key: str = field(default_factory=lambda: os.getenv("OPENFDA_API_KEY", ""))
     scopus_api_key: str = field(default_factory=lambda: os.getenv("SCOPUS_API_KEY", ""))
     scopus_insttoken: str = field(default_factory=lambda: os.getenv("SCOPUS_INSTTOKEN", ""))
     # Thêm 17/09/2026: khi VPN toàn tuyến bật, Cloudflare chặn 403 request tới

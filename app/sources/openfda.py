@@ -7,8 +7,11 @@ NGUYÊN TẮC QUAN TRỌNG (an toàn thuốc):
 """
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
+import requests
+
+from app.config import settings
 from app.sources._fixtures import MOCK_DRUG_SAFETY, mock_records_for
 from app.sources.base import RawRecord, SourceClient
 from app.utils.http import HttpClient
@@ -16,6 +19,47 @@ from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 EVENT = "https://api.fda.gov/drug/event.json"
+
+# openFDA (sau api.data.gov) trả 401/403 (`API_KEY_INVALID`/`API_KEY_DISABLED`/…) khi khoá SAI.
+_MA_KHOA_BI_TU_CHOI = (401, 403)
+
+# Kết quả của lần gọi CÓ KHOÁ gần nhất: "chap_nhan" · "bi_tu_choi" · None (chưa có lần nào). Để
+# `run.py test-live openfda` báo được khoá có THẬT SỰ được FDA chấp nhận hay không — chỉ "đã nạp
+# khoá" thì chưa chứng minh gì (khoá gõ nhầm vẫn được nạp).
+trang_thai_khoa: Optional[str] = None
+
+
+def get_json_openfda(http: HttpClient, url: str, params: Dict[str, Any]) -> Any:
+    """GET api.fda.gov, gắn `api_key` nếu `OPENFDA_API_KEY` được đặt — DÙNG CHUNG cho mọi nơi
+    gọi openFDA (connector FAERS, tra nhãn thuốc, live adapter) để không nơi nào quên khoá.
+
+    Vì sao có nhánh lùi: openFDA chạy được KHÔNG khoá, nên khoá chỉ nên làm hệ TỐT HƠN, không
+    bao giờ tệ hơn. Khoá gõ nhầm (dán thừa dấu nháy, xuống dòng…) bị trả 403 — mà
+    `OpenFDAClient.search()` nuốt mọi lỗi và trả `[]`, tức luồng giám sát đang chạy tốt
+    KHÔNG khoá sẽ chuyển thành «không có tín hiệu nào» một cách im lặng (đúng lớp lỗi BH27/BH08:
+    «không kiểm được» bị đọc thành «sạch»). Nên khi khoá bị từ chối: cảnh báo RÕ tên biến cần
+    kiểm rồi thử lại một lần KHÔNG khoá — dữ liệu trả về vẫn là dữ liệu THẬT của FDA, chỉ chịu
+    trần lượt gọi thấp hơn. Mã lỗi khác (404 «không khớp», 5xx, timeout) đi thẳng lên cho nơi
+    gọi xử lý như cũ.
+    """
+    global trang_thai_khoa
+    khoa = settings.openfda_api_key
+    if not khoa:
+        return http.get_json(url, params=params)
+    try:
+        kq = http.get_json(url, params={**params, "api_key": khoa})
+        trang_thai_khoa = "chap_nhan"
+        return kq
+    except requests.HTTPError as exc:
+        ma = exc.response.status_code if exc.response is not None else None
+        if ma in _MA_KHOA_BI_TU_CHOI:
+            trang_thai_khoa = "bi_tu_choi"
+            logger.warning(
+                "[openfda] OPENFDA_API_KEY bị từ chối (HTTP %s) — kiểm lại khoá trong "
+                "~/.ebm-secrets/medical-ebm-automation.env (dán thừa ký tự?). Tạm thử lại "
+                "KHÔNG khoá; dữ liệu vẫn thật nhưng chịu trần lượt gọi thấp hơn.", ma)
+            return http.get_json(url, params=params)
+        raise
 
 
 def _escape_lucene_phrase(text: str) -> str:
@@ -58,7 +102,7 @@ class OpenFDAClient(SourceClient):
             query_an_toan = _escape_lucene_phrase(query)
             params = {"search": f'patient.drug.medicinalproduct:"{query_an_toan}"',
                       "count": "patient.reaction.reactionmeddrapt.exact", "limit": max_results}
-            data = self.http.get_json(EVENT, params=params)
+            data = get_json_openfda(self.http, EVENT, params)
             self.save_raw(query, data)
             out: List[RawRecord] = []
             for row in data.get("results", []):
