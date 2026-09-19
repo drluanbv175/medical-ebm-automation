@@ -318,6 +318,20 @@ class TestPhanHoiHong:
         assert [r.title for r in recs] == ["Bai thu 1", "Bai thu 3"]      # dòng 2 không DOI hợp lệ ⇒ bỏ
         assert recs[1].publication_date == "2023"
 
+    def test_mot_dong_nem_ngoai_le_thi_bo_dong_do_giu_cac_dong_khac(self, monkeypatch):
+        """Vòng bọc từng dòng là lớp phòng thủ cuối (Scopus cũng có): một dòng làm `_mot_dong` ném lỗi
+        không được huỷ cả lô đã tốn lượt."""
+        goc = cs._mot_dong
+
+        def hong_o_dong_xau(item):
+            if isinstance(item, dict) and item.get("title") == "Bai thu 2":
+                raise TypeError("dong hong")
+            return goc(item)
+
+        monkeypatch.setattr(cs, "_mot_dong", hong_o_dong_xau)
+        c = _client(monkeypatch, {"results": [_bai(1), _bai(2), _bai(3)]})
+        assert [r.title for r in c.search("x")] == ["Bai thu 1", "Bai thu 3"]
+
     def test_kieu_du_lieu_la_duoc_ep_chat(self, monkeypatch):
         c = _client(monkeypatch, {"results": [_bai(1, journal_name=["Lancet"], publish_year=2024.0,
                                                    url="ftp://x", authors=[{"n": 1}, "A", None])]})
