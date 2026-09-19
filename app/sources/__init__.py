@@ -30,6 +30,7 @@ def _nap_client(ten_module: str, ten_lop: str):
 
 
 ClinicalTrialsClient = _nap_client("clinicaltrials", "ClinicalTrialsClient")
+ConsensusClient = _nap_client("consensus_api", "ConsensusClient")
 CoreClient = _nap_client("core_api", "CoreClient")
 CrossrefClient = _nap_client("crossref", "CrossrefClient")
 EpistemonikosClient = _nap_client("epistemonikos", "EpistemonikosClient")
@@ -59,6 +60,7 @@ def get_enabled_sources() -> List[SourceClient]:
         (settings.enable_scopus, "ScopusClient", ScopusClient),
         (settings.enable_core, "CoreClient", CoreClient),
         (settings.enable_epistemonikos, "EpistemonikosClient", EpistemonikosClient),
+        (settings.enable_consensus, "ConsensusClient", ConsensusClient),
     ]
     ket_qua: List[SourceClient] = []
     for enabled, ten, lop in candidates:
@@ -83,6 +85,7 @@ __all__ = [
     "ScopusClient",
     "CoreClient",
     "EpistemonikosClient",
+    "ConsensusClient",
     "SemanticScholarClient",
     "UnpaywallClient",
     "get_enabled_sources",

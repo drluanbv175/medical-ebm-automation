@@ -175,6 +175,7 @@ def _build_source_map():
         return _SOURCE_MAP
     from app.sources import (
         ClinicalTrialsClient,
+        ConsensusClient,
         CoreClient,
         CrossrefClient,
         EpistemonikosClient,
@@ -191,6 +192,7 @@ def _build_source_map():
         "openalex": OpenAlexClient, "semantic_scholar": SemanticScholarClient,
         "openfda": OpenFDAClient, "scopus": ScopusClient, "core": CoreClient,
         "epistemonikos": EpistemonikosClient,
+        "consensus": ConsensusClient,
     })
     return _SOURCE_MAP
 
@@ -225,6 +227,16 @@ def cmd_test_live(source: str = "europepmc",
         })
     out = {"source": source, "query": query, "live": True,
            "count": len(results), "results": results}
+    if source == "consensus":
+        # Chỉ TÊN trường + số đếm (không giá trị, không khoá) — để biết gói Free thật sự trả trường
+        # nào (đặc biệt `doi`) mà không phải mở payload; kèm số lượt đã dùng so với trần nội bộ.
+        from app.config import settings  # noqa: PLC0415
+        from app.sources import consensus_api as _cs  # noqa: PLC0415
+        out["consensus_chan_doan"] = {
+            "so_lan_goi_thang_nay": _cs.so_lan_goi_thang_nay(),
+            "tran_noi_bo": settings.consensus_monthly_call_cap,
+            **getattr(client, "chan_doan", {}),
+        }
     if source == "openfda":
         # Chỉ báo TRẠNG THÁI — tuyệt đối không in giá trị khoá. Để bác sĩ xác nhận khoá đã nạp VÀ
         # được FDA chấp nhận mà không phải mở file secrets.

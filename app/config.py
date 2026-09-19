@@ -216,6 +216,15 @@ class Settings:
     epistemonikos_api_token: str = field(
         default_factory=lambda: os.getenv("EPISTEMONIKOS_API_TOKEN", ""))
 
+    # Consensus API (consensus.app) — thêm 19/09/2026. Khoá tự cấp: đăng nhập Consensus → "API & MCP
+    # Dashboard" → Keys (hiện MỘT lần lúc tạo). Gói Free chỉ 30 lượt/tháng, dùng CHUNG với kênh MCP
+    # của claude.ai. `consensus_monthly_call_cap` là trần NỘI BỘ (fail-closed, có sổ đếm bền ở
+    # data/state/consensus_quota.json): mặc định 20 để chừa dư cho MCP; ≤0 = chặn hoàn toàn. Gói trả phí
+    # thì tự nâng (vd Pro 500 lượt ⇒ CONSENSUS_MONTHLY_CALL_CAP=450). Xem app/sources/consensus_api.py.
+    consensus_api_key: str = field(default_factory=lambda: os.getenv("CONSENSUS_API_KEY", ""))
+    consensus_monthly_call_cap: int = field(
+        default_factory=lambda: _get_int("CONSENSUS_MONTHLY_CALL_CAP", 20))
+
     # Flags bật/tắt nguồn
     enable_pubmed: bool = field(default_factory=lambda: _get_bool("ENABLE_PUBMED", True))
     enable_europe_pmc: bool = field(default_factory=lambda: _get_bool("ENABLE_EUROPE_PMC", True))
@@ -242,6 +251,9 @@ class Settings:
     # khác CORE), và token phải xin qua email trước khi có gì để bật.
     enable_epistemonikos: bool = field(
         default_factory=lambda: _get_bool("ENABLE_EPISTEMONIKOS", False))
+    # Mặc định TẮT — đòi CONSENSUS_API_KEY bắt buộc thật (chặn cứng như Scopus) và hạn mức Free rất
+    # nhỏ (30 lượt/tháng): bật có chủ ý, chỉ sau khi đã có khoá + hiểu trần CONSENSUS_MONTHLY_CALL_CAP.
+    enable_consensus: bool = field(default_factory=lambda: _get_bool("ENABLE_CONSENSUS", False))
     enable_nice: bool = field(default_factory=lambda: _get_bool("ENABLE_NICE", False))
     enable_drug_safety_feeds: bool = field(
         default_factory=lambda: _get_bool("ENABLE_DRUG_SAFETY_FEEDS", True))
