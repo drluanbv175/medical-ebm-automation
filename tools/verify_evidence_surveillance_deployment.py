@@ -275,7 +275,13 @@ def _check_online_sources() -> Check:
     for name, adapter in registry.items():
         result = adapter.lookup(identifiers[name])
         found = bool(result.found) and not bool(result.unavailable)
-        evidence.append(f"{name}:found={found},health={adapter.health.health_status}")
+        # Vá 20/09/2026: adapter PubMed tự lùi về Europe PMC khi NCBI E-utilities không dùng được (đo thật: mạng này bị
+        # NCBI chặn misuse cả esearch/esummary/efetch) — canary vẫn "found=True,health=ok" nên người đọc tưởng PubMed
+        # chạy trực tiếp. PASS giữ nguyên (bản sao MEDLINE của Europe PMC là dự phòng có chủ ý) nhưng phải NÓI RA.
+        raw = getattr(result, "raw", None)
+        via = str(raw.get("fallback_source") or "") if isinstance(raw, dict) else ""
+        evidence.append(f"{name}:found={found},health={adapter.health.health_status}"
+                        + (f",via={via}(nguon_goc_khong_dung_duoc)" if via else ""))
         if not found:
             failed.append(name)
     return Check(

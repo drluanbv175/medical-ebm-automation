@@ -40,7 +40,8 @@
 | Connector | ID công cụ MCP (tiền tố) | Vai chứng cứ | Khi ưu tiên |
 |---|---|---|---|
 | **PubMed/MEDLINE** | `mcp__plugin_healthcare_PubMed__` → `search_articles` · `get_article_metadata` · `get_full_text_article` · `find_related_articles` · `convert_article_ids` (PMID↔DOI↔PMCID) · `lookup_article_by_citation` | **NỀN TẢNG** — tìm SR/MA, RCT, cohort; phân giải & kiểm metadata; lấy toàn văn PMC | Mọi câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại; mọi lần xác minh PMID/DOI |
-| **Consensus** | `mcp__plugin_bio-research_consensus__search` | **CHỈ KHÁM PHÁ** (discovery) — tổng hợp AI có trích dẫn để định hướng nhanh | Quét sơ bộ "bài nào nói gì"; **KHÔNG** dùng làm nguồn trích dẫn cấp 1 — xem ⚠ §3 |
+| **Consensus** | `mcp__plugin_bio-research_consensus__search` | **CHỈ KHÁM PHÁ** (discovery) — tổng hợp AI có trích dẫn để định hướng nhanh | **CHỈ qua CỔNG §2ter** (khi các tầng trước chưa đủ chứng cứ đáng tin); **KHÔNG** dùng làm nguồn trích dẫn cấp 1 — xem ⚠ §3 |
+| **Scite** | kết nối claude.ai «scite» (ID dạng `mcp__<uuid>__search_literature` · `bibliography` · `citation_graph` · `report_citations`; tiền tố khác nhau giữa các máy — tìm bằng ToolSearch «scite») | **CHỈ XÁC MINH** — cờ rút bài/`editorialNotices` + tally trích dẫn (ủng hộ/phản bác) làm BỐI CẢNH | **CHỈ qua CỔNG §2ter**; BỔ SUNG cho chuỗi rút bài 3 tầng, không thay; tally không dùng chấm mức chứng cứ |
 | **ClinicalTrials.gov** | `mcp__plugin_healthcare_Clinical_Trials__` → `search_trials` · `get_trial_details` · `analyze_endpoints` · `search_by_eligibility` | Đăng ký & thiết kế thử nghiệm; endpoint benchmark; thử nghiệm đang chạy/đã có kết quả | Câu hỏi điều trị (xem có RCT đang/đã chạy); thiết kế NC (đối chiếu endpoint/cỡ mẫu/tiêu chí) |
 | **bioRxiv/medRxiv** | `mcp__plugin_bio-research_biorxiv__` → `search_preprints` · `get_preprint` · `search_published_preprints` | Tiền ấn phẩm (**CHƯA bình duyệt**); kiểm preprint đã lên tạp chí chưa | Văn liệu xám cho SR; tín hiệu rất mới — **luôn ghi nhãn "CHƯA bình duyệt"** |
 | **ChEMBL** | `mcp__plugin_bio-research_chembl__` → `drug_search` · `get_mechanism` · `get_admet` · `get_bioactivity` · `target_search` | Dược lý **TIỀN LÂM SÀNG** (cơ chế, IC50/Ki, ADMET dự đoán) | Bối cảnh cơ chế thuốc cho NGHIÊN CỨU — xem ⚠ §3 (KHÔNG dùng cho cảnh báo kê đơn) |
@@ -138,7 +139,19 @@ ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-
 3. **Cấp 0.5 — tạp chí đỉnh** (§1bis c): lấy toàn văn nghiên cứu gốc/đồng thuận khi cần chi tiết.
 4. **PubMed/Europe PMC — LỚP ĐỐI CHIẾU & KHỬ TRÙNG:** với mỗi chứng cứ từ bước 2–3, tra để (a) **lấy PMID/DOI** cho mọi mục (bất biến verify), và (b) **xác nhận trùng khớp** (cùng nghiên cứu/khuyến cáo, không phải 2 nguồn mâu thuẫn). **KHÔNG** dùng PubMed làm điểm khởi đầu tìm kiếm độc lập khi Cấp 0/0.5 đã trả lời.
 5. **CHỈ mở rộng tìm PubMed/Europe PMC sơ cấp độc lập** khi nguồn chính thống **KHÔNG phủ** câu hỏi (khoảng trống thật) — khi đó nêu rõ "nguồn chính thống chưa phủ → bổ sung y văn sơ cấp".
+6. **MCP dự phòng (Consensus · Scite) CHỈ qua CỔNG §2ter** — không phải bước mặc định; chỉ leo thang khi các bước 1–5 đã tra xong mà vẫn chưa đủ chứng cứ đáng tin.
 > **Bất biến giữ nguyên:** mọi mục cần **PMID/DOI** (hoặc URL guideline chính thức + năm) để verify; nguồn thiếu → **PARTIAL** (không kết luận "không có"); **KHÔNG PII outbound**; **chỉ nguồn miễn phí** (loại Consensus upsell — §3); nguồn bậc cao mâu thuẫn → nêu mâu thuẫn, không chọn bài hợp ý.
+
+---
+
+## 2ter. ⛔ CỔNG DỰ PHÒNG CHO MCP (Consensus · Scite) — thêm 20/09/2026, bác sĩ chốt «MCP vẫn đi qua cổng»
+> Cùng luật với bậc thang dự phòng của engine (`medical-ebm-automation/app/services/fallback_ladder.py`: cổng đủ-chứng-cứ → Consensus → SerpApi Scholar → xác minh Crossref/PubMed → Scite). MCP KHÔNG phải đường tắt quanh cổng đó: cùng điều kiện leo thang, cùng xác minh, cùng trần lượt gọi.
+1. **Điều kiện được gọi Consensus MCP:** đã tra XONG kho nội bộ → Cấp 0 → Cấp 0.5 → PubMed/Europe PMC (§2bis) mà vẫn CHƯA ĐỦ chứng cứ đáng tin. «Đủ» = ≥ 3 bài PHÂN BIỆT có PMID/DOI (không tính bài do Consensus/Scholar tìm ra), không thuộc bậc D, đúng PICO. Đủ rồi thì KHÔNG gọi («hỏi thêm cho chắc» là vi phạm). PubMed/nguồn lõi đang LỖI hoặc không tra được ⇒ trạng thái «CHƯA KẾT LUẬN» (PARTIAL), KHÔNG leo thang sang Consensus để lấp chỗ trống — lỗi ở phía ta không phải là thiếu chứng cứ.
+2. **Ngân sách:** gói Free của Consensus 30 lượt/THÁNG dùng CHUNG giữa MCP và REST của engine (engine tự giới hạn 10/tháng và 5/lượt chạy, đếm ở `data/raw/_state/consensus_usage.json`). Agent: tối đa **2 lời gọi MCP cho một câu hỏi**, không lặp lại truy vấn đã hỏi, và ghi tường minh trong gói «đã leo thang lên Consensus vì: <lý do thiếu>» kèm số lời gọi. Hết lượt/thông báo hết hạn mức ⇒ dừng, ghi PARTIAL.
+3. **Kết quả Consensus = GỢI Ý cần tra lại, không phải nguồn:** không trích trực tiếp. Mỗi bài phải được phân giải qua PubMed/Crossref (DOI, hoặc PMID, hoặc tiêu đề + năm ±1 + họ tác giả đầu; tiêu đề chỉ GẦN GIỐNG — khác đối tượng, phần I/II, erratum — là KHÔNG khớp) và chỉ bản ghi của cơ quan đăng ký được giữ; không xác minh được ⇒ BỎ và đếm. `takeaway` của Consensus không phải abstract; nhãn loại nghiên cứu của Consensus chỉ được dùng để HẠ bậc, không bao giờ nâng.
+4. **Scite MCP = LỚP XÁC MINH, không phải nguồn tìm:** chỉ dùng để (a) kiểm cờ rút bài/`editorialNotices` cho bài SẮP TRÍCH — BỔ SUNG cho chuỗi 3 tầng `check_citation_retraction.py`, KHÔNG thay (Scite không thấy gì thì tuyệt đối không được ghi «chưa bị rút»); (b) xem số trích dẫn ủng hộ/phản bác (tally) làm BỐI CẢNH trong ghi chú — KHÔNG chấm mức chứng cứ, KHÔNG dùng để chọn bài. `search_literature` của Scite chỉ dùng khi mục 1 đã cho phép leo thang và theo mục 3 (như Consensus). Bài Scite không phân giải được ở PubMed/Crossref ⇒ bỏ.
+5. **Upsell/thông điệp hạn mức:** giữ nguyên §3 — Consensus = discovery-only, không trích vào đầu ra SR/đề tài; thông điệp đăng ký/hạn mức mà công cụ MCP ép in chỉ hiện ở câu trả lời tra cứu cho bác sĩ, KHÔNG chép vào artifact.
+6. **Bất biến:** MCP không mở Cổng A/B/G, không đổi `decision`/`gradeLevel`, không PII outbound (truy vấn chỉ chứa câu hỏi lâm sàng đã khử định danh), mọi khẳng định vẫn cần PMID/DOI.
 
 ---
 
@@ -157,7 +170,7 @@ ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-
 
 | Agent | Connector nên dùng |
 |---|---|
-| `tra-cuu-chung-cu` | PubMed (đủ bộ) · Consensus *(discovery)* · ClinicalTrials *(điều trị)* |
+| `tra-cuu-chung-cu` | PubMed (đủ bộ) · Consensus *(discovery, CHỈ qua cổng §2ter)* · ClinicalTrials *(điều trị)* |
 | `pico-lam-sang` · `chan-doan-xac-suat` | PubMed *(LR/độ nhạy-đặc hiệu, quy tắc dự đoán)* |
 | `tham-dinh-grade-nnt` · `tham-dinh-phe-binh` | PubMed `get_full_text_article` *(đọc toàn văn để chấm RoB/GRADE)* |
 | `dien-giai-can-lam-sang` | PubMed *(ngưỡng/giá trị tham chiếu)* · ICD-10 *(mã hóa)* |
@@ -165,7 +178,7 @@ ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-
 | `thu-thu-tai-lieu` | PubMed (`get_article_metadata`/`convert_article_ids`) · bioRxiv *(preprint)* |
 | `tong-quan-y-van` | PubMed · bioRxiv *(văn liệu xám)* · ClinicalTrials *(đăng ký)* — **KHÔNG** Consensus (xem §3) |
 | `trich-xuat-y-van` · `meta-phan-tich` | PubMed `get_full_text_article` *(trích số liệu/CI)* |
-| `kiem-chung-trich-dan` | PubMed `convert_article_ids`/`lookup_article_by_citation`/`get_article_metadata` *(phân giải định danh)* |
+| `kiem-chung-trich-dan` | PubMed `convert_article_ids`/`lookup_article_by_citation`/`get_article_metadata` *(phân giải định danh)* · Scite *(kiểm rút bài/thông báo BỔ SUNG, CHỈ qua cổng §2ter)* |
 | `cau-hoi-nghien-cuu` · `khoang-trong-nghien-cuu` | PubMed · ClinicalTrials *(đối chiếu đã làm chưa)* |
 | `cap-nhat-guideline` · `huong-dan-lam-sang` | PubMed + `WebFetch`/`WebSearch` trang hội *(xem `_NGUON-GUIDELINE-TU-DONG.md`)* |
 | `thiet-ke-nghien-cuu` · `co-mau-nghien-cuu` · `dao-duc-dang-ky` | ClinicalTrials `analyze_endpoints`/`get_trial_details` *(benchmark thiết kế)* |
