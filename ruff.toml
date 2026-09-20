@@ -31,6 +31,7 @@ select = ["E", "F", "W", "I", "FA102"]
 # nguyên để đọc đúng nội dung thay vì bẻ dòng máy móc (các luật E/F/W/I khác vẫn áp dụng).
 "tests/test_consensus_api.py" = ["E501"]
 "tests/test_fallback_ladder.py" = ["E501"]
+"tests/test_rxnorm_ema_medicines.py" = ["E501"]
 "tests/test_fallback_verification.py" = ["E501"]
 # Sinh HTML/CSS template: chuỗi style/markup dài, bẻ dòng gây rối & rủi ro.
 "app/social/package.py" = ["E501"]

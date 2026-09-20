@@ -116,6 +116,31 @@ ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-
 
 ---
 
+## 1ter. ĐÁNH GIÁ `JamesANZ/medical-mcp` — CHỌN LỌC (20/09/2026, bác sĩ yêu cầu «chọn lọc phù hợp»)
+> Repo MIT, Node.js, 16 công cụ, còn được bảo trì (commit 18/09/2026). **QUYẾT ĐỊNH: KHÔNG cài/chạy máy chủ MCP này.** Lý do: (a) chạy mã bên thứ ba (gói npm, có cả `express`/`cors`) với quyền mạng ngay trong máy bác sĩ; (b) không chọn được tập công cụ con — 11/16 công cụ trùng thứ ta ĐÃ có; (c) phần đáng lấy chỉ là hai khoảng trống thật và một nguồn đã có tài liệu. Thay vào đó gọi THẲNG API công khai chính thức bằng mã của ta (retry/backoff/cache, chặn PII, `loi` ≠ `khong_thay`, có kiểm hồi quy + kiểm đột biến).
+
+| Công cụ của medical-mcp | Quyết định | Lý do (số đo 20/09/2026) |
+|---|---|---|
+| `search-drug-nomenclature` (RxNorm) | ✅ **LẤY** — `python3 medical-ebm-automation/tools/tra_thuoc_quoc_te.py chuan-hoa "<tên>"` | Khoảng trống thật: engine 0 adapter, kho 0 tài liệu RxNorm. «Glucophage» → metformin ✔; nhưng «metfromin» → **merbromin** (thuốc sát khuẩn) nên khớp gần đúng không được tự chấp nhận; «Coversyl» → toàn mã Obsolete; API tương tác RxNav đã ngừng (HTTP 404) |
+| `search-drugs` (FDA · DailyMed · TGA · Health Canada · EMA) | ✅ **CHỈ phần EMA** — `… tra_thuoc_quoc_te.py ema "<hoạt chất>"` | EMA: 2.746 bản ghi, 0,7 MB nén, có trạng thái/giám sát bổ sung/cấp phép có điều kiện (rosiglitazone: Avandia `Expired`, Avaglim `Withdrawn`). FDA + DailyMed ĐÃ có (openFDA + `database-lookup`). TGA/Health Canada bỏ: không phải cơ quan bác sĩ VN dùng để ra quyết định, chỉ thêm nhiễu |
+| `get-health-statistics` (WHO GHO) | ✅ **CHỈ DẪN** tới tài liệu đã có `sync/skills/database-lookup/references/who.md` | Chạy được (tuổi thọ VNM 2021 = 73,8). Chỉ là BỐI CẢNH gánh nặng bệnh, KHÔNG làm p0/effect size cho cỡ mẫu (G3 đòi nguồn có PMID/DOI/guideline) |
+| `search-drug-safety` (FAERS · recall · shortage) | ❌ | FAERS đã có (30 tệp engine); recall = openFDA enforcement đã ghi ở `database-lookup/references/fda.md`; shortage là thiếu thuốc ở Mỹ, không áp dụng VN |
+| `search-medical-literature` · `get-article-details` (PubMed) | ❌ trùng | Engine + MCP PubMed đã có, kèm chuỗi rút bài 3 tầng |
+| `search-clinical-trials` | ❌ trùng | MCP ClinicalTrials.gov + adapter engine |
+| `search-google-scholar` | ❌ | Cào web qua dịch vụ trả phí bên thứ ba (Monid/TinyFish) hoặc lùi về Semantic Scholar (ta đã có); phần Scholar của ta là SerpApi có cổng |
+| `search-medical-journals` | ❌ trùng | 31 lane Crossref theo ISSN, độc lập NCBI |
+| `search-clinical-guidelines` | ❌ trùng | Chấm điểm heuristic trên PubMed; ta có 33 lane guideline + AGREE II |
+| `search-pediatric-guidelines` · `search-pediatric-literature` · `search-pediatric-drugs` | ⏸ hoãn | Ngoài phạm vi nội khoa người lớn; xét lại nếu bác sĩ khám nhi |
+| `list-sources` · `health-check` · `get-cache-stats` | ❌ | Hạ tầng của chính máy chủ đó; ta có `kiem_nguon_that` / `do_nguon_song` |
+
+**Luật đọc kết quả `tra_thuoc_quoc_te.py` (mỗi luật từng là một lỗi đo được, có test khoá):**
+1. **`gan_dung` chỉ là GỢI Ý cho bác sĩ xác nhận, không bao giờ dùng tự động** (đo thật: «metfromin» → merbromin). **`khong_thay` ≠ thuốc không tồn tại** (RxNorm là danh mục Hoa Kỳ; biệt dược chỉ có ở Việt Nam sẽ không có). Mã `Obsolete` = không còn hoạt chất để đối chiếu — đọc INN trên nhãn thuốc.
+2. **`loi` (mã thoát 2) = KHÔNG BIẾT**, không bao giờ được đọc thành «không thấy»; danh sách EMA rỗng/bố cục lạ cũng là `loi`.
+3. **EMA chỉ có thuốc cấp phép TẬP TRUNG** (không thấy ≠ chưa được cấp phép ở EU) và trạng thái `Withdrawn/Expired/Lapsed` **KHÔNG kèm lý do** — thường là quyết định thương mại, đọc EPAR qua `medicine_url` trước khi kết luận an toàn. Đây là quản lý châu Âu, không thay Cục Quản lý Dược Việt Nam.
+4. Công cụ **không kiểm tương tác/liều/chống chỉ định**; đầu vào chỉ là TÊN thuốc ngắn (bị từ chối nếu quá 100 ký tự hoặc có dấu hiệu PII). Kết quả chỉ để đối chiếu — không mở Cổng A/B/G, không đổi `decision`/`gradeLevel`; mọi cảnh báo kê đơn vẫn cần nhãn thuốc/guideline có nguồn chính thống.
+
+---
+
 ## 2. PHÂN TẦNG THẨM QUYỀN NGUỒN (nối vào rubric Q7 `_CHUAN-CHAT-LUONG-MEDPALM.md` + R7)
 
 | Tầng | Connector/Nguồn | Được làm gì |
@@ -190,12 +215,12 @@ ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-
 | `pico-lam-sang` · `chan-doan-xac-suat` | PubMed *(LR/độ nhạy-đặc hiệu, quy tắc dự đoán)* |
 | `tham-dinh-grade-nnt` · `tham-dinh-phe-binh` | PubMed `get_full_text_article` *(đọc toàn văn để chấm RoB/GRADE)* |
 | `dien-giai-can-lam-sang` | PubMed *(ngưỡng/giá trị tham chiếu)* · ICD-10 *(mã hóa)* |
-| `ke-don-an-toan` | PubMed *(tương tác/cảnh báo có nguồn)* — **KHÔNG** ChEMBL cho cảnh báo kê đơn (xem §3) |
+| `ke-don-an-toan` | PubMed *(tương tác/cảnh báo có nguồn)* · `tra_thuoc_quoc_te.py` *(RxNorm chuẩn hoá tên + EMA trạng thái cấp phép, §1ter)* — **KHÔNG** ChEMBL cho cảnh báo kê đơn (xem §3) |
 | `thu-thu-tai-lieu` | PubMed (`get_article_metadata`/`convert_article_ids`) · bioRxiv *(preprint)* |
 | `tong-quan-y-van` | PubMed · Cochrane MCP *(SR chuẩn vàng, §2quater)* · bioRxiv *(văn liệu xám)* · ClinicalTrials *(đăng ký)* — **KHÔNG** Consensus (xem §3) |
 | `trich-xuat-y-van` · `meta-phan-tich` | PubMed `get_full_text_article` *(trích số liệu/CI)* |
 | `kiem-chung-trich-dan` | PubMed `convert_article_ids`/`lookup_article_by_citation`/`get_article_metadata` *(phân giải định danh)* · Scite *(kiểm rút bài/thông báo BỔ SUNG, CHỈ qua cổng §2ter)* |
-| `cau-hoi-nghien-cuu` · `khoang-trong-nghien-cuu` | PubMed · ClinicalTrials *(đối chiếu đã làm chưa)* |
+| `cau-hoi-nghien-cuu` · `khoang-trong-nghien-cuu` | PubMed · ClinicalTrials *(đối chiếu đã làm chưa)* · WHO GHO qua `database-lookup/references/who.md` *(bối cảnh gánh nặng bệnh, không phải p0 — §1ter)* |
 | `cap-nhat-guideline` · `huong-dan-lam-sang` | PubMed + `WebFetch`/`WebSearch` trang hội *(xem `_NGUON-GUIDELINE-TU-DONG.md`)* · Cochrane MCP *(tổng quan Cochrane mới/phiên bản mới hơn, §2quater)* |
 | `thiet-ke-nghien-cuu` · `co-mau-nghien-cuu` · `dao-duc-dang-ky` | ClinicalTrials `analyze_endpoints`/`get_trial_details` *(benchmark thiết kế)* |
 

@@ -43,6 +43,7 @@ Câu hỏi nghiên cứu/PICO (từ `cau-hoi-nghien-cuu`) · chuyên khoa + dân
 2. **Trạng thái câu hỏi:** đã đồng thuận? đang tranh cãi? thiếu bằng chứng? bằng chứng gián tiếp/ngoại suy?
 3. **Xác định research gap cụ thể:** mảng PICO chưa nghiên cứu · dân số chưa đại diện (vd người Việt, tuyến cơ sở) · kết cục quan trọng chưa đo · bối cảnh/thời điểm mới · mâu thuẫn giữa nghiên cứu cần giải quyết.
 4. **Tính mới & ý nghĩa:** novelty (lặp lại/mở rộng/mới) + ý nghĩa lâm sàng–chính sách nếu trả lời được.
+5. **Bối cảnh gánh nặng bệnh (tuỳ chọn, thêm 20/09/2026):** để biện minh ý nghĩa đề tài có thể lấy chỉ số WHO GHO theo quốc gia — cách gọi ở `sync/skills/database-lookup/references/who.md` (API `ghoapi.azureedge.net/api`, không khoá; tìm chỉ số bằng `Indicator?$filter=contains(IndicatorName,'…')`, lọc `SpatialDim eq 'VNM'`). **Chỉ là BỐI CẢNH:** ước tính cấp quốc gia/mô hình, không thay dữ liệu địa phương, và **KHÔNG được dùng làm p0/effect size cho cỡ mẫu** (G3 đòi nguồn có PMID/DOI/guideline); ghi mã chỉ số + năm dữ liệu. Lý do chọn lọc: `_CONNECTOR-CHUNG-CU.md` §1ter.
 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
@@ -98,6 +99,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN

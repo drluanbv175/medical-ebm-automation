@@ -54,8 +54,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # vào đây MỖI LẦN sync agent .md đã sửa sang medical-ebm-automation/.claude/agents/.
 # Tái khóa 2026-09-03: 6 agent được nâng ICH E6(R3) Annex 2/QUADAS-3 v1.2
 # và hợp đồng điều phối khép kín; số lượng vẫn giữ nguyên 50.
+# Tái khóa 2026-09-20: `ke-don-an-toan` (mục 8 chuẩn hoá tên thuốc RxNorm + trạng thái EMA) và
+# `khoang-trong-nghien-cuu` (mục 5 bối cảnh WHO GHO); số lượng vẫn giữ nguyên 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "e69302d5fcff4c6c7e89d27d75315f7f7fcd8294f506bc20f9ec927801433eb9"
+    "929871d7bf1b6d10353196925c9675a0ae18c42c8b362fd29399029776235fe8"
 )
 
 MINIMUM_AGENT_COUNT = 50
