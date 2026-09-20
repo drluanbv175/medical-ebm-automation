@@ -8,7 +8,7 @@ Tôn trọng điều khoản sử dụng: chỉ đọc RSS/Atom công khai do t�
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import List
 
 
@@ -20,6 +20,10 @@ class FeedConfig:
     org: str
     kind: str               # "drug_safety" | "guideline"
     clinical_area: str | None = None
+    # mode "rss" (mặc định) đọc RSS/Atom ở `url`; mode "crossref" lấy bài MỚI NHẤT của tạp chí theo `issn` qua Crossref
+    # (api.crossref.org, không khoá) — dùng khi RSS của nhà xuất bản không đọc được từ máy chủ/mạng của bác sĩ.
+    issn: str | None = None
+    mode: str = "rss"
 
 
 # An toàn thuốc CHÍNH THỨC (cơ quan quản lý) – trọng số cao.
@@ -161,4 +165,54 @@ GUIDELINE_FEEDS: List[FeedConfig] = [
         id="bmj_recent", name="The BMJ (recent)",
         url="https://www.bmj.com/rss/recent.xml",
         org="The BMJ", kind="guideline", clinical_area=None),
+]
+
+
+# ── FEED RSS KHÔNG ĐỌC ĐƯỢC → LẤY QUA CROSSREF THEO ISSN (đo thật 20/09/2026) ─────────────────────────────────────────
+# Đo 29 feed: 14 feed trả 0 mục bằng CHÍNH client của hệ (UA/Accept chuẩn, giãn 4 giây): họ BMJ HTTP 429 hoặc timeout
+# ~30 giây (chống bot của HighWire), 3 feed Springer HTTP 406, `bmj_recent` HTTP 403; nhật ký 14 ngày cũng lỗi/ok chập
+# chờn. Đổi UA/giãn nhịp không cứu được, và mỗi lần lỗi tốn tới 30 giây. Crossref cho đúng thứ cần (bài MỚI NHẤT của tạp
+# chí: DOI + tiêu đề + ngày) ổn định từ mọi mạng. ISSN đã đối chiếu từng cái bằng
+# `api.crossref.org/journals/{issn}` (khớp
+# tên tạp chí, có bài 60 ngày gần nhất). BMJ dùng ISSN ĐIỆN TỬ 1756-1833 vì bài mới không gắn ISSN in 0959-8138 trong
+# Crossref (đo: 0 bài so với 473). Cochrane dùng ISSN điện tử 1465-1858 (ISSN in 1469-493X: 0 bài so với 70).
+_CROSSREF_THAY_RSS = {
+    "bmj_ebm": "2515-446X", "ard_bmj": "0003-4967", "bmj_drc": "2052-4897", "diabetologia": "0012-186X",
+    "sti_bmj": "1368-4973", "bmj_gh": "2059-7908", "emj_bmj": "1472-0205", "jnnp_bmj": "0022-3050",
+    "practneurol_bmj": "1474-7758", "svn_bmj": "2059-8688", "bmc_nephrol": "1471-2369", "j_nephrol": "1121-8428",
+    "bmj_mentalhealth": "2755-9734", "bmj_recent": "1756-1833",
+}
+GUIDELINE_FEEDS = [replace(f, issn=_CROSSREF_THAY_RSS[f.id], mode="crossref") if f.id in _CROSSREF_THAY_RSS else f
+                   for f in GUIDELINE_FEEDS]
+
+# Tạp chí nơi các HIỆP HỘI ĐĂNG guideline/đồng thuận (ACC/AHA, ESC, ADA, IDSA, AASLD, KDIGO, ATS/ERS, AGS, ACP,
+# ASCO/ESMO,
+# ASH, AGA/ACG) + Cochrane: hệ không có connector trực tiếp tới trang của các hiệp hội này nên phủ qua nơi họ công bố.
+# Guideline được nhận diện qua TIÊU ĐỀ (infer_study_type) và vẫn phải qua cổng xác minh/duyệt như mọi ứng viên — đây
+# KHÔNG phải nguồn "đã duyệt".
+_JOURNAL_GUIDELINE_SPECS = [
+    # (id, tên, tổ chức, lĩnh vực, ISSN)
+    ("circulation", "Circulation (AHA)", "Circulation (AHA)", "Tim mạch", "0009-7322"),
+    ("eur_heart_j", "European Heart Journal (ESC)", "Eur Heart J (ESC)", "Tim mạch", "0195-668X"),
+    ("diabetes_care", "Diabetes Care (ADA)", "Diabetes Care (ADA)", "Nội tiết - Chuyển hóa", "0149-5992"),
+    ("cid", "Clinical Infectious Diseases (IDSA)", "Clin Infect Dis (IDSA)", "Nhiễm khuẩn", "1058-4838"),
+    ("hepatology", "Hepatology (AASLD)", "Hepatology (AASLD)", "Tiêu hóa - Gan mật", "0270-9139"),
+    ("gastroenterology", "Gastroenterology (AGA)", "Gastroenterology (AGA)", "Tiêu hóa - Gan mật", "0016-5085"),
+    ("am_j_gastroenterol", "American Journal of Gastroenterology (ACG)", "Am J Gastroenterol (ACG)",
+     "Tiêu hóa - Gan mật", "0002-9270"),
+    ("kidney_int", "Kidney International (KDIGO)", "Kidney Int (KDIGO)", "Thận", "0085-2538"),
+    ("ajrccm", "Am J Respir Crit Care Med (ATS)", "AJRCCM (ATS)", "Hô hấp", "1073-449X"),
+    ("eur_respir_j", "European Respiratory Journal (ERS)", "Eur Respir J (ERS)", "Hô hấp", "0903-1936"),
+    ("jags", "Journal of the American Geriatrics Society (AGS)", "JAGS (AGS)", "Lão khoa - Đa bệnh lý", "0002-8614"),
+    ("ann_intern_med", "Annals of Internal Medicine (ACP)", "Ann Intern Med (ACP)", None, "0003-4819"),
+    ("lancet", "The Lancet", "The Lancet", None, "0140-6736"),
+    ("cochrane_cdsr", "Cochrane Database of Systematic Reviews", "Cochrane", None, "1465-1858"),
+    ("jco", "Journal of Clinical Oncology (ASCO)", "JCO (ASCO)", None, "0732-183X"),
+    ("ann_oncol", "Annals of Oncology (ESMO)", "Ann Oncol (ESMO)", None, "0923-7534"),
+    ("blood_adv", "Blood Advances (ASH)", "Blood Adv (ASH)", None, "2473-9529"),
+]
+GUIDELINE_FEEDS = GUIDELINE_FEEDS + [
+    FeedConfig(id=i, name=n, url=f"https://api.crossref.org/journals/{issn}", org=o, kind="guideline",
+               clinical_area=a, issn=issn, mode="crossref")
+    for (i, n, o, a, issn) in _JOURNAL_GUIDELINE_SPECS
 ]

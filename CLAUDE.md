@@ -197,6 +197,21 @@ This file contains only Claude Code-specific instructions.
   GHI vào `raw`, không tham gia chấm điểm; KHÔNG phải tầng tìm kiếm vì Scite Search cần giấy phép.
   ⚠️ **TRẠNG THÁI TRUNG THỰC (cập nhật 20/09/2026):** 98 + 230 + 156 + 86 + 67 test offline đạt, và ĐÃ kiểm THẬT một phần: (a) **SerpApi** — xem đoạn trên; (b) **lớp xác minh Crossref + Scite công khai** — 5 ca có đáp án biết trước, 4/5 đúng: DOI + tiêu đề đúng ⇒ giữ, kèm tally Scite thật (DAPA-HF: 5953 trích dẫn, 169 ủng hộ, 9 mâu thuẫn — chỉ GHI, không chấm điểm) · DOI thật nhưng tiêu đề sai ⇒ loại · DOI không tồn tại ⇒ loại · bài Wakefield (Lancet 1998, Crossref ghi tiêu đề "RETRACTED: …") ⇒ `bi_rut_bai` — **lỗi đo được và vá cùng ngày**: trước đó bị xếp "không khớp" (vẫn loại nhưng sai nhãn, không được đếm là rút bài); ca thứ 5 (tiêu đề bị Scholar cắt "…", không DOI) KHÔNG được giữ vì Crossref tìm theo tiêu đề trả về một bản 2022 KHÁC bài và cổng năm chặn đúng — đây là bằng chứng thật rằng bỏ cổng năm sẽ nhận nhầm bài; (c) **đường PMID/PubMed** vẫn không kiểm được trên mạng này vì NCBI đang chặn misuse ⇒ trả `loi_xac_minh` (fail-closed); (d) **Consensus CHƯA kiểm thật** — chưa có `CONSENSUS_API_KEY` (kết nối MCP Consensus KHÔNG phải khoá REST API — phải tạo khoá riêng ở "API & MCP Dashboard"). Cả hai nguồn dự phòng vẫn TẮT mặc định. Kiểm thật Consensus tốn 1 trong 30 lượt Free/tháng. **Việc còn mở:**
   (i) [đã xong: `.env.example` có đủ dòng mẫu]; (ii) [ĐÃ XONG 20/09/2026 — bác sĩ chốt «MCP vẫn đi qua cổng»: Consensus/Scite ở phía MCP của tác nhân đi qua CÙNG cổng, khai ở `.claude/agents/_CONNECTOR-CHUNG-CU.md` §2ter (chỉ leo thang khi các tầng trước chưa đủ chứng cứ đáng tin; nguồn lõi lỗi ⇒ PARTIAL chứ không leo thang; tối đa 2 lời gọi MCP/câu hỏi vì hạn mức Free 30 lượt/tháng dùng CHUNG với REST; kết quả Consensus phải xác minh Crossref/PubMed; Scite chỉ XÁC MINH, bổ sung cho chuỗi rút bài 3 tầng), khoá bằng chốt BH104 ở repo gốc. Giới hạn trung thực: đây là luật văn bản cho agent, KHÔNG phải cổng máy — không đếm được lời gọi MCP của một phiên cụ thể].
+  · **Feed tạp chí/guideline: chế độ Crossref theo ISSN — thêm 20/09/2026**, theo yêu cầu «phủ chứng cứ» sau đánh giá hệ.
+  Đo 29 feed RSS: chỉ 15 trả mục thật; 14 feed trả 0 mục kể cả bằng CHÍNH client của hệ (giãn nhịp, UA/Accept chuẩn) — họ BMJ
+  HTTP 429/timeout ~30 giây, 3 feed Springer HTTP 406, `bmj_recent` HTTP 403; nhật ký 14 ngày cũng lỗi/ok chập chờn. Đổi UA/nhịp
+  không cứu được. `FeedConfig` nay có `issn` + `mode` ("rss" mặc định | "crossref"); `RSSFeedClient._search_crossref()` lấy bài MỚI
+  NHẤT của tạp chí qua `api.crossref.org/works` (`filter=issn:…,from-pub-date:…`, không khoá, `mailto` polite pool; mặc định cửa sổ
+  45 ngày). 14 feed lỗi được chuyển sang Crossref (ISSN đối chiếu từng cái bằng `api.crossref.org/journals/{issn}`; BMJ dùng
+  ISSN điện tử 1756-1833, Cochrane 1465-1858 vì ISSN in không cho bài mới) và THÊM 17 tạp chí nơi hiệp hội đăng guideline
+  (Circulation/AHA, Eur Heart J/ESC, Diabetes Care/ADA, CID/IDSA, Hepatology/AASLD, Gastroenterology/AGA, AJG/ACG, Kidney Int/KDIGO,
+  AJRCCM/ATS, ERJ/ERS, JAGS/AGS, Ann Intern Med/ACP, Lancet, Cochrane, JCO/ASCO, Ann Oncol/ESMO, Blood Adv/ASH) — độc lập với NCBI
+  và với RSS của nhà xuất bản. Đo thật: **31/31 feed Crossref trả bài thật** (DOI + ngày; SourceLog `ok`). Ngày tương lai của số
+  phát hành (2026-10 cho bài đăng tháng 9) thay bằng ngày Crossref nhận bản ghi, không bịa ngày. **Giới hạn nói thẳng:** đây là
+  lane KHÁM PHÁ theo TIÊU ĐỀ (guideline nhận qua `infer_study_type`), KHÔNG phải nguồn «đã duyệt»; không có abstract đầy đủ; NICE,
+  USPSTF, WHO, GOLD, GINA… vẫn KHÔNG có connector trực tiếp (NICE API chỉ cấp cho tổ chức, có phí quốc tế — xem
+  `docs/xin-cap-quyen-nguon-chung-cu.md`). 25 test ở `tests/test_rss_feed_crossref_mode.py` (mutation-tested 2 phép). CORE chạy được
+  KHÔNG khoá (test-live 20/09/2026: 3 kết quả thật) — chỉ còn cờ `ENABLE_CORE`; Epistemonikos cần token (thư nháp ở docs).
   · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026, GỠ BỎ cùng ngày sau khi xác minh.**
   Kiểm trực tiếp `developer.ebsco.com/dynamed` xác nhận: đăng ký app MedsAPI **bắt buộc** một
   Customer ID + Group ID mà tài liệu EBSCO nói rõ "received from your EBSCO representative" —

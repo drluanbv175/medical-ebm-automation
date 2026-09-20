@@ -10,12 +10,13 @@ from __future__ import annotations
 
 import re
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from email.utils import parsedate_to_datetime
 from typing import List, Optional
 
 from defusedxml.ElementTree import fromstring as _safe_fromstring  # chống XXE/billion-laughs
 
+from app.config import settings
 from app.sources._fixtures import MOCK_FEED_ITEMS
 from app.sources.base import RawRecord, SourceClient
 from app.sources.classify_meta import infer_study_type
@@ -167,6 +168,9 @@ class RSSFeedClient(SourceClient):
         self.feed = feed
         self.name = f"feed_{feed.id}"
         self.endpoint = feed.url
+        if feed.mode == "crossref" and feed.issn:
+            # Nhật ký nguồn (SourceLog) phải ghi ĐÚNG nơi đã gọi, không phải URL RSS cũ không còn dùng.
+            self.endpoint = f"https://api.crossref.org/works?filter=issn:{feed.issn}"
         # Một số CDN (vd FDA/Akamai) chặn User-Agent không giống trình duyệt -> 403.
         # Dùng UA giống trình duyệt để đọc RSS công khai hợp lệ.
         ua = ("Mozilla/5.0 (compatible; medical-ebm-automation/0.1; "
@@ -180,6 +184,8 @@ class RSSFeedClient(SourceClient):
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
         if self.use_mock:
             return self._mock(max_results)
+        if self.feed.mode == "crossref":
+            return self._search_crossref(max_results, since_date)
         try:
             xml_text = self.http.get_text(self.feed.url, use_cache=True)
             self.save_raw(self.feed.id, xml_text)
@@ -188,6 +194,70 @@ class RSSFeedClient(SourceClient):
             logger.warning("[%s] lỗi đọc feed %s — BỎ QUA, KHÔNG bịa mock: %s",
                            self.name, self.feed.url, exc)
             return []
+
+    # -- Chế độ Crossref (RSS của nhà xuất bản không đọc được) ------------------------------
+    _CROSSREF_WORKS = "https://api.crossref.org/works"
+    _CUA_SO_NGAY = 45   # không có since_date thì lấy bài của 45 ngày gần nhất
+
+    def _search_crossref(self, max_results: int, since_date: Optional[str]) -> List[RawRecord]:
+        """Bài MỚI NHẤT của tạp chí `feed.issn` qua Crossref (không khoá). Lỗi ⇒ log + [] (KHÔNG bịa mock)."""
+        issn = (self.feed.issn or "").strip()
+        if not issn:
+            logger.warning("[%s] feed mode=crossref nhưng thiếu ISSN — BỎ QUA", self.name)
+            return []
+        tu_ngay = since_date or (date.today() - timedelta(days=self._CUA_SO_NGAY)).isoformat()
+        params = {
+            "filter": f"issn:{issn},from-pub-date:{tu_ngay},type:journal-article",
+            "sort": "published", "order": "desc", "rows": max(1, min(int(max_results), 100)),
+            "select": "DOI,title,issued,published-online,published-print,created,URL,abstract",
+        }
+        email = getattr(settings, "openalex_email", "") or getattr(settings, "ncbi_email", "")
+        if email:
+            params["mailto"] = email   # polite pool của Crossref
+        try:
+            data = self.http.get_json(self._CROSSREF_WORKS, params=params)
+            items = (data.get("message") or {}).get("items") or []
+        except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
+            logger.warning("[%s] lỗi lấy Crossref ISSN %s — BỎ QUA, KHÔNG bịa mock: %s", self.name, issn, exc)
+            return []
+        out: List[RawRecord] = []
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            tieu_de = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", str((it.get("title") or [""])[0] or ""))).strip()
+            if not tieu_de:
+                continue
+            ngay = self._ngay_crossref(it)
+            tom_tat = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", str(it.get("abstract") or ""))).strip()
+            doi = str(it.get("DOI") or "").strip().lower() or None
+            rec = self._to_record(tieu_de, str(it.get("URL") or "") or None, ngay or None, tom_tat)
+            rec.doi = doi
+            rec.api_endpoint = f"{self._CROSSREF_WORKS}?filter=issn:{issn}"
+            rec.raw["_via"] = "crossref_issn"
+            out.append(rec)
+        logger.info("[%s] %d bài từ Crossref (ISSN %s, %s)", self.name, len(out), issn, self.feed.org)
+        return out
+
+    @staticmethod
+    def _ngay_crossref(it: dict) -> Optional[str]:
+        """Ngày công bố từ Crossref: online-first > ngày phát hành > in. Ngày TƯƠNG LAI (số phát hành của tháng sau — đo
+        thật: 2026-10 cho bài đã đăng tháng 9) thì dùng ngày Crossref nhận bản ghi (`created`); KHÔNG bịa ngày và
+        không để bài "mới nhất" mang ngày chưa tới làm lệch xếp hạng độ mới."""
+        def _so(muc: object) -> List[int]:
+            parts = ((muc or {}).get("date-parts") or [[]])[0] if isinstance(muc, dict) else []
+            return [int(x) for x in parts[:3] if isinstance(x, int) and not isinstance(x, bool)]
+
+        def _chuoi(so: List[int]) -> str:
+            return "-".join(f"{x:02d}" if i else str(x) for i, x in enumerate(so))
+
+        hom_nay = date.today()
+        moc = (hom_nay.year, hom_nay.month, hom_nay.day)
+        for khoa in ("published-online", "issued", "published-print"):
+            so = _so(it.get(khoa))
+            if so and tuple(so) <= moc[: len(so)]:
+                return _chuoi(so)
+        so = _so(it.get("created"))
+        return _chuoi(so) if so else None
 
     # -- Parse -----------------------------------------------------------
     def _parse(self, xml_text: str, max_results: int,

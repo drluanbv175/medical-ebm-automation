@@ -174,13 +174,16 @@ EVIDENCE_SOURCE_UNIVERSE: tuple[EvidenceSourceLayer, ...] = (
         # feed_gut_bmj/feed_jama) vẫn trả layers['high_impact_journals']
         # ['healthy']==[] trước khi vá — tầng này VĨNH VIỄN PARTIAL bất kể hệ
         # thống khoẻ mạnh tới đâu, không phân biệt được "feed chết thật" với
-        # "tên sai quy ước". "lancet"/"annals_internal_medicine"/
-        # "nature_medicine"/"circulation"/"diabetes_care"/
-        # "kidney_international"/"chest"/"blood" KHÔNG có feed tương ứng
-        # trong feeds.py nên bị bỏ (không bịa feed không tồn tại).
+        # "tên sai quy ước". [CẬP NHẬT 20/09/2026] các tạp chí nơi hiệp hội đăng guideline
+        # (Lancet, Annals of Internal Medicine, Circulation, Eur Heart J, Diabetes Care, Kidney Int, CID, Hepatology,
+        # AJRCCM, ERJ, JAGS, Cochrane) NAY CÓ feed thật (chế độ Crossref theo ISSN trong feeds.py) nên được khai ở đây;
+        # "nature_medicine"/"chest" vẫn không có feed tương ứng nên vẫn bị bỏ (không bịa feed không tồn tại).
         (
             "feed_nejm_current", "feed_jama", "feed_bmj_recent", "feed_bmj_ebm",
             "feed_jacc", "feed_gut_bmj", "feed_thorax_bmj", "feed_ard_bmj",
+            "feed_lancet", "feed_ann_intern_med", "feed_circulation", "feed_eur_heart_j", "feed_diabetes_care",
+            "feed_kidney_int", "feed_cid", "feed_hepatology", "feed_ajrccm", "feed_eur_respir_j", "feed_jags",
+            "feed_cochrane_cdsr",
         ),
         1,
         "crosscheck",
