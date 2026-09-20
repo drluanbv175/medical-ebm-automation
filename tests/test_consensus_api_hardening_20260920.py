@@ -26,10 +26,13 @@ if str(REPO_ROOT) not in sys.path:
 
 from app.config import settings  # noqa: E402
 from app.sources import consensus_api as ca  # noqa: E402
-from app.sources.consensus_api import ConsensusClient, ConsensusLoi  # noqa: E402
 from app.utils import http as http_mod  # noqa: E402
 
 KHOA = "KHOA_HOP_LE_THU_NGHIEM_123"
+# LƯU Ý: test_consensus_api.py dùng `importlib.reload(consensus_api)` để mô phỏng «khởi động lại» ⇒ sau đó lớp
+# trong module là lớp MỚI. Vì vậy KHÔNG nhập `ConsensusClient`/`ConsensusLoi` lúc import (sẽ giữ lớp CŨ và
+# `pytest.raises` không bắt được ngoại lệ của lớp mới — đỏ ở CI vì test_consensus_api chạy trước theo thứ tự
+# chữ cái) mà tra qua module `ca` tại thời điểm chạy.
 
 
 @pytest.fixture(autouse=True)
@@ -79,9 +82,9 @@ class _AdapterGia(requests.adapters.BaseAdapter):
         pass
 
 
-def _client(monkeypatch, khoa: str, adapter: _AdapterGia) -> ConsensusClient:
+def _client(monkeypatch, khoa: str, adapter: _AdapterGia):
     monkeypatch.setattr(settings, "consensus_api_key", khoa)
-    c = ConsensusClient()
+    c = ca.ConsensusClient()
     c.use_mock = False
     c.http.session.mount("https://", adapter)
     return c
@@ -111,9 +114,9 @@ class TestKhoaDiDang:
         ad = _AdapterGia()
         c = _client(monkeypatch, khoa_xau, ad)
         with caplog.at_level("DEBUG"):
-            with pytest.raises(ConsensusLoi) as ei:
+            with pytest.raises(ca.ConsensusLoi) as ei:
                 c.search("aspirin")
-            with pytest.raises(ConsensusLoi) as ei2:        # lượt sau: vẫn lỗi chính xác, nguồn đã bị đánh dấu dừng
+            with pytest.raises(ca.ConsensusLoi) as ei2:        # lượt sau: vẫn lỗi chính xác, nguồn đã bị đánh dấu dừng
                 c.search("warfarin")
         assert ei.value.loai == "key_sai" and ei.value.chot
         assert ei2.value.loai == "key_sai" and c._chot_loi is not None and c._chot_loi.loai == "key_sai"
