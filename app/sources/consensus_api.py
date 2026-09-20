@@ -185,6 +185,21 @@ def _lay_khoa() -> str:
     return khoa.strip() if isinstance(khoa, str) else ""
 
 
+def _khoa_dinh_dang_hop_le(khoa: str) -> bool:
+    """Khoá hợp lệ = ASCII, in được, không khoảng trắng bên trong. Ký tự vô hình/ngoài ASCII (zero-width
+    U+200B, nháy cong U+2019 — hay dính theo khi copy khoá từ web) làm `requests` ném UnicodeEncodeError
+    lúc dựng header; nếu không kiểm trước thì lỗi đó bị báo là «timeout/mất mạng» (sai nguyên nhân) và
+    nguồn không bị dừng, mỗi truy vấn kế tiếp lại thử lại vô ích."""
+    return bool(khoa) and khoa.isascii() and khoa.isprintable() and not any(c.isspace() for c in khoa)
+
+
+def _go_khoa_khi_chuyen_huong(prepared_request: Any, response: Any) -> None:
+    """`requests` chỉ gỡ header `Authorization` khi đổi host, KHÔNG gỡ header tuỳ biến — nên `x-api-key`
+    từng đi theo cả chuyển hướng 302 sang host/`http://` khác (đo thật 20/09/2026). Consensus không có lý do
+    chuyển hướng ⇒ gỡ khoá ở MỌI chuyển hướng (thay cho `Session.rebuild_auth`)."""
+    prepared_request.headers.pop("x-api-key", None)
+
+
 def _cau_hinh_tran(ten: str, mac_dinh: int) -> int:
     """Trần số lượt gọi từ settings. Thiếu thuộc tính -> mặc định của hợp đồng; có mà sai kiểu ->
     0 (fail-closed: không bao giờ hiểu cấu hình hỏng thành 'không giới hạn')."""
@@ -577,6 +592,9 @@ class ConsensusClient(SourceClient):
             headers["x-api-key"] = khoa
         self.http = HttpClient(default_headers=headers, min_interval=KHOANG_CACH_TOI_THIEU_GIAY,
                                max_retries=0)
+        session = getattr(self.http, "session", None)
+        if session is not None:   # client giả trong test có thể không có session
+            session.rebuild_auth = _go_khoa_khi_chuyen_huong
         self._chot_loi: Optional[ConsensusLoi] = None   # lỗi chốt: dừng gọi tiếp trên instance này
         self.stats: Dict[str, int] = {
             "so_lan_goi": 0, "bo_qua_ngan_sach": 0, "khong_co_ket_qua": 0, "bo_qua_thieu_tieu_de": 0,
@@ -596,6 +614,13 @@ class ConsensusClient(SourceClient):
             raise ConsensusLoi(
                 "[consensus] ENABLE_CONSENSUS=true nhưng thiếu CONSENSUS_API_KEY — thêm vào "
                 "~/.ebm-secrets/medical-ebm-automation.env rồi thử lại.", "thieu_key")
+        if not _khoa_dinh_dang_hop_le(khoa):
+            # Thông điệp CỐ ĐỊNH — tuyệt đối không chèn giá trị khoá. Lỗi CHỐT: cấu hình sai thì mọi lời gọi
+            # sau đều vô nghĩa. Nằm TRƯỚC ngân sách nên không tốn lượt nào.
+            raise self._chot(ConsensusLoi(
+                "[consensus] CONSENSUS_API_KEY chứa ký tự không hợp lệ (khoảng trắng, ký tự vô hình hoặc "
+                "ngoài ASCII — hay dính theo khi copy từ web). Nạp lại khoá, không kèm dấu nháy/khoảng "
+                "trắng; nguồn dừng cho phần còn lại của lượt chạy.", "key_sai"))
         if self._chot_loi is not None:
             raise ConsensusLoi(
                 f"{self._chot_loi.args[0]} [nguồn đã bị dừng cho phần còn lại của lượt chạy, "
