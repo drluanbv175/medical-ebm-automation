@@ -368,16 +368,19 @@ class PubMedClient(SourceClient):
             found.add(pmid)
             pubtypes = {pt.text for pt in art.findall(".//PublicationType") if pt.text}
             retraction_notice = None
+            retraction_notices = []  # TẤT CẢ thông báo (thêm 20/09/2026: dấu vân tay sổ miễn trừ phải phủ đủ)
             eoc_notice = None
             for cc in art.findall(".//CommentsCorrectionsList/CommentsCorrections"):
                 ref_type = cc.get("RefType", "")
                 notice = {"pmid": cc.findtext("PMID"), "citation": cc.findtext("RefSource")}
                 if ref_type == "RetractionIn":
                     retraction_notice = notice
+                    retraction_notices.append(notice)
                 elif ref_type == "ExpressionOfConcernIn":
                     eoc_notice = notice
             if "Retracted Publication" in pubtypes or retraction_notice:
-                results[pmid] = {"status": "retracted", "retraction_notice": retraction_notice}
+                results[pmid] = {"status": "retracted", "retraction_notice": retraction_notice,
+                                 "retraction_notices": retraction_notices}
             elif "Expression of Concern" in pubtypes or eoc_notice:
                 results[pmid] = {"status": "expression_of_concern",
                                   "expression_of_concern_notice": eoc_notice}

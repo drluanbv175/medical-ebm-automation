@@ -236,7 +236,10 @@ class EuropePMCClient(SourceClient):
             return {"status": "retracted",
                     "retraction_notice": ({"pmid": thong_bao_rut["pmid"],
                                            "citation": thong_bao_rut["citation"]}
-                                          if thong_bao_rut else None)}
+                                          if thong_bao_rut else None),
+                    # TẤT CẢ thông báo rút (thêm 20/09/2026, cùng lý do với PubMed).
+                    "retraction_notices": [{"pmid": c["pmid"], "citation": c["citation"]}
+                                           for c in lien_ket if c["type"].startswith("retraction in")]}
         if "expression of concern" in pubtypes or thong_bao_eoc:
             return {"status": "expression_of_concern",
                     "expression_of_concern_notice": ({"pmid": thong_bao_eoc["pmid"],

@@ -56,6 +56,15 @@ KHONG_BIET = {"unknown_mock_or_no_email", "unknown_fetch_error"}
 DUONG_TINH = ("retracted", "expression_of_concern")
 
 
+
+def _cac_thong_bao(kq: dict) -> list:
+    """Mọi thông báo rút bài mà MỘT nguồn báo (ưu tiên danh sách đầy đủ; lùi về thông báo đơn)."""
+    ds = [n for n in (kq.get("retraction_notices") or []) if isinstance(n, dict)]
+    if not ds and isinstance(kq.get("retraction_notice"), dict):
+        ds = [kq["retraction_notice"]]
+    return ds
+
+
 class RetractionChain:
     """Hỏi lần lượt 3 nguồn rồi gộp theo luật bất đối xứng ở docstring đầu file."""
 
@@ -162,9 +171,9 @@ class RetractionChain:
         for nguon in (pm, ep):
             for kq in nguon.values():
                 if kq.get("status") == "retracted":
-                    nid = (kq.get("retraction_notice") or {}).get("pmid")
-                    if nid:
-                        notice_pmids.add(str(nid))
+                    for n in _cac_thong_bao(kq):
+                        if n.get("pmid"):
+                            notice_pmids.add(str(n["pmid"]))
         notice_titles: Dict[str, str] = {}
         if notice_pmids:
             ds_notice = sorted(notice_pmids)
@@ -219,13 +228,30 @@ class RetractionChain:
                     # nói sai về một trích dẫn hợp lệ; việc cần làm là ĐỐI CHIẾU số liệu
                     # với bản đã sửa, không phải bỏ mục. Vẫn giữ status 'retracted' để
                     # cổng còn chặn (fail-closed) — chỉ CÂU CHỮ đổi.
-                    from app.sources.crossref_retraction import la_rut_va_thay  # noqa: PLC0415
+                    from app.sources.crossref_retraction import (  # noqa: PLC0415
+                        la_rut_va_thay,
+                        la_thong_bao_sua_loi_bi_rut,
+                    )
                     notice_pmid = str((kq.get("retraction_notice") or {}).get("pmid") or "")
                     if la_rut_va_thay((rw or {}).get("reason", ""),
                                       kq.get("notice_title", ""),
                                       kq.get("reason", ""),
                                       notice_titles.get(notice_pmid, "")):
                         ra["retract_and_replace"] = True
+                    if muc == "retracted":
+                        # «BẢN ĐÍNH CHÍNH BỊ RÚT» (20/09/2026) — chỉ NHẬN DIỆN CÂU CHỮ, trạng thái
+                        # vẫn `retracted`. Đánh cờ CHỈ khi hội đủ: (1) biết MỌI thông báo rút và
+                        # đã đọc được tiêu đề của TỪNG cái, (2) tất cả đều là đính chính bị rút,
+                        # (3) Retraction Watch không có phán quyết dương tính riêng (RW ghi một
+                        # vụ rút THẬT thì không được gọi nó là «đính chính»). Thiếu một điều kiện
+                        # ⇒ không cờ ⇒ giữ thông điệp «đã bị rút» như cũ (đường an toàn).
+                        ds_tb = _cac_thong_bao(kq)
+                        ra["notice_ids"] = sorted({str(n["pmid"]) for n in ds_tb if n.get("pmid")})
+                        rw_duong = bool(rw and rw.get("status") in DUONG_TINH)
+                        ra["withdrawn_correction_notice"] = bool(
+                            ds_tb and len(ra["notice_ids"]) == len(ds_tb) and not rw_duong
+                            and all(la_thong_bao_sua_loi_bi_rut(notice_titles.get(str(n["pmid"]), ""))
+                                    for n in ds_tb))
                     return ra
 
         # 2. ÂM TÍNH hoặc "nghi ma" — chỉ nguồn SỐNG mới được nói, theo thứ tự ưu tiên.

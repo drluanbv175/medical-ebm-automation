@@ -33,6 +33,7 @@ tiêu thụ đọc được mà không phải đổi cách đọc.
 from __future__ import annotations
 
 import json
+import re
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -65,6 +66,29 @@ def la_rut_va_thay(*van_ban: str) -> bool:
     """Có phải dạng rút-rồi-đăng-lại không? Đọc tiêu đề thông báo / lý do Retraction Watch."""
     gop = " ".join(v or "" for v in van_ban).lower()
     return any(k in gop for k in _RUT_VA_THAY)
+
+
+# THÔNG BÁO ĐÍNH CHÍNH BỊ RÚT — thêm 20/09/2026, ca thật `TienLuongSuyTim_20260914` ITEM-11.
+# Guideline CCS/CHFS 2025 (PMID 41110921) mang cờ «Retracted Publication» chỉ vì NLM gắn thông
+# báo rút bài (PMID 41422828) vào NÓ, trong khi thứ bị rút là MỘT BẢN ĐÍNH CHÍNH TRÙNG LẶP
+# («WITHDRAWN: Corrigendum to …», nguyên văn: «accidental duplication of an article that has
+# already been published… The duplicate article has therefore been withdrawn»). Chuỗi 3 tầng
+# không độc lập với lỗi này — cả ba đọc cùng một liên kết NLM nên cùng nói «đã rút».
+# ĐÂY LÀ NHẬN DIỆN CÂU CHỮ, KHÔNG PHẢI PHÁN QUYẾT: trạng thái vẫn là `retracted` (cổng vẫn chặn),
+# cờ chỉ đổi thông điệp thành «cần bác sĩ xem» và cho phép sổ miễn trừ DO BÁC SĨ KÝ (xem
+# `verify_dashboard.kiem_nguon_da_rut`). Chặt có chủ ý: chỉ nhận tiêu đề dạng «WITHDRAWN|RETRACTED:
+# <Corrigendum|Erratum|Correction|Addendum> to/for …» hoặc «Author/Publisher Correction» — một bài
+# nghiên cứu tình cờ tên «Correction of hypertension…» KHÔNG khớp «correction to/for».
+_TB_SUA_LOI_BI_RUT = re.compile(
+    r"^\s*(?:withdrawn|retracted)\s*:\s*"
+    r"(?:(?:corrigendum|erratum|correction|addendum)\s+(?:to|for)\b"
+    r"|(?:author|publisher)\s+correction\b)",
+    re.IGNORECASE)
+
+
+def la_thong_bao_sua_loi_bi_rut(tieu_de: str) -> bool:
+    """Tiêu đề thông báo rút bài có phải của MỘT BẢN ĐÍNH CHÍNH bị rút (không phải của bài chính)?"""
+    return bool(_TB_SUA_LOI_BI_RUT.match(tieu_de or ""))
 
 
 def _chuan_hoa(nhan: str) -> str:
@@ -139,11 +163,18 @@ class CrossrefRetraction:
                     tieu_de_tb = (tb.get("title") or [""])[0]
                 except Exception:  # noqa: BLE001 — không đọc được thì giữ mức chung
                     pass
+                # Tập MỌI thông báo rút (để dấu vân tay của sổ miễn trừ phủ đủ) — và chỉ
+                # đánh cờ «bản đính chính bị rút» khi có ĐÚNG MỘT thông báo và tiêu đề khớp:
+                # đã đọc tiêu đề của mỗi thông báo thì mới nói được «tất cả đều là đính chính».
+                cac_tb = sorted({x.lower() for t, x in nang if t == "retracted" and x})
                 ra[d] = {"status": "retracted", "source": "crossref",
                          "reason": "Crossref: updated-by retraction",
                          "notice_doi": thong_bao,
+                         "notice_dois": cac_tb,
                          "notice_title": tieu_de_tb,
                          "retract_and_replace": la_rut_va_thay(tieu_de_tb),
+                         "withdrawn_correction_notice": (
+                             len(cac_tb) == 1 and la_thong_bao_sua_loi_bi_rut(tieu_de_tb)),
                          "title": (m.get("title") or [""])[0]}
             elif nang:
                 ra[d] = {"status": "expression_of_concern", "source": "crossref",
