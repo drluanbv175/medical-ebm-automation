@@ -112,6 +112,95 @@ This file contains only Claude Code-specific instructions.
   nguyên văn tài liệu (query "adjuvant treatment", total_hits=205) — không bịa cấu trúc. **CHƯA xác
   nhận chạy thật** (bác sĩ chưa có token lúc viết) — chạy
   `python run.py test-live epistemonikos "<từ khoá>"` sau khi có token để đối chiếu.
+  · **SerpApi Google Scholar — thêm 20/09/2026**, theo yêu cầu "tích hợp Google Scholar API qua
+  SerpApi để hoàn thiện hệ thống". `app/sources/serpapi_scholar.py` (`SerpApiScholarClient`).
+  Google Scholar KHÔNG có API chính thức; SerpApi là dịch vụ thương mại bóc kết quả Scholar thành
+  JSON: `GET https://serpapi.com/search.json` với `engine=google_scholar`, `q`, `num` ≤ 20,
+  `as_ylo` = năm của `since_date`, `api_key` là query param (tài liệu SerpApi không ghi header xác
+  thực). Đây là nguồn KHÁM PHÁ, không phải nguồn xác minh. ⚠️ **CẬP NHẬT cùng ngày 20/09/2026 — KHÔNG
+  còn nằm trong `get_enabled_sources()`**: bác sĩ yêu cầu chỉ dùng khi các nguồn khác chưa đủ chứng
+  cứ đáng tin, nên nó là TẦNG DỰ PHÒNG số 2 của bậc thang có cổng (xem đoạn "Bậc thang dự phòng có
+  cổng" ngay dưới); `get_fallback_sources()` mới dựng nó. Vẫn KHÔNG thuộc `_DISCOVERY_CORE` và KHÔNG có
+  trong `authority.EVIDENCE_SOURCE_UNIVERSE`. TẮT mặc định
+  (`ENABLE_SERPAPI_SCHOLAR=true` để bật). **`SERPAPI_API_KEY` BẮT BUỘC thật** trong
+  `~/.ebm-secrets/medical-ebm-automation.env` — `search()` tự chặn sớm bằng `SerpApiLoi` (loại
+  `thieu_key`, là `RuntimeError`), KHÔNG đặt trong `__init__` vì `get_enabled_sources()` dựng
+  client ngoài `try`. **MỖI request là MỘT search SerpApi TÍNH PHÍ** (kết quả rỗng vẫn tính 1;
+  lỗi/thất bại/trúng cache của SerpApi thì không tính): gói Free 250 search/tháng và 50 search/giờ —
+  số đo từ trang giá `serpapi.com/pricing` đọc 20/09/2026 (qua công cụ tóm tắt, đối chiếu chéo với
+  nguồn thứ ba, KHÔNG phải HTML thô); **CHƯA xác nhận từ nguồn chính** rằng Google Scholar nằm trong
+  gói Free. Vì vậy có NGÂN SÁCH `SERPAPI_MAX_CALLS_PER_RUN` (mặc định **8**, `app/config.py`):
+  bộ đếm theo TIẾN TRÌNH dùng chung mọi instance (ingestion, `research/manager.py`,
+  `research/dossier.py` đều tạo instance riêng), tự về 0 khi sang NGÀY mới, `<= 0` = khoá hẳn. Tính:
+  8 x ~22 ngày chạy/tháng = 176 search, chừa ~30% cho chạy tay. Chạm trần → NỔ TO (`SerpApiLoi` loại
+  `het_ngan_sach`, không gửi thêm request), không trả rỗng im lặng; lượt trúng cache 24 giờ của
+  `HttpClient` được hoàn lại ngân sách. **Đúng MỘT request HTTP cho mỗi `search()` trên MỌI đường**
+  (thành công, 401/429/5xx, timeout, mất mạng, JSON hỏng — sửa 20/09/2026 sau khi đo thấy 429/5xx gửi 2
+  request và timeout/mất mạng/JSON hỏng gửi 5, trong khi ngân sách chỉ đếm 1): connector dựng
+  `HttpClient(max_retries=0)` — tham số MỚI `max_retries` theo TỪNG client ở `app/utils/http.py`
+  (`None` = mặc định, dùng `settings.http_max_retries`, hành vi mọi nguồn khác KHÔNG đổi; `0` = không
+  retry, không ngủ backoff vô ích). Key sai (401) và hết quota (429 "run out of searches") là lỗi
+  CHỐT: dừng nguồn cho phần còn lại của lượt chạy. **Giới hạn đã biết:** (1) KHÔNG abstract —
+  `snippet` của Scholar chỉ là đoạn trích ngắn, giữ ở `raw["snippet"]`, `abstract=None`; (2) KHÔNG
+  DOI/PMID chắc chắn — chỉ trích khi `link` thật là doi.org / PubMed / PMC / Europe PMC hoặc URL nhà
+  xuất bản chứa nguyên văn `/doi/10.xxxx/…`, còn lại `None` (không tra ngược từ tiêu đề) →
+  **mọi bản ghi Scholar phải được phân giải qua PubMed/Crossref TRƯỚC khi dùng lâm sàng**;
+  (3) ngày chỉ có NĂM (`publication_date="YYYY"` hoặc `None` + cờ `year_unknown`, không bịa
+  tháng/ngày; `as_ylo` lọc phía server nên mỗi lượt vẫn trả kết quả chồng lấp); (4) `study_type` LUÔN
+  `None` trừ tín hiệu preprint — đã chứng minh offline rằng suy từ tiêu đề đẩy bản ghi title-only lên
+  tier A/actionable rồi vào cảnh báo email và EBM_MASTER; (5) KHÔNG tham gia chuỗi 3 tầng kiểm rút bài
+  (`retraction_chain.py`) — bản ghi Scholar luôn "chưa kiểm rút bài", giống Scopus/OpenAlex/Crossref/
+  Semantic Scholar; (6) tiêu đề Scholar hay bị cắt bằng "…" nên dedup KHÔNG gộp được với bản PubMed
+  (cờ `title_truncated`); (7) truy vấn đi qua SerpApi tới Google và SerpApi lưu 31 ngày → connector
+  TỪ CHỐI truy vấn có dấu hiệu PII/PHI (`contains_pii_text`), và BỎ QUA truy vấn mang thẻ PubMed
+  (`[ta]`/`[pt]`/`[cn]`… — 8/53 truy vấn trong `CLINICAL_AREAS`, không gọi HTTP, Source Log hiện ok/0,
+  số thật ở `client.stats`). `api_key` chỉ đi qua `params` nên `HttpClient._redact` che ở log/
+  exception; payload trước `save_raw` và cache GET trên đĩa đều bị lược khoá. **Bật (đúng thứ tự):**
+  (a) bác sĩ TỰ tạo tài khoản và lấy key trên serpapi.com; (b) thêm `SERPAPI_API_KEY=<key>` và
+  `ENABLE_SERPAPI_SCHOLAR=true` vào `~/.ebm-secrets/medical-ebm-automation.env` (giữ
+  `USE_MOCK_SOURCES=false` nếu muốn `ingest` chạy thật; chỉnh `SERPAPI_MAX_CALLS_PER_RUN` nếu cần) —
+  không ghi key vào repo; (c) chạy MỘT lần `python run.py test-live serpapi_scholar "<từ khoá>"`
+  (`test-live` tự ép chế độ thật, tốn đúng 1 search) rồi kiểm `is_mock:false`, `count`, `year`,
+  `doi`/`pmid` (đa số sẽ `None`), `study_type:null`. **181 test offline** ở
+  `tests/test_serpapi_scholar.py` (không gọi mạng, không cần key; dựng từ tài liệu SerpApi + mẫu tự
+  dựng, không có phản hồi thật nào; gồm nhóm đếm số request thật qua `HttpClient` với session giả) +
+  **21 test** ở `tests/test_http_per_client_max_retries.py` cho tham số `max_retries` của `HttpClient`. ✅ **ĐÃ XÁC NHẬN CHẠY THẬT 20/09/2026** (1 search tính phí, `run.py test-live serpapi_scholar`): khoá hợp lệ ⇒ `count=5`, `is_mock:false`, `year` 2019–2026, `pmid:null`, `study_type:null`, `tier C`, `watch_only`; trong 4 bản ghi đầu chỉ 1 có DOI (đúng dự đoán "đa số `None`"). ⚠️ **Bẫy đã gặp thật:** khoá bị DÁN ĐÔI (128 ký tự = 2 × 64 hex giống hệt nhau) ⇒ HTTP 401 "Invalid API key" (lỗi không tính phí) — nút `Nhap Khoa SerpApi.command` trước đó chỉ cảnh báo "dài 128, thường 64" rồi vẫn ghi; nay tự nhận và gộp khoá dán đôi (cả khoá đang lưu lẫn khoá vừa dán). Còn CHƯA đối chiếu: ý nghĩa `as_ylo` "bao gồm năm đó" và việc phản hồi có lặp lại `api_key` hay không. **Việc còn mở (chưa làm, cần bác sĩ quyết):** (i) `summarize_source_health`
+  (`app/services/ingestion.py`) — nguồn NGOÀI lõi hỏng 100% vẫn ra `PASS` (đã chứng minh offline;
+  Scopus/CORE/Epistemonikos cũng chịu lỗ hổng này), đổi luật sẽ đổi hành vi phát hành nên chưa sửa;
+  (ii) [ĐÃ LỖI THỜI từ khi có bậc thang có cổng — giờ chỉ truy vấn THIẾU chứng cứ mới gọi Scholar, không còn
+  quét tuần tự 53 truy vấn]; (iii) `.env.example` chưa có dòng
+  mẫu — cần thêm `SERPAPI_API_KEY=` (để trống), `ENABLE_SERPAPI_SCHOLAR=false`,
+  `SERPAPI_MAX_CALLS_PER_RUN=8` (tác nhân không được sửa `.env*`); (iv) `research/manager.py` và
+  `research/dossier.py` nuốt mọi exception bằng `logger.warning` nên lỗi thiếu key/hết quota không
+  lên giao diện; (v) chưa có trần theo tháng (~225/250) qua Account API; (vi) tầng giám sát lâm sàng
+  (`EBM-Dashboards/tools/surveillance_scan.py`) chưa có "làn" Scholar. Tắt được bằng cờ và không
+  phụ thuộc duy nhất vào nguồn này (Google đang kiện SerpApi — theo báo chí/blog SerpApi, chưa có
+  thông tin sau ~01/09/2026).
+  · **Bậc thang dự phòng có cổng (Consensus → SerpApi Scholar) + lớp xác minh Scite — thêm 20/09/2026**,
+  theo yêu cầu "chỉ khi các nguồn khác chưa đủ chứng cứ đáng tin cậy mới xác minh và tìm thêm".
+  Mã: `app/services/evidence_sufficiency.py` (cổng), `fallback_ladder.py` (bậc thang),
+  `fallback_verification.py` (xác minh), `app/sources/consensus_api.py`, `app/sources/scite_public.py`.
+  **Cổng đủ-chứng-cứ:** một truy vấn chỉ leo thang khi có < `FALLBACK_MIN_TRUSTED` (mặc định 3) bài
+  ĐÁNG TIN phân biệt — đáng tin = không phải Consensus/Scholar, không mock, có PMID/DOI, tier ≠ D, điểm
+  chứng cứ ≥ `FALLBACK_MIN_EVIDENCE` (60); đếm cả bài đã có trong kho. Nguồn lõi sập ⇒ trạng thái
+  "không rõ", KHÔNG leo thang (tránh đốt hạn mức khi lỗi nằm ở phía ta). Chế độ mock ⇒ bậc thang tắt.
+  Thứ tự thử = `FALLBACK_ORDER` (mặc định `consensus,serpapi_scholar`; tên lạ ⇒ `ValueError`); chỉ tầng
+  có cờ bật mới chạy. **Consensus** (`ENABLE_CONSENSUS`, `CONSENSUS_API_KEY` bắt buộc, key đi header
+  `x-api-key`): gói Free 30 lượt/tháng dùng CHUNG với MCP nên có trần riêng — `CONSENSUS_MAX_CALLS_PER_MONTH`
+  (mặc định **10**, bộ đếm bền ở `data/raw/_state/consensus_usage.json`) và `CONSENSUS_MAX_CALLS_PER_RUN`
+  (mặc định **5**), cách nhau ≥ 1,1 giây, hết trần ⇒ nổ to chứ không trả rỗng. Consensus chỉ trả
+  `takeaway` (KHÔNG phải abstract) và nhãn `study_type` của nó chỉ là gợi ý, chỉ được HẠ bậc. **Xác minh
+  (bắt buộc, nghiêm ngặt):** mọi bản ghi do tầng dự phòng tìm ra phải khớp một bản ghi THẬT trong Crossref
+  (DOI/tiêu đề) hoặc PubMed (PMID) — tiêu đề giống ≥ 0,9 VÀ cùng token phân biệt (số phần/giai đoạn,
+  nhóm dân số), năm lệch ≤ 1, khớp họ tác giả đầu; bản ghi giữ lại là bản của registry, không phải bản
+  của Consensus/Scholar. Không xác minh được ⇒ bỏ và đếm (`FALLBACK_KEEP_UNVERIFIED=true` để giữ kèm cờ
+  `chua_xac_minh`). **Scite** (`ENABLE_SCITE_VERIFICATION`, mặc định bật, KHÔNG cần khoá): chỉ là lớp xác minh
+  qua endpoint công khai `papers`/`tallies` — chặn bài bị rút/có thông báo biên tập (`bi_rut_bai`), tally chỉ
+  GHI vào `raw`, không tham gia chấm điểm; KHÔNG phải tầng tìm kiếm vì Scite Search cần giấy phép.
+  ⚠️ **TRẠNG THÁI TRUNG THỰC (cập nhật 20/09/2026):** 98 + 230 + 156 + 86 + 67 test offline đạt, và ĐÃ kiểm THẬT một phần: (a) **SerpApi** — xem đoạn trên; (b) **lớp xác minh Crossref + Scite công khai** — 5 ca có đáp án biết trước, 4/5 đúng: DOI + tiêu đề đúng ⇒ giữ, kèm tally Scite thật (DAPA-HF: 5953 trích dẫn, 169 ủng hộ, 9 mâu thuẫn — chỉ GHI, không chấm điểm) · DOI thật nhưng tiêu đề sai ⇒ loại · DOI không tồn tại ⇒ loại · bài Wakefield (Lancet 1998, Crossref ghi tiêu đề "RETRACTED: …") ⇒ `bi_rut_bai` — **lỗi đo được và vá cùng ngày**: trước đó bị xếp "không khớp" (vẫn loại nhưng sai nhãn, không được đếm là rút bài); ca thứ 5 (tiêu đề bị Scholar cắt "…", không DOI) KHÔNG được giữ vì Crossref tìm theo tiêu đề trả về một bản 2022 KHÁC bài và cổng năm chặn đúng — đây là bằng chứng thật rằng bỏ cổng năm sẽ nhận nhầm bài; (c) **đường PMID/PubMed** vẫn không kiểm được trên mạng này vì NCBI đang chặn misuse ⇒ trả `loi_xac_minh` (fail-closed); (d) **Consensus CHƯA kiểm thật** — chưa có `CONSENSUS_API_KEY` (kết nối MCP Consensus KHÔNG phải khoá REST API — phải tạo khoá riêng ở "API & MCP Dashboard"). Cả hai nguồn dự phòng vẫn TẮT mặc định. Kiểm thật Consensus tốn 1 trong 30 lượt Free/tháng. **Việc còn mở:**
+  (i) `.env.example` chưa có các dòng `SERPAPI_*`, `ENABLE_CONSENSUS`, `CONSENSUS_*`, `FALLBACK_*`,
+  `ENABLE_SCITE_VERIFICATION` (tác nhân không được sửa `.env*`); (ii) Consensus/Scite ở phía MCP của tác
+  nhân KHÔNG bị cổng này ràng buộc — đổi học thuyết agent sẽ kéo theo cổng đồng bộ agent nên để bác sĩ quyết.
   · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026, GỠ BỎ cùng ngày sau khi xác minh.**
   Kiểm trực tiếp `developer.ebsco.com/dynamed` xác nhận: đăng ký app MedsAPI **bắt buộc** một
   Customer ID + Group ID mà tài liệu EBSCO nói rõ "received from your EBSCO representative" —

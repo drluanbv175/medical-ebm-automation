@@ -175,6 +175,7 @@ def _build_source_map():
         return _SOURCE_MAP
     from app.sources import (
         ClinicalTrialsClient,
+        ConsensusClient,
         CoreClient,
         CrossrefClient,
         EpistemonikosClient,
@@ -184,6 +185,7 @@ def _build_source_map():
         PubMedClient,
         ScopusClient,
         SemanticScholarClient,
+        SerpApiScholarClient,
     )
     _SOURCE_MAP.update({
         "pubmed": PubMedClient, "europepmc": EuropePMCClient,
@@ -191,6 +193,11 @@ def _build_source_map():
         "openalex": OpenAlexClient, "semantic_scholar": SemanticScholarClient,
         "openfda": OpenFDAClient, "scopus": ScopusClient, "core": CoreClient,
         "epistemonikos": EpistemonikosClient,
+        # Mỗi lần test-live thật tốn 1 search SerpApi; thiếu SERPAPI_API_KEY sẽ nổ RuntimeError rõ ràng.
+        "serpapi_scholar": SerpApiScholarClient,
+        # Tầng 1 của bậc thang dự phòng; mỗi lần test-live thật tốn 1 lượt của hạn mức THÁNG (dùng chung với
+        # MCP của bác sĩ) và thiếu CONSENSUS_API_KEY sẽ nổ ConsensusLoi rõ ràng.
+        "consensus": ConsensusClient,
     })
     return _SOURCE_MAP
 

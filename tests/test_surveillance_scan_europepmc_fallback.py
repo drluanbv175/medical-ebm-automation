@@ -31,10 +31,11 @@ def _load_scanner():
 
 def test_search_falls_back_to_europepmc_when_pubmed_runtime_fails(monkeypatch):
     scanner = _load_scanner()
-    calls: list[tuple[str, int, int]] = []
+    calls: list[tuple[str, int, int, bool, str, str]] = []
 
-    def fake_fallback(query: str, days: int, retmax: int, *, loc_thiet_ke: bool = True) -> list[str]:
-        calls.append((query, days, retmax, loc_thiet_ke))
+    def fake_fallback(query: str, days: int, retmax: int, *, loc_thiet_ke: bool = True,
+                      mindate: str = "", maxdate: str = "") -> list[str]:
+        calls.append((query, days, retmax, loc_thiet_ke, mindate, maxdate))
         return ["42119588"]
 
     monkeypatch.setattr(scanner, "search_europe_pmc", fake_fallback)
@@ -50,7 +51,34 @@ def test_search_falls_back_to_europepmc_when_pubmed_runtime_fails(monkeypatch):
     # Vá 14/09/2026 (BH38 qua đường dự phòng): search() phải CHUYỂN TIẾP
     # loc_thiet_ke cho search_europe_pmc() khi rơi xuống dự phòng, không được
     # để tầng "mới nhất" (loc_thiet_ke=False) im lặng biến thành tầng có lọc.
-    assert calls == [("type 2 diabetes guideline", 30, 1, True)]
+    # Vá 04/09/2026: mindate/maxdate cũng phải được chuyển tiếp (không có cửa sổ thì rỗng).
+    assert calls == [("type 2 diabetes guideline", 30, 1, True, "", "")]
+
+
+def test_search_forwards_cursor_window_to_europepmc_fallback(monkeypatch):
+    """Con trỏ tăng dần (mindate/maxdate) không được mất khi rơi xuống dự phòng Europe PMC.
+
+    Thiếu chuyển tiếp thì dự phòng quay về cửa sổ `days` lùi từ hôm nay RỘNG HƠN NHIỀU và
+    ứng viên đã duyệt tái xuất vào hàng chờ mỗi khi PubMed tình cờ lỗi.
+    """
+    scanner = _load_scanner()
+    calls: list[tuple[str, str]] = []
+
+    def fake_fallback(query: str, days: int, retmax: int, *, loc_thiet_ke: bool = True,
+                      mindate: str = "", maxdate: str = "") -> list[str]:
+        calls.append((mindate, maxdate))
+        return ["42119588"]
+
+    monkeypatch.setattr(scanner, "search_europe_pmc", fake_fallback)
+
+    ids = scanner.search(
+        "type 2 diabetes guideline", 30, 1,
+        fetch_json=lambda _url: (_ for _ in ()).throw(RuntimeError("NCBI returned HTML")),
+        datetype="edat", loc_thiet_ke=False, mindate="2026/09/01", maxdate="2026/09/10",
+    )
+
+    assert ids == ["42119588"]
+    assert calls == [("2026/09/01", "2026/09/10")]
 
 
 def test_summarize_falls_back_with_explicit_source_label(monkeypatch):

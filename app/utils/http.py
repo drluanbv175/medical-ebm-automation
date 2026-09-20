@@ -72,9 +72,18 @@ _SENSITIVE_QUERY_RE = re.compile(
 )
 
 
+# Thêm 20/09/2026 (Consensus gửi khoá qua HEADER `x-api-key`, không qua query): nếu một ngoại lệ vận chuyển mang theo
+# nguyên văn header (dạng `x-api-key: <giá trị>` hoặc `'x-api-key': '<giá trị>'`), giá trị cũng phải bị che trước khi
+# ghi log. `requests` thường không nhét header vào thông báo lỗi — đây là lớp phòng thủ chiều sâu.
+_SENSITIVE_HEADER_RE = re.compile(
+    r"""((?:x-api-key|authorization)['"]?\s*[:=]\s*['"]?(?:bearer\s+)?)[^'"\s,}&]+""",
+    re.IGNORECASE,
+)
+
+
 def _redact(text: str) -> str:
-    """Che giá trị tham số nhạy cảm trong một chuỗi URL/thông báo lỗi trước khi ghi log."""
-    return _SENSITIVE_QUERY_RE.sub(r"\1***", text)
+    """Che giá trị tham số/header nhạy cảm trong một chuỗi URL/thông báo lỗi trước khi ghi log."""
+    return _SENSITIVE_HEADER_RE.sub(r"\1***", _SENSITIVE_QUERY_RE.sub(r"\1***", text))
 
 
 def _raise_for_status_redacted(resp: "requests.Response") -> None:
@@ -178,6 +187,14 @@ class HttpClient:
             cũ. Chỉ hỗ trợ macOS/Darwin — nền tảng khác nổ lỗi rõ ràng ngay lúc
             khởi tạo thay vì âm thầm bỏ qua, để không ai tưởng lầm nó đang hoạt
             động trên Windows.
+        max_retries: trần số LẦN THỬ LẠI riêng cho client này (thêm 20/09/2026). None
+            (mặc định) = dùng `settings.http_max_retries` như mọi nguồn khác, hành vi cũ
+            giữ nguyên. Đặt 0 = ĐÚNG MỘT request cho mỗi lần gọi, không thử lại bất kể
+            lỗi gì (429/5xx, timeout, mất mạng, JSON hỏng). Dành cho API TÍNH PHÍ THEO
+            REQUEST (SerpApi: mỗi request là một search bị trừ quota): vòng retry toàn cục
+            có thể nhân một truy vấn thành 2-5 request, timeout mà phía server đã xử lý
+            xong vẫn có thể bị tính phí nhiều lần. Đặt trần > 0 thì 429/5xx vẫn chỉ thử
+            lại tối đa min(1, trần) lần như cũ.
     """
 
     def __init__(
@@ -186,7 +203,12 @@ class HttpClient:
         cache_ttl: Optional[int] = None,
         min_interval: Optional[float] = None,
         bind_interface: Optional[str] = None,
+        max_retries: Optional[int] = None,
     ) -> None:
+        if max_retries is not None and (isinstance(max_retries, bool) or not isinstance(max_retries, int)
+                                        or max_retries < 0):
+            raise ValueError(f"max_retries phải là số nguyên >= 0 hoặc None, nhận {max_retries!r}")
+        self.max_retries = max_retries
         self.session = requests.Session()
         if default_headers:
             self.session.headers.update(default_headers)
@@ -304,10 +326,17 @@ class HttpClient:
         _RETRYABLE_STATUS = (429, 500, 502, 503, 504)
         _MAX_RETRYABLE_RETRIES = 1
 
+        # Trần retry riêng của client (xem tham số `max_retries` ở docstring lớp). None = hành vi
+        # cũ, dùng cấu hình toàn cục; số cụ thể (vd 0 cho API tính phí theo request) thì cả vòng
+        # lặp lẫn hạn mức retry của 429/5xx đều không được vượt trần đó.
+        rieng = getattr(self, "max_retries", None)
+        max_retries = settings.http_max_retries if rieng is None else rieng
+        tran_retryable = _MAX_RETRYABLE_RETRIES if rieng is None else min(_MAX_RETRYABLE_RETRIES, rieng)
+
         attempt = 0
         attempt_retryable = 0
         last_exc: Optional[Exception] = None
-        while attempt <= settings.http_max_retries:
+        while attempt <= max_retries:
             try:
                 _throttle(url, self.min_interval)
                 # Chỉ thêm json=/headers= khi THẬT SỰ dùng (POST) — giữ nguyên
@@ -326,11 +355,17 @@ class HttpClient:
                 last_exc = exc
                 self.transient_failure_count += 1
                 wait = self._backoff_wait(attempt, None)
-                logger.warning(
-                    "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
-                    url, _redact(str(exc)), wait, attempt + 1,
-                )
-                time.sleep(wait)
+                if self._con_luot_thu_lai(attempt, max_retries):
+                    logger.warning(
+                        "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
+                        url, _redact(str(exc)), wait, attempt + 1,
+                    )
+                    time.sleep(wait)
+                else:
+                    logger.warning(
+                        "Lỗi gọi %s: %s – KHÔNG thử lại (max_retries=%d riêng của client này)",
+                        url, _redact(str(exc)), max_retries,
+                    )
                 attempt += 1
                 continue
 
@@ -427,7 +462,7 @@ class HttpClient:
                 except requests.HTTPError as exc:
                     self._record_terminal_failure(exc, resp.status_code)
                     raise
-            if resp.status_code in _RETRYABLE_STATUS and attempt_retryable >= _MAX_RETRYABLE_RETRIES:
+            if resp.status_code in _RETRYABLE_STATUS and attempt_retryable >= tran_retryable:
                 logger.warning("HTTP %s từ %s — đã hết hạn mức retry, bỏ qua.", resp.status_code, url)
                 try:
                     _raise_for_status_redacted(resp)
@@ -460,11 +495,17 @@ class HttpClient:
                 last_exc = exc
                 self.transient_failure_count += 1
                 wait = self._backoff_wait(attempt, None)
-                logger.warning(
-                    "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
-                    url, _redact(str(exc)), wait, attempt + 1,
-                )
-                time.sleep(wait)
+                if self._con_luot_thu_lai(attempt, max_retries):
+                    logger.warning(
+                        "Lỗi gọi %s: %s – thử lại sau %.1fs (lần %d)",
+                        url, _redact(str(exc)), wait, attempt + 1,
+                    )
+                    time.sleep(wait)
+                else:
+                    logger.warning(
+                        "Lỗi gọi %s: %s – KHÔNG thử lại (max_retries=%d riêng của client này)",
+                        url, _redact(str(exc)), max_retries,
+                    )
                 attempt += 1
                 continue
 
@@ -475,9 +516,20 @@ class HttpClient:
             self.last_status_code = resp.status_code
             return data
 
-        terminal = RuntimeError(f"Gọi API thất bại sau {settings.http_max_retries} lần: {url}")
+        if rieng is None:
+            terminal = RuntimeError(f"Gọi API thất bại sau {settings.http_max_retries} lần: {url}")
+        else:
+            terminal = RuntimeError(f"Gọi API thất bại (max_retries={rieng} riêng của client, "
+                                    f"đã gửi {attempt} request): {url}")
         self._record_terminal_failure(terminal)
         raise terminal from last_exc
+
+    def _con_luot_thu_lai(self, attempt: int, max_retries: int) -> bool:
+        """Còn lượt thử lại sau lần thử thứ `attempt` (đánh số từ 0) không?
+
+        Client mặc định (max_retries=None) luôn trả True để giữ NGUYÊN hành vi cũ, kể cả việc
+        ngủ backoff sau lần thử cuối. Client có trần riêng thì hết lượt là không ngủ vô ích."""
+        return getattr(self, "max_retries", None) is None or attempt < max_retries
 
     def _backoff_wait(self, attempt: int, resp: Optional[requests.Response]) -> float:
         # Giới hạn tối đa 30s để không chặn startup quá lâu (vd BMJ Retry-After: 600)

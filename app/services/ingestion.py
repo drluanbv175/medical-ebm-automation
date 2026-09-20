@@ -5,6 +5,12 @@ TĂNG TỐC: chạy SONG SONG để rút ngắn thời gian quét.
   BÊN TRONG vẫn tuần tự các từ khoá -> tôn trọng giới hạn tốc độ từng nguồn (vd NCBI 3 req/s).
 - Các RSS feed chạy song song nhưng GIỚI HẠN số luồng (tránh bị chặn 429, vd nhiều feed BMJ).
 - Source Log gom lại và ghi DB MỘT LẦN ở cuối (tránh khóa SQLite khi nhiều luồng cùng ghi).
+
+BẬC THANG DỰ PHÒNG (20/09/2026): Consensus (tầng 1) và SerpApi Scholar (tầng 2) KHÔNG nằm trong vòng quét song
+song ở trên. Chúng chỉ chạy SAU KHI mọi nguồn miễn phí đã quét xong và TRƯỚC lần ghi Source Log duy nhất, chỉ cho
+(nhóm, truy vấn) còn thiếu chứng cứ đáng tin — xem `app/services/fallback_ladder.py`. Sức khoẻ nguồn (summarize_
+source_health) tính từ log của nguồn CHÍNH; kết quả dự phòng chỉ ở diagnostics["fallback"] và dòng Source Log riêng.
+Cả hai cờ ENABLE_CONSENSUS/ENABLE_SERPAPI_SCHOLAR tắt (hoặc USE_MOCK_SOURCES=true) thì khối này TRƠ HOÀN TOÀN.
 """
 from __future__ import annotations
 
@@ -16,7 +22,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from app.config import CLINICAL_AREAS, settings
 from app.database import session_scope
 from app.models import SourceLog
-from app.sources import get_enabled_sources
+from app.sources import get_enabled_sources, get_fallback_sources
 from app.sources.authority import assess_source_universe_coverage
 from app.sources.base import RawRecord
 from app.sources.openfda import OpenFDAClient
@@ -219,6 +225,55 @@ def sweep_source(client, areas: List[str], max_results_per_query: int,
     return recs, logs
 
 
+_KHOA_LOG_SOURCELOG = ("source", "api_endpoint", "query", "record_count", "status", "error_message", "mode")
+
+
+def _dung_tang_du_phong() -> List[Any]:
+    """Dựng các tầng dự phòng đang bật — gọi TRƯỚC mọi lời gọi mạng để cấu hình sai NỔ TO sớm.
+
+    Cả hai cờ tắt hoặc chế độ mock -> [] và KHÔNG chạm `get_fallback_sources()` (không dựng client, không đọc
+    cấu hình tầng). FALLBACK_ORDER chứa tên lạ / tầng đang bật mà không nạp được thì `get_fallback_sources()` nổ
+    ValueError/ImportError cùng phong cách `get_enabled_sources()`: chủ ý, trước khi tốn bất kỳ lời gọi nào.
+    """
+    if settings.use_mock_sources or not (settings.enable_consensus or settings.enable_serpapi_scholar):
+        return []
+    return get_fallback_sources()
+
+
+def _chay_du_phong(all_records: List[RawRecord], all_logs: List[dict], areas: List[str],
+                   max_results_per_query: int, since_date: Optional[str],
+                   clients: List[Any]) -> Tuple[List[RawRecord], List[dict], Optional[dict]]:
+    """Chạy bậc thang dự phòng sau khi mọi nguồn chính đã quét xong. Không bao giờ ném lỗi.
+
+    Trả (bản ghi đã xác minh, dòng SourceLog thêm, tóm tắt cho diagnostics["fallback"] hoặc None).
+    None = cả hai cờ tắt: KHÔNG thêm gì vào diagnostics (hành vi y hệt trước khi có bậc thang). Có cờ bật mà không
+    chạy (mock / nguồn chính trả mock ở live / không dựng được tầng) thì trả dấu hiệu {"active": False, "ly_do": ...}
+    — nói rõ là KHÔNG chạy chứ không im lặng.
+    """
+    if not (settings.enable_consensus or settings.enable_serpapi_scholar):
+        return [], [], None
+    if settings.use_mock_sources:
+        return [], [], {"active": False, "ly_do": "mock"}
+    if any(str(lg.get("status")) == "mock" for lg in all_logs):
+        # Một nguồn chính trả mock ở chế độ live (vd PubMed thiếu email): lượt này sẽ bị đánh dấu lỗi
+        # (MOCK_DETECTED_IN_LIVE) và bản ghi mock không phải bằng chứng — không tiêu hạn mức trả phí cho nó.
+        return [], [], {"active": False, "ly_do": "nguon_chinh_tra_mock_o_che_do_live"}
+    if not clients:
+        return [], [], {"active": False, "ly_do": "khong_co_tang_du_phong_nao_duoc_dung"}
+    try:
+        from app.services.fallback_ladder import chay_du_phong_ingest  # noqa: PLC0415 — tránh vòng import
+
+        extra_records, extra_logs, tom_tat = chay_du_phong_ingest(
+            all_records, all_logs, areas, max_results_per_query, since_date, clients=clients)
+    except Exception as exc:  # noqa: BLE001 — bậc thang không được làm sập ingest_all
+        logger.error("Bậc thang dự phòng lỗi bất ngờ (%s) — lượt quét tiếp tục không có phần dự phòng.",
+                     type(exc).__name__)
+        return [], [], {"active": True, "loi_noi_bo": type(exc).__name__}
+    # SourceLog(**lg) không có try/except: chỉ cho đi qua đúng các cột của model.
+    extra_logs = [{k: lg.get(k) for k in _KHOA_LOG_SOURCELOG} for lg in extra_logs]
+    return extra_records, extra_logs, tom_tat
+
+
 def ingest_all(max_results_per_query: int = 10,
                areas: Optional[List[str]] = None,
                since_date: Optional[str] = None,
@@ -230,6 +285,7 @@ def ingest_all(max_results_per_query: int = 10,
     """
     areas = areas or list(CLINICAL_AREAS.keys())
     sources = get_enabled_sources()
+    tang_du_phong = _dung_tang_du_phong()   # không quét song song; chạy sau khi mọi nguồn chính xong
     all_records: List[RawRecord] = []
     all_logs: List[dict] = []
 
@@ -277,23 +333,42 @@ def ingest_all(max_results_per_query: int = 10,
             all_records.extend(recs)
             all_logs.extend(logs)
 
+    # Sức khoẻ nguồn tính từ log của nguồn CHÍNH (chụp TRƯỚC khi thêm dòng của tầng dự phòng): kết quả dự phòng
+    # không được cộng vào total_records (che NO_RECORDS_FROM_ANY_SOURCE), không được gây MOCK_DETECTED_IN_LIVE,
+    # và một tầng dự phòng hỏng không được biến PASS thành FAIL hay che lỗi của nguồn chính.
+    primary_logs = list(all_logs)
+
+    # BẬC THANG DỰ PHÒNG: sau khi mọi nguồn xong, trước lần ghi Source Log duy nhất.
+    extra_records, extra_logs, fallback_summary = _chay_du_phong(
+        all_records, all_logs, areas, max_results_per_query, since_date, tang_du_phong)
+    if extra_records:
+        all_records.extend(extra_records)
+    if extra_logs:
+        all_logs.extend(extra_logs)
+
     # Ghi toàn bộ Source Log MỘT LẦN (tránh nhiều luồng ghi SQLite đồng thời).
     if all_logs:
         with session_scope() as s:
             s.add_all([SourceLog(**lg) for lg in all_logs])
 
     source_health = summarize_source_health(
-        all_logs,
+        primary_logs,
         expected_api_sources=[client.name for client in sources],
         expected_feed_sources=[client.name for client in feed_clients],
         safety_enabled=settings.enable_openfda,
     )
     if diagnostics is not None:
         diagnostics.update(source_health)
+        if fallback_summary is not None:
+            # Chỉ gắn vào bản diagnostics: dict sức khoẻ của nguồn CHÍNH giữ nguyên, không bị sửa bởi kết quả dự phòng.
+            diagnostics["fallback"] = fallback_summary
 
     logger.info("Ingestion: thu thập %d bản ghi thô từ %d nguồn API + %d feed (song song).",
                 len(all_records), len(sources) + (1 if settings.enable_openfda else 0),
                 len(feed_clients))
+    if extra_records or extra_logs:
+        logger.info("Ingestion: trong đó %d bản ghi từ bậc thang dự phòng (đã xác minh Crossref/PubMed), "
+                    "%d dòng Source Log dự phòng.", len(extra_records), len(extra_logs))
     logger.info(
         "Ingestion source health: %s (hard=%s; warning=%s)",
         source_health["status"],

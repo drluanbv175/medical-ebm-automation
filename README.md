@@ -12,7 +12,8 @@ Hệ thống tự động hoá phục vụ bác sĩ lâm sàng ngoại trú và 
 
 ## 1. Mục tiêu hệ thống
 
-- Quét nhiều nguồn (PubMed, Europe PMC, Crossref, ClinicalTrials.gov, OpenAlex, Semantic Scholar, openFDA…).
+- Quét nhiều nguồn (PubMed, Europe PMC, Crossref, ClinicalTrials.gov, OpenAlex, Semantic Scholar, openFDA…;
+  tùy chọn, tắt mặc định, tính phí: SerpApi Google Scholar — chỉ khám phá, không thay nguồn xác minh).
 - Chuẩn hoá, loại trùng, **chấm điểm chứng cứ** và **phân tầng độ tin cậy** bằng luật minh bạch.
 - Tách rõ phần **actionable** (đáng thay đổi thực hành) và phần **chưa đủ bằng chứng**.
 - Sinh **báo cáo EBM tuần** (Markdown/HTML/Word), xuất Excel/CSV/BibTeX.
@@ -55,6 +56,8 @@ Mở `.env` và điền (mọi key đều tùy chọn – thiếu key thì ngu�
 | `OPENALEX_EMAIL`, `UNPAYWALL_EMAIL` | "polite pool" của OpenAlex/Unpaywall |
 | `SEMANTIC_SCHOLAR_API_KEY` | tăng rate limit Semantic Scholar |
 | `ZOTERO_API_KEY`, `ZOTERO_LIBRARY_ID` | đẩy tài liệu vào Zotero (bật `ENABLE_ZOTERO=true`) |
+| `SERPAPI_API_KEY`, `ENABLE_SERPAPI_SCHOLAR`, `SERPAPI_MAX_CALLS_PER_RUN` | Google Scholar qua SerpApi (tắt mặc định; **bắt buộc có key thật** khi chạy chế độ thật, thiếu key thì báo lỗi rõ chứ không trả rỗng im lặng; mỗi lần gọi là một search tính phí, trần mặc định 8 lần/lượt; mới kiểm offline — xem `CLAUDE.md` mục "Nguồn dữ liệu") |
+| `ENABLE_CONSENSUS`, `CONSENSUS_API_KEY`, `CONSENSUS_MAX_CALLS_PER_MONTH` (10), `CONSENSUS_MAX_CALLS_PER_RUN` (5), `CONSENSUS_LOOKBACK_YEARS` (10), `FALLBACK_ORDER` (`consensus,serpapi_scholar`), `FALLBACK_MIN_TRUSTED` (3), `FALLBACK_MIN_EVIDENCE` (60), `FALLBACK_KEEP_UNVERIFIED` (false), `ENABLE_SCITE_VERIFICATION` (true) | Bậc thang dự phòng có cổng: Consensus rồi SerpApi Scholar, CHỈ chạy khi nguồn chính thống chưa đủ bài đáng tin; mọi bản ghi phải khớp Crossref/PubMed mới được giữ; Scite chỉ xác minh rút bài (endpoint công khai, không khoá). Tắt mặc định, mới kiểm offline, chưa gọi API thật; chi tiết ở `CLAUDE.md` mục "Nguồn dữ liệu". |
 | `MIN_EVIDENCE_SCORE`, `MIN_PRACTICE_CHANGE_SCORE` | ngưỡng để 1 mục được coi là *actionable* |
 | `ENABLE_*` | bật/tắt từng nguồn |
 

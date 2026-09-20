@@ -31,9 +31,16 @@ from app.scoring import (
     practice_change_score,
     reliability_tier,
 )
+from app.services.fallback_ladder import (
+    bo_sung_neu_thieu,
+    du_phong_dang_bat,
+    goi_nguon_thuong,
+    tom_tat_ngan,
+)
 from app.services.filtering import classify
 from app.services.normalization import normalize
 from app.sources import get_enabled_sources
+from app.sources.base import RawRecord
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -51,30 +58,66 @@ def _project(project_id: str) -> Optional[Dict]:
         return {c.name: getattr(p, c.name) for c in p.__table__.columns}
 
 
+def _cham_diem_ban_ghi(rec: RawRecord) -> Optional[Dict]:
+    """normalize -> chấm điểm -> phân loại một RawRecord; None nếu bị loại ("excluded")."""
+    item = normalize(rec)
+    eq, _ = evidence_quality_score(item)
+    pc, _ = practice_change_score(item)
+    tier = reliability_tier(item, eq, pc)
+    level, _ = operational_evidence_level(item, eq)
+    item.update(evidence_quality_score=eq, practice_change_score=pc,
+                reliability_tier=tier, operational_evidence_level=level)
+    classification, *_ = classify(item)
+    if classification == "excluded":
+        return None
+    return {**item, "classification": classification}
+
+
 def find_background_literature(query: str, clinical_area: Optional[str] = None,
-                               max_results: int = 12) -> List[Dict]:
+                               max_results: int = 12, *,
+                               tom_tat_du_phong: Optional[dict] = None) -> List[Dict]:
     """Tìm tài liệu nền (guideline/SR/MA/RCT) cho đề tài, có chấm điểm + truy vết.
 
     Tôn trọng USE_MOCK_SOURCES: live nếu đã bật chế độ thật. Ưu tiên tài liệu mạnh.
+
+    BẬC THANG DỰ PHÒNG (20/09/2026): Consensus/SerpApi Scholar KHÔNG nằm trong vòng nguồn thường. Chỉ khi bật
+    (cờ ENABLE_* và không mock) và chứng cứ đáng tin của truy vấn còn thiếu mới hỏi thêm, rồi chỉ giữ bài được
+    Crossref/PubMed xác minh (`bo_sung_neu_thieu`). `tom_tat_du_phong` (tuỳ chọn) là dict ĐẦU RA: hàm cập nhật nó
+    bằng tóm tắt bậc thang để người gọi báo lỗi/lý do thay vì chỉ ghi log — rỗng khi bậc thang không bật.
     """
     found: List[Dict] = []
+    dang_bat = du_phong_dang_bat()
+    logs_thuong: Optional[List[dict]] = [] if dang_bat else None
+    raw_thuong: List[RawRecord] = []
     for client in get_enabled_sources():
         try:
-            for rec in client.search(query, clinical_area=clinical_area,
-                                     max_results=max_results):
-                item = normalize(rec)
-                eq, _ = evidence_quality_score(item)
-                pc, _ = practice_change_score(item)
-                tier = reliability_tier(item, eq, pc)
-                level, _ = operational_evidence_level(item, eq)
-                item.update(evidence_quality_score=eq, practice_change_score=pc,
-                            reliability_tier=tier, operational_evidence_level=level)
-                classification, *_ = classify(item)
-                if classification == "excluded":
+            recs = goi_nguon_thuong(client, query, clinical_area, max_results, logs_thuong)
+            raw_thuong.extend(recs)
+            for rec in recs:
+                cham = _cham_diem_ban_ghi(rec)
+                if cham is None:
                     continue
-                found.append({**item, "classification": classification})
+                found.append(cham)
         except Exception as exc:  # pragma: no cover
             logger.warning("Tìm tài liệu nền lỗi nguồn %s: %s", client.name, exc)
+
+    if dang_bat:
+        try:
+            xac_minh, tom_tat = bo_sung_neu_thieu(query, clinical_area, raw_thuong, max_results=max_results,
+                                                  logs=logs_thuong)
+            if tom_tat_du_phong is not None:
+                tom_tat_du_phong.update(tom_tat)
+            for rec in xac_minh:
+                cham = _cham_diem_ban_ghi(rec)
+                if cham is None:
+                    continue
+                cham["phat_hien_boi"] = (rec.raw or {}).get("phat_hien_boi")
+                cham["chua_xac_minh"] = bool((rec.raw or {}).get("chua_xac_minh"))
+                found.append(cham)
+        except Exception as exc:  # noqa: BLE001 — bậc thang không được làm hỏng hồ sơ
+            logger.warning("Bậc thang dự phòng lỗi ở hồ sơ nghiên cứu (%s).", type(exc).__name__)
+            if tom_tat_du_phong is not None:
+                tom_tat_du_phong.update({"active": True, "loi_noi_bo": type(exc).__name__})
 
     # Loại trùng theo DOI/PMID/title; ưu tiên tier A>B>C.
     seen = set()
@@ -113,7 +156,10 @@ def build_dossier_markdown(project_id: str, max_lit: int = 12) -> Optional[str]:
     title = p["project_title"]
     query = " ".join(filter(None, [p.get("short_title") or title,
                                    p.get("primary_objective") or ""]))[:200]
-    lit = find_background_literature(query, clinical_area=None, max_results=max_lit)
+    tt_du_phong: Dict = {}
+    lit = find_background_literature(
+        query, clinical_area=None, max_results=max_lit,
+        **({"tom_tat_du_phong": tt_du_phong} if du_phong_dang_bat() else {}))
 
     L: List[str] = []
     L.append(f"# Hồ sơ nghiên cứu – {title}\n")
@@ -148,6 +194,10 @@ def build_dossier_markdown(project_id: str, max_lit: int = 12) -> Optional[str]:
         L.append("| --- | --- | --- | --- | --- |")
         for i, it in enumerate(lit, 1):
             ref = it.get("doi") or it.get("pmid") or it.get("url") or ""
+            if it.get("phat_hien_boi"):
+                ref = f"{ref} (phát hiện bởi {it['phat_hien_boi']}, đã đối chiếu Crossref/PubMed)".strip()
+            if it.get("chua_xac_minh"):
+                ref = f"{ref} [CHƯA XÁC MINH]".strip()
             L.append(f"| {i} | {it['title'][:70].replace('|','/')} | "
                      f"{it.get('study_type') or '?'} | {it.get('reliability_tier')} | {ref} |")
         L.append("\n### Gợi ý khung tổng quan tài liệu")
@@ -156,6 +206,10 @@ def build_dossier_markdown(project_id: str, max_lit: int = 12) -> Optional[str]:
                  "- Khung lý thuyết/biến số liên quan")
     else:
         L.append("*Chưa tìm thấy tài liệu nền (bật chế độ live hoặc kiểm tra từ khóa).*")
+    ghi_chu_du_phong = tom_tat_ngan(tt_du_phong)
+    if ghi_chu_du_phong:
+        # Lỗi/lý do của bậc thang dự phòng phải LÊN TÀI LIỆU (không chỉ logger.warning): im lặng ≠ an toàn.
+        L.append(f"\n*Bậc thang dự phòng (Consensus / SerpApi Scholar): {ghi_chu_du_phong}.*")
     L.append("")
 
     # 3. Biến số

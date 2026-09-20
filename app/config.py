@@ -215,6 +215,41 @@ class Settings:
     # gửi email xin cấp token tới dev@epistemonikos.org (xem app/sources/epistemonikos.py).
     epistemonikos_api_token: str = field(
         default_factory=lambda: os.getenv("EPISTEMONIKOS_API_TOKEN", ""))
+    # SerpApi (Google Scholar) — thêm 20/09/2026 (app/sources/serpapi_scholar.py). KHÁC mọi nguồn khác:
+    # MỖI request là một search TÍNH PHÍ (gói Free 250 search/tháng, 50/giờ — số đo từ trang giá SerpApi
+    # 20/09/2026), nên có thêm trần số lần gọi mỗi lượt chạy. Khoá CHỈ nạp từ môi trường/kho secrets
+    # (~/.ebm-secrets/medical-ebm-automation.env), KHÔNG hard-code, không in ra log.
+    serpapi_api_key: str = field(default_factory=lambda: os.getenv("SERPAPI_API_KEY", ""))
+    # Trần số lần gọi SerpApi mỗi lượt chạy — đếm THEO TIẾN TRÌNH (dùng chung mọi instance connector, tự
+    # về 0 khi sang ngày mới để scheduler/dashboard chạy dài không bị khoá vĩnh viễn; run.py/cron một
+    # tiến trình = một lượt): 8 x ~22 ngày chạy/tháng = 176 search, chừa ~30% quota Free cho chạy tay.
+    # Chạm trần thì connector NỔ TO (không trả rỗng im lặng). <= 0 = khoá hẳn (fail-closed).
+    serpapi_max_calls_per_run: int = field(
+        default_factory=lambda: _get_int("SERPAPI_MAX_CALLS_PER_RUN", 8))
+    # Consensus (consensus.app — tìm kiếm nghiên cứu bằng AI, REST API) — thêm 20/09/2026, cùng họ với
+    # SerpApi: nguồn DỰ PHÒNG có cổng, KHÔNG tham gia quét song song (xem app/services/fallback_ladder.py).
+    # Khoá CHỈ nạp từ môi trường/kho secrets (~/.ebm-secrets/medical-ebm-automation.env), không hard-code,
+    # không in ra log. Gói Free: 30 lượt/THÁNG dùng CHUNG cho API và MCP của bác sĩ -> trần tháng mặc định 10
+    # (chừa 20 cho MCP); trần mỗi lượt chạy 5. <= 0 = khoá hẳn (fail-closed).
+    consensus_api_key: str = field(default_factory=lambda: os.getenv("CONSENSUS_API_KEY", ""))
+    consensus_max_calls_per_month: int = field(
+        default_factory=lambda: _get_int("CONSENSUS_MAX_CALLS_PER_MONTH", 10))
+    consensus_max_calls_per_run: int = field(
+        default_factory=lambda: _get_int("CONSENSUS_MAX_CALLS_PER_RUN", 5))
+    # Cửa sổ năm gửi cho Consensus (year_min = năm hiện tại - N) khi không có since_date; 0 = không lọc năm.
+    consensus_lookback_years: int = field(
+        default_factory=lambda: _get_int("CONSENSUS_LOOKBACK_YEARS", 10))
+    # BẬC THANG DỰ PHÒNG (Consensus rồi SerpApi Scholar): thứ tự thử, CHỈ tầng đang BẬT mới chạy; tên lạ => ValueError.
+    fallback_order: str = field(
+        default_factory=lambda: os.getenv("FALLBACK_ORDER", "consensus,serpapi_scholar"))
+    # Một truy vấn (nhóm, chuỗi) được coi là ĐỦ chứng cứ khi có >= N bài ĐÁNG TIN phân biệt (PMID/DOI, tier != D,
+    # điểm chất lượng >= ngưỡng bên dưới; đếm cả bài đã lưu trong kho — xem app/services/evidence_sufficiency.py).
+    fallback_min_trusted: int = field(default_factory=lambda: _get_int("FALLBACK_MIN_TRUSTED", 3))
+    fallback_min_evidence: float = field(
+        default_factory=lambda: _get_float("FALLBACK_MIN_EVIDENCE", 60.0))
+    # True = giữ cả phát hiện CHƯA xác minh (gắn cờ raw["chua_xac_minh"]=True); mặc định False = bỏ và đếm.
+    fallback_keep_unverified: bool = field(
+        default_factory=lambda: _get_bool("FALLBACK_KEEP_UNVERIFIED", False))
 
     # Flags bật/tắt nguồn
     enable_pubmed: bool = field(default_factory=lambda: _get_bool("ENABLE_PUBMED", True))
@@ -242,6 +277,16 @@ class Settings:
     # khác CORE), và token phải xin qua email trước khi có gì để bật.
     enable_epistemonikos: bool = field(
         default_factory=lambda: _get_bool("ENABLE_EPISTEMONIKOS", False))
+    # Mặc định TẮT — đòi SERPAPI_API_KEY bắt buộc thật (chặn cứng như Scopus) và mỗi lượt gọi tốn tiền.
+    # Nguồn KHÁM PHÁ (chỉ tiêu đề + đoạn trích, không abstract/DOI/PMID chắc chắn), KHÔNG thuộc lõi discovery.
+    enable_serpapi_scholar: bool = field(
+        default_factory=lambda: _get_bool("ENABLE_SERPAPI_SCHOLAR", False))
+    # Mặc định TẮT — đòi CONSENSUS_API_KEY bắt buộc thật; nguồn DỰ PHÒNG có cổng (tầng 1 của bậc thang).
+    enable_consensus: bool = field(default_factory=lambda: _get_bool("ENABLE_CONSENSUS", False))
+    # Kiểm PUBLIC api.scite.ai (không khoá, không Authorization) làm lớp XÁC MINH THÊM (rút bài/thông báo biên tập
+    # + ghi tally); CHỈ chạy bên trong nhánh dự phòng có cổng, cho bản ghi mà tầng dự phòng vừa tìm thấy.
+    enable_scite_verification: bool = field(
+        default_factory=lambda: _get_bool("ENABLE_SCITE_VERIFICATION", True))
     enable_nice: bool = field(default_factory=lambda: _get_bool("ENABLE_NICE", False))
     enable_drug_safety_feeds: bool = field(
         default_factory=lambda: _get_bool("ENABLE_DRUG_SAFETY_FEEDS", True))
