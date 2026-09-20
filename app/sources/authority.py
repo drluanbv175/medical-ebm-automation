@@ -341,14 +341,34 @@ def source_universe_report() -> dict[str, dict[str, object]]:
     }
 
 
+# Feed/lane guideline (tên nguồn `feed_<id>`, xem app/sources/feeds.py) -> tên tổ chức trong tầng guideline_authority.
+# Thêm 20/09/2026: các tổ chức KHÔNG có connector riêng được phủ qua KÊNH CÔNG BỐ của họ (Europe PMC, WHO IRIS OAI-PMH,
+# kcb.vn, Crossref theo tiêu đề trên tạp chí của hiệp hội). Coverage báo chúng ở khoá riêng `healthy_via_lane` (KHÔNG
+# gộp vào `healthy`) để người đọc thấy rõ đó là phủ gián tiếp theo tiêu đề, không phải kết nối trực tiếp tới trang của
+# tổ chức.
+FEED_TO_AUTHORITY: dict[str, str] = {
+    "feed_epmc_uspstf": "uspstf", "feed_epmc_who": "who", "feed_who_iris": "who", "feed_cdc_mmwr": "cdc",
+    "feed_cdc_mmwr_weekly": "cdc", "feed_epmc_cdc_mmwr_rr": "cdc", "feed_gold_copd": "gold", "feed_gina": "gina",
+    "feed_kdigo_news": "kdigo", "feed_kdigo_ki": "kdigo", "feed_acc_aha_circ": "acc_aha",
+    "feed_acc_aha_jacc": "acc_aha", "feed_esc_ehj": "esc", "feed_ada_standards": "ada_easd",
+    "feed_idsa_cid": "idsa", "feed_eular_ard": "eular_acr", "feed_acr_rheum": "eular_acr",
+    "feed_aasld_hep": "aasld_easl", "feed_aasld_rss": "aasld_easl", "feed_easl": "aasld_easl",
+    "feed_ash_bloodadv": "ash_isth", "feed_ags_jags": "ags", "feed_ats_ajrccm": "ats_ers_bts",
+    "feed_ers_erj": "ats_ers_bts", "feed_bts_thorax": "ats_ers_bts", "feed_aga_gastro": "acg_aga_asge",
+    "feed_acg_ajg": "acg_aga_asge", "feed_kcb_vn": "moh_vietnam", "feed_cochrane_cdsr": "cochrane",
+}
+
+
 def assess_source_universe_coverage(healthy_sources: Iterable[str]) -> dict[str, object]:
     healthy = {str(source or "").casefold() for source in healthy_sources}
+    qua_lane = {FEED_TO_AUTHORITY[s] for s in healthy if s in FEED_TO_AUTHORITY}
     layers: dict[str, dict[str, object]] = {}
     missing_required_layers: list[str] = []
     discovery_only_layers: list[str] = []
     for layer in EVIDENCE_SOURCE_UNIVERSE:
         matched = sorted(source for source in layer.sources if source.casefold() in healthy)
-        status = "PASS" if len(matched) >= layer.minimum_live_sources else "PARTIAL"
+        gian_tiep = sorted(s for s in layer.sources if s in qua_lane and s not in matched)
+        status = "PASS" if len(matched) + len(gian_tiep) >= layer.minimum_live_sources else "PARTIAL"
         if status != "PASS" and layer.clinical_use in {"source_of_record", "crosscheck", "safety"}:
             missing_required_layers.append(layer.layer_id)
         if layer.clinical_use == "discovery_only":
@@ -356,6 +376,8 @@ def assess_source_universe_coverage(healthy_sources: Iterable[str]) -> dict[str,
         layers[layer.layer_id] = {
             "status": status,
             "healthy": matched,
+            "healthy_via_lane": gian_tiep,
+            "not_connected": sorted(s for s in layer.sources if s not in matched and s not in gian_tiep),
             "expected": list(layer.sources),
             "minimum_live_sources": layer.minimum_live_sources,
             "clinical_use": layer.clinical_use,

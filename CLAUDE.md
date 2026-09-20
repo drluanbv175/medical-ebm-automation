@@ -212,6 +212,23 @@ This file contains only Claude Code-specific instructions.
   USPSTF, WHO, GOLD, GINA… vẫn KHÔNG có connector trực tiếp (NICE API chỉ cấp cho tổ chức, có phí quốc tế — xem
   `docs/xin-cap-quyen-nguon-chung-cu.md`). 25 test ở `tests/test_rss_feed_crossref_mode.py` (mutation-tested 2 phép). CORE chạy được
   KHÔNG khoá (test-live 20/09/2026: 3 kết quả thật) — chỉ còn cờ `ENABLE_CORE`; Epistemonikos cần token (thư nháp ở docs).
+  · **LANE guideline nối trực tiếp, miễn phí, không khoá — thêm 20/09/2026** (`app/sources/guideline_lanes.py`, cấu hình ở
+  `feeds.py::GUIDELINE_LANES`), theo yêu cầu «kết nối các nguồn guideline chưa có connector». Đo 20/09/2026: RSS chính thức chỉ có ở
+  GOLD · GINA · KDIGO · EASL · AASLD · CDC MMWR (đã nối); IDSA/ESC/EULAR/ADA/ACC/SIGN/BTS/ASH/AAN đều 404, WHO 403, NICE 403, USPSTF không
+  có RSS. Nên phủ qua đường công khai khác, đều đã đo chạy thật (**33/33 lane trả mục thật**, SourceLog `ok`): (1) **Europe PMC**
+  (độc lập NCBI, có PMID): loại xuất bản «Practice Guideline» toàn cầu (127 bài từ 01/08), USPSTF, WHO, CDC MMWR R&R; (2) **WHO IRIS**
+  OAI-PMH (`iris.who.int/oai/request`, set Headquarters; `from` của OAI lọc theo ngày SỬA bản ghi nên chỉ giữ bản ghi có `dc:date` mới
+  và tiêu đề có tính khuyến cáo); (3) **Bộ Y tế VN** `kcb.vn/phac-do` (danh sách Quyết định ban hành hướng dẫn chẩn đoán, điều trị;
+  robots.txt cho phép; 1 GET/lượt; tiêu đề lấy từ thuộc tính `title`, bỏ đuôi `?categoryId=`; HTML có thể đổi bố cục — parser trả [] chứ
+  không bịa); (4) **Crossref theo tiêu đề** cho 21 hiệp hội trên tạp chí của họ (ACC/AHA ×3, ESC, ADA, IDSA, EULAR, AASLD, KDIGO, ATS,
+  ERS, BTS, AGS, ACP, ASCO, ESMO, ASH, AGA, ACG, AAN, ACR): lọc nhiều ISSN + cụm tiêu đề + regex tổ chức + tính khuyến cáo, loại
+  đính chính/thư/bình luận; (5) RSS trực tiếp GOLD/GINA/KDIGO/EASL/AASLD/CDC MMWR weekly. `authority.py::FEED_TO_AUTHORITY` ánh xạ
+  feed → tên tổ chức; coverage báo phủ gián tiếp ở khoá riêng `healthy_via_lane` (KHÔNG gộp vào `healthy`) và liệt kê `not_connected`.
+  **Giới hạn nói thẳng:** đây là lane KHÁM PHÁ theo TIÊU ĐỀ (guideline nhận qua tiêu đề/loại xuất bản, có thể lẫn bài bình luận về
+  guideline), KHÔNG phải nguồn «đã duyệt» và KHÔNG thay việc đọc guideline gốc; còn CHƯA có kết nối nào cho **NICE** (API chỉ cấp cho
+  tổ chức, có phí quốc tế) và **USPSTF API** (phải xin duyệt qua email; lane MEDLINE thay thế đã có) — thư nháp ở
+  `docs/xin-cap-quyen-nguon-chung-cu.md`. Chi phí: +33 lượt gọi/lần quét (cache 1 giờ). 42 test ở `tests/test_guideline_lanes.py`
+  (4 phép đột biến đều đỏ đúng chỗ).
   · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026, GỠ BỎ cùng ngày sau khi xác minh.**
   Kiểm trực tiếp `developer.ebsco.com/dynamed` xác nhận: đăng ký app MedsAPI **bắt buộc** một
   Customer ID + Group ID mà tài liệu EBSCO nói rõ "received from your EBSCO representative" —

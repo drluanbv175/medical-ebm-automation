@@ -69,7 +69,7 @@ def test_every_crossref_mode_feed_has_a_valid_issn_and_ids_are_unique():
     ids = [f.id for f in tat_ca]
     assert len(ids) == len(set(ids)), "id feed phải duy nhất (id tạo tên nguồn feed_<id> trong SourceLog)"
     for f in tat_ca:
-        assert f.mode in {"rss", "crossref"}, f.id
+        assert f.mode in {"rss", "crossref", "crossref_title", "europepmc", "who_iris", "kcb_vn"}, f.id
         if f.mode == "crossref":
             assert ISSN_RE.match(f.issn or ""), f"{f.id}: ISSN không hợp lệ"
             assert f.kind == "guideline"

@@ -21,6 +21,17 @@ from app.sources._fixtures import MOCK_FEED_ITEMS
 from app.sources.base import RawRecord, SourceClient
 from app.sources.classify_meta import infer_study_type
 from app.sources.feeds import FeedConfig
+from app.sources.guideline_lanes import (
+    CROSSREF_WORKS,
+    EUROPEPMC,
+    KCB_PHAC_DO,
+    WHO_IRIS_OAI,
+    crossref_title_lane,
+    europepmc_lane,
+    kcb_vn_lane,
+    ngay_crossref,
+    who_iris_lane,
+)
 from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
 
@@ -168,9 +179,17 @@ class RSSFeedClient(SourceClient):
         self.feed = feed
         self.name = f"feed_{feed.id}"
         self.endpoint = feed.url
+        # Nhật ký nguồn (SourceLog) phải ghi ĐÚNG nơi đã gọi, không phải URL RSS cũ không còn dùng.
         if feed.mode == "crossref" and feed.issn:
-            # Nhật ký nguồn (SourceLog) phải ghi ĐÚNG nơi đã gọi, không phải URL RSS cũ không còn dùng.
-            self.endpoint = f"https://api.crossref.org/works?filter=issn:{feed.issn}"
+            self.endpoint = f"{CROSSREF_WORKS}?filter=issn:{feed.issn}"
+        elif feed.mode == "crossref_title" and feed.issn:
+            self.endpoint = f"{CROSSREF_WORKS}?filter=issn:{feed.issn.split('|')[0]}&query.title=…"
+        elif feed.mode == "europepmc":
+            self.endpoint = EUROPEPMC
+        elif feed.mode == "who_iris":
+            self.endpoint = WHO_IRIS_OAI
+        elif feed.mode == "kcb_vn":
+            self.endpoint = KCB_PHAC_DO
         # Một số CDN (vd FDA/Akamai) chặn User-Agent không giống trình duyệt -> 403.
         # Dùng UA giống trình duyệt để đọc RSS công khai hợp lệ.
         ua = ("Mozilla/5.0 (compatible; medical-ebm-automation/0.1; "
@@ -186,6 +205,8 @@ class RSSFeedClient(SourceClient):
             return self._mock(max_results)
         if self.feed.mode == "crossref":
             return self._search_crossref(max_results, since_date)
+        if self.feed.mode in ("crossref_title", "europepmc", "who_iris", "kcb_vn"):
+            return self._search_lane(max_results, since_date)
         try:
             xml_text = self.http.get_text(self.feed.url, use_cache=True)
             self.save_raw(self.feed.id, xml_text)
@@ -240,24 +261,37 @@ class RSSFeedClient(SourceClient):
 
     @staticmethod
     def _ngay_crossref(it: dict) -> Optional[str]:
-        """Ngày công bố từ Crossref: online-first > ngày phát hành > in. Ngày TƯƠNG LAI (số phát hành của tháng sau — đo
-        thật: 2026-10 cho bài đã đăng tháng 9) thì dùng ngày Crossref nhận bản ghi (`created`); KHÔNG bịa ngày và
-        không để bài "mới nhất" mang ngày chưa tới làm lệch xếp hạng độ mới."""
-        def _so(muc: object) -> List[int]:
-            parts = ((muc or {}).get("date-parts") or [[]])[0] if isinstance(muc, dict) else []
-            return [int(x) for x in parts[:3] if isinstance(x, int) and not isinstance(x, bool)]
+        """Uỷ quyền cho `guideline_lanes.ngay_crossref` (ngày tương lai của số phát hành: dùng `created`)."""
+        return ngay_crossref(it)
 
-        def _chuoi(so: List[int]) -> str:
-            return "-".join(f"{x:02d}" if i else str(x) for i, x in enumerate(so))
-
-        hom_nay = date.today()
-        moc = (hom_nay.year, hom_nay.month, hom_nay.day)
-        for khoa in ("published-online", "issued", "published-print"):
-            so = _so(it.get(khoa))
-            if so and tuple(so) <= moc[: len(so)]:
-                return _chuoi(so)
-        so = _so(it.get("created"))
-        return _chuoi(so) if so else None
+    # -- LANE guideline (Europe PMC, WHO IRIS, kcb.vn, Crossref theo tiêu đề): xem app/sources/guideline_lanes.py --
+    def _search_lane(self, max_results: int, since_date: Optional[str]) -> List[RawRecord]:
+        f = self.feed
+        n = max(int(max_results), int(f.cap_results or 0))
+        email = getattr(settings, "openalex_email", "") or getattr(settings, "ncbi_email", "")
+        if f.mode == "europepmc":
+            muc = europepmc_lane(self.http, f.epmc_query or "", n, since_date, guideline=f.is_guideline,
+                                 so_ngay=f.window_days or 60)
+        elif f.mode == "who_iris":
+            muc = who_iris_lane(self.http, n, since_date, oai_set=f.oai_set or "com_10665_8",
+                                so_ngay=f.window_days or 60)
+        elif f.mode == "kcb_vn":
+            muc = kcb_vn_lane(self.http, n, since_date)
+        else:
+            muc = crossref_title_lane(self.http, (f.issn or "").split("|"), f.title_query or "", f.title_regex, n,
+                                      since_date, so_ngay=f.window_days or 365, mailto=email)
+        out: List[RawRecord] = []
+        for m in muc:
+            rec = self._to_record(m["title"], m.get("url"), m.get("date"), m.get("summary") or "")
+            rec.doi = m.get("doi")
+            rec.pmid = m.get("pmid")
+            rec.api_endpoint = self.endpoint
+            rec.raw["_via"] = f.mode
+            if m.get("guideline") and f.kind == "guideline" and (f.is_guideline or f.mode in ("who_iris", "kcb_vn")):
+                rec.study_type, rec.source_type = "guideline", "guideline"
+            out.append(rec)
+        logger.info("[%s] %d mục từ lane %s (%s)", self.name, len(out), f.mode, f.org)
+        return out
 
     # -- Parse -----------------------------------------------------------
     def _parse(self, xml_text: str, max_results: int,

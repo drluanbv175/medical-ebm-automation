@@ -46,3 +46,5 @@ select = ["E", "F", "W", "I", "FA102"]
 # Danh mục item SPIRIT 2025 NGUYÊN VĂN (sinh từ bài E&E chính thức, 06/09/2026): bẻ dòng
 # một câu checklist là sửa dữ liệu chuẩn — cùng lý do với verified.py/_fixtures.py.
 "tools/protocol_checklist_items.py" = ["E501"]
+# Test lane guideline (20/09/2026): fixture HTML/OAI/JSON dài, giữ nguyên để khớp dữ liệu thật đã đo.
+"tests/test_guideline_lanes.py" = ["E501"]

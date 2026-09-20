@@ -73,6 +73,33 @@ Kind regards,
 
 Chỉ khi có API key do NICE cấp mới bấm `Nhap Khoa NICE.command` rồi bật bằng `bn`.
 
+## 2bis. USPSTF — API chính thức (miễn phí nhưng phải xin duyệt)
+
+Nguồn: https://www.uspreventiveservicestaskforce.org/apps/api.jsp (đọc 20/09/2026): muốn dùng Prevention TaskForce API phải gửi email
+xin duyệt tới uspstfpda@ahrq.gov kèm thông tin liên hệ và mô tả mục đích. Điều kiện ghi rõ: khi hiển thị khuyến cáo phải **giữ nguyên văn,
+không sửa, và ghi nguồn**. Tài liệu kỹ thuật (endpoint, trường JSON) nằm trong file PDF hướng dẫn trên trang đó, chỉ có sau khi được cấp.
+
+Trong lúc chờ: hệ đã có lane `epmc_uspstf` (Recommendation Statement của USPSTF trong MEDLINE qua Europe PMC, có PMID) — không cần khoá.
+Đo 20/09/2026: 0 bài trong 365 ngày, 6 bài trong 730 ngày (USPSTF ra rất ít gần đây).
+
+**Gửi tới:** uspstfpda@ahrq.gov — **Tiêu đề:** Request for Prevention TaskForce API access (non-commercial clinical decision support)
+
+```
+Dear USPSTF / AHRQ team,
+
+I am a practising physician (outpatient internal medicine, Vietnam). I would like to request access to the Prevention
+TaskForce API for a personal, non-commercial clinical evidence-surveillance tool.
+
+Intended use: a scheduled, read-only check (about weekly) for new or updated USPSTF recommendations, so that my
+practice guidance stays current. Recommendation text will only be shown verbatim, unmodified and with a clear
+citation to USPSTF as the source; no patient data will be sent to your service; no redistribution or commercial use.
+
+Contact: [Họ tên], [chức danh, cơ quan], [email].
+
+Thank you,
+[Họ tên]
+```
+
 ## 3. NCBI/PubMed bị chặn "misuse"
 
 Đo 20/09/2026: cả `esearch`, `esummary`, `efetch` của `eutils.ncbi.nlm.nih.gov` đều trả HTTP 302 sang trang
