@@ -84,12 +84,14 @@ def _cach_ly_moi_truong(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "serpapi_api_key", "")
     monkeypatch.setattr(settings, "enable_serpapi_scholar", False)
     monkeypatch.setattr(settings, "serpapi_max_calls_per_run", 10**6)
+    monkeypatch.setattr(settings, "serpapi_max_calls_per_month", 10**6)
     monkeypatch.setattr(settings, "data_dir", tmp_path / "data")
     (tmp_path / "data" / "raw").mkdir(parents=True, exist_ok=True)
     yield
     # Dọn trạng thái theo tiến trình: trả trần về rất lớn rồi nạp lại module, để test ngân sách
     # (trần nhỏ, đếm dở) không làm nhiễm các test chạy sau.
     monkeypatch.setattr(settings, "serpapi_max_calls_per_run", 10**6)
+    monkeypatch.setattr(settings, "serpapi_max_calls_per_month", 10**6)
     _nap_lai_lop()
 
 
@@ -699,6 +701,107 @@ def test_http_401_invalid_key_is_loud_and_disables_further_calls(client_cls, mon
         client.search("heart failure")
     assert len(client.http.session.calls) == so_goi, "nguồn phải tự tắt sau 401, không thử lại"
     _kiem_khong_ro_khoa(client, caplog, ei2.value)
+
+
+def _tep_thang() -> Path:
+    return settings.raw_dir / "_state" / "serpapi_usage.json"
+
+
+def _da_goi_thang() -> int:
+    return json.loads(_tep_thang().read_text(encoding="utf-8"))["da_goi"]
+
+
+def test_monthly_cap_blocks_without_any_http_request_and_releases_the_process_budget(monkeypatch):
+    monkeypatch.setattr(settings, "serpapi_max_calls_per_month", 2)
+    client, ghi = _client_live(_nap_lai_lop(), monkeypatch)
+    client.search("q1")
+    client.search("q2")
+    with pytest.raises(RuntimeError) as ei:
+        client.search("q3")
+    assert getattr(ei.value, "loai", None) == "het_ngan_sach"
+    assert len(ghi["calls"]) == 2, "chạm trần THÁNG thì không được gửi request nào nữa"
+    assert serpapi_mod._NGAN_SACH["da_goi"] == 2, "lượt bị từ chối phải NHẢ chỗ theo tiến trình đã giữ"
+    assert _da_goi_thang() == 2
+
+
+def test_monthly_count_persists_across_processes_unlike_the_per_process_budget(monkeypatch):
+    """Nạp lại module = tiến trình MỚI (bộ đếm theo tiến trình về 0) nhưng tệp tháng vẫn còn."""
+    monkeypatch.setattr(settings, "serpapi_max_calls_per_month", 3)
+    c1, _ = _client_live(_nap_lai_lop(), monkeypatch)
+    c1.search("a")
+    c1.search("b")
+    c2, ghi2 = _client_live(_nap_lai_lop(), monkeypatch)
+    c2.search("c")
+    with pytest.raises(RuntimeError) as ei:
+        c2.search("d")
+    assert getattr(ei.value, "loai", None) == "het_ngan_sach"
+    assert len(ghi2["calls"]) == 1
+
+
+def test_a_corrupt_monthly_state_file_blocks_fail_closed_and_is_never_overwritten(monkeypatch):
+    client, ghi = _client_live(_nap_lai_lop(), monkeypatch)
+    _tep_thang().parent.mkdir(parents=True, exist_ok=True)
+    _tep_thang().write_text("{khong phai json", encoding="utf-8", newline="\n")
+    with pytest.raises(RuntimeError) as ei:
+        client.search("q")
+    assert getattr(ei.value, "loai", None) == "het_ngan_sach"
+    assert ghi["calls"] == [], "bộ đếm hỏng thì KHÔNG được gửi request tính phí"
+    assert _tep_thang().read_text(encoding="utf-8") == "{khong phai json", "không được ghi đè bằng suy đoán"
+
+
+def test_a_zero_monthly_cap_locks_the_source_completely(monkeypatch):
+    monkeypatch.setattr(settings, "serpapi_max_calls_per_month", 0)
+    client, ghi = _client_live(_nap_lai_lop(), monkeypatch)
+    with pytest.raises(RuntimeError) as ei:
+        client.search("q")
+    assert getattr(ei.value, "loai", None) == "het_ngan_sach"
+    assert ghi["calls"] == []
+
+
+@pytest.mark.parametrize("gia_tri", ["200", None, True, 1.5])
+def test_a_garbled_monthly_cap_setting_locks_fail_closed(monkeypatch, gia_tri):
+    monkeypatch.setattr(settings, "serpapi_max_calls_per_month", gia_tri)
+    client, ghi = _client_live(_nap_lai_lop(), monkeypatch)
+    with pytest.raises(RuntimeError) as ei:
+        client.search("q")
+    assert getattr(ei.value, "loai", None) == "het_ngan_sach"
+    assert ghi["calls"] == []
+
+
+def test_refunding_a_local_cache_hit_also_refunds_the_monthly_counter(monkeypatch):
+    monkeypatch.setattr(settings, "serpapi_max_calls_per_month", 5)
+    mod = importlib.reload(serpapi_mod)
+    mod._giu_cho_ngan_sach(10)
+    mod._BO_DEM_THANG.giu_cho(5)
+    assert _da_goi_thang() == 1
+    mod._hoan_ngan_sach()
+    assert _da_goi_thang() == 0
+    assert mod._NGAN_SACH["da_goi"] == 0
+
+
+def test_quota_exhausted_response_marks_the_whole_month_so_other_processes_stop(monkeypatch):
+    client, _ = _client_live(
+        _nap_lai_lop(), monkeypatch,
+        response={"search_metadata": {"status": "Error"}, "error": "Your account has run out of searches."})
+    with pytest.raises(RuntimeError) as ei:
+        client.search("q1")
+    assert getattr(ei.value, "loai", None) == "het_quota"
+    tiep, ghi2 = _client_live(_nap_lai_lop(), monkeypatch)   # tiến trình khác, cùng tháng
+    with pytest.raises(RuntimeError) as ei2:
+        tiep.search("q2")
+    assert getattr(ei2.value, "loai", None) == "het_ngan_sach"
+    assert ghi2["calls"] == [], "SerpApi đã báo hết quota tháng: tiến trình khác không được gửi thêm"
+
+
+def test_doc_ngan_sach_reports_the_month_without_mutating_anything(monkeypatch):
+    monkeypatch.setattr(settings, "serpapi_max_calls_per_month", 4)
+    client, _ = _client_live(_nap_lai_lop(), monkeypatch)
+    client.search("q1")
+    truoc = _tep_thang().read_text(encoding="utf-8")
+    anh = serpapi_mod.doc_ngan_sach()
+    assert (anh["tran_thang"], anh["da_goi_thang"], anh["con_lai_thang"]) == (4, 1, 3)
+    assert anh["trang_thai_hong"] is False
+    assert _tep_thang().read_text(encoding="utf-8") == truoc
 
 
 def test_http_429_run_out_of_searches_is_loud_and_stops_remaining_calls(client_cls, monkeypatch, tmp_path, caplog):

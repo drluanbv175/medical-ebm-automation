@@ -168,11 +168,9 @@ This file contains only Claude Code-specific instructions.
   (`app/services/ingestion.py`) — nguồn NGOÀI lõi hỏng 100% vẫn ra `PASS` (đã chứng minh offline;
   Scopus/CORE/Epistemonikos cũng chịu lỗ hổng này), đổi luật sẽ đổi hành vi phát hành nên chưa sửa;
   (ii) [ĐÃ LỖI THỜI từ khi có bậc thang có cổng — giờ chỉ truy vấn THIẾU chứng cứ mới gọi Scholar, không còn
-  quét tuần tự 53 truy vấn]; (iii) `.env.example` chưa có dòng
-  mẫu — cần thêm `SERPAPI_API_KEY=` (để trống), `ENABLE_SERPAPI_SCHOLAR=false`,
-  `SERPAPI_MAX_CALLS_PER_RUN=8` (tác nhân không được sửa `.env*`); (iv) `research/manager.py` và
+  quét tuần tự 53 truy vấn]; (iii) [ĐÃ XONG 20/09/2026 — `.env.example` đã có đủ dòng mẫu cho bậc thang dự phòng]; (iv) `research/manager.py` và
   `research/dossier.py` nuốt mọi exception bằng `logger.warning` nên lỗi thiếu key/hết quota không
-  lên giao diện; (v) chưa có trần theo tháng (~225/250) qua Account API; (vi) tầng giám sát lâm sàng
+  lên giao diện; (v) [ĐÃ XONG 20/09/2026 — trần THÁNG bền `SERPAPI_MAX_CALLS_PER_MONTH` (mặc định 200/250), tệp `data/raw/_state/serpapi_usage.json`, fail-closed, dùng chung giữa các tiến trình; SerpApi báo hết quota thì đánh dấu hết cả tháng; số đã dùng chưa đối chiếu với Account API]; (vi) tầng giám sát lâm sàng
   (`EBM-Dashboards/tools/surveillance_scan.py`) chưa có "làn" Scholar. Tắt được bằng cờ và không
   phụ thuộc duy nhất vào nguồn này (Google đang kiện SerpApi — theo báo chí/blog SerpApi, chưa có
   thông tin sau ~01/09/2026).
@@ -198,8 +196,7 @@ This file contains only Claude Code-specific instructions.
   qua endpoint công khai `papers`/`tallies` — chặn bài bị rút/có thông báo biên tập (`bi_rut_bai`), tally chỉ
   GHI vào `raw`, không tham gia chấm điểm; KHÔNG phải tầng tìm kiếm vì Scite Search cần giấy phép.
   ⚠️ **TRẠNG THÁI TRUNG THỰC (cập nhật 20/09/2026):** 98 + 230 + 156 + 86 + 67 test offline đạt, và ĐÃ kiểm THẬT một phần: (a) **SerpApi** — xem đoạn trên; (b) **lớp xác minh Crossref + Scite công khai** — 5 ca có đáp án biết trước, 4/5 đúng: DOI + tiêu đề đúng ⇒ giữ, kèm tally Scite thật (DAPA-HF: 5953 trích dẫn, 169 ủng hộ, 9 mâu thuẫn — chỉ GHI, không chấm điểm) · DOI thật nhưng tiêu đề sai ⇒ loại · DOI không tồn tại ⇒ loại · bài Wakefield (Lancet 1998, Crossref ghi tiêu đề "RETRACTED: …") ⇒ `bi_rut_bai` — **lỗi đo được và vá cùng ngày**: trước đó bị xếp "không khớp" (vẫn loại nhưng sai nhãn, không được đếm là rút bài); ca thứ 5 (tiêu đề bị Scholar cắt "…", không DOI) KHÔNG được giữ vì Crossref tìm theo tiêu đề trả về một bản 2022 KHÁC bài và cổng năm chặn đúng — đây là bằng chứng thật rằng bỏ cổng năm sẽ nhận nhầm bài; (c) **đường PMID/PubMed** vẫn không kiểm được trên mạng này vì NCBI đang chặn misuse ⇒ trả `loi_xac_minh` (fail-closed); (d) **Consensus CHƯA kiểm thật** — chưa có `CONSENSUS_API_KEY` (kết nối MCP Consensus KHÔNG phải khoá REST API — phải tạo khoá riêng ở "API & MCP Dashboard"). Cả hai nguồn dự phòng vẫn TẮT mặc định. Kiểm thật Consensus tốn 1 trong 30 lượt Free/tháng. **Việc còn mở:**
-  (i) `.env.example` chưa có các dòng `SERPAPI_*`, `ENABLE_CONSENSUS`, `CONSENSUS_*`, `FALLBACK_*`,
-  `ENABLE_SCITE_VERIFICATION` (tác nhân không được sửa `.env*`); (ii) Consensus/Scite ở phía MCP của tác
+  (i) [đã xong: `.env.example` có đủ dòng mẫu]; (ii) Consensus/Scite ở phía MCP của tác
   nhân KHÔNG bị cổng này ràng buộc — đổi học thuyết agent sẽ kéo theo cổng đồng bộ agent nên để bác sĩ quyết.
   · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026, GỠ BỎ cùng ngày sau khi xác minh.**
   Kiểm trực tiếp `developer.ebsco.com/dynamed` xác nhận: đăng ký app MedsAPI **bắt buộc** một

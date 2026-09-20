@@ -114,6 +114,7 @@ from app.core.policy_engine import contains_pii_text
 from app.sources._fixtures import mock_records_for
 from app.sources.base import RawRecord, SourceClient
 from app.sources.classify_meta import infer_study_type
+from app.utils.bo_dem_thang import BoDemThang, HetTran
 from app.utils.http import HttpClient, _cache_key, _cache_path, _redact, _write_cache
 from app.utils.logging_config import get_logger
 
@@ -189,10 +190,29 @@ def _giu_cho_ngan_sach(tran: int) -> bool:
         return True
 
 
+# Bộ đếm THÁNG bền qua các tiến trình (ingest/dossier/manager là tiến trình riêng nên trần theo tiến trình ở
+# trên KHÔNG chặn được tổng): tệp `<data>/raw/_state/serpapi_usage.json`, fail-closed (xem app/utils/bo_dem_thang.py).
+_BO_DEM_THANG = BoDemThang("serpapi", lambda: settings.raw_dir / "_state" / "serpapi_usage.json")
+
+
+def _tran_thang() -> int:
+    """Trần tháng từ cấu hình; giá trị hỏng/không phải số nguyên => 0 (khoá hẳn, fail-closed)."""
+    tran = getattr(settings, "serpapi_max_calls_per_month", 200)
+    if isinstance(tran, bool) or not isinstance(tran, int):
+        return 0
+    return max(tran, 0)
+
+
+def doc_ngan_sach() -> Dict[str, Any]:
+    """Ảnh chụp ngân sách THÁNG cho diagnostics; không ném, không sửa gì."""
+    return _BO_DEM_THANG.anh_chup(_tran_thang())
+
+
 def _hoan_ngan_sach() -> None:
     with _KHOA_NGAN_SACH:
         if _NGAN_SACH["da_goi"] > 0:
             _NGAN_SACH["da_goi"] -= 1
+    _BO_DEM_THANG.hoan()
 
 
 class SerpApiLoi(RuntimeError):
@@ -561,11 +581,26 @@ class SerpApiScholarClient(SourceClient):
                 self._da_bao_het_ngan_sach = True
                 logger.warning(thong_bao)
             raise SerpApiLoi(thong_bao, "het_ngan_sach")
+        try:
+            _BO_DEM_THANG.giu_cho(_tran_thang())
+        except HetTran as exc:
+            with _KHOA_NGAN_SACH:  # nhả chỗ theo tiến trình vừa giữ: request này KHÔNG được gửi
+                if _NGAN_SACH["da_goi"] > 0:
+                    _NGAN_SACH["da_goi"] -= 1
+            self.stats["bo_qua_ngan_sach"] += 1
+            thong_bao = (f"[serpapi_scholar] {exc} (SERPAPI_MAX_CALLS_PER_MONTH={_tran_thang()}; gói Free 250 "
+                         "search/tháng) — truy vấn này BỊ BỎ QUA có chủ đích để không đốt hạn mức.")
+            if not self._da_bao_het_ngan_sach:
+                self._da_bao_het_ngan_sach = True
+                logger.warning(thong_bao)
+            raise SerpApiLoi(thong_bao, "het_ngan_sach") from None
         self.stats["so_lan_goi"] += 1
 
     # ------------------------------------------------------------------ xử lý lỗi
     def _chot(self, loi: SerpApiLoi) -> SerpApiLoi:
         self._chot_loi = loi
+        if loi.loai == "het_quota":
+            _BO_DEM_THANG.danh_dau_het(_tran_thang())  # SerpApi báo hết quota: các tiến trình khác cũng phải dừng
         logger.warning("[serpapi_scholar] LỖI CHỐT (%s) — dừng gọi SerpApi cho phần còn lại của lượt chạy.",
                        loi.loai)
         return loi

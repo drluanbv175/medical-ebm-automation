@@ -226,6 +226,10 @@ class Settings:
     # Chạm trần thì connector NỔ TO (không trả rỗng im lặng). <= 0 = khoá hẳn (fail-closed).
     serpapi_max_calls_per_run: int = field(
         default_factory=lambda: _get_int("SERPAPI_MAX_CALLS_PER_RUN", 8))
+    # Trần THÁNG bền qua các tiến trình (tệp data/raw/_state/serpapi_usage.json, fail-closed): 200 < 250 của gói
+    # Free để chừa ~50 search cho chạy tay/kiểm thật. <= 0 = khoá hẳn.
+    serpapi_max_calls_per_month: int = field(
+        default_factory=lambda: _get_int("SERPAPI_MAX_CALLS_PER_MONTH", 200))
     # Consensus (consensus.app — tìm kiếm nghiên cứu bằng AI, REST API) — thêm 20/09/2026, cùng họ với
     # SerpApi: nguồn DỰ PHÒNG có cổng, KHÔNG tham gia quét song song (xem app/services/fallback_ladder.py).
     # Khoá CHỈ nạp từ môi trường/kho secrets (~/.ebm-secrets/medical-ebm-automation.env), không hard-code,
