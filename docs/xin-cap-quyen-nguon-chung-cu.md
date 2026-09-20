@@ -111,7 +111,10 @@ Hệ vẫn chạy nhờ Europe PMC (bản sao MEDLINE) + Crossref, nhưng PubMed
 2. **Lưu ý Scopus — ĐÃ KIỂM 20/09/2026, cách ép card KHÔNG hiệu quả với Kaspersky VPN:** Scopus bị Cloudflare chặn theo IP của VPN.
    Đặt `SCOPUS_BIND_INTERFACE=en1` (card vật lý của máy này) vẫn bị 403, vì địa chỉ nguồn của kết nối vẫn là địa chỉ đường hầm VPN
    (`172.21.39.127`, không phải `192.168.1.11` của en1) — bằng chứng và hệ quả ở `CLAUDE.md` mục Scopus. Nên: **chạy Scopus lúc VPN tắt**, hoặc
-   thêm `api.elsevier.com` vào danh sách loại trừ của ứng dụng VPN nếu nó có tính năng đó (chưa kiểm).
+   ~~thêm `api.elsevier.com` vào danh sách loại trừ~~ — **đã kiểm 20/09/2026: không làm được.** Kaspersky VPN cho Mac chỉ có «Phân tách kênh
+   truyền tải» theo **ứng dụng** và **đảo chiều** (tick «Chỉ bật VPN cho các ứng dụng được chọn»: ứng dụng trong danh sách đi qua VPN, còn lại
+   đi thẳng), không có ô tên miền/IP, chỉ có ở bản Unlimited và chỉ với ứng dụng trong thư mục Applications
+   ([trang chính thức](https://support.kaspersky.com/us/ksec-for-mac/240287)). Scopus và PubMed chạy chung một tiến trình Python nên không tách được.
 3. Nhắn Claude "đã bật VPN" → Claude kiểm `esearch` PubMed và chạy lại các test nguồn. **Kết quả đo 20/09/2026 với VPN bật:** PubMed HTTP 200
    (hết chặn), Scopus vẫn 403, 33/33 lane guideline chạy, SerpApi + Consensus chạy thật.
 
