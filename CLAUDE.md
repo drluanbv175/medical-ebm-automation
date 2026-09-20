@@ -75,6 +75,16 @@ This file contains only Claude Code-specific instructions.
   `~/.ebm-secrets/medical-ebm-automation.env`, chạy `python run.py test-live scopus` — kỳ vọng
   `is_mock:false` và không còn 403, trong khi `python run.py test-live pubmed` (không cần đổi gì)
   vẫn chạy tốt qua VPN như trước.
+  ⛔ **ĐÃ KIỂM BẰNG MẠNG THẬT 20/09/2026 — `SCOPUS_BIND_INTERFACE` KHÔNG vượt được Kaspersky VPN, câu «kỳ vọng
+  không còn 403» ở trên là SAI với VPN này.** Bật VPN + `SCOPUS_BIND_INTERFACE=en1`: `test-live scopus` vẫn HTTP 403 HTML Cloudflare
+  (cả khi đi route mặc định lẫn khi ép card). Nguyên nhân đo được, không đoán: mở socket có `IP_BOUND_IF`=en1 rồi đọc
+  `getsockname()` — địa chỉ nguồn vẫn là `172.21.39.127` (đường hầm VPN), KHÔNG phải `192.168.1.11` (IP của en1). Kaspersky VPN chặn
+  gói tin ở tầng cao hơn tuỳ chọn socket này, nên cơ chế ép card không có tác dụng với nó (có thể vẫn hữu dụng với VPN khác — chưa thử).
+  Cùng lượt đo, VPN BẬT: PubMed E-utilities HTTP 200 (hết chặn misuse, `test-live pubmed` count=5 thật), 33/33 lane guideline trả mục,
+  SerpApi + Consensus test-live thật đều `is_mock:false`. **Hệ quả thực tế: VPN bật ⇒ PubMed trực tiếp chạy, Scopus bị chặn; VPN tắt ⇒
+  ngược lại.** Việc bù: Europe PMC + Crossref phủ dữ liệu PubMed khi NCBI chặn, còn Scopus chỉ là nguồn bổ sung — nên chạy Scopus lúc
+  VPN tắt, hoặc thêm `api.elsevier.com` vào danh sách loại trừ của ứng dụng VPN nếu nó có tính năng đó (CHƯA kiểm ứng dụng Kaspersky có hay
+  không).
   · **CORE API (core.ac.uk) — thêm 16/09/2026**, theo yêu cầu "nâng cấp trạng thái tự động" và
   khảo sát toàn hệ xác định đây là nguồn OA bổ sung cho Unpaywall (>452 triệu bản ghi, >16.000 kho
   lưu trữ, gồm cả luận văn/báo cáo xám mà Unpaywall không phủ). `app/sources/core_api.py`. TẮT mặc

@@ -108,10 +108,12 @@ Hệ vẫn chạy nhờ Europe PMC (bản sao MEDLINE) + Crossref, nhưng PubMed
 
 **Cách 1 — đổi IP thoát bằng VPN (bác sĩ tự bật; agent không được đổi cài đặt mạng của máy):**
 1. Mở ứng dụng **Kaspersky VPN** (Kaspersky Secure Connection) → chọn vị trí → Kết nối.
-2. **Lưu ý Scopus:** Scopus bị Cloudflare chặn theo IP của VPN. Trước khi bật VPN, thêm dòng
-   `SCOPUS_BIND_INTERFACE=en1` vào `~/.ebm-secrets/medical-ebm-automation.env` (en1 = card mạng vật lý của máy này, đo 20/09/2026) để chỉ
-   Scopus đi thẳng qua card vật lý, các nguồn khác đi qua VPN. Cơ chế + giới hạn: `CLAUDE.md` mục Scopus.
-3. Nhắn Claude "đã bật VPN" → Claude kiểm `esearch` PubMed và chạy lại các test nguồn.
+2. **Lưu ý Scopus — ĐÃ KIỂM 20/09/2026, cách ép card KHÔNG hiệu quả với Kaspersky VPN:** Scopus bị Cloudflare chặn theo IP của VPN.
+   Đặt `SCOPUS_BIND_INTERFACE=en1` (card vật lý của máy này) vẫn bị 403, vì địa chỉ nguồn của kết nối vẫn là địa chỉ đường hầm VPN
+   (`172.21.39.127`, không phải `192.168.1.11` của en1) — bằng chứng và hệ quả ở `CLAUDE.md` mục Scopus. Nên: **chạy Scopus lúc VPN tắt**, hoặc
+   thêm `api.elsevier.com` vào danh sách loại trừ của ứng dụng VPN nếu nó có tính năng đó (chưa kiểm).
+3. Nhắn Claude "đã bật VPN" → Claude kiểm `esearch` PubMed và chạy lại các test nguồn. **Kết quả đo 20/09/2026 với VPN bật:** PubMed HTTP 200
+   (hết chặn), Scopus vẫn 403, 33/33 lane guideline chạy, SerpApi + Consensus chạy thật.
 
 **Cách 2 — xin gỡ chặn (lâu dài, không phụ thuộc VPN).** Gửi tới **info@ncbi.nlm.nih.gov**:
 
