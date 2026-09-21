@@ -21,10 +21,25 @@ mkdir -p "$(dirname "$LOG")"
 
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') : BẮT ĐẦU quét chứng cứ bị vượt qua (quý) =====" >> "$LOG"
 OUT="$HUB/EBM-Dashboards/derivatives/CHUNG-CU-VUOT-QUA_$(date '+%Y%m%d').txt"
-"$PY" "$HUB/tools/kiem_chung_cu_vuot_qua.py" > "$OUT" 2>> "$LOG"
+# MANIFEST JSON (21/09/2026): kết luận + phạm vi + danh sách PMID có bài mới hơn. Bên tiêu thụ (tra_diem_kham,
+# provenance_ledger) đọc manifest qua kiem_chung_cu_vuot_qua.doc_bao_cao_vuot_qua() thay vì phân tích chuỗi văn bản —
+# báo cáo 16/09 in 🟢 giả (bản lỗi JSON đọc thành rỗng) làm tắt mọi cờ 🟠 vì không ai phân biệt được nó với «sạch thật».
+OUTJ="${OUT%.txt}.json"
+# Xoá manifest cũ TRƯỚC khi chạy: lượt này chết giữa chừng thì không được để manifest hợp lệ của lượt trước ghép với báo cáo mới.
+rm -f "$OUTJ"
+if ! mkdir -p "$(dirname "$OUT")" 2>> "$LOG"; then
+  echo "===== $(date '+%Y-%m-%d %H:%M:%S') : KẾT THÚC — không tạo được thư mục đầu ra, tổng thể=CÓ BƯỚC LỖI =====" >> "$LOG"
+  exit 0
+fi
+"$PY" "$HUB/tools/kiem_chung_cu_vuot_qua.py" --json-ra "$OUTJ" > "$OUT" 2>> "$LOG"
 rc=$?
-# mã 1 = CÓ mục cần đọc lại — vẫn là một lượt quét THÀNH CÔNG; chỉ mã ≥2 là hỏng.
-tong="PASS"; [ "$rc" -ge 2 ] && tong="CÓ BƯỚC LỖI"
+# Kết luận thật đến từ MANIFEST, không từ mã thoát: CHUA_DO / MAU / lỗi không đọc được manifest đều KHÔNG phải «đã dò xong».
+ket_luan=$("$PY" -c "import json,sys; print(json.load(open(sys.argv[1],encoding='utf-8')).get('ket_luan',''))" "$OUTJ" 2>/dev/null || echo "")
+# mã 1 = CÓ mục cần đọc lại — vẫn là một lượt quét THÀNH CÔNG; mã ≥2 hoặc kết luận khác SACH/CO_BAI_MOI là chưa đo xong.
+tong="PASS"
+{ [ "$rc" -ge 2 ] || { [ "$ket_luan" != "SACH" ] && [ "$ket_luan" != "CO_BAI_MOI" ]; }; } && tong="CÓ BƯỚC LỖI"
+# rc=1 do lỗi ghi tệp (không phải «có phát hiện»): chỉ tin rc=1 khi manifest nói CO_BAI_MOI
+[ "$rc" -eq 1 ] && [ "$ket_luan" != "CO_BAI_MOI" ] && rc=2
 # Alert khi có phát hiện (mã 1): một dòng vào alerts/ để bác sĩ thấy ngay đầu phiên.
 if [ "$rc" -eq 1 ]; then
   AD="$HUB/alerts"; mkdir -p "$AD"
@@ -32,6 +47,14 @@ if [ "$rc" -eq 1 ]; then
   [ -f "$AF" ] || printf '# CẢNH BÁO KHẨN — %s\n\n' "$(date '+%Y-%m-%d')" >> "$AF"
   n=$(grep -c "▸ PMID" "$OUT" 2>/dev/null || echo "?")
   printf -- "- 🟠 QUÉT QUÝ: %s mục 'apply' có tổng quan/guideline MỚI HƠN — đọc %s\n" "$n" "$OUT" >> "$AF"
+fi
+# Mã ≥2 = KHÔNG hỏi được PubMed (hoặc lỗi): báo cáo KHÔNG dùng để kết luận «không có bài mới hơn». Trước đây chỉ vào log,
+# nên bác sĩ không biết lượt quý đã hỏng — nay có một dòng ở alerts/ (cùng khuôn với nhánh mã 1).
+if [ "$rc" -ge 2 ] || [ "$tong" != "PASS" ]; then
+  AD="$HUB/alerts"; mkdir -p "$AD"
+  AF="$AD/$(date '+%Y-%m-%d').md"
+  [ -f "$AF" ] || printf '# CẢNH BÁO KHẨN — %s\n\n' "$(date '+%Y-%m-%d')" >> "$AF"
+  printf -- "- 🟠 QUÉT QUÝ KHÔNG HOÀN TẤT (mã %s, kết luận %s): không dò xong toàn kho — %s KHÔNG dùng để kết luận «không có bài mới hơn»; chạy lại khi NCBI thông.\n" "$rc" "${ket_luan:-không-có-manifest}" "$OUT" >> "$AF"
 fi
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') : KẾT THÚC — bước (1)=$rc, tổng thể=$tong =====" >> "$LOG"
 exit 0
