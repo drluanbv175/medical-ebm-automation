@@ -71,7 +71,8 @@ def link_evidence(project_id: str, evidence_ids: List[int]) -> bool:
 
 
 def suggest_background_literature(query: str, clinical_area: Optional[str] = None,
-                                  max_results: int = 10) -> List[Dict]:
+                                  max_results: int = 10,
+                                  *, diagnostics: Optional[Dict] = None) -> List[Dict]:
     """Gợi ý tài liệu nền (guideline/SR/MA/RCT) cho một đề tài.
 
     Ưu tiên các nguồn mạnh đã có trong DB; nếu chưa có, quét nhanh qua connector.
@@ -79,9 +80,19 @@ def suggest_background_literature(query: str, clinical_area: Optional[str] = Non
 
     BẬC THANG DỰ PHÒNG (20/09/2026): Consensus/SerpApi Scholar không nằm trong vòng quét nhanh. Khi được bật (và
     không mock) và chứng cứ đáng tin của truy vấn vẫn còn thiếu SAU vòng quét, mới hỏi thêm và chỉ thêm bài được
-    Crossref/PubMed xác minh (mỗi mục có `phat_hien_boi`); lỗi/lý do được ghi vào log (hàm này trả list, không có
-    kênh lỗi khác).
+    Crossref/PubMed xác minh (mỗi mục có `phat_hien_boi`).
+
+    `diagnostics` (thêm 22/09/2026, TUỲ CHỌN, không phá vỡ chữ ký cũ): truyền một dict RỖNG vào để
+    nhận lại lỗi/lý do — trước bản vá, lỗi CHỈ vào `logger.warning` (file log ít khi được đọc lúc
+    đang thao tác), nên caller không cách nào biết kết quả rỗng là "thật sự không có gì" hay "một
+    nguồn/tầng dự phòng vừa lỗi". Không truyền (mặc định `None`) thì hành vi giữ NGUYÊN như cũ —
+    caller cũ không cần sửa gì. Khoá ghi vào `diagnostics`: `loi_nguon_thuong` (list[str], lỗi từng
+    connector ở vòng quét nhanh) và `du_phong` (str hoặc None, tóm tắt bậc thang dự phòng nếu có
+    hỏi/lỗi — rỗng khi cổng đủ-chứng-cứ đóng, tức không cần hỏi thêm).
     """
+    if diagnostics is not None:
+        diagnostics.setdefault("loi_nguon_thuong", [])
+        diagnostics.setdefault("du_phong", None)
     results: List[Dict] = []
     with session_scope() as s:
         q = s.query(EvidenceItem).filter(
@@ -114,8 +125,19 @@ def suggest_background_literature(query: str, clinical_area: Optional[str] = Non
                                 "source": rec.source})
         except Exception as exc:  # pragma: no cover
             logger.warning("Gợi ý tài liệu lỗi nguồn %s: %s", client.name, exc)
+            if diagnostics is not None:
+                diagnostics["loi_nguon_thuong"].append(f"{client.name}: {type(exc).__name__}")
         if len(results) >= max_results:
             break
+    # Khi cổng dự phòng BẬT, goi_nguon_thuong() KHÔNG ném lỗi (đẩy vào logs_thuong thay vì raise —
+    # xem docstring goi_nguon_thuong) nên nhánh except ở trên không chạy tới; lỗi nguồn vẫn phải
+    # tới được `diagnostics`, không chỉ nằm trong logs_thuong (vốn chỉ phục vụ cổng đủ-chứng-cứ nội
+    # bộ, không phải kênh báo cho người gọi).
+    if diagnostics is not None and logs_thuong:
+        for lg in logs_thuong:
+            if str(lg.get("status")) == "error":
+                diagnostics["loi_nguon_thuong"].append(
+                    f"{lg.get('source', '?')}: {lg.get('error_message') or 'lỗi'}")
 
     if dang_bat:
         # Chỉ hỏi tầng dự phòng khi chứng cứ ĐÁNG TIN còn thiếu (cổng chấm điểm lại từ RawRecord, không tin đếm
@@ -134,8 +156,12 @@ def suggest_background_literature(query: str, clinical_area: Optional[str] = Non
             ghi_chu = tom_tat_ngan(tom_tat)
             if ghi_chu:
                 logger.warning("Bậc thang dự phòng (gợi ý tài liệu nền): %s", ghi_chu)
+                if diagnostics is not None:
+                    diagnostics["du_phong"] = ghi_chu
         except Exception as exc:  # noqa: BLE001 — bậc thang không được làm hỏng gợi ý
             logger.warning("Bậc thang dự phòng lỗi ở gợi ý tài liệu nền (%s).", type(exc).__name__)
+            if diagnostics is not None:
+                diagnostics["du_phong"] = f"lỗi nội bộ: {type(exc).__name__}"
     return results[:max_results]
 
 

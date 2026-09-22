@@ -1295,6 +1295,109 @@ def test_research_paths_make_no_fallback_call_when_both_flags_are_off(monkeypatc
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# Lỗi nguồn thường KHÔNG được chỉ nằm trong logger.warning — thêm 22/09/2026
+# (theo đề nghị "hoàn thiện hệ thống nguồn" của bác sĩ)
+# ════════════════════════════════════════════════════════════════════════════
+
+class NguonThuongHong:
+    """Nguồn thường LUÔN raise — mô phỏng Scopus/CORE/Epistemonikos hết quota/sai key."""
+
+    def __init__(self, su_kien: list, ten: str = "core") -> None:
+        self.name, self.endpoint, self.use_mock = ten, "https://fake.example.org/", False
+        self._su_kien = su_kien
+
+    def search(self, query, clinical_area=None, max_results=20, since_date=None):
+        self._su_kien.append("thuong_hong")
+        raise RuntimeError("hết quota giả lập")
+
+
+def test_manager_diagnostics_none_mac_dinh_khong_doi_hanh_vi_cu(monkeypatch, db_rieng):
+    """Không truyền `diagnostics` (mặc định None) — hành vi giữ NGUYÊN như trước bản vá, không
+    crash vì thiếu tham số mới."""
+    from app.research import manager as manager_mod
+
+    su_kien: List[str] = []
+    monkeypatch.setattr(manager_mod, "get_enabled_sources", lambda: [NguonThuongHong(su_kien)])
+    monkeypatch.setattr(settings, "enable_consensus", False)
+    monkeypatch.setattr(settings, "enable_serpapi_scholar", False)
+    ket_qua = manager_mod.suggest_background_literature(TRUY_VAN_NC, KHU_NC, max_results=10)
+    assert ket_qua == []
+    assert su_kien == ["thuong_hong"]
+
+
+def test_manager_diagnostics_bat_khi_du_phong_tat_ghi_qua_except(monkeypatch, db_rieng):
+    """Cổng dự phòng TẮT ⇒ goi_nguon_thuong() gọi thẳng client.search(), lỗi propagate lên nhánh
+    except — phải tới được diagnostics['loi_nguon_thuong']."""
+    from app.research import manager as manager_mod
+
+    su_kien: List[str] = []
+    monkeypatch.setattr(manager_mod, "get_enabled_sources", lambda: [NguonThuongHong(su_kien, "core")])
+    monkeypatch.setattr(settings, "enable_consensus", False)
+    monkeypatch.setattr(settings, "enable_serpapi_scholar", False)
+    chan = {}
+    ket_qua = manager_mod.suggest_background_literature(TRUY_VAN_NC, KHU_NC, max_results=10,
+                                                        diagnostics=chan)
+    assert ket_qua == []
+    assert len(chan["loi_nguon_thuong"]) == 1
+    assert "core" in chan["loi_nguon_thuong"][0]
+    assert "RuntimeError" in chan["loi_nguon_thuong"][0]
+    assert chan["du_phong"] is None
+
+
+def test_manager_diagnostics_bat_khi_du_phong_bat_ghi_qua_logs_thuong(monkeypatch, db_rieng):
+    """Cổng dự phòng BẬT ⇒ goi_nguon_thuong() KHÔNG raise (lỗi rơi vào logs_thuong nội bộ thay vì
+    propagate) — trước bản vá, lỗi ở nhánh NÀY hoàn toàn không tới được diagnostics. Nay đọc lại
+    logs_thuong sau vòng lặp để bắt đúng."""
+    from app.research import manager as manager_mod
+
+    su_kien: List[str] = []
+    monkeypatch.setattr(manager_mod, "get_enabled_sources", lambda: [NguonThuongHong(su_kien, "epistemonikos")])
+    _vá_bo_sung(monkeypatch, lambda *a, **k: ([], {"active": True, "so_truy_van": 0, "du": 0, "thieu": 0,
+                                                     "chua_ket_luan": 0, "bo_qua_cu_phap_pubmed": 0,
+                                                     "du_sau_du_phong": 0, "van_thieu": 0, "tang": {}, "scite": {},
+                                                     "quyet_dinh": []}))
+    monkeypatch.setattr(settings, "enable_consensus", True)
+    monkeypatch.setattr(settings, "consensus_api_key", CLE_SENTINEL)
+    chan = {}
+    ket_qua = manager_mod.suggest_background_literature(TRUY_VAN_NC, KHU_NC, max_results=10,
+                                                        diagnostics=chan)
+    assert ket_qua == []
+    assert len(chan["loi_nguon_thuong"]) == 1
+    assert "epistemonikos" in chan["loi_nguon_thuong"][0]
+
+
+def test_dossier_loi_nguon_thuong_outparam_ca_hai_nhanh(monkeypatch, db_rieng):
+    """Cùng hai nhánh (dự phòng tắt/bật) nhưng cho phía dossier.find_background_literature()."""
+    from app.research import dossier as dossier_mod
+
+    su_kien: List[str] = []
+    monkeypatch.setattr(dossier_mod, "get_enabled_sources", lambda: [NguonThuongHong(su_kien, "scopus")])
+    monkeypatch.setattr(settings, "enable_consensus", False)
+    monkeypatch.setattr(settings, "enable_serpapi_scholar", False)
+    loi: List[str] = []
+    ket_qua = dossier_mod.find_background_literature(TRUY_VAN_NC, KHU_NC, max_results=12,
+                                                      loi_nguon_thuong=loi)
+    assert ket_qua == []
+    assert len(loi) == 1 and "scopus" in loi[0]
+
+
+def test_dossier_markdown_hien_loi_nguon_thuong_khong_chi_vao_log(monkeypatch, db_rieng, tmp_path):
+    """Đầu ra cuối cùng bác sĩ đọc (Markdown hồ sơ) phải thấy dòng lỗi — không chỉ logger."""
+    from app.models import ResearchProject
+    from app.research import dossier as dossier_mod
+
+    _luu(db_rieng, ResearchProject(project_id="P-DIAG-1", project_title="Đề tài kiểm lỗi nguồn"))
+    su_kien: List[str] = []
+    monkeypatch.setattr(dossier_mod, "get_enabled_sources", lambda: [NguonThuongHong(su_kien, "core")])
+    monkeypatch.setattr(settings, "enable_consensus", False)
+    monkeypatch.setattr(settings, "enable_serpapi_scholar", False)
+    md = dossier_mod.build_dossier_markdown("P-DIAG-1")
+    assert md is not None
+    assert "Nguồn thường gặp lỗi" in md
+    assert "core" in md
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # Đăng ký nguồn: get_enabled_sources() vs get_fallback_sources()
 # ════════════════════════════════════════════════════════════════════════════
 

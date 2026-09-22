@@ -43,6 +43,17 @@ _SLOW_QUERY_THRESHOLD_SEC = 10.0
 
 _DISCOVERY_CORE = {"pubmed", "europepmc", "crossref"}
 _SAFETY_FEEDS = {"feed_fda_medwatch", "feed_fda_recalls", "feed_mhra_dsu"}
+# Nguồn TĂNG CƯỜNG tuỳ chọn — thêm 22/09/2026, đo được bằng đọc mã: các nguồn này CÓ trong
+# get_enabled_sources() (Scopus/CORE/Epistemonikos khi bật) nên get_enabled_sources()/ingest_all()
+# THẬT SỰ gọi chúng mỗi lượt live-update và source_rows ghi nhận đúng sức khoẻ — nhưng vì
+# _DISCOVERY_CORE chỉ khai 3 tên, một nguồn ở đây hỏng 100% (health='unavailable') KHÔNG BAO GIỜ
+# đổi `status` tổng ("PASS" dù hỏng hoàn toàn). CỐ Ý KHÔNG đưa vào _DISCOVERY_CORE (sẽ biến chúng
+# thành BẮT BUỘC — một máy chưa có SCOPUS_API_KEY sẽ khiến TOÀN BỘ live-update FAIL, sai mục đích
+# "nguồn TĂNG CƯỜNG tuỳ chọn"); thay vào đó CHỈ hạ `status` xuống tối đa "PARTIAL" (cảnh báo, không
+# chặn) khi một nguồn Ở ĐÂY đã THẬT SỰ được gọi (có mặt trong source_rows, tức đang bật) mà hỏng
+# 100%. Consensus/SerpApi KHÔNG ở đây — chúng đi qua `diagnostics["fallback"]` riêng (xem docstring
+# module), không qua summarize_source_health().
+_OPTIONAL_ENHANCED = {"scopus", "core", "epistemonikos"}
 
 
 def _http_snapshot(client: object) -> Dict[str, Any]:
@@ -169,6 +180,14 @@ def summarize_source_health(
         redundancy_warnings.append("SAFETY_REDUNDANCY_LOW")
     if len(guideline_healthy) < min(3, len(guideline_expected)):
         redundancy_warnings.append("GUIDELINE_REDUNDANCY_LOW")
+    # Nguồn tăng cường tuỳ chọn (Scopus/CORE/Epistemonikos) ĐÃ được gọi (có mặt trong source_rows,
+    # tức đang bật) mà hỏng 100% — CẢNH BÁO, không chặn. Xem chú thích đầy đủ ở _OPTIONAL_ENHANCED.
+    enhanced_failed = sorted(
+        name for name in _OPTIONAL_ENHANCED
+        if name in source_rows and source_rows[name].get("health") == "unavailable"
+    )
+    if enhanced_failed:
+        redundancy_warnings.append("OPTIONAL_ENHANCED_SOURCE_UNAVAILABLE:" + ",".join(enhanced_failed))
 
     if hard_fail_reasons:
         overall = "FAIL"
@@ -186,6 +205,7 @@ def summarize_source_health(
         "discovery_core": {"expected": discovery_expected, "healthy": discovery_healthy},
         "safety": {"expected": sorted(safety_expected), "healthy": safety_healthy},
         "guideline": {"expected": guideline_expected, "healthy": guideline_healthy},
+        "optional_enhanced_failed": enhanced_failed,
         "source_universe": source_universe,
         "sources": source_rows,
     }

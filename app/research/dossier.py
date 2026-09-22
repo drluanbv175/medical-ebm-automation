@@ -75,7 +75,8 @@ def _cham_diem_ban_ghi(rec: RawRecord) -> Optional[Dict]:
 
 def find_background_literature(query: str, clinical_area: Optional[str] = None,
                                max_results: int = 12, *,
-                               tom_tat_du_phong: Optional[dict] = None) -> List[Dict]:
+                               tom_tat_du_phong: Optional[dict] = None,
+                               loi_nguon_thuong: Optional[list] = None) -> List[Dict]:
     """Tìm tài liệu nền (guideline/SR/MA/RCT) cho đề tài, có chấm điểm + truy vết.
 
     Tôn trọng USE_MOCK_SOURCES: live nếu đã bật chế độ thật. Ưu tiên tài liệu mạnh.
@@ -84,6 +85,12 @@ def find_background_literature(query: str, clinical_area: Optional[str] = None,
     (cờ ENABLE_* và không mock) và chứng cứ đáng tin của truy vấn còn thiếu mới hỏi thêm, rồi chỉ giữ bài được
     Crossref/PubMed xác minh (`bo_sung_neu_thieu`). `tom_tat_du_phong` (tuỳ chọn) là dict ĐẦU RA: hàm cập nhật nó
     bằng tóm tắt bậc thang để người gọi báo lỗi/lý do thay vì chỉ ghi log — rỗng khi bậc thang không bật.
+
+    `loi_nguon_thuong` (thêm 22/09/2026, TUỲ CHỌN, list ĐẦU RA): trước bản vá, lỗi ở VÒNG NGUỒN
+    THƯỜNG (Scopus/CORE/Epistemonikos hết quota, sai key, mạng lỗi…) CHỈ vào `logger.warning` —
+    khác hẳn `tom_tat_du_phong` vốn đã có kênh báo riêng cho bậc thang dự phòng từ trước, phần
+    này bị bỏ sót. Truyền một list RỖNG để nhận lại `"<tên nguồn>: <loại lỗi>"` cho từng connector
+    hỏng; không truyền thì hành vi giữ nguyên như cũ.
     """
     found: List[Dict] = []
     dang_bat = du_phong_dang_bat()
@@ -100,6 +107,16 @@ def find_background_literature(query: str, clinical_area: Optional[str] = None,
                 found.append(cham)
         except Exception as exc:  # pragma: no cover
             logger.warning("Tìm tài liệu nền lỗi nguồn %s: %s", client.name, exc)
+            if loi_nguon_thuong is not None:
+                loi_nguon_thuong.append(f"{client.name}: {type(exc).__name__}")
+    # Khi cổng dự phòng BẬT, goi_nguon_thuong() KHÔNG ném lỗi (đẩy vào logs_thuong thay vì raise —
+    # xem docstring goi_nguon_thuong) nên nhánh except ở trên không chạy tới; lỗi nguồn vẫn phải
+    # tới được `loi_nguon_thuong`, không chỉ nằm trong logs_thuong (vốn chỉ phục vụ cổng đủ-chứng-cứ
+    # nội bộ, không phải kênh báo cho người gọi).
+    if loi_nguon_thuong is not None and logs_thuong:
+        for lg in logs_thuong:
+            if str(lg.get("status")) == "error":
+                loi_nguon_thuong.append(f"{lg.get('source', '?')}: {lg.get('error_message') or 'lỗi'}")
 
     if dang_bat:
         try:
@@ -157,8 +174,9 @@ def build_dossier_markdown(project_id: str, max_lit: int = 12) -> Optional[str]:
     query = " ".join(filter(None, [p.get("short_title") or title,
                                    p.get("primary_objective") or ""]))[:200]
     tt_du_phong: Dict = {}
+    loi_thuong: List[str] = []
     lit = find_background_literature(
-        query, clinical_area=None, max_results=max_lit,
+        query, clinical_area=None, max_results=max_lit, loi_nguon_thuong=loi_thuong,
         **({"tom_tat_du_phong": tt_du_phong} if du_phong_dang_bat() else {}))
 
     L: List[str] = []
@@ -210,6 +228,11 @@ def build_dossier_markdown(project_id: str, max_lit: int = 12) -> Optional[str]:
     if ghi_chu_du_phong:
         # Lỗi/lý do của bậc thang dự phòng phải LÊN TÀI LIỆU (không chỉ logger.warning): im lặng ≠ an toàn.
         L.append(f"\n*Bậc thang dự phòng (Consensus / SerpApi Scholar): {ghi_chu_du_phong}.*")
+    if loi_thuong:
+        # Thêm 22/09/2026 — cùng lý do ngay trên: một nguồn thường (Scopus/CORE/Epistemonikos…) lỗi
+        # trước đây CHỈ vào logger.warning, tài liệu vẫn trông như đã quét đủ. Không được mất số 0
+        # tài liệu và "0 nguồn lỗi" là hai trạng thái RẤT khác nhau.
+        L.append(f"\n*Nguồn thường gặp lỗi khi tìm tài liệu nền: {'; '.join(loi_thuong)}.*")
     L.append("")
 
     # 3. Biến số
