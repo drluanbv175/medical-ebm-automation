@@ -308,6 +308,11 @@ def _check_online_scanner() -> Check:
             sys.executable, str(scanner), "--watchlist", str(watchlist),
             "--days", "30", "--max", "1", "--report", str(report_path),
             "--json-report", str(json_path),
+            # Vá 22/09/2026 (phản biện vòng 2, review:thu-nhan #7): canary chạy 2 chủ đề GIẢ
+            # ("Canary guideline"/"Canary safety") — thiếu --khong-cursor thì lượt canary GHI hai
+            # khoá đó vào .quet-cursor.json THẬT (dùng chung với lượt quét sản xuất), làm con trỏ
+            # sản xuất phồng thêm 2 khoá không liên quan chủ đề nào trong watchlist thật.
+            "--khong-cursor",
         ], cwd=ROOT)
         try:
             payload = _load_json(json_path)

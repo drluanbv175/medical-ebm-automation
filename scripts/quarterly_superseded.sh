@@ -35,9 +35,16 @@ fi
 rc=$?
 # Kết luận thật đến từ MANIFEST, không từ mã thoát: CHUA_DO / MAU / lỗi không đọc được manifest đều KHÔNG phải «đã dò xong».
 ket_luan=$("$PY" -c "import json,sys; print(json.load(open(sys.argv[1],encoding='utf-8')).get('ket_luan',''))" "$OUTJ" 2>/dev/null || echo "")
-# mã 1 = CÓ mục cần đọc lại — vẫn là một lượt quét THÀNH CÔNG; mã ≥2 hoặc kết luận khác SACH/CO_BAI_MOI là chưa đo xong.
+# Vá 22/09/2026 (phản biện vòng 2, review:cong-rut-bai #2): CO_BAI_MOI vẫn cho phép so_pmid_hong>0
+# (một phần PMID không hỏi được, phần còn lại có dương tính thật) — trước đây tiêu chí PASS ở đây
+# chỉ nhìn ket_luan, YẾU HƠN tiêu chí hợp lệ của bên tiêu thụ (doc_bao_cao_vuot_qua() đòi so_pmid_hong
+# == 0 mới hop_le=True). Hệ quả: kiem_do_tuoi/tu_khoi_dong đọc "tổng thể=PASS" và reset đồng hồ 92
+# ngày cho một lượt dò MỘT PHẦN, trong khi bác sĩ không hề được báo có phần chưa dò.
+so_hong=$("$PY" -c "import json,sys; print(json.load(open(sys.argv[1],encoding='utf-8')).get('so_pmid_hong',0))" "$OUTJ" 2>/dev/null || echo "0")
+# mã 1 = CÓ mục cần đọc lại — vẫn là một lượt quét THÀNH CÔNG; mã ≥2, kết luận khác SACH/CO_BAI_MOI,
+# hoặc còn PMID chưa hỏi được (so_hong>0) đều là CHƯA đo xong.
 tong="PASS"
-{ [ "$rc" -ge 2 ] || { [ "$ket_luan" != "SACH" ] && [ "$ket_luan" != "CO_BAI_MOI" ]; }; } && tong="CÓ BƯỚC LỖI"
+{ [ "$rc" -ge 2 ] || { [ "$ket_luan" != "SACH" ] && [ "$ket_luan" != "CO_BAI_MOI" ]; } || [ "${so_hong:-0}" != "0" ]; } && tong="CÓ BƯỚC LỖI"
 # rc=1 do lỗi ghi tệp (không phải «có phát hiện»): chỉ tin rc=1 khi manifest nói CO_BAI_MOI
 [ "$rc" -eq 1 ] && [ "$ket_luan" != "CO_BAI_MOI" ] && rc=2
 # Alert khi có phát hiện (mã 1): một dòng vào alerts/ để bác sĩ thấy ngay đầu phiên.
@@ -46,7 +53,11 @@ if [ "$rc" -eq 1 ]; then
   AF="$AD/$(date '+%Y-%m-%d').md"
   [ -f "$AF" ] || printf '# CẢNH BÁO KHẨN — %s\n\n' "$(date '+%Y-%m-%d')" >> "$AF"
   n=$(grep -c "▸ PMID" "$OUT" 2>/dev/null || echo "?")
-  printf -- "- 🟠 QUÉT QUÝ: %s mục 'apply' có tổng quan/guideline MỚI HƠN — đọc %s\n" "$n" "$OUT" >> "$AF"
+  if [ "${so_hong:-0}" != "0" ]; then
+    printf -- "- 🟠 QUÉT QUÝ: %s mục 'apply' có tổng quan/guideline MỚI HƠN — NHƯNG %s PMID KHÔNG hỏi được (lượt dò MỘT PHẦN, chưa đủ để kết luận phần còn lại «sạch») — đọc %s\n" "$n" "$so_hong" "$OUT" >> "$AF"
+  else
+    printf -- "- 🟠 QUÉT QUÝ: %s mục 'apply' có tổng quan/guideline MỚI HƠN — đọc %s\n" "$n" "$OUT" >> "$AF"
+  fi
 fi
 # Mã ≥2 = KHÔNG hỏi được PubMed (hoặc lỗi): báo cáo KHÔNG dùng để kết luận «không có bài mới hơn». Trước đây chỉ vào log,
 # nên bác sĩ không biết lượt quý đã hỏng — nay có một dòng ở alerts/ (cùng khuôn với nhánh mã 1).
