@@ -44,7 +44,18 @@ so_hong=$("$PY" -c "import json,sys; print(json.load(open(sys.argv[1],encoding='
 # mã 1 = CÓ mục cần đọc lại — vẫn là một lượt quét THÀNH CÔNG; mã ≥2, kết luận khác SACH/CO_BAI_MOI,
 # hoặc còn PMID chưa hỏi được (so_hong>0) đều là CHƯA đo xong.
 tong="PASS"
-{ [ "$rc" -ge 2 ] || { [ "$ket_luan" != "SACH" ] && [ "$ket_luan" != "CO_BAI_MOI" ]; } || [ "${so_hong:-0}" != "0" ]; } && tong="CÓ BƯỚC LỖI"
+if [ "$ket_luan" = "CHUA_DO" ] || [ "$ket_luan" = "MAU" ] || [ "$ket_luan" = "KHONG_CO_CONG_CU" ]; then
+  # Vá 22/09/2026 (phản biện vòng 2, review:cong-rut-bai #8): BA TÌNH TRẠNG TẤT ĐỊNH — 0 mục
+  # 'apply' để dò (CHUA_DO), lượt bị giới hạn cố ý (MAU: --gioi-han/--file), hoặc thiếu công cụ
+  # (KHONG_CO_CONG_CU) — retry NGAY LẬP TỨC không giúp gì, vì điều kiện gốc không đổi giữa các
+  # lần chạy cho tới khi bác sĩ tự thay đổi dữ liệu/môi trường. Trước đây cả ba bị gán CHUNG
+  # nhãn "CÓ BƯỚC LỖI" với lỗi mạng/lỗi thật, khiến tu_khoi_dong.qua_han() (đọc "LỖI" ⇒ phóng
+  # lại BẤT KỂ số ngày) phóng lại quét ~326 lời gọi NCBI MỖI LẦN MỞ PHIÊN vô ích — nặng nhất khi
+  # NCBI đang chặn IP (tiền lệ 16/09), lại càng tăng tải vào đúng IP đang bị nghi lạm dụng.
+  tong="KHÔNG CẦN LẶP LẠI"
+elif [ "$rc" -ge 2 ] || [ "${so_hong:-0}" != "0" ]; then
+  tong="CÓ BƯỚC LỖI"
+fi
 # rc=1 do lỗi ghi tệp (không phải «có phát hiện»): chỉ tin rc=1 khi manifest nói CO_BAI_MOI
 [ "$rc" -eq 1 ] && [ "$ket_luan" != "CO_BAI_MOI" ] && rc=2
 # Alert khi có phát hiện (mã 1): một dòng vào alerts/ để bác sĩ thấy ngay đầu phiên.
