@@ -113,6 +113,14 @@ This file contains only Claude Code-specific instructions.
   `is_mock:false`; camelCase (`publishedDate`, `yearPublished`) là dạng THẬT SỰ dùng trong response
   (đã thấy trực tiếp trong `raw`), nhánh snake_case trong `_lay()` chỉ còn là dự phòng, chưa gỡ vì
   vô hại.
+  ✅ **ĐÃ BẬT VỚI KHOÁ THẬT 22/09/2026 (máy Mac của bác sĩ).** Xác nhận 16/09 ở trên chạy ở chế độ
+  KHÔNG khoá (nhịp thấp) — trên máy này `ENABLE_CORE` và `CORE_API_KEY` vẫn TẮT/rỗng cho tới hôm
+  nay. Bác sĩ tự nhập khoá qua nút bấm đúp `Nhap Khoa CORE.command` (khoá KHÔNG đi qua khung chat,
+  đúng quy ước "★ CHỈ BÁC SĨ TỰ BẤM" ghi ngay trong script) rồi bật bằng `Bat Tat SerpApi Du Phong.command`
+  → gõ `bo`. Kiểm lại: `settings.enable_core=True`, có `core_api_key`; `run.py test-live core
+  "heart failure guideline"` trả `live:true, count:5`, cả 5 bản ghi `is_mock:false` (3/5 có DOI thật,
+  vd `10.1186/1472-6963-9-74`; 2/5 CORE không trả DOI — đúng giới hạn siêu dữ liệu đã ghi ở trên).
+  CORE nay là nguồn PHỦ RỘNG đang chạy thật cùng lõi miễn phí + Scopus/SerpApi/Consensus.
   · **Epistemonikos API — thêm 16/09/2026**, cùng đợt với CORE. `app/sources/epistemonikos.py`.
   TẮT mặc định. **KHÁC CORE: `EPISTEMONIKOS_API_TOKEN` BẮT BUỘC thật** (chặn cứng như Scopus) —
   và **KHÔNG tự đăng ký được**: tài liệu chính thức (`api.epistemonikos.org`, đọc trực tiếp — trang
