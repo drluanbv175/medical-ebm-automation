@@ -347,6 +347,9 @@ def source_universe_report() -> dict[str, dict[str, object]]:
 # gộp vào `healthy`) để người đọc thấy rõ đó là phủ gián tiếp theo tiêu đề, không phải kết nối trực tiếp tới trang của
 # tổ chức.
 FEED_TO_AUTHORITY: dict[str, str] = {
+    # feed_epmc_nice thêm 22/09/2026 — cùng khuôn feed_epmc_uspstf: NICE chặn truy cập tự động
+    # (403), phủ gián tiếp qua tóm tắt guideline trên tạp chí, chỉ mục MEDLINE (AFF=NICE).
+    "feed_epmc_nice": "nice",
     "feed_epmc_uspstf": "uspstf", "feed_epmc_who": "who", "feed_who_iris": "who", "feed_cdc_mmwr": "cdc",
     "feed_cdc_mmwr_weekly": "cdc", "feed_epmc_cdc_mmwr_rr": "cdc", "feed_gold_copd": "gold", "feed_gina": "gina",
     "feed_kdigo_news": "kdigo", "feed_kdigo_ki": "kdigo", "feed_acc_aha_circ": "acc_aha",

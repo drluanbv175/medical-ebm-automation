@@ -52,7 +52,16 @@ Trang guidance của NICE cũng chặn truy cập tự động (HTTP 403, đo 13
 
 **Khuyến nghị:** không chờ NICE API. Phủ NICE bằng: (a) agent tra trang NICE thủ công theo `_NGUON-GUIDELINE-TU-DONG.md`, (b) nhập tay
 metadata guideline bằng `app/sources/guidelines.py::manual_import()` kèm trạng thái xác minh, (c) bài đăng lại/tóm tắt của NICE trong
-các tạp chí (BMJ…) — đã nằm trong lane tạp chí Crossref. Nếu bệnh viện/cơ quan của bác sĩ đủ điều kiện tổ chức, có thể hỏi trước:
+các tạp chí (BMJ…).
+
+⛔ **ĐÍNH CHÍNH 22/09/2026 — câu "(c)... đã nằm trong lane tạp chí Crossref" ở trên SAI, đối
+chiếu trực tiếp `feeds.py::_HIEP_HOI_TREN_TAP_CHI` (21 hiệp hội) xác nhận NICE KHÔNG có mặt.**
+Đã ĐÓNG khoảng trống (c) thật sự — nhưng bằng lane KHÁC: `epmc_nice` (Europe PMC, không phải
+Crossref-title), lọc AFF="National Institute for Health and Care Excellence" AND
+PUB_TYPE="Practice Guideline". Đăng ký `SRC-037` trong `data/sources.json`, kiểm sống 5 bản ghi
+PMID thật (xem CLAUDE.md gốc mục "LANE guideline nối trực tiếp"). Nếu bệnh viện/cơ quan của bác
+sĩ đủ điều kiện tổ chức và vẫn muốn NICE Syndication API CHÍNH THỨC (toàn văn, không chỉ tín
+hiệu qua tóm tắt), có thể hỏi trước:
 
 **Gửi tới:** reuseofcontent@nice.org.uk — **Tiêu đề:** Enquiry: eligibility for NICE syndication API (hospital, Vietnam)
 

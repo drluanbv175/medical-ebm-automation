@@ -247,6 +247,25 @@ GUIDELINE_LANES: list[FeedConfig] = [
                epmc_query=('"Preventive Services Task Force" AND "Recommendation Statement" '
                            'AND PUB_TYPE:"Practice Guideline"'),
                is_guideline=True, window_days=730),   # USPSTF ra rất ít: 0 bài trong 365 ngày, 2 bài trong 15 tháng
+    # NICE — thêm 22/09/2026, theo yêu cầu bác sĩ "đóng khoảng trống nguồn". `nice.org.uk` chặn
+    # truy cập tự động (403, đã ghi ở đầu file) — KHÔNG có nút "đăng ký cá nhân" nào để lách vì
+    # đây là chặn bot, không phải cổng đăng nhập. Cùng khuôn epmc_uspstf ở trên: guideline NICE
+    # thường được TÓM TẮT lại thành bài báo trên tạp chí (BMJ, Br J Gen Pract…) có PMID thật, chỉ
+    # mục MEDLINE với AFF="National Institute for Health and Care Excellence" + PUB_TYPE="Practice
+    # Guideline". Đã kiểm SỐNG 22/09/2026: 15 kết quả thật, có tiêu đề/năm hợp lệ (vd "Recognition,
+    # diagnosis, and early management of suspected sepsis: summary of updated NICE guideline",
+    # 2024). Đây là TÓM TẮT có PMID, không phải toàn văn khuyến cáo — khác hẳn "đăng ký NICE
+    # Syndication API" (cần hợp đồng tổ chức, xem CLAUDE.md) nhưng đủ để bắt được TÍN HIỆU có
+    # guideline mới, đúng vai trò các lane epmc_* khác trong danh sách này.
+    FeedConfig(id="epmc_nice", name="NICE — tóm tắt guideline trên tạp chí (qua Europe PMC)", url=_UA_EPMC,
+               org="NICE", kind="guideline", mode="europepmc",
+               epmc_query=('AFF:"National Institute for Health and Care Excellence" '
+                           'AND PUB_TYPE:"Practice Guideline"'),
+               is_guideline=True, window_days=1095),  # nguồn thưa như USPSTF (window_days=730 ở
+               # trên) — đo SỐNG 22/09/2026 theo ĐÚNG trường FIRST_PDATE (khác P_PDATE) mà
+               # europepmc_lane() thật sự lọc: 0 hit ở 365/545/730 ngày, 5 hit ở 1095 ngày (3
+               # năm). Đặt 365 (như bản đầu chưa đo) sẽ luôn trả rỗng — không phải lỗi mạng, chỉ
+               # là cửa sổ quá hẹp cho một nguồn ra bài thưa.
     FeedConfig(id="epmc_who", name="WHO — guideline trong MEDLINE (qua Europe PMC)", url=_UA_EPMC, org="WHO (MEDLINE)",
                kind="guideline", mode="europepmc",
                epmc_query='AFF:"World Health Organization" AND PUB_TYPE:"Practice Guideline"', is_guideline=True,

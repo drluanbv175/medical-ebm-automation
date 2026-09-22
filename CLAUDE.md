@@ -254,6 +254,41 @@ This file contains only Claude Code-specific instructions.
   tổ chức, có phí quốc tế) và **USPSTF API** (phải xin duyệt qua email; lane MEDLINE thay thế đã có) — thư nháp ở
   `docs/xin-cap-quyen-nguon-chung-cu.md`. Chi phí: +33 lượt gọi/lần quét (cache 1 giờ). 42 test ở `tests/test_guideline_lanes.py`
   (4 phép đột biến đều đỏ đúng chỗ).
+  ✅ **ĐÃ ĐÓNG khoảng trống NICE — thêm 22/09/2026, theo yêu cầu bác sĩ "không đăng ký cá nhân
+  được thì đóng khoảng trống bằng cách khác".** Dòng "chưa có kết nối nào cho NICE" ở trên nay
+  chỉ còn đúng cho NICE Syndication API CHÍNH THỨC (vẫn cần hợp đồng tổ chức, không đổi). Thêm
+  lane `epmc_nice` (cùng khuôn `epmc_uspstf`): AFF="National Institute for Health and Care
+  Excellence" AND PUB_TYPE="Practice Guideline" qua Europe PMC — không cần khoá, không cần đăng
+  ký. **Đo sống trước khi chốt tham số:** nguồn ra bài THƯA (giống USPSTF) — 0 hit ở
+  window_days=365/545/730, phải **1095 (3 năm)** mới có hit thật; đặt 365 như USPSTF ban đầu
+  từng bị sẽ luôn trả rỗng, không phải lỗi mạng. Kiểm qua `RSSFeedClient` thật (không phải script
+  tự viết): 5 bản ghi, PMID thật (vd 38889923, "Recognition, diagnosis, and early management of
+  suspected sepsis: summary of updated NICE guideline", 2024). Đăng ký `SRC-037` trong
+  `data/sources.json`, nối `feed_epmc_nice→"nice"` vào `authority.py::FEED_TO_AUTHORITY`. 2 test
+  mới ở `tests/test_guideline_lanes.py`, mutation-tested (đột biến `window_days=365` → đỏ đúng
+  chỗ, khớp con số đã đo sống).
+  ✅ **ĐÍNH CHÍNH cùng ngày — SRC-020 (Bộ Y tế VN) "not-covered" trong `data/sources.json` là SỔ
+  LỖI THỜI, không phải khoảng trống thật.** `kcb_vn_lane()` mô tả ở đoạn trên đã tồn tại và chạy
+  từ 20/09/2026 — sổ đăng ký nguồn chỉ chưa được cập nhật theo mã sống (đúng họ lỗi "tài liệu nói
+  một đằng, mã sống chạy một nẻo" lặp lại nhiều lần trong file này). Đã sửa `status: active`,
+  thêm `SRC-020` vào `DIEM_THAM` của `tools/sources_health.py` (đã kiểm reachability riêng: HTTP
+  200 thật từ chính môi trường chạy chốt, khác hẳn ca DAV dưới đây).
+  ⛔ **Cục Quản lý Dược VN (SRC-021) — THỬ nối cùng ngày, KHÔNG xác minh được, KHÔNG viết
+  connector.** Định thêm `dav_vn_lane()` cùng khuôn `kcb_vn_lane()` (đích
+  `dav.gov.vn/canh-bao-va-thu-hoi-cn81.html`) nhưng `dav.gov.vn` **không tới được** từ môi trường
+  phiên qua CẢ BA phương pháp độc lập: `urllib` timeout, trình duyệt Claude báo "denied/failed",
+  `WebFetch` trả thẳng `ECONNREFUSED 103.124.60.65:443` (từ chối kết nối tầng TCP — tín hiệu mạnh
+  nhất, không phải chặn bot ở tầng ứng dụng như kiểu NICE 403). **Cố ý KHÔNG viết connector** —
+  sẽ phải khẳng định "robots.txt cho phép" mà không kiểm chứng được, đúng loại bịa mà toàn bộ
+  kỷ luật của repo này chống lại. **Việc cần bác sĩ:** tự mở hai URL trên từ mạng Việt Nam
+  (`dav.gov.vn/canh-bao-va-thu-hoi-cn81.html` + `dav.gov.vn/robots.txt`) — tải được thì báo lại,
+  lúc đó viết connector đúng khuôn `kcb_vn_lane()` mới có căn cứ thật.
+  ⛔ **Epistemonikos (SRC-036) — VẪN mở, không có đường vòng hợp lệ.** Khác NICE (bị chặn TRUY
+  CẬP TỰ ĐỘNG, có thể lách bằng nguồn thay thế công khai), Epistemonikos chặn ở tầng NỘI DUNG —
+  họ tự khai *"contact us to register your application"*, không có API công khai song song để đi
+  vòng. Đã đối chiếu 22/09/2026: SR/MA vẫn được phủ đáng kể qua PubMed/Europe PMC tầng SR/MA +
+  Cochrane MCP (Cấp 0) — mất Epistemonikos là mất lớp TỔNG HỢP/phân loại chéo nhiều CSDL riêng
+  của họ, không phải mất trắng khả năng tìm SR/MA.
   · **DynaMed/DynaMedex (EBSCO) — thêm 13/09/2026, GỠ BỎ cùng ngày sau khi xác minh.**
   Kiểm trực tiếp `developer.ebsco.com/dynamed` xác nhận: đăng ký app MedsAPI **bắt buộc** một
   Customer ID + Group ID mà tài liệu EBSCO nói rõ "received from your EBSCO representative" —

@@ -322,6 +322,37 @@ def test_since_date_from_ingestion_is_forwarded_to_every_lane_mode(monkeypatch):
     assert "from-pub-date:2026-09-10" in c.http.calls[0]["params"]["filter"]
 
 
+def test_epmc_nice_lane_is_configured_and_wraps_records_correctly(monkeypatch):
+    """Thêm 22/09/2026 — đóng khoảng trống nguồn NICE (bác sĩ không đăng ký cá nhân được NICE
+    Syndication API chính thức). Cùng khuôn epmc_uspstf: NICE chặn truy cập tự động trực tiếp
+    (403) nên phủ gián tiếp qua tóm tắt guideline trên tạp chí, chỉ mục MEDLINE."""
+    f = next(x for x in GUIDELINE_LANES if x.id == "epmc_nice")
+    assert f.mode == "europepmc" and "National Institute for Health and Care Excellence" in f.epmc_query
+    assert f.is_guideline is True
+    # Cửa sổ phải đủ rộng — đo sống 22/09/2026: nguồn ra bài THƯA, 0 hit ở 365/730 ngày,
+    # cần 1095 (3 năm) mới có hit thật. window_days=365 (mặc định USPSTF trước khi sửa) sẽ
+    # luôn trả rỗng cho nguồn này, không phải lỗi mạng — hồi quy chống đặt lại giá trị quá hẹp.
+    assert f.window_days >= 1095, "NICE ra bài thưa — cửa sổ hẹp sẽ luôn trả rỗng, đã đo sống"
+
+    c = _client("epmc_nice", monkeypatch, json_data=_epmc(
+        {"title": "Suspected sepsis: summary of updated NICE guideline", "pmid": "38889923", "doi": "10.1/nice",
+         "source": "MED", "id": "38889923", "firstPublicationDate": "2024-06-18", "abstractText": "tóm tắt"}))
+    (r,) = c.search("", max_results=5)
+    assert r.source == "feed_epmc_nice" and r.pmid == "38889923"
+    assert r.study_type == "guideline" and r.source_type == "guideline"
+
+
+def test_epmc_nice_is_registered_in_feed_to_authority_and_evidence_universe():
+    assert FEED_TO_AUTHORITY.get("feed_epmc_nice") == "nice"
+    from app.sources.authority import EVIDENCE_SOURCE_UNIVERSE
+    ten_that = {n for layer in EVIDENCE_SOURCE_UNIVERSE for n in layer.sources}
+    assert "nice" in ten_that
+    r = assess_source_universe_coverage(["feed_epmc_nice"])
+    tang = r["layers"]["guideline_authority"]
+    assert "nice" in tang["healthy_via_lane"]
+    assert "nice" not in tang["not_connected"]
+
+
 def test_title_lane_records_use_the_generic_classifier_not_a_forced_guideline_label(monkeypatch):
     c = _client("esc_ehj", monkeypatch, json_data=_cr(_bai("ESC consensus statement on something", "10.1/z")))
     (r,) = c.search("", max_results=5)
