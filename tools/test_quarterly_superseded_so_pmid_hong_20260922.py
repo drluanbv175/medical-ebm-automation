@@ -27,6 +27,35 @@ REPO_MEA = Path(__file__).resolve().parents[1]          # medical-ebm-automation
 SCRIPT_THAT = REPO_MEA / "scripts" / "quarterly_superseded.sh"
 
 
+def _tim_bash_that() -> str | None:
+    """Trả đường dẫn bash THẬT dùng để chạy script — KHÔNG tin `"bash"` trần trên Windows.
+
+    VÁ 22/09/2026 (3 lượt vá mù trước đều sai chỗ — xem lịch sử commit): trên Windows CI,
+    `subprocess.run(["bash", ...])` gọi tay từ Python tự tra PATH và ăn nhầm
+    `C:\\Windows\\System32\\bash.exe` — launcher WSL của Windows, không phải Git Bash —
+    vì thư mục đó đứng TRƯỚC thư mục cài Git trong PATH của runner. Chẩn đoán trực tiếp
+    lượt CI trước xác nhận: stdout (UTF-16LE) là nguyên văn "Windows Subsystem for Linux
+    has no installed distributions... wsl.exe --install <Distro>", returncode=1, KHÔNG
+    một dòng nào của script thật từng chạy. GitHub Actions tự dùng ĐÚNG Git Bash cho bước
+    khai `shell: bash` (đường cứng `C:\\Program Files\\Git\\bin\\bash.exe`, theo tài liệu
+    GitHub Actions chính thức) — nhưng cơ chế đó chỉ áp cho các bước `run:` của workflow,
+    KHÔNG áp cho subprocess.run() gọi tay bên trong một bước Python đang chạy, nên phải
+    tự định vị đúng đường đó.
+    """
+    if sys.platform == "win32":
+        for ung_vien in (
+            r"C:\Program Files\Git\bin\bash.exe",
+            r"C:\Program Files\Git\usr\bin\bash.exe",
+        ):
+            if Path(ung_vien).exists():
+                return ung_vien
+        return None  # KHÔNG lùi về "bash" trần — đó chính là đường đã ăn nhầm WSL stub.
+    return shutil.which("bash")
+
+
+BASH_THAT = _tim_bash_that()
+
+
 def _dung_kich_ban(tmp_path: Path, manifest: dict, bao_cao: str = "báo cáo giả\n"):
     """Dựng cây thư mục HUB/medical-ebm-automation + PY giả, chạy script thật, trả (rc, log, alert)."""
     hub = tmp_path / "Claude AI"
@@ -78,7 +107,7 @@ def _dung_kich_ban(tmp_path: Path, manifest: dict, bao_cao: str = "báo cáo gi�
     env = dict(os.environ)
     env["HOME"] = str(home)
     r = subprocess.run(
-        ["bash", str(mea / "scripts" / "quarterly_superseded.sh")],
+        [BASH_THAT, str(mea / "scripts" / "quarterly_superseded.sh")],
         cwd=str(mea / "scripts"), env=env, capture_output=True, text=True, timeout=30,
     )
     log_path = mea / "data" / "archive" / "quarterly_superseded.log"
@@ -114,7 +143,7 @@ def _man(**ghi_de) -> dict:
     return m
 
 
-@pytest.mark.skipif(shutil.which("bash") is None, reason="cần bash")
+@pytest.mark.skipif(BASH_THAT is None, reason="cần Git Bash (không tin \"bash\" trần trên Windows)")
 def test_co_bai_moi_du_khong_hong_van_pass(tmp_path):
     man = _man(ket_luan="CO_BAI_MOI", so_pmid_hong=0, pmid_co_bai_moi=["1"])
     _rc, log, alert = _dung_kich_ban(tmp_path, man, "▸ PMID 1 (2020)\n")
@@ -122,7 +151,7 @@ def test_co_bai_moi_du_khong_hong_van_pass(tmp_path):
     assert "MỘT PHẦN" not in alert
 
 
-@pytest.mark.skipif(shutil.which("bash") is None, reason="cần bash")
+@pytest.mark.skipif(BASH_THAT is None, reason="cần Git Bash (không tin \"bash\" trần trên Windows)")
 def test_co_bai_moi_con_pmid_hong_khong_duoc_pass(tmp_path):
     """Ca đúng finding: CO_BAI_MOI với 100/163 PMID hỏng — KHÔNG được tổng thể=PASS,
     và alert phải NÓI RÕ còn phần chưa dò, không chỉ khoe «có phát hiện»."""
@@ -135,14 +164,14 @@ def test_co_bai_moi_con_pmid_hong_khong_duoc_pass(tmp_path):
     assert "100" in alert and "MỘT PHẦN" in alert, thong_diep
 
 
-@pytest.mark.skipif(shutil.which("bash") is None, reason="cần bash")
+@pytest.mark.skipif(BASH_THAT is None, reason="cần Git Bash (không tin \"bash\" trần trên Windows)")
 def test_sach_khong_bi_anh_huong(tmp_path):
     man = _man(ket_luan="SACH", so_pmid_hong=0)
     _rc, log, _alert = _dung_kich_ban(tmp_path, man, "Không có mục nào.\n")
     assert "tổng thể=PASS" in log
 
 
-@pytest.mark.skipif(shutil.which("bash") is None, reason="cần bash")
+@pytest.mark.skipif(BASH_THAT is None, reason="cần Git Bash (không tin \"bash\" trần trên Windows)")
 def test_khong_hoi_duoc_van_khong_pass_nhu_cu(tmp_path):
     man = _man(ket_luan="KHONG_HOI_DUOC", so_pmid_hong=163, pmid_co_bai_moi=[])
     _rc, log, alert = _dung_kich_ban(tmp_path, man, "Không hỏi được.\n")
