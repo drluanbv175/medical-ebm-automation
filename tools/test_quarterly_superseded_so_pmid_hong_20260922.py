@@ -62,6 +62,7 @@ def _dung_kich_ban(tmp_path: Path, manifest: dict, bao_cao: str = "báo cáo gi�
         f"printf '%s' {json.dumps(bao_cao)}\n"
         f"exit {ma_thoat}\n",
         encoding="utf-8",
+        newline="\n",
     )
     stub.chmod(0o755)
 
