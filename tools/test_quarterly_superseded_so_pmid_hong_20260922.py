@@ -88,6 +88,20 @@ def _dung_kich_ban(tmp_path: Path, manifest: dict, bao_cao: str = "báo cáo gi�
     if alert_dir.exists():
         for f in alert_dir.glob("*.md"):
             alert += f.read_text(encoding="utf-8")
+    # CHẨN ĐOÁN 22/09/2026 (2 lần vá mù trước đều KHÔNG sửa được Windows CI, log vẫn rỗng cả
+    # hai lần) — in ra dữ kiện thật thay vì đoán tiếp lần 3. pytest tự hiện khối này trong
+    # "Captured stdout call" khi assert thất bại, không cần sửa từng bài test.
+    if not log:
+        print("=== CHẨN ĐOÁN log rỗng ===")
+        print("returncode:", r.returncode)
+        print("stdout:", repr(r.stdout))
+        print("stderr:", repr(r.stderr))
+        print("HOME đã set:", repr(env["HOME"]))
+        print("log_path kỳ vọng:", log_path, "| tồn tại:", log_path.exists())
+        print("data/archive tồn tại:", (mea / "data" / "archive").exists())
+        for duong_con in (".ebm-venv/bin/python", ".ebm-venv/Scripts/python.exe"):
+            p = home / duong_con
+            print(f"stub {duong_con}: tồn tại={p.exists()}")
     return r.returncode, log, alert
 
 
