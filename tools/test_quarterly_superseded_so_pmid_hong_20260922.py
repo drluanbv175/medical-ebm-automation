@@ -37,8 +37,6 @@ def _dung_kich_ban(tmp_path: Path, manifest: dict, bao_cao: str = "báo cáo gi�
     (mea / "tools").mkdir(parents=True)
 
     home = tmp_path / "home"
-    py_dir = home / ".ebm-venv" / "bin"
-    py_dir.mkdir(parents=True)
     py_that = sys.executable
     kich_ban_json = json.dumps(manifest)
     # Mã thoát thật của kiem_chung_cu_vuot_qua.py: 0=SACH · 1=CO_BAI_MOI (có mục cần đọc) ·
@@ -48,8 +46,7 @@ def _dung_kich_ban(tmp_path: Path, manifest: dict, bao_cao: str = "báo cáo gi�
     ma_thoat = {"SACH": 0, "CO_BAI_MOI": 1}.get(ket_luan, 2)
     # Script Python giả: -c ⇒ python thật (parse JSON của chính script bash); còn lại ⇒ giả lập
     # kiem_chung_cu_vuot_qua.py — ghi manifest theo kịch bản + in báo cáo giả ra stdout.
-    stub = py_dir / "python"
-    stub.write_text(
+    noi_dung_stub = (
         "#!/bin/sh\n"
         f'if [ "$1" = "-c" ]; then exec "{py_that}" "$@"; fi\n'
         "for a in \"$@\"; do :; done\n"
@@ -60,11 +57,23 @@ def _dung_kich_ban(tmp_path: Path, manifest: dict, bao_cao: str = "báo cáo gi�
         "done\n"
         f"cat > \"$OUTJ\" <<'EOF_MANIFEST'\n{kich_ban_json}\nEOF_MANIFEST\n"
         f"printf '%s' {json.dumps(bao_cao)}\n"
-        f"exit {ma_thoat}\n",
-        encoding="utf-8",
-        newline="\n",
+        f"exit {ma_thoat}\n"
     )
-    stub.chmod(0o755)
+    # VÁ 22/09/2026 (CI Windows đỏ, phát hiện SAU khi push): Path.chmod(0o755) từ Python là
+    # NO-OP thật trên NTFS gốc — tài liệu Python tự khai "Windows: only stat.S_IWRITE has
+    # effect, all other bits are ignored". quarterly_superseded.sh dò PY qua `[ -x "$PY" ]`
+    # nên nhánh bin/python (dòng 16) LUÔN thất bại trên Windows dù đã chmod, rơi qua nhánh dự
+    # phòng Scripts/python.exe (dòng 17) rồi cuối cùng dùng PYTHON HỆ THỐNG THẬT — bỏ qua
+    # hoàn toàn stub giả, log rỗng. Ghi CÙNG một stub vào CẢ HAI đường script thật đã tự dò
+    # (bin/python cho POSIX, Scripts/python.exe cho Windows — MSYS/Git Bash công nhận đuôi
+    # .exe là thực thi được bất kể chmod) để test đúng trên cả hai nền, không đoán mò cơ chế
+    # cấp quyền của MSYS.
+    for duong_con, ten_file in ((".ebm-venv/bin", "python"), (".ebm-venv/Scripts", "python.exe")):
+        py_dir = home / duong_con
+        py_dir.mkdir(parents=True)
+        stub = py_dir / ten_file
+        stub.write_text(noi_dung_stub, encoding="utf-8", newline="\n")
+        stub.chmod(0o755)
 
     env = dict(os.environ)
     env["HOME"] = str(home)
