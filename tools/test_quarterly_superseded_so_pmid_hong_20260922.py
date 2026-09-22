@@ -19,7 +19,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -108,7 +107,8 @@ def test_co_bai_moi_con_pmid_hong_khong_duoc_pass(tmp_path):
     assert "tổng thể=PASS" not in log, "còn 100/163 PMID chưa hỏi được ⇒ KHÔNG được coi là lượt PASS"
     assert "tổng thể=CÓ BƯỚC LỖI" in log
     assert rc == 0  # script luôn exit 0 (owner thu thập, không phải cổng chặn)
-    assert "100" in alert and "MỘT PHẦN" in alert, "alert phải nêu rõ còn phần chưa dò, không chỉ báo có phát hiện suông"
+    thong_diep = "alert phải nêu rõ còn phần chưa dò, không chỉ báo có phát hiện suông"
+    assert "100" in alert and "MỘT PHẦN" in alert, thong_diep
 
 
 @pytest.mark.skipif(shutil.which("bash") is None, reason="cần bash")
