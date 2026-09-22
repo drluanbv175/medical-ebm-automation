@@ -303,6 +303,21 @@ This file contains only Claude Code-specific instructions.
   surveillance_scan.py`) — **giữ nguyên** `search_scopus_lane()`/Scopus, không liên quan tới lý do
   gỡ DynaMed. Muốn nối lại sau này: cần xác nhận với EBSCO/đại diện bán hàng để được cấp Customer
   ID + Group ID theo một hợp đồng tổ chức, không phải việc tự làm được từ tài khoản cá nhân.
+  · **Cochrane MCP (Cấp 0) — đăng ký `SRC-038` 22/09/2026, kiểm sống 2 lần trong cùng ngày (một
+  lần bị Cloudflare chặn hoàn toàn qua CẢ 3 phương pháp, một lần chạy tốt sau 1 lần thử lại).**
+  Đây là connector MCP (`mcp__plugin_cochrane_cochrane__cochrane_search/get_details/suggest_terms`)
+  bác sĩ tự cài từ marketplace `cochrane-marketplace` — doctrine dùng nó đã được viết đầy đủ ở
+  `.claude/agents/_CONNECTOR-CHUNG-CU.md` §1bis + §2quater từ 20/09/2026 (trình tự gọi, cạm bẫy
+  `orderBy`, xử lý `review:0`, giao thức thử-lại-1-lần khi lỗi điều hướng). **Ranh giới CỐ Ý,
+  đừng nhầm lẫn khi bác sĩ hỏi "cài vào hệ thống cho vòng quét tuần":** đây là công cụ MCP chỉ
+  gọi được TỪ TRONG một phiên Claude Code tương tác (cần trình duyệt CDP nền của chính plugin) —
+  KHÔNG phải HTTP endpoint mà `weekly_safety.sh`/`surveillance_scan.py` (chạy qua cron/scheduled
+  task, không có phiên Claude nào đứng sau) có thể gọi. Vòng quét tuần TỰ ĐỘNG vẫn dùng lane
+  Crossref theo ISSN 1465-1858 (`app/sources/feeds.py::cochrane_cdsr`, đã có từ trước) — phủ được
+  review CDSR mới nhưng KHÔNG có abstract có cấu trúc/PICO/mức chắc chắn GRADE như MCP. Cochrane
+  MCP chỉ hữu dụng khi một AGENT (`tra-cuu-chung-cu`/`tong-quan-y-van`/`cap-nhat-guideline`/
+  `huong-dan-lam-sang`) đang chạy TRONG phiên tương tác chủ động gọi để trả lời MỘT câu hỏi cụ
+  thể — không có cách "cài đặt" để nó tự chạy định kỳ không người giám sát.
 
 ---
 
