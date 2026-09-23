@@ -157,6 +157,39 @@ EVIDENCE_SOURCE_UNIVERSE: tuple[EvidenceSourceLayer, ...] = (
         "source_of_record",
     ),
     EvidenceSourceLayer(
+        # Thêm 23/09/2026 (audit/14, vấn đề 1) — TÁCH RIÊNG khỏi
+        # "guideline_authority" ở trên và khỏi "full_text_and_citation_context"
+        # ở dưới, cả hai đều KHÔNG khớp tên 5 connector mới nên tầng này trước
+        # đó không có cách nào PASS được dù GOLD/GINA đang hoạt động thật.
+        # "guideline_authority" trả lời "biết khuyến cáo nào tồn tại" (tiêu đề/
+        # tóm tắt qua Crossref/html-watch); "full_text_and_citation_context" là
+        # nhóm cũ (unpaywall/semantic_scholar…) để TÌM bản OA hợp pháp của MỘT
+        # bài nghiên cứu, không phải ĐỌC toàn văn một guideline theo tổ chức.
+        # Tầng này trả lời câu hỏi KHÁC hẳn hai tầng kia: "trích được CÂU CHỮ
+        # khuyến cáo cụ thể chưa" — xem app/sources/gold_copd.py|gina_asthma.py|
+        # bts_guidelines.py|pmc_guideline_fulltext.py|wiley_tdm.py và
+        # audit/13-tong-hop-nguon-chung-cu-va-doc-toan-van_2026-09-23.md.
+        # Tên trong `sources` KHỚP ĐÚNG SourceClient.name của từng connector
+        # (xác nhận bằng grep trực tiếp, không suy đoán) — 2/5 `active` đã kiểm
+        # sống (gold_copd_fulltext, gina_asthma_fulltext), 1/5 `degraded` bị
+        # chặn IP (wiley_tdm), 2/5 `not-covered` bị chặn mạng/pháp lý
+        # (bts_guidelines_fulltext, pmc_guideline_fulltext) — xem data/
+        # sources.json SRC-042..046. minimum_live_sources=1 vì đây là năng lực
+        # còn thưa, đặt ngưỡng cao sẽ khiến tầng này PARTIAL vĩnh viễn dù đúng
+        # 2 connector đang hoạt động.
+        "guideline_fulltext",
+        "Guideline full-text extraction (organization-specific connectors)",
+        "Read the actual recommendation text from a guideline, not just detect its "
+        "existence — a different capability than guideline_authority (discovery) or "
+        "full_text_and_citation_context (legal OA lookup for a research article).",
+        (
+            "gold_copd_fulltext", "gina_asthma_fulltext", "bts_guidelines_fulltext",
+            "pmc_guideline_fulltext", "wiley_tdm",
+        ),
+        1,
+        "source_of_record",
+    ),
+    EvidenceSourceLayer(
         "high_impact_journals",
         "High-impact journal discovery",
         "Detect practice-changing RCTs, reviews, and guideline publications in major journals.",

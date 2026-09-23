@@ -122,6 +122,10 @@ def test_source_universe_coverage_separates_required_from_discovery_only():
     # UNIVERSE["high_impact_journals"] không bao giờ PASS trên dữ liệu thật
     # dù feed NEJM đang khoẻ mạnh. Đã vá layer đó khớp tên connector thật;
     # test này cập nhật input theo đúng cùng lý do.
+    # SỬA 23/09/2026 (audit/14, vấn đề 1) — thêm "gold_copd_fulltext" cho tầng
+    # mới "guideline_fulltext" (source_of_record, nên tính vào required) — đã
+    # kiểm sống thật cùng ngày (xem data/sources.json SRC-043), không phải tên
+    # giả định.
     coverage = assess_source_universe_coverage([
         "pubmed",
         "europepmc",
@@ -133,6 +137,7 @@ def test_source_universe_coverage_separates_required_from_discovery_only():
         "openfda",
         "pubmed_retraction",
         "unpaywall",
+        "gold_copd_fulltext",
     ])
 
     assert coverage["status"] == "PASS"
@@ -147,3 +152,27 @@ def test_source_universe_coverage_fails_closed_without_guideline_and_safety_laye
     assert coverage["status"] == "PARTIAL"
     assert "guideline_authority" in coverage["missing_required_layers"]
     assert "drug_safety" in coverage["missing_required_layers"]
+    # Tầng mới cũng phải bị thiếu khi healthy_sources rỗng — nếu không, tầng
+    # guideline_fulltext im lặng PASS sai (đúng bẫy "high_impact_journals" đã
+    # gặp 05/09/2026 khi tên khai không khớp connector thật).
+    assert "guideline_fulltext" in coverage["missing_required_layers"]
+
+
+def test_source_universe_coverage_new_guideline_fulltext_layer_20260923():
+    """Hồi quy audit/14 vấn đề 1 — vá 23/09/2026: taxonomy trước đó KHÔNG có
+    tên nào khớp 5 connector toàn văn guideline mới (gold_copd_fulltext,
+    gina_asthma_fulltext, bts_guidelines_fulltext, pmc_guideline_fulltext,
+    wiley_tdm), nên tầng full-text-guideline không bao giờ PASS được dù
+    GOLD/GINA đang hoạt động thật. Kiểm đúng 3 việc: tên khớp SourceClient.name
+    thật (không suy đoán) · PASS khi có ≥1 connector khoẻ · not_connected liệt
+    đúng 3 connector còn lại."""
+    coverage = assess_source_universe_coverage(["gold_copd_fulltext", "gina_asthma_fulltext"])
+    layer = coverage["layers"]["guideline_fulltext"]
+
+    assert layer["status"] == "PASS"
+    assert layer["clinical_use"] == "source_of_record"
+    assert sorted(layer["healthy"]) == ["gina_asthma_fulltext", "gold_copd_fulltext"]
+    assert sorted(layer["not_connected"]) == [
+        "bts_guidelines_fulltext", "pmc_guideline_fulltext", "wiley_tdm",
+    ]
+    assert "guideline_fulltext" not in coverage["missing_required_layers"]
