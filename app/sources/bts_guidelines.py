@@ -18,8 +18,33 @@ tìm kiếm/PubMed trước). Đây là phạm vi ĐÃ KIỂM CHỨNG THẬT, kh
 ⚠️ MỘT SỐ HƯỚNG DẪN BTS ĐỒNG XUẤT BẢN với NICE/SIGN và KHÔNG tự lưu PDF trên chính
 brit-thoracic.org.uk (ví dụ hướng dẫn Hen mới nhất, 11/2024, trỏ sang nice.org.uk) —
 với các URL đó, `tai_toan_van()` sẽ nhận diện domain KHÁC brit-thoracic.org.uk và từ
-chối tải (chưa khảo sát robots.txt/ToU của NICE/SIGN cho việc này), báo rõ lý do thay
-vì âm thầm thử tải từ một domain chưa được xác nhận an toàn.
+chối tải, báo rõ lý do thay vì âm thầm thử tải từ một domain chưa được xác nhận an
+toàn. HAI DOMAIN CỤ THỂ đã khảo sát 23/09/2026 và ĐỀU BỊ CHẶN THẬT SỰ — KHÔNG PHẢI
+"chưa khảo sát" nữa, mà là "đã khảo sát, kết luận KHÔNG xây được", vì hai lý do khác
+hẳn nhau, không lý do nào là lỗi lập trình có thể vá:
+
+  • thorax.bmj.com / bmjopenrespres.bmj.com (nơi phần lớn guideline BTS hiện nay
+    THẬT SỰ nằm, sau khi brit-thoracic.org.uk đổi cấu trúc và ngừng tự lưu PDF —
+    xem `_HIEP_HOI_TREN_TAP_CHI["bts_thorax"]` ở `feeds.py` cho tầng khám phá vẫn
+    hoạt động): CHẶN bởi Cloudflare Managed Challenge (`Cf-Mitigated: challenge`,
+    đòi chạy JavaScript + cookie) trên MỌI trang, kể cả trang chủ và robots.txt-cho-
+    phép. Vượt qua thử thách này bằng code là "bypass bot-detection" — hành vi
+    TUYỆT ĐỐI KHÔNG được làm dù được yêu cầu tường minh, không phải vấn đề độ khó
+    kỹ thuật.
+  • nice.org.uk: KHÔNG bị chặn kỹ thuật (robots.txt cho phép `Allow: /`, trang HTML
+    đọc được sạch, có cấu trúc chương mục rõ ràng — về mặt kỹ thuật DỄ xây hơn PDF).
+    NHƯNG điều khoản sử dụng (nice.org.uk/terms-and-conditions, mục 18.3, đọc trực
+    tiếp 23/09/2026) nói THẲNG: nội dung NICE dùng cho MỤC ĐÍCH AI — đúng hệ thống
+    này — "All requests, without exception, are subject to an approval process,
+    licensing arrangement and a fee (for international use)". Đây là RÀO PHÁP LÝ/
+    HỢP ĐỒNG, không phải rào kỹ thuật — chỉ gỡ được khi bác sĩ tự xin cấp phép qua
+    trang "permission to use nice content for AI purposes" của NICE, KHÔNG có cách
+    nào agent tự xử lý thay được.
+
+Kết luận: với công nghệ và giấy phép hiện có, BTS full-text KHÔNG có đường tự động
+hợp lệ nào ngoài `brit-thoracic.org.uk` (phạm vi module này, hiện gần như trống nội
+dung). Đường thực tế duy nhất còn lại: bác sĩ tự mở trình duyệt thật khi cần đọc một
+guideline cụ thể — Cloudflare cho qua bình thường với trình duyệt người dùng thật.
 """
 from __future__ import annotations
 
@@ -37,6 +62,12 @@ from app.utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 _DOMAIN_DA_KHAO_SAT = "brit-thoracic.org.uk"
+# Hai domain đã khảo sát 23/09/2026 và ĐỀU KẾT LUẬN "không xây được" — lý do khác
+# nhau, không domain nào là lỗi lập trình có thể vá (xem docstring module). Khai rõ
+# ở đây để thông điệp từ chối trả lý do THẬT thay vì "chưa khảo sát" (sẽ mời người
+# đọc điều tra lại từ đầu một việc đã điều tra xong).
+_DOMAIN_CLOUDFLARE_CHAN = ("thorax.bmj.com", "bmjopenrespres.bmj.com")
+_DOMAIN_NICE_CAN_GIAY_PHEP_AI = ("nice.org.uk",)
 
 
 class BtsGuidelineFullTextClient:
@@ -58,18 +89,43 @@ class BtsGuidelineFullTextClient:
     def tai_toan_van(self, url: str) -> KetQuaToanVanGuideline:
         """Tải + trích văn bản từ một URL PDF BTS đã biết. Từ chối NGAY (không gọi
         mạng) nếu domain khác `brit-thoracic.org.uk` — một số hướng dẫn BTS đồng xuất
-        bản trỏ sang nice.org.uk/rightdecisions.scot.nhs.uk, những domain đó CHƯA
-        được khảo sát robots.txt/điều khoản riêng."""
+        bản trỏ sang thorax.bmj.com/bmjopenrespres.bmj.com/nice.org.uk/
+        rightdecisions.scot.nhs.uk. Hai domain đầu ĐÃ khảo sát và bị Cloudflare chặn;
+        nice.org.uk ĐÃ khảo sát và cần giấy phép AI trả phí — xem docstring module."""
         domain = urlparse(url).netloc.lower()
+        if domain.endswith(_DOMAIN_CLOUDFLARE_CHAN):
+            return KetQuaToanVanGuideline(
+                to_chuc="BTS", url_nguon=url, thanh_cong=False,
+                ghi_chu=(
+                    f"URL thuộc domain '{domain}' — ĐÃ khảo sát 23/09/2026, KHÔNG PHẢI "
+                    "chưa kiểm: mọi trang trên domain này (kể cả robots.txt cho phép) "
+                    "trả về thử thách Cloudflare Managed Challenge (đòi chạy JavaScript "
+                    "+ cookie), không phải 403 thường. Vượt qua bằng code là 'bypass "
+                    "bot-detection' — hành vi không được làm, không phải lỗi kỹ thuật "
+                    "có thể vá. Đường thực tế duy nhất: mở trình duyệt thật."
+                ),
+            )
+        if domain.endswith(_DOMAIN_NICE_CAN_GIAY_PHEP_AI):
+            return KetQuaToanVanGuideline(
+                to_chuc="BTS", url_nguon=url, thanh_cong=False,
+                ghi_chu=(
+                    f"URL thuộc domain '{domain}' — ĐÃ khảo sát 23/09/2026: KHÔNG bị "
+                    "chặn kỹ thuật (robots.txt cho phép), nhưng điều khoản sử dụng "
+                    "(nice.org.uk/terms-and-conditions mục 18.3) đòi giấy phép + phí "
+                    "cho MỌI truy cập phục vụ mục đích AI, không ngoại lệ. Đây là rào "
+                    "pháp lý/hợp đồng — chỉ bác sĩ tự xin cấp phép mới gỡ được, agent "
+                    "không có thẩm quyền tự quyết định thay."
+                ),
+            )
         if not domain.endswith(_DOMAIN_DA_KHAO_SAT):
             return KetQuaToanVanGuideline(
                 to_chuc="BTS", url_nguon=url, thanh_cong=False,
                 ghi_chu=(
                     f"URL thuộc domain '{domain}', KHÁC '{_DOMAIN_DA_KHAO_SAT}' đã khảo "
                     "sát robots.txt/điều khoản — có thể đây là hướng dẫn BTS đồng xuất "
-                    "bản với NICE/SIGN, toàn văn nằm ở domain của họ. Connector này CHƯA "
-                    "khảo sát domain đó, từ chối tải để không vi phạm kỷ luật "
-                    "'không crawl khi chưa kiểm robots.txt/ToU trước'."
+                    "bản với một tổ chức khác. Connector này CHƯA khảo sát domain đó, "
+                    "từ chối tải để không vi phạm kỷ luật 'không crawl khi chưa kiểm "
+                    "robots.txt/ToU trước'."
                 ),
             )
 

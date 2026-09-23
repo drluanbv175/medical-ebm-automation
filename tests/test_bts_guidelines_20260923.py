@@ -21,6 +21,9 @@ _URL_THAT_BTS = (
     "bts-guideline-for-pleural-disease/"
 )
 _URL_DONG_XUAT_BAN_NICE = "https://www.nice.org.uk/guidance/NG245"
+_URL_THORAX_BMJ = "https://thorax.bmj.com/content/74/1/1"
+_URL_BMJOPENRESPRES = "https://bmjopenrespres.bmj.com/content/5/1/e000348"
+_URL_DOMAIN_LA = "https://rightdecisions.scot.nhs.uk/something/"
 
 
 @pytest.fixture(autouse=True)
@@ -44,9 +47,10 @@ def test_tai_toan_van_success_on_bts_domain(monkeypatch):
     assert kq.to_chuc == "BTS"
 
 
-def test_tai_toan_van_refuses_url_on_different_domain_without_network_call(monkeypatch):
-    """Một số hướng dẫn BTS đồng xuất bản trỏ sang nice.org.uk — domain đó CHƯA được
-    khảo sát robots.txt/ToU, phải TỪ CHỐI mà KHÔNG gọi mạng."""
+def test_tai_toan_van_refuses_nice_url_giay_phep_ai(monkeypatch):
+    """nice.org.uk ĐÃ khảo sát 23/09/2026: không bị chặn kỹ thuật, nhưng ToU đòi giấy
+    phép AI trả phí — phải TỪ CHỐI mà KHÔNG gọi mạng, thông điệp nói rõ lý do pháp lý,
+    KHÔNG được nói 'chưa khảo sát' (đã khảo sát xong, kết luận không xây được)."""
     client = BtsGuidelineFullTextClient()
     goi_mang = []
     monkeypatch.setattr(client.http, "get_bytes", lambda url, **kw: goi_mang.append(url) or b"")
@@ -54,6 +58,35 @@ def test_tai_toan_van_refuses_url_on_different_domain_without_network_call(monke
     assert kq.thanh_cong is False
     assert goi_mang == []  # KHÔNG được gọi mạng
     assert "nice.org.uk" in kq.ghi_chu.lower()
+    assert "giấy phép" in kq.ghi_chu.lower() or "ai" in kq.ghi_chu.lower()
+    assert "chưa khảo sát" not in kq.ghi_chu.lower()
+
+
+@pytest.mark.parametrize("url", [_URL_THORAX_BMJ, _URL_BMJOPENRESPRES])
+def test_tai_toan_van_refuses_cloudflare_domain_without_network_call(monkeypatch, url):
+    """thorax.bmj.com/bmjopenrespres.bmj.com ĐÃ khảo sát 23/09/2026: chặn bởi
+    Cloudflare Managed Challenge — phải TỪ CHỐI mà KHÔNG gọi mạng, thông điệp nêu
+    đúng 'Cloudflare', không nói chung chung 'chưa khảo sát'."""
+    client = BtsGuidelineFullTextClient()
+    goi_mang = []
+    monkeypatch.setattr(client.http, "get_bytes", lambda u, **kw: goi_mang.append(u) or b"")
+    kq = client.tai_toan_van(url)
+    assert kq.thanh_cong is False
+    assert goi_mang == []  # KHÔNG được gọi mạng
+    assert "cloudflare" in kq.ghi_chu.lower()
+    assert "chưa khảo sát" not in kq.ghi_chu.lower()
+
+
+def test_tai_toan_van_refuses_truly_unsurveyed_domain(monkeypatch):
+    """Domain KHÔNG thuộc 3 nhóm đã khảo sát (BTS/Cloudflare/NICE) vẫn phải từ chối
+    với thông điệp 'chưa khảo sát' — hành vi cũ, chưa đổi."""
+    client = BtsGuidelineFullTextClient()
+    goi_mang = []
+    monkeypatch.setattr(client.http, "get_bytes", lambda u, **kw: goi_mang.append(u) or b"")
+    kq = client.tai_toan_van(_URL_DOMAIN_LA)
+    assert kq.thanh_cong is False
+    assert goi_mang == []
+    assert "chưa khảo sát" in kq.ghi_chu.lower()
 
 
 def test_tai_toan_van_non_pdf_response_reported_clearly(monkeypatch):
