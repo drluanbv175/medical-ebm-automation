@@ -48,6 +48,37 @@ def test_tim_url_bao_cao_moi_nhat_returns_first_matching_link(monkeypatch):
     assert url == "https://goldcopd.org/wp-content/uploads/2026/01/GOLD-REPORT-2026-v1.3-8Dec2025_WMV2.pdf"
 
 
+# HTML thật đo được từ goldcopd.org/archived-reports/ 23/09/2026 — mỗi năm liệt kê
+# báo cáo đầy đủ (văn bản hiển thị KHÔNG chứa "GOLD") RỒI MỚI tới Pocket Guide (văn
+# bản hiển thị CÓ chứa "GOLD"). Kiểm sống lần đầu lấy nhầm Pocket Guide — xem docstring
+# module "LỖI ĐÃ VÁ 23/09/2026".
+_URL_BAO_CAO_DAY_DU = (
+    "https://goldcopd.org/wp-content/uploads/2024/11/"
+    "GOLD-2025-Report-v1.0-15Nov2024_WMV.pdf"
+)
+_URL_POCKET_GUIDE = (
+    "https://goldcopd.org/wp-content/uploads/2024/12/"
+    "Pocket-Guide-2025-v1.2-FINAL-covered-13Dec2024_WMV.pdf"
+)
+_HTML_TRANG_MUC_LUC_THAT = f"""
+<html><body>
+<a href="{_URL_BAO_CAO_DAY_DU}">2025 Global Strategy for Prevention, Diagnosis
+and Management of COPD</a>
+<a href="{_URL_POCKET_GUIDE}">2025 GOLD Pocket Guide</a>
+</body></html>
+"""
+
+
+def test_tim_url_bao_cao_moi_nhat_bo_qua_pocket_guide_lay_bao_cao_day_du(monkeypatch):
+    """Hồi quy cho lỗi kiểm sống 23/09/2026: phải lấy báo cáo ĐẦY ĐỦ, KHÔNG lấy nhầm
+    Pocket Guide dù Pocket Guide là link duy nhất có chữ "GOLD" trong văn bản hiển thị."""
+    client = GoldCopdFullTextClient()
+    monkeypatch.setattr(client.http, "get_text", lambda url, **kw: _HTML_TRANG_MUC_LUC_THAT)
+    url = client.tim_url_bao_cao_moi_nhat()
+    assert url == _URL_BAO_CAO_DAY_DU
+    assert "pocket" not in url.lower()
+
+
 def test_tim_url_bao_cao_moi_nhat_returns_none_when_no_link_matches(monkeypatch):
     client = GoldCopdFullTextClient()
     monkeypatch.setattr(client.http, "get_text", lambda url, **kw: "<html><body>khong co gi</body></html>")

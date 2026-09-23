@@ -14,6 +14,17 @@ khác Ở HAI ĐIỂM bắt buộc dưới đây (KHÔNG được bỏ qua khi b
 Điều khoản sử dụng (`https://ginasthma.org/legal-policy/`) cấm sao chép/phân phối/
 đăng lại nội dung khi chưa có phép — xem `GHI_CHU_BAN_QUYEN_CHUAN`. Muốn xin phép:
 `https://ginasthma.org/copyright-requests/`.
+
+LỖI ĐÃ VÁ 23/09/2026 (kiểm sống lần đầu, phát hiện ngay): `https://ginasthma.org/reports/`
+KHÔNG còn link PDF trực tiếp nào — trang này chỉ liệt kê link tới các trang LANDING
+riêng từng ấn phẩm (`https://ginasthma.org/2026-gina-strategy-report/`,
+`.../2026-gina-summary-guide/`, `.../2026-gina-severe-asthma-guide/`...), và PDF thật
+nằm Ở TRANG LANDING đó, không nằm ở trang liệt kê. Bản vá đầu chỉ dò `.pdf` trực tiếp
+trên `/reports/` nên luôn trả `None`. Đã sửa thành HAI BƯỚC: (1) dò link landing khớp
+mẫu `{năm}-gina-strategy-report/` trên `/reports/`; (2) dò `.pdf` trên đúng trang
+landing đó bằng regex cũ (`_MAU_LINK_PDF`, vẫn khớp đúng — đã kiểm sống: file thật là
+`GINA-2026-Strategy-Report-WMS.pdf`). Không tìm thấy link landing ⇒ `None` kèm cảnh
+báo, KHÔNG bịa/đoán slug năm.
 """
 from __future__ import annotations
 
@@ -32,6 +43,12 @@ from app.utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 TRANG_MUC_LUC = "https://ginasthma.org/reports/"
+# Trang mục lục nay chỉ liệt kê link LANDING theo năm, KHÔNG có .pdf trực tiếp — dò
+# link landing "{năm}-gina-strategy-report/" trước (bước 1), rồi mới dò .pdf trên
+# đúng trang landing đó (bước 2, dùng lại _MAU_LINK_PDF ở dưới).
+_MAU_LINK_LANDING = re.compile(
+    r'href="(https://ginasthma\.org/\d{4}-gina-strategy-report/)"', re.IGNORECASE
+)
 _MAU_LINK_PDF = re.compile(
     r'href="([^"]*GINA[^"]*Strategy-Report[^"]*\.pdf)"', re.IGNORECASE
 )
@@ -61,18 +78,36 @@ class GinaAsthmaFullTextClient:
         self.http = HttpClient(min_interval=_KHOANG_CACH_TOI_THIEU_GIAY)
 
     def tim_url_bao_cao_moi_nhat(self) -> Optional[str]:
+        """Hai bước (xem "LỖI ĐÃ VÁ 23/09/2026" ở docstring module): (1) tìm link trang
+        landing mới nhất trên trang mục lục; (2) tìm link PDF thật trên trang landing đó."""
         try:
-            html = self.http.get_text(TRANG_MUC_LUC)
+            html_muc_luc = self.http.get_text(TRANG_MUC_LUC)
         except Exception as exc:  # noqa: BLE001
             logger.warning("[gina_asthma] không tải được trang mục lục %s: %s", TRANG_MUC_LUC, exc)
             return None
 
-        links = self._trich_link_pdf(html)
+        landing = _MAU_LINK_LANDING.findall(html_muc_luc)
+        if not landing:
+            logger.warning(
+                "[gina_asthma] không tìm thấy link trang landing '{năm}-gina-strategy-report/' "
+                "trong %s — có thể GINA đã đổi cấu trúc trang HOẶC đang tạm đóng truy cập miễn "
+                "phí (đã xảy ra 07-11/2025) — CẦN XÁC NHẬN THỦ CÔNG.", TRANG_MUC_LUC,
+            )
+            return None
+        url_landing = landing[0]
+
+        try:
+            html_landing = self.http.get_text(url_landing)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[gina_asthma] không tải được trang landing %s: %s", url_landing, exc)
+            return None
+
+        links = self._trich_link_pdf(html_landing)
         if not links:
             logger.warning(
-                "[gina_asthma] không tìm thấy link PDF 'GINA...Strategy-Report...pdf' trong "
-                "%s — có thể GINA đã đổi cấu trúc trang HOẶC đang tạm đóng truy cập miễn phí "
-                "(đã xảy ra 07-11/2025) — CẦN XÁC NHẬN THỦ CÔNG.", TRANG_MUC_LUC,
+                "[gina_asthma] tìm thấy trang landing %s nhưng KHÔNG có link PDF "
+                "'GINA...Strategy-Report...pdf' trên đó — cấu trúc trang có thể đã đổi, "
+                "CẦN XÁC NHẬN THỦ CÔNG.", url_landing,
             )
             return None
         return links[0]

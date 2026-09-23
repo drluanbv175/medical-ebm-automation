@@ -18,9 +18,19 @@ GIỚI HẠN QUAN TRỌNG NHẤT, đã đo bằng dữ liệu thật (KHÔNG ph�
     chỉnh sửa nguyên văn, đổi mỗi khi GOLD phát hành bản vá trong năm.
   • Vì hai điểm trên, việc "tìm URL báo cáo mới nhất" PHẢI đi qua trang mục lục ổn định
     `https://goldcopd.org/archived-reports/` (luôn tồn tại, liệt kê link mọi năm) rồi
-    trích `<a href>` trỏ tới file `.pdf` có "GOLD" trong tên — KHÔNG BAO GIỜ đoán/ghép
-    URL theo công thức. Không tìm thấy link khớp mẫu kỳ vọng ⇒ trả `None` kèm cảnh báo
-    rõ ràng, KHÔNG bịa kết quả.
+    trích `<a href>` trỏ tới file `.pdf`. Không tìm thấy link khớp mẫu kỳ vọng ⇒ trả
+    `None` kèm cảnh báo rõ ràng, KHÔNG bịa kết quả.
+
+LỖI ĐÃ VÁ 23/09/2026 (kiểm sống lần đầu, phát hiện ngay): mỗi năm trang mục lục liệt
+kê HAI file .pdf liền nhau — báo cáo ĐẦY ĐỦ ("2025 Global Strategy for Prevention,
+Diagnosis and Management...") RỒI MỚI tới "2025 GOLD Pocket Guide" (bản tóm tắt bỏ
+túi, ngắn hơn nhiều). Bản vá đầu chỉ khớp link có chữ "GOLD" NGAY SAU thẻ `<a>` trong
+văn bản hiển thị — nhưng chữ "GOLD" chỉ xuất hiện ở link Pocket Guide ("2025 GOLD
+Pocket Guide"), KHÔNG xuất hiện ở link báo cáo đầy đủ ("2025 Global Strategy for...").
+Kết quả: kiểm sống đầu tiên lấy NHẦM Pocket Guide (31.772 ký tự) thay vì báo cáo đầy
+đủ. Đã sửa: lọc theo URL/văn bản CHỨA "pocket" (không phân biệt hoa/thường) để LOẠI
+TRỪ, giữ lại link ĐẦU TIÊN còn lại — đúng thứ tự trang liệt kê (mới nhất lên đầu, báo
+cáo đầy đủ luôn đứng trước pocket guide cùng năm, đã xác nhận cho mọi năm 2016-2025).
 """
 from __future__ import annotations
 
@@ -39,13 +49,11 @@ from app.utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 TRANG_MUC_LUC = "https://goldcopd.org/archived-reports/"
-# Bắt <a href="....pdf"> có "GOLD" (không phân biệt hoa/thường) trong đường dẫn — đúng
-# quy ước đặt tên đã quan sát được (GOLD-REPORT-2026-..., GOLD-2024_v1.2-...).
+# Bắt CẢ href lẫn văn bản hiển thị của thẻ <a href="....pdf">...</a> — cần văn bản để
+# lọc "pocket" (xem LỖI ĐÃ VÁ ở docstring module: chữ "GOLD" không đủ để phân biệt báo
+# cáo đầy đủ với Pocket Guide, vì Pocket Guide MỚI là link có chữ "GOLD" trong text).
 _MAU_LINK_PDF = re.compile(
-    r'href="([^"]+\.pdf)"[^>]*>[^<]*GOLD', re.IGNORECASE
-)
-_MAU_LINK_PDF_DU_PHONG = re.compile(
-    r'href="([^"]*GOLD[^"]*\.pdf)"', re.IGNORECASE
+    r'href="([^"]+\.pdf)"[^>]*>([^<]*)', re.IGNORECASE
 )
 
 
@@ -79,8 +87,9 @@ class GoldCopdFullTextClient:
         links = self._trich_link_pdf(html)
         if not links:
             logger.warning(
-                "[gold_copd] không tìm thấy link PDF nào khớp mẫu 'GOLD...*.pdf' trong %s — "
-                "có thể GOLD đã đổi cấu trúc trang, CẦN XÁC NHẬN THỦ CÔNG.", TRANG_MUC_LUC,
+                "[gold_copd] không tìm thấy link PDF báo cáo đầy đủ (đã loại Pocket Guide) "
+                "trong %s — có thể GOLD đã đổi cấu trúc trang, CẦN XÁC NHẬN THỦ CÔNG.",
+                TRANG_MUC_LUC,
             )
             return None
         # Trang archived-reports liệt kê nhiều năm — link đầu tiên xuất hiện trong HTML
@@ -90,12 +99,16 @@ class GoldCopdFullTextClient:
 
     @staticmethod
     def _trich_link_pdf(html: str) -> List[str]:
-        tim_thay = _MAU_LINK_PDF.findall(html) or _MAU_LINK_PDF_DU_PHONG.findall(html)
-        # Loại trùng lặp, giữ thứ tự xuất hiện.
+        """Trả danh sách URL PDF theo thứ tự xuất hiện, ĐÃ LOẠI Pocket Guide (URL hoặc
+        văn bản hiển thị chứa "pocket", không phân biệt hoa/thường) — xem LỖI ĐÃ VÁ ở
+        docstring module. Không suy đoán/sắp xếp lại thứ tự trang liệt kê."""
+        cap = _MAU_LINK_PDF.findall(html)
         da_thay: List[str] = []
-        for link in tim_thay:
-            if link not in da_thay:
-                da_thay.append(link)
+        for url, text in cap:
+            if "pocket" in url.lower() or "pocket" in text.lower():
+                continue
+            if url not in da_thay:
+                da_thay.append(url)
         return da_thay
 
     def tai_toan_van_pdf(self, url: Optional[str] = None) -> KetQuaToanVanGuideline:
