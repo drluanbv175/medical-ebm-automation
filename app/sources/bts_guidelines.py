@@ -1,6 +1,12 @@
 """Connector TẢI TOÀN VĂN hướng dẫn BTS (British Thoracic Society) trực tiếp từ
 brit-thoracic.org.uk — thêm 23/09/2026 theo yêu cầu bác sĩ.
 
+📎 KHI `tai_toan_van()` TỪ CHỐI (Cloudflare/giấy phép NICE, xem "LỖI ĐÃ VÁ 23/09/2026"
+bên dưới) mà đã biết DOI/PMID của guideline đó: gọi
+`app.sources.guideline_citation_summary.lay_trich_dan_tom_tat(doi=..., pmid=...)` —
+KHÔNG thay được toàn văn, nhưng cho trích dẫn xác minh thật + tóm tắt từ abstract
+(khi có), thay vì tay không hoàn toàn.
+
 Đã khảo sát TRƯỚC khi viết module này:
   • robots.txt cho phép mọi bot ở `/clinical-resources/guidelines/` và
     `/document-library/guidelines/` (chỉ chặn /auth, /umbraco*, /login/, /search/...).
