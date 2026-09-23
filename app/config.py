@@ -215,6 +215,23 @@ class Settings:
     # gửi email xin cấp token tới dev@epistemonikos.org (xem app/sources/epistemonikos.py).
     epistemonikos_api_token: str = field(
         default_factory=lambda: os.getenv("EPISTEMONIKOS_API_TOKEN", ""))
+    # Wiley Text and Data Mining (TDM) API — thêm 23/09/2026, theo yêu cầu bác sĩ sau khi
+    # đã có token thật từ tài khoản Wiley Online Library (WOL). KHÁC MỌI connector khác:
+    # đây là dịch vụ TẢI TOÀN VĂN PDF THEO DOI ĐÃ BIẾT, không phải nguồn tìm kiếm — xem
+    # app/sources/wiley_tdm.py để đọc đầy đủ giới hạn (đặc biệt: quyền truy cập theo DẢI IP
+    # của tài khoản WOL, không chỉ theo token — README chính thức "Access is IP address
+    # based only").
+    wiley_tdm_api_token: str = field(default_factory=lambda: os.getenv("WILEY_TDM_API_TOKEN", ""))
+    # Thư mục lưu PDF tải về — để trống dùng mặc định "downloads_wiley_tdm" (thư mục làm
+    # việc hiện tại). Đây là PDF nhị phân, cố ý KHÔNG đặt trong data/raw/ như bản ghi JSON
+    # của các nguồn khác.
+    wiley_tdm_download_dir: str = field(
+        default_factory=lambda: os.getenv("WILEY_TDM_DOWNLOAD_DIR", ""))
+    # Giây nghỉ giữa các lượt tải hàng loạt. Thư viện `wiley-tdm` mặc định 5.0; README
+    # chính thức của WileyLabs/tdm-client khuyến nghị 10.0 cho việc dùng LIÊN TỤC (trần
+    # Wiley công bố: ~3 bài/giây, 60 request/10 phút).
+    wiley_tdm_rate_limit_seconds: float = field(
+        default_factory=lambda: _get_float("WILEY_TDM_RATE_LIMIT_SECONDS", 10.0))
     # SerpApi (Google Scholar) — thêm 20/09/2026 (app/sources/serpapi_scholar.py). KHÁC mọi nguồn khác:
     # MỖI request là một search TÍNH PHÍ (gói Free 250 search/tháng, 50/giờ — số đo từ trang giá SerpApi
     # 20/09/2026), nên có thêm trần số lần gọi mỗi lượt chạy. Khoá CHỈ nạp từ môi trường/kho secrets
@@ -281,6 +298,11 @@ class Settings:
     # khác CORE), và token phải xin qua email trước khi có gì để bật.
     enable_epistemonikos: bool = field(
         default_factory=lambda: _get_bool("ENABLE_EPISTEMONIKOS", False))
+    # Mặc định TẮT — đòi WILEY_TDM_API_TOKEN bắt buộc thật (chặn cứng như Scopus/
+    # Epistemonikos). KHÔNG tham gia get_enabled_sources()/get_fallback_sources() vì đây
+    # không phải nguồn tìm kiếm — chỉ bật khi có quy trình chủ động gọi WileyTdmClient để
+    # tải PDF theo DOI đã biết (xem app/sources/wiley_tdm.py).
+    enable_wiley_tdm: bool = field(default_factory=lambda: _get_bool("ENABLE_WILEY_TDM", False))
     # Mặc định TẮT — đòi SERPAPI_API_KEY bắt buộc thật (chặn cứng như Scopus) và mỗi lượt gọi tốn tiền.
     # Nguồn KHÁM PHÁ (chỉ tiêu đề + đoạn trích, không abstract/DOI/PMID chắc chắn), KHÔNG thuộc lõi discovery.
     enable_serpapi_scholar: bool = field(

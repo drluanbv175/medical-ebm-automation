@@ -16,6 +16,7 @@ Cách dùng:
     python run.py dossier <project_id>   # xuất Hồ sơ nghiên cứu (đề cương + tài liệu nền + checklist)
     python run.py zotero-push     # đẩy tài liệu actionable vào Zotero (cần cấu hình)
     python run.py test-live [nguồn] [từ khoá]   # gọi 1 nguồn API THẬT để kiểm chứng
+    python run.py wiley-tdm-test <DOI>           # tải THẬT 1 PDF qua Wiley TDM API theo DOI
     python run.py tiktok [N]      # sinh N gói nội dung TikTok (slideshow+caption) từ kho
     python run.py tiktok-watch [N]# như trên nhưng GỒM cả "tin nhanh – chưa kết luận"
     python run.py tiktok-video [N]# như tiktok nhưng dựng thêm VIDEO dọc + giọng đọc tiếng Việt
@@ -163,6 +164,15 @@ def main() -> int:
         source = sys.argv[2] if len(sys.argv) > 2 else "europepmc"
         query = sys.argv[3] if len(sys.argv) > 3 else "atrial fibrillation guideline 2024"
         _print(cmd_test_live(source=source, query=query))
+
+    elif cmd == "wiley-tdm-test":
+        # Tải THẬT 1 PDF theo DOI qua Wiley TDM API — xem cmd_test_live_wiley_tdm() để
+        # biết vì sao đây là lệnh RIÊNG, không nhét vào test-live.
+        if len(sys.argv) <= 2:
+            print("❌ Thiếu DOI. Dùng: python run.py wiley-tdm-test <DOI>")
+            return 1
+        from app.main import cmd_test_live_wiley_tdm
+        _print(cmd_test_live_wiley_tdm(doi=sys.argv[2]))
 
     elif cmd == "tiktok-auto":
         # Dùng cho lịch nền: chỉ sinh khi .env bật ENABLE_TIKTOK_AUTO (mặc định bỏ qua êm).

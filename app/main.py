@@ -248,6 +248,36 @@ def cmd_test_live(source: str = "europepmc",
     return out
 
 
+def cmd_test_live_wiley_tdm(doi: str) -> Dict:
+    """Gọi Wiley TDM API THẬT để tải MỘT PDF theo DOI đã biết và kiểm chứng kết nối.
+
+    KHÁC `cmd_test_live`: Wiley TDM không phải nguồn tìm kiếm (không có `.search()`), nên
+    dùng lệnh riêng thay vì nhét vào `_SOURCE_MAP`. Không ghi vào DB; chỉ tải 1 file để
+    xác nhận token + quyền truy cập theo IP đang hoạt động đến đâu (xem giới hạn IP-based
+    ở app/sources/wiley_tdm.py). Dùng một DOI Open Access trước để tách lỗi token khỏi
+    lỗi phạm vi IP; DOI không phải Open Access ACCESS_DENIED dù token đúng là tín hiệu
+    "tài khoản WOL của bác sĩ không được cấp quyền IP từ mạng đang chạy lệnh này", không
+    phải lỗi cấu hình.
+    """
+    from app.sources import WileyTdmClient
+
+    if WileyTdmClient is None:
+        return {"error": "Thiếu thư viện `wiley-tdm` — cài: "
+                          "~/.ebm-venv/bin/pip install wiley-tdm"}
+    client = WileyTdmClient()
+    ket_qua = client.download_pdf(doi)
+    return {
+        "doi": ket_qua.doi,
+        "trang_thai": ket_qua.trang_thai,
+        "thanh_cong": ket_qua.thanh_cong,
+        "duong_dan": ket_qua.duong_dan,
+        "kich_thuoc_byte": ket_qua.kich_thuoc_byte,
+        "ghi_chu": ket_qua.ghi_chu,
+        "ma_http": ket_qua.ma_http,
+        "thu_muc_tai": str(client.download_dir),
+    }
+
+
 def cmd_export_all() -> Dict:
     init_db()
     return {

@@ -46,6 +46,10 @@ ScopusClient = _nap_client("scopus", "ScopusClient")
 SerpApiScholarClient = _nap_client("serpapi_scholar", "SerpApiScholarClient")
 SemanticScholarClient = _nap_client("semantic_scholar", "SemanticScholarClient")
 UnpaywallClient = _nap_client("unpaywall", "UnpaywallClient")
+# KHÔNG phải SourceClient, KHÔNG phải nguồn tìm kiếm — tải TOÀN VĂN PDF theo DOI đã
+# biết qua Wiley TDM API (xem app/sources/wiley_tdm.py). Cố ý KHÔNG có trong
+# get_enabled_sources()/get_fallback_sources() vì không tham gia vòng quét song song.
+WileyTdmClient = _nap_client("wiley_tdm", "WileyTdmClient")
 
 
 def get_enabled_sources() -> List[SourceClient]:
@@ -152,6 +156,7 @@ __all__ = [
     "EpistemonikosClient",
     "SemanticScholarClient",
     "UnpaywallClient",
+    "WileyTdmClient",
     "get_enabled_sources",
     "get_fallback_sources",
 ]

@@ -32,6 +32,11 @@ matplotlib>=3.9.0   # tuỳ chọn — vẽ đường cong Kaplan-Meier (script 
 # «Phat Khoa Ed25519» báo "Thiếu thư viện cryptography" (đo thật trên Mac 01/09/2026).
 cryptography>=44.0.0
 
+# Wiley Text and Data Mining API (app/sources/wiley_tdm.py) — TUỲ CHỌN: chỉ cần khi
+# ENABLE_WILEY_TDM=true; import trễ (_nap_client) nên thiếu gói này không kéo sập
+# app.sources. Thư viện chính thức của Wiley (github.com/WileyLabs/tdm-client).
+wiley-tdm>=1.2.0
+
 # Reports / export
 Jinja2>=3.1.4
 deep-translator>=1.11.4

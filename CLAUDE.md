@@ -318,6 +318,38 @@ This file contains only Claude Code-specific instructions.
   MCP chỉ hữu dụng khi một AGENT (`tra-cuu-chung-cu`/`tong-quan-y-van`/`cap-nhat-guideline`/
   `huong-dan-lam-sang`) đang chạy TRONG phiên tương tác chủ động gọi để trả lời MỘT câu hỏi cụ
   thể — không có cách "cài đặt" để nó tự chạy định kỳ không người giám sát.
+  · **Wiley Text and Data Mining (TDM) API — xây 23/09/2026, theo yêu cầu bác sĩ sau khi đã có
+  token thật từ tài khoản Wiley Online Library (WOL) của bác sĩ.** `app/sources/wiley_tdm.py`
+  (`WileyTdmClient`), thư viện nền là gói PyPI chính thức `wiley-tdm`
+  (github.com/WileyLabs/tdm-client). **KHÁC HOÀN TOÀN** `SRC-041` (MCP `plugin:bio-research:wiley`
+  — claude.ai connector, vẫn "not-covered", cần bác sĩ tự cấp quyền OAuth qua cài đặt connector,
+  agent KHÔNG được làm hộ) — đây là API REST tải TOÀN VĂN PDF THEO DOI ĐÃ BIẾT TRƯỚC, KHÔNG phải
+  nguồn tìm kiếm/khám phá. Đăng ký `SRC-042` trong `data/sources.json` (workspace gốc).
+  **Kiến trúc cố ý khác mọi connector khác:** `WileyTdmClient` KHÔNG kế thừa `SourceClient`, KHÔNG
+  có `.search()`, và KHÔNG có trong `get_enabled_sources()`/`get_fallback_sources()` — chỉ dựng
+  khi một quy trình/agent ĐÃ CÓ DOI (từ PubMed/Crossref/Scopus/Europe PMC…) và cần lấy toàn văn.
+  Nạp qua `_nap_client` (như mọi connector khác) nên thiếu gói `wiley-tdm` không kéo sập cả
+  `app.sources`. `ENABLE_WILEY_TDM` mặc định TẮT, `WILEY_TDM_API_TOKEN` **bắt buộc thật** (chặn
+  cứng như Scopus/Epistemonikos — `WileyTdmClient()` tự chặn sớm bằng lỗi tiếng Việt rõ ràng thay
+  vì để lọt `ValueError` tiếng Anh mù mờ của thư viện gốc). Token là UUID lấy từ trang "Text and
+  Data Mining" trong tài khoản WOL — **KHÔNG BAO GIỜ nhập/dán qua Claude Code**; bác sĩ tự thêm
+  `WILEY_TDM_API_TOKEN=<token>` và `ENABLE_WILEY_TDM=true` vào
+  `~/.ebm-secrets/medical-ebm-automation.env`.
+  ⚠️ **GIỚI HẠN QUAN TRỌNG NHẤT, CHƯA xác nhận chạy thật lúc viết module này** — README chính thức
+  của WileyLabs/tdm-client, mục Known Limitations, ghi nguyên văn *"Access is IP address based
+  only"*: dù token hợp lệ, IP gọi request phải nằm trong dải IP mà tài khoản WOL của bác sĩ được
+  cấp quyền (thường là mạng bệnh viện/tổ chức đã mua gói Wiley Online Library) — gọi từ mạng khác
+  (nhà, VPN, máy này) có thể nhận `ACCESS_DENIED` cho bài KHÔNG PHẢI Open Access dù token đúng.
+  Chỉ bài Open Access chắc chắn tải được từ mọi IP. **Kiểm sau khi có token:**
+  `python run.py wiley-tdm-test <DOI Open Access>` rồi một DOI KHÔNG Open Access để biết đúng
+  ranh giới thật của tài khoản — lệnh RIÊNG (không dùng `test-live`, vì Wiley TDM không có
+  `.search()` để khớp khuôn chung). Trần nhịp Wiley công bố: ~3 bài/giây, 60 request/10 phút;
+  `WILEY_TDM_RATE_LIMIT_SECONDS` mặc định 10.0 (thư viện gốc mặc định 5.0, README khuyến nghị
+  10.0 cho việc dùng liên tục). **KHÔNG tham gia chuỗi 3 tầng kiểm rút bài** — tải được PDF không
+  xác nhận bài chưa bị rút; phải kiểm rút bài qua kênh hiện có (PubMed/Europe PMC/Retraction Watch
+  offline) TRƯỚC khi dùng nội dung PDF cho việc gì. 15 test offline ở `tests/test_wiley_tdm.py`
+  (thư viện `wiley_tdm` được GIẢ LẬP qua `sys.modules`, không phụ thuộc mạng thật hay việc gói có
+  cài trong venv chạy test hay không).
 
 ---
 
