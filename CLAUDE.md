@@ -350,6 +350,69 @@ This file contains only Claude Code-specific instructions.
   offline) TRƯỚC khi dùng nội dung PDF cho việc gì. 15 test offline ở `tests/test_wiley_tdm.py`
   (thư viện `wiley_tdm` được GIẢ LẬP qua `sys.modules`, không phụ thuộc mạng thật hay việc gói có
   cài trong venv chạy test hay không).
+  · **Connector TẢI TOÀN VĂN guideline trực tiếp từ website hiệp hội chuyên ngành (GOLD/GINA/
+  BTS/PMC) — xây 23/09/2026, theo yêu cầu bác sĩ "đảm bảo chứng cứ ESC/ADA/GOLD/GINA... luôn
+  được đọc toàn văn".** Trước khi viết bất kỳ dòng code nào, đã khảo sát ĐỘC LẬP robots.txt +
+  điều khoản sử dụng của TỪNG tổ chức (đúng kỷ luật "không crawl khi chưa kiểm trước" của dự án)
+  — 18 tổ chức được khảo sát (ESC, ADA, GOLD, GINA + 14 hội khác: ACC/AHA, IDSA, EULAR, ATS, ERS,
+  BTS, AGS, ACP, ASCO, ESMO, ASH, AGA, ACG, AAN), kết quả:
+  **KHẢ THI** (robots.txt cho phép THẬT + toàn văn miễn phí công khai, đã đọc trực tiếp không
+  suy đoán): **GOLD, GINA, BTS**. **ADA**: crawl trực tiếp `diabetesjournals.org` KHÔNG khả thi
+  (robots.txt của domain đó **không đọc được** — 403/lỗi DNS ở mọi lần thử, "chưa đọc được"
+  TUYỆT ĐỐI không được hiểu là "cho phép ngầm") — nhưng ADA nộp lưu toàn bộ "Standards of Care"
+  lên **PMC** (PubMed Central, hạ tầng công khai của NIH, robots.txt kiểu allowlist có
+  `Allow: /articles/` tường minh), nên đi đường PMC thay vì crawl trực tiếp. **KHÔNG khả thi**
+  (robots.txt chặn AI-crawler toàn site, hoặc toàn văn thật nằm ở nhà xuất bản thứ ba có
+  paywall/bot-detection đã xác nhận, hoặc cả hai): **ESC** (chặn `ClaudeBot`/`GPTBot`/
+  `Google-Extended` toàn site; toàn văn nằm ở European Heart Journal/Oxford Academic), ACC/AHA,
+  IDSA, EULAR, ATS, AGS, ACP, ASH, AGA, ACG, AAN. **Cần khảo sát thêm** trước khi kết luận: ERS,
+  ASCO, ESMO (môi trường khảo sát bị chặn/lỗi mạng, chưa đủ dữ kiện — KHÔNG suy đoán thành
+  "khả thi" hay "không khả thi").
+  **Kiến trúc:** 4 module mới trong `app/sources/` (`gold_copd.py`, `gina_asthma.py`,
+  `bts_guidelines.py`, `pmc_guideline_fulltext.py`), tất cả theo khuôn (B) của
+  `wiley_tdm.py::WileyTdmClient` — KHÔNG kế thừa `SourceClient`, KHÔNG có `.search()`, KHÔNG
+  tham gia `get_enabled_sources()`/vòng quét song song (không phải nguồn khám phá). Hạ tầng
+  dùng chung ở `app/sources/guideline_fulltext_common.py`: dataclass `KetQuaToanVanGuideline` +
+  hàm `trich_van_ban_tu_pdf()` (thư viện mới `pypdf`, nạp trễ qua `_nap_client`). `HttpClient`
+  được thêm phương thức `get_bytes()` (tải nhị phân, KHÔNG cache — định dạng cache cũ là JSON,
+  không hợp với PDF) — vẫn hưởng đủ retry/backoff/throttle/phát hiện chặn NCBI sẵn có.
+  **RANH GIỚI BẢN QUYỀN, ÁP DỤNG CHO CẢ 4 CONNECTOR, KHÔNG NGOẠI LỆ** (cả GOLD/GINA/BTS đều có
+  điều khoản cấm sao chép/phân phối lại/đăng công khai khi chưa có phép bằng văn bản; ADA qua
+  PMC là license CC BY-NC-ND, cấm bản phái sinh): PDF tải về CHỈ dùng làm **nguồn tham chiếu nội
+  bộ** để trích câu chữ khuyến cáo cụ thể kèm PMID/DOI/URL gốc — TUYỆT ĐỐI KHÔNG hiển thị nguyên
+  văn PDF trên dashboard công khai, KHÔNG đăng lại toàn văn, KHÔNG phân phối file cho bên thứ ba.
+  **Giới hạn kỹ thuật đã đo, PHẢI tôn trọng khi bảo trì:**
+  — GOLD/GINA: tên slug trang landing + tên file PDF đổi MỖI NĂM, không có mẫu cố định
+  ⇒ `tim_url_bao_cao_moi_nhat()` LUÔN dò qua trang mục lục ổn định (`archived-reports/` cho
+  GOLD, `reports/` cho GINA), fail-closed (`None` + cảnh báo) khi không tìm thấy link khớp mẫu —
+  TUYỆT ĐỐI không đoán/ghép URL theo công thức năm.
+  — GINA: robots.txt đòi `Crawl-delay: 10` ⇒ `GinaAsthmaFullTextClient` BẮT BUỘC dùng
+  `HttpClient(min_interval=10.0)`. GINA từng TẠM ĐÓNG truy cập miễn phí 07→11/2025 (lý do tài
+  chính) — connector phân biệt "phản hồi không phải PDF thật" (thiếu chữ ký `%PDF`, nghi đổi
+  chính sách) với lỗi mạng thường, báo hai thông điệp KHÁC NHAU, không được gộp.
+  — PMC: robots.txt đòi `Crawl-delay: 1` ⇒ `min_interval=1.0`. `PmcGuidelineFullTextClient` CHỈ
+  nhận PMCID đã biết (tra qua `pubmed.py`/Europe PMC trước) — KHÔNG tự tìm PMCID.
+  — BTS: KHÔNG có trang mục lục ổn định (mỗi bệnh một slug riêng, không đổi theo năm cập nhật)
+  ⇒ `BtsGuidelineFullTextClient` KHÔNG có `tim_url_bao_cao_moi_nhat()` tự động, chỉ nhận URL PDF
+  ĐÃ BIẾT. Một số hướng dẫn BTS đồng xuất bản với NICE/SIGN và toàn văn thật nằm ở domain khác
+  (đã xác nhận với hướng dẫn Hen 11/2024 trỏ sang `nice.org.uk`) — connector TỪ CHỐI tải (không
+  gọi mạng) nếu URL không thuộc `brit-thoracic.org.uk`, vì domain khác chưa được khảo sát riêng.
+  **CHƯA XÁC NHẬN CHẠY THẬT LÚC VIẾT** — cả 4 module chỉ có 31 test offline PASS (mock
+  `HttpClient`/`trich_van_ban_tu_pdf`, không gọi mạng thật), CHƯA gọi mạng thật lần nào tới
+  goldcopd.org/ginasthma.org/brit-thoracic.org.uk/pmc.ncbi.nlm.nih.gov. Đăng ký `SRC-043`
+  (GOLD) · `SRC-044` (GINA) · `SRC-045` (BTS) · `SRC-046` (PMC) trong `data/sources.json`,
+  `status: "not-covered"` cho tới khi kiểm sống. Cả 4 mặc định TẮT (`ENABLE_GOLD_COPD_FULLTEXT`
+  / `ENABLE_GINA_ASTHMA_FULLTEXT` / `ENABLE_BTS_GUIDELINES_FULLTEXT` /
+  `ENABLE_PMC_GUIDELINE_FULLTEXT`, không cần API key).
+  **Việc CHƯA làm, có chủ ý** (ghi rõ để không ai suy nhầm là đã xong): (1) chưa nối vào bất kỳ
+  agent/pipeline nào (chỉ là hạ tầng CÓ SẴN, gọi thủ công) — nối vào `tra-cuu-chung-cu`/
+  `cap-nhat-guideline` là việc SAU KHI kiểm sống; (2) chưa khảo sát ERS/ASCO/ESMO (kết quả
+  "can_kiem_them", không đủ dữ kiện); (3) ESC/ACC-AHA/IDSA/EULAR/ATS/AGS/ACP/ASH/AGA/ACG/AAN
+  CỐ Ý không có connector crawl — với các tổ chức này, đầu ra hệ thống vẫn chỉ là link + tóm
+  tắt (đúng cách `tra-cuu-chung-cu` đang hoạt động), bác sĩ tự mở link đọc toàn văn qua quyền
+  truy cập của mình; (4) chưa đọc lại nguyên văn tiếng Anh đầy đủ (chữ-đối-chữ) các trang điều
+  khoản sử dụng đã khảo sát — bản khảo sát đi qua công cụ tóm tắt AI (WebFetch), nên trước khi
+  coi đây là căn cứ pháp lý chính thức, nên đọc lại bằng trình duyệt thật.
 
 ---
 

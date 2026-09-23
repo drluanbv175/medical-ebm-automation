@@ -232,6 +232,19 @@ class Settings:
     # Wiley công bố: ~3 bài/giây, 60 request/10 phút).
     wiley_tdm_rate_limit_seconds: float = field(
         default_factory=lambda: _get_float("WILEY_TDM_RATE_LIMIT_SECONDS", 10.0))
+    # Connector TẢI TOÀN VĂN guideline trực tiếp từ website hiệp hội chuyên ngành —
+    # thêm 23/09/2026, sau khảo sát robots.txt/điều khoản sử dụng riêng từng tổ chức
+    # (xem app/sources/guideline_fulltext_common.py + CLAUDE.md mục "Nguồn dữ liệu").
+    # Cả ba đều mặc định TẮT — bật riêng từng cái khi cần, KHÔNG tham gia
+    # get_enabled_sources()/get_fallback_sources() (không phải nguồn tìm kiếm).
+    enable_gold_copd_fulltext: bool = field(
+        default_factory=lambda: _get_bool("ENABLE_GOLD_COPD_FULLTEXT", False))
+    enable_gina_asthma_fulltext: bool = field(
+        default_factory=lambda: _get_bool("ENABLE_GINA_ASTHMA_FULLTEXT", False))
+    enable_bts_guidelines_fulltext: bool = field(
+        default_factory=lambda: _get_bool("ENABLE_BTS_GUIDELINES_FULLTEXT", False))
+    enable_pmc_guideline_fulltext: bool = field(
+        default_factory=lambda: _get_bool("ENABLE_PMC_GUIDELINE_FULLTEXT", False))
     # SerpApi (Google Scholar) — thêm 20/09/2026 (app/sources/serpapi_scholar.py). KHÁC mọi nguồn khác:
     # MỖI request là một search TÍNH PHÍ (gói Free 250 search/tháng, 50/giờ — số đo từ trang giá SerpApi
     # 20/09/2026), nên có thêm trần số lần gọi mỗi lượt chạy. Khoá CHỈ nạp từ môi trường/kho secrets

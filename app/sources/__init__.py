@@ -50,6 +50,13 @@ UnpaywallClient = _nap_client("unpaywall", "UnpaywallClient")
 # biết qua Wiley TDM API (xem app/sources/wiley_tdm.py). Cố ý KHÔNG có trong
 # get_enabled_sources()/get_fallback_sources() vì không tham gia vòng quét song song.
 WileyTdmClient = _nap_client("wiley_tdm", "WileyTdmClient")
+# Cùng khuôn WileyTdmClient (tải toàn văn theo định danh đã biết, không tìm kiếm) —
+# thêm 23/09/2026 cho guideline GOLD/GINA/BTS/PMC. Xem app/sources/
+# guideline_fulltext_common.py cho ranh giới bản quyền chung của cả 4 connector.
+GoldCopdFullTextClient = _nap_client("gold_copd", "GoldCopdFullTextClient")
+GinaAsthmaFullTextClient = _nap_client("gina_asthma", "GinaAsthmaFullTextClient")
+BtsGuidelineFullTextClient = _nap_client("bts_guidelines", "BtsGuidelineFullTextClient")
+PmcGuidelineFullTextClient = _nap_client("pmc_guideline_fulltext", "PmcGuidelineFullTextClient")
 
 
 def get_enabled_sources() -> List[SourceClient]:
@@ -157,6 +164,10 @@ __all__ = [
     "SemanticScholarClient",
     "UnpaywallClient",
     "WileyTdmClient",
+    "GoldCopdFullTextClient",
+    "GinaAsthmaFullTextClient",
+    "BtsGuidelineFullTextClient",
+    "PmcGuidelineFullTextClient",
     "get_enabled_sources",
     "get_fallback_sources",
 ]

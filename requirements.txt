@@ -37,6 +37,15 @@ cryptography>=44.0.0
 # app.sources. Thư viện chính thức của Wiley (github.com/WileyLabs/tdm-client).
 wiley-tdm>=1.2.0
 
+# Connector toàn văn guideline GOLD/GINA/BTS/PMC (app/sources/gold_copd.py,
+# gina_asthma.py, bts_guidelines.py, pmc_guideline_fulltext.py) — TUỲ CHỌN, nạp trễ,
+# thiếu gói không kéo sập app.sources. beautifulsoup4/lxml đã có sẵn trong
+# requirements.lock.txt (phụ thuộc bắc cầu) nhưng chưa khai trực tiếp — khai rõ ở đây
+# theo đúng thói quen của dự án (không dựa vào phụ thuộc bắc cầu ngầm).
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+pypdf>=4.0.0
+
 # Reports / export
 Jinja2>=3.1.4
 deep-translator>=1.11.4

@@ -281,6 +281,18 @@ class HttpClient:
     ) -> str:
         return self._request("GET", url, params=params, use_cache=use_cache, want="text")
 
+    def get_bytes(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> bytes:
+        """GET rồi trả về bytes thô — dùng để tải PDF/nhị phân (thêm 23/09/2026 cho
+        các connector toàn văn guideline như GOLD/GINA). KHÔNG cache: định dạng cache
+        file hiện có (`_write_cache`) lưu JSON {"json","text"}, không phù hợp với nội
+        dung nhị phân lớn — mỗi lần gọi luôn tải mới, nhưng vẫn hưởng đủ retry/backoff/
+        throttle/phát hiện chặn NCBI của `_request()`."""
+        return self._request("GET", url, params=params, use_cache=False, want="bytes")
+
     def post_json(
         self,
         url: str,
@@ -488,6 +500,9 @@ class HttpClient:
                 if want == "json":
                     data = resp.json()
                     payload = {"json": data, "text": None}
+                elif want == "bytes":
+                    data = resp.content
+                    payload = None  # get_bytes() luôn use_cache=False, xem docstring
                 else:
                     data = resp.text
                     payload = {"json": None, "text": data}
@@ -509,7 +524,7 @@ class HttpClient:
                 attempt += 1
                 continue
 
-            if use_cache and self.cache_ttl != 0:
+            if use_cache and self.cache_ttl != 0 and payload is not None:
                 _write_cache(key, payload)
             self.success_count += 1
             self.last_error = ""
