@@ -34,6 +34,24 @@ This file contains only Claude Code-specific instructions.
 - **Evidence surveillance deployment**: `weekly_safety.sh`/`monthly_update.sh` là owner thu thập duy nhất. `PARTIAL/FAIL` phải giữ watermark, chặn `bridge_to_ebm_master.py` và không gửi cảnh báo nội dung. Chạy `python tools/verify_evidence_surveillance_deployment.py --online`; chỉ `READY_FOR_CONTROLLED_DEPLOYMENT` mới cho phép candidate-only. Claude Code không tự điền UAT, alert/rollback/shadow evidence hoặc phê duyệt để làm xanh cổng.
 - **⚠️ Sau khi đồng bộ agent .md đã sửa vào `medical-ebm-automation/.claude/agents/` (bản in-repo dùng bởi `runtime/agent_registry.py` FULL_SCOPE_A):** BẮT BUỘC chạy `python3 scripts/regenerate_agent_manifest.py --write` rồi dán giá trị self-check SHA-256 in ra vào hằng số `MANIFEST_SELF_CHECK_SHA256` trong `runtime/agent_registry.py` — **kể cả khi số lượng agent KHÔNG đổi**, vì manifest khóa hash theo NỘI DUNG từng file, không chỉ số lượng. Quên bước này → hàng chục test `test_v4_*`/`test_offline_workflow_integration.py` fail với "agent hash mismatch" (đã xảy ra ≥2 lần, 2026-07-05). Chạy `pytest` sau mỗi lần sync để bắt sớm nếu quên.
 - **Secrets**: live in `.env` outside OneDrive, symlinked into the repo if needed. Never commit or print them.
+- **Nguồn chứng cứ TRÊN PHIÊN CLOUD — đo thật 24/09/2026, đọc TRƯỚC khi kết luận «nguồn X hỏng»**
+  (báo cáo đầy đủ: `audit/15-…` ở repo gốc). Môi trường Cloud «Default — **Trusted** network access»:
+  proxy thoát mạng TỪ CHỐI (CONNECT 403, chính sách) MỌI host API y văn — NCBI, `www.ebi.ac.uk`,
+  `api.crossref.org`, OpenAlex, ClinicalTrials.gov, openFDA, Semantic Scholar, CORE, WHO IRIS,
+  `kcb.vn`, GOLD/GINA, RSS hội/tạp chí ⇒ `test-live` 0/8 nguồn miễn phí, feed/lane guideline 0/111.
+  Container không có `~/.ebm-secrets` ⇒ `USE_MOCK_SOURCES=true`, không `NCBI_EMAIL` ⇒ PubMed trả
+  MOCK kể cả `test-live` (nay `test-live` ghi `live:false` + `canh_bao`; lỗi mạng bị nuốt thành `[]`
+  nay hiện ở `loi_goi_mang`). **Chạy THẬT được trên Cloud:** PMC toàn văn qua S3 (`*.amazonaws.com`
+  thuộc Trusted — SRC-046 trả 200.000 ký tự PMC13555224) · nền Retraction Watch qua **gương GitLab
+  chính thức của Crossref** (`python tools/tai_retraction_watch.py` tự lùi sang đó khi thiếu email/
+  Crossref bị chặn — tải 72.606 dòng, 31.511 PMID; chuỗi rút bài bắt đúng Wakefield + Choi R&R) ·
+  MỌI connector **MCP** (đi qua máy chủ Anthropic, không qua allowlist): PubMed, ClinicalTrials,
+  Scite, Wiley, Amass… (bioRxiv MCP lỗi phía máy chủ 24/09). Python mặc định của container là 3.11
+  mà `requirements.lock.txt` cần ≥3.12 (scipy 1.18.0) ⇒ tạo venv bằng `python3.12 -m venv`. Proxy
+  403/407 nay bị `HttpClient` bỏ NGAY (trước: retry ≈48 s/lần gọi). Muốn engine chạy thật trên Cloud
+  là việc CỦA BÁC SĨ ở cài đặt môi trường: Network access → Custom (giữ danh sách mặc định) + thêm
+  host; biến môi trường `USE_MOCK_SOURCES=false`, `NCBI_EMAIL`; khoá API — connector hiện đòi THẤY
+  khoá trong biến môi trường (tính năng «API credentials» giấu khoá chưa dùng được với connector).
 - **Nguồn dữ liệu** (`app/sources/`): PubMed/Europe PMC/Crossref/OpenAlex/ClinicalTrials/openFDA
   (miễn phí, không key, bật mặc định; **openFDA có khoá TUỲ CHỌN `OPENFDA_API_KEY` — thêm 19/09/2026**: không khoá 240 lượt/phút + 1.000 lượt/ngày theo IP, có khoá 120.000 lượt/ngày theo khoá; nối qua MỘT hàm dùng chung `app.sources.openfda.get_json_openfda()` cho cả 3 nơi gọi api.fda.gov (FAERS · tra nhãn thuốc · live adapter). Khoá bị FDA từ chối (401/403) ⇒ cảnh báo rõ + tự lùi về không khoá — KHÔNG để `OpenFDAClient.search()` nuốt lỗi thành `[]` im lặng. Kiểm khoá có THẬT SỰ được chấp nhận: `python run.py test-live openfda` → trường `khoa_api_openfda`; giá trị khoá không bao giờ được in) · Semantic Scholar (bật mặc định, chạy được không key nhưng
   QPS thấp hơn) · Zotero/NICE (tắt mặc định) · **Scopus (Elsevier) — thêm 13/09/2026**

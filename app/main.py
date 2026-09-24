@@ -230,8 +230,22 @@ def cmd_test_live(source: str = "europepmc",
             "tier": item["reliability_tier"], "classification": classification,
             "is_mock": rec.raw.get("_mock", False),
         })
-    out = {"source": source, "query": query, "live": True,
+    # SỬA 24/09/2026 (kiểm nguồn trên Cloud): `live` từng LUÔN là True — kể cả khi connector
+    # tự lùi về dữ liệu minh hoạ dù đã ép `use_mock=False` (đo thật: PubMed thiếu NCBI_EMAIL trả
+    # 2 bản ghi mock, đầu ra vẫn ghi «live: true, count: 2»). `live` nay chỉ True khi KHÔNG có bản
+    # ghi mock nào; lỗi mạng bị connector nuốt thành [] cũng được nói ra thay vì «count: 0» câm.
+    so_mock = sum(1 for r in results if r["is_mock"])
+    out = {"source": source, "query": query, "live": so_mock == 0,
            "count": len(results), "results": results}
+    if so_mock:
+        out["so_ban_ghi_mock"] = so_mock
+        out["canh_bao"] = (f"{so_mock}/{len(results)} bản ghi là DỮ LIỆU MINH HOẠ (mock) — nguồn "
+                           "CHƯA được gọi thật (vd PubMed khi thiếu NCBI_EMAIL). KHÔNG dùng kết "
+                           "quả này để kết luận nguồn đang chạy.")
+    http = getattr(client, "http", None)
+    loi_mang = getattr(http, "last_error", "") if http is not None else ""
+    if loi_mang and not results:
+        out["loi_goi_mang"] = loi_mang  # đã che khoá bởi HttpClient._record_terminal_failure
     if source == "openfda":
         # Chỉ báo TRẠNG THÁI — tuyệt đối không in giá trị khoá. Để bác sĩ xác nhận khoá đã nạp VÀ
         # được FDA chấp nhận mà không phải mở file secrets.

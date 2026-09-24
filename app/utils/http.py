@@ -86,6 +86,22 @@ def _redact(text: str) -> str:
     return _SENSITIVE_HEADER_RE.sub(r"\1***", _SENSITIVE_QUERY_RE.sub(r"\1***", text))
 
 
+# SỬA 24/09/2026 (kiểm nguồn chứng cứ trên phiên Cloud): proxy thoát mạng của MÔI TRƯỜNG từ chối
+# lệnh CONNECT theo CHÍNH SÁCH (403 Forbidden / 407 Proxy Authentication Required). Đo thật trên môi
+# trường Cloud «Default — Trusted network access»: MỌI host API y văn (NCBI, Europe PMC, Crossref,
+# OpenAlex, ClinicalTrials.gov, openFDA, Semantic Scholar, CORE…) đều nhận đúng lỗi này, dạng
+# `ProxyError(... OSError('Tunnel connection failed: 403 Forbidden'))`. Trước bản vá nó bị coi là lỗi
+# TẠM THỜI ⇒ retry đủ `http_max_retries` với backoff ≈ 48 giây cho MỖI lời gọi (đo: 7 nguồn × 48 s)
+# mà không bao giờ thành công — chính sách không đổi giữa hai lần thử. Chỉ khớp ĐÍCH DANH mã 403/407
+# ở bước CONNECT: ProxyError khác (proxy chưa lên, reset kết nối…) vẫn giữ nguyên đường retry cũ.
+_PROXY_TU_CHOI_RE = re.compile(r"Tunnel connection failed:\s*(403|407)\b")
+
+
+def _la_proxy_tu_choi_chinh_sach(exc: BaseException) -> bool:
+    """True khi `exc` là proxy thoát mạng TỪ CHỐI theo chính sách (CONNECT → 403/407)."""
+    return isinstance(exc, requests.exceptions.ProxyError) and bool(_PROXY_TU_CHOI_RE.search(str(exc)))
+
+
 def _raise_for_status_redacted(resp: "requests.Response") -> None:
     """resp.raise_for_status() nhưng che tham số nhạy cảm trong thông báo lỗi trước khi
     exception rời khỏi HttpClient — nơi gọi (vd resolve_pmids() ở evidence_workbench.py)
@@ -364,6 +380,21 @@ class HttpClient:
                     method, url, params=params, timeout=settings.http_timeout, **extra
                 )
             except requests.RequestException as exc:
+                # Proxy môi trường từ chối theo CHÍNH SÁCH ⇒ bỏ ngay, không retry (xem
+                # `_la_proxy_tu_choi_chinh_sach`). Nói rõ host bị chặn và chỗ sửa để người đọc
+                # không nhầm «môi trường chặn» thành «nguồn hỏng» (họ BH08).
+                if _la_proxy_tu_choi_chinh_sach(exc):
+                    host = urlparse(url).hostname or url
+                    loi = RuntimeError(
+                        f"Proxy thoát mạng của môi trường này TỪ CHỐI kết nối tới {host} theo "
+                        "chính sách mạng (CONNECT 403/407) — KHÔNG phải nguồn hỏng hay lỗi tạm "
+                        "thời, retry không giúp gì. Trên phiên Cloud: sửa môi trường → Network "
+                        f"access → Custom, thêm «{host}» vào Allowed domains (hoặc chọn Full)."
+                    )
+                    logger.warning("Proxy từ chối theo chính sách (bỏ ngay, không retry): %s",
+                                   _redact(url))
+                    self._record_terminal_failure(loi)
+                    raise loi from exc
                 last_exc = exc
                 self.transient_failure_count += 1
                 wait = self._backoff_wait(attempt, None)
