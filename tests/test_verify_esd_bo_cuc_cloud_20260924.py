@@ -214,12 +214,28 @@ def test_esd04_chay_verifier_tai_goc_ebm_anh_em(tmp_path, monkeypatch):
 
 # ── ESD07 ─────────────────────────────────────────────────────────────────────
 
+def _tao_duoc_symlink(tmp_path: Path) -> bool:
+    """Windows không bật Developer Mode/quyền admin thì không tạo được symlink thư mục."""
+    try:
+        (tmp_path / "_thu_symlink").symlink_to(tmp_path, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        return False
+    return True
+
+
 def test_esd07_vendor_chay_trong_hop_cat_khong_ghi_vao_repo_ebm(tmp_path, monkeypatch):
     home = tmp_path / "home"
     goc = _dung_ebm(home / "EBM-drluanbv175")
     truoc = _anh_chup(goc)
     monkeypatch.setattr(V, "ROOT", home)
+    co_symlink = _tao_duoc_symlink(tmp_path)
     check = V._check_online_scanner()  # chạy subprocess THẬT với scanner giả
+    if not co_symlink:
+        # Máy không cho tạo symlink (vd Windows runner): phải «chưa đo được», KHÔNG chạy vendor tại chỗ.
+        assert check.status == V.NOT_MEASURED, check.evidence
+        assert "symlink" in check.evidence
+        assert _anh_chup(goc) == truoc
+        return
     assert check.status == V.PASS, check.evidence
     assert "vendor_hop_cat" in check.evidence
     assert f"max={V.CANARY_SCANNER_MAX}" in check.evidence
