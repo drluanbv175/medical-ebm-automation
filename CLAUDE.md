@@ -48,7 +48,7 @@ This file contains only Claude Code-specific instructions.
   MỌI connector **MCP** (đi qua máy chủ Anthropic, không qua allowlist): PubMed, ClinicalTrials,
   Scite, Wiley, Amass… (bioRxiv MCP lỗi phía máy chủ 24/09). Python mặc định của container là 3.11
   mà `requirements.lock.txt` cần ≥3.12 (scipy 1.18.0) ⇒ tạo venv bằng `python3.12 -m venv`. Proxy
-  403/407 nay bị `HttpClient` bỏ NGAY (trước: retry ≈48 s/lần gọi). Muốn engine chạy thật trên Cloud
+  403/407 nay bị `HttpClient` bỏ NGAY (trước: retry ≈48 s/lần gọi). **Từ 24/09 (chiều), phiên Cloud TỰ nạp nền Retraction Watch** khi mở phiên (repo gốc `tools/nap_nen_rut_bai_cloud.py`, nối vào `tu_sua_chua.py --pham-vi-cloud`); `sources_health.py` trên Cloud báo proxy chặn là ⚪ «không đo được» và KHÔNG ghi sổ `data/sources.json`; connector MCP trên Cloud mang tiền tố khác plugin Mac (`mcp__PubMed__*`, `mcp__bioRxiv__*`… — `_CONNECTOR-CHUNG-CU.md`). Muốn engine chạy thật trên Cloud
   là việc CỦA BÁC SĨ ở cài đặt môi trường: Network access → Custom (giữ danh sách mặc định) + thêm
   host; biến môi trường `USE_MOCK_SOURCES=false`, `NCBI_EMAIL`; khoá API — connector hiện đòi THẤY
   khoá trong biến môi trường (tính năng «API credentials» giấu khoá chưa dùng được với connector).

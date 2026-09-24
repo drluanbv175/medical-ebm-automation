@@ -48,6 +48,19 @@
 | **ChEMBL** | `mcp__plugin_bio-research_chembl__` → `drug_search` · `get_mechanism` · `get_admet` · `get_bioactivity` · `target_search` | Dược lý **TIỀN LÂM SÀNG** (cơ chế, IC50/Ki, ADMET dự đoán) | Bối cảnh cơ chế thuốc cho NGHIÊN CỨU — xem ⚠ §3 (KHÔNG dùng cho cảnh báo kê đơn) |
 | **ICD-10-CM/PCS** | `mcp__plugin_healthcare_ICD10_Codes__` → `search_codes` · `lookup_code` · `validate_code` · `get_hierarchy` | Mã hóa chẩn đoán/thủ thuật (bộ mã 2026) | Khi cần mã ICD-10 chuẩn cho chẩn đoán/biến số/báo cáo |
 
+> **TÊN CÔNG CỤ ĐỔI THEO NƠI CHẠY (đo 24/09/2026 trên phiên Cloud — audit/15).** Các ID trong bảng
+> trên là tiền tố của PLUGIN trên máy Mac (`mcp__plugin_healthcare_*`, `mcp__plugin_bio-research_*`).
+> Trên phiên Cloud (claude.ai/code) cùng các nguồn đó đến qua **connector claude.ai** với tiền tố KHÁC:
+> `mcp__PubMed__*` · `mcp__Clinical_Trials__*` · `mcp__bioRxiv__*` · `mcp__Consensus__search` ·
+> `mcp__Scite__*` · `mcp__ChEMBL__*` · `mcp__ICD-10_Codes__*`. Tên hàm phía sau (`search_articles`,
+> `search_trials`, `search_preprints`…) giữ nguyên. **Luật:** nạp bằng ToolSearch theo TỪ KHOÁ nguồn
+> (vd «pubmed search_articles») hoặc thử lần lượt cả hai tiền tố — KHÔNG kết luận «connector không
+> có» chỉ vì tiền tố plugin không nạp được. Cochrane (`mcp__plugin_cochrane_*`) KHÔNG có bản connector
+> trên Cloud — tra Cochrane qua PubMed/Crossref, ghi rõ đã mất abstract có cấu trúc/GRADE của MCP.
+> Công cụ nạp được nhưng lời gọi DỮ LIỆU lỗi (đo 24/09: bioRxiv `get_categories` chạy, `search_preprints`
+> «Internal error» 3/3 lần) ⇒ thử lại một lần, rồi ghi **PARTIAL — kênh X hỏng phía máy chủ connector**,
+> không được đọc thành «không có chứng cứ».
+
 > Bộ mã ICD-10-CM là chuẩn Hoa Kỳ — đối chiếu danh mục **ICD-10 của Bộ Y tế VN** khi dùng cho hồ sơ
 > trong nước (`[CẦN XÁC NHẬN TẠI ĐƠN VỊ]`).
 
