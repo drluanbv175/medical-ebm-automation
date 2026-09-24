@@ -49,6 +49,15 @@ from app.utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 TRANG_MUC_LUC = "https://goldcopd.org/archived-reports/"
+# Trang chủ liệt kê link tới trang báo cáo NĂM HIỆN HÀNH (vd `/2026-gold-report-and-pocket-guide/`).
+# LỖI ĐÃ VÁ 24/09/2026 (đo sống): `archived-reports/` theo đúng nghĩa KHÔNG chứa báo cáo năm hiện
+# hành ⇒ connector trả GOLD-2025 trong khi GOLD 2026 v1.3 (12/2025) đã phát hành. Nay đọc năm từ
+# CHÍNH các link có trên trang chủ (không ghép URL theo công thức năm), chọn năm lớn nhất, lấy PDF
+# báo cáo đầy đủ trên trang đó; không được thì lùi về `archived-reports/` như cũ.
+TRANG_CHU = "https://goldcopd.org/"
+_MAU_TRANG_BAO_CAO = re.compile(r'https://goldcopd\.org/(20\d\d)-gold-report[0-9a-z-]*/?', re.IGNORECASE)
+# PDF không phải báo cáo đầy đủ: Pocket Guide và bản «tóm tắt thay đổi» (KEY-CHANGES).
+_KHONG_PHAI_BAO_CAO = ("pocket", "key-changes", "summary of changes")
 # Bắt CẢ href lẫn văn bản hiển thị của thẻ <a href="....pdf">...</a> — cần văn bản để
 # lọc "pocket" (xem LỖI ĐÃ VÁ ở docstring module: chữ "GOLD" không đủ để phân biệt báo
 # cáo đầy đủ với Pocket Guide, vì Pocket Guide MỚI là link có chữ "GOLD" trong text).
@@ -78,6 +87,9 @@ class GoldCopdFullTextClient:
         """Trích link PDF từ trang mục lục ổn định — KHÔNG đoán URL theo công thức năm
         (xem giới hạn ở docstring module). Trả `None` + log cảnh báo nếu không tìm
         thấy link nào khớp mẫu kỳ vọng, để người gọi biết cần xác nhận thủ công."""
+        hien_hanh = self._tim_qua_trang_nam_hien_hanh()
+        if hien_hanh:
+            return hien_hanh
         try:
             html = self.http.get_text(TRANG_MUC_LUC)
         except Exception as exc:  # noqa: BLE001 — lỗi mạng, KHÔNG bịa URL
@@ -97,6 +109,28 @@ class GoldCopdFullTextClient:
         # khi khảo sát). Không sắp xếp lại theo "đoán" số năm trong URL.
         return links[0]
 
+    def _tim_qua_trang_nam_hien_hanh(self) -> Optional[str]:
+        """Trang chủ → trang báo cáo có NĂM LỚN NHẤT trong các link đang hiển thị → PDF đầy đủ.
+        Mọi lỗi/không khớp ⇒ `None` để người gọi lùi về `archived-reports/`."""
+        try:
+            trang_chu = self.http.get_text(TRANG_CHU)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[gold_copd] không tải được trang chủ %s: %s", TRANG_CHU, exc)
+            return None
+        ung_vien = {}
+        for m in _MAU_TRANG_BAO_CAO.finditer(trang_chu):
+            ung_vien.setdefault(int(m.group(1)), m.group(0))
+        if not ung_vien:
+            return None
+        trang = ung_vien[max(ung_vien)]
+        try:
+            html = self.http.get_text(trang)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[gold_copd] không tải được trang báo cáo %s: %s", trang, exc)
+            return None
+        links = self._trich_link_pdf(html)
+        return links[0] if links else None
+
     @staticmethod
     def _trich_link_pdf(html: str) -> List[str]:
         """Trả danh sách URL PDF theo thứ tự xuất hiện, ĐÃ LOẠI Pocket Guide (URL hoặc
@@ -105,7 +139,8 @@ class GoldCopdFullTextClient:
         cap = _MAU_LINK_PDF.findall(html)
         da_thay: List[str] = []
         for url, text in cap:
-            if "pocket" in url.lower() or "pocket" in text.lower():
+            nhan = (url + " " + text).lower()
+            if any(t in nhan for t in _KHONG_PHAI_BAO_CAO):
                 continue
             if url not in da_thay:
                 da_thay.append(url)
