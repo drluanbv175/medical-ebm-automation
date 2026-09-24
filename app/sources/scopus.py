@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from app.config import settings
+from app.config import khoa_do_proxy_gan, settings
 from app.sources._fixtures import mock_records_for
 from app.sources.base import RawRecord, SourceClient
 from app.sources.classify_meta import infer_study_type
@@ -70,7 +70,8 @@ class ScopusClient(SourceClient):
         if self.use_mock:
             return mock_records_for(self.name, query, clinical_area, max_results)
 
-        if not settings.scopus_api_key:
+        if not settings.scopus_api_key and not khoa_do_proxy_gan("scopus"):
+            # (KHOA_QUA_PROXY khai «scopus» ⇒ proxy Cloud gắn X-ELS-APIKey — không chặn.)
             # Chặn SỚM, rõ ràng — khác để lọt xuống rồi nhận 401 mù mờ từ Elsevier.
             # Cùng nguyên tắc fail-closed của get_enabled_sources(): nguồn BẬT mà
             # thiếu điều kiện thật phải NỔ TO, không âm thầm trả rỗng.

@@ -103,7 +103,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-from app.config import settings
+from app.config import khoa_do_proxy_gan, settings
 from app.core.policy_engine import contains_pii_text
 from app.sources._fixtures import mock_records_for
 from app.sources.base import RawRecord, SourceClient
@@ -608,13 +608,14 @@ class ConsensusClient(SourceClient):
             return mock_records_for(self.name, query, clinical_area, max_results)
 
         khoa = _lay_khoa()
-        if not khoa:
+        qua_proxy = not khoa and khoa_do_proxy_gan("consensus")
+        if not khoa and not qua_proxy:
             # Chặn SỚM, rõ ràng — cùng nguyên tắc fail-closed của scopus.py/serpapi_scholar.py:
             # nguồn BẬT mà thiếu điều kiện thật phải NỔ TO, không âm thầm trả rỗng.
             raise ConsensusLoi(
                 "[consensus] ENABLE_CONSENSUS=true nhưng thiếu CONSENSUS_API_KEY — thêm vào "
                 "~/.ebm-secrets/medical-ebm-automation.env rồi thử lại.", "thieu_key")
-        if not _khoa_dinh_dang_hop_le(khoa):
+        if not qua_proxy and not _khoa_dinh_dang_hop_le(khoa):
             # Thông điệp CỐ ĐỊNH — tuyệt đối không chèn giá trị khoá. Lỗi CHỐT: cấu hình sai thì mọi lời gọi
             # sau đều vô nghĩa. Nằm TRƯỚC ngân sách nên không tốn lượt nào.
             raise self._chot(ConsensusLoi(
@@ -656,7 +657,8 @@ class ConsensusClient(SourceClient):
             params["year_min"] = nam_loc
 
         self._giu_ngan_sach()
-        self._dong_bo_header(khoa)
+        if not qua_proxy:   # qua proxy: KHÔNG đặt header rỗng — proxy tự gắn x-api-key
+            self._dong_bo_header(khoa)
 
         cache_truoc = _dem_cache_hit(self.http)
         loi_http: Optional[ConsensusLoi] = None

@@ -1597,3 +1597,23 @@ def test_the_real_client_feeds_the_ladder_with_verifiable_hits(monkeypatch, tmp_
         assert set(lg) == {"source", "api_endpoint", "query", "record_count", "status", "error_message", "mode"}
         assert lg["source"] == "consensus" and lg["mode"] == "live"
     assert CLE_SENTINEL not in json.dumps(tom_tat, ensure_ascii=False, default=str)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# KHOA_QUA_PROXY (24/09/2026): khoá do agent proxy của môi trường Cloud gắn vào header
+# ════════════════════════════════════════════════════════════════════════════
+
+def test_qua_proxy_thieu_khoa_van_goi_va_khong_gui_x_api_key_rong(monkeypatch, tmp_path):
+    monkeypatch.setattr(settings, "khoa_qua_proxy", "consensus")
+    client, ghi = _client(monkeypatch, tmp_path, key="")
+    client.search("hypertension guideline", max_results=5)
+    assert len(ghi.calls) == 1, "khai qua proxy thì không được chặn vì thiếu khoá"
+    assert "x-api-key" not in {k.lower() for k in ghi.calls[0].headers}, "không gửi header khoá rỗng"
+
+
+def test_khong_khai_proxy_thieu_khoa_van_chan(monkeypatch, tmp_path):
+    monkeypatch.setattr(settings, "khoa_qua_proxy", "scopus")  # khai nguồn KHÁC
+    client, ghi = _client(monkeypatch, tmp_path, key="")
+    with pytest.raises(RuntimeError):
+        client.search("atrial fibrillation")
+    assert ghi.calls == []
