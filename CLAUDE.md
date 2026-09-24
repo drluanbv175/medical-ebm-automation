@@ -50,8 +50,15 @@ This file contains only Claude Code-specific instructions.
   mà `requirements.lock.txt` cần ≥3.12 (scipy 1.18.0) ⇒ tạo venv bằng `python3.12 -m venv`. Proxy
   403/407 nay bị `HttpClient` bỏ NGAY (trước: retry ≈48 s/lần gọi). **Từ 24/09 (chiều), phiên Cloud TỰ nạp nền Retraction Watch** khi mở phiên (repo gốc `tools/nap_nen_rut_bai_cloud.py`, nối vào `tu_sua_chua.py --pham-vi-cloud`); `sources_health.py` trên Cloud báo proxy chặn là ⚪ «không đo được» và KHÔNG ghi sổ `data/sources.json`; connector MCP trên Cloud mang tiền tố khác plugin Mac (`mcp__PubMed__*`, `mcp__bioRxiv__*`… — `_CONNECTOR-CHUNG-CU.md`). Muốn engine chạy thật trên Cloud
   là việc CỦA BÁC SĨ ở cài đặt môi trường: Network access → Custom (giữ danh sách mặc định) + thêm
-  host; biến môi trường `USE_MOCK_SOURCES=false`, `NCBI_EMAIL`; khoá API — connector hiện đòi THẤY
-  khoá trong biến môi trường (tính năng «API credentials» giấu khoá chưa dùng được với connector).
+  host; biến môi trường `USE_MOCK_SOURCES=false`, `NCBI_EMAIL`. **Khoá API trên Cloud — từ 24/09 (chiều) dùng
+  được «API credentials»** (proxy gắn khoá vào HEADER sau khi request rời sandbox, engine không bao giờ thấy khoá): khai
+  credential cho host rồi đặt biến KHÔNG bí mật `KHOA_QUA_PROXY=scopus,core,consensus,epistemonikos,semantic_scholar`
+  (chỉ nguồn khai mới được miễn chặn «thiếu khoá»; connector KHÔNG gửi header khoá rỗng). Header theo nguồn: Scopus
+  `X-ELS-APIKey` · CORE `Authorization: Bearer` · Consensus `x-api-key` · Epistemonikos `Authorization: Token
+  token="…"` · Semantic Scholar `x-api-key`. **SerpApi/NCBI/openFDA gửi khoá qua tham số URL ⇒ proxy KHÔNG gắn được**
+  (`app.config.NGUON_KHOA_HEADER` loại chúng; khai vào cũng vô hiệu) — muốn dùng trên Cloud phải đặt khoá ở biến môi
+  trường thường (ai dùng môi trường cũng đọc được). Test: `tests/test_khoa_qua_proxy_20260924.py` + 2 test trong
+  `tests/test_consensus_api.py` (4 đột biến đều đỏ).
 - **Nguồn dữ liệu** (`app/sources/`): PubMed/Europe PMC/Crossref/OpenAlex/ClinicalTrials/openFDA
   (miễn phí, không key, bật mặc định; **openFDA có khoá TUỲ CHỌN `OPENFDA_API_KEY` — thêm 19/09/2026**: không khoá 240 lượt/phút + 1.000 lượt/ngày theo IP, có khoá 120.000 lượt/ngày theo khoá; nối qua MỘT hàm dùng chung `app.sources.openfda.get_json_openfda()` cho cả 3 nơi gọi api.fda.gov (FAERS · tra nhãn thuốc · live adapter). Khoá bị FDA từ chối (401/403) ⇒ cảnh báo rõ + tự lùi về không khoá — KHÔNG để `OpenFDAClient.search()` nuốt lỗi thành `[]` im lặng. Kiểm khoá có THẬT SỰ được chấp nhận: `python run.py test-live openfda` → trường `khoa_api_openfda`; giá trị khoá không bao giờ được in) · Semantic Scholar (bật mặc định, chạy được không key nhưng
   QPS thấp hơn) · Zotero/NICE (tắt mặc định) · **Scopus (Elsevier) — thêm 13/09/2026**

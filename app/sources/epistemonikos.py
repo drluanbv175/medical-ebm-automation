@@ -53,7 +53,7 @@ from __future__ import annotations
 import re
 from typing import List, Optional
 
-from app.config import settings
+from app.config import khoa_do_proxy_gan, settings
 from app.sources._fixtures import mock_records_for
 from app.sources.base import RawRecord, SourceClient
 from app.sources.classify_meta import infer_study_type
@@ -106,7 +106,7 @@ class EpistemonikosClient(SourceClient):
         if self.use_mock:
             return mock_records_for(self.name, query, clinical_area, max_results)
 
-        if not settings.epistemonikos_api_token:
+        if not settings.epistemonikos_api_token and not khoa_do_proxy_gan("epistemonikos"):
             # Khác CORE (vẫn gọi được không key): Epistemonikos đòi token BẮT
             # BUỘC — thiếu token API trả 401 ngay. Chặn sớm để thông báo rõ
             # ràng, cùng nguyên tắc fail-closed của scopus.py.

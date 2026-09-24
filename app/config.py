@@ -215,6 +215,15 @@ class Settings:
     # gửi email xin cấp token tới dev@epistemonikos.org (xem app/sources/epistemonikos.py).
     epistemonikos_api_token: str = field(
         default_factory=lambda: os.getenv("EPISTEMONIKOS_API_TOKEN", ""))
+    # KHOÁ DO PROXY GẮN — thêm 24/09/2026 (audit/15). Trên phiên Cloud claude.ai/code, tính năng
+    # «API credentials» của môi trường cất khoá NGOÀI sandbox: agent proxy tự gắn khoá vào HEADER
+    # của request tới đúng host đã khai, engine KHÔNG BAO GIỜ thấy khoá. Trước bản vá, connector
+    # thấy biến khoá rỗng liền tự chặn («thiếu …_API_KEY») nên tính năng đó vô dụng. Liệt kê tên
+    # nguồn (phân tách dấu phẩy) mà bác sĩ ĐÃ khai credential cho: scopus, core, consensus,
+    # epistemonikos, semantic_scholar. KHÔNG phải bí mật. Chỉ có tác dụng với nguồn gửi khoá qua
+    # HEADER — SerpApi/NCBI/openFDA gửi qua tham số URL nên proxy không gắn được (bị bỏ qua, có
+    # cảnh báo ở khoa_do_proxy_gan). Máy thật để trống ⇒ hành vi cũ, không đổi.
+    khoa_qua_proxy: str = field(default_factory=lambda: os.getenv("KHOA_QUA_PROXY", ""))
     # Wiley Text and Data Mining (TDM) API — thêm 23/09/2026, theo yêu cầu bác sĩ sau khi
     # đã có token thật từ tài khoản Wiley Online Library (WOL). KHÁC MỌI connector khác:
     # đây là dịch vụ TẢI TOÀN VĂN PDF THEO DOI ĐÃ BIẾT, không phải nguồn tìm kiếm — xem
@@ -420,6 +429,20 @@ class Settings:
 # Singleton tiện dùng khắp nơi.
 settings = Settings()
 settings.ensure_dirs()
+
+# Nguồn gửi khoá qua HEADER — proxy của môi trường Cloud gắn được. Nguồn gửi khoá qua tham số URL
+# (serpapi_scholar · pubmed/NCBI · openfda) KHÔNG nằm đây: khai chúng vào KHOA_QUA_PROXY là vô hiệu.
+NGUON_KHOA_HEADER = frozenset({"scopus", "core", "consensus", "epistemonikos", "semantic_scholar"})
+
+
+def khoa_do_proxy_gan(nguon: str) -> bool:
+    """True khi bác sĩ khai `nguon` trong KHOA_QUA_PROXY VÀ nguồn đó gửi khoá qua header.
+
+    Nghĩa: connector KHÔNG được tự chặn vì biến khoá rỗng, và KHÔNG được gửi header khoá rỗng —
+    agent proxy của môi trường sẽ gắn khoá thật sau khi request rời sandbox. Khoá sai/thiếu thật
+    sự ở phía proxy sẽ lộ ra đúng bằng 401/403 của nhà cung cấp (đã có nhánh báo lỗi riêng)."""
+    khai = {x.strip().lower() for x in (settings.khoa_qua_proxy or "").split(",") if x.strip()}
+    return nguon.lower() in khai and nguon.lower() in NGUON_KHOA_HEADER
 
 # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 22) — `settings.use_mock_
 # sources` là cờ TOÀN CỤC dùng chung một tiến trình. Hai nơi ép tạm rồi khôi

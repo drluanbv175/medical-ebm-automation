@@ -38,7 +38,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from app.config import settings
+from app.config import khoa_do_proxy_gan, settings
 from app.sources._fixtures import mock_records_for
 from app.sources.base import RawRecord, SourceClient
 from app.sources.classify_meta import infer_study_type
@@ -116,7 +116,7 @@ class CoreClient(SourceClient):
         if self.use_mock:
             return mock_records_for(self.name, query, clinical_area, max_results)
 
-        if not settings.core_api_key:
+        if not settings.core_api_key and not khoa_do_proxy_gan("core"):
             # KHÁC Scopus (chặn cứng khi thiếu key): CORE tự khai vẫn cho gọi
             # không đăng ký, chỉ ở nhịp thấp hơn — chỉ cảnh báo, không raise.
             logger.warning(
