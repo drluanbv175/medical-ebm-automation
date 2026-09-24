@@ -29,6 +29,25 @@ _MA_KHOA_BI_TU_CHOI = (401, 403)
 trang_thai_khoa: Optional[str] = None
 
 
+def la_404_khong_khop(exc: BaseException) -> bool:
+    """openFDA trả HTTP 404 + `{"error": {"code": "NOT_FOUND", "message": "No matches found!"}}` khi
+    truy vấn HỢP LỆ nhưng không bản ghi nào khớp — đó là «0 kết quả», KHÔNG phải lỗi mạng.
+
+    Đo 24/09/2026: `test-live openfda` với truy vấn mặc định «atrial fibrillation guideline 2024»
+    (không phải tên thuốc) bị báo thành `loi_goi_mang`. Chỉ nhận đúng mã NOT_FOUND trong thân phản
+    hồi — 404 khác (đường dẫn sai, proxy…) vẫn là lỗi thật.
+    """
+    resp = getattr(exc, "response", None)
+    if resp is None or getattr(resp, "status_code", None) != 404:
+        return False
+    try:
+        than = resp.json()
+    except ValueError:
+        return False
+    loi = than.get("error") if isinstance(than, dict) else None
+    return isinstance(loi, dict) and loi.get("code") == "NOT_FOUND"
+
+
 def get_json_openfda(http: HttpClient, url: str, params: Dict[str, Any]) -> Any:
     """GET api.fda.gov, gắn `api_key` nếu `OPENFDA_API_KEY` được đặt — DÙNG CHUNG cho mọi nơi
     gọi openFDA (connector FAERS, tra nhãn thuốc, live adapter) để không nơi nào quên khoá.
@@ -52,6 +71,11 @@ def get_json_openfda(http: HttpClient, url: str, params: Dict[str, Any]) -> Any:
         return kq
     except requests.HTTPError as exc:
         ma = exc.response.status_code if exc.response is not None else None
+        if la_404_khong_khop(exc):
+            # FDA đã XỬ LÝ truy vấn có khoá (api.data.gov chặn khoá sai bằng 401/403 TRƯỚC khi tới
+            # openFDA) ⇒ khoá được chấp nhận; «không khớp» đi tiếp lên nơi gọi như cũ.
+            trang_thai_khoa = "chap_nhan"
+            raise
         if ma in _MA_KHOA_BI_TU_CHOI:
             trang_thai_khoa = "bi_tu_choi"
             logger.warning(
@@ -83,9 +107,12 @@ class OpenFDAClient(SourceClient):
     def __init__(self) -> None:
         super().__init__()
         self.http = HttpClient()
+        # True khi lần search() gần nhất nhận 404 NOT_FOUND của openFDA = 0 bản ghi khớp (không lỗi).
+        self.khong_khop = False
 
     def search(self, query: str, clinical_area: Optional[str] = None,
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
+        self.khong_khop = False
         if self.use_mock:
             # Pool an toàn thuốc dùng chung; trả tín hiệu cho mọi truy vấn thuốc (demo).
             recs = mock_records_for(self.name, "", "An toàn thuốc",
@@ -121,6 +148,13 @@ class OpenFDAClient(SourceClient):
                     ingest_query=query, api_endpoint=EVENT,
                 ))
             return out
+        except requests.HTTPError as exc:
+            if la_404_khong_khop(exc):
+                self.khong_khop = True
+                logger.info("[openfda] 0 báo cáo FAERS khớp '%s' (404 NOT_FOUND — không phải lỗi).", query)
+                return []
+            logger.warning("[openfda] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
+            return []
         except Exception as exc:  # pragma: no cover
             logger.warning("[openfda] lỗi gọi thật (live) — BỎ QUA, KHÔNG bịa mock: %s", exc)
             return []

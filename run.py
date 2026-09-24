@@ -162,7 +162,8 @@ def main() -> int:
     elif cmd == "test-live":
         from app.main import cmd_test_live
         source = sys.argv[2] if len(sys.argv) > 2 else "europepmc"
-        query = sys.argv[3] if len(sys.argv) > 3 else "atrial fibrillation guideline 2024"
+        # Không gõ từ khoá ⇒ cmd_test_live chọn truy vấn mặc định THEO NGUỒN (openfda: tên thuốc).
+        query = sys.argv[3] if len(sys.argv) > 3 else None
         _print(cmd_test_live(source=source, query=query))
 
     elif cmd == "wiley-tdm-test":

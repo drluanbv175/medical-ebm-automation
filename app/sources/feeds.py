@@ -192,6 +192,11 @@ _CROSSREF_THAY_RSS = {
     "sti_bmj": "1368-4973", "bmj_gh": "2059-7908", "emj_bmj": "1472-0205", "jnnp_bmj": "0022-3050",
     "practneurol_bmj": "1474-7758", "svn_bmj": "2059-8688", "bmc_nephrol": "1471-2369", "j_nephrol": "1121-8428",
     "bmj_mentalhealth": "2755-9734", "bmj_recent": "1756-1833",
+    # Thêm 24/09/2026: RSS của 4 tạp chí BMJ này bị Cloudflare trả HTTP 429 cả trên Cloud lẫn máy Mac ⇒ 0 mục.
+    # ISSN tra thật ở api.crossref.org/journals/{issn} (publisher BMJ, đúng tên tạp chí) và kiểm
+    # /works?filter=issn:…,from-pub-date:2026-08-10 có bài mới: Heart 36 · Gut 55 · Frontline Gastro 19 · Thorax 31.
+    # Dùng ISSN điện tử như bmj_recent (bản in của Gut 0017-5749 làm Crossref trả lỗi trong lượt đo).
+    "heart_bmj": "1468-201X", "gut_bmj": "1468-3288", "fg_bmj": "2041-4137", "thorax_bmj": "1468-3296",
 }
 GUIDELINE_FEEDS = [replace(f, issn=_CROSSREF_THAY_RSS[f.id], mode="crossref") if f.id in _CROSSREF_THAY_RSS else f
                    for f in GUIDELINE_FEEDS]
