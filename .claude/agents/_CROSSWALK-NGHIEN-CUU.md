@@ -45,7 +45,9 @@ template**, KHÔNG cấp trục đánh số. **Quy ước cứng:** khi BÀN GIA
 > TRƯỚC cả lần sửa gần nhất của chính file này (2026-07-16). `tools/run_g10_assemble.py` là nơi CHẶN
 > CỨNG THẬT (fail-closed) cho cả cổng G8 Bình duyệt độc lập (`MISSING_PEER_REVIEW_SIGNATURE`) lẫn cổng
 > A12 kiểm chứng trích dẫn (`MISSING_CITATION_VERIFICATION`) — gộp mọi checkpoint G0-G9 thành MỘT đề
-> cương thống nhất theo mẫu 16 mục của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Xem `dieu-phoi-nghien-cuu.md`.
+> cương thống nhất theo mẫu 18 mục (từ 06/09/2026; trước đó 16), 24 thành phần lõi P01-P24 (P24
+> thêm cùng ngày: TIDieR/ngẫu nhiên hoá-làm mù/lịch trình §6.2-6.5, chỉ RCT), của skill
+> `nghien-cuu-y-khoa-chuan-quoc-te`. Xem `dieu-phoi-nghien-cuu.md`.
 
 ---
 

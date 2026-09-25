@@ -125,6 +125,22 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 6. Tiêu chí hoàn thành + qua cổng
 **Hoàn thành khi:** mỗi outcome quan trọng có hàng GRADE + lý do + nguồn; lượng hóa (hoặc nêu rõ không tính được); tách ý nghĩa thống kê/lâm sàng; có khối EtD với khuyến nghị **có điều kiện**. Không tự gán mức nếu nguồn không phân hạng (`gradeLevel:'na'`).
 
+🔴 **HAI TRƯỜNG BẮT BUỘC KHI ĐẦU RA ĐI VÀO DASHBOARD** (cổng `verify_dashboard.py
+--strict-sources` kiểm; doctrine này trước 14/08/2026 **chưa hề nhắc**, nên đầu ra của
+agent bị chặn mà không ai hiểu vì sao):
+
+| Trường | Khi nào | Ghi gì |
+|---|---|---|
+| `gradeBy` | mọi `gradeLevel` **khác `na`** | TÊN tổ chức/hệ đã chấm — `"KDIGO 2024"` · `"Cochrane (GRADE)"` · `"EULAR LoE/SoR"` · `"AHA/ASA COR-LOE"`. **Mô tả thiết kế KHÔNG phải phân hạng**: *"RCT đa trung tâm, mù đôi"* là tự chấm, không phải `gradeBy`. |
+| `normativeBasis` | `decision:'apply'` **trên** `gradeLevel:'na'` | Loại quy phạm: `contraindication` · `drug-label` · `official-classification` · `guideline-strong-rec` · `guideline-explicit-criteria`. Chỉ hợp lệ khi `design` là Guideline/Nhãn thuốc — **`Consensus` KHÔNG BAO GIỜ đủ** (BH03). |
+
+**Vì sao nghiêm:** đo toàn kho 14/08/2026 — **530 item có `gradeLevel` khác `na`, 249 (47%)
+không truy được về tổ chức nào đã chấm**; 128 mục lấy mô tả thiết kế làm lý do; **56 mục tự
+khai "nguồn không cung cấp phân hạng" mà VẪN mang mức** (đã đưa về `na`). `gradeLevel` là thứ
+bác sĩ **hành động theo**, nên một mức không truy được nguồn gây hại ở MỌI lần đọc.
+Không xác định được ai chấm ⇒ **để `na`**, đừng đoán.
+Soi phần còn tồn: `python tools/kiem_phan_hang.py`.
+
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; giữ grading gốc; dùng đúng công cụ RoB theo thiết kế (RoB 2 RCT · ROBINS-I V2/ROBINS-E quan sát · AMSTAR-2 SR · QUADAS-3 chẩn đoán); chọn đúng biến thể GRADE (can thiệp/test/tiên lượng/ADOLOPMENT); tách chứng cứ vs khuyến cáo; không bịa số. Kết: **"Cần bác sĩ kiểm chứng."**
 
@@ -157,6 +173,32 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
 ```
 
+<!-- EBM-CHUAN-QUOC-TE-2026 -->
+## AGREE II — THẨM ĐỊNH CHÍNH GUIDELINE, đừng tin theo thương hiệu
+
+**Khoảng trống đo được 14/08/2026:** AGREE II xuất hiện ở **1/50 agent** (và đó là file rubric
+QA nội bộ, không phải agent thẩm định). Trong khi `cap-nhat-guideline` nhắc "guideline" 16 lần,
+`huong-dan-lam-sang` 19 lần, `tra-cuu-chung-cu` 13 lần — **không agent nào có công cụ thẩm định
+chất lượng guideline**. Tức hệ đang tin guideline theo TÊN TỔ CHỨC.
+
+Điều đó nguy hiểm hơn kể từ 14/08, khi watchlist mở thêm 4 kênh gọi thẳng tên **Cochrane ·
+NICE · USPSTF · WHO** — hệ sẽ hút về NHIỀU guideline hơn, tất cả đều "có thương hiệu".
+
+**AGREE II** (Brouwers và cs., PMID **20656455**, J Clin Epidemiol 2010,
+doi:10.1016/j.jclinepi.2010.07.001) — 23 mục, 6 lĩnh vực. Với công việc ngoại trú, lĩnh vực
+quyết định là **Miền 3 — Rigour of Development** (phương pháp tìm chứng cứ, tiêu chí chọn,
+cách nối chứng cứ với khuyến cáo, bình duyệt ngoài, quy trình cập nhật). Một khuyến cáo của
+hiệp hội lớn nhưng Miền 3 yếu thì bản chất là **đồng thuận chuyên gia có logo**, không phải
+khuyến cáo dựa chứng cứ — và cổng đã có sẵn cách nói điều đó: `design:'Consensus'`, thứ
+**KHÔNG BAO GIỜ** đủ để miễn trừ quy phạm (BH03).
+
+**AGREE-REX** bổ sung cho AGREE II ở chỗ AGREE II không chạm tới: độ tin cậy LÂM SÀNG của
+chính khuyến cáo. Dùng khi phải quyết một khuyến cáo có áp cho bệnh nhân Việt Nam được không.
+
+⚠️ Không chấm đủ 23 mục cho mọi guideline — không thực tế tại điểm khám. Tối thiểu: **nêu Miền
+3 có được mô tả hay không**, và nếu guideline không mô tả cách tìm/chọn chứng cứ thì ghi rõ
+điều đó cạnh khuyến cáo thay vì im lặng.
+
 <!-- EBM-MANDATORY-FINAL-GUARDRAIL -->
 ## Cổng bắt buộc trước khi trả lời
 
@@ -169,6 +211,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN

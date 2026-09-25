@@ -45,7 +45,7 @@
 | taskId native | Routine canonical | Cron (giờ địa phương) | Trạng thái (máy chủ = Mac) |
 |---|---|---|---|
 | `ebm-drug-safety` | `Scheduled/drug-safety-daily` | `0 7 * * 1,4` (T2 & T5, 07:00) | đăng ký trên Mac (gói sẵn) |
-| `ebm-giam-sat-chung-cu` | `Scheduled/giam-sat-chung-cu` | `20 19 * * 3` (T4, 19:20) | Tầng thẩm định candidate; lịch native Claude còn cần xác nhận. Tầng thu thập phần mềm dùng LaunchAgent `com.medicalebm.weeklysafety`/`monthlyupdate`; release vẫn BLOCKED tới khi deployment gate đủ UAT/runtime history. |
+| `ebm-giam-sat-chung-cu` | `Scheduled/giam-sat-chung-cu` | `20 19 * * 3` (T4, 19:20) | Tầng thẩm định candidate; lịch native Claude còn cần xác nhận. Tầng thu thập phần mềm nay chạy qua scheduled-task `thu-thap-tuan-an-toan-thuoc`/`cap-nhat-thang-ebm` (LaunchAgent cũ `com.medicalebm.weeklysafety`/`monthlyupdate` đã TẮT 15/08/2026, runs=0); release vẫn BLOCKED tới khi deployment gate đủ UAT/runtime history. |
 | `ebm-uptodate-tuan` | `Scheduled/uptodate` | `30 19 * * 6` (T7, 19:30) | đăng ký trên Mac (gói sẵn) |
 | `ebm-tu-kiem-dong-bo` | `Scheduled/tu-kiem-dong-bo` | `10 8 * * 0` (CN, 08:10) | đăng ký trên Mac (gói sẵn) |
 | `ebm-nckh-qy175` | `Scheduled/nckh` | — (ad-hoc, chạy tay) | manual |
