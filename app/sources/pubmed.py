@@ -6,6 +6,7 @@ publication type filter trong query.
 """
 from __future__ import annotations
 
+import re
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Optional
 
@@ -54,6 +55,38 @@ NAM_GUIDELINE = 5
 # KHÔNG phải «Guideline» (đo 25/09/2026, PMID 41358900) ⇒ chỉ dựa nhãn loại xuất bản sẽ bỏ sót chúng.
 GUIDELINE_FILTER = ('("guideline"[Publication Type] OR "practice guideline"[Publication Type] '
                     'OR "consensus statement"[Publication Type] OR "standards of care"[Title])')
+
+
+# LÀN GUIDELINE SỐNG theo chuỗi (thêm 25/09/2026). ADA Standards of Care in Diabetes ra MỘT ấn bản mỗi
+# năm, chia ~17 chương. Tiêu đề chương không ghi «type 2», nên làn guideline theo relevance bỏ sót cả
+# chương 9 «Pharmacologic Approaches to Glycemic Treatment» (đo sống: không lọt 20 bài đầu cho truy vấn
+# «type 2 diabetes»; chuẩn vàng trượt nhóm này). Làn này lấy thẳng chuỗi, chỉ giữ ẤN BẢN MỚI NHẤT,
+# bỏ đính chính/tóm tắt sửa đổi/lời giới thiệu, lấy SO_CHUONG_CHUOI chương sát nhất theo relevance.
+_CHUOI_GUIDELINE_SONG = {
+    "diabetes": '"standards of care"[Title] AND diabetes[Title] AND "Diabetes care"[Journal]',
+    "diabetic": '"standards of care"[Title] AND diabetes[Title] AND "Diabetes care"[Journal]',
+}
+SO_CHUONG_CHUOI = 2
+_VUNG_CHUOI = 40
+_MAU_AN_BAN = re.compile(r"standards of care in diabetes\W*(\d{4})", re.I)
+_KHONG_PHAI_CHUONG = re.compile(
+    r"^\s*(erratum|correction|summary of revisions|introduction|\d+\.\s*diabetes advocacy)", re.I)
+
+
+def chon_chuong_moi_nhat(records: List[RawRecord], thu_tu: List[str],
+                         so: int = SO_CHUONG_CHUOI) -> List[str]:
+    """PMID các chương thuộc ẤN BẢN MỚI NHẤT của chuỗi, theo thứ tự relevance `thu_tu`, tối đa `so`.
+    Năm ấn bản đọc từ TIÊU ĐỀ («…Standards of Care in Diabetes—2026»), không đoán theo năm hiện tại."""
+    theo_pmid = {r.pmid: r for r in records if r.pmid in set(thu_tu)}
+    an_ban: Dict[str, int] = {}
+    for pmid, r in theo_pmid.items():
+        m = _MAU_AN_BAN.search(r.title or "")
+        if m and not _KHONG_PHAI_CHUONG.search(r.title or ""):
+            an_ban[pmid] = int(m.group(1))
+    if not an_ban:
+        return []
+    moi_nhat = max(an_ban.values())
+    return [p for p in thu_tu if an_ban.get(p) == moi_nhat][:so]
 
 
 def hang_do_manh(pubtypes: List[str], tieu_de: str = "") -> int:
@@ -105,21 +138,26 @@ def _tieu_de_sat(tieu_de: str, tu: List[str]) -> bool:
 
 
 def xep_theo_do_manh(records: List[RawRecord], query: str = "",
-                     thu_tu_lien_quan: Optional[Dict[str, int]] = None) -> List[RawRecord]:
+                     thu_tu_lien_quan: Optional[Dict[str, int]] = None,
+                     sat_chu_de_san: Optional[set] = None) -> List[RawRecord]:
     """Xếp ổn định theo: hạng độ mạnh ↑ → TIÊU ĐỀ chứa đủ từ khoá chủ đề (sát chủ đề trước) →
     thứ tự relevance của PubMed (làn guideline) → NĂM ↓ → thứ tự gốc.
 
     Vì sao «sát chủ đề» đứng trước «năm» (đo 25/09/2026): xếp năm trước kéo lên các guideline
     2026 LẠC ĐỀ chỉ nhắc từ khoá trong tóm tắt (lọc máu, migraine, CKD ở mèo cho truy vấn tăng
-    huyết áp) và đẩy guideline suy tim AHA/ACC/HFSA 2022 xuống cuối."""
+    huyết áp) và đẩy guideline suy tim AHA/ACC/HFSA 2022 xuống cuối.
+
+    `sat_chu_de_san`: PMID đã được chọn VÌ chủ đề (chương chuỗi guideline sống) ⇒ coi là sát chủ đề
+    dù tiêu đề không chứa đủ từ khoá (chương ADA không ghi «type 2»)."""
     tu = _tu_chu_de(query)
     lien_quan = thu_tu_lien_quan or {}
+    san = sat_chu_de_san or set()
 
     def khoa(cap):
         i, r = cap
         nam = str(r.publication_date or "")[:4]
         tieu_de = (r.title or "").lower()
-        sat = _tieu_de_sat(tieu_de, tu)
+        sat = r.pmid in san or _tieu_de_sat(tieu_de, tu)
         return (hang_do_manh((r.raw or {}).get("publication_types") or [], r.title or ""),
                 0 if sat else 1,
                 lien_quan.get(r.pmid or "", len(lien_quan) + 1),
@@ -318,10 +356,14 @@ class PubMedClient(SourceClient):
         data = self.http.get_json(ESEARCH, params=params)
         ids = data.get("esearchresult", {}).get("idlist", [])
         lien_quan: Dict[str, int] = {}
+        ids_chuoi: List[str] = []
+        chi_tu_chuoi: set = set()
         if chon_manh:
             ids_gl = self._ids_guideline(query, since_date)
             lien_quan = {pmid: k for k, pmid in enumerate(ids_gl)}
-            ids = list(dict.fromkeys(ids_gl + list(ids)))  # bỏ trùng, giữ thứ tự (guideline trước)
+            ids_chuoi = self._ids_chuoi_song(query, since_date)
+            chi_tu_chuoi = set(ids_chuoi) - set(ids_gl) - set(ids)
+            ids = list(dict.fromkeys(ids_gl + list(ids) + ids_chuoi))  # bỏ trùng, guideline trước
         if not ids:
             return []
         fetch_params = {
@@ -334,8 +376,32 @@ class PubMedClient(SourceClient):
         self.save_raw(query, xml_text)
         records = self._parse_efetch(xml_text, clinical_area, query)
         if chon_manh:
-            records = xep_theo_do_manh(records, query, lien_quan)[:max_results]
+            chon = set(chon_chuong_moi_nhat(records, ids_chuoi))
+            # Chương cũ/không được chọn mà CHỈ đến từ làn chuỗi thì bỏ, để ~40 chương không chiếm top.
+            records = [r for r in records if r.pmid not in chi_tu_chuoi or r.pmid in chon]
+            records = xep_theo_do_manh(records, query, lien_quan, chon)[:max_results]
         return records
+
+    def _ids_chuoi_song(self, query: str, since_date: Optional[str]) -> List[str]:
+        """Làn guideline sống theo chuỗi (hiện có ADA Standards of Care) — chỉ chạy khi truy vấn có từ
+        chủ đề khớp khoá trong `_CHUOI_GUIDELINE_SONG`. Lỗi ⇒ [] kèm log (làn phụ)."""
+        from datetime import date
+        tu = set(_tu_chu_de(query))
+        ra: List[str] = []
+        for loc in dict.fromkeys(v for k, v in _CHUOI_GUIDELINE_SONG.items() if k in tu):
+            params = {"db": "pubmed", "term": loc, "retmax": _VUNG_CHUOI, "retmode": "json",
+                      "email": settings.ncbi_email, "sort": "relevance", "datetype": "pdat",
+                      "maxdate": "3000/01/01",
+                      "mindate": (since_date.replace("-", "/") if since_date
+                                  else f"{date.today().year - 1}/01/01")}
+            if settings.ncbi_api_key:
+                params["api_key"] = settings.ncbi_api_key
+            try:
+                data = self.http.get_json(ESEARCH, params=params)
+                ra += list(data.get("esearchresult", {}).get("idlist", []))
+            except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
+                logger.warning("[pubmed] làn chuỗi guideline sống lỗi: %s", exc)
+        return list(dict.fromkeys(ra))
 
     def _ids_guideline(self, query: str, since_date: Optional[str]) -> List[str]:
         """Làn guideline: VUNG_GUIDELINE bài guideline/consensus SÁT CHỦ ĐỀ NHẤT (sort=relevance)
