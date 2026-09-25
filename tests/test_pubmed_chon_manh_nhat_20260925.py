@@ -115,3 +115,61 @@ def test_since_date_ap_cho_ca_lan_guideline(client, monkeypatch):
     client.search("hypertension", max_results=2, since_date="2026-09-01")
     gl = [g for g in client.http.goi if g["sort"] == "relevance"][0]
     assert gl["mindate"] == "2026/09/01"
+
+
+# ── Làn chuỗi guideline sống: ADA Standards of Care (25/09/2026) ─────────────────────────────
+BAI.update({
+    "20": ("9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
+           2026, ["Journal Article", "Review"]),
+    "21": ("2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
+           2026, ["Journal Article", "Review"]),
+    "22": ("9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2025.",
+           2025, ["Journal Article", "Review"]),
+    "23": ("Summary of Revisions: Standards of Care in Diabetes-2026.", 2026, ["Journal Article"]),
+    "24": ("Erratum. 7. Diabetes Technology: Standards of Care in Diabetes-2026.", 2026,
+           ["Published Erratum"]),
+    "25": ("Guideline on thyroid nodules in adults", 2026, ["Practice Guideline"]),   # lạc đề
+    "26": ("Management of type 2 diabetes: consensus report", 2022, ["Consensus Statement"]),
+})
+
+
+class _HttpChuoi(_HttpGia):
+    def __init__(self, ids_moi, ids_gl, ids_chuoi):
+        super().__init__(ids_moi, ids_gl)
+        self.ids_chuoi = ids_chuoi
+
+    def get_json(self, url, params=None, **kw):
+        if '"Diabetes care"[Journal]' in params.get("term", ""):
+            self.goi.append(dict(params))
+            return {"esearchresult": {"idlist": self.ids_chuoi[: params["retmax"]]}}
+        return super().get_json(url, params, **kw)
+
+
+def _rec(i):
+    return RawRecord(source="pubmed", title=BAI[i][0], pmid=i, publication_date=str(BAI[i][1]),
+                     raw={"publication_types": BAI[i][2]})
+
+
+def test_chon_chuong_chi_an_ban_moi_nhat_bo_dinh_chinh_va_tom_tat():
+    thu_tu = ["22", "23", "20", "24", "21"]
+    assert P.chon_chuong_moi_nhat([_rec(i) for i in thu_tu], thu_tu) == ["20", "21"]
+    assert P.chon_chuong_moi_nhat([_rec(i) for i in thu_tu], thu_tu, so=1) == ["20"]
+    assert P.chon_chuong_moi_nhat([_rec("25")], ["25"]) == []
+
+
+def test_chuong_ada_khong_ghi_type2_van_dung_truoc_guideline_lac_de(client, monkeypatch):
+    monkeypatch.setattr(settings, "pubmed_chon_manh_nhat", True)
+    client.http = _HttpChuoi(ids_moi=["1"], ids_gl=["26", "25"], ids_chuoi=["22", "20", "23", "21", "24"])
+    out = [r.pmid for r in client.search("type 2 diabetes", max_results=10)]
+    assert out.index("20") < out.index("25") and out.index("21") < out.index("25")
+    assert "22" not in out and "23" not in out and "24" not in out   # ấn bản cũ/không phải chương bị bỏ
+    chuoi = [g for g in client.http.goi if '"Diabetes care"[Journal]' in g.get("term", "")]
+    assert len(chuoi) == 1                                           # hai khoá cùng bộ lọc ⇒ gọi 1 lần
+
+
+def test_lan_chuoi_khong_chay_voi_chu_de_khac(client, monkeypatch):
+    monkeypatch.setattr(settings, "pubmed_chon_manh_nhat", True)
+    client.http = _HttpChuoi(ids_moi=["1"], ids_gl=["3"], ids_chuoi=["20"])
+    out = [r.pmid for r in client.search("hypertension", max_results=10)]
+    assert "20" not in out
+    assert not [g for g in client.http.goi if '"Diabetes care"[Journal]' in g.get("term", "")]
