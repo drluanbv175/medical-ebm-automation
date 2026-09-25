@@ -113,6 +113,9 @@ def moi_truong(monkeypatch, tmp_path):
         consensus_lookback_years=10, use_mock_sources=True,
         fallback_min_trusted=3, fallback_min_evidence=60, fallback_keep_unverified=False,
         enable_scite_verification=True,
+        # Vá 25/09/2026: phiên Cloud có đặt KHOA_QUA_PROXY ⇒ nhánh «khoá gắn qua proxy» làm 4 test «thiếu khoá» đỏ
+        # giả. Test nào cần chế độ proxy tự đặt lại (xem test_khoa_qua_proxy_*).
+        khoa_qua_proxy="",
     ).items():
         monkeypatch.setattr(settings, khoa, gia_tri)
     monkeypatch.setattr(settings, "data_dir", tmp_path / "data")
