@@ -41,6 +41,11 @@ This file contains only Claude Code-specific instructions.
   scopus · consensus; riêng semantic_scholar HTTP 429 (không khoá, nhịp thấp — không phải proxy chặn). Chuỗi rút bài
   3 tầng chạy thật tới tầng PubMed. Lệnh `curl` trực tiếp từ Bash vẫn bị hook runtime đòi duyệt egress — đo bằng
   `run.py test-live`, đừng kết luận «mạng chặn» từ curl. Mỗi `test-live consensus` tốn 1 lượt hạn mức tháng.
+  Feed/lane guideline + an toàn thuốc (đo cùng ngày qua `RSSFeedClient.search()` cho TỪNG mục của
+  `DRUG_SAFETY_FEEDS` + `GUIDELINE_FEEDS`, hiện 80 mục): **79/80 trả bài thật**, 0 mock (crossref 35 · crossref_title 21 ·
+  rss 17 · europepmc 5 · who_iris 1 · kcb_vn 1). Mục duy nhất 0 bài là `fda_medwatch`: www.fda.gov trả HTTP 401 cho truy
+  cập tự động; `search()` trả `[]` nhưng `_fetch()` của ingestion đọc bộ đếm lỗi HttpClient nên vẫn ghi `error` (không
+  xanh giả). MedWatch không có API openFDA tương đương (khác `fda_recalls` đã có dự phòng enforcement) — giới hạn đã biết.
   Đoạn mô tả 24/09 giữ lại làm lịch sử: Môi trường Cloud «Default — **Trusted** network access»:
   proxy thoát mạng TỪ CHỐI (CONNECT 403, chính sách) MỌI host API y văn — NCBI, `www.ebi.ac.uk`,
   `api.crossref.org`, OpenAlex, ClinicalTrials.gov, openFDA, Semantic Scholar, CORE, WHO IRIS,
