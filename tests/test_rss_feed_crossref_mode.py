@@ -84,6 +84,22 @@ def test_society_guideline_journals_are_covered_through_crossref():
         assert theo_id[i].mode == "crossref", i
 
 
+# Thêm 24/09/2026: 4 feed RSS BMJ bị Cloudflare 429 (Cloud + Mac) ⇒ chuyển Crossref-ISSN. ISSN đối chiếu thật với
+# api.crossref.org/journals/{issn} (publisher BMJ) — không đoán.
+BMJ_429_20260924 = {"heart_bmj": "1468-201X", "gut_bmj": "1468-3288", "fg_bmj": "2041-4145", "thorax_bmj": "1468-3296"}
+
+
+def test_the_4_bmj_feeds_blocked_by_cloudflare_429_use_crossref_with_the_verified_issn():
+    theo_id = {f.id: f for f in GUIDELINE_FEEDS}
+    for i, issn in BMJ_429_20260924.items():
+        assert theo_id[i].mode == "crossref", i
+        assert theo_id[i].issn == issn, i
+        assert RSSFeedClient(theo_id[i]).endpoint == f"https://api.crossref.org/works?filter=issn:{issn}"
+    # Tên/tổ chức/lĩnh vực giữ nguyên — SourceLog và authority.FEED_TO_AUTHORITY vẫn khớp feed_<id>.
+    assert theo_id["thorax_bmj"].clinical_area == "Hô hấp"
+    assert theo_id["gut_bmj"].org == "Gut (BMJ)"
+
+
 def test_bmj_and_cochrane_use_the_electronic_issn_because_the_print_issn_returns_no_recent_articles():
     theo_id = {f.id: f for f in GUIDELINE_FEEDS}
     assert theo_id["bmj_recent"].issn == "1756-1833"

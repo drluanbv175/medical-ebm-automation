@@ -4,7 +4,7 @@ Cung cấp các lệnh: init, seed, run, report, export, scheduler.
 """
 from __future__ import annotations
 
-from typing import Dict
+from typing import Dict, Optional
 
 from app.database import init_db
 from app.reports import (
@@ -202,14 +202,28 @@ def _build_source_map():
     return _SOURCE_MAP
 
 
+# Truy vấn mặc định THEO NGUỒN cho `test-live` khi không gõ từ khoá. openFDA FAERS tìm theo TÊN
+# THUỐC (patient.drug.medicinalproduct) — cụm «atrial fibrillation guideline 2024» luôn trả 404
+# NOT_FOUND nên không kiểm được gì (đo 24/09/2026: «metformin» ⇒ 5 kết quả, khoá «FDA CHAP NHAN»).
+TRUY_VAN_TEST_LIVE_CHUNG = "atrial fibrillation guideline 2024"
+TRUY_VAN_TEST_LIVE_THEO_NGUON = {"openfda": "metformin"}
+
+
+def truy_van_test_live_mac_dinh(source: str) -> str:
+    return TRUY_VAN_TEST_LIVE_THEO_NGUON.get(source, TRUY_VAN_TEST_LIVE_CHUNG)
+
+
 def cmd_test_live(source: str = "europepmc",
-                  query: str = "atrial fibrillation guideline 2024",
+                  query: Optional[str] = None,
                   clinical_area: str = "Tim mạch", limit: int = 5) -> Dict:
     """Gọi MỘT nguồn ở chế độ API THẬT (bỏ qua USE_MOCK_SOURCES) và chấm điểm thử.
 
     Không ghi vào DB; chỉ trả kết quả để kiểm chứng kết nối + pipeline scoring.
     Khuyến nghị dùng nguồn không cần key: europepmc, crossref, clinicaltrials.
+    `query=None` ⇒ truy vấn mặc định hợp với nguồn (openfda: một tên thuốc).
     """
+    if not query:
+        query = truy_van_test_live_mac_dinh(source)
     smap = _build_source_map()
     if source not in smap:
         return {"error": f"Nguồn '{source}' không hợp lệ. Chọn: {list(smap)}"}
@@ -244,7 +258,11 @@ def cmd_test_live(source: str = "europepmc",
                            "quả này để kết luận nguồn đang chạy.")
     http = getattr(client, "http", None)
     loi_mang = getattr(http, "last_error", "") if http is not None else ""
-    if loi_mang and not results:
+    if getattr(client, "khong_khop", False):
+        # 404 NOT_FOUND của openFDA = truy vấn hợp lệ, 0 bản ghi khớp — KHÔNG phải lỗi mạng.
+        out["ghi_chu"] = ("openFDA trả 404 NOT_FOUND = 0 báo cáo FAERS khớp truy vấn này (không phải "
+                          "lỗi mạng). openFDA tìm theo TÊN THUỐC, vd: run.py test-live openfda metformin")
+    elif loi_mang and not results:
         out["loi_goi_mang"] = loi_mang  # đã che khoá bởi HttpClient._record_terminal_failure
     if source == "openfda":
         # Chỉ báo TRẠNG THÁI — tuyệt đối không in giá trị khoá. Để bác sĩ xác nhận khoá đã nạp VÀ

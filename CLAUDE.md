@@ -452,6 +452,20 @@ This file contains only Claude Code-specific instructions.
   khoản sử dụng đã khảo sát — bản khảo sát đi qua công cụ tóm tắt AI (WebFetch), nên trước khi
   coi đây là căn cứ pháp lý chính thức, nên đọc lại bằng trình duyệt thật.
 
+  · **Vá 24/09/2026 (đo lại nguồn trên Cloud — audit/15 §7quinquies ở repo EBM).** (1) **Toàn văn guideline hết «mồ côi»:**
+  lệnh `python3 tools/toan_van_guideline.py gold|gina [--url …] · pmc <PMCID> · bts <URL PDF brit-thoracic.org.uk> ·
+  trich-dan --doi|--pmid` + `--tim "<cụm từ>"` (lặp được; tìm TOÀN BỘ tài liệu, trả vị trí ký tự + số trang), `--luu`
+  (chỉ NGOÀI repo), `--json`. In metadata (tổ chức · URL · năm/phiên bản suy từ URL · số ký tự/trang · SHA-256 tệp · ngày
+  tải) + ghi chú bản quyền, KHÔNG in toàn văn. Mã thoát 0 tải được · 1 `--tim` không khớp · 2 lỗi/bị chặn (gợi ý
+  `trich-dan` nếu có DOI/PMID) · 3 cờ tắt · 4 từ chối (NICE, domain chưa khảo sát, PMCID sai). Đo thật 24/09: GOLD 2026
+  v1.3 = 248 trang/961.723 ký tự, GINA 2026 = 298 trang/1.040.956 ký tự (mặc định cũ 200.000 ký tự chỉ phủ ~1/5 —
+  `trich_van_ban_tu_pdf` giữ mặc định nhưng nay báo `bi_cat`, `gioi_han_ky_tu=None` = toàn bộ). Cờ tắt trên Cloud
+  (`CLAUDE_CODE_REMOTE=true`) nay chỉ sang cài đặt môi trường Cloud + phiên mới; cờ vẫn TẮT mặc định. (2) **Cổng triển
+  khai** dò gốc repo EBM ở bố cục lồng hoặc anh em (`../EBM-drluanbv175`, hoặc `EBM_REPO_ROOT`); vắng repo EBM /
+  `EBM-Dashboards` / `EBM_MASTER`+`dashboard_mockups` (chỉ có trên OneDrive) ⇒ `NOT_MEASURED` và trạng thái tổng
+  `MEASUREMENT_INCOMPLETE` — không FAIL giả, không bao giờ READY. Canary scanner `--max 20`; bản vendor chạy trong hộp
+  cát tạm (không ghi alert/khoá vào cây repo EBM). (3) `test-live openfda` mặc định «metformin»; 404 NOT_FOUND = 0 kết
+  quả, không phải lỗi mạng. (4) 4 feed BMJ (heart/gut/fg/thorax) sang Crossref-ISSN (Cloudflare 429).
 ---
 
 ## 0.1 Current Active Subproject: Chronic Care Clinic OS

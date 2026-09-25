@@ -40,7 +40,11 @@ from typing import List, Optional
 from app.config import settings
 from app.sources.guideline_fulltext_common import (
     GHI_CHU_BAN_QUYEN_CHUAN,
+    GIOI_HAN_KY_TU_MAC_DINH,
+    ConnectorChuaBat,
     KetQuaToanVanGuideline,
+    sha256_hex,
+    thong_diep_co_tat,
     trich_van_ban_tu_pdf,
 )
 from app.utils.http import HttpClient
@@ -77,10 +81,7 @@ class GoldCopdFullTextClient:
 
     def __init__(self) -> None:
         if not settings.enable_gold_copd_fulltext:
-            raise RuntimeError(
-                "[gold_copd] ENABLE_GOLD_COPD_FULLTEXT chưa bật — đặt true trong "
-                "~/.ebm-secrets/medical-ebm-automation.env để dùng connector này."
-            )
+            raise ConnectorChuaBat(thong_diep_co_tat("gold_copd", "ENABLE_GOLD_COPD_FULLTEXT"))
         self.http = HttpClient()
 
     def tim_url_bao_cao_moi_nhat(self) -> Optional[str]:
@@ -146,7 +147,8 @@ class GoldCopdFullTextClient:
                 da_thay.append(url)
         return da_thay
 
-    def tai_toan_van_pdf(self, url: Optional[str] = None) -> KetQuaToanVanGuideline:
+    def tai_toan_van_pdf(self, url: Optional[str] = None,
+                         gioi_han_ky_tu: Optional[int] = GIOI_HAN_KY_TU_MAC_DINH) -> KetQuaToanVanGuideline:
         """Tải + trích văn bản từ báo cáo GOLD. `url=None` ⇒ tự tìm bản mới nhất qua
         `tim_url_bao_cao_moi_nhat()`. KHÔNG bịa kết quả khi lỗi — `thanh_cong=False`
         kèm `ghi_chu` giải thích rõ, không quy hết về một thông điệp chung chung."""
@@ -167,7 +169,8 @@ class GoldCopdFullTextClient:
                 to_chuc="GOLD", url_nguon=url, thanh_cong=False, ghi_chu=str(exc),
             )
 
-        van_ban = trich_van_ban_tu_pdf(pdf_bytes)
+        thong_tin: dict = {}
+        van_ban = trich_van_ban_tu_pdf(pdf_bytes, gioi_han_ky_tu=gioi_han_ky_tu, thong_tin=thong_tin)
         if not van_ban:
             return KetQuaToanVanGuideline(
                 to_chuc="GOLD", url_nguon=url, thanh_cong=False,
@@ -179,4 +182,9 @@ class GoldCopdFullTextClient:
             to_chuc="GOLD", url_nguon=url, thanh_cong=True,
             van_ban_trich=van_ban, so_trang_hoac_ky_tu=len(van_ban),
             ghi_chu_ban_quyen=GHI_CHU_BAN_QUYEN_CHUAN,
+            bi_cat=bool(thong_tin.get("bi_cat")), so_trang_pdf=thong_tin.get("so_trang_pdf"),
+            moc_trang=list(thong_tin.get("moc_trang") or []), sha256_nguon=sha256_hex(pdf_bytes),
+            ghi_chu=(f"Văn bản ĐÃ BỊ CẮT ở {gioi_han_ky_tu} ký tự — phần sau của tài liệu KHÔNG có trong "
+                     "kết quả; muốn đọc/tìm toàn bộ thì truyền gioi_han_ky_tu=None."
+                     if thong_tin.get("bi_cat") else None),
         )
