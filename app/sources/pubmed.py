@@ -38,6 +38,95 @@ PUBTYPE_FILTER = (
     'OR "practice guideline"[Publication Type])'
 )
 
+# ★ LẤY ĐỦ RỒI CHỌN MẠNH NHẤT (vá 25/09/2026, audit/15 §7sexies). Trước đây `_live_search` sắp
+# PubMed theo NGÀY rồi cắt `max_results` bài đầu ⇒ trả «10 bài mới nhất», không phải «10 bài mạnh
+# nhất». Đo sống 24/09 trên 6 bệnh ngoại trú (THA · suy tim · rung nhĩ · ĐTĐ2 · COPD · CKD): 0/15
+# guideline chuẩn 2023–2026 lọt vào kết quả; 4/6 chủ đề có 7–8/10 bài tier C (suy tim khớp 23.502
+# bài nên 10 bài mới nhất gần như luôn là tổng quan nhỏ vừa lên mạng). Cùng lỗi đã vá ở
+# `surveillance_scan.py` (phương án B, 24/09). Nay khi dùng bộ lọc mặc định: lấy một VÙNG rộng
+# (VUNG_MOI_NHAT bài mới nhất + VUNG_GUIDELINE guideline sát chủ đề nhất theo relevance trong
+# NAM_GUIDELINE năm, hoặc trong cửa sổ since_date nếu có), xếp theo độ mạnh rồi mới cắt.
+# Tắt bằng PUBMED_CHON_MANH_NHAT=false (quay về hành vi cũ).
+VUNG_MOI_NHAT = 100
+VUNG_GUIDELINE = 20
+NAM_GUIDELINE = 5
+# «Standards of Care»[ti]: các chương ADA Standards of Care in Diabetes được PubMed gắn nhãn «Review»,
+# KHÔNG phải «Guideline» (đo 25/09/2026, PMID 41358900) ⇒ chỉ dựa nhãn loại xuất bản sẽ bỏ sót chúng.
+GUIDELINE_FILTER = ('("guideline"[Publication Type] OR "practice guideline"[Publication Type] '
+                    'OR "consensus statement"[Publication Type] OR "standards of care"[Title])')
+
+
+def hang_do_manh(pubtypes: List[str], tieu_de: str = "") -> int:
+    """Hạng độ mạnh theo LOẠI XUẤT BẢN THẬT của PubMed (nhỏ = mạnh hơn).
+
+    0 guideline/practice guideline/consensus statement · 1 systematic review/meta-analysis ·
+    2 RCT · 3 khác. Bài đã bị rút (Retracted Publication) luôn xếp CUỐI (9) — vẫn trả về để
+    tầng kiểm rút bài phía sau gắn cờ, KHÔNG âm thầm vứt đi."""
+    j = " | ".join(p.lower() for p in pubtypes)
+    if "retracted publication" in j:
+        return 9
+    if "guideline" in j or "consensus statement" in j:
+        return 0
+    t = (tieu_de or "").lower()
+    if ("standards of care" in t and "published erratum" not in j
+            and not t.startswith(("correction", "erratum"))):
+        return 0  # ADA Standards of Care: PubMed gắn «Review» nhưng bản chất là guideline
+    if "meta-analysis" in j or "systematic review" in j:
+        return 1
+    if "randomized controlled trial" in j:
+        return 2
+    return 3
+
+
+_TU_BO_QUA = {"guideline", "guidelines", "management", "treatment", "therapy", "and", "the",
+              "for", "with", "adult", "adults", "patients", "clinical", "practice"}
+
+
+def _tu_chu_de(query: str) -> List[str]:
+    """Từ khoá CHỦ ĐỀ của truy vấn (bỏ thẻ PubMed, toán tử, từ chung chung như «guideline»)."""
+    import re
+    q = re.sub(r"\[[^\]]*\]", " ", query or "").lower()
+    return [t for t in re.findall(r"[a-z0-9]+", q)
+            if len(t) >= 3 and t not in _TU_BO_QUA and t not in {"not", "or"}]
+
+
+# Đồng nghĩa khi so TIÊU ĐỀ (chỉ các cặp phổ biến ở ngoại trú, đã gặp thật): guideline Mỹ 2025 về
+# huyết áp ghi «High Blood Pressure», không ghi «hypertension»; GOLD/ERS ghi tên đầy đủ của COPD.
+_DONG_NGHIA_TIEU_DE = {
+    "hypertension": ("hypertension", "blood pressure"),
+    "copd": ("copd", "chronic obstructive"),
+    "ckd": ("ckd", "chronic kidney"),
+    "afib": ("atrial fibrillation",),
+}
+
+
+def _tieu_de_sat(tieu_de: str, tu: List[str]) -> bool:
+    return bool(tu) and all(any(d in tieu_de for d in _DONG_NGHIA_TIEU_DE.get(t, (t,))) for t in tu)
+
+
+def xep_theo_do_manh(records: List[RawRecord], query: str = "",
+                     thu_tu_lien_quan: Optional[Dict[str, int]] = None) -> List[RawRecord]:
+    """Xếp ổn định theo: hạng độ mạnh ↑ → TIÊU ĐỀ chứa đủ từ khoá chủ đề (sát chủ đề trước) →
+    thứ tự relevance của PubMed (làn guideline) → NĂM ↓ → thứ tự gốc.
+
+    Vì sao «sát chủ đề» đứng trước «năm» (đo 25/09/2026): xếp năm trước kéo lên các guideline
+    2026 LẠC ĐỀ chỉ nhắc từ khoá trong tóm tắt (lọc máu, migraine, CKD ở mèo cho truy vấn tăng
+    huyết áp) và đẩy guideline suy tim AHA/ACC/HFSA 2022 xuống cuối."""
+    tu = _tu_chu_de(query)
+    lien_quan = thu_tu_lien_quan or {}
+
+    def khoa(cap):
+        i, r = cap
+        nam = str(r.publication_date or "")[:4]
+        tieu_de = (r.title or "").lower()
+        sat = _tieu_de_sat(tieu_de, tu)
+        return (hang_do_manh((r.raw or {}).get("publication_types") or [], r.title or ""),
+                0 if sat else 1,
+                lien_quan.get(r.pmid or "", len(lien_quan) + 1),
+                -(int(nam) if nam.isdigit() else 0), i)
+    return [r for _, r in sorted(enumerate(records), key=khoa)]
+
+
 # Bộ lọc nghiên cứu QUAN SÁT — dùng MeSH thay vì [Publication Type] vì PubMed KHÔNG có
 # publication type cho cohort/case-control/cross-sectional (đó là lý do bộ lọc cũ không
 # thể tìm ra chúng dù có muốn).
@@ -213,8 +302,10 @@ class PubMedClient(SourceClient):
                      max_results: int, since_date: Optional[str] = None,
                      pubtype_filter: Optional[str] = PUBTYPE_FILTER) -> List[RawRecord]:
         term = f"({query}) AND {pubtype_filter}" if pubtype_filter else f"({query})"
+        chon_manh = settings.pubmed_chon_manh_nhat and pubtype_filter == PUBTYPE_FILTER
         params = {
-            "db": "pubmed", "term": term, "retmax": max_results,
+            "db": "pubmed", "term": term,
+            "retmax": max(max_results, VUNG_MOI_NHAT) if chon_manh else max_results,
             "retmode": "json", "email": settings.ncbi_email, "sort": "date",
         }
         # Lọc theo ngày xuất bản: chỉ bài MỚI kể từ since_date.
@@ -226,6 +317,11 @@ class PubMedClient(SourceClient):
             params["api_key"] = settings.ncbi_api_key
         data = self.http.get_json(ESEARCH, params=params)
         ids = data.get("esearchresult", {}).get("idlist", [])
+        lien_quan: Dict[str, int] = {}
+        if chon_manh:
+            ids_gl = self._ids_guideline(query, since_date)
+            lien_quan = {pmid: k for k, pmid in enumerate(ids_gl)}
+            ids = list(dict.fromkeys(ids_gl + list(ids)))  # bỏ trùng, giữ thứ tự (guideline trước)
         if not ids:
             return []
         fetch_params = {
@@ -236,7 +332,29 @@ class PubMedClient(SourceClient):
             fetch_params["api_key"] = settings.ncbi_api_key
         xml_text = self.http.get_text(EFETCH, params=fetch_params)
         self.save_raw(query, xml_text)
-        return self._parse_efetch(xml_text, clinical_area, query)
+        records = self._parse_efetch(xml_text, clinical_area, query)
+        if chon_manh:
+            records = xep_theo_do_manh(records, query, lien_quan)[:max_results]
+        return records
+
+    def _ids_guideline(self, query: str, since_date: Optional[str]) -> List[str]:
+        """Làn guideline: VUNG_GUIDELINE bài guideline/consensus SÁT CHỦ ĐỀ NHẤT (sort=relevance)
+        trong cửa sổ since_date, hoặc NAM_GUIDELINE năm gần nhất. Lỗi ⇒ [] (làn phụ, không được
+        làm hỏng làn chính) — nhưng GHI LOG, không im lặng."""
+        from datetime import date
+        params = {"db": "pubmed", "term": f"({query}) AND {GUIDELINE_FILTER}",
+                  "retmax": VUNG_GUIDELINE, "retmode": "json", "email": settings.ncbi_email,
+                  "sort": "relevance", "datetype": "pdat", "maxdate": "3000/01/01",
+                  "mindate": (since_date.replace("-", "/") if since_date
+                              else f"{date.today().year - NAM_GUIDELINE}/01/01")}
+        if settings.ncbi_api_key:
+            params["api_key"] = settings.ncbi_api_key
+        try:
+            data = self.http.get_json(ESEARCH, params=params)
+            return list(data.get("esearchresult", {}).get("idlist", []))
+        except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
+            logger.warning("[pubmed] làn guideline lỗi — chỉ dùng làn mới nhất: %s", exc)
+            return []
 
     def _parse_efetch(self, xml_text: str, clinical_area: Optional[str],
                       query: str) -> List[RawRecord]:
@@ -270,6 +388,7 @@ class PubMedClient(SourceClient):
                 clinical_area=clinical_area, mesh_terms=mesh,
                 url=f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else None,
                 ingest_query=query, api_endpoint=EFETCH,
+                raw={"publication_types": pubtypes},
             ))
         return records
 
