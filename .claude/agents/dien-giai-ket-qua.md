@@ -28,7 +28,7 @@ Bất biến cứng: phân biệt ý nghĩa THỐNG KÊ với ý nghĩa LÂM SÀ
 KẾT QUẢ CHÍNH — Tóm tắt:
 Kết cục chính: ___
 Ước lượng hiệu ứng: ___ (95% CI: ___–___; p = ___)
-Loại ước lượng: ☐ MD ☐ OR ☐ RR ☐ HR ☐ SMD
+Loại ước lượng: ☐ MD ☐ OR ☐ RR ☐ HR ☐ SMD ☐ cOR (kết cục THỨ BẬC — xem khối riêng dưới)
 
 ════ Ý NGHĨA THỐNG KÊ ════
 ☐ Có ý nghĩa (p < 0,05; CI không cắt giá trị null)
@@ -44,6 +44,27 @@ MCID / ngưỡng quan trọng tối thiểu: ___ [nguồn: PMID/DOI hoặc [CẦ
 Kết luận được phép (theo thiết kế ___):
   ☐ Nghiên cứu CAN THIỆP → có thể suy nhân quả với giới hạn
   ☐ Nghiên cứu QUAN SÁT → CHỈ được nói LIÊN QUAN / KẾT HỢP (KHÔNG "X GÂY RA Y")
+```
+
+**KẾT CỤC THỨ BẬC — diễn giải cOR (thêm 2026-09-01, cùng đợt G6 sinh script
+proportional odds và G7 gợi ý phương pháp thứ bậc):**
+
+```
+cOR (common odds ratio, mô hình proportional odds) đọc là: tỷ số chênh CHUNG
+cho việc kết cục nằm ở MỨC CAO HƠN (trên bất kỳ ranh giới cắt nào của thang),
+với giả định tỷ số đó HẰNG ĐỊNH qua mọi ranh giới.
+
+Ba luật cứng khi diễn giải cOR:
+1. CHỈ diễn giải cOR sau khi kiểm proportional odds (Brant/so sánh
+   log-likelihood) KHÔNG vi phạm — vi phạm ở biến nào thì báo hệ số theo
+   TỪNG ranh giới cắt cho biến đó (partial proportional odds), KHÔNG lấy
+   một cOR duy nhất làm kết luận chính.
+2. KHÔNG tính NNT/NNH trực tiếp từ cOR — NNT cần kết cục NHỊ PHÂN; chỉ được
+   lấy từ nhánh độ nhạy gộp nhị phân (khi SAP cho phép và đủ ≥10 biến cố/
+   tham số), và phải nói rõ đó là ESTIMAND KHÁC với mô hình thứ bậc chính.
+3. Thiết kế có gom cụm (vd bàn khám): báo cOR với SE robust theo cụm hoặc
+   mô hình chặn ngẫu nhiên đúng như SAP khai (kèm ICC) — cOR không hiệu
+   chỉnh cụm sẽ hẹp KTC giả tạo.
 ```
 
 ---
@@ -226,6 +247,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN

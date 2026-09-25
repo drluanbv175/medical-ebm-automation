@@ -110,7 +110,7 @@ Mọi routine tuân hiến pháp liêm chính + headless fallback + connector PA
 ## 9. SẢN PHẨM PHÁI SINH TỰ TÍCH LŨY — Antifacts (mặt tiền theo CHUYÊN KHOA)
 Cuối vòng khép kín, ngoài 3 trang hub (`DANH_MUC` · `EBM_WEBAPP` · `EBM_LIENKET`), hệ sinh **`Antifacts.html`** (gốc "Claude AI") — mặt tiền gom MỌI sản phẩm EBM theo **chuyên khoa**: cập nhật chứng cứ + 45 thang điểm lâm sàng + công cụ nghiên cứu. Đây là điểm "đồng bộ với toàn hệ Agent": mọi dashboard/thẻ do 2 nhạc trưởng hoặc 6 routine sinh ra đều TÍCH LŨY về đây.
 - **Nguồn (chỉ đọc, KHÔNG bịa):** `EBM-Dashboards/WebDashboard_*.html` (+ `library.json`) · `medical-ebm-automation/data/reference/clinical_scores_45.json` · danh mục công cụ NC trong generator.
-- **Tự cập nhật TÍCH LŨY:** `EBM_MASTER/tools/sync_all.py` ở bước cuối tự chạy `build_library.py add` (làm giàu badge Áp dụng/Cân nhắc/PMID) → `build_antifacts.py`; 2 lịch launchd `com.medicalebm.weeklysafety`/`com.medicalebm.monthlyupdate` (nhãn KHÔNG gạch dưới) cũng gọi `build_antifacts`. Dashboard MỚI → vào Antifacts ở lần sync kế, ở hàng **"chờ bác sĩ duyệt"** (KHÔNG tự "áp dụng").
+- **Tự cập nhật TÍCH LŨY:** `EBM_MASTER/tools/sync_all.py` ở bước cuối tự chạy `build_library.py add` (làm giàu badge Áp dụng/Cân nhắc/PMID) → `build_antifacts.py`; 2 lịch launchd cũ đã TẮT từ 15/08/2026 — nay scheduled-task `ebm-antifacts-weekly` cũng gọi `build_antifacts`. Dashboard MỚI → vào Antifacts ở lần sync kế, ở hàng **"chờ bác sĩ duyệt"** (KHÔNG tự "áp dụng").
 - **Điều hướng 2 chiều:** 3 trang hub có nút "🛡️ Antifacts ↗"; Antifacts có link "↩ Hub EBM". Sửa bố cục = sửa generator (`tools/build_antifacts.py` · `gen_*.py`), KHÔNG sửa tay HTML (sẽ mất khi sync). Có skill `antifacts` (nguồn `sync/skills/antifacts/SKILL.md`) để gọi dựng+mở.
 
 ---
