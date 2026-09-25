@@ -40,7 +40,7 @@ def test_loi_engine_la_khong_do_duoc_khong_phai_truot():
 
 def test_ma_thoat(monkeypatch, tmp_path):
     tep = tmp_path / "c.json"
-    tep.write_text(json.dumps(CHUAN), encoding="utf-8")
+    tep.write_text(json.dumps(CHUAN), encoding="utf-8", newline="\n")
     monkeypatch.setattr(sys, "argv", ["x", "--tep", str(tep)])
     monkeypatch.setattr(M, "_tim_that", lambda q, n: ["1", "2", "3"])
     assert M.main() == 0
