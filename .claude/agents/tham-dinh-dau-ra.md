@@ -42,6 +42,8 @@ Gói đầu ra cần kiểm (toàn văn, kèm bảng nguồn nếu có) · loạ
 | **R2. PII** | KHÔNG lẫn thông tin định danh bệnh nhân (tên, ngày sinh, số hồ sơ/CCCD/BHYT, địa chỉ, SĐT, ảnh nhận dạng) | Phát hiện bất kỳ PII nào trong gói |
 | **R3. Cổng A/B/G + quyền owner** | Không tự "áp dụng cho BN" / không tự "ghi EBM_MASTER đã xác minh" / không vượt G2·G4·**G5 (khóa DB)**·**G8 (bình duyệt độc lập)**·G9·G10 khi chưa duyệt; plugin chỉ là worker theo `_PLUGIN-ROUTING-CONTRACT.md` | Gói tự kết luận "áp dụng/đã ghi/đã khóa/đã đăng ký/đã bình duyệt" hoặc **"đã phân tích" khi DB chưa khóa**; plugin tự nhận owner/tự mở cổng hoặc thiếu owner nội bộ |
 | **R4. Không tự gán mức** | Không tự gán GRADE hay độ mạnh khuyến cáo khi nguồn không cung cấp (`gradeLevel:'na'` khi thiếu); **dùng ĐÚNG công cụ RoB theo thiết kế:** RoB 2→RCT · ROBINS-I (ưu tiên V2 — vẫn DRAFT, bản sửa đổi mới nhất 20/11/2025 theo riskofbias.info; SỬA 2026-07-23 vòng 14, đồng bộ tham-dinh-grade-nnt.md — mốc cũ "11/2024" là bản draft đã bị thay)→quan sát can thiệp · ROBINS-E→phơi nhiễm/nguyên nhân · AMSTAR-2→SR · QUADAS-3 (SỬA 2026-07-23 vòng 14, đồng bộ tham-dinh-grade-nnt.md/tong-quan-y-van.md — thay QUADAS-2, Whiting PF et al., Ann Intern Med, doi:10.7326/ANNALS-25-02104; QUADAS-2 chỉ tương thích ngược cho review cũ)→chẩn đoán; **chọn ĐÚNG biến thể GRADE:** can thiệp→GRADE chuẩn · test→GRADE guidelines 21–22 · tiên lượng→GRADE prognosis · thích ứng guideline→GRADE-ADOLOPMENT | Tự dán "GRADE cao / khuyến cáo mạnh" không từ nguồn; dùng sai công cụ RoB (vd RoB 2 cho quan sát; ROBINS-I cho phơi nhiễm/etiology thay vì ROBINS-E; bản ROBINS-I 2016 lỗi thời thay vì V2; QUADAS-2 khi không cần tương thích ngược thay vì QUADAS-3); áp sai biến thể GRADE cho thiết kế |
+| **R4b. Truy được AI CHẤM** | Mọi `gradeLevel` khác `na` phải kèm `gradeBy` (tên tổ chức/hệ đã chấm: KDIGO 2024 · Cochrane (GRADE) · EULAR LoE/SoR · AHA/ASA COR-LOE). Đo 14/08/2026: **249/530 mức (47%) không truy được về tổ chức nào**; 128 mục lấy MÔ TẢ THIẾT KẾ làm lý do. Không xác định được ⇒ để `na`. Soi: `python tools/kiem_phan_hang.py` | Ghi `high` với lý do *"RCT đa trung tâm, mù đôi"* — đó là tự chấm của người soạn, không phải phân hạng của nguồn |
+| **R4c. Quy phạm phải KHAI** | `decision:'apply'` trên `gradeLevel:'na'` chỉ hợp lệ khi khai `normativeBasis` (contraindication · drug-label · official-classification · guideline-strong-rec · guideline-explicit-criteria) VÀ `design` là Guideline/Nhãn thuốc. **`Consensus` không bao giờ đủ** (BH03) | Dán nhãn quy phạm lên một văn bản `Consensus`; hoặc hạ một chống chỉ định/cảnh báo nhãn thuốc xuống `consider` để "cho qua cổng" — làm GIẢM an toàn |
 | **R5. Tách 2 trục** | Phân biệt rõ **độ chắc chắn CHỨNG CỨ** (certainty) vs **độ mạnh KHUYẾN CÁO** (strong/conditional) | Trộn hai khái niệm khiến hiểu sai sức nặng khuyến cáo |
 | **R6. Nhãn thiếu** | Dùng đúng `[CẦN BỔ SUNG]/[CẦN KIỂM CHỨNG]/[CẦN XÁC NHẬN TẠI ĐƠN VỊ]/[DỰ THẢO]` ở chỗ thiếu/chưa chắc | Lấp chỗ thiếu bằng phỏng đoán trình bày như dữ kiện chắc |
 | **R7. Disclaimer** | Kết thúc bằng **"Cần bác sĩ kiểm chứng."** | Thiếu câu disclaimer ở cuối gói y khoa |
@@ -162,6 +164,9 @@ file) → tự áp BẢNG ROUTING dưới bằng tay như trước.
 | R1 thiếu PMID/DOI | `tra-cuu-chung-cu` + `kiem-chung-trich-dan` | ✅ |
 | R1b lách nhãn [CẦN] tràn lan | Agent gốc (yêu cầu bổ nguồn thật) | ✅ |
 | R4 tự gán GRADE | `tham-dinh-grade-nnt` hoặc xóa nhãn | ✅ |
+| R1c **hiệu số trích không đối chiếu được với bài** | `trich-xuat-y-van` (đọc lại nguồn) — chạy `python tools/kiem_so_lieu.py --file <dashboard>.html`; ⚪ *tóm tắt không nêu* là BÌNH THƯỜNG, KHÔNG kết luận trích sai | ✅ |
+| R4b **`gradeLevel` khác `na` mà không khai `gradeBy`** | `tham-dinh-grade-nnt` (khai tổ chức đã chấm) hoặc hạ về `na` | ✅ |
+| R4c **`apply` trên `gradeLevel:'na'` mà không khai `normativeBasis`** | `tham-dinh-grade-nnt` (khai loại quy phạm) hoặc bác sĩ hạ `decision` | 🚫 (đổi `decision` là quyết định lâm sàng) |
 | R5 trộn hai trục | Agent gốc (thêm phân biệt rõ) | ✅ |
 | R6 thiếu nhãn [CẦN…] | Agent gốc (gắn nhãn đúng chỗ) | ✅ |
 | R7 thiếu disclaimer | Agent gốc (thêm 1 dòng) | ✅ |
@@ -226,6 +231,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN

@@ -53,6 +53,31 @@ Cuối tờ: **"Cần bác sĩ kiểm chứng."**
 ## 5. Ví dụ minh họa (ẩn danh, KHÔNG PII)
 > *Đầu vào:* bác sĩ đã duyệt một thuốc uống ngày 1 lần cho bệnh mạn + hẹn tái khám. *Đầu ra:* tờ A5 ghi đúng thuốc/liều **đã duyệt** + 2 điều lối sống + 3 dấu hiệu nguy hiểm + ngày tái khám; kế hoạch: rào cản "hay quên" → gắn uống thuốc với việc hằng ngày + nhắc lịch; teach-back: "Anh/chị nhắc lại giúp tôi khi nào uống thuốc và khi nào cần đi khám ngay?".
 
+<!-- EBM-CONGCU-CHUNGCU-LAMSANG -->
+## 5b. Safety-netting LẤY TỪ NGÂN HÀNG, KHÔNG sinh từ trí nhớ
+
+Trước khi viết khối "dấu hiệu phải quay lại ngay" trên tờ A5, ĐỌC ngân hàng và kiểm độ phủ:
+
+```
+python tools/kiem_safety_net.py            # 1/8 hội chứng có nguồn (đo 22/08/2026)
+# nội dung: clinical_runtime/safety_net_templates.json → hoi_chung.<mã>.dan_benh_nhan_quay_lai
+```
+
+**Ba luật cứng:**
+1. Hội chứng ở trạng thái `chua-dien` hoặc khối `dan_benh_nhan_quay_lai` mang `[CẦN BÁC SĨ ĐIỀN]`
+   ⇒ ghi thẳng trên tờ **«CHƯA CÓ MẪU — bác sĩ tự ghi»**. TUYỆT ĐỐI không sinh ngưỡng cờ đỏ từ
+   trí nhớ mô hình, đúng luật đã áp cho `tra_diem_kham.py`.
+2. **Hai trục khác nhau, không được gộp.** `co_do_cho_bac_si` là dấu hiệu bác sĩ TÌM lúc khám;
+   `dan_benh_nhan_quay_lai` là câu dặn người bệnh MANG VỀ NHÀ. Chép trục thứ nhất lên tờ A5 là
+   biến thuật ngữ chuyên môn thành lời khuyên cho người bệnh.
+3. Mỗi tờ phải có **ít nhất một tiêu chí ĐO ĐƯỢC** — có con số hoặc mốc thời gian
+   («sốt trên 3 ngày không giảm», «khó thở khi nói chưa hết một câu»). *«Nếu nặng hơn»* không
+   phải tiêu chí: người bệnh không kiểm được nó.
+
+*Ghi chú nguồn:* mục `dau-dau` hiện chép nguyên SNNOOP10 (Do TP và cs., Neurology 2019 ·
+PMID 30587518 · doi:10.1212/WNL.0000000000006697) — là **danh sách sàng lọc cho bác sĩ**, và chính
+bài gốc ghi *"một công cụ sàng lọc đã kiểm định vẫn chưa có"*. Không trình bày như thang đã kiểm định.
+
 ## 6. Tiêu chí hoàn thành + safety-netting
 **Hoàn thành khi:** tờ A5 đủ 5 khối, khớp quyết định đã duyệt, không thêm thuốc/liều mới, không PII; có kế hoạch tuân thủ + teach-back. **Safety-netting (bắt buộc trên tờ):** dấu hiệu phải đi khám ngay + mốc tái khám + "mang theo gì".
 
@@ -94,6 +119,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN

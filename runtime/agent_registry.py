@@ -57,7 +57,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # Tái khóa 2026-09-20: `ke-don-an-toan` (mục 8 chuẩn hoá tên thuốc RxNorm + trạng thái EMA) và
 # `khoang-trong-nghien-cuu` (mục 5 bối cảnh WHO GHO); số lượng vẫn giữ nguyên 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "929871d7bf1b6d10353196925c9675a0ae18c42c8b362fd29399029776235fe8"
+    "76c45053c29651f15e61268f810abe803d18ba14f880190227adc731c8aef227"
 )
 
 MINIMUM_AGENT_COUNT = 50

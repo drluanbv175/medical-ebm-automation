@@ -101,6 +101,19 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
 ```
 
+<!-- EBM-CONGCU-CHUNGCU-LAMSANG -->
+## Công cụ bắt buộc — con số trích có THẬT trong bài không?
+
+```
+python tools/kiem_so_lieu.py --file <dashboard>.html
+```
+Hệ xác minh "PMID có thật + tiêu đề khớp" từ lâu, nhưng **chưa bao giờ xác minh CON SỐ**.
+Một mục có thể trích đúng PMID, đúng tiêu đề, mà hiệu số lại là số của **kết cục khác**,
+**phân nhóm khác**, hoặc gõ sai.
+Ba mức, **cố ý không có mức "SAI"**: ✓ khớp · 🟠 một phần · ⚪ tóm tắt không nêu.
+⚪ là chuyện BÌNH THƯỜNG — nhiều bài chỉ để số ở toàn văn/bảng. Nói "sai" từ việc vắng mặt
+trong tóm tắt là biến *không biết* thành *có vấn đề*.
+
 <!-- EBM-MANDATORY-FINAL-GUARDRAIL -->
 ## Cổng bắt buộc trước khi trả lời
 
@@ -113,6 +126,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN

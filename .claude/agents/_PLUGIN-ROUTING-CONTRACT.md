@@ -38,6 +38,9 @@
 | Bình duyệt | `binh-duyet` | ARS reviewer/rebuttal-audit | Worker không phải chữ ký phản biện độc lập G8 |
 | An toàn kê đơn | `ke-don-an-toan` | `ke-don-an-toan-benh-man` | Dừng Cổng A; bác sĩ quyết định |
 | Xây phần mềm | workflow kỹ thuật của repo | `claude-code-harness` | Worker kỹ thuật không sở hữu quyết định y khoa/nghiên cứu |
+| Cỡ mẫu / power (cổng **G3**) | `co-mau-nghien-cuu` → `run_g3_auto.py` + `g3_quality_gate.py` | `calc-sample-size`, `sample-size-power-calculator`, `sample-size-and-power-planning-assistant` | **5 skill plugin tự nhận làm được.** Worker chỉ ra con số nháp; N của đề tài thật phải qua cổng G3 — effect size KHÔNG NGUỒN thì cổng chặn, đó là thiết kế |
+| Nộp bài · COI · khai AI (cổng **G9**) | `nop-bai-phan-hoi` + `g9_quality_gate.py` | `fill-icmje-coi`, `find-journal`, `cover-letter-drafter`, `target-journal-matcher` | **7 skill plugin tự nhận làm được.** Worker soạn nháp; khai COI và khai dùng AI là lời TỰ KHAI có chữ ký của chủ nhiệm, worker không ký thay |
+| Khử định danh · PII (cổng **G5**) | `quan-ly-du-lieu` + luật KHÔNG PII | `deidentify-a-dataset`, `deidentifying-clinical-text`, `auditing-deidentification-runs` | **6 skill plugin tự nhận làm được — nhóm nguy hiểm nhất.** Dữ liệu bệnh nhân KHÔNG được rời máy; worker chạy cục bộ thì được dùng, nhưng quyết định «đã đủ khử định danh để phát hành» thuộc chủ |
 
 ## 2b. Worker CÓ HỢP ĐỒNG bổ sung 16/08/2026 (bác sĩ duyệt phương án B — «plugin thành worker chính thức»)
 

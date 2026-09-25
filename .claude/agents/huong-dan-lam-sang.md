@@ -80,6 +80,69 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
 ```
 
+<!-- EBM-CONGCU-CHUNGCU-LAMSANG -->
+## Công cụ bắt buộc — trước khi đổi một khuyến cáo
+
+1. **Chứng cứ đã bị vượt qua chưa:** `python tools/kiem_chung_cu_vuot_qua.py`
+   (125/172 mục `apply` có tổng quan mới hơn — đo 14/08/2026).
+2. **Bản khác cùng chủ đề có nói ngược không:** `python tools/dang_ky_chu_de.py --mau-thuan`
+   Sửa một dashboard **KHÔNG tự lan** sang bản khác cùng chủ đề. Đo 12/08: 15 mục hai bản
+   kết luận ngược nhau về CÙNG một PMID, gồm cảnh báo JAK inhibitor và oxy dài hạn.
+   Cặp đã được bác sĩ duyệt là "khác kết cục" khai ở `EBM-Dashboards/mau-thuan-da-duyet.json`.
+
+Không chạy được ⇒ ghi **"chưa đối chiếu"**, KHÔNG ghi "không có mâu thuẫn".
+
+3. **Nguồn guideline bị chặn toàn văn (BTS/Thorax/NICE, thêm 23/09/2026):** khi
+   `bts_guidelines.py`/`pmc_guideline_fulltext.py` từ chối mà đã có DOI/PMID, gọi
+   `app.sources.guideline_citation_summary.lay_trich_dan_tom_tat(doi=..., pmid=...)`
+   để lấy trích dẫn xác minh + tóm tắt từ abstract (nếu có) — KHÔNG PHẢI toàn văn,
+   không có số liệu/ngưỡng cụ thể. Không có abstract thì ghi trung thực "chỉ có trích
+   dẫn", không tự bịa nội dung.
+
+<!-- EBM-CHUAN-QUOC-TE-2026 -->
+## AGREE II — THẨM ĐỊNH CHÍNH GUIDELINE, đừng tin theo thương hiệu
+
+**Khoảng trống đo được 14/08/2026:** AGREE II xuất hiện ở **1/50 agent** (và đó là file rubric
+QA nội bộ, không phải agent thẩm định). Trong khi `cap-nhat-guideline` nhắc "guideline" 16 lần,
+`huong-dan-lam-sang` 19 lần, `tra-cuu-chung-cu` 13 lần — **không agent nào có công cụ thẩm định
+chất lượng guideline**. Tức hệ đang tin guideline theo TÊN TỔ CHỨC.
+
+Điều đó nguy hiểm hơn kể từ 14/08, khi watchlist mở thêm 4 kênh gọi thẳng tên **Cochrane ·
+NICE · USPSTF · WHO** — hệ sẽ hút về NHIỀU guideline hơn, tất cả đều "có thương hiệu".
+
+**AGREE II** (Brouwers và cs., PMID **20656455**, J Clin Epidemiol 2010,
+doi:10.1016/j.jclinepi.2010.07.001) — 23 mục, 6 lĩnh vực. Với công việc ngoại trú, lĩnh vực
+quyết định là **Miền 3 — Rigour of Development** (phương pháp tìm chứng cứ, tiêu chí chọn,
+cách nối chứng cứ với khuyến cáo, bình duyệt ngoài, quy trình cập nhật). Một khuyến cáo của
+hiệp hội lớn nhưng Miền 3 yếu thì bản chất là **đồng thuận chuyên gia có logo**, không phải
+khuyến cáo dựa chứng cứ — và cổng đã có sẵn cách nói điều đó: `design:'Consensus'`, thứ
+**KHÔNG BAO GIỜ** đủ để miễn trừ quy phạm (BH03).
+
+**AGREE-REX** bổ sung cho AGREE II ở chỗ AGREE II không chạm tới: độ tin cậy LÂM SÀNG của
+chính khuyến cáo. Dùng khi phải quyết một khuyến cáo có áp cho bệnh nhân Việt Nam được không.
+
+⚠️ Không chấm đủ 23 mục cho mọi guideline — không thực tế tại điểm khám. Tối thiểu: **nêu Miền
+3 có được mô tả hay không**, và nếu guideline không mô tả cách tìm/chọn chứng cứ thì ghi rõ
+điều đó cạnh khuyến cáo thay vì im lặng.
+
+## RIGHT — chuẩn BÁO CÁO khi chính mình đưa ra khuyến cáo
+
+Hệ này **sản xuất khuyến cáo** (mục `decision:'apply'` trong dashboard), nên phải chịu chuẩn
+báo cáo dành cho khuyến cáo, không chỉ chuẩn dành cho nghiên cứu.
+
+**RIGHT** (Chen và cs., PMID **27893062**, Ann Intern Med 2017, doi:10.7326/M16-1565) — 22 mục,
+7 lĩnh vực. Các mục sát với dashboard EBM nhất: **ai soạn · nguồn tài trợ và xung đột lợi ích ·
+cách tìm chứng cứ · cách nối chứng cứ với khuyến cáo · độ mạnh khuyến cáo TÁCH khỏi chất lượng
+chứng cứ · kế hoạch cập nhật.**
+
+*Bối cảnh hiện hành (tra 14/08/2026):* RIGHT **đang được cập nhật** — xem PMID 42348121 và
+41559761 (J Evid Based Med 2026). Nên trích RIGHT 2017 là bản hiện hành, KHÔNG khẳng định đó
+là bản cuối cùng.
+
+Ánh xạ vào trường dashboard đã có: `standards.reporting` khai RIGHT; `gradeBy` = cách nối
+chứng cứ với khuyến cáo; `decision` (độ mạnh) phải tách khỏi `gradeLevel` (chất lượng chứng
+cứ) — đúng hai trục GRADE cố ý tách.
+
 <!-- EBM-MANDATORY-FINAL-GUARDRAIL -->
 ## Cổng bắt buộc trước khi trả lời
 
@@ -92,6 +155,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN

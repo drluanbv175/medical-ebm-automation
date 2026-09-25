@@ -16,15 +16,28 @@ thử nghiệm can thiệp KHÔNG truyền thống — thông qua Step 4 RIÊNG 
 cho đề tài quan sát hiện tại nhưng cần biết khi có đề tài can thiệp thiết kế mới; dự thảo
 Step 2b 2023 đã lỗi thời, không dùng) · **CIOMS** 2016 · **SPIRIT 2025** (RCT) · VN: **TT43/2024/TT-BYT** (HLực 01/02/2025) · **Luật Khám bệnh, chữa bệnh 15/2023/QH15** · **Luật BVDLCN 91/2025/QH15** + **NĐ 356/2025/NĐ-CP**. `[CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]`
 
-### ICH E6(R3) Annex 2 — hợp đồng chạy được tại G1/G2
+### ICH E6(R3) Annex 2 — ĐẶC TẢ, CHƯA CÓ BỘ THI HÀNH (đính chính 03/09/2026)
 
 Nếu RCT có `decentralised`, `pragmatic` và/hoặc `rwd`, PI/methodologist phải khai
 `study_meta.gate_params.G1.annex2` với `applicable: true` và `methodologies`. G1 kiểm
 fitness-for-purpose, gánh nặng/khả năng tiếp cận, vai trò giám sát, luồng an toàn và kiểm
 soát riêng từng phương pháp; G2 kiểm thông tin cho IRB, eConsent/xác minh danh tính,
 lựa chọn không số hóa, DHT, privacy/confidentiality, quyền dùng RWD và data governance.
-Thiếu trường thật hoặc còn nhãn `[CẦN...]` → `BLOCK`, không được mở G1/G2. Hợp đồng code:
-`medical-ebm-automation/tools/annex2_quality_gate.py`; nguồn ICH Step 4 03/06/2026.
+Thiếu trường thật hoặc còn nhãn `[CẦN...]` thì **PHẢI** coi là chưa mở được G1/G2.
+Nguồn ICH Step 4 03/06/2026.
+
+⛔ **ĐÍNH CHÍNH 03/09/2026 — mục này TỪNG tự khai là «hợp đồng CHẠY ĐƯỢC» và chỉ đích danh
+`medical-ebm-automation/tools/annex2_quality_gate.py`. File đó CHƯA BAO GIỜ TỒN TẠI** — không
+có trong cây làm việc, không có trên `origin/master` của CẢ HAI repo, và chuỗi `annex2` xuất
+hiện ĐÚNG 0 lần trong toàn bộ repo y khoa. Nghĩa là **KHÔNG có mã nào chặn**: thử nghiệm
+decentralised/pragmatic/RWD hiện đi qua G1/G2 mà máy không kiểm một trường Annex 2 nào.
+Chữ «BLOCK» ở trên là mô tả ĐIỀU PHẢI LÀM, do **người** thi hành — không phải điều máy đang làm.
+Đúng họ **BH27**: lời khai về một cổng không có thật còn nguy hiểm hơn không có cổng, vì nó
+làm người đọc thôi tự kiểm.
+**Việc còn lại thuộc PI/methodologist:** bộ tiêu chí Annex 2 là chuẩn QUY PHẠM — agent KHÔNG
+được tự bịa để «cho có cổng». Khi nào bác sĩ ấn định xong tiêu chí thì mới dựng module.
+`tools/verify_controlled_research_automation.py` nay báo trục này
+`ich_e6_r3_annex2.trang_thai = KHONG_CO_BO_THI_HANH` và cho **FAIL** (không phải ⚪) cho tới lúc đó.
 
 ---
 
@@ -467,6 +480,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN

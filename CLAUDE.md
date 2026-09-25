@@ -35,7 +35,18 @@ This file contains only Claude Code-specific instructions.
 - **⚠️ Sau khi đồng bộ agent .md đã sửa vào `medical-ebm-automation/.claude/agents/` (bản in-repo dùng bởi `runtime/agent_registry.py` FULL_SCOPE_A):** BẮT BUỘC chạy `python3 scripts/regenerate_agent_manifest.py --write` rồi dán giá trị self-check SHA-256 in ra vào hằng số `MANIFEST_SELF_CHECK_SHA256` trong `runtime/agent_registry.py` — **kể cả khi số lượng agent KHÔNG đổi**, vì manifest khóa hash theo NỘI DUNG từng file, không chỉ số lượng. Quên bước này → hàng chục test `test_v4_*`/`test_offline_workflow_integration.py` fail với "agent hash mismatch" (đã xảy ra ≥2 lần, 2026-07-05). Chạy `pytest` sau mỗi lần sync để bắt sớm nếu quên.
 - **Secrets**: live in `.env` outside OneDrive, symlinked into the repo if needed. Never commit or print them.
 - **Nguồn chứng cứ TRÊN PHIÊN CLOUD — đo thật 24/09/2026, đọc TRƯỚC khi kết luận «nguồn X hỏng»**
-  (báo cáo đầy đủ: `audit/15-…` ở repo gốc). Môi trường Cloud «Default — **Trusted** network access»:
+  (báo cáo đầy đủ: `audit/15-…` ở repo gốc). ✅ **ĐO LẠI 25/09/2026 (chiều) — phần «proxy chặn mọi host API» dưới đây ĐÃ LỖI THỜI** sau khi bác sĩ
+  đổi cài đặt môi trường Cloud (`USE_MOCK_SOURCES=false`, có `NCBI_EMAIL`, khoá qua proxy): `run.py test-live` trả
+  `live:true`, `count=5`, `is_mock:false` cho pubmed · europepmc · crossref · openalex · clinicaltrials · openfda · core ·
+  scopus · consensus; riêng semantic_scholar HTTP 429 (không khoá, nhịp thấp — không phải proxy chặn). Chuỗi rút bài
+  3 tầng chạy thật tới tầng PubMed. Lệnh `curl` trực tiếp từ Bash vẫn bị hook runtime đòi duyệt egress — đo bằng
+  `run.py test-live`, đừng kết luận «mạng chặn» từ curl. Mỗi `test-live consensus` tốn 1 lượt hạn mức tháng.
+  Feed/lane guideline + an toàn thuốc (đo cùng ngày qua `RSSFeedClient.search()` cho TỪNG mục của
+  `DRUG_SAFETY_FEEDS` + `GUIDELINE_FEEDS`, hiện 80 mục): **79/80 trả bài thật**, 0 mock (crossref 35 · crossref_title 21 ·
+  rss 17 · europepmc 5 · who_iris 1 · kcb_vn 1). Mục duy nhất 0 bài là `fda_medwatch`: www.fda.gov trả HTTP 401 cho truy
+  cập tự động; `search()` trả `[]` nhưng `_fetch()` của ingestion đọc bộ đếm lỗi HttpClient nên vẫn ghi `error` (không
+  xanh giả). MedWatch không có API openFDA tương đương (khác `fda_recalls` đã có dự phòng enforcement) — giới hạn đã biết.
+  Đoạn mô tả 24/09 giữ lại làm lịch sử: Môi trường Cloud «Default — **Trusted** network access»:
   proxy thoát mạng TỪ CHỐI (CONNECT 403, chính sách) MỌI host API y văn — NCBI, `www.ebi.ac.uk`,
   `api.crossref.org`, OpenAlex, ClinicalTrials.gov, openFDA, Semantic Scholar, CORE, WHO IRIS,
   `kcb.vn`, GOLD/GINA, RSS hội/tạp chí ⇒ `test-live` 0/8 nguồn miễn phí, feed/lane guideline 0/111.
@@ -213,13 +224,15 @@ This file contains only Claude Code-specific instructions.
   `doi`/`pmid` (đa số sẽ `None`), `study_type:null`. **181 test offline** ở
   `tests/test_serpapi_scholar.py` (không gọi mạng, không cần key; dựng từ tài liệu SerpApi + mẫu tự
   dựng, không có phản hồi thật nào; gồm nhóm đếm số request thật qua `HttpClient` với session giả) +
-  **21 test** ở `tests/test_http_per_client_max_retries.py` cho tham số `max_retries` của `HttpClient`. ✅ **ĐÃ XÁC NHẬN CHẠY THẬT 20/09/2026** (1 search tính phí, `run.py test-live serpapi_scholar`): khoá hợp lệ ⇒ `count=5`, `is_mock:false`, `year` 2019–2026, `pmid:null`, `study_type:null`, `tier C`, `watch_only`; trong 4 bản ghi đầu chỉ 1 có DOI (đúng dự đoán "đa số `None`"). ⚠️ **Bẫy đã gặp thật:** khoá bị DÁN ĐÔI (128 ký tự = 2 × 64 hex giống hệt nhau) ⇒ HTTP 401 "Invalid API key" (lỗi không tính phí) — nút `Nhap Khoa SerpApi.command` trước đó chỉ cảnh báo "dài 128, thường 64" rồi vẫn ghi; nay tự nhận và gộp khoá dán đôi (cả khoá đang lưu lẫn khoá vừa dán). Còn CHƯA đối chiếu: ý nghĩa `as_ylo` "bao gồm năm đó" và việc phản hồi có lặp lại `api_key` hay không. **Việc còn mở (chưa làm, cần bác sĩ quyết):** (i) `summarize_source_health`
-  (`app/services/ingestion.py`) — nguồn NGOÀI lõi hỏng 100% vẫn ra `PASS` (đã chứng minh offline;
-  Scopus/CORE/Epistemonikos cũng chịu lỗ hổng này), đổi luật sẽ đổi hành vi phát hành nên chưa sửa;
+  **21 test** ở `tests/test_http_per_client_max_retries.py` cho tham số `max_retries` của `HttpClient`. ✅ **ĐÃ XÁC NHẬN CHẠY THẬT 20/09/2026** (1 search tính phí, `run.py test-live serpapi_scholar`): khoá hợp lệ ⇒ `count=5`, `is_mock:false`, `year` 2019–2026, `pmid:null`, `study_type:null`, `tier C`, `watch_only`; trong 4 bản ghi đầu chỉ 1 có DOI (đúng dự đoán "đa số `None`"). ⚠️ **Bẫy đã gặp thật:** khoá bị DÁN ĐÔI (128 ký tự = 2 × 64 hex giống hệt nhau) ⇒ HTTP 401 "Invalid API key" (lỗi không tính phí) — nút `Nhap Khoa SerpApi.command` trước đó chỉ cảnh báo "dài 128, thường 64" rồi vẫn ghi; nay tự nhận và gộp khoá dán đôi (cả khoá đang lưu lẫn khoá vừa dán). Còn CHƯA đối chiếu: ý nghĩa `as_ylo` "bao gồm năm đó" và việc phản hồi có lặp lại `api_key` hay không. **Việc còn mở (chưa làm, cần bác sĩ quyết):** (i) [ĐÃ XONG 22/09/2026, commit `dc4abb9` — `summarize_source_health`
+  (`app/services/ingestion.py`) có `_OPTIONAL_ENHANCED`: nguồn tăng cường (Scopus/CORE/Epistemonikos) đã gọi mà hỏng 100%
+  ⇒ hạ trạng thái tối đa PARTIAL (cảnh báo, không chặn) + trường `optional_enhanced_failed`; SerpApi/Consensus đi qua
+  `diagnostics['fallback']` riêng — đối chiếu mã sống 25/09/2026];
   (ii) [ĐÃ LỖI THỜI từ khi có bậc thang có cổng — giờ chỉ truy vấn THIẾU chứng cứ mới gọi Scholar, không còn
-  quét tuần tự 53 truy vấn]; (iii) [ĐÃ XONG 20/09/2026 — `.env.example` đã có đủ dòng mẫu cho bậc thang dự phòng]; (iv) `research/manager.py` và
-  `research/dossier.py` nuốt mọi exception bằng `logger.warning` nên lỗi thiếu key/hết quota không
-  lên giao diện; (v) [ĐÃ XONG 20/09/2026 — trần THÁNG bền `SERPAPI_MAX_CALLS_PER_MONTH` (mặc định 200/250), tệp `data/raw/_state/serpapi_usage.json`, fail-closed, dùng chung giữa các tiến trình; SerpApi báo hết quota thì đánh dấu hết cả tháng; số đã dùng chưa đối chiếu với Account API]; (vi) tầng giám sát lâm sàng
+  quét tuần tự 53 truy vấn]; (iii) [ĐÃ XONG 20/09/2026 — `.env.example` đã có đủ dòng mẫu cho bậc thang dự phòng]; (iv) [ĐÃ XONG 22/09/2026, commit `dc4abb9` —
+  `suggest_background_literature(diagnostics=)` và `find_background_literature(loi_nguon_thuong=)` trả lỗi có cấu trúc (cả
+  khi cổng dự phòng bật lẫn tắt); `build_dossier_markdown()` in dòng «Nguồn thường gặp lỗi…» vào hồ sơ mà tab Nghiên cứu
+  của dashboard hiển thị — đối chiếu mã sống 25/09/2026]; (v) [ĐÃ XONG 20/09/2026 — trần THÁNG bền `SERPAPI_MAX_CALLS_PER_MONTH` (mặc định 200/250), tệp `data/raw/_state/serpapi_usage.json`, fail-closed, dùng chung giữa các tiến trình; SerpApi báo hết quota thì đánh dấu hết cả tháng; số đã dùng chưa đối chiếu với Account API]; (vi) tầng giám sát lâm sàng
   (`EBM-Dashboards/tools/surveillance_scan.py`) chưa có "làn" Scholar. Tắt được bằng cờ và không
   phụ thuộc duy nhất vào nguồn này (Google đang kiện SerpApi — theo báo chí/blog SerpApi, chưa có
   thông tin sau ~01/09/2026).

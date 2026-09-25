@@ -86,7 +86,7 @@ def test_society_guideline_journals_are_covered_through_crossref():
 
 # Thêm 24/09/2026: 4 feed RSS BMJ bị Cloudflare 429 (Cloud + Mac) ⇒ chuyển Crossref-ISSN. ISSN đối chiếu thật với
 # api.crossref.org/journals/{issn} (publisher BMJ) — không đoán.
-BMJ_429_20260924 = {"heart_bmj": "1468-201X", "gut_bmj": "1468-3288", "fg_bmj": "2041-4137", "thorax_bmj": "1468-3296"}
+BMJ_429_20260924 = {"heart_bmj": "1468-201X", "gut_bmj": "1468-3288", "fg_bmj": "2041-4145", "thorax_bmj": "1468-3296"}
 
 
 def test_the_4_bmj_feeds_blocked_by_cloudflare_429_use_crossref_with_the_verified_issn():
@@ -236,3 +236,15 @@ def test_missing_or_garbled_dates_return_none():
     assert _ngay({"issued": {"date-parts": [[None]]}}) is None
     assert _ngay({"issued": "rác", "published-online": None}) is None
     assert _ngay({"issued": {"date-parts": [[True, True]]}}) is None
+
+
+def test_bon_feed_bmj_con_lai_da_chuyen_sang_crossref_20260925():
+    """25/09/2026: Heart/Gut/Frontline Gastro/Thorax trả 0 mục qua RSS trên mọi mạng —
+    phải đi Crossref theo ISSN ĐIỆN TỬ đã đối chiếu (khớp tên tạp chí, có bài mới)."""
+    from app.sources.feeds import GUIDELINE_FEEDS
+    mong_doi = {"heart_bmj": "1468-201X", "gut_bmj": "1468-3288",
+                "fg_bmj": "2041-4145", "thorax_bmj": "1468-3296"}
+    theo_id = {f.id: f for f in GUIDELINE_FEEDS}
+    for fid, issn in mong_doi.items():
+        assert theo_id[fid].mode == "crossref", fid
+        assert theo_id[fid].issn == issn, fid

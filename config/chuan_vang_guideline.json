@@ -1,0 +1,113 @@
+{
+  "_mo_ta": "CHUẨN VÀNG guideline hiện hành cho phép đo «engine có trả được chứng cứ MẠNH NHẤT không» (tools/kiem_chuan_vang_guideline.py). Mỗi chủ đề có các NHÓM guideline; mỗi nhóm là CÙNG MỘT guideline đăng ở nhiều tạp chí (bất kỳ PMID nào trong nhóm lọt top N là đạt nhóm đó). PMID do máy tra trên PubMed 25/09/2026 (loại xuất bản + tiêu đề đã đọc). bac_si_duyet = null nghĩa là CHƯA được bác sĩ xác nhận đây đúng là guideline cần theo — trước khi duyệt, kết quả đo chỉ là máy tự chấm.",
+  "phien_ban": "2026-09-25",
+  "top_n": 10,
+  "chu_de": [
+    {
+      "chu_de": "Tăng huyết áp",
+      "truy_van": "hypertension guideline",
+      "nhom": [
+        {
+          "ten": "AHA/ACC 2025 — High Blood Pressure in Adults",
+          "pmid": [
+            "40811497",
+            "40811516"
+          ],
+          "bac_si_duyet": "2026-09-25"
+        },
+        {
+          "ten": "ESC 2024 — Elevated blood pressure and hypertension",
+          "pmid": [
+            "39210715"
+          ],
+          "bac_si_duyet": "2026-09-25"
+        }
+      ]
+    },
+    {
+      "chu_de": "Suy tim",
+      "truy_van": "heart failure",
+      "nhom": [
+        {
+          "ten": "AHA/ACC/HFSA 2022 — Management of Heart Failure",
+          "pmid": [
+            "35379503",
+            "35363499",
+            "35378257"
+          ],
+          "bac_si_duyet": "2026-09-25"
+        }
+      ]
+    },
+    {
+      "chu_de": "Rung nhĩ",
+      "truy_van": "atrial fibrillation",
+      "nhom": [
+        {
+          "ten": "ACC/AHA/ACCP/HRS 2023 — Atrial Fibrillation",
+          "pmid": [
+            "38033089",
+            "38043043"
+          ],
+          "bac_si_duyet": "2026-09-25"
+        },
+        {
+          "ten": "ESC 2024 — Atrial fibrillation",
+          "pmid": [
+            "39210723"
+          ],
+          "bac_si_duyet": "2026-09-25"
+        }
+      ]
+    },
+    {
+      "chu_de": "Đái tháo đường típ 2",
+      "truy_van": "type 2 diabetes",
+      "nhom": [
+        {
+          "ten": "ADA/EASD 2022 — Management of Hyperglycemia in Type 2 Diabetes (consensus)",
+          "pmid": [
+            "36148880",
+            "36151309"
+          ],
+          "bac_si_duyet": "2026-09-25"
+        },
+        {
+          "ten": "ADA Standards of Care in Diabetes 2026 — ch.9 Pharmacologic Approaches",
+          "pmid": [
+            "41358900"
+          ],
+          "bac_si_duyet": "2026-09-25"
+        }
+      ]
+    },
+    {
+      "chu_de": "COPD",
+      "truy_van": "COPD",
+      "_ghi_chu": "Báo cáo GOLD KHÔNG được PubMed lập chỉ mục là guideline — phủ bằng connector toàn văn app/sources/gold_copd.py, không đo ở đây.",
+      "nhom": [
+        {
+          "ten": "Canadian Thoracic Society 2023 — Pharmacotherapy in stable COPD",
+          "pmid": [
+            "37690008"
+          ],
+          "bac_si_duyet": "2026-09-25"
+        }
+      ]
+    },
+    {
+      "chu_de": "Bệnh thận mạn",
+      "truy_van": "chronic kidney disease",
+      "nhom": [
+        {
+          "ten": "KDIGO 2024 — Evaluation and Management of CKD",
+          "pmid": [
+            "38490803",
+            "38519239"
+          ],
+          "bac_si_duyet": "2026-09-25"
+        }
+      ]
+    }
+  ]
+}

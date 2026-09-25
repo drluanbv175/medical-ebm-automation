@@ -103,6 +103,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 |---|---|
 | `_HIEN-PHAP-LIEM-CHINH.md` | 6 điều bất biến + 2 Cổng bác sĩ + định dạng (luật tối cao) |
 | `_CONNECTOR-CHUNG-CU.md` | **Registry connector chứng cứ SỐNG (SSOT): ID công cụ MCP (PubMed/Consensus/ClinicalTrials/bioRxiv/ChEMBL/ICD-10) + vai + phân tầng thẩm quyền nguồn + khử PII outbound + quy tắc PARTIAL.** Mọi agent tra cứu/thẩm định/xác minh trỏ về đây để lấy "chứng cứ tốt nhất" |
+| `_PLUGIN-ROUTING-CONTRACT.md` | **Hợp đồng một owner/capability:** agent/runtime nội bộ sở hữu quyết định; ARS/Anthropic/BMAD/Bio chỉ là worker theo allowlist/stage, có provenance, không mở Cổng A/B/G. Registry máy đọc: `tools/orchestrator/plugin_ownership_registry.json` |
 | `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` | 4 trụ cột: Trung thực · Bảo mật · Pháp lý VN · Liêm chính |
 | `_HO-SO-NGUOI-DUNG.md` | Hồ sơ người dùng (giọng/định dạng/mặc định chuyên môn) |
 | `_SO-DO-PIPELINE-HOP-NHAT.md` | **Sơ đồ pipeline hợp nhất + mô hình hàng đợi phê duyệt** |
@@ -180,6 +181,38 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 | "Tìm bài / dựng danh mục TLTK / soát danh mục" | `thu-thu-tai-lieu` | cửa trước `kiem-chung-trich-dan` |
 | (tự động) Soi gói đầu ra trước khi trả / "có vượt cổng / lẫn PII không" | `tham-dinh-dau-ra` | guardrail bước cuối; 2 lớp R1–R7 + Q1–Q7 (gói lâm sàng) |
 | Việc lẻ (1 câu hỏi, 1 bài, 1 chặng) | gọi thẳng agent chuyên trách | xem 2 bảng trên |
+
+> **CỬA VÀO — bổ sung 02/09/2026 sau khi ĐO 30 câu bác sĩ nói tự nhiên.** Lần đo đầu: **12 câu
+> rơi `unknown`** (nhạc trưởng KHÔNG vào cửa) + 2 câu định tuyến quá tay — trong khi **cả 12 câu
+> đều đã có chủ**. Khoảng trống ở CỬA VÀO, không ở năng lực. Sau khi mở: **30/30 vào đúng cửa,
+> 0 unknown, 0 lệch**. Bảng máy đọc: `tools/orchestrator/intent.py`; chốt `BH88` chạy lại chính
+> 30 câu đó mỗi phiên.
+
+| Bác sĩ nói/gõ kiểu… | Định tuyến tới | Ghi chú |
+|---|---|---|
+| "Viết bản thảo / làm một bài báo về… / phần bàn luận" | `viet-ban-thao` | G7; chuẩn báo cáo theo thiết kế |
+| "Phân tích số liệu / chạy thống kê / xử lý số liệu" | `phan-tich-thong-ke` | G6 — chỉ chạy trên SAP + dữ liệu ĐÃ khoá |
+| "Chủ đề X có gì mới không / cập nhật chứng cứ / guideline mới" | `cap-nhat-guideline` | dừng ở CANDIDATE; Cổng B nguyên vẹn |
+| "Kiểm tra dashboard / cổng liêm chính / bộ năm" | `cap-nhat-guideline` | owner của `clinical_evidence_update` |
+| "Bài này có bị rút không / retracted" | `kiem-chung-trich-dan` | chuỗi 3 tầng; không tra được ⇒ ghi «chưa kiểm rút bài» |
+| "Chọn tạp chí nào / nộp bài / cover letter" | `nop-bai-phan-hoi` | G9 — COI/khai AI là chữ ký của chủ nhiệm |
+| "Thuốc này với… có tương tác gì / dùng chung được không" | `ke-don-an-toan` | Cổng A |
+| "Sàng lọc ung thư… từ tuổi nào / khám định kỳ" | `du-phong-tam-soat` | cấp độ USPSTF A/B/C/D/I |
+| "Soạn tờ dặn dò / hướng dẫn cho bệnh nhân" | `loi-dan-tuan-thu` | có cue CA ⇒ đi nhạc trưởng lâm sàng trước (xem luật dưới) |
+| "Hệ thống còn gì để hoàn thiện / còn việc gì" | `tools/tu_de_xuat_viec.py` | việc CÔNG CỤ — bảng 8 giác quan |
+| "Tra ICD-10 / mã bệnh / mã thủ thuật" | `/tra-ma-icd10` | việc CÔNG CỤ (lệnh tiếng Việt) |
+| "Làm slide / bài giảng / tài liệu đào tạo / poster" | skill `dao-tao-slide-tai-lieu-y-khoa` | việc CÔNG CỤ (skill) |
+
+> **HAI LUẬT ƯU TIÊN Ở CỬA (đọc kỹ — chúng ngược chiều nhau có chủ ý):**
+> 1. **Việc lẻ MẠNH thắng cue ĐỀ TÀI.** "Tính cỡ mẫu cho nghiên cứu cắt ngang" là xin MỘT con
+>    số → `co-mau-nghien-cuu`, KHÔNG khởi động vòng đời G0–G10. Danh sách: `VIEC_LE_MANH`.
+> 2. **Việc lẻ mạnh KHÔNG BAO GIỜ thắng cue CA LÂM SÀNG.** Câu vừa có "bệnh nhân" vừa xin một
+>    sản phẩm lẻ vẫn vào `dieu-phoi-lam-sang`. Over-route sang nơi CÓ sàng lọc cờ đỏ là chiều an
+>    toàn; under-route bỏ qua cờ đỏ thì không. Nhạc trưởng vẫn sinh đúng sản phẩm đó ở bước 5.
+
+> **Việc CÔNG CỤ (`cong_cu`)** = chủ là lệnh/skill/công cụ, KHÔNG phải agent. Nhạc trưởng không
+> dựng bước agent cho nhóm này (`_run_step` tra registry AGENT — nhét tên lệnh vào sẽ thành tham
+> chiếu treo), nhưng đầu ra vẫn qua `tham-dinh-dau-ra` nếu có yếu tố y khoa.
 
 > Claude cũng **tự** định tuyến theo mô tả công việc; bảng trên để tra nhanh và thống nhất giữa các máy.
 

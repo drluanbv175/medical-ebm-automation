@@ -28,6 +28,8 @@ def _don_key_scopus(monkeypatch):
     monkeypatch.setattr(settings, "scopus_api_key", "")
     monkeypatch.setattr(settings, "scopus_insttoken", "")
     monkeypatch.setattr(settings, "scopus_bind_interface", "")
+    # Vá 25/09/2026: KHOA_QUA_PROXY của môi trường (phiên Cloud) miễn chặn «thiếu khoá» ⇒ test đỏ giả.
+    monkeypatch.setattr(settings, "khoa_qua_proxy", "")
     yield
 
 

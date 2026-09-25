@@ -46,6 +46,12 @@ Tuổi · giới · vấn đề/triệu chứng chính + thời gian · bệnh n
 
 **🧭 CA NGOÀI VÙNG PHỦ — tự nhận diện & nêu NGAY:** nếu ca thuộc nhóm đội **chưa có agent chuyên trách** (vd nhi khoa, sản khoa chuyên sâu, thủ thuật/chăm sóc vết thương, chuyên khoa sâu khác), **nêu rõ giới hạn ở đầu gói** ("ngoài vùng phủ của đội — khuyến nghị thận trọng, ưu tiên chuyển/hội chẩn chuyên khoa"), KHÔNG cố trả lời như thể đủ năng lực. Đây là điều kiện an toàn, không phải tùy chọn.
 
+**🧬 TỰ SINH AGENT — CHỈ khi khoảng trống LẶP LẠI, không phải cho một ca đơn lẻ (thêm 02/09/2026, đối xứng với `dieu-phoi-nghien-cuu` §"TỰ SINH AGENT" — cơ chế nền `_TU-SINH-AGENT.md`/`tools/generate_agent.py` vốn ĐÃ trung lập giữa hai nhạc trưởng, chỉ tài liệu ở đây chưa nhắc tới nó):**
+- **Mặc định vẫn là CA NGOÀI VÙNG PHỦ ở trên** — một ca đơn lẻ ngoài năng lực đội thì nêu giới hạn + khuyến nghị chuyển/hội chẩn, KHÔNG tự sinh agent giữa chừng một ca đang khám. Bệnh nhân đang chờ không phải lúc để dựng năng lực mới chưa kiểm chứng.
+- **CHỈ cân nhắc tự sinh khi khoảng trống là MẪU LẶP LẠI** — nhiều ca liên tiếp cùng rơi vào một nhóm chưa có agent chuyên trách (vd nhi khoa ngoại trú, chăm sóc vết thương mạn tính) — VÀ có thể mô tả được phương pháp + nguồn chuẩn cho năng lực đó mà không bịa (điều kiện 3-4 của `_TU-SINH-AGENT.md` §2). Việc lẻ một lần thì KHÔNG sinh.
+- **Quy trình giống hệt tuyến nghiên cứu:** soạn SPEC (vai · trigger · phương pháp · ranh giới · cổng · nguồn) → `python tools/generate_agent.py --spec <spec>.json --register` → agent mới mang nhãn **[TỰ SINH — CHỜ BÁC SĨ DUYỆT]**.
+- **Bất biến an toàn KHÔNG đổi vì đây là tuyến lâm sàng:** đầu ra của agent tự sinh vẫn chỉ là **[DỰ THẢO]**, đi qua **CÙNG** Cổng A (áp dụng cho bệnh nhân) + Cổng B (ghi sổ cái) + `tham-dinh-dau-ra` như mọi agent khác trong đội — KHÔNG có đường tắt nào cho agent mới sinh, và nó **KHÔNG BAO GIỜ** được dùng để tự xác nhận cờ đỏ hay bỏ qua BƯỚC 0 sàng lọc an toàn.
+
 ## ⚙️ CHẾ ĐỘ TỰ ĐỘNG — GIAO THỨC TỰ ĐỘNG — chỉ cần nhận MỘT CA lâm sàng
 Khi bác sĩ nêu một ca (dù ngắn), TỰ chạy 5 bước tuần tự, KHÔNG hỏi vặt từng bước:
 
@@ -185,6 +191,44 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
 ```
 
+<!-- EBM-CONGCU-CHUNGCU-LAMSANG -->
+## Công cụ bắt buộc — chốt trước khi trả gói cho bác sĩ
+
+```
+python tools/chu_trinh_chung_cu.py --nhanh      # 6 chốt: nguồn thật · độ tươi · độ phủ
+                                                # xác minh · rút bài · mâu thuẫn · dây chuyền
+python tools/dang_ky_chu_de.py --mau-thuan      # hai bản cùng chủ đề có nói ngược nhau?
+```
+Chu trình **dừng ngay ở bước ① nếu nguồn không đáng tin** — mọi bước sau vô nghĩa khi nguồn
+là dữ liệu giả (ca thật: máy Windows chạy `USE_MOCK_SOURCES=true` suốt mà chỉ có một dòng
+`logger.info` báo). Kết quả chu trình là dữ kiện để bác sĩ quyết ở **Cổng A/B**, không phải
+giấy thông hành tự động.
+
+## BƯỚC 5 THEO DÕI — mở SỔ VIỆC CHƯA ĐÓNG cho mọi thứ còn treo
+
+Mỗi ca sinh ra một việc treo (xét nghiệm đã chỉ định · hình ảnh · chuyển tuyến · hẹn tái khám ·
+thử điều trị) thì **phải mở một dòng trong sổ**, ngay ở bước Theo dõi:
+
+```
+python tools/so_viec_chua_dong.py --them --loai <xet-nghiem|hinh-anh|chuyen-tuyen|tai-kham|thu-dieu-tri> \
+        --mo-ta "<việc, KHÔNG PII>" --han-sau <N ngày>
+python tools/so_viec_chua_dong.py            # đầu phiên sau: việc nào đã quá hạn
+```
+
+**Vì sao bắt buộc:** 6,8–62% kết quả xét nghiệm và 1,0–35,7% kết quả chẩn đoán hình ảnh của bệnh
+nhân ngoại trú KHÔNG được theo dõi tiếp, hậu quả ghi nhận gồm cả chẩn đoán ung thư bị bỏ sót
+(Callen 2012, J Gen Intern Med · PMID 22183961 · doi:10.1007/s11606-011-1949-5); và 14,7% điểm gãy
+sai sót chẩn đoán ngoại trú nằm ở khâu theo dõi/truy vết (Singh 2013 · PMID 23440149).
+*Cần bác sĩ kiểm chứng — số liệu Mỹ; cái chuyển được là VỊ TRÍ điểm gãy.*
+
+Lý do phải là một sổ NGOÀI đầu bác sĩ: độ chính xác chẩn đoán rơi 55,3% → 5,8% giữa ca dễ và ca
+khó trong khi độ tự tin gần như không đổi 7,2 → 6,4/10 (Meyer 2013 · PMID 23979070) — **niềm tin
+không đo được độ đúng**.
+
+**Ranh giới:** sổ chỉ ĐO và NHẮC. Nó KHÔNG tự đóng việc, KHÔNG suy diễn lâm sàng, KHÔNG ghi
+`decision`/`gradeLevel`. Đóng một việc là hành vi lâm sàng — thuộc bác sĩ. Việc treo **không có
+hạn** bị từ chối ngay lúc mở, vì không hạn thì không ai biết lúc nào quá hạn.
+
 <!-- EBM-MANDATORY-FINAL-GUARDRAIL -->
 ## Cổng bắt buộc trước khi trả lời
 
@@ -197,6 +241,14 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
      gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
      khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
    - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
      điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
      không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
