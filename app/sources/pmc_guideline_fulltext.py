@@ -61,6 +61,14 @@ _MAU_KEY_TXT = re.compile(r"<Key>(PMC\d+)\.(\d+)/\1\.\2\.txt</Key>", re.IGNORECA
 _GIOI_HAN_KY_TU = 200_000  # đồng bộ với trich_van_ban_tu_pdf() ở guideline_fulltext_common.py
 
 
+class _LoiLietKeBucket(RuntimeError):
+    """Không liệt kê được bucket (lỗi mạng/proxy) — KHÁC «liệt kê được nhưng 0 kết quả».
+
+    Vá 25/09/2026: trước đây cả hai trường hợp cùng trả `None`, nên lỗi mạng bị báo thành
+    «bài KHÔNG có trong PMC Open Access Subset» — biến «không biết» thành «không có».
+    """
+
+
 class PmcGuidelineFullTextClient:
     """Tải TOÀN VĂN một bài/chương guideline đã có trong PMC Open Access Subset, theo
     PMCID đã biết — qua bản sao S3 công khai của NCBI (KHÔNG qua trang HTML
@@ -90,7 +98,7 @@ class PmcGuidelineFullTextClient:
         except Exception as exc:  # noqa: BLE001 — lỗi mạng, KHÔNG bịa kết quả
             logger.warning("[pmc_guideline_fulltext] không liệt kê được bucket cho %s: %s",
                             pmcid_chuan, exc)
-            return None
+            raise _LoiLietKeBucket(f"{type(exc).__name__}: {exc}") from exc
         ung_vien: List[tuple[int, str]] = []
         for match in _MAU_KEY_TXT.finditer(xml):
             _pmcid, phien_ban = match.group(1), match.group(2)
@@ -114,7 +122,17 @@ class PmcGuidelineFullTextClient:
                 ghi_chu=f"'{pmcid}' không đúng định dạng PMCID (kỳ vọng 'PMC' + số).",
             )
 
-        key = self._tim_key_txt_moi_nhat(pmcid_chuan)
+        try:
+            key = self._tim_key_txt_moi_nhat(pmcid_chuan)
+        except _LoiLietKeBucket as exc:
+            return KetQuaToanVanGuideline(
+                to_chuc="PMC", url_nguon=_S3_GOC + pmcid_chuan, thanh_cong=False,
+                ghi_chu=(
+                    f"Không liệt kê được bucket PMC OA cho {pmcid_chuan} ({exc}) — CHƯA BIẾT bài "
+                    "có trong PMC Open Access Subset hay không (lỗi mạng/proxy, không phải sự "
+                    "thật của nguồn). Thử lại sau hoặc đọc trực tiếp trên trang tạp chí."
+                ),
+            )
         if key is None:
             return KetQuaToanVanGuideline(
                 to_chuc="PMC", url_nguon=_S3_GOC + pmcid_chuan, thanh_cong=False,

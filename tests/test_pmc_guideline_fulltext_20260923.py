@@ -114,6 +114,9 @@ def test_tai_toan_van_list_call_network_error_returns_failure_not_raise(monkeypa
     monkeypatch.setattr(client.http, "get_text", _loi)
     kq = client.tai_toan_van("PMC12690171")
     assert kq.thanh_cong is False
+    # Vá 25/09/2026: lỗi mạng KHÔNG được báo thành «không có trong PMC OA» (không biết ≠ không có)
+    assert "không có trong pmc open access subset" not in kq.ghi_chu.lower()
+    assert "chưa biết" in kq.ghi_chu.lower()
 
 
 def test_tai_toan_van_object_fetch_error_returns_failure_not_raise(monkeypatch):
