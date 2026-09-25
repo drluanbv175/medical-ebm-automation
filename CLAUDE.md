@@ -213,13 +213,15 @@ This file contains only Claude Code-specific instructions.
   `doi`/`pmid` (đa số sẽ `None`), `study_type:null`. **181 test offline** ở
   `tests/test_serpapi_scholar.py` (không gọi mạng, không cần key; dựng từ tài liệu SerpApi + mẫu tự
   dựng, không có phản hồi thật nào; gồm nhóm đếm số request thật qua `HttpClient` với session giả) +
-  **21 test** ở `tests/test_http_per_client_max_retries.py` cho tham số `max_retries` của `HttpClient`. ✅ **ĐÃ XÁC NHẬN CHẠY THẬT 20/09/2026** (1 search tính phí, `run.py test-live serpapi_scholar`): khoá hợp lệ ⇒ `count=5`, `is_mock:false`, `year` 2019–2026, `pmid:null`, `study_type:null`, `tier C`, `watch_only`; trong 4 bản ghi đầu chỉ 1 có DOI (đúng dự đoán "đa số `None`"). ⚠️ **Bẫy đã gặp thật:** khoá bị DÁN ĐÔI (128 ký tự = 2 × 64 hex giống hệt nhau) ⇒ HTTP 401 "Invalid API key" (lỗi không tính phí) — nút `Nhap Khoa SerpApi.command` trước đó chỉ cảnh báo "dài 128, thường 64" rồi vẫn ghi; nay tự nhận và gộp khoá dán đôi (cả khoá đang lưu lẫn khoá vừa dán). Còn CHƯA đối chiếu: ý nghĩa `as_ylo` "bao gồm năm đó" và việc phản hồi có lặp lại `api_key` hay không. **Việc còn mở (chưa làm, cần bác sĩ quyết):** (i) `summarize_source_health`
-  (`app/services/ingestion.py`) — nguồn NGOÀI lõi hỏng 100% vẫn ra `PASS` (đã chứng minh offline;
-  Scopus/CORE/Epistemonikos cũng chịu lỗ hổng này), đổi luật sẽ đổi hành vi phát hành nên chưa sửa;
+  **21 test** ở `tests/test_http_per_client_max_retries.py` cho tham số `max_retries` của `HttpClient`. ✅ **ĐÃ XÁC NHẬN CHẠY THẬT 20/09/2026** (1 search tính phí, `run.py test-live serpapi_scholar`): khoá hợp lệ ⇒ `count=5`, `is_mock:false`, `year` 2019–2026, `pmid:null`, `study_type:null`, `tier C`, `watch_only`; trong 4 bản ghi đầu chỉ 1 có DOI (đúng dự đoán "đa số `None`"). ⚠️ **Bẫy đã gặp thật:** khoá bị DÁN ĐÔI (128 ký tự = 2 × 64 hex giống hệt nhau) ⇒ HTTP 401 "Invalid API key" (lỗi không tính phí) — nút `Nhap Khoa SerpApi.command` trước đó chỉ cảnh báo "dài 128, thường 64" rồi vẫn ghi; nay tự nhận và gộp khoá dán đôi (cả khoá đang lưu lẫn khoá vừa dán). Còn CHƯA đối chiếu: ý nghĩa `as_ylo` "bao gồm năm đó" và việc phản hồi có lặp lại `api_key` hay không. **Việc còn mở (chưa làm, cần bác sĩ quyết):** (i) [ĐÃ XONG 22/09/2026, commit `dc4abb9` — `summarize_source_health`
+  (`app/services/ingestion.py`) có `_OPTIONAL_ENHANCED`: nguồn tăng cường (Scopus/CORE/Epistemonikos) đã gọi mà hỏng 100%
+  ⇒ hạ trạng thái tối đa PARTIAL (cảnh báo, không chặn) + trường `optional_enhanced_failed`; SerpApi/Consensus đi qua
+  `diagnostics['fallback']` riêng — đối chiếu mã sống 25/09/2026];
   (ii) [ĐÃ LỖI THỜI từ khi có bậc thang có cổng — giờ chỉ truy vấn THIẾU chứng cứ mới gọi Scholar, không còn
-  quét tuần tự 53 truy vấn]; (iii) [ĐÃ XONG 20/09/2026 — `.env.example` đã có đủ dòng mẫu cho bậc thang dự phòng]; (iv) `research/manager.py` và
-  `research/dossier.py` nuốt mọi exception bằng `logger.warning` nên lỗi thiếu key/hết quota không
-  lên giao diện; (v) [ĐÃ XONG 20/09/2026 — trần THÁNG bền `SERPAPI_MAX_CALLS_PER_MONTH` (mặc định 200/250), tệp `data/raw/_state/serpapi_usage.json`, fail-closed, dùng chung giữa các tiến trình; SerpApi báo hết quota thì đánh dấu hết cả tháng; số đã dùng chưa đối chiếu với Account API]; (vi) tầng giám sát lâm sàng
+  quét tuần tự 53 truy vấn]; (iii) [ĐÃ XONG 20/09/2026 — `.env.example` đã có đủ dòng mẫu cho bậc thang dự phòng]; (iv) [ĐÃ XONG 22/09/2026, commit `dc4abb9` —
+  `suggest_background_literature(diagnostics=)` và `find_background_literature(loi_nguon_thuong=)` trả lỗi có cấu trúc (cả
+  khi cổng dự phòng bật lẫn tắt); `build_dossier_markdown()` in dòng «Nguồn thường gặp lỗi…» vào hồ sơ mà tab Nghiên cứu
+  của dashboard hiển thị — đối chiếu mã sống 25/09/2026]; (v) [ĐÃ XONG 20/09/2026 — trần THÁNG bền `SERPAPI_MAX_CALLS_PER_MONTH` (mặc định 200/250), tệp `data/raw/_state/serpapi_usage.json`, fail-closed, dùng chung giữa các tiến trình; SerpApi báo hết quota thì đánh dấu hết cả tháng; số đã dùng chưa đối chiếu với Account API]; (vi) tầng giám sát lâm sàng
   (`EBM-Dashboards/tools/surveillance_scan.py`) chưa có "làn" Scholar. Tắt được bằng cờ và không
   phụ thuộc duy nhất vào nguồn này (Google đang kiện SerpApi — theo báo chí/blog SerpApi, chưa có
   thông tin sau ~01/09/2026).
