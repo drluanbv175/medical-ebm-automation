@@ -214,7 +214,48 @@ class RSSFeedClient(SourceClient):
         except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
             logger.warning("[%s] lỗi đọc feed %s — BỎ QUA, KHÔNG bịa mock: %s",
                            self.name, self.feed.url, exc)
+            if self.feed.id in self._DU_PHONG_OPENFDA:
+                return self._du_phong_openfda_thu_hoi(max_results, since_date)
             return []
+
+    # -- Dự phòng openFDA cho feed thu hồi thuốc của FDA (25/09/2026) ------------------------
+    # Trang www.fda.gov chặn truy cập tự động CHẬP CHỜN (đo 24–25/09: cùng feed lúc 401 lúc 200).
+    # Không giả dạng trình duyệt để lách (luật dự án) — thay vào đó dùng API CHÍNH THỨC tương đương
+    # của FDA: openFDA `drug/enforcement` (thu hồi thuốc, cùng dữ liệu Enforcement Report). Chỉ áp cho
+    # `fda_recalls`; MedWatch không có API tương đương nên lỗi vẫn là lỗi (ingestion ghi «error»).
+    # Bản ghi dự phòng mang raw["_via"]="openfda_enforcement" để người đọc biết đường đi.
+    _DU_PHONG_OPENFDA = {"fda_recalls"}
+    _OPENFDA_ENFORCEMENT = "https://api.fda.gov/drug/enforcement.json"
+
+    def _du_phong_openfda_thu_hoi(self, max_results: int, since_date: Optional[str]) -> List[RawRecord]:
+        from app.sources.openfda import get_json_openfda
+        tu = (since_date or (date.today() - timedelta(days=self._CUA_SO_NGAY)).isoformat()).replace("-", "")
+        params = {"search": f"report_date:[{tu} TO 99991231]", "sort": "report_date:desc",
+                  "limit": max(1, min(int(max_results), 100))}
+        try:
+            data = get_json_openfda(self.http, self._OPENFDA_ENFORCEMENT, params)
+        except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
+            logger.warning("[%s] dự phòng openFDA enforcement cũng lỗi — KHÔNG bịa: %s", self.name, exc)
+            return []
+        out: List[RawRecord] = []
+        for it in (data or {}).get("results") or []:
+            if not isinstance(it, dict):
+                continue
+            ly_do = str(it.get("reason_for_recall") or "").strip()
+            san_pham = str(it.get("product_description") or "").strip()
+            if not (ly_do or san_pham):
+                continue
+            ngay = str(it.get("report_date") or "")
+            ngay = f"{ngay[:4]}-{ngay[4:6]}-{ngay[6:8]}" if len(ngay) == 8 and ngay.isdigit() else None
+            tieu_de = f"Drug recall ({it.get('classification') or 'unclassified'}): {san_pham[:160]}"
+            rec = self._to_record(tieu_de, None, ngay, f"{ly_do} — {san_pham}".strip(" —"))
+            rec.api_endpoint = self._OPENFDA_ENFORCEMENT
+            rec.raw["_via"] = "openfda_enforcement"
+            rec.raw["recall_number"] = it.get("recall_number")
+            out.append(rec)
+        logger.warning("[%s] RSS FDA bị chặn — lấy %d mục thu hồi từ openFDA enforcement (API chính thức)",
+                       self.name, len(out))
+        return out
 
     # -- Chế độ Crossref (RSS của nhà xuất bản không đọc được) ------------------------------
     _CROSSREF_WORKS = "https://api.crossref.org/works"

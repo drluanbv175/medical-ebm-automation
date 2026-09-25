@@ -299,6 +299,9 @@ class Settings:
     enable_europe_pmc: bool = field(default_factory=lambda: _get_bool("ENABLE_EUROPE_PMC", True))
     enable_crossref: bool = field(default_factory=lambda: _get_bool("ENABLE_CROSSREF", True))
     enable_openalex: bool = field(default_factory=lambda: _get_bool("ENABLE_OPENALEX", True))
+    # PubMed «lấy đủ rồi chọn mạnh nhất» (25/09/2026): lấy vùng rộng + làn guideline, xếp theo
+    # độ mạnh rồi mới cắt max_results. false = hành vi cũ (10 bài MỚI NHẤT theo ngày).
+    pubmed_chon_manh_nhat: bool = field(default_factory=lambda: _get_bool("PUBMED_CHON_MANH_NHAT", True))
     enable_semantic_scholar: bool = field(
         default_factory=lambda: _get_bool("ENABLE_SEMANTIC_SCHOLAR", True)
     )

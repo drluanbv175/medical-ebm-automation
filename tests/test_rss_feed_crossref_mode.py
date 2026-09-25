@@ -220,3 +220,15 @@ def test_missing_or_garbled_dates_return_none():
     assert _ngay({"issued": {"date-parts": [[None]]}}) is None
     assert _ngay({"issued": "rác", "published-online": None}) is None
     assert _ngay({"issued": {"date-parts": [[True, True]]}}) is None
+
+
+def test_bon_feed_bmj_con_lai_da_chuyen_sang_crossref_20260925():
+    """25/09/2026: Heart/Gut/Frontline Gastro/Thorax trả 0 mục qua RSS trên mọi mạng —
+    phải đi Crossref theo ISSN ĐIỆN TỬ đã đối chiếu (khớp tên tạp chí, có bài mới)."""
+    from app.sources.feeds import GUIDELINE_FEEDS
+    mong_doi = {"heart_bmj": "1468-201X", "gut_bmj": "1468-3288",
+                "fg_bmj": "2041-4145", "thorax_bmj": "1468-3296"}
+    theo_id = {f.id: f for f in GUIDELINE_FEEDS}
+    for fid, issn in mong_doi.items():
+        assert theo_id[fid].mode == "crossref", fid
+        assert theo_id[fid].issn == issn, fid
