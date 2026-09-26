@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -58,6 +59,28 @@ ANH_XA_NATURE = {
     "expression of concern": "expression_of_concern",
 }
 
+# DOI hợp lệ SAU khi chuẩn hoá (lower + bỏ tiền tố). Cùng khuôn DOI_RE của cổng verify_dashboard.
+_DOI_HOP_LE = re.compile(r"^10\.\d{4,9}/\S+$")
+_TIEN_TO_DOI = ("https://doi.org/", "http://doi.org/", "https://dx.doi.org/", "http://dx.doi.org/",
+                "doi.org/", "doi:")
+
+
+def chuan_hoa_doi(gia_tri: Optional[str]) -> Optional[str]:
+    """Chuẩn hoá một DOI để làm khoá chỉ mục: strip, lower, bỏ tiền tố URL/`doi:`.
+
+    Trả `None` cho giá trị giữ chỗ ('Unavailable', '0', rỗng) hoặc không đúng khuôn `10.xxxx/…` —
+    giá trị giữ chỗ mà thành khoá thì MỌI bài «Unavailable» sẽ trùng nhau (đỏ giả hàng loạt).
+    """
+    d = (gia_tri or "").strip().lower()
+    for tt in _TIEN_TO_DOI:
+        if d.startswith(tt):
+            d = d[len(tt):].strip()
+            break
+    d = d.rstrip(".,;")
+    if not d or d in ("unavailable", "0") or not _DOI_HOP_LE.match(d):
+        return None
+    return d
+
 
 class RetractionWatchIndex:
     """Chỉ mục PMID → bản ghi rút bài, dựng từ file CSV đã tải về."""
@@ -69,6 +92,12 @@ class RetractionWatchIndex:
         self._chi_muc: Dict[str, dict] = {}
         self._da_nap = False
         self._phuc_hoi: set[str] = set()
+        # Chỉ mục THEO DOI (thêm 26/09/2026, phát hiện #31): 33.294/72.606 dòng Retraction Watch KHÔNG
+        # có PMID (chỉ có OriginalPaperDOI) nên bị bỏ hẳn khỏi chỉ mục PMID; và một bài có PMID mà gói
+        # trích bằng DOI cũng không bao giờ được hỏi. Chỉ mục này dựng từ MỌI dòng có DOI hợp lệ —
+        # KHÔNG đụng tới chỉ mục PMID hay hành vi của `tra()`.
+        self._chi_muc_doi: Dict[str, dict] = {}
+        self._phuc_hoi_doi: set[str] = set()
 
     # -- trạng thái ------------------------------------------------------
     def san_sang(self) -> bool:
@@ -122,13 +151,19 @@ class RetractionWatchIndex:
         except (OverflowError, ValueError):  # pragma: no cover - Windows 32-bit
             csv.field_size_limit(2 ** 31 - 1)
 
+        pmid_sang_doi: Dict[str, set] = {}
         with self.csv_path.open(encoding="utf-8", errors="replace", newline="") as fh:
             for hang in csv.DictReader(fh):
+                # DOI được xử lý TRƯỚC và ĐỘC LẬP với PMID: dòng không có PMID vẫn vào chỉ mục DOI.
+                self._nap_dong_doi(hang)
                 pmid = (hang.get("OriginalPaperPubMedID") or "").strip()
                 # "0" là giá trị GIỮ CHỖ của Retraction Watch khi không biết PMID —
                 # coi nó là PMID thật sẽ gắn cờ rút bài cho một PMID không tồn tại.
                 if not pmid or pmid == "0":
                     continue
+                doi_dong = chuan_hoa_doi(hang.get("OriginalPaperDOI"))
+                if doi_dong:
+                    pmid_sang_doi.setdefault(pmid, set()).add(doi_dong)
                 nature = (hang.get("RetractionNature") or "").strip().lower()
                 if nature == "reinstatement":
                     self._phuc_hoi.add(pmid)
@@ -151,10 +186,48 @@ class RetractionWatchIndex:
                 cu = self._chi_muc.get(pmid)
                 if cu is None or (cu["status"] != "retracted" and trang_thai == "retracted"):
                     self._chi_muc[pmid] = ban_ghi
+        # Bài được PHỤC HỒI theo PMID thì DOI của chính bài đó (lấy từ mọi dòng cùng PMID) cũng không được
+        # kết luận «đã rút» — nếu không, cùng một bài sẽ «sạch» khi trích bằng PMID mà «rút» khi trích bằng
+        # DOI (đỏ giả). Chiều ngược lại (DOI phục hồi ⇒ PMID) CỐ Ý không làm: giữ nguyên hành vi `tra()`.
+        for pm in self._phuc_hoi:
+            self._phuc_hoi_doi.update(pmid_sang_doi.get(pm, ()))
         self._da_nap = True
-        logger.info("[retraction_watch] nạp %d PMID có phán quyết, %d PMID được phục hồi",
-                    len(self._chi_muc), len(self._phuc_hoi))
+        logger.info("[retraction_watch] nạp %d PMID có phán quyết, %d PMID được phục hồi; "
+                    "%d DOI có phán quyết, %d DOI được phục hồi",
+                    len(self._chi_muc), len(self._phuc_hoi),
+                    len(self._chi_muc_doi), len(self._phuc_hoi_doi))
         return True
+
+    def _nap_dong_doi(self, hang: dict) -> None:
+        """Đưa MỘT dòng CSV vào chỉ mục DOI — cùng luật của chỉ mục PMID:
+        chỉ Retraction/EoC thành phán quyết; Reinstatement ⇒ DOI bị loại khỏi kết luận; rút bài thắng EoC
+        bất kể thứ tự dòng; giữ tiêu đề Retraction Watch để bác sĩ đối chiếu (dữ liệu RW có hiếm DOI khớp
+        nhiều bài khác nhau)."""
+        doi = chuan_hoa_doi(hang.get("OriginalPaperDOI"))
+        if not doi:
+            return
+        nature = (hang.get("RetractionNature") or "").strip().lower()
+        if nature == "reinstatement":
+            self._phuc_hoi_doi.add(doi)
+            return
+        trang_thai = ANH_XA_NATURE.get(nature)
+        if not trang_thai:
+            return
+        notice = (hang.get("RetractionPubMedID") or "").strip()
+        ban_ghi = {
+            "status": trang_thai,
+            "nature": (hang.get("RetractionNature") or "").strip(),
+            "retraction_date": (hang.get("RetractionDate") or "").strip(),
+            "reason": (hang.get("Reason") or "").strip(),
+            "journal": (hang.get("Journal") or "").strip(),
+            "notice_pmid": notice if notice and notice != "0" else None,
+            "notice_doi": (hang.get("RetractionDOI") or "").strip() or None,
+            "title": (hang.get("Title") or "").strip(),
+            "doi": doi,
+        }
+        cu = self._chi_muc_doi.get(doi)
+        if cu is None or (cu["status"] != "retracted" and trang_thai == "retracted"):
+            self._chi_muc_doi[doi] = ban_ghi
 
     # -- tra cứu ---------------------------------------------------------
     def tra(self, pmid: str) -> Optional[dict]:
@@ -188,3 +261,30 @@ class RetractionWatchIndex:
     def so_ban_ghi(self) -> int:
         self.nap()
         return len(self._chi_muc)
+
+    # -- tra cứu theo DOI (thêm 26/09/2026, phát hiện #31) ---------------------
+    def san_sang_doi(self) -> bool:
+        """True chỉ khi đã nạp được ÍT NHẤT MỘT DOI có phán quyết — cùng lý lẽ của `san_sang()`."""
+        return self.nap() and len(self._chi_muc_doi) > 0
+
+    def tra_doi(self, doi: str) -> Optional[dict]:
+        """Trả bản ghi nếu DOI nằm trong danh mục; `None` nghĩa là KHÔNG BIẾT (không bao giờ là «ok»).
+
+        Chuẩn hoá cùng cách lúc nạp (lower, bỏ tiền tố `https://doi.org/`/`doi:`). DOI có dòng phục hồi —
+        hoặc thuộc một PMID được phục hồi — trả `None`, y như `tra()` với PMID.
+        """
+        if not self.nap():
+            return None
+        khoa = chuan_hoa_doi(doi)
+        if not khoa or khoa in self._phuc_hoi_doi:
+            return None
+        ban_ghi = self._chi_muc_doi.get(khoa)
+        if ban_ghi is None:
+            return None
+        kq = dict(ban_ghi)
+        kq["source"] = "retraction_watch"
+        return kq
+
+    def so_ban_ghi_doi(self) -> int:
+        self.nap()
+        return len(self._chi_muc_doi)
