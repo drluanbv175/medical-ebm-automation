@@ -54,6 +54,19 @@ logger = get_logger(__name__)
 KHONG_BIET = {"unknown_mock_or_no_email", "unknown_fetch_error"}
 # Trạng thái DƯƠNG — có vấn đề thật, ưu tiên cao nhất khi gộp.
 DUONG_TINH = ("retracted", "expression_of_concern")
+# Trạng thái mang PHÁN QUYẾT của một nguồn sống (vá 26/09/2026, phát hiện #34 — phòng thủ
+# nhiều lớp). Nguồn trả trạng thái NGOÀI tập này và ngoài KHONG_BIET (vd 'rate_limited',
+# 'timeout', None, '') bị coi là «không biết»: được hỏi Europe PMC như KHONG_BIET, và nếu
+# không nguồn nào kết luận được thì CHUẨN HOÁ thành 'unknown_fetch_error' (giữ trạng thái
+# gốc trong `reason`) — receipt A12 không bao giờ mang một trạng thái mà nơi tiêu thụ không biết.
+CO_PHAN_QUYET = frozenset({"ok", "unresolved", *DUONG_TINH})
+
+
+def _chi_dict(kq: object) -> Dict[str, dict]:
+    """Kết quả của một client: chỉ giữ mục là dict (mục hỏng ⇒ coi như nguồn không trả lời PMID đó)."""
+    if not isinstance(kq, dict):
+        return {}
+    return {str(k): v for k, v in kq.items() if isinstance(v, dict)}
 
 
 
@@ -102,7 +115,7 @@ class RetractionChain:
         # `sources_tried`: chưa hỏi thì không được kể là đã thử.
         pm: Dict[str, dict] = {}
         if self.pubmed is not None:
-            pm = self.pubmed.check_retraction_status(pmids)
+            pm = _chi_dict(self.pubmed.check_retraction_status(pmids))
         else:
             logger.info("[retraction_chain] tầng NCBI vắng mặt (thiếu thư viện — "
                         "python3 hệ thống?) — chỉ còn nền ngoại tuyến + Europe PMC")
@@ -128,15 +141,19 @@ class RetractionChain:
 
         # Tầng 2 — Europe PMC, CHỈ hỏi cho PMID mà tầng 1 không kết luận được.
         # Hỏi thừa vừa tốn mạng vừa dễ tạo bất đồng giả giữa hai nguồn.
-        con_thieu = [p for p in pmids
-                     if pm.get(p, {}).get("status", "unknown_fetch_error")
-                     in trang_thai_can_kiem_cheo]
+        # Vá 26/09/2026 (#34): trạng thái LẠ của PubMed (ngoài CO_PHAN_QUYET) cũng là «không biết»
+        # ⇒ hỏi Europe PMC, thay vì để nó trôi thẳng vào receipt.
+        def _can_hoi_ep(p: str) -> bool:
+            tt = pm.get(p, {}).get("status", "unknown_fetch_error")
+            return tt in trang_thai_can_kiem_cheo or tt not in CO_PHAN_QUYET
+
+        con_thieu = [p for p in pmids if _can_hoi_ep(p)]
         con_thieu_tap = set(con_thieu)
         ep: Dict[str, dict] = {}
         if con_thieu and self.europepmc is not None:
             logger.info("[retraction_chain] tầng 1 câm cho %d/%d PMID → hỏi Europe PMC",
                         len(con_thieu), len(pmids))
-            ep = self.europepmc.check_retraction_status(con_thieu)
+            ep = _chi_dict(self.europepmc.check_retraction_status(con_thieu))
 
         # SỬA 2026-09-03 (Workflow đối kháng đa-agent, phát hiện #4): `sources_tried`
         # trước đây là MỘT list dùng CHUNG cho cả lô — một PMID được pubmed trả lời
@@ -203,6 +220,10 @@ class RetractionChain:
         pm/ep không bao giờ mang tiêu đề thông báo nên hai đối số kia luôn rỗng."""
         notice_titles = notice_titles or {}
         nen = {"sources_tried": list(da_thu)}
+        # Mục không phải dict (client hỏng) ⇒ coi như nguồn đó không trả lời (fail-closed ở nhánh 3).
+        rw = rw if isinstance(rw, dict) else None
+        pm = pm if isinstance(pm, dict) else None
+        ep = ep if isinstance(ep, dict) else None
 
         # 1. DƯƠNG TÍNH thắng tất cả, theo mức nặng: rút bài > expression of concern.
         #    Duyệt theo thứ tự nguồn giàu thông tin nhất để giữ được notice gốc.
@@ -283,9 +304,17 @@ class RetractionChain:
         # 3. Không nguồn nào kết luận được → FAIL-CLOSED, giữ nguyên lý do của tầng 1
         #    (nó nói rõ NCBI đang chặn) và nói thêm rằng dự phòng cũng đã thử.
         goc = pm or ep or {}
+        trang_thai = goc.get("status", "unknown_fetch_error")
+        ly_do = str(goc.get("reason") or "không nguồn nào kiểm được")
+        if trang_thai not in KHONG_BIET:
+            # Trạng thái LẠ (vá 26/09/2026, #34): chuẩn hoá về 'unknown_fetch_error' để receipt không
+            # mang một trạng thái mà nơi tiêu thụ (danh sách trắng/đen) không biết; giữ nguyên gốc trong lý do.
+            ly_do = (f"nguồn trả trạng thái lạ {trang_thai!r} — chuẩn hoá thành "
+                     f"'unknown_fetch_error' (CHƯA xác minh) | {ly_do}")
+            trang_thai = "unknown_fetch_error"
         ra = {
-            "status": goc.get("status", "unknown_fetch_error"),
-            "reason": goc.get("reason", "không nguồn nào kiểm được"),
+            "status": trang_thai,
+            "reason": ly_do,
         }
         ra.update(nen)
         ra["source"] = None

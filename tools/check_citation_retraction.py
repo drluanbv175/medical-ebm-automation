@@ -22,8 +22,9 @@ Dùng:
     python tools/check_citation_retraction.py --pmids 12345678,23456789 --study KKB-2026
 
 Exit code: 0 = không phát hiện vấn đề (mọi PMID "ok"); 1 = có PMID retracted/
-expression-of-concern/không xác minh được (unresolved/mock/no-email) — KHÔNG
-được ghi "ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN" vào artifact A12 khi exit code là 1.
+expression-of-concern/không xác minh được (unresolved/mock/no-email) HOẶC mang
+trạng thái lạ/không đúng định dạng (danh sách trắng — chỉ "ok" là sạch, 26/09/2026)
+— KHÔNG được ghi "ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN" vào artifact A12 khi exit code là 1.
 
 LÀM CỨNG CỔNG A12 (vá 2026-07-15, P1.1 lộ trình 7 ngày — sau audit chỉ ra
 `run_g10_assemble.py::citation_verification_ok()` trước đây CHỈ đọc một dòng
@@ -67,6 +68,33 @@ from app.sources.retraction_chain import RetractionChain  # noqa: E402
 # luật cần chạy), chỉ khác chỗ phát bệnh. "Không kiểm được" PHẢI là một VẤN ĐỀ.
 _PROBLEM_STATUSES = {"retracted", "expression_of_concern", "unresolved",
                      "unknown_mock_or_no_email", "unknown_fetch_error"}
+# ↑ Tập trên nay CHỈ còn dùng cho NHÃN hiển thị và test cũ — KHÔNG còn quyết định
+# «sạch/không sạch». SỬA 26/09/2026 (phát hiện #34): bản vá 14/08 vẫn giữ kiểu DANH
+# SÁCH ĐEN, nên một trạng thái chưa từng liệt kê ('rate_limited', 'timeout', None, '',
+# bản ghi không phải dict…) lại bị tính là SẠCH ⇒ receipt ký all_clean=true ⇒ G10 mở
+# cổng — đúng kịch bản fail-open 14/08, chỉ chờ một client thêm mã lỗi mới là tái phát.
+# Nay quyết định bằng DANH SÁCH TRẮNG đóng: CHỈ "ok" là sạch (cùng kiểu với
+# `check_citation_metadata.all_resolved` và whitelist 14/09 của so_xac_minh_nguon.py).
+# Thêm một trạng thái sạch mới phải thêm TƯỜNG MINH vào đây — mặc định là chặn.
+_TRANG_THAI_SACH = frozenset({"ok"})
+
+
+def la_van_de(info: object) -> bool:
+    """True nếu kết quả kiểm rút bài của MỘT PMID KHÔNG được coi là sạch.
+
+    Danh sách trắng: chỉ `{"status": "ok"}` là sạch. Mọi thứ khác — trạng thái dương
+    tính, «không biết», trạng thái LẠ, thiếu khoá, None, chuỗi rỗng, hay bản ghi không
+    phải dict — đều là VẤN ĐỀ (fail-closed). Dùng chung cho receipt, mã thoát CLI và
+    `tools/check_citations.py`.
+    """
+    return not isinstance(info, dict) or info.get("status") not in _TRANG_THAI_SACH
+
+
+def nhan_trang_thai(status: object) -> str:
+    """Nhãn hiển thị cho một trạng thái; trạng thái LẠ in cảnh báo thay vì chuỗi thô."""
+    if isinstance(status, str) and status in _STATUS_LABEL:
+        return _STATUS_LABEL[status]
+    return f"⚠️  TRẠNG THÁI LẠ {status!r} — CHƯA xác minh (không được coi là sạch)"
 
 _STATUS_LABEL = {
     "retracted": "🔴 ĐÃ BỊ RÚT",
@@ -116,7 +144,8 @@ def write_retraction_receipt(study_raw: str, pmids: List[str], results: Dict[str
         pmid: results.get(pmid, {"status": "unresolved", "reason": "không có kết quả"})
         for pmid in pmids
     }
-    all_clean = not any(v.get("status") in _PROBLEM_STATUSES for v in per_pmid.values())
+    # Danh sách TRẮNG (vá 26/09/2026, #34): chỉ "ok" là sạch; lô rỗng không bao giờ là «sạch».
+    all_clean = bool(per_pmid) and not any(la_van_de(v) for v in per_pmid.values())
 
     checked_at_utc = datetime.now(timezone.utc).isoformat()
     pmids_hash_value = pmids_hash(sorted_pmids)
@@ -171,18 +200,23 @@ def main() -> int:
 
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
-        return 1 if any(v.get("status") in _PROBLEM_STATUSES for v in results.values()) else 0
+        # Xét theo DANH SÁCH PMID đã hỏi (PMID vắng mặt trong kết quả cũng là vấn đề), không
+        # chỉ theo những gì chuỗi trả về.
+        return 1 if any(la_van_de(results.get(p)) for p in pmids) else 0
 
-    da_thu = next((v.get("sources_tried") for v in results.values() if v.get("sources_tried")), [])
+    da_thu = next((v.get("sources_tried") for v in results.values()
+                   if isinstance(v, dict) and v.get("sources_tried")), [])
     print(f"Kiểm rút bài/expression of concern cho {len(pmids)} PMID")
     print(f"Nguồn đã hỏi (chuỗi 3 tầng): {', '.join(da_thu) if da_thu else '(không có)'}\n")
     any_problem = False
     for pmid in pmids:
         info = results.get(pmid, {"status": "unresolved", "reason": "không có kết quả"})
-        status = info.get("status", "unresolved")
-        if status in _PROBLEM_STATUSES:
+        if la_van_de(info):
             any_problem = True
-        label = _STATUS_LABEL.get(status, status)
+        if not isinstance(info, dict):
+            info = {"status": None, "reason": f"kết quả không đúng định dạng ({type(info).__name__})"}
+        status = info.get("status")
+        label = nhan_trang_thai(status)
         line = f"  PMID {pmid}: {label}"
         if status == "retracted" and info.get("retraction_notice"):
             n = info["retraction_notice"]
@@ -190,8 +224,7 @@ def main() -> int:
         elif status == "expression_of_concern" and info.get("expression_of_concern_notice"):
             n = info["expression_of_concern_notice"]
             line += f"\n      → Thông báo: PMID {n.get('pmid')} — {n.get('citation')}"
-        elif status in ("unresolved", "unknown_mock_or_no_email",
-                        "unknown_fetch_error") and info.get("reason"):
+        elif status not in ("ok", "retracted", "expression_of_concern") and info.get("reason"):
             line += f"\n      → {info['reason']}"
         # Khi phán quyết đến từ nền ngoại tuyến, `retraction_notice` rỗng — in NGUYÊN
         # lý do của Retraction Watch, đừng để bác sĩ chỉ thấy "🔴 ĐÃ BỊ RÚT" trơ trọi.
