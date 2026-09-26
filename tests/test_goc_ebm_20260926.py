@@ -63,3 +63,37 @@ def test_bon_verifier_dung_bo_do_chung(ten):
             if x.strip() and not x.strip().startswith("#")]
     assert any(x.startswith("ROOT = _goc.tim_goc_ebm(REPO)") for x in dong)
     assert not any(x.strip() == "ROOT = REPO.parent" for x in dong)
+
+
+def test_chi_thieu_tep_onedrive_tren_ban_sao_tran(tmp_path):
+    goc = _goc_ebm(tmp_path / "EBM-drluanbv175")
+    loi = ["missing:EBM_MASTER/tools/sync_all.py", "missing:dashboard_mockups/templates/a.html"]
+    assert G.chi_thieu_tep_onedrive(loi, goc, "missing:") is True
+
+
+@pytest.mark.parametrize("loi", [
+    ["missing:EBM_MASTER/tools/sync_all.py", "upgrade_verify_missing_pipeline:x"],   # lỗi nội dung ⇒ vẫn FAIL
+    ["missing:tools/upgrade_verify.py"],                                           # thiếu tệp TRONG git
+    [],
+])
+def test_loi_khac_van_la_fail(tmp_path, loi):
+    goc = _goc_ebm(tmp_path / "EBM-drluanbv175")
+    assert G.chi_thieu_tep_onedrive(loi, goc, "missing:") is False
+
+
+def test_may_that_co_onedrive_thi_thieu_la_fail(tmp_path):
+    """Có EBM-Dashboards/ (máy thật) mà thiếu EBM_MASTER/… là cây OneDrive hỏng dở — phải ĐỎ."""
+    goc = _goc_ebm(tmp_path / "EBM-drluanbv175")
+    (goc / "EBM-Dashboards").mkdir()
+    assert G.chi_thieu_tep_onedrive(["missing:EBM_MASTER/tools/sync_all.py"], goc, "missing:") is False
+
+
+@pytest.mark.parametrize("ten,tien_to", [
+    ("verify_clinical_production_control_plane", '"missing:"'),
+    ("verify_clinical_evidence_agent_standards", '"missing_file:"'),
+])
+def test_hai_verifier_dung_bo_phan_loai_va_ma_2(ten, tien_to):
+    nguon = (_TEP.parent / f"{ten}.py").read_text(encoding="utf-8")
+    dong = [x for x in nguon.splitlines() if x.strip() and not x.strip().startswith("#")]
+    assert any("_goc.chi_thieu_tep_onedrive(" in x and tien_to in x for x in dong)
+    assert any('return 2 if report["overall_status"] == "MEASUREMENT_INCOMPLETE" else 0' in x for x in dong)

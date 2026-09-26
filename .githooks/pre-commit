@@ -15,6 +15,18 @@ export PYTHONIOENCODING=utf-8
 REPO_ROOT=$(git rev-parse --show-toplevel)
 WORKSPACE_ROOT=${EBM_WORKSPACE_ROOT:-$(cd "$REPO_ROOT/.." && pwd)}
 ROOT_HOOK="$WORKSPACE_ROOT/.githooks/pre-commit"
+# Bo cuc ANH EM (phien Cloud: /home/user/medical-ebm-automation canh /home/user/EBM-drluanbv175) —
+# 26/09/2026, cung thu tu do voi tools/goc_ebm.py. Chi thu khi KHONG dat EBM_WORKSPACE_ROOT va thu muc cha
+# khong co hook; khong thay thi van CHAN nhu cu (khong noi long cong).
+if [ -z "$EBM_WORKSPACE_ROOT" ] && [ ! -x "$ROOT_HOOK" ]; then
+  for ten in EBM-drluanbv175 ebm-drluanbv175; do
+    if [ -x "$REPO_ROOT/../$ten/.githooks/pre-commit" ]; then
+      WORKSPACE_ROOT=$(cd "$REPO_ROOT/../$ten" && pwd)
+      ROOT_HOOK="$WORKSPACE_ROOT/.githooks/pre-commit"
+      break
+    fi
+  done
+fi
 
 if [ ! -x "$ROOT_HOOK" ]; then
   echo "CHAN COMMIT: khong tim thay hook dong bo workspace: $ROOT_HOOK" >&2
