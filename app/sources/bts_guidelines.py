@@ -54,6 +54,7 @@ guideline cụ thể — Cloudflare cho qua bình thường với trình duyệt
 """
 from __future__ import annotations
 
+import re
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -80,12 +81,50 @@ _DOMAIN_DA_KHAO_SAT = "brit-thoracic.org.uk"
 _DOMAIN_CLOUDFLARE_CHAN = ("thorax.bmj.com", "bmjopenrespres.bmj.com")
 _DOMAIN_NICE_CAN_GIAY_PHEP_AI = ("nice.org.uk",)
 
+# ── Tự tìm URL theo CHỦ ĐỀ (thêm 26/09/2026) ─────────────────────────────────────────────
+# Đo thật 26/09 trên 16 trang /clinical-resources/guidelines/<chủ-đề>/: mỗi trang liệt kê link
+# /document-library/guidelines/<nhóm>/<tài-liệu>/ — bản chính + phụ lục/tóm tắt/slide. Quy tắc
+# chọn rút từ chính số đo đó; còn >1 ứng viên thì KHÔNG đoán (trả danh sách cho người chọn).
+_TRANG_CHU_DE = "https://www.brit-thoracic.org.uk/clinical-resources/guidelines/{}/"
+_GOC_BTS = "https://www.brit-thoracic.org.uk"
+_CHU_DE_HOP_LE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+_LINK_TAI_LIEU = re.compile(r'href="(/document-library/guidelines/[a-z0-9-]+/[a-z0-9-]+/)"')
+# Bản phụ, không phải toàn văn guideline (đều gặp thật trong số đo 26/09).
+_TU_LOAI_TRU = ("appendix", "summary", "slide", "quick-reference", "alert-card", "template",
+                "public", "consensus-method", "supplement")
+
+
+def chon_url_guideline_chinh(html: str) -> dict:
+    """Từ HTML trang chủ đề BTS, chọn URL toàn văn guideline CHÍNH. Hàm thuần — không gọi mạng.
+
+    Trả {"url": str|None, "ly_do": str, "ung_vien": [...], "loai_nice": [...]}. `url` chỉ có khi
+    còn ĐÚNG MỘT ứng viên. Tài liệu đồng xuất bản với NICE (slug chứa «nice») bị tách riêng vì
+    điều khoản NICE mục 18.3 đòi giấy phép cho mọi dùng cho AI — dù tệp nằm trên brit-thoracic.
+    """
+    tat_ca = sorted(set(_LINK_TAI_LIEU.findall(html or "")))
+    ung_vien, loai_nice = [], []
+    for duong in tat_ca:
+        ten = duong.rstrip("/").rsplit("/", 1)[-1]
+        if any(t in ten for t in _TU_LOAI_TRU):
+            continue
+        (loai_nice if "nice" in ten.split("-") or ten.startswith(("btsnicesign", "nice-")) else ung_vien).append(
+            _GOC_BTS + duong)
+    if len(ung_vien) == 1:
+        return {"url": ung_vien[0], "ly_do": "một ứng viên duy nhất", "ung_vien": ung_vien,
+                "loai_nice": loai_nice}
+    if not ung_vien:
+        ly_do = ("chỉ có tài liệu đồng xuất bản với NICE — cần giấy phép AI của NICE, không tải"
+                 if loai_nice else "trang chủ đề không liệt kê tài liệu toàn văn nào trên brit-thoracic")
+        return {"url": None, "ly_do": ly_do, "ung_vien": [], "loai_nice": loai_nice}
+    return {"url": None, "ly_do": f"{len(ung_vien)} ứng viên — không đoán, chọn một URL rồi chạy lại",
+            "ung_vien": ung_vien, "loai_nice": loai_nice}
+
 
 class BtsGuidelineFullTextClient:
     """Tải TOÀN VĂN một hướng dẫn BTS theo URL PDF ĐÃ BIẾT trên brit-thoracic.org.uk.
 
-    KHÔNG kế thừa `SourceClient`, KHÔNG có `.search()`, KHÔNG tự dò "bản mới nhất"
-    (xem giới hạn ở docstring module) — cùng khuôn `WileyTdmClient`."""
+    KHÔNG kế thừa `SourceClient`, KHÔNG có `.search()` — cùng khuôn `WileyTdmClient`. Từ 26/09/2026
+    có `tim_url_theo_chu_de()` đọc trang chủ đề BTS để chọn URL guideline chính (không đoán khi >1)."""
 
     name = "bts_guidelines_fulltext"
 
@@ -93,6 +132,25 @@ class BtsGuidelineFullTextClient:
         if not settings.enable_bts_guidelines_fulltext:
             raise ConnectorChuaBat(thong_diep_co_tat("bts_guidelines", "ENABLE_BTS_GUIDELINES_FULLTEXT"))
         self.http = HttpClient()
+
+    def tim_url_theo_chu_de(self, chu_de: str) -> dict:
+        """Đọc trang /clinical-resources/guidelines/<chu_de>/ rồi chọn URL guideline chính.
+
+        Fail-closed: chủ đề sai khuôn ⇒ không gọi mạng; lỗi mạng ⇒ `url` None kèm lý do."""
+        chu_de = (chu_de or "").strip().lower()
+        if not _CHU_DE_HOP_LE.match(chu_de):
+            return {"url": None, "ly_do": f"chủ đề «{chu_de}» sai khuôn (chỉ chữ thường, số, gạch nối)",
+                    "ung_vien": [], "loai_nice": []}
+        trang = _TRANG_CHU_DE.format(chu_de)
+        try:
+            html = self.http.get_text(trang)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[bts_guidelines] không đọc được trang chủ đề %s: %s", trang, exc)
+            return {"url": None, "ly_do": f"không đọc được {trang}: {exc}"[:300], "ung_vien": [],
+                    "loai_nice": []}
+        kq = chon_url_guideline_chinh(html)
+        kq["trang_chu_de"] = trang
+        return kq
 
     def tai_toan_van(self, url: str,
                      gioi_han_ky_tu: Optional[int] = GIOI_HAN_KY_TU_MAC_DINH) -> KetQuaToanVanGuideline:

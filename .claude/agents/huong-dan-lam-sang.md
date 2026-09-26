@@ -92,6 +92,11 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
 
 Không chạy được ⇒ ghi **"chưa đối chiếu"**, KHÔNG ghi "không có mâu thuẫn".
 
+3a. **Đọc TOÀN VĂN guideline trước khi dựng/cập nhật khuyến cáo (nối 26/09/2026):**
+   `python3 medical-ebm-automation/tools/toan_van_guideline.py gold|gina|pmc <PMCID>|bts --chu-de <chủ-đề>
+   --tim "<cụm>"` — trích đúng câu chữ + số trang + SHA-256 bản đã đọc. Mã 2 ⇒ «chưa đọc được toàn văn»
+   (không phải «không có»); mã 4 với `bts --chu-de` ⇒ chọn một URL trong danh sách, không tự đoán.
+
 3. **Nguồn guideline bị chặn toàn văn (BTS/Thorax/NICE, thêm 23/09/2026):** khi
    `bts_guidelines.py`/`pmc_guideline_fulltext.py` từ chối mà đã có DOI/PMID, gọi
    `app.sources.guideline_citation_summary.lay_trich_dan_tom_tat(doi=..., pmid=...)`

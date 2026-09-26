@@ -10,6 +10,7 @@ Dùng:
     python3 medical-ebm-automation/tools/toan_van_guideline.py gina [--url <PDF ginasthma.org>] [--tim "<cụm từ>"]
     python3 medical-ebm-automation/tools/toan_van_guideline.py pmc <PMCID> [--tim "<cụm từ>"]
     python3 medical-ebm-automation/tools/toan_van_guideline.py bts <URL PDF brit-thoracic.org.uk> [--tim "<cụm từ>"]
+    python3 medical-ebm-automation/tools/toan_van_guideline.py bts --chu-de pulmonary-nodules [--tim "<cụm từ>"]
     python3 medical-ebm-automation/tools/toan_van_guideline.py trich-dan --doi <DOI> | --pmid <PMID>   (đường lùi)
 Tuỳ chọn chung: --tim (lặp được) · --ngu-canh 300 · --toi-da-khop 10 · --toan-bo · --gioi-han N ·
                 --luu <tệp NGOÀI repo> · --doi/--pmid (để gợi ý đường lùi khi tải thất bại) · --json
@@ -21,7 +22,7 @@ Mặc định không --tim: trích tới 200.000 ký tự (như connector); có 
 Mã thoát: 0 = tải được (và mọi --tim đều khớp) · 1 = tải được nhưng có --tim KHÔNG khớp ·
           2 = LỖI/KHÔNG BIẾT (mạng, bị chặn, nguồn đổi cấu trúc, không có trong PMC OA) ·
           3 = connector CHƯA BẬT (cờ ENABLE_* tắt) · 4 = đầu vào bị từ chối (URL ngoài nguồn đã khảo sát,
-          NICE, PMCID sai, --luu trong repo).
+          NICE, PMCID sai, --luu trong repo; `bts --chu-de` có >1 ứng viên hoặc chỉ tài liệu đồng xuất bản NICE).
 Chỉ là nguồn tham chiếu nội bộ để trích câu chữ kèm nguồn; cần bác sĩ kiểm chứng.
 """
 from __future__ import annotations
@@ -83,6 +84,20 @@ def kiem_duong_luu(duong: str) -> Optional[str]:
         return None
     return (f"Không lưu toàn văn vào trong repo ({REPO.name}/) — dễ bị commit/phân phối lại. "
             "Chọn đường dẫn NGOÀI repo (vd thư mục tạm).")
+
+
+_THANG = r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
+_NAM_TAP_CHI = re.compile(r"\b(?:THORAX|Thorax)\s+(?:" + _THANG + r"\s+)?((?:19|20)\d\d)\b")
+
+
+def nam_tu_van_ban(van_ban: str, so_ky_tu_dau: int = 30000) -> Optional[str]:
+    """Năm SUY TỪ NỘI DUNG: dòng tiêu đề tạp chí «THORAX <Tháng> <Năm>» / «Thorax <Năm>» ở phần đầu tài liệu.
+
+    Chỉ nhận mẫu tạp chí rõ ràng (đo thật 26/09: «THORAX August 2015», «THORAX January 2019») —
+    không lấy năm bất kỳ trong văn bản (năm của tài liệu tham khảo sẽ làm sai). Không thấy ⇒ None.
+    """
+    m = _NAM_TAP_CHI.search((van_ban or "")[:so_ky_tu_dau])
+    return m.group(1) if m else None
 
 
 def nam_phien_ban(url: str) -> Dict[str, Optional[str]]:
@@ -150,6 +165,25 @@ def xu_ly_tai(args) -> Dict[str, Any]:
     nguon = args.nguon
     dinh_danh = getattr(args, "dinh_danh", None) or getattr(args, "url", None)
     out: Dict[str, Any] = {"nguon": nguon, "dinh_danh": dinh_danh, "ghi_chu_ban_quyen": GHI_CHU_BAN_QUYEN_CHUAN}
+    chu_de = getattr(args, "chu_de", None)
+    if nguon == "bts" and not dinh_danh:
+        if not chu_de:
+            return {**out, "trang_thai": "tu_choi", "ly_do": "Cần URL hoặc --chu-de <tên chủ đề>.",
+                    "ma_thoat": MA_TU_CHOI}
+        try:
+            tim = _dung_client("bts").tim_url_theo_chu_de(chu_de)
+        except ConnectorChuaBat as exc:
+            return {**out, "trang_thai": "chua_bat", "ly_do": str(exc), "ma_thoat": MA_CHUA_BAT}
+        out.update({"tim_theo_chu_de": chu_de, "trang_chu_de": tim.get("trang_chu_de"),
+                    "ung_vien": tim.get("ung_vien"), "loai_nice": tim.get("loai_nice")})
+        if not tim.get("url"):
+            if tim.get("ung_vien"):  # >1 ứng viên: không đoán — người chọn một URL
+                return {**out, "trang_thai": "can_chon", "ly_do": tim["ly_do"], "ma_thoat": MA_TU_CHOI}
+            if tim.get("loai_nice"):  # chỉ có tài liệu đồng xuất bản NICE: rào giấy phép AI
+                return {**out, "trang_thai": "tu_choi", "ly_do": tim["ly_do"], "ma_thoat": MA_TU_CHOI}
+            return {**out, "trang_thai": "loi", "ly_do": tim["ly_do"], "ma_thoat": MA_LOI}
+        dinh_danh = tim["url"]
+        out["dinh_danh"] = dinh_danh
     if nguon in DOMAIN_CHO_PHEP:
         ly_do = kiem_url(nguon, dinh_danh)
         if ly_do:
@@ -183,7 +217,7 @@ def xu_ly_tai(args) -> Dict[str, Any]:
     van_ban = kq.van_ban_trich or ""
     out.update({
         "trang_thai": "tai_duoc", "to_chuc": kq.to_chuc, "url_nguon": kq.url_nguon, "ngay_tai": ngay_tai,
-        **nam_phien_ban(kq.url_nguon),
+        **nam_phien_ban(kq.url_nguon), "nam_suy_tu_noi_dung": nam_tu_van_ban(van_ban),
         "so_ky_tu": len(van_ban), "so_trang_pdf": kq.so_trang_pdf, "bi_cat": kq.bi_cat,
         "gioi_han_ky_tu": gioi_han, "sha256_nguon": kq.sha256_nguon,
         "ghi_chu": kq.ghi_chu, "ghi_chu_ban_quyen": kq.ghi_chu_ban_quyen,
@@ -237,6 +271,10 @@ def _in(out: Dict[str, Any]) -> None:
     print(f"Toàn văn guideline [{out['nguon']}] → {tt}")
     if tt == "chua_bat":
         print("  CONNECTOR CHƯA BẬT:", out["ly_do"])
+    elif tt == "can_chon":
+        print("  CẦN CHỌN URL (không tự đoán): " + out["ly_do"])
+        for u in out.get("ung_vien") or []:
+            print("    ·", u)
     elif tt in ("tu_choi", "loi"):
         nhan = "TỪ CHỐI: " if tt == "tu_choi" else "KHÔNG TẢI ĐƯỢC (mạng lỗi/bị chặn/nguồn đổi): "
         print("  " + nhan + out["ly_do"])
@@ -248,6 +286,10 @@ def _in(out: Dict[str, Any]) -> None:
         print(f"  Tổ chức: {out['to_chuc']} · URL nguồn: {out['url_nguon']}")
         print(f"  Năm/phiên bản (suy từ URL): {out.get('nam_suy_tu_url') or 'không rõ'} / "
               f"{out.get('phien_ban_suy_tu_url') or 'không rõ'}")
+        if out.get("nam_suy_tu_noi_dung"):
+            print(f"  Năm (suy từ dòng tiêu đề tạp chí trong PDF): {out['nam_suy_tu_noi_dung']}")
+        if out.get("tim_theo_chu_de"):
+            print(f"  URL tự tìm theo chủ đề «{out['tim_theo_chu_de']}» (trang: {out.get('trang_chu_de')})")
         dong = f"  Số ký tự: {out['so_ky_tu']:,}"
         if out.get("so_trang_pdf"):
             dong += f" · số trang PDF: {out['so_trang_pdf']}"
@@ -286,8 +328,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         p.add_argument("--url", help=f"URL PDF đã biết trên {DOMAIN_CHO_PHEP[ten][0]} (bỏ trống = tự dò bản mới nhất)")
     p = sub.add_parser("pmc", parents=[chung], help="bài/chương guideline trong PMC Open Access theo PMCID")
     p.add_argument("dinh_danh", metavar="PMCID")
-    p = sub.add_parser("bts", parents=[chung], help="hướng dẫn BTS theo URL PDF đã biết")
-    p.add_argument("dinh_danh", metavar="URL")
+    p = sub.add_parser("bts", parents=[chung], help="hướng dẫn BTS theo URL đã biết hoặc --chu-de")
+    p.add_argument("dinh_danh", metavar="URL", nargs="?")
+    p.add_argument("--chu-de", help="tên chủ đề trên brit-thoracic.org.uk/clinical-resources/guidelines/<chủ-đề>/ "
+                                    "(vd pulmonary-nodules) — tự tìm URL toàn văn guideline chính")
     t = sub.add_parser("trich-dan", help="đường lùi: trích dẫn + tóm tắt theo DOI/PMID (không phải toàn văn)")
     t.add_argument("--doi")
     t.add_argument("--pmid")
