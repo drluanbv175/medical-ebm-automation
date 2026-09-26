@@ -782,6 +782,8 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         and GC.g2_quality_contract_satisfied(
             g2,
             GC.load_study_meta(_REPO_ROOT / "exports" / study),
+            study=study,
+            out_dir=_REPO_ROOT / "exports" / study,
         )
     )
     sap_locked = sap_locked_text and _ledger_approved(
@@ -1204,6 +1206,8 @@ def write_g9_checkpoint(
         and GC.g2_quality_contract_satisfied(
             g2_cp,
             GC.load_study_meta(_REPO_ROOT / "exports" / study),
+            study=study,
+            out_dir=_REPO_ROOT / "exports" / study,
         )
     )
     sap_locked_cp = sap_locked_cp_text and _ledger_approved(

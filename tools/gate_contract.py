@@ -192,9 +192,70 @@ def locked_analysis_dataset_blockers(
     return blockers, manifest
 
 
+def _g2_signed_attestation_state(
+    study: str,
+    out_dir: Path,
+    meta: Optional[Dict[str, Any]],
+) -> Optional[bool]:
+    """Kiểm HIỆU LỰC + PHIÊN BẢN từ attestation nằm trong gói G2 đã ký.
+
+    Trả None khi gói không có attestation (fixture tổng hợp / hồ sơ trước khi có
+    attestation) — caller giữ nhánh tương thích cũ. Trả False khi attestation hết
+    hạn, thiếu hạn mà không xác nhận «không ghi hạn», lệch phiên bản protocol/ICF
+    so với meta.gate_params.G2, hoặc không đọc/chấm được (fail-closed). True khi đạt.
+
+    Nguồn sự thật là attestation trong ``G2_A3_ETHICS_PACKAGE_<study>.md`` — tệp mà
+    evidence_hash của bản ghi ledger G2 ràng buộc (mọi nơi gọi đều AND với
+    ledger_approved), KHÔNG phải G2_checkpoint.json không ký (xoá/sửa tay được)."""
+    package = Path(out_dir) / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    if not package.exists():
+        return None
+    try:
+        import g2_quality_gate as g2_quality  # noqa: PLC0415 — import lười, tránh vòng
+    except ImportError:
+        return False
+    try:
+        text = package.read_bytes().decode("utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
+    attestation = g2_quality.extract_attestation(text)
+    if not attestation:
+        return None
+    today = datetime.now(timezone.utc).date()
+    valid_until_raw = str(attestation.get("valid_until") or "").strip()
+    if valid_until_raw:
+        try:
+            expiry = datetime.fromisoformat(valid_until_raw[:10]).date()
+        except ValueError:
+            return False
+        if expiry < today:
+            return False
+    elif attestation.get("no_expiry_confirmed") is not True:
+        return False
+    if not isinstance(meta, dict):
+        meta = load_study_meta(Path(out_dir))
+    params = meta.get("gate_params") if isinstance(meta, dict) else None
+    g2 = params.get("G2") if isinstance(params, dict) else None
+    g2 = g2 if isinstance(g2, dict) else {}
+    current_protocol = str(g2.get("protocol_version") or "").strip()
+    approved_protocol = str(attestation.get("approved_protocol_version") or "").strip()
+    if current_protocol and current_protocol != approved_protocol:
+        return False
+    waiver = attestation.get("icf_waiver_approved") is True
+    approved_icf = str(attestation.get("approved_icf_version") or "").strip()
+    if not waiver and not approved_icf:
+        return False
+    current_icf = str(g2.get("icf_version") or "").strip()
+    if current_icf and not waiver and current_icf != approved_icf:
+        return False
+    return True
+
+
 def g2_quality_contract_satisfied(
     checkpoint: Dict[str, Any],
     meta: Optional[Dict[str, Any]] = None,
+    study: Optional[str] = None,
+    out_dir: Optional[Path] = None,
 ) -> bool:
     """True khi checkpoint G2 mới đã qua hợp đồng chất lượng có cấu trúc.
 
@@ -202,10 +263,23 @@ def g2_quality_contract_satisfied(
     workflow sinh từ G2-2026.1 trở đi bắt buộc ``PASS_G2_APPROVED`` ngoài chữ
     ký ledger. Nhờ vậy, một chữ ký đúng kỹ thuật trên hồ sơ thiếu metadata,
     sai phiên bản hoặc hết hiệu lực không mở được đường dữ liệu thật.
+
+    VÁ 2026-09-26 (#15): khi có ``study`` + ``out_dir``, đọc attestation trong gói
+    G2 ĐÃ KÝ và kiểm hạn hiệu lực + lệch phiên bản protocol/ICF BẤT KỂ checkpoint
+    (checkpoint không ký: xoá tệp, ghi ``{}`` hay sửa tay valid_until=2099 từng đủ
+    để khoá dữ liệu thật dưới một phê duyệt IRB đã hết hạn). Có attestation thì
+    nhánh tương thích «checkpoint thiếu version ⇒ True» KHÔNG được áp dụng. Nhánh đó
+    chỉ còn cho gói KHÔNG có attestation. Mọi nơi gọi PHẢI truyền study/out_dir.
     """
+    has_attestation = False
+    if study and out_dir is not None:
+        state = _g2_signed_attestation_state(str(study), Path(out_dir), meta)
+        if state is False:
+            return False
+        has_attestation = state is True
     if not isinstance(checkpoint, dict):
         return False
-    if not checkpoint.get("quality_contract_version"):
+    if not checkpoint.get("quality_contract_version") and not has_attestation:
         return True
     quality = checkpoint.get("quality_gate")
     if not (

@@ -1072,6 +1072,8 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
     g2_quality_ok = _GC.g2_quality_contract_satisfied(
         g2,
         _GC.load_study_meta(Path("exports") / "__STUDY__"),
+        study="__STUDY__",
+        out_dir=Path("exports") / "__STUDY__",
     )
     g2_locked = (
         (g2_checkpoint_locked or i_confirm_irb)
@@ -1548,6 +1550,8 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
     g2_quality_ok = _GC.g2_quality_contract_satisfied(
         g2,
         _GC.load_study_meta(Path("exports") / "__STUDY__"),
+        study="__STUDY__",
+        out_dir=Path("exports") / "__STUDY__",
     )
     g2_locked = (
         (g2_checkpoint_locked or i_confirm_irb)
@@ -1980,7 +1984,8 @@ _SENSITIVITY_TEMPLATE = (
     "    g5_ledger = _GC.ledger_approved(\n"
     "        \"G5\", \"__STUDY__\", _Path(\'exports\') / \'__STUDY__\' / \'G5_checkpoint.json\')\n"
     "    g2_quality = _GC.g2_quality_contract_satisfied(\n"
-    "        g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'))\n"
+    "        g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'),\n"
+    "        study='__STUDY__', out_dir=_Path('exports') / '__STUDY__')\n"
     "    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality\n"
     "    g4_locked = (g4_cp or i_confirm_sap) and g4_ledger\n"
     "    g5_quality = _GC.g5_quality_contract_satisfied('__STUDY__')\n"
@@ -2231,7 +2236,8 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
     g5_ledger = _GC.ledger_approved(
         "G5", "__STUDY__", _Path('exports') / '__STUDY__' / 'G5_checkpoint.json')
     g2_quality = _GC.g2_quality_contract_satisfied(
-        g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'))
+        g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'),
+        study='__STUDY__', out_dir=_Path('exports') / '__STUDY__')
     g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality
     g4_locked = (g4_cp or i_confirm_sap) and g4_ledger
     g5_quality = _GC.g5_quality_contract_satisfied("__STUDY__")

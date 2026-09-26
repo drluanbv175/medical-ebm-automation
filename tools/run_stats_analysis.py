@@ -1278,6 +1278,8 @@ def main():
     g2_quality_ok = GC.g2_quality_contract_satisfied(
         g2_cp,
         GC.load_study_meta(Path("exports") / args.study),
+        study=args.study,
+        out_dir=Path("exports") / args.study,
     )
     g2_locked = (
         (g2_checkpoint_locked or args.i_confirm_irb_approved)
