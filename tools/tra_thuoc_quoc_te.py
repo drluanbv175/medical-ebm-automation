@@ -135,8 +135,13 @@ def chay_cli(argv: Optional[list] = None) -> int:
     except (KeyboardInterrupt, SystemExit):
         raise
     except Exception as exc:  # noqa: BLE001 — mọi lỗi lạ đều là «KHÔNG BIẾT», không phải «không thấy»
-        print(f"LỖI/KHÔNG BIẾT (tra_thuoc_quoc_te): ngoại lệ bất ngờ {type(exc).__name__}: {exc} — "
-              f"KHÔNG được đọc thành «không thấy». {DISCLAIMER}", file=sys.stderr)
+        # Bản thân dòng báo lỗi cũng có thể không encode được (stream không có reconfigure) —
+        # khi đó vẫn phải trả mã KHÔNG BIẾT, không để traceback thoát mã 1.
+        try:
+            print(f"LỖI/KHÔNG BIẾT (tra_thuoc_quoc_te): ngoại lệ bất ngờ {type(exc).__name__}: {exc} — "
+                  f"KHÔNG được đọc thành «không thấy». {DISCLAIMER}", file=sys.stderr)
+        except Exception:  # noqa: BLE001
+            print("LOI/KHONG BIET (tra_thuoc_quoc_te): ngoai le bat ngo " + type(exc).__name__, file=sys.stderr)
         return 2
 
 
