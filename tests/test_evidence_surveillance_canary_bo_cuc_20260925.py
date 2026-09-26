@@ -21,7 +21,8 @@ SPEC.loader.exec_module(V)
 
 def _goc_gia(noi: Path) -> Path:
     (noi / "tools").mkdir(parents=True)
-    (noi / "tools" / "verify_clinical_evidence_update_pipeline.py").write_text("# gia\n", encoding="utf-8")
+    dau_hieu = noi / "tools" / "verify_clinical_evidence_update_pipeline.py"
+    dau_hieu.write_text("# gia\n", encoding="utf-8", newline="\n")
     return noi
 
 
@@ -56,7 +57,7 @@ def test_bien_moi_truong_thang_va_khong_thay_thi_giu_cu(tmp_path, monkeypatch):
 def test_khung_tam_giu_khoa_va_canh_bao_trong_thu_muc_tam(tmp_path):
     nguon = tmp_path / "that" / "tools" / "surveillance_scan.py"
     nguon.parent.mkdir(parents=True)
-    nguon.write_text("print('scanner')\n", encoding="utf-8")
+    nguon.write_text("print('scanner')\n", encoding="utf-8", newline="\n")
     base = tmp_path / "tam"
     base.mkdir()
     ban_sao = V._dung_khung_scanner_tam(base, nguon)
@@ -77,5 +78,5 @@ def test_scanner_nguon_lui_ve_ban_vendor_khi_khong_co_runtime(tmp_path, monkeypa
     assert V._tim_scanner_nguon() == vendor
     runtime = tmp_path / "EBM-Dashboards" / "tools" / "surveillance_scan.py"
     runtime.parent.mkdir(parents=True)
-    runtime.write_text("#\n", encoding="utf-8")
+    runtime.write_text("#\n", encoding="utf-8", newline="\n")
     assert V._tim_scanner_nguon() == runtime                   # máy thật: bản runtime thắng
