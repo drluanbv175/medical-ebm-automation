@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.sources.ema_medicines import EmaMedicinesClient  # noqa: E402
 from app.sources.rxnorm import RxNormClient  # noqa: E402
+from app.utils.console import configure_unicode_console  # noqa: E402
 
 DISCLAIMER = "Cần bác sĩ kiểm chứng."
 _CO_HOAT_CHAT = ("IN", "MIN", "PIN")
@@ -121,5 +122,23 @@ def main(argv: Optional[list] = None) -> int:
     return ma_thoat(kq)
 
 
+def chay_cli(argv: Optional[list] = None) -> int:
+    """Điểm vào dòng lệnh: ép console UTF-8 TRƯỚC mọi print, và mọi ngoại lệ bất ngờ ⇒ mã 2 (KHÔNG BIẾT).
+
+    Trên Windows (cp1252), print tiếng Việt/biểu tượng từng ném UnicodeEncodeError ⇒ traceback thoát mã 1,
+    trùng mã «không thấy / không khớp» — tín hiệu lỗi bị đọc thành kết quả hợp lệ. Ngoại lệ lạ cũng vậy.
+    KeyboardInterrupt/SystemExit (vd argparse) được ném lại nguyên vẹn.
+    """
+    configure_unicode_console()
+    try:
+        return main(argv)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except Exception as exc:  # noqa: BLE001 — mọi lỗi lạ đều là «KHÔNG BIẾT», không phải «không thấy»
+        print(f"LỖI/KHÔNG BIẾT (tra_thuoc_quoc_te): ngoại lệ bất ngờ {type(exc).__name__}: {exc} — "
+              f"KHÔNG được đọc thành «không thấy». {DISCLAIMER}", file=sys.stderr)
+        return 2
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(chay_cli())
