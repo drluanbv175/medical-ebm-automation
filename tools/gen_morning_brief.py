@@ -156,6 +156,38 @@ def get_drug_alerts(pack_version_dir: Path) -> list[str]:
     return alerts[:2]  # Tối đa 2 cảnh báo
 
 
+def _dong_daily_integrity(di_file: Path) -> str | None:
+    """Diễn giải results/daily_integrity.json thành MỘT dòng bản tin (hoặc None = xanh).
+
+    Hợp đồng thật (research_automation.schedule_runner.JobReport) dùng khoá
+    ``ok`` (bool) + ``findings`` (list) — KHÔNG có khoá ``status``. Quy tắc:
+      - ``ok is True`` (và không có ``status == "FAIL"`` kiểu cũ) ⇒ None (im lặng).
+      - ``ok is False`` hoặc ``status == "FAIL"`` (định dạng cũ) ⇒ 🔴 kèm số phát hiện.
+      - Đọc/parse lỗi, không phải dict, thiếu khoá ``ok`` hay ``ok`` không phải bool
+        ⇒ ⚪ «CHƯA ĐO» — không đo được KHÔNG được coi là xanh.
+    """
+    try:
+        di = json.loads(di_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
+        return (
+            "⚪ Daily integrity CHƯA ĐO — không đọc được results/daily_integrity.json "
+            f"({type(exc).__name__})"
+        )
+    if not isinstance(di, dict):
+        return "⚪ Daily integrity CHƯA ĐO — results/daily_integrity.json không phải object JSON"
+    findings = di.get("findings")
+    so_phat_hien = len(findings) if isinstance(findings, list) else 0
+    ok = di.get("ok")
+    if ok is False or di.get("status") == "FAIL":
+        return (
+            f"🔴 Daily integrity check FAIL — {so_phat_hien} phát hiện "
+            "— xem results/daily_integrity.json"
+        )
+    if ok is True:
+        return None
+    return "⚪ Daily integrity CHƯA ĐO — results/daily_integrity.json thiếu khoá 'ok' hợp lệ"
+
+
 def check_surveillance_updates() -> list[str]:
     """Kiểm tra kết quả surveillance gần nhất."""
     updates = []
@@ -164,7 +196,7 @@ def check_surveillance_updates() -> list[str]:
     wq_file = RESULTS_DIR / "weekly_quality.json"
     if wq_file.exists():
         try:
-            wq = json.loads(wq_file.read_text())
+            wq = json.loads(wq_file.read_text(encoding="utf-8"))
             findings = wq.get("findings", [])
             if findings:
                 updates.append(f"⚠️ Weekly quality: {len(findings)} phát hiện cần xem xét")
@@ -174,12 +206,9 @@ def check_surveillance_updates() -> list[str]:
     # Đọc daily integrity
     di_file = RESULTS_DIR / "daily_integrity.json"
     if di_file.exists():
-        try:
-            di = json.loads(di_file.read_text())
-            if di.get("status") == "FAIL":
-                updates.append("🔴 Daily integrity check FAIL — xem results/daily_integrity.json")
-        except Exception:
-            pass
+        dong = _dong_daily_integrity(di_file)
+        if dong:
+            updates.append(dong)
 
     # Hàng chờ cập nhật knowledge pack từ surveillance/evidence mới.
     kp_queue_file = RESULTS_DIR / "knowledge_pack_update_queue.json"
