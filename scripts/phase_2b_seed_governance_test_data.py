@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -25,6 +26,8 @@ from app.governance.migrations import create_governance_schema  # noqa: E402
 from app.governance.repository import GovernanceRepository  # noqa: E402
 from app.models.governance_v7 import AuditEventRecord, IncidentRecord, ReleaseManifestRecord  # noqa: E402
 from runtime.data_boundary import DataBoundary  # noqa: E402
+
+_UUID_HEX_RE = re.compile(r"[0-9a-f]{32}")
 
 
 def _resolve_sqlite_path(database_url: str) -> Path | None:
@@ -152,6 +155,11 @@ def seed_governance_test_data(database_url: str) -> Dict[str, object]:
             release.release_id,
             approval_record.approval_id,
         ])
+        # Vá 2026-09-26: bốn ID trên mang uuid4().hex (32 ký tự hex) do CHÍNH script sinh; sentinel «cccd»
+        # toàn chữ hex nên khớp chuỗi con ~0,1% số lượt (CI nhánh mặc định đỏ ngẫu nhiên, run #837).
+        # Che đúng khuôn uuid hex TRƯỚC khi quét — nội dung chữ (objective, title, tiền tố ID) vẫn quét thật;
+        # bộ quét dùng chung giữ nguyên (nới ranh giới từ sẽ lọt BN001 / CCCD viết liền số).
+        written_text = _UUID_HEX_RE.sub("<uuid>", written_text)
         contains_pii, _pii_reason = DataBoundary().check_pii_in_output(written_text)
         return {
             "run_id": run.run_id,
