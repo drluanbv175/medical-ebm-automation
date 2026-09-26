@@ -64,6 +64,10 @@ def _cham_diem_ban_ghi(rec: RawRecord) -> Optional[Dict]:
     eq, _ = evidence_quality_score(item)
     pc, _ = practice_change_score(item)
     tier = reliability_tier(item, eq, pc)
+    # Rà phản biện synthesis #4 (26/09/2026): cùng trần với pipeline.score_item — bài có
+    # Expression of Concern không được Tier A (bài đã rút đã về D qua reason_for_exclusion).
+    if item.get("_rut_bai") == "eoc" and tier == "A":
+        tier = "B"
     level, _ = operational_evidence_level(item, eq)
     item.update(evidence_quality_score=eq, practice_change_score=pc,
                 reliability_tier=tier, operational_evidence_level=level)

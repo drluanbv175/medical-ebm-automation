@@ -235,7 +235,7 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
     # Vá 26/09/2026 (synthesis #7): lượt DEMO (mock) vẫn kết thúc "ok" ở đây nhưng
     # KHÔNG được làm watermark live — compute_since_date() đọc run_state.last_live_ok_run()
     # (lọc thêm mode=="live"), không đọc last_finished_run().
-    source_status =str(source_health.get("status") or "NOT_APPLICABLE")
+    source_status = str(source_health.get("status") or "NOT_APPLICABLE")
     if source_status == "FAIL":
         run_status = "error"
         stats["release_status"] = "BLOCKED_SOURCE_HEALTH_FAIL"
