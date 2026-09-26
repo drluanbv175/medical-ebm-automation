@@ -67,7 +67,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gate_contract as GC  # noqa: E402
 
 from app.utils.console import configure_unicode_console  # noqa: E402
-from runtime.approval_ledger import ApprovalLedger, LedgerLockInvalidated  # noqa: E402
+from runtime.approval_ledger import (  # noqa: E402
+    LEDGER_RECOVERY_HINT,
+    ApprovalLedger,
+    LedgerLockInvalidated,
+    LedgerUnreadable,
+    read_ledger_raw_strict,
+)
 from runtime.schemas import ApprovalDecisionEnum  # noqa: E402
 
 ALL_GATES = ("G2", "G4", "G8", "G9")
@@ -183,9 +189,21 @@ def main() -> int:
     # tools/approve_gate.py thật). Vẫn nạp 1 lần/ghi 1 lần cho MỌI cổng trong 1
     # lệnh gọi (giảm số lần lấy/nhả khóa), nhưng nay TRỌN khối nằm trong khóa.
     ok_count = 0
+    # VÁ 2026-09-26 (#8): sổ TỒN TẠI mà hỏng ⇒ TỪ CHỐI (mã 1) TRƯỚC khi ký/ghi, không
+    # để locked_update ghi đè sổ bằng sổ rỗng + bản ghi mới rồi niêm phong lại.
+    try:
+        read_ledger_raw_strict(ledger_path)
+    except LedgerUnreadable as exc:
+        print(f"✗ TỪ CHỐI — sổ cái KHÔNG đọc được: {exc}")
+        print(LEDGER_RECOVERY_HINT)
+        return 1
     try:
         with ApprovalLedger.locked_update(ledger_path) as ledger:
             ok_count = _approve_all_gates(ledger, gates, artifact_map, study_dir, study_name)
+    except LedgerUnreadable as exc:
+        print(f"✗ TỪ CHỐI — sổ cái KHÔNG đọc được: {exc}")
+        print(LEDGER_RECOVERY_HINT)
+        return 1
     except (TimeoutError, LedgerLockInvalidated) as exc:
         print(f"✗ TỪ CHỐI (khóa ledger): {exc}")
         print("   Đây là lỗi tạm thời — chạy lại chính xác lệnh này.")
