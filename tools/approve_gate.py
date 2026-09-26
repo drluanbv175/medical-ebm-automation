@@ -362,6 +362,11 @@ def _prepare_g2_attestation(
     return G2Q.append_attestation(base, attestation), []
 
 
+class LedgerTailChanged(RuntimeError):
+    """Đuôi sổ cái đọc lại DƯỚI KHOÁ khác đuôi đã dùng để ký prev_hash (#27) — một
+    tiến trình khác vừa ghi xen vào. Không ghi; chạy lại lệnh."""
+
+
 def main() -> int:
     configure_unicode_console()
     ap = argparse.ArgumentParser(description=__doc__.split("Dùng:")[0])
@@ -821,8 +826,11 @@ def main() -> int:
     # SỔ CÁI CHUỖI BĂM (v4, 2026-07-27): mắt xích = vân tay bản ghi ĐANG ĐỨNG CUỐI sổ cái.
     # Nhờ vậy, xóa/đảo/chèn bản ghi về sau sẽ làm đứt xích và bị phát hiện — điều mà chữ
     # ký một mình KHÔNG làm được (sổ cái bị cắt bớt trông y hệt sổ cái ngắn). Đọc ở đây
-    # thay vì trong locked_update để ký ĐÚNG giá trị sẽ ghi; nếu có tiến trình khác chen
-    # vào giữa, khóa file sẽ xếp hàng và lần chạy này ghi tiếp vào đuôi mới.
+    # (trước khi ký) để có prev_hash đưa vào chữ ký. ĐÍNH CHÍNH 2026-09-26 (#27): chú
+    # thích cũ nói «có tiến trình khác chen vào thì khóa xếp hàng và lần chạy này ghi
+    # tiếp vào đuôi mới» là SAI — khoá chỉ chống MẤT bản ghi, không làm prev_hash đã ký
+    # tự cập nhật; hai lượt ký chồng nhau từng làm ĐỨT CHUỖI vĩnh viễn (đã tái lập bằng
+    # 2 tiến trình thật). Nay đuôi sổ được đọc LẠI DƯỚI KHOÁ; lệch ⇒ từ chối, mã 1.
     # VÁ 2026-09-26 (#8): sổ TỒN TẠI mà hỏng ⇒ TỪ CHỐI (mã 1) TRƯỚC khi ký. Trước đây
     # lỗi đọc bị nuốt thành `_existing = []` ⇒ prev_hash = GENESIS, rồi locked_update
     # ghi đè sổ bằng đúng 1 bản ghi mới và niêm phong lại — xoá sạch lịch sử phê duyệt.
@@ -875,6 +883,16 @@ def main() -> int:
     # xóa/thay giữa chừng), KHÔNG để traceback thô lộ ra — báo rõ để bác sĩ chạy lại.
     try:
         with ApprovalLedger.locked_update(ledger_path) as ledger:
+            # VÁ 2026-09-26 (#27): đọc LẠI đuôi sổ DƯỚI KHOÁ (đúng thứ tự export_json sẽ
+            # ghi). Lệch với prev_hash đã ký ⇒ tiến trình khác vừa ghi xen vào ⇒ KHÔNG
+            # ghi (raise thoát khối with trước to_file), bác sĩ chạy lại lệnh. KHÔNG
+            # được «vá» bằng cách nới verify_ledger_chain.
+            prev_hash_now = GC.chain_prev_hash(ledger.export_tail())
+            if prev_hash_now != prev_hash:
+                raise LedgerTailChanged(
+                    "sổ cái vừa được tiến trình khác cập nhật trong lúc lệnh này đang chạy "
+                    f"(đuôi đã ký {prev_hash[:12]}… ≠ đuôi hiện tại {prev_hash_now[:12]}…)"
+                )
             record = ApprovalLedger.make_human_approval(
                 gate_id=args.gate,
                 reviewer_role=args.reviewer_role,
@@ -897,6 +915,10 @@ def main() -> int:
     except LedgerUnreadable as exc:
         print(f"✗ TỪ CHỐI ghi phê duyệt — sổ cái KHÔNG đọc được: {exc}")
         print(LEDGER_RECOVERY_HINT)
+        return 1
+    except LedgerTailChanged as exc:
+        print(f"✗ TỪ CHỐI ghi phê duyệt: {exc}. Không ghi gì — sổ cái và chuỗi băm nguyên vẹn.")
+        print("   Chạy lại chính xác lệnh này (chữ ký sẽ được tính theo đuôi sổ mới).")
         return 1
     except (TimeoutError, LedgerLockInvalidated) as exc:
         print(f"✗ TỪ CHỐI ghi phê duyệt (khóa ledger): {exc}")

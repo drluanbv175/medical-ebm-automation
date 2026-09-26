@@ -439,6 +439,14 @@ class ApprovalLedger:
             ensure_ascii=False,
         )
 
+    def export_tail(self) -> Optional[dict]:
+        """Phần tử sẽ đứng CUỐI tệp nếu ghi NGAY BÂY GIỜ (đúng thứ tự export_json) —
+        None nếu sổ rỗng hoặc phần tử cuối không phải dict. Dùng để tính prev_hash
+        DƯỚI KHOÁ (tools/approve_gate.py, #27)."""
+        items = json.loads(self.export_json())
+        last = items[-1] if items else None
+        return last if isinstance(last, dict) else None
+
     # ── Persistence (thêm 2026-07-08, BL-06) ────────────────────────────────────
     # TRƯỚC ĐÂY: ApprovalLedger chỉ sống TRONG BỘ NHỚ (self._records) — mỗi lần
     # research_workflow.py/dashboard.py khởi tạo `ApprovalLedger()` là một sổ RỖNG
