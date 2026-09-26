@@ -545,7 +545,9 @@ def _check_notification_config() -> Check:
     ready = email_ready or webhook_ready
     return Check(
         "ESD10", "Cấu hình kênh cảnh báo", "runtime", PASS if ready else FAIL,
-        f"email_ready={email_ready}; webhook_ready={webhook_ready}",
+        f"email_ready={email_ready}; webhook_ready={webhook_ready}"
+        + ("" if ready else "; bác sĩ tự nhập bằng nút «Nhap Kenh Canh Bao.command/.bat» ở gốc repo EBM "
+           "(tools/nhap_kenh_canh_bao.py), rồi gửi thử: python run.py notify-test"),
         "Chỉ kiểm cấu hình có mặt, UAT vẫn phải chứng minh gửi/nhận thật.",
     )
 

@@ -3,7 +3,9 @@ import os
 import subprocess
 import tempfile
 
-os.environ.setdefault("USE_MOCK_SOURCES", "true")
+# ÉP (không setdefault): môi trường Cloud đặt USE_MOCK_SOURCES=false từ 25/09/2026 để engine chạy
+# thật — setdefault để giá trị đó thắng, bộ test mất tính kín và gọi mạng thật (26/09/2026).
+os.environ["USE_MOCK_SOURCES"] = "true"
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 # AN TOÀN: tắt mọi kênh gửi cảnh báo khi chạy test để KHÔNG BAO GIỜ gửi email/webhook thật.
 os.environ["ENABLE_EMAIL_ALERTS"] = "false"

@@ -113,6 +113,17 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
   «bị chặn» ngay dưới) · 2 = CHƯA BIẾT (lỗi mạng/định danh) ⇒ ghi «chưa đọc được toàn văn», KHÔNG ghi
   «không có». Toàn văn chỉ là tham chiếu NỘI BỘ: không dán nguyên văn dài ra đầu ra. Đọc được toàn văn
   KHÔNG thay việc kiểm rút bài.
+- **Toàn văn GUIDELINE hiệp hội (GOLD · GINA · BTS · PMC, nối vào agent 26/09/2026):** cần câu chữ/
+  ngưỡng/mức khuyến cáo NGUYÊN BẢN của một guideline ⇒ chạy (từ gốc repo EBM)
+  `python3 medical-ebm-automation/tools/toan_van_guideline.py gold|gina [--tim "<cụm>"]` (tự dò bản mới
+  nhất) · `… pmc <PMCID>` · `… bts --chu-de <chủ-đề>` (vd `pulmonary-nodules`, tự tìm URL guideline chính
+  trên brit-thoracic.org.uk) hoặc `… bts <URL>`. Lệnh in metadata (URL, năm suy từ URL/dòng tiêu đề tạp
+  chí, số trang, SHA-256, ngày tải) + đoạn khớp `--tim` kèm số trang — ghi các trường đó cạnh trích dẫn.
+  Mã 0 = đọc được · 1 = `--tim` không khớp · 2 = lỗi/KHÔNG BIẾT ⇒ ghi «chưa đọc được toàn văn», KHÔNG
+  ghi «không có» · 3 = connector chưa bật (cờ `ENABLE_*_FULLTEXT`) · 4 = từ chối (NICE, domain chưa khảo
+  sát, hoặc `bts --chu-de` có >1 ứng viên ⇒ chọn một URL từ danh sách in ra, không tự đoán). Tải thất bại mà
+  có DOI/PMID ⇒ `… trich-dan --doi|--pmid` (trích dẫn + tóm tắt, KHÔNG phải toàn văn). Toàn văn chỉ là
+  tham chiếu NỘI BỘ — không dán nguyên văn dài ra đầu ra, không thay việc kiểm rút bài.
 - **Toàn văn guideline BỊ CHẶN (Cloudflare/giấy phép NICE — BTS/Thorax, thêm
   23/09/2026):** khi `bts_guidelines.py`/`pmc_guideline_fulltext.py` từ chối mà đã
   biết DOI/PMID, gọi `app.sources.guideline_citation_summary.lay_trich_dan_tom_tat

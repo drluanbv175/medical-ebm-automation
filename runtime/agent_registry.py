@@ -56,8 +56,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # và hợp đồng điều phối khép kín; số lượng vẫn giữ nguyên 50.
 # Tái khóa 2026-09-20: `ke-don-an-toan` (mục 8 chuẩn hoá tên thuốc RxNorm + trạng thái EMA) và
 # `khoang-trong-nghien-cuu` (mục 5 bối cảnh WHO GHO); số lượng vẫn giữ nguyên 50.
+# Tái khóa 2026-09-26: `tra-cuu-chung-cu` + `huong-dan-lam-sang` nối lệnh đọc toàn văn guideline
+# (tools/toan_van_guideline.py); số lượng vẫn giữ nguyên 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "76c45053c29651f15e61268f810abe803d18ba14f880190227adc731c8aef227"
+    "812d9104b4c3b1bb12ac07ade11fbc3307a8d9d8ab2e8f26c28c930e116996da"
 )
 
 MINIMUM_AGENT_COUNT = 50
