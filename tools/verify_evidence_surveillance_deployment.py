@@ -20,7 +20,30 @@ from pathlib import Path
 from typing import Sequence
 
 REPO = Path(__file__).resolve().parents[1]
-ROOT = REPO.parent
+_DAU_HIEU_GOC = Path("tools") / "verify_clinical_evidence_update_pipeline.py"
+
+
+def _tim_goc_workspace(repo: Path = REPO) -> Path:
+    """Gốc workspace (repo EBM-drluanbv175) chứa `tools/` và `sync/skills/` dùng chung.
+
+    Vá 25/09/2026: trước đây luôn là `repo.parent` — đúng bố cục LỒNG của OneDrive trên máy thật
+    (`Claude AI/medical-ebm-automation`), nhưng SAI trên phiên Cloud nơi hai repo nằm CẠNH nhau
+    (`/home/user/EBM-drluanbv175` và `/home/user/medical-ebm-automation`) — canary khi đó tìm
+    `<WORKSPACE>/tools/…` ở `/home/user/tools` và báo FAIL giả cho ESD04/ESD07/ESD08. Thứ tự:
+    biến môi trường `EBM_WORKSPACE_ROOT` → thư mục cha (máy thật) → anh em `EBM-drluanbv175`.
+    Không thấy dấu hiệu ở đâu ⇒ giữ `repo.parent` như cũ (các kiểm tự báo thiếu tệp, không bịa).
+    """
+    ung_vien = []
+    if os.environ.get("EBM_WORKSPACE_ROOT"):
+        ung_vien.append(Path(os.environ["EBM_WORKSPACE_ROOT"]))
+    ung_vien += [repo.parent, repo.parent / "EBM-drluanbv175"]
+    for goc in ung_vien:
+        if (goc / _DAU_HIEU_GOC).is_file():
+            return goc.resolve()
+    return repo.parent
+
+
+ROOT = _tim_goc_workspace()
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 DEPLOYMENT_DIR = REPO / "deployment" / "evidence_surveillance"
@@ -291,10 +314,48 @@ def _check_online_sources() -> Check:
     )
 
 
+def _tim_scanner_nguon() -> Path:
+    """Bản scanner để chạy canary: bản runtime `EBM-Dashboards/tools/` (máy thật) nếu có, không thì
+    bản vendor qua git `sync/skills/cap-nhat-chung-cu-y-khoa/tools/` (có trên mọi checkout, kể cả
+    Cloud/CI). ESD02 vẫn kiểm riêng ba bản có trùng byte hay không."""
+    runtime = ROOT / "EBM-Dashboards" / "tools" / "surveillance_scan.py"
+    if runtime.is_file():
+        return runtime
+    return ROOT / "sync" / "skills" / "cap-nhat-chung-cu-y-khoa" / "tools" / "surveillance_scan.py"
+
+
+def _dung_khung_scanner_tam(base: Path, nguon: Path) -> Path:
+    """Chép scanner vào thư mục tạm `base/khung/tools/` rồi chạy từ đó.
+
+    Vá 25/09/2026: scanner ghi khoá `.quet.lock` cạnh `watchlist.json` của CHÍNH nó và ghi cảnh báo
+    khẩn vào `<thư mục cha>/alerts/` — chạy canary (2 chủ đề GIẢ) từ bản runtime có thể ghi dòng
+    «CỔNG QUÉT FAIL: chủ đề «Canary guideline»» vào `EBM-Dashboards/alerts/` THẬT, còn chạy từ bản
+    vendor thì ghi rác vào repo. Bản chép tạm giữ mọi thứ trong `base`. Liên kết `base/
+    medical-ebm-automation` → REPO để `_tim_medical_ebm_automation()` của scanner vẫn tìm được engine
+    (chuỗi kiểm rút bài); không tạo được liên kết (Windows thiếu quyền) ⇒ vẫn chạy, chỉ thiếu làn đó.
+    """
+    thu_muc = base / "khung" / "tools"
+    thu_muc.mkdir(parents=True)
+    ban_sao = thu_muc / "surveillance_scan.py"
+    ban_sao.write_bytes(nguon.read_bytes())
+    try:
+        (base / "medical-ebm-automation").symlink_to(REPO, target_is_directory=True)
+    except OSError:
+        pass
+    return ban_sao
+
+
 def _check_online_scanner() -> Check:
-    scanner = ROOT / "EBM-Dashboards" / "tools" / "surveillance_scan.py"
+    nguon = _tim_scanner_nguon()
     with tempfile.TemporaryDirectory(prefix="evidence-surveillance-canary-") as tmp:
         base = Path(tmp)
+        if not nguon.is_file():
+            return Check(
+                "ESD07", "Scanner PubMed online", "online", FAIL,
+                f"Không tìm thấy scanner: {nguon}",
+                "Hai query canary không thay độ phủ toàn watchlist hoặc thẩm định Track A.",
+            )
+        scanner = _dung_khung_scanner_tam(base, nguon)
         watchlist = base / "watchlist.json"
         report_path = base / "scan.md"
         json_path = base / "scan.json"
