@@ -23,7 +23,12 @@ from pathlib import Path
 from typing import Any
 
 REPO = Path(__file__).resolve().parents[1]
-ROOT = REPO.parent
+import importlib.util as _ilu_goc  # noqa: E402
+
+_sp_goc = _ilu_goc.spec_from_file_location("_goc_ebm", Path(__file__).resolve().parent / "goc_ebm.py")
+_goc = _ilu_goc.module_from_spec(_sp_goc)
+_sp_goc.loader.exec_module(_goc)
+ROOT = _goc.tim_goc_ebm(REPO)  # lồng (Mac/Windows) hoặc anh em (Cloud) — tools/goc_ebm.py
 AGENTS = REPO / ".claude" / "agents"
 TOOLS = REPO / "tools"
 ROOT_TOOLS = ROOT / "tools"
