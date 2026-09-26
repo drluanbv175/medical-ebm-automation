@@ -28,6 +28,11 @@ def _today() -> datetime:
 
 
 def last_finished_run() -> Optional[PipelineRun]:
+    """Lượt chạy 'ok' mới nhất, BẤT KỂ mode (live/mock) — CHỈ dùng cho HIỂN THỊ.
+
+    KHÔNG dùng hàm này để tính watermark: lượt mock («🌱 Dữ liệu mẫu», `python run.py`
+    không tham số) cũng kết thúc bằng status 'ok' (source_health 'DEMO'). Watermark
+    live phải đọc `last_live_ok_run()` (vá 26/09/2026, synthesis #7)."""
     with session_scope() as s:
         return (s.query(PipelineRun)
                 .filter(PipelineRun.status == "ok")
@@ -35,13 +40,31 @@ def last_finished_run() -> Optional[PipelineRun]:
                 .first())
 
 
+def last_live_ok_run() -> Optional[PipelineRun]:
+    """Lượt chạy LIVE kết thúc 'ok' mới nhất — mốc DUY NHẤT được phép làm watermark.
+
+    Vá 26/09/2026 (synthesis #7): trước đây `compute_since_date()` đọc `last_finished_run()`
+    (chỉ lọc status=='ok', không lọc mode) ⇒ một lượt MOCK (seed_all/«Dữ liệu mẫu»/`python
+    run.py`) đẩy watermark live lên «hôm nay − 2 ngày», nhảy qua cả khoảng outage/PARTIAL:
+    guideline và cảnh báo an toàn thuốc công bố trong khoảng đó KHÔNG BAO GIỜ được ingest.
+    Cùng họ lỗi «watermark nhảy qua outage» đã vá 05/09 cho nhánh FAIL (pipeline.py 7b).
+    Không lọc thẳng trong `last_finished_run()` vì phần hiển thị (bản tin, test_incremental)
+    cần lượt 'ok' mới nhất kể cả mock."""
+    with session_scope() as s:
+        return (s.query(PipelineRun)
+                .filter(PipelineRun.status == "ok", PipelineRun.mode == "live")
+                .order_by(PipelineRun.started_at.desc())
+                .first())
+
+
 def compute_since_date(window_days: Optional[int] = None) -> str:
     """Tính mốc since_date (YYYY-MM-DD) để lọc API ở chế độ live.
 
-    - Nếu có lần chạy thành công trước: lấy từ ngày bắt đầu lần đó trừ OVERLAP_DAYS.
-    - Nếu chưa từng chạy: nhìn lùi window_days (hoặc DEFAULT_FIRST_LOOKBACK_DAYS).
+    - Nếu có lần chạy LIVE thành công trước: lấy từ ngày bắt đầu lần đó trừ OVERLAP_DAYS.
+      Lượt mock/partial/error KHÔNG BAO GIỜ làm mốc (xem `last_live_ok_run`).
+    - Nếu chưa từng chạy live ok: nhìn lùi window_days (hoặc DEFAULT_FIRST_LOOKBACK_DAYS).
     """
-    prev = last_finished_run()
+    prev = last_live_ok_run()
     if prev and prev.started_at:
         base = prev.started_at - timedelta(days=OVERLAP_DAYS)
     else:
