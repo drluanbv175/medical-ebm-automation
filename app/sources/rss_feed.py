@@ -400,6 +400,10 @@ class RSSFeedClient(SourceClient):
             out.append(self._to_record(m["title"], m.get("url"),
                                        m.get("publication_date"), m.get("summary", "")))
             out[-1].journal_or_organization = m.get("org", self.feed.org)
+            # Vá 26/09/2026 (synthesis #6): gắn cờ truy vết mock như _fixtures.py đang làm —
+            # trước đây thiếu nên mục mock của feed (vd «FDA MedWatch: Updated warning…» bịa)
+            # vào DB với is_mock=0, lọt bản tin/email như cảnh báo cơ quan quản lý THẬT.
+            out[-1].raw = {**(out[-1].raw or {}), "_mock": True}
         return out
 
 

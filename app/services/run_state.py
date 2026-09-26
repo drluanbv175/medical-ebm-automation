@@ -9,7 +9,7 @@ Hai khái niệm bổ trợ nhau:
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Set
+from typing import Dict, Optional, Set
 
 from app.database import session_scope
 from app.models import PipelineRun
@@ -100,14 +100,36 @@ def finish_run(run_id: int, *, total_fetched: int, new_items: int,
         run.status = status
 
 
-def recent_run_ids(days: int = 7) -> Set[int]:
-    """ID các lần chạy trong `days` ngày gần đây (để xác định 'mới tuần này')."""
+def recent_run_ids(days: int = 7, mode: Optional[str] = None) -> Set[int]:
+    """ID các lần chạy trong `days` ngày gần đây (để xác định 'mới tuần này').
+
+    mode=None (mặc định, cho HIỂN THỊ): mọi lượt, kể cả mock. mode="live": chỉ lượt live —
+    đường GỬI cảnh báo bắt buộc dùng (vá 26/09/2026, synthesis #6: mục của lượt mock/«Dữ liệu
+    mẫu» từng được gửi email như tin thật ở lượt live PASS kế tiếp)."""
     cutoff = _today() - timedelta(days=days)
     with session_scope() as s:
-        rows = (s.query(PipelineRun.id)
-                .filter(PipelineRun.started_at >= cutoff)
-                .all())
-        return {r[0] for r in rows}
+        q = s.query(PipelineRun.id).filter(PipelineRun.started_at >= cutoff)
+        if mode is not None:
+            q = q.filter(PipelineRun.mode == mode)
+        return {r[0] for r in q.all()}
+
+
+def run_modes(run_ids: Set[int]) -> Dict[int, str]:
+    """{run_id: mode} cho các lượt đã cho (để gắn nhãn DEMO/«Chế độ» theo lượt ĐÃ GÓP mục)."""
+    ids = {i for i in run_ids if i is not None}
+    if not ids:
+        return {}
+    with session_scope() as s:
+        rows = s.query(PipelineRun.id, PipelineRun.mode).filter(PipelineRun.id.in_(ids)).all()
+        return {r[0]: (r[1] or "") for r in rows}
+
+
+def latest_run() -> Optional[PipelineRun]:
+    """Lượt chạy MỚI NHẤT (mọi status/mode, kể cả đang chạy) — cổng GỬI cảnh báo đọc lượt này."""
+    with session_scope() as s:
+        return (s.query(PipelineRun)
+                .order_by(PipelineRun.started_at.desc(), PipelineRun.id.desc())
+                .first())
 
 
 def latest_run_id() -> Optional[int]:
