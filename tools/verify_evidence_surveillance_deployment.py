@@ -376,25 +376,31 @@ def _check_online_sources() -> Check:
 def _chuan_bi_scanner(goc: Path, base: Path) -> tuple[Path | None, Path, str]:
     """Chọn scanner để chạy canary: (đường dẫn, cwd, nguồn) — None nếu không chạy được.
 
-    Ưu tiên bản runtime EBM-Dashboards/tools (chạy như cũ). Lùi về bản vendor thì CHÉP sang hộp
-    cát tạm có symlink `medical-ebm-automation` → engine: bản vendor ghi alert vào
-    `sync/skills/alerts/` và khoá `.quet.lock` cạnh skill — chạy tại chỗ sẽ ghi bẩn cây repo EBM.
+    Ưu tiên bản runtime EBM-Dashboards/tools, lùi về bản vendor; CẢ HAI đều CHÉP sang hộp cát tạm có
+    symlink `medical-ebm-automation` → engine: scanner ghi alert vào `<cha của thư mục cha>/alerts/`
+    và khoá `.quet.lock` cạnh chính nó — chạy tại chỗ sẽ ghi bẩn cây repo EBM/EBM-Dashboards.
     """
     runtime = goc / "EBM-Dashboards" / "tools" / "surveillance_scan.py"
-    if runtime.is_file():
-        return runtime, goc, "EBM-Dashboards"
     vendor = next((goc.joinpath(*parts) for parts in SCANNER_VENDOR if goc.joinpath(*parts).is_file()), None)
-    if vendor is None:
+    if not runtime.is_file() and vendor is None:
         return None, goc, "khong_co_scanner"
     hop = base / "hop_cat"
     tools_dir = hop / "skills" / "canary-skill" / "tools"
     tools_dir.mkdir(parents=True)
     dich = tools_dir / "surveillance_scan.py"
-    dich.write_bytes(vendor.read_bytes())
+    dich.write_bytes((runtime if runtime.is_file() else vendor).read_bytes())
     try:
         (hop / "medical-ebm-automation").symlink_to(REPO, target_is_directory=True)
     except (OSError, NotImplementedError) as exc:
+        if runtime.is_file():
+            # Máy thật không tạo được symlink (Windows thiếu quyền): giữ hành vi cũ — chạy bản
+            # runtime tại chỗ, chấp nhận rủi ro ghi khoá/alert canary vào EBM-Dashboards như trước.
+            return runtime, goc, "EBM-Dashboards"
         return None, goc, f"khong_tao_duoc_symlink_hop_cat:{exc.__class__.__name__}"
+    if runtime.is_file():
+        # Vá 26/09/2026: bản runtime ghi `.quet.lock`, `.so-xac-minh-nguon.json` cạnh chính nó và
+        # alert khẩn vào `<gốc EBM>/alerts/` — hai chủ đề GIẢ của canary không được rơi vào đó.
+        return dich, hop, "EBM-Dashboards_hop_cat"
     return dich, hop, f"vendor_hop_cat:{'/'.join(vendor.relative_to(goc).parts[:3])}"
 
 
