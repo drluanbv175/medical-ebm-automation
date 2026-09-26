@@ -46,7 +46,11 @@ from typing import List, Optional
 from app.config import settings
 from app.sources.guideline_fulltext_common import (
     GHI_CHU_BAN_QUYEN_CHUAN,
+    GIOI_HAN_KY_TU_MAC_DINH,
+    ConnectorChuaBat,
     KetQuaToanVanGuideline,
+    sha256_hex,
+    thong_diep_co_tat,
 )
 from app.utils.http import HttpClient
 from app.utils.logging_config import get_logger
@@ -58,7 +62,7 @@ _MAU_PMCID = re.compile(r"^PMC\d+$", re.IGNORECASE)
 # Khớp <Key>PMC12690171.2/PMC12690171.2.txt</Key> — bắt CẢ số phiên bản để chọn bản
 # MỚI NHẤT khi bucket có nhiều phiên bản của cùng một bài.
 _MAU_KEY_TXT = re.compile(r"<Key>(PMC\d+)\.(\d+)/\1\.\2\.txt</Key>", re.IGNORECASE)
-_GIOI_HAN_KY_TU = 200_000  # đồng bộ với trich_van_ban_tu_pdf() ở guideline_fulltext_common.py
+_GIOI_HAN_KY_TU = GIOI_HAN_KY_TU_MAC_DINH  # đồng bộ với trich_van_ban_tu_pdf() ở guideline_fulltext_common.py
 
 
 class _LoiLietKeBucket(RuntimeError):
@@ -82,10 +86,7 @@ class PmcGuidelineFullTextClient:
 
     def __init__(self) -> None:
         if not settings.enable_pmc_guideline_fulltext:
-            raise RuntimeError(
-                "[pmc_guideline_fulltext] ENABLE_PMC_GUIDELINE_FULLTEXT chưa bật — đặt "
-                "true trong ~/.ebm-secrets/medical-ebm-automation.env để dùng connector này."
-            )
+            raise ConnectorChuaBat(thong_diep_co_tat("pmc_guideline_fulltext", "ENABLE_PMC_GUIDELINE_FULLTEXT"))
         self.http = HttpClient()
 
     def _tim_key_txt_moi_nhat(self, pmcid_chuan: str) -> Optional[str]:
@@ -108,7 +109,8 @@ class PmcGuidelineFullTextClient:
         ung_vien.sort(key=lambda cap: cap[0], reverse=True)
         return ung_vien[0][1]
 
-    def tai_toan_van(self, pmcid: str) -> KetQuaToanVanGuideline:
+    def tai_toan_van(self, pmcid: str,
+                     gioi_han_ky_tu: Optional[int] = _GIOI_HAN_KY_TU) -> KetQuaToanVanGuideline:
         """Tải + trích văn bản một bài PMC theo PMCID (định dạng "PMC1234567", có hoặc
         không tiền tố PMC đều được chuẩn hoá). Không bịa PMCID — người gọi phải tự tra
         qua PubMed/Europe PMC trước. 0 kết quả trong bucket ⇒ bài KHÔNG có trong PMC
@@ -159,9 +161,13 @@ class PmcGuidelineFullTextClient:
                 ghi_chu="Object .txt tồn tại trong bucket nhưng nội dung rỗng — bất "
                         "thường, cần xác nhận thủ công.",
             )
-        van_ban = van_ban_tho[:_GIOI_HAN_KY_TU]
+        bi_cat = gioi_han_ky_tu is not None and len(van_ban_tho) > gioi_han_ky_tu
+        van_ban = van_ban_tho[:gioi_han_ky_tu] if bi_cat else van_ban_tho
         return KetQuaToanVanGuideline(
             to_chuc="PMC", url_nguon=url_txt, thanh_cong=True,
             van_ban_trich=van_ban, so_trang_hoac_ky_tu=len(van_ban),
             ghi_chu_ban_quyen=GHI_CHU_BAN_QUYEN_CHUAN,
+            bi_cat=bi_cat, sha256_nguon=sha256_hex(van_ban_tho.encode("utf-8")),
+            ghi_chu=(f"Văn bản ĐÃ BỊ CẮT ở {gioi_han_ky_tu} ký tự (bản gốc {len(van_ban_tho)} ký tự) — "
+                     "muốn đọc/tìm toàn bộ thì truyền gioi_han_ky_tu=None." if bi_cat else None),
         )

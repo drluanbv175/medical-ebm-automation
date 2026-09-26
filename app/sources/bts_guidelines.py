@@ -54,12 +54,17 @@ guideline cụ thể — Cloudflare cho qua bình thường với trình duyệt
 """
 from __future__ import annotations
 
+from typing import Optional
 from urllib.parse import urlparse
 
 from app.config import settings
 from app.sources.guideline_fulltext_common import (
     GHI_CHU_BAN_QUYEN_CHUAN,
+    GIOI_HAN_KY_TU_MAC_DINH,
+    ConnectorChuaBat,
     KetQuaToanVanGuideline,
+    sha256_hex,
+    thong_diep_co_tat,
     trich_van_ban_tu_pdf,
 )
 from app.utils.http import HttpClient
@@ -86,13 +91,11 @@ class BtsGuidelineFullTextClient:
 
     def __init__(self) -> None:
         if not settings.enable_bts_guidelines_fulltext:
-            raise RuntimeError(
-                "[bts_guidelines] ENABLE_BTS_GUIDELINES_FULLTEXT chưa bật — đặt true "
-                "trong ~/.ebm-secrets/medical-ebm-automation.env để dùng connector này."
-            )
+            raise ConnectorChuaBat(thong_diep_co_tat("bts_guidelines", "ENABLE_BTS_GUIDELINES_FULLTEXT"))
         self.http = HttpClient()
 
-    def tai_toan_van(self, url: str) -> KetQuaToanVanGuideline:
+    def tai_toan_van(self, url: str,
+                     gioi_han_ky_tu: Optional[int] = GIOI_HAN_KY_TU_MAC_DINH) -> KetQuaToanVanGuideline:
         """Tải + trích văn bản từ một URL PDF BTS đã biết. Từ chối NGAY (không gọi
         mạng) nếu domain khác `brit-thoracic.org.uk` — một số hướng dẫn BTS đồng xuất
         bản trỏ sang thorax.bmj.com/bmjopenrespres.bmj.com/nice.org.uk/
@@ -150,7 +153,8 @@ class BtsGuidelineFullTextClient:
                         "thể đã hết hạn hoặc trỏ sai, cần xác nhận thủ công.",
             )
 
-        van_ban = trich_van_ban_tu_pdf(pdf_bytes)
+        thong_tin: dict = {}
+        van_ban = trich_van_ban_tu_pdf(pdf_bytes, gioi_han_ky_tu=gioi_han_ky_tu, thong_tin=thong_tin)
         if not van_ban:
             return KetQuaToanVanGuideline(
                 to_chuc="BTS", url_nguon=url, thanh_cong=False,
@@ -161,4 +165,9 @@ class BtsGuidelineFullTextClient:
             to_chuc="BTS", url_nguon=url, thanh_cong=True,
             van_ban_trich=van_ban, so_trang_hoac_ky_tu=len(van_ban),
             ghi_chu_ban_quyen=GHI_CHU_BAN_QUYEN_CHUAN,
+            bi_cat=bool(thong_tin.get("bi_cat")), so_trang_pdf=thong_tin.get("so_trang_pdf"),
+            moc_trang=list(thong_tin.get("moc_trang") or []), sha256_nguon=sha256_hex(pdf_bytes),
+            ghi_chu=(f"Văn bản ĐÃ BỊ CẮT ở {gioi_han_ky_tu} ký tự — phần sau của tài liệu KHÔNG có trong "
+                     "kết quả; muốn đọc/tìm toàn bộ thì truyền gioi_han_ky_tu=None."
+                     if thong_tin.get("bi_cat") else None),
         )

@@ -20,30 +20,9 @@ from pathlib import Path
 from typing import Sequence
 
 REPO = Path(__file__).resolve().parents[1]
-_DAU_HIEU_GOC = Path("tools") / "verify_clinical_evidence_update_pipeline.py"
-
-
-def _tim_goc_workspace(repo: Path = REPO) -> Path:
-    """Gốc workspace (repo EBM-drluanbv175) chứa `tools/` và `sync/skills/` dùng chung.
-
-    Vá 25/09/2026: trước đây luôn là `repo.parent` — đúng bố cục LỒNG của OneDrive trên máy thật
-    (`Claude AI/medical-ebm-automation`), nhưng SAI trên phiên Cloud nơi hai repo nằm CẠNH nhau
-    (`/home/user/EBM-drluanbv175` và `/home/user/medical-ebm-automation`) — canary khi đó tìm
-    `<WORKSPACE>/tools/…` ở `/home/user/tools` và báo FAIL giả cho ESD04/ESD07/ESD08. Thứ tự:
-    biến môi trường `EBM_WORKSPACE_ROOT` → thư mục cha (máy thật) → anh em `EBM-drluanbv175`.
-    Không thấy dấu hiệu ở đâu ⇒ giữ `repo.parent` như cũ (các kiểm tự báo thiếu tệp, không bịa).
-    """
-    ung_vien = []
-    if os.environ.get("EBM_WORKSPACE_ROOT"):
-        ung_vien.append(Path(os.environ["EBM_WORKSPACE_ROOT"]))
-    ung_vien += [repo.parent, repo.parent / "EBM-drluanbv175"]
-    for goc in ung_vien:
-        if (goc / _DAU_HIEU_GOC).is_file():
-            return goc.resolve()
-    return repo.parent
-
-
-ROOT = _tim_goc_workspace()
+# ROOT = gốc workspace/repo EBM ở bố cục LỒNG (máy Mac/Windows: engine nằm TRONG repo EBM trên
+# OneDrive). KHÔNG dùng thẳng ROOT làm gốc EBM nữa — xem _tim_goc_ebm() (vá 24/09/2026).
+ROOT = REPO.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 DEPLOYMENT_DIR = REPO / "deployment" / "evidence_surveillance"
@@ -56,6 +35,21 @@ PASS = "PASS"
 FAIL = "FAIL"
 HUMAN_GATE = "HUMAN_GATE"
 SKIP = "SKIP"
+# «Chưa đo được» (vá 24/09/2026): thiếu thứ cần đo (repo EBM vắng, EBM-Dashboards chỉ có trên
+# OneDrive…) KHÔNG phải FAIL (không có gì hỏng) và TUYỆT ĐỐI không phải PASS — không bao giờ cho
+# READY/RUNTIME_CANARY_PASS/CONTRACT_PASS; trạng thái tổng thành MEASUREMENT_INCOMPLETE.
+NOT_MEASURED = "NOT_MEASURED"
+# Tên thư mục repo EBM khi engine là ANH EM (phiên Cloud: /home/user/medical-ebm-automation cạnh
+# /home/user/EBM-drluanbv175). Biến môi trường EBM_REPO_ROOT (tuỳ chọn) ghi đè mọi phép dò.
+TEN_REPO_EBM_ANH_EM = ("EBM-drluanbv175", "ebm-drluanbv175")
+# Canary scanner: --max 1 làm scanner (luật 22/09) coi «esearch bị cắt ở retmax» là PASS_DEGRADED
+# ⇒ ESD07 không bao giờ PASS khi chủ đề canary có > 1 bài trong 30 ngày (đo 24/09: --max 1 ⇒
+# PARTIAL; --max 20 ⇒ PASS, 38 ứng viên). Canary đo NGUỒN sống, không đo độ rộng truy vấn.
+CANARY_SCANNER_MAX = 20
+SCANNER_VENDOR = (
+    ("sync", "skills", "cap-nhat-chung-cu-y-khoa", "tools", "surveillance_scan.py"),
+    ("sync", "skills", "dark-analyst", "tools", "surveillance_scan.py"),
+)
 DISCLAIMER = (
     "Cần bác sĩ kiểm chứng. Cổng này chỉ cho phép triển khai chế độ ứng viên; "
     "không tự áp dụng lâm sàng và không dùng dữ liệu bệnh nhân thật."
@@ -111,6 +105,50 @@ def _run(command: Sequence[str], *, cwd: Path) -> tuple[bool, str]:
     return proc.returncode == 0, _sanitize_local_paths(" / ".join(lines[-3:])[:800])
 
 
+def _la_goc_ebm(path: Path) -> bool:
+    """Nhận diện gốc repo EBM bằng DẤU VẾT NỘI DUNG, không bằng tên thư mục."""
+    return (
+        (path / "tools" / "verify_clinical_evidence_update_pipeline.py").is_file()
+        or any((path.joinpath(*parts)).is_file() for parts in SCANNER_VENDOR)
+    )
+
+
+def _tim_goc_ebm() -> tuple[Path | None, str]:
+    """Gốc repo EBM ở bố cục LỒNG (ROOT) hoặc ANH EM (ROOT/EBM-drluanbv175); None nếu vắng.
+
+    Trả kèm nhãn bố cục để ghi vào bằng chứng (lồng · anh_em · env).
+    """
+    env = os.environ.get("EBM_REPO_ROOT", "").strip()
+    if env:
+        p = Path(env).expanduser()
+        return (p.resolve(), "env") if _la_goc_ebm(p) else (None, f"env_khong_hop_le:{env}")
+    if _la_goc_ebm(ROOT):
+        return ROOT, "long"
+    for ten in TEN_REPO_EBM_ANH_EM:
+        p = ROOT / ten
+        if _la_goc_ebm(p):
+            return p, "anh_em"
+    return None, "vang"
+
+
+# Tài sản mà tools/verify_clinical_evidence_update_pipeline.py kiểm nhưng CHỈ có trên OneDrive (không
+# nằm trong git): đo 24/09/2026 trên bản clone git-only, verifier đó FAIL vì THIẾU chính các thư mục
+# này (template contract · sync_all) — FAIL giả của bố cục, không phải pipeline hỏng.
+TAI_SAN_CHI_ONEDRIVE = ("EBM_MASTER", "dashboard_mockups")
+
+
+def _thieu_tai_san_onedrive(goc: Path) -> list[str]:
+    return [ten for ten in TAI_SAN_CHI_ONEDRIVE if not (goc / ten).is_dir()]
+
+
+def _chua_do(check_id: str, title: str, phase: str, ly_do: str) -> Check:
+    return Check(
+        check_id, title, phase, NOT_MEASURED, f"CHƯA ĐO ĐƯỢC: {ly_do}",
+        "Không phải FAIL (không có gì hỏng) và không phải PASS — không cho READY khi chưa đo. "
+        "Đo lại ở máy có đủ repo EBM + EBM-Dashboards (OneDrive), hoặc đặt EBM_REPO_ROOT.",
+    )
+
+
 def _check_contract() -> Check:
     try:
         contract = _load_json(CONTRACT_PATH)
@@ -138,11 +176,15 @@ def _check_contract() -> Check:
 
 
 def _check_tool_mirrors() -> Check:
-    paths = [
-        ROOT / "sync" / "skills" / "cap-nhat-chung-cu-y-khoa" / "tools" / "surveillance_scan.py",
-        ROOT / "sync" / "skills" / "dark-analyst" / "tools" / "surveillance_scan.py",
-        ROOT / "EBM-Dashboards" / "tools" / "surveillance_scan.py",
-    ]
+    title = "Đồng bộ scanner skill/runtime"
+    goc, bo_cuc = _tim_goc_ebm()
+    if goc is None:
+        return _chua_do("ESD02", title, "static", f"không thấy repo EBM (bố cục={bo_cuc})")
+    dashboards = goc / "EBM-Dashboards"
+    paths = [goc.joinpath(*parts) for parts in SCANNER_VENDOR]
+    co_dashboards = dashboards.is_dir()
+    if co_dashboards:
+        paths.append(dashboards / "tools" / "surveillance_scan.py")
     missing = [str(path) for path in paths if not path.exists()]
     unreadable: list[str] = []
     hashes: set[str] = set()
@@ -153,13 +195,21 @@ def _check_tool_mirrors() -> Check:
             hashes.add(_sha256(path))
         except OSError as exc:
             unreadable.append(f"{path}: {exc}")
+    evidence = (
+        f"bo_cuc={bo_cuc}; files={len(paths) - len(missing)}/{len(paths)}; hashes={len(hashes)}; "
+        f"missing={missing}; unreadable={unreadable}"
+    )
     ok = not missing and not unreadable and len(hashes) == 1
+    if ok and not co_dashboards:
+        # Hai bản vendor khớp nhau nhưng bản runtime (EBM-Dashboards, chỉ có trên OneDrive) vắng
+        # ⇒ chưa đo được đủ 3 bản; lệch giữa hai bản vendor vẫn là FAIL thật ở nhánh dưới.
+        return _chua_do(
+            "ESD02", title, "static",
+            evidence + "; EBM-Dashboards/ vắng (chỉ có trên OneDrive) — mới so 2/3 bản",
+        )
     return Check(
-        "ESD02", "Đồng bộ scanner skill/runtime", "static", PASS if ok else FAIL,
-        (
-            f"files={len(paths) - len(missing)}/3; hashes={len(hashes)}; "
-            f"missing={missing}; unreadable={unreadable}"
-        ),
+        "ESD02", title, "static", PASS if ok else FAIL,
+        evidence,
         "Hash đồng nhất không thay xác minh nguồn online.",
     )
 
@@ -195,11 +245,20 @@ def _check_runtime_code() -> Check:
 
 
 def _check_offline_pipeline() -> Check:
-    verifier = ROOT / "tools" / "verify_clinical_evidence_update_pipeline.py"
-    ok, detail = _run([sys.executable, str(verifier), "--no-write"], cwd=ROOT)
+    title = "Pipeline Evidence Workbench offline"
+    goc, bo_cuc = _tim_goc_ebm()
+    verifier = goc / "tools" / "verify_clinical_evidence_update_pipeline.py" if goc else None
+    if verifier is None or not verifier.is_file():
+        return _chua_do("ESD04", title, "static",
+                        f"không thấy tools/verify_clinical_evidence_update_pipeline.py (bố cục={bo_cuc})")
+    thieu = _thieu_tai_san_onedrive(goc)
+    if thieu:
+        return _chua_do("ESD04", title, "static",
+                        f"bo_cuc={bo_cuc}; repo EBM thiếu thư mục chỉ có trên OneDrive: {thieu}")
+    ok, detail = _run([sys.executable, str(verifier), "--no-write"], cwd=goc)
     return Check(
-        "ESD04", "Pipeline Evidence Workbench offline", "static", PASS if ok else FAIL,
-        detail,
+        "ESD04", title, "static", PASS if ok else FAIL,
+        f"bo_cuc={bo_cuc}; {detail}",
         "Fixture offline không chứng minh PMID/DOI phân giải được tại thời điểm triển khai.",
     )
 
@@ -314,48 +373,47 @@ def _check_online_sources() -> Check:
     )
 
 
-def _tim_scanner_nguon() -> Path:
-    """Bản scanner để chạy canary: bản runtime `EBM-Dashboards/tools/` (máy thật) nếu có, không thì
-    bản vendor qua git `sync/skills/cap-nhat-chung-cu-y-khoa/tools/` (có trên mọi checkout, kể cả
-    Cloud/CI). ESD02 vẫn kiểm riêng ba bản có trùng byte hay không."""
-    runtime = ROOT / "EBM-Dashboards" / "tools" / "surveillance_scan.py"
-    if runtime.is_file():
-        return runtime
-    return ROOT / "sync" / "skills" / "cap-nhat-chung-cu-y-khoa" / "tools" / "surveillance_scan.py"
+def _chuan_bi_scanner(goc: Path, base: Path) -> tuple[Path | None, Path, str]:
+    """Chọn scanner để chạy canary: (đường dẫn, cwd, nguồn) — None nếu không chạy được.
 
-
-def _dung_khung_scanner_tam(base: Path, nguon: Path) -> Path:
-    """Chép scanner vào thư mục tạm `base/khung/tools/` rồi chạy từ đó.
-
-    Vá 25/09/2026: scanner ghi khoá `.quet.lock` cạnh `watchlist.json` của CHÍNH nó và ghi cảnh báo
-    khẩn vào `<thư mục cha>/alerts/` — chạy canary (2 chủ đề GIẢ) từ bản runtime có thể ghi dòng
-    «CỔNG QUÉT FAIL: chủ đề «Canary guideline»» vào `EBM-Dashboards/alerts/` THẬT, còn chạy từ bản
-    vendor thì ghi rác vào repo. Bản chép tạm giữ mọi thứ trong `base`. Liên kết `base/
-    medical-ebm-automation` → REPO để `_tim_medical_ebm_automation()` của scanner vẫn tìm được engine
-    (chuỗi kiểm rút bài); không tạo được liên kết (Windows thiếu quyền) ⇒ vẫn chạy, chỉ thiếu làn đó.
+    Ưu tiên bản runtime EBM-Dashboards/tools, lùi về bản vendor; CẢ HAI đều CHÉP sang hộp cát tạm có
+    symlink `medical-ebm-automation` → engine: scanner ghi alert vào `<cha của thư mục cha>/alerts/`
+    và khoá `.quet.lock` cạnh chính nó — chạy tại chỗ sẽ ghi bẩn cây repo EBM/EBM-Dashboards.
     """
-    thu_muc = base / "khung" / "tools"
-    thu_muc.mkdir(parents=True)
-    ban_sao = thu_muc / "surveillance_scan.py"
-    ban_sao.write_bytes(nguon.read_bytes())
+    runtime = goc / "EBM-Dashboards" / "tools" / "surveillance_scan.py"
+    vendor = next((goc.joinpath(*parts) for parts in SCANNER_VENDOR if goc.joinpath(*parts).is_file()), None)
+    if not runtime.is_file() and vendor is None:
+        return None, goc, "khong_co_scanner"
+    hop = base / "hop_cat"
+    tools_dir = hop / "skills" / "canary-skill" / "tools"
+    tools_dir.mkdir(parents=True)
+    dich = tools_dir / "surveillance_scan.py"
+    dich.write_bytes((runtime if runtime.is_file() else vendor).read_bytes())
     try:
-        (base / "medical-ebm-automation").symlink_to(REPO, target_is_directory=True)
-    except OSError:
-        pass
-    return ban_sao
+        (hop / "medical-ebm-automation").symlink_to(REPO, target_is_directory=True)
+    except (OSError, NotImplementedError) as exc:
+        if runtime.is_file():
+            # Máy thật không tạo được symlink (Windows thiếu quyền): giữ hành vi cũ — chạy bản
+            # runtime tại chỗ, chấp nhận rủi ro ghi khoá/alert canary vào EBM-Dashboards như trước.
+            return runtime, goc, "EBM-Dashboards"
+        return None, goc, f"khong_tao_duoc_symlink_hop_cat:{exc.__class__.__name__}"
+    if runtime.is_file():
+        # Vá 26/09/2026: bản runtime ghi `.quet.lock`, `.so-xac-minh-nguon.json` cạnh chính nó và
+        # alert khẩn vào `<gốc EBM>/alerts/` — hai chủ đề GIẢ của canary không được rơi vào đó.
+        return dich, hop, "EBM-Dashboards_hop_cat"
+    return dich, hop, f"vendor_hop_cat:{'/'.join(vendor.relative_to(goc).parts[:3])}"
 
 
 def _check_online_scanner() -> Check:
-    nguon = _tim_scanner_nguon()
+    title = "Scanner PubMed online"
+    goc, bo_cuc = _tim_goc_ebm()
+    if goc is None:
+        return _chua_do("ESD07", title, "online", f"không thấy repo EBM chứa scanner (bố cục={bo_cuc})")
     with tempfile.TemporaryDirectory(prefix="evidence-surveillance-canary-") as tmp:
         base = Path(tmp)
-        if not nguon.is_file():
-            return Check(
-                "ESD07", "Scanner PubMed online", "online", FAIL,
-                f"Không tìm thấy scanner: {nguon}",
-                "Hai query canary không thay độ phủ toàn watchlist hoặc thẩm định Track A.",
-            )
-        scanner = _dung_khung_scanner_tam(base, nguon)
+        scanner, cwd, nguon = _chuan_bi_scanner(goc, base)
+        if scanner is None:
+            return _chua_do("ESD07", title, "online", f"bo_cuc={bo_cuc}; {nguon}")
         watchlist = base / "watchlist.json"
         report_path = base / "scan.md"
         json_path = base / "scan.json"
@@ -367,14 +425,14 @@ def _check_online_scanner() -> Check:
         }), encoding="utf-8", newline="\n")
         ok, detail = _run([
             sys.executable, str(scanner), "--watchlist", str(watchlist),
-            "--days", "30", "--max", "1", "--report", str(report_path),
+            "--days", "30", "--max", str(CANARY_SCANNER_MAX), "--report", str(report_path),
             "--json-report", str(json_path),
             # Vá 22/09/2026 (phản biện vòng 2, review:thu-nhan #7): canary chạy 2 chủ đề GIẢ
             # ("Canary guideline"/"Canary safety") — thiếu --khong-cursor thì lượt canary GHI hai
             # khoá đó vào .quet-cursor.json THẬT (dùng chung với lượt quét sản xuất), làm con trỏ
             # sản xuất phồng thêm 2 khoá không liên quan chủ đề nào trong watchlist thật.
             "--khong-cursor",
-        ], cwd=ROOT)
+        ], cwd=cwd)
         try:
             payload = _load_json(json_path)
             status = payload.get("status")
@@ -386,26 +444,35 @@ def _check_online_scanner() -> Check:
                 if isinstance(item, dict) and item.get("status") != PASS
             ]
             detail = (
+                f"scanner={nguon}; max={CANARY_SCANNER_MAX}; "
                 f"status={status}; topics={topics}; failed={payload.get('failed_topics')}; "
                 f"candidates={payload.get('candidate_count')}; errors={errors}"
             )
         except (ValueError, TypeError) as exc:
             ok = False
-            detail = f"Không đọc được audit JSON scanner canary: {exc}; output={detail}"
+            detail = f"scanner={nguon}; Không đọc được audit JSON scanner canary: {exc}; output={detail}"
     return Check(
-        "ESD07", "Scanner PubMed online", "online", PASS if ok else FAIL,
+        "ESD07", title, "online", PASS if ok else FAIL,
         detail,
         "Hai query canary không thay độ phủ toàn watchlist hoặc thẩm định Track A.",
     )
 
 
 def _check_online_dashboard() -> Check:
-    verifier = ROOT / "tools" / "verify_clinical_evidence_update_pipeline.py"
+    goc, bo_cuc = _tim_goc_ebm()
+    verifier = goc / "tools" / "verify_clinical_evidence_update_pipeline.py" if goc else None
+    if verifier is None or not verifier.is_file():
+        return _chua_do("ESD08", "Dashboard strict source online", "online",
+                        f"không thấy tools/verify_clinical_evidence_update_pipeline.py (bố cục={bo_cuc})")
+    thieu = _thieu_tai_san_onedrive(goc)
+    if thieu:
+        return _chua_do("ESD08", "Dashboard strict source online", "online",
+                        f"bo_cuc={bo_cuc}; repo EBM thiếu thư mục chỉ có trên OneDrive: {thieu}")
     proc = subprocess.run(
         [
             sys.executable, str(verifier), "--online-dashboard-gate", "--no-write", "--json",
         ],
-        cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8", errors="replace",
+        cwd=str(goc), capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
     detail = (proc.stderr or "").strip()[:800]
     ok = proc.returncode == 0
@@ -575,8 +642,12 @@ def run_verification(*, online: bool, runtime_canary: bool, contract_check: bool
 
     failures = [row for row in selected if row.status == FAIL]
     human_gates = [row for row in selected if row.status == HUMAN_GATE]
+    not_measured = [row for row in selected if row.status == NOT_MEASURED]
     if failures:
         deployment_status = "BLOCKED_FOR_DEPLOYMENT"
+    elif not_measured:
+        # Chưa đo ≠ đạt: không bao giờ rơi xuống READY/RUNTIME_CANARY_PASS/CONTRACT_PASS.
+        deployment_status = "MEASUREMENT_INCOMPLETE"
     elif human_gates:
         deployment_status = "HUMAN_VALIDATION_REQUIRED"
     else:
@@ -595,6 +666,7 @@ def run_verification(*, online: bool, runtime_canary: bool, contract_check: bool
         "online": online,
         "failure_count": len(failures),
         "human_gate_count": len(human_gates),
+        "not_measured_count": len(not_measured),
         "checks": [
             {
                 **asdict(row),
@@ -618,6 +690,7 @@ def markdown_report(report: dict) -> str:
         f"- Deployment allowed: `{report['deployment_allowed']}`",
         f"- Online canary: `{report['online']}`",
         f"- Failures / human gates: `{report['failure_count']}` / `{report['human_gate_count']}`",
+        f"- Chưa đo được (NOT_MEASURED): `{report.get('not_measured_count', 0)}`",
         "",
         "| ID | Cổng | Pha | Trạng thái | Bằng chứng | Giới hạn |",
         "|---|---|---|---|---|---|",
