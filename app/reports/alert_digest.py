@@ -20,6 +20,7 @@ from app.config import settings
 from app.database import session_scope
 from app.models import EvidenceItem
 from app.services import run_state
+from app.services.filtering import la_ly_do_eoc, la_ly_do_rut_bai
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -104,10 +105,16 @@ def build_alert_data(days: int = 7, chi_live: bool = False) -> Dict:
     demo_ids = {r.id for r in items
                 if r.is_mock or mode_theo_luot.get(r.first_seen_run_id) != "live"}
     guidelines, regulatory, actionable, need_ft, drug_signals = [], [], [], [], []
+    retracted: List[EvidenceItem] = []
     for r in items:
+        # Vá 26/09/2026 (synthesis #4): bài ĐÃ BỊ RÚT không bao giờ vào danh sách guideline/
+        # actionable/cảnh báo — liệt kê ở mục đỏ riêng, không xoá im lặng.
+        if r.classification == "excluded" and la_ly_do_rut_bai(r.reason_for_exclusion):
+            retracted.append(r)
+            continue
         if r.source_type == "drug_safety" or r.safety_signal:
             (regulatory if _is_regulatory(r) else drug_signals).append(r)
-        elif r.study_type == "guideline":
+        elif r.study_type == "guideline" and r.classification != "excluded":
             guidelines.append(r)
         if r.is_actionable:
             actionable.append(r)
@@ -125,6 +132,7 @@ def build_alert_data(days: int = 7, chi_live: bool = False) -> Dict:
         "guidelines": guidelines, "regulatory": regulatory,
         "actionable": actionable, "need_full_text": need_ft,
         "drug_signals": drug_signals,
+        "retracted": retracted,
         "chi_live": chi_live,
         "demo_ids": demo_ids, "n_demo": len(demo_ids),
     }
@@ -142,6 +150,8 @@ def _bullets(rows: List[EvidenceItem], demo_ids=frozenset()) -> List[str]:
         safety_signal = html_lib.escape(r.safety_signal) if r.safety_signal else ""
         area = f" _({html_lib.escape(r.clinical_area)})_" if r.clinical_area else ""
         nhan = _NHAN_DEMO if r.id in demo_ids else ""
+        if la_ly_do_eoc(r.reason_for_exclusion):
+            nhan += "🟠 [Có Expression of Concern] "
         out.append(f"- {nhan}**{title[:110]}**{area}\n"
                    f"  - Mức: {r.operational_evidence_level or '—'} | Tier {r.reliability_tier or '—'}"
                    f"{' | ⚠️ ' + safety_signal[:80] if safety_signal else ''}\n"
@@ -167,6 +177,19 @@ def render_alert_markdown(data: Dict) -> str:
         L.append(f"> 🧪 **{len(demo_ids)} mục là DỮ LIỆU MẪU (DEMO — do lượt chạy mock đưa vào)**: "
                  "chỉ để xem thử giao diện, KHÔNG phải tin thật, KHÔNG bao giờ được gửi "
                  "email/webhook. Các mục này mang nhãn 🧪 [DEMO] bên dưới.\n")
+
+    retracted = data.get("retracted") or []
+    if retracted:
+        L.append(f"## ⛔ Bài đã bị rút — KHÔNG dùng ({len(retracted)})\n")
+        L.append("> Nguồn (PubMed/Europe PMC) gắn nhãn rút bài cho các mục dưới đây: đã LOẠI khỏi "
+                 "guideline/actionable/cảnh báo và không đưa sang EBM_MASTER. Liệt kê để bác sĩ "
+                 "biết, KHÔNG dùng lâm sàng.\n")
+        out_rut = []
+        for dong, r in zip(_bullets(retracted, demo_ids), retracted):
+            ly_do = html_lib.escape(r.reason_for_exclusion or "")
+            out_rut.append(f"{dong}\n  - Lý do: {ly_do[:220]}")
+        L.append("\n".join(out_rut))
+        L.append("")
 
     L.append(f"## ⛑️ Cảnh báo an toàn thuốc CHÍNH THỨC mới ({len(data['regulatory'])})\n")
     L.append("\n".join(_bullets(data["regulatory"], demo_ids)) if data["regulatory"]
