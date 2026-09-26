@@ -26,6 +26,7 @@ if str(TOOLS_DIR) not in sys.path:
 
 import approve_gate as AG  # noqa: E402
 import gate_contract as GC  # noqa: E402
+
 from runtime.approval_ledger import ApprovalLedger, LedgerUnreadable  # noqa: E402
 from runtime.schemas import ApprovalDecisionEnum  # noqa: E402
 

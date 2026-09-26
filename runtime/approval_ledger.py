@@ -161,6 +161,15 @@ class ApprovalLedger:
         # GIỮ LẠI để to_file() ghi trả nguyên vẹn — xem chú thích dài ở from_file():
         # trước 2026-07-27 chúng bị bỏ qua rồi bị to_file() xóa vĩnh viễn khỏi sổ cái.
         self._unparsed_raw: list = []
+        # VÁ 2026-09-26 (#26): MỌI phần tử đã nạp từ file, NGUYÊN VĂN và ĐÚNG THỨ TỰ
+        # (parse được hay không). export_json() ghi trả y nguyên phần này rồi mới nối
+        # bản ghi mới vào ĐUÔI — sổ append-only không được đảo/đổi byte phần tử cũ.
+        # Trước đây dòng không parse được bị dời xuống CUỐI ⇒ lượt ký kế tiếp (prev_hash
+        # lấy từ đuôi file thô) làm ĐỨT CHUỖI và khoá vĩnh viễn mọi cổng của đề tài.
+        self._loaded_raw: list = []
+        # Số bản ghi trong _records đến từ file; bản ghi đứng SAU mốc này là bản mới
+        # (add_approval hoặc nối thẳng _records trong test) — được xuất sau _loaded_raw.
+        self._n_loaded_records: int = 0
 
     # ── Write ─────────────────────────────────────────────────────────────────
 
@@ -190,6 +199,9 @@ class ApprovalLedger:
 
         # Kiểm tra approval_id unique
         existing_ids = {r.approval_id for r in self._records}
+        existing_ids.update(
+            d.get("approval_id") for d in self._unparsed_raw if isinstance(d, dict)
+        )
         if record.approval_id in existing_ids:
             return False, f"DUPLICATE_APPROVAL_ID:{record.approval_id}"
 
@@ -415,8 +427,14 @@ class ApprovalLedger:
         # được lúc đọc. Trước đây chúng bị bỏ khỏi danh sách rồi to_file() ghi đè nguyên
         # file → XÓA VĨNH VIỄN bản ghi phê duyệt thật (kể cả của Hội đồng Đạo đức), không
         # cảnh báo, không bản sao lưu. Sổ cái kiểm toán chỉ được PHÉP thêm.
+        # VÁ 2026-09-26 (#26): ghi trả NGUYÊN VĂN mọi phần tử đã nạp, ĐÚNG THỨ TỰ gốc
+        # (không dựng lại qua record_to_dict — hàm đó làm rơi khoá ngoài lược đồ), rồi
+        # mới nối bản ghi mới vào ĐUÔI. Trước đây `records + _unparsed_raw` dời dòng lỗi
+        # xuống cuối ⇒ bản ghi mới không đứng ở đuôi ⇒ đứt chuỗi băm vĩnh viễn.
+        # Ledger dựng trong bộ nhớ (không nạp file): _loaded_raw rỗng ⇒ như cũ.
+        moi = [record_to_dict(r) for r in self._records[self._n_loaded_records:]]
         return json.dumps(
-            [record_to_dict(r) for r in self._records] + list(self._unparsed_raw),
+            list(self._loaded_raw) + moi,
             indent=2,
             ensure_ascii=False,
         )
@@ -657,6 +675,8 @@ class ApprovalLedger:
                 ledger._unparsed_raw.append(d)
                 continue
             ledger._records.append(rec)
+        ledger._loaded_raw = list(raw)
+        ledger._n_loaded_records = len(ledger._records)
         return ledger
 
     # ── Factory helpers (for tests only) ──────────────────────────────────────
