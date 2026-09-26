@@ -33,3 +33,29 @@ def tim_goc_ebm(repo: Path) -> Path:
         if la_goc_ebm(cha / ten):
             return cha / ten
     return cha
+
+
+# Thư mục CHỈ sống trên OneDrive, không bao giờ đi qua git (cùng danh sách với tools/ban_sao_tran.py của repo EBM).
+GOC_CHI_ONEDRIVE = ("EBM-Dashboards", "EBM_MASTER", "dashboard_mockups")
+
+
+def thieu_du_lieu_onedrive(goc: Path) -> bool:
+    """Gốc EBM vắng CẢ EBM-Dashboards lẫn EBM_MASTER — bản sao git trần (Cloud/CI), không phải máy thật hỏng dở."""
+    return not any((goc / ten).exists() for ten in ("EBM-Dashboards", "EBM_MASTER"))
+
+
+def la_duong_chi_onedrive(rel: str) -> bool:
+    """Đường dẫn TƯƠNG ĐỐI gốc EBM nằm dưới một thư mục chỉ-OneDrive."""
+    phan = Path(rel).parts
+    return bool(phan) and phan[0] in GOC_CHI_ONEDRIVE
+
+
+def chi_thieu_tep_onedrive(loi: list[str], goc: Path, tien_to: str) -> bool:
+    """True khi đang ở bản sao trần VÀ mọi lỗi đều là «thiếu tệp» (`<tien_to><đường>`) dưới thư mục chỉ-OneDrive.
+
+    Bất kỳ lỗi nào khác (thiếu token, lệch nội dung, thiếu tệp TRONG git) ⇒ False — vẫn FAIL.
+    """
+    if not loi or not thieu_du_lieu_onedrive(goc):
+        return False
+    return all(x.startswith(tien_to) and la_duong_chi_onedrive(x[len(tien_to):]) for x in loi)
+

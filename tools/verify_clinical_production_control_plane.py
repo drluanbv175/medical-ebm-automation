@@ -38,6 +38,8 @@ DEFAULT_MD = REPO / "reports" / "CLINICAL_PRODUCTION_CONTROL_PLANE_REPORT.md"
 PASS = "PASS"
 FAIL = "FAIL"
 HUMAN_GATE = "HUMAN_GATE"
+# 26/09/2026: bản sao git trần thiếu tệp chỉ có trên OneDrive — không phải FAIL, cũng không phải đạt.
+NOT_MEASURED = "NOT_MEASURED"
 DISCLAIMER = (
     "Cần bác sĩ kiểm chứng. Đây là kiểm control-plane kỹ thuật/offline; không thay "
     "UAT, phê duyệt bảo mật/pháp lý, thẩm định lâm sàng hoặc quyết định điều trị."
@@ -323,7 +325,8 @@ def _check_evidence_update_pipeline_wiring() -> ControlPlaneCheck:
             errors.append("direct_gate_does_not_hold_engine_candidates_for_review")
     return ControlPlaneCheck(
         check_id="CP4",
-        status=FAIL if errors else PASS,
+        status=(NOT_MEASURED if _goc.chi_thieu_tep_onedrive(errors, ROOT, "missing:")
+                else FAIL if errors else PASS),
         title="Pipeline cập nhật chứng cứ lâm sàng được nối vào kiểm toàn hệ",
         evidence=[_rel(path) for path in evidence],
         proves="Dashboard Evidence Workbench, thư viện, phái sinh và sync hub có verifier trong upgrade cycle.",
@@ -383,8 +386,11 @@ def evaluate_all(generated_at: str | None = None) -> dict[str, Any]:
     ]
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
+    not_measured_count = sum(1 for check in checks if check.status == NOT_MEASURED)
     if fail_count:
         overall = "FAIL_CLOSED"
+    elif not_measured_count:
+        overall = "MEASUREMENT_INCOMPLETE"
     elif human_gate_count:
         overall = "CONTROLLED_AUTOMATION_READY_WITH_HUMAN_GATES"
     else:
@@ -465,7 +471,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"clinical_production_allowed={report['clinical_production_allowed']}")
         print(f"real_patient_data_allowed={report['real_patient_data_allowed']}")
         print("Cần bác sĩ kiểm chứng.")
-    return 0 if report["fail_count"] == 0 else 1
+    if report["fail_count"]:
+        return 1
+    return 2 if report["overall_status"] == "MEASUREMENT_INCOMPLETE" else 0
 
 
 if __name__ == "__main__":

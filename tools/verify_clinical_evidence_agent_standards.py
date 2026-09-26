@@ -18,7 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
@@ -41,6 +41,8 @@ DEFAULT_MD = REPO / "reports" / "CLINICAL_EVIDENCE_AGENT_STANDARDS_REPORT.md"
 PASS = "PASS"
 FAIL = "FAIL"
 HUMAN_GATE = "HUMAN_GATE"
+# 26/09/2026: bản sao git trần thiếu tệp chỉ có trên OneDrive — không phải FAIL, cũng không phải đạt.
+NOT_MEASURED = "NOT_MEASURED"
 DISCLAIMER = (
     "Cần bác sĩ kiểm chứng. Đây là kiểm chuẩn agent/pipeline kỹ thuật; không thay "
     "xác minh nguồn online, thẩm định chuyên môn, hoặc quyết định áp dụng lâm sàng."
@@ -1730,10 +1732,18 @@ def evaluate_all(generated_at: str | None = None) -> dict:
     question_frame_policy = build_question_frame_policy()
     conflicting_evidence_policy = build_conflicting_evidence_policy()
     operational_completeness_policy = build_operational_completeness_policy()
+    checks = [
+        replace(c, status=NOT_MEASURED) if c.status == FAIL
+        and _goc.chi_thieu_tep_onedrive(list(c.missing), ROOT, "missing_file:") else c
+        for c in checks
+    ]
     fail_count = sum(1 for check in checks if check.status == FAIL)
     human_gate_count = sum(1 for check in checks if check.status == HUMAN_GATE)
+    not_measured_count = sum(1 for check in checks if check.status == NOT_MEASURED)
     if fail_count:
         overall = "FAIL_CLOSED"
+    elif not_measured_count:
+        overall = "MEASUREMENT_INCOMPLETE"
     elif human_gate_count:
         overall = "CLINICAL_EVIDENCE_AGENT_STANDARD_READY_WITH_DOCTOR_GATE"
     else:
@@ -1744,7 +1754,8 @@ def evaluate_all(generated_at: str | None = None) -> dict:
         "overall_status": overall,
         "fail_count": fail_count,
         "human_gate_count": human_gate_count,
-        "standards_ready": fail_count == 0,
+        "standards_ready": fail_count == 0 and not_measured_count == 0,
+        "not_measured_count": not_measured_count,
         "doctor_review_required_before_apply": True,
         "clinical_production_allowed": False,
         "real_patient_data_allowed": False,
@@ -1974,7 +1985,9 @@ def main(argv: list[str] | None = None) -> int:
         print("conflicting_evidence_policy_status=" + report["conflicting_evidence_policy_status"])
         print("operational_completeness_policy_status=" + report["operational_completeness_policy_status"])
         print("Cần bác sĩ kiểm chứng.")
-    return 0 if report["fail_count"] == 0 else 1
+    if report["fail_count"]:
+        return 1
+    return 2 if report["overall_status"] == "MEASUREMENT_INCOMPLETE" else 0
 
 
 if __name__ == "__main__":
