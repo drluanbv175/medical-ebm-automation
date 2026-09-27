@@ -25,6 +25,7 @@ from typing import Any, Dict, Iterable, Mapping, Optional
 
 import gate_contract as GC
 import import_real_dataset as RDI
+import pipeline_freshness as PF
 
 STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT = "DRAFT_READY_NEEDS_REAL_DATA"
@@ -850,10 +851,7 @@ def evaluate_study(
             checkpoint["g5_status"] = (
                 "LOCKED" if lock_ok else checkpoint.get("g5_status", "PENDING")
             )
-            checkpoint_path.write_text(
-                json.dumps(checkpoint, ensure_ascii=False, indent=2),
-                encoding="utf-8", newline="\n"
-            )
+            PF.ghi_checkpoint_giu_moc_sinh(checkpoint_path, json.dumps(checkpoint, ensure_ascii=False, indent=2))
     return report
 
 

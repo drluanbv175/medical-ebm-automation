@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 import gate_contract as GC
+import pipeline_freshness as PF
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -1375,10 +1376,7 @@ def evaluate_study(
                 "human_approval_valid": False,
             }
             checkpoint["submission_package_ready"] = status == STATUS_READY
-            checkpoint_path.write_text(
-                json.dumps(checkpoint, ensure_ascii=False, indent=2),
-                encoding="utf-8", newline="\n"
-            )
+            PF.ghi_checkpoint_giu_moc_sinh(checkpoint_path, json.dumps(checkpoint, ensure_ascii=False, indent=2))
     return report
 
 
