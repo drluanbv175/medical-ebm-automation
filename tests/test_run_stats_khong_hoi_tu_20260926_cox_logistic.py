@@ -143,6 +143,22 @@ class TestCoxKhongHoiTu:
         assert "khong_hoi_tu" not in c and "so_tho_khong_tin_cay" not in c
         assert 0.0 < c["CI_95"][0] < c["HR"] < c["CI_95"][1] < float("inf")
 
+    def test_hiep_bien_tach_hoan_toan_gan_co_mo_hinh_hieu_chinh(self):
+        """Bổ sung khi rà phản biện: phép kiểm độc lập phải chạy trên MỌI hệ số, không
+        chỉ group_col. Phơi nhiễm chồng lấp (thô hội tụ) nhưng hiệp biến «marker» tách
+        hoàn toàn (mọi ca marker=1 có biến cố sớm nhất) ⇒ mô hình hiệu chỉnh không tin
+        cậy dù HR của phơi nhiễm trông hữu hạn. Đột biến «chỉ kiểm group_col» phải đỏ."""
+        df = _df_tach()
+        df.loc[df.record_id == "S05", "follow_time"] = 13
+        df.loc[df.record_id == "S21", "follow_time"] = 38
+        df.loc[df.record_id == "S27", "follow_time"] = 50
+        df["marker"] = ((df.follow_time <= 9) & (df.event_flag == 1)).astype(int)
+        res = RSA.survival_model(df, "follow_time", "event_flag", "exposure_var", ["marker"])
+        assert "khong_hoi_tu" not in res["crude"], res["crude"]
+        a = res["adjusted"]
+        assert a.get("khong_hoi_tu") is True and "HR" not in a, a
+        assert any(ld.startswith("marker: ") for ld in a["ly_do"]), a["ly_do"]
+
 
 # ════════════════════════════════════════════════════════════════════════════
 # Logistic đa biến + MI — tách gần hoàn toàn
