@@ -55,7 +55,6 @@
   "pending_doctor_actions": [
     "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.",
     "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted.",
-    "Điền Intervention(s)/Inclusion-Exclusion/Primary-Secondary Outcome từ PICO thật của đề tài (checkpoint G1) trước khi đăng ký thật.",
     "Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.",
     "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt."
   ],
@@ -87,6 +86,13 @@
         "action": "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa."
       },
       {
+        "id": "G2-AUTO-02b",
+        "label": "ICH E6(R3) Annex 2 Step 4: IRB/consent/privacy/data governance đủ cho phương pháp mới",
+        "status": "PASS",
+        "evidence": "status=NOT_APPLICABLE; methods=không áp dụng",
+        "action": "Hoàn thiện khối annex2 trong study_meta trước khi nộp/khóa G2."
+      },
+      {
         "id": "G2-AUTO-03",
         "label": "Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc",
         "status": "PASS",
@@ -104,7 +110,7 @@
         "id": "G2-AUTO-05",
         "label": "Không còn placeholder khoa học/vận hành trọng yếu",
         "status": "REVIEW",
-        "evidence": "còn 38 dòng [CẦN] ngoài các dòng chỉ chứa PII",
+        "evidence": "còn 35 dòng [CẦN] ngoài các dòng chỉ chứa PII",
         "action": "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted."
       },
       {
@@ -124,8 +130,8 @@
       {
         "id": "G2-AUTO-08",
         "label": "Mục khoa học WHO TRDS (can thiệp/tiêu chí/kết cục) đã có nội dung thật",
-        "status": "REVIEW",
-        "evidence": "còn trống: #13 Intervention(s), #14 Key Inclusion and Exclusion Criteria, #19 Primary Outcome(s), #20 Key Secondary Outcomes",
+        "status": "PASS",
+        "evidence": "mục 13/14/19/20 đã có nội dung",
         "action": "Điền Intervention(s)/Inclusion-Exclusion/Primary-Secondary Outcome từ PICO thật của đề tài (checkpoint G1) trước khi đăng ký thật."
       },
       {
@@ -153,9 +159,8 @@
       }
     ],
     "unresolved_critical_placeholders": [
-      "Chức vụ: [CẦN BỔ SUNG]",
       "Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]",
-      "Đăng ký nghiên cứu: [CẦN — ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)]",
+      "Đăng ký nghiên cứu: [CẦN — OSF Registries (https://osf.io/registries) (nếu tiến cứu tuyển mới)]",
       "[CẦN BỔ SUNG tạp chí/hội nghị mục tiêu]",
       "`[CẦN BÁC SĨ XÁC NHẬN bảng rủi ro phù hợp với đề tài thật]`",
       "Nghiên cứu này được tài trợ bởi: [CẦN, tên nguồn tài trợ, hoặc \"không có",
@@ -163,7 +168,6 @@
       "☐ Có hỗ trợ: [CẦN, mô tả cụ thể, vd hỗ trợ chi phí đi lại/thời gian;",
       "Dữ liệu được mã hóa và lưu tại [CẦN, máy chủ bảo mật/",
       "[CẦN — đơn vị/chủ nhiệm] sẽ [CẦN CHỦ NHIỆM XÁC NHẬN, mô tả chính sách",
-      "Hội đồng Đạo đức: [CẦN — Tên HĐ cơ sở]",
       "Nơi lưu: [CẦN, máy chủ nội bộ / OneDrive institutional",
       "Sao lưu: [CẦN — ví dụ: hàng ngày/tuần, 2 bản độc lập]",
       "☐ Không chia sẻ (lý do: [CẦN])",
@@ -171,7 +175,6 @@
       "[CẦN BÁC SĨ CHỌN VÀ BIỆN MINH]",
       "Quy trình: [CẦN BỔ SUNG quy trình cụ thể của đơn vị]",
       "SỐ BẢN NỘP: ___ [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]",
-      "Chức vụ: [CẦN BỔ SUNG] | Đơn vị: [CẦN BỔ SUNG]",
       "Tài trợ chính: [CẦN BỔ SUNG — \"Không có tài trợ bên ngoài\" nếu đúng]",
       "Tài trợ bổ sung: [CẦN BỔ SUNG]",
       "Số hợp đồng (nếu có): [CẦN BỔ SUNG]",
@@ -179,7 +182,7 @@
       "> `[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`",
       "Chủ nhiệm: [CẦN BỔ SUNG]",
       "> hệ thống không tra được hai nguồn đầu vì không có API mở. [CẦN BÁC SĨ TỰ TRA]",
-      "[CẦN — sẽ có sau khi đăng ký: NCT_______ / ANZCTR_____]",
+      "[CẦN — sẽ có sau khi đăng ký trên OSF Registries: mã/URL đăng ký dạng osf.io/xxxxx]",
       "[CẦN — ngày đăng ký thành công]",
       "Số phê duyệt IRB: [CẦN sau khi nhận]",
       "[CẦN BỔ SUNG — tên tổ chức tài trợ hoặc \"None\"]",
@@ -195,7 +198,6 @@
     "pending_actions": [
       "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.",
       "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted.",
-      "Điền Intervention(s)/Inclusion-Exclusion/Primary-Secondary Outcome từ PICO thật của đề tài (checkpoint G1) trước khi đăng ký thật.",
       "Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.",
       "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt."
     ],
@@ -210,6 +212,11 @@
         "standard": "ICH E6(R3)",
         "scope": "IRB/IEC, informed consent, safety and protocol control for clinical trials",
         "url": "https://database.ich.org/sites/default/files/ICH_E6%28R3%29_Step4_FinalGuideline_2025_0106.pdf"
+      },
+      {
+        "standard": "ICH E6(R3) Annex 2 Step 4",
+        "scope": "IRB/IEC, consent, privacy và data governance cho decentralised/pragmatic/RWD trials",
+        "url": "https://database.ich.org/sites/default/files/ICH_E6%28R3%29_Annex%202_Guideline_Step%204_2026_0603_0.pdf"
       },
       {
         "standard": "WHO Trial Registration Data Set 1.3.1",

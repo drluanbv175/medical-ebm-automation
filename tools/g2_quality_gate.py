@@ -199,6 +199,10 @@ def _gate_meta(meta: Optional[Mapping[str, Any]], gate: str) -> Mapping[str, Any
 
 
 def _real_text(value: Any) -> Optional[str]:
+    # Dict/list KHÔNG phải văn bản (vá 27/09/2026): str() của chúng là chuỗi repr Python — từng lọt vào mục #19 WHO TRDS
+    # dưới dạng "{'name': ..., 'measure': ...}" mà G2-AUTO-08 vẫn PASS vì chuỗi đó «không trống».
+    if isinstance(value, (Mapping, list, tuple, set)):
+        return None
     text = str(value or "").strip()
     if not text or re.search(r"\[(?:CẦN|CAN|TBD|TODO|PENDING)", text, re.IGNORECASE):
         return None
@@ -298,12 +302,13 @@ def build_registration_draft(
     comparator = _real_text(g1.get("comparator")) or _real_text(g0.get("comparison"))
     inclusion = _real_text_list(g1.get("inclusion_criteria"))
     exclusion = _real_text_list(g1.get("exclusion_criteria"))
-    primary_outcome = (
-        _real_text(g1.get("primary_outcome"))
-        or _real_text(g0.get("primary_outcome"))
-    )
-    primary_measure = _real_text(g0.get("primary_outcome_measure"))
-    primary_timepoint = _real_text(g0.get("primary_outcome_timepoint"))
+    # G1 có thể ghim kết cục chính dạng CÓ CẤU TRÚC {name, measure, timepoint, type} (C1a từ 02/09/2026) — lấy ĐÚNG từng
+    # trường, thiếu trường nào mới lùi về G0 (vá 27/09/2026: trước đây str(dict) bị nhét nguyên vào «name»).
+    kc_g1 = g1.get("primary_outcome")
+    kc_g1 = kc_g1 if isinstance(kc_g1, Mapping) else {"name": kc_g1}
+    primary_outcome = _real_text(kc_g1.get("name")) or _real_text(g0.get("primary_outcome"))
+    primary_measure = _real_text(kc_g1.get("measure")) or _real_text(g0.get("primary_outcome_measure"))
+    primary_timepoint = _real_text(kc_g1.get("timepoint")) or _real_text(g0.get("primary_outcome_timepoint"))
     secondary_outcomes = _real_text_list(g1.get("secondary_outcomes"))
     if not secondary_outcomes:
         secondary_outcomes = [

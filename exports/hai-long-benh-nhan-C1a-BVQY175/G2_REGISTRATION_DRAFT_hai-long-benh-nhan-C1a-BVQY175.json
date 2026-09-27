@@ -3,7 +3,7 @@
   "who_trds_version": "1.3.1",
   "item_count": 24,
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-07-31T21:43:41.281104",
+  "generated_at": "2026-09-27T17:16:50.045759",
   "status": "DRAFT",
   "registration_requirement": "BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên) — TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới — loại hình thu thập [CẦN BỔ SUNG]",
   "suggested_registry": "ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)",
@@ -71,14 +71,28 @@
     {
       "number": 13,
       "label": "Intervention(s)",
-      "value": null
+      "value": {
+        "assigned_intervention": "Not applicable - no prospectively assigned intervention",
+        "exposure_or_index_test": "Không can thiệp. Phơi nhiễm trung tâm của MT2: thời gian chờ khám theo mốc HIS/eHospital, báo hiệu ứng theo mỗi 15 phút chờ thêm; kiểm phi tuyến bằng restricted cubic spline 3 nút (mục 4.6.3, 4.10)"
+      }
     },
     {
       "number": 14,
       "label": "Key Inclusion and Exclusion Criteria",
       "value": {
-        "inclusion": null,
-        "exclusion": null
+        "inclusion": [
+          "Người bệnh ngoại trú từ đủ 18 tuổi trở lên (bao gồm cả phụ nữ mang thai)",
+          "Đủ sức khỏe, tỉnh táo và đủ năng lực nhận thức/ngôn ngữ để trả lời",
+          "Đã cơ bản hoàn thành quy trình khám tại Khoa C1a (đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT)",
+          "Đồng ý tham gia tự nguyện sau khi được giải thích"
+        ],
+        "exclusion": [
+          "Từ chối tham gia",
+          "Không đủ năng lực trả lời (cấp cứu, suy giảm nhận thức, rào cản ngôn ngữ không khắc phục được)",
+          "Nhân viên y tế của chính khoa/bệnh viện đi khám (nguy cơ xung đột/thiên lệch đánh giá)",
+          "Đã tham gia nghiên cứu này ở lượt trước trong cùng kỳ (chống trùng)",
+          "Phiếu khuyết dữ liệu vượt ngưỡng cho phép (biến PhieuHopLe, mục 4.10)"
+        ]
       }
     },
     {
@@ -108,12 +122,20 @@
     {
       "number": 19,
       "label": "Primary Outcome(s)",
-      "value": null
+      "value": {
+        "name": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)",
+        "measure": "Mục đơn Likert 5 mức — nguyên văn C.3: 'Nói chung, Ông/Bà hài lòng ở mức độ nào với tất cả các dịch vụ đã nhận được tại Khoa Khám bệnh trong lần khám này?'; KHÔNG tính từ trung bình lĩnh vực A–F (chống part-whole bias, mục 4.6.3)",
+        "timepoint": "Đo MỘT lần ngay sau khi cơ bản hoàn thành quy trình khám — đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT (mục 4.3.1); cắt ngang, không theo dõi dọc"
+      }
     },
     {
       "number": 20,
       "label": "Key Secondary Outcomes",
-      "value": null
+      "value": [
+        "Điểm hài lòng theo 6 lĩnh vực A-F (30 mục Likert 5 mức)",
+        "Tỷ lệ hài lòng theo ngưỡng cố định G1 >= 4/5 (kết cục nhị phân thứ cấp, chỉ thực hiện nếu đủ điều kiện kích hoạt)",
+        "Điểm hài lòng chung tính toán SHLNBChung_TinhToan (kết cục đối chiếu/hội tụ)"
+      ]
     },
     {
       "number": 21,
@@ -147,6 +169,16 @@
       }
     }
   ],
+  "scientific_fields_source": {
+    "source": "study_meta.gate_params.G0/G1",
+    "pi_pinned_only": true,
+    "auto_filled_items": [
+      13,
+      14,
+      19,
+      20
+    ]
+  },
   "no_pii_note": "Thông tin liên hệ cá nhân phải điền trực tiếp trên registry công khai; không lưu PII trong artifact pipeline.",
   "disclaimer": "Cần bác sĩ kiểm chứng."
 }
