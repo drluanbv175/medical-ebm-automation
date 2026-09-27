@@ -163,3 +163,18 @@ def test_ledger_trong_bo_nho_giu_hanh_vi_cu(tmp_path):
     ledger._records.append(r2)
     out = json.loads(ledger.export_json())
     assert [d["gate_id"] for d in out] == ["G4", "G5"]
+
+
+def test_trung_approval_id_voi_dong_khong_parse_duoc_bi_tu_choi(tmp_path):
+    """Rà phản biện 2026-09-26: add_approval phải xét trùng approval_id CẢ với dòng thô
+    không parse được (approval_id là băm tất định gate:ref:timestamp — trùng là có thể)."""
+    r = ApprovalLedger.make_human_approval(gate_id="G4", reviewer_role="PI", reviewer_ref="a",
+                                           scope="s", evidence_content="e1",
+                                           timestamp_utc="2026-09-01T10:00:00Z")
+    dong_loi = {"approval_id": r.approval_id, "gate_id": "G4"}   # thiếu trường ⇒ không parse
+    p = tmp_path / "approval_ledger.json"
+    p.write_text(json.dumps([dong_loi]), encoding="utf-8", newline="\n")
+    ledger = ApprovalLedger.from_file(p)
+    assert ledger._unparsed_raw == [dong_loi]   # fixture đúng: dòng không parse được
+    ok, ly_do = ledger.add_approval(r)
+    assert ok is False and ly_do.startswith("DUPLICATE_APPROVAL_ID"), ly_do

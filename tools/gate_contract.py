@@ -31,7 +31,7 @@ import os
 import re
 import sys
 import unicodedata
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Tuple
 
@@ -220,8 +220,15 @@ def _g2_signed_attestation_state(
         return False
     attestation = g2_quality.extract_attestation(text)
     if not attestation:
+        # Rà phản biện 2026-09-26: gói CÓ dấu mở attestation mà không bóc được JSON hợp
+        # lệ (khối hỏng/bị sửa) ⇒ KHÔNG rơi về nhánh tương thích «thiếu version ⇒ True»
+        # — đó là xanh giả. Chỉ gói HOÀN TOÀN không có attestation mới trả None.
+        if g2_quality.ATTESTATION_BEGIN in text:
+            return False
         return None
-    today = datetime.now(timezone.utc).date()
+    # Cùng quy ước ngày với g2_quality_gate.check_attestation (date.today() — ngày
+    # địa phương), để hai nơi không lệch nhau quanh nửa đêm UTC.
+    today = date.today()
     valid_until_raw = str(attestation.get("valid_until") or "").strip()
     if valid_until_raw:
         try:

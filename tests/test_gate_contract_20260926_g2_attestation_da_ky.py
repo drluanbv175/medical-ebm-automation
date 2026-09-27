@@ -133,3 +133,18 @@ def test_moi_noi_goi_trong_tools_deu_truyen_out_dir():
                 line = text.count("\n", 0, m.start()) + 1
                 thieu.append(f"{f.name}:{line}")
     assert thieu == [], f"nơi gọi thiếu out_dir=: {thieu}"
+
+
+@pytest.mark.parametrize("khoi", [
+    pytest.param("```json\n{hỏng\n```", id="json-hong"),
+    pytest.param("```json\n[1, 2]\n```", id="goc-khong-phai-dict"),
+    pytest.param("khong co khoi json", id="thieu-khoi-json"),
+])
+def test_khoi_attestation_hong_khong_roi_ve_nhanh_tuong_thich(tmp_path, khoi):
+    """Rà phản biện 2026-09-26: gói CÓ dấu mở attestation nhưng khối bị hỏng/sửa không
+    được coi như «không có attestation» (nhánh tương thích checkpoint thiếu version ⇒
+    True là xanh giả) — phải False."""
+    (tmp_path / f"G2_A3_ETHICS_PACKAGE_{_STUDY}.md").write_text(
+        f"# Hồ sơ\n{G2Q.ATTESTATION_BEGIN}\n{khoi}\n{G2Q.ATTESTATION_END}\n",
+        encoding="utf-8", newline="\n")
+    assert _ok({"g2_status": "LOCKED"}, tmp_path) is False
