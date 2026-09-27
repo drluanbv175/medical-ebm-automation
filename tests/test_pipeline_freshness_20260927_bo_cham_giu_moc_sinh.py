@@ -22,7 +22,7 @@ import pipeline_freshness as PF  # noqa: E402
 
 def test_ham_ghi_giu_mtime_cu_va_tep_moi_ghi_binh_thuong(tmp_path):
     p = tmp_path / "G2_checkpoint.json"
-    p.write_text("{}", encoding="utf-8")
+    p.write_text("{}", encoding="utf-8", newline="\n")
     cu = time.time() - 5000
     os.utime(p, (cu, cu))
     PF.ghi_checkpoint_giu_moc_sinh(p, '{"quality_gate": {}}')
@@ -37,7 +37,7 @@ def test_cham_lai_g2_khong_che_trang_thai_cu(tmp_path):
     # G2 phụ thuộc G0/G1/G3 (GATE_DEPS) — thiếu G3 thì G2 là «mồ côi», không phải «cũ».
     for gate, tuoi in (("G0", 10), ("G1", 10), ("G3", 10), ("G2", 1000)):   # G2 sinh TRƯỚC thượng nguồn ⇒ cũ
         p = tmp_path / f"{gate}_checkpoint.json"
-        p.write_text(json.dumps({"gate": gate}), encoding="utf-8")
+        p.write_text(json.dumps({"gate": gate}), encoding="utf-8", newline="\n")
         t = time.time() - tuoi
         os.utime(p, (t, t))
     assert "G2" in PF.stale_report(tmp_path)["stale_gates"]
