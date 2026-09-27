@@ -106,6 +106,30 @@ def test_print_table_surfaces_orphan_empty_folders(tmp_path, monkeypatch, capsys
     assert "THƯ MỤC RỖNG" in out
 
 
+def test_thu_muc_he_thong_khong_bi_bao_la_khong_ro_de_tai(tmp_path, monkeypatch, capsys):
+    """27/09/2026: chatgpt_project/ và phase_2b/ là thư mục mã đang dùng — báo «không rõ đề tài» mỗi lần chạy thì dễ bị
+    dọn nhầm. Thư mục lạ thật vẫn phải bị báo."""
+    monkeypatch.setattr(LS, "EXPORTS_DIR", tmp_path)
+    for ten in ("chatgpt_project", "phase_2b", "THU-MUC-LA"):
+        (tmp_path / ten).mkdir()
+        (tmp_path / ten / "a.json").write_text("{}", encoding="utf-8", newline="\n")
+    LS.print_table(LS.scan_all())
+    out = capsys.readouterr().out
+    phan_la = out.split("KHÔNG RÕ ĐỀ TÀI", 1)[1]
+    assert "THU-MUC-LA" in phan_la
+    assert "chatgpt_project" not in phan_la and "phase_2b" not in phan_la
+    assert "THƯ MỤC HỆ THỐNG" in out
+
+
+def test_danh_sach_thu_muc_he_thong_khop_ma_dang_dung():
+    """Tên trong _THU_MUC_HE_THONG phải còn được mã sống tham chiếu — hết dùng thì bỏ khỏi danh sách, đừng che mãi."""
+    goc = Path(__file__).resolve().parents[1]
+    nguon = (goc / "app" / "chatgpt_app" / "knowledge.py").read_text(encoding="utf-8") + \
+        (goc / "scripts" / "phase_2b_live_source_smoke_test.py").read_text(encoding="utf-8")
+    for ten in LS._THU_MUC_HE_THONG:
+        assert f"exports/{ten}" in nguon, f"{ten} không còn được mã tham chiếu"
+
+
 def test_print_detail_returns_1_for_missing_study(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(LS, "EXPORTS_DIR", tmp_path)
     rc = LS.print_detail("DOES-NOT-EXIST")
