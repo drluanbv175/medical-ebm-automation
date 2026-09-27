@@ -184,13 +184,23 @@ class TestLogisticKhongHoiTu:
 
     def test_mi_gan_co_va_bang5_khong_in_so(self):
         df = _df_tach_gan_logistic(missing=True)
-        # MICEData rút ngẫu nhiên từ np.random toàn cục — cố định hạt giống để test
-        # tất định (vài hạt giống cho 'Singular matrix' ⇒ nhánh except, không phải ca cần kiểm).
-        np.random.seed(20260926)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            mi = RSA.multiple_imputation_model(df, "y", "x", ["z"], "binary", n_imputations=3)
-        assert "error" not in mi and not mi.get("skipped"), mi
+        # MICEData rút ngẫu nhiên từ np.random toàn cục; cùng một hạt giống có thể cho 'Singular matrix'
+        # trên máy này mà không trên máy khác (khác BLAS/LAPACK — CI 27/09 đỏ vì vậy). Thử lần lượt vài hạt
+        # giống: lượt lỗi phải KHÔNG mang con số nào; phải có ÍT NHẤT MỘT lượt chạy tới nhánh cần kiểm
+        # (không skip, không nới assertion bên dưới).
+        mi = None
+        for hat in (20260926, 1, 7, 42, 123, 2024, 31337, 99991):
+            np.random.seed(hat)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                thu = RSA.multiple_imputation_model(df, "y", "x", ["z"], "binary", n_imputations=3)
+            if "error" in thu:
+                assert "results" not in thu and "OR_adj" not in str(thu), thu
+                continue
+            mi = thu
+            break
+        assert mi is not None, "Mọi hạt giống đều cho lỗi MI — không kiểm được nhánh không hội tụ"
+        assert not mi.get("skipped"), mi
         assert mi.get("khong_hoi_tu") is True, mi
         rx = next(r for r in mi["results"] if r["variable"] == "x")
         assert rx.get("khong_hoi_tu") is True and "OR_adj" not in rx
