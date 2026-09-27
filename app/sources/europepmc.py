@@ -30,6 +30,30 @@ def _infer_study_type(pubtype: str, journal: str, raw: dict) -> "str | None":
                             source_tag=raw.get("source"))
 
 
+def trang_thai_rut_bai_epmc(r: dict) -> "str | None":
+    """Tín hiệu rút bài của CHÍNH bản ghi Europe PMC trong dây chuyền KHÁM PHÁ (vá 26/09/2026,
+    synthesis #4) — "retracted" | "eoc" | None. KHỚP ĐÚNG TOKEN (cùng bẫy ghi ở `_doc_rut_bai`):
+    pubType «retracted publication» hoặc liên kết «Retraction in» ⇒ "retracted"; liên kết
+    «Expression of concern in» ⇒ "eoc". «retraction of publication» (chính thông báo rút) và
+    pubType «expression of concern» (chính thông báo quan ngại) KHÔNG gắn cờ bài.
+    None = không có tín hiệu, KHÔNG phải «đã kiểm, chưa bị rút»."""
+    danh_sach = (r.get("pubTypeList") or {}).get("pubType", []) or []
+    if isinstance(danh_sach, str):
+        danh_sach = [danh_sach]
+    token = {str(t).strip().lower() for t in danh_sach}
+    chuoi = r.get("pubType")
+    if isinstance(chuoi, str):
+        token |= {t.strip().lower() for t in chuoi.split(";")}
+    lien_ket = [str(c.get("type", "")).strip().lower()
+                for c in (r.get("commentCorrectionList") or {}).get("commentCorrection", []) or []
+                if isinstance(c, dict)]
+    if "retracted publication" in token or any(t.startswith("retraction in") for t in lien_ket):
+        return "retracted"
+    if any(t.startswith("expression of concern in") for t in lien_ket):
+        return "eoc"
+    return None
+
+
 class EuropePMCClient(SourceClient):
     name = "europepmc"
     endpoint = SEARCH
@@ -71,6 +95,8 @@ class EuropePMCClient(SourceClient):
             try:
                 pubtype = r.get("pubType") or ""
                 journal = r.get("journalTitle") or ""
+                rut_bai = trang_thai_rut_bai_epmc(r)
+                raw = ({"rut_bai": rut_bai, "rut_bai_nguon": "Europe PMC"} if rut_bai else {})
                 out.append(RawRecord(
                     source=self.name, title=r.get("title", ""),
                     authors=r.get("authorString"),
@@ -82,7 +108,7 @@ class EuropePMCClient(SourceClient):
                     study_type=_infer_study_type(pubtype, journal, r),
                     clinical_area=clinical_area,
                     url=f"https://europepmc.org/article/{r.get('source')}/{r.get('id')}",
-                    ingest_query=query, api_endpoint=SEARCH,
+                    ingest_query=query, api_endpoint=SEARCH, raw=raw,
                 ))
             except Exception as exc:  # pragma: no cover
                 logger.warning("[europepmc] bỏ qua 1 bản ghi hỏng trong trang kết quả "

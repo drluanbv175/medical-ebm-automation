@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 import xml.etree.ElementTree as ET
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from defusedxml.ElementTree import fromstring as _safe_fromstring  # chống XXE/billion-laughs
 
@@ -93,8 +93,10 @@ def hang_do_manh(pubtypes: List[str], tieu_de: str = "") -> int:
     """Hạng độ mạnh theo LOẠI XUẤT BẢN THẬT của PubMed (nhỏ = mạnh hơn).
 
     0 guideline/practice guideline/consensus statement · 1 systematic review/meta-analysis ·
-    2 RCT · 3 khác. Bài đã bị rút (Retracted Publication) luôn xếp CUỐI (9) — vẫn trả về để
-    tầng kiểm rút bài phía sau gắn cờ, KHÔNG âm thầm vứt đi."""
+    2 RCT · 3 khác. Bài đã bị rút (Retracted Publication) luôn xếp CUỐI (9) — vẫn trả về,
+    KHÔNG âm thầm vứt đi: `_parse_efetch` gắn raw["rut_bai"] (`_trang_thai_rut_bai`), rồi
+    `normalize`/`classify` loại khỏi báo cáo chính/cảnh báo/EBM_MASTER với lý do rút bài cụ thể
+    (vá 26/09/2026 — trước đó docstring hứa «tầng sau gắn cờ» nhưng không tầng nào làm)."""
     j = " | ".join(p.lower() for p in pubtypes)
     if "retracted publication" in j:
         return 9
@@ -250,6 +252,43 @@ def _own_article_pmid(art: ET.Element) -> Optional[str]:
     quy nếu gặp bản ghi có cấu trúc lạ.
     """
     return art.findtext("MedlineCitation/PMID") or art.findtext(".//PMID")
+
+
+# ★ TÍN HIỆU RÚT BÀI CỦA CHÍNH BÀI trong dây chuyền KHÁM PHÁ (vá 26/09/2026, synthesis #4).
+# Trước đây `_parse_efetch` chỉ đọc PublicationType để suy study_type; nhãn «Retracted
+# Publication» bị bỏ qua và `normalize` vứt `raw` ⇒ guideline đã rút được tier A/100 điểm, lọt
+# email «guideline mới» và bridge EBM_MASTER. KHỚP ĐÚNG TOKEN, không khớp chuỗi con:
+#   • PublicationType «Retracted Publication» HOẶC CommentsCorrections RefType="RetractionIn"
+#     ⇒ "retracted" (có bài chỉ mang một trong hai — xem docstring check_retraction_status);
+#   • RefType="ExpressionOfConcernIn" ⇒ "eoc";
+#   • «Retraction of Publication» (RefType RetractionOf) là CHÍNH THÔNG BÁO rút ⇒ KHÔNG gắn cờ.
+#   • PublicationType «Expression of Concern» cũng nằm ở chính THÔNG BÁO quan ngại, không ở bài
+#     bị ảnh hưởng ⇒ không dùng để gắn cờ bài (dây chuyền khám phá).
+# Luật «retracted» trùng với `_parse_retraction_xml` (cổng A12); test hồi quy khoá sự trùng này.
+_PUBTYPE_BI_RUT = "retracted publication"
+_REFTYPE_BI_RUT = "RetractionIn"
+_REFTYPE_EOC = "ExpressionOfConcernIn"
+
+
+def _trang_thai_rut_bai(art: ET.Element) -> Tuple[Optional[str], List[dict]]:
+    """Trả ("retracted" | "eoc" | None, [thông báo {pmid, citation}]) cho MỘT <PubmedArticle>.
+
+    None nghĩa là bản ghi KHÔNG mang tín hiệu — KHÔNG có nghĩa «đã kiểm, chưa bị rút»."""
+    pubtypes = {(pt.text or "").strip().lower() for pt in art.findall(".//PublicationType")}
+    rut: List[dict] = []
+    eoc: List[dict] = []
+    for cc in art.findall(".//CommentsCorrectionsList/CommentsCorrections"):
+        ref_type = (cc.get("RefType") or "").strip()
+        thong_bao = {"pmid": cc.findtext("PMID"), "citation": cc.findtext("RefSource")}
+        if ref_type == _REFTYPE_BI_RUT:
+            rut.append(thong_bao)
+        elif ref_type == _REFTYPE_EOC:
+            eoc.append(thong_bao)
+    if _PUBTYPE_BI_RUT in pubtypes or rut:
+        return "retracted", rut
+    if eoc:
+        return "eoc", eoc
+    return None, []
 
 
 # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2): dò trang CHẶN của NCBI dùng
@@ -445,6 +484,12 @@ class PubMedClient(SourceClient):
                 f"{a.findtext('LastName') or ''} {a.findtext('Initials') or ''}".strip()
                 for a in art.findall(".//Author")[:5]
             )
+            raw: Dict[str, object] = {"publication_types": pubtypes}
+            rut_bai, thong_bao = _trang_thai_rut_bai(art)
+            if rut_bai:
+                # normalize() đọc 3 khoá này (raw bị vứt sau normalize) — synthesis #4.
+                raw.update({"rut_bai": rut_bai, "rut_bai_thong_bao": thong_bao,
+                            "rut_bai_nguon": "PubMed"})
             records.append(RawRecord(
                 source=self.name, source_type="article", title=title,
                 authors=authors or None, journal_or_organization=journal,
@@ -454,7 +499,7 @@ class PubMedClient(SourceClient):
                 clinical_area=clinical_area, mesh_terms=mesh,
                 url=f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else None,
                 ingest_query=query, api_endpoint=EFETCH,
-                raw={"publication_types": pubtypes},
+                raw=raw,
             ))
         return records
 

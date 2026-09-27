@@ -31,6 +31,20 @@ def _log_change(summary: str, module: str) -> None:
 
 
 # --- Jobs -----------------------------------------------------------------
+def _notify_neu_pass(stats: dict, days: int) -> dict:
+    """Chỉ gửi cảnh báo nội dung khi lượt quét VỪA CHẠY có source_health PASS (giống
+    `app/main.py::cmd_live_update`). Vá 26/09/2026 (synthesis #6): trước đây job_daily/
+    job_weekly gọi notify vô điều kiện ⇒ email đi cả sau lượt PARTIAL/FAIL và ở chế độ mock
+    (DEMO), trái hợp đồng «PARTIAL/FAIL không gửi cảnh báo nội dung». notify còn tự kiểm
+    lần nữa (`ly_do_chan_gui`) — hai lớp độc lập."""
+    source_health = dict((stats or {}).get("source_health") or {})
+    trang_thai = str(source_health.get("status") or "FAIL")
+    if trang_thai != "PASS":
+        logger.warning("[scheduler] không gửi cảnh báo: source_health=%s", trang_thai)
+        return {"status": "blocked", "reason": f"source_health_{trang_thai.lower()}"}
+    return notify_high_priority_new(days=days)
+
+
 def job_daily() -> None:
     """Hằng ngày: quét incremental + bản tin CẢNH BÁO 'mới' (an toàn thuốc/guideline)."""
     logger.info("[job_daily] bắt đầu")
@@ -39,7 +53,7 @@ def job_daily() -> None:
     from app.services.knowledge_pack_surveillance import write_knowledge_pack_update_queue
 
     queue_path = write_knowledge_pack_update_queue(days=7)
-    notify = notify_high_priority_new(days=1)  # gửi nếu có mục ưu tiên cao mới
+    notify = _notify_neu_pass(stats, days=1)  # chỉ gửi khi lượt vừa chạy PASS
     _log_change(f"Daily scan: {stats['new_items']} mới; alert={alert['markdown'].name} "
                 f"({alert['total_new']} mục); pack_queue={queue_path.name}; notify={notify.get('status')}",
                 "scheduler.daily")
@@ -48,7 +62,7 @@ def job_daily() -> None:
 def job_weekly() -> None:
     """Hằng tuần: báo cáo EBM tuần + cập nhật dashboard exports."""
     logger.info("[job_weekly] bắt đầu")
-    run_pipeline(max_results_per_query=10)
+    stats = run_pipeline(max_results_per_query=10)
     md = export_weekly_ebm_markdown()
     export_weekly_ebm_html()
     alert = export_alert_digest(days=7)
@@ -56,7 +70,7 @@ def job_weekly() -> None:
     antibiotic = export_antibiotic_report()
     export_dashboard_excel()
     export_source_log_csv()
-    notify = notify_high_priority_new(days=7)
+    notify = _notify_neu_pass(stats, days=7)
     tiktok_note = ""
     if settings.enable_tiktok_auto:
         try:

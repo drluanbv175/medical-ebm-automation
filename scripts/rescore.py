@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # cho phép ch�
 
 from app.database import init_db, session_scope  # noqa: E402
 from app.models import EvidenceItem  # noqa: E402
-from app.services.filtering import classify  # noqa: E402
+from app.services.filtering import classify, la_ly_do_eoc, la_ly_do_rut_bai  # noqa: E402
 from app.services.pipeline import score_item  # noqa: E402
 
 # Chỉ lấy các trường ĐẦU VÀO cho scoring (không mang theo điểm/tier/lý do cũ),
@@ -26,6 +26,26 @@ from app.services.pipeline import score_item  # noqa: E402
 INPUT_FIELDS = ["study_type", "title", "abstract", "document_type", "safety_signal",
                 "official_grade", "journal_or_organization", "authors", "keywords",
                 "publication_date", "guideline_version", "source_type"]
+
+
+def _item_tu_hang(obj) -> dict:
+    """Dựng item đầu vào scoring từ MỘT hàng DB, GIỮ tín hiệu rút bài/EoC đã lưu.
+
+    Vá 26/09/2026 (rà phản biện synthesis #4): tín hiệu rút bài chỉ còn trên DB dưới dạng
+    `reason_for_exclusion` mang tiền tố hợp đồng (`raw` đã bị vứt sau normalize). INPUT_FIELDS
+    cố ý không mang lý do cũ ⇒ trước bản vá này, `--apply` chấm lại bài ĐÃ BỊ RÚT từ đầu: xoá
+    lý do rút, tier có thể lên A, actionable trở lại ⇒ lọt bản tin/EBM_MASTER. Nay tiền tố rút
+    bài ⇒ `_rut_bai='retracted'` (+ giữ lý do cụ thể), tiền tố EoC ⇒ `_rut_bai='eoc'` —
+    đúng các khoá tạm mà `normalize()` đặt cho `score_item`/`classify`."""
+    item = {f: getattr(obj, f) for f in INPUT_FIELDS}
+    ly_do_cu = getattr(obj, "reason_for_exclusion", None)
+    if la_ly_do_rut_bai(ly_do_cu):
+        item["_rut_bai"] = "retracted"
+        item["_ly_do_rut_bai"] = ly_do_cu
+        item["reason_for_exclusion"] = ly_do_cu
+    elif la_ly_do_eoc(ly_do_cu):
+        item["_rut_bai"] = "eoc"
+    return item
 
 
 def rescore(apply: bool = False) -> dict:
@@ -40,7 +60,7 @@ def rescore(apply: bool = False) -> dict:
             before_cls[obj.classification or "?"] += 1
             before_actionable += 1 if obj.is_actionable else 0
 
-            item = {f: getattr(obj, f) for f in INPUT_FIELDS}
+            item = _item_tu_hang(obj)
             score_item(item)
             cls, actionable, a_reason, x_reason = classify(item)
             after_cls[cls] += 1
