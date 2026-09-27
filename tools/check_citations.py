@@ -18,9 +18,10 @@ Dùng:
     python tools/check_citations.py --pmids 12345678,23456789
     python tools/check_citations.py --pmids 12345678 --study KKB-2026 --json
 
-Exit code: 0 = mọi PMID sạch rút bài VÀ phân giải được metadata; 1 = còn ít nhất
-một vấn đề ở bất kỳ nhánh nào (KHÔNG được ghi "ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN" vào
-artifact A12 khi exit code là 1).
+Exit code: 0 = mọi PMID sạch rút bài ("ok") VÀ phân giải được metadata ("resolved");
+1 = còn ít nhất một vấn đề ở bất kỳ nhánh nào, kể cả trạng thái lạ (danh sách trắng,
+26/09/2026) — KHÔNG được ghi "ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN" vào artifact A12 khi
+exit code là 1.
 """
 from __future__ import annotations
 
@@ -75,8 +76,12 @@ def main() -> int:
         print(f"📝 Đã ghi 2 receipt máy-kiểm: {rp.relative_to(REPO_ROOT)} + "
               f"{mp.relative_to(REPO_ROOT)}", file=sys.stderr)
 
-    retr_problem = any(v.get("status") in CCR._PROBLEM_STATUSES for v in retraction.values())
-    meta_problem = any(v.get("status") in CCM._PROBLEM_STATUSES for v in metadata.values())
+    # DANH SÁCH TRẮNG (vá 26/09/2026, #34): rút bài chỉ "ok" là sạch (`CCR.la_van_de`), metadata chỉ
+    # "resolved" là phân giải được. Xét theo DANH SÁCH PMID đã hỏi — PMID vắng mặt, trạng thái lạ,
+    # None hay bản ghi không phải dict đều là vấn đề. Danh sách đen cũ coi mọi trạng thái lạ là sạch.
+    retr_problem = any(CCR.la_van_de(retraction.get(p)) for p in pmids)
+    meta_problem = any(not isinstance(metadata.get(p), dict) or metadata[p].get("status") != "resolved"
+                       for p in pmids)
 
     if args.json:
         print(json.dumps({"retraction": retraction, "metadata": metadata},
@@ -87,8 +92,11 @@ def main() -> int:
     for pmid in pmids:
         r = retraction.get(pmid, {"status": "unresolved"})
         m = metadata.get(pmid, {"status": "unresolved"})
-        r_label = CCR._STATUS_LABEL.get(r.get("status"), r.get("status"))
-        m_label = CCM._STATUS_LABEL.get(m.get("status"), m.get("status"))
+        r = r if isinstance(r, dict) else {"status": None}
+        m = m if isinstance(m, dict) else {"status": None}
+        r_label = CCR.nhan_trang_thai(r.get("status"))
+        m_label = CCM._STATUS_LABEL.get(m.get("status")) or (
+            f"⚠️  TRẠNG THÁI LẠ {m.get('status')!r} — CHƯA phân giải (không được coi là sạch)")
         print(f"  PMID {pmid}:")
         print(f"      Rút bài:  {r_label}")
         print(f"      Metadata: {m_label}")
