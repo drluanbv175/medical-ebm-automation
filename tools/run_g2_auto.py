@@ -1795,6 +1795,35 @@ def main():
     # điền và mọi số liệu (tools/vn_prose_style.py).
     artifact_md = _VNSTYLE.clean_generated_prose(artifact_md)
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    # ★ BẢN NHÁP ĐĂNG KÝ WHO TRDS DỰNG TRƯỚC RÀO CHỐNG ĐÈ (vá 27/09/2026): bản nháp sinh HOÀN TOÀN từ dữ kiện PI đã ghim
+    # trong study_meta (G0/G1) + nguy cơ/cỡ mẫu vừa tính, không chứa văn bản bác sĩ biên tập. Trước đây nó nằm SAU rào,
+    # nên khi hồ sơ đạo đức đã được biên tập (rào từ chối, mã 2) bản nháp không bao giờ được làm mới: C1a giữ bản 31/07
+    # với mục #13/14/19/20 trống dù study_meta đã ghim đủ từ 02/09 ⇒ G2-AUTO-08 REVIEW mãi. Nội dung mục đổi ⇒ sao lưu
+    # bản cũ .bak-* trước (bỏ qua dấu thời gian để không đẻ bản sao mỗi lượt chạy).
+    registration_path = out_dir / f"G2_REGISTRATION_DRAFT_{study}.json"
+    try:
+        dk_cu = json.loads(registration_path.read_text(encoding="utf-8")) if registration_path.exists() else None
+    except (OSError, ValueError):
+        dk_cu = None
+    dk_cu_tho = registration_path.read_text(encoding="utf-8") if registration_path.exists() else None
+    registration_path = G2Q.build_registration_draft(
+        study=study,
+        topic=topic,
+        design_code=design_code,
+        design_primary=design_primary,
+        risk=risk,
+        n_target=n_adjusted or None,
+        out_dir=out_dir,
+        generated_at=datetime.now().isoformat(),
+        meta=_study_meta_for_g2,
+    )
+    dk_moi = json.loads(registration_path.read_text(encoding="utf-8"))
+    if dk_cu_tho is not None and (not isinstance(dk_cu, dict) or dk_cu.get("items") != dk_moi.get("items")):
+        bak_dk = registration_path.with_name(
+            registration_path.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
+        bak_dk.write_text(dk_cu_tho, encoding="utf-8", newline="\n")
+        print(f"  → Sao lưu bản nháp đăng ký cũ: {bak_dk.name}")
+    print(f"  → WHO TRDS 24 mục: {registration_path}")
     # ★ RÀO CHỐNG ĐÈ MẤT HỒ SƠ ĐẠO ĐỨC ĐÃ BIÊN TẬP (01/09/2026) — cùng luật với
     # SAP ở G4: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh (ít nhãn [CẦN hơn) → TỪ
     # CHỐI đè, mã 2; muốn sinh lại có chủ đích → --regenerate-artifact; mọi lần
@@ -1818,18 +1847,6 @@ def main():
             raise SystemExit(GC.EXIT_BLOCKED)
     md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
-    registration_path = G2Q.build_registration_draft(
-        study=study,
-        topic=topic,
-        design_code=design_code,
-        design_primary=design_primary,
-        risk=risk,
-        n_target=n_adjusted or None,
-        out_dir=out_dir,
-        generated_at=datetime.now().isoformat(),
-        meta=_study_meta_for_g2,
-    )
-    print(f"  → WHO TRDS 24 mục: {registration_path}")
 
     # ── Bước 5: Guardrail ──
     print("\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
