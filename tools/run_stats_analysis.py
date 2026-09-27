@@ -595,8 +595,14 @@ def _ly_do_tu_canh_bao(caught) -> list:
     return ly_do
 
 
-def _ly_do_tu_uoc_luong(ten: str, coef, se, ci_lo_log, ci_hi_log) -> list:
-    """Phép kiểm ĐỘC LẬP trên một hệ số (thang log): không dựa vào câu chữ cảnh báo."""
+def _ly_do_tu_uoc_luong(ten: str, coef, se, ci_lo_log, ci_hi_log,
+                        kiem_do_lon: bool = True) -> list:
+    """Phép kiểm ĐỘC LẬP trên một hệ số (thang log): không dựa vào câu chữ cảnh báo.
+
+    Vá 2026-09-27: kiem_do_lon=False cho HỆ SỐ CHẶN — độ lớn của nó phụ thuộc thang
+    đo hiệp biến (vd tuổi tính bằng năm, không căn giữa ⇒ intercept −20 hoàn toàn hợp
+    lệ), nên hai ngưỡng |hệ số| / sai số chuẩn làm báo đỏ giả. Hệ số chặn vẫn chịu
+    phép kiểm không hữu hạn / CI tràn về 0 hoặc vô cùng."""
     ly_do = []
     vals = {"coef": coef, "se": se, "ci_lo": ci_lo_log, "ci_hi": ci_hi_log}
     for k, v in vals.items():
@@ -620,6 +626,8 @@ def _ly_do_tu_uoc_luong(ten: str, coef, se, ci_lo_log, ci_hi_log) -> list:
             continue
         if not np.isfinite(ev) or ev <= 0.0:
             ly_do.append(f"{ten}: {k} sau exp = {ev} (không hữu hạn/bằng 0)")
+    if not kiem_do_lon:
+        return ly_do
     try:
         if coef is not None and np.isfinite(float(coef)) and abs(float(coef)) > _NGUONG_HE_SO_LOG:
             ly_do.append(f"{ten}: |hệ số log| = {abs(float(coef)):.1f} > {_NGUONG_HE_SO_LOG:g}")
@@ -695,14 +703,16 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
             conf = model.conf_int()
             bse = model.bse
             converged = model.mle_retvals.get("converged", True)
-            # Lý do cấp MÔ HÌNH (cảnh báo, converged=False, bất kỳ hệ số nào kể cả
-            # hằng số vô nghĩa) ⇒ MỌI ước lượng của mô hình đều không tin cậy.
+            # Lý do cấp MÔ HÌNH (cảnh báo, converged=False, bất kỳ hệ số nào — hằng số
+            # chỉ bị kiểm không hữu hạn/CI tràn, không kiểm độ lớn) ⇒ MỌI ước lượng
+            # của mô hình đều không tin cậy.
             ly_do_mo_hinh = _ly_do_tu_canh_bao(caught)
             if converged is False:
                 ly_do_mo_hinh.append("statsmodels mle_retvals['converged'] = False")
             for var in coefs.index:
                 ly_do_mo_hinh.extend(_ly_do_tu_uoc_luong(
-                    str(var), coefs[var], bse[var], conf.loc[var, 0], conf.loc[var, 1]))
+                    str(var), coefs[var], bse[var], conf.loc[var, 0], conf.loc[var, 1],
+                    kiem_do_lon=(var != "const")))
             results = []
             for var in coefs.index:
                 if var == "const":
@@ -816,7 +826,8 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
             ten = rev_map.get(safe_name, safe_name)
             se_i = float(bse[i]) if bse is not None else None
             ly_do_mo_hinh.extend(_ly_do_tu_uoc_luong(
-                str(ten), float(res.params[i]), se_i, float(ci[i][0]), float(ci[i][1])))
+                str(ten), float(res.params[i]), se_i, float(ci[i][0]), float(ci[i][1]),
+                kiem_do_lon=(safe_name != "Intercept")))
     results = []
     for i, safe_name in enumerate(res.model.exog_names):
         if safe_name == "Intercept":
