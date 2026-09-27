@@ -478,7 +478,7 @@ with st.sidebar:
         cp_path = exports_dir / study / "G1_checkpoint.json"
         design_code = "cohort"
         if cp_path.exists():
-            with open(cp_path) as f:
+            with open(cp_path, encoding="utf-8") as f:
                 cp = json.load(f)
             design_code = cp.get("design_code", "cohort")
         st.info(f"Thiết kế: **{design_code}**")

@@ -45,11 +45,44 @@ logger = get_logger(__name__)
 
 API = "https://api.crossref.org/works/"
 # Crossref dùng nhiều nhãn cho cùng một việc; gom về 2 mức nặng của hợp đồng chung.
-NHAN_RUT = {"retraction", "retracted", "withdrawal", "withdrawn", "removal"}
+NHAN_RUT = {"retraction", "retracted", "withdrawal", "withdrawn", "removal",
+            # Rút MỘT PHẦN (vá 26/09/2026, phát hiện #12): trước đây rơi xuống nhánh
+            # mặc định «ok» — tín hiệu DƯƠNG bị đảo thành ÂM. Rút một phần vẫn là rút:
+            # xếp `retracted`, KHÔNG đặt tên trạng thái mới (whitelist
+            # `TRANG_THAI_DOI_DA_BIET` của sổ xác minh sẽ coi tên lạ là «chưa kiểm»
+            # và các nơi so `== "retracted"` sẽ bỏ sót).
+            "partial_retraction"}
 NHAN_QUAN_NGAI = {"expression_of_concern", "expression of concern", "concern"}
 # `correction`/`corrigendum`/`erratum` CỐ Ý không nằm ở đây: đính chính là chuyện
 # bình thường của xuất bản, gộp nó vào "rút bài" sẽ tạo báo động giả hàng loạt và
 # làm bác sĩ quen bỏ qua cảnh báo thật.
+
+
+def la_nhan_rut(nhan: str) -> bool:
+    """Nhãn `updated-by` (ĐÃ chuẩn hoá bằng `_chuan_hoa`) có phải một kiểu RÚT BÀI không?
+
+    Ngoài tập `NHAN_RUT` đã liệt kê, MỌI nhãn lạ chứa «retract»/«withdraw» cũng coi là
+    rút (vá 26/09/2026, phát hiện #12): Crossref có thể thêm kiểu cập nhật mới, và luật
+    bất đối xứng đòi nghiêng về DƯƠNG TÍNH — một nhãn rút bài chưa từng thấy KHÔNG BAO
+    GIỜ được rơi xuống nhánh «ok».
+    """
+    return nhan in NHAN_RUT or "retract" in nhan or "withdraw" in nhan
+
+
+# Nhà xuất bản gắn "RETRACTED:"/"WITHDRAWN:" vào TIÊU ĐỀ CỦA CHÍNH BÀI bị rút — khác thông báo
+# rút bài (có DOI riêng, tiêu đề "Retraction Note: ..."). Đo thật 20/09/2026: DOI gốc của
+# Wakefield (Lancet 1998) mang tiêu đề "RETRACTED: ...". Chuyển về TẦNG SOURCES ngày 26/09/2026
+# (phát hiện #12) để `CrossrefRetraction.check()` dùng chung với
+# `app/services/fallback_verification.py` (tầng services import từ đây — KHÔNG làm chiều
+# ngược lại, tầng sources không được import tầng services). Regex đòi dấu phân cách NGAY sau
+# từ khoá, nên «Retraction of …», «Withdrawal symptoms of …» KHÔNG khớp.
+TIEU_DE_BAI_BI_RUT_RE = re.compile(
+    r"^\s*\[?\s*(?:retracted|withdrawn)\s*[:\]\-\u2013\u2014]\s*", re.IGNORECASE)
+
+
+def la_tieu_de_bai_bi_rut(tieu_de: str) -> bool:
+    """Tiêu đề CỦA CHÍNH BÀI có mang tiền tố RETRACTED/WITHDRAWN của nhà xuất bản không?"""
+    return bool(TIEU_DE_BAI_BI_RUT_RE.match(tieu_de or ""))
 
 
 # Dấu hiệu "RÚT RỒI ĐĂNG LẠI BẢN ĐÃ SỬA" — KHÁC HẲN rút bỏ hẳn, và phải nói khác.
@@ -93,6 +126,16 @@ def la_thong_bao_sua_loi_bi_rut(tieu_de: str) -> bool:
 
 def _chuan_hoa(nhan: str) -> str:
     return (nhan or "").strip().lower().replace("-", "_")
+
+
+def _tieu_de_dau(m: dict) -> str:
+    """Tiêu đề đầu tiên của bản ghi Crossref (`title` là list; chịu cả dạng chuỗi trần)."""
+    t = m.get("title")
+    if isinstance(t, str):
+        return t
+    if isinstance(t, list) and t and isinstance(t[0], str):
+        return t[0]
+    return ""
 
 
 class CrossrefRetraction:
@@ -146,10 +189,11 @@ class CrossrefRetraction:
             nang: List[tuple[str, str]] = []
             for u in (m.get("updated-by") or []):
                 nhan = _chuan_hoa(u.get("type", ""))
-                if nhan in NHAN_RUT:
+                if la_nhan_rut(nhan):
                     nang.append(("retracted", u.get("DOI", "")))
                 elif nhan in NHAN_QUAN_NGAI:
                     nang.append(("expression_of_concern", u.get("DOI", "")))
+            tieu_de_bai = _tieu_de_dau(m)
 
             if any(t == "retracted" for t, _ in nang):
                 thong_bao = next(x for t, x in nang if t == "retracted")
@@ -175,13 +219,31 @@ class CrossrefRetraction:
                          "retract_and_replace": la_rut_va_thay(tieu_de_tb),
                          "withdrawn_correction_notice": (
                              len(cac_tb) == 1 and la_thong_bao_sua_loi_bi_rut(tieu_de_tb)),
-                         "title": (m.get("title") or [""])[0]}
+                         "title": tieu_de_bai}
+            elif la_tieu_de_bai_bi_rut(tieu_de_bai):
+                # CHỈ có tiền tố tiêu đề, không có quan hệ `updated-by` rút bài (vá
+                # 26/09/2026, phát hiện #12). Với DOI không có PMID, Crossref là nguồn DUY
+                # NHẤT — trả «ok» ở đây là đảo tín hiệu dương thành âm. Đứng TRƯỚC nhánh EoC:
+                # tiêu đề nói «đã rút» nặng hơn một quan ngại.
+                # `withdrawn_correction_notice` LUÔN False: không có DOI thông báo thì không
+                # có dấu vân tay (`thong_bao_ids` rỗng) — sổ miễn trừ do bác sĩ ký sẽ không
+                # gắn được vào bằng chứng cụ thể nào, nên không được mở đường miễn trừ.
+                ra[d] = {"status": "retracted", "source": "crossref",
+                         "reason": ("Crossref: tiêu đề bài mang tiền tố RETRACTED/WITHDRAWN "
+                                    "(không có quan hệ updated-by)"),
+                         "notice_doi": "",
+                         "notice_dois": [],
+                         "notice_title": "",
+                         "retract_and_replace": False,
+                         "withdrawn_correction_notice": False,
+                         "title_marker": True,
+                         "title": tieu_de_bai}
             elif nang:
                 ra[d] = {"status": "expression_of_concern", "source": "crossref",
                          "reason": "Crossref: updated-by expression of concern",
                          "notice_doi": nang[0][1],
-                         "title": (m.get("title") or [""])[0]}
+                         "title": tieu_de_bai}
             else:
                 ra[d] = {"status": "ok", "source": "crossref",
-                         "title": (m.get("title") or [""])[0]}
+                         "title": tieu_de_bai}
         return ra

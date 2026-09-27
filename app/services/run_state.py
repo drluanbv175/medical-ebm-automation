@@ -9,7 +9,7 @@ Hai khái niệm bổ trợ nhau:
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Set
+from typing import Dict, Optional, Set
 
 from app.database import session_scope
 from app.models import PipelineRun
@@ -28,6 +28,11 @@ def _today() -> datetime:
 
 
 def last_finished_run() -> Optional[PipelineRun]:
+    """Lượt chạy 'ok' mới nhất, BẤT KỂ mode (live/mock) — CHỈ dùng cho HIỂN THỊ.
+
+    KHÔNG dùng hàm này để tính watermark: lượt mock («🌱 Dữ liệu mẫu», `python run.py`
+    không tham số) cũng kết thúc bằng status 'ok' (source_health 'DEMO'). Watermark
+    live phải đọc `last_live_ok_run()` (vá 26/09/2026, synthesis #7)."""
     with session_scope() as s:
         return (s.query(PipelineRun)
                 .filter(PipelineRun.status == "ok")
@@ -35,13 +40,31 @@ def last_finished_run() -> Optional[PipelineRun]:
                 .first())
 
 
+def last_live_ok_run() -> Optional[PipelineRun]:
+    """Lượt chạy LIVE kết thúc 'ok' mới nhất — mốc DUY NHẤT được phép làm watermark.
+
+    Vá 26/09/2026 (synthesis #7): trước đây `compute_since_date()` đọc `last_finished_run()`
+    (chỉ lọc status=='ok', không lọc mode) ⇒ một lượt MOCK (seed_all/«Dữ liệu mẫu»/`python
+    run.py`) đẩy watermark live lên «hôm nay − 2 ngày», nhảy qua cả khoảng outage/PARTIAL:
+    guideline và cảnh báo an toàn thuốc công bố trong khoảng đó KHÔNG BAO GIỜ được ingest.
+    Cùng họ lỗi «watermark nhảy qua outage» đã vá 05/09 cho nhánh FAIL (pipeline.py 7b).
+    Không lọc thẳng trong `last_finished_run()` vì phần hiển thị (bản tin, test_incremental)
+    cần lượt 'ok' mới nhất kể cả mock."""
+    with session_scope() as s:
+        return (s.query(PipelineRun)
+                .filter(PipelineRun.status == "ok", PipelineRun.mode == "live")
+                .order_by(PipelineRun.started_at.desc())
+                .first())
+
+
 def compute_since_date(window_days: Optional[int] = None) -> str:
     """Tính mốc since_date (YYYY-MM-DD) để lọc API ở chế độ live.
 
-    - Nếu có lần chạy thành công trước: lấy từ ngày bắt đầu lần đó trừ OVERLAP_DAYS.
-    - Nếu chưa từng chạy: nhìn lùi window_days (hoặc DEFAULT_FIRST_LOOKBACK_DAYS).
+    - Nếu có lần chạy LIVE thành công trước: lấy từ ngày bắt đầu lần đó trừ OVERLAP_DAYS.
+      Lượt mock/partial/error KHÔNG BAO GIỜ làm mốc (xem `last_live_ok_run`).
+    - Nếu chưa từng chạy live ok: nhìn lùi window_days (hoặc DEFAULT_FIRST_LOOKBACK_DAYS).
     """
-    prev = last_finished_run()
+    prev = last_live_ok_run()
     if prev and prev.started_at:
         base = prev.started_at - timedelta(days=OVERLAP_DAYS)
     else:
@@ -77,14 +100,36 @@ def finish_run(run_id: int, *, total_fetched: int, new_items: int,
         run.status = status
 
 
-def recent_run_ids(days: int = 7) -> Set[int]:
-    """ID các lần chạy trong `days` ngày gần đây (để xác định 'mới tuần này')."""
+def recent_run_ids(days: int = 7, mode: Optional[str] = None) -> Set[int]:
+    """ID các lần chạy trong `days` ngày gần đây (để xác định 'mới tuần này').
+
+    mode=None (mặc định, cho HIỂN THỊ): mọi lượt, kể cả mock. mode="live": chỉ lượt live —
+    đường GỬI cảnh báo bắt buộc dùng (vá 26/09/2026, synthesis #6: mục của lượt mock/«Dữ liệu
+    mẫu» từng được gửi email như tin thật ở lượt live PASS kế tiếp)."""
     cutoff = _today() - timedelta(days=days)
     with session_scope() as s:
-        rows = (s.query(PipelineRun.id)
-                .filter(PipelineRun.started_at >= cutoff)
-                .all())
-        return {r[0] for r in rows}
+        q = s.query(PipelineRun.id).filter(PipelineRun.started_at >= cutoff)
+        if mode is not None:
+            q = q.filter(PipelineRun.mode == mode)
+        return {r[0] for r in q.all()}
+
+
+def run_modes(run_ids: Set[int]) -> Dict[int, str]:
+    """{run_id: mode} cho các lượt đã cho (để gắn nhãn DEMO/«Chế độ» theo lượt ĐÃ GÓP mục)."""
+    ids = {i for i in run_ids if i is not None}
+    if not ids:
+        return {}
+    with session_scope() as s:
+        rows = s.query(PipelineRun.id, PipelineRun.mode).filter(PipelineRun.id.in_(ids)).all()
+        return {r[0]: (r[1] or "") for r in rows}
+
+
+def latest_run() -> Optional[PipelineRun]:
+    """Lượt chạy MỚI NHẤT (mọi status/mode, kể cả đang chạy) — cổng GỬI cảnh báo đọc lượt này."""
+    with session_scope() as s:
+        return (s.query(PipelineRun)
+                .order_by(PipelineRun.started_at.desc(), PipelineRun.id.desc())
+                .first())
 
 
 def latest_run_id() -> Optional[int]:

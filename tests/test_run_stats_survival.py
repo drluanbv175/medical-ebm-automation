@@ -38,13 +38,18 @@ from tests.test_run_stats_data_lock_gate import (  # noqa: E402
 
 # ── Dữ liệu synthetic có CENSORING, HR khác 1 rõ ràng (không chỉ "chạy không lỗi") ──
 # Nhóm 1 (exposure_var=1): thời gian tới biến cố NGẮN hơn hẳn nhóm 0 → kỳ vọng HR > 1.
+# SỬA 2026-09-26 (#10): bản cũ TÁCH HOÀN TOÀN (nhóm 1 luôn ≤28 ngày, nhóm 0 luôn ≥35)
+# nên Cox KHÔNG hội tụ (HR≈2,5e8, CI 0–inf) mà test vẫn xanh nhờ assert yếu. Nay cho
+# thời gian hai nhóm CHỒNG LẤP (S05 35→13, S21 25→38, S27 28→50) — giữ nguyên n=30,
+# 21 biến cố (8 + 13), 15/nhóm; ca tách hoàn toàn cũ chuyển thành test ÂM ở
+# tests/test_run_stats_khong_hoi_tu_20260926_cox_logistic.py.
 _SURVIVAL_CSV = """
 record_id,age,exposure_var,follow_time,event_flag
 S01,45,0,40,1
 S02,50,0,55,0
 S03,42,0,48,1
 S04,60,0,60,0
-S05,38,0,35,1
+S05,38,0,13,1
 S06,55,0,58,0
 S07,41,0,44,1
 S08,47,0,52,0
@@ -60,13 +65,13 @@ S17,51,1,15,1
 S18,40,1,8,1
 S19,61,1,20,0
 S20,37,1,12,1
-S21,56,1,25,1
+S21,56,1,38,1
 S22,42,1,6,1
 S23,48,1,18,1
 S24,53,1,22,0
 S25,38,1,9,1
 S26,45,1,14,1
-S27,59,1,28,1
+S27,59,1,50,1
 S28,35,1,7,1
 S29,50,1,16,1
 S30,44,1,11,1
@@ -91,6 +96,8 @@ class TestSurvivalModelUnit:
         assert c["HR"] > 1.5, f"Nhóm 1 có hazard rõ ràng cao hơn — kỳ vọng HR > 1.5, được {c['HR']}"
         lo, hi = c["CI_95"]
         assert lo < c["HR"] < hi, "HR phải nằm trong khoảng CI của chính nó"
+        assert 0.0 < lo and hi < float("inf"), "CI phải hữu hạn (mô hình hội tụ)"
+        assert "khong_hoi_tu" not in c
         assert 0.0 <= c["p"] <= 1.0
         assert 0.5 <= c["concordance"] <= 1.0
         assert res["n"] == 30

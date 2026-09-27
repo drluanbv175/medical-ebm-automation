@@ -5,6 +5,8 @@ Nguyên tắc an toàn:
 - Chỉ gửi khi THỰC SỰ có mục ưu tiên cao mới (cảnh báo an toàn thuốc chính thức,
   guideline mới, hoặc mục actionable mới). Không có gì mới -> không gửi (không spam).
 - Không bao giờ bịa nội dung; chỉ chuyển tiếp dữ liệu đã truy vết.
+- Chỉ gửi khi lượt chạy mới nhất là LIVE + source_health PASS, và chỉ gửi mục của lượt
+  LIVE — mục DEMO/mock không bao giờ đi ra ngoài, kể cả force (vá 26/09/2026, synthesis #6).
 """
 from __future__ import annotations
 
@@ -84,12 +86,57 @@ def send_webhook(text: str, payload_extra: Dict | None = None) -> Dict:
         return {"status": "error", "error": str(exc)}
 
 
+def ly_do_chan_gui() -> str | None:
+    """Cổng GỬI cảnh báo nội dung, áp cho MỌI nơi gọi (vá 26/09/2026, synthesis #6).
+
+    Chỉ cho gửi khi lượt chạy MỚI NHẤT là lượt LIVE đã kết thúc với source_health PASS.
+    Trước đây chỉ `cmd_live_update` có cổng này; `scheduler.job_daily/job_weekly` (lệnh
+    `run.py schedule` trong README) gửi cả sau lượt PARTIAL/FAIL và ở chế độ mock. Trả lý do
+    chặn (chuỗi) hoặc None nếu được gửi. Không đọc được trạng thái ⇒ CHẶN (fail-closed)."""
+    from app.services import run_state
+
+    try:
+        run = run_state.latest_run()
+    except Exception as exc:  # noqa: BLE001 - không đọc được sổ lượt chạy ⇒ không gửi
+        return f"khong_doc_duoc_luot_chay: {exc}"
+    if run is None:
+        return "chua_co_luot_chay"
+    if (run.status or "") == "running" or run.finished_at is None:
+        return "luot_moi_nhat_chua_ket_thuc"
+    if (run.mode or "") != "live":
+        return f"luot_moi_nhat_khong_phai_live ({run.mode or 'khong_ro'})"
+    source_health = dict((run.stats or {}).get("source_health") or {})
+    trang_thai = str(source_health.get("status") or "khong_ro")
+    if trang_thai != "PASS":
+        return f"source_health_{trang_thai.lower()}"
+    return None
+
+
 def notify_high_priority_new(days: int = 7, force: bool = False) -> Dict:
     """Dựng bản tin 'mới' và gửi nếu có mục ưu tiên cao (hoặc force=True).
 
+    Cổng `ly_do_chan_gui()` áp TRƯỚC, kể cả khi force=True: lượt mới nhất không phải live
+    PASS ⇒ không gửi. Bản tin gửi đi chỉ gồm mục của lượt LIVE (`chi_live=True`) — mục của
+    lượt mock KHÔNG BAO GIỜ được gửi, kể cả force.
+
     Trả về tổng hợp kết quả gửi (email/webhook) + số mục.
     """
-    data = build_alert_data(days=days)
+    ly_do = ly_do_chan_gui()
+    if ly_do:
+        logger.info("Không gửi cảnh báo nội dung: %s", ly_do)
+        return {"days": days, "total_new": 0, "high_priority": 0,
+                "status": "blocked", "reason": ly_do,
+                "email": {"status": "skipped", "reason": ly_do},
+                "webhook": {"status": "skipped", "reason": ly_do}}
+
+    data = build_alert_data(days=days, chi_live=True)
+    if data.get("n_demo"):
+        # Không thể xảy ra khi chi_live=True; nếu có ⇒ lỗi logic, CHẶN chứ không gửi.
+        ly_do = f"ban_tin_con_{data['n_demo']}_muc_demo"
+        return {"days": days, "total_new": data["total_new"], "high_priority": 0,
+                "status": "blocked", "reason": ly_do,
+                "email": {"status": "skipped", "reason": ly_do},
+                "webhook": {"status": "skipped", "reason": ly_do}}
     hp = _high_priority(data)
     result: Dict = {"days": days, "total_new": data["total_new"],
                     "high_priority": len(hp)}

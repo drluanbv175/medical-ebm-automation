@@ -46,6 +46,7 @@ from app.sources.guideline_fulltext_common import (  # noqa: E402
     KetQuaToanVanGuideline,
     trang_cua_vi_tri,
 )
+from app.utils.console import configure_unicode_console  # noqa: E402
 
 DISCLAIMER = "Cần bác sĩ kiểm chứng."
 MA_OK, MA_KHONG_KHOP, MA_LOI, MA_CHUA_BAT, MA_TU_CHOI = 0, 1, 2, 3, 4
@@ -345,5 +346,28 @@ def main(argv: Optional[List[str]] = None) -> int:
     return int(out["ma_thoat"])
 
 
+def chay_cli(argv: Optional[List[str]] = None) -> int:
+    """Điểm vào dòng lệnh: ép console UTF-8 TRƯỚC mọi print, và mọi ngoại lệ bất ngờ ⇒ MA_LOI (2, KHÔNG BIẾT).
+
+    Trên Windows (cp1252), print tiếng Việt/biểu tượng từng ném UnicodeEncodeError ⇒ traceback thoát mã 1,
+    trùng MA_KHONG_KHOP — tín hiệu lỗi bị đọc thành «tải được nhưng --tim không khớp». Ngoại lệ lạ cũng vậy.
+    KeyboardInterrupt/SystemExit (vd argparse) được ném lại nguyên vẹn.
+    """
+    configure_unicode_console()
+    try:
+        return main(argv)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except Exception as exc:  # noqa: BLE001 — mọi lỗi lạ đều là «KHÔNG BIẾT», không phải «không khớp»
+        # Bản thân dòng báo lỗi cũng có thể không encode được (stream không có reconfigure) —
+        # khi đó vẫn phải trả mã KHÔNG BIẾT, không để traceback thoát mã 1.
+        try:
+            print(f"LỖI/KHÔNG BIẾT (toan_van_guideline): ngoại lệ bất ngờ {type(exc).__name__}: {exc} — "
+                  f"KHÔNG được đọc thành «không khớp». {DISCLAIMER}", file=sys.stderr)
+        except Exception:  # noqa: BLE001
+            print("LOI/KHONG BIET (toan_van_guideline): ngoai le bat ngo " + type(exc).__name__, file=sys.stderr)
+        return MA_LOI
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(chay_cli())

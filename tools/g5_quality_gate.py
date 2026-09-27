@@ -616,7 +616,7 @@ def evaluate_study(
     g2_ok = (
         _status_is_locked(g2_cp.get("g2_status") or g2_cp.get("G2_STATUS"))
         and GC.ledger_approved("G2", study, g2_artifact, repo_root=root)
-        and GC.g2_quality_contract_satisfied(g2_cp, meta)
+        and GC.g2_quality_contract_satisfied(g2_cp, meta, study=study, out_dir=out_dir)
     )
     g4_ok = GC.g4_quality_contract_satisfied(study, repo_root=root)
     upstream_status = "PASS" if g2_ok and g4_ok else ("BLOCK" if has_real_data else "REVIEW")

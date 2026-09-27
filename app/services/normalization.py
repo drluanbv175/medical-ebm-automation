@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import re
-from typing import Dict
+from typing import Dict, List, Tuple
 
+from app.services.filtering import ly_do_rut_bai
 from app.sources.base import RawRecord
 from app.utils.text import clean_text
 
@@ -24,7 +25,48 @@ def _clean_id(value):
 
 
 def normalize(record: RawRecord) -> Dict:
-    """Map RawRecord -> dict khớp các cột EvidenceItem (chưa có scoring)."""
+    """Map RawRecord -> dict khớp các cột EvidenceItem (chưa có scoring).
+
+    Tín hiệu rút bài (vá 26/09/2026, synthesis #4): `raw` KHÔNG được giữ lại sau bước này, nên
+    cờ raw["rut_bai"] do nguồn gắn (PubMed/Europe PMC, khớp đúng token) phải được chép NGAY ở
+    đây. 'retracted' ⇒ `reason_for_exclusion` (cột đã lưu DB ⇒ reliability_tier D ⇒ không
+    «đáng tin», bridge EBM_MASTER tự loại) + khoá tạm `_rut_bai`/`_ly_do_rut_bai` cho classify.
+    'eoc' ⇒ chỉ `_rut_bai` (classify chặn actionable). Vắng cờ KHÔNG có nghĩa «chưa bị rút»."""
+    raw = getattr(record, "raw", None) or {}
+    item = _normalize_co_ban(record, raw)
+    rut_bai = raw.get("rut_bai")
+    if rut_bai == "retracted":
+        ly_do = ly_do_rut_bai(str(raw.get("rut_bai_nguon") or record.source or ""),
+                              raw.get("rut_bai_thong_bao"))
+        item["_rut_bai"] = "retracted"
+        item["_ly_do_rut_bai"] = ly_do
+        item["reason_for_exclusion"] = ly_do
+    elif rut_bai == "eoc":
+        item["_rut_bai"] = "eoc"
+    return item
+
+
+def lan_co_rut_bai_trong_nhom(items: List[Dict], links: List[Tuple[int, int, str]]) -> int:
+    """Một thành viên của nhóm trùng bị rút ⇒ bản CHÍNH cũng bị loại (vd bản Europe PMC/Crossref
+    không mang cờ, bản PubMed trùng mang «Retracted Publication»). EoC lan tương tự nếu bản chính
+    chưa có tín hiệu nào. Không vứt bản ghi. Trả số bản chính được gắn cờ. (vá 26/09/2026, #4)"""
+    so = 0
+    for vi_tri_chinh, vi_tri_trung, _ly_do in links:
+        chinh, trung = items[vi_tri_chinh], items[vi_tri_trung]
+        if trung.get("_rut_bai") == "retracted" and chinh.get("_rut_bai") != "retracted":
+            ly_do = (trung.get("_ly_do_rut_bai") or ly_do_rut_bai(str(trung.get("source") or "")))
+            ly_do = f"{ly_do} [qua bản trùng nguồn {trung.get('source')}]"
+            chinh["_rut_bai"] = "retracted"
+            chinh["_ly_do_rut_bai"] = ly_do
+            chinh["reason_for_exclusion"] = ly_do
+            so += 1
+        elif trung.get("_rut_bai") == "eoc" and not chinh.get("_rut_bai"):
+            chinh["_rut_bai"] = "eoc"
+            so += 1
+    return so
+
+
+def _normalize_co_ban(record: RawRecord, raw: Dict) -> Dict:
     return {
         "source": record.source,
         "source_type": record.source_type,
@@ -50,7 +92,7 @@ def normalize(record: RawRecord) -> Dict:
         "ingest_query": record.ingest_query,
         "api_endpoint": record.api_endpoint,
         # Truy vết mock: cờ raw["_mock"] (do _fixtures gắn) -> cột is_mock.
-        "is_mock": bool((getattr(record, "raw", None) or {}).get("_mock", False)),
+        "is_mock": bool(raw.get("_mock", False)),
     }
 
 

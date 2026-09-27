@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 import xml.etree.ElementTree as ET
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from defusedxml.ElementTree import fromstring as _safe_fromstring  # chống XXE/billion-laughs
 
@@ -93,8 +93,10 @@ def hang_do_manh(pubtypes: List[str], tieu_de: str = "") -> int:
     """Hạng độ mạnh theo LOẠI XUẤT BẢN THẬT của PubMed (nhỏ = mạnh hơn).
 
     0 guideline/practice guideline/consensus statement · 1 systematic review/meta-analysis ·
-    2 RCT · 3 khác. Bài đã bị rút (Retracted Publication) luôn xếp CUỐI (9) — vẫn trả về để
-    tầng kiểm rút bài phía sau gắn cờ, KHÔNG âm thầm vứt đi."""
+    2 RCT · 3 khác. Bài đã bị rút (Retracted Publication) luôn xếp CUỐI (9) — vẫn trả về,
+    KHÔNG âm thầm vứt đi: `_parse_efetch` gắn raw["rut_bai"] (`_trang_thai_rut_bai`), rồi
+    `normalize`/`classify` loại khỏi báo cáo chính/cảnh báo/EBM_MASTER với lý do rút bài cụ thể
+    (vá 26/09/2026 — trước đó docstring hứa «tầng sau gắn cờ» nhưng không tầng nào làm)."""
     j = " | ".join(p.lower() for p in pubtypes)
     if "retracted publication" in j:
         return 9
@@ -250,6 +252,111 @@ def _own_article_pmid(art: ET.Element) -> Optional[str]:
     quy nếu gặp bản ghi có cấu trúc lạ.
     """
     return art.findtext("MedlineCitation/PMID") or art.findtext(".//PMID")
+
+
+# ★ TÍN HIỆU RÚT BÀI CỦA CHÍNH BÀI trong dây chuyền KHÁM PHÁ (vá 26/09/2026, synthesis #4).
+# Trước đây `_parse_efetch` chỉ đọc PublicationType để suy study_type; nhãn «Retracted
+# Publication» bị bỏ qua và `normalize` vứt `raw` ⇒ guideline đã rút được tier A/100 điểm, lọt
+# email «guideline mới» và bridge EBM_MASTER. KHỚP ĐÚNG TOKEN, không khớp chuỗi con:
+#   • PublicationType «Retracted Publication» HOẶC CommentsCorrections RefType="RetractionIn"
+#     ⇒ "retracted" (có bài chỉ mang một trong hai — xem docstring check_retraction_status);
+#   • RefType="ExpressionOfConcernIn" ⇒ "eoc";
+#   • «Retraction of Publication» (RefType RetractionOf) là CHÍNH THÔNG BÁO rút ⇒ KHÔNG gắn cờ.
+#   • PublicationType «Expression of Concern» cũng nằm ở chính THÔNG BÁO quan ngại, không ở bài
+#     bị ảnh hưởng ⇒ không dùng để gắn cờ bài (dây chuyền khám phá).
+# Luật «retracted» trùng với `_parse_retraction_xml` (cổng A12); test hồi quy khoá sự trùng này.
+_PUBTYPE_BI_RUT = "retracted publication"
+_REFTYPE_BI_RUT = "RetractionIn"
+_REFTYPE_EOC = "ExpressionOfConcernIn"
+
+
+def _trang_thai_rut_bai(art: ET.Element) -> Tuple[Optional[str], List[dict]]:
+    """Trả ("retracted" | "eoc" | None, [thông báo {pmid, citation}]) cho MỘT <PubmedArticle>.
+
+    None nghĩa là bản ghi KHÔNG mang tín hiệu — KHÔNG có nghĩa «đã kiểm, chưa bị rút»."""
+    pubtypes = {(pt.text or "").strip().lower() for pt in art.findall(".//PublicationType")}
+    rut: List[dict] = []
+    eoc: List[dict] = []
+    for cc in art.findall(".//CommentsCorrectionsList/CommentsCorrections"):
+        ref_type = (cc.get("RefType") or "").strip()
+        thong_bao = {"pmid": cc.findtext("PMID"), "citation": cc.findtext("RefSource")}
+        if ref_type == _REFTYPE_BI_RUT:
+            rut.append(thong_bao)
+        elif ref_type == _REFTYPE_EOC:
+            eoc.append(thong_bao)
+    if _PUBTYPE_BI_RUT in pubtypes or rut:
+        return "retracted", rut
+    if eoc:
+        return "eoc", eoc
+    return None, []
+
+
+# ---------------------------------------------------------------- NCBI Bookshelf (vá 26/09/2026, phát hiện #29)
+# PMID của tài liệu Bookshelf (StatPearls, GeneReviews, guideline NICE xuất bản dạng sách…) là PMID THẬT, nhưng
+# efetch trả chúng trong `<PubmedBookArticle>` (PMID ở `BookDocument/PMID`), KHÔNG phải `<PubmedArticle>`. Hai
+# parser của cổng A12 trước đây chỉ duyệt `.//PubmedArticle`, nên mọi PMID sách rơi xuống «unresolved» — tức bị gắn
+# «nghi trích dẫn ma» và chặn oan G10. Báo động giả kiểu này dạy người dùng bỏ qua cảnh báo thật.
+# PHẠM VI CỐ Ý HẸP: chỉ hai parser A12 (`_parse_retraction_xml`, `_parse_metadata_xml`). `_parse_efetch` (dây chuyền
+# KHÁM PHÁ) KHÔNG đổi — thêm sách vào đó sẽ bơm StatPearls/NICE vào ingestion và nâng tier qua PublicationType,
+# là quyết định phạm vi riêng.
+# Mọi đường dẫn đều NEO vào `BookDocument/…` hoặc `BookDocument/Book/…` — TUYỆT ĐỐI không dùng trục `.//` trên
+# bản ghi sách: `BookDocument/ReferenceList` chứa định danh của tài liệu tham khảo, `Book/AuthorList[@Type=
+# "editors"]` là BIÊN TẬP VIÊN chứ không phải tác giả (cùng họ lỗi với `_own_article_doi`).
+LOAI_BAN_GHI_SACH = "pubmed_book"
+GHI_CHU_RUT_BAI_SACH = (
+    "Bản ghi NCBI Bookshelf (PubmedBookArticle): BookDocument trong DTD PubMed không mang "
+    "CommentsCorrections/cờ rút bài như bài báo — 'ok' ở đây CHỈ nghĩa là PubMed có bản ghi "
+    "cho PMID này; tín hiệu rút bài chỉ có thể đến từ Retraction Watch/Crossref.")
+
+
+def _own_book_pmid(book_art: ET.Element) -> Optional[str]:
+    """PMID CỦA CHÍNH tài liệu sách: `BookDocument/PMID`, dự phòng `PubmedBookData/ArticleIdList` (IdType=pubmed)."""
+    pmid = (book_art.findtext("BookDocument/PMID") or "").strip()
+    if pmid:
+        return pmid
+    for el in book_art.findall("PubmedBookData/ArticleIdList/ArticleId"):
+        if el.get("IdType") == "pubmed" and (el.text or "").strip():
+            return (el.text or "").strip()
+    return None
+
+
+def _ten_tac_gia(a: ET.Element) -> str:
+    """Tên một `<Author>`: «Họ Viết-tắt», hoặc tên tập thể (`CollectiveName`) nếu không có họ."""
+    ten = f"{a.findtext('LastName') or ''} {a.findtext('Initials') or ''}".strip()
+    return ten or _full_text(a.find("CollectiveName")).strip()
+
+
+def _book_authors(book_art: ET.Element) -> List[str]:
+    """Tác giả của tài liệu sách — KHÔNG BAO GIỜ lẫn biên tập viên.
+
+    Ưu tiên `BookDocument/AuthorList` (tác giả của chương/tài liệu) trừ danh sách khai `Type="editors"`; bản ghi
+    CẢ CUỐN (vd guideline NICE) không có danh sách đó thì lấy `Book/AuthorList` khai TƯỜNG MINH `Type="authors"`.
+    `Book/AuthorList[@Type="editors"]` bị loại ở mọi nhánh.
+    """
+    def _gom(ds_list: List[ET.Element]) -> List[str]:
+        ten: List[str] = []
+        for al in ds_list:
+            for a in al.findall("Author"):
+                t = _ten_tac_gia(a)
+                if t:
+                    ten.append(t)
+        return ten
+
+    doc = [al for al in book_art.findall("BookDocument/AuthorList")
+           if (al.get("Type") or "authors").lower() != "editors"]
+    ten = _gom(doc)
+    if not ten:
+        ten = _gom([al for al in book_art.findall("BookDocument/Book/AuthorList")
+                    if (al.get("Type") or "").lower() == "authors"])
+    return ten
+
+
+def _own_book_doi(book_art: ET.Element) -> Optional[str]:
+    """DOI của CHÍNH tài liệu sách (`BookDocument/ArticleIdList`), không quét danh mục tham khảo."""
+    for el in book_art.findall("BookDocument/ArticleIdList/ArticleId"):
+        if el.get("IdType") == "doi" and (el.text or "").strip():
+            return (el.text or "").strip()
+    return None
 
 
 # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2): dò trang CHẶN của NCBI dùng
@@ -445,6 +552,12 @@ class PubMedClient(SourceClient):
                 f"{a.findtext('LastName') or ''} {a.findtext('Initials') or ''}".strip()
                 for a in art.findall(".//Author")[:5]
             )
+            raw: Dict[str, object] = {"publication_types": pubtypes}
+            rut_bai, thong_bao = _trang_thai_rut_bai(art)
+            if rut_bai:
+                # normalize() đọc 3 khoá này (raw bị vứt sau normalize) — synthesis #4.
+                raw.update({"rut_bai": rut_bai, "rut_bai_thong_bao": thong_bao,
+                            "rut_bai_nguon": "PubMed"})
             records.append(RawRecord(
                 source=self.name, source_type="article", title=title,
                 authors=authors or None, journal_or_organization=journal,
@@ -454,7 +567,7 @@ class PubMedClient(SourceClient):
                 clinical_area=clinical_area, mesh_terms=mesh,
                 url=f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else None,
                 ingest_query=query, api_endpoint=EFETCH,
-                raw={"publication_types": pubtypes},
+                raw=raw,
             ))
         return records
 
@@ -571,6 +684,25 @@ class PubMedClient(SourceClient):
                                   "expression_of_concern_notice": eoc_notice}
             else:
                 results[pmid] = {"status": "ok"}
+        # Tài liệu NCBI Bookshelf (vá 26/09/2026, phát hiện #29 — xem khối chú thích `LOAI_BAN_GHI_SACH`).
+        # KHÔNG tạo trạng thái mới: receipt A12 từng dùng danh sách ĐEN, một trạng thái lạ sẽ bị tính là SẠCH.
+        # Vẫn đọc PublicationType của BookDocument (phòng khi NLM gắn cờ) — dương tính thì dương tính như bài báo.
+        for book in root.findall(".//PubmedBookArticle"):
+            pmid = _own_book_pmid(book)
+            if not pmid or pmid in found:
+                continue
+            found.add(pmid)
+            pubtypes = {pt.text for pt in book.findall("BookDocument/PublicationType") if pt.text}
+            if "Retracted Publication" in pubtypes:
+                results[pmid] = {"status": "retracted", "retraction_notice": None,
+                                 "retraction_notices": [], "loai_ban_ghi": LOAI_BAN_GHI_SACH}
+            elif "Expression of Concern" in pubtypes:
+                results[pmid] = {"status": "expression_of_concern",
+                                 "expression_of_concern_notice": None,
+                                 "loai_ban_ghi": LOAI_BAN_GHI_SACH}
+            else:
+                results[pmid] = {"status": "ok", "loai_ban_ghi": LOAI_BAN_GHI_SACH,
+                                 "ghi_chu": GHI_CHU_RUT_BAI_SACH}
         for pmid in requested_pmids:
             if pmid not in found:
                 results[pmid] = {"status": "unresolved",
@@ -717,6 +849,27 @@ class PubMedClient(SourceClient):
                 "journal": journal or None,
                 "year": year or None,
                 "doi": doi,
+            }
+        # Tài liệu NCBI Bookshelf (vá 26/09/2026, phát hiện #29): PMID có thật ⇒ "resolved". Mọi đường dẫn neo
+        # vào BookDocument; bản ghi CẢ CUỐN (vd guideline NICE) không có ArticleTitle ⇒ lùi về Book/BookTitle.
+        for book in root.findall(".//PubmedBookArticle"):
+            pmid = _own_book_pmid(book)
+            if not pmid or pmid in found:
+                continue
+            found.add(pmid)
+            ten_sach = _full_text(book.find("BookDocument/Book/BookTitle")).strip()
+            title = _full_text(book.find("BookDocument/ArticleTitle")).strip() or ten_sach
+            year = (book.findtext("BookDocument/Book/PubDate/Year")
+                    or book.findtext("BookDocument/Book/PubDate/MedlineDate") or "").strip()
+            authors = ", ".join(_book_authors(book)[:5]).strip()
+            results[pmid] = {
+                "status": "resolved",
+                "title": title,
+                "authors": authors or None,
+                "journal": ten_sach or None,
+                "year": year or None,
+                "doi": _own_book_doi(book),
+                "loai_ban_ghi": LOAI_BAN_GHI_SACH,
             }
         for pmid in requested_pmids:
             if pmid not in found:

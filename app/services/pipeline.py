@@ -22,7 +22,7 @@ from app.services import run_state
 from app.services.deduplication import deduplicate
 from app.services.filtering import classify
 from app.services.ingestion import ingest_all
-from app.services.normalization import normalize
+from app.services.normalization import lan_co_rut_bai_trong_nhom, normalize
 from app.services.synthesis import synthesize
 from app.sources.base import RawRecord
 from app.utils.logging_config import get_logger
@@ -35,6 +35,11 @@ def score_item(item: Dict) -> Dict:
     eq, eq_bd = evidence_quality_score(item)
     pc, pc_bd = practice_change_score(item)
     tier = reliability_tier(item, eq, pc)
+    # Vá 26/09/2026 (synthesis #4): bài có Expression of Concern không được Tier A (tối đa B ⇒
+    # need_full_text, không lọt bộ chọn «tier A» của bridge EBM_MASTER). Bài đã bị rút đã về D
+    # qua reason_for_exclusion do normalize() đặt.
+    if item.get("_rut_bai") == "eoc" and tier == "A":
+        tier = "B"
     op_level, is_official = operational_evidence_level(item, eq)
 
     item["evidence_quality_score"] = eq
@@ -165,6 +170,8 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
     # 3) Deduplicate xuyên nguồn (theo vị trí) -> chọn record chính + liên kết trùng
     primary_positions, links = deduplicate(normalized)
     primary_set = set(primary_positions)
+    # 3a) Một bản trùng bị rút/EoC ⇒ bản chính mang cùng cờ (vá 26/09/2026, synthesis #4).
+    lan_co_rut_bai_trong_nhom(normalized, links)
 
     stats: Dict[str, object] = {"total": len(normalized_all), "unique_records": len(normalized),
              "primary": len(primary_positions), "duplicates": len(links),
@@ -225,6 +232,9 @@ def run_pipeline(records: Optional[List[RawRecord]] = None,
     # guideline/cảnh báo an toàn thuốc công bố trong khoảng đó KHÔNG BAO GIỜ được
     # ingest lại. Thêm nhánh FAIL tường minh, đối xứng với nhánh strict đã có ở
     # trên (status="error").
+    # Vá 26/09/2026 (synthesis #7): lượt DEMO (mock) vẫn kết thúc "ok" ở đây nhưng
+    # KHÔNG được làm watermark live — compute_since_date() đọc run_state.last_live_ok_run()
+    # (lọc thêm mode=="live"), không đọc last_finished_run().
     source_status = str(source_health.get("status") or "NOT_APPLICABLE")
     if source_status == "FAIL":
         run_status = "error"

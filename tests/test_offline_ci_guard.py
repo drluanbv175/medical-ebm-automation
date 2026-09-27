@@ -57,6 +57,11 @@ class TestHermeticOfflineCI:
         assert not os.environ.get("OPENAI_API_KEY")
 
     def test_network_connect_is_blocked(self):
+        # Vá 2026-09-27: loopback số (127.0.0.1/::1) nay được conftest cho qua có chủ ý (asyncio trên Windows tự
+        # tạo cặp socket nội bộ qua loopback) — kiểm địa chỉ NGOÀI thật: 192.0.2.1 (TEST-NET-1, RFC 5737).
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        with pytest.raises(RuntimeError):
-            s.connect(("127.0.0.1", 9))
+        try:
+            with pytest.raises(RuntimeError):
+                s.connect(("192.0.2.1", 9))
+        finally:
+            s.close()

@@ -51,6 +51,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from app.config import settings
 from app.services.normalization import normalized_title_key
 from app.sources.base import RawRecord
+from app.sources.crossref_retraction import TIEU_DE_BAI_BI_RUT_RE
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -259,7 +260,9 @@ def _la_tieu_de_thong_bao(tieu_de: str) -> bool:
 # Nhà xuất bản gắn "RETRACTED:"/"WITHDRAWN:" vào TIÊU ĐỀ CỦA CHÍNH BÀI bị rút — khác thông báo rút bài (có DOI riêng,
 # tiêu đề "Retraction Note: ..."). Đo thật 20/09/2026: DOI gốc của Wakefield (Lancet 1998) có tiêu đề "RETRACTED: ...",
 # bị `_la_tieu_de_thong_bao` xếp thành "không khớp" — vẫn bị loại (an toàn) nhưng sai nhãn: đáng phải đếm là BỊ RÚT.
-_TIEU_DE_BAI_BI_RUT_RE = re.compile(r"^\s*\[?\s*(?:retracted|withdrawn)\s*[:\]\-\u2013\u2014]\s*", re.IGNORECASE)
+# Regex nay sống ở TẦNG SOURCES (`app.sources.crossref_retraction`, vá 26/09/2026 — phát hiện #12) để
+# `CrossrefRetraction.check()` dùng CÙNG một định nghĩa; ở đây chỉ nhập lại, không định nghĩa bản thứ hai.
+_TIEU_DE_BAI_BI_RUT_RE = TIEU_DE_BAI_BI_RUT_RE
 
 
 def _la_tieu_de_bai_bi_rut(tieu_de: str) -> bool:

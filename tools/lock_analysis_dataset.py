@@ -188,7 +188,7 @@ def _upstream_approval_report(
     # được cho một đề tài SAP đã ký hợp lệ thật. Dùng đúng hàm chấm trực tiếp.
     g2 = bool(
         GC.ledger_approved("G2", study, g2_artifact, repo_root=repo_root)
-        and GC.g2_quality_contract_satisfied(g2_cp, meta)
+        and GC.g2_quality_contract_satisfied(g2_cp, meta, study=study, out_dir=out_dir)
     )
     g4 = GC.g4_quality_contract_satisfied(study, repo_root=repo_root)
     return {
