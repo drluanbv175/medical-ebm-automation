@@ -32,7 +32,7 @@ Kính gửi: Hội đồng Đạo đức Nghiên cứu Y sinh
 Từ: Chủ nhiệm đề tài: Nguyễn Hà Luân
  Chức vụ: Bác sĩ Chuyên khoa I (BS.CKI)
  Đơn vị: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
- Điện thoại: 0971656665 | Email: bsluanbv175@gmail.com
+ Điện thoại: [PII — điền ở bản nộp ngoài hệ thống] | Email: [PII — điền ở bản nộp ngoài hệ thống]
 
 TÊN ĐỀ TÀI: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 
@@ -258,7 +258,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
  ─────────────────────────────────────────────────────────
  Thắc mắc về nghiên cứu:                                
  Chủ nhiệm đề tài: Nguyễn Hà Luân                     
- Điện thoại: 0971656665 Email: bsluanbv175@gmail.com     
+ Điện thoại: [PII — điền ở bản nộp ngoài hệ thống] Email: [PII — điền ở bản nộp ngoài hệ thống]     
                                                            
  Thắc mắc về quyền của người tham gia:                  
  Hội đồng Đạo đức: Hội đồng Y đức Bệnh viện Quân y 175              
