@@ -46,6 +46,10 @@ TEN_REPO_EBM_ANH_EM = ("EBM-drluanbv175", "ebm-drluanbv175")
 # ⇒ ESD07 không bao giờ PASS khi chủ đề canary có > 1 bài trong 30 ngày (đo 24/09: --max 1 ⇒
 # PARTIAL; --max 20 ⇒ PASS, 38 ứng viên). Canary đo NGUỒN sống, không đo độ rộng truy vấn.
 CANARY_SCANNER_MAX = 20
+# Canary quét 2 chủ đề GIẢ để đo NGUỒN sống — KHÔNG BAO GIỜ được tiêu hạn mức tính phí/giới hạn. Vá 27/09/2026:
+# mỗi lần chạy cổng --online từng gọi THẬT Consensus + SerpApi cho «Canary guideline/safety» (bộ đếm tháng 9 bị trừ).
+# Engine đọc biến môi trường HĐH TRƯỚC kho bí mật (load_dotenv override=False) ⇒ đặt ở đây là tắt chắc chắn.
+_ENV_CANARY_KHONG_TINH_PHI = {"ENABLE_CONSENSUS": "false", "ENABLE_SERPAPI_SCHOLAR": "false"}
 SCANNER_VENDOR = (
     ("sync", "skills", "cap-nhat-chung-cu-y-khoa", "tools", "surveillance_scan.py"),
     ("sync", "skills", "dark-analyst", "tools", "surveillance_scan.py"),
@@ -92,8 +96,24 @@ def _sanitize_local_paths(value: str) -> str:
     return value.replace(str(ROOT), "<WORKSPACE>").replace(str(Path.home()), "<HOME>")
 
 
-def _run(command: Sequence[str], *, cwd: Path) -> tuple[bool, str]:
+def _goi_y_ncbi_loi(errors: Sequence[str]) -> str:
+    """Câu gợi ý khi MỌI chủ đề canary suy giảm vì NCBI lỗi — để không chẩn đoán nhầm thành lỗi mã.
+
+    Đo 27/09/2026: ESD07 đỏ vì NCBI trả «WWW Error 500 Diagnostic» (lỗi máy chủ eutils) cho cả truy vấn tối giản,
+    xác nhận từ HAI đường mạng độc lập (máy Mac và connector PubMed của Anthropic). Scanner đã làm đúng thiết kế
+    (Europe PMC dự phòng, con trỏ đứng yên); ESD07 đỏ là ĐÚNG, chỉ thiếu lời nói rõ nguồn cơn.
+    """
+    if errors and all("NCBI lỗi" in e for e in errors):
+        return ("; GỢI Ý: mọi chủ đề suy giảm vì NCBI lỗi (thường là lỗi máy chủ NCBI, không phải lỗi mã) — chạy lại"
+                " khi NCBI ổn; lượt quét tuần vẫn chạy bằng Europe PMC dự phòng, con trỏ không tiến")
+    return ""
+
+
+def _run(command: Sequence[str], *, cwd: Path,
+         env_them: dict[str, str] | None = None) -> tuple[bool, str]:
     env = dict(os.environ)
+    if env_them:
+        env.update(env_them)   # ghi ĐÈ biến HĐH đang có (vd tắt làn tính phí cho canary)
     env.setdefault("PYTHONUTF8", "1")
     env.setdefault("PYTHONIOENCODING", "utf-8")
     env.setdefault("PYTHONPYCACHEPREFIX", str(Path(tempfile.gettempdir()) / "ebm_pycache"))
@@ -432,7 +452,7 @@ def _check_online_scanner() -> Check:
             # khoá đó vào .quet-cursor.json THẬT (dùng chung với lượt quét sản xuất), làm con trỏ
             # sản xuất phồng thêm 2 khoá không liên quan chủ đề nào trong watchlist thật.
             "--khong-cursor",
-        ], cwd=cwd)
+        ], cwd=cwd, env_them=_ENV_CANARY_KHONG_TINH_PHI)
         try:
             payload = _load_json(json_path)
             status = payload.get("status")
@@ -447,6 +467,7 @@ def _check_online_scanner() -> Check:
                 f"scanner={nguon}; max={CANARY_SCANNER_MAX}; "
                 f"status={status}; topics={topics}; failed={payload.get('failed_topics')}; "
                 f"candidates={payload.get('candidate_count')}; errors={errors}"
+                f"{_goi_y_ncbi_loi(errors)}"
             )
         except (ValueError, TypeError) as exc:
             ok = False
