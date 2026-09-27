@@ -31,6 +31,55 @@ class LedgerLockInvalidated(RuntimeError):
     bắt exception này (không để traceback thô lộ ra CLI) và báo bác sĩ chạy
     lại lệnh — đây là lỗi TẠM THỜI/hiếm, không phải lỗi cấu hình."""
 
+
+class LedgerUnreadable(RuntimeError):
+    """Raise khi approval_ledger.json CÓ TỒN TẠI nhưng không đọc được thành một danh
+    sách bản ghi (lỗi đọc OSError/UnicodeDecodeError, JSON hỏng, gốc không phải list,
+    hoặc tệp rỗng) — CHỈ trên ĐƯỜNG GHI (locked_update, approve_gate).
+
+    VÁ 2026-09-26 (#8): trước đây from_file() trả sổ RỖNG cho tệp hỏng, rồi
+    locked_update() ghi đè nguyên tệp + to_file() NIÊM PHONG LẠI ⇒ toàn bộ lịch sử
+    phê duyệt (kể cả quyết định THU HỒI) biến mất vĩnh viễn, và con dấu mới làm sổ bị
+    cắt trông hợp lệ (đã tái lập: 2 bản ghi → 1, verify_ledger_seal True). Đường ĐỌC
+    (công cụ kiểm toán chỉ-đọc) vẫn giữ hành vi «hỏng = rỗng = chưa duyệt» (fail-closed
+    cho việc mở cổng). Caller PHẢI bắt lỗi này, KHÔNG ghi gì, và báo bác sĩ khôi phục
+    sổ từ lịch sử phiên bản OneDrive/bản sao lưu — agent không tự dựng lại bản ghi."""
+
+
+def read_ledger_raw_strict(path) -> list:
+    """Đọc NGHIÊM NGẶT approval_ledger.json cho đường GHI: trả danh sách phần tử thô.
+
+    - Tệp KHÔNG tồn tại ⇒ [] (đề tài chưa từng duyệt — hợp lệ).
+    - Tệp tồn tại mà đọc lỗi / không phải UTF-8 / rỗng hoặc chỉ khoảng trắng / JSON
+      hỏng / gốc không phải list ⇒ raise LedgerUnreadable. (to_file() ghi nguyên tử
+      nên tệp rỗng KHÔNG BAO GIỜ là đầu ra hợp lệ của hệ.)
+    """
+    p = Path(path)
+    if not p.exists():
+        return []
+    try:
+        text = p.read_bytes().decode("utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise LedgerUnreadable(f"không đọc được sổ cái {p}: {exc}") from exc
+    if not text.strip():
+        raise LedgerUnreadable(f"sổ cái {p} TỒN TẠI nhưng RỖNG — không phải đầu ra hợp lệ")
+    try:
+        raw = json.loads(text)
+    except ValueError as exc:
+        raise LedgerUnreadable(f"sổ cái {p} không phải JSON hợp lệ (file hỏng?): {exc}") from exc
+    if not isinstance(raw, list):
+        raise LedgerUnreadable(
+            f"sổ cái {p} có gốc kiểu {type(raw).__name__}, không phải danh sách bản ghi")
+    return raw
+
+
+LEDGER_RECOVERY_HINT = (
+    "   KHÔNG sửa tay và KHÔNG xoá tệp. Khôi phục approval_ledger.json từ lịch sử phiên\n"
+    "   bản OneDrive hoặc bản sao lưu (tệp này KHÔNG có trong git vì /exports/ bị\n"
+    "   gitignore), rồi chạy lại lệnh. Việc khôi phục là của bác sĩ — agent không tự\n"
+    "   dựng lại bản ghi."
+)
+
 # Vá 2026-07-15 (hợp nhất bảng stakeholder — trước đây file này giữ 3 bản sao RIÊNG
 # của tools/gate_contract.py (STAKEHOLDER_ROLE_ALIASES, GATE_REQUIRED_STAKEHOLDERS,
 # GATE_ADDITIONAL_STAKEHOLDERS), và đã LỆCH THẬT 2 lần trong 24 giờ — G4 nới nhận PI
@@ -112,6 +161,15 @@ class ApprovalLedger:
         # GIỮ LẠI để to_file() ghi trả nguyên vẹn — xem chú thích dài ở from_file():
         # trước 2026-07-27 chúng bị bỏ qua rồi bị to_file() xóa vĩnh viễn khỏi sổ cái.
         self._unparsed_raw: list = []
+        # VÁ 2026-09-26 (#26): MỌI phần tử đã nạp từ file, NGUYÊN VĂN và ĐÚNG THỨ TỰ
+        # (parse được hay không). export_json() ghi trả y nguyên phần này rồi mới nối
+        # bản ghi mới vào ĐUÔI — sổ append-only không được đảo/đổi byte phần tử cũ.
+        # Trước đây dòng không parse được bị dời xuống CUỐI ⇒ lượt ký kế tiếp (prev_hash
+        # lấy từ đuôi file thô) làm ĐỨT CHUỖI và khoá vĩnh viễn mọi cổng của đề tài.
+        self._loaded_raw: list = []
+        # Số bản ghi trong _records đến từ file; bản ghi đứng SAU mốc này là bản mới
+        # (add_approval hoặc nối thẳng _records trong test) — được xuất sau _loaded_raw.
+        self._n_loaded_records: int = 0
 
     # ── Write ─────────────────────────────────────────────────────────────────
 
@@ -141,6 +199,9 @@ class ApprovalLedger:
 
         # Kiểm tra approval_id unique
         existing_ids = {r.approval_id for r in self._records}
+        existing_ids.update(
+            d.get("approval_id") for d in self._unparsed_raw if isinstance(d, dict)
+        )
         if record.approval_id in existing_ids:
             return False, f"DUPLICATE_APPROVAL_ID:{record.approval_id}"
 
@@ -366,11 +427,25 @@ class ApprovalLedger:
         # được lúc đọc. Trước đây chúng bị bỏ khỏi danh sách rồi to_file() ghi đè nguyên
         # file → XÓA VĨNH VIỄN bản ghi phê duyệt thật (kể cả của Hội đồng Đạo đức), không
         # cảnh báo, không bản sao lưu. Sổ cái kiểm toán chỉ được PHÉP thêm.
+        # VÁ 2026-09-26 (#26): ghi trả NGUYÊN VĂN mọi phần tử đã nạp, ĐÚNG THỨ TỰ gốc
+        # (không dựng lại qua record_to_dict — hàm đó làm rơi khoá ngoài lược đồ), rồi
+        # mới nối bản ghi mới vào ĐUÔI. Trước đây `records + _unparsed_raw` dời dòng lỗi
+        # xuống cuối ⇒ bản ghi mới không đứng ở đuôi ⇒ đứt chuỗi băm vĩnh viễn.
+        # Ledger dựng trong bộ nhớ (không nạp file): _loaded_raw rỗng ⇒ như cũ.
+        moi = [record_to_dict(r) for r in self._records[self._n_loaded_records:]]
         return json.dumps(
-            [record_to_dict(r) for r in self._records] + list(self._unparsed_raw),
+            list(self._loaded_raw) + moi,
             indent=2,
             ensure_ascii=False,
         )
+
+    def export_tail(self) -> Optional[dict]:
+        """Phần tử sẽ đứng CUỐI tệp nếu ghi NGAY BÂY GIỜ (đúng thứ tự export_json) —
+        None nếu sổ rỗng hoặc phần tử cuối không phải dict. Dùng để tính prev_hash
+        DƯỚI KHOÁ (tools/approve_gate.py, #27)."""
+        items = json.loads(self.export_json())
+        last = items[-1] if items else None
+        return last if isinstance(last, dict) else None
 
     # ── Persistence (thêm 2026-07-08, BL-06) ────────────────────────────────────
     # TRƯỚC ĐÂY: ApprovalLedger chỉ sống TRONG BỘ NHỚ (self._records) — mỗi lần
@@ -503,7 +578,16 @@ class ApprovalLedger:
         path = Path(path)
         lock_path = path.with_suffix(path.suffix + ".lock")
         with cls._exclusive_file_lock(lock_path) as fd:
-            ledger = cls.from_file(path)
+            # VÁ 2026-09-26 (#8): nạp NGHIÊM NGẶT trước khi yield — sổ tồn tại mà hỏng
+            # ⇒ LedgerUnreadable, KHÔNG yield, KHÔNG to_file(), KHÔNG ghi lại con dấu.
+            # Tệp gốc giữ nguyên tại chỗ (gate_contract tiếp tục báo «file hỏng?»); chỉ
+            # SAO CHÉP (không move) một bản chụp .corrupt-<UTC> để hỗ trợ khôi phục.
+            try:
+                ledger = cls.from_file(path, strict=True)
+            except LedgerUnreadable as exc:
+                snap = cls._snapshot_corrupt(path)
+                extra = f" Bản chụp: {snap.name}." if snap else ""
+                raise LedgerUnreadable(f"{exc}.{extra}") from exc
             yield ledger
             if not cls._lock_identity_matches(fd, lock_path):
                 raise LedgerLockInvalidated(
@@ -514,22 +598,46 @@ class ApprovalLedger:
                 )
             ledger.to_file(path)
 
+    @staticmethod
+    def _snapshot_corrupt(path: Path) -> Optional[Path]:
+        """Sao chép (KHÔNG move) sổ hỏng sang <tên>.corrupt-<UTC> — best-effort."""
+        import shutil
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        dst = path.with_name(f"{path.name}.corrupt-{stamp}")
+        try:
+            shutil.copy2(path, dst)
+        except OSError:
+            return None
+        return dst
+
     @classmethod
-    def from_file(cls, path) -> "ApprovalLedger":
+    def from_file(cls, path, strict: bool = False) -> "ApprovalLedger":
         """Nạp ledger từ file JSON (định dạng export_json()). File không tồn tại/
         rỗng/hỏng → trả ledger RỖNG (KHÔNG raise) — vì phần lớn đề tài CHƯA có file
         này (chưa từng được duyệt qua cơ chế crypto này), đây là trạng thái HỢP LỆ,
         không phải lỗi. Bản ghi nạp lại có _created_by_agent=False (đã ghi ra đĩa
         nghĩa là đã qua add_approval() thành công lúc ghi, không cho phép giả mạo
-        lại từ file — file này chỉ được ghi bởi to_file(), không phải input tự do)."""
+        lại từ file — file này chỉ được ghi bởi to_file(), không phải input tự do).
+
+        strict=True (VÁ 2026-09-26, #8 — CHỈ dùng cho ĐƯỜNG GHI, xem locked_update):
+        tệp tồn tại mà hỏng ⇒ raise LedgerUnreadable thay vì trả sổ rỗng (sổ rỗng rồi
+        ghi đè = xoá sạch lịch sử). Mặc định strict=False giữ nguyên cho công cụ kiểm
+        toán chỉ-đọc (stakeholder_review_audit, project_cli)."""
         ledger = cls()
         p = Path(path)
-        if not p.exists():
-            return ledger
-        try:
-            raw = json.loads(p.read_text(encoding="utf-8"))
-        except (ValueError, OSError):
-            return ledger
+        if strict:
+            raw = read_ledger_raw_strict(p)
+        else:
+            if not p.exists():
+                return ledger
+            try:
+                raw = json.loads(p.read_text(encoding="utf-8"))
+            except (ValueError, OSError):
+                return ledger
+            if not isinstance(raw, list):
+                # Gốc dict/số: trước đây `for d in raw` lặp khoá dict hoặc ném TypeError
+                # thô. Đường ĐỌC coi như sổ rỗng (fail-closed: chưa duyệt).
+                return ledger
         for d in raw:
             try:
                 rec = ApprovalRecord(
@@ -575,6 +683,8 @@ class ApprovalLedger:
                 ledger._unparsed_raw.append(d)
                 continue
             ledger._records.append(rec)
+        ledger._loaded_raw = list(raw)
+        ledger._n_loaded_records = len(ledger._records)
         return ledger
 
     # ── Factory helpers (for tests only) ──────────────────────────────────────

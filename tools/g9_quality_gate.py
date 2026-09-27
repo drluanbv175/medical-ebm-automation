@@ -978,7 +978,7 @@ def evaluate_study(
         GC.ledger_approved(
             "G2", study, out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md", repo_root=root
         )
-        and GC.g2_quality_contract_satisfied(g2_cp, meta)
+        and GC.g2_quality_contract_satisfied(g2_cp, meta, study=study, out_dir=out_dir)
     )
     g4_ok = GC.g4_quality_contract_satisfied(study, repo_root=root)
     g5_ok = GC.g5_quality_contract_satisfied(study, repo_root=root)
