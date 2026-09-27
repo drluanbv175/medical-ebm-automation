@@ -551,6 +551,109 @@ def interpret_hypothesis_type(res: dict, hypothesis_type: str, margin) -> dict:
 # 6. MÔ HÌNH ĐA BIẾN
 # ════════════════════════════════════════════════════════════════════════════
 
+# ════════════════════════════════════════════════════════════════════════════
+# 5b. KIỂM HỘI TỤ MÔ HÌNH (Cox/logistic/MI) — vá 2026-09-26 (#10)
+# ════════════════════════════════════════════════════════════════════════════
+# Lỗi gốc: warnings.filterwarnings("ignore") ở đầu tệp nuốt ConvergenceWarning của
+# lifelines/statsmodels; Cox/logistic tách (gần) hoàn toàn in thẳng
+# «HR = 255220126.69 (95%CI 0.0–inf)» kèm dòng «số liệu lấy trực tiếp từ dữ liệu
+# thật», không cờ nào. Nay: (1) bọc TỪNG lời gọi fit bằng catch_warnings(record=True)
+# — KHÔNG bỏ filter toàn cục (làm nhiễu stderr bằng FutureWarning của pandas);
+# (2) phép kiểm ĐỘC LẬP với câu chữ cảnh báo (tên lớp đổi theo phiên bản thư viện):
+# cận CI không hữu hạn/bằng 0, |hệ số| hoặc sai số chuẩn quá lớn, converged=False;
+# (3) có cờ ⇒ con số bị THAY bằng dòng cảnh báo, số thô chỉ còn trong JSON dưới khoá
+# «so_tho_khong_tin_cay». KHÔNG tự chuyển Firth/penalizer: SAP đã khoá ở G4, đổi
+# phương pháp là quyết định của thống kê viên.
+
+DONG_KHONG_HOI_TU = "⚠ MÔ HÌNH KHÔNG HỘI TỤ — không diễn giải được [CẦN BIOSTATISTICIAN]"
+GHI_CHU_KHONG_HOI_TU = (
+    "Tách (gần) hoàn toàn / không hội tụ: HR/OR và p Wald KHÔNG diễn giải được "
+    "(p≈1 KHÔNG có nghĩa là 'không liên quan'). Đổi phương pháp (Firth, penalizer, "
+    "gộp nhóm…) là quyết định của thống kê viên vì SAP đã khoá ở G4 — script KHÔNG tự đổi."
+)
+# Tên lớp cảnh báo báo hiệu mô hình không ổn định (lifelines + statsmodels).
+_TEN_CANH_BAO_HOI_TU = ("ConvergenceWarning", "PerfectSeparationWarning",
+                        "HessianInversionWarning")
+# Ngưỡng phụ cho phép kiểm độc lập (thang log): |hệ số| > 15 ⇔ HR/OR > ~3,3 triệu;
+# sai số chuẩn > 10 ⇔ CI Wald trải hơn e^±19. Tiêu chí chính vẫn là CI không hữu
+# hạn/bằng 0 và cờ converged; hai ngưỡng này chỉ bắt thêm ca lifelines/statsmodels
+# dừng sớm với số hữu hạn nhưng vô nghĩa.
+_NGUONG_HE_SO_LOG = 15.0
+_NGUONG_SE_LOG = 10.0
+
+
+def _ly_do_tu_canh_bao(caught) -> list:
+    """Rút lý do từ danh sách cảnh báo bắt được quanh MỘT lời gọi fit."""
+    ly_do = []
+    for w in caught or []:
+        ten = getattr(w.category, "__name__", "")
+        if any(k in ten for k in _TEN_CANH_BAO_HOI_TU):
+            msg = " ".join(str(w.message).split())[:160]
+            item = f"{ten}: {msg}"
+            if item not in ly_do:
+                ly_do.append(item)
+    return ly_do
+
+
+def _ly_do_tu_uoc_luong(ten: str, coef, se, ci_lo_log, ci_hi_log) -> list:
+    """Phép kiểm ĐỘC LẬP trên một hệ số (thang log): không dựa vào câu chữ cảnh báo."""
+    ly_do = []
+    vals = {"coef": coef, "se": se, "ci_lo": ci_lo_log, "ci_hi": ci_hi_log}
+    for k, v in vals.items():
+        if v is None:
+            continue
+        try:
+            fv = float(v)
+        except (TypeError, ValueError):
+            ly_do.append(f"{ten}: {k} không phải số")
+            continue
+        if not np.isfinite(fv):
+            ly_do.append(f"{ten}: {k} không hữu hạn")
+    # Cận CI sau exp bằng 0 (tràn dưới) hoặc vô cùng (tràn trên).
+    for k, v in (("cận dưới CI", ci_lo_log), ("cận trên CI", ci_hi_log)):
+        if v is None:
+            continue
+        try:
+            with np.errstate(over="ignore", under="ignore"):
+                ev = float(np.exp(float(v)))
+        except (TypeError, ValueError, OverflowError):
+            continue
+        if not np.isfinite(ev) or ev <= 0.0:
+            ly_do.append(f"{ten}: {k} sau exp = {ev} (không hữu hạn/bằng 0)")
+    try:
+        if coef is not None and np.isfinite(float(coef)) and abs(float(coef)) > _NGUONG_HE_SO_LOG:
+            ly_do.append(f"{ten}: |hệ số log| = {abs(float(coef)):.1f} > {_NGUONG_HE_SO_LOG:g}")
+    except (TypeError, ValueError):
+        pass
+    try:
+        if se is not None and np.isfinite(float(se)) and float(se) > _NGUONG_SE_LOG:
+            ly_do.append(f"{ten}: sai số chuẩn = {float(se):.1f} > {_NGUONG_SE_LOG:g}")
+    except (TypeError, ValueError):
+        pass
+    return ly_do
+
+
+def _gan_co_khong_hoi_tu(entry: dict, ly_do: list, keys: tuple) -> dict:
+    """Có lý do ⇒ gỡ con số khỏi khoá chính (HR/OR/CI/p), giữ số thô dưới khoá
+    tên rõ là không tin cậy, gắn cờ khong_hoi_tu. Không có lý do ⇒ trả nguyên
+    (không thêm khoá nào — giữ hợp đồng golden cho mô hình hội tụ)."""
+    if not ly_do:
+        return entry
+    out = {k: v for k, v in entry.items() if k not in keys}
+    out["so_tho_khong_tin_cay"] = {k: entry[k] for k in keys if k in entry}
+    out["khong_hoi_tu"] = True
+    out["ly_do"] = list(ly_do)
+    return out
+
+
+def _chay_fit_bat_canh_bao(fn):
+    """Chạy fn() trong catch_warnings(record=True) cục bộ; trả (kết quả, cảnh báo)."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        kq = fn()
+    return kq, list(caught)
+
+
 def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
                         covariates: list, outcome_type: str = "auto") -> dict:
     """Logistic (nhị phân) hoặc Linear regression (liên tục)."""
@@ -586,21 +689,38 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
 
     try:
         if outcome_type == "binary":
-            model = sm.Logit(y, X).fit(disp=False, maxiter=200)
+            model, caught = _chay_fit_bat_canh_bao(
+                lambda: sm.Logit(y, X).fit(disp=False, maxiter=200))
             coefs = model.params
             conf = model.conf_int()
+            bse = model.bse
+            converged = model.mle_retvals.get("converged", True)
+            # Lý do cấp MÔ HÌNH (cảnh báo, converged=False, bất kỳ hệ số nào kể cả
+            # hằng số vô nghĩa) ⇒ MỌI ước lượng của mô hình đều không tin cậy.
+            ly_do_mo_hinh = _ly_do_tu_canh_bao(caught)
+            if converged is False:
+                ly_do_mo_hinh.append("statsmodels mle_retvals['converged'] = False")
+            for var in coefs.index:
+                ly_do_mo_hinh.extend(_ly_do_tu_uoc_luong(
+                    str(var), coefs[var], bse[var], conf.loc[var, 0], conf.loc[var, 1]))
             results = []
             for var in coefs.index:
                 if var == "const":
                     continue
-                or_adj = round(float(np.exp(coefs[var])), 3)
-                ci_low = round(float(np.exp(conf.loc[var, 0])), 3)
-                ci_up = round(float(np.exp(conf.loc[var, 1])), 3)
+                with np.errstate(over="ignore", under="ignore"):
+                    or_adj = round(float(np.exp(coefs[var])), 3)
+                    ci_low = round(float(np.exp(conf.loc[var, 0])), 3)
+                    ci_up = round(float(np.exp(conf.loc[var, 1])), 3)
                 p = round(float(model.pvalues[var]), 4)
-                results.append({"variable": var, "OR_adj": or_adj,
-                                 "CI_95": [ci_low, ci_up], "p": p})
-            return {"model": "logistic", "n": len(data), "aic": round(model.aic, 2),
-                    "results": results, "convergence": model.mle_retvals.get("converged", True)}
+                results.append(_gan_co_khong_hoi_tu(
+                    {"variable": var, "OR_adj": or_adj, "CI_95": [ci_low, ci_up], "p": p},
+                    ly_do_mo_hinh, ("OR_adj", "CI_95", "p")))
+            out = {"model": "logistic", "n": len(data), "aic": round(model.aic, 2),
+                   "results": results, "convergence": converged}
+            if ly_do_mo_hinh:
+                out["khong_hoi_tu"] = True
+                out["ly_do"] = ly_do_mo_hinh
+            return out
         else:
             model = sm.OLS(y, X).fit()
             coefs = model.params
@@ -679,11 +799,24 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     try:
         imp = MICEData(sub_safe)
         mice = MICE(formula, model_class, imp, fit_kwds=fit_kwds)
-        res = mice.fit(n_imputations=n_imputations, n_burnin=10)
+        res, caught = _chay_fit_bat_canh_bao(
+            lambda: mice.fit(n_imputations=n_imputations, n_burnin=10))
     except Exception as e:
         return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — MI không hội tụ]"}
 
     ci = res.conf_int()
+    bse = getattr(res, "bse", None)
+    # Kiểm hội tụ chỉ áp cho nhánh logistic (thang log-odds); OLS không có vấn đề
+    # tách hoàn toàn. Lý do cấp mô hình (cảnh báo trong bất kỳ lần fit MI nào,
+    # hệ số vô nghĩa ở bất kỳ tham số nào) ⇒ mọi ước lượng gộp không tin cậy.
+    ly_do_mo_hinh = []
+    if outcome_type == "binary":
+        ly_do_mo_hinh = _ly_do_tu_canh_bao(caught)
+        for i, safe_name in enumerate(res.model.exog_names):
+            ten = rev_map.get(safe_name, safe_name)
+            se_i = float(bse[i]) if bse is not None else None
+            ly_do_mo_hinh.extend(_ly_do_tu_uoc_luong(
+                str(ten), float(res.params[i]), se_i, float(ci[i][0]), float(ci[i][1])))
     results = []
     for i, safe_name in enumerate(res.model.exog_names):
         if safe_name == "Intercept":
@@ -693,14 +826,16 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
         lo, hi = float(ci[i][0]), float(ci[i][1])
         p = round(float(res.pvalues[i]), 4)
         if outcome_type == "binary":
-            results.append({"variable": var, "OR_adj": round(float(np.exp(est)), 3),
-                             "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)],
-                             "p": p})
+            results.append(_gan_co_khong_hoi_tu(
+                {"variable": var, "OR_adj": round(float(np.exp(est)), 3),
+                 "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)],
+                 "p": p},
+                ly_do_mo_hinh, ("OR_adj", "CI_95", "p")))
         else:
             results.append({"variable": var, "beta": round(est, 4),
                              "CI_95": [round(lo, 4), round(hi, 4)], "p": p})
 
-    return {
+    out_mi = {
         "model": "logistic_mi" if outcome_type == "binary" else "linear_mi",
         "n_imputations": n_imputations,
         "n_total": n_total, "n_complete_case": n_complete,
@@ -708,6 +843,10 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
         "pct_missing_rows": round(n_missing_rows / n_total * 100, 1),
         "results": results,
     }
+    if ly_do_mo_hinh:
+        out_mi["khong_hoi_tu"] = True
+        out_mi["ly_do"] = ly_do_mo_hinh
+    return out_mi
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -754,16 +893,24 @@ def survival_model(df: pd.DataFrame, time_col: str, event_col: str,
 
     def _fit(cols: list) -> dict:
         cph = CoxPHFitter()
-        cph.fit(data[cols], duration_col=time_col, event_col=event_col)
+        _, caught = _chay_fit_bat_canh_bao(
+            lambda: cph.fit(data[cols], duration_col=time_col, event_col=event_col))
         s = cph.summary
         hr = float(s.loc[group_col, "exp(coef)"])
         ci_low = float(s.loc[group_col, "exp(coef) lower 95%"])
         ci_up = float(s.loc[group_col, "exp(coef) upper 95%"])
         p = float(s.loc[group_col, "p"])
-        return {
+        # Vá 2026-09-26 (#10): kiểm hội tụ trên MỌI hệ số của mô hình (hiệp biến
+        # tách hoàn toàn cũng làm HR của group_col không tin cậy).
+        ly_do = _ly_do_tu_canh_bao(caught)
+        for ten in s.index:
+            ly_do.extend(_ly_do_tu_uoc_luong(
+                str(ten), s.loc[ten, "coef"], s.loc[ten, "se(coef)"],
+                s.loc[ten, "coef lower 95%"], s.loc[ten, "coef upper 95%"]))
+        return _gan_co_khong_hoi_tu({
             "HR": round(hr, 3), "CI_95": [round(ci_low, 3), round(ci_up, 3)],
             "p": round(p, 4), "concordance": round(float(cph.concordance_index_), 4),
-        }
+        }, ly_do, ("HR", "CI_95", "p", "concordance"))
 
     try:
         result["crude"] = _fit([time_col, event_col, group_col])
@@ -941,9 +1088,18 @@ def format_multivariate_text(mv: dict) -> str:
     metric_label = "AIC" if mv["model"] == "logistic" else "R²"
     metric_value = mv.get("aic", mv.get("r_squared", "?"))
     lines.append(f"  n = {mv['n']} | {metric_label} = {metric_value}")
+    # Vá 2026-09-26 (#10): đọc cờ hội tụ — trước đây trường convergence bị bỏ qua.
+    if mv.get("khong_hoi_tu") or mv.get("convergence") is False:
+        lines.append(f"  {DONG_KHONG_HOI_TU}")
+        lines.append(f"  {GHI_CHU_KHONG_HOI_TU}")
+        for ld in mv.get("ly_do", [])[:6]:
+            lines.append(f"    - {ld}")
     lines.append(f"\n  {'Biến số':<28} {'OR/β hiệu chỉnh':>18}  {'95%CI':>20}  {'p':>8}")
     lines.append("  " + "-" * 60)
     for r in mv.get("results", []):
+        if r.get("khong_hoi_tu") or "CI_95" not in r:
+            lines.append(f"  {r['variable'][:28]:<28} {DONG_KHONG_HOI_TU}")
+            continue
         est = r.get("OR_adj", r.get("beta", "?"))
         ci = r["CI_95"]
         ci_str = f"{ci[0]}–{ci[1]}"
@@ -965,19 +1121,29 @@ def format_mi_text(mi: dict, mv: dict = None) -> str:
     lines = [f"BẢNG 5 — MULTIPLE IMPUTATION ({mi['model'].upper()}, m={mi['n_imputations']})", "=" * 70]
     lines.append(f"  Complete-case: n = {mi['n_complete_case']}/{mi['n_total']} "
                  f"({mi['n_missing_rows']} hàng thiếu, {mi['pct_missing_rows']}%)")
+    if mi.get("khong_hoi_tu"):
+        lines.append(f"  {DONG_KHONG_HOI_TU}")
+        lines.append(f"  {GHI_CHU_KHONG_HOI_TU}")
+        for ld in mi.get("ly_do", [])[:6]:
+            lines.append(f"    - {ld}")
     lines.append(f"\n  {'Biến số':<22} {'OR/β (MI)':>14}  {'95%CI (MI)':>18}  {'p':>7}   {'so complete-case'}")
     lines.append("  " + "-" * 90)
     mv_lookup = {r["variable"]: r for r in (mv.get("results", []) if mv else [])}
     for r in mi.get("results", []):
+        cc = mv_lookup.get(r["variable"])
+        cc_str = ""
+        if cc and (cc.get("khong_hoi_tu") or "CI_95" not in cc):
+            cc_str = "complete-case: " + DONG_KHONG_HOI_TU
+        elif cc:
+            cc_est = cc.get("OR_adj", cc.get("beta", "?"))
+            cc_str = f"{cc_est} ({cc['CI_95'][0]}–{cc['CI_95'][1]}, p={cc['p']})"
+        if r.get("khong_hoi_tu") or "CI_95" not in r:
+            lines.append(f"  {r['variable'][:20]:<22} {DONG_KHONG_HOI_TU}   {cc_str}")
+            continue
         est = r.get("OR_adj", r.get("beta", "?"))
         ci = r["CI_95"]
         p = r["p"]
         star = "*" if p < 0.05 else " "
-        cc = mv_lookup.get(r["variable"])
-        cc_str = ""
-        if cc:
-            cc_est = cc.get("OR_adj", cc.get("beta", "?"))
-            cc_str = f"{cc_est} ({cc['CI_95'][0]}–{cc['CI_95'][1]}, p={cc['p']})"
         lines.append(f"  {r['variable'][:20]:<22} {est:>14}  {ci[0]}–{ci[1]:<10}  {p:>6}{star}   {cc_str}")
     lines.append("\n* p < 0.05 (MI). So sánh với complete-case để đánh giá độ nhạy với giả định thiếu dữ liệu.")
     lines.append("[BÁC SĨ KIỂM TRA: MI dùng statsmodels MICEData/MICE, pooling theo luật Rubin]")
@@ -993,12 +1159,23 @@ def format_survival_text(res: dict, km: dict = None, hypothesis_interp: dict = N
         lines.append(f"  ⚠ {res['epv_warning']} [CẦN BIOSTATISTICIAN XÁC NHẬN]")
     if "crude_error" in res:
         lines.append(f"  Mô hình thô: LỖI — {res['crude_error']}")
+    elif "crude" in res and (res["crude"].get("khong_hoi_tu") or "HR" not in res["crude"]):
+        lines.append(f"  Thô: {DONG_KHONG_HOI_TU}")
+        lines.append(f"    {GHI_CHU_KHONG_HOI_TU}")
+        for ld in res["crude"].get("ly_do", [])[:6]:
+            lines.append(f"    - {ld}")
     elif "crude" in res:
         c = res["crude"]
         lines.append(f"  Thô: HR = {c['HR']} (95%CI {c['CI_95'][0]}–{c['CI_95'][1]}), "
                       f"p = {c['p']}, C-index = {c['concordance']}")
     if "adjusted_error" in res:
         lines.append(f"  Mô hình hiệu chỉnh: LỖI — {res['adjusted_error']}")
+    elif "adjusted" in res and (res["adjusted"].get("khong_hoi_tu") or "HR" not in res["adjusted"]):
+        covs = ", ".join(res.get("adjusted_covariates", [])[:4])
+        lines.append(f"  Hiệu chỉnh ({covs}): {DONG_KHONG_HOI_TU}")
+        lines.append(f"    {GHI_CHU_KHONG_HOI_TU}")
+        for ld in res["adjusted"].get("ly_do", [])[:6]:
+            lines.append(f"    - {ld}")
     elif "adjusted" in res:
         a = res["adjusted"]
         covs = ", ".join(res.get("adjusted_covariates", [])[:4])
@@ -1524,7 +1701,11 @@ def main():
         mv_txt = format_multivariate_text(mv)
         (prefix.parent / f"{args.gate}_table4_multivariate.txt").write_text(mv_txt, encoding="utf-8", newline="\n")
         summary["multivariate"] = mv
-        print(f"✓ Mô hình đa biến: {mv.get('model','?')} ({mv.get('n','?')} quan sát)")
+        if mv.get("khong_hoi_tu") or mv.get("convergence") is False:
+            print(f"⚠ Mô hình đa biến: {mv.get('model','?')} ({mv.get('n','?')} quan sát) — "
+                  f"{DONG_KHONG_HOI_TU}")
+        else:
+            print(f"✓ Mô hình đa biến: {mv.get('model','?')} ({mv.get('n','?')} quan sát)")
 
         # 6a. Multiple imputation (chỉ khi biến phân tích có dữ liệu thiếu) — vá 2026-07-15
         mi = multiple_imputation_model(df, args.outcome, args.group, covariates,
@@ -1538,8 +1719,11 @@ def main():
             mi_txt = format_mi_text(mi, mv)
             (prefix.parent / f"{args.gate}_table5_multiple_imputation.txt").write_text(
                 mi_txt, encoding="utf-8", newline="\n")
-            print(f"✓ Multiple imputation (m={mi['n_imputations']}): "
+            dau_mi = "⚠" if mi.get("khong_hoi_tu") else "✓"
+            print(f"{dau_mi} Multiple imputation (m={mi['n_imputations']}): "
                   f"{mi['n_missing_rows']}/{mi['n_total']} hàng thiếu được impute")
+            if mi.get("khong_hoi_tu"):
+                print(f"  {DONG_KHONG_HOI_TU}")
 
         # 7. Script R tái lặp
         r_script = generate_r_script(args.study, args.gate, args.outcome,
@@ -1572,7 +1756,9 @@ def main():
         summary["kaplan_meier"] = km
         if surv_hyp_interp.get("note"):
             summary["survival_hypothesis_interpretation"] = surv_hyp_interp
-        if "crude" in surv:
+        if "crude" in surv and (surv["crude"].get("khong_hoi_tu") or "HR" not in surv["crude"]):
+            print(f"⚠ Cox PH thô: {DONG_KHONG_HOI_TU}")
+        elif "crude" in surv:
             c = surv["crude"]
             print(f"✓ Cox PH thô: HR={c['HR']} (95%CI {c['CI_95'][0]}–{c['CI_95'][1]}), p={c['p']}")
         elif "error" in surv:
