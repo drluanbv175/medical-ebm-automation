@@ -248,8 +248,9 @@ def test_esd07_canary_dung_max_20(tmp_path, monkeypatch):
     monkeypatch.setattr(V, "ROOT", goc)
     goi: dict = {}
 
-    def fake_run(cmd, *, cwd):
+    def fake_run(cmd, *, cwd, env_them=None):
         goi["cmd"] = list(cmd)
+        goi["env"] = env_them
         out = Path(cmd[cmd.index("--json-report") + 1])
         Path(cmd[cmd.index("--report") + 1]).write_text("r", encoding="utf-8", newline="\n")
         out.write_text(json.dumps({"status": "PASS", "topic_count": 2}), encoding="utf-8", newline="\n")
@@ -260,6 +261,7 @@ def test_esd07_canary_dung_max_20(tmp_path, monkeypatch):
     assert check.status == V.PASS
     assert goi["cmd"][goi["cmd"].index("--max") + 1] == "20"
     assert "--khong-cursor" in goi["cmd"]
+    assert goi["env"] == V._ENV_CANARY_KHONG_TINH_PHI  # 27/09: canary không tiêu hạn mức tính phí
     assert "scanner=EBM-Dashboards" in check.evidence
 
 
