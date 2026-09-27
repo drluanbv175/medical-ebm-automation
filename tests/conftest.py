@@ -39,14 +39,35 @@ if OFFLINE_CI:
 
     import socket as _socket
 
+    # Vá 27/09/2026: asyncio trên Windows (ProactorEventLoop) tự tạo cặp socket nội bộ bằng
+    # socket.socketpair() dự phòng — connect tới 127.0.0.1 — nên chặn TRẮNG mọi connect làm
+    # asyncio.run() sập (CI Windows PR #21). Loopback không phải mạng ra ngoài: CHỈ cho qua đúng
+    # địa chỉ IP loopback dạng số; mọi địa chỉ khác (kể cả tên miền, «localhost») vẫn bị chặn.
+    _LOOPBACK = {"127.0.0.1", "::1"}
+    _connect_goc = _socket.socket.connect
+    _connect_ex_goc = _socket.socket.connect_ex
+
+    def _la_loopback(dia_chi):
+        return isinstance(dia_chi, tuple) and bool(dia_chi) and dia_chi[0] in _LOOPBACK
+
     def _blocked_connect(*_a, **_k):
         raise RuntimeError(
             "OFFLINE CI HERMETIC: kết nối mạng outbound bị chặn (network disabled)."
         )
 
-    # Chặn ở cả tầng socket lẫn helper create_connection.
-    _socket.socket.connect = _blocked_connect           # type: ignore[assignment]
-    _socket.socket.connect_ex = _blocked_connect         # type: ignore[assignment]
+    def _connect_chi_loopback(self, dia_chi, *a, **k):
+        if _la_loopback(dia_chi):
+            return _connect_goc(self, dia_chi, *a, **k)
+        return _blocked_connect()
+
+    def _connect_ex_chi_loopback(self, dia_chi, *a, **k):
+        if _la_loopback(dia_chi):
+            return _connect_ex_goc(self, dia_chi, *a, **k)
+        return _blocked_connect()
+
+    # Chặn ở cả tầng socket lẫn helper create_connection (create_connection chặn trắng).
+    _socket.socket.connect = _connect_chi_loopback       # type: ignore[assignment]
+    _socket.socket.connect_ex = _connect_ex_chi_loopback  # type: ignore[assignment]
     _socket.create_connection = _blocked_connect         # type: ignore[assignment]
 
 import pytest  # noqa: E402
