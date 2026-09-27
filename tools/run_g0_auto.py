@@ -67,10 +67,9 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 _REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 
-# Thiết lập NCBI_EMAIL trước khi import app.config
-_DEFAULT_EMAIL = "bsluanbv175@gmail.com"
-if not os.environ.get("NCBI_EMAIL"):
-    os.environ["NCBI_EMAIL"] = _DEFAULT_EMAIL
+# NCBI_EMAIL do app.config tự đọc (biến môi trường → kho secrets ngoài git → .env). Bỏ email cá nhân gài mặc định
+# (27/09/2026): repo công khai, và email gài trước khi import app.config còn ĐÈ giá trị bác sĩ khai trong kho secrets.
+# Thiếu email ⇒ PubMedClient trả bản ghi GIẢ LẬP ⇒ §3 của A1 tự gắn nhãn giả lập (xem _ly_do_gia_lap).
 if not os.environ.get("USE_MOCK_SOURCES"):
     os.environ["USE_MOCK_SOURCES"] = "false"
 
@@ -634,13 +633,26 @@ def _format_article_list(articles: list, max_show: int = 5) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _in_mock_mode() -> bool:
-    """Đang chạy với nguồn GIẢ LẬP (fixture) thay vì PubMed thật?"""
+def _ly_do_gia_lap() -> Optional[str]:
+    """Vì sao PubMed trả bản ghi GIẢ LẬP (fixture), hoặc None nếu tra thật.
+
+    Khớp ĐÚNG điều kiện của `PubMedClient.search()`: `use_mock` HOẶC thiếu NCBI_EMAIL đều trả fixture. Trước
+    27/09/2026 chỉ xét `use_mock_sources` — email cá nhân gài mặc định che khoảng hở đó.
+    """
     try:
         from app.config import settings
-        return bool(getattr(settings, "use_mock_sources", False))
+        if getattr(settings, "use_mock_sources", False):
+            return "USE_MOCK_SOURCES=true"
+        if not getattr(settings, "ncbi_email", ""):
+            return "thiếu NCBI_EMAIL"
+        return None
     except Exception:  # noqa: BLE001 — không xác định được thì coi như thật, và
-        return False   # các cờ counts_are_real/query_errors vẫn cảnh báo riêng
+        return None    # các cờ counts_are_real/query_errors vẫn cảnh báo riêng
+
+
+def _in_mock_mode() -> bool:
+    """Đang chạy với nguồn GIẢ LẬP (fixture) thay vì PubMed thật?"""
+    return _ly_do_gia_lap() is not None
 
 
 def _evidence_source_label() -> str:
@@ -655,6 +667,10 @@ def _evidence_source_label() -> str:
 
 
 def _evidence_source_warning() -> str:
+    if _ly_do_gia_lap() == "thiếu NCBI_EMAIL":
+        return ("⚠️ **CẢNH BÁO: thiếu NCBI_EMAIL — PubMed KHÔNG được tra thật.** Danh sách dưới đây là dữ liệu "
+                "GIẢ LẬP, KHÔNG phải kết quả PubMed và KHÔNG được dùng cho bất kỳ quyết định nghiên cứu nào. "
+                "Khai NCBI_EMAIL trong kho secrets (hoặc chạy lại với --email) để có bằng chứng thật.")
     if _in_mock_mode():
         return ("⚠️ **CẢNH BÁO: đang chạy chế độ USE_MOCK_SOURCES=true.** Danh sách dưới "
                 "đây là dữ liệu GIẢ LẬP dùng để thử phần mềm, KHÔNG phải kết quả PubMed và "
@@ -1371,7 +1387,7 @@ def main():
     parser.add_argument("--max-results", type=int, default=15,
                         help="Số kết quả tối đa mỗi loại query (mặc định: 15)")
     parser.add_argument("--email", default=None,
-                        help="Email NCBI (mặc định: từ NCBI_EMAIL trong .env)")
+                        help="Email NCBI (mặc định: NCBI_EMAIL từ biến môi trường/kho secrets)")
     parser.add_argument("--skip-registry", action="store_true",
                         help="Bỏ qua bước tra ClinicalTrials.gov (chạy offline/nhanh). "
                              "Khi bỏ qua, artifact GHI RÕ là CHƯA TRA — không coi như "
@@ -1382,6 +1398,12 @@ def main():
     # Ghi đè email nếu có
     if args.email:
         os.environ["NCBI_EMAIL"] = args.email
+        # `settings` đã dựng lúc import app.sources.pubmed — chỉ gán biến môi trường thì --email VÔ TÁC DỤNG (27/09/2026)
+        from app.config import settings as _cau_hinh
+        _cau_hinh.ncbi_email = args.email
+    if _ly_do_gia_lap() == "thiếu NCBI_EMAIL":
+        print("⚠ Thiếu NCBI_EMAIL — PubMed sẽ trả dữ liệu GIẢ LẬP, §3 của A1 bị gắn nhãn «KHÔNG DÙNG». "
+              "Khai NCBI_EMAIL trong kho secrets hoặc chạy lại với --email.")
 
     run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
     # SỬA: --study chỉ thay khoảng trắng, không loại "/", ".." — có thể ghi

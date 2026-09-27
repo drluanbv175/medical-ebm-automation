@@ -530,6 +530,9 @@ def test_che_do_mock_khong_duoc_trinh_bay_la_bang_chung_that(monkeypatch):
     from app.config import settings
 
     monkeypatch.setattr(settings, "use_mock_sources", False, raising=False)
+    # Tra thật cần CẢ NCBI_EMAIL (thiếu thì PubMedClient cũng trả giả lập — 27/09/2026); trước đây email cá nhân gài
+    # sẵn trong run_g0_auto che điều kiện này.
+    monkeypatch.setattr(settings, "ncbi_email", "tester@example.org", raising=False)
     art_real = _artifact_text()
     assert "THẬT — từ PubMed" in art_real and "GIẢ LẬP" not in art_real
 
