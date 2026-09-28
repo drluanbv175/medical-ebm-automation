@@ -44,6 +44,8 @@ Phụ thuộc: pandas, numpy, scipy, statsmodels (pip install scipy statsmodels)
 cho thiết kế sống còn, matplotlib (tuỳ chọn) để vẽ đường cong KM.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import sys
@@ -1021,6 +1023,265 @@ def kaplan_meier_summary(df: pd.DataFrame, time_col: str, event_col: str,
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# 6c. KẾT CỤC THỨ TỰ + GOM CỤM + NHẠY CẢM HC3 — thêm 2026-09-28 (đề xuất N1)
+# ════════════════════════════════════════════════════════════════════════════
+# Đề tài thật C1a khoá ở SAP (đề cương mục 4.10): mô hình chính là hồi quy logistic THỨ TỰ
+# (proportional odds) trên G1 năm mức; sai số chuẩn HIỆU CHỈNH CỤM theo bàn khám + báo ICC;
+# phân tích nhạy cảm OLS với sai số HC3. Trước 28/09 engine chỉ có logistic nhị phân / OLS /
+# Cox ⇒ tới G6 không chạy được đúng SAP đã khoá. Nhánh này CHỈ bật khi SAP khai tường minh
+# --outcome-type ordinal (không tự đoán: thang 1–5 dễ bị auto nhận là "continuous").
+
+def _ma_tran_du_bao(data: pd.DataFrame, predictors: list) -> pd.DataFrame:
+    """Biến phân loại → dummy (bỏ mức đầu); ép float để statsmodels không nhận object."""
+    return pd.get_dummies(data[predictors], drop_first=True).astype(float)
+
+
+def _ghi_chu_so_cum(n_cum: int) -> str:
+    return (f"Số cụm = {n_cum}. Sai số chuẩn hiệu chỉnh cụm (sandwich) kém tin cậy khi số cụm ít — "
+            "thống kê viên quyết định có cần hiệu chỉnh cỡ mẫu nhỏ/bootstrap theo cụm "
+            "hay mô hình hỗn hợp không [CẦN THỐNG KÊ VIÊN].")
+
+
+def ordinal_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
+                  cluster_col: str | None = None) -> dict:
+    """Hồi quy logistic thứ tự (proportional odds, statsmodels OrderedModel) → OR hiệu chỉnh + KTC 95%.
+
+    Có cluster_col ⇒ sai số chuẩn sandwich theo cụm (cov_type='cluster'). Kèm bảng KIỂM GIẢ ĐỊNH
+    tỷ lệ odds: OR của từng biến trong các mô hình logistic nhị phân tách tại TỪNG ngưỡng (Y > k) —
+    OR lệch nhau nhiều giữa các ngưỡng gợi ý vi phạm giả định. Công cụ KHÔNG đặt ngưỡng p/độ lệch
+    để kết luận — thống kê viên đọc bảng và quyết định (vd mô hình partial proportional odds)."""
+    if not HAS_STATSMODELS:
+        return {"error": "statsmodels chưa cài. Chạy: pip install statsmodels",
+                "note": "[CẦN BỔ SUNG — hồi quy thứ tự cần statsmodels]"}
+    from statsmodels.miscmodels.ordinal_model import OrderedModel
+
+    available_covs = [c for c in covariates if c in df.columns]
+    predictors = [group_col] + available_covs
+    cols = [outcome_col] + predictors + ([cluster_col] if cluster_col else [])
+    data = df[cols].dropna()
+    y_num = pd.to_numeric(data[outcome_col], errors="coerce")
+    if y_num.isna().any():
+        return {"error": f"Kết cục thứ tự «{outcome_col}» phải là mã số có thứ tự (vd 1–5).",
+                "note": "[CẦN BIOSTATISTICIAN — kiểm tra mã hoá kết cục]"}
+    muc = sorted(y_num.unique())
+    if len(muc) < 3:
+        return {"error": f"Kết cục chỉ có {len(muc)} mức — hồi quy thứ tự cần ≥ 3 mức; "
+                         "2 mức thì dùng --outcome-type binary.",
+                "note": "[CẦN BIOSTATISTICIAN]"}
+    y = pd.Series(pd.Categorical(y_num, categories=muc, ordered=True), index=data.index)
+    X = _ma_tran_du_bao(data, predictors)
+    so_theo_muc = {str(k): int((y_num == k).sum()) for k in muc}
+    out: dict = {"model": "ordinal_logit_po", "n": len(data), "so_muc": len(muc),
+                 "so_quan_sat_theo_muc": so_theo_muc, "canh_bao": []}
+    fit_kw: dict = {"method": "bfgs", "disp": False, "maxiter": 2000}
+    if cluster_col:
+        n_cum = int(data[cluster_col].nunique())
+        out["cluster"] = {"cot": cluster_col, "so_cum": n_cum}
+        out["canh_bao"].append(_ghi_chu_so_cum(n_cum))
+        if n_cum < 2:
+            return {"error": f"Cột cụm «{cluster_col}» chỉ có {n_cum} giá trị — không hiệu chỉnh cụm được.",
+                    "note": "[CẦN BIOSTATISTICIAN]"}
+        fit_kw.update(cov_type="cluster", cov_kwds={"groups": pd.factorize(data[cluster_col])[0]})
+    try:
+        model, caught = _chay_fit_bat_canh_bao(
+            lambda: OrderedModel(y, X, distr="logit").fit(**fit_kw))
+    except Exception as e:  # noqa: BLE001 — lỗi fit bất kỳ phải thành thông điệp, không giết pipeline
+        return {"error": f"Hồi quy thứ tự không chạy được: {e}",
+                "note": "[CẦN BIOSTATISTICIAN — mô hình không hội tụ]"}
+    coefs, bse, conf = model.params, model.bse, model.conf_int()
+    ly_do = _ly_do_tu_canh_bao(caught)
+    if model.mle_retvals.get("converged", True) is False:
+        ly_do.append("statsmodels mle_retvals['converged'] = False")
+    bien = [c for c in X.columns]
+    for v in bien:
+        ly_do.extend(_ly_do_tu_uoc_luong(str(v), coefs[v], bse[v], conf.loc[v, 0], conf.loc[v, 1]))
+    results = []
+    for v in bien:
+        with np.errstate(over="ignore", under="ignore"):
+            entry = {"variable": v, "OR_adj": round(float(np.exp(coefs[v])), 3),
+                     "CI_95": [round(float(np.exp(conf.loc[v, 0])), 3),
+                               round(float(np.exp(conf.loc[v, 1])), 3)],
+                     "p": round(float(model.pvalues[v]), 4)}
+        results.append(_gan_co_khong_hoi_tu(entry, ly_do, ("OR_adj", "CI_95", "p")))
+    out.update({"results": results, "aic": round(float(model.aic), 2),
+                "cov_type": "cluster" if cluster_col else "nonrobust",
+                "convergence": model.mle_retvals.get("converged", True)})
+    if ly_do:
+        out["khong_hoi_tu"] = True
+        out["ly_do"] = ly_do
+    # Kiểm giả định tỷ lệ odds: OR tại từng ngưỡng Y > k (k = mọi mức trừ mức cao nhất).
+    kiem_po = []
+    Xc = sm.add_constant(X, has_constant="add")
+    for k in muc[:-1]:
+        yk = (y_num > k).astype(float)
+        if yk.nunique() < 2:
+            continue
+        try:
+            fk, _ = _chay_fit_bat_canh_bao(lambda: sm.Logit(yk, Xc).fit(disp=False, maxiter=200))
+            with np.errstate(over="ignore", under="ignore"):
+                kiem_po.append({"nguong": f"Y > {k:g}",
+                                "OR": {v: round(float(np.exp(fk.params[v])), 3) for v in bien}})
+        except Exception as e:  # noqa: BLE001
+            kiem_po.append({"nguong": f"Y > {k:g}", "loi": str(e)[:160]})
+    out["kiem_gia_dinh_ty_le_odds"] = kiem_po
+    return out
+
+
+def icc_cum(df: pd.DataFrame, outcome_col: str, cluster_col: str) -> dict:
+    """ICC(1) một chiều (ANOVA, cỡ cụm không đều hiệu chỉnh bằng n0) + hiệu ứng thiết kế.
+
+    ICC = (MSB − MSW) / (MSB + (n0 − 1)·MSW),  n0 = (N − Σnᵢ²/N) / (k − 1)
+    DE = 1 + (m̄ − 1)·ICC (m̄ = cỡ cụm trung bình; ICC âm tính thành 0 khi dùng cho DE)
+    Dạng ICC(1) theo Shrout & Fleiss 1979 (PMID 18839484). Tính trên ĐIỂM SỐ của kết cục (thang
+    1–5 coi như số) — là xấp xỉ tuyến tính, không phải ICC trên thang tiềm ẩn của mô hình thứ tự."""
+    data = df[[outcome_col, cluster_col]].dropna()
+    y = pd.to_numeric(data[outcome_col], errors="coerce")
+    if y.isna().any():
+        return {"error": f"«{outcome_col}» phải là số để tính ICC"}
+    nhom = data.assign(_y=y).groupby(cluster_col)["_y"]
+    n_i = nhom.size()
+    k, N = int(len(n_i)), int(n_i.sum())
+    if k < 2 or N - k < 1:
+        return {"error": f"Cần ≥ 2 cụm và nhiều quan sát hơn số cụm (đang có {k} cụm, {N} quan sát)"}
+    tb = y.mean()
+    ssb = float((n_i * (nhom.mean() - tb) ** 2).sum())
+    ssw = float(((y - nhom.transform("mean")) ** 2).sum())
+    msb, msw = ssb / (k - 1), ssw / (N - k)
+    n0 = (N - float((n_i ** 2).sum()) / N) / (k - 1)
+    mau = msb + (n0 - 1) * msw
+    icc = float((msb - msw) / mau) if mau > 0 else float("nan")
+    m_tb = N / k
+    de = 1 + (m_tb - 1) * max(icc, 0.0) if np.isfinite(icc) else float("nan")
+    return {"cot_cum": cluster_col, "so_cum": k, "n": N, "co_cum_trung_binh": round(m_tb, 2),
+            "co_cum_min": int(n_i.min()), "co_cum_max": int(n_i.max()), "n0": round(n0, 3),
+            "icc": round(icc, 4) if np.isfinite(icc) else None,
+            "hieu_ung_thiet_ke": round(de, 3) if np.isfinite(de) else None,
+            "co_mau_hieu_dung": round(N / de, 1) if np.isfinite(de) and de > 0 else None,
+            "ghi_chu": "ICC(1) ANOVA một chiều trên điểm số (xấp xỉ tuyến tính); ICC âm → dùng 0 cho DE."}
+
+
+def linear_hc3(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
+               cluster_col: str | None = None) -> dict:
+    """Phân tích nhạy cảm: OLS coi kết cục là liên tục, sai số HC3 (hoặc sandwich theo cụm nếu có cụm)."""
+    if not HAS_STATSMODELS:
+        return {"error": "statsmodels chưa cài. Chạy: pip install statsmodels"}
+    available_covs = [c for c in covariates if c in df.columns]
+    predictors = [group_col] + available_covs
+    cols = [outcome_col] + predictors + ([cluster_col] if cluster_col else [])
+    data = df[cols].dropna()
+    X = sm.add_constant(_ma_tran_du_bao(data, predictors), has_constant="add")
+    y = pd.to_numeric(data[outcome_col], errors="coerce").astype(float)
+    if cluster_col:
+        cov_type, kw = "cluster", {"cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]}}
+    else:
+        cov_type, kw = "HC3", {}
+    try:
+        model = sm.OLS(y, X).fit(cov_type=cov_type, **kw)
+    except Exception as e:  # noqa: BLE001
+        return {"error": f"OLS nhạy cảm không chạy được: {e}"}
+    conf = model.conf_int()
+    results = [{"variable": v, "beta": round(float(model.params[v]), 4),
+                "CI_95": [round(float(conf.loc[v, 0]), 4), round(float(conf.loc[v, 1]), 4)],
+                "p": round(float(model.pvalues[v]), 4)}
+               for v in model.params.index if v != "const"]
+    out = {"model": "linear_sensitivity", "cov_type": cov_type, "n": len(data),
+           "r_squared": round(float(model.rsquared), 4), "results": results}
+    if cluster_col:
+        out["cluster"] = {"cot": cluster_col, "so_cum": int(data[cluster_col].nunique())}
+    return out
+
+
+def format_ordinal_text(od: dict) -> str:
+    if "error" in od:
+        return f"HỒI QUY THỨ TỰ: {od['error']}\n{od.get('note', '')}"
+    se = "hiệu chỉnh cụm theo «" + od["cluster"]["cot"] + "»" if od.get("cluster") else "thường (không hiệu chỉnh cụm)"
+    lines = ["BẢNG 4 — HỒI QUY LOGISTIC THỨ TỰ (PROPORTIONAL ODDS)", "=" * 70,
+             f"  n = {od['n']} | số mức kết cục = {od['so_muc']} | AIC = {od.get('aic', '?')} | sai số chuẩn: {se}",
+             "  Số quan sát theo mức: " + ", ".join(f"{k}: {v}" for k, v in od["so_quan_sat_theo_muc"].items())]
+    if od.get("khong_hoi_tu"):
+        lines += [f"  {DONG_KHONG_HOI_TU}", f"  {GHI_CHU_KHONG_HOI_TU}"]
+        lines += [f"    - {ld}" for ld in od.get("ly_do", [])[:6]]
+    lines += [f"\n  {'Biến số':<28} {'OR hiệu chỉnh':>14}  {'95%CI':>20}  {'p':>8}", "  " + "-" * 60]
+    for r in od.get("results", []):
+        if r.get("khong_hoi_tu") or "CI_95" not in r:
+            lines.append(f"  {r['variable'][:28]:<28} {DONG_KHONG_HOI_TU}")
+            continue
+        ci = f"{r['CI_95'][0]}–{r['CI_95'][1]}"
+        lines.append(f"  {r['variable'][:28]:<28} {r['OR_adj']:>14}  {ci:>20}  {r['p']:>8}")
+    lines.append("\n  OR > 1: tăng odds ở mức kết cục CAO HƠN (mọi ngưỡng, theo giả định tỷ lệ odds).")
+    po = od.get("kiem_gia_dinh_ty_le_odds") or []
+    if po:
+        lines += ["\n  KIỂM GIẢ ĐỊNH TỶ LỆ ODDS — OR của logistic nhị phân tách tại từng ngưỡng:"]
+        for row in po:
+            if "loi" in row:
+                lines.append(f"    {row['nguong']}: lỗi — {row['loi']}")
+            else:
+                lines.append(f"    {row['nguong']}: " + ", ".join(f"{k}={v}" for k, v in row["OR"].items()))
+        lines.append("    OR lệch nhiều giữa các ngưỡng gợi ý vi phạm giả định — công cụ KHÔNG tự kết luận "
+                     "[CẦN THỐNG KÊ VIÊN].")
+    for cb in od.get("canh_bao", []):
+        lines.append(f"  ⚠ {cb}")
+    return "\n".join(lines)
+
+
+def format_icc_text(ic: dict) -> str:
+    if "error" in ic:
+        return f"ICC THEO CỤM: {ic['error']}"
+    return "\n".join([
+        f"ICC THEO CỤM «{ic['cot_cum']}» — hiệu ứng thiết kế", "=" * 70,
+        f"  Số cụm = {ic['so_cum']} | n = {ic['n']} | cỡ cụm TB = {ic['co_cum_trung_binh']} "
+        f"(min {ic['co_cum_min']}, max {ic['co_cum_max']})",
+        f"  ICC(1) = {ic['icc']} | DE = {ic['hieu_ung_thiet_ke']} | cỡ mẫu hiệu dụng ≈ {ic['co_mau_hieu_dung']}",
+        f"  {ic['ghi_chu']} Nguồn dạng ICC(1): Shrout & Fleiss 1979, PMID 18839484.",
+    ])
+
+
+def format_hc3_text(lh: dict) -> str:
+    if "error" in lh:
+        return f"PHÂN TÍCH NHẠY CẢM: {lh['error']}"
+    se = f"sandwich theo cụm «{lh['cluster']['cot']}» ({lh['cluster']['so_cum']} cụm)" if lh.get("cluster") else "HC3"
+    lines = ["BẢNG 6 — PHÂN TÍCH NHẠY CẢM: OLS (kết cục coi là liên tục)", "=" * 70,
+             f"  n = {lh['n']} | R² = {lh['r_squared']} | sai số chuẩn: {se}",
+             f"\n  {'Biến số':<28} {'β':>12}  {'95%CI':>24}  {'p':>8}", "  " + "-" * 60]
+    for r in lh["results"]:
+        ci = f"{r['CI_95'][0]}–{r['CI_95'][1]}"
+        lines.append(f"  {r['variable'][:28]:<28} {r['beta']:>12}  {ci:>24}  {r['p']:>8}")
+    return "\n".join(lines)
+
+
+def generate_r_script_ordinal(study: str, gate: str, outcome_col: str, group_col: str,
+                              covariates: list, cluster_col: str | None) -> str:
+    """Script R đối chiếu: ordinal::clm (+ clmm nếu có cụm), lm + sandwich HC3/vcovCL."""
+    formula = " + ".join([group_col] + covariates)
+    run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+    cum = (
+        f"# Mô hình hỗn hợp (hệ số chặn ngẫu nhiên theo cụm) — KHÁC sai số sandwich của Python:\n"
+        f"m_clmm <- clmm(y_ord ~ {formula} + (1 | {cluster_col}), data = data)\n"
+        "summary(m_clmm)\n"
+        f"vc <- sandwich::vcovCL(m_lm, cluster = ~{cluster_col}, type = \"HC1\")\n"
+        if cluster_col else
+        "vc <- sandwich::vcovHC(m_lm, type = \"HC3\")\n"
+    )
+    return (
+        f"# ══════════════════════════════════════════════\n"
+        f"# Script R tái lặp (kết cục THỨ TỰ) — {study} | {gate}\n"
+        f"# Tạo tự động bởi run_stats_analysis.py · Ngày: {run_date}\n"
+        f"# ══════════════════════════════════════════════\n"
+        "library(ordinal); library(sandwich); library(lmtest)\n"
+        'data <- read.csv("data.csv")  # thay đường dẫn tới bộ dữ liệu ĐÃ KHOÁ\n'
+        f"data$y_ord <- factor(data${outcome_col}, ordered = TRUE)\n\n"
+        "# 1. Logistic thứ tự (proportional odds) — OR + 95%CI\n"
+        f"m_clm <- clm(y_ord ~ {formula}, data = data, link = \"logit\")\n"
+        "exp(cbind(OR = coef(m_clm), confint(m_clm)))[names(coef(m_clm)) %in% names(m_clm$beta), ]\n"
+        "nominal_test(m_clm)  # kiểm giả định tỷ lệ odds (thống kê viên đọc)\n\n"
+        "# 2. Phân tích nhạy cảm OLS\n"
+        f"m_lm <- lm({outcome_col} ~ {formula}, data = data)\n"
+        f"{cum}coeftest(m_lm, vcov = vc)\n\n"
+        'sink("session_info.txt"); sessionInfo(); sink()\n'
+    )
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # 7. ĐỊNH DẠNG ĐẦU RA CHO AGENT
 # ════════════════════════════════════════════════════════════════════════════
 
@@ -1417,8 +1678,12 @@ def main():
                         help="Số bộ dữ liệu impute (m) cho multiple imputation khi biến phân "
                              "tích có dữ liệu thiếu — mặc định 20 (vá 2026-07-15)")
     parser.add_argument("--outcome-type", default="auto",
-                        choices=["auto", "binary", "continuous"],
-                        help="Loại kết cục (mặc định: tự phát hiện)")
+                        choices=["auto", "binary", "continuous", "ordinal"],
+                        help="Loại kết cục (mặc định: tự phát hiện). 'ordinal' = logistic thứ tự "
+                             "(proportional odds) — chỉ bật khi SAP khai tường minh, không tự đoán")
+    parser.add_argument("--cot-cum", default="",
+                        help="Cột cụm (vd ma_ban_kham): sai số chuẩn hiệu chỉnh cụm cho nhánh ordinal "
+                             "+ OLS nhạy cảm, và báo ICC/hiệu ứng thiết kế (thêm 2026-09-28)")
     parser.add_argument("--study", default="STUDY", help="Tên đề tài (dùng đặt tên file đầu ra)")
     parser.add_argument("--gate", default="G6", help="Cổng phân tích (mặc định: G6)")
     parser.add_argument("--vars", default="", help="Biến cho Bảng 1 (mặc định: tất cả)")
@@ -1672,8 +1937,12 @@ def main():
         print(f"✓ Phân tích dữ liệu thiếu: {miss['pct_complete']}% hoàn chỉnh")
     (prefix.parent / f"{args.gate}_missing_data_summary.txt").write_text(miss_txt, encoding="utf-8", newline="\n")
 
-    # 4. Bảng 1
-    if args.group and args.group in df.columns:
+    # 4. Bảng 1 — phơi nhiễm liên tục (nhiều giá trị, vd thời gian chờ) không làm biến phân nhóm được
+    phoi_nhiem_lien_tuc = bool(args.group and args.group in df.columns
+                               and args.outcome_type == "ordinal" and df[args.group].nunique() > 10)
+    if phoi_nhiem_lien_tuc:
+        print(f"ℹ️  Bảng 1: bỏ phân nhóm theo «{args.group}» ({df[args.group].nunique()} giá trị — biến liên tục).")
+    if args.group and args.group in df.columns and not phoi_nhiem_lien_tuc:
         try:
             t1 = table1_descriptive(df, args.group, vars_for_t1)
             t1_txt = format_table1_text(t1)
@@ -1685,8 +1954,49 @@ def main():
             print(f"✗ Bảng 1 THẤT BẠI: {exc}")
         (prefix.parent / f"{args.gate}_table1_descriptive.txt").write_text(t1_txt, encoding="utf-8", newline="\n")
 
+    cot_cum = args.cot_cum.strip() or None
+    if cot_cum and cot_cum not in df.columns:
+        print(f"✗ DỪNG: không có cột cụm «{cot_cum}» trong dữ liệu.")
+        sys.exit(1)
+    if cot_cum and args.outcome and args.outcome in df.columns:
+        ic = icc_cum(df, args.outcome, cot_cum)
+        summary["icc_cluster"] = ic
+        (prefix.parent / f"{args.gate}_icc_cluster.txt").write_text(format_icc_text(ic), encoding="utf-8",
+                                                                     newline="\n")
+        print(f"✓ ICC theo cụm «{cot_cum}»: {ic.get('icc', ic.get('error'))}")
+        if args.outcome_type != "ordinal":
+            print("⚠ --cot-cum: nhánh nhị phân/liên tục hiện CHƯA hiệu chỉnh sai số chuẩn theo cụm "
+                  "(chỉ báo ICC) [CẦN THỐNG KÊ VIÊN].")
+
+    # 5'. Kết cục THỨ TỰ (proportional odds) — nhánh riêng, thêm 2026-09-28 (N1)
+    if args.outcome_type == "ordinal" and args.outcome and args.group:
+        missing_cols = [c for c in (args.outcome, args.group) if c not in df.columns]
+        if missing_cols:
+            print(f"✗ DỪNG: thiếu cột {missing_cols} cho hồi quy thứ tự.")
+            sys.exit(1)
+        od = ordinal_model(df, args.outcome, args.group, covariates, cot_cum)
+        (prefix.parent / f"{args.gate}_table4_ordinal.txt").write_text(format_ordinal_text(od), encoding="utf-8",
+                                                                        newline="\n")
+        summary["ordinal"] = od
+        dau = "✗" if "error" in od else ("⚠" if od.get("khong_hoi_tu") else "✓")
+        print(f"{dau} Hồi quy thứ tự: {od.get('error') or str(od.get('n')) + ' quan sát'}")
+        lh = linear_hc3(df, args.outcome, args.group, covariates, cot_cum)
+        (prefix.parent / f"{args.gate}_table6_sensitivity_linear.txt").write_text(
+            format_hc3_text(lh), encoding="utf-8", newline="\n")
+        summary["sensitivity_linear"] = lh
+        print(f"✓ Nhạy cảm OLS ({lh.get('cov_type', '?')})" if "error" not in lh else f"✗ {lh['error']}")
+        if df[[args.outcome, args.group] + [c for c in covariates if c in df.columns]].isna().any().any():
+            summary["multiple_imputation"] = {"skipped": True,
+                                              "reason": "MI chưa hỗ trợ kết cục thứ tự — complete-case "
+                                                        "[CẦN THỐNG KÊ VIÊN nếu tỷ lệ thiếu đáng kể]"}
+            print("ℹ️  Multiple imputation: chưa hỗ trợ kết cục thứ tự — đang dùng complete-case.")
+        (prefix.parent / f"{args.gate}_analysis_syntax.R").write_text(
+            generate_r_script_ordinal(args.study, args.gate, args.outcome, args.group, covariates, cot_cum),
+            encoding="utf-8", newline="\n")
+        print("✓ Script R (thứ tự) tái lặp đã tạo")
+
     # 5. Kết cục chính
-    if args.outcome and args.group and args.outcome in df.columns:
+    if args.outcome_type != "ordinal" and args.outcome and args.group and args.outcome in df.columns:
         try:
             res = compare_primary_outcome(df, args.outcome, args.group, args.outcome_type)
         except (ZeroDivisionError, ValueError) as exc:
