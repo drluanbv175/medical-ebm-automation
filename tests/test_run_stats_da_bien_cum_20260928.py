@@ -57,7 +57,7 @@ def test_logistic_cum_khop_statsmodels():
     cum = RSA.multivariate_model(df, "hl", "cho", ["tai_kham"], "binary", cluster_col="ban")
     X = sm.add_constant(df[["cho", "tai_kham"]].astype(float))
     ref = sm.Logit(df["hl"].astype(float), X).fit(disp=False, cov_type="cluster",
-                                                  cov_kwds={"groups": pd.factorize(df["ban"])[0]})
+                                                  cov_kwds={"groups": pd.factorize(df["ban"])[0]}, use_t=True)
     ci = np.exp(ref.conf_int().loc["tai_kham"]).round(3).tolist()
     assert _ci(cum, "tai_kham") == ci
 
