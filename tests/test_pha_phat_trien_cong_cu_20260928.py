@@ -14,7 +14,7 @@ import pha_phat_trien_cong_cu as P  # noqa: E402
 
 
 def _ghi(p: Path, dong: list[str]) -> Path:
-    p.write_text("\n".join(dong) + "\n", encoding="utf-8")
+    p.write_text("\n".join(dong) + "\n", encoding="utf-8", newline="\n")
     return p
 
 
