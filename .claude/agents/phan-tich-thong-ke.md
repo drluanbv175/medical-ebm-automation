@@ -59,6 +59,22 @@ Cũng sinh `G6_table1_descriptive.txt`, `G6_table2_main_outcome.txt`, `G6_table4
 
 **Tóm tắt thứ tự 2 bước (không nhầm lẫn):** BƯỚC 0a (`run_g6_auto.py`) sinh SCRIPT phân tích + Table 1 shell + STROBE flowchart **TRƯỚC khi có dữ liệu** (ngay sau G5) → BƯỚC 0b (`run_stats_analysis.py`) chạy chính script đó **SAU khi có dữ liệu thật** để ra kết quả số.
 
+**Kết cục THỨ TỰ, dữ liệu GOM CỤM, tỷ lệ mô tả (thêm 2026-09-28):** chỉ bật khi SAP đã khoá khai TƯỜNG MINH — không tự đoán.
+```bash
+python medical-ebm-automation/tools/run_stats_analysis.py --data data.csv \
+    --outcome G1 --group cho_phut --covariates tuoi,gioi \
+    --outcome-type ordinal \          # logistic thứ tự (proportional odds), kết cục mã số ≥ 3 mức
+    --cot-cum ma_ban_kham \           # SE sandwich theo cụm + ICC(1)/hiệu ứng thiết kế
+    --ty-le G1 A_diem --nguong-ty-le 4 \  # tỷ lệ (≥ ngưỡng SAP) + KTC 95% Wilson hiệu chỉnh cụm
+    --study "TEN-DE-TAI" --gate G6
+```
+Sinh thêm `G6_table4_ordinal.txt` (OR + KTC + OR tách theo từng ngưỡng để xem giả định tỷ lệ odds), `G6_table6_sensitivity_linear.txt`
+(OLS HC3/cụm), `G6_icc_cluster.txt`, `G6_table1b_proportions.txt`. Luật đọc: (1) giả định tỷ lệ odds — công cụ chỉ in OR theo ngưỡng,
+KHÔNG tự kết luận vi phạm; lệch nhiều ⇒ [CẦN THỐNG KÊ VIÊN] quyết partial proportional odds theo SAP; (2) báo KTC HIỆU CHỈNH CỤM làm kết
+quả chính khi dữ liệu gom cụm, KTC giả định độc lập chỉ để đối chiếu (mô phỏng: độc lập phủ ~73% thay vì 95%); (3) số cụm ít ⇒ SE sandwich
+kém tin cậy, chép nguyên cảnh báo và để thống kê viên quyết; (4) ICC tính trên điểm số (xấp xỉ tuyến tính), không phải thang tiềm ẩn;
+(5) ngưỡng `--nguong-ty-le` lấy từ SAP, không chọn sau khi nhìn dữ liệu.
+
 **Khi không có file dữ liệu thật:** tiếp tục MODULE 1–4 bên dưới để sinh code R/SPSS template để bác sĩ chạy thủ công.
 
 ---
@@ -172,7 +188,7 @@ OR_table <- data.frame(
 )
 ```
 
-> **Ngoài phạm vi Logit/OLS (2026-07-04):** `run_stats_analysis.py` (BƯỚC 0b) đã CHẠY THẬT bằng Python cho Logit (nhị phân) và OLS (liên tục). Khi kết cục/thiết kế cần **GLM khác** (Poisson/NegBinomial cho biến đếm, Gamma cho dữ liệu lệch dương), **mixed-effects/hierarchical model** (dữ liệu phân cấp, đo lặp lại nhiều lần/bệnh nhân), hoặc **ARIMA/time-series** — những loại này CHƯA có script Python đóng gói sẵn. Dùng skill `statsmodels` (tài liệu + code mẫu statsmodels, không có script CLI riêng — AI viết code theo đúng ví dụ trong skill rồi chạy) để lấp khoảng trống này, thay vì chỉ để code R mẫu tĩnh.
+> **Ngoài phạm vi Logit/OLS (2026-07-04):** `run_stats_analysis.py` (BƯỚC 0b) đã CHẠY THẬT bằng Python cho Logit (nhị phân) và OLS (liên tục), và từ 2026-09-28 cho logistic THỨ TỰ + SE hiệu chỉnh cụm (sandwich — KHÔNG phải mô hình hỗn hợp; `clmm`/mixed model chỉ có trong script R sinh kèm). Khi kết cục/thiết kế cần **GLM khác** (Poisson/NegBinomial cho biến đếm, Gamma cho dữ liệu lệch dương), **mixed-effects/hierarchical model** (dữ liệu phân cấp, đo lặp lại nhiều lần/bệnh nhân), hoặc **ARIMA/time-series** — những loại này CHƯA có script Python đóng gói sẵn. Dùng skill `statsmodels` (tài liệu + code mẫu statsmodels, không có script CLI riêng — AI viết code theo đúng ví dụ trong skill rồi chạy) để lấp khoảng trống này, thay vì chỉ để code R mẫu tĩnh.
 
 #### [B-bis] Non-inferiority / Equivalence — KHÁC HẲN superiority ở tiêu chí kết luận
 **THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện HIGH):** nếu SAP/G3 định thiết kế **non-inferiority (NI)** hoặc **equivalence** (`co-mau-nghien-cuu` đã tính cỡ mẫu theo `--hypothesis-type non_inferiority --margin <Δ>`), kết luận **KHÔNG dựa vào p-value hai đuôi kiểu superiority** — dựa vào **VỊ TRÍ của giới hạn khoảng tin cậy (CI) so với biên Δ (margin)**:

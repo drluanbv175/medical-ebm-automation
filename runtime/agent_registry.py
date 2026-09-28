@@ -62,7 +62,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # (tools/kiem_tin_cay_thang_do.py) + lệnh CVI/phỏng vấn nhận thức (tools/pha_phat_trien_cong_cu.py);
 # số lượng vẫn giữ nguyên 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "d29564ea4e5cf920dbb3f932c1123eefb039bf5cbad668cc04b90218bb1f2c79"
+    "e5b2522242ebd330865de0c8c23e91332db6c81387685ceb1ae860d12531422d"
 )
 
 MINIMUM_AGENT_COUNT = 50

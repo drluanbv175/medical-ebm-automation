@@ -668,9 +668,24 @@ def _chay_fit_bat_canh_bao(fn):
     return kq, list(caught)
 
 
+def _gan_thong_tin_cum(out: dict, data: pd.DataFrame, cluster_col: str | None) -> dict:
+    """Ghi rõ SE hiệu chỉnh cụm vào kết quả đa biến (N6). Không có cụm thì KHÔNG thêm khoá nào — đầu ra cũ giữ
+    nguyên từng byte (golden GOLDEN-G6-001 là hợp đồng); vắng ``cov_type`` = SE thường."""
+    if cluster_col:
+        out["cov_type"] = "cluster"
+        k = int(data[cluster_col].nunique())
+        out["cluster"] = {"cot": cluster_col, "so_cum": k}
+        out.setdefault("canh_bao", []).append(_ghi_chu_so_cum(k))
+    return out
+
+
 def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
-                        covariates: list, outcome_type: str = "auto") -> dict:
-    """Logistic (nhị phân) hoặc Linear regression (liên tục)."""
+                        covariates: list, outcome_type: str = "auto",
+                        cluster_col: str | None = None) -> dict:
+    """Logistic (nhị phân) hoặc Linear regression (liên tục).
+
+    Có ``cluster_col`` (2026-09-28, N6) ⇒ sai số chuẩn sandwich theo cụm (``cov_type='cluster'``) cho CẢ hai
+    nhánh — ước lượng điểm không đổi, chỉ KTC/p phản ánh gom cụm. Dòng thiếu mã cụm bị loại cùng complete-case."""
     if not HAS_STATSMODELS:
         return {
             "error": "statsmodels chưa cài. Chạy: pip install statsmodels",
@@ -681,7 +696,9 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
 
     available_covs = [c for c in covariates if c in df.columns]
     predictors = [group_col] + available_covs
-    data = df[[outcome_col] + predictors].dropna()
+    data = df[[outcome_col] + predictors + ([cluster_col] if cluster_col else [])].dropna()
+    fit_cum = ({"cov_type": "cluster", "cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]}}
+               if cluster_col else {})
 
     # Audit 2026-07-11: EPV (Events-Per-Variable, Peduzzi 1996) cho hồi quy LOGISTIC
     # phải tính theo SỐ BIẾN CỐ (nhóm hiếm hơn của outcome nhị phân), không phải tổng
@@ -704,7 +721,7 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
     try:
         if outcome_type == "binary":
             model, caught = _chay_fit_bat_canh_bao(
-                lambda: sm.Logit(y, X).fit(disp=False, maxiter=200))
+                lambda: sm.Logit(y, X).fit(disp=False, maxiter=200, **fit_cum))
             coefs = model.params
             conf = model.conf_int()
             bse = model.bse
@@ -736,9 +753,9 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
             if ly_do_mo_hinh:
                 out["khong_hoi_tu"] = True
                 out["ly_do"] = ly_do_mo_hinh
-            return out
+            return _gan_thong_tin_cum(out, data, cluster_col)
         else:
-            model = sm.OLS(y, X).fit()
+            model = sm.OLS(y, X).fit(**fit_cum)
             coefs = model.params
             conf = model.conf_int()
             results = []
@@ -749,8 +766,8 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
                 ci = [round(float(conf.loc[var, 0]), 4), round(float(conf.loc[var, 1]), 4)]
                 p = round(float(model.pvalues[var]), 4)
                 results.append({"variable": var, "beta": beta, "CI_95": ci, "p": p})
-            return {"model": "linear", "n": len(data), "r_squared": round(model.rsquared, 4),
-                    "results": results}
+            return _gan_thong_tin_cum({"model": "linear", "n": len(data), "r_squared": round(model.rsquared, 4),
+                                       "results": results}, data, cluster_col)
     except Exception as e:
         return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — mô hình không hội tụ]"}
 
@@ -1464,7 +1481,9 @@ def format_multivariate_text(mv: dict) -> str:
     lines = [f"BẢNG 4 — MÔ HÌNH ĐA BIẾN ({mv['model'].upper()})", "=" * 70]
     metric_label = "AIC" if mv["model"] == "logistic" else "R²"
     metric_value = mv.get("aic", mv.get("r_squared", "?"))
-    lines.append(f"  n = {mv['n']} | {metric_label} = {metric_value}")
+    se = (f"sandwich theo cụm «{mv['cluster']['cot']}» ({mv['cluster']['so_cum']} cụm)" if mv.get("cluster")
+          else "thường (không hiệu chỉnh cụm)")
+    lines.append(f"  n = {mv['n']} | {metric_label} = {metric_value} | sai số chuẩn: {se}")
     # Vá 2026-09-26 (#10): đọc cờ hội tụ — trước đây trường convergence bị bỏ qua.
     if mv.get("khong_hoi_tu") or mv.get("convergence") is False:
         lines.append(f"  {DONG_KHONG_HOI_TU}")
@@ -1484,6 +1503,8 @@ def format_multivariate_text(mv: dict) -> str:
         star = " *" if p < 0.05 else ""
         lines.append(f"  {r['variable'][:28]:<28} {est:>18}  {ci_str:>20}  {p:>8}{star}")
     lines.append("\n* p < 0.05")
+    for cb in mv.get("canh_bao", []):
+        lines.append(f"  ⚠ {cb}")
     return "\n".join(lines)
 
 
@@ -1622,8 +1643,8 @@ def _generate_r_script_survival(study: str, gate: str, time_col: str, event_col:
 
 
 def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
-                       covariates: list, outcome_type: str) -> str:
-    """Script R tái lặp kết quả (để audit/tái lặp độc lập)."""
+                       covariates: list, outcome_type: str, cluster_col: str | None = None) -> str:
+    """Script R tái lặp kết quả (để audit/tái lặp độc lập). Có cụm ⇒ thêm KTC sandwich theo cụm (vcovCL)."""
     formula = " + ".join([group_col] + covariates)
     family = "binomial" if outcome_type == "binary" else "gaussian"
     # Pre-compute conditionals to avoid backslash-in-f-string (Python < 3.12)
@@ -1637,6 +1658,18 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
         f"hoslem.test(data${outcome_col}, fitted(model_adj))"
         if family == "binomial" else ""
     )
+    if cluster_col:
+        dao = "exp(ci_cum)" if family == "binomial" else "ci_cum"
+        cluster_block = (
+            f"# 3b. KTC hiệu chỉnh cụm «{cluster_col}» (sandwich) — khớp Bảng 4 của Python\n"
+            "library(sandwich); library(lmtest)\n"
+            f"vc_cum <- vcovCL(model_adj, cluster = ~ {cluster_col})\n"
+            "print(coeftest(model_adj, vcov. = vc_cum))\n"
+            "ci_cum <- coefci(model_adj, vcov. = vc_cum)\n"
+            f"print({dao})\n\n"
+        )
+    else:
+        cluster_block = ""
     run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
     return (
         f"# ══════════════════════════════════════════════\n"
@@ -1656,6 +1689,7 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
         f"model_crude <- glm({outcome_col} ~ {group_col}, data = data, family = {family})\n"
         f"model_adj   <- glm({outcome_col} ~ {formula}, data = data, family = {family})\n\n"
         f"# OR/β + 95%CI (không chỉ p-value)\n{coef_code}\n\n"
+        f"{cluster_block}"
         "# 4. Kiểm tra giả định\n"
         f"library(car); vif(model_adj)\n{hosmer_block}\n\n"
         "# 5. Ghi session info (tái lặp)\n"
@@ -2076,8 +2110,8 @@ def main():
                                                                      newline="\n")
         print(f"✓ ICC theo cụm «{cot_cum}»: {ic.get('icc', ic.get('error'))}")
         if args.outcome_type != "ordinal":
-            print("⚠ --cot-cum: nhánh nhị phân/liên tục hiện CHƯA hiệu chỉnh sai số chuẩn theo cụm "
-                  "(chỉ báo ICC) [CẦN THỐNG KÊ VIÊN].")
+            print("⚠ --cot-cum: Bảng 4 (đa biến) dùng SE hiệu chỉnh cụm; Bảng 2 (so sánh 2 nhóm) và MI "
+                  "CHƯA hiệu chỉnh cụm — không dùng p của chúng làm kết quả chính [CẦN THỐNG KÊ VIÊN].")
 
     if args.ty_le:
         ds_ty_le = [ty_le_wilson_cum(df, c, args.nguong_ty_le, cot_cum) for c in args.ty_le]
@@ -2136,7 +2170,7 @@ def main():
             print(f"  ℹ️  Diễn giải {hypothesis_type}: xem {args.gate}_table2_main_outcome.txt")
 
         # 6. Đa biến
-        mv = multivariate_model(df, args.outcome, args.group, covariates, args.outcome_type)
+        mv = multivariate_model(df, args.outcome, args.group, covariates, args.outcome_type, cot_cum)
         mv_txt = format_multivariate_text(mv)
         (prefix.parent / f"{args.gate}_table4_multivariate.txt").write_text(mv_txt, encoding="utf-8", newline="\n")
         summary["multivariate"] = mv
@@ -2166,7 +2200,7 @@ def main():
 
         # 7. Script R tái lặp
         r_script = generate_r_script(args.study, args.gate, args.outcome,
-                                      args.group, covariates, args.outcome_type)
+                                      args.group, covariates, args.outcome_type, cot_cum)
         (prefix.parent / f"{args.gate}_analysis_syntax.R").write_text(r_script, encoding="utf-8", newline="\n")
         print("✓ Script R tái lặp đã tạo")
 
