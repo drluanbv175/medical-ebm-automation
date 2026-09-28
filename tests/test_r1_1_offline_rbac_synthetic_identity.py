@@ -120,7 +120,7 @@ class TestT01_NoPII:
         with pytest.raises(SyntheticIdentityError, match="PII"):
             SyntheticActor(
                 synthetic_actor_id="SYN-PI-002",
-                display_label="bsluanbv175@gmail.com",
+                display_label="nguyenvana@gmail.com",  # địa chỉ giả dạng email cá nhân — không dùng email thật
                 role_assignments=[RoleAssignment(
                     role=ResearchRole.PI.value,
                     assigned_at_utc=datetime.now(timezone.utc).isoformat(),

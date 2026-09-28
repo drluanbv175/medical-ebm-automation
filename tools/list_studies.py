@@ -47,6 +47,11 @@ import gate_contract as GC  # noqa: E402
 BASE = Path(__file__).resolve().parent.parent
 EXPORTS_DIR = BASE / "exports"
 
+# Thư mục HỆ THỐNG trong exports/ — mã đang chạy đọc/ghi, KHÔNG phải đề tài (27/09/2026: trước đây bị báo «không rõ đề
+# tài» mỗi lần chạy ⇒ dễ bị dọn nhầm). chatgpt_project/: app/chatgpt_app/knowledge.py đọc README + v7_manifest.json;
+# phase_2b/: đầu ra mặc định của scripts/phase_2b_live_source_smoke_test.py.
+_THU_MUC_HE_THONG = frozenset({"chatgpt_project", "phase_2b"})
+
 _MILESTONE_FIELDS = [
     ("irb_approved", "IRB"),
     ("sap_lock_date", "SAP khóa"),
@@ -104,6 +109,7 @@ def scan_study(d: Path) -> dict:
         "furthest_gate": _furthest_gate(d),
         "n_files": n_files,
         "recognized": bool(topic) or has_g0,
+        "system": d.name in _THU_MUC_HE_THONG,
         "milestones": milestones,
         "last_modified": _last_modified(d),
     }
@@ -135,8 +141,9 @@ def _fmt_milestone(row: dict) -> str:
 def print_table(rows: list[dict]) -> None:
     GC.ensure_utf8_stdout()
     real = [r for r in rows if r["recognized"]]
-    unknown = [r for r in rows if not r["recognized"] and r["n_files"] > 0]
-    empty = [r for r in rows if not r["recognized"] and r["n_files"] == 0]
+    system = [r for r in rows if not r["recognized"] and r.get("system")]
+    unknown = [r for r in rows if not r["recognized"] and not r.get("system") and r["n_files"] > 0]
+    empty = [r for r in rows if not r["recognized"] and not r.get("system") and r["n_files"] == 0]
 
     print(f"\n{'='*100}")
     print(f"  DANH SÁCH ĐỀ TÀI — exports/  (tổng {len(rows)} thư mục)")
@@ -153,6 +160,11 @@ def print_table(rows: list[dict]) -> None:
             if ms != "—":
                 print(f"      Mốc đời thực  : {ms}")
             print()
+
+    if system:
+        names = ", ".join(r["study"] for r in system)
+        print(f"🔧 THƯ MỤC HỆ THỐNG (mã đang đọc/ghi — không phải đề tài, ĐỪNG dọn) — {len(system)}\n")
+        print(f"  {names}\n")
 
     if unknown:
         print(f"⚠️  THƯ MỤC CÓ FILE NHƯNG KHÔNG RÕ ĐỀ TÀI (không phải pipeline G0-G10) — {len(unknown)}\n")

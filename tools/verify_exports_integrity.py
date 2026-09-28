@@ -113,7 +113,9 @@ def _check_placeholder_integrity(path: Path, lines: list[str], rep: Report) -> N
 # Bắt buộc có dấu hai chấm: đó là dạng TRÍCH DẪN thật ("PMID: 33886027"). Nếu
 # nhận cả "PMID " thì mọi câu văn xuôi nhắc tới chữ PMID ("có PMID (kèm DOI...)",
 # tiêu đề cột "Nguồn (PMID · DOI)") đều bị báo oan.
-_PMID_BAD = re.compile(r"PMID:\s*(?!\d{1,9}\b)([^\s|.,;)\]]+)")
+# «62 PMID: kiểm rút bài 62/62» là NHÃN ĐẾM (con số đứng ngay trước), không phải trích dẫn — vá 27/09/2026 sau khi
+# câu đó trong HO-SO-KHOI-DONG-2026-08-15.md bị báo LỖI CHẶN giả (commit tệp đó sẽ bị chặn oan).
+_PMID_BAD = re.compile(r"(?<!\d\s)(?<!\d)PMID:\s*(?!\d{1,9}\b)([^\s|.,;)\]]+)")
 _DOI_BAD = re.compile(r"doi:\s*(?!10\.\d{4,9}/)([^\s|,;)\]]+)", re.IGNORECASE)
 
 

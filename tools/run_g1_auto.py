@@ -50,9 +50,8 @@ import g1_quality_gate as G1Q  # noqa: E402  (hợp đồng chất lượng riê
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import skill_standards as S  # noqa: E402  (bản đồ chuẩn báo cáo/protocol)
 
-_DEFAULT_EMAIL = "bsluanbv175@gmail.com"
-if not os.environ.get("NCBI_EMAIL"):
-    os.environ["NCBI_EMAIL"] = _DEFAULT_EMAIL
+# NCBI_EMAIL do app.config tự đọc (biến môi trường → kho secrets ngoài git → .env) — bỏ email cá nhân gài mặc định
+# (27/09/2026, repo công khai). Thiếu email ⇒ search_for_effect_sizes KHÔNG trích effect size (PubMed chỉ trả giả lập).
 if not os.environ.get("USE_MOCK_SOURCES"):
     os.environ["USE_MOCK_SOURCES"] = "false"
 
@@ -924,7 +923,13 @@ def extract_effect_sizes(articles: list) -> list[dict]:
 
 def search_for_effect_sizes(topic: str, study_name: str, max_results: int = 10) -> list[dict]:
     """Tìm kiếm PubMed để lấy ước lượng effect size từ SR/RCT abstracts."""
+    from app.config import settings
     from app.sources.pubmed import PubMedClient
+    if not settings.use_mock_sources and not settings.ncbi_email:
+        # PubMedClient.search() thiếu email thì trả bản ghi GIẢ LẬP — effect size trích từ đó sẽ lọt vào G3 như số thật.
+        print("     ⚠ Thiếu NCBI_EMAIL — PubMed không được tra thật; KHÔNG trích effect size "
+              "(khai NCBI_EMAIL trong kho secrets hoặc chạy lại với --email).")
+        return []
     client = PubMedClient()
     q = f"{topic} AND (systematic review[pt] OR meta-analysis[pt] OR randomized controlled trial[pt])"
     print(f"  🔍 Tìm effect size từ abstracts ({q[:70]}...)...")
@@ -1921,6 +1926,9 @@ def main():
 
     if args.email:
         os.environ["NCBI_EMAIL"] = args.email
+        # `settings` có thể đã dựng lúc import — chỉ gán biến môi trường thì --email vô tác dụng (27/09/2026)
+        from app.config import settings as _cau_hinh
+        _cau_hinh.ncbi_email = args.email
 
     run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))

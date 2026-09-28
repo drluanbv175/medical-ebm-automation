@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import http.client
 import json
+import os
 import re
 import sys
 import time
@@ -39,14 +40,35 @@ for _s in (sys.stdout, sys.stderr):
 HERE = Path(__file__).resolve().parent
 EXPORTS = HERE.parent / "exports"
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-MAILTO = "bsluanbv175@gmail.com"
+
+
+def _email_lien_he() -> str:
+    """Email liên hệ gửi NCBI: biến môi trường NCBI_EMAIL → kho secrets ngoài git; không có ⇒ "".
+
+    27/09/2026: bỏ email cá nhân viết cứng (repo công khai). Chỉ dùng thư viện chuẩn — công cụ này chạy được bằng
+    `python3` không venv. E-utilities vẫn trả lời khi thiếu `email=`, chỉ mất phần định danh người gọi.
+    """
+    if os.environ.get("NCBI_EMAIL"):
+        return os.environ["NCBI_EMAIL"].strip()
+    kho = Path.home() / ".ebm-secrets" / "medical-ebm-automation.env"
+    if kho.exists():
+        for dong in kho.read_text(encoding="utf-8", errors="replace").splitlines():
+            m = re.match(r"\s*NCBI_EMAIL\s*=\s*(\S+)", dong)
+            if m:
+                return m.group(1).strip("'\"")
+    return ""
+
+
+MAILTO = _email_lien_he()
+_HAU_EMAIL = f"&tool=ebm&email={MAILTO}" if MAILTO else "&tool=ebm"
 
 
 def _goi(url: str, thu: int = 3) -> bytes:
     """GET có RETRY — đo thật 15/08: kho 600 PMID chết giữa chừng ở file thứ 17 vì
     một IncompleteRead đơn lẻ (mạng nháy), mất cả lượt chạy dài. Mạng nháy là
     thường lệ ở lô lớn; lỗi lần cuối mới được ném ra."""
-    req = urllib.request.Request(url, headers={"User-Agent": f"EBM-toan-van-oa/1.0 ({MAILTO})"})
+    req = urllib.request.Request(url, headers={"User-Agent": f"EBM-toan-van-oa/1.0 ({MAILTO})" if MAILTO
+                                               else "EBM-toan-van-oa/1.0"})
     loi: Exception | None = None
     for lan in range(thu):
         try:
@@ -99,7 +121,7 @@ def lien_ket_pmc(pmids: list[str], co_lo: int = 50) -> dict[str, str]:
     for i in range(0, len(pmids), max(1, co_lo)):
         lo = pmids[i:i + co_lo]
         u = (f"{EUTILS}/elink.fcgi?dbfrom=pubmed&db=pmc&retmode=json"
-             + "".join(f"&id={p}" for p in lo) + f"&tool=ebm&email={MAILTO}")
+             + "".join(f"&id={p}" for p in lo) + _HAU_EMAIL)
         ra.update(_parse_linksets(json.loads(_goi(u).decode("utf-8", "replace"))))
         if i + co_lo < len(pmids):
             time.sleep(0.34)
@@ -114,7 +136,7 @@ def tai_toan_van(pmcid: str) -> bytes | None:
     docstring của `_goi()`), và nó KHÔNG phải lớp con của `OSError`/
     `URLError`. Thiếu nhánh này thì một mạng nháy giữa batch sẽ làm crash cả
     lượt gom thay vì trả `None` đúng hợp đồng của hàm."""
-    u = f"{EUTILS}/efetch.fcgi?db=pmc&id={pmcid}&retmode=xml&tool=ebm&email={MAILTO}"
+    u = f"{EUTILS}/efetch.fcgi?db=pmc&id={pmcid}&retmode=xml{_HAU_EMAIL}"
     try:
         xml = _goi(u)
     except (urllib.error.URLError, OSError, http.client.HTTPException):

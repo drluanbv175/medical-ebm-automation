@@ -27,6 +27,7 @@ from typing import Any, Mapping, Optional
 
 import annex2_quality_gate as A2X
 import gate_contract as GC
+import pipeline_freshness as PF
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -1026,10 +1027,7 @@ def refresh_checkpoint(
         checkpoint["gate_status"] = f"{report.get('status')} — G2 CHƯA ĐƯỢC KHÓA"
         checkpoint["g2_status"] = "PENDING"
     checkpoint["disclaimer"] = "Cần bác sĩ kiểm chứng."
-    checkpoint_path.write_text(
-        json.dumps(checkpoint, ensure_ascii=False, indent=2),
-        encoding="utf-8", newline="\n"
-    )
+    PF.ghi_checkpoint_giu_moc_sinh(checkpoint_path, json.dumps(checkpoint, ensure_ascii=False, indent=2))
     return checkpoint_path
 
 

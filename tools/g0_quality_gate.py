@@ -62,6 +62,7 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import gate_contract as GC  # noqa: E402
+import pipeline_freshness as PF  # noqa: E402
 import skill_standards as S  # noqa: E402
 
 STATUS_BLOCKED = "BLOCKED"
@@ -733,8 +734,7 @@ def refresh_checkpoint(*, study: str, out_dir: Path,
             "resolved_by": "g0_quality_gate.refresh_checkpoint",
             "resolved_at": datetime.now().isoformat(timespec="seconds"),
         }
-    checkpoint_path.write_text(
-        json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    PF.ghi_checkpoint_giu_moc_sinh(checkpoint_path, json.dumps(checkpoint, ensure_ascii=False, indent=2))
     return checkpoint_path
 
 

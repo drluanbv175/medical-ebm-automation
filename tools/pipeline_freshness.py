@@ -19,9 +19,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import time
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -82,6 +84,21 @@ SAME_RUN_TOLERANCE_S = 120.0
 
 def checkpoint_path(out_dir: Path, gate: str) -> Path:
     return out_dir / f"{gate}_checkpoint.json"
+
+
+def ghi_checkpoint_giu_moc_sinh(path: Path, noi_dung: str) -> None:
+    """Ghi lại checkpoint mà GIỮ mốc sinh (mtime) — CHỈ dành cho bộ chấm chất lượng (đánh giá lại, KHÔNG sinh lại cổng).
+
+    Tính tươi (`checkpoint_mtime`) đo bằng mtime tệp checkpoint. Bộ chấm chất lượng ghi kết quả chấm vào checkpoint ⇒
+    mtime nhảy lên «bây giờ» ⇒ một cổng CŨ (sinh trước thượng nguồn) trông như vừa sinh ⇒ run_pipeline bỏ qua, không
+    chạy lại. Vá 27/09/2026 sau ca C1a: chạy g2_quality_gate làm G2 hết «stale» trong khi bản nháp đăng ký vẫn là bản
+    31/07. Bộ SINH cổng (run_gN_auto) vẫn ghi bình thường ⇒ mtime mới = sinh lại thật. Tệp chưa có ⇒ ghi như thường.
+    """
+    path = Path(path)
+    cu = path.stat().st_mtime if path.exists() else None
+    path.write_text(noi_dung, encoding="utf-8", newline="\n")
+    if cu is not None:
+        os.utime(path, (time.time(), cu))
 
 
 def checkpoint_mtime(out_dir: Path, gate: str) -> Optional[float]:

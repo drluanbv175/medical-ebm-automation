@@ -56,6 +56,7 @@ from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
 import gate_contract as GC
+import pipeline_freshness as PF
 import skill_standards as S
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
@@ -1615,9 +1616,7 @@ def refresh_checkpoint(
         checkpoint["artifacts"] = artifacts
     artifacts["quality_report"] = str(quality_report_path)
     checkpoint["disclaimer"] = "Cần bác sĩ kiểm chứng."
-    checkpoint_path.write_text(
-        json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
-    )
+    PF.ghi_checkpoint_giu_moc_sinh(checkpoint_path, json.dumps(checkpoint, ensure_ascii=False, indent=2))
     return checkpoint_path
 
 
