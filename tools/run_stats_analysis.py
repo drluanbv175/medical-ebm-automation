@@ -1235,6 +1235,68 @@ def ordinal_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates
         except Exception as e:  # noqa: BLE001
             kiem_po.append({"nguong": f"Y > {k:g}", "loi": str(e)[:160]})
     out["kiem_gia_dinh_ty_le_odds"] = kiem_po
+    out["brant"] = kiem_dinh_brant(y_num, X, muc, cluster_col)
+    return out
+
+
+def kiem_dinh_brant(y_num: pd.Series, X: pd.DataFrame, muc: list, cluster_col: str | None = None) -> dict:
+    """Kiểm định Brant (Brant 1990, Biometrics 46:1171–1178) cho giả định tỷ lệ odds (N10, 28/09/2026).
+
+    Ước lượng J−1 mô hình logistic nhị phân tại từng ngưỡng Y > k trên CÙNG ma trận dự báo, dựng hiệp phương
+    sai chéo giữa các ước lượng (Cov(y_j, y_l) = π_l(1 − π_j) với j ≤ l), rồi kiểm định Wald H0: hệ số dốc bằng
+    nhau ở mọi ngưỡng — tổng thể (df = (J−2)·p) và theo từng biến (df = J−2). Giả định quan sát ĐỘC LẬP (không
+    hiệu chỉnh cụm). Công cụ chỉ báo số, KHÔNG tự đổi mô hình: p nhỏ ⇒ thống kê viên cân nhắc partial
+    proportional odds theo SAP. Lỗi số học/tách hoàn toàn ⇒ trả {"loi": ...}, không bịa thống kê.
+    """
+    if not HAS_SCIPY:
+        return {"loi": "Cần scipy để tính p của kiểm định Brant."}
+    Xc = sm.add_constant(X, has_constant="add")
+    ten, Xa = list(X.columns), Xc.to_numpy(float)
+    y = pd.to_numeric(y_num, errors="coerce").to_numpy(float)
+    q, m = Xa.shape[1], len(muc) - 1
+    if m < 2:
+        return {"loi": "Cần ≥ 3 mức kết cục cho kiểm định Brant."}
+    try:
+        betas, pis, nghich = [], [], []
+        for k in muc[:-1]:
+            yk = (y > k).astype(float)
+            loi_nguong = {"loi": f"Logistic tại ngưỡng Y > {k:g} không hội tụ/tách hoàn toàn — không tính Brant."}
+            try:
+                fk, caught = _chay_fit_bat_canh_bao(lambda: sm.Logit(yk, Xa).fit(disp=False, maxiter=200))
+            except (np.linalg.LinAlgError, ValueError):
+                return loi_nguong
+            if _ly_do_tu_canh_bao(caught) or not fk.mle_retvals.get("converged", True):
+                return loi_nguong
+            pi = fk.predict(Xa)
+            betas.append(np.asarray(fk.params, float))
+            pis.append(pi)
+            nghich.append(np.linalg.inv(Xa.T @ (Xa * (pi * (1 - pi))[:, None])))
+        V = np.zeros((m * q, m * q))
+        for j in range(m):
+            for k2 in range(j, m):
+                c = nghich[j] @ (Xa.T @ (Xa * (pis[k2] * (1 - pis[j]))[:, None])) @ nghich[k2]
+                V[j * q:(j + 1) * q, k2 * q:(k2 + 1) * q] = c
+                V[k2 * q:(k2 + 1) * q, j * q:(j + 1) * q] = c.T
+        b = np.concatenate(betas)
+
+        def _wald(chi_so):
+            dong = []
+            for t in range(1, m):
+                for v in chi_so:
+                    r = np.zeros(m * q)
+                    r[1 + v], r[t * q + 1 + v] = 1.0, -1.0
+                    dong.append(r)
+            D = np.array(dong)
+            d = D @ b
+            chi = float(d @ np.linalg.solve(D @ V @ D.T, d))
+            return {"chi2": round(chi, 3), "df": len(dong), "p": round(float(sp_stats.chi2.sf(chi, len(dong))), 4)}
+
+        out = {"tong": _wald(range(len(ten))), "theo_bien": {v: _wald([i]) for i, v in enumerate(ten)}}
+    except (np.linalg.LinAlgError, ValueError) as exc:
+        return {"loi": f"Không tính được kiểm định Brant: {exc}"}
+    if cluster_col:
+        out["canh_bao"] = [f"Kiểm định Brant giả định quan sát độc lập — dữ liệu gom cụm «{cluster_col}» làm p nhỏ "
+                           "giả; đọc cùng bảng OR theo ngưỡng [CẦN THỐNG KÊ VIÊN]."]
     return out
 
 
@@ -1431,6 +1493,19 @@ def format_ordinal_text(od: dict) -> str:
                 lines.append(f"    {row['nguong']}: " + ", ".join(f"{k}={v}" for k, v in row["OR"].items()))
         lines.append("    OR lệch nhiều giữa các ngưỡng gợi ý vi phạm giả định — công cụ KHÔNG tự kết luận "
                      "[CẦN THỐNG KÊ VIÊN].")
+    br = od.get("brant")
+    if br:
+        lines.append("\n  KIỂM ĐỊNH BRANT (H0: hệ số bằng nhau ở mọi ngưỡng — Brant 1990):")
+        if br.get("loi"):
+            lines.append(f"    {br['loi']} [CẦN THỐNG KÊ VIÊN]")
+        else:
+            t = br["tong"]
+            lines.append(f"    Tổng thể: χ² = {t['chi2']}, df = {t['df']}, p = {t['p']}")
+            for v, r in br["theo_bien"].items():
+                lines.append(f"    {v[:28]:<28} χ² = {r['chi2']}, df = {r['df']}, p = {r['p']}")
+            lines.append("    p nhỏ gợi ý vi phạm giả định; mô hình thay thế (partial proportional odds) là quyết "
+                         "định của thống kê viên theo SAP — công cụ KHÔNG tự đổi [CẦN THỐNG KÊ VIÊN].")
+        lines += [f"    ⚠ {c}" for c in br.get("canh_bao", [])]
     for cb in od.get("canh_bao", []):
         lines.append(f"  ⚠ {cb}")
     return "\n".join(lines)
