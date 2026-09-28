@@ -534,7 +534,7 @@ def _so_sanh_hai_nhom_cum(df: pd.DataFrame, outcome_col: str, group_col: str, ou
     if k < 2:
         return {"cot": cluster_col, "so_cum": k,
                 "error": f"Cột cụm «{cluster_col}» chỉ có {k} giá trị — không hiệu chỉnh cụm được."}
-    fit_kw = {"cov_type": "cluster", "cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]}}
+    fit_kw = {"cov_type": "cluster", "cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]}, "use_t": True}
 
     def _dong(fit):
         lo, hi = fit.conf_int().loc["nhom"]
@@ -766,7 +766,8 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
     available_covs = [c for c in covariates if c in df.columns]
     predictors = [group_col] + available_covs
     data = df[[outcome_col] + predictors + ([cluster_col] if cluster_col else [])].dropna()
-    fit_cum = ({"cov_type": "cluster", "cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]}}
+    fit_cum = ({"cov_type": "cluster", "cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]},
+                "use_t": True}
                if cluster_col else {})
 
     # Audit 2026-07-11: EPV (Events-Per-Variable, Peduzzi 1996) cho hồi quy LOGISTIC
@@ -924,6 +925,11 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
 
     ci = res.conf_int()
     bse = getattr(res, "bse", None)
+    pvals = res.pvalues
+    if cluster_col:
+        # MICE gộp Rubin bỏ qua use_t (luôn dùng z) ⇒ tự tính KTC/p theo t(G−1) từ hệ số + SE đã gộp,
+        # cùng quy ước với các bảng hiệu chỉnh cụm khác (N11).
+        ci, pvals = _suy_luan_t_cum(res.params, bse, so_cum)
     # Kiểm hội tụ chỉ áp cho nhánh logistic (thang log-odds); OLS không có vấn đề
     # tách hoàn toàn. Lý do cấp mô hình (cảnh báo trong bất kỳ lần fit MI nào,
     # hệ số vô nghĩa ở bất kỳ tham số nào) ⇒ mọi ước lượng gộp không tin cậy.
@@ -943,7 +949,7 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
         var = rev_map.get(safe_name, safe_name)
         est = float(res.params[i])
         lo, hi = float(ci[i][0]), float(ci[i][1])
-        p = round(float(res.pvalues[i]), 4)
+        p = round(float(pvals[i]), 4)
         if outcome_type == "binary":
             results.append(_gan_co_khong_hoi_tu(
                 {"variable": var, "OR_adj": round(float(np.exp(est)), 3),
@@ -1147,8 +1153,24 @@ def _ma_tran_du_bao(data: pd.DataFrame, predictors: list) -> pd.DataFrame:
     return pd.get_dummies(data[predictors], drop_first=True).astype(float)
 
 
+def _suy_luan_t_cum(params, bse, so_cum: int):
+    """KTC 95% + p hai phía theo phân phối t với G−1 bậc tự do (G = số cụm) từ hệ số và SE (N11).
+
+    Trả (ci dạng mảng n×2, p dạng mảng n). Cùng quy ước statsmodels ``use_t=True`` với ``cov_type='cluster'``.
+    """
+    b = np.asarray(params, dtype=float)
+    se = np.asarray(bse, dtype=float)
+    df_t = max(int(so_cum) - 1, 1)
+    q = float(sp_stats.t.ppf(0.975, df_t))
+    ci = np.column_stack([b - q * se, b + q * se])
+    p = 2 * sp_stats.t.sf(np.abs(b / se), df_t)
+    return ci, p
+
+
 def _ghi_chu_so_cum(n_cum: int) -> str:
-    return (f"Số cụm = {n_cum}. Sai số chuẩn hiệu chỉnh cụm (sandwich) kém tin cậy khi số cụm ít — "
+    return (f"Số cụm = {n_cum}. KTC/p hiệu chỉnh cụm dùng phân phối t với G−1 = {max(n_cum - 1, 1)} bậc tự do "
+            "(hiệu chỉnh cỡ mẫu nhỏ CR1) thay cho z. "
+            f"Sai số chuẩn hiệu chỉnh cụm (sandwich) vẫn kém tin cậy khi số cụm ít — "
             "thống kê viên quyết định có cần hiệu chỉnh cỡ mẫu nhỏ/bootstrap theo cụm "
             "hay mô hình hỗn hợp không [CẦN THỐNG KÊ VIÊN].")
 
@@ -1192,7 +1214,7 @@ def ordinal_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates
         if n_cum < 2:
             return {"error": f"Cột cụm «{cluster_col}» chỉ có {n_cum} giá trị — không hiệu chỉnh cụm được.",
                     "note": "[CẦN BIOSTATISTICIAN]"}
-        fit_kw.update(cov_type="cluster", cov_kwds={"groups": pd.factorize(data[cluster_col])[0]})
+        fit_kw.update(cov_type="cluster", cov_kwds={"groups": pd.factorize(data[cluster_col])[0]}, use_t=True)
     try:
         model, caught = _chay_fit_bat_canh_bao(
             lambda: OrderedModel(y, X, distr="logit").fit(**fit_kw))
@@ -1446,7 +1468,7 @@ def linear_hc3(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: l
     X = sm.add_constant(_ma_tran_du_bao(data, predictors), has_constant="add")
     y = pd.to_numeric(data[outcome_col], errors="coerce").astype(float)
     if cluster_col:
-        cov_type, kw = "cluster", {"cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]}}
+        cov_type, kw = "cluster", {"cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]}, "use_t": True}
     else:
         cov_type, kw = "HC3", {}
     try:
@@ -1546,8 +1568,10 @@ def generate_r_script_ordinal(study: str, gate: str, outcome_col: str, group_col
         f"m_clmm <- clmm(y_ord ~ {formula} + (1 | {cluster_col}), data = data)\n"
         "summary(m_clmm)\n"
         f"vc <- sandwich::vcovCL(m_lm, cluster = ~{cluster_col}, type = \"HC1\")\n"
+        f"df_suy_luan <- length(unique(na.omit(data${cluster_col}))) - 1  # t(G−1), như Python (N11)\n"
         if cluster_col else
         "vc <- sandwich::vcovHC(m_lm, type = \"HC3\")\n"
+        "df_suy_luan <- Inf  # z, như Python (HC3 không cụm)\n"
     )
     return (
         f"# ══════════════════════════════════════════════\n"
@@ -1563,7 +1587,7 @@ def generate_r_script_ordinal(study: str, gate: str, outcome_col: str, group_col
         "nominal_test(m_clm)  # kiểm giả định tỷ lệ odds (thống kê viên đọc)\n\n"
         "# 2. Phân tích nhạy cảm OLS\n"
         f"m_lm <- lm({outcome_col} ~ {formula}, data = data)\n"
-        f"{cum}coeftest(m_lm, vcov = vc)\n\n"
+        f"{cum}coeftest(m_lm, vcov = vc, df = df_suy_luan)\n\n"
         'sink("session_info.txt"); sessionInfo(); sink()\n'
     )
 
@@ -1862,20 +1886,22 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
         cluster_block = (
             f"# 3b. KTC hiệu chỉnh cụm «{cluster_col}» (sandwich) — khớp Bảng 4 của Python\n"
             "library(sandwich); library(lmtest)\n"
+            "# Suy luận theo t với G−1 bậc tự do (G = số cụm) — cùng quy ước Python (N11)\n"
+            f"df_cum <- length(unique(na.omit(data${cluster_col}))) - 1\n"
             f"vc_cum <- vcovCL(model_adj, cluster = ~ {cluster_col})\n"
-            "print(coeftest(model_adj, vcov. = vc_cum))\n"
-            "ci_cum <- coefci(model_adj, vcov. = vc_cum)\n"
+            "print(coeftest(model_adj, vcov. = vc_cum, df = df_cum))\n"
+            "ci_cum <- coefci(model_adj, vcov. = vc_cum, df = df_cum)\n"
             f"print({dao})\n"
             f"# 3c. Bảng 2 (ước lượng thô) theo cụm — khớp khoá `cum` của Python\n"
             f"vc_tho <- vcovCL(model_crude, cluster = ~ {cluster_col})\n"
-            "print(coeftest(model_crude, vcov. = vc_tho))\n"
-            "ci_tho <- coefci(model_crude, vcov. = vc_tho)\n"
+            "print(coeftest(model_crude, vcov. = vc_tho, df = df_cum))\n"
+            "ci_tho <- coefci(model_crude, vcov. = vc_tho, df = df_cum)\n"
             f"print({dao.replace('ci_cum', 'ci_tho')})\n"
             + (
                 "# RD thô theo cụm: mô hình xác suất tuyến tính (biến cố = giá trị lớn nhất, như Python)\n"
                 f"data$y_bc <- as.numeric(data${outcome_col} == max(data${outcome_col}, na.rm = TRUE))\n"
                 f"model_rd <- lm(y_bc ~ {group_col}, data = data)\n"
-                f"print(coefci(model_rd, vcov. = vcovCL(model_rd, cluster = ~ {cluster_col})))\n"
+                f"print(coefci(model_rd, vcov. = vcovCL(model_rd, cluster = ~ {cluster_col}), df = df_cum))\n"
                 if family == "binomial" else ""
             )
             + "\n"
