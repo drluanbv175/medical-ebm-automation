@@ -36,6 +36,10 @@ chỉ là mean-impute tự khai không phải MI thật.
     G6_km_curve.png               — Đường cong Kaplan-Meier (nếu có matplotlib) — thiết kế sống còn
     G6_table4_multivariate.txt    — Mô hình đa biến (complete-case) — thiết kế nhị phân/liên tục
     G6_table5_multiple_imputation.txt — MI thật (đối chiếu complete-case) — khi có dữ liệu thiếu
+    G6_table4_ordinal.txt         — Logistic thứ tự (--outcome-type ordinal)
+    G6_table6_sensitivity_linear.txt — OLS nhạy cảm HC3/cụm — nhánh ordinal
+    G6_icc_cluster.txt            — ICC(1) + hiệu ứng thiết kế (--cot-cum)
+    G6_table1b_proportions.txt    — Tỷ lệ + KTC 95% Wilson (hiệu chỉnh cụm nếu có --cot-cum; --ty-le)
     G6_missing_data_summary.txt   — Tóm tắt dữ liệu thiếu
     G6_analysis_summary.json      — JSON dùng cho agent viet-ban-thao
     G6_analysis_syntax.R          — Script R tái lặp kết quả
@@ -1160,6 +1164,107 @@ def icc_cum(df: pd.DataFrame, outcome_col: str, cluster_col: str) -> dict:
             "ghi_chu": "ICC(1) ANOVA một chiều trên điểm số (xấp xỉ tuyến tính); ICC âm → dùng 0 cho DE."}
 
 
+Z_95 = 1.959963984540054
+
+
+def _wilson(p: float, n: float, z: float = Z_95) -> list:
+    """KTC Wilson score cho một tỷ lệ; n có thể là cỡ mẫu hiệu dụng (không nguyên)."""
+    if n <= 0:
+        return [float("nan"), float("nan")]
+    mau = 1 + z * z / n
+    tam = (p + z * z / (2 * n)) / mau
+    nua = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / mau
+    return [max(0.0, tam - nua), min(1.0, tam + nua)]
+
+
+def ty_le_wilson_cum(df: pd.DataFrame, col: str, nguong: float | None = None,
+                     cluster_col: str | None = None) -> dict:
+    """Tỷ lệ + KTC 95% Wilson; có cụm thì Wilson trên CỠ MẪU HIỆU DỤNG n/DE.
+
+    - Không có ``nguong``: cột phải là 0/1 (1 = sự kiện). Có ``nguong``: sự kiện = giá trị ≥ ngưỡng
+      (vd hài lòng = G1 ≥ 4 theo SAP C1a) — ngưỡng do SAP khoá, công cụ không tự chọn.
+    - DE thiết kế (tuyến tính hoá, ước lượng tỷ số theo cụm):
+      Var(p̂) = K/(K−1) · Σ_c (t_c − p̂·m_c)² / n², DE = Var(p̂) / [p̂(1−p̂)/n], chặn dưới 1
+      (không để gom cụm làm KTC HẸP hơn giả định độc lập). DE theo ICC(1) báo kèm để đối chiếu.
+    """
+    if col not in df.columns:
+        return {"cot": col, "error": f"không có cột «{col}»"}
+    cols = [col] + ([cluster_col] if cluster_col else [])
+    data = df[cols].dropna()
+    x = pd.to_numeric(data[col], errors="coerce")
+    if x.isna().any():
+        return {"cot": col, "error": f"«{col}» phải là số"}
+    if nguong is None:
+        if not set(x.unique()) <= {0, 1}:
+            return {"cot": col, "error": f"«{col}» không phải 0/1 — cần --nguong-ty-le do SAP khoá"}
+        y = x.astype(int)
+    else:
+        y = (x >= nguong).astype(int)
+    n = int(len(y))
+    if n == 0:
+        return {"cot": col, "error": "không còn quan sát sau khi bỏ dữ liệu thiếu"}
+    su_kien = int(y.sum())
+    p = su_kien / n
+    ci_doc_lap = _wilson(p, n)
+    out = {"cot": col, "dinh_nghia": (f"{col} ≥ {nguong:g}" if nguong is not None else f"{col} = 1"),
+           "n": n, "so_su_kien": su_kien, "ty_le": round(p, 4),
+           "CI_95_wilson_doc_lap": [round(v, 4) for v in ci_doc_lap],
+           "so_thieu_bo_qua": int(len(df) - n), "canh_bao": []}
+    if not cluster_col:
+        out["phuong_phap"] = "Wilson score (giả định quan sát độc lập)"
+        return out
+    nhom = pd.DataFrame({"y": y.values, "c": data[cluster_col].values}).groupby("c")["y"]
+    t_c, m_c = nhom.sum(), nhom.size()
+    K = int(len(m_c))
+    out["cluster"] = {"cot": cluster_col, "so_cum": K}
+    if K < 2:
+        out["error"] = f"Cần ≥ 2 cụm để hiệu chỉnh (đang có {K})"
+        return out
+    var_lin = K / (K - 1) * float(((t_c - p * m_c) ** 2).sum()) / (n * n)
+    var_srs = p * (1 - p) / n
+    ic = icc_cum(pd.DataFrame({"y": y.values, "c": data[cluster_col].values}), "y", "c")
+    out["de_theo_icc"] = ic.get("hieu_ung_thiet_ke")
+    out["icc"] = ic.get("icc")
+    if var_srs > 0:
+        de_tho = var_lin / var_srs
+        de = max(1.0, de_tho)
+        out["de_thiet_ke_tho"] = round(de_tho, 3)
+    else:
+        de = 1.0
+        out["canh_bao"].append("Tỷ lệ bằng 0 hoặc 1 — không ước lượng được DE; KTC dưới đây là Wilson độc lập.")
+    n_hd = n / de
+    out["hieu_ung_thiet_ke"] = round(de, 3)
+    out["co_mau_hieu_dung"] = round(n_hd, 1)
+    out["CI_95"] = [round(v, 4) for v in _wilson(p, n_hd)]
+    out["phuong_phap"] = ("Wilson score trên cỡ mẫu hiệu dụng n/DE; DE từ phương sai tuyến tính hoá "
+                          "theo cụm (chặn dưới 1)")
+    out["canh_bao"].append(_ghi_chu_so_cum(K))
+    return out
+
+
+def format_ty_le_text(ds: list) -> str:
+    lines = ["BẢNG 1b — TỶ LỆ + KTC 95% WILSON (Mục tiêu mô tả)", "=" * 70]
+    for r in ds:
+        if "error" in r:
+            lines.append(f"  {r['cot']}: LỖI — {r['error']}")
+            continue
+        lines.append(f"\n  {r['dinh_nghia']}: {r['so_su_kien']}/{r['n']} = {r['ty_le'] * 100:.1f}%"
+                     f"  (bỏ {r['so_thieu_bo_qua']} thiếu)")
+        a, b = r["CI_95_wilson_doc_lap"]
+        lines.append(f"    KTC 95% Wilson giả định độc lập: {a * 100:.1f}%–{b * 100:.1f}%")
+        if "CI_95" in r:
+            a, b = r["CI_95"]
+            lines.append(f"    KTC 95% hiệu chỉnh cụm «{r['cluster']['cot']}» ({r['cluster']['so_cum']} cụm): "
+                         f"{a * 100:.1f}%–{b * 100:.1f}%  | DE = {r['hieu_ung_thiet_ke']}"
+                         f" (thô {r.get('de_thiet_ke_tho', '—')}; theo ICC {r.get('de_theo_icc')},"
+                         f" ICC = {r.get('icc')})"
+                         f" | n hiệu dụng ≈ {r['co_mau_hieu_dung']}")
+        for cb in r.get("canh_bao", []):
+            lines.append(f"    ⚠ {cb}")
+    lines.append("\n  " + "Báo KTC hiệu chỉnh cụm làm kết quả chính khi dữ liệu gom cụm; KTC độc lập chỉ để đối chiếu.")
+    return "\n".join(lines)
+
+
 def linear_hc3(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
                cluster_col: str | None = None) -> dict:
     """Phân tích nhạy cảm: OLS coi kết cục là liên tục, sai số HC3 (hoặc sandwich theo cụm nếu có cụm)."""
@@ -1684,6 +1789,12 @@ def main():
     parser.add_argument("--cot-cum", default="",
                         help="Cột cụm (vd ma_ban_kham): sai số chuẩn hiệu chỉnh cụm cho nhánh ordinal "
                              "+ OLS nhạy cảm, và báo ICC/hiệu ứng thiết kế (thêm 2026-09-28)")
+    parser.add_argument("--ty-le", nargs="*", default=[],
+                        help="Cột cần báo TỶ LỆ + KTC 95%% Wilson (Mục tiêu mô tả); hiệu chỉnh cụm khi có "
+                             "--cot-cum (thêm 2026-09-28, N2)")
+    parser.add_argument("--nguong-ty-le", type=float, default=None,
+                        help="Ngưỡng sự kiện cho --ty-le (sự kiện = giá trị ≥ ngưỡng, vd 4 cho G1 ≥ 4/5). "
+                             "Bỏ trống thì cột phải là 0/1. Ngưỡng phải lấy từ SAP đã khoá")
     parser.add_argument("--study", default="STUDY", help="Tên đề tài (dùng đặt tên file đầu ra)")
     parser.add_argument("--gate", default="G6", help="Cổng phân tích (mặc định: G6)")
     parser.add_argument("--vars", default="", help="Biến cho Bảng 1 (mặc định: tất cả)")
@@ -1967,6 +2078,13 @@ def main():
         if args.outcome_type != "ordinal":
             print("⚠ --cot-cum: nhánh nhị phân/liên tục hiện CHƯA hiệu chỉnh sai số chuẩn theo cụm "
                   "(chỉ báo ICC) [CẦN THỐNG KÊ VIÊN].")
+
+    if args.ty_le:
+        ds_ty_le = [ty_le_wilson_cum(df, c, args.nguong_ty_le, cot_cum) for c in args.ty_le]
+        summary["ty_le"] = ds_ty_le
+        (prefix.parent / f"{args.gate}_table1b_proportions.txt").write_text(
+            format_ty_le_text(ds_ty_le), encoding="utf-8", newline="\n")
+        print(f"✓ Tỷ lệ + KTC Wilson cho {len(ds_ty_le)} cột" + (f" (hiệu chỉnh cụm «{cot_cum}»)" if cot_cum else ""))
 
     # 5'. Kết cục THỨ TỰ (proportional odds) — nhánh riêng, thêm 2026-09-28 (N1)
     if args.outcome_type == "ordinal" and args.outcome and args.group:
