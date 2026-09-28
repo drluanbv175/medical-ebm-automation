@@ -389,8 +389,14 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list) -> dict:
 # ════════════════════════════════════════════════════════════════════════════
 
 def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
-                             group_col: str, outcome_type: str = "auto") -> dict:
-    """Tính crude effect (OR/MD) + 95%CI cho kết cục chính."""
+                             group_col: str, outcome_type: str = "auto",
+                             cluster_col: str | None = None) -> dict:
+    """Tính crude effect (OR/MD) + 95%CI cho kết cục chính.
+
+    Có ``cluster_col`` (28/09/2026, N7) ⇒ thêm khoá ``cum`` chứa ước lượng thô với SE sandwich theo cụm
+    (``_so_sanh_hai_nhom_cum``). Các khoá cũ KHÔNG đổi (golden GOLDEN-G6-001 là hợp đồng); p Chi-square/t-test cũ
+    vẫn giả định độc lập và được dán nhãn như vậy trong Bảng 2.
+    """
     if outcome_type == "auto":
         outcome_type = detect_var_type(df[outcome_col])
 
@@ -494,7 +500,70 @@ def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
                 f"tính toán/chuyển đơn vị)."
             )
 
+    if cluster_col:
+        result["cum"] = _so_sanh_hai_nhom_cum(df, outcome_col, group_col, result["outcome_type"],
+                                              cluster_col, g1)
     return result
+
+
+def _so_sanh_hai_nhom_cum(df: pd.DataFrame, outcome_col: str, group_col: str, outcome_type: str,
+                          cluster_col: str, g1) -> dict:
+    """Ước lượng THÔ 2 nhóm với SE sandwich theo cụm (N7, 28/09/2026).
+
+    Vì sao: Chi-square/t-test của Bảng 2 giả định các quan sát độc lập; dữ liệu gom cụm (bàn khám, bác sĩ, khoa)
+    làm KTC hẹp giả và p nhỏ giả. Nhị phân: Logit y~nhóm (OR) + mô hình xác suất tuyến tính y~nhóm (RD); liên tục:
+    OLS y~nhóm (MD). Ước lượng điểm trùng ước lượng thô, chỉ SE/KTC/p đổi. Hàng thiếu mã cụm bị loại (ghi số).
+    """
+    if not HAS_STATSMODELS:
+        return {"error": "Cần statsmodels để hiệu chỉnh cụm (pip install statsmodels)."}
+    data = df[[outcome_col, group_col, cluster_col]].dropna()
+    loai_thieu_cum = int(df[[outcome_col, group_col]].dropna().shape[0] - data.shape[0])
+    if outcome_type == "binary":
+        gia_tri_bien_co = max(df[outcome_col].dropna().unique())
+        y = (data[outcome_col] == gia_tri_bien_co).astype(float)
+    else:
+        y = pd.to_numeric(data[outcome_col], errors="coerce")
+        giu = np.isfinite(y)
+        data, y = data[giu], y[giu]
+    x = sm.add_constant((data[group_col] == g1).astype(float).rename("nhom"))
+    k = int(data[cluster_col].nunique())
+    out = {"cot": cluster_col, "so_cum": k, "n": int(len(data)), "cov_type": "cluster",
+           "canh_bao": [_ghi_chu_so_cum(k)]}
+    if loai_thieu_cum:
+        out["loai_thieu_ma_cum"] = loai_thieu_cum
+    if k < 2:
+        return {"cot": cluster_col, "so_cum": k,
+                "error": f"Cột cụm «{cluster_col}» chỉ có {k} giá trị — không hiệu chỉnh cụm được."}
+    fit_kw = {"cov_type": "cluster", "cov_kwds": {"groups": pd.factorize(data[cluster_col])[0]}}
+
+    def _dong(fit):
+        lo, hi = fit.conf_int().loc["nhom"]
+        return float(fit.params["nhom"]), float(lo), float(hi), round(float(fit.pvalues["nhom"]), 4)
+
+    try:
+        if outcome_type == "binary":
+            if y.nunique() < 2 or y.groupby(x["nhom"]).nunique().min() < 2:
+                out["ghi_chu"] = "Một nhóm có 0% hoặc 100% biến cố — không ước lượng OR theo cụm được."
+            else:
+                fit, caught = _chay_fit_bat_canh_bao(
+                    lambda: sm.Logit(y, x).fit(disp=False, maxiter=200, **fit_kw))
+                b, lo, hi, pv = _dong(fit)
+                out.update(or_cum=round(float(np.exp(b)), 3),
+                           ci_95_cum=(round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)),
+                           p_cum=pv)
+                ly_do = _ly_do_tu_canh_bao(caught)
+                out = _gan_co_khong_hoi_tu(out, ly_do, ("or_cum", "ci_95_cum", "p_cum"))
+            fit_rd = sm.OLS(y, x).fit(**fit_kw)
+            b, lo, hi, pv = _dong(fit_rd)
+            out.update(risk_diff_cum=round(b, 4), risk_diff_ci_95_cum=(round(lo, 4), round(hi, 4)),
+                       p_rd_cum=pv)
+        else:
+            fit = sm.OLS(y, x).fit(**fit_kw)
+            b, lo, hi, pv = _dong(fit)
+            out.update(md_cum=round(b, 3), md_ci_95_cum=(round(lo, 3), round(hi, 3)), p_cum=pv)
+    except (ValueError, np.linalg.LinAlgError) as exc:
+        out["error"] = f"Không ước lượng được theo cụm: {exc}"
+    return out
 
 
 def interpret_hypothesis_type(res: dict, hypothesis_type: str, margin) -> dict:
@@ -1448,7 +1517,10 @@ def format_outcome_text(res: dict, outcome_col: str, hypothesis_interp: dict = N
         lines.append(f"  Nhóm {g[1]}: Mean={n1.get('mean','?')} ± SD={n1.get('sd','?')}")
         lines.append(f"  {res.get('effect', 'N/A')}")
     if "p_value" in res:
-        lines.append(f"  p = {res['p_value']} ({res.get('test','')})")
+        doc_lap = " — giả định quan sát ĐỘC LẬP" if res.get("cum") else ""
+        lines.append(f"  p = {res['p_value']} ({res.get('test','')}){doc_lap}")
+    if res.get("cum"):
+        lines.extend(_dong_bang2_cum(res["cum"]))
     if res.get("data_quality_warning"):
         lines.append(f"  ⚠ {res['data_quality_warning']} [CẦN BIOSTATISTICIAN XÁC NHẬN]")
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện HIGH):
@@ -1471,6 +1543,31 @@ def format_outcome_text(res: dict, outcome_col: str, hypothesis_interp: dict = N
         lines.append(f"  {hypothesis_interp['note']}")
     lines.append("\n[BÁC SĨ KIỂM TRA: số liệu lấy trực tiếp từ dữ liệu thật]")
     return "\n".join(lines)
+
+
+def _dong_bang2_cum(cu: dict) -> list:
+    """Các dòng Bảng 2 cho ước lượng thô hiệu chỉnh cụm (N7)."""
+    dau = f"  ── HIỆU CHỈNH CỤM «{cu.get('cot')}» ({cu.get('so_cum')} cụm) — SE sandwich theo cụm ──"
+    if cu.get("error"):
+        return ["", dau, f"  {cu['error']} [CẦN THỐNG KÊ VIÊN]"]
+    dong = ["", dau, f"  n phân tích = {cu.get('n')}"]
+    if cu.get("loai_thieu_ma_cum"):
+        dong.append(f"  Loại {cu['loai_thieu_ma_cum']} hàng thiếu mã cụm.")
+    if cu.get("khong_hoi_tu"):
+        dong.append(f"  OR theo cụm: {DONG_KHONG_HOI_TU}")
+    elif "or_cum" in cu:
+        a, b = cu["ci_95_cum"]
+        dong.append(f"  OR thô (cụm) = {cu['or_cum']} (95%CI {a}–{b}), p = {cu['p_cum']}")
+    if cu.get("ghi_chu"):
+        dong.append(f"  {cu['ghi_chu']}")
+    if "risk_diff_cum" in cu:
+        a, b = cu["risk_diff_ci_95_cum"]
+        dong.append(f"  Risk difference (cụm) = {cu['risk_diff_cum']} (95%CI {a}–{b}), p = {cu['p_rd_cum']}")
+    if "md_cum" in cu:
+        a, b = cu["md_ci_95_cum"]
+        dong.append(f"  MD thô (cụm) = {cu['md_cum']} (95%CI {a}–{b}), p = {cu['p_cum']}")
+    dong += [f"  ⚠ {c}" for c in cu.get("canh_bao", [])]
+    return dong
 
 
 def format_multivariate_text(mv: dict) -> str:
@@ -2110,8 +2207,9 @@ def main():
                                                                      newline="\n")
         print(f"✓ ICC theo cụm «{cot_cum}»: {ic.get('icc', ic.get('error'))}")
         if args.outcome_type != "ordinal":
-            print("⚠ --cot-cum: Bảng 4 (đa biến) dùng SE hiệu chỉnh cụm; Bảng 2 (so sánh 2 nhóm) và MI "
-                  "CHƯA hiệu chỉnh cụm — không dùng p của chúng làm kết quả chính [CẦN THỐNG KÊ VIÊN].")
+            print("⚠ --cot-cum: Bảng 2 có thêm dòng ước lượng thô hiệu chỉnh cụm, Bảng 4 (đa biến) dùng SE hiệu "
+                  "chỉnh cụm; p Chi-square/t-test của Bảng 2 và MI (Bảng 5) CHƯA hiệu chỉnh cụm — không dùng "
+                  "chúng làm kết quả chính [CẦN THỐNG KÊ VIÊN].")
 
     if args.ty_le:
         ds_ty_le = [ty_le_wilson_cum(df, c, args.nguong_ty_le, cot_cum) for c in args.ty_le]
@@ -2150,7 +2248,7 @@ def main():
     # 5. Kết cục chính
     if args.outcome_type != "ordinal" and args.outcome and args.group and args.outcome in df.columns:
         try:
-            res = compare_primary_outcome(df, args.outcome, args.group, args.outcome_type)
+            res = compare_primary_outcome(df, args.outcome, args.group, args.outcome_type, cot_cum)
         except (ZeroDivisionError, ValueError) as exc:
             res = {"error": f"Lỗi tính kết cục chính: {exc}",
                    "note": "[CẦN BIOSTATISTICIAN — kiểm tra dữ liệu]"}

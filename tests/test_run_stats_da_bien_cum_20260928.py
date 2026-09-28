@@ -107,4 +107,4 @@ def test_main_nhi_phan_co_cum(tmp_path, monkeypatch, capsys):
     tom = json.loads((out / "G6_analysis_summary.json").read_text(encoding="utf-8"))
     assert tom["multivariate"]["cov_type"] == "cluster"
     assert "vcovCL" in (out / "G6_analysis_syntax.R").read_text(encoding="utf-8")
-    assert "Bảng 2 (so sánh 2 nhóm) và MI CHƯA hiệu chỉnh cụm" in capsys.readouterr().out
+    assert "MI (Bảng 5) CHƯA hiệu chỉnh cụm" in capsys.readouterr().out
