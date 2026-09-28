@@ -49,6 +49,11 @@ def _khoi_phuc_trang_thai_logging_toan_cuc():
     level_cu = root.level
     configured_cu = logging_config._CONFIGURED
     yield
+    # Đóng handler do test tạo ra (FileHandler giữ tệp log mở) trước khi
+    # khôi phục — nếu không, pytest báo ResourceWarning «unclosed file».
+    for h in list(root.handlers):
+        if h not in handlers_cu:
+            h.close()
     root.handlers[:] = handlers_cu
     root.setLevel(level_cu)
     logging_config._CONFIGURED = configured_cu
