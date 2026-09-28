@@ -403,9 +403,16 @@ This file contains only Claude Code-specific instructions.
   (robots.txt chặn AI-crawler toàn site, hoặc toàn văn thật nằm ở nhà xuất bản thứ ba có
   paywall/bot-detection đã xác nhận, hoặc cả hai): **ESC** (chặn `ClaudeBot`/`GPTBot`/
   `Google-Extended` toàn site; toàn văn nằm ở European Heart Journal/Oxford Academic), ACC/AHA,
-  IDSA, EULAR, ATS, AGS, ACP, ASH, AGA, ACG, AAN. **Cần khảo sát thêm** trước khi kết luận: ERS,
-  ASCO, ESMO (môi trường khảo sát bị chặn/lỗi mạng, chưa đủ dữ kiện — KHÔNG suy đoán thành
-  "khả thi" hay "không khả thi").
+  IDSA, EULAR, ATS, AGS, ACP, ASH, AGA, ACG, AAN. **ERS/ASCO/ESMO — đã khảo sát 28/09/2026** (đọc
+  toàn văn robots.txt từ Cloud): **ESMO** — `esmo.org` cho phép mọi bot, nhưng toàn văn guideline nằm
+  ở Annals of Oncology (`annalsofoncology.org`) CHẶN tường minh `ClaudeBot`/`anthropic-ai`/`GPTBot`
+  ⇒ KHÔNG khả thi (như ESC). **ERS** — `ersnet.org` cho phép (chỉ chặn `/doi-api`), nhưng toàn văn ở
+  ERJ (`erj.ersjournals.com`) trả 403 trang thách thức Cloudflare cho truy cập tự động ⇒ KHÔNG crawl;
+  một phần có PMCID (vd PMC13612986) ⇒ đi đường PMC như ADA. **ASCO** — `www.asco.org` trả 403 cho
+  truy cập tự động; `ascopubs.org` cho `*` (Crawl-delay 1, chặn GPTBot/CCBot, KHÔNG nhắc ClaudeBot)
+  nhưng điều khoản sử dụng CHƯA đọc ⇒ vẫn «cần khảo sát thêm», không viết connector. Europe PMC
+  (2021–2026): ~64 ESMO CPG trên Ann Oncol, ~78 «ASCO Guideline» trên JCO; các bản mẫu đầu không có
+  PMCID ⇒ đường PMC gần như không phủ ESMO/ASCO.
   **Kiến trúc:** 4 module mới trong `app/sources/` (`gold_copd.py`, `gina_asthma.py`,
   `bts_guidelines.py`, `pmc_guideline_fulltext.py`), tất cả theo khuôn (B) của
   `wiley_tdm.py::WileyTdmClient` — KHÔNG kế thừa `SourceClient`, KHÔNG có `.search()`, KHÔNG
@@ -444,8 +451,8 @@ This file contains only Claude Code-specific instructions.
   `ENABLE_PMC_GUIDELINE_FULLTEXT`, không cần API key).
   **Việc CHƯA làm, có chủ ý** (ghi rõ để không ai suy nhầm là đã xong): (1) chưa nối vào bất kỳ
   agent/pipeline nào (chỉ là hạ tầng CÓ SẴN, gọi thủ công) — nối vào `tra-cuu-chung-cu`/
-  `cap-nhat-guideline` là việc SAU KHI kiểm sống; (2) chưa khảo sát ERS/ASCO/ESMO (kết quả
-  "can_kiem_them", không đủ dữ kiện); (3) ESC/ACC-AHA/IDSA/EULAR/ATS/AGS/ACP/ASH/AGA/ACG/AAN
+  `cap-nhat-guideline` là việc SAU KHI kiểm sống; (2) ERS/ASCO/ESMO đã khảo sát 28/09 (xem trên:
+  ESMO/ERS không crawl, ERS đi PMC khi có PMCID, ASCO chờ đọc điều khoản); (3) ESC/ACC-AHA/IDSA/EULAR/ATS/AGS/ACP/ASH/AGA/ACG/AAN
   CỐ Ý không có connector crawl — với các tổ chức này, đầu ra hệ thống vẫn chỉ là link + tóm
   tắt (đúng cách `tra-cuu-chung-cu` đang hoạt động), bác sĩ tự mở link đọc toàn văn qua quyền
   truy cập của mình; (4) chưa đọc lại nguyên văn tiếng Anh đầy đủ (chữ-đối-chữ) các trang điều
