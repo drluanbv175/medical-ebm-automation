@@ -140,3 +140,12 @@ def test_main_bang2_co_cum(tmp_path, monkeypatch):
     assert "HIỆU CHỈNH CỤM «ban»" in (out / "G6_table2_main_outcome.txt").read_text(encoding="utf-8")
     tom = json.loads((out / "G6_analysis_summary.json").read_text(encoding="utf-8"))
     assert tom["primary_outcome"]["cum"]["cov_type"] == "cluster"
+
+
+def test_script_r_co_bang2_theo_cum():
+    nhi = RSA.generate_r_script("S", "G6", "hl", "nhom", ["tuoi"], "binary", "ban")
+    assert "vcovCL(model_crude, cluster = ~ ban)" in nhi and "print(exp(ci_tho))" in nhi
+    assert "model_rd <- lm(y_bc ~ nhom" in nhi and "max(data$hl, na.rm = TRUE)" in nhi
+    lt = RSA.generate_r_script("S", "G6", "diem", "nhom", [], "continuous", "ban")
+    assert "print(ci_tho)" in lt and "model_rd" not in lt
+    assert "ci_tho" not in RSA.generate_r_script("S", "G6", "diem", "nhom", [], "continuous")

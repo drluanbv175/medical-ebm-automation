@@ -1790,7 +1790,20 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
             f"vc_cum <- vcovCL(model_adj, cluster = ~ {cluster_col})\n"
             "print(coeftest(model_adj, vcov. = vc_cum))\n"
             "ci_cum <- coefci(model_adj, vcov. = vc_cum)\n"
-            f"print({dao})\n\n"
+            f"print({dao})\n"
+            f"# 3c. Bảng 2 (ước lượng thô) theo cụm — khớp khoá `cum` của Python\n"
+            f"vc_tho <- vcovCL(model_crude, cluster = ~ {cluster_col})\n"
+            "print(coeftest(model_crude, vcov. = vc_tho))\n"
+            "ci_tho <- coefci(model_crude, vcov. = vc_tho)\n"
+            f"print({dao.replace('ci_cum', 'ci_tho')})\n"
+            + (
+                "# RD thô theo cụm: mô hình xác suất tuyến tính (biến cố = giá trị lớn nhất, như Python)\n"
+                f"data$y_bc <- as.numeric(data${outcome_col} == max(data${outcome_col}, na.rm = TRUE))\n"
+                f"model_rd <- lm(y_bc ~ {group_col}, data = data)\n"
+                f"print(coefci(model_rd, vcov. = vcovCL(model_rd, cluster = ~ {cluster_col})))\n"
+                if family == "binomial" else ""
+            )
+            + "\n"
         )
     else:
         cluster_block = ""
