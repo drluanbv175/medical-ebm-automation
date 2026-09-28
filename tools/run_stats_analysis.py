@@ -847,7 +847,7 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
 
 def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str,
                                covariates: list, outcome_type: str = "auto",
-                               n_imputations: int = 20) -> dict:
+                               n_imputations: int = 20, cluster_col: str | None = None) -> dict:
     """Multiple imputation THẬT (statsmodels MICEData+MICE, m=n_imputations mặc
     định 20, pooling theo luật Rubin qua MICEResults) — vá 2026-07-15. Trước đây
     "MI" trong exports/<study>/sensitivity_analysis.py (template do run_g6_auto.py
@@ -865,7 +865,11 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     thức nội bộ theo TÊN CỘT GỐC lúc impute từng biến, và patsy.dmatrices ném
     SyntaxError ngay nếu tên cột có khoảng trắng/dấu gạch ngang (rất thường gặp
     trong CSV thật, vd "blood pressure"). Kết quả map ngược lại tên gốc trước
-    khi trả về — bác sĩ không thấy tên nội bộ v0/v1 bao giờ."""
+    khi trả về — bác sĩ không thấy tên nội bộ v0/v1 bao giờ.
+
+    Có ``cluster_col`` (28/09/2026, N8) ⇒ mỗi lần fit trong MICE dùng SE sandwich theo cụm (``fit_kwds``), luật Rubin
+    gộp đúng các ma trận hiệp phương sai đó. Cột cụm KHÔNG vào mô hình impute (mã bàn khám không phải biến dự báo);
+    hàng thiếu mã cụm bị loại TRƯỚC khi impute và được đếm. Không có cụm ⇒ đầu ra cũ giữ nguyên từng khoá."""
     if not HAS_STATSMODELS:
         return {
             "error": "statsmodels chưa cài. Chạy: pip install statsmodels",
@@ -878,6 +882,11 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     available_covs = [c for c in covariates if c in df.columns]
     predictors = [group_col] + available_covs
     analysis_cols = [outcome_col] + predictors
+    loai_thieu_cum = 0
+    if cluster_col:
+        co_cum = df[cluster_col].notna()
+        loai_thieu_cum = int((~co_cum).sum())
+        df = df[co_cum]
     sub = df[analysis_cols].copy()
 
     n_total = len(sub)
@@ -897,6 +906,13 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     formula = f"{safe_map[outcome_col]} ~ " + " + ".join(safe_map[p] for p in predictors)
     model_class = sm.Logit if outcome_type == "binary" else sm.OLS
     fit_kwds = {"disp": 0} if outcome_type == "binary" else None
+    if cluster_col:
+        so_cum = int(df[cluster_col].nunique())
+        if so_cum < 2:
+            return {"error": f"Cột cụm «{cluster_col}» chỉ có {so_cum} giá trị — không hiệu chỉnh cụm được.",
+                    "note": "[CẦN THỐNG KÊ VIÊN]"}
+        fit_kwds = dict(fit_kwds or {}, cov_type="cluster",
+                        cov_kwds={"groups": pd.factorize(df[cluster_col])[0]})
 
     try:
         imp = MICEData(sub_safe)
@@ -949,6 +965,11 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     if ly_do_mo_hinh:
         out_mi["khong_hoi_tu"] = True
         out_mi["ly_do"] = ly_do_mo_hinh
+    if cluster_col:
+        out_mi.update(cov_type="cluster", cluster={"cot": cluster_col, "so_cum": so_cum},
+                      canh_bao=[_ghi_chu_so_cum(so_cum)])
+        if loai_thieu_cum:
+            out_mi["loai_thieu_ma_cum"] = loai_thieu_cum
     return out_mi
 
 
@@ -1616,6 +1637,12 @@ def format_mi_text(mi: dict, mv: dict = None) -> str:
     lines = [f"BẢNG 5 — MULTIPLE IMPUTATION ({mi['model'].upper()}, m={mi['n_imputations']})", "=" * 70]
     lines.append(f"  Complete-case: n = {mi['n_complete_case']}/{mi['n_total']} "
                  f"({mi['n_missing_rows']} hàng thiếu, {mi['pct_missing_rows']}%)")
+    if mi.get("cluster"):
+        lines.append(f"  Sai số chuẩn: sandwich theo cụm «{mi['cluster']['cot']}» ({mi['cluster']['so_cum']} cụm) "
+                     "trong từng lần fit, gộp theo luật Rubin")
+        if mi.get("loai_thieu_ma_cum"):
+            lines.append(f"  Loại {mi['loai_thieu_ma_cum']} hàng thiếu mã cụm trước khi impute.")
+        lines += [f"  ⚠ {c}" for c in mi.get("canh_bao", [])]
     if mi.get("khong_hoi_tu"):
         lines.append(f"  {DONG_KHONG_HOI_TU}")
         lines.append(f"  {GHI_CHU_KHONG_HOI_TU}")
@@ -2207,9 +2234,9 @@ def main():
                                                                      newline="\n")
         print(f"✓ ICC theo cụm «{cot_cum}»: {ic.get('icc', ic.get('error'))}")
         if args.outcome_type != "ordinal":
-            print("⚠ --cot-cum: Bảng 2 có thêm dòng ước lượng thô hiệu chỉnh cụm, Bảng 4 (đa biến) dùng SE hiệu "
-                  "chỉnh cụm; p Chi-square/t-test của Bảng 2 và MI (Bảng 5) CHƯA hiệu chỉnh cụm — không dùng "
-                  "chúng làm kết quả chính [CẦN THỐNG KÊ VIÊN].")
+            print("⚠ --cot-cum: Bảng 2 có thêm dòng ước lượng thô hiệu chỉnh cụm; Bảng 4 (đa biến) và Bảng 5 (MI) "
+                  "dùng SE hiệu chỉnh cụm; p Chi-square/t-test của Bảng 2 vẫn giả định độc lập — không dùng làm "
+                  "kết quả chính [CẦN THỐNG KÊ VIÊN].")
 
     if args.ty_le:
         ds_ty_le = [ty_le_wilson_cum(df, c, args.nguong_ty_le, cot_cum) for c in args.ty_le]
@@ -2280,7 +2307,7 @@ def main():
 
         # 6a. Multiple imputation (chỉ khi biến phân tích có dữ liệu thiếu) — vá 2026-07-15
         mi = multiple_imputation_model(df, args.outcome, args.group, covariates,
-                                        args.outcome_type, args.n_imputations)
+                                        args.outcome_type, args.n_imputations, cot_cum)
         summary["multiple_imputation"] = mi
         if mi.get("skipped"):
             print(f"ℹ️  Multiple imputation: bỏ qua ({mi['reason']})")
