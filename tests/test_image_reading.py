@@ -36,7 +36,8 @@ def test_strip_exif_removes_metadata(tmp_path):
     p = tmp_path / "ecg.jpg"
     _make_image_with_exif(str(p))
     # Trước khi khử: EXIF có chứa định danh.
-    assert "Nguyen Van A" in str(dict(Image.open(str(p)).getexif()))
+    with Image.open(str(p)) as goc:
+        assert "Nguyen Van A" in str(dict(goc.getexif()))
     clean_bytes = strip_exif(str(p))
     reopened = Image.open(io.BytesIO(clean_bytes))
     assert dict(reopened.getexif()) == {}, "EXIF phải bị xóa sạch"
