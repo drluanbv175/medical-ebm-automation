@@ -81,6 +81,7 @@ Khái niệm cần đo (construct) + quần thể đích · công cụ dự ki�
    - **Độ giá trị hội tụ–phân biệt** (giả thuyết tương quan định trước), known-groups.
    - **Độ đáp ứng (responsiveness)** + **MCID** nếu đo thay đổi.
    - **Floor/ceiling effect**, dữ liệu thiếu, tính khả thi.
+   - **Có dữ liệu pilot thật (đã khử định danh) → tính bằng công cụ, KHÔNG tính tay:** `python medical-ebm-automation/tools/kiem_tin_cay_thang_do.py <pilot.csv|.xlsx> --nhom "TEN:cot1,cot2" --min <điểm thấp nhất> --max <điểm cao nhất> [--ma-thieu 7 9] [--lap-lai <lan2.csv> --khoa-id <cột mã>]` → α + KTC 95% Feldt, α-nếu-bỏ-mục, r mục–tổng hiệu chỉnh (xếp tăng dần, KHÔNG có ngưỡng loại mục), sàn/trần điểm tổng, ICC(2,1) test–retest. Không khai `--min/--max` thì công cụ KHÔNG tính sàn/trần. Ngưỡng Terwee 2007 (PMID 17161752) in kèm `[CẦN ĐỐI CHIẾU NGUYÊN VĂN]`; ω, EFA/CFA, SEM/SDC công cụ CHƯA tính → `[CẦN DỮ LIỆU]`/`phan-tich-thong-ke`.
 5. **Báo cáo theo COSMIN** + nêu giới hạn (công cụ chỉ giá trị trong quần thể/ngôn ngữ đã kiểm định).
 6. **Bàn giao:** đặc tả biến/đưa item vào CRF → `bien-so-nghien-cuu` → `quan-ly-du-lieu`; cỡ mẫu kiểm định → `co-mau-nghien-cuu`; phân tích thật → `phan-tich-thong-ke`; viết phần phương pháp → `viet-ban-thao`.
 
