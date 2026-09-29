@@ -97,12 +97,21 @@ def _epmc(*ket_qua: Dict[str, Any]) -> Dict[str, Any]:
     return {"resultList": {"result": list(ket_qua)}}
 
 
-def test_europepmc_lane_builds_the_query_window_and_sort():
+class _NgayCoDinh(date):
+    """Đóng băng «hôm nay» — HOM_NAY tính lúc nạp module nên lệch ngày khi bộ test chạy vắt qua nửa đêm (CI 29/09/2026)."""
+
+    @classmethod
+    def today(cls):
+        return cls(2026, 9, 15)
+
+
+def test_europepmc_lane_builds_the_query_window_and_sort(monkeypatch):
+    monkeypatch.setattr(gl, "date", _NgayCoDinh)
     http = HttpGia(json_data=_epmc())
     gl.europepmc_lane(http, 'PUB_TYPE:"Practice Guideline"', 500, since_date="2026-08-01")
     (c,) = http.calls
     assert c["url"] == gl.EUROPEPMC
-    assert c["params"]["query"] == f'(PUB_TYPE:"Practice Guideline") AND FIRST_PDATE:[2026-08-01 TO {HOM_NAY.isoformat()}]'
+    assert c["params"]["query"] == '(PUB_TYPE:"Practice Guideline") AND FIRST_PDATE:[2026-08-01 TO 2026-09-15]'
     assert c["params"]["sort"] == "FIRST_PDATE_D desc" and c["params"]["pageSize"] == 100    # kẹp ở 100
     assert c["params"]["resultType"] == "core"
 
