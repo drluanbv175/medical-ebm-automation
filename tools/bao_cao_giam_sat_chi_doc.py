@@ -72,9 +72,13 @@ def _nam_trong(con: Path, cha: Path) -> bool:
 
 
 def chay_bao_cao_chi_doc(out_dir: Path, ngay: int = 10, max_per_query: int = 8, *,
+                         bo_bao_cao: tuple = (),
                          _chay_pipeline: Optional[Callable[[int, int], Dict[str, object]]] = None,
                          _xuat: Optional[Callable[[int], Dict[str, Path]]] = None) -> Dict[str, object]:
-    """Chạy một lượt quét cô lập rồi ghi báo cáo vào `out_dir`. Trả tóm tắt (cũng ghi ra tom_tat.json)."""
+    """Chạy một lượt quét cô lập rồi ghi báo cáo vào `out_dir`. Trả tóm tắt (cũng ghi ra tom_tat.json).
+
+    `bo_bao_cao`: khoá trong TEN_BAO_CAO cố ý KHÔNG chép (vd `weekly_md` ≈2 MB mà Routine Cloud không commit) —
+    ghi ở `bo_co_y`, không lẫn vào `thieu_bao_cao` (thiếu thật)."""
     from app import database
     from app.config import settings, use_mock_sources_override_lock
 
@@ -108,6 +112,8 @@ def chay_bao_cao_chi_doc(out_dir: Path, ngay: int = 10, max_per_query: int = 8, 
     out_dir.mkdir(parents=True, exist_ok=True)
     da_chep = {}
     for khoa, ten in TEN_BAO_CAO.items():
+        if khoa in bo_bao_cao:
+            continue
         nguon = bao_cao.get(khoa)
         if nguon and Path(nguon).is_file():
             shutil.copyfile(nguon, out_dir / ten)
@@ -127,7 +133,8 @@ def chay_bao_cao_chi_doc(out_dir: Path, ngay: int = 10, max_per_query: int = 8, 
         "so_ban_ghi": sh.get("total_records"),
         "muc_moi": stats.get("new_items"),
         "bao_cao": da_chep,
-        "thieu_bao_cao": sorted(set(TEN_BAO_CAO) - set(da_chep)),
+        "thieu_bao_cao": sorted(set(TEN_BAO_CAO) - set(da_chep) - set(bo_bao_cao)),
+        "bo_co_y": sorted(set(bo_bao_cao) & set(TEN_BAO_CAO)),
         "da_goi_canh_bao": False,
         "da_noi_hub": False,
         "watermark_chinh_thuc_doi": False,
@@ -155,6 +162,8 @@ def _markdown(t: Dict[str, object]) -> str:
     dong += [f"- `{ten}`" for ten in dict(t["bao_cao"]).values()] or ["- (không sinh được báo cáo nào)"]
     if t["thieu_bao_cao"]:
         dong.append(f"- Thiếu: {', '.join(t['thieu_bao_cao'])}")
+    if t.get("bo_co_y"):
+        dong.append(f"- Cố ý không kèm: {', '.join(TEN_BAO_CAO[k] for k in t['bo_co_y'])}")
     dong += ["", "## Ranh giới", "",
              "- Không gửi email/webhook · không nối Hub EBM_MASTER · không dựng Antifacts · "
              "không ghi sổ lượt giám sát.",
@@ -169,12 +178,15 @@ def main(argv: Optional[list] = None) -> int:
     ap.add_argument("--out", required=True, help="Thư mục ghi báo cáo (không nằm trong data/).")
     ap.add_argument("--ngay", type=int, default=10, help="Cửa sổ nhìn lùi (ngày), mặc định 10.")
     ap.add_argument("--max-per-query", type=int, default=8)
+    ap.add_argument("--bo-ebm-tuan", action="store_true",
+                    help="Không chép ebm-tuan.md (≈2 MB) — dùng cho Routine Cloud commit báo cáo vào git.")
     a = ap.parse_args(argv)
     if a.ngay < 1 or a.max_per_query < 1:
         print("--ngay và --max-per-query phải ≥ 1", file=sys.stderr)
         return 3
     try:
-        t = chay_bao_cao_chi_doc(Path(a.out), a.ngay, a.max_per_query)
+        t = chay_bao_cao_chi_doc(Path(a.out), a.ngay, a.max_per_query,
+                                 bo_bao_cao=("weekly_md",) if a.bo_ebm_tuan else ())
     except ValueError as exc:
         print(f"Từ chối: {exc}", file=sys.stderr)
         return 3

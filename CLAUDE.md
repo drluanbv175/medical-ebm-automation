@@ -31,7 +31,7 @@ This file contains only Claude Code-specific instructions.
   mở G2/G4/G5/G8/G9/G10. Kiểm từ workspace gốc bằng
   `python ../tools/verify_plugin_orchestration.py`.
 - **Research assurance**: sáu cổng canonical là G2/G4/G5/G8/G9/G10. G2 phải chặn khi WHO TRDS v1.3.1 mục 13/14/19/20 thiếu dữ kiện PI đã pin hoặc tham chiếu Hội đồng chỉ là fallback; G9 phải chặn khi thiếu quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026. Chạy `python ../tools/verify_controlled_research_automation.py`; Claude Code không tự điền các xác nhận đời thực.
-- **Evidence surveillance deployment**: `weekly_safety.sh`/`monthly_update.sh` là owner thu thập duy nhất. `PARTIAL/FAIL` phải giữ watermark, chặn `bridge_to_ebm_master.py` và không gửi cảnh báo nội dung. Chạy `python tools/verify_evidence_surveillance_deployment.py --online`; chỉ `READY_FOR_CONTROLLED_DEPLOYMENT` mới cho phép candidate-only. Claude Code không tự điền UAT, alert/rollback/shadow evidence hoặc phê duyệt để làm xanh cổng. **Lượt chạy THÊM ngoài Mac (29/09/2026):** `weekly_safety.sh --chi-bao-cao <thư mục>` / `monthly_update.sh --chi-bao-cao <thư mục>` (cửa sổ 35 ngày) → `tools/bao_cao_giam_sat_chi_doc.py`: quét thật nhưng DB/watermark ở thư mục tạm, tắt cứng Consensus/SerpApi, KHÔNG cảnh báo/Hub/Antifacts/ghi sổ lượt; mã 0 PASS · 2 PARTIAL/FAIL · 3 tham số sai. Routine Cloud «Giam sat tuan Cloud chi bao cao» dùng chế độ này để mở PR nháp chỉ chứa `reports/giam-sat-cloud/<ngày>/` — không phải owner thứ hai, không bao giờ tự merge.
+- **Evidence surveillance deployment**: `weekly_safety.sh`/`monthly_update.sh` là owner thu thập duy nhất. `PARTIAL/FAIL` phải giữ watermark, chặn `bridge_to_ebm_master.py` và không gửi cảnh báo nội dung. Chạy `python tools/verify_evidence_surveillance_deployment.py --online`; chỉ `READY_FOR_CONTROLLED_DEPLOYMENT` mới cho phép candidate-only. Claude Code không tự điền UAT, alert/rollback/shadow evidence hoặc phê duyệt để làm xanh cổng. **Lượt chạy THÊM ngoài Mac (29/09/2026):** `weekly_safety.sh --chi-bao-cao <thư mục>` / `monthly_update.sh --chi-bao-cao <thư mục>` (cửa sổ 35 ngày) → `tools/bao_cao_giam_sat_chi_doc.py`: quét thật nhưng DB/watermark ở thư mục tạm, tắt cứng Consensus/SerpApi, KHÔNG cảnh báo/Hub/Antifacts/ghi sổ lượt; mã 0 PASS · 2 PARTIAL/FAIL · 3 tham số sai. Cờ `--bo-ebm-tuan` bỏ `ebm-tuan.md` (≈2 MB) khỏi thư mục ra, ghi `bo_co_y` trong tóm tắt. Routine Cloud «Giam sat tuan Cloud chi bao cao (phien co dinh)» (thứ Hai 06:56 giờ VN) đánh thức MỘT phiên cố định có gắn repo (phiên tạo mới mỗi lượt KHÔNG có quyền push — lượt thử 29/09 hỏng vì vậy) để mở PR nháp chỉ chứa `reports/giam-sat-cloud/<ngày>/` — không phải owner thứ hai, không bao giờ tự merge.
 - **⚠️ Sau khi đồng bộ agent .md đã sửa vào `medical-ebm-automation/.claude/agents/` (bản in-repo dùng bởi `runtime/agent_registry.py` FULL_SCOPE_A):** BẮT BUỘC chạy `python3 scripts/regenerate_agent_manifest.py --write` rồi dán giá trị self-check SHA-256 in ra vào hằng số `MANIFEST_SELF_CHECK_SHA256` trong `runtime/agent_registry.py` — **kể cả khi số lượng agent KHÔNG đổi**, vì manifest khóa hash theo NỘI DUNG từng file, không chỉ số lượng. Quên bước này → hàng chục test `test_v4_*`/`test_offline_workflow_integration.py` fail với "agent hash mismatch" (đã xảy ra ≥2 lần, 2026-07-05). Chạy `pytest` sau mỗi lần sync để bắt sớm nếu quên.
 - **Secrets**: live in `.env` outside OneDrive, symlinked into the repo if needed. Never commit or print them.
 - **Nguồn chứng cứ TRÊN PHIÊN CLOUD — đo thật 24/09/2026, đọc TRƯỚC khi kết luận «nguồn X hỏng»**
@@ -45,7 +45,7 @@ This file contains only Claude Code-specific instructions.
   `DRUG_SAFETY_FEEDS` + `GUIDELINE_FEEDS`, hiện 80 mục): **79/80 trả bài thật**, 0 mock (crossref 35 · crossref_title 21 ·
   rss 17 · europepmc 5 · who_iris 1 · kcb_vn 1). Mục duy nhất 0 bài là `fda_medwatch`: www.fda.gov trả HTTP 401 cho truy
   cập tự động; `search()` trả `[]` nhưng `_fetch()` của ingestion đọc bộ đếm lỗi HttpClient nên vẫn ghi `error` (không
-  xanh giả). MedWatch không có API openFDA tương đương (khác `fda_recalls` đã có dự phòng enforcement) — giới hạn đã biết.
+  xanh giả). MedWatch không có API openFDA tương đương (khác `fda_recalls` đã có dự phòng enforcement) — giới hạn đã biết. **Từ 29/09/2026 (bác sĩ chọn «ghi chú, không chặn»):** MedWatch hỏng CHỈ vì 401/403 và openFDA + ≥ 1 feed an toàn khác còn khoẻ ⇒ `summarize_source_health` ghi `FEED_FDA_MEDWATCH_PROVIDER_BLOCKS_AUTOMATED_ACCESS_401_403` vào `mirror_notices`, không tính là nguồn bắt buộc suy giảm (trước đó riêng nó làm MỌI lượt PARTIAL ⇒ chặn nối Hub mỗi tuần); lỗi khác hoặc thiếu dự phòng vẫn PARTIAL (`tests/test_medwatch_chan_truy_cap_20260929.py`, 5 đột biến đỏ).
   Đoạn mô tả 24/09 giữ lại làm lịch sử: Môi trường Cloud «Default — **Trusted** network access»:
   proxy thoát mạng TỪ CHỐI (CONNECT 403, chính sách) MỌI host API y văn — NCBI, `www.ebi.ac.uk`,
   `api.crossref.org`, OpenAlex, ClinicalTrials.gov, openFDA, Semantic Scholar, CORE, WHO IRIS,
@@ -410,7 +410,7 @@ This file contains only Claude Code-specific instructions.
   ERJ (`erj.ersjournals.com`) trả 403 trang thách thức Cloudflare cho truy cập tự động ⇒ KHÔNG crawl;
   một phần có PMCID (vd PMC13612986) ⇒ đi đường PMC như ADA. **ASCO** — `www.asco.org` trả 403 cho
   truy cập tự động; `ascopubs.org` cho `*` (Crawl-delay 1, chặn GPTBot/CCBot, KHÔNG nhắc ClaudeBot)
-  nhưng điều khoản sử dụng CHƯA đọc ⇒ vẫn «cần khảo sát thêm», không viết connector. Europe PMC
+  nhưng đo lại 29/09/2026 từ Cloud: MỌI trang nội dung (`/terms`, `/terms-of-use`, `/page/…`, trang bài `/doi/…`) trả 403 trang thách thức Cloudflare «Just a moment…» cho truy cập tự động (chỉ `robots.txt` trả 200) ⇒ KHÔNG khả thi như ERS (không lách thách thức bot); điều khoản vẫn chưa đọc được bằng máy — không viết connector. Europe PMC
   (2021–2026): ~64 ESMO CPG trên Ann Oncol, ~78 «ASCO Guideline» trên JCO; các bản mẫu đầu không có
   PMCID ⇒ đường PMC gần như không phủ ESMO/ASCO.
   **Kiến trúc:** 4 module mới trong `app/sources/` (`gold_copd.py`, `gina_asthma.py`,
@@ -451,8 +451,8 @@ This file contains only Claude Code-specific instructions.
   `ENABLE_PMC_GUIDELINE_FULLTEXT`, không cần API key).
   **Việc CHƯA làm, có chủ ý** (ghi rõ để không ai suy nhầm là đã xong): (1) chưa nối vào bất kỳ
   agent/pipeline nào (chỉ là hạ tầng CÓ SẴN, gọi thủ công) — nối vào `tra-cuu-chung-cu`/
-  `cap-nhat-guideline` là việc SAU KHI kiểm sống; (2) ERS/ASCO/ESMO đã khảo sát 28/09 (xem trên:
-  ESMO/ERS không crawl, ERS đi PMC khi có PMCID, ASCO chờ đọc điều khoản); (3) ESC/ACC-AHA/IDSA/EULAR/ATS/AGS/ACP/ASH/AGA/ACG/AAN
+  `cap-nhat-guideline` là việc SAU KHI kiểm sống; (2) ERS/ASCO/ESMO đã khảo sát 28–29/09 (xem trên:
+  ESMO/ERS/ASCO không crawl, ERS đi PMC khi có PMCID; ASCO bị thách thức Cloudflare); (3) ESC/ACC-AHA/IDSA/EULAR/ATS/AGS/ACP/ASH/AGA/ACG/AAN
   CỐ Ý không có connector crawl — với các tổ chức này, đầu ra hệ thống vẫn chỉ là link + tóm
   tắt (đúng cách `tra-cuu-chung-cu` đang hoạt động), bác sĩ tự mở link đọc toàn văn qua quyền
   truy cập của mình; (4) chưa đọc lại nguyên văn tiếng Anh đầy đủ (chữ-đối-chữ) các trang điều

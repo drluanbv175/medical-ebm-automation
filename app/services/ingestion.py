@@ -14,6 +14,7 @@ Cả hai cờ ENABLE_CONSENSUS/ENABLE_SERPAPI_SCHOLAR tắt (hoặc USE_MOCK_SOU
 """
 from __future__ import annotations
 
+import re
 import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -54,6 +55,13 @@ _SAFETY_FEEDS = {"feed_fda_medwatch", "feed_fda_recalls", "feed_mhra_dsu"}
 # 100%. Consensus/SerpApi KHÔNG ở đây — chúng đi qua `diagnostics["fallback"]` riêng (xem docstring
 # module), không qua summarize_source_health().
 _OPTIONAL_ENHANCED = {"scopus", "core", "epistemonikos"}
+# Feed an toàn mà NHÀ CUNG CẤP chặn truy cập tự động vĩnh viễn (29/09/2026, bác sĩ chọn «ghi chú,
+# không chặn»): www.fda.gov trả 401 cho MedWatch RSS với mọi client tự động và MedWatch không có API
+# openFDA tương đương. Để nguyên thì CHỈ nguồn này hỏng cũng làm mọi lượt thành PARTIAL ⇒ chặn nối Hub
+# MỖI tuần. Chỉ miễn khi (a) MỌI lỗi của feed là HTTP 401/403 và (b) openFDA cùng ≥ 1 feed an toàn khác
+# còn khoẻ; lỗi khác (timeout, 5xx, parse…) hoặc thiếu dự phòng ⇒ vẫn PARTIAL như cũ.
+_SAFETY_FEEDS_PROVIDER_BLOCKED = {"feed_fda_medwatch"}
+_HTTP_BI_CHAN_RE = re.compile(r"\b40[13] Client Error\b|\bHTTP 40[13]\b")
 
 
 def _http_snapshot(client: object) -> Dict[str, Any]:
@@ -91,7 +99,8 @@ def summarize_source_health(
     thiếu phần lớn nguồn discovery lõi là lỗi cứng.
     """
     grouped: dict[str, dict[str, Any]] = defaultdict(
-        lambda: {"requests": 0, "records": 0, "ok": 0, "degraded": 0, "error": 0, "mock": 0}
+        lambda: {"requests": 0, "records": 0, "ok": 0, "degraded": 0, "error": 0, "mock": 0,
+                 "error_http_401_403": 0}
     )
     for row in logs:
         source = str(row.get("source") or "unknown")
@@ -99,7 +108,10 @@ def summarize_source_health(
         item["requests"] += 1
         item["records"] += int(row.get("record_count") or 0)
         status = str(row.get("status") or "error")
-        item[status if status in {"ok", "degraded", "error", "mock"} else "error"] += 1
+        status = status if status in {"ok", "degraded", "error", "mock"} else "error"
+        item[status] += 1
+        if status == "error" and _HTTP_BI_CHAN_RE.search(str(row.get("error_message") or "")):
+            item["error_http_401_403"] += 1
 
     source_rows: dict[str, dict[str, Any]] = {}
     for source, item in sorted(grouped.items()):
@@ -174,6 +186,14 @@ def summarize_source_health(
         ):
             mirror_notices.append("PUBMED_EUTILS_MIRRORED_BY_EUROPEPMC_AND_CROSSREF")
             continue
+        if name in _SAFETY_FEEDS_PROVIDER_BLOCKED:
+            row_bc = source_rows.get(name, {})
+            du_phong = [n for n in safety_healthy if n != name]
+            if (int(row_bc.get("error", 0)) > 0
+                    and row_bc.get("error_http_401_403") == row_bc.get("error")
+                    and "openfda" in du_phong and len(du_phong) >= 2):
+                mirror_notices.append(f"{name.upper()}_PROVIDER_BLOCKS_AUTOMATED_ACCESS_401_403")
+                continue
         degraded_required.append(name)
     redundancy_warnings: list[str] = []
     if len(safety_healthy) < min(2, len(safety_expected)):
