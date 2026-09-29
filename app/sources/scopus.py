@@ -79,6 +79,10 @@ class ScopusClient(SourceClient):
                 "[scopus] ENABLE_SCOPUS=true nhưng thiếu SCOPUS_API_KEY — "
                 "thêm vào ~/.ebm-secrets/medical-ebm-automation.env rồi thử lại."
             )
+        # Đặt SAU chốt thiếu khoá (cấu hình sai phải nổ to dù truy vấn là gì): thẻ [ta]/[pt] của PubMed không phải
+        # cú pháp Scopus, nhét vào TITLE-ABS-KEY(...) chỉ ra lỗi hoặc rác.
+        if self.bo_qua_truy_van(query):
+            return []
 
         try:
             scopus_query = f"TITLE-ABS-KEY({query})"

@@ -1,4 +1,9 @@
-"""Connector ClinicalTrials.gov API v2 – theo dõi RCT mới/đang tuyển/hoàn tất."""
+"""Connector ClinicalTrials.gov API v2 – theo dõi RCT mới/đang tuyển/hoàn tất.
+
+Truy vấn mang thẻ trường PubMed ([ta]/[pt]/[cn]...) bị BỎ QUA, không gọi mạng (29/09/2026): `query.term` của API v2
+không hiểu cú pháp này và trả HTTP 400 — lượt weekly 29/09/2026 ghi 3 lỗi 400 ("N Engl J Med"[ta], "Lancet"[ta],
+"JAMA"[ta]) rồi circuit-breaker của sweep_source cắt luôn các truy vấn phía sau. Xem SourceClient.bo_qua_truy_van().
+"""
 from __future__ import annotations
 
 from typing import List, Optional
@@ -36,6 +41,8 @@ class ClinicalTrialsClient(SourceClient):
             # trên đúng tập ứng viên (chỉ bản ghi có NCT).
             pool_co_nct = [item for item in MOCK_EVIDENCE if item.get("nct_id")]
             return mock_records_for(self.name, query, clinical_area, max_results, pool=pool_co_nct)
+        if self.bo_qua_truy_van(query):
+            return []
         try:
             params = {"query.term": query, "pageSize": max_results, "format": "json"}
             if since_date:

@@ -26,6 +26,9 @@ class OpenAlexClient(SourceClient):
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
         if self.use_mock:
             return mock_records_for(self.name, query, clinical_area, max_results)
+        # `search` của OpenAlex là tìm tự do: payload thật (09/2026) cho truy vấn [ta] ra Research Square, ACM Trans...
+        if self.bo_qua_truy_van(query):
+            return []
         try:
             params = {"search": query, "per-page": max_results}
             if since_date:

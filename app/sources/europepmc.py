@@ -66,6 +66,10 @@ class EuropePMCClient(SourceClient):
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
         if self.use_mock:
             return mock_records_for(self.name, query, clinical_area, max_results)
+        # Cú pháp Lucene-like của Europe PMC không có thẻ [ta]/[pt]: payload thật 29/09/2026 cho "N Engl J Med"[ta]
+        # ra 8/8 bài KHÔNG thuộc NEJM (sách tóm tắt hội nghị...), lọt cả bài 2018 dù có FIRST_PDATE.
+        if self.bo_qua_truy_van(query):
+            return []
         try:
             q = query
             if since_date:

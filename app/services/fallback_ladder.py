@@ -30,7 +30,6 @@ AN TOÀN VẬN HÀNH:
 """
 from __future__ import annotations
 
-import re
 import threading
 import time
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
@@ -50,7 +49,7 @@ from app.services.fallback_verification import (
     KetQuaXacMinh,
     tao_bo_xac_minh,
 )
-from app.sources.base import RawRecord
+from app.sources.base import RawRecord, la_truy_van_cu_phap_pubmed
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -70,12 +69,6 @@ _SO_LOI_THUONG_LIEN_TIEP_TOI_DA = 3
 _LAN_GOI_CUOI: Dict[str, float] = {}
 _KHOA_LAN_GOI_CUOI = threading.Lock()
 _KHOA_LOG_HOP_LE = ("source", "api_endpoint", "query", "record_count", "status", "error_message", "mode")
-
-# Thẻ trường PubMed vô nghĩa với Google Scholar/Consensus. Là TẬP CON MỞ RỘNG của regex trong
-# serpapi_scholar.py (thêm ti/tw/au/ad/jour/pdat/sb/mesh/all/la): bậc thang không tốn lượt trả phí cho truy vấn
-# mà connector hoặc dịch vụ chắc chắn không hiểu.
-_CU_PHAP_PUBMED_RE = re.compile(
-    r"\[(?:ta|pt|cn|tiab|mh|majr|dp|ti|tw|au|ad|jour|pdat|sb|mesh|all|la)\]", re.IGNORECASE)
 
 
 # ============================================================================ phân loại truy vấn
@@ -191,7 +184,9 @@ def _quyet_dinh_mot_truy_van(area: str, query: str, records: List[RawRecord], lo
                              ) -> Tuple[dict, Optional[Set[str]], List[Tuple[str, ...]]]:
     """Phân loại một (nhóm, truy vấn). Trả (quyết định, khoá kho đã đọc hoặc None nếu không đọc được, nhóm liên kết)."""
     co_pii = _co_pii(query)
-    cu_phap = bool(_CU_PHAP_PUBMED_RE.search(query))
+    # Thẻ trường PubMed vô nghĩa với Scholar/Consensus: không tốn lượt trả phí cho truy vấn dịch vụ chắc chắn không
+    # hiểu. Định nghĩa DUY NHẤT ở app/sources/base.py (trước 29/09/2026 file này giữ một bản regex chép riêng).
+    cu_phap = la_truy_van_cu_phap_pubmed(query)
     kho: Optional[Set[str]] = None
     lien_ket: List[Tuple[str, ...]] = []
     loi_kho: Optional[str] = None
