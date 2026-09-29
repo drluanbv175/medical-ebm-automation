@@ -142,7 +142,8 @@ def _regex_the_pubmed_trong(duong_dan: Path) -> int:
 
 def test_chi_mot_regex_the_truong_pubmed_trong_toan_app():
     """Trước 29/09/2026 có 3 bản chép trôi lệch (serpapi 7 thẻ, consensus 12, fallback_ladder 17); nay chỉ base.py."""
-    noi_co = {str(p.relative_to(REPO_ROOT)): n for p in sorted((REPO_ROOT / "app").rglob("*.py"))
+    # as_posix(): trên Windows relative_to() cho 'app\\sources\\base.py' (CI offline-hermetic-tests-windows đỏ 29/09).
+    noi_co = {p.relative_to(REPO_ROOT).as_posix(): n for p in sorted((REPO_ROOT / "app").rglob("*.py"))
               if (n := _regex_the_pubmed_trong(p))}
     assert noi_co == {"app/sources/base.py": 1}, f"regex thẻ trường PubMed bị chép lại ở: {noi_co}"
     for mod in ("app.sources.serpapi_scholar", "app.sources.consensus_api", "app.services.fallback_ladder"):
