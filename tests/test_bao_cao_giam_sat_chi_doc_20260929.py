@@ -165,3 +165,15 @@ def test_bo_ebm_tuan_khong_chep_va_ghi_ro_la_co_y(tmp_path, monkeypatch):
     assert "weekly_md" not in js["bao_cao"]
     md = (ra / "TOM-TAT.md").read_text(encoding="utf-8")
     assert "`ebm-tuan.md`" not in md and "Cố ý không kèm: ebm-tuan.md" in md
+
+
+def test_pass_van_neu_ghi_chu_nguon_duoc_mien(tmp_path, monkeypatch):
+    """29/09/2026: nguồn hỏng được MIỄN theo luật đã duyệt (Scopus bị Cloudflare chặn, MedWatch 401…) — PASS vẫn phải
+    nói ra trong tóm tắt, không để trông như mọi nguồn đều chạy."""
+    ghi_chu = ["SCOPUS_BLOCKED_BY_CLOUDFLARE_403_NETWORK_IP"]
+    monkeypatch.setattr(BC, "_mac_dinh_chay_pipeline", lambda q, n: _sh(mirror_notices=ghi_chu))
+    monkeypatch.setattr(BC, "_mac_dinh_xuat", lambda n: {})
+    assert BC.main(["--out", str(tmp_path / "ra")]) == 0
+    js = json.loads((tmp_path / "ra" / "tom_tat.json").read_text(encoding="utf-8"))
+    assert js["ghi_chu_nguon"] == ghi_chu
+    assert ghi_chu[0] in (tmp_path / "ra" / "TOM-TAT.md").read_text(encoding="utf-8")

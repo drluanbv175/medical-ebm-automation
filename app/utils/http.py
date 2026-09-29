@@ -102,6 +102,40 @@ def _la_proxy_tu_choi_chinh_sach(exc: BaseException) -> bool:
     return isinstance(exc, requests.exceptions.ProxyError) and bool(_PROXY_TU_CHOI_RE.search(str(exc)))
 
 
+# SỬA 29/09/2026 (bác sĩ chọn phương án a cho Scopus): Cloudflare chặn theo IP mạng (VPN) TRƯỚC khi request
+# tới máy chủ nguồn. Đo thật cùng ngày: api.elsevier.com trả 403 `server: cloudflare` + `cf-ray`, thân HTML
+# «Attention Required! | Cloudflare» có `cf-error-details` và «Cloudflare Ray ID» — GIỐNG HỆT cho khoá đúng lẫn
+# khoá sai (lỗi thật của Elsevier là JSON `service-error`). Gắn tiền tố này vào `last_error` để tầng tổng hợp sức
+# khoẻ phân biệt «bị chặn theo mạng» với «khoá sai/không có quyền». Đặt ĐẦU chuỗi vì `last_error` bị cắt 500 ký tự.
+# Chỉ HTTP 403: trang 5xx/52x của Cloudflare (máy chủ nguồn sập) cũng có «Cloudflare Ray ID» nhưng không phải «bị
+# chặn». KHÔNG dùng `/cdn-cgi/challenge-platform/` làm dấu (phản biện 29/09): tính năng JS Detections chèn script đó
+# vào MỌI trang HTML đi qua Cloudflare, kể cả trang 403 do chính máy chủ nguồn sinh ra ⇒ trang thách thức nhận qua
+# tiêu đề `cf-mitigated` (Cloudflare chỉ đặt khi thật sự ra thách thức).
+DAU_CLOUDFLARE_CHAN = "[cloudflare-chan]"
+_THAN_TRANG_CHAN_CLOUDFLARE = ("cf-error-details", "cloudflare ray id")
+
+
+def _la_trang_chan_cloudflare(resp: Any) -> bool:
+    """True khi phản hồi 403 là trang chặn/thách thức của CHÍNH Cloudflare (cần tiêu đề Cloudflare VÀ dấu chặn).
+
+    Chỉ `server: cloudflare`/`cf-ray` thì chưa đủ: nguồn đứng sau Cloudflare (vd Elsevier) gắn `cf-ray` cho MỌI phản
+    hồi, kể cả lỗi JSON của chính máy chủ nguồn. Dấu chặn = thân có `cf-error-details`/«Cloudflare Ray ID», hoặc tiêu
+    đề `cf-mitigated`. Hàm đo đạc — không bao giờ ném lỗi (response giả trong test có thể thiếu trường).
+    """
+    try:
+        if getattr(resp, "status_code", None) != 403:
+            return False
+        tieu_de = {str(k).lower(): str(v) for k, v in (getattr(resp, "headers", None) or {}).items()}
+        if not (tieu_de.get("server", "").lower().startswith("cloudflare") or tieu_de.get("cf-ray")):
+            return False
+        if tieu_de.get("cf-mitigated"):
+            return True
+        than = str(getattr(resp, "text", "") or "")[:20000].lower()
+        return any(dau in than for dau in _THAN_TRANG_CHAN_CLOUDFLARE)
+    except Exception:  # noqa: BLE001 — telemetry không được làm hỏng đường báo lỗi chính
+        return False
+
+
 def _raise_for_status_redacted(resp: "requests.Response") -> None:
     """resp.raise_for_status() nhưng che tham số nhạy cảm trong thông báo lỗi trước khi
     exception rời khỏi HttpClient — nơi gọi (vd resolve_pmids() ở evidence_workbench.py)
@@ -275,10 +309,16 @@ class HttpClient:
             "last_status_code": self.last_status_code,
         }
 
-    def _record_terminal_failure(self, exc: Exception, status_code: Optional[int] = None) -> None:
-        """Ghi một lỗi cuối cùng sau khi retry đã hết; thông báo luôn được che secret."""
+    def _record_terminal_failure(self, exc: Exception, status_code: Optional[int] = None,
+                                 resp: Any = None) -> None:
+        """Ghi một lỗi cuối cùng sau khi retry đã hết; thông báo luôn được che secret.
+
+        Có `resp` là trang chặn Cloudflare ⇒ thêm tiền tố `DAU_CLOUDFLARE_CHAN` (xem chú thích hằng số)."""
         self.failure_count += 1
-        self.last_error = _redact(f"{exc.__class__.__name__}: {exc}")[:500]
+        loi = _redact(f"{exc.__class__.__name__}: {exc}")
+        if resp is not None and _la_trang_chan_cloudflare(resp):
+            loi = f"{DAU_CLOUDFLARE_CHAN} {loi}"
+        self.last_error = loi[:500]
         self.last_status_code = status_code
 
     def get_json(
@@ -503,7 +543,7 @@ class HttpClient:
                 try:
                     _raise_for_status_redacted(resp)
                 except requests.HTTPError as exc:
-                    self._record_terminal_failure(exc, resp.status_code)
+                    self._record_terminal_failure(exc, resp.status_code, resp)
                     raise
             if resp.status_code in _RETRYABLE_STATUS and attempt_retryable >= tran_retryable:
                 logger.warning("HTTP %s từ %s — đã hết hạn mức retry, bỏ qua.", resp.status_code, url)
