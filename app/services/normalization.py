@@ -9,6 +9,21 @@ from app.sources.base import RawRecord
 from app.utils.text import clean_text
 
 
+def _clean_date(v):
+    """Ép `publication_date` về chuỗi (hoặc None) cho MỌI nguồn (29/09/2026).
+
+    `RawRecord.publication_date` khai `Optional[str]` nhưng không có gì cưỡng chế lúc chạy: CORE trả
+    `yearPublished` là SỐ NGUYÊN khi thiếu `publishedDate` ⇒ `deduplication._same_version` cắt `[:4]`
+    trên int và làm sập cả lượt quét (đo thật trên Cloud 29/09). Chặn ở đây vì mọi nguồn đều đi qua.
+    """
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return str(int(v))
+    s = str(v).strip()
+    return s or None
+
+
 def _clean_doi(doi):
     if not doi:
         return None
@@ -73,7 +88,7 @@ def _normalize_co_ban(record: RawRecord, raw: Dict) -> Dict:
         "title": clean_text(record.title, structured=False) or "",
         "authors": record.authors,
         "journal_or_organization": record.journal_or_organization,
-        "publication_date": record.publication_date,
+        "publication_date": _clean_date(record.publication_date),
         "update_date": None,
         "doi": _clean_doi(record.doi),
         "pmid": _clean_id(record.pmid),
