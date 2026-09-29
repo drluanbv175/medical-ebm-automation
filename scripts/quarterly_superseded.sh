@@ -18,6 +18,8 @@ PY="$HOME/.ebm-venv/bin/python"
 [ -x "$PY" ] || PY="$(command -v python3 || command -v python)"
 LOG="$HERE/data/archive/quarterly_superseded.log"
 mkdir -p "$(dirname "$LOG")"
+# Khoá một lượt (29/09/2026) — xem scripts/_khoa_mot_luot.sh: lượt thứ hai trên cùng máy «BỎ QUA», thoát 75.
+. "$HERE/scripts/_khoa_mot_luot.sh"; khoa_mot_luot quarterly_superseded
 
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') : BẮT ĐẦU quét chứng cứ bị vượt qua (quý) =====" >> "$LOG"
 OUT="$HUB/EBM-Dashboards/derivatives/CHUNG-CU-VUOT-QUA_$(date '+%Y%m%d').txt"

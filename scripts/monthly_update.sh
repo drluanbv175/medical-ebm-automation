@@ -30,6 +30,9 @@ if [ "${1:-}" = "--chi-bao-cao" ]; then
   exec "$PY" tools/bao_cao_giam_sat_chi_doc.py --out "${2:?thiếu thư mục ra}" --ngay 35 "${@:3}"
 fi
 
+# Khoá một lượt (29/09/2026) — xem scripts/_khoa_mot_luot.sh: lượt thứ hai trên cùng máy «BỎ QUA», thoát 75.
+. "$PROJ/scripts/_khoa_mot_luot.sh"; khoa_mot_luot monthly_update
+
 echo "" >> "$LOG"
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') : BẮT ĐẦU cập nhật hằng tháng =====" >> "$LOG"
 

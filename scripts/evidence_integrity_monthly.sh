@@ -15,6 +15,8 @@ PY="$HOME/.ebm-venv/bin/python"; [ -x "$PY" ] || PY="$HOME/.ebm-venv/Scripts/pyt
 [ -x "$PY" ] || PY="$(command -v python3 || command -v python)"
 LOG="$HERE/data/archive/evidence_integrity.log"
 mkdir -p "$(dirname "$LOG")"
+# Khoá một lượt (29/09/2026) — xem scripts/_khoa_mot_luot.sh: lượt thứ hai trên cùng máy «BỎ QUA», thoát 75.
+. "$HERE/scripts/_khoa_mot_luot.sh"; khoa_mot_luot evidence_integrity_monthly
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') : BẮT ĐẦU liêm chính chứng cứ (tháng) =====" >> "$LOG"
 tong="PASS"; buoc=0
 chay() {  # chay <tên> <lệnh...> — rc>=2 mới là HỎNG; rc=1 = có phát hiện cần đọc

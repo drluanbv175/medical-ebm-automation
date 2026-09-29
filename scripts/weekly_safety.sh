@@ -33,6 +33,10 @@ if [ "${1:-}" = "--chi-bao-cao" ]; then
   exec "$PY" tools/bao_cao_giam_sat_chi_doc.py --out "${2:?thiếu thư mục ra}" "${@:3}"
 fi
 
+# Khoá một lượt (29/09/2026): lượt thứ hai trên CÙNG máy ghi «BỎ QUA» rồi thoát 75, không gọi nguồn nào — hai lượt
+# chồng nhau hôm 29/09 gây 429 hàng loạt. Xem scripts/_khoa_mot_luot.sh.
+. "$PROJ/scripts/_khoa_mot_luot.sh"; khoa_mot_luot weekly_safety
+
 echo "" >> "$LOG"
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') : BẮT ĐẦU an toàn thuốc hằng tuần =====" >> "$LOG"
 
