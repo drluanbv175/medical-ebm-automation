@@ -61,6 +61,13 @@ _OPTIONAL_ENHANCED = {"scopus", "core", "epistemonikos"}
 # MỖI tuần. Chỉ miễn khi (a) MỌI lỗi của feed là HTTP 401/403 và (b) openFDA cùng ≥ 1 feed an toàn khác
 # còn khoẻ; lỗi khác (timeout, 5xx, parse…) hoặc thiếu dự phòng ⇒ vẫn PARTIAL như cũ.
 _SAFETY_FEEDS_PROVIDER_BLOCKED = {"feed_fda_medwatch"}
+# Dự phòng CHÍNH THỨC đã khai (29/09/2026): feed thu hồi FDA bị chặn ⇒ rss_feed lùi sang openFDA
+# drug/enforcement và gắn raw["_via"]. Trước đây bộ đếm lỗi HttpClient của lần gọi RSS hỏng vẫn làm dòng log thành
+# «error» dù đã có bản ghi thật từ API chính thức ⇒ nguồn «unavailable» ⇒ MỌI lượt PARTIAL — trái ý định ở audit/15 #6
+# (chỉ MedWatch mới báo lỗi thật). Nay: TOÀN BỘ bản ghi đến từ dự phòng đã khai ⇒ «degraded» + tiền tố `du_phong:` và
+# một ghi chú có tên trong `mirror_notices`. Chỉ các `_via` trong tập này (chế độ Crossref-ISSN là nguồn CHÍNH,
+# không phải dự phòng, nên không có ở đây).
+_VIA_DU_PHONG = {"openfda_enforcement"}
 _HTTP_BI_CHAN_RE = re.compile(r"\b40[13] Client Error\b|\bHTTP 40[13]\b")
 
 
@@ -100,7 +107,7 @@ def summarize_source_health(
     """
     grouped: dict[str, dict[str, Any]] = defaultdict(
         lambda: {"requests": 0, "records": 0, "ok": 0, "degraded": 0, "error": 0, "mock": 0,
-                 "error_http_401_403": 0}
+                 "error_http_401_403": 0, "du_phong": 0}
     )
     for row in logs:
         source = str(row.get("source") or "unknown")
@@ -112,6 +119,8 @@ def summarize_source_health(
         item[status] += 1
         if status == "error" and _HTTP_BI_CHAN_RE.search(str(row.get("error_message") or "")):
             item["error_http_401_403"] += 1
+        if str(row.get("error_message") or "").startswith("du_phong:"):
+            item["du_phong"] += 1
 
     source_rows: dict[str, dict[str, Any]] = {}
     for source, item in sorted(grouped.items()):
@@ -169,7 +178,10 @@ def summarize_source_health(
     if guideline_expected and not guideline_healthy:
         hard_fail_reasons.append("GUIDELINE_SOURCE_COVERAGE_MISSING")
 
-    mirror_notices: list[str] = []
+    mirror_notices: list[str] = [
+        f"{name.upper()}_SERVED_BY_OFFICIAL_FALLBACK"
+        for name, item in sorted(source_rows.items()) if item.get("du_phong")
+    ]
     degraded_required: list[str] = []
     for name in sorted(set(discovery_expected) | safety_expected):
         health = source_rows.get(name, {}).get("health")
@@ -441,7 +453,13 @@ def _fetch(client, query: str, area: str, max_results: int,
         terminal_failures = _counter_delta(health_before, health_after, "failure_count")
         transient_failures = _counter_delta(health_before, health_after, "transient_failure_count")
         successes = _counter_delta(health_before, health_after, "success_count")
-        if terminal_failures:
+        chi_du_phong = bool(records) and all(
+            (r.raw or {}).get("_via") in _VIA_DU_PHONG for r in records)
+        if terminal_failures and chi_du_phong:
+            via = (records[0].raw or {}).get("_via")
+            status = "degraded"
+            err = f"du_phong:{via} sau lỗi nguồn chính: {health_after.get('last_error') or 'HTTP request failed'}"[:500]
+        elif terminal_failures:
             status = "error"
             err = str(health_after.get("last_error") or "HTTP request failed")
         elif transient_failures:
