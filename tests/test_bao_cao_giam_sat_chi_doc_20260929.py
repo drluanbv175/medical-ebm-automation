@@ -152,3 +152,16 @@ def test_ngay_do_nguoi_goi_de_len_mac_dinh(tmp_path, monkeypatch):
     monkeypatch.setattr(BC, "_mac_dinh_xuat", lambda n: {})
     assert BC.main(["--out", str(tmp_path / "ra"), "--ngay", "35", "--ngay", "40"]) == 0
     assert thay["ngay"] == 40
+
+
+def test_bo_ebm_tuan_khong_chep_va_ghi_ro_la_co_y(tmp_path, monkeypatch):
+    monkeypatch.setattr(BC, "_mac_dinh_chay_pipeline", lambda q, n: _sh())
+    monkeypatch.setattr(BC, "_mac_dinh_xuat", _xuat_gia)
+    ra = tmp_path / "ra"
+    assert BC.main(["--out", str(ra), "--bo-ebm-tuan"]) == 0
+    assert not (ra / "ebm-tuan.md").exists() and (ra / "ban-tin-moi.md").exists()
+    js = json.loads((ra / "tom_tat.json").read_text(encoding="utf-8"))
+    assert js["bo_co_y"] == ["weekly_md"] and js["thieu_bao_cao"] == []
+    assert "weekly_md" not in js["bao_cao"]
+    md = (ra / "TOM-TAT.md").read_text(encoding="utf-8")
+    assert "`ebm-tuan.md`" not in md and "Cố ý không kèm: ebm-tuan.md" in md
