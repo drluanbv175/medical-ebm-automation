@@ -27,6 +27,11 @@ cd "$PROJ" || exit 1
 if [ "${1:-}" = "--canary" ]; then
   exec "$PY" tools/verify_evidence_surveillance_deployment.py --runtime-canary --online
 fi
+# Chỉ báo cáo (29/09/2026): quét thật nhưng DB/watermark ở thư mục tạm, không cảnh báo, không nối
+# Hub, không ghi sổ lượt — dùng cho lượt chạy thêm ngoài Mac (Routine Cloud). Đối số 2 = thư mục ra.
+if [ "${1:-}" = "--chi-bao-cao" ]; then
+  exec "$PY" tools/bao_cao_giam_sat_chi_doc.py --out "${2:?thiếu thư mục ra}" "${@:3}"
+fi
 
 echo "" >> "$LOG"
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') : BẮT ĐẦU an toàn thuốc hằng tuần =====" >> "$LOG"
