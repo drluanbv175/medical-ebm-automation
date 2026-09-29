@@ -45,7 +45,7 @@ This file contains only Claude Code-specific instructions.
   `DRUG_SAFETY_FEEDS` + `GUIDELINE_FEEDS`, hiện 80 mục): **79/80 trả bài thật**, 0 mock (crossref 35 · crossref_title 21 ·
   rss 17 · europepmc 5 · who_iris 1 · kcb_vn 1). Mục duy nhất 0 bài là `fda_medwatch`: www.fda.gov trả HTTP 401 cho truy
   cập tự động; `search()` trả `[]` nhưng `_fetch()` của ingestion đọc bộ đếm lỗi HttpClient nên vẫn ghi `error` (không
-  xanh giả). MedWatch không có API openFDA tương đương (khác `fda_recalls` đã có dự phòng enforcement) — giới hạn đã biết.
+  xanh giả). MedWatch không có API openFDA tương đương (khác `fda_recalls` đã có dự phòng enforcement) — giới hạn đã biết. **Từ 29/09/2026 (bác sĩ chọn «ghi chú, không chặn»):** MedWatch hỏng CHỈ vì 401/403 và openFDA + ≥ 1 feed an toàn khác còn khoẻ ⇒ `summarize_source_health` ghi `FEED_FDA_MEDWATCH_PROVIDER_BLOCKS_AUTOMATED_ACCESS_401_403` vào `mirror_notices`, không tính là nguồn bắt buộc suy giảm (trước đó riêng nó làm MỌI lượt PARTIAL ⇒ chặn nối Hub mỗi tuần); lỗi khác hoặc thiếu dự phòng vẫn PARTIAL (`tests/test_medwatch_chan_truy_cap_20260929.py`, 5 đột biến đỏ).
   Đoạn mô tả 24/09 giữ lại làm lịch sử: Môi trường Cloud «Default — **Trusted** network access»:
   proxy thoát mạng TỪ CHỐI (CONNECT 403, chính sách) MỌI host API y văn — NCBI, `www.ebi.ac.uk`,
   `api.crossref.org`, OpenAlex, ClinicalTrials.gov, openFDA, Semantic Scholar, CORE, WHO IRIS,
@@ -410,7 +410,7 @@ This file contains only Claude Code-specific instructions.
   ERJ (`erj.ersjournals.com`) trả 403 trang thách thức Cloudflare cho truy cập tự động ⇒ KHÔNG crawl;
   một phần có PMCID (vd PMC13612986) ⇒ đi đường PMC như ADA. **ASCO** — `www.asco.org` trả 403 cho
   truy cập tự động; `ascopubs.org` cho `*` (Crawl-delay 1, chặn GPTBot/CCBot, KHÔNG nhắc ClaudeBot)
-  nhưng điều khoản sử dụng CHƯA đọc ⇒ vẫn «cần khảo sát thêm», không viết connector. Europe PMC
+  nhưng đo lại 29/09/2026 từ Cloud: MỌI trang nội dung (`/terms`, `/terms-of-use`, `/page/…`, trang bài `/doi/…`) trả 403 trang thách thức Cloudflare «Just a moment…» cho truy cập tự động (chỉ `robots.txt` trả 200) ⇒ KHÔNG khả thi như ERS (không lách thách thức bot); điều khoản vẫn chưa đọc được bằng máy — không viết connector. Europe PMC
   (2021–2026): ~64 ESMO CPG trên Ann Oncol, ~78 «ASCO Guideline» trên JCO; các bản mẫu đầu không có
   PMCID ⇒ đường PMC gần như không phủ ESMO/ASCO.
   **Kiến trúc:** 4 module mới trong `app/sources/` (`gold_copd.py`, `gina_asthma.py`,
@@ -451,8 +451,8 @@ This file contains only Claude Code-specific instructions.
   `ENABLE_PMC_GUIDELINE_FULLTEXT`, không cần API key).
   **Việc CHƯA làm, có chủ ý** (ghi rõ để không ai suy nhầm là đã xong): (1) chưa nối vào bất kỳ
   agent/pipeline nào (chỉ là hạ tầng CÓ SẴN, gọi thủ công) — nối vào `tra-cuu-chung-cu`/
-  `cap-nhat-guideline` là việc SAU KHI kiểm sống; (2) ERS/ASCO/ESMO đã khảo sát 28/09 (xem trên:
-  ESMO/ERS không crawl, ERS đi PMC khi có PMCID, ASCO chờ đọc điều khoản); (3) ESC/ACC-AHA/IDSA/EULAR/ATS/AGS/ACP/ASH/AGA/ACG/AAN
+  `cap-nhat-guideline` là việc SAU KHI kiểm sống; (2) ERS/ASCO/ESMO đã khảo sát 28–29/09 (xem trên:
+  ESMO/ERS/ASCO không crawl, ERS đi PMC khi có PMCID; ASCO bị thách thức Cloudflare); (3) ESC/ACC-AHA/IDSA/EULAR/ATS/AGS/ACP/ASH/AGA/ACG/AAN
   CỐ Ý không có connector crawl — với các tổ chức này, đầu ra hệ thống vẫn chỉ là link + tóm
   tắt (đúng cách `tra-cuu-chung-cu` đang hoạt động), bác sĩ tự mở link đọc toàn văn qua quyền
   truy cập của mình; (4) chưa đọc lại nguyên văn tiếng Anh đầy đủ (chữ-đối-chữ) các trang điều
