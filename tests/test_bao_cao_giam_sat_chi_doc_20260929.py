@@ -31,7 +31,7 @@ def _xuat_gia(ngay):
     out = {}
     for khoa in BC.TEN_BAO_CAO:
         p = settings.reports_dir / f"{khoa}.md"
-        p.write_text(f"# {khoa} ({ngay} ngày)\n", encoding="utf-8")
+        p.write_text(f"# {khoa} ({ngay} ngày)\n", encoding="utf-8", newline="\n")
         out[khoa] = p
     return out
 

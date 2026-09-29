@@ -134,8 +134,9 @@ def chay_bao_cao_chi_doc(out_dir: Path, ngay: int = 10, max_per_query: int = 8, 
         "tang_du_phong_tinh_phi": "tắt cứng",
         "disclaimer": DISCLAIMER,
     }
-    (out_dir / "tom_tat.json").write_text(json.dumps(tom_tat, ensure_ascii=False, indent=2), encoding="utf-8")
-    (out_dir / "TOM-TAT.md").write_text(_markdown(tom_tat), encoding="utf-8")
+    (out_dir / "tom_tat.json").write_text(json.dumps(tom_tat, ensure_ascii=False, indent=2),
+                                          encoding="utf-8", newline="\n")
+    (out_dir / "TOM-TAT.md").write_text(_markdown(tom_tat), encoding="utf-8", newline="\n")
     return tom_tat
 
 
