@@ -58,6 +58,10 @@ def _lay(entry: Dict[str, Any], *ten_khoa: str) -> Any:
     return None
 
 
+def _chuoi_hoac_none(v: Any) -> Optional[str]:
+    return None if v is None else (str(v).strip() or None)
+
+
 def _ten_tap_chi(entry: Dict[str, Any]) -> Optional[str]:
     journals = _lay(entry, "journals") or []
     if isinstance(journals, list) and journals:
@@ -159,7 +163,9 @@ class CoreClient(SourceClient):
                     source=self.name, title=title,
                     authors=_danh_sach_tac_gia(e),
                     journal_or_organization=journal,
-                    publication_date=_lay(e, "publishedDate", "published_date", "yearPublished", "year_published"),
+                    # yearPublished là SỐ NGUYÊN trong phản hồi thật ⇒ ép chuỗi (khớp RawRecord: Optional[str]).
+                    publication_date=_chuoi_hoac_none(
+                        _lay(e, "publishedDate", "published_date", "yearPublished", "year_published")),
                     doi=_lay(e, "doi"),
                     pmid=str(_lay(e, "pubmedId", "pubmed_id")) if _lay(e, "pubmedId", "pubmed_id") else None,
                     abstract=_lay(e, "abstract"),
