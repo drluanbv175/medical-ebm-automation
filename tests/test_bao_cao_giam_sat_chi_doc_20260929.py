@@ -131,3 +131,24 @@ def test_weekly_safety_noi_co_chi_bao_cao():
     assert dong == ['exec "$PY" tools/bao_cao_giam_sat_chi_doc.py --out "${2:?thiếu thư mục ra}" "${@:3}"']
     i_co = sh.index('if [ "${1:-}" = "--chi-bao-cao" ]')
     assert i_co < sh.index('"$PY" run.py live-update')
+
+
+def test_monthly_update_noi_co_chi_bao_cao_cua_so_35_ngay():
+    sh = (ROOT / "scripts" / "monthly_update.sh").read_text(encoding="utf-8")
+    dong = [d.strip() for d in sh.splitlines() if "bao_cao_giam_sat_chi_doc.py" in d and not d.strip().startswith("#")]
+    assert dong == ['exec "$PY" tools/bao_cao_giam_sat_chi_doc.py --out "${2:?thiếu thư mục ra}" --ngay 35 "${@:3}"']
+    assert sh.index('if [ "${1:-}" = "--chi-bao-cao" ]') < sh.index('"$PY" run.py live-update')
+
+
+def test_ngay_do_nguoi_goi_de_len_mac_dinh(tmp_path, monkeypatch):
+    """monthly truyền --ngay 35 trước "${@:3}": argparse lấy giá trị SAU CÙNG ⇒ người gọi đè được."""
+    thay = {}
+
+    def chay(q, n):
+        thay["ngay"] = n
+        return _sh()
+
+    monkeypatch.setattr(BC, "_mac_dinh_chay_pipeline", chay)
+    monkeypatch.setattr(BC, "_mac_dinh_xuat", lambda n: {})
+    assert BC.main(["--out", str(tmp_path / "ra"), "--ngay", "35", "--ngay", "40"]) == 0
+    assert thay["ngay"] == 40

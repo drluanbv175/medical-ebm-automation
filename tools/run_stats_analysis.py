@@ -1865,6 +1865,56 @@ def _generate_r_script_survival(study: str, gate: str, time_col: str, event_col:
     )
 
 
+def _r_khoi_mi(outcome_col: str, bien: list, family: str, cluster_col: str | None) -> str:
+    """Khối R «3d» tái lặp Bảng 5 (MI) của Python — thêm 29/09/2026.
+
+    Trước đây script R không có MI nên Bảng 5 không tái lặp độc lập được. Chỉ chạy khi các biến phân tích CÓ thiếu
+    (giống Python). Không cụm ⇒ `mice::pool()` chuẩn. Có cụm ⇒ gộp Rubin THỦ CÔNG trên `vcovCL` từng bộ dữ liệu
+    (pool() của mice chỉ dùng vcov mô hình) rồi suy luận t(G−1) — đúng quy ước `_suy_luan_t_cum` của Python (N11);
+    cột cụm không vào mô hình impute, hàng thiếu mã cụm bị loại trước.
+    """
+    cot = ", ".join(f'"{c}"' for c in [outcome_col] + bien)
+    cong_thuc = f"{outcome_col} ~ {' + '.join(bien)}"
+    dau = (
+        "# 3d. Bảng 5 — Multiple imputation (mice m=20, pmm), chỉ khi biến phân tích có thiếu\n"
+        "library(mice)\n"
+        f"vars_mi <- c({cot})\n"
+    )
+    if not cluster_col:
+        return dau + (
+            "if (anyNA(data[, vars_mi])) {\n"
+            "  imp <- mice(data[, vars_mi], m = 20, method = \"pmm\", seed = 42, printFlag = FALSE)\n"
+            f"  fit_mi <- with(imp, glm({cong_thuc}, family = {family}))\n"
+            "  print(summary(pool(fit_mi), conf.int = TRUE))\n"
+            "}\n\n"
+        )
+    return dau + (
+        f"d_mi <- data[!is.na(data${cluster_col}), c(vars_mi, \"{cluster_col}\")]\n"
+        "if (anyNA(d_mi[, vars_mi])) {\n"
+        f"  d_mi${cluster_col} <- as.factor(d_mi${cluster_col})\n"
+        "  pred <- make.predictorMatrix(d_mi)\n"
+        f"  pred[, \"{cluster_col}\"] <- 0  # mã cụm không phải biến dự báo\n"
+        "  imp <- mice(d_mi, m = 20, method = \"pmm\", predictorMatrix = pred, seed = 42, printFlag = FALSE)\n"
+        "  fits <- lapply(seq_len(imp$m), function(i) {\n"
+        "    d_i <- complete(imp, i)\n"
+        f"    m_i <- glm({cong_thuc}, data = d_i, family = {family})\n"
+        f"    list(b = coef(m_i), v = vcovCL(m_i, cluster = ~ {cluster_col}))\n"
+        "  })\n"
+        "  B_mat <- do.call(rbind, lapply(fits, `[[`, \"b\"))\n"
+        "  q_bar <- colMeans(B_mat)\n"
+        "  u_bar <- Reduce(`+`, lapply(fits, `[[`, \"v\")) / imp$m\n"
+        "  t_tot <- u_bar + (1 + 1 / imp$m) * cov(B_mat)  # luật Rubin\n"
+        "  se_mi <- sqrt(diag(t_tot))\n"
+        f"  df_mi <- length(unique(d_mi${cluster_col})) - 1  # t(G−1) như Python\n"
+        "  q_t <- qt(0.975, df_mi)\n"
+        "  bang5 <- cbind(est = q_bar, lo = q_bar - q_t * se_mi, hi = q_bar + q_t * se_mi,\n"
+        "                 p = 2 * pt(abs(q_bar / se_mi), df_mi, lower.tail = FALSE))\n"
+        + ("  bang5[, 1:3] <- exp(bang5[, 1:3])  # OR\n" if family == "binomial" else "")
+        + "  print(bang5)\n"
+        "}\n\n"
+    )
+
+
 def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
                        covariates: list, outcome_type: str, cluster_col: str | None = None) -> str:
     """Script R tái lặp kết quả (để audit/tái lặp độc lập). Có cụm ⇒ thêm KTC sandwich theo cụm (vcovCL)."""
@@ -1908,6 +1958,7 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
         )
     else:
         cluster_block = ""
+    mi_block = _r_khoi_mi(outcome_col, [group_col] + covariates, family, cluster_col)
     run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
     return (
         f"# ══════════════════════════════════════════════\n"
@@ -1928,6 +1979,7 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
         f"model_adj   <- glm({outcome_col} ~ {formula}, data = data, family = {family})\n\n"
         f"# OR/β + 95%CI (không chỉ p-value)\n{coef_code}\n\n"
         f"{cluster_block}"
+        f"{mi_block}"
         "# 4. Kiểm tra giả định\n"
         f"library(car); vif(model_adj)\n{hosmer_block}\n\n"
         "# 5. Ghi session info (tái lặp)\n"

@@ -24,6 +24,36 @@ def _clean_date(v):
     return s or None
 
 
+def _chuoi_hoac_none(v):
+    """Ép một trường VĂN BẢN của RawRecord về chuỗi (hoặc None) cho MỌI nguồn (29/09/2026).
+
+    Cùng họ lỗi `publication_date` số nguyên của CORE: dataclass khai `Optional[str]` nhưng không cưỡng
+    chế lúc chạy, trong khi bước sau gọi `.lower()`/`.strip()`/cắt chuỗi (vd `deduplication._key_for`
+    gọi `.lower()` trên `journal_or_organization`). JSON nguồn hay trả DANH SÁCH (Crossref
+    `container-title`), số (phiên bản), hoặc dict. Danh sách ⇒ nối bằng «; »; dict ⇒ None (không đoán
+    khoá nào là giá trị); số ⇒ `str()`; rỗng ⇒ None.
+    """
+    if v is None or isinstance(v, (bool, dict)):
+        return None
+    if isinstance(v, (list, tuple)):
+        phan = [p for p in (_chuoi_hoac_none(x) for x in v) if p]
+        return "; ".join(phan) or None
+    s = str(v).strip()
+    return s or None
+
+
+def _danh_sach_chuoi(v):
+    """Ép trường DANH SÁCH (`keywords`, `mesh_terms`) về list[str] không phần tử rỗng/None."""
+    if v is None or isinstance(v, (bool, dict)):
+        return []
+    if isinstance(v, str):
+        return [v.strip()] if v.strip() else []
+    if isinstance(v, (list, tuple, set)):
+        return [s for s in (_chuoi_hoac_none(x) for x in v) if s]
+    s = _chuoi_hoac_none(v)
+    return [s] if s else []
+
+
 def _clean_doi(doi):
     if not doi:
         return None
@@ -82,28 +112,29 @@ def lan_co_rut_bai_trong_nhom(items: List[Dict], links: List[Tuple[int, int, str
 
 
 def _normalize_co_ban(record: RawRecord, raw: Dict) -> Dict:
+    c = _chuoi_hoac_none
     return {
         "source": record.source,
-        "source_type": record.source_type,
-        "title": clean_text(record.title, structured=False) or "",
-        "authors": record.authors,
-        "journal_or_organization": record.journal_or_organization,
+        "source_type": c(record.source_type) or "article",
+        "title": clean_text(c(record.title), structured=False) or "",
+        "authors": c(record.authors),
+        "journal_or_organization": c(record.journal_or_organization),
         "publication_date": _clean_date(record.publication_date),
         "update_date": None,
-        "doi": _clean_doi(record.doi),
-        "pmid": _clean_id(record.pmid),
-        "pmcid": _clean_id(record.pmcid),
-        "nct_id": _clean_id(record.nct_id),
-        "url": record.url,
-        "abstract": clean_text(record.abstract, structured=True),
-        "document_type": record.document_type,
-        "study_type": record.study_type,
-        "clinical_area": record.clinical_area,
-        "keywords": record.keywords or [],
-        "mesh_terms": record.mesh_terms or [],
-        "guideline_version": record.guideline_version,
-        "safety_signal": clean_text(record.safety_signal, structured=False),
-        "official_grade": record.official_grade,
+        "doi": _clean_doi(c(record.doi)),
+        "pmid": _clean_id(c(record.pmid)),
+        "pmcid": _clean_id(c(record.pmcid)),
+        "nct_id": _clean_id(c(record.nct_id)),
+        "url": c(record.url),
+        "abstract": clean_text(c(record.abstract), structured=True),
+        "document_type": c(record.document_type),
+        "study_type": c(record.study_type),
+        "clinical_area": c(record.clinical_area),
+        "keywords": _danh_sach_chuoi(record.keywords),
+        "mesh_terms": _danh_sach_chuoi(record.mesh_terms),
+        "guideline_version": c(record.guideline_version),
+        "safety_signal": clean_text(c(record.safety_signal), structured=False),
+        "official_grade": c(record.official_grade),
         "ingest_query": record.ingest_query,
         "api_endpoint": record.api_endpoint,
         # Truy vết mock: cờ raw["_mock"] (do _fixtures gắn) -> cột is_mock.
