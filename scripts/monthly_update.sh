@@ -24,6 +24,11 @@ cd "$PROJ" || exit 1
 if [ "${1:-}" = "--canary" ]; then
   exec "$PY" tools/verify_evidence_surveillance_deployment.py --runtime-canary --online
 fi
+# Chỉ báo cáo (29/09/2026, như weekly_safety.sh): quét thật, DB/watermark ở thư mục tạm, không cảnh báo, không
+# nối Hub, không TikTok, không ghi sổ lượt. Cửa sổ mặc định 35 ngày cho lượt tháng; đối số 2 = thư mục ra.
+if [ "${1:-}" = "--chi-bao-cao" ]; then
+  exec "$PY" tools/bao_cao_giam_sat_chi_doc.py --out "${2:?thiếu thư mục ra}" --ngay 35 "${@:3}"
+fi
 
 echo "" >> "$LOG"
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') : BẮT ĐẦU cập nhật hằng tháng =====" >> "$LOG"
