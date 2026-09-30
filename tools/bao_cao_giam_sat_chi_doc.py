@@ -130,6 +130,9 @@ def chay_bao_cao_chi_doc(out_dir: Path, ngay: int = 10, max_per_query: int = 8, 
         "ly_do_that_bai": list(sh.get("hard_fail_reasons") or []),
         "canh_bao_nguon": list(sh.get("warnings") or []),
         "nguon_bat_buoc_suy_giam": list(sh.get("degraded_required_sources") or []),
+        # Nguồn hỏng được MIỄN theo luật bác sĩ đã chọn (MedWatch 401/403, Scopus bị Cloudflare chặn, dự phòng chính
+        # thức…): PASS vẫn phải nói ra, không để trông như mọi nguồn đều chạy (phản biện 29/09/2026).
+        "ghi_chu_nguon": list(sh.get("mirror_notices") or []),
         "so_ban_ghi": sh.get("total_records"),
         "muc_moi": stats.get("new_items"),
         "bao_cao": da_chep,
@@ -158,6 +161,9 @@ def _markdown(t: Dict[str, object]) -> str:
         for k in ("ly_do_that_bai", "nguon_bat_buoc_suy_giam", "canh_bao_nguon"):
             if t[k]:
                 dong.append(f"- {k}: {', '.join(map(str, t[k]))}")
+    if t.get("ghi_chu_nguon"):
+        ghi_chu = ", ".join(map(str, t["ghi_chu_nguon"]))
+        dong.append(f"- Ghi chú nguồn (hỏng nhưng được miễn theo luật đã duyệt): {ghi_chu}")
     dong += ["", "## Báo cáo kèm theo", ""]
     dong += [f"- `{ten}`" for ten in dict(t["bao_cao"]).values()] or ["- (không sinh được báo cáo nào)"]
     if t["thieu_bao_cao"]:
