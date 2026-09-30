@@ -14,15 +14,34 @@ from app.services.normalization import normalized_title_key
 TITLE_SIMILARITY_THRESHOLD = 0.92
 
 
+def _chuoi(v) -> str:
+    """Ép một trường văn bản về chuỗi đã strip; rỗng/None/bool ⇒ "" (lớp phòng thủ 29/09/2026).
+
+    Normalizer (`normalization._clean_date`/`_chuoi_hoac_none`) đã ép kiểu từ gốc, nhưng lượt
+    `weekly_safety.sh` 29/09/2026 18:31 chạy trên cây CHƯA có bản vá đó và sập ở đây với
+    `TypeError: 'int' object is not subscriptable` (CORE trả `yearPublished` số nguyên). Khử trùng
+    lặp không được làm sập cả lượt quét chỉ vì một nguồn trả sai kiểu ⇒ tự ép kiểu tại chỗ.
+    Giá trị «falsy» (None, "", 0) vẫn là "" như biểu thức cũ `(x or "")`; bool không phải năm.
+    """
+    if not v or isinstance(v, bool):
+        return ""
+    return str(v).strip()
+
+
+def _nam(item: Dict) -> str:
+    """4 ký tự đầu của `publication_date` dưới dạng chuỗi ("" nếu không có)."""
+    return _chuoi(item.get("publication_date"))[:4]
+
+
 def _key_for(item: Dict) -> Optional[str]:
     """Khóa định danh mạnh nhất hiện có (ưu tiên DOI > PMID > PMCID > NCT)."""
     for field in ("doi", "pmid", "pmcid", "nct_id"):
         if item.get(field):
             return f"{field}:{str(item[field]).lower()}"
     if (item.get("study_type") or "") == "guideline":
-        org = (item.get("journal_or_organization") or "").lower()
+        org = _chuoi(item.get("journal_or_organization")).lower()
         # Phiên bản; nếu không có thì dùng NĂM để 2 guideline cùng tên khác năm không bị gộp.
-        ver = (item.get("guideline_version") or "").lower() or (item.get("publication_date") or "")[:4]
+        ver = _chuoi(item.get("guideline_version")).lower() or _nam(item)
         if org:
             return f"guideline:{org}:{normalized_title_key(item.get('title', ''))}:{ver}"
     return None
@@ -63,15 +82,15 @@ def _same_version(a: Dict, b: Dict) -> bool:
     đề — trả False (fail-closed), tránh gộp nhầm 2 mục có thể khác năm mà
     một bên chỉ thiếu dữ liệu ngày.
     """
-    ya = (a.get("publication_date") or "")[:4]
-    yb = (b.get("publication_date") or "")[:4]
+    ya = _nam(a)
+    yb = _nam(b)
     if ya and yb:
         if ya != yb:
             return False
     elif ya or yb:
         return False
-    va = (a.get("guideline_version") or "").strip().lower()
-    vb = (b.get("guideline_version") or "").strip().lower()
+    va = _chuoi(a.get("guideline_version")).lower()
+    vb = _chuoi(b.get("guideline_version")).lower()
     if va and vb and va != vb:
         return False
     return True
