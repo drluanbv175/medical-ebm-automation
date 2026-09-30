@@ -169,6 +169,23 @@ This file contains only Claude Code-specific instructions.
   "heart failure guideline"` trả `live:true, count:5`, cả 5 bản ghi `is_mock:false` (3/5 có DOI thật,
   vd `10.1186/1472-6963-9-74`; 2/5 CORE không trả DOI — đúng giới hạn siêu dữ liệu đã ghi ở trên).
   CORE nay là nguồn PHỦ RỘNG đang chạy thật cùng lõi miễn phí + Scopus/SerpApi/Consensus.
+  ⚠️ **NHỊP RIÊNG + ĐỘ PHỦ — 30/09/2026** (sau run #44 tuần 29/09: 3 lần 429 ⇒ cầu dao cắt 20/53 mà `health` vẫn «ok»).
+  Đối chiếu cache HTTP: trong «30 truy vấn ok» của lượt đó 25 là TRÚNG CACHE (năm lượt quét khác cùng tối để lại), chỉ 5
+  request thật rồi 429 — cache nguội thì CORE chỉ phủ khoảng 5/45 truy vấn chủ đề. Hai trang chính thức nói KHÁC nhau
+  (services/api: «five single requests per 10 seconds»; docs/v3 mục «Rate limits»: theo token, tối đa 10/phút cho hạng
+  không đăng ký và học thuật, 25/phút «Registered Personal», «adjusted dynamically»). Header thật đo 30/09 với khoá của
+  máy: `x-ratelimit-limit: 10`; `x-ratelimit-retry-after` là MỐC ISO-8601, không phải số giây — nên `_backoff_wait` cũ
+  lùi về 1,5 giây và gửi lại khi cửa sổ chưa mở. Nay: `CORE_MIN_INTERVAL_SECONDS` (mặc định 6,5; không thấp hơn
+  `HTTP_MIN_INTERVAL`) + `HttpClient(rate_limit_headers=RateLimitHeaders(...))` chờ tới đúng mốc máy chủ nêu (trần
+  `CORE_RATE_LIMIT_MAX_WAIT_SECONDS` = 65; ≤ 0 = tắt; 429 không có mốc ⇒ chờ 60 giây; mốc XA HƠN trần, vd hết hạn mức
+  token theo ngày ⇒ truy vấn hỏng ngay, không ngủ, cầu dao cắt trong vài giây) — CHỈ client khai chính sách mới
+  đọc header này. `sweep_source` trừ thời gian CHỜ NHỊP CHỦ ĐỘNG (`HttpClient.paced_wait_seconds`) khỏi ngưỡng chậm
+  10 giây của cầu dao; ngủ backoff sau 429/5xx vẫn tính. Hàng nguồn của `summarize_source_health` có thêm `not_attempted`
+  (+ `not_attempted_areas`) = truy vấn lẽ ra được gửi mà cầu dao cắt — KHÔNG gồm truy vấn nguồn vốn bỏ qua (`skipped`),
+  KHÔNG đổi `health`/`status`; kèm khoá gộp `not_attempted_by_source`, dòng log «Ingestion độ phủ truy vấn» và trường
+  `truy_van_chua_thu` của báo cáo chỉ-đọc. Hệ quả: lượt quét CORE không trúng cache mất ≈ 5 phút. CHƯA quan sát header
+  của chính phản hồi 429 (không cố ý bắn hết lượt để xem). `tests/test_core_nhip_va_do_phu_20260930.py` (79 ca; 65 đột
+  biến đều đỏ).
   · **Epistemonikos API — thêm 16/09/2026**, cùng đợt với CORE. `app/sources/epistemonikos.py`.
   TẮT mặc định. **KHÁC CORE: `EPISTEMONIKOS_API_TOKEN` BẮT BUỘC thật** (chặn cứng như Scopus) —
   và **KHÔNG tự đăng ký được**: tài liệu chính thức (`api.epistemonikos.org`, đọc trực tiếp — trang

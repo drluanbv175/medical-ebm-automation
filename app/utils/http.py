@@ -6,11 +6,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import socket
 import sys
 import threading
 import time
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
@@ -145,6 +149,118 @@ def _raise_for_status_redacted(resp: "requests.Response") -> None:
     except requests.HTTPError as exc:
         raise requests.HTTPError(_redact(str(exc)), response=resp) from None
 
+
+# THÊM 30/09/2026 — nguồn báo giới hạn nhịp qua HEADER RIÊNG, không phải `Retry-After` chuẩn.
+# Ca gốc (data/archive/launchd_weekly.log, lượt weekly 29/09/2026, run #44): CORE trả 429, `_backoff_wait` chỉ hiểu
+# `Retry-After` dạng SỐ GIÂY nên lùi về backoff 1,5 s, gửi lại khi cửa sổ token của CORE chưa mở ⇒ 429 lần nữa ⇒
+# truy vấn kế tiếp gửi ngay sau 0,34 s cũng 429 ⇒ 3 truy vấn liên tiếp hỏng ⇒ cầu dao cắt phần còn lại của nguồn.
+# CORE nêu mốc được gọi lại ở `X-RateLimit-Retry-After` dạng MỐC THỜI GIAN ISO-8601 (đo thật 30/09/2026:
+# `x-ratelimit-limit: 10`, `x-ratelimit-remaining: 9`, `x-ratelimit-retry-after: 2026-09-30T12:16:23+0000`).
+# CHỈ client khai `rate_limit_headers` mới đọc các header này; mọi client khác giữ nguyên hành vi cũ.
+@dataclass(frozen=True)
+class RateLimitHeaders:
+    """Tên các header giới hạn nhịp của MỘT nguồn + trần chờ, để `HttpClient` chờ đúng mốc máy chủ nêu.
+
+    retry_after: header mang thời điểm «được gọi lại» — mốc ISO-8601/HTTP-date/epoch, hoặc số giây tương đối.
+    remaining: header mang số lượt/token CÒN LẠI trong cửa sổ hiện tại (None = nguồn không có).
+    limit: header mang trần của cửa sổ — chỉ để ghi log cho người đọc (None = không ghi).
+    max_wait: trần MỘT lần chờ (giây). Máy chủ hẹn xa hơn trần này ⇒ KHÔNG chờ, truy vấn bị bỏ ngay.
+    wait_429_without_hint: số giây chờ khi nhận 429 mà header `retry_after` thiếu, không đọc được hoặc không ở
+        tương lai. None = backoff mũ mặc định, y như client không khai chính sách.
+    margin: cộng thêm vào mốc máy chủ nêu — header chỉ chính xác tới giây, tới sớm một nhịp là 429 lần nữa.
+    """
+
+    retry_after: str
+    remaining: Optional[str] = None
+    limit: Optional[str] = None
+    max_wait: float = 30.0
+    wait_429_without_hint: Optional[float] = None
+    margin: float = 1.0
+
+    def __post_init__(self) -> None:
+        # Cấu hình sai NỔ TO lúc dựng client (một trần ≤ 0 sẽ thành time.sleep(số âm) giữa lượt quét).
+        if not isinstance(self.retry_after, str) or not self.retry_after.strip():
+            raise ValueError("RateLimitHeaders.retry_after phải là tên header không rỗng")
+        if not (isinstance(self.max_wait, (int, float)) and math.isfinite(self.max_wait) and self.max_wait > 0):
+            raise ValueError(f"RateLimitHeaders.max_wait phải là số hữu hạn > 0, nhận {self.max_wait!r}")
+        if not (isinstance(self.margin, (int, float)) and math.isfinite(self.margin) and self.margin >= 0):
+            raise ValueError(f"RateLimitHeaders.margin phải là số hữu hạn >= 0, nhận {self.margin!r}")
+        cho = self.wait_429_without_hint
+        if cho is not None and not (isinstance(cho, (int, float)) and math.isfinite(cho) and cho >= 0):
+            raise ValueError(f"RateLimitHeaders.wait_429_without_hint phải là None hoặc số hữu hạn >= 0, nhận {cho!r}")
+
+
+# Số ≥ mốc này (09/09/2001) là THỜI ĐIỂM epoch tính bằng giây; ≥ 10^12 là epoch mili-giây; nhỏ hơn là số giây tương đối.
+_EPOCH_GIAY_TOI_THIEU = 1_000_000_000
+_EPOCH_MILI_GIAY_TOI_THIEU = 1_000_000_000_000
+
+
+def _parse_moment(value: str) -> Optional[datetime]:
+    """Mốc ISO-8601 hoặc HTTP-date → datetime CÓ múi giờ (mốc không ghi múi giờ coi là UTC); None = không đọc được."""
+    # strptime trước: nhận đúng dạng CORE trả thật (`2026-09-30T12:16:23+0000`) trên mọi phiên bản Python đang hỗ trợ.
+    for doc in (lambda s: datetime.strptime(s, "%Y-%m-%dT%H:%M:%S%z"), datetime.fromisoformat,
+                parsedate_to_datetime):
+        try:
+            moc = doc(value)
+        except (TypeError, ValueError):
+            continue
+        if not isinstance(moc, datetime):
+            continue
+        return moc if moc.tzinfo is not None else moc.replace(tzinfo=timezone.utc)
+    return None
+
+
+def _seconds_until(value: Any, now: datetime) -> Optional[float]:
+    """Giá trị header «được gọi lại lúc nào» → SỐ GIÂY phải chờ tính từ `now` (có thể ≤ 0); None = không đọc được.
+
+    Nhận mốc ISO-8601 (kể cả `+00:00`, `Z`, giây lẻ), HTTP-date (RFC 7231), số epoch (giây hoặc mili-giây) và số
+    giây tương đối. Hàm đo đạc — không bao giờ ném lỗi.
+    """
+    try:
+        chuoi = str(value).strip()
+        if not chuoi:
+            return None
+        try:
+            so = float(chuoi)
+        except ValueError:
+            moc = _parse_moment(chuoi)
+            return None if moc is None else (moc - now).total_seconds()
+        if not math.isfinite(so):
+            return None
+        if so >= _EPOCH_MILI_GIAY_TOI_THIEU:
+            so /= 1000.0
+        return so - now.timestamp() if so >= _EPOCH_GIAY_TOI_THIEU else so
+    except Exception:  # noqa: BLE001 — telemetry không được làm hỏng đường gọi chính
+        return None
+
+
+def _read_rate_limit(resp: Any, policy: RateLimitHeaders) -> Dict[str, Any]:
+    """Đọc header giới hạn nhịp của MỘT phản hồi theo `policy`. Hàm đo đạc — không bao giờ ném lỗi.
+
+    Trả {"remaining": int|None, "wait": float|None, "raw": {tên header: giá trị đã cắt gọn để ghi log}}. `wait` là số
+    giây từ «bây giờ» tới mốc được gọi lại (≤ 0 = mốc không ở tương lai; None = thiếu header hoặc không đọc được).
+    «Bây giờ» lấy theo ĐỒNG HỒ MÁY CHỦ (header `Date` của chính phản hồi): so mốc của máy chủ với giờ của máy chủ thì
+    đồng hồ máy này lệch cũng không làm sai; phản hồi không có `Date` đọc được mới dùng giờ UTC của máy.
+    """
+    ket_qua: Dict[str, Any] = {"remaining": None, "wait": None, "raw": {}}
+    try:
+        headers = {str(k).lower(): str(v) for k, v in (getattr(resp, "headers", None) or {}).items()}
+        for ten in (policy.limit, policy.remaining, policy.retry_after):
+            if ten and ten.lower() in headers:
+                ket_qua["raw"][ten] = re.sub(r"[^\x20-\x7e]", "?", headers[ten.lower()])[:60]
+        if policy.remaining and policy.remaining.lower() in headers:
+            try:
+                ket_qua["remaining"] = int(float(headers[policy.remaining.lower()].strip()))
+            except (ValueError, OverflowError):
+                pass
+        if policy.retry_after.lower() in headers:
+            bay_gio = _parse_moment(headers.get("date", "")) or datetime.now(timezone.utc)
+            ket_qua["wait"] = _seconds_until(headers[policy.retry_after.lower()], bay_gio)
+    except Exception:  # noqa: BLE001 — telemetry không được làm hỏng đường gọi chính
+        pass
+    return ket_qua
+
+
 _CACHE_DIR = settings.raw_dir / "_http_cache"
 _CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -245,6 +361,12 @@ class HttpClient:
             có thể nhân một truy vấn thành 2-5 request, timeout mà phía server đã xử lý
             xong vẫn có thể bị tính phí nhiều lần. Đặt trần > 0 thì 429/5xx vẫn chỉ thử
             lại tối đa min(1, trần) lần như cũ.
+        rate_limit_headers: chính sách đọc header giới hạn nhịp RIÊNG của nguồn (thêm 30/09/2026,
+            xem `RateLimitHeaders`). None (mặc định) = hành vi cũ. Có khai thì: (a) 429 ⇒ chờ
+            tới đúng mốc máy chủ nêu rồi mới thử lại, thay cho backoff 1,5 giây; (b) phản hồi
+            báo hết lượt (remaining ≤ 0, hoặc 429) kèm mốc ở TƯƠNG LAI ⇒ request KẾ TIẾP của
+            client này chờ tới mốc đó trước khi gửi. Mốc xa hơn `max_wait` thì không chờ:
+            429 đó thành lỗi ngay (chờ tới trần rồi gửi lại cũng vẫn bị từ chối).
     """
 
     def __init__(
@@ -254,11 +376,17 @@ class HttpClient:
         min_interval: Optional[float] = None,
         bind_interface: Optional[str] = None,
         max_retries: Optional[int] = None,
+        rate_limit_headers: Optional[RateLimitHeaders] = None,
     ) -> None:
         if max_retries is not None and (isinstance(max_retries, bool) or not isinstance(max_retries, int)
                                         or max_retries < 0):
             raise ValueError(f"max_retries phải là số nguyên >= 0 hoặc None, nhận {max_retries!r}")
+        if rate_limit_headers is not None and not isinstance(rate_limit_headers, RateLimitHeaders):
+            raise ValueError(f"rate_limit_headers phải là RateLimitHeaders hoặc None, nhận {rate_limit_headers!r}")
         self.max_retries = max_retries
+        self.rate_limit_headers = rate_limit_headers
+        # Mốc time.monotonic() mà máy chủ đã nêu: không gửi request kế tiếp trước mốc này (None = không có).
+        self._not_before: Optional[float] = None
         self.session = requests.Session()
         if default_headers:
             self.session.headers.update(default_headers)
@@ -296,6 +424,12 @@ class HttpClient:
         self.cache_hit_count = 0
         self.last_error = ""
         self.last_status_code: Optional[int] = None
+        # Tổng số giây đã CHỜ NHỊP CHỦ ĐỘNG trước khi gửi (giãn cách tối thiểu cùng host + chờ tới mốc máy chủ nêu).
+        # Cầu dao của ingestion trừ phần này khỏi «độ trễ bất thường»: chờ có chủ đích không phải dấu hiệu nguồn
+        # trục trặc. KHÔNG gồm thời gian ngủ backoff sau lỗi (429/5xx/mất mạng) — phần đó vẫn là tín hiệu trục trặc.
+        self.paced_wait_seconds = 0.0
+        # Header giới hạn nhịp của phản hồi gần nhất (chỉ khi khai `rate_limit_headers`) — đưa vào dòng log 429.
+        self.last_rate_limit: Dict[str, str] = {}
 
     def health_snapshot(self) -> Dict[str, Any]:
         """Trả telemetry không chứa secret để Source Log và deployment gate sử dụng."""
@@ -307,7 +441,51 @@ class HttpClient:
             "cache_hit_count": self.cache_hit_count,
             "last_error": self.last_error,
             "last_status_code": self.last_status_code,
+            "paced_wait_seconds": self.paced_wait_seconds,
         }
+
+    def _paced_wait(self, url: str) -> None:
+        """Chờ CHỦ ĐỘNG trước khi gửi: tới mốc máy chủ đã nêu (nếu có), rồi giãn cách tối thiểu cùng host.
+
+        Thời gian đã chờ cộng dồn vào `paced_wait_seconds` (đo bằng đồng hồ, không phải bằng số đã xin ngủ)."""
+        bat_dau = time.monotonic()
+        moc, self._not_before = self._not_before, None
+        if moc is not None and moc > bat_dau:
+            logger.info("Máy chủ %s báo hết lượt — chờ %.1fs tới mốc được gọi lại rồi mới gửi tiếp%s.",
+                        urlparse(url).netloc, moc - bat_dau, self._rate_limit_note())
+            time.sleep(moc - bat_dau)
+        _throttle(url, self.min_interval)
+        self.paced_wait_seconds += max(0.0, time.monotonic() - bat_dau)
+
+    def _note_rate_limit(self, resp: Any) -> Optional[float]:
+        """Ghi nhận header giới hạn nhịp của phản hồi vừa nhận; hết lượt kèm mốc TƯƠNG LAI ⇒ đặt mốc «không gửi trước».
+
+        Chỉ đặt mốc khi máy chủ nói RÕ hai điều: đã hết lượt (remaining ≤ 0, hoặc chính phản hồi là 429) VÀ thời
+        điểm được gọi lại còn ở phía trước. Còn lượt, hoặc mốc không ở tương lai ⇒ không chờ gì thêm (không đoán).
+
+        Trả số giây phải chờ tới mốc máy chủ nêu (đã cộng lề) khi mốc ở tương lai, ngược lại None — `_backoff_wait`
+        dùng lại đúng con số này cho 429, không đọc header lần thứ hai. Mốc XA HƠN `max_wait` (vd hết hạn mức theo
+        ngày) ⇒ trả `math.inf` và KHÔNG đặt mốc: chờ tới trần rồi gửi lại chắc chắn vẫn bị từ chối, nên `_request`
+        bỏ truy vấn ngay thay vì ngủ vô ích — ba truy vấn hỏng nhanh thì cầu dao cắt trong vài giây."""
+        policy = self.rate_limit_headers
+        if policy is None:
+            return None
+        nhip = _read_rate_limit(resp, policy)
+        self.last_rate_limit = nhip["raw"]
+        if nhip["wait"] is None or nhip["wait"] <= 0:
+            return None
+        cho = nhip["wait"] + policy.margin
+        if cho > policy.max_wait:
+            return math.inf
+        if (nhip["remaining"] is not None and nhip["remaining"] <= 0) or getattr(resp, "status_code", None) == 429:
+            self._not_before = time.monotonic() + cho
+        return cho
+
+    def _rate_limit_note(self) -> str:
+        """Đuôi dòng log: các header giới hạn nhịp của phản hồi gần nhất (rỗng nếu không có)."""
+        if not self.last_rate_limit:
+            return ""
+        return " [" + ", ".join(f"{k}={v}" for k, v in self.last_rate_limit.items()) + "]"
 
     def _record_terminal_failure(self, exc: Exception, status_code: Optional[int] = None,
                                  resp: Any = None) -> None:
@@ -406,7 +584,7 @@ class HttpClient:
         last_exc: Optional[Exception] = None
         while attempt <= max_retries:
             try:
-                _throttle(url, self.min_interval)
+                self._paced_wait(url)
                 # Chỉ thêm json=/headers= khi THẬT SỰ dùng (POST) — giữ nguyên
                 # đúng chữ ký lời gọi cũ (method, url, params=, timeout=) cho
                 # mọi GET hiện có, để không phá vỡ các test/fake session.request
@@ -451,6 +629,10 @@ class HttpClient:
                     )
                 attempt += 1
                 continue
+
+            # Nguồn khai header giới hạn nhịp riêng: ghi nhận NGAY khi có phản hồi (kể cả 429/5xx) để request kế tiếp
+            # — lần thử lại của chính truy vấn này hoặc truy vấn sau — không gửi trước mốc máy chủ nêu.
+            cho_theo_may_chu = self._note_rate_limit(resp)
 
             # SỬA 2026-09-16: NCBI đôi khi CHUYỂN HƯỚNG (302) mọi request
             # eutils.ncbi.nlm.nih.gov sang misuse.ncbi.nlm.nih.gov/error/abuse.shtml —
@@ -545,8 +727,18 @@ class HttpClient:
                 except requests.HTTPError as exc:
                     self._record_terminal_failure(exc, resp.status_code, resp)
                     raise
+            if resp.status_code == 429 and cho_theo_may_chu == math.inf:
+                logger.warning("HTTP 429 từ %s — máy chủ hẹn gọi lại SAU trần chờ %.0fs của nguồn này; bỏ truy vấn "
+                               "ngay, không ngủ rồi gửi lại vô ích.%s",
+                               url, self.rate_limit_headers.max_wait, self._rate_limit_note())
+                try:
+                    _raise_for_status_redacted(resp)
+                except requests.HTTPError as exc:
+                    self._record_terminal_failure(exc, resp.status_code)
+                    raise
             if resp.status_code in _RETRYABLE_STATUS and attempt_retryable >= tran_retryable:
-                logger.warning("HTTP %s từ %s — đã hết hạn mức retry, bỏ qua.", resp.status_code, url)
+                logger.warning("HTTP %s từ %s — đã hết hạn mức retry, bỏ qua.%s",
+                               resp.status_code, url, self._rate_limit_note())
                 try:
                     _raise_for_status_redacted(resp)
                 except requests.HTTPError as exc:
@@ -557,10 +749,10 @@ class HttpClient:
             if resp.status_code in _RETRYABLE_STATUS:
                 self.transient_failure_count += 1
                 attempt_retryable += 1
-                wait = self._backoff_wait(attempt, resp)
+                wait = self._backoff_wait(attempt, resp, cho_theo_may_chu)
                 logger.warning(
-                    "HTTP %s từ %s, thử lại sau %.1fs (lần %d)",
-                    resp.status_code, url, wait, attempt + 1,
+                    "HTTP %s từ %s, thử lại sau %.1fs (lần %d)%s",
+                    resp.status_code, url, wait, attempt + 1, self._rate_limit_note(),
                 )
                 time.sleep(wait)
                 attempt += 1
@@ -617,7 +809,18 @@ class HttpClient:
         ngủ backoff sau lần thử cuối. Client có trần riêng thì hết lượt là không ngủ vô ích."""
         return getattr(self, "max_retries", None) is None or attempt < max_retries
 
-    def _backoff_wait(self, attempt: int, resp: Optional[requests.Response]) -> float:
+    def _backoff_wait(self, attempt: int, resp: Optional[requests.Response],
+                      rate_limit_wait: Optional[float] = None) -> float:
+        # Nguồn khai header giới hạn nhịp riêng (vd CORE) bị 429: chờ tới ĐÚNG mốc máy chủ nêu (`rate_limit_wait`, do
+        # `_note_rate_limit` tính từ chính phản hồi này). Máy chủ không nêu mốc dùng được ⇒ chờ `wait_429_without_hint`
+        # (nếu khai), không đoán bằng backoff 1,5 giây — chính khoảng chờ quá ngắn đó làm lượt weekly 29/09/2026 hỏng
+        # 3 truy vấn liên tiếp.
+        policy = getattr(self, "rate_limit_headers", None)
+        if policy is not None and resp is not None and getattr(resp, "status_code", None) == 429:
+            if rate_limit_wait is not None and math.isfinite(rate_limit_wait):
+                return rate_limit_wait
+            if policy.wait_429_without_hint is not None:
+                return min(policy.wait_429_without_hint, policy.max_wait)
         # Giới hạn tối đa 30s để không chặn startup quá lâu (vd BMJ Retry-After: 600)
         _MAX_WAIT = 30.0
         if resp is not None and "Retry-After" in resp.headers:

@@ -95,11 +95,36 @@ def _http_snapshot(client: object) -> Dict[str, Any]:
         "cache_hit_count": 0,
         "last_error": "",
         "last_status_code": None,
+        "paced_wait_seconds": 0.0,
     }
 
 
 def _counter_delta(before: Dict[str, Any], after: Dict[str, Any], key: str) -> int:
     return max(0, int(after.get(key) or 0) - int(before.get(key) or 0))
+
+
+def _paced_seconds(client: object) -> float:
+    """Tổng số giây client đã CHỜ NHỊP CHỦ ĐỘNG (HttpClient.paced_wait_seconds); không đo được thì 0 — không ném lỗi."""
+    try:
+        return float(_http_snapshot(client).get("paced_wait_seconds") or 0.0)
+    except Exception:  # noqa: BLE001 — telemetry của client giả/lạ không được làm sập lượt quét
+        return 0.0
+
+
+def _sweep_coverage(client, plan: List[Tuple[str, str]], reached: int) -> dict:
+    """Độ phủ của MỘT lượt `sweep_source` dừng sau `reached` truy vấn đầu của `plan`.
+
+    `not_attempted` = truy vấn nguồn này LẼ RA gửi nhưng CHƯA TỪNG được thử vì cầu dao cắt. Khác hẳn `skipped` (bỏ
+    qua CÓ CHỦ ĐÍCH, vd thẻ trường PubMed tới nguồn không hiểu): truy vấn nằm sau điểm cắt mà nguồn vốn không gửi thì
+    không phải độ phủ bị mất — đếm riêng ở `unreached_skippable`, KHÔNG cộng vào `not_attempted`.
+    """
+    rest = plan[reached:]
+    lost = [(area, query) for area, query in rest if _ly_do_bo_qua(client, query) is None]
+    return {
+        "not_attempted": len(lost),
+        "unreached_skippable": len(rest) - len(lost),
+        "not_attempted_areas": dict(Counter(area for area, _query in lost)),
+    }
 
 
 def summarize_source_health(
@@ -108,12 +133,19 @@ def summarize_source_health(
     expected_api_sources: List[str],
     expected_feed_sources: List[str],
     safety_enabled: bool,
+    coverage: Optional[Dict[str, dict]] = None,
 ) -> dict:
     """Tổng hợp độ phủ nguồn để pipeline phân biệt PASS/PARTIAL/FAIL.
 
     Một feed tùy chọn lỗi không làm hỏng cả lượt quét khi các kênh cùng nhóm còn đủ
     dự phòng. Ngược lại, mock trong live, mất toàn bộ kênh an toàn/guideline, hoặc
     thiếu phần lớn nguồn discovery lõi là lỗi cứng.
+
+    `coverage` (30/09/2026): {tên nguồn: kết quả `_sweep_coverage`} do `sweep_source` ghi. Có thì hàng của nguồn thêm
+    `not_attempted` — số truy vấn lẽ ra được gửi mà cầu dao cắt trước khi tới lượt — để health «ok» (chỉ đo trên phần
+    ĐÃ gửi) không che độ phủ thật. CHỈ là số đo: KHÔNG tham gia tính `health` hay `status` (ngưỡng PASS/PARTIAL/FAIL
+    giữ nguyên). Không truyền, hoặc nguồn không đi qua `sweep_source` (feed, openFDA) ⇒ hàng KHÔNG có khoá này —
+    «không đo» không được hiện thành 0.
     """
     grouped: dict[str, dict[str, Any]] = defaultdict(
         lambda: {"requests": 0, "records": 0, "ok": 0, "degraded": 0, "error": 0, "mock": 0,
@@ -157,6 +189,13 @@ def summarize_source_health(
         else:
             health = "ok"
         source_rows[source] = {**item, "error_rate": round(error_rate, 4), "health": health}
+        phu = (coverage or {}).get(source)
+        if isinstance(phu, dict):
+            source_rows[source]["not_attempted"] = max(0, int(phu.get("not_attempted") or 0))
+            if phu.get("not_attempted_areas"):
+                source_rows[source]["not_attempted_areas"] = dict(phu["not_attempted_areas"])
+    not_attempted_by_source = {name: row["not_attempted"] for name, row in source_rows.items()
+                               if row.get("not_attempted")}
 
     expected_api = set(expected_api_sources)
     expected_feeds = set(expected_feed_sources)
@@ -284,48 +323,64 @@ def summarize_source_health(
         "guideline": {"expected": guideline_expected, "healthy": guideline_healthy},
         "optional_enhanced_failed": enhanced_failed,
         "optional_enhanced_blocked_by_cloudflare": enhanced_cloudflare,
+        # Nguồn bị cầu dao cắt: {tên: số truy vấn lẽ ra được gửi mà chưa từng được thử}. Chỉ để NHÌN THẤY.
+        "not_attempted_by_source": not_attempted_by_source,
         "source_universe": source_universe,
         "sources": source_rows,
     }
 
 
 def sweep_source(client, areas: List[str], max_results_per_query: int,
-                  since_date: Optional[str] = None, fetch_fn=None) -> Tuple[List[RawRecord], List[dict]]:
+                  since_date: Optional[str] = None, fetch_fn=None,
+                  coverage: Optional[Dict[str, dict]] = None) -> Tuple[List[RawRecord], List[dict]]:
     """Quét 1 nguồn API qua mọi (area, query) theo CLINICAL_AREAS — tuần tự, có circuit-breaker.
 
     Tách khỏi `ingest_all()` (trước là closure nội bộ) để test được độc lập, không cần
     dựng toàn bộ pipeline/ThreadPoolExecutor/DB. `fetch_fn` injectable cho test (mặc định `_fetch`).
+    `coverage` (tuỳ chọn): dict do người gọi cấp; hàm ghi `coverage[client.name]` = độ phủ của lượt quét này
+    (xem `_sweep_coverage`) để `summarize_source_health` nói rõ bao nhiêu truy vấn CHƯA TỪNG được thử.
     """
     fetch_fn = fetch_fn or _fetch
     recs: List[RawRecord] = []
     logs: List[dict] = []
-    total_queries = sum(len(CLINICAL_AREAS.get(a, [])) for a in areas)
+    plan = [(area, query) for area in areas for query in CLINICAL_AREAS.get(area, [])]
     consecutive_errors = 0
-    for area in areas:
-        for query in CLINICAL_AREAS.get(area, []):
-            started = time.monotonic()
-            r, log = fetch_fn(client, query, area, max_results_per_query, since_date)
-            elapsed = time.monotonic() - started
-            recs.extend(r)
-            logs.append(log)
-            if log["status"] == "skipped":
-                # Bỏ qua có chủ đích, không gọi mạng: không phải lỗi, cũng không phải bằng chứng nguồn đã hồi phục —
-                # KHÔNG đụng bộ đếm lỗi liên tiếp (trước 29/09/2026 ba lỗi 400 của truy vấn [ta] gửi sang
-                # ClinicalTrials.gov đủ làm breaker cắt mọi truy vấn phía sau).
-                continue
-            if log["status"] == "error" or elapsed >= _SLOW_QUERY_THRESHOLD_SEC:
-                consecutive_errors += 1
-                if consecutive_errors >= _MAX_CONSECUTIVE_ERRORS:
-                    skipped = total_queries - len(logs)
-                    logger.warning(
-                        "Nguồn %s lỗi/chậm liên tiếp %d lần (có thể đang gián đoạn) — "
-                        "bỏ qua %d truy vấn còn lại thay vì thử hết, tránh treo lâu.",
-                        client.name, consecutive_errors, skipped,
-                    )
-                    _log_tong_bo_qua(client, logs)
-                    return recs, logs
-            else:
-                consecutive_errors = 0
+    for idx, (area, query) in enumerate(plan):
+        paced_before = _paced_seconds(client)
+        started = time.monotonic()
+        r, log = fetch_fn(client, query, area, max_results_per_query, since_date)
+        elapsed = time.monotonic() - started
+        # Chờ nhịp CHỦ ĐỘNG (giãn cách tối thiểu cùng host, chờ tới mốc máy chủ nêu) không phải «độ trễ bất thường».
+        # Không trừ thì nguồn có nhịp riêng dài (CORE 6,5 giây) bị CHÍNH nhịp của mình đẩy qua ngưỡng chậm và tự cắt.
+        # Thời gian ngủ backoff sau 429/5xx/mất mạng KHÔNG nằm trong phần bị trừ — vẫn là tín hiệu nguồn trục trặc.
+        abnormal = max(0.0, elapsed - max(0.0, _paced_seconds(client) - paced_before))
+        recs.extend(r)
+        logs.append(log)
+        if log["status"] == "skipped":
+            # Bỏ qua có chủ đích, không gọi mạng: không phải lỗi, cũng không phải bằng chứng nguồn đã hồi phục —
+            # KHÔNG đụng bộ đếm lỗi liên tiếp (trước 29/09/2026 ba lỗi 400 của truy vấn [ta] gửi sang
+            # ClinicalTrials.gov đủ làm breaker cắt mọi truy vấn phía sau).
+            continue
+        if log["status"] == "error" or abnormal >= _SLOW_QUERY_THRESHOLD_SEC:
+            consecutive_errors += 1
+            if consecutive_errors >= _MAX_CONSECUTIVE_ERRORS:
+                phu = _sweep_coverage(client, plan, idx + 1)
+                # «KHÔNG THỬ», không viết «bỏ qua»: «bỏ qua» là chữ của dòng status="skipped" (có chủ đích).
+                logger.warning(
+                    "Nguồn %s lỗi/chậm liên tiếp %d lần (có thể đang gián đoạn) — KHÔNG THỬ %d truy vấn còn lại "
+                    "thay vì thử hết, tránh treo lâu: %d truy vấn lẽ ra được gửi mà chưa từng được thử, %d truy vấn "
+                    "nguồn này vốn không gửi.",
+                    client.name, consecutive_errors, len(plan) - (idx + 1),
+                    phu["not_attempted"], phu["unreached_skippable"],
+                )
+                if coverage is not None:
+                    coverage[client.name] = phu
+                _log_tong_bo_qua(client, logs)
+                return recs, logs
+        else:
+            consecutive_errors = 0
+    if coverage is not None:
+        coverage[client.name] = _sweep_coverage(client, plan, len(plan))
     _log_tong_bo_qua(client, logs)
     return recs, logs
 
@@ -432,10 +487,12 @@ def ingest_all(max_results_per_query: int = 10,
     # Chạy nguồn API + openFDA (luồng theo host) ĐỒNG THỜI với feed (luồng giới hạn).
     src_tasks = list(sources) + ([_FDA_SENTINEL] if settings.enable_openfda else [])
     n_src_workers = max(1, len(src_tasks))
+    # Độ phủ truy vấn của từng nguồn API (mỗi luồng ghi đúng MỘT khoá là tên nguồn của mình).
+    coverage: Dict[str, dict] = {}
     with ThreadPoolExecutor(max_workers=n_src_workers) as src_pool:
         src_futs = [
             src_pool.submit(sweep_fda, c) if c is _FDA_SENTINEL
-            else src_pool.submit(sweep_source, c, areas, max_results_per_query, since_date)
+            else src_pool.submit(sweep_source, c, areas, max_results_per_query, since_date, None, coverage)
             for c in src_tasks
         ]
         # Feed pool chạy song song trong khi nguồn API đang quét
@@ -473,6 +530,7 @@ def ingest_all(max_results_per_query: int = 10,
         expected_api_sources=[client.name for client in sources],
         expected_feed_sources=[client.name for client in feed_clients],
         safety_enabled=settings.enable_openfda,
+        coverage=coverage,
     )
     if diagnostics is not None:
         diagnostics.update(source_health)
@@ -493,6 +551,14 @@ def ingest_all(max_results_per_query: int = 10,
         source_health["warnings"],
         source_health.get("mirror_notices") or [],
     )
+    if source_health.get("not_attempted_by_source"):
+        # Dòng RIÊNG (không sửa dòng trên): trạng thái lượt chạy không đổi vì con số này, nhưng người đọc log phải thấy
+        # health «ok» của các nguồn dưới đây chỉ đo trên phần truy vấn ĐÃ gửi.
+        logger.warning(
+            "Ingestion độ phủ truy vấn: cầu dao cắt trước khi thử hết — số truy vấn lẽ ra được gửi mà CHƯA TỪNG được "
+            "thử, theo nguồn: %s. Không tính vào trạng thái lượt chạy.",
+            source_health["not_attempted_by_source"],
+        )
     return all_records
 
 

@@ -133,6 +133,9 @@ def chay_bao_cao_chi_doc(out_dir: Path, ngay: int = 10, max_per_query: int = 8, 
         # Nguồn hỏng được MIỄN theo luật bác sĩ đã chọn (MedWatch 401/403, Scopus bị Cloudflare chặn, dự phòng chính
         # thức…): PASS vẫn phải nói ra, không để trông như mọi nguồn đều chạy (phản biện 29/09/2026).
         "ghi_chu_nguon": list(sh.get("mirror_notices") or []),
+        # Nguồn bị cầu dao cắt giữa chừng: {tên: số truy vấn lẽ ra được gửi mà chưa từng được thử}. Health «ok» của
+        # nguồn chỉ đo trên phần đã gửi, nên PASS cũng phải nói ra con số này (30/09/2026).
+        "truy_van_chua_thu": dict(sh.get("not_attempted_by_source") or {}),
         "so_ban_ghi": sh.get("total_records"),
         "muc_moi": stats.get("new_items"),
         "bao_cao": da_chep,
@@ -164,6 +167,10 @@ def _markdown(t: Dict[str, object]) -> str:
     if t.get("ghi_chu_nguon"):
         ghi_chu = ", ".join(map(str, t["ghi_chu_nguon"]))
         dong.append(f"- Ghi chú nguồn (hỏng nhưng được miễn theo luật đã duyệt): {ghi_chu}")
+    if t.get("truy_van_chua_thu"):
+        chua_thu = ", ".join(f"{ten} {so}" for ten, so in sorted(dict(t["truy_van_chua_thu"]).items()))
+        dong.append("- Truy vấn CHƯA TỪNG được gửi vì cầu dao cắt nguồn giữa chừng (không tính vào trạng thái): "
+                    f"{chua_thu}")
     dong += ["", "## Báo cáo kèm theo", ""]
     dong += [f"- `{ten}`" for ten in dict(t["bao_cao"]).values()] or ["- (không sinh được báo cáo nào)"]
     if t["thieu_bao_cao"]:
