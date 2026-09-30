@@ -26,8 +26,9 @@ Bổ sung cùng ngày — bốn lỗ mà ba việc trên chưa rào (đo ngoại
   7. Rào `tools/toan_van_guideline.py --luu` so DANH TÍNH thư mục chứ không so chuỗi (trên macOS
      «/users/…» và «/Users/…» là một), và từ chối cả đích nằm trong cây git khác mà git thấy.
 
-Mục 5–6 chạy hai lần: với thư viện `wiley-tdm` THẬT (máy có cài; chỉ thay biên mạng) và với một
-bản giả tối thiểu (CI không cài thư viện). Bản giả trôi khỏi thư viện thì một trong hai đỏ.
+Mục 5–6 chạy hai lần: với thư viện `wiley-tdm` THẬT (chỉ thay biên mạng; có trong
+requirements.lock.txt nên máy bác sĩ và CI đều chạy) và với một bản giả tối thiểu, cho môi trường
+không cài gói tuỳ chọn này. Bản giả trôi khỏi thư viện thì một trong hai biến thể đỏ.
 
 Luật ignore được đo trong một kho git TẠM chỉ mang đúng `.gitignore` của dự án, với cấu
 hình git cô lập khỏi máy: luật ignore riêng của máy (`core.excludesFile`,
@@ -524,9 +525,9 @@ def test_tam_nhin_git_duong_tuong_doi_tinh_theo_thu_muc_dang_dung(kho_git, monke
 def test_tam_nhin_git_hieu_ten_tep_dung_tung_chu(kho_git):
     """Tên có ký tự mà git coi là đặc biệt vẫn phải ra «bị ignore»/«git thấy», không ra «không đo
     được». Đo 30/09/2026: hỏi trần «:(glob)x.pdf» thì git thoát mã 128 (pathspec magic)."""
-    ten_la = ["tên tiếng Việt có dấu cách.pdf", "x[1]*.pdf"]
-    if os.name != "nt":  # Windows không cho «:» trong tên tệp
-        ten_la.append(":(glob)x.pdf")
+    ten_la = ["tên tiếng Việt có dấu cách.pdf", "x[1].pdf"]
+    if os.name != "nt":  # Windows không cho «:» và «*» trong tên tệp
+        ten_la += [":(glob)x.pdf", "x*.pdf"]
     for ten in ten_la:
         assert tng.tam_nhin_git(kho_git.thu_muc / "pdfs" / ten).trang_thai == tng.GIT_THAY, ten
         assert tng.tam_nhin_git(kho_git.thu_muc / THU_MUC_TAI_MAC_DINH / ten).trang_thai == tng.BI_IGNORE, ten
@@ -629,6 +630,31 @@ def test_tam_nhin_git_co_tep_ten_git_ma_khong_chay_duoc_la_khong_do_duoc(kho_git
     assert "không chạy được git" in ket_luan.ly_do
 
 
+def _tao_worktree(kho_git: _KhoGit, cay_phu: Path) -> Path:
+    """Thêm một worktree của kho tạm. Phải commit `.gitignore` trước: worktree mới chỉ mang tệp đã
+    được theo dõi, mà không có `.gitignore` thì không còn luật nào để đo."""
+    for lenh in (
+        ["add", ".gitignore"],
+        ["-c", "user.name=ca-kiem", "-c", "user.email=ca-kiem@example.invalid", "commit", "-q", "-m", "luat ignore"],
+        ["worktree", "add", "-q", "--detach", str(cay_phu)],
+    ):
+        kq = kho_git._git(*lenh)
+        assert kq.returncode == 0, f"git {lenh[0]} hỏng: {kq.stderr}"
+    assert (cay_phu / ".git").is_file(), "worktree phải có mục `.git` là TỆP thì ca này mới có nghĩa"
+    return cay_phu
+
+
+def test_tam_nhin_git_trong_worktree_noi_muc_git_la_tep(kho_git, tmp_path):
+    """Worktree (và submodule) có mục `.git` là TỆP trỏ về kho chính. Chỉ nhận `.git` là thư mục
+    thì mọi worktree — nơi các phiên làm việc của dự án này vẫn chạy — bị coi là «ngoài cây git»."""
+    cay_phu = _tao_worktree(kho_git, tmp_path / "cay-phu")
+    thay = tng.tam_nhin_git(cay_phu / "pdfs" / _TEN_TEP_PDF)
+    assert thay.trang_thai == tng.GIT_THAY and thay.goc_cay.samefile(cay_phu)
+    assert tng.tam_nhin_git(cay_phu / THU_MUC_TAI_MAC_DINH / _TEN_TEP_PDF).trang_thai == tng.BI_IGNORE
+    (cay_phu / "tools").mkdir()
+    assert tng.tam_nhin_git(cay_phu / "tools" / _TEN_TEP_PDF).trang_thai == tng.GIT_THAY
+
+
 def _cac_bi_danh(thu_muc: Path, noi_dat: Path) -> List[Path]:
     """Những TÊN KHÁC của cùng một thư mục dựng được trên máy này: sai chữ hoa/thường (hệ tệp
     không phân biệt hoa/thường — macOS, Windows) và symlink (Linux, macOS; Windows khi có quyền).
@@ -694,9 +720,9 @@ class _KetQuaTaiGia:
 
 
 class _TDMClientGia:
-    """Bản giả TỐI THIỂU của `wiley_tdm.TDMClient` 1.2.0, cho CI (nơi không cài thư viện). Chép
-    đúng những hành vi mà mục 5–6 dựa vào; chính các ca đó chạy lại trên thư viện THẬT ở máy có
-    cài, nên bản giả trôi khỏi thư viện là một trong hai biến thể đỏ:
+    """Bản giả TỐI THIỂU của `wiley_tdm.TDMClient` 1.2.0, cho môi trường không cài gói tuỳ chọn
+    này. Chép đúng những hành vi mà mục 5–6 dựa vào; chính các ca đó chạy lại trên thư viện THẬT
+    ở nơi có cài, nên bản giả trôi khỏi thư viện là một trong hai biến thể đỏ:
 
       * dựng client là tạo thư mục tải; tên có đuôi (`Path.suffix`) bị coi là tên TỆP ⇒ lùi về
         thư mục mẹ (`FileUtils.create_directory`);
@@ -795,7 +821,8 @@ def test_thu_muc_tai_tu_dat_o_cho_git_thay_thi_bi_tu_choi(kho_git, wiley_bat, mo
             WileyTdmClient(download_dir=thu_muc)
     thong_diep = str(loi.value)
     assert "cây git" in thong_diep and "bản quyền" in thong_diep
-    assert Path(thu_muc).name in thong_diep, "thông điệp phải nêu thư mục bị từ chối"
+    thu_muc_that = str((kho_git.thu_muc / thu_muc).resolve())
+    assert thu_muc_that in thong_diep, f"thông điệp phải nêu đúng thư mục bị từ chối ({thu_muc_that})"
     assert "WILEY_TDM_DOWNLOAD_DIR" in thong_diep and THU_MUC_TAI_MAC_DINH in thong_diep, "thông điệp phải nêu cách sửa"
     assert kho_git.tep_git_thay() == [".gitignore"]
 
@@ -928,33 +955,55 @@ def test_doi_thu_muc_dang_dung_sau_khi_dung_client_thi_kiem_lai_truoc_khi_tai(
 def test_dut_mang_giua_chung_thi_luot_sau_khong_bao_thanh_cong_cho_tep_cut(kho_git, wiley_bat, monkeypatch):
     """(C) Đo 30/09/2026: đứt mạng giữa chừng ⇒ thư viện trả `STORAGE_ERROR` và để lại tệp ghi dở
     (4.009 byte); lượt sau trả `EXISTING_FILE` mà KHÔNG gọi mạng. Trước bản vá, kết quả của ta là
-    `thanh_cong=True` cho PDF cụt đó, mãi tới khi có người xoá tệp."""
+    `thanh_cong=True` cho PDF cụt đó, mãi tới khi có người xoá tệp.
+
+    Bác sĩ chốt cùng ngày: connector tự xoá tệp mà chính lượt tải vừa ghi dở, nên lượt sau gọi
+    mạng lại chứ không vấp `EXISTING_FILE`, và mạng thông là ra PDF trọn vẹn — không cần ai xoá tay."""
     monkeypatch.chdir(kho_git.thu_muc)
     client = WileyTdmClient()
     phien = _gan_phien(client, _pdf_tron_ven(20_000), dut_sau=4009)
     tep = kho_git.thu_muc / THU_MUC_TAI_MAC_DINH / _TEN_TEP_PDF
 
-    lan_mot = client.download_pdf(_DOI)
-    assert (lan_mot.trang_thai, lan_mot.thanh_cong, lan_mot.kich_thuoc_byte) == ("STORAGE_ERROR", False, None)
-    assert tep.stat().st_size == 4009, "tệp ghi dở phải nằm thật trên đĩa thì ca này mới có nghĩa"
-    assert "ghi dở" in lan_mot.ghi_chu and _TEN_TEP_PDF in lan_mot.ghi_chu, "phải chỉ ra tệp dở để người xoá"
+    for lan in (1, 2):  # mạng vẫn đứt: mỗi lượt là một lần gọi mạng mới, không lượt nào «thành công»
+        kq = client.download_pdf(_DOI)
+        assert len(phien.cac_url) == lan, "tệp dở đã bị xoá thì thư viện phải gọi mạng lại"
+        assert (kq.trang_thai, kq.thanh_cong, kq.kich_thuoc_byte) == ("STORAGE_ERROR", False, None)
+        assert "Connection broken" in kq.ghi_chu, "lời của thư viện phải được giữ"
+        assert "Đã xoá tệp ghi dở" in kq.ghi_chu and _TEN_TEP_PDF in kq.ghi_chu
+        assert not tep.exists(), "tệp ghi dở 4.009/20.000 byte còn nằm lại trên đĩa"
 
-    lan_hai = client.download_pdf(_DOI)
-    assert len(phien.cac_url) == 1, "thư viện thấy tệp đã có nên không gọi mạng lần nữa"
-    assert lan_hai.trang_thai == "EXISTING_FILE"
-    assert lan_hai.thanh_cong is False, "PDF cụt 4.009/20.000 byte bị báo «thành công»"
-    assert lan_hai.kich_thuoc_byte is None, "kích thước tệp dở không phải kích thước PDF đã tải"
-    assert "ghi dở" in lan_hai.ghi_chu and _TEN_TEP_PDF in lan_hai.ghi_chu
-
-    # Người xoá tệp dở, mạng hết đứt: tải lại ra PDF trọn vẹn.
-    tep.unlink()
-    phien.dut_sau = None
+    phien.dut_sau = None  # mạng thông
     lan_ba = client.download_pdf(_DOI)
     assert (lan_ba.trang_thai, lan_ba.thanh_cong, lan_ba.kich_thuoc_byte) == ("SUCCESS", True, 20_000)
-    assert len(phien.cac_url) == 2
+    assert len(phien.cac_url) == 3
+    assert tep.read_bytes() == _pdf_tron_ven(20_000)
     lan_bon = client.download_pdf(_DOI)
     assert (lan_bon.trang_thai, lan_bon.thanh_cong, lan_bon.kich_thuoc_byte) == ("EXISTING_FILE", True, 20_000)
+    assert len(phien.cac_url) == 3, "PDF trọn vẹn đã có thì không tải lại"
     assert kho_git.tep_git_thay() == [".gitignore"]
+
+
+def test_tep_ghi_do_co_san_tu_truoc_thi_bao_khong_thanh_cong_va_khong_xoa(kho_git, wiley_bat, monkeypatch):
+    """Tệp dở KHÔNG do lượt này ghi (tiến trình bị tắt giữa chừng, tệp sót từ trước bản vá): thư viện
+    trả `EXISTING_FILE` mà không gọi mạng. Không rõ ai ghi tệp đó nên connector không xoá — chỉ báo
+    `thanh_cong=False` kèm đường dẫn để người xoá."""
+    monkeypatch.chdir(kho_git.thu_muc)
+    client = WileyTdmClient()
+    phien = _gan_phien(client, _pdf_tron_ven(20_000))
+    tep = kho_git.thu_muc / THU_MUC_TAI_MAC_DINH / _TEN_TEP_PDF
+    tep.write_bytes(_pdf_tron_ven(20_000)[:4009])
+
+    for _ in (1, 2):
+        kq = client.download_pdf(_DOI)
+        assert (kq.trang_thai, kq.thanh_cong, kq.kich_thuoc_byte) == ("EXISTING_FILE", False, None)
+        assert "ghi dở" in kq.ghi_chu and "%%EOF" in kq.ghi_chu and _TEN_TEP_PDF in kq.ghi_chu
+        assert "Xoá tệp đó rồi tải lại" in kq.ghi_chu
+    assert phien.cac_url == [], "thư viện thấy tệp đã có nên không gọi mạng"
+    assert tep.stat().st_size == 4009, "tệp có sẵn từ trước không được tự xoá"
+
+    tep.unlink()  # người xoá tệp dở
+    sau_khi_xoa = client.download_pdf(_DOI)
+    assert (sau_khi_xoa.trang_thai, sau_khi_xoa.thanh_cong, sau_khi_xoa.kich_thuoc_byte) == ("SUCCESS", True, 20_000)
 
 
 def test_may_chu_tra_200_ma_khong_phai_pdf_thi_khong_bao_thanh_cong(kho_git, wiley_bat, monkeypatch):
@@ -1012,6 +1061,18 @@ def test_luu_vao_cay_git_khac_ma_git_thay_thi_bi_tu_choi(kho_git, tmp_path):
     assert ly_do is not None and "cây git" in ly_do
     assert T.kiem_duong_luu(str(kho / THU_MUC_TAI_MAC_DINH / "x.txt")) is None, "chỗ cây đó đã ignore thì được"
     assert T.kiem_duong_luu(str(_ngoai_moi_cay_git(tmp_path) / "ngoai" / "x.txt")) is None
+
+
+def test_luu_vao_worktree_khac_cua_cung_repo_bi_tu_choi(kho_git, tmp_path, monkeypatch):
+    """Đúng tình huống đo 30/09/2026: công cụ chạy từ MỘT cây của repo, đích nằm trong một worktree
+    KHÁC của chính repo đó. Rào cũ chỉ biết cây chứa công cụ nên cho qua."""
+    monkeypatch.setattr(T, "REPO", kho_git.thu_muc)
+    cay_phu = _tao_worktree(kho_git, tmp_path / "cay-phu")
+    assert not tng.nam_trong_thu_muc(cay_phu / "reports" / "x.txt", T.REPO)
+    ly_do = T.kiem_duong_luu(str(cay_phu / "reports" / "x.txt"))
+    assert ly_do is not None and "cây git" in ly_do and "cay-phu" in ly_do
+    trong_cay_chua_cong_cu = T.kiem_duong_luu(str(kho_git.thu_muc / "reports" / "x.txt"))
+    assert "trong repo" in trong_cay_chua_cong_cu, "cây chứa công cụ: rào thứ nhất"
 
 
 def test_khong_do_duoc_git_thi_luu_vao_cay_git_khac_bi_tu_choi(kho_git, tmp_path, monkeypatch):

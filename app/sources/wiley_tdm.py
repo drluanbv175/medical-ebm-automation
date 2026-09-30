@@ -51,14 +51,16 @@ GIỚI HẠN ĐÃ BIẾT, ghi rõ để không ai hiểu nhầm mức độ ph�
   • `thanh_cong=True` nghĩa là có một tệp TRÔNG NHƯ PDF trọn vẹn trên đĩa, không chỉ là thư
     viện báo `SUCCESS`/`EXISTING_FILE`: đứt mạng giữa chừng để lại tệp ghi dở, và lượt sau
     thư viện thấy tệp đó là trả `EXISTING_FILE` mà không gọi mạng. Xem `_ly_do_pdf_ghi_do`
-    (phép kiểm cấu trúc hai đầu tệp — không bắt được tệp hỏng ở giữa).
+    (phép kiểm cấu trúc hai đầu tệp — không bắt được tệp hỏng ở giữa). Tệp mà CHÍNH lượt
+    tải vừa ghi dở (`STORAGE_ERROR`) thì client tự xoá để lượt sau tải lại được (bác sĩ chốt
+    30/09/2026, `_xoa_tep_vua_ghi_do`); tệp dở có sẵn từ trước thì chỉ báo, không xoá.
 """
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from app.config import settings
 from app.utils.logging_config import get_logger
@@ -165,25 +167,60 @@ def _ly_do_pdf_ghi_do(duong_dan) -> Optional[str]:
     return None
 
 
-def _ghi_chu_tep_do(ghi_chu_thu_vien: Optional[str], duong_dan, ly_do: str) -> str:
-    canh_bao = (
-        f"Tệp trên đĩa có vẻ ghi dở hoặc không phải PDF ({ly_do}): {duong_dan}. KHÔNG dùng tệp này làm "
-        "toàn văn. Xoá tệp đó rồi tải lại — chừng nào tệp còn nằm đó, thư viện không gọi mạng lần nữa."
-    )
-    return f"{ghi_chu_thu_vien} | {canh_bao}" if ghi_chu_thu_vien else canh_bao
+_DAN_XOA_TAY = "Xoá tệp đó rồi tải lại — chừng nào tệp còn nằm đó, thư viện không gọi mạng lần nữa."
 
 
-def _quy_doi_ket_qua(ket_qua) -> KetQuaTaiWiley:
+def _ghi_chu_tep_do(duong_dan, ly_do: str) -> str:
+    return (f"Tệp trên đĩa có vẻ ghi dở hoặc không phải PDF ({ly_do}): {duong_dan}. KHÔNG dùng tệp này làm "
+            f"toàn văn. {_DAN_XOA_TAY}")
+
+
+def _noi_ghi_chu(*cac_phan: Optional[str]) -> Optional[str]:
+    """Nối lời của thư viện với ghi chú của ta; không phần nào có nội dung thì `None`."""
+    co_noi_dung = [phan for phan in cac_phan if phan]
+    return " | ".join(co_noi_dung) if co_noi_dung else None
+
+
+def _xoa_tep_vua_ghi_do(ket_qua, thu_muc_tai) -> Optional[str]:
+    """Xoá tệp mà CHÍNH lượt tải này vừa ghi dở; trả câu ghi chú về việc đó (`None` = không xoá gì).
+
+    Bác sĩ chốt 30/09/2026: connector tự xoá, để lượt sau tải lại được mà không cần người can
+    thiệp — để nguyên thì thư viện thấy tệp là trả `EXISTING_FILE`, không gọi mạng. Chỉ xoá khi ĐỦ
+    cả ba điều kiện:
+      * thư viện vừa trả `STORAGE_ERROR` cho tệp này, tức chính lượt này mở tệp ra ghi rồi gãy;
+      * tệp không qua phép kiểm PDF trọn vẹn (`_ly_do_pdf_ghi_do`) — tệp trông trọn vẹn thì để nguyên;
+      * tệp nằm ngay trong thư mục tải của client.
+    Tệp dở có sẵn từ trước (thư viện trả `EXISTING_FILE`, không rõ ai ghi) KHÔNG bao giờ bị xoá."""
+    if ket_qua.status.name != _TRANG_THAI_LOI_GHI:
+        return None
+    ly_do = _ly_do_pdf_ghi_do(ket_qua.path)
+    if not ly_do:
+        return None
+    tep = Path(ket_qua.path)
+    try:
+        if not tep.parent.samefile(thu_muc_tai):
+            return None
+        tep.unlink()
+    except OSError as exc:
+        logger.warning("[wiley_tdm] không xoá được tệp ghi dở %s: %s", tep, exc)
+        return f"Tệp ghi dở ({ly_do}) còn nằm ở {tep} vì connector không xoá được ({exc}). {_DAN_XOA_TAY}"
+    logger.warning("[wiley_tdm] đã xoá tệp ghi dở %s (%s)", tep, ly_do)
+    return f"Đã xoá tệp ghi dở ({ly_do}): {tep}. Lượt tải sau sẽ tải lại DOI này."
+
+
+def _quy_doi_ket_qua(ket_qua, ghi_chu_xoa: Optional[str] = None) -> KetQuaTaiWiley:
+    """Kết quả thô của thư viện ⇒ `KetQuaTaiWiley`. `ghi_chu_xoa` là lời của `_xoa_tep_vua_ghi_do`
+    khi client vừa xử lý tệp ghi dở của chính kết quả này."""
     ten_trang_thai = ket_qua.status.name
     thanh_cong = ten_trang_thai in _TRANG_THAI_THANH_CONG
-    ghi_chu = ket_qua.comment or None
+    ghi_chu = _noi_ghi_chu(ket_qua.comment, ghi_chu_xoa)
     # `SUCCESS`/`EXISTING_FILE` chỉ nói thư viện đã ghi, hoặc đã thấy, MỘT tệp — không nói tệp đó
-    # trọn vẹn. `STORAGE_ERROR` cũng xét, để chỉ ra tệp dở mà lượt sau sẽ vấp phải.
-    if thanh_cong or ten_trang_thai == _TRANG_THAI_LOI_GHI:
+    # trọn vẹn. `STORAGE_ERROR` cũng xét: tệp dở mà client không xoá sẽ làm lượt sau vấp phải.
+    if not ghi_chu_xoa and (thanh_cong or ten_trang_thai == _TRANG_THAI_LOI_GHI):
         ly_do_ghi_do = _ly_do_pdf_ghi_do(ket_qua.path)
         if ly_do_ghi_do:
             thanh_cong = False
-            ghi_chu = _ghi_chu_tep_do(ghi_chu, ket_qua.path, ly_do_ghi_do)
+            ghi_chu = _noi_ghi_chu(ghi_chu, _ghi_chu_tep_do(ket_qua.path, ly_do_ghi_do))
     # Chỉ đo khi tải THÀNH CÔNG: `STORAGE_ERROR` có thể để lại tệp ghi dở trên đĩa, mà kích
     # thước của tệp dở không phải «kích thước PDF đã tải».
     kich_thuoc = _kich_thuoc_byte_tren_dia(ket_qua.path) if thanh_cong else None
@@ -310,10 +347,10 @@ class WileyTdmClient:
         của Wiley (ACCESS_DENIED/UNKNOWN_DOI/NETWORK_ERROR/...), không quy hết về 'lỗi'
         chung chung để người gọi biết chính xác phải làm gì tiếp theo.
 
-        `thanh_cong` chỉ đúng khi tệp trên đĩa trông như một PDF trọn vẹn (`_ly_do_pdf_ghi_do`)."""
+        `thanh_cong` chỉ đúng khi tệp trên đĩa trông như một PDF trọn vẹn (`_ly_do_pdf_ghi_do`).
+        Tệp mà chính lượt này ghi dở (`STORAGE_ERROR`) được xoá ngay — xem `_xoa_tep_vua_ghi_do`."""
         self._kiem_thu_muc_tai()
-        ket_qua = self._client.download_pdf(doi)
-        out = _quy_doi_ket_qua(ket_qua)
+        out = self._xu_ly_ket_qua(self._client.download_pdf(doi))
         if not out.thanh_cong:
             logger.warning(
                 "[wiley_tdm] tải thất bại doi=%s trạng_thái=%s ghi_chú=%s",
@@ -321,21 +358,32 @@ class WileyTdmClient:
             )
         return out
 
+    def _xu_ly_ket_qua(self, ket_qua) -> KetQuaTaiWiley:
+        """MỘT kết quả thô của thư viện ⇒ kết quả của ta, xoá tệp vừa ghi dở nếu có. Mỗi kết quả thô
+        chỉ đi qua đây một lần: gọi lần hai thì tệp dở đã không còn, ghi chú về việc xoá sẽ mất."""
+        return _quy_doi_ket_qua(ket_qua, _xoa_tep_vua_ghi_do(ket_qua, self._client.download_dir))
+
     def download_pdfs(
         self,
         dois: List[str],
         on_result: Optional[Callable[[KetQuaTaiWiley], None]] = None,
     ) -> List[KetQuaTaiWiley]:
         """Tải HÀNG LOẠT theo danh sách DOI — thư viện tự giãn nhịp giữa các lượt
-        (xem `api_rate_limit`). `on_result` (tuỳ chọn) được gọi sau MỖI lượt tải."""
+        (xem `api_rate_limit`). `on_result` (tuỳ chọn) được gọi sau MỖI lượt tải.
+
+        Tệp ghi dở của từng bài được xoá ngay sau lượt tải bài đó (không đợi hết loạt), nên
+        `on_result` và danh sách trả về mang cùng một kết quả."""
+        da_xu_ly: Dict[int, KetQuaTaiWiley] = {}
 
         def _cb(ket_qua):
+            da_xu_ly[id(ket_qua)] = self._xu_ly_ket_qua(ket_qua)
             if on_result:
-                on_result(_quy_doi_ket_qua(ket_qua))
+                on_result(da_xu_ly[id(ket_qua)])
 
         self._kiem_thu_muc_tai()
-        ket_qua_tho = self._client.download_pdfs(dois, on_result=_cb if on_result else None)
-        return [_quy_doi_ket_qua(k) for k in ket_qua_tho]
+        ket_qua_tho = self._client.download_pdfs(dois, on_result=_cb)
+        # Kết quả nào thư viện không đưa qua callback thì xử lý ở đây, để không kết quả nào bị bỏ sót.
+        return [da_xu_ly.get(id(k)) or self._xu_ly_ket_qua(k) for k in ket_qua_tho]
 
     @property
     def download_dir(self) -> Path:
