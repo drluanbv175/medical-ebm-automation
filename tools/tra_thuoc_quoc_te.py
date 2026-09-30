@@ -113,8 +113,9 @@ def main(argv: Optional[list] = None) -> int:
 
     if args.lenh == "chuan-hoa":
         kq = RxNormClient().chuan_hoa(args.ten)
-        # Điều khoản RxNav: đầu ra dùng dữ liệu NLM phải kèm dòng miễn trừ NGUYÊN VĂN. Client đã gắn sẵn; GÁN LẠI ở
-        # đây để lệnh không bao giờ in thiếu (hay in một bản đã bị sửa/dịch) dù client bị thay hoặc đổi về sau.
+        # Điều khoản RxNav đề nghị ứng dụng dùng dữ liệu NLM kèm dòng miễn trừ NGUYÊN VĂN; hệ này coi là bắt buộc.
+        # Client đã gắn sẵn; GÁN LẠI ở đây để lệnh không bao giờ in thiếu (hay in một bản đã bị sửa/dịch) dù client bị
+        # thay hoặc đổi về sau.
         kq["mien_tru_nlm"] = MIEN_TRU_NLM
     else:
         # EMA không phải dữ liệu NLM — cố ý KHÔNG gắn dòng miễn trừ của NLM vào đây.

@@ -35,9 +35,10 @@ from app.utils.http import HttpClient
 
 BASE = "https://rxnav.nlm.nih.gov/REST"
 NGUON = "RxNorm (NLM RxNav REST)"
-# Dòng miễn trừ mà điều khoản RxNav đề nghị mọi ứng dụng dùng dữ liệu NLM phải kèm — chép NGUYÊN VĂN từ trang điều
-# khoản (xem docstring đầu tệp). KHÔNG dịch, KHÔNG diễn giải, KHÔNG sửa dấu câu hay khoảng trắng: test khoá SHA-256 của
-# chuỗi này. NLM đổi câu chữ ⇒ mở lại trang, chép lại nguyên văn, rồi cập nhật mã băm trong test cùng một lượt.
+# Dòng miễn trừ mà điều khoản RxNav ĐỀ NGHỊ («We request…») mọi ứng dụng dùng dữ liệu NLM kèm theo; hệ này coi là bắt
+# buộc. Chép NGUYÊN VĂN từ trang điều khoản (xem docstring đầu tệp): KHÔNG dịch, KHÔNG diễn giải, KHÔNG sửa dấu câu hay
+# khoảng trắng — test khoá SHA-256 của chuỗi này. NLM đổi câu chữ ⇒ mở lại trang, chép lại nguyên văn, rồi cập nhật mã
+# băm trong test cùng một lượt.
 MIEN_TRU_NLM = (
     "This product uses publicly available data from the U.S. National Library of Medicine (NLM), "
     "National Institutes of Health, Department of Health and Human Services; "
