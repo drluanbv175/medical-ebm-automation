@@ -63,7 +63,19 @@ CHINH_SACH = RateLimitHeaders(retry_after="X-RateLimit-Retry-After", remaining="
 @pytest.fixture(autouse=True)
 def _co_lap(monkeypatch, tmp_path):
     """Dữ liệu/cache HTTP về tmp_path; trạng thái throttle theo host làm mới; cấu hình nhịp về đúng mặc định của mã
-    (máy chạy test có thể đặt biến môi trường riêng)."""
+    (máy chạy test có thể đặt biến môi trường riêng).
+
+    `_throttle` CỐ Ý không bị thay bằng hàm rỗng như ở các tệp test khác: giãn cách tối thiểu chính là hành vi được
+    kiểm. Thay vào đó `time.sleep` bị CẤM mặc định — test nào gửi request phải dùng `_DongHo` (đồng hồ giả), nên
+    không test nào trong tệp này ngủ thật. Vi phạm được kiểm lại lúc dọn fixture vì connector bắt `Exception` quanh
+    lời gọi mạng (lỗi ném ở đây có thể bị nuốt)."""
+    ngu_that: list = []
+
+    def cam_ngu_that(giay):
+        ngu_that.append(giay)
+        raise AssertionError(f"test ngủ THẬT {giay} giây — mọi test có gửi request phải dùng _DongHo (đồng hồ giả)")
+
+    monkeypatch.setattr(http_mod.time, "sleep", cam_ngu_that)
     (tmp_path / "du_lieu").mkdir()
     monkeypatch.setattr(settings, "data_dir", tmp_path / "du_lieu")
     (tmp_path / "http_cache").mkdir()
@@ -79,6 +91,7 @@ def _co_lap(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "core_min_interval", 6.5)
     monkeypatch.setattr(settings, "core_rate_limit_max_wait", 65.0)
     yield
+    assert not ngu_that, f"test đã gọi time.sleep thật {ngu_that} — thiếu _DongHo"
 
 
 class _DongHo:
