@@ -305,7 +305,7 @@ def canh_dang_ky(canh):
 def test_moc_audit_bat_thao_tac_tep_that(canh_dang_ky, kho, tmp_path):
     canh = canh_dang_ky
     a = kho / "raw" / "core" / "a.json"
-    a.write_text("{}", encoding="utf-8")                                    # open(w)
+    a.write_text("{}", encoding="utf-8", newline="\n")                                    # open(w)
     os.close(os.open(kho / "raw" / "b.bin", os.O_CREAT | os.O_WRONLY))      # os.open
     with open(a, "a", encoding="utf-8") as fh:                              # open(a)
         fh.write("\n")
@@ -330,15 +330,15 @@ def test_moc_audit_bat_thao_tac_tep_that(canh_dang_ky, kho, tmp_path):
 
 def test_moc_audit_khong_tinh_doc_tao_thu_muc_mien_tru_va_ngoai_kho(canh_dang_ky, kho, tmp_path):
     canh = canh_dang_ky
-    (kho / "raw" / "d.json").write_text("{}", encoding="utf-8")
+    (kho / "raw" / "d.json").write_text("{}", encoding="utf-8", newline="\n")
     so_truoc = len(canh.vi_pham)
     assert (kho / "raw" / "d.json").read_text(encoding="utf-8") == "{}"    # đọc
     assert sorted(p.name for p in (kho / "raw").iterdir()) == ["core", "d.json"]
     (kho / "raw" / "core").mkdir(parents=True, exist_ok=True)               # mkdir trên thư mục đã có
     (kho / "raw" / "moi").mkdir()                                           # tạo thư mục (không phải tệp)
-    (kho / "archive" / "app.log").write_text("nhật ký", encoding="utf-8")   # miễn trừ theo thư mục
-    (kho / "processed" / "lo_da_biet.jsonl").write_text("{}", encoding="utf-8")  # miễn trừ theo tệp
-    (tmp_path / "ngoai.json").write_text("{}", encoding="utf-8")            # ngoài kho
+    (kho / "archive" / "app.log").write_text("nhật ký", encoding="utf-8", newline="\n")   # miễn trừ theo thư mục
+    (kho / "processed" / "lo_da_biet.jsonl").write_text("{}", encoding="utf-8", newline="\n")  # miễn trừ theo tệp
+    (tmp_path / "ngoai.json").write_text("{}", encoding="utf-8", newline="\n")            # ngoài kho
     assert canh.vi_pham[so_truoc:] == []
 
 
@@ -353,7 +353,7 @@ def test_dang_ky_hai_lan_khong_ghi_doi_va_huy_dang_ky_thi_thoi_canh(canh, kho):
     finally:
         huy_dang_ky(canh)
     assert not any(c is canh for c in cac_canh())
-    (kho / "raw" / "sau_khi_go.json").write_text("{}", encoding="utf-8")
+    (kho / "raw" / "sau_khi_go.json").write_text("{}", encoding="utf-8", newline="\n")
     assert [vp.tuong_doi for vp in canh.vi_pham] == ["raw/mot_lan.json"]
 
 
@@ -382,20 +382,20 @@ def test_hook_logstart_logfinish_gan_nhan_test_cho_moi_chot(canh_dang_ky, reques
 # ════════════════════════════════════════════════════════════════════════════
 
 def test_chup_va_so_sanh(canh, kho):
-    (kho / "raw" / "giu.json").write_text("1", encoding="utf-8")
-    (kho / "raw" / "sua.json").write_text("1", encoding="utf-8")
-    (kho / "raw" / "xoa.json").write_text("1", encoding="utf-8")
-    (kho / "archive" / "app.log").write_text("1", encoding="utf-8")
+    (kho / "raw" / "giu.json").write_text("1", encoding="utf-8", newline="\n")
+    (kho / "raw" / "sua.json").write_text("1", encoding="utf-8", newline="\n")
+    (kho / "raw" / "xoa.json").write_text("1", encoding="utf-8", newline="\n")
+    (kho / "archive" / "app.log").write_text("1", encoding="utf-8", newline="\n")
     truoc, du = chup(kho, canh)
     assert du and sorted(truoc) == ["raw/giu.json", "raw/sua.json", "raw/xoa.json"], truoc
 
-    (kho / "raw" / "sua.json").write_text("dài hơn", encoding="utf-8")
+    (kho / "raw" / "sua.json").write_text("dài hơn", encoding="utf-8", newline="\n")
     (kho / "raw" / "xoa.json").unlink()
-    (kho / "raw" / "core" / "moi.json").write_text("1", encoding="utf-8")
-    (kho / "archive" / "app.log").write_text("nhật ký dài thêm", encoding="utf-8")            # miễn trừ thư mục
-    (kho / "processed" / "lo_da_biet.jsonl").write_text("1", encoding="utf-8")                # miễn trừ tệp
-    for ten_he_thong in (".DS_Store", "Thumbs.db", "desktop.ini"):                            # tệp hệ điều hành
-        (kho / "raw" / ten_he_thong).write_text("1", encoding="utf-8")
+    (kho / "raw" / "core" / "moi.json").write_text("1", encoding="utf-8", newline="\n")
+    (kho / "archive" / "app.log").write_text("nhật ký dài thêm", encoding="utf-8", newline="\n")  # miễn trừ thư mục
+    (kho / "processed" / "lo_da_biet.jsonl").write_text("1", encoding="utf-8", newline="\n")      # miễn trừ tệp
+    for ten_he_thong in (".DS_Store", "Thumbs.db", "desktop.ini"):                                # tệp hệ điều hành
+        (kho / "raw" / ten_he_thong).write_text("1", encoding="utf-8", newline="\n")
     sau, du = chup(kho, canh)
     assert du
     assert so_sanh(truoc, sau) == {"moi": ["raw/core/moi.json"], "doi": ["raw/sua.json"], "mat": ["raw/xoa.json"]}
@@ -407,7 +407,7 @@ def test_chup_va_so_sanh(canh, kho):
 
 
 def test_chup_qua_han_thi_bao_khong_du(canh, kho):
-    (kho / "raw" / "a.json").write_text("1", encoding="utf-8")
+    (kho / "raw" / "a.json").write_text("1", encoding="utf-8", newline="\n")
     anh, du = chup(kho, canh, han_giay=-1.0)
     assert du is False and anh == {}, "quá hạn phải báo KHÔNG ĐỦ, không được trả ảnh thiếu như thể đã quét xong"
 
@@ -422,7 +422,7 @@ def test_tong_ket_sach_thi_khong_co_dong_nao(canh):
 def test_tong_ket_ghi_trong_tien_trinh_chua_test_nao_nhan_thi_do(canh, kho):
     canh.chup_dau()
     canh.nhan("open", (str(kho / "raw" / "luc_import.json"), "w", GHI))
-    (kho / "raw" / "luc_import.json").write_text("{}", encoding="utf-8")
+    (kho / "raw" / "luc_import.json").write_text("{}", encoding="utf-8", newline="\n")
     for nghiem in (False, True):
         tk = tong_ket([canh], nghiem=nghiem)
         assert any("raw/luc_import.json" in d and NGOAI_TEST in d for d in tk.do), tk
@@ -431,14 +431,14 @@ def test_tong_ket_ghi_trong_tien_trinh_chua_test_nao_nhan_thi_do(canh, kho):
 
 
 def test_tong_ket_tep_doi_khong_quy_duoc_chi_do_o_phien_kin(canh, kho):
-    (kho / "raw" / "cu.json").write_text("1", encoding="utf-8")
-    (kho / "raw" / "se_mat.json").write_text("1", encoding="utf-8")
+    (kho / "raw" / "cu.json").write_text("1", encoding="utf-8", newline="\n")
+    (kho / "raw" / "se_mat.json").write_text("1", encoding="utf-8", newline="\n")
     canh.chup_dau()
     # tiến trình KHÁC ghi (móc audit của chốt này không thấy vì chưa đăng ký): mới + đổi + mất
-    (kho / "raw" / "core" / "cua_tien_trinh_khac.json").write_text("{}", encoding="utf-8")
-    (kho / "raw" / "cu.json").write_text("đã đổi", encoding="utf-8")
+    (kho / "raw" / "core" / "cua_tien_trinh_khac.json").write_text("{}", encoding="utf-8", newline="\n")
+    (kho / "raw" / "cu.json").write_text("đã đổi", encoding="utf-8", newline="\n")
     (kho / "raw" / "se_mat.json").unlink()
-    (kho / "archive" / "app.log").write_text("miễn trừ", encoding="utf-8")
+    (kho / "archive" / "app.log").write_text("miễn trừ", encoding="utf-8", newline="\n")
 
     long = tong_ket([canh], nghiem=False)
     assert long.do == [], "không biết ai ghi ⇒ KHÔNG được báo đỏ ở phiên thường"
@@ -456,7 +456,7 @@ def test_tong_ket_khong_quet_duoc_thi_noi_khong_do_duoc(canh, kho, monkeypatch):
     import tests.canh_ghi_du_lieu_that as M
 
     canh.chup_dau()
-    (kho / "raw" / "moi.json").write_text("{}", encoding="utf-8")
+    (kho / "raw" / "moi.json").write_text("{}", encoding="utf-8", newline="\n")
     monkeypatch.setattr(M, "chup", lambda goc, canh=None, han_giay=20.0: ({}, False))
     long = tong_ket([canh], nghiem=False)
     assert long.do == [] and any("KHÔNG so được" in d for d in long.ghi_chu), long
@@ -468,7 +468,7 @@ def test_tong_ket_khong_quet_duoc_thi_noi_khong_do_duoc(canh, kho, monkeypatch):
 def test_tong_ket_liet_ke_co_tran_va_noi_ro_phan_con_lai(canh, kho):
     canh.chup_dau()
     for i in range(7):
-        (kho / "raw" / f"t{i}.json").write_text("{}", encoding="utf-8")
+        (kho / "raw" / f"t{i}.json").write_text("{}", encoding="utf-8", newline="\n")
         canh.nhan("open", (str(kho / "raw" / f"n{i}.json"), "w", GHI))
     tk = tong_ket([canh], nghiem=True, toi_da=3)
     van_ban = "\n".join(tk.do)
@@ -492,7 +492,7 @@ dang_ky(CanhGhi(KHO))
 def _chay_pytest_con(tmp_path, than_tep: str, kin: bool = False, them=()) -> subprocess.CompletedProcess:
     """Chạy một phiên pytest con trên MỘT tệp test tạm, nạp tests/conftest.py thật làm plugin."""
     tep = tmp_path / "test_con.py"
-    tep.write_text(_DAU_TEP_CON + than_tep, encoding="utf-8")
+    tep.write_text(_DAU_TEP_CON + than_tep, encoding="utf-8", newline="\n")
     env = {k: v for k, v in os.environ.items() if k != "MRAQ_OFFLINE_CI"}
     env.update(PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
     if kin:
