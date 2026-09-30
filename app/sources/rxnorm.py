@@ -19,6 +19,12 @@ Bốn trạng thái, KHÔNG được gộp:
   * `loi`            — không hỏi được (mạng/API/đầu vào bị từ chối). Luôn là «KHÔNG BIẾT», không bao giờ được đọc
                        thành «không thấy» (cùng lớp bài học BH27/BH08: không kiểm được phải là một vấn đề, không
                        phải một cái gật đầu).
+
+ĐIỀU KHOẢN SỬ DỤNG của RxNav (https://lhncbc.nlm.nih.gov/RxNav/TermsofService.html — mở trang, đọc nguyên văn ngày
+30/09/2026): NLM đề nghị mọi ứng dụng dùng dữ liệu của NLM kèm MỘT dòng miễn trừ. Vì vậy mọi kết quả của
+`chuan_hoa()` — cả bốn trạng thái — mang dòng đó NGUYÊN VĂN tiếng Anh ở trường riêng `mien_tru_nlm` (hằng
+`MIEN_TRU_NLM`), không trộn vào `nguon` hay `canh_bao`. Cùng trang đó ghi nhà phát triển không được dùng tên/logo NLM
+gắn với ứng dụng: dòng miễn trừ chỉ để nói dữ liệu lấy từ đâu, KHÔNG phải lời bảo chứng của NLM cho công cụ này.
 """
 from __future__ import annotations
 
@@ -29,6 +35,14 @@ from app.utils.http import HttpClient
 
 BASE = "https://rxnav.nlm.nih.gov/REST"
 NGUON = "RxNorm (NLM RxNav REST)"
+# Dòng miễn trừ mà điều khoản RxNav đề nghị mọi ứng dụng dùng dữ liệu NLM phải kèm — chép NGUYÊN VĂN từ trang điều
+# khoản (xem docstring đầu tệp). KHÔNG dịch, KHÔNG diễn giải, KHÔNG sửa dấu câu hay khoảng trắng: test khoá SHA-256 của
+# chuỗi này. NLM đổi câu chữ ⇒ mở lại trang, chép lại nguyên văn, rồi cập nhật mã băm trong test cùng một lượt.
+MIEN_TRU_NLM = (
+    "This product uses publicly available data from the U.S. National Library of Medicine (NLM), "
+    "National Institutes of Health, Department of Health and Human Services; "
+    "NLM is not responsible for the product and does not endorse or recommend this or any other product."
+)
 # IN = hoạt chất đơn · MIN = tổ hợp nhiều hoạt chất · PIN = dạng muối/tinh chất của hoạt chất
 TTY_HOAT_CHAT = ("IN", "MIN", "PIN")
 TOI_DA_UNG_VIEN = 3
@@ -134,8 +148,10 @@ class RxNormClient:
     # ---- API chính --------------------------------------------------------------------------------------------
     def chuan_hoa(self, ten: Optional[str]) -> Dict[str, Any]:
         ten = _lam_sach_ten(ten)
+        # `mien_tru_nlm` nằm ngay ở khung kết quả ⇒ mọi đường trả về (kể cả `loi`) đều mang nó, không đường nào in
+        # dữ liệu NLM mà thiếu dòng miễn trừ.
         kq: Dict[str, Any] = {"ten_nhap": ten, "trang_thai": "loi", "ket_qua": [], "nguon": NGUON,
-                              "canh_bao": [_CANH_BAO_PHAM_VI]}
+                              "mien_tru_nlm": MIEN_TRU_NLM, "canh_bao": [_CANH_BAO_PHAM_VI]}
         if not ten:
             kq["ly_do"] = "tên thuốc rỗng"
             return kq
