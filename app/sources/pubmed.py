@@ -384,6 +384,9 @@ _LY_DO_NCBI_CHAN = (
 class PubMedClient(SourceClient):
     name = "pubmed"
     endpoint = ESEARCH
+    # Thẻ trường [ta]/[pt]/[cn]... là cú pháp gốc của E-utilities: nguồn DUY NHẤT nhận 8 truy vấn quét theo tạp chí/
+    # tổ chức của CLINICAL_AREAS (xem CU_PHAP_PUBMED_RE ở app/sources/base.py).
+    hieu_cu_phap_pubmed = True
 
     def __init__(self) -> None:
         super().__init__()

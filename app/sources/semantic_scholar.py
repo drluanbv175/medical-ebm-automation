@@ -30,6 +30,9 @@ class SemanticScholarClient(SourceClient):
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
         if self.use_mock:
             return mock_records_for(self.name, query, clinical_area, max_results)
+        # `query` là tìm tự do, không hiểu thẻ [ta]/[pt] của PubMed.
+        if self.bo_qua_truy_van(query):
+            return []
         try:
             params = {"query": query, "limit": max_results, "fields": FIELDS}
             if since_date:

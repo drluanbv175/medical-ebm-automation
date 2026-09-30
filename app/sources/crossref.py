@@ -26,6 +26,10 @@ class CrossrefClient(SourceClient):
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
         if self.use_mock:
             return mock_records_for(self.name, query, clinical_area, max_results)
+        # `query` của Crossref là tìm tự do: payload thật 29/09/2026 cho truy vấn [ta] NEJM/Lancet/JAMA ra
+        # "Plantation Technology", "JURNAL TEKNIK PERTAMBANGAN", "Problems of Tribology".
+        if self.bo_qua_truy_van(query):
+            return []
         try:
             params = {"query": query, "rows": max_results,
                       "select": "DOI,title,author,container-title,issued,type,abstract"}

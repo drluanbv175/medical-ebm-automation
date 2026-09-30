@@ -119,6 +119,9 @@ class CoreClient(SourceClient):
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
         if self.use_mock:
             return mock_records_for(self.name, query, clinical_area, max_results)
+        # Ngôn ngữ truy vấn kiểu Lucene của CORE không có thẻ [ta]/[pt] ('[' mở truy vấn khoảng) — không gửi.
+        if self.bo_qua_truy_van(query):
+            return []
 
         if not settings.core_api_key and not khoa_do_proxy_gan("core"):
             # KHÁC Scopus (chặn cứng khi thiếu key): CORE tự khai vẫn cho gọi

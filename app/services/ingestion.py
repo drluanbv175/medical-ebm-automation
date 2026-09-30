@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import re
 import time
-from collections import defaultdict
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -107,14 +107,19 @@ def summarize_source_health(
     """
     grouped: dict[str, dict[str, Any]] = defaultdict(
         lambda: {"requests": 0, "records": 0, "ok": 0, "degraded": 0, "error": 0, "mock": 0,
-                 "error_http_401_403": 0, "du_phong": 0}
+                 "error_http_401_403": 0, "du_phong": 0, "skipped": 0}
     )
     for row in logs:
         source = str(row.get("source") or "unknown")
         item = grouped[source]
+        status = str(row.get("status") or "error")
+        if status == "skipped":
+            # Truy vấn bị BỎ QUA có chủ đích, không gọi mạng (xem _fetch): KHÔNG phải một request — không tính vào
+            # requests/error_rate (sẽ pha loãng tỉ lệ lỗi thật), cũng KHÔNG phải một lần nguồn trả lời thành công.
+            item["skipped"] += 1
+            continue
         item["requests"] += 1
         item["records"] += int(row.get("record_count") or 0)
-        status = str(row.get("status") or "error")
         status = status if status in {"ok", "degraded", "error", "mock"} else "error"
         item[status] += 1
         if status == "error" and _HTTP_BI_CHAN_RE.search(str(row.get("error_message") or "")):
@@ -128,6 +133,11 @@ def summarize_source_health(
         error_rate = item["error"] / max(1, item["requests"])
         if item["mock"]:
             health = "mock"
+        elif item["requests"] == 0:
+            # MỌI truy vấn của nguồn đều bị bỏ qua có chủ đích: không có lần gọi nào để đo — KHÔNG được là "ok"
+            # (xanh giả) cũng KHÔNG phải "unavailable" (đỏ giả). Không nằm trong {ok, degraded} nên không bao giờ
+            # được đếm là khoẻ ở các phép tính độ phủ bên dưới.
+            health = "not_queried"
         elif live_success == 0:
             health = "unavailable"
         elif error_rate > 0.20:
@@ -220,6 +230,15 @@ def summarize_source_health(
     )
     if enhanced_failed:
         redundancy_warnings.append("OPTIONAL_ENHANCED_SOURCE_UNAVAILABLE:" + ",".join(enhanced_failed))
+    # Nguồn BẮT BUỘC (lõi khám phá/an toàn) mà mọi truy vấn đều bị bỏ qua: không đo được ≠ ổn ⇒ CẢNH BÁO (PARTIAL),
+    # không chặn (không đo được ≠ hỏng). Với CLINICAL_AREAS hiện hành không xảy ra (nguồn lõi nào cũng còn truy vấn
+    # chủ đề) — đây là lưới cho hồi quy làm một nguồn lõi bị bỏ qua sạch mà lượt chạy vẫn PASS.
+    required_not_queried = sorted(
+        name for name in set(discovery_expected) | safety_expected
+        if source_rows.get(name, {}).get("health") == "not_queried"
+    )
+    if required_not_queried:
+        redundancy_warnings.append("REQUIRED_SOURCE_NOT_QUERIED:" + ",".join(required_not_queried))
 
     if hard_fail_reasons:
         overall = "FAIL"
@@ -262,6 +281,11 @@ def sweep_source(client, areas: List[str], max_results_per_query: int,
             elapsed = time.monotonic() - started
             recs.extend(r)
             logs.append(log)
+            if log["status"] == "skipped":
+                # Bỏ qua có chủ đích, không gọi mạng: không phải lỗi, cũng không phải bằng chứng nguồn đã hồi phục —
+                # KHÔNG đụng bộ đếm lỗi liên tiếp (trước 29/09/2026 ba lỗi 400 của truy vấn [ta] gửi sang
+                # ClinicalTrials.gov đủ làm breaker cắt mọi truy vấn phía sau).
+                continue
             if log["status"] == "error" or elapsed >= _SLOW_QUERY_THRESHOLD_SEC:
                 consecutive_errors += 1
                 if consecutive_errors >= _MAX_CONSECUTIVE_ERRORS:
@@ -271,10 +295,24 @@ def sweep_source(client, areas: List[str], max_results_per_query: int,
                         "bỏ qua %d truy vấn còn lại thay vì thử hết, tránh treo lâu.",
                         client.name, consecutive_errors, skipped,
                     )
+                    _log_tong_bo_qua(client, logs)
                     return recs, logs
             else:
                 consecutive_errors = 0
+    _log_tong_bo_qua(client, logs)
     return recs, logs
+
+
+def _log_tong_bo_qua(client, logs: List[dict]) -> None:
+    """MỘT dòng INFO mỗi nguồn cho các truy vấn bị bỏ qua có chủ đích (thay vì một dòng mỗi truy vấn)."""
+    ly_do = Counter(str(lg.get("error_message") or "").split(":", 1)[0]
+                    for lg in logs if lg.get("status") == "skipped")
+    if ly_do:
+        logger.info(
+            "Nguồn %s: BỎ QUA %d truy vấn có chủ đích (%s) — không gọi mạng, KHÔNG tính là lỗi; sức khoẻ nguồn chỉ "
+            "đo trên %d truy vấn đã gửi.",
+            client.name, sum(ly_do.values()), ", ".join(f"{k}×{v}" for k, v in sorted(ly_do.items())),
+            len(logs) - sum(ly_do.values()))
 
 
 _KHOA_LOG_SOURCELOG = ("source", "api_endpoint", "query", "record_count", "status", "error_message", "mode")
@@ -433,9 +471,36 @@ def ingest_all(max_results_per_query: int = 10,
 _FDA_SENTINEL = object()  # đánh dấu tác vụ openFDA trong danh sách nguồn
 
 
+def _ly_do_bo_qua(client, query: str) -> Optional[str]:
+    """Hỏi connector có CHỦ ĐÍCH không gửi truy vấn này không (vd thẻ trường PubMed tới nguồn không hiểu) — thuần.
+
+    Chế độ mock không bỏ qua (giữ nguyên hành vi demo/seed, cùng quy ước serpapi_scholar). Client không khai
+    `ly_do_bo_qua_truy_van` (test double, wrapper cũ) hoặc trả thứ không phải chuỗi => không bỏ qua (hành vi cũ).
+    """
+    if getattr(client, "use_mock", False):
+        return None
+    hoi = getattr(client, "ly_do_bo_qua_truy_van", None)
+    if not callable(hoi):
+        return None
+    ly_do = hoi(query)
+    return ly_do if isinstance(ly_do, str) and ly_do else None
+
+
 def _fetch(client, query: str, area: str, max_results: int,
            since_date: Optional[str] = None) -> Tuple[List[RawRecord], dict]:
     """Gọi 1 nguồn cho 1 truy vấn. KHÔNG ghi DB (gom log trả về để ghi sau)."""
+    ly_do_bo_qua = _ly_do_bo_qua(client, query)
+    if ly_do_bo_qua:
+        # Không gọi mạng. status="skipped" KHÔNG phải lỗi (không đẩy circuit-breaker, không vào error_rate) nhưng
+        # cũng KHÔNG phải nguồn đã trả lời: summarize_source_health không tính là khoẻ, evidence_sufficiency không
+        # tính là "nguồn lõi đã trả lời" (chỉ nhận ok/degraded).
+        logger.debug("Nguồn %s bỏ qua query '%s' (%s) — không gọi mạng, không phải lỗi.",
+                     client.name, query, ly_do_bo_qua)
+        return [], dict(source=client.name, api_endpoint=getattr(client, "endpoint", ""),
+                        query=f"[{area}] {query}", record_count=0, status="skipped",
+                        error_message=(f"{ly_do_bo_qua}: không gửi truy vấn tới nguồn không hiểu cú pháp này — "
+                                       "bỏ qua có chủ đích, không phải lỗi"),
+                        mode="live")
     status, mode, err, records = "ok", "live", None, []
     health_before = _http_snapshot(client)
     try:

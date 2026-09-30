@@ -49,9 +49,10 @@ GIỚI HẠN ĐÃ BIẾT, ghi rõ để không ai hiểu nhầm độ tin cậy 
     KHÔNG BAO GIỜ đưa PHI/PII bệnh nhân vào `query`, chỉ dùng chuỗi chủ đề y văn. Connector
     tự chặn: truy vấn khớp `contains_pii_text` (email, CCCD/mã bệnh nhân, SĐT, ngày sinh…)
     bị TỪ CHỐI (`tham_so_sai`) trước khi tốn ngân sách, thông báo không nhắc lại truy vấn.
-  • Truy vấn mang thẻ trường PubMed ([ta]/[pt]/[cn]/[tiab]/[mh]/[majr]/[dp]) bị BỎ QUA (trả []
-    kèm cảnh báo + `stats["bo_qua_cu_phap_pubmed"]`, không gọi HTTP, không tốn ngân sách): Source
-    Log sẽ hiện ok/0 cho các truy vấn đó, số thật nằm ở `client.stats` và dòng log.
+  • Truy vấn mang thẻ trường PubMed ([ta]/[pt]/[cn]/[ti]... — định nghĩa DUY NHẤT: `CU_PHAP_PUBMED_RE` ở
+    app/sources/base.py) bị BỎ QUA (trả [] kèm cảnh báo + `stats["bo_qua_cu_phap_pubmed"]`, không gọi HTTP, không
+    tốn ngân sách). Đi qua `ingestion._fetch` thì dòng Source Log là status="skipped" (từ 29/09/2026 — bậc thang
+    dự phòng vốn đã không gửi các truy vấn này); gọi thẳng `search()` thì số thật nằm ở `client.stats` và dòng log.
   • `max_results <= 0` trả [] ngay, không gọi SerpApi.
   • CHƯA xác nhận chạy thật (chưa có SERPAPI_API_KEY lúc viết): cấu trúc phản hồi, chuỗi
     lỗi, ý nghĩa `as_ylo` "bao gồm năm đó" đều dựng từ tài liệu SerpApi + tóm tắt nghiên
@@ -112,7 +113,7 @@ import requests
 from app.config import settings
 from app.core.policy_engine import contains_pii_text
 from app.sources._fixtures import mock_records_for
-from app.sources.base import RawRecord, SourceClient
+from app.sources.base import RawRecord, SourceClient, la_truy_van_cu_phap_pubmed
 from app.sources.classify_meta import infer_study_type
 from app.utils.bo_dem_thang import BoDemThang, HetTran
 from app.utils.http import HttpClient, _cache_key, _cache_path, _redact, _write_cache
@@ -134,9 +135,6 @@ _MIEN_RE = re.compile(r"^(?:[\w-]+\.)+[a-z]{2,}$", re.IGNORECASE)
 _THE_DAU_TIEU_DE_RE = re.compile(
     r"^(?:\[(?:PDF|HTML|BOOK|B|CITATION|C|DOC|DOCX|PPT)\]\s*)+", re.IGNORECASE)
 _KHOANG_TRANG_RE = re.compile(r"\s+")
-# Thẻ trường của PubMed ([ta], [pt], [cn]...) vô nghĩa với Google Scholar: gửi đi chỉ tốn 1 search
-# tính phí mà kết quả không tin được. CLINICAL_AREAS có 8 truy vấn dạng này.
-_CU_PHAP_PUBMED_RE = re.compile(r"\[(?:ta|pt|cn|tiab|mh|majr|dp)\]", re.IGNORECASE)
 
 # DOI: CHỈ trích khi URL thật sự mang nguyên văn chuỗi 10.xxxx/... ở vị trí có neo.
 _DOI_HOST = frozenset({"doi.org", "dx.doi.org", "www.doi.org"})
@@ -480,7 +478,8 @@ class SerpApiScholarClient(SourceClient):
                 "[serpapi_scholar] truy vấn có dấu hiệu PII/PHI (email, CCCD/mã bệnh nhân, SĐT, ngày sinh...) — "
                 "TỪ CHỐI, không gửi sang SerpApi (lưu 31 ngày, chuyển tiếp Google). Chỉ dùng chuỗi chủ đề y văn.",
                 "tham_so_sai")
-        if _CU_PHAP_PUBMED_RE.search(query):
+        if la_truy_van_cu_phap_pubmed(query):
+            # Thẻ trường PubMed vô nghĩa với Google Scholar: gửi đi chỉ tốn 1 search tính phí mà kết quả không tin được.
             self.stats["bo_qua_cu_phap_pubmed"] += 1
             logger.warning(
                 "[serpapi_scholar] BỎ QUA truy vấn cú pháp PubMed (thẻ [ta]/[pt]/...; không gọi SerpApi, không tốn "

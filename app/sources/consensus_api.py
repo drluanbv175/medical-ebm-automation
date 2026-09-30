@@ -106,7 +106,7 @@ import requests
 from app.config import khoa_do_proxy_gan, settings
 from app.core.policy_engine import contains_pii_text
 from app.sources._fixtures import mock_records_for
-from app.sources.base import RawRecord, SourceClient
+from app.sources.base import RawRecord, SourceClient, la_truy_van_cu_phap_pubmed
 from app.utils.http import HttpClient, _cache_key, _cache_path, _redact, _write_cache
 from app.utils.logging_config import get_logger
 
@@ -135,9 +135,6 @@ _DOI_HOP_LE_RE = re.compile(r"^10\.\d{4,9}/[^\s\"<>#?]+$")
 _DOI_TIEN_TO_RE = re.compile(r"^(?:https?://(?:dx\.)?doi\.org/|doi:\s*)", re.IGNORECASE)
 _NGAY_ISO_RE = re.compile(r"^(\d{4})-(\d{2})(?:-(\d{2}))?(?:[T ].*)?$")
 _THANG_RE = re.compile(r"^\d{4}-(?:0[1-9]|1[0-2])$")
-# Thẻ trường của PubMed vô nghĩa với Consensus (hỏi bằng câu/cụm tự nhiên): gửi đi chỉ tốn 1 lượt.
-_CU_PHAP_PUBMED_RE = re.compile(
-    r"\[(?:ta|pt|cn|tiab|ti|mh|majr|dp|au|la|sb|tw)\]", re.IGNORECASE)
 # Khoá có thể bị lặp lại dạng "x-api-key: xxx"/"x-api-key=xxx" trong một chuỗi lỗi/echo.
 _KHOA_HEADER_RE = re.compile(r"(x-api-key['\"]?\s*[:=]\s*['\"]?)[^\s'\",;}]+", re.IGNORECASE)
 
@@ -637,7 +634,8 @@ class ConsensusClient(SourceClient):
             raise ConsensusLoi(
                 "[consensus] truy vấn có dấu hiệu PII/PHI (email, CCCD/mã bệnh nhân, SĐT, ngày sinh...) "
                 "— TỪ CHỐI, không gửi sang Consensus. Chỉ dùng chuỗi chủ đề y văn.", "tham_so_sai")
-        if _CU_PHAP_PUBMED_RE.search(query):
+        if la_truy_van_cu_phap_pubmed(query):
+            # Thẻ trường PubMed vô nghĩa với Consensus (hỏi bằng câu/cụm tự nhiên): gửi đi chỉ tốn 1 lượt.
             self.stats["bo_qua_cu_phap_pubmed"] += 1
             logger.warning(
                 "[consensus] BỎ QUA truy vấn cú pháp PubMed (thẻ [ta]/[pt]/...; không gọi Consensus, "

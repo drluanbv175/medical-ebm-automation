@@ -116,6 +116,9 @@ class EpistemonikosClient(SourceClient):
                 "phải gửi email xin cấp token tới dev@epistemonikos.org rồi "
                 "thêm vào ~/.ebm-secrets/medical-ebm-automation.env."
             )
+        # Sau chốt thiếu token (như scopus.py): `q` là tìm tự do, không hiểu thẻ [ta]/[pt] của PubMed.
+        if self.bo_qua_truy_van(query):
+            return []
 
         try:
             params = {"q": query, "show": "classification,external_links"}
