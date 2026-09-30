@@ -27,6 +27,7 @@ from app.sources import get_enabled_sources, get_fallback_sources
 from app.sources.authority import assess_source_universe_coverage
 from app.sources.base import RawRecord
 from app.sources.openfda import OpenFDAClient
+from app.utils.http import DAU_CLOUDFLARE_CHAN
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -55,6 +56,15 @@ _SAFETY_FEEDS = {"feed_fda_medwatch", "feed_fda_recalls", "feed_mhra_dsu"}
 # 100%. Consensus/SerpApi KHÔNG ở đây — chúng đi qua `diagnostics["fallback"]` riêng (xem docstring
 # module), không qua summarize_source_health().
 _OPTIONAL_ENHANCED = {"scopus", "core", "epistemonikos"}
+# Nguồn tăng cường bị CLOUDFLARE chặn theo IP mạng (29/09/2026, bác sĩ chọn phương án a «ghi chú, không chặn»):
+# VPN BẬT là mặc định (NCBI chạy) nên Scopus luôn nhận trang chặn Cloudflare ⇒ MỌI lượt tuần thành PARTIAL (lượt bù
+# 29/09 PARTIAL chỉ vì `OPTIONAL_ENHANCED_SOURCE_UNAVAILABLE:scopus`) ⇒ chặn nối Hub mỗi tuần. Chỉ miễn khi (a) MỌI
+# lỗi của nguồn là HTTP 403 kèm trang chặn Cloudflare (`DAU_CLOUDFLARE_CHAN`, gắn ở `HttpClient`) và (b) ĐỦ cả ba
+# nguồn khám phá lõi (PubMed/Europe PMC/Crossref) đang bật và health «ok» (không tính «degraded»). 401 (khoá sai),
+# 403 JSON của chính Elsevier, mất mạng, thiếu khoá… ⇒ vẫn PARTIAL như cũ. Nguồn vẫn được liệt kê ở
+# `optional_enhanced_failed` (sự thật không đổi).
+_OPTIONAL_ENHANCED_CLOUDFLARE_IP = {"scopus"}
+_HTTP_403_CLOUDFLARE_RE = re.compile(r"^" + re.escape(DAU_CLOUDFLARE_CHAN) + r" .*\b403 Client Error\b")
 # Feed an toàn mà NHÀ CUNG CẤP chặn truy cập tự động vĩnh viễn (29/09/2026, bác sĩ chọn «ghi chú,
 # không chặn»): www.fda.gov trả 401 cho MedWatch RSS với mọi client tự động và MedWatch không có API
 # openFDA tương đương. Để nguyên thì CHỈ nguồn này hỏng cũng làm mọi lượt thành PARTIAL ⇒ chặn nối Hub
@@ -107,7 +117,7 @@ def summarize_source_health(
     """
     grouped: dict[str, dict[str, Any]] = defaultdict(
         lambda: {"requests": 0, "records": 0, "ok": 0, "degraded": 0, "error": 0, "mock": 0,
-                 "error_http_401_403": 0, "du_phong": 0, "skipped": 0}
+                 "error_http_401_403": 0, "error_http_403_cloudflare": 0, "du_phong": 0, "skipped": 0}
     )
     for row in logs:
         source = str(row.get("source") or "unknown")
@@ -124,6 +134,8 @@ def summarize_source_health(
         item[status] += 1
         if status == "error" and _HTTP_BI_CHAN_RE.search(str(row.get("error_message") or "")):
             item["error_http_401_403"] += 1
+        if status == "error" and _HTTP_403_CLOUDFLARE_RE.search(str(row.get("error_message") or "")):
+            item["error_http_403_cloudflare"] += 1
         if str(row.get("error_message") or "").startswith("du_phong:"):
             item["du_phong"] += 1
 
@@ -228,8 +240,22 @@ def summarize_source_health(
         name for name in _OPTIONAL_ENHANCED
         if name in source_rows and source_rows[name].get("health") == "unavailable"
     )
-    if enhanced_failed:
-        redundancy_warnings.append("OPTIONAL_ENHANCED_SOURCE_UNAVAILABLE:" + ",".join(enhanced_failed))
+    # Miễn riêng ca Cloudflare chặn theo IP mạng — điều kiện đầy đủ ở chú thích _OPTIONAL_ENHANCED_CLOUDFLARE_IP.
+    # ĐỦ cả ba nguồn lõi, mỗi nguồn health == "ok" (phản biện 29–30/09): máy tắt Europe PMC/Crossref thì PubMed một
+    # mình không đủ bù cho Scopus; và «degraded» (vd NCBI chặn giữa lượt: 1 thành công + 3 lỗi, PubMed phải nhờ gương
+    # Europe PMC/Crossref) KHÔNG tính là khoẻ — nếu không, hai nguồn cùng hỏng mà lượt vẫn PASS.
+    loi_kham_pha_du = all(source_rows.get(n, {}).get("health") == "ok" for n in _DISCOVERY_CORE)
+    enhanced_cloudflare = [
+        name for name in enhanced_failed
+        if name in _OPTIONAL_ENHANCED_CLOUDFLARE_IP and loi_kham_pha_du
+        and int(source_rows[name].get("error", 0)) > 0
+        and source_rows[name].get("error_http_403_cloudflare") == source_rows[name].get("error")
+    ]
+    for name in enhanced_cloudflare:
+        mirror_notices.append(f"{name.upper()}_BLOCKED_BY_CLOUDFLARE_403_NETWORK_IP")
+    enhanced_canh_bao = [name for name in enhanced_failed if name not in enhanced_cloudflare]
+    if enhanced_canh_bao:
+        redundancy_warnings.append("OPTIONAL_ENHANCED_SOURCE_UNAVAILABLE:" + ",".join(enhanced_canh_bao))
     # Nguồn BẮT BUỘC (lõi khám phá/an toàn) mà mọi truy vấn đều bị bỏ qua: không đo được ≠ ổn ⇒ CẢNH BÁO (PARTIAL),
     # không chặn (không đo được ≠ hỏng). Với CLINICAL_AREAS hiện hành không xảy ra (nguồn lõi nào cũng còn truy vấn
     # chủ đề) — đây là lưới cho hồi quy làm một nguồn lõi bị bỏ qua sạch mà lượt chạy vẫn PASS.
@@ -257,6 +283,7 @@ def summarize_source_health(
         "safety": {"expected": sorted(safety_expected), "healthy": safety_healthy},
         "guideline": {"expected": guideline_expected, "healthy": guideline_healthy},
         "optional_enhanced_failed": enhanced_failed,
+        "optional_enhanced_blocked_by_cloudflare": enhanced_cloudflare,
         "source_universe": source_universe,
         "sources": source_rows,
     }
@@ -460,10 +487,11 @@ def ingest_all(max_results_per_query: int = 10,
         logger.info("Ingestion: trong đó %d bản ghi từ bậc thang dự phòng (đã xác minh Crossref/PubMed), "
                     "%d dòng Source Log dự phòng.", len(extra_records), len(extra_logs))
     logger.info(
-        "Ingestion source health: %s (hard=%s; warning=%s)",
+        "Ingestion source health: %s (hard=%s; warning=%s; notice=%s)",
         source_health["status"],
         source_health["hard_fail_reasons"],
         source_health["warnings"],
+        source_health.get("mirror_notices") or [],
     )
     return all_records
 

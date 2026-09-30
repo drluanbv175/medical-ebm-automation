@@ -119,7 +119,19 @@ This file contains only Claude Code-specific instructions.
   Cùng lượt đo, VPN BẬT: PubMed E-utilities HTTP 200 (hết chặn misuse, `test-live pubmed` count=5 thật), 33/33 lane guideline trả mục,
   SerpApi + Consensus test-live thật đều `is_mock:false`. **Hệ quả thực tế: VPN bật ⇒ PubMed trực tiếp chạy, Scopus bị chặn; VPN tắt ⇒
   ngược lại.** Việc bù: Europe PMC + Crossref phủ dữ liệu PubMed khi NCBI chặn, còn Scopus chỉ là nguồn bổ sung — nên chạy Scopus lúc
-  VPN tắt. **Đã kiểm 20/09/2026 (tài liệu chính thức + nhìn trực tiếp ứng dụng): KHÔNG thể loại trừ riêng `api.elsevier.com`.**
+  VPN tắt. **Từ 29/09/2026 (bác sĩ chọn phương án a «ghi chú, không chặn»):** VPN bật là mặc định nên Scopus bị chặn MỌI lượt ⇒
+  trước đây mọi lượt tuần PARTIAL chỉ vì `OPTIONAL_ENHANCED_SOURCE_UNAVAILABLE:scopus` ⇒ chặn nối Hub. Nay `HttpClient` gắn tiền tố
+  `[cloudflare-chan]` vào `last_error` CHỈ khi phản hồi 403 là TRANG CHẶN của chính Cloudflare (cần tiêu đề `server: cloudflare`/`cf-ray`
+  VÀ dấu chặn: thân có `cf-error-details`/«Cloudflare Ray ID», hoặc tiêu đề `cf-mitigated` — Elsevier gắn `cf-ray` cho mọi phản hồi, kể
+  cả lỗi JSON của chính nó; KHÔNG dùng `/cdn-cgi/challenge-platform/` vì JS Detections chèn nó vào mọi trang HTML qua Cloudflare; trang
+  5xx/52x của Cloudflare không phải «bị chặn»). MỌI lỗi Scopus là 403 mang tiền tố đó VÀ ĐỦ cả ba PubMed + Europe PMC + Crossref đang
+  bật với health «ok» («degraded» — vd NCBI chặn giữa lượt — KHÔNG tính) ⇒ `summarize_source_health` ghi `SCOPUS_BLOCKED_BY_CLOUDFLARE_403_NETWORK_IP` vào `mirror_notices` (vẫn liệt kê ở
+  `optional_enhanced_failed`, thêm `optional_enhanced_blocked_by_cloudflare`), không cảnh báo. 401 khoá sai, 403 JSON của Elsevier, mất
+  mạng, thiếu khoá, một lõi hỏng/tắt, hay CORE/Epistemonikos bị chặn ⇒ vẫn PARTIAL. Ghi chú hiện ở dòng log «Ingestion source health
+  … notice=…» và trường `ghi_chu_nguon` của báo cáo chỉ-đọc (PASS có miễn trừ không được trông như mọi nguồn đều chạy). Đo thật 29/09:
+  khoá đúng lẫn khoá sai đều nhận cùng trang chặn; `_fetch` với `ScopusClient` thật ⇒ PASS + ghi chú.
+  `tests/test_scopus_cloudflare_403_20260929.py` (21 ca) + 1 ca ở `tests/test_bao_cao_giam_sat_chi_doc_20260929.py`; 18 đột biến đều
+  đỏ; phản biện đối kháng 3 lăng kính bắt 5 lỗi + vòng kiểm chứng bắt thêm 1 (PubMed «degraded»), đã vá cả 6. **Đã kiểm 20/09/2026 (tài liệu chính thức + nhìn trực tiếp ứng dụng): KHÔNG thể loại trừ riêng `api.elsevier.com`.**
   Kaspersky VPN cho Mac chỉ có «Phân tách kênh truyền tải» kiểu **ĐẢO CHIỀU so với Windows**: tick «Chỉ bật VPN cho các ứng dụng được chọn»
   ⇒ chỉ ứng dụng trong danh sách đi qua VPN, mọi ứng dụng khác đi thẳng — theo **ỨNG DỤNG**, không có ô nhập tên miền/địa chỉ IP; chỉ áp
   cho ứng dụng ngoài hệ thống nằm trong thư mục Applications và chỉ có ở bản Unlimited (support.kaspersky.com/us/ksec-for-mac/240287). Mà
