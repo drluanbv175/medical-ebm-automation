@@ -43,6 +43,7 @@
 | **Cochrane Library** | `mcp__plugin_cochrane_cochrane__` → `cochrane_search` · `cochrane_get_details` · `cochrane_suggest_terms` | **CẤP 0 — nguồn CHÍNH THỐNG** (tổng quan hệ thống Cochrane/CDSR; abstract có cấu trúc + mức chắc chắn GRADE do CHÍNH Cochrane chấm) | Câu hỏi hiệu quả/điều trị — tra ở Cấp 0 (§2bis bước 2), **KHÔNG qua cổng §2ter**; cách dùng đúng (đo 20/09/2026) ở §2quater |
 | **Consensus** | `mcp__plugin_bio-research_consensus__search` | **CHỈ KHÁM PHÁ** (discovery) — tổng hợp AI có trích dẫn để định hướng nhanh | **CHỈ qua CỔNG §2ter** (khi các tầng trước chưa đủ chứng cứ đáng tin); **KHÔNG** dùng làm nguồn trích dẫn cấp 1 — xem ⚠ §3 |
 | **Scite** | kết nối claude.ai «scite» (ID dạng `mcp__<uuid>__search_literature` · `bibliography` · `citation_graph` · `report_citations`; tiền tố khác nhau giữa các máy — tìm bằng ToolSearch «scite») | **XÁC MINH + TẦNG TÌM DỰ PHÒNG số 2** — (a) cờ rút bài/`editorialNotices` + tally trích dẫn (ủng hộ/phản bác) làm BỐI CẢNH; (b) `search_literature` tìm bài khi Consensus chưa đủ (thêm 20/09/2026) | **CHỈ qua CỔNG §2ter**; BỔ SUNG cho chuỗi rút bài 3 tầng, không thay; tally không dùng chấm mức chứng cứ; `limit ≤ 3` (payload rất lớn) |
+| **Wiley Scholar Gateway** | kết nối claude.ai «Wiley Scholar Gateway» (ID dạng `mcp__<uuid>__search_wiley_fulltext` · `getUsageLimit`; tiền tố khác nhau giữa các máy — tìm bằng ToolSearch «wiley») | **ĐỌC ĐOẠN TOÀN VĂN** kho tạp chí bình duyệt của Wiley — trả ĐOẠN TRÍCH kèm DOI, loại bài, mục, cờ rút bài/OA; là công cụ ĐỌC, không phải tầng thẩm quyền mới | Khi nguồn cần đọc đăng ở tạp chí Wiley mà đường PMC OA không có toàn văn; hạn mức 30 lượt/kỳ, `topN ≤ 5`, **đoạn trích ≠ toàn văn** — kỷ luật gọi ở §2quinquies |
 | **ClinicalTrials.gov** | `mcp__plugin_healthcare_Clinical_Trials__` → `search_trials` · `get_trial_details` · `analyze_endpoints` · `search_by_eligibility` | Đăng ký & thiết kế thử nghiệm; endpoint benchmark; thử nghiệm đang chạy/đã có kết quả | Câu hỏi điều trị (xem có RCT đang/đã chạy); thiết kế NC (đối chiếu endpoint/cỡ mẫu/tiêu chí) |
 | **bioRxiv/medRxiv** | `mcp__plugin_bio-research_biorxiv__` → `search_preprints` · `get_preprint` · `search_published_preprints` | Tiền ấn phẩm (**CHƯA bình duyệt**); kiểm preprint đã lên tạp chí chưa | Văn liệu xám cho SR; tín hiệu rất mới — **luôn ghi nhãn "CHƯA bình duyệt"** |
 | **ChEMBL** | `mcp__plugin_bio-research_chembl__` → `drug_search` · `get_mechanism` · `get_admet` · `get_bioactivity` · `target_search` | Dược lý **TIỀN LÂM SÀNG** (cơ chế, IC50/Ki, ADMET dự đoán) | Bối cảnh cơ chế thuốc cho NGHIÊN CỨU — xem ⚠ §3 (KHÔNG dùng cho cảnh báo kê đơn) |
@@ -209,6 +210,21 @@ ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-
 
 ---
 
+## 2quinquies. WILEY SCHOLAR GATEWAY — ĐỌC ĐOẠN TOÀN VĂN TẠP CHÍ WILEY (nối vào doctrine 30/09/2026; đo bằng lời gọi thật cùng ngày)
+> Công cụ ĐỌC (grounding), không phải tầng thẩm quyền hay tầng khám phá mới — thứ tự §2bis giữ nguyên. Nó đi qua máy chủ connector nên chạy được cả khi mạng của máy không tới được nhà xuất bản. Trước ngày này connector đã nối mà không agent nào được dạy dùng (họ BH41: công cụ không ai gọi thì coi như không tồn tại).
+1. **Khi nào gọi:** đã xác định nguồn cần đọc (guideline/nghiên cứu) đăng trên tạp chí của Wiley — nhận ra qua tên tạp chí hoặc trường `publisher` «John Wiley & Sons» (đo thật: *Journal of the American Geriatrics Society*, nơi đăng AGS Beers Criteria) — mà `tools/doc_toan_van_pmc.py` trả mã 1 (không có PMC OA) và `toan_van_guideline.py` không phủ. KHÔNG gọi để «tìm thêm cho chắc»; TÌM bài vẫn là việc của các bước §2bis.
+2. **Hạn mức dùng CHUNG mọi phiên:** gói Free 30 lượt mỗi kỳ (đo 30/09: `getUsageLimit` → `queryLimit: 30`, có `resetDate`; gọi `getUsageLimit` không tốn lượt). Tối đa **2 lời gọi `search_wiley_fulltext` cho một câu hỏi**, không lặp truy vấn đã hỏi; định gọi nhiều lần trong phiên ⇒ xem `queriesRemaining` trước. Phản hồi báo hết hạn mức ⇒ dừng, ghi **PARTIAL — chưa đọc được toàn văn Wiley**, KHÔNG ghi «không có».
+3. **Cách gọi (đo thật: 5 đoạn ≈ 17 KB):** `topN ≤ 5`; `query` là câu hỏi tự nhiên ĐẦY ĐỦ bằng tiếng Anh, viết đủ tên guideline/thuốc/bệnh (không viết tắt); biết năm thì ép `start_year`/`end_year`; để `includeRetractedContent` mặc định `false`. Truy vấn chỉ chứa câu hỏi đã khử định danh (§0.4).
+4. **«Có đoạn khớp» ≠ «đã đọc nguồn gốc» — kiểm BA thứ trước khi dùng một đoạn:**
+   (a) **Đoạn của bài NÀO, loại gì:** đọc `title` + `article_type`. Lượt đo 30/09 hỏi khuyến cáo của «AGS 2023 Beers Criteria» về sulfonylurea ⇒ 5 đoạn của 4 bài: một THƯ bình luận (đoạn trả về là DANH MỤC TÀI LIỆU của thư), một XÃ LUẬN, một nghiên cứu sử dụng thuốc và bài «Alternative Treatments…» — KHÔNG có đoạn nào của chính bài Beers 2023. Đoạn từ thư/xã luận/bài khác NÓI VỀ một guideline không phải lời của guideline đó; danh mục tài liệu không phải nội dung.
+   (b) **Đoạn ở ĐÂU trong bài:** `section_title` + `chunk_index`/`total_chunks` — mỗi đoạn chỉ vài trăm từ, một bài có từ vài đến hơn trăm đoạn. Ghi «trích đoạn i/N, mục <section>» cạnh trích dẫn; đọc vài đoạn KHÔNG phải «đã đọc toàn văn» — mức thẩm định vẫn là MỘT PHẦN trừ khi đã có đủ các đoạn Phương pháp + Kết quả cần cho phán đoán.
+   (c) **Định danh và rút bài:** DOI trả về phải phân giải qua PubMed `convert_article_ids`/Crossref (lấy PMID, khớp tiêu đề + năm) rồi kiểm rút bài bằng chuỗi 3 tầng; cờ `isRetracted: false` của công cụ chỉ là GỢI Ý — không thay phép kiểm, không được ghi «chưa bị rút» dựa vào nó.
+5. **Không trúng nguồn gốc / không có kết quả:** diễn đạt lại MỘT lần (tên đầy đủ + năm của nguồn); vẫn không ⇒ ghi «Wiley Scholar Gateway không trả đoạn nào của <nguồn>» — KHÔNG đọc thành «không có chứng cứ» hay «guideline không nói»; chuyển `toan_van_guideline.py trich-dan --doi|--pmid` hoặc đưa link để bác sĩ tự mở. Kho KHÔNG phủ mọi bài của Wiley (công cụ tự dẫn trang «Available Content»).
+6. **Bản quyền và trình bày:** đoạn trích là tham chiếu NỘI BỘ — dẫn ngắn đúng câu cần, kèm DOI; không dán nguyên đoạn dài vào artifact/dashboard. Trả lời tra cứu cho bác sĩ có dùng kết quả này thì in MỘT lần dòng nguồn gốc + dòng công bố mà công cụ yêu cầu (`render_contract`); KHÔNG chép các dòng đó vào artifact (cùng luật §2ter mục 5).
+7. **Bất biến và ranh giới:** không mở Cổng A/B/G, không đổi `decision`/`gradeLevel`, mọi khẳng định vẫn cần PMID/DOI. Engine và tác vụ lịch KHÔNG gọi được (MCP chỉ có trong phiên tương tác). KHÁC `app/sources/wiley_tdm.py` (tải PDF theo DOI qua TDM API bằng token của bác sĩ — phụ thuộc IP/mạng; 30/09 máy Windows không nối được `api.wiley.com` nên chưa đo được). Bản plugin `plugin:bio-research:wiley` có thể lỗi kết nối trong khi connector claude.ai chạy (đo 30/09) ⇒ nạp bằng ToolSearch «wiley» trước khi ghi PARTIAL.
+
+---
+
 ## 3. ⚠ HẠNG MỤC CẦN BÁC SĨ QUYẾT trước khi mở rộng (KHÔNG tự bật)
 - **Consensus có UPSELL TRẢ PHÍ.** Hướng dẫn MCP của Consensus buộc in nguyên văn thông điệp đăng ký/nâng
   cấp trả phí ở cuối kết quả — **xung đột** luật "CHỈ nguồn miễn phí, không backend trả phí" của gói nghiên cứu
@@ -224,9 +240,9 @@ ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-
 
 | Agent | Connector nên dùng |
 |---|---|
-| `tra-cuu-chung-cu` | PubMed (đủ bộ) · Cochrane MCP *(Cấp 0, §2quater)* · Consensus *(discovery, CHỈ qua cổng §2ter)* · Scite `search_literature` *(dự phòng số 2, CHỈ qua cổng §2ter)* · ClinicalTrials *(điều trị)* |
+| `tra-cuu-chung-cu` | PubMed (đủ bộ) · Cochrane MCP *(Cấp 0, §2quater)* · Consensus *(discovery, CHỈ qua cổng §2ter)* · Scite `search_literature` *(dự phòng số 2, CHỈ qua cổng §2ter)* · ClinicalTrials *(điều trị)* · Wiley Scholar Gateway *(đọc đoạn toàn văn tạp chí Wiley khi PMC OA không có, §2quinquies)* |
 | `pico-lam-sang` · `chan-doan-xac-suat` | PubMed *(LR/độ nhạy-đặc hiệu, quy tắc dự đoán)* |
-| `tham-dinh-grade-nnt` · `tham-dinh-phe-binh` | PubMed `get_full_text_article` *(đọc toàn văn để chấm RoB/GRADE)* |
+| `tham-dinh-grade-nnt` · `tham-dinh-phe-binh` | PubMed `get_full_text_article` *(đọc toàn văn để chấm RoB/GRADE)* · Wiley Scholar Gateway *(đoạn toàn văn bài Wiley khi PMC không có — «trích đoạn» KHÔNG đủ để chấm RoB trọn bài, §2quinquies)* |
 | `dien-giai-can-lam-sang` | PubMed *(ngưỡng/giá trị tham chiếu)* · ICD-10 *(mã hóa)* |
 | `ke-don-an-toan` | PubMed *(tương tác/cảnh báo có nguồn)* · `tra_thuoc_quoc_te.py` *(RxNorm chuẩn hoá tên + EMA trạng thái cấp phép, §1ter)* — **KHÔNG** ChEMBL cho cảnh báo kê đơn (xem §3) |
 | `thu-thu-tai-lieu` | PubMed (`get_article_metadata`/`convert_article_ids`) · bioRxiv *(preprint)* |
@@ -234,7 +250,7 @@ ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-
 | `trich-xuat-y-van` · `meta-phan-tich` | PubMed `get_full_text_article` *(trích số liệu/CI)* |
 | `kiem-chung-trich-dan` | PubMed `convert_article_ids`/`lookup_article_by_citation`/`get_article_metadata` *(phân giải định danh)* · Scite *(kiểm rút bài/thông báo BỔ SUNG, CHỈ qua cổng §2ter)* |
 | `cau-hoi-nghien-cuu` · `khoang-trong-nghien-cuu` | PubMed · ClinicalTrials *(đối chiếu đã làm chưa)* · WHO GHO qua `database-lookup/references/who.md` *(bối cảnh gánh nặng bệnh, không phải p0 — §1ter)* |
-| `cap-nhat-guideline` · `huong-dan-lam-sang` | PubMed + `WebFetch`/`WebSearch` trang hội *(xem `_NGUON-GUIDELINE-TU-DONG.md`)* · Cochrane MCP *(tổng quan Cochrane mới/phiên bản mới hơn, §2quater)* |
+| `cap-nhat-guideline` · `huong-dan-lam-sang` | PubMed + `WebFetch`/`WebSearch` trang hội *(xem `_NGUON-GUIDELINE-TU-DONG.md`)* · Cochrane MCP *(tổng quan Cochrane mới/phiên bản mới hơn, §2quater)* · Wiley Scholar Gateway *(guideline đăng trên tạp chí Wiley, §2quinquies)* |
 | `thiet-ke-nghien-cuu` · `co-mau-nghien-cuu` · `dao-duc-dang-ky` | ClinicalTrials `analyze_endpoints`/`get_trial_details` *(benchmark thiết kế)* |
 
 > Engine Python `medical-ebm-automation` **KHÔNG** dùng connector MCP — nó là pipeline batch chạy theo
