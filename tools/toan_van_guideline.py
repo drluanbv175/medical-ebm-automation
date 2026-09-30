@@ -13,7 +13,7 @@ Dùng:
     python3 medical-ebm-automation/tools/toan_van_guideline.py bts --chu-de pulmonary-nodules [--tim "<cụm từ>"]
     python3 medical-ebm-automation/tools/toan_van_guideline.py trich-dan --doi <DOI> | --pmid <PMID>   (đường lùi)
 Tuỳ chọn chung: --tim (lặp được) · --ngu-canh 300 · --toi-da-khop 10 · --toan-bo · --gioi-han N ·
-                --luu <tệp NGOÀI repo> · --doi/--pmid (để gợi ý đường lùi khi tải thất bại) · --json
+                --luu <tệp NGOÀI mọi cây git> · --doi/--pmid (để gợi ý đường lùi khi tải thất bại) · --json
 
 In ra: metadata (tổ chức, URL nguồn, năm/phiên bản suy từ URL, số ký tự, số trang, SHA-256 tệp nguồn, ngày tải)
 + ghi chú bản quyền. Có --tim: đoạn quanh từ khoá kèm vị trí ký tự và số trang. KHÔNG bao giờ in toàn văn.
@@ -22,7 +22,8 @@ Mặc định không --tim: trích tới 200.000 ký tự (như connector); có 
 Mã thoát: 0 = tải được (và mọi --tim đều khớp) · 1 = tải được nhưng có --tim KHÔNG khớp ·
           2 = LỖI/KHÔNG BIẾT (mạng, bị chặn, nguồn đổi cấu trúc, không có trong PMC OA) ·
           3 = connector CHƯA BẬT (cờ ENABLE_* tắt) · 4 = đầu vào bị từ chối (URL ngoài nguồn đã khảo sát,
-          NICE, PMCID sai, --luu trong repo; `bts --chu-de` có >1 ứng viên hoặc chỉ tài liệu đồng xuất bản NICE).
+          NICE, PMCID sai, --luu trong repo hoặc ở chỗ git của một cây khác nhìn thấy; `bts --chu-de` có >1
+          ứng viên hoặc chỉ tài liệu đồng xuất bản NICE).
 Chỉ là nguồn tham chiếu nội bộ để trích câu chữ kèm nguồn; cần bác sĩ kiểm chứng.
 """
 from __future__ import annotations
@@ -47,6 +48,7 @@ from app.sources.guideline_fulltext_common import (  # noqa: E402
     trang_cua_vi_tri,
 )
 from app.utils.console import configure_unicode_console  # noqa: E402
+from app.utils.tam_nhin_git import GIT_THAY, KHONG_DO_DUOC, nam_trong_thu_muc, tam_nhin_git  # noqa: E402
 
 DISCLAIMER = "Cần bác sĩ kiểm chứng."
 MA_OK, MA_KHONG_KHOP, MA_LOI, MA_CHUA_BAT, MA_TU_CHOI = 0, 1, 2, 3, 4
@@ -77,14 +79,25 @@ def kiem_url(nguon: str, url: Optional[str]) -> Optional[str]:
 
 
 def kiem_duong_luu(duong: str) -> Optional[str]:
-    """Không cho lưu toàn văn vào cây repo (tránh commit/phân phối lại nội dung có bản quyền)."""
-    p = Path(duong).expanduser().resolve()
-    try:
-        p.relative_to(REPO)
-    except ValueError:
-        return None
-    return (f"Không lưu toàn văn vào trong repo ({REPO.name}/) — dễ bị commit/phân phối lại. "
-            "Chọn đường dẫn NGOÀI repo (vd thư mục tạm).")
+    """Lý do TỪ CHỐI nơi lưu (None = chấp nhận): toàn văn có bản quyền không được nằm ở chỗ dễ bị commit.
+
+    Hai rào, đều hỏi hệ điều hành và git chứ không so chuỗi đường dẫn. Đo 30/09/2026 trên macOS:
+    «/users/…/<repo>/reports/x.txt» lọt rào so chuỗi cũ dù `samefile` xác nhận đó là thư mục trong
+    repo — hệ tệp không phân biệt hoa/thường, mà `Path.resolve()` giữ nguyên chữ người gọi gõ.
+      1. Đích nằm trong cây repo chứa công cụ này: từ chối, kể cả chỗ đã bị ignore.
+      2. Đích nằm trong một cây git KHÁC (worktree khác, repo khác) ở chỗ git của cây đó thấy, hoặc
+         không đo được git có thấy hay không: từ chối. Chỗ cây đó đã ignore thì được."""
+    if nam_trong_thu_muc(duong, REPO):
+        return (f"Không lưu toàn văn vào trong repo ({REPO.name}/) — dễ bị commit/phân phối lại. "
+                "Chọn đường dẫn NGOÀI repo (vd thư mục tạm).")
+    ket_luan = tam_nhin_git(duong)
+    if ket_luan.trang_thai == GIT_THAY:
+        return (f"Không lưu toàn văn vào cây git «{ket_luan.goc_cay}» ở chỗ git nhìn thấy — `git add -A` ở đó "
+                "sẽ cuốn nội dung có bản quyền vào. Chọn đường dẫn NGOÀI mọi cây git (vd thư mục tạm).")
+    if ket_luan.trang_thai == KHONG_DO_DUOC:
+        return (f"Đích nằm trong cây git «{ket_luan.goc_cay}» nhưng không đo được git có nhìn thấy nó hay không "
+                f"({ket_luan.ly_do}). Chọn đường dẫn NGOÀI mọi cây git (vd thư mục tạm).")
+    return None
 
 
 _THANG = r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
@@ -320,7 +333,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     chung.add_argument("--toi-da-khop", type=int, default=10)
     chung.add_argument("--toan-bo", action="store_true", help="trích toàn bộ tài liệu (không cắt 200.000 ký tự)")
     chung.add_argument("--gioi-han", type=int, default=None, help="cắt ở N ký tự (ghi đè --toan-bo)")
-    chung.add_argument("--luu", help="lưu văn bản trích ra tệp NGOÀI repo (chỉ dùng nội bộ)")
+    chung.add_argument("--luu", help="lưu văn bản trích ra tệp NGOÀI mọi cây git (chỉ dùng nội bộ)")
     chung.add_argument("--doi", help="DOI của guideline — để gợi ý đường lùi khi tải thất bại")
     chung.add_argument("--pmid", help="PMID của guideline — để gợi ý đường lùi khi tải thất bại")
     chung.add_argument("--json", action="store_true", help="in JSON máy đọc (không kèm toàn văn)")

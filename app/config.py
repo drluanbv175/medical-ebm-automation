@@ -235,7 +235,10 @@ class Settings:
     # việc hiện tại). Đây là PDF nhị phân, cố ý KHÔNG đặt trong data/raw/ như bản ghi JSON
     # của các nguồn khác. PDF là nội dung CÓ BẢN QUYỀN mà repo này công khai: `.gitignore`
     # chỉ bắt đúng tên mặc định (ở mọi cấp), KHÔNG đi theo giá trị đặt ở đây — nếu đặt thì
-    # trỏ NGOÀI repo hoặc vào nơi `.gitignore` đã bắt (vd exports/<đề tài>/...).
+    # trỏ NGOÀI repo hoặc vào nơi `.gitignore` đã bắt (vd exports/<đề tài>/...). Từ 30/09/2026
+    # `WileyTdmClient` hỏi git và TỪ CHỐI thư mục mà git nhìn thấy. Tên thư mục đừng có dấu
+    # chấm: thư viện coi «wiley.pdfs» là tên tệp và ghi vào thư mục MẸ. «~» được giải thành
+    # thư mục nhà.
     wiley_tdm_download_dir: str = field(
         default_factory=lambda: os.getenv("WILEY_TDM_DOWNLOAD_DIR", ""))
     # Giây nghỉ giữa các lượt tải hàng loạt. Thư viện `wiley-tdm` mặc định 5.0; README
