@@ -1,0 +1,27 @@
+{
+  "nhan": "CHỈ BÁO CÁO — không phải lượt giám sát chính thức",
+  "thoi_diem_utc": "2026-09-29T04:33:21Z",
+  "cua_so_ngay": 10,
+  "trang_thai_nguon": "PARTIAL",
+  "ly_do_that_bai": [],
+  "canh_bao_nguon": [],
+  "nguon_bat_buoc_suy_giam": [
+    "europepmc",
+    "feed_fda_medwatch",
+    "feed_fda_recalls"
+  ],
+  "so_ban_ghi": 2240,
+  "muc_moi": 1837,
+  "bao_cao": {
+    "alert_digest_md": "ban-tin-moi.md",
+    "weekly_md": "ebm-tuan.md",
+    "drug_safety_md": "an-toan-thuoc.md",
+    "antibiotic_md": "khang-sinh.md"
+  },
+  "thieu_bao_cao": [],
+  "da_goi_canh_bao": false,
+  "da_noi_hub": false,
+  "watermark_chinh_thuc_doi": false,
+  "tang_du_phong_tinh_phi": "tắt cứng",
+  "disclaimer": "Cần bác sĩ kiểm chứng. Đây là danh sách ỨNG VIÊN do máy quét, chưa thẩm định; không tự áp dụng lâm sàng; watermark/sổ cái/cảnh báo của lượt chính thức trên Mac KHÔNG đổi."
+}
