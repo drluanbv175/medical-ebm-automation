@@ -400,6 +400,18 @@ This file contains only Claude Code-specific instructions.
   offline) TRƯỚC khi dùng nội dung PDF cho việc gì. 15 test offline ở `tests/test_wiley_tdm.py`
   (thư viện `wiley_tdm` được GIẢ LẬP qua `sys.modules`, không phụ thuộc mạng thật hay việc gói có
   cài trong venv chạy test hay không).
+  **Vá 30/09/2026 — PDF có bản quyền không được để git thấy; đơn vị kích thước.** Thư mục tải mặc
+  định `downloads_wiley_tdm/` (hằng `THU_MUC_TAI_MAC_DINH`, TƯƠNG ĐỐI so với thư mục đang đứng) trước
+  đó KHÔNG có trong `.gitignore` của repo CÔNG KHAI này (`git status` hiện `??`); nay có luật KHÔNG
+  neo gốc, bắt ở mọi cấp. Luật không đi theo cấu hình: `WILEY_TDM_DOWNLOAD_DIR`/`download_dir` tự đặt
+  phải trỏ NGOÀI repo hoặc vào nơi đã ignore, và thư viện đổi thư mục có dấu chấm (`wiley.pdfs`)
+  thành thư mục MẸ (đo ngoại tuyến) — hai trường hợp này CHƯA có rào. `KetQuaTaiWiley.kich_thuoc_byte`
+  nay là byte THẬT đo trên đĩa; trước đó mang KiB làm tròn của thư viện (8705 cho tệp 8.913.789
+  byte) và rỗng với `EXISTING_FILE`. Rà bằng đọc mã: 4 connector guideline không tự ghi tệp (PDF qua
+  `get_bytes` chỉ ở bộ nhớ); toàn văn PMC qua `get_text` nằm ở cache `data/raw/_http_cache/` (đã
+  ignore). Canh: `tests/test_toan_van_khong_lot_vao_git_20260930.py` (đo trong kho git tạm, cấu hình
+  git cô lập khỏi máy) + `tests/test_wiley_tdm.py`; 31 đột biến đều đỏ đúng chỗ. Thêm connector toàn
+  văn ghi đĩa ⇒ thêm luật ignore + ca `bi_ignore` cho đường dẫn mới.
   · **Connector TẢI TOÀN VĂN guideline trực tiếp từ website hiệp hội chuyên ngành (GOLD/GINA/
   BTS/PMC) — xây 23/09/2026, theo yêu cầu bác sĩ "đảm bảo chứng cứ ESC/ADA/GOLD/GINA... luôn
   được đọc toàn văn".** Trước khi viết bất kỳ dòng code nào, đã khảo sát ĐỘC LẬP robots.txt +

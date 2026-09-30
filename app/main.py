@@ -290,6 +290,9 @@ def cmd_test_live_wiley_tdm(doi: str) -> Dict:
     lỗi phạm vi IP; DOI không phải Open Access ACCESS_DENIED dù token đúng là tín hiệu
     "tài khoản WOL của bác sĩ không được cấp quyền IP từ mạng đang chạy lệnh này", không
     phải lỗi cấu hình.
+
+    `kich_thuoc_byte` là byte THẬT đo trên đĩa (trước 30/09/2026 nó mang KiB của thư viện:
+    8705 cho tệp 8.913.789 byte); `None` = tải không thành công hoặc không đo được tệp.
     """
     from app.sources import WileyTdmClient
 

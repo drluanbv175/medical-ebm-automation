@@ -40,6 +40,12 @@ GIỚI HẠN ĐÃ BIẾT, ghi rõ để không ai hiểu nhầm mức độ ph�
   • Token là chuỗi UUID lấy từ trang "Text and Data Mining" trong tài khoản Wiley Online
     Library của bác sĩ — KHÔNG BAO GIỜ nhập/dán token qua Claude Code; xem hướng dẫn ở
     `.env.example`.
+  • PDF tải về là nội dung CÓ BẢN QUYỀN của nhà xuất bản, mà repo này CÔNG KHAI — đưa
+    vào git là phân phối lại công khai. Thư mục mặc định `THU_MUC_TAI_MAC_DINH` được
+    `.gitignore` bắt ở mọi cấp (vá 30/09/2026 — trước đó `git status` hiện
+    `?? downloads_wiley_tdm/`). Luật ignore KHÔNG đi theo cấu hình: tự đặt
+    `WILEY_TDM_DOWNLOAD_DIR` hoặc truyền `download_dir` thì phải trỏ NGOÀI repo hoặc vào
+    nơi `.gitignore` đã bắt.
 """
 from __future__ import annotations
 
@@ -54,6 +60,13 @@ logger = get_logger(__name__)
 
 _TRANG_THAI_THANH_CONG = {"SUCCESS", "EXISTING_FILE"}
 
+# Tên thư mục tải MẶC ĐỊNH — tương đối so với thư mục đang đứng lúc dựng client (thư viện
+# tự `mkdir` ngay trong `TDMClient.__init__`). `.gitignore` có luật cùng tên, không neo gốc,
+# để PDF có bản quyền không hiện trong `git status` của repo công khai này. Đổi tên ở đây
+# PHẢI đổi luật ignore cùng lúc: tests/test_toan_van_khong_lot_vao_git_20260930.py đọc đúng
+# hằng số này rồi hỏi `git check-ignore`.
+THU_MUC_TAI_MAC_DINH = "downloads_wiley_tdm"
+
 
 @dataclass
 class KetQuaTaiWiley:
@@ -66,19 +79,48 @@ class KetQuaTaiWiley:
     # KNOWN_ISSUE, API_ERROR, EXISTING_FILE, STORAGE_ERROR, INVALID_DOI, NETWORK_ERROR
     thanh_cong: bool
     duong_dan: Optional[str] = None
+    # Byte THẬT của tệp trên đĩa (`st_size`), chỉ có khi tải thành công và đo được — xem
+    # `_kich_thuoc_byte_tren_dia`. KHÔNG phải `DownloadResult.size` của thư viện (KiB).
     kich_thuoc_byte: Optional[int] = None
     ghi_chu: Optional[str] = None
     ma_http: Optional[int] = None
 
 
+def _kich_thuoc_byte_tren_dia(duong_dan) -> Optional[int]:
+    """Kích thước THẬT, tính bằng byte, của tệp PDF trên đĩa. Không đo được thì trả `None`.
+
+    Không dùng `DownloadResult.size` của thư viện: trường đó mang KiB làm tròn
+    (`FileUtils.get_file_size_kb` = round(st_size / 1024)) và để trống với `EXISTING_FILE`.
+    Đo 30/09/2026 với DOI 10.1002/jcsm.70385: tệp 8.913.789 byte, thư viện báo 8705 — trước
+    bản vá, con số 8705 đó đi ra ngoài dưới tên `kich_thuoc_byte`. Nhân lại với 1024 cũng
+    không ra số thật (8.913.920), nên đo thẳng trên đĩa; cách này còn đứng vững nếu thư viện
+    đổi đơn vị."""
+    if not duong_dan:
+        return None
+    try:
+        tep = Path(duong_dan)
+        return tep.stat().st_size if tep.is_file() else None
+    except OSError:
+        return None
+
+
 def _quy_doi_ket_qua(ket_qua) -> KetQuaTaiWiley:
     ten_trang_thai = ket_qua.status.name
+    thanh_cong = ten_trang_thai in _TRANG_THAI_THANH_CONG
+    # Chỉ đo khi tải THÀNH CÔNG: `STORAGE_ERROR` có thể để lại tệp ghi dở trên đĩa, mà kích
+    # thước của tệp dở không phải «kích thước PDF đã tải».
+    kich_thuoc = _kich_thuoc_byte_tren_dia(ket_qua.path) if thanh_cong else None
+    if thanh_cong and kich_thuoc is None:
+        logger.warning(
+            "[wiley_tdm] trạng_thái=%s nhưng không đo được kích thước tệp doi=%s đường_dẫn=%s",
+            ten_trang_thai, ket_qua.doi, ket_qua.path,
+        )
     return KetQuaTaiWiley(
         doi=ket_qua.doi,
         trang_thai=ten_trang_thai,
-        thanh_cong=ten_trang_thai in _TRANG_THAI_THANH_CONG,
+        thanh_cong=thanh_cong,
         duong_dan=str(ket_qua.path) if ket_qua.path else None,
-        kich_thuoc_byte=ket_qua.size,
+        kich_thuoc_byte=kich_thuoc,
         ghi_chu=ket_qua.comment or None,
         ma_http=int(ket_qua.api_status) if ket_qua.api_status else None,
     )
@@ -122,7 +164,7 @@ class WileyTdmClient:
                 "%USERPROFILE%\\.ebm-venv\\Scripts\\pip.exe install wiley-tdm (Windows)."
             ) from exc
 
-        thu_muc = download_dir or settings.wiley_tdm_download_dir or "downloads_wiley_tdm"
+        thu_muc = download_dir or settings.wiley_tdm_download_dir or THU_MUC_TAI_MAC_DINH
         self._client = TDMClient(api_token=settings.wiley_tdm_api_token, download_dir=thu_muc)
         self._client.api_rate_limit = settings.wiley_tdm_rate_limit_seconds
         # skip_existing_files=True là mặc định của thư viện — giữ nguyên để không tải

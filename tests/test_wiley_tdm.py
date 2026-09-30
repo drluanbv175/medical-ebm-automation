@@ -4,6 +4,13 @@ Tất cả test OFFLINE: thư viện `wiley_tdm` bị GIẢ LẬP qua `sys.modul
 `TDMClient` giả ghi lại lời gọi thay vì gọi mạng Wiley thật) — không phụ thuộc
 việc `wiley-tdm` có được cài trong venv chạy test hay không, và không bao giờ
 gọi mạng thật, đúng quy ước `tests/test_scopus.py`.
+
+Sửa 30/09/2026 (lỗi đơn vị của `kich_thuoc_byte`): bản giả cũ trả `size=1234` mà
+không có tệp nào trên đĩa, tức ngầm coi `DownloadResult.size` là byte — đúng giả
+định sai đã để con số KiB của thư viện (8705 cho tệp 8.913.789 byte) đi ra ngoài
+dưới tên «byte». Bản giả nay ghi tệp thật và báo `size` theo KiB như thư viện;
+một ca riêng gọi thẳng `FileUtils.save_file` của thư viện THẬT để chính bản giả
+cũng bị đối chiếu. Mỗi test đứng trong `tmp_path`, không ghi gì vào cây repo.
 """
 from __future__ import annotations
 
@@ -20,17 +27,41 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from app.config import settings  # noqa: E402
+from app.sources.wiley_tdm import THU_MUC_TAI_MAC_DINH  # noqa: E402
+
+# Hai con số đo 30/09/2026 với DOI 10.1002/jcsm.70385: tệp trên đĩa và số thư viện báo.
+_SO_BYTE_DO_THAT = 8_913_789
+_SO_KIB_THU_VIEN_BAO = 8705
 
 
 @pytest.fixture(autouse=True)
-def _don_cau_hinh_wiley(monkeypatch):
+def _don_cau_hinh_wiley(monkeypatch, tmp_path):
     """Cô lập cấu hình Wiley TDM khỏi .env thật của máy đang chạy test — mỗi
-    test tự đặt giá trị nó cần, không phụ thuộc môi trường ngoài."""
+    test tự đặt giá trị nó cần, không phụ thuộc môi trường ngoài.
+
+    Đứng trong `tmp_path`: thư mục tải mặc định là đường dẫn TƯƠNG ĐỐI, bản giả nay
+    ghi tệp thật nên nếu đứng ở gốc repo sẽ rải tệp vào cây làm việc."""
     monkeypatch.setattr(settings, "enable_wiley_tdm", False)
     monkeypatch.setattr(settings, "wiley_tdm_api_token", "")
     monkeypatch.setattr(settings, "wiley_tdm_download_dir", "")
     monkeypatch.setattr(settings, "wiley_tdm_rate_limit_seconds", 10.0)
+    monkeypatch.chdir(tmp_path)
     yield
+
+
+def _kib_nhu_thu_vien(tep: Path) -> int:
+    """Đúng công thức của thư viện thật: `FileUtils.get_file_size_kb` = round(st_size / 1024)."""
+    return round(tep.stat().st_size / 1024)
+
+
+def _ghi_tep_pdf_gia(tep: Path, so_byte: int) -> Path:
+    """Ghi một tệp dài đúng `so_byte` byte, đầu tệp mang chữ ký %PDF. Ghi tường minh từng byte:
+    `truncate` để nới tệp thì kết quả tuỳ nền tảng, mà ca kiểm này sống nhờ con số chính xác."""
+    dau = b"%PDF-1.7\n"
+    tep.parent.mkdir(parents=True, exist_ok=True)
+    tep.write_bytes(dau + b"\0" * (so_byte - len(dau)))
+    assert tep.stat().st_size == so_byte
+    return tep
 
 
 class _FakeDownloadStatus:
@@ -39,6 +70,8 @@ class _FakeDownloadStatus:
 
 
 class _FakeDownloadResult:
+    """`size` mang KiB làm tròn, như `wiley_tdm.DownloadResult` thật — KHÔNG phải byte."""
+
     def __init__(self, doi, status_name, comment=None, path=None, size=None, api_status=None):
         self.doi = doi
         self.status = _FakeDownloadStatus(status_name)
@@ -49,35 +82,47 @@ class _FakeDownloadResult:
 
 
 class _FakeTDMClient:
-    """Thay cho `wiley_tdm.TDMClient` thật — ghi lại lời gọi, không gọi mạng."""
+    """Thay cho `wiley_tdm.TDMClient` thật — ghi lại lời gọi, không gọi mạng.
+
+    Giống thư viện thật ở ba điểm mà bản giả cũ bỏ qua: dựng client là tạo thư mục
+    tải, tải thành công là CÓ tệp trên đĩa, và `size` là KiB làm tròn."""
 
     dang_ky_goi_gan_nhat: Optional["_FakeTDMClient"] = None
+    so_byte_moi_tep: int = 5000  # cố ý không chia hết cho 1024: 5000 byte, thư viện báo 5
 
     def __init__(self, api_token=None, download_dir="downloads"):
         if not api_token:
             raise ValueError("Token is required")
         self.api_token = api_token
         self._download_dir = Path(download_dir)
+        self._download_dir.mkdir(parents=True, exist_ok=True)
         self.api_rate_limit = 5.0
         self.skip_existing_files = True
         self.goi_download_pdf: List[str] = []
         self.goi_download_pdfs: List[List[str]] = []
+        self.ket_qua_tho: List[_FakeDownloadResult] = []
         _FakeTDMClient.dang_ky_goi_gan_nhat = self
 
     @property
     def download_dir(self):
         return self._download_dir
 
+    def _tai_mot_bai(self, doi):
+        tep = _ghi_tep_pdf_gia(
+            self._download_dir / (doi.replace("/", "-") + ".pdf"), self.so_byte_moi_tep)
+        kq = _FakeDownloadResult(doi, "SUCCESS", path=tep, size=_kib_nhu_thu_vien(tep))
+        self.ket_qua_tho.append(kq)
+        return kq
+
     def download_pdf(self, doi):
         self.goi_download_pdf.append(doi)
-        return _FakeDownloadResult(
-            doi, "SUCCESS", path=self._download_dir / f"{doi}.pdf", size=1234)
+        return self._tai_mot_bai(doi)
 
     def download_pdfs(self, dois, on_result=None):
         self.goi_download_pdfs.append(list(dois))
         out = []
         for doi in dois:
-            r = _FakeDownloadResult(doi, "SUCCESS", path=self._download_dir / f"{doi}.pdf", size=1)
+            r = self._tai_mot_bai(doi)
             if on_result:
                 on_result(r)
             out.append(r)
@@ -145,11 +190,16 @@ def test_wiley_tdm_builds_underlying_client_with_token_and_rate_limit(monkeypatc
 
 
 def test_wiley_tdm_default_download_dir_when_not_configured(monkeypatch, _wiley_tdm_gia):
+    """Không cấu hình gì -> đúng hằng `THU_MUC_TAI_MAC_DINH`, tương đối so với thư mục đang
+    đứng. Tên này có luật riêng trong `.gitignore` (canh ở
+    tests/test_toan_van_khong_lot_vao_git_20260930.py): đổi tên thì đổi cả hai."""
     _bat_wiley(monkeypatch)
     from app.sources.wiley_tdm import WileyTdmClient
     WileyTdmClient()
     inner = _FakeTDMClient.dang_ky_goi_gan_nhat
-    assert str(inner.download_dir) == "downloads_wiley_tdm"
+    assert inner.download_dir.as_posix() == THU_MUC_TAI_MAC_DINH
+    assert not inner.download_dir.is_absolute()
+    assert THU_MUC_TAI_MAC_DINH == "downloads_wiley_tdm"
 
 
 def test_wiley_tdm_custom_download_dir_from_settings(monkeypatch, _wiley_tdm_gia, tmp_path):
@@ -174,22 +224,30 @@ def test_wiley_tdm_explicit_download_dir_argument_overrides_settings(monkeypatch
 # Tải MỘT bài — quy đổi kết quả đúng, không bịa khi thất bại
 # ════════════════════════════════════════════════════════════════════════════
 
-def test_download_pdf_success_returns_thanh_cong_true(monkeypatch, _wiley_tdm_gia):
+_CANH_BAO_KHONG_DO_DUOC = "không đo được kích thước tệp"
+
+
+def test_download_pdf_success_returns_thanh_cong_true(monkeypatch, _wiley_tdm_gia, caplog):
     _bat_wiley(monkeypatch)
+    caplog.set_level("WARNING")
     from app.sources.wiley_tdm import WileyTdmClient
     client = WileyTdmClient()
     kq = client.download_pdf("10.1002/example.doi")
     assert kq.doi == "10.1002/example.doi"
     assert kq.trang_thai == "SUCCESS"
     assert kq.thanh_cong is True
-    assert kq.duong_dan is not None
-    assert kq.kich_thuoc_byte == 1234
+    assert Path(kq.duong_dan).as_posix() == f"{THU_MUC_TAI_MAC_DINH}/10.1002-example.doi.pdf"
+    tho = _FakeTDMClient.dang_ky_goi_gan_nhat.ket_qua_tho[-1]
+    assert tho.size == 5, "bản giả phải báo KiB như thư viện thật thì ca này mới có nghĩa"
+    assert kq.kich_thuoc_byte == 5000 == Path(kq.duong_dan).stat().st_size
+    assert _CANH_BAO_KHONG_DO_DUOC not in caplog.text, "đo được thì không cảnh báo"
 
 
-def test_download_pdf_access_denied_is_reported_not_hidden(monkeypatch, _wiley_tdm_gia):
+def test_download_pdf_access_denied_is_reported_not_hidden(monkeypatch, _wiley_tdm_gia, caplog):
     """Đúng giới hạn IP-based đã ghi ở docstring module — ACCESS_DENIED phải
     hiện nguyên trạng thái thật, KHÔNG bị nuốt thành lỗi chung chung."""
     _bat_wiley(monkeypatch)
+    caplog.set_level("WARNING")
 
     def _tra_ve_tu_choi(self, doi):
         return _FakeDownloadResult(doi, "ACCESS_DENIED", comment="Not entitled", api_status=403)
@@ -202,14 +260,20 @@ def test_download_pdf_access_denied_is_reported_not_hidden(monkeypatch, _wiley_t
     assert kq.trang_thai == "ACCESS_DENIED"
     assert kq.ghi_chu == "Not entitled"
     assert kq.ma_http == 403
+    assert kq.duong_dan is None
+    assert kq.kich_thuoc_byte is None
+    assert "tải thất bại" in caplog.text
+    assert _CANH_BAO_KHONG_DO_DUOC not in caplog.text, "tải thất bại thì không có tệp nào để đo"
 
 
-def test_download_pdf_existing_file_counts_as_success(monkeypatch, _wiley_tdm_gia):
+def test_download_pdf_existing_file_counts_as_success(monkeypatch, _wiley_tdm_gia, tmp_path):
+    """`EXISTING_FILE`: thư viện thật trả `DownloadResult(doi, EXISTING_FILE, "", path)`, KHÔNG
+    có `size`. Tệp vẫn nằm trên đĩa nên `kich_thuoc_byte` là byte thật của nó, không phải None."""
     _bat_wiley(monkeypatch)
+    tep = _ghi_tep_pdf_gia(tmp_path / "da_co" / "10.1002-da-co-san.pdf", 7777)
 
     def _tra_ve_da_co(self, doi):
-        return _FakeDownloadResult(
-            doi, "EXISTING_FILE", path=Path("downloads_wiley_tdm") / f"{doi}.pdf")
+        return _FakeDownloadResult(doi, "EXISTING_FILE", comment="", path=tep)
 
     monkeypatch.setattr(_FakeTDMClient, "download_pdf", _tra_ve_da_co)
     from app.sources.wiley_tdm import WileyTdmClient
@@ -217,6 +281,7 @@ def test_download_pdf_existing_file_counts_as_success(monkeypatch, _wiley_tdm_gi
     kq = client.download_pdf("10.1002/da-co-san")
     assert kq.thanh_cong is True
     assert kq.trang_thai == "EXISTING_FILE"
+    assert kq.kich_thuoc_byte == 7777
 
 
 def test_download_pdf_unknown_doi_is_not_treated_as_success(monkeypatch, _wiley_tdm_gia):
@@ -231,6 +296,112 @@ def test_download_pdf_unknown_doi_is_not_treated_as_success(monkeypatch, _wiley_
     kq = client.download_pdf("10.9999/khong-ton-tai")
     assert kq.thanh_cong is False
     assert kq.trang_thai == "UNKNOWN_DOI"
+    assert kq.kich_thuoc_byte is None
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# `kich_thuoc_byte` là BYTE THẬT đo trên đĩa — vá 30/09/2026
+# ════════════════════════════════════════════════════════════════════════════
+
+def test_kich_thuoc_byte_la_byte_that_khong_phai_kib_cua_thu_vien(monkeypatch, _wiley_tdm_gia):
+    """Tái hiện đúng hai con số đo thật: tệp 8.913.789 byte, thư viện báo 8705. Trước bản
+    vá trường `kich_thuoc_byte` mang 8705; nhân lại 1024 cũng chỉ ra 8.913.920."""
+    _bat_wiley(monkeypatch)
+    monkeypatch.setattr(_FakeTDMClient, "so_byte_moi_tep", _SO_BYTE_DO_THAT)
+    from app.sources.wiley_tdm import WileyTdmClient
+    client = WileyTdmClient()
+    kq = client.download_pdf("10.1002/jcsm.70385")
+    tho = _FakeTDMClient.dang_ky_goi_gan_nhat.ket_qua_tho[-1]
+    assert tho.size == _SO_KIB_THU_VIEN_BAO
+    assert kq.kich_thuoc_byte == _SO_BYTE_DO_THAT
+    assert kq.kich_thuoc_byte == Path(kq.duong_dan).stat().st_size
+    assert kq.kich_thuoc_byte != tho.size * 1024
+
+
+def test_storage_error_khong_bao_kich_thuoc_cua_tep_ghi_do(monkeypatch, _wiley_tdm_gia, tmp_path):
+    """`STORAGE_ERROR` để lại tệp ghi dở trên đĩa: kích thước tệp dở KHÔNG phải kích thước
+    PDF đã tải, nên không được báo ra như thể tải xong."""
+    _bat_wiley(monkeypatch)
+    tep_do = _ghi_tep_pdf_gia(tmp_path / "do" / "10.1002-ghi-do.pdf", 321)
+
+    def _loi_luu(self, doi):
+        return _FakeDownloadResult(
+            doi, "STORAGE_ERROR", comment="No space left on device", path=tep_do)
+
+    monkeypatch.setattr(_FakeTDMClient, "download_pdf", _loi_luu)
+    from app.sources.wiley_tdm import WileyTdmClient
+    kq = WileyTdmClient().download_pdf("10.1002/ghi-do")
+    assert tep_do.stat().st_size == 321, "tệp dở phải có thật thì ca này mới có nghĩa"
+    assert kq.thanh_cong is False
+    assert kq.trang_thai == "STORAGE_ERROR"
+    assert Path(kq.duong_dan) == tep_do
+    assert kq.kich_thuoc_byte is None
+
+
+@pytest.mark.parametrize("kieu", ["khong_ton_tai", "la_thu_muc", "khong_co_duong_dan"])
+def test_thanh_cong_ma_khong_do_duoc_tep_thi_none_khong_lay_so_kib(
+        monkeypatch, _wiley_tdm_gia, tmp_path, caplog, kieu):
+    """Không đo được thì nói «không biết» (None) — không lấy số KiB của thư viện đắp vào — và
+    để lại một dòng cảnh báo: «tải thành công» mà không thấy tệp là chuyện bất thường."""
+    _bat_wiley(monkeypatch)
+    caplog.set_level("WARNING")
+    duong = {"khong_ton_tai": tmp_path / "khong-co.pdf", "la_thu_muc": tmp_path, "khong_co_duong_dan": None}[kieu]
+
+    def _tra_ve(self, doi):
+        return _FakeDownloadResult(doi, "SUCCESS", path=duong, size=_SO_KIB_THU_VIEN_BAO)
+
+    monkeypatch.setattr(_FakeTDMClient, "download_pdf", _tra_ve)
+    from app.sources.wiley_tdm import WileyTdmClient
+    kq = WileyTdmClient().download_pdf("10.1002/khong-do-duoc")
+    assert kq.thanh_cong is True
+    assert kq.kich_thuoc_byte is None
+    assert _CANH_BAO_KHONG_DO_DUOC in caplog.text
+
+
+def test_thu_vien_wiley_that_bao_kib_con_ket_qua_cua_ta_la_byte(tmp_path):
+    """Hợp đồng với thư viện THẬT, không mạng: `FileUtils.save_file` trả KiB làm tròn, và
+    `_quy_doi_ket_qua` đổi đúng kết quả đó thành byte thật. Ca này giữ cho bản giả ở trên
+    không tự bịa ra một hợp đồng khác với thư viện (lỗi đơn vị lọt từ 23/09 vì thế)."""
+    pytest.importorskip("wiley_tdm")
+    from wiley_tdm.download_result import DownloadResult
+    from wiley_tdm.download_status import DownloadStatus
+    from wiley_tdm.file_utils import FileUtils
+
+    from app.sources.wiley_tdm import _quy_doi_ket_qua
+
+    noi_dung = b"%PDF-1.7\n" + b"x" * 4991  # 5000 byte
+
+    class _PhanHoi:
+        def iter_content(self, chunk_size=8192):
+            yield noi_dung[:3000]
+            yield noi_dung[3000:]
+
+    doi = "10.1002/jcsm.70385"
+    tep = FileUtils.to_file_path(tmp_path, doi, "pdf")
+    kib = FileUtils.save_file(_PhanHoi(), tep)
+    assert tep.name == "10.1002-jcsm.70385.pdf"
+    assert tep.stat().st_size == 5000
+    assert kib == 5, "thư viện đổi đơn vị của `size`: soát lại `_kich_thuoc_byte_tren_dia` và bản giả"
+    kq = _quy_doi_ket_qua(DownloadResult(doi, DownloadStatus.SUCCESS, "", tep, kib))
+    assert kq.thanh_cong is True
+    assert kq.kich_thuoc_byte == 5000
+    da_co = _quy_doi_ket_qua(DownloadResult(doi, DownloadStatus.EXISTING_FILE, "", tep))
+    assert da_co.thanh_cong is True
+    assert da_co.kich_thuoc_byte == 5000
+
+
+def test_cmd_test_live_wiley_tdm_in_byte_that_tren_dia(monkeypatch, _wiley_tdm_gia):
+    """`python run.py wiley-tdm-test <DOI>` in đúng byte của tệp vừa tải, không phải KiB."""
+    _bat_wiley(monkeypatch)
+    monkeypatch.setattr(_FakeTDMClient, "so_byte_moi_tep", _SO_BYTE_DO_THAT)
+    from app.main import cmd_test_live_wiley_tdm
+    out = cmd_test_live_wiley_tdm("10.1002/jcsm.70385")
+    assert out["trang_thai"] == "SUCCESS"
+    assert out["thanh_cong"] is True
+    assert out["kich_thuoc_byte"] == _SO_BYTE_DO_THAT
+    assert Path(out["duong_dan"]).stat().st_size == out["kich_thuoc_byte"]
+    assert Path(out["duong_dan"]).as_posix() == f"{THU_MUC_TAI_MAC_DINH}/10.1002-jcsm.70385.pdf"
+    assert Path(out["thu_muc_tai"]).as_posix() == THU_MUC_TAI_MAC_DINH
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -257,6 +428,19 @@ def test_download_pdfs_on_result_callback_receives_ket_qua_tai_wiley(monkeypatch
     assert len(nhan_duoc) == 1
     assert isinstance(nhan_duoc[0], KetQuaTaiWiley)
     assert nhan_duoc[0].doi == "10.1002/x"
+
+
+def test_download_pdfs_va_callback_cung_bao_byte_that(monkeypatch, _wiley_tdm_gia):
+    """Đường tải hàng loạt và callback đi qua cùng một phép quy đổi: cũng phải ra byte thật."""
+    _bat_wiley(monkeypatch)
+    monkeypatch.setattr(_FakeTDMClient, "so_byte_moi_tep", 3000)  # thư viện báo round(3000/1024) = 3
+    from app.sources.wiley_tdm import WileyTdmClient
+    client = WileyTdmClient()
+    nhan_duoc = []
+    ket_qua = client.download_pdfs(["10.1002/a", "10.1002/b"], on_result=nhan_duoc.append)
+    assert [r.size for r in _FakeTDMClient.dang_ky_goi_gan_nhat.ket_qua_tho] == [3, 3]
+    assert [k.kich_thuoc_byte for k in ket_qua] == [3000, 3000]
+    assert [k.kich_thuoc_byte for k in nhan_duoc] == [3000, 3000]
 
 
 def test_download_pdfs_without_callback_does_not_crash(monkeypatch, _wiley_tdm_gia):
