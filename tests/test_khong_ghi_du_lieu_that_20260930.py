@@ -539,8 +539,11 @@ def test_ghi_vao_kho_ma_teardown_da_do_san(teardown_hong):
     thong_ke = _dong_thong_ke(kq)
     assert re.search(r"\b3 passed\b", thong_ke) and re.search(r"\b2 errors\b", thong_ke) and "failed" not in thong_ke, \
         f"đúng HAI test ghi phải lỗi ở teardown, test sạch không bị vạ lây: {thong_ke}\n{ra}"
-    assert re.search(r"^ERROR \S*test_con\.py::test_ghi_vao_kho(?:\s|$)", kq.stdout, re.M), ra
-    assert "test_con.py::test_sach" not in kq.stdout, ra
+    # Phần đường dẫn của nodeid KHÔNG cố định: pytest con chạy một tệp nằm NGOÀI rootdir; trên runner Windows tệp tạm ở
+    # ổ C: còn repo ở ổ D: nên pytest in «ERROR ::test_ghi_vao_kho …» (phần tệp RỖNG), trên Linux/cùng ổ thì in
+    # «ERROR ../../tmp/…/test_con.py::test_ghi_vao_kho …». Chỉ khẳng định phần tên test, `\S*` nhận cả hai dạng.
+    assert re.search(r"^ERROR \S*::test_ghi_vao_kho(?:\s|$)", kq.stdout, re.M), ra
+    assert not re.search(r"^(?:ERROR|FAILED) \S*::test_sach(?:\s|$)", kq.stdout, re.M), ra
     # teardown đã đỏ sẵn vì lý do khác: giữ nguyên lỗi đó, và VẪN nói rõ test đã ghi vào thư mục được canh
     assert "teardown của fixture hỏng vì lý do khác" in ra and "open: raw/gia_2.json" in ra, ra
 
