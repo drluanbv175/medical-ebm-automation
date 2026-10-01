@@ -405,13 +405,27 @@ This file contains only Claude Code-specific instructions.
   đó KHÔNG có trong `.gitignore` của repo CÔNG KHAI này (`git status` hiện `??`); nay có luật KHÔNG
   neo gốc, bắt ở mọi cấp. Luật không đi theo cấu hình: `WILEY_TDM_DOWNLOAD_DIR`/`download_dir` tự đặt
   phải trỏ NGOÀI repo hoặc vào nơi đã ignore, và thư viện đổi thư mục có dấu chấm (`wiley.pdfs`)
-  thành thư mục MẸ (đo ngoại tuyến) — hai trường hợp này CHƯA có rào. `KetQuaTaiWiley.kich_thuoc_byte`
+  thành thư mục MẸ (đo ngoại tuyến) — hai trường hợp này nay có rào (đoạn «tiếp» ngay dưới). `KetQuaTaiWiley.kich_thuoc_byte`
   nay là byte THẬT đo trên đĩa; trước đó mang KiB làm tròn của thư viện (8705 cho tệp 8.913.789
   byte) và rỗng với `EXISTING_FILE`. Rà bằng đọc mã: 4 connector guideline không tự ghi tệp (PDF qua
   `get_bytes` chỉ ở bộ nhớ); toàn văn PMC qua `get_text` nằm ở cache `data/raw/_http_cache/` (đã
   ignore). Canh: `tests/test_toan_van_khong_lot_vao_git_20260930.py` (đo trong kho git tạm, cấu hình
   git cô lập khỏi máy) + `tests/test_wiley_tdm.py`; 31 đột biến đều đỏ đúng chỗ. Thêm connector toàn
   văn ghi đĩa ⇒ thêm luật ignore + ca `bi_ignore` cho đường dẫn mới.
+  **Vá 30/09/2026 (tiếp) — bốn lỗ còn lại, đo ngoại tuyến với wiley-tdm 1.2.0.** (A)(B) `WileyTdmClient`
+  hỏi chính git (`app/utils/tam_nhin_git.py`: ngoài cây git · bị ignore · git thấy · không đo được) về
+  thư mục THẬT của thư viện (`client.download_dir`, KHÔNG phải chuỗi cấu hình — thư viện lùi «wiley.pdfs»
+  về thư mục mẹ) và TỪ CHỐI bằng RuntimeError kèm cách sửa khi git thấy; kiểm lại trước mỗi lượt tải
+  (thư mục tương đối tính theo thư mục đang đứng lúc ghi); «~» được giải. Chỉ luật ignore ĐI THEO KHO
+  được tính, luật riêng của máy thì không (cây đồng bộ OneDrive sang máy khác). **Bác sĩ chốt:** trong
+  cây git mà không hỏi được git ⇒ TỪ CHỐI; ngoài mọi cây git thì không cần git. (C) `thanh_cong=True` đòi
+  tệp trông như PDF trọn vẹn («%PDF-» ở đầu, «%%EOF» trong 1024 byte cuối, dấu kết cuối cùng không đứng
+  sau «startxref 0») — áp cho cả `SUCCESS` lẫn `EXISTING_FILE`; phép kiểm hai đầu, không bắt tệp hỏng ở
+  giữa. **Bác sĩ chốt:** tệp mà CHÍNH lượt tải vừa ghi dở (`STORAGE_ERROR`, nằm trong thư mục tải) thì
+  connector tự xoá để lượt sau tải lại; tệp dở có sẵn từ trước chỉ bị báo, không bị xoá. (D) `--luu` so
+  danh tính thư mục (`samefile`) thay vì chuỗi, và từ chối cả đích trong cây git KHÁC (worktree khác,
+  repo khác) ở chỗ git thấy. Canh: mục 4–7 của tệp chốt trên (mục 5–6 chạy cả thư viện thật lẫn bản
+  giả) + `tests/test_wiley_tdm.py`; 105 đột biến (31 của bản vá trên, giữ nguyên, + 74 mới) đều đỏ đúng chỗ.
   · **Connector TẢI TOÀN VĂN guideline trực tiếp từ website hiệp hội chuyên ngành (GOLD/GINA/
   BTS/PMC) — xây 23/09/2026, theo yêu cầu bác sĩ "đảm bảo chứng cứ ESC/ADA/GOLD/GINA... luôn
   được đọc toàn văn".** Trước khi viết bất kỳ dòng code nào, đã khảo sát ĐỘC LẬP robots.txt +

@@ -43,22 +43,41 @@ GIỚI HẠN ĐÃ BIẾT, ghi rõ để không ai hiểu nhầm mức độ ph�
   • PDF tải về là nội dung CÓ BẢN QUYỀN của nhà xuất bản, mà repo này CÔNG KHAI — đưa
     vào git là phân phối lại công khai. Thư mục mặc định `THU_MUC_TAI_MAC_DINH` được
     `.gitignore` bắt ở mọi cấp (vá 30/09/2026 — trước đó `git status` hiện
-    `?? downloads_wiley_tdm/`). Luật ignore KHÔNG đi theo cấu hình: tự đặt
-    `WILEY_TDM_DOWNLOAD_DIR` hoặc truyền `download_dir` thì phải trỏ NGOÀI repo hoặc vào
-    nơi `.gitignore` đã bắt.
+    `?? downloads_wiley_tdm/`). Luật ignore KHÔNG đi theo cấu hình, nên từ 30/09/2026
+    client TỪ CHỐI (RuntimeError kèm cách sửa) khi thư mục tải tự đặt — qua
+    `WILEY_TDM_DOWNLOAD_DIR` hoặc `download_dir` — nằm trong một cây git ở chỗ git nhìn
+    thấy. Phép kiểm hỏi chính git (`app/utils/tam_nhin_git.py`) về thư mục THẬT mà thư viện
+    ghi: thư viện coi tên có dấu chấm («wiley.pdfs») là tên tệp và lùi về thư mục MẸ.
+  • `thanh_cong=True` nghĩa là có một tệp TRÔNG NHƯ PDF trọn vẹn trên đĩa, không chỉ là thư
+    viện báo `SUCCESS`/`EXISTING_FILE`: đứt mạng giữa chừng để lại tệp ghi dở, và lượt sau
+    thư viện thấy tệp đó là trả `EXISTING_FILE` mà không gọi mạng. Xem `_ly_do_pdf_ghi_do`
+    (phép kiểm cấu trúc hai đầu tệp — không bắt được tệp hỏng ở giữa). Tệp mà CHÍNH lượt
+    tải vừa ghi dở (`STORAGE_ERROR`) thì client tự xoá để lượt sau tải lại được (bác sĩ chốt
+    30/09/2026, `_xoa_tep_vua_ghi_do`); tệp dở có sẵn từ trước thì chỉ báo, không xoá.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from app.config import settings
 from app.utils.logging_config import get_logger
+from app.utils.tam_nhin_git import GIT_THAY, KHONG_DO_DUOC, TamNhinGit, tam_nhin_git
 
 logger = get_logger(__name__)
 
 _TRANG_THAI_THANH_CONG = {"SUCCESS", "EXISTING_FILE"}
+_TRANG_THAI_LOI_GHI = "STORAGE_ERROR"
+
+# Số byte đọc ở MỖI đầu tệp khi kiểm PDF có trọn vẹn không — xem `_ly_do_pdf_ghi_do`.
+_CUA_SO_KIEM_PDF = 1024
+_STARTXREF_VE_BYTE_0 = re.compile(rb"startxref\s+0\s*$")
+
+# Tên tệp đem hỏi git khi chưa có DOI nào: thư viện đặt tên PDF theo DOI («10.1002/x» ⇒
+# «10.1002-x.pdf»), nên hỏi về một tên cùng khuôn nằm trong thư mục tải.
+_TEN_TEP_THU = "10.1002-kiem-thu-muc-tai.pdf"
 
 # Tên thư mục tải MẶC ĐỊNH — tương đối so với thư mục đang đứng lúc dựng client (thư viện
 # tự `mkdir` ngay trong `TDMClient.__init__`). `.gitignore` có luật cùng tên, không neo gốc,
@@ -104,9 +123,104 @@ def _kich_thuoc_byte_tren_dia(duong_dan) -> Optional[int]:
         return None
 
 
-def _quy_doi_ket_qua(ket_qua) -> KetQuaTaiWiley:
+def _ly_do_pdf_ghi_do(duong_dan) -> Optional[str]:
+    """Vì sao tệp trên đĩa KHÔNG trông như một PDF trọn vẹn. `None` = trông trọn vẹn, hoặc không
+    xét được (không có đường dẫn, không phải tệp, không đọc được).
+
+    Đo 30/09/2026: đứt mạng giữa chừng thì thư viện trả `STORAGE_ERROR` và để lại tệp ghi dở; lượt
+    sau nó thấy tệp đã có nên trả `EXISTING_FILE` mà không gọi mạng. Chỉ nhìn trạng thái của thư
+    viện thì PDF cụt đó được báo «thành công» mãi, tới khi có người xoá tệp.
+
+    Phép kiểm chỉ đọc hai đầu tệp, không mở PDF ra:
+      * «%PDF-» trong 1024 byte đầu — không có thì đây không phải PDF, hoặc ghi dở ngay từ đầu;
+      * «%%EOF» trong 1024 byte cuối — tệp bị cắt giữa chừng thì mất dấu này;
+      * dấu «%%EOF» cuối cùng không được đứng ngay sau «startxref 0»: PDF tuyến tính hoá
+        (linearized) có một đoạn kết như vậy GẦN ĐẦU tệp, nên tệp bị cắt ngay sau đoạn đó vẫn có
+        «%%EOF» ở đuôi. Đuôi thật của một PDF không bao giờ trỏ về byte 0 (ở đó là chữ ký «%PDF-»).
+    Cùng ngày, đo trên 109 PDF thật có sẵn trên máy: cả 109 có «%PDF-» ở byte 0 và «%%EOF» trong 7
+    byte cuối; 4 tệp tuyến tính hoá đều có «startxref 0 %%EOF» ở byte 450–1364.
+
+    Giới hạn: đây là phép kiểm CẤU TRÚC HAI ĐẦU. Nó bắt tệp bị cắt và tệp không phải PDF; nó
+    không bắt được tệp hỏng ở giữa mà hai đầu còn nguyên."""
+    if not duong_dan:
+        return None
+    try:
+        tep = Path(duong_dan)
+        if not tep.is_file():
+            return None
+        kich_thuoc = tep.stat().st_size
+        with tep.open("rb") as dau_vao:
+            dau = dau_vao.read(_CUA_SO_KIEM_PDF)
+            dau_vao.seek(max(0, kich_thuoc - _CUA_SO_KIEM_PDF))
+            cuoi = dau_vao.read(_CUA_SO_KIEM_PDF)
+    except OSError:
+        return None
+    if kich_thuoc == 0:
+        return "tệp rỗng, 0 byte"
+    if b"%PDF-" not in dau:
+        return "không có chữ ký «%PDF-» ở đầu tệp"
+    vi_tri_ket = cuoi.rfind(b"%%EOF")
+    if vi_tri_ket < 0:
+        return "không có dấu kết thúc «%%EOF» ở cuối tệp"
+    if _STARTXREF_VE_BYTE_0.search(cuoi[:vi_tri_ket]):
+        return "tệp dừng ngay sau phần mở đầu của một PDF tuyến tính hoá («startxref 0»)"
+    return None
+
+
+_DAN_XOA_TAY = "Xoá tệp đó rồi tải lại — chừng nào tệp còn nằm đó, thư viện không gọi mạng lần nữa."
+
+
+def _ghi_chu_tep_do(duong_dan, ly_do: str) -> str:
+    return (f"Tệp trên đĩa có vẻ ghi dở hoặc không phải PDF ({ly_do}): {duong_dan}. KHÔNG dùng tệp này làm "
+            f"toàn văn. {_DAN_XOA_TAY}")
+
+
+def _noi_ghi_chu(*cac_phan: Optional[str]) -> Optional[str]:
+    """Nối lời của thư viện với ghi chú của ta; không phần nào có nội dung thì `None`."""
+    co_noi_dung = [phan for phan in cac_phan if phan]
+    return " | ".join(co_noi_dung) if co_noi_dung else None
+
+
+def _xoa_tep_vua_ghi_do(ket_qua, thu_muc_tai) -> Optional[str]:
+    """Xoá tệp mà CHÍNH lượt tải này vừa ghi dở; trả câu ghi chú về việc đó (`None` = không xoá gì).
+
+    Bác sĩ chốt 30/09/2026: connector tự xoá, để lượt sau tải lại được mà không cần người can
+    thiệp — để nguyên thì thư viện thấy tệp là trả `EXISTING_FILE`, không gọi mạng. Chỉ xoá khi ĐỦ
+    cả ba điều kiện:
+      * thư viện vừa trả `STORAGE_ERROR` cho tệp này, tức chính lượt này mở tệp ra ghi rồi gãy;
+      * tệp không qua phép kiểm PDF trọn vẹn (`_ly_do_pdf_ghi_do`) — tệp trông trọn vẹn thì để nguyên;
+      * tệp nằm ngay trong thư mục tải của client.
+    Tệp dở có sẵn từ trước (thư viện trả `EXISTING_FILE`, không rõ ai ghi) KHÔNG bao giờ bị xoá."""
+    if ket_qua.status.name != _TRANG_THAI_LOI_GHI:
+        return None
+    ly_do = _ly_do_pdf_ghi_do(ket_qua.path)
+    if not ly_do:
+        return None
+    tep = Path(ket_qua.path)
+    try:
+        if not tep.parent.samefile(thu_muc_tai):
+            return None
+        tep.unlink()
+    except OSError as exc:
+        logger.warning("[wiley_tdm] không xoá được tệp ghi dở %s: %s", tep, exc)
+        return f"Tệp ghi dở ({ly_do}) còn nằm ở {tep} vì connector không xoá được ({exc}). {_DAN_XOA_TAY}"
+    logger.warning("[wiley_tdm] đã xoá tệp ghi dở %s (%s)", tep, ly_do)
+    return f"Đã xoá tệp ghi dở ({ly_do}): {tep}. Lượt tải sau sẽ tải lại DOI này."
+
+
+def _quy_doi_ket_qua(ket_qua, ghi_chu_xoa: Optional[str] = None) -> KetQuaTaiWiley:
+    """Kết quả thô của thư viện ⇒ `KetQuaTaiWiley`. `ghi_chu_xoa` là lời của `_xoa_tep_vua_ghi_do`
+    khi client vừa xử lý tệp ghi dở của chính kết quả này."""
     ten_trang_thai = ket_qua.status.name
     thanh_cong = ten_trang_thai in _TRANG_THAI_THANH_CONG
+    ghi_chu = _noi_ghi_chu(ket_qua.comment, ghi_chu_xoa)
+    # `SUCCESS`/`EXISTING_FILE` chỉ nói thư viện đã ghi, hoặc đã thấy, MỘT tệp — không nói tệp đó
+    # trọn vẹn. `STORAGE_ERROR` cũng xét: tệp dở mà client không xoá sẽ làm lượt sau vấp phải.
+    if not ghi_chu_xoa and (thanh_cong or ten_trang_thai == _TRANG_THAI_LOI_GHI):
+        ly_do_ghi_do = _ly_do_pdf_ghi_do(ket_qua.path)
+        if ly_do_ghi_do:
+            thanh_cong = False
+            ghi_chu = _noi_ghi_chu(ghi_chu, _ghi_chu_tep_do(ket_qua.path, ly_do_ghi_do))
     # Chỉ đo khi tải THÀNH CÔNG: `STORAGE_ERROR` có thể để lại tệp ghi dở trên đĩa, mà kích
     # thước của tệp dở không phải «kích thước PDF đã tải».
     kich_thuoc = _kich_thuoc_byte_tren_dia(ket_qua.path) if thanh_cong else None
@@ -121,9 +235,41 @@ def _quy_doi_ket_qua(ket_qua) -> KetQuaTaiWiley:
         thanh_cong=thanh_cong,
         duong_dan=str(ket_qua.path) if ket_qua.path else None,
         kich_thuoc_byte=kich_thuoc,
-        ghi_chu=ket_qua.comment or None,
+        ghi_chu=ghi_chu,
         ma_http=int(ket_qua.api_status) if ket_qua.api_status else None,
     )
+
+
+def _thong_diep_tu_choi_thu_muc(
+        ket_luan: TamNhinGit, thu_muc_that: Path, cau_hinh: Path, bi_thu_vien_doi: bool) -> str:
+    """Thông điệp từ chối thư mục tải: nói rõ thư mục nào, vì sao, và sửa thế nào."""
+    dong = [f"[wiley_tdm] TỪ CHỐI thư mục tải «{thu_muc_that}»: nó nằm trong cây git «{ket_luan.goc_cay}»"]
+    if ket_luan.trang_thai == GIT_THAY:
+        dong.append(
+            "mà không luật ignore nào của kho bắt. PDF tải về là nội dung có bản quyền của nhà xuất bản: "
+            "`git status` sẽ hiện tệp và một lần `git add -A` là đưa nó vào lịch sử — với repo công khai như "
+            "dự án này, đó là phân phối lại.")
+    else:
+        dong.append(
+            f"nhưng không đo được git có nhìn thấy nó hay không ({ket_luan.ly_do}). Không đo được không có "
+            "nghĩa là an toàn: PDF tải về là nội dung có bản quyền, và cây làm việc có thể đồng bộ sang máy "
+            "có git.")
+    if bi_thu_vien_doi:
+        dong.append(
+            f"Cấu hình là «{cau_hinh}», nhưng thư viện wiley-tdm coi thành phần cuối có dấu chấm là tên tệp "
+            "và lùi về thư mục mẹ, nên nơi ghi thật là thư mục nêu trên.")
+    cach_sua = []
+    if cau_hinh != Path(THU_MUC_TAI_MAC_DINH):
+        cach_sua.append(
+            "bỏ trống WILEY_TDM_DOWNLOAD_DIR (và không truyền download_dir) để dùng mặc định "
+            f"«{THU_MUC_TAI_MAC_DINH}/», đã có luật ignore trong repo này")
+    cach_sua.append(
+        "trỏ WILEY_TDM_DOWNLOAD_DIR ra NGOÀI mọi cây git, vd «~/wiley_tdm_pdf» (tên thư mục đừng có dấu chấm)")
+    cach_sua.append(
+        "thêm luật ignore cho thư mục đó vào `.gitignore` của kho" if ket_luan.trang_thai == GIT_THAY
+        else "cài hoặc sửa git trên máy này")
+    dong.append("Cách sửa, chọn một: " + "; ".join(f"({i}) {c}" for i, c in enumerate(cach_sua, 1)) + ".")
+    return " ".join(dong)
 
 
 class WileyTdmClient:
@@ -165,17 +311,46 @@ class WileyTdmClient:
             ) from exc
 
         thu_muc = download_dir or settings.wiley_tdm_download_dir or THU_MUC_TAI_MAC_DINH
-        self._client = TDMClient(api_token=settings.wiley_tdm_api_token, download_dir=thu_muc)
+        # Thư viện không giải «~»: để nguyên thì nó tạo một thư mục TÊN «~» ngay trong thư mục đang đứng.
+        self._thu_muc_cau_hinh = Path(str(thu_muc)).expanduser()
+        self._client = TDMClient(api_token=settings.wiley_tdm_api_token, download_dir=self._thu_muc_cau_hinh)
         self._client.api_rate_limit = settings.wiley_tdm_rate_limit_seconds
         # skip_existing_files=True là mặc định của thư viện — giữ nguyên để không tải
         # lại PDF đã có trên đĩa.
+        self._thu_muc_da_kiem: Optional[Path] = None
+        self._kiem_thu_muc_tai()
+
+    def _kiem_thu_muc_tai(self) -> None:
+        """Từ chối khi nơi thư viện SẼ GHI nằm ở chỗ git nhìn thấy (repo này công khai, PDF có bản quyền).
+
+        Xét `self._client.download_dir` — thư mục THẬT của thư viện, không phải chuỗi cấu hình: thư
+        viện coi tên có đuôi («wiley.pdfs») là tên TỆP và lùi về thư mục mẹ (đo 30/09/2026). Thư mục
+        tương đối được tính theo thư mục đang đứng LÚC GHI, nên phép kiểm chạy lại trước mỗi lượt
+        tải; thư mục đã kiểm được nhớ theo đường tuyệt đối để không hỏi git lặp lại."""
+        thu_muc_that = Path(self._client.download_dir).resolve()
+        if thu_muc_that == self._thu_muc_da_kiem:
+            return
+        ket_luan = tam_nhin_git(thu_muc_that / _TEN_TEP_THU)
+        bi_thu_vien_doi = thu_muc_that != self._thu_muc_cau_hinh.resolve()
+        if ket_luan.trang_thai in (GIT_THAY, KHONG_DO_DUOC):
+            raise RuntimeError(
+                _thong_diep_tu_choi_thu_muc(ket_luan, thu_muc_that, self._thu_muc_cau_hinh, bi_thu_vien_doi))
+        if bi_thu_vien_doi:
+            logger.warning(
+                "[wiley_tdm] cấu hình thư mục tải là «%s» nhưng thư viện coi tên có dấu chấm là tên tệp và "
+                "lùi về thư mục mẹ: PDF sẽ nằm ở «%s»", self._thu_muc_cau_hinh, thu_muc_that,
+            )
+        self._thu_muc_da_kiem = thu_muc_that
 
     def download_pdf(self, doi: str) -> KetQuaTaiWiley:
         """Tải MỘT bài theo DOI. Không bịa kết quả khi lỗi — trả nguyên trạng thái thật
         của Wiley (ACCESS_DENIED/UNKNOWN_DOI/NETWORK_ERROR/...), không quy hết về 'lỗi'
-        chung chung để người gọi biết chính xác phải làm gì tiếp theo."""
-        ket_qua = self._client.download_pdf(doi)
-        out = _quy_doi_ket_qua(ket_qua)
+        chung chung để người gọi biết chính xác phải làm gì tiếp theo.
+
+        `thanh_cong` chỉ đúng khi tệp trên đĩa trông như một PDF trọn vẹn (`_ly_do_pdf_ghi_do`).
+        Tệp mà chính lượt này ghi dở (`STORAGE_ERROR`) được xoá ngay — xem `_xoa_tep_vua_ghi_do`."""
+        self._kiem_thu_muc_tai()
+        out = self._xu_ly_ket_qua(self._client.download_pdf(doi))
         if not out.thanh_cong:
             logger.warning(
                 "[wiley_tdm] tải thất bại doi=%s trạng_thái=%s ghi_chú=%s",
@@ -183,20 +358,32 @@ class WileyTdmClient:
             )
         return out
 
+    def _xu_ly_ket_qua(self, ket_qua) -> KetQuaTaiWiley:
+        """MỘT kết quả thô của thư viện ⇒ kết quả của ta, xoá tệp vừa ghi dở nếu có. Mỗi kết quả thô
+        chỉ đi qua đây một lần: gọi lần hai thì tệp dở đã không còn, ghi chú về việc xoá sẽ mất."""
+        return _quy_doi_ket_qua(ket_qua, _xoa_tep_vua_ghi_do(ket_qua, self._client.download_dir))
+
     def download_pdfs(
         self,
         dois: List[str],
         on_result: Optional[Callable[[KetQuaTaiWiley], None]] = None,
     ) -> List[KetQuaTaiWiley]:
         """Tải HÀNG LOẠT theo danh sách DOI — thư viện tự giãn nhịp giữa các lượt
-        (xem `api_rate_limit`). `on_result` (tuỳ chọn) được gọi sau MỖI lượt tải."""
+        (xem `api_rate_limit`). `on_result` (tuỳ chọn) được gọi sau MỖI lượt tải.
+
+        Tệp ghi dở của từng bài được xoá ngay sau lượt tải bài đó (không đợi hết loạt), nên
+        `on_result` và danh sách trả về mang cùng một kết quả."""
+        da_xu_ly: Dict[int, KetQuaTaiWiley] = {}
 
         def _cb(ket_qua):
+            da_xu_ly[id(ket_qua)] = self._xu_ly_ket_qua(ket_qua)
             if on_result:
-                on_result(_quy_doi_ket_qua(ket_qua))
+                on_result(da_xu_ly[id(ket_qua)])
 
-        ket_qua_tho = self._client.download_pdfs(dois, on_result=_cb if on_result else None)
-        return [_quy_doi_ket_qua(k) for k in ket_qua_tho]
+        self._kiem_thu_muc_tai()
+        ket_qua_tho = self._client.download_pdfs(dois, on_result=_cb)
+        # Kết quả nào thư viện không đưa qua callback thì xử lý ở đây, để không kết quả nào bị bỏ sót.
+        return [da_xu_ly.get(id(k)) or self._xu_ly_ket_qua(k) for k in ket_qua_tho]
 
     @property
     def download_dir(self) -> Path:

@@ -54,12 +54,26 @@ def _kib_nhu_thu_vien(tep: Path) -> int:
     return round(tep.stat().st_size / 1024)
 
 
-def _ghi_tep_pdf_gia(tep: Path, so_byte: int) -> Path:
-    """Ghi một tệp dài đúng `so_byte` byte, đầu tệp mang chữ ký %PDF. Ghi tường minh từng byte:
-    `truncate` để nới tệp thì kết quả tuỳ nền tảng, mà ca kiểm này sống nhờ con số chính xác."""
-    dau = b"%PDF-1.7\n"
+_DAU_PDF = b"%PDF-1.7\n"
+_DUOI_PDF = b"\nstartxref\n9\n%%EOF\n"
+
+
+def _noi_dung_pdf_gia(so_byte: int, tron_ven: bool = True) -> bytes:
+    """Đúng `so_byte` byte, đầu mang chữ ký «%PDF-». `tron_ven=True` (mặc định): cuối có
+    «startxref … %%EOF» như mọi PDF thật. `tron_ven=False`: tệp bị cắt giữa chừng — mất đoạn cuối."""
+    if not tron_ven:
+        return _DAU_PDF + b"\0" * (so_byte - len(_DAU_PDF))
+    return _DAU_PDF + b"\0" * (so_byte - len(_DAU_PDF) - len(_DUOI_PDF)) + _DUOI_PDF
+
+
+def _ghi_tep_pdf_gia(tep: Path, so_byte: int, tron_ven: bool = True) -> Path:
+    """Ghi một tệp dài đúng `so_byte` byte. Ghi tường minh từng byte: `truncate` để nới tệp thì
+    kết quả tuỳ nền tảng, mà ca kiểm này sống nhờ con số chính xác.
+
+    Sửa 30/09/2026: bản cũ chỉ ghi chữ ký «%PDF-» rồi toàn byte 0 — đúng hình một tệp GHI DỞ. Từ
+    khi `thanh_cong` đòi tệp trông trọn vẹn, tệp «tải xong» của bản giả phải có cả dấu «%%EOF»."""
     tep.parent.mkdir(parents=True, exist_ok=True)
-    tep.write_bytes(dau + b"\0" * (so_byte - len(dau)))
+    tep.write_bytes(_noi_dung_pdf_gia(so_byte, tron_ven))
     assert tep.stat().st_size == so_byte
     return tep
 
@@ -320,9 +334,12 @@ def test_kich_thuoc_byte_la_byte_that_khong_phai_kib_cua_thu_vien(monkeypatch, _
 
 def test_storage_error_khong_bao_kich_thuoc_cua_tep_ghi_do(monkeypatch, _wiley_tdm_gia, tmp_path):
     """`STORAGE_ERROR` để lại tệp ghi dở trên đĩa: kích thước tệp dở KHÔNG phải kích thước
-    PDF đã tải, nên không được báo ra như thể tải xong."""
+    PDF đã tải, nên không được báo ra như thể tải xong.
+
+    Tệp dở ở ca này nằm NGOÀI thư mục tải của client, nên connector không xoá (nó chỉ xoá tệp
+    trong chính thư mục tải) — chỉ báo kèm đường dẫn."""
     _bat_wiley(monkeypatch)
-    tep_do = _ghi_tep_pdf_gia(tmp_path / "do" / "10.1002-ghi-do.pdf", 321)
+    tep_do = _ghi_tep_pdf_gia(tmp_path / "do" / "10.1002-ghi-do.pdf", 321, tron_ven=False)
 
     def _loi_luu(self, doi):
         return _FakeDownloadResult(
@@ -336,6 +353,85 @@ def test_storage_error_khong_bao_kich_thuoc_cua_tep_ghi_do(monkeypatch, _wiley_t
     assert kq.trang_thai == "STORAGE_ERROR"
     assert Path(kq.duong_dan) == tep_do
     assert kq.kich_thuoc_byte is None
+    # Lời của thư viện được giữ nguyên, kèm chỉ dẫn về tệp dở mà lượt tải sau sẽ vấp phải.
+    assert "No space left on device" in kq.ghi_chu
+    assert "ghi dở" in kq.ghi_chu and tep_do.name in kq.ghi_chu
+    assert "Xoá tệp đó rồi tải lại" in kq.ghi_chu and "Đã xoá" not in kq.ghi_chu
+    assert tep_do.stat().st_size == 321, "tệp nằm ngoài thư mục tải không được tự xoá"
+
+
+def _client_tra_storage_error(monkeypatch, ten_tep: str, so_byte: int, tron_ven: bool):
+    """Client mà mỗi lượt tải đều gãy kiểu `STORAGE_ERROR`, để lại một tệp ngay TRONG thư mục tải —
+    đúng hình thư viện thật để lại khi đứt mạng giữa chừng. Trả (client, đường dẫn tệp)."""
+    _bat_wiley(monkeypatch)
+    from app.sources.wiley_tdm import WileyTdmClient
+    client = WileyTdmClient()
+    tep = Path(THU_MUC_TAI_MAC_DINH) / ten_tep
+
+    def _gay_giua_chung(self, doi):
+        _ghi_tep_pdf_gia(tep, so_byte, tron_ven=tron_ven)
+        return _FakeDownloadResult(doi, "STORAGE_ERROR", comment="Connection broken", path=tep)
+
+    monkeypatch.setattr(_FakeTDMClient, "download_pdf", _gay_giua_chung)
+    return client, tep
+
+
+def test_storage_error_thi_tu_xoa_tep_vua_ghi_do_trong_thu_muc_tai(monkeypatch, _wiley_tdm_gia, caplog):
+    """Bác sĩ chốt 30/09/2026: tệp mà CHÍNH lượt tải vừa ghi dở thì connector tự xoá, để lượt sau
+    thư viện gọi mạng lại thay vì trả `EXISTING_FILE` cho một PDF cụt."""
+    caplog.set_level("WARNING")
+    client, tep = _client_tra_storage_error(monkeypatch, "10.1002-dut-mang.pdf", 4009, tron_ven=False)
+    kq = client.download_pdf("10.1002/dut-mang")
+    assert (kq.trang_thai, kq.thanh_cong, kq.kich_thuoc_byte) == ("STORAGE_ERROR", False, None)
+    assert not tep.exists(), "tệp ghi dở còn nằm lại trong thư mục tải"
+    assert kq.ghi_chu.startswith("Connection broken | "), "lời của thư viện đứng trước, không bị đè"
+    assert "Đã xoá tệp ghi dở" in kq.ghi_chu and "%%EOF" in kq.ghi_chu and tep.name in kq.ghi_chu
+    assert "Xoá tệp đó rồi tải lại" not in kq.ghi_chu, "đã xoá rồi thì không dặn người xoá nữa"
+    assert "đã xoá tệp ghi dở" in caplog.text, "việc xoá tệp phải để lại một dòng nhật ký"
+
+
+def test_storage_error_ma_tep_trong_tron_ven_thi_khong_xoa(monkeypatch, _wiley_tdm_gia):
+    """Lỗi ghi xảy ra SAU khi đã nhận đủ nội dung (vd đo kích thước tệp hỏng): tệp trên đĩa trông
+    trọn vẹn — không phải tệp dở, không được xoá."""
+    client, tep = _client_tra_storage_error(monkeypatch, "10.1002-du-noi-dung.pdf", 5000, tron_ven=True)
+    kq = client.download_pdf("10.1002/du-noi-dung")
+    assert (kq.trang_thai, kq.thanh_cong, kq.kich_thuoc_byte) == ("STORAGE_ERROR", False, None)
+    assert tep.stat().st_size == 5000, "tệp trông trọn vẹn đã bị xoá"
+    assert kq.ghi_chu == "Connection broken"
+
+
+def test_khong_xoa_duoc_tep_ghi_do_thi_noi_ro_va_dan_xoa_tay(monkeypatch, _wiley_tdm_gia, caplog):
+    """Không xoá được (tệp đang bị khoá, không có quyền): không được báo «đã xoá»."""
+    caplog.set_level("WARNING")
+    client, tep = _client_tra_storage_error(monkeypatch, "10.1002-khong-xoa-duoc.pdf", 4009, tron_ven=False)
+
+    def _unlink_hong(self, *a, **k):
+        raise PermissionError(13, "Permission denied", str(self))
+
+    monkeypatch.setattr(Path, "unlink", _unlink_hong)
+    kq = client.download_pdf("10.1002/khong-xoa-duoc")
+    assert (kq.trang_thai, kq.thanh_cong, kq.kich_thuoc_byte) == ("STORAGE_ERROR", False, None)
+    assert tep.stat().st_size == 4009
+    assert "Đã xoá" not in kq.ghi_chu
+    assert "không xoá được" in kq.ghi_chu and "Permission denied" in kq.ghi_chu and tep.name in kq.ghi_chu
+    assert "Xoá tệp đó rồi tải lại" in kq.ghi_chu
+    assert kq.ghi_chu.count("Xoá tệp đó rồi tải lại") == 1, "lời dặn xoá tay không lặp hai lần"
+    assert "không xoá được tệp ghi dở" in caplog.text
+
+
+def test_storage_error_khong_de_lai_tep_thi_giu_nguyen_loi_cua_thu_vien(monkeypatch, _wiley_tdm_gia, tmp_path):
+    """Lỗi ghi mà KHÔNG có tệp nào nằm lại (vd không mở được tệp để ghi): không có tệp dở để báo."""
+    _bat_wiley(monkeypatch)
+    khong_co = tmp_path / "do" / "10.1002-khong-mo-duoc.pdf"
+
+    def _loi_luu(self, doi):
+        return _FakeDownloadResult(doi, "STORAGE_ERROR", comment="Permission denied", path=khong_co)
+
+    monkeypatch.setattr(_FakeTDMClient, "download_pdf", _loi_luu)
+    from app.sources.wiley_tdm import WileyTdmClient
+    kq = WileyTdmClient().download_pdf("10.1002/khong-mo-duoc")
+    assert (kq.trang_thai, kq.thanh_cong, kq.kich_thuoc_byte) == ("STORAGE_ERROR", False, None)
+    assert kq.ghi_chu == "Permission denied"
 
 
 @pytest.mark.parametrize("kieu", ["khong_ton_tai", "la_thu_muc", "khong_co_duong_dan"])
@@ -369,7 +465,7 @@ def test_thu_vien_wiley_that_bao_kib_con_ket_qua_cua_ta_la_byte(tmp_path):
 
     from app.sources.wiley_tdm import _quy_doi_ket_qua
 
-    noi_dung = b"%PDF-1.7\n" + b"x" * 4991  # 5000 byte
+    noi_dung = _noi_dung_pdf_gia(5000)
 
     class _PhanHoi:
         def iter_content(self, chunk_size=8192):
@@ -388,6 +484,152 @@ def test_thu_vien_wiley_that_bao_kib_con_ket_qua_cua_ta_la_byte(tmp_path):
     da_co = _quy_doi_ket_qua(DownloadResult(doi, DownloadStatus.EXISTING_FILE, "", tep))
     assert da_co.thanh_cong is True
     assert da_co.kich_thuoc_byte == 5000
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# Tệp ghi dở không được báo «thành công» — vá 30/09/2026
+# ════════════════════════════════════════════════════════════════════════════
+
+# Phần mở đầu của một PDF tuyến tính hoá (linearized), dựng theo đúng hình đo được trên 4 tệp thật
+# ngày 30/09/2026: ngay sau bảng tham chiếu trang đầu là «startxref 0 %%EOF», ở byte 450–1364 —
+# tức có một dấu «%%EOF» nằm gần ĐẦU tệp. Nội dung tự chế.
+_MO_DAU_TUYEN_TINH = (
+    b"%PDF-1.6\r%\xe2\xe3\xcf\xd3\r\n1 0 obj\r<</Linearized 1/L 20000/O 3/E 5000/N 1/T 19000/H [ 450 150]>>\rendobj\r\n"
+    b"xref\r\n1 2\r\n0000000016 00000 n\r\n0000000600 00000 n\r\n"
+    b"trailer\r\n<</Size 3/Prev 19000/Root 2 0 R>>\r\nstartxref\r\n0\r\n%%EOF\r\n"
+)
+_DUOI_TUYEN_TINH = b"\r\nstartxref\r\n116\r\n%%EOF\r\n"
+
+_CAC_TEP_MAU = {
+    # tên ca: (nội dung, mảnh phải có trong lý do — None nghĩa là «trông trọn vẹn»)
+    "tron_ven": (_noi_dung_pdf_gia(5000), None),
+    "tron_ven_nho_hon_cua_so": (_noi_dung_pdf_gia(64), None),
+    "tron_ven_startxref_10": (_DAU_PDF + b"x" * 200 + b"\nstartxref\n10\n%%EOF\n", None),
+    "tron_ven_khong_co_startxref": (_DAU_PDF + b"x" * 200 + b"\n%%EOF\n", None),
+    "rac_ngan_sau_eof": (_noi_dung_pdf_gia(5000) + b"\n" * 900, None),
+    "rac_ngan_truoc_chu_ky": (b"\xef\xbb\xbf\r\n" + _noi_dung_pdf_gia(5000), None),
+    "tuyen_tinh_tron_ven": (_MO_DAU_TUYEN_TINH + b"x" * 5000 + _DUOI_TUYEN_TINH, None),
+    "tuyen_tinh_tron_ven_nho_hon_cua_so": (_MO_DAU_TUYEN_TINH + b"x" * 100 + _DUOI_TUYEN_TINH, None),
+    "rong": (b"", "rỗng"),
+    "cut_giua_chung": (_noi_dung_pdf_gia(5000, tron_ven=False), "%%EOF"),
+    "cut_ngay_sau_chu_ky": (b"%PDF-1.7\n", "%%EOF"),
+    "khong_phai_pdf": (b"<html><body>Service temporarily unavailable</body></html>\n%%EOF\n", "%PDF-"),
+    "chu_ky_nam_qua_sau": (b"\0" * 1500 + _noi_dung_pdf_gia(5000), "%PDF-"),
+    "rac_dai_sau_eof": (_noi_dung_pdf_gia(5000) + b"\n" * 1100, "%%EOF"),
+    "tuyen_tinh_cut_ngay_sau_phan_mo_dau": (_MO_DAU_TUYEN_TINH + b"x" * 300, "startxref 0"),
+    "tuyen_tinh_cut_dung_o_phan_mo_dau": (_MO_DAU_TUYEN_TINH, "startxref 0"),
+    "tuyen_tinh_cut_xa_phan_mo_dau": (_MO_DAU_TUYEN_TINH + b"x" * 5000, "%%EOF"),
+}
+
+
+@pytest.mark.parametrize("ten_ca", sorted(_CAC_TEP_MAU))
+def test_ly_do_pdf_ghi_do_tren_tung_hinh_tep(tmp_path, ten_ca):
+    """Phép kiểm cấu trúc hai đầu tệp: tệp trọn vẹn không bị bắt nhầm, tệp cụt và tệp không phải
+    PDF đều bị bắt kèm đúng lý do."""
+    from app.sources.wiley_tdm import _ly_do_pdf_ghi_do
+    noi_dung, manh_ly_do = _CAC_TEP_MAU[ten_ca]
+    tep = tmp_path / "10.1002-mau.pdf"
+    tep.write_bytes(noi_dung)
+    ly_do = _ly_do_pdf_ghi_do(tep)
+    if manh_ly_do is None:
+        assert ly_do is None, f"tệp trọn vẹn bị coi là ghi dở: {ly_do}"
+    else:
+        assert ly_do is not None, "tệp cụt hoặc không phải PDF lại được coi là trọn vẹn"
+        assert manh_ly_do in ly_do
+
+
+def test_ly_do_pdf_ghi_do_nhan_ca_duong_dan_dang_chuoi(tmp_path):
+    from app.sources.wiley_tdm import _ly_do_pdf_ghi_do
+    tep = _ghi_tep_pdf_gia(tmp_path / "10.1002-cut.pdf", 5000, tron_ven=False)
+    assert "%%EOF" in _ly_do_pdf_ghi_do(str(tep))
+
+
+@pytest.mark.parametrize("kieu", ["khong_ton_tai", "la_thu_muc", "khong_co_duong_dan"])
+def test_ly_do_pdf_ghi_do_khong_xet_duoc_thi_khong_ket_luan(tmp_path, kieu):
+    """Không có tệp để xét thì không kết luận «ghi dở» (đường «thành công mà không thấy tệp» đã có
+    cảnh báo riêng ở `_quy_doi_ket_qua`)."""
+    from app.sources.wiley_tdm import _ly_do_pdf_ghi_do
+    duong = {"khong_ton_tai": tmp_path / "khong-co.pdf", "la_thu_muc": tmp_path, "khong_co_duong_dan": None}[kieu]
+    assert _ly_do_pdf_ghi_do(duong) is None
+
+
+def test_existing_file_la_tep_ghi_do_thi_khong_thanh_cong(monkeypatch, _wiley_tdm_gia, tmp_path, caplog):
+    """Đo 30/09/2026: sau một lượt đứt mạng, thư viện trả `EXISTING_FILE` cho tệp 4.009 byte mà
+    không gọi mạng. Trước bản vá, đó là `thanh_cong=True` kèm `kich_thuoc_byte=4009`."""
+    _bat_wiley(monkeypatch)
+    caplog.set_level("WARNING")
+    tep_do = _ghi_tep_pdf_gia(tmp_path / "da_co" / "10.1002-cut.pdf", 4009, tron_ven=False)
+
+    def _tra_ve_da_co(self, doi):
+        return _FakeDownloadResult(doi, "EXISTING_FILE", comment="", path=tep_do)
+
+    monkeypatch.setattr(_FakeTDMClient, "download_pdf", _tra_ve_da_co)
+    from app.sources.wiley_tdm import WileyTdmClient
+    kq = WileyTdmClient().download_pdf("10.1002/cut")
+    assert kq.trang_thai == "EXISTING_FILE", "trạng thái của thư viện được giữ nguyên"
+    assert kq.thanh_cong is False
+    assert kq.kich_thuoc_byte is None, "kích thước tệp dở không phải kích thước PDF đã tải"
+    assert "ghi dở" in kq.ghi_chu and "%%EOF" in kq.ghi_chu and tep_do.name in kq.ghi_chu
+    assert "Xoá tệp đó rồi tải lại" in kq.ghi_chu
+    assert "tải thất bại" in caplog.text
+    assert _CANH_BAO_KHONG_DO_DUOC not in caplog.text, "đây là «tệp dở», không phải «không đo được»"
+    assert tep_do.stat().st_size == 4009, "connector không tự xoá tệp"
+
+
+def test_download_pdfs_va_callback_cung_bat_tep_ghi_do(monkeypatch, _wiley_tdm_gia):
+    """Tải hàng loạt và callback đi qua cùng một lần xử lý cho mỗi bài: tệp dở của MỘT bài không
+    kéo bài khác xuống, cũng không được bài khác che. Ba bài, ba hình:
+      * «tot»  — tải được, PDF trọn vẹn;
+      * «cut»  — tệp dở CÓ SẴN từ trước ⇒ `EXISTING_FILE`, không thành công, không bị xoá;
+      * «gay»  — lượt này gãy giữa chừng ⇒ `STORAGE_ERROR`, tệp vừa ghi dở bị xoá ngay."""
+    _bat_wiley(monkeypatch)
+    from app.sources.wiley_tdm import WileyTdmClient
+    client = WileyTdmClient()
+    thu_muc = Path(THU_MUC_TAI_MAC_DINH)
+    tep_co_san = _ghi_tep_pdf_gia(thu_muc / "10.1002-cut.pdf", 4009, tron_ven=False)
+    tep_gay = thu_muc / "10.1002-gay.pdf"
+
+    def _tai(self, doi):
+        """Như thư viện thật: tệp đã có trên đĩa thì trả `EXISTING_FILE`, không tải lại."""
+        tep = self._download_dir / (doi.replace("/", "-") + ".pdf")
+        if tep.exists():
+            return _FakeDownloadResult(doi, "EXISTING_FILE", comment="", path=tep)
+        if doi == "10.1002/gay":
+            _ghi_tep_pdf_gia(tep, 4009, tron_ven=False)
+            return _FakeDownloadResult(doi, "STORAGE_ERROR", comment="Connection broken", path=tep)
+        return self._tai_mot_bai(doi)
+
+    def _tai_loat(self, dois, on_result=None):
+        ket_qua_tho = []
+        for doi in dois:
+            mot = _tai(self, doi)
+            ket_qua_tho.append(mot)
+            if on_result:
+                on_result(mot)
+        return ket_qua_tho
+
+    monkeypatch.setattr(_FakeTDMClient, "download_pdfs", _tai_loat)
+    nhan_duoc = []
+    da_xoa_luc_callback = []
+
+    def _khi_co_ket_qua(kq):
+        nhan_duoc.append(kq)
+        da_xoa_luc_callback.append(not tep_gay.exists())
+
+    ket_qua = client.download_pdfs(["10.1002/tot", "10.1002/cut", "10.1002/gay"], on_result=_khi_co_ket_qua)
+    for loat in (ket_qua, nhan_duoc):
+        assert [(k.doi, k.trang_thai, k.thanh_cong, k.kich_thuoc_byte) for k in loat] == [
+            ("10.1002/tot", "SUCCESS", True, 5000), ("10.1002/cut", "EXISTING_FILE", False, None),
+            ("10.1002/gay", "STORAGE_ERROR", False, None)]
+        assert "Xoá tệp đó rồi tải lại" in loat[1].ghi_chu
+        assert "Đã xoá tệp ghi dở" in loat[2].ghi_chu
+    assert ket_qua == nhan_duoc, "callback và danh sách trả về phải mang cùng một kết quả"
+    assert da_xoa_luc_callback[2] is True, "tệp vừa ghi dở phải bị xoá ngay sau lượt tải bài đó, không đợi hết loạt"
+    assert tep_co_san.stat().st_size == 4009, "tệp dở có sẵn từ trước không được tự xoá"
+    assert not tep_gay.exists()
+    # Không truyền callback thì tệp vừa ghi dở vẫn bị xoá.
+    assert client.download_pdfs(["10.1002/gay"])[0].ghi_chu.count("Đã xoá tệp ghi dở") == 1
+    assert not tep_gay.exists()
 
 
 def test_cmd_test_live_wiley_tdm_in_byte_that_tren_dia(monkeypatch, _wiley_tdm_gia):
