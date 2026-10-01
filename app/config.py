@@ -211,6 +211,18 @@ class Settings:
     # KHÔNG cần duyệt: https://core.ac.uk/services/api — khác Scopus, key không bắt
     # buộc (vẫn gọi được ở nhịp thấp theo T&C của CORE nếu thiếu key).
     core_api_key: str = field(default_factory=lambda: os.getenv("CORE_API_KEY", ""))
+    # NHỊP RIÊNG cho CORE — thêm 30/09/2026 (căn cứ đầy đủ: docstring app/sources/core_api.py, mục «GIỚI HẠN NHỊP»).
+    # Giây giãn cách tối thiểu giữa hai request tới api.core.ac.uk. 6,5 = 60 giây / 10 lượt mỗi phút (trần đo được ở
+    # header `x-ratelimit-limit: 10` với khoá của máy này 30/09/2026; tài liệu CORE ghi «maximum 10 per minute» cho cả
+    # hạng không đăng ký lẫn học thuật) + 0,5 giây lề cho độ rung mạng. Khoá hạng «Registered Personal» (25/phút) có
+    # thể hạ xuống 2,5. Không bao giờ thấp hơn HTTP_MIN_INTERVAL (CoreClient lấy giá trị lớn hơn trong hai số).
+    core_min_interval: float = field(
+        default_factory=lambda: _get_float("CORE_MIN_INTERVAL_SECONDS", 6.5))
+    # Trần MỘT lần chờ tới mốc CORE nêu ở `X-RateLimit-Retry-After` (giây). 65 = một cửa sổ «per minute» + 5 giây
+    # lề; máy chủ hẹn xa hơn trần thì truy vấn hỏng ngay, không ngủ. <= 0 = KHÔNG đọc header giới hạn nhịp (về hành
+    # vi cũ: 429 chỉ chờ backoff 1,5 giây rồi thử lại một lần).
+    core_rate_limit_max_wait: float = field(
+        default_factory=lambda: _get_float("CORE_RATE_LIMIT_MAX_WAIT_SECONDS", 65.0))
     # Epistemonikos API — thêm 16/09/2026. KHÁC CORE: KHÔNG tự đăng ký được, phải
     # gửi email xin cấp token tới dev@epistemonikos.org (xem app/sources/epistemonikos.py).
     epistemonikos_api_token: str = field(
