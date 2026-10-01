@@ -26,6 +26,7 @@ This file contains only Claude Code-specific instructions.
 - **Tests**: `python -m compileall -q app scripts tests`; chạy thêm `pytest` và `ruff check` khi venv đã có dev dependencies.
 - **Test KHÔNG ghi vào `data/` thật (30/09/2026)**: `tests/conftest.py` trỏ `settings.data_dir` (raw/processed/reports/exports…) sang thư mục TẠM cho cả phiên và gắn chốt canh `tests/canh_ghi_du_lieu_that.py` — test nào mở tệp để ghi/đổi tên/xoá dưới `data/` của cây thì ĐỎ ngay ở test đó (miễn trừ đã khai: `archive/` và `processed/chronic_care_phase_3a_audit.jsonl`). Test connector không cần tự cô lập `data_dir` nữa; đừng trả `settings.data_dir` về thư mục thật; mã nguồn thêm hằng module chốt đường dẫn đầu ra lúc import ⇒ thêm vào `_HANG_CHOT_LUC_IMPORT`. Đo trước khi vá (clone sạch, 6.446 test): mỗi lượt pytest để lại 35 payload GIẢ trong `data/raw/{core,scopus,epistemonikos}/` + 5 `processed/pipeline_*.json` + 4 tệp `exports/` đè bản cùng ngày + một lô `tiktok/…-tuso` ⇒ payload ở ba thư mục `raw` đó ghi TRƯỚC ngày này LẪN payload của test — lọc (so nội dung với payload test, tên truy vấn kiểu `sglt2_ckd`/`query_hiếm`) trước khi dùng làm bằng chứng đo.
 - **Agent source of truth**: sửa `.claude/agents/*.md` ở thư mục gốc OneDrive; không sửa tay `.Codex/agents/*.toml` hoặc `.codex/agents/*.toml`. Sau khi sửa/thêm agent, chạy sync ở thư mục gốc.
+- **Mirror `.codex/agents/` CỦA REPO NÀY được TRACK** (Codex nạp agent dự án từ đây): mỗi lần `.claude/agents/*.md` ở repo này đổi ⇒ `python3 tools/sinh_mirror_codex.py --ghi` (nhãn cố định `.codex/agents`, trùng byte bộ sinh gốc) rồi `git add .codex/agents`. Lệch thì `tests/test_mirror_codex_agents_20261001.py` (CI) và BH143 của repo gốc ĐỎ.
 - **Plugin ownership**: owner/worker canonical nằm ở `../.claude/agents/_PLUGIN-ROUTING-CONTRACT.md`
   và `../tools/orchestrator/plugin_ownership_registry.json`. Repo này cung cấp runtime nghiên cứu
   sản xuất; ARS/Anthropic/BMAD/Bio không được thay `run_pipeline.py`, tự ghi approval ledger hoặc
@@ -598,6 +599,7 @@ python ../tools/sync_agents_to_codex.py --check
 ```bash
 python -m compileall -q app scripts tests
 python ../tools/sync_agents_to_codex.py --check
+python tools/sinh_mirror_codex.py
 python ../tools/check_claude_codex_sync_health.py
 python ../tools/verify_claude_code_repo_alignment.py
 python scripts/regenerate_agent_manifest.py --check
