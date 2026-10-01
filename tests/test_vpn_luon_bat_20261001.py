@@ -156,9 +156,12 @@ def test_khai_bao_ba_duong_thay():
 
 
 def test_rss_feed_dieu_phoi_lane_who_va_gan_guideline_dung_cho():
+    """Tiêu đề KHÔNG có chữ «guideline» (bộ phân loại theo tiêu đề không tự gắn) ⇒ nhãn guideline phải đến từ chế độ
+    lane `who_hub` — ấn phẩm thật mang `Tag` «Guideline» (WHO 2025)."""
     c = RSSFeedClient(_feed("who_publications"))
     c.use_mock = False
-    c.http = _HttpGia({WHO_HUB_API: {"value": AN_PHAM[:1]}})
+    c.http = _HttpGia({WHO_HUB_API: {"value": [
+        _an_pham("Medical eligibility criteria for contraceptive use, 6th ed.", "Guideline", "2026-09-23")]}})
     recs = c.search("", max_results=10, since_date="2026-09-01")
     assert c.endpoint == WHO_HUB_API and len(recs) == 1
     assert recs[0].study_type == "guideline" and recs[0].raw["_via"] == "who_hub"
