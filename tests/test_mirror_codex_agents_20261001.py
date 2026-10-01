@@ -3,7 +3,7 @@
 VÌ SAO. Repo track mirror từ commit 20660c0 (08/09) nhưng không có bộ sinh lẫn chốt canh. Đo 01/10 trên nhánh mặc
 định: kỳ vọng 84 tệp · khớp 3 · lệch nội dung 79 (cả 50/50 agent) · thiếu 2 — mọi phiên Codex trong repo này chạy
 đội agent của GIỮA THÁNG 7 (README còn QUADAS-2, «Ba cổng nghiên cứu»). Đây là lớp 1 của chốt hai lớp: chạy ở CI
-(ubuntu + windows) nên bắt lệch TRƯỚC khi merge; lớp 2 là BH143 ở repo gốc (mỗi lần mở phiên trên máy thật, bắt
+(ubuntu + windows) nên bắt lệch TRƯỚC khi merge; lớp 2 là BH144 ở repo gốc (mỗi lần mở phiên trên máy thật, bắt
 phần lọt sau merge vì CI không phải check bắt buộc). Bộ sinh `tools/sinh_mirror_codex.py` tự chứa nên CI đơn-repo
 chạy trọn; phép đối chiếu với bộ sinh gốc chỉ chạy khi tìm thấy repo gốc EBM.
 """
@@ -57,7 +57,7 @@ def test_ban_dung_cua_repo_y_khoa_trung_byte_bo_sinh_goc():
     bo_sinh_goc = goc / "tools" / "sync_agents_to_codex.py"
     if not (goc_ebm.la_goc_ebm(goc) and bo_sinh_goc.is_file()):
         pytest.skip("không tìm thấy repo gốc EBM (CI đơn-repo / worktree ngoài cây; đặt EBM_REPO_ROOT để bật) — "
-                    "đối chiếu chéo khi đó do BH143 của repo gốc đảm nhận")
+                    "đối chiếu chéo khi đó do BH144 của repo gốc đảm nhận")
     sac = _nap("sync_agents_to_codex_goc_test_20261001", bo_sinh_goc)
     sac.SOURCE_DIR = REPO / ".claude" / "agents"
     for nhan in (".codex/agents", ".Codex/agents"):
