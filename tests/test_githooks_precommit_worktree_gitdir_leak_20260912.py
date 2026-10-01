@@ -104,6 +104,14 @@ def _moi_truong_sach(tmp_path) -> dict:
         "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
         "HOME": str(tmp_path),
     }
+    # 01/10/2026 — biến HỆ THỐNG Windows (không liên quan git, không làm rò GIT_*). Wrapper gọi `python3` hai
+    # lần; trên máy Windows dùng bí danh Microsoft Store (WindowsApps\python3), môi trường chỉ có PATH+HOME
+    # khiến MỖI lần gọi mất ~13 s (đo: 13,5 s so với 0,46 s khi có SYSTEMROOT/LOCALAPPDATA/USERPROFILE/TEMP)
+    # ⇒ một lệnh `sh wrapper` ~27 s, sát hạn 30 s của `_run` ⇒ test đỏ ngẫu nhiên ở máy đó (CI Windows dùng
+    # Python cài thật nên không thấy). Không có trên Mac/Linux thì bỏ qua; có thì chuyển tiếp nguyên giá trị.
+    for khoa in ("SYSTEMROOT", "LOCALAPPDATA", "APPDATA", "USERPROFILE", "TEMP", "TMP", "COMSPEC", "PATHEXT"):
+        if khoa in os.environ:
+            env.setdefault(khoa, os.environ[khoa])
     env.update(_GIT_ENV)
     return env
 
