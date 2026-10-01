@@ -81,6 +81,16 @@ _SAFETY_FEEDS_PROVIDER_BLOCKED = {"feed_fda_medwatch"}
 # một ghi chú có tên trong `mirror_notices`. Chỉ các `_via` trong tập này (chế độ Crossref-ISSN là nguồn CHÍNH,
 # không phải dự phòng, nên không có ở đây).
 _VIA_DU_PHONG = {"openfda_enforcement"}
+# Lane bị chặn TRÊN ĐƯỜNG MẠNG khi VPN bật (đo 01/10/2026, bác sĩ chốt «VPN luôn bật») ⇒ ĐƯỜNG THAY đã khai, cùng nhà
+# phát hành hoặc cùng vai trò, chạy được qua VPN: iris.who.int hết giờ mở kết nối ⇒ API www.who.int; ECDC bị
+# CloudFront chặn ⇒ tin dịch chính thức của WHO + tạp chí Eurosurveillance của ECDC (qua Crossref). MỌI lỗi của lane
+# gốc mang nhãn đường mạng VÀ ≥ 1 đường thay khoẻ ⇒ một ghi chú có tên trong `mirror_notices` — cảm biến hòm việc thấy
+# ghi chú thì xếp nguồn đó ưu tiên thấp nhất nhưng VẪN liệt kê. Không đổi `status` (feed lẻ vốn không làm PARTIAL).
+# Lỗi KHÁC (5xx, đọc hỏng, 404…) ⇒ KHÔNG ghi chú: đó là lỗi thật cần xem.
+_DUONG_THAY_KHI_CHAN_MANG = {
+    "feed_who_iris": ("feed_who_publications",),
+    "feed_ecdc_threats": ("feed_who_don", "feed_eurosurveillance"),
+}
 _HTTP_BI_CHAN_RE = re.compile(r"\b40[13] Client Error\b|\bHTTP 40[13]\b")
 
 
@@ -264,6 +274,15 @@ def summarize_source_health(
         f"{name.upper()}_SERVED_BY_OFFICIAL_FALLBACK"
         for name, item in sorted(source_rows.items()) if item.get("du_phong")
     ]
+    for goc, cac_duong_thay in sorted(_DUONG_THAY_KHI_CHAN_MANG.items()):
+        row_goc = source_rows.get(goc) or {}
+        so_loi = int(row_goc.get("error") or 0)
+        if row_goc.get("health") != "unavailable" or not so_loi or row_goc.get("error_duong_mang") != so_loi:
+            continue
+        khoe = [t for t in cac_duong_thay if source_rows.get(t, {}).get("health") in {"ok", "degraded"}]
+        if khoe:
+            mirror_notices.append(f"{goc.upper()}_BLOCKED_ON_NETWORK_PATH_SERVED_BY_"
+                                  + "_AND_".join(t.upper() for t in khoe))
     degraded_required: list[str] = []
     for name in sorted(set(discovery_expected) | safety_expected):
         health = source_rows.get(name, {}).get("health")

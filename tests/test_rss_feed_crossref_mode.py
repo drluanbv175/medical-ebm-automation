@@ -69,7 +69,9 @@ def test_every_crossref_mode_feed_has_a_valid_issn_and_ids_are_unique():
     ids = [f.id for f in tat_ca]
     assert len(ids) == len(set(ids)), "id feed phải duy nhất (id tạo tên nguồn feed_<id> trong SourceLog)"
     for f in tat_ca:
-        assert f.mode in {"rss", "crossref", "crossref_title", "europepmc", "who_iris", "kcb_vn"}, f.id
+        # who_hub/who_don (01/10/2026): API www.who.int — đường thay chạy được khi VPN bật (xem guideline_lanes.py).
+        assert f.mode in {"rss", "crossref", "crossref_title", "europepmc", "who_iris", "who_hub", "who_don",
+                          "kcb_vn"}, f.id
         if f.mode == "crossref":
             assert ISSN_RE.match(f.issn or ""), f"{f.id}: ISSN không hợp lệ"
             assert f.kind == "guideline"

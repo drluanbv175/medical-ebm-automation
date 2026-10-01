@@ -25,6 +25,14 @@ from collections import Counter
 from typing import Any, Dict, List, Optional
 
 from app.core.policy_engine import contains_pii_text
+from app.sources.ec_union_register import (
+    CANH_BAO_EC,
+    NGUON_EC,
+    TRANG_THAI_EC_KHONG_CON,
+    EcLoi,
+    EcUnionRegisterClient,
+    url_trang_thuoc,
+)
 from app.utils.http import HttpClient
 
 EMA_URL = "https://www.ema.europa.eu/en/documents/report/medicines-output-medicines_json-report_en.json"
@@ -70,8 +78,11 @@ class EmaMedicinesClient:
 
     name = "ema_medicines"
 
-    def __init__(self, http: Optional[HttpClient] = None) -> None:
+    def __init__(self, http: Optional[HttpClient] = None, ec: Optional[EcUnionRegisterClient] = None) -> None:
         self.http = http or HttpClient(cache_ttl=_TTL_CACHE)
+        # Đường DỰ PHÒNG khi danh mục EMA không tới được (01/10/2026, bác sĩ: «VPN luôn bật» — www.ema.europa.eu bị
+        # CloudFront chặn qua VPN): Sổ đăng ký Liên minh của Uỷ ban châu Âu, dùng chung HttpClient (cache 7 ngày).
+        self._ec = ec
 
     def _nap(self) -> Dict[str, Any]:
         try:
@@ -97,9 +108,7 @@ class EmaMedicinesClient:
         try:
             d = self._nap()
         except EmaLoi as exc:
-            kq.update(trang_thai="loi", ly_do=str(exc))
-            kq["canh_bao"].append("KHÔNG BIẾT (không lấy được danh mục EMA) — tuyệt đối không đọc thành «không thấy».")
-            return kq
+            return self._tra_du_phong_ec(kq, tu_khoa, exc, ca_thu_y=ca_thu_y, toi_da=toi_da)
 
         mau = re.compile(r"(?<!\w)" + re.escape(tu_khoa.casefold()) + r"(?!\w)")
         khop: List[Dict[str, Any]] = []
@@ -120,6 +129,56 @@ class EmaMedicinesClient:
         khop.sort(key=lambda b: _UU_TIEN_TRANG_THAI.get(b["medicine_status"], 2))
         kq["du_lieu_luc"] = (d.get("meta") or {}).get("timestamp", "")
         kq["tong_bai_ghi_ema"] = len(d["data"])
+        kq["so_khop"] = len(khop)
+        kq["theo_trang_thai"] = dict(Counter(b["medicine_status"] for b in khop))
+        kq["ket_qua"] = khop[:max(1, toi_da)]
+        kq["bi_cat_bot"] = max(0, len(khop) - len(kq["ket_qua"]))
+        kq["trang_thai"] = "co_ket_qua" if khop else "khong_thay"
+        return kq
+
+    def _tra_du_phong_ec(self, kq: Dict[str, Any], tu_khoa: str, loi_ema: EmaLoi, *, ca_thu_y: bool,
+                         toi_da: int) -> Dict[str, Any]:
+        """EMA không lấy được ⇒ tra Sổ đăng ký Liên minh (EC). Sổ EC cũng hỏng ⇒ «loi» (KHÔNG BIẾT) như trước.
+
+        Bản ghi giữ đúng các khoá `TRUONG_GIU` (khoá sổ EC không có thì để rỗng) để công cụ đọc kết quả không phải đổi;
+        thuốc đang lưu hành mang trạng thái «Authorised» (cùng ưu tiên sắp xếp như EMA), thuốc không còn lưu hành mang
+        `TRANG_THAI_EC_KHONG_CON` — sổ EC không cho biết là rút, hết hạn hay đình chỉ."""
+        ec = self._ec or EcUnionRegisterClient(http=self.http)
+        try:
+            so = ec.nap()
+        except EcLoi as loi_ec:
+            kq.update(trang_thai="loi", ly_do=f"{loi_ema}; dự phòng EC Union Register cũng lỗi: {loi_ec}")
+            kq["canh_bao"].append("KHÔNG BIẾT (không lấy được danh mục EMA lẫn sổ EC) — tuyệt đối không đọc thành "
+                                  "«không thấy».")
+            return kq
+        mau = re.compile(r"(?<!\w)" + re.escape(tu_khoa.casefold()) + r"(?!\w)")
+        khop: List[Dict[str, Any]] = []
+        for nhom, trang_thai in (("dang_luu_hanh", "Authorised"), ("khong_con", TRANG_THAI_EC_KHONG_CON)):
+            for x in so.get(nhom) or []:
+                hoat_chat, ten = str(x.get("inn") or ""), str(x.get("name") or "")
+                if mau.search(hoat_chat.casefold()):
+                    loai = "hoat_chat"
+                elif mau.search(ten.casefold()):
+                    loai = "ten_thuoc"
+                else:
+                    continue
+                eu = x.get("eu_num") if isinstance(x.get("eu_num"), dict) else {}
+                ban = {k: "" for k in TRUONG_GIU}
+                ban.update(name_of_medicine=ten, active_substance=hoat_chat,
+                           international_non_proprietary_name_common_name=hoat_chat, category="Human",
+                           medicine_status=trang_thai, ema_product_number=str(eu.get("display") or ""),
+                           medicine_url=url_trang_thuoc(eu))
+                ban["khop_theo"] = loai
+                ban["nguon_ban_ghi"] = "EC Union Register"
+                khop.append(ban)
+        khop.sort(key=lambda b: _UU_TIEN_TRANG_THAI.get(b["medicine_status"], 2))
+        kq["nguon"] = f"{NGUON} — DỰ PHÒNG: {NGUON_EC}"
+        kq["du_phong"] = {"nguon": NGUON_EC, "ly_do_ema": str(loi_ema)}
+        kq["canh_bao"].extend(CANH_BAO_EC)
+        if ca_thu_y:
+            kq["canh_bao"].append("Dự phòng sổ EC chỉ có thuốc NGƯỜI — phần thú y KHÔNG được tra (không đọc thành "
+                                  "«không thấy»).")
+        kq["tong_bai_ghi_du_phong"] = sum(len(so.get(n) or []) for n in ("dang_luu_hanh", "khong_con"))
         kq["so_khop"] = len(khop)
         kq["theo_trang_thai"] = dict(Counter(b["medicine_status"] for b in khop))
         kq["ket_qua"] = khop[:max(1, toi_da)]
