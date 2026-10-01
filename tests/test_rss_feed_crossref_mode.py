@@ -125,15 +125,17 @@ def test_query_params_are_built_from_the_issn_and_window(monkeypatch):
     (goi,) = ghi["calls"]
     p = goi["params"]
     assert goi["url"] == "https://api.crossref.org/works"
-    assert p["filter"] == "issn:1234-5678,from-pub-date:2026-08-01,type:journal-article"
-    assert (p["sort"], p["order"], p["rows"]) == ("published", "desc", 7)
+    # Từ 30/09/2026 mốc «bài mới» là ngày Crossref nhận DOI (`created`), kèm sàn ngày công bố chống hồi tố; sắp theo
+    # `created` — hành vi và lý do: tests/test_lane_moc_xuat_hien_20260930.py.
+    assert p["filter"] == "issn:1234-5678,from-created-date:2026-08-01,from-pub-date:2025-01-01,type:journal-article"
+    assert (p["sort"], p["order"], p["rows"]) == ("created", "desc", 7)
     assert p["mailto"] == "bs@example.org"
 
 
 def test_without_since_date_the_window_is_the_last_45_days(monkeypatch):
     client, ghi = _client(monkeypatch, _feed(), items=[])
     client.search("", max_results=5)
-    dau = ghi["calls"][0]["params"]["filter"].split("from-pub-date:")[1].split(",")[0]
+    dau = ghi["calls"][0]["params"]["filter"].split("from-created-date:")[1].split(",")[0]
     assert 44 <= (date.today() - date.fromisoformat(dau)).days <= 46
 
 
