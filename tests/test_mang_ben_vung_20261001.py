@@ -223,6 +223,8 @@ def _bo_dong(gan_nhan: bool) -> List[dict]:
     def nhan(dau: str, loi: str) -> str:
         return f"{dau} {loi}" if gan_nhan else loi
     dong = [_dong(n, "ok", 5) for n in ("pubmed", "europepmc", "crossref")]
+    # PubMed vừa có lần chạy được vừa có lần NCBI chặn: nhãn không được biến «degraded» thành «unavailable».
+    dong += [_dong("pubmed", "error", 0, nhan(DAU_NCBI_CHAN, "RuntimeError: NCBI đã CHẶN mạng này"))]
     dong += [_dong(f"feed_g{i}", "ok", 3) for i in range(4)]
     dong += [_dong("feed_ecdc_threats", "error", 0, nhan(DAU_CLOUDFRONT_CHAN, "HTTPError: 403 Client Error: x")),
              _dong("feed_who_iris", "error", 0,
@@ -242,6 +244,7 @@ def test_loi_duong_mang_liet_ke_dung_nguon_va_kieu():
     assert h["loi_duong_mang"] == {
         "feed_ecdc_threats": {"kieu": {"cloudfront-chan": 1}, "loi_duong_mang": 1, "loi": 1, "health": "unavailable"},
         "feed_who_iris": {"kieu": {"ket-noi-het-gio": 1}, "loi_duong_mang": 1, "loi": 1, "health": "unavailable"},
+        "pubmed": {"kieu": {"ncbi-chan": 1}, "loi_duong_mang": 1, "loi": 1, "health": "degraded"},
     }
     assert h["sources"]["feed_bjgp"]["error_duong_mang"] == 0 and h["sources"]["feed_bjgp"]["kieu_duong_mang"] == {}
 
