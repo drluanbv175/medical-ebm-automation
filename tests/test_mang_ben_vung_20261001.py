@@ -563,5 +563,5 @@ def test_cong_cu_so_sanh_hai_duong():
 
 def test_cong_cu_so_sanh_tep_hong_tra_ma_2(tmp_path, capsys):
     hong = tmp_path / "hong.json"
-    hong.write_text("{khong phai json", encoding="utf-8")
+    hong.write_text("{khong phai json", encoding="utf-8", newline="\n")
     assert _cong_cu().main(["--so-sanh", str(hong), str(hong)]) == 2

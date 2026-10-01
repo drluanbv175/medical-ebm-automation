@@ -219,7 +219,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     else:
         in_bang(kq)
     if a.ghi:
-        Path(a.ghi).write_text(json.dumps(kq, ensure_ascii=False, indent=2), encoding="utf-8")
+        Path(a.ghi).write_text(json.dumps(kq, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
         print(f"\nđã ghi {a.ghi}")
     return 0
 
