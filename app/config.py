@@ -233,7 +233,9 @@ class Settings:
     wiley_tdm_api_token: str = field(default_factory=lambda: os.getenv("WILEY_TDM_API_TOKEN", ""))
     # Thư mục lưu PDF tải về — để trống dùng mặc định "downloads_wiley_tdm" (thư mục làm
     # việc hiện tại). Đây là PDF nhị phân, cố ý KHÔNG đặt trong data/raw/ như bản ghi JSON
-    # của các nguồn khác.
+    # của các nguồn khác. PDF là nội dung CÓ BẢN QUYỀN mà repo này công khai: `.gitignore`
+    # chỉ bắt đúng tên mặc định (ở mọi cấp), KHÔNG đi theo giá trị đặt ở đây — nếu đặt thì
+    # trỏ NGOÀI repo hoặc vào nơi `.gitignore` đã bắt (vd exports/<đề tài>/...).
     wiley_tdm_download_dir: str = field(
         default_factory=lambda: os.getenv("WILEY_TDM_DOWNLOAD_DIR", ""))
     # Giây nghỉ giữa các lượt tải hàng loạt. Thư viện `wiley-tdm` mặc định 5.0; README
