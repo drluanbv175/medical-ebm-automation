@@ -156,6 +156,16 @@ This file contains only Claude Code-specific instructions.
   đo từng nguồn trên đường hiện tại bằng CHÍNH bộ nhận diện engine, `--so-sanh a.json b.json` ra bốn nhóm (chạy cả hai / chỉ A / chỉ
   B / hỏng cả hai). Bật/tắt VPN hay tách tuyến là quyết định của BÁC SĨ — công cụ chỉ cho số đo. `tests/test_mang_ben_vung_20261001.py`
   (61 ca, 36/36 đột biến đỏ đúng chỗ).
+  ✅ **VPN LUÔN BẬT — bác sĩ chốt 01/10/2026 sau đo đối chứng** (VPN tắt 19:07 vs bật 18:01: CHỈ qua VPN = NCBI; CHỈ đi thẳng =
+  EMA, ECDC, WHO IRIS). Mỗi nguồn mất khi bật VPN có ĐƯỜNG THAY chạy được qua VPN (đo thật cùng ngày): WHO IRIS ⇒ lane
+  `who_publications` (mode `who_hub`, API ấn phẩm www.who.int — KHÔNG xin trường `Summary`: có nó máy chủ quá 30 giây);
+  ECDC ⇒ lane `who_don` (tin dịch chính thức WHO) + `eurosurveillance` (Crossref ISSN 1560-7917); EMA ⇒ Sổ đăng ký Liên
+  minh của Uỷ ban châu Âu (`app/sources/ec_union_register.py`, dự phòng trong `EmaMedicinesClient.tra`: chỉ ĐANG/KHÔNG CÒN
+  lưu hành, kèm `CANH_BAO_EC`; EMA lẫn sổ EC hỏng ⇒ vẫn «KHÔNG BIẾT»). Lane Europe PMC `epmc_who` KHÔNG phải đường thay
+  (0 bản ghi mọi lượt). `ingestion._DUONG_THAY_KHI_CHAN_MANG`: lane gốc bị chặn đường mạng (mọi lỗi mang nhãn) + ≥ 1 đường
+  thay khoẻ ⇒ `mirror_notices` `<NGUỒN>_BLOCKED_ON_NETWORK_PATH_SERVED_BY_<ĐƯỜNG THAY>` (cảm biến hòm việc xếp ưu tiên 3),
+  không đổi trạng thái; lỗi thật (5xx, đọc hỏng) không có ghi chú. Thêm đường thay mới ⇒ khai vào bảng đó + đo bằng
+  `tools/do_mang_nguon.py` (đã có các đường thay). `tests/test_vpn_luon_bat_20261001.py`.
   · **CORE API (core.ac.uk) — thêm 16/09/2026**, theo yêu cầu "nâng cấp trạng thái tự động" và
   khảo sát toàn hệ xác định đây là nguồn OA bổ sung cho Unpaywall (>452 triệu bản ghi, >16.000 kho
   lưu trữ, gồm cả luận văn/báo cáo xám mà Unpaywall không phủ). `app/sources/core_api.py`. TẮT mặc

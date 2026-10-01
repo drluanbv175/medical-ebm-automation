@@ -86,7 +86,7 @@ def danh_sach_diem(cfg: Any, co_scopus: bool = False) -> List[Diem]:
         ("ECDC — feed mối đe doạ", NHOM_GUIDELINE, "https://www.ecdc.europa.eu/en/taxonomy/term/2942/feed", {}, rss,
          (200,)),
         ("WHO IRIS — OAI-PMH", NHOM_GUIDELINE, "https://iris.who.int/oai/request", {"verb": "Identify"}, {}, (200,)),
-        # Đường THAY khi VPN bật (01/10/2026): ấn phẩm WHO + tin dịch WHO qua www.who.int, Eurosurveillance qua Crossref.
+        # Đường THAY khi VPN bật (01/10/2026): ấn phẩm + tin dịch WHO qua www.who.int, Eurosurveillance qua Crossref.
         ("WHO — API ấn phẩm (thay WHO IRIS)", NHOM_GUIDELINE, "https://www.who.int/api/hubs/publications",
          {"sf_site": "15210d59-ad60-47ff-a542-7ed76645f0c7", "sf_provider": "OpenAccessProvider", "sf_culture": "en",
           "$select": "Title", "$top": "1"}, rss, (200,)),
