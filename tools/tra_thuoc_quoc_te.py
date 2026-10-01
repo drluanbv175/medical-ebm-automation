@@ -15,6 +15,9 @@ Dùng:
 Mã thoát: 0 = có kết quả · 1 = không thấy (hợp lệ, KHÔNG có nghĩa «không tồn tại» — đọc cảnh báo) ·
           2 = LỖI/KHÔNG BIẾT (mạng, dữ liệu, đầu vào bị từ chối) — không được đọc thành «không thấy».
 Mọi kết quả kèm nguồn; chỉ là dữ liệu tra cứu, cần bác sĩ kiểm chứng.
+
+Dòng miễn trừ của NLM (điều khoản RxNav, đọc 30/09/2026): `chuan-hoa` LUÔN kèm dòng đó NGUYÊN VĂN tiếng Anh — trường
+`mien_tru_nlm` trong JSON, một dòng riêng dưới dòng «Nguồn» ở bản đọc. `ema` không dùng dữ liệu NLM nên KHÔNG kèm.
 """
 from __future__ import annotations
 
@@ -27,7 +30,7 @@ from typing import Any, Dict, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.sources.ema_medicines import EmaMedicinesClient  # noqa: E402
-from app.sources.rxnorm import RxNormClient  # noqa: E402
+from app.sources.rxnorm import MIEN_TRU_NLM, RxNormClient  # noqa: E402
 from app.utils.console import configure_unicode_console  # noqa: E402
 
 DISCLAIMER = "Cần bác sĩ kiểm chứng."
@@ -110,7 +113,12 @@ def main(argv: Optional[list] = None) -> int:
 
     if args.lenh == "chuan-hoa":
         kq = RxNormClient().chuan_hoa(args.ten)
+        # Điều khoản RxNav đề nghị ứng dụng dùng dữ liệu NLM kèm dòng miễn trừ NGUYÊN VĂN; hệ này coi là bắt buộc.
+        # Client đã gắn sẵn; GÁN LẠI ở đây để lệnh không bao giờ in thiếu (hay in một bản đã bị sửa/dịch) dù client bị
+        # thay hoặc đổi về sau.
+        kq["mien_tru_nlm"] = MIEN_TRU_NLM
     else:
+        # EMA không phải dữ liệu NLM — cố ý KHÔNG gắn dòng miễn trừ của NLM vào đây.
         kq = EmaMedicinesClient().tra(args.tu_khoa, ca_thu_y=args.ca_thu_y, toi_da=args.toi_da)
     if args.json:
         print(json.dumps(kq, ensure_ascii=False, indent=2))
@@ -119,6 +127,9 @@ def main(argv: Optional[list] = None) -> int:
         for c in kq.get("canh_bao", []):
             print("  ⚠", c)
         print(f"  Nguồn: {kq.get('nguon')}. {DISCLAIMER}")
+        if kq.get("mien_tru_nlm"):
+            print("  Miễn trừ của nguồn dữ liệu (nguyên văn tiếng Anh, không dịch):")
+            print(f"  {kq['mien_tru_nlm']}")
     return ma_thoat(kq)
 
 

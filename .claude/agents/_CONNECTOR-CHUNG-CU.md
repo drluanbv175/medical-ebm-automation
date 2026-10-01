@@ -169,6 +169,7 @@ ClinicalTrials.gov (clinicaltrials.gov · REST API v2 free — cũng là MCP `c-
 2. **`loi` (mã thoát 2) = KHÔNG BIẾT**, không bao giờ được đọc thành «không thấy»; danh sách EMA rỗng/bố cục lạ cũng là `loi`.
 3. **EMA chỉ có thuốc cấp phép TẬP TRUNG** (không thấy ≠ chưa được cấp phép ở EU) và trạng thái `Withdrawn/Expired/Lapsed` **KHÔNG kèm lý do** — thường là quyết định thương mại, đọc EPAR qua `medicine_url` trước khi kết luận an toàn. Đây là quản lý châu Âu, không thay Cục Quản lý Dược Việt Nam.
 4. Công cụ **không kiểm tương tác/liều/chống chỉ định**; đầu vào chỉ là TÊN thuốc ngắn (bị từ chối nếu quá 100 ký tự hoặc có dấu hiệu PII). Kết quả chỉ để đối chiếu — không mở Cổng A/B/G, không đổi `decision`/`gradeLevel`; mọi cảnh báo kê đơn vẫn cần nhãn thuốc/guideline có nguồn chính thống.
+5. **Dòng miễn trừ của NLM (điều khoản RxNav, đọc 30/09/2026):** trả lời cho bác sĩ có dùng kết quả RxNorm (`chuan-hoa`) thì in ĐÚNG MỘT lần, NGUYÊN VĂN tiếng Anh — không dịch, không diễn giải — dòng ở trường `mien_tru_nlm` của đầu ra: «This product uses publicly available data from the U.S. National Library of Medicine (NLM), National Institutes of Health, Department of Health and Human Services; NLM is not responsible for the product and does not endorse or recommend this or any other product.»; KHÔNG chép dòng đó vào artifact có cổng (cùng luật §2ter mục 5), và lệnh `ema` không dùng dữ liệu NLM nên không kèm.
 
 ---
 
