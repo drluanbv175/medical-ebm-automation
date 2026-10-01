@@ -196,6 +196,11 @@ _CROSSREF_THAY_RSS = {
     # ISSN điện tử đối chiếu bằng api.crossref.org/journals/{issn} (đúng tên tạp chí) và có bài
     # thật từ 01/08/2026: Heart 46 · Gut 68 · Frontline Gastroenterology 25 · Thorax 40.
     "heart_bmj": "1468-201X", "gut_bmj": "1468-3288", "fg_bmj": "2041-4145", "thorax_bmj": "1468-3296",
+    # 30/09/2026: RSS của NEJM trả HTTP 403 (trang chặn Cloudflare) ở MỌI lần gọi từ lượt 07/09 — SourceLog: lần cuối
+    # `ok` 01/09, 9/9 lần gọi sau đó (07/09 → 29/09) lỗi; kho không nhận bài NEJM nào qua lane này sau lượt 01/09. ISSN
+    # điện tử đối chiếu bằng api.crossref.org/journals/1533-4406 (nhà xuất bản «New England Journal of Medicine», cùng
+    # bản ghi với ISSN in 0028-4793); 189 bài từ 01/08/2026, DOI tiền tố 10.1056, ngày công bố đủ ngày.
+    "nejm_current": "1533-4406",
 }
 GUIDELINE_FEEDS = [replace(f, issn=_CROSSREF_THAY_RSS[f.id], mode="crossref") if f.id in _CROSSREF_THAY_RSS else f
                    for f in GUIDELINE_FEEDS]

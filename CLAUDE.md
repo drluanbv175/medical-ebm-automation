@@ -287,6 +287,18 @@ This file contains only Claude Code-specific instructions.
   USPSTF, WHO, GOLD, GINA… vẫn KHÔNG có connector trực tiếp (NICE API chỉ cấp cho tổ chức, có phí quốc tế — xem
   `docs/xin-cap-quyen-nguon-chung-cu.md`). 25 test ở `tests/test_rss_feed_crossref_mode.py` (mutation-tested 2 phép). CORE chạy được
   KHÔNG khoá (test-live 20/09/2026: 3 kết quả thật) — chỉ còn cờ `ENABLE_CORE`; Epistemonikos cần token (thư nháp ở docs).
+  ⚠️ **SỬA 30/09/2026 — mốc «bài mới» của lane = ngày bản ghi XUẤT HIỆN trong chỉ mục, không phải ngày công bố.** Con số
+  «31/31» và «33/33» ở trên đo KHÔNG kèm mốc, nên không đi qua đường lượt tuần đi (mốc ≈ 9 ngày). Đo lại 30/09 với mốc thật của
+  lượt #44: lọc `from-pub-date ≥ mốc` loại SẠCH bài của tháng đang chạy ở 9 tạp chí chỉ khai ngày tới THÁNG (Crossref coi «2026-09»
+  là 01/09) và để bài mang ngày số phát hành tương lai chiếm hết chỗ ⇒ kho: `feed_lancet` 0 bài từ khi tạo lane, `feed_ard_bmj`
+  và `feed_acc_aha_jacc` 0 (lọt guideline 2026 AHA/ACC trên JACC), `feed_kidney_int`/`feed_gastroenterology`/`feed_ann_oncol` 8 bài
+  ở lượt đầu rồi 0; Europe PMC «Practice Guideline» thấy 11/25 bài mới xuất hiện trong 8 ngày. NEJM RSS 403 từ 07/09 (9/9 lần gọi).
+  Nay: Crossref `from-created-date:<mốc>` + sàn `from-pub-date:<đầu năm trước>` chống hồi tố, sắp theo `created`; Europe PMC
+  `(FIRST_PDATE OR FIRST_IDATE) từ mốc` + sàn, ngày tương lai hiện bằng ngày vào chỉ mục; NEJM qua Crossref ISSN 1533-4406; lane
+  bị cắt theo số tối đa mỗi lượt thì nói ra trong nhật ký. Canh: `tests/test_lane_moc_xuat_hien_20260930.py` (máy chủ Crossref giả
+  thi hành đúng ngữ nghĩa lọc/sắp; 11 phép đột biến đều đỏ). **Còn lại:** mỗi feed chỉ lấy `max_results_per_query` (10) bài/lượt —
+  đo 30/09: BMJ 84 bài mới ⇒ lấy 10, Lancet 38, Circulation 32, NEJM 24; bài được MEDLINE gán loại xuất bản SAU khi đã vào chỉ
+  mục quá một chu kỳ vẫn có thể lọt lane lọc theo `PUB_TYPE`; bài tháng 9 đã lọt ở các lượt 21/09 và 29/09 KHÔNG tự được lấy bù.
   · **LANE guideline nối trực tiếp, miễn phí, không khoá — thêm 20/09/2026** (`app/sources/guideline_lanes.py`, cấu hình ở
   `feeds.py::GUIDELINE_LANES`), theo yêu cầu «kết nối các nguồn guideline chưa có connector». Đo 20/09/2026: RSS chính thức chỉ có ở
   GOLD · GINA · KDIGO · EASL · AASLD · CDC MMWR (đã nối); IDSA/ESC/EULAR/ADA/ACC/SIGN/BTS/ASH/AAN đều 404, WHO 403, NICE 403, USPSTF không

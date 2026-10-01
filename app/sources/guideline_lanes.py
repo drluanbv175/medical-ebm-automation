@@ -73,14 +73,66 @@ def _sap_giam_dan_theo_ngay(muc: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return sorted(muc, key=lambda m: str(m.get("date") or ""), reverse=True)
 
 
+# ── MỐC «BÀI MỚI» = NGÀY BẢN GHI XUẤT HIỆN TRONG CHỈ MỤC, KHÔNG PHẢI NGÀY CÔNG BỐ (sửa 30/09/2026) ───────────────────
+# Lượt tuần hỏi «có gì mới từ lượt trước» (mốc ≈ 9 ngày). Trước 30/09 mọi lane lọc theo NGÀY CÔNG BỐ ≥ mốc, và bỏ sót
+# IM LẶNG (SourceLog vẫn `ok`) ở ba kiểu bản ghi — đo thật 30/09/2026:
+#   (1) ngày công bố chỉ khai tới THÁNG. Crossref coi «2026-09» là 01/09 nên mốc 22/09 loại SẠCH bài tháng 9: Lancet
+#       có 31 DOI mới trong 8 ngày ⇒ trả 0; `feed_lancet`, `feed_ard_bmj`, `feed_acc_aha_jacc` chưa từng đưa bài nào
+#       vào kho. 9 tạp chí chỉ khai tới tháng (Lancet, JACC, Kidney Int, Gastroenterology, Ann Oncol, ARD, BMJ DRC,
+#       BMJ Global Health, BMJ Mental Health), 5 tạp chí khai lẫn lộn (AJG, ERJ, JAGS, Ann Intern Med, Stroke);
+#   (2) ngày SỐ PHÁT HÀNH tương lai (2026-10, 2026-11): lọt qua mọi mốc, chiếm hết N chỗ đầu suốt nhiều tuần ⇒ lane
+#       «đứng hình» — Kidney Int, Gastroenterology, Ann Oncol vào kho 8 bài ở lượt đầu rồi 0 ở các lượt sau, trong khi
+#       mỗi tuần có 4–25 DOI mới; ở Europe PMC thì ngược lại, ngày tương lai bị cận trên «hôm nay» loại tới khi tới ngày
+#       (guideline EASL–EASD–EASO vào chỉ mục 29/09 mang ngày 01/12 ⇒ hai tháng sau mới được thấy);
+#   (3) bản ghi vào chỉ mục TRỄ hơn ngày công bố: 14/83 guideline tháng 8 trong Europe PMC trễ hơn 9 ngày; trong cửa sổ
+#       22–30/09 lane «Practice Guideline» thấy 11 bài trong khi có 25 bài mới xuất hiện.
+# Mốc đúng cho giám sát là ngày bản ghi LẦN ĐẦU có mặt trong chỉ mục (`created` của Crossref, `FIRST_IDATE` của Europe
+# PMC): luôn đủ ngày, không đổi khi nhà xuất bản sửa bản ghi, nên mỗi bài được thấy ở đúng lượt ngay sau khi nó xuất
+# hiện. Bài học đo: phép thử 20/09 («31/31 feed trả bài») chạy KHÔNG kèm mốc nên không đi qua đường mà lượt tuần đi.
+
+def bao_bi_cat(ten: str, mo_ta: object, tong: object, lay: int, tu: str) -> None:
+    """Chỉ mục báo có NHIỀU bản ghi mới hơn số lane lấy về ⇒ nói ra trong nhật ký, không cắt im lặng.
+
+    «0 bài» và «10 bài» của một lane không có nghĩa là «không còn gì»: mỗi lượt lane chỉ lấy một số tối đa."""
+    if isinstance(tong, int) and not isinstance(tong, bool) and tong > lay:
+        logger.info("[%s] %s: chỉ mục có %d bản ghi mới từ %s, lane lấy %d — phần còn lại BỊ CẮT theo số tối đa "
+                    "mỗi lượt", ten, mo_ta, tong, tu, lay)
+
+
+def bo_loc_crossref_moi_xuat_hien(since_date: Optional[str], so_ngay: int) -> List[str]:
+    """Hai bộ lọc Crossref cho «bản ghi MỚI XUẤT HIỆN từ mốc» — xem khối chú thích ngay trên.
+
+    `from-created-date` là mốc thật. `from-pub-date:<năm trước>-01-01` chỉ là SÀN chống hồi tố: bài cũ được cấp DOI
+    muộn (số hoá kho lưu trữ) không bị coi là bài mới."""
+    tu = _tu_ngay(since_date, so_ngay)
+    return [f"from-created-date:{tu}", f"from-pub-date:{int(tu[:4]) - 1}-01-01"]
+
+
 # ─────────────────────────────── Europe PMC ───────────────────────────────
+
+def _ngay_epmc(r: Dict[str, Any]) -> Optional[str]:
+    """Ngày công bố lần đầu; là ngày TƯƠNG LAI (số phát hành chưa tới) thì dùng ngày VÀO CHỈ MỤC lần đầu.
+
+    Cùng luật với `ngay_crossref`: không bịa ngày, và không để bài mới nhất mang ngày chưa tới làm lệch độ mới."""
+    cong_bo = str(r.get("firstPublicationDate") or "") or None
+    if cong_bo and cong_bo[:10] > date.today().isoformat():
+        return str(r.get("firstIndexDate") or "") or cong_bo
+    return cong_bo
+
 
 def europepmc_lane(http: Any, epmc_query: str, max_results: int, since_date: Optional[str] = None,
                    guideline: bool = False, so_ngay: int = CUA_SO_MAC_DINH) -> List[Dict[str, Any]]:
-    """Bài MỚI NHẤT khớp `epmc_query` trong Europe PMC (MEDLINE/PMC), sắp theo ngày đăng lần đầu giảm dần."""
+    """Bản ghi khớp `epmc_query` MỚI XUẤT HIỆN trong Europe PMC (MEDLINE/PMC) từ mốc, sắp theo ngày đăng giảm dần.
+
+    «Mới xuất hiện» = công bố lần đầu HOẶC vào chỉ mục lần đầu (`FIRST_IDATE`) từ mốc — xem khối chú thích «MỐC BÀI
+    MỚI» ở trên. Sàn `FIRST_PDATE` từ đầu năm trước chống hồi tố (bài cũ vào chỉ mục muộn không bị coi là mới).
+    Giới hạn còn lại: bài được MEDLINE gán loại xuất bản SAU khi đã vào chỉ mục quá một chu kỳ thì cả hai mốc đều đã
+    trôi qua — lane lọc theo `PUB_TYPE` vẫn có thể sót những bài đó."""
     tu = _tu_ngay(since_date, so_ngay)
+    nay = date.today().isoformat()
     params = {
-        "query": f"({epmc_query}) AND FIRST_PDATE:[{tu} TO {date.today().isoformat()}]",
+        "query": (f"({epmc_query}) AND (FIRST_PDATE:[{tu} TO {nay}] OR FIRST_IDATE:[{tu} TO {nay}]) "
+                  f"AND FIRST_PDATE:[{int(tu[:4]) - 1}-01-01 TO 3000-12-31]"),
         "format": "json", "resultType": "core", "sort": "FIRST_PDATE_D desc",
         "pageSize": max(1, min(int(max_results), 100)),
     }
@@ -90,6 +142,7 @@ def europepmc_lane(http: Any, epmc_query: str, max_results: int, since_date: Opt
     except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
         logger.warning("[europepmc_lane] lỗi truy vấn Europe PMC, BỎ QUA (KHÔNG bịa dữ liệu): %s", exc)
         return []
+    bao_bi_cat("europepmc_lane", epmc_query, data.get("hitCount"), len(ket_qua), tu)
     out: List[Dict[str, Any]] = []
     for r in ket_qua:
         if not isinstance(r, dict):
@@ -102,7 +155,7 @@ def europepmc_lane(http: Any, epmc_query: str, max_results: int, since_date: Opt
         nguon, ma = str(r.get("source") or ""), str(r.get("id") or "")
         url = (f"https://europepmc.org/article/{nguon}/{ma}" if nguon and ma
                else (f"https://doi.org/{doi}" if doi else None))
-        out.append({"title": tieu_de, "url": url, "date": str(r.get("firstPublicationDate") or "") or None,
+        out.append({"title": tieu_de, "url": url, "date": _ngay_epmc(r),
                     "summary": sach_van_ban(r.get("abstractText")), "doi": doi, "pmid": pmid, "guideline": guideline})
     return out
 
@@ -253,9 +306,9 @@ def crossref_title_lane(http: Any, issns: List[str], title_query: str, org_regex
     if not issns or not title_query:
         logger.warning("[crossref_title_lane] thiếu ISSN hoặc cụm tìm tiêu đề, BỎ QUA")
         return []
-    tu = _tu_ngay(since_date, so_ngay)
     params = {
-        "filter": ",".join([f"issn:{i}" for i in issns] + [f"from-pub-date:{tu}", "type:journal-article"]),
+        "filter": ",".join([f"issn:{i}" for i in issns] + bo_loc_crossref_moi_xuat_hien(since_date, so_ngay)
+                           + ["type:journal-article"]),
         "query.title": title_query, "rows": 60,
         "select": "DOI,title,issued,published-online,published-print,created,URL,abstract",
     }
@@ -268,6 +321,8 @@ def crossref_title_lane(http: Any, issns: List[str], title_query: str, org_regex
         logger.warning("[crossref_title_lane] lỗi Crossref (ISSN %s), BỎ QUA (KHÔNG bịa dữ liệu): %s",
                        "|".join(issns), exc)
         return []
+    bao_bi_cat("crossref_title_lane", "|".join(issns), (data.get("message") or {}).get("total-results"), len(items),
+               _tu_ngay(since_date, so_ngay))
     re_org = re.compile(org_regex, re.IGNORECASE) if org_regex else None
     out: List[Dict[str, Any]] = []
     for it in items:
