@@ -4,24 +4,61 @@ name: offline-ci-hermetic
 # Chạy deterministic offline tests với network bị chặn và KHÔNG có API key.
 # Fail nếu phát hiện API key hoặc runtime live bị khởi tạo.
 # Qualification GIỮ NGUYÊN: NO-GO — NOT QUALIFIED FOR RESEARCH WORKFLOW USE.
+#
+# GỌN CI (02/10/2026, đo 120 lượt gần nhất của chính workflow này):
+#   • 43/71 commit bị chạy HAI lần (cả `push` lẫn `pull_request`) — trigger cũ `push: branches ["**"]` + `pull_request` chồng nhau cho mọi nhánh
+#     có PR. Nay `push` chỉ ở nhánh mặc định (sau khi gộp); PR đi bằng `pull_request`; nhánh chưa có PR chạy tay bằng workflow_dispatch.
+#   • Lượt cũ của cùng PR không còn chạy tiếp khi có commit mới (concurrency) — một nhánh từng có 81 lượt × ~33 phút job. KHÔNG bao giờ
+#     huỷ lượt trên nhánh mặc định.
+#   • Hai job sao chép nhau (ubuntu / windows) gộp thành MỘT ma trận: sửa một bước chỉ phải sửa một chỗ (trước đây dễ lệch nhau).
+#   • Có trần thời gian cho job và cache pip; job tổng kết `ci-ok` là MỘT tên kiểm tra ổn định cho «bảo vệ nhánh».
+#   Windows vẫn chạy ĐỦ bộ test: đo 70 lượt, Windows là lane duy nhất đỏ riêng một mình ở 4 lượt (ubuntu riêng một mình: 1) — họ lỗi
+#   «viết cho một máy, gãy trên máy kia» vẫn cần nó.
 
 on:
   push:
-    branches: [ "**" ]
+    branches: [ "feat/r1-1-2-design-gap-remediation" ]
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: offline-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   offline-hermetic-tests:
-    runs-on: ubuntu-latest
+    timeout-minutes: 60      # đo: ubuntu TB 11 phút, windows TB 22 phút (tối đa ~38 kể cả hàng đợi)
+    strategy:
+      fail-fast: false
+      matrix:
+        # NÂNG CẤP TẦNG-1 15-16/08/2026 (bác sĩ duyệt): chạy CÙNG bộ test hermetic trên
+        # WINDOWS — họ lỗi «viết cho một máy, gãy im lặng trên máy kia» tái phát ≥6 lần
+        # (đường dẫn cứng · os.getuid · cp1252 · python3-literal); chốt đa nền quét TĨNH
+        # bắt được mẫu, còn lane này bắt HÀNH VI thật mỗi lần chạy. Tái dùng NGUYÊN
+        # run_offline_ci.sh (chặn mạng ở tầng socket Python — portable), chỉ đổi
+        # PYTHON=python (Windows không có tên lệnh python3) + ép UTF-8.
+        include:
+          - os: ubuntu-latest
+            python_cmd: python3
+            artifact: offline-ci-results
+          - os: windows-latest
+            python_cmd: python
+            artifact: offline-ci-results-windows
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     env:
       # Bật chế độ hermetic; KHÔNG khai báo ANTHROPIC_API_KEY/OPENAI_API_KEY.
       MRAQ_OFFLINE_CI: "1"
       USE_MOCK_SOURCES: "true"
       # eHospital connector DISABLED — không bật synthetic flag trong CI.
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+      PYTHON: ${{ matrix.python_cmd }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -29,6 +66,8 @@ jobs:
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.lock.txt
 
       - name: Fail-closed — cấm API key trong môi trường CI offline
         run: |
@@ -59,59 +98,20 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: offline-ci-results
+          name: ${{ matrix.artifact }}
           path: results/
 
-  # NÂNG CẤP TẦNG-1 15-16/08/2026 (bác sĩ duyệt): chạy CÙNG bộ test hermetic trên
-  # WINDOWS — họ lỗi «viết cho một máy, gãy im lặng trên máy kia» tái phát ≥6 lần
-  # (đường dẫn cứng · os.getuid · cp1252 · python3-literal); chốt đa nền quét TĨNH
-  # bắt được mẫu, còn job này bắt HÀNH VI thật mỗi lần push. Tái dùng NGUYÊN
-  # run_offline_ci.sh (chặn mạng ở tầng socket Python — portable), chỉ đổi
-  # PYTHON=python (Windows không có tên lệnh python3) + ép UTF-8.
-  offline-hermetic-tests-windows:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: bash
-    env:
-      MRAQ_OFFLINE_CI: "1"
-      USE_MOCK_SOURCES: "true"
-      PYTHONUTF8: "1"
-      PYTHONIOENCODING: "utf-8"
-      PYTHON: "python"
+  # MỘT tên kiểm tra ổn định cho «bảo vệ nhánh»: bật required check chỉ cần khai `ci-ok`, đổi ma trận không phải sửa lại cài đặt.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [offline-hermetic-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.12"
-
-      - name: Fail-closed — cấm API key trong môi trường CI offline
+      - name: Mọi lane offline-hermetic-tests phải xanh (huỷ/bỏ qua cũng là ĐỎ)
+        env:
+          KET_QUA: ${{ needs.offline-hermetic-tests.result }}
         run: |
-          if [ -n "${ANTHROPIC_API_KEY:-}" ] || [ -n "${OPENAI_API_KEY:-}" ]; then
-            echo "OFFLINE CI HERMETIC VIOLATION: API key được set." >&2
-            exit 2
-          fi
-          echo "OK — no API key present."
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.lock.txt  # LOCK — cùng toolchain 2 máy thật; requirements.txt vẫn thả nổi ruff>=0.15
-
-      - name: Lint (ruff)
-        run: ruff check .
-
-      - name: Bất biến newline vùng chuỗi-ký (chống CRLF phá hash trên Windows)
-        run: python tools/kiem_newline_vung_ky.py
-
-      - name: Run hermetic offline tests (network blocked, Windows)
-        run: bash scripts/run_offline_ci.sh
-
-      - name: Upload offline CI results (Windows)
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: offline-ci-results-windows
-          path: results/
+          [ "$KET_QUA" = "success" ] || { echo "offline-hermetic-tests: $KET_QUA" >&2; exit 1; }
+          echo "✅ mọi lane offline-hermetic-tests xanh"
