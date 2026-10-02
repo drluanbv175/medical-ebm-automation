@@ -95,7 +95,7 @@ def test_main_dau_cuoi_the_engine_tier_a_khong_mang_high(bridge, tmp_path, monke
     hub = tmp_path / "EBM_MASTER"
     hub.mkdir()
     (hub / "EBM_MASTER.json").write_text(json.dumps(
-        {"meta": {"counts": {"evidence_cards": 0}}, "evidence_cards": []}), encoding="utf-8")
+        {"meta": {"counts": {"evidence_cards": 0}}, "evidence_cards": []}), encoding="utf-8", newline="\n")
     db = tmp_path / "medical_ebm.db"
     _tao_db(db, [
         {"is_mock": 0, "is_actionable": 1, "reliability_tier": "A", "practice_change_score": 80,
