@@ -27,7 +27,7 @@ class FeedConfig:
     # ── LANE guideline (20/09/2026, xem app/sources/guideline_lanes.py) ──
     # mode: "rss" | "crossref" (bài mới nhất theo ISSN) | "crossref_title" (khuyến cáo của hiệp hội trên tạp chí của
     # họ; `issn` có thể là NHIỀU ISSN ngăn bằng "|", kèm `title_query` + `title_regex`) | "europepmc" (`epmc_query`) |
-    # "who_iris" (OAI-PMH) | "kcb_vn".
+    # "who_iris" (OAI-PMH) | "who_hub" / "who_don" (API www.who.int — đường thay khi VPN bật) | "kcb_vn".
     title_query: str | None = None
     title_regex: str | None = None       # regex TỔ CHỨC phải khớp trong tiêu đề (vd "KDIGO", "\\bESC\\b")
     window_days: int | None = None       # cửa sổ khi ingestion không truyền since_date
@@ -230,6 +230,10 @@ _JOURNAL_GUIDELINE_SPECS = [
     ("jco", "Journal of Clinical Oncology (ASCO)", "JCO (ASCO)", None, "0732-183X"),
     ("ann_oncol", "Annals of Oncology (ESMO)", "Ann Oncol (ESMO)", None, "0923-7534"),
     ("blood_adv", "Blood Advances (ASH)", "Blood Adv (ASH)", None, "2473-9529"),
+    # 01/10/2026 (bác sĩ: «VPN luôn bật»): tạp chí của CHÍNH ECDC, đọc qua Crossref (chạy được qua VPN) — đường thay cho
+    # feed ECDC «mối đe doạ» bị CloudFront chặn khi bật VPN. ISSN điện tử 1560-7917 đối chiếu bằng
+    # api.crossref.org/journals/1560-7917 (5.797 bài, bài mới nhất tháng 09/2026).
+    ("eurosurveillance", "Eurosurveillance (ECDC)", "Eurosurveillance (ECDC)", "Nhiễm khuẩn", "1560-7917"),
 ]
 GUIDELINE_FEEDS = GUIDELINE_FEEDS + [
     FeedConfig(id=i, name=n, url=f"https://api.crossref.org/journals/{issn}", org=o, kind="guideline",
@@ -285,6 +289,15 @@ GUIDELINE_LANES: list[FeedConfig] = [
     FeedConfig(id="who_iris", name="WHO IRIS — ấn phẩm guideline mới (OAI-PMH chính thức)",
                url="https://iris.who.int/oai/request", org="WHO IRIS", kind="guideline", mode="who_iris",
                window_days=60),
+    # 01/10/2026 (bác sĩ: «VPN luôn bật»): iris.who.int hết giờ mở kết nối khi đi qua VPN; www.who.int (khác hạ tầng)
+    # chạy được — hai lane dưới đây là ĐƯỜNG THAY khai trong ingestion `_DUONG_THAY_KHI_CHAN_MANG`. Khi không có VPN thì
+    # cả lane IRIS lẫn lane ấn phẩm cùng chạy; bản ghi trùng tiêu đề được khử trùng ở pipeline.
+    FeedConfig(id="who_publications", name="WHO — ấn phẩm guideline mới (API www.who.int, chạy được khi bật VPN)",
+               url="https://www.who.int/publications/i", org="WHO", kind="guideline", mode="who_hub",
+               window_days=60),
+    FeedConfig(id="who_don", name="WHO — Disease Outbreak News (tin bùng phát dịch chính thức, API www.who.int)",
+               url="https://www.who.int/emergencies/disease-outbreak-news", org="WHO DON", kind="guideline",
+               mode="who_don", clinical_area="Nhiễm khuẩn", window_days=60),
     FeedConfig(id="kcb_vn", name="Bộ Y tế VN — Hướng dẫn chẩn đoán, điều trị (kcb.vn)", url="https://kcb.vn/phac-do",
                org="Bộ Y tế VN", kind="guideline", mode="kcb_vn"),
     # RSS trực tiếp của hiệp hội/tổ chức (đo 20/09/2026: HTTP 200, có mục thật)

@@ -35,6 +35,12 @@ logger = get_logger(__name__)
 EUROPEPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 WHO_IRIS_OAI = "https://iris.who.int/oai/request"
 WHO_IRIS_HQ_SET = "com_10665_8"        # «1. Headquarters»: ấn phẩm của trụ sở WHO
+# API công khai của chính trang www.who.int (đứng sau Cloudflare, KHÁC hạ tầng iris.who.int) — xem `who_hub_lane`.
+WHO_HUB_API = "https://www.who.int/api/hubs/publications"
+WHO_HUB_SITE = "15210d59-ad60-47ff-a542-7ed76645f0c7"   # mã site trang Ấn phẩm, chép từ chính trang /publications/i
+WHO_ITEM_URL = "https://www.who.int/publications/i/item"
+WHO_DON_API = "https://www.who.int/api/emergencies/diseaseoutbreaknews"
+WHO_DON_ITEM_URL = "https://www.who.int/emergencies/disease-outbreak-news/item"
 KCB_PHAC_DO = "https://kcb.vn/phac-do"
 KCB_GOC = "https://kcb.vn"
 CROSSREF_WORKS = "https://api.crossref.org/works"
@@ -217,6 +223,105 @@ def who_iris_lane(http: Any, max_results: int, since_date: Optional[str] = None,
         if token is None or not (token.text or "").strip() or len(giu) >= max_results:
             break
         params = {"verb": "ListRecords", "resumptionToken": token.text.strip()}
+    return _sap_giam_dan_theo_ngay(giu)[: max(1, int(max_results))]
+
+
+# ─────────── WHO qua API của www.who.int — chạy được khi VPN BẬT (thêm 01/10/2026, bác sĩ: «VPN luôn bật») ───────────
+# Đo thật 01/10/2026 qua Kaspersky VPN: iris.who.int hết giờ MỞ kết nối (lane OAI-PMH ở trên hỏng 4/4 lượt 29/09), còn
+# www.who.int trả 200 cho cả hai API dưới đây — cùng nhà phát hành, khác hạ tầng. Đối chiếu kho: hai bài lane IRIS lấy
+# ngày 17/09 đều có trên API ấn phẩm («Implementation guidance … wasting» cùng ngày; «WHO guidelines on expanding
+# contraceptive options» mang ngày đăng web 23/09 — muộn hơn ngày IRIS vài ngày). Lane Europe PMC «WHO» (epmc_who)
+# KHÔNG thay được: 0 bản ghi ở MỌI lượt từ khi tạo. `Tag` không lọc được phía máy chủ (OData báo lỗi 400) ⇒ lọc ở đây;
+# ngày thì lọc được.
+_TAG_WHO_KHUYEN_CAO = frozenset({"Guideline", "Guidance (normative)"})
+# Văn kiện cơ quan quản trị (lane IRIS cũng bỏ) và bản tóm tắt điều hành (trùng ý với chính guideline, gây bản ghi đôi).
+_TAG_WHO_BO = frozenset({"Governing bodies documentation", "Executive summary"})
+_TRAN_WHO_HUB = 100           # ~36 ấn phẩm/tháng (đo 08–09/2026) ⇒ 100 đủ cho cửa sổ 60 ngày
+_TRAN_WHO_DON = 50
+_RE_NGAY_ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def _goi_who_api(http: Any, url: str, params: Dict[str, str], ten: str, tran: int, tu: str) -> Optional[List[Any]]:
+    """GET một API OData của www.who.int → danh sách `value`; None khi lỗi MẠNG (HttpClient đã ghi lỗi + nhãn mạng).
+
+    Bố cục lạ (không có `value` dạng danh sách) ⇒ NÉM lỗi: «0 bản ghi» chỉ được phép khi máy chủ thật sự trả rỗng, không
+    được là «đọc hỏng nên rỗng» (xanh giả)."""
+    try:
+        d = http.get_json(url, params=params)
+    except Exception as exc:  # pragma: no cover - lỗi mạng thực tế; HttpClient đã đếm lỗi cuối cho Source Log
+        logger.warning("[%s] lỗi gọi API www.who.int, BỎ QUA (KHÔNG bịa dữ liệu): %s", ten, exc)
+        return None
+    ds = d.get("value") if isinstance(d, dict) else None
+    if not isinstance(ds, list):
+        raise ValueError(f"[{ten}] bố cục API www.who.int không như dự kiến (thiếu danh sách `value`)")
+    if len(ds) >= tran:
+        logger.info("[%s] API trả đủ trần %d bản ghi từ %s — có thể còn bản ghi cũ hơn BỊ CẮT", ten, tran, tu)
+    return ds
+
+
+def _ngay_who(x: Dict[str, Any]) -> Optional[str]:
+    ngay = str(x.get("PublicationDateAndTime") or "")[:10]
+    return ngay if _RE_NGAY_ISO.fullmatch(ngay) else None
+
+
+def who_hub_lane(http: Any, max_results: int, since_date: Optional[str] = None,
+                 so_ngay: int = CUA_SO_MAC_DINH) -> List[Dict[str, Any]]:
+    """Ấn phẩm dạng guideline/khuyến cáo mới của WHO qua API trang Ấn phẩm của www.who.int (1 GET).
+
+    Giữ khi `Tag` là Guideline/Guidance (normative) HOẶC tiêu đề có tính khuyến cáo (cùng regex lane IRIS — có guideline
+    mang `Tag` «Publication», vd bài «wasting» 17/09); bỏ văn kiện cơ quan quản trị và bản tóm tắt điều hành.
+
+    KHÔNG xin trường `Summary`: đo 01/10/2026 qua VPN, có `Summary` thì máy chủ bốn lần liền quá 30 giây (lượt đầu chỉ
+    xong ở lần thử thứ năm); bỏ đi thì 6/6 lần 1–5 giây. Tiêu đề + trang ấn phẩm đủ cho bản tin; tóm tắt đọc ở trang
+    đó."""
+    tu = _tu_ngay(since_date, so_ngay)
+    params = {"sf_site": WHO_HUB_SITE, "sf_provider": "OpenAccessProvider", "sf_culture": "en",
+              "$select": "Title,ItemDefaultUrl,PublicationDateAndTime,Tag",
+              "$orderby": "PublicationDateAndTime desc", "$top": str(_TRAN_WHO_HUB),
+              "$filter": f"PublicationDateAndTime ge {tu}T00:00:00Z"}
+    ds = _goi_who_api(http, WHO_HUB_API, params, "who_hub_lane", _TRAN_WHO_HUB, tu)
+    giu: List[Dict[str, Any]] = []
+    for x in ds or []:
+        if not isinstance(x, dict):
+            continue
+        tieu_de = sach_van_ban(x.get("Title"))
+        tag = str(x.get("Tag") or "").strip()
+        if not tieu_de or tag in _TAG_WHO_BO:
+            continue
+        if tag not in _TAG_WHO_KHUYEN_CAO and not _RE_WHO_KHUYEN_CAO.search(tieu_de):
+            continue
+        ngay = _ngay_who(x)
+        if ngay is None or ngay < tu:
+            continue
+        duong = str(x.get("ItemDefaultUrl") or "")
+        giu.append({"title": tieu_de, "url": WHO_ITEM_URL + duong if duong.startswith("/") else None, "date": ngay,
+                    "summary": "", "doi": None, "pmid": None, "guideline": True})
+    return _sap_giam_dan_theo_ngay(giu)[: max(1, int(max_results))]
+
+
+def who_don_lane(http: Any, max_results: int, since_date: Optional[str] = None,
+                 so_ngay: int = CUA_SO_MAC_DINH) -> List[Dict[str, Any]]:
+    """Tin bùng phát dịch CHÍNH THỨC của WHO (Disease Outbreak News) qua API www.who.int (1 GET).
+
+    Là đường thay chạy được khi VPN bật cho feed «mối đe doạ bệnh truyền nhiễm» của ECDC (bị CloudFront chặn qua VPN),
+    và phủ toàn cầu (gồm châu Á) thay vì chỉ châu Âu. Đây là TIN dịch, không phải guideline: `guideline` luôn False."""
+    tu = _tu_ngay(since_date, so_ngay)
+    params = {"sf_culture": "en", "$select": "Title,ItemDefaultUrl,PublicationDateAndTime,Summary",
+              "$orderby": "PublicationDateAndTime desc", "$top": str(_TRAN_WHO_DON),
+              "$filter": f"PublicationDateAndTime ge {tu}T00:00:00Z"}
+    ds = _goi_who_api(http, WHO_DON_API, params, "who_don_lane", _TRAN_WHO_DON, tu)
+    giu: List[Dict[str, Any]] = []
+    for x in ds or []:
+        if not isinstance(x, dict):
+            continue
+        tieu_de = sach_van_ban(x.get("Title"))
+        ngay = _ngay_who(x)
+        if not tieu_de or ngay is None or ngay < tu:
+            continue
+        duong = str(x.get("ItemDefaultUrl") or "")
+        giu.append({"title": tieu_de, "url": WHO_DON_ITEM_URL + duong if duong.startswith("/") else None, "date": ngay,
+                    "summary": sach_van_ban(html_lib.unescape(str(x.get("Summary") or "")))[:600],
+                    "doi": None, "pmid": None, "guideline": False})
     return _sap_giam_dan_theo_ngay(giu)[: max(1, int(max_results))]
 
 
