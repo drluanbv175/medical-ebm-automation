@@ -122,19 +122,24 @@ def test_connector_live_voi_get_json_gia_ghi_payload_vao_thu_muc_tam(monkeypatch
     assert C._CANH_DU_LIEU_THAT.vi_pham[so_vi_pham_truoc:] == []
 
 
-def test_mien_tru_cua_chot_canh_that_chi_gom_hai_lo_da_biet():
-    """Khoá danh sách miễn trừ: thêm một miễn trừ là nới chốt — phải sửa cả test này, để người duyệt PR thấy."""
+def test_mien_tru_cua_chot_canh_that_chi_con_archive():
+    """Khoá danh sách miễn trừ: thêm một miễn trừ là nới chốt — phải sửa cả test này, để người duyệt PR thấy.
+    `processed/chronic_care_phase_3a_audit.jsonl` hết miễn trừ từ 01/10/2026 (app/chronic_care/audit.py đi theo
+    settings.processed_dir) — khoá cả tập miễn trừ, không chỉ vài đường dẫn mẫu."""
     canh = C._CANH_DU_LIEU_THAT
+    assert canh._mien_thu_muc == (os.path.normcase("archive"),) and canh._mien_tep == frozenset()
     assert canh.duoc_mien("archive/app.log") and canh.duoc_mien("archive")
-    assert canh.duoc_mien("processed/chronic_care_phase_3a_audit.jsonl")
     for bi_canh in ("raw/core/x.json", "raw/_http_cache/ab.json", "raw/_state/serpapi_usage.json",
                     "processed/pipeline_20260930T132226.json", "processed/_translations_vi.json",
                     "reports/x.md", "exports/dashboard_master_ebm_20260930.xlsx", "tiktok/20260930-2025-tuso/a.png",
                     "reference/clinical_scores_45.json", "retraction_watch/retraction_watch.csv", "medical_ebm.db",
-                    "archive_khac/app.log", "processed/chronic_care_phase_3a_audit.jsonl.bak"):
+                    "archive_khac/app.log", "processed/chronic_care_phase_3a_audit.jsonl",
+                    "processed/chronic_care_phase_3a_audit.jsonl.bak"):
         assert not canh.duoc_mien(bi_canh), bi_canh
     goc = C._DU_LIEU_THAT
     assert canh.xet("open", (str(goc / "raw" / "core" / "x.json"), "w", GHI)) == ["raw/core/x.json"]
+    assert canh.xet("open", (str(goc / "processed" / "chronic_care_phase_3a_audit.jsonl"), "a", GHI | os.O_APPEND)) \
+        == ["processed/chronic_care_phase_3a_audit.jsonl"]
     assert canh.xet("open", (str(goc / "archive" / "app.log"), "a", GHI | os.O_APPEND)) == []
     assert canh.xet("open", (str(goc / "raw" / "core" / "x.json"), "r", os.O_RDONLY)) == []
 

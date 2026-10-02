@@ -22,9 +22,25 @@ class ChronicCareAuditTrail:
     events: list[AuditEvent]
 
 
+AUDIT_FILENAME = "chronic_care_phase_3a_audit.jsonl"
+
+
+def default_audit_path() -> Path:
+    """Tệp audit mặc định `settings.processed_dir / AUDIT_FILENAME`, tính LÚC GỌI.
+
+    SỬA 01/10/2026: trước đây là `Path("data/processed/chronic_care_phase_3a_audit.jsonl")` — tương đối theo thư mục
+    hiện hành, không qua `settings`, nên bộ test không chuyển hướng được và mỗi lượt pytest nối sự kiện tổng hợp vào
+    `data/processed/` thật của cây. Chạy dashboard từ gốc repo (`Mở Dashboard.command`, `python run.py dashboard`) vẫn
+    ra đúng tệp cũ. Import `app.config` trong hàm để import `app.chronic_care` vẫn không kéo theo `app.config` (nạp
+    .env, tạo thư mục data/) — chỉ lời gọi dùng đường dẫn mặc định mới cần."""
+    from app.config import settings
+
+    return settings.processed_dir / AUDIT_FILENAME
+
+
 def default_audit_trail(path: Path | None = None) -> ChronicCareAuditTrail:
     return ChronicCareAuditTrail(
-        logger=AuditLogger(path or Path("data/processed/chronic_care_phase_3a_audit.jsonl")),
+        logger=AuditLogger(path or default_audit_path()),
         events=[],
     )
 
