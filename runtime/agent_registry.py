@@ -61,8 +61,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # Tái khóa 2026-09-28: `cong-cu-do-luong` nối lệnh độ tin cậy thang đo trên dữ liệu pilot
 # (tools/kiem_tin_cay_thang_do.py) + lệnh CVI/phỏng vấn nhận thức (tools/pha_phat_trien_cong_cu.py);
 # số lượng vẫn giữ nguyên 50.
+# Tái khóa 2026-10-01: `ke-don-an-toan` (mục 8 dạy in một lần, nguyên văn dòng `mien_tru_nlm` của NLM khi trình
+# kết quả `chuan-hoa` — trỏ `_CONNECTOR-CHUNG-CU.md` §1ter luật 5); số lượng vẫn giữ nguyên 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "e5b2522242ebd330865de0c8c23e91332db6c81387685ceb1ae860d12531422d"
+    "978aa1d334d2650edc2110494be0dbf57bcc197b0a47942b75d3bcaca9965c32"
 )
 
 MINIMUM_AGENT_COUNT = 50

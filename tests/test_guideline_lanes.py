@@ -111,7 +111,10 @@ def test_europepmc_lane_builds_the_query_window_and_sort(monkeypatch):
     gl.europepmc_lane(http, 'PUB_TYPE:"Practice Guideline"', 500, since_date="2026-08-01")
     (c,) = http.calls
     assert c["url"] == gl.EUROPEPMC
-    assert c["params"]["query"] == '(PUB_TYPE:"Practice Guideline") AND FIRST_PDATE:[2026-08-01 TO 2026-09-15]'
+    # Từ 30/09/2026: công bố lần đầu HOẶC vào chỉ mục lần đầu từ mốc, kèm sàn chống hồi tố (đầu năm trước) —
+    # hành vi và lý do: tests/test_lane_moc_xuat_hien_20260930.py.
+    assert c["params"]["query"] == ('(PUB_TYPE:"Practice Guideline") AND (FIRST_PDATE:[2026-08-01 TO 2026-09-15] OR '
+                                    'FIRST_IDATE:[2026-08-01 TO 2026-09-15]) AND FIRST_PDATE:[2025-01-01 TO 3000-12-31]')
     assert c["params"]["sort"] == "FIRST_PDATE_D desc" and c["params"]["pageSize"] == 100    # kẹp ở 100
     assert c["params"]["resultType"] == "core"
 
@@ -253,7 +256,8 @@ def test_crossref_title_lane_builds_a_multi_issn_filter_and_title_query():
     gl.crossref_title_lane(http, ["0195-668X", "1522-9645"], "ESC Guidelines", r"\bESC\b", 5, since_date="2026-01-01",
                            mailto="bs@example.org")
     p = http.calls[0]["params"]
-    assert p["filter"] == "issn:0195-668X,issn:1522-9645,from-pub-date:2026-01-01,type:journal-article"
+    assert p["filter"] == ("issn:0195-668X,issn:1522-9645,from-created-date:2026-01-01,from-pub-date:2025-01-01,"
+                           "type:journal-article")
     assert p["query.title"] == "ESC Guidelines" and p["rows"] == 60 and p["mailto"] == "bs@example.org"
 
 
@@ -325,10 +329,11 @@ def test_the_high_volume_lane_asks_for_at_least_its_cap_even_when_ingestion_pass
 def test_since_date_from_ingestion_is_forwarded_to_every_lane_mode(monkeypatch):
     c = _client("epmc_uspstf", monkeypatch, json_data=_epmc())
     c.search("", max_results=5, since_date="2026-09-10")
-    assert "FIRST_PDATE:[2026-09-10 TO" in c.http.calls[0]["params"]["query"]
+    truy_van = c.http.calls[0]["params"]["query"]
+    assert "FIRST_PDATE:[2026-09-10 TO" in truy_van and "FIRST_IDATE:[2026-09-10 TO" in truy_van
     c = _client("esc_ehj", monkeypatch, json_data=_cr())
     c.search("", max_results=5, since_date="2026-09-10")
-    assert "from-pub-date:2026-09-10" in c.http.calls[0]["params"]["filter"]
+    assert "from-created-date:2026-09-10" in c.http.calls[0]["params"]["filter"]
 
 
 def test_epmc_nice_lane_is_configured_and_wraps_records_correctly(monkeypatch):

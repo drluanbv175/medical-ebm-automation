@@ -95,13 +95,11 @@ _DU_LIEU_THAT = Path(settings.data_dir)
 # tests/canh_ghi_du_lieu_that.py). Mỗi miễn trừ là một lỗ ĐÃ BIẾT, có lý do — không thêm để «cho hết đỏ»:
 #   • archive/ — nhật ký vận hành app.log. Handler dựng ngay lúc import (`get_logger()` ở mức module của hầu hết
 #     tệp), trước mọi fixture, nên test vẫn nối nhật ký vào đây. Không phải kho bằng chứng.
-#   • processed/chronic_care_phase_3a_audit.jsonl — app/chronic_care/audit.py dùng đường dẫn TƯƠNG ĐỐI theo thư mục
-#     hiện hành (không qua settings) nên fixture không chuyển hướng được; ~40 test chronic care nối vào tệp này
-#     (toàn ca tổng hợp). Sửa ở mã nguồn là việc riêng; sửa xong thì BỎ dòng miễn trừ này.
+# (Miễn trừ `processed/chronic_care_phase_3a_audit.jsonl` đã BỎ 01/10/2026: app/chronic_care/audit.py nay tính đường dẫn
+# mặc định theo settings.processed_dir lúc gọi, nên fixture bên dưới chuyển hướng được.)
 _CANH_DU_LIEU_THAT = dang_ky(CanhGhi(
     _DU_LIEU_THAT,
     mien_tru_thu_muc=("archive",),
-    mien_tru_tep=("processed/chronic_care_phase_3a_audit.jsonl",),
 ))
 
 # Hằng MODULE chốt đường dẫn ĐẦU RA ngay lúc import (không tính lại theo settings.data_dir) ⇒ phải vá riêng từng cái.

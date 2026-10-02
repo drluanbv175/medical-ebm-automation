@@ -25,11 +25,17 @@ from app.sources.guideline_lanes import (
     CROSSREF_WORKS,
     EUROPEPMC,
     KCB_PHAC_DO,
+    WHO_DON_API,
+    WHO_HUB_API,
     WHO_IRIS_OAI,
+    bao_bi_cat,
+    bo_loc_crossref_moi_xuat_hien,
     crossref_title_lane,
     europepmc_lane,
     kcb_vn_lane,
     ngay_crossref,
+    who_don_lane,
+    who_hub_lane,
     who_iris_lane,
 )
 from app.utils.http import HttpClient
@@ -188,6 +194,10 @@ class RSSFeedClient(SourceClient):
             self.endpoint = EUROPEPMC
         elif feed.mode == "who_iris":
             self.endpoint = WHO_IRIS_OAI
+        elif feed.mode == "who_hub":
+            self.endpoint = WHO_HUB_API
+        elif feed.mode == "who_don":
+            self.endpoint = WHO_DON_API
         elif feed.mode == "kcb_vn":
             self.endpoint = KCB_PHAC_DO
         # Một số CDN (vd FDA/Akamai) chặn User-Agent không giống trình duyệt -> 403.
@@ -205,7 +215,7 @@ class RSSFeedClient(SourceClient):
             return self._mock(max_results)
         if self.feed.mode == "crossref":
             return self._search_crossref(max_results, since_date)
-        if self.feed.mode in ("crossref_title", "europepmc", "who_iris", "kcb_vn"):
+        if self.feed.mode in ("crossref_title", "europepmc", "who_iris", "who_hub", "who_don", "kcb_vn"):
             return self._search_lane(max_results, since_date)
         try:
             xml_text = self.http.get_text(self.feed.url, use_cache=True)
@@ -262,15 +272,19 @@ class RSSFeedClient(SourceClient):
     _CUA_SO_NGAY = 45   # không có since_date thì lấy bài của 45 ngày gần nhất
 
     def _search_crossref(self, max_results: int, since_date: Optional[str]) -> List[RawRecord]:
-        """Bài MỚI NHẤT của tạp chí `feed.issn` qua Crossref (không khoá). Lỗi ⇒ log + [] (KHÔNG bịa mock)."""
+        """Bài MỚI XUẤT HIỆN của tạp chí `feed.issn` qua Crossref (không khoá). Lỗi ⇒ log + [] (KHÔNG bịa mock).
+
+        Mốc và thứ tự đều theo ngày Crossref nhận DOI lần đầu (`created`), KHÔNG theo ngày công bố — lý do và số đo
+        30/09/2026 ở `guideline_lanes.bo_loc_crossref_moi_xuat_hien`. Sắp theo `created` giảm dần để N chỗ của lượt
+        thuộc về bài vừa xuất hiện, không thuộc về bài mang ngày số phát hành xa nhất trong tương lai."""
         issn = (self.feed.issn or "").strip()
         if not issn:
             logger.warning("[%s] feed mode=crossref nhưng thiếu ISSN — BỎ QUA", self.name)
             return []
-        tu_ngay = since_date or (date.today() - timedelta(days=self._CUA_SO_NGAY)).isoformat()
+        bo_loc_moi = bo_loc_crossref_moi_xuat_hien(since_date, self._CUA_SO_NGAY)
         params = {
-            "filter": f"issn:{issn},from-pub-date:{tu_ngay},type:journal-article",
-            "sort": "published", "order": "desc", "rows": max(1, min(int(max_results), 100)),
+            "filter": ",".join([f"issn:{issn}", *bo_loc_moi, "type:journal-article"]),
+            "sort": "created", "order": "desc", "rows": max(1, min(int(max_results), 100)),
             "select": "DOI,title,issued,published-online,published-print,created,URL,abstract",
         }
         email = getattr(settings, "openalex_email", "") or getattr(settings, "ncbi_email", "")
@@ -282,6 +296,8 @@ class RSSFeedClient(SourceClient):
         except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
             logger.warning("[%s] lỗi lấy Crossref ISSN %s — BỎ QUA, KHÔNG bịa mock: %s", self.name, issn, exc)
             return []
+        bao_bi_cat(self.name, f"ISSN {issn}", (data.get("message") or {}).get("total-results"), len(items),
+                   bo_loc_moi[0].split(":", 1)[1])
         out: List[RawRecord] = []
         for it in items:
             if not isinstance(it, dict):
@@ -316,6 +332,10 @@ class RSSFeedClient(SourceClient):
         elif f.mode == "who_iris":
             muc = who_iris_lane(self.http, n, since_date, oai_set=f.oai_set or "com_10665_8",
                                 so_ngay=f.window_days or 60)
+        elif f.mode == "who_hub":
+            muc = who_hub_lane(self.http, n, since_date, so_ngay=f.window_days or 60)
+        elif f.mode == "who_don":
+            muc = who_don_lane(self.http, n, since_date, so_ngay=f.window_days or 60)
         elif f.mode == "kcb_vn":
             muc = kcb_vn_lane(self.http, n, since_date)
         else:
@@ -328,7 +348,8 @@ class RSSFeedClient(SourceClient):
             rec.pmid = m.get("pmid")
             rec.api_endpoint = self.endpoint
             rec.raw["_via"] = f.mode
-            if m.get("guideline") and f.kind == "guideline" and (f.is_guideline or f.mode in ("who_iris", "kcb_vn")):
+            if m.get("guideline") and f.kind == "guideline" and (f.is_guideline
+                                                                  or f.mode in ("who_iris", "who_hub", "kcb_vn")):
                 rec.study_type, rec.source_type = "guideline", "guideline"
             out.append(rec)
         logger.info("[%s] %d mục từ lane %s (%s)", self.name, len(out), f.mode, f.org)

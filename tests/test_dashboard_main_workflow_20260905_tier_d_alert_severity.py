@@ -33,6 +33,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 _SCRIPT = """
 import sys
 sys.path.insert(0, {repo!r})
+from pathlib import Path
+from app.config import settings
+settings.data_dir = Path({du_lieu!r})
+settings.ensure_dirs()
 import streamlit as st
 
 _calls = []
@@ -53,12 +57,17 @@ if tier_text is None:
 else:
     match = next((k for k, m in _calls if m == tier_text), "NONE")
     print("ALERT_KIND=" + match)
+print("DATA_DIR=" + str(settings.data_dir))
 """
 
 
 def _alert_kind_for_tier(tier: str, tmp_path: Path) -> str:
     db_path = tmp_path / f"tier_{tier}.db"
-    script = _SCRIPT.format(repo=str(REPO_ROOT), tier=tier)
+    # Tiến trình con không có fixture của tests/conftest.py (settings.data_dir → thư mục tạm): import dashboard chạy cả
+    # tab 14, seed Chronic Care và ghi audit vào settings.processed_dir ⇒ trỏ dữ liệu sang thư mục tạm TRƯỚC khi import,
+    # nếu không mỗi test nối sự kiện vào data/processed/ thật của cây (01/10/2026).
+    du_lieu = tmp_path / "du_lieu"
+    script = _SCRIPT.format(repo=str(REPO_ROOT), tier=tier, du_lieu=str(du_lieu))
     env = dict(os.environ)
     env["DATABASE_URL"] = f"sqlite:///{db_path}"
     env["USE_MOCK_SOURCES"] = "false"
@@ -68,6 +77,9 @@ def _alert_kind_for_tier(tier: str, tmp_path: Path) -> str:
     )
     assert result.returncode == 0, (
         f"subprocess render_clinical_application(tier={tier}) lỗi:\n{result.stderr[-4000:]}"
+    )
+    assert f"DATA_DIR={du_lieu}" in result.stdout.splitlines(), (
+        f"tiến trình con phải dùng thư mục dữ liệu tạm {du_lieu}, không phải data/ thật:\n{result.stdout!r}"
     )
     for line in result.stdout.splitlines():
         if line.startswith("ALERT_KIND="):

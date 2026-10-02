@@ -18,16 +18,19 @@ import re
 import time
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from app.config import CLINICAL_AREAS, settings
 from app.database import session_scope
 from app.models import SourceLog
+from app.services import nguon_hong_keo_dai
 from app.sources import get_enabled_sources, get_fallback_sources
 from app.sources.authority import assess_source_universe_coverage
 from app.sources.base import RawRecord
 from app.sources.openfda import OpenFDAClient
-from app.utils.http import DAU_CLOUDFLARE_CHAN
+from app.utils import mang
+from app.utils.http import DAU_CLOUDFLARE_CHAN, nhan_duong_mang_cua
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -78,6 +81,16 @@ _SAFETY_FEEDS_PROVIDER_BLOCKED = {"feed_fda_medwatch"}
 # một ghi chú có tên trong `mirror_notices`. Chỉ các `_via` trong tập này (chế độ Crossref-ISSN là nguồn CHÍNH,
 # không phải dự phòng, nên không có ở đây).
 _VIA_DU_PHONG = {"openfda_enforcement"}
+# Lane bị chặn TRÊN ĐƯỜNG MẠNG khi VPN bật (đo 01/10/2026, bác sĩ chốt «VPN luôn bật») ⇒ ĐƯỜNG THAY đã khai, cùng nhà
+# phát hành hoặc cùng vai trò, chạy được qua VPN: iris.who.int hết giờ mở kết nối ⇒ API www.who.int; ECDC bị
+# CloudFront chặn ⇒ tin dịch chính thức của WHO + tạp chí Eurosurveillance của ECDC (qua Crossref). MỌI lỗi của lane
+# gốc mang nhãn đường mạng VÀ ≥ 1 đường thay khoẻ ⇒ một ghi chú có tên trong `mirror_notices` — cảm biến hòm việc thấy
+# ghi chú thì xếp nguồn đó ưu tiên thấp nhất nhưng VẪN liệt kê. Không đổi `status` (feed lẻ vốn không làm PARTIAL).
+# Lỗi KHÁC (5xx, đọc hỏng, 404…) ⇒ KHÔNG ghi chú: đó là lỗi thật cần xem.
+_DUONG_THAY_KHI_CHAN_MANG = {
+    "feed_who_iris": ("feed_who_publications",),
+    "feed_ecdc_threats": ("feed_who_don", "feed_eurosurveillance"),
+}
 _HTTP_BI_CHAN_RE = re.compile(r"\b40[13] Client Error\b|\bHTTP 40[13]\b")
 
 
@@ -146,10 +159,15 @@ def summarize_source_health(
     ĐÃ gửi) không che độ phủ thật. CHỈ là số đo: KHÔNG tham gia tính `health` hay `status` (ngưỡng PASS/PARTIAL/FAIL
     giữ nguyên). Không truyền, hoặc nguồn không đi qua `sweep_source` (feed, openFDA) ⇒ hàng KHÔNG có khoá này —
     «không đo» không được hiện thành 0.
+
+    `loi_duong_mang` (01/10/2026): nguồn có lỗi mang nhãn đường mạng của HttpClient (trang chặn Cloudflare/CloudFront,
+    NCBI gắn cờ IP, proxy, không mở được kết nối, DNS, TLS) — mỗi hàng nguồn thêm `error_duong_mang` và
+    `kieu_duong_mang`. Cũng CHỈ là số đo, không tham gia `health`/`status`.
     """
     grouped: dict[str, dict[str, Any]] = defaultdict(
         lambda: {"requests": 0, "records": 0, "ok": 0, "degraded": 0, "error": 0, "mock": 0,
-                 "error_http_401_403": 0, "error_http_403_cloudflare": 0, "du_phong": 0, "skipped": 0}
+                 "error_http_401_403": 0, "error_http_403_cloudflare": 0, "du_phong": 0, "skipped": 0,
+                 "error_duong_mang": 0, "kieu_duong_mang": {}}
     )
     for row in logs:
         source = str(row.get("source") or "unknown")
@@ -168,6 +186,10 @@ def summarize_source_health(
             item["error_http_401_403"] += 1
         if status == "error" and _HTTP_403_CLOUDFLARE_RE.search(str(row.get("error_message") or "")):
             item["error_http_403_cloudflare"] += 1
+        nhan = nhan_duong_mang_cua(row.get("error_message")) if status == "error" else None
+        if nhan:
+            item["error_duong_mang"] += 1
+            item["kieu_duong_mang"][nhan] = item["kieu_duong_mang"].get(nhan, 0) + 1
         if str(row.get("error_message") or "").startswith("du_phong:"):
             item["du_phong"] += 1
 
@@ -196,6 +218,15 @@ def summarize_source_health(
                 source_rows[source]["not_attempted_areas"] = dict(phu["not_attempted_areas"])
     not_attempted_by_source = {name: row["not_attempted"] for name, row in source_rows.items()
                                if row.get("not_attempted")}
+    # Lỗi TRÊN ĐƯỜNG MẠNG (01/10/2026): request không tới/không được máy chủ nguồn phục vụ — trang chặn của mạng phân
+    # phối, NCBI gắn cờ IP, proxy môi trường, không mở được kết nối, DNS, TLS (nhãn do HttpClient gắn, xem
+    # `NHAN_DUONG_MANG`). CHỈ để NHÌN THẤY, không tham gia tính `health`/`status`: luật PASS/PARTIAL/FAIL và các miễn
+    # trừ bác sĩ đã chọn giữ nguyên. Không phán nguyên nhân (IP VPN hay chống bot) — đọc kèm `mang` của lượt.
+    loi_duong_mang = {
+        name: {"kieu": dict(row["kieu_duong_mang"]), "loi_duong_mang": row["error_duong_mang"], "loi": row["error"],
+               "health": row["health"]}
+        for name, row in source_rows.items() if row.get("error_duong_mang")
+    }
 
     expected_api = set(expected_api_sources)
     expected_feeds = set(expected_feed_sources)
@@ -243,6 +274,15 @@ def summarize_source_health(
         f"{name.upper()}_SERVED_BY_OFFICIAL_FALLBACK"
         for name, item in sorted(source_rows.items()) if item.get("du_phong")
     ]
+    for goc, cac_duong_thay in sorted(_DUONG_THAY_KHI_CHAN_MANG.items()):
+        row_goc = source_rows.get(goc) or {}
+        so_loi = int(row_goc.get("error") or 0)
+        if row_goc.get("health") != "unavailable" or not so_loi or row_goc.get("error_duong_mang") != so_loi:
+            continue
+        khoe = [t for t in cac_duong_thay if source_rows.get(t, {}).get("health") in {"ok", "degraded"}]
+        if khoe:
+            mirror_notices.append(f"{goc.upper()}_BLOCKED_ON_NETWORK_PATH_SERVED_BY_"
+                                  + "_AND_".join(t.upper() for t in khoe))
     degraded_required: list[str] = []
     for name in sorted(set(discovery_expected) | safety_expected):
         health = source_rows.get(name, {}).get("health")
@@ -325,6 +365,8 @@ def summarize_source_health(
         "optional_enhanced_blocked_by_cloudflare": enhanced_cloudflare,
         # Nguồn bị cầu dao cắt: {tên: số truy vấn lẽ ra được gửi mà chưa từng được thử}. Chỉ để NHÌN THẤY.
         "not_attempted_by_source": not_attempted_by_source,
+        # Nguồn có lỗi trên đường mạng: {tên: {kieu: {nhãn: số lần}, ...}}. Chỉ để NHÌN THẤY.
+        "loi_duong_mang": loi_duong_mang,
         "source_universe": source_universe,
         "sources": source_rows,
     }
@@ -460,6 +502,11 @@ def ingest_all(max_results_per_query: int = 10,
     tang_du_phong = _dung_tang_du_phong()   # không quét song song; chạy sau khi mọi nguồn chính xong
     all_records: List[RawRecord] = []
     all_logs: List[dict] = []
+    # Dấu vân đường mạng (01/10/2026): lượt live tự ghi nó đi qua VPN hay ra thẳng — xem app/utils/mang.py.
+    luc_bat_dau = datetime.now(timezone.utc)
+    mang_dau = None if settings.use_mock_sources else mang.dau_van_mang()
+    if mang_dau is not None:
+        logger.info("Ingestion đường mạng: %s", mang.mo_ta_ngan(mang_dau))
 
     if since_date:
         logger.info("Ingestion: lọc bài MỚI kể từ %s", since_date)
@@ -532,6 +579,8 @@ def ingest_all(max_results_per_query: int = 10,
         safety_enabled=settings.enable_openfda,
         coverage=coverage,
     )
+    if mang_dau is not None:
+        _gan_mang_va_hong_keo_dai(source_health, mang_dau, luc_bat_dau)
     if diagnostics is not None:
         diagnostics.update(source_health)
         if fallback_summary is not None:
@@ -559,7 +608,43 @@ def ingest_all(max_results_per_query: int = 10,
             "thử, theo nguồn: %s. Không tính vào trạng thái lượt chạy.",
             source_health["not_attempted_by_source"],
         )
+    if source_health.get("loi_duong_mang"):
+        logger.warning(
+            "Ingestion lỗi TRÊN ĐƯỜNG MẠNG (request không tới/không được máy chủ nguồn phục vụ; đường mạng lượt "
+            "này: %s): %s. Không tính vào trạng thái lượt chạy; đo lại từng nguồn: python tools/do_mang_nguon.py",
+            mang.mo_ta_ngan(source_health.get("mang")),
+            " · ".join(f"{ten} {','.join(sorted(ct['kieu']))} ({ct['loi_duong_mang']}/{ct['loi']} lỗi)"
+                       for ten, ct in sorted(source_health["loi_duong_mang"].items())),
+        )
+    if source_health.get("hong_keo_dai"):
+        logger.warning(
+            "⚠ Nguồn HỎNG KÉO DÀI (≥%d lượt live liền, ≥%d ngày — trạng thái lượt KHÔNG phản ánh điều này): %s",
+            nguon_hong_keo_dai.NGUONG_LUOT, nguon_hong_keo_dai.NGUONG_NGAY,
+            nguon_hong_keo_dai.mo_ta_ngan(source_health["hong_keo_dai"]),
+        )
     return all_records
+
+
+def _gan_mang_va_hong_keo_dai(source_health: dict, mang_dau: dict, luc_bat_dau: datetime) -> None:
+    """Gắn dấu vân đường mạng + danh sách nguồn hỏng kéo dài vào `source_health` (01/10/2026). CHỈ là số đo.
+
+    Không đổi `status`/`warnings`. Đọc lịch sử lỗi (CSDL khoá, bảng cũ…) ⇒ `hong_keo_dai` = None kèm
+    `hong_keo_dai_loi` — không đo được ≠ «không nguồn nào hỏng kéo dài», nên KHÔNG ghi {}."""
+    source_health["mang"] = mang_dau
+    mang_cuoi = mang.dau_van_mang()
+    if not mang.cung_duong(mang_dau, mang_cuoi):
+        # VPN nối lại/đổi máy chủ giữa lượt: lỗi của lượt này có thể thuộc một trong hai đường.
+        source_health["mang_cuoi_luot"] = mang_cuoi
+        logger.warning("Ingestion: đường mạng ĐỔI giữa lượt — đầu lượt %s, cuối lượt %s.",
+                       mang.mo_ta_ngan(mang_dau), mang.mo_ta_ngan(mang_cuoi))
+    try:
+        source_health["hong_keo_dai"] = nguon_hong_keo_dai.tinh_hong_keo_dai(
+            source_health.get("sources") or {}, nguon_hong_keo_dai.doc_lich_su_suc_khoe(), luc_bat_dau,
+            ghi_chu=source_health.get("mirror_notices") or [])
+    except Exception as exc:  # noqa: BLE001 — số đo phụ trợ không được làm hỏng lượt quét
+        source_health["hong_keo_dai"] = None
+        source_health["hong_keo_dai_loi"] = type(exc).__name__
+        logger.warning("Ingestion: KHÔNG đo được nguồn hỏng kéo dài (%s) — không phải «không có».", type(exc).__name__)
 
 
 _FDA_SENTINEL = object()  # đánh dấu tác vụ openFDA trong danh sách nguồn

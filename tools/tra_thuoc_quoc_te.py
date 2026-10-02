@@ -87,7 +87,12 @@ def _dong_ema(b: Dict[str, Any]) -> str:
 
 def _in_ema(kq: Dict[str, Any]) -> None:
     print(f"EMA — «{kq['tu_khoa']}» → {kq['trang_thai']}")
-    if kq["trang_thai"] in ("co_ket_qua", "khong_thay"):
+    if kq.get("du_phong") and kq["trang_thai"] in ("co_ket_qua", "khong_thay"):
+        # 01/10/2026: EMA bị chặn trên đường mạng (vd VPN) ⇒ kết quả từ Sổ đăng ký Liên minh của Uỷ ban châu Âu.
+        print(f"  ⚠ DỰ PHÒNG sổ EC (EMA không tới được: {str(kq['du_phong'].get('ly_do_ema'))[:120]}) · "
+              f"{kq.get('tong_bai_ghi_du_phong')} bản ghi sổ EC · khớp {kq.get('so_khop')} · "
+              f"theo trạng thái {kq.get('theo_trang_thai')}")
+    elif kq["trang_thai"] in ("co_ket_qua", "khong_thay"):
         print(f"  Dữ liệu lúc {kq.get('du_lieu_luc') or '?'} · {kq.get('tong_bai_ghi_ema')} bản ghi EMA · "
               f"khớp {kq.get('so_khop')} · theo trạng thái {kq.get('theo_trang_thai')}")
     for b in kq["ket_qua"]:
