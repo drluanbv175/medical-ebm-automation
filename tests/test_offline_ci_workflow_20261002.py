@@ -36,7 +36,8 @@ def test_huy_luot_cu_cua_pr_nhung_khong_huy_nhanh_mac_dinh():
 
 
 def test_ten_job_ngan_va_on_dinh():
-    assert "name: offline-hermetic-tests (${{ matrix.os }})" in _doc(), "tên job lộ khoá phụ của ma trận (python_cmd, artifact)"
+    ten = "name: offline-hermetic-tests (${{ matrix.os }})"
+    assert ten in _doc(), "tên job lộ khoá phụ của ma trận (python_cmd, artifact)"
 
 
 def test_mot_ma_tran_hai_nen_khong_con_hai_job_sao_chep():
