@@ -44,7 +44,7 @@ wiley-tdm>=1.2.0
 # theo đúng thói quen của dự án (không dựa vào phụ thuộc bắc cầu ngầm).
 beautifulsoup4>=4.12.0
 lxml>=5.0.0
-pypdf>=6.16.1  # vá bảo mật 2026-09-28 (PYSEC-2026-3655/3656/3910–3913)
+pypdf>=6.19.0  # vá bảo mật 02/10/2026 (Dependabot: 8 cảnh báo high đến 6.19.0; trước đó PYSEC-2026-3655/3656/3910–3913)
 
 # Reports / export
 Jinja2>=3.1.4
