@@ -9,6 +9,7 @@ Triết lý: ENGINE quét RỘNG (cả nhiễu, 3.6k mục, máy chấm điểm)
 
 Liêm chính: mọi mục từ engine là "máy chấm điểm" → provenance="from_engine",
 verification_status="chưa xác minh" (chờ bác sĩ kiểm); decision không bao giờ tự đặt "apply".
+gradeLevel CHỈ lấy từ `official_grade` của nguồn (02/10/2026, EV-08) — điểm máy chấm không bao giờ thành «GRADE».
 Backup sổ cái trước khi ghi; chống trùng theo doi>pmid>title.
 
 Cách dùng:
@@ -18,6 +19,7 @@ Cách dùng:
 import argparse
 import json
 import os
+import re
 import shutil
 import sqlite3
 import subprocess
@@ -40,19 +42,34 @@ def ensure_utf8_console() -> None:
         except (AttributeError, OSError, ValueError):
             continue
 
-GRADE_MAP = {  # operational_evidence_level / official_grade → gradeLevel chuẩn EBM_MASTER
-    "high": "high", "moderate": "mod", "mod": "mod", "low": "low", "very low": "vlow", "vlow": "vlow",
-}
+# Mức GRADE CHÍNH THỨC của NGUỒN → gradeLevel chuẩn EBM_MASTER. Thứ tự: THẤP nhất trước — văn bản tự do vừa nhắc
+# «cao» vừa nhắc «thấp» (vd "Downgraded from high to low", "High risk of bias, low certainty") thì kết luận là mức
+# THẤP HƠN (cùng nguyên tắc `app/scoring/operational_level.py`, sửa 05/09/2026).
+GRADE_PATTERNS = (
+    ("vlow", re.compile(r"\b(very\s+low|vlow)\b")),
+    ("low", re.compile(r"\blow\b")),
+    ("mod", re.compile(r"\b(moderate|mod)\b")),
+    ("high", re.compile(r"\bhigh\b")),
+)
 
 
 def to_grade(item):
-    for raw in (item.get("official_grade"), item.get("operational_evidence_level")):
-        if not raw:
-            continue
-        k = str(raw).strip().lower()
-        for token, val in GRADE_MAP.items():
-            if k.startswith(token):
-                return val
+    """gradeLevel của thẻ cầu nối — CHỈ từ `official_grade` (phân hạng do NGUỒN công bố).
+
+    SỬA 02/10/2026 (EV-08): trước đây hàm còn đọc `operational_evidence_level` — nhưng khi nguồn KHÔNG có GRADE,
+    trường đó là mức VẬN HÀNH do máy ước từ điểm chất lượng ("High (operational)"), nên mọi thẻ engine tier A đều
+    thành `gradeLevel: high` (đo 02/10: 409/409 thẻ from_engine mang «high»; WebApp hiện nhãn «GRADE: high» cho
+    chúng). Điểm máy chấm vẫn nằm trong `certainty` («máy chấm, không phải GRADE chính thức»); không có
+    official_grade ⇒ "na" (nguồn không dùng thang GRADE, KHÔNG phải «chứng cứ yếu»). Luật «không bao giờ nâng
+    gradeLevel» (CLAUDE.md §6.3). Không đụng thẻ đã có trong sổ cái — hạ/nâng thẻ cũ là quyết định của bác sĩ.
+    """
+    raw = item.get("official_grade")
+    if not raw:
+        return "na"
+    k = str(raw).strip().lower()
+    for val, pat in GRADE_PATTERNS:
+        if pat.search(k):
+            return val
     return "na"
 
 
