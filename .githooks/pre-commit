@@ -115,4 +115,16 @@ if [ -f tools/kiem_newline_vung_ky.py ]; then
   fi
 fi
 
+# Them 03/10/2026 (AN-06): chot bi mat/PII cho phan da stage CUA REPO Y KHOA. Hook goc o tren chay voi cwd = repo goc nen chi quet
+# phan stage cua repo GOC. Cong cu o repo goc (mot nguon duy nhat), quet repo nay qua --repo. Vang cong cu ⇒ ⚪ bao, KHONG chan.
+BIMAT="${WORKSPACE_ROOT:-}/tools/kiem_bi_mat_truoc_commit.py"
+if [ -n "${WORKSPACE_ROOT:-}" ] && [ -f "$BIMAT" ]; then
+  if ! python3 "$BIMAT" --repo "${REPO_ROOT:-$(pwd)}"; then
+    echo "CHAN COMMIT: chot bi mat/PII — go khoa/token khoi phan da stage; khoa GIA trong test thi them 'bimat-mien: <ly do>' tren CHINH dong do." >&2
+    exit 1
+  fi
+else
+  echo "⚪ pre-commit: chua co tools/kiem_bi_mat_truoc_commit.py o repo goc (${WORKSPACE_ROOT:-?}) — bo qua chot bi mat/PII cua repo y khoa." >&2
+fi
+
 exit 0
