@@ -60,8 +60,10 @@ def bat_gui(monkeypatch):
     """Thay send_email/send_webhook bằng hàm ghi lại nội dung (không gửi thật)."""
     da_gui: list = []
 
-    def _email(subject, body_md, body_html=None):
-        da_gui.append(("email", subject, body_md))
+    def _email(subject, body_md, body_html=None, attachments=None):
+        # HV-05 (03/10/2026): thân = bản tin ngắn, bản đầy đủ là tệp đính kèm — ghi cả hai để các kiểm cũ soi
+        # được nội dung.
+        da_gui.append(("email", subject, body_md + "".join(f"\n{a[1]}" for a in (attachments or []))))
         return {"status": "sent"}
 
     def _webhook(text, payload_extra=None):

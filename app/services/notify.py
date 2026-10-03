@@ -17,7 +17,7 @@ from email.mime.text import MIMEText
 from typing import Dict, List
 
 from app.config import settings
-from app.reports.alert_digest import build_alert_data, render_alert_markdown
+from app.reports.alert_digest import build_alert_data, render_alert_markdown, render_alert_short
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -28,8 +28,12 @@ def _high_priority(data: Dict) -> List:
     return data.get("regulatory", []) + data.get("guidelines", []) + data.get("actionable", [])
 
 
-def send_email(subject: str, body_md: str, body_html: str | None = None) -> Dict:
-    """Gửi email qua SMTP. Trả về status; 'skipped' nếu chưa cấu hình."""
+def send_email(subject: str, body_md: str, body_html: str | None = None,
+               attachments: List[tuple] | None = None) -> Dict:
+    """Gửi email qua SMTP. Trả về status; 'skipped' nếu chưa cấu hình.
+
+    `attachments`: danh sách (tên tệp, nội dung str, kiểu con MIME vd "markdown") — HV-05 (03/10/2026):
+    bản tin đầy đủ đi kèm dạng tệp, thân email là bản tin ngắn."""
     if not (settings.enable_email_alerts and settings.smtp_host
             and settings.alert_email_to and settings.smtp_from
             and settings.smtp_password):
@@ -37,13 +41,22 @@ def send_email(subject: str, body_md: str, body_html: str | None = None) -> Dict
                   and not settings.smtp_password) else "email_not_configured")
         return {"status": "skipped", "reason": reason}
     try:
-        msg = MIMEMultipart("alternative")
+        than = MIMEMultipart("alternative")
+        than.attach(MIMEText(body_md, "plain", "utf-8"))
+        if body_html:
+            than.attach(MIMEText(body_html, "html", "utf-8"))
+        if attachments:
+            msg = MIMEMultipart("mixed")
+            msg.attach(than)
+            for ten, noi_dung, kieu in attachments:
+                phan = MIMEText(noi_dung, kieu or "plain", "utf-8")
+                phan.add_header("Content-Disposition", "attachment", filename=ten)
+                msg.attach(phan)
+        else:
+            msg = than
         msg["Subject"] = subject
         msg["From"] = settings.smtp_from
         msg["To"] = settings.alert_email_to
-        msg.attach(MIMEText(body_md, "plain", "utf-8"))
-        if body_html:
-            msg.attach(MIMEText(body_html, "html", "utf-8"))
 
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30) as server:
             if settings.smtp_use_tls:
@@ -148,19 +161,21 @@ def notify_high_priority_new(days: int = 7, force: bool = False) -> Dict:
         return result
 
     md = render_alert_markdown(data)
+    from datetime import datetime, timezone  # noqa: PLC0415
+    ten_tep = f"Alert_Digest_{datetime.now(timezone.utc):%Y%m%d}.md"
+    ngan = render_alert_short(data, ten_tep)
     n_reg = len(data.get("regulatory", []))
     n_gl = len(data.get("guidelines", []))
     n_act = len(data.get("actionable", []))
     subject = (f"[EBM Alert] {len(hp)} mục mới ưu tiên cao "
                f"({n_reg} an toàn thuốc, {n_gl} guideline, {n_act} actionable)")
-    try:
-        import markdown as md_lib
-        html = md_lib.markdown(md, extensions=["tables"])
-    except Exception:  # pragma: no cover
-        html = None
-
-    result["email"] = send_email(subject, md, html)
-    result["webhook"] = send_webhook(subject + "\n\n" + md[:1500])
+    # HV-05: thân email = bản tin NGẮN (trần mỗi nhóm, nói rõ phần còn lại); bản ĐẦY ĐỦ đính kèm dạng tệp .md —
+    # không mục nào mất.
+    an_toan = ngan.replace("&", "&amp;").replace("<", "&lt;")
+    html = "<pre style='font-family:system-ui,Arial;white-space:pre-wrap'>" + an_toan + "</pre>"
+    result["email"] = send_email(subject, ngan, html, attachments=[(ten_tep, md, "markdown")])
+    result["webhook"] = send_webhook(subject + "\n\n" + ngan[:1500])
+    result["ban_tin_ngan_so_dong"] = ngan.count("\n") + 1
     result["status"] = "sent" if (result["email"]["status"] == "sent"
                                   or result["webhook"]["status"] == "sent") else "not_delivered"
     return result
