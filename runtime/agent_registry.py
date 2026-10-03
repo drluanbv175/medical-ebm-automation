@@ -63,8 +63,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # số lượng vẫn giữ nguyên 50.
 # Tái khóa 2026-10-01: `ke-don-an-toan` (mục 8 dạy in một lần, nguyên văn dòng `mien_tru_nlm` của NLM khi trình
 # kết quả `chuan-hoa` — trỏ `_CONNECTOR-CHUNG-CU.md` §1ter luật 5); số lượng vẫn giữ nguyên 50.
+# Tái khóa 2026-10-03: `tham-dinh-dau-ra` (R6 dạy ô mẫu khuôn sinh không nhãn + §6bis biên nhận máy, gốc 21d95d1),
+# `dao-duc-dang-ky` (đính chính Annex 2 lạc hậu), `dieu-phoi-nghien-cuu`, `viet-ban-thao` (bản cặp y hệt gốc); vẫn 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "978aa1d334d2650edc2110494be0dbf57bcc197b0a47942b75d3bcaca9965c32"
+    "229e2b9bf9e5bd50a4161ddf73088aa108956a40315484dc2099f5e256e20b7c"
 )
 
 MINIMUM_AGENT_COUNT = 50

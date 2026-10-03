@@ -54,7 +54,7 @@
 | **R3** | Vượt cổng cứng (G2/G4/G5/G8/G9/G10) | **DỪNG NGAY — leo thang** | ❌ | Không retry; nêu cổng bị vượt + artifact vi phạm |
 | **R4** | Tự gán GRADE không nguồn | `tham-dinh-grade-nnt` (re-grade) hoặc xóa nhãn | ✅ | Xóa GRADE label; dùng `gradeLevel:'na'` |
 | **R5** | Trộn độ chắc chứng cứ & độ mạnh KCáo | Agent gốc (tách rõ hai trục) | ✅ | Thêm chú thích phân biệt |
-| **R6** | Thiếu nhãn `[CẦN…]` ở chỗ thiếu | Agent gốc (gắn nhãn đúng chỗ) | ✅ | Tìm tất cả giá trị trống/giả định → gắn nhãn |
+| **R6** | Thiếu nhãn `[CẦN…]` ở chỗ thiếu, hoặc còn ô mẫu khuôn sinh không nhãn | Agent gốc (gắn nhãn đúng chỗ) | ✅ | Tìm tất cả giá trị trống/giả định → gắn nhãn; ô mẫu không nhãn (`[TO BE COMPLETED]`, `[đơn vị]`/`[bệnh]`/`[nơi thực hiện]`/`[địa điểm]`/`[ca/hồ sơ]`, `[… — điền]`, câu ví dụ «thuốc/can thiệp X», `[TÁC GIẢ ĐIỀN…]`/`[BÁC SĨ ĐIỀN…]`, «___»/«……» ngoài bảng trống dự kiến và dòng ký/ngày) → điền bằng dữ kiện có nguồn hoặc đổi sang nhãn chuẩn |
 | **R7** | Thiếu disclaimer | Agent gốc (thêm disclaimer) | ✅ | Nhanh nhất — thêm "Cần bác sĩ kiểm chứng." |
 | **R8** | p-value đơn độc không kèm CI | `phan-tich-thong-ke` (bổ CI) | ✅ | Yêu cầu effect size + 95% CI |
 | **R9** *(2026-07-12: bổ sung, thiếu từ trước — thêm vào `retry_loop.py` 2026-07-04)* | Nguồn thiếu năm/phiên bản | `tra-cuu-chung-cu` (bổ năm/phiên bản) | ✅ | Nối `tools/eval/run_eval.py::source_has_year` |

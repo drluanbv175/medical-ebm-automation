@@ -23,21 +23,18 @@ Nếu RCT có `decentralised`, `pragmatic` và/hoặc `rwd`, PI/methodologist ph
 fitness-for-purpose, gánh nặng/khả năng tiếp cận, vai trò giám sát, luồng an toàn và kiểm
 soát riêng từng phương pháp; G2 kiểm thông tin cho IRB, eConsent/xác minh danh tính,
 lựa chọn không số hóa, DHT, privacy/confidentiality, quyền dùng RWD và data governance.
-Thiếu trường thật hoặc còn nhãn `[CẦN...]` thì **PHẢI** coi là chưa mở được G1/G2.
+Thiếu trường thật hoặc còn nhãn `[CẦN...]` thì **PHẢI** coi là chưa mở được G1/G2 — kể cả ô mẫu khuôn sinh KHÔNG nhãn
+(ICF: «thuốc/can thiệp X», `[bệnh]`, `[đơn vị]`, `[nơi thực hiện]`, `[tài trợ…]`; ICF tiếng Anh: `[TO BE COMPLETED]`; «___» gắn với
+giá trị như thời hạn lưu trữ): G2 đo bằng `placeholder_contract.py` (sự cố ICF C1a 03/10/2026).
 Nguồn ICH Step 4 03/06/2026.
 
-⛔ **ĐÍNH CHÍNH 03/09/2026 — mục này TỪNG tự khai là «hợp đồng CHẠY ĐƯỢC» và chỉ đích danh
-`medical-ebm-automation/tools/annex2_quality_gate.py`. File đó CHƯA BAO GIỜ TỒN TẠI** — không
-có trong cây làm việc, không có trên `origin/master` của CẢ HAI repo, và chuỗi `annex2` xuất
-hiện ĐÚNG 0 lần trong toàn bộ repo y khoa. Nghĩa là **KHÔNG có mã nào chặn**: thử nghiệm
-decentralised/pragmatic/RWD hiện đi qua G1/G2 mà máy không kiểm một trường Annex 2 nào.
-Chữ «BLOCK» ở trên là mô tả ĐIỀU PHẢI LÀM, do **người** thi hành — không phải điều máy đang làm.
-Đúng họ **BH27**: lời khai về một cổng không có thật còn nguy hiểm hơn không có cổng, vì nó
-làm người đọc thôi tự kiểm.
-**Việc còn lại thuộc PI/methodologist:** bộ tiêu chí Annex 2 là chuẩn QUY PHẠM — agent KHÔNG
-được tự bịa để «cho có cổng». Khi nào bác sĩ ấn định xong tiêu chí thì mới dựng module.
-`tools/verify_controlled_research_automation.py` nay báo trục này
-`ich_e6_r3_annex2.trang_thai = KHONG_CO_BO_THI_HANH` và cho **FAIL** (không phải ⚪) cho tới lúc đó.
+✅ **HIỆN TRẠNG (đo lại 03/10/2026; thay đoạn «ĐÍNH CHÍNH 03/09/2026» đã lạc hậu):** `medical-ebm-automation/tools/annex2_quality_gate.py`
+CÓ THẬT từ commit y khoa `6d66acf` (03/09/2026 — đoạn đính chính viết cùng ngày, trước khi module vào nhánh) và được
+`g1_quality_gate.py` + `g2_quality_gate.py` gọi: PI/methodologist khai `study_meta.gate_params.G1.annex2`; đã khai áp dụng mà thiếu
+mục G1/G2 ⇒ **BLOCK** (máy thi hành). `tools/verify_controlled_research_automation.py` chấm trục `ich_e6_r3_annex2` bằng hành vi
+thật (thiếu ⇒ BLOCK, đủ ⇒ PASS); vắng module thì trục tự báo `KHONG_CO_BO_THI_HANH` (không xanh giả). Bộ tiêu chí Annex 2 vẫn là
+chuẩn QUY PHẠM — agent KHÔNG tự bịa để «cho có cổng». Bài học BH27 giữ nguyên: lời khai về cổng phải đo trên mã sống, kể cả lời
+khai «cổng KHÔNG tồn tại».
 
 ---
 

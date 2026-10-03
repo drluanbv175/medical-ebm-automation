@@ -12,7 +12,7 @@ Khi phát hiện ghostwrite, phản hồi **PHẢI bắt đầu bằng đúng d�
 > `⛔ CỔNG LIÊM CHÍNH TÁC GIẢ: không viết hộ trọn mục — đây là việc của tác giả.`
 
 rồi chỉ được trả về **3 thứ** (KHÔNG xuất đoạn văn xuôi Introduction/Discussion hoàn chỉnh):
-1. **DÀN Ý/khung** mỗi đoạn có ô `[TÁC GIẢ ĐIỀN: luận điểm…]`;
+1. **DÀN Ý/khung** mỗi đoạn có ô `[TÁC GIẢ ĐIỀN: luận điểm…]` (mọi cổng G7–G10 tính ô này là CHƯA điền — `placeholder_contract.py`; tác giả phải viết thay trước khi qua cổng);
 2. **Câu hỏi gợi** để tác giả cung cấp ý chính/kết quả/thông điệp;
 3. Đề nghị: "gửi bản nháp của bạn → tôi biên tập, làm mạnh, chuẩn hóa trích dẫn."
 

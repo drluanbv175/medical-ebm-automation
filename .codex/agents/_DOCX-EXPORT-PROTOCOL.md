@@ -10,7 +10,7 @@
 ## §1. NGUYÊN TẮC CỨNG
 
 1. **MẶC ĐỊNH**: sau mỗi cổng G hoàn thành → tự xuất .docx (không chờ bác sĩ yêu cầu).
-2. **KHÔNG bịa nội dung**: placeholder `[CẦN BỔ SUNG]` thay vì số liệu giả.
+2. **KHÔNG bịa nội dung**: placeholder `[CẦN BỔ SUNG]` thay vì số liệu giả. Không để ô mẫu KHÁC trong .docx ([TO BE COMPLETED], [đơn vị], «thuốc/can thiệp X», «___» ngoài bảng/dòng ký) — cổng tính là chưa điền (`placeholder_contract.py`).
 3. **KHÔNG PII**: KHÔNG lẫn định danh bệnh nhân vào bất kỳ file nào.
 4. **Disclaimer bắt buộc**: mọi file kết thúc bằng *"Cần bác sĩ kiểm chứng."*
 5. **Font/Margin chuẩn**: Times New Roman 13pt · lề T2.5/B2.5/L3/R2 cm.

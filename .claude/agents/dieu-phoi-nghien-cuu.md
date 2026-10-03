@@ -317,7 +317,8 @@ R2. PII — không lẫn định danh BN (làm trên bản sao, mã giả danh) 
 R3. Cổng A/B/G — không vượt G2·G4·dữ liệu thật trước phân tích·liêm chính tác giả khi chưa duyệt [✅/🟡/🔴]
 R4. Không tự gán GRADE/độ mạnh khuyến cáo; RoB 2 chỉ cho RCT ...... [✅/🟡/🔴]
 R5. Tách độ chắc CHỨNG CỨ vs độ mạnh KHUYẾN CÁO; không suy nhân quả vượt thiết kế [✅/🟡/🔴]
-R6. Nhãn thiếu [CẦN BỔ SUNG]/[CẦN KIỂM CHỨNG]/[CẦN XÁC NHẬN…]/[DỰ THẢO] đúng chỗ [✅/🟡/🔴]
+R6. Nhãn thiếu [CẦN BỔ SUNG]/[CẦN KIỂM CHỨNG]/[CẦN XÁC NHẬN…]/[DỰ THẢO] đúng chỗ; không sót ô mẫu khuôn sinh không nhãn
+    (placeholder_contract.py — thước đo chung của 11 cổng; chạy TRƯỚC khi báo READY/chờ ký) [✅/🟡/🔴]
 R7. Disclaimer kết "Cần bác sĩ kiểm chứng." ...................... [✅/🟡/🔴]
 R8. Kết quả thống kê trọng yếu: hiệu ứng + 95% CI, KHÔNG p-value đơn độc [✅/🟡/🔴]
 Lớp 2 (Q1–Q7 Med-PaLM): N/A cho gói NGHIÊN CỨU — dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic A1–A18 (`_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`).
