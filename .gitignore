@@ -81,7 +81,11 @@ reports/*.docx
 evidence/external-library/catalog.json
 
 # Codex agent sync — sinh tự động từ .claude/agents/*.md; không edit tay.
-.codex/
+# .codex/agents/ được TRACK (Codex nạp agent dự án từ đây; commit 20660c0 theo yêu cầu bác sĩ) nên KHÔNG ignore —
+# trước 01/10/2026 dòng `.codex/` ignore cả thư mục, tệp agent mới sinh ra phải `git add -f` mới vào được git.
+# Sinh/kiểm: python3 tools/sinh_mirror_codex.py [--ghi]. Phần còn lại của .codex/ (cấu hình máy) vẫn ignore.
+.codex/*
+!.codex/agents/
 
 # Kết quả CI tự động sinh (daily/weekly scripts) — không commit vào git.
 # Frozen evidence (v4_3_3_*) vẫn được tracked; chỉ bỏ output chạy hàng ngày.

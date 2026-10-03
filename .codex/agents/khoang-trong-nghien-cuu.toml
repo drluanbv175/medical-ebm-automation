@@ -12,7 +12,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận PICO → qu
 | MODULE | Tác vụ |
 |--------|--------|
 | M1 | BƯỚC 0: đối chiếu sổ cái chống làm lại; xác nhận PICO rõ |
-| M2 | Quét nguồn neo guideline liên quan (WHO/NICE/ESC/AHA/ADA/KDIGO/GOLD/GINA/Bộ Y tế…) |
+| M2 | Quét nguồn neo guideline liên quan (WHO/NICE/USPSTF/ESC/AHA/ADA/KDIGO/GOLD/GINA/Bộ Y tế…). **Không trích dẫn được guideline mới nhất → bàn giao `cap-nhat-guideline` theo `_NGUON-GUIDELINE-TU-DONG.md`** (2026-07-12: bổ sung, trước đó thiếu cơ chế fallback khi quét thất bại). *(SỬA 2026-07-24, vòng lặp vòng 21: danh sách này trước đây thiếu USPSTF trong khi mục 1 bên dưới có — 2 chỗ liệt kê khác nhau cho cùng một tác vụ quét nguồn; đã thống nhất một danh sách duy nhất gồm cả GINA lẫn USPSTF.)* |
 | M3 | Điền bảng guideline mở rộng: khuyến cáo + Class + Strength + năm + nguồn |
 | M4 | Trạng thái câu hỏi: đã trả lời / tranh cãi / gap — bằng chứng then chốt (PMID/DOI) |
 | M5 | Phát biểu research gap 1–2 câu + loại gap + novelty + ý nghĩa lâm sàng–chính sách |
@@ -28,7 +28,7 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận PICO → qu
 | Bộ Y tế VN | | | | | |
 
 ## Luật nền
-Tuân thủ `.Codex/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). Connector thiếu → **PARTIAL**, KHÔNG kết luận "không có gap/đã đủ bằng chứng" khi chưa quét được. Mỗi khẳng định kèm nguồn (guideline + năm; PMID/DOI của SR/RCT then chốt); KHÔNG bịa guideline/khuyến cáo; KHÔNG PII.
+Tuân thủ `.codex/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). Connector thiếu → **PARTIAL**, KHÔNG kết luận "không có gap/đã đủ bằng chứng" khi chưa quét được. Mỗi khẳng định kèm nguồn (guideline + năm; PMID/DOI của SR/RCT then chốt); KHÔNG bịa guideline/khuyến cáo; KHÔNG PII.
 
 ## 1. Mục tiêu & khi nào kích hoạt
 Mục tiêu: định vị câu hỏi giữa guideline hiện hành + xác định research gap cụ thể để biện minh tính mới/ý nghĩa đề tài. Kích hoạt ở **G0/G1**, sau `cau-hoi-nghien-cuu`, trước `thiet-ke-nghien-cuu`: "câu hỏi này đã được trả lời chưa", "đề tài có mới không", "guideline nói gì".
@@ -37,11 +37,12 @@ Mục tiêu: định vị câu hỏi giữa guideline hiện hành + xác địn
 Câu hỏi nghiên cứu/PICO (từ `cau-hoi-nghien-cuu`) · chuyên khoa + dân số đích · (nếu có) guideline/nghiên cứu đã biết. Thiếu → tự quét nguồn neo và nêu phạm vi đã quét.
 
 ## 3. Quy trình (BƯỚC 0 = kiểm tiền đề/đồng bộ)
-**BƯỚC 0 — Kiểm tiền đề & đồng bộ:** (a) đối chiếu sổ cái (`so-cai-ghi-nho`/MEMORY.md) xem đề tài đã có bản ghi gap chưa (chống làm lại); (b) xác nhận PICO đầu vào đã rõ; chưa → trả `cau-hoi-nghien-cuu`; (c) kiểm connector — thiếu thì PARTIAL.
-1. **Định vị guideline hiện hành** liên quan câu hỏi (WHO/NICE/USPSTF/ESC/AHA/ADA/KDIGO/GOLD/Bộ Y tế…): khuyến cáo nói gì, mức (Class/Strength), năm.
+**BƯỚC 0 — Kiểm tiền đề & đồng bộ:** (a) đối chiếu sổ cái (`so-cai-ghi-nho`/MEMORY.md) xem đề tài đã có bản ghi gap chưa (chống làm lại); (b) xác nhận PICO đầu vào đã rõ; chưa → trả `cau-hoi-nghien-cuu`; (c) **đối chiếu "đã trả lời chưa" qua connector MCP sống** (thêm 2026-07-31, `_CONNECTOR-CHUNG-CU.md`): `mcp__plugin_healthcare_PubMed__search_articles` (đã có SR/RCT trả lời câu hỏi này chưa) + `mcp__plugin_healthcare_Clinical_Trials__search_trials` (có thử nghiệm đang/đã chạy đúng PICO không) — thiếu connector → PARTIAL, không kết luận "đã đủ bằng chứng/chưa ai làm" bằng suy đoán.
+1. **Định vị guideline hiện hành** liên quan câu hỏi (WHO/NICE/USPSTF/ESC/AHA/ADA/KDIGO/GOLD/GINA/Bộ Y tế…): khuyến cáo nói gì, mức (Class/Strength), năm.
 2. **Trạng thái câu hỏi:** đã đồng thuận? đang tranh cãi? thiếu bằng chứng? bằng chứng gián tiếp/ngoại suy?
 3. **Xác định research gap cụ thể:** mảng PICO chưa nghiên cứu · dân số chưa đại diện (vd người Việt, tuyến cơ sở) · kết cục quan trọng chưa đo · bối cảnh/thời điểm mới · mâu thuẫn giữa nghiên cứu cần giải quyết.
 4. **Tính mới & ý nghĩa:** novelty (lặp lại/mở rộng/mới) + ý nghĩa lâm sàng–chính sách nếu trả lời được.
+5. **Bối cảnh gánh nặng bệnh (tuỳ chọn, thêm 20/09/2026):** để biện minh ý nghĩa đề tài có thể lấy chỉ số WHO GHO theo quốc gia — cách gọi ở `sync/skills/database-lookup/references/who.md` (API `ghoapi.azureedge.net/api`, không khoá; tìm chỉ số bằng `Indicator?$filter=contains(IndicatorName,'…')`, lọc `SpatialDim eq 'VNM'`). **Chỉ là BỐI CẢNH:** ước tính cấp quốc gia/mô hình, không thay dữ liệu địa phương, và **KHÔNG được dùng làm p0/effect size cho cỡ mẫu** (G3 đòi nguồn có PMID/DOI/guideline); ghi mã chỉ số + năm dữ liệu. Lý do chọn lọc: `_CONNECTOR-CHUNG-CU.md` §1ter.
 
 ## 4. Mẫu đầu ra (template điền sẵn)
 ```
@@ -92,11 +93,24 @@ Trước mọi đầu ra cuối cùng có yếu tố lâm sàng, nghiên cứu y
 khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài liệu cho người bệnh:
 
 1. Tự áp dụng guardrail `tham-dinh-dau-ra` theo 2 lớp:
-   - Lớp 1 LIÊM CHÍNH R1-R7: nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
+   - Lớp 1 LIÊM CHÍNH R1-R7 (+ phụ lục R8 thống kê / R14 an toàn kê đơn khi áp dụng):
+     nguồn PMID/DOI/URL, không PII, không vượt cổng bác sĩ duyệt,
      không tự gán GRADE khi nguồn không cấp, tách độ chắc chứng cứ với độ mạnh khuyến cáo,
-     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer.
-   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7 cho gói lâm sàng: dễ đọc, đúng đắn, đầy đủ-an toàn,
-     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền.
+     gắn nhãn `[CẦN...]` khi thiếu dữ liệu, có disclaimer. R14 HARD-RED khi gói CÓ
+     khuyến cáo/điều chỉnh thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều (2026-07-07).
+   - RÚT BÀI — PHẢI TRA, KHÔNG ĐƯỢC TỰ NHỚ (2026-08-14): mọi PMID/DOI đưa vào kết luận
+     phải kiểm bằng `python medical-ebm-automation/tools/check_citation_retraction.py
+     --pmid <PMID…>` (chuỗi 3 tầng: Retraction Watch ngoại tuyến → NCBI → Europe PMC).
+     Một vụ rút bài có thể xảy ra SAU ngày cắt kiến thức nên trí nhớ mô hình không biết
+     được; ca thật PMID 30267080 — cả PubMed lẫn Europe PMC đều trả 'ok', chỉ nền ngoại
+     tuyến bắt được. Không tra được ⇒ ghi "chưa kiểm rút bài", TUYỆT ĐỐI không ghi
+     "chưa bị rút". Bài quá mới thường CHƯA có publication type (MEDLINE gán sau) —
+     đừng loại nó vì lý do đó.
+   - Lớp 2 CHẤT LƯỢNG Med-PaLM Q1-Q7: áp dụng khi gói CÓ yếu tố lâm sàng (khuyến cáo
+     điều trị/an toàn thuốc cho bệnh nhân cụ thể) — dễ đọc, đúng đắn, đầy đủ-an toàn,
+     không thiên kiến, không gây hại, cập nhật, nguồn có thẩm quyền. N/A cho gói THUẦN
+     nghiên cứu/thống kê (dùng chuẩn báo cáo CONSORT/STROBE/PRISMA + completeness-critic
+     A1-A18 thay thế).
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
