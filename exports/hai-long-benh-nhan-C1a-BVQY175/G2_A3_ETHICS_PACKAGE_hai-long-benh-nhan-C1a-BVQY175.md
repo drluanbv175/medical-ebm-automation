@@ -34,7 +34,7 @@ Từ: Chủ nhiệm đề tài: Nguyễn Hà Luân
  Đơn vị: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
  Điện thoại: [PII — điền ở bản nộp ngoài hệ thống] | Email: [PII — điền ở bản nộp ngoài hệ thống]
 
-TÊN ĐỀ TÀI: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
+TÊN ĐỀ TÀI: Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 
 THÔNG TIN TỔNG QUAN:
  Loại nghiên cứu: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
@@ -44,8 +44,8 @@ THÔNG TIN TỔNG QUAN:
  Cỡ mẫu dự kiến: 1000
  Thời gian nghiên cứu: bắt đầu SAU phê duyệt IRB — một giai đoạn liên tục phủ đều khung giờ/ngày trong tuần (đề cương §4.2); ngày cụ thể [BÁC SĨ ĐIỀN theo lịch khoa]
  Nguồn tài trợ: Không có tài trợ bên ngoài, kinh phí tự túc (chủ nhiệm đề tài tự chi trả)
- Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
- Đăng ký nghiên cứu: [CẦN — OSF Registries (https://osf.io/registries) (nếu tiến cứu tuyển mới)]
+ Xung đột lợi ích (COI): Không có xung đột lợi ích (khai đầy đủ ở Tài liệu 8)
+ Đăng ký nghiên cứu: OSF Registries (https://osf.io/registries) — đăng ký TRƯỚC người tham gia đầu tiên (khảo sát tiến cứu, đề cương); mã đăng ký cập nhật sau khi đăng ký
 
 CAM KẾT:
  Chúng tôi cam kết thực hiện nghiên cứu theo Tuyên ngôn Helsinki
@@ -83,7 +83,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
 ---
 
 1. VẤN ĐỀ NGHIÊN CỨU VÀ LÝ DO CẦN THIẾT:
- Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
+ Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
  Bằng chứng hiện có (từ PubMed): 0 SR/MA · 0 RCT (mức: CÓ NỀN QUAN SÁT, ~12 NC quan sát, chưa có RCT/SR).
  Khảo sát PubMed có hồ sơ trong G0: SR/MA 0 · RCT 0 · guideline 0 · 12 nghiên cứu quan sát (chủ yếu bối cảnh dân sự/quốc tế) — chưa có dữ liệu ở mô hình khám-theo-yêu-cầu tại bệnh viện quân y tuyến cuối Việt Nam, với bộ công cụ tự xây được kiểm định tâm trắc và phân tích yếu tố liên quan bằng hồi quy thứ tự (đề cương §3.5).
 
@@ -117,7 +117,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
  ☐ Bài báo đăng tạp chí quốc tế/trong nước có phản biện
  ☐ Luận văn/báo cáo nghiên cứu
  ☐ Báo cáo khuyến nghị cho đơn vị/chính sách
- [CẦN BỔ SUNG tạp chí/hội nghị mục tiêu]
+ Tạp chí mục tiêu: Tạp chí Y Dược Thực hành 175
 ---
 "DRAFT, Cần bác sĩ/chủ nhiệm kiểm chứng trước khi nộp."
 ```
@@ -131,17 +131,18 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
 
 | # | Rủi ro tiềm tàng | Xác suất | Mức độ | Biện pháp giảm thiểu |
 |---|-----------------|----------|--------|----------------------|
-| 1 | Rò rỉ thông tin từ bộ câu hỏi | Rất thấp | Nhẹ | Khuyết danh hoàn toàn nếu không cần theo dõi; mã hóa nếu cần liên kết |
-| 2 | Gánh nặng thời gian | Thấp | Không đáng kể | Bộ câu hỏi ngắn; tự điền hoặc qua điện thoại/email |
+| 1 | Rò rỉ thông tin từ phiếu | Rất thấp | Nhẹ | Phiếu nặc danh ngay từ khâu phát, không thu tên/số điện thoại; ICF ký tên lưu TÁCH RIÊNG, không liên kết với phiếu |
+| 2 | Gánh nặng thời gian | Thấp | Không đáng kể | Phiếu tự điền ~15–20 phút tại khoa sau khi khám xong, MỘT lần; dừng bất kỳ lúc nào |
+| 3 | Ngại nhận xét về nhân viên y tế | Thấp | Nhẹ | Nặc danh, hòm phiếu kín; điều tra viên không thuộc kíp khám; khẳng định không ảnh hưởng chăm sóc |
 
 | | **Lợi ích bù đắp** |
 |---|---|
 | Trực tiếp với NTG | KHÔNG có lợi ích y khoa trực tiếp; đóng góp ý kiến giúp cải thiện chất lượng phục vụ cho chính người bệnh và người bệnh sau |
-| Cộng đồng/y tế | Cung cấp dữ liệu tỷ lệ hiện mắc/tỷ lệ các yếu tố liên quan tại địa phương; chi phí thấp |
+| Cộng đồng/y tế | Tỷ lệ hài lòng và các yếu tố liên quan tại Khoa C1a — căn cứ cải tiến chất lượng; chi phí thấp |
 
 **Kết luận:** Lợi ích dự kiến của nghiên cứu **vượt trội** nguy cơ tiềm tàng.
 Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
-`[CẦN BÁC SĨ XÁC NHẬN bảng rủi ro phù hợp với đề tài thật]`
+Chủ nhiệm đã rà và xác nhận bảng rủi ro theo đề cương (03/10/2026).
 
 
 ---
@@ -155,7 +156,7 @@ Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
  [Phiên bản phê duyệt sẽ có số IRB, CẦN BỔ SUNG]
 ---
 
-TÊN ĐỀ TÀI: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
+TÊN ĐỀ TÀI: Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 Đơn vị thực hiện: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 (TP. Hồ Chí Minh)
 Chủ nhiệm đề tài: Nguyễn Hà Luân
 
@@ -167,12 +168,9 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 1. MỤC ĐÍCH NGHIÊN CỨU
  Chúng tôi kính mời anh/chị tham gia nghiên cứu nhằm:
  Chúng tôi muốn tìm hiểu ông/bà hài lòng đến đâu về lần khám hôm nay — từ khâu đón tiếp, thời gian chờ, nơi khám, đến bác sĩ, điều dưỡng và kết quả — để bệnh viện phục vụ tốt hơn.
- Ví dụ: "Tìm hiểu xem thuốc/can thiệp X có giúp cải thiện tình
- trạng [bệnh] ở người bệnh như anh/chị không."
-
- Nghiên cứu do [đơn vị] thực hiện với sự hỗ trợ của [tài trợ
- nếu có]. Cỡ mẫu dự kiến: khoảng 1000 người tham gia
- tại [nơi thực hiện].
+ Nghiên cứu do Khoa Khám bệnh C1a, Bệnh viện Quân y 175 thực hiện, không có tài trợ bên
+ ngoài (kinh phí tự túc). Cỡ mẫu dự kiến: khoảng 1000 người tham gia
+ tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175.
 
  THAM GIA LÀ HOÀN TOÀN TỰ NGUYỆN. Quyết định không tham gia
  KHÔNG ảnh hưởng đến chất lượng chăm sóc y tế của anh/chị.
@@ -209,21 +207,19 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
  Anh/chị sẽ nhận được tóm tắt kết quả nghiên cứu khi hoàn tất.
 
 4b. NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH
- Nghiên cứu này được tài trợ bởi: [CẦN, tên nguồn tài trợ, hoặc "không có
- tài trợ ngoài" nếu đúng]. Nhóm nghiên cứu [CẦN — có/không] có xung đột
- lợi ích liên quan đến chủ đề nghiên cứu (khớp khai báo COI ở Tài liệu 8).
+ Nghiên cứu này không có tài trợ bên ngoài (kinh phí tự túc, chủ nhiệm đề tài tự
+ chi trả). Nhóm nghiên cứu không có xung đột lợi ích liên quan đến chủ đề
+ nghiên cứu (khớp khai báo COI ở Tài liệu 8).
 
 4c. HỖ TRỢ/BỒI DƯỠNG KHI THAM GIA
- ☐ Không có hỗ trợ/bồi dưỡng nào ngoài chăm sóc y tế thường quy.
- ☐ Có hỗ trợ: [CẦN, mô tả cụ thể, vd hỗ trợ chi phí đi lại/thời gian;
- PHẢI ở mức hợp lý, không mang tính ép buộc/dụ dỗ tham gia].
+ ☑ Không có hỗ trợ/bồi dưỡng nào ngoài chăm sóc y tế thường quy.
 
 5. BẢO MẬT THÔNG TIN CÁ NHÂN
  Thông tin cá nhân của anh/chị được bảo vệ theo
  Luật BVDLCN 91/2025/QH15:
 
- Dữ liệu được mã hóa và lưu tại [CẦN, máy chủ bảo mật/
- ổ cứng mã hóa tại đơn vị]
+ Dữ liệu được mã hóa và lưu trên ổ đĩa mã hóa AES-256 tại Khoa Khám bệnh
+ C1a, Bệnh viện Quân y 175
  Chỉ nhóm nghiên cứu được phép truy cập dữ liệu danh tính
  Kết quả công bố dùng dữ liệu TỔNG HỢP, KHÔNG tiết lộ danh tính
  Dữ liệu nhận dạng: KHÔNG THU THẬP — phiếu nặc danh ngay từ khâu phát, không tồn tại dữ liệu danh tính cần xóa
@@ -245,12 +241,10 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
 
 6c. BỒI THƯỜNG KHI CÓ TỔN HẠI
- Nếu xảy ra tổn hại liên quan trực tiếp đến việc tham gia nghiên cứu,
- [CẦN — đơn vị/chủ nhiệm] sẽ [CẦN CHỦ NHIỆM XÁC NHẬN, mô tả chính sách
- chi trả điều trị/bồi thường cụ thể và nguồn kinh phí]. Với nghiên cứu
- quan sát nguy cơ tối thiểu (không can thiệp), mục này có thể rút gọn
- thành xác nhận không phát sinh thủ thuật/can thiệp ngoài thực hành
- thường quy, nhưng KHÔNG được bỏ hẳn.
+ Đây là nghiên cứu quan sát nguy cơ tối thiểu, không phát sinh thủ thuật/can
+ thiệp nào ngoài thực hành khám chữa bệnh thường quy. Nếu xảy ra tổn hại liên
+ quan trực tiếp đến việc tham gia nghiên cứu, Bệnh viện Quân y 175 xử trí theo
+ quy trình khám chữa bệnh thường quy; nghiên cứu không có bảo hiểm riêng.
 
 
 
@@ -296,7 +290,7 @@ Ký tên: _______________ Ngày: ___/___/2026
  "English translation of Vietnamese ICF, for journal submission only."
 ---
 
-STUDY TITLE: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
+STUDY TITLE: Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 Institution: [TO BE COMPLETED]
 Principal Investigator: [TO BE COMPLETED]
 
@@ -347,7 +341,7 @@ Investigator: _______________ Date: ___/___/2026
 
 ```
 KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
-Đề tài: hai-long-benh-nhan-C1a-BVQY175 | Phiên bản: 1.0 | Ngày: 2026-07-31
+Đề tài: Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 | Phiên bản: 1.0 | Ngày: 2026-07-31
 ---
 
 1. LOẠI DỮ LIỆU THU THẬP:
@@ -371,18 +365,20 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  Ngưỡng k-ẩn danh: ≥5 (nhóm nhỏ sẽ nhóm lại trước công bố)
 
 4. LƯU TRỮ:
- Nơi lưu: [CẦN, máy chủ nội bộ / OneDrive institutional
- / ổ cứng mã hóa tại [đơn vị]]
+ Nơi lưu: ổ đĩa mã hóa AES-256 tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175;
+ chỉ nhóm nghiên cứu được truy cập
  Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa)
- Sao lưu: [CẦN — ví dụ: hàng ngày/tuần, 2 bản độc lập]
+ Sao lưu: hằng tuần, 2 bản độc lập
  Thời gian lưu: ___ năm sau kết thúc nghiên cứu
  (theo TT38/2018/TT-BYT về lưu trữ hồ sơ y tế)
 
 5. CHIA SẺ / MỞ DỮ LIỆU:
- ☐ Không chia sẻ (lý do: [CẦN])
- ☐ Chia sẻ theo yêu cầu hợp lý (DTA cần ký trước)
- ☐ Mở hoàn toàn sau ẩn danh hóa (tại: [CẦN — OSF/Zenodo...])
- [CẦN BÁC SĨ CHỌN VÀ BIỆN MINH]
+ ☐ Không chia sẻ
+ ☑ Chia sẻ theo yêu cầu hợp lý (DTA cần ký trước)
+ ☐ Mở hoàn toàn sau ẩn danh hóa
+ Lựa chọn của chủ nhiệm (03/10/2026): chia sẻ có kiểm soát theo yêu cầu — bộ dữ
+ liệu đã khử định danh kèm từ điển biến, sau khi công bố, cho mục đích nghiên
+ cứu hợp lý, ký thoả thuận sử dụng dữ liệu (DTA) trước.
 
 6. XỬ LÝ VI PHẠM DỮ LIỆU:
  Theo NĐ 356/2025/NĐ-CP Điều 23:
@@ -406,7 +402,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
 
 ```
 CHECKLIST HỒ SƠ NỘP HỘI ĐỒNG ĐẠO ĐỨC
-Đề tài: hai-long-benh-nhan-C1a-BVQY175 | Ngày chuẩn bị: 2026-07-31
+Đề tài: Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 | Ngày chuẩn bị: 2026-07-31
 ---
 
 HỒ SƠ BẮT BUỘC:
@@ -457,21 +453,21 @@ Chức vụ: Bác sĩ Chuyên khoa I (BS.CKI) | Đơn vị: Khoa Khám bệnh C1
 Ngày khai báo: 31/07/2026
 
 A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (12 tháng gần nhất):
-☐ Không có
+☑ Không có
 ☐ Có → [Liệt kê: Tên công ty · Loại quan hệ (cổ phần/tư vấn/
  thù lao/tài trợ hội nghị) · Giá trị (nếu phải khai)]
 
 B. XUNG ĐỘT LỢI ÍCH PHI TÀI CHÍNH:
-☐ Không có
+☑ Không có
 ☐ Có → [Quan hệ cá nhân với người được nghiên cứu / lợi ích
  học thuật (thăng tiến/bằng sáng chế) / quan điểm đối nghịch]
 
 C. NGUỒN TÀI TRỢ:
- Tài trợ chính: [CẦN BỔ SUNG — "Không có tài trợ bên ngoài" nếu đúng]
- Tài trợ bổ sung: [CẦN BỔ SUNG]
- Số hợp đồng (nếu có): [CẦN BỔ SUNG]
+ Tài trợ chính: Không có tài trợ bên ngoài — kinh phí tự túc (chủ nhiệm đề tài tự chi trả)
+ Tài trợ bổ sung: Không có
+ Số hợp đồng (nếu có): Không áp dụng
 
-D. VAI TRÒ NHÀ TÀI TRỢ:
+D. VAI TRÒ NHÀ TÀI TRỢ: Không áp dụng — không có nhà tài trợ bên ngoài.
  Nhà tài trợ có can thiệp vào:
  ☐ Thiết kế nghiên cứu: ☐ Có ☐ Không
  ☐ Thu thập / phân tích dữ liệu: ☐ Có ☐ Không
@@ -482,7 +478,7 @@ E. SỬ DỤNG CÔNG CỤ AI TRONG NGHIÊN CỨU:
  ☐ Có sử dụng:
  Tên công cụ: Claude AI (EBM Copilot) · Không dùng công cụ AI nào khác
  Mục đích: Hỗ trợ soạn hồ sơ G2 · tổng quan y văn · thống kê
- Người kiểm tra đầu ra: [CẦN — tên nghiên cứu viên phụ trách]
+ Người kiểm tra đầu ra: Nguyễn Hà Luân (chủ nhiệm đề tài)
 
  XÁC NHẬN (bắt buộc): "Tôi đã kiểm chứng TOÀN BỘ nội dung AI
  hỗ trợ. Mọi số liệu, trích dẫn và kết quả đã được xác minh
@@ -497,39 +493,10 @@ Chữ ký chủ nhiệm: _______________ Ngày: ___/___/2026
 
 ---
 
-## TÀI LIỆU 9. ĐỀ NGHỊ MIỄN ICF (ICF Waiver, cho thiết kế đủ điều kiện)
+## TÀI LIỆU 9. ĐỀ NGHỊ MIỄN ICF — KHÔNG NỘP
 
-> Kích hoạt vì hồ sơ nguy cơ của thiết kế 'cross_sectional' được hệ thống đánh giá đủ điều kiện miễn ICF (dữ liệu thứ cấp/ẩn danh hoàn toàn, không can thiệp), BÁC SĨ PHẢI tự xác nhận nghiên cứu THẬT SỰ không thu thập dữ liệu định danh mới nào.
-> `[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`
-
-```
-YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request), DRAFT Phiên bản 1.0
----
-Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki (WMA, bản sửa 2024) §29
-Tên đề tài: hai-long-benh-nhan-C1a-BVQY175
-Chủ nhiệm: [CẦN BỔ SUNG]
-Ngày: 2026-07-31
-
-CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
-☑ Dùng dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát ẩn danh hoàn toàn, không truy ngược cá nhân
-☑ Không có can thiệp/thủ thuật bổ sung lên người tham gia
-☑ Rủi ro không vượt nguy cơ tối thiểu từ dữ liệu đã ẩn danh
-☑ Không khả thi/không cần thiết yêu cầu ICF đầy đủ (khảo sát nặc danh hoặc dữ liệu đã có sẵn)
-
-ĐẢM BẢO BẢO MẬT:
-Loại dữ liệu: Khảo sát NẶC DANH người tham gia mới (phiếu tự điền; KHÔNG dùng hồ sơ bệnh án/dữ liệu thứ cấp)
-Mã hóa: Không cần (không có PII)
-Quyền truy cập: Chỉ nhóm nghiên cứu
-Kế hoạch hủy: Lưu trữ 5 năm sau công bố theo quy định
-
-CỜ ĐỎ (bất kỳ → PHẢI lấy ICF đầy đủ):
-☐ Có dữ liệu cá nhân nhận dạng được → ICF bắt buộc
-☐ Có tiếp xúc người tham gia → ICF bắt buộc
-
-Chữ ký chủ nhiệm: [CẦN KÝ] | Ngày: ___/___/2026
-"DRAFT, Cần Hội đồng Đạo đức phê duyệt."
----
-```
+> Bác sĩ/chủ nhiệm quyết 03/10/2026: KHÔNG xin miễn ICF — dùng Bản thông tin & Đồng thuận ICF ký tên riêng theo đề cương
+> (Phụ lục B); khảo sát có điều tra viên tiếp xúc người tham gia nên ICF bắt buộc (TT43/2024/TT-BYT · Helsinki §25–26).
 
 ---
 
@@ -564,7 +531,7 @@ Trường 3, Secondary IDs (nếu có):
  PROSPERO (nếu SR): Không áp dụng — không phải tổng quan hệ thống
 
 Trường 4, Source(s) of monetary or material support:
- [CẦN BỔ SUNG — tên tổ chức tài trợ hoặc "None"]
+ None — self-funded by the principal investigator (no external funding)
 
 Trường 5, Primary sponsor:
  Bệnh viện Quân y 175 (Military Hospital 175), TP. Hồ Chí Minh [BÁC SĨ RÀ]
@@ -582,7 +549,7 @@ Trường 9, Public title (tiêu đề công khai, dễ hiểu):
  Patient satisfaction with on-demand outpatient care at a tertiary military hospital in Vietnam: a cross-sectional survey
 
 Trường 10, Scientific title (tiêu đề khoa học):
- Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
+ Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 
 Trường 11, Countries of recruitment:
  Vietnam (VN) — Ho Chi Minh City
@@ -622,7 +589,7 @@ Trường 20, Key secondary outcomes:
 Trường 21, Ethics review:
  Status: Not approved
  Approval date: [CẦN sau quyết định IRB]
- Ethics committee: [CẦN mã/tên đơn vị; không lưu PII cá nhân]
+ Ethics committee: Hội đồng Đạo đức Nghiên cứu Y sinh — Hội đồng Y đức Bệnh viện Quân y 175
 
 Trường 22, Completion date:
  [CẦN — ngày hoàn tất dự kiến; cập nhật ngày thật khi kết thúc]
@@ -632,8 +599,9 @@ Trường 23, Summary results:
  protocol URL + phiên bản, participant flow, AE, outcomes]
 
 Trường 24, IPD sharing statement:
- Plan to share de-identified IPD: [CẦN — Yes/No]
- What/when/how/with whom/purpose: [CẦN — kế hoạch cụ thể]
+ Plan to share de-identified IPD: Yes — controlled access on reasonable request
+ What/when/how/with whom/purpose: de-identified dataset with data dictionary; after publication; via the
+ principal investigator under a signed data-use agreement; for researchers with a reasonable research purpose
 
 GHI CHÚ CHUYỂN ĐỔI:
  Bản mẫu cũ 18 trường đã ngừng dùng. WHO TRDS 1.3.1 có 24 mục;
