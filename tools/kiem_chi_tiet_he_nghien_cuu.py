@@ -31,6 +31,8 @@ KHÔNG ghi decision/gradeLevel · KHÔNG ký · KHÔNG sinh lại artifact · KH
 Dùng:
     python3 tools/kiem_chi_tiet_he_nghien_cuu.py --study <mã> [--no-write] [--khong-canary]
 Ra: bảng điểm terminal + exports/<mã>/KIEM_CHI_TIET_report.{json,md} (trừ --no-write).
+    Báo cáo là kết quả ĐO, KHÔNG track git (03/10/2026, B6: bản track cũ 12/09 lệch hiện trạng và mỗi lần đo làm
+    bẩn cây; `/exports/` vốn bị ignore — tệp chỉ còn trên đĩa/OneDrive).
 Cần bác sĩ kiểm chứng.
 """
 
