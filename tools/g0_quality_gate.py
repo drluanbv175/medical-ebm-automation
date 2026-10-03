@@ -63,6 +63,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import gate_contract as GC  # noqa: E402
 import pipeline_freshness as PF  # noqa: E402
+import placeholder_contract as PC  # noqa: E402
 import skill_standards as S  # noqa: E402
 
 STATUS_BLOCKED = "BLOCKED"
@@ -113,6 +114,12 @@ _REVIEW_ROLES = {
     "nhà phương pháp", "chủ nhiệm", "chủ nhiệm đề tài",
 }
 
+# Dấu hiệu «chưa điền» RIÊNG của G0 (có từ 2026-07-28) — so CHUỖI CON trên value.upper(), không phân biệt
+# hoa/thường. GIỮ NGUYÊN ngữ nghĩa này (03/10/2026): hợp đồng chung `placeholder_contract` hẹp hơn ở vài chỗ
+# («CHƯA XÁC NHẬN» chỉ khớp CHỮ HOA; không có «SUY RA TỪ TOPIC» — ô P/I/E của khuôn A1 — hay «XXX»), nên
+# vị từ trường của G0 = marker cũ HOẶC hợp đồng chung, không bao giờ thay marker cũ bằng hợp đồng.
+# Biết trước (kiểm toán 03/10, mức thấp): «CHƯA XÁC NHẬN»/«XXX» không neo ngoặc nên văn xuôi hợp lệ
+# («… chưa xác nhận ở người Việt», «karyotype 47,XXX») bị REVIEW oan — chiều an toàn, chưa nới (cần bác sĩ quyết).
 _PLACEHOLDER_MARKERS = (
     "[CẦN", "[REQUIRE_HUMAN", "CHƯA XÁC NHẬN", "[TODO", "___",
     "SUY RA TỪ TOPIC", "XXX",
@@ -146,8 +153,33 @@ _STANDARDS_BASIS = (
 # Tiện ích
 # ════════════════════════════════════════════════════════════════════════════
 
+def _chuoi_that(value: str) -> bool:
+    """Một CHUỖI có nội dung thật không: marker cũ của G0 (nguyên văn) VÀ hợp đồng chung (mọi họ).
+
+    Hợp đồng chung (`PC.co_noi_dung_that`, mặc định MỌI họ vì đây là GIÁ TRỊ TRƯỜNG) bắt thêm những gì đo được
+    là lọt G0 tới PASS_G0_CONFIRMED (kiểm toán 03/10/2026, đã chạy): nhãn nháp «[DỰ THẢO — CHỜ BÁC SĨ …]» (có
+    thật ở novelty_justification của C1a), ô khung của CHÍNH khuôn A1 «[P — điền]»/«[xem §3 bên dưới]», ô mẫu
+    chung «[nơi thực hiện]», «[TO BE COMPLETED]»/«[TBD]»/«[PENDING]»/«<CẦN …>», «[XÁC NHẬN THỦ CÔNG…]»,
+    «……», ký hiệu đứng một mình («?», «…», «-») và chuỗi chỉ toàn ô tick «☐ tăng ☐ giảm». Ba chấm ASCII «...»
+    trong văn xuôi vẫn hợp lệ (C1a primary_outcome_measure).
+    """
+    text = value.strip()
+    if not text:
+        return False
+    upper = text.upper()
+    if any(marker in upper for marker in _PLACEHOLDER_MARKERS):
+        return False
+    return PC.co_noi_dung_that(text)
+
+
 def _present(value: Any) -> bool:
-    """Giá trị có NỘI DUNG THẬT không (placeholder không tính là có)."""
+    """Giá trị có NỘI DUNG THẬT không (placeholder không tính là có).
+
+    Danh sách: phải KHÔNG rỗng và MỌI phần tử thật (vá 03/10/2026 — trước đó any(): outcomes
+    ["Tử vong tim mạch", "[CẦN BÁC SĨ ẤN ĐỊNH]"] tính là ĐÃ ĐIỀN, G1 thì vốn dùng all()).
+    Dict: có ít nhất một giá trị thật VÀ không giá trị nào còn ô trống (khoá để None vẫn được chấp nhận,
+    chỉ siết đúng phần dư của khuôn).
+    """
     if value is None:
         return False
     if isinstance(value, bool):
@@ -155,16 +187,40 @@ def _present(value: Any) -> bool:
     if isinstance(value, (int, float)):
         return True
     if isinstance(value, str):
-        text = value.strip()
-        if not text:
-            return False
-        upper = text.upper()
-        return not any(marker in upper for marker in _PLACEHOLDER_MARKERS)
+        return _chuoi_that(value)
     if isinstance(value, Mapping):
-        return any(_present(v) for v in value.values())
+        return any(_present(v) for v in value.values()) and not _con_o_trong(value)
     if isinstance(value, (list, tuple, set)):
-        return any(_present(v) for v in value)
+        return bool(value) and all(_present(v) for v in value)
     return True
+
+
+def _con_o_trong(value: Any) -> bool:
+    """True khi giá trị (hoặc một phần tử con) là chuỗi CÓ CHỮ nhưng còn dấu hiệu chưa điền.
+
+    Phân biệt «còn ô trống/nhãn nháp» với «thiếu» (rỗng/None) để bằng chứng báo cáo nói đúng việc bác sĩ phải
+    làm: gỡ nhãn/ô mẫu chứ không phải viết từ đầu.
+    """
+    if isinstance(value, str):
+        return bool(value.strip()) and not _chuoi_that(value)
+    if isinstance(value, Mapping):
+        return any(_con_o_trong(v) for v in value.values())
+    if isinstance(value, (list, tuple, set)):
+        return any(_con_o_trong(v) for v in value)
+    return False
+
+
+def _mo_ta(value: Any) -> str:
+    """Nhãn bằng chứng cho một trường: 'có' / 'còn ô trống/nhãn nháp' / 'thiếu'."""
+    if _present(value):
+        return "có"
+    return "còn ô trống/nhãn nháp" if _con_o_trong(value) else "thiếu"
+
+
+_HANH_DONG_GO_O_TRONG = (
+    " Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — "
+    "hệ KHÔNG tự viết thay."
+)
 
 
 def _g0_meta(meta: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -419,18 +475,29 @@ def evaluate_g0_quality(
         "outcomes": g0.get("outcomes"),
     }
     pico_missing = [k for k, v in pico_fields.items() if not _present(v)]
+    pico_residue = [k for k in pico_missing if _con_o_trong(pico_fields[k])]
     human.append(_criterion(
         "G0-HUMAN-01", "PICO/PECO đủ 4 thành phần do bác sĩ viết",
         "PASS" if not pico_missing else "REVIEW",
-        f"thiếu: {', '.join(pico_missing)}" if pico_missing else "P/I/C/O đều có nội dung",
+        (
+            f"thiếu: {', '.join(pico_missing)}"
+            + (f" (còn ô trống/nhãn nháp: {', '.join(pico_residue)})" if pico_residue else "")
+        ) if pico_missing else "P/I/C/O đều có nội dung",
         "Điền gate_params.G0.population/intervention/comparison/outcomes "
-        "trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+        "trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy)."
+        + (_HANH_DONG_GO_O_TRONG if pico_residue else ""),
     ))
 
-    n_primary = _count_unique_primary_outcomes(g0.get("primary_outcome"))
+    primary_raw = g0.get("primary_outcome")
+    n_primary = _count_unique_primary_outcomes(primary_raw)
+    # Vá 03/10/2026: list ["Kết cục thật", "[CẦN …]"] từng đếm = 1 kết cục ⇒ PASS dù còn ô trống.
+    primary_residue = _con_o_trong(primary_raw)
     measure_ok = _present(g0.get("primary_outcome_measure"))
     timepoint_ok = _present(g0.get("primary_outcome_timepoint"))
-    if n_primary == 1 and measure_ok and timepoint_ok:
+    po_residue = primary_residue or any(
+        _con_o_trong(g0.get(k)) for k in ("primary_outcome_measure", "primary_outcome_timepoint")
+    )
+    if n_primary == 1 and measure_ok and timepoint_ok and not primary_residue:
         po_status = "PASS"
         po_evidence = "1 kết cục chính, có thang đo và thời điểm đo"
     elif n_primary > 1:
@@ -442,15 +509,15 @@ def evaluate_g0_quality(
     else:
         po_status = "REVIEW"
         po_evidence = (
-            f"primary_outcome={'có' if n_primary else 'thiếu'}; "
-            f"thang đo={'có' if measure_ok else 'thiếu'}; "
-            f"thời điểm đo={'có' if timepoint_ok else 'thiếu'}"
+            f"primary_outcome={'còn ô trống/nhãn nháp' if primary_residue else ('có' if n_primary else 'thiếu')}; "
+            f"thang đo={_mo_ta(g0.get('primary_outcome_measure'))}; "
+            f"thời điểm đo={_mo_ta(g0.get('primary_outcome_timepoint'))}"
         )
     human.append(_criterion(
         "G0-HUMAN-02", "Kết cục CHÍNH duy nhất, đo được, có thời điểm",
         po_status, po_evidence,
         "Điền primary_outcome (1 kết cục) + primary_outcome_measure + "
-        "primary_outcome_timepoint.",
+        "primary_outcome_timepoint." + (_HANH_DONG_GO_O_TRONG if po_residue else ""),
     ))
 
     h0_ok = _present(g0.get("hypothesis_h0"))
@@ -462,14 +529,17 @@ def evaluate_g0_quality(
     # đến chỗ bịa một giả thuyết cho một đề tài mô tả thuần.
     descriptive = test_type in {"descriptive", "mô tả"}
     hypo_ok = test_ok and (descriptive or (h0_ok and h1_ok and dir_ok))
+    hypo_residue = not descriptive and any(
+        _con_o_trong(g0.get(k)) for k in ("hypothesis_h0", "hypothesis_h1", "expected_direction")
+    )
     human.append(_criterion(
         "G0-HUMAN-03", "Giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định",
         "PASS" if hypo_ok else "REVIEW",
-        f"test_type={test_type or 'thiếu'}; H0={'có' if h0_ok else 'thiếu'}; "
-        f"H1={'có' if h1_ok else 'thiếu'}; chiều={'có' if dir_ok else 'thiếu'}",
+        f"test_type={test_type or 'thiếu'}; H0={_mo_ta(g0.get('hypothesis_h0'))}; "
+        f"H1={_mo_ta(g0.get('hypothesis_h1'))}; chiều={_mo_ta(g0.get('expected_direction'))}",
         "Điền test_type (superiority/non_inferiority/equivalence/descriptive); "
         "nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và "
-        "expected_direction.",
+        "expected_direction." + (_HANH_DONG_GO_O_TRONG if hypo_residue and not hypo_ok else ""),
     ))
 
     qtype = str(g0.get("question_type") or "").strip().lower()
@@ -483,23 +553,31 @@ def evaluate_g0_quality(
     finer_keys = ("finer_feasible", "finer_interesting", "finer_novel",
                   "finer_ethical", "finer_relevant")
     finer_missing = [k for k in finer_keys if not _present(g0.get(k))]
+    finer_residue = [k for k in finer_missing if _con_o_trong(g0.get(k))]
     human.append(_criterion(
         "G0-HUMAN-05", "FINER đánh giá đủ từng tiêu chí (5/5)",
         "PASS" if not finer_missing else "REVIEW",
-        f"thiếu: {', '.join(k.replace('finer_', '') for k in finer_missing)}"
-        if finer_missing else "5/5 tiêu chí có kết luận",
-        "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá.",
+        (
+            f"thiếu: {', '.join(k.replace('finer_', '') for k in finer_missing)}"
+            + (
+                f" (còn ô trống/nhãn nháp: {', '.join(k.replace('finer_', '') for k in finer_residue)})"
+                if finer_residue else ""
+            )
+        ) if finer_missing else "5/5 tiêu chí có kết luận",
+        "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá."
+        + (_HANH_DONG_GO_O_TRONG if finer_residue else ""),
     ))
 
     evidence_reviewed = g0.get("evidence_reviewed_confirmed") is True
-    novelty_ok = _present(g0.get("novelty_justification"))
+    novelty = g0.get("novelty_justification")
+    novelty_ok = _present(novelty)
     human.append(_criterion(
         "G0-HUMAN-06", "Đã đọc lại bằng chứng G0 và biện minh tính mới",
         "PASS" if (evidence_reviewed and novelty_ok) else "REVIEW",
         f"evidence_reviewed_confirmed={evidence_reviewed}; "
-        f"novelty_justification={'có' if novelty_ok else 'thiếu'}",
+        f"novelty_justification={_mo_ta(novelty)}",
         "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true "
-        "và viết novelty_justification.",
+        "và viết novelty_justification." + (_HANH_DONG_GO_O_TRONG if _con_o_trong(novelty) else ""),
     ))
 
     role = str(g0.get("reviewed_by_role") or "").strip().casefold()
