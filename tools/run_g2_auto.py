@@ -873,7 +873,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
 1. MỤC ĐÍCH NGHIÊN CỨU
    Chúng tôi kính mời anh/chị tham gia nghiên cứu nhằm:
-   [CẦN MÔ TẢ bằng ngôn ngữ đơn giản — không dùng thuật ngữ khó]
+   [CẦN MÔ TẢ bằng ngôn ngữ đơn giản — không dùng thuật ngữ khó; viết xong thì XOÁ dòng ví dụ dưới]
    Ví dụ: "Tìm hiểu xem thuốc/can thiệp X có giúp cải thiện tình
    trạng [bệnh] ở người bệnh như anh/chị không."
 

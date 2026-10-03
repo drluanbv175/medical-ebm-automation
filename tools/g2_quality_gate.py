@@ -541,12 +541,24 @@ def scientific_registration_item_gaps(
     ]
 
 
+# Ô MẪU CHUNG sót từ khuôn sinh `run_g2_auto.py` — KHÔNG mang nhãn [CẦN] nên trước 03/10/2026 G2-AUTO-05 không đếm:
+# hồ sơ C1a đã điền hết mục đích thật mà ICF tiếng Việt vẫn còn câu ví dụ thử nghiệm thuốc («thuốc/can thiệp X»,
+# «[bệnh]») cùng «[đơn vị]», «[tài trợ nếu có]», «[nơi thực hiện]», và ICF tiếng Anh còn 14 ô «[TO BE COMPLETED]».
+# Khi mọi [CẦN] được điền, cổng sẽ báo READY_FOR_IRB_SUBMISSION cho một phiếu đồng thuận người bệnh ký còn chữ mẫu.
+# «[tài trợ» không đòi dấu đóng: khuôn sinh ngắt dòng giữa ô («[tài trợ\n nếu có]»).
+_O_MAU_CHUNG_RE = re.compile(
+    r"\[TO BE COMPLETED|\[(?:đơn vị|bệnh|nơi thực hiện)\]|\[tài trợ|thuốc/can thiệp X",
+    re.IGNORECASE,
+)
+
+
 def unresolved_critical_placeholders(package_text: str) -> list[str]:
-    """Liệt kê placeholder khoa học/vận hành còn lại, bỏ qua dòng chỉ chứa PII."""
+    """Liệt kê placeholder khoa học/vận hành còn lại (nhãn [CẦN…] VÀ ô mẫu chung sót từ khuôn sinh), bỏ qua dòng
+    chỉ chứa PII."""
     base = strip_attestation(package_text)
     unresolved: list[str] = []
     for line in base.splitlines():
-        if "[CẦN" not in line.upper():
+        if "[CẦN" not in line.upper() and not _O_MAU_CHUNG_RE.search(line):
             continue
         upper = line.upper()
         if any(hint in upper for hint in _PII_ONLY_HINTS):
@@ -765,7 +777,7 @@ def evaluate_g2_quality(
         "G2-AUTO-05",
         "Không còn placeholder khoa học/vận hành trọng yếu",
         "REVIEW" if unresolved else "PASS",
-        f"còn {len(unresolved)} dòng [CẦN] ngoài các dòng chỉ chứa PII",
+        f"còn {len(unresolved)} dòng [CẦN]/ô mẫu chung ngoài các dòng chỉ chứa PII",
         "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted.",
     ))
 
