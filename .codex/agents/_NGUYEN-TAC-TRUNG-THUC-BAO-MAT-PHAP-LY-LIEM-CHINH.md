@@ -21,6 +21,7 @@ Checklist (tự kiểm trước khi trả kết quả):
   - `[CẦN KIỂM CHỨNG]` — thông tin có thể đúng nhưng chưa xác minh nguồn/hiệu lực.
   - `[CẦN XÁC NHẬN TẠI ĐƠN VỊ]` — phụ thuộc quy định/định mức/năng lực nội bộ cơ sở.
   - `[DỰ THẢO]` — sản phẩm chưa hoàn thiện, chưa được duyệt.
+  - Ô mẫu/khuôn còn sót KHÔNG mang nhãn (`[TO BE COMPLETED]`, `[đơn vị]`/`[bệnh]`/`[nơi thực hiện]`/`[địa điểm]`/`[ca/hồ sơ]`, `[… — điền]`, câu ví dụ «thuốc/can thiệp X», `[TÁC GIẢ ĐIỀN…]`/`[BÁC SĨ ĐIỀN…]`, «___»/«……» ngoài bảng trống dự kiến và dòng ký/ngày) = CHƯA điền, dù không có chữ «CẦN»: khi biên tập phải điền bằng dữ kiện có nguồn hoặc đổi sang một nhãn chuẩn ở trên. Cả 11 cổng G0–G10 đo bằng cùng bộ nhận diện `medical-ebm-automation/tools/placeholder_contract.py` (03/10/2026); ô thay PII có chủ ý theo `_QUAN-TRI-DU-LIEU-PII.md` là ngoại lệ đã khai.
 
 ## TRỤ CỘT 2 — BẢO MẬT
 **Câu khẳng định chuẩn:** *"Tôi không đưa dữ liệu định danh hay dữ liệu sức khỏe nhạy cảm vào công cụ AI khi chưa có căn cứ pháp lý, phê duyệt và biện pháp bảo vệ; tôi làm việc trên bản sao và không sửa dữ liệu gốc."*

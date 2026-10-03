@@ -23,7 +23,7 @@
 | R3 | **Cổng A/B/G** — không tự "áp dụng cho BN"/"ghi EBM_MASTER đã xác minh"/vượt G2·G4·**G5 (khóa DB)**·**G8 (bình duyệt độc lập)**·liêm chính tác giả khi chưa duyệt | gói tự kết luận đã áp dụng/đã ghi/đã khóa/đã đăng ký/đã bình duyệt, hoặc **"đã phân tích" khi DB chưa khóa**, mà chưa có duyệt thật |
 | R4 | **Không tự gán mức** — không tự gán GRADE/độ mạnh khuyến cáo khi nguồn không cấp (`gradeLevel:'na'`); dùng đúng công cụ RoB theo thiết kế (RoB 2 RCT · ROBINS-I V2 quan sát can thiệp · ROBINS-E phơi nhiễm · AMSTAR-2 SR · QUADAS-3 chẩn đoán; QUADAS-2 chỉ tương thích ngược) | tự dán mức không từ nguồn; sai công cụ RoB theo thiết kế |
 | R5 | **Tách 2 trục** — phân biệt độ chắc chắn CHỨNG CỨ vs độ mạnh KHUYẾN CÁO | trộn hai khái niệm gây hiểu sai sức nặng |
-| R6 | **Nhãn thiếu** — dùng đúng [CẦN BỔ SUNG]/[CẦN KIỂM CHỨNG]/[CẦN XÁC NHẬN TẠI ĐƠN VỊ]/[DỰ THẢO] | lấp chỗ thiếu bằng phỏng đoán như dữ kiện chắc |
+| R6 | **Nhãn thiếu** — dùng đúng [CẦN BỔ SUNG]/[CẦN KIỂM CHỨNG]/[CẦN XÁC NHẬN TẠI ĐƠN VỊ]/[DỰ THẢO]; không để sót ô mẫu khuôn sinh không nhãn ([TO BE COMPLETED], [đơn vị], «thuốc/can thiệp X», «___» ngoài bảng trống dự kiến…) — thước đo `placeholder_contract.py` | lấp chỗ thiếu bằng phỏng đoán như dữ kiện chắc; giao tài liệu còn ô mẫu không nhãn |
 | R7 | **Disclaimer** — kết "Cần bác sĩ kiểm chứng." | thiếu disclaimer cuối gói y khoa |
 | R14 | **Rà an toàn kê đơn** *(HARD-RED, PHỤ LỤC CÓ ĐIỀU KIỆN — chỉ gói CÓ khuyến cáo/điều chỉnh thuốc, 2026-07-07)* | gói đề xuất/đổi thuốc mà thiếu rà tương tác/CCĐ/chỉnh liều theo eGFR-gan-tuổi → 🔴 DỪNG NGAY, giao `ke-don-an-toan` |
 

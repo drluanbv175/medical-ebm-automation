@@ -55,6 +55,8 @@
 
 > *"Trong quá trình chuẩn bị bản thảo này, nhóm tác giả có sử dụng công cụ trí tuệ nhân tạo [tên công cụ + phiên bản, vd Claude Opus 4.x] để hỗ trợ [tìm kiếm tài liệu / hiệu đính ngôn ngữ / định dạng trích dẫn]. Công cụ AI KHÔNG được dùng để tạo ra dữ liệu, kết quả hay diễn giải khoa học. Toàn bộ nội dung đã được các tác giả kiểm tra, hiệu chỉnh và chịu trách nhiệm hoàn toàn. AI không được liệt kê là tác giả theo khuyến nghị ICMJE."*
 
+> **Ô trong ngoặc của hai mẫu (`[tên công cụ + phiên bản]`, `[mô tả CỤ THỂ: …]`, `[tên người]`, «___») là Ô MẪU:** chép vào bản thảo/A10 thì phải điền hết hoặc đổi thành `[CẦN BỔ SUNG]` trước khi giao — bộ nhận diện chung của cổng G7–G10 (`placeholder_contract.py`) tính ô mẫu còn sót là CHƯA điền.
+
 ### Mẫu B — AI hỗ trợ xử lý/phân tích dữ liệu (mức cần khai chi tiết)
 
 > *"Nhóm nghiên cứu sử dụng [tên công cụ + phiên bản] cho [mô tả CỤ THỂ: vd hỗ trợ viết mã phân tích / kiểm tra logic dữ liệu]. Dữ liệu đưa vào công cụ đã được [khử định danh / xử lý trên bản sao] theo [căn cứ pháp lý: Luật 91/2025/QH15; phê duyệt đạo đức số ___]. Mọi kết quả do công cụ tạo ra đều được [tên người] kiểm chứng độc lập đối chiếu với [nguồn]. Các tác giả chịu trách nhiệm về tính chính xác và toàn vẹn của toàn bộ phân tích."*

@@ -44,7 +44,7 @@ Gói đầu ra cần kiểm (toàn văn, kèm bảng nguồn nếu có) · loạ
 | **R4b. Truy được AI CHẤM** | Mọi `gradeLevel` khác `na` phải kèm `gradeBy` (tên tổ chức/hệ đã chấm: KDIGO 2024 · Cochrane (GRADE) · EULAR LoE/SoR · AHA/ASA COR-LOE). Đo 14/08/2026: **249/530 mức (47%) không truy được về tổ chức nào**; 128 mục lấy MÔ TẢ THIẾT KẾ làm lý do. Không xác định được ⇒ để `na`. Soi: `python tools/kiem_phan_hang.py` | Ghi `high` với lý do *"RCT đa trung tâm, mù đôi"* — đó là tự chấm của người soạn, không phải phân hạng của nguồn |
 | **R4c. Quy phạm phải KHAI** | `decision:'apply'` trên `gradeLevel:'na'` chỉ hợp lệ khi khai `normativeBasis` (contraindication · drug-label · official-classification · guideline-strong-rec · guideline-explicit-criteria) VÀ `design` là Guideline/Nhãn thuốc. **`Consensus` không bao giờ đủ** (BH03) | Dán nhãn quy phạm lên một văn bản `Consensus`; hoặc hạ một chống chỉ định/cảnh báo nhãn thuốc xuống `consider` để "cho qua cổng" — làm GIẢM an toàn |
 | **R5. Tách 2 trục** | Phân biệt rõ **độ chắc chắn CHỨNG CỨ** (certainty) vs **độ mạnh KHUYẾN CÁO** (strong/conditional) | Trộn hai khái niệm khiến hiểu sai sức nặng khuyến cáo |
-| **R6. Nhãn thiếu** | Dùng đúng `[CẦN BỔ SUNG]/[CẦN KIỂM CHỨNG]/[CẦN XÁC NHẬN TẠI ĐƠN VỊ]/[DỰ THẢO]` ở chỗ thiếu/chưa chắc | Lấp chỗ thiếu bằng phỏng đoán trình bày như dữ kiện chắc |
+| **R6. Nhãn thiếu** | Dùng đúng `[CẦN BỔ SUNG]/[CẦN KIỂM CHỨNG]/[CẦN XÁC NHẬN TẠI ĐƠN VỊ]/[DỰ THẢO]` ở chỗ thiếu/chưa chắc; KHÔNG để sót ô mẫu khuôn sinh KHÔNG nhãn (`[TO BE COMPLETED]`, `[đơn vị]`/`[bệnh]`/`[nơi thực hiện]`/`[địa điểm]`/`[ca/hồ sơ]`, `[… — điền]`, câu ví dụ «thuốc/can thiệp X», `[TÁC GIẢ ĐIỀN…]`/`[BÁC SĨ ĐIỀN…]`, «___»/«……» ngoài bảng trống dự kiến và dòng ký/ngày) — thước đo chung của 11 cổng G0–G10 là `medical-ebm-automation/tools/placeholder_contract.py` (từ 03/10/2026) | Lấp chỗ thiếu bằng phỏng đoán trình bày như dữ kiện chắc; hoặc giao tài liệu còn ô mẫu không nhãn (cổng sẽ KHÔNG báo đạt — sự cố ICF C1a 03/10/2026) |
 | **R7. Disclaimer** | Kết thúc bằng **"Cần bác sĩ kiểm chứng."** | Thiếu câu disclaimer ở cuối gói y khoa |
 | **R8. Hiệu ứng + CI** *(gói CÓ báo cáo số liệu thống kê — chủ yếu nghiên cứu)* | Kết quả thống kê trọng yếu kèm **độ lớn hiệu ứng (effect size) + khoảng tin cậy 95%**; KHÔNG báo **p-value ĐƠN ĐỘC** (đồng bộ nguyên tắc P6 "Medical Research OS") | Báo **p-value trần** (vd "p<0,05") cho kết quả/kết cục chính mà thiếu effect size + 95% CI |
 | **R14. Rà an toàn kê đơn** *(HARD-RED — gói CÓ khuyến cáo/điều chỉnh thuốc, chủ yếu lâm sàng)* | Gói thể hiện ĐÃ rà (qua `ke-don-an-toan`): (a) tương tác thuốc–thuốc nghiêm trọng, (b) chống chỉ định thuốc–bệnh, (c) chỉnh liều/tránh thuốc theo eGFR/chức năng gan/tuổi khi liên quan | Gói đề xuất/đổi thuốc mà THIẾU một mục áp dụng được → 🔴 **DỪNG NGAY**, trả về `ke-don-an-toan` (M2–M5) trước khi phát hành. Nhóm thuốc gây ADE ngoại trú hay gặp nhất (SỬA 2026-07-23, vòng lặp kiểm tra-hoàn thiện vòng 13, phát hiện MEDIUM — câu cũ "NSAID·chống đông·hạ đường huyết" gán sai thứ hạng cho 2 trích dẫn này, đã tự tra lại nguyên văn cả 2 bài): **tim mạch·kháng sinh·lợi tiểu** (Gurwitz, JAMA 2003, PMID 12622580 — nhóm gây ADE ngoại trú nhiều nhất, KHÔNG phải NSAID); ADE dẫn tới **cấp cứu** hay gặp nhất: **kháng đông·kháng sinh·thuốc đái tháo đường** (Shehab, JAMA 2016, PMID 27893129) |
@@ -112,6 +112,7 @@ KẾT QUẢ THẨM ĐỊNH ĐẦU RA — [lâm sàng/nghiên cứu] — cổng/b
 PHÁN ĐỊNH: [ĐẠT / ĐẠT-CÓ-LƯU-Ý / TRẢ-VỀ-SỬA]   (gói lâm sàng: phải ĐẠT cả 2 lớp)
 DANH SÁCH 🔴 BẮT BUỘC SỬA (nếu có): 1)… 2)…  → giao lại agent: [tên agent phụ trách]
 🔁 CỜ CHUYỂN BÁC SĨ (Q2/Q5 đỏ — nếu có): …
+BIÊN NHẬN MÁY: APPRAISAL-…-… (run_eval Lớp 1 tự động: PASS/RETURN-FOR-FIX) | «chưa ghi được — <lý do>»   (§6bis)
 ```
 Kết: **"Cần bác sĩ kiểm chứng."**
 
@@ -119,7 +120,20 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 > *Đầu vào:* gói quyết định lâm sàng nêu "thêm thuốc X, GRADE cao" nhưng không kèm PMID/DOI và không có câu disclaimer. → R1 🔴 (số/khuyến cáo không nguồn), R4 🔴 (tự gán GRADE cao), R7 🔴 (thiếu disclaimer) → **TRẢ-VỀ-SỬA**, giao lại `tra-cuu-chung-cu` (bổ nguồn) + `tham-dinh-grade-nnt` (chấm lại đúng nguồn). *Không tự "sửa hộ" nội dung — chỉ liệt kê lỗi để agent phụ trách sửa.*
 
 ## 6. Tiêu chí hoàn thành
-**Hoàn thành khi:** đã chấm đủ Lớp 1 (R1–R7) và — với gói lâm sàng — Lớp 2 (Q1–Q7), mỗi mục có bằng chứng trích vị trí; phán định rõ ĐẠT/TRẢ-VỀ-SỬA; nếu TRẢ-VỀ-SỬA thì liệt kê 🔴 + giao đúng agent phụ trách. Lớp 2 chỉ **SÀNG LỌC & GẮN CỜ** chất lượng lâm sàng — **KHÔNG tự chứng nhận "đúng đắn y khoa"**; Q2 (đúng đắn) và Q5 (nguy cơ hại) đỏ thì BẮT BUỘC chuyển bác sĩ phán định. Phán định chuyên môn cuối cùng vẫn của bác sĩ.
+**Hoàn thành khi:** đã chấm đủ Lớp 1 (R1–R7) và — với gói lâm sàng — Lớp 2 (Q1–Q7), mỗi mục có bằng chứng trích vị trí; phán định rõ ĐẠT/TRẢ-VỀ-SỬA; nếu TRẢ-VỀ-SỬA thì liệt kê 🔴 + giao đúng agent phụ trách. Lớp 2 chỉ **SÀNG LỌC & GẮN CỜ** chất lượng lâm sàng — **KHÔNG tự chứng nhận "đúng đắn y khoa"**; Q2 (đúng đắn) và Q5 (nguy cơ hại) đỏ thì BẮT BUỘC chuyển bác sĩ phán định. Phán định chuyên môn cuối cùng vẫn của bác sĩ. Có dòng **BIÊN NHẬN MÁY** (mã thật trong sổ, hoặc lý do chưa ghi được — §6bis).
+
+## 6bis. GHI BIÊN NHẬN — bắt buộc MỖI lần chấm (thêm 03/10/2026, B5 kiểm toàn diện)
+Đo 02/10/2026: sổ QA sống `observability/APPRAISALS.jsonl` không có dòng nào sau 07/2026 dù agent này vẫn được gọi — vì chỉ chế độ
+AUTO-DISPATCH (§8) mới chạy `run_eval.py`, nên một lần chấm bình thường không để lại dấu vết để tra khi nghi ngờ. Từ nay mọi lần chấm:
+1. Ghi NGUYÊN VĂN gói đầu ra vào một tệp tạm NGOÀI repo (scratchpad của phiên, hoặc `state/` — không nằm trong git). Gói đã qua R2
+   (không PII); còn nghi PII thì DỪNG ở R2, không ghi tệp.
+2. Chạy `python3 tools/eval/run_eval.py <tệp> --json --source tham-dinh-dau-ra` — bộ chấm rule-based Lớp 1 ghi một dòng vào sổ
+   (tên tệp được khử PII, có dấu thời gian) và trả `appraisal.id`.
+3. Chép `appraisal.id` vào dòng **BIÊN NHẬN MÁY** của mẫu §4. Phán định của `run_eval` là Lớp 1 TỰ ĐỘNG: khác phán định của agent thì
+   ghi CẢ HAI và nêu khác biệt — không tự nâng/hạ phán định nào cho khớp.
+4. Không chạy được (không có shell/repo, lệnh lỗi) ⇒ ghi «BIÊN NHẬN MÁY: chưa ghi được — <lý do>». KHÔNG bịa mã: `clinical_checkpoint`
+   đối chiếu mã trích với sổ — trích mã KHÔNG có trong sổ là vi phạm.
+Bước này KHÔNG đổi luật chấm; chỉ để lại biên nhận để bác sĩ tra lại được.
 
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; kiểm đối kháng, nghiêm khắc; không "cho qua vì gần đúng"; không tạo nội dung mới; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
@@ -167,7 +181,7 @@ file) → tự áp BẢNG ROUTING dưới bằng tay như trước.
 | R4b **`gradeLevel` khác `na` mà không khai `gradeBy`** | `tham-dinh-grade-nnt` (khai tổ chức đã chấm) hoặc hạ về `na` | ✅ |
 | R4c **`apply` trên `gradeLevel:'na'` mà không khai `normativeBasis`** | `tham-dinh-grade-nnt` (khai loại quy phạm) hoặc bác sĩ hạ `decision` | 🚫 (đổi `decision` là quyết định lâm sàng) |
 | R5 trộn hai trục | Agent gốc (thêm phân biệt rõ) | ✅ |
-| R6 thiếu nhãn [CẦN…] | Agent gốc (gắn nhãn đúng chỗ) | ✅ |
+| R6 thiếu nhãn [CẦN…] / còn ô mẫu không nhãn | Agent gốc (gắn nhãn đúng chỗ; ô mẫu khuôn sinh: điền bằng dữ kiện CÓ NGUỒN hoặc đổi sang nhãn chuẩn — không tự bịa) | ✅ |
 | R7 thiếu disclaimer | Agent gốc (thêm 1 dòng) | ✅ |
 | R8 p-value đơn độc | `phan-tich-thong-ke` (bổ CI) | ✅ |
 | R9 nguồn thiếu năm/phiên bản | `tra-cuu-chung-cu` (bổ năm/phiên bản) | ✅ |
