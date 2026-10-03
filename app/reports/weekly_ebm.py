@@ -13,6 +13,7 @@ from typing import Dict, List
 from app.config import settings
 from app.database import session_scope
 from app.models import EvidenceItem
+from app.utils.lien_ket_scopus import lien_ket_cong_khai
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -63,7 +64,9 @@ def _row(r: EvidenceItem, new_run_ids=None) -> Dict:
         "actionable_reason": _esc(r.actionable_reason),
         "reason_for_exclusion": _esc(r.reason_for_exclusion),
         "safety_signal": _esc(r.safety_signal), "doi": r.doi, "pmid": r.pmid,
-        "nct_id": r.nct_id, "url": _esc(r.url), "publication_date": r.publication_date,
+        # 03/10/2026: URL Scopus ⇒ DOI/PubMed hoặc bỏ (điều khoản Elsevier) — dùng chung cho Markdown/HTML/Word.
+        "nct_id": r.nct_id, "url": _esc(lien_ket_cong_khai(r.url, r.doi, r.pmid)),
+        "publication_date": r.publication_date,
         "authors": _esc(r.authors), "synthesis": syn,
         "is_mock": bool(getattr(r, "is_mock", False)),
     }

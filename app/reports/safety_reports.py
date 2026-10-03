@@ -15,6 +15,7 @@ from typing import Dict, List
 from app.config import settings
 from app.database import session_scope
 from app.models import EvidenceItem
+from app.utils.lien_ket_scopus import lien_ket_cong_khai
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -29,8 +30,10 @@ def _ref(r: EvidenceItem) -> str:
         parts.append(f"DOI:{r.doi}")
     if r.pmid:
         parts.append(f"PMID:{r.pmid}")
-    if r.url:
-        parts.append(r.url)
+    # 03/10/2026: KHÔNG in URL Scopus (điều khoản Elsevier; báo cáo lên repo CÔNG KHAI) — thay bằng DOI/PubMed.
+    url = lien_ket_cong_khai(r.url, r.doi, r.pmid)
+    if url:
+        parts.append(url)
     return " ; ".join(parts) or "Không có định danh"
 
 

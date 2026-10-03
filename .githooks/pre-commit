@@ -90,6 +90,20 @@ if [ -f tools/verify_exports_integrity.py ]; then
   fi
 fi
 
+# Them 03/10/2026: repo nay CONG KHAI; Routine Cloud commit reports/giam-sat-cloud/<ngay>/ (commit 7fc55a2 da dang 79 lien
+# ket scopus.com). Dieu khoan Elsevier cam phat tan du lieu Scopus ⇒ CHAN phan da stage duoi reports/ con lien ket/EID
+# Scopus. Ma 2 = khong do duoc ⇒ ⚪ bao, KHONG chan (CI van quet moi tep da track duoi reports/).
+if [ -f tools/kiem_lien_ket_scopus_bao_cao.py ]; then
+  python3 tools/kiem_lien_ket_scopus_bao_cao.py --staged
+  MA_SCOPUS=$?
+  if [ "$MA_SCOPUS" -eq 1 ]; then
+    echo "CHAN COMMIT: reports/ con lien ket/EID Scopus — chay: python3 tools/kiem_lien_ket_scopus_bao_cao.py --lam-sach <tep> roi git add lai." >&2
+    exit 1
+  elif [ "$MA_SCOPUS" -ne 0 ]; then
+    echo "⚪ pre-commit: khong kiem duoc lien ket Scopus (ma $MA_SCOPUS) — CI van quet reports/." >&2
+  fi
+fi
+
 # Them 02/10/2026 (PM-05, kiem toan dien): 14/29 luot CI y khoa do tu 14/09 la loi «Lint (ruff)» hoac «Bat bien newline vung
 # chuoi-ky» — hai buoc CI chay < 2 giay nhung pre-commit chua chay (ngay 02/10 PR #65 do 4/4 vi dung loi newline). Chay CUNG lenh
 # voi CI. May thieu ruff ⇒ ⚪ bo qua co thong bao (CI van chan), KHONG chan commit vi «khong do duoc» ≠ «loi».
