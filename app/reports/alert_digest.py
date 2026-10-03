@@ -219,6 +219,47 @@ def render_alert_markdown(data: Dict) -> str:
     return "\n".join(L)
 
 
+# HV-05 (kiểm toàn diện 02/10/2026): email cảnh báo là bản DUMP 162 KB / 379 mục — bác sĩ khó thấy vài cảnh báo thuốc
+# thật chìm giữa hàng trăm mục. Thân email nay là BẢN TIN NGẮN; bản đầy đủ (render_alert_markdown) đi kèm dạng TỆP
+# ĐÍNH KÈM. Không mục nào bị LỌC BỎ: phần vượt trần mỗi nhóm chỉ chuyển sang tệp đính kèm, kèm dòng «+N mục nữa». Cảnh
+# báo an toàn thuốc chính thức và bài bị rút đứng TRƯỚC guideline/actionable, trần riêng cao hơn.
+TRAN_BAN_TIN_NGAN = {"retracted": 5, "regulatory": 8, "guidelines": 5, "actionable": 5}
+
+
+def _dong_ngan(r: EvidenceItem, demo_ids) -> str:
+    nhan = _NHAN_DEMO if r.id in demo_ids else ""
+    ref = f"PMID {r.pmid}" if r.pmid else (f"DOI {r.doi}" if r.doi else (r.url or "—"))
+    return f"- {nhan}{html_lib.escape((r.title or '')[:120])} — {html_lib.escape(ref)}"
+
+
+def render_alert_short(data: Dict, ten_tep_day_du: str = "") -> str:
+    """Bản tin NGẮN cho thân email/webhook (HV-05). Mỗi nhóm có trần `TRAN_BAN_TIN_NGAN`; phần còn lại
+    nằm trong tệp đính kèm — nói rõ số lượng, không cắt im lặng."""
+    L: List[str] = [f"🔔 Cảnh báo EBM — {data['days']} ngày qua · {data['total_new']} tài liệu mới",
+                    f"Tạo lúc: {data['generated_at']} | Chế độ: {data['run_mode']}"]
+    if data["total_new"] == 0:
+        L.append("✅ Không có cập nhật mới (hệ thống không bịa tin).")
+        return "\n".join(L)
+    demo_ids = data.get("demo_ids") or frozenset()
+    for khoa, tieu_de in (("retracted", "⛔ BÀI ĐÃ BỊ RÚT — KHÔNG dùng"),
+                          ("regulatory", "⛑️ Cảnh báo an toàn thuốc CHÍNH THỨC"),
+                          ("guidelines", "📌 Guideline mới"),
+                          ("actionable", "✅ Đáng cân nhắc thay đổi thực hành")):
+        ds = data.get(khoa) or []
+        if not ds:
+            continue
+        tran = TRAN_BAN_TIN_NGAN[khoa]
+        L.append(f"\n{tieu_de} ({len(ds)})")
+        L += [_dong_ngan(r, demo_ids) for r in ds[:tran]]
+        if len(ds) > tran:
+            L.append(f"  … +{len(ds) - tran} mục nữa trong tệp đính kèm")
+    con_lai = len(data.get("need_full_text") or []) + len(data.get("drug_signals") or [])
+    if con_lai:
+        L.append(f"\n(+{con_lai} mục «cần đọc toàn văn»/tín hiệu FAERS — chỉ có trong tệp đính kèm)")
+    L.append(f"\nBản đầy đủ: tệp đính kèm {ten_tep_day_du or 'Alert_Digest_<ngày>.md'}. Cần bác sĩ kiểm chứng.")
+    return "\n".join(L)
+
+
 def export_alert_digest(days: int = 7) -> Dict[str, Path]:
     data = build_alert_data(days=days)
     md = render_alert_markdown(data)
