@@ -90,4 +90,29 @@ if [ -f tools/verify_exports_integrity.py ]; then
   fi
 fi
 
+# Them 02/10/2026 (PM-05, kiem toan dien): 14/29 luot CI y khoa do tu 14/09 la loi «Lint (ruff)» hoac «Bat bien newline vung
+# chuoi-ky» — hai buoc CI chay < 2 giay nhung pre-commit chua chay (ngay 02/10 PR #65 do 4/4 vi dung loi newline). Chay CUNG lenh
+# voi CI. May thieu ruff ⇒ ⚪ bo qua co thong bao (CI van chan), KHONG chan commit vi «khong do duoc» ≠ «loi».
+RUFF=""
+for ung in "$HOME/.ebm-venv/bin/ruff" "$HOME/.ebm-venv/Scripts/ruff.exe"; do
+  if [ -x "$ung" ]; then RUFF="$ung"; break; fi
+done
+if [ -z "$RUFF" ] && command -v ruff >/dev/null 2>&1; then RUFF="ruff"; fi
+if [ -n "$RUFF" ]; then
+  if ! "$RUFF" check . -q; then
+    echo "" >&2
+    echo "CHAN COMMIT: ruff check . co loi (CI 'Lint (ruff)' se do). Sua: $RUFF check . --fix (xem lai thay doi)." >&2
+    exit 1
+  fi
+else
+  echo "⚪ pre-commit: may nay khong co ruff (~/.ebm-venv) — bo qua buoc lint; CI van chay 'ruff check .'." >&2
+fi
+if [ -f tools/kiem_newline_vung_ky.py ]; then
+  if ! python3 tools/kiem_newline_vung_ky.py >/dev/null 2>&1; then
+    python3 tools/kiem_newline_vung_ky.py >&2
+    echo "CHAN COMMIT: bat bien newline vung chuoi-ky (CI cung chan) — them newline='\\n' cho write_text/open o dong bao do." >&2
+    exit 1
+  fi
+fi
+
 exit 0
