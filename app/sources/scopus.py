@@ -63,6 +63,8 @@ class ScopusClient(SourceClient):
         self.http = HttpClient(
             default_headers=headers or None,
             bind_interface=settings.scopus_bind_interface or None,
+            # None = theo HTTP_CACHE_TTL chung; 0 = không lưu đệm (SCOPUS_CACHE_TTL — điều kiện §2.4, bác sĩ quyết).
+            cache_ttl=settings.scopus_cache_ttl,
         )
 
     def search(self, query: str, clinical_area: Optional[str] = None,
