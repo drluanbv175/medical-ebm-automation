@@ -7,9 +7,11 @@ IP trực tiếp 01→16/09). Quyết định bật/tắt VPN — hoặc tách t
 cho số đo để quyết: chạy một lần ở mỗi đường, ghi JSON, rồi `--so-sanh`.
 
 Chỉ ĐỌC: mỗi nguồn MỘT yêu cầu nhỏ, không thử lại, hết giờ 12 giây; không gọi nguồn tính phí (Consensus, SerpApi).
-Scopus tốn hạn mức của tổ chức nên chỉ đo khi thêm `--co-scopus` (1 yêu cầu). Phân loại dùng CHUNG bộ nhận diện với
-engine (`app.utils.http.nhan_trang_chan`/`nhan_loi_ket_noi`) — nhãn ở đây khớp nhãn trong Source Log. Dấu vân đường
-mạng lấy tại máy (`app.utils.mang`), không tra IP ở dịch vụ ngoài. Khoá API đọc từ cấu hình engine, KHÔNG in ra.
+Scopus tốn hạn mức của tổ chức nên chỉ đo khi thêm `--co-scopus` (1 yêu cầu) VÀ cờ ENABLE_SCOPUS đang bật (03/10/2026:
+cờ tắt = bác sĩ tạm dừng làn Scopus ⇒ in «bỏ qua Scopus: ENABLE_SCOPUS=false», không gọi).
+Phân loại dùng CHUNG bộ nhận diện với engine (`app.utils.http.nhan_trang_chan`/`nhan_loi_ket_noi`) — nhãn ở đây khớp
+nhãn trong Source Log. Dấu vân đường mạng lấy tại máy (`app.utils.mang`), không tra IP ở dịch vụ ngoài. Khoá API đọc từ
+cấu hình engine, KHÔNG in ra.
 
 Dùng (từ thư mục repo y khoa, venv ~/.ebm-venv):
     python tools/do_mang_nguon.py [--co-scopus] [--ghi <tệp.json>] [--json]
@@ -51,6 +53,17 @@ NHOM_PHU = "phụ trợ"
 
 # (tên, nhóm, url, params, headers, mã HTTP coi là «tới được»)
 Diem = Tuple[str, str, str, Dict[str, str], Dict[str, str], Tuple[int, ...]]
+
+
+def ly_do_bo_scopus(cfg: Any) -> Optional[str]:
+    """Lý do KHÔNG đo Scopus dù đã xin `--co-scopus`; None = được đo. Cờ xét TRƯỚC khoá — cờ tắt là ý định của bác sĩ.
+
+    Thiếu thuộc tính `enable_scopus` ⇒ coi như TẮT (fail-closed: không tốn hạn mức khi không chắc cờ đang bật)."""
+    if not getattr(cfg, "enable_scopus", False):
+        return "ENABLE_SCOPUS=false"
+    if not getattr(cfg, "scopus_api_key", ""):
+        return "thiếu SCOPUS_API_KEY"
+    return None
 
 
 def danh_sach_diem(cfg: Any, co_scopus: bool = False) -> List[Diem]:
@@ -113,7 +126,7 @@ def danh_sach_diem(cfg: Any, co_scopus: bool = False) -> List[Diem]:
     if getattr(cfg, "core_api_key", ""):
         ds.append(("CORE", NHOM_PHU, "https://api.core.ac.uk/v3/search/works", {"q": "heart failure", "limit": "1"},
                    {"Authorization": f"Bearer {cfg.core_api_key}"}, (200,)))
-    if co_scopus and getattr(cfg, "scopus_api_key", ""):
+    if co_scopus and ly_do_bo_scopus(cfg) is None:
         ds.append(("Scopus (1 yêu cầu hạn mức)", NHOM_PHU, "https://api.elsevier.com/content/search/scopus",
                    {"query": "TITLE(heart failure)", "count": "1"},
                    {"X-ELS-APIKey": cfg.scopus_api_key, "Accept": "application/json"}, (200,)))
@@ -161,6 +174,9 @@ def _goi(url: str, params: Dict[str, str], headers: Dict[str, str]) -> Tuple[Any
 
 def do(cfg: Any, co_scopus: bool = False, goi=_goi) -> Dict[str, Any]:
     kq: Dict[str, Any] = {"mang": dau_van_mang(), "nguon": {}}
+    ly_do = ly_do_bo_scopus(cfg) if co_scopus else None
+    if ly_do is not None:
+        kq["bo_qua"] = {"Scopus": ly_do}
     for ten, nhom, url, params, headers, ma_ok in danh_sach_diem(cfg, co_scopus):
         t = time.monotonic()
         r, loi = goi(url, params, headers)
@@ -212,7 +228,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     ap.add_argument("--ghi", help="ghi kết quả JSON vào tệp này")
     ap.add_argument("--json", action="store_true", help="in JSON thay cho bảng")
-    ap.add_argument("--co-scopus", action="store_true", help="đo cả Scopus (tốn 1 yêu cầu hạn mức của tổ chức)")
+    ap.add_argument("--co-scopus", action="store_true",
+                    help="đo cả Scopus (tốn 1 yêu cầu hạn mức của tổ chức; chỉ khi ENABLE_SCOPUS=true)")
     ap.add_argument("--so-sanh", nargs=2, metavar=("A.json", "B.json"), help="so hai lần đo đã ghi")
     a = ap.parse_args(argv)
     if a.so_sanh:
@@ -225,6 +242,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 0
     from app.config import settings
     kq = do(settings, co_scopus=a.co_scopus)
+    for ten, ly_do in (kq.get("bo_qua") or {}).items():
+        # --json: in ra stderr để stdout vẫn là JSON hợp lệ (lý do còn nằm trong khoá «bo_qua»).
+        print(f"bỏ qua {ten}: {ly_do}", file=sys.stderr if a.json else sys.stdout)
     if a.json:
         print(json.dumps(kq, ensure_ascii=False, indent=2))
     else:

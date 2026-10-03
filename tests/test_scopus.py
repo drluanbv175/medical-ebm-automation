@@ -30,6 +30,9 @@ def _don_key_scopus(monkeypatch):
     monkeypatch.setattr(settings, "scopus_bind_interface", "")
     # Vá 25/09/2026: KHOA_QUA_PROXY của môi trường (phiên Cloud) miễn chặn «thiếu khoá» ⇒ test đỏ giả.
     monkeypatch.setattr(settings, "khoa_qua_proxy", "")
+    # Vá 03/10/2026: search() nay xét ENABLE_SCOPUS. Các test lối live ở đây mô phỏng nguồn ĐÃ BẬT — đặt cờ tường
+    # minh thay vì phụ thuộc .env của máy (bác sĩ đang để false). Cờ TẮT có test riêng: test_scopus_co_tat_20261003.py.
+    monkeypatch.setattr(settings, "enable_scopus", True)
     yield
 
 

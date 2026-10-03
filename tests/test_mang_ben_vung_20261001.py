@@ -531,6 +531,7 @@ class _CauHinhGia:
     ncbi_api_key = "KHOA-NCBI-BIMAT"
     core_api_key = "KHOA-CORE-BIMAT"
     scopus_api_key = "KHOA-SCOPUS-BIMAT"
+    enable_scopus = True  # 03/10/2026: --co-scopus chỉ đo khi cờ bật; cờ tắt: test_scopus_co_tat_20261003
 
 
 def test_cong_cu_scopus_chi_do_khi_xin_va_khong_lo_khoa(monkeypatch):

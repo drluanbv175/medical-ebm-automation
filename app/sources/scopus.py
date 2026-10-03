@@ -8,6 +8,10 @@ khác Semantic Scholar vẫn chạy được không key ở QPS thấp hơn. Vì
 `enable_scopus` mặc định TẮT (app/config.py) và `search()` tự chặn SỚM bằng lỗi
 rõ ràng nếu bật cờ mà thiếu key, thay vì để mỗi lượt gọi ăn một lỗi 401 mù mờ.
 
+CỜ TẮT thì `search()` KHÔNG gọi mạng (03/10/2026): lối gọi thẳng client (`run.py test-live scopus`,
+mã gọi `ScopusClient().search(...)`) đi vòng qua tầng chọn nguồn `get_enabled_sources()`, nên trước bản vá
+vẫn gọi API thật dù bác sĩ đã đặt ENABLE_SCOPUS=false (đã xảy ra 11:13 ngày 03/10). Chế độ mock giữ nguyên.
+
 GIỚI HẠN ĐÃ BIẾT, ghi rõ để không ai hiểu nhầm độ phủ dữ liệu:
   • Scopus Search API (endpoint `/content/search/scopus`) KHÔNG trả abstract đầy
     đủ theo mặc định — trả `abstract=None` trừ khi entry có sẵn `dc:description`
@@ -66,11 +70,23 @@ class ScopusClient(SourceClient):
             # None = theo HTTP_CACHE_TTL chung; 0 = không lưu đệm (SCOPUS_CACHE_TTL — điều kiện §2.4, bác sĩ quyết).
             cache_ttl=settings.scopus_cache_ttl,
         )
+        # Lý do lần search() gần nhất CÓ CHỦ ĐÍCH không gọi API (None = đã gọi / chưa gọi) — để cmd_test_live nói rõ
+        # «không đo», thay vì in «live: true, count: 0» như thể nguồn trả rỗng.
+        self.ly_do_khong_goi: Optional[str] = None
 
     def search(self, query: str, clinical_area: Optional[str] = None,
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
+        self.ly_do_khong_goi = None
         if self.use_mock:
             return mock_records_for(self.name, query, clinical_area, max_results)
+
+        if not settings.enable_scopus:
+            # Chốt NGAY trong client, không chỉ ở get_enabled_sources(): lối gọi thẳng client đi vòng tầng chọn nguồn.
+            # Đặt TRƯỚC chốt thiếu khoá — cờ tắt là ý định của bác sĩ (tạm dừng, chờ điều kiện Elsevier API Service
+            # Agreement §2.4), không phải cấu hình sai, nên không được nổ vì thiếu khoá.
+            self.ly_do_khong_goi = "ENABLE_SCOPUS=false — không gọi API (bác sĩ tạm dừng)"
+            logger.info("[scopus] %s", self.ly_do_khong_goi)
+            return []
 
         if not settings.scopus_api_key and not khoa_do_proxy_gan("scopus"):
             # (KHOA_QUA_PROXY khai «scopus» ⇒ proxy Cloud gắn X-ELS-APIKey — không chặn.)
