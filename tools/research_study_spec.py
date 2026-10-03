@@ -11,8 +11,10 @@ Module không tự tạo dữ kiện khoa học hoặc phê duyệt. Trường c
 
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+import placeholder_contract as PC
 import skill_standards as S
 
 SCHEMA_VERSION = "1.0"
@@ -31,9 +33,19 @@ _PLACEHOLDERS = {
     "chưa xác định",
 }
 
+# «<» đứng trước một số là phép so sánh lâm sàng («nằm viện < 3 ngày hoặc tuổi > 80»), không phải ô mẫu «<điền tên>»
+# — che trước khi hỏi vị từ chung (nhánh ngoặc nhọn của họ NHAN có từ «ngày/tên»).
+_SO_SANH_TRUOC_SO_RE = re.compile(r"<(?=\s*[\d.,])")
+
 
 def is_present(value: Any) -> bool:
-    """True khi giá trị có nội dung thật, không phải placeholder/trạng thái."""
+    """True khi giá trị có nội dung thật, không phải placeholder/trạng thái.
+
+    SỬA 03/10/2026 (hợp đồng ô trống chung `tools/placeholder_contract.py`): chuỗi phải qua thêm
+    `co_noi_dung_that` (MỌI họ dấu hiệu) — trước đây «[nơi thực hiện]», «___», «thuốc/can thiệp X», «[TO BE
+    COMPLETED]», «……», «CHƯA XÁC NHẬN», «[Cần bổ sung]», «<CẦN ĐIỀN>» được coi là CÓ: vừa làm StudySpec báo đủ
+    (G10-AUTO-06 PASS) vừa được `run_g10_assemble._text()` in nguyên văn như giá trị thật. Chỉ AND thêm — giữ
+    `_PLACEHOLDERS`, tiền tố «[CẦN»/«[DỰ THẢO]», số 0 vẫn là giá trị thật, dict/list vẫn theo any()."""
     if value is None:
         return False
     if isinstance(value, bool):
@@ -49,8 +61,11 @@ def is_present(value: Any) -> bool:
     if isinstance(value, str):
         text = value.strip()
         lowered = text.lower()
-        return bool(text) and lowered not in _PLACEHOLDERS and not text.startswith(
-            ("[CẦN", "[DỰ THẢO]")
+        return (
+            bool(text)
+            and lowered not in _PLACEHOLDERS
+            and not text.startswith(("[CẦN", "[DỰ THẢO]"))
+            and PC.co_noi_dung_that(_SO_SANH_TRUOC_SO_RE.sub("‹", text))
         )
     if isinstance(value, dict):
         return any(is_present(v) for v in value.values())

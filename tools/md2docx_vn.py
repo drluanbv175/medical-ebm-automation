@@ -7,7 +7,9 @@ Dùng chung cho mọi cổng pipeline và cho G10 (assembler). Đặc điểm:
 - Bảng Markdown (dạng `| ... |`) -> BẢNG WORD thật (không phải text).
 - Công thức `$$...$$` -> dòng căn giữa, dọn ký hiệu LaTeX cơ bản.
 - Tô ĐẬM + nghiêng mọi nhãn trạng thái skill ([CẦN...], [ĐÃ...], [DỰ THẢO]...)
-  để bác sĩ thấy ngay chỗ cần điền.
+  để bác sĩ thấy ngay chỗ cần điền; từ 03/10/2026 tô cả ô chưa điền theo
+  `placeholder_contract` (họ NHAN/MAU_CHUNG/THU_CONG — [TO BE COMPLETED], [đơn vị],
+  «thuốc/can thiệp X»…). KHÔNG tô «___»/«……» (bảng trống dự kiến, dòng ký hợp lệ).
 - Trang bìa TUỲ CHỌN (title_page dict) — không cứng hoá cho một đề tài nào.
 
 Yêu cầu: python-docx (`pip install python-docx`). Nếu thiếu, convert() ném
@@ -27,6 +29,8 @@ import sys as _sys_r4
 import unicodedata
 from pathlib import Path
 from typing import Dict, List, Optional
+
+import placeholder_contract as PC
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -171,12 +175,37 @@ _HIGHLIGHT_PREFIXES = ("CẦN", "ĐÃ", "DỰ THẢO", "CHƯA", "KHOÁ", "KHÓA"
 _URGENT_FLAG_SUBSTRING = "KẾT QUẢ THẬT"
 _FLAG_COLOR_URGENT = (0xCC, 0x33, 0x00)   # đỏ cam đậm
 _FLAG_COLOR_NORMAL = (0xCC, 0x77, 0x00)   # cam
+# 03/10/2026 — hợp đồng ô trống chung `placeholder_contract`: ngoài các tiền tố cũ, tô cả ô CHƯA ĐIỀN theo ba họ
+# «có chữ» NHAN / MAU_CHUNG / THU_CONG — «[TO BE COMPLETED]», «[đơn vị]», «[XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG]»,
+# «[BÁC SĨ RÀ…]», «[CHỜ BÁC SĨ]», «[CAN …]» bỏ dấu, và ô KHÔNG nằm trong ngoặc vuông: «thuốc/can thiệp X»,
+# «<CẦN …>», «CHƯA XÁC NHẬN», «XOÁ mục này». Trước đó bộ Word nộp IRB in các ô này như văn đã điền (sự cố ICF C1a).
+# KHÔNG tô họ TRONG («___», «……») ở bất kỳ đâu, kể cả trong bảng — bảng trống dự kiến của SAP và dòng ký/ngày là ô
+# HỢP LỆ, tô cam sẽ thành nhiễu.
+_HO_TO_SANG = (PC.NHAN, PC.MAU_CHUNG, PC.THU_CONG)
+_MAU_TO_SANG = tuple(bt for _ho in _HO_TO_SANG for bt in PC.mau(_ho))
 
 
 def _looks_like_flag(bracket_text: str) -> bool:
-    """[CẦN...], [ĐÃ CUNG CẤP], [DỰ THẢO], [CẦN KIỂM CHỨNG...] -> True."""
+    """[CẦN...], [ĐÃ CUNG CẤP], [DỰ THẢO], [CẦN KIỂM CHỨNG...] -> True; thêm (03/10/2026) mọi ngoặc vuông còn ô
+    chưa điền theo `_HO_TO_SANG` ([TO BE COMPLETED], [đơn vị], [XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG]…)."""
     inner = bracket_text.strip("[]").strip().upper()
-    return any(inner.startswith(p) for p in _HIGHLIGHT_PREFIXES)
+    if any(inner.startswith(p) for p in _HIGHLIGHT_PREFIXES):
+        return True
+    return PC.co_o_trong(bracket_text, ho=_HO_TO_SANG)
+
+
+def _residue_spans(text: str) -> List[tuple]:
+    """Các khoảng [đầu, cuối) của ô chưa điền (ba họ `_HO_TO_SANG`) trong một đoạn chữ THƯỜNG — ngoặc vuông đóng kín
+    đã được `_INLINE_RE` tách riêng, nên ở đây còn «thuốc/can thiệp X», «<CẦN …>», «CHƯA XÁC NHẬN», «XOÁ mục này»,
+    «[tài trợ»/«[CẦN…» bị khuôn ngắt dòng. Khoảng chồng/kề nhau được gộp."""
+    spans = sorted((m.start(), m.end()) for bt in _MAU_TO_SANG for m in bt.finditer(text) if m.end() > m.start())
+    gop: List[list] = []
+    for dau, cuoi in spans:
+        if gop and dau <= gop[-1][1]:
+            gop[-1][1] = max(gop[-1][1], cuoi)
+        else:
+            gop.append([dau, cuoi])
+    return [(dau, cuoi) for dau, cuoi in gop]
 
 
 def _flag_color(bracket_text: str):
@@ -544,7 +573,20 @@ def _add_inline_runs(paragraph, text, size=None, bold=False, italic=False):
         elif part.startswith("*") and part.endswith("*") and len(part) > 2:
             _add_text(paragraph, part[1:-1], size, bold=bold, italic=True)
         else:
-            _add_text(paragraph, part, size, bold=bold, italic=italic)
+            _add_plain_text(paragraph, part, size, bold=bold, italic=italic)
+
+
+def _add_plain_text(paragraph, text, size=None, bold=False, italic=False):
+    """In một đoạn chữ thường; ô chưa điền KHÔNG nằm trong ngoặc vuông (xem `_residue_spans`) được tô đậm+nghiêng+cam
+    như nhãn [CẦN…], phần còn lại in y như trước (03/10/2026)."""
+    vt = 0
+    for dau, cuoi in _residue_spans(text):
+        if dau > vt:
+            _add_text(paragraph, text[vt:dau], size, bold=bold, italic=italic)
+        _add_text(paragraph, text[dau:cuoi], size, bold=True, italic=True, color=_FLAG_COLOR_NORMAL)
+        vt = cuoi
+    if vt < len(text):
+        _add_text(paragraph, text[vt:], size, bold=bold, italic=italic)
 
 
 def _spacing(paragraph, before=0, after=8, line=1.5, align=None):

@@ -936,8 +936,18 @@ def _item_auto_check(item_name: str, gates: dict, design_code: str,
         manuscript_text, "## I. GIỚI THIỆU", "## II.")
     methods_section = _extract_manuscript_section(
         manuscript_text, "## II. PHƯƠNG PHÁP", "## III.")
-    intro_ready = bool(manuscript_text) and "[CẦN" not in intro_section
-    methods_ready = bool(manuscript_text) and "[CẦN" not in methods_section
+    # THÊM 03/10/2026 (bộ nhận diện ô trống dùng chung): giữ nguyên chốt cũ «[CẦN» và AND thêm
+    # placeholder_contract — nhãn họ NHAN (mọi [CẦN…] mọi hoa/thường, [CAN …] chữ hoa, [TODO]…), ô mẫu
+    # MAU_CHUNG, ô trống TRONG («___»). Trước đó «[CAN]», «___», «[đơn vị]» không làm mục về ☐ nên % checklist
+    # (nuôi G8-AUTO-10 và decide_g8_status) bị thổi phồng. Mục I/II không có bảng nên xét cả mục.
+    import placeholder_contract as PC  # noqa: PLC0415
+
+    def _section_ready(section: str) -> bool:
+        return (bool(manuscript_text) and "[CẦN" not in section
+                and not PC.co_o_trong(section, ho=(PC.NHAN, PC.MAU_CHUNG, PC.TRONG)))
+
+    intro_ready = _section_ready(intro_section)
+    methods_ready = _section_ready(methods_section)
 
     if any(k in name_lower for k in ["background", "rationale", "search", "eligibility"]):
         return "☑" if (g0.get("_file_exists") and intro_ready) else "☐"
@@ -962,7 +972,9 @@ def _item_auto_check(item_name: str, gates: dict, design_code: str,
         return "☑" if (g4.get("_file_exists") and methods_ready) else "☐"
     if any(k in name_lower for k in ["ethical", "registration", "ethical"]):
         irb = g2.get("g2_irb_number", "")
-        return "☑" if (irb and "[CAN" not in str(irb)) else "☐"
+        # 03/10/2026: «[CẦN SỐ IRB THẬT]» (có dấu — đúng giá trị khuôn G7 truyền vào) trước đây được ☑ vì chỉ so
+        # «[CAN» không dấu; AND thêm vị từ chung (mọi họ dấu hiệu) mà vẫn giữ chốt cũ.
+        return "☑" if (irb and "[CAN" not in str(irb) and PC.co_noi_dung_that(str(irb))) else "☐"
     if "bias" in name_lower:
         return "☑" if (g1.get("_file_exists") and methods_ready) else "☐"
     if "missing" in name_lower:

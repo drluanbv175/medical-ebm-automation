@@ -39,6 +39,7 @@ sys.path.insert(0, str(TOOLS))
 
 import gate_contract as GC  # noqa: E402
 import pipeline_freshness as FRESH  # noqa: E402
+import placeholder_contract as PC  # noqa: E402
 import skill_standards as S  # noqa: E402
 
 REPORT_JSON = "GATE_AUTOMATION_matrix.json"
@@ -621,6 +622,13 @@ _PLACEHOLDER_TOKENS = (
 
 
 def _present_value(value: Any) -> bool:
+    """Trường study_meta có GIÁ TRỊ THẬT chưa (bảng readiness metadata).
+
+    03/10/2026 — AND thêm vị từ trường chung `placeholder_contract.co_noi_dung_that` (mọi họ dấu hiệu), GIỮ NGUYÊN
+    `_PLACEHOLDER_TOKENS` cũ: trước đó «[TO BE COMPLETED]», «___», «[đơn vị]», «[REQUIRE_HUMAN_INPUT]», «-» được tính
+    là ĐÃ ĐIỀN; danh sách/dict chỉ cần KHÔNG RỖNG (một list toàn «[CẦN…]» vẫn «có»). Nay danh sách/dict đòi MỌI phần tử
+    thật (ngữ nghĩa mặc định của hợp đồng). bool giữ nguyên nghĩa cũ (False = chưa xác nhận). Chỉ được CHẶT hơn.
+    """
     if value is None:
         return False
     if isinstance(value, bool):
@@ -628,12 +636,14 @@ def _present_value(value: Any) -> bool:
     if isinstance(value, (int, float)):
         return True
     if isinstance(value, (list, tuple, set, dict)):
-        return bool(value)
+        return bool(value) and PC.co_noi_dung_that(value)
     text = str(value).strip()
     if not text:
         return False
     up = text.upper()
-    return not any(token in up for token in _PLACEHOLDER_TOKENS)
+    if any(token in up for token in _PLACEHOLDER_TOKENS):
+        return False
+    return PC.co_noi_dung_that(value)
 
 
 def _meta_get(meta: Dict[str, Any], dotted: str) -> Any:

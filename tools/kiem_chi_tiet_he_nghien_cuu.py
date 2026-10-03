@@ -13,7 +13,8 @@ tại). Đó là nguồn của chuỗi «đã hoàn thiện» → «kiểm lại
 Công cụ này CHỈ ĐO và BÁO, theo NĂM TRỤC cho mỗi cổng G0-G10 + một nhóm HỆ THỐNG:
   ① TỰ ĐỘNG      script cổng · quality gate có CLI · dây nối approve_gate · checkpoint · độ tươi
   ② CHUẨN        hợp đồng chất lượng chấm SỐNG (write=False) · tiêu chí tự động · chuẩn báo cáo
-  ③ TÀI LIỆU     artifact bắt buộc · 5 luật liêm chính (verify_exports_integrity) · nhãn [CẦN
+  ③ TÀI LIỆU     artifact bắt buộc · 5 luật liêm chính (verify_exports_integrity) · ô chưa điền
+                 (nhãn [CẦN… + ô mẫu khuôn sinh + xác nhận thủ công — placeholder_contract, 03/10/2026)
   ④ TRÌNH BÀY    .docx: Times New Roman · cỡ 13/11 · 0 ký tự trang trí · không cũ hơn .md
   ⑤ ĐIỂM DỪNG NGƯỜI  sổ cái ký thật của cổng cứng: chưa ký / đã ký / THU HỒI / bị sửa
 Nó KHÔNG viết lại phép đo nào đã có — chỉ GHÉP các nguồn sự thật sẵn có (hai bản
@@ -68,6 +69,7 @@ import chuan_trinh_bay as CTB  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import list_studies as LS  # noqa: E402
 import pipeline_freshness as PF  # noqa: E402
+import placeholder_contract as PC  # noqa: E402
 import skill_standards as SS  # noqa: E402
 import verify_exports_integrity as VEI  # noqa: E402
 
@@ -106,7 +108,13 @@ BO_SINH_DOCX = [  # 11 điểm doc.save phải đi qua chuan_trinh_bay (đo 01/0
     "gen_research_docx.py", "md2docx_vn.py",
 ]
 FONT_MA = {"Consolas", "Courier New"}
+# Marker CŨ của con số 🟡 trục ③ — giữ để đối chiếu: mọi «[CẦN» vẫn được họ NHAN đếm (NHAN không phân biệt hoa/thường).
 SO_TAG_CAN = re.compile(r"\[CẦN")
+# 03/10/2026 — hợp đồng ô trống chung `placeholder_contract`: con số 🟡 «còn ô chưa điền» trước đây CHỈ đếm «[CẦN»
+# (phân biệt hoa/thường) nên mù với «[TO BE COMPLETED]», «[Cần…]» chữ thường, «[đơn vị]», «thuốc/can thiệp X»,
+# «[XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG]»… Nay đếm ba họ «có chữ». Họ TRONG («___», «……») chỉ in để THAM KHẢO — bảng
+# trống dự kiến và dòng ký/ngày là ô hợp lệ. Mức vẫn là 🟡 (việc người thật), KHÔNG nâng 🔴 (không sinh đỏ giả).
+HO_O_CHUA_DIEN = (PC.NHAN, PC.MAU_CHUNG, PC.THU_CONG)
 
 
 @dataclass
@@ -134,8 +142,17 @@ def _doc_json(p: Path) -> dict[str, Any]:
         return {}
 
 
+def dem_o_theo_ho(text: str) -> dict[str, int]:
+    """Số ô còn trống theo từng họ (NHAN · MAU_CHUNG · THU_CONG · TRONG) — `PC.tom_tat`, chỉ để hiển thị."""
+    return PC.tom_tat(text, ho=HO_O_CHUA_DIEN + (PC.TRONG,))
+
+
 def dem_tag_can(text: str) -> int:
-    return len(SO_TAG_CAN.findall(text))
+    """Số ô CHƯA ĐIỀN cho con số 🟡 trục ③: tổng ba họ HO_O_CHUA_DIEN (không gồm TRONG).
+
+    Tên hàm giữ nguyên cho bên gọi cũ; mọi «[CẦN» mà bản cũ đếm vẫn nằm trong họ NHAN nên con số không bao giờ nhỏ
+    hơn bản cũ."""
+    return sum(PC.tom_tat(text, ho=HO_O_CHUA_DIEN).values())
 
 
 def _rut_gon(s: str, n: int = 110) -> str:
@@ -256,7 +273,10 @@ def kiem_md(p: Path) -> dict[str, Any]:
         "file": p.name,
         "chan": [f"{f.code}@{f.line}" for f in rep.blocking],
         "canh_bao": [f"{f.code}@{f.line}" for f in rep.warnings],
+        # «so_can» = số ô CHƯA ĐIỀN theo ba họ có chữ (tên khoá giữ cho JSON cũ); «o_trong_theo_ho» kể chi tiết,
+        # gồm cả họ TRONG chỉ để tham khảo.
         "so_can": dem_tag_can(text),
+        "o_trong_theo_ho": dem_o_theo_ho(text),
         "co_disclaimer": bool(VEI._DISCLAIMER.search(text)) if text else False,
     }
 
@@ -676,9 +696,11 @@ def kiem_cong(gate: str, study: str, out_dir: Path, cps: dict[str, dict[str, Any
         md_files += [p for p in sorted(out_dir.glob("*.md"))
                      if p.name.startswith(TAI_LIEU_NOP_PREFIX) and p not in md_files]
     tong_can = 0
+    tong_ho: Counter[str] = Counter()
     for p in md_files:
         k = kiem_md(p)
         tong_can += k["so_can"]
+        tong_ho.update(k["o_trong_theo_ho"])
         if k["chan"]:
             m.append(Muc(gate, "③", DO, f"{p.name}: vi phạm liêm chính CHẶN", ", ".join(k["chan"][:6]),
                          f"python3 tools/verify_exports_integrity.py --path exports/{study}/{p.name}", True))
@@ -686,10 +708,16 @@ def kiem_cong(gate: str, study: str, out_dir: Path, cps: dict[str, dict[str, Any
             m.append(Muc(gate, "③", VANG, f"{p.name}: cảnh báo liêm chính", ", ".join(k["canh_bao"][:6])))
         else:
             m.append(Muc(gate, "③", XANH, f"{p.name}: 5 luật liêm chính sạch",
-                         f"[CẦN còn {k['so_can']}" + ("" if k["co_disclaimer"] else " · nhãn trạng thái dạng khác")))
+                         f"ô chưa điền còn {k['so_can']}"
+                         + ("" if k["co_disclaimer"] else " · nhãn trạng thái dạng khác")))
     if tong_can:
-        m.append(Muc(gate, "③", VANG, f"Còn {tong_can} nhãn [CẦN…] trong {len(md_files)} file",
-                     "thẩm quyền chủ nhiệm/thống kê viên", "điền rồi chạy lại quality gate của cổng"))
+        chi_tiet = " · ".join(f"{h} {tong_ho[h]}" for h in HO_O_CHUA_DIEN)
+        m.append(Muc(gate, "③", VANG,
+                     f"Còn {tong_can} ô chưa điền (nhãn [CẦN…]/ô mẫu khuôn sinh/xác nhận thủ công) trong "
+                     f"{len(md_files)} file",
+                     f"thẩm quyền chủ nhiệm/thống kê viên — {chi_tiet}; ô gạch/chấm {tong_ho[PC.TRONG]} (chỉ tham "
+                     "khảo: bảng trống dự kiến/dòng ký hợp lệ)",
+                     "điền rồi chạy lại quality gate của cổng"))
     if not md_files and da_chay and not rd["missing_required"]:
         m.append(Muc(gate, "③", VANG, "Không có artifact .md để soi", "cổng chỉ có checkpoint/json"))
 
