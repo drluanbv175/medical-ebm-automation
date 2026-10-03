@@ -13,9 +13,13 @@ Công cụ này vì vậy:
 - KHÔNG gọi gửi cảnh báo (email/webhook), KHÔNG nối Hub, KHÔNG dựng Antifacts, KHÔNG ghi sổ lượt
   giám sát (`record_evidence_surveillance_run`);
 - chép các báo cáo Markdown sinh ra vào `--out` kèm TOM-TAT.md + tom_tat.json nêu rõ trạng thái
-  nguồn (PASS/PARTIAL/FAIL) và nhãn «chỉ báo cáo — ứng viên, cần bác sĩ duyệt».
+  nguồn (PASS/PARTIAL/FAIL) và nhãn «chỉ báo cáo — ứng viên, cần bác sĩ duyệt»;
+- (03/10/2026) làm sạch URL/EID Scopus NGAY LÚC CHÉP (`app/utils/lien_ket_scopus.py`): `--out` được Routine commit
+  lên repo CÔNG KHAI mà điều khoản Elsevier cấm phát tán dữ liệu Scopus ⇒ thay bằng liên kết DOI/PubMed, không có
+  thì bỏ liên kết; còn sót sau làm sạch ⇒ xoá tệp + mã 3.
 
-Mã thoát: 0 = nguồn PASS · 2 = PARTIAL/FAIL (vẫn ghi báo cáo, có dải cảnh báo) · 3 = tham số sai.
+Mã thoát: 0 = nguồn PASS · 2 = PARTIAL/FAIL (vẫn ghi báo cáo, có dải cảnh báo) · 3 = tham số sai hoặc báo cáo còn
+URL/EID Scopus sau làm sạch (tệp đó đã bị xoá).
 Không tự áp dụng lâm sàng, không dùng dữ liệu bệnh nhân. Cần bác sĩ kiểm chứng.
 """
 from __future__ import annotations
@@ -27,11 +31,13 @@ import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+from app.utils.lien_ket_scopus import chep_da_lam_sach, lam_sach_van_ban, tim_vi_pham  # noqa: E402
 
 NHAN = "CHỈ BÁO CÁO — không phải lượt giám sát chính thức"
 DISCLAIMER = ("Cần bác sĩ kiểm chứng. Đây là danh sách ỨNG VIÊN do máy quét, chưa thẩm định; "
@@ -111,14 +117,22 @@ def chay_bao_cao_chi_doc(out_dir: Path, ngay: int = 10, max_per_query: int = 8, 
 
     out_dir.mkdir(parents=True, exist_ok=True)
     da_chep = {}
-    for khoa, ten in TEN_BAO_CAO.items():
-        if khoa in bo_bao_cao:
-            continue
-        nguon = bao_cao.get(khoa)
-        if nguon and Path(nguon).is_file():
-            shutil.copyfile(nguon, out_dir / ten)
-            da_chep[khoa] = ten
-    shutil.rmtree(tam, ignore_errors=True)
+    # 03/10/2026: chốt hậu kiểm TẤT ĐỊNH — Routine Cloud commit `--out` lên repo CÔNG KHAI; điều khoản Elsevier cấm
+    # phát tán dữ liệu Scopus. Bộ dựng đã đổi URL Scopus sang DOI/PubMed; lưới này bắt mọi chỗ còn sót (kể cả bộ dựng
+    # chưa nối) NGAY LÚC CHÉP — bản chưa làm sạch không bao giờ nằm trong `--out`.
+    lien_ket_scopus_da_go = {}
+    try:
+        for khoa, ten in TEN_BAO_CAO.items():
+            if khoa in bo_bao_cao:
+                continue
+            nguon = bao_cao.get(khoa)
+            if nguon and Path(nguon).is_file():
+                n = chep_da_lam_sach(Path(nguon), out_dir / ten)
+                da_chep[khoa] = ten
+                if n:
+                    lien_ket_scopus_da_go[ten] = n
+    finally:
+        shutil.rmtree(tam, ignore_errors=True)
 
     sh = dict(stats.get("source_health") or {})
     trang_thai = str(sh.get("status") or "FAIL")
@@ -145,12 +159,32 @@ def chay_bao_cao_chi_doc(out_dir: Path, ngay: int = 10, max_per_query: int = 8, 
         "da_noi_hub": False,
         "watermark_chinh_thuc_doi": False,
         "tang_du_phong_tinh_phi": "tắt cứng",
+        "lien_ket_scopus_da_go": lien_ket_scopus_da_go,
         "disclaimer": DISCLAIMER,
     }
-    (out_dir / "tom_tat.json").write_text(json.dumps(tom_tat, ensure_ascii=False, indent=2),
-                                          encoding="utf-8", newline="\n")
-    (out_dir / "TOM-TAT.md").write_text(_markdown(tom_tat), encoding="utf-8", newline="\n")
+    # Lý do lỗi/cảnh báo nguồn có thể mang URL Scopus ⇒ làm sạch cả tóm tắt (đọc lại để giá trị trả về == tệp).
+    tom_tat_json = lam_sach_van_ban(json.dumps(tom_tat, ensure_ascii=False, indent=2))[0]
+    tom_tat = json.loads(tom_tat_json)
+    (out_dir / "tom_tat.json").write_text(tom_tat_json, encoding="utf-8", newline="\n")
+    (out_dir / "TOM-TAT.md").write_text(lam_sach_van_ban(_markdown(tom_tat))[0], encoding="utf-8", newline="\n")
+    _chan_neu_con_scopus(out_dir, [*da_chep.values(), "tom_tat.json", "TOM-TAT.md"])
     return tom_tat
+
+
+def _chan_neu_con_scopus(out_dir: Path, ten_tep: List[str]) -> None:
+    """Hậu điều kiện fail-closed: tệp nào lượt này ghi mà còn URL/EID Scopus ⇒ XOÁ tệp đó rồi từ chối (mã 3), để
+    Routine không thể commit nó dù bỏ qua mã thoát. `lam_sach_van_ban` bảo đảm sạch nên nhánh này chỉ bắt lỗi lập
+    trình."""
+    con_lai = {}
+    for ten in ten_tep:
+        tep = out_dir / ten
+        if tep.is_file():
+            vp = tim_vi_pham(tep.read_text(encoding="utf-8", errors="replace"))
+            if vp:
+                con_lai[ten] = len(vp)
+                tep.unlink()
+    if con_lai:
+        raise ValueError(f"báo cáo còn liên kết/EID Scopus sau khi làm sạch (đã xoá tệp): {con_lai}")
 
 
 def _markdown(t: Dict[str, object]) -> str:
@@ -177,6 +211,10 @@ def _markdown(t: Dict[str, object]) -> str:
         dong.append(f"- Thiếu: {', '.join(t['thieu_bao_cao'])}")
     if t.get("bo_co_y"):
         dong.append(f"- Cố ý không kèm: {', '.join(TEN_BAO_CAO[k] for k in t['bo_co_y'])}")
+    if t.get("lien_ket_scopus_da_go"):
+        da_go = ", ".join(f"{ten} {so}" for ten, so in sorted(dict(t["lien_ket_scopus_da_go"]).items()))
+        dong.append("- Liên kết/EID Scopus đã gỡ (điều khoản Elsevier — thay bằng DOI/PubMed, không có thì bỏ "
+                    f"liên kết): {da_go}")
     dong += ["", "## Ranh giới", "",
              "- Không gửi email/webhook · không nối Hub EBM_MASTER · không dựng Antifacts · "
              "không ghi sổ lượt giám sát.",

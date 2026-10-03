@@ -21,6 +21,7 @@ from app.database import session_scope
 from app.models import EvidenceItem
 from app.services import run_state
 from app.services.filtering import la_ly_do_eoc, la_ly_do_rut_bai
+from app.utils.lien_ket_scopus import lien_ket_cong_khai
 from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -38,8 +39,10 @@ def _ref(r: EvidenceItem) -> str:
         parts.append(f"PMID:{r.pmid}")
     if r.nct_id:
         parts.append(r.nct_id)
-    if r.url:
-        parts.append(r.url)
+    # 03/10/2026: KHÔNG in URL Scopus (điều khoản Elsevier; báo cáo lên repo CÔNG KHAI) — thay bằng DOI/PubMed.
+    url = lien_ket_cong_khai(r.url, r.doi, r.pmid)
+    if url:
+        parts.append(url)
     return " ; ".join(parts) or "—"
 
 
@@ -228,7 +231,7 @@ TRAN_BAN_TIN_NGAN = {"retracted": 5, "regulatory": 8, "guidelines": 5, "actionab
 
 def _dong_ngan(r: EvidenceItem, demo_ids) -> str:
     nhan = _NHAN_DEMO if r.id in demo_ids else ""
-    ref = f"PMID {r.pmid}" if r.pmid else (f"DOI {r.doi}" if r.doi else (r.url or "—"))
+    ref = f"PMID {r.pmid}" if r.pmid else (f"DOI {r.doi}" if r.doi else (lien_ket_cong_khai(r.url) or "—"))
     return f"- {nhan}{html_lib.escape((r.title or '')[:120])} — {html_lib.escape(ref)}"
 
 

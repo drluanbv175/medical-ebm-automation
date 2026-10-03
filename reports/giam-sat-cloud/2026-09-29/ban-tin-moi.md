@@ -128,16 +128,16 @@
   - Nguồn: DOI:10.1038/s41581-026-01128-3 ; https://openalex.org/W7214311727
 - **Cardiovascular risk burden and guideline-recommended lipid and blood pressure goals in an Italian Cohort: find** _(Tim mạch)_
   - Mức: High (operational) | Tier A
-  - Nguồn: DOI:10.1186/s12916-025-04552-7 ; PMID:41361314 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105027405212&origin=inward
+  - Nguồn: DOI:10.1186/s12916-025-04552-7 ; PMID:41361314 ; https://doi.org/10.1186/s12916-025-04552-7
 - **Addressing systematic underdetection of left ventricular hypertrophy by guideline-recommended electrocardiogra** _(Tim mạch)_
   - Mức: High (operational) | Tier A
-  - Nguồn: DOI:10.1016/j.ijcard.2026.134761 ; PMID:42674294 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105049258639&origin=inward
+  - Nguồn: DOI:10.1016/j.ijcard.2026.134761 ; PMID:42674294 ; https://doi.org/10.1016/j.ijcard.2026.134761
 - **Cost of illness of type 2 diabetes mellitus with a cardiovascular comorbidity and comparison with guideline re** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier A
-  - Nguồn: DOI:10.1186/s12913-026-14428-y ; PMID:42032593 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105037479871&origin=inward
+  - Nguồn: DOI:10.1186/s12913-026-14428-y ; PMID:42032593 ; https://doi.org/10.1186/s12913-026-14428-y
 - **Diabetes Prediction and Recommendation System Based on Laboratory Results Using Machine Learning** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier A
-  - Nguồn: DOI:10.1007/978-3-032-32726-0_31 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105048714382&origin=inward
+  - Nguồn: DOI:10.1007/978-3-032-32726-0_31 ; https://doi.org/10.1007/978-3-032-32726-0_31
 - **Clinicians’ time in different aspects of hypertension care: how far are we from optimal management required by** _(Tim mạch)_
   - Mức: High (operational) | Tier A
   - Nguồn: DOI:10.1080/08037051.2026.2635826 ; https://core.ac.uk/works/337237558
@@ -161,7 +161,7 @@
   - Nguồn: DOI:10.1097/hjh.0000000000004411 ; PMID:42554264 ; https://pubmed.ncbi.nlm.nih.gov/42554264/
 - **Recognising the family physician in asthma and COPD guidelines: a necessary step for effective primary care im** _(Hô hấp)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1038/s41533-026-00485-7 ; PMID:41688458 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105029949159&origin=inward
+  - Nguồn: DOI:10.1038/s41533-026-00485-7 ; PMID:41688458 ; https://doi.org/10.1038/s41533-026-00485-7
 - **Left Atrial Pressure Estimation Using Contemporary Guideline Algorithms in Patients with Atrial Fibrillation a** _(Tim mạch)_
   - Mức: High (operational) | Tier B
   - Nguồn: DOI:10.1016/j.echo.2026.02.004 ; https://core.ac.uk/works/360499014
@@ -197,7 +197,7 @@
   - Nguồn: DOI:10.1186/s12877-026-08324-7 ; https://openalex.org/W7213889600
 - **European stroke organisation guideline on stroke-associated pneumonia** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1093/esj/aakag044 ; PMID:42095755 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105038289483&origin=inward
+  - Nguồn: DOI:10.1093/esj/aakag044 ; PMID:42095755 ; https://doi.org/10.1093/esj/aakag044
 - **Implications of the 2025 AHA/ACC hypertension guideline on hypertension prevalence, treatment eligibility and ** _(Tim mạch)_
   - Mức: High (operational) | Tier B
   - Nguồn: DOI:10.1136/bmjph-2026-005006 ; https://core.ac.uk/works/413744233
@@ -305,76 +305,76 @@
   - Nguồn: DOI:10.1542/peds.2026-078565 ; https://openalex.org/W7214536856
 - **Updates in the 2025 AHA/ACC Hypertension Guideline** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11906-026-01372-9 ; PMID:41843050 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105033649312&origin=inward
+  - Nguồn: DOI:10.1007/s11906-026-01372-9 ; PMID:41843050 ; https://doi.org/10.1007/s11906-026-01372-9
 - **The 2025 AHA/ACC Hypertension Guidelines: Key Updates, Historical Context, and Clinical Implications** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11886-026-02413-0 ; PMID:42704524 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105049548123&origin=inward
+  - Nguồn: DOI:10.1007/s11886-026-02413-0 ; PMID:42704524 ; https://doi.org/10.1007/s11886-026-02413-0
 - **The impact of right ventricular free wall strain on current international echocardiography guidelines for the ** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s44156-026-00114-6 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041112319&origin=inward
+  - Nguồn: DOI:10.1186/s44156-026-00114-6 ; https://doi.org/10.1186/s44156-026-00114-6
 - **Impact of guideline definitions on right ventricular diameter in echocardiography: an automated analysis in co** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s44156-026-00118-2 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041031279&origin=inward
+  - Nguồn: DOI:10.1186/s44156-026-00118-2 ; https://doi.org/10.1186/s44156-026-00118-2
 - **Adherence to European Society of Cardiology guidelines at discharge after Acute Coronary Syndrome: a two-cente** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s43044-026-00721-y ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105030139111&origin=inward
+  - Nguồn: DOI:10.1186/s43044-026-00721-y ; https://doi.org/10.1186/s43044-026-00721-y
 - **Primary Prevention of Dyslipidemia: 10 Practice-Changing Takeaways from the 2026 ACC/AHA Multisociety Guidelin** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11883-026-01437-9 ; PMID:42295619 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041906921&origin=inward
+  - Nguồn: DOI:10.1007/s11883-026-01437-9 ; PMID:42295619 ; https://doi.org/10.1007/s11883-026-01437-9
 - **Sodium intake patterns among US adults before and after the 2017 ACC/AHA hypertension guidelines: evidence fro** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s41110-026-00495-y ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105043369741&origin=inward
+  - Nguồn: DOI:10.1186/s41110-026-00495-y ; https://doi.org/10.1186/s41110-026-00495-y
 - **Top 10 Concepts in Secondary ASCVD Prevention From the 2026 ACC/AHA Dyslipidemia Guideline: What Is New and Wh** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11883-026-01465-5 ; PMID:42709273 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105049623720&origin=inward
+  - Nguồn: DOI:10.1007/s11883-026-01465-5 ; PMID:42709273 ; https://doi.org/10.1007/s11883-026-01465-5
 - **Bridging the Gap in Racial/Ethnic Disparities: Perspectives from the 2025 American Heart Association/American ** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11906-026-01367-6 ; PMID:41714558 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105030563676&origin=inward
+  - Nguồn: DOI:10.1007/s11906-026-01367-6 ; PMID:41714558 ; https://doi.org/10.1007/s11906-026-01367-6
 - **Changes in statin therapy eligibility under the 2026 versus 2018 dyslipidemia guidelines** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1016/j.ajpc.2026.101719 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105043372626&origin=inward
+  - Nguồn: DOI:10.1016/j.ajpc.2026.101719 ; https://doi.org/10.1016/j.ajpc.2026.101719
 - **Secondary prevention of recurrent ischemic stroke: from guidelines to precision medicine** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s13019-026-04452-8 ; PMID:42374519 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105050501443&origin=inward
+  - Nguồn: DOI:10.1186/s13019-026-04452-8 ; PMID:42374519 ; https://doi.org/10.1186/s13019-026-04452-8
 - **Retraction for: Response to Request for Modification of the 2026 AHA/ASA Acute Ischemic Stroke Guidelines: End** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1161/strokeaha.126.056726 ; PMID:42535264 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105048209863&origin=inward
+  - Nguồn: DOI:10.1161/strokeaha.126.056726 ; PMID:42535264 ; https://doi.org/10.1161/strokeaha.126.056726
 - **Sex-specific risk factors for stroke in women: Focus on the 2024 AHA/ASA guideline** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.3949/ccjm.93a.25049 ; PMID:42067227 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105037747963&origin=inward
+  - Nguồn: DOI:10.3949/ccjm.93a.25049 ; PMID:42067227 ; https://doi.org/10.3949/ccjm.93a.25049
 - **2025 update to European Stroke Organisation (ESO) guideline on blood pressure management in acute ischaemic st** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1093/esj/aakag004 ; PMID:42095756 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105038260360&origin=inward
+  - Nguồn: DOI:10.1093/esj/aakag004 ; PMID:42095756 ; https://doi.org/10.1093/esj/aakag004
 - **European Stroke Organisation (ESO), European Association of Neurosurgical Societies (EANS) and European Societ** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1093/esj/aakag043 ; PMID:42095754 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105038260088&origin=inward
+  - Nguồn: DOI:10.1093/esj/aakag043 ; PMID:42095754 ; https://doi.org/10.1093/esj/aakag043
 - **Clinical guidelines on physical activity and exercise therapy for Chinese adults with type 2 diabetes: A clini** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1016/j.jshs.2026.101124 ; PMID:41534762 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105034864746&origin=inward
+  - Nguồn: DOI:10.1016/j.jshs.2026.101124 ; PMID:41534762 ; https://doi.org/10.1016/j.jshs.2026.101124
 - **Intermittent fasting to treat diabetes: time to update clinical practice guidelines** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1016/s2213-8587(26)00119-1 ; PMID:42361830 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105044079235&origin=inward
+  - Nguồn: DOI:10.1016/s2213-8587(26)00119-1 ; PMID:42361830 ; https://doi.org/10.1016/s2213-8587(26)00119-1
 - **Challenges implementing treatment guidelines in electronic health records: the American Diabetes Association S** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1093/jamiaopen/ooag141 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105044824541&origin=inward
+  - Nguồn: DOI:10.1093/jamiaopen/ooag141 ; https://doi.org/10.1093/jamiaopen/ooag141
 - **Screening, Diagnosis, Evaluation, and Staging of Obesity in Adults: Standards of Care in Overweight and Obesit** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1136/bmjdrc-2026-006247 ; PMID:42242835 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041470437&origin=inward
+  - Nguồn: DOI:10.1136/bmjdrc-2026-006247 ; PMID:42242835 ; https://doi.org/10.1136/bmjdrc-2026-006247
 - **Joint British Transplantation Society and British Cardiovascular Society guidelines on medical management of c** _(Thận)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1016/j.trre.2026.101048 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105047807683&origin=inward
+  - Nguồn: DOI:10.1016/j.trre.2026.101048 ; https://doi.org/10.1016/j.trre.2026.101048
 - **From global guidelines for cardio-kidney-metabolic diseases management to national implementation: perspective** _(Thận)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s12933-026-03098-z ; PMID:41731496 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105030906665&origin=inward
+  - Nguồn: DOI:10.1186/s12933-026-03098-z ; PMID:41731496 ; https://doi.org/10.1186/s12933-026-03098-z
 - **A 3-year prospective study to assess clinical characteristics and risk factors for exacerbations in patients w** _(Hô hấp)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s12931-026-03643-0 ; PMID:41904521 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105038410586&origin=inward
+  - Nguồn: DOI:10.1186/s12931-026-03643-0 ; PMID:41904521 ; https://doi.org/10.1186/s12931-026-03643-0
 - **Incorporating New Guidelines into School-Based Asthma Management** _(Hô hấp)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11882-026-01282-5 ; PMID:42287579 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041884945&origin=inward
+  - Nguồn: DOI:10.1007/s11882-026-01282-5 ; PMID:42287579 ; https://doi.org/10.1007/s11882-026-01282-5
 - **Evaluation of ChatGPT-4o and Gemini for gout management: a comparative analysis based on EULAR guidelines** _(Cơ xương khớp - Thấp khớp)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1038/s41598-026-35166-5 ; PMID:41495169 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105029263708&origin=inward
+  - Nguồn: DOI:10.1038/s41598-026-35166-5 ; PMID:41495169 ; https://doi.org/10.1038/s41598-026-35166-5
 - **Quantifying population-level antihypertensive treatment eligibility under the 2025 AHA/ACC hypertension guidel** _(Tim mạch)_
   - Mức: High (operational) | Tier B
   - Nguồn: DOI:10.1016/j.ajpc.2026.101428 ; https://core.ac.uk/works/379179029
@@ -506,16 +506,16 @@
   - Nguồn: DOI:10.1038/s41581-026-01128-3 ; https://openalex.org/W7214311727
 - **Cardiovascular risk burden and guideline-recommended lipid and blood pressure goals in an Italian Cohort: find** _(Tim mạch)_
   - Mức: High (operational) | Tier A
-  - Nguồn: DOI:10.1186/s12916-025-04552-7 ; PMID:41361314 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105027405212&origin=inward
+  - Nguồn: DOI:10.1186/s12916-025-04552-7 ; PMID:41361314 ; https://doi.org/10.1186/s12916-025-04552-7
 - **Addressing systematic underdetection of left ventricular hypertrophy by guideline-recommended electrocardiogra** _(Tim mạch)_
   - Mức: High (operational) | Tier A
-  - Nguồn: DOI:10.1016/j.ijcard.2026.134761 ; PMID:42674294 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105049258639&origin=inward
+  - Nguồn: DOI:10.1016/j.ijcard.2026.134761 ; PMID:42674294 ; https://doi.org/10.1016/j.ijcard.2026.134761
 - **Cost of illness of type 2 diabetes mellitus with a cardiovascular comorbidity and comparison with guideline re** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier A
-  - Nguồn: DOI:10.1186/s12913-026-14428-y ; PMID:42032593 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105037479871&origin=inward
+  - Nguồn: DOI:10.1186/s12913-026-14428-y ; PMID:42032593 ; https://doi.org/10.1186/s12913-026-14428-y
 - **Diabetes Prediction and Recommendation System Based on Laboratory Results Using Machine Learning** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier A
-  - Nguồn: DOI:10.1007/978-3-032-32726-0_31 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105048714382&origin=inward
+  - Nguồn: DOI:10.1007/978-3-032-32726-0_31 ; https://doi.org/10.1007/978-3-032-32726-0_31
 - **Clinicians’ time in different aspects of hypertension care: how far are we from optimal management required by** _(Tim mạch)_
   - Mức: High (operational) | Tier A
   - Nguồn: DOI:10.1080/08037051.2026.2635826 ; https://core.ac.uk/works/337237558
@@ -566,7 +566,7 @@
   - Nguồn: DOI:10.1161/strokeaha.125.053569 ; PMID:42644244 ; https://pubmed.ncbi.nlm.nih.gov/42644244/
 - **Recognising the family physician in asthma and COPD guidelines: a necessary step for effective primary care im** _(Hô hấp)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1038/s41533-026-00485-7 ; PMID:41688458 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105029949159&origin=inward
+  - Nguồn: DOI:10.1038/s41533-026-00485-7 ; PMID:41688458 ; https://doi.org/10.1038/s41533-026-00485-7
 - **Left Atrial Pressure Estimation Using Contemporary Guideline Algorithms in Patients with Atrial Fibrillation a** _(Tim mạch)_
   - Mức: High (operational) | Tier B
   - Nguồn: DOI:10.1016/j.echo.2026.02.004 ; https://core.ac.uk/works/360499014
@@ -614,7 +614,7 @@
   - Nguồn: DOI:10.1186/s12877-026-08324-7 ; https://openalex.org/W7213889600
 - **European stroke organisation guideline on stroke-associated pneumonia** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1093/esj/aakag044 ; PMID:42095755 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105038289483&origin=inward
+  - Nguồn: DOI:10.1093/esj/aakag044 ; PMID:42095755 ; https://doi.org/10.1093/esj/aakag044
 - **Pharmacokinetics of Ertapenem Following Subcutaneous or Intravenous Infusion in Patients Aged Over 75 (PHACINE** _(Lão khoa - Đa bệnh lý)_
   - Mức: High (operational) | Tier B
   - Nguồn: NCT02505386 ; https://clinicaltrials.gov/study/NCT02505386
@@ -803,76 +803,76 @@
   - Nguồn: DOI:10.1542/peds.2026-078565 ; https://openalex.org/W7214536856
 - **Updates in the 2025 AHA/ACC Hypertension Guideline** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11906-026-01372-9 ; PMID:41843050 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105033649312&origin=inward
+  - Nguồn: DOI:10.1007/s11906-026-01372-9 ; PMID:41843050 ; https://doi.org/10.1007/s11906-026-01372-9
 - **The 2025 AHA/ACC Hypertension Guidelines: Key Updates, Historical Context, and Clinical Implications** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11886-026-02413-0 ; PMID:42704524 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105049548123&origin=inward
+  - Nguồn: DOI:10.1007/s11886-026-02413-0 ; PMID:42704524 ; https://doi.org/10.1007/s11886-026-02413-0
 - **The impact of right ventricular free wall strain on current international echocardiography guidelines for the ** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s44156-026-00114-6 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041112319&origin=inward
+  - Nguồn: DOI:10.1186/s44156-026-00114-6 ; https://doi.org/10.1186/s44156-026-00114-6
 - **Impact of guideline definitions on right ventricular diameter in echocardiography: an automated analysis in co** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s44156-026-00118-2 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041031279&origin=inward
+  - Nguồn: DOI:10.1186/s44156-026-00118-2 ; https://doi.org/10.1186/s44156-026-00118-2
 - **Adherence to European Society of Cardiology guidelines at discharge after Acute Coronary Syndrome: a two-cente** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s43044-026-00721-y ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105030139111&origin=inward
+  - Nguồn: DOI:10.1186/s43044-026-00721-y ; https://doi.org/10.1186/s43044-026-00721-y
 - **Primary Prevention of Dyslipidemia: 10 Practice-Changing Takeaways from the 2026 ACC/AHA Multisociety Guidelin** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11883-026-01437-9 ; PMID:42295619 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041906921&origin=inward
+  - Nguồn: DOI:10.1007/s11883-026-01437-9 ; PMID:42295619 ; https://doi.org/10.1007/s11883-026-01437-9
 - **Sodium intake patterns among US adults before and after the 2017 ACC/AHA hypertension guidelines: evidence fro** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s41110-026-00495-y ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105043369741&origin=inward
+  - Nguồn: DOI:10.1186/s41110-026-00495-y ; https://doi.org/10.1186/s41110-026-00495-y
 - **Top 10 Concepts in Secondary ASCVD Prevention From the 2026 ACC/AHA Dyslipidemia Guideline: What Is New and Wh** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11883-026-01465-5 ; PMID:42709273 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105049623720&origin=inward
+  - Nguồn: DOI:10.1007/s11883-026-01465-5 ; PMID:42709273 ; https://doi.org/10.1007/s11883-026-01465-5
 - **Bridging the Gap in Racial/Ethnic Disparities: Perspectives from the 2025 American Heart Association/American ** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11906-026-01367-6 ; PMID:41714558 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105030563676&origin=inward
+  - Nguồn: DOI:10.1007/s11906-026-01367-6 ; PMID:41714558 ; https://doi.org/10.1007/s11906-026-01367-6
 - **Changes in statin therapy eligibility under the 2026 versus 2018 dyslipidemia guidelines** _(Tim mạch)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1016/j.ajpc.2026.101719 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105043372626&origin=inward
+  - Nguồn: DOI:10.1016/j.ajpc.2026.101719 ; https://doi.org/10.1016/j.ajpc.2026.101719
 - **Secondary prevention of recurrent ischemic stroke: from guidelines to precision medicine** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s13019-026-04452-8 ; PMID:42374519 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105050501443&origin=inward
+  - Nguồn: DOI:10.1186/s13019-026-04452-8 ; PMID:42374519 ; https://doi.org/10.1186/s13019-026-04452-8
 - **Retraction for: Response to Request for Modification of the 2026 AHA/ASA Acute Ischemic Stroke Guidelines: End** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1161/strokeaha.126.056726 ; PMID:42535264 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105048209863&origin=inward
+  - Nguồn: DOI:10.1161/strokeaha.126.056726 ; PMID:42535264 ; https://doi.org/10.1161/strokeaha.126.056726
 - **Sex-specific risk factors for stroke in women: Focus on the 2024 AHA/ASA guideline** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.3949/ccjm.93a.25049 ; PMID:42067227 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105037747963&origin=inward
+  - Nguồn: DOI:10.3949/ccjm.93a.25049 ; PMID:42067227 ; https://doi.org/10.3949/ccjm.93a.25049
 - **2025 update to European Stroke Organisation (ESO) guideline on blood pressure management in acute ischaemic st** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1093/esj/aakag004 ; PMID:42095756 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105038260360&origin=inward
+  - Nguồn: DOI:10.1093/esj/aakag004 ; PMID:42095756 ; https://doi.org/10.1093/esj/aakag004
 - **European Stroke Organisation (ESO), European Association of Neurosurgical Societies (EANS) and European Societ** _(Thần kinh/Đột quỵ)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1093/esj/aakag043 ; PMID:42095754 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105038260088&origin=inward
+  - Nguồn: DOI:10.1093/esj/aakag043 ; PMID:42095754 ; https://doi.org/10.1093/esj/aakag043
 - **Clinical guidelines on physical activity and exercise therapy for Chinese adults with type 2 diabetes: A clini** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1016/j.jshs.2026.101124 ; PMID:41534762 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105034864746&origin=inward
+  - Nguồn: DOI:10.1016/j.jshs.2026.101124 ; PMID:41534762 ; https://doi.org/10.1016/j.jshs.2026.101124
 - **Intermittent fasting to treat diabetes: time to update clinical practice guidelines** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1016/s2213-8587(26)00119-1 ; PMID:42361830 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105044079235&origin=inward
+  - Nguồn: DOI:10.1016/s2213-8587(26)00119-1 ; PMID:42361830 ; https://doi.org/10.1016/s2213-8587(26)00119-1
 - **Challenges implementing treatment guidelines in electronic health records: the American Diabetes Association S** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1093/jamiaopen/ooag141 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105044824541&origin=inward
+  - Nguồn: DOI:10.1093/jamiaopen/ooag141 ; https://doi.org/10.1093/jamiaopen/ooag141
 - **Screening, Diagnosis, Evaluation, and Staging of Obesity in Adults: Standards of Care in Overweight and Obesit** _(Nội tiết - Chuyển hóa)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1136/bmjdrc-2026-006247 ; PMID:42242835 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041470437&origin=inward
+  - Nguồn: DOI:10.1136/bmjdrc-2026-006247 ; PMID:42242835 ; https://doi.org/10.1136/bmjdrc-2026-006247
 - **Joint British Transplantation Society and British Cardiovascular Society guidelines on medical management of c** _(Thận)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1016/j.trre.2026.101048 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105047807683&origin=inward
+  - Nguồn: DOI:10.1016/j.trre.2026.101048 ; https://doi.org/10.1016/j.trre.2026.101048
 - **From global guidelines for cardio-kidney-metabolic diseases management to national implementation: perspective** _(Thận)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s12933-026-03098-z ; PMID:41731496 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105030906665&origin=inward
+  - Nguồn: DOI:10.1186/s12933-026-03098-z ; PMID:41731496 ; https://doi.org/10.1186/s12933-026-03098-z
 - **A 3-year prospective study to assess clinical characteristics and risk factors for exacerbations in patients w** _(Hô hấp)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1186/s12931-026-03643-0 ; PMID:41904521 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105038410586&origin=inward
+  - Nguồn: DOI:10.1186/s12931-026-03643-0 ; PMID:41904521 ; https://doi.org/10.1186/s12931-026-03643-0
 - **Incorporating New Guidelines into School-Based Asthma Management** _(Hô hấp)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1007/s11882-026-01282-5 ; PMID:42287579 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105041884945&origin=inward
+  - Nguồn: DOI:10.1007/s11882-026-01282-5 ; PMID:42287579 ; https://doi.org/10.1007/s11882-026-01282-5
 - **Evaluation of ChatGPT-4o and Gemini for gout management: a comparative analysis based on EULAR guidelines** _(Cơ xương khớp - Thấp khớp)_
   - Mức: High (operational) | Tier B
-  - Nguồn: DOI:10.1038/s41598-026-35166-5 ; PMID:41495169 ; https://www.scopus.com/inward/record.uri?partnerID=HzOxMe3b&scp=105029263708&origin=inward
+  - Nguồn: DOI:10.1038/s41598-026-35166-5 ; PMID:41495169 ; https://doi.org/10.1038/s41598-026-35166-5
 - **Quantifying population-level antihypertensive treatment eligibility under the 2025 AHA/ACC hypertension guidel** _(Tim mạch)_
   - Mức: High (operational) | Tier B
   - Nguồn: DOI:10.1016/j.ajpc.2026.101428 ; https://core.ac.uk/works/379179029
