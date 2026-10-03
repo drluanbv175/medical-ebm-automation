@@ -139,6 +139,7 @@ def test_scopus_that_bi_cloudflare_chan_qua_fetch_la_pass_kem_ghi_chu(monkeypatc
     monkeypatch.setattr(settings, "scopus_api_key", "KHOA_GIA_TEST")
     monkeypatch.setattr(settings, "scopus_insttoken", "")
     monkeypatch.setattr(settings, "scopus_bind_interface", "")
+    monkeypatch.setattr(settings, "enable_scopus", True)  # 03/10/2026: search() xét cờ — ca này mô phỏng nguồn ĐÃ BẬT
     client = ScopusClient()
     client.use_mock = False
     client.http.cache_ttl = 0

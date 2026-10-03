@@ -67,6 +67,7 @@ def _co_lap(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "scopus_api_key", "KHOA_GIA_SCOPUS")
     monkeypatch.setattr(settings, "scopus_insttoken", "")
     monkeypatch.setattr(settings, "scopus_bind_interface", "")
+    monkeypatch.setattr(settings, "enable_scopus", True)  # 03/10/2026: search() xét cờ — ca này mô phỏng nguồn ĐÃ BẬT
     monkeypatch.setattr(settings, "epistemonikos_api_token", "TOKEN_GIA")
     monkeypatch.setattr(settings, "core_api_key", "KHOA_GIA_CORE")
     monkeypatch.setattr(settings, "serpapi_api_key", "KHOA_GIA_SERPAPI")

@@ -20,6 +20,8 @@ def _sach(monkeypatch):
     for k in ("scopus_api_key", "scopus_insttoken", "scopus_bind_interface", "core_api_key",
               "epistemonikos_api_token", "khoa_qua_proxy"):
         monkeypatch.setattr(settings, k, "")
+    # 03/10/2026: ScopusClient.search() xét ENABLE_SCOPUS — các ca Scopus ở đây mô phỏng nguồn ĐÃ BẬT.
+    monkeypatch.setattr(settings, "enable_scopus", True)
 
 
 def _song(client, monkeypatch, tra_ve):

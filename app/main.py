@@ -258,7 +258,12 @@ def cmd_test_live(source: str = "europepmc",
                            "quả này để kết luận nguồn đang chạy.")
     http = getattr(client, "http", None)
     loi_mang = getattr(http, "last_error", "") if http is not None else ""
-    if getattr(client, "khong_khop", False):
+    ly_do_khong_goi = getattr(client, "ly_do_khong_goi", None)
+    if isinstance(ly_do_khong_goi, str) and ly_do_khong_goi:
+        # 03/10/2026: cờ nguồn TẮT ⇒ connector không gọi API. «count: 0» lúc này KHÔNG phải số đo nguồn.
+        out["live"] = False
+        out["ghi_chu"] = f"{ly_do_khong_goi} — count 0 KHÔNG phải kết quả đo nguồn."
+    elif getattr(client, "khong_khop", False):
         # 404 NOT_FOUND của openFDA = truy vấn hợp lệ, 0 bản ghi khớp — KHÔNG phải lỗi mạng.
         out["ghi_chu"] = ("openFDA trả 404 NOT_FOUND = 0 báo cáo FAERS khớp truy vấn này (không phải "
                           "lỗi mạng). openFDA tìm theo TÊN THUỐC, vd: run.py test-live openfda metformin")

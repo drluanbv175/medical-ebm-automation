@@ -77,6 +77,15 @@ def _get_int(key: str, default: int) -> int:
         return default
 
 
+def _get_int_tuy_chon(key: str) -> int | None:
+    """Số nguyên từ biến môi trường; vắng hoặc sai định dạng ⇒ None (= «theo mặc định chung»)."""
+    try:
+        v = os.getenv(key, "").strip()
+        return int(v) if v else None
+    except ValueError:
+        return None
+
+
 def _get_float(key: str, default: float) -> float:
     try:
         return float(os.getenv(key, str(default)))
@@ -198,6 +207,11 @@ class Settings:
     openfda_api_key: str = field(default_factory=lambda: os.getenv("OPENFDA_API_KEY", ""))
     scopus_api_key: str = field(default_factory=lambda: os.getenv("SCOPUS_API_KEY", ""))
     scopus_insttoken: str = field(default_factory=lambda: os.getenv("SCOPUS_INSTTOKEN", ""))
+    # Thêm 03/10/2026: thời gian lưu đệm RIÊNG cho phản hồi Scopus (giây). Elsevier API Service Agreement §2.4 cho dùng
+    # API cùng hệ AI với điều kiện «không sao chép/lưu cục bộ đáng kể hoặc có hệ thống» — việc lưu đệm mặc định
+    # HTTP_CACHE_TTL (24 giờ) có thoả hay không là quyết định của bác sĩ. Vắng (mặc định) = theo HTTP_CACHE_TTL như cũ;
+    # SCOPUS_CACHE_TTL=0 = không ghi phản hồi Scopus ra đĩa.
+    scopus_cache_ttl: int | None = field(default_factory=lambda: _get_int_tuy_chon("SCOPUS_CACHE_TTL"))
     # Thêm 17/09/2026: khi VPN toàn tuyến bật, Cloudflare chặn 403 request tới
     # api.elsevier.com TRƯỚC khi tới logic xác thực của Elsevier (đã ghi ở mục
     # "Nguồn dữ liệu" phía trên, xác nhận 13/09/2026 bằng cách đọc thân response —
