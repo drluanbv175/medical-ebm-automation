@@ -476,7 +476,9 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         "hypothesis_h1": None,
         "expected_direction": None,
         "test_type": None,           # superiority/non_inferiority/equivalence/descriptive
-        "question_type": None,       # therapy/diagnosis/prognosis/harm/descriptive
+        "question_type": None,       # treatment(≡therapy)/diagnosis/prognosis/harm/descriptive/qualitative/…
+        # 04/10/2026 (G0-06): câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại mà chỉ mô tả ⇒ phải có lý do bằng chữ.
+        "descriptive_justification": None,
         # FINER — 5 tiêu chí, bác sĩ đánh giá từng cái (không phải 1 cờ gộp).
         "finer_feasible": None,
         "finer_interesting": None,
@@ -486,9 +488,15 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         # Đã ĐỌC LẠI bằng chứng G0 tìm được, và biện minh tính mới bằng chữ.
         "evidence_reviewed_confirmed": False,
         "novelty_justification": None,
+        # 04/10/2026 (G0-04/QĐ-17): PI tự tra WHO ICTRP (+ PROSPERO cho tổng quan) rồi ghi NGÀY tra (ISO);
+        # có thử nghiệm đang tuyển khớp ⇒ viết đánh giá chồng lấn.
+        "registry_manual_checked": {"ictrp": None, "prospero": None},
+        "registry_overlap_assessment": None,
         "pico_confirmed": False,
         "reviewed_by_role": None,
         "reviewed_at": None,
+        # 04/10/2026 (G0-07/CHUNG-C): dấu vân tay nội dung đang chốt — chép từ báo cáo G0 (dau_van_tay_hien_tai).
+        "dau_van_tay_chot": None,
     },
     # G1 — quyết định phương pháp do PI/methodologist xác nhận. Hệ chỉ sinh
     # dự thảo và kiểm nhất quán; không tự bật các cờ xác nhận người thật.

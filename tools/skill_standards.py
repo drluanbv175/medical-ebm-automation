@@ -687,6 +687,7 @@ _BI_DANH_QUESTION_TYPE = {
     "diagnostic": "diagnosis", "chan_doan": "diagnosis", "chẩn_đoán": "diagnosis",
     "prognostic": "prognosis", "tien_luong": "prognosis", "tiên_lượng": "prognosis",
     "etiology": "harm", "aetiology": "harm", "risk_factor": "harm", "nguyen_nhan": "harm",
+    "tac_hai": "harm", "tác_hại": "harm", "meaning": "qualitative",
     "description": "descriptive", "mo_ta": "descriptive", "mô_tả": "descriptive", "prevalence": "descriptive",
     "dinh_tinh": "qualitative", "định_tính": "qualitative",
     "systematic_review": "sr", "sr_ma": "sr", "meta_analysis": "sr",
@@ -696,7 +697,8 @@ HYPOTHESIS_TYPES = frozenset({"superiority", "non_inferiority", "equivalence", "
 _BI_DANH_HYPOTHESIS = {"ni": "non_inferiority", "noninferiority": "non_inferiority",
                        "non-inferiority": "non_inferiority",
                        "equiv": "equivalence", "precision": "descriptive_precision",
-                       "descriptive": "descriptive_precision", "sup": "superiority"}
+                       "descriptive": "descriptive_precision", "mô_tả": "descriptive_precision",
+                       "mo_ta": "descriptive_precision", "sup": "superiority"}
 OUTCOME_DIRECTIONS = frozenset({"higher_better", "lower_better"})
 
 
