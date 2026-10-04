@@ -640,6 +640,141 @@ DESIGN_CODE_ALIASES: Dict[str, str] = {
 }
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# 4b. BẢNG BÍ DANH THIẾT KẾ CỦA CHUỖI G0–G10 + ĐẶC TẢ THIẾT KẾ ĐÃ KHOÁ (04/10/2026)
+# ════════════════════════════════════════════════════════════════════════════
+# Soát từng cổng (G1-12): bảng bí danh nằm RIÊNG ở run_g1_auto (_PIN_DESIGN_ALIASES) và g1_quality_gate, lệch nhau ⇒
+# «RCT»/«systematic_review» qua được chỗ này nhưng bị chỗ kia chặn. Đây là bảng DUY NHẤT cho 8 mã chuỗi hỗ trợ.
+MA_THIET_KE_CHUOI = frozenset({"rct", "cohort", "case_control", "cross_sectional", "diagnostic", "sr_ma",
+                               "prediction", "qualitative"})
+BI_DANH_THIET_KE_CHUOI: Dict[str, str] = {
+    "qual": "qualitative", "dinh_tinh": "qualitative",
+    "rct_parallel": "rct", "rct_crossover": "rct", "randomized": "rct", "randomised": "rct",
+    "randomized_controlled_trial": "rct", "thu_nghiem_ngau_nhien": "rct",
+    "sr": "sr_ma", "systematic_review": "sr_ma", "meta_analysis": "sr_ma", "metaanalysis": "sr_ma",
+    "systematic_review_meta_analysis": "sr_ma",
+    "case_control_study": "case_control", "cross_sectional_descriptive": "cross_sectional",
+    "cross_sectional_analytic": "cross_sectional", "prevalence": "cross_sectional", "cat_ngang": "cross_sectional",
+    "cohort_study": "cohort", "prospective_cohort": "cohort", "retrospective_cohort": "cohort",
+    "prognostic": "prediction", "prediction_model": "prediction", "prognostic_model": "prediction",
+    "diagnostic_accuracy": "diagnostic", "dta": "diagnostic",
+}
+
+
+def ma_thiet_ke_chuoi(raw: Optional[str]) -> Optional[str]:
+    """Mã thiết kế CHUỖI G0–G10 (một trong 8 mã) cho một cách viết bất kỳ; None nếu ngoài 8 mã.
+
+    Gạch nối/khoảng trắng ⇒ gạch dưới; không phân biệt hoa thường. KHÔNG đoán: mã lạ trả None để cổng CHẶN
+    (G1-AUTO-02c), không lặng lẽ thay bằng thiết kế suy luận."""
+    if raw is None:
+        return None
+    key = re.sub(r"[\s\-]+", "_", str(raw).strip().lower())
+    if not key:
+        return None
+    ma = BI_DANH_THIET_KE_CHUOI.get(key, key)
+    return ma if ma in MA_THIET_KE_CHUOI else None
+
+
+# CHUNG-F (soát từng cổng): đặc tả thiết kế từng bị SUY LẠI ở mỗi tầng với giá trị mặc định im lặng («treatment»,
+# «superiority», «Power 80%», Cox…). G1 ghi MỘT khối `dac_ta_thiet_ke` vào checkpoint; các tầng sau chỉ ĐỌC khối này
+# qua dac_ta_thiet_ke(out_dir). Giá trị chưa biết là None — KHÔNG BAO GIỜ thay bằng mặc định.
+DAC_TA_KHOA = ("design_code", "question_type", "test_type", "hypothesis_type", "margin", "outcome_direction",
+               "estimand", "masking", "alpha_sidedness")
+QUESTION_TYPES = frozenset({"treatment", "diagnosis", "prognosis", "harm", "descriptive", "qualitative", "sr",
+                            "prediction_model"})
+_BI_DANH_QUESTION_TYPE = {
+    "therapy": "treatment", "intervention": "treatment", "dieu_tri": "treatment", "điều_trị": "treatment",
+    "diagnostic": "diagnosis", "chan_doan": "diagnosis", "chẩn_đoán": "diagnosis",
+    "prognostic": "prognosis", "tien_luong": "prognosis", "tiên_lượng": "prognosis",
+    "etiology": "harm", "aetiology": "harm", "risk_factor": "harm", "nguyen_nhan": "harm",
+    "description": "descriptive", "mo_ta": "descriptive", "mô_tả": "descriptive", "prevalence": "descriptive",
+    "dinh_tinh": "qualitative", "định_tính": "qualitative",
+    "systematic_review": "sr", "sr_ma": "sr", "meta_analysis": "sr",
+    "prediction": "prediction_model", "du_bao": "prediction_model",
+}
+HYPOTHESIS_TYPES = frozenset({"superiority", "non_inferiority", "equivalence", "descriptive_precision"})
+_BI_DANH_HYPOTHESIS = {"ni": "non_inferiority", "noninferiority": "non_inferiority",
+                       "non-inferiority": "non_inferiority",
+                       "equiv": "equivalence", "precision": "descriptive_precision",
+                       "descriptive": "descriptive_precision", "sup": "superiority"}
+OUTCOME_DIRECTIONS = frozenset({"higher_better", "lower_better"})
+
+
+def chuan_hoa_question_type(raw: Optional[str]) -> Optional[str]:
+    """Loại câu hỏi chuẩn (therapy ≡ treatment…); None nếu không nhận ra (KHÔNG mặc định «treatment»)."""
+    if raw is None:
+        return None
+    key = re.sub(r"[\s\-]+", "_", str(raw).strip().lower())
+    qt = _BI_DANH_QUESTION_TYPE.get(key, key)
+    return qt if qt in QUESTION_TYPES else None
+
+
+def chuan_hoa_hypothesis_type(raw: Optional[str]) -> Optional[str]:
+    """Loại giả thuyết chuẩn; None nếu không nhận ra (KHÔNG mặc định «superiority»)."""
+    if raw is None:
+        return None
+    key = str(raw).strip().lower().replace(" ", "_")
+    ht = _BI_DANH_HYPOTHESIS.get(key, key).replace("-", "_")
+    return ht if ht in HYPOTHESIS_TYPES else None
+
+
+def dac_ta_thiet_ke(out_dir) -> Dict[str, object]:
+    """Đặc tả thiết kế của đề tài cho các tầng sau ĐỌC (không suy lại).
+
+    Ưu tiên khối `dac_ta_thiet_ke` mà G1 ghi vào G1_checkpoint.json (nguon="g1_khoa"). Chưa có khối (đề tài chạy G1
+    trước 04/10/2026) ⇒ dựng tạm từ study_meta.gate_params (nguon="suy_lai"). Mọi khoá trong DAC_TA_KHOA luôn có mặt;
+    giá trị chưa biết là None và được liệt kê ở `thieu` — tầng sau phải coi None là «chưa khai», không phải mặc định."""
+    import json as _json
+
+    out = Path(out_dir)
+
+    def _doc(p: Path) -> dict:
+        try:
+            v = _json.loads(p.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, ValueError):
+            return {}
+        return v if isinstance(v, dict) else {}
+
+    cp1 = _doc(out / "G1_checkpoint.json")
+    khoi = cp1.get("dac_ta_thiet_ke")
+    if isinstance(khoi, dict):
+        ra = {k: khoi.get(k) for k in DAC_TA_KHOA}
+        ra["design_code"] = ma_thiet_ke_chuoi(ra.get("design_code"))
+        ra["question_type"] = chuan_hoa_question_type(ra.get("question_type"))
+        ra["hypothesis_type"] = chuan_hoa_hypothesis_type(ra.get("hypothesis_type"))
+        ra["nguon"] = "g1_khoa"
+        ra["dau_van_tay"] = khoi.get("dau_van_tay")
+    else:
+        meta = _doc(out / "study_meta.json")
+        gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), dict) else {}
+
+        def _g(gate: str) -> dict:
+            v = gp.get(gate)
+            return v if isinstance(v, dict) else {}
+
+        g0, g1, g3 = _g("G0"), _g("G1"), _g("G3")
+        design_raw = meta.get("design_code") or g1.get("design")
+        if not design_raw and isinstance(cp1.get("design"), dict):
+            design_raw = cp1["design"].get("internal_code")
+        ra = {
+            "design_code": ma_thiet_ke_chuoi(design_raw if isinstance(design_raw, str) else None),
+            "question_type": chuan_hoa_question_type(g0.get("question_type") or g1.get("question_type")),
+            "test_type": g0.get("test_type") or None,
+            "hypothesis_type": chuan_hoa_hypothesis_type(g3.get("hypothesis_type")),
+            "margin": g3.get("margin"),
+            "outcome_direction": g3.get("outcome_direction") or g1.get("outcome_direction") or None,
+            "estimand": g1.get("estimand") or None,
+            "masking": g1.get("masking") or None,
+            "alpha_sidedness": g3.get("alpha_sidedness") or None,
+            "nguon": "suy_lai",
+            "dau_van_tay": None,
+        }
+    if ra.get("outcome_direction") not in OUTCOME_DIRECTIONS:
+        ra["outcome_direction"] = None
+    ra["thieu"] = [k for k in DAC_TA_KHOA if ra.get(k) in (None, "", [], {})]
+    return ra
+
+
 def canonical_design_code(design_code: Optional[str]) -> Optional[str]:
     """Chuẩn hoá mã thiết kế về key canon (áp bí danh, lowercase)."""
     if not design_code:

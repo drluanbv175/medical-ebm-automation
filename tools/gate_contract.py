@@ -255,7 +255,17 @@ def _g2_signed_attestation_state(
     current_icf = str(g2.get("icf_version") or "").strip()
     if current_icf and not waiver and current_icf != approved_icf:
         return False
-    return True
+    # VÁ 04/10/2026 (soát từng cổng, CHUNG-D): các phép kiểm trên chỉ là MỘT PHẦN của validate_attestation — gói đã
+    # ký mà phụ lục quyết định IRB thiếu schema/mã hội đồng/số phê duyệt, ngày phê duyệt ở tương lai, RCT ghi hồi cứu…
+    # vẫn qua đây. Gọi đúng bộ kiểm đầy đủ của G2 (cùng hàm G2-HUMAN-01 dùng); lỗi ⇒ False (fail-closed).
+    try:
+        design_code, _ = resolve_design_code(Path(out_dir), default="")
+        loi = g2_quality.validate_attestation(attestation=attestation, package_text=text, study=study,
+                                              design_code=design_code, meta=meta if isinstance(meta, dict) else {},
+                                              today=today)
+    except Exception:  # noqa: BLE001 — bộ kiểm hỏng ⇒ không xác nhận được ⇒ False
+        return False
+    return not loi
 
 
 def g2_quality_contract_satisfied(

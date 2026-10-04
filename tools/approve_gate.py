@@ -159,6 +159,32 @@ def _g4_sections_still_draft(content: str) -> list[str]:
     return still_draft
 
 
+# VÁ 04/10/2026 (soát từng cổng, CHUNG-D): bộ chấm G2/G8 cho trạng thái «sẵn sàng ký» khi tiêu chí MÁY đạt, kể cả khi
+# một tiêu chí NGƯỜI vốn kiểm được TRƯỚC lúc ký còn REVIEW (G2: quyết định IRB có cấu trúc đủ trường; G8: bản nhận xét
+# phản biện thật + khai COI/độc lập/AI của người phản biện). Tiêu chí phụ thuộc chính chữ ký (sổ cái) không nằm ở đây.
+_TIEU_CHI_NGUOI_TRUOC_KY: dict[str, tuple[str, ...]] = {
+    "G2": ("G2-HUMAN-01",),
+    "G8": ("G8-HUMAN-01", "G8-HUMAN-05"),
+}
+
+
+def _tieu_chi_nguoi_chua_dat(gate: str, report: dict) -> list[str]:
+    """Các tiêu chí người kiểm được TRƯỚC khi ký mà chưa PASS (vắng trong báo cáo ⇒ coi là chưa đạt — fail-closed)."""
+    hang: list = []
+    for khoa in ("approval_criteria", "human_approval_criteria", "human_criteria"):
+        v = report.get(khoa) if isinstance(report, dict) else None
+        if isinstance(v, list):
+            hang.extend(r for r in v if isinstance(r, dict))
+    ra = []
+    for tid in _TIEU_CHI_NGUOI_TRUOC_KY.get(gate, ()):
+        row = next((r for r in hang if r.get("id") == tid), None)
+        if row is None:
+            ra.append(f"{tid}: không thấy trong báo cáo chấm (fail-closed)")
+        elif row.get("status") != "PASS":
+            ra.append(f"{tid}: {row.get('label')} ({row.get('evidence')})")
+    return ra
+
+
 def _valid_iso_date(value: str | None) -> bool:
     """Ngày G2 phải là ISO YYYY-MM-DD để so sánh không mơ hồ."""
     if not value:
@@ -168,6 +194,26 @@ def _valid_iso_date(value: str | None) -> bool:
     except ValueError:
         return False
     return bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", value))
+
+
+def _thiet_ke_cho_g2(study_dir: Path) -> tuple[str, list[str]]:
+    """(mã thiết kế chuỗi, lỗi) cho bước ký G2: pin của bác sĩ trong study_meta đối chiếu thiết kế các cổng đã ghi."""
+    import skill_standards as SK  # noqa: PLC0415 — import lười
+
+    loi: list[str] = []
+    try:
+        meta = json.loads((study_dir / "study_meta.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        meta = {}
+    pin_tho = meta.get("design_code") if isinstance(meta, dict) else None
+    pin = SK.ma_thiet_ke_chuoi(pin_tho) if isinstance(pin_tho, str) else None
+    cong, canh_bao = GC.resolve_design_code(study_dir, default="")
+    cong = SK.ma_thiet_ke_chuoi(cong) if cong else None
+    if canh_bao:
+        loi.append("Thiết kế lệch giữa G1 và G2 — chạy lại G1/G2 cho khớp trước khi ký")
+    if pin and cong and pin != cong:
+        loi.append(f"Thiết kế bác sĩ ghim «{pin}» khác thiết kế các cổng đã ghi «{cong}» — thống nhất trước khi ký")
+    return (pin or cong or ""), loi
 
 
 def _prepare_g2_attestation(
@@ -264,14 +310,13 @@ def _prepare_g2_attestation(
             "Không dùng đồng thời phiên bản ICF và xác nhận miễn ICF"
         )
 
-    checkpoint_path = study_dir / "G2_checkpoint.json"
-    try:
-        checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-        checkpoint = {}
-    design_code = str(
-        checkpoint.get("design_code") if isinstance(checkpoint, dict) else ""
-    ).strip()
+    # VÁ 04/10/2026 (soát từng cổng, CHUNG-D): bản cũ đọc design_code từ G2_checkpoint.json — tệp KHÔNG ký, sửa tay
+    # được — để quyết định có bắt đăng ký hay không. Nay lấy thiết kế bác sĩ GHIM (study_meta) đối chiếu với thiết
+    # kế các cổng đã ghi (gate_contract.resolve_design_code); hai nơi lệch nhau ⇒ từ chối, không tự chọn một bên.
+    design_code, design_errors = _thiet_ke_cho_g2(study_dir)
+    errors.extend(design_errors)
+    if design_code == "rct" and args.g2_recruitment_mode != "PROSPECTIVE_NEW_PARTICIPANTS":
+        errors.append("RCT phải ghi --g2-recruitment-mode PROSPECTIVE_NEW_PARTICIPANTS (tuyển mới tiến cứu)")
     registration_required = (
         args.g2_recruitment_mode == "PROSPECTIVE_NEW_PARTICIPANTS"
         or design_code == "sr_ma"
@@ -435,7 +480,49 @@ def main() -> int:
     ap.add_argument("--g2-first-search-date")
     ap.add_argument("--g2-approval-scope")
     args = ap.parse_args()
+    return _ky_co_hoan_nguyen(args)
 
+
+# Trạng thái một lượt ký: đã ghi sổ cái chưa (sau mốc này KHÔNG hoàn nguyên artifact — bản ghi đã ràng buộc đúng byte).
+_TRANG_THAI_KY = {"da_ghi_so_cai": False}
+
+
+def _hoan_nguyen_artifact(path: Path, goc: bytes | None) -> None:
+    """Trả artifact về ĐÚNG byte trước lệnh nếu lệnh thất bại trước khi ghi sổ cái (CHUNG-D, soát 04/10/2026)."""
+    if goc is None or _TRANG_THAI_KY["da_ghi_so_cai"]:
+        return
+    try:
+        if path.read_bytes() != goc:
+            path.write_bytes(goc)
+            print(f"↩️  Đã hoàn nguyên {path.name} về đúng byte trước lệnh — không ký thì không để lại thay đổi "
+                  "dở dang.")
+    except OSError as exc:
+        print(f"⚠️  Không hoàn nguyên được {path.name}: {exc} — cần kiểm tra tay trước khi chạy lại.")
+
+
+def _ky_co_hoan_nguyen(args: argparse.Namespace) -> int:
+    """Chạy _ky(); lệnh trả mã ≠ 0 hoặc ném lỗi TRƯỚC khi ghi sổ cái ⇒ hoàn nguyên artifact.
+
+    VÁ 04/10/2026 (soát từng cổng, CHUNG-D): G2 ghi phụ lục quyết định IRB vào gói đạo đức, G10 dọn needs_input khỏi
+    checkpoint — đều TRƯỚC khi chấm; chấm thất bại thì tệp vẫn mang thay đổi đó dù không có chữ ký nào."""
+    artifact_path = Path(args.artifact)
+    try:
+        goc = artifact_path.read_bytes() if artifact_path.is_file() else None
+    except OSError:
+        goc = None
+    _TRANG_THAI_KY["da_ghi_so_cai"] = False
+    try:
+        rc = _ky(args)
+    except BaseException:
+        _hoan_nguyen_artifact(artifact_path, goc)
+        raise
+    if rc != 0:
+        _hoan_nguyen_artifact(artifact_path, goc)
+    return rc
+
+
+def _ky(args: argparse.Namespace) -> int:
+    """Thân lệnh ký (tách khỏi main 04/10/2026 để main hoàn nguyên artifact khi lệnh thất bại)."""
     artifact_path = Path(args.artifact)
     if not artifact_path.exists():
         print(f"✗ Không thấy file artifact: {artifact_path}")
@@ -514,6 +601,13 @@ def main() -> int:
                 if item.get("status") != "PASS":
                     print(f"   - {item.get('id')}: {item.get('label')} ({item.get('evidence')})")
             print("   Không ghi ledger; xử lý hết mục BLOCK/REVIEW ở trên trước khi ký.")
+            return 1
+        chua_dat = _tieu_chi_nguoi_chua_dat("G2", g2_report)
+        if chua_dat:
+            print("✗ TỪ CHỐI ký G2 — tiêu chí người kiểm được TRƯỚC khi ký chưa đạt:")
+            for item in chua_dat:
+                print(f"   - {item}")
+            print("   Không ghi ledger; hồ sơ được hoàn nguyên về đúng byte trước lệnh.")
             return 1
 
     # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, phát hiện phụ, LOW):
@@ -712,6 +806,13 @@ def main() -> int:
                     if item.get("status") != "PASS":
                         print(f"   - {item.get('id')}: {item.get('label')} ({item.get('evidence')})")
                 print("   Không ghi ledger; người phản biện phải hoàn tất bản nhận xét thật trước khi ký.")
+                return 1
+            chua_dat = _tieu_chi_nguoi_chua_dat("G8", g8_report)
+            if chua_dat:
+                print("✗ TỪ CHỐI ký G8 — tiêu chí người kiểm được TRƯỚC khi ký chưa đạt:")
+                for item in chua_dat:
+                    print(f"   - {item}")
+                print("   Không ghi ledger; người phản biện hoàn tất bản nhận xét + khai COI/độc lập/AI trước khi ký.")
                 return 1
 
     if args.gate == "G9":
@@ -934,6 +1035,7 @@ def main() -> int:
     if not ok:
         print(f"✗ TỪ CHỐI ghi phê duyệt: {reason}")
         return 1
+    _TRANG_THAI_KY["da_ghi_so_cai"] = True
 
     # Niêm phong lại sổ cái NGAY SAU khi ghi — con dấu (số bản ghi + vân tay đuôi, đã ký)
     # là mốc neo NGOÀI file, thứ duy nhất phát hiện được việc CẮT ĐUÔI sổ cái. Xem

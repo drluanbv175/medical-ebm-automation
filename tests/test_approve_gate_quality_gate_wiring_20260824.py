@@ -53,7 +53,12 @@ def _run_main(monkeypatch, *args) -> int:
 
 
 def _fake_report(status: str, criteria=None) -> dict:
-    return {"status": status, "automatic_criteria": criteria or [], "approval_criteria": []}
+    # 04/10/2026 (CHUNG-D): báo cáo thật của G2/G8 luôn mang các tiêu chí người kiểm được TRƯỚC khi ký; approve_gate
+    # nay đòi chúng PASS (vắng ⇒ fail-closed). Báo cáo giả mô phỏng một hồ sơ đã đủ các tiêu chí đó.
+    nguoi = [{"id": tid, "label": tid, "status": "PASS", "evidence": "giả lập"}
+             for tid in ("G2-HUMAN-01", "G8-HUMAN-01", "G8-HUMAN-05")]
+    return {"status": status, "automatic_criteria": criteria or [], "approval_criteria": nguoi,
+            "human_approval_criteria": nguoi}
 
 
 # ════════════════════════════════════════════════════════════════════════════
