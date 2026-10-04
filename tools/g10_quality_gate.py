@@ -27,11 +27,13 @@ nhận. Không lưu tên, email, điện thoại hoặc thông tin định danh 
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import re
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import unicodedata
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -39,6 +41,7 @@ from typing import Any, Dict, Mapping, Optional
 
 import gate_contract as GC
 import pipeline_freshness as PF
+import placeholder_contract as PC
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -131,11 +134,47 @@ STANDARDS_BASIS = (
     },
 )
 
+# Mẫu RIÊNG cũ của G10 — GIỮ NGUYÊN ngữ nghĩa (IGNORECASE, ngoặc vuông phải đóng, ngoặc nhọn chứa
+# điền/fill/name/date: «<điền tên>», «<Name>», «<date>», «[CAN_BO_SUNG]», «[todo: x]»…). SỬA 03/10/2026 (lượt đo ô
+# trống 11 cổng): CHỈ bỏ báo nhầm đã đo của nhánh «[CAN» không ranh giới từ — «[CAN» liền một CHỮ CÁI («[Cancer…]»,
+# «[Canxi]») hoặc «[can thiệp…]» (mục checklist hợp lệ, vd «☐ [Can thiệp thuốc]» của G2). Văn bản phải chuẩn hoá NFC
+# trước khi so (xem _placeholder_hits) để «thiệp» dựng sẵn/tổ hợp đều khớp.
 _PLACEHOLDER_RE = re.compile(
-    r"\[(?:CẦN|CAN|TBD|TODO|PENDING)[^\]]*\]|"
+    r"\[(?:CẦN|TBD|TODO|PENDING)[^\]]*\]|"
+    r"\[CAN(?![^\W\d_])(?!\s+thi[eệ]p)[^\]]*\]|"
     r"<[^>\n]*(?:điền|fill|name|date)[^>\n]*>",
     re.IGNORECASE,
 )
+# THÊM 03/10/2026 — hợp đồng ô trống dùng chung (tools/placeholder_contract.py). Quét TÀI LIỆU (đề cương .md, gói quyết
+# định, CHỮ HIỂN THỊ của .docx) bằng họ NHAN + MAU_CHUNG («[TO BE COMPLETED]», «[nơi thực hiện]», «thuốc/can thiệp X»,
+# «<CẦN …>», «CHƯA XÁC NHẬN»…). CỐ Ý KHÔNG bật NHAP/TRONG/THU_CONG: khuôn G10 in VÔ ĐIỀU KIỆN «[DỰ THẢO]» (dòng «Trạng
+# thái khóa tài liệu», _META_DRAFT_NOTE), câu chú giải «mọi ô để trống `___`» (§13) và nhãn hướng dẫn vĩnh viễn
+# «[XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG]» — bật các họ đó là chặn MỌI đề tài mãi mãi (đúng lỗi tautology G10-02).
+_HO_TAI_LIEU = PC.HO_MAC_DINH
+# Câu mặc định khuôn G10 in khi StudySpec thiếu nguồn dữ liệu (run_g10_assemble «Dữ liệu hiện có») — ô trống văn xuôi.
+_THEM_TAI_LIEU = ("Chưa có dữ liệu thật/nguồn chưa xác nhận",)
+# «<» đứng trước một số là PHÉP SO SÁNH lâm sàng («nằm viện < 3 ngày hoặc tuổi > 80»), không phải ô mẫu ngoặc nhọn — che
+# trước khi gọi họ NHAN (nhánh ngoặc nhọn của hợp đồng có từ «ngày/tên»). Mẫu cũ _PLACEHOLDER_RE vẫn chạy trên bản gốc.
+_SO_SANH_TRUOC_SO_RE = re.compile(r"<(?=\s*[\d.,])")
+# Dư lượng riêng của khuôn G10 (run_g10_assemble.py) không mang nhãn: số liệu thiếu in «?» (default="?" của n_sr/n_rct/
+# α/power/n…, «| ? | ? |» tạp chí), mã thiết kế None in thành «`None`», băng-rôn «🚧 BẢN NHÁP — CHƯA SẴN SÀNG NỘP» do
+# main() chèn đầu tài liệu (lắp lại mới xoá — chấm độc lập vẫn phải thấy).
+_O_HOI_TRONG_RE = re.compile(r"(?<![\w?])\?(?![\w?])")
+_NONE_IN_RA_RE = re.compile(r"`None`|Mã thiết kế nội bộ:\W*None\b")
+_BANG_RON_NHAP_RE = re.compile(r"BẢN NHÁP\s+—")
+# Bảng «Kiểm soát phiên bản»: ô GIÁ TRỊ của 4 dòng này phải là nội dung thật theo vị từ trường (MỌI họ) — khuôn in
+# «[DỰ THẢO]» khi thiếu phiên bản và in NGUYÊN giá trị meta thô (không qua is_present). KHÔNG gồm «Trạng thái khóa tài
+# liệu» (nhãn «[DỰ THẢO]» cố định có chủ ý tới khi G2/G4/G6/G9 có bằng chứng thật).
+_DONG_KIEM_SOAT_RE = re.compile(
+    r"^\|\s*(Phiên bản tài liệu|Ngày tạo/cập nhật|Người soạn/cập nhật|Người phê duyệt/chủ nhiệm)\s*\|([^|\n]*)\|",
+    re.MULTILINE,
+)
+# Vị từ GIÁ TRỊ TRƯỜNG (_real_text): «TO BE COMPLETED» không ngoặc cũng là ô trống của một mã tham chiếu.
+_THEM_TRUONG = ("TO BE COMPLETED",)
+# Đường dẫn additional_artifacts: không bật TRONG (tên tệp thật có thể chứa «___»; tệp vắng đã bị bắt ở bước tồn tại).
+_HO_DUONG_DAN = (PC.NHAN, PC.NHAP, PC.MAU_CHUNG, PC.THU_CONG)
+# Phần chữ của .docx được quét (thân bài + đầu/chân trang + chú thích cuối trang).
+_DOCX_PHAN_PHU_RE = re.compile(r"word/(?:header\d*|footer\d*|footnotes|endnotes)\.xml")
 _INTERNAL_TRACE_RE = re.compile(
     r"\b(?:chain[- ]of[- ]thought|internal reasoning|system prompt|agent scratchpad)\b",
     re.IGNORECASE,
@@ -181,8 +220,14 @@ def _sha256(path: Optional[Path]) -> Optional[str]:
         return None
 
 
-def _real_text(value: Any) -> bool:
-    text = str(value or "").strip()
+def _real_text(value: Any, *, ho: Optional[tuple[str, ...]] = None) -> bool:
+    """Vị từ GIÁ TRỊ TRƯỜNG cho mã tham chiếu readiness (và đường dẫn additional_artifacts).
+
+    SỬA 03/10/2026: luật cũ (mẫu riêng G10 + tập từ «none/null/unknown…») GIỮ NGUYÊN và AND thêm vị từ chung
+    `placeholder_contract.co_noi_dung_that` — trước đây «___», «……», «[XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG]», «[DỰ THẢO]»,
+    «[TO BE COMPLETED]», «[đơn vị]», «?», «-» đều được coi là mã thật nên G10-HUMAN-01/04 PASS (đã đo). `ho=None` ⇒
+    MỌI họ dấu hiệu; đường dẫn truyền _HO_DUONG_DAN."""
+    text = unicodedata.normalize("NFC", str(value or "")).strip()
     return bool(
         text
         and not _PLACEHOLDER_RE.search(text)
@@ -196,6 +241,7 @@ def _real_text(value: Any) -> bool:
             "chưa quyết định",
             "n/a",
         }
+        and PC.co_noi_dung_that(text, ho=ho, them=_THEM_TRUONG)
     )
 
 
@@ -241,7 +287,7 @@ def _status_locked(value: Any) -> bool:
 
 
 def _safe_child(base: Path, value: Any) -> Optional[Path]:
-    if not _real_text(value):
+    if not _real_text(value, ho=_HO_DUONG_DAN):
         return None
     candidate = Path(str(value))
     if not candidate.is_absolute():
@@ -439,6 +485,78 @@ def _manifest_matches(expected: Any, current: Mapping[str, Any]) -> bool:
     return isinstance(expected, Mapping) and dict(expected) == dict(current)
 
 
+def _so_dong(text: str, pos: int) -> int:
+    return text.count("\n", 0, pos) + 1
+
+
+def _placeholder_hits(text: Any) -> list[str]:
+    """Các ô còn trống trong VĂN BẢN HIỂN THỊ (đề cương .md, gói quyết định, chữ của .docx) — «L<dòng>:<dấu hiệu>».
+
+    THÊM 03/10/2026. Hợp của: (1) mẫu riêng cũ _PLACEHOLDER_RE (không yếu hơn danh sách cũ của G10); (2) họ NHAN +
+    MAU_CHUNG của hợp đồng chung + câu mặc định thiếu nguồn dữ liệu; (3) dư lượng riêng của khuôn G10: «?» đứng một
+    mình thay số liệu, «`None`», băng-rôn bản nháp, ô giá trị trống của bảng kiểm soát phiên bản. Bằng chứng chỉ mang
+    số dòng + dấu hiệu mẫu (không chép cả dòng — tránh kéo tên người vào báo cáo)."""
+    vb = unicodedata.normalize("NFC", str(text or ""))
+    hits: list[tuple[int, str]] = []
+    for m in _PLACEHOLDER_RE.finditer(vb):
+        hits.append((_so_dong(vb, m.start()), m.group(0)))
+    da_che = _SO_SANH_TRUOC_SO_RE.sub("‹", vb)  # thay 1 ký tự lấy 1 ký tự ⇒ số dòng giữ nguyên
+    for p in PC.tim(da_che, _HO_TAI_LIEU, _THEM_TAI_LIEU):
+        hits.append((p.dong_so, p.khop))
+    for m in _O_HOI_TRONG_RE.finditer(vb):
+        sau = vb[m.end():].split("\n", 1)[0].strip()
+        if not sau:
+            continue  # «?» cuối dòng = câu hỏi văn xuôi («… là bao nhiêu ?»)
+        if len(sau) > 1 and sau[0].isupper() and sau[1].islower():
+            continue  # «… bao nhiêu ? Yếu tố nào …» = sang câu mới, không phải ô số liệu
+        hits.append((_so_dong(vb, m.start()), "? " + sau[:12].rstrip()))
+    for rx in (_NONE_IN_RA_RE, _BANG_RON_NHAP_RE):
+        for m in rx.finditer(vb):
+            hits.append((_so_dong(vb, m.start()), m.group(0)))
+    for m in _DONG_KIEM_SOAT_RE.finditer(vb):
+        if not PC.co_noi_dung_that(m.group(2)):
+            hits.append((_so_dong(vb, m.start()), f"{m.group(1)}: ô giá trị trống"))
+    ra: list[str] = []
+    for dong, dau in sorted(hits):
+        muc = f"L{dong}:{dau[:60]}"
+        if muc not in ra:
+            ra.append(muc)
+    return ra
+
+
+def _xml_sang_chu(xml: str) -> str:
+    """Chữ của một phần XML trong .docx: bỏ THẺ (kể cả «<w:shd w:fill=…/>»), mỗi đoạn «</w:p>» một dòng, giải mã thực
+    thể (&lt;điền tên&gt; ⇒ «<điền tên>»). Giữ mọi nút chữ như bản XML thô cũ đã thấy (w:t, w:delText, w:instrText)."""
+    x = re.sub(r"<w:tab\b[^>]*/>", "\t", xml)
+    x = re.sub(r"<w:(?:br|cr)\b[^>]*/>", "\n", x)
+    x = x.replace("</w:p>", "\n")
+    return html.unescape(re.sub(r"<[^>]*>", "", x))
+
+
+def _docx_visible_text(archive: zipfile.ZipFile, document_xml: str) -> str:
+    """VĂN BẢN HIỂN THỊ của .docx để dò ô trống — THÊM 03/10/2026 thay cho quét XML THÔ.
+
+    Quét XML thô từng báo nhầm VĨNH VIỄN: nhánh «<…fill…>» khớp thẻ «<w:shd w:fill="D9EAF7"/>» md2docx_vn chèn cho
+    hàng tiêu đề MỌI bảng (76–90 lần/tài liệu ⇒ G10-AUTO-09 không bao giờ PASS qua assembler thật), còn chữ thật
+    «<điền tên>» (đã escape thành &lt;) lại không bao giờ khớp; nhãn bị tách giữa hai run cũng lọt. Ở đây: chữ theo
+    đoạn + mỗi hàng bảng thêm một dòng dạng «| ô | ô |» (để luật theo hàng như bảng kiểm soát phiên bản chạy được
+    trên .docx), cộng phần đầu/chân trang/chú thích."""
+    phan = [_xml_sang_chu(document_xml)]
+    xmls = [document_xml]
+    for name in sorted(n for n in archive.namelist() if _DOCX_PHAN_PHU_RE.fullmatch(n)):
+        xml = archive.read(name).decode("utf-8", errors="replace")
+        xmls.append(xml)
+        phan.append(_xml_sang_chu(xml))
+    for xml in xmls:
+        for tr in re.finditer(r"<w:tr\b[^>]*>(.*?)</w:tr>", xml, re.S):
+            cells = [
+                " ".join(_xml_sang_chu(tc.group(1)).split())
+                for tc in re.finditer(r"<w:tc\b[^>]*>(.*?)</w:tc>", tr.group(1), re.S)
+            ]
+            phan.append("| " + " | ".join(cells) + " |")
+    return "\n".join(phan)
+
+
 def _documents_clean(
     files: Mapping[str, Optional[Path]],
 ) -> tuple[bool, str, bool]:
@@ -451,6 +569,7 @@ def _documents_clean(
         return False, "missing_or_unreadable=" + ",".join(missing), False
 
     placeholder_hits: list[str] = []
+    placeholder_lines: list[str] = []
     trace_hits: list[str] = []
     contact_pii_hits: list[str] = []
     for key in ("final_protocol_md", "decision_package"):
@@ -459,8 +578,10 @@ def _documents_clean(
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             return False, f"unreadable_text={key}", True
-        if _PLACEHOLDER_RE.search(text):
+        found = _placeholder_hits(text)
+        if found:
             placeholder_hits.append(key)
+            placeholder_lines.extend(f"{key}:{item}" for item in found[:3])
         if _INTERNAL_TRACE_RE.search(text):
             trace_hits.append(key)
         if _EMAIL_RE.search(text) or _PHONE_RE.search(text):
@@ -471,10 +592,15 @@ def _documents_clean(
             docx_text = archive.read("word/document.xml").decode(
                 "utf-8", errors="strict"
             )
+            # SỬA 03/10/2026: dò ô trống trên CHỮ HIỂN THỊ (không trên thẻ XML); dấu vết nội bộ/PII vẫn quét
+            # XML thô như cũ (không nới).
+            docx_visible = _docx_visible_text(archive, docx_text)
     except (OSError, KeyError, UnicodeDecodeError, zipfile.BadZipFile):
         return False, "invalid_docx_container=true", True
-    if _PLACEHOLDER_RE.search(docx_text):
+    found = _placeholder_hits(docx_visible)
+    if found:
         placeholder_hits.append("final_protocol_docx")
+        placeholder_lines.extend(f"final_protocol_docx:{item}" for item in found[:3])
     if _INTERNAL_TRACE_RE.search(docx_text):
         trace_hits.append("final_protocol_docx")
     if _EMAIL_RE.search(docx_text) or _PHONE_RE.search(docx_text):
@@ -484,7 +610,7 @@ def _documents_clean(
         clean,
         (
             f"placeholders={placeholder_hits}; internal_traces={trace_hits}; "
-            f"contact_pii={contact_pii_hits}"
+            f"contact_pii={contact_pii_hits}; placeholder_lines={placeholder_lines}"
         ),
         bool(trace_hits or contact_pii_hits),
     )
