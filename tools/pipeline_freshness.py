@@ -195,9 +195,51 @@ def find_stale_gates(out_dir: Path) -> List[Dict[str, object]]:
     return out
 
 
+# Ngưỡng nhận ra mtime bị DÀN PHẲNG: các checkpoint cùng mtime (≤ dung sai cùng-đợt) trong khi dấu thời gian GHI TRONG
+# nội dung trải hơn một ngày.
+NGUONG_DAN_PHANG_NOI_DUNG_S = 86_400.0
+
+
+def mtime_khong_tin_duoc(out_dir: Path) -> Optional[str]:
+    """Lý do nếu mtime checkpoint KHÔNG còn tin được để đo độ tươi; None nếu tin được.
+
+    VÁ 04/10/2026 (điều phối thống nhất G0–G10): độ tươi đo bằng mtime tệp. Bản clone mới (phiên Cloud, máy mới,
+    giải nén bản sao lưu) gán CÙNG một mtime cho mọi checkpoint ⇒ find_stale_gates thấy «cùng đợt» ⇒ báo TƯƠI dù một
+    cổng sau đang dựa trên thượng nguồn cũ — và G10-AUTO-03 dùng đúng phép đo này làm tiêu chí CHẶN. Dấu hiệu nhận
+    ra: ≥ 3 checkpoint, mtime trải ≤ SAME_RUN_TOLERANCE_S, nhưng dấu thời gian trong nội dung
+    (generated_at/run_date) trải > NGUONG_DAN_PHANG_NOI_DUNG_S. Khi đó KHÔNG kết luận được (không phải «tươi»)."""
+    mtimes, tem = [], []
+    for g in GATE_ORDER:
+        p = checkpoint_path(out_dir, g)
+        if not p.exists():
+            continue
+        try:
+            mtimes.append(p.stat().st_mtime)
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        stamp = (data.get("generated_at") or data.get("run_date")) if isinstance(data, dict) else None
+        t = _parse_stamp(str(stamp)) if stamp else None
+        if t is not None:
+            tem.append(t)
+    if len(mtimes) < 3 or len(tem) < 3:
+        return None
+    if max(mtimes) - min(mtimes) <= SAME_RUN_TOLERANCE_S and max(tem) - min(tem) > NGUONG_DAN_PHANG_NOI_DUNG_S:
+        return (f"{len(mtimes)} checkpoint cùng mtime (trải {max(mtimes) - min(mtimes):.0f}s) nhưng nội dung sinh "
+                f"cách nhau {(max(tem) - min(tem)) / 86400:.1f} ngày — mtime đã bị dàn phẳng (bản clone/sao chép); "
+                "KHÔNG đo được độ tươi. "
+                "Đo trên cây gốc của đề tài, hoặc chạy lại chuỗi run_pipeline.py --from <cổng sớm nhất đã đổi>.")
+    return None
+
+
 def stale_report(out_dir: Path) -> Dict[str, object]:
-    """Báo cáo tổng hợp freshness cho 1 study."""
+    """Báo cáo tổng hợp freshness cho 1 study.
+
+    mtime bị dàn phẳng ⇒ fresh=False kèm `mtime_khong_tin_duoc` (không phải tươi)."""
     issues = find_stale_gates(out_dir)
+    dan_phang = mtime_khong_tin_duoc(out_dir)
+    if dan_phang:
+        issues = issues + [{"gate": "*", "kind": "mtime_khong_tin_duoc", "reason": dan_phang, "offending_upstream": []}]
     present = [g for g in GATE_ORDER if checkpoint_mtime(out_dir, g) is not None]
     return {
         "checkpoints_present": present,
@@ -207,6 +249,7 @@ def stale_report(out_dir: Path) -> Dict[str, object]:
         "fresh": len(issues) == 0,
         "stale_gates": [i["gate"] for i in issues if i["kind"] == "stale"],
         "orphan_gates": [i["gate"] for i in issues if i["kind"] == "orphan_downstream"],
+        "mtime_khong_tin_duoc": dan_phang,
     }
 
 

@@ -2,7 +2,7 @@
 # SƠ ĐỒ PIPELINE EBM HỢP NHẤT + HÀNG ĐỢI PHÊ DUYỆT
 
 > Sổ tham chiếu hạ tầng (`_*`) — **KHÔNG phải agent** (không tính vào bộ đếm agent). Tạo 2026-06-14.
-> Gộp hai luồng (Lâm sàng 5 bước · Nghiên cứu G0–G9) vào **một khung dùng chung**: cùng cổng vào · cùng luật nền · cùng guardrail · cùng sổ cái · cùng hàng đợi phê duyệt.
+> Gộp hai luồng (Lâm sàng 5 bước · Nghiên cứu G0–G10) vào **một khung dùng chung**: cùng cổng vào · cùng luật nền · cùng guardrail · cùng sổ cái · cùng hàng đợi phê duyệt.
 > Đồng bộ: `README.md`, `HUONG-DAN-VAN-HANH.md`, `_HIEN-PHAP-LIEM-CHINH.md` §2, `dieu-phoi-lam-sang.md`, `dieu-phoi-nghien-cuu.md`.
 > **Tra cứu chứng cứ sống trong cả 2 luồng đi qua connector MCP** — bản đồ agent↔connector riêng ở
 > `_CONNECTOR-CHUNG-CU.md` (thêm 2026-07-31, audit tích hợp plugin).
@@ -18,7 +18,7 @@ Hai luồng khác nhau ở phần GIỮA (nội dung chuyên môn) nhưng **chia
 |---|---|---|
 | **L0 Cổng vào** | Phân loại yêu cầu → định tuyến nhạc trưởng | `README.md` (ma trận định tuyến) |
 | **L1 Luật nền** | 6 điều bất biến · 4 trụ cột · hồ sơ người dùng | `_HIEN-PHAP-LIEM-CHINH.md` · `_NGUYEN-TAC-…` · `_HO-SO-NGUOI-DUNG.md` |
-| **L2 Thân pipeline** | Lâm sàng: 5 bước EBM · Nghiên cứu: G0–G9 | 2 nhạc trưởng |
+| **L2 Thân pipeline** | Lâm sàng: 5 bước EBM · Nghiên cứu: G0–G10 | 2 nhạc trưởng |
 | **L3 Guardrail** | `tham-dinh-dau-ra` (2 lớp: R1–R7 liêm chính + Q1–Q7 Med-PaLM cho gói lâm sàng) — bước cuối | `tham-dinh-dau-ra.md` · `_KIEM-DUYET-DOC-LAP.md` · `_CHUAN-CHAT-LUONG-MEDPALM.md` |
 | **L4 Cổng phê duyệt + Sổ cái** | Hàng đợi "chờ bác sĩ duyệt" → EBM_MASTER | `_SO-EBM-MASTER.md` · §3–§4 dưới |
 
@@ -38,7 +38,7 @@ Hai luồng khác nhau ở phần GIỮA (nội dung chuyên môn) nhưng **chia
         └───────────────┬───────────────────┘   └───────────────┬───────────────────┘
                         ▼                                        ▼
         ┌───────────────────────────────────┐   ┌───────────────────────────────────┐
-        │ L2  dieu-phoi-LAM-SANG (5 bước)   │   │ L2  dieu-phoi-NGHIEN-CUU (G0→G9)  │
+        │ L2  dieu-phoi-LAM-SANG (5 bước)   │   │ L2  dieu-phoi-NGHIEN-CUU (G0→G10) │
         │                                   │   │  BƯỚC 0: RESUME từ sổ cái + suy   │
         │ BƯỚC 0 ⚑ sang-loc-co-do (cờ đỏ)  │   │          loại thiết kế            │
         │   └─ CỜ ĐỎ → CHUYỂN TUYẾN NGAY   │   │  G0 câu hỏi/PICO·FINER·tổng quan │
@@ -123,7 +123,7 @@ Mỗi sản phẩm (thẻ chứng cứ · gói quyết định lâm sàng · art
 |---|---|---|
 | Nhạc trưởng | `dieu-phoi-lam-sang` | `dieu-phoi-nghien-cuu` |
 | An toàn trước tiên | **Bước 0: cờ đỏ** (`sang-loc-co-do`) | **Bước 0: RESUME** + chưa chạm dữ liệu thật khi chưa G2 |
-| Thân | 5 bước EBM | G0–G9 + 18 artifact A1–A18 |
+| Thân | 5 bước EBM | G0–G10 + 18 artifact A1–A18 |
 | Cổng cứng | Cổng A | G2 · G4 · G5 khóa dữ liệu thật trước phân tích · G8 · G9 · G10 PI khóa gói phát hành (+ A12 kiểm trích dẫn) |
 | Guardrail cuối | `tham-dinh-dau-ra` (chung) | `tham-dinh-dau-ra` (chung) |
 | Điểm dừng phê duyệt | Cổng A + Cổng B | Cổng G + Cổng B |

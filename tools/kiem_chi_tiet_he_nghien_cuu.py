@@ -75,7 +75,9 @@ import verify_exports_integrity as VEI  # noqa: E402
 
 XANH, VANG, DO, TRANG = "🟢", "🟡", "🔴", "⚪"
 CONG = [f"G{i}" for i in range(11)]
-CONG_CUNG = ("G2", "G4", "G5", "G8", "G9", "G10")
+# Cổng cứng rút từ gate_contract (nguồn sự thật duy nhất) — không viết cứng (soát 04/10/2026: ba công cụ khác viết
+# cứng 3–4 cổng và lệch nhau).
+CONG_CUNG = tuple(g for g in CONG if g in GC._GATE_REQUIRED_STAKEHOLDERS)
 SCRIPT_CONG = {g: (f"run_{g.lower()}_auto.py" if g != "G10" else "run_g10_assemble.py") for g in CONG}
 # Artifact mà chữ ký cổng cứng ràng buộc vào (đúng thứ approve_gate --artifact nhận)
 ARTIFACT_KY = {
@@ -828,6 +830,29 @@ def la_de_tai_nghien_cuu(out_dir: Path) -> tuple[bool, str]:
                    "G0_checkpoint.json" if n else "thư mục RỖNG")
 
 
+def kiem_xuyen_cong(study: str, out_dir: Path) -> list[Muc]:
+    """XUYÊN CỔNG (04/10/2026 — điều phối thống nhất G0–G10): mỗi thông số then chốt (N · α · power · thiết kế ·
+    kết cục chính · quần thể) phải mang CÙNG giá trị ở mọi cổng giữ bản sao của nó. Lệch cứng ⇒ 🔴 (G10-AUTO-11 chặn);
+    lệch mềm/cần xem ⇒ 🟡 (chủ nhiệm quyết); chưa đủ nơi để so ⇒ ⚪. Bộ đối chiếu hỏng ⇒ ⚪ có lý do — KHÔNG phải
+    «khớp»."""
+    try:
+        import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
+        ket = NQ.doi_chieu(out_dir, study)
+    except Exception as exc:  # noqa: BLE001
+        return [Muc("XUYÊN", "X", TRANG, "Không chạy được bộ đối chiếu xuyên cổng", f"{type(exc).__name__}: {exc}",
+                    "python3 tools/nhat_quan_xuyen_cong.py --study " + study)]
+    mau = {NQ.MUC_LECH_CUNG: DO, NQ.MUC_LECH_MEM: VANG, NQ.MUC_CAN_XEM: VANG, NQ.MUC_KHOP: XANH, NQ.MUC_CHUA_DU: TRANG}
+    ra = []
+    for k in ket["thong_so"]:
+        nguon = "; ".join(f"{n['cong']} {n['noi']}={_rut_gon(str(n['gia_tri']), 60)}" for n in k["nguon"])
+        hanh = "" if k["muc"] in (NQ.MUC_KHOP, NQ.MUC_CHUA_DU) else (
+            "sửa về MỘT giá trị tại cổng gốc / chủ nhiệm giải trình — python3 tools/nhat_quan_xuyen_cong.py --study "
+            + study)
+        ra.append(Muc("XUYÊN", "X", mau[k["muc"]], k["ten"], f"{k['ghi_chu']} | {nguon}" if k["muc"] != NQ.MUC_KHOP
+                      else k["ghi_chu"], hanh, may_sua=k["muc"] == NQ.MUC_LECH_CUNG))
+    return ra
+
+
 def kiem_de_tai(study: str, out_dir: Path, *, canary: bool = True) -> dict[str, Any]:
     cps = ARG._load_checkpoints(out_dir)
     ky = {g: da_ky(g, study, out_dir)[0] for g in CONG_CUNG}
@@ -836,6 +861,7 @@ def kiem_de_tai(study: str, out_dir: Path, *, canary: bool = True) -> dict[str, 
     muc: list[Muc] = []
     for g in CONG:
         muc.extend(kiem_cong(g, study, out_dir, cps, ky, tuoi, dx_cong))
+    muc.extend(kiem_xuyen_cong(study, out_dir))
     muc.extend(kiem_he_thong(canary))
     dem = Counter(x.muc for x in muc)
     exit_code = 2 if dem[DO] else (1 if dem[VANG] else 0)
@@ -854,7 +880,7 @@ def in_bao_cao(r: dict[str, Any]) -> None:
     print("=" * 78)
     print(f" KIỂM CHI TIẾT HỆ NGHIÊN CỨU — {r['study']} — {r['generated_at']}")
     print("=" * 78)
-    hien = [x for x in r["muc"] if x["cong"] != "HỆ"]
+    hien = [x for x in r["muc"] if x["cong"] not in ("HỆ", "XUYÊN")]
     for g in CONG:
         dong = [x for x in hien if x["cong"] == g]
         if not dong:
@@ -863,6 +889,12 @@ def in_bao_cao(r: dict[str, Any]) -> None:
         for x in dong:
             hd = f"  → {x['hanh_dong']}" if x["hanh_dong"] else ""
             print(f"  {x['muc']} {x['truc']} {x['nhan']} — {x['bang_chung']}{hd}")
+    xc = [x for x in r["muc"] if x["cong"] == "XUYÊN"]
+    if xc:
+        print("\nXUYÊN CỔNG (thông số then chốt phải cùng giá trị ở mọi cổng — G10-AUTO-11)")
+        for x in xc:
+            hd = f"  → {x['hanh_dong']}" if x["hanh_dong"] else ""
+            print(f"  {x['muc']} {x['nhan']} — {x['bang_chung']}{hd}")
     print("\nHỆ THỐNG")
     for x in r["muc"]:
         if x["cong"] == "HỆ":

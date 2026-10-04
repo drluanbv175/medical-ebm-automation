@@ -79,10 +79,26 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
             checkpoint["quality_gate"] = {"status": quality_status}
         if index == 9:
             checkpoint["quality_contract_version"] = "G9-2026.2"
+        # 04/10/2026 (G10-AUTO-11, điều phối thống nhất): một đề tài «sẵn sàng» thật có thông số then chốt ở ≥ 2 cổng
+        # và CÙNG giá trị — fixture cũ không có thiết kế/N/kết cục nào nên chỉ PASS nhờ «chưa đủ để so» bị coi là khớp.
+        if index >= 2:
+            checkpoint["design_code"] = "rct"
+        if index == 3:
+            checkpoint.update({"confirmed_n": 200, "alpha": 0.05, "power": 0.8})
+        if index == 4:
+            checkpoint["n_from_g3"] = 200
         (out_dir / f"G{index}_checkpoint.json").write_text(
             json.dumps(checkpoint, ensure_ascii=False),
             encoding="utf-8", newline="\n"
         )
+
+    (out_dir / "study_meta.json").write_text(
+        json.dumps({"design_code": "rct", "gate_params": {
+            "G0": {"primary_outcome": "Tử vong mọi nguyên nhân 30 ngày (biến TuVong_30N)"},
+            "G1": {"primary_outcome": {"name": "Tử vong mọi nguyên nhân 30 ngày (biến TuVong_30N)"}}}},
+            ensure_ascii=False),
+        encoding="utf-8", newline="\n"
+    )
 
     g10_checkpoint = {
         "gate": "G10",

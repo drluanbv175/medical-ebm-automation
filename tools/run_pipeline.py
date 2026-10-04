@@ -12,7 +12,8 @@ Chỉ cần TÊN ĐỀ TÀI (+ chủ đề lần đầu) → chạy trọn G0→
 BẤT BIẾN AN TOÀN:
   - KHÔNG bịa số liệu/PMID/phê duyệt (mọi remediation chỉ chạy lại script thật).
   - Retry CÓ TRẦN + tổng số lần chạy CÓ TRẦN → không vòng lặp vô hạn.
-  - Cổng cứng (G2/G4/G9) và dữ liệu thật là điểm DỪNG, không tự "đạt".
+  - Sáu cổng cứng (nguồn sự thật DUY NHẤT gate_contract._GATE_REQUIRED_STAKEHOLDERS:
+    G2/G4/G5/G8/G9/G10) và dữ liệu thật là điểm DỪNG, không tự "đạt".
   - Idempotent: chạy lại khi đã tươi → không làm gì (hội tụ).
 
 Dùng:
@@ -46,15 +47,24 @@ GATE_ORDER = [f"G{i}" for i in range(11)]  # G0..G10
 DATA_GATES = {"G0", "G1", "G2", "G7"}       # cổng có thể chạm mạng (degrade được)
 MAX_TOTAL_RUNS = 40                          # trần cứng chống runaway
 
-# Cổng CỨNG (🔒) — sinh DRAFT tự động nhưng CHỜ bằng chứng đời-thực (bác sĩ ký/nộp).
-# Ánh xạ tới tín hiệu real_world_signals tương ứng để BÁO TRUNG THỰC (D6): không
-# để "✅ ok" (draft) bị hiểu nhầm là "đã xong thật".
+# Cổng CỨNG (🔒) — sinh DRAFT tự động nhưng CHỜ bằng chứng đời-thực (bác sĩ ký/nộp). Ánh xạ tới tín hiệu
+# real_world_signals tương ứng để BÁO TRUNG THỰC (D6): không để "✅ ok" (draft) bị hiểu nhầm là "đã xong thật". VÁ
+# 04/10/2026: bảng từng chỉ có G2/G4/G5/G9 (+ G10 xử riêng) — THIẾU G8 (bình duyệt độc lập), dù G8 là cổng cứng trong
+# nguồn sự thật gate_contract._GATE_REQUIRED_STAKEHOLDERS ⇒ báo cáo nhạc trưởng im lặng về G8. Tập cổng cứng nay RÚT từ
+# gate_contract (`_hard_gates()`); cổng cứng nào chưa có tín hiệu ở đây vẫn hiện ra là «chưa có tín hiệu — không kết
+# luận».
 HARD_GATE_SIGNAL = {
     "G2": ("irb_approved", "phê duyệt IRB thật (số + ngày)"),
     "G4": ("sap_locked", "ký + ngày khóa SAP"),
     "G5": ("db_locked", "dữ liệu thật đã khóa (KHÔNG PII)"),
+    "G8": ("peer_review_approved", "biên bản phản biện của người phản biện THẬT + chữ ký sổ cái G8"),
     "G9": ("integrity_signed", "gói liêm chính đã ký (COI/tài trợ/AI/đóng góp)"),
 }
+
+
+def _hard_gates() -> List[str]:
+    """Cổng cứng theo NGUỒN SỰ THẬT DUY NHẤT (gate_contract), xếp theo thứ tự chuỗi G0→G10."""
+    return [g for g in GATE_ORDER if g in GC._GATE_REQUIRED_STAKEHOLDERS]
 
 
 def _script_for(gate: str) -> Path:
@@ -343,9 +353,20 @@ def _hard_gate_report(out_dir: Path, meta: dict) -> List[Dict[str, object]]:
     except Exception:  # noqa: BLE001
         return []
     out: List[Dict[str, object]] = []
-    for gate, (sig_key, need_label) in HARD_GATE_SIGNAL.items():
-        if gate not in cps:
+    for gate in _hard_gates():
+        if gate == "G10" or gate not in cps:
+            continue  # G10 xử riêng bên dưới (manifest gói phát hành)
+        if gate not in HARD_GATE_SIGNAL:
+            # Cổng cứng mới thêm vào gate_contract mà chưa có tín hiệu ở đây: hiện ra, KHÔNG im lặng, KHÔNG báo «đã
+            # khoá».
+            out.append({
+                "gate": gate, "signal": None, "locked": False,
+                "state": ("🔒 CHƯA CÓ TÍN HIỆU — không kết luận (cổng cứng theo gate_contract, chưa nối vào "
+                          "nhạc trưởng)"),
+                "need": "nối tín hiệu đời thực cho cổng cứng này",
+            })
             continue
+        sig_key, need_label = HARD_GATE_SIGNAL[gate]
         locked = bool(signals.get(sig_key))
         out.append({
             "gate": gate, "signal": sig_key, "locked": locked,
@@ -373,6 +394,19 @@ def _hard_gate_report(out_dir: Path, meta: dict) -> List[Dict[str, object]]:
             }
         )
     return out
+
+
+def _nhat_quan_tom_tat(out_dir: Path, study: str) -> Dict[str, object]:
+    """Điều phối thống nhất (04/10/2026): thông số then chốt cùng giá trị ở mọi cổng — tóm tắt cho báo cáo chuỗi.
+    Bộ đối chiếu hỏng ⇒ {"loi": …} (không đo được ≠ khớp)."""
+    try:
+        import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
+        ket = NQ.doi_chieu(out_dir, study)
+    except Exception as exc:  # noqa: BLE001
+        return {"loi": f"{type(exc).__name__}: {exc}"}
+    return {"muc_cao_nhat": ket["muc_cao_nhat"], "tong": ket["tong"],
+            "lech": [{"ma": k["ma"], "muc": k["muc"], "ghi_chu": k["ghi_chu"]} for k in ket["thong_so"]
+                     if k["muc"] in (NQ.MUC_LECH_CUNG, NQ.MUC_LECH_MEM, NQ.MUC_CAN_XEM)]}
 
 
 def orchestrate(study: str, topic: Optional[str], max_attempts: int,
@@ -477,6 +511,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
         "readiness": readiness,
         "g10_quality_status": g10_quality_status,
         "hard_gates": _hard_gate_report(out_dir, meta),
+        "nhat_quan_xuyen_cong": _nhat_quan_tom_tat(out_dir, study),
     }
     # Ghi report.
     (out_dir / "pipeline_run_report.json").write_text(
@@ -513,7 +548,10 @@ def print_summary(report: Dict[str, object]) -> None:
             print(f"    • {r['gate']}: {r['detail']}")
 
     fresh = report["freshness_after"]
-    print(f"  Freshness sau: {'✅ TƯƠI' if fresh['fresh'] else '⚠ còn stale: ' + ', '.join(fresh['stale_gates'])}")
+    if fresh.get("mtime_khong_tin_duoc"):
+        print(f"  Freshness sau: ⚪ KHÔNG ĐO ĐƯỢC — {fresh['mtime_khong_tin_duoc'][:160]}")
+    else:
+        print(f"  Freshness sau: {'✅ TƯƠI' if fresh['fresh'] else '⚠ còn stale: ' + ', '.join(fresh['stale_gates'])}")
 
     # D6 — trạng thái TRUNG THỰC cổng cứng (draft vs đã-khóa-thật).
     hard = report.get("hard_gates") or []
@@ -522,6 +560,15 @@ def print_summary(report: Dict[str, object]) -> None:
         for h in hard:
             print(f"    • {h['gate']}: {h['state']}")
 
+    nq = report.get("nhat_quan_xuyen_cong") or {}
+    if nq.get("loi"):
+        print(f"  🔗 Nhất quán xuyên cổng: ⚪ KHÔNG ĐO ĐƯỢC ({nq['loi'][:80]}) — không phải «khớp»")
+    elif nq:
+        t = nq.get("tong", {})
+        print(f"  🔗 Nhất quán xuyên cổng: 🔴 {t.get('lech_cung', 0)} lệch cứng · 🟠 {t.get('lech_mem', 0)} lệch mềm · "
+              f"🟡 {t.get('can_xem', 0)} cần xem · 🟢 {t.get('khop', 0)} khớp")
+        for k in nq.get("lech", []):
+            print(f"    • {k['ma']} ({k['muc']}): {k['ghi_chu'][:110]}")
     if report.get("readiness"):
         print("  Kết luận sẵn sàng (G10):")
         for r in report["readiness"]:

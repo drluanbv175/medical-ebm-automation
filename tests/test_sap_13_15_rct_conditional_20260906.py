@@ -111,10 +111,14 @@ class TestSection12BoundaryStillCorrect:
 
 class TestPreSignatureGateUnaffected:
     def test_required_sections_still_only_1_2_5_10(self):
+        # 04/10/2026: tập bắt buộc thêm §4 PHÂN TÍCH CHÍNH + §9 PHÂN TÍCH ĐỘ NHẠY (soát từng cổng — SAP từng ký khoá
+        # được khi phân tích chính/độ nhạy còn trống). SAP RCT vừa sinh: §4 đã có phương pháp tự điền, §9 còn «[CẦN» ⇒
+        # bị chặn đúng. Mục đích gốc của test giữ nguyên: §13–§15 (RCT có điều kiện) KHÔNG thành bắt buộc trước ký.
         text = _gen("rct")
         still_draft = AG._g4_sections_still_draft(text)
         labels = {re.match(r"(§\d+)", s).group(1) for s in still_draft}
-        assert labels == {"§1", "§2", "§5", "§10"}
+        assert labels == {"§1", "§2", "§5", "§9", "§10"}
+        assert set(AG._G4_REQUIRED_SECTIONS) == {"§1", "§2", "§4", "§5", "§9", "§10"}
         # §13/§14/§15 CHƯA điền (còn nguyên placeholder) nhưng KHÔNG được liệt
         # kê ở đây — chúng không nằm trong _G4_REQUIRED_SECTIONS, tức không
         # đổi ngưỡng chặn ký hiện có.

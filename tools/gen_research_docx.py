@@ -51,6 +51,22 @@ except ImportError:
     print("[CẢNH BÁO] python-docx chưa cài. Chạy: pip install python-docx")
 
 
+def _cong_cung() -> list:
+    """[(mã cổng, nhãn)] cho mọi cổng CỨNG theo gate_contract._GATE_REQUIRED_STAKEHOLDERS (nguồn sự thật duy nhất).
+
+    Không import được (chạy tách khỏi repo) ⇒ trả đủ sáu cổng đã biết với nhãn chung — bi quan, không rút gọn bảng."""
+    try:
+        if str(Path(__file__).resolve().parent) not in _sys_r4.path:
+            _sys_r4.path.insert(0, str(Path(__file__).resolve().parent))
+        import gate_contract as _GC  # noqa: PLC0415
+        import skill_standards as _SS  # noqa: PLC0415
+        thu_tu = [f"G{i}" for i in range(11)]
+        return [(g, _SS.PIPELINE_HARD_GATES.get(g, "cổng cứng").split(" — ")[0])
+                for g in thu_tu if g in _GC._GATE_REQUIRED_STAKEHOLDERS]
+    except Exception:  # noqa: BLE001
+        return [(g, "cổng cứng") for g in ("G2", "G4", "G5", "G8", "G9", "G10")]
+
+
 # ── Ánh xạ artifact chuẩn G0→G9 ────────────────────────────────────────────
 
 ARTIFACT_MAP = {
@@ -1073,20 +1089,16 @@ class ResearchDocxGenerator:
         else:
             self._note(doc, "Không còn khoảng trống 🔴 — đề tài READY.")
 
-        self._h(doc, "3. Trạng thái 3 cổng cứng")
+        # 04/10/2026: bảng từng viết cứng «3 cổng cứng» G2/G4/G9 — thiếu G5/G8/G10. Nay rút từ gate_contract
+        # (nguồn sự thật duy nhất); nhãn lấy từ skill_standards.PIPELINE_HARD_GATES.
+        cong_cung = _cong_cung()
+        self._h(doc, f"3. Trạng thái {len(cong_cung)} cổng cứng")
         self._tbl(doc,
             ["Cổng cứng", "Trạng thái", "Bằng chứng"],
-            [
-                ["G2 Đạo đức & đăng ký",
-                 content.get("g2_status", "🔴 CHƯA ĐÓNG"),
-                 content.get("g2_evidence", "[Số phê duyệt IRB]")],
-                ["G4 Khóa SAP",
-                 content.get("g4_status", "🔴 CHƯA ĐÓNG"),
-                 content.get("g4_evidence", "[Biên bản khóa SAP]")],
-                ["G9 Liêm chính tác giả",
-                 content.get("g9_status", "🔴 CHƯA ĐÓNG"),
-                 content.get("g9_evidence", "[COI + tài trợ + khai báo AI]")],
-            ])
+            [[f"{g} {nhan}",
+              content.get(f"{g.lower()}_status", "🔴 CHƯA ĐÓNG"),
+              content.get(f"{g.lower()}_evidence", "[CẦN bằng chứng chữ ký đúng vai]")]
+             for g, nhan in cong_cung])
 
         self._disclaimer(doc)
         return self._save(doc, code, "readiness")

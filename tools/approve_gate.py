@@ -105,10 +105,17 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 # §10 phần mềm+seed) vẫn ký được — phá vỡ mục đích chống HARKing/p-hacking mà
 # G4 hướng tới. Tái dùng khái niệm đếm "[CẦN" đã có ở run_g4_auto.py::
 # guardrail() R6, nhưng áp NGAY TRƯỚC lúc ký thay vì chỉ trên bản DRAFT gốc.
+#
+# VÁ 04/10/2026 (soát từng cổng G0–G10): tập này từng THIẾU §4 PHÂN TÍCH CHÍNH và §9 PHÂN TÍCH ĐỘ NHẠY — hai mục
+# mà hướng dẫn nội dung SAP (Gamble C et al. JAMA 2017;318(23):2337-43) coi là lõi — trong khi run_g4_auto.py điền
+# «[CẦN]» vào phương pháp chính khi thiết kế không có khuôn ⇒ SAP KÝ KHOÁ ĐƯỢC dù phân tích chính còn trống. Mục vắng
+# hẳn (biến thể thiết kế) vẫn cho qua như cũ; chỉ mục CÓ MẶT mà còn «[CẦN» mới bị chặn.
 _G4_REQUIRED_SECTIONS = {
     "§1": "Tiêu chí nhận/loại (Quần thể phân tích)",
     "§2": "Kết cục chính",
+    "§4": "Phân tích chính",
     "§5": "Covariates/Phân tích đa biến",
+    "§9": "Phân tích độ nhạy",
     "§10": "Phần mềm + seed",
 }
 

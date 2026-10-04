@@ -131,6 +131,7 @@ Thời gian theo dõi: ___
 > SAP phải hoàn chỉnh và "khóa" TRƯỚC KHI XEM DỮ LIỆU THẬT.
 > Sau khi khóa: KHÔNG thay đổi kết cục chính, quần thể phân tích chính, mô hình chính.
 > Phân tích thêm → ghi rõ là THĂM DÒ và thực hiện riêng biệt.
+> **Ký khoá (04/10/2026):** `approve_gate.py --gate G4` và G4-AUTO-10 từ chối khi §1 · §2 · **§4 PHÂN TÍCH CHÍNH** · §5 · **§9 PHÂN TÍCH ĐỘ NHẠY** · §10 còn «[CẦN» — phân tích chính và kịch bản độ nhạy phải định trước, không để trống rồi điền sau khi thấy dữ liệu. SAP ĐÃ KÝ trước mốc này không bị hạ cấp vì §4/§9 (dòng G4-AUTO-10 vẫn hiện để đọc) — muốn điền thì đi đường sửa đổi SAP (amendment), không sửa bản đã ký. N/α/power ở §12 và kết cục chính ở §2 phải khớp G3, đăng ký G2 (TRDS 17/19) và gate_params G0/G1 — `tools/nhat_quan_xuyen_cong.py` đối chiếu, G10-AUTO-11 chặn khi lệch cứng.
 
 ### SAP §1 — Quần thể phân tích (định nghĩa từng nhóm)
 ```

@@ -879,6 +879,21 @@ def evaluate_g1_quality(
         "Chọn một mã thiết kế canonical được hệ hỗ trợ.",
     ))
 
+    # VÁ 04/10/2026 (soát từng cổng): bác sĩ GHIM thiết kế ngoài 8 mã chuỗi hỗ trợ ⇒ run_g1_auto từng lặng lẽ dùng thiết
+    # kế suy luận thay cho lựa chọn tường minh của bác sĩ. Nay G1 ghi `design.pin_bi_tu_choi` và cổng CHẶN tới khi PI
+    # chọn lại.
+    pin_tu_choi = str(design.get("pin_bi_tu_choi") or "").strip()
+    automatic.append(_criterion(
+        "G1-AUTO-02c",
+        "Thiết kế bác sĩ đã ghim được chuỗi G0–G10 hỗ trợ (không bị thay bằng suy luận)",
+        "BLOCK" if pin_tu_choi else "PASS",
+        (f"pin «{pin_tu_choi}» ngoài 8 mã hỗ trợ; G1 đang dùng thiết kế suy luận «{internal}»"
+         if pin_tu_choi else "không có pin bị từ chối"),
+        "PI ghim lại study_meta.design_code bằng một trong rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/"
+        "prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → "
+        "TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE).",
+    ))
+
     annex2 = A2X.evaluate(meta, internal, "G1")
     annex2_issues = annex2["errors"] + annex2["missing"]
     automatic.append(_criterion(

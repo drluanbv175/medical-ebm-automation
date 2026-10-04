@@ -59,6 +59,11 @@ _GATES = [
     ("G9", "Liêm chính tác giả", True),
     ("G10", "Lắp gói nộp", False),
 ]
+# VÁ 04/10/2026 (điều phối thống nhất G0–G10): cột «cứng» từng viết TAY — chỉ G2/G4/G8/G9, THIẾU G5 (khoá dữ liệu,
+# DATA_MANAGER+PI) và G10 (khoá gói phát hành, PI) ⇒ công cụ báo «x/4» trong khi gate_contract có SÁU cổng cứng. Nay rút
+# từ NGUỒN SỰ THẬT DUY NHẤT gate_contract._GATE_REQUIRED_STAKEHOLDERS; cột viết tay ở trên chỉ còn là nhãn.
+_GATES = [(g, nhan, g in GC._GATE_REQUIRED_STAKEHOLDERS) for g, nhan, _cu in _GATES]
+_CONG_CUNG = [g for g, _nhan, cung in _GATES if cung]
 
 _UNCHECKED = re.compile(r"^\s*[-*]\s*\[ \]\s*(.+?)\s*$", re.M)
 _PENDING_DECISION = re.compile(r"QUYẾT ĐỊNH CÒN TREO|CHƯA TỰ Ý XỬ LÝ|CẦN QUYẾT ĐỊNH", re.I)
@@ -197,7 +202,8 @@ def report(study: str) -> int:
         print(f"   {gate:4} {label:24} {state}")
         if state.startswith("🔒"):
             signed_hard += 1
-    print(f"\n   → Cổng CỨNG đã có chữ ký thật: {signed_hard}/4 (G2 · G4 · G8 · G9)")
+    # Repo gốc tools/tu_de_xuat_viec.py dò chuỗi «chữ ký thật: 0/<n>» để biết «chưa cổng cứng nào có chữ ký».
+    print(f"\n   → Cổng CỨNG đã có chữ ký thật: {signed_hard}/{len(_CONG_CUNG)} ({' · '.join(_CONG_CUNG)})")
     if signed_hard == 0:
         print("     ⚠️  CHƯA CỔNG CỨNG NÀO ĐƯỢC KÝ. Mọi hồ sơ hiện có là DỰ THẢO.")
 
@@ -232,20 +238,36 @@ def report(study: str) -> int:
               + " · ".join(f"{_TEN_HO[h]} {dem_ho[h]}" for h in _HO_CON_TRONG)
               + f" — {_TEN_HO[PC.TRONG]} {dem_ho[PC.TRONG]} (chỉ tham khảo: bảng trống dự kiến/dòng ký là hợp lệ)")
 
+    # 04/10/2026 — điều phối thống nhất G0–G10: thông số then chốt phải cùng giá trị ở mọi cổng
+    # (tools/nhat_quan_xuyen_cong.py).
+    lech_xc: list[str] = []
+    try:
+        import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
+        ket_xc = NQ.doi_chieu(d, study)
+        print("\n🔗 NHẤT QUÁN XUYÊN CỔNG (N · α · power · thiết kế · kết cục chính · quần thể)")
+        for k in ket_xc["thong_so"]:
+            print(f"   {NQ.BIEU_TUONG[k['muc']]} {k['ten']}: {k['ghi_chu']}")
+            if k["muc"] in (NQ.MUC_LECH_CUNG, NQ.MUC_LECH_MEM):
+                lech_xc.append(k["ten"])
+    except Exception as exc:  # noqa: BLE001 — không đo được ≠ khớp
+        print(f"\n🔗 NHẤT QUÁN XUYÊN CỔNG: ⚪ KHÔNG ĐO ĐƯỢC ({type(exc).__name__}) — không phải «khớp»")
+        lech_xc.append("nhất quán xuyên cổng (không đo được)")  # cố ý bi quan: không đo được vẫn là việc còn treo
+
     print("\n" + "-" * 78)
-    total = len(todo) + len(pending)
-    if signed_hard == 4 and total == 0:
+    total = len(todo) + len(pending) + len(lech_xc)
+    if signed_hard == len(_CONG_CUNG) and total == 0:
         if so_con_trong:
             # 03/10/2026: đủ chữ ký + hết việc nội bộ mà tài liệu vẫn còn ô chưa điền thì KHÔNG in câu «không còn
-            # việc nào» trơn — công cụ cố ý bi quan (docstring module). Không in chuỗi «0/4» ở nhánh này: ROOT
-            # tools/tu_de_xuat_viec.py dò chuỗi đó để hiểu «chưa cổng cứng nào có chữ ký».
+            # việc nào» trơn — công cụ cố ý bi quan (docstring module). Không in chuỗi «chữ ký thật: 0/<n>» ở nhánh này:
+            # ROOT tools/tu_de_xuat_viec.py dò chuỗi đó để hiểu «chưa cổng cứng nào có chữ ký».
             print(f"Mọi cổng cứng đã ký và không còn việc nào trong danh sách nội bộ — NHƯNG tài liệu còn "
                   f"{so_con_trong} ô chưa điền (nhãn/ô mẫu/xác nhận thủ công, xem mục ✏️ ở trên).")
         else:
             print("Mọi cổng cứng đã ký và không còn việc nào trong danh sách nội bộ.")
         print("Việc kết luận đề tài 'đủ điều kiện' vẫn thuộc về BÁC SĨ và HỘI ĐỒNG, không phải công cụ này.")
     else:
-        print(f"KẾT LUẬN: CÒN {total} việc chưa xong và {4 - signed_hard}/4 cổng cứng chưa ký.")
+        con_thieu = len(_CONG_CUNG) - signed_hard
+        print(f"KẾT LUẬN: CÒN {total} việc chưa xong và {con_thieu}/{len(_CONG_CUNG)} cổng cứng chưa ký.")
         if so_con_trong:
             print(f"Tài liệu còn {so_con_trong} ô chưa điền (nhãn/ô mẫu/xác nhận thủ công) — xem mục ✏️ ở trên.")
         print("Đây KHÔNG phải trạng thái sẵn sàng triển khai. Công cụ này cố ý chỉ đếm việc")
