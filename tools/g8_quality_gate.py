@@ -60,11 +60,13 @@ import re
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import unicodedata
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
 import gate_contract as GC
 import pipeline_freshness as PF
+import placeholder_contract as PC
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -120,6 +122,43 @@ _REVIEW_RECOMMENDATIONS = (
     "REJECT",
 )
 
+# ── Bản nhận xét chép nguyên MẪU (thêm 03/10/2026) ─────────────────────────────────────────────────────────
+# Lượt đo: khối «TỔNG HỢP — NHẬN XÉT PHẢN BIỆN CUỐI» chép nguyên từ binh-duyet.md (chưa điền gì) qua G8-HUMAN-01
+# ⇒ PASS_G8_REVIEW_RECORDED, vì dòng mẫu «KHUYẾN NGHỊ: ☐ Chấp nhận ☐ Sửa nhỏ ☐ Sửa lớn ☐ Từ chối» liệt kê ĐỦ 4 mức
+# nên tự thoả «có khuyến nghị rõ mức». Ba chốt tối thiểu: khuyến nghị phải được CHỌN (tích ☑/☒/[x] đúng MỘT mức,
+# hoặc chỉ còn một mức); kết luận không còn để cả hai lựa chọn; không còn ô mẫu của khuôn (ngoặc mẫu, «___» ngoài
+# dòng tích chọn, bảng chỉ có số thứ tự).
+_REVIEW_LEVEL_ALTS: Mapping[str, str] = {
+    "chấp nhận": r"(?:CHẤP NHẬN|ACCEPT(?:ED)?)",
+    "sửa nhỏ": r"(?:SỬA NHỎ|MINOR REVISIONS?)",
+    "sửa lớn": r"(?:SỬA LỚN|MAJOR REVISIONS?)",
+    "từ chối": r"(?:TỪ CHỐI|REJECT(?:ED|ION)?)",
+}
+_TICK_MARK = r"(?:☑|☒|✓|✔|■|\[X\])"
+_OPEN_BOX = r"(?:☐|\[ \])"
+_LEVEL_TICKED_RE = {k: re.compile(_TICK_MARK + r"\s*\**\s*" + v + r"(?!\w)") for k, v in _REVIEW_LEVEL_ALTS.items()}
+_LEVEL_BOXED_RE = {k: re.compile(_OPEN_BOX + r"\s*\**\s*" + v + r"(?!\w)") for k, v in _REVIEW_LEVEL_ALTS.items()}
+# «Accept with minor revisions» / «chấp nhận sau khi sửa nhỏ» là MỘT mức (sửa nhỏ), không phải hai.
+_ACCEPT_WITH_RE = re.compile(
+    r"(?:ACCEPT(?:ED)?\s+(?:WITH|AFTER)|CHẤP NHẬN\s+(?:VỚI|SAU KHI|KÈM))\s+"
+    r"(?=(?:MINOR|MAJOR)\s+REVISION|SỬA (?:NHỎ|LỚN))"
+)
+_RECOMMENDATION_KEY_RE = re.compile(r"KHUYẾN NGHỊ|RECOMMENDATION", re.IGNORECASE)
+# Dòng kết luận của mẫu còn để nguyên cả hai lựa chọn.
+_UNCHOSEN_CONCLUSION_RE = re.compile(r"sẵn sàng nộp\s*/\s*cần sửa thêm", re.IGNORECASE)
+# Ngoặc mẫu của khuôn binh-duyet.md (so không phân biệt hoa/thường; MAU_CHUNG chỉ nhận «[tên…]» chữ thường).
+_REVIEW_TEMPLATE_LITERALS = (
+    "[Tên bài]",
+    "[Tên thiết kế]",
+    "[Ngày]",
+    "[CONSORT/STROBE/...]",
+    "[Người phản biện tự điền",
+)
+# Trích dẫn nguyên văn từ bản thảo (người phản biện chỉ ra «N = ___» còn sót) KHÔNG phải ô trống của bản nhận xét.
+_QUOTED_SPAN_RE = re.compile(r"`[^`\n]*`|«[^»\n]*»|“[^”\n]*”|\"[^\"\n]*\"")
+_CHECKBOX_CHAR_RE = re.compile(r"[☐☑☒]|\[[ xX]\]")
+_TABLE_SEPARATOR_RE = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?\s*$")
+
 # "Vệt công cụ nội bộ" — doctrine binh-duyet.md §Lăng kính 3 mục 8 xếp mức CHẶN:
 # còn sót bất kỳ mục nào = KHÔNG sẵn sàng nộp, không phải góp ý nhỏ.
 _INTERNAL_TRACE_PATTERNS: Sequence[tuple[str, Any]] = (
@@ -128,7 +167,14 @@ _INTERNAL_TRACE_PATTERNS: Sequence[tuple[str, Any]] = (
     ("nhắc 'checklist nội bộ'", re.compile(r"checklist\s+nội\s+bộ", re.IGNORECASE)),
     (
         "hướng dẫn biên tập còn sót",
-        re.compile(r"(cần chủ nhiệm bổ sung|điền vào đây|TODO|FIXME|XXX)", re.IGNORECASE),
+        # SỬA 03/10/2026 (báo nhầm ĐÃ CHỨNG MINH ở lượt đo cùng ngày): TODO/FIXME/XXX trước đây khớp như chuỗi
+        # con không ranh giới ⇒ tên tác giả «Todorov» trong TLTK, chữ «Todos», mặt nạ «0xxx-xxx» CHẶN oan và
+        # không sửa được. Nay chỉ khớp khi đứng thành TOKEN (không dính chữ/số/gạch nối hai bên) — «TODO»,
+        # «TODO:», «[TODO]», «XXX», «FIXME» vẫn bắt như cũ.
+        re.compile(
+            r"(cần chủ nhiệm bổ sung|điền vào đây|(?<![A-Za-z0-9-])(?:TODO|FIXME|XXX)(?![A-Za-z0-9-]))",
+            re.IGNORECASE,
+        ),
     ),
     (
         "lựa chọn (A) hay (B) còn bỏ ngỏ",
@@ -139,6 +185,50 @@ _INTERNAL_TRACE_PATTERNS: Sequence[tuple[str, Any]] = (
         re.compile(r"(run_g\d+_auto\.py|G\d_checkpoint\.json|study_meta\.json|approval_ledger)", re.IGNORECASE),
     ),
 )
+
+# ── Ô CÒN TRỐNG / Ô MẪU trong phần bản thảo GỬI tạp chí (thêm 03/10/2026, bộ dò chung placeholder_contract) ──
+# Lượt đo thật cùng ngày: bản thảo do run_g7_auto.generate_manuscript sinh, điền hết nhãn [CẦN…] bằng chữ rồi bỏ
+# dòng «agent» ⇒ G8-AUTO-04 PASS dù còn «N = ___», «[Ước lượng hiệu quả]», «CẦN KẾT QUẢ THẬT» trong tiêu đề mục,
+# banner nháp; mẫu nhãn cũ «\[CẦN[^\]]{0,80}\]» còn bỏ sót 10 nhãn dài >80 ký tự, «[CAN]», «[Cần …]». Lớp này
+# BỔ SUNG cho _INTERNAL_TRACE_PATTERNS (không thay):
+#   • họ NHAN (mọi [CẦN…] mọi hoa/thường, không giới hạn độ dài; [CAN …] chữ hoa; [TODO]/[TBD]/[TO BE COMPLETED];
+#     <…điền…>…) + MAU_CHUNG («[đơn vị]», «thuốc/can thiệp X», «[… — điền]»…);
+#   • họ TRONG («___», «……») chỉ trên dòng NGOÀI bảng và không tính dòng chỉ toàn gạch dưới (đường kẻ Markdown);
+#   • ô mẫu RIÊNG của khuôn G7 không mang nhãn (danh sách dưới, đo trên bản thảo sinh thật).
+# KHÔNG dùng «ngoặc vuông chung» trần: bản thảo thật có trích dẫn số «[1]», «[10]», nhãn «[V1]» (bài giao thức C1a).
+# KHÔNG kế thừa \bagent\b hay TODO/XXX vào bộ dò chung — hai mẫu đó là luật RIÊNG của G8 ở trên.
+_MANUSCRIPT_FAMILIES = (PC.NHAN, PC.MAU_CHUNG)
+# Chuỗi con nguyên văn (so không phân biệt hoa/thường) của khuôn run_g7_auto.py — chỉ xuất hiện khi CHƯA soạn xong.
+_G7_TEMPLATE_LITERALS = (
+    "[Ước lượng hiệu quả]",
+    "[kết cục chính]",
+    "[cơ sở/quần thể]",
+    "[thời gian]",
+    "[loại thiết kế]",
+    "[kết quả thật]",
+    "[Năm]",
+    "Gợi ý cấu trúc:",
+    "BẢN NHÁP TỰ ĐỘNG",
+    "IMRAD SKELETON",
+    "(Bắt đầu bằng:",
+    "chỉ điền sau khi có kết quả thật",
+    "sinh từ kết quả thật",
+    "BẢNG ƯỚC TÍNH SỐ TỪ",
+    "Kiểm chứng bắt buộc trước khi nộp",
+    "(Không liệt kê AI là tác giả",
+    "PMID seed",
+)
+# Mẫu riêng của khuôn G7 cần biểu thức. «KẾT QUẢ THẬT» CỐ Ý phân biệt hoa/thường: khuôn luôn in CHỮ HOA («CẦN/CHỜ/
+# yêu cầu KẾT QUẢ THẬT»), còn văn xuôi «kết quả thật sự…» là hợp lệ.
+_G7_TEMPLATE_PATTERNS: Sequence[tuple[str, Any]] = (
+    ("cụm «KẾT QUẢ THẬT» của khuôn G7", re.compile(r"KẾT QUẢ THẬT")),
+    ("chú thích khuôn trong tiêu đề mục", re.compile(r"\*\((?:ước tính:[^)\n]*|điền thủ công)\)\*", re.IGNORECASE)),
+    ("trỏ tệp bảng nội bộ của G6", re.compile(r"\(Xem file Table\d*\.docx", re.IGNORECASE)),
+)
+# Đường kẻ ngang Markdown («---», «***», «___» đứng riêng một dòng) — không phải ô trống.
+_HR_LINE_RE = re.compile(r"^\s{0,3}(?:-{3,}|\*{3,}|_{3,})\s*$")
+# Mốc phụ lục kiểm tra NỘI BỘ ở cuối bản thảo (không gửi tạp chí) — dùng chung cho _body_without_labels_section.
+_INTERNAL_APPENDIX_MARKERS = ("## PHỤ LỤC", "## APPENDIX", "<!-- INTERNAL", "## CHECKLIST NỘI BỘ")
 
 # ICMJE bản Updated January 2026 — Mục V (AI) là phần cấp 1 quan trọng cho khai báo AI.
 # SỬA 2026-07-31 (audit tích hợp plugin, phát hiện qua rà lại các "chưa sửa" cũ trong CLAUDE.md):
@@ -282,6 +372,11 @@ def _g8_meta(meta: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 def _present(value: Any) -> bool:
+    """Giá trị gate_params.G8 có nội dung thật không.
+
+    Giữ NGUYÊN chốt cũ (rỗng/None; «[CẦN»/«[CAN» so trên chữ HOA — tức không phân biệt hoa/thường) rồi AND thêm
+    vị từ chung ``placeholder_contract.co_noi_dung_that`` (03/10/2026): «___», «TBD» trong ngoặc, «[đơn vị]», ký hiệu
+    đứng một mình «?»/«-»/«xxx»… trước đây được coi là đã điền (lượt đo: _present('___') == True)."""
     if value is None:
         return False
     if isinstance(value, bool):
@@ -290,8 +385,10 @@ def _present(value: Any) -> bool:
         text = value.strip()
         if not text:
             return False
-        return "[CẦN" not in text.upper() and "[CAN" not in text.upper()
-    return bool(value)
+        if "[CẦN" in text.upper() or "[CAN" in text.upper():
+            return False
+        return PC.co_noi_dung_that(text)
+    return bool(value) and PC.co_noi_dung_that(value)
 
 
 def _body_without_labels_section(manuscript: str) -> str:
@@ -300,11 +397,84 @@ def _body_without_labels_section(manuscript: str) -> str:
     Quét vệt công cụ nội bộ chỉ có nghĩa trên phần sẽ gửi tạp chí; nếu bản thảo có
     mục phụ lục kiểm tra nội bộ thì phần đó không phải "sót".
     """
-    for marker in ("## PHỤ LỤC", "## APPENDIX", "<!-- INTERNAL", "## CHECKLIST NỘI BỘ"):
+    for marker in _INTERNAL_APPENDIX_MARKERS:
         idx = manuscript.find(marker)
         if idx > 0:
             return manuscript[:idx]
     return manuscript
+
+
+def _cut_at_internal_appendix(text: str) -> str:
+    """Cắt tại mốc phụ lục nội bộ SỚM NHẤT (kể cả ở vị trí 0) — dùng cho phần đuôi sau phụ lục."""
+    hits = [i for i in (text.find(m) for m in _INTERNAL_APPENDIX_MARKERS) if i >= 0]
+    return text[:min(hits)] if hits else text
+
+
+def _manuscript_scan_regions(manuscript: str) -> list[str]:
+    """Các đoạn bản thảo SẼ GỬI tạp chí cần quét.
+
+    (1) Thân bài như quy ước cũ (bỏ phụ lục kiểm tra nội bộ — test khoá). (2) THÊM 03/10/2026 (khoảng hở thấp của
+    lượt đo): phần ĐUÔI sau đường kẻ ngang cuối cùng nằm SAU phụ lục — khuôn G7 luôn nối «---» rồi banner
+    «[BẢN NHÁP TỰ ĐỘNG — DRAFT G7] …» ở đó, trước đây bị cắt bỏ cùng phụ lục. Đuôi lại bắt đầu bằng phụ lục khác thì
+    vẫn bỏ phần phụ lục đó."""
+    body = _body_without_labels_section(manuscript)
+    regions = [body]
+    rest = manuscript[len(body):]
+    if rest:
+        offset, last_hr_end = 0, None
+        for line in rest.splitlines(keepends=True):
+            offset += len(line)
+            if _HR_LINE_RE.match(line.rstrip("\r\n")):
+                last_hr_end = offset
+        if last_hr_end is not None:
+            regions.append(_cut_at_internal_appendix(rest[last_hr_end:]))
+    return regions
+
+
+def _nfc(text: Any) -> str:
+    return unicodedata.normalize("NFC", str(text or ""))
+
+
+def _excerpt(line: str, needle: str, width: int = 32) -> str:
+    """Trích ngắn quanh chỗ khớp để làm bằng chứng (không in cả dòng dài)."""
+    idx = line.find(needle) if needle else -1
+    if idx < 0:
+        return line[: 2 * width]
+    start, end = max(0, idx - width), min(len(line), idx + len(needle) + width)
+    return ("…" if start else "") + line[start:end] + ("…" if end < len(line) else "")
+
+
+def manuscript_residues(manuscript: str) -> list[str]:
+    """Ô còn trống / ô mẫu chưa điền trong phần bản thảo gửi tạp chí — mỗi DÒNG một bằng chứng «…trích…».
+
+    Dùng cho G8-AUTO-04 (CHẶN). G9-AUTO-05 CHƯA nối (04/10/2026 — phần G9 của lượt tích hợp chưa làm); khi nối, gọi
+    chính hàm này để hai cổng nói MỘT chuyện."""
+    found: list[str] = []
+    seen: set[str] = set()
+
+    def _add(line: str, needle: str) -> None:
+        compact = re.sub(r"\s+", " ", line.strip())
+        if compact in seen:
+            return
+        seen.add(compact)
+        compact_needle = re.sub(r"\s+", " ", needle.strip())
+        found.append("«" + _excerpt(compact, compact_needle) + "»")
+
+    for region in _manuscript_scan_regions(_nfc(manuscript)):
+        for hit in PC.tim(region, _MANUSCRIPT_FAMILIES, them=_G7_TEMPLATE_LITERALS):
+            _add(hit.dong, hit.khop)
+        for line in region.splitlines():
+            if not line.strip():
+                continue
+            for _label, pattern in _G7_TEMPLATE_PATTERNS:
+                match = pattern.search(line)
+                if match:
+                    _add(line, match.group(0))
+            if line.lstrip().startswith("|") or _HR_LINE_RE.match(line):
+                continue
+            for hit in PC.tim(line, (PC.TRONG,)):
+                _add(line, hit.khop)
+    return found
 
 
 def ledger_records(study: str, repo_root: Path) -> list[dict[str, Any]]:
@@ -350,8 +520,12 @@ def _reviewer_ref(record: Optional[Mapping[str, Any]]) -> str:
 
 
 def scan_internal_traces(manuscript: str) -> list[str]:
-    """Tìm vệt công cụ nội bộ còn sót trong bản thảo (doctrine xếp mức CHẶN)."""
-    body = _body_without_labels_section(manuscript)
+    """Tìm vệt công cụ nội bộ còn sót trong bản thảo (doctrine xếp mức CHẶN).
+
+    Ô trống/ô mẫu chưa điền do ``manuscript_residues`` đảm nhận (bộ dò chung); hàm này giữ đúng các luật riêng
+    của doctrine binh-duyet.md (Lăng kính 3, mục 8). Từ 03/10/2026 quét cả phần đuôi sau phụ lục (xem
+    ``_manuscript_scan_regions``)."""
+    body = "\n".join(_manuscript_scan_regions(manuscript))
     found: list[str] = []
     for label, pattern in _INTERNAL_TRACE_PATTERNS:
         match = pattern.search(body)
@@ -515,8 +689,105 @@ def data_sharing_issues(design_code: str, g8: Mapping[str, Any]) -> tuple[str, l
     return ("REVIEW" if problems else "PASS"), problems
 
 
+def _recommendation_segments(report_text: str) -> list[str]:
+    """Các đoạn thuộc mục KHUYẾN NGHỊ: phần sau từ khoá trên chính dòng đó + các dòng kế tiếp tới tiêu đề/đường
+    kẻ/khung «═══» kế tiếp (tối đa 15 dòng)."""
+    lines = _nfc(report_text).splitlines()
+    segments: list[str] = []
+    for idx, line in enumerate(lines):
+        match = _RECOMMENDATION_KEY_RE.search(line)
+        if not match:
+            continue
+        segments.append(line[match.end():])
+        for nxt in lines[idx + 1: idx + 16]:
+            if (nxt.lstrip().startswith("#") or "═══" in nxt or _HR_LINE_RE.match(nxt)
+                    or _RECOMMENDATION_KEY_RE.search(nxt)):
+                break
+            segments.append(nxt)
+    return segments
+
+
+def _recommendation_choice_problem(report_text: str) -> Optional[str]:
+    """Khuyến nghị đã được CHỌN chưa — None nếu đã chọn hoặc không phán được (để chốt cấu trúc cũ lo).
+
+    Chỉ báo khi THẤY bằng chứng chưa chọn: dòng còn liệt kê ≥2 mức với ô ☐ mà không tích mức nào, hoặc tích
+    nhiều hơn một mức. Một mức đứng riêng («SỬA NHỎ», «Khuyến nghị: Major revision (sửa lớn)») là đã chọn."""
+    ticked: set[str] = set()
+    option_list = False
+    for segment in _recommendation_segments(report_text):
+        upper = _ACCEPT_WITH_RE.sub("", segment.upper())
+        seg_ticked = {k for k, r in _LEVEL_TICKED_RE.items() if r.search(upper)}
+        seg_boxed = {k for k, r in _LEVEL_BOXED_RE.items() if r.search(upper)}
+        ticked |= seg_ticked
+        if len(seg_boxed) >= 2 and not seg_ticked:
+            option_list = True
+    if len(ticked) == 1:
+        return None
+    if len(ticked) > 1:
+        return f"KHUYẾN NGHỊ tích nhiều hơn một mức ({', '.join(sorted(ticked))}) — chỉ được chọn MỘT"
+    if option_list:
+        return (
+            "KHUYẾN NGHỊ chưa được CHỌN — dòng mẫu còn liệt kê các mức ☐ chưa tích (tích ☑ đúng một mức hoặc "
+            "xoá các mức không chọn)"
+        )
+    return None
+
+
+def _empty_template_tables(text: str) -> list[str]:
+    """Bảng mà MỌI hàng dữ liệu chỉ còn số thứ tự (vd «| 1 | | | | |» của mẫu binh-duyet.md)."""
+    found: list[str] = []
+    block: list[str] = []
+    for line in text.splitlines() + [""]:
+        if line.lstrip().startswith("|"):
+            block.append(line)
+            continue
+        if block:
+            rows = [r for r in block[1:] if not _TABLE_SEPARATOR_RE.match(r)]
+            if rows and all(_table_row_is_empty(r) for r in rows):
+                found.append(f"bảng chỉ có hàng trống: «{block[0].strip()[:80]}»")
+            block = []
+    return found
+
+
+def _table_row_is_empty(row: str) -> bool:
+    cells = [c.strip() for c in row.strip().strip("|").split("|")]
+    if cells and re.fullmatch(r"#?\d*\.?", cells[0]):
+        cells = cells[1:]
+    return all(not c for c in cells)
+
+
+def review_template_residues(report_text: str) -> list[str]:
+    """Ô mẫu còn sót trong bản nhận xét phản biện (khuôn binh-duyet.md) — bằng chứng «…trích…».
+
+    Bỏ qua phần TRÍCH NGUYÊN VĂN (`…`, «…», “…”, "…") vì người phản biện có thể dẫn đúng ô trống của bản thảo.
+    «___» trên dòng có ô tích (☐/☑) là ô điều kiện hợp lệ («☐ Có (ghi rõ): ___» khi chọn «Không có»)."""
+    clean = _QUOTED_SPAN_RE.sub("", _nfc(report_text))
+    found: list[str] = []
+    seen: set[str] = set()
+
+    def _add(line: str, needle: str) -> None:
+        compact = re.sub(r"\s+", " ", line.strip())
+        if compact not in seen:
+            seen.add(compact)
+            found.append("«" + _excerpt(compact, needle) + "»")
+
+    for hit in PC.tim(clean, _MANUSCRIPT_FAMILIES, them=_REVIEW_TEMPLATE_LITERALS):
+        _add(hit.dong, hit.khop)
+    for line in clean.splitlines():
+        if (not line.strip() or _CHECKBOX_CHAR_RE.search(line) or _HR_LINE_RE.match(line)
+                or line.lstrip().startswith("|")):
+            continue
+        for hit in PC.tim(line, (PC.TRONG,)):
+            _add(line, hit.khop)
+    found.extend(_empty_template_tables(clean))
+    return found
+
+
 def review_report_issues(report_text: str) -> list[str]:
-    """Bản nhận xét phản biện có đủ cấu trúc mẫu của doctrine binh-duyet.md không."""
+    """Bản nhận xét phản biện có đủ cấu trúc mẫu của doctrine binh-duyet.md không.
+
+    Từ 03/10/2026 thêm: khuyến nghị phải được CHỌN, kết luận không còn hai lựa chọn, không còn ô mẫu (xem
+    ``review_template_residues``) — bản chép nguyên mẫu trống không còn được tính là nhận xét thật."""
     if not report_text.strip():
         return ["chưa có bản nhận xét phản biện"]
     problems: list[str] = []
@@ -526,6 +797,17 @@ def review_report_issues(report_text: str) -> list[str]:
             problems.append(f"thiếu mục '{label}'")
     if not any(rec.upper() in upper for rec in _REVIEW_RECOMMENDATIONS):
         problems.append("thiếu KHUYẾN NGHỊ rõ mức (chấp nhận / sửa nhỏ / sửa lớn / từ chối)")
+    else:
+        choice_problem = _recommendation_choice_problem(report_text)
+        if choice_problem:
+            problems.append(choice_problem)
+    if _UNCHOSEN_CONCLUSION_RE.search(_nfc(report_text)):
+        problems.append("KẾT LUẬN TỔNG THỂ còn để cả hai lựa chọn «sẵn sàng nộp / cần sửa thêm» — chọn một")
+    residues = review_template_residues(report_text)
+    if residues:
+        problems.append(
+            f"bản nhận xét còn ô mẫu chưa điền ({len(residues)} chỗ): " + "; ".join(residues[:4])
+        )
     return problems
 
 
@@ -638,14 +920,25 @@ def evaluate_g8_quality(
         "Chạy agent kiem-chung-trich-dan và tools/check_citation_retraction.py cho tới khi sạch.",
     ))
 
-    # ── G8-AUTO-04 — vệt công cụ nội bộ trong bản thảo ─────────────────────
+    # ── G8-AUTO-04 — vệt công cụ nội bộ + ô còn trống trong bản thảo ───────
+    # THÊM 03/10/2026: ô trống/ô mẫu chưa điền (bộ dò chung placeholder_contract + ô mẫu riêng khuôn G7) cũng
+    # CHẶN — trước đó bản thảo thật đã điền hết nhãn [CẦN…] nhưng còn «N = ___», «[Ước lượng hiệu quả]» vẫn PASS.
     traces = scan_internal_traces(manuscript_text) if manuscript_text else []
+    residues = manuscript_residues(manuscript_text) if manuscript_text else []
+    trace_evidence = list(traces)
+    if residues:
+        more = f" (+{len(residues) - 6} dòng khác)" if len(residues) > 6 else ""
+        trace_evidence.append(
+            f"ô trống/ô mẫu chưa điền ({len(residues)} dòng): " + "; ".join(residues[:6]) + more
+        )
     automatic.append(_criterion(
         "G8-AUTO-04",
-        "Bản thảo không còn vệt công cụ nội bộ",
-        "BLOCK" if traces else "PASS",
-        "; ".join(traces) if traces else "không thấy nhãn [CẦN], tên file pipeline hay hướng dẫn biên tập sót lại",
-        "Xóa mọi vệt nội bộ khỏi thân bài — doctrine xếp đây là lỗi CHẶN, không phải góp ý nhỏ.",
+        "Bản thảo không còn vệt công cụ nội bộ hay ô mẫu chưa điền",
+        "BLOCK" if trace_evidence else "PASS",
+        "; ".join(trace_evidence) if trace_evidence else (
+            "không thấy nhãn [CẦN], ô trống/ô mẫu khuôn G7, tên file pipeline hay hướng dẫn biên tập sót lại"
+        ),
+        "Xóa mọi vệt nội bộ và điền mọi ô mẫu trong thân bài — doctrine xếp đây là lỗi CHẶN, không phải góp ý nhỏ.",
     ))
 
     # ── G8-AUTO-05 — báo cáo kết quả chọn lọc ──────────────────────────────
