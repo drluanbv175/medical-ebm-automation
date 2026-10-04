@@ -987,7 +987,7 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 17. Green SB. How Many Subjects Does It Take To Do A Regression Analysis. Multivariate Behav Res. 1991;26(3):499-510. doi:10.1207/s15327906mbr2603_7. PMID: 26776715.
 18. Polit DF, Beck CT, Owen SV. Is the CVI an acceptable indicator of content validity? Appraisal and recommendations. Res Nurs Health. 2007;30(4):459-67. doi:10.1002/nur.20199. PMID: 17654487.
 19. Mokkink LB, Terwee CB, Patrick DL, et al. The COSMIN study reached international consensus on taxonomy, terminology, and definitions of measurement properties for health-related patient-reported outcomes. J Clin Epidemiol. 2010;63(7):737-45. doi:10.1016/j.jclinepi.2010.02.006. PMID: 20494804.
-20. Terwee CB, Bot SD, de Boer MR, et al. Quality criteria were proposed for measurement properties of health status questionnaires. J Clin Epidemiol. 2006;60(1):34-42. doi:10.1016/j.jclinepi.2006.03.012. PMID: 17161752.
+20. Terwee CB, Bot SD, de Boer MR, et al. Quality criteria were proposed for measurement properties of health status questionnaires. J Clin Epidemiol. 2007;60(1):34-42. doi:10.1016/j.jclinepi.2006.03.012. PMID: 17161752.
 21. Badejo MA, Ramtin S, Rossano A, et al. Does Adjusting for Social Desirability Reduce Ceiling Effects and Increase Variation of Patient-Reported Experience Measures?. J Patient Exp. 2022;9:23743735221079144. doi:10.1177/23743735221079144. PMID: 35155757.
 22. Bender R, Grouven U. Ordinal logistic regression in medical research. J R Coll Physicians Lond. 1997;31(5):546-51. PMID: 9429194.
 23. Heinze G, Schemper M. A solution to the problem of separation in logistic regression. Stat Med. 2002;21(16):2409-19. doi:10.1002/sim.1047. PMID: 12210625.
@@ -1027,7 +1027,7 @@ Bảng dự trù dưới đây liệt kê các nhóm chi; toàn bộ đơn giá 
 ## A.2. Mục tiêu 1 (mô tả)
 - Trình bày cả trung bình ± SD và trung vị [IQR] của điểm hài lòng; kiểm tra phân bố phần dư bằng trực quan (histogram, Q-Q plot) + độ lệch/độ nhọn chỉ nhằm đánh giá độ phù hợp mô tả, không dùng để đổi outcome chính; Shapiro–Wilk chỉ tham khảo.
 - Tỷ lệ hài lòng chung và theo lĩnh vực (ngưỡng cố định ≥ 4/5) kèm KTC 95% Wilson score.
-- Báo % đạt điểm sàn/trần mỗi lĩnh vực; nếu > 15% (ngưỡng Terwee[19]) → ghi là hạn chế đo lường, ưu tiên trung vị [IQR] + phân tích nhạy cảm.
+- Báo % đạt điểm sàn/trần mỗi lĩnh vực; nếu > 15% (ngưỡng Terwee[20]) → ghi là hạn chế đo lường, ưu tiên trung vị [IQR] + phân tích nhạy cảm.
 - Đặc tính đo lường trong mẫu: Cronbach's α theo lĩnh vực cho A, B, C, D (≥ 3 mục); lĩnh vực E (2 mục) báo α kèm cảnh báo khoảng tin cậy rộng; lĩnh vực F (1 mục) không tính α (chỉ số đơn mục). Phân tích nhân tố khám phá (EFA) trên 29 mục A–E (loại F1, chỉ số đơn mục, không đưa vào EFA): ma trận tương quan polychoric, số nhân tố xác định bằng parallel analysis, xoay xiên (oblique); EFA là bằng chứng bổ sung cho pha phát triển công cụ, không tự thân chứng minh công cụ "đã chuẩn hóa" (mục 4.5.3).
 
 ## A.3. Mục tiêu 2 (phân tích)
