@@ -21,6 +21,7 @@ import re
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import unicodedata
 from datetime import date
 from pathlib import Path
 from typing import Any, Mapping, Optional
@@ -28,6 +29,7 @@ from typing import Any, Mapping, Optional
 import annex2_quality_gate as A2X
 import gate_contract as GC
 import pipeline_freshness as PF
+import placeholder_contract as PC
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -199,13 +201,31 @@ def _gate_meta(meta: Optional[Mapping[str, Any]], gate: str) -> Mapping[str, Any
     return value if isinstance(value, Mapping) else {}
 
 
+# Vị từ GIÁ TRỊ TRƯỜNG của _real_text (WHO TRDS 13/14/19/20, vá 03/10/2026). Bộ cũ chỉ nhận
+# «[CẦN|[CAN|[TBD|[TODO|[PENDING» nên «[TO BE COMPLETED]», «___», «……», «[đơn vị]», «<CẦN…>», «CHƯA XÁC NHẬN»,
+# «[XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG]» ghim ở G0/G1 lọt thành «nội dung thật» (đo 03/10/2026) ⇒ nay AND thêm vị từ
+# chung placeholder_contract.co_noi_dung_that (mọi họ). Bốn dấu hiệu cũ giữ NGUYÊN ngữ nghĩa (chuỗi con, không phân
+# biệt hoa thường, không đòi ranh giới từ) qua them=.
+_REAL_TEXT_DAU_HIEU_CU = ("[CẦN", "[TBD", "[TODO", "[PENDING")
+# «[CAN» cũ (IGNORECASE, không ranh giới) báo nhầm tiêu chí thật «[Can thiệp giáo dục]», «[cancer cohort]»,
+# «[Canxi máu]» (báo nhầm ĐÃ ĐO trong lượt kiểm 03/10/2026) — chỉ bỏ đúng hai dạng đó: «can» nối tiếp chữ cái
+# và «can thiệp/thiep».
+# Bản CHỮ HOA có ranh giới («[CAN BO SUNG]», «[CAN]») vẫn bị họ NHAN của hợp đồng bắt; bản thường như «[can bo sung]»,
+# «[can]» vẫn bị luật này bắt.
+_CAN_KHONG_DAU_RE = re.compile(r"\[\s*can(?![^\W\d_])(?!\s+thi[eệ]p)", re.IGNORECASE)
+
+
 def _real_text(value: Any) -> Optional[str]:
     # Dict/list KHÔNG phải văn bản (vá 27/09/2026): str() của chúng là chuỗi repr Python — từng lọt vào mục #19 WHO TRDS
     # dưới dạng "{'name': ..., 'measure': ...}" mà G2-AUTO-08 vẫn PASS vì chuỗi đó «không trống».
     if isinstance(value, (Mapping, list, tuple, set)):
         return None
     text = str(value or "").strip()
-    if not text or re.search(r"\[(?:CẦN|CAN|TBD|TODO|PENDING)", text, re.IGNORECASE):
+    if (
+        not text
+        or _CAN_KHONG_DAU_RE.search(text)
+        or not PC.co_noi_dung_that(text, them=_REAL_TEXT_DAU_HIEU_CU)
+    ):
         return None
     return text
 
@@ -551,22 +571,226 @@ _O_MAU_CHUNG_RE = re.compile(
     re.IGNORECASE,
 )
 
+# ── Bộ dò ô còn trống của G2 trên hợp đồng chung tools/placeholder_contract.py (03/10/2026) ─────────────────────────
+# Lượt kiểm 03/10/2026 (chạy thật trên hồ sơ sinh từ khuôn + hồ sơ C1a) thấy READY_FOR_IRB_SUBMISSION vẫn đạt khi còn:
+# «[TÊN ĐƠN VỊ — CẦN BỔ SUNG]» (CẦN không đứng ngay sau «[»), «Thời gian lưu: ___ năm», «trong ___ tháng»,
+# «SỐ BẢN NỘP: ___», «[sẽ/sẽ không]», «XÓA mục này», lời dặn soạn thảo ICF 6c, ô PROSPERO «[topic in English]…»,
+# thẻ biên tập «[BÁC SĨ ĐIỀN …]»/«[BÁC SĨ RÀ]»; và luật PII bỏ qua NGUYÊN DÒNG che luôn ô không-PII cùng dòng.
+# Nguyên tắc: KHÔNG BAO GIỜ yếu hơn bộ dò cũ — «[CẦN» (so trên line.upper()) và _O_MAU_CHUNG_RE vẫn chạy y nguyên trên
+# MỌI dòng; các họ mới chỉ CỘNG thêm.
+_CAN_CU_RE = re.compile(re.escape("[CẦN"), re.IGNORECASE)
+# Họ của hợp đồng chung bật cho tài liệu G2: nhãn + ô mẫu chung (mặc định quét tài liệu), cộng họ TRONG («___», «……»)
+# SAU KHI che chỗ ký/ngày điền tay. KHÔNG bật NHAP: «[BẢN NHÁP TỰ ĐỘNG — DRAFT …]» là nhãn BẮT BUỘC của khuôn sinh
+# (guardrail R4 đòi ≥ 5 «DRAFT»); KHÔNG bật THU_CONG (nhãn của G10).
+_HO_TAI_LIEU_G2 = (PC.NHAN, PC.MAU_CHUNG)
+# Chuỗi riêng của khuôn sinh run_g2_auto.py mà hợp đồng chung không có (chuỗi con, không phân biệt hoa thường):
+# ô phụ lục PROSPERO (sr_ma) và lời dặn người soạn in thẳng vào mục 6c của ICF mọi thiết kế.
+_THEM_G2 = (
+    "[topic in English]",
+    "[RCT / Observational",
+    "[RoB 2 / ROBINS-I",
+    "[sẽ bổ sung sau]",
+    "mục này có thể rút gọn",
+    "không được bỏ hẳn",
+)
+# Nhãn CẦN KHÔNG đứng ngay sau «[»: «[TÊN ĐƠN VỊ — CẦN BỔ SUNG]» (mặc định khi thiếu irb_name), «[Phiên bản phê duyệt
+# sẽ có số IRB, CẦN BỔ SUNG]» (clean_generated_prose đã đổi «—» thành «,»). «CẦN» phải VIẾT HOA cả từ, hoặc «cần» đứng
+# ngay sau dấu ngăn — câu chữ thường hợp lệ như «[Mỗi đồng tác giả cần khai báo COI…]» KHÔNG khớp. Bỏ qua ngoặc mở đầu
+# bằng «CẦN» (đã có dấu hiệu cũ/họ NHAN) để không đếm hai lần.
+_CAN_GIUA_NGOAC_RE = re.compile(
+    r"\[(?!\s*(?i:cần))[^\[\]\n]*?(?:\bCẦN\b|(?i:[—–,;:]\s*cần\b))[^\[\]\n]*(?:\]|$)"
+)
+# Ô trống HỢP LỆ điền tay khi ký/nộp (không phải nội dung khoa học): ngày «___/___/2026», «___/___/____»; chỗ ký/họ
+# tên ngay sau nhãn ký; dòng gạch dưới mở đầu bằng «Ký, ghi rõ họ tên». Chúng được CHE trước khi dò họ TRONG.
+_NGAY_TRONG_RE = re.compile(r"_{2,}\s*/\s*_{2,}\s*/\s*(?:\d{2,4}|_{2,})")
+_NHAN_KY_RE = re.compile(
+    r"\b(?:họ(?: và)? tên|ký tên|chữ ký|participant|witness|investigator|signature)\b[^:\n]{0,40}:\s*(_{3,})",
+    re.IGNORECASE,
+)
+_DONG_KY_RE = re.compile(r"^\s*(_{3,})(?=\s*(?:ký|chữ ký|signature)\b)", re.IGNORECASE)
+# Khối HƯỚNG DẪN tĩnh cuối hồ sơ (không thuộc tài liệu nộp): «[CHỜ BÁC SĨ]» ở đó là danh sách sự kiện sau khi nộp —
+# chỉ dấu hiệu CŨ được dò trong khối này (như trước), họ mới thì không.
+_TIEU_DE_RE = re.compile(r"^\s{0,3}#{1,6}\s")
+_KHOI_HUONG_DAN_RE = re.compile(
+    r"^\s{0,3}#{1,6}\s*(?:CƠ CHẾ MỞ KH(?:ÓA|OÁ) G2|YÊU CẦU ÁP DỤNG KHI QUA CỔNG G2)", re.IGNORECASE
+)
+# Ô CHỈ ĐIỀN ĐƯỢC SAU khi nộp/phê duyệt/đăng ký: không thể có trước khi nộp IRB ⇒ chỉ là THÔNG TIN ở mốc
+# READY_FOR_IRB_SUBMISSION, nhưng vẫn BẮT BUỘC ở mốc PASS_G2_APPROVED (approve_gate từ chối ký khi còn — đường
+# attestation). Danh sách hẹp theo đúng câu chữ khuôn sinh (WHO TRDS mục 1/2/3/16/21/22/23, số IRB trên ICF, liên kết
+# protocol PROSPERO) — so trên NỘI DUNG Ô, không trên cả dòng, để ô trước-nộp cùng dòng không bị nới nhầm.
+_SAU_PHE_DUYET = (
+    # (biểu thức trên NHÃN đứng trước ô — None nếu không cần, biểu thức trên chính Ô)
+    (re.compile(r"phê duyệt|IRB", re.IGNORECASE), re.compile(r"\bsau khi nhận\b", re.IGNORECASE)),
+    (
+        None,
+        re.compile(
+            r"sau quyết định IRB|sẽ có sau khi đăng ký|ngày đăng ký thành công|chỉ tuyển sau phê duyệt"
+            r"|ngày hoàn tất dự kiến|cập nhật sau nghiên cứu|sẽ có số IRB|^\[\s*sẽ bổ sung sau\s*\]$",
+            re.IGNORECASE,
+        ),
+    ),
+)
+# Dòng chân bản nháp WHO TRDS «DRAFT — Điền trường còn [CẦN] trước khi gửi đăng ký.» là CHỈ DẪN (chuỗi «[CẦN]» theo
+# nghĩa đen), xếp cùng nhóm sau phê duyệt: không chặn nộp IRB, vẫn phải sửa trước khi khoá G2.
+_CHAN_TRANG_DANG_KY_RE = re.compile(r"Điền trường còn \[CẦN\] trước khi gửi đăng ký", re.IGNORECASE)
+
+
+def _che_o_ky_hop_le(dong: str) -> str:
+    """Thay chỗ ký/ngày điền tay bằng khoảng trắng CÙNG ĐỘ DÀI (giữ nguyên vị trí các khớp khác)."""
+    ky_tu = list(dong)
+
+    def _che(dau: int, cuoi: int) -> None:
+        for i in range(dau, cuoi):
+            ky_tu[i] = " "
+
+    for m in _NGAY_TRONG_RE.finditer(dong):
+        _che(m.start(), m.end())
+    for m in _NHAN_KY_RE.finditer(dong):
+        _che(m.start(1), m.end(1))
+    m = _DONG_KY_RE.match(dong)
+    if m:
+        _che(m.start(1), m.end(1))
+    return "".join(ky_tu)
+
+
+def _khop_tren_dong(tho: str, dong: str, *, quet_ho_moi: bool) -> list[tuple[int, int, bool]]:
+    """Mọi khớp ô trống trên MỘT dòng: (đầu, cuối, là_dấu_hiệu_cũ). `tho` = dòng gốc, `dong` = dòng đã NFC."""
+    khop: list[tuple[int, int, bool]] = []
+    khop.extend((m.start(), m.end(), True) for m in _CAN_CU_RE.finditer(dong))
+    khop.extend((m.start(), m.end(), True) for m in _O_MAU_CHUNG_RE.finditer(dong))
+    # Lưới an toàn: bộ dò cũ (so trên dòng GỐC) thấy mà vị trí trên dòng NFC không bắt được ⇒ cả dòng là một ô cũ.
+    if not khop and ("[CẦN" in tho.upper() or _O_MAU_CHUNG_RE.search(tho)):
+        khop.append((0, len(dong), True))
+    if not quet_ho_moi:
+        return khop
+    for ho in _HO_TAI_LIEU_G2:
+        for bieu_thuc in PC.mau(ho):
+            khop.extend((m.start(), m.end(), False) for m in bieu_thuc.finditer(dong))
+    khop.extend((m.start(), m.end(), False) for m in _CAN_GIUA_NGOAC_RE.finditer(dong))
+    for chuoi in _THEM_G2:
+        khop.extend((m.start(), m.end(), False) for m in re.finditer(re.escape(chuoi), dong, re.IGNORECASE))
+    da_che = _che_o_ky_hop_le(dong)
+    for bieu_thuc in PC.mau(PC.TRONG):
+        khop.extend((m.start(), m.end(), False) for m in bieu_thuc.finditer(da_che))
+    return khop
+
+
+def _o_bao_quanh(dong: str, dau: int, cuoi: int) -> tuple[int, int]:
+    """Khoảng của Ô chứa khớp: cả cặp ngoặc vuông bao quanh (tới cuối dòng nếu ngoặc chưa đóng), hoặc chính khớp."""
+    mo = dong.rfind("[", 0, dau + 1)
+    if mo >= 0 and "]" not in dong[mo:dau]:
+        dong_ngoac = dong.find("]", max(dau, mo + 1))
+        return mo, (dong_ngoac + 1 if dong_ngoac >= 0 else len(dong))
+    return dau, cuoi
+
+
+def _la_o_pii(nhan: str, o: str) -> bool:
+    """Ô dành cho PII (điền ở bản nộp ngoài hệ thống): nhãn ngay trước ô hoặc chính ô mang từ gợi PII, hoặc ô
+    ghi «PII»."""
+    nhan_hoa, o_hoa = nhan.upper(), o.upper()
+    return any(goi_y in nhan_hoa or goi_y in o_hoa for goi_y in _PII_ONLY_HINTS) or bool(
+        re.search(r"\bPII\b", o, re.IGNORECASE)
+    )
+
+
+def _la_o_sau_phe_duyet(dong: str, nhan: str, o: str) -> bool:
+    if _CHAN_TRANG_DANG_KY_RE.search(dong) and o.strip().upper() == "[CẦN]":
+        return True
+    return any(
+        bt_o.search(o) and (bt_nhan is None or bt_nhan.search(nhan))
+        for bt_nhan, bt_o in _SAU_PHE_DUYET
+    )
+
+
+def _o_trong_cua_dong(tho: str, dong: str, *, quet_ho_moi: bool) -> list[tuple[str, str]]:
+    """Các Ô CÒN TRỐNG không được miễn trên một dòng: [(nhãn đứng trước, nội dung ô), …].
+
+    Miễn ô PII (thu hẹp 03/10/2026): trước đây một từ gợi PII ở BẤT KỲ đâu trên dòng làm bỏ qua NGUYÊN DÒNG, che luôn
+    ô không-PII cùng dòng («Nghiên cứu do [CẦN — họ tên chủ nhiệm], [CẦN — chức danh…]»). Nay chỉ ô có nhãn/nội dung
+    PII mới được miễn. Ô mang dấu hiệu CŨ chỉ được miễn khi dòng có từ gợi PII (đúng điều kiện cũ) ⇒ không bao giờ yếu
+    hơn bộ dò cũ; ô chỉ có dấu hiệu MỚI được miễn khi là ô PII (vd «[ĐIỀN TRỰC TIẾP TRÊN REGISTRY — không lưu PII…]»).
+    """
+    khop = _khop_tren_dong(tho, dong, quet_ho_moi=quet_ho_moi)
+    if not khop:
+        return []
+    o_co_cu: dict[tuple[int, int], bool] = {}
+    for dau, cuoi, cu in khop:
+        khoang = _o_bao_quanh(dong, dau, cuoi)
+        o_co_cu[khoang] = o_co_cu.get(khoang, False) or cu
+    gop: list[list[Any]] = []
+    for dau, cuoi in sorted(o_co_cu):
+        if gop and dau < gop[-1][1]:
+            gop[-1][1] = max(gop[-1][1], cuoi)
+            gop[-1][2] = gop[-1][2] or o_co_cu[(dau, cuoi)]
+        else:
+            gop.append([dau, cuoi, o_co_cu[(dau, cuoi)]])
+    dong_co_goi_y_pii = any(goi_y in tho.upper() for goi_y in _PII_ONLY_HINTS)
+    con: list[tuple[str, str]] = []
+    truoc = 0
+    for dau, cuoi, cu in gop:
+        nhan = re.split(r"[|;]", dong[truoc:dau])[-1]
+        o = dong[dau:cuoi]
+        mien = _la_o_pii(nhan, o) and (dong_co_goi_y_pii or not cu)
+        if not mien:
+            con.append((nhan, o))
+        truoc = cuoi
+    return con
+
+
+def _dong_con_o_trong(package_text: str) -> list[tuple[str, bool]]:
+    """Mọi DÒNG còn ô trống không được miễn (sau strip_attestation), theo thứ tự, không lặp:
+    [(dòng rút gọn ≤ 240 ký tự, mọi_ô_còn_lại_đều_chỉ_điền_được_sau_phê_duyệt), …]."""
+    base = strip_attestation(package_text)
+    ra: list[tuple[str, bool]] = []
+    da_co: set[str] = set()
+    trong_khoi_huong_dan = False
+    for tho in base.splitlines():
+        dong = unicodedata.normalize("NFC", tho)
+        if _TIEU_DE_RE.match(dong):
+            trong_khoi_huong_dan = bool(_KHOI_HUONG_DAN_RE.match(dong))
+        con = _o_trong_cua_dong(tho, dong, quet_ho_moi=not trong_khoi_huong_dan)
+        if not con:
+            continue
+        compact = re.sub(r"\s+", " ", tho.strip())[:240]
+        if not compact or compact in da_co:
+            continue
+        da_co.add(compact)
+        ra.append((compact, all(_la_o_sau_phe_duyet(dong, nhan, o) for nhan, o in con)))
+    return ra
+
+
+def classify_placeholders(package_text: str) -> dict[str, list[str]]:
+    """Phân loại DÒNG còn ô trống của hồ sơ G2 theo mốc:
+
+    - ``pre_submission``: phải điền TRƯỚC khi nộp IRB — lái G2-AUTO-05 ở mốc READY_FOR_IRB_SUBMISSION;
+    - ``post_approval``: dòng mà mọi ô còn lại đều chỉ điền được SAU nộp/phê duyệt/đăng ký (số IRB, ngày phê duyệt,
+      mã/ngày đăng ký, ngày tuyển đầu tiên, ngày hoàn tất, kết quả tóm tắt, số IRB trên ICF) — thông tin ở mốc READY,
+      BẮT BUỘC ở mốc PASS_G2_APPROVED (G2-AUTO-05 khi đã có attestation; approve_gate từ chối ký khi còn).
+    Bỏ ô chỉ chứa PII và chỗ ký/ngày điền tay."""
+    dong = _dong_con_o_trong(package_text)
+    return {
+        "pre_submission": [noi_dung for noi_dung, sau in dong if not sau],
+        "post_approval": [noi_dung for noi_dung, sau in dong if sau],
+    }
+
 
 def unresolved_critical_placeholders(package_text: str) -> list[str]:
-    """Liệt kê placeholder khoa học/vận hành còn lại (nhãn [CẦN…] VÀ ô mẫu chung sót từ khuôn sinh), bỏ qua dòng
-    chỉ chứa PII."""
-    base = strip_attestation(package_text)
-    unresolved: list[str] = []
-    for line in base.splitlines():
-        if "[CẦN" not in line.upper() and not _O_MAU_CHUNG_RE.search(line):
-            continue
-        upper = line.upper()
-        if any(hint in upper for hint in _PII_ONLY_HINTS):
-            continue
-        compact = re.sub(r"\s+", " ", line.strip())
-        if compact and compact not in unresolved:
-            unresolved.append(compact[:240])
-    return unresolved
+    """Liệt kê MỌI dòng còn placeholder khoa học/vận hành (nhãn [CẦN…], ô mẫu chung của khuôn sinh, ô trống «___»
+    gắn giá trị, thẻ biên tập [BÁC SĨ …]) — gồm cả ô chỉ điền được sau phê duyệt — bỏ qua ô chỉ chứa PII và chỗ ký/ngày.
+
+    approve_gate.py dùng danh sách ĐẦY ĐỦ này để từ chối ghi attestation/ledger ⇒ ô sau phê duyệt vẫn bắt buộc ở
+    PASS_G2_APPROVED. Mốc READY_FOR_IRB_SUBMISSION chỉ xét phần ``pre_submission`` của classify_placeholders()."""
+    return [noi_dung for noi_dung, _sau in _dong_con_o_trong(package_text)]
+
+
+def placeholder_total(text: str) -> int:
+    """Tổng số khớp ô trống THÔ (không miễn trừ) theo hợp đồng chung NHAN + MAU_CHUNG + TRONG cộng luật riêng G2.
+
+    Dùng cho rào chống đè hồ sơ đã biên tập của run_g2_auto.py: bác sĩ điền «___ năm» hay «[TÊN ĐƠN VỊ — CẦN BỔ SUNG]»
+    không đổi số «[CẦN» nhưng làm tổng này giảm."""
+    van_ban = unicodedata.normalize("NFC", str(text or ""))
+    tong = len(PC.tim(van_ban, (PC.NHAN, PC.MAU_CHUNG, PC.TRONG), them=_THEM_G2))
+    return tong + sum(len(_CAN_GIUA_NGOAC_RE.findall(dong)) for dong in van_ban.splitlines())
 
 
 def validate_attestation(
@@ -772,13 +996,29 @@ def evaluate_g2_quality(
         "Sinh lại bản đăng ký từ nguồn WHO TRDS hiện hành.",
     ))
 
+    # Mốc của ô trống (03/10/2026): ô chỉ điền được SAU nộp/phê duyệt/đăng ký (số IRB, ngày phê duyệt, mã/ngày đăng ký,
+    # ngày tuyển đầu tiên, ngày hoàn tất, kết quả tóm tắt…) KHÔNG THỂ có trước khi nộp — đếm chúng ở mốc READY làm
+    # READY_FOR_IRB_SUBMISSION không bao giờ đạt (đo trên C1a). Trước khi có attestation: chỉ ô TRƯỚC NỘP lái
+    # G2-AUTO-05,
+    # ô sau phê duyệt là danh sách thông tin. Khi đã có attestation (mốc PASS_G2_APPROVED): MỌI ô đều bắt buộc — như cũ.
+    attestation = extract_attestation(package_text)
+    phan_loai = classify_placeholders(package_text)
+    truoc_nop = phan_loai["pre_submission"]
+    sau_phe_duyet = phan_loai["post_approval"]
     unresolved = unresolved_critical_placeholders(package_text)
+    lai_trang_thai = unresolved if attestation else truoc_nop
     automatic.append(_criterion(
         "G2-AUTO-05",
         "Không còn placeholder khoa học/vận hành trọng yếu",
-        "REVIEW" if unresolved else "PASS",
-        f"còn {len(unresolved)} dòng [CẦN]/ô mẫu chung ngoài các dòng chỉ chứa PII",
-        "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted.",
+        "REVIEW" if lai_trang_thai else "PASS",
+        (
+            f"còn {len(truoc_nop)} dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; "
+            f"{len(sau_phe_duyet)} dòng chỉ điền được SAU phê duyệt/đăng ký "
+            f"({'đã có attestation nên BẮT BUỘC' if attestation else 'thông tin, chưa chặn nộp'}) — "
+            "ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay"
+        ),
+        "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt "
+        "(số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2.",
     ))
 
     automatic.append(_criterion(
@@ -846,7 +1086,6 @@ def evaluate_g2_quality(
         "từ PICO thật của đề tài (checkpoint G1) trước khi đăng ký thật.",
     ))
 
-    attestation = extract_attestation(package_text)
     attestation_errors = validate_attestation(
         attestation=attestation,
         package_text=package_text,
@@ -937,6 +1176,8 @@ def evaluate_g2_quality(
         "automatic_criteria": automatic,
         "human_approval_criteria": approval,
         "unresolved_critical_placeholders": unresolved,
+        "pre_submission_placeholders": truoc_nop,
+        "post_approval_placeholders": sau_phe_duyet,
         "pending_actions": list(dict.fromkeys(pending)),
         "attestation": attestation,
         "standards_basis": list(STANDARDS_BASIS),
@@ -980,6 +1221,14 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
     for row in report.get("human_approval_criteria", []):
         evidence = str(row.get("evidence") or "").replace("|", "/")
         lines.append(f"| {row['id']} | {row['label']} | {row['status']} | {evidence} |")
+    sau_phe_duyet = report.get("post_approval_placeholders") or []
+    if sau_phe_duyet:
+        lines.extend([
+            "",
+            "## Ô chỉ điền được SAU phê duyệt/đăng ký",
+            "Không chặn nộp IRB; BẮT BUỘC điền trước khi ký khoá G2 (approve_gate từ chối ký khi còn).",
+        ])
+        lines.extend(f"- {str(item).replace('|', '/')}" for item in sau_phe_duyet)
     lines.extend(["", "## Việc còn lại"])
     pending = report.get("pending_actions") or []
     lines.extend(f"- {item}" for item in pending)

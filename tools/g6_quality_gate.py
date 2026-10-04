@@ -15,10 +15,21 @@ mật mã như G2/G4/G5/G8/G9/G10.
 
 4 trạng thái rời nghĩa (khuôn G3):
   BLOCKED                            — lệch SAP/thiếu artifact: phải sửa trước khi đi tiếp
-  DRAFT_NEEDS_HUMAN_PARAMETERS       — SAP còn placeholder (seed/alpha) → kết quả ĐÚNG
+  DRAFT_NEEDS_HUMAN_PARAMETERS       — SAP còn placeholder (seed/alpha), SAP KHÔNG có seed/alpha
+                                       máy-đọc-được, hoặc script còn tham số chưa điền (tên
+                                       biến cụm/ngưỡng/số mức, biến dự phòng) → kết quả ĐÚNG
                                        của lần chạy tự động đầu, không phải lỗi
   READY_FOR_STATISTICIAN_REVIEW      — máy đối chiếu xong, chờ thống kê viên xác nhận
   PASS_G6_SCRIPTS_CONFIRMED          — đã có xác nhận người trong study_meta.gate_params.G6
+
+VÁ 03/10/2026 (lượt đo ô còn trống 11 cổng — `tools/placeholder_contract.py`): (1) seed SAP §10 từng
+được đọc từ CÂU VÍ DỤ nằm TRONG nhãn «[CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]» ⇒ cổng báo
+«seed khớp SAP» khi SAP chưa hề chốt seed; nay bóc nguyên nhãn trước khi đọc; (2) seed/alpha «không
+đọc được» từng chỉ cho pass=None mà vẫn PASS khi có xác nhận người ⇒ nay giữ ở DRAFT (trừ khi SAP
+khai rõ «không áp dụng»); (3) §12 của SAP không phải RCT từng kéo tới HẾT tệp nên alpha được đọc từ
+hộp chứng nhận khoá, che ô alpha còn trống ở §12 ⇒ nay §12 dừng ở ranh giới «## »/«---»; (4) G6-AUTO-07
+soi DANH SÁCH THAM SỐ RIÊNG của khuôn sinh trong script/A7 (không quét chung ngoặc/[CẦN] trên script:
+ô bảng khung, ô đánh dấu, cú pháp mã, băng cảnh báo «[CẦN CHÚ Ý …]» là hợp lệ).
 
 Dùng:  python3 tools/g6_quality_gate.py --study <mã>     (tự chạy cuối run_g6_auto)
 """
@@ -40,7 +51,41 @@ for _s in (sys.stdout, sys.stderr):
 
 HERE = Path(__file__).resolve().parent
 EXPORTS = HERE.parent / "exports"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
+
+# Test nạp module này bằng spec_from_file_location (không qua sys.path) — tự thêm thư mục tools/ để
+# import được hợp đồng ô trống dùng chung.
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+import placeholder_contract as PC  # noqa: E402
+
+# Dấu hiệu CŨ của G6 (trước 03/10/2026) — giữ NGUYÊN ngữ nghĩa, chỉ được cộng thêm, không được thay:
+# AUTO-02 so «[CẦN» nguyên văn trên §10; AUTO-03 so «[can» sau khi bỏ dấu + chữ thường trên §12.
+_DAU_CU_SEED = ("[CẦN",)
+_DAU_CU_ALPHA_BO_DAU = "[can"
+
+# Ngoặc vuông/nhọn trên MỘT dòng — đơn vị bóc khi nội dung là nhãn chưa điền.
+_NGOAC_MOT_DONG = re.compile(r"\[[^\[\]\n]*\]|<[^<>\n]*>")
+# SAP khai RÕ tham số không áp dụng (vd không có bước ngẫu nhiên) — không phải ô trống, không giữ DRAFT.
+_KHONG_AP_DUNG = re.compile(r"không\s+áp\s+dụng|not\s+applicable", re.IGNORECASE)
+
+# G6-AUTO-07 — DANH SÁCH THAM SỐ RIÊNG mà khuôn sinh run_g6_auto.py in khi KHÔNG phát hiện được biến/tham
+# số (lượt đo 03/10/2026). Cố ý KHÔNG quét chung họ NHAN/ngoặc/dấu lửng trên script/A7: ô bảng khung
+# «[CẦN]», ô đánh dấu, cú pháp mã «[col]», băng cảnh báo «[CẦN CHÚ Ý …]», lời nhắc «[CẦN DỮ LIỆU THẬT]» đều
+# hợp lệ và sẽ ngập báo động giả. So không phân biệt hoa/thường.
+_THAM_SO_KHUON_G6 = (
+    "[CẦN TÊN BIẾN",            # biến cụm / phương thức trả lời (03_analysis.R thứ bậc)
+    "[CẦN NGƯỠNG",              # ngưỡng gộp nhị phân độ nhạy
+    "[CẦN SỐ MỨC",              # số mức kết cục thứ bậc ⇒ levels mặc định c(1, 2, 3, 4, 5)
+    "[CẦN — các biến tiên đoán",  # công thức mô hình tiên lượng khi thiếu covariate
+    "[CẦN XÁC ĐỊNH THEO SAP]",  # thiết kế lạ — chưa có tên phân tích/mẫu bảng
+    "[xem SAP §5]",             # không phát hiện covariate ⇒ script dùng age + sex + bmi … dự phòng
+    "Không tự phát hiện exposure",  # tên biến dự phòng 'exposure'
+    "Không tự phát hiện outcome",   # tên biến dự phòng 'primary_outcome'
+)
+# Biến thời gian dự phòng 'follow_time' CHỈ là tham số thiếu khi phân tích chính là thời-gian-tới-biến-cố.
+_THAM_SO_THOI_GIAN = "Không tự phát hiện time"
+_PHAN_TICH_COX = re.compile(r"\*\*Phân tích chính:\*\*[^\n]*Cox proportional hazards")
 
 # VÁ 2026-09-04 (Workflow đối kháng đa-agent vòng 3, HIGH) — mẫu tên file GIẢ ĐỊNH của
 # G6-AUTO-06 (*KET_QUA*/*RESULTS*/stats_output*) KHÔNG khớp bất kỳ file thật nào mà
@@ -65,10 +110,40 @@ def _bo_dau(s: str) -> str:
     return "".join(c for c in s if unicodedata.category(c) != "Mn").lower()
 
 
-def _sec(sap: str, so: int) -> str:
-    """Cắt nguyên văn một §N của SAP (tới § kế tiếp)."""
-    m = re.search(rf"###\s*§{so}\b.*?(?=###\s*§|\Z)", sap, re.S)
+def _sec(sap: str, so: int, chat: bool = False) -> str:
+    """Cắt nguyên văn một §N của SAP (tới § kế tiếp).
+
+    `chat=True` (VÁ 03/10/2026, dùng cho §12): dừng THÊM ở tiêu đề cấp 2 «## …» hoặc đường kẻ «---» —
+    với SAP không phải RCT, §12 là mục cuối nên bản cũ kéo tới HẾT tệp, alpha bị đọc từ hộp chứng nhận
+    khoá (PHẦN 5) và dòng ký «___» lọt vào phạm vi soi. Mặc định giữ ranh giới cũ cho §2/§7/§10."""
+    ranh_gioi = r"###\s*§|^##(?!#)\s|^-{3,}\s*$|\Z" if chat else r"###\s*§|\Z"
+    m = re.search(rf"###\s*§{so}\b.*?(?={ranh_gioi})", sap, re.S | re.M)
     return m.group(0) if m else ""
+
+
+def _bo_nhan_chua_dien(van_ban: str) -> str:
+    """Bóc NGUYÊN nhãn chưa điền (gồm cả câu ví dụ nằm BÊN TRONG nhãn) trước khi regex đọc giá trị.
+
+    Sự cố 03/10/2026: «[CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]» bị đọc thành seed 2026 đã chốt.
+    Ngoặc đóng trên cùng dòng mà mang dấu hiệu ô trống (mọi họ của placeholder_contract) ⇒ thay bằng khoảng
+    trắng; nhãn MỞ không đóng trên dòng («[CẦN …» xuống dòng) ⇒ cắt từ chỗ mở tới hết dòng. Ô trống trần
+    không ngoặc («___», «CHƯA XÁC NHẬN») KHÔNG cắt — giá trị đứng trước/sau nó vẫn được đọc như cũ."""
+    def _thay(m: re.Match) -> str:
+        return " " if PC.co_o_trong(m.group(0), PC.TAT_CA_HO) else m.group(0)
+
+    ra = []
+    for dong in van_ban.splitlines():
+        dong = _NGOAC_MOT_DONG.sub(_thay, dong)
+        mo = [m.start() for ho in PC.TAT_CA_HO for bt in PC.mau(ho) for m in bt.finditer(dong)
+              if m.group(0)[:1] in "[<"]
+        ra.append(dong[:min(mo)] if mo else dong)
+    return "\n".join(ra)
+
+
+def _dong_o_trong(dong_list: list[str], them: tuple[str, ...] = ()) -> list[str]:
+    """Các dòng (rút gọn) còn ô trống theo MỌI họ — dòng giá trị seed/alpha coi như GIÁ TRỊ TRƯỜNG."""
+    return [re.sub(r"\s+", " ", d.strip())[:160] for d in dong_list
+            if PC.co_o_trong(d, PC.TAT_CA_HO, them)]
 
 
 def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True) -> dict:
@@ -98,6 +173,7 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True) 
     # Bản đầu chỉ đọc md nên báo «không set.seed» trong khi template R có
     # `SEED <- 2026` (bắt được khi chạy trên đề tài sống 15/08 — bug #2 của gate).
     art_chinh = art  # phần soi HARKing §7 — KHÔNG gồm script độ nhạy
+    art_md = art  # riêng bìa A7 (G6-AUTO-07 đọc dòng «Phân tích chính»)
     for sf in sorted((thu_muc / "scripts").glob("*")):
         if sf.suffix in (".R", ".py", ".r"):
             noi_dung_sf = sf.read_text(encoding="utf-8", errors="replace")
@@ -147,40 +223,88 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True) 
             "là mở cửa HARKing", True)
 
     # ── G6-AUTO-02: SEED script ↔ SAP §10 ────────────────────────────────────
+    # VÁ 03/10/2026: đọc seed trên §10 ĐÃ BÓC nhãn chưa điền (câu ví dụ trong nhãn không phải seed đã
+    # chốt); «seed»/«hạt giống» không phân biệt hoa/thường. Dòng seed còn ô trống theo MỌI họ ⇒ DRAFT.
+    # Seed không đọc được ⇒ DRAFT (không còn đường PASS khi chưa đối chiếu seed), trừ khi SAP khai rõ
+    # «không áp dụng». Lệch seed vẫn BLOCKED như cũ — ô trống chỉ được hạ một kết quả ĐẠT xuống DRAFT.
+    # `draft_cu_seed` = điều kiện DRAFT của bản cũ, giữ nguyên để cổng không bao giờ yếu hơn bản cũ.
     sap10 = _sec(sap, 10)
-    seed_sap = re.search(r"set\.seed\((\d+)\)|seed\D{0,12}(\d{3,6})", sap10)
+    seed_sap = re.search(r"set\.seed\((\d+)\)|(?:seed|hạt giống)\D{0,12}(\d{3,6})",
+                         _bo_nhan_chua_dien(sap10), re.IGNORECASE)
+    seed_cu = re.search(r"set\.seed\((\d+)\)|seed\D{0,12}(\d{3,6})", sap10)
+    draft_cu_seed = any(t in sap10 for t in _DAU_CU_SEED) and not seed_cu
     seed_art = re.findall(r"set\.seed\((\d+)\)", art) + re.findall(r"SEED\s*<-\s*(\d+)", art)
-    if "[CẦN" in sap10 and not seed_sap:
-        add("G6-AUTO-02", None, "SAP §10 seed còn [CẦN BÁC SĨ ẤN ĐỊNH] — chưa đối chiếu được")
-        trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
-    elif seed_sap:
+    dong_seed = [d for d in sap10.splitlines() if re.search(r"seed|hạt giống", d, re.IGNORECASE)]
+    seed_o_trong = _dong_o_trong(dong_seed, _DAU_CU_SEED)
+    if not seed_sap:
+        if seed_o_trong or any(t in sap10 for t in _DAU_CU_SEED):
+            add("G6-AUTO-02", None, "SAP §10 seed còn ô chưa điền "
+                f"({'; '.join(seed_o_trong[:2]) or '[CẦN …]'}) — chưa đối chiếu được; câu ví dụ trong nhãn "
+                "KHÔNG phải seed đã chốt")
+            trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
+        elif any(_KHONG_AP_DUNG.search(d) for d in dong_seed):
+            add("G6-AUTO-02", None, "SAP §10 khai seed KHÔNG ÁP DỤNG — thống kê viên xác nhận script "
+                                    "không có bước ngẫu nhiên cần tái lập (không suy đoán hộ)")
+        else:
+            add("G6-AUTO-02", None, "SAP §10 không có seed máy-đọc-được (`set.seed(N)` hoặc «seed: N») — "
+                                    "chưa đối chiếu được nên KHÔNG được PASS; ghi seed vào SAP §10 hoặc khai "
+                                    "«không áp dụng»")
+            trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
+    else:
         so = next(g for g in seed_sap.groups() if g)
         if seed_art and all(s == so for s in seed_art):
-            add("G6-AUTO-02", True, f"seed {so} khớp SAP ở {len(seed_art)} chỗ trong script")
+            if seed_o_trong or draft_cu_seed:
+                add("G6-AUTO-02", None, f"seed {so} khớp script nhưng SAP §10 còn ô chưa điền "
+                                        f"({'; '.join(seed_o_trong[:2]) or '[CẦN …]'}) — seed chưa chốt")
+                trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
+            else:
+                add("G6-AUTO-02", True, f"seed {so} khớp SAP ở {len(seed_art)} chỗ trong script")
         elif not seed_art:
             add("G6-AUTO-02", False, f"SAP ấn định seed {so} nhưng script KHÔNG set.seed", True)
         else:
             add("G6-AUTO-02", False,
                 f"seed LỆCH: SAP={so}, script={sorted(set(seed_art))} — kết quả sẽ không tái lập "
                 "đúng SAP", True)
-    else:
-        add("G6-AUTO-02", None, "SAP §10 không đọc được seed — cần thống kê viên xem")
 
     # ── G6-AUTO-03: ALPHA script ↔ SAP §12 ───────────────────────────────────
-    sap12 = _sec(sap, 12)
-    a_sap = re.search(r"alpha\D{0,15}0[\.,](\d+)", _bo_dau(sap12))
+    # VÁ 03/10/2026: §12 cắt ĐÚNG (dừng ở «## »/«---» — không còn đọc alpha của hộp chứng nhận khoá);
+    # đọc trên bản đã bóc nhãn; nhận cả «α». Dòng alpha còn ô trống theo MỌI họ ⇒ DRAFT; alpha không đọc
+    # được ⇒ DRAFT. Giữ làm lưới hai điều kiện của bản cũ (đọc tới hết tệp): (a) alpha đọc được ở chỗ
+    # khác §12 mà script khác ⇒ vẫn BLOCKED; (b) «[can» + không đọc được alpha ⇒ vẫn DRAFT.
+    sap12 = _sec(sap, 12, chat=True)
+    sap12_cu = _sec(sap, 12)  # phạm vi CŨ — chỉ dùng cho lưới không-yếu-hơn
+    a_sap = re.search(r"(?:alpha|α)\D{0,15}0[\.,](\d+)", _bo_dau(_bo_nhan_chua_dien(sap12)))
     a_art = set(re.findall(r"alpha\s*(?:=|:|<-)\s*0[\.,](\d+)", _bo_dau(art)))
-    if "[can" in _bo_dau(sap12) and not a_sap:
-        add("G6-AUTO-03", None, "SAP §12 alpha còn placeholder — chưa đối chiếu được")
-        trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
-    elif a_sap and a_art and a_sap.group(1) not in a_art:
+    dong_alpha = [d for d in sap12.splitlines() if re.search(r"alpha|α", _bo_dau(d))]
+    alpha_o_trong = _dong_o_trong(dong_alpha)
+    a_cu = re.search(r"alpha\D{0,15}0[\.,](\d+)", _bo_dau(sap12_cu))
+    draft_cu_alpha = _DAU_CU_ALPHA_BO_DAU in _bo_dau(sap12_cu) and not a_cu
+    if a_sap and a_art and a_sap.group(1) not in a_art:
         add("G6-AUTO-03", False,
             f"alpha LỆCH: SAP=0.{a_sap.group(1)}, script=0.{'/0.'.join(sorted(a_art))}", True)
-    elif a_sap:
+    elif not a_sap and a_cu and a_art and a_cu.group(1) not in a_art:
+        add("G6-AUTO-03", False,
+            f"alpha LỆCH: SAP=0.{a_cu.group(1)} (đọc ngoài dòng alpha §12 — §12 còn trống), "
+            f"script=0.{'/0.'.join(sorted(a_art))}", True)
+    elif not a_sap or draft_cu_alpha:
+        if alpha_o_trong or draft_cu_alpha or _DAU_CU_ALPHA_BO_DAU in _bo_dau(sap12):
+            add("G6-AUTO-03", None, "SAP §12 alpha còn placeholder "
+                f"({'; '.join(alpha_o_trong[:2]) or '[CẦN …]'}) — chưa đối chiếu được")
+            trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
+        elif any(_KHONG_AP_DUNG.search(d) for d in dong_alpha):
+            add("G6-AUTO-03", None, "SAP §12 khai alpha KHÔNG ÁP DỤNG — thống kê viên xác nhận (không "
+                                    "suy đoán hộ)")
+        else:
+            add("G6-AUTO-03", None, "không đọc được alpha từ SAP §12 — chưa đối chiếu được nên KHÔNG được "
+                                    "PASS; ghi «Alpha: 0.05» (hoặc giá trị đã khoá) vào SAP §12")
+            trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
+    elif alpha_o_trong:
+        add("G6-AUTO-03", None, f"alpha 0.{a_sap.group(1)} đọc được nhưng dòng alpha SAP §12 còn ô chưa "
+                                f"điền ({'; '.join(alpha_o_trong[:2])})")
+        trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
+    else:
         add("G6-AUTO-03", True, f"alpha 0.{a_sap.group(1)} nhất quán"
             + ("" if a_art else " (script không hardcode alpha — dùng mặc định, chấp nhận)"))
-    else:
-        add("G6-AUTO-03", None, "không đọc được alpha từ SAP §12 — cần người xem")
 
     # ── G6-AUTO-04: KẾT CỤC SAP §2 phải có mặt trong script (chống bỏ kết cục) ──
     sap2 = _bo_dau(_sec(sap, 2))
@@ -241,6 +365,22 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True) 
                 f"kết quả có TRƯỚC thời điểm khoá G5: {sau[:3]} — vi phạm DATA LOCK", True)
         else:
             add("G6-AUTO-06", True, f"{len(kq)} file kết quả đều SAU khoá G5")
+
+    # ── G6-AUTO-07: tham số script còn trống theo DANH SÁCH RIÊNG của khuôn sinh (VÁ 03/10/2026) ──
+    # Lượt đo 03/10: script cắt ngang thứ bậc còn «[CẦN TÊN BIẾN CỤM …]», covariate dự phòng «age + sex +
+    # bmi», tên biến dự phòng 'exposure'/'primary_outcome' mà cổng vẫn PASS — chỉ seed/alpha/kết cục/nhóm
+    # con được đối chiếu. Không chặn (script là khung chờ dữ liệu), nhưng không được PASS khi còn.
+    them_ts = _THAM_SO_KHUON_G6 + ((_THAM_SO_THOI_GIAN,) if _PHAN_TICH_COX.search(art_md) else ())
+    tham_so_trong = PC.dong_con_trong(art, ho=(), them=them_ts)
+    if tham_so_trong:
+        add("G6-AUTO-07", None,
+            f"script/A7 còn {len(tham_so_trong)} dòng tham số chưa điền (tên biến cụm/ngưỡng/số mức, "
+            f"covariate hoặc tên biến dự phòng): {' | '.join(d[:110] for d in tham_so_trong[:3])} — bổ sung "
+            "biến vào G5 dictionary rồi chạy lại run_g6_auto.py, hoặc sửa tay script và dòng log A7")
+        trang_thai = "DRAFT_NEEDS_HUMAN_PARAMETERS"
+    else:
+        add("G6-AUTO-07", True, "không còn tham số khuôn sinh chưa điền trong script/A7 (danh sách riêng: "
+                                "tên biến cụm/ngưỡng/số mức, covariate & tên biến dự phòng)")
 
     # ── G6-HUMAN-01: thống kê viên xác nhận (study_meta.gate_params.G6) ─────
     meta_p = thu_muc / "study_meta.json"

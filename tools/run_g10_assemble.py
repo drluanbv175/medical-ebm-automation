@@ -1585,7 +1585,9 @@ def build_missing_information(cps, meta=None, evaluation=None) -> str:
         ("Kết cục chính", (meta or {}).get("primary_outcome")),
     ]
     for field, value in locked_fields:
-        if not value or str(value).startswith("[CẦN"):
+        # SỬA 03/10/2026: trước chỉ bắt tiền tố «[CẦN» — «[nơi thực hiện]», «___», «[TO BE COMPLETED]»… lọt thành
+        # «đã chốt». Giữ hai điều kiện cũ, OR thêm vị từ StudySpec (đã AND hợp đồng ô trống chung).
+        if not value or str(value).startswith("[CẦN") or not RS.is_present(value):
             added = True
             lines.append(
                 f"| Khóa phạm vi | {field} chưa được cung cấp/xác nhận | "

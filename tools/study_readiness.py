@@ -43,6 +43,7 @@ sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / "tools"))
 
 import gate_contract as GC  # noqa: E402
+import placeholder_contract as PC  # noqa: E402
 
 # Chuỗi cổng theo doctrine dieu-phoi-nghien-cuu.md. G2/G4/G8/G9 là cổng CỨNG cần chữ ký.
 _GATES = [
@@ -62,7 +63,22 @@ _GATES = [
 _UNCHECKED = re.compile(r"^\s*[-*]\s*\[ \]\s*(.+?)\s*$", re.M)
 _PENDING_DECISION = re.compile(r"QUYẾT ĐỊNH CÒN TREO|CHƯA TỰ Ý XỬ LÝ|CẦN QUYẾT ĐỊNH", re.I)
 # Chỗ để trống trong tài liệu: dãy dấu chấm/gạch dưới dài, hoặc placeholder [CẦN…]
+# (marker CŨ — giữ nguyên ngữ nghĩa, chỉ được CỘNG THÊM; xem _HO_CON_TRONG ngay dưới).
 _BLANKS = re.compile(r"…{3,}|\.{5,}|_{5,}|\[CẦN")
+# 03/10/2026 — hợp đồng ô trống dùng chung `placeholder_contract`. Trước đây mục «✏️ CHỖ CÒN ĐỂ TRỐNG» chỉ biết
+# `_BLANKS` nên mù với «[TO BE COMPLETED]», «[Cần bổ sung]» chữ thường, «<CẦN…>», «[đơn vị]», «thuốc/can thiệp X»,
+# «[XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG]», «[REQUIRE_HUMAN_INPUT]» (đo thật: ICF đề tài C1a cùng ngày còn 14 ô
+# «[TO BE COMPLETED]» mà công cụ không liệt dòng nào). Nay một DÒNG được liệt khi khớp `_BLANKS` HOẶC còn ô trống
+# theo ba họ «có chữ» dưới đây. Họ TRONG («___», «……») chỉ ĐẾM để tham khảo — bảng trống dự kiến của SAP và dòng
+# ký/ngày là ô trống HỢP LỆ, không được tính là «còn trống».
+_HO_CON_TRONG = (PC.NHAN, PC.MAU_CHUNG, PC.THU_CONG)
+_HO_DEM = _HO_CON_TRONG + (PC.TRONG,)
+_TEN_HO = {
+    PC.NHAN: "nhãn chưa điền",
+    PC.MAU_CHUNG: "ô mẫu của khuôn sinh",
+    PC.THU_CONG: "xác nhận thủ công",
+    PC.TRONG: "ô gạch/chấm",
+}
 
 
 def _study_dir(study: str) -> Path:
@@ -146,6 +162,26 @@ def _collect_todo(d: Path) -> tuple[list[tuple[str, str]], list[str]]:
     return todo, pending
 
 
+def _collect_blanks(d: Path) -> tuple[list[str], dict[str, int]]:
+    """(các dòng còn chỗ trống, số ô theo họ dấu hiệu) quét mọi tài liệu .md trong thư mục — CHỈ để HIỂN THỊ.
+
+    Dòng được liệt khi khớp `_BLANKS` (marker cũ, giữ nguyên) HOẶC còn ô trống theo `_HO_CON_TRONG`. Bộ đếm theo họ
+    dùng `PC.tom_tat` trên toàn văn từng tệp; họ TRONG đếm riêng, KHÔNG cộng vào «còn trống» (có thể là ô hợp lệ)."""
+    blanks: list[str] = []
+    dem = {h: 0 for h in _HO_DEM}
+    for f in sorted(d.glob("*.md")):
+        try:
+            text = f.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for h, n in PC.tom_tat(text, ho=_HO_DEM).items():
+            dem[h] += n
+        for i, line in enumerate(text.splitlines(), 1):
+            if _BLANKS.search(line) or PC.co_o_trong(line, ho=_HO_CON_TRONG):
+                blanks.append(f"{f.name}:{i}  {line.strip()[:95]}")
+    return blanks, dem
+
+
 def report(study: str) -> int:
     d = _study_dir(study)
     print("=" * 78)
@@ -185,26 +221,33 @@ def report(study: str) -> int:
             print(f"   · {p}")
 
     # Chỗ để trống trong tài liệu trình Hội đồng (tên PI, mã IRB, mã đăng ký…)
-    blanks = []
-    for f in sorted(d.glob("*.md")):
-        try:
-            for i, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
-                if _BLANKS.search(line):
-                    blanks.append(f"{f.name}:{i}  {line.strip()[:95]}")
-        except (OSError, UnicodeDecodeError):
-            continue
+    blanks, dem_ho = _collect_blanks(d)
+    so_con_trong = sum(dem_ho[h] for h in _HO_CON_TRONG)
     if blanks:
         print(f"\n✏️  CHỖ CÒN ĐỂ TRỐNG trong tài liệu ({len(blanks)}) — 6 dòng đầu:")
         for b in blanks[:6]:
             print(f"   · {b}")
+    if blanks or dem_ho[PC.TRONG]:
+        print("   Đếm theo họ dấu hiệu (placeholder_contract): "
+              + " · ".join(f"{_TEN_HO[h]} {dem_ho[h]}" for h in _HO_CON_TRONG)
+              + f" — {_TEN_HO[PC.TRONG]} {dem_ho[PC.TRONG]} (chỉ tham khảo: bảng trống dự kiến/dòng ký là hợp lệ)")
 
     print("\n" + "-" * 78)
     total = len(todo) + len(pending)
     if signed_hard == 4 and total == 0:
-        print("Mọi cổng cứng đã ký và không còn việc nào trong danh sách nội bộ.")
+        if so_con_trong:
+            # 03/10/2026: đủ chữ ký + hết việc nội bộ mà tài liệu vẫn còn ô chưa điền thì KHÔNG in câu «không còn
+            # việc nào» trơn — công cụ cố ý bi quan (docstring module). Không in chuỗi «0/4» ở nhánh này: ROOT
+            # tools/tu_de_xuat_viec.py dò chuỗi đó để hiểu «chưa cổng cứng nào có chữ ký».
+            print(f"Mọi cổng cứng đã ký và không còn việc nào trong danh sách nội bộ — NHƯNG tài liệu còn "
+                  f"{so_con_trong} ô chưa điền (nhãn/ô mẫu/xác nhận thủ công, xem mục ✏️ ở trên).")
+        else:
+            print("Mọi cổng cứng đã ký và không còn việc nào trong danh sách nội bộ.")
         print("Việc kết luận đề tài 'đủ điều kiện' vẫn thuộc về BÁC SĨ và HỘI ĐỒNG, không phải công cụ này.")
     else:
         print(f"KẾT LUẬN: CÒN {total} việc chưa xong và {4 - signed_hard}/4 cổng cứng chưa ký.")
+        if so_con_trong:
+            print(f"Tài liệu còn {so_con_trong} ô chưa điền (nhãn/ô mẫu/xác nhận thủ công) — xem mục ✏️ ở trên.")
         print("Đây KHÔNG phải trạng thái sẵn sàng triển khai. Công cụ này cố ý chỉ đếm việc")
         print("CHƯA làm — nó không bao giờ tự tuyên bố 'sẵn sàng'; điều đó thuộc thẩm quyền")
         print("của bác sĩ và Hội đồng Đạo đức.")

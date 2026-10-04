@@ -1835,10 +1835,15 @@ def main():
         bak = md_path.with_name(md_path.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
         bak.write_text(ban_cu, encoding="utf-8", newline="\n")
         print(f"  → Sao lưu hồ sơ đạo đức hiện có: {bak.name}")
-        if (ban_cu.count("[CẦN") < artifact_md.count("[CẦN")
+        # 04/10/2026: OR thêm tổng ô trống theo hợp đồng chung (G2Q.placeholder_total — gồm «___», «[TÊN ĐƠN VỊ —
+        # CẦN BỔ SUNG]», «[sẽ/sẽ không]»…): bác sĩ điền «Thời gian lưu: ___ năm» không đổi số «[CẦN» nên rào cũ không
+        # thấy và đè mất. Giữ nguyên điều kiện cũ ⇒ rào chỉ CHẶT hơn.
+        tong_cu, tong_moi = G2Q.placeholder_total(ban_cu), G2Q.placeholder_total(artifact_md)
+        if ((ban_cu.count("[CẦN") < artifact_md.count("[CẦN") or tong_cu < tong_moi)
                 and not getattr(args, "regenerate_artifact", False)):
             print("⛔ TỪ CHỐI đè hồ sơ đạo đức: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh "
-                  f"({ban_cu.count('[CẦN')} vs {artifact_md.count('[CẦN')} nhãn [CẦN...]) — "
+                  f"({ban_cu.count('[CẦN')} vs {artifact_md.count('[CẦN')} nhãn [CẦN...]; "
+                  f"{tong_cu} vs {tong_moi} ô trống theo hợp đồng chung) — "
                   "nhiều khả năng đã được bác sĩ biên tập.")
             print("   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: thêm cờ --regenerate-artifact "
                   "(bản cũ vẫn được sao lưu .bak-* ở trên).")

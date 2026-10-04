@@ -37,6 +37,8 @@ import sys as _sys_r4
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+import placeholder_contract as PC
+
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
         _s_r4.reconfigure(encoding="utf-8")
@@ -770,6 +772,11 @@ def _is_real_value(v) -> bool:
     """True nếu v là GIÁ TRỊ THẬT — không rỗng/None/placeholder/nhãn skill/phủ định.
 
     Chặn kiểu 'g2_irb_number = "[CẦN BỔ SUNG]"' hay '"TBD"' bị coi là đã có IRB.
+
+    03/10/2026 — AND thêm vị từ trường chung `placeholder_contract.co_noi_dung_that` (mọi họ dấu hiệu), GIỮ NGUYÊN
+    `_PLACEHOLDER_TOKENS` cũ. Trước đó «[TO BE COMPLETED]», «[TODO]», «___», «[đơn vị]», «[REQUIRE_HUMAN_INPUT]»,
+    «[TÁC GIẢ ĐIỀN: …]», «[XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG]», ký hiệu đứng một mình «-»/«?» đều bị coi là số
+    IRB/ngày khoá THẬT ⇒ tín hiệu đời thực (irb_approved, sap_locked, db_locked, peer) bật sai. Chỉ được CHẶT hơn.
     """
     if v is None:
         return False
@@ -779,7 +786,9 @@ def _is_real_value(v) -> bool:
     if not s:
         return False
     up = s.upper()
-    return not any(tok in up for tok in _PLACEHOLDER_TOKENS)
+    if any(tok in up for tok in _PLACEHOLDER_TOKENS):
+        return False
+    return PC.co_noi_dung_that(v)
 
 
 def _status_is_locked(status: Optional[str]) -> bool:

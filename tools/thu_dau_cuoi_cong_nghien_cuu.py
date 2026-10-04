@@ -43,8 +43,10 @@ Mã thoát: 0 = mọi lỗi gài đều bị đúng cổng bắt; khác 0 = có 
 
 from __future__ import annotations
 
+import hashlib
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 
@@ -59,6 +61,7 @@ TOOLS_DIR = REPO_ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+import g2_quality_gate as G2Q  # noqa: E402
 import g3_quality_gate as G3Q  # noqa: E402
 import g4_quality_gate as G4Q  # noqa: E402
 import g8_quality_gate as G8Q  # noqa: E402
@@ -406,6 +409,137 @@ def _evaluate_g8(**overrides) -> Dict[str, Any]:
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# Đồ gá — G2 (đạo đức/IRB + phiếu đồng thuận). Thêm 03/10/2026 (hợp đồng ô trống chung
+# `placeholder_contract`). Mượn đúng hình dạng gói hồ sơ + bản đăng ký WHO TRDS + attestation mà
+# tests/test_g2_quality_gate.py xác nhận là "gói tốt" đạt PASS_G2_APPROVED; dữ liệu TỔNG HỢP, không PII.
+# ════════════════════════════════════════════════════════════════════════════
+
+# Hai dòng ICF ĐÃ ĐIỀN THẬT của gói tốt — lỗi gài thay đúng MỘT dòng bằng ô mẫu khuôn sinh run_g2_auto.py in ra.
+_G2_ICF_VI_LINE = "Mục đích: tìm hiểu hiệu quả của can thiệp canary ở người trưởng thành."
+_G2_ICF_EN_LINE = "Location: Canary outpatient clinic."
+# Dòng kế hoạch quản lý dữ liệu ĐÃ ĐIỀN — ca gài thay bằng ô «___» mà chỉ bộ dò mới (hợp đồng chung, họ TRONG) thấy.
+_G2_DMP_LINE = "Thời gian lưu: 10 năm sau kết thúc nghiên cứu."
+# Ngày chấm CỐ ĐỊNH: attestation có hạn 2026-07-20 → 2027-07-20; dùng date.today() thì canary tự đỏ khi hết hạn.
+_G2_TODAY = date(2026, 7, 27)
+
+_G2_CLEAN_PACKAGE = f"""# A3 — HỒ SƠ ĐẠO ĐỨC
+## TÀI LIỆU 1 — Đơn xin phê duyệt IRB
+## TÀI LIỆU 2 — Tóm tắt đề cương
+## TÀI LIỆU 3 — Bảng RỦI RO lợi ích
+## TÀI LIỆU 4 — PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
+{_G2_ICF_VI_LINE}
+## TÀI LIỆU 5 — English informed consent
+{_G2_ICF_EN_LINE}
+## TÀI LIỆU 6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU
+{_G2_DMP_LINE}
+## TÀI LIỆU 7 — Checklist nộp Hội đồng
+## TÀI LIỆU 8 — NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH
+### BỒI THƯỜNG KHI CÓ TỔN HẠI
+Chính sách đã được đơn vị và Hội đồng rà soát.
+### Kế hoạch an toàn
+Theo dõi AE/SAE; DSMB/DMC độc lập; quy tắc dừng tiền định.
+> Cần bác sĩ kiểm chứng.
+"""
+
+
+def _g2_meta() -> Dict[str, Any]:
+    return {
+        "gate_params": {
+            "G0": {
+                "population": "Người trưởng thành mắc bệnh canary",
+                "intervention": "Can thiệp canary",
+                "comparison": "Chăm sóc chuẩn",
+                "outcomes": ["Kết cục tổng hợp canary", "Nhập viện"],
+                "primary_outcome": "Kết cục tổng hợp canary",
+                "primary_outcome_measure": "Tỷ lệ người đạt đáp ứng",
+                "primary_outcome_timepoint": "12 tuần",
+            },
+            "G1": {
+                "intervention_or_exposure": "Can thiệp canary theo protocol",
+                "comparator": "Chăm sóc chuẩn",
+                "inclusion_criteria": ["Tuổi từ 18", "Chẩn đoán bệnh canary"],
+                "exclusion_criteria": ["Chống chỉ định can thiệp canary"],
+                "primary_outcome": "Kết cục tổng hợp canary",
+                "secondary_outcomes": ["Nhập viện"],
+            },
+            "G2": {"protocol_version": "2.1", "icf_version": "2.0"},
+        }
+    }
+
+
+def _g2_attestation(package_text: str) -> Dict[str, Any]:
+    return {
+        "schema_version": G2Q.ATTESTATION_SCHEMA,
+        "study": STUDY,
+        "ethics_decision": "APPROVED",
+        "ethics_committee_ref": "IRB-CANARY",
+        "approval_number": "IRB-CANARY-2026-001",
+        "approval_date": "2026-07-20",
+        "valid_until": "2027-07-20",
+        "no_expiry_confirmed": False,
+        "approval_scope": "Protocol 2.1 và ICF 2.0",
+        "approved_protocol_version": "2.1",
+        "approved_icf_version": "2.0",
+        "icf_waiver_approved": False,
+        "recruitment_mode": "PROSPECTIVE_NEW_PARTICIPANTS",
+        "first_enrolment_date": "2026-08-15",
+        "registration": {
+            "required": True,
+            "status": "REGISTERED",
+            "registry": "ClinicalTrials.gov",
+            "registration_id": "NCT00000001",
+            "registration_date": "2026-07-25",
+        },
+        "package_sha256_before_attestation": hashlib.sha256(
+            G2Q.strip_attestation(package_text).encode("utf-8")
+        ).hexdigest(),
+        "attested_at": "2026-07-27T10:00:00+07:00",
+        "ethics_committee_ref_source": "explicit",
+        "disclaimer": "Cần bác sĩ kiểm chứng.",
+    }
+
+
+def _g2_package_with(old_line: str, new_line: str) -> str:
+    """Gói tốt với ĐÚNG MỘT dòng ICF bị thay (lỗi gài một-thay-đổi)."""
+    if _G2_CLEAN_PACKAGE.count(old_line) != 1:
+        raise AssertionError(f"gói G2 canary đã đổi hình dạng, thiếu dòng: {old_line[:50]!r}")
+    return _G2_CLEAN_PACKAGE.replace(old_line, new_line)
+
+
+def _evaluate_g2(tmp_path: Path, package_text: Optional[str] = None) -> Dict[str, Any]:
+    """Chấm G2 THẬT (evaluate_g2_quality) trên gói ĐÃ có attestation IRB + sổ cái hợp lệ — gói tốt đạt
+    PASS_G2_APPROVED, nên mọi lỗi gài kéo được trạng thái xuống là do chính nội dung gài."""
+    base = _G2_CLEAN_PACKAGE if package_text is None else package_text
+    signed = G2Q.append_attestation(base, _g2_attestation(base))
+    g2_dir = tmp_path / "g2-canary"
+    g2_dir.mkdir(parents=True, exist_ok=True)
+    package_path = g2_dir / f"G2_A3_ETHICS_PACKAGE_{STUDY}.md"
+    package_path.write_text(signed, encoding="utf-8", newline="\n")
+    registration_path = G2Q.build_registration_draft(
+        study=STUDY,
+        topic="Can thiệp canary ở người trưởng thành",
+        design_code="rct",
+        design_primary="Thử nghiệm ngẫu nhiên có đối chứng",
+        risk={"registration": "BẮT BUỘC trước tuyển mẫu", "register_where": "ClinicalTrials.gov"},
+        n_target=200,
+        out_dir=g2_dir,
+        generated_at="2026-07-27T10:00:00+07:00",
+        meta=_g2_meta(),
+    )
+    return G2Q.evaluate_g2_quality(
+        study=STUDY,
+        design_code="rct",
+        package_path=package_path,
+        registration_path=registration_path,
+        g1_checkpoint={"quality_gate": {"status": "PASS_G1_CONFIRMED"}},
+        meta=_g2_meta(),
+        guardrail_passed=True,
+        ledger_approved=True,
+        today=_G2_TODAY,
+    )
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # Khung lỗi gài
 # ════════════════════════════════════════════════════════════════════════════
 
@@ -422,7 +556,7 @@ class InjectedError:
 
 
 def _row(report: Mapping[str, Any], criterion_id: str) -> Optional[Dict[str, Any]]:
-    for key in ("automatic_criteria", "approval_criteria", "human_criteria"):
+    for key in ("automatic_criteria", "approval_criteria", "human_criteria", "human_approval_criteria"):
         for row in report.get(key, []):
             if row["id"] == criterion_id:
                 return row
@@ -545,6 +679,38 @@ def build_injected_errors(tmp_path: Optional[Path] = None) -> List[InjectedError
     ))
 
     # ── G8 — trích dẫn/rút bài chưa xác minh bị đọc thành 'không vấn đề' ───
+    # ── G2 — hồ sơ IRB còn ô mẫu khuôn sinh (03/10/2026, hợp đồng ô trống chung) ──────────────────────────────
+    errors.append(InjectedError(
+        code="G2-ICF-EN-TO-BE-COMPLETED",
+        gate="G2 (đạo đức/IRB)",
+        history=(
+            "Sự cố 03/10/2026 (C1a): ICF tiếng Anh còn 14 ô «[TO BE COMPLETED]» của khuôn sinh trong khi G2 chỉ đếm "
+            "«[CẦN» — hồ sơ người bệnh ký có thể được báo sẵn sàng. Criterion G2-AUTO-05."
+        ),
+        build_report=lambda: _evaluate_g2(
+            tmp_path / "g2-icf-en", _g2_package_with(_G2_ICF_EN_LINE, "Location: [TO BE COMPLETED]")
+        ),
+        criterion_id="G2-AUTO-05",
+        expect_criterion_status=frozenset({"REVIEW", "BLOCK"}),
+        bad_overall_statuses=frozenset({G2Q.STATUS_APPROVED}),
+        tmp_needed=True,
+    ))
+    errors.append(InjectedError(
+        code="G2-DMP-O-GACH-DUOI",
+        gate="G2 (đạo đức/IRB)",
+        history=(
+            "Đo 03/10/2026: «Thời gian lưu: ___ năm» (ô không nhãn của khuôn sinh) lọt mọi bộ dò cũ — chỉ hợp đồng ô "
+            "trống chung (họ TRONG, đã che chỗ ký/ngày) bắt. Criterion G2-AUTO-05."
+        ),
+        build_report=lambda: _evaluate_g2(
+            tmp_path / "g2-dmp", _g2_package_with(_G2_DMP_LINE, "Thời gian lưu: ___ năm sau kết thúc nghiên cứu.")
+        ),
+        criterion_id="G2-AUTO-05",
+        expect_criterion_status=frozenset({"REVIEW", "BLOCK"}),
+        bad_overall_statuses=frozenset({G2Q.STATUS_APPROVED}),
+        tmp_needed=True,
+    ))
+
     errors.append(InjectedError(
         code="G8-CITATION-NOT-VERIFIED",
         gate="G8 (bình duyệt độc lập)",
@@ -589,6 +755,7 @@ def _clean_baselines(tmp_path: Path) -> Dict[str, Dict[str, Any]]:
         "G3": _evaluate_g3(tmp_path),
         "G4": _evaluate_g4(),
         "G8": _evaluate_g8(),
+        "G2": _evaluate_g2(tmp_path / "g2-baseline"),
     }
 
 
@@ -596,6 +763,7 @@ _CLEAN_BEST_STATUS = {
     "G3": {G3Q.STATUS_CONFIRMED},
     "G4": {G4Q.STATUS_LOCKED},
     "G8": {G8Q.STATUS_REVIEWED},
+    "G2": {G2Q.STATUS_APPROVED},
 }
 
 
@@ -659,7 +827,7 @@ def _print_report(result: Mapping[str, Any]) -> None:
     print(f"CANARY ĐẦU-CUỐI — chuỗi cổng NGHIÊN CỨU G0–G10 (đề tài giả: {result['study']})")
     print("=" * 78)
     print()
-    print("① Gói TỐT (baseline sạch) trên 3 cổng đã nối dây:")
+    print("① Gói TỐT (baseline sạch) trên các cổng đã nối dây:")
     for gate, status in result["clean_baseline_statuses"].items():
         mark = "✅" if not result["clean_baseline_findings"] else "⚠️"
         print(f"   {mark} {gate}: {status}")

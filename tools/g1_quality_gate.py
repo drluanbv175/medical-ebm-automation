@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
 import annex2_quality_gate as A2X
+import placeholder_contract as PC
 import skill_standards as S
 
 STATUS_BLOCKED = "BLOCKED"
@@ -143,24 +144,80 @@ _REVIEW_ROLES = {
 }
 
 
+# Dấu hiệu «chưa điền» CŨ của G1 — chuỗi con trên value.upper(), không phân biệt hoa/thường. GIỮ NGUYÊN.
+_PLACEHOLDER_MARKERS = ("[CẦN", "[REQUIRE_HUMAN", "CHƯA XÁC NHẬN")
+# Bổ sung cho vị từ QUYẾT ĐỊNH tiêu chí (_filled) — vá 03/10/2026 theo kiểm toán (đã chạy: mỗi chuỗi dưới đây
+# nằm trong trường gate_params.G1 vẫn ra PASS_G1_CONFIRMED). Hợp marker riêng của G0 («___», «[TODO»,
+# «SUY RA TỪ TOPIC» = ô P/I/E của khuôn A1, «XXX») để một trường dùng chung giữa G0/G1 được chấm cùng một
+# kiểu; cộng ô mẫu của CHÍNH khuôn G1 mà hợp đồng chung chưa có: «[CHỜ …]» (thẻ chờ của SAP),
+# «[từ §2 Bias Control]» (con trỏ đứng thay nội dung), «[tỷ lệ/trung bình]» (lựa chọn chưa chốt ở SAP §12)
+# và mặt nạ ngày «[DD/MM/YYYY]». Cố ý KHÔNG đưa vào _present: _present còn dựng chữ cho artifact (_text, kể
+# cả TIÊU ĐỀ PubMed ở A2b) — «47,XXX» trong một tiêu đề thật không được bị thay bằng [CẦN BỔ SUNG].
+_FIELD_EXTRA_MARKERS = (
+    "[TODO", "___", "SUY RA TỪ TOPIC", "XXX",
+    "[CHỜ", "[TỪ §", "[TỶ LỆ/TRUNG BÌNH]", "[DD/MM/YYYY]",
+)
+
+
+def _chuoi_that(value: str, them: Sequence[str] = ()) -> bool:
+    """Một CHUỖI có nội dung thật không: marker cũ G1 (nguyên văn) VÀ hợp đồng chung (mọi họ) [+ `them`]."""
+    text = value.strip()
+    if not text:
+        return False
+    upper = text.upper()
+    if any(marker in upper for marker in _PLACEHOLDER_MARKERS):
+        return False
+    return PC.co_noi_dung_that(text, them=them)
+
+
 def _present(value: Any) -> bool:
+    """Có nội dung thật không — dùng để CHỌN NGUỒN (_first_present) và DỰNG CHỮ artifact (_text).
+
+    Chuỗi: marker cũ + hợp đồng chung `placeholder_contract` (vá 03/10/2026: «[địa điểm]», «[TO BE
+    COMPLETED]», «[DỰ THẢO] …», «<CẦN …>», «thuốc/can thiệp X», «……», chuỗi chỉ toàn ô tick… không còn
+    được coi là đã điền). Danh sách/dict: GIỮ any() cũ — để _first_present không lặng lẽ bỏ một nguồn chỉ vì
+    MỘT phần tử còn trống rồi lấy nguồn dự phòng; phần tử trống đó do _filled bắt khi chấm tiêu chí.
+    """
     if value is None:
         return False
     if isinstance(value, bool):
         return value
     if isinstance(value, str):
-        text = value.strip()
-        if not text:
-            return False
-        return not any(
-            marker in text.upper()
-            for marker in ("[CẦN", "[REQUIRE_HUMAN", "CHƯA XÁC NHẬN")
-        )
+        return _chuoi_that(value)
     if isinstance(value, Mapping):
         return any(_present(v) for v in value.values())
     if isinstance(value, (list, tuple, set)):
         return any(_present(v) for v in value)
     return True
+
+
+def _con_o_trong(value: Any) -> bool:
+    """True khi giá trị (hoặc phần tử con) là chuỗi CÓ CHỮ nhưng còn dấu hiệu chưa điền (kể cả marker bổ sung)."""
+    if isinstance(value, str):
+        return bool(value.strip()) and not _chuoi_that(value, _FIELD_EXTRA_MARKERS)
+    if isinstance(value, Mapping):
+        return any(_con_o_trong(v) for v in value.values())
+    if isinstance(value, (list, tuple, set)):
+        return any(_con_o_trong(v) for v in value)
+    return False
+
+
+def _filled(value: Any) -> bool:
+    """Vị từ QUYẾT ĐỊNH tiêu chí G1: có nội dung thật VÀ không phần tử nào còn ô trống/nhãn nháp.
+
+    Khác _present ở danh sách/dict («["Khoa A", "___"]» là CHƯA điền) và ở marker bổ sung.
+    """
+    return _present(value) and not _con_o_trong(value)
+
+
+def _mo_ta(*sources: Any) -> str:
+    """Nhãn bằng chứng 'có' / 'còn ô trống/nhãn nháp' / 'thiếu' cho giá trị chọn theo _first_present."""
+    chosen = _first_present(*sources) if len(sources) > 1 else (sources[0] if sources else None)
+    if _filled(chosen):
+        return "có"
+    if any(_con_o_trong(v) for v in (chosen, *sources)):
+        return "còn ô trống/nhãn nháp"
+    return "thiếu"
 
 
 def _text(value: Any, fallback: str = "[CẦN BỔ SUNG]") -> str:
@@ -206,9 +263,9 @@ def _valid_review_time(value: Any) -> bool:
 
 
 def _list_complete(value: Any) -> bool:
-    """True khi danh sách có ít nhất một mục nội dung thật."""
+    """True khi danh sách KHÔNG rỗng và MỌI mục là nội dung thật (không còn ô trống/nhãn nháp)."""
     return isinstance(value, (list, tuple)) and bool(value) and all(
-        _present(item) for item in value
+        _filled(item) for item in value
     )
 
 
@@ -268,7 +325,7 @@ def _estimand_complete(g1: Mapping[str, Any]) -> bool:
         "intercurrent_events_strategy",
         "population_summary_measure",
     )
-    return all(_present(estimand.get(key)) for key in required)
+    return all(_filled(estimand.get(key)) for key in required)
 
 
 def build_protocol_core(
@@ -877,12 +934,14 @@ def evaluate_g1_quality(
         "PI/methodologist phải pin thiết kế sau khi đọc lại khoảng trống.",
     ))
 
-    primary_present = _present(design.get("primary"))
+    # «[Đã pin bởi bác sĩ — …]» (run_g1_auto._apply_design_pin) là nội dung HỢP LỆ của alternative_1/2 —
+    # hợp đồng chung cố ý không khớp nó (không có quy tắc «ngoặc chung»), nên thiết kế đã pin vẫn PASS ở đây.
+    primary_present = _filled(design.get("primary"))
     alternatives_complete = all(
-        _present(design.get(key))
+        _filled(design.get(key))
         for key in ("alternative_1", "alternative_2")
     )
-    rationale_present = _present(design.get("rationale"))
+    rationale_present = _filled(design.get("rationale"))
     draft_rationale_present = bool(str(design.get("rationale") or "").strip())
     # SỬA 2026-07-31 (audit tautology vòng 2 — reverse-tautology CRITICAL):
     # ngưỡng >=7 hardcode cho MỌI thiết kế, nhưng run_g1_auto.py::
@@ -1041,31 +1100,51 @@ def evaluate_g1_quality(
     g1 = _g1_meta(meta)
     pinned_design = _first_present(meta.get("design_code"), g1.get("design"))
     pin_matches = _present(pinned_design) and str(pinned_design).strip() == internal
-    design_confirmed = bool(g1.get("design_confirmed")) and pin_matches
+    # Vá 03/10/2026: design_rationale không bắt buộc, nhưng ĐÃ khai thì không được còn ô trống/nhãn nháp
+    # (kiểm toán: trường này chưa từng được chấm — «[CẦN …]»/«___» ở đây vẫn PASS).
+    rationale_residue = _con_o_trong(g1.get("design_rationale"))
+    design_confirmed = bool(g1.get("design_confirmed")) and pin_matches and not rationale_residue
     human.append(_criterion(
         "G1-HUMAN-01",
         "PI/methodologist xác nhận thiết kế",
         "PASS" if design_confirmed else "REVIEW",
-        f"pin={pinned_design!r}; design_confirmed={bool(g1.get('design_confirmed'))}",
-        "Điền design_code/gate_params.G1.design và design_confirmed=true.",
+        f"pin={pinned_design!r}; design_confirmed={bool(g1.get('design_confirmed'))}"
+        + ("; design_rationale=còn ô trống/nhãn nháp" if rationale_residue else ""),
+        "Điền design_code/gate_params.G1.design và design_confirmed=true."
+        + (" Gỡ ô trống/nhãn nháp còn sót trong design_rationale." if rationale_residue else ""),
     ))
 
     objectives = _objectives(meta)
     outcome = _outcome_components(meta)
-    outcome_complete = all(_present(value) for value in outcome.values())
+    # Kết cục chính dạng dict: ô trống ở BẤT KỲ khoá nào (kể cả khoá đồng nghĩa measure/unit…) đều chặn — nếu
+    # không, «measure: "___"» bị _first_present bỏ qua rồi lấy «unit» thay, lặng lẽ qua cổng.
+    outcome_complete = all(_filled(value) for value in outcome.values()) and not _con_o_trong(
+        _primary_outcome(meta)
+    )
     research_question = g1.get("research_question")
+    # Trường KHÔNG bắt buộc (vá 03/10/2026): đã khai thì không được còn ô trống/nhãn nháp.
+    optional_fields = [("secondary_outcomes", g1.get("secondary_outcomes"))]
+    if internal not in ("qualitative", "sr_ma"):  # hai thiết kế này BẮT BUỘC research_question (chấm riêng)
+        optional_fields.append(("research_question", research_question))
+    optional_residue = [key for key, value in optional_fields if _con_o_trong(value)]
+    optional_note = (
+        f"; còn ô trống/nhãn nháp ở trường tuỳ chọn: {', '.join(optional_residue)}"
+        if optional_residue else ""
+    )
     if internal == "qualitative":
         objective_ok = (
             _list_complete(objectives)
-            and _present(research_question)
-            and _present(g1.get("central_phenomenon"))
-            and _present(g1.get("qualitative_approach"))
+            and _filled(research_question)
+            and _filled(g1.get("central_phenomenon"))
+            and _filled(g1.get("qualitative_approach"))
+            and not optional_residue
         )
         objective_evidence = (
             f"objectives={'đủ' if _list_complete(objectives) else 'thiếu'}; "
-            f"research_question={'có' if _present(research_question) else 'thiếu'}; "
-            f"central_phenomenon={'có' if _present(g1.get('central_phenomenon')) else 'thiếu'}; "
-            f"qualitative_approach={'có' if _present(g1.get('qualitative_approach')) else 'thiếu'}"
+            f"research_question={_mo_ta(research_question)}; "
+            f"central_phenomenon={_mo_ta(g1.get('central_phenomenon'))}; "
+            f"qualitative_approach={_mo_ta(g1.get('qualitative_approach'))}"
+            + optional_note
         )
         objective_action = (
             "Điền objectives, research_question, central_phenomenon và "
@@ -1075,19 +1154,23 @@ def evaluate_g1_quality(
         objective_ok = (
             _list_complete(objectives)
             and outcome_complete
-            and (internal != "sr_ma" or _present(research_question))
+            and (internal != "sr_ma" or _filled(research_question))
+            and not optional_residue
         )
         objective_evidence = (
             f"objectives={'đủ' if _list_complete(objectives) else 'thiếu'}; "
-            f"outcome_name={'có' if _present(outcome['name']) else 'thiếu'}; "
-            f"measure={'có' if _present(outcome['measure']) else 'thiếu'}; "
-            f"timepoint={'có' if _present(outcome['timepoint']) else 'thiếu'}; "
-            f"type={'có' if _present(outcome['type']) else 'thiếu'}"
+            f"outcome_name={_mo_ta(outcome['name'])}; "
+            f"measure={_mo_ta(outcome['measure'])}; "
+            f"timepoint={_mo_ta(outcome['timepoint'])}; "
+            f"type={_mo_ta(outcome['type'])}"
         )
+        if _con_o_trong(_primary_outcome(meta)):
+            objective_evidence += "; primary_outcome còn ô trống/nhãn nháp"
         if internal == "sr_ma":
             objective_evidence += (
-                f"; research_question={'có' if _present(research_question) else 'thiếu'}"
+                f"; research_question={_mo_ta(research_question)}"
             )
+        objective_evidence += optional_note
         objective_action = (
             "Điền objectives và primary_outcome gồm tên, định nghĩa/công cụ đo, "
             "thời điểm và loại dữ liệu."
@@ -1117,7 +1200,7 @@ def evaluate_g1_quality(
             and _list_complete(exclusion)
             and _list_complete(sources)
             and all(
-                _present(value)
+                _filled(value)
                 for value in (
                     g1.get("search_strategy"),
                     g1.get("search_last_date"),
@@ -1128,9 +1211,9 @@ def evaluate_g1_quality(
         frame_evidence = (
             f"eligibility={'đủ' if _list_complete(inclusion) and _list_complete(exclusion) else 'thiếu'}; "
             f"information_sources={'có' if _list_complete(sources) else 'thiếu'}; "
-            f"search_strategy={'có' if _present(g1.get('search_strategy')) else 'thiếu'}; "
-            f"search_last_date={'có' if _present(g1.get('search_last_date')) else 'thiếu'}; "
-            f"selection_process={'có' if _present(g1.get('study_selection_process')) else 'thiếu'}"
+            f"search_strategy={_mo_ta(g1.get('search_strategy'))}; "
+            f"search_last_date={_mo_ta(g1.get('search_last_date'))}; "
+            f"selection_process={_mo_ta(g1.get('study_selection_process'))}"
         )
         frame_action = (
             "Điền eligibility, information_sources, search_strategy, "
@@ -1138,17 +1221,17 @@ def evaluate_g1_quality(
         )
     else:
         frame_ok = (
-            all(_present(v) for v in (population, setting, period, recruitment))
+            all(_filled(v) for v in (population, setting, period, recruitment))
             and _list_complete(inclusion)
             and _list_complete(exclusion)
         )
         frame_evidence = (
-            f"population={'có' if _present(population) else 'thiếu'}; "
+            f"population={_mo_ta(meta.get('population'), g1.get('population'))}; "
             f"inclusion={'có' if _list_complete(inclusion) else 'thiếu'}; "
             f"exclusion={'có' if _list_complete(exclusion) else 'thiếu'}; "
-            f"recruitment={'có' if _present(recruitment) else 'thiếu'}; "
-            f"setting={'có' if _present(setting) else 'thiếu'}; "
-            f"study_period={'có' if _present(period) else 'thiếu'}"
+            f"recruitment={_mo_ta(recruitment)}; "
+            f"setting={_mo_ta(meta.get('setting'), g1.get('setting'))}; "
+            f"study_period={_mo_ta(meta.get('study_period'), g1.get('study_period'))}"
         )
         frame_action = (
             "Điền population, inclusion/exclusion criteria, recruitment_strategy, "
@@ -1171,7 +1254,7 @@ def evaluate_g1_quality(
     follow_up = g1.get("follow_up_schedule")
     if internal == "qualitative":
         treatment_frame_ok = all(
-            _present(value)
+            _filled(value)
             for value in (
                 g1.get("qualitative_approach"),
                 g1.get("data_collection_method"),
@@ -1179,32 +1262,34 @@ def evaluate_g1_quality(
             )
         )
         treatment_evidence = (
-            f"qualitative_approach={'có' if _present(g1.get('qualitative_approach')) else 'thiếu'}; "
-            f"data_collection_method={'có' if _present(g1.get('data_collection_method')) else 'thiếu'}; "
-            f"saturation_criterion={'có' if _present(g1.get('saturation_criterion')) else 'thiếu'}"
+            f"qualitative_approach={_mo_ta(g1.get('qualitative_approach'))}; "
+            f"data_collection_method={_mo_ta(g1.get('data_collection_method'))}; "
+            f"saturation_criterion={_mo_ta(g1.get('saturation_criterion'))}"
         )
         treatment_action = (
             "Điền qualitative_approach, data_collection_method và saturation_criterion."
         )
     elif internal == "sr_ma":
         treatment_frame_ok = all(
-            _present(value) for value in (intervention, comparator)
+            _filled(value) for value in (intervention, comparator)
         )
         treatment_evidence = (
-            f"intervention_or_exposure={'có' if _present(intervention) else 'thiếu'}; "
-            f"comparator={'có' if _present(comparator) else 'thiếu'}"
+            f"intervention_or_exposure={_mo_ta(intervention)}; "
+            f"comparator={_mo_ta(comparator)}"
         )
         treatment_action = (
             "Điền intervention_or_exposure và comparator hoặc lý do N/A trong PICO."
         )
     else:
+        # «N/A — <lý do>» (vd C1a: «N/A — thiết kế mô tả cắt ngang…») là câu trả lời HỢP LỆ — hành động bên dưới
+        # cho phép «lý do N/A»; hợp đồng chung không có luật «N/A» nên vá 03/10/2026 không đổi hành vi này.
         treatment_frame_ok = all(
-            _present(value) for value in (intervention, comparator, follow_up)
+            _filled(value) for value in (intervention, comparator, follow_up)
         )
         treatment_evidence = (
-            f"intervention_or_exposure={'có' if _present(intervention) else 'thiếu'}; "
-            f"comparator={'có' if _present(comparator) else 'thiếu'}; "
-            f"follow_up_schedule={'có' if _present(follow_up) else 'thiếu'}"
+            f"intervention_or_exposure={_mo_ta(intervention)}; "
+            f"comparator={_mo_ta(comparator)}; "
+            f"follow_up_schedule={_mo_ta(follow_up)}"
         )
         treatment_action = (
             "Điền intervention_or_exposure, comparator (hoặc lý do N/A) "

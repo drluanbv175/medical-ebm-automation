@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+import placeholder_contract as PC
+
 VERSION = "ICH E6(R3) Annex 2 Step 4"
 ADOPTED_DATE = "2026-06-03"
 SOURCE_URL = (
@@ -61,13 +63,23 @@ METHOD_G2_FIELDS = {
 
 
 def _present(value: Any) -> bool:
+    """Trường Annex 2 có nội dung thật không (dùng chung cho G1 và G2).
+
+    Giữ nguyên hai dấu hiệu cũ («[CẦN», «[DỰ THẢO]» — phân biệt hoa/thường) rồi AND với vị từ trường của hợp
+    đồng chung `placeholder_contract.co_noi_dung_that` (mọi họ). Vá 03/10/2026 (kiểm toán, đã chạy: mỗi giá
+    trị dưới đây từng cho G1-AUTO-02b PASS): «[cần PI ấn định]» viết thường, «[DỰ THẢO — chờ]», «___»,
+    «[TO BE COMPLETED]», «CHƯA XÁC NHẬN»; danh sách/dict trước chỉ cần KHÔNG rỗng (["[CẦN]"] và
+    {"x": "[CẦN]"} lọt) — nay mọi phần tử phải thật.
+    """
     if value is None or value is False:
         return False
     if isinstance(value, str):
         text = value.strip()
-        return bool(text) and "[CẦN" not in text and "[DỰ THẢO]" not in text
+        if not text or "[CẦN" in text or "[DỰ THẢO]" in text:
+            return False
+        return PC.co_noi_dung_that(text)
     if isinstance(value, (list, tuple, set, dict)):
-        return bool(value)
+        return bool(value) and PC.co_noi_dung_that(value)
     return True
 
 
