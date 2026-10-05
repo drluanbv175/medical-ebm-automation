@@ -3262,7 +3262,24 @@ def hau_xu_ly_script_r(code: str, study: str, ket_cuc_phu=(), la_03: bool = Fals
                  "# GHI PHIÊN BẢN MÔI TRƯỜNG ĐỂ TÁI LẬP — chạy cùng lần phân tích thật\n"
                  "# ----------------------------------------------------------\n"
                  'writeLines(capture.output(sessionInfo()), file.path(OUTPUT, "session_info.txt"))\n'
-                 "# renv::snapshot(prompt = FALSE)   # khoá phiên bản gói vào renv.lock khi chạy phân tích thật\n")
+                 "# renv::snapshot(prompt = FALSE)   # khoá phiên bản gói vào renv.lock khi chạy phân tích thật\n"
+                 # VÁ 04/10/2026 (điều phối G6↔G7): G7-AUTO-03 đối chiếu N bản thảo với tóm tắt G6 mang sha256 bản
+                 # khoá — Python CLI đã ghi G6_analysis_summary.json, đường R thì chưa ghi gì máy đọc được.
+                 "\n# ----------------------------------------------------------\n"
+                 "# TÓM TẮT CHO G7 — N phân tích + dấu dataset khoá (G7 đối chiếu N với bản thảo). Tự ghi khi đối tượng\n"
+                 "# phân tích đã nạp: df (cá thể) · extracted (SR/MA — số nghiên cứu) · codes (định tính — số người/bản gỡ băng)\n"
+                 "# ----------------------------------------------------------\n"
+                 'DT_G7 <- Filter(function(x) is.data.frame(get0(x, envir = globalenv(), inherits = FALSE)),\n'
+                 '                c("df", "extracted", "codes"))\n'
+                 "if (length(DT_G7) > 0) {\n"
+                 "  D_G7 <- get(DT_G7[1], envir = globalenv())\n"
+                 '  N_G7 <- if (DT_G7[1] == "codes" && "transcript_id" %in% names(D_G7)) length(unique(D_G7$transcript_id))'
+                 " else nrow(D_G7)\n"
+                 "  writeLines(sprintf('{\"study\": \"%s\", \"nguon\": \"03_analysis.R\", \"doi_tuong\": \"%s\", "
+                 "\"n_total\": %d, \"locked_data_sha256\": \"%s\", \"generated\": \"%s\"}',\n"
+                 '                     STUDY, DT_G7[1], as.integer(N_G7), LOCKED_SHA, format(Sys.time(), "%Y-%m-%dT%H:%M:%S")),\n'
+                 '             file.path(OUTPUT, "G6_analysis_summary.json"))\n'
+                 "}\n")
     return code
 
 

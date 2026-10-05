@@ -60,6 +60,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import g7_quality_gate as G7Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G7)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import skill_standards as S  # noqa: E402  (hằng chuẩn dùng chung — Helsinki, 04/10/2026)
 
 # ════════════════════════════════════════════════════════════════════════════
 # 1. HẰNG SỐ — CHECKLIST BÁO CÁO THEO CHUẨN
@@ -806,7 +807,8 @@ def build_pmid_meta(pubmed_raw: dict) -> dict:
 # 3. GUARDRAIL R1-R7 ĐẶC THÙ G7
 # ════════════════════════════════════════════════════════════════════════════
 
-def guardrail_g7(artifact: str) -> tuple[list[str], list[str]]:
+def guardrail_g7(artifact: str, *, dang_ky_g2: Optional[str] = None,
+                 ket_qua_that: bool = False) -> tuple[list[str], list[str]]:
     """
     Kiểm tra artifact A8:
       R1 — Không PII
@@ -855,7 +857,12 @@ def guardrail_g7(artifact: str) -> tuple[list[str], list[str]]:
         r'(?:Đăng\s*ký|Registration)[:\s]+NCT\d{8}(?!\s*\[CẦN)',
         artifact, re.IGNORECASE
     )
-    if fake_nct:
+    # VÁ 04/10/2026 (soát từng cổng, G7-08): số đăng ký TRÙNG số mà G2 ĐÃ DUYỆT ghi nhận không phải bịa — bản cũ chặn
+    # MỌI số NCT thật của một bản thảo đã hoàn thiện khi chấm lại từ đĩa.
+    nct_g2 = re.search(r"NCT\d{8}", str(dang_ky_g2 or ""))
+    if fake_nct and nct_g2 and nct_g2.group(0) in fake_nct.group(0):
+        warnings.append(f"R2 ✅ Số đăng ký {nct_g2.group(0)} khớp G2 đã duyệt")
+    elif fake_nct:
         errors.append(f"R2 🔴 Số NCT có vẻ tự gán: '{fake_nct.group()}' — dùng [CẦN SỐ ĐĂNG KÝ]")
     else:
         warnings.append("R2 ✅ Không phát hiện số NCT bịa đặt")
@@ -867,15 +874,23 @@ def guardrail_g7(artifact: str) -> tuple[list[str], list[str]]:
         warnings.append("R3 ✅ Không tự claim LOCKED")
 
     # R4 — Nhãn DRAFT đủ
+    # VÁ 04/10/2026 (soát từng cổng, G7-08 + G7-06): nhãn DRAFT bảo vệ KHUNG do máy sinh khi CHƯA có kết quả thật. Bộ
+    # quét ô chưa soạn dùng chung với G8 (G7-AUTO-05/G8-AUTO-04) lại coi chính các dòng banner «DRAFT — BẢN NHÁP TỰ
+    # ĐỘNG», «IMRAD SKELETON» là ô mẫu phải gỡ ⇒ đòi DRAFT vô điều kiện khiến bản thảo HOÀN THIỆN không bao giờ PASS.
+    # Kết quả đã THẬT (results_final + G5/G6 đạt + tóm tắt G6 khớp — g7_quality_gate tính) ⇒ nhãn không còn bắt buộc.
     draft_count = artifact.count("DRAFT")
     if draft_count >= 2:
         warnings.append(f"R4 ✅ Nhãn DRAFT đủ ({draft_count} lần)")
+    elif ket_qua_that:
+        warnings.append("R4 ✅ Kết quả đã THẬT — bản thảo hoàn thiện không còn bắt buộc nhãn DRAFT")
     else:
         errors.append(f"R4 🔴 Thiếu nhãn DRAFT (chỉ {draft_count} lần — cần ≥2)")
 
     # R5 — Không hardcode kết quả thống kê dạng HR=0.xx (95%CI
+    # VÁ 04/10/2026 (G7-08): mẫu cũ chỉ bắt «HR = 0.64 (95% CI» — lọt «HR 0,64; 95%CI», «cOR: 1,8 [95% CI»; khi kết quả
+    # ĐÃ THẬT (results_final + G5/G6 đạt + đầu ra G6 khớp, do g7_quality_gate tính) thì chỉ còn là cảnh báo.
     fake_result = re.search(
-        r'(?:HR|OR|RR|ARR|NNT)\s*=\s*\d+\.\d+\s*[\(\[]95%\s*CI',
+        r'(?:HR|OR|RR|ARR|NNT|cOR)\s*[=:]?\s*\d+[.,]\d+\s*[;,(\[]\s*95\s*%\s*CI',
         artifact, re.IGNORECASE
     )
     if fake_result:
@@ -885,6 +900,9 @@ def guardrail_g7(artifact: str) -> tuple[list[str], list[str]]:
         context   = artifact[ctx_start:ctx_end]
         if "[CẦN KẾT QUẢ THẬT" in context:
             warnings.append("R5 ✅ Placeholder kết quả có mẫu cú pháp — OK (nằm trong [CẦN KẾT QUẢ THẬT])")
+        elif ket_qua_that:
+            warnings.append("R5 ⚠ Có ước lượng thống kê trong bản thảo — kết quả đã THẬT (results_final + G5/G6 đạt); "
+                            "đối chiếu từng số với đầu ra G6 trước khi nộp")
         else:
             errors.append("R5 🔴 Có kết quả thống kê hardcoded trong manuscript — xóa hoặc đổi thành [CẦN KẾT QUẢ THẬT]")
     else:
@@ -916,10 +934,12 @@ def guardrail_g7(artifact: str) -> tuple[list[str], list[str]]:
     _has_numbers = bool(re.search(r'\b\d+[.,]\d+\s*%|\bn\s*=\s*\d+|\bp\s*[=<]\s*0[.,]\d+',
                                   _results_sec))
     if _results_sec and _has_numbers and "[CẦN KẾT QUẢ THẬT" not in _results_sec:
+        # VÁ 04/10/2026 (G7-05): nói ĐÚNG phạm vi bộ chấm đối chiếu — bản cũ hứa «đối chiếu với G6» khi bộ chấm chỉ
+        # đọc cờ results_final.
         warnings.append(
             "R6 ⚠ Mục KẾT QUẢ có số liệu và không còn ô [CẦN KẾT QUẢ THẬT] — "
-            "g7_quality_gate.py sẽ đối chiếu với G6/results_final xem số này có "
-            "thật không"
+            "g7_quality_gate.py kiểm tóm tắt G6 (G6_analysis_summary.json) từ ĐÚNG dataset đã khoá và N phân tích "
+            "có trong Tóm tắt/Kết quả; từng ước lượng/KTC còn lại tác giả tự đối chiếu với đầu ra G6"
         )
     else:
         warnings.append(
@@ -981,9 +1001,14 @@ def generate_manuscript(
     crf_blocks: Optional[dict] = None,
     bias_controls: Optional[list] = None,
     outcome_ordinal: bool = False,
+    mien_dong_thuan: bool = False,
 ) -> str:
     """
     Sinh toàn bộ bản thảo IMRAD skeleton A8.
+
+    VÁ 04/10/2026 (soát từng cổng G7-03/G7-04): main() đưa vào irb_number/g4_status/g4_lock_date ĐÃ THEO NGUỒN THẨM
+    QUYỀN (chữ ký sổ cái + hợp đồng chất lượng G2/G4) — không còn từ trường phẳng/cũ của checkpoint; `mien_dong_thuan`
+    = IRB duyệt MIỄN phiếu đồng thuận (g2_icf_waiver_approved) ⇒ không in câu «mọi người tham gia ký phiếu».
     Phần Results và Conclusions chỉ có placeholder [CẦN KẾT QUẢ THẬT].
 
     outcome_ordinal (thêm 2026-09-01): SAP đã khoá khai mô hình thứ bậc
@@ -1086,9 +1111,9 @@ def generate_manuscript(
         if effect_val else "[CẦN EFFECT SIZE — từ y văn/pilot data]"
     )
     sap_lock_text = (
-        f"SAP phiên bản 1.0 ký ngày {g4_lock_date} (G4=LOCKED)"
-        if g4_lock_date
-        else "SAP phiên bản 1.0 [CẦN NGÀY KÝ G4 — G4 hiện PENDING]"
+        f"kế hoạch phân tích thống kê (SAP) đã khoá, ký ngày {g4_lock_date}"
+        if g4_lock_date and g4_status == "LOCKED"
+        else "SAP [CẦN NGÀY KÝ G4 — SAP chưa khoá thật (chữ ký sổ cái + PASS_G4_SAP_LOCKED)]"
     )
 
     # THÊM 2026-07-06: gợi ý phương pháp thống kê §6 ĐỘNG theo effect_type (đã
@@ -1100,8 +1125,10 @@ def generate_manuscript(
         "MD": "t-test/ANCOVA/hồi quy tuyến tính (kết cục liên tục)",
         "HR": "Cox proportional hazards regression (kết cục thời gian-đến-biến cố)",
         "OR": "logistic regression (kết cục nhị phân)",
-        "RR": "log-binomial/Poisson regression (kết cục nhị phân)",
-        "ARR%": "so sánh hai tỷ lệ + hồi quy nhị phân",
+        # VÁ 04/10/2026 (điều phối G6↔G7): khớp đúng mô hình mà G6 sinh cho RR/ARR% (G6-04) — Poisson sai số robust
+        # (Zou 2004, PMID 15033648) và hiệu nguy cơ — không còn gợi ý chung chung lệch script phân tích.
+        "RR": "hồi quy Poisson sai số robust (Zou 2004) hoặc log-binomial — RR + KTC 95% (kết cục nhị phân)",
+        "ARR%": "hiệu nguy cơ (risk difference) + KTC 95% (Newcombe) — kết cục nhị phân",
         "AUC": "phân tích ROC/AUC (độ chính xác chẩn đoán)",
         # THÊM 2026-09-01: PREVALENCE (cắt ngang tính cỡ mẫu theo độ chính
         # xác — Lwanga & Lemeshow) trước đây rơi về câu trung tính, tức đề
@@ -1332,7 +1359,9 @@ def generate_manuscript(
         "Ngưỡng ý nghĩa thống kê: α = " + str(alpha) + " (two-sided); "
         "mọi ước lượng kèm 95%CI.  ",
         "",
-        "**§6b Kiểm soát sai lệch (Bias) — STROBE mục 9:**  ",
+        # VÁ 04/10/2026 (G7-10): «STROBE mục 9» chỉ đúng cho thiết kế quan sát theo STROBE — bản cũ in cho MỌI thiết kế.
+        "**§6b Kiểm soát sai lệch (Bias)"
+        + (" — STROBE mục 9" if design_code in ("cohort", "case_control", "cross_sectional") else "") + ":**  ",
         build_bias_control_block(bias_controls or []),
         "",
         "**§7 Đạo đức và đăng ký:**  ",
@@ -1347,11 +1376,16 @@ def generate_manuscript(
         # Nay: có bằng chứng G2 thật thì viết thể khẳng định; không có thì nói thẳng
         # là CHƯA, và không mượn danh Helsinki.
         (
-            f"Nghiên cứu được Hội đồng Đạo đức phê duyệt (số: {irb_number}; "
-            f"ICF phiên bản: {icf_version}). "
+            f"Nghiên cứu được Hội đồng Đạo đức phê duyệt (số: {irb_number}"
+            + ("" if mien_dong_thuan else f"; ICF phiên bản: {icf_version}") + "). "
             f"Đăng ký nghiên cứu: {registration}. "
-            "Mọi người tham gia ký Phiếu đồng thuận tự nguyện trước khi tham gia. "
-            "Thực hiện theo Tuyên ngôn Helsinki 2013 và TT43/2024/TT-BYT.  "
+            # VÁ 04/10/2026 (G7-04): IRB duyệt MIỄN đồng thuận ⇒ nói đúng điều đó; chưa có phiên bản ICF đã duyệt ⇒ ô
+            # [CẦN] thay cho câu khẳng định; Helsinki theo hằng dùng chung (bản 2024, như G2/G10).
+            + ("Hội đồng Đạo đức chấp thuận MIỄN lấy phiếu đồng thuận cho nghiên cứu này. " if mien_dong_thuan
+               else "Mọi người tham gia ký Phiếu đồng thuận tự nguyện trước khi tham gia. "
+               if not str(icf_version).startswith("[CẦN")
+               else "[CẦN PHIÊN BẢN ICF ĐÃ DUYỆT — chưa được viết 'người tham gia đã ký phiếu đồng thuận'] ")
+            + f"Thực hiện theo {S.TUYEN_NGON_HELSINKI} và TT43/2024/TT-BYT.  "
             if not str(irb_number).startswith("[CẦN")
             else "[CẦN — CHƯA CÓ PHÊ DUYỆT ĐẠO ĐỨC THẬT. Đề tài này chưa có "
                  "G2_checkpoint.json với số IRB. KHÔNG được viết 'nghiên cứu được Hội "
@@ -1817,7 +1851,7 @@ def write_checkpoint(
         "I. Introduction §3 (mục tiêu + thiết kế từ G1)",
         "II. Methods §1 (thiết kế + chuẩn báo cáo từ G1)",
         "II. Methods §5 (cỡ mẫu từ G3)",
-        "II. Methods §6b (kiểm soát sai lệch — STROBE mục 9 — từ G1 bias_controls)",
+        "II. Methods §6b (kiểm soát sai lệch — từ G1 bias_controls)",
         "II. Methods §7 (đạo đức + đăng ký từ G2)",
         "IV. Discussion §2 (đối chiếu y văn — PMID seed từ G0)",
         "IV. Discussion §4 (điểm mạnh — từ G1+G4)",
@@ -1924,6 +1958,23 @@ def write_checkpoint(
 # ════════════════════════════════════════════════════════════════════════════
 # 9. MAIN
 # ════════════════════════════════════════════════════════════════════════════
+
+def _ngay_khoa_sap(study: str, g4: dict) -> Optional[str]:
+    """Ngày ký SAP (YYYY-MM-DD) cho câu «SAP đã khoá, ký ngày …» — CHỈ gọi khi G4 đã khoá THẬT.
+
+    VÁ 04/10/2026 (soát từng cổng G7-03): `g4_lock_date` chỉ được ghi khi bộ chấm G4 chạy lại SAU lúc ký (ghi từ
+    timestamp sổ cái); SAP vừa ký mà chưa ai chấm lại G4 thì trường còn trống ⇒ bản thảo in «SAP chưa khoá thật» cho
+    một SAP đã khoá. Vắng ⇒ đọc thẳng bản ghi CÓ THẨM QUYỀN mới nhất của sổ cái (cùng hàm ledger_approved dùng)."""
+    ngay = str(g4.get("g4_lock_date") or "")
+    if not ngay:
+        try:
+            records = json.loads((BASE / "exports" / study / "approval_ledger.json").read_text(encoding="utf-8"))
+            ban_ghi = GC._latest_authoritative_record(records, "G4", study, BASE)
+        except (OSError, UnicodeDecodeError, ValueError):
+            ban_ghi = None
+        ngay = str((ban_ghi or {}).get("timestamp_utc") or "")
+    return ngay[:10] or None
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -2040,8 +2091,11 @@ def main() -> None:
                     reporting_std = f"{k} {yr}"
                     break
 
-    # Từ G2
-    irb_number  = g2.get("g2_irb_number")  or "[CẦN SỐ IRB THẬT]"
+    # Từ G2 — VÁ 04/10/2026 (soát từng cổng, G7-03): «đã được IRB phê duyệt» chỉ khi chữ ký sổ cái G2 khớp gói đạo
+    # đức hiện tại VÀ hợp đồng chất lượng G2 đạt (bản cũ tin g2_irb_number — trường có thể còn sót sau khi G2 tụt).
+    # Một nguồn duy nhất cho «G2 đã duyệt» (g7_quality_gate.g2_da_duyet — cùng hợp đồng G5/G6/G10).
+    g2_da_duyet, _g2_ly_do = G7Q.g2_da_duyet(study, out_dir, repo_root=BASE)
+    irb_number  = (g2.get("g2_irb_number") if g2_da_duyet else None) or "[CẦN SỐ IRB THẬT]"
     icf_version = g2.get("g2_icf_version") or "[CẦN PHIÊN BẢN ICF ĐÃ DUYỆT]"
     registration = g2.get("g2_registration") or "[CẦN SỐ ĐĂNG KÝ CLINICALTRIALS.GOV/PROSPERO]"
 
@@ -2062,9 +2116,11 @@ def main() -> None:
     hypothesis_type = g3.get("hypothesis_type") or "superiority"
     margin = g3.get("margin")
 
-    # Từ G4
-    g4_status    = g4.get("g4_status", "PENDING")
-    g4_lock_date = g4.get("g4_lock_date")
+    # Từ G4 — VÁ 04/10/2026 (G7-03): «SAP đã khoá» chỉ khi G4 chấm trực tiếp PASS_G4_SAP_LOCKED (gồm chữ ký); bản cũ
+    # in «ký ngày X (G4=LOCKED)» từ g4_lock_date của checkpoint — trường run_g4_auto/approve_gate không ghi theo khoá thật.
+    sap_khoa     = bool(GC.g4_quality_contract_satisfied(study, repo_root=BASE))
+    g4_status    = "LOCKED" if sap_khoa else str(g4.get("g4_status") or "PENDING")
+    g4_lock_date = _ngay_khoa_sap(study, g4) if sap_khoa else None
 
     print(f"  → G0: topic='{topic[:50]}', {n_sr} SR, {n_rct} RCT, {len(pmids)} PMIDs")
     print(f"  → G1: design_code={design_code}, std={reporting_std}")
@@ -2076,15 +2132,11 @@ def main() -> None:
     print(f"\n📋 Bước 3/8: Chuẩn bị checklist {reporting_std}...")
     std_name, std_total, items_list = _checklist_cho_thiet_ke(design_code)
     # Đếm mục tự điền
-    auto_count  = sum(
-        1 for _, desc, auto in items_list
-        if auto or any(
-            p in desc.lower()
-            for p in {"tóm tắt", "thiết kế", "cỡ mẫu", "đăng ký", "ethics", "irb",
-                       "design", "abstract", "structure", "reporting", "background", "protocol"}
-        )
-    )
-    print(f"  → {auto_count}/{len(items_list)} dòng checklist tự điền từ G0-G4 (chuẩn {std_name} có {std_total} mục chính thức)")
+    # VÁ 04/10/2026 (G7-11): đếm từ CHÍNH khối phụ lục (_render_checklist_block) — bản cũ đếm heuristic từ khoá mà
+    # G7-F3 đã bỏ khỏi phụ lục ⇒ số trên màn hình/checkpoint lệch phụ lục.
+    _khoi, auto_count, so_dong_checklist = _render_checklist_block(items_list, reporting_std, std_total)
+    print(f"  → {auto_count}/{so_dong_checklist} dòng checklist tự điền từ G0-G4 "
+          f"(chuẩn {std_name} có {std_total} mục chính thức)")
 
     # ── Bước 4: Sinh manuscript ──
     print(f"\n✍️  Bước 4/8: Sinh bản thảo IMRAD ({design_code} / {reporting_std})...")
@@ -2122,6 +2174,7 @@ def main() -> None:
         # của G6 — hai cổng phải kể MỘT chuyện về mô hình phân tích chính.
         outcome_ordinal=(design_code == "cross_sectional"
                          and GC.sap_declares_ordinal(out_dir, study)),
+        mien_dong_thuan=g2_da_duyet and g2.get("g2_icf_waiver_approved") is True,
     )
 
     # ── Bước 5: Bảng số từ + checklist ──
@@ -2207,7 +2260,7 @@ def main() -> None:
         md_path=md_path,
         docx_path=docx_path,
         checklist_auto=auto_count,
-        checklist_total=std_total,
+        checklist_total=so_dong_checklist,
         crf_blocks=crf_blocks,
         design_drift_warning=design_drift_warning,
     )
@@ -2264,7 +2317,7 @@ def main() -> None:
     print(f"  💾 Checkpoint:  {cp_path.name}")
     print("\n  THỐNG KÊ BẢN THẢO:")
     print(f"  • PMIDs seed từ G0:   {min(10, len(pmids))} PMID")
-    print(f"  • Mục checklist tự điền: {auto_count}/{std_total}")
+    print(f"  • Mục checklist tự điền: {auto_count}/{so_dong_checklist}")
     print(f"  • Ô [CẦN KẾT QUẢ THẬT]:  {n_can_result}")
     print(f"  • Ô [CẦN] khác:       {n_can_fill}")
     print(f"  • Guardrail:          {guardrail_status}")

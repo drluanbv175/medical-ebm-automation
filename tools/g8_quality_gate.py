@@ -217,6 +217,21 @@ _G7_TEMPLATE_LITERALS = (
     "Kiểm chứng bắt buộc trước khi nộp",
     "(Không liệt kê AI là tác giả",
     "PMID seed",
+    # 04/10/2026 (soát từng cổng G7-06, bộ quét DÙNG CHUNG G7-AUTO-05/G8-AUTO-04): cờ mà doctrine viet-ban-thao.md bắt
+    # gắn cho trích dẫn không xác minh được — «KHÔNG để lọt vào bản nộp» — trước ngày này không họ nhãn nào bắt.
+    "[TRÍCH DẪN CHƯA XÁC MINH",
+    # 05/10/2026 (điều phối G7↔G8): dòng chỉ dẫn «> • …» của khuôn G7 không mang nhãn — trước đây chỉ dòng ĐẦU mỗi khối
+    # bị bắt, các gạch đầu dòng sau (kể cả «Dùng agent `kiem-chung-trich-dan`») lọt vào bản thảo «đã soạn xong».
+    "chứa TOÀN BỘ placeholder",
+    "KHÔNG điền số liệu giả",
+    "cần bác sĩ điền thông tin thực",
+    "dùng làm seed TLTK",
+    "phải chứa: thiết kế + quần thể + kết cục",
+    "Điền sau khi: G5",
+    "Không được điền số liệu ước tính/giả định",
+    "Xác minh tác giả/volume/số/trang toàn văn",
+    "kiem-chung-trich-dan` hoặc PubMed trực tiếp",
+    "Định dạng Vancouver đầy đủ (theo hướng dẫn tác giả tạp chí)",
 )
 # Mẫu riêng của khuôn G7 cần biểu thức. «KẾT QUẢ THẬT» CỐ Ý phân biệt hoa/thường: khuôn luôn in CHỮ HOA («CẦN/CHỜ/
 # yêu cầu KẾT QUẢ THẬT»), còn văn xuôi «kết quả thật sự…» là hợp lệ.

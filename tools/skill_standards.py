@@ -72,6 +72,11 @@ VALID_STATUS_TAGS: Tuple[str, ...] = tuple(STATUS_TAGS.values()) + (
 )
 
 
+# Phiên bản Tuyên ngôn Helsinki DÙNG CHUNG cho mọi cổng in câu tuân thủ (04/10/2026, soát từng cổng G7-04): G7 từng in
+# «Helsinki 2013» trong khi G2 (STANDARDS_BASIS) và G10 dùng bản 2024 — một đề tài nói hai phiên bản khác nhau.
+TUYEN_NGON_HELSINKI = "Tuyên ngôn Helsinki 2024 (WMA)"
+
+
 def is_valid_status_tag(tag_text: str) -> bool:
     """Kiểm 1 chuỗi nhãn (vd '[ĐÃ CUNG CẤP]') có thuộc bộ nhãn skill hợp lệ."""
     return tag_text.strip() in VALID_STATUS_TAGS

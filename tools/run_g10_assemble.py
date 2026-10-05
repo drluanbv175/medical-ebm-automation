@@ -855,7 +855,7 @@ def sec_daoduc(cps, meta) -> str:
         f"**An toàn và xử lý sự cố/biến cố:** {_text(ethics.get('safety'))}.\n\n"
         "**Hồ sơ đạo đức đã sinh tự động (G2):**\n\n"
         f"{doc_txt}\n\n"
-        "Tuân thủ Tuyên ngôn Helsinki 2024, ICH-GCP, Thông tư 43/2024/TT-BYT "
+        f"Tuân thủ {S.TUYEN_NGON_HELSINKI}, ICH-GCP, Thông tư 43/2024/TT-BYT "
         f"{S.TAG_CAN_KIEM_CHUNG_NGUON}. ICF đồng thuận tham gia; tự nguyện; ẩn "
         "danh; bảo mật.\n"
     )

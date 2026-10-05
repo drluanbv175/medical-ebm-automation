@@ -146,10 +146,12 @@ def test_evaluate_g7_quality_hop_le_khi_chen_ten_to_chuc_nhung_co_bang_chung_tha
         "Đề tài đã được Hội đồng Đạo đức Bệnh viện Quân y 175 phê duyệt "
         "(IRB-2026-001)."
     )
+    # 04/10/2026 (G7-01/G7-02): «có IRB thật» = G2 chấm sống PASS (chữ ký + chất lượng), không phải cờ meta.
     report = G7Q.evaluate_g7_quality(
         manuscript_text=text,
         checkpoints=_cps(G2={"gate": "G2", "g2_irb_number": "IRB-2026-001"}),
         meta={"irb_approved": True},
+        tien_de={g: {"status": "PASS", "evidence": f"{g}=PASS"} for g in ("G0", "G1", "G2", "G3", "G4", "G5", "G6")},
     )
     row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-06")
     assert row["status"] == "PASS", row
