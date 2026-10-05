@@ -108,8 +108,7 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 #
 # VÁ 04/10/2026 (soát từng cổng G0–G10): tập này từng THIẾU §4 PHÂN TÍCH CHÍNH và §9 PHÂN TÍCH ĐỘ NHẠY — hai mục
 # mà hướng dẫn nội dung SAP (Gamble C et al. JAMA 2017;318(23):2337-43) coi là lõi — trong khi run_g4_auto.py điền
-# «[CẦN]» vào phương pháp chính khi thiết kế không có khuôn ⇒ SAP KÝ KHOÁ ĐƯỢC dù phân tích chính còn trống. Mục vắng
-# hẳn (biến thể thiết kế) vẫn cho qua như cũ; chỉ mục CÓ MẶT mà còn «[CẦN» mới bị chặn.
+# «[CẦN]» vào phương pháp chính khi thiết kế không có khuôn ⇒ SAP KÝ KHOÁ ĐƯỢC dù phân tích chính còn trống.
 _G4_REQUIRED_SECTIONS = {
     "§1": "Tiêu chí nhận/loại (Quần thể phân tích)",
     "§2": "Kết cục chính",
@@ -118,45 +117,69 @@ _G4_REQUIRED_SECTIONS = {
     "§9": "Phân tích độ nhạy",
     "§10": "Phần mềm + seed",
 }
+# VÁ 04/10/2026 (soát từng cổng, G4-02 — QĐ-1, mặc định an toàn chờ bác sĩ duyệt qua PR): SAP RCT ký khoá được khi
+# §13 giữa kỳ/quy tắc dừng, §14 DMC, §15 tổn hại còn NGUYÊN placeholder — doctrine thiet-ke-nghien-cuu lại dạy «đạt G4
+# khi 15 mục nếu RCT». Nay ba mục này BẮT BUỘC cho RCT (thiết kế khác không sinh chúng). SAP đã ký trước 04/10/2026
+# không bị hạ cấp vì chúng (xem g4_quality_gate._G4_MUC_BAT_BUOC_TU_20261004).
+_G4_REQUIRED_SECTIONS_RCT = {
+    "§13": "Phân tích giữa kỳ / quy tắc dừng",
+    "§14": "Hội đồng theo dõi dữ liệu (DMC/DSMB)",
+    "§15": "Tổn hại; ngừng/đổi can thiệp và tuân thủ",
+}
 
 
-def _g4_sections_still_draft(content: str) -> list[str]:
-    """Trả về danh sách mục §N BẮT BUỘC của SAP còn placeholder '[CẦN' chưa
-    điền. Thiết kế không có một mục nào đó (vd định tính dùng §5 CHIẾN LƯỢC
-    MÃ HÓA thay vì PHÂN TÍCH ĐA BIẾN — vẫn đánh số §5) không bị coi là lỗi
-    riêng biệt; chỉ mục THẬT SỰ tồn tại mà còn placeholder mới bị chặn.
+def _g4_muc_bat_buoc(content: str, design_code: str | None = None) -> dict[str, str]:
+    """Tập mục bắt buộc của MỘT SAP: 6 mục lõi; thêm §13–§15 khi thiết kế là RCT HOẶC chính văn bản đã có các mục đó
+    (SAP mang §13–§15 thì phải điền chúng — không cần biết thiết kế mới chặn được ô trống)."""
+    muc = dict(_G4_REQUIRED_SECTIONS)
+    co_muc_rct = any(re.search(rf"^#{{2,3}}\s+{re.escape(so)}\b", content, re.MULTILINE)
+                     for so in _G4_REQUIRED_SECTIONS_RCT)
+    if str(design_code or "").strip().lower() == "rct" or co_muc_rct:
+        muc.update(_G4_REQUIRED_SECTIONS_RCT)
+    return muc
 
-    NGOẠI LỆ (BH97, 02/09/2026): nếu KHÔNG MỘT mục bắt buộc nào được tìm thấy
-    trong toàn bộ tài liệu, đây không còn là "thiết kế bỏ qua một vài mục" —
-    đó là một tài liệu RỖNG hoặc sai khuôn hoàn toàn. `if start is None:
-    continue` cũ để lọt trường hợp này (0/4 mục ⇒ still_draft=[] ⇒ SAP rỗng
-    ký được), và chữ ký mật mã của G4 chỉ bảo vệ TOÀN VẸN nội dung đã ký,
-    không bảo đảm nội dung đó KHÔNG RỖNG. Ranh giới: VẮNG MỘT VÀI mục (cho
-    qua, biến thể thiết kế hợp lệ) khác VẮNG SẠCH toàn bộ (chặn)."""
+
+def _g4_sections_still_draft(content: str, design_code: str | None = None) -> list[str]:
+    """Trả về danh sách mục §N BẮT BUỘC của SAP còn ô trống chưa điền HOẶC vắng hẳn.
+
+    VÁ 04/10/2026 (soát từng cổng, G4-01): bản cũ `if start is None: continue` cho qua MỤC BẮT BUỘC VẮNG HẲN với lý do
+    «biến thể thiết kế» — nhưng run_g4_auto.generate() in đủ §1–§12 có đánh số cho CẢ 8 thiết kế (định tính vẫn giữ
+    số §5–§9, chỉ đổi tiêu đề), nên «vắng» chỉ có thể là bị XOÁ. Tái hiện: xoá trọn §2/§4/§7/§9 khỏi SAP cohort ⇒
+    still_draft=[] ⇒ ký khoá một SAP không có kết cục chính lẫn phân tích chính. Nay mục bắt buộc vắng ⇒ «— VẮNG».
+    Giữ ngoại lệ BH97: vắng SẠCH mọi mục ⇒ báo một lần «VẮNG SẠCH» (tài liệu rỗng/sai khuôn).
+
+    Ranh giới thân mục: tới tiêu đề §-kế-tiếp HOẶC «## PHẦN» (cùng quy ước g4_quality_gate._section_body) — §15 của RCT
+    là mục cuối PHẦN 3, không được nuốt chứng chỉ khoá PHẦN 5 (PHẦN 5 có tiêu chí riêng G4-AUTO-13).
+    Ô trống nhận diện theo hợp đồng dùng chung `placeholder_contract` (CHUNG-B: «[CẦN», «[CAN …», «[TBD]», «<CẦN»…),
+    không chỉ chuỗi «[CẦN»."""
+    import placeholder_contract as PC  # noqa: PLC0415 — import lười, giữ thời gian nạp approve_gate
+
     lines = content.splitlines()
-    still_draft = []
+    muc_bat_buoc = _g4_muc_bat_buoc(content, design_code)
+    ket_qua: list[str] = []
     tim_thay = 0
-    for section_num, label in _G4_REQUIRED_SECTIONS.items():
+    for section_num, label in muc_bat_buoc.items():
         start = None
         for i, line in enumerate(lines):
             if re.match(rf'^#{{2,3}}\s+{re.escape(section_num)}\b', line):
                 start = i
                 break
         if start is None:
+            ket_qua.append(f"{section_num} ({label}) — VẮNG")
             continue
         tim_thay += 1
         end = len(lines)
         for j in range(start + 1, len(lines)):
-            if re.match(r'^#{2,3}\s+§\d', lines[j]):
+            if re.match(r'^#{2,3}\s+§\d', lines[j]) or re.match(r'^##\s+PHẦN', lines[j]):
                 end = j
                 break
         body = "\n".join(lines[start:end])
-        if "[CẦN" in body:
-            still_draft.append(f"{section_num} ({label})")
+        if PC.co_o_trong(body):
+            ket_qua.append(f"{section_num} ({label})")
     if tim_thay == 0:
         return [f"{so_muc} ({nhan}) — VẮNG SẠCH, tài liệu không có mục bắt buộc nào"
-                for so_muc, nhan in _G4_REQUIRED_SECTIONS.items()]
-    return still_draft
+                for so_muc, nhan in muc_bat_buoc.items()]
+    return ket_qua
 
 
 # VÁ 04/10/2026 (soát từng cổng, CHUNG-D): bộ chấm G2/G8 cho trạng thái «sẵn sàng ký» khi tiêu chí MÁY đạt, kể cả khi
@@ -164,6 +187,10 @@ def _g4_sections_still_draft(content: str) -> list[str]:
 # phản biện thật + khai COI/độc lập/AI của người phản biện). Tiêu chí phụ thuộc chính chữ ký (sổ cái) không nằm ở đây.
 _TIEU_CHI_NGUOI_TRUOC_KY: dict[str, tuple[str, ...]] = {
     "G2": ("G2-HUMAN-01",),
+    # VÁ 04/10/2026 (soát từng cổng G4): xác nhận EPV/VIF, cơ chế dữ liệu thiếu, nhóm nhỏ tiền định, vai trò người rà và
+    # dấu nội dung SAP đều kiểm được TRƯỚC lúc ký. Thiếu chúng mà vẫn ghi sổ cái thì tầng sau (G5/G6 đọc
+    # ledger_approved("G4")) mở dữ liệu trong khi G4 không bao giờ đạt PASS_G4_SAP_LOCKED.
+    "G4": ("G4-HUMAN-04", "G4-HUMAN-05", "G4-HUMAN-06", "G4-HUMAN-07", "G4-HUMAN-08"),
     "G8": ("G8-HUMAN-01", "G8-HUMAN-05"),
 }
 
@@ -194,6 +221,22 @@ def _valid_iso_date(value: str | None) -> bool:
     except ValueError:
         return False
     return bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", value))
+
+
+def _thiet_ke_g4(study_dir: Path) -> str | None:
+    """Mã thiết kế chuỗi của SAP sắp ký: G4_checkpoint.design_code (thiết kế SAP được sinh theo), vắng thì thiết kế các
+    cổng đã ghi. Dùng để biết SAP có phải RCT (§13–§15 bắt buộc) — None khi không xác định (khi đó chính văn bản có
+    §13–§15 vẫn bắt các mục đó phải điền)."""
+    import skill_standards as SK  # noqa: PLC0415 — import lười
+
+    try:
+        cp = json.loads((study_dir / "G4_checkpoint.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        cp = {}
+    tho = cp.get("design_code") if isinstance(cp, dict) else None
+    if not (isinstance(tho, str) and tho.strip()):
+        tho, _canh_bao = GC.resolve_design_code(study_dir, default="")
+    return SK.ma_thiet_ke_chuoi(tho) if isinstance(tho, str) and tho.strip() else None
 
 
 def _thiet_ke_cho_g2(study_dir: Path) -> tuple[str, list[str]]:
@@ -670,15 +713,30 @@ def _ky(args: argparse.Namespace) -> int:
             print("   Không cho dùng file tự chọn để thay thế SAP thật đã khóa.")
             return 1
 
-        still_draft = _g4_sections_still_draft(evidence_content)
+        still_draft = _g4_sections_still_draft(evidence_content, _thiet_ke_g4(study_dir))
         if still_draft:
-            print("✗ TỪ CHỐI ký G4 — SAP còn placeholder '[CẦN' chưa điền ở mục bắt buộc:")
+            print("✗ TỪ CHỐI ký G4 — SAP còn ô trống hoặc VẮNG ở mục bắt buộc:")
             for item in still_draft:
                 print(f"   - {item}")
-            print("   Bác sĩ/thống kê viên PHẢI điền đầy đủ các mục này TRƯỚC khi ký khóa G4")
+            print("   Bác sĩ/thống kê viên PHẢI điền (và khôi phục nếu đã xoá) các mục này TRƯỚC khi ký khóa G4")
             print("   (khóa mật mã bảo vệ TÍNH TOÀN VẸN nội dung, không tự đảm bảo nội dung có ý nghĩa).")
             print("   Không ghi ledger để tránh SAP rỗng bị coi là đã khóa.")
             return 1
+        if args.decision == "APPROVED":
+            # VÁ 04/10/2026 (soát từng cổng, G4-07): ký (hoặc ký LẠI) SAP SAU ngày khoá dữ liệu mà PHẦN 4 không khai
+            # «SAP AMENDMENT» là dấu hiệu đổi kế hoạch phân tích sau khi đã thấy dữ liệu (HARKing) ⇒ từ chối.
+            try:
+                _meta_g4 = json.loads((study_dir / "study_meta.json").read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                _meta_g4 = {}
+            ky_sau = G4Q.ky_sau_khoa_du_lieu(
+                evidence_content, (_meta_g4 or {}).get("data_lock_date") if isinstance(_meta_g4, dict) else None,
+                datetime.now(timezone.utc).isoformat(timespec="seconds"))
+            if ky_sau:
+                print(f"✗ TỪ CHỐI ký G4 — {ky_sau}.")
+                print("   Sửa SAP sau khi khoá dữ liệu phải ghi một dòng «SAP AMENDMENT» (ngày, mô tả, người duyệt) ở "
+                      "PHẦN 4 rồi mới ký lại.")
+                return 1
         # SỬA 2026-08-24 (audit đa-agent G0-G10): tương tự G2 — G4Q (12 tiêu chí,
         # gồm G4-AUTO-03 đối chiếu SAP đã ký với G3_checkpoint.json HIỆN TẠI và
         # G4-AUTO-09 chặn thiếu margin NI/equivalence) trước đây chỉ chạy SAU khi
@@ -705,6 +763,14 @@ def _ky(args: argparse.Namespace) -> int:
                     if item.get("status") != "PASS":
                         print(f"   - {item.get('id')}: {item.get('label')} ({item.get('evidence')})")
                 print("   Không ghi ledger; xử lý hết mục BLOCK/REVIEW ở trên trước khi ký.")
+                return 1
+            chua_dat = _tieu_chi_nguoi_chua_dat("G4", g4_report)
+            if chua_dat:
+                print("✗ TỪ CHỐI ký G4 — xác nhận của thống kê viên/PI kiểm được TRƯỚC khi ký chưa đạt:")
+                for item in chua_dat:
+                    print(f"   - {item}")
+                print("   Không ghi ledger; ghi các xác nhận vào study_meta.json → gate_params.G4 "
+                      "(gắn dấu nội dung SAP).")
                 return 1
 
     if args.gate == "G5":

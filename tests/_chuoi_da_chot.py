@@ -124,3 +124,193 @@ def dung_g0_g1_da_chot(out_dir: Path, study: str, *, them_meta: Optional[Dict[st
                 assert song["muc"] != "BLOCKED", f"fixture {gate} bị chặn: {song['status']} — {song.get('ly_do')}"
         CS.xoa_dem()
     return meta
+
+
+# ═══════════════════════════════════ G3 chốt thật → G4 (soát từng cổng G4, 04/10/2026) ═══════════════════════════════
+# Từ khi G4 CHẤM SỐNG G3 (G4-AUTO-12), fixture «G3_checkpoint trơn» không còn mở được G4 — đúng luật. Chuỗi dưới chạy
+# run_g3_auto THẬT trên chuỗi G0→G1 RCT đã chốt (kết cục liên tục «Thay đổi điểm số Y», estimand đủ 5 thuộc tính) rồi
+# thống kê viên xác nhận ĐÚNG bộ giá trị G3 (dấu vân tay) ⇒ G3 chấm sống PASS_G3_CONFIRMED. Dữ liệu tổng hợp.
+KET_CUC_G1 = "Thay đổi điểm số Y"
+G3_ARGV_RCT = ["--effect-size", "5", "--effect-type", "MD", "--sd", "10", "--dropout", "0.1"]
+G3_DA_CHOT_RCT: Dict[str, Any] = {
+    "effect_source": "PMID: 30560792", "effect_source_confirmed": True,
+    "sd_source": "PMID: 30560792 — SD 10 điểm", "dropout_source": "Pilot nội bộ 2025, bỏ cuộc 10%",
+    "assumptions_confirmed": True, "hypothesis_confirmed": True,
+    "powered_for_outcome": KET_CUC_G1, "recruitment_feasibility_confirmed": True,
+    "software": "run_g3_auto.py + scipy",
+}
+# Tham số G3 (dòng lệnh) + xác nhận RIÊNG theo thiết kế để G3 chấm sống PASS_G3_CONFIRMED (đo 04/10/2026). Thiết kế theo
+# độ chính xác/không dùng power truyền tham số TƯỜNG MINH qua CLI để run_g3_auto ghim (G3-AUTO-14).
+G3_THEO_THIET_KE: Dict[str, tuple] = {
+    "rct": (G3_ARGV_RCT, {}),
+    "cohort": (["--effect-size", "0.7", "--effect-type", "RR", "--p0", "0.3", "--dropout", "0.1"],
+               {"p0_source": "PMID: 30560792 — tỷ lệ biến cố nhóm không phơi nhiễm 30%"}),
+    "case_control": (["--effect-size", "2.0", "--effect-type", "OR", "--p0", "0.2", "--dropout", "0.1"],
+                     {"p0_source": "PMID: 30560792 — tỷ lệ phơi nhiễm ở nhóm chứng 20%"}),
+    "cross_sectional": (["--prevalence", "0.5", "--precision", "0.05", "--dropout", "0.1"],
+                        {"prevalence_source": "PMID: 30560792 — tỷ lệ 50% (thận trọng nhất)"}),
+    "diagnostic": (["--effect-size", "0.75", "--effect-type", "AUC", "--prevalence", "0.3", "--dropout", "0.1"],
+                   {"prevalence_source": "PMID: 30560792 — tỷ lệ hiện mắc 30%"}),
+    "qualitative": (["--confirmed-n", "20"],
+                    {"confirmed_n_method": "Bão hoà dữ liệu: dừng khi 3 phỏng vấn liên tiếp không có mã mới",
+                     "saturation_stopping_rule": "Dừng khi 3 phỏng vấn liên tiếp không có mã mới (n tối thiểu 12)"}),
+    "sr_ma": (["--confirmed-n", "15"], {"confirmed_n_method": "RIS/TSA cho kết cục chính (tổng hợp)"}),
+    "prediction": (["--confirmed-n", "500"], {"confirmed_n_method": "pmsampsize cho 10 tham số dự báo (tổng hợp)"}),
+}
+
+
+def chay_g3_that(out_dir: Path, study: str, argv: list) -> tuple:
+    """Chạy run_g3_auto.main() THẬT với BASE = thư mục chứa exports/ của out_dir; trả (G3_checkpoint, mã thoát)."""
+    import contextlib
+    import io
+
+    import run_g3_auto as R3
+
+    out_dir = Path(out_dir)
+    assert out_dir.parent.name == "exports", "out_dir phải có dạng <gốc>/exports/<đề tài>"
+    base_cu, argv_cu = R3.BASE, sys.argv[:]
+    R3.BASE = out_dir.parent.parent
+    sys.argv = ["run_g3_auto.py", "--study", study, *argv]
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            try:
+                rc = R3.main()
+            except SystemExit as exc:
+                rc = exc.code
+    finally:
+        R3.BASE, sys.argv = base_cu, argv_cu
+    return json.loads((out_dir / "G3_checkpoint.json").read_text(encoding="utf-8")), rc
+
+
+def xac_nhan_g3(out_dir: Path, checkpoint: Dict[str, Any]) -> None:
+    """Thống kê viên xác nhận ĐÚNG bộ giá trị G3 hiện tại (gate_params.G3.dau_van_tay_chot)."""
+    import g3_quality_gate as G3Q
+
+    p = Path(out_dir) / "study_meta.json"
+    meta = json.loads(p.read_text(encoding="utf-8"))
+    meta.setdefault("gate_params", {}).setdefault("G3", {}).update({
+        "reviewed_by_role": "STATISTICIAN", "reviewed_at": "2026-09-01T09:00:00",
+        "dau_van_tay_chot": G3Q.dau_van_tay_g3(checkpoint)})
+    _ghi(p, meta)
+
+
+def dung_g0_g3_da_chot(out_dir: Path, study: str, *, thiet_ke: str = "rct", g3_argv: Optional[list] = None,
+                       them_meta: Optional[Dict[str, Any]] = None, chot_g3: bool = True,
+                       kiem: bool = True) -> Dict[str, Any]:
+    """G0→G1 (thiết kế `thiet_ke`, đã chốt) → G3 chạy THẬT → (chot_g3) xác nhận gắn dấu ⇒ G3 chấm sống PASS.
+
+    Trả G3_checkpoint. them_meta gộp NÔNG theo cổng lên bộ xác nhận G3 mặc định
+    (vd {"G3": {"underpowered_acceptance_justification": …}})."""
+    argv_mac_dinh, meta_rieng = G3_THEO_THIET_KE[thiet_ke]
+    them: Dict[str, Any] = {"G3": {**G3_DA_CHOT_RCT, **meta_rieng}}
+    for khoa, gia_tri in (them_meta or {}).items():
+        if isinstance(gia_tri, dict) and isinstance(them.get(khoa), dict):
+            them[khoa].update(gia_tri)
+        else:
+            them[khoa] = gia_tri
+    dung_g0_g1_da_chot(out_dir, study, thiet_ke=thiet_ke, mau_hieu_qua=[], them_meta=them, kiem=kiem)
+    cp, rc = chay_g3_that(out_dir, study, g3_argv or argv_mac_dinh)
+    if chot_g3:
+        xac_nhan_g3(out_dir, cp)
+    if kiem:
+        CS.xoa_dem()
+        song = CS.trang_thai_song("G3", study, out_dir)
+        if chot_g3:
+            ly_do = [f"{r['id']}={r['status']}" for r in (song.get("bao_cao") or {}).get("automatic_criteria", [])
+                     + (song.get("bao_cao") or {}).get("human_criteria", []) if r.get("status") != "PASS"]
+            assert song["muc"] == "PASS", f"fixture G3 ({thiet_ke}) chưa chốt (rc={rc}): {song['status']} — {ly_do}"
+        CS.xoa_dem()
+    return cp
+
+
+def dien_chung_chi(text: str, ket_cuc: str = f"{KET_CUC_G1} tại tuần 12") -> str:
+    """Điền hai ô của chứng chỉ khoá (PHẦN 5) theo MẪU — vn_prose_style gọn khoảng trắng trong khung nên chuỗi cố
+    định của khuôn không khớp bản run_g4_auto ghi ra đĩa."""
+    import re
+
+    text = re.sub(r"(║ KQ chính\s*:\s*)\[CẦN[^\]]*\]", lambda m: m.group(1) + ket_cuc, text)
+    return re.sub(r"(║ Phân tích\s*:\s*)\[CẦN[^\]]*\]", lambda m: m.group(1) + "ITT (treatment-policy)", text)
+
+
+def dien_phan_rct(text: str) -> str:
+    """Điền phần RIÊNG của SAP RCT: «Quần thể phân tích CHÍNH» (§4) và mọi ô của §13–§15 (bắt buộc từ 04/10/2026)."""
+    import re
+
+    text = re.sub(r"(- \*\*Quần thể phân tích CHÍNH:\*\*) \[CẦN[^\]]*\]",
+                  r"\1 ITT — khớp chiến lược treatment-policy; per-protocol là phân tích độ nhạy ở §9", text)
+    dau, cuoi = text.index("### §13"), text.index("## PHẦN 4")
+    khoi = re.sub(r"\[CẦN[^\]]*\]", "Không — can thiệp nguy cơ thấp, theo dõi 12 tuần; lý do ghi trong đề cương",
+                  text[dau:cuoi])
+    return text[:dau] + khoi + text[cuoi:]
+
+
+# Ô có NỘI DUNG mà bộ chấm kiểm (EPV/VIF ở §5, phần mềm+seed ở §10, đa so sánh ở §8, kết cục chính ở §2) điền theo
+# NHÃN dòng; mọi ô còn lại của PHẦN 3 điền câu trung tính. Theo MẪU (không chuỗi cố định) để bền với vn_prose_style.
+_DIEN_THEO_NHAN = (
+    ("Kết cục chính", f"{KET_CUC_G1} tại tuần 12"),
+    ("Biến độc lập đưa vào", "Tuổi, điểm Y nền — EPV=15 cho 8 biến, VIF<5"),
+    ("Biến đưa vào mô hình imputation", "Tuổi, giới, điểm Y nền"),
+    ("Nhóm nhỏ tiền định", "Theo tuổi <65/≥65 — TIỀN ĐỊNH"),
+    ("Điều chỉnh", "Chỉ 1 kết cục chính nên không cần hiệu chỉnh"),
+    ("Packages", "mice, lme4"),
+    ("Random seed", "set.seed(20261004)"),
+)
+
+
+def dien_sap_g4(text: str) -> str:
+    """Điền SAP do run_g4_auto sinh (mọi thiết kế) như người thật: ô theo nhãn, mọi ô còn lại của PHẦN 2–3, chứng chỉ
+    khoá; SAP RCT thêm «Quần thể phân tích CHÍNH» và §13–§15."""
+    import re
+
+    dinh_tinh = "CHIẾN LƯỢC MÃ HÓA" in text
+    for nhan, gia_tri in _DIEN_THEO_NHAN:
+        text = re.sub(rf"(- \*\*{re.escape(nhan)}:\*\*) \[CẦN[^\]]*\]", lambda m, g=gia_tri: f"{m.group(1)} {g}", text)
+    phan_mem = "NVivo v14" if dinh_tinh else "R v4.3.1"
+    text = re.sub(r"(- \*\*Phần mềm:\*\*) \[CẦN[^\]]*\]", lambda m: f"{m.group(1)} {phan_mem}", text)
+    if "### §13" in text:
+        text = dien_phan_rct(text)
+    dau, cuoi = text.index("## PHẦN 2"), text.index("## PHẦN 4")
+    khoi = re.sub(r"\[CẦN[^\]]*\]", "Đã xác định trong đề cương (tổng hợp)", text[dau:cuoi])
+    return dien_chung_chi(text[:dau] + khoi + text[cuoi:])
+
+
+def sinh_sap_g4_that(out_dir: Path, study: str) -> Path:
+    """Chạy run_g4_auto.main() THẬT (BASE = thư mục chứa exports/ của out_dir); trả đường dẫn SAP đã sinh."""
+    import contextlib
+    import io
+
+    import g4_quality_gate as G4Q
+    import run_g4_auto as R4
+
+    out_dir = Path(out_dir)
+    assert out_dir.parent.name == "exports", "out_dir phải có dạng <gốc>/exports/<đề tài>"
+    base_cu, argv_cu = R4.BASE, sys.argv[:]
+    R4.BASE = out_dir.parent.parent
+    sys.argv = ["run_g4_auto.py", "--study", study]
+    CS.xoa_dem()
+    try:
+        with contextlib.redirect_stdout(io.StringIO()) as buf:
+            try:
+                rc = R4.main()
+            except SystemExit as exc:
+                rc = exc.code
+    finally:
+        R4.BASE, sys.argv = base_cu, argv_cu
+    sap = out_dir / G4Q.sap_artifact_name(study)
+    assert sap.exists(), f"run_g4_auto không sinh SAP (rc={rc}): {buf.getvalue()[-400:]}"
+    return sap
+
+
+def xac_nhan_g4(out_dir: Path, artifact_text: str, **them: Any) -> Dict[str, Any]:
+    """Thống kê viên xác nhận G4 (EPV/VIF, dữ liệu thiếu, nhóm nhỏ, vai trò) GẮN DẤU nội dung SAP hiện tại."""
+    import g4_quality_gate as G4Q
+
+    p = Path(out_dir) / "study_meta.json"
+    meta = json.loads(p.read_text(encoding="utf-8"))
+    g4 = meta.setdefault("gate_params", {}).setdefault("G4", {})
+    g4.update({"epv_vif_reviewed": True, "missing_data_mechanism_confirmed": True,
+               "subgroup_multiplicity_predefined_confirmed": True, "reviewed_by_role": "STATISTICIAN",
+               "reviewed_at": "2026-09-02T08:00:00+00:00", "dau_van_tay_chot": G4Q.dau_van_tay_g4(artifact_text)})
+    g4.update(them)
+    _ghi(p, meta)
+    return meta

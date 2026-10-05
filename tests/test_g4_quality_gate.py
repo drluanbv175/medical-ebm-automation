@@ -31,6 +31,23 @@ import g4_quality_gate as G4Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import run_g4_auto as G4  # noqa: E402
 
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _chuoi_da_chot import dien_phan_rct  # noqa: E402
+
+# 04/10/2026 (soát từng cổng G4): SAP RCT in estimand G1 (G4-03) — fixture truyền estimand đủ 5 thuộc tính và bộ chấm
+# nhận CÙNG đặc tả qua dac_ta (G4-AUTO-15); G3 chấm sống truyền dạng đã chốt (G4-AUTO-12) — test riêng ở
+# test_g4_hoan_thien_20261004.py đi qua chuỗi G0→G3 thật.
+_ESTIMAND = {
+    "population": "Người trưởng thành có bệnh Z",
+    "treatment_condition": "Can thiệp X so với chăm sóc chuẩn",
+    "variable": "Tỷ lệ nhập viện tim mạch trong 12 tháng",
+    "intercurrent_events_strategy": "Treatment-policy cho ngừng điều trị",
+    "population_summary_measure": "Tỷ số nguy cơ",
+}
+_G3_SONG_PASS = {"gate": "G3", "status": "PASS_G3_CONFIRMED", "muc": "PASS", "dat": True, "bi_chan": False,
+                 "nguon": "song", "ly_do": "chấm sống (write=False)"}
+
 # ════════════════════════════════════════════════════════════════════════════
 # Tiện ích dựng artifact SAP đã điền đủ (không phải markdown viết tay tùy ý —
 # đi qua ĐÚNG run_g4_auto.generate() rồi thay placeholder, để test bám sát
@@ -94,9 +111,9 @@ _QUALITATIVE_FILLS = [
     ("- **Kết cục phụ 1:** [CẦN]  ", "- **Kết cục phụ 1:** N/A  "),
     ("- **Kết cục phụ 2:** [CẦN]  ", "- **Kết cục phụ 2:** N/A  "),
     ("- **Kết cục an toàn:** [CẦN — đặc biệt với RCT]  ", "- **Kết cục an toàn:** N/A  "),
-    ("- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ", "- **Phần mềm:** NVivo v14  "),
-    ("- **Packages:** [CẦN — survival, lme4, mice, gtsummary...]  ", "- **Packages:** N/A  "),
-    ("- **Random seed:** [CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]  ", "- **Random seed:** N/A (định tính)  "),
+    # 04/10/2026 (G4-06): §10 định tính có khuôn riêng — Packages/Random seed in sẵn «KHÔNG ÁP DỤNG».
+    ("- **Phần mềm:** [CẦN — phần mềm phân tích định tính và phiên bản (vd NVivo 14 / ATLAS.ti 23 / "
+     "MAXQDA 2022) hoặc mã tay theo codebook]  ", "- **Phần mềm:** NVivo v14  "),
 ]
 
 
@@ -112,15 +129,19 @@ def _fresh_sap(design_code="rct", **overrides):
                        kwargs["power"], kwargs["effect_val"], kwargs["effect_type"],
                        kwargs["run_date"], kwargs.get("sd"),
                        hypothesis_type=kwargs.get("hypothesis_type", "superiority"),
-                       margin=kwargs.get("margin"))
+                       margin=kwargs.get("margin"), n_statistical_min=kwargs.get("n_statistical_min"),
+                       g3=kwargs.get("g3"), estimand=kwargs.get("estimand", _ESTIMAND),
+                       giai_trinh_thieu_luc=kwargs.get("giai_trinh_thieu_luc"))
 
 
 def _filled_comparative_sap(**overrides):
-    text = _fresh_sap(design_code=overrides.pop("design_code", "rct"), **overrides)
+    design_code = overrides.pop("design_code", "rct")
+    text = _fresh_sap(design_code=design_code, **overrides)
     for old, new in _COMPARATIVE_FILLS:
         assert old in text, f"template không còn chứa placeholder mong đợi: {old[:50]!r}"
         text = text.replace(old, new)
-    return text
+    # 04/10/2026 (G4-02/G4-03): SAP RCT bắt buộc «Quần thể phân tích CHÍNH» và §13–§15 — fixture điền như người thật.
+    return dien_phan_rct(text) if design_code == "rct" else text
 
 
 def _filled_qualitative_sap(**overrides):
@@ -161,7 +182,9 @@ def _meta(g4_overrides=None, g0_overrides=None, g3_overrides=None, top_level=Non
     return meta
 
 
-def _evaluate(**overrides):
+def _evaluate(_chot=True, **overrides):
+    """_chot=True: thống kê viên xác nhận G4 GẮN DẤU nội dung SAP đang chấm (gate_params.G4.dau_van_tay_chot) — trừ
+    khi test tự ghi khoá đó (setdefault). False: giữ nguyên meta (xác nhận kiểu cũ không dấu)."""
     kwargs = dict(
         study="TEST-G4Q",
         checkpoint=_checkpoint(),
@@ -174,8 +197,15 @@ def _evaluate(**overrides):
         signature_scope="role",
         role_key_available=True,
         cross_gate_refs={"G2": "IRB-01", "G4": "STAT-01", "G8": "REV-77", "G9": "PI-01"},
+        g3_song=_G3_SONG_PASS,
+        dac_ta={"estimand": _ESTIMAND},
     )
     kwargs.update(overrides)
+    if _chot:
+        meta = json.loads(json.dumps(kwargs["meta"]))
+        meta.setdefault("gate_params", {}).setdefault("G4", {}).setdefault(
+            "dau_van_tay_chot", G4Q.dau_van_tay_g4(kwargs["artifact_text"]))
+        kwargs["meta"] = meta
     return G4Q.evaluate_g4_quality(**kwargs)
 
 
@@ -643,20 +673,13 @@ def test_reviewed_by_role_pi_cung_hop_le():
 
 
 def _seed_g0_g1_g3(study_dir: Path, *, alpha: float = 0.05) -> None:
-    study_dir.mkdir(parents=True, exist_ok=True)
-    (study_dir / "G0_checkpoint.json").write_text(json.dumps({
-        "gate": "G0", "topic": "Đề tài kiểm định G4", "guardrail": {"passed": True},
-    }), encoding="utf-8", newline="\n")
-    (study_dir / "G1_checkpoint.json").write_text(json.dumps({
-        "gate": "G1",
-        "design": {"internal_code": "rct", "primary": "RCT song song",
-                   "reporting_standard": "CONSORT 2025", "ambiguous": False},
-    }), encoding="utf-8", newline="\n")
-    (study_dir / "G3_checkpoint.json").write_text(json.dumps({
-        "gate": "G3", "design_code": "rct", "alpha": alpha, "power": 0.8,
-        "n_adjusted": 400, "confirmed_n": None, "effect_val": 0.7, "effect_type": "RR",
-        "hypothesis_type": "superiority", "margin": None, "sd": None, "guardrail": "✅ PASS",
-    }), encoding="utf-8", newline="\n")
+    """04/10/2026 (soát từng cổng G4-04): G4 CHẤM SỐNG G3 — G3_checkpoint trơn (không A4, không xác nhận) nay là G3 BỊ
+    CHẶN ⇒ run_g4_auto từ chối sinh SAP (đúng luật). Dựng chuỗi G0→G1 RCT đã chốt → G3 chạy THẬT → thống kê viên xác
+    nhận gắn dấu vân tay (tests/_chuoi_da_chot.py)."""
+    from _chuoi_da_chot import dung_g0_g3_da_chot
+
+    argv = ["--effect-size", "5", "--effect-type", "MD", "--sd", "10", "--dropout", "0.1", "--alpha", str(alpha)]
+    dung_g0_g3_da_chot(study_dir, study_dir.name, g3_argv=argv)
 
 
 def test_pipeline_that_g4_moi_sinh_la_draft_needs_human_content():
@@ -701,19 +724,12 @@ def test_pipeline_that_ky_bang_khoa_vai_tro_dat_locked_va_ghi_g4_lock_date(tmp_p
         assert gen.returncode == 0, gen.stdout + gen.stderr
 
         artifact_path = d / f"G4_A5_SAP_FINAL_{study}.md"
-        text = artifact_path.read_text(encoding="utf-8")
-        for old, new in _COMPARATIVE_FILLS:
-            text = text.replace(old, new)
+        # 04/10/2026: điền như người thật cho SAP RCT (kết cục chính ĐÚNG kết cục G1 đã ghim, chứng chỉ khoá, §4
+        # quần thể phân tích chính, §13–§15) rồi xác nhận G4 GẮN DẤU nội dung — tests/_chuoi_da_chot.py.
+        from _chuoi_da_chot import dien_sap_g4, xac_nhan_g4
+        text = dien_sap_g4(artifact_path.read_text(encoding="utf-8"))
         artifact_path.write_text(text, encoding="utf-8", newline="\n")
-
-        meta = GC.ensure_study_meta(d)
-        meta["gate_params"]["G4"].update({
-            "epv_vif_reviewed": True, "missing_data_mechanism_confirmed": True,
-            "subgroup_multiplicity_predefined_confirmed": True,
-            "reviewed_by_role": "STATISTICIAN", "reviewed_at": "2026-07-29T08:00:00+00:00",
-        })
-        (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8",
-            newline="\n")
+        xac_nhan_g4(d, text)
 
         sign = subprocess.run(
             [PYTHON, str(TOOLS_DIR / "approve_gate.py"), "--study", study, "--gate", "G4",

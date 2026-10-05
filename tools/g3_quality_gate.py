@@ -1385,11 +1385,22 @@ def evaluate_g3_quality(
     if confirmed_n is None:
         confirmed_status = "PASS"
         confirmed_evidence = "chưa chốt N thực tế"
-    elif n_adjusted > 0 and confirmed_n < n_adjusted:
+    elif n_adjusted > 0 and confirmed_n < n_adjusted and not _present(g3.get("underpowered_acceptance_justification")):
         confirmed_status = "REVIEW"
         confirmed_evidence = (
             f"N chốt={confirmed_n} THẤP HƠN N tối thiểu={n_adjusted} — "
-            "đề tài tự khai thiếu lực thống kê"
+            "đề tài tự khai thiếu lực thống kê; chưa có giải trình chấp nhận ở "
+            "gate_params.G3.underpowered_acceptance_justification"
+        )
+    elif n_adjusted > 0 and confirmed_n < n_adjusted:
+        # VÁ 04/10/2026 (soát từng cổng, G4-05 phía G3): hành động của tiêu chí này từ lâu đã dạy «ghi rõ chấp nhận giảm
+        # lực kèm hệ quả» nhưng KHÔNG có trường nào được đọc ⇒ đề tài chủ động chấp nhận N thấp hơn (pilot, giới hạn
+        # nguồn lực) kẹt REVIEW mãi, kéo theo G4 (chấm sống G3) không bao giờ ký được. Nay giải trình của thống kê
+        # viên/PI ⇒ PASS, và bằng chứng vẫn nói rõ đề tài THIẾU LỰC (SAP phải nói thật — G4-AUTO-14).
+        confirmed_status = "PASS"
+        confirmed_evidence = (
+            f"N chốt={confirmed_n} THẤP HƠN N tối thiểu={n_adjusted} — đề tài thiếu lực, ĐÃ có giải trình chấp nhận: "
+            f"{str(g3.get('underpowered_acceptance_justification'))[:80]}"
         )
     elif n_not_applicable and not _present(g3.get("confirmed_n_method")):
         confirmed_status = "REVIEW"
@@ -1414,11 +1425,21 @@ def evaluate_g3_quality(
     # audit_research_gates coi gate_params.G3.effect_size + p_event là metadata
     # BẮT BUỘC để chạy lại; nhưng run_g3_auto chỉ ghim khi bác sĩ truyền cả
     # effect_size lẫn effect_type qua CLI, và KHÔNG bao giờ đọc lại p_event.
-    pin_missing = [
-        key
-        for key in ("effect_size", "effect_type")
-        if needs_effect and not _present(g3.get(key))
-    ]
+    # VÁ 04/10/2026 (soát từng cổng — lộ khi dựng chuỗi G0→G4 tổng hợp cho 8 thiết kế): thiết kế theo ĐỘ CHÍNH XÁC
+    # (PREVALENCE) không có effect size — tham số quyết định N là tỷ lệ ước lượng p và sai số d. Bản cũ đòi ghim
+    # effect_size/effect_type mà run_g3_auto không bao giờ ghim cho nhánh này ⇒ đề tài mô tả (như C1a) kẹt REVIEW mãi.
+    if effect_type == "PREVALENCE":
+        # p ghim dạng mới (prevalence) HOẶC dạng cũ (effect_size + effect_type=PREVALENCE — C1a ghim kiểu này) đều
+        # là ghim.
+        p_da_ghim = _present(g3.get("prevalence")) or (
+            _present(g3.get("effect_size")) and str(g3.get("effect_type") or "").strip().upper() == "PREVALENCE")
+        pin_missing = ([] if p_da_ghim else ["prevalence"]) + ([] if _present(g3.get("precision")) else ["precision"])
+    else:
+        pin_missing = [
+            key
+            for key in ("effect_size", "effect_type")
+            if needs_effect and not _present(g3.get(key))
+        ]
     automatic.append(
         _criterion(
             "G3-AUTO-14",
@@ -1436,7 +1457,8 @@ def evaluate_g3_quality(
             # check sẽ khiến tiêu chí này REVIEW vĩnh viễn cho thiết kế cần
             # p_event (case_control/cross_sectional/diagnostic) thay vì đóng
             # đúng khoảng trống — sửa CÂU CHỮ khớp với những gì thật sự kiểm.
-            "Ghim gate_params.G3 (effect_size, effect_type) để chạy lại không trôi giá trị.",
+            "Ghim gate_params.G3 (effect_size, effect_type — thiết kế theo độ chính xác: prevalence, precision) để "
+            "chạy lại không trôi giá trị.",
         )
     )
 

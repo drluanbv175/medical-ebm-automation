@@ -26,7 +26,10 @@ sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(TOOLS))
 
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
+import cong_song as CS  # noqa: E402  (chấm sống G3 trước khi sinh SAP — G4-04)
+import g4_quality_gate as G4Q  # noqa: E402  (khung §12 dùng chung với bộ chấm — G4-06)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import skill_standards as S  # noqa: E402  (đặc tả thiết kế khoá ở G1, chuẩn báo cáo theo thiết kế)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
 
 # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, xác nhận bằng thực
@@ -69,7 +72,7 @@ def guardrail(artifact):
     # mọi gate_params.G4 human attestations=True → status vẫn BLOCKED chỉ vì
     # G4-AUTO-00 (guardrail_passed=False do R6). Hạ xuống CẢNH BÁO thông tin
     # (không còn chặn) — đúng tiền lệ đã áp cho R6 tương tự của G8. Kiểm
-    # placeholder THẬT còn sót ở mục BẮT BUỘC (§1/§2/§5/§10) đã có sẵn ở
+    # placeholder THẬT còn sót ở mục BẮT BUỘC (§1/§2/§4/§5/§9/§10, RCT thêm §13–§15) đã có sẵn ở
     # approve_gate.py::_g4_sections_still_draft() — chốt trước-ký thật sự,
     # không nhân đôi logic sai ở đây.
     can_n = len(re.findall(r'\[CẦN', artifact))
@@ -121,11 +124,183 @@ def guardrail(artifact):
         warnings.append("R3 ✅ Không tìm thấy công bố tự vượt cổng khóa SAP")
     return errors, warnings
 
+def _so(gia_tri, mac_dinh="[CẦN từ G3]"):
+    """Số tham số in ĐÚNG giá trị G3 (định dạng :g) — None ⇒ nhãn chờ G3.
+
+    VÁ 04/10/2026 (soát từng cổng, G4-06/G4-08): bản cũ in effect size bằng :.2f (0,855 ⇒ «0.85») — văn bản KÝ phải ghi
+    đúng tham số đã dùng để tính N; alpha/power vắng từng rơi về 0,05/80% im lặng (CHUNG-F)."""
+    if gia_tri is None or gia_tri == "":
+        return mac_dinh
+    try:
+        return f"{float(gia_tri):g}"
+    except (TypeError, ValueError):
+        return str(gia_tri)
+
+
+def _phan_tram(ty_le, mac_dinh="[CẦN từ G3]"):
+    """0.8 ⇒ «80%» (làm tròn — int(0.29 * 100) của bản cũ ra 28)."""
+    try:
+        return f"{round(float(ty_le) * 100)}%"
+    except (TypeError, ValueError):
+        return mac_dinh
+
+
+# Nhãn hai nhóm của bảng giả cho thiết kế so sánh (§11).
+_NHOM_BANG_GIA = {
+    "rct": ("Nhóm can thiệp", "Nhóm chứng"),
+    "cohort": ("Phơi nhiễm", "Không phơi nhiễm"),
+    "case_control": ("Nhóm bệnh (ca)", "Nhóm chứng"),
+}
+
+
+def _bang_gia(design_code, loai12):
+    """§11 — khung bảng kết quả THEO THIẾT KẾ.
+
+    VÁ 04/10/2026 (soát từng cổng, G4-06): bản cũ in «Nhóm 1 | Nhóm 2 | p» cho MỌI thiết kế — định tính có cột p mâu
+    thuẫn §8, chẩn đoán thiếu bảng 2×2/độ nhạy-độ đặc hiệu, cắt ngang mô tả không có nhóm, và RCT có cột p cho đặc
+    điểm nền dù khác biệt nền giữa các nhóm ĐÃ NGẪU NHIÊN HOÁ là do may rủi (CONSORT 2010 E&E, PMID 20332511)."""
+    if design_code == "qualitative":
+        return [
+            "**Bảng 1 — Đặc điểm người tham gia (mô tả, không kiểm định):**",
+            "| Đặc điểm | n (%) |",
+            "|---|---|",
+            "| [CẦN thêm đặc điểm theo tiêu chí đa dạng §7] | |",
+            "",
+            "**Bảng 2 — Chủ đề và chủ đề con (COREQ/SRQR):**",
+            "| Chủ đề | Chủ đề con | Trích dẫn minh hoạ (ẩn danh, mã người tham gia) |",
+            "|---|---|---|",
+            "| [CẦN KẾT QUẢ THẬT — sau khi mã hoá] | | |",
+        ]
+    if design_code == "diagnostic":
+        return [
+            "**Bảng 1 — Đặc điểm người tham gia theo tiêu chuẩn tham chiếu (STARD 2015):**",
+            "| Biến | Có bệnh (tham chiếu +) | Không bệnh (tham chiếu −) |",
+            "|---|---|---|",
+            "| [CẦN thêm biến] | | |",
+            "",
+            "**Bảng 2 — Xét nghiệm chỉ số × tiêu chuẩn tham chiếu (2×2):**",
+            "| Xét nghiệm chỉ số | Tham chiếu + | Tham chiếu − |",
+            "|---|---|---|",
+            "| Dương tính | a | b |",
+            "| Âm tính | c | d |",
+            "",
+            "**Bảng 3 — Độ chính xác chẩn đoán (ước lượng + 95%CI):**",
+            "| Chỉ số | Ước lượng | 95%CI |",
+            "|---|---|---|",
+            "| Độ nhạy · độ đặc hiệu · LR+ · LR− · AUC | [CẦN KẾT QUẢ THẬT] | |",
+        ]
+    if design_code == "sr_ma":
+        return [
+            "**Bảng 1 — Đặc điểm các nghiên cứu được đưa vào (PRISMA 2020):**",
+            "| Nghiên cứu | Thiết kế | Cỡ mẫu | Quần thể | Can thiệp/so sánh | Nguy cơ sai lệch |",
+            "|---|---|---|---|---|---|",
+            "| [CẦN KẾT QUẢ THẬT — sau sàng lọc] | | | | | |",
+            "",
+            "**Bảng 2 — Ước lượng gộp:**",
+            "| Kết cục | Số nghiên cứu (k) | Hiệu ứng gộp (95%CI) | I² | τ² |",
+            "|---|---|---|---|---|",
+            "| [CẦN KẾT QUẢ THẬT] | | | | |",
+        ]
+    if design_code == "prediction":
+        return [
+            "**Bảng 1 — Đặc điểm người tham gia (TRIPOD+AI):**",
+            "| Biến | Tập phát triển | Tập kiểm định |",
+            "|---|---|---|",
+            "| [CẦN thêm biến dự báo] | | |",
+            "",
+            "**Bảng 2 — Hiệu năng mô hình (ước lượng + 95%CI):**",
+            "| Chỉ số | Tập phát triển (đã hiệu chỉnh lạc quan) | Tập kiểm định |",
+            "|---|---|---|",
+            "| C-statistic · độ dốc/hệ số chặn hiệu chuẩn | [CẦN KẾT QUẢ THẬT] | |",
+        ]
+    if loai12 == "chinh_xac":
+        return [
+            "**Bảng 1 — Đặc điểm mẫu nghiên cứu (mô tả toàn mẫu):**",
+            "| Biến | Toàn mẫu: n (%) hoặc trung bình ± SD |",
+            "|---|---|",
+            "| [CẦN thêm biến] | |",
+            "",
+            "**Bảng 2 — Kết cục chính (ước lượng theo độ chính xác):**",
+            "| Kết cục | Tỷ lệ (%) | 95%CI |",
+            "|---|---|---|",
+            "| [CẦN KẾT QUẢ THẬT] | | |",
+        ]
+    nhom1, nhom2 = _NHOM_BANG_GIA.get(design_code, ("Nhóm 1", "Nhóm 2"))
+    if design_code == "rct":
+        return [
+            "**Bảng 1 — Đặc điểm nền theo nhóm ngẫu nhiên hoá:**",
+            f"| Biến | {nhom1} | {nhom2} | Toàn bộ |",
+            "|---|---|---|---|",
+            "| Tuổi (năm) | ___ ± ___ | ___ ± ___ | ___ ± ___ |",
+            "| Giới nữ, n (%) | ___ (_) | ___ (_) | ___ (_) |",
+            "| [CẦN thêm biến] | | | |",
+            "",
+            "> Không có cột p: không kiểm định ý nghĩa khác biệt nền giữa các nhóm đã ngẫu nhiên hoá "
+            "(CONSORT 2010 E&E, PMID 20332511).",
+            "",
+            "**Bảng 2 — Kết cục chính:**",
+            f"| Kết cục | {nhom1} | {nhom2} | Hiệu ứng (95%CI) |",
+            "|---|---|---|---|",
+            "| [CẦN KẾT QUẢ THẬT] | | | |",
+        ]
+    return [
+        "**Bảng 1 — Đặc điểm nền:**",
+        f"| Biến | {nhom1} | {nhom2} | p |",
+        "|---|---|---|---|",
+        "| Tuổi (năm) | ___ ± ___ | ___ ± ___ | ___ |",
+        "| Giới nữ, n (%) | ___ (_) | ___ (_) | ___ |",
+        "| [CẦN thêm biến] | | | |",
+        "",
+        "**Bảng 2 — Kết cục chính:**",
+        "| Kết cục | N (%) / Trung vị | 95%CI | p |",
+        "|---|---|---|---|",
+        "| [CẦN KẾT QUẢ THẬT] | | | |",
+    ]
+
+
+def _thong_ke_mo_ta(design_code, loai12):
+    """§3 — mô tả theo thiết kế (VÁ 04/10/2026, G4-06: bản cũ «so sánh đặc điểm nền t-test…» cho MỌI thiết kế)."""
+    chung = [
+        "- Biến liên tục: trung bình ± SD (phân phối chuẩn) hoặc trung vị [IQR] (lệch)  ",
+        "- Biến phân loại: n (%)  ",
+    ]
+    if design_code == "qualitative":
+        return ["- Đặc điểm người tham gia: mô tả tần số, không kiểm định thống kê (COREQ/SRQR)  "]
+    if design_code == "rct":
+        return chung + [
+            "- Đặc điểm nền trình bày theo nhóm ngẫu nhiên hoá; KHÔNG kiểm định ý nghĩa khác biệt nền — khác biệt "
+            "giữa các nhóm đã ngẫu nhiên hoá là do may rủi (CONSORT 2010 E&E, PMID 20332511)  ",
+        ]
+    if design_code in ("cohort", "case_control") or (design_code == "cross_sectional" and loai12 != "chinh_xac"):
+        return chung + [
+            "- So sánh đặc điểm nền giữa các nhóm: t-test / Mann-Whitney / Chi-square / Fisher (mô tả mất cân bằng; "
+            "nhiễu xử lý ở §5)  ",
+        ]
+    if design_code == "diagnostic":
+        return chung + ["- Mô tả người tham gia theo kết quả tiêu chuẩn tham chiếu (có bệnh/không bệnh) — STARD 2015  "]
+    if design_code == "sr_ma":
+        return ["- Mô tả đặc điểm các nghiên cứu được đưa vào (thiết kế, cỡ mẫu, quần thể, can thiệp) — PRISMA 2020  "]
+    if design_code == "prediction":
+        return chung + ["- Mô tả người tham gia ở tập phát triển (và tập kiểm định nếu có) — TRIPOD+AI  "]
+    return chung + ["- Mô tả toàn mẫu; kết cục chính trình bày tỷ lệ kèm khoảng tin cậy 95%  "]
+
+
 def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
-             hypothesis_type="superiority", margin=None, n_statistical_min=None):
+             hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
+             g3=None, estimand=None, giai_trinh_thieu_luc=None):
+    """Sinh SAP Final + chứng chỉ khoá (DRAFT — CHỜ KÝ).
+
+    Tham số vị trí giữ nguyên hợp đồng cũ. Từ khoá mới (VÁ 04/10/2026, soát từng cổng):
+      g3  — G3_checkpoint đầy đủ: sai số d/p ước lượng (thiết kế theo độ chính xác), p0, p_event, tỷ lệ bỏ cuộc, chiều
+            kết cục NI, cụm (ICC/m/DE/số cụm), chẩn đoán (số ca bệnh/không bệnh, tỷ lệ hiện mắc), FPC — G4-06/G4-08.
+      estimand — gate_params.G1.estimand (5 thuộc tính ICH E9(R1)) cho §4 của RCT — G4-03; vắng ⇒ ô [CẦN].
+      giai_trinh_thieu_luc — gate_params.G3.underpowered_acceptance_justification khi N kế hoạch < N tối thiểu — G4-05.
+    """
+    g3 = dict(g3 or {})
+    loai12 = G4Q.loai_muc_12(design_code, {"effect_type": effect_type})
     sap_sections = {
-        "rct": ("Nhóm can thiệp vs nhóm chứng", "Intention-to-treat (ITT), Per-protocol (PP)", "t-test hoặc Mann-Whitney; logistic/log-rank"),
+        "rct": ("Nhóm can thiệp vs nhóm chứng", None, "t-test hoặc Mann-Whitney; logistic/log-rank"),
         "cohort": ("Nhóm phơi nhiễm vs không phơi nhiễm", "Phân tích đầy đủ (complete case + MI)", "Cox regression; logistic regression"),
         "cross_sectional": ("Toàn bộ mẫu đủ tiêu chí", "Phân tích đầy đủ", "Hồi quy logistic/tuyến tính"),
         "diagnostic": ("Bệnh nhân có xét nghiệm chỉ số và tiêu chuẩn vàng", "Phân tích đầy đủ", "ROC, AUC, độ nhạy/đặc hiệu"),
@@ -150,41 +325,91 @@ def generate(study, topic, design_code, design_primary, reporting_std,
     }
     pop, analysis_pop, main_method = sap_sections.get(design_code, ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]"))
 
-    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 18, phát hiện HIGH):
-    # run_g3_auto.py (vòng 15) đã sửa nhãn "hai phía" cứng thành động theo
-    # hypothesis_type (non_inferiority dùng z MỘT PHÍA) — bản vá đó KHÔNG
-    # lan sang run_g4_auto.py, khiến SAP Lock Certificate (văn bản bác sĩ
-    # KÝ trước khi khóa, không phải chỉ artifact tham khảo) khẳng định SAI
-    # "Alpha (two-sided)" cho một đề tài non-inferiority thực chất dùng z
-    # một phía — mâu thuẫn nội bộ ngay trong văn bản đã ký.
+    # THÊM 2026-07-24 (vòng 18): nhãn một/hai phía theo hypothesis_type — non_inferiority dùng z MỘT PHÍA.
     _alpha_sidedness = "one-sided" if hypothesis_type == "non_inferiority" else "two-sided"
 
-    # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): với sr_ma/prediction/
-    # qualitative, n_adjusted=0 là CÓ CHỦ ĐÍCH (không dùng power/effect size)
-    # — hiện "[CẦN từ G3]" sẽ SAI (ngụ ý G3 chưa xong/thiếu dữ liệu). CHỈ áp
-    # dụng khi n_adjusted VẪN <= 0 (chưa có confirmed_n) — nếu bác sĩ đã tự
-    # tính N (RIS/pmsampsize/bão hòa) và chốt qua --confirmed-n, main() đã
-    # gán n_adjusted=confirmed_n TRƯỚC khi gọi generate() nên phải hiện N
-    # thật, không phải "N/A".
+    # THÊM 2026-07-19 (audit vòng 3, D1): sr_ma/prediction/qualitative — n_adjusted=0 CÓ CHỦ ĐÍCH (không dùng power);
+    # N thật (nếu bác sĩ chốt qua --confirmed-n) đã được main() gán vào n_adjusted trước khi gọi.
     n_not_applicable = design_code in N_NOT_APPLICABLE_DESIGNS and not n_adjusted
     n_na_note = f"N/A — {design_code} không dùng power (xem A4)"
-    # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện HIGH): dòng
-    # "Effect size" KHÔNG được gộp chung điều kiện với "Cỡ mẫu" — sr_ma/prediction/
-    # qualitative không bao giờ dùng effect_size dù N đã được bác sĩ chốt qua
-    # --confirmed-n (n_adjusted khác 0). Dùng cờ RIÊNG, chỉ phụ thuộc design_code,
-    # để tránh hiện "[CẦN từ G3]" (TODO không bao giờ giải được) hoặc một effect
-    # size trông như bịa còn sót lại từ vòng scrape G1.
     effect_size_not_applicable = design_code in N_NOT_APPLICABLE_DESIGNS
+    precision = g3.get("precision")
+    do_tin_cay = _phan_tram(1 - float(alpha)) if alpha is not None else "[CẦN từ G3]"
 
-    # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện, xác nhận đối kháng):
-    # trước đây §5-§9 (đa biến/dữ liệu thiếu/subgroup/đa so sánh/độ nhạy) là
-    # VĂN BẢN CỐ ĐỊNH cho MỌI design_code kể cả "qualitative" — bác sĩ ký SAP
-    # Lock Certificate cho đề tài định tính sẽ vô tình xác nhận một kế hoạch
-    # Multiple Imputation/Bonferroni vô nghĩa về phương pháp luận. G3 (bão hòa
-    # dữ liệu) và G7 (SRQR 2014) đã có nhánh riêng cho qualitative từ
-    # 2026-07-19 — G4 là gate duy nhất còn thiếu. Thay bằng khung COREQ/SRQR:
-    # chiến lược mã hóa, bão hòa dữ liệu, chọn mẫu đa dạng, trustworthiness
-    # (Lincoln & Guba) thay cho đa biến/MI/subgroup/đa-so-sánh/độ-nhạy.
+    # ── §1: dòng cỡ mẫu theo cách N được quyết định ──
+    if n_not_applicable:
+        dong_co_mau_1 = f"- **Cỡ mẫu:** {n_na_note}  "
+    elif not n_adjusted:
+        dong_co_mau_1 = "- **Cỡ mẫu:** [CẦN từ G3]  "
+    elif loai12 == "power":
+        dong_co_mau_1 = f"- **Cỡ mẫu cuối:** N = {n_adjusted} (alpha={_so(alpha)}, power={_phan_tram(power)})  "
+    elif loai12 == "chinh_xac":
+        dong_co_mau_1 = (f"- **Cỡ mẫu cuối:** N = {n_adjusted} (độ tin cậy {do_tin_cay}, sai số tuyệt đối "
+                         f"d = ±{_so(precision)})  ")
+    else:
+        dong_co_mau_1 = f"- **Cỡ mẫu cuối:** N = {n_adjusted} (phương pháp riêng của thiết kế — xem A4)  "
+    # VÁ 04/10/2026 (soát từng cổng, G4-05): câu «N kế hoạch … lớn hơn mức tối thiểu» từng in chỉ với điều kiện hai số
+    # KHÁC nhau — không xét CHIỀU — nên SAP ký khẳng định SAI khi chủ nhiệm chốt N THẤP hơn N tối thiểu (đề tài thiếu
+    # lực). Nay rẽ nhánh theo chiều; chiều thấp hơn phải có giải trình của người thật (ô [CẦN] nếu chưa khai).
+    dong_n_toi_thieu = []
+    if n_statistical_min and n_adjusted and n_statistical_min != n_adjusted:
+        if n_adjusted > n_statistical_min:
+            dong_n_toi_thieu = [f"- **N tối thiểu theo thống kê (từ G3):** {n_statistical_min} — "
+                                "N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  "]
+        else:
+            he_qua = ("đề tài THIẾU LỰC THỐNG KÊ so với giả định ở G3" if loai12 == "power"
+                      else "ước lượng KHÔNG đạt độ chính xác đã đặt ở G3")
+            giai_trinh = str(giai_trinh_thieu_luc or "").strip()
+            if not giai_trinh or "[CẦN" in giai_trinh.upper():
+                giai_trinh = ("[CẦN THỐNG KÊ VIÊN/PI GIẢI TRÌNH — vì sao chấp nhận N thấp hơn, hệ quả lên diễn giải; "
+                              "ghi gate_params.G3.underpowered_acceptance_justification]")
+            dong_n_toi_thieu = [
+                f"- **N tối thiểu theo thống kê (từ G3):** {n_statistical_min} — ⚠ N kế hoạch ở trên "
+                f"{G4Q.NHAN_LOAI_THIEU_LUC}: {he_qua}.  ",
+                f"- **Giải trình chấp nhận:** {giai_trinh}  ",
+            ]
+
+    # ── §4: phân tích chính; RCT có estimand + quần thể phân tích CHÍNH ──
+    dong_muc4 = [f"- **Phương pháp:** {main_method}  "]
+    if design_code == "rct":
+        # VÁ 04/10/2026 (soát từng cổng, G4-03 ≡ G1-08): SAP RCT từng in cứng «ITT, PP» mà không nói cái nào CHÍNH và
+        # không có estimand dù STANDARDS_BASIS tuyên bố đối chiếu ICH E9(R1). Nay in ĐÚNG estimand PI đã khai ở G1 (đặc
+        # tả thiết kế khoá ở G1 — không suy lại); chưa khai ⇒ ô [CẦN]. Quần thể phân tích chính là quyết định người.
+        est = estimand if isinstance(estimand, dict) else {}
+
+        def _est(khoa, goi_y):
+            gia_tri = str(est.get(khoa) or "").strip()
+            return gia_tri if gia_tri else f"[CẦN — {goi_y}; khai ở gate_params.G1.estimand.{khoa}]"
+
+        dong_muc4 += [
+            "- **Estimand chính (ICH E9(R1); Kahan BC et al. BMJ 2024, PMID 38262663) — lấy từ G1:**  ",
+            f"  - Quần thể (population): {_est('population', 'quần thể đích')}  ",
+            f"  - Điều kiện điều trị so sánh: {_est('treatment_condition', 'can thiệp và đối chứng')}  ",
+            f"  - Biến kết cục (variable): {_est('variable', 'kết cục chính')}  ",
+            f"  - Biến cố xen ngang + chiến lược: {_est('intercurrent_events_strategy', 'biến cố và chiến lược')}  ",
+            f"  - Thước đo tổng hợp quần thể: {_est('population_summary_measure', 'RR/OR/RD/HR/MD')}  ",
+            "- **Quần thể phân tích CHÍNH:** [CẦN THỐNG KÊ VIÊN/PI CHỐT — phải khớp chiến lược biến cố xen ngang của "
+            "estimand (vd treatment-policy ⇒ ITT); quần thể khác (vd per-protocol) chỉ là phân tích độ nhạy ở §9]  ",
+        ]
+    else:
+        dong_muc4.append(f"- **Quần thể:** {analysis_pop}  ")
+    icc, cluster_size, design_effect = g3.get("icc"), g3.get("cluster_size"), g3.get("design_effect")
+    co_cum = icc is not None and cluster_size is not None
+    if co_cum:
+        dong_muc4.append(
+            f"- **Hiệu chỉnh cụm:** phân tích chính phải tính cấu trúc cụm (DE = {_so(design_effect)}, ICC = {_so(icc)}, "
+            f"m = {_so(cluster_size)}) — [CẦN THỐNG KÊ VIÊN chọn phương pháp, vd mô hình hiệu ứng hỗn hợp hoặc GEE]  ")
+    if hypothesis_type in ("non_inferiority", "equivalence"):
+        dong_muc4.append(
+            f"- **Kết luận {'không kém hơn' if hypothesis_type == 'non_inferiority' else 'tương đương'}:** so cận khoảng "
+            f"tin cậy với biên Δ = {_so(margin)} theo chiều kết cục {g3.get('outcome_direction') or '[CẦN từ G3]'} "
+            "— không dựa vào p-value của kiểm định vượt trội  ")
+    if design_code == "qualitative":
+        dong_muc4.append("- **Trình bày:** chủ đề, chủ đề con và trích dẫn minh hoạ ẩn danh (COREQ/SRQR)  ")
+    else:
+        dong_muc4.append("- **Trình bày:** ước lượng + 95%CI; không báo p-value đơn độc  ")
+
+    # THÊM 2026-07-20: §5-§9 cho định tính theo khung COREQ/SRQR (không MI/Bonferroni vô nghĩa).
     if design_code == "qualitative":
         sap_sections_5_to_9 = [
             "### §5 CHIẾN LƯỢC MÃ HÓA (thay Phân tích đa biến — không áp dụng cho định tính)",
@@ -213,6 +438,15 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "- **Transferability:** [CẦN — mô tả bối cảnh dày (thick description)]  ",
             "- **Dependability:** [CẦN — audit trail quá trình mã hóa]  ",
             "- **Confirmability:** [CẦN — nhật ký phản tư (reflexivity journal)]  ",
+            "",
+        ]
+        muc_10 = [
+            "### §10 PHẦN MỀM + SEED",
+            "",
+            "- **Phần mềm:** [CẦN — phần mềm phân tích định tính và phiên bản (vd NVivo 14 / ATLAS.ti 23 / "
+            "MAXQDA 2022) hoặc mã tay theo codebook]  ",
+            "- **Packages:** KHÔNG ÁP DỤNG (định tính)  ",
+            "- **Random seed:** KHÔNG ÁP DỤNG — định tính không có bước ngẫu nhiên trong phân tích  ",
             "",
         ]
     else:
@@ -248,19 +482,18 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "- [CẦN BÁC SĨ thêm kịch bản cụ thể]  ",
             "",
         ]
+        muc_10 = [
+            "### §10 PHẦN MỀM + SEED",
+            "",
+            "- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ",
+            "- **Packages:** [CẦN — survival, lme4, mice, gtsummary...]  ",
+            "- **Random seed:** [CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]  ",
+            "",
+        ]
 
-    # THÊM 2026-09-06 (bác sĩ duyệt "thêm mục 13–15 có điều kiện" sau khi đo SAP
-    # thiếu 4 mục SPIRIT 2025 CHỈ áp dụng cho RCT — 0 lần xuất hiện trong file
-    # này: 28b phân tích giữa kỳ/quy tắc dừng, 28a hội đồng theo dõi dữ liệu
-    # (DMC/DSMB), 17 định nghĩa/đánh giá tổn hại, 15b/15c ngừng-đổi can thiệp
-    # và tuân thủ. CHỈ cho RCT (`design_code == "rct"`, cùng quy ước literal đã
-    # dùng xuyên suốt hàm này cho "qualitative") — nối SAU §12, KHÔNG đánh số
-    # lại §1-§12: `approve_gate._g4_sections_still_draft` và
-    # `g4_quality_gate._section_body`/`parse_signed_numbers` đều tìm biên §12
-    # bằng regex `^#{2,3}\s+§\d`, nên chèn giữa hoặc đổi số sẽ làm vỡ cổng
-    # đang chạy (SAP là tài liệu ĐƯỢC KÝ VÀ KHOÁ). §13/§14/§15 KHÔNG nằm trong
-    # `_G4_REQUIRED_SECTIONS` — chỉ là nội dung thêm để bác sĩ/DMC điền, không
-    # đổi ngưỡng chặn ký hiện có (đó là quyết định RIÊNG, chưa được yêu cầu).
+    # THÊM 2026-09-06 (bác sĩ duyệt «thêm mục 13–15 có điều kiện»): SPIRIT 2025 28b/28a/17/15b/15c CHỈ cho RCT — nối SAU
+    # §12, KHÔNG đánh số lại §1-§12. VÁ 04/10/2026 (soát từng cổng, G4-02 — QĐ-1): §13/§14/§15 nay BẮT BUỘC khi ký SAP
+    # RCT (approve_gate._G4_REQUIRED_SECTIONS_RCT) — doctrine thiet-ke-nghien-cuu đã dạy «đạt G4 khi 15 mục nếu RCT».
     sap_sections_13_to_15 = [
         "",
         "### §13 PHÂN TÍCH GIỮA KỲ VÀ QUY TẮC DỪNG (SPIRIT 2025 mục 28b)",
@@ -295,6 +528,101 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
     ]
 
+    # ── §12 + chứng chỉ khoá theo khung (G4-06/G4-08) ──
+    dong_n_12 = (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
+                 (f"- **Cỡ mẫu:** N = {n_adjusted}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  "))
+    if loai12 == "dinh_tinh":
+        tieu_de_12 = "### §12 KHÔNG KIỂM ĐỊNH GIẢ THUYẾT (định tính)"
+        muc_12 = [
+            "- **Alpha:** KHÔNG ÁP DỤNG — định tính không kiểm định giả thuyết bằng p-value  ",
+            "- **Power:** KHÔNG ÁP DỤNG — cỡ mẫu theo bão hoà dữ liệu (xem §6 và A4)  ",
+            dong_n_12,
+            f"- **Effect size:** N/A — {design_code} không dùng effect size  ",
+        ]
+    elif loai12 == "khong_power":
+        tieu_de_12 = "### §12 ALPHA + CỠ MẪU (không dùng power của G3)"
+        muc_12 = [
+            f"- **Alpha ({_alpha_sidedness}):** {_so(alpha)}  ",
+            f"- **Power:** KHÔNG ÁP DỤNG cho công thức của G3 — {design_code} dùng phương pháp riêng (xem A4)  ",
+            dong_n_12,
+            f"- **Effect size:** N/A — {design_code} không dùng effect size  ",
+        ]
+    elif loai12 == "chinh_xac":
+        tieu_de_12 = "### §12 ALPHA + ĐỘ CHÍNH XÁC (cỡ mẫu theo sai số cho phép)"
+        muc_12 = [
+            f"- **Alpha ({_alpha_sidedness}):** {_so(alpha)} — độ tin cậy {do_tin_cay}  ",
+            f"- **Tỷ lệ ước lượng (p):** {_so(effect_val)}  ",
+            f"- **Sai số tuyệt đối cho phép (d):** ±{_so(precision)}  ",
+            dong_n_12,
+            "- **Power:** không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả thuyết  ",
+        ]
+    else:
+        tieu_de_12 = "### §12 ALPHA + POWER"
+        muc_12 = [
+            f"- **Alpha ({_alpha_sidedness}):** {_so(alpha)}  ",
+            f"- **Power:** {_phan_tram(power)}  ",
+            dong_n_12,
+            (f"- **Effect size:** N/A — {design_code} không dùng effect size  " if effect_size_not_applicable else
+             (f"- **Effect size dự kiến:** {effect_type} = {_so(effect_val)}  " if effect_val is not None
+              else "- **Effect size:** [CẦN từ G3]  ")),
+        ]
+        if hypothesis_type in ("non_inferiority", "equivalence"):
+            # THÊM 2026-07-24 (vòng 18): margin Δ phải có trong SAP được ký. VÁ 04/10/2026: chỉ NI/tương đương —
+            # cắt ngang phân tích có hypothesis_type=descriptive_precision từng bị in khối margin «[CẦN từ G3]».
+            muc_12 += [f"- **Loại giả thuyết:** {hypothesis_type}  ",
+                       f"- **Biên (margin, Δ):** {_so(margin)} "
+                       "— [CẦN Hội đồng/thống kê viên xác nhận biện minh lâm sàng TRƯỚC KHI KÝ]  "]
+            if g3.get("outcome_direction"):
+                muc_12.append(f"- **Chiều kết cục:** {g3.get('outcome_direction')}  ")
+        if effect_type == "MD":
+            # THÊM 2026-07-06: SD bắt buộc để tái tạo cỡ mẫu kết cục liên tục.
+            muc_12.append(f"- **Độ lệch chuẩn (SD) kết cục:** {_so(sd)}  " if sd is not None
+                          else "- **SD kết cục:** [CẦN từ G3 — bắt buộc khi effect_type=MD]  ")
+        for khoa, nhan in (("p0", "Tỷ lệ biến cố nhóm chứng (p0)"), ("p_event", "Tỷ lệ biến cố (log-rank, p_event)")):
+            if g3.get(khoa) is not None:
+                muc_12.append(f"- **{nhan}:** {_so(g3.get(khoa))}  ")
+        if design_code == "diagnostic" and g3.get("n_benh") is not None:
+            muc_12 += [f"- **Số ca bệnh cần:** {g3.get('n_benh')}  ",
+                       f"- **Số ca không bệnh cần:** {g3.get('n_khong_benh')}  ",
+                       f"- **Tỷ lệ hiện mắc dự kiến:** {_so(g3.get('prevalence'))}  "]
+    if loai12 != "dinh_tinh" and g3.get("dropout") is not None:
+        muc_12.append(f"- **Tỷ lệ bỏ cuộc dự kiến:** {_so(g3.get('dropout'))}  ")
+    if co_cum:
+        muc_12 += [f"- **Hiệu ứng thiết kế (DE):** {_so(design_effect)}  ",
+                   f"- **ICC:** {_so(icc)}  ",
+                   f"- **Cỡ cụm trung bình (m):** {_so(cluster_size)}  "]
+        if g3.get("n_clusters") is not None:
+            muc_12.append(f"- **Số cụm:** {g3.get('n_clusters')}  ")
+    if g3.get("population_n") is not None:
+        muc_12.append(f"- **Quần thể hữu hạn (FPC):** N = {g3.get('population_n')}  ")
+
+    dong_co_mau_cc = (f"║ Cỡ mẫu   : {n_na_note:<49} ║" if n_not_applicable else
+                      (f"║ Cỡ mẫu   : N = {str(n_adjusted):<45} ║" if n_adjusted
+                       else "║ Cỡ mẫu   : [CẦN từ G3]                                      ║"))
+    def _o_khung(nhan, gia_tri):
+        return f"║ {nhan:<10}: {gia_tri:<48} ║"
+
+    if loai12 == "dinh_tinh":
+        chung_chi_so = [_o_khung("Alpha", "KHÔNG ÁP DỤNG (định tính)"),
+                        _o_khung("Power", "KHÔNG ÁP DỤNG (bão hoà dữ liệu)")]
+    elif loai12 == "khong_power":
+        chung_chi_so = [_o_khung("Alpha", f"{_so(alpha)} ({_alpha_sidedness})"),
+                        _o_khung("Power", "KHÔNG ÁP DỤNG (xem A4)")]
+    elif loai12 == "chinh_xac":
+        chung_chi_so = [_o_khung("Alpha", f"{_so(alpha)} (độ tin cậy {do_tin_cay})"),
+                        _o_khung("Sai số d", f"±{_so(precision)} (p = {_so(effect_val)})")]
+    else:
+        chung_chi_so = [f"║ Alpha     : {_so(alpha)} ({_alpha_sidedness})                                  ║",
+                        f"║ Power     : {_phan_tram(power)}                                            ║"]
+        if effect_type == "MD":
+            chung_chi_so.append(f"║ SD kết cục: {_so(sd):<48} ║" if sd is not None
+                                else "║ SD kết cục: [CẦN từ G3 — bắt buộc khi effect_type=MD]       ║")
+        if hypothesis_type in ("non_inferiority", "equivalence"):
+            chung_chi_so += [f"║ Giả thuyết: {hypothesis_type:<48} ║",
+                             f"║ Margin (Δ): {_so(margin):<48} ║"]
+
+    muc_bat_buoc = "§1/§2/§4/§5/§9/§10" + ("/§13/§14/§15" if design_code == "rct" else "")
+    vai_tro_ky = GC.required_reviewer_role_hint("G4")
     lines = [
         "# A5 — SAP FINAL + SAP LOCK CERTIFICATE (DRAFT — CHỜ BÁC SĨ KÝ)",
         f"**Đề tài:** {topic}  ",
@@ -332,24 +660,12 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "### §1 QUẦN THỂ PHÂN TÍCH",
         "",
         f"- **Quần thể chính:** {pop}  ",
-        # THÊM 06/09/2026 (bác sĩ: "Điền phần Can thiệp và đối chứng"): SAP chỉ
-        # định nghĩa quần thể phân tích theo NHÓM (ITT/PP), không mô tả can
-        # thiệp/đối chứng LÀ GÌ — nội dung đó đã có ở đề cương §6.2 (TIDieR,
-        # commit 8bc39e2). Trỏ NGƯỢC sang đó thay vì chép lại: hai nơi cùng một
-        # sự thật dễ lệch nhau khi sửa một bên (đúng lý do 15b/15c ở §13-15 chỉ
-        # trỏ sang, không lặp). Chỉ RCT — thiết kế khác không có can thiệp.
+        # THÊM 06/09/2026: RCT trỏ NGƯỢC sang đề cương §6.2 (TIDieR) thay vì chép lại.
         *(["- **Mô tả can thiệp/đối chứng (TIDieR):** xem đề cương thống nhất "
            "§6.2 Can thiệp và đối chứng — không lặp lại ở đây để tránh hai nơi "
            "cùng một sự thật dễ lệch nhau.  "] if design_code == "rct" else []),
-        (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
-         (f"- **Cỡ mẫu cuối:** N = {n_adjusted} (alpha={alpha}, power={int(power*100)}%)  " if n_adjusted
-          else "- **Cỡ mẫu:** [CẦN từ G3]  ")),
-        # Khi chủ nhiệm/Hội đồng chốt N lớn hơn N tối thiểu, in CẢ HAI con số:
-        # giấu N tối thiểu đi cũng là mất minh bạch, còn ghi mỗi N tối thiểu thì
-        # SAP đã khóa sẽ lệch với dữ liệu thật sẽ thu.
-        *([f"- **N tối thiểu theo thống kê (từ G3):** {n_statistical_min} — "
-           f"N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  "]
-          if (n_statistical_min and n_adjusted and n_statistical_min != n_adjusted) else []),
+        dong_co_mau_1,
+        *dong_n_toi_thieu,
         "- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  ",
         "- **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  ",
         "",
@@ -363,65 +679,22 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
         "### §3 THỐNG KÊ MÔ TẢ",
         "",
-        "- Biến liên tục: trung bình ± SD (phân phối chuẩn) hoặc trung vị [IQR] (lệch)  ",
-        "- Biến phân loại: n (%)  ",
-        "- So sánh đặc điểm nền: t-test / Mann-Whitney / Chi-square / Fisher  ",
+        *_thong_ke_mo_ta(design_code, loai12),
         "",
         "### §4 PHÂN TÍCH CHÍNH",
         "",
-        f"- **Phương pháp:** {main_method}  ",
-        f"- **Quần thể:** {analysis_pop}  ",
-        "- **Trình bày:** ước lượng + 95%CI; không báo p-value đơn độc  ",
+        *dong_muc4,
         "",
         *sap_sections_5_to_9,
-        "### §10 PHẦN MỀM + SEED",
-        "",
-        "- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ",
-        "- **Packages:** [CẦN — survival, lme4, mice, gtsummary...]  ",
-        "- **Random seed:** [CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]  ",
-        "",
+        *muc_10,
         "### §11 DUMMY TABLES (Khung bảng kết quả)",
         "",
-        "**Bảng 1 — Đặc điểm nền:**",
-        "| Biến | Nhóm 1 | Nhóm 2 | p |",
-        "|---|---|---|---|",
-        "| Tuổi (năm) | ___ ± ___ | ___ ± ___ | ___ |",
-        "| Giới nữ, n (%) | ___ (_) | ___ (_) | ___ |",
-        "| [CẦN thêm biến] | | | |",
+        *_bang_gia(design_code, loai12),
         "",
-        "**Bảng 2 — Kết cục chính:**",
-        "| Kết cục | N (%) / Trung vị | 95%CI | p |",
-        "|---|---|---|---|",
-        "| [CẦN KẾT QUẢ THẬT] | | | |",
+        tieu_de_12,
         "",
-        "### §12 ALPHA + POWER",
-        "",
-        f"- **Alpha ({_alpha_sidedness}):** {alpha}  ",
-        f"- **Power:** {int(power*100)}%  ",
-        (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
-         (f"- **Cỡ mẫu:** N = {n_adjusted}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  ")),
-        (f"- **Effect size:** N/A — {design_code} không dùng effect size  " if effect_size_not_applicable else
-         (f"- **Effect size dự kiến:** {effect_type} = {effect_val:.2f}  " if effect_val
-          else "- **Effect size:** [CẦN từ G3]  ")),
-    ] + (
-        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 18, phát hiện
-        # HIGH): margin Δ là tham số an toàn-trọng yếu nhất của thiết kế NI/
-        # equivalence (định nghĩa "kém hơn tối đa chấp nhận được") — trước
-        # đây KHÔNG xuất hiện ở đâu trong SAP mà bác sĩ/thống kê viên ký,
-        # dù run_g3_auto.py đã ghi vào G3_checkpoint.json từ vòng 15.
-        [f"- **Loại giả thuyết:** {hypothesis_type}  ",
-         f"- **Biên (margin, Δ):** {margin if margin is not None else '[CẦN từ G3]'} "
-         "— [CẦN Hội đồng/thống kê viên xác nhận biện minh lâm sàng TRƯỚC KHI KÝ]  "]
-        if hypothesis_type != "superiority" else []
-    ) + (
-        # THÊM 2026-07-06: SD bị RỚT khi truyền G3→G4 (phát hiện qua kiểm định
-        # đối kháng vòng 2) — bác sĩ ký SAP mà không thấy tham số bắt buộc để
-        # tái tạo/kiểm chứng cỡ mẫu kết cục liên tục (effect_type=MD).
-        [f"- **Độ lệch chuẩn (SD) kết cục:** {sd:.2f}  " if sd else "- **SD kết cục:** [CẦN từ G3 — bắt buộc khi effect_type=MD]  "]
-        if effect_type == "MD" else []
-    ) + (
-        sap_sections_13_to_15 if design_code == "rct" else []
-    ) + [
+        *muc_12,
+        *(sap_sections_13_to_15 if design_code == "rct" else []),
         "",
         "---",
         "",
@@ -444,24 +717,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "╠══════════════════════════════════════════════════════════════╣",
         f"║ Đề tài    : {study:<48} ║",
         f"║ Ngày soạn : {run_date:<48} ║",
-        (f"║ Cỡ mẫu   : {n_na_note:<49} ║" if n_not_applicable else
-         (f"║ Cỡ mẫu   : N = {str(n_adjusted):<45} ║" if n_adjusted
-          else "║ Cỡ mẫu   : [CẦN từ G3]                                      ║")),
-        f"║ Alpha     : {alpha} ({_alpha_sidedness})                                  ║",
-        f"║ Power     : {int(power*100)}%                                            ║",
-    ] + (
-        # THÊM 2026-07-06: giữ nguyên tinh thần vá ở §12 — SD bắt buộc để tái
-        # tạo/kiểm chứng cỡ mẫu kết cục liên tục, không được rớt ở chứng chỉ ký.
-        [f"║ SD kết cục: {sd:<48.2f} ║" if sd else "║ SD kết cục: [CẦN từ G3 — bắt buộc khi effect_type=MD]       ║"]
-        if effect_type == "MD" else []
-    ) + (
-        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 18, phát hiện
-        # HIGH): margin phải xuất hiện ngay trên chứng chỉ KÝ, không chỉ ở
-        # §12 phía trên — đây là văn bản bác sĩ/thống kê viên thực sự ký.
-        [f"║ Giả thuyết: {hypothesis_type:<48} ║",
-         f"║ Margin (Δ): {str(margin if margin is not None else '[CẦN từ G3]'):<48} ║"]
-        if hypothesis_type != "superiority" else []
-    ) + [
+        dong_co_mau_cc,
+        *chung_chi_so,
         "║ KQ chính  : [CẦN BÁC SĨ ĐIỀN — từ SAP §2]                 ║",
         "║ Phân tích : [CẦN BÁC SĨ ĐIỀN — quần thể phân tích]        ║",
         "╠══════════════════════════════════════════════════════════════╣",
@@ -471,25 +728,33 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "║ Đồng tác giả:     _________________________ Ngày: ___/___/ ║",
         "╚══════════════════════════════════════════════════════════════╝",
         "",
-        "  → Sau khi ký: scan + lưu vào exports/<study>/G4_SAP_SIGNED.pdf",
-        "  → Cung cấp ngày ký → hệ thống ghi G4_STATUS: LOCKED",
-        "  → Chỉ sau khi G4=LOCKED mới được xem dữ liệu (G5→G6)",
+        # VÁ 04/10/2026 (soát từng cổng, G4-11): hướng dẫn cũ «Cung cấp ngày ký → hệ thống ghi G4_STATUS: LOCKED» trái
+        # cơ chế thật — chốt khoá là bản ghi phê duyệt có niêm phong do thống kê viên/PI TỰ ký bằng approve_gate.py.
+        "  → Ký số: thống kê viên/PI TỰ chạy approve_gate.py --gate G4 (sổ cái phê duyệt có niêm phong)",
+        "  → Bản giấy có chữ ký (nếu đơn vị yêu cầu): scan lưu exports/<study>/G4_SAP_SIGNED.pdf",
+        "  → Chỉ khi sổ cái có phê duyệt G4 hợp lệ mới được xem dữ liệu (G5→G6)",
         "```",
         "",
         "---",
         "",
         "## PHẦN 6 — TIÊU CHÍ QUA CỔNG G4 + CƠ CHẾ MỞ KHÓA",
         "",
-        "**Để G4=LOCKED:**",
-        "1. Bác sĩ điền TẤT CẢ [CẦN...] trong SAP §2 (kết cục) và §5 (covariates)",
-        "2. Bác sĩ ký SAP Lock Certificate (Phần 5)",
-        "3. Cung cấp ngày ký cho hệ thống",
-        "4. Hệ thống ghi: `G4_STATUS: LOCKED` vào checkpoint",
+        "**Để G4 đạt PASS_G4_SAP_LOCKED:**",
+        f"1. Điền TẤT CẢ ô [CẦN...] ở các mục bắt buộc {muc_bat_buoc} và ở chứng chỉ khoá (Phần 5); "
+        "không xoá mục bắt buộc nào",
+        f"2. Chạy `python3 tools/g4_quality_gate.py --study {study}` — trạng thái phải là READY_FOR_SIGNATURE "
+        "(G3 đã chốt PASS_G3_CONFIRMED, số liệu ký khớp G3)",
+        "3. Thống kê viên/PI ghi xác nhận vào study_meta.json → gate_params.G4 (epv_vif_reviewed, "
+        "missing_data_mechanism_confirmed, subgroup_multiplicity_predefined_confirmed, reviewed_by_role, reviewed_at "
+        "ISO-8601, dau_van_tay_chot = dấu nội dung SAP mà bộ chấm in)",
+        f"4. Thống kê viên/PI TỰ ký: `python3 tools/approve_gate.py --study {study} --gate G4 --artifact "
+        f"exports/{study}/G4_A5_SAP_FINAL_{study}.md --reviewer-role <{vai_tro_ky}> --reviewer-ref <mã người duyệt>` "
+        "— hệ thống KHÔNG tự ghi trạng thái khoá",
         "",
-        "**Chỉ sau G4=LOCKED:**",
+        "**Chỉ sau khi G4 được ký trên sổ cái:**",
         "- Mới được mở dữ liệu (G5)",
         "- Mới được chạy phân tích chính (G6)",
-        "- Mọi phân tích trước G4=LOCKED bị coi là 'thăm dò'",
+        "- Mọi phân tích trước khi ký bị coi là 'thăm dò'",
         "",
         "---",
         "*Cần bác sĩ kiểm chứng. SAP này chỉ có hiệu lực pháp lý sau khi được ký.*",
@@ -562,8 +827,11 @@ def main():
     design_code, _design_warn = GC.resolve_design_code(out)
     if _design_warn:
         print(_design_warn)
-    design_primary = g1_design.get("primary") or "Cohort tiến cứu"
-    reporting_std = g1_design.get("reporting_standard") or "STROBE 2007"
+    # VÁ 04/10/2026 (soát từng cổng, CHUNG-F): mặc định im lặng «Cohort tiến cứu»/«STROBE 2007» từng in vào SAP của MỌI
+    # thiết kế khi G1 thiếu khoá — một RCT tự khai là cohort. Nay chuẩn báo cáo lấy theo thiết kế đã giải quyết; mô tả
+    # thiết kế vắng ⇒ ô [CẦN].
+    design_primary = g1_design.get("primary") or f"{design_code} — [CẦN mô tả thiết kế từ G1]"
+    reporting_std = g1_design.get("reporting_standard") or S.reporting_standards_for(design_code).get("primary")
     # SỬA: n_adjusted có thể là string nếu checkpoint bị ghi/sửa bởi nguồn
     # khác (vd tay sửa JSON) — "n_adjusted <= 0" crash TypeError khi so sánh
     # str với int. Ép kiểu an toàn, giá trị không hợp lệ → coi như 0 (sẽ bị
@@ -596,10 +864,12 @@ def main():
     n_statistical_min = n_adjusted
     if confirmed_n:
         n_adjusted = confirmed_n
-    alpha = g3.get("alpha") or 0.05
-    power = g3.get("power") or 0.80
+    # VÁ 04/10/2026 (soát từng cổng, CHUNG-F/G4-06): «alpha or 0.05», «power or 0.80», «effect_type or "HR"» là giá trị
+    # mặc định IM LẶNG trong văn bản sẽ KÝ. G3 (từ 04/10) luôn ghi alpha/power kèm nguồn; vắng ⇒ SAP in [CẦN từ G3].
+    alpha = g3.get("alpha")
+    power = g3.get("power")
     effect_val = g3.get("effect_val")
-    effect_type = g3.get("effect_type") or "HR"
+    effect_type = g3.get("effect_type")
     sd = g3.get("sd")  # THÊM 2026-07-06: SD kết cục liên tục (effect_type=MD), từng bị rớt khi truyền G3→G4
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 18, phát hiện HIGH):
     # hypothesis_type/margin bị RỚT khi truyền G3→G4 — cùng lớp lỗi với SD
@@ -646,13 +916,54 @@ def main():
         print("   💾 Đã ghi G4_checkpoint.json (BLOCKED) để pipeline đọc remediation.")
         raise SystemExit(GC.EXIT_BLOCKED)
 
+    # VÁ 04/10/2026 (soát từng cổng, G4-04 ≡ G3-05): run_g3_auto ghi G3_checkpoint (kèm N) TRƯỚC khi chấm rồi mới thoát
+    # mã 3 khi BLOCKED ⇒ G4 từng sinh (và cho ký) SAP khoá một N mà chính G3 đánh giá là sai. Nay CHẤM SỐNG G3: bị chặn
+    # ⇒ TỪ CHỐI sinh SAP, ghi checkpoint DỪNG trỏ về G3; chưa chốt ⇒ vẫn sinh bản DỰ THẢO để soạn song song nhưng nói rõ
+    # G4 không ký được tới khi G3 = PASS_G3_CONFIRMED (g4_quality_gate G4-AUTO-12).
+    g3_song = CS.trang_thai_song("G3", study, out, repo_root=BASE)
+    if g3_song.get("muc") == "BLOCKED":
+        _bc3 = g3_song.get("bao_cao") if isinstance(g3_song.get("bao_cao"), dict) else {}
+        _chan3 = [str(r.get("id")) for r in _bc3.get("automatic_criteria") or []
+                  if isinstance(r, dict) and r.get("status") == "BLOCK"]
+        print(f"🚧 G4 DỪNG: G3 chấm sống = BLOCKED ({', '.join(_chan3) or g3_song.get('ly_do')}) — không khoá SAP "
+              "trên cỡ mẫu bị chặn.")
+        need = GC.needs_input(
+            GC.REASON_MISSING_SAMPLE_SIZE,
+            "G4 (khóa SAP) không sinh SAP vì G3 (cỡ mẫu) đang BỊ CHẶN khi chấm sống — N trong G3_checkpoint chưa hợp "
+            "lệ. Xử lý các mục BLOCK của G3 trước.",
+            f"python3 tools/g3_quality_gate.py --study {study}",
+            must_not_fabricate=["n_adjusted", "effect_size", "PMID"],
+        )
+        cp = {
+            "gate": "G4", "study": study, "run_date": run_date,
+            "g4_status": "BLOCKED — G3 BỊ CHẶN KHI CHẤM SỐNG",
+            "g4_sap_version": None, "g4_lock_date": None,
+            "n_from_g3": n_adjusted, "design_code": design_code,
+            "g3_trang_thai_luc_sinh": g3_song.get("status"),
+            "guardrail": GC.BLOCKED_GUARDRAIL_STR,
+            "core_value": GC.core_value("n_from_g3", n_adjusted, is_empty=True),
+            "needs_input": need,
+            "pending_doctor_actions": ["Xử lý mục BLOCK của G3 (g3_quality_gate.py) rồi chạy lại G3 → G4"],
+        }
+        (out / "G4_checkpoint.json").write_text(
+            json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        print("   💾 Đã ghi G4_checkpoint.json (BLOCKED) — remediation trỏ về G3.")
+        raise SystemExit(GC.EXIT_BLOCKED)
+    if g3_song.get("muc") != "PASS":
+        print(f"  ⚠ G3 chấm sống = {g3_song.get('status')} — SAP sinh ra là DỰ THẢO để soạn song song; G4 KHÔNG ký "
+              "được tới khi G3 = PASS_G3_CONFIRMED (thống kê viên/PI xác nhận tham số cỡ mẫu).")
+
     print(f"  → Topic: {topic[:60]}")
     print(f"  → Design: {design_code} | N={n_adjusted}")
 
+    meta_cp = GC.load_study_meta(out)
+    g3_meta = ((meta_cp.get("gate_params") or {}).get("G3") or {}) if isinstance(meta_cp, dict) else {}
     artifact = generate(study, topic, design_code, design_primary, reporting_std,
                         n_adjusted, alpha, power, effect_val, effect_type, run_date, sd,
                         hypothesis_type=hypothesis_type, margin=margin,
-                        n_statistical_min=n_statistical_min)
+                        n_statistical_min=n_statistical_min,
+                        g3=g3, estimand=S.dac_ta_thiet_ke(out).get("estimand"),
+                        giai_trinh_thieu_luc=g3_meta.get("underpowered_acceptance_justification"))
     md = out / f"G4_A5_SAP_FINAL_{study}.md"
     # SAP là tài liệu bác sĩ/thống kê viên ĐỌC RỒI KÝ, nên chuẩn hoá văn phong
     # trước khi ghi. keep_box=True: khung của SAP LOCK CERTIFICATE đóng vai con
@@ -698,20 +1009,28 @@ def main():
     write_docx(artifact, docx)
     print(f"  → DOCX: {docx}")
 
+    muc_bat_buoc = "§1/§2/§4/§5/§9/§10" + ("/§13/§14/§15" if design_code == "rct" else "")
     cp = {
         "gate": "G4", "study": study, "run_date": run_date,
         "g4_status": "PENDING — CHỜ BÁC SĨ KÝ SAP",
         "g4_sap_version": "1.0", "g4_lock_date": None,
         "n_from_g3": n_adjusted, "alpha": alpha, "power": power,
         "design_code": design_code, "reporting_standard": reporting_std,
+        "loai_muc_12": G4Q.loai_muc_12(design_code, g3),
+        "g3_trang_thai_luc_sinh": g3_song.get("status"),
         "guardrail": status,
+        # VÁ 04/10/2026 (soát từng cổng, G4-11): danh sách cũ bỏ sót §1/§4/§6–§9 và dạy «cung cấp ngày ký → ghi
+        # G4_STATUS=LOCKED» — trái cơ chế thật (approve_gate + sổ cái niêm phong + mục bắt buộc + chất lượng READY).
         "pending_doctor_actions": [
-            "Điền §2 kết cục chính (tên biến, đơn vị, ngưỡng)",
-            "Điền §5 covariates với lý do lâm sàng / DAG",
-            "Điền §10 phần mềm + seed",
-            "Ký SAP Lock Certificate → cung cấp ngày ký",
+            f"Điền mọi ô [CẦN…] ở mục bắt buộc {muc_bat_buoc} và chứng chỉ khoá (Phần 5); không xoá mục bắt buộc",
+            "Xử lý các mục REVIEW/BLOCK của python3 tools/g4_quality_gate.py (G3 phải PASS_G3_CONFIRMED)",
+            "Thống kê viên/PI ghi gate_params.G4 (EPV/VIF, cơ chế dữ liệu thiếu, nhóm nhỏ tiền định, reviewed_by_role, "
+            "reviewed_at ISO, dau_van_tay_chot theo dấu bộ chấm in)",
+            "Thống kê viên/PI TỰ ký: python3 tools/approve_gate.py --gate G4 (agent không ký thay)",
         ],
-        "lock_instruction": "Để mở G4: ký SAP Lock Certificate → cung cấp ngày ký → ghi G4_STATUS=LOCKED",
+        "lock_instruction": ("G4 chỉ khoá khi thống kê viên/PI TỰ ký bằng approve_gate.py --gate G4 (sổ cái phê duyệt "
+                             "có niêm phong) sau khi g4_quality_gate.py báo READY_FOR_SIGNATURE — hệ thống không tự "
+                             "ghi trạng thái khoá"),
     }
     cp_path = out / "G4_checkpoint.json"
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")

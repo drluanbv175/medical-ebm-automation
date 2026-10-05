@@ -411,3 +411,44 @@ def test_g3_chay_lai_chi_voi_study_khong_troi_tham_so(tmp_path, monkeypatch):
     d, cp3, rc, out = _chay(tmp_path, monkeypatch, "S-TROI", "rct", [], dung=False)
     assert (cp3["dropout"], cp3["p_event"], cp3["power"]) == (0.15, 0.4, 0.9)
     assert cp3["nguon_tham_so"]["dropout"] == "checkpoint lượt trước"
+
+
+# ── Lộ khi dựng chuỗi G0→G4 tổng hợp cho 8 thiết kế (soát cổng G4, 04/10/2026) ───────────────────────────────────────
+def test_g3_auto14_thiet_ke_chinh_xac_ghim_p_va_d(tmp_path, monkeypatch):
+    """Đề tài mô tả (như C1a): tham số quyết định N là p và d — bản cũ đòi ghim effect_size/effect_type ⇒ REVIEW mãi."""
+    d, cp, rc, out = _chay(tmp_path, monkeypatch, "S-MT", "cross_sectional",
+                           ["--prevalence", "0.5", "--precision", "0.05"])
+    meta = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
+    assert meta["gate_params"]["G3"]["prevalence"] == 0.5 and meta["gate_params"]["G3"]["precision"] == 0.05
+    assert _row(_q(cp), "G3-AUTO-14")["status"] == "PASS"
+    d2, cp2, rc2, out2 = _chay(tmp_path, monkeypatch, "S-MT2", "cross_sectional", [])
+    a14 = _row(_q(cp2), "G3-AUTO-14")
+    assert a14["status"] == "REVIEW" and "prevalence" in a14["evidence"] and "effect_size" not in a14["evidence"]
+    assert "precision" in a14["evidence"]
+
+
+def test_g3_auto14_ghim_p_kieu_cu_van_nhan_nhung_doi_d(tmp_path):
+    """C1a ghim p dạng cũ (effect_size=0.5, effect_type=PREVALENCE): vẫn là ghim p; còn thiếu d (precision) ⇒ REVIEW
+    chỉ nêu precision — sai số d là tham số thật quyết định N, giá trị mặc định máy không phải quyết định người."""
+    cp = {"design_code": "cross_sectional", "effect_type": "PREVALENCE", "effect_val": 0.5, "n_adjusted": 453,
+          "guardrail": "✅ PASS"}
+    (tmp_path / "A4.md").write_text("", encoding="utf-8", newline="\n")
+
+    def _a14(g3):
+        r = G3Q.evaluate_g3_quality(study="S", checkpoint=cp, artifact_path=tmp_path / "A4.md", g0_checkpoint={},
+                                    g1_checkpoint={"gate": "G1"}, meta={"gate_params": {"G3": g3}})
+        return next(c for c in r["automatic_criteria"] if c["id"] == "G3-AUTO-14")
+
+    cu_kieu = {"effect_size": 0.5, "effect_type": "PREVALENCE"}
+    row = _a14(cu_kieu)
+    assert row["status"] == "REVIEW" and "precision" in row["evidence"] and "prevalence" not in row["evidence"]
+    assert _a14(dict(cu_kieu, precision=0.05))["status"] == "PASS"
+
+
+def test_g3_ni_ghim_effect_size_khong_can_effect_type(tmp_path, monkeypatch):
+    d, cp, rc, out = _chay(tmp_path, monkeypatch, "S-NI-GHIM", "rct",
+                           ["--effect-size", "0.85", "--p0", "0.65", "--hypothesis-type", "non_inferiority",
+                            "--margin", "0.10", "--outcome-direction", "higher_better"])
+    g3 = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))["gate_params"]["G3"]
+    assert g3["effect_size"] == 0.85 and g3["effect_type"] == "NI_PROPORTION"
+    assert _row(_q(cp), "G3-AUTO-14")["status"] == "PASS"

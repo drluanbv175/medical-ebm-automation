@@ -44,6 +44,8 @@ Mã thoát: 0 = mọi lỗi gài đều bị đúng cổng bắt; khác 0 = có 
 from __future__ import annotations
 
 import hashlib
+import json
+import re
 import sys
 from dataclasses import dataclass
 from datetime import date
@@ -223,6 +225,29 @@ _COMPARATIVE_FILLS: Sequence[tuple] = (
 )
 
 
+# 04/10/2026 (soát từng cổng G4): SAP RCT in estimand G1 (G4-03) — đồ gá truyền estimand đủ 5 thuộc tính và bộ chấm
+# nhận CÙNG đặc tả (G4-AUTO-15); G3 chấm sống truyền dạng đã chốt (G4-AUTO-12); xác nhận G4 gắn dấu nội dung SAP.
+_G4_ESTIMAND: Dict[str, str] = {
+    "population": "Người trưởng thành tổng hợp canary",
+    "treatment_condition": "Can thiệp canary so với chăm sóc chuẩn",
+    "variable": "Kết cục tổng hợp canary",
+    "intercurrent_events_strategy": "Treatment-policy cho ngừng điều trị",
+    "population_summary_measure": "Tỷ số nguy cơ",
+}
+_G4_G3_SONG_PASS: Dict[str, Any] = {"gate": "G3", "status": "PASS_G3_CONFIRMED", "muc": "PASS", "dat": True,
+                                     "bi_chan": False, "nguon": "song", "ly_do": "đồ gá canary"}
+
+
+def _g4_dien_phan_rct(text: str) -> str:
+    """Điền phần riêng SAP RCT: «Quần thể phân tích CHÍNH» (§4) và mọi ô §13–§15 (bắt buộc từ 04/10/2026)."""
+    text = re.sub(r"(- \*\*Quần thể phân tích CHÍNH:\*\*) \[CẦN[^\]]*\]",
+                  r"\1 ITT — khớp chiến lược treatment-policy; per-protocol là phân tích độ nhạy ở §9", text)
+    dau, cuoi = text.index("### §13"), text.index("## PHẦN 4")
+    khoi = re.sub(r"\[CẦN[^\]]*\]", "Không — can thiệp canary nguy cơ thấp, theo dõi ngắn; lý do ghi trong đề cương",
+                  text[dau:cuoi])
+    return text[:dau] + khoi + text[cuoi:]
+
+
 def _g4_fresh_sap(design_code: str = "rct", **overrides) -> str:
     kwargs = dict(
         study=STUDY, topic="Đề tài canary G4", design_primary="RCT song song",
@@ -237,16 +262,18 @@ def _g4_fresh_sap(design_code: str = "rct", **overrides) -> str:
         kwargs["run_date"], kwargs.get("sd"),
         hypothesis_type=kwargs.get("hypothesis_type", "superiority"),
         margin=kwargs.get("margin"),
+        estimand=kwargs.get("estimand", _G4_ESTIMAND),
     )
 
 
 def _g4_filled_sap(**overrides) -> str:
-    text = _g4_fresh_sap(design_code=overrides.pop("design_code", "rct"), **overrides)
+    design_code = overrides.pop("design_code", "rct")
+    text = _g4_fresh_sap(design_code=design_code, **overrides)
     for old, new in _COMPARATIVE_FILLS:
         if old not in text:
             raise AssertionError(f"template G4 đã đổi hình dạng, thiếu placeholder: {old[:50]!r}")
         text = text.replace(old, new)
-    return text
+    return _g4_dien_phan_rct(text) if design_code == "rct" else text
 
 
 def _g4_checkpoint(**overrides) -> Dict[str, Any]:
@@ -289,8 +316,14 @@ def _evaluate_g4(**overrides) -> Dict[str, Any]:
         signature_scope="role",
         role_key_available=True,
         cross_gate_refs={"G2": "IRB-CANARY", "G4": "STAT-CANARY", "G8": "REV-CANARY", "G9": "PI-CANARY"},
+        g3_song=_G4_G3_SONG_PASS,
+        dac_ta={"estimand": _G4_ESTIMAND},
     )
     kwargs.update(overrides)
+    meta = json.loads(json.dumps(kwargs["meta"]))
+    meta.setdefault("gate_params", {}).setdefault("G4", {}).setdefault(
+        "dau_van_tay_chot", G4Q.dau_van_tay_g4(kwargs["artifact_text"]))
+    kwargs["meta"] = meta
     return G4Q.evaluate_g4_quality(**kwargs)
 
 

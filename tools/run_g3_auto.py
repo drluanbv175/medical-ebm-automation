@@ -1730,6 +1730,11 @@ def main():
                         "dropout": dropout, "p_event": p_event})
         if args.sd is not None:
             seed_g3["sd"] = args.sd
+    elif args.effect_size is not None and effect_type == "NI_PROPORTION":
+        # VÁ 04/10/2026 (soát từng cổng — lộ khi dựng chuỗi tổng hợp): nhánh không-kém-hơn/tương đương dùng --effect-size
+        # làm p_test KHÔNG cần --effect-type ⇒ bản cũ không ghim gì ⇒ G3-AUTO-14 («tham số đã ghim») REVIEW mãi.
+        seed_g3.update({"effect_size": args.effect_size, "effect_type": "NI_PROPORTION",
+                        "dropout": dropout, "p_event": p_event})
     if args.confirmed_n is not None:
         # Bác sĩ có thể chốt N thực tế TRƯỚC khi effect size sẵn sàng — vẫn ghim
         # riêng để không mất khi chạy lại.

@@ -335,7 +335,8 @@ def test_g4_chan_ky_khi_phan_tich_chinh_hoac_do_nhay_con_trong():
 def _g4_sap_day_du(monkeypatch, *, con, ledger_signed):
     """SAP đầy đủ của bộ test G4 (không chặn gì ⇒ LOCKED khi đã ký), rồi giả lập mục còn «[CẦN» ở G4-AUTO-10."""
     from tests.test_g4_quality_gate import _evaluate
-    monkeypatch.setattr(AG, "_g4_sections_still_draft", lambda _t: list(con))
+    # 04/10/2026 (soát từng cổng G4): hàm nhận thêm design_code (RCT ⇒ §13–§15 bắt buộc).
+    monkeypatch.setattr(AG, "_g4_sections_still_draft", lambda _t, _thiet_ke=None: list(con))
     r = _evaluate(ledger_signed=ledger_signed, ledger_reason="" if ledger_signed else "chưa ký")
     return next(c for c in r["automatic_criteria"] if c["id"] == "G4-AUTO-10"), r
 

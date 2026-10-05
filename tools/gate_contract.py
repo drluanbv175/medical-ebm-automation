@@ -622,6 +622,9 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         "dropout": None,              # vd 0.15
         "p_event": None,              # tỷ lệ biến cố nền (log-rank)
         "sd": None,                   # độ lệch chuẩn kết cục liên tục (bắt buộc khi effect_type=MD)
+        # 04/10/2026 (G4-05): N chốt < N tối thiểu ⇒ thống kê viên/PI giải trình vì sao chấp nhận giảm lực (G3-AUTO-13,
+        # G4-AUTO-14 đọc; SAP in nguyên văn).
+        "underpowered_acceptance_justification": None,
     },
     # G4 — khóa SAP. Thêm 2026-07-29 (audit toàn diện G0-G10): trước đây G4
     # KHÔNG có khối gate_params riêng — 3 xác nhận người thật mà
@@ -633,6 +636,8 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         "subgroup_multiplicity_predefined_confirmed": False,
         "reviewed_by_role": None,
         "reviewed_at": None,
+        # 04/10/2026 (CHUNG-C/QĐ-7): dấu nội dung SAP (PHẦN 3) mà xác nhận trên chứng cho — bộ chấm G4 in dấu hiện tại.
+        "dau_van_tay_chot": None,
     },
 }
 

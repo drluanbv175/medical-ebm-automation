@@ -15,7 +15,6 @@ Bốn hành vi phải khoá:
 4. SAP cũ KÉM đầy đủ hơn template → đè như cũ nhưng có .bak-*.
 """
 
-import json
 import shutil
 import subprocess
 import sys
@@ -28,20 +27,13 @@ PYTHON = sys.executable
 
 
 def _seed(study_dir: Path) -> None:
-    study_dir.mkdir(parents=True, exist_ok=True)
-    (study_dir / "G0_checkpoint.json").write_text(json.dumps({
-        "gate": "G0", "topic": "Đề tài kiểm rào đè SAP", "guardrail": {"passed": True},
-    }), encoding="utf-8", newline="\n")
-    (study_dir / "G1_checkpoint.json").write_text(json.dumps({
-        "gate": "G1",
-        "design": {"internal_code": "rct", "primary": "RCT song song",
-                   "reporting_standard": "CONSORT 2025", "ambiguous": False},
-    }), encoding="utf-8", newline="\n")
-    (study_dir / "G3_checkpoint.json").write_text(json.dumps({
-        "gate": "G3", "design_code": "rct", "alpha": 0.05, "power": 0.8,
-        "n_adjusted": 400, "confirmed_n": None, "effect_val": 0.7, "effect_type": "RR",
-        "hypothesis_type": "superiority", "margin": None, "sd": None, "guardrail": "✅ PASS",
-    }), encoding="utf-8", newline="\n")
+    """04/10/2026 (soát từng cổng G4-04): G4 CHẤM SỐNG G3 — G3_checkpoint trơn nay là G3 BỊ CHẶN và run_g4_auto từ
+    chối sinh SAP (đúng luật). Dựng chuỗi G0→G1 RCT đã chốt → G3 chạy THẬT (tests/_chuoi_da_chot.py); test này chỉ
+    khoá rào chống đè nên không cần G3 đã xác nhận."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _chuoi_da_chot import dung_g0_g3_da_chot
+
+    dung_g0_g3_da_chot(study_dir, study_dir.name, chot_g3=False)
 
 
 def _run_g4(study: str, *extra: str) -> subprocess.CompletedProcess:

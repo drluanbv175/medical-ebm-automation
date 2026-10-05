@@ -20,7 +20,6 @@ import g5_quality_gate as G5Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import import_real_dataset as RDI  # noqa: E402
 import lock_analysis_dataset as LAD  # noqa: E402
-import run_g4_auto as G4  # noqa: E402
 
 from runtime.approval_ledger import ApprovalLedger  # noqa: E402
 from runtime.schemas import ApprovalDecisionEnum  # noqa: E402
@@ -280,29 +279,12 @@ def write_g5_toolkit(
     return dictionary_path
 
 
-_G4_SAP_FILLS = [
-    ("- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  ", "- **Tiêu chí nhận:** Tuổi 18-75  "),
-    ("- **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  ", "- **Tiêu chí loại:** Chống chỉ định  "),
-    ("- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — ví dụ: tỷ lệ nhập viện tim mạch trong 12 tháng]  ",
-     "- **Kết cục chính:** Tỷ lệ nhập viện tim mạch trong 12 tháng  "),
-    ("- **Đơn vị / ngưỡng:** [CẦN]  ", "- **Đơn vị / ngưỡng:** %  "),
-    ("- **Kết cục phụ 1:** [CẦN]  ", "- **Kết cục phụ 1:** Tử vong toàn bộ  "),
-    ("- **Kết cục phụ 2:** [CẦN]  ", "- **Kết cục phụ 2:** Đột quỵ  "),
-    ("- **Kết cục an toàn:** [CẦN — đặc biệt với RCT]  ", "- **Kết cục an toàn:** Tiêu cơ vân  "),
-    ("- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  ",
-     "- **Biến độc lập đưa vào:** Tuổi, HbA1c — EPV=15 cho 8 biến, VIF<5  "),
-    ("- **Giả định:** [CẦN kiểm tra PH / normality theo thiết kế]  ", "- **Giả định:** Kiểm PH bằng cox.zph  "),
-    ("- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  ",
-     "- **Biến đưa vào mô hình imputation:** Tuổi, giới, HbA1c nền  "),
-    ("- **Nhóm nhỏ tiền định:** [CẦN BÁC SĨ — phải ghi TRƯỚC khi xem dữ liệu]  ",
-     "- **Nhóm nhỏ tiền định:** Theo tuổi <65/≥65 — TIỀN ĐỊNH  "),
-    ("- **Điều chỉnh:** [CẦN — Bonferroni / FDR nếu >3 kết cục chính]  ",
-     "- **Điều chỉnh:** Chỉ 1 kết cục chính nên không cần hiệu chỉnh  "),
-    ("- [CẦN BÁC SĨ thêm kịch bản cụ thể]  ", "- Kịch bản: loại trừ bỏ thuốc >30% thời gian theo dõi  "),
-    ("- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ", "- **Phần mềm:** R v4.3.1  "),
-    ("- **Packages:** [CẦN — survival, lme4, mice, gtsummary...]  ", "- **Packages:** survival, mice  "),
-    ("- **Random seed:** [CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]  ", "- **Random seed:** set.seed(20260730)  "),
-]
+def _doc_json(path: Path) -> dict:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
 
 
 def prepare_upstream_approvals(
@@ -313,19 +295,54 @@ def prepare_upstream_approvals(
 ) -> None:
     """Tạo checkpoint và approval G2/G4 hợp lệ cho fixture tổng hợp.
 
-    SỬA 2026-07-30 (audit toàn diện G0-G10, G10-01 — CRITICAL): trước đây G4
-    chỉ ghi tay ``{"g4_status": "LOCKED"}`` vào checkpoint — một chuỗi mà
-    KHÔNG pipeline thật nào từng tạo ra (xem run_g4_auto.py), và
-    ``g10_quality_gate.py``/``g9_quality_gate.py`` đọc ĐÚNG field text đó
-    (``_status_locked``) nên "PASS" của các test này chưa từng chứng minh
-    được pipeline thật có thể đạt LOCKED hay không. Nay g10/g9 đã chuyển
-    sang chấm trực tiếp qua ``gate_contract.g4_quality_contract_satisfied()``
-    (như g5_ok/g9_ok đã làm đúng từ đầu) — fixture này phải dựng một G4 THẬT
-    SỰ đạt ``PASS_G4_SAP_LOCKED``: SAP sinh từ ``run_g4_auto.generate()`` rồi
-    điền đủ placeholder, G1/G3 checkpoint nhất quán, xác nhận
-    ``gate_params.G4``, và ký bằng khóa RIÊNG nhóm STATISTICIAN (không phải
-    khóa chung — G4-HUMAN-02 chỉ PASS với khóa vai trò, giống hệt G8-HUMAN-03).
+    SỬA 2026-07-30 (audit toàn diện G0-G10, G10-01 — CRITICAL): trước đây G4 chỉ ghi tay ``{"g4_status": "LOCKED"}`` —
+    fixture phải dựng một G4 THẬT SỰ đạt ``PASS_G4_SAP_LOCKED``.
+
+    SỬA 04/10/2026 (soát từng cổng G4): G4 nay CHẤM SỐNG G3 (G4-AUTO-12), đòi chứng chỉ khoá đã điền, estimand/§13–§15
+    cho RCT và xác nhận gắn DẤU nội dung SAP (G4-HUMAN-08) — «G1/G3 checkpoint trơn + SAP generate() điền chuỗi cố
+    định» không còn khoá được G4 (đúng luật). Fixture dựng chuỗi G0→G1→G3 ĐÃ CHỐT THẬT theo THIẾT KẾ của đề tài
+    (tests/_chuoi_da_chot.py — thiết kế lấy từ G1 test tự ghi trước: design.internal_code hoặc design_code, mặc định
+    cohort), giữ nguyên khoá riêng test đã ghi (G1_checkpoint, gate_params cổng khác), sinh SAP bằng run_g4_auto THẬT,
+    điền như người thật, xác nhận G4 gắn dấu, ký bằng khoá RIÊNG nhóm STATISTICIAN — rồi TỰ KIỂM G4 chấm sống LOCKED
+    (fixture hỏng thì lộ ngay ở đây, không lộ ở test G5–G10 phía sau).
     """
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cong_song as CS  # noqa: PLC0415
+    import g4_quality_gate as G4Q  # noqa: PLC0415
+    import skill_standards as SK  # noqa: PLC0415
+    from _chuoi_da_chot import (  # noqa: PLC0415
+        dien_sap_g4,
+        dung_g0_g3_da_chot,
+        sinh_sap_g4_that,
+        xac_nhan_g4,
+    )
+
+    g1_path = out_dir / "G1_checkpoint.json"
+    g1_cu = _doc_json(g1_path)
+    meta_cu = _doc_json(out_dir / "study_meta.json")
+    tho = ((g1_cu.get("design") or {}).get("internal_code") if isinstance(g1_cu.get("design"), dict) else None) \
+        or g1_cu.get("design_code") or "cohort"
+    design_code = SK.ma_thiet_ke_chuoi(tho) or "cohort"
+    dung_g0_g3_da_chot(out_dir, study, thiet_ke=design_code)
+    # Giữ khoá riêng mà test đã ghi (vd specialist_modules ở G1, gate_params của cổng khác) — chuỗi chỉ làm chủ
+    # G0/G1/G3.
+    if g1_cu:
+        g1_moi = _doc_json(g1_path)
+        for khoa, gia_tri in g1_cu.items():
+            if khoa != "design" and khoa not in g1_moi:
+                g1_moi[khoa] = gia_tri
+        g1_path.write_text(json.dumps(g1_moi, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    if meta_cu:
+        meta_moi = _doc_json(out_dir / "study_meta.json")
+        for khoa, gia_tri in meta_cu.items():
+            if khoa == "gate_params" and isinstance(gia_tri, dict):
+                for cong, khoi in gia_tri.items():
+                    meta_moi.setdefault("gate_params", {}).setdefault(cong, khoi)
+            else:
+                meta_moi.setdefault(khoa, gia_tri)
+        (out_dir / "study_meta.json").write_text(json.dumps(meta_moi, ensure_ascii=False, indent=2),
+                                                 encoding="utf-8", newline="\n")
+
     (out_dir / "G2_checkpoint.json").write_text(
         json.dumps({"g2_status": "LOCKED"}, ensure_ascii=False),
         encoding="utf-8", newline="\n"
@@ -343,67 +360,13 @@ def prepare_upstream_approvals(
         repo_root=repo_root,
     )
 
-    # Design nhất quán với G1 nếu fixture khác đã tạo checkpoint đó trước;
-    # mặc định "cohort" khi chưa có (đa số test G9/G10 không cần G1 riêng).
-    g1_path = out_dir / "G1_checkpoint.json"
-    if g1_path.exists():
-        try:
-            existing_g1 = json.loads(g1_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError, UnicodeDecodeError):
-            existing_g1 = {}
-        design_code = ((existing_g1.get("design") or {}).get("internal_code")) or "cohort"
-    else:
-        design_code = "cohort"
-        g1_path.write_text(
-            json.dumps(
-                {"gate": "G1", "design": {"internal_code": design_code,
-                                          "primary": "Cohort tiến cứu", "ambiguous": False}},
-                ensure_ascii=False,
-            ),
-            encoding="utf-8", newline="\n"
-        )
-
-    g3_fields = {
-        "gate": "G3", "design_code": design_code, "alpha": 0.05, "power": 0.8,
-        "n_adjusted": 200, "confirmed_n": None, "effect_val": 0.7, "effect_type": "RR",
-        "hypothesis_type": "superiority", "margin": None, "sd": None, "guardrail": "✅ PASS",
-    }
-    (out_dir / "G3_checkpoint.json").write_text(
-        json.dumps(g3_fields, ensure_ascii=False), encoding="utf-8", newline="\n")
-
-    sap_text = G4.generate(
-        study, f"Đề tài fixture tổng hợp {study}", design_code, "Cohort tiến cứu",
-        "STROBE 2007", g3_fields["n_adjusted"], g3_fields["alpha"], g3_fields["power"],
-        g3_fields["effect_val"], g3_fields["effect_type"], "2026-07-30",
-    )
-    for old, new in _G4_SAP_FILLS:
-        sap_text = sap_text.replace(old, new)
-    g4_artifact = out_dir / f"G4_A5_SAP_FINAL_{study}.md"
+    g4_artifact = sinh_sap_g4_that(out_dir, study)
+    sap_text = dien_sap_g4(g4_artifact.read_text(encoding="utf-8"))
     g4_artifact.write_text(sap_text, encoding="utf-8", newline="\n")
+    xac_nhan_g4(out_dir, sap_text)
 
-    (out_dir / "G4_checkpoint.json").write_text(
-        json.dumps(
-            {"gate": "G4", "study": study, "g4_status": "PENDING — CHỜ BÁC SĨ KÝ SAP",
-             "g4_sap_version": "1.0", "design_code": design_code, "guardrail": "✅ PASS"},
-            ensure_ascii=False,
-        ),
-        encoding="utf-8", newline="\n"
-    )
-
-    meta = GC.ensure_study_meta(out_dir)
-    meta["gate_params"]["G4"].update({
-        "epv_vif_reviewed": True,
-        "missing_data_mechanism_confirmed": True,
-        "subgroup_multiplicity_predefined_confirmed": True,
-        "reviewed_by_role": "STATISTICIAN",
-        "reviewed_at": "2026-07-30T08:00:00+00:00",
-    })
-    (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
-
-    # Khóa RIÊNG nhóm STATISTICIAN — bắt buộc để G4-HUMAN-02 (mức bảo đảm khóa
-    # ký) đạt PASS; ký bằng khóa CHUNG chỉ đạt REVIEW nên KHÔNG BAO GIỜ tới
-    # được PASS_G4_SAP_LOCKED (đúng thiết kế, mirror G8-HUMAN-03).
+    # Khóa RIÊNG nhóm STATISTICIAN — bắt buộc để G4-HUMAN-02 (mức bảo đảm khóa ký) đạt PASS; ký bằng khóa CHUNG chỉ
+    # đạt REVIEW nên KHÔNG BAO GIỜ tới được PASS_G4_SAP_LOCKED (đúng thiết kế, mirror G8-HUMAN-03).
     base_key = os.environ.get("EBM_GATE_KEY_PATH")
     if base_key:
         role_key_path = Path(base_key).with_name(Path(base_key).name + "_STATISTICIAN")
@@ -417,6 +380,12 @@ def prepare_upstream_approvals(
         "METHODS_STATISTICS_REVIEWER",
         repo_root=repo_root,
     )
+    CS.xoa_dem()
+    bao_cao = G4Q.evaluate_study(study, out_dir, repo_root=repo_root, write=False)
+    chua_dat = [(c["id"], c["evidence"][:120]) for c in bao_cao["automatic_criteria"] + bao_cao["approval_criteria"]
+                if c["status"] != "PASS"]
+    assert bao_cao["status"] == G4Q.STATUS_LOCKED, f"fixture G4 ({design_code}) chưa khoá: {chua_dat}"
+    CS.xoa_dem()
 
 
 def prepare_locked_g5_study(

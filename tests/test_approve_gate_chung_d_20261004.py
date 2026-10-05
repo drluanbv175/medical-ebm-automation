@@ -90,7 +90,10 @@ def test_g2_tieu_chi_nguoi_truoc_ky_chua_dat_thi_tu_choi(monkeypatch, study_dir,
 def test_g2_bao_cao_vang_tieu_chi_nguoi_la_fail_closed():
     assert AG._tieu_chi_nguoi_chua_dat("G2", {"status": "PENDING"}) == [
         "G2-HUMAN-01: không thấy trong báo cáo chấm (fail-closed)"]
-    assert AG._tieu_chi_nguoi_chua_dat("G4", {}) == [], "cổng không có tiêu chí người trước ký ⇒ không thêm điều kiện"
+    assert AG._tieu_chi_nguoi_chua_dat("G5", {}) == [], "cổng không có tiêu chí người trước ký ⇒ không thêm điều kiện"
+    # 04/10/2026 (soát từng cổng G4): G4 nay có xác nhận người kiểm được trước khi ký (G4-HUMAN-04…08) — vắng ⇒
+    # fail-closed.
+    assert len(AG._tieu_chi_nguoi_chua_dat("G4", {})) == 5
 
 
 def test_g2_rct_ghi_hoi_cuu_bi_tu_choi(monkeypatch, study_dir):
