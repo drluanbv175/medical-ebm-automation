@@ -822,6 +822,12 @@ def _ky(args: argparse.Namespace) -> int:
                         f"   - {item.get('id')}: {item.get('label')} "
                         f"({item.get('evidence')})"
                     )
+                if not blocked and g5_report.get("status") == G5Q.STATUS_DRAFT_REVIEW:
+                    # VÁ 04/10/2026 (G5): trạng thái «đã khoá, còn mục REVIEW» — liệt kê mục cần người rà (trừ chính
+                    # chữ ký G5-HUMAN-01) thay vì in danh sách BLOCK rỗng.
+                    for item in [i for i in g5_report.get("automatic_criteria", [])
+                                 if i.get("status") == "REVIEW" and i.get("id") != "G5-HUMAN-01"][:10]:
+                        print(f"   - REVIEW {item.get('id')}: {item.get('label')} ({item.get('evidence')})")
                 print("   Không ghi ledger; phải xử lý hết lỗi dữ liệu trước.")
                 return 1
 

@@ -1705,7 +1705,8 @@ def generate_csv(study: str, out_dir: Path, rows: list) -> tuple[Path, int]:
                     "Text Validation Type OR Show Slider Number": row[7],
                     "Text Validation Min": row[8],
                     "Text Validation Max": row[9],
-                    "Identifier?": "",
+                    # G5-06: cờ định danh của bộ biến riêng (phần tử thứ 13); bundle không gắn cờ ⇒ rỗng.
+                    "Identifier?": row[12] if len(row) > 12 else "",
                     "Branching Logic (Show field only if...)": row[11],
                     "Required Field?": row[10],
                     "Custom Alignment": "",
@@ -1718,13 +1719,53 @@ def generate_csv(study: str, out_dir: Path, rows: list) -> tuple[Path, int]:
     return csv_path, len(rows)
 
 
+def _muc_van_hanh_2026_2() -> dict:
+    """Hai mục mới của hồ sơ G5-OPS-2026.2 (G5-07), dạng khuôn chưa hoàn tất.
+
+    audit_trail_review: checklist khoá CSDL của DMP đòi «Audit trail REDCap đầy đủ» mà trước 04/10/2026 không tiêu chí
+    nào kiểm. source_data_verification (QĐ-10): khai cách đối chiếu dữ liệu nguồn (nhập kép / kiểm ngẫu nhiên ≥10%…)
+    HOẶC ghi not_applicable_reason — thiếu cả hai chỉ là cảnh báo (REVIEW), không chặn cứng."""
+    return {
+        "audit_trail_review": {
+            "completed": False,
+            "reviewed_at": "[CẦN NGÀY YYYY-MM-DD]",
+            "evidence_ref": "[CẦN MÃ BIÊN BẢN RÀ AUDIT TRAIL (REDCap Logging), KHÔNG PII]",
+        },
+        "source_data_verification": {
+            "method": "[CẦN CÁCH ĐỐI CHIẾU: nhập kép / kiểm ngẫu nhiên ≥10% hồ sơ / khác — mô tả]",
+            "fraction_or_n": "[CẦN TỶ LỆ hoặc SỐ HỒ SƠ đã đối chiếu]",
+            "completed": False,
+            "evidence_ref": "[CẦN MÃ BIÊN BẢN ĐỐI CHIẾU, KHÔNG PII]",
+            "not_applicable_reason": None,
+            "huong_dan": ("Điền method, fraction_or_n, completed=true và evidence_ref; HOẶC xoá bốn trường đó và ghi "
+                          "not_applicable_reason (vd dữ liệu nhập thẳng vào eCRF, không có hồ sơ nguồn giấy)."),
+        },
+    }
+
+
 def write_operational_readiness_template(out_dir: Path) -> Path:
-    """Sinh hồ sơ vận hành fail-closed; người có thẩm quyền phải hoàn tất."""
+    """Sinh hồ sơ vận hành fail-closed; người có thẩm quyền phải hoàn tất.
+
+    VÁ 04/10/2026 (soát từng cổng, G5-07): khuôn theo lược đồ G5-OPS-2026.2 (thêm audit_trail_review và
+    source_data_verification; evidence_ref/log_ref bắt buộc có nội dung thật). Hồ sơ cũ G5-OPS-2026.1 được NÂNG CẤP tại
+    chỗ: chỉ THÊM hai mục mới (dạng khuôn chưa hoàn tất) và đổi schema_version — mọi giá trị người đã điền giữ nguyên.
+    Bộ chấm vẫn chặn tới khi người có thẩm quyền hoàn tất hai mục mới."""
     path = out_dir / G5Q.OPERATIONAL_READINESS_JSON
     if path.exists():
+        try:
+            hien_co = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            return path  # hỏng/không đọc được: để nguyên cho người sửa — bộ chấm báo missing_or_invalid_record
+        if isinstance(hien_co, dict) and hien_co.get("schema_version") == "G5-OPS-2026.1":
+            them = {k: v for k, v in _muc_van_hanh_2026_2().items() if k not in hien_co}
+            hien_co.update(them)
+            hien_co["schema_version"] = G5Q.OPERATIONAL_SCHEMA_VERSION
+            path.write_text(json.dumps(hien_co, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+            print(f"  → Hồ sơ vận hành nâng lên {G5Q.OPERATIONAL_SCHEMA_VERSION}: thêm "
+                  f"{', '.join(them) or '(không mục nào)'} — người có thẩm quyền phải hoàn tất trước khi khoá.")
         return path
     payload = {
-        "schema_version": "G5-OPS-2026.1",
+        "schema_version": G5Q.OPERATIONAL_SCHEMA_VERSION,
         "status": "DRAFT_REQUIRES_HUMAN_VERIFICATION",
         "access_control_review": {
             "completed": False,
@@ -1748,6 +1789,7 @@ def write_operational_readiness_template(out_dir: Path) -> Path:
             "open_count": "[CẦN SỐ NGUYÊN]",
             "log_ref": "[CẦN MÃ DEVIATION LOG, KHÔNG PII]",
         },
+        **_muc_van_hanh_2026_2(),
         "reviewer_role": "[CẦN DATA_MANAGER hoặc PI]",
         "reviewer_ref": "[CẦN MÃ THAM CHIẾU, KHÔNG GHI HỌ TÊN/PII]",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
@@ -1756,6 +1798,31 @@ def write_operational_readiness_template(out_dir: Path) -> Path:
         json.dumps(payload, ensure_ascii=False, indent=2),
         encoding="utf-8", newline="\n"
     )
+    return path
+
+
+def write_transcript_manifest_template(out_dir: Path) -> Path:
+    """Khuôn TRANSCRIPT_manifest.json cho thiết kế ĐỊNH TÍNH (G5-08) — chỉ sinh khi chưa có, không bao giờ ghi đè.
+
+    Bản gỡ băng là dữ liệu thô nhạy PII nhất của nghiên cứu định tính, nhưng G5 từng chỉ khoá CSV siêu dữ liệu. Mỗi bản
+    gỡ băng ĐÃ khử định danh phải có một mục; G5-AUTO-10 kiểm băm, cờ khử định danh, quyền chỉ đọc và quét mẫu PII nội
+    dung. Danh sách rỗng là trạng thái nháp: khi đã có dữ liệu thật, bộ chấm CHẶN tới khi khai đủ."""
+    path = out_dir / G5Q.TRANSCRIPT_MANIFEST_JSON
+    if path.exists():
+        return path
+    payload = {
+        "schema_version": "G5-TRANSCRIPT-2026.1",
+        "huong_dan": (
+            "Mỗi bản gỡ băng ĐÃ KHỬ ĐỊNH DANH một mục trong transcripts: transcript_id (khớp cột transcript_id của dữ "
+            "liệu), file (đường dẫn tương đối trong thư mục đề tài; .txt, .md hoặc .docx), sha256 (băm SHA-256 của "
+            "tệp), deidentified (true chỉ sau khi người rà xác nhận đã khử định danh), reviewer_ref (mã người rà, "
+            "không ghi họ tên). Đặt tệp gỡ băng ở chế độ chỉ đọc trước khi khoá dữ liệu. Bản ghi âm gốc KHÔNG đưa vào "
+            "thư mục đề tài."
+        ),
+        "transcripts": [],
+        "disclaimer": "Cần bác sĩ kiểm chứng.",
+    }
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
 
 
@@ -2137,6 +2204,11 @@ def nap_bo_bien_rieng(out_dir: Path, study: str):
       (generate_csv · gen_data_cleaning_script · gen_data_quality_report_script
       · artifact) — nhờ vậy script làm sạch + kiểm range TỰ ĐỘNG dùng đúng
       biến thật của đề tài, không cần sửa consumer nào.
+    - VÁ 04/10/2026 (soát từng cổng, G5-06): thêm phần tử THỨ 13 = cờ «Identifier?»
+      ("y" hoặc ""). Bản cũ bỏ cột này nên generate_csv luôn ghi rỗng: chức năng
+      xuất khử định danh của REDCap («remove tagged identifiers») và luật
+      redcap_identifier_rows của G5-AUTO-02 không bao giờ kích hoạt dù bộ biến đã
+      gắn cờ ma_benh_an/sdt. Mọi consumer chỉ đọc theo chỉ số 0–11 nên không vỡ.
     """
     duong = Path(out_dir) / BO_BIEN_RIENG_TEN_FILE
     if not duong.exists():
@@ -2176,6 +2248,7 @@ def nap_bo_bien_rieng(out_dir: Path, study: str):
                     loi.append(f"dòng {i}: biến '{var}' thiếu Field Label")
                     continue
                 req = (r.get("Required Field?") or "").strip().lower()
+                dinh_danh = (r.get("Identifier?") or "").strip().lower()
                 rows.append((
                     var,
                     (r.get("Form Name") or "").strip() or "Main",
@@ -2189,6 +2262,7 @@ def nap_bo_bien_rieng(out_dir: Path, study: str):
                     (r.get("Text Validation Max") or "").strip(),
                     "y" if req in ("y", "yes", "1", "true") else "n",
                     (r.get("Branching Logic (Show field only if...)") or "").strip(),
+                    "y" if dinh_danh in ("y", "yes", "1", "true") else "",
                 ))
     except OSError as e:
         raise SystemExit(f"⛔ Không đọc được {duong}: {e}") from e
@@ -2202,8 +2276,27 @@ def nap_bo_bien_rieng(out_dir: Path, study: str):
     if rows[0][0] != "record_id":
         # REDCap đòi record_id là trường ĐẦU TIÊN — thiếu thì import gãy ngay.
         rows.insert(0, ("record_id", rows[0][1], "", "text", "Mã bản ghi (tự sinh)",
-                        "", "", "", "", "", "y", ""))
+                        "", "", "", "", "", "y", "", ""))
     return rows
+
+
+def _du_lieu_da_khoa(out_dir: Path):
+    """Lý do coi bộ dữ liệu là ĐÃ KHOÁ KỸ THUẬT — None nếu chưa khoá.
+
+    Khoá = DATA_LOCK_manifest.json ở trạng thái LOCKED_FOR_ANALYSIS (hằng LOCKED_STATUS của lock_analysis_dataset).
+    Manifest tồn tại mà không đọc được ⇒ coi như đã khoá (không chứng minh được là CHƯA khoá — fail-closed). Manifest
+    trạng thái BLOCKED (lần khoá trước bị từ chối) không phải khoá ⇒ được sinh lại."""
+    path = Path(out_dir) / "DATA_LOCK_manifest.json"
+    if not path.exists():
+        return None
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return f"{path.name} tồn tại nhưng không đọc được — không chứng minh được là CHƯA khoá"
+    if isinstance(manifest, dict) and manifest.get("status") == "LOCKED_FOR_ANALYSIS":
+        return (f"{path.name} = LOCKED_FOR_ANALYSIS (khoá lúc {manifest.get('locked_at')}, "
+                f"sha256 {str(manifest.get('sha256'))[:12]}…)")
+    return None
 
 
 def main():
@@ -2215,9 +2308,8 @@ def main():
 
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
     out = BASE / "exports" / study
-    out.mkdir(parents=True, exist_ok=True)
     scripts_dir = out / "scripts"
-    scripts_dir.mkdir(parents=True, exist_ok=True)
+    # Thư mục chỉ được tạo SAU các chốt từ chối bên dưới — chốt phải chạy trước MỌI thao tác ghi (G5-05).
 
     run_date = datetime.now().strftime("%Y-%m-%d")
 
@@ -2261,6 +2353,20 @@ def main():
         print("        --gate G5 từ đầu cho bộ dữ liệu MỚI.")
         return GC.EXIT_GUARDRAIL_FAIL
 
+    # ★★ VÁ 04/10/2026 (soát từng cổng, G5-05) — chốt trên CHƯA đủ: nó chỉ kích hoạt khi G5 ĐÃ KÝ. Ở trạng thái
+    # «khoá kỹ thuật xong, chờ ký» (DATA_LOCK_manifest LOCKED_FOR_ANALYSIS), chạy lại lệnh này từng ghi đè dictionary
+    # (sinh lại từ bundle/bộ biến riêng), DMP và checkpoint (mất locked_dataset_sha256) — dữ liệu đã khoá không còn
+    # khớp dictionary, G5 tụt BLOCKED. Nay từ chối TRƯỚC mọi thao tác ghi; muốn soạn lại phải là việc có chủ ý.
+    _ly_do_khoa = _du_lieu_da_khoa(out)
+    if _ly_do_khoa:
+        print("🚫 G5 TỪ CHỐI CHẠY LẠI — bộ dữ liệu phân tích ĐÃ KHOÁ KỸ THUẬT (dù G5 chưa ký):")
+        print(f"   {_ly_do_khoa}")
+        print("   Chạy lại sẽ ghi đè data dictionary, DMP và G5_checkpoint.json — dữ liệu đã khoá không còn khớp")
+        print("   dictionary, các trường băm khoá bị xoá. Bước tiếp theo đúng là RÀ và KÝ G5 (approve_gate.py), không")
+        print("   phải sinh lại CRF/DMP. Nếu THẬT SỰ cần soạn lại (quyết định có chủ ý): tự tay đổi tên")
+        print("   DATA_LOCK_manifest.json hiện có rồi chạy lại toàn bộ intake → làm sạch → khoá.")
+        return GC.EXIT_GUARDRAIL_FAIL
+
     # ★★ VÁ 2026-07-27 — G5 PHẢI ĐÒI G4 ĐÃ KÝ. Kiểm định độc lập đo được: G6 gọi
     # ledger_approved() 20 chỗ, run_stats_analysis.py 8 chỗ, còn G5 = 0 chỗ. Nghĩa là
     # cổng KHÓA DỮ LIỆU chạy được trong khi SAP CHƯA KHÓA.
@@ -2282,6 +2388,9 @@ def main():
         print(f"       --artifact exports/{study}/G4_A5_SAP_FINAL_{study}.md \\")
         print('       --reviewer-role "METHODS_STATISTICS_REVIEWER" --reviewer-ref "<mã người duyệt>"')
         return GC.EXIT_BLOCKED
+
+    out.mkdir(parents=True, exist_ok=True)
+    scripts_dir.mkdir(parents=True, exist_ok=True)
 
     # Đọc checkpoints
     g0 = load_cp(out / "G0_checkpoint.json")
@@ -2410,6 +2519,9 @@ def main():
     print(f"  → REDCap CSV: {csv_path} ({n_vars} dòng)")
     operations_path = write_operational_readiness_template(out)
     print(f"  → Hồ sơ vận hành: {operations_path}")
+    if design_code == "qualitative":
+        transcript_path = write_transcript_manifest_template(out)
+        print(f"  → Sổ bản gỡ băng (định tính, G5-AUTO-10): {transcript_path}")
 
     # Guardrail R1–R7
     errors, warnings = guardrail(artifact)
@@ -2462,11 +2574,20 @@ def main():
         "pending_doctor_actions": [
             "Điền tất cả [CẦN...] trong CRF (biến phơi nhiễm/kết cục cụ thể)",
             "Import REDCap dictionary CSV vào REDCap cơ sở",
-            f"Hoàn tất {G5Q.OPERATIONAL_READINESS_JSON} bằng bằng chứng tại đơn vị",
-            "Thu thập dữ liệu thật (chỉ sau G2 = LOCKED)",
-            "Spot-check 10% phiếu CRF",
+            # VÁ 04/10/2026 (G5-07): hồ sơ G5-OPS-2026.2 gồm cả rà audit trail và đối chiếu dữ liệu nguồn (SDV).
+            f"Hoàn tất {G5Q.OPERATIONAL_READINESS_JSON} ({G5Q.OPERATIONAL_SCHEMA_VERSION}) bằng bằng chứng tại "
+            "đơn vị: quyền truy cập, thử phục hồi, lưu trữ, sai lệch đề cương, RÀ AUDIT TRAIL, đối chiếu dữ liệu nguồn "
+            "(nhập kép/kiểm ngẫu nhiên ≥10% — hoặc lý do không áp dụng); mọi evidence_ref/log_ref là mã thật",
+            "Thu thập dữ liệu thật (chỉ sau G2 = LOCKED và G4 = SAP đã khoá — import_real_dataset từ chối trước đó)",
+            "Đóng truy vấn dữ liệu bằng tệp --query-resolutions (mã da_sua / xac_nhan_dung / khong_ap_dung_co_ly_do "
+            "kèm lý do, người xử lý, thời điểm) khi chạy clean_research_dataset.py",
             "Chạy data_cleaning.py + data_quality_report.py trên dữ liệu thật → PASS",
-            "Ký biên bản khóa DB",
+            "Hoàn tất DMP PHẦN 8 (bỏ nhãn DRAFT, điền ngày/người khoá, đánh dấu checklist) TRƯỚC khi khoá",
+            "Khoá bằng lock_analysis_dataset.py với đủ cờ --confirm-* (kể cả --confirm-audit-trail-reviewed)",
+            *(["Định tính: khai mọi bản gỡ băng đã khử định danh trong "
+               f"{G5Q.TRANSCRIPT_MANIFEST_JSON} (băm sha256, chỉ đọc, reviewer_ref)"]
+              if design_code == "qualitative" else []),
+            "Người có thẩm quyền tự rà G5_QUALITY_REPORT rồi ký bằng approve_gate.py --gate G5",
         ],
     }
     cp_path = out / "G5_checkpoint.json"
@@ -2489,8 +2610,13 @@ def main():
         print("🟡 BỘ CÔNG CỤ G5 ĐÃ TẠO — CHƯA QUA CỔNG, CẦN DỮ LIỆU THẬT")
     elif quality_gate["status"] == G5Q.STATUS_READY:
         print("🟠 DATASET ĐÃ KHÓA KỸ THUẬT — CHỜ NGƯỜI CÓ THẨM QUYỀN DUYỆT G5")
-    else:
+    elif quality_gate["status"] == G5Q.STATUS_DRAFT_REVIEW:
+        # VÁ 04/10/2026: trạng thái mới này từng rơi vào nhánh «✅ G5 ĐÃ QUA» bên dưới.
+        print("🟠 DATASET ĐÃ KHÓA KỸ THUẬT — CÒN MỤC CẦN NGƯỜI RÀ (REVIEW) TRƯỚC KHI ĐƯỢC KÝ G5")
+    elif quality_gate["status"] == G5Q.STATUS_LOCKED:
         print("✅ G5 ĐÃ QUA: DATASET KHÓA + PHÊ DUYỆT G5 HỢP LỆ")
+    else:
+        print(f"⚪ Trạng thái G5 không nhận ra: {quality_gate['status']} — không coi là đã qua.")
     print(f"  CRF: {n_vars} dòng ({design_code}) | Guardrail: {status}")
     print(f"  Scripts: data_cleaning.py + data_quality_report.py → {scripts_dir}")
     print("  STROBE flowchart: nhúng trong artifact")

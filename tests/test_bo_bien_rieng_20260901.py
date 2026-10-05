@@ -49,13 +49,16 @@ class TestNapBoBienRieng:
     def test_vang_mat_tra_none(self, tmp_path):
         assert G5.nap_bo_bien_rieng(tmp_path, "S") is None
 
-    def test_hop_le_tra_tuple_12_truong(self, tmp_path):
+    def test_hop_le_tra_tuple_13_truong(self, tmp_path):
+        """12 trường cũ + phần tử thứ 13 = cờ «Identifier?» (04/10/2026, G5-06: bản cũ bỏ cột này nên cờ định danh
+        của bộ biến riêng không bao giờ tới dictionary)."""
         _viet(tmp_path,
               '"record_id","m","","text","Mã phiếu","","","","","","","","y","","","","",""',
               '"tuoi","m","Hiệu chỉnh","text","Tuổi","","","integer","18","120","","","y","","","","",""')
         rows = G5.nap_bo_bien_rieng(tmp_path, "S")
-        assert len(rows) == 2 and len(rows[0]) == 12
+        assert len(rows) == 2 and len(rows[0]) == 13
         assert rows[1][0] == "tuoi" and rows[1][7] == "integer" and rows[1][10] == "y"
+        assert rows[0][12] == rows[1][12] == "", "không gắn cờ Identifier? ⇒ rỗng"
 
     def test_thieu_cot_bat_buoc_dung_ma_2(self, tmp_path):
         p = tmp_path / G5.BO_BIEN_RIENG_TEN_FILE

@@ -62,6 +62,22 @@ def _ghi(path: Path, obj: Any) -> None:
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
+def danh_dau_de_tai_thu(exports_root: Path, study: str) -> Path:
+    """Đánh dấu ``study_kind=synthetic_test`` (đúng khoá mà tools/mark_study_synthetic.py ghi) cho test chỉ kiểm CƠ CHẾ
+    nạp/khử định danh/làm sạch, không dựng chuỗi G0→G4.
+
+    Từ 04/10/2026 (G5-02), đề tài thật chỉ nạp được dữ liệu khi SAP (G4) đã khoá hợp lệ; đề tài thử nghiệm tổng hợp được
+    miễn như ở mọi chốt sổ cái khác. Test cần đường «đề tài thật» thì dựng chuỗi bằng
+    g5_test_helpers.prepare_upstream_approvals."""
+    thu_muc = Path(exports_root) / study
+    thu_muc.mkdir(parents=True, exist_ok=True)
+    meta_path = thu_muc / "study_meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    meta["study_kind"] = "synthetic_test"
+    _ghi(meta_path, meta)
+    return meta_path
+
+
 def dung_g0_g1_da_chot(out_dir: Path, study: str, *, them_meta: Optional[Dict[str, Any]] = None,
                        kiem: bool = True, thiet_ke: str = "rct", chot_g1: bool = True,
                        mau_hieu_qua: Optional[list] = None) -> Dict[str, Any]:

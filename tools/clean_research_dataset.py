@@ -25,7 +25,7 @@ import sys
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -39,8 +39,10 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import cong_song as CS  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import import_real_dataset as RDI  # noqa: E402
+import placeholder_contract as PC  # noqa: E402
 
 CLEAN_READY_STATUS = "CLEAN_READY_FOR_LOCK"
 CLEAN_QUERY_STATUS = "CLEAN_REQUIRES_QUERY_RESOLUTION"
@@ -341,6 +343,21 @@ def _validate_rows(columns: List[str], rows: List[Dict[str, str]],
     issues: List[Dict[str, Any]] = []
     normalised_columns = {RDI._normalize_header(col): col for col in columns}
 
+    # VÁ 04/10/2026 (soát từng cổng, G5-03): cột KHÔNG có trong dictionary từng bị bỏ qua im lặng («if not rule:
+    # continue») ⇒ không luật range/category nào được áp mà bộ dữ liệu vẫn sẵn sàng khoá (tuoi_nam=450 lọt vì
+    # dictionary khai «age»). Nay mỗi cột ngoài dictionary (trừ cột ID) là MỘT query «undeclared_column» — chặn
+    # ready_for_lock tới khi khai biến vào dictionary (hoặc bỏ cột). Không có dictionary (rules rỗng) thì không phán.
+    if rules:
+        for col in columns:
+            if col == id_column or RDI._normalize_header(col) in rules:
+                continue
+            issues.append(_issue(
+                "undeclared_column",
+                col,
+                None,
+                "Cột không có trong data dictionary — không có luật kiểm; khai biến (loại/phạm vi) hoặc bỏ cột.",
+            ))
+
     for required in required_columns:
         if required not in columns and RDI._normalize_header(required) not in normalised_columns:
             issues.append(_issue(
@@ -440,6 +457,50 @@ def _validate_rows(columns: List[str], rows: List[Dict[str, str]],
     return issues
 
 
+# VÁ 04/10/2026 (soát từng cổng, G5-04 — QĐ-9): mã đóng query hợp lệ. «da_sua» KHÔNG đóng được một query mà giá trị lỗi
+# VẪN CÒN trong dữ liệu (sửa phải diễn ra ở nguồn rồi nạp lại — ALCOA+); nó chỉ ghi nhận query của lần làm sạch trước.
+MA_DONG_QUERY = frozenset({"da_sua", "xac_nhan_dung", "khong_ap_dung_co_ly_do"})
+TEN_TEP_GIAI_QUYET = "query_resolutions"
+
+
+def _nap_giai_quyet(path: Optional[Path]) -> Tuple[Dict[Tuple[str, str, str], Dict[str, str]], List[str]]:
+    """Đọc tệp giải quyết query (CSV hoặc JSON danh sách): mỗi dòng {issue_type, column, row, resolution, ly_do,
+    owner_ref, resolved_at}. Trả ({(issue_type, column, row): dòng hợp lệ}, [lỗi không chứa giá trị dữ liệu])."""
+    if path is None:
+        return {}, []
+    path = Path(path)
+    loi: List[str] = []
+    try:
+        if path.suffix.lower() == ".json":
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            dong = [r for r in (raw if isinstance(raw, list) else raw.get("resolutions", [])) if isinstance(r, dict)]
+        else:
+            with path.open("r", encoding="utf-8-sig", newline="") as handle:
+                dong = list(csv.DictReader(handle))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, csv.Error, AttributeError):
+        return {}, [f"khong_doc_duoc_tep_giai_quyet:{path.name}"]
+    hop_le: Dict[Tuple[str, str, str], Dict[str, str]] = {}
+    for i, r in enumerate(dong, 2):
+        khoa = (str(r.get("issue_type") or "").strip(), str(r.get("column") or "").strip(),
+                str(r.get("row") or "").strip())
+        ma = str(r.get("resolution") or "").strip().lower()
+        if ma not in MA_DONG_QUERY:
+            loi.append(f"dong_{i}:ma_dong_khong_hop_le")
+            continue
+        if not PC.co_noi_dung_that(r.get("ly_do")):
+            loi.append(f"dong_{i}:thieu_ly_do")
+            continue
+        if not PC.co_noi_dung_that(r.get("owner_ref")):
+            loi.append(f"dong_{i}:thieu_owner_ref")
+            continue
+        if not CS.iso_khong_tuong_lai(r.get("resolved_at")):
+            loi.append(f"dong_{i}:resolved_at_khong_phai_ISO_hoac_o_tuong_lai")
+            continue
+        hop_le[khoa] = {"resolution": ma, "ly_do": str(r.get("ly_do")).strip(),
+                        "owner_ref": str(r.get("owner_ref")).strip(), "resolved_at": str(r.get("resolved_at")).strip()}
+    return hop_le, loi
+
+
 def _write_query_log(path: Path, issues: List[Dict[str, Any]]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     now = datetime.now().isoformat(timespec="seconds")
@@ -473,7 +534,7 @@ def _write_query_log(path: Path, issues: List[Dict[str, Any]]) -> Path:
                 "detail": item.get("detail") or "",
                 "status": item.get("status") or "open",
                 "owner": "data manager + PI",
-                "resolution": "verify against source/CRF; do not guess",
+                "resolution": item.get("resolution") or "verify against source/CRF; do not guess",
             })
     return path
 
@@ -509,8 +570,14 @@ def clean_dataset(study: str, data_path: Path, *,
                   id_column: Optional[str] = None,
                   required_columns: Optional[List[str]] = None,
                   missing_tokens: Optional[List[str]] = None,
-                  max_scan_rows: int = 5000) -> Dict[str, Any]:
-    """Làm sạch an toàn 1 CSV đã khử định danh/pseudonymized."""
+                  max_scan_rows: int = 5000,
+                  query_resolutions_path: Optional[Path] = None) -> Dict[str, Any]:
+    """Làm sạch an toàn 1 CSV đã khử định danh/pseudonymized.
+
+    query_resolutions_path (VÁ 04/10/2026, G5-04): tệp giải quyết query (xem _nap_giai_quyet). Trước đây KHÔNG có đường
+    đóng query hợp lệ: sửa tay query log làm lệch băm (G5-AUTO-07/08 BLOCK), chạy lại thì query mở lại — giá trị cực
+    trị đã xác minh với nguồn không bao giờ khoá được, lối thoát duy nhất là sửa dữ liệu hoặc nới dictionary SAU khi đã
+    xem dữ liệu. Tệp được sao vào thư mục đề tài và gắn băm (query_resolutions_sha256)."""
     study_id = RDI._sanitize_study(study)
     data_path = Path(data_path)
     exports_root = Path(exports_root) if exports_root else BASE / "exports"
@@ -518,6 +585,7 @@ def clean_dataset(study: str, data_path: Path, *,
     output_path = Path(output_path) if output_path else _default_output_path(
         study_id, data_path, exports_root)
     cleaned_at = datetime.now().isoformat(timespec="seconds")
+    cleaned_at_utc = datetime.now(timezone.utc).isoformat()  # G5-02: so với mốc ký G2/G4 (UTC), đủ micro-giây
 
     blocker: Optional[str] = None
     if data_path.suffix.lower() not in RDI.SUPPORTED_SUFFIXES:
@@ -581,6 +649,7 @@ def clean_dataset(study: str, data_path: Path, *,
 
     action_counts: Dict[str, int] = {}
     validation_issues: List[Dict[str, Any]] = []
+    loi_giai_quyet: List[str] = []
     clean_dataset_path: Optional[Path] = None
     query_log_path: Optional[Path] = None
     plan_path: Optional[Path] = None
@@ -618,6 +687,14 @@ def clean_dataset(study: str, data_path: Path, *,
             columns, rules, id_column or dictionary.get("id_column"))
         validation_issues = _validate_rows(
             columns, clean_rows, rules, detected_id_column, merged_required)
+        giai_quyet, loi_giai_quyet = _nap_giai_quyet(query_resolutions_path)
+        for item in validation_issues:
+            r = giai_quyet.get((item["type"], item.get("column") or "", str(item.get("row") or "")))
+            if r and r["resolution"] != "da_sua":
+                item["status"] = "closed"
+                item["resolution"] = f"{r['resolution']}: {r['ly_do']} ({r['owner_ref']}, {r['resolved_at']})"
+            elif r:
+                loi_giai_quyet.append(f"da_sua_nhung_gia_tri_van_con:{item['type']}:{item.get('column') or ''}")
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with output_path.open("w", encoding="utf-8", newline="") as f:
@@ -655,7 +732,15 @@ def clean_dataset(study: str, data_path: Path, *,
         }
         plan_path = _write_json(out_dir / "03_cleaning_scripts" / PLAN_NAME, plan_payload)
 
-    open_query_count = len(validation_issues)
+    open_query_count = sum(1 for item in validation_issues if item.get("status") != "closed")
+    qr_rel: Optional[str] = None
+    qr_sha: Optional[str] = None
+    if query_resolutions_path is not None and Path(query_resolutions_path).exists() and blocker is None:
+        dich = out_dir / "04_query_logs" / f"{TEN_TEP_GIAI_QUYET}{Path(query_resolutions_path).suffix.lower()}"
+        dich.parent.mkdir(parents=True, exist_ok=True)
+        if Path(query_resolutions_path).resolve() != dich.resolve():
+            dich.write_bytes(Path(query_resolutions_path).read_bytes())
+        qr_rel, qr_sha = _safe_rel(dich, out_dir), RDI._sha256_file(dich)
     status = (
         BLOCKED_STATUS if blocker
         else CLEAN_QUERY_STATUS if open_query_count
@@ -666,6 +751,7 @@ def clean_dataset(study: str, data_path: Path, *,
         "study": study_id,
         "status": status,
         "cleaned_at": cleaned_at,
+        "cleaned_at_utc": cleaned_at_utc,
         "source_filename": RDI._safe_source_filename(data_path),
         "source_sha256": RDI._sha256_file(data_path) if data_path.exists() else None,
         "clean_dataset_path": _safe_rel(clean_dataset_path, out_dir),
@@ -688,6 +774,10 @@ def clean_dataset(study: str, data_path: Path, *,
         "dictionary_blocker": dictionary_blocker,
         "safe_action_counts": action_counts,
         "open_query_count": open_query_count,
+        "query_resolutions": qr_rel,
+        "query_resolutions_sha256": qr_sha,
+        "query_resolution_errors": loi_giai_quyet,
+        "n_query_resolved": sum(1 for item in validation_issues if item.get("status") == "closed"),
         "query_summary": {
             issue_type: sum(1 for item in validation_issues if item["type"] == issue_type)
             for issue_type in sorted({item["type"] for item in validation_issues})
@@ -718,6 +808,9 @@ def main() -> int:
     parser.add_argument("--required-cols", default="", help="Danh sách cột bắt buộc, ngăn cách dấu phẩy")
     parser.add_argument("--missing-tokens", default="", help="Mã missing bổ sung, ngăn cách dấu phẩy")
     parser.add_argument("--max-scan-rows", type=int, default=5000)
+    parser.add_argument("--query-resolutions", default=None,
+                        help="CSV/JSON giải quyết query: issue_type, column, row, resolution (da_sua/xac_nhan_dung/"
+                             "khong_ap_dung_co_ly_do), ly_do, owner_ref (không PII), resolved_at (ISO) — G5-04")
     args = parser.parse_args()
 
     report = clean_dataset(
@@ -729,6 +822,7 @@ def main() -> int:
         required_columns=_split_list(args.required_cols),
         missing_tokens=_split_list(args.missing_tokens),
         max_scan_rows=args.max_scan_rows,
+        query_resolutions_path=Path(args.query_resolutions) if args.query_resolutions else None,
     )
     print(f"DATA_CLEANING: {report['status']}")
     print(

@@ -97,7 +97,10 @@ class TestCaChinhDmpTautologyBiChan:
         assert thieu_nhan == [], "Cả 11 nhãn đều CÓ MẶT — đúng tiền đề của tautology"
 
         thieu_noi_dung = G5Q._dmp_noi_dung_thieu_duoi_nhan(text, G5Q._REQUIRED_DMP_TOKENS)
-        assert set(thieu_noi_dung) == set(G5Q._REQUIRED_DMP_TOKENS), (
+        # 04/10/2026 (G5-01): «ICH E6(R3)» là nhãn THAM CHIẾU (chỉ cần có mặt — kiểm ở missing_dmp), không phải mục có
+        # thân; mọi nhãn MỤC còn lại vẫn phải bị gắn cờ.
+        nhan_muc = set(G5Q._REQUIRED_DMP_TOKENS) - set(G5Q._DMP_NHAN_THAM_CHIEU)
+        assert set(thieu_noi_dung) == nhan_muc, (
             "Mọi nhãn đều phải bị gắn cờ THIẾU NỘI DUNG — thân mục giữa hai nhãn "
             f"liên tiếp chỉ là một dấu xuống dòng. Thực tế: {thieu_noi_dung}"
         )

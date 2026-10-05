@@ -6,9 +6,11 @@ import csv
 import hashlib
 import json
 import os
+import stat
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -95,6 +97,7 @@ def write_g5_toolkit(
     *,
     id_field: str = "record_id",
     extra_date_columns: frozenset[str] = frozenset(),
+    extra_text_columns: frozenset[str] = frozenset(),
 ) -> Path:
     """Tạo bộ DMP/dictionary/script tối thiểu nhưng hợp lệ cho fixture.
 
@@ -203,6 +206,9 @@ def write_g5_toolkit(
         # validation "date_ymd" -> _normalise_rule() trong clean_research_dataset.py
         # đọc thành type="date" (bắt đầu bằng "date_"); đúng khuôn REDCap thật.
         rows.append((extra_name, "text", "", "date_ymd", "", ""))
+    # 04/10/2026 (G5-03): cột văn bản khai thêm (vd transcript_id của đề tài định tính) — cột không khai là truy vấn mở.
+    for extra_name in sorted(extra_text_columns - declared_names - set(extra_date_columns)):
+        rows.append((extra_name, "text", "", "", "", ""))
     with dictionary_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=headers)
         writer.writeheader()
@@ -232,7 +238,8 @@ def write_g5_toolkit(
     )
     today = datetime.now().date().isoformat()
     operational = {
-        "schema_version": "G5-OPS-2026.1",
+        # G5-OPS-2026.2 (04/10/2026, G5-07): thêm rà audit trail + đối chiếu dữ liệu nguồn (SDV).
+        "schema_version": G5Q.OPERATIONAL_SCHEMA_VERSION,
         "status": "VERIFIED",
         "access_control_review": {
             "completed": True,
@@ -255,6 +262,17 @@ def write_g5_toolkit(
             "reconciled": True,
             "open_count": 0,
             "log_ref": "PYTEST-DEVIATION-001",
+        },
+        "audit_trail_review": {
+            "completed": True,
+            "reviewed_at": today,
+            "evidence_ref": "PYTEST-AUDIT-TRAIL-001",
+        },
+        "source_data_verification": {
+            "method": "Kiểm ngẫu nhiên 10% hồ sơ so với hồ sơ nguồn",
+            "fraction_or_n": "10%",
+            "completed": True,
+            "evidence_ref": "PYTEST-SDV-001",
         },
         "reviewer_role": "DATA_GOVERNANCE_QA_REVIEWER",
         "reviewer_ref": "PYTEST-G5-DATA-REVIEWER",
@@ -388,25 +406,40 @@ def prepare_upstream_approvals(
     CS.xoa_dem()
 
 
-def prepare_locked_g5_study(
+def ghi_ban_go_bang_tong_hop(out_dir: Path, transcript_ids) -> Path:
+    """Bản gỡ băng TỔNG HỢP đã khử định danh + TRANSCRIPT_manifest.json hợp lệ (G5-08) cho đề tài định tính trong test:
+    tệp chỉ đọc, băm sha256 đúng, deidentified=true, reviewer_ref là mã (không PII), nội dung không mang mẫu PII."""
+    thu_muc = Path(out_dir) / "06_ban_go_bang"
+    thu_muc.mkdir(parents=True, exist_ok=True)
+    muc = []
+    for tid in transcript_ids:
+        tep = thu_muc / f"{tid}.txt"
+        if tep.exists():
+            os.chmod(tep, stat.S_IRUSR | stat.S_IWUSR)
+        tep.write_text(f"Người tham gia {tid} kể về trải nghiệm chờ khám và lời giải thích của nhân viên "
+                       "(dữ liệu tổng hợp cho kiểm thử, không có thông tin định danh).", encoding="utf-8", newline="\n")
+        os.chmod(tep, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+        muc.append({"transcript_id": tid, "file": f"06_ban_go_bang/{tid}.txt",
+                    "sha256": hashlib.sha256(tep.read_bytes()).hexdigest(), "deidentified": True,
+                    "reviewer_ref": "PYTEST-QR-01"})
+    path = Path(out_dir) / G5Q.TRANSCRIPT_MANIFEST_JSON
+    path.write_text(json.dumps({"schema_version": "G5-TRANSCRIPT-2026.1", "transcripts": muc}, ensure_ascii=False,
+                               indent=2), encoding="utf-8", newline="\n")
+    return path
+
+
+def prepare_clean_g5_study(
     study: str,
     source_data: Path,
     *,
     exports_root: Path,
     repo_root: Path,
-    approve_g5: bool = True,
     extra_date_columns: frozenset[str] = frozenset(),
-) -> tuple[Path, dict]:
-    """Chạy intake -> cleaning -> lock -> approval G5 cho dữ liệu tổng hợp.
-
-    `extra_date_columns`: tên cột NGHIÊN CỨU trong `source_data` đã khai
-    tường minh kiểu "date" ở nơi khác (vd data_dictionary.json của pipeline
-    pseudonymize) — được ghi vào CHÍNH dictionary REDCap canonical mà
-    `write_g5_toolkit()` sinh ra, để cả bước quét PII (intake/clean/lock)
-    LẪN `g5_quality_gate.evaluate_study()` (vốn đọc dictionary ở đường dẫn
-    canonical để chấm G5-AUTO-02..09) đều thấy ĐÚNG MỘT dictionary — tránh
-    lệch hash nếu dùng hai file dictionary khác nhau cho hai việc.
-    """
+    extra_text_columns: frozenset[str] = frozenset(),
+    query_resolutions_path: Optional[Path] = None,
+) -> dict:
+    """Bộ công cụ G5 + chuỗi G0→G4 đã chốt + nạp + làm sạch (chưa khoá). Trả {out_dir, clean_path, query_log,
+    dictionary_path, cleaning} để test khoá bằng lock_g5_fixture — kể cả các ca khoá bị từ chối (04/10/2026)."""
     out_dir = exports_root / study
     with Path(source_data).open("r", encoding="utf-8-sig", newline="") as handle:
         source_fields = set(csv.DictReader(handle).fieldnames or [])
@@ -422,6 +455,7 @@ def prepare_locked_g5_study(
         out_dir,
         id_field=id_field,
         extra_date_columns=extra_date_columns,
+        extra_text_columns=extra_text_columns,
     )
     prepare_upstream_approvals(study, out_dir, repo_root=repo_root)
 
@@ -445,20 +479,28 @@ def prepare_locked_g5_study(
         raw_path,
         dictionary_path=dictionary_path,
         exports_root=exports_root,
+        query_resolutions_path=query_resolutions_path,
     )
     assert cleaning["status"] == CLEAN.CLEAN_READY_STATUS, cleaning
-    clean_path = out_dir / cleaning["clean_dataset_path"]
-    query_log = out_dir / cleaning["query_log"]
-    manifest = LAD.lock_dataset(
-        study,
-        clean_path,
+    return {
+        "out_dir": out_dir,
+        "clean_path": out_dir / cleaning["clean_dataset_path"],
+        "query_log": out_dir / cleaning["query_log"],
+        "dictionary_path": dictionary_path,
+        "cleaning": cleaning,
+    }
+
+
+def lock_g5_fixture(study: str, ctx: dict, *, exports_root: Path, repo_root: Path, **ghi_de) -> dict:
+    """lock_dataset với đủ mười xác nhận của người (G5-07 thêm audit trail); `ghi_de` thay từng tham số."""
+    kwargs = dict(
         lock_date=datetime.now().date().isoformat(),
         reviewer_role="DATA_GOVERNANCE_QA_REVIEWER",
         reviewer_ref="PYTEST-G5-DATA-REVIEWER",
         sap_version="1.0",
-        query_log=query_log,
-        dictionary_path=dictionary_path,
-        cleaning_report_path=out_dir / CLEAN.REPORT_NAME,
+        query_log=ctx["query_log"],
+        dictionary_path=ctx["dictionary_path"],
+        cleaning_report_path=ctx["out_dir"] / CLEAN.REPORT_NAME,
         exports_root=exports_root,
         repo_root=repo_root,
         confirm_deidentified=True,
@@ -470,7 +512,52 @@ def prepare_locked_g5_study(
         confirm_backup_restore_tested=True,
         confirm_retention_plan=True,
         confirm_protocol_deviations_reconciled=True,
+        confirm_audit_trail_reviewed=True,
     )
+    kwargs.update(ghi_de)
+    return LAD.lock_dataset(study, ctx["clean_path"], **kwargs)
+
+
+def prepare_locked_g5_study(
+    study: str,
+    source_data: Path,
+    *,
+    exports_root: Path,
+    repo_root: Path,
+    approve_g5: bool = True,
+    extra_date_columns: frozenset[str] = frozenset(),
+    extra_text_columns: frozenset[str] = frozenset(),
+    truoc_khi_khoa=None,
+    ky_vong: Optional[str] = None,
+    query_resolutions_path: Optional[Path] = None,
+) -> tuple[Path, dict]:
+    """Chạy intake -> cleaning -> lock -> approval G5 cho dữ liệu tổng hợp.
+
+    `extra_date_columns`: tên cột NGHIÊN CỨU trong `source_data` đã khai
+    tường minh kiểu "date" ở nơi khác (vd data_dictionary.json của pipeline
+    pseudonymize) — được ghi vào CHÍNH dictionary REDCap canonical mà
+    `write_g5_toolkit()` sinh ra, để cả bước quét PII (intake/clean/lock)
+    LẪN `g5_quality_gate.evaluate_study()` (vốn đọc dictionary ở đường dẫn
+    canonical để chấm G5-AUTO-02..09) đều thấy ĐÚNG MỘT dictionary — tránh
+    lệch hash nếu dùng hai file dictionary khác nhau cho hai việc.
+
+    04/10/2026 (soát từng cổng G5): `extra_text_columns` khai thêm cột văn bản; `truoc_khi_khoa(out_dir)` chạy ngay
+    trước lock_dataset (sửa DMP/hồ sơ vận hành/bản gỡ băng như người thật); `ky_vong` = trạng thái G5 mong đợi sau khoá
+    (mặc định READY_FOR_G5_APPROVAL) — khác READY thì không ký G5.
+    """
+    ctx = prepare_clean_g5_study(
+        study,
+        source_data,
+        exports_root=exports_root,
+        repo_root=repo_root,
+        extra_date_columns=extra_date_columns,
+        extra_text_columns=extra_text_columns,
+        query_resolutions_path=query_resolutions_path,
+    )
+    out_dir = ctx["out_dir"]
+    if truoc_khi_khoa is not None:
+        truoc_khi_khoa(out_dir)
+    manifest = lock_g5_fixture(study, ctx, exports_root=exports_root, repo_root=repo_root)
     assert manifest["status"] == LAD.LOCKED_STATUS, manifest.get("blockers")
     report = G5Q.evaluate_study(
         study,
@@ -478,8 +565,10 @@ def prepare_locked_g5_study(
         repo_root=repo_root,
         write=True,
     )
-    assert report["status"] == G5Q.STATUS_READY, report
-    if approve_g5:
+    ky_vong = ky_vong or G5Q.STATUS_READY
+    assert report["status"] == ky_vong, [(c["id"], c["evidence"][:160]) for c in report["automatic_criteria"]
+                                         if c["status"] != "PASS"]
+    if approve_g5 and ky_vong == G5Q.STATUS_READY:
         append_signed_approval(
             study,
             out_dir / "G5_checkpoint.json",
