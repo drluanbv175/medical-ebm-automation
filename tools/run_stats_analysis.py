@@ -314,8 +314,13 @@ def _compare_categorical(col: pd.Series, grp: pd.Series) -> dict:
     return {"p": round(float(p), 4), "effect": "N/A", "test": "Chi-square"}
 
 
-def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list) -> dict:
-    """Tạo Bảng 1 đặc điểm mẫu theo nhóm."""
+def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_nen: bool = True) -> dict:
+    """Tạo Bảng 1 đặc điểm mẫu theo nhóm.
+
+    `kiem_dinh_nen=False` (RCT — VÁ 04/10/2026, điều phối G4→G6): KHÔNG kiểm định ý nghĩa khác biệt đặc điểm nền giữa
+    các nhóm ngẫu nhiên hoá — khác biệt nền trong RCT là do ngẫu nhiên theo định nghĩa, p-value nền vô nghĩa và gây
+    hiểu sai (CONSORT 2010 giải thích & chi tiết, mục 15; Moher et al., BMJ 2010, PMID 20332511). SAP RCT do G4 sinh
+    đã bỏ cột p ở Bảng 1; phân tích phải theo đúng SAP."""
     groups = sorted(df[group_col].dropna().unique())
     rows = []
     for var in vars_:
@@ -348,7 +353,9 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list) -> dict:
                     row[f"grp_{g}"] = f"{s.median():.2f} [{s.quantile(.25):.2f}–{s.quantile(.75):.2f}]"
                 if n_inf:
                     row[f"grp_{g}"] += f" (⚠loại {n_inf} giá trị Inf)"
-            if len(groups) == 2 and HAS_SCIPY:
+            if not kiem_dinh_nen:
+                row["test"] = "không kiểm định (RCT — CONSORT 2010)"
+            elif len(groups) == 2 and HAS_SCIPY:
                 comp = _compare_continuous(grp_data[groups[0]], grp_data[groups[1]])
                 row["p"] = comp["p"]
                 row["test"] = comp["test"]
@@ -373,7 +380,9 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list) -> dict:
                 else:
                     counts = s.value_counts()
                     row[f"grp_{g}"] = "; ".join(f"{k}: {v}({v/len(s)*100:.0f}%)" for k, v in counts.items())
-            if len(groups) == 2 and HAS_SCIPY:
+            if not kiem_dinh_nen:
+                row["test"] = "không kiểm định (RCT — CONSORT 2010)"
+            elif len(groups) == 2 and HAS_SCIPY:
                 comp = _compare_categorical(df[var], df[group_col])
                 row["p"] = comp["p"]
                 row["test"] = comp["test"]
@@ -2379,7 +2388,7 @@ def main():
         print(f"ℹ️  Bảng 1: bỏ phân nhóm theo «{args.group}» ({df[args.group].nunique()} giá trị — biến liên tục).")
     if args.group and args.group in df.columns and not phoi_nhiem_lien_tuc:
         try:
-            t1 = table1_descriptive(df, args.group, vars_for_t1)
+            t1 = table1_descriptive(df, args.group, vars_for_t1, kiem_dinh_nen=design_code != "rct")
             t1_txt = format_table1_text(t1)
             summary["table1"] = {"n_per_group": t1["n_per_group"]}
             print(f"✓ Bảng 1: {len(t1['rows'])} biến, {len(t1['groups'])} nhóm")

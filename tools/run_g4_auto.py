@@ -324,6 +324,18 @@ def generate(study, topic, design_code, design_primary, reporting_std,
                         "(COREQ/SRQR, xem A4)"),
     }
     pop, analysis_pop, main_method = sap_sections.get(design_code, ("Toàn bộ mẫu", "Phân tích đầy đủ", "[CẦN]"))
+    # VÁ 04/10/2026 (điều phối G4↔G6, lộ khi soát G6-04): RCT/cohort từng in phương pháp CHUNG CHUNG theo thiết kế
+    # («t-test hoặc Mann-Whitney; logistic/log-rank» cho mọi RCT) — không nói phân tích chính dùng thước đo nào trong khi
+    # G3 đã chốt effect_type, nên G6 không có căn cứ đối chiếu họ mô hình của script với SAP. Nay chọn theo effect_type.
+    if design_code in ("rct", "cohort"):
+        main_method = {
+            "HR": "Cox proportional hazards (HR) + Kaplan–Meier, log-rank cho so sánh thô",
+            "RR": "Hồi quy Poisson với sai số chuẩn robust (hoặc log-binomial) → RR",
+            "OR": "Hồi quy logistic → OR",
+            "ARR%": "Hiệu nguy cơ (risk difference) + 95%CI; hiệu chỉnh: hồi quy nhị thức liên kết đồng nhất",
+            "NI_PROPORTION": "Hiệu tỷ lệ (risk difference) + 95%CI (Newcombe) so với biên Δ",
+            "MD": "t-test hoặc Mann-Whitney; ANCOVA/hồi quy tuyến tính hiệu chỉnh giá trị nền",
+        }.get(str(effect_type or "").upper().replace("ARR", "ARR%").replace("%%", "%"), main_method)
 
     # THÊM 2026-07-24 (vòng 18): nhãn một/hai phía theo hypothesis_type — non_inferiority dùng z MỘT PHÍA.
     _alpha_sidedness = "one-sided" if hypothesis_type == "non_inferiority" else "two-sided"

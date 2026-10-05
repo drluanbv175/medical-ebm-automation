@@ -18,6 +18,7 @@ import sys
 import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -31,7 +32,12 @@ sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
+import g6_quality_gate as G6Q  # noqa: E402  (bộ đọc SAP + phép kiểm khoá G4 dùng CHUNG với bộ chấm — 04/10/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+
+# Kết cục NHỊ PHÂN (tỷ lệ tích luỹ, không có trục thời gian) — G3 cho rct/cohort tính cỡ mẫu bằng hai tỷ lệ với các
+# effect_type này. VÁ 04/10/2026 (soát từng cổng, G6-04): trước đây chúng rơi vào nhánh Cox + Kaplan–Meier.
+_KET_CUC_NHI_PHAN = frozenset({"RR", "OR", "ARR%", "ARR", "NI_PROPORTION"})
 
 # ─────────────────────────────────────────────
 # PHÁT HIỆN BIẾN TỰ ĐỘNG TỪ REDCAP DICTIONARY
@@ -482,10 +488,35 @@ def _sap_declares_ordinal(out_dir: Path, study: str) -> bool:
 # R SCRIPTS — SETUP & CLEANING (chung)
 # ─────────────────────────────────────────────
 
-R_00_SETUP = """\
+def make_r00_setup(study: str, seed: Optional[str] = None, seed_khong_ap_dung: bool = False,
+                   r_version: Optional[str] = None, alpha: Optional[float] = None,
+                   alpha_khong_ap_dung: bool = False) -> str:
+    """Sinh 00_setup.R: cài/nạp gói, seed + alpha THEO SAP đã khoá, và CHỐT KHOÁ DỮ LIỆU trước mọi phân tích.
+
+    VÁ 04/10/2026 (soát từng cổng): G6-02 — đường R từng KHÔNG có chốt khoá nào (DATA_RAW/DATA_PROC = data/ chung của
+    repo, làm sạch lại dữ liệu thô, chạy được khi G4/G5 chưa ký); nay gọi tools/kiem_khoa_phan_tich.py (đúng hợp đồng
+    của khuôn Python: chữ ký + chất lượng G2/G4/G5, checksum dataset khoá) và stop() khi bị chặn; dữ liệu duy nhất được
+    đọc là LOCKED_DATA; thư mục làm việc là exports/<đề tài>/06_phan_tich_R. G6-09 — seed cứng 2026 làm lệch SAP (C1a
+    khoá set.seed(20260830)); nay seed/alpha/phiên bản R lấy từ SAP §10/§12; SAP chưa chốt seed ⇒ NA + nhãn [CẦN] và
+    dừng khi chạy (SAP khai «không áp dụng» ⇒ NA, không dừng)."""
+    if seed:
+        dong_seed = (f"SEED <- {seed}   # theo SAP §10 đã khoá\n"
+                     "set.seed(SEED)")
+    elif seed_khong_ap_dung:
+        dong_seed = "SEED <- NA   # SAP §10: seed KHÔNG ÁP DỤNG (phân tích không có bước ngẫu nhiên)"
+    else:
+        dong_seed = ("SEED <- NA   # [CẦN SEED THEO SAP §10]\n"
+                     "if (is.na(SEED)) stop(\"SAP §10 chưa chốt seed — không chạy phân tích (G6).\")")
+    dong_alpha = (f"ALPHA <- {alpha}   # theo SAP §12 đã khoá" if alpha is not None
+                  else "ALPHA <- NA   # SAP §12: alpha KHÔNG ÁP DỤNG" if alpha_khong_ap_dung
+                  else "ALPHA <- NA   # [CẦN ALPHA THEO SAP §12]")
+    dong_r = (f"if (getRversion() < \"{r_version}\") warning(\"SAP §10 khoá R >= {r_version}; đang chạy R \", "
+              "getRversion())" if r_version else "# Phiên bản R: SAP §10 không khai phiên bản — ghi sessionInfo() ở 03")
+    return f"""\
 # ============================================================
-# 00_setup.R — Cài đặt môi trường và nạp thư viện
-# Chạy một lần trước khi thực hiện phân tích
+# 00_setup.R — Môi trường + CHỐT KHOÁ DỮ LIỆU (đề tài {study})
+# Mọi script 01–03 nạp tệp này TRƯỚC khi đọc dữ liệu — không chạy phân tích khi
+# G2 (IRB), G4 (SAP) và G5 (khoá dữ liệu) chưa được ký thật.
 # ============================================================
 
 packages <- c(
@@ -511,31 +542,45 @@ packages <- c(
 )
 
 to_install <- packages[!packages %in% installed.packages()[, "Package"]]
-if (length(to_install) > 0) {
+if (length(to_install) > 0) {{
   message("Đang cài: ", paste(to_install, collapse = ", "))
   install.packages(to_install, repos = "https://cran.rstudio.com/")
-}
+}}
 
 suppressPackageStartupMessages(
   lapply(packages, require, character.only = TRUE)
 )
+{dong_r}
 
-# Seed — phải khớp với seed đã cam kết trong G4 SAP §10
-SEED <- 2026
-set.seed(SEED)
+# Seed và alpha — theo SAP đã khoá (G4), KHÔNG tự đặt
+{dong_seed}
+{dong_alpha}
 
-DATA_RAW  <- here::here("data", "raw")
-DATA_PROC <- here::here("data", "processed")
-OUTPUT    <- here::here("output")
-SCRIPTS   <- here::here("scripts")
+STUDY     <- "{study}"
+REPO      <- here::here()
+STUDY_DIR <- file.path(REPO, "exports", STUDY)
 
-dir.create(DATA_RAW,  showWarnings = FALSE, recursive = TRUE)
-dir.create(DATA_PROC, showWarnings = FALSE, recursive = TRUE)
-dir.create(OUTPUT,    showWarnings = FALSE, recursive = TRUE)
+# ---- CHỐT DATA LOCK — dùng chung hợp đồng với khuôn Python (tools/kiem_khoa_phan_tich.py) ----
+PY <- Sys.getenv("EBM_PYTHON", unset = if (.Platform$OS.type == "windows") "python" else "python3")
+KHOA <- suppressWarnings(system2(PY, c(shQuote(file.path(REPO, "tools", "kiem_khoa_phan_tich.py")),
+                                       "--study", STUDY), stdout = TRUE, stderr = TRUE))
+MA_KHOA <- attr(KHOA, "status")
+if (!is.null(MA_KHOA) && MA_KHOA != 0) stop("DỪNG — dữ liệu chưa khoá hợp lệ:\\n", paste(KHOA, collapse = "\\n"))
+LOCKED_DATA <- sub("^LOCKED_DATA=", "", grep("^LOCKED_DATA=", KHOA, value = TRUE))
+LOCKED_SHA  <- sub("^SHA256=", "", grep("^SHA256=", KHOA, value = TRUE))
+if (length(LOCKED_DATA) != 1 || !file.exists(LOCKED_DATA)) stop("DỪNG — không xác định được dataset đã khoá.")
+
+DATA_PROC <- file.path(STUDY_DIR, "06_phan_tich_R")
+OUTPUT    <- file.path(DATA_PROC, "output")
+dir.create(OUTPUT, showWarnings = FALSE, recursive = TRUE)
 
 options(scipen = 999, digits = 4)
-message("=== 00_setup.R hoàn tất === Seed: ", SEED)
+message("=== 00_setup.R hoàn tất === dataset khoá: ", basename(LOCKED_DATA), " | Seed: ", SEED)
 """
+
+
+# Bản dựng sẵn cho caller cũ (test guardrail) — đề tài giữ chỗ, seed chưa chốt. main() luôn gọi make_r00_setup().
+R_00_SETUP = make_r00_setup("__STUDY__")
 
 
 # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện LOW +
@@ -610,81 +655,56 @@ def make_r01_cleaning(v: dict, design_code: str = "cohort") -> str:
     mutate_lines.append(f"    {outcome}  = as.integer({outcome}),")
     mutate_lines.append(f"    {time_col} = as.numeric({time_col})")
 
-    mutate_block = "\n".join(mutate_lines)
+    # VÁ 04/10/2026 (lộ khi phân tích cú pháp R mọi script sinh ra): các dòng chuyển kiểu từng KHÔNG có dấu «#» trong
+    # khi «# df <- …» / «#   dplyr::mutate(» bao quanh đều là chú thích ⇒ 01_cleaning.R của MỌI đề tài lỗi cú pháp R
+    # ngay dòng đầu khối. Nay chú thích đồng bộ (bỏ «#» cả khối khi chạy thật).
+    mutate_block = "\n".join(f"#     {ln.strip()}" for ln in mutate_lines)
 
+    # VÁ 04/10/2026 (soát từng cổng, G6-02): bản cũ đọc CSV THÔ ở data/raw chung của repo rồi làm sạch LẠI (trùng
+    # record_id, lọc dòng, kiểm phạm vi) — làm sạch thuộc G5 và đã khoá; làm lại sau khoá là đổi dữ liệu ngoài mọi
+    # kiểm soát. Nay chỉ đọc LOCKED_DATA (00_setup.R đã kiểm chữ ký G2/G4/G5 + checksum) và chuyển kiểu XÁC ĐỊNH,
+    # không lọc dòng, không sửa giá trị; RDS mang sha256 của bản khoá để script sau tự đối chiếu.
     code = f"""\
 # ============================================================
-# 01_cleaning.R — Làm sạch dữ liệu
+# 01_cleaning.R — Chuẩn bị dữ liệu phân tích TỪ DATASET ĐÃ KHOÁ (G5)
 # Biến phơi nhiễm: {exposure}
 # Biến kết cục  : {outcome}
 # Thời gian TD  : {time_col}
 # Covariates    : {", ".join(covars) if covars else "[xem SAP §5]"}
-# Sinh tự động từ G5 REDCap dictionary — kiểm tra lại trước khi chạy
+# KHÔNG đọc dữ liệu thô, KHÔNG làm sạch lại (làm sạch đã xong và khoá ở G5) —
+# chỉ chuyển kiểu biến xác định; mọi thay đổi giá trị phải quay lại G5 + khoá lại.
 # ============================================================
 
-source(here::here("scripts", "00_setup.R"))
+source(here::here("scripts", "00_setup.R"))   # chốt khoá: LOCKED_DATA + LOCKED_SHA
 
 # ----------------------------------------------------------
-# BƯỚC 1: ĐỌC DỮ LIỆU THÔ (uncomment đúng nguồn)
+# BƯỚC 1: ĐỌC DATASET ĐÃ KHOÁ (đường dẫn do chốt khoá cấp)
 # ----------------------------------------------------------
-
-# Cách 1: CSV xuất REDCap
-# df_raw <- readr::read_csv(
-#   file.path(DATA_RAW, "data_export.csv"),  # đổi tên file thật
-#   locale = locale(encoding = "UTF-8")
-# )
-
-# Cách 2: REDCap API
-# library(REDCapR)
-# df_raw <- REDCapR::redcap_read(
-#   redcap_uri = Sys.getenv("REDCAP_URI"),
-#   token      = Sys.getenv("REDCAP_TOKEN")
-# )$data
+# df_khoa <- readr::read_csv(LOCKED_DATA, locale = readr::locale(encoding = "UTF-8"),
+#                            show_col_types = FALSE)
+# message("Số hàng dataset khoá: ", nrow(df_khoa))
 
 # ----------------------------------------------------------
-# BƯỚC 2: KIỂM TRA CẤU TRÚC
+# BƯỚC 2: CHUYỂN KIỂU BIẾN (xác định — không lọc dòng, không sửa giá trị)
 # ----------------------------------------------------------
-# message("Số hàng thô: ", nrow(df_raw))
-# glimpse(df_raw)
-
-# ----------------------------------------------------------
-# BƯỚC 3: KIỂM TRA TRÙNG record_id
-# ----------------------------------------------------------
-# dup_ids <- df_raw$record_id[duplicated(df_raw$record_id)]
-# if (length(dup_ids) > 0) stop("Trùng record_id: ", paste(dup_ids, collapse=", "))
-
-# ----------------------------------------------------------
-# BƯỚC 4: CHUYỂN ĐỔI KIỂU DỮ LIỆU (tên biến từ REDCap)
-# ----------------------------------------------------------
-# df <- df_raw %>%
+# df <- df_khoa %>%
 #   dplyr::mutate(
 {mutate_block}
-#   ) %>%
-#   dplyr::filter(!is.na(record_id))
+#   )
 
 # ----------------------------------------------------------
-# BƯỚC 5: KIỂM TRA GIÁ TRỊ NGOÀI PHẠM VI
-# ----------------------------------------------------------
-# if ("age" %in% names(df)) {{
-#   age_out <- df %>% filter(age < 18 | age > 120)
-#   if (nrow(age_out) > 0) warning("Tuổi ngoài phạm vi: ", nrow(age_out), " hàng")
-# }}
-# out_time <- df %>% filter({time_col} < 0 | {time_col} > 120)
-# if (nrow(out_time) > 0) warning("Thời gian TD âm/quá lớn: ", nrow(out_time))
-
-# ----------------------------------------------------------
-# BƯỚC 6: TỶ LỆ DỮ LIỆU THIẾU
+# BƯỚC 3: TỶ LỆ DỮ LIỆU THIẾU (mô tả — xử lý theo SAP §6, không điền ở đây)
 # ----------------------------------------------------------
 # missing_pct <- df %>%
 #   summarise(across(everything(), ~mean(is.na(.))*100)) %>%
 #   tidyr::pivot_longer(everything(), names_to="variable", values_to="pct_missing") %>%
 #   arrange(desc(pct_missing))
-# print(missing_pct)
 # write.csv(missing_pct, file.path(OUTPUT, "missing_summary.csv"), row.names=FALSE)
 
 # ----------------------------------------------------------
-# BƯỚC 7: LƯU DỮ LIỆU ĐÃ LÀM SẠCH
+# BƯỚC 4: LƯU BẢN PHÂN TÍCH (gắn sha256 của dataset khoá để 02/03 đối chiếu)
 # ----------------------------------------------------------
+# attr(df, "sha256_khoa") <- LOCKED_SHA
 # saveRDS(df, file.path(DATA_PROC, "df_clean.rds"))
 # message("Đã lưu df_clean: ", nrow(df), " hàng x ", ncol(df), " cột")
 
@@ -814,7 +834,8 @@ def make_r03_cohort(v: dict, n_adjusted: int, alpha: float, power: float,
     # Chuỗi covariates cho công thức Cox
     cov_formula = " + ".join(covars) if covars else "age + sex + bmi + dm + htn"
     cov_mi_list  = ", ".join(f'"{c}"' for c in covars) if covars else '"age", "sex", "bmi", "dm", "htn"'
-    subgroup_vars = [c for c in covars if c in ("sex", "dm", "htn", "age")]
+    # VÁ 04/10/2026 (G6-03): nhóm con CHỈ theo SAP §7 đã khoá (bản cũ: covariate ∩ {sex, dm, htn, age}).
+    subgroup_vars = [str(x) for x in (v.get("nhom_con_sap") or [])]
 
     # Xây subgroup R code trước — tránh f-string lồng nhau
     subgroup_r_lines = []
@@ -825,7 +846,8 @@ def make_r03_cohort(v: dict, n_adjusted: int, alpha: float, power: float,
         subgroup_r_lines.append("#   data = df")
         subgroup_r_lines.append("# )")
         subgroup_r_lines.append(f"# broom::tidy(cox_sub_{sg}, exponentiate=TRUE, conf.int=TRUE)")
-    subgroup_r_block = "\n".join(subgroup_r_lines) if subgroup_r_lines else "# [Không phát hiện biến nhóm con phù hợp — xem SAP §7]"
+    subgroup_r_block = ("\n".join(subgroup_r_lines) if subgroup_r_lines
+                        else "# SAP §7 không định trước nhóm con — không sinh phân tích nhóm con")
 
     return f"""\
 # ============================================================
@@ -1010,7 +1032,7 @@ def parse_args():
     p.add_argument("--outcome",    default="__OUTCOME__",     help="Tên cột kết cục (0/1)")
     p.add_argument("--time",       default="__TIME__",        help="Tên cột thời gian (số)")
     p.add_argument("--covariates", default="__COVARS_DEFAULT__", help="Covariates (dấu phẩy)")
-    p.add_argument("--output-dir", default=".")
+    p.add_argument("--output-dir", default="exports/__STUDY__/06_ket_qua")
     p.add_argument("--i-confirm-sap-locked", action="store_true",
                     help="Ghi đè kiểm tra G4/G5 checkpoint khi không tìm thấy file checkpoint "
                          "nhưng SAP+DB thực tế đã khóa. KHÔNG dùng để né việc chưa khóa thật.")
@@ -1135,8 +1157,11 @@ def _require_locked_dataset(data_arg: str) -> None:
             print(f"   - {_b}")
         print("   Khóa dữ liệu bằng: python tools/lock_analysis_dataset.py --study __STUDY__ "
               "--clean-data <df_clean.csv> --query-log <query_log.csv> --lock-date <YYYY-MM-DD> "
-              "--approved-by <PI> --sap-version <x.y> --confirm-deidentified --confirm-clean-copy "
-              "--confirm-no-open-query --confirm-sap-locked")
+              "--reviewer-role DATA_GOVERNANCE_QA_REVIEWER --reviewer-ref <mã người khoá, không PII> "
+              "--sap-version <x.y> --confirm-deidentified --confirm-clean-copy --confirm-no-open-query "
+              "--confirm-sap-locked --confirm-dictionary-crf-aligned --confirm-access-control-reviewed "
+              "--confirm-backup-restore-tested --confirm-retention-plan --confirm-protocol-deviations-reconciled "
+              "--confirm-audit-trail-reviewed (rồi người có thẩm quyền ký G5 bằng approve_gate.py)")
         _sys.exit(1)
     print("✓ DATA LOCK: --data khớp dataset đã khóa (checksum xác nhận).")
 
@@ -1363,6 +1388,21 @@ def export_docx(tbl1, cox_res, km_path, out_path, study_name, exposure, outcome,
     print(f"   → DOCX: {out_path}")
 
 
+def ghi_moi_truong(out_dir):
+    """Ghi phiên bản Python + gói vào G6_moi_truong.json để tái lập kết quả (04/10/2026, G6-11)."""
+    import json as _json
+    import platform as _platform
+    goi = {}
+    for ten in ("pandas", "numpy", "scipy", "statsmodels", "lifelines", "matplotlib"):
+        try:
+            goi[ten] = __import__(ten).__version__
+        except Exception:  # noqa: BLE001 — gói vắng không chặn phân tích
+            goi[ten] = None
+    (Path(out_dir) / "G6_moi_truong.json").write_text(
+        _json.dumps({"python": sys.version, "nen_tang": _platform.platform(), "goi": goi},
+                    ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+
+
 def main():
     args = parse_args()
     _check_sap_db_locked(args.i_confirm_sap_locked, args.i_confirm_irb_approved)
@@ -1370,6 +1410,7 @@ def main():
     data_path  = Path(args.data)
     out_dir    = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    ghi_moi_truong(out_dir)
     exposure   = args.exposure
     outcome    = args.outcome
     time_col   = args.time
@@ -1485,7 +1526,7 @@ def parse_args():
     p.add_argument("--covariates", default="__COVARS_DEFAULT__", help="Covariates (dấu phẩy)")
     p.add_argument("--matched",    action="store_true",
                    help="Nếu case-control CÓ bắt cặp (matched) — cảnh báo dùng conditional logistic thay vì thường")
-    p.add_argument("--output-dir", default=".")
+    p.add_argument("--output-dir", default="exports/__STUDY__/06_ket_qua")
     p.add_argument("--i-confirm-sap-locked", action="store_true",
                     help="Ghi đè kiểm tra G4/G5 checkpoint khi không tìm thấy file checkpoint "
                          "nhưng SAP+DB thực tế đã khóa. KHÔNG dùng để né việc chưa khóa thật.")
@@ -1613,8 +1654,11 @@ def _require_locked_dataset(data_arg: str) -> None:
             print(f"   - {_b}")
         print("   Khóa dữ liệu bằng: python tools/lock_analysis_dataset.py --study __STUDY__ "
               "--clean-data <df_clean.csv> --query-log <query_log.csv> --lock-date <YYYY-MM-DD> "
-              "--approved-by <PI> --sap-version <x.y> --confirm-deidentified --confirm-clean-copy "
-              "--confirm-no-open-query --confirm-sap-locked")
+              "--reviewer-role DATA_GOVERNANCE_QA_REVIEWER --reviewer-ref <mã người khoá, không PII> "
+              "--sap-version <x.y> --confirm-deidentified --confirm-clean-copy --confirm-no-open-query "
+              "--confirm-sap-locked --confirm-dictionary-crf-aligned --confirm-access-control-reviewed "
+              "--confirm-backup-restore-tested --confirm-retention-plan --confirm-protocol-deviations-reconciled "
+              "--confirm-audit-trail-reviewed (rồi người có thẩm quyền ký G5 bằng approve_gate.py)")
         _sys.exit(1)
     print("✓ DATA LOCK: --data khớp dataset đã khóa (checksum xác nhận).")
 
@@ -1793,6 +1837,21 @@ def export_docx(tbl1, lr_res, out_path, study_name, exposure, outcome, matched):
     print(f"   → DOCX: {out_path}")
 
 
+def ghi_moi_truong(out_dir):
+    """Ghi phiên bản Python + gói vào G6_moi_truong.json để tái lập kết quả (04/10/2026, G6-11)."""
+    import json as _json
+    import platform as _platform
+    goi = {}
+    for ten in ("pandas", "numpy", "scipy", "statsmodels", "lifelines", "matplotlib"):
+        try:
+            goi[ten] = __import__(ten).__version__
+        except Exception:  # noqa: BLE001 — gói vắng không chặn phân tích
+            goi[ten] = None
+    (Path(out_dir) / "G6_moi_truong.json").write_text(
+        _json.dumps({"python": sys.version, "nen_tang": _platform.platform(), "goi": goi},
+                    ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+
+
 def main():
     args = parse_args()
     _check_sap_db_locked(args.i_confirm_sap_locked, args.i_confirm_irb_approved)
@@ -1800,6 +1859,7 @@ def main():
     data_path  = Path(args.data)
     out_dir    = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    ghi_moi_truong(out_dir)
     exposure   = args.exposure
     outcome    = args.outcome
     covariates = [c.strip() for c in args.covariates.split(",") if c.strip()]
@@ -1888,6 +1948,15 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
             "# phân tích chính; KHÔNG chạy Cox bên dưới cho biến liên tục.\n"
             "# (Phiên bản CLI Python cho kết cục liên tục sẽ bổ sung sau.)\n\n"
         )
+    if effect_type in _KET_CUC_NHI_PHAN and design_code in ("rct", "cohort"):
+        # VÁ 04/10/2026 (G6-04): cùng khuôn cảnh báo với MD — CLI Cox/HR sai cho kết cục nhị phân.
+        warns.append(
+            f"# ⚠️  [CẦN CHÚ Ý — KẾT CỤC NHỊ PHÂN (effect_type={effect_type})]\n"
+            "# Template CLI này dùng Cox/HR (kết cục thời gian-đến-biến-cố) — SAI\n"
+            "# phương pháp cho kết cục NHỊ PHÂN (tỷ lệ tích luỹ tại một mốc). Dùng\n"
+            "# 03_analysis.R (Poisson robust / logistic / hiệu nguy cơ theo G3) làm\n"
+            "# phân tích chính; KHÔNG chạy Cox bên dưới.\n\n"
+        )
     # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện): trước đây CHỈ tách riêng
     # case_control khỏi _RUN_CLI_TEMPLATE (Cox/HR) — 5 design_code còn lại
     # (cross_sectional/diagnostic/prediction/sr_ma/qualitative) vẫn âm thầm
@@ -1922,7 +1991,7 @@ _SENSITIVITY_TEMPLATE = (
     "#\n"
     "# Noi dung:\n"
     "#   1. Complete-case vs Multiple Imputation (mean-impute demo)\n"
-    "#   2. Subgroup: sex, dm, htn, age>=70\n"
+    "#   2. Subgroup: CHI theo SAP §7 da khoa (__SUBGROUPS__; nguong tuoi __AGE_CUT__)\n"
     "#   3. E-value (unmeasured confounding)\n"
     "#\n"
     "# Cach dung: python sensitivity_analysis.py --data path/to/data.csv\n"
@@ -2047,7 +2116,7 @@ _SENSITIVITY_TEMPLATE = (
     "    parser.add_argument(\'--outcome\',    default=\'__OUTCOME__\')\n"
     "    parser.add_argument(\'--time\',       default=\'__TIME__\')\n"
     "    parser.add_argument(\'--covariates\', default=\'__COVARS_DEFAULT__\')\n"
-    "    parser.add_argument(\'--output-dir\', default=\'.')\n"
+    "    parser.add_argument(\'--output-dir\', default=\'exports/__STUDY__/06_ket_qua\')\n"
     "    parser.add_argument(\'--i-confirm-sap-locked\', action=\'store_true\')\n"
     "    parser.add_argument(\'--i-confirm-irb-approved\', action=\'store_true\')\n"
     "    args = parser.parse_args()\n"
@@ -2080,13 +2149,13 @@ _SENSITIVITY_TEMPLATE = (
     "                df2[col]=df2[col].fillna(fill)\n"
     "        df2=df2.dropna()\n"
     "        hr,clo,chi,pv,n,ev = run_cox_sub(df2,time_col,outcome,exposure,avail)\n"
-    "        sens_rows.append(dict(method=\'MI-demo (mean-impute; R mice m=20 for real)\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev))\n"
+    "        sens_rows.append(dict(method=\'Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev))\n"
     "        print(f\'   MI: HR={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}\')\n"
     "    except Exception as e:\n"
     "        print(f\'   MI loi: {e}\')\n"
     "    # Subgroup\n"
     "    sub_rows = []\n"
-    "    for sg in [\'sex\',\'dm\',\'htn\']:\n"
+    "    for sg in __SUBGROUPS__:  # nhom con CHI theo SAP §7 da khoa\n"
     "        if sg not in df.columns: continue\n"
     "        for val in sorted(df[sg].dropna().unique()):\n"
     "            sub = df[df[sg]==val][[c for c in [time_col,outcome,exposure]+avail if c in df.columns]].dropna()\n"
@@ -2103,9 +2172,10 @@ _SENSITIVITY_TEMPLATE = (
     "                    print(f\'   {sg}={val}: HR tho={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [khong hoi tu voi covariates, dung mo hinh tho]\')\n"
     "                except Exception as e2:\n"
     "                    print(f\'   {sg}={val} loi: {e2}\')\n"
-    "    if \'age\' in df.columns:\n"
-    "        df[\'_ag\']=df[\'age\'].apply(lambda x:\'age>=70\' if x>=70 else \'age<70\')\n"
-    "        for val in [\'age<70\',\'age>=70\']:\n"
+    "    AGE_CUT = __AGE_CUT__  # nguong tuoi theo SAP §7 (None = SAP khong dinh truoc)\n"
+    "    if AGE_CUT is not None and \'age\' in df.columns:\n"
+    "        df[\'_ag\']=df[\'age\'].apply(lambda x:f\'age>={AGE_CUT}\' if x>=AGE_CUT else f\'age<{AGE_CUT}\')\n"
+    "        for val in [f\'age<{AGE_CUT}\',f\'age>={AGE_CUT}\']:\n"
     "            sub=df[df[\'_ag\']==val][[c for c in [time_col,outcome,exposure]+avail if c in df.columns]].dropna()\n"
     "            if len(sub)<20 or sub[outcome].sum()<5: continue\n"
     "            sub_covars = pick_subgroup_covars(sub, outcome, avail, exclude=\'age\')\n"
@@ -2147,7 +2217,7 @@ _CASE_CONTROL_SENSITIVITY_TEMPLATE = r'''#!/usr/bin/env python3
 #
 # Noi dung:
 #   1. Complete-case vs Multiple Imputation (mean-impute demo)
-#   2. Subgroup: sex, dm, htn, age>=70
+#   2. Subgroup: CHỈ theo SAP §7 đã khoá (__SUBGROUPS__; ngưỡng tuổi __AGE_CUT__)
 #   3. E-value (unmeasured confounding) -- OR, co xap xi OR->RR neu outcome pho bien
 #
 # Cach dung: python sensitivity_analysis.py --data path/to/data.csv
@@ -2278,8 +2348,11 @@ def _require_locked_dataset(data_arg: str) -> None:
             print(f"   - {_b}")
         print("   Khóa dữ liệu bằng: python tools/lock_analysis_dataset.py --study __STUDY__ "
               "--clean-data <df_clean.csv> --query-log <query_log.csv> --lock-date <YYYY-MM-DD> "
-              "--approved-by <PI> --sap-version <x.y> --confirm-deidentified --confirm-clean-copy "
-              "--confirm-no-open-query --confirm-sap-locked")
+              "--reviewer-role DATA_GOVERNANCE_QA_REVIEWER --reviewer-ref <mã người khoá, không PII> "
+              "--sap-version <x.y> --confirm-deidentified --confirm-clean-copy --confirm-no-open-query "
+              "--confirm-sap-locked --confirm-dictionary-crf-aligned --confirm-access-control-reviewed "
+              "--confirm-backup-restore-tested --confirm-retention-plan --confirm-protocol-deviations-reconciled "
+              "--confirm-audit-trail-reviewed (rồi người có thẩm quyền ký G5 bằng approve_gate.py)")
         _sys.exit(1)
     print("✓ DATA LOCK: --data khớp dataset đã khóa (checksum xác nhận).")
 
@@ -2315,7 +2388,7 @@ def main():
     parser.add_argument('--covariates', default='__COVARS_DEFAULT__')
     parser.add_argument('--outcome-prevalence', type=float, default=None,
                          help='Ty le ca trong QUAN THE NGUON (khong phai trong mau) -- de tinh E-value dung neu outcome pho bien')
-    parser.add_argument('--output-dir', default='.')
+    parser.add_argument('--output-dir', default='exports/__STUDY__/06_ket_qua')
     parser.add_argument('--i-confirm-sap-locked', action='store_true')
     parser.add_argument('--i-confirm-irb-approved', action='store_true')
     args = parser.parse_args()
@@ -2347,13 +2420,13 @@ def main():
                 df2[col] = df2[col].fillna(fill)
         df2 = df2.dropna()
         or_, clo, chi, pv, n, ev = run_logistic_sub(df2, outcome, exposure, avail)
-        sens_rows.append(dict(method='MI-demo (mean-impute; R mice m=20 for real)', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev))
+        sens_rows.append(dict(method='Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev))
         print(f'   MI: OR={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}')
     except Exception as e:
         print(f'   MI loi: {e}')
     # Subgroup
     sub_rows = []
-    for sg in ['sex', 'dm', 'htn']:
+    for sg in __SUBGROUPS__:  # nhóm con CHỈ theo SAP §7 đã khoá
         if sg not in df.columns:
             continue
         for val in sorted(df[sg].dropna().unique()):
@@ -2372,9 +2445,10 @@ def main():
                     print(f'   {sg}={val}: OR tho={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [khong hoi tu voi covariates, dung mo hinh tho]')
                 except Exception as e2:
                     print(f'   {sg}={val} loi: {e2}')
-    if 'age' in df.columns:
-        df['_ag'] = df['age'].apply(lambda x: 'age>=70' if x >= 70 else 'age<70')
-        for val in ['age<70', 'age>=70']:
+    AGE_CUT = __AGE_CUT__  # ngưỡng tuổi theo SAP §7 (None = SAP không định trước)
+    if AGE_CUT is not None and 'age' in df.columns:
+        df['_ag'] = df['age'].apply(lambda x: f'age>={AGE_CUT}' if x >= AGE_CUT else f'age<{AGE_CUT}')
+        for val in [f'age<{AGE_CUT}', f'age>={AGE_CUT}']:
             sub = df[df['_ag'] == val][[c for c in [outcome, exposure] + avail if c in df.columns]].dropna()
             if len(sub) < 20 or sub[outcome].sum() < 5:
                 continue
@@ -2411,7 +2485,7 @@ if __name__ == '__main__':
 '''
 
 
-def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort") -> str:
+def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort", effect_type: str = "HR") -> str:
     """
     Sinh sensitivity_analysis.py — dung raw template + .replace().
     SỬA: trước đây dùng CHUNG _SENSITIVITY_TEMPLATE (Cox/HR) cho MỌI
@@ -2424,9 +2498,15 @@ def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort") 
     time_col       = v["time_col"]
     covars         = v["covariates"]
     covars_default = ",".join(covars) if covars else "age,sex,dm,htn"
+    # VÁ 04/10/2026 (soát từng cổng, G6-03): nhóm con + ngưỡng tuổi CHỈ theo SAP §7 đã khoá — bản cũ cứng
+    # sex/dm/htn + tuổi ≥ 70 (ngưỡng không lấy từ SAP), ghi G6_subgroup.xlsx không nhãn thăm dò. SAP §7 trống ⇒ []/None.
+    nhom_con = repr([str(x) for x in (v.get("nhom_con_sap") or [])])
+    nguong_tuoi = repr(v.get("nguong_tuoi_sap"))
     if design_code == "case_control":
         return (
             _CASE_CONTROL_SENSITIVITY_TEMPLATE
+            .replace("__SUBGROUPS__",      nhom_con)
+            .replace("__AGE_CUT__",        nguong_tuoi)
             .replace("__STUDY__",          study)
             .replace("__EXPOSURE__",       exposure)
             .replace("__OUTCOME__",        outcome)
@@ -2434,6 +2514,8 @@ def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort") 
         )
     code = (
         _SENSITIVITY_TEMPLATE
+        .replace("__SUBGROUPS__",      nhom_con)
+        .replace("__AGE_CUT__",        nguong_tuoi)
         .replace("__STUDY__",          study)
         .replace("__EXPOSURE__",       exposure)
         .replace("__OUTCOME__",        outcome)
@@ -2447,6 +2529,11 @@ def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort") 
     # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2): _WRONG_METHOD_DESIGNS
     # hoist lên module-level (xem đầu file, gần make_r01_cleaning) — trước đây
     # định nghĩa LẶP LẠI y hệt ở đây và make_run_analysis_cli().
+    if effect_type in _KET_CUC_NHI_PHAN and design_code in ("rct", "cohort"):
+        code = _insert_warning_after_shebang(code, (
+            f"# ⚠️  [CẦN CHÚ Ý — KẾT CỤC NHỊ PHÂN (effect_type={effect_type})]\n"
+            "# Template độ nhạy này dùng Cox/HR — SAI cho kết cục nhị phân; thống kê viên dựng\n"
+            "# độ nhạy theo cùng thước đo của 03_analysis.R (RR/OR/hiệu nguy cơ) trước khi dùng.\n\n"))
     if design_code in _WRONG_METHOD_DESIGNS:
         warn = (
             f"# ⚠️  [CẦN CHÚ Ý — THIẾT KẾ {design_code.upper()}]\n"
@@ -2797,7 +2884,8 @@ def _is_locked(status) -> bool:
 # study-level, qualitative không có mô hình suy diễn), bác sĩ vẫn nhận artifact
 # yêu cầu kiểm cox.zph()/điền HR — mâu thuẫn trực tiếp với 03_analysis.R thật.
 def _is_cox_like(design_code, effect_type):
-    return design_code in ("rct", "cohort") and effect_type != "MD"
+    # VÁ 04/10/2026 (G6-04): kết cục nhị phân (RR/OR/ARR%) không phải Cox — cùng cờ với R_ANALYSIS_MAP_FUNC.
+    return design_code in ("rct", "cohort") and effect_type != "MD" and effect_type not in _KET_CUC_NHI_PHAN
 
 
 _SCRIPT03_INFO = {
@@ -2821,6 +2909,9 @@ def _script03_row(design_code, effect_type, exposure, outcome, time_col,
         desc, libs = "Cox + KM + MI (m=20)", "survival, survminer, mice"
     elif design_code in ("rct", "cohort") and effect_type == "MD":
         desc, libs = "Hồi quy tuyến tính/ANCOVA + MI (m=20)", "stats, mice, gtsummary"
+    elif design_code in ("rct", "cohort") and effect_type in _KET_CUC_NHI_PHAN:
+        desc, libs = ({"OR": "Hồi quy logistic (OR)", "RR": "Poisson sai số robust (RR)"}.get(
+            effect_type, "Hiệu nguy cơ + 95%CI (ARR%)") + " + MI (m=20)", "stats, sandwich, lmtest, mice")
     elif design_code == "cross_sectional" and outcome_ordinal:
         # THÊM 2026-09-01: mô tả phải khớp script thứ bậc THẬT sinh ra —
         # cùng luật chống "2 lớp tách rời" của vòng 5.
@@ -2899,9 +2990,22 @@ def _phan5_checklist(design_code, effect_type, outcome_ordinal=False):
 
 def generate_artifact(study, topic, design_code, reporting_std,
                       n_total, alpha, power, effect_val, effect_type,
-                      g4_status, run_date, scripts_dir, v: dict) -> str:
-    """Sinh A7 artifact đầy đủ — gồm tên biến thật từ REDCap."""
-    g4_locked = _is_locked(g4_status)
+                      g4_status, run_date, scripts_dir, v: dict,
+                      g4_khoa: Optional[bool] = None, g4_nguon: str = "",
+                      tham_so_sap: Optional[dict] = None) -> str:
+    """Sinh A7 artifact đầy đủ — gồm tên biến thật từ REDCap.
+
+    04/10/2026 (soát từng cổng G6): `g4_khoa`/`g4_nguon` = phép kiểm khoá G4 THẬT (sổ cái + chấm trực tiếp) do main()
+    tính; caller cũ không truyền thì giữ cách đọc g4_status. `tham_so_sap` = seed/phiên bản R/… đọc từ SAP đã khoá."""
+    g4_locked = _is_locked(g4_status) if g4_khoa is None else bool(g4_khoa)
+    ts = tham_so_sap or {}
+    if ts.get("seed"):
+        dong_seed_a7 = f"- [x] **Seed theo SAP §10:** `SEED <- {ts['seed']}` (00_setup.R lấy từ SAP, không tự đặt)"
+    elif ts.get("seed_khong_ap_dung"):
+        dong_seed_a7 = "- [x] **Seed theo SAP §10:** KHÔNG ÁP DỤNG (SAP khai không có bước ngẫu nhiên)"
+    else:
+        dong_seed_a7 = "- [ ] **Seed theo SAP §10:** [CẦN SEED THEO SAP §10] — 00_setup.R dừng khi chạy tới khi SAP chốt"
+    phien_ban_r = ts.get("r_version")
     # THÊM 2026-09-01: cờ kết cục thứ bậc (main() đặt từ SAP đã khoá) — mọi
     # lớp mô tả dưới đây phải rẽ nhánh CÙNG cờ với R_ANALYSIS_MAP_FUNC, nếu
     # không artifact nói "logistic OR" trong khi script dạy polr (đúng lớp
@@ -2926,6 +3030,10 @@ def generate_artifact(study, topic, design_code, reporting_std,
     covars    = v["covariates"]
     det_log   = "\n".join(f"  - {line}" for line in v["detection_log"])
 
+    # VÁ 04/10/2026 (G6-04): nhãn kết cục nhị phân — trung thực với _r03_binary_with_vars.
+    _nhan_nhi_phan = {"OR": "Hồi quy logistic (OR 95%CI) — kết cục nhị phân",
+                      "RR": "Hồi quy Poisson sai số robust (RR 95%CI) — kết cục nhị phân"}.get(
+        effect_type, "Hiệu nguy cơ (risk difference) + 95%CI — kết cục nhị phân")
     analysis_name_map = {
         # SỬA 2026-07-06: nhãn 'rct' cũ ("GLM/LM/Cox theo loại kết cục") NGỤ Ý
         # hệ tự chọn phương pháp theo kết cục, nhưng script thật chỉ luôn sinh
@@ -2933,9 +3041,13 @@ def generate_artifact(study, topic, design_code, reporting_std,
         # script THẬT sinh ra bên dưới (kiểm định đối kháng vòng 2).
         "rct":             ("ITT + PP — t-test/ANCOVA/hồi quy tuyến tính (MD, kết cục liên tục)"
                             if effect_type == "MD"
+                            else f"ITT + PP — {_nhan_nhi_phan}"
+                            if effect_type in _KET_CUC_NHI_PHAN
                             else "ITT + PP — Cox proportional hazards (kết cục thời gian-đến-biến cố)"),
         "cohort":          ("Hồi quy tuyến tính/ANCOVA (MD, kết cục liên tục)"
                             if effect_type == "MD"
+                            else _nhan_nhi_phan
+                            if effect_type in _KET_CUC_NHI_PHAN
                             else "Cox proportional hazards + Kaplan-Meier"),
         # THÊM 2026-09-01: nhãn ĐỘNG theo cờ thứ bậc — trung thực với script
         # thật (cùng khuôn nhãn động rct/cohort theo effect_type ở trên).
@@ -2991,12 +3103,15 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "",
         "## PHẦN 2 — ĐIỀU KIỆN CHẠY PHÂN TÍCH",
         "",
-        f"- [{'x' if g4_locked else ' '}] **G4 SAP đã LOCKED**: {g4_status}",
-        f"  {'✅ Đã khóa SAP — an toàn để chạy' if g4_locked else '⚠️ SAP chưa LOCKED — KHÔNG được xem dữ liệu'}",
-        "- [ ] **DB đã khóa (G5)**: Biên bản khóa DB có chữ ký bác sĩ",
+        f"- [{'x' if g4_locked else ' '}] **G4 SAP đã khoá THẬT** (chữ ký sổ cái + G4 chấm trực tiếp): "
+        f"{g4_nguon or g4_status}",
+        f"  {'✅ Đã khóa SAP — an toàn để chạy' if g4_locked else '⚠️ SAP chưa khoá thật — KHÔNG được xem dữ liệu'}",
+        "- [ ] **DB đã khóa (G5)**: tools/kiem_khoa_phan_tich.py trả mã 0 (G2/G4/G5 ký + checksum dataset khoá) — "
+        "00_setup.R và CLI tự chạy chốt này",
         "- [ ] **Scripts versioned**: `git commit` trước khi chạy lần đầu",
-        "- [ ] **Seed đã ghi vào SAP**: `SEED = 2026` (hoặc theo SAP §10)",
-        "- [ ] **R ≥ 4.2 hoặc Python + venv ~/.ebm-venv** đã cài đặt",
+        dong_seed_a7,
+        f"- [ ] **R ≥ {phien_ban_r or '4.2'}{' (theo SAP §10)' if phien_ban_r else ' (SAP §10 không khai phiên bản)'} "
+        "hoặc Python + venv ~/.ebm-venv** đã cài đặt",
         "",
         "---",
         "",
@@ -3006,33 +3121,36 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "",
         "| Script | Mục đích | Biến dùng | Thư viện |",
         "|---|---|---|---|",
-        "| `00_setup.R` | Cài packages R | — | tidyverse, survival, mice, gtsummary |",
-        f"| `01_cleaning.R` | Làm sạch, recode biến | {exposure}, {outcome}, {time_col} | tidyverse, REDCapR |",
+        "| `00_setup.R` | Cài packages R + seed/alpha theo SAP + **CHỐT KHOÁ dữ liệu** (G2/G4/G5 + checksum) | — | "
+        "tidyverse, survival, mice, gtsummary |",
+        f"| `01_cleaning.R` | Đọc dataset ĐÃ KHOÁ, chuyển kiểu (không làm sạch lại) | {exposure}, {outcome}, {time_col} | "
+        "tidyverse |",
         f"| `02_tables.R` | Table 1 theo nhóm {exposure} | {', '.join(covars[:4]) if covars else 'age,sex,dm,htn'} | gtsummary, flextable |",
         _script03_row(design_code, effect_type, exposure, outcome, time_col,
                       outcome_ordinal=outcome_ordinal),
         f"| `run_analysis_cli.py` | **Python CLI đầy đủ** — chạy ngay với CSV | {exposure}/{outcome}/{time_col} | lifelines, pandas, matplotlib |",
         f"| `sensitivity_analysis.py` | CC vs MI, Subgroup, E-value | {exposure}/{outcome}/{time_col} | lifelines, pandas |",
         "",
-        "**Thứ tự chạy (R):**",
+        "**Thứ tự chạy (R, từ gốc repo — 00_setup.R dừng nếu dữ liệu chưa khoá):**",
         "```bash",
-        "Rscript scripts/00_setup.R",
-        "Rscript scripts/01_cleaning.R",
-        "Rscript scripts/02_tables.R",
-        "Rscript scripts/03_analysis.R",
+        f"Rscript exports/{study}/scripts/00_setup.R",
+        f"Rscript exports/{study}/scripts/01_cleaning.R",
+        f"Rscript exports/{study}/scripts/02_tables.R",
+        f"Rscript exports/{study}/scripts/03_analysis.R",
         "```",
         "",
-        "**Chạy Python CLI (khi có CSV thật):**",
+        "**Chạy Python CLI (sau khi khoá — `--data` là LOCKED_DATA do `tools/kiem_khoa_phan_tich.py` in ra):**",
         "```bash",
-        "python scripts/run_analysis_cli.py \\",
-        "    --data data/raw/export.csv \\",
+        f"python3 tools/kiem_khoa_phan_tich.py --study {study}",
+        f"python exports/{study}/scripts/run_analysis_cli.py \\",
+        "    --data <LOCKED_DATA> \\",
         f"    --exposure {exposure} \\",
         f"    --outcome {outcome} \\",
         f"    --time {time_col} \\",
         f"    --covariates {','.join(covars) if covars else 'age,sex,dm,htn'}",
         "",
-        "python scripts/sensitivity_analysis.py \\",
-        "    --data data/raw/export.csv",
+        f"python exports/{study}/scripts/sensitivity_analysis.py \\",
+        "    --data <LOCKED_DATA>",
         "```",
         "",
         "---",
@@ -3092,6 +3210,62 @@ def generate_artifact(study, topic, design_code, reporting_std,
 # HÀM CHÍNH
 # ─────────────────────────────────────────────
 
+def doc_tham_so_sap(sap: str, ten_bien=()) -> dict:
+    """Tham số phân tích ĐÃ KHOÁ trong SAP (G4) mà script phải theo — dùng CHUNG bộ đọc với g6_quality_gate.
+
+    VÁ 04/10/2026 (soát từng cổng, G6-09): bộ sinh từng không đọc SAP — SEED cứng 2026, alpha lấy từ G3, chỉ MỘT kết
+    cục, nhóm con cứng — nên với SAP thật C1a cổng chắc chắn BLOCKED và sửa tay bị lần chạy sau ghi đè. Nay script
+    theo SAP: seed/phiên bản R (§10), alpha (§12), kết cục chính + phụ (§2), nhóm con + ngưỡng tuổi (§7, chỉ nhận
+    biến có trong dictionary G5)."""
+    sap10, sap2, sap7 = G6Q._sec(sap, 10), G6Q._sec(sap, 2), G6Q._sec(sap, 7)
+    dong_alpha = [d for d in G6Q._sec(sap, 12, chat=True).splitlines() if re.search(r"alpha|α", d, re.IGNORECASE)]
+    alpha = G6Q.doc_alpha_sap(sap)
+    seed = G6Q.doc_seed_sap(sap10)
+    dong_seed = [d for d in sap10.splitlines() if re.search(r"seed|hạt giống", d, re.IGNORECASE)]
+    ten = {str(t).lower() for t in ten_bien}
+    nhom_con = [t.lower() for t in re.findall(r"`([A-Za-z][A-Za-z0-9_]{1,})`", sap7) if t.lower() in ten]
+    m_tuoi = re.search(r"tuổi[^0-9\n]{0,8}(\d{2,3})|(\d{2,3})\s*tuổi", sap7, re.IGNORECASE)
+    return {
+        "seed": seed,
+        "seed_khong_ap_dung": bool(not seed and any(G6Q._KHONG_AP_DUNG.search(d) for d in dong_seed)),
+        "alpha": alpha,
+        "alpha_khong_ap_dung": bool(alpha is None and any(G6Q._KHONG_AP_DUNG.search(d) for d in dong_alpha)),
+        "r_version": G6Q.doc_phien_ban_r(sap10),
+        "ket_cuc_chinh": G6Q.ket_cuc_chinh_sap(sap2),
+        "ket_cuc_phu": G6Q.ket_cuc_phu_sap(sap2),
+        "nhom_con": list(dict.fromkeys(nhom_con)),
+        "nguong_tuoi": int(next(g for g in m_tuoi.groups() if g)) if m_tuoi else None,
+    }
+
+
+_NGUON_SETUP_CU = 'source(here::here("scripts", "00_setup.R"))'
+_DOC_RDS = '# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))'
+
+
+def hau_xu_ly_script_r(code: str, study: str, ket_cuc_phu=(), la_03: bool = False) -> str:
+    """Nối script R vào ĐÚNG 00_setup.R của đề tài và chốt khoá dữ liệu (VÁ 04/10/2026, G6-02/G6-09/G6-11).
+
+    (1) `here::here("scripts", "00_setup.R")` trỏ <gốc repo>/scripts — KHÔNG phải exports/<đề tài>/scripts nơi script
+    được sinh ⇒ chốt khoá không bao giờ chạy; (2) mỗi lần đọc RDS kèm đối chiếu sha256 với dataset khoá hiện hành;
+    (3) 03: khung cho từng kết cục PHỤ của SAP §2 và ghi sessionInfo() để tái lập."""
+    code = code.replace(_NGUON_SETUP_CU, f'source(here::here("exports", "{study}", "scripts", "00_setup.R"))')
+    code = code.replace(_DOC_RDS, _DOC_RDS + '\n# stopifnot(identical(attr(df, "sha256_khoa"), LOCKED_SHA))'
+                                  '  # RDS phải sinh từ ĐÚNG dataset khoá hiện hành')
+    if la_03:
+        if ket_cuc_phu:
+            code += ("\n# ----------------------------------------------------------\n"
+                     "# KẾT CỤC PHỤ theo SAP §2 — phân tích theo phương pháp SAP §4/§8 (thống kê viên điền mô hình);\n"
+                     "# hiệu chỉnh đa so sánh theo SAP §8\n"
+                     "# ----------------------------------------------------------\n"
+                     + "".join(f"# Kết cục phụ: {k}\n" for k in ket_cuc_phu))
+        code += ("\n# ----------------------------------------------------------\n"
+                 "# GHI PHIÊN BẢN MÔI TRƯỜNG ĐỂ TÁI LẬP — chạy cùng lần phân tích thật\n"
+                 "# ----------------------------------------------------------\n"
+                 'writeLines(capture.output(sessionInfo()), file.path(OUTPUT, "session_info.txt"))\n'
+                 "# renv::snapshot(prompt = FALSE)   # khoá phiên bản gói vào renv.lock khi chạy phân tích thật\n")
+    return code
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="G6 NÂNG CẤP — Sinh R scripts + Python CLI với tên biến thật (75% tự động)"
@@ -3133,21 +3307,30 @@ def main():
         print(_design_warn)
     reporting_std = g1_design.get("reporting_standard") or "STROBE 2007"
     n_adjusted    = g3.get("n_adjusted", g3.get("n_total", 0))
-    alpha         = g3.get("alpha", 0.05)
     power         = g3.get("power", 0.80)
     effect_val    = g3.get("effect_val", g3.get("effect_size", "[CẦN]"))
     effect_type   = g3.get("effect_type", "HR")
     g4_status     = g4.get("g4_status", "PENDING — chưa chạy G4")
-    g4_locked     = _is_locked(g4_status)
+    # VÁ 04/10/2026 (soát từng cổng, G6-01): «G4 đã khoá» = chữ ký sổ cái khớp SAP hiện tại + G4 chấm trực tiếp
+    # PASS_G4_SAP_LOCKED (cùng phép kiểm với bộ chấm) — g4_status của checkpoint không bao giờ được run_g4_auto ghi
+    # LOCKED nên bản cũ luôn «chưa khoá», còn sửa tay thì «khoá» không cần chữ ký.
+    sap_path      = out / f"G4_A5_SAP_FINAL_{study}.md"
+    g4_locked, g4_nguon = G6Q._g4_da_khoa(study, sap_path, BASE)
+    sap_text      = sap_path.read_text(encoding="utf-8", errors="replace") if sap_path.exists() else ""
+    # G6-09: alpha THEO SAP §12 đã khoá; chỉ khi SAP chưa đọc được mới tạm lấy G3 (cổng sẽ giữ DRAFT).
+    alpha_sap     = G6Q.doc_alpha_sap(sap_text) if sap_text else None
+    alpha         = alpha_sap if alpha_sap is not None else g3.get("alpha", 0.05)
 
     print(f"  → Đề tài   : {topic}")
     print(f"  → Design   : {design_code} | Chuẩn: {reporting_std}")
     print(f"  → Cỡ mẫu  : N={n_adjusted}, alpha={alpha}, power={power}, {effect_type}={effect_val}")
-    print(f"  → G4 SAP   : {g4_status}")
+    print(f"  → G4 SAP   : {'✅ đã khoá thật' if g4_locked else '⚠️ chưa khoá'} — {g4_nguon}")
+    if alpha_sap is None:
+        print("  ⚠️  Không đọc được alpha ở SAP §12 — tạm lấy alpha G3; cổng G6 giữ DRAFT tới khi SAP có alpha.")
 
     if not g4_locked:
-        print("  ⚠️  CẢNH BÁO: G4 SAP chưa LOCKED!")
-        print("     Bác sĩ PHẢI ký SAP Lock Certificate trước khi xem dữ liệu.")
+        print("  ⚠️  CẢNH BÁO: G4 SAP chưa khoá thật (sổ cái + PASS_G4_SAP_LOCKED)!")
+        print("     Bác sĩ PHẢI ký SAP bằng approve_gate.py trước khi xem dữ liệu.")
 
     # ─── Đọc REDCap dictionary → phát hiện biến ───
     redcap_csv = out / f"G5_REDCap_dictionary_{study}.csv"
@@ -3159,6 +3342,21 @@ def main():
     # không suy từ mã số mức trong dictionary. Đặt TRƯỚC R_ANALYSIS_MAP_FUNC
     # và generate_artifact để script + artifact rẽ nhánh CÙNG một cờ.
     v["outcome_ordinal"] = _sap_declares_ordinal(out, study)
+
+    # VÁ 04/10/2026 (G6-08/G6-09): kết cục chính, nhóm con, ngưỡng tuổi THEO SAP — dictionary chỉ cho tên biến.
+    tham_so_sap = doc_tham_so_sap(sap_text, v.get("all_vars") or [])
+    kc_sap = tham_so_sap["ket_cuc_chinh"]
+    ten_goc = {str(x).lower(): str(x) for x in (v.get("all_vars") or [])}
+    if kc_sap and kc_sap in ten_goc and kc_sap != str(v.get("outcome") or "").lower():
+        v["detection_log"].append(f"✅ Kết cục chính THEO SAP §2: {ten_goc[kc_sap]} (thay biến dò được: {v['outcome']})")
+        v["outcome"] = ten_goc[kc_sap]
+    elif kc_sap and kc_sap not in ten_goc:
+        v["detection_log"].append(f"⚠️  SAP §2 khai kết cục chính `{kc_sap}` nhưng dictionary G5 KHÔNG có biến này — "
+                                  "G6-AUTO-04 sẽ chặn tới khi khớp. Nếu là biến DẪN XUẤT (vd tính từ câu hỏi gốc): "
+                                  "khai trường calc trong _bo-bien-rieng.csv theo đúng quy tắc SAP rồi chạy lại G5; "
+                                  "nếu SAP ghi sai tên: sửa SAP bằng dòng SAP AMENDMENT và ký lại G4")
+    v["nhom_con_sap"] = tham_so_sap["nhom_con"]
+    v["nguong_tuoi_sap"] = tham_so_sap["nguong_tuoi"]
     if v["outcome_ordinal"] and design_code == "cross_sectional":
         print("  → Kết cục    : THỨ BẬC theo SAP đã khoá → 03_analysis.R dùng "
               "proportional odds (cOR), không gộp nhị phân ở phân tích chính")
@@ -3179,10 +3377,11 @@ def main():
     r03 = R_ANALYSIS_MAP_FUNC(design_code, v, n_adjusted, alpha, power, effect_val, effect_type)
 
     scripts_to_write = {
-        "00_setup.R":    R_00_SETUP,
-        "01_cleaning.R": make_r01_cleaning(v, design_code),
-        "02_tables.R":   make_r02_tables(v, design_code),
-        "03_analysis.R": r03,
+        "00_setup.R":    make_r00_setup(study, tham_so_sap["seed"], tham_so_sap["seed_khong_ap_dung"],
+                                        tham_so_sap["r_version"], alpha_sap, tham_so_sap["alpha_khong_ap_dung"]),
+        "01_cleaning.R": hau_xu_ly_script_r(make_r01_cleaning(v, design_code), study),
+        "02_tables.R":   hau_xu_ly_script_r(make_r02_tables(v, design_code), study),
+        "03_analysis.R": hau_xu_ly_script_r(r03, study, tham_so_sap["ket_cuc_phu"], la_03=True),
     }
 
     generated_paths = []
@@ -3202,7 +3401,7 @@ def main():
 
     # ─── Sinh sensitivity analysis ───
     print("  🔬 Sinh sensitivity_analysis.py...")
-    sens_code = make_sensitivity_analysis(v, study, design_code)
+    sens_code = make_sensitivity_analysis(v, study, design_code, effect_type)
     sens_path = scripts_dir / "sensitivity_analysis.py"
     sens_path.write_text(sens_code, encoding="utf-8", newline="\n")
     generated_paths.append(str(sens_path))
@@ -3213,7 +3412,8 @@ def main():
     artifact = generate_artifact(
         study, topic, design_code, reporting_std,
         n_adjusted, alpha, power, effect_val, effect_type,
-        g4_status, run_date, scripts_dir, v
+        g4_status, run_date, scripts_dir, v,
+        g4_khoa=g4_locked, g4_nguon=g4_nguon, tham_so_sap=tham_so_sap,
     )
 
     md_path = out / f"G6_A7_ANALYSIS_SCRIPTS_{study}.md"
@@ -3244,7 +3444,9 @@ def main():
         "design_code":       design_code,
         "reporting_std":     reporting_std,
         "g4_was_locked":     g4_locked,
+        "g4_lock_source":    g4_nguon,
         "g4_status":         g4_status,
+        "tham_so_sap":       tham_so_sap,
         "redcap_csv":        str(redcap_csv),
         "variables_detected": {
             "exposure":   v["exposure"],
@@ -3274,11 +3476,7 @@ def main():
     # CỐ Ý không đổi exit-code của run_g6_auto (hợp đồng cũ nhiều test dựa vào);
     # kết quả in ra + ghi G6_QUALITY_REPORT.{json,md} + checkpoint["quality_gate"].
     try:
-        import importlib.util as _ilu
-        _sp = _ilu.spec_from_file_location("g6qg", Path(__file__).resolve().parent / "g6_quality_gate.py")
-        _qg = _ilu.module_from_spec(_sp)
-        _sp.loader.exec_module(_qg)
-        _bao = _qg.evaluate_study(study)
+        _bao = G6Q.evaluate_study(study, out, repo_root=BASE)
         print(f"\n🔎 G6 QUALITY: {_bao['status']} (chi tiết: G6_QUALITY_REPORT.md)")
     except Exception as _exc:  # noqa: BLE001 — lớp chấm không được giết cổng sinh
         print(f"\n⚠ G6 QUALITY không chạy được: {_exc} — chạy tay: python3 tools/g6_quality_gate.py --study {study}")
@@ -3294,7 +3492,7 @@ def main():
     print("     - 4 R scripts (tên biến thật)")
     print("     - run_analysis_cli.py (Python — chạy ngay khi có CSV)")
     print("     - sensitivity_analysis.py (CC vs MI, subgroup, E-value)")
-    print(f"   G4 Locked : {'✅ Đã khóa SAP' if g4_locked else '⚠️ CHƯA khóa'}")
+    print(f"   G4 Locked : {'✅ Đã khóa SAP (sổ cái + G4 PASS)' if g4_locked else '⚠️ CHƯA khóa thật'}")
     print(f"   Guardrail : {status}")
     print("   Bước tiếp : Khóa DB (G5) → python run_analysis_cli.py --data <CSV> → G7")
 
@@ -3323,6 +3521,8 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
     # vòng 2 xác nhận đây là bug thiếu sót (bug of omission) thật.
     if effect_type == "MD" and design_code in ("rct", "cohort"):
         return _r03_continuous_md_with_vars(v, design_code)
+    if effect_type in _KET_CUC_NHI_PHAN and design_code in ("rct", "cohort"):
+        return _r03_binary_with_vars(v, design_code, effect_type)
     if design_code == "cohort":
         return make_r03_cohort(v, n_adjusted, alpha, power, effect_val, effect_type)
     elif design_code == "case_control":
@@ -3364,6 +3564,50 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
         return _r03_qualitative_template()
     else:
         return make_r03_cohort(v, n_adjusted, alpha, power, effect_val, effect_type)
+
+
+def _r03_binary_with_vars(v: dict, design_code: str = "rct", effect_type: str = "RR") -> str:
+    """Script phân tích kết cục NHỊ PHÂN (tỷ lệ tích luỹ) cho RCT/cohort — KHÔNG Cox/Kaplan–Meier.
+
+    VÁ 04/10/2026 (soát từng cổng, G6-04): G3 tính cỡ mẫu cho rct/cohort với RR/OR/ARR% bằng hai tỷ lệ (kết cục nhị
+    phân, không có trục thời gian) nhưng 03_analysis.R luôn sinh coxph(Surv(...)). Thước đo theo effect_type đã chốt ở
+    G3: RR ⇒ hồi quy Poisson với sai số robust (Zou 2004, PMID 15033648; dữ liệu cụm: Zou & Donner 2011, PMID
+    22072596); OR ⇒ hồi quy logistic; ARR%/tỷ lệ (kể cả không-kém-hơn) ⇒ hiệu nguy cơ + 95%CI."""
+    exposure = v["exposure"]
+    outcome  = v["outcome"]
+    covars   = v["covariates"]
+    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi"
+    label = "RCT" if design_code == "rct" else "Cohort"
+    if effect_type == "OR":
+        than = f"""\
+# OR — hồi quy logistic (thô + hiệu chỉnh):
+# fit_tho <- glm({outcome} ~ {exposure}, data = df, family = binomial())
+# fit_hc  <- glm({outcome} ~ {exposure} + {cov_fml}, data = df, family = binomial())
+# broom::tidy(fit_hc, exponentiate = TRUE, conf.int = TRUE) %>% filter(term == "{exposure}")
+# car::vif(fit_hc)   # đa cộng tuyến (SAP §5)"""
+    elif effect_type == "RR":
+        than = f"""\
+# RR — hồi quy Poisson với sai số chuẩn robust (Zou 2004, PMID 15033648); log-binomial nếu hội tụ:
+# fit_rr <- glm({outcome} ~ {exposure} + {cov_fml}, data = df, family = poisson(link = "log"))
+# lmtest::coeftest(fit_rr, vcov = sandwich::vcovHC(fit_rr, type = "HC0"))   # RR = exp(hệ số)
+# Dữ liệu cụm (vd bàn khám): vcov = sandwich::vcovCL(fit_rr, cluster = ~<biến cụm>) (Zou & Donner 2011, PMID 22072596)"""
+    else:
+        than = f"""\
+# Hiệu nguy cơ (ARR%) — chênh lệch tỷ lệ + 95%CI; không-kém-hơn: so cận KTC với biên Δ của SAP:
+# bang <- table(df${exposure}, df${outcome})
+# hieu_nguy_co <- prop.test(bang[, "1"], rowSums(bang), correct = FALSE)   # 95%CI hiệu hai tỷ lệ
+# Hiệu chỉnh đồng biến: glm({outcome} ~ {exposure} + {cov_fml}, family = binomial(link = "identity"), data = df)"""
+    return f"""\
+# 03_analysis.R — {label} kết cục NHỊ PHÂN ({effect_type}) — KHÔNG dùng Cox/Kaplan–Meier
+# Biến: nhóm/phơi nhiễm={exposure} | kết cục nhị phân={outcome}
+# Kết cục là tỷ lệ tích luỹ tại một mốc (không có trục thời-gian-tới-biến-cố) — thước đo theo G3 ({effect_type}).
+source(here::here("scripts", "00_setup.R"))
+# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
+
+{than}
+
+message("03_analysis.R ({label}, kết cục nhị phân {effect_type}) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
+"""
 
 
 def _r03_continuous_md_with_vars(v: dict, design_code: str = "rct") -> str:

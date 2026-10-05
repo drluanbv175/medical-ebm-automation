@@ -263,7 +263,8 @@ def dien_phan_rct(text: str) -> str:
 # Ô có NỘI DUNG mà bộ chấm kiểm (EPV/VIF ở §5, phần mềm+seed ở §10, đa so sánh ở §8, kết cục chính ở §2) điền theo
 # NHÃN dòng; mọi ô còn lại của PHẦN 3 điền câu trung tính. Theo MẪU (không chuỗi cố định) để bền với vn_prose_style.
 _DIEN_THEO_NHAN = (
-    ("Kết cục chính", f"{KET_CUC_G1} tại tuần 12"),
+    # 04/10/2026 (G6-08): kết cục chính ghi kèm TÊN BIẾN (backtick) — G6 đối chiếu biến kết cục của script với SAP.
+    ("Kết cục chính", f"{KET_CUC_G1} tại tuần 12 — biến `primary_outcome`"),
     ("Biến độc lập đưa vào", "Tuổi, điểm Y nền — EPV=15 cho 8 biến, VIF<5"),
     ("Biến đưa vào mô hình imputation", "Tuổi, giới, điểm Y nền"),
     ("Nhóm nhỏ tiền định", "Theo tuổi <65/≥65 — TIỀN ĐỊNH"),

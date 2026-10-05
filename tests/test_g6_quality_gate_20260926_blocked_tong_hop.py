@@ -6,9 +6,10 @@ Trước đây chỉ tests/test_g6_quality_gate_20260815.py kiểm, và tệp đ
 exports/ nằm NGOÀI git (chỉ có trên OneDrive) ⇒ đột biến tháo phép kiểm seed hoặc
 AUTO-00 sống sót trên CI. Tệp cũ được GIỮ cho máy bác sĩ.
 
-Khuôn fixture: checkpoint PHẢI có ``g4_was_locked: true`` — thiếu thì AUTO-01 tự chặn
-và làm BLOCKED ngay cả khi phép kiểm seed bị tháo (xanh giả). Mọi test gọi
-evaluate_study(study, out_dir=tmp_path, …) với study id riêng; KHÔNG ghi exports/ thật.
+Khuôn fixture: G4 phải ĐÃ KHOÁ — thiếu thì AUTO-01 tự chặn và làm BLOCKED ngay cả khi phép
+kiểm seed bị tháo (xanh giả). Từ 04/10/2026 (G6-01) ``g4_was_locked`` tự khai KHÔNG còn đủ:
+test cần AUTO-01 đạt giả lập đúng phép kiểm thật (_g4_da_khoa: sổ cái + G4 chấm trực tiếp).
+Mọi test gọi evaluate_study(study, out_dir=tmp_path, …) với study id riêng; KHÔNG ghi exports/ thật.
 """
 from __future__ import annotations
 
@@ -62,7 +63,8 @@ def test_thieu_sap_auto00_chan(tmp_path):
     assert "G4_A5_SAP_FINAL" in c["detail"]
 
 
-def test_seed_lech_auto02_chan_va_auto01_dat(tmp_path):
+def test_seed_lech_auto02_chan_va_auto01_dat(tmp_path, monkeypatch):
+    monkeypatch.setattr(G6Q, "_g4_da_khoa", lambda *a, **k: (True, "giả lập: sổ cái + G4 PASS_G4_SAP_LOCKED"))
     d = _dung(tmp_path / _STUDY, seed_sap=9999, seed_script=2026)
     bao = G6Q.evaluate_study(_STUDY, out_dir=d, write=False)
     # AUTO-01 phải ĐẠT để BLOCKED quy được đúng về AUTO-02 (không xanh giả).
