@@ -2640,12 +2640,25 @@ def main() -> int:
             _mtxt = ""
         if _mtxt.strip():
             _live_hash = hashlib.sha256(_mtxt.encode("utf-8")).hexdigest()
-        if _embedded_hash and _live_hash and _embedded_hash != _live_hash:
+        # VÁ 05/10/2026 (soát từng cổng G8-03/G8-04): (1) A9 KHÔNG nhúng hash mà có bản thảo cũng là «không ràng buộc»
+        # — điều kiện cũ `_embedded_hash and …` bỏ qua đúng trường hợp đó; (2) bản NHẬN XÉT phản biện cũng phải còn
+        # đúng bản đã ràng buộc vào A9 (hợp đồng CHUNG-E — cong_song.trich_bam_a9).
+        import cong_song as CS  # noqa: PLC0415 — import lười
+        _bam_bc = CS.trich_bam_a9(_g8_a9_text).get("bao_cao_phan_bien")
+        _live_bc = CS.bam_van_ban_tep(out_dir / f"G8_PEER_REVIEW_REPORT_{study}.md")
+        _lech_g8 = []
+        if _live_hash and _embedded_hash != _live_hash:
+            _lech_g8.append(("bản thảo", _embedded_hash, _live_hash))
+        if _bam_bc != _live_bc:
+            _lech_g8.append(("bản nhận xét phản biện", _bam_bc, _live_bc))
+        if _lech_g8:
             if not args.i_know_g8_manuscript_changed:
-                print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: bản thảo đã bị sửa SAU KHI G8 được ký —")
-                print("   chữ ký G8 hiện có KHÔNG còn ràng buộc nội dung bản thảo đang có.")
-                print(f"   Hash bản thảo lúc A9 được ký: {_embedded_hash[:12]}…")
-                print(f"   Hash bản thảo hiện tại:        {_live_hash[:12]}…")
+                print("\n🚧 CHƯA SẴN SÀNG NỘP BÀI: " + " và ".join(t for t, _a, _b in _lech_g8)
+                      + " đã đổi (hoặc chưa từng được ràng buộc) SAU KHI G8 được ký —")
+                print("   chữ ký G8 hiện có KHÔNG còn ràng buộc nội dung đang có.")
+                for _ten, _nhung, _song in _lech_g8:
+                    print(f"   {_ten}: hash lúc A9 được ký {(_nhung or 'KHÔNG NHÚNG')[:12]}… — "
+                          f"hiện tại {(_song or 'KHÔNG CÒN')[:12]}…")
                 print("   Sinh lại A9 (run_g8_auto.py) rồi mời phản biện ký lại G8.")
                 print("   Nếu chỉ muốn xem trước, thêm --i-know-g8-manuscript-changed.")
                 _mark_g10_blocked(
@@ -2664,9 +2677,8 @@ def main() -> int:
                 ])
                 return GC.EXIT_BLOCKED
             bypass_notes.append(
-                "Bản thảo đã đổi SAU KHI G8 ký (bị BỎ QUA bằng --i-know-g8-manuscript-changed): "
-                f"hash lúc ký {_embedded_hash[:12]}… ≠ hash hiện tại {_live_hash[:12]}… — chữ ký "
-                "G8 hiện có không còn ràng buộc nội dung bản thảo hiện tại."
+                " và ".join(t for t, _a, _b in _lech_g8).capitalize() + " đã đổi SAU KHI G8 ký (bị BỎ QUA bằng "
+                "--i-know-g8-manuscript-changed) — chữ ký G8 hiện có không còn ràng buộc nội dung hiện tại."
             )
 
     # Vá 2026-07-12 (audit toàn diện cổng G0-G9): G10 là bước lắp ráp CUỐI trước khi

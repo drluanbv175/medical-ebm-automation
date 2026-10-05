@@ -63,6 +63,7 @@ TOOLS_DIR = REPO_ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+import cong_song as CS  # noqa: E402
 import g2_quality_gate as G2Q  # noqa: E402
 import g3_quality_gate as G3Q  # noqa: E402
 import g4_quality_gate as G4Q  # noqa: E402
@@ -329,6 +330,9 @@ def _evaluate_g4(**overrides) -> Dict[str, Any]:
 
 # ════════════════════════════════════════════════════════════════════════════
 # Đồ gá — G8 (bình duyệt độc lập). Mượn từ tests/test_g8_quality_gate.py.
+# SỬA 05/10/2026 (soát từng cổng G8): «gói TỐT» phải hợp lệ theo hợp đồng G8-2026.2 — bản nhận xét cũ khuyến nghị kèm
+# MỘT lỗi nghiêm trọng + «Cần sửa thêm», không có khối khai báo người phản biện; A9 không nhúng băm; bản thảo còn «Kết
+# quả sẽ được điền sau…» — chính các ca G8 nay CHẶN/REVIEW (G8-01/02/03/04). Không nới luật: sửa đồ gá cho hợp lệ.
 # ════════════════════════════════════════════════════════════════════════════
 
 _G8_CLEAN_MANUSCRIPT = """# Bản thảo
@@ -341,7 +345,7 @@ Kết cục chính là kết cục tổng hợp canary.
 Nhóm nghiên cứu có sử dụng công cụ trí tuệ nhân tạo để hiệu đính ngôn ngữ.
 
 ## Kết quả
-Kết quả sẽ được điền sau khi khóa dữ liệu.
+Tổng cộng 120 người tham gia được phân tích; tỷ lệ kết cục tổng hợp canary là 8%.
 
 ## TÀI LIỆU THAM KHẢO
 1. Tác giả canary. Tạp chí tổng hợp 2026.
@@ -353,11 +357,10 @@ _G8_REVIEW_REPORT = """# NHẬN XÉT PHẢN BIỆN
 
 ## KHUYẾN NGHỊ
 SỬA NHỎ
+Lý do: phương pháp phù hợp thiết kế, kết cục chính khớp SAP; chỉ còn góp ý trình bày nhỏ.
 
 ## LỖI NGHIÊM TRỌNG (phải sửa trước khi nộp)
-| Vị trí | Vấn đề |
-|---|---|
-| Mục 3.2 | Thiếu khoảng tin cậy |
+Không có.
 
 ## GÓP Ý NHỎ
 - Rút gọn phần mở đầu.
@@ -365,23 +368,37 @@ SỬA NHỎ
 ## CÂU HỎI CHO TÁC GIẢ
 1. Vì sao chọn ngưỡng này?
 
+## KHAI BÁO CỦA NGƯỜI PHẢN BIỆN
+Xung đột lợi ích với nhóm nghiên cứu: ☑ Không có ☐ Có (ghi rõ):
+Có phải đồng tác giả/cấp trên/cấp dưới trực tiếp của tác giả không: ☑ Không ☐ Có
+Có dùng AI khi phản biện không: ☑ Không ☐ Có (tên công cụ + mục đích):
+Cam kết không tải bản thảo lên công cụ AI thiếu bảo mật khi chưa được cho phép: ☑ Xác nhận
+
 ## KẾT LUẬN TỔNG THỂ
-Cần sửa thêm trước khi nộp.
+Sẵn sàng nộp.
 """
 
-_G8_PRESUBMISSION_TEXT = (
-    "# A9 — GÓI TIỀN NỘP BÀI\n"
-    "Nội dung tự kiểm toàn bộ pipeline G0-G7.\n"
-    "[CAN] Vài mục hành chính (CRediT/COI) còn chờ bác sĩ điền.\n"
-    "Cần bác sĩ kiểm chứng.\n"
-)
+
+def _g8_a9(manuscript_text: str, review_report_text: str) -> str:
+    """A9 đúng khuôn run_g8_auto: nhúng băm bản thảo + bản nhận xét (hợp đồng CHUNG-E) của CHÍNH văn bản đang chấm."""
+    dong = ["# A9 — GÓI TIỀN NỘP BÀI", "Nội dung tự kiểm toàn bộ pipeline G0-G7."]
+    if manuscript_text.strip():
+        dong.append(CS.dong_bam_a9(CS.NHAN_BAM_BAN_THAO, f"G7_A8_MANUSCRIPT_{STUDY}.md",
+                                   hashlib.sha256(manuscript_text.encode("utf-8")).hexdigest()))
+    if review_report_text.strip():
+        dong.append(CS.dong_bam_a9(CS.NHAN_BAM_BAO_CAO_PHAN_BIEN, f"G8_PEER_REVIEW_REPORT_{STUDY}.md",
+                                   hashlib.sha256(review_report_text.encode("utf-8")).hexdigest()))
+    dong += ["[CAN] Vài mục hành chính (CRediT/COI) còn chờ bác sĩ điền.", "Cần bác sĩ kiểm chứng."]
+    return "\n".join(dong) + "\n"
+
+
+_G8_PRESUBMISSION_TEXT = _g8_a9(_G8_CLEAN_MANUSCRIPT, _G8_REVIEW_REPORT)
 
 
 def _g8_checkpoint(**overrides) -> Dict[str, Any]:
     value = {
         "gate": "G8",
         "study": STUDY,
-        "design_code": "rct",
         "guardrail": {"passed": True},
         "reporting_score_pct": 82.0,
         "pipeline_completeness": {
@@ -442,8 +459,14 @@ def _evaluate_g8(**overrides) -> Dict[str, Any]:
         signature_scope="role",
         role_key_available=True,
         cross_gate_refs={"G2": "IRB-CANARY", "G4": "STAT-CANARY", "G8": "REV-CANARY", "G9": "PI-CANARY"},
+        # 05/10/2026: thiết kế sống (G8-10) + tiền đề G7 chấm sống PASS (G8-06) — evaluate_study tính, ở đây truyền tay.
+        design_code="rct",
+        tien_de_g7={"status": "PASS", "evidence": "G7=PASS_G7_CONFIRMED (canary)"},
     )
     kwargs.update(overrides)
+    if "presubmission_text" not in overrides and (
+            "manuscript_text" in overrides or "review_report_text" in overrides):
+        kwargs["presubmission_text"] = _g8_a9(kwargs["manuscript_text"], kwargs["review_report_text"])
     return G8Q.evaluate_g8_quality(**kwargs)
 
 

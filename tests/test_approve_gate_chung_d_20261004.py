@@ -48,7 +48,7 @@ def _run(monkeypatch, *args) -> int:
 
 def _bao_cao(status, nguoi_pass=True, thieu=()):
     nguoi = [{"id": tid, "label": tid, "status": "PASS" if (nguoi_pass and tid not in thieu) else "REVIEW",
-              "evidence": "giả lập"} for tid in ("G2-HUMAN-01", "G8-HUMAN-01", "G8-HUMAN-05")]
+              "evidence": "giả lập"} for tid in ("G2-HUMAN-01", "G8-HUMAN-01", "G8-HUMAN-05", "G8-HUMAN-06")]
     return {"status": status, "automatic_criteria": [], "approval_criteria": nguoi, "human_approval_criteria": nguoi}
 
 

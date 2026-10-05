@@ -42,8 +42,11 @@ Giới hạn đã biết (ghi rõ để không ai đọc nhầm)
 ─────────────────────────────────────────────
 - ``PASS_G8_REVIEW_RECORDED`` CỐ Ý không mang chữ "ĐỘC LẬP": hệ không biết điều
   đó có thật hay không.
-- Module này KHÔNG phải cổng chặn. Chốt fail-closed duy nhất của G8 vẫn là
-  ``run_g10_assemble.py`` gọi ``GC.ledger_approved("G8", ...)``.
+- Từ 24/08/2026 ``approve_gate.py --gate G8`` dùng CHÍNH module này để TỪ CHỐI ký: trạng thái phải là PENDING/
+  REVIEWED và các tiêu chí người kiểm được trước khi ký (G8-HUMAN-01/05/06) phải PASS. Cổng sau (G9, G10) hỏi sổ cái
+  G8 và đối chiếu băm bản thảo + bản nhận xét nhúng trong A9 (hợp đồng CHUNG-E, cong_song.trich_bam_a9). SỬA
+  05/10/2026 (soát từng cổng G8-15): câu cũ «module này KHÔNG phải cổng chặn, chốt duy nhất là run_g10_assemble.py»
+  không còn đúng.
 - KHÔNG được đổi tên ``G8_A9_PRESUBMISSION_<study>.md``: tên này là hợp đồng ba
   bên (run_g8_auto ghi · run_g10_assemble tra ledger · doctrine dạy bác sĩ gõ
   tay vào approve_gate --artifact) và nội dung nó bị băm trong chữ ký. Tên "A9"
@@ -61,9 +64,11 @@ import re
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
 import unicodedata
+from datetime import date
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
+import cong_song as CS
 import gate_contract as GC
 import pipeline_freshness as PF
 import placeholder_contract as PC
@@ -80,7 +85,7 @@ STATUS_READY = "READY_FOR_INDEPENDENT_REVIEW"
 STATUS_PENDING = "PENDING_REAL_REVIEW_SIGNATURE"
 STATUS_REVIEWED = "PASS_G8_REVIEW_RECORDED"
 
-QUALITY_CONTRACT_VERSION = "G8-2026.1"
+QUALITY_CONTRACT_VERSION = "G8-2026.2"  # 05/10/2026: soát từng cổng G8
 
 REVIEWER_ROLE_GROUP = "INDEPENDENT_PEER_REVIEWER"
 
@@ -163,7 +168,19 @@ _TABLE_SEPARATOR_RE = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\
 # còn sót bất kỳ mục nào = KHÔNG sẵn sàng nộp, không phải góp ý nhỏ.
 _INTERNAL_TRACE_PATTERNS: Sequence[tuple[str, Any]] = (
     ("nhãn [CẦN…] còn trong thân bài", re.compile(r"\[CẦN[^\]]{0,80}\]")),
-    ("nhắc tới 'agent' của hệ nội bộ", re.compile(r"\bagent\b", re.IGNORECASE)),
+    # SỬA 05/10/2026 (soát từng cổng G8-11): «\bagent\b» trần CHẶN oan thuật ngữ dược lý tiếng Anh («contrast agent»,
+    # «single agent», «alkylating agent») trong bản thảo nộp quốc tế — cùng họ lỗi «Todorov/TODO» đã sửa 03/10. Nay chỉ
+    # bắt «agent» trong NGỮ CẢNH của hệ: kèm tên trong backtick hoặc tên kebab-case viết thường của agent nội bộ
+    # (kiem-chung-trich-dan), «sub-agent», «.claude/agents», hoặc đứng trong câu tiếng Việt («dùng agent», «agent tự…»).
+    (
+        "nhắc tới 'agent' của hệ nội bộ",
+        re.compile(
+            r"(?i:\bsub-?agents?\b|\.claude/agents|\bagents?\s+`[^`\n]+`"
+            r"|\b(?:các|một|nhờ|dùng|gọi|chạy|bởi|giao)\s+agents?\b"
+            r"|\bagents?\s+(?:của|tự|đã|sẽ|này|khác|phụ|con|kiểm|rà)\b)"
+            r"|(?i:\bagents?)\s+[a-z]+(?:-[a-z]+)+\b"
+        ),
+    ),
     ("nhắc 'checklist nội bộ'", re.compile(r"checklist\s+nội\s+bộ", re.IGNORECASE)),
     (
         "hướng dẫn biên tập còn sót",
@@ -529,6 +546,14 @@ def _reviewer_ref(record: Optional[Mapping[str, Any]]) -> str:
     return ""
 
 
+def norm_ref(ref: Any) -> str:
+    """Chuẩn hoá reviewer_ref để SO người ký giữa các cổng: NFC, không phân biệt hoa/thường, bỏ khoảng trắng/./_/-.
+
+    SỬA 05/10/2026 (soát từng cổng G8-14): «pi-01» ở G8 và «PI-01» ở G2/G4/G9 từng bị coi là hai người khác nhau ⇒
+    G8-HUMAN-04 («người ký G8 khác người ký các cổng khác») PASS sai. G9 dùng lại hàm này."""
+    return re.sub(r"[\s._\-]+", "", unicodedata.normalize("NFC", str(ref or "")).casefold())
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # Các phép kiểm nội dung
 # ════════════════════════════════════════════════════════════════════════════
@@ -550,34 +575,90 @@ def scan_internal_traces(manuscript: str) -> list[str]:
     return found
 
 
+def _chuan_kc(text: Any) -> str:
+    """Chuẩn hoá để so một KẾT CỤC: NFC, chữ thường, bỏ đánh dấu Markdown/backtick, dấu thanh kiểu cũ/mới về một kiểu
+    (khoá → khóa), gọn khoảng trắng và dấu câu hai đầu."""
+    t = _nfc(text).casefold()
+    t = re.sub(r"[*_`>#|]", " ", t)
+    for cu, moi in (("oá", "óa"), ("oà", "òa"), ("oả", "ỏa"), ("oã", "õa"), ("oạ", "ọa"),
+                    ("uý", "úy"), ("uỳ", "ùy"), ("uỷ", "ủy"), ("uỹ", "ũy"), ("uỵ", "ụy")):
+        t = t.replace(cu, moi)
+    return re.sub(r"\s+", " ", t).strip(" .;,:")
+
+
+# Dòng KHAI kết cục trong SAP: nhãn đứng ĐẦU dòng (sau gạch đầu dòng/chữ đậm) — «- **Kết cục chính:** …», «Kết cục
+# phụ 2: …», «Primary outcome: …». «Kết cục được coi là kết cục chính: chỉ 1», «Bảng 2, Kết cục chính:» KHÔNG phải dòng
+# khai.
+_DONG_KHAI_KET_CUC_RE = re.compile(
+    r"^\s*(?:[-*•]\s*)?(?:\*\*)?\s*(kết\s*cục\s*(chính|phụ)(?:\s*\d+)?|primary\s+outcome|secondary\s+outcomes?(?:\s*\d+)?)"
+    r"\s*(?:\*\*)?\s*[:：]\s*(?:\*\*)?\s*(.+)$",
+    re.IGNORECASE,
+)
+_CAU_KET_CUC_CHINH_RE = re.compile(r"kết\s*cục\s*chính|primary\s+outcome", re.IGNORECASE)
+
+
+def ket_cuc_sap(sap_text: str) -> tuple[list[str], list[str]]:
+    """(các kết cục CHÍNH, các kết cục PHỤ) mà SAP khai — phần sau nhãn, bỏ đuôi «— biến `x`», đã chuẩn hoá."""
+    chinh: list[str] = []
+    phu: list[str] = []
+    for line in _nfc(sap_text).splitlines():
+        m = _DONG_KHAI_KET_CUC_RE.match(line)
+        if not m:
+            continue
+        gia_tri = re.split(r"\s+[—–-]\s+(?:biến|variable)\b", m.group(3), flags=re.IGNORECASE)[0]
+        gia_tri = _chuan_kc(gia_tri)
+        if len(gia_tri) < 4:
+            continue
+        la_chinh = (m.group(2) or "").casefold() == "chính" or "primary" in m.group(1).casefold()
+        (chinh if la_chinh else phu).append(gia_tri)
+    return chinh, phu
+
+
 def primary_outcome_consistency(
     sap_text: str, manuscript: str, declared_outcome: str
 ) -> tuple[str, str]:
-    """So kết cục chính đã định trước với kết cục chính trong bản thảo.
+    """So kết cục chính đã định trước với kết cục chính mà bản thảo BÁO.
 
-    Trả (status, evidence). Đây là miền "báo cáo kết quả chọn lọc" của Cochrane RoB
-    — lệch mà không giải trình là một trong những sai lệch nặng nhất, và là thứ máy
-    kiểm được vì cả SAP lẫn bản thảo đều là văn bản.
-    """
+    Trả (status, evidence). Đây là miền "báo cáo kết quả chọn lọc" của Cochrane RoB — lệch mà không giải trình là một
+    trong những sai lệch nặng nhất. SỬA 05/10/2026 (soát từng cổng G8-09): bản cũ chỉ hỏi «chuỗi khai có mặt ở ĐÂU ĐÓ
+    trong SAP và trong bản thảo» ⇒ khai một kết cục PHỤ của SAP (có trong SAP, có trong bản thảo) vẫn PASS dù bản thảo
+    đã đổi kết cục chính. Nay: (1) kết cục khai ở G8 phải là kết cục CHÍNH của SAP (dòng «Kết cục chính:»), (2) câu nêu
+    «kết cục chính» của bản thảo phải chứa nó; câu đó lại nêu một kết cục PHỤ của SAP ⇒ CHẶN (đổi kết cục chính);
+    không xác nhận được ⇒ REVIEW, kèm yêu cầu giải trình."""
     if not _present(declared_outcome):
         return "REVIEW", "chưa khai kết cục chính định trước (gate_params.G8.primary_outcome)"
-    needle = declared_outcome.strip().casefold()
-    in_sap = bool(sap_text) and needle in sap_text.casefold()
-    in_manuscript = bool(manuscript) and needle in manuscript.casefold()
     if not sap_text:
         return "REVIEW", "không đọc được SAP (G4) để đối chiếu kết cục chính"
     if not manuscript:
         return "REVIEW", "không đọc được bản thảo (G7) để đối chiếu kết cục chính"
-    if in_sap and in_manuscript:
-        return "PASS", f"kết cục chính {declared_outcome[:60]!r} có mặt ở CẢ SAP và bản thảo"
-    missing = []
-    if not in_sap:
-        missing.append("SAP (G4)")
-    if not in_manuscript:
-        missing.append("bản thảo (G7)")
-    return "BLOCK", (
-        f"kết cục chính {declared_outcome[:60]!r} KHÔNG tìm thấy trong: "
-        f"{', '.join(missing)} — nghi báo cáo kết quả chọn lọc"
+    khai = _chuan_kc(declared_outcome)
+    chinh_sap, phu_sap = ket_cuc_sap(sap_text)
+    if not chinh_sap:
+        return "REVIEW", "không rút được dòng «Kết cục chính:» của SAP để đối chiếu — kiểm tay SAP §2"
+    if not any(khai in c or c in khai for c in chinh_sap):
+        return "BLOCK", (
+            f"kết cục khai ở G8 {declared_outcome[:60]!r} KHÔNG phải kết cục CHÍNH của SAP "
+            f"({chinh_sap[0][:60]!r}) — nghi báo cáo kết quả chọn lọc"
+        )
+    vung_gui = _manuscript_scan_regions(_nfc(manuscript))
+    if khai not in _chuan_kc("\n".join(vung_gui)):
+        return "BLOCK", (
+            f"kết cục chính {declared_outcome[:60]!r} KHÔNG có mặt trong bản thảo (G7) — nghi báo cáo kết quả chọn lọc"
+        )
+    cau_ban_thao = [_chuan_kc(d) for vung in vung_gui for d in vung.splitlines() if _CAU_KET_CUC_CHINH_RE.search(d)]
+    if not cau_ban_thao:
+        return "REVIEW", "bản thảo không có câu nào nêu «kết cục chính» để đối chiếu với SAP"
+    if any(khai in c for c in cau_ban_thao):
+        return "PASS", f"kết cục chính {declared_outcome[:60]!r} = SAP §2 và được bản thảo nêu đúng là kết cục chính"
+    doi = [p for p in phu_sap if len(p) >= 8 and any(p in c for c in cau_ban_thao)]
+    if doi:
+        return "BLOCK", (
+            f"bản thảo nêu kết cục PHỤ của SAP ({doi[0][:60]!r}) làm kết cục chính — đổi kết cục chính so với SAP "
+            "(báo cáo kết quả chọn lọc)"
+        )
+    return "REVIEW", (
+        f"câu «kết cục chính» trong bản thảo không chứa kết cục đã định trước {declared_outcome[:60]!r} — đối chiếu "
+        "lại hoặc giải trình công khai việc đổi"
     )
 
 
@@ -598,6 +679,15 @@ def ai_disclosure_issues(manuscript: str, g8: Mapping[str, Any]) -> list[str]:
     """Kiểm khai báo AI theo ICMJE Mục V.A (bản 1/2026)."""
     issues: list[str] = []
     declared = g8.get("ai_use_declared")
+    # SỬA 05/10/2026 (soát từng cổng G8-08): giá trị KHÁC kiểu bool («có», «true», «false», «không» gõ tay vào
+    # study_meta.json) từng rơi qua cả ba nhánh None/True/False ⇒ issues rỗng ⇒ PASS «khai báo AI đầy đủ» — nặng nhất là
+    # chuỗi «false» bỏ qua luôn phép đối chiếu ngược với bản thảo. Fail-closed như các cờ cover_letter_* (`is True`).
+    if declared is not None and not isinstance(declared, bool):
+        issues.append(f"ai_use_declared phải là true/false (JSON), nhận {declared!r} — chưa khai dứt khoát "
+                      "có/không dùng AI")
+        if _manuscript_signals_ai_use(manuscript):
+            issues.append("bản thảo có nhắc tới việc dùng AI — chốt gate_params.G8.ai_use_declared bằng true/false")
+        return issues
     if declared is None:
         issues.append("chưa khai dứt khoát có/không dùng AI (ICMJE: không khai có thể bị coi là misconduct)")
         # SỬA 2026-07-30 (G8-F3): trước đây return NGAY tại đây nên không bao
@@ -651,32 +741,70 @@ def ai_disclosure_issues(manuscript: str, g8: Mapping[str, Any]) -> list[str]:
     return issues
 
 
-def registration_issues(design_code: str, g8: Mapping[str, Any], g2: Mapping[str, Any]) -> tuple[str, list[str]]:
+_KHONG_XAC_DINH_THIET_KE = (
+    "không xác định được thiết kế nghiên cứu (G1/G2) — không kết luận được nghĩa vụ đăng ký/chia sẻ dữ liệu của ICMJE"
+)
+
+
+def _ngay_iso(value: Any) -> Optional[date]:
+    """Ngày YYYY-MM-DD hợp lệ ⇒ date; còn lại (rỗng, «2026-3-1», «15/03/2026») ⇒ None. So chuỗi ngày thô từng cho
+    «2026-03-15» < «2026-3-1» (G8-07)."""
+    text = str(value or "").strip()
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def registration_issues(design_code: str, g8: Mapping[str, Any], g2: Mapping[str, Any],
+                        attestation: Optional[Mapping[str, Any]] = None) -> tuple[str, list[str]]:
     """Kiểm đăng ký nghiên cứu theo ICMJE §III.L.1.
 
     Trả (mức, danh sách vấn đề). CỐ Ý không gắn vào ``design_code == "rct"``: định
     nghĩa thử nghiệm của ICMJE rộng hơn (mọi phân bổ TIẾN CỨU vào một can thiệp,
     kể cả can thiệp giáo dục/cải tiến chất lượng). Ngược lại với thiết kế quan sát
     ICMJE nói rõ chỉ KHUYẾN KHÍCH — báo lỗi ở đó là báo sai chuẩn.
-    """
+
+    SỬA 05/10/2026 (soát từng cổng G8-07/G8-10): (1) nguồn THẨM QUYỀN là attestation đã ký trong gói G2
+    (registration.registration_id/registration_date, first_enrolment_date) — gate_params.G8 khai khác ⇒ REVIEW; (2) ngày
+    phải ISO YYYY-MM-DD và so bằng date (so chuỗi thô từng cho đăng ký hồi cứu qua); (3) mã đăng ký phải KHỚP TRỌN
+    mẫu registry («xem NCT0123456789» từng đạt); (4) thiết kế không xác định ⇒ REVIEW, không mặc định im lặng là quan
+    sát."""
     interventional = design_code in _TRIAL_LIKE_DESIGNS or g8.get("interventional") is True
+    if not design_code and not interventional:
+        return "REVIEW", [_KHONG_XAC_DINH_THIET_KE]
+    att = attestation if isinstance(attestation, Mapping) else {}
+    att_reg = att.get("registration") if isinstance(att.get("registration"), Mapping) else {}
     registration_id = str(
-        g8.get("registration_id") or g2.get("g2_registration") or ""
+        att_reg.get("registration_id") or g8.get("registration_id") or g2.get("g2_registration") or ""
     ).strip()
     problems: list[str] = []
     if not interventional:
         if design_code in _REGISTRATION_ENCOURAGED_DESIGNS and not registration_id:
             return "PASS", ["thiết kế quan sát — ICMJE KHUYẾN KHÍCH đăng ký, không bắt buộc"]
         return "PASS", []
-    if not registration_id or not _REGISTRY_ID_RE.search(registration_id):
+    if not registration_id or not _REGISTRY_ID_RE.fullmatch(registration_id):
         problems.append(f"thiếu mã đăng ký hợp lệ (nhận được {registration_id or 'rỗng'!r})")
-    reg_date = str(g8.get("registration_date") or "").strip()
-    enrol_date = str(g8.get("first_enrolment_date") or "").strip()
+    for khoa_g8, gia_tri_att in (("registration_id", att_reg.get("registration_id")),
+                                 ("registration_date", att_reg.get("registration_date")),
+                                 ("first_enrolment_date", att.get("first_enrolment_date"))):
+        khai = str(g8.get(khoa_g8) or "").strip()
+        if gia_tri_att and khai and khai != str(gia_tri_att).strip():
+            problems.append(f"gate_params.G8.{khoa_g8}={khai!r} LỆCH attestation G2 đã ký ({gia_tri_att!r})")
+    reg_raw = att_reg.get("registration_date") or g8.get("registration_date")
+    enrol_raw = att.get("first_enrolment_date") or g8.get("first_enrolment_date")
+    reg_date, enrol_date = _ngay_iso(reg_raw), _ngay_iso(enrol_raw)
     if reg_date and enrol_date:
         if reg_date > enrol_date:
             problems.append(
-                f"ĐĂNG KÝ HỒI CỨU: ngày đăng ký {reg_date} SAU ngày tuyển ca đầu {enrol_date}"
+                f"ĐĂNG KÝ HỒI CỨU: ngày đăng ký {reg_date.isoformat()} SAU ngày tuyển ca đầu {enrol_date.isoformat()}"
             )
+    elif reg_raw or enrol_raw:
+        problems.append(
+            f"ngày đăng ký/tuyển ca đầu phải đúng ISO YYYY-MM-DD (nhận {reg_raw!r} / {enrol_raw!r})"
+        )
     else:
         problems.append("thiếu ngày đăng ký và/hoặc ngày tuyển ca đầu tiên để đối chiếu")
     if g8.get("registration_date_is_irb_date") is True:
@@ -686,9 +814,21 @@ def registration_issues(design_code: str, g8: Mapping[str, Any], g2: Mapping[str
     return ("REVIEW" if problems else "PASS"), problems
 
 
+_PHU_DINH_RE = re.compile(r"(?<!\w)(?:không|not|no|none)(?!\w)", re.IGNORECASE)
+
+
 def data_sharing_issues(design_code: str, g8: Mapping[str, Any]) -> tuple[str, list[str]]:
-    """ICMJE §III.L.3 — chỉ BẮT BUỘC với báo cáo kết quả thử nghiệm lâm sàng."""
+    """ICMJE §III.L.3 — chỉ BẮT BUỘC với báo cáo kết quả thử nghiệm lâm sàng.
+
+    Thiết kế không xác định ⇒ REVIEW (G8-10). SỬA 05/10/2026 (soát từng cổng G8-13): tuyên bố KHÔNG chia sẻ dữ liệu cá
+    nhân là câu trả lời HỢP LỆ — bài ICMJE 2017 (PLoS Med, PMID 28582414, doi:10.1371/journal.pmed.1002315) Bảng 1 Ví
+    dụ 4: «No» và các mục còn lại «Not available/Not applicable». Bản cũ đòi từ khoá của đủ 5 trường cả khi câu trả lời
+    là KHÔNG ⇒ giữ REVIEW vĩnh viễn (muốn gỡ chỉ có cách nhồi từ khoá). PI khai TƯỜNG MINH gate_params.G8.ipd_sharing
+    =false (bool) — tránh suy từ văn bản («không chia sẻ dữ liệu ĐỊNH DANH» vẫn có thể là tuyên bố CÓ chia sẻ); văn
+    bản phải có ý phủ định cho khớp; «undecided» vẫn bị từ chối."""
     interventional = design_code in _TRIAL_LIKE_DESIGNS or g8.get("interventional") is True
+    if not design_code and not interventional:
+        return "REVIEW", [_KHONG_XAC_DINH_THIET_KE]
     statement = str(g8.get("data_sharing_statement") or "")
     if not interventional:
         return "PASS", ["không phải báo cáo kết quả thử nghiệm — ICMJE không bắt buộc"]
@@ -697,6 +837,13 @@ def data_sharing_issues(design_code: str, g8: Mapping[str, Any]) -> tuple[str, l
     problems: list[str] = []
     if re.search(r"(undecided|chưa quyết định|sẽ xem xét sau)", statement, re.IGNORECASE):
         problems.append("chứa 'undecided' — ICMJE nói rõ đây KHÔNG phải câu trả lời chấp nhận được")
+    ipd = g8.get("ipd_sharing")
+    if ipd is False and not problems:
+        if not _PHU_DINH_RE.search(statement):
+            return "REVIEW", [
+                "gate_params.G8.ipd_sharing=false nhưng tuyên bố không nói KHÔNG chia sẻ — hai nơi phải khớp"]
+        return "PASS", [
+            "tuyên bố KHÔNG chia sẻ dữ liệu cá nhân — các mục còn lại «không áp dụng» (ICMJE 2017, Ví dụ 4)"]
     lowered = statement.casefold()
     for label, tokens in _DATA_SHARING_FIELDS:
         if not any(token.casefold() in lowered for token in tokens):
@@ -798,26 +945,235 @@ def review_template_residues(report_text: str) -> list[str]:
     return found
 
 
+# ── Đọc NỘI DUNG bản nhận xét phản biện (VÁ 05/10/2026, soát từng cổng G8-01/G8-02/G8-12) ─────────────────────────
+# Bản cũ chỉ hỏi «có đủ mục (chuỗi con ở BẤT KỲ đâu) / đã chọn một mức / còn ô mẫu không» — không đọc mức ĐÃ CHỌN, kết
+# luận, bảng lỗi nghiêm trọng hay khối khai báo của người phản biện ⇒ «☑ Từ chối» + «Cần sửa thêm» + «☑ Có xung đột lợi
+# ích» vẫn ký được G8; «MAJOR … OVERALL ACCEPT» một dòng cũng qua (G8-12; «majority», «overall survival» khớp nhầm).
+
+# Nhãn mọi mục của khuôn binh-duyet.md (dùng để biết một mục KẾT THÚC ở đâu).
+_NHAN_MUC_BAO_CAO = tuple(alt for _l, alts in _REVIEW_REPORT_SECTIONS for alt in alts) + (
+    "KHAI BÁO CỦA NGƯỜI PHẢN BIỆN", "REVIEWER DECLARATION", "ĐỐI CHIẾU CHECKLIST", "CỔNG TRÍCH DẪN",
+    "ĐA LĂNG KÍNH", "TÓM TẮT NHẬN XÉT")
+
+
+def _la_tieu_de(line: str, nhan: str) -> bool:
+    """Dòng là TIÊU ĐỀ của mục `nhan` (không phân biệt hoa/thường): tiêu đề Markdown «#…»/khung «═══» chứa nhãn, hoặc
+    dòng MỞ ĐẦU bằng nhãn rồi tới «:»/«(»/gạch/hết dòng. Văn xuôi «overall survival», «Major revisions are…» không
+    khớp."""
+    text = _nfc(line).strip()
+    if not text:
+        return False
+    upper, n = text.upper(), nhan.upper()
+    if (text.startswith("#") or "═══" in text) and n in upper:
+        return True
+    bo = re.sub(r"^[\s*_>#\-•]+", "", upper)
+    return bool(re.match(re.escape(n) + r"\s*(?:[:：(—–\-]|\*\*|$)", bo))
+
+
+def _doan_muc(report_text: str, nhan_cac: Sequence[str]) -> Optional[str]:
+    """Nội dung mục có tiêu đề là một trong `nhan_cac`: phần sau nhãn trên chính dòng tiêu đề + các dòng tới tiêu đề kế
+    tiếp (Markdown «#», khung ═══, hoặc nhãn mục khác của khuôn đứng đầu dòng). None nếu không có tiêu đề nào."""
+    lines = _nfc(report_text).splitlines()
+    rieng = {n.upper() for n in nhan_cac}
+    for i, line in enumerate(lines):
+        nhan = next((n for n in nhan_cac if _la_tieu_de(line, n)), None)
+        if nhan is None:
+            continue
+        idx = line.upper().find(nhan.upper())
+        phan = [line[idx + len(nhan):] if idx >= 0 else ""]
+        for nxt in lines[i + 1:]:
+            if ("═══" in nxt or nxt.lstrip().startswith("#")
+                    or any(_la_tieu_de(nxt, n) for n in _NHAN_MUC_BAO_CAO if n.upper() not in rieng)):
+                break
+            phan.append(nxt)
+        return "\n".join(phan)
+    return None
+
+
+_MUC_CHO_PHEP_NOP = ("chấp nhận", "sửa nhỏ")
+_LEVEL_ANY_RE = {k: re.compile(r"(?<!\w)" + v + r"(?!\w)") for k, v in _REVIEW_LEVEL_ALTS.items()}
+
+
+def muc_khuyen_nghi(report_text: str) -> Optional[str]:
+    """Mức khuyến nghị ĐÃ CHỌN («chấp nhận» · «sửa nhỏ» · «sửa lớn» · «từ chối»); None nếu chưa chọn/mơ hồ.
+
+    Ưu tiên ô đã tích (☑/☒/✓/[X]); không có ô tích thì nhận mức DUY NHẤT được nêu trong mục khuyến nghị («SỬA NHỎ»,
+    «Khuyến nghị: Major revision»). «Accept with minor revisions» là MỘT mức (sửa nhỏ)."""
+    ticked: set[str] = set()
+    neu: set[str] = set()
+    for segment in _recommendation_segments(report_text):
+        upper = _ACCEPT_WITH_RE.sub("", segment.upper())
+        ticked |= {k for k, r in _LEVEL_TICKED_RE.items() if r.search(upper)}
+        boxed = {k for k, r in _LEVEL_BOXED_RE.items() if r.search(upper)}
+        neu |= {k for k, r in _LEVEL_ANY_RE.items() if r.search(upper)} - boxed
+    if ticked:
+        return next(iter(ticked)) if len(ticked) == 1 else None
+    return next(iter(neu)) if len(neu) == 1 else None
+
+
+_KET_LUAN_CAN_SUA_RE = re.compile(
+    r"cần sửa thêm|chưa sẵn sàng|không đủ điều kiện nộp|chưa đủ điều kiện|not ready|requires? (?:major |minor )?"
+    r"revisions?|needs? (?:further |major |minor )?revisions?", re.IGNORECASE)
+_KET_LUAN_SAN_SANG_RE = re.compile(r"sẵn sàng nộp|đủ điều kiện nộp|ready for submission|ready to submit", re.IGNORECASE)
+
+
+def ket_luan_tong_the(report_text: str) -> Optional[str]:
+    """«san_sang» · «can_sua» · None (chưa chọn / không có mục kết luận). Còn nguyên hai lựa chọn của mẫu ⇒ None; «cần
+    sửa thêm» thắng khi cả hai cùng xuất hiện (nguyên tắc mặc định nghi ngờ của binh-duyet.md)."""
+    doan = _doan_muc(report_text, ("KẾT LUẬN TỔNG THỂ", "OVERALL"))
+    if doan is None or _UNCHOSEN_CONCLUSION_RE.search(doan):
+        return None
+    if _KET_LUAN_CAN_SUA_RE.search(doan):
+        return "can_sua"
+    if _KET_LUAN_SAN_SANG_RE.search(doan):
+        return "san_sang"
+    return None
+
+
+_KHONG_CO_RE = re.compile(r"(?<!\w)(?:không có|không phát hiện|none|nil|n/a)(?!\w)", re.IGNORECASE)
+
+
+def loi_nghiem_trong(report_text: str) -> tuple[Optional[int], list[str]]:
+    """(số lỗi nghiêm trọng còn ghi, các lỗi THIẾU vị trí) trong mục LỖI NGHIÊM TRỌNG — (None, []) khi không có mục.
+
+    Bảng: mỗi hàng có nội dung (ngoài số thứ tự) là một lỗi, và cột «Vị trí/Location» của hàng đó phải có nội dung.
+    Gạch đầu dòng/đánh số có chữ (không phải «không có») cũng là một lỗi. Mục chỉ ghi «không có»/«none» ⇒ 0."""
+    doan = _doan_muc(report_text, ("LỖI NGHIÊM TRỌNG", "MAJOR ISSUES", "MAJOR COMMENTS", "MAJOR"))
+    if doan is None:
+        return None, []
+    so, thieu_vi_tri = 0, []
+    tieu_de_bang: Optional[list[str]] = None
+    for line in doan.splitlines():
+        s = line.strip()
+        if s.startswith("|"):
+            if _TABLE_SEPARATOR_RE.match(s):
+                continue
+            cells = [c.strip() for c in s.strip("|").split("|")]
+            if tieu_de_bang is None:
+                tieu_de_bang = [c.casefold() for c in cells]
+                continue
+            if all(not c or re.fullmatch(r"#?\d*\.?", c) or _KHONG_CO_RE.fullmatch(c) for c in cells):
+                continue
+            so += 1
+            vi_tri = next((i for i, h in enumerate(tieu_de_bang) if "vị trí" in h or "location" in h), None)
+            if vi_tri is not None and (vi_tri >= len(cells) or not cells[vi_tri]):
+                thieu_vi_tri.append(" | ".join(c for c in cells if c)[:80])
+            continue
+        if not s:
+            tieu_de_bang = None
+            continue
+        m = re.match(r"^(?:[-*•]|\d+[.)])\s+(.+)$", s)
+        if m and not _KHONG_CO_RE.search(m.group(1)) and PC.co_noi_dung_that(m.group(1)):
+            so += 1
+    return so, thieu_vi_tri
+
+
+# Khối KHAI BÁO CỦA NGƯỜI PHẢN BIỆN (binh-duyet.md — «người phản biện tự điền»): (khoá, mẫu dòng câu hỏi, đáp án
+# «không», đáp án «có»).
+_CAU_KHAI_BAO: Sequence[tuple[str, Any, tuple[str, ...], tuple[str, ...]]] = (
+    ("xung đột lợi ích", re.compile(r"xung đột lợi ích|conflict of interest", re.IGNORECASE),
+     ("không có", "none", "no"), ("có", "yes")),
+    ("đồng tác giả/cấp trên/cấp dưới", re.compile(r"đồng tác giả|co-?author", re.IGNORECASE),
+     ("không", "no"), ("có", "yes")),
+    ("dùng AI khi phản biện",
+     re.compile(r"dùng AI|AI khi phản biện|use[ds]? (?:any )?(?:generative )?AI", re.IGNORECASE),
+     ("không", "no"), ("có", "yes")),
+)
+_O_TICH_RE = re.compile(r"(?:☑|☒|✓|✔|■|\[[xX]\])\s*\**\s*([^☐☑☒✓✔■\[\]:]+)")
+_BO_O_TICH_RE = re.compile(r"[☐☑☒✓✔■]|\[[ xX]\]")
+
+
+def _cau_hoi(dong: str) -> str:
+    """Phần CÂU HỎI của một dòng khai báo — trước ô tích đầu tiên. Chi tiết tự do sau ô «Có» (vd «là đồng tác giả bài
+    trước» ghi ở dòng XUNG ĐỘT LỢI ÍCH) từng làm câu khai đồng tác giả đọc nhầm dòng đó (đột biến 05/10/2026)."""
+    m = _CHECKBOX_CHAR_RE.search(dong)
+    return dong[: m.start()] if m else dong
+
+
+def _dap_an(line: str, nhan_khong: Sequence[str], nhan_co: Sequence[str]) -> Optional[str]:
+    """«khong» · «co» · None (chưa tích / tích cả hai) cho MỘT dòng câu hỏi có ô tích."""
+    da_tich: set[str] = set()
+    for m in _O_TICH_RE.finditer(_nfc(line)):
+        nhan = m.group(1).strip().casefold()
+        if any(nhan.startswith(k) for k in nhan_khong):
+            da_tich.add("khong")
+        elif any(nhan.startswith(k) for k in nhan_co):
+            da_tich.add("co")
+    return next(iter(da_tich)) if len(da_tich) == 1 else None
+
+
+def khai_bao_nguoi_phan_bien(report_text: str) -> tuple[list[str], list[str]]:
+    """(lý do CHẶN, lý do REVIEW) từ khối KHAI BÁO CỦA NGƯỜI PHẢN BIỆN trong bản nhận xét (G8-02).
+
+    CHẶN: tự khai CÓ xung đột lợi ích hoặc LÀ đồng tác giả/cấp trên/cấp dưới trực tiếp — ICMJE §II.B.1.b: người phản
+    biện có xung đột phải TỪ CHỐI phản biện. REVIEW: thiếu khối; câu chưa tích đúng một ô; khai CÓ dùng AI mà không nêu
+    công cụ + mục đích; chưa tích «Xác nhận» cam kết bảo mật (ICMJE §V.B). Bản cũ chỉ đọc 4 cờ boolean trong
+    study_meta (ai sửa study_meta cũng đặt được, không nằm trong phạm vi ký)."""
+    doan = _doan_muc(report_text, ("KHAI BÁO CỦA NGƯỜI PHẢN BIỆN", "REVIEWER DECLARATION"))
+    if doan is None:
+        return [], ["thiếu khối «KHAI BÁO CỦA NGƯỜI PHẢN BIỆN» trong bản nhận xét (mẫu binh-duyet.md)"]
+    chan: list[str] = []
+    xem: list[str] = []
+    lines = doan.splitlines()
+    for ten, mau, khong, co in _CAU_KHAI_BAO:
+        dong = next((d for d in lines if _CHECKBOX_CHAR_RE.search(d) and mau.search(_cau_hoi(d))), None)
+        if dong is None:
+            xem.append(f"không thấy câu khai «{ten}» (kèm ô tích) trong khối khai báo")
+            continue
+        dap = _dap_an(dong, khong, co)
+        if dap is None:
+            xem.append(f"câu khai «{ten}» chưa tích đúng MỘT ô")
+        elif dap == "co" and ten == "xung đột lợi ích":
+            chan.append("người phản biện tự khai CÓ xung đột lợi ích — ICMJE §II.B.1.b: phải TỪ CHỐI phản biện")
+        elif dap == "co" and ten.startswith("đồng tác giả"):
+            chan.append("người phản biện tự khai LÀ đồng tác giả/cấp trên/cấp dưới trực tiếp — không độc lập")
+        elif dap == "co":
+            chi_tiet = _BO_O_TICH_RE.sub("", dong.rsplit(":", 1)[-1] if ":" in dong else "").strip()
+            if not PC.co_noi_dung_that(chi_tiet):
+                xem.append("khai CÓ dùng AI khi phản biện nhưng thiếu tên công cụ + mục đích (ICMJE §V.B)")
+    xac_nhan = [d for d in lines if re.search(r"xác nhận|i confirm", d, re.IGNORECASE) and _CHECKBOX_CHAR_RE.search(d)]
+    if not any(_O_TICH_RE.search(_nfc(d)) for d in xac_nhan):
+        xem.append("chưa tích «Xác nhận» cam kết không tải bản thảo lên công cụ AI thiếu bảo mật (ICMJE §V.B)")
+    return chan, xem
+
+
+def _ly_do_khuyen_nghi(report_text: str) -> str:
+    """Phần LÝ DO trong mục khuyến nghị — đã bỏ ô tích, tên các mức và nhãn «Lý do:»."""
+    doan = _doan_muc(report_text, ("KHUYẾN NGHỊ", "RECOMMENDATION")) or ""
+    doan = _BO_O_TICH_RE.sub(" ", _ACCEPT_WITH_RE.sub(" ", doan.upper()))
+    for r in _LEVEL_ANY_RE.values():
+        doan = r.sub(" ", doan)
+    doan = re.sub(r"(?<!\w)(?:LÝ DO|REASON|RATIONALE)\s*[:：]", " ", doan)
+    return re.sub(r"[\s*_:;,.\-—–]+", " ", doan).strip()
+
+
 def review_report_issues(report_text: str) -> list[str]:
     """Bản nhận xét phản biện có đủ cấu trúc mẫu của doctrine binh-duyet.md không.
 
-    Từ 03/10/2026 thêm: khuyến nghị phải được CHỌN, kết luận không còn hai lựa chọn, không còn ô mẫu (xem
-    ``review_template_residues``) — bản chép nguyên mẫu trống không còn được tính là nhận xét thật."""
+    Từ 03/10/2026: khuyến nghị phải được CHỌN, kết luận không còn hai lựa chọn, không còn ô mẫu (xem
+    ``review_template_residues``). SỬA 05/10/2026 (soát từng cổng G8-12): mục nhận theo DÒNG TIÊU ĐỀ (không còn chuỗi
+    con ở bất kỳ đâu); khuyến nghị phải có LÝ DO; kết luận phải được CHỌN; mỗi lỗi nghiêm trọng trong bảng phải kèm vị
+    trí. Kết luận CHO PHÉP NỘP hay không là việc của G8-HUMAN-06, khai báo người phản biện là việc của G8-HUMAN-05."""
     if not report_text.strip():
         return ["chưa có bản nhận xét phản biện"]
     problems: list[str] = []
-    upper = report_text.upper()
     for label, alternatives in _REVIEW_REPORT_SECTIONS:
-        if not any(alt.upper() in upper for alt in alternatives):
-            problems.append(f"thiếu mục '{label}'")
-    if not any(rec.upper() in upper for rec in _REVIEW_RECOMMENDATIONS):
+        if _doan_muc(report_text, alternatives) is None:
+            problems.append(f"thiếu mục '{label}' (tiêu đề mục)")
+    choice_problem = _recommendation_choice_problem(report_text)
+    if choice_problem:
+        problems.append(choice_problem)
+    elif muc_khuyen_nghi(report_text) is None:
         problems.append("thiếu KHUYẾN NGHỊ rõ mức (chấp nhận / sửa nhỏ / sửa lớn / từ chối)")
-    else:
-        choice_problem = _recommendation_choice_problem(report_text)
-        if choice_problem:
-            problems.append(choice_problem)
+    if len(re.findall(r"\w", _ly_do_khuyen_nghi(report_text))) < 15:
+        problems.append("KHUYẾN NGHỊ thiếu LÝ DO (dòng «Lý do: …» có nội dung)")
     if _UNCHOSEN_CONCLUSION_RE.search(_nfc(report_text)):
         problems.append("KẾT LUẬN TỔNG THỂ còn để cả hai lựa chọn «sẵn sàng nộp / cần sửa thêm» — chọn một")
+    elif ket_luan_tong_the(report_text) is None:
+        problems.append("KẾT LUẬN TỔNG THỂ chưa chọn «sẵn sàng nộp» hay «cần sửa thêm»")
+    _so_loi, thieu_vi_tri = loi_nghiem_trong(report_text)
+    if thieu_vi_tri:
+        problems.append(f"lỗi nghiêm trọng thiếu VỊ TRÍ (trang/mục/dòng): {'; '.join(thieu_vi_tri[:3])}")
     residues = review_template_residues(report_text)
     if residues:
         problems.append(
@@ -849,8 +1205,16 @@ def evaluate_g8_quality(
     role_key_available: bool,
     cross_gate_refs: Mapping[str, str],
     design_drift_warning: Optional[str] = None,
+    design_code: Optional[str] = None,
+    tien_de_g7: Optional[Mapping[str, str]] = None,
+    attestation_g2: Optional[Mapping[str, Any]] = None,
 ) -> dict[str, Any]:
-    """Chấm G8 hai tầng: máy kiểm NỘI DUNG, rồi bằng chứng bình duyệt người thật."""
+    """Chấm G8 hai tầng: máy kiểm NỘI DUNG, rồi bằng chứng bình duyệt người thật.
+
+    05/10/2026 (soát từng cổng G8): `design_code` — thiết kế SỐNG do evaluate_study tính qua resolve_design_code (G2 >
+    G1), vắng thì rơi về checkpoint/G2 như cũ, rỗng ⇒ G8-AUTO-07/08 REVIEW (G8-10); `tien_de_g7` — G7 chấm sống
+    ({status, evidence}), vắng ⇒ «không đo được», không bao giờ đạt (G8-06); `attestation_g2` — attestation đã ký trong
+    gói G2 khi G2 đã duyệt, nguồn THẨM QUYỀN cho mã/ngày đăng ký (G8-07)."""
     g8 = _g8_meta(meta)
     # LƯU Ý (G8-F5, MEDIUM DOWNSTREAM_CONTRACT_RISK): design_code ở đây KHÔNG
     # đến từ G8_checkpoint.json (write_g8_checkpoint() trong run_g8_auto.py
@@ -864,7 +1228,9 @@ def evaluate_g8_quality(
     # resolve_design_code()) nuôi một tiêu chí CẢNH BÁO riêng (G8-AUTO-11)
     # bên dưới khi G1/G2 lệch nhau, để bác sĩ biết registration_issues()/
     # data_sharing_issues() có thể đang dùng design_code sai.
-    design_code = str(checkpoint.get("design_code") or g2_checkpoint.get("design_code") or "")
+    if design_code is None:
+        design_code = str(checkpoint.get("design_code") or g2_checkpoint.get("design_code") or "")
+    design_code = str(design_code or "")
     automatic: list[dict[str, str]] = []
     approval: list[dict[str, str]] = []
 
@@ -946,12 +1312,15 @@ def evaluate_g8_quality(
         trace_evidence.append(
             f"ô trống/ô mẫu chưa điền ({len(residues)} dòng): " + "; ".join(residues[:6]) + more
         )
+    # 05/10/2026 (lộ khi đo C1a trên bản sao): chưa có bản thảo thì KHÔNG ĐO ĐƯỢC — bản cũ in PASS «không thấy nhãn
+    # [CẦN]…» trên văn bản rỗng (xanh giả ở cấp tiêu chí; trạng thái chung vẫn nhờ G8-AUTO-02 REVIEW).
     automatic.append(_criterion(
         "G8-AUTO-04",
         "Bản thảo không còn vệt công cụ nội bộ hay ô mẫu chưa điền",
-        "BLOCK" if trace_evidence else "PASS",
+        "BLOCK" if trace_evidence else "PASS" if manuscript_text.strip() else "REVIEW",
         "; ".join(trace_evidence) if trace_evidence else (
             "không thấy nhãn [CẦN], ô trống/ô mẫu khuôn G7, tên file pipeline hay hướng dẫn biên tập sót lại"
+            if manuscript_text.strip() else "chưa có bản thảo để quét (không đo được ≠ sạch — xem G8-AUTO-02)"
         ),
         "Xóa mọi vệt nội bộ và điền mọi ô mẫu trong thân bài — doctrine xếp đây là lỗi CHẶN, không phải góp ý nhỏ.",
     ))
@@ -979,7 +1348,7 @@ def evaluate_g8_quality(
     ))
 
     # ── G8-AUTO-07 — đăng ký nghiên cứu ────────────────────────────────────
-    reg_status, reg_problems = registration_issues(design_code, g8, g2_checkpoint)
+    reg_status, reg_problems = registration_issues(design_code, g8, g2_checkpoint, attestation_g2)
     automatic.append(_criterion(
         "G8-AUTO-07",
         "Đăng ký nghiên cứu đúng ICMJE (tiền cứu, không dùng ngày IRB thay thế)",
@@ -995,7 +1364,8 @@ def evaluate_g8_quality(
         "Tuyên bố chia sẻ dữ liệu đủ 5 trường (thử nghiệm lâm sàng)",
         ds_status,
         "; ".join(ds_problems) if ds_problems else "đủ 5 trường theo ICMJE §III.L.3",
-        "Viết data_sharing_statement đủ 5 trường; 'undecided' không được chấp nhận.",
+        "Viết data_sharing_statement đủ 5 trường; 'undecided' không được chấp nhận. KHÔNG chia sẻ dữ liệu cá nhân là "
+        "câu trả lời hợp lệ: khai gate_params.G8.ipd_sharing=false (bool) và nói rõ trong tuyên bố.",
     ))
 
     # ── G8-AUTO-09 — cover letter ──────────────────────────────────────────
@@ -1114,22 +1484,26 @@ def evaluate_g8_quality(
     # định tránh (biến "chưa biết" thành "có vấn đề"), chỉ là áp nhầm hướng.
     # 6 test hồi quy cũ (test_g8_quality_gate.py) bắt được ngay. G8-AUTO-02 đã
     # sẵn REVIEW khi thiếu bản thảo -- không cần G8-AUTO-12 lặp lại tín hiệu
-    # đó. PASS ở đây chỉ có nghĩa "không có gì để đối chiếu", KHÔNG phải "đã
-    # xác nhận an toàn"; bảo vệ THẬT cho kịch bản tráo bản thảo sau ký nằm ở
-    # cổng CHẶN CỨNG run_g10_assemble.py (độc lập với report["status"] này).
+    # đó.
+    # SỬA 05/10/2026 (soát từng cổng G8-03): nhánh «A9 không nhúng hash» trả PASS kể cả khi ĐANG CÓ bản thảo ⇒ ký được
+    # một A9 (sinh lúc chưa có bản thảo) không ràng buộc bản thảo nào, và run_g10_assemble cũng bỏ qua vì hash nhúng
+    # None — câu «bảo vệ THẬT nằm ở run_g10_assemble» SAI đúng cho trường hợp này. Nay: có bản thảo mà A9 không nhúng
+    # hash ⇒ CHẶN (sinh lại A9 — rẻ); không có bản thảo thì G8-AUTO-02 đã REVIEW. Mối lo BH08 (đề tài ký trước 04/09
+    # tụt hạng) không còn áp dụng: đề tài thật duy nhất chưa tới G8.
     _embedded_hash = _trich_hash_ban_thao_da_ky(presubmission_text)
     _live_hash = (
         hashlib.sha256(manuscript_text.encode("utf-8")).hexdigest()
         if manuscript_text.strip() else None
     )
-    if _embedded_hash is None:
-        hash_status = "PASS"
+    if _embedded_hash is None and _live_hash is not None:
+        hash_status = "BLOCK"
         hash_evidence = (
-            "A9 chưa nhúng hash bản thảo (artifact định dạng cũ trước bản vá 2026-09-04, "
-            "hoặc chưa có bản thảo lúc sinh A9) — không có gì để đối chiếu ở lớp này; "
-            "chạy lại run_g8_auto.py để sinh A9 có nhúng hash và có được bảo vệ này. "
-            "Cổng chặn THẬT cho việc bản thảo bị sửa sau ký là run_g10_assemble.py."
+            "A9 KHÔNG ràng buộc bản thảo đang có (A9 sinh khi chưa có bản thảo hoặc định dạng cũ) — chữ ký trên A9 này "
+            "không chứng cho bản thảo nào; chạy lại run_g8_auto.py để nhúng hash rồi mới ký"
         )
+    elif _embedded_hash is None:
+        hash_status = "PASS"
+        hash_evidence = "chưa có bản thảo để đối chiếu (G8-AUTO-02 đã REVIEW)"
     elif _live_hash is None:
         hash_status = "REVIEW"
         hash_evidence = f"bản thảo không còn tồn tại/rỗng trên đĩa, A9 đã nhúng hash {_embedded_hash[:12]}…"
@@ -1150,6 +1524,54 @@ def evaluate_g8_quality(
         hash_status,
         hash_evidence,
         "Sinh lại A9 (run_g8_auto.py) rồi ký lại G8 sau bất kỳ thay đổi nào vào bản thảo.",
+    ))
+
+    # ── G8-AUTO-12b — chữ ký G8 ràng buộc ĐÚNG bản NHẬN XÉT phản biện (G8-04, hợp đồng CHUNG-E) ──────────────────────
+    # Chữ ký G8 chỉ băm A9; A9 sinh TRƯỚC bản nhận xét nên sau khi ký có thể xoá/đổi/tráo bản nhận xét (đổi «Từ chối»
+    # thành «Chấp nhận») mà G9/G10 chỉ hỏi sổ cái. Nay run_g8_auto nhúng băm bản nhận xét vào A9 (sinh lại A9 SAU khi có
+    # bản nhận xét) — chữ ký A9 vì thế ràng buộc cả bản nhận xét; cổng sau so lại bằng cong_song.trich_bam_a9.
+    _bam_bc = CS.trich_bam_a9(presubmission_text).get("bao_cao_phan_bien")
+    _live_bc = (hashlib.sha256(review_report_text.encode("utf-8")).hexdigest()
+                if review_report_text.strip() else None)
+    if _live_bc is None and _bam_bc is None:
+        bc_status, bc_evidence = "PASS", "chưa có bản nhận xét phản biện (G8-HUMAN-01 đòi)"
+    elif _live_bc is None:
+        bc_status = "BLOCK" if ledger_signed else "REVIEW"
+        bc_evidence = f"A9 đã ràng buộc bản nhận xét {_bam_bc[:12]}… nhưng bản nhận xét KHÔNG còn trên đĩa"
+    elif _bam_bc is None:
+        bc_status = "BLOCK" if ledger_signed else "REVIEW"
+        bc_evidence = (
+            "A9 chưa nhúng băm bản nhận xét phản biện — sinh lại A9 (run_g8_auto.py) SAU khi có bản nhận xét để chữ "
+            "ký G8 ràng buộc nó" + (" — G8 ĐÃ ký trên A9 không ràng buộc bản nhận xét" if ledger_signed else "")
+        )
+    elif _bam_bc == _live_bc:
+        bc_status, bc_evidence = "PASS", f"băm bản nhận xét khớp ({_live_bc[:12]}…)"
+    else:
+        bc_status = "BLOCK" if ledger_signed else "REVIEW"
+        bc_evidence = (
+            f"bản nhận xét đã SỬA sau khi A9 được sinh: băm nhúng {_bam_bc[:12]}… ≠ hiện tại {_live_bc[:12]}…"
+            + (" — VÀ G8 ĐÃ ký trên bản cũ" if ledger_signed else " (chưa ký — sinh lại A9 rồi mới ký)")
+        )
+    automatic.append(_criterion(
+        "G8-AUTO-12b",
+        "Chữ ký G8 ràng buộc ĐÚNG bản nhận xét phản biện hiện tại",
+        bc_status,
+        bc_evidence,
+        "Sinh lại A9 (run_g8_auto.py) SAU khi có/sửa bản nhận xét phản biện, rồi mới ký G8.",
+    ))
+
+    # ── G8-AUTO-13 — tiền đề: bản thảo G7 đã PASS_G7_CONFIRMED (chấm sống) (G8-06) ─────────────────────────────────
+    # Bản cũ không đọc kết luận của chính run_g8_auto («PENDING — cần IRB thật, SAP ký, kết quả thật») hay trạng thái
+    # G7: ký được «bình duyệt trước nộp» cho bản thảo chưa có kết quả thật («Kết quả sẽ được điền sau khi khoá dữ
+    # liệu»).
+    # G7 PASS đã bao hàm G0–G6 PASS thật + kết quả G6 khớp + bản thảo sạch + tác giả đọc lại đúng bản này.
+    g7_song = dict(tien_de_g7 or {"status": "REVIEW", "evidence": "không đo được G7 sống (chấm qua evaluate_study)"})
+    automatic.append(_criterion(
+        "G8-AUTO-13",
+        "Bản thảo G7 đã PASS_G7_CONFIRMED (chấm sống) — tiền đề bình duyệt trước nộp",
+        g7_song.get("status") if g7_song.get("status") in ("PASS", "REVIEW", "BLOCK") else "REVIEW",
+        str(g7_song.get("evidence") or ""),
+        "Hoàn tất G7 (kết quả thật từ G6, khai báo ICMJE, A12, đọc lại toàn văn gắn dấu) rồi mới bình duyệt G8.",
     ))
 
     # ── Tầng BẰNG CHỨNG BÌNH DUYỆT NGƯỜI THẬT ──────────────────────────────
@@ -1198,9 +1620,10 @@ def evaluate_g8_quality(
 
     # Đối chiếu reviewer_ref giữa các cổng — chỉ số ĐỘC LẬP rẻ nhất hiện có.
     g8_ref = cross_gate_refs.get("G8", "")
+    # G8-14 (05/10/2026): so sau chuẩn hoá — «pi-01» và «PI-01» là CÙNG một người.
     clashes = [
         gate for gate, ref in cross_gate_refs.items()
-        if gate != "G8" and ref and g8_ref and ref == g8_ref
+        if gate != "G8" and ref and g8_ref and norm_ref(ref) == norm_ref(g8_ref)
     ]
     if not g8_ref:
         ref_status, ref_evidence = "REVIEW", "chưa có bản ghi phê duyệt G8 để đối chiếu"
@@ -1230,16 +1653,52 @@ def evaluate_g8_quality(
         )
         if g8.get(key) is not True
     ]
+    # G8-02 (05/10/2026): đọc CHÍNH khối «KHAI BÁO CỦA NGƯỜI PHẢN BIỆN» trong bản nhận xét (tệp được băm vào A9 —
+    # G8-AUTO-12b), không chỉ 4 cờ boolean trong study_meta (ai sửa cũng đặt được, «declared=True» không phân biệt khai
+    # KHÔNG hay CÓ xung đột). Tự khai CÓ xung đột/LÀ đồng tác giả ⇒ CHẶN.
+    kb_chan, kb_xem = (khai_bao_nguoi_phan_bien(review_report_text) if review_report_text.strip()
+                       else ([], ["chưa có bản nhận xét phản biện để đọc khối khai báo"]))
+    van_de_05 = kb_chan + kb_xem + (["cờ gate_params.G8 chưa đủ: " + "; ".join(reviewer_declarations)]
+                                    if reviewer_declarations else [])
     approval.append(_criterion(
         "G8-HUMAN-05",
-        "Người phản biện đã khai COI, tính độc lập và việc dùng AI",
-        "REVIEW" if reviewer_declarations else "PASS",
-        "thiếu: " + "; ".join(reviewer_declarations) if reviewer_declarations else "đủ 4 khai báo",
-        "ICMJE §II.B.1.b và §V.B: người phản biện phải khai quan hệ gây thiên lệch và việc dùng AI.",
+        "Người phản biện đã khai COI, tính độc lập và việc dùng AI (khối khai báo trong bản nhận xét)",
+        "BLOCK" if kb_chan else "REVIEW" if van_de_05 else "PASS",
+        "; ".join(van_de_05) if van_de_05 else "khối khai báo: không xung đột, không đồng tác giả, AI đã khai, đã cam "
+                                               "kết bảo mật; đủ 4 cờ gate_params.G8",
+        "ICMJE §II.B.1.b và §V.B: người phản biện tự điền khối KHAI BÁO trong bản nhận xét; có xung đột thì phải TỪ "
+        "CHỐI phản biện — mời người khác.",
+    ))
+
+    # G8-HUMAN-06 (G8-01, 05/10/2026): kết luận của phản biện phải CHO PHÉP nộp — bản cũ không đọc mức đã chọn hay kết
+    # luận ⇒ «☑ Từ chối» / «Sửa lớn» / «Cần sửa thêm» / bảng lỗi nghiêm trọng còn dòng vẫn ký được và G10 in «Đã qua
+    # G8».
+    van_de_06: list[str] = []
+    if not review_report_text.strip():
+        van_de_06.append("chưa có bản nhận xét phản biện")
+    else:
+        muc = muc_khuyen_nghi(review_report_text)
+        if muc not in _MUC_CHO_PHEP_NOP:
+            van_de_06.append(f"khuyến nghị {('«' + muc.upper() + '»') if muc else 'chưa chọn'} — chỉ CHẤP NHẬN/SỬA "
+                             "NHỎ mới cho phép nộp")
+        ket_luan = ket_luan_tong_the(review_report_text)
+        if ket_luan != "san_sang":
+            van_de_06.append("kết luận tổng thể " + ("«cần sửa thêm»" if ket_luan == "can_sua" else "chưa chọn"))
+        so_loi, _thieu = loi_nghiem_trong(review_report_text)
+        if so_loi:
+            van_de_06.append(f"còn {so_loi} lỗi nghiêm trọng trong bản nhận xét")
+    approval.append(_criterion(
+        "G8-HUMAN-06",
+        "Kết luận phản biện CHO PHÉP nộp (chấp nhận/sửa nhỏ, «sẵn sàng nộp», không còn lỗi nghiêm trọng)",
+        "REVIEW" if van_de_06 else "PASS",
+        "; ".join(van_de_06) if van_de_06 else "khuyến nghị cho phép nộp, kết luận «sẵn sàng nộp», 0 lỗi nghiêm trọng",
+        "Sửa bản thảo theo nhận xét → sinh lại A9 → người phản biện viết VÒNG SAU xác nhận đã xử lý (khuyến nghị "
+        "chấp nhận/sửa nhỏ, «sẵn sàng nộp», bảng lỗi nghiêm trọng «không có») rồi mới ký G8.",
     ))
 
     # ── Tổng hợp ───────────────────────────────────────────────────────────
-    auto_blocked = any(row["status"] == "BLOCK" for row in automatic)
+    # 05/10/2026 (G8-02): tiêu chí người cũng có thể CHẶN (phản biện tự khai có xung đột) ⇒ BLOCKED, không «chờ ký».
+    auto_blocked = any(row["status"] == "BLOCK" for row in automatic + approval)
     auto_review = any(row["status"] == "REVIEW" for row in automatic)
     approval_complete = all(row["status"] == "PASS" for row in approval)
     has_review_evidence = not report_problems
@@ -1303,7 +1762,8 @@ def evaluate_g8_quality(
             "KHÔNG chứng minh được người ký khác chủ nhiệm đề tài; khóa riêng theo "
             "vai trò chỉ chứng minh một FILE tồn tại trên cùng máy. Bằng chứng độc "
             "lập THẬT phải đến từ ngoài hệ (thư phản biện có danh tính, biên bản hội "
-            "đồng). Cổng chặn thật của G8 vẫn là run_g10_assemble.py."
+            "đồng). approve_gate.py dùng chính báo cáo này để từ chối ký khi chưa đạt; cổng sau đối chiếu băm bản "
+            "thảo và bản nhận xét nhúng trong A9."
         ),
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
@@ -1438,13 +1898,32 @@ def evaluate_study(study: str, out_dir: Path, *, repo_root: Optional[Path] = Non
         for gate in ("G2", "G4", "G5", "G8", "G9")
     }
 
-    # G8-F5: tái dùng resolve_design_code() (đã nối vào G5/G7) làm trọng tài
-    # CẢNH BÁO khi G1/G2 lệch nhau — KHÔNG dùng để thay design_code chính ở
-    # trên (xem chú thích trong evaluate_g8_quality()).
+    # G8-F5 + G8-10 (05/10/2026): resolve_design_code() (G2 > G1, đã nối vào G5/G7) là nguồn thiết kế DÙNG CHUNG — nay
+    # cũng là design_code chính của G8 (bản cũ đọc G8/G2_checkpoint, rỗng ⇒ im lặng coi như quan sát: RCT không bị đòi
+    # đăng ký/chia sẻ dữ liệu). Không xác định được ⇒ "" ⇒ G8-AUTO-07/08 REVIEW.
     try:
-        _, design_drift_warning = GC.resolve_design_code(out_dir)
+        design_code_song, design_drift_warning = GC.resolve_design_code(out_dir, default="")
     except Exception:  # pragma: no cover - lưới an toàn
-        design_drift_warning = None
+        design_code_song, design_drift_warning = "", None
+
+    # G8-06: tiền đề G7 chấm SỐNG (PASS_G7_CONFIRMED bao hàm G0–G6 thật + kết quả G6 khớp + bản thảo sạch + đọc lại).
+    try:
+        g7s = CS.trang_thai_song("G7", study, out_dir, repo_root=repo_root)
+        muc = g7s.get("muc")
+        tien_de_g7 = {"status": "PASS" if muc == "PASS" else "BLOCK" if muc == "BLOCKED" else "REVIEW",
+                      "evidence": f"G7={g7s.get('status')}"}
+    except Exception as exc:  # noqa: BLE001 — không đo được ≠ đạt
+        tien_de_g7 = {"status": "REVIEW", "evidence": f"không chấm được G7 sống: {type(exc).__name__}"}
+
+    # G8-07: attestation đã ký trong gói G2 (khi G2 đã duyệt theo hợp đồng dùng chung) là nguồn thẩm quyền cho đăng ký.
+    attestation_g2: dict[str, Any] = {}
+    try:
+        import g2_quality_gate as G2Q  # noqa: PLC0415 — import lười
+        import g7_quality_gate as G7Q  # noqa: PLC0415
+        if G7Q.g2_da_duyet(study, out_dir, repo_root)[0]:
+            attestation_g2 = G2Q.extract_attestation(_read_text(out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md")) or {}
+    except Exception:  # noqa: BLE001 — không đọc được thì rơi về gate_params.G8 (vẫn kiểm ISO/fullmatch)
+        attestation_g2 = {}
 
     report = evaluate_g8_quality(
         study=study,
@@ -1463,6 +1942,9 @@ def evaluate_study(study: str, out_dir: Path, *, repo_root: Optional[Path] = Non
         role_key_available=bool(role_key),
         cross_gate_refs=cross_refs,
         design_drift_warning=design_drift_warning,
+        design_code=design_code_song,
+        tien_de_g7=tien_de_g7,
+        attestation_g2=attestation_g2,
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)

@@ -96,7 +96,7 @@ _REPORTING = {"standard_name": "STROBE 2007", "score_pct": 80, "checked": 4, "to
 _STAT_CHECK = G8.check_statistical_integrity(_BASE_GATES)
 
 
-def _build_a9(study: str, d: Path, manuscript_sha256, manuscript_filename) -> str:
+def _build_a9(study: str, d: Path, manuscript_sha256, manuscript_filename, review_sha256=None) -> str:
     presubmission = G8.build_presubmission_checklist(
         _PIPELINE, _REPORTING, _STAT_CHECK, _BASE_GATES, [], study=study, out_dir=d,
     )
@@ -104,6 +104,7 @@ def _build_a9(study: str, d: Path, manuscript_sha256, manuscript_filename) -> st
         study, "2026-09-04", _BASE_GATES, _PIPELINE, _REPORTING, _STAT_CHECK, [],
         presubmission, "", 0.0, "PENDING",
         manuscript_sha256=manuscript_sha256, manuscript_filename=manuscript_filename,
+        review_sha256=review_sha256, review_filename=f"G8_PEER_REVIEW_REPORT_{study}.md",
     )
 
 
@@ -237,19 +238,11 @@ class TestEvaluateG8QualityAuto12Matrix:
         finally:
             _rmtree_retry(d)
 
-    def test_khong_co_hash_nhung_a9_dinh_dang_cu_thi_pass_khong_block(self):
-        """A9 sinh TRƯỚC bản vá này (không có nhãn hash) -- không được suy
-        diễn thành "đã bị sửa" (BH08: biến chưa biết thành có vấn đề).
-
-        SỬA: bản đầu của check này trả REVIEW cho trường hợp này, nhưng
-        auto_review = any(status=="REVIEW") kéo report["status"] TOÀN BỘ về
-        STATUS_DRAFT vô điều kiện -- nghĩa là MỌI đề tài đã ký G8 THẬT trước
-        khi bản vá này tồn tại (100% số đề tài hiện có) sẽ đồng loạt "tụt
-        hạng" từ PASS_G8_REVIEW_RECORDED xuống DRAFT_NEEDS_HUMAN_COMPLETION
-        dù không có gì thay đổi -- đúng lớp lỗi BH08 mà chính comment ở đó
-        định tránh, chỉ là áp SAI hướng. Bắt bằng cách chạy bộ test hồi quy
-        đầy đủ tests/test_g8_quality_gate.py (6 test đỏ trước khi sửa lại
-        thành PASS). Test này khoá lại: PASS, không REVIEW."""
+    def test_khong_co_hash_ma_co_ban_thao_thi_chan(self):
+        """ĐỔI HÀNH VI 05/10/2026 (soát từng cổng G8-03, phát hiện đã được phản biện xác nhận): A9 KHÔNG nhúng hash
+        trong khi ĐANG CÓ bản thảo ⇒ chữ ký trên A9 không chứng cho bản thảo nào ⇒ CHẶN (sinh lại A9 — rẻ). Bản trước
+        cố ý PASS vì lo BH08 (đề tài đã ký trước 04/09/2026 tụt hạng) — mối lo đó không còn: đề tài thật duy nhất chưa
+        tới G8; còn giữ PASS thì run_g10_assemble cũng bỏ qua (hash nhúng None) ⇒ bản thảo sửa tự do sau ký."""
         study = "PYTEST-G8HASH-B4"
         report = self._evaluate(
             study, REPO_ROOT / "exports" / study,
@@ -257,25 +250,21 @@ class TestEvaluateG8QualityAuto12Matrix:
             "bản thảo bất kỳ", ledger_signed=True,
         )
         row = self._find(report, "G8-AUTO-12")
-        assert row["status"] == "PASS", row
-        assert "định dạng cũ" in row["evidence"]
+        assert row["status"] == "BLOCK", row
+        assert "KHÔNG ràng buộc" in row["evidence"]
 
-    def test_khong_co_hash_khong_keo_status_tong_ve_draft(self):
-        """★★ Đối chứng trực tiếp cho regression vừa vá, dùng CHÍNH fixture
-        "mọi tiêu chí khác đều PASS" của tests/test_g8_quality_gate.py (nơi
-        đã đo được: bản đầu của G8-AUTO-12 làm 6 test ở đó đỏ vì report["status"]
-        tụt từ STATUS_REVIEWED xuống STATUS_DRAFT). presubmission_text của
-        fixture đó là chuỗi viết tay, KHÔNG có nhãn hash nhúng — đúng kịch bản
-        "đề tài đã ký G8 THẬT trước khi bản vá 2026-09-04 tồn tại"."""
+    def test_fixture_xanh_bam_that_thi_dat_thieu_bam_thi_chan(self):
+        """Fixture «mọi tiêu chí khác đều PASS» của tests/test_g8_quality_gate.py nay dựng A9 ĐÚNG khuôn run_g8_auto
+        (nhúng băm bản thảo + bản nhận xét) ⇒ PASS_G8_REVIEW_RECORDED; cùng fixture mà A9 viết tay không nhúng băm ⇒
+        G8-AUTO-12 CHẶN (05/10/2026, G8-03)."""
         from tests.test_g8_quality_gate import _evaluate as _evaluate_fully_green
 
         report = _evaluate_fully_green()
-        row = self._find(report, "G8-AUTO-12")
-        assert row["status"] == "PASS", row
-        assert report["status"] == G8Q.STATUS_REVIEWED, (
-            f"Thiếu hash nhúng (đề tài ký TRƯỚC bản vá này) không được tự nó "
-            f"kéo trạng thái tổng thể của G8 xuống DRAFT — xem CLAUDE.md BH08. "
-            f"status thật: {report['status']}")
+        assert self._find(report, "G8-AUTO-12")["status"] == "PASS"
+        assert report["status"] == G8Q.STATUS_REVIEWED, report["status"]
+        cu = _evaluate_fully_green(presubmission_text=(
+            "# A9 — GÓI TIỀN NỘP BÀI\nNội dung tự kiểm toàn bộ pipeline G0-G7.\nCần bác sĩ kiểm chứng.\n"))
+        assert self._find(cu, "G8-AUTO-12")["status"] == "BLOCK" and cu["status"] == G8Q.STATUS_BLOCKED
 
     def test_khong_co_ban_thao_song_thi_review(self):
         study = "PYTEST-G8HASH-B5"
@@ -295,7 +284,7 @@ class TestG10BlocksManuscriptTamperedAfterSigning:
     qua CLI THẬT run_g10_assemble.main() (không mock): ký G8 xong, sửa bản
     thảo, gọi G10 lại -- phải bị CHẶN, không được lắp gói "sẵn sàng nộp"."""
 
-    def _seed_and_sign_g8(self, d: Path, study: str, manuscript_text: str) -> None:
+    def _seed_and_sign_g8(self, d: Path, study: str, manuscript_text: str, review_text: str = "") -> None:
         _write_cross_sectional_fixture(d)
         _write_clean_citation_artifact(d, study)
         (d / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").write_text(
@@ -305,9 +294,31 @@ class TestG10BlocksManuscriptTamperedAfterSigning:
         (d / f"G7_A8_MANUSCRIPT_{study}.md").write_text(
             manuscript_text, encoding="utf-8", newline="\n")
         manuscript_hash = hashlib.sha256(manuscript_text.encode("utf-8")).hexdigest()
-        a9 = _build_a9(study, d, manuscript_hash, f"G7_A8_MANUSCRIPT_{study}.md")
+        review_hash = None
+        if review_text:
+            # 05/10/2026 (G8-04): bản nhận xét phản biện được ràng buộc vào A9 (hợp đồng CHUNG-E của cong_song).
+            (d / f"G8_PEER_REVIEW_REPORT_{study}.md").write_text(review_text, encoding="utf-8", newline="\n")
+            review_hash = hashlib.sha256(review_text.encode("utf-8")).hexdigest()
+        a9 = _build_a9(study, d, manuscript_hash, f"G7_A8_MANUSCRIPT_{study}.md", review_sha256=review_hash)
         (d / f"G8_A9_PRESUBMISSION_{study}.md").write_text(a9, encoding="utf-8", newline="\n")
         _write_ledger_approval(d, "G8", a9, "PHAN_BIEN_DOC_LAP")
+
+    def test_ban_nhan_xet_doi_sau_khi_ky_thi_g10_chan(self, tmp_path, monkeypatch):
+        """05/10/2026 (soát từng cổng G8-04): tráo bản nhận xét phản biện SAU khi G8 ký (đổi «Từ chối» thành «Chấp
+        nhận») ⇒ G10 CHẶN như bản thảo bị sửa — bản cũ chỉ hỏi sổ cái G8 (chữ ký chỉ băm A9)."""
+        study = "PYTEST-G10HASH-C5"
+        d = _study_dir(study)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            self._seed_and_sign_g8(d, study, "bản thảo không đổi", review_text="KHUYẾN NGHỊ: TỪ CHỐI\n")
+            assert _run_main(study) == 0, "đối chứng: bản nhận xét giữ nguyên sau ký thì không chặn"
+            (d / f"G8_PEER_REVIEW_REPORT_{study}.md").write_text("KHUYẾN NGHỊ: CHẤP NHẬN\n", encoding="utf-8",
+                                                                  newline="\n")
+            assert _run_main(study) == GC.EXIT_BLOCKED
+            assert (_read_g10_needs_input(d)["reason_code"]
+                    == GC.REASON_MANUSCRIPT_CHANGED_AFTER_PEER_REVIEW)
+        finally:
+            _rmtree_retry(d)
 
     def test_ban_thao_doi_sau_khi_ky_thi_bi_chan(self, tmp_path, monkeypatch):
         study = "PYTEST-G10HASH-C1"
@@ -357,10 +368,9 @@ class TestG10BlocksManuscriptTamperedAfterSigning:
         finally:
             _rmtree_retry(d)
 
-    def test_a9_dinh_dang_cu_khong_co_hash_khong_bi_chan_oan(self, tmp_path, monkeypatch):
-        """Tương thích ngược: đề tài đã ký G8 TRƯỚC bản vá này (A9 không có
-        nhãn hash nhúng) -- không được diễn giải thành "đã bị sửa" và chặn
-        một đề tài hợp lệ đã ký từ trước (BH08)."""
+    def test_a9_khong_nhung_hash_ma_co_ban_thao_thi_g10_chan(self, tmp_path, monkeypatch):
+        """ĐỔI HÀNH VI 05/10/2026 (soát từng cổng G8-03): A9 không nhúng hash mà có bản thảo ⇒ chữ ký G8 không ràng
+        buộc bản thảo nào ⇒ G10 CHẶN như lệch hash (điều kiện cũ `_embedded_hash and …` bỏ qua đúng ca này)."""
         study = "PYTEST-G10HASH-C4"
         d = _study_dir(study)
         try:
@@ -378,7 +388,9 @@ class TestG10BlocksManuscriptTamperedAfterSigning:
                 g8_content_dinh_dang_cu, encoding="utf-8", newline="\n")
             _write_ledger_approval(d, "G8", g8_content_dinh_dang_cu, "PHAN_BIEN_DOC_LAP")
             rc = _run_main(study)
-            assert rc == 0, "A9 định dạng cũ (chưa có hash nhúng) không được chặn oan"
+            assert rc == GC.EXIT_BLOCKED, "A9 không ràng buộc bản thảo đang có — G10 phải chặn"
+            assert (_read_g10_needs_input(d)["reason_code"]
+                    == GC.REASON_MANUSCRIPT_CHANGED_AFTER_PEER_REVIEW)
         finally:
             _rmtree_retry(d)
 

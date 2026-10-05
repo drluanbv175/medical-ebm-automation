@@ -57,6 +57,8 @@ def _fake_report(status: str, criteria=None) -> dict:
     # nay đòi chúng PASS (vắng ⇒ fail-closed). Báo cáo giả mô phỏng một hồ sơ đã đủ các tiêu chí đó.
     nguoi = [{"id": tid, "label": tid, "status": "PASS", "evidence": "giả lập"}
              for tid in ("G2-HUMAN-01", "G8-HUMAN-01", "G8-HUMAN-05",
+                         # 05/10/2026 (soát từng cổng G8-01): kết luận phản biện cho phép nộp.
+                         "G8-HUMAN-06",
                          # 04/10/2026 (soát từng cổng G4): xác nhận EPV/VIF, dữ liệu thiếu, nhóm nhỏ, vai trò, dấu SAP.
                          "G4-HUMAN-04", "G4-HUMAN-05", "G4-HUMAN-06", "G4-HUMAN-07", "G4-HUMAN-08")]
     return {"status": status, "automatic_criteria": criteria or [], "approval_criteria": nguoi,

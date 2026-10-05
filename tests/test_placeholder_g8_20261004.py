@@ -105,7 +105,8 @@ def test_tich_mot_muc_la_da_chon_tich_hai_muc_la_chua():
 
 
 def test_ket_luan_de_ca_hai_lua_chon_va_o_mau():
-    r = REVIEW_REPORT.replace("Cần sửa thêm trước khi nộp.", "Sẵn sàng nộp / cần sửa thêm")
+    r = REVIEW_REPORT.replace("Sẵn sàng nộp.", "Sẵn sàng nộp / cần sửa thêm")
+    assert r != REVIEW_REPORT
     assert any("KẾT LUẬN" in v for v in G8Q.review_report_issues(r))
     o_mau = REVIEW_REPORT + "\nBài: [Tên bài] — ngày [Ngày]\n"
     assert any("ô mẫu" in v for v in G8Q.review_report_issues(o_mau))

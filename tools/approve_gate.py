@@ -191,7 +191,9 @@ _TIEU_CHI_NGUOI_TRUOC_KY: dict[str, tuple[str, ...]] = {
     # dấu nội dung SAP đều kiểm được TRƯỚC lúc ký. Thiếu chúng mà vẫn ghi sổ cái thì tầng sau (G5/G6 đọc
     # ledger_approved("G4")) mở dữ liệu trong khi G4 không bao giờ đạt PASS_G4_SAP_LOCKED.
     "G4": ("G4-HUMAN-04", "G4-HUMAN-05", "G4-HUMAN-06", "G4-HUMAN-07", "G4-HUMAN-08"),
-    "G8": ("G8-HUMAN-01", "G8-HUMAN-05"),
+    # 05/10/2026 (soát từng cổng G8-01): kết luận phản biện phải CHO PHÉP nộp (G8-HUMAN-06) — kiểm được TRƯỚC khi ký;
+    # bản cũ ký được G8 khi người phản biện khuyến nghị TỪ CHỐI/SỬA LỚN hoặc kết luận «cần sửa thêm».
+    "G8": ("G8-HUMAN-01", "G8-HUMAN-05", "G8-HUMAN-06"),
 }
 
 
@@ -890,7 +892,8 @@ def _ky(args: argparse.Namespace) -> int:
                 print("✗ TỪ CHỐI ký G8 — tiêu chí người kiểm được TRƯỚC khi ký chưa đạt:")
                 for item in chua_dat:
                     print(f"   - {item}")
-                print("   Không ghi ledger; người phản biện hoàn tất bản nhận xét + khai COI/độc lập/AI trước khi ký.")
+                print("   Không ghi ledger; người phản biện hoàn tất bản nhận xét + khai COI/độc lập/AI, và kết luận "
+                      "phải CHO PHÉP nộp (chấp nhận/sửa nhỏ, «sẵn sàng nộp», không còn lỗi nghiêm trọng) trước khi ký.")
                 return 1
 
     if args.gate == "G9":
