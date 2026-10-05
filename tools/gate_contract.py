@@ -262,7 +262,7 @@ def _g2_signed_attestation_state(
         design_code, _ = resolve_design_code(Path(out_dir), default="")
         loi = g2_quality.validate_attestation(attestation=attestation, package_text=text, study=study,
                                               design_code=design_code, meta=meta if isinstance(meta, dict) else {},
-                                              today=today)
+                                              today=today, out_dir=Path(out_dir))
     except Exception:  # noqa: BLE001 — bộ kiểm hỏng ⇒ không xác nhận được ⇒ False
         return False
     return not loi
@@ -570,8 +570,20 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
     # mô tả hồ sơ hiện hành; KHÔNG phải phê duyệt. G2 chỉ khóa khi ledger có
     # chữ ký đúng vai trò IRB và phụ lục approval attestation hợp lệ.
     "G2": {
-        "protocol_version": "1.0",
-        "icf_version": "1.0",
+        # VÁ 04/10/2026 (soát từng cổng, G2-08 / QĐ-6): bỏ giá trị gieo «1.0» — phiên bản đề cương/ICF hiện
+        # hành là KHAI BÁO của PI (G2-AUTO-10 giữ REVIEW khi chưa khai). Đề tài cũ mang «1.0» do khuôn gieo:
+        # PI xác nhận lại.
+        "protocol_version": None,
+        "icf_version": None,
+        # G2-07: mục WHO TRDS 9 (tiêu đề công khai, ngôn ngữ đại chúng) và 12 (tình trạng sức khỏe) do PI khai —
+        # không chép tên đề tài khoa học. primary_purpose: ghi đè bảng mặc định khi RCT không phải điều trị
+        # (dự phòng, tầm soát…).
+        "public_title": None,
+        "health_condition": None,
+        "primary_purpose": None,
+        # G2-03 / QĐ-4: thử nghiệm can thiệp (RCT, hoặc safety_plan_required=true) cần G2_SAFETY_PLAN_<study>.md
+        # đủ 5 mục và PI xác nhận — máy chỉ dựng khung.
+        "safety_plan_confirmed": False,
         "recruitment_mode": None,
         "registration_required": None,
         "registration_registry": None,

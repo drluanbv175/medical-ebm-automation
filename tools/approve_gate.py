@@ -378,6 +378,9 @@ def _prepare_g2_attestation(
         return None, errors
 
     base = G2Q.strip_attestation(evidence_content)
+    # VÁ 04/10/2026 (soát từng cổng, G2-08): ghi DẤU ĐẦU VÀO (thiết kế + quyết định G1 + cỡ mẫu G3) mà Hội đồng duyệt —
+    # sửa đề cương/cỡ mẫu sau khi ký làm validate_attestation thất bại (cần sửa đổi đề cương được Hội đồng duyệt).
+    dau_dau_vao, thanh_phan_dau = G2Q.dau_dau_vao_g2(study_dir)
     attestation = {
         "schema_version": G2Q.ATTESTATION_SCHEMA,
         "study": args.study,
@@ -407,6 +410,9 @@ def _prepare_g2_attestation(
         "package_sha256_before_attestation": hashlib.sha256(
             base.encode("utf-8")
         ).hexdigest(),
+        "dau_dau_vao": dau_dau_vao,
+        "dau_dau_vao_gom": {"design_code": thanh_phan_dau.get("design_code"), "g3_n": thanh_phan_dau.get("g3_n"),
+                            "khoa_g1": sorted((thanh_phan_dau.get("g1") or {}).keys())},
         "attested_at": datetime.now(timezone.utc).isoformat(),
         "pii_policy": "Reviewer reference only; no full name/contact/identity document.",
         "disclaimer": "Cần bác sĩ kiểm chứng.",

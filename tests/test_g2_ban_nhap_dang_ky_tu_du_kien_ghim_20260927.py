@@ -18,6 +18,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = REPO_ROOT / "tools"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 STUDY = "PYTEST-G2-TRDS-PINNED"
 
 
@@ -47,11 +48,10 @@ def test_ban_nhap_dang_ky_duoc_lam_moi_du_ho_so_dao_duc_bi_tu_choi_de():
     _rmtree_retry(d)
     try:
         d.mkdir(parents=True)
-        (d / "G1_checkpoint.json").write_text(json.dumps({
-            "gate": "G1",
-            "design": {"internal_code": "cross_sectional", "primary": "Cắt ngang có phân tích",
-                       "reporting_standard": "STROBE", "ambiguous": False},
-        }), encoding="utf-8", newline="\n")
+        # 04/10/2026 (soát từng cổng): G2 CHẤM SỐNG G1 — một G1_checkpoint chỉ có «design» (không artifact, không
+        # G0) là G1 BỊ CHẶN và G2 dừng đúng luật (mã 3). Fixture dựng chuỗi G0→G1 thật (tests/_chuoi_da_chot.py).
+        from _chuoi_da_chot import dung_g0_g1_da_chot  # noqa: PLC0415
+        dung_g0_g1_da_chot(d, STUDY, thiet_ke="cross_sectional")
         r1 = _run_g2()
         assert r1.returncode == 0, r1.stdout[-1500:] + r1.stderr[-800:]
         ho_so = d / f"G2_A3_ETHICS_PACKAGE_{STUDY}.md"

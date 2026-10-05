@@ -16,12 +16,27 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 TOOLS_DIR = REPO_ROOT / "tools"
 PYTHON = sys.executable
 sys.path.insert(0, str(TOOLS_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import approve_gate as AG  # noqa: E402
 import g2_quality_gate as G2Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import run_g2_auto as G2  # noqa: E402
 import skill_standards as S  # noqa: E402
+
+# 04/10/2026 (soát từng cổng G2-04/G2-11): ICF của RCT phải có đủ nhãn mục theo thiết kế ở ĐẦU DÒNG (G2-AUTO-03) và bản
+# tiếng Anh cùng tập mục (G2-AUTO-03b) — fixture «hồ sơ hoàn chỉnh» được bổ sung cho HỢP LỆ theo luật đó.
+_MUC_ICF_RCT_VI = (("1", "MỤC ĐÍCH NGHIÊN CỨU"), ("1b", "NGƯỜI THỰC HIỆN NGHIÊN CỨU"), ("2", "QUY TRÌNH"),
+                   ("2b", "PHÂN NHÓM NGẪU NHIÊN"), ("3", "RỦI RO VÀ BẤT TIỆN"), ("4", "LỢI ÍCH KỲ VỌNG"),
+                   ("4b", "NGUỒN TÀI TRỢ"), ("4c", "HỖ TRỢ KHI THAM GIA"), ("5", "BẢO MẬT THÔNG TIN"),
+                   ("5b", "QUYỀN TRUY CẬP HỒ SƠ GỐC"), ("6", "QUYỀN TỰ NGUYỆN"), ("6b", "LỰA CHỌN THAY THẾ"),
+                   ("6c", "BỒI THƯỜNG"), ("6d", "CHĂM SÓC SAU NGHIÊN CỨU"), ("6f", "THÔNG TIN MỚI"),
+                   ("6g", "THEO DÕI KHI NGỪNG HOẶC RÚT"), ("6h", "CHẤM DỨT THAM GIA"), ("7", "LIÊN HỆ"))
+
+
+def _icf(ngon_ngu: str) -> str:
+    return "\n".join(f"{nhan}. {ten if ngon_ngu == 'vi' else 'SECTION ' + nhan.upper()}\n   Nội dung đã hoàn thiện."
+                     for nhan, ten in _MUC_ICF_RCT_VI)
 
 
 def _package() -> str:
@@ -30,7 +45,9 @@ def _package() -> str:
 ## TÀI LIỆU 2 — Tóm tắt đề cương
 ## TÀI LIỆU 3 — Bảng RỦI RO lợi ích
 ## TÀI LIỆU 4 — PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
+""" + _icf("vi") + """
 ## TÀI LIỆU 5 — English informed consent
+""" + _icf("en") + """
 ## TÀI LIỆU 6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU
 ## TÀI LIỆU 7 — Checklist nộp Hội đồng
 ## TÀI LIỆU 8 — NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH
@@ -67,10 +84,16 @@ def _meta() -> dict:
                 "secondary_outcomes": ["Nhập viện"],
                 # 04/10/2026 (G1-11 / QĐ-15): RCT phải KHAI tường minh Annex 2 (không dùng phương pháp mới ⇒ false).
                 "annex2": {"applicable": False},
+                # 04/10/2026 (G2-07): masking của RCT do PI khai (WHO TRDS mục 15).
+                "blinding": "Double blind (người tham gia và người đánh giá kết cục)",
             },
             "G2": {
                 "protocol_version": "2.1",
                 "icf_version": "2.0",
+                # 04/10/2026 (G2-07, G2-03): mục 9/12 do PI khai; kế hoạch an toàn RCT đã được PI xác nhận.
+                "public_title": "Can thiệp X có giúp người lớn mắc bệnh Y khỏe hơn không",
+                "health_condition": "Bệnh Y ở người trưởng thành",
+                "safety_plan_confirmed": True,
             }
         }
     }
@@ -93,7 +116,22 @@ def _write_registration(tmp_path: Path, study: str) -> Path:
     )
 
 
-def _attestation(study: str, package_text: str, **overrides) -> dict:
+def _dung_chuoi_g0_g1(study_dir: Path, study: str) -> None:
+    from _chuoi_da_chot import dung_g0_g1_da_chot  # noqa: PLC0415
+
+    dung_g0_g1_da_chot(study_dir, study, them_meta={"G2": dict(_meta()["gate_params"]["G2"])})
+    (study_dir / G2Q.ten_ke_hoach_an_toan(study)).write_text(_ke_hoach_an_toan_day_du(study), encoding="utf-8",
+                                                            newline="\n")
+
+
+def _ke_hoach_an_toan_day_du(study: str) -> str:
+    return G2Q.khung_ke_hoach_an_toan(study).replace("[CẦN — chủ nhiệm điền]", "Nội dung chủ nhiệm đã điền và rà.")
+
+
+def _attestation(study: str, package_text: str, meta=None, out_dir=None, **overrides) -> dict:
+    # 04/10/2026 (G2-08): attestation lúc ký gắn DẤU ĐẦU VÀO (thiết kế + quyết định G1 + cỡ mẫu G3) mà Hội đồng duyệt.
+    dau_dau_vao, _ = G2Q.dau_dau_vao_g2(Path(out_dir) if out_dir else Path("/khong-ton-tai-g2"),
+                                        _meta() if meta is None else meta)
     value = {
         "schema_version": G2Q.ATTESTATION_SCHEMA,
         "study": study,
@@ -120,6 +158,7 @@ def _attestation(study: str, package_text: str, **overrides) -> dict:
             G2Q.strip_attestation(package_text).encode("utf-8")
         ).hexdigest(),
         "attested_at": "2026-07-27T10:00:00+07:00",
+        "dau_dau_vao": dau_dau_vao,
         "ethics_committee_ref_source": "explicit",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
@@ -131,6 +170,8 @@ def _evaluate(tmp_path: Path, package_text: str, *, ledger=True, meta=None):
     study = "TEST-G2"
     package_path = tmp_path / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     package_path.write_text(package_text, encoding="utf-8", newline="\n")
+    (tmp_path / G2Q.ten_ke_hoach_an_toan(study)).write_text(_ke_hoach_an_toan_day_du(study), encoding="utf-8",
+                                                           newline="\n")
     registration_path = _write_registration(tmp_path, study)
     return G2Q.evaluate_g2_quality(
         study=study,
@@ -331,12 +372,10 @@ def test_cli_g2_ethics_committee_ref_flag_records_explicit_source(tmp_path):
         package_path = study_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
         package_path.write_text(_package(), encoding="utf-8", newline="\n")
         _write_registration(study_dir, study)
-        (study_dir / "G1_checkpoint.json").write_text(
-            json.dumps(_g1_confirmed(), ensure_ascii=False), encoding="utf-8", newline="\n"
-        )
-        (study_dir / "study_meta.json").write_text(
-            json.dumps(_meta(), ensure_ascii=False), encoding="utf-8", newline="\n"
-        )
+        # 04/10/2026 (soát từng cổng): G2 CHẤM SỐNG G1 (và G1 chấm sống G0) — một G1_checkpoint chỉ ghi
+        # quality_gate=PASS không còn mở cửa; fixture dựng chuỗi G0→G1 đã chốt THẬT (tests/_chuoi_da_chot.py) và kế
+        # hoạch an toàn RCT đầy đủ (G2-03).
+        _dung_chuoi_g0_g1(study_dir, study)
         (study_dir / "G2_checkpoint.json").write_text(
             json.dumps({
                 "study": study,
@@ -555,14 +594,10 @@ def test_human_cli_valid_g2_flow_updates_checkpoint_to_pass(tmp_path):
         package_path = study_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
         package_path.write_text(_package(), encoding="utf-8", newline="\n")
         _write_registration(study_dir, study)
-        (study_dir / "G1_checkpoint.json").write_text(
-            json.dumps(_g1_confirmed(), ensure_ascii=False),
-            encoding="utf-8", newline="\n",
-        )
-        (study_dir / "study_meta.json").write_text(
-            json.dumps(_meta(), ensure_ascii=False),
-            encoding="utf-8", newline="\n",
-        )
+        # 04/10/2026 (soát từng cổng): G2 CHẤM SỐNG G1 (và G1 chấm sống G0) — một G1_checkpoint chỉ ghi
+        # quality_gate=PASS không còn mở cửa; fixture dựng chuỗi G0→G1 đã chốt THẬT (tests/_chuoi_da_chot.py) và kế
+        # hoạch an toàn RCT đầy đủ (G2-03).
+        _dung_chuoi_g0_g1(study_dir, study)
         (study_dir / "G2_checkpoint.json").write_text(
             json.dumps({
                 "study": study,

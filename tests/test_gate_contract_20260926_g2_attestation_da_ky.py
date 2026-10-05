@@ -44,6 +44,8 @@ def _goi(out_dir: Path, **attest) -> Path:
         "valid_until": "2099-12-31", "recruitment_mode": "RETROSPECTIVE_SECONDARY_DATA",
         "registration": {"required": False, "status": "NOT_REQUIRED"},
         "package_sha256_before_attestation": hashlib.sha256(G2Q.strip_attestation(nen).encode("utf-8")).hexdigest(),
+        # 04/10/2026 (G2-08): lệnh ký thật ghi DẤU ĐẦU VÀO (thiết kế + quyết định G1 + cỡ mẫu G3) mà Hội đồng duyệt.
+        "dau_dau_vao": G2Q.dau_dau_vao_g2(out_dir, _meta())[0],
     }
     base.update(attest)
     p = out_dir / f"G2_A3_ETHICS_PACKAGE_{_STUDY}.md"

@@ -422,14 +422,22 @@ _G2_DMP_LINE = "Thời gian lưu: 10 năm sau kết thúc nghiên cứu."
 # Ngày chấm CỐ ĐỊNH: attestation có hạn 2026-07-20 → 2027-07-20; dùng date.today() thì canary tự đỏ khi hết hạn.
 _G2_TODAY = date(2026, 7, 27)
 
+# 04/10/2026 (soát từng cổng G2-04/G2-11): ICF của RCT phải đủ nhãn mục theo thiết kế ở đầu dòng và bản tiếng Anh
+# cùng tập mục — gói TỐT có đủ (nội dung tổng hợp).
+_G2_NHAN_ICF_RCT = ("1", "1b", "2", "2b", "3", "4", "4b", "4c", "5", "5b", "6", "6b", "6c", "6d", "6f", "6g", "6h", "7")
+_G2_ICF_VI_MUC = "\n".join(f"{n}. MỤC {n.upper()}\n   Nội dung đã hoàn thiện." for n in _G2_NHAN_ICF_RCT)
+_G2_ICF_EN_MUC = "\n".join(f"{n}. SECTION {n.upper()}\n   Completed content." for n in _G2_NHAN_ICF_RCT)
+
 _G2_CLEAN_PACKAGE = f"""# A3 — HỒ SƠ ĐẠO ĐỨC
 ## TÀI LIỆU 1 — Đơn xin phê duyệt IRB
 ## TÀI LIỆU 2 — Tóm tắt đề cương
 ## TÀI LIỆU 3 — Bảng RỦI RO lợi ích
 ## TÀI LIỆU 4 — PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
 {_G2_ICF_VI_LINE}
+{_G2_ICF_VI_MUC}
 ## TÀI LIỆU 5 — English informed consent
 {_G2_ICF_EN_LINE}
+{_G2_ICF_EN_MUC}
 ## TÀI LIỆU 6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU
 {_G2_DMP_LINE}
 ## TÀI LIỆU 7 — Checklist nộp Hội đồng
@@ -463,8 +471,13 @@ def _g2_meta() -> Dict[str, Any]:
                 "secondary_outcomes": ["Nhập viện"],
                 # 04/10/2026 (G1-11 / QĐ-15): gói TỐT của RCT phải KHAI tường minh Annex 2 (không phương pháp mới).
                 "annex2": {"applicable": False},
+                # 04/10/2026 (G2-07): masking RCT do PI khai (WHO TRDS mục 15).
+                "blinding": "Double blind",
             },
-            "G2": {"protocol_version": "2.1", "icf_version": "2.0"},
+            # 04/10/2026 (G2-07, G2-03): mục WHO TRDS 9/12 do PI khai; kế hoạch an toàn RCT đã được PI xác nhận.
+            "G2": {"protocol_version": "2.1", "icf_version": "2.0",
+                   "public_title": "Can thiệp canary có giúp người lớn khỏe hơn không",
+                   "health_condition": "Bệnh canary ở người trưởng thành", "safety_plan_confirmed": True},
         }
     }
 
@@ -496,6 +509,8 @@ def _g2_attestation(package_text: str) -> Dict[str, Any]:
             G2Q.strip_attestation(package_text).encode("utf-8")
         ).hexdigest(),
         "attested_at": "2026-07-27T10:00:00+07:00",
+        # 04/10/2026 (G2-08): dấu đầu vào lúc ký (thư mục canary không có G1/G3 checkpoint ⇒ chỉ phụ thuộc meta).
+        "dau_dau_vao": G2Q.dau_dau_vao_g2(Path("/khong-ton-tai-canary-g2"), _g2_meta())[0],
         "ethics_committee_ref_source": "explicit",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
@@ -517,6 +532,10 @@ def _evaluate_g2(tmp_path: Path, package_text: Optional[str] = None) -> Dict[str
     g2_dir.mkdir(parents=True, exist_ok=True)
     package_path = g2_dir / f"G2_A3_ETHICS_PACKAGE_{STUDY}.md"
     package_path.write_text(signed, encoding="utf-8", newline="\n")
+    # 04/10/2026 (G2-03): gói TỐT của RCT có kế hoạch an toàn riêng đủ 5 mục (nội dung tổng hợp).
+    (g2_dir / G2Q.ten_ke_hoach_an_toan(STUDY)).write_text(
+        G2Q.khung_ke_hoach_an_toan(STUDY).replace("[CẦN — chủ nhiệm điền]", "Nội dung đã điền và rà."),
+        encoding="utf-8", newline="\n")
     registration_path = G2Q.build_registration_draft(
         study=STUDY,
         topic="Can thiệp canary ở người trưởng thành",
