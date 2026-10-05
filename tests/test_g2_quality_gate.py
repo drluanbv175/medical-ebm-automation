@@ -65,6 +65,8 @@ def _meta() -> dict:
                 "exclusion_criteria": ["Chống chỉ định can thiệp X"],
                 "primary_outcome": "Kết cục chính",
                 "secondary_outcomes": ["Nhập viện"],
+                # 04/10/2026 (G1-11 / QĐ-15): RCT phải KHAI tường minh Annex 2 (không dùng phương pháp mới ⇒ false).
+                "annex2": {"applicable": False},
             },
             "G2": {
                 "protocol_version": "2.1",

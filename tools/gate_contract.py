@@ -533,12 +533,38 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
             "intercurrent_events_strategy": None,
             "population_summary_measure": None,
         },
+        # 04/10/2026 (G1-02): mọi dòng THUỘC PHẠM VI G1 của đề cương lõi (PHẦN 0 của A2) có một khoá để PI điền —
+        # trước đó in cứng «[CẦN BỔ SUNG]» không có chỗ điền. «N/A — <lý do>» là câu trả lời hợp lệ.
+        "team_roles": None,                  # chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu
+        "background_problem": None,          # vấn đề nghiên cứu và gánh nặng
+        "evidence_summary": None,            # bằng chứng hiện có và giới hạn (tổng hợp từ A2b)
+        "knowledge_gap": None,               # khoảng trống/tính mới (vắng thì dùng G0.novelty_justification)
+        "benefit_risk_rationale": None,
+        "study_schema_timeline": None,       # sơ đồ + lịch tuyển–can thiệp–đánh giá
+        "intervention_dose_adherence": None, # liều/cường độ/thời lượng/tuân thủ hoặc cách đo phơi nhiễm
+        "stopping_rescue_rules": None,       # tiêu chí dừng/chuyển/điều trị cứu hộ (N/A nếu quan sát)
+        "critical_to_quality": None,         # ICH E6(R3): CTQ factors + quality tolerance limits
+        "monitoring_plan": None,
+        # Khoá theo thiết kế (chỉ dòng của thiết kế đang dùng xuất hiện trong đề cương lõi).
+        "randomisation": None, "allocation_concealment": None, "blinding": None,       # rct
+        "target_condition": None, "reference_standard": None,                          # diagnostic
+        "case_definition": None, "control_source": None,                               # case_control
+        "candidate_predictors": None, "prediction_horizon": None,                      # prediction
+        # 04/10/2026 (G1-03): risk register và kinh phí THẬT ghi ở đây (A13/A13b sinh lại từ đó; sửa tay .md bị
+        # ghi đè). Mỗi dòng risk: id/loai/rui_ro/xac_suat/tac_dong/giam_thieu/capa/chu_nhan/trang_thai/ngay_ra;
+        # mỗi dòng budget: nhom/so_luong/don_gia/thanh_tien/trang_thai.
+        "risk_register": [],
+        "budget": [],
+        # 04/10/2026 (G1-11/QĐ-15): RCT phải khai applicable true/false tường minh (None = chưa khai ⇒ REVIEW).
+        "annex2": {"applicable": None, "methodologies": []},
         "bias_controls_confirmed": False,
         "protocol_core_confirmed": False,
         "feasibility_confirmed": False,
         "evidence_review_confirmed": False,
         "reviewed_by_role": None,
         "reviewed_at": None,
+        # 04/10/2026 (G1-09/CHUNG-C): dấu vân tay quyết định đang chốt — chép từ báo cáo G1 (dau_van_tay_hien_tai).
+        "dau_van_tay_chot": None,
     },
     # G2 — metadata phiên bản và đường đi đạo đức/đăng ký. Các trường này chỉ
     # mô tả hồ sơ hiện hành; KHÔNG phải phê duyệt. G2 chỉ khóa khi ledger có
@@ -724,6 +750,13 @@ def resolve_design_code(out_dir: Path, default: str = "cohort") -> Tuple[str, Op
 
     g1 = _read("G1_checkpoint.json", "design", "internal_code")
     g2 = _read("G2_checkpoint.json", "design_code")
+    # VÁ 04/10/2026 (soát từng cổng, G1-05): G1 đã CHẶN vì thiết kế bác sĩ ghim bị từ chối thì thiết kế G1 đang ghi
+    # chỉ là SUY LUẬN — cổng sau không được lặng lẽ dùng nó như thiết kế đã chốt.
+    pin_tu_choi = _read("G1_checkpoint.json", "design", "pin_bi_tu_choi")
+    if pin_tu_choi:
+        return (g2 or g1 or default), (
+            f"⛔ G1 ĐANG CHẶN: thiết kế bác sĩ ghim «{pin_tu_choi}» ngoài 8 mã chuỗi hỗ trợ; "
+            f"mã «{g1}» chỉ là suy luận — PI ghim lại thiết kế có chủ ý rồi chạy lại G1 trước khi đi tiếp.")
     if g1 and g2 and g1 != g2:
         return g2, (f"⚠️  THIẾT KẾ LỆCH GIỮA CÁC CỔNG: G1 suy luận '{g1}' nhưng G2 ghi "
                     f"'{g2}' (thường do bác sĩ truyền --design {g2} ở G2). Đang dùng '{g2}'. "

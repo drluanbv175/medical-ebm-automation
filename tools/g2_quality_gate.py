@@ -953,11 +953,14 @@ def evaluate_g2_quality(
     automatic.append(_criterion(
         "G2-AUTO-02b",
         f"{A2X.VERSION}: IRB/consent/privacy/data governance đủ cho phương pháp mới",
-        "BLOCK" if annex2["status"] == "BLOCK" else "PASS",
+        # VÁ 04/10/2026 (G1-11 / QĐ-15): RCT chưa khai annex2.applicable ⇒ REVIEW (không suy «không áp dụng»).
+        {"BLOCK": "BLOCK", "NEEDS_DECLARATION": "REVIEW"}.get(annex2["status"], "PASS"),
         (
             "; ".join(annex2_issues)
             if annex2_issues
-            else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}"
+            else ("RCT chưa khai gate_params.G1.annex2.applicable (true/false)"
+                  if annex2["status"] == "NEEDS_DECLARATION"
+                  else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}")
         ),
         "Hoàn thiện khối annex2 trong study_meta trước khi nộp/khóa G2.",
     ))

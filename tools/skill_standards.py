@@ -34,6 +34,7 @@ import re
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import unicodedata
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -650,7 +651,8 @@ MA_THIET_KE_CHUOI = frozenset({"rct", "cohort", "case_control", "cross_sectional
 BI_DANH_THIET_KE_CHUOI: Dict[str, str] = {
     "qual": "qualitative", "dinh_tinh": "qualitative",
     "rct_parallel": "rct", "rct_crossover": "rct", "randomized": "rct", "randomised": "rct",
-    "randomized_controlled_trial": "rct", "thu_nghiem_ngau_nhien": "rct",
+    "randomized_controlled_trial": "rct", "randomised_controlled_trial": "rct", "thu_nghiem_ngau_nhien": "rct",
+    "qualitative_study": "qualitative", "nghien_cuu_dinh_tinh": "qualitative",
     "sr": "sr_ma", "systematic_review": "sr_ma", "meta_analysis": "sr_ma", "metaanalysis": "sr_ma",
     "systematic_review_meta_analysis": "sr_ma",
     "case_control_study": "case_control", "cross_sectional_descriptive": "cross_sectional",
@@ -664,11 +666,12 @@ BI_DANH_THIET_KE_CHUOI: Dict[str, str] = {
 def ma_thiet_ke_chuoi(raw: Optional[str]) -> Optional[str]:
     """Mã thiết kế CHUỖI G0–G10 (một trong 8 mã) cho một cách viết bất kỳ; None nếu ngoài 8 mã.
 
-    Gạch nối/khoảng trắng ⇒ gạch dưới; không phân biệt hoa thường. KHÔNG đoán: mã lạ trả None để cổng CHẶN
-    (G1-AUTO-02c), không lặng lẽ thay bằng thiết kế suy luận."""
+    Gạch nối/khoảng trắng ⇒ gạch dưới; không phân biệt hoa thường; bỏ dấu tiếng Việt («Cắt ngang» ≡ «cat_ngang»).
+    KHÔNG đoán: mã lạ trả None để cổng CHẶN (G1-AUTO-02c), không lặng lẽ thay bằng thiết kế suy luận."""
     if raw is None:
         return None
-    key = re.sub(r"[\s\-]+", "_", str(raw).strip().lower())
+    khong_dau = "".join(c for c in unicodedata.normalize("NFD", str(raw)) if not unicodedata.combining(c))
+    key = re.sub(r"[\s\-]+", "_", khong_dau.replace("đ", "d").replace("Đ", "D").strip().lower())
     if not key:
         return None
     ma = BI_DANH_THIET_KE_CHUOI.get(key, key)

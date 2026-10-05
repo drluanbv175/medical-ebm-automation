@@ -32,14 +32,20 @@ FIXTURE_G0_CHECKPOINT = {
     "generated_at": "2026-01-01T00:00:00",
     "topic": "Hiệu quả Metformin trong kiểm soát đường huyết ở bệnh nhân tiền đái tháo đường",
     "base_query": "metformin AND prediabetes",
+    # 04/10/2026 (soát từng cổng, G1-04): G1 chấm SỐNG G0 — fixture phải là checkpoint G0 HỢP LỆ (đủ khoá
+    # pubmed_results của hợp đồng + artifact A1 ghi ở fixture), nếu không G0 sống = BLOCKED và G1 dừng đúng luật.
     "pubmed_results": {
         "total_found": 120,
         "n_pmids": 30,
+        "all_pmids": ["30000001"],
         "n_sr": 4,
         "n_rct": 8,
         "n_guideline": 2,
+        "n_observational": 20,
         "n_recent": 10,
         "most_recent_year": 2025,
+        "counts_are_real": True,
+        "counts_unavailable": [],
     },
     "evidence_level": "Có SR/MA + RCT",
     "research_gaps": [
@@ -111,6 +117,10 @@ def smoke_study():
     (STUDY_DIR / "G0_checkpoint.json").write_text(
         json.dumps(FIXTURE_G0_CHECKPOINT, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
     )
+    if str(Path(__file__).resolve().parent) not in sys.path:  # thư mục tests (không phụ thuộc thứ tự chạy)
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from test_g0_quality_gate_20260728 import _artifact_text as _g0_a1  # noqa: PLC0415
+    (STUDY_DIR / f"G0_A1_PICO_FINER_{STUDY}.md").write_text(_g0_a1(), encoding="utf-8", newline="\n")
     try:
         yield STUDY
     finally:

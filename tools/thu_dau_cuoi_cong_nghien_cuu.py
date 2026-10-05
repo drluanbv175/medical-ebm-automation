@@ -461,6 +461,8 @@ def _g2_meta() -> Dict[str, Any]:
                 "exclusion_criteria": ["Chống chỉ định can thiệp canary"],
                 "primary_outcome": "Kết cục tổng hợp canary",
                 "secondary_outcomes": ["Nhập viện"],
+                # 04/10/2026 (G1-11 / QĐ-15): gói TỐT của RCT phải KHAI tường minh Annex 2 (không phương pháp mới).
+                "annex2": {"applicable": False},
             },
             "G2": {"protocol_version": "2.1", "icf_version": "2.0"},
         }
