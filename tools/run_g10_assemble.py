@@ -2312,6 +2312,36 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
     return True, ""
 
 
+# Hạn hiệu lực của TRẠNG THÁI RÚT BÀI (CLAUDE.md §6.4: 30 ngày cho trạng thái rút bài; 180 ngày cho tồn tại/metadata).
+A12_RUT_BAI_HAN_NGAY = 30
+
+
+def han_bien_nhan_rut_bai(out_dir: Path, *,
+                          bay_gio: Optional[datetime] = None) -> tuple[Optional[str], Optional[float]]:
+    """(cảnh báo | None, tuổi tính bằng ngày) của `A12_RETRACTION_RECEIPT.json` — None khi còn trong hạn.
+
+    THÊM 05/10/2026 (soát từng cổng G10-05, dùng chung G9): citation_verification_ok kiểm all_clean/băm/chữ ký/độ phủ
+    nhưng KHÔNG kiểm tuổi — một bài bị rút SAU lần kiểm cũ vẫn qua, gói khoá giữ LOCKED mãi. G9 (khoá gói nộp tạp chí)
+    và G10 (khoá gói phát hành) là hai lúc gửi ra ngoài: biên nhận cũ hơn A12_RUT_BAI_HAN_NGAY ngày ⇒ chạy lại
+    check_citations.py TRƯỚC khi ký. Không đọc được mốc kiểm ⇒ coi như hết hạn (không đo được ≠ còn hạn)."""
+    try:
+        receipt = json.loads((Path(out_dir) / "A12_RETRACTION_RECEIPT.json").read_text(encoding="utf-8"))
+        moc = datetime.fromisoformat(str(receipt.get("checked_at_utc") or "").replace("Z", "+00:00"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError, AttributeError):
+        return ("không đọc được mốc kiểm rút bài (checked_at_utc) của A12_RETRACTION_RECEIPT.json — coi như hết "
+                "hạn"), None
+    if moc.tzinfo is None:
+        return "checked_at_utc của biên nhận rút bài thiếu múi giờ — coi như hết hạn", None
+    now = bay_gio or datetime.now(moc.tzinfo)
+    tuoi = (now - moc).total_seconds() / 86400
+    if tuoi > A12_RUT_BAI_HAN_NGAY:
+        return (f"biên nhận rút bài A12 đã {tuoi:.0f} ngày (> {A12_RUT_BAI_HAN_NGAY} ngày — trạng thái rút bài hết "
+                "hạn): chạy lại `python tools/check_citations.py --study <mã> --pmids <...>` trước khi ký"), tuoi
+    if tuoi < -1:
+        return "checked_at_utc của biên nhận rút bài ở tương lai — kiểm đồng hồ/biên nhận", tuoi
+    return None, tuoi
+
+
 def metadata_verification_ok(study: str, out_dir: Path, required_pmids: set) -> tuple[bool, str]:
     """Điều kiện (e) của cổng A12 — đối chiếu receipt máy-kiểm METADATA
     (`A12_METADATA_RECEIPT.json`, ghi bởi `tools/check_citation_metadata.py`).

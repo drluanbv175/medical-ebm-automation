@@ -396,7 +396,10 @@ def g9_quality_contract_satisfied(
     """True khi G9 được chấm trực tiếp là đã khóa liêm chính công bố.
 
     Không tin ``submission_package_ready`` hoặc report JSON lưu sẵn. Việc chấm
-    trực tiếp bắt lại thay đổi ở manuscript/readiness/A12/G8 sau chữ ký PI.
+    trực tiếp bắt lại thay đổi ở manuscript/readiness/A12/G8 sau chữ ký PI
+    (manifest G9-AUTO-07); từ 05/10/2026 (G9-04) G9-AUTO-03 còn chấm SỐNG G8 —
+    bản thảo/bản nhận xét sửa SAU bình duyệt G8 (kể cả trước khi PI ký G9) cũng
+    làm G9 mất READY/LOCKED.
     """
     try:
         import g9_quality_gate as g9_quality  # noqa: PLC0415

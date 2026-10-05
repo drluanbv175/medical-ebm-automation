@@ -1114,15 +1114,12 @@ def real_world_signals(checkpoints: Dict[str, Dict],
                 except (ImportError, OSError, RuntimeError, ValueError):
                     integ = False
             else:
-                integ = (
-                    meta.get("g9_quality_status")
-                    == "PASS_G9_PUBLICATION_INTEGRITY_LOCKED"
-                )
+                # SỬA 05/10/2026 (soát từng cổng G9-10): không chấm sống được ⇒ CHƯA khoá. Bản cũ rơi về
+                # meta["g9_quality_status"] — trường g9_quality_gate không bao giờ lưu (dòng gán đã bỏ), tức chỉ có
+                # thể là giá trị gõ tay/cũ: «tin bản lưu» đúng lớp lỗi đã đóng ở G4/G5/G8.
+                integ = False
         else:
-            integ = (
-                meta.get("g9_quality_status")
-                == "PASS_G9_PUBLICATION_INTEGRITY_LOCKED"
-            )
+            integ = False
     else:
         integ = (
             g9.get("submission_package_ready") is True and _guardrail_passed(g9)
