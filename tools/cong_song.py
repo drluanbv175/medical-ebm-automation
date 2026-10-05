@@ -184,9 +184,22 @@ def iso_khong_tuong_lai(v: Any) -> bool:
     return t <= (datetime.now(tz=t.tzinfo) if t.tzinfo else datetime.now())
 
 
+def _rong(v: Any) -> bool:
+    return v is None or (isinstance(v, (str, list, tuple, set, dict)) and len(v) == 0)
+
+
 def _chuan_tac(v: Any) -> Any:
+    # VÁ 04/10/2026 (soát từng cổng, phát hiện khi làm G3): khoá KHÔNG có nội dung (None, "", [], {} — kể cả dict con
+    # rỗng sau khi lọc) bị bỏ khỏi dấu vân tay. Trước đây ensure_study_meta thêm khoá khuôn rỗng (team_roles: None,
+    # annex2: {applicable: None, methodologies: []}…) làm ĐỔI dấu G1/G0 và vô hiệu xác nhận của PI dù không ai đổi quyết
+    # định nào. False và 0 VẪN là nội dung.
     if isinstance(v, Mapping):
-        return {str(k): _chuan_tac(x) for k, x in sorted(v.items(), key=lambda kv: str(kv[0]))}
+        ra = {}
+        for k, x in sorted(v.items(), key=lambda kv: str(kv[0])):
+            cx = _chuan_tac(x)
+            if not _rong(cx):
+                ra[str(k)] = cx
+        return ra
     if isinstance(v, (list, tuple)):
         return [_chuan_tac(x) for x in v]
     if isinstance(v, set):

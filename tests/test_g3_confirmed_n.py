@@ -35,18 +35,12 @@ import gate_contract as GC  # noqa: E402
 
 
 def _mk_upstream(study_dir: Path):
-    study_dir.mkdir(parents=True, exist_ok=True)
-    (study_dir / "G0_checkpoint.json").write_text(json.dumps({
-        "study": study_dir.name, "gate": "G0",
-        "topic": "Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh",
-        "base_query": "patient satisfaction outpatient",
-    }, ensure_ascii=False), encoding="utf-8", newline="\n")
-    (study_dir / "G1_checkpoint.json").write_text(json.dumps({
-        "study": study_dir.name, "gate": "G1",
-        "design": {"internal_code": "cross_sectional", "primary": "Cắt ngang mô tả",
-                   "reporting_standard": "STROBE"},
-        "effect_size_samples": [],
-    }, ensure_ascii=False), encoding="utf-8", newline="\n")
+    # 04/10/2026 (soát từng cổng): G3 CHẤM SỐNG G1 — G1_checkpoint chỉ có «design» là G1 BỊ CHẶN và G3 dừng đúng luật.
+    # Fixture dựng chuỗi G0→G1 đã chốt thật cho thiết kế cắt ngang (tests/_chuoi_da_chot.py), không mẫu effect size.
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _chuoi_da_chot import dung_g0_g1_da_chot
+    dung_g0_g1_da_chot(study_dir, study_dir.name, thiet_ke="cross_sectional", mau_hieu_qua=[])
 
 
 def _run(study: str, extra=None):

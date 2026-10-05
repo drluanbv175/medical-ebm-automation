@@ -501,7 +501,10 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
     # G1 — quyết định phương pháp do PI/methodologist xác nhận. Hệ chỉ sinh
     # dự thảo và kiểm nhất quán; không tự bật các cờ xác nhận người thật.
     "G1": {
-        "protocol_version": "1.0",
+        # VÁ 04/10/2026 (soát từng cổng, QĐ-6 — phát hiện khi làm G3): khuôn KHÔNG gieo «1.0» — phiên bản đề cương là
+        # KHAI BÁO của PI. Giá trị gieo sẵn còn làm ĐỔI dấu vân tay G1 mỗi lần một cổng sau gọi ensure_study_meta
+        # (khoá vắng ⇒ được điền «1.0») và vô hiệu xác nhận của PI.
+        "protocol_version": None,
         "design": None,
         "design_confirmed": False,
         "design_rationale": None,

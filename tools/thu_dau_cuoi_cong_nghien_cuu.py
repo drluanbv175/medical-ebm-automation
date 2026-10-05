@@ -170,13 +170,19 @@ def _evaluate_g3(tmp_path: Path, *, checkpoint=None, meta=None, artifact=None) -
     artifact_path.write_text(
         _g3_artifact() if artifact is None else artifact, encoding="utf-8", newline="\n"
     )
+    checkpoint = _g3_checkpoint() if checkpoint is None else checkpoint
+    if meta is None:
+        # 04/10/2026 (soát từng cổng G3-03): xác nhận của thống kê viên trong gói TỐT gắn dấu vân tay của ĐÚNG các giá
+        # trị quyết định N đang chấm (lỗi gài đổi giá trị thì dấu lệch ⇒ bị bắt đúng luật).
+        meta = _g3_full_meta()
+        meta["gate_params"]["G3"]["dau_van_tay_chot"] = G3Q.dau_van_tay_g3(_g3_checkpoint())
     return G3Q.evaluate_g3_quality(
         study=STUDY,
-        checkpoint=_g3_checkpoint() if checkpoint is None else checkpoint,
+        checkpoint=checkpoint,
         artifact_path=artifact_path,
         g0_checkpoint={"gate": "G0"},
         g1_checkpoint={"gate": "G1"},
-        meta=_g3_full_meta() if meta is None else meta,
+        meta=meta,
     )
 
 
