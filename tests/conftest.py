@@ -1,4 +1,6 @@
-"""Cấu hình test: dùng database SQLite tạm, bật mock sources, không gọi mạng thật, không ghi vào data/ thật."""
+"""Cấu hình test: dùng database SQLite tạm, bật mock sources, không gọi mạng thật, không ghi vào data/ thật, không chạm
+khoá ký thật (~/.ebm-secrets)."""
+import atexit
 import os
 import shutil
 import subprocess
@@ -18,6 +20,29 @@ os.environ["ALERT_WEBHOOK_URL"] = ""
 # DB riêng cho test để không đụng DB thật.
 _tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
 os.environ["DATABASE_URL"] = f"sqlite:///{_tmp.name}"
+
+# ── Khoá ký THẬT ở ~/.ebm-secrets: chốt canh + khoá GIẢ — 05/10/2026 ─────────────
+# Đo trước khi vá (bộ test đầy đủ trên Mac của bác sĩ, đầu dò chặn trước khi mở): 78 test / 22 tệp mở khoá HMAC chung
+# và khoá riêng Ed25519 THẬT để ký sổ cái tạm — gate_contract rơi về ~/.ebm-secrets khi EBM_GATE_KEY_PATH vắng (71 test
+# ngay trong tiến trình này, 7 test qua tiến trình con approve_gate.py / run_g9_auto.py / g4_quality_gate.py).
+# Đặt ở đây — TRƯỚC `from app.config import settings` và trước khi thu thập test — để chốt thấy cả lúc import.
+from tests import canh_bi_mat_that as CBM  # noqa: E402
+
+# Miễn trừ ĐỌC (lỗ ĐÃ BIẾT, không thêm để «cho hết đỏ»): app/config.py nạp tệp biến môi trường này lúc import ở mọi
+# tiến trình, kể cả trước conftest — phải khớp `app.config._SECRETS_ENV.name` (test canh gác đối chiếu). Ghi/xoá/đổi
+# tên tệp đó vẫn bị chặn.
+TEP_ENV_APP_CONFIG = "medical-ebm-automation.env"
+_CANH_BI_MAT_THAT = CBM.dang_ky(CBM.CanhBiMat(CBM.THU_MUC_BI_MAT_THAT, mien_tru_doc=(TEP_ENV_APP_CONFIG,)))
+
+# Khoá ký GIẢ mặc định cho CẢ PHIÊN. ÉP (không setdefault): một EBM_GATE_KEY_PATH sót lại trong shell không được lọt
+# vào test. Đặt lúc import nên che cả lúc thu thập, fixture phạm vi rộng và tiến trình con (kế thừa os.environ, còn
+# PYTEST_CURRENT_TEST cho gate_contract biết đang trong test). Fixture `_khoa_ky_gia_tung_test` bên dưới thay bằng
+# khoá mới cho từng test.
+KHOA_ENV = "EBM_GATE_KEY_PATH"
+_THU_MUC_KHOA_GIA_PHIEN = Path(tempfile.mkdtemp(prefix="ebm-khoa-gia-phien-"))
+atexit.register(shutil.rmtree, _THU_MUC_KHOA_GIA_PHIEN, True)
+KHOA_GIA_PHIEN = CBM.tao_khoa_gia(_THU_MUC_KHOA_GIA_PHIEN)
+os.environ[KHOA_ENV] = str(KHOA_GIA_PHIEN)
 
 # ── V4.2.1: Hermetic OFFLINE CI guard (chỉ kích hoạt khi MRAQ_OFFLINE_CI=1) ────
 # Mục tiêu: FAIL nếu có API key / runtime live, và CHẶN mọi kết nối mạng outbound.
@@ -113,6 +138,7 @@ _HANG_CHOT_LUC_IMPORT = (
 )
 
 _KHOA_TONG_KET = pytest.StashKey[TongKet]()
+_KHOA_TONG_KET_BI_MAT = pytest.StashKey[list]()
 
 _subprocess_run = subprocess.run
 
@@ -166,64 +192,114 @@ def _db():
     yield
 
 
-# ── Chốt canh thư mục dữ liệu thật: nối vào vòng đời của pytest ────────────────
+@pytest.fixture(autouse=True)
+def _khoa_ky_gia_tung_test(tmp_path_factory, monkeypatch):
+    """Mỗi test một khoá ký GIẢ mới (EBM_GATE_KEY_PATH), trong thư mục tạm riêng — KHÔNG phải tmp_path của test, để
+    test liệt kê tmp_path của mình không thấy tệp lạ.
+
+    Khoá vai trò `<khoá>_<NHÓM>` và khoá Ed25519 mà gate_contract tìm CẠNH khoá giả nên test nào tạo chúng thì tạo trong
+    thư mục riêng này, không lây sang test sau. Test tự đặt khoá khác (monkeypatch.setenv trong thân test hoặc trong
+    fixture của nó) vẫn thắng vì chạy SAU fixture này. Fixture phạm vi rộng hơn đã tự đặt một giá trị khác khoá mặc định
+    của phiên thì để nguyên; biến bị xoá mất (một test trước `del os.environ[...]`) thì đặt lại."""
+    hien_tai = os.environ.get(KHOA_ENV)
+    if hien_tai and hien_tai != str(KHOA_GIA_PHIEN):
+        yield
+        return
+    monkeypatch.setenv(KHOA_ENV, str(CBM.tao_khoa_gia(tmp_path_factory.mktemp("khoa-gia"))))
+    yield
+
+
+# ── Chốt canh thư mục dữ liệu thật + thư mục bí mật thật: nối vào vòng đời của pytest ─
 def pytest_runtest_logstart(nodeid, location):
-    for canh in cac_canh():
+    for canh in (*cac_canh(), *CBM.cac_canh()):
         canh.test_dang_chay = nodeid
 
 
 def pytest_runtest_logfinish(nodeid, location):
-    for canh in cac_canh():
+    for canh in (*cac_canh(), *CBM.cac_canh()):
         canh.test_dang_chay = NGOAI_TEST
+
+
+_DAU_DU_LIEU_THAT = "CHỐT CANH DỮ LIỆU THẬT — test này đã ghi/đổi tên/xoá tệp trong thư mục dữ liệu thật của cây:"
+_DUOI_DU_LIEU_THAT = (
+    "Bộ test chỉ được ghi vào thư mục tạm mà tests/conftest.py đã trỏ `settings.data_dir` sang. Test (hoặc mã nó",
+    "gọi) đang đi vòng: đặt lại settings.data_dir về thư mục thật, dùng một hằng module chốt đường dẫn lúc import",
+    "(thêm vào _HANG_CHOT_LUC_IMPORT), hoặc đường dẫn viết cứng. Chi tiết: tests/canh_ghi_du_lieu_that.py.",
+)
+_DAU_BI_MAT_THAT = ("CHỐT CANH BÍ MẬT THẬT — test này đã chạm thư mục khoá thật của máy (thao tác đã bị CHẶN, khoá "
+                    "không bị đọc):")
+_DUOI_BI_MAT_THAT = (
+    f"Bộ test chỉ được dùng khoá GIẢ mà tests/conftest.py đặt ở {KHOA_ENV}. Test (hoặc mã nó gọi) đang đi vòng:",
+    f"xoá/bỏ qua {KHOA_ENV}, dựng `env=` cho tiến trình con mà bỏ biến đó, đường dẫn viết cứng",
+    "`Path.home() / \".ebm-secrets\"`, hoặc một hằng module chốt đường dẫn đó lúc import.",
+    "Chi tiết: tests/canh_bi_mat_that.py.",
+)
+
+
+def _thong_diep_vi_pham(cac, nodeid, dau, duoi):
+    """Thông điệp đỏ cho các vi phạm của test `nodeid` ở nhóm chốt `cac` (None nếu không có)."""
+    dong = []
+    for canh in cac:
+        cua_test = canh.rut_cua_test(nodeid)
+        if cua_test:
+            dong.append(f"  {canh.goc}")
+            dong.extend(dong_vi_pham(cua_test, kem_test=False))
+    return "\n".join([dau, *dong, *duoi]) if dong else None
 
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    """Test nào ghi vào thư mục được canh thì ĐỎ ngay ở chính test đó (báo cáo teardown: mọi finalizer đã chạy xong)."""
+    """Test nào ghi vào thư mục dữ liệu được canh, hoặc chạm thư mục bí mật thật, thì ĐỎ ngay ở chính test đó (báo cáo
+    teardown: mọi finalizer đã chạy xong)."""
     ket_qua = yield
     if call.when != "teardown":
         return
-    dong = []
-    for canh in cac_canh():
-        cua_test = canh.rut_cua_test(item.nodeid)
-        if cua_test:
-            dong.append(f"  {canh.goc}")
-            dong.extend(dong_vi_pham(cua_test, kem_test=False))
-    if not dong:
+    cac_muc = []   # (tên mục, thông điệp)
+    for ten, cac, dau, duoi in (
+        ("chốt canh dữ liệu thật", cac_canh(), _DAU_DU_LIEU_THAT, _DUOI_DU_LIEU_THAT),
+        ("chốt canh bí mật thật", CBM.cac_canh(), _DAU_BI_MAT_THAT, _DUOI_BI_MAT_THAT),
+    ):
+        thong_diep = _thong_diep_vi_pham(cac, item.nodeid, dau, duoi)
+        if thong_diep:
+            cac_muc.append((ten, thong_diep))
+    if not cac_muc:
         return
-    thong_diep = "\n".join([
-        "CHỐT CANH DỮ LIỆU THẬT — test này đã ghi/đổi tên/xoá tệp trong thư mục dữ liệu thật của cây:",
-        *dong,
-        "Bộ test chỉ được ghi vào thư mục tạm mà tests/conftest.py đã trỏ `settings.data_dir` sang. Test (hoặc mã nó",
-        "gọi) đang đi vòng: đặt lại settings.data_dir về thư mục thật, dùng một hằng module chốt đường dẫn lúc import",
-        "(thêm vào _HANG_CHOT_LUC_IMPORT), hoặc đường dẫn viết cứng. Chi tiết: tests/canh_ghi_du_lieu_that.py.",
-    ])
     bao_cao = ket_qua.get_result()
     if bao_cao.passed:
         bao_cao.outcome = "failed"
-        bao_cao.longrepr = thong_diep
+        bao_cao.longrepr = "\n\n".join(thong_diep for _ten, thong_diep in cac_muc)
     else:
-        bao_cao.sections.append(("chốt canh dữ liệu thật", thong_diep))
+        bao_cao.sections.extend(cac_muc)
 
 
 def pytest_sessionfinish(session, exitstatus):
-    """Cuối phiên: phần ghi chưa test nào nhận + so danh sách tệp đầu↔cuối phiên ⇒ đỏ thì ép mã thoát khác 0."""
+    """Cuối phiên: phần ghi/chạm chưa test nào nhận + so danh sách tệp đầu↔cuối phiên ⇒ đỏ thì ép mã thoát khác 0."""
     tk = tong_ket(cac_canh(), nghiem=OFFLINE_CI)
     session.config.stash[_KHOA_TONG_KET] = tk
-    if not tk.do:
+    do_bi_mat = CBM.tong_ket(CBM.cac_canh())
+    session.config.stash[_KHOA_TONG_KET_BI_MAT] = do_bi_mat
+    if not (tk.do or do_bi_mat):
         return
     if session.exitstatus == pytest.ExitCode.OK:
         session.exitstatus = pytest.ExitCode.TESTS_FAILED
     if session.config.option.no_summary:  # --no-summary tắt mục tổng kết bên dưới: vẫn phải nói vì sao đỏ
-        print("\n".join(["CHỐT CANH THƯ MỤC DỮ LIỆU THẬT — LỖI:", *tk.do]), file=sys.stderr)
+        if tk.do:
+            print("\n".join(["CHỐT CANH THƯ MỤC DỮ LIỆU THẬT — LỖI:", *tk.do]), file=sys.stderr)
+        if do_bi_mat:
+            print("\n".join(["CHỐT CANH THƯ MỤC BÍ MẬT THẬT — LỖI:", *do_bi_mat]), file=sys.stderr)
 
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     tk = config.stash.get(_KHOA_TONG_KET, None)
-    if tk is None or not (tk.do or tk.ghi_chu):
-        return
-    terminalreporter.section("chốt canh thư mục dữ liệu thật", sep="=", red=bool(tk.do), yellow=not tk.do, bold=True)
-    for dong in tk.do:
-        terminalreporter.write_line(dong, red=True)
-    for dong in tk.ghi_chu:
-        terminalreporter.write_line(dong, yellow=True)
+    if tk is not None and (tk.do or tk.ghi_chu):
+        terminalreporter.section("chốt canh thư mục dữ liệu thật", sep="=", red=bool(tk.do), yellow=not tk.do,
+                                 bold=True)
+        for dong in tk.do:
+            terminalreporter.write_line(dong, red=True)
+        for dong in tk.ghi_chu:
+            terminalreporter.write_line(dong, yellow=True)
+    do_bi_mat = config.stash.get(_KHOA_TONG_KET_BI_MAT, None)
+    if do_bi_mat:
+        terminalreporter.section("chốt canh thư mục bí mật thật", sep="=", red=True, bold=True)
+        for dong in do_bi_mat:
+            terminalreporter.write_line(dong, red=True)
