@@ -142,10 +142,12 @@ def test_moi_script_r_sinh_ra_phan_tich_cu_phap_duoc_va_chot_khoa_chay_that(tmp_
     khoi = khoi.replace('"--study", STUDY)', '"--study", STUDY, "--repo-root", REPO_EXPORTS)')
     chay = _ghi(tmp_path / "chay_khoa.R", (
         "args <- commandArgs(TRUE)\nSTUDY <- args[1]; REPO <- args[2]; REPO_EXPORTS <- args[3]\n"
-        f"Sys.setenv(EBM_PYTHON = '{sys.executable}')\n"
         "kq <- tryCatch({\n" + khoi + "\npaste('OK', basename(LOCKED_DATA))\n}, error = function(e) "
         "paste('STOP', conditionMessage(e)))\ncat(kq, '\\n')\n"))
     env = dict(os.environ)  # có PYTEST_CURRENT_TEST + EBM_GATE_KEY_PATH (khoá giả) ⇒ công cụ con dùng khoá giả
+    # Trình Python đi qua BIẾN MÔI TRƯỜNG (đúng lối 00_setup.R đọc), KHÔNG nhét vào chuỗi R: đường dẫn Windows
+    # «C:\hostedtoolcache\…» trong nháy R thành ký tự thoát «\h» ⇒ R không phân tích được script (CI Windows 06/10).
+    env["EBM_PYTHON"] = sys.executable
     da_khoa = subprocess.run([RSCRIPT, str(chay), study, str(REPO_ROOT), str(goc)], capture_output=True, text=True,
                              timeout=180, env=env)
     assert da_khoa.stdout.strip().startswith("OK") and ".locked.csv" in da_khoa.stdout, da_khoa.stdout + da_khoa.stderr
