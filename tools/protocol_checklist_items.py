@@ -158,6 +158,21 @@ assert all(S.canonical_design_code(k) == k for k in _PROTOCOL_CHECKLIST_BY_DESIG
 assert all(S.canonical_design_code(k) == k for k in _NO_ITEM_LIST_REASON)
 
 
+def pmid_tai_lieu_chuan() -> frozenset:
+    """PMID của bài CHUẨN ĐỀ CƯƠNG mà chính hệ thống chèn vào đề cương (SPIRIT 2025, PRISMA-P 2015 — nguồn đã xác minh
+    ghi ở *_PROVENANCE). Bộ kiểm đề cương (check_de_cuong R4) dùng tập này để KHÔNG gắn «nghi bịa» cho trích dẫn do hệ
+    chèn (06/10/2026 — chuỗi thật SR/MA tới G10 bị chặn «nghi bịa: 25554246»). Không miễn kiểm rút bài: G10-AUTO-05
+    vẫn đòi A12 phủ các PMID này trước khi phát hành."""
+    import re
+
+    tap = set()
+    for nguon in (SPIRIT_2025_PROVENANCE, PRISMA_P_2015_PROVENANCE):
+        for gia_tri in nguon.values():
+            if isinstance(gia_tri, str):
+                tap.update(re.findall(r"PMID (\d{6,9})", gia_tri))
+    return frozenset(tap)
+
+
 def items_for_design(design_code: Optional[str]):
     """(tên chuẩn, tuple item, provenance) cho thiết kế có checklist protocol theo mục; None nếu không.
 

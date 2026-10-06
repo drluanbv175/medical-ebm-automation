@@ -553,6 +553,8 @@ def _package_files(
     tuy_chon = {
         "g1_protocol_design": out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md",
         "g2_registration_draft": out_dir / f"G2_REGISTRATION_DRAFT_{study}.json",
+        # 06/10/2026: kế hoạch an toàn RCT (G2-03) — §Thiết kế/StudySpec trỏ sang nó cho mục tác hại (R03).
+        "g2_safety_plan": out_dir / f"G2_SAFETY_PLAN_{study}.md",
         "g3_sample_size": out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md",
     }
     if day_du:

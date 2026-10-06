@@ -243,6 +243,7 @@ _GLYPH_SUBSTITUTE = {
     "∎": "■",    # U+220E END OF PROOF      -> ô vuông đặc
     "✅": "■",    # U+2705 dấu tick đậm      -> ô vuông đặc (Times KHÔNG có glyph tick nào)
     "⚠": "‼",    # U+26A0 biển cảnh báo     -> U+203C hai chấm than
+    "ℹ": "►",    # U+2139 nguồn thông tin   -> U+25BA mũi trỏ (06/10/2026: biểu ngữ «GÓI CAPSTONE G10» của đề cương)
     "\ufe0f": "",  # VARIATION SELECTOR-16 — bộ chọn hiển thị emoji, vô nghĩa khi
                     # không có font emoji; để lại sẽ thành ô vuông trống.
 }

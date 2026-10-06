@@ -889,7 +889,7 @@ def evaluate_study(study: str, out_dir: Path, *, write: bool = True,
     if (out_dir / f"A12_CITATION_VERIFICATION_{study}.md").exists():
         try:
             import run_g10_assemble as G10  # noqa: PLC0415 — import lười
-            citation_ok, citation_detail = G10.citation_verification_ok(study, out_dir)
+            citation_ok, citation_detail = G10.citation_verification_ok(study, out_dir, kiem_ban_g10=False)
         except Exception as exc:  # noqa: BLE001 — không đo được ≠ sạch
             citation_ok, citation_detail = False, f"không chấm được A12: {type(exc).__name__}"
     else:

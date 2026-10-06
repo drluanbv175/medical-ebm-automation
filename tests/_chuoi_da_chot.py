@@ -36,6 +36,16 @@ _CAU_HOI_THEO_THIET_KE = {
     "sr_ma": ("therapy", "superiority"),
 }
 
+# Quyết định RCT của G1 (gate_params.G1 — khung gate_contract) cho chuỗi RCT chốt thật (06/10/2026).
+_G1_RCT_QUYET_DINH = {
+    "randomisation": "Danh sách ngẫu nhiên khối hoán vị (cỡ khối 4–6) sinh bằng phần mềm, phân tầng theo cơ sở",
+    "allocation_concealment": "Phân bổ trung tâm qua hệ thống trực tuyến; người tuyển không tiếp cận trình tự",
+    "blinding": "Người đánh giá kết cục và thống kê viên được làm mù; người tham gia không làm mù được",
+    "stopping_rescue_rules": "Ngừng can thiệp cho người tham gia khi có biến cố bất lợi nghiêm trọng liên quan",
+    "study_schema_timeline": "Sàng lọc tuần 0 → phân bổ → can thiệp 12 tuần → đánh giá kết cục tuần 12",
+    "intervention_dose_adherence": "Can thiệp X 3 buổi/tuần trong 12 tuần; tuân thủ đo bằng nhật ký buổi tham gia",
+}
+
 # Khoá G1 riêng theo thiết kế mà G1-HUMAN-02/03/04 đòi (giá trị tổng hợp, không PII).
 _G1_THEO_THIET_KE = {
     "qualitative": {
@@ -126,6 +136,12 @@ def dung_g0_g1_da_chot(out_dir: Path, study: str, *, them_meta: Optional[Dict[st
             meta[khoa] = gia_tri
     if thiet_ke == "rct":
         design = _design()
+        # 06/10/2026 (CHUNG-H RCT tới G10): một G1 RCT chốt thật có đủ quyết định ngẫu nhiên hoá/che giấu/làm mù/dừng/
+        # lịch trình/liều–tuân thủ (G1-AUTO-07 đòi trên A2 sinh thật; G2 TRDS #15 và §6 đề cương G10 đọc lại) — đồ gá cũ
+        # để trống vì A2 của đồ gá là văn bản tĩnh. Giá trị tổng hợp, không PII.
+        for khoa, gia_tri in _G1_RCT_QUYET_DINH.items():
+            if not meta["gate_params"]["G1"].get(khoa):
+                meta["gate_params"]["G1"][khoa] = gia_tri
     else:
         chuan = S.reporting_standards_for(thiet_ke)
         design = _design(internal_code=thiet_ke, primary=f"Thiết kế {thiet_ke}", reporting_standard=chuan["primary"],

@@ -1872,7 +1872,7 @@ def evaluate_study(study: str, out_dir: Path, *, repo_root: Optional[Path] = Non
 
     try:
         import run_g10_assemble as G10
-        citation_ok, citation_detail = G10.citation_verification_ok(study, out_dir)
+        citation_ok, citation_detail = G10.citation_verification_ok(study, out_dir, kiem_ban_g10=False)
     except Exception as exc:  # pragma: no cover - lưới an toàn
         citation_ok, citation_detail = False, f"không kiểm được A12: {exc}"
 

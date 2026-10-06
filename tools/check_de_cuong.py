@@ -77,6 +77,11 @@ sys.path.insert(0, str(TOOLS))
 import research_study_spec as RS  # noqa: E402
 import skill_standards as S  # noqa: E402
 
+try:  # cùng tinh thần rào của R18: thiếu module ⇒ luật dùng nó báo N/A, không sập cả bộ kiểm
+    import protocol_checklist_items as PCI  # noqa: E402
+except ImportError:  # pragma: no cover
+    PCI = None
+
 # Nhãn "trông giống marker": mở ngoặc vuông + bắt đầu bằng các từ khoá này.
 _MARKER_WORD_RE = re.compile(r"\[\s*(CẦN|ĐÃ|DỰ THẢO|CHƯA)\b[^\]]*\]")
 # THÊM 2026-07-06: "[CẦN — giải thích tự do]" (CẦN + em-dash + văn bản) là quy
@@ -357,7 +362,10 @@ def validate(md_path, out_dir) -> Dict:
     seed = _seed_pmids(out_dir)        # chỉ có trong checkpoint (chưa chắc đối chiếu raw)
     receipt, receipt_expired, receipt_invalid = _receipt_pmids(out_dir)
     doc_pmids = {m.group(1) for m in _PMID_RE.finditer(text)}
-    fabricated = sorted(doc_pmids - raw - seed - receipt)  # không ở đâu cả → bịa
+    # 06/10/2026 (CHUNG-H): bài chuẩn đề cương do HỆ chèn (SPIRIT 2025/PRISMA-P 2015) có nguồn — không phải «nghi bịa».
+    chuan_he_thong = PCI.pmid_tai_lieu_chuan() if PCI is not None else frozenset()
+    he_thong = sorted((doc_pmids & chuan_he_thong) - raw - seed - receipt)
+    fabricated = sorted(doc_pmids - raw - seed - receipt - set(he_thong))  # không ở đâu cả → bịa
     seed_only = sorted((doc_pmids & seed) - raw)  # ở seed nhưng KHÔNG ở raw
     receipt_only = sorted((doc_pmids & receipt) - raw - seed)  # chỉ biên nhận
     expired_hit = sorted((doc_pmids & receipt_expired) - raw - seed - receipt)
@@ -375,7 +383,12 @@ def validate(md_path, out_dir) -> Dict:
             f"R4 PMID KHÔNG TRUY ĐƯỢC VỀ BẤT KỲ NGUỒN NÀO (nghi bịa): "
             f"{', '.join(fabricated[:10])}.{_exp_note}")
         checks["R4_pmid_traceable"] = f"FAIL ({len(fabricated)} PMID không nguồn)"
-    elif seed_only or receipt_only:
+    elif seed_only or receipt_only or he_thong:
+        if he_thong:
+            warnings.append(
+                f"R4 GHI CHÚ: {len(he_thong)} PMID là bài chuẩn đề cương do hệ thống chèn (SPIRIT 2025/PRISMA-P 2015 "
+                f"— nguồn đã xác minh trong protocol_checklist_items): {', '.join(he_thong)}. Vẫn phải chạy A12 (kiểm "
+                "rút bài + metadata) trên các PMID này trước khi phát hành (G10-AUTO-05).")
         # KHÔNG fail, nhưng PHẢI cảnh báo rõ từng mức bảo đảm — không được báo
         # 'đều truy được' như cũ (bug tự-chứng-nhận).
         if seed_only:
@@ -394,7 +407,7 @@ def validate(md_path, out_dir) -> Dict:
                 f"{', '.join(receipt_only[:10])}.")
         checks["R4_pmid_traceable"] = (
             f"WARN ({len(raw_verified)} đối chiếu raw, {len(seed_only)} chỉ-seed, "
-            f"{len(receipt_only)} biên-nhận cần bác sĩ kiểm)")
+            f"{len(receipt_only)} biên-nhận cần bác sĩ kiểm, {len(he_thong)} chuẩn đề cương của hệ thống)")
     else:
         checks["R4_pmid_traceable"] = (
             f"PASS ({len(raw_verified)}/{len(doc_pmids)} PMID đối chiếu PubMed raw)")
@@ -728,7 +741,8 @@ def validate(md_path, out_dir) -> Dict:
     # 06/09/2026 chưa có bảng này, và thiếu bảng không làm nội dung khoa học sai —
     # nó chỉ làm hội đồng khó tick. Dùng cùng nguồn item với G10 (một sự thật).
     try:
-        import protocol_checklist_items as PCI
+        if PCI is None:
+            raise ImportError("protocol_checklist_items")
         design_code = (spec.get("design") or {}).get("code")
         found = PCI.items_for_design(design_code)
         if found:

@@ -61,6 +61,49 @@ from tests.test_g10_quality_gate import _complete_readiness  # noqa: E402
 from tests.test_research_study_spec import _complete_meta  # noqa: E402
 
 PMID_GOI = ("12345678", "30560792")  # PMID gốc của chuỗi + PMID nguồn giả định G3 mà đề cương G10 trích
+# Đề cương G10 của RCT trích SPIRIT 2025 (tools/protocol_checklist_items.py: PMID 40294593, 40294956) — gói phát hành
+# phải có A12 phủ cả hai, như PI chạy check_citations.py trên MỌI PMID của gói cuối.
+PMID_SPIRIT_2025 = ("40294593", "40294956")
+# Mục SPIRIT của RCT KHÔNG thuộc quyết định G1 — PI khai ở study_meta khi soạn đề cương (giá trị tổng hợp, không PII).
+_SPIRIT_RCT_NGOAI_G1 = {
+    "comparator_rationale": "Chăm sóc chuẩn là thực hành hiện hành tại đơn vị — so sánh trực tiếp lợi ích tăng thêm",
+    "concomitant_care_policy": "Điều trị thường quy được phép; cấm tham gia chương trình can thiệp tương tự",
+    "design_specific": {
+        "randomization_type": "Ngẫu nhiên khối hoán vị, phân tầng theo cơ sở",
+        "allocation_access": "Chỉ điều phối viên trung tâm không tham gia tuyển hay đánh giá",
+        "unblinding_procedure": "Mở mù khi có biến cố bất lợi nghiêm trọng theo quy trình của hội đồng theo dõi",
+        "ppi_plan": "Đại diện người bệnh góp ý tài liệu thông tin và kết cục quan trọng ở giai đoạn thiết kế",
+    },
+}
+
+
+# Mục theo thiết kế KHÔNG thuộc quyết định G0/G1 — PI khai ở study_meta khi soạn đề cương (StudySpec X01/M01/S01/Q01/
+# Q02; giá trị tổng hợp, không PII). Chỉ số index test của chẩn đoán đến từ G1 (intervention_or_exposure).
+_DE_CUONG_THEO_THIET_KE = {
+    "rct": _SPIRIT_RCT_NGOAI_G1,
+    "diagnostic": {"design_specific": {
+        "reference_standard": "Tiêu chuẩn tham chiếu của hội chuyên ngành, người đọc không biết kết quả test chỉ điểm",
+        "threshold": "Ngưỡng dương tính định trước theo y văn; ngưỡng khác chỉ là phân tích thăm dò"}},
+    "prediction": {"design_specific": {
+        "validation": "Kiểm định nội bằng bootstrap 500 lần, hiệu chỉnh độ lạc quan",
+        "calibration": "Độ dốc hiệu chuẩn, hiệu chuẩn tổng thể và đồ thị hiệu chuẩn",
+        "discrimination": "Thống kê C kèm KTC 95%"}},
+    "sr_ma": {"design_specific": {
+        "eligibility": "Thử nghiệm ngẫu nhiên so sánh can thiệp X với chăm sóc chuẩn ở người trưởng thành",
+        "risk_of_bias": "RoB 2 cho từng kết cục, hai người đánh giá độc lập"}},
+    "qualitative": {"design_specific": {
+        "reflexivity": "Nhật ký phản tư của người phỏng vấn; vai trò và quan hệ với người tham gia được khai",
+        "audit_trail": "Lưu vết quyết định mã hoá và phiên bản codebook theo ngày",
+        "qda_software": "Mã tay theo codebook trên bảng tính"}},
+}
+# PMID mà đề cương G10 của thiết kế trích do HỆ chèn (chuẩn đề cương / công thức cỡ mẫu G3) — gói phát hành phải có A12
+# phủ, như PI chạy check_citations.py trên MỌI PMID của gói cuối.
+_PMID_HE_THONG = {"rct": PMID_SPIRIT_2025, "sr_ma": ("25554246",), "diagnostic": ("7063747",)}
+# Khoá mà G1 của chuỗi đã chốt — đề cương phải lấy từ G1, PI KHÔNG khai lại ở cấp cao (CHUNG-F).
+_KHOA_G1_DA_CHOT = ("objectives", "population", "inclusion_criteria", "exclusion_criteria", "recruitment_plan",
+                    "setting", "study_period")
+THIET_KE_DAU_CUOI = ("rct", "cohort", "case_control", "cross_sectional", "diagnostic", "prediction", "sr_ma",
+                     "qualitative")
 
 
 def _ck(bao: dict, ma: str) -> dict:
@@ -107,9 +150,17 @@ def _ho_so_g2_that(out: Path, thiet_ke: str) -> None:
         "g2_irb_number": "IRB-REF-2026-01", "g2_approval_date": "2026-01-05", "g2_icf_version": "1.0",
     })
     _ghi(cp_path, json.dumps(cp, ensure_ascii=False, indent=2))
+    if thiet_ke == "rct":
+        # G2-03: RCT có kế hoạch an toàn riêng (5 mục) + PI xác nhận ở gate_params.G2.safety_plan_confirmed.
+        _ghi(out / G2Q.ten_ke_hoach_an_toan(out.name), G2Q.khung_ke_hoach_an_toan(out.name).replace(
+            "[CẦN — chủ nhiệm điền]", "Nội dung chủ nhiệm đã điền và rà."))
+        meta_p = out / "study_meta.json"
+        meta = json.loads(meta_p.read_text(encoding="utf-8"))
+        meta["gate_params"].setdefault("G2", {})["safety_plan_confirmed"] = True
+        _ghi(meta_p, json.dumps(meta, ensure_ascii=False, indent=2))
 
 
-def _noi_dung_de_cuong(out: Path, study: str) -> None:
+def _noi_dung_de_cuong(out: Path, study: str, thiet_ke: str = "cohort") -> None:
     """Chủ nhiệm soạn nội dung đề cương (StudySpec D01–D18, trang bìa, công cụ, tài liệu tham khảo) vào study_meta —
     MỌI ô [CẦN] của đề cương thống nhất phải đến từ dữ kiện người khai hoặc hệ đã xác minh. Kết cục chính lấy đúng
     khối G1 đã chốt; các mô tả kết cục ở các cổng là CÙNG một kết cục ⇒ chủ nhiệm xác nhận bằng dấu vân tay CLI in
@@ -118,7 +169,11 @@ def _noi_dung_de_cuong(out: Path, study: str) -> None:
     meta = json.loads(meta_p.read_text(encoding="utf-8"))
     noi_dung = _complete_meta()
     noi_dung.pop("design_code", None)
+    for khoa in _KHOA_G1_DA_CHOT:
+        noi_dung.pop(khoa, None)
     kc1 = dict(meta["gate_params"]["G1"]["primary_outcome"])
+    # Khối kết cục cấp cao là CẢ khối (bộ chấm G1 đọc nó trước gate_params.G1) — giữ tên/thời điểm G1, thêm định
+    # nghĩa vận hành, nguồn đo, tên biến.
     noi_dung["primary_outcome"] = dict(kc1, definition="Thay đổi điểm thang Y từ ban đầu đến tuần 12",
                                        source="Thang điểm Y đã thẩm định", variable_name="primary_outcome")
     noi_dung["analysis"] = dict(noi_dung["analysis"], primary_outcome=kc1["name"])
@@ -130,6 +185,7 @@ def _noi_dung_de_cuong(out: Path, study: str) -> None:
         "pmids": list(PMID_GOI),
         "tai_lieu_tieng_viet_khong_ap_dung": "Đề tài chỉ trích tài liệu đã có PMID; không dùng luận văn trong nước.",
     })
+    noi_dung.update(_DE_CUONG_THEO_THIET_KE.get(thiet_ke, {}))
     for khoa, gia_tri in noi_dung.items():
         meta.setdefault(khoa, gia_tri)
     _ghi(meta_p, json.dumps(meta, ensure_ascii=False, indent=2))
@@ -155,11 +211,12 @@ def _a12_that(study: str, out: Path, goc: Path, monkeypatch) -> None:
 def _de_tai_g10_that(tmp_path: Path, monkeypatch, thiet_ke: str = "cohort") -> tuple[str, Path, Path]:
     """G0→G9 KHOÁ (chuỗi thật; A12 chạy trên đủ PMID gói trích) → chủ nhiệm soạn nội dung đề cương → lắp G10 → PI
     hoàn tất hồ sơ phát hành → lắp lại (manifest + dấu tài liệu)."""
-    study, out, goc = _de_tai_g9_that(tmp_path, monkeypatch, thiet_ke, pmid_a12=PMID_GOI)
+    study, out, goc = _de_tai_g9_that(tmp_path, monkeypatch, thiet_ke,
+                                      pmid_a12=PMID_GOI + _PMID_HE_THONG.get(thiet_ke, ()))
     append_signed_approval(study, out / G9Q.CHECKPOINT_JSON, "G9", "PI_PROJECT_OWNER", repo_root=goc)
     assert _cham9(study, out, goc, write=True)["status"] == G9Q.STATUS_LOCKED
     _ho_so_g2_that(out, thiet_ke)
-    _noi_dung_de_cuong(out, study)
+    _noi_dung_de_cuong(out, study, thiet_ke)
     _lap_g10(goc, study, monkeypatch)
     _ghi(out / G10Q.READINESS_JSON, json.dumps(_complete_readiness(study), ensure_ascii=False, indent=2))
     _lap_g10(goc, study, monkeypatch)
@@ -221,7 +278,7 @@ def _de_tai_truoc_irb(tmp_path: Path, monkeypatch, *, muc_dich: str = "ETHICS_SU
 
 # ── CHUNG-H: chuỗi THẬT G0→G9 khoá → G10 READY → PI khoá → ràng buộc ─────────────────────────────────────────────────
 
-@pytest.mark.parametrize("thiet_ke", ["cohort"])
+@pytest.mark.parametrize("thiet_ke", THIET_KE_DAU_CUOI)
 def test_chung_h_dau_cuoi_g10_toi_ready_khoa_va_rang_buoc(tmp_path, monkeypatch, thiet_ke):
     study, out, goc = _de_tai_g10_that(tmp_path, monkeypatch, thiet_ke)
     bao = _cham10(study, out, goc)
@@ -229,10 +286,15 @@ def test_chung_h_dau_cuoi_g10_toi_ready_khoa_va_rang_buoc(tmp_path, monkeypatch,
     cp = json.loads((out / G10Q.CHECKPOINT_JSON).read_text(encoding="utf-8"))
     tep = cp["release_manifest"]["files"]
     # G10-04: manifest gồm artifact hợp đồng của các cổng tiền đề + artifact G5 + script R/Python của luồng phân tích.
+    if thiet_ke == "rct":
+        assert (tep.get("g2_safety_plan") or {}).get("sha256"), "kế hoạch an toàn G2 của RCT phải nằm trong manifest"
+    duong_r = thiet_ke in ("qualitative", "sr_ma")  # CLI Python từ chối hai thiết kế này — tóm tắt G6 từ 03_analysis.R
     for khoa in ("g2_ethics_package", "g4_sap_final", "g5_data_lock_manifest", "g5_data_management",
-                 "g5_data_dictionary", "g6_analysis_scripts", "g6_analysis_summary", "g6_script_03_analysis",
-                 "g6_script_run_analysis_cli_py", "g7_manuscript", "g8_peer_review", "g8_peer_review_report",
-                 "g9_publication_readiness", "checkpoint_g6", "checkpoint_g7", "checkpoint_g9"):
+                 "g5_data_dictionary", "g6_analysis_scripts", "g6_script_03_analysis", "g7_manuscript",
+                 "g8_peer_review", "g8_peer_review_report", "g9_publication_readiness", "checkpoint_g6",
+                 "checkpoint_g7", "checkpoint_g9",
+                 *(("g6_analysis_summary_r",) if duong_r
+                   else ("g6_analysis_summary", "g6_script_run_analysis_cli_py"))):
         assert (tep.get(khoa) or {}).get("sha256"), khoa
     # G10-02: dấu lắp ráp đúng hai tài liệu cuối.
     md = out / f"DE_CUONG_THONG_NHAT_{study}.md"
@@ -241,6 +303,12 @@ def test_chung_h_dau_cuoi_g10_toi_ready_khoa_va_rang_buoc(tmp_path, monkeypatch,
     noi_dung = md.read_text(encoding="utf-8")
     assert "[CẦN" not in noi_dung and "BẢN NHÁP" not in noi_dung
     assert "PMID: 30560792" in noi_dung and "Tạp chí thử nghiệm" in noi_dung  # Vancouver từ biên nhận A12
+    # CHUNG-F: quyết định G1 (PI không khai lại ở cấp cao) có mặt trong đề cương thống nhất.
+    g1 = json.loads((out / "study_meta.json").read_text(encoding="utf-8"))["gate_params"]["G1"]
+    for gia_tri in (g1["setting"], g1["study_period"], g1["population"], g1["inclusion_criteria"][0],
+                    g1["exclusion_criteria"][0], g1["recruitment_strategy"], g1["objectives"][0],
+                    g1["primary_outcome"]["name"]):
+        assert gia_tri in noi_dung, gia_tri
 
     _ky_g10(study, out, goc)
     bao = _cham10(study, out, goc)
@@ -506,10 +574,14 @@ def test_lo_chuoi_that_vancouver_tu_bien_nhan_a12():
 def test_lo_chuoi_that_tai_lieu_tham_khao_chi_dung_metadata_khi_a12_dat(tmp_path, monkeypatch, a12_dat):
     (tmp_path / "A12_METADATA_RECEIPT.json").write_text(json.dumps({"metadata": {"12345678": {
         "status": "resolved", **_METADATA_THU}}}, ensure_ascii=False), encoding="utf-8", newline="\n")
-    monkeypatch.setattr(G10A, "citation_verification_ok", lambda study, out_dir: (a12_dat, ""))
+    goi = []
+    monkeypatch.setattr(G10A, "citation_verification_ok",
+                        lambda study, out_dir, **kw: goi.append(kw) or (a12_dat, ""))
     cps = {"G0": {"pmids_used_as_seed": ["12345678"]}, "G7": {}}
     meta = {"_g10": {"out_dir": str(tmp_path)}, "tai_lieu_tieng_viet": ["Tác giả C (2024). Luận văn trong nước."]}
     van_ban = G10A.sec_tltk(cps, meta)
+    # CHUNG-H: danh mục tham khảo KHÔNG đối chiếu đề cương CŨ trên đĩa (bản đang được lắp thay nó).
+    assert goi and all(kw.get("kiem_ban_g10") is False for kw in goi), goi
     assert "Tài liệu tham khảo tiếng Việt (chủ nhiệm khai)" in van_ban and "Luận văn trong nước" in van_ban
     if a12_dat:
         assert "Nguồn thử nghiệm tổng hợp. Tạp chí thử nghiệm. 2018. PMID: 12345678." in van_ban
@@ -539,3 +611,253 @@ def test_g10_skill_standards_khong_tin_g10_quality_status_luu_tay(study):
     tin_hieu = S.real_world_signals({"G10": {"quality_contract_version": G10Q.QUALITY_CONTRACT_VERSION,
                                              "study": study}}, meta={"g10_quality_status": G10Q.STATUS_LOCKED})
     assert tin_hieu["release_locked"] is False
+
+
+# ── CHUNG-H đầu–cuối RCT (06/10/2026): lộ khi chạy chuỗi THẬT RCT tới G10 ──────────────────────────────────────────
+
+def test_chung_h_de_cuong_g10_khong_lam_tut_cong_truoc_da_khoa(tmp_path, monkeypatch):
+    """Đề cương G10 trích một PMID chưa có trong biên nhận A12 ⇒ chỉ G10 bị giữ (G10-AUTO-05); G7/G8/G9 đã khoá KHÔNG
+    tụt ngược. Bản cũ: hàm A12 dùng chung đối chiếu cả đề cương G10 cho G7/G8/G9 ⇒ lắp G10 cho RCT (đề cương trích PMID
+    SPIRIT 2025) làm G7 DRAFT, G8 BLOCKED, G9 mất khoá."""
+    study, out, goc = _de_tai_g10_that(tmp_path, monkeypatch)
+    md = out / f"DE_CUONG_THONG_NHAT_{study}.md"
+    md.write_text(md.read_text(encoding="utf-8") + "\nTham khảo bổ sung: PMID: 99999999\n", encoding="utf-8",
+                  newline="\n")
+    CS.xoa_dem()
+    for gate, khoa in (("G7", "PASS_G7_CONFIRMED"), ("G8", "PASS_G8_REVIEW_RECORDED"),
+                       ("G9", "PASS_G9_PUBLICATION_INTEGRITY_LOCKED")):
+        assert CS.trang_thai_song(gate, study, out, repo_root=goc)["status"] == khoa, gate
+    a05 = _ck(_cham10(study, out, goc), "G10-AUTO-05")
+    assert a05["status"] == "REVIEW" and "99999999" in a05["evidence"], a05
+    # Lắp lại: danh mục tài liệu tham khảo KHÔNG phụ thuộc đề cương CŨ trên đĩa (PMID lạ ở bản cũ không biến Vancouver
+    # đã xác minh thành ô «[CẦN BỔ SUNG]»).
+    _lap_g10(goc, study, monkeypatch)
+    moi_md = md.read_text(encoding="utf-8")
+    assert "99999999" not in moi_md and "PMID: 12345678 — [CẦN" not in moi_md
+    assert "PMID: 12345678." in moi_md
+
+
+def test_chung_h_studyspec_dung_quyet_dinh_g1_cho_de_cuong_rct():
+    """Quyết định RCT PI đã CHỐT ở G1 (gate_params.G1) nuôi §6 đề cương G10 qua StudySpec — không bắt khai lại."""
+    import research_study_spec as RS
+
+    from tests._chuoi_da_chot import _G1_RCT_QUYET_DINH
+
+    meta = {"design_code": "rct", "gate_params": {
+        "G0": {"intervention": "Can thiệp X", "comparison": "Chăm sóc chuẩn"},
+        "G1": dict(_G1_RCT_QUYET_DINH, intervention_or_exposure="Chương trình X có cấu trúc"),
+        "G2": {"safety_plan_confirmed": True}}}
+    spec = RS.build_study_spec("S-RCT", {"G1": {"design": {"internal_code": "rct"}}}, meta)
+    ds, ei = spec["design_specific"], spec["exposure_intervention"]
+    assert ds["randomization"] == _G1_RCT_QUYET_DINH["randomisation"]
+    assert ds["allocation_concealment"] == _G1_RCT_QUYET_DINH["allocation_concealment"]
+    assert ds["blinding"] == _G1_RCT_QUYET_DINH["blinding"]
+    assert ds["stopping_rules"] == _G1_RCT_QUYET_DINH["stopping_rescue_rules"]
+    assert ds["schedule"] == _G1_RCT_QUYET_DINH["study_schema_timeline"]
+    assert "G2_SAFETY_PLAN_S-RCT.md" in ds["harms"]
+    assert ei["description"].startswith("Chương trình X có cấu trúc; Can thiệp X 3 buổi/tuần")
+    assert ei["comparator"] == "Chăm sóc chuẩn"
+    assert not [r["id"] for r in RS.missing_requirements(spec) if r["id"].startswith("R0")]
+    # Khoá riêng của study_meta (PI khai lại có chủ ý) vẫn THẮNG giá trị G1.
+    meta["design_specific"] = {"randomization": "Ngẫu nhiên đơn giản theo phong bì"}
+    spec = RS.build_study_spec("S-RCT", {"G1": {"design": {"internal_code": "rct"}}}, meta)
+    assert spec["design_specific"]["randomization"] == "Ngẫu nhiên đơn giản theo phong bì"
+    # Chưa xác nhận kế hoạch an toàn ⇒ không trỏ (R03 còn thiếu).
+    meta["gate_params"]["G2"]["safety_plan_confirmed"] = False
+    spec = RS.build_study_spec("S-RCT", {"G1": {"design": {"internal_code": "rct"}}}, meta)
+    assert "harms" not in spec["design_specific"] or not spec["design_specific"].get("harms")
+
+
+@pytest.mark.parametrize("khoa_g1, khoa_ds", [
+    ("masking", "blinding"), ("randomization", "randomization"), ("follow_up_schedule", "schedule"),
+    ("reference_standard", "reference_standard"), ("target_condition", "target_condition"),
+    ("search_strategy", "search_strategy")])
+def test_chung_h_studyspec_nhan_khoa_g1_thay_the_va_theo_thiet_ke(khoa_g1, khoa_ds):
+    """Khoá G1 thay thế mà run_g1_auto cũng nhận (masking, randomization, follow_up_schedule) và khoá của thiết kế chẩn
+    đoán/tổng quan hệ thống đều nuôi design_specific — không riêng tên chuẩn của RCT."""
+    import research_study_spec as RS
+
+    meta = {"gate_params": {"G1": {khoa_g1: "Quyết định đã chốt ở G1"}}}
+    spec = RS.build_study_spec("S-X", {}, meta)
+    assert spec["design_specific"][khoa_ds] == "Quyết định đã chốt ở G1"
+
+
+@pytest.mark.parametrize("ds, co", [
+    ({"blinding": "Người đánh giá kết cục được làm mù"}, "Người đánh giá kết cục được làm mù"),
+    ({"blinding_who": "Người đánh giá", "blinding_how": "Mã hoá nhóm"}, "Người đánh giá — Mã hoá nhóm"),
+    ({}, f"{G10A.TAG_BS} — {G10A.TAG_BS}"),
+])
+def test_chung_h_dong_lam_mu_doc_quyet_dinh_g1_khi_chua_tach(ds, co):
+    """Quyết định làm mù chốt ở G1 là MỘT câu (ai + cách) — §6.3 in nguyên câu đó khi PI chưa tách ai/cách."""
+    assert f"(SPIRIT 24a/24b):** {co}\n" in G10A._sec_thietke_rct_subsections({"design_specific": ds})
+
+
+# ── CHUNG-H 8 thiết kế + CHUNG-F (06/10/2026): lộ khi chạy chuỗi THẬT cắt ngang/chẩn đoán/dự báo/SR/định tính ──
+
+@pytest.mark.parametrize("loai, co, khong", [
+    ("descriptive_precision", ["DESCRIPTIVE_PRECISION", "không có biên Δ"], ["Margin Δ", "[CẦN"]),
+    ("precision", ["DESCRIPTIVE_PRECISION"], ["Margin Δ"]),
+    ("non_inferiority", ["NON_INFERIORITY — Margin Δ = 0.1"], []),
+    ("equivalence", ["EQUIVALENCE — Margin Δ = 0.1"], []),
+    ("superiority", [], ["Loại giả thuyết (tự động từ G3)"]),
+    ("khong_ro_loai", [], ["Margin Δ"]),
+])
+def test_chung_h_dong_gia_thuyet_chi_in_bien_cho_ni_tuong_duong(loai, co, khong):
+    """Đề cương mô tả (cắt ngang — thiết kế của C1a) từng in «Margin Δ = [CẦN…] [CẦN Hội đồng… CONSORT-NI]» ⇒ R3 chặn
+    G10. Biên Δ chỉ thuộc NI/tương đương; mô tả nói rõ không có biên."""
+    van_ban = G10A.sec_cauhoi({"G1": {}, "G3": {"hypothesis_type": loai, "margin": 0.1}}, {})
+    dong = next((d for d in van_ban.splitlines() if d.startswith("**Loại giả thuyết")), "")
+    for chuoi in co:
+        assert chuoi in dong, chuoi
+    for chuoi in khong:
+        assert chuoi not in dong, chuoi
+
+
+@pytest.mark.parametrize("meta, co, khong", [
+    ({"recruitment_plan": "Chọn mẫu hệ thống phân tầng theo ngày × khung giờ"},
+     ["Chọn mẫu hệ thống phân tầng theo ngày × khung giờ"], [f"{G10A.TAG_BS} — phương pháp chọn mẫu"]),
+    ({"sampling_method": "Chọn mẫu liên tiếp", "recruitment_plan": "Sàng lọc tại quầy tiếp đón"},
+     ["Chọn mẫu liên tiếp", "**Quy trình tuyển:** Sàng lọc tại quầy tiếp đón"], []),
+    ({"population": "Người bệnh ngoại trú từ đủ 18 tuổi"},
+     ["**Quần thể nghiên cứu:** Người bệnh ngoại trú từ đủ 18 tuổi"], []),
+    ({}, [f"{G10A.TAG_BS} — phương pháp chọn mẫu"], ["Quần thể nghiên cứu"]),
+])
+def test_chung_f_muc_doi_tuong_in_quan_the_va_quy_trinh_tuyen(meta, co, khong):
+    """StudySpec D07 nhận chọn mẫu HOẶC quy trình tuyển (G1 recruitment_strategy) — mục Đối tượng phải in cùng thứ đó,
+    không in «[CẦN BỔ SUNG]» khi PI đã chốt cách tuyển ở G1 (C1a)."""
+    van_ban = G10A.sec_doituong({}, meta)
+    for chuoi in co:
+        assert chuoi in van_ban, chuoi
+    for chuoi in khong:
+        assert chuoi not in van_ban, chuoi
+
+
+def _meta_kieu_c1a() -> dict:
+    """Quyết định CHỈ nằm ở gate_params (đúng hình dạng study_meta của C1a đo 06/10/2026 — giá trị tổng hợp)."""
+    return {"design_code": "cross_sectional", "gate_params": {
+        "G0": {"population": "Quần thể G0", "intervention": "Phơi nhiễm G0", "comparison": "Không có",
+               "primary_outcome": "Kết cục G0", "primary_outcome_measure": "Thang 5 mức",
+               "primary_outcome_timepoint": "Một lần sau khám", "novelty_justification": "Khoảng trống G0"},
+        "G1": {"research_question": "Câu hỏi G1?", "objectives": ["MT1 G1", "MT2 G1"], "setting": "Bối cảnh G1",
+               "study_period": "Năm 2027", "population": "Quần thể G1", "inclusion_criteria": ["Chọn G1"],
+               "exclusion_criteria": ["Loại G1"], "recruitment_strategy": "Chọn mẫu hệ thống G1",
+               "primary_outcome": {"name": "Kết cục G1", "measure": "Mục đơn Likert 5 mức",
+                                   "timepoint": "Ngay sau khi khám"},
+               "secondary_outcomes": ["Kết cục phụ G1"], "follow_up_schedule": "Đo một lần",
+               "design_rationale": "Lý do thiết kế G1", "background_problem": "Vấn đề G1",
+               "knowledge_gap": "Khoảng trống G1", "evidence_summary": "Tổng hợp chứng cứ G1",
+               "benefit_risk_rationale": "Lợi ích–nguy cơ G1", "team_roles": "Chủ nhiệm, thống kê viên"}}}
+
+
+def test_chung_f_studyspec_dung_quyet_dinh_g0_g1_khong_bat_khai_lai():
+    """C1a (đo trên bản sao 06/10/2026): G1 đủ câu hỏi/mục tiêu/bối cảnh/thời gian/quần thể/tiêu chuẩn/cách tuyển/kết
+    cục nhưng StudySpec chỉ đọc khoá cấp cao ⇒ D02/D03/D05–D08 «thiếu», đề cương in «[CẦN BỔ SUNG]». Nay G1 là nguồn
+    kế tiếp (G0 sau cùng); khoá cấp cao vẫn thắng."""
+    spec = RS.build_study_spec("S-C1A", {}, _meta_kieu_c1a())
+    assert spec["question"]["text"] == "Câu hỏi G1?"
+    assert spec["objectives"]["specific"] == ["MT1 G1", "MT2 G1"]
+    assert (spec["design"]["setting"], spec["design"]["period"]) == ("Bối cảnh G1", "Năm 2027")
+    assert spec["design"]["rationale"] == "Lý do thiết kế G1"
+    pop = spec["population"]
+    assert (pop["description"], pop["inclusion"], pop["exclusion"], pop["recruitment"]) == (
+        "Quần thể G1", ["Chọn G1"], ["Loại G1"], "Chọn mẫu hệ thống G1")
+    kc = spec["outcomes"]["primary"]
+    assert (kc["name"], kc["definition"], kc["timepoint"]) == (
+        "Kết cục G1", "Mục đơn Likert 5 mức", "Ngay sau khi khám")
+    assert spec["outcomes"]["secondary"] == [{"name": "Kết cục phụ G1"}]
+    assert spec["data_collection"]["measurement_times"] == "Đo một lần"
+    assert (spec["rationale"]["problem"], spec["rationale"]["evidence_gap"]) == ("Vấn đề G1", "Khoảng trống G1")
+    assert spec["literature"]["summary"] == "Tổng hợp chứng cứ G1"
+    assert spec["ethics"]["benefit_risk"] == "Lợi ích–nguy cơ G1"
+    assert spec["resources"]["team"] == "Chủ nhiệm, thống kê viên"
+    assert spec["question"]["pico"] == {"p": "Quần thể G0", "i_e": "Phơi nhiễm G0", "c": "Không có", "o": "Kết cục G0"}
+    thieu = {r["id"] for r in RS.missing_requirements(spec)}
+    assert not thieu & {"D02", "D03", "D05", "D06", "D07"}, thieu
+    assert "D08" in thieu  # nguồn đo kết cục chưa ai khai — vẫn phải báo
+    # Khoá cấp cao (PI ghi đè có chủ ý) thắng; thiếu G1 thì lùi về G0.
+    meta = _meta_kieu_c1a()
+    meta.update({"research_question": "Câu hỏi cấp cao?", "population": "Quần thể cấp cao",
+                 "primary_outcome": {"name": "Kết cục cấp cao", "source": "Phiếu"}})
+    for khoa in ("population", "primary_outcome", "knowledge_gap"):
+        meta["gate_params"]["G1"].pop(khoa)
+    spec = RS.build_study_spec("S-C1A", {}, meta)
+    assert (spec["question"]["text"], spec["population"]["description"]) == ("Câu hỏi cấp cao?", "Quần thể cấp cao")
+    assert spec["outcomes"]["primary"]["name"] == "Kết cục cấp cao"
+    assert spec["rationale"]["evidence_gap"] == "Khoảng trống G0"
+    meta.pop("population")
+    meta.pop("primary_outcome")
+    spec = RS.build_study_spec("S-C1A", {}, meta)
+    assert spec["population"]["description"] == "Quần thể G0"
+    kc = spec["outcomes"]["primary"]
+    assert (kc["name"], kc["definition"], kc["timepoint"]) == ("Kết cục G0", "Thang 5 mức", "Một lần sau khám")
+
+
+def test_chung_f_studyspec_quan_the_g1_dung_truoc_p_cua_pico():
+    meta = _meta_kieu_c1a()
+    meta["pico"] = {"p": "P tóm tắt"}
+    assert RS.build_study_spec("S", {}, meta)["population"]["description"] == "Quần thể G1"
+    meta["gate_params"]["G1"].pop("population")
+    assert RS.build_study_spec("S", {}, meta)["population"]["description"] == "P tóm tắt"
+
+
+@pytest.mark.parametrize("thiet_ke, co_index", [("diagnostic", True), ("cohort", False)])
+def test_chung_f_index_test_cua_chan_doan_lay_tu_g1(thiet_ke, co_index):
+    meta = {"design_code": thiet_ke, "gate_params": {"G1": {"intervention_or_exposure": "Test nhanh X"}}}
+    ds = RS.build_study_spec("S", {}, meta)["design_specific"]
+    assert (ds.get("index_test") == "Test nhanh X") is co_index
+
+
+@pytest.mark.parametrize("gp, mong", [
+    ({"G1": {"saturation_criterion": "3 phỏng vấn không mã mới"}}, "3 phỏng vấn không mã mới"),
+    ({"G3": {"saturation_stopping_rule": "Dừng khi bão hoà"}}, "Dừng khi bão hoà"),
+])
+def test_chung_f_tinh_du_cua_mau_dinh_tinh_tu_g1_g3(gp, mong):
+    spec = RS.build_study_spec("S", {}, {"design_code": "qualitative", "gate_params": gp})
+    assert spec["sample_size"]["sampling_sufficiency"] == mong
+
+
+def test_chung_h_r4_bai_chuan_de_cuong_cua_he_thong_khong_bi_gan_nghi_bia(tmp_path):
+    """Đề cương SR trích PRISMA-P 2015 (PMID 25554246 — do hệ chèn từ protocol_checklist_items) từng bị R4 gắn «nghi
+    bịa» ⇒ G10 BLOCKED. Nay là GHI CHÚ (vẫn phải qua A12); PMID lạ thật vẫn chặn."""
+    import check_de_cuong as CDC
+
+    md = tmp_path / "de_cuong.md"
+    md.write_text("# Đề cương\nPRISMA-P 2015 (PMID: 25554246). SPIRIT 2025 (PMID: 40294956).\n"
+                  "Cần bác sĩ kiểm chứng.\n", encoding="utf-8", newline="\n")
+    bao = CDC.validate(md, tmp_path)
+    assert not [e for e in bao["errors"] if e.startswith("R4")], bao["errors"]
+    assert any(w.startswith("R4 GHI CHÚ") and "25554246" in w and "A12" in w for w in bao["warnings"])
+    assert bao["checks"]["R4_pmid_traceable"].startswith("WARN")
+    md.write_text(md.read_text(encoding="utf-8") + "Thêm PMID: 99999999.\n", encoding="utf-8", newline="\n")
+    bao = CDC.validate(md, tmp_path)
+    loi = [e for e in bao["errors"] if e.startswith("R4")]
+    assert loi and "99999999" in loi[0] and "25554246" not in loi[0], loi
+
+
+@pytest.mark.parametrize("meta, co", [
+    ({"analysis": {"software": "NVivo 14"}}, "Phần mềm mã hóa (QDA): NVivo 14."),
+    ({"analysis": {}, "design_specific": {"qda_software": "Mã tay theo codebook"}},
+     "Phần mềm mã hóa (QDA): Mã tay theo codebook."),
+    ({}, f"Phần mềm mã hóa (QDA): {G10A.TAG_BS} (vd NVivo"),
+])
+def test_chung_h_dong_phan_mem_qda_doc_khai_bao(meta, co):
+    """Đề cương định tính in «Phần mềm mã hóa (QDA): [CẦN BỔ SUNG]» VÔ ĐIỀU KIỆN ⇒ G10-AUTO-09 không bao giờ qua."""
+    assert co in G10A.sec_sap({"G4": {}, "G1": {"design": {"internal_code": "qualitative"}}}, meta)
+
+
+def test_chung_h_studyspec_q02_doi_phan_mem_ma_hoa():
+    spec = RS.build_study_spec("S", {}, {"design_code": "qualitative"})
+    q02 = next(r for r in RS.missing_requirements(spec) if r["id"] == "Q02")
+    assert "phần mềm" in q02["label"]
+    spec["analysis"]["primary_method"] = "Phân tích chủ đề"
+    spec["design_specific"]["audit_trail"] = "Nhật ký mã hoá"
+    q02 = next(r for r in RS.missing_requirements(spec) if r["id"] == "Q02")  # chỉ còn thiếu phần mềm ⇒ vẫn báo
+    assert q02["paths"] == ["analysis.software | design_specific.qda_software"], q02
+    spec["design_specific"]["qda_software"] = "NVivo"
+    assert "Q02" not in {r["id"] for r in RS.missing_requirements(spec)}
+
+
+def test_chung_h_ky_tu_thong_tin_doi_sang_glyph_times_co():
+    import md2docx_vn as MD
+
+    assert MD._font_safe("ℹ️ GÓI") == "► GÓI"

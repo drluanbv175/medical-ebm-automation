@@ -1059,7 +1059,7 @@ def evaluate_study(
     try:
         import run_g10_assemble as G10  # noqa: PLC0415
 
-        citation_ok, citation_reason = G10.citation_verification_ok(study, out_dir)
+        citation_ok, citation_reason = G10.citation_verification_ok(study, out_dir, kiem_ban_g10=False)
         # 05/10/2026 (G10-05, dùng chung G9): G9 khoá gói NỘP TẠP CHÍ — trạng thái rút bài phải còn hạn 30 ngày lúc ký;
         # sau khi đã khoá thì chỉ cảnh báo (chạy lại A12 làm đổi manifest ⇒ phải ký lại có chủ ý), không tự huỷ khoá.
         if citation_ok:

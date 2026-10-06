@@ -325,9 +325,17 @@ def sec_cauhoi(cps, meta) -> str:
     # tự do ở mục "8. Cỡ mẫu" (sec_comau) — không phải vị trí chuẩn để công bố loại
     # giả thuyết, và sẽ biến mất nếu câu chữ formula_used thay đổi sau này. Đây mới
     # là mục "Câu hỏi nghiên cứu và giả thuyết" — vị trí đúng để công bố tường minh.
-    hypothesis_type = _g(cps.get("G3"), "hypothesis_type", default="superiority")
+    _ht_tho = _g(cps.get("G3"), "hypothesis_type", default="superiority")
+    hypothesis_type = S.chuan_hoa_hypothesis_type(_ht_tho) or _ht_tho
     margin = _g(cps.get("G3"), "margin", default=None)
-    if hypothesis_type and hypothesis_type != "superiority":
+    if hypothesis_type == "descriptive_precision":
+        # SỬA 06/10/2026 (CHUNG-H — chuỗi thật CẮT NGANG tới G10; đúng thiết kế của C1a): mọi loại khác «superiority»
+        # từng rơi vào nhánh biên Δ của NI ⇒ đề cương mô tả in «Margin Δ = [CẦN BỔ SUNG] [CẦN Hội đồng… CONSORT-NI]»,
+        # check_de_cuong R3 chặn G10 (nhãn lạ) dù G3/G4 đúng. Cùng lỗi G4 đã vá ở SAP §12 ngày 04/10.
+        lines.append("**Loại giả thuyết (tự động từ G3):** DESCRIPTIVE_PRECISION — nghiên cứu mô tả: cỡ mẫu theo độ "
+                     "chính xác của ước lượng (khoảng tin cậy), không kiểm định giả thuyết so sánh nên không có "
+                     "biên Δ.\n")
+    elif hypothesis_type in ("non_inferiority", "equivalence"):
         margin_text = margin if margin is not None else TAG_BS
         nguon_bien = _gp(meta, "G3").get("margin_source")
         if (meta.get("_g10") or {}).get("g3_song_pass") and RS.is_present(nguon_bien):
@@ -438,8 +446,12 @@ def _sec_thietke_rct_subsections(meta) -> str:
         f"{_text(ds.get('allocation_concealment'), TAG_BS)}\n",
         f"**Ai được tiếp cận trình tự phân bổ (SPIRIT 23):** "
         f"{_text(ds.get('allocation_access'), TAG_BS)}\n",
-        f"**Ai bị làm mù và cách làm mù (SPIRIT 24a/24b):** "
-        f"{_text(ds.get('blinding_who'), TAG_BS)} — {_text(ds.get('blinding_how'), TAG_BS)}\n",
+        "**Ai bị làm mù và cách làm mù (SPIRIT 24a/24b):** "
+        + (f"{_text(ds.get('blinding_who'), TAG_BS)} — {_text(ds.get('blinding_how'), TAG_BS)}"
+           if RS.is_present(ds.get("blinding_who")) or RS.is_present(ds.get("blinding_how")) or
+           not RS.is_present(ds.get("blinding"))
+           # 06/10/2026: quyết định làm mù PI đã chốt ở G1 (một câu gồm ai + cách) — không bắt tách lại.
+           else _text(ds.get("blinding"))) + "\n",
         f"**Điều kiện/quy trình mở mù (SPIRIT 24c):** "
         f"{_text(ds.get('unblinding_procedure'), TAG_BS)}\n",
         "",
@@ -461,6 +473,11 @@ def sec_doituong(cps, meta) -> str:
     inclusion = meta.get("inclusion_criteria") or []
     exclusion = meta.get("exclusion_criteria") or []
     sampling = meta.get("sampling_method")
+    # SỬA 06/10/2026 (CHUNG-F — đo trên bản sao C1a): StudySpec D07 nhận chọn mẫu HOẶC quy trình tuyển (G1
+    # recruitment_strategy), nhưng mục này chỉ in sampling_method ⇒ C1a (cách chọn mẫu hệ thống phân tầng chốt ở G1)
+    # vẫn in «[CẦN BỔ SUNG]»: đề cương và StudySpec nói hai chuyện. Quần thể đích (D06) cũng chưa từng được in ở đây.
+    recruitment = meta.get("recruitment_plan")
+    population = meta.get("population")
     inclusion_txt = (
         "\n".join(f"- {c}" for c in inclusion)
         if inclusion else
@@ -471,16 +488,21 @@ def sec_doituong(cps, meta) -> str:
         if exclusion else
         f"{TAG_BS} — bác sĩ xác định tiêu chuẩn loại trừ."
     )
-    sampling_txt = (
-        sampling
-        if sampling else
-        f"{TAG_BS} — phương pháp chọn mẫu (thuận tiện/ngẫu nhiên hệ thống/phân "
-        "tầng...) và quy trình tuyển. Cỡ mẫu xem Mục 8."
-    )
-    draft_note = f"> {_META_DRAFT_NOTE}\n\n" if (inclusion or exclusion or sampling) else ""
+    co_chon_mau, co_tuyen = RS.is_present(sampling), RS.is_present(recruitment)
+    if co_chon_mau and co_tuyen:
+        sampling_txt = f"{_text(sampling)}\n\n**Quy trình tuyển:** {_text(recruitment)}"
+    elif co_chon_mau or co_tuyen:
+        sampling_txt = _text(sampling if co_chon_mau else recruitment)
+    else:
+        sampling_txt = (f"{TAG_BS} — phương pháp chọn mẫu (thuận tiện/ngẫu nhiên hệ thống/phân "
+                        "tầng...) và quy trình tuyển. Cỡ mẫu xem Mục 8.")
+    quan_the_txt = f"**Quần thể nghiên cứu:** {_text(population)}\n\n" if RS.is_present(population) else ""
+    draft_note = (f"> {_META_DRAFT_NOTE}\n\n" if (inclusion or exclusion or co_chon_mau or co_tuyen or quan_the_txt)
+                  else "")
     return (
         f"{S.de_cuong_heading('doituong')}\n\n"
         f"{draft_note}"
+        f"{quan_the_txt}"
         f"{S.de_cuong_sub_heading('doituong', 0)}\n\n"
         f"{inclusion_txt}\n\n"
         f"{S.de_cuong_sub_heading('doituong', 1)}\n\n"
@@ -824,6 +846,13 @@ def sec_sap(cps, meta) -> str:
     # thể nộp hội đồng đạo đức/tạp chí — SAI ở đây dễ bị bắt lỗi ngay hoặc
     # tệ hơn là không ai nhận ra.
     if code == "qualitative":
+        # SỬA 06/10/2026 (CHUNG-H — chuỗi thật ĐỊNH TÍNH tới G10): dòng phần mềm mã hoá in «[CẦN BỔ SUNG]» VÔ ĐIỀU KIỆN
+        # ⇒ G10-AUTO-09 không bao giờ qua dù PI đã khai; nay đọc analysis.software / design_specific.qda_software
+        # (StudySpec Q02 liệt kê khi thiếu).
+        _ds = meta.get("design_specific") if isinstance(meta.get("design_specific"), dict) else {}
+        _qda_khai = analysis.get("software") if RS.is_present(analysis.get("software")) else _ds.get("qda_software")
+        _qda = (_text(_qda_khai) if RS.is_present(_qda_khai)
+                else f"{TAG_BS} (vd NVivo/ATLAS.ti/MAXQDA hoặc mã tay theo codebook)")
         return (
             f"{S.de_cuong_heading('sap')}\n\n"
             f"**Phiên bản SAP (tự động từ G4):** {ver} — trạng thái: {status}.\n\n"
@@ -838,7 +867,7 @@ def sec_sap(cps, meta) -> str:
             "(nhật ký phản tư).\n"
             "- KHÔNG dùng p-value/χ²/t-test/hồi quy — không kiểm định giả thuyết "
             "thống kê cho thiết kế này.\n"
-            f"- Phần mềm mã hóa (QDA): {TAG_BS} (vd NVivo/ATLAS.ti/MAXQDA hoặc mã tay theo codebook).\n\n"
+            f"- Phần mềm mã hóa (QDA): {_qda}.\n\n"
             f"> Cổng cứng: SAP phải được KÝ KHOÁ (G4 Lock Certificate) TRƯỚC khi xem "
             f"dữ liệu. Mã thiết kế `{code}` (COREQ/SRQR, nối `nghien-cuu-dinh-tinh`/`phan-tich-thong-ke`).\n"
         )
@@ -1054,7 +1083,7 @@ def sec_tltk(cps, meta) -> str:
             metadata = {}
         study_g10 = Path(out_dir_g10).name
         try:
-            a12_ok = citation_verification_ok(study_g10, Path(out_dir_g10))[0]
+            a12_ok = citation_verification_ok(study_g10, Path(out_dir_g10), kiem_ban_g10=False)[0]
         except Exception:  # noqa: BLE001 — không xác minh được ⇒ coi như chưa đạt
             a12_ok = False
     lines = [f"{S.de_cuong_heading('tltk')}\n"]
@@ -2324,7 +2353,7 @@ def _safe_compare(a, b) -> bool:
         return False
 
 
-def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
+def citation_verification_ok(study: str, out_dir: Path, *, kiem_ban_g10: bool = True) -> tuple[bool, str]:
     """Cổng A12 (kiem-chung-trich-dan) — trước 2026-07-15, run_g7_auto.py chỉ IN
     RA một dòng nhắc bác sĩ tự chạy agent kiểm trích dẫn (không gì ép buộc); đề
     tài có thể march thẳng G7→G8→G9→G10 mà chưa ai xác minh PMID/DOI có thật/
@@ -2351,6 +2380,11 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
     không còn đủ để qua cổng.
 
     Trả (ok, lý_do_chặn) — lý_do_chặn rỗng khi ok=True.
+
+    `kiem_ban_g10` (THÊM 06/10/2026, soát từng cổng — CHUNG-H RCT): đối chiếu THÊM mọi PMID của ĐỀ CƯƠNG G10 cuối
+    (DE_CUONG_THONG_NHAT_<mã>.md). Chỉ G10 (bộ chấm G10 + bộ lắp ráp) bật — G7/G8/G9 gọi với False: bản cũ ai cũng đối
+    chiếu đề cương G10 ⇒ lắp G10 cho RCT (đề cương trích PMID SPIRIT 2025 40294593/40294956) làm G7/G8/G9 ĐÃ KHOÁ tụt
+    khỏi PASS ngược dòng — cổng trước không được mất hiệu lực vì nội dung artifact của cổng sau.
     """
     p = out_dir / f"A12_CITATION_VERIFICATION_{study}.md"
     if not p.exists():
@@ -2476,7 +2510,7 @@ def citation_verification_ok(study: str, out_dir: Path) -> tuple[bool, str]:
             "artifact A12 nhắc tới PMID chưa có trong receipt máy-kiểm (chưa được "
             "`check_citation_retraction.py` kiểm rút bài thật): " + ", ".join(missing)
         )
-    final_doc_pmids = _extract_pmids_from_final_document(study, out_dir)
+    final_doc_pmids = _extract_pmids_from_final_document(study, out_dir) if kiem_ban_g10 else set()
     missing_final = sorted(final_doc_pmids - checked_set)
     if missing_final:
         return False, (

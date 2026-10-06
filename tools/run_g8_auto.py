@@ -1313,7 +1313,7 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
     # đọc A12_CITATION_VERIFICATION_<study>.md + A12_RETRACTION_RECEIPT.json.
     citation_ok = False
     if study and out_dir is not None:
-        citation_ok, _reason = G10.citation_verification_ok(study, out_dir)
+        citation_ok, _reason = G10.citation_verification_ok(study, out_dir, kiem_ban_g10=False)
 
     items = []
 
