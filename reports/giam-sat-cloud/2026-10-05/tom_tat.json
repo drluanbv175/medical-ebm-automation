@@ -1,0 +1,30 @@
+{
+  "nhan": "CHỈ BÁO CÁO — không phải lượt giám sát chính thức",
+  "thoi_diem_utc": "2026-10-05T00:02:55Z",
+  "cua_so_ngay": 10,
+  "trang_thai_nguon": "PASS",
+  "ly_do_that_bai": [],
+  "canh_bao_nguon": [],
+  "nguon_bat_buoc_suy_giam": [],
+  "ghi_chu_nguon": [],
+  "truy_van_chua_thu": {
+    "semantic_scholar": 40
+  },
+  "so_ban_ghi": 2224,
+  "muc_moi": 1805,
+  "bao_cao": {
+    "alert_digest_md": "ban-tin-moi.md",
+    "drug_safety_md": "an-toan-thuoc.md",
+    "antibiotic_md": "khang-sinh.md"
+  },
+  "thieu_bao_cao": [],
+  "bo_co_y": [
+    "weekly_md"
+  ],
+  "da_goi_canh_bao": false,
+  "da_noi_hub": false,
+  "watermark_chinh_thuc_doi": false,
+  "tang_du_phong_tinh_phi": "tắt cứng",
+  "lien_ket_scopus_da_go": {},
+  "disclaimer": "Cần bác sĩ kiểm chứng. Đây là danh sách ỨNG VIÊN do máy quét, chưa thẩm định; không tự áp dụng lâm sàng; watermark/sổ cái/cảnh báo của lượt chính thức trên Mac KHÔNG đổi."
+}
