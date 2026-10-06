@@ -464,6 +464,7 @@ def test_g2_03_run_g2_dung_khung_khong_ghi_de(tmp_path, monkeypatch):
     d = tmp_path / "exports" / study
     dung_g0_g1_da_chot(d, study, them_meta={"G2": dict(_meta()["gate_params"]["G2"])})
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(R, "_REPO_ROOT", tmp_path)  # 06/10/2026: G0–G2 neo exports theo _REPO_ROOT, không theo cwd
 
     def chay():
         monkeypatch.setattr(sys, "argv", ["run_g2_auto.py", "--study", study, "--skip-registry",
@@ -494,6 +495,7 @@ def test_g2_08_g2_human_01_so_dau_dau_vao(tmp_path):
 def test_chung_f_run_g2_khong_g1_khong_design_la_mo_ho(tmp_path, monkeypatch):
     study = "S-KHONG-G1"
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(R, "_REPO_ROOT", tmp_path)  # 06/10/2026: G0–G2 neo exports theo _REPO_ROOT, không theo cwd
     monkeypatch.setattr(sys, "argv", ["run_g2_auto.py", "--study", study, "--topic", "Đề tài thử", "--skip-registry"])
     CS.xoa_dem()
     try:

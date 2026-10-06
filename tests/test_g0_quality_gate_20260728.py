@@ -256,7 +256,9 @@ def test_topic_rong_van_ghi_checkpoint_va_needs_input(tmp_path):
     bản vá, topic rỗng thoát mã 2 nhưng KHÔNG để lại gì cho pipeline chẩn đoán."""
     env = dict(os.environ, USE_MOCK_SOURCES="true", PYTHONUTF8="1")
     proc = subprocess.run(
-        [PYTHON, str(TOOLS_DIR / "run_g0_auto.py"), "--study", "ZZ-EMPTY", "--topic", "   "],
+        # 06/10/2026: run_g0_auto neo exports theo GỐC REPO (không theo cwd) ⇒ trỏ gốc tạm bằng --repo-root.
+        [PYTHON, str(TOOLS_DIR / "run_g0_auto.py"), "--study", "ZZ-EMPTY", "--topic", "   ",
+         "--repo-root", str(tmp_path)],
         cwd=tmp_path, env=env, capture_output=True, text=True, timeout=180,
     )
     assert proc.returncode == GC.EXIT_BLOCKED, proc.stdout[-500:]
@@ -695,7 +697,9 @@ def test_g0_quality_gate_cli_doc_lap_cung_cap_nhat_checkpoint(tmp_path):
     _seed_out_dir_for_evaluate_study(tmp_path, study="ZZ-CLI")
     env = dict(os.environ, PYTHONUTF8="1")
     proc = subprocess.run(
-        [PYTHON, str(TOOLS_DIR / "g0_quality_gate.py"), "--study", "ZZ-CLI"],
+        # 06/10/2026: mặc định --exports-dir là exports/ của repo (không theo cwd) ⇒ trỏ thư mục tạm tường minh.
+        [PYTHON, str(TOOLS_DIR / "g0_quality_gate.py"), "--study", "ZZ-CLI",
+         "--exports-dir", str(tmp_path / "exports")],
         cwd=tmp_path, env=env, capture_output=True, text=True, timeout=60,
     )
     assert proc.returncode in (GC.EXIT_OK, GC.EXIT_BLOCKED, GC.EXIT_GUARDRAIL_FAIL), (

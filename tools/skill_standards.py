@@ -728,6 +728,22 @@ def chuan_hoa_hypothesis_type(raw: Optional[str]) -> Optional[str]:
     return ht if ht in HYPOTHESIS_TYPES else None
 
 
+# Thiết kế mà cỡ mẫu KHÔNG đi theo khung loại giả thuyết (superiority/NI/tương đương/độ chính xác): định tính (bão hoà
+# dữ liệu), SR/MA (RIS/TSA), mô hình tiên lượng (pmsampsize) — CÙNG tập với g3_quality_gate.N_NOT_APPLICABLE_DESIGNS.
+THIET_KE_KHONG_KHUNG_GIA_THUYET = frozenset({"sr_ma", "prediction", "qualitative"})
+
+
+def gia_thuyet_tu_test_type(test_type: Optional[str], design_code: Optional[str]) -> Optional[str]:
+    """Loại giả thuyết suy từ test_type PI khai ở G0 (G0-06) — None khi thiết kế không dùng khung giả thuyết.
+
+    06/10/2026: «descriptive» của đề tài ĐỊNH TÍNH/SR-MA/tiên lượng nghĩa là «không kiểm định giả thuyết», KHÔNG phải
+    «cỡ mẫu theo độ chính xác» (descriptive_precision) — ánh xạ thẳng từng đưa G3 định tính sang khung độ chính xác
+    (G3-AUTO-17 «ngôn ngữ power/alpha»). Dùng CHUNG cho khối đặc tả G1, bản dựng lại và G3."""
+    if ma_thiet_ke_chuoi(design_code) in THIET_KE_KHONG_KHUNG_GIA_THUYET:
+        return None
+    return chuan_hoa_hypothesis_type(test_type)
+
+
 def dac_ta_thiet_ke(out_dir) -> Dict[str, object]:
     """Đặc tả thiết kế của đề tài cho các tầng sau ĐỌC (không suy lại).
 
@@ -770,7 +786,12 @@ def dac_ta_thiet_ke(out_dir) -> Dict[str, object]:
             "design_code": ma_thiet_ke_chuoi(design_raw if isinstance(design_raw, str) else None),
             "question_type": chuan_hoa_question_type(g0.get("question_type") or g1.get("question_type")),
             "test_type": g0.get("test_type") or None,
-            "hypothesis_type": chuan_hoa_hypothesis_type(g3.get("hypothesis_type")),
+            # G0-06 (06/10/2026): CÙNG luật với khối G1 (run_g1_auto.dac_ta_thiet_ke_g1) — G3 đã ghim, không thì
+            # test_type G0 đã khai. Bản cũ chỉ đọc G3 ⇒ đề tài chưa có khối G1 bỏ qua test_type G0, G3 rơi về
+            # «superiority» mặc định máy.
+            "hypothesis_type": (chuan_hoa_hypothesis_type(g3.get("hypothesis_type")) if g3.get("hypothesis_type")
+                                else gia_thuyet_tu_test_type(
+                                    g0.get("test_type"), design_raw if isinstance(design_raw, str) else None)),
             "margin": g3.get("margin"),
             "outcome_direction": g3.get("outcome_direction") or g1.get("outcome_direction") or None,
             "estimand": g1.get("estimand") or None,

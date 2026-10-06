@@ -40,7 +40,7 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     except (AttributeError, ValueError):
         pass
 
-_REPO_ROOT = Path(__file__).parent.parent
+_REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -1987,7 +1987,9 @@ def dac_ta_thiet_ke_g1(design: dict, question_type: str, meta: dict) -> dict:
         "design_code": S.ma_thiet_ke_chuoi(design.get("internal_code")),
         "question_type": S.chuan_hoa_question_type(question_type),
         "test_type": test_type,
-        "hypothesis_type": S.chuan_hoa_hypothesis_type(g3.get("hypothesis_type") or test_type),
+        # 06/10/2026: test_type G0 → giả thuyết CÓ XÉT thiết kế (định tính/SR-MA/tiên lượng không dùng khung giả thuyết).
+        "hypothesis_type": (S.chuan_hoa_hypothesis_type(g3.get("hypothesis_type")) if g3.get("hypothesis_type")
+                            else S.gia_thuyet_tu_test_type(test_type, design.get("internal_code"))),
         "margin": g3.get("margin"),
         "outcome_direction": g3.get("outcome_direction") or g1.get("outcome_direction") or None,
         "estimand": g1.get("estimand") if isinstance(g1.get("estimand"), dict) and any(
@@ -2005,6 +2007,16 @@ def dac_ta_thiet_ke_g1(design: dict, question_type: str, meta: dict) -> dict:
 # 8. MAIN
 # ════════════════════════════════════════════════════════════════════════════
 
+def _thu_muc_de_tai(study: str) -> Path:
+    """Thư mục đề tài exports/<study>/ — neo theo GỐC REPO y khoa (_REPO_ROOT), KHÔNG theo thư mục đang đứng.
+
+    06/10/2026: bản cũ dùng Path("exports")/study ⇒ chạy `python medical-ebm-automation/tools/run_gN_auto.py` từ repo
+    gốc (đúng lệnh vài agent hướng dẫn) đẻ exports/ ở repo gốc, trong khi G3–G10 (BASE/"exports") đọc
+    medical-ebm-automation/exports/ ⇒ hồ sơ MỘT đề tài tách làm hai nơi. Test cô lập bằng cách vá _REPO_ROOT.
+    """
+    return _REPO_ROOT / "exports" / study
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="G1 Auto — Tự động hóa cổng G1: Thiết kế nghiên cứu + SAP skeleton"
@@ -2018,7 +2030,13 @@ def main():
                         help="Loại câu hỏi (mặc định: lấy gate_params.G0.question_type đã chốt; không có mới dùng "
                              "treatment và đánh dấu thiết kế mơ hồ)")
     parser.add_argument("--email", default=None)
+    parser.add_argument("--repo-root", default=None,
+                        help="Gốc repo chứa exports/ (mặc định: repo y khoa chứa công cụ này — KHÔNG theo thư mục đang "
+                             "đứng). Dùng cho test cô lập hoặc bản sao đo thử.")
     args = parser.parse_args()
+    if args.repo_root:
+        global _REPO_ROOT
+        _REPO_ROOT = Path(args.repo_root).resolve()
 
     if args.email:
         os.environ["NCBI_EMAIL"] = args.email
@@ -2035,7 +2053,7 @@ def main():
     print(f"{'='*65}\n")
 
     # Đọc G0 checkpoint nếu có
-    out_dir = Path("exports") / study
+    out_dir = _thu_muc_de_tai(study)
     out_dir.mkdir(parents=True, exist_ok=True)
     g0_cp_path = out_dir / "G0_checkpoint.json"
 

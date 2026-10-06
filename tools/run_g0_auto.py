@@ -64,7 +64,7 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
         pass
 
 # Thêm thư mục cha vào sys.path để import app modules
-_REPO_ROOT = Path(__file__).parent.parent
+_REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 
 # NCBI_EMAIL do app.config tự đọc (biến môi trường → kho secrets ngoài git → .env). Bỏ email cá nhân gài mặc định
@@ -1376,6 +1376,16 @@ def write_checkpoint(study_name: str, out_dir: Path, results: dict,
 # 9. MAIN — CLI ENTRY POINT
 # ════════════════════════════════════════════════════════════════════════════
 
+def _thu_muc_de_tai(study: str) -> Path:
+    """Thư mục đề tài exports/<study>/ — neo theo GỐC REPO y khoa (_REPO_ROOT), KHÔNG theo thư mục đang đứng.
+
+    06/10/2026: bản cũ dùng Path("exports")/study ⇒ chạy `python medical-ebm-automation/tools/run_gN_auto.py` từ repo
+    gốc (đúng lệnh vài agent hướng dẫn) đẻ exports/ ở repo gốc, trong khi G3–G10 (BASE/"exports") đọc
+    medical-ebm-automation/exports/ ⇒ hồ sơ MỘT đề tài tách làm hai nơi. Test cô lập bằng cách vá _REPO_ROOT.
+    """
+    return _REPO_ROOT / "exports" / study
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="G0 Auto — Tự động hóa cổng G0: câu hỏi nghiên cứu + PubMed search thật"
@@ -1394,7 +1404,13 @@ def main():
                         help="Bỏ qua bước tra ClinicalTrials.gov (chạy offline/nhanh). "
                              "Khi bỏ qua, artifact GHI RÕ là CHƯA TRA — không coi như "
                              "'không có nghiên cứu trùng'.")
+    parser.add_argument("--repo-root", default=None,
+                        help="Gốc repo chứa exports/ (mặc định: repo y khoa chứa công cụ này — KHÔNG theo thư mục đang "
+                             "đứng). Dùng cho test cô lập hoặc bản sao đo thử.")
     args = parser.parse_args()
+    if args.repo_root:
+        global _REPO_ROOT
+        _REPO_ROOT = Path(args.repo_root).resolve()
     GC.ensure_utf8_stdout()
 
     # Ghi đè email nếu có
@@ -1424,7 +1440,7 @@ def main():
     # ("BLOCKED = ĐÃ ghi checkpoint DRAFT + needs_input"). Pipeline đọc vào không
     # thấy gì để chẩn đoán. Nay dừng ở tầng CLI và để lại dấu vết máy đọc được.
     if not (args.topic or "").strip():
-        out_dir = Path("exports") / study
+        out_dir = _thu_muc_de_tai(study)
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / "G0_checkpoint.json").write_text(json.dumps({
             "study": study, "gate": "G0",
@@ -1458,7 +1474,7 @@ def main():
     # đề tài) nguy hiểm hơn vì âm thầm trộn lẫn dữ liệu, không tự lộ ra. Cảnh
     # báo (không chặn cứng — bác sĩ có thể đang hợp lệ chạy lại G0 với topic đã
     # diễn đạt lại cho CÙNG đề tài).
-    _warn_if_topic_collision(Path("exports") / study, args.topic)
+    _warn_if_topic_collision(_thu_muc_de_tai(study), args.topic)
 
     # 1. Xây truy vấn
     print("📋 Bước 1/7: Xây dựng truy vấn PubMed...")
@@ -1494,10 +1510,10 @@ def main():
     # 4. Sinh artifact A1
     print("\n✍️  Bước 5/8: Sinh artifact A1 (PICO + Giả thuyết + FINER + Evidence + Gap)...")
     artifact_md = generate_a1_artifact(args.topic, study, queries, results, gaps, run_date,
-                                       registry=registry, meta=GC.load_study_meta(Path("exports") / study))
+                                       registry=registry, meta=GC.load_study_meta(_thu_muc_de_tai(study)))
 
     # 5. Lưu artifact
-    out_dir = Path("exports") / study
+    out_dir = _thu_muc_de_tai(study)
     out_dir.mkdir(parents=True, exist_ok=True)
     md_path = out_dir / f"G0_A1_PICO_FINER_{study}.md"
     # ★ THÊM 2026-07-28: chạy lại G0 GHI ĐÈ file này. Nếu bác sĩ đã điền tay PICO

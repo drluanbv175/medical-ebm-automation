@@ -2320,6 +2320,37 @@ def _scan_doi_citation_coverage(artifact_text: str, study: str, out_dir: Path) -
     return _dois_from_text(artifact_text + "\n" + final_text)
 
 
+def _chuan_doi(doi: str) -> str:
+    return str(doi or "").strip().rstrip(".,;").lower()
+
+
+def _doi_co_pmid_da_kiem(dois: set, checked_pmids: set, out_dir: Path) -> set:
+    """Tập con của `dois` mà PMID SONG SONG đã nằm trong biên nhận rút bài A12 — không cần tra Retraction Watch tay.
+
+    06/10/2026: cảnh báo DOI của A12 bắn cả cho DOI chính hệ thống in KÈM PMID — dòng Vancouver dựng từ metadata PubMed
+    («doi:… PMID: …») và tài liệu chuẩn đề cương (SPIRIT 2025, PRISMA-P 2015) — dù PMID đó ĐÃ được kiểm rút bài; đề tài
+    thật sẽ nhận cảnh báo cho gần như MỌI tài liệu tham khảo. Cặp PMID↔DOI CHỈ lấy từ hai nguồn đã xác minh: metadata
+    PubMed đã phân giải trong A12_METADATA_RECEIPT.json và nguồn gốc tài liệu chuẩn của hệ (protocol_checklist_items).
+    DOI không ghép được, hoặc ghép được mà PMID chưa có trong biên nhận ⇒ vẫn cảnh báo."""
+    cap: Dict[str, str] = {}
+    try:
+        md = json.loads((Path(out_dir) / "A12_METADATA_RECEIPT.json").read_text(encoding="utf-8")).get("metadata")
+    except (OSError, ValueError, AttributeError):
+        md = None
+    if isinstance(md, dict):
+        for pmid, info in md.items():
+            if isinstance(info, dict) and info.get("status") == "resolved" and RS.is_present(info.get("doi")):
+                cap[_chuan_doi(info["doi"])] = str(pmid)
+    try:
+        import protocol_checklist_items as PCI  # noqa: PLC0415
+        for doi, pmid in PCI.cap_doi_pmid_tai_lieu_chuan().items():
+            cap.setdefault(doi, pmid)
+    except ImportError:
+        pass
+    da_kiem = {str(x) for x in checked_pmids}
+    return {d for d in dois if cap.get(_chuan_doi(d)) in da_kiem}
+
+
 def _extract_pmids_from_final_document(study: str, out_dir: Path) -> set:
     """Trích PMID xuất hiện trong bản G10 cuối nếu file đã được assemble().
 
@@ -2529,7 +2560,11 @@ def citation_verification_ok(study: str, out_dir: Path, *, kiem_ban_g10: bool = 
     )
     if not meta_ok:
         return False, meta_reason
-    doi_citations = _scan_doi_citation_coverage(text, study, out_dir)
+    doi_tim_thay = _scan_doi_citation_coverage(text, study, out_dir)
+    doi_da_phu = _doi_co_pmid_da_kiem(doi_tim_thay, checked_set, out_dir)
+    doi_citations = doi_tim_thay - doi_da_phu
+    if doi_da_phu:
+        print(f"  ℹ️  A12: {len(doi_da_phu)} DOI có PMID song song đã nằm trong biên nhận rút bài — không cần tra tay.")
     if doi_citations:
         print(
             "  ⚠️  CẢNH BÁO CỔNG A12: phát hiện " + str(len(doi_citations)) +

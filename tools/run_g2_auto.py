@@ -38,7 +38,7 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     except (AttributeError, ValueError):
         pass
 
-_REPO_ROOT = Path(__file__).parent.parent
+_REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -1708,6 +1708,16 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
 # 7. MAIN
 # ════════════════════════════════════════════════════════════════════════════
 
+def _thu_muc_de_tai(study: str) -> Path:
+    """Thư mục đề tài exports/<study>/ — neo theo GỐC REPO y khoa (_REPO_ROOT), KHÔNG theo thư mục đang đứng.
+
+    06/10/2026: bản cũ dùng Path("exports")/study ⇒ chạy `python medical-ebm-automation/tools/run_gN_auto.py` từ repo
+    gốc (đúng lệnh vài agent hướng dẫn) đẻ exports/ ở repo gốc, trong khi G3–G10 (BASE/"exports") đọc
+    medical-ebm-automation/exports/ ⇒ hồ sơ MỘT đề tài tách làm hai nơi. Test cô lập bằng cách vá _REPO_ROOT.
+    """
+    return _REPO_ROOT / "exports" / study
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="G2 Auto — Tự động hóa cổng G2: Đạo đức & Đăng ký nghiên cứu"
@@ -1730,7 +1740,13 @@ def main():
     parser.add_argument("--skip-registry", action="store_true",
                         help="Bỏ qua tra ClinicalTrials.gov (offline). Hồ sơ sẽ ghi rõ "
                              "CHƯA TRA ĐƯỢC, không được đọc thành 'chưa ai làm'.")
+    parser.add_argument("--repo-root", default=None,
+                        help="Gốc repo chứa exports/ (mặc định: repo y khoa chứa công cụ này — KHÔNG theo thư mục đang "
+                             "đứng). Dùng cho test cô lập hoặc bản sao đo thử.")
     args = parser.parse_args()
+    if args.repo_root:
+        global _REPO_ROOT
+        _REPO_ROOT = Path(args.repo_root).resolve()
 
     run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
@@ -1740,7 +1756,7 @@ def main():
     print(f"  Thời gian: {run_date}")
     print(f"{'='*65}\n")
 
-    out_dir = Path("exports") / study
+    out_dir = _thu_muc_de_tai(study)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # ── Bước 1: Đọc G0 + G1 checkpoint ──

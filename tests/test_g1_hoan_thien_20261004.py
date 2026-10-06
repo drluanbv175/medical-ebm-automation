@@ -119,6 +119,7 @@ def _chay_main(tmp_path, monkeypatch, meta_g0=None, them_args=(), g0_luu=None, g
             (d / "study_meta.json").write_text(json.dumps({"gate_params": {"G0": meta_g0}}, ensure_ascii=False),
                                                encoding="utf-8", newline="\n")
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(G1, "_REPO_ROOT", tmp_path)  # 06/10/2026: G0–G2 neo exports theo _REPO_ROOT, không theo cwd
     monkeypatch.setattr(sys, "argv", ["run_g1_auto.py", "--study", study, *them_args])
     CS.xoa_dem()
     with patch.object(G1, "search_for_effect_sizes", return_value=[]), \

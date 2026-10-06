@@ -1305,6 +1305,16 @@ def main():
     print("⚙️  Bước 2/6: Xác định tham số...")
     effect_quality = None
     if args.hypothesis_type is None:
+        # G0-06 (06/10/2026): loại kiểm định PI đã khai ở G0 (gate_params.G0.test_type — G0-06 chấm) là quyết định của
+        # người, đứng TRƯỚC mặc định máy. Khối đặc tả G1 dựng trước khi G0 khai thì không mang nó ⇒ đọc thẳng
+        # study_meta. Có xét thiết kế: định tính/SR-MA/tiên lượng không dùng khung giả thuyết.
+        _tu_g0 = S.gia_thuyet_tu_test_type(
+            ((_study_meta.get("gate_params") or {}).get("G0") or {}).get("test_type"), design_code)
+        if _tu_g0:
+            args.hypothesis_type = _tu_g0
+            nguon_tham_so["hypothesis_type"] = "G0 test_type (study_meta.gate_params.G0)"
+            print(f"  → hypothesis_type={_tu_g0} từ G0 test_type (study_meta)")
+    if args.hypothesis_type is None:
         # Mặc định MÁY (không phải quyết định): thiết kế cắt ngang tính theo độ chính xác ⇒ không kiểm định giả thuyết.
         args.hypothesis_type = "descriptive_precision" if design_code == "cross_sectional" else "superiority"
         nguon_tham_so["hypothesis_type"] = "mặc định máy"

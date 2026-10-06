@@ -90,6 +90,7 @@ def _gia_lap_cong(monkeypatch):
 def test_main_ghi_bang_ty_le(tmp_path, monkeypatch):
     _gia_lap_cong(monkeypatch)
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(RSA, "BASE", tmp_path)  # 06/10/2026: exports neo BASE, không theo cwd
     rng = np.random.default_rng(7)
     df = pd.DataFrame({"G1": rng.integers(1, 6, 300), "A_diem": rng.integers(1, 6, 300),
                        "cho_phut": rng.normal(0, 1, 300), "ma_ban": rng.integers(0, 10, 300)})

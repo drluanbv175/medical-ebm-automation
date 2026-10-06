@@ -95,6 +95,7 @@ def _gia_lap_cong(monkeypatch):
 def test_main_nhi_phan_co_cum(tmp_path, monkeypatch, capsys):
     _gia_lap_cong(monkeypatch)
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(RSA, "BASE", tmp_path)  # 06/10/2026: exports neo BASE, không theo cwd
     duong = tmp_path / "d.csv"
     _du_lieu(n=600).assign(nhom=lambda d: (d["cho"] > 0).astype(int)).to_csv(duong, index=False)
     monkeypatch.setattr(sys, "argv", [
