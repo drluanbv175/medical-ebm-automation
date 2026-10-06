@@ -74,7 +74,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # viet-ban-thao, binh-duyet, nop-bai-phan-hoi) bỏ chỉ dẫn «agent ghi Gx_STATUS=LOCKED», tiền đề chấm sống, hợp đồng
 # hiện hành từng cổng — bản cặp y hệt gốc; vẫn 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "5cc30b257de39b0267f27102e575c5e83bed96e2ef965d8e29a38889b0a50e57"
+    "28f4df29c4e778deac8a5e0b08eae8b17eb6d82507c856980b4ced4920c2703d"
 )
 
 MINIMUM_AGENT_COUNT = 50

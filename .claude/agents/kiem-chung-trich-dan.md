@@ -25,6 +25,7 @@ Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG
 ## 1. Mục tiêu & khi nào kích hoạt
 Mục tiêu: xác minh từng tham khảo (định danh + metadata + nội dung) và sinh danh mục sạch — cổng chất lượng chống trích dẫn ma. Kích hoạt ở **G7/G9** trước khi nộp, và mỗi khi `viet-ban-thao` soạn phần có trích dẫn.
 **Cổng CHẶN CỨNG thật sự của A12 nằm ở G10** (`tools/run_g10_assemble.py::citation_verification_ok`): G10 đọc lại artifact A12 trước khi lắp gói phát hành; G9 là cổng liêm chính tác giả/ICMJE/COI.
+Phạm vi đối chiếu (06/10/2026): G7/G8/G9 gọi CÙNG hàm với `kiem_ban_g10=False` — chỉ đối chiếu bản thảo với biên nhận A12; CHỈ G10 đối chiếu thêm đề cương `DE_CUONG_THONG_NHAT_<mã>`. PMID trong đề cương chưa có ở A12 (vd SPIRIT 2025 của đề cương RCT, PRISMA-P 2015 của SR, Hanley–McNeil 1982 của cỡ mẫu chẩn đoán) ⇒ thêm vào A12 rồi chạy lại; nó chỉ giữ G10 (G10-AUTO-05 REVIEW), không kéo tụt G7/G8/G9 đã khoá. `check_de_cuong` R4 coi PMID bài chuẩn đề cương do HỆ chèn (`protocol_checklist_items.pmid_tai_lieu_chuan()`) là có nguồn — GHI CHÚ, không «nghi bịa» — nhưng vẫn phải qua A12.
 
 ## 2. Đầu vào tối thiểu
 Danh mục tham khảo / loạt PMID·DOI / bản thảo có trích dẫn · (nếu kiểm nội dung) câu khẳng định gắn với từng tham khảo · định dạng đích (Vancouver/AMA/APA/BibTeX). Thiếu connector PubMed/Crossref → PARTIAL.

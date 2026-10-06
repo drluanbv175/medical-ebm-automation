@@ -381,7 +381,7 @@ Date · 23. Summary Results · 24. IPD Sharing Statement
 ### Hợp đồng G2 hiện hành (soát từng cổng 04/10/2026 — `g2_quality_gate.py`)
 
 - RCT: thêm `G2_SAFETY_PLAN_<mã>.md` (5 mục, khuôn `khung_ke_hoach_an_toan`) + `gate_params.G2.safety_plan_confirmed`
-  (PI); ICF RCT có 2b/5b/6f/6g/6h (ICH E6(R3) 2.8.10); chẩn đoán có thủ thuật/mẫu sinh học ⇒ mục 6e; ICF tiếng Anh
+  (PI — `true` kiểu bool; khi đó mục tác hại §6 của đề cương G10 trỏ sang kế hoạch này và tệp vào manifest G10); ICF RCT có 2b/5b/6f/6g/6h (ICH E6(R3) 2.8.10); chẩn đoán có thủ thuật/mẫu sinh học ⇒ mục 6e; ICF tiếng Anh
   cùng tập mục với bản tiếng Việt.
 - WHO TRDS v1.3.1: PI khai `gate_params.G2.public_title` (#9) và `health_condition` (#12) — không chép tên đề tài;
   #13/#14/#19/#20 lấy từ `gate_params.G0/G1` đã pin (kết cục phụ: `gate_params.G1.secondary_outcomes`); masking (#15)

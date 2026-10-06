@@ -423,7 +423,13 @@ Báo cáo: TRIPOD+AI (2024)
   case_definition, control_source, candidate_predictors, prediction_horizon, risk_register[], budget[],
   annex2{applicable}) — RCT PHẢI khai `annex2.applicable`; estimand (5 thuộc tính ICH E9(R1)) ở
   `gate_params.G1.estimand`. Thiết kế ngoài 8 mã chuỗi ⇒ G1-AUTO-02c CHẶN. Agent KHÔNG bật cờ xác nhận
-  (`design_confirmed`…) — PI xác nhận gắn dấu vân tay `dau_van_tay_chot`.
+  (`design_confirmed`…) — PI xác nhận gắn dấu vân tay `dau_van_tay_chot`. Đề cương G10 đọc THẲNG các quyết định này qua
+  StudySpec — lõi (research_question, objectives, setting, study_period, population, inclusion/exclusion_criteria,
+  recruitment_strategy, primary/secondary_outcomes, follow_up_schedule, background_problem, knowledge_gap,
+  evidence_summary, benefit_risk_rationale, team_roles) và theo thiết kế (randomisation/allocation_concealment/
+  blinding|masking/stopping_rescue_rules/study_schema_timeline|follow_up_schedule; chẩn đoán/SR: reference_standard/
+  target_condition/search_strategy, index test = intervention_or_exposure; can thiệp G1 → G0) — KHÔNG khai lại ở khoá
+  cấp cao hay `design_specific` (khoá riêng chỉ để PI ghi đè có chủ ý, và thắng giá trị G1).
 - **G4**: SAP RCT 15 mục BẮT BUỘC (§13 giữa kỳ & quy tắc dừng · §14 DMC · §15 tổn hại/ngừng/tuân thủ — QĐ-1), nối SAU
   §12, không đánh số lại §1–§12; estimand G1 in NGUYÊN VĂN ở §4 + «Quần thể phân tích CHÍNH» do người chốt; khung §12
   theo cách N được quyết định (`loai_muc_12`: power / chính xác / không power / định tính — thiết kế mô tả KHÔNG in

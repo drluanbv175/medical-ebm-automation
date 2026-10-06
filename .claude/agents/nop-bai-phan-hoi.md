@@ -335,7 +335,7 @@ Trân trọng, [Tên tác giả liên hệ]
 ║  2. python tools/g9_quality_gate.py --study <mã>             ║
 ║     → READY_FOR_G9_PI_APPROVAL (ghi manifest trước ký)      ║
 ║  3. PI TỰ chạy approve_gate.py --gate G9 --reviewer-role PI  ║
-║     --artifact G9_checkpoint.json                           ║
+║     --artifact exports/<mã>/G9_checkpoint.json              ║
 ║  4. Bộ chấm sống trả PASS_G9_PUBLICATION_INTEGRITY_LOCKED    ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  KHÔNG có trường «G9_STATUS: LOCKED» nào mở cổng — ghi tay   ║
