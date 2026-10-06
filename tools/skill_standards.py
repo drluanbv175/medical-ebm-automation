@@ -34,10 +34,14 @@ import re
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import unicodedata
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import placeholder_contract as PC
+
+# Gốc repo y khoa — một biến để test trỏ sang thư mục tạm (không đọc exports/ thật khi kiểm).
+_GOC_REPO = Path(__file__).resolve().parents[1]
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -66,6 +70,11 @@ TAG_CAN_KIEM_CHUNG_NGUON = "[CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC]"
 VALID_STATUS_TAGS: Tuple[str, ...] = tuple(STATUS_TAGS.values()) + (
     TAG_CAN_KIEM_CHUNG_NGUON,
 )
+
+
+# Phiên bản Tuyên ngôn Helsinki DÙNG CHUNG cho mọi cổng in câu tuân thủ (04/10/2026, soát từng cổng G7-04): G7 từng in
+# «Helsinki 2013» trong khi G2 (STANDARDS_BASIS) và G10 dùng bản 2024 — một đề tài nói hai phiên bản khác nhau.
+TUYEN_NGON_HELSINKI = "Tuyên ngôn Helsinki 2024 (WMA)"
 
 
 def is_valid_status_tag(tag_text: str) -> bool:
@@ -637,11 +646,151 @@ DESIGN_CODE_ALIASES: Dict[str, str] = {
 }
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# 4b. BẢNG BÍ DANH THIẾT KẾ CỦA CHUỖI G0–G10 + ĐẶC TẢ THIẾT KẾ ĐÃ KHOÁ (04/10/2026)
+# ════════════════════════════════════════════════════════════════════════════
+# Soát từng cổng (G1-12): bảng bí danh nằm RIÊNG ở run_g1_auto (_PIN_DESIGN_ALIASES) và g1_quality_gate, lệch nhau ⇒
+# «RCT»/«systematic_review» qua được chỗ này nhưng bị chỗ kia chặn. Đây là bảng DUY NHẤT cho 8 mã chuỗi hỗ trợ.
+MA_THIET_KE_CHUOI = frozenset({"rct", "cohort", "case_control", "cross_sectional", "diagnostic", "sr_ma",
+                               "prediction", "qualitative"})
+BI_DANH_THIET_KE_CHUOI: Dict[str, str] = {
+    "qual": "qualitative", "dinh_tinh": "qualitative",
+    "rct_parallel": "rct", "rct_crossover": "rct", "randomized": "rct", "randomised": "rct",
+    "randomized_controlled_trial": "rct", "randomised_controlled_trial": "rct", "thu_nghiem_ngau_nhien": "rct",
+    "qualitative_study": "qualitative", "nghien_cuu_dinh_tinh": "qualitative",
+    "sr": "sr_ma", "systematic_review": "sr_ma", "meta_analysis": "sr_ma", "metaanalysis": "sr_ma",
+    "systematic_review_meta_analysis": "sr_ma",
+    "case_control_study": "case_control", "cross_sectional_descriptive": "cross_sectional",
+    "cross_sectional_analytic": "cross_sectional", "prevalence": "cross_sectional", "cat_ngang": "cross_sectional",
+    "cohort_study": "cohort", "prospective_cohort": "cohort", "retrospective_cohort": "cohort",
+    "prognostic": "prediction", "prediction_model": "prediction", "prognostic_model": "prediction",
+    "diagnostic_accuracy": "diagnostic", "dta": "diagnostic",
+}
+
+
+def ma_thiet_ke_chuoi(raw: Optional[str]) -> Optional[str]:
+    """Mã thiết kế CHUỖI G0–G10 (một trong 8 mã) cho một cách viết bất kỳ; None nếu ngoài 8 mã.
+
+    Gạch nối/khoảng trắng ⇒ gạch dưới; không phân biệt hoa thường; bỏ dấu tiếng Việt («Cắt ngang» ≡ «cat_ngang»).
+    KHÔNG đoán: mã lạ trả None để cổng CHẶN (G1-AUTO-02c), không lặng lẽ thay bằng thiết kế suy luận."""
+    if raw is None:
+        return None
+    khong_dau = "".join(c for c in unicodedata.normalize("NFD", str(raw)) if not unicodedata.combining(c))
+    key = re.sub(r"[\s\-]+", "_", khong_dau.replace("đ", "d").replace("Đ", "D").strip().lower())
+    if not key:
+        return None
+    ma = BI_DANH_THIET_KE_CHUOI.get(key, key)
+    return ma if ma in MA_THIET_KE_CHUOI else None
+
+
+# CHUNG-F (soát từng cổng): đặc tả thiết kế từng bị SUY LẠI ở mỗi tầng với giá trị mặc định im lặng («treatment»,
+# «superiority», «Power 80%», Cox…). G1 ghi MỘT khối `dac_ta_thiet_ke` vào checkpoint; các tầng sau chỉ ĐỌC khối này
+# qua dac_ta_thiet_ke(out_dir). Giá trị chưa biết là None — KHÔNG BAO GIỜ thay bằng mặc định.
+DAC_TA_KHOA = ("design_code", "question_type", "test_type", "hypothesis_type", "margin", "outcome_direction",
+               "estimand", "masking", "alpha_sidedness")
+QUESTION_TYPES = frozenset({"treatment", "diagnosis", "prognosis", "harm", "descriptive", "qualitative", "sr",
+                            "prediction_model"})
+_BI_DANH_QUESTION_TYPE = {
+    "therapy": "treatment", "intervention": "treatment", "dieu_tri": "treatment", "điều_trị": "treatment",
+    "diagnostic": "diagnosis", "chan_doan": "diagnosis", "chẩn_đoán": "diagnosis",
+    "prognostic": "prognosis", "tien_luong": "prognosis", "tiên_lượng": "prognosis",
+    "etiology": "harm", "aetiology": "harm", "risk_factor": "harm", "nguyen_nhan": "harm",
+    "tac_hai": "harm", "tác_hại": "harm", "meaning": "qualitative",
+    "description": "descriptive", "mo_ta": "descriptive", "mô_tả": "descriptive", "prevalence": "descriptive",
+    "dinh_tinh": "qualitative", "định_tính": "qualitative",
+    "systematic_review": "sr", "sr_ma": "sr", "meta_analysis": "sr",
+    "prediction": "prediction_model", "du_bao": "prediction_model",
+}
+HYPOTHESIS_TYPES = frozenset({"superiority", "non_inferiority", "equivalence", "descriptive_precision"})
+_BI_DANH_HYPOTHESIS = {"ni": "non_inferiority", "noninferiority": "non_inferiority",
+                       "non-inferiority": "non_inferiority",
+                       "equiv": "equivalence", "precision": "descriptive_precision",
+                       "descriptive": "descriptive_precision", "mô_tả": "descriptive_precision",
+                       "mo_ta": "descriptive_precision", "sup": "superiority"}
+OUTCOME_DIRECTIONS = frozenset({"higher_better", "lower_better"})
+
+
+def chuan_hoa_question_type(raw: Optional[str]) -> Optional[str]:
+    """Loại câu hỏi chuẩn (therapy ≡ treatment…); None nếu không nhận ra (KHÔNG mặc định «treatment»)."""
+    if raw is None:
+        return None
+    key = re.sub(r"[\s\-]+", "_", str(raw).strip().lower())
+    qt = _BI_DANH_QUESTION_TYPE.get(key, key)
+    return qt if qt in QUESTION_TYPES else None
+
+
+def chuan_hoa_hypothesis_type(raw: Optional[str]) -> Optional[str]:
+    """Loại giả thuyết chuẩn; None nếu không nhận ra (KHÔNG mặc định «superiority»)."""
+    if raw is None:
+        return None
+    key = str(raw).strip().lower().replace(" ", "_")
+    ht = _BI_DANH_HYPOTHESIS.get(key, key).replace("-", "_")
+    return ht if ht in HYPOTHESIS_TYPES else None
+
+
+def dac_ta_thiet_ke(out_dir) -> Dict[str, object]:
+    """Đặc tả thiết kế của đề tài cho các tầng sau ĐỌC (không suy lại).
+
+    Ưu tiên khối `dac_ta_thiet_ke` mà G1 ghi vào G1_checkpoint.json (nguon="g1_khoa"). Chưa có khối (đề tài chạy G1
+    trước 04/10/2026) ⇒ dựng tạm từ study_meta.gate_params (nguon="suy_lai"). Mọi khoá trong DAC_TA_KHOA luôn có mặt;
+    giá trị chưa biết là None và được liệt kê ở `thieu` — tầng sau phải coi None là «chưa khai», không phải mặc định."""
+    import json as _json
+
+    out = Path(out_dir)
+
+    def _doc(p: Path) -> dict:
+        try:
+            v = _json.loads(p.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, ValueError):
+            return {}
+        return v if isinstance(v, dict) else {}
+
+    cp1 = _doc(out / "G1_checkpoint.json")
+    khoi = cp1.get("dac_ta_thiet_ke")
+    if isinstance(khoi, dict):
+        ra = {k: khoi.get(k) for k in DAC_TA_KHOA}
+        ra["design_code"] = ma_thiet_ke_chuoi(ra.get("design_code"))
+        ra["question_type"] = chuan_hoa_question_type(ra.get("question_type"))
+        ra["hypothesis_type"] = chuan_hoa_hypothesis_type(ra.get("hypothesis_type"))
+        ra["nguon"] = "g1_khoa"
+        ra["dau_van_tay"] = khoi.get("dau_van_tay")
+    else:
+        meta = _doc(out / "study_meta.json")
+        gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), dict) else {}
+
+        def _g(gate: str) -> dict:
+            v = gp.get(gate)
+            return v if isinstance(v, dict) else {}
+
+        g0, g1, g3 = _g("G0"), _g("G1"), _g("G3")
+        design_raw = meta.get("design_code") or g1.get("design")
+        if not design_raw and isinstance(cp1.get("design"), dict):
+            design_raw = cp1["design"].get("internal_code")
+        ra = {
+            "design_code": ma_thiet_ke_chuoi(design_raw if isinstance(design_raw, str) else None),
+            "question_type": chuan_hoa_question_type(g0.get("question_type") or g1.get("question_type")),
+            "test_type": g0.get("test_type") or None,
+            "hypothesis_type": chuan_hoa_hypothesis_type(g3.get("hypothesis_type")),
+            "margin": g3.get("margin"),
+            "outcome_direction": g3.get("outcome_direction") or g1.get("outcome_direction") or None,
+            "estimand": g1.get("estimand") or None,
+            "masking": g1.get("masking") or None,
+            "alpha_sidedness": g3.get("alpha_sidedness") or None,
+            "nguon": "suy_lai",
+            "dau_van_tay": None,
+        }
+    if ra.get("outcome_direction") not in OUTCOME_DIRECTIONS:
+        ra["outcome_direction"] = None
+    ra["thieu"] = [k for k in DAC_TA_KHOA if ra.get(k) in (None, "", [], {})]
+    return ra
+
+
 def canonical_design_code(design_code: Optional[str]) -> Optional[str]:
     """Chuẩn hoá mã thiết kế về key canon (áp bí danh, lowercase)."""
     if not design_code:
         return None
-    key = str(design_code).strip().lower()
+    # «case-control», «Cross sectional» ⇒ case_control / cross_sectional (gạch nối, khoảng trắng ⇒ gạch dưới).
+    key = re.sub(r"[\s\-]+", "_", str(design_code).strip().lower())
     return DESIGN_CODE_ALIASES.get(key, key)
 
 
@@ -820,9 +969,46 @@ def _status_is_locked(status: Optional[str]) -> bool:
 # Cổng chỉ được coi KHOÁ khi có tín hiệu thực-tế tương ứng, KHÔNG suy từ việc
 # artifact tồn tại. Nguồn tín hiệu: trường bằng chứng có cấu trúc + guardrail
 # của chính cổng, HOẶC study_meta.json do bác sĩ xác nhận.
+def _thu_muc_de_tai(study: str, out_dir: Optional[Any], meta: Mapping[str, Any]) -> Optional[Path]:
+    """Thư mục đề tài để CHẤM SỐNG: tường minh (`out_dir`) > ngữ cảnh lắp ráp G10 (meta["_g10"]["out_dir"]) > vị trí
+    chuẩn <repo>/exports/<mã>. None khi mã đề tài rỗng/lạ hoặc thư mục không có."""
+    if out_dir is None:
+        ngu_canh = meta.get("_g10") if isinstance(meta.get("_g10"), Mapping) else {}
+        out_dir = ngu_canh.get("out_dir")
+    if out_dir is not None:
+        d = Path(out_dir)
+    elif study and re.fullmatch(r"[\w-]+", study):
+        d = _GOC_REPO / "exports" / study
+    else:
+        return None
+    return d if d.is_dir() else None
+
+
+def _da_khoa_song(gate: str, study: str, d: Optional[Path], trang_thai_khoa: str) -> Optional[bool]:
+    """Cổng `gate` còn KHOÁ khi chấm sống (cong_song — có bộ nhớ đệm + chốt chống vòng lặp); None khi không có thư mục
+    để chấm (người gọi tự quyết đường lùi). Bộ chấm hỏng/vòng lặp ⇒ False (bi quan), không bao giờ True vì lỗi.
+
+    THÊM 06/10/2026 (NGANG): bản cũ gọi thẳng gN_quality_gate.evaluate_study cho G4/G5/G8/G9/G10 — từ khi G10 chấm lại
+    check_de_cuong (G10-02), chuỗi G10.evaluate → check_de_cuong.validate → real_world_signals → G10.evaluate … đệ quy
+    tới RecursionError (bị nuốt thành «chưa khoá», ~23 giây mỗi lần trên C1a). cong_song cắt vòng ở tầng thứ hai."""
+    if d is None:
+        return None
+    try:
+        import cong_song as CS  # noqa: PLC0415 — import lười (cong_song import lười bộ chấm)
+
+        # Checkpoint thiếu `study` mà thư mục đề tài đã biết ⇒ mã đề tài là tên thư mục (quy ước exports/<mã>).
+        return CS.trang_thai_song(gate, study or d.name, d, repo_root=d.parent.parent).get("status") == trang_thai_khoa
+    except Exception:  # noqa: BLE001 — không chấm được ⇒ chưa khoá
+        return False
+
+
 def real_world_signals(checkpoints: Dict[str, Dict],
-                       meta: Optional[Dict] = None) -> Dict[str, bool]:
-    """Trả các tín hiệu đời thực; artifact/checkpoint đơn thuần không đủ."""
+                       meta: Optional[Dict] = None,
+                       out_dir: Optional[Any] = None) -> Dict[str, bool]:
+    """Trả các tín hiệu đời thực; artifact/checkpoint đơn thuần không đủ.
+
+    `out_dir`: thư mục đề tài đang xét (06/10/2026) — mặc định lấy từ ngữ cảnh lắp ráp G10 rồi tới <repo>/exports/<mã>;
+    bản cũ LUÔN chấm <repo>/exports/<mã> nên kiểm một bản sao/đề tài ngoài repo lại đọc tín hiệu của thư mục khác."""
     meta = meta or {}
     g2 = checkpoints.get("G2") or {}
     g4 = checkpoints.get("G4") or {}
@@ -831,12 +1017,38 @@ def real_world_signals(checkpoints: Dict[str, Dict],
     g9 = checkpoints.get("G9") or {}
     g10 = checkpoints.get("G10") or {}
 
-    if g2.get("quality_contract_version"):
-        quality = g2.get("quality_gate")
-        irb = (
-            isinstance(quality, dict)
-            and quality.get("status") == "PASS_G2_APPROVED"
-        )
+    # SỬA 06/10/2026 (soát từng cổng — NGANG, CHUNG-A): có checkpoint của cổng VÀ biết thư mục đề tài ⇒ chấm SỐNG (cùng
+    # định nghĩa G5–G10 dùng: g2_da_duyet; hợp đồng G4/G5/G8/G9/G10 qua cong_song). Thứ tự quyết định:
+    #   1) chấm sống ĐẠT ⇒ True, bất kể checkpoint đã được bộ chấm đóng dấu phiên bản hay chưa (G4 khoá thật mà
+    #      checkpoint chưa có quality_contract_version từng bị báo «SAP chưa khoá» ở đây);
+    #   2) checkpoint CÓ hợp đồng chất lượng ⇒ chấm sống quyết định (không đạt / không đo được ⇒ False — không bao giờ
+    #      lùi về trạng thái LƯU của công cụ);
+    #   3) checkpoint KIỂU CŨ (chưa có hợp đồng) ⇒ giữ nhánh cũ: trường bằng chứng có cấu trúc + cờ đời thực bác sĩ khai
+    #      trong study_meta (irb_approved/sap_lock_date/… — cơ chế doctrine dieu-phoi-nghien-cuu; KHÔNG phải trạng thái
+    #      công cụ tự lưu).
+    def _song(gate: str, cp: Mapping[str, Any], trang_thai_khoa: str) -> Optional[bool]:
+        if not cp:
+            return None
+        study = str(cp.get("study") or "").strip()
+        return _da_khoa_song(gate, study, _thu_muc_de_tai(study, out_dir, meta), trang_thai_khoa)
+
+    # G2: «G2 đã duyệt» = g7_quality_gate.g2_da_duyet (chữ ký sổ cái khớp gói hiện tại + hợp đồng chất lượng) — bản cũ
+    # đọc quality_gate.status LƯU: G2 đã duyệt rồi đề cương/cỡ mẫu đổi (dấu đầu vào lệch) vẫn «irb_approved».
+    irb_song: Optional[bool] = None
+    if g2:
+        study2 = str(g2.get("study") or "").strip()
+        d2 = _thu_muc_de_tai(study2, out_dir, meta)
+        if d2 is not None:
+            try:
+                import g7_quality_gate as G7Q  # noqa: PLC0415
+
+                irb_song = G7Q.g2_da_duyet(study2 or d2.name, d2, repo_root=d2.parent.parent)[0] is True
+            except Exception:  # noqa: BLE001 — bộ chấm hỏng ⇒ chưa duyệt (bi quan)
+                irb_song = False
+    if irb_song is True:
+        irb = True
+    elif g2.get("quality_contract_version"):
+        irb = False
     else:
         irb = (
             _guardrail_passed(g2)
@@ -844,36 +1056,13 @@ def real_world_signals(checkpoints: Dict[str, Dict],
             and _is_real_value(g2.get("g2_approval_date"))
         ) or bool(meta.get("irb_approved"))
 
-    # SỬA 2026-07-29 (audit toàn diện G0-G10, F6): trước đây tín hiệu "SAP đã
-    # khóa" chỉ đọc g4_lock_date/g4_status — cả hai đều KHÔNG được approve_gate.py
-    # cập nhật khi ký thật (chỉ g4_quality_gate.py mới ghi g4_lock_date, xem
-    # refresh_checkpoint() của module đó) — nên một G4 đã ký hợp lệ vẫn báo "chưa
-    # khóa" ở đây. Mirror đúng nhánh G5/G9: có quality_contract_version thì chấm
-    # TRỰC TIẾP (bắt lại drift số liệu với G3 hiện tại), không tin field cũ.
-    if g4.get("quality_contract_version"):
-        study = str(g4.get("study") or "").strip()
-        if study and re.fullmatch(r"[\w-]+", study):
-            root = Path(__file__).resolve().parents[1]
-            default_out = root / "exports" / study
-            if default_out.exists():
-                try:
-                    import g4_quality_gate as G4Q  # noqa: PLC0415
-
-                    live = G4Q.evaluate_study(
-                        study,
-                        default_out,
-                        repo_root=root,
-                        write=False,
-                    )
-                    sap = live.get("status") == G4Q.STATUS_LOCKED
-                except (ImportError, OSError, RuntimeError, ValueError):
-                    sap = False
-            else:
-                # Audit/verifier có thể chạy trong TemporaryDirectory; ở đó caller
-                # vừa chấm G4 và pin trạng thái vào meta của chính fixture.
-                sap = meta.get("g4_quality_status") == "PASS_G4_SAP_LOCKED"
-        else:
-            sap = meta.get("g4_quality_status") == "PASS_G4_SAP_LOCKED"
+    # G4 — SỬA 2026-07-29 (F6): g4_lock_date/g4_status không được approve_gate cập nhật khi ký thật; chấm trực tiếp.
+    song4 = _song("G4", g4, "PASS_G4_SAP_LOCKED")
+    if song4 is True:
+        sap = True
+    elif g4.get("quality_contract_version"):
+        # Không có thư mục để chấm: audit/verifier chạy trong TemporaryDirectory pin trạng thái vừa chấm vào meta.
+        sap = song4 is None and meta.get("g4_quality_status") == "PASS_G4_SAP_LOCKED"
     else:
         sap = (
             _guardrail_passed(g4)
@@ -881,112 +1070,54 @@ def real_world_signals(checkpoints: Dict[str, Dict],
                  or _status_is_locked(g4.get("g4_status")))
         ) or _is_real_value(meta.get("sap_lock_date"))
 
-    if g5.get("quality_contract_version"):
-        study = str(g5.get("study") or "").strip()
-        if study and re.fullmatch(r"[\w-]+", study):
-            root = Path(__file__).resolve().parents[1]
-            default_out = root / "exports" / study
-            if default_out.exists():
-                try:
-                    import g5_quality_gate as G5Q  # noqa: PLC0415
-
-                    live = G5Q.evaluate_study(
-                        study,
-                        default_out,
-                        repo_root=root,
-                        write=False,
-                    )
-                    db = live.get("status") == G5Q.STATUS_LOCKED
-                except (ImportError, OSError, RuntimeError, ValueError):
-                    db = False
-            else:
-                # Audit/verifier có thể chạy trong TemporaryDirectory; ở đó
-                # caller vừa chấm G5 và pin trạng thái vào meta của chính fixture.
-                db = (
-                    meta.get("g5_quality_status") == "PASS_G5_DATA_LOCKED"
-                    and _is_real_value(meta.get("data_lock_date"))
-                )
-        else:
-            # Checkpoint fixture/legacy không có study: giữ đường tương thích,
-            # còn pipeline thật luôn ghi study và phải chấm trực tiếp từ artifact.
-            db = (
-                meta.get("g5_quality_status") == "PASS_G5_DATA_LOCKED"
-                and _is_real_value(meta.get("data_lock_date"))
-            )
+    song5 = _song("G5", g5, "PASS_G5_DATA_LOCKED")
+    if song5 is True:
+        db = True
+    elif g5.get("quality_contract_version"):
+        # Không có thư mục để chấm: audit/verifier chạy trong TemporaryDirectory pin trạng thái vừa chấm vào meta.
+        db = song5 is None and (
+            meta.get("g5_quality_status") == "PASS_G5_DATA_LOCKED"
+            and _is_real_value(meta.get("data_lock_date"))
+        )
     else:
         db = _status_is_locked(g5.get("database_lock_status")) \
             or _is_real_value(meta.get("data_lock_date"))
 
-    # Kết quả phân tích thật KHÔNG do pipeline sinh — chỉ bác sĩ xác nhận.
-    results = bool(meta.get("results_final"))
+    # Kết quả phân tích thật KHÔNG do pipeline sinh — chỉ bác sĩ xác nhận. SỬA 06/10/2026 (NGANG): `is True` như G7/G8
+    # (bản cũ bool(...) ⇒ chuỗi «false»/«chưa» thành True).
+    results = meta.get("results_final") is True
 
-    peer = (
-        _guardrail_passed(g8)
-        and g8.get("independent_peer_review_approved") is True
-        and _is_real_value(g8.get("peer_review_approval_date"))
-    ) or bool(meta.get("peer_review_approved"))
+    # G8 — VÁ 04/10/2026: cổng CỨNG (INDEPENDENT_PEER_REVIEWER); nhánh cũ đọc trường KHÔNG mã nào ghi
+    # (`independent_peer_review_approved`/`peer_review_approval_date`) ⇒ chỉ «đã duyệt» khi study_meta TỰ KHAI.
+    song8 = _song("G8", g8, "PASS_G8_REVIEW_RECORDED")
+    if song8 is True:
+        peer = True
+    elif g8.get("quality_contract_version"):
+        peer = False
+    else:
+        peer = (
+            _guardrail_passed(g8)
+            and g8.get("independent_peer_review_approved") is True
+            and _is_real_value(g8.get("peer_review_approval_date"))
+        ) or bool(meta.get("peer_review_approved"))
 
-    if g9.get("quality_contract_version"):
-        study = str(g9.get("study") or "").strip()
-        if study and re.fullmatch(r"[\w-]+", study):
-            root = Path(__file__).resolve().parents[1]
-            default_out = root / "exports" / study
-            if default_out.exists():
-                try:
-                    import g9_quality_gate as G9Q  # noqa: PLC0415
-
-                    live = G9Q.evaluate_study(
-                        study,
-                        default_out,
-                        repo_root=root,
-                        write=False,
-                    )
-                    integ = live.get("status") == G9Q.STATUS_LOCKED
-                except (ImportError, OSError, RuntimeError, ValueError):
-                    integ = False
-            else:
-                integ = (
-                    meta.get("g9_quality_status")
-                    == "PASS_G9_PUBLICATION_INTEGRITY_LOCKED"
-                )
-        else:
-            integ = (
-                meta.get("g9_quality_status")
-                == "PASS_G9_PUBLICATION_INTEGRITY_LOCKED"
-            )
+    # G9 — SỬA 05/10/2026 (G9-10): không chấm sống được ⇒ CHƯA khoá (không rơi về trường g9_quality_status gõ tay).
+    song9 = _song("G9", g9, "PASS_G9_PUBLICATION_INTEGRITY_LOCKED")
+    if song9 is True:
+        integ = True
+    elif g9.get("quality_contract_version"):
+        integ = False
     else:
         integ = (
             g9.get("submission_package_ready") is True and _guardrail_passed(g9)
         ) or bool(meta.get("integrity_signed"))
 
-    if g10.get("quality_contract_version"):
-        study = str(g10.get("study") or "").strip()
-        if study and re.fullmatch(r"[\w-]+", study):
-            root = Path(__file__).resolve().parents[1]
-            default_out = root / "exports" / study
-            if default_out.exists():
-                try:
-                    import g10_quality_gate as G10Q  # noqa: PLC0415
-
-                    live = G10Q.evaluate_study(
-                        study,
-                        default_out,
-                        repo_root=root,
-                        write=False,
-                    )
-                    release = live.get("status") == G10Q.STATUS_LOCKED
-                except (ImportError, OSError, RuntimeError, ValueError):
-                    release = False
-            else:
-                release = (
-                    meta.get("g10_quality_status")
-                    == "PASS_G10_RELEASE_PACKAGE_LOCKED"
-                )
-        else:
-            release = (
-                meta.get("g10_quality_status")
-                == "PASS_G10_RELEASE_PACKAGE_LOCKED"
-            )
+    # G10 — SỬA 05/10/2026 (cùng lỗi G9-10): không chấm sống được ⇒ CHƯA khoá (không rơi về g10_quality_status).
+    song10 = _song("G10", g10, "PASS_G10_RELEASE_PACKAGE_LOCKED")
+    if song10 is True:
+        release = True
+    elif g10.get("quality_contract_version"):
+        release = False
     else:
         release = (
             g10.get("release_package_locked") is True

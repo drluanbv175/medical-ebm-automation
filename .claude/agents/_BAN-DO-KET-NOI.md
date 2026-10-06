@@ -1,4 +1,6 @@
-# BẢN ĐỒ KẾT NỐI ĐỘI AGENT EBM (50 agent: 21 lâm sàng + 28 nghiên cứu + 1 guardrail)
+# BẢN ĐỒ KẾT NỐI ĐỘI AGENT EBM (64 agent: 21 lâm sàng + 42 nghiên cứu + 1 guardrail)
+
+> **Cập nhật 06/10/2026 — HỘI ĐỒNG CỔNG (`_HOI-DONG-CONG.md`):** +14 node nghiên cứu. `dieu-phoi-nghien-cuu` trỏ thêm 11 điều phối cổng (`dieu-phoi-g0`…`dieu-phoi-g10`) + 3 vai hội đồng (`giam-khao-cong`, `phan-bien-tranh-bien`, `trong-tai-tranh-bien`); mỗi điều phối cổng trỏ tới agent chuyên trách + người chấm chéo của cổng mình (cạnh cấp 2 — danh mục máy-kiểm-được `tools/hoi_dong_cong.py`). Số out-degree 23/30/48/50 ở §1 dưới đây là số đo 2026-07-11, TRƯỚC tầng hội đồng; tổng hiện hành đo bằng `python3 tools/verify_agent_routing.py`.
 
 > Tài liệu tham chiếu dùng chung. Mô tả MẠNG LƯỚI thật giữa các agent: điểm vào · luồng · điểm cuối · cầu nối · hub dùng chung.
 > **Dựng từ đồ thị cạnh THẬT** (quét tham chiếu `` `agent` `` trong từng file `.claude/agents/*.md`, 2026-06-13; **tái quét 2026-07-05** sau 2 đợt thêm agent 48→50) — KHÔNG bịa cạnh.
@@ -56,7 +58,7 @@
 ```
 Hub chẩn đoán `chan-doan-xac-suat` ↔ `khai-thac-benh-su-kham` ↔ `sang-loc-co-do` ↔ `pico-lam-sang` ↔ `thang-diem-nguy-co` ↔ `tham-dinh-grade-nnt`.
 
-## 5. LUỒNG NGHIÊN CỨU (G0–G9 — theo `dieu-phoi-nghien-cuu`)
+## 5. LUỒNG NGHIÊN CỨU (G0–G10 — theo `dieu-phoi-nghien-cuu`)
 ```
 G0  cau-hoi-nghien-cuu → khoang-trong-nghien-cuu → thu-thu-tai-lieu/tong-quan-y-van
                          (trich-xuat-y-van · tham-dinh-phe-binh · nghien-cuu-dinh-tinh)

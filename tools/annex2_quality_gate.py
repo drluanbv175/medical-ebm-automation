@@ -91,7 +91,7 @@ def annex2_config(meta: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 def evaluate(meta: Mapping[str, Any], design_code: str, stage: str) -> dict[str, Any]:
-    """Trả trạng thái PASS/NOT_APPLICABLE/BLOCK và danh sách trường thiếu."""
+    """Trả trạng thái PASS/NOT_APPLICABLE/NEEDS_DECLARATION/BLOCK và danh sách trường thiếu."""
     cfg = annex2_config(meta)
     raw_methods = cfg.get("methodologies") or []
     if isinstance(raw_methods, str):
@@ -110,6 +110,11 @@ def evaluate(meta: Mapping[str, Any], design_code: str, stage: str) -> dict[str,
         return {"status": "NOT_APPLICABLE", "applicable": False, "methods": [],
                 "missing": [], "errors": [], "version": VERSION, "source": SOURCE_URL}
     if not applicable:
+        # VÁ 04/10/2026 (soát từng cổng, G1-11 / QĐ-15): RCT mà PI CHƯA KHAI (applicable vắng/None) KHÔNG được suy
+        # «không áp dụng» — trả NEEDS_DECLARATION để cổng giữ REVIEW tới khi PI khai true/false tường minh.
+        if cfg.get("applicable") is None:
+            return {"status": "NEEDS_DECLARATION", "applicable": None, "methods": [],
+                    "missing": [], "errors": [], "version": VERSION, "source": SOURCE_URL}
         return {"status": "NOT_APPLICABLE", "applicable": False, "methods": [],
                 "missing": [], "errors": [], "version": VERSION, "source": SOURCE_URL}
     if cfg.get("applicable") is False and methods:

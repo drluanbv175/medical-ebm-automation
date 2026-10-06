@@ -121,6 +121,7 @@ def _outcome(value: Any) -> dict:
             out.get("definition"),
             out.get("operational_definition"),
             out.get("dinh_nghia"),
+            out.get("measure"),  # 06/10/2026: khối kết cục chính của G1 (name/measure/timepoint/type)
         )
         out["timepoint"] = _first(
             out.get("timepoint"),
@@ -159,6 +160,22 @@ def _dedupe(values: Iterable[Any]) -> List[Any]:
     return out
 
 
+def _kc_tu_g0(g0_quyet: dict) -> dict:
+    """Kết cục chính PI chốt ở G0 (tên + cách đo + thời điểm) dưới dạng khối kết cục."""
+    if not is_present(g0_quyet.get("primary_outcome")):
+        return {}
+    return {"name": g0_quyet.get("primary_outcome"), "definition": g0_quyet.get("primary_outcome_measure"),
+            "timepoint": g0_quyet.get("primary_outcome_timepoint")}
+
+
+def _pico_tu_g0(g0_quyet: dict) -> dict:
+    """PICO/PECO PI đã chốt ở G0 (population/intervention/comparison/primary_outcome) — chỉ để HIỂN THỊ khi study_meta
+    không khai khối pico; không dùng làm nguồn suy cho trường khác (G1 tinh hơn G0)."""
+    pico = {"p": g0_quyet.get("population"), "i_e": g0_quyet.get("intervention"),
+            "c": g0_quyet.get("comparison"), "o": g0_quyet.get("primary_outcome")}
+    return {k: v for k, v in pico.items() if is_present(v)}
+
+
 def _canonical_meta(meta: Optional[dict]) -> dict:
     """Cho phép StudySpec nằm trực tiếp hoặc trong key `study_spec`."""
     meta = dict(meta or {})
@@ -174,6 +191,15 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
                      meta: Optional[dict] = None) -> dict:
     """Hợp nhất checkpoint + study_meta thành StudySpec chuẩn, không bịa dữ kiện."""
     raw = _canonical_meta(meta)
+    # THÊM 06/10/2026 (soát từng cổng — CHUNG-F/CHUNG-H, đo trên bản sao C1a): quyết định PI đã CHỐT ở G0/G1 (và G3)
+    # nằm ở study_meta.gate_params — nguồn của A2 PHẦN 0, WHO TRDS và bộ chấm G1. StudySpec cũ chỉ đọc khoá CẤP CAO của
+    # study_meta ⇒ C1a (G1 đủ câu hỏi, mục tiêu, bối cảnh, quần thể, tiêu chuẩn, cách tuyển, kết cục) vẫn bị báo thiếu
+    # D02/D03/D05–D08 và đề cương thống nhất in «[CẦN BỔ SUNG]»: bác sĩ phải khai LẠI điều đã chốt. Nay là nguồn KẾ
+    # TIẾP — khoá cấp cao (PI ghi đè có chủ ý) vẫn thắng; G1 trước G0 (G1 chốt sau, tinh hơn).
+    _gp_all = _as_dict(raw.get("gate_params"))
+    g0_quyet = _as_dict(_gp_all.get("G0"))
+    g1_quyet = _as_dict(_gp_all.get("G1"))
+    g3_quyet = _as_dict(_gp_all.get("G3"))
     g0 = checkpoints.get("G0") or {}
     g1 = checkpoints.get("G1") or {}
     g2 = checkpoints.get("G2") or {}
@@ -185,17 +211,22 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
 
     document = _as_dict(raw.get("document"))
     pico = _as_dict(_first(raw.get("pico"), raw.get("pico_or_equivalent")))
-    objectives_raw = _first(raw.get("objectives"), _get(raw, "objectives", "specific"))
+    objectives_raw = _first(raw.get("objectives"), _get(raw, "objectives", "specific"),
+                            g1_quyet.get("objectives"))
     objectives = _as_list(objectives_raw)
     aim = _first(raw.get("aim"), _get(raw, "objectives", "general"))
 
     outcomes_input = _as_list(raw.get("outcomes"))
+    # Cả KHỐI theo đúng thứ tự bộ chấm G1 đọc (g1_quality_gate._primary_outcome: cấp cao → G1) rồi G0 — một định nghĩa
+    # «kết cục chính» cho mọi cổng; không ghép trường của hai khối (lớp cấp cao thiếu tên làm chính G1 tụt DRAFT).
     primary = _outcome(_first(raw.get("primary_outcome"),
-                              outcomes_input[0] if outcomes_input else None))
+                              outcomes_input[0] if outcomes_input else None,
+                              g1_quyet.get("primary_outcome"), _kc_tu_g0(g0_quyet)))
     if not primary and "primary_outcome" in (_get(g5, "crf_columns", default=[]) or []):
         primary = {"name": "primary_outcome", "variable_name": "primary_outcome"}
     secondary_input = _first(raw.get("secondary_outcomes"),
-                             outcomes_input[1:] if outcomes_input else None)
+                             outcomes_input[1:] if outcomes_input else None,
+                             g1_quyet.get("secondary_outcomes"))
     secondary = [_outcome(item) for item in _as_list(secondary_input)]
     secondary = [item for item in secondary if item]
 
@@ -228,6 +259,16 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
         raw.get("comparator_rationale"), intervention.get("comparator_rationale"))
     exposure_intervention["concomitant_care"] = _first(
         raw.get("concomitant_care_policy"), intervention.get("concomitant_care"))
+    # THÊM 06/10/2026 (soát từng cổng — CHUNG-H RCT / CHUNG-F): quyết định PI đã CHỐT ở G0/G1 (gate_params — cũng là
+    # nguồn của A2 PHẦN 0 và WHO TRDS #13) là nguồn kế tiếp cho can thiệp/đối chứng của đề cương G10. Bản cũ chỉ đọc
+    # khoá riêng của study_meta ⇒ PI phải khai LẠI, chưa khai thì §6 mang «[CẦN BỔ SUNG]» dù G1 đã chốt.
+    if not is_present(exposure_intervention.get("description")):
+        exposure_intervention["description"] = _first(
+            "; ".join(str(x) for x in (g1_quyet.get("intervention_or_exposure"),
+                                       g1_quyet.get("intervention_dose_adherence")) if is_present(x)) or None,
+            g0_quyet.get("intervention"))
+    if not is_present(exposure_intervention.get("comparator")):
+        exposure_intervention["comparator"] = _first(g1_quyet.get("comparator"), g0_quyet.get("comparison"))
 
     instrument = _as_dict(raw.get("instrument"), text_key="name")
     variables = _first(raw.get("variables"), _get(g5, "crf_columns"))
@@ -289,6 +330,30 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
             if _alias != _key and is_present(design_specific.get(_alias)):
                 design_specific[_key] = design_specific.get(_alias)
                 break
+    # THÊM 06/10/2026 (CHUNG-H RCT / CHUNG-F): khoá theo thiết kế PI đã chốt ở G1 (gate_params.G1) là nguồn kế tiếp —
+    # không bắt khai lại ở design_specific. Tác hại (R03): RCT có kế hoạch an toàn G2 (G2_SAFETY_PLAN — định nghĩa/phân
+    # độ AE-SAE, báo cáo, DMC) mà PI đã xác nhận ⇒ trỏ sang kế hoạch đó, không chép nội dung.
+    for _key, _g1_keys in (("randomization", ("randomisation", "randomization")),
+                           ("allocation_concealment", ("allocation_concealment",)),
+                           ("blinding", ("blinding", "masking")),
+                           ("stopping_rules", ("stopping_rescue_rules",)),
+                           ("schedule", ("study_schema_timeline", "follow_up_schedule")),
+                           ("reference_standard", ("reference_standard",)),
+                           ("target_condition", ("target_condition",)),
+                           ("search_strategy", ("search_strategy",))):
+        if is_present(design_specific.get(_key)):
+            continue
+        _gia_tri = _first(*(g1_quyet.get(k) for k in _g1_keys))
+        if is_present(_gia_tri):
+            design_specific[_key] = _gia_tri
+    if design_code == "diagnostic" and not is_present(design_specific.get("index_test")):
+        _gia_tri = g1_quyet.get("intervention_or_exposure")
+        if is_present(_gia_tri):
+            design_specific["index_test"] = _gia_tri
+    if not is_present(design_specific.get("harms")) and \
+            _as_dict(_as_dict(raw.get("gate_params")).get("G2")).get("safety_plan_confirmed") is True:
+        design_specific["harms"] = (f"Theo kế hoạch an toàn G2 (G2_SAFETY_PLAN_{study}.md — định nghĩa/phân độ "
+                                    "biến cố bất lợi, báo cáo, hội đồng theo dõi), PI đã xác nhận")
     # Thiết kế quan sát KHÔNG có ngẫu nhiên hoá/làm mù/can thiệp — sự thật CẤU
     # TRÚC suy trực tiếp từ design_code (không phải nội dung lâm sàng bịa), CÙNG
     # khuôn với `theory.not_applicable_rationale` (P22) và các cờ *_not_applicable
@@ -329,20 +394,24 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
                 raw.get("problem_statement"),
                 raw.get("background"),
                 raw.get("rationale"),
+                g1_quyet.get("background_problem"),
             ),
             "evidence_gap": _first(
                 raw.get("evidence_gap"),
                 raw.get("research_gap"),
                 g0.get("research_gaps"),
+                g1_quyet.get("knowledge_gap"),
+                g0_quyet.get("novelty_justification"),
             ),
             "local_context": _first(raw.get("local_context"),
                                     raw.get("practice_context")),
         },
         "question": {
             "text": _first(raw.get("research_question"),
-                           raw.get("clinical_question")),
+                           raw.get("clinical_question"),
+                           g1_quyet.get("research_question")),
             "framework": _first(raw.get("question_framework"), "PICO/PECO"),
-            "pico": pico,
+            "pico": pico if is_present(pico) else _pico_tu_g0(g0_quyet),
             "hypothesis": raw.get("hypothesis"),
         },
         "objectives": {
@@ -354,23 +423,29 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
             "label": _first(raw.get("design"),
                             _get(g1, "design", "primary")),
             "rationale": _first(raw.get("design_rationale"),
-                                _get(g1, "design", "rationale")),
+                                _get(g1, "design", "rationale"),
+                                g1_quyet.get("design_rationale")),
             "setting": _first(raw.get("setting"), raw.get("site"),
-                              raw.get("location")),
+                              raw.get("location"), g1_quyet.get("setting")),
             "period": _first(raw.get("study_period"), raw.get("period"),
-                             raw.get("timeframe")),
+                             raw.get("timeframe"), g1_quyet.get("study_period")),
             "reporting_primary": reporting["primary"],
             "protocol_standard": reporting["protocol"],
             "additional_standards": reporting["extra"],
         },
         "population": {
-            "description": _first(raw.get("population"), pico.get("p")),
-            "inclusion": _as_list(raw.get("inclusion_criteria")),
-            "exclusion": _as_list(raw.get("exclusion_criteria")),
+            # Quyết định quần thể CHÍNH THỨC của G1 đứng trước P của khối PICO (bản tóm tắt) — 06/10/2026.
+            "description": _first(raw.get("population"), g1_quyet.get("population"),
+                                  pico.get("p"), g0_quyet.get("population")),
+            "inclusion": _as_list(_first(raw.get("inclusion_criteria"),
+                                         g1_quyet.get("inclusion_criteria"))),
+            "exclusion": _as_list(_first(raw.get("exclusion_criteria"),
+                                         g1_quyet.get("exclusion_criteria"))),
             "sampling": _first(raw.get("sampling_method"),
                                raw.get("sampling_strategy")),
             "recruitment": _first(raw.get("recruitment_plan"),
-                                  raw.get("recruitment")),
+                                  raw.get("recruitment"),
+                                  g1_quyet.get("recruitment_strategy")),
             "consent": _first(raw.get("consent_plan"),
                               ethics_meta.get("consent"),
                               raw.get("consent")),
@@ -423,6 +498,8 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
                 sample_meta.get("sampling_sufficiency"),
                 raw.get("sampling_sufficiency"),
                 raw.get("saturation_plan"),
+                g1_quyet.get("saturation_criterion"),
+                g3_quyet.get("saturation_stopping_rule"),
             ),
             "confirmed_n_adequate": g3.get("confirmed_n_adequate"),
         },
@@ -433,7 +510,8 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
             "procedures": _first(raw.get("data_collection_procedure"),
                                  raw.get("data_collection")),
             "measurement_times": _first(raw.get("measurement_times"),
-                                        raw.get("timepoints")),
+                                        raw.get("timepoints"),
+                                        g1_quyet.get("follow_up_schedule")),
             "quality_control": _first(raw.get("quality_control"),
                                       raw.get("qc_plan")),
             "pilot": _first(raw.get("pilot"), raw.get("pilot_plan")),
@@ -486,7 +564,8 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
         "literature": {
             "summary": _first(raw.get("literature_review"),
                               raw.get("literature_summary"),
-                              _get(raw, "literature", "summary")),
+                              _get(raw, "literature", "summary"),
+                              g1_quyet.get("evidence_summary")),
             "consensus": _first(raw.get("literature_consensus"),
                                 _get(raw, "literature", "consensus")),
             "disagreements": _first(raw.get("literature_disagreements"),
@@ -541,7 +620,8 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
             "irb_route": _first(ethics_meta.get("irb_route"),
                                 g2.get("irb_route")),
             "benefit_risk": _first(ethics_meta.get("benefit_risk"),
-                                   raw.get("risk_benefit")),
+                                   raw.get("risk_benefit"),
+                                   g1_quyet.get("benefit_risk_rationale")),
             "consent": _first(ethics_meta.get("consent"),
                               raw.get("consent_plan")),
             "privacy": _first(ethics_meta.get("privacy"),
@@ -568,7 +648,8 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
                                raw.get("timeline")),
             "team": _first(resources_meta.get("team"),
                            raw.get("team"),
-                           raw.get("personnel")),
+                           raw.get("personnel"),
+                           g1_quyet.get("team_roles")),
             "budget": _first(resources_meta.get("budget"),
                              raw.get("budget")),
         },
@@ -885,8 +966,9 @@ _DESIGN_FIELD_REQUIREMENTS: Dict[
         ("Q01", "Sampling, bão hòa/information power và reflexivity",
          (("population.sampling",), ("sample_size.sampling_sufficiency",),
           ("design_specific.reflexivity",)), "Nhóm định tính"),
-        ("Q02", "Quy trình mã hóa và audit trail",
-         (("analysis.primary_method",), ("design_specific.audit_trail",)),
+        ("Q02", "Quy trình mã hóa, phần mềm mã hóa và audit trail",
+         (("analysis.primary_method",), ("design_specific.audit_trail",),
+          ("analysis.software", "design_specific.qda_software")),
          "Nhóm định tính"),
     ),
 }
@@ -1101,6 +1183,16 @@ def meta_for_render(meta: Optional[dict], spec: dict) -> dict:
         out["exposure_intervention"] = spec["exposure_intervention"]
     if is_present(spec.get("design_specific")):
         out["design_specific"] = spec["design_specific"]
+    # THÊM 05/10/2026 (soát từng cổng G10 — lộ khi chạy chuỗi THẬT tới G10): các KHỐI mà section builder đọc như dict
+    # (expected_results, literature, theory, analysis, bias, ethics, registration, resources) — study_meta thô hay ghi
+    # dạng phẳng (vd "expected_results": "<chuỗi>" + "table_shells": [...] ở cấp cao nhất). StudySpec gom đúng vào khối
+    # dict (D18 đạt) nhưng luật «chỉ điền khi thiếu» giữ CHUỖI thô ⇒ builder thấy không phải dict ⇒ in «[CẦN BỔ SUNG]»
+    # dù dữ kiện đã có: đề cương và StudySpec nói hai chuyện. Bản thô không phải dict ⇒ dùng khối của StudySpec.
+    for key in ("expected_results", "literature", "theory", "analysis", "bias", "ethics", "registration",
+                "resources"):
+        value = defaults.get(key)
+        if isinstance(value, dict) and is_present(value) and not isinstance(out.get(key), dict):
+            out[key] = value
     return out
 
 

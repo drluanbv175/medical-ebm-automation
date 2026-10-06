@@ -141,7 +141,6 @@ def test_c1a_that_khong_it_hon_bo_cu_va_o_sau_phe_duyet_duoc_tach():
 
 # ── rào chống đè hồ sơ đã biên tập của run_g2_auto dùng tổng ô trống của hợp đồng chung ────────────────────────────
 def test_rao_chong_de_bat_ca_o_khong_mang_can():
-    import json as _json
     import shutil as _shutil
     import subprocess as _sp
     study = "PYTEST-G2-RAO-O-TRONG"
@@ -149,9 +148,11 @@ def test_rao_chong_de_bat_ca_o_khong_mang_can():
     _shutil.rmtree(d, ignore_errors=True)
     try:
         d.mkdir(parents=True)
-        (d / "G1_checkpoint.json").write_text(_json.dumps({"gate": "G1", "design": {
-            "internal_code": "rct", "primary": "RCT song song", "reporting_standard": "CONSORT 2025",
-            "ambiguous": False}}), encoding="utf-8", newline="\n")
+        # 04/10/2026 (soát từng cổng): G2 CHẤM SỐNG G1 — một G1_checkpoint chỉ có «design» (không artifact, không
+        # G0) là G1 BỊ CHẶN và G2 dừng đúng luật (mã 3). Fixture dựng chuỗi G0→G1 thật (tests/_chuoi_da_chot.py).
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from _chuoi_da_chot import dung_g0_g1_da_chot  # noqa: PLC0415
+        dung_g0_g1_da_chot(d, study)
 
         def _chay(*them):
             return _sp.run([sys.executable, str(ROOT / "tools" / "run_g2_auto.py"), "--study", study, "--topic",

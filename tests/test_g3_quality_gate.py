@@ -8,6 +8,7 @@ dưới đây tương ứng một lỗ hổng đã xác nhận bằng cách đ�
 from __future__ import annotations
 
 import json
+import math
 import shutil
 import subprocess
 import sys
@@ -35,18 +36,11 @@ def _rmtree_retry(d: Path, attempts: int = 5, delay_s: float = 0.2) -> None:
 
 
 def _seed_g0_g1(study_dir: Path, design_code: str) -> None:
-    study_dir.mkdir(parents=True, exist_ok=True)
-    (study_dir / "G0_checkpoint.json").write_text(
-        json.dumps({"gate": "G0", "topic": "Đề tài kiểm định", "guardrail": {"passed": True}}),
-        encoding="utf-8", newline="\n"
-    )
-    (study_dir / "G1_checkpoint.json").write_text(
-        json.dumps({
-            "gate": "G1",
-            "design": {"internal_code": design_code, "primary": design_code, "ambiguous": False},
-        }),
-        encoding="utf-8", newline="\n"
-    )
+    # 04/10/2026 (soát từng cổng): G3 CHẤM SỐNG G1 — G1_checkpoint chỉ có «design» là G1 BỊ CHẶN. Dựng chuỗi G0→G1 đã
+    # chốt thật cho đúng thiết kế (tests/_chuoi_da_chot.py), không mẫu effect size ở G1.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _chuoi_da_chot import dung_g0_g1_da_chot
+    dung_g0_g1_da_chot(study_dir, study_dir.name, thiet_ke=design_code, mau_hieu_qua=[])
 
 # ════════════════════════════════════════════════════════════════════════════
 # Đồ gá
@@ -155,6 +149,27 @@ _NI_FDA = {
     "margin_source": "PMID: 30560792",
 }
 
+def _checkpoint_cum(n_clusters: int = 60, m: int = 25, icc: float = 0.02) -> dict:
+    """Checkpoint G3 của thiết kế cụm mà bộ sinh ĐÃ nhân hệ số thiết kế (04/10/2026, G3-02): N trước DE suy ngược
+    để n_total = ⌈N trước DE × DE⌉ và số cụm = ⌈n_total / m⌉ = n_clusters."""
+    de = 1 + (m - 1) * icc
+    n_total = n_clusters * m
+    n_truoc = int(n_total / de)
+    while math.ceil(n_truoc * de) < n_total - (m - 1):
+        n_truoc += 1
+    n_total = math.ceil(n_truoc * de)
+    return _checkpoint(icc=icc, cluster_size=m, design_effect=de, n_total_truoc_de=n_truoc, n_total=n_total,
+                       n_per_group=math.ceil(n_total / 2), n_adjusted=math.ceil(n_total / 0.8),
+                       n_clusters=math.ceil(n_total / m))
+
+
+def _eval_cum(tmp_path, meta, **kw):
+    cp = _checkpoint_cum(**kw)
+    return _evaluate(tmp_path, checkpoint=cp, meta=meta,
+                     artifact=_artifact(n_total=cp["n_total"], n_adjusted=cp["n_adjusted"],
+                                        base_cell=cp["n_adjusted"]))
+
+
 # Bộ khai báo thiết kế theo chùm đã đủ điều kiện.
 _CLUSTER_OK = {
     "icc": 0.02,
@@ -165,19 +180,29 @@ _CLUSTER_OK = {
 }
 
 
-def _evaluate(tmp_path: Path, *, checkpoint=None, meta=None, artifact=None, g1=True, g0=True):
+def _chot(meta: dict, checkpoint: dict) -> dict:
+    """PI xác nhận ĐÚNG bộ giá trị đang có trong checkpoint (G3-03): dấu vân tay các giá trị quyết định N."""
+    meta = json.loads(json.dumps(meta))
+    meta.setdefault("gate_params", {}).setdefault("G3", {}).setdefault(
+        "dau_van_tay_chot", G3Q.dau_van_tay_g3(checkpoint))
+    return meta
+
+
+def _evaluate(tmp_path: Path, *, checkpoint=None, meta=None, artifact=None, g1=True, g0=True, chot=True):
     study = "TEST-G3"
     artifact_path = tmp_path / f"G3_A4_SAMPLE_SIZE_{study}.md"
     artifact_path.write_text(
         _artifact() if artifact is None else artifact, encoding="utf-8", newline="\n"
     )
+    checkpoint = _checkpoint() if checkpoint is None else checkpoint
+    meta = _full_meta() if meta is None else meta
     return G3Q.evaluate_g3_quality(
         study=study,
-        checkpoint=_checkpoint() if checkpoint is None else checkpoint,
+        checkpoint=checkpoint,
         artifact_path=artifact_path,
         g0_checkpoint={"gate": "G0"} if g0 else {},
         g1_checkpoint={"gate": "G1"} if g1 else {},
-        meta=_full_meta() if meta is None else meta,
+        meta=_chot(meta, checkpoint) if chot else meta,
     )
 
 
@@ -410,7 +435,7 @@ def test_khong_thua_kem_thieu_bien_bi_chan(tmp_path):
 def test_khong_thua_kem_co_bien_nhung_thieu_bien_minh_bi_ra_soat(tmp_path):
     report = _evaluate(
         tmp_path,
-        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10),
+        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10, outcome_direction="higher_better"),
     )
     row = _row(report, "G3-AUTO-11")
     assert row["status"] == "REVIEW"
@@ -420,7 +445,7 @@ def test_khong_thua_kem_co_bien_nhung_thieu_bien_minh_bi_ra_soat(tmp_path):
 def test_khong_thua_kem_du_bien_minh_va_nguon_thi_dat(tmp_path):
     report = _evaluate(
         tmp_path,
-        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10),
+        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10, outcome_direction="higher_better"),
         meta=_full_meta(**_NI_FDA),
     )
     assert _row(report, "G3-AUTO-11")["status"] == "PASS"
@@ -432,7 +457,7 @@ def test_khong_khai_khung_quy_dinh_cho_bien_bi_bat(tmp_path):
     meta.pop("ni_regulatory_framework")
     report = _evaluate(
         tmp_path,
-        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10),
+        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10, outcome_direction="higher_better"),
         meta=_full_meta(**meta),
     )
     row = _row(report, "G3-AUTO-11")
@@ -444,7 +469,7 @@ def test_ema_cam_dinh_nghia_bien_theo_ty_le_hieu_qua(tmp_path):
     """EMA nói rõ KHÔNG phù hợp khi Δ là một tỷ lệ của hiệu số thuốc chứng–giả dược."""
     report = _evaluate(
         tmp_path,
-        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10),
+        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10, outcome_direction="higher_better"),
         meta=_full_meta(
             ni_regulatory_framework="EMA",
             margin_justification="Chọn Δ bằng 50% của hiệu số thuốc chứng so với giả dược",
@@ -459,7 +484,7 @@ def test_ema_cam_dinh_nghia_bien_theo_ty_le_hieu_qua(tmp_path):
 def test_ema_cam_bien_minh_vi_nghien_cuu_nho(tmp_path):
     report = _evaluate(
         tmp_path,
-        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10),
+        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10, outcome_direction="higher_better"),
         meta=_full_meta(
             ni_regulatory_framework="EMA",
             margin_justification="Nới biên vì nghiên cứu nhỏ, khó tuyển đủ bệnh nhân",
@@ -472,7 +497,7 @@ def test_ema_cam_bien_minh_vi_nghien_cuu_nho(tmp_path):
 def test_khung_fda_doi_tach_bach_m1_va_m2(tmp_path):
     report = _evaluate(
         tmp_path,
-        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10),
+        checkpoint=_checkpoint(hypothesis_type="non_inferiority", margin=0.10, outcome_direction="higher_better"),
         meta=_full_meta(
             ni_regulatory_framework="FDA",
             margin_justification="Theo ý kiến chuyên gia lâm sàng của khoa",
@@ -485,38 +510,32 @@ def test_khung_fda_doi_tach_bach_m1_va_m2(tmp_path):
 
 
 def test_thiet_ke_cum_thieu_nguon_icc_bi_ra_soat(tmp_path):
-    report = _evaluate(tmp_path, meta=_full_meta(icc=0.02, cluster_size=25))
+    report = _eval_cum(tmp_path, _full_meta(icc=0.02, cluster_size=25))
     row = _row(report, "G3-AUTO-12")
     assert row["status"] == "REVIEW"
     assert "ICC" in row["evidence"]
 
 
 def test_thiet_ke_cum_du_thong_tin_thi_dat(tmp_path):
-    report = _evaluate(tmp_path, meta=_full_meta(**_CLUSTER_OK))
+    report = _eval_cum(tmp_path, _full_meta(**_CLUSTER_OK))
     assert _row(report, "G3-AUTO-12")["status"] == "PASS"
 
 
 def test_design_effect_tu_khai_sai_so_hoc_bi_bat(tmp_path):
     """Không tin con số tự khai: DE phải khớp 1+(m−1)·ICC."""
-    report = _evaluate(
-        tmp_path, meta=_full_meta(**{**_CLUSTER_OK, "design_effect": 1.10})
-    )
+    report = _eval_cum(tmp_path, _full_meta(**{**_CLUSTER_OK, "design_effect": 1.10}))
     row = _row(report, "G3-AUTO-12")
     assert row["status"] == "REVIEW"
     assert "design_effect" in row["evidence"]
 
 
 def test_design_effect_dung_so_hoc_thi_dat(tmp_path):
-    report = _evaluate(
-        tmp_path, meta=_full_meta(**{**_CLUSTER_OK, "design_effect": 1 + 24 * 0.02})
-    )
+    report = _eval_cum(tmp_path, _full_meta(**{**_CLUSTER_OK, "design_effect": 1 + 24 * 0.02}))
     assert _row(report, "G3-AUTO-12")["status"] == "PASS"
 
 
 def test_so_chum_nho_phai_khai_hieu_chinh_mau_nho(tmp_path):
-    report = _evaluate(
-        tmp_path, meta=_full_meta(**{**_CLUSTER_OK, "n_clusters": 18})
-    )
+    report = _eval_cum(tmp_path, _full_meta(**{**_CLUSTER_OK, "n_clusters": 18}), n_clusters=18)
     row = _row(report, "G3-AUTO-12")
     assert row["status"] == "REVIEW"
     assert "hiệu chỉnh mẫu nhỏ" in row["evidence"]
@@ -525,7 +544,7 @@ def test_so_chum_nho_phai_khai_hieu_chinh_mau_nho(tmp_path):
 def test_co_chum_khong_deu_va_cv_lon_phai_hieu_chinh(tmp_path):
     meta = {**_CLUSTER_OK}
     meta.pop("equal_cluster_sizes")
-    report = _evaluate(tmp_path, meta=_full_meta(**{**meta, "cluster_size_cv": 0.65}))
+    report = _eval_cum(tmp_path, _full_meta(**{**meta, "cluster_size_cv": 0.65}))
     row = _row(report, "G3-AUTO-12")
     assert row["status"] == "REVIEW"
     assert "CV" in row["evidence"]
@@ -534,7 +553,7 @@ def test_co_chum_khong_deu_va_cv_lon_phai_hieu_chinh(tmp_path):
 def test_co_chum_khong_deu_nhung_cv_nho_thi_dat(tmp_path):
     meta = {**_CLUSTER_OK}
     meta.pop("equal_cluster_sizes")
-    report = _evaluate(tmp_path, meta=_full_meta(**{**meta, "cluster_size_cv": 0.15}))
+    report = _eval_cum(tmp_path, _full_meta(**{**meta, "cluster_size_cv": 0.15}))
     assert _row(report, "G3-AUTO-12")["status"] == "PASS"
 
 
@@ -871,11 +890,15 @@ def test_evaluate_study_chay_tron_ven_tren_thu_muc_that(tmp_path):
     (tmp_path / "G3_checkpoint.json").write_text(
         json.dumps(_checkpoint(), ensure_ascii=False), encoding="utf-8", newline="\n"
     )
-    (tmp_path / "G1_checkpoint.json").write_text(
-        json.dumps({"gate": "G1"}, ensure_ascii=False), encoding="utf-8", newline="\n"
-    )
+    # 04/10/2026 (soát từng cổng): G1 được chấm SỐNG — dựng chuỗi G0→G1 đã chốt thật rồi gộp khối G3 đầy đủ.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _chuoi_da_chot import dung_g0_g1_da_chot
+    meta = dung_g0_g1_da_chot(tmp_path, study, mau_hieu_qua=[])
+    g3 = _chot(_full_meta(powered_for_outcome=meta["gate_params"]["G1"]["primary_outcome"]["name"]),
+               _checkpoint())["gate_params"]["G3"]
+    meta["gate_params"]["G3"] = g3
     (tmp_path / "study_meta.json").write_text(
-        json.dumps(_full_meta(), ensure_ascii=False), encoding="utf-8", newline="\n"
+        json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n"
     )
     report = G3Q.evaluate_study(study, tmp_path, write=True)
     assert report["status"] == G3Q.STATUS_CONFIRMED
@@ -969,11 +992,11 @@ class TestPipelineThatKhongDungFixtureGia:
             assert "khối cỡ mẫu dán vào đề cương" not in row["evidence"]
             assert "QUY TẮC DỪNG" in row["evidence"]
 
+            _meta = json.loads((study_dir / "study_meta.json").read_text(encoding="utf-8"))
+            _meta["gate_params"].setdefault("G3", {})["saturation_stopping_rule"] = (
+                "Dừng khi 3 cuộc phỏng vấn liên tiếp không sinh mã mới")
             (study_dir / "study_meta.json").write_text(
-                json.dumps({"gate_params": {"G3": {
-                    "saturation_stopping_rule": "Dừng khi 3 cuộc phỏng vấn liên tiếp không sinh mã mới",
-                }}}),
-                encoding="utf-8", newline="\n"
+                json.dumps(_meta, ensure_ascii=False), encoding="utf-8", newline="\n"
             )
             result2 = subprocess.run(
                 [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"), "--study", study, "--confirmed-n", "20"],

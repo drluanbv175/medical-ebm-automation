@@ -21,11 +21,11 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Sequence
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
 import annex2_quality_gate as A2X
+import cong_song as CS
 import placeholder_contract as PC
 import skill_standards as S
 
@@ -253,13 +253,64 @@ def _normalise_role(value: Any) -> str:
 
 
 def _valid_review_time(value: Any) -> bool:
+    """ISO-8601 thật và KHÔNG ở tương lai (VÁ 04/10/2026, G1-09: bản cũ nhận cả «2099-12-31»)."""
     if not _present(value):
         return False
-    try:
-        datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-    except ValueError:
-        return False
-    return True
+    return CS.iso_khong_tuong_lai(value)
+
+
+# Khoá xác nhận của gate_params.G1 — KHÔNG đưa vào dấu vân tay (chúng là phần xác nhận, không phải nội dung được chốt).
+_KHOA_XAC_NHAN_G1 = frozenset({
+    "design_confirmed", "protocol_core_confirmed", "bias_controls_confirmed", "feasibility_confirmed",
+    "evidence_review_confirmed", "reviewed_by_role", "reviewed_at", "dau_van_tay_chot",
+})
+
+# Thiết kế hợp lệ cho từng loại câu hỏi G0 (G1-06): thiết kế cuối nằm ngoài tập ⇒ REVIEW (PI giải trình/đổi).
+_THIET_KE_HOP_LE_THEO_CAU_HOI: Dict[str, frozenset] = {
+    "treatment": frozenset({"rct", "cohort", "case_control", "sr_ma"}),
+    "harm": frozenset({"cohort", "case_control", "cross_sectional", "sr_ma"}),
+    "prognosis": frozenset({"cohort", "prediction", "sr_ma"}),
+    "diagnosis": frozenset({"diagnostic", "sr_ma"}),
+    "descriptive": frozenset({"cross_sectional", "cohort", "qualitative", "sr_ma"}),
+    "qualitative": frozenset({"qualitative"}),
+    "prediction_model": frozenset({"prediction", "cohort"}),
+}
+
+# Dòng đề cương lõi mang «[CẦN … G2…G10 …]» là việc của CỔNG SAU — không tính là ô trống của G1 (G1-02).
+_HOAN_CHO_CONG_SAU = re.compile(r"\[CẦN[^\]]*\bG(?:[2-9]|10)\b[^\]]*\]")
+
+
+def dau_van_tay_g1(meta: Mapping[str, Any], design: Mapping[str, Any]) -> str:
+    """Dấu vân tay NỘI DUNG mà PI chốt ở G1: mọi quyết định trong gate_params.G1 (trừ khoá xác nhận) + thiết kế
+    đang dùng + pin. Sinh lại đề cương với quyết định khác ⇒ dấu đổi ⇒ xác nhận cũ hết hiệu lực (VÁ 04/10/2026,
+    G1-09). Không băm văn bản A2 (có dấu thời gian sinh ⇒ đổi mỗi lần chạy)."""
+    g1 = {k: v for k, v in _g1_meta(meta).items() if k not in _KHOA_XAC_NHAN_G1}
+    return CS.dau_van_tay(g1, str(design.get("internal_code") or ""), meta.get("design_code"))
+
+
+def o_trong_pham_vi_g1(a2_text: str) -> List[str]:
+    """Các dòng của PHẦN 0 (đề cương lõi) còn ô trống THUỘC PHẠM VI G1 — bỏ qua dòng hoãn cho cổng sau.
+
+    VÁ 04/10/2026 (soát từng cổng, G1-02): G1 từng PASS_G1_CONFIRMED khi A2 còn hơn 80 «[CẦN» vì G1-AUTO-05 chỉ kiểm
+    TIÊU ĐỀ. Nay mỗi dòng của đề cương lõi lấy từ một trường gate_params (khuôn đã có đủ khoá) hoặc ghi rõ cổng sau
+    sẽ hoàn thiện; dòng thuộc G1 còn trống ⇒ G1 chưa xác nhận được."""
+    text = a2_text or ""
+    bat_dau = text.find("PHẦN 0 — ĐỀ CƯƠNG LÕI")
+    if bat_dau < 0:
+        return []
+    ket_thuc = text.find("\n---", bat_dau)
+    vung = text[bat_dau: ket_thuc if ket_thuc > 0 else len(text)]
+    ra: List[str] = []
+    for dong in vung.splitlines():
+        d = dong.strip()
+        if not d.startswith("-") and not d.startswith("[") and "[CẦN" not in d:
+            continue
+        if not PC.co_o_trong(d):
+            continue
+        if _HOAN_CHO_CONG_SAU.search(d) and not PC.co_o_trong(_HOAN_CHO_CONG_SAU.sub("", d)):
+            continue
+        ra.append(d[:140])
+    return ra
 
 
 def _list_complete(value: Any) -> bool:
@@ -336,8 +387,23 @@ def build_protocol_core(
     meta: Mapping[str, Any],
     generated_at: str,
 ) -> str:
-    """Sinh khung đề cương lõi chung; chỗ thiếu luôn mang nhãn, không suy diễn."""
+    """Sinh khung đề cương lõi chung; chỗ thiếu luôn mang nhãn, không suy diễn.
+
+    VÁ 04/10/2026 (soát từng cổng, G1-02): mọi dòng THUỘC PHẠM VI G1 nay lấy từ một trường gate_params (khuôn
+    gate_contract đã có khoá) — bản cũ in cứng «[CẦN BỔ SUNG]» ở nhiều dòng mà study_meta không có chỗ nào để điền ⇒
+    PI không thể hoàn thiện đề cương qua kênh chuẩn. Dòng thuộc cổng sau ghi rõ «Ở Gx» (o_trong_pham_vi_g1 bỏ qua).
+    Giả thuyết lấy từ G0 (G0 là nơi chốt — G0-06)."""
     g1 = _g1_meta(meta)
+    gp_all = meta.get("gate_params") if isinstance(meta.get("gate_params"), Mapping) else {}
+    g0 = gp_all.get("G0") if isinstance(gp_all.get("G0"), Mapping) else {}
+    test_type = str(g0.get("test_type") or "").strip().lower()
+    if test_type in {"descriptive", "mô tả"}:
+        gia_thuyet = "Nghiên cứu mô tả — không kiểm định giả thuyết (test_type=descriptive, chốt ở G0)"
+    elif _filled(g0.get("hypothesis_h1")):
+        gia_thuyet = (f"{_text(g0.get('hypothesis_h1'))} (chiều kỳ vọng: {_text(g0.get('expected_direction'))}; "
+                      f"loại kiểm định: {_text(g0.get('test_type'))})")
+    else:
+        gia_thuyet = "[CẦN CHỐT Ở G0 — hypothesis_h1/expected_direction/test_type]"
     outcome = _outcome_components(meta)
     reporting = str(design.get("reporting_standard") or "[CẦN BỔ SUNG]")
     protocol = str(design.get("protocol_standard") or "[CẦN BỔ SUNG]")
@@ -359,9 +425,45 @@ def build_protocol_core(
 - Ngày tìm cuối cùng dự kiến: {_text(g1.get("search_last_date"))}
 - Quy trình chọn nghiên cứu: {_text(g1.get("study_selection_process"))}
 """
+    elif internal == "rct":
+        design_specific_core = f"""
+- Tạo chuỗi ngẫu nhiên (randomisation): {_text(g1.get("randomisation"))}
+- Che giấu phân bổ (allocation concealment): {_text(g1.get("allocation_concealment"))}
+- Làm mù (blinding/masking): {_text(g1.get("blinding"))}
+"""
+    elif internal == "diagnostic":
+        design_specific_core = f"""
+- Tình trạng đích (target condition): {_text(g1.get("target_condition"))}
+- Tiêu chuẩn tham chiếu (reference standard): {_text(g1.get("reference_standard"))}
+"""
+    elif internal == "case_control":
+        design_specific_core = f"""
+- Định nghĩa ca bệnh: {_text(g1.get("case_definition"))}
+- Nguồn và cách chọn nhóm chứng: {_text(g1.get("control_source"))}
+"""
+    elif internal == "prediction":
+        design_specific_core = f"""
+- Yếu tố dự báo ứng viên: {_text(g1.get("candidate_predictors"))}
+- Khung thời gian dự báo (prediction horizon): {_text(g1.get("prediction_horizon"))}
+"""
 
     def joined(value: Any) -> str:
         return _text(value)
+
+    khoang_trong = _text(_first_present(g1.get("knowledge_gap"), g0.get("novelty_justification")))
+    lieu_tuan_thu = _text(g1.get("intervention_dose_adherence"))
+
+    # Dòng estimand chỉ thuộc phạm vi G1 khi là RCT (G1-HUMAN-05); thiết kế khác ghi N/A thay vì 5 ô «[CẦN]».
+    if internal == "rct":
+        estimand_dong = (
+            f"- Estimand RCT hiện hành: dân số={_text(estimand.get('population'))};\n"
+            f"  điều kiện điều trị={_text(estimand.get('treatment_condition'))};\n"
+            f"  biến kết cục={_text(estimand.get('variable'))};\n"
+            f"  biến cố xen ngang/chiến lược={_text(estimand.get('intercurrent_events_strategy'))};\n"
+            f"  thước đo tổng hợp quần thể={_text(estimand.get('population_summary_measure'))}."
+        )
+    else:
+        estimand_dong = "- Estimand (ICH E9(R1)) bắt buộc: N/A — không phải RCT."
 
     return f"""
 ## PHẦN 0 — ĐỀ CƯƠNG LÕI
@@ -374,21 +476,21 @@ def build_protocol_core(
 - Tên đề tài: {_text(topic)}
 - Phiên bản protocol: {_text(g1.get("protocol_version"))}
 - Ngày tạo/cập nhật: {generated_at}
-- Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: [CẦN BỔ SUNG]
-- Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN BỔ SUNG]
+- Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: {_text(g1.get("team_roles"))}
+- Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: {protocol}
 - Chuẩn báo cáo kết quả dự kiến: {reporting}
 
 ### 0.2 Cơ sở khoa học và khoảng trống
-- Vấn đề nghiên cứu và gánh nặng liên quan: [CẦN TỔNG HỢP TỪ A2b]
-- Bằng chứng hiện có và giới hạn: [CẦN TỔNG HỢP TỪ A2b]
-- Khoảng trống, tính mới và lý do cần nghiên cứu: [CẦN PI/NGƯỜI RÀ BẰNG CHỨNG XÁC NHẬN]
-- Cân bằng lợi ích, nguy cơ và tính hợp lý khoa học: [CẦN BỔ SUNG]
+- Vấn đề nghiên cứu và gánh nặng liên quan: {_text(g1.get("background_problem"))}
+- Bằng chứng hiện có và giới hạn: {_text(g1.get("evidence_summary"))}
+- Khoảng trống, tính mới và lý do cần nghiên cứu: {khoang_trong}
+- Cân bằng lợi ích, nguy cơ và tính hợp lý khoa học: {_text(g1.get("benefit_risk_rationale"))}
 
 ### 0.3 Mục tiêu, câu hỏi và giả thuyết
 - Mục tiêu: {joined(_objectives(meta))}
 - Câu hỏi nghiên cứu/PICO-PECO-PIRD: {_text(g1.get("research_question"))}
-- Giả thuyết chính và hướng hiệu ứng: [CẦN BỔ SUNG]
+- Giả thuyết chính và hướng hiệu ứng: {gia_thuyet}
 - Kết cục chính neo mục tiêu: {_text(outcome["name"])}
 
 ### 0.4 Thiết kế, địa điểm và thời gian
@@ -396,7 +498,7 @@ def build_protocol_core(
 - Lý do chọn so với phương án thay thế: {_text(design.get("rationale"))}
 - Địa điểm/bối cảnh: {_text(_first_present(meta.get("setting"), g1.get("setting")))}
 - Thời gian nghiên cứu: {_text(_first_present(meta.get("study_period"), g1.get("study_period")))}
-- Sơ đồ nghiên cứu và lịch tuyển-can thiệp-đánh giá: [CẦN BỔ SUNG]
+- Sơ đồ nghiên cứu và lịch tuyển-can thiệp-đánh giá: {_text(g1.get("study_schema_timeline"))}
 
 ### 0.5 Quần thể, tiêu chí chọn và tuyển mẫu
 - Quần thể đích/nguồn: {_text(_first_present(meta.get("population"), g1.get("population")))}
@@ -408,8 +510,8 @@ def build_protocol_core(
 ### 0.6 Can thiệp/phơi nhiễm và đối chứng
 - Can thiệp, phơi nhiễm hoặc index test: {_text(g1.get("intervention_or_exposure"))}
 - Đối chứng/comparator hoặc lý do không áp dụng: {_text(g1.get("comparator"))}
-- Liều/cường độ, thời lượng, đồng can thiệp, tuân thủ hoặc cách đo phơi nhiễm: [CẦN BỔ SUNG]
-- Tiêu chí dừng/chuyển/điều trị cứu hộ nếu áp dụng: [CẦN BỔ SUNG]
+- Liều/cường độ, thời lượng, đồng can thiệp, tuân thủ hoặc cách đo phơi nhiễm: {lieu_tuan_thu}
+- Tiêu chí dừng/chuyển/điều trị cứu hộ nếu áp dụng: {_text(g1.get("stopping_rescue_rules"))}
 {design_specific_core}
 
 ### 0.7 Kết cục và lịch đánh giá
@@ -423,26 +525,26 @@ def build_protocol_core(
 ### 0.8 Cỡ mẫu
 - Cỡ mẫu và power chính thức: [CẦN TÍNH Ở G3]
 - Effect size/MCID, alpha, power, tỷ lệ biến cố, mất theo dõi và design effect:
-  [CẦN NGUỒN PMID/DOI HOẶC PILOT]
-- Phân bổ theo nhóm/tầng/trung tâm nếu có: [CẦN BỔ SUNG]
+  [CẦN NGUỒN PMID/DOI HOẶC PILOT — Ở G3]
+- Phân bổ theo nhóm/tầng/trung tâm nếu có: [CẦN TÍNH Ở G3]
 
 ### 0.9 Quản lý dữ liệu, bảo mật và chất lượng
 - CRF/data dictionary, nguồn dữ liệu và quy tắc kiểm tra: [CẦN HOÀN THIỆN G3/G5]
 - Mã giả danh, phân quyền, audit trail, lưu trữ và hủy dữ liệu: [CẦN HOÀN THIỆN G2/G5]
-- Critical-to-quality factors và quality tolerance limits: [CẦN PI ẤN ĐỊNH]
+- Critical-to-quality factors và quality tolerance limits: {_text(g1.get("critical_to_quality"))}
 - Kế hoạch dữ liệu thiếu, sai lệch protocol và CAPA: [CẦN HOÀN THIỆN G4/G5]
 
 ### 0.10 Đạo đức, an toàn và đăng ký
 - Phê duyệt IRB/IEC, ICF/waiver, bảo mật và bồi thường: [CẦN HỒ SƠ THẬT Ở G2]
 - Đăng ký nghiên cứu/protocol trước mốc bắt buộc: [CẦN HỒ SƠ THẬT Ở G2]
-- AE/SAE, giám sát an toàn, DMC/DSMB và quy tắc dừng nếu áp dụng: [CẦN BỔ SUNG]
-- Nhóm dễ tổn thương và biện pháp bảo vệ: [CẦN ĐÁNH GIÁ]
+- AE/SAE, giám sát an toàn, DMC/DSMB và quy tắc dừng nếu áp dụng: [CẦN HOÀN THIỆN Ở G2/G4]
+- Nhóm dễ tổn thương và biện pháp bảo vệ: [CẦN ĐÁNH GIÁ Ở G2]
 
 ### 0.11 Giám sát, sửa đổi và phổ biến
-- Monitoring/audit và phân công trách nhiệm: [CẦN BỔ SUNG]
-- Quy trình protocol amendment, cập nhật registry/IRB và thông báo bên liên quan: [CẦN BỔ SUNG]
+- Monitoring/audit và phân công trách nhiệm: {_text(g1.get("monitoring_plan"))}
+- Quy trình protocol amendment, cập nhật registry/IRB và thông báo bên liên quan: [CẦN HOÀN THIỆN Ở G2]
 - Kế hoạch công bố kể cả kết quả âm, chia sẻ dữ liệu/mã và truyền đạt cho người tham gia:
-  [CẦN BỔ SUNG]
+  [CẦN HOÀN THIỆN Ở G9]
 - Tác giả, contributorship, COI, tài trợ và khai báo AI: [CẦN XÁC NHẬN Ở G9]
 
 ### 0.12 Tài liệu tham khảo và phụ lục
@@ -450,11 +552,7 @@ def build_protocol_core(
 - Project Charter: `G1_A1b_PROJECT_CHARTER_{study}.md`
 - Kế hoạch triển khai/RACI/kinh phí: `G1_A13_IMPLEMENTATION_PLAN_{study}.md`
 - Risk Register/CAPA: `G1_A13b_RISK_REGISTER_{study}.md`
-- Estimand RCT hiện hành: dân số={_text(estimand.get("population"))};
-  điều kiện điều trị={_text(estimand.get("treatment_condition"))};
-  biến kết cục={_text(estimand.get("variable"))};
-  biến cố xen ngang/chiến lược={_text(estimand.get("intercurrent_events_strategy"))};
-  thước đo tổng hợp quần thể={_text(estimand.get("population_summary_measure"))}.
+{estimand_dong}
 
 > Cần bác sĩ kiểm chứng.
 
@@ -703,6 +801,20 @@ def build_supporting_artifacts(
 > Cần bác sĩ kiểm chứng.
 """
 
+    # VÁ 04/10/2026 (G1-03): kinh phí lấy từ study_meta.gate_params.G1.budget (mỗi dòng: nhom/so_luong/don_gia/nguon/
+    # thanh_tien/trang_thai); chưa khai thì giữ khuôn [CẦN] — máy KHÔNG bịa đơn giá.
+    bud = g1.get("budget")
+    kinh_phi_rows = "\n".join(
+        "| " + " | ".join(_text(r.get(k), "[CẦN]").replace("|", "/") for k in (
+            "nhom", "so_luong", "don_gia", "thanh_tien", "trang_thai")) + " |"
+        for r in (bud if isinstance(bud, list) else []) if isinstance(r, Mapping)
+    ) or (
+        "| Nhân công | [CẦN] | [CẦN CHỦ NHIỆM ẤN ĐỊNH] | [CẦN] | Dự thảo |\n"
+        "| Thu thập/xét nghiệm | [CẦN] | [CẦN] | [CẦN] | Dự thảo |\n"
+        "| Dữ liệu/phần mềm | [CẦN] | [CẦN] | [CẦN] | Dự thảo |\n"
+        "| Công bố/lưu trữ | [CẦN] | [CẦN] | [CẦN] | Dự thảo |"
+    )
+
     plan = f"""# KẾ HOẠCH TRIỂN KHAI (A13) — {study}
 > [DỰ THẢO] Đơn giá, nhân sự và thời lượng thật do chủ nhiệm/đơn vị xác nhận.
 
@@ -727,10 +839,7 @@ def build_supporting_artifacts(
 ## KINH PHÍ
 | Nhóm chi phí | Số lượng | Đơn giá có nguồn | Thành tiền | Trạng thái |
 |---|---:|---:|---:|---|
-| Nhân công | [CẦN] | [CẦN CHỦ NHIỆM ẤN ĐỊNH] | [CẦN] | Dự thảo |
-| Thu thập/xét nghiệm | [CẦN] | [CẦN] | [CẦN] | Dự thảo |
-| Dữ liệu/phần mềm | [CẦN] | [CẦN] | [CẦN] | Dự thảo |
-| Công bố/lưu trữ | [CẦN] | [CẦN] | [CẦN] | Dự thảo |
+{kinh_phi_rows}
 
 ## QUALITY-BY-DESIGN
 - Critical-to-quality factors: quyền/an toàn người tham gia; tính tin cậy kết cục chính;
@@ -741,7 +850,21 @@ def build_supporting_artifacts(
 > Cần bác sĩ kiểm chứng.
 """
 
-    review_date = generated_at[:10]
+    # VÁ 04/10/2026 (soát từng cổng, G1-03): cột «Ngày rà» từng do MÁY điền bằng ngày sinh tệp — một ngày rà chưa ai
+    # rà. Nay để «[CẦN NGƯỜI RÀ]»; nhóm nghiên cứu ghi risk register thật vào study_meta.gate_params.G1.risk_register
+    # (mỗi dòng: id/loai/rui_ro/xac_suat/tac_dong/giam_thieu/capa/chu_nhan/trang_thai/ngay_ra) — sửa tay .md bị ghi đè.
+    review_date = "[CẦN NGƯỜI RÀ]"
+    rr_meta = g1.get("risk_register")
+    rr_rows_meta: List[str] = []
+    if isinstance(rr_meta, list):
+        for row in rr_meta:
+            if not isinstance(row, Mapping):
+                continue
+            o = [_text(row.get(k), "[CẦN]").replace("|", "/") for k in (
+                "id", "loai", "rui_ro", "xac_suat", "tac_dong", "giam_thieu", "capa", "chu_nhan", "trang_thai")]
+            ngay = row.get("ngay_ra")
+            o.append(str(ngay) if _valid_review_time(ngay) else "[CẦN NGƯỜI RÀ]")
+            rr_rows_meta.append("| " + " | ".join(o) + " |")
     risk_rows = (
         "| G1-R01 | Thiết kế | Thiết kế không khớp câu hỏi/estimand | [CẦN] | Cao | "
         "Methodologist rà trước G2 | Sửa protocol có version; vô hiệu downstream cũ | "
@@ -764,11 +887,12 @@ def build_supporting_artifacts(
 
 | ID | Loại | Rủi ro | Xác suất | Tác động | Giảm thiểu trước | CAPA nếu xảy ra | Chủ nhân | Trạng thái | Ngày rà |
 |---|---|---|---|---|---|---|---|---|---|
-{chr(10).join(risk_rows)}
+{chr(10).join(rr_rows_meta or risk_rows)}
 
 ## Quy tắc cập nhật
 - Rà sau mỗi cổng và khi có protocol amendment.
-- Không xóa dòng cũ; cập nhật trạng thái, ngày, nguyên nhân và CAPA.
+- Ghi mọi thay đổi vào `study_meta.json → gate_params.G1.risk_register` (giữ dòng cũ, cập nhật trạng thái, ngày rà,
+  nguyên nhân và CAPA) rồi chạy lại G1 — tệp .md này được SINH LẠI, sửa tay sẽ bị ghi đè (bản sửa tay được sao lưu).
 
 > Cần bác sĩ kiểm chứng.
 """
@@ -785,9 +909,60 @@ def build_supporting_artifacts(
         "A13": out_dir / f"G1_A13_IMPLEMENTATION_PLAN_{study}.md",
         "A13b": out_dir / f"G1_A13b_RISK_REGISTER_{study}.md",
     }
+    manifest_cu = _manifest_luot_truoc(out_dir)
     for key, path in paths.items():
+        sao_luu_neu_sua_tay(path, manifest_cu.get(key), contents[key])
         path.write_text(contents[key], encoding="utf-8", newline="\n")
     return paths
+
+
+def _manifest_luot_truoc(out_dir: Path) -> Dict[str, str]:
+    """{khoá artifact: sha256} LÚC SINH của lượt run_g1_auto trước — rỗng nếu chưa có (= không biết).
+
+    Chỉ tin `artifact_manifest_luc_sinh`: `artifact_manifest` của báo cáo kiểu cũ có thể được tính SAU khi người đã sửa
+    tay (lượt chấm lại), dùng nó làm mốc sẽ coi bản sửa tay là «bản máy sinh» và đè mất."""
+    try:
+        rep_cu = json.loads((Path(out_dir) / "G1_QUALITY_REPORT.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    man = rep_cu.get("artifact_manifest_luc_sinh") if isinstance(rep_cu, dict) else None
+    return {k: str(v.get("sha256")) for k, v in (man or {}).items() if isinstance(v, dict) and v.get("sha256")}
+
+
+def sao_luu_neu_sua_tay(path: Path, sha_luot_truoc: Optional[str],
+                        noi_dung_moi: Optional[str] = None) -> Optional[Path]:
+    """Tệp đang có KHÁC bản lượt trước sinh ra (người đã sửa tay) ⇒ sao lưu `<tên>.bak-<thời điểm>` rồi mới ghi đè.
+
+    VÁ 04/10/2026 (soát từng cổng, G1-03): mỗi lần chạy, G1 ghi đè A2/A1b/A2b/A13/A13b vô điều kiện — phần PI sửa tay
+    mất trắng không một dòng cảnh báo. Trả đường dẫn bản sao lưu (None nếu không cần).
+
+    sha_luot_truoc vắng = KHÔNG BIẾT bản lượt trước (báo cáo kiểu cũ chưa có mốc lúc sinh): không đoán «chưa ai sửa» —
+    tệp nào khác nội dung sắp ghi thì sao lưu (một lần chuyển tiếp; từ lượt sau đã có mốc lúc sinh)."""
+    path = Path(path)
+    if not path.is_file():
+        return None
+    try:
+        cu = path.read_bytes()
+    except OSError:
+        return None
+    if sha_luot_truoc:
+        if hashlib.sha256(cu).hexdigest() == sha_luot_truoc:
+            return None
+        ly_do = "đã bị sửa tay sau lượt G1 trước"
+    else:
+        if noi_dung_moi is not None and cu == noi_dung_moi.encode("utf-8"):
+            return None
+        ly_do = "khác bản sắp sinh mà không có mốc lúc sinh để biết ai sửa (báo cáo G1 kiểu cũ)"
+    from datetime import datetime as _dt  # noqa: PLC0415
+
+    goc = f"{path.name}.bak-{_dt.now().strftime('%Y%m%d-%H%M%S')}"
+    bak, i = path.with_name(goc), 1
+    while bak.exists():  # hai lượt trong cùng một giây không được đè bản sao lưu trước
+        bak, i = path.with_name(f"{goc}-{i}"), i + 1
+    bak.write_bytes(cu)
+    print(f"  ⚠️  {path.name} {ly_do} — sao lưu ở {bak.name} trước khi sinh lại. "
+          "Ghi nội dung đó vào study_meta.gate_params.G1 để không mất ở lượt sau.")
+    return bak
 
 
 def _criterion(
@@ -815,8 +990,12 @@ def evaluate_g1_quality(
     meta: Mapping[str, Any],
     evidence_identifiers: Mapping[str, Sequence[str]],
     guardrail_passed: bool = True,
+    g0_song: Optional[Mapping[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Đánh giá G1 theo tiêu chí máy và xác nhận người thật."""
+    """Đánh giá G1 theo tiêu chí máy và xác nhận người thật.
+
+    `g0_song` = kết quả cong_song.trang_thai_song("G0", …) — nơi gọi trong sản xuất (run_g1_auto, evaluate_study)
+    LUÔN truyền để G1-AUTO-01 dựa trên G0 CHẤM SỐNG; vắng thì đọc trạng thái lưu (chỉ dùng cho kiểm thử trực tiếp)."""
     automatic: List[Dict[str, str]] = []
     human: List[Dict[str, str]] = []
 
@@ -828,9 +1007,11 @@ def evaluate_g1_quality(
         "Sửa mọi lỗi PII, vượt cổng, nguồn hoặc disclaimer trước khi tiếp tục.",
     ))
 
+    # VÁ 04/10/2026 (soát từng cổng, G0-01 + G1-04 / CHUNG-A): bản cũ tin `quality_gate.status` LƯU SẴN của G0 (C1a:
+    # lưu PASS 02/09, chấm sống DRAFT vì study_meta sửa 04/10) và — với checkpoint G0 kiểu cũ không có
+    # quality_contract_version — bỏ qua cả trạng thái lồng bên trong, cho PASS chỉ vì guardrail sạch.
     g0_guard = g0_checkpoint.get("guardrail")
     g0_present = bool(g0_checkpoint)
-    g0_contract = bool(g0_checkpoint.get("quality_contract_version"))
     g0_quality = g0_checkpoint.get("quality_gate")
     g0_quality_status = (
         str(g0_quality.get("status") or "")
@@ -840,24 +1021,38 @@ def evaluate_g1_quality(
     legacy_g0_ok = bool(
         isinstance(g0_guard, Mapping) and g0_guard.get("passed") is True
     )
-    if not g0_present:
+    if isinstance(g0_song, Mapping) and g0_song.get("nguon") in (CS.NGUON_SONG, CS.NGUON_LOI):
+        muc = g0_song.get("muc")
+        luu_khac = (f"; bản LƯU={g0_song.get('trang_thai_luu')}"
+                    if g0_song.get("trang_thai_luu") and g0_song.get("trang_thai_luu") != g0_song.get("status")
+                    else "")
+        if muc == "PASS":
+            g0_status, g0_evidence = "PASS", f"G0 chấm sống={g0_song.get('status')}"
+        elif muc == "BLOCKED":
+            g0_status, g0_evidence = "BLOCK", f"G0 chấm sống=BLOCKED{luu_khac}"
+        elif muc == CS.KHONG_DO_DUOC:
+            g0_status, g0_evidence = "REVIEW", f"G0 KHÔNG ĐO ĐƯỢC ({g0_song.get('ly_do')}) — không phải «đạt»{luu_khac}"
+        else:
+            g0_status = "REVIEW"
+            g0_evidence = f"G0 chấm sống={g0_song.get('status')} — câu hỏi nghiên cứu chưa được chốt{luu_khac}"
+    elif not g0_present:
         g0_status = "REVIEW"
         g0_evidence = "Chưa có G0; chỉ được tạo dự thảo G1 độc lập"
-    elif g0_contract and g0_quality_status == "PASS_G0_CONFIRMED":
+    elif g0_quality_status == "PASS_G0_CONFIRMED":
         g0_status = "PASS"
-        g0_evidence = "G0 quality_gate=PASS_G0_CONFIRMED"
-    elif g0_contract and g0_quality_status == "BLOCKED":
+        g0_evidence = "G0 quality_gate=PASS_G0_CONFIRMED (bản lưu — nơi gọi chưa chấm sống)"
+    elif g0_quality_status == "BLOCKED":
         g0_status = "BLOCK"
         g0_evidence = "G0 quality contract đang BLOCKED"
-    elif g0_contract:
+    elif g0_quality_status:
         g0_status = "REVIEW"
         g0_evidence = (
-            f"G0 quality_gate={g0_quality_status or 'thiếu'}; "
+            f"G0 quality_gate={g0_quality_status}; "
             "chưa có xác nhận câu hỏi nghiên cứu"
         )
     elif legacy_g0_ok:
-        g0_status = "PASS"
-        g0_evidence = "G0 legacy guardrail passed=True"
+        g0_status = "REVIEW"
+        g0_evidence = "G0 kiểu cũ (guardrail sạch nhưng chưa có hợp đồng chất lượng) — chạy lại G0 để chấm"
     else:
         g0_status = "BLOCK"
         g0_evidence = "Có checkpoint G0 nhưng guardrail chưa đạt"
@@ -879,18 +1074,62 @@ def evaluate_g1_quality(
         "Chọn một mã thiết kế canonical được hệ hỗ trợ.",
     ))
 
+    # VÁ 04/10/2026 (soát từng cổng): bác sĩ GHIM thiết kế ngoài 8 mã chuỗi hỗ trợ ⇒ run_g1_auto từng lặng lẽ dùng thiết
+    # kế suy luận thay cho lựa chọn tường minh của bác sĩ. Nay G1 ghi `design.pin_bi_tu_choi` và cổng CHẶN tới khi PI
+    # chọn lại.
+    pin_tu_choi = str(design.get("pin_bi_tu_choi") or "").strip()
+    automatic.append(_criterion(
+        "G1-AUTO-02c",
+        "Thiết kế bác sĩ đã ghim được chuỗi G0–G10 hỗ trợ (không bị thay bằng suy luận)",
+        "BLOCK" if pin_tu_choi else "PASS",
+        (f"pin «{pin_tu_choi}» ngoài 8 mã hỗ trợ; G1 đang dùng thiết kế suy luận «{internal}»"
+         if pin_tu_choi else "không có pin bị từ chối"),
+        "PI ghim lại study_meta.design_code bằng một trong rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/"
+        "prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → "
+        "TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE).",
+    ))
+
+    # VÁ 04/10/2026 (soát từng cổng, G1-06): thiết kế cuối phải hợp với loại câu hỏi bác sĩ đã chốt ở G0 — bản cũ
+    # bỏ qua G0 nên đề tài phân tích yếu tố liên quan bị dựng thành RCT mà không ai báo.
+    gp_all = meta.get("gate_params") if isinstance(meta.get("gate_params"), Mapping) else {}
+    g0_meta = gp_all.get("G0") if isinstance(gp_all.get("G0"), Mapping) else {}
+    qt_g0 = S.chuan_hoa_question_type(g0_meta.get("question_type"))
+    hop_le = _THIET_KE_HOP_LE_THEO_CAU_HOI.get(qt_g0 or "")
+    if not hop_le:
+        tk_status = "PASS"
+        tk_evidence = "G0 chưa khai loại câu hỏi — không đối chiếu được (G1-AUTO-01 đã giữ G1 chờ G0 chốt)"
+    elif internal in hop_le:
+        tk_status, tk_evidence = "PASS", f"thiết kế «{internal}» hợp với loại câu hỏi G0 «{qt_g0}»"
+    else:
+        tk_status = "REVIEW"
+        tk_evidence = (f"thiết kế «{internal}» không thuộc nhóm thiết kế của loại câu hỏi G0 «{qt_g0}» "
+                       f"({', '.join(sorted(hop_le))})")
+    automatic.append(_criterion(
+        "G1-AUTO-02d",
+        "Thiết kế hợp với loại câu hỏi đã chốt ở G0",
+        tk_status,
+        tk_evidence,
+        "Đổi thiết kế cho khớp câu hỏi, hoặc sửa question_type ở G0 rồi chạy lại G1 (PI giải trình nếu cố ý).",
+    ))
+
     annex2 = A2X.evaluate(meta, internal, "G1")
     annex2_issues = annex2["errors"] + annex2["missing"]
+    # VÁ 04/10/2026 (soát từng cổng, G1-11 / QĐ-15 — mặc định an toàn chờ bác sĩ duyệt qua PR): RCT mà PI CHƯA KHAI
+    # annex2.applicable từng được coi là «không áp dụng» và PASS im lặng. Nay phải khai tường minh (true/false).
+    annex2_status = {"BLOCK": "BLOCK", "NEEDS_DECLARATION": "REVIEW"}.get(annex2["status"], "PASS")
     automatic.append(_criterion(
         "G1-AUTO-02b",
         f"{A2X.VERSION}: thiết kế phương pháp mới đủ fitness-for-purpose và giám sát",
-        "BLOCK" if annex2["status"] == "BLOCK" else "PASS",
+        annex2_status,
         (
             "; ".join(annex2_issues)
             if annex2_issues
-            else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}"
+            else ("RCT chưa khai gate_params.G1.annex2.applicable (true/false) — không suy «không áp dụng»"
+                  if annex2["status"] == "NEEDS_DECLARATION"
+                  else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}")
         ),
-        "Điền study_meta.gate_params.G1.annex2 theo phương pháp đã chọn; không mở G1 khi thiếu.",
+        "Điền study_meta.gate_params.G1.annex2 (RCT: applicable=true kèm methodologies, hoặc applicable=false); "
+        "không mở G1 khi thiếu.",
     ))
 
     reporting = str(design.get("reporting_standard") or "")
@@ -1070,6 +1309,20 @@ def evaluate_g1_quality(
         "Sinh lại hoặc sửa artifact G1 bị thiếu.",
     ))
 
+    # VÁ 04/10/2026 (soát từng cổng, G1-02): đếm ô trống THUỘC PHẠM VI G1 trong đề cương lõi (PHẦN 0 của A2).
+    o_g1 = o_trong_pham_vi_g1(artifact_texts.get("A2", ""))
+    automatic.append(_criterion(
+        "G1-AUTO-07",
+        "Đề cương lõi không còn ô trống thuộc phạm vi G1 (dòng hoãn cho cổng sau được bỏ qua)",
+        "REVIEW" if o_g1 else "PASS",
+        (f"{len(o_g1)} dòng còn trống: " + " | ".join(x.replace("|", "/") for x in o_g1[:4])
+         + (" …" if len(o_g1) > 4 else "")) if o_g1 else "mọi dòng thuộc G1 của PHẦN 0 đã có nội dung",
+        "Điền các khoá tương ứng ở study_meta.gate_params.G1 (team_roles, background_problem, evidence_summary, "
+        "knowledge_gap, benefit_risk_rationale, study_schema_timeline, intervention_dose_adherence, "
+        "stopping_rescue_rules, critical_to_quality, monitoring_plan và khoá theo thiết kế) rồi chạy lại G1; "
+        "«N/A — <lý do>» là câu trả lời hợp lệ. KHÔNG sửa tay A2 (bị ghi đè khi chạy lại).",
+    ))
+
     identifiers = list(evidence_identifiers.get("pmids") or []) + list(
         evidence_identifiers.get("dois") or []
     )
@@ -1099,16 +1352,20 @@ def evaluate_g1_quality(
 
     g1 = _g1_meta(meta)
     pinned_design = _first_present(meta.get("design_code"), g1.get("design"))
-    pin_matches = _present(pinned_design) and str(pinned_design).strip() == internal
+    # VÁ 04/10/2026 (soát từng cổng, G1-12): so pin SAU KHI chuẩn hoá qua bảng bí danh dùng chung — ghim «RCT» hay
+    # «systematic_review» từng bị REVIEW vĩnh viễn vì so chuỗi nguyên văn với mã đã chuẩn hoá.
+    pin_matches = _present(pinned_design) and S.ma_thiet_ke_chuoi(str(pinned_design)) == internal
     # Vá 03/10/2026: design_rationale không bắt buộc, nhưng ĐÃ khai thì không được còn ô trống/nhãn nháp
     # (kiểm toán: trường này chưa từng được chấm — «[CẦN …]»/«___» ở đây vẫn PASS).
     rationale_residue = _con_o_trong(g1.get("design_rationale"))
-    design_confirmed = bool(g1.get("design_confirmed")) and pin_matches and not rationale_residue
+    # VÁ 04/10/2026 (soát từng cổng, G1-01): `is True` — bool() từng coi chuỗi «false»/«chưa»/«[CẦN PI XÁC NHẬN]» là
+    # PI ĐÃ xác nhận thiết kế.
+    design_confirmed = g1.get("design_confirmed") is True and pin_matches and not rationale_residue
     human.append(_criterion(
         "G1-HUMAN-01",
         "PI/methodologist xác nhận thiết kế",
         "PASS" if design_confirmed else "REVIEW",
-        f"pin={pinned_design!r}; design_confirmed={bool(g1.get('design_confirmed'))}"
+        f"pin={pinned_design!r}; design_confirmed={g1.get('design_confirmed')!r}"
         + ("; design_rationale=còn ô trống/nhãn nháp" if rationale_residue else ""),
         "Điền design_code/gate_params.G1.design và design_confirmed=true."
         + (" Gỡ ô trống/nhãn nháp còn sót trong design_rationale." if rationale_residue else ""),
@@ -1344,13 +1601,19 @@ def evaluate_g1_quality(
     ))
 
     role = _normalise_role(g1.get("reviewed_by_role"))
-    review_ok = role in _REVIEW_ROLES and _valid_review_time(g1.get("reviewed_at"))
+    # VÁ 04/10/2026 (soát từng cổng, G1-09 / CHUNG-C): xác nhận phải GẮN với đúng các quyết định đang chốt — sinh lại
+    # đề cương với quyết định khác mà cờ cũ vẫn PASS là lỗi; ngày ở tương lai không nhận.
+    dau_hien_tai = dau_van_tay_g1(meta, design)
+    xn_ok, xn_ly_do = CS.xac_nhan_gan_noi_dung(
+        {"reviewed_at": g1.get("reviewed_at"), "dau_van_tay": g1.get("dau_van_tay_chot")}, dau_hien_tai)
+    review_ok = role in _REVIEW_ROLES and _valid_review_time(g1.get("reviewed_at")) and xn_ok
     human.append(_criterion(
         "G1-HUMAN-08",
-        "Có vai trò và thời điểm rà phương pháp",
+        "Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung",
         "PASS" if review_ok else "REVIEW",
-        f"reviewed_by_role={role or 'thiếu'}; reviewed_at={g1.get('reviewed_at') or 'thiếu'}",
-        "Ghi reviewed_by_role và reviewed_at dạng ISO-8601; không cần lưu danh tính.",
+        f"reviewed_by_role={role or 'thiếu'}; reviewed_at={g1.get('reviewed_at') or 'thiếu'}; {xn_ly_do}",
+        "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và "
+        f"dau_van_tay_chot=\"{dau_hien_tai}\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính.",
     ))
 
     auto_blocked = any(row["status"] == "BLOCK" for row in automatic)
@@ -1387,6 +1650,7 @@ def evaluate_g1_quality(
         "human_criteria": human,
         "pending_actions": pending,
         "artifact_manifest": artifact_manifest,
+        "dau_van_tay_hien_tai": dau_hien_tai,
         "standards_basis": list(_STANDARDS_BASIS),
         "scope_statement": (
             "PASS_G1_CONFIRMED chỉ xác nhận thiết kế/reporting map và bộ artifact "
@@ -1470,8 +1734,72 @@ def write_quality_report(study: str, out_dir: Path, report: Mapping[str, Any]) -
     return md_path
 
 
+TEN_ARTIFACT_G1 = {
+    "A1b": "G1_A1b_PROJECT_CHARTER_{s}.md",
+    "A2": "G1_A2_PROTOCOL_DESIGN_{s}.md",
+    "A2b": "G1_A2b_EVIDENCE_LEDGER_{s}.md",
+    "A13": "G1_A13_IMPLEMENTATION_PLAN_{s}.md",
+    "A13b": "G1_A13b_RISK_REGISTER_{s}.md",
+}
+
+
+def _doc_json(p: Path) -> Dict[str, Any]:
+    try:
+        v = json.loads(Path(p).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    return v if isinstance(v, dict) else {}
+
+
+def evaluate_study(study: str, out_dir: Path, *, write: bool = True) -> Dict[str, Any]:
+    """Chấm LẠI G1 từ checkpoint + artifact đã lưu (không gọi mạng, không sinh lại artifact).
+
+    VÁ 04/10/2026 (soát từng cổng, G1-10 / CHUNG-A): G1 là cổng DUY NHẤT không có hàm này ⇒ cổng sau (G2, G3…) chỉ
+    đọc được trạng thái G1 LƯU SẴN — G1 PASS rồi bác sĩ sửa study_meta, G2 vẫn khoá được trên G1 đã cũ. Nay
+    cong_song.trang_thai_song("G1") chấm sống được. G0 tiền đề cũng được chấm sống (không tin bản lưu)."""
+    out_dir = Path(out_dir)
+    cp = _doc_json(out_dir / "G1_checkpoint.json")
+    meta = _doc_json(out_dir / "study_meta.json")
+    g0_cp = _doc_json(out_dir / "G0_checkpoint.json")
+    design = dict(cp.get("design") or {}) if isinstance(cp.get("design"), Mapping) else {}
+    paths = {k: out_dir / ten.format(s=study) for k, ten in TEN_ARTIFACT_G1.items()}
+    texts: Dict[str, str] = {}
+    for k, pth in paths.items():
+        try:
+            texts[k] = pth.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            texts[k] = ""
+    effects = cp.get("effect_size_samples") if isinstance(cp.get("effect_size_samples"), list) else []
+    evidence = collect_evidence_identifiers(out_dir, g0_cp, [e for e in effects if isinstance(e, Mapping)])
+    guard = cp.get("guardrail")
+    guardrail_passed = isinstance(guard, Mapping) and guard.get("passed") is True
+    g0_song = CS.trang_thai_song("G0", study, out_dir)
+    report = evaluate_g1_quality(
+        design=design, artifact_texts=texts, artifact_paths={k: v for k, v in paths.items() if v.exists()},
+        g0_checkpoint=g0_cp, meta=meta, evidence_identifiers=evidence, guardrail_passed=guardrail_passed,
+        g0_song=g0_song,
+    )
+    if not cp:
+        report["status"] = STATUS_BLOCKED
+        report["pending_actions"] = ["Chưa có G1_checkpoint.json — chạy run_g1_auto.py trước."] + list(
+            report.get("pending_actions") or [])
+    # Giữ manifest LÚC SINH của lượt run_g1_auto (để phát hiện sửa tay) — chấm lại không được ghi đè mốc đó.
+    cu = _doc_json(out_dir / "G1_QUALITY_REPORT.json")
+    report["artifact_manifest_luc_sinh"] = cu.get("artifact_manifest_luc_sinh") or {}
+    if write:
+        write_quality_report(study, out_dir, report)
+        if cp:
+            import pipeline_freshness as PF  # noqa: PLC0415 — import lười
+
+            cp["quality_contract_version"] = QUALITY_CONTRACT_VERSION
+            cp["quality_gate"] = {**report, "dau_van_tay_luc_cham": report.get("dau_van_tay_hien_tai")}
+            PF.ghi_checkpoint_giu_moc_sinh(out_dir / "G1_checkpoint.json",
+                                           json.dumps(cp, ensure_ascii=False, indent=2))
+    return report
+
+
 def main() -> int:
-    """CLI đọc lại KẾT QUẢ ĐÃ CHẤM của G1 — vá 01/09/2026 (kiểm toàn diện).
+    """CLI CHẤM LẠI G1 từ tệp đã lưu (04/10/2026; trước đó chỉ đọc báo cáo cũ — vá 01/09/2026).
 
     ★ VÌ SAO TỒN TẠI: G1 là cổng DUY NHẤT trong 11 cổng không có CLI — gọi
     `python3 tools/g1_quality_gate.py --study X` trước bản vá này thì Python
@@ -1480,33 +1808,35 @@ def main() -> int:
     đúng họ «yên tâm giả» (BH32) và «công cụ vẫn chạy, thứ cần kiểm thì không
     bao giờ được kiểm».
 
-    Giới hạn TRUNG THỰC: evaluate_g1_quality() cần bộ input mà chỉ
-    run_g1_auto.py lắp được (artifact_texts, evidence_identifiers…) — CLI này
-    vì thế KHÔNG chấm lại, nó đọc G1_QUALITY_REPORT.json ĐÃ LƯU và nói rõ
-    điều đó; muốn CHẤM LẠI thì chạy lại run_g1_auto.py (tự chấm ở bước cuối).
-    Thiếu báo cáo → mã 2, không bao giờ im lặng thoát 0.
+    Từ 04/10/2026 (soát từng cổng, G1-10): evaluate_study() lắp lại đủ input từ checkpoint + artifact đã lưu nên CLI
+    CHẤM LẠI THẬT (G0 tiền đề chấm sống). MẶC ĐỊNH CHỈ IN — không ghi báo cáo/checkpoint: bộ test và agent gọi CLI này
+    trên đề tài thật (C1a) không được âm thầm đổi tệp trong exports/. Muốn lưu kết quả chấm lại: thêm `--ghi`.
+    Không có checkpoint → mã 2, không bao giờ im lặng thoát 0.
     """
     import argparse
 
-    ap = argparse.ArgumentParser(description="Đọc kết quả hợp đồng chất lượng cổng G1 (đã lưu)")
+    ap = argparse.ArgumentParser(description="Chấm lại hợp đồng chất lượng cổng G1 từ tệp đã lưu (mặc định chỉ in)")
     ap.add_argument("--study", required=True, help="Mã đề tài")
+    ap.add_argument("--ghi", action="store_true",
+                    help="Ghi kết quả chấm lại vào G1_QUALITY_REPORT.* và G1_checkpoint.json (mặc định chỉ in)")
+    ap.add_argument("--no-write", action="store_true", help="(tương thích cũ — nay là mặc định) chỉ in, không ghi")
     a = ap.parse_args()
     study = re.sub(r"[^\w\-]", "_", a.study.strip().replace(" ", "-"))
     out_dir = Path(__file__).resolve().parent.parent / "exports" / study
-    bao_path = out_dir / "G1_QUALITY_REPORT.json"
-    if not bao_path.exists():
-        print(f"⛔ Chưa có {bao_path.name} cho đề tài '{study}' — G1 chưa từng được chấm.")
+    if not (out_dir / "G1_checkpoint.json").exists():
+        print(f"⛔ Chưa có G1_checkpoint.json cho đề tài '{study}' — G1 chưa từng chạy nên chưa từng được chấm.")
         print("   Chạy: python3 tools/run_g1_auto.py --study", study)
         return 2
     try:
-        bao = json.loads(bao_path.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as e:
-        print(f"⛔ Không đọc được {bao_path.name}: {e}")
+        bao = evaluate_study(study, out_dir, write=bool(a.ghi) and not a.no_write)
+    except Exception as e:  # noqa: BLE001 — chấm hỏng ⇒ mã 2, không bao giờ im lặng thoát 0
+        print(f"⛔ Không chấm được G1: {type(e).__name__}: {e}")
         return 2
     status = str(bao.get("status") or "KHÔNG RÕ")
     print(f"G1 QUALITY [{study}]: {status}")
-    print("  (kết quả ĐÃ LƯU từ lượt run_g1_auto gần nhất — muốn CHẤM LẠI: "
-          "python3 tools/run_g1_auto.py --study " + study + ")")
+    print("  (CHẤM LẠI từ checkpoint + artifact đã lưu; "
+          + ("đã ghi báo cáo/checkpoint" if a.ghi and not a.no_write else "chỉ in, không ghi — thêm --ghi để lưu")
+          + "; sinh lại artifact: python3 tools/run_g1_auto.py --study " + study + ")")
     for nhom, ten in (("automatic_criteria", "Tiêu chí máy"), ("human_criteria", "Xác nhận người thật")):
         muc = bao.get(nhom) or []
         print(f"  — {ten}: {len(muc)} mục")

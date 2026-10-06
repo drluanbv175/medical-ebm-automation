@@ -44,6 +44,8 @@ Mã thoát: 0 = mọi lỗi gài đều bị đúng cổng bắt; khác 0 = có 
 from __future__ import annotations
 
 import hashlib
+import json
+import re
 import sys
 from dataclasses import dataclass
 from datetime import date
@@ -61,6 +63,7 @@ TOOLS_DIR = REPO_ROOT / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+import cong_song as CS  # noqa: E402
 import g2_quality_gate as G2Q  # noqa: E402
 import g3_quality_gate as G3Q  # noqa: E402
 import g4_quality_gate as G4Q  # noqa: E402
@@ -170,13 +173,19 @@ def _evaluate_g3(tmp_path: Path, *, checkpoint=None, meta=None, artifact=None) -
     artifact_path.write_text(
         _g3_artifact() if artifact is None else artifact, encoding="utf-8", newline="\n"
     )
+    checkpoint = _g3_checkpoint() if checkpoint is None else checkpoint
+    if meta is None:
+        # 04/10/2026 (soát từng cổng G3-03): xác nhận của thống kê viên trong gói TỐT gắn dấu vân tay của ĐÚNG các giá
+        # trị quyết định N đang chấm (lỗi gài đổi giá trị thì dấu lệch ⇒ bị bắt đúng luật).
+        meta = _g3_full_meta()
+        meta["gate_params"]["G3"]["dau_van_tay_chot"] = G3Q.dau_van_tay_g3(_g3_checkpoint())
     return G3Q.evaluate_g3_quality(
         study=STUDY,
-        checkpoint=_g3_checkpoint() if checkpoint is None else checkpoint,
+        checkpoint=checkpoint,
         artifact_path=artifact_path,
         g0_checkpoint={"gate": "G0"},
         g1_checkpoint={"gate": "G1"},
-        meta=_g3_full_meta() if meta is None else meta,
+        meta=meta,
     )
 
 
@@ -217,6 +226,29 @@ _COMPARATIVE_FILLS: Sequence[tuple] = (
 )
 
 
+# 04/10/2026 (soát từng cổng G4): SAP RCT in estimand G1 (G4-03) — đồ gá truyền estimand đủ 5 thuộc tính và bộ chấm
+# nhận CÙNG đặc tả (G4-AUTO-15); G3 chấm sống truyền dạng đã chốt (G4-AUTO-12); xác nhận G4 gắn dấu nội dung SAP.
+_G4_ESTIMAND: Dict[str, str] = {
+    "population": "Người trưởng thành tổng hợp canary",
+    "treatment_condition": "Can thiệp canary so với chăm sóc chuẩn",
+    "variable": "Kết cục tổng hợp canary",
+    "intercurrent_events_strategy": "Treatment-policy cho ngừng điều trị",
+    "population_summary_measure": "Tỷ số nguy cơ",
+}
+_G4_G3_SONG_PASS: Dict[str, Any] = {"gate": "G3", "status": "PASS_G3_CONFIRMED", "muc": "PASS", "dat": True,
+                                     "bi_chan": False, "nguon": "song", "ly_do": "đồ gá canary"}
+
+
+def _g4_dien_phan_rct(text: str) -> str:
+    """Điền phần riêng SAP RCT: «Quần thể phân tích CHÍNH» (§4) và mọi ô §13–§15 (bắt buộc từ 04/10/2026)."""
+    text = re.sub(r"(- \*\*Quần thể phân tích CHÍNH:\*\*) \[CẦN[^\]]*\]",
+                  r"\1 ITT — khớp chiến lược treatment-policy; per-protocol là phân tích độ nhạy ở §9", text)
+    dau, cuoi = text.index("### §13"), text.index("## PHẦN 4")
+    khoi = re.sub(r"\[CẦN[^\]]*\]", "Không — can thiệp canary nguy cơ thấp, theo dõi ngắn; lý do ghi trong đề cương",
+                  text[dau:cuoi])
+    return text[:dau] + khoi + text[cuoi:]
+
+
 def _g4_fresh_sap(design_code: str = "rct", **overrides) -> str:
     kwargs = dict(
         study=STUDY, topic="Đề tài canary G4", design_primary="RCT song song",
@@ -231,16 +263,18 @@ def _g4_fresh_sap(design_code: str = "rct", **overrides) -> str:
         kwargs["run_date"], kwargs.get("sd"),
         hypothesis_type=kwargs.get("hypothesis_type", "superiority"),
         margin=kwargs.get("margin"),
+        estimand=kwargs.get("estimand", _G4_ESTIMAND),
     )
 
 
 def _g4_filled_sap(**overrides) -> str:
-    text = _g4_fresh_sap(design_code=overrides.pop("design_code", "rct"), **overrides)
+    design_code = overrides.pop("design_code", "rct")
+    text = _g4_fresh_sap(design_code=design_code, **overrides)
     for old, new in _COMPARATIVE_FILLS:
         if old not in text:
             raise AssertionError(f"template G4 đã đổi hình dạng, thiếu placeholder: {old[:50]!r}")
         text = text.replace(old, new)
-    return text
+    return _g4_dien_phan_rct(text) if design_code == "rct" else text
 
 
 def _g4_checkpoint(**overrides) -> Dict[str, Any]:
@@ -283,13 +317,22 @@ def _evaluate_g4(**overrides) -> Dict[str, Any]:
         signature_scope="role",
         role_key_available=True,
         cross_gate_refs={"G2": "IRB-CANARY", "G4": "STAT-CANARY", "G8": "REV-CANARY", "G9": "PI-CANARY"},
+        g3_song=_G4_G3_SONG_PASS,
+        dac_ta={"estimand": _G4_ESTIMAND},
     )
     kwargs.update(overrides)
+    meta = json.loads(json.dumps(kwargs["meta"]))
+    meta.setdefault("gate_params", {}).setdefault("G4", {}).setdefault(
+        "dau_van_tay_chot", G4Q.dau_van_tay_g4(kwargs["artifact_text"]))
+    kwargs["meta"] = meta
     return G4Q.evaluate_g4_quality(**kwargs)
 
 
 # ════════════════════════════════════════════════════════════════════════════
 # Đồ gá — G8 (bình duyệt độc lập). Mượn từ tests/test_g8_quality_gate.py.
+# SỬA 05/10/2026 (soát từng cổng G8): «gói TỐT» phải hợp lệ theo hợp đồng G8-2026.2 — bản nhận xét cũ khuyến nghị kèm
+# MỘT lỗi nghiêm trọng + «Cần sửa thêm», không có khối khai báo người phản biện; A9 không nhúng băm; bản thảo còn «Kết
+# quả sẽ được điền sau…» — chính các ca G8 nay CHẶN/REVIEW (G8-01/02/03/04). Không nới luật: sửa đồ gá cho hợp lệ.
 # ════════════════════════════════════════════════════════════════════════════
 
 _G8_CLEAN_MANUSCRIPT = """# Bản thảo
@@ -302,7 +345,7 @@ Kết cục chính là kết cục tổng hợp canary.
 Nhóm nghiên cứu có sử dụng công cụ trí tuệ nhân tạo để hiệu đính ngôn ngữ.
 
 ## Kết quả
-Kết quả sẽ được điền sau khi khóa dữ liệu.
+Tổng cộng 120 người tham gia được phân tích; tỷ lệ kết cục tổng hợp canary là 8%.
 
 ## TÀI LIỆU THAM KHẢO
 1. Tác giả canary. Tạp chí tổng hợp 2026.
@@ -314,11 +357,10 @@ _G8_REVIEW_REPORT = """# NHẬN XÉT PHẢN BIỆN
 
 ## KHUYẾN NGHỊ
 SỬA NHỎ
+Lý do: phương pháp phù hợp thiết kế, kết cục chính khớp SAP; chỉ còn góp ý trình bày nhỏ.
 
 ## LỖI NGHIÊM TRỌNG (phải sửa trước khi nộp)
-| Vị trí | Vấn đề |
-|---|---|
-| Mục 3.2 | Thiếu khoảng tin cậy |
+Không có.
 
 ## GÓP Ý NHỎ
 - Rút gọn phần mở đầu.
@@ -326,23 +368,37 @@ SỬA NHỎ
 ## CÂU HỎI CHO TÁC GIẢ
 1. Vì sao chọn ngưỡng này?
 
+## KHAI BÁO CỦA NGƯỜI PHẢN BIỆN
+Xung đột lợi ích với nhóm nghiên cứu: ☑ Không có ☐ Có (ghi rõ):
+Có phải đồng tác giả/cấp trên/cấp dưới trực tiếp của tác giả không: ☑ Không ☐ Có
+Có dùng AI khi phản biện không: ☑ Không ☐ Có (tên công cụ + mục đích):
+Cam kết không tải bản thảo lên công cụ AI thiếu bảo mật khi chưa được cho phép: ☑ Xác nhận
+
 ## KẾT LUẬN TỔNG THỂ
-Cần sửa thêm trước khi nộp.
+Sẵn sàng nộp.
 """
 
-_G8_PRESUBMISSION_TEXT = (
-    "# A9 — GÓI TIỀN NỘP BÀI\n"
-    "Nội dung tự kiểm toàn bộ pipeline G0-G7.\n"
-    "[CAN] Vài mục hành chính (CRediT/COI) còn chờ bác sĩ điền.\n"
-    "Cần bác sĩ kiểm chứng.\n"
-)
+
+def _g8_a9(manuscript_text: str, review_report_text: str) -> str:
+    """A9 đúng khuôn run_g8_auto: nhúng băm bản thảo + bản nhận xét (hợp đồng CHUNG-E) của CHÍNH văn bản đang chấm."""
+    dong = ["# A9 — GÓI TIỀN NỘP BÀI", "Nội dung tự kiểm toàn bộ pipeline G0-G7."]
+    if manuscript_text.strip():
+        dong.append(CS.dong_bam_a9(CS.NHAN_BAM_BAN_THAO, f"G7_A8_MANUSCRIPT_{STUDY}.md",
+                                   hashlib.sha256(manuscript_text.encode("utf-8")).hexdigest()))
+    if review_report_text.strip():
+        dong.append(CS.dong_bam_a9(CS.NHAN_BAM_BAO_CAO_PHAN_BIEN, f"G8_PEER_REVIEW_REPORT_{STUDY}.md",
+                                   hashlib.sha256(review_report_text.encode("utf-8")).hexdigest()))
+    dong += ["[CAN] Vài mục hành chính (CRediT/COI) còn chờ bác sĩ điền.", "Cần bác sĩ kiểm chứng."]
+    return "\n".join(dong) + "\n"
+
+
+_G8_PRESUBMISSION_TEXT = _g8_a9(_G8_CLEAN_MANUSCRIPT, _G8_REVIEW_REPORT)
 
 
 def _g8_checkpoint(**overrides) -> Dict[str, Any]:
     value = {
         "gate": "G8",
         "study": STUDY,
-        "design_code": "rct",
         "guardrail": {"passed": True},
         "reporting_score_pct": 82.0,
         "pipeline_completeness": {
@@ -403,8 +459,14 @@ def _evaluate_g8(**overrides) -> Dict[str, Any]:
         signature_scope="role",
         role_key_available=True,
         cross_gate_refs={"G2": "IRB-CANARY", "G4": "STAT-CANARY", "G8": "REV-CANARY", "G9": "PI-CANARY"},
+        # 05/10/2026: thiết kế sống (G8-10) + tiền đề G7 chấm sống PASS (G8-06) — evaluate_study tính, ở đây truyền tay.
+        design_code="rct",
+        tien_de_g7={"status": "PASS", "evidence": "G7=PASS_G7_CONFIRMED (canary)"},
     )
     kwargs.update(overrides)
+    if "presubmission_text" not in overrides and (
+            "manuscript_text" in overrides or "review_report_text" in overrides):
+        kwargs["presubmission_text"] = _g8_a9(kwargs["manuscript_text"], kwargs["review_report_text"])
     return G8Q.evaluate_g8_quality(**kwargs)
 
 
@@ -422,14 +484,22 @@ _G2_DMP_LINE = "Thời gian lưu: 10 năm sau kết thúc nghiên cứu."
 # Ngày chấm CỐ ĐỊNH: attestation có hạn 2026-07-20 → 2027-07-20; dùng date.today() thì canary tự đỏ khi hết hạn.
 _G2_TODAY = date(2026, 7, 27)
 
+# 04/10/2026 (soát từng cổng G2-04/G2-11): ICF của RCT phải đủ nhãn mục theo thiết kế ở đầu dòng và bản tiếng Anh
+# cùng tập mục — gói TỐT có đủ (nội dung tổng hợp).
+_G2_NHAN_ICF_RCT = ("1", "1b", "2", "2b", "3", "4", "4b", "4c", "5", "5b", "6", "6b", "6c", "6d", "6f", "6g", "6h", "7")
+_G2_ICF_VI_MUC = "\n".join(f"{n}. MỤC {n.upper()}\n   Nội dung đã hoàn thiện." for n in _G2_NHAN_ICF_RCT)
+_G2_ICF_EN_MUC = "\n".join(f"{n}. SECTION {n.upper()}\n   Completed content." for n in _G2_NHAN_ICF_RCT)
+
 _G2_CLEAN_PACKAGE = f"""# A3 — HỒ SƠ ĐẠO ĐỨC
 ## TÀI LIỆU 1 — Đơn xin phê duyệt IRB
 ## TÀI LIỆU 2 — Tóm tắt đề cương
 ## TÀI LIỆU 3 — Bảng RỦI RO lợi ích
 ## TÀI LIỆU 4 — PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
 {_G2_ICF_VI_LINE}
+{_G2_ICF_VI_MUC}
 ## TÀI LIỆU 5 — English informed consent
 {_G2_ICF_EN_LINE}
+{_G2_ICF_EN_MUC}
 ## TÀI LIỆU 6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU
 {_G2_DMP_LINE}
 ## TÀI LIỆU 7 — Checklist nộp Hội đồng
@@ -461,8 +531,15 @@ def _g2_meta() -> Dict[str, Any]:
                 "exclusion_criteria": ["Chống chỉ định can thiệp canary"],
                 "primary_outcome": "Kết cục tổng hợp canary",
                 "secondary_outcomes": ["Nhập viện"],
+                # 04/10/2026 (G1-11 / QĐ-15): gói TỐT của RCT phải KHAI tường minh Annex 2 (không phương pháp mới).
+                "annex2": {"applicable": False},
+                # 04/10/2026 (G2-07): masking RCT do PI khai (WHO TRDS mục 15).
+                "blinding": "Double blind",
             },
-            "G2": {"protocol_version": "2.1", "icf_version": "2.0"},
+            # 04/10/2026 (G2-07, G2-03): mục WHO TRDS 9/12 do PI khai; kế hoạch an toàn RCT đã được PI xác nhận.
+            "G2": {"protocol_version": "2.1", "icf_version": "2.0",
+                   "public_title": "Can thiệp canary có giúp người lớn khỏe hơn không",
+                   "health_condition": "Bệnh canary ở người trưởng thành", "safety_plan_confirmed": True},
         }
     }
 
@@ -494,6 +571,8 @@ def _g2_attestation(package_text: str) -> Dict[str, Any]:
             G2Q.strip_attestation(package_text).encode("utf-8")
         ).hexdigest(),
         "attested_at": "2026-07-27T10:00:00+07:00",
+        # 04/10/2026 (G2-08): dấu đầu vào lúc ký (thư mục canary không có G1/G3 checkpoint ⇒ chỉ phụ thuộc meta).
+        "dau_dau_vao": G2Q.dau_dau_vao_g2(Path("/khong-ton-tai-canary-g2"), _g2_meta())[0],
         "ethics_committee_ref_source": "explicit",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
@@ -515,6 +594,10 @@ def _evaluate_g2(tmp_path: Path, package_text: Optional[str] = None) -> Dict[str
     g2_dir.mkdir(parents=True, exist_ok=True)
     package_path = g2_dir / f"G2_A3_ETHICS_PACKAGE_{STUDY}.md"
     package_path.write_text(signed, encoding="utf-8", newline="\n")
+    # 04/10/2026 (G2-03): gói TỐT của RCT có kế hoạch an toàn riêng đủ 5 mục (nội dung tổng hợp).
+    (g2_dir / G2Q.ten_ke_hoach_an_toan(STUDY)).write_text(
+        G2Q.khung_ke_hoach_an_toan(STUDY).replace("[CẦN — chủ nhiệm điền]", "Nội dung đã điền và rà."),
+        encoding="utf-8", newline="\n")
     registration_path = G2Q.build_registration_draft(
         study=STUDY,
         topic="Can thiệp canary ở người trưởng thành",

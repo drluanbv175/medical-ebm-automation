@@ -11,6 +11,7 @@ sys.path.insert(0, str(TOOLS_DIR))
 import import_real_dataset as RDI  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
 
+from tests._chuoi_da_chot import danh_dau_de_tai_thu  # noqa: E402
 from tests.test_g10_assemble import _write_cross_sectional_fixture  # noqa: E402
 
 
@@ -28,6 +29,8 @@ S001,45,F,1,0
 S002,52,M,0,1
 """,
     )
+    # 04/10/2026 (G5-02): test CƠ CHẾ nạp — đề tài thử nghiệm tổng hợp (đề tài thật cần SAP G4 đã khoá).
+    danh_dau_de_tai_thu(tmp_path / "exports", "REAL-DATA")
     manifest = RDI.import_dataset("REAL-DATA", data, exports_root=tmp_path / "exports")
 
     assert manifest["status"] == RDI.READY_STATUS

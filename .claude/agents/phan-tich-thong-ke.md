@@ -16,8 +16,9 @@ Bất biến cứng: chạy ĐÚNG SAP đã khóa · KHÔNG đổi kết cục c
 
 ```
 Kiểm tra trước khi chạy phân tích:
-☐ G4_STATUS = LOCKED → SAP phiên bản: ___ | Ngày khóa: ___
-☐ G5_STATUS = LOCKED → Dataset phiên bản: ___ | Ngày khóa: ___
+☐ G4 còn khoá khi CHẤM SỐNG (python tools/g4_quality_gate.py --study <mã> → PASS_G4_SAP_LOCKED) → SAP phiên bản: ___
+☐ G5 còn khoá khi CHẤM SỐNG (python tools/g5_quality_gate.py --study <mã> → PASS_G5_DATA_LOCKED) → Dataset: ___
+  (KHÔNG đọc/ghi trường G4_STATUS/G5_STATUS trong checkpoint — trường đó không mở cổng nào)
 ☐ Đang làm trên BẢN SAO | Dữ liệu gốc read-only
 ☐ Không còn PII trong dataset
 
@@ -40,7 +41,7 @@ python medical-ebm-automation/tools/run_g6_auto.py --study "MA-DE-TAI"
 
 ## 🐍 BƯỚC 0b — PYTHON AUTO-STATS (chạy SAU — khi ĐÃ có file dữ liệu thật)
 
-**Chỉ chạy khi BƯỚC 0 đã PASS (G2=phê duyệt đạo đức LOCKED · G4_STATUS=LOCKED · G5_STATUS=LOCKED) — cập nhật 2026-07-10: `run_stats_analysis.py` NAY ĐÃ TỰ kiểm tra trạng thái khóa bằng cổng kỹ thuật cho CẢ BA cổng — đọc checkpoint (`_is_locked`) VÀ đối chiếu `approval_ledger.json` khớp evidence_hash (`_ledger_approved`) cho **G2 (đạo đức/IRB)**, G4 (SAP) và G5 (khóa DB); thiếu bất kỳ cổng nào → script TỰ TỪ CHỐI chạy, trừ khi bác sĩ truyền cờ ghi đè (`--i-confirm-irb-approved` cho G2 · `--i-confirm-sap-locked` cho G4/G5) để tự chịu trách nhiệm. Dù đã có cổng này, vẫn KHÔNG lạm dụng cờ ghi đè khi các cổng thực tế CHƯA khóa bằng phê duyệt thật — để tránh dùng dữ liệu chưa được duyệt đạo đức + data dredging/p-hacking (nhìn trước dữ liệu trước khi IRB/SAP/DB thật sự khóa). (2026-07-07 script KHÔNG có cổng; 2026-07-09 thêm G4/G5; 2026-07-10 thêm G2 — phát hiện qua kiểm định đối kháng đa-agent.)**
+**Chỉ chạy khi BƯỚC 0 đã PASS (G2 đã duyệt theo `g7_quality_gate.g2_da_duyet` · G4 `PASS_G4_SAP_LOCKED` · G5 `PASS_G5_DATA_LOCKED` khi chấm sống) — cập nhật 2026-07-10: `run_stats_analysis.py` NAY ĐÃ TỰ kiểm tra trạng thái khóa bằng cổng kỹ thuật cho CẢ BA cổng — đọc checkpoint (`_is_locked`) VÀ đối chiếu `approval_ledger.json` khớp evidence_hash (`_ledger_approved`) cho **G2 (đạo đức/IRB)**, G4 (SAP) và G5 (khóa DB); thiếu bất kỳ cổng nào → script TỰ TỪ CHỐI chạy, trừ khi bác sĩ truyền cờ ghi đè (`--i-confirm-irb-approved` cho G2 · `--i-confirm-sap-locked` cho G4/G5) để tự chịu trách nhiệm. Dù đã có cổng này, vẫn KHÔNG lạm dụng cờ ghi đè khi các cổng thực tế CHƯA khóa bằng phê duyệt thật — để tránh dùng dữ liệu chưa được duyệt đạo đức + data dredging/p-hacking (nhìn trước dữ liệu trước khi IRB/SAP/DB thật sự khóa). (2026-07-07 script KHÔNG có cổng; 2026-07-09 thêm G4/G5; 2026-07-10 thêm G2 — phát hiện qua kiểm định đối kháng đa-agent.)**
 
 **Khi bác sĩ/nhà nghiên cứu cung cấp file CSV/Excel VÀ BƯỚC 0 đã PASS:** chạy chính SCRIPT mà `run_g6_auto.py` ở BƯỚC 0a vừa sinh ra, TRƯỚC MODULE 1–4, để nhận kết quả thật ngay:
 
@@ -313,7 +314,19 @@ sink("session_info.txt"); sessionInfo(); sink()
 
 ## TIÊU CHÍ QUA CỔNG G6
 
-**Đạt G6 khi:** cổng tự kiểm PASS (G4+G5 LOCKED) · code cho mọi phân tích chính + nhạy cảm · kiểm giả định đã chạy · bảng kết quả khớp dummy tables (ước lượng + 95%CI + p) · VIF<5 + GOF PASS · phân tích ngoài SAP gắn THĂM DÒ · script tái lặp có seed + session info · bàn giao `dien-giai-ket-qua`.
+**Đạt G6 khi:** cổng tự kiểm PASS (G4+G5 khoá khi chấm sống) · code cho mọi phân tích chính + nhạy cảm · kiểm giả định đã chạy · bảng kết quả khớp dummy tables (ước lượng + 95%CI + p) · VIF<5 + GOF PASS · phân tích ngoài SAP gắn THĂM DÒ · script tái lặp có seed + session info · bàn giao `dien-giai-ket-qua`.
+
+**Hợp đồng G6 hiện hành (soát từng cổng 04/10/2026 — `g6_quality_gate.py`):**
+- G4/G5 KHOÁ (chấm sống) là điều kiện CHẠY; `PASS_G6_SCRIPTS_CONFIRMED` = script khớp SAP đã khoá — thống kê viên xác
+  nhận ở `gate_params.G6` {`scripts_match_sap_confirmed`, `reviewed_by_role`, `reviewed_at`, `dau_van_tay_chot`}.
+- Cờ `--i-confirm-*` của `run_stats_analysis.py` CHỈ thay checkpoint bị mất — chữ ký sổ cái đúng vai + chất lượng G2/G5
+  + checksum DATA_LOCK luôn bắt buộc. Đường R có chốt khoá (`tools/kiem_khoa_phan_tich.py` gọi trong `00_setup.R`);
+  `01_cleaning.R` đọc LOCKED_DATA.
+- SAP §2 ghi TÊN BIẾN kết cục chính trong backtick (G6 rút kết cục chính riêng); họ mô hình phải khớp SAP §4 (G6-AUTO-09:
+  nhị phân ⇒ RR/OR/RD theo đúng thước đo SAP); nhóm con theo SAP §7; seed/alpha theo SAP.
+- `sessionInfo()`/`G6_moi_truong.json` là TIÊU CHÍ qua cổng (G6-AUTO-10), không tuỳ chọn; Bảng 1 RCT KHÔNG kiểm định ý
+  nghĩa khác biệt nền (CONSORT 2010 E&E, PMID 20332511).
+- Kết quả nằm ở `exports/<mã>/06_ket_qua/` (CLI) và `06_phan_tich_R/output/` (R) — G7/G10 đọc/đóng gói từ đây.
 
 Xuất Word:
 ```bash

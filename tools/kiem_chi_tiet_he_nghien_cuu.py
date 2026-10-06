@@ -41,8 +41,6 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import importlib
-import inspect
 import io
 import json
 import re
@@ -51,7 +49,7 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 for _s in (sys.stdout, sys.stderr):
     try:
@@ -66,6 +64,7 @@ sys.path.insert(0, str(BASE))
 
 import audit_research_gates as ARG  # noqa: E402
 import chuan_trinh_bay as CTB  # noqa: E402
+import cong_song as CS  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import list_studies as LS  # noqa: E402
 import pipeline_freshness as PF  # noqa: E402
@@ -75,7 +74,9 @@ import verify_exports_integrity as VEI  # noqa: E402
 
 XANH, VANG, DO, TRANG = "🟢", "🟡", "🔴", "⚪"
 CONG = [f"G{i}" for i in range(11)]
-CONG_CUNG = ("G2", "G4", "G5", "G8", "G9", "G10")
+# Cổng cứng rút từ gate_contract (nguồn sự thật duy nhất) — không viết cứng (soát 04/10/2026: ba công cụ khác viết
+# cứng 3–4 cổng và lệch nhau).
+CONG_CUNG = tuple(g for g in CONG if g in GC._GATE_REQUIRED_STAKEHOLDERS)
 SCRIPT_CONG = {g: (f"run_{g.lower()}_auto.py" if g != "G10" else "run_g10_assemble.py") for g in CONG}
 # Artifact mà chữ ký cổng cứng ràng buộc vào (đúng thứ approve_gate --artifact nhận)
 ARTIFACT_KY = {
@@ -218,44 +219,19 @@ def phan_loai_tieu_chi(report: dict[str, Any]) -> dict[str, list[str]]:
 
 
 def _cham_song(gate: str, study: str, out_dir: Path) -> tuple[dict[str, Any] | None, str]:
-    """Chấm SỐNG qua gN_quality_gate.evaluate_study(write=False) — không ghi gì.
+    """Chấm SỐNG qua cong_song.trang_thai_song — chính gN_quality_gate.evaluate_study(write=False), không ghi gì.
 
-    G1 không có hàm chấm độc lập (evaluate_g1_quality cần bộ input chỉ run_g1_auto có) →
-    đọc báo cáo ĐÃ LƯU và nói rõ. Cổng chết khi chấm → trả (None, 'chết: …') để caller
-    xếp ĐỎ (fail-closed, họ BH27) chứ không im lặng.
+    SỬA 06/10/2026 (soát từng cổng — NGANG, G1-10): bản cũ đọc BÁO CÁO ĐÃ LƯU cho G1 («không có hàm chấm độc lập» — G1
+    nay đã có evaluate_study) và rơi về bản lưu khi bộ chấm thoát SystemExit — đúng lỗi «tin bản lưu» (CHUNG-A). Nay một
+    định nghĩa chấm sống chung với G2–G10 (repo_root suy từ out_dir như cũ). Không đo được (bộ chấm hỏng/thoát/vòng lặp)
+    ⇒ (None, 'chết: …') để caller xếp ĐỎ (fail-closed, họ BH27) chứ không im lặng.
     """
-    da_luu = out_dir / f"{gate}_QUALITY_REPORT.json"
-    if gate == "G1":
-        rep = _doc_json(da_luu)
-        return (rep or None), ("bản đã lưu — chấm lại = chạy run_g1_auto" if rep else "chưa có báo cáo")
-    try:
-        mod = importlib.import_module(f"{gate.lower()}_quality_gate")
-        fn: Callable[..., Any] = getattr(mod, "evaluate_study")
-        params = inspect.signature(fn).parameters
-        kw: dict[str, Any] = {}
-        if "out_dir" in params:
-            kw["out_dir"] = out_dir
-        if "write" in params:
-            kw["write"] = False
-        if "repo_root" in params:
-            # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, HIGH): trước đây
-            # hardcode BASE (repo THẬT) — khi --exports-root trỏ ra thư mục khác
-            # (chính cờ --help ghi "cho kiểm thử"), G4/G8's ledger_records() nội bộ
-            # (đối chiếu reviewer_ref chéo cổng) vẫn đọc sổ cái/checkpoint ở
-            # BASE/exports/<study> THẬT thay vì cạnh out_dir đang được kiểm. Suy
-            # repo_root từ out_dir — đúng quy ước out_dir=<repo>/exports/<study> mà
-            # chính --exports-root dùng (root=<đường dẫn>, out_dir=root/study), và
-            # khớp cách g4/g8/g9_quality_gate.py tự suy repo_root khi không được
-            # truyền (out_dir.parent.parent).
-            kw["repo_root"] = out_dir.parent.parent
-        with contextlib.redirect_stdout(io.StringIO()):
-            rep = fn(study, **kw)
-        return (rep if isinstance(rep, dict) else None), "chấm sống"
-    except SystemExit as e:  # một số cổng thoát thay vì trả về
-        rep = _doc_json(da_luu)
-        return (rep or None), f"chấm sống thoát mã {e.code}; dùng bản đã lưu" if rep else f"chết: SystemExit {e.code}"
-    except Exception as e:  # noqa: BLE001 — cổng chết phải hiện ra, không nuốt
-        return None, f"chết: {type(e).__name__}: {_rut_gon(str(e), 80)}"
+    song = CS.trang_thai_song(gate, study, out_dir, repo_root=out_dir.parent.parent)
+    if song.get("nguon") == CS.NGUON_SONG and isinstance(song.get("bao_cao"), dict):
+        return song["bao_cao"], "chấm sống"
+    if song.get("nguon") == CS.NGUON_LUU:
+        return {"status": song.get("status")}, f"bản LƯU (kém tin cậy) — {song.get('ly_do')}"
+    return None, f"chết: {song.get('ly_do')}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -828,6 +804,29 @@ def la_de_tai_nghien_cuu(out_dir: Path) -> tuple[bool, str]:
                    "G0_checkpoint.json" if n else "thư mục RỖNG")
 
 
+def kiem_xuyen_cong(study: str, out_dir: Path) -> list[Muc]:
+    """XUYÊN CỔNG (04/10/2026 — điều phối thống nhất G0–G10): mỗi thông số then chốt (N · α · power · thiết kế ·
+    kết cục chính · quần thể) phải mang CÙNG giá trị ở mọi cổng giữ bản sao của nó. Lệch cứng ⇒ 🔴 (G10-AUTO-11 chặn);
+    lệch mềm/cần xem ⇒ 🟡 (chủ nhiệm quyết); chưa đủ nơi để so ⇒ ⚪. Bộ đối chiếu hỏng ⇒ ⚪ có lý do — KHÔNG phải
+    «khớp»."""
+    try:
+        import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
+        ket = NQ.doi_chieu(out_dir, study)
+    except Exception as exc:  # noqa: BLE001
+        return [Muc("XUYÊN", "X", TRANG, "Không chạy được bộ đối chiếu xuyên cổng", f"{type(exc).__name__}: {exc}",
+                    "python3 tools/nhat_quan_xuyen_cong.py --study " + study)]
+    mau = {NQ.MUC_LECH_CUNG: DO, NQ.MUC_LECH_MEM: VANG, NQ.MUC_CAN_XEM: VANG, NQ.MUC_KHOP: XANH, NQ.MUC_CHUA_DU: TRANG}
+    ra = []
+    for k in ket["thong_so"]:
+        nguon = "; ".join(f"{n['cong']} {n['noi']}={_rut_gon(str(n['gia_tri']), 60)}" for n in k["nguon"])
+        hanh = "" if k["muc"] in (NQ.MUC_KHOP, NQ.MUC_CHUA_DU) else (
+            "sửa về MỘT giá trị tại cổng gốc / chủ nhiệm giải trình — python3 tools/nhat_quan_xuyen_cong.py --study "
+            + study)
+        ra.append(Muc("XUYÊN", "X", mau[k["muc"]], k["ten"], f"{k['ghi_chu']} | {nguon}" if k["muc"] != NQ.MUC_KHOP
+                      else k["ghi_chu"], hanh, may_sua=k["muc"] == NQ.MUC_LECH_CUNG))
+    return ra
+
+
 def kiem_de_tai(study: str, out_dir: Path, *, canary: bool = True) -> dict[str, Any]:
     cps = ARG._load_checkpoints(out_dir)
     ky = {g: da_ky(g, study, out_dir)[0] for g in CONG_CUNG}
@@ -836,6 +835,7 @@ def kiem_de_tai(study: str, out_dir: Path, *, canary: bool = True) -> dict[str, 
     muc: list[Muc] = []
     for g in CONG:
         muc.extend(kiem_cong(g, study, out_dir, cps, ky, tuoi, dx_cong))
+    muc.extend(kiem_xuyen_cong(study, out_dir))
     muc.extend(kiem_he_thong(canary))
     dem = Counter(x.muc for x in muc)
     exit_code = 2 if dem[DO] else (1 if dem[VANG] else 0)
@@ -854,7 +854,7 @@ def in_bao_cao(r: dict[str, Any]) -> None:
     print("=" * 78)
     print(f" KIỂM CHI TIẾT HỆ NGHIÊN CỨU — {r['study']} — {r['generated_at']}")
     print("=" * 78)
-    hien = [x for x in r["muc"] if x["cong"] != "HỆ"]
+    hien = [x for x in r["muc"] if x["cong"] not in ("HỆ", "XUYÊN")]
     for g in CONG:
         dong = [x for x in hien if x["cong"] == g]
         if not dong:
@@ -863,6 +863,12 @@ def in_bao_cao(r: dict[str, Any]) -> None:
         for x in dong:
             hd = f"  → {x['hanh_dong']}" if x["hanh_dong"] else ""
             print(f"  {x['muc']} {x['truc']} {x['nhan']} — {x['bang_chung']}{hd}")
+    xc = [x for x in r["muc"] if x["cong"] == "XUYÊN"]
+    if xc:
+        print("\nXUYÊN CỔNG (thông số then chốt phải cùng giá trị ở mọi cổng — G10-AUTO-11)")
+        for x in xc:
+            hd = f"  → {x['hanh_dong']}" if x["hanh_dong"] else ""
+            print(f"  {x['muc']} {x['nhan']} — {x['bang_chung']}{hd}")
     print("\nHỆ THỐNG")
     for x in r["muc"]:
         if x["cong"] == "HỆ":

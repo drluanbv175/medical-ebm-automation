@@ -27,7 +27,7 @@ import sys
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
 import unicodedata
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -336,6 +336,11 @@ def import_dataset(study: str, data_path: Path, *,
     out_dir.mkdir(parents=True, exist_ok=True)
 
     imported_at = datetime.now().isoformat(timespec="seconds")
+    # VÁ 04/10/2026 (soát từng cổng, G5-02): mốc UTC tường minh để G5-AUTO-05b so với lúc ký G2/G4 trên sổ cái (UTC) —
+    # imported_at giờ địa phương không kèm múi giờ giữ lại cho tương thích.
+    # Đủ micro-giây: mốc ký sổ cái có micro-giây; làm tròn xuống giây làm lần nạp SAU khi ký (cùng giây) bị coi là
+    # «trước khi ký» ở G5-AUTO-05b.
+    imported_at_utc = datetime.now(timezone.utc).isoformat()
     suffix = data_path.suffix.lower()
     issues: List[Dict[str, Any]] = []
     if suffix not in SUPPORTED_SUFFIXES:
@@ -359,6 +364,24 @@ def import_dataset(study: str, data_path: Path, *,
                             exempt_date_columns=exempt_date_columns)
         issues = list(profile["issues"])
 
+    # VÁ 04/10/2026 (soát từng cổng, G5-02): dữ liệu thật chỉ được NẠP sau khi SAP (G4) đã khoá hợp lệ — mục đích của
+    # G4 là chốt kế hoạch phân tích TRƯỚC khi ai thấy dữ liệu (chống HARKing). Bản cũ nạp + làm sạch được rồi mới
+    # ký SAP.
+    # Quét PII vẫn chạy (báo đủ lỗi một lần); chỉ không sao chép dữ liệu vào 02_raw_readonly. Đề tài đánh dấu tường
+    # minh study_kind=synthetic_test (tools/mark_study_synthetic.py) được miễn.
+    repo_root = exports_root.parent
+    try:
+        sap_da_khoa = bool(GC.g4_quality_contract_satisfied(study_id, repo_root=repo_root))
+    except Exception:  # noqa: BLE001 — không đo được ⇒ không phải «đã khoá»
+        sap_da_khoa = False
+    if not sap_da_khoa and not GC.is_synthetic_test_study(study_id, repo_root):
+        issues.append({
+            "severity": "blocker",
+            "type": "sap_chua_khoa",
+            "column": None,
+            "detail": "G4 (SAP) chưa khoá hợp lệ (PASS_G4_SAP_LOCKED) — không nạp dữ liệu thật trước khi ký khoá SAP.",
+        })
+
     query_log = out_dir / "04_query_logs" / "data_intake_query_log.csv"
     _write_query_log(query_log, issues)
 
@@ -367,6 +390,8 @@ def import_dataset(study: str, data_path: Path, *,
         "study": study_id,
         "status": BLOCKED_STATUS if issues else READY_STATUS,
         "imported_at": imported_at,
+        "imported_at_utc": imported_at_utc,
+        "sap_da_khoa_luc_nap": sap_da_khoa,
         "source_filename": _safe_source_filename(data_path),
         "source_filename_redacted": _safe_source_filename(data_path) != data_path.name,
         "supported_format": suffix in SUPPORTED_SUFFIXES,

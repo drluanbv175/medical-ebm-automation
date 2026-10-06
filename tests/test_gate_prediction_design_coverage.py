@@ -155,9 +155,17 @@ def test_g6_table_shells_no_fabricated_numbers_for_prediction():
 
 # ── G2: WHO field maps có "prediction" (kiểm qua nguồn — biến cục bộ trong hàm) ──
 def test_g2_who_field_maps_include_prediction_source_check():
-    src = (TOOLS_DIR / "run_g2_auto.py").read_text(encoding="utf-8")
-    assert '"prediction": "Observational"' in src
-    assert '"prediction": "Prognosis"' in src
+    # 04/10/2026 (soát từng cổng G2-07): bảng WHO TRDS mục 15 nay là MỘT bảng ở g2_quality_gate (run_g2_auto không
+    # còn giữ bảng riêng — hai bảng từng lệch nhau). Kiểm HÀNH VI trên bảng chung + bản .md dựng từ nó, chặt hơn dò
+    # chuỗi.
+    if str(TOOLS_DIR) not in sys.path:
+        sys.path.insert(0, str(TOOLS_DIR))
+    import g2_quality_gate as G2Q  # noqa: PLC0415
+
+    assert G2Q.WHO_DESIGN_TYPE["prediction"] == "Observational"
+    assert G2Q.WHO_PRIMARY_PURPOSE["prediction"] == "Prognosis"
+    v = G2Q.who_trds_values(topic="T", design_code="prediction", design_primary="P", n_target=None, meta={})
+    assert G2Q.render_who_trds_khoa_hoc(v)[15].startswith("Observational · Prognosis")
 
 
 # ── G4: sap_sections có "prediction", main_method đúng thuật ngữ TRIPOD+AI ──

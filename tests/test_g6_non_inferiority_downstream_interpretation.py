@@ -128,7 +128,8 @@ class TestG3ChecktpointWritesHypothesisFields:
             result = subprocess.run(
                 [sys.executable, str(TOOLS_DIR / "run_g3_auto.py"),
                  "--study", study, "--effect-size", "0.85",
-                 "--hypothesis-type", "non_inferiority", "--margin", "0.10", "--p0", "0.65"],
+                 "--hypothesis-type", "non_inferiority", "--margin", "0.10", "--p0", "0.65",
+                 "--outcome-direction", "higher_better"],  # 04/10/2026 (G3-01): chiều kết cục khai tường minh
                 cwd=repo_root, capture_output=True, text=True, timeout=60,
             )
             assert result.returncode == 0, result.stdout + result.stderr
@@ -136,6 +137,7 @@ class TestG3ChecktpointWritesHypothesisFields:
             cp = json.loads((study_dir / "G3_checkpoint.json").read_text(encoding="utf-8"))
             assert cp["hypothesis_type"] == "non_inferiority"
             assert cp["margin"] == 0.10
+            assert cp["outcome_direction"] == "higher_better"
         finally:
             if study_dir.exists():
                 shutil.rmtree(study_dir, ignore_errors=True)

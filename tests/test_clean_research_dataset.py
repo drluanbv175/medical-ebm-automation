@@ -28,6 +28,9 @@ def _dict_json(path: Path) -> Path:
             {"name": "age", "type": "integer", "required": True, "min": 18, "max": 100},
             {"name": "sex", "type": "category", "required": True, "allowed": ["F", "M"]},
             {"name": "primary_outcome", "type": "integer", "required": True, "min": 0, "max": 1},
+            # 04/10/2026 (G5-03): cột có trong dữ liệu mà dictionary không khai là một truy vấn mở — fixture khai đủ
+            # cột «notes» của dữ liệu kiểm thử thay vì dựa vào việc cột lạ đi qua im lặng.
+            {"name": "notes", "type": "text", "required": False},
         ],
     }
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8", newline="\n")

@@ -65,11 +65,19 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # kết quả `chuan-hoa` — trỏ `_CONNECTOR-CHUNG-CU.md` §1ter luật 5); số lượng vẫn giữ nguyên 50.
 # Tái khóa 2026-10-03: `tham-dinh-dau-ra` (R6 dạy ô mẫu khuôn sinh không nhãn + §6bis biên nhận máy, gốc 21d95d1),
 # `dao-duc-dang-ky` (đính chính Annex 2 lạc hậu), `dieu-phoi-nghien-cuu`, `viet-ban-thao` (bản cặp y hệt gốc); vẫn 50.
+# Tái khóa 2026-10-04: `dieu-phoi-nghien-cuu` (điều phối thống nhất xuyên cổng · G10-AUTO-11 · G1-AUTO-02c · SAP
+# §4/§9) + `thiet-ke-nghien-cuu` (khoá SAP đòi §4/§9) + README/_BAN-DO-KET-NOI/_SO-DO-PIPELINE-HOP-NHAT (G0–G10) — bản
+# cặp y hệt gốc; vẫn 50.
+# Tái khóa 2026-10-06 (soát từng cổng — doctrine CHUNG-I): 11 agent nghiên cứu (dieu-phoi-nghien-cuu,
+# cau-hoi-nghien-cuu, thiet-ke-nghien-cuu, ke-hoach-trien-khai, dao-duc-dang-ky, co-mau-nghien-cuu, quan-ly-du-lieu,
+# phan-tich-thong-ke,
+# viet-ban-thao, binh-duyet, nop-bai-phan-hoi) bỏ chỉ dẫn «agent ghi Gx_STATUS=LOCKED», tiền đề chấm sống, hợp đồng
+# hiện hành từng cổng — bản cặp y hệt gốc; vẫn 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "229e2b9bf9e5bd50a4161ddf73088aa108956a40315484dc2099f5e256e20b7c"
+    "24b4325182789181c8a4a69013ad00ac087aec70b4ba044dcd6a693d5a64f4ff"
 )
 
-MINIMUM_AGENT_COUNT = 50
+MINIMUM_AGENT_COUNT = 64
 # V4.2.1 (GAP-001): hard-enforce đủ 4 agent trọng yếu (2 nhạc trưởng + guardrail
 # chốt kiểm cuối + sổ cái). Thiếu bất kỳ agent nào → registry fail-closed.
 REQUIRED_AGENTS = frozenset({

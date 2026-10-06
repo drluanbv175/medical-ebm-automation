@@ -32,7 +32,7 @@ sys.path.insert(0, str(REPO_ROOT))
 import gate_contract as GC  # noqa: E402
 
 from runtime.approval_ledger import ApprovalLedger  # noqa: E402
-from tests.g5_test_helpers import prepare_locked_g5_study  # noqa: E402
+from tests.g5_test_helpers import ghi_ban_go_bang_tong_hop, prepare_locked_g5_study  # noqa: E402
 
 
 def _configure_test_signing_key(tmp_path, monkeypatch) -> None:
@@ -123,9 +123,18 @@ def _lock_study(study: str, tmp_path: Path, g1_checkpoint: dict) -> Path:
     (study_dir / "G1_checkpoint.json").write_text(
         json.dumps(g1_checkpoint), encoding="utf-8", newline="\n")
     clean = _clean_dataset(tmp_path / f"{study}_df_clean.csv")
+    them = {}
+    if g1_checkpoint.get("design_code") == "qualitative":
+        # 04/10/2026 (G5-08): đề tài định tính chỉ khoá được khi bản gỡ băng có sổ băm, khử định danh, chỉ đọc —
+        # fixture cung cấp cột transcript_id + bản gỡ băng tổng hợp hợp lệ (không nới luật khoá).
+        clean = _csv(tmp_path / f"{study}_df_clean.csv",
+                     "record_id,transcript_id,age,sex,exposure_var,primary_outcome\n"
+                     + "\n".join(f"S00{i},T0{i},4{i},{'F' if i % 2 else 'M'},{i // 4},{i % 2}" for i in range(1, 7)))
+        them = {"extra_text_columns": frozenset({"transcript_id"}),
+                "truoc_khi_khoa": lambda d: ghi_ban_go_bang_tong_hop(d, [f"T0{i}" for i in range(1, 7)])}
     locked_path, _ = prepare_locked_g5_study(
         study, clean, exports_root=REPO_ROOT / "exports",
-        repo_root=REPO_ROOT,
+        repo_root=REPO_ROOT, **them,
     )
     return locked_path
 

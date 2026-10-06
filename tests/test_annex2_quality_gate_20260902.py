@@ -35,7 +35,11 @@ def _complete(methods=("decentralised", "pragmatic", "rwd")):
 
 def test_non_annex2_studies_are_unchanged():
     assert A2X.evaluate({}, "cohort", "G1")["status"] == "NOT_APPLICABLE"
-    assert A2X.evaluate({}, "rct", "G2")["status"] == "NOT_APPLICABLE"
+    # 04/10/2026 (soát từng cổng, G1-11 / QĐ-15): RCT CHƯA KHAI không còn được suy «không áp dụng» — phải khai
+    # tường minh; khai false thì mới là NOT_APPLICABLE.
+    assert A2X.evaluate({}, "rct", "G2")["status"] == "NEEDS_DECLARATION"
+    khai_false = {"gate_params": {"G1": {"annex2": {"applicable": False, "methodologies": []}}}}
+    assert A2X.evaluate(khai_false, "rct", "G2")["status"] == "NOT_APPLICABLE"
 
 
 def test_annex2_missing_controls_blocks_both_gates():

@@ -2,10 +2,13 @@
 """Hợp đồng chất lượng G5 cho quản trị và khóa dữ liệu nghiên cứu.
 
 G5 không được coi là đạt chỉ vì đã sinh CRF hoặc vì checkpoint chứa chữ
-``LOCKED``. Cổng có bốn trạng thái:
+``LOCKED``. Cổng có năm trạng thái:
 
 - ``BLOCKED``: lỗi liêm chính, provenance hoặc khóa dữ liệu.
 - ``DRAFT_READY_NEEDS_REAL_DATA``: bộ công cụ đã sẵn sàng nhưng chưa có dữ liệu.
+- ``DRAFT_LOCKED_NEEDS_HUMAN_REVIEW``: đã khoá kỹ thuật nhưng còn mục người phải rà (DMP còn ô trống ở mục sống,
+  kế hoạch SDV chưa khai, SAP ký lại sau khi nạp dữ liệu chưa khai sửa đổi…) — approve_gate chỉ ký khi READY.
+  (Thêm 04/10/2026 — soát từng cổng G5: trước đó REVIEW không ảnh hưởng trạng thái nên không chặn được gì.)
 - ``READY_FOR_G5_APPROVAL``: dataset đã khóa kỹ thuật, chờ người có thẩm quyền ký.
 - ``PASS_G5_DATA_LOCKED``: khóa kỹ thuật hợp lệ và approval ledger khớp hash.
 
@@ -26,12 +29,21 @@ from typing import Any, Dict, Iterable, Mapping, Optional
 import gate_contract as GC
 import import_real_dataset as RDI
 import pipeline_freshness as PF
+import placeholder_contract as PC
 
 STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT = "DRAFT_READY_NEEDS_REAL_DATA"
+STATUS_DRAFT_REVIEW = "DRAFT_LOCKED_NEEDS_HUMAN_REVIEW"
 STATUS_READY = "READY_FOR_G5_APPROVAL"
 STATUS_LOCKED = "PASS_G5_DATA_LOCKED"
-QUALITY_CONTRACT_VERSION = "G5-2026.1"
+QUALITY_CONTRACT_VERSION = "G5-2026.2"  # 04/10/2026: khoá gắn DMP, giải quyết query, bản gỡ băng
+# VÁ 04/10/2026 (soát từng cổng, G5-07): hồ sơ vận hành phiên bản 2 — bằng chứng (evidence_ref/log_ref) bắt buộc, thêm
+# rà soát audit trail và kế hoạch kiểm dữ liệu nguồn (SDV/spot-check, QĐ-10).
+OPERATIONAL_SCHEMA_VERSION = "G5-OPS-2026.2"
+# VÁ 04/10/2026 (G5-08): bản gỡ băng/ghi âm của thiết kế định tính — dữ liệu thô nhạy PII nhất — vào manifest có băm.
+TRANSCRIPT_MANIFEST_JSON = "TRANSCRIPT_manifest.json"
+# VÁ 04/10/2026 (G5-04, QĐ-9): mã đóng query hợp lệ (kèm lý do, người đóng, thời điểm ISO).
+MA_DONG_QUERY = frozenset({"da_sua", "xac_nhan_dung", "khong_ap_dung_co_ly_do"})
 
 REPORT_JSON = "G5_QUALITY_REPORT.json"
 REPORT_MD = "G5_QUALITY_REPORT.md"
@@ -96,6 +108,9 @@ _REQUIRED_DMP_TOKENS = (
     "CHIA SẺ DỮ LIỆU",
     "ICH E6(R3)",
 )
+# Nhãn THAM CHIẾU (chuẩn được viện dẫn) chỉ cần có mặt — không phải một MỤC có thân nội dung (G5-01).
+_DMP_NHAN_THAM_CHIEU = frozenset({"ICH E6(R3)"})
+_DMP_NHAN_KHOA = "KHÓA CƠ SỞ DỮ LIỆU"
 
 STANDARDS_BASIS = (
     {
@@ -210,6 +225,19 @@ def _normalise_key(value: Any) -> str:
     return RDI._normalize_header(str(value or ""))
 
 
+def _la_ten_bien_dinh_danh(name: Any) -> bool:
+    """Tên biến là định danh trực tiếp — HỢP NHẤT danh sách của G5 với PII_HEADER_EXACT/CONTAINS của bước nạp
+    (import_real_dataset).
+
+    VÁ 04/10/2026 (soát từng cổng, G5-06): danh sách cũ của G5 hẹp hơn bước nạp (thiếu ma_benh_an, sdt, ten_benh_nhan,
+    hoten, ma_bn, initials…) ⇒ dictionary khai biến định danh vẫn PASS rồi mới bị chặn ở intake. Không dùng luật TOKEN
+    «name»/«ten» của bước nạp: «drug_name» (tên thuốc) không phải định danh người (đã có test chống báo nhầm)."""
+    norm = _normalise_key(name)
+    if norm in _DIRECT_IDENTIFIER_TOKENS or set(norm.split("_")) & _DIRECT_IDENTIFIER_COMPONENTS:
+        return True
+    return norm in RDI.PII_HEADER_EXACT or any(tok in norm for tok in RDI.PII_HEADER_CONTAINS)
+
+
 def _read_redcap_dictionary(path: Path) -> Dict[str, Any]:
     """Đọc data dictionary CSV thật và trả kiểm tra cấu trúc không chứa dữ liệu."""
     if not path.exists():
@@ -248,15 +276,14 @@ def _read_redcap_dictionary(path: Path) -> Dict[str, Any]:
     names = [str(row.get(name_header) or "").strip() for row in rows]
     empty = [idx + 2 for idx, name in enumerate(names) if not name]
     duplicates = sorted({name for name in names if name and names.count(name) > 1})
-    pii_names = sorted(
-        {
-            name
-            for name in names
-            if _normalise_key(name) in _DIRECT_IDENTIFIER_TOKENS
-            or set(_normalise_key(name).split("_"))
-            & _DIRECT_IDENTIFIER_COMPONENTS
-        }
-    )
+    pii_names = sorted({name for name in names if name and _la_ten_bien_dinh_danh(name)})
+    required_header = headers.get("required_field?")
+    required_names = [
+        str(row.get(name_header) or "").strip()
+        for row in rows
+        if required_header and str(row.get(required_header) or "").strip().casefold() in {"1", "true", "y", "yes"}
+        and str(row.get(name_header) or "").strip()
+    ]
     identifier_header = headers.get("identifier?")
     flagged_identifiers = [
         idx + 2
@@ -278,6 +305,7 @@ def _read_redcap_dictionary(path: Path) -> Dict[str, Any]:
     return {
         "rows": len(rows),
         "names": names,
+        "required_names": required_names,
         "issues": issues,
         "headers": list(reader.fieldnames or []),
     }
@@ -317,78 +345,103 @@ def _readonly(path: Optional[Path]) -> bool:
         return False
 
 
+def _ngay_hop_le(value: Any) -> Optional[str]:
+    """None nếu `value` là ngày/giờ ISO không ở tương lai; ngược lại trả mã lỗi ngắn ("invalid"/"future")."""
+    text = str(value or "").strip()
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return "invalid"
+    # Ngày lịch không kèm múi giờ do người duyệt gõ theo NGÀY ĐỊA PHƯƠNG (cùng quy ước lock_date) — so với UTC sẽ báo
+    # sai «future_» với múi giờ trước UTC (VD UTC+7) suốt khoảng nửa đêm tới rạng sáng giờ địa phương.
+    if parsed.date() > datetime.now().date():
+        return "future"
+    return None
+
+
 def evaluate_operational_readiness(path: Path) -> Dict[str, Any]:
-    """Kiểm hồ sơ vận hành G5 mà không đọc dữ liệu người tham gia."""
+    """Kiểm hồ sơ vận hành G5 mà không đọc dữ liệu người tham gia.
+
+    VÁ 04/10/2026 (soát từng cổng, G5-07 — hồ sơ ``G5-OPS-2026.2``): (a) evidence_ref của rà quyền truy cập/thử phục hồi
+    và log_ref của sai lệch đề cương BẮT BUỘC có nội dung thật — bản cũ để chuỗi rỗng vẫn valid=True; (b) thêm
+    ``audit_trail_review`` {completed, reviewed_at, evidence_ref} — checklist khoá CSDL của chính DMP đòi «Audit trail
+    REDCap đầy đủ» mà không tiêu chí nào kiểm; (c) ``source_data_verification`` {method, fraction_or_n, completed,
+    evidence_ref} HOẶC {not_applicable_reason} — QĐ-10: thiếu ⇒ cảnh báo (REVIEW ở G5-AUTO-04b), không phải lỗi cứng.
+    Trả thêm ``canh_bao`` (mục chỉ REVIEW)."""
     payload = _read_json(path)
     issues: list[str] = []
+    canh_bao: list[str] = []
     if not payload:
-        return {"valid": False, "issues": ["missing_or_invalid_record"], "sha256": None}
+        return {"valid": False, "issues": ["missing_or_invalid_record"], "canh_bao": [], "sha256": None}
+    if payload.get("schema_version") != OPERATIONAL_SCHEMA_VERSION:
+        issues.append(f"schema_version_khong_phai_{OPERATIONAL_SCHEMA_VERSION}")
     if payload.get("status") != "VERIFIED":
         issues.append("status_not_verified")
-    access = payload.get("access_control_review")
-    access = access if isinstance(access, Mapping) else {}
-    if not (
-        access.get("completed") is True
-        and access.get("least_privilege_confirmed") is True
-    ):
+
+    def _muc(ten: str) -> Mapping[str, Any]:
+        value = payload.get(ten)
+        return value if isinstance(value, Mapping) else {}
+
+    access = _muc("access_control_review")
+    if not (access.get("completed") is True and access.get("least_privilege_confirmed") is True):
         issues.append("access_control_not_verified")
-    backup = payload.get("backup_restore_test")
-    backup = backup if isinstance(backup, Mapping) else {}
+    backup = _muc("backup_restore_test")
     if not (
         backup.get("completed") is True
         and backup.get("restore_verified") is True
         and backup.get("checksum_verified") is True
     ):
         issues.append("backup_restore_not_verified")
-    retention = payload.get("retention_plan")
-    retention = retention if isinstance(retention, Mapping) else {}
-    if not (
-        retention.get("confirmed") is True
-        and str(retention.get("retention_rule") or "").strip()
-    ):
+    retention = _muc("retention_plan")
+    if not (retention.get("confirmed") is True and PC.co_noi_dung_that(retention.get("retention_rule"))):
         issues.append("retention_plan_not_confirmed")
-    deviations = payload.get("protocol_deviations")
-    deviations = deviations if isinstance(deviations, Mapping) else {}
+    deviations = _muc("protocol_deviations")
     try:
         open_count = int(deviations.get("open_count"))
     except (TypeError, ValueError):
         open_count = -1
-    if not (
-        deviations.get("reconciled") is True
-        and open_count == 0
-    ):
+    if not (deviations.get("reconciled") is True and open_count == 0):
         issues.append("protocol_deviations_not_reconciled")
+    audit = _muc("audit_trail_review")
+    if audit.get("completed") is not True:
+        issues.append("audit_trail_not_reviewed")
+    for ten, section in (("access_control_review.evidence_ref", access.get("evidence_ref")),
+                         ("backup_restore_test.evidence_ref", backup.get("evidence_ref")),
+                         ("protocol_deviations.log_ref", deviations.get("log_ref")),
+                         ("audit_trail_review.evidence_ref", audit.get("evidence_ref"))):
+        if not PC.co_noi_dung_that(section):
+            issues.append(f"thieu_bang_chung:{ten}")
     reviewer_role = str(payload.get("reviewer_role") or "")
     if not GC.reviewer_role_satisfies_gate("G5", reviewer_role):
         issues.append("invalid_reviewer_role")
-    if not str(payload.get("reviewer_ref") or "").strip():
+    if not PC.co_noi_dung_that(payload.get("reviewer_ref")):
         issues.append("missing_reviewer_ref")
-    for field, section in (
-        ("reviewed_at", access),
-        ("tested_at", backup),
+    for field, section in (("reviewed_at", access), ("tested_at", backup), ("audit_reviewed_at", audit)):
+        loi = _ngay_hop_le(section.get("reviewed_at" if field == "audit_reviewed_at" else field))
+        if loi:
+            issues.append(f"{loi}_{field}")
+    sdv = _muc("source_data_verification")
+    if PC.co_noi_dung_that(sdv.get("not_applicable_reason")):
+        pass  # khai «không áp dụng» kèm lý do là câu trả lời hợp lệ (QĐ-10)
+    elif not (
+        sdv.get("completed") is True
+        and PC.co_noi_dung_that(sdv.get("method"))
+        and PC.co_noi_dung_that(sdv.get("fraction_or_n"))
+        and PC.co_noi_dung_that(sdv.get("evidence_ref"))
     ):
-        value = str(section.get(field) or "")
-        try:
-            parsed = datetime.fromisoformat(value).date()
-        except ValueError:
-            issues.append(f"invalid_{field}")
-        else:
-            # reviewed_at/tested_at là ngày lịch không kèm múi giờ, do người
-            # duyệt gõ tay theo NGÀY ĐỊA PHƯƠNG trên máy họ (giống quy ước
-            # lock_date ở lock_analysis_dataset.py) — so với UTC sẽ báo sai
-            # "future_" với múi giờ trước UTC (VD UTC+7) suốt khoảng nửa đêm
-            # đến rạng sáng giờ địa phương.
-            if parsed > datetime.now().date():
-                issues.append(f"future_{field}")
+        canh_bao.append("sdv_chua_khai_hoac_chua_xong: khai source_data_verification {method, fraction_or_n, "
+                        "completed, "
+                        "evidence_ref} hoặc not_applicable_reason")
     try:
         raw_text = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         raw_text = ""
-    if "[CẦN" in raw_text or "[REQUIRE_HUMAN" in raw_text:
+    if PC.co_o_trong(raw_text):
         issues.append("unresolved_placeholder")
     return {
         "valid": not issues,
         "issues": issues,
+        "canh_bao": canh_bao,
         "sha256": _sha256(path),
         "reviewer_group": GC.role_group_for(reviewer_role),
     }
@@ -397,38 +450,239 @@ def evaluate_operational_readiness(path: Path) -> Dict[str, Any]:
 _NGUONG_NOI_DUNG_THAT_SAU_NHAN = 20  # ký tự, sau khi đã bỏ mọi placeholder
 
 
-def _dmp_noi_dung_thieu_duoi_nhan(dmp_text: str, tokens: Iterable[str]) -> list:
-    """Với MỖI nhãn trong `tokens` đã XUẤT HIỆN trong `dmp_text`, kiểm đoạn văn bản
-    NGAY SAU nhãn đó tới nhãn KẾ TIẾP (theo đúng vị trí thật trong văn bản, không
-    theo thứ tự khai trong tuple) — hoặc hết văn bản nếu là nhãn cuối. Trả về danh
-    sách nhãn mà đoạn đó RỖNG hoặc chỉ toàn placeholder `[CẦN...]`/`[REQUIRE_HUMAN...]`.
+_RE_TIEU_DE = re.compile(r"^\s*#{1,6}\s+(.*)$")
+_RE_NHAN_DAM = re.compile(r"^\s*[-*]\s+\*\*([^*\n]+)\*\*")
 
-    Sinh ra để đóng khoảng trống G5-F3 (audit 2026-07-30, vá thật 10/09/2026): trước
-    đây G5-AUTO-03 chỉ hỏi "nhãn có xuất hiện ở đâu đó trong toàn văn bản không" —
-    một DMP mà mọi mục đều rỗng/placeholder vẫn PASS miễn 11 chuỗi nhãn còn nằm đâu
-    đó (vd trong mục lục). Khoá này đòi thêm NỘI DUNG THẬT đứng ngay sau nhãn, theo
-    đúng khuôn BH97 (`approve_gate._g4_sections_still_draft`): phân biệt "còn thiếu
-    một vài mục" (không bắt ở đây — G5-AUTO-03 chỉ xét 11 nhãn bắt buộc) với
-    "nhãn có mặt nhưng thân mục trống rỗng" (BLOCK).
 
-    Không tính token VẮNG MẶT hoàn toàn ở đây — đã có `missing_dmp` xử lý riêng.
-    """
-    lower = dmp_text.casefold()
-    positions = []
+def _phan_nhan_cua_dong(line: str) -> Optional[str]:
+    """Phần NHÃN của một dòng cấu trúc: cả tiêu đề, hoặc chỉ phần in đậm đầu gạch đầu dòng — None nếu là câu văn."""
+    m = _RE_TIEU_DE.match(line)
+    if m:
+        return m.group(1)
+    m = _RE_NHAN_DAM.match(line)
+    return m.group(1) if m else None
+
+
+def _dmp_neo_nhan(dmp_text: str, tokens: Iterable[str]) -> Dict[str, int]:
+    """{nhãn: chỉ số DÒNG cấu trúc đầu tiên chứa nhãn} — dòng cấu trúc = tiêu đề Markdown («# …») hoặc gạch đầu dòng
+    in đậm («- **Nhãn:** …»). Nhãn THAM CHIẾU (ICH E6(R3)) không có neo.
+
+    VÁ 04/10/2026 (soát từng cổng, G5-01): bản cũ dùng ``find()`` lấy lần xuất hiện ĐẦU TIÊN ở BẤT KỲ đâu — «KHỬ ĐỊNH
+    DANH» khớp câu cảnh báo bảo mật đầu tệp, «ICH E6(R3)» khớp dòng tham chiếu, nên văn mẫu bộ sinh (≥ 20 ký tự sau mỗi
+    lần xuất hiện) luôn PASS kể cả DMP nháp còn 20 ô [CẦN]. Nay chỉ neo ở dòng cấu trúc."""
+    lines = dmp_text.splitlines()
+    neo: Dict[str, int] = {}
     for tok in tokens:
-        idx = lower.find(tok.casefold())
-        if idx != -1:
-            positions.append((idx, tok))
-    positions.sort(key=lambda cap: cap[0])
-    thieu_noi_dung = []
-    for i, (idx, tok) in enumerate(positions):
-        start = idx + len(tok)
-        end = positions[i + 1][0] if i + 1 < len(positions) else len(dmp_text)
-        than_muc = dmp_text[start:end]
-        that = re.sub(r"\[(CẦN|REQUIRE_HUMAN)[^\]]*\]", "", than_muc, flags=re.IGNORECASE).strip()
+        if tok in _DMP_NHAN_THAM_CHIEU:
+            continue
+        for i, line in enumerate(lines):
+            nhan = _phan_nhan_cua_dong(line)
+            if nhan is not None and tok.casefold() in nhan.casefold():
+                neo[tok] = i
+                break
+    return neo
+
+
+def _bo_o_trong(text: str) -> str:
+    """Bỏ mọi ô trống dạng ngoặc mà hợp đồng chung nhận ra («[CẦN…]», «[REQUIRE_HUMAN…]», «[TBD]»…)."""
+    return re.sub(r"\[[^\]\n]*\]", lambda m: "" if PC.co_o_trong(m.group(0), PC.TAT_CA_HO) else m.group(0), text)
+
+
+def _dmp_noi_dung_thieu_duoi_nhan(dmp_text: str, tokens: Iterable[str]) -> list:
+    """Nhãn (không kể nhãn tham chiếu) mà thân mục RỖNG/chỉ ô trống, hoặc KHÔNG có dòng cấu trúc riêng.
+
+    Thân mục = phần dòng neo sau nhãn + các dòng tới neo kế tiếp (theo vị trí thật trong văn bản). Nhãn chỉ xuất hiện
+    trong câu văn (không có tiêu đề/gạch đầu dòng riêng) bị coi là THIẾU MỤC (G5-01). Khuôn BH97: phân biệt «thiếu nhãn»
+    (missing_dmp, xử lý riêng) với «có nhãn nhưng thân mục trống rỗng»."""
+    tokens = [t for t in tokens if t not in _DMP_NHAN_THAM_CHIEU]
+    lines = dmp_text.splitlines()
+    neo = _dmp_neo_nhan(dmp_text, tokens)
+    thieu = [tok for tok in tokens if tok.casefold() in dmp_text.casefold() and tok not in neo]
+    thu_tu = sorted(neo.items(), key=lambda kv: kv[1])
+    for i, (tok, idx) in enumerate(thu_tu):
+        dong_neo = lines[idx]
+        sau_nhan = dong_neo[dong_neo.casefold().index(tok.casefold()) + len(tok):]
+        ket_thuc = thu_tu[i + 1][1] if i + 1 < len(thu_tu) else len(lines)
+        than_muc = "\n".join([sau_nhan, *lines[idx + 1:ket_thuc]])
+        that = re.sub(r"[*#|\-\s:()]+", " ", _bo_o_trong(than_muc)).strip()
         if len(that) < _NGUONG_NOI_DUNG_THAT_SAU_NHAN:
-            thieu_noi_dung.append(tok)
-    return thieu_noi_dung
+            thieu.append(tok)
+    return thieu
+
+
+def _dmp_khoi_khoa(dmp_text: str) -> str:
+    """Thân mục KHOÁ CƠ SỞ DỮ LIỆU: từ dòng neo tới tiêu đề cùng cấp hoặc cao hơn kế tiếp."""
+    lines = dmp_text.splitlines()
+    idx = _dmp_neo_nhan(dmp_text, (_DMP_NHAN_KHOA,)).get(_DMP_NHAN_KHOA)
+    if idx is None:
+        return ""
+    m = re.match(r"^\s*(#{1,6})\s", lines[idx])
+    cap = len(m.group(1)) if m else 6
+    ket_thuc = len(lines)
+    for j in range(idx + 1, len(lines)):
+        m2 = re.match(r"^\s*(#{1,6})\s", lines[j])
+        if m2 and len(m2.group(1)) <= cap:
+            ket_thuc = j
+            break
+    return "\n".join(lines[idx:ket_thuc])
+
+
+def dmp_chua_hoan_tat_khi_khoa(dmp_text: str) -> list:
+    """Lý do DMP CHƯA được hoàn tất cho thời điểm khoá dữ liệu (rỗng = đã hoàn tất).
+
+    VÁ 04/10/2026 (soát từng cổng, G5-01): G5 từng tới PASS_G5_DATA_LOCKED khi DMP vẫn «Trạng thái: DRAFT» và checklist
+    khoá còn «Ngày khóa DB: [CẦN]», «Người khóa DB (chữ ký): [CẦN]». Khi đã có dữ liệu khoá: tiêu đề/dòng trạng thái còn
+    DRAFT, mục khoá CSDL còn ô trống hoặc ô tick chưa đánh dấu ⇒ BLOCK (lock_analysis_dataset cũng từ chối khoá)."""
+    ly_do: list = []
+    for line in dmp_text.splitlines()[:15]:
+        if (line.startswith("# ") or re.search(r"\*\*Trạng thái:\*\*", line)) and re.search(r"\bDRAFT\b", line):
+            ly_do.append(f"DMP còn nhãn bản nháp: {line.strip()[:90]!r}")
+            break
+    khoi = _dmp_khoi_khoa(dmp_text)
+    if not khoi:
+        ly_do.append("DMP không có mục KHÓA CƠ SỞ DỮ LIỆU (checklist khoá) có tiêu đề riêng")
+        return ly_do
+    o_trong = PC.dong_con_trong(khoi, PC.TAT_CA_HO)
+    if o_trong:
+        ly_do.append("mục KHÓA CƠ SỞ DỮ LIỆU còn ô trống: " + " | ".join(o_trong[:3]))
+    chua_tick = [ln.strip() for ln in khoi.splitlines() if re.match(r"^\s*[-*]\s+\[\s\]", ln)]
+    if chua_tick:
+        ly_do.append(f"checklist khoá còn {len(chua_tick)} mục chưa đánh dấu: " + " | ".join(chua_tick[:2]))
+    return ly_do
+
+
+def dmp_o_trong_muc_song(dmp_text: str) -> list:
+    """Dòng còn ô trống NGOÀI mục khoá CSDL (mục «sống» — lưu đồ N, ngưỡng thiếu…) — chỉ REVIEW sau khi khoá."""
+    khoi = _dmp_khoi_khoa(dmp_text)
+    phan_con_lai = dmp_text.replace(khoi, "") if khoi else dmp_text
+    return PC.dong_con_trong(phan_con_lai)
+
+
+def _moc_utc(value: Any) -> Optional[datetime]:
+    """Mốc thời gian ISO → UTC. Không kèm múi giờ ⇒ coi là giờ ĐỊA PHƯƠNG của máy ghi (imported_at/cleaned_at cũ)."""
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        moc = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if moc.tzinfo is None:
+        moc = moc.astimezone()
+    return moc.astimezone(timezone.utc)
+
+
+def _som_hon(moc: datetime, moc_ky: datetime) -> bool:
+    """``moc`` (nạp/làm sạch) có SỚM HƠN ``moc_ky`` không — so ở đúng độ chính xác của ``moc``.
+
+    Mốc nạp/làm sạch cũ ghi tới GIÂY (timespec=seconds) còn mốc ký sổ cái có micro-giây: lần nạp diễn ra ngay sau khi ký
+    (cùng giây) từng bị coi là «trước khi ký». Mốc không có phần lẻ giây ⇒ làm tròn mốc ký xuống giây trước khi so."""
+    if moc.microsecond == 0:
+        moc_ky = moc_ky.replace(microsecond=0)
+    return moc < moc_ky
+
+
+def _moc_ky_so_cai(study: str, gate: str, artifact: Path, repo_root: Path) -> tuple:
+    """(lần ký APPROVED SỚM NHẤT của cổng — mọi phiên bản, lần ký MỚI NHẤT khớp băm artifact HIỆN TẠI) theo UTC.
+
+    Chỉ đọc sổ cái để lấy MỐC — phán «đã ký hợp lệ» vẫn là việc của gate_contract.ledger_approved (G5-AUTO-05)."""
+    try:
+        records = json.loads((Path(repo_root) / "exports" / str(study) / "approval_ledger.json")
+                             .read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None, None
+    if not isinstance(records, list):
+        return None, None
+    approved = [r for r in records if isinstance(r, dict)
+                and str(r.get("gate_id") or "").upper() == gate and str(r.get("decision") or "").upper() == "APPROVED"]
+    moc_tat_ca = [m for m in (_moc_utc(r.get("timestamp_utc")) for r in approved) if m]
+    bam = _sha256(artifact) if artifact.exists() else None
+    moc_hien_hanh = [m for m in (_moc_utc(r.get("timestamp_utc")) for r in approved
+                                 if bam and r.get("evidence_hash") == bam) if m]
+    return (min(moc_tat_ca) if moc_tat_ca else None), (max(moc_hien_hanh) if moc_hien_hanh else None)
+
+
+def _doc_header_csv(path: Optional[Path]) -> list:
+    if path is None or not path.exists():
+        return []
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            return list(next(csv.reader(handle), []) or [])
+    except (OSError, UnicodeDecodeError, csv.Error):
+        return []
+
+
+def danh_gia_transcript(out_dir: Path, du_lieu: Optional[Path]) -> Dict[str, Any]:
+    """Kiểm TRANSCRIPT_manifest.json của thiết kế định tính (G5-08): mỗi transcript_id có trong dataset phải có mục
+    {file (tương đối trong thư mục đề tài), sha256, deidentified=true, reviewer_ref}; tệp tồn tại, băm khớp, CHỈ ĐỌC, và
+    nội dung (.txt/.md; .docx nếu có python-docx) không còn mẫu PII mà bước nạp quét (RDI.VALUE_PATTERNS)."""
+    out_dir = Path(out_dir)
+    mf_path = out_dir / TRANSCRIPT_MANIFEST_JSON
+    mf = _read_json(mf_path)
+    issues: list = []
+    if not mf:
+        return {"issues": [f"thieu_{TRANSCRIPT_MANIFEST_JSON}"], "sha256": None, "n": 0}
+    try:
+        if PC.co_o_trong(mf_path.read_text(encoding="utf-8")):
+            issues.append("manifest_con_o_trong")
+    except (OSError, UnicodeDecodeError):
+        issues.append("manifest_khong_doc_duoc")
+    entries = [e for e in (mf.get("transcripts") or []) if isinstance(e, Mapping)]
+    if not entries:
+        # Đề tài định tính đã có dữ liệu thật mà manifest không khai bản gỡ băng nào = bản gỡ băng nằm ngoài kiểm soát.
+        issues.append("manifest_khong_co_ban_go_bang")
+    da_khai: set = set()
+    for e in entries:
+        tid = str(e.get("transcript_id") or "").strip()
+        if not tid:
+            issues.append("muc_thieu_transcript_id")
+            continue
+        da_khai.add(tid)
+        tep = _safe_child(out_dir, e.get("file"))
+        if tep is None or not tep.exists():
+            issues.append(f"{tid}:thieu_tep")
+            continue
+        if _sha256(tep) != str(e.get("sha256") or "").strip().lower():
+            issues.append(f"{tid}:bam_lech")
+        if not _readonly(tep):
+            issues.append(f"{tid}:chua_chi_doc")
+        if e.get("deidentified") is not True:
+            issues.append(f"{tid}:chua_khu_dinh_danh")
+        if not PC.co_noi_dung_that(e.get("reviewer_ref")):
+            issues.append(f"{tid}:thieu_reviewer_ref")
+        noi_dung = ""
+        if tep.suffix.lower() in {".txt", ".md"}:
+            try:
+                noi_dung = tep.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                issues.append(f"{tid}:khong_doc_duoc")
+        elif tep.suffix.lower() == ".docx":
+            try:
+                from docx import Document  # noqa: PLC0415
+                noi_dung = "\n".join(par.text for par in Document(str(tep)).paragraphs)
+            except Exception:  # noqa: BLE001 — không đọc được ⇒ không kiểm được PII ⇒ không phải «sạch»
+                issues.append(f"{tid}:khong_doc_duoc_docx")
+        else:
+            issues.append(f"{tid}:dinh_dang_khong_ho_tro")
+        for ten, mau in RDI.VALUE_PATTERNS.items():
+            if noi_dung and mau.search(noi_dung):
+                issues.append(f"{tid}:pii_{ten}")
+    if du_lieu is not None and du_lieu.exists():
+        try:
+            with du_lieu.open("r", encoding="utf-8-sig", newline="") as handle:
+                reader = csv.DictReader(handle)
+                cot = next((c for c in (reader.fieldnames or []) if _normalise_key(c) == "transcript_id"), None)
+                trong_du_lieu = {str(r.get(cot) or "").strip() for r in reader if cot} - {""}
+            if cot is None:
+                # Không có cột nối dữ liệu ↔ bản gỡ băng thì không đối chiếu được — không phải «mọi bản đã khai».
+                issues.append("dataset_thieu_cot_transcript_id")
+        except (OSError, UnicodeDecodeError, csv.Error):
+            trong_du_lieu = set()
+            issues.append("khong_doc_duoc_dataset")
+        thieu = sorted(trong_du_lieu - da_khai)
+        if thieu:
+            issues.append(f"transcript_chua_co_trong_manifest:{thieu[:10]}")
+    return {"issues": issues, "sha256": _sha256(mf_path), "n": len(entries)}
 
 
 def _contains_placeholder(paths: Iterable[Path]) -> bool:
@@ -569,24 +823,35 @@ def evaluate_study(
         token for token in _REQUIRED_DMP_TOKENS if token.casefold() not in dmp_text.casefold()
     ]
     content_thieu = _dmp_noi_dung_thieu_duoi_nhan(dmp_text, _REQUIRED_DMP_TOKENS)
-    thieu_tong = missing_dmp or content_thieu
+    # VÁ 04/10/2026 (soát từng cổng, G5-01): khi dữ liệu ĐÃ KHOÁ, DMP phải được hoàn tất cho thời điểm khoá (hết nhãn
+    # DRAFT, mục khoá CSDL không còn ô trống/ô tick trống) ⇒ BLOCK; mục «sống» khác còn ô trống ⇒ REVIEW.
+    khoa_chua_xong = dmp_chua_hoan_tat_khi_khoa(dmp_text) if has_locked_data else []
+    muc_song = dmp_o_trong_muc_song(dmp_text) if has_locked_data else []
     if missing_dmp:
-        bang_chung = "thiếu nhãn: " + ", ".join(missing_dmp)
+        dmp_status, bang_chung = "BLOCK", "thiếu nhãn: " + ", ".join(missing_dmp)
     elif content_thieu:
-        bang_chung = "có nhãn nhưng thân mục rỗng/chỉ placeholder: " + ", ".join(content_thieu)
+        dmp_status = "BLOCK"
+        bang_chung = ("mục không có tiêu đề/gạch đầu dòng riêng hoặc thân mục rỗng/chỉ ô trống: "
+                      + ", ".join(content_thieu))
+    elif khoa_chua_xong:
+        dmp_status, bang_chung = "BLOCK", "đã khoá dữ liệu nhưng DMP chưa hoàn tất: " + "; ".join(khoa_chua_xong)
+    elif muc_song:
+        dmp_status, bang_chung = "REVIEW", "mục sống của DMP còn ô trống: " + " | ".join(muc_song[:3])
     else:
+        dmp_status = "PASS"
         bang_chung = (
-            "đủ 11 nhãn + nội dung thật dưới mỗi nhãn "
+            "đủ 11 nhãn, mỗi mục có tiêu đề riêng và nội dung thật "
             "(capture/QC/audit/privacy/access/backup/retention/lock/sharing)"
+            + ("; DMP đã hoàn tất cho thời điểm khoá" if has_locked_data else "")
         )
     automatic.append(
         _criterion(
             "G5-AUTO-03",
-            "DMP phủ vòng đời dữ liệu theo ICH E6(R3), có NỘI DUNG thật dưới mỗi nhãn",
-            "BLOCK" if thieu_tong else "PASS",
+            "DMP phủ vòng đời dữ liệu theo ICH E6(R3), có NỘI DUNG thật dưới mỗi mục; hoàn tất khi khoá dữ liệu",
+            dmp_status,
             bang_chung,
-            "Bổ sung nhãn còn thiếu và/hoặc viết nội dung thật (không chỉ [CẦN...]) "
-            "dưới các phần vòng đời dữ liệu trong DMP.",
+            "Bổ sung mục còn thiếu/viết nội dung thật dưới các phần vòng đời dữ liệu; trước khi khoá dữ liệu: bỏ nhãn "
+            "DRAFT, điền ngày khoá + người khoá/người chứng kiến (mã, không PII) và đánh dấu đủ checklist khoá CSDL.",
         )
     )
 
@@ -604,6 +869,16 @@ def evaluate_study(
                 f"Hoàn tất {OPERATIONAL_READINESS_JSON} bằng bằng chứng vận hành "
                 "và người quản trị dữ liệu/PI xác nhận."
             ),
+        )
+    )
+    canh_bao_ops = list(operational.get("canh_bao") or [])
+    automatic.append(
+        _criterion(
+            "G5-AUTO-04b",
+            "Kế hoạch kiểm dữ liệu nguồn (SDV/spot-check) đã khai và hoàn tất, hoặc khai không áp dụng kèm lý do",
+            "REVIEW" if canh_bao_ops else "PASS",
+            "; ".join(canh_bao_ops) or "source_data_verification đã khai",
+            f"Ghi source_data_verification trong {OPERATIONAL_READINESS_JSON} (QĐ-10).",
         )
     )
 
@@ -628,6 +903,50 @@ def evaluate_study(
             upstream_status,
             f"G2={g2_ok}; G4={g4_ok}",
             "Hoàn tất G2 IRB/IEC và G4 SAP trong approval ledger trước intake/lock.",
+        )
+    )
+
+    # ── G5-AUTO-05b — THỨ TỰ THỜI GIAN: dữ liệu chỉ được nạp/làm sạch SAU khi IRB (G2) và SAP (G4) được ký ──────────
+    # VÁ 04/10/2026 (soát từng cổng, G5-02): AUTO-05 chỉ hỏi trạng thái G2/G4 HIỆN TẠI — nạp + làm sạch dữ liệu TRƯỚC,
+    # rồi mới ký SAP vẫn khoá và qua G5 (chính là HARKing mà chốt G4→G5 sinh ra để chặn). Nay so mốc nạp (imported_at)
+    # và mốc làm sạch (cleaned_at) — giờ địa phương không kèm múi giờ được quy về UTC — với lần ký APPROVED đầu tiên
+    # của G2/G4 trên sổ cái: sớm hơn ⇒ BLOCK. SAP ký LẠI sau khi đã nạp dữ liệu ⇒ REVIEW trừ khi PHẦN 4 của SAP có
+    # dòng «SAP AMENDMENT».
+    sap_path = out_dir / f"G4_A5_SAP_FINAL_{study}.md"
+    tg_van_de: list = []
+    tg_status = "PASS"
+    if has_real_data:
+        t_nap = _moc_utc(intake.get("imported_at_utc") or intake.get("imported_at"))
+        t_sach = _moc_utc(cleaning.get("cleaned_at_utc") or cleaning.get("cleaned_at")) if cleaning else None
+        if intake and t_nap is None:
+            tg_status = "REVIEW"
+            tg_van_de.append("không đọc được mốc nạp dữ liệu (imported_at) để so với lúc ký")
+        for cong, tep in (("G2", g2_artifact), ("G4", sap_path)):
+            dau_tien, hien_hanh = _moc_ky_so_cai(study, cong, tep, root)
+            if dau_tien is None:
+                continue  # chưa ký — G5-AUTO-05 đã chặn
+            for nhan, moc in (("nạp", t_nap), ("làm sạch", t_sach)):
+                if moc is not None and _som_hon(moc, dau_tien):
+                    tg_status = "BLOCK"
+                    tg_van_de.append(f"{nhan} dữ liệu lúc {moc.isoformat(timespec='seconds')} TRƯỚC lần ký {cong} đầu "
+                                     f"tiên {dau_tien.isoformat(timespec='seconds')}")
+            if cong == "G4" and hien_hanh is not None and t_nap is not None and _som_hon(t_nap, hien_hanh):
+                try:
+                    import g4_quality_gate as G4Q  # noqa: PLC0415 — import lười
+                    co_sua_doi = bool(G4Q._dong_sua_doi_sap(sap_path.read_text(encoding="utf-8")))
+                except (ImportError, OSError, UnicodeDecodeError):
+                    co_sua_doi = False
+                if not co_sua_doi:
+                    tg_status = "BLOCK" if tg_status == "BLOCK" else "REVIEW"
+                    tg_van_de.append(f"SAP được ký LẠI lúc {hien_hanh.isoformat(timespec='seconds')} sau khi đã nạp dữ "
+                                     "liệu mà PHẦN 4 không có dòng «SAP AMENDMENT»")
+    automatic.append(
+        _criterion(
+            "G5-AUTO-05b",
+            "Dữ liệu được nạp/làm sạch SAU khi G2 (IRB) và G4 (SAP) được ký",
+            tg_status,
+            "; ".join(tg_van_de) or ("mốc nạp/làm sạch sau mốc ký G2/G4" if has_real_data else "chưa có dữ liệu"),
+            "Không nạp dữ liệu trước khi IRB và SAP được ký; SAP sửa sau khi đã thấy dữ liệu phải ghi SAP AMENDMENT.",
         )
     )
 
@@ -680,15 +999,54 @@ def evaluate_study(
         )
     )
 
+    # ── G5-AUTO-07b — cột dữ liệu KHỚP dictionary (G5-03) ─────────────────────────────────────────────────────────────
+    # VÁ 04/10/2026 (soát từng cổng): cột không có trong dictionary thì không luật range/category nào được áp
+    # (clean_research_dataset bỏ qua «if not rule: continue») mà cổng vẫn PASS — tuoi_nam=450 lọt vì dictionary khai
+    # «age». Nay so header bộ dữ liệu (bản khoá, chưa khoá thì bản sạch) với tên biến dictionary: cột ngoài dictionary
+    # hoặc biến Required=y vắng ⇒ BLOCK; ghi tỷ lệ phủ.
+    locked_path = _safe_child(out_dir, lock.get("locked_dataset_path"))
+    du_lieu_path = locked_path if (locked_path and locked_path.exists()) else clean_path
+    header = _doc_header_csv(du_lieu_path)
+    ten_dict = {_normalise_key(n) for n in dictionary.get("names") or [] if n}
+    ten_cot = {_normalise_key(c) for c in header}
+    ngoai_dict = [c for c in header if _normalise_key(c) not in ten_dict]
+    thieu_bat_buoc = [n for n in dictionary.get("required_names") or [] if _normalise_key(n) not in ten_cot]
+    if not header:
+        phu_status = "BLOCK" if has_real_data and cleaning else "REVIEW" if has_real_data else "PASS"
+        phu_bang_chung = "chưa có bộ dữ liệu sạch/khoá để đối chiếu" if has_real_data else "chưa có dữ liệu"
+    elif ngoai_dict or thieu_bat_buoc:
+        phu_status = "BLOCK"
+        phu_bang_chung = (f"cột ngoài dictionary: {ngoai_dict[:10]}; biến bắt buộc vắng: {thieu_bat_buoc[:10]}; "
+                          f"phủ {len(header) - len(ngoai_dict)}/{len(header)} cột")
+    else:
+        phu_status, phu_bang_chung = "PASS", f"{len(header)}/{len(header)} cột có trong dictionary; đủ biến bắt buộc"
+    automatic.append(
+        _criterion(
+            "G5-AUTO-07b",
+            "Mọi cột của bộ dữ liệu có trong data dictionary và đủ biến bắt buộc",
+            phu_status,
+            phu_bang_chung,
+            "Khai mọi biến trong G5_REDCap_dictionary (kèm loại/phạm vi) hoặc bỏ cột ngoài kế hoạch; không khoá cột "
+            "không có luật kiểm.",
+        )
+    )
+
     query_path = _safe_child(out_dir, cleaning.get("query_log"))
     query = _query_log_report(query_path)
     query_sha = _sha256(query_path) if query_path else None
+    # VÁ 04/10/2026 (G5-04): query đóng bằng tệp giải quyết (clean_dataset --query-resolutions) — băm tệp đó phải khớp
+    # báo cáo làm sạch (sửa tệp giải quyết sau khi làm sạch ⇒ không còn khớp).
+    qr_path = _safe_child(out_dir, cleaning.get("query_resolutions"))
+    qr_sha = _sha256(qr_path) if qr_path else None
+    qr_ok = (not cleaning.get("query_resolutions") and not cleaning.get("query_resolutions_sha256")) or bool(
+        qr_sha and qr_sha == cleaning.get("query_resolutions_sha256"))
     query_ok = bool(
         query_path
         and not query.get("issues")
         and query.get("open") == 0
         and query_sha
         and cleaning.get("query_log_sha256") == query_sha
+        and qr_ok
     )
     automatic.append(
         _criterion(
@@ -698,13 +1056,13 @@ def evaluate_study(
             (
                 f"rows={query.get('rows')}; open={query.get('open')}; "
                 f"issues={query.get('issues')}; hash_match="
-                f"{cleaning.get('query_log_sha256') == query_sha}"
+                f"{cleaning.get('query_log_sha256') == query_sha}; giai_quyet_khop={qr_ok}"
             ),
-            "Đối chiếu nguồn, ghi resolution và đóng từng query; không tự sửa giá trị.",
+            "Đối chiếu nguồn rồi ghi tệp giải quyết query (clean_research_dataset.py --query-resolutions: mã "
+            "da_sua/xac_nhan_dung/khong_ap_dung_co_ly_do + lý do + người đóng + thời điểm ISO); không tự sửa giá trị.",
         )
     )
 
-    locked_path = _safe_child(out_dir, lock.get("locked_dataset_path"))
     locked_sha = _sha256(locked_path) if locked_path else None
     confirmations = lock.get("confirmations")
     confirmations = confirmations if isinstance(confirmations, Mapping) else {}
@@ -718,6 +1076,9 @@ def evaluate_study(
         "backup_restore_tested",
         "retention_plan_confirmed",
         "protocol_deviations_reconciled",
+        # VÁ 04/10/2026 (G5-07): rà soát audit trail trước khoá — checklist khoá CSDL của DMP đòi mà trước đây không ai
+        # xác nhận.
+        "audit_trail_reviewed",
     }
     confirmations_ok = all(confirmations.get(key) is True for key in required_confirmations)
     reviewer_group = GC.role_group_for(str(lock.get("reviewer_role") or ""))
@@ -730,6 +1091,11 @@ def evaluate_study(
         and checkpoint.get("query_log_sha256") == query_sha
         and checkpoint.get("operational_readiness_sha256")
         == operational.get("sha256")
+        # VÁ 04/10/2026 (G5-01/G5-04/G5-08): DMP, tệp giải quyết query và manifest bản gỡ băng (định tính) gắn vào
+        # checkpoint được ký.
+        and checkpoint.get("dmp_sha256") == _sha256(dmp_path)
+        and checkpoint.get("query_resolutions_sha256") == cleaning.get("query_resolutions_sha256")
+        and checkpoint.get("transcript_manifest_sha256") == lock.get("transcript_manifest_sha256")
     )
     lock_ok = bool(
         has_locked_data
@@ -749,6 +1115,8 @@ def evaluate_study(
         and lock.get("cleaning_report_sha256") == _sha256(cleaning_report_path)
         and lock.get("query_log_sha256") == query_sha
         and lock.get("operational_readiness_sha256") == operational.get("sha256")
+        and lock.get("dmp_sha256") == _sha256(dmp_path)
+        and lock.get("query_resolutions_sha256") == cleaning.get("query_resolutions_sha256")
         and operational_ok
         and checkpoint_hashes_ok
         and lock.get("upstream_approvals", {}).get("G2") is True
@@ -766,6 +1134,30 @@ def evaluate_study(
                 f"checkpoint_hashes={checkpoint_hashes_ok}"
             ),
             "Khóa lại qua lock_analysis_dataset.py sau khi mọi điều kiện đã đủ.",
+        )
+    )
+
+    # ── G5-AUTO-10 — định tính: bản gỡ băng/ghi âm có manifest băm, khử định danh, chỉ đọc (G5-08) ─────────────────
+    # VÁ 04/10/2026 (soát từng cổng): với thiết kế định tính, G5 chỉ khoá CSV siêu dữ liệu (transcript_id…) trong khi
+    # bản gỡ băng — dữ liệu thô nhạy PII nhất — nằm ngoài mọi kiểm soát.
+    thiet_ke_g5 = str(GC.resolve_design_code(out_dir, default="")[0] or "").strip().lower()
+    if thiet_ke_g5 == "qualitative" and has_real_data:
+        tr = danh_gia_transcript(out_dir, du_lieu_path)
+        if has_locked_data and lock.get("transcript_manifest_sha256") != tr.get("sha256"):
+            tr["issues"].append("manifest_ban_go_bang_doi_sau_khi_khoa")
+        tr_status = "BLOCK" if tr["issues"] else "PASS"
+        tr_bang_chung = "; ".join(tr["issues"][:8]) or f"{tr['n']} bản gỡ băng có băm, khử định danh, chỉ đọc"
+    else:
+        tr_status = "PASS"
+        tr_bang_chung = "không áp dụng (không phải định tính hoặc chưa có dữ liệu)"
+    automatic.append(
+        _criterion(
+            "G5-AUTO-10",
+            "Định tính: bản gỡ băng có TRANSCRIPT_manifest (băm, khử định danh, chỉ đọc, không còn mẫu PII)",
+            tr_status,
+            tr_bang_chung,
+            f"Lập {TRANSCRIPT_MANIFEST_JSON} cho mọi transcript_id (tệp đã khử định danh, chỉ đọc, sha256, "
+            "reviewer_ref không PII) rồi khoá lại.",
         )
     )
 
@@ -787,14 +1179,21 @@ def evaluate_study(
     )
 
     any_block = any(row["status"] == "BLOCK" for row in automatic)
+    # VÁ 04/10/2026 (soát từng cổng G5): REVIEW sau khi đã khoá kỹ thuật (DMP mục sống còn ô trống, SDV chưa khai, SAP
+    # ký lại sau khi nạp…) từng KHÔNG ảnh hưởng trạng thái ⇒ vẫn READY và ký được. Nay chặn ký (approve_gate chỉ
+    # ký READY).
+    # G5 đã ký trước luật mới không bị hạ cấp vì REVIEW (chỉ hiển thị).
+    con_review = any(row["status"] == "REVIEW" for row in automatic if row["id"] != "G5-HUMAN-01")
     if any_block:
         status = STATUS_BLOCKED
     elif not lock_ok:
         status = STATUS_DRAFT
-    elif not g5_approved:
-        status = STATUS_READY
-    else:
+    elif g5_approved:
         status = STATUS_LOCKED
+    elif con_review:
+        status = STATUS_DRAFT_REVIEW
+    else:
+        status = STATUS_READY
 
     actions = [
         row["action"]

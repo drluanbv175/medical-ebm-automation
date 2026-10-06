@@ -114,23 +114,43 @@ class TestAuto06KhongBaoDongGiaKhiThatSuChuaCoKetQua:
 
 class TestAuto06KetQuaSauKhoaVanPass:
     """Đối chứng: kết quả thật NHƯNG SAU thời điểm khoá G5 (đúng thứ tự an toàn)
-    vẫn phải PASS — bản vá không được biến MỌI file kết quả thành lỗi vô điều kiện."""
+    vẫn phải PASS — bản vá không được biến MỌI file kết quả thành lỗi vô điều kiện.
 
-    def test_ket_qua_sau_g5_checkpoint_van_pass(self):
-        import time
+    04/10/2026 (G6-06): mốc khoá là DATA_LOCK_manifest (LOCKED_FOR_ANALYSIS + locked_at) + chữ ký G5 thật — fixture
+    cũ dùng G5_checkpoint RỖNG ``{}`` làm «mốc khoá» (đúng lỗ đã vá). Chữ ký G5 giả lập qua _g5_da_khoa."""
+
+    def test_ket_qua_sau_g5_checkpoint_van_pass(self, monkeypatch):
+        from datetime import datetime, timedelta
         m = _nap()
         study = "TEST-AUTO06-SAU-KHOA"
         with tempfile.TemporaryDirectory() as td:
             thu_muc = Path(td)
             _dung_bo_ba_toi_thieu(thu_muc, study)
-            (thu_muc / "G5_checkpoint.json").write_text(
-                json.dumps({}), encoding="utf-8", newline="\n")
-            time.sleep(0.05)
+            (thu_muc / "DATA_LOCK_manifest.json").write_text(json.dumps({
+                "status": "LOCKED_FOR_ANALYSIS",
+                "locked_at": (datetime.now() - timedelta(hours=1)).isoformat(timespec="seconds")}),
+                encoding="utf-8", newline="\n")
+            monkeypatch.setattr(m, "_g5_da_khoa", lambda s, t, r: (True, json.loads(
+                (t / "DATA_LOCK_manifest.json").read_text(encoding="utf-8"))))
             (thu_muc / f"{study}_table2_main_outcome.txt").write_text(
                 "x", encoding="utf-8", newline="\n")
             bao = m.evaluate_study(study, out_dir=thu_muc, write=False)
         chk = _tim_auto06(bao)
         assert chk["pass"] is True, chk
+
+    def test_g5_checkpoint_nhap_khong_phai_moc_khoa(self):
+        """G5_checkpoint tồn tại (bản nháp) mà không có bản khoá + chữ ký G5 ⇒ kết quả là chạy TRƯỚC khoá ⇒ BLOCK."""
+        m = _nap()
+        study = "TEST-AUTO06-G5-NHAP"
+        with tempfile.TemporaryDirectory() as td:
+            thu_muc = Path(td)
+            _dung_bo_ba_toi_thieu(thu_muc, study)
+            (thu_muc / "G5_checkpoint.json").write_text(json.dumps({"g5_status": "PENDING"}),
+                                                        encoding="utf-8", newline="\n")
+            (thu_muc / f"{study}_table2_main_outcome.txt").write_text("x", encoding="utf-8", newline="\n")
+            bao = m.evaluate_study(study, out_dir=thu_muc, write=False)
+        chk = _tim_auto06(bao)
+        assert chk["pass"] is False and chk["blocking"] is True, chk
 
 
 if __name__ == "__main__":

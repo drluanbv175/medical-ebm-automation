@@ -5,6 +5,10 @@ cổng báo «seed khớp SAP» khi SAP chưa chốt seed; (2) seed/alpha không
 (3) §12 của SAP không phải RCT kéo tới hết tệp nên alpha đọc từ hộp chứng nhận khoá. Cộng G6-AUTO-07 (tham số
 riêng của khuôn sinh script).
 Lệch seed/alpha vẫn BLOCKED như cũ; đề tài điền thật vẫn tới READY_FOR_STATISTICIAN_REVIEW.
+
+04/10/2026 (soát từng cổng G6): G6-AUTO-01 đòi G4 khoá THẬT (sổ cái + G4 chấm trực tiếp), không nhận g4_was_locked tự
+khai — đề tài giả trong tmp_path giả lập đúng kết quả đó qua _g4_da_khoa; SAP có §4 (G6-AUTO-09 họ mô hình) và script
+ghi sessionInfo() (G6-AUTO-10) như một đề tài điền thật.
 """
 from __future__ import annotations
 
@@ -12,6 +16,8 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 STUDY = "ZZT-G6-O-TRONG"
@@ -27,6 +33,11 @@ def _nap():
 
 G6 = _nap()
 
+@pytest.fixture(autouse=True)
+def _g4_khoa_that(monkeypatch):
+    monkeypatch.setattr(G6, "_g4_da_khoa", lambda *a, **k: (True, "giả lập: sổ cái + G4 PASS_G4_SAP_LOCKED"))
+
+
 SEED_THAT = "Seed ngẫu nhiên: set.seed(2026) cho bootstrap/đa phép gán."
 ALPHA_THAT = "Alpha: 0.05 hai phía."
 
@@ -34,6 +45,7 @@ ALPHA_THAT = "Alpha: 0.05 hai phía."
 def _sap(seed: str = SEED_THAT, alpha: str = ALPHA_THAT, hop_khoa: str = "alpha 0.05 (đã khoá)") -> str:
     return (
         "# SAP\n\n### §2 Kết cục\nKết cục chính: `diem_hai_long` (thang 5 mức).\n\n"
+        "### §4 Phân tích chính\nHồi quy tuyến tính (lm) cho `diem_hai_long`.\n\n"
         "### §7 Nhóm con\nKhông có phân tích nhóm con.\n\n"
         f"### §10 Phần mềm & tái lập\nR 4.4.1.\n{seed}\n\n"
         f"### §12 Ngưỡng ý nghĩa\n{alpha}\n\n"
@@ -41,7 +53,8 @@ def _sap(seed: str = SEED_THAT, alpha: str = ALPHA_THAT, hop_khoa: str = "alpha 
     )
 
 
-SCRIPT_THAT = "SEED <- 2026\nset.seed(SEED)\nalpha <- 0.05\nfit <- lm(diem_hai_long ~ tuoi, data = d)\n"
+SCRIPT_THAT = ("SEED <- 2026\nset.seed(SEED)\nalpha <- 0.05\nfit <- lm(diem_hai_long ~ tuoi, data = d)\n"
+               "writeLines(capture.output(sessionInfo()), \"session_info.txt\")\n")
 
 
 def _de_tai(tmp_path: Path, sap: str, script: str = SCRIPT_THAT, a7: str = "**Phân tích chính:** Hồi quy tuyến tính\n"):

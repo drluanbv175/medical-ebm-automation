@@ -462,6 +462,50 @@ def _update_meta(out_dir: Path, manifest: Dict[str, Any],
         json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
+def _ghi_checkpoint_khoa(out_dir: Path, study_id: str, manifest: Dict[str, Any]) -> None:
+    """Ghi trạng thái khoá + các trường băm của manifest vào G5_checkpoint.json (dùng chung cho khoá thường và khoá lại
+    y hệt khi G5 chưa ký — G5-05)."""
+    manifest_path = out_dir / "DATA_LOCK_manifest.json"
+    checkpoint_path = out_dir / "G5_checkpoint.json"
+    checkpoint = _read_json(checkpoint_path)
+    if not checkpoint:
+        checkpoint = {
+            "gate": "G5",
+            "study": study_id,
+            "guardrail": "⚠ BLOCKED — thiếu bộ công cụ G5",
+        }
+    checkpoint["quality_contract_version"] = G5Q.QUALITY_CONTRACT_VERSION
+    checkpoint["data_lock_manifest"] = manifest_path.name
+    checkpoint["data_lock_memo"] = "DATA_LOCK_memo.md"
+    checkpoint["database_lock_status"] = manifest["status"]
+    if manifest["status"] == LOCKED_STATUS:
+        checkpoint.update(
+            {
+                "g5_status": "LOCKED",
+                "data_lock_date": manifest["lock_date"],
+                "locked_dataset_sha256": manifest["sha256"],
+                "locked_dataset_path": manifest["locked_dataset_path"],
+                "raw_dataset_sha256": manifest.get("raw_sha256"),
+                "data_dictionary_sha256": manifest.get("dictionary_sha256"),
+                "cleaning_report_sha256": manifest.get("cleaning_report_sha256"),
+                "query_log_sha256": manifest.get("query_log_sha256"),
+                "operational_readiness_sha256": manifest.get("operational_readiness_sha256"),
+                "dmp_sha256": manifest.get("dmp_sha256"),
+                "query_resolutions_sha256": manifest.get("query_resolutions_sha256"),
+                "transcript_manifest_sha256": manifest.get("transcript_manifest_sha256"),
+                "reviewer_role": manifest.get("reviewer_role"),
+                "reviewer_ref": manifest.get("reviewer_ref"),
+                "sap_version": manifest.get("sap_version"),
+            }
+        )
+    else:
+        checkpoint["g5_status"] = "PENDING"
+    checkpoint_path.write_text(
+        json.dumps(checkpoint, ensure_ascii=False, indent=2),
+        encoding="utf-8", newline="\n"
+    )
+
+
 def lock_dataset(
     study: str,
     clean_data: Path,
@@ -485,9 +529,16 @@ def lock_dataset(
     confirm_backup_restore_tested: bool = False,
     confirm_retention_plan: bool = False,
     confirm_protocol_deviations_reconciled: bool = False,
+    confirm_audit_trail_reviewed: bool = False,
     max_scan_rows: int = 5000,
 ) -> Dict[str, Any]:
-    """Khóa bản dữ liệu phân tích nếu đủ xác nhận và không còn blocker."""
+    """Khóa bản dữ liệu phân tích nếu đủ xác nhận và không còn blocker.
+
+    VÁ 04/10/2026 (soát từng cổng G5): thêm xác nhận rà soát audit trail (G5-07); từ chối khoá khi DMP chưa hoàn tất cho
+    thời điểm khoá (G5-01); manifest + checkpoint gắn băm DMP, tệp giải quyết query (G5-04) và manifest bản gỡ băng
+    định tính (G5-08); khoá lại ĐÚNG dữ liệu cũ khi G5 CHƯA ký thì CHẤM LẠI mọi điều kiện khoá với tài liệu hiện tại
+    (G5-05) — đạt thì ghi bản khoá mới (cùng tệp dữ liệu khoá, ghi ``lan_khoa_truoc``), không đạt thì GIỮ NGUYÊN bản
+    khoá cũ (khôi phục các trường khoá trong checkpoint) và trả báo cáo BLOCKED."""
     study_id = RDI._sanitize_study(study)
     clean_data = Path(clean_data)
     exports_root = Path(exports_root) if exports_root else BASE / "exports"
@@ -522,6 +573,7 @@ def lock_dataset(
     # đường duy nhất là bác sĩ tự tay xóa/đổi tên manifest cũ, để hành vi đó hiện trong
     # lịch sử thư mục thay vì diễn ra âm thầm bên trong một lệnh trông vô hại.
     _existing_manifest = out_dir / "DATA_LOCK_manifest.json"
+    _khoa_lai_tu: Optional[Dict[str, Any]] = None
     if _existing_manifest.exists():
         try:
             _old = json.loads(_existing_manifest.read_text(encoding="utf-8"))
@@ -554,20 +606,30 @@ def lock_dataset(
                 and _new_sha == _old.get("sha256")
                 and _old_locked_sha == _old.get("sha256")
             ):
-                return _old          # khóa lại đúng y file cũ — vô hại, trả nguyên trạng
-            return {
-                **_old,
-                "status": BLOCKED_STATUS,
-                "blockers": [
-                    "ĐÃ KHÓA TRƯỚC ĐÓ — TỪ CHỐI KHÓA ĐÈ. Đề tài này đã có DATA_LOCK_manifest.json "
-                    f"ở trạng thái {LOCKED_STATUS} (khóa lúc {_old.get('locked_at')}, "
-                    f"sha256 {str(_old.get('sha256'))[:12]}…), nhưng file dữ liệu đưa vào lần này "
-                    f"có sha256 {str(_new_sha)[:12]}… — tức NỘI DUNG ĐÃ KHÁC. Khóa đè sẽ xóa dấu "
-                    "vết bản khóa cũ và hợp thức hóa một tập dữ liệu đã bị thay đổi sau khi khóa "
-                    "(chính là p-hacking có dấu tích xanh). Nếu thật sự cần khóa một tập khác, "
-                    "hãy TỰ TAY lưu/đổi tên manifest cũ trước, để việc đó hiện trong lịch sử.",
-                ],
-            }
+                # VÁ 04/10/2026 (soát từng cổng, G5-05): nhánh này từng «trả nguyên trạng» TRƯỚC khi ghi checkpoint —
+                # (a) chạy lại run_g5_auto sau khi khoá mà chưa ký làm mất các trường băm, G5 kẹt BLOCKED vĩnh viễn;
+                # (b) tài liệu quản trị gắn băm vào bản khoá (DMP, hồ sơ vận hành, giải quyết truy vấn, bản gỡ băng)
+                # được hoàn tất SAU khi khoá — đúng việc mà mục REVIEW đòi — thì băm lệch, G5 BLOCK mà khoá lại không
+                # gắn được băm mới. Nay: G5 ĐÃ ký ⇒ trả nguyên trạng (không đổi gì); CHƯA ký ⇒ đi tiếp đường khoá
+                # thường để CHẤM LẠI mọi điều kiện với tài liệu hiện tại (dữ liệu y hệt, cùng tệp khoá).
+                _cp_path = out_dir / "G5_checkpoint.json"
+                if GC.ledger_approved("G5", study_id, _cp_path, repo_root=repo_root):
+                    return _old          # đã ký: khóa lại đúng y file cũ — vô hại, trả nguyên trạng
+                _khoa_lai_tu = _old
+            else:
+                return {
+                    **_old,
+                    "status": BLOCKED_STATUS,
+                    "blockers": [
+                        "ĐÃ KHÓA TRƯỚC ĐÓ — TỪ CHỐI KHÓA ĐÈ. Đề tài này đã có DATA_LOCK_manifest.json "
+                        f"ở trạng thái {LOCKED_STATUS} (khóa lúc {_old.get('locked_at')}, "
+                        f"sha256 {str(_old.get('sha256'))[:12]}…), nhưng file dữ liệu đưa vào lần này "
+                        f"có sha256 {str(_new_sha)[:12]}… — tức NỘI DUNG ĐÃ KHÁC. Khóa đè sẽ xóa dấu "
+                        "vết bản khóa cũ và hợp thức hóa một tập dữ liệu đã bị thay đổi sau khi khóa "
+                        "(chính là p-hacking có dấu tích xanh). Nếu thật sự cần khóa một tập khác, "
+                        "hãy TỰ TAY lưu/đổi tên manifest cũ trước, để việc đó hiện trong lịch sử.",
+                    ],
+                }
 
     locked_at = datetime.now().isoformat(timespec="seconds")
     # Cột đã khai "type": "date" trong data dictionary (vd visit_date) không
@@ -603,6 +665,7 @@ def lock_dataset(
         "backup_restore_tested": confirm_backup_restore_tested,
         "retention_plan_confirmed": confirm_retention_plan,
         "protocol_deviations_reconciled": confirm_protocol_deviations_reconciled,
+        "audit_trail_reviewed": confirm_audit_trail_reviewed,
     }
     upstream = _upstream_approval_report(study_id, out_dir, repo_root)
     provenance = _provenance_report(
@@ -615,6 +678,13 @@ def lock_dataset(
     operational_readiness = G5Q.evaluate_operational_readiness(
         operational_readiness_path
     )
+    dmp_path = out_dir / f"G5_A6_DATA_MGMT_{study_id}.md"
+    try:
+        dmp_text = dmp_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        dmp_text = None
+    transcript_path = out_dir / G5Q.TRANSCRIPT_MANIFEST_JSON
+    cleaning_payload = _read_json(cleaning_report_path)
     blockers = _build_blockers(
         clean_data=clean_data,
         lock_date=lock_date,
@@ -630,6 +700,17 @@ def lock_dataset(
         row_count=int(profile.get("rows") or 0),
         column_count=len(profile.get("columns") or []),
     )
+    # VÁ 04/10/2026 (G5-01): DMP là tài liệu sống, NHƯNG lúc khoá dữ liệu nó phải được hoàn tất (hết nhãn DRAFT, mục
+    # khoá CSDL không còn ô trống/ô tick trống) — bản cũ khoá được khi DMP còn «Ngày khóa DB: [CẦN]».
+    if dmp_text is None:
+        blockers.append("missing_dmp: thiếu G5_A6_DATA_MGMT — chạy run_g5_auto.py")
+    else:
+        blockers.extend(f"dmp_not_finalized: {ly_do}" for ly_do in G5Q.dmp_chua_hoan_tat_khi_khoa(dmp_text))
+    # VÁ 04/10/2026 (G5-08): thiết kế định tính — bản gỡ băng phải đạt (băm, khử định danh, chỉ đọc, không mẫu PII) NGAY
+    # lúc khoá; để tới bộ chấm sau khoá thì sửa bản gỡ băng làm lệch băm đã gắn vào bản khoá.
+    if str(GC.resolve_design_code(out_dir, default="")[0] or "").strip().lower() == "qualitative":
+        blockers.extend(f"transcript_manifest: {v}"
+                        for v in G5Q.danh_gia_transcript(out_dir, clean_data)["issues"])
 
     manifest: Dict[str, Any] = {
         "kind": "analysis_dataset_lock_manifest",
@@ -662,6 +743,11 @@ def lock_dataset(
         "cleaning_report_sha256": provenance.get("cleaning_report_sha256"),
         "operational_readiness": _safe_rel(operational_readiness_path, out_dir),
         "operational_readiness_sha256": operational_readiness.get("sha256"),
+        "dmp_sha256": RDI._sha256_file(dmp_path) if dmp_path.exists() else None,
+        "query_resolutions_sha256": cleaning_payload.get("query_resolutions_sha256"),
+        "transcript_manifest_sha256": (
+            RDI._sha256_file(transcript_path) if transcript_path.exists() else None
+        ),
         "raw_sha256": provenance.get("raw_sha256"),
         "provenance": provenance,
         "upstream_approvals": {
@@ -685,6 +771,20 @@ def lock_dataset(
         ],
     }
 
+    if _khoa_lai_tu is not None:
+        if blockers:
+            # Khoá lại không đạt: GIỮ NGUYÊN bản khoá cũ (manifest, memo, meta) — chỉ khôi phục các trường khoá trong
+            # checkpoint từ manifest cũ (phòng checkpoint đã bị ghi đè) rồi chấm lại.
+            _ghi_checkpoint_khoa(out_dir, study_id, _khoa_lai_tu)
+            G5Q.evaluate_study(study_id, out_dir, repo_root=repo_root, write=True)
+            return {**_khoa_lai_tu, "status": BLOCKED_STATUS, "analysis_allowed": False,
+                    "blockers": ["khoa_lai_khong_dat — bản khoá cũ GIỮ NGUYÊN", *blockers]}
+        manifest["lan_khoa_truoc"] = {
+            k: _khoa_lai_tu.get(k)
+            for k in ("locked_at", "lock_date", "locked_dataset_path", "dmp_sha256", "operational_readiness_sha256",
+                      "cleaning_report_sha256", "query_resolutions_sha256", "transcript_manifest_sha256")
+        }
+
     locked_path: Optional[Path] = None
     if not blockers:
         sha = RDI._sha256_file(clean_data)
@@ -700,45 +800,7 @@ def lock_dataset(
     manifest_path = _write_manifest(out_dir, manifest)
     memo_path = _write_lock_memo(out_dir, manifest)
     _update_meta(out_dir, manifest, manifest_path, memo_path)
-    checkpoint_path = out_dir / "G5_checkpoint.json"
-    checkpoint = _read_json(checkpoint_path)
-    if not checkpoint:
-        checkpoint = {
-            "gate": "G5",
-            "study": study_id,
-            "guardrail": "⚠ BLOCKED — thiếu bộ công cụ G5",
-        }
-    checkpoint["quality_contract_version"] = G5Q.QUALITY_CONTRACT_VERSION
-    checkpoint["data_lock_manifest"] = manifest_path.name
-    checkpoint["data_lock_memo"] = memo_path.name
-    checkpoint["database_lock_status"] = manifest["status"]
-    if manifest["status"] == LOCKED_STATUS:
-        checkpoint.update(
-            {
-                "g5_status": "LOCKED",
-                "data_lock_date": manifest["lock_date"],
-                "locked_dataset_sha256": manifest["sha256"],
-                "locked_dataset_path": manifest["locked_dataset_path"],
-                "raw_dataset_sha256": manifest.get("raw_sha256"),
-                "data_dictionary_sha256": manifest.get("dictionary_sha256"),
-                "cleaning_report_sha256": manifest.get(
-                    "cleaning_report_sha256"
-                ),
-                "query_log_sha256": manifest.get("query_log_sha256"),
-                "operational_readiness_sha256": manifest.get(
-                    "operational_readiness_sha256"
-                ),
-                "reviewer_role": reviewer_role,
-                "reviewer_ref": reviewer_ref,
-                "sap_version": sap_version,
-            }
-        )
-    else:
-        checkpoint["g5_status"] = "PENDING"
-    checkpoint_path.write_text(
-        json.dumps(checkpoint, ensure_ascii=False, indent=2),
-        encoding="utf-8", newline="\n"
-    )
+    _ghi_checkpoint_khoa(out_dir, study_id, manifest)
     quality = G5Q.evaluate_study(
         study_id,
         out_dir,
@@ -797,6 +859,8 @@ def main() -> int:
     parser.add_argument("--confirm-backup-restore-tested", action="store_true")
     parser.add_argument("--confirm-retention-plan", action="store_true")
     parser.add_argument("--confirm-protocol-deviations-reconciled", action="store_true")
+    parser.add_argument("--confirm-audit-trail-reviewed", action="store_true",
+                        help="Đã rà soát audit trail (mọi chỉnh sửa có lý do, người, thời điểm) — G5-07")
     parser.add_argument("--max-scan-rows", type=int, default=5000)
     args = parser.parse_args()
 
@@ -828,6 +892,7 @@ def main() -> int:
         confirm_protocol_deviations_reconciled=(
             args.confirm_protocol_deviations_reconciled
         ),
+        confirm_audit_trail_reviewed=args.confirm_audit_trail_reviewed,
         max_scan_rows=args.max_scan_rows,
     )
     print(f"DATA_LOCK: {manifest['status']}")

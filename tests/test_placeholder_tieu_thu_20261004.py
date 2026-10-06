@@ -103,8 +103,48 @@ def test_dem_o_chua_dien_tren_c1a_that_khong_nho_hon():
 
 # ── study_readiness: chuỗi mà tools/tu_de_xuat_viec.py của repo gốc PHÂN TÍCH phải còn nguyên ────────────────────────
 def test_study_readiness_giu_chuoi_repo_goc_doc():
+    """Repo gốc dò «CHƯA được bác sĩ chốt» và «chữ ký thật: 0/<n>» (04/10/2026: từ «0/4» sang số cổng cứng THẬT của
+    gate_contract — sáu cổng). Kiểm cả nguồn lẫn đầu ra thật của report()."""
     nguon = (ROOT / "tools" / "study_readiness.py").read_text(encoding="utf-8")
-    assert "CHƯA được bác sĩ chốt" in nguon and "0/4" in nguon
+    assert "CHƯA được bác sĩ chốt" in nguon and "Cổng CỨNG đã có chữ ký thật: {signed_hard}/{len(_CONG_CUNG)}" in nguon
+
+
+def test_study_readiness_dem_du_sau_cong_cung(tmp_path, monkeypatch, capsys):
+    import re as _re
+
+    import gate_contract as GC
+    import study_readiness as SR
+    d = tmp_path / "de-tai-thu"
+    d.mkdir()
+    (d / "study_meta.json").write_text("{}", encoding="utf-8", newline="\n")
+    monkeypatch.setattr(SR, "_study_dir", lambda _s: d)
+    SR.report("de-tai-thu")
+    out = capsys.readouterr().out
+    so = len(GC._GATE_REQUIRED_STAKEHOLDERS)
+    assert so == 6 and _re.search(rf"chữ ký thật: 0/{so} \(G2 · G4 · G5 · G8 · G9 · G10\)", out), out
+    assert "NHẤT QUÁN XUYÊN CỔNG" in out
+
+
+def test_study_readiness_bo_doi_chieu_hong_van_tinh_la_viec_con_treo(tmp_path, monkeypatch, capsys):
+    """Bộ đối chiếu xuyên cổng hỏng ⇒ in «KHÔNG ĐO ĐƯỢC» VÀ cộng một việc còn treo (công cụ cố ý bi quan)."""
+    import re as _re
+
+    import nhat_quan_xuyen_cong as NQ
+    import study_readiness as SR
+    d = tmp_path / "de-tai-thu"
+    d.mkdir()
+    (d / "study_meta.json").write_text("{}", encoding="utf-8", newline="\n")
+    monkeypatch.setattr(SR, "_study_dir", lambda _s: d)
+    SR.report("de-tai-thu")
+    truoc = int(_re.search(r"KẾT LUẬN: CÒN (\d+) việc", capsys.readouterr().out).group(1))
+
+    def hong(*_a, **_k):
+        raise KeyError("thong_so")
+    monkeypatch.setattr(NQ, "doi_chieu", hong)
+    SR.report("de-tai-thu")
+    out = capsys.readouterr().out
+    assert "KHÔNG ĐO ĐƯỢC" in out
+    assert int(_re.search(r"KẾT LUẬN: CÒN (\d+) việc", out).group(1)) == truoc + 1, out
 
 
 def test_study_readiness_dem_theo_ho(tmp_path):

@@ -24,7 +24,7 @@ quan sát.
 | M2 | G1 — sinh 2–3 thiết kế ứng viên theo câu hỏi nghiên cứu (Tree-of-Thoughts); kiểm soát 7 sai lệch chính; xác định Estimand ICH E9(R1) cho can thiệp |
 | M3 | G1 — xuất KHỐI THIẾT KẾ hoàn chỉnh (loại · bố trí · ngẫu nhiên hóa · làm mù · estimand · cỡ mẫu từ `co-mau-nghien-cuu`); nếu RCT, đề cương G10 sẽ tự mở rộng khối này thành §6.2-6.5 theo **TIDieR** (can thiệp/đối chứng, ngẫu nhiên hoá-làm mù, lịch trình, PPI) — agent này chỉ cần cấp đủ dữ liệu ngẫu nhiên hóa/làm mù ở đây, không cần tự soạn §6.2-6.5 |
 | M4 | G4 — soạn SAP 12 mục (RCT: 15 mục, +§13-15 — xem đính chính 10/09/2026 phía trên): quần thể phân tích · kết cục · thống kê mô tả · phân tích chính/đa biến · dữ liệu thiếu · nhóm nhỏ · đa so sánh · nhạy cảm · phần mềm/seed · dummy tables + SAP Lock Certificate |
-| M5 | ⛔ CỔNG CỨNG G4: dừng — chờ bác sĩ ký xác nhận "SAP đã khóa ngày [DD/MM/YYYY]". **Ghi G4_STATUS=LOCKED vào checkpoint KHÔNG còn đủ để mở cổng thật (vá 2026-07-12, audit toàn diện — kiểm định đối kháng xác nhận agent tự ghi dòng này từng đủ để qua cổng, dù bác sĩ chưa hề duyệt).** Việc CỦA AGENT: nhắc bác sĩ **tự tay** (không nhờ agent) chạy `python tools/approve_gate.py --study <tên> --gate G4 --artifact <file SAP đã khóa> --reviewer-role "PI_PROJECT_OWNER"` trong terminal riêng — script đó tự ký bằng khóa cục bộ bác sĩ đã thiết lập (`tools/setup_gate_approval_key.py`, một lần/máy). **Role bắt buộc (vá 2026-07-14 — trước đó code CHỈ chấp nhận role thống kê viên dù tài liệu này luôn hướng dẫn "Chủ nhiệm đề tài" tự ký, khiến bác sĩ làm đúng theo hướng dẫn vẫn bị `approve_gate.py` từ chối):** `--reviewer-role` phải là `PI`/`PI_PROJECT_OWNER`/`PRINCIPAL_INVESTIGATOR`/`CHỦ_NHIỆM_ĐỀ_TÀI` (khi chủ nhiệm tự ký, trường hợp phổ biến) HOẶC `STATISTICIAN`/`BIOSTATISTICIAN`/`METHODS_STATISTICS_REVIEWER`/`THỐNG_KÊ_VIÊN` (khi có thống kê viên riêng ký). Agent CHỈ ghi lại vào `so-cai-ghi-nho` rằng đã nhắc bác sĩ chạy lệnh này — KHÔNG tự chạy hộ, KHÔNG tự coi cổng đã đóng chỉ vì đã sửa checkpoint text. |
+| M5 | ⛔ CỔNG CỨNG G4: dừng — chờ bác sĩ ký xác nhận "SAP đã khóa ngày [DD/MM/YYYY]". **Agent KHÔNG ghi `G4_STATUS=LOCKED` — trường đó không mở cổng (vá 2026-07-12: agent tự ghi dòng này từng đủ để qua cổng dù bác sĩ chưa duyệt; từ 04/10/2026 G4 khoá = bộ chấm sống trả `PASS_G4_SAP_LOCKED`).** Việc CỦA AGENT: nhắc bác sĩ **tự tay** (không nhờ agent) chạy `python tools/approve_gate.py --study <tên> --gate G4 --artifact <file SAP đã khóa> --reviewer-role "PI_PROJECT_OWNER"` trong terminal riêng — script đó tự ký bằng khóa cục bộ bác sĩ đã thiết lập (`tools/setup_gate_approval_key.py`, một lần/máy). **Role bắt buộc (vá 2026-07-14 — trước đó code CHỈ chấp nhận role thống kê viên dù tài liệu này luôn hướng dẫn "Chủ nhiệm đề tài" tự ký, khiến bác sĩ làm đúng theo hướng dẫn vẫn bị `approve_gate.py` từ chối):** `--reviewer-role` phải là `PI`/`PI_PROJECT_OWNER`/`PRINCIPAL_INVESTIGATOR`/`CHỦ_NHIỆM_ĐỀ_TÀI` (khi chủ nhiệm tự ký, trường hợp phổ biến) HOẶC `STATISTICIAN`/`BIOSTATISTICIAN`/`METHODS_STATISTICS_REVIEWER`/`THỐNG_KÊ_VIÊN` (khi có thống kê viên riêng ký). Agent CHỈ ghi lại vào `so-cai-ghi-nho` rằng đã nhắc bác sĩ chạy lệnh này — KHÔNG tự chạy hộ, KHÔNG tự coi cổng đã đóng chỉ vì đã sửa checkpoint text. |
 
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`.
@@ -132,6 +132,7 @@ Thời gian theo dõi: ___
 > SAP phải hoàn chỉnh và "khóa" TRƯỚC KHI XEM DỮ LIỆU THẬT.
 > Sau khi khóa: KHÔNG thay đổi kết cục chính, quần thể phân tích chính, mô hình chính.
 > Phân tích thêm → ghi rõ là THĂM DÒ và thực hiện riêng biệt.
+> **Ký khoá (04/10/2026):** `approve_gate.py --gate G4` và G4-AUTO-10 từ chối khi §1 · §2 · **§4 PHÂN TÍCH CHÍNH** · §5 · **§9 PHÂN TÍCH ĐỘ NHẠY** · §10 còn «[CẦN» — phân tích chính và kịch bản độ nhạy phải định trước, không để trống rồi điền sau khi thấy dữ liệu. SAP ĐÃ KÝ trước mốc này không bị hạ cấp vì §4/§9 (dòng G4-AUTO-10 vẫn hiện để đọc) — muốn điền thì đi đường sửa đổi SAP (amendment), không sửa bản đã ký. N/α/power ở §12 và kết cục chính ở §2 phải khớp G3, đăng ký G2 (TRDS 17/19) và gate_params G0/G1 — `tools/nhat_quan_xuyen_cong.py` đối chiếu, G10-AUTO-11 chặn khi lệch cứng.
 
 ### SAP §1 — Quần thể phân tích (định nghĩa từng nhóm)
 ```
@@ -394,24 +395,48 @@ Báo cáo: TRIPOD+AI (2024)
 ## CƠ CHẾ MỞ KHÓA G4
 
 ```
-╔══════════════════════════════════════════════════════╗
-║       ĐỂ MỞ CỔNG G4 — bác sĩ làm 1 việc:           ║
-║  Xác nhận: "SAP đã khóa ngày [DD/MM/YYYY]"          ║
-║  Phiên bản SAP: ___                                  ║
-╠══════════════════════════════════════════════════════╣
-║  → Agent ghi vào _SO-TRANG-THAI-CHECKPOINT.md:       ║
-║    G4_STATUS: LOCKED                                ║
-║    G4_SAP_VERSION: ___                              ║
-║    G4_LOCK_DATE: ___                                ║
-╠══════════════════════════════════════════════════════╣
-║  Sau LOCKED:                                        ║
-║  • KHÔNG thay đổi kết cục chính / mô hình chính    ║
-║  • G6 (phan-tich-thong-ke) chỉ chạy khi             ║
-║    G4=LOCKED + G5=LOCKED (DB đã khóa)              ║
-║  Yêu cầu đổi SAP sau khóa → từ chối, gợi ý:        ║
-║  làm phân tích thăm dò POST-HOC riêng biệt         ║
-╚══════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════╗
+║  ĐỂ MỞ CỔNG G4 (sửa 06/10/2026 — agent KHÔNG ghi LOCKED)     ║
+║  1. G3 CHẤM SỐNG PASS_G3_CONFIRMED (thống kê viên chốt N)    ║
+║  2. SAP đủ mục (RCT: §1–§15), chứng chỉ khoá PHẦN 5 điền đủ  ║
+║  3. Thống kê viên/PI xác nhận ở gate_params.G4 — kèm         ║
+║     reviewed_at (ISO) + dau_van_tay_chot = dấu PHẦN 3 mà     ║
+║     g4_quality_gate in ra (sửa §1–§15 sau xác nhận ⇒ hết hạn)║
+║  4. python tools/g4_quality_gate.py → READY_FOR_SIGNATURE    ║
+║  5. Người ký TỰ chạy approve_gate.py --gate G4               ║
+║     --reviewer-role METHODS_STATISTICS_REVIEWER (hoặc PI)    ║
+║  6. Bộ chấm sống trả PASS_G4_SAP_LOCKED                      ║
+╠══════════════════════════════════════════════════════════════╣
+║  Không có trường «G4_STATUS: LOCKED» nào mở cổng. Sau khoá:  ║
+║  • KHÔNG đổi kết cục chính / mô hình chính                   ║
+║  • G6 chỉ chạy khi G4 + G5 còn khoá (chấm sống)              ║
+║  • Đổi SAP sau khoá dữ liệu ⇒ dòng «SAP AMENDMENT» ở PHẦN 4  ║
+║    + ký lại; không có dòng đó approve_gate TỪ CHỐI ký        ║
+╚══════════════════════════════════════════════════════════════╝
 ```
+
+### Hợp đồng G1/G4 hiện hành (soát từng cổng 04/10/2026)
+
+- **G1** (bước 0): loại câu hỏi lấy từ G0 (`gate_params.G0.question_type`, chuẩn hoá treatment ≡ therapy…); mọi quyết
+  định thiết kế ghi vào `gate_params.G1` (team_roles, background_problem, evidence_summary, knowledge_gap,
+  benefit_risk_rationale, study_schema_timeline, intervention_dose_adherence, stopping_rescue_rules, critical_to_quality,
+  monitoring_plan, randomisation, allocation_concealment, blinding, target_condition, reference_standard,
+  case_definition, control_source, candidate_predictors, prediction_horizon, risk_register[], budget[],
+  annex2{applicable}) — RCT PHẢI khai `annex2.applicable`; estimand (5 thuộc tính ICH E9(R1)) ở
+  `gate_params.G1.estimand`. Thiết kế ngoài 8 mã chuỗi ⇒ G1-AUTO-02c CHẶN. Agent KHÔNG bật cờ xác nhận
+  (`design_confirmed`…) — PI xác nhận gắn dấu vân tay `dau_van_tay_chot`. Đề cương G10 đọc THẲNG các quyết định này qua
+  StudySpec — lõi (research_question, objectives, setting, study_period, population, inclusion/exclusion_criteria,
+  recruitment_strategy, primary/secondary_outcomes, follow_up_schedule, background_problem, knowledge_gap,
+  evidence_summary, benefit_risk_rationale, team_roles) và theo thiết kế (randomisation/allocation_concealment/
+  blinding|masking/stopping_rescue_rules/study_schema_timeline|follow_up_schedule; chẩn đoán/SR: reference_standard/
+  target_condition/search_strategy, index test = intervention_or_exposure; can thiệp G1 → G0) — KHÔNG khai lại ở khoá
+  cấp cao hay `design_specific` (khoá riêng chỉ để PI ghi đè có chủ ý, và thắng giá trị G1).
+- **G4**: SAP RCT 15 mục BẮT BUỘC (§13 giữa kỳ & quy tắc dừng · §14 DMC · §15 tổn hại/ngừng/tuân thủ — QĐ-1), nối SAU
+  §12, không đánh số lại §1–§12; estimand G1 in NGUYÊN VĂN ở §4 + «Quần thể phân tích CHÍNH» do người chốt; khung §12
+  theo cách N được quyết định (`loai_muc_12`: power / chính xác / không power / định tính — thiết kế mô tả KHÔNG in
+  «Power 80%»); G4-AUTO-12 chấm sống G3; thiếu lực ⇒ cần `gate_params.G3.underpowered_acceptance_justification` do
+  người viết; approve_gate TỪ CHỐI ký khi G3 chưa PASS_G3_CONFIRMED, chứng chỉ còn ô trống, xác nhận người thiếu/sai dấu,
+  hoặc ký sau `data_lock_date` mà không có dòng «SAP AMENDMENT». Agent KHÔNG ghi `G4_STATUS`/`LOCKED`.
 
 > **Cổng thật đòi ledger có chữ ký (vá 2026-07-12/2026-07-14), khối trên chỉ mô tả checkpoint
 > text tham khảo:** xem M5 ở bảng đầu file — lệnh `approve_gate.py --gate G4` thật cần thêm

@@ -66,14 +66,18 @@ _CLEAN_SAP = (
     # trích dẫn minh hoạ với placeholder thật.
     "Nội dung SẠCH (không còn placeholder kiểu ngoặc vuông ở bất kỳ mục nào) để "
     "cô lập phép kiểm artifact-path khỏi _g4_sections_still_draft (đã có test "
-    "riêng ở test_approve_gate_g4_content_check.py). Đủ cả 4 mục §1/§2/§5/§10 "
-    "(không 'vắng sạch' theo BH97) — mục đích ở đây là điền, không phải bỏ trống.\n"
+    "riêng ở test_approve_gate_g4_content_check.py). Đủ cả 6 mục bắt buộc §1/§2/§4/§5/§9/§10 "
+    "(04/10/2026: mục bắt buộc VẮNG cũng bị chặn) — mục đích ở đây là điền, không phải bỏ trống.\n"
     "## §1 Tiêu chí nhận/loại (Quần thể phân tích)\n"
     "Người lớn ≥18 tuổi, đã ký ICF.\n"
     "## §2 Kết cục chính\n"
     "Tỷ lệ đáp ứng tại tuần 12.\n"
+    "## §4 Phân tích chính\n"
+    "Hồi quy logistic, quần thể phân tích đầy đủ.\n"
     "## §5 Covariates/Phân tích đa biến\n"
     "Tuổi, giới, mức độ nặng nền.\n"
+    "## §9 Phân tích độ nhạy\n"
+    "Complete case so với MI.\n"
     "## §10 Phần mềm + seed\n"
     "Python 3.12, seed=42.\n"
 )
@@ -95,10 +99,14 @@ def study_dir():
 def _g4q_reports_ready(monkeypatch):
     """Cô lập chốt artifact-path khỏi mọi tiêu chí NỘI DUNG khác của G4Q —
     xem docstring module. Test dương tính cuối file dùng lại đúng patch này."""
+    # 04/10/2026 (soát từng cổng G4): approve_gate còn đòi các xác nhận người kiểm được TRƯỚC khi ký
+    # (G4-HUMAN-04…08) — báo cáo READY giả lập mang sẵn chúng ở PASS để vẫn chỉ cô lập chốt artifact-path.
+    hang_nguoi = [{"id": tid, "label": tid, "status": "PASS", "evidence": "giả lập"}
+                  for tid in AG._TIEU_CHI_NGUOI_TRUOC_KY["G4"]]
     monkeypatch.setattr(
         G4Q, "evaluate_study",
         lambda *a, **k: {"status": G4Q.STATUS_READY, "automatic_criteria": [],
-                         "approval_criteria": []},
+                         "approval_criteria": hang_nguoi},
     )
 
 

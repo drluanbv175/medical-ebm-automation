@@ -37,6 +37,7 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import cong_song as CS  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import pipeline_freshness as FRESH  # noqa: E402
 import placeholder_contract as PC  # noqa: E402
@@ -874,10 +875,59 @@ def _requirement_action(gate: str, default_command: str,
     return None
 
 
+def _cp_theo_song(cp: Dict[str, Any], song: Dict[str, Any]) -> Dict[str, Any]:
+    """Bản sao checkpoint mà `quality_gate.status` là trạng thái CHẤM SỐNG (không đo được ⇒ KHONG_DO_DUOC — không bao
+    giờ giữ trạng thái lưu); hành động kế tiếp lấy từ báo cáo sống khi có."""
+    qg = dict(cp["quality_gate"]) if isinstance(cp.get("quality_gate"), dict) else {}
+    qg["status"] = song.get("status") or CS.KHONG_DO_DUOC
+    bao_cao = song.get("bao_cao") if isinstance(song.get("bao_cao"), dict) else {}
+    hanh_dong = bao_cao.get("pending_actions") or bao_cao.get("actions")
+    if isinstance(hanh_dong, list):
+        qg["pending_actions"] = hanh_dong
+    return dict(cp, quality_gate=qg)
+
+
+def _phan_loai_cong_song(gate: str, study: str, out_dir: Path, topic: Optional[str],
+                         meta: Dict[str, Any], cps: Dict[str, Dict[str, Any]],
+                         signals: Dict[str, bool],
+                         freshness: Dict[str, Any]) -> Dict[str, Any]:
+    """Phân loại MỘT cổng cho đài kiểm soát (bọc _classify_gate bằng trạng thái CHẤM SỐNG).
+
+    SỬA 06/10/2026 (soát từng cổng — NGANG, CHUNG-A / G0-01): mọi nhánh bên dưới đọc `quality_gate.status` — bản cũ là
+    trạng thái LƯU lúc cổng chạy lần cuối, nên đài kiểm soát báo «không cần hành động» cho cổng mà chấm sống đã DRAFT/
+    BLOCKED (G0 của C1a: lưu PASS 02/09, sống DRAFT sau khi study_meta sửa 04/10) và ngược lại báo guardrail FAIL theo
+    khối guardrail CŨ lúc sinh artifact. Nay G0–G9 có checkpoint được CHẤM SỐNG một lần (cong_song.trang_thai_song —
+    cùng định nghĩa với G10-AUTO-02B), các nhánh nhận trạng thái sống; G10 vốn đã chấm sống riêng. Kết quả mang thêm
+    `trang_thai_song` để người đọc thấy nguồn."""
+    cp = cps.get(gate)
+    song = None
+    if cp and gate != "G10":
+        song = CS.trang_thai_song(gate, study, out_dir)
+        if gate == "G2" and song.get("muc") != "PASS":
+            # «G2 đã duyệt» mang MỘT nghĩa ở mọi cổng sau (g7_quality_gate.g2_da_duyet: chữ ký sổ cái khớp gói hiện
+            # tại + hợp đồng chất lượng) — luật hồ sơ mới của bộ chấm G2 không biến phê duyệt IRB thật thành «chưa
+            # duyệt».
+            try:
+                import g7_quality_gate as G7Q  # noqa: PLC0415 — import lười
+
+                if G7Q.g2_da_duyet(study, out_dir, repo_root=out_dir.parent.parent)[0] is True:
+                    song = dict(song, status="PASS_G2_APPROVED", muc="PASS",
+                                ly_do="g2_da_duyet: chữ ký sổ cái + hợp đồng chất lượng G2")
+            except Exception:  # noqa: BLE001 — không đo được ⇒ giữ kết quả bộ chấm G2 sống
+                pass
+        cps = dict(cps)
+        cps[gate] = _cp_theo_song(cp, song)
+    ket = _classify_gate(gate, study, out_dir, topic, meta, cps, signals, freshness, song)
+    if song is not None:
+        ket["trang_thai_song"] = {k: song.get(k) for k in ("status", "muc", "nguon", "ly_do")}
+    return ket
+
+
 def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
                    meta: Dict[str, Any], cps: Dict[str, Dict[str, Any]],
                    signals: Dict[str, bool],
-                   freshness: Dict[str, Any]) -> Dict[str, Any]:
+                   freshness: Dict[str, Any],
+                   song: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     cp = cps.get(gate)
     extras = _gate_extras(gate, out_dir, meta, signals)
     guardrail = _read_guardrail(cp)
@@ -916,7 +966,9 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
             **extras,
         }
 
-    if guardrail is False:
+    # Khối guardrail trong checkpoint là ảnh chụp lúc SINH artifact; khi đã chấm sống được, bộ chấm của chính cổng là
+    # nguồn phán (BLOCKED sống vẫn rơi vào nhánh chặn của từng cổng bên dưới).
+    if guardrail is False and not (song and song.get("nguon") == CS.NGUON_SONG):
         return {
             "gate": gate,
             "label": PIPELINE_GATE_LABELS[gate],
@@ -1663,10 +1715,15 @@ def _gate_action_actor(row: Dict[str, Any], blocked_by: List[str]) -> str:
     if status == STATUS_MISSING:
         return "agent"
     if blocked_by or status == STATUS_NEEDS_REAL:
-        if row.get("gate") in {"G2", "G4", "G9"}:
-            return "human_pi_or_irb"
-        if row.get("gate") == "G6":
+        # 04/10/2026: tập cổng cứng rút từ gate_contract (nguồn sự thật duy nhất, 6 cổng) — bản cũ viết cứng
+        # {G2, G4, G9} nên G5/G8/G10 bị xếp «study team» dù là cổng có chữ ký đúng vai.
+        gate = row.get("gate")
+        if gate == "G5" or gate == "G6":
             return "human_pi_or_data_manager"
+        if gate == "G8":
+            return "human_independent_reviewer"
+        if gate in GC._GATE_REQUIRED_STAKEHOLDERS:
+            return "human_pi_or_irb"
         return "human_pi_or_study_team"
     if status == STATUS_BLOCKED:
         return "human_pi_or_study_team"
@@ -1919,6 +1976,9 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         f"- Can auto resume: `{report['resume_contract']['can_auto_resume']}`",
         f"- Resume command: `{report['resume_contract']['next_command'] or 'NONE'}`",
         f"- Release blockers: {report['gate_release_summary']['blocking_gate_count']}",
+        "- Hội đồng cổng (tư vấn — không mở/chặn cổng): "
+        + (" · ".join(f"{g} {t.get('trang_thai')}" for g, t in (report.get("hoi_dong_cong") or {}).items()
+                      if t.get("trang_thai") != "CHƯA HỌP") or "chưa họp cổng nào"),
         "",
         "## Gate Release Contracts",
         "",
@@ -2088,6 +2148,18 @@ def _update_meta(out_dir: Path, report: Dict[str, Any],
         json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
+def _hoi_dong_cong(out_dir: Path) -> Dict[str, Any]:
+    """Tóm tắt biên bản hội đồng từng cổng (tools/hoi_dong_cong.py); lỗi ⇒ mọi cổng «KHÔNG ĐO ĐƯỢC» — không bao giờ
+    «đồng thuận» mặc định."""
+    try:
+        import hoi_dong_cong as HD  # noqa: PLC0415
+
+        return HD.tom_tat(out_dir, out_dir.parent.parent)
+    except Exception as exc:  # noqa: BLE001
+        return {g: {"gate": g, "trang_thai": "KHÔNG ĐO ĐƯỢC", "ly_do": [f"{type(exc).__name__}: {exc}"[:200]]}
+                for g in ("G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10")}
+
+
 def audit_gates(study: str, *, out_dir: Optional[Path] = None,
                 topic: Optional[str] = None, write: bool = True) -> Dict[str, Any]:
     study_id = study.strip()
@@ -2096,12 +2168,17 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
     meta = _load_meta(out_dir)
     cps = _load_checkpoints(out_dir)
     freshness = FRESH.stale_report(out_dir)
-    signals = S.real_world_signals(cps, meta)
+    signals = S.real_world_signals(cps, meta, out_dir=out_dir)  # 06/10/2026: chấm đúng thư mục đề tài đang kiểm
     pipeline_rows = [
-        _classify_gate(gate, study_id, out_dir, topic, meta, cps, signals, freshness)
+        _phan_loai_cong_song(gate, study_id, out_dir, topic, meta, cps, signals, freshness)
         for gate in PIPELINE_GATES
     ]
     _attach_release_contracts(pipeline_rows)
+    # 06/10/2026 — hội đồng cổng (đánh giá chéo + tranh biện giữa các agent): TƯ VẤN — gắn vào từng dòng cổng để đài
+    # kiểm soát thấy, KHÔNG đổi overall_status/verdict (cổng do bộ chấm + chữ ký người).
+    hoi_dong = _hoi_dong_cong(out_dir)
+    for row in pipeline_rows:
+        row["hoi_dong"] = (hoi_dong.get(row["gate"]) or {}).get("trang_thai", "KHÔNG ĐO ĐƯỢC")
     hard_stop_count = sum(
         1 for row in pipeline_rows
         if row["status"] in {STATUS_BLOCKED, STATUS_GUARDRAIL_FAIL, STATUS_NEEDS_REAL}
@@ -2139,6 +2216,7 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         "real_world_signals": signals,
         "pipeline_gates": pipeline_rows,
         "gate_release_summary": _release_summary(pipeline_rows),
+        "hoi_dong_cong": hoi_dong,
         "data_pipeline": data_pipeline,
         "skill_gates": _skill_gate_rows(cps, meta),
         "readiness": S.readiness_report(cps, meta),
@@ -2181,6 +2259,9 @@ def print_summary(report: Dict[str, Any]) -> None:
     print(f"resume_mode={report['resume_contract']['mode']}")
     print(f"can_auto_resume={report['resume_contract']['can_auto_resume']}")
     print(f"release_blocking_gate_count={report['gate_release_summary']['blocking_gate_count']}")
+    hd = report.get("hoi_dong_cong") or {}
+    can = [f"{g}:{t.get('trang_thai')}" for g, t in hd.items() if t.get("trang_thai") not in ("CHƯA HỌP", "ĐỒNG THUẬN")]
+    print(f"hoi_dong_cong={'; '.join(can) if can else 'không có việc treo (tư vấn)'}")
     for row in report["pipeline_gates"]:
         if row["gate"] == report.get("current_actionable_gate"):
             print(f"next_action={row['next_action']}")

@@ -61,8 +61,12 @@ def _results(**over):
 
 
 def _confirmed_g0_meta() -> dict:
-    """Khối gate_params.G0 đã được bác sĩ điền đủ (dùng cho đường PASS)."""
-    return {
+    """Khối gate_params.G0 đã được bác sĩ điền đủ (dùng cho đường PASS).
+
+    04/10/2026 (soát từng cổng): một lần chốt HỢP LỆ nay gồm cả ngày PI tự tra WHO ICTRP (G0-HUMAN-08, QĐ-17), đánh
+    giá chồng lấn khi ClinicalTrials.gov có thử nghiệm đang tuyển (checkpoint mẫu có 16), và dấu vân tay của đúng nội
+    dung đang chốt (G0-07) — fixture cũ thiếu ba thứ này nên không còn là một lần chốt hợp lệ."""
+    g0 = {
         "population": "Bệnh nhân ≥18 tuổi suy tim EF bảo tồn, ngoại trú",
         "intervention": "Dapagliflozin 10 mg/ngày trong 12 tháng",
         "comparison": "Giả dược trên nền điều trị chuẩn",
@@ -85,7 +89,12 @@ def _confirmed_g0_meta() -> dict:
         "pico_confirmed": True,
         "reviewed_by_role": "PI",
         "reviewed_at": "2026-07-28T09:00:00",
+        "registry_manual_checked": {"ictrp": "2026-07-28", "prospero": None},
+        "registry_overlap_assessment": ("16 thử nghiệm đang tuyển đều ở HFrEF hoặc kết cục khác — không chồng lấn "
+                                        "trực tiếp"),
     }
+    g0["dau_van_tay_chot"] = G0Q.dau_van_tay_g0(_checkpoint(), {"gate_params": {"G0": g0}})
+    return g0
 
 
 def _checkpoint(**over) -> dict:

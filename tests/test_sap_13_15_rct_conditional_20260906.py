@@ -16,9 +16,10 @@ Bác sĩ duyệt đúng đề xuất đó. Test dưới khoá bốn việc:
      không đổi phần còn lại.
   3. Biên §12 (đọc bằng regex ở g4_quality_gate) KHÔNG bị ba mục mới làm lệch —
      ``parse_signed_numbers``/``_section_body`` vẫn đọc đúng số đã ký.
-  4. Chốt gác trước-ký (``approve_gate._g4_sections_still_draft``, chỉ §1/§2/§5/§10)
-     không đổi hành vi — §13-§15 KHÔNG nằm trong `_G4_REQUIRED_SECTIONS`, tức không
-     đổi ngưỡng chặn ký hiện có (quyết định đó chưa được yêu cầu).
+  4. (ĐỔI 04/10/2026 — soát từng cổng G4-02, QĐ-1 mặc định an toàn chờ bác sĩ duyệt qua PR) Chốt gác trước-ký
+     ``approve_gate._g4_sections_still_draft`` nay BẮT BUỘC §13/§14/§15 cho SAP RCT (doctrine
+     thiet-ke-nghien-cuu đã dạy «đạt G4 khi 15 mục nếu RCT»; bản cũ khoá cứng hành vi cho qua, là test
+     khoá hành vi sai — §6 của bản tổng hợp soát cổng). Thiết kế KHÁC không sinh và không bị đòi §13–§15.
 """
 from __future__ import annotations
 
@@ -109,16 +110,28 @@ class TestSection12BoundaryStillCorrect:
         assert "Effect size" in body12  # vẫn đọc đúng thân §12
 
 
-class TestPreSignatureGateUnaffected:
-    def test_required_sections_still_only_1_2_5_10(self):
+class TestPreSignatureGateRct:
+    def test_rct_bat_buoc_13_14_15_truoc_ky(self):
+        # 04/10/2026 (soát từng cổng G4-02, QĐ-1): SAP RCT vừa sinh — §13/§14/§15 còn nguyên ô [CẦN ⇒ bị chặn trước ký,
+        # cùng §1/§2/§5/§9/§10 (ô trống) và §4 (estimand + quần thể phân tích CHÍNH chưa khai — G4-03).
         text = _gen("rct")
-        still_draft = AG._g4_sections_still_draft(text)
-        labels = {re.match(r"(§\d+)", s).group(1) for s in still_draft}
-        assert labels == {"§1", "§2", "§5", "§10"}
-        # §13/§14/§15 CHƯA điền (còn nguyên placeholder) nhưng KHÔNG được liệt
-        # kê ở đây — chúng không nằm trong _G4_REQUIRED_SECTIONS, tức không
-        # đổi ngưỡng chặn ký hiện có.
-        assert not any(s.startswith(("§13", "§14", "§15")) for s in still_draft)
+        labels = {re.match(r"(§\d+)", s).group(1) for s in AG._g4_sections_still_draft(text, "rct")}
+        assert labels == {"§1", "§2", "§4", "§5", "§9", "§10", "§13", "§14", "§15"}
+        assert set(AG._G4_REQUIRED_SECTIONS) == {"§1", "§2", "§4", "§5", "§9", "§10"}
+        assert set(AG._G4_REQUIRED_SECTIONS_RCT) == {"§13", "§14", "§15"}
+        # Không truyền thiết kế: văn bản mang §13–§15 thì vẫn bị đòi điền (không lách bằng thiếu design_code).
+        tu_van_ban = {re.match(r"(§\d+)", s).group(1) for s in AG._g4_sections_still_draft(text)}
+        assert {"§13", "§14", "§15"} <= tu_van_ban
+
+    def test_rct_xoa_han_13_van_bi_chan(self):
+        text = _gen("rct")
+        dau, cuoi = text.index("### §13"), text.index("### §14")
+        still = AG._g4_sections_still_draft(text[:dau] + text[cuoi:], "rct")
+        assert any(s.startswith("§13") and "VẮNG" in s for s in still), still
+
+    def test_cohort_khong_bi_doi_13_15(self):
+        still = AG._g4_sections_still_draft(_gen("cohort"), "cohort")
+        assert not any(s.startswith(("§13", "§14", "§15")) for s in still)
 
 
 class TestSection1PointsToProtocolIntervention:

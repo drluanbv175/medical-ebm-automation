@@ -42,6 +42,7 @@ sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(TOOLS))
 
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
+import cong_song as CS  # noqa: E402  (chấm SỐNG cổng trước + hợp đồng băm A9 — 05/10/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — chỉ dùng load_study_meta)
 
 # SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện HIGH): tái
@@ -833,8 +834,13 @@ def _gate_pending_actions(cp: dict, gate_key: str) -> str:
     return defaults.get(gate_key, "Xem checkpoint chi tiet")
 
 
-def analyze_pipeline(gates: dict, study: str) -> dict:
-    """Phan tich toan bo trang thai pipeline G0-G7."""
+def analyze_pipeline(gates: dict, study: str, song: dict = None) -> dict:
+    """Phan tich toan bo trang thai pipeline G0-G7.
+
+    05/10/2026 (soát từng cổng G8-06): `song` = {cổng: {"muc", "status"}} chấm SỐNG (cong_song; G2 theo hợp đồng dùng
+    chung g2_da_duyet) — có thì nhãn và đếm PASS theo nó. Bản cũ tự xếp từ trường checkpoint: sap_signed_date/sap_locked
+    (không công cụ nào ghi) và g2_irb_number (trường TĨNH — bộ chấm G2 chỉ ghi khi chấm lại APPROVED, không nói chữ ký
+    còn khớp gói hiện tại) ⇒ G4 «PENDING» cả khi đã ký thật, G0/G1/G3/G6 «PASS» khi chỉ có guardrail sạch."""
     rows = []
     n_pass = 0
 
@@ -842,6 +848,8 @@ def analyze_pipeline(gates: dict, study: str) -> dict:
         key = f"G{i}"
         cp = gates[key]
         status = _gate_status_label(cp)
+        if song and key in song:
+            status = f"{song[key].get('muc')}: {song[key].get('status')}"
         artifact = _gate_artifact_name(key)
         pending = _gate_pending_actions(cp, key)
 
@@ -880,7 +888,7 @@ def analyze_pipeline(gates: dict, study: str) -> dict:
             "checkpoint_exists": cp.get("_file_exists", False),
         })
 
-        if _is_locked_or_pass(status):
+        if (song[key].get("muc") == "PASS") if (song and key in song) else _is_locked_or_pass(status):
             n_pass += 1
 
     return {
@@ -948,6 +956,16 @@ def _item_auto_check(item_name: str, gates: dict, design_code: str,
 
     intro_ready = _section_ready(intro_section)
     methods_ready = _section_ready(methods_section)
+    # 05/10/2026 (soát từng cổng G8 — lộ khi chạy chuỗi thật G7 PASS → G8): mọi mục KẾT QUẢ/BÀN LUẬN/khai báo trước
+    # đây rơi xuống nhánh cuối «☐» VÔ ĐIỀU KIỆN ⇒ tỷ lệ checklist của một bản thảo hoàn chỉnh bị chặn trên ở ~30–45% <
+    # ngưỡng 60% của G8-AUTO-10/decide_g8_status ⇒ G8 KHÔNG BAO GIỜ đạt với đề tài thật. Nay mục thuộc phần nào của
+    # bản thảo thì ☑ khi CHÍNH phần đó đã soạn xong (không ô trống, có nội dung); mục cần kết quả còn đòi G7 đã PASS
+    # sống (kết quả thật, khớp G6) — main() gắn cờ `_g7_song_pass` vào gates["G7"].
+    g7_that = gates.get("G7", {}).get("_g7_song_pass") is True
+
+    def _phan_xong(start: str, end: str) -> bool:
+        phan = _extract_manuscript_section(manuscript_text, start, end)
+        return len(re.findall(r"\w", phan)) >= 40 and _section_ready(phan)
 
     if any(k in name_lower for k in ["background", "rationale", "search", "eligibility"]):
         return "☑" if (g0.get("_file_exists") and intro_ready) else "☐"
@@ -971,6 +989,11 @@ def _item_auto_check(item_name: str, gates: dict, design_code: str,
     if any(k in name_lower for k in ["statistic", "effect measure", "synthesis"]):
         return "☑" if (g4.get("_file_exists") and methods_ready) else "☐"
     if any(k in name_lower for k in ["ethical", "registration", "ethical"]):
+        # 05/10/2026 (điều phối G7↔G8): «G2 đã duyệt» theo hợp đồng DÙNG CHUNG (g7_quality_gate.g2_da_duyet — sổ cái +
+        # hợp đồng chất lượng G2) do main() gắn vào gates["G2"]["_g2_da_duyet"]; g2_irb_number trần chỉ còn là dự
+        # phòng khi gọi hàm này ngoài main() (trường đó có thể còn sót sau khi G2 tụt hạng).
+        if "_g2_da_duyet" in g2:
+            return "☑" if g2.get("_g2_da_duyet") is True else "☐"
         irb = g2.get("g2_irb_number", "")
         # 03/10/2026: «[CẦN SỐ IRB THẬT]» (có dấu — đúng giá trị khuôn G7 truyền vào) trước đây được ☑ vì chỉ so
         # «[CAN» không dấu; AND thêm vị từ chung (mọi họ dấu hiệu) mà vẫn giữ chốt cũ.
@@ -981,8 +1004,37 @@ def _item_auto_check(item_name: str, gates: dict, design_code: str,
         return "☑" if (g4.get("_file_exists") and methods_ready) else "☐"
     if any(k in name_lower for k in ["randomis", "allocation", "blinding"]):
         return "☑" if (design_code == "rct" and g4.get("_file_exists") and methods_ready) else "☐"
-    # Cac muc can ket qua that hoac bac si dien
-    return "☐"
+    # 05/10/2026: các mục còn lại — xếp theo PHẦN của bản thảo mà mục đó thuộc về (xem chú thích `g7_that` ở trên).
+    if any(k in name_lower for k in _MUC_KET_QUA):
+        return "☑" if (g7_that and _phan_xong("## III. KẾT QUẢ", "## IV.")) else "☐"
+    if any(k in name_lower for k in _MUC_BAN_LUAN):
+        return "☑" if (g7_that and _phan_xong("## IV. BÀN LUẬN", "## V.")) else "☐"
+    if any(k in name_lower for k in _MUC_KHAI_BAO):
+        return "☑" if _phan_xong("## KHAI BÁO", "## TÀI LIỆU") else "☐"
+    if any(k in name_lower for k in ("title", "abstract")):
+        return "☑" if (g7_that and _phan_xong("## TÓM TẮT", "## I.")) else "☐"
+    # Mục phương pháp còn lại (setting, interventions, outcomes, data sources, …).
+    return "☑" if methods_ready and _phan_xong("## II. PHƯƠNG PHÁP", "## III.") else "☐"
+
+
+# Từ khoá xếp mục checklist vào PHẦN của bản thảo (05/10/2026) — so trên tên mục chữ thường của DESIGN_CHECKLIST_MAP.
+_MUC_KET_QUA = (
+    "result", "flow", "enrol", "losses", "recruitment", "baseline", "descriptive data", "outcome data",
+    "outcomes and estimation", "harms", "estimates", "cross tabulation", "time interval", "distribution",
+    "model development counts", "model specification", "model performance", "model updating results",
+    "performance heterogeneity", "comparison to development", "study selection", "studies excluded",
+    "included-study", "individual study", "pooled", "certainty of evidence", "evidence-completeness", "trial ending",
+    "interventions as administered", "concomitant care", "adverse events", "other analyses", "summary of main results",
+    "effect of uncertainty", "effect of engagement", "study-level quality", "links to empirical data",
+)
+_MUC_BAN_LUAN = (
+    "interpretation", "limitations", "generalis", "implications", "next steps", "key results",
+    "integration with other literature", "study findings", "usability",
+)
+_MUC_KHAI_BAO = (
+    "funding", "conflict", "author coi", "competing", "protocol/sap access", "protocol availability",
+    "protocol amendments", "data/code access", "data sharing", "code sharing", "availability of data",
+)
 
 
 def build_reporting_checklist(design_code: str, gates: dict, specialist_modules: list = None,
@@ -1071,7 +1123,9 @@ def check_statistical_integrity(gates: dict) -> dict:
     passed_count = 0
 
     # Kiem 1 -- SAP da ky truoc khi xem du lieu
-    sap_signed = g4.get("sap_signed_date") or g4.get("sap_locked")
+    # 05/10/2026 (soát từng cổng G8-06): main() gắn `_sap_khoa` = G4 chấm SỐNG PASS_G4_SAP_LOCKED (chữ ký + chất lượng);
+    # sap_signed_date/sap_locked là trường KHÔNG công cụ nào ghi ⇒ A9 từng in «SAP chưa ký» cho SAP đã khoá thật.
+    sap_signed = g4.get("_sap_khoa") if "_sap_khoa" in g4 else (g4.get("sap_signed_date") or g4.get("sap_locked"))
     if g4.get("_file_exists") and sap_signed:
         checks.append("☑ SAP da ky/khoa truoc khi phan tich (G4)")
         passed_count += 1
@@ -1239,6 +1293,16 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
     g2 = gates.get("G2", {})
     g4 = gates.get("G4", {})
     g5 = gates.get("G5", {})
+    # 05/10/2026 (soát từng cổng G8-06 — điều phối G2/G4/G5/G7 ↔ G8): main() gắn cờ THẨM QUYỀN vào gates — «G2 đã
+    # duyệt» (_g2_da_duyet: sổ cái + hợp đồng chất lượng), «SAP khoá» (_sap_khoa), «dữ liệu khoá» (_du_lieu_khoa), «G7
+    # PASS sống» (_g7_song_pass). Vắng cờ (gọi ngoài main) ⇒ giữ cách đọc trường cũ.
+    irb_that = (g2.get("_g2_da_duyet") is True if "_g2_da_duyet" in g2
+                else bool(g2.get("g2_irb_number") and "[CAN" not in str(g2.get("g2_irb_number", ""))))
+    sap_khoa = (g4.get("_sap_khoa") is True if "_sap_khoa" in g4
+                else bool(g4.get("sap_signed_date") or g4.get("sap_locked")))
+    du_lieu_khoa = (g5.get("_du_lieu_khoa") is True if "_du_lieu_khoa" in g5
+                    else bool(g5.get("db_lock_date") and "[CAN" not in str(g5.get("db_lock_date", ""))))
+    g7_pass = gates.get("G7", {}).get("_g7_song_pass") is True
 
     # SỬA 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 12, phát hiện HIGH):
     # 2 mục dưới đây (LIEM CHINH "PMID/DOI đã xác minh" + TRINH BAY "định dạng
@@ -1249,7 +1313,7 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
     # đọc A12_CITATION_VERIFICATION_<study>.md + A12_RETRACTION_RECEIPT.json.
     citation_ok = False
     if study and out_dir is not None:
-        citation_ok, _reason = G10.citation_verification_ok(study, out_dir)
+        citation_ok, _reason = G10.citation_verification_ok(study, out_dir, kiem_ban_g10=False)
 
     items = []
 
@@ -1267,15 +1331,12 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
          gates["G0"].get("_file_exists", False))
     _add("PIPELINE", "G1 -- Thiet ke nghien cuu: checkpoint ton tai",
          gates["G1"].get("_file_exists", False))
-    _add("PIPELINE", "G2 -- IRB/Dao duc: so IRB that da co",
-         bool(g2.get("g2_irb_number") and "[CAN" not in str(g2.get("g2_irb_number", ""))))
+    _add("PIPELINE", "G2 -- IRB/Dao duc: so IRB that da co", irb_that)
     _add("PIPELINE", "G3 -- Co mau: da tinh va co N",
          gates["G3"].get("_file_exists", False))
-    _add("PIPELINE", "G4 -- SAP: da khoa/ky truoc khi xem du lieu",
-         bool(g4.get("sap_signed_date") or g4.get("sap_locked")),
+    _add("PIPELINE", "G4 -- SAP: da khoa/ky truoc khi xem du lieu", sap_khoa,
          note="Bat buoc truoc phan tich")
-    _add("PIPELINE", "G5 -- DB Lock: co so du lieu da khoa",
-         bool(g5.get("db_lock_date") and "[CAN" not in str(g5.get("db_lock_date", ""))),
+    _add("PIPELINE", "G5 -- DB Lock: co so du lieu da khoa", du_lieu_khoa,
          note="Truoc khi phan tich cuoi")
     _add("PIPELINE", "G6 -- Scripts: da sinh R/Python analysis scripts",
          gates["G6"].get("_file_exists", False))
@@ -1341,8 +1402,7 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
          citation_ok,
          note="Cong A12 (kiem-chung-trich-dan)" if citation_ok
               else "[CAN] Chua PASS cong A12 -- chay agent kiem-chung-trich-dan")
-    _add("LIEM CHINH", "So IRB that (khong phai placeholder [CAN...])",
-         bool(g2.get("g2_irb_number") and "[CAN" not in str(g2.get("g2_irb_number", ""))))
+    _add("LIEM CHINH", "So IRB that (khong phai placeholder [CAN...])", irb_that)
     _add("LIEM CHINH", "Dang ky thu nghiem (ClinicalTrials.gov / TCTR)",
          bool(g2.get("g2_registration") and "[CAN" not in str(g2.get("g2_registration", ""))),
          note="Bat buoc cho RCT theo ICMJE")
@@ -1380,15 +1440,18 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
     # hiện ở đây. Không có ground-truth máy đọc được khác ngoài chính văn bản
     # tự do đó. Để CỐ Ý là [CẦN] (bác sĩ tự xác nhận qua Phần 5), không giả
     # vờ đã tự động hoá.
+    # 05/10/2026 (G8-06): G7 chấm SỐNG PASS_G7_CONFIRMED là ground-truth máy đọc được cho ba mục dưới — G7-HUMAN-01
+    # (tiêu đề + tác giả là chuỗi thật), G7-AUTO-05 (tóm tắt không còn ô trống), G7-HUMAN-04 (tác giả đã đọc lại ĐÚNG
+    # bản này). Chưa PASS thì vẫn là [CAN] như cũ.
     _add("TRINH BAY", "Tieu de bai <= 120 ky tu, chua thiet ke nghien cuu",
-         False,
-         note="[CAN xac nhan tieu de cuoi tu G7]")
+         g7_pass,
+         note="G7 PASS song: tieu de da chot (G7-HUMAN-01)" if g7_pass else "[CAN xac nhan tieu de cuoi tu G7]")
     _add("TRINH BAY", "Tom tat co cau truc <= 250 tu",
-         False,
-         note="[CAN sau khi co ket qua that]")
+         g7_pass,
+         note="G7 PASS song: tom tat da soan (G7-AUTO-05)" if g7_pass else "[CAN sau khi co ket qua that]")
     _add("TRINH BAY", "Danh sach tac gia + affiliations + ORCID day du",
-         False,
-         note="[CAN xac nhan CRediT roles o Phan 5]")
+         g7_pass,
+         note="G7 PASS song: tac gia da chot (G7-HUMAN-01)" if g7_pass else "[CAN xac nhan CRediT roles o Phan 5]")
     _add("TRINH BAY", "Tai lieu tham khao theo dinh dang tap chi dich (Vancouver/APA/...)",
          citation_ok,
          note="Cong A12 (kiem-chung-trich-dan)" if citation_ok
@@ -1440,6 +1503,8 @@ def generate_a9_artifact(
     gate_criteria: dict = None,
     manuscript_sha256: str = None,
     manuscript_filename: str = None,
+    review_sha256: str = None,
+    review_filename: str = None,
 ) -> str:
     """Sinh artifact A9 -- Bao cao toan dien kiem tra truoc nop bai."""
 
@@ -1479,6 +1544,13 @@ def generate_a9_artifact(
     else:
         ln(f"**Hash SHA-256 bản thảo đã ràng buộc:** CHƯA CÓ BẢN THẢO (`{manuscript_filename}` "
            "không tồn tại lúc sinh A9) — chữ ký G8 sẽ KHÔNG ràng buộc được nội dung bản thảo.")
+    # 05/10/2026 (soát từng cổng G8-04, hợp đồng CHUNG-E của cong_song): nhúng băm BẢN NHẬN XÉT phản biện để chữ ký G8
+    # (chỉ băm A9) ràng buộc luôn bản nhận xét — sinh lại A9 SAU khi người phản biện viết xong, rồi mới ký.
+    if review_sha256:
+        ln(CS.dong_bam_a9(CS.NHAN_BAM_BAO_CAO_PHAN_BIEN, review_filename or "G8_PEER_REVIEW_REPORT", review_sha256))
+    else:
+        ln("**Hash SHA-256 báo cáo phản biện đã ràng buộc:** CHƯA CÓ BẢN NHẬN XÉT — người phản biện viết "
+           "G8_PEER_REVIEW_REPORT_<mã>.md rồi chạy lại run_g8_auto.py trước khi ký G8.")
     ln()
     ln("> [BẢN NHÁP TỰ ĐỘNG] — Dựa trên checkpoints G0-G7.")
     ln("> Các mục [CAN] yêu cầu bác sĩ/nhóm tác giả hoàn thiện trước khi nộp.")
@@ -1982,13 +2054,18 @@ def write_g8_checkpoint(
     target_journal: str,
     impact_factor: float,
     g8_status: str,
+    design_code: str = None,
 ) -> Path:
-    """Ghi G8_checkpoint.json voi day du thong tin kiem toan."""
+    """Ghi G8_checkpoint.json voi day du thong tin kiem toan.
+
+    05/10/2026 (G8-10): ghi `design_code` (thiết kế SỐNG theo resolve_design_code — G2 > G1; "" khi không xác định) —
+    bản cũ không ghi nên bộ chấm rơi về G2 và im lặng coi «rỗng» là quan sát."""
     cp = {
         "gate": "G8",
         "study": study,
         "run_date": run_date,
         "gate_status": g8_status,
+        "design_code": design_code or "",
 
         # Hoan chinh pipeline
         "pipeline_completeness": {
@@ -2119,13 +2196,31 @@ def main():
     # SỬA: cùng 2 lỗi đã sửa ở generate_a9_artifact() — design_code đọc SAI
     # đường dẫn (top-level thay vì lồng trong "design") và topic không có
     # None-guard. Hàm KHÁC (main()) trong CÙNG FILE bị bỏ sót lần trước.
-    design_code = (gates["G1"].get("design") or {}).get("internal_code") or "cohort"
+    # VÁ 05/10/2026 (soát từng cổng G8-10): thiết kế theo resolve_design_code DÙNG CHUNG (G2 > G1) như G3–G7 — bản cũ
+    # chỉ đọc G1; không xác định được thì vẫn dựng checklist STROBE nhưng ghi "" vào checkpoint để bộ chấm REVIEW.
+    design_code_song, _canh_bao_tk = GC.resolve_design_code(out_dir, default="")
+    design_code = design_code_song or "cohort"
+    if not design_code_song:
+        print("  ⚠ Không xác định được thiết kế từ G1/G2 — checklist tạm theo STROBE; G8-AUTO-07/08 sẽ REVIEW.")
     topic = gates["G0"].get("topic") or study
     print(f"  -> Design: {design_code} | Topic: {topic[:50]}")
 
+    # VÁ 05/10/2026 (soát từng cổng G8-06): trạng thái cổng trước CHẤM SỐNG (cong_song); «G2 đã duyệt» theo hợp đồng
+    # DÙNG CHUNG (g7_quality_gate.g2_da_duyet = sổ cái + hợp đồng chất lượng — như G5/G6/G7/G10). Bản cũ đọc
+    # sap_signed_date/sap_locked (không công cụ nào ghi) và g2_irb_number (trường tĩnh của lần chấm G2 cuối) ⇒ «PENDING —
+    # cần SAP ký» cho cả đề tài đã khoá SAP thật.
+    import g7_quality_gate as G7Q  # noqa: PLC0415 — import lười
+    song = {f"G{i}": CS.trang_thai_song(f"G{i}", study, out_dir, repo_root=BASE) for i in range(8)}
+    g2_ok, g2_ly_do = G7Q.g2_da_duyet(study, out_dir, repo_root=BASE)
+    song["G2"] = {"muc": "PASS" if g2_ok else song["G2"].get("muc"), "status": g2_ly_do}
+    gates["G2"]["_g2_da_duyet"] = g2_ok
+    gates["G4"]["_sap_khoa"] = song["G4"].get("muc") == "PASS"
+    gates["G5"]["_du_lieu_khoa"] = song["G5"].get("muc") == "PASS"
+    gates["G7"]["_g7_song_pass"] = song["G7"].get("muc") == "PASS"
+
     # 2. Phan tich pipeline
     print("\nBuoc 2/7: Phan tich trang thai pipeline G0-G7...")
-    pipeline = analyze_pipeline(gates, study)
+    pipeline = analyze_pipeline(gates, study, song=song)
     print(f"  -> {pipeline['n_pass']}/{pipeline['n_total']} gates PASS ({pipeline['completeness_pct']}%)")
     for row in pipeline["rows"]:
         print(f"    {row['gate']}: {row['status']}")
@@ -2203,16 +2298,12 @@ def main():
     # study_meta.json["results_final"] (chi bac si tu tay bat, khong tu dong bat
     # duoc -- dung quy uoc da co san o G7/G9/skill_standards.py).
     _study_meta_g8 = GC.load_study_meta(out_dir)
-    results_final = bool(_study_meta_g8.get("results_final"))
+    # VÁ 05/10/2026 (G8-06): bool thật (chuỗi "true"/"false" gõ tay từng được nhận) và nguồn thẩm quyền cho IRB/SAP/G7.
+    results_final = _study_meta_g8.get("results_final") is True
 
-    irb_ok = bool(
-        gates["G2"].get("g2_irb_number") and
-        "[CAN" not in str(gates["G2"].get("g2_irb_number", ""))
-    )
-    sap_ok = bool(
-        gates["G4"].get("sap_signed_date") or gates["G4"].get("sap_locked")
-    )
-    g7_ok = gates["G7"].get("_file_exists", False)
+    irb_ok = g2_ok
+    sap_ok = song["G4"].get("muc") == "PASS"
+    g7_ok = song["G7"].get("muc") == "PASS"
     score_ok = presubmission["passed"] >= 25
     reporting_ok = reporting["score_pct"] >= 60
     g8_status = decide_g8_status(
@@ -2228,11 +2319,13 @@ def main():
         "irb_ok": irb_ok, "sap_ok": sap_ok, "g7_ok": g7_ok,
         "score_ok": score_ok, "results_final": results_final,
     }
+    _review_path = out_dir / f"G8_PEER_REVIEW_REPORT_{study}.md"
     artifact_md = generate_a9_artifact(
         study, run_date, gates, pipeline, reporting, stat_check,
         journal_suggestions, presubmission, args.target_journal, args.impact_factor,
         g8_status, gate_criteria=gate_criteria,
         manuscript_sha256=manuscript_sha256, manuscript_filename=_manuscript_path.name,
+        review_sha256=CS.bam_van_ban_tep(_review_path), review_filename=_review_path.name,
     )
 
     guardrail = guardrail_g8(artifact_md, pipeline)
@@ -2256,7 +2349,8 @@ def main():
     cp_path = write_g8_checkpoint(
         study, out_dir, run_date, pipeline, reporting, stat_check,
         journal_suggestions, presubmission, guardrail,
-        args.target_journal, args.impact_factor, g8_status
+        args.target_journal, args.impact_factor, g8_status,
+        design_code=design_code_song,
     )
     print(f"  -> Luu checkpoint: {cp_path.name}")
 

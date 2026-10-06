@@ -157,7 +157,9 @@ def build_part1_icmje(n_authors: int, study: str) -> str:
 
     for i in range(1, n_authors + 1):
         lines += [
-            f"**Tác giả {i} — [CẦN ĐIỀN HỌ TÊN ĐẦY ĐỦ + ĐƠN VỊ + EMAIL]:**",
+            # SỬA 05/10/2026 (soát từng cổng G9-09): mã tác giả KHÔNG định danh cho khớp Phần 2 và chính sách không
+            # lưu PII — khuôn cũ dạy ghi «HỌ TÊN + ĐƠN VỊ + EMAIL» vào A10 (tệp được manifest băm, lưu trong exports/).
+            f"**Tác giả {i} — AUTHOR-{i:02d}** (họ tên/đơn vị/email chỉ điền trong hệ thống nộp bài của tạp chí):",
             "- Đóng góp cụ thể (CRediT): [CẦN — ví dụ: Conceptualization, "
             "Methodology, Writing – original draft]",
             "- Tư cách tác giả: ☐ ĐỦ CẢ 4 tiêu chí -> LÀ TÁC GIẢ  "
@@ -283,7 +285,7 @@ def build_part2_coi(n_authors: int, study: str) -> str:
         "   influence the work reported in this paper.'",
         "",
         "Option B (Có COI phải khai báo):",
-        "  '[Tên tác giả] reports [loại COI] from [tổ chức], outside the",
+        "  '[CẦN — tên tác giả] reports [CẦN — loại COI] from [CẦN — tổ chức], outside the",
         "   submitted work. All other authors declare no conflicts of interest.'",
         "─────────────────────────────────────────────────────",
         "```",
@@ -423,8 +425,8 @@ def build_part4_ai_disclosure(cps: dict, study: str) -> str:
         "### Mẫu soạn sau khi xác nhận thực tế",
         "",
         "```",
-        "During preparation of this work, the authors used [TOOL, PROVIDER, VERSION]",
-        "for [PURPOSE AND SECTION]. The authors independently reviewed and verified",
+        "During preparation of this work, the authors used [CẦN — TOOL, PROVIDER, VERSION]",
+        "for [CẦN — PURPOSE AND SECTION]. The authors independently reviewed and verified",
         "the output, made all scientific decisions, and accept full responsibility.",
         "```",
         "",
@@ -562,7 +564,7 @@ def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
         "> Không vượt quá 1 trang A4. Tông văn: tự tin, súc tích, học thuật.",
         "",
         "```",
-        f"[Tên + Địa chỉ đơn vị + Ngày: {_TODAY}]",
+        f"[CẦN — tên + địa chỉ đơn vị + ngày: {_TODAY}]",
         "",
         f"Dear Editor-in-Chief of {journal_display},",
         "",
@@ -590,7 +592,7 @@ def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
         "",
         "KEY FINDINGS:",
         "  [CẦN — 2-3 câu tóm tắt kết quả chính từ G6/G7]",
-        "  [Điền sau khi hoàn tất phân tích và có kết quả thật]",
+        "  [CẦN — điền sau khi hoàn tất phân tích và có kết quả thật]",
         "",
         "CONTRIBUTION TO THE FIELD:",
         "  [CẦN — ý nghĩa lâm sàng + chính sách + hướng nghiên cứu tiếp]",
@@ -647,6 +649,22 @@ def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
 # ════════════════════════════════════════════════════════════════════════════
 # 8. SINH PHẦN 7 — BẢN MẪU PHẢN HỒI PHẢN BIỆN
 # ════════════════════════════════════════════════════════════════════════════
+
+def build_part7_pointer(study: str) -> str:
+    """Phần 7 trong A10 — chỉ TRỎ tới tệp mẫu phản hồi phản biện riêng (05/10/2026, soát từng cổng G9-03).
+
+    Mẫu phản hồi phản biện là việc SAU khi nộp (mã bản thảo, nhận xét của reviewer chỉ có khi tạp chí gửi) — để trong
+    A10 thì ~20 ô [CẦN] của nó khiến G9-AUTO-05 («gói cuối không placeholder») không bao giờ đạt, xoá đi thì R6 chặn."""
+    return "\n".join([
+        "## PHẦN 7 — BẢN MẪU PHẢN HỒI PHẢN BIỆN (tệp riêng)",
+        "",
+        f"> Mẫu nằm ở `G9_RESPONSE_TEMPLATE_{study}.md` — chỉ dùng SAU khi tạp chí gửi nhận xét phản biện; KHÔNG thuộc",
+        "> gói liêm chính trước nộp và không nằm trong manifest G9.",
+        "",
+        "---",
+        "",
+    ])
+
 
 def build_part7_reviewer_response(study: str, target_journal: str) -> str:
     """
@@ -882,7 +900,7 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         "    ☐ Chưa duyệt  ☐ Đã duyệt và xác nhận",
         "",
         "A5. Data Availability Statement đã chọn (Phần 3)",
-        "    ☐ Chưa chọn  ☐ Đã chọn Option [A/B/C]",
+        "    ☐ Chưa chọn  ☐ Đã chọn Option A / B / C (ghi rõ)",
         ni_gate_block,
         "",
         "A7. Quyền truy cập dữ liệu theo ICMJE 01/2026 đã xác nhận",
@@ -967,10 +985,15 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
 # 10. GUARDRAIL R1-R7 CHO G9
 # ════════════════════════════════════════════════════════════════════════════
 
-def guardrail_check_g9(artifact: str) -> dict:
+def guardrail_check_g9(artifact: str, *, cham_lai: bool = False) -> dict:
     """
     Kiểm guardrail 7 quy tắc R1-R7 cho gói G9.
     Trả về dict: passed (bool), errors (list), warnings (list).
+
+    `cham_lai` (05/10/2026, soát từng cổng G9-03): True khi g9_quality_gate CHẤM LẠI gói người đã điền — R2 (DOI thật
+    của Data Availability Option B) và R4 (gỡ nhãn DRAFT/CHỜ khi gói đã chốt) chỉ còn là cảnh báo. Bản cũ: R2 lỗi khi
+    DOI không có «[CẦN» gần đó trong khi G9-AUTO-05 đòi không còn «[CẦN» nào — hai luật loại trừ nhau với MỌI DOI thật;
+    R4 đòi giữ ≥3 «DRAFT» và ≥2 «CHỜ» — gói đã chốt mà gỡ nhãn nháp bị CHẶN.
     """
     errors, warnings = [], []
 
@@ -985,16 +1008,19 @@ def guardrail_check_g9(artifact: str) -> dict:
         warnings.append("R1 ✅ Không phát hiện PII")
 
     # R2 — Không bịa DOI/số đăng ký cụ thể ngoài ngữ cảnh [CẦN]
-    doi_match = re.search(r'\b10\.\d{4,}/\S{4,}\b', artifact)
-    if doi_match:
+    # 05/10/2026: xét MỌI DOI (bản cũ chỉ DOI đầu tiên — DOI bịa phía sau lọt).
+    doi_tran = []
+    for doi_match in re.finditer(r'\b10\.\d{4,}/\S{4,}\b', artifact):
         start = max(0, doi_match.start() - 50)
         context = artifact[start:doi_match.end() + 50]
         if "[CẦN" not in context:
-            errors.append(
-                f"R2 🔴 DOI cụ thể '{doi_match.group()}' không có nhãn [CẦN] — kiểm tra không bịa đặt"
-            )
-        else:
-            warnings.append("R2 ✅ DOI có nhãn [CẦN] đi kèm")
+            doi_tran.append(doi_match.group())
+    if doi_tran and not cham_lai:
+        errors.append(
+            f"R2 🔴 DOI cụ thể {doi_tran[:3]} không có nhãn [CẦN] — bộ sinh không được tự điền DOI"
+        )
+    elif doi_tran:
+        warnings.append(f"R2 ⚠ DOI {doi_tran[:3]} do người điền — đối chiếu Crossref/kho dữ liệu trước khi nộp")
     else:
         warnings.append("R2 ✅ Không phát hiện DOI bịa đặt")
 
@@ -1020,6 +1046,9 @@ def guardrail_check_g9(artifact: str) -> dict:
     cho_count   = artifact.count("CHỜ")
     if draft_count >= 3 and cho_count >= 2:
         warnings.append(f"R4 ✅ Nhãn DRAFT ({draft_count}) và CHỜ ({cho_count}) đủ")
+    elif cham_lai:
+        warnings.append(f"R4 ⚠ Gói đã gỡ bớt nhãn nháp (DRAFT={draft_count}, CHỜ={cho_count}) — chấp nhận khi chấm lại "
+                        "gói người đã hoàn tất")
     else:
         errors.append(
             f"R4 🔴 Thiếu nhãn DRAFT/CHỜ (DRAFT={draft_count}, CHỜ={cho_count} — cần >=3/2)"
@@ -1303,6 +1332,28 @@ def write_g9_checkpoint(
 # 13. MAIN
 # ════════════════════════════════════════════════════════════════════════════
 
+_MOC_THOI_GIAN_RE = re.compile(r"\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}(?::\d{2})?)?")
+
+
+def _ghi_giu_ban_cu(path: Path, noi_dung: str) -> None:
+    """Ghi `noi_dung`; tệp đã có và KHÁC ⇒ sao lưu `<tên>.bak-YYYYMMDD-HHMMSS.md` trước (05/10/2026, soát từng cổng
+    G9-06 — bản cũ ghi đè vô điều kiện A10/cover letter mà tác giả đã hoàn tất, theo khuôn sao lưu của run_g7_auto).
+    Chỉ khác mốc ngày/giờ sinh («Ngày tạo») thì KHÔNG sao lưu — chạy lại khuôn chưa ai sửa không đẻ .bak rác."""
+    if path.exists():
+        try:
+            cu = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            cu = None
+        if cu is not None and _MOC_THOI_GIAN_RE.sub("", cu) == _MOC_THOI_GIAN_RE.sub("", noi_dung):
+            path.write_text(noi_dung, encoding="utf-8", newline="\n")
+            return
+        if cu is not None:
+            bak = path.with_name(f"{path.stem}.bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}{path.suffix}")
+            bak.write_text(cu, encoding="utf-8", newline="\n")
+            print(f"  ⚠ {path.name} đã có bản KHÁC — sao lưu {bak.name} trước khi sinh lại")
+    path.write_text(noi_dung, encoding="utf-8", newline="\n")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="G9 Auto — Tự động hóa cổng G9: Liêm chính Tác giả (Author Integrity)"
@@ -1337,6 +1388,7 @@ def main():
     # đè âm thầm không cảnh báo. Nay default=None phân biệt được "không truyền" (None) với
     # "gõ tường minh 1"; chỉ khôi phục từ pin khi bác sĩ THẬT SỰ không truyền cờ.
     _g9_pinned = (GC.load_study_meta(out_dir).get("gate_params") or {}).get("G9") or {}
+    _n_tuong_minh = args.n_authors is not None  # 05/10/2026 (G9-06): gõ tường minh — kể cả 1 — phải ghi đè pin
     if args.n_authors is None and _g9_pinned.get("n_authors") is not None:
         args.n_authors = _g9_pinned["n_authors"]
         print(f"  → Khôi phục n_authors={args.n_authors} từ study_meta.json (pin trước đó)")
@@ -1351,12 +1403,24 @@ def main():
     # Ghi giá trị bác sĩ cấp qua CLI (fill-if-missing). n_authors CHỈ pin khi >1 (1 là
     # mặc định/sàn — pin 1 vô nghĩa và dễ khóa nhầm giá trị mặc định vào sổ).
     _seed_g9 = {}
-    if args.n_authors and args.n_authors > 1:
+    if _n_tuong_minh or (args.n_authors and args.n_authors > 1):
         _seed_g9["n_authors"] = args.n_authors
     if args.target_journal:
         _seed_g9["target_journal"] = args.target_journal
     if _seed_g9:
         GC.ensure_study_meta(out_dir, seed={"gate_params": {"G9": _seed_g9}})
+        # SỬA 05/10/2026 (soát từng cổng G9-06): ensure_study_meta chỉ fill-if-missing ⇒ bác sĩ gõ --n-authors MỚI mà
+        # pin cũ vẫn thắng ở lần sau (run_pipeline đọc pin). Giá trị CLI TƯỜNG MINH phải ghi đè pin.
+        _meta_p = out_dir / "study_meta.json"
+        try:
+            _meta = json.loads(_meta_p.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            _meta = None
+        if isinstance(_meta, dict):
+            _g9p = _meta.setdefault("gate_params", {}).setdefault("G9", {})
+            if any(_g9p.get(k) != v for k, v in _seed_g9.items()):
+                _g9p.update(_seed_g9)
+                _meta_p.write_text(json.dumps(_meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     n_authors      = max(1, args.n_authors)
     target_journal = args.target_journal
@@ -1415,8 +1479,9 @@ def main():
     print("  -> Phần 6: Cover Letter Shell")
     part6 = build_part6_cover_letter(cps, study, target_journal)
 
-    print("  -> Phần 7: Response-to-Reviewers Template")
-    part7 = build_part7_reviewer_response(study, target_journal)
+    print("  -> Phần 7: Response-to-Reviewers Template (tệp riêng)")
+    part7 = build_part7_pointer(study)
+    mau_phan_hoi = build_part7_reviewer_response(study, target_journal)
 
     print("  -> Phần 8: Tiêu chí Cổng G9")
     part8 = build_part8_gate_criteria(cps, n_authors, study)
@@ -1437,7 +1502,8 @@ def main():
         "| 6 | PI ký Tuyên bố Liêm chính 5 điểm | Phần 5 | ✅ Có |",
         "| 7 | Điền Cover Letter (tiêu đề bài, kết quả chính) | Phần 6 | ✅ Có |",
         "| 8 | Chạy similarity check và rà từng nguồn theo chính sách đích | Phần 5 | ✅ Có |",
-        "| 9 | Điền Response-to-Reviewers khi nhận peer review | Phần 7 | Khi cần |",
+        f"| 9 | Điền Response-to-Reviewers khi nhận peer review (`G9_RESPONSE_TEMPLATE_{study}.md`) | Phần 7 "
+        "| Khi cần |",
         "| 10 | Ký checklist G9 (Phần 8) khi tất cả xong | Phần 8 | ✅ Có |",
         "",
         "---",
@@ -1454,9 +1520,11 @@ def main():
     # ── Bước 3: Lưu Markdown ──
     print("\n💾 Bước 3/6: Lưu A10 Markdown...")
     md_path = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
-    md_path.write_text(artifact, encoding="utf-8", newline="\n")
+    _ghi_giu_ban_cu(md_path, artifact)
+    _ghi_giu_ban_cu(out_dir / f"G9_RESPONSE_TEMPLATE_{study}.md", mau_phan_hoi)
     cover_letter_path = out_dir / f"G9_COVER_LETTER_{study}.md"
-    cover_letter_path.write_text(
+    _ghi_giu_ban_cu(
+        cover_letter_path,
         "\n".join(
             [
                 f"# COVER LETTER — {study}",
@@ -1469,7 +1537,6 @@ def main():
                 "",
             ]
         ),
-        encoding="utf-8", newline="\n"
     )
     readiness_path = G9Q.write_readiness_template(
         out_dir,
@@ -1537,14 +1604,15 @@ def main():
     print("  Phần 4 — AI Use Disclosure (ICMJE 01/2026)")
     print("  Phần 5 — Tuyên bố Liêm chính Nghiên cứu (5 điểm)")
     print(f"  Phần 6 — Cover Letter Shell (tạp chí: {target_journal or '[CẦN]'})")
-    print("  Phần 7 — Response-to-Reviewers Template")
+    print(f"  Phần 7 — Response-to-Reviewers Template (tệp riêng G9_RESPONSE_TEMPLATE_{study}.md — dùng sau khi nộp)")
     print("  Phần 8 — Tiêu chí Cổng G9 (Hard Gate)")
     print(f"\n  🛡️  Guardrail: {guardrail_status}")
     print(f"  📊 Checkpoints đọc được: {', '.join(sorted(cps.keys())) or '(không có)'}")
     print("\n  ⚠️  G9 STATUS: DRAFT — CHỜ KÝ TẤT CẢ TÁC GIẢ")
     print("  KHÔNG nộp bản thảo cho đến khi G9 PASSED.")
     print("\n  VIỆC CÒN LẠI CỦA BÁC SĨ:")
-    print("  1. Mở file DOCX, điền TẤT CẢ [CẦN ...]")
+    print("  1. Mở file DOCX, điền TẤT CẢ [CẦN ...] (A10 + cover letter); trỏ final_package.reporting_checklist_path "
+          "tới checklist chuẩn báo cáo có số trang")
     print(f"  2. Tất cả {n_authors} tác giả ký ICMJE + COI (Phần 1-2)")
     print("  3. PI ký Tuyên bố Liêm chính (Phần 5)")
     print(f"  4. Hoàn tất {G9Q.READINESS_JSON} bằng evidence_ref không PII")

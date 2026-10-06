@@ -7,7 +7,7 @@ SGLT2-HFpEF-2026...). Trước đây muốn biết "đề tài nào đang ở đ
 `run_pipeline.py --study <TEN> --check-only` CHO TỪNG đề tài một. Script này
 quét exports/*/ MỘT LẦN và in ra bảng tổng hợp: cổng xa nhất đã tới, có tươi
 (freshness) không, có đang BLOCKED chờ input đời-thực không (và lý do 1 dòng),
-lần cập nhật gần nhất, và trạng thái cổng CỨNG (G2/G4/G5/G9 — draft vs đã khóa
+lần cập nhật gần nhất, và trạng thái SÁU cổng CỨNG (rút từ gate_contract — draft vs đã khóa
 thật bằng bằng-chứng-đời-thực, KHÔNG suy diễn).
 
 NGUYÊN TẮC (khớp toàn hệ):
@@ -61,8 +61,15 @@ HARD_GATE_SIGNAL = {
     "G2": ("irb_approved", "phê duyệt IRB thật (số + ngày)"),
     "G4": ("sap_locked", "ký + ngày khóa SAP"),
     "G5": ("db_locked", "dữ liệu thật đã khóa (KHÔNG PII)"),
+    "G8": ("peer_review_approved", "biên bản phản biện của người phản biện THẬT + chữ ký sổ cái G8"),
     "G9": ("integrity_signed", "gói liêm chính đã ký (COI/tài trợ/AI/đóng góp)"),
+    "G10": ("release_locked", "PI ký khoá gói phát hành đúng manifest cuối"),
 }
+
+
+def _hard_gates() -> List[str]:
+    """Cổng cứng theo NGUỒN SỰ THẬT DUY NHẤT gate_contract (04/10/2026 — bản cũ viết cứng G2/G4/G5/G9, thiếu G8/G10)."""
+    return [g for g in FRESH.GATE_ORDER if g in GC._GATE_REQUIRED_STAKEHOLDERS]
 
 
 def _load_json(p: Path) -> dict:
@@ -117,9 +124,13 @@ def _hard_gate_states(cps: Dict[str, dict], meta: dict) -> List[Dict[str, object
     except Exception:  # noqa: BLE001
         return []
     out = []
-    for gate, (sig_key, need_label) in HARD_GATE_SIGNAL.items():
+    for gate in _hard_gates():
         if gate not in cps:
             continue
+        if gate not in HARD_GATE_SIGNAL:
+            out.append({"gate": gate, "locked": False, "state": "🔒 CHƯA CÓ TÍN HIỆU — không kết luận"})
+            continue
+        sig_key, need_label = HARD_GATE_SIGNAL[gate]
         locked = bool(signals.get(sig_key))
         out.append({
             "gate": gate, "locked": locked,
@@ -156,6 +167,7 @@ def study_summary(out_dir: Path) -> Dict[str, object]:
         "gates_present": present,
         "n_gates": len(present),
         "fresh": fresh["fresh"],
+        "mtime_khong_tin_duoc": fresh.get("mtime_khong_tin_duoc"),
         "stale_gates": fresh["stale_gates"],
         "orphan_gates": fresh["orphan_gates"],
         "blocked": blocked,
@@ -225,6 +237,8 @@ def render_text(overview: Dict[str, object]) -> str:
                 extra.append(f"cũ: {', '.join(s['stale_gates'])}")
             if s["orphan_gates"]:
                 extra.append(f"mồ côi: {', '.join(s['orphan_gates'])}")
+            if s.get("mtime_khong_tin_duoc"):
+                extra.append("⚪ KHÔNG ĐO ĐƯỢC — mtime bị dàn phẳng (bản clone/sao chép), không phải «tươi»")
             lines.append(f"      ⚠ Freshness: {' · '.join(extra)}")
         if s["hard_gates"]:
             hg = " · ".join(f"{h['gate']}:{h['state']}" for h in s["hard_gates"])

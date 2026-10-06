@@ -18,14 +18,14 @@ def test_agent_gate_senior_governance_passes_current_repo():
 
     assert report["kind"] == "agent_gate_senior_governance_report"
     assert report["ready"], report["findings"]
-    assert report["summary"]["source_agents"] == 50
+    assert report["summary"]["source_agents"] == 64
     assert report["summary"]["clinical_agents_expected"] == 21
-    assert report["summary"]["research_agents_expected"] == 28
+    assert report["summary"]["research_agents_expected"] == 42  # 28 + 14 hội đồng cổng (06/10/2026)
     assert report["summary"]["guardrail_agents_expected"] == 1
 
 
 def test_core_agent_topology_is_locked():
-    assert len(AGG.EXPECTED_CORE_AGENTS) == 50
+    assert len(AGG.EXPECTED_CORE_AGENTS) == 64
     assert AGG.EXPECTED_CLINICAL_AGENTS.isdisjoint(AGG.EXPECTED_RESEARCH_AGENTS)
     assert AGG.EXPECTED_GUARDRAIL_AGENTS == {"tham-dinh-dau-ra"}
     assert "dieu-phoi-lam-sang" in AGG.EXPECTED_CLINICAL_AGENTS

@@ -18,16 +18,13 @@ from runtime.schemas import ApprovalDecisionEnum
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _TOOLS_DIR = _REPO_ROOT / "tools"
 
-# Tái dùng danh sách điền SAP mẫu của test_g4_quality_gate.py (cùng thư mục
-# tests/) thay vì viết tay artifact tối giản — SAU khi approve_gate.py được
-# nối với g4_quality_gate.py (2026-08-24, audit đa-agent G0-G10), một artifact
-# chỉ 1-2 dòng không còn đạt STATUS_READY (12 tiêu chí tự động thật đòi §5
-# EPV/VIF, §6 MCAR/MAR/MNAR, §10 phần mềm+seed... không chỉ "không còn [CẦN]").
+# SAU khi approve_gate.py được nối với g4_quality_gate.py (2026-08-24), một artifact chỉ 1-2 dòng không còn đạt
+# STATUS_READY. Từ 04/10/2026 (soát từng cổng G4) SAP ký được phải đi qua chuỗi G0→G3 đã chốt THẬT và xác nhận G4 gắn
+# dấu nội dung — đồ gá dùng chung ở tests/_chuoi_da_chot.py (nạp trong _seed_valid_g4_sap).
 if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
 if str(_TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(_TOOLS_DIR))
-from test_g4_quality_gate import _COMPARATIVE_FILLS  # noqa: E402
 
 
 class TestApprovalLedgerBlock:
@@ -399,38 +396,20 @@ class TestApproveGateEndToEnd:
         """Sinh một SAP G4 THẬT (qua run_g4_auto.py, không viết tay) rồi điền
         đủ để đạt STATUS_READY của g4_quality_gate.py — dùng cho mọi test G4
         muốn approve_gate.py cho ký thật (chốt nối 2026-08-24)."""
-        (study_dir / "G0_checkpoint.json").write_text(json.dumps({
-            "gate": "G0", "topic": "Đề tài kiểm định BL-06", "guardrail": {"passed": True},
-        }), encoding="utf-8", newline="\n")
-        (study_dir / "G1_checkpoint.json").write_text(json.dumps({
-            "gate": "G1",
-            "design": {"internal_code": "rct", "primary": "RCT song song",
-                       "reporting_standard": "CONSORT 2025", "ambiguous": False},
-        }), encoding="utf-8", newline="\n")
-        (study_dir / "G3_checkpoint.json").write_text(json.dumps({
-            "gate": "G3", "design_code": "rct", "alpha": 0.05, "power": 0.8,
-            "n_adjusted": 400, "confirmed_n": None, "effect_val": 0.7, "effect_type": "RR",
-            "hypothesis_type": "superiority", "margin": None, "sd": None, "guardrail": "✅ PASS",
-        }), encoding="utf-8", newline="\n")
+        # 04/10/2026 (soát từng cổng G4): G4 CHẤM SỐNG G3 và đòi xác nhận gắn dấu nội dung SAP — dựng chuỗi G0→G1
+        # RCT đã chốt → G3 chạy THẬT + xác nhận → run_g4_auto → điền như người thật → xác nhận G4 (_chuoi_da_chot).
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from _chuoi_da_chot import dien_sap_g4, dung_g0_g3_da_chot, xac_nhan_g4
+        dung_g0_g3_da_chot(study_dir, self._STUDY)
         gen = subprocess.run(
             [sys.executable, str(_TOOLS_DIR / "run_g4_auto.py"), "--study", self._STUDY],
             cwd=str(_REPO_ROOT), capture_output=True, text=True, timeout=60,
         )
         assert gen.returncode == 0, gen.stdout + gen.stderr
         artifact = study_dir / f"G4_A5_SAP_FINAL_{self._STUDY}.md"
-        text = artifact.read_text(encoding="utf-8")
-        for old, new in _COMPARATIVE_FILLS:
-            text = text.replace(old, new)
+        text = dien_sap_g4(artifact.read_text(encoding="utf-8"))
         artifact.write_text(text, encoding="utf-8", newline="\n")
-        import gate_contract as _GC  # import cục bộ — tránh phụ thuộc module-level
-        meta = _GC.ensure_study_meta(study_dir)
-        meta["gate_params"]["G4"].update({
-            "epv_vif_reviewed": True, "missing_data_mechanism_confirmed": True,
-            "subgroup_multiplicity_predefined_confirmed": True,
-            "reviewed_by_role": "STATISTICIAN", "reviewed_at": "2026-07-29T08:00:00+00:00",
-        })
-        (study_dir / "study_meta.json").write_text(
-            json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        xac_nhan_g4(study_dir, text)
         return artifact
 
     def test_approve_gate_hash_matches_ledger_approved_predicate(self, study_dir):

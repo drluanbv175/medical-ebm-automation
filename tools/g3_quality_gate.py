@@ -51,10 +51,12 @@ import re
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
+import cong_song as CS
 import gate_contract as GC
 import pipeline_freshness as PF
 import skill_standards as S
@@ -107,6 +109,7 @@ CANONICAL_DESIGNS = frozenset(
 EFFECT_TYPES_BY_DESIGN: Mapping[str, frozenset[str]] = {
     "rct": frozenset({"HR", "OR", "RR", "ARR%", "MD"}),
     "cohort": frozenset({"HR", "OR", "RR", "ARR%", "MD"}),
+    # (NI_PROPORTION / «p_test» cũ hợp lệ cho rct/cohort CHỈ khi hypothesis_type là NI/equivalence — xem G3-AUTO-03.)
     "case_control": frozenset({"OR", "RR", "ARR%"}),
     "cross_sectional": frozenset({"PREVALENCE"}),
     "diagnostic": frozenset({"AUC"}),
@@ -114,6 +117,11 @@ EFFECT_TYPES_BY_DESIGN: Mapping[str, frozenset[str]] = {
     "qualitative": frozenset(),
     "sr_ma": frozenset(),
 }
+
+# VÁ 04/10/2026 (soát từng cổng, G3-07): loại hiệu quả của non-inferiority/equivalence hai tỷ lệ (p_test là tỷ lệ
+# kết cục nhóm thử nghiệm). «p_test» là tên cũ của bộ sinh — vẫn nhận để checkpoint cũ không kẹt.
+NI_EFFECT_TYPES = frozenset({"NI_PROPORTION", "p_test"})
+NI_HYPOTHESES = frozenset({"non_inferiority", "equivalence"})
 
 # Thước đo LIÊN HỆ (association) — không bao giờ là một tỷ lệ/xác suất tuyệt đối.
 ASSOCIATION_EFFECT_TYPES = frozenset({"HR", "OR", "RR"})
@@ -132,6 +140,8 @@ _PMID_RE = re.compile(r"\bPMID[:\s]*([0-9]{1,9})\b", re.IGNORECASE)
 _DOI_RE = re.compile(r"\b10\.\d{4,9}/\S+", re.IGNORECASE)
 _MCID_RE = re.compile(r"\b(MCID|MID|ngưỡng lâm sàng tối thiểu)\b", re.IGNORECASE)
 _PILOT_RE = re.compile(r"\b(pilot|nghiên cứu thử|tiền khả thi)\b", re.IGNORECASE)
+_PHU_DINH_NGUON_RE = re.compile(r"\b(chưa có|không có|không áp dụng|chưa áp dụng|chưa tìm|không tìm|n/a)\b",
+                                re.IGNORECASE)
 
 STANDARDS_BASIS: Sequence[Mapping[str, str]] = (
     {
@@ -500,6 +510,11 @@ def source_kind(value: Any) -> Optional[str]:
     if not _present(value):
         return None
     text = str(value)
+    # VÁ 04/10/2026 (soát từng cổng, G3-07): «chưa có pilot», «không có MCID», «không áp dụng» từng được nhận là nguồn
+    # loại PILOT/MCID chỉ vì chứa từ khoá. Câu phủ định KHÔNG phải nguồn.
+    if _PHU_DINH_NGUON_RE.search(unicodedata.normalize("NFC", text)) and not (_PMID_RE.search(text) or
+                                                                               _DOI_RE.search(text)):
+        return None
     if _PMID_RE.search(text):
         return "PMID"
     if _DOI_RE.search(text):
@@ -653,6 +668,27 @@ def sensitivity_base_cell(
 # ════════════════════════════════════════════════════════════════════════════
 
 
+# Giá trị QUYẾT ĐỊNH N trong checkpoint — xác nhận của người gắn với ĐÚNG bộ giá trị này (G3-03).
+KHOA_DAU_VAN_TAY_G3 = ("design_code", "effect_val", "effect_type", "sd", "p0", "p_event", "dropout", "hypothesis_type",
+                       "margin", "outcome_direction", "icc", "cluster_size", "population_n", "precision", "prevalence",
+                       "alpha", "power", "n_adjusted", "confirmed_n")
+
+
+def dau_van_tay_g3(checkpoint: Mapping[str, Any]) -> str:
+    """Dấu 16 hex của các giá trị quyết định N đang có trong G3_checkpoint.
+
+    VÁ 04/10/2026 (soát từng cổng, G3-03): các cờ *_confirmed từng KHÔNG gắn với giá trị — chạy lại với effect size/SD/
+    giả thuyết khác vẫn PASS_G3_CONFIRMED. Nay G3-HUMAN-06 đòi gate_params.G3.dau_van_tay_chot = dấu này."""
+    return CS.dau_van_tay({k: checkpoint.get(k) for k in KHOA_DAU_VAN_TAY_G3})
+
+
+def _cung_gia_tri(a: Any, b: Any) -> bool:
+    fa, fb = _as_float(a), _as_float(b)
+    if fa is not None and fb is not None:
+        return abs(fa - fb) <= 1e-9 * max(1.0, abs(fa), abs(fb))
+    return str(a).strip().casefold() == str(b).strip().casefold()
+
+
 def evaluate_g3_quality(
     *,
     study: str,
@@ -661,8 +697,12 @@ def evaluate_g3_quality(
     g0_checkpoint: Mapping[str, Any],
     g1_checkpoint: Mapping[str, Any],
     meta: Mapping[str, Any],
+    g1_song: Optional[Mapping[str, Any]] = None,
 ) -> dict[str, Any]:
-    """Chấm G3 theo hai tầng: máy kiểm SỐ, rồi người thật xác nhận GIẢ ĐỊNH."""
+    """Chấm G3 theo hai tầng: máy kiểm SỐ, rồi người thật xác nhận GIẢ ĐỊNH.
+
+    g1_song: kết quả cong_song.trang_thai_song("G1") — G1 CHẤM SỐNG (evaluate_study truyền vào). Vắng thì dùng sự có
+    mặt của G1_checkpoint như trước (đường tương thích cho nơi gọi trực tiếp)."""
     artifact_path = Path(artifact_path)
     artifact_text = (
         artifact_path.read_text(encoding="utf-8") if artifact_path.exists() else ""
@@ -711,7 +751,30 @@ def evaluate_g3_quality(
     # thư mục trống vẫn tính N như thể là cohort rồi exit 0.
     has_g1 = bool(g1_checkpoint)
     has_g0 = bool(g0_checkpoint)
-    if has_g1 and design_ambiguous:
+    pin_tu_choi = (g1_checkpoint.get("design") or {}).get("pin_bi_tu_choi") if isinstance(
+        g1_checkpoint.get("design"), Mapping) else None
+    # VÁ 04/10/2026 (soát từng cổng, G1-05 phía tiêu thụ): G1 được CHẤM SỐNG — một đề tài có G1 BỊ CHẶN (vd thiết kế
+    # bác sĩ ghim bị từ chối) từng đi thẳng tới khoá SAP vì G3 chỉ cần G1_checkpoint tồn tại.
+    if has_g1 and isinstance(g1_song, Mapping) and g1_song.get("nguon") in (CS.NGUON_SONG, CS.NGUON_LOI):
+        muc_g1 = g1_song.get("muc")
+        if pin_tu_choi or muc_g1 == "BLOCKED":
+            premise_status = "BLOCK"
+            ly_do_pin = f" (thiết kế ghim «{pin_tu_choi}» bị từ chối)" if pin_tu_choi else ""
+            premise_evidence = f"G1 chấm sống=BLOCKED{ly_do_pin} — cỡ mẫu không được tính trên thiết kế bị chặn"
+        elif muc_g1 == "PASS" and not design_ambiguous:
+            premise_status, premise_evidence = "PASS", f"G1 chấm sống={g1_song.get('status')}"
+        elif muc_g1 == CS.KHONG_DO_DUOC:
+            premise_status = "REVIEW"
+            premise_evidence = f"G1 KHÔNG ĐO ĐƯỢC ({g1_song.get('ly_do')}) — không phải «đạt»"
+        else:
+            premise_status = "REVIEW"
+            premise_evidence = (f"G1 chấm sống={g1_song.get('status')}"
+                                + ("; G1 gắn cờ design.ambiguous=true" if design_ambiguous else "")
+                                + " — thiết kế chưa được PI/methodologist chốt")
+    elif pin_tu_choi:
+        premise_status = "BLOCK"
+        premise_evidence = f"G1 đang chặn: thiết kế ghim «{pin_tu_choi}» bị từ chối"
+    elif has_g1 and design_ambiguous:
         # G1 tự đánh dấu thiết kế chỉ là placeholder tạm (bác sĩ CHƯA xác nhận
         # khoảng trống thật). N tính ra đúng công thức cho mã thiết kế đó, nhưng
         # đổi thiết kế thường đổi luôn công thức — nên không được để trôi xuống
@@ -771,6 +834,14 @@ def evaluate_g3_quality(
             f"design=diagnostic nhưng effect_type={effect_type} — nhánh chẩn đoán "
             "thay mọi loại khác bằng hằng AUC=0.75 không nguồn"
         )
+    elif effect_type in NI_EFFECT_TYPES:
+        if design_code in {"rct", "cohort"} and hypothesis_type in NI_HYPOTHESES:
+            compat_status = "PASS"
+            compat_evidence = f"effect_type={effect_type} (tỷ lệ kết cục nhóm thử nghiệm) cho {hypothesis_type}"
+        else:
+            compat_status = "REVIEW"
+            compat_evidence = (f"effect_type={effect_type} chỉ hợp lệ cho non-inferiority/equivalence trên rct/cohort "
+                               f"(đang: {design_code}, {hypothesis_type})")
     elif allowed and effect_type in allowed:
         compat_status = "PASS"
         compat_evidence = f"effect_type={effect_type} hợp lệ cho {design_code}"
@@ -925,8 +996,8 @@ def evaluate_g3_quality(
         nuisance_missing.append("p_event (tỷ lệ biến cố nền cho log-rank)")
     if effect_type == "MD" and not _present(g3.get("sd_source")):
         nuisance_missing.append("SD (độ lệch chuẩn kết cục liên tục)")
-    if effect_type in {"OR", "RR", "ARR%"} and not _present(g3.get("p0_source")):
-        nuisance_missing.append("p0 (tỷ lệ biến cố nhóm chứng)")
+    if (effect_type in {"OR", "RR", "ARR%"} or effect_type in NI_EFFECT_TYPES) and not _present(g3.get("p0_source")):
+        nuisance_missing.append("p0 (tỷ lệ kết cục nhóm chứng)")
     if design_code == "cross_sectional" and not _present(g3.get("prevalence_source")):
         nuisance_missing.append("tỷ lệ hiện mắc p (quy ước thận trọng là p=0,5)")
     if design_code == "diagnostic" and not _present(g3.get("prevalence_source")):
@@ -1037,12 +1108,17 @@ def evaluate_g3_quality(
     # khung quy định đang theo, rồi mới áp bộ kiểm tương ứng.
     justification = str(g3.get("margin_justification") or "")
     framework = str(g3.get("ni_regulatory_framework") or "").strip().upper()
-    if hypothesis_type == "superiority":
-        ni_status, ni_evidence = "PASS", "giả thuyết superiority"
+    outcome_direction = str(checkpoint.get("outcome_direction") or "").strip()
+    if hypothesis_type not in NI_HYPOTHESES:
+        ni_status, ni_evidence = "PASS", f"giả thuyết {hypothesis_type} (không phải NI/equivalence)"
     else:
         ni_problems: list[str] = []
         if margin is None or margin <= 0:
             ni_problems.append("thiếu biên Δ hợp lệ")
+        thieu_chieu = hypothesis_type == "non_inferiority" and outcome_direction not in {"higher_better",
+                                                                                          "lower_better"}
+        if thieu_chieu:
+            ni_problems.append("thiếu CHIỀU kết cục (higher_better/lower_better) — công thức NI đổi mẫu số theo chiều")
         if not _present(justification):
             ni_problems.append("thiếu BIỆN MINH LÂM SÀNG cho biên Δ")
         if not source_kind(g3.get("margin_source")):
@@ -1061,7 +1137,7 @@ def evaluate_g3_quality(
                 ni_problems.append(
                     "theo khung FDA nhưng biện minh không tách bạch M1 và M2"
                 )
-        ni_status = "BLOCK" if (margin is None or margin <= 0) else "REVIEW"
+        ni_status = "BLOCK" if (margin is None or margin <= 0 or thieu_chieu) else "REVIEW"
         ni_status = "PASS" if not ni_problems else ni_status
         ni_evidence = (
             "; ".join(ni_problems)
@@ -1080,13 +1156,33 @@ def evaluate_g3_quality(
     )
 
     # ── G3-AUTO-12 — thiết kế theo chùm ────────────────────────────────────
-    icc = _as_float(g3.get("icc"))
-    cluster_size = _as_int(g3.get("cluster_size"))
+    # VÁ 04/10/2026 (soát từng cổng, G3-02): bộ sinh từng chỉ đọc CLI còn bộ chấm chỉ đọc study_meta — khai cụm trong
+    # study_meta đạt PASS với N CHƯA nhân hệ số thiết kế; ICC truyền qua CLI thì tiêu chí báo «không khai cụm». Nay đọc
+    # HỢP hai nguồn, lệch nhau ⇒ REVIEW, và kiểm N trong checkpoint ĐÃ nhân DE.
+    icc_cp, icc_meta = _as_float(checkpoint.get("icc")), _as_float(g3.get("icc"))
+    m_cp, m_meta = _as_int(checkpoint.get("cluster_size")), _as_int(g3.get("cluster_size"))
+    icc = icc_cp if icc_cp is not None else icc_meta
+    cluster_size = m_cp if m_cp is not None else m_meta
     is_cluster = bool(g3.get("cluster_randomised")) or icc is not None
     if not is_cluster:
         cluster_status, cluster_evidence = "PASS", "không khai thiết kế theo chùm"
     else:
         cluster_problems = []
+        cluster_block = False
+        if icc_cp is not None and icc_meta is not None and not _cung_gia_tri(icc_cp, icc_meta):
+            cluster_problems.append(f"ICC lệch: checkpoint {icc_cp} ≠ study_meta {icc_meta}")
+        if m_cp is not None and m_meta is not None and m_cp != m_meta:
+            cluster_problems.append(f"cỡ chùm lệch: checkpoint {m_cp} ≠ study_meta {m_meta}")
+        de_cp = _as_float(checkpoint.get("design_effect"))
+        n_truoc = _as_int(checkpoint.get("n_total_truoc_de"))
+        if icc is not None and cluster_size and n_total:
+            if de_cp is None:
+                cluster_block = True
+                cluster_problems.append("khai thiết kế theo chùm nhưng N trong checkpoint CHƯA nhân hệ số thiết kế "
+                                        "(chạy lại run_g3_auto — tham số cụm nay được đọc từ study_meta)")
+            elif n_truoc and n_total < n_truoc * de_cp - 1:
+                cluster_block = True
+                cluster_problems.append(f"n_total={n_total} < N trước DE {n_truoc} × DE {de_cp:.3f}")
         if icc is None:
             cluster_problems.append("thiếu ICC")
         elif not source_kind(g3.get("icc_source")):
@@ -1106,9 +1202,14 @@ def evaluate_g3_quality(
                 )
 
         # Số chùm là thứ chi phối lực của thử nghiệm theo chùm, không phải tổng N.
-        n_clusters = _as_int(g3.get("n_clusters"))
+        n_clusters_khai = _as_int(g3.get("n_clusters"))
+        n_clusters = _as_int(checkpoint.get("n_clusters"))
         if n_clusters is None and cluster_size and n_total:
             n_clusters = -(-n_total // cluster_size)  # làm tròn lên
+        if n_clusters_khai is not None and n_clusters is not None and abs(n_clusters_khai - n_clusters) > 1:
+            cluster_problems.append(f"số chùm khai tay={n_clusters_khai} khác số chùm suy từ N={n_clusters}")
+        if n_clusters is None:
+            n_clusters = n_clusters_khai
         if n_clusters is None:
             cluster_problems.append("thiếu SỐ CHÙM (không suy ra được)")
         elif n_clusters < CLUSTER_SMALL_SAMPLE_THRESHOLD and not _present(
@@ -1133,7 +1234,7 @@ def evaluate_g3_quality(
                     f"CV cỡ chùm={cv} ≥ {CLUSTER_CV_NEGLIGIBLE} nhưng chưa khai hiệu chỉnh"
                 )
 
-        cluster_status = "REVIEW" if cluster_problems else "PASS"
+        cluster_status = ("BLOCK" if cluster_block else "REVIEW") if cluster_problems else "PASS"
         cluster_evidence = (
             "; ".join(cluster_problems)
             if cluster_problems
@@ -1154,7 +1255,9 @@ def evaluate_g3_quality(
     # và suy luận nhắm vào chính quần thể đó (khảo sát cắt ngang/mô tả). Với
     # thử nghiệm ngẫu nhiên, suy luận nhắm vào quá trình sinh dữ liệu, nên FPC
     # chỉ làm N NHỎ ĐI một cách sai lầm → thiếu lực.
-    population_n = _as_int(g3.get("population_n"))
+    population_n = _as_int(checkpoint.get("population_n"))
+    if population_n is None:
+        population_n = _as_int(g3.get("population_n"))
     if population_n is None:
         fpc_status, fpc_evidence = "PASS", "không dùng hiệu chỉnh quần thể hữu hạn"
     elif design_code == "rct" or is_cluster:
@@ -1244,15 +1347,60 @@ def evaluate_g3_quality(
         )
     )
 
+    # ── G3-AUTO-18 — tham số đã GHIM trong study_meta khớp checkpoint (G3-03) ─────────────────────────────────────
+    # Dòng lệnh từng thắng bản ghim một cách im lặng (ensure_study_meta không đè) và bộ chấm không so: đề tài ghim
+    # non_inferiority chạy lại thành superiority mà vẫn PASS. Lệch giả thuyết ⇒ CHẶN; lệch tham số khác ⇒ REVIEW.
+    lech: list[str] = []
+    lech_gia_thuyet = False
+    ghim_gt = g3.get("hypothesis_type")
+    if _present(ghim_gt):
+        ghim_chuan = S.chuan_hoa_hypothesis_type(ghim_gt) or str(ghim_gt)
+        if ghim_chuan != hypothesis_type:
+            lech_gia_thuyet = True
+            lech.append(f"giả thuyết ghim «{ghim_chuan}» ≠ checkpoint «{hypothesis_type}»")
+    for khoa_ghim, khoa_cp in (("effect_size", "effect_val"), ("effect_type", "effect_type"), ("sd", "sd"),
+                               ("margin", "margin"), ("outcome_direction", "outcome_direction"), ("icc", "icc"),
+                               ("cluster_size", "cluster_size"), ("population_n", "population_n"),
+                               ("prevalence", "prevalence"), ("precision", "precision")):
+        ghim = g3.get(khoa_ghim)
+        if not _present(ghim) or khoa_cp not in checkpoint:
+            continue
+        gia_tri_cp = checkpoint.get(khoa_cp)
+        if khoa_ghim == "effect_type" and str(ghim).strip().upper() == "PREVALENCE":
+            gia_tri_cp = gia_tri_cp or ("PREVALENCE" if design_code == "cross_sectional" else gia_tri_cp)
+        if gia_tri_cp is None or not _cung_gia_tri(ghim, gia_tri_cp):
+            lech.append(f"{khoa_ghim} ghim={ghim!r} ≠ checkpoint {khoa_cp}={gia_tri_cp!r}")
+    automatic.append(
+        _criterion(
+            "G3-AUTO-18",
+            "Tham số đã ghim trong study_meta khớp giá trị thật sự đem vào phép tính",
+            ("BLOCK" if lech_gia_thuyet else "REVIEW") if lech else "PASS",
+            "; ".join(lech) if lech else "các tham số đã ghim khớp checkpoint",
+            "Chạy lại run_g3_auto chỉ với --study (dùng bản ghim), hoặc sửa bản ghim trong study_meta nếu giá trị mới "
+            "mới là quyết định thật — rồi xác nhận lại.",
+        )
+    )
+
     # ── G3-AUTO-13 — N chốt có đủ lực không ────────────────────────────────
     if confirmed_n is None:
         confirmed_status = "PASS"
         confirmed_evidence = "chưa chốt N thực tế"
-    elif n_adjusted > 0 and confirmed_n < n_adjusted:
+    elif n_adjusted > 0 and confirmed_n < n_adjusted and not _present(g3.get("underpowered_acceptance_justification")):
         confirmed_status = "REVIEW"
         confirmed_evidence = (
             f"N chốt={confirmed_n} THẤP HƠN N tối thiểu={n_adjusted} — "
-            "đề tài tự khai thiếu lực thống kê"
+            "đề tài tự khai thiếu lực thống kê; chưa có giải trình chấp nhận ở "
+            "gate_params.G3.underpowered_acceptance_justification"
+        )
+    elif n_adjusted > 0 and confirmed_n < n_adjusted:
+        # VÁ 04/10/2026 (soát từng cổng, G4-05 phía G3): hành động của tiêu chí này từ lâu đã dạy «ghi rõ chấp nhận giảm
+        # lực kèm hệ quả» nhưng KHÔNG có trường nào được đọc ⇒ đề tài chủ động chấp nhận N thấp hơn (pilot, giới hạn
+        # nguồn lực) kẹt REVIEW mãi, kéo theo G4 (chấm sống G3) không bao giờ ký được. Nay giải trình của thống kê
+        # viên/PI ⇒ PASS, và bằng chứng vẫn nói rõ đề tài THIẾU LỰC (SAP phải nói thật — G4-AUTO-14).
+        confirmed_status = "PASS"
+        confirmed_evidence = (
+            f"N chốt={confirmed_n} THẤP HƠN N tối thiểu={n_adjusted} — đề tài thiếu lực, ĐÃ có giải trình chấp nhận: "
+            f"{str(g3.get('underpowered_acceptance_justification'))[:80]}"
         )
     elif n_not_applicable and not _present(g3.get("confirmed_n_method")):
         confirmed_status = "REVIEW"
@@ -1277,11 +1425,21 @@ def evaluate_g3_quality(
     # audit_research_gates coi gate_params.G3.effect_size + p_event là metadata
     # BẮT BUỘC để chạy lại; nhưng run_g3_auto chỉ ghim khi bác sĩ truyền cả
     # effect_size lẫn effect_type qua CLI, và KHÔNG bao giờ đọc lại p_event.
-    pin_missing = [
-        key
-        for key in ("effect_size", "effect_type")
-        if needs_effect and not _present(g3.get(key))
-    ]
+    # VÁ 04/10/2026 (soát từng cổng — lộ khi dựng chuỗi G0→G4 tổng hợp cho 8 thiết kế): thiết kế theo ĐỘ CHÍNH XÁC
+    # (PREVALENCE) không có effect size — tham số quyết định N là tỷ lệ ước lượng p và sai số d. Bản cũ đòi ghim
+    # effect_size/effect_type mà run_g3_auto không bao giờ ghim cho nhánh này ⇒ đề tài mô tả (như C1a) kẹt REVIEW mãi.
+    if effect_type == "PREVALENCE":
+        # p ghim dạng mới (prevalence) HOẶC dạng cũ (effect_size + effect_type=PREVALENCE — C1a ghim kiểu này) đều
+        # là ghim.
+        p_da_ghim = _present(g3.get("prevalence")) or (
+            _present(g3.get("effect_size")) and str(g3.get("effect_type") or "").strip().upper() == "PREVALENCE")
+        pin_missing = ([] if p_da_ghim else ["prevalence"]) + ([] if _present(g3.get("precision")) else ["precision"])
+    else:
+        pin_missing = [
+            key
+            for key in ("effect_size", "effect_type")
+            if needs_effect and not _present(g3.get(key))
+        ]
     automatic.append(
         _criterion(
             "G3-AUTO-14",
@@ -1299,7 +1457,8 @@ def evaluate_g3_quality(
             # check sẽ khiến tiêu chí này REVIEW vĩnh viễn cho thiết kế cần
             # p_event (case_control/cross_sectional/diagnostic) thay vì đóng
             # đúng khoảng trống — sửa CÂU CHỮ khớp với những gì thật sự kiểm.
-            "Ghim gate_params.G3 (effect_size, effect_type) để chạy lại không trôi giá trị.",
+            "Ghim gate_params.G3 (effect_size, effect_type — thiết kế theo độ chính xác: prevalence, precision) để "
+            "chạy lại không trôi giá trị.",
         )
     )
 
@@ -1329,15 +1488,27 @@ def evaluate_g3_quality(
     )
 
     # ── Tầng NGƯỜI THẬT ────────────────────────────────────────────────────
+    # VÁ 04/10/2026 (soát từng cổng, G3-07): nguồn đòi hỏi THEO THIẾT KẾ — trước đây đòi PMID/DOI cho effect size kể cả
+    # thiết kế không có effect size (mô tả, định tính, SR/MA, tiên lượng) ⇒ ép điền chữ «pilot» cho có.
+    if effect_type == "PREVALENCE":
+        nguon_chinh_ok = _present(g3.get("prevalence_source"))
+        mo_ta_nguon = f"nguồn tỷ lệ ước lượng={'có' if nguon_chinh_ok else 'thiếu'} (prevalence_source)"
+    elif n_not_applicable:
+        nguon_chinh_ok = _present(g3.get("confirmed_n_method"))
+        mo_ta_nguon = f"phương pháp N thay thế={'có' if nguon_chinh_ok else 'thiếu'} (confirmed_n_method)"
+    elif hypothesis_type in NI_HYPOTHESES:
+        nguon_chinh_ok = bool(source_kind(g3.get("margin_source"))) and _present(g3.get("p0_source"))
+        mo_ta_nguon = (f"nguồn biên Δ={source_kind(g3.get('margin_source')) or 'thiếu'}; "
+                       f"nguồn p_control={'có' if _present(g3.get('p0_source')) else 'thiếu'}")
+    else:
+        nguon_chinh_ok = bool(kind)
+        mo_ta_nguon = f"nguồn={kind or 'thiếu'}"
     human.append(
         _criterion(
             "G3-HUMAN-01",
-            "Chủ nhiệm/thống kê viên xác nhận effect size và nguồn của nó",
-            "PASS" if (g3.get("effect_source_confirmed") is True and kind) else "REVIEW",
-            (
-                f"effect_source_confirmed={g3.get('effect_source_confirmed') is True}; "
-                f"nguồn={kind or 'thiếu'}"
-            ),
+            "Chủ nhiệm/thống kê viên xác nhận tham số chính của phép tính và nguồn của nó",
+            "PASS" if (g3.get("effect_source_confirmed") is True and nguon_chinh_ok) else "REVIEW",
+            f"effect_source_confirmed={g3.get('effect_source_confirmed') is True}; {mo_ta_nguon}",
             "Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true.",
         )
     )
@@ -1365,6 +1536,10 @@ def evaluate_g3_quality(
     )
     powered_for = g3.get("powered_for_outcome")
     primary_outcome = g1_params.get("primary_outcome") or g1_params.get("primary_endpoint")
+    if isinstance(primary_outcome, Mapping):
+        # VÁ 04/10/2026 (soát từng cổng G3): G1 ghim kết cục chính CÓ CẤU TRÚC {name, measure, timepoint, type} — so
+        # với TÊN kết cục, không so với chuỗi repr của dict (luôn lệch ⇒ REVIEW oan).
+        primary_outcome = primary_outcome.get("name") or primary_outcome.get("text")
     if not _present(powered_for):
         outcome_status = "REVIEW"
         outcome_evidence = "chưa ghi N này được tính cho KẾT CỤC nào"
@@ -1404,19 +1579,21 @@ def evaluate_g3_quality(
     )
     role_raw = str(g3.get("reviewed_by_role") or "")
     role_group = GC.role_group_for(role_raw) if role_raw else None
-    review_ok = role_group in {"STATISTICIAN", "PI"} and _valid_iso_time(
-        g3.get("reviewed_at")
-    )
+    dau_hien_tai = dau_van_tay_g3(checkpoint)
+    xn_ok, xn_ly_do = CS.xac_nhan_gan_noi_dung(
+        {"reviewed_at": g3.get("reviewed_at"), "dau_van_tay": g3.get("dau_van_tay_chot")}, dau_hien_tai)
+    review_ok = role_group in {"STATISTICIAN", "PI"} and _valid_iso_time(g3.get("reviewed_at")) and xn_ok
     human.append(
         _criterion(
             "G3-HUMAN-06",
-            "Có vai trò (thống kê viên/chủ nhiệm) và thời điểm rà soát",
+            "Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính",
             "PASS" if review_ok else "REVIEW",
             (
                 f"reviewed_by_role={role_raw or 'thiếu'} (nhóm={role_group or 'không nhận diện'}); "
-                f"reviewed_at={g3.get('reviewed_at') or 'thiếu'}"
+                f"reviewed_at={g3.get('reviewed_at') or 'thiếu'}; {xn_ly_do}"
             ),
-            "Ghi reviewed_by_role (STATISTICIAN hoặc PI) và reviewed_at dạng ISO-8601; không lưu danh tính.",
+            "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và "
+            f'dau_van_tay_chot="{dau_hien_tai}" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính.',
         )
     )
     if g3.get("pivotal_trial") is True:
@@ -1481,6 +1658,7 @@ def evaluate_g3_quality(
         "automatic_criteria": automatic,
         "human_criteria": human,
         "pending_actions": list(dict.fromkeys(pending)),
+        "dau_van_tay_hien_tai": dau_hien_tai,
         "artifact_manifest": artifact_manifest,
         "sensitivity_table": {
             "found": table.get("found"),
@@ -1629,13 +1807,15 @@ def evaluate_study(
     """Chấm lại G3 từ artifact đã có; KHÔNG tính lại cỡ mẫu, KHÔNG tự xác nhận."""
     out_dir = Path(out_dir)
     checkpoint = _read_json(out_dir / "G3_checkpoint.json")
+    g1_checkpoint = _read_json(out_dir / "G1_checkpoint.json")
     report = evaluate_g3_quality(
         study=study,
         checkpoint=checkpoint,
         artifact_path=out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md",
         g0_checkpoint=_read_json(out_dir / "G0_checkpoint.json"),
-        g1_checkpoint=_read_json(out_dir / "G1_checkpoint.json"),
+        g1_checkpoint=g1_checkpoint,
         meta=GC.load_study_meta(out_dir),
+        g1_song=CS.trang_thai_song("G1", study, out_dir) if g1_checkpoint else None,
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)

@@ -12,6 +12,10 @@ hoàn thành một bản thảo cho đề tài chưa có câu hỏi, chưa có t
 đồng Đạo đức, chưa có dữ liệu.
 
 Nguyên tắc viết test: KIỂM HÀNH VI, không grep chuỗi trong mã nguồn. Không gọi mạng.
+
+04/10/2026 (soát từng cổng G7): tiền đề G0–G6 nay là kết quả CHẤM SỐNG truyền vào (`tien_de`) — «có checkpoint» không
+còn đủ; ca PASS cần đầu ra G6 đối chiếu được (`ket_qua_g6`), bản thảo hết ô trống (bộ quét chung của G8) và xác nhận
+đọc lại gắn DẤU bản thảo. Đồ gá dưới đây dựng đúng các điều đó.
 """
 from __future__ import annotations
 
@@ -27,9 +31,20 @@ for _p in (str(REPO_ROOT), str(TOOLS_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+import cong_song as CS  # noqa: E402
 import g7_quality_gate as G7Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import run_g7_auto as G7  # noqa: E402
+
+_CONG = ("G0", "G1", "G2", "G3", "G4", "G5", "G6")
+
+
+def _td(**muc) -> dict:
+    """Tiền đề chấm sống G0–G6: mặc định PASS; `_td(G1="BLOCK")` đè từng cổng."""
+    return {g: {"status": muc.get(g, "PASS"), "evidence": f"{g}={muc.get(g, 'PASS')}"} for g in _CONG}
+
+
+_KQ_DAT = {"status": "PASS", "evidence": "giả lập: G6_analysis_summary.json sau khoá dữ liệu; N khớp bản thảo"}
 
 # ════════════════════════════════════════════════════════════════════════════
 # Fixture
@@ -55,7 +70,8 @@ def _manuscript(*, with_results: bool = False, extra: str = "") -> str:
         "## I. GIỚI THIỆU\nBối cảnh nghiên cứu.\n\n"
         "## II. PHƯƠNG PHÁP\n"
         "**§5 Cỡ mẫu:** Cỡ mẫu được tính theo công thức log-rank, N = 320.\n"
-        "**§7 Đạo đức và đăng ký:** [CẦN — chưa có phê duyệt đạo đức thật]\n\n"
+        + ("**§7 Đạo đức và đăng ký:** Nghiên cứu được Hội đồng Đạo đức phê duyệt (IRB-2026-001).\n\n"
+           if with_results else "**§7 Đạo đức và đăng ký:** [CẦN — chưa có phê duyệt đạo đức thật]\n\n") +
         "## III. KẾT QUẢ\n" + results_block + "\n"
         "## IV. BÀN LUẬN\nBàn luận.\n\n"
         "## V. KẾT LUẬN\nKết luận.\n\n"
@@ -82,9 +98,9 @@ def _cps(**over) -> dict:
     return base
 
 
-def _meta_confirmed() -> dict:
-    """study_meta.json với gate_params.G7 đã được tác giả chốt đủ."""
-    return {
+def _meta_confirmed(ban_thao: str | None = None) -> dict:
+    """study_meta.json với gate_params.G7 đã được tác giả chốt đủ — `ban_thao`: xác nhận gắn DẤU đúng bản này."""
+    meta = {
         "irb_approved": True,
         "sap_lock_date": "2026-05-01",
         "data_lock_date": "2026-06-01",
@@ -106,6 +122,9 @@ def _meta_confirmed() -> dict:
             }
         },
     }
+    if ban_thao is not None:
+        meta["gate_params"]["G7"]["dau_van_tay_chot"] = CS.dau_van_tay(ban_thao.replace("\r\n", "\n"))
+    return meta
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -118,7 +137,7 @@ def test_chan_khi_thieu_thiet_ke_G1():
     report = G7Q.evaluate_g7_quality(
         manuscript_text=_manuscript(),
         checkpoints=_cps(G1={}),
-        meta={},
+        meta={}, tien_de=_td(G1="BLOCK"),
     )
     assert report["status"] == G7Q.STATUS_BLOCKED
     row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-01")
@@ -129,7 +148,7 @@ def test_canh_bao_khi_thieu_G0_G2_G3_G4():
     report = G7Q.evaluate_g7_quality(
         manuscript_text=_manuscript(),
         checkpoints=_cps(G2={}, G3={}),
-        meta={},
+        meta={}, tien_de=_td(G2="REVIEW", G3="REVIEW"),
     )
     row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-02")
     assert row["status"] == "REVIEW"
@@ -151,10 +170,11 @@ def test_khong_pass_khi_chua_co_ket_qua_that():
 def test_pass_khi_du_dieu_kien():
     """Đường PASS phải ĐẠT ĐƯỢC — cổng không bao giờ qua nổi cũng vô dụng như cổng
     luôn qua."""
+    text = _manuscript(with_results=True)
     report = G7Q.evaluate_g7_quality(
-        manuscript_text=_manuscript(with_results=True),
-        checkpoints=_cps(), meta=_meta_confirmed(),
-        citation_verification_ok=True,
+        manuscript_text=text,
+        checkpoints=_cps(), meta=_meta_confirmed(text),
+        citation_verification_ok=True, tien_de=_td(), ket_qua_g6=_KQ_DAT,
     )
     assert report["status"] == G7Q.STATUS_CONFIRMED, report["pending_actions"]
     assert report["pending_actions"] == []
@@ -174,7 +194,7 @@ def test_chan_khang_dinh_da_duoc_hoi_dong_dao_duc_phe_duyet():
         "**§7 Đạo đức:** Nghiên cứu được Hội đồng Đạo đức phê duyệt.",
     )
     report = G7Q.evaluate_g7_quality(
-        manuscript_text=text, checkpoints=_cps(G2={}), meta={},
+        manuscript_text=text, checkpoints=_cps(G2={}), meta={}, tien_de=_td(G2="REVIEW"),
     )
     assert report["status"] == G7Q.STATUS_BLOCKED
     assert any("Hội đồng Đạo đức" in c for c in report["unsupported_claims"])
@@ -187,8 +207,8 @@ def test_khang_dinh_hop_le_khi_co_bang_chung_that():
         "**§7 Đạo đức:** Nghiên cứu được Hội đồng Đạo đức phê duyệt (IRB-2026-001).",
     )
     report = G7Q.evaluate_g7_quality(
-        manuscript_text=text, checkpoints=_cps(), meta=_meta_confirmed(),
-        citation_verification_ok=True,
+        manuscript_text=text, checkpoints=_cps(), meta=_meta_confirmed(text),
+        citation_verification_ok=True, tien_de=_td(), ket_qua_g6=_KQ_DAT,
     )
     assert report["unsupported_claims"] == []
     assert report["status"] == G7Q.STATUS_CONFIRMED
@@ -229,9 +249,16 @@ def test_dem_o_trong_theo_tung_muc():
     assert ph["total"] >= 3
 
 
-def test_evaluate_study_doc_ban_thao_TU_DIA(tmp_path):
+def test_evaluate_study_doc_ban_thao_TU_DIA(tmp_path, monkeypatch):
     """Điểm khác cốt lõi của G7: bác sĩ SỬA TAY bản thảo, và lần chấm sau phải
-    phản ánh bản đã sửa — không phải bản khung do công cụ sinh ra."""
+    phản ánh bản đã sửa — không phải bản khung do công cụ sinh ra.
+
+    04/10/2026: tiền đề/kết quả G6/A12 nay chấm SỐNG — thư mục tạm không phải chuỗi thật nên giả lập ba phép đó là
+    đạt; test này chỉ khoá việc ĐỌC TỪ ĐĨA."""
+    import run_g10_assemble as G10
+    monkeypatch.setattr(G7Q, "tien_de_song", lambda *a, **k: _td())
+    monkeypatch.setattr(G7Q, "doi_chieu_ket_qua_g6", lambda *a, **k: dict(_KQ_DAT))
+    monkeypatch.setattr(G10, "citation_verification_ok", lambda *a, **k: (True, "giả lập: A12 + receipt sạch"))
     study = "T-G7"
     d = tmp_path / study
     d.mkdir(parents=True)
@@ -250,8 +277,11 @@ def test_evaluate_study_doc_ban_thao_TU_DIA(tmp_path):
     assert r1["status"] == G7Q.STATUS_DRAFT_READY
     assert r1["placeholder_counts"]["results"] > 0
 
-    # Lần 2 — bác sĩ đã điền kết quả thật vào CHÍNH file đó
-    md.write_text(_manuscript(with_results=True), encoding="utf-8", newline="\n")
+    # Lần 2 — bác sĩ đã điền kết quả thật vào CHÍNH file đó (và xác nhận gắn dấu ĐÚNG bản này)
+    ban2 = _manuscript(with_results=True)
+    md.write_text(ban2, encoding="utf-8", newline="\n")
+    (d / "study_meta.json").write_text(
+        json.dumps(_meta_confirmed(ban2), ensure_ascii=False), encoding="utf-8", newline="\n")
     r2 = G7Q.evaluate_study(study, d)
     assert r2["status"] == G7Q.STATUS_CONFIRMED, r2["pending_actions"]
     assert r2["placeholder_counts"]["results"] == 0
@@ -343,11 +373,13 @@ def test_ensure_study_meta_tao_khoi_G7(tmp_path):
 
 
 def test_thieu_khai_bao_ICMJE_khong_duoc_pass():
-    meta = _meta_confirmed()
+    # Mọi điều kiện khác ĐẠT (tiền đề sống, kết quả G6, dấu bản thảo) — chỉ thiếu đúng một khai báo ICMJE.
+    text = _manuscript(with_results=True)
+    meta = _meta_confirmed(text)
     del meta["gate_params"]["G7"]["coi_declared"]
     report = G7Q.evaluate_g7_quality(
-        manuscript_text=_manuscript(with_results=True),
-        checkpoints=_cps(), meta=meta, citation_verification_ok=True,
+        manuscript_text=text,
+        checkpoints=_cps(), meta=meta, citation_verification_ok=True, tien_de=_td(), ket_qua_g6=_KQ_DAT,
     )
     assert report["status"] == G7Q.STATUS_DRAFT_READY
     row = next(r for r in report["human_criteria"] if r["id"] == "G7-HUMAN-02")
@@ -355,11 +387,12 @@ def test_thieu_khai_bao_ICMJE_khong_duoc_pass():
 
 
 def test_chua_doc_lai_toan_van_khong_duoc_pass():
-    meta = _meta_confirmed()
+    text = _manuscript(with_results=True)
+    meta = _meta_confirmed(text)
     meta["gate_params"]["G7"]["manuscript_reviewed_confirmed"] = False
     report = G7Q.evaluate_g7_quality(
-        manuscript_text=_manuscript(with_results=True),
-        checkpoints=_cps(), meta=meta, citation_verification_ok=True,
+        manuscript_text=text,
+        checkpoints=_cps(), meta=meta, citation_verification_ok=True, tien_de=_td(), ket_qua_g6=_KQ_DAT,
     )
     assert report["status"] == G7Q.STATUS_DRAFT_READY
     row = next(r for r in report["human_criteria"] if r["id"] == "G7-HUMAN-04")
@@ -367,10 +400,11 @@ def test_chua_doc_lai_toan_van_khong_duoc_pass():
 
 
 def test_thieu_A12_kiem_chung_trich_dan_khong_duoc_pass():
+    text = _manuscript(with_results=True)
     report = G7Q.evaluate_g7_quality(
-        manuscript_text=_manuscript(with_results=True),
-        checkpoints=_cps(), meta=_meta_confirmed(),
-        citation_verification_ok=None,
+        manuscript_text=text,
+        checkpoints=_cps(), meta=_meta_confirmed(text),
+        citation_verification_ok=None, tien_de=_td(), ket_qua_g6=_KQ_DAT,
     )
     assert report["status"] == G7Q.STATUS_DRAFT_READY
     row = next(r for r in report["automatic_criteria"] if r["id"] == "G7-AUTO-07")
