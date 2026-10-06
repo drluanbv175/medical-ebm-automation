@@ -101,7 +101,9 @@ def test_ten_va_thu_muc_khop_gate_contract():
     # chỉ tính đường dẫn (thuần chuỗi) — không mở, không liệt kê gì
     assert C._CANH_BI_MAT_THAT.xet("open", (str(GC._DEFAULT_KEY_PATH), "r", os.O_RDONLY)) == [CBM.TEN_KHOA_GIA]
     ed = str(GC._ED_PRIVATE_DIR / "gate_ed25519_IRB.key")
-    assert C._CANH_BI_MAT_THAT.xet("open", (ed, "rb", os.O_RDONLY)) == ["gate_ed25519_IRB.key"]
+    # Chốt canh trả đường dẫn tương đối ĐÃ normcase (Windows: chữ thường — hệ tệp không phân biệt hoa thường) ⇒ so
+    # cùng phép chuẩn hoá. CI Windows 05/10/2026 đỏ: ['gate_ed25519_irb.key'] == ['gate_ed25519_IRB.key'].
+    assert C._CANH_BI_MAT_THAT.xet("open", (ed, "rb", os.O_RDONLY)) == [os.path.normcase("gate_ed25519_IRB.key")]
 
 
 def test_mien_tru_khop_app_config_va_chi_cho_doc():
