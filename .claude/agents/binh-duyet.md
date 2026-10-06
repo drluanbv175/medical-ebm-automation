@@ -255,6 +255,25 @@ chủ nhiệm điền thêm `gate_params.G8` (primary_outcome, ai_use_declared, 
 data_sharing_statement...). Trạng thái đạt là `PASS_G8_REVIEW_RECORDED` — **CỐ Ý không
 mang chữ "ĐỘC LẬP"**, xem mục kế tiếp.
 
+### Hợp đồng G8 hiện hành (soát từng cổng 04/10/2026 — `g8_quality_gate.py`)
+
+| Mã | Đòi gì | Ghi chú cho agent/người phản biện |
+|---|---|---|
+| G8-AUTO-00…03 | guardrail sạch; có A9 tự kiểm; có bản thảo G7; A12 đạt thật | thiếu A12 ⇒ giao `kiem-chung-trich-dan` |
+| G8-AUTO-04 | bản thảo không còn vệt công cụ nội bộ/ô mẫu (bộ quét DÙNG CHUNG G7/G9/G10) | không có bản thảo ⇒ REVIEW, không PASS |
+| G8-AUTO-05 | kết cục chính trong bản thảo = kết cục chính SAP §2 | đổi kết cục ⇒ báo outcome switching, không «sửa cho khớp» |
+| G8-AUTO-06 | khai báo AI (ICMJE Mục V, 1/2026): `gate_params.G8.ai_use_declared` là bool thật | chuỗi «có»/«không» không được nhận |
+| G8-AUTO-07 | đăng ký: `registration_id` KHỚP ĐÚNG mã trong attestation G2 (không chứa-chuỗi), ngày ISO, phát hiện đăng ký hồi cứu | không dùng ngày IRB thay ngày đăng ký |
+| G8-AUTO-08 | tuyên bố chia sẻ dữ liệu (thử nghiệm): đủ 5 trường; `ipd_sharing: false` hợp lệ khi tuyên bố có câu phủ định rõ (ICMJE 2017 ví dụ 4, PMID 28582414) | thiếu phủ định ⇒ REVIEW |
+| G8-AUTO-09/10 | cover letter đủ nội dung ICMJE §IV.B; checklist chuẩn báo cáo đạt ngưỡng (xếp theo phần bản thảo, thang theo nguồn thẩm quyền) | — |
+| G8-AUTO-11 | mã thiết kế G1 ↔ G2 không lệch | — |
+| G8-AUTO-12 / 12b | A9 NHÚNG băm bản thảo VÀ băm bản nhận xét; chữ ký G8 ràng buộc đúng hai nội dung đó | sửa bản thảo/bản nhận xét SAU ký ⇒ G8 hết PASS ⇒ G9/G10 dừng; KHÔNG sửa A9 cho khớp |
+| G8-AUTO-13 | G7 CHẤM SỐNG `PASS_G7_CONFIRMED` | — |
+| G8-HUMAN-01 | có `G8_PEER_REVIEW_REPORT_<mã>.md` do người phản biện THẬT viết (mục đọc theo DÒNG TIÊU ĐỀ) | máy không sinh bản này |
+| G8-HUMAN-02/03/04 | sổ cái G8 đúng vai INDEPENDENT_PEER_REVIEWER; nêu đúng mức bảo đảm khoá (HMAC đối xứng); người ký G8 khác người ký cổng khác (`reviewer_ref` chuẩn hoá) | — |
+| G8-HUMAN-05 | KHỐI KHAI BÁO trong bản nhận xét: COI «Có» hoặc đồng tác giả/cấp trên «Có» ⇒ CHẶN; AI «Có» phải ghi công cụ + mục đích; phải tích «Xác nhận» không tải bản thảo lên AI thiếu bảo mật | người phản biện tự tích, agent không tích hộ |
+| G8-HUMAN-06 | KẾT LUẬN cho phép nộp: khuyến nghị «Chấp nhận»/«Sửa nhỏ» VÀ «Kết luận tổng thể: sẵn sàng nộp» VÀ bảng «LỖI NGHIÊM TRỌNG» không còn dòng nào (mỗi lỗi phải có vị trí) | «Sửa lớn/Từ chối/cần sửa thêm» ⇒ `approve_gate.py --gate G8` TỪ CHỐI ký |
+
 ## CƠ CHẾ MỞ KHÓA G8 (vá 2026-07-14 — nâng cấp kiểm soát PI/IRB/thống kê viên/phản biện)
 
 `run_g8_auto.py` (BƯỚC 0) chỉ SOẠN báo cáo TỰ KIỂM (A9/`G8_A9_PRESUBMISSION_<tên>.md`) từ

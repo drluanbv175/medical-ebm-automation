@@ -16,9 +16,10 @@ thử nghiệm can thiệp KHÔNG truyền thống — thông qua Step 4 RIÊNG 
 cho đề tài quan sát hiện tại nhưng cần biết khi có đề tài can thiệp thiết kế mới; dự thảo
 Step 2b 2023 đã lỗi thời, không dùng) · **CIOMS** 2016 · **SPIRIT 2025** (RCT) · VN: **TT43/2024/TT-BYT** (HLực 01/02/2025) · **Luật Khám bệnh, chữa bệnh 15/2023/QH15** · **Luật BVDLCN 91/2025/QH15** + **NĐ 356/2025/NĐ-CP**. `[CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]`
 
-### ICH E6(R3) Annex 2 — ĐẶC TẢ, CHƯA CÓ BỘ THI HÀNH (đính chính 03/09/2026)
+### ICH E6(R3) Annex 2 — ĐẶC TẢ + BỘ THI HÀNH (`annex2_quality_gate.py`, cập nhật 03/10 và 06/10/2026)
 
-Nếu RCT có `decentralised`, `pragmatic` và/hoặc `rwd`, PI/methodologist phải khai
+MỌI RCT phải khai tường minh `study_meta.gate_params.G1.annex2.applicable` (true/false) — vắng ⇒ G1/G2 REVIEW, không
+suy «không áp dụng» (G1-11/QĐ-15, 04/10/2026). Nếu RCT có `decentralised`, `pragmatic` và/hoặc `rwd`, PI/methodologist phải khai
 `study_meta.gate_params.G1.annex2` với `applicable: true` và `methodologies`. G1 kiểm
 fitness-for-purpose, gánh nặng/khả năng tiếp cận, vai trò giám sát, luồng an toàn và kiểm
 soát riêng từng phương pháp; G2 kiểm thông tin cho IRB, eConsent/xác minh danh tính,
@@ -49,7 +50,8 @@ python medical-ebm-automation/tools/run_g2_auto.py --study "MA-DE-TAI"
 Mở `exports/<MA-DE-TAI>/G2_A3_ETHICS_PACKAGE_<MA-DE-TAI>.docx`:
 - Điền tất cả `[CẦN BỔ SUNG]` (tên chủ nhiệm, đơn vị, liên lạc, cỡ mẫu)
 - Ký TL1 (Đơn IRB) + Trưởng đơn vị → nộp Hội đồng
-- Nhận số IRB thật → cung cấp cho hệ thống → G2_STATUS: LOCKED
+- Nhận quyết định IRB thật → người có thẩm quyền TỰ ghi bằng `approve_gate.py --gate G2` (kèm phụ lục quyết định có
+  cấu trúc/attestation) → bộ chấm sống trả `PASS_G2_APPROVED`. Agent KHÔNG ghi `G2_STATUS: LOCKED` (không mở cổng nào)
 
 ## BƯỚC 0 — KIỂM TIỀN ĐỀ (bắt buộc trước mọi soạn thảo)
 
@@ -319,7 +321,7 @@ Chữ ký chủ nhiệm: _______________  Ngày: ___/___/2026
 |---------|------------|-------------|-----------|
 | RCT / can thiệp | **BẮT BUỘC** | ClinicalTrials.gov · ANZCTR · DRKS · ISRCTN | Trước tuyển người tham gia đầu tiên |
 | Quan sát TIẾN CỨU có tuyển người tham gia mới (cohort tiến cứu · cắt ngang khảo sát · bệnh-chứng tuyển mới) | **BẮT BUỘC** — Helsinki §35, KHÔNG giới hạn riêng RCT (xem BƯỚC 0 mục 2) | ClinicalTrials.gov · ANZCTR · DRKS · ISRCTN · đăng ký trong nước · OSF Registries (nếu không có registry quốc gia phù hợp) | Trước khi tuyển người tham gia đầu tiên |
-| SR/MA | Khuyến nghị | PROSPERO | Trước tìm kiếm |
+| SR/MA | **BẮT BUỘC** — PROSPERO (khuôn G2 và bộ chấm đòi) | PROSPERO | Trước khi bắt đầu tìm kiếm |
 | Quan sát HỒI CỨU/dữ liệu thứ cấp thuần túy, KHÔNG tuyển người tham gia mới | Tùy chọn (không có "người tham gia đầu tiên" để mốc thời gian áp vào) | — | — |
 
 **WHO Trial Registration Data Set v1.3.1 — 24 mục bắt buộc** (khớp ĐÚNG hằng số
@@ -355,24 +357,39 @@ Date · 23. Summary Results · 24. IPD Sharing Statement
 ## CƠ CHẾ MỞ KHÓA G2 (điều kiện cổng)
 
 ```
-╔══════════════════════════════════════════════════════╗
-║       ĐỂ MỞ CỔNG G2 — bác sĩ cung cấp:             ║
-║  1. Số phê duyệt IRB: ___  (do Hội đồng cấp)        ║
-║  2. Ngày phê duyệt:   ___/___/20__                  ║
-║  3. Phiên bản ICF được duyệt: ___                   ║
-╠══════════════════════════════════════════════════════╣
-║  → Agent ghi vào _SO-TRANG-THAI-CHECKPOINT.md:       ║
-║    G2_STATUS: LOCKED                                ║
-║    G2_IRB_NUMBER: ___                               ║
-║    G2_APPROVAL_DATE: ___                            ║
-║    G2_ICF_VERSION: ___                              ║
-╠══════════════════════════════════════════════════════╣
-║  Sau khi LOCKED:                                    ║
-║  • G0 → G1 → G3 → G4 vẫn chạy bình thường          ║
-║  • G5 (thu thập dữ liệu THẬT) chỉ mở khi G2=LOCKED  ║
-║  Khi chưa LOCKED: chỉ soạn, không thu thập thật    ║
-╚══════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════╗
+║  ĐỂ MỞ CỔNG G2 (sửa 06/10/2026 — agent KHÔNG ghi LOCKED)     ║
+║  TRƯỚC nộp: điền mọi ô TRƯỚC-NỘP của hồ sơ (bộ chấm phân     ║
+║  loại: ô trước-nộp / sau-phê-duyệt / sau-kết-thúc) ⇒         ║
+║  READY_FOR_IRB_SUBMISSION — đây là mốc nộp Hội đồng; G10      ║
+║  khoá được GÓI TRÌNH HỘI ĐỒNG (mục đích ETHICS_SUBMISSION)    ║
+║  ở mốc này                                                   ║
+║  SAU khi Hội đồng duyệt: số IRB, ngày duyệt, hiệu lực,       ║
+║  phiên bản protocol/ICF đã duyệt → attestation có cấu trúc   ║
+║  (gắn DẤU ĐẦU VÀO: thiết kế + quyết định G1 + N của G3)      ║
+║  → người có thẩm quyền TỰ chạy approve_gate.py --gate G2     ║
+║  → g2_quality_gate.py trả PASS_G2_APPROVED                   ║
+╠══════════════════════════════════════════════════════════════╣
+║  «G2 đã duyệt» ở MỌI cổng sau = g7_quality_gate.g2_da_duyet  ║
+║  (chữ ký sổ cái khớp gói hiện tại + hợp đồng chất lượng).    ║
+║  Sửa đề cương/cỡ mẫu SAU khi duyệt ⇒ dấu đầu vào lệch ⇒      ║
+║  hết hiệu lực: làm sửa đổi (amendment) + ký lại.             ║
+║  G5 (dữ liệu THẬT) chỉ mở khi G2 đã duyệt.                   ║
+╚══════════════════════════════════════════════════════════════╝
 ```
+
+### Hợp đồng G2 hiện hành (soát từng cổng 04/10/2026 — `g2_quality_gate.py`)
+
+- RCT: thêm `G2_SAFETY_PLAN_<mã>.md` (5 mục, khuôn `khung_ke_hoach_an_toan`) + `gate_params.G2.safety_plan_confirmed`
+  (PI); ICF RCT có 2b/5b/6f/6g/6h (ICH E6(R3) 2.8.10); chẩn đoán có thủ thuật/mẫu sinh học ⇒ mục 6e; ICF tiếng Anh
+  cùng tập mục với bản tiếng Việt.
+- WHO TRDS v1.3.1: PI khai `gate_params.G2.public_title` (#9) và `health_condition` (#12) — không chép tên đề tài;
+  #13/#14/#19/#20 lấy từ `gate_params.G0/G1` đã pin (kết cục phụ: `gate_params.G1.secondary_outcomes`); masking (#15)
+  từ `gate_params.G1.blinding` — không in cứng «blinded».
+- `gate_params.G2.protocol_version` / `icf_version` do PI khai (khuôn KHÔNG gieo «1.0»); miễn ICF:
+  `icf_waiver_requested`; thiết kế hồ sơ phải khớp G1 đã xác nhận (G2-AUTO-06b).
+- Mọi tiêu chí tự động lái trạng thái; ô «chỉ điền sau khi kết thúc nghiên cứu» (TRDS #23) không chặn ký.
+- `run_g2_auto.py` ghi `exports/<mã>` theo THƯ MỤC LÀM VIỆC — chạy từ gốc `medical-ebm-automation/`.
 
 Sau khi nhận số IRB, ghi vào checkpoint và xuất Word:
 ```bash
@@ -442,7 +459,7 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 
 **Đạt G2 (AI side):** 8 tài liệu hoàn chỉnh · checklist nộp đủ mục · WHO TRDS 1.3.1 đủ 24 mục và các mục khoa học 13/14/19/20 lấy từ quyết định PI đã pin · tham chiếu Hội đồng rõ nguồn · ICF đúng 7 mục Helsinki · DMP đủ Luật 91/2025 · khai báo COI/AI · không PII · không số phê duyệt bịa.
 
-**Mở khóa thật (human side):** bác sĩ nộp hồ sơ → Hội đồng phê duyệt → cung cấp số IRB thật → agent ghi G2_STATUS: LOCKED vào checkpoint (nội dung tham khảo).
+**Mở khóa thật (human side):** bác sĩ nộp hồ sơ → Hội đồng phê duyệt → bác sĩ TỰ chạy `approve_gate.py --gate G2` (vai IRB) kèm quyết định có cấu trúc → `g2_quality_gate.py` trả `PASS_G2_APPROVED`. Agent KHÔNG ghi `G2_STATUS: LOCKED`.
 
 **Vá 2026-07-12 (audit toàn diện cổng G0-G9):** ghi `G2_STATUS: LOCKED` vào checkpoint KHÔNG còn tự mở cổng thật — kiểm định đối kháng xác nhận agent tự ghi dòng này từng đủ để các script phân tích dữ liệu thật (`run_stats_analysis.py`) chạy trót lọt, dù chưa hề có phê duyệt IRB thật. Cổng THẬT nay đòi `approval_ledger.json` có chữ ký (xem `tools/gate_contract.py::ledger_approved`). Việc CỦA AGENT khi có số IRB thật: nhắc bác sĩ **tự tay** chạy `python tools/approve_gate.py --study <tên> --gate G2 --artifact <hồ sơ đạo đức>` trong terminal riêng (không nhờ agent chạy hộ — nếu agent chạy hộ, chữ ký vẫn được tạo nhưng mất ý nghĩa "một người ngoài agent đã xác nhận"). Cần khóa ký đã thiết lập một lần bằng `tools/setup_gate_approval_key.py` (bác sĩ tự chạy).
 

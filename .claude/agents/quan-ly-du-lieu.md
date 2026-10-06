@@ -69,8 +69,9 @@ Một bác sĩ/kiểm toán viên đối chiếu bảng trên với TÀI LIỆU 
 
 ```
 Kiểm tra trước khi xử lý dữ liệu thật:
-☐ G2_STATUS = LOCKED (số IRB: ___)    → nếu chưa: CHỈ thiết kế quy trình, KHÔNG chạm DL thật
-☐ G4_STATUS = LOCKED (SAP đã khóa)   → nếu chưa: không phân tích chính thức
+☐ G2 ĐÃ DUYỆT (g7_quality_gate.g2_da_duyet: chữ ký IRB khớp gói hiện tại) → nếu chưa: CHỈ thiết kế quy trình
+☐ G4 ĐÃ KHOÁ khi chấm sống (PASS_G4_SAP_LOCKED)  → nếu chưa: KHÔNG nạp dữ liệu (import từ chối)
+  (KHÔNG đọc/ghi trường G2_STATUS/G4_STATUS trong checkpoint — trường đó không mở cổng nào)
 ☐ Đang làm trên BẢN SAO             → dữ liệu gốc read-only tại ___
 ☐ Không có PII trực tiếp             → tên/CMND/địa chỉ đã tách hoặc sẽ tách ngay
 ```
@@ -206,7 +207,7 @@ CHECKLIST TIỀN-KHÓA DATABASE (hoàn tất trước khi khóa):
 ☐ Trường định danh nội bộ dùng đối soát/chống trùng (vd mã hồ sơ bệnh án) đã được xóa khỏi bộ dữ liệu bàn giao phân tích (TÀI LIỆU 4, BƯỚC 5)
 ☐ Backup file trước khi khóa: [đường dẫn]
 ☐ Checksum/hash trước khi khóa: ___
-☐ SAP đã khóa (G4_STATUS = LOCKED)
+☐ SAP đã khóa (g4_quality_gate chấm sống PASS_G4_SAP_LOCKED)
 ☐ Chủ nhiệm đã rà qua báo cáo QC sơ bộ
 ```
 
@@ -227,7 +228,7 @@ Thống kê cơ sở dữ liệu cuối:
   Số truy vấn đã đóng: ___  |  Số truy vấn còn mở: 0
 ──────────────────────────────────────────────────────────────
 Xác nhận:
-  ☐ SAP đã khóa ngày ___ (G4_STATUS = LOCKED)
+  ☐ SAP đã khóa ngày ___ (chấm sống PASS_G4_SAP_LOCKED)
   ☐ Tất cả truy vấn đã giải quyết
   ☐ Checksum đã ghi nhận
   ☐ Bảng liên kết đã lưu tách biệt + mã hóa
@@ -268,23 +269,28 @@ exports/{study}/
 ## CƠ CHẾ MỞ KHÓA G5
 
 ```
-╔══════════════════════════════════════════════════════╗
-║       ĐỂ MỞ CỔNG G5 — bác sĩ làm 1 việc:           ║
-║  Ký Biên bản khóa DB (Data Lock Memo)               ║
-║  + Xác nhận G2_STATUS = LOCKED (có số IRB thật)     ║
-╠══════════════════════════════════════════════════════╣
-║  → Agent ghi vào _SO-TRANG-THAI-CHECKPOINT.md:       ║
-║    G5_STATUS: LOCKED                                ║
-║    G5_LOCK_DATE: ___                                ║
-║    G5_DATASET_VERSION: 1.0                          ║
-║    G5_RECORD_COUNT: ___                             ║
-╠══════════════════════════════════════════════════════╣
-║  Sau LOCKED:                                        ║
-║  • G6 (phan-tich-thong-ke) chỉ chạy khi             ║
-║    G4=LOCKED + G5=LOCKED cả hai                    ║
-║  Khi chưa LOCKED: chỉ thiết kế quy trình,          ║
-║  không chạm dữ liệu thật                           ║
-╚══════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════╗
+║  ĐỂ MỞ CỔNG G5 (sửa 06/10/2026 — agent KHÔNG ghi LOCKED)     ║
+║  Tiền đề: G2 ĐÃ DUYỆT + G4 ĐÃ KHOÁ (chấm sống). Nạp dữ liệu  ║
+║  trước khi IRB/SAP được ký ⇒ import TỪ CHỐI.                 ║
+║  1. Hoàn tất DMP PHẦN 8 (bộ khoá TỪ CHỐI khi còn ô trống)    ║
+║  2. Đóng mọi truy vấn: --query-resolutions (mã da_sua /      ║
+║     xac_nhan_dung / khong_ap_dung_co_ly_do + ly_do +         ║
+║     owner_ref + resolved_at; có băm)                         ║
+║  3. Hồ sơ vận hành G5-OPS-2026.2: audit_trail_review +       ║
+║     source_data_verification (hoặc not_applicable_reason)    ║
+║  4. Định tính: TRANSCRIPT_manifest.json (băm từng bản gỡ)    ║
+║  5. python tools/lock_analysis_dataset.py ... ĐỦ 10 cờ       ║
+║     --confirm-* (gồm --confirm-audit-trail-reviewed)         ║
+║  6. g5_quality_gate.py → READY_FOR_G5_APPROVAL               ║
+║     (DRAFT_LOCKED_NEEDS_HUMAN_REVIEW = CHƯA qua)             ║
+║  7. Người có thẩm quyền TỰ chạy approve_gate.py --gate G5    ║
+║     (DATA_MANAGER hoặc PI) → PASS_G5_DATA_LOCKED             ║
+╠══════════════════════════════════════════════════════════════╣
+║  Từ điển dữ liệu: G5_REDCap_dictionary_<mã>.csv. Khoá lại    ║
+║  cùng dữ liệu khi chưa ký = chấm lại tài liệu (lan_khoa_truoc)║
+║  Không có trường «G5_STATUS: LOCKED» nào mở cổng.            ║
+╚══════════════════════════════════════════════════════════════╝
 ```
 
 Xuất Word:

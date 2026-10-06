@@ -33,11 +33,12 @@ trong file .md (file .md bị ghi đè mỗi lần chạy lại):
 |---|---|
 | PICO/PECO | `population` · `intervention` · `comparison` · `outcomes` |
 | Kết cục chính DUY NHẤT | `primary_outcome` · `primary_outcome_measure` · `primary_outcome_timepoint` |
-| Giả thuyết | `hypothesis_h0` · `hypothesis_h1` · `expected_direction` · `test_type` |
-| Loại câu hỏi | `question_type` (therapy/diagnosis/prognosis/harm/descriptive) |
-| FINER 5 tiêu chí | `finer_feasible` · `finer_interesting` · `finer_novel` · `finer_ethical` · `finer_relevant` |
+| Giả thuyết | `hypothesis_h0` · `hypothesis_h1` · `expected_direction` · `test_type` (superiority / non_inferiority / equivalence / descriptive — G3 tính N và SAP §12 ký PHẢI cùng loại; G10 đối chiếu, lệch là LỆCH CỨNG) |
+| Loại câu hỏi | `question_type` (therapy/diagnosis/prognosis/harm/descriptive; bí danh chuẩn hoá: treatment ≡ therapy…) — loại có so sánh mà test_type «descriptive» phải có `descriptive_justification` |
+| FINER 5 tiêu chí | `finer_feasible` · `finer_interesting` · `finer_novel` · `finer_ethical` · `finer_relevant` — mỗi tiêu chí có KẾT LUẬN + lý do (kết luận phủ định mạnh ⇒ không qua) |
 | Đã đọc lại bằng chứng | `evidence_reviewed_confirmed` · `novelty_justification` |
-| Chốt | `pico_confirmed` · `reviewed_by_role` · `reviewed_at` |
+| Trùng lặp đăng ký | `registry_manual_checked` · `registry_overlap_assessment` (ClinicalTrials.gov tra tự động + người rà) |
+| Chốt | `pico_confirmed` · `reviewed_by_role` · `reviewed_at` (ISO, không ở tương lai) · `dau_van_tay_chot` = dấu vân tay mà `g0_quality_gate.py` in ra (sửa PICO/chủ đề/PMID SAU khi chốt ⇒ dấu lệch ⇒ G0 về DỰ THẢO — mọi công cụ hiển thị nay chấm sống nên sẽ thấy ngay) |
 
 Rồi chấm lại (KHÔNG gọi lại PubMed, chạy được nhiều lần):
 ```bash

@@ -52,7 +52,7 @@ Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kế
 
 > Kích hoạt khi orchestrator gọi từ CHAY-TOAN-BO **sau khi G6 đã hoàn tất** và truyền kết quả từ `phan-tich-thong-ke` + `dien-giai-ket-qua`. **(2026-07-07 — làm rõ, tránh mâu thuẫn với CỔNG 0):** CỔNG 0 anti-ghostwrite KHÔNG chặn phần **Results/bảng số liệu** — đây là dữ kiện khách quan sao chép nguyên vẹn từ dữ liệu đã khóa (G4/G5 LOCKED) do bác sĩ cung cấp, không phải luận điểm AI tự nghĩ. Nhưng phần **Discussion/diễn giải** (luận điểm, ý nghĩa lâm sàng — do agent `dien-giai-ket-qua` soạn, không phải bác sĩ) VẪN phải qua CỔNG 0 đầy đủ: dùng đúng nhãn mạnh `[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]` (không phải nhãn yếu "chỉ kiểm tra số liệu" ở dưới), và bác sĩ phải cung cấp góc nhìn/ý chính của riêng mình trước khi AI soạn Discussion.
 
-**Điều kiện kích hoạt:** orchestrator truyền rõ kết quả G6 + G6.5 ĐÃ CÓ SỐ LIỆU THẬT (G4_STATUS=LOCKED + G5_STATUS=LOCKED).
+**Điều kiện kích hoạt:** orchestrator truyền rõ kết quả G6 + G6.5 ĐÃ CÓ SỐ LIỆU THẬT — G4/G5 còn khoá khi CHẤM SỐNG (`gate_contract.g4/g5_quality_contract_satisfied`; G7 chấm sống G0–G6 qua `g7_quality_gate.tien_de_song`), KHÔNG dựa trường `G4_STATUS`/`G5_STATUS` trong checkpoint (trường đó không mở cổng nào; agent không ghi).
 
 **Hành động AUTO-PULL (không cần bác sĩ nhắc):**
 
@@ -119,6 +119,18 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 **Hoàn thành khi:** thông điệp chính rõ; chuẩn báo cáo đúng thiết kế + bảng đối chiếu checklist; IMRAD văn xuôi; Results có CI; Discussion không overclaim; mục khai báo đầy đủ (tác giả xác nhận); chỗ thiếu đánh `[CẦN BỔ SUNG]`. **Bàn giao** `hieu-dinh-song-ngu` (nếu nộp quốc tế) → `kiem-chung-trich-dan` (cổng cứng, kiểm TỪNG tham khảo trên bản CUỐI — xem mục 🔒 CỔNG CỨNG trích dẫn) → `binh-duyet`. Danh mục tham khảo PHẢI đã qua `kiem-chung-trich-dan` trước khi sang `binh-duyet`; còn `[TRÍCH DẪN CHƯA XÁC MINH]` → CHƯA sẵn sàng nộp (sửa 2026-07-26, vòng lặp vòng 29, phát hiện HIGH: đồng bộ thứ tự với mục 🔒 CỔNG CỨNG trích dẫn phía trên).
 
 > **Định dạng LaTeX theo venue cụ thể (2026-07-04, sửa số liệu 2026-07-11 — "50+ venue" không khớp thực tế trên đĩa):** dòng 101 ("xuất LaTeX/PDF/DOCX khi cần") hiện chỉ xuất bản thảo chung, KHÔNG có template riêng theo từng tạp chí. Khi đã chọn tạp chí/hội nghị/quỹ tài trợ đích cụ thể — dùng skill `venue-templates` để định dạng đúng khuôn, SAU khi nội dung khoa học đã chốt ở bước này. Skill này có `.tex` THẬT (kiểm trực tiếp `sync/skills/venue-templates/assets/`) chỉ cho **Elsevier (3 biến thể), Nature, PLOS ONE, NeurIPS + 1 poster + 2 mẫu grant (NIH/NSF)** — 9 file, không phải "50+ venue" như SKILL.md của skill này tự mô tả; các venue khác trong bảng của SKILL.md chỉ có hướng dẫn định dạng bằng văn xuôi (`references/*.md`), KHÔNG có `.tex` sẵn dùng. Không dùng để thay nội dung/liêm chính đã qua cổng cứng trích dẫn ở trên.
+
+### Hợp đồng G7 hiện hành (soát từng cổng 04/10/2026 — `g7_quality_gate.py`)
+- `PASS_G7_CONFIRMED` đòi G0–G6 PASS THẬT khi CHẤM SỐNG (`g7_quality_gate.tien_de_song`; «G2 đã duyệt» =
+  `g2_da_duyet`), không chỉ «checkpoint tồn tại».
+- Kết quả: tóm tắt G6 (`G6_analysis_summary.json` — CLI ở `06_ket_qua/` hoặc khối cuối `03_analysis.R` ở
+  `06_phan_tich_R/output/`) tính từ ĐÚNG dataset đã khoá, và N đó phải có trong Tóm tắt/Kết quả; `results_final` là bool
+  `true` (chuỗi không được nhận); chỉ gỡ băng-rôn DRAFT khi kết quả đã thật.
+- A12 qua `run_g10_assemble.citation_verification_ok` (biên nhận có chữ ký, phủ mọi PMID của bản thảo).
+- `gate_params.G7` là CHUỖI nội dung thật: title, authors, 5 khai báo ICMJE, target_journal; xác nhận đọc lại gắn
+  `dau_van_tay_chot` mà báo cáo G7 in ra (sửa bản thảo sau xác nhận ⇒ hết hiệu lực).
+- Bộ quét «bản thảo sạch» DÙNG CHUNG G7/G8/G9/G10: gỡ hết «[TRÍCH DẪN CHƯA XÁC MINH]», dòng chỉ dẫn khuôn, ô mẫu, vệt
+  công cụ nội bộ; miễn đồng thuận lấy từ quyết định G2; Helsinki 2024; mục 9 STROBE theo thiết kế.
 
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa trích dẫn/số liệu; phân biệt phát hiện vs suy diễn; nhắc khai báo AI/tác giả/COI; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
