@@ -1976,6 +1976,9 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         f"- Can auto resume: `{report['resume_contract']['can_auto_resume']}`",
         f"- Resume command: `{report['resume_contract']['next_command'] or 'NONE'}`",
         f"- Release blockers: {report['gate_release_summary']['blocking_gate_count']}",
+        "- Hội đồng cổng (tư vấn — không mở/chặn cổng): "
+        + (" · ".join(f"{g} {t.get('trang_thai')}" for g, t in (report.get("hoi_dong_cong") or {}).items()
+                      if t.get("trang_thai") != "CHƯA HỌP") or "chưa họp cổng nào"),
         "",
         "## Gate Release Contracts",
         "",
@@ -2145,6 +2148,18 @@ def _update_meta(out_dir: Path, report: Dict[str, Any],
         json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
+def _hoi_dong_cong(out_dir: Path) -> Dict[str, Any]:
+    """Tóm tắt biên bản hội đồng từng cổng (tools/hoi_dong_cong.py); lỗi ⇒ mọi cổng «KHÔNG ĐO ĐƯỢC» — không bao giờ
+    «đồng thuận» mặc định."""
+    try:
+        import hoi_dong_cong as HD  # noqa: PLC0415
+
+        return HD.tom_tat(out_dir, out_dir.parent.parent)
+    except Exception as exc:  # noqa: BLE001
+        return {g: {"gate": g, "trang_thai": "KHÔNG ĐO ĐƯỢC", "ly_do": [f"{type(exc).__name__}: {exc}"[:200]]}
+                for g in ("G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10")}
+
+
 def audit_gates(study: str, *, out_dir: Optional[Path] = None,
                 topic: Optional[str] = None, write: bool = True) -> Dict[str, Any]:
     study_id = study.strip()
@@ -2159,6 +2174,11 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         for gate in PIPELINE_GATES
     ]
     _attach_release_contracts(pipeline_rows)
+    # 06/10/2026 — hội đồng cổng (đánh giá chéo + tranh biện giữa các agent): TƯ VẤN — gắn vào từng dòng cổng để đài
+    # kiểm soát thấy, KHÔNG đổi overall_status/verdict (cổng do bộ chấm + chữ ký người).
+    hoi_dong = _hoi_dong_cong(out_dir)
+    for row in pipeline_rows:
+        row["hoi_dong"] = (hoi_dong.get(row["gate"]) or {}).get("trang_thai", "KHÔNG ĐO ĐƯỢC")
     hard_stop_count = sum(
         1 for row in pipeline_rows
         if row["status"] in {STATUS_BLOCKED, STATUS_GUARDRAIL_FAIL, STATUS_NEEDS_REAL}
@@ -2196,6 +2216,7 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         "real_world_signals": signals,
         "pipeline_gates": pipeline_rows,
         "gate_release_summary": _release_summary(pipeline_rows),
+        "hoi_dong_cong": hoi_dong,
         "data_pipeline": data_pipeline,
         "skill_gates": _skill_gate_rows(cps, meta),
         "readiness": S.readiness_report(cps, meta),
@@ -2238,6 +2259,9 @@ def print_summary(report: Dict[str, Any]) -> None:
     print(f"resume_mode={report['resume_contract']['mode']}")
     print(f"can_auto_resume={report['resume_contract']['can_auto_resume']}")
     print(f"release_blocking_gate_count={report['gate_release_summary']['blocking_gate_count']}")
+    hd = report.get("hoi_dong_cong") or {}
+    can = [f"{g}:{t.get('trang_thai')}" for g, t in hd.items() if t.get("trang_thai") not in ("CHƯA HỌP", "ĐỒNG THUẬN")]
+    print(f"hoi_dong_cong={'; '.join(can) if can else 'không có việc treo (tư vấn)'}")
     for row in report["pipeline_gates"]:
         if row["gate"] == report.get("current_actionable_gate"):
             print(f"next_action={row['next_action']}")

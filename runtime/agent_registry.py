@@ -74,10 +74,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # viet-ban-thao, binh-duyet, nop-bai-phan-hoi) bỏ chỉ dẫn «agent ghi Gx_STATUS=LOCKED», tiền đề chấm sống, hợp đồng
 # hiện hành từng cổng — bản cặp y hệt gốc; vẫn 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "28f4df29c4e778deac8a5e0b08eae8b17eb6d82507c856980b4ced4920c2703d"
+    "24b4325182789181c8a4a69013ad00ac087aec70b4ba044dcd6a693d5a64f4ff"
 )
 
-MINIMUM_AGENT_COUNT = 50
+MINIMUM_AGENT_COUNT = 64
 # V4.2.1 (GAP-001): hard-enforce đủ 4 agent trọng yếu (2 nhạc trưởng + guardrail
 # chốt kiểm cuối + sổ cái). Thiếu bất kỳ agent nào → registry fail-closed.
 REQUIRED_AGENTS = frozenset({
