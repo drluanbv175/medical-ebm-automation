@@ -62,6 +62,12 @@ def ed_env(tmp_path, monkeypatch):
     _gen_keypair(tmp_path, GROUP)
     monkeypatch.setattr(GC, "_ED_PRIVATE_DIR", tmp_path / "priv")
     monkeypatch.setattr(GC, "_ED_PUBLIC_DIR", tmp_path / "pub")
+    # Dưới pytest, EBM_GATE_KEY_PATH quyết định thư mục khoá riêng Ed25519: gate_contract._ed_private_dir() lấy THƯ MỤC
+    # CHA của nó, không nhìn _ED_PRIVATE_DIR. Trước 05/10/2026 biến này vắng nên khoá HMAC rơi về ~/.ebm-secrets thật;
+    # nay tests/conftest.py luôn đặt khoá giả. Trỏ khoá HMAC vào priv/ (không tạo tệp ⇒ đường HMAC fail-closed) để khoá
+    # riêng vừa sinh ở priv/ là khoá được dùng — không phải khoá giả của conftest, càng không phải khoá thật.
+    monkeypatch.setenv("EBM_GATE_KEY_PATH", str(tmp_path / "priv" / "gate_approval_key"))
+    assert GC._ed_private_dir() == tmp_path / "priv"
     return tmp_path
 
 
