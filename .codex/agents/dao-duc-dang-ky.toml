@@ -374,6 +374,10 @@ Date · 23. Summary Results · 24. IPD Sharing Statement
 ║  Sửa đề cương/cỡ mẫu SAU khi duyệt ⇒ dấu đầu vào lệch ⇒      ║
 ║  hết hiệu lực: làm sửa đổi (amendment) + ký lại.             ║
 ║  G5 (dữ liệu THẬT) chỉ mở khi G2 đã duyệt.                   ║
+║  ĐỔI KẾT CỤC CHÍNH (06/10/2026): Hội đồng đạo đức chấp thuận ║
+║  sửa đổi + cập nhật bản đăng ký (ngày) TRƯỚC khoá dữ liệu;   ║
+║  chủ nhiệm khai gate_params.G10.sua_doi_ket_cuc_chinh        ║
+║  (irb_chap_thuan, dang_ky_cap_nhat…) — xem dieu-phoi-g10.    ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 

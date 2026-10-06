@@ -595,6 +595,17 @@ _DONG_KHAI_KET_CUC_RE = re.compile(
     re.IGNORECASE,
 )
 _CAU_KET_CUC_CHINH_RE = re.compile(r"kết\s*cục\s*chính|primary\s+outcome", re.IGNORECASE)
+# ĐỊNH TÍNH (06/10/2026): bài theo COREQ/SRQR nêu điều đã định trước bằng «câu hỏi/hiện tượng/mục tiêu nghiên cứu», hiếm
+# khi viết «kết cục chính» ⇒ chỉ nhận cụm định lượng thì bản thảo định tính đúng chuẩn vẫn rơi REVIEW giả.
+_CAU_KET_CUC_CHINH_DINH_TINH_RE = re.compile(
+    r"kết\s*cục\s*chính|primary\s+outcome|hiện\s*tượng\s*nghiên\s*cứu|câu\s*hỏi\s*nghiên\s*cứu|research\s+question|"
+    r"phenomenon\s+of\s+interest|mục\s*(?:tiêu|đích)\s*nghiên\s*cứu|aims?\s+of\s+(?:the|this)\s+study",
+    re.IGNORECASE,
+)
+
+
+def _la_dinh_tinh(design_code: Optional[str]) -> bool:
+    return str(design_code or "").strip().lower().replace("-", "_") in {"qualitative", "dinh_tinh", "định tính"}
 
 
 def ket_cuc_sap(sap_text: str) -> tuple[list[str], list[str]]:
@@ -615,7 +626,7 @@ def ket_cuc_sap(sap_text: str) -> tuple[list[str], list[str]]:
 
 
 def primary_outcome_consistency(
-    sap_text: str, manuscript: str, declared_outcome: str
+    sap_text: str, manuscript: str, declared_outcome: str, design_code: Optional[str] = None
 ) -> tuple[str, str]:
     """So kết cục chính đã định trước với kết cục chính mà bản thảo BÁO.
 
@@ -645,9 +656,11 @@ def primary_outcome_consistency(
         return "BLOCK", (
             f"kết cục chính {declared_outcome[:60]!r} KHÔNG có mặt trong bản thảo (G7) — nghi báo cáo kết quả chọn lọc"
         )
-    cau_ban_thao = [_chuan_kc(d) for vung in vung_gui for d in vung.splitlines() if _CAU_KET_CUC_CHINH_RE.search(d)]
+    neo = _CAU_KET_CUC_CHINH_DINH_TINH_RE if _la_dinh_tinh(design_code) else _CAU_KET_CUC_CHINH_RE
+    cau_ban_thao = [_chuan_kc(d) for vung in vung_gui for d in vung.splitlines() if neo.search(d)]
     if not cau_ban_thao:
-        return "REVIEW", "bản thảo không có câu nào nêu «kết cục chính» để đối chiếu với SAP"
+        return "REVIEW", ("bản thảo không có câu nào nêu «kết cục chính»" + (
+            " / câu hỏi–hiện tượng nghiên cứu" if _la_dinh_tinh(design_code) else "") + " để đối chiếu với SAP")
     if any(khai in c for c in cau_ban_thao):
         return "PASS", f"kết cục chính {declared_outcome[:60]!r} = SAP §2 và được bản thảo nêu đúng là kết cục chính"
     doi = [p for p in phu_sap if len(p) >= 8 and any(p in c for c in cau_ban_thao)]
@@ -1327,7 +1340,7 @@ def evaluate_g8_quality(
 
     # ── G8-AUTO-05 — báo cáo kết quả chọn lọc ──────────────────────────────
     outcome_status, outcome_evidence = primary_outcome_consistency(
-        sap_text, manuscript_text, str(g8.get("primary_outcome") or "")
+        sap_text, manuscript_text, str(g8.get("primary_outcome") or ""), design_code
     )
     automatic.append(_criterion(
         "G8-AUTO-05",

@@ -105,12 +105,15 @@ _QUALITATIVE_FILLS = [
     ("[CẦN — nhật ký phản tư (reflexivity journal)]", "nhật ký phản tư"),
     ("- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  ", "- **Tiêu chí nhận:** Bệnh nhân đồng ý phỏng vấn  "),
     ("- **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  ", "- **Tiêu chí loại:** Không đủ năng lực đồng thuận  "),
-    ("- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — ví dụ: tỷ lệ nhập viện tim mạch trong 12 tháng]  ",
-     "- **Kết cục chính:** Trải nghiệm sống với bệnh mạn  "),
-    ("- **Đơn vị / ngưỡng:** [CẦN]  ", "- **Đơn vị / ngưỡng:** N/A  "),
-    ("- **Kết cục phụ 1:** [CẦN]  ", "- **Kết cục phụ 1:** N/A  "),
-    ("- **Kết cục phụ 2:** [CẦN]  ", "- **Kết cục phụ 2:** N/A  "),
-    ("- **Kết cục an toàn:** [CẦN — đặc biệt với RCT]  ", "- **Kết cục an toàn:** N/A  "),
+    # 06/10/2026 (SAP định tính — bác sĩ yêu cầu): §2 định tính có khuôn riêng (run_g4_auto._dong_muc_2) — «Kết cục
+    # chính» là hiện tượng/câu hỏi nghiên cứu G1; «Đơn vị / ngưỡng» và «Kết cục an toàn» in sẵn KHÔNG ÁP DỤNG nên
+    # không còn ô để điền; kết cục phụ là câu hỏi phụ hoặc KHÔNG ÁP DỤNG.
+    ("- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — hiện tượng/câu hỏi nghiên cứu trọng tâm đã chốt ở G1, ví dụ: trải "
+     "nghiệm của người bệnh về …]  ", "- **Kết cục chính:** Trải nghiệm sống với bệnh mạn  "),
+    ("- **Kết cục phụ 1:** [CẦN — câu hỏi/chủ đề nghiên cứu phụ, hoặc KHÔNG ÁP DỤNG]  ",
+     "- **Kết cục phụ 1:** KHÔNG ÁP DỤNG  "),
+    ("- **Kết cục phụ 2:** [CẦN — câu hỏi/chủ đề nghiên cứu phụ, hoặc KHÔNG ÁP DỤNG]  ",
+     "- **Kết cục phụ 2:** KHÔNG ÁP DỤNG  "),
     # 04/10/2026 (G4-06): §10 định tính có khuôn riêng — Packages/Random seed in sẵn «KHÔNG ÁP DỤNG».
     ("- **Phần mềm:** [CẦN — phần mềm phân tích định tính và phiên bản (vd NVivo 14 / ATLAS.ti 23 / "
      "MAXQDA 2022) hoặc mã tay theo codebook]  ", "- **Phần mềm:** NVivo v14  "),

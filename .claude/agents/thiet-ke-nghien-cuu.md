@@ -132,6 +132,8 @@ Thời gian theo dõi: ___
 > SAP phải hoàn chỉnh và "khóa" TRƯỚC KHI XEM DỮ LIỆU THẬT.
 > Sau khi khóa: KHÔNG thay đổi kết cục chính, quần thể phân tích chính, mô hình chính.
 > Phân tích thêm → ghi rõ là THĂM DÒ và thực hiện riêng biệt.
+> **Đổi kết cục chính SAU khi khoá SAP (06/10/2026, G10-07):** SAP AMENDMENT đưa kết cục MỚI vào §2 (dòng «Kết cục chính:»); chủ nhiệm khai `gate_params.G10.sua_doi_ket_cuc_chinh` (Hội đồng đạo đức chấp thuận + đăng ký cập nhật, TRƯỚC khoá dữ liệu) — G10-AUTO-11 đòi §2 = kết cục mới nhất; đổi sau khoá dữ liệu là hậu kiểm, không thành kết cục chính tiền định. **SAP ĐỊNH TÍNH:** run_g4_auto điền sẵn §2 «Kết cục chính:» = hiện tượng/câu hỏi nghiên cứu đã chốt ở G1 kèm dòng diễn giải (SRQR, không kiểm định giả thuyết); đơn vị/ngưỡng và kết cục an toàn KHÔNG ÁP DỤNG; G6-AUTO-04 không đòi biến kết cục cho định tính.
+
 > **Ký khoá (04/10/2026):** `approve_gate.py --gate G4` và G4-AUTO-10 từ chối khi §1 · §2 · **§4 PHÂN TÍCH CHÍNH** · §5 · **§9 PHÂN TÍCH ĐỘ NHẠY** · §10 còn «[CẦN» — phân tích chính và kịch bản độ nhạy phải định trước, không để trống rồi điền sau khi thấy dữ liệu. SAP ĐÃ KÝ trước mốc này không bị hạ cấp vì §4/§9 (dòng G4-AUTO-10 vẫn hiện để đọc) — muốn điền thì đi đường sửa đổi SAP (amendment), không sửa bản đã ký. N/α/power ở §12 và kết cục chính ở §2 phải khớp G3, đăng ký G2 (TRDS 17/19) và gate_params G0/G1 — `tools/nhat_quan_xuyen_cong.py` đối chiếu, G10-AUTO-11 chặn khi lệch cứng.
 
 ### SAP §1 — Quần thể phân tích (định nghĩa từng nhóm)

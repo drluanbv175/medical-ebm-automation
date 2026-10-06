@@ -64,6 +64,7 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Điều phối cổng G10 TỰ chạy bộ lắp (G10-T1) nên KHÔNG chấm đầu ra đó — người chấm theo ma trận.
 - `.md`/`.docx` phải đúng bản đã lắp; sửa dữ kiện ở cổng gốc/`study_meta` rồi lắp lại.
 - Kết cục chính khác diễn đạt giữa các cổng ⇒ CHỦ NHIỆM ghi `gate_params.G10.xac_nhan_ket_cuc_chinh`.
+- Kết cục chính ĐÃ ĐỔI THẬT (06/10/2026, G10-07) ⇒ CHỦ NHIỆM khai `gate_params.G10.sua_doi_ket_cuc_chinh` (danh sách theo thời gian; mỗi lần: `ket_cuc_cu` · `ket_cuc_moi` · `ly_do` ≥ 30 ký tự · `ma_sua_doi` · `ngay_sua_doi` · `irb_chap_thuan` · `dang_ky_cap_nhat` · `ngay_cap_nhat_dang_ky` · `reviewed_by_role`=PI · `reviewed_at`; lần cuối gắn `dau_van_tay` do CLI `nhat_quan_xuyen_cong.py` in; tới bản thảo thêm `cong_bo_trong_ban_thao`). Hợp lệ khi chuỗi nối tiếp, SAP §2 và khai báo G8 là kết cục mới (G0/G1/bản nháp đăng ký giữ kết cục cũ — không sửa ngược hồ sơ cổng), sửa TRƯỚC ngày khoá dữ liệu, bản thảo có câu báo cáo thay đổi (CONSORT 2025 mục 10, PMID 40228477; SPIRIT 2025 mục 31) ⇒ G10-AUTO-11 «cần xem», không chặn; đề cương G10 in bảng «Sửa đổi kết cục chính». Agent KHÔNG khai thay chủ nhiệm.
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G10` xác nhận/dấu vân tay · bật cờ đời thực trong

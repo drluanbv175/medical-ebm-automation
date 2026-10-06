@@ -285,10 +285,43 @@ def _thong_ke_mo_ta(design_code, loai12):
     return chung + ["- Mô tả toàn mẫu; kết cục chính trình bày tỷ lệ kèm khoảng tin cậy 95%  "]
 
 
+def _dong_muc_2(design_code, ket_cuc_chinh_da_chot=None):
+    """Dòng §2 KẾT CỤC của SAP. Nhãn «Kết cục chính:» GIỮ cho MỌI thiết kế — G4-AUTO-11, G8-AUTO-05 và đối chiếu xuyên
+    cổng (G10-AUTO-11) cùng đọc dòng này để truy điều đã định trước.
+
+    ĐỊNH TÍNH (06/10/2026, bác sĩ yêu cầu «giải quyết theo hướng tốt nhất»): bản cũ in khuôn ĐỊNH LƯỢNG («ví dụ: tỷ lệ
+    nhập viện…», «Đơn vị / ngưỡng», «Kết cục an toàn») cho cả đề tài định tính. Nay «Kết cục chính» là HIỆN TƯỢNG / CÂU
+    HỎI NGHIÊN CỨU TRỌNG TÂM đã chốt ở G1 (điền sẵn — không hỏi lại điều đã chốt), kèm dòng diễn giải (SRQR: mục đích/câu
+    hỏi nghiên cứu; không kiểm định giả thuyết); đơn vị/ngưỡng và kết cục an toàn KHÔNG ÁP DỤNG."""
+    if design_code == "qualitative":
+        chinh = str(ket_cuc_chinh_da_chot or "").strip() or (
+            "[CẦN BÁC SĨ ĐIỀN — hiện tượng/câu hỏi nghiên cứu trọng tâm đã chốt ở G1, ví dụ: trải nghiệm của người bệnh "
+            "về …]")
+        return [
+            f"- **Kết cục chính:** {chinh}  ",
+            "- **Ý nghĩa với thiết kế định tính:** «kết cục chính» ở đây là HIỆN TƯỢNG / CÂU HỎI NGHIÊN CỨU TRỌNG TÂM đã "
+            "định trước (SRQR — mục đích/câu hỏi nghiên cứu), không phải biến kiểm định giả thuyết; không có p-value/"
+            "alpha. Phải khớp G1 và đề cương; đổi sau khi đã thu thập dữ liệu là sửa đổi phải giải trình công khai "
+            "(gate_params.G10.sua_doi_ket_cuc_chinh).  ",
+            "- **Đơn vị / ngưỡng:** KHÔNG ÁP DỤNG (định tính — không đo lường định lượng)  ",
+            "- **Kết cục phụ 1:** [CẦN — câu hỏi/chủ đề nghiên cứu phụ, hoặc KHÔNG ÁP DỤNG]  ",
+            "- **Kết cục phụ 2:** [CẦN — câu hỏi/chủ đề nghiên cứu phụ, hoặc KHÔNG ÁP DỤNG]  ",
+            "- **Kết cục an toàn:** KHÔNG ÁP DỤNG (định tính) — rủi ro tâm lý khi phỏng vấn và cách xử trí nằm ở hồ sơ "
+            "đạo đức G2  ",
+        ]
+    return [
+        "- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — ví dụ: tỷ lệ nhập viện tim mạch trong 12 tháng]  ",
+        "- **Đơn vị / ngưỡng:** [CẦN]  ",
+        "- **Kết cục phụ 1:** [CẦN]  ",
+        "- **Kết cục phụ 2:** [CẦN]  ",
+        "- **Kết cục an toàn:** [CẦN — đặc biệt với RCT]  ",
+    ]
+
+
 def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
              hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
-             g3=None, estimand=None, giai_trinh_thieu_luc=None):
+             g3=None, estimand=None, giai_trinh_thieu_luc=None, ket_cuc_chinh_da_chot=None):
     """Sinh SAP Final + chứng chỉ khoá (DRAFT — CHỜ KÝ).
 
     Tham số vị trí giữ nguyên hợp đồng cũ. Từ khoá mới (VÁ 04/10/2026, soát từng cổng):
@@ -296,6 +329,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             kết cục NI, cụm (ICC/m/DE/số cụm), chẩn đoán (số ca bệnh/không bệnh, tỷ lệ hiện mắc), FPC — G4-06/G4-08.
       estimand — gate_params.G1.estimand (5 thuộc tính ICH E9(R1)) cho §4 của RCT — G4-03; vắng ⇒ ô [CẦN].
       giai_trinh_thieu_luc — gate_params.G3.underpowered_acceptance_justification khi N kế hoạch < N tối thiểu — G4-05.
+      ket_cuc_chinh_da_chot — kết cục chính ĐÃ CHỐT ở G1 (rồi G0); thiết kế ĐỊNH TÍNH điền sẵn vào §2 (06/10/2026).
     """
     g3 = dict(g3 or {})
     loai12 = G4Q.loai_muc_12(design_code, {"effect_type": effect_type})
@@ -683,11 +717,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
         "### §2 KẾT CỤC",
         "",
-        "- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — ví dụ: tỷ lệ nhập viện tim mạch trong 12 tháng]  ",
-        "- **Đơn vị / ngưỡng:** [CẦN]  ",
-        "- **Kết cục phụ 1:** [CẦN]  ",
-        "- **Kết cục phụ 2:** [CẦN]  ",
-        "- **Kết cục an toàn:** [CẦN — đặc biệt với RCT]  ",
+        *_dong_muc_2(design_code, ket_cuc_chinh_da_chot),
         "",
         "### §3 THỐNG KÊ MÔ TẢ",
         "",
@@ -772,6 +802,18 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "*Cần bác sĩ kiểm chứng. SAP này chỉ có hiệu lực pháp lý sau khi được ký.*",
     ]
     return "\n".join(lines)
+
+def _ket_cuc_chinh_da_chot(meta):
+    """Kết cục chính đã chốt — G1 (ghim có cấu trúc {name,…}) rồi G0; CÙNG cách G4-AUTO-11 đọc để đối chiếu §2."""
+    gp = (meta.get("gate_params") or {}) if isinstance(meta, dict) else {}
+    for cong in ("G1", "G0"):
+        v = (gp.get(cong) or {}).get("primary_outcome") if isinstance(gp.get(cong), dict) else None
+        if isinstance(v, dict):
+            v = v.get("name") or v.get("text")
+        if str(v or "").strip():
+            return str(v).strip()
+    return None
+
 
 def write_docx(artifact, path):
     try:
@@ -975,7 +1017,8 @@ def main():
                         hypothesis_type=hypothesis_type, margin=margin,
                         n_statistical_min=n_statistical_min,
                         g3=g3, estimand=S.dac_ta_thiet_ke(out).get("estimand"),
-                        giai_trinh_thieu_luc=g3_meta.get("underpowered_acceptance_justification"))
+                        giai_trinh_thieu_luc=g3_meta.get("underpowered_acceptance_justification"),
+                        ket_cuc_chinh_da_chot=_ket_cuc_chinh_da_chot(meta_cp))
     md = out / f"G4_A5_SAP_FINAL_{study}.md"
     # SAP là tài liệu bác sĩ/thống kê viên ĐỌC RỒI KÝ, nên chuẩn hoá văn phong
     # trước khi ghi. keep_box=True: khung của SAP LOCK CERTIFICATE đóng vai con

@@ -32,7 +32,7 @@ import hashlib
 import json
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -49,7 +49,9 @@ if str(TOOLS) not in sys.path:
 
 import clinical_checkpoint as CC  # noqa: E402  (một định nghĩa mẫu PII cho văn bản tự do do agent viết)
 
-SCHEMA = "hoi_dong_cong/v1"
+# v2 (06/10/2026): phán quyết trọng tài bắt buộc `giai_phap_tot_nhat` — bác sĩ quyết hội đồng ĐƯA RA GIẢI PHÁP TỐT
+# NHẤT.
+SCHEMA = "hoi_dong_cong/v2"
 CONG = tuple(f"G{i}" for i in range(11))
 THU_MUC = "hoi_dong"
 MAX_VONG = 2  # trần vòng tranh biện (chi phí + chống «cãi vòng»)
@@ -504,6 +506,33 @@ def _kiem_tranh_bien(bb: Dict[str, Any], gate: str, out_dir: Path, repo_root: Pa
             _quet_pii(f"chuyen_bac_si #{i} vi_sao", c.get("vi_sao"), loi)
     for i, s in enumerate(viec_sua, 1):
         _quet_pii(f"viec_sua #{i}", s if isinstance(s, str) else json.dumps(s, ensure_ascii=False), loi)
+    # 06/10/2026 — bác sĩ quyết: hội đồng là TƯ VẤN và phải ĐƯA RA GIẢI PHÁP TỐT NHẤT cho từng điểm quyết định (không
+    # chỉ phán giữ/sửa/chuyển): một phương án khuyến nghị cụ thể có căn cứ kiểm được; sửa kết luận hay chuyển bác sĩ thì
+    # cân nhắc ≥1 phương án khác kèm lý do không chọn. Giải pháp là KHUYẾN NGHỊ — người có thẩm quyền chọn và ký.
+    gp = pq.get("giai_phap_tot_nhat")
+    if not isinstance(gp, dict):
+        loi.append("phan_quyet.giai_phap_tot_nhat: trọng tài phải nêu GIẢI PHÁP TỐT NHẤT (phuong_an + can_cu)")
+        gp = {}
+    elif not _co_noi_dung(gp.get("phuong_an")):
+        loi.append("giai_phap_tot_nhat: thiếu phuong_an (khuyến nghị cụ thể, làm được)")
+    else:
+        _quet_pii("giai_phap_tot_nhat", gp.get("phuong_an"), loi)
+        if _VUOT_THAM_QUYEN_RE.search(str(gp["phuong_an"])):
+            loi.append("giai_phap_tot_nhat: tự tuyên bố trạng thái thuộc thẩm quyền người — giải pháp chỉ là "
+                       "KHUYẾN NGHỊ")
+    if gp:
+        _kiem_can_cu("giai_phap_tot_nhat", gp.get("can_cu"), out_dir, repo_root, loi, kiem_tep)
+        khac = gp.get("phuong_an_khac") or []
+        khac = khac if isinstance(khac, list) else [khac]
+        if ket_qua in ("sua_ket_luan", "chuyen_bac_si") and not khac:
+            loi.append("giai_phap_tot_nhat: sửa kết luận/chuyển bác sĩ thì phải nêu ≥1 phuong_an_khac đã cân nhắc kèm "
+                       "vi_sao_khong_chon")
+        for i, k in enumerate(khac, 1):
+            if not (isinstance(k, dict) and _co_noi_dung(k.get("phuong_an"))
+                    and _co_noi_dung(k.get("vi_sao_khong_chon"))):
+                loi.append(f"giai_phap_tot_nhat.phuong_an_khac #{i}: cần phuong_an + vi_sao_khong_chon")
+                continue
+            _quet_pii(f"phuong_an_khac #{i}", f"{k['phuong_an']} {k['vi_sao_khong_chon']}", loi)
     kl_cuoi = pq.get("ket_luan_cuoi")
     if not _co_noi_dung(kl_cuoi):
         loi.append("phan_quyet.ket_luan_cuoi: thiếu kết luận cuối")
@@ -513,7 +542,8 @@ def _kiem_tranh_bien(bb: Dict[str, Any], gate: str, out_dir: Path, repo_root: Pa
             loi.append("ket_luan_cuoi: tự tuyên bố trạng thái thuộc thẩm quyền người (ký/duyệt/khoá/PASS) — trọng "
                        "tài chỉ đề xuất; cổng do bộ chấm + chữ ký người")
     return {"ket_qua": ket_qua, "dp": dp_bb.get("ma"), "bat_buoc": bool(dp and dp["bat_buoc"]),
-            "tham_quyen": dp["tham_quyen"] if dp else None, "nguon_bat_dong": bb.get("nguon_bat_dong")}
+            "tham_quyen": dp["tham_quyen"] if dp else None, "nguon_bat_dong": bb.get("nguon_bat_dong"),
+            "giai_phap": gp.get("phuong_an")}
 
 
 def kiem_bien_ban(bb: Dict[str, Any], out_dir: Path, repo_root: Optional[Path] = None,
@@ -554,6 +584,33 @@ def thu_muc_bien_ban(out_dir: Path, gate: Optional[str] = None) -> Path:
     return d / gate if gate else d
 
 
+def _moc_thoi_gian(v: Any) -> Tuple[int, float, str]:
+    """Khoá sắp xếp theo MỐC THỜI GIAN thật (so datetime, không so chuỗi — bản cũ/mới lệch độ chính xác giây/micro giây
+    và múi giờ); chuỗi không đọc được xếp trước."""
+    try:
+        return (1, datetime.fromisoformat(str(v)).timestamp(), str(v))
+    except (TypeError, ValueError):
+        return (0, 0.0, str(v))
+
+
+def _sau_moc_moi_nhat(t: datetime, out_dir: Path, gate: str) -> datetime:
+    """Mốc ≥ t và LỚN HƠN HẲN mọi «thoi_diem» đọc được của biên bản cổng này ⇒ thứ tự GHI = thứ tự thời gian.
+
+    07/10/2026: đồng hồ hệ thống trên Windows với Python < 3.13 chỉ nhảy ~15,6 ms một nấc (GetSystemTimeAsFileTime) —
+    hai biên bản ghi liền nhau có thể TRÙNG cả micro giây, khi đó «mới nhất» lại rơi về đuôi băm của tên tệp. Mốc trùng
+    hoặc lùi (lệch đồng hồ giữa hai máy) ⇒ lấy mốc mới nhất + 1 micro giây. Chuỗi không đọc được thì bỏ qua."""
+    cu = []
+    for bb in doc_bien_ban(out_dir, gate):
+        try:
+            cu.append(datetime.fromisoformat(str(bb.get("thoi_diem"))).astimezone())
+        except (TypeError, ValueError):
+            continue
+    moi_nhat = max(cu, default=None)
+    if moi_nhat is not None and t <= moi_nhat:
+        return (moi_nhat + timedelta(microseconds=1)).astimezone()
+    return t
+
+
 def ghi_bien_ban(study: str, gate: str, nhap: Dict[str, Any], out_dir: Path, repo_root: Optional[Path] = None,
                  *, bay_gio: Optional[datetime] = None) -> Tuple[Optional[Path], Dict[str, Any]]:
     """Kiểm biên bản nháp, gắn SHA-256 tài liệu được xét, ghi JSON + MD. Vi phạm ⇒ KHÔNG ghi gì."""
@@ -569,9 +626,13 @@ def ghi_bien_ban(study: str, gate: str, nhap: Dict[str, Any], out_dir: Path, rep
     kq["hop_le"] = not kq["loi"]
     if not kq["hop_le"]:
         return None, kq
-    t = (bay_gio or datetime.now()).astimezone().replace(microsecond=0)
+    # 06/10/2026: GIỮ micro giây — bản cũ cắt về giây nên hai biên bản cùng điểm quyết định ghi trong MỘT giây có
+    # «thời điểm» bằng nhau, tóm tắt chọn «mới nhất» theo đuôi băm ngẫu nhiên (test chập chờn ~50%).
+    t = (bay_gio or datetime.now()).astimezone()
+    if bay_gio is None:  # mốc truyền tay (dựng lại hồ sơ, test) giữ nguyên — chỉ đồng hồ thật mới cần ép thứ tự
+        t = _sau_moc_moi_nhat(t, Path(out_dir), gate)
     noi_dung = json.dumps(bb, ensure_ascii=False, sort_keys=True)
-    bb["thoi_diem"] = t.isoformat()
+    bb["thoi_diem"] = t.isoformat(timespec="microseconds")
     bb["id"] = (f"{gate}-{'DG' if bb['loai'] == 'danh_gia_cheo' else 'TB'}-{t.strftime('%Y%m%dT%H%M%S')}-"
                 f"{hashlib.sha256(noi_dung.encode('utf-8')).hexdigest()[:8]}")
     bb["ket_qua_kiem_luc_ghi"] = kq["tom_tat"]
@@ -625,7 +686,7 @@ def tom_tat_cong(gate: str, out_dir: Path, repo_root: Optional[Path] = None) -> 
     ly_do: List[str] = []
     tranh_bien_moi: Dict[str, Tuple[Dict[str, Any], Dict[str, Any]]] = {}
     danh_gia_moi: Dict[str, Tuple[Dict[str, Any], Dict[str, Any]]] = {}
-    for bb, tom in sorted(hieu_luc, key=lambda x: str(x[0].get("thoi_diem"))):
+    for bb, tom in sorted(hieu_luc, key=lambda x: _moc_thoi_gian(x[0].get("thoi_diem"))):
         if bb["loai"] == "tranh_bien":
             tranh_bien_moi[str(tom.get("dp"))] = (bb, tom)
         else:
@@ -688,6 +749,12 @@ def _markdown(bb: Dict[str, Any]) -> str:
         for p in pq.get("tung_luan_diem", []):
             dong.append(f"| {p.get('ma')} | {p.get('ket')} | {p.get('ly_do')} |")
         dong += ["", f"**Kết quả:** {pq.get('ket_qua')} — {pq.get('ket_luan_cuoi')}"]
+        gp = pq.get("giai_phap_tot_nhat") if isinstance(pq.get("giai_phap_tot_nhat"), dict) else {}
+        if gp.get("phuong_an"):
+            dong.append(f"**Giải pháp tốt nhất (khuyến nghị):** {gp['phuong_an']}")
+            for k in gp.get("phuong_an_khac") or []:
+                if isinstance(k, dict):
+                    dong.append(f"- Đã cân nhắc: {k.get('phuong_an')} — không chọn vì {k.get('vi_sao_khong_chon')}")
         for c in pq.get("chuyen_bac_si") or []:
             dong.append(f"- Chuyển bác sĩ: {c.get('van_de')} — {c.get('vi_sao')}")
         for s in pq.get("viec_sua") or []:
@@ -724,7 +791,9 @@ def mau_bien_ban(loai: str, gate: str) -> Dict[str, Any]:
             "phan_quyet": {"trong_tai": TRONG_TAI,
                            "tung_luan_diem": [{"ma": "P1", "ket": "chap_nhan|bac|chua_du_can_cu", "ly_do": ""}],
                            "ket_qua": "giu_ket_luan|sua_ket_luan|chuyen_bac_si", "ket_luan_cuoi": "",
-                           "viec_sua": [], "chuyen_bac_si": [{"van_de": "", "vi_sao": ""}]}}
+                           "viec_sua": [], "chuyen_bac_si": [{"van_de": "", "vi_sao": ""}],
+                           "giai_phap_tot_nhat": {"phuong_an": "", "can_cu": cc,
+                                                  "phuong_an_khac": [{"phuong_an": "", "vi_sao_khong_chon": ""}]}}}
 
 
 def _in_danh_muc(gate: Optional[str]) -> None:
