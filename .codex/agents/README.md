@@ -56,7 +56,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 ## Cụm Nghiên cứu (28 agent)
 | Agent | Vai trò | Gọi khi |
 |-------|---------|---------|
-| `dieu-phoi-nghien-cuu` | Chủ nhiệm đề tài, gác cổng G0–G9 | Chạy trọn/một chặng vòng đời nghiên cứu |
+| `dieu-phoi-nghien-cuu` | Chủ nhiệm đề tài, gác cổng G0–G10 | Chạy trọn/một chặng vòng đời nghiên cứu |
 | `cau-hoi-nghien-cuu` | Đặt câu hỏi PICO/PECO · kết cục · giả thuyết · FINER (G0) | Bắt đầu từ ý tưởng/vấn đề lâm sàng |
 | `khoang-trong-nghien-cuu` | Đối chiếu câu hỏi với guideline + xác định research gap/novelty | Biện minh tính mới đề tài (G0/G1) |
 | `tong-quan-y-van` | Tổng quan hệ thống PRISMA | Rà soát bằng chứng cho đề tài/công bố |
@@ -170,7 +170,7 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 | "Đơn này an toàn không / thuốc đánh nhau / chỉnh liều theo thận" | `ke-don-an-toan` | rà tương tác/đa thuốc/chỉnh liều |
 | "Chọn kháng đông nào / liều DOAC theo thận / bắc cầu quanh thủ thuật / đảo ngược kháng đông / INR đích" | `quan-ly-khang-dong` | khung quyết định trọn vòng; liều/tương tác qua `ke-don-an-toan`, thang qua `thang-diem-nguy-co` |
 | "Giải thích cho BN / trình bày lựa chọn cùng quyết" | `quyet-dinh-chung` | shared decision-making |
-| "Đề tài [tên]… / chạy nghiên cứu này" | `dieu-phoi-nghien-cuu` | RESUME từ sổ cái → march G0→G9 |
+| "Đề tài [tên]… / chạy nghiên cứu này" | `dieu-phoi-nghien-cuu` | RESUME từ sổ cái → march G0→G10 |
 | "Biến vấn đề lâm sàng thành câu hỏi nghiên cứu / PICO-PECO/FINER" | `cau-hoi-nghien-cuu` | G0 |
 | "Tổ chức thực hiện / nhân lực · tiến độ · kinh phí đề tài" | `ke-hoach-trien-khai` | A13, G1 |
 | "Đề tài có phỏng vấn/định tính/hỗn hợp" | `nghien-cuu-dinh-tinh` | COREQ/SRQR |

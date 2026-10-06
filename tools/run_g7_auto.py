@@ -109,6 +109,27 @@ REPORTING_CHECKLISTS: dict[str, tuple[str, int]] = {
     "economic":        ("CHEERS 2022",    28),
 }
 
+def _checklist_cho_thiet_ke(design_code: str) -> tuple:
+    """(tên chuẩn, tổng số mục, danh sách mục) cho thiết kế — KHÔNG rơi lặng lẽ về STROBE/khuôn cohort.
+
+    VÁ 04/10/2026 (soát từng cổng): ba chỗ dùng `.get(design_code, ("STROBE 2007", 22))` /
+    `CHECKLIST_ITEMS.get(design_code, CHECKLIST_ITEMS["cohort"])` nên một thiết kế chưa có bảng (vd non_randomized → TREND,
+    quality_improvement → SQUIRE 2.0, case_report → CARE, mixed_methods) bị đối chiếu bằng checklist STROBE mà không một
+    dòng cảnh báo. Nay lấy TÊN chuẩn đúng từ skill_standards (nguồn dùng chung 13 thiết kế), để danh sách mục RỖNG và gắn
+    «[CẦN BỔ SUNG DANH MỤC …]» vào tên ⇒ bản thảo mang ô chưa điền, G8-AUTO-04 giữ lại thay vì qua bằng checklist sai."""
+    if design_code in REPORTING_CHECKLISTS and design_code in CHECKLIST_ITEMS:
+        ten, tong = REPORTING_CHECKLISTS[design_code]
+        return ten, tong, CHECKLIST_ITEMS[design_code]
+    try:
+        import skill_standards as _S  # noqa: PLC0415
+        chuan = _S.reporting_standards_for(design_code)["primary"]
+    except Exception:  # noqa: BLE001
+        chuan = "chuẩn báo cáo theo thiết kế thật (tra EQUATOR)"
+    print(f"  ⚠️  Chưa có danh mục checklist chi tiết cho thiết kế «{design_code}» — dùng tên chuẩn «{chuan}», "
+          "KHÔNG thay bằng STROBE; bản thảo mang ô [CẦN …] tới khi bổ sung danh mục.")
+    return f"{chuan} — [CẦN BỔ SUNG DANH MỤC CHI TIẾT CHO THIẾT KẾ {design_code}]", 0, []
+
+
 # Mục checklist chi tiết theo design (mô tả ngắn → tự điền hay cần thêm)
 CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
     # (Số mục, Mô tả, auto_filled?)
@@ -1615,7 +1636,7 @@ def generate_checklist(
     THÊM phụ lục CONSORT-NI/Equivalence (Piaggio 2012, xem CONSORT_NI_
     EXTENSION_ITEMS) — checklist CONSORT chuẩn KHÔNG tự đủ cho thiết kế này.
     """
-    items = CHECKLIST_ITEMS.get(design_code, CHECKLIST_ITEMS.get("cohort", []))
+    items = _checklist_cho_thiet_ke(design_code)[2]
     block, _auto, _total = _render_checklist_block(items, reporting_std, std_total_items)
 
     specialist_modules = specialist_modules or []
@@ -2004,7 +2025,7 @@ def main() -> None:
     # nhau trong CÙNG một bản thảo. Chỉ khi KHÔNG có cảnh báo lệch mới tin trường
     # G1 tự ghi (giữ đường cũ cho các trường hợp G1/G2 khớp nhau).
     if design_drift_warning:
-        reporting_std = REPORTING_CHECKLISTS.get(design_code, ("STROBE 2007", 22))[0]
+        reporting_std = _checklist_cho_thiet_ke(design_code)[0]
     else:
         reporting_std = (
             design_info.get("reporting_standard")
@@ -2053,9 +2074,8 @@ def main() -> None:
 
     # ── Bước 3: Chuẩn bị reporting checklist ──
     print(f"\n📋 Bước 3/8: Chuẩn bị checklist {reporting_std}...")
-    std_name, std_total = REPORTING_CHECKLISTS.get(design_code, ("STROBE 2007", 22))
+    std_name, std_total, items_list = _checklist_cho_thiet_ke(design_code)
     # Đếm mục tự điền
-    items_list  = CHECKLIST_ITEMS.get(design_code, CHECKLIST_ITEMS.get("cohort", []))
     auto_count  = sum(
         1 for _, desc, auto in items_list
         if auto or any(

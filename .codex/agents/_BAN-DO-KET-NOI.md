@@ -57,7 +57,7 @@
 ```
 Hub chẩn đoán `chan-doan-xac-suat` ↔ `khai-thac-benh-su-kham` ↔ `sang-loc-co-do` ↔ `pico-lam-sang` ↔ `thang-diem-nguy-co` ↔ `tham-dinh-grade-nnt`.
 
-## 5. LUỒNG NGHIÊN CỨU (G0–G9 — theo `dieu-phoi-nghien-cuu`)
+## 5. LUỒNG NGHIÊN CỨU (G0–G10 — theo `dieu-phoi-nghien-cuu`)
 ```
 G0  cau-hoi-nghien-cuu → khoang-trong-nghien-cuu → thu-thu-tai-lieu/tong-quan-y-van
                          (trich-xuat-y-van · tham-dinh-phe-binh · nghien-cuu-dinh-tinh)

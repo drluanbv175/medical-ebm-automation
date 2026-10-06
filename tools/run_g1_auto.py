@@ -434,7 +434,9 @@ def _canonicalize_pinned_design_code(raw: str) -> str:
     dùng suy luận tự động) nếu không khớp bất kỳ mã canon nào, thay vì âm
     thầm truyền giá trị lạ.
     """
-    key = raw.strip().lower()
+    # «case-control», «Cross sectional» ⇒ case_control / cross_sectional (gạch nối, khoảng trắng ⇒ gạch dưới) —
+    # trước 04/10/2026 các cách viết này bị từ chối như mã lạ.
+    key = re.sub(r"[\s\-]+", "_", raw.strip().lower())
     canonical = _PIN_DESIGN_ALIASES.get(key, key)
     if canonical not in _CANONICAL_DESIGN_CODES:
         print(f"  ⚠️  design_code pin '{raw}' không khớp bất kỳ mã canon nào "
@@ -457,6 +459,24 @@ def _read_pinned_design(out_dir) -> str:
         return ""
     pin = meta.get("design_code") or (meta.get("gate_params", {}).get("G1", {}) or {}).get("design")
     return _canonicalize_pinned_design_code(str(pin)) if pin else ""
+
+
+def _raw_pinned_design(out_dir) -> str:
+    """Giá trị thiết kế bác sĩ GHIM nguyên văn (chưa chuẩn hoá) — '' nếu không ghim.
+
+    VÁ 04/10/2026 (soát từng cổng): `_read_pinned_design` trả '' khi bác sĩ ghim một thiết kế ngoài 8 mã chuỗi G0–G10 hỗ trợ
+    (vd non_randomized, quality_improvement, case_report, mixed_methods) ⇒ G1 lặng lẽ dùng thiết kế SUY LUẬN thay cho lựa
+    chọn TƯỜNG MINH của bác sĩ, chỉ một dòng in ra màn hình, checkpoint không ghi gì. Hàm này cho G1 ghi lại pin bị từ chối
+    vào checkpoint để bộ chấm G1 CHẶN (G1-AUTO-02c) tới khi PI chọn lại có chủ ý."""
+    import json as _json
+    from pathlib import Path as _Path
+    p = _Path(out_dir) / "study_meta.json"
+    try:
+        meta = _json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    except (ValueError, OSError):
+        return ""
+    pin = meta.get("design_code") or (meta.get("gate_params", {}).get("G1", {}) or {}).get("design")
+    return str(pin).strip() if pin else ""
 
 
 def _apply_design_pin(design: dict, pinned: str) -> dict:
@@ -1873,6 +1893,9 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
             # liệu này, nên mục 9 STROBE ("mô tả nỗ lực xử lý nguồn sai lệch") luôn để
             # trống [CẦN] trong Methods dù G1 đã tính sẵn.
             "bias_controls": design.get("bias_controls", []),
+            # 04/10/2026: pin thiết kế của bác sĩ bị từ chối (ngoài 8 mã) phải NẰM TRONG checkpoint — chấm lại G1 từ
+            # checkpoint (chấm sống ở cổng sau) vẫn thấy và vẫn CHẶN (G1-AUTO-02c), không chỉ ở lượt chạy đầu.
+            **({"pin_bi_tu_choi": design["pin_bi_tu_choi"]} if design.get("pin_bi_tu_choi") else {}),
         },
         "specialist_modules": specialist_modules or [],
         "effect_sizes_found": len(effects),
@@ -1998,6 +2021,13 @@ def main():
     if pinned:
         design = _apply_design_pin(design, pinned)
         print(f"  → 📌 Dùng THIẾT KẾ PIN từ study_meta.json: {pinned}")
+    else:
+        raw_pin = _raw_pinned_design(out_dir)
+        if raw_pin:
+            # Pin của bác sĩ bị từ chối (ngoài 8 mã) — GHI LẠI để bộ chấm G1 chặn, không lặng lẽ thay bằng suy luận.
+            design = dict(design)
+            design["pin_bi_tu_choi"] = raw_pin
+            print(f"  → ⛔ Thiết kế bác sĩ ghim «{raw_pin}» chưa được chuỗi G0–G10 hỗ trợ — G1 sẽ CHẶN (G1-AUTO-02c).")
 
     print(f"  → Thiết kế ưu tiên: {design['primary']}")
     print(f"  → Chuẩn báo cáo: {design['reporting_standard']}")

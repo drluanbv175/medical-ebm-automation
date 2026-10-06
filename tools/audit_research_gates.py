@@ -1663,10 +1663,15 @@ def _gate_action_actor(row: Dict[str, Any], blocked_by: List[str]) -> str:
     if status == STATUS_MISSING:
         return "agent"
     if blocked_by or status == STATUS_NEEDS_REAL:
-        if row.get("gate") in {"G2", "G4", "G9"}:
-            return "human_pi_or_irb"
-        if row.get("gate") == "G6":
+        # 04/10/2026: tập cổng cứng rút từ gate_contract (nguồn sự thật duy nhất, 6 cổng) — bản cũ viết cứng
+        # {G2, G4, G9} nên G5/G8/G10 bị xếp «study team» dù là cổng có chữ ký đúng vai.
+        gate = row.get("gate")
+        if gate == "G5" or gate == "G6":
             return "human_pi_or_data_manager"
+        if gate == "G8":
+            return "human_independent_reviewer"
+        if gate in GC._GATE_REQUIRED_STAKEHOLDERS:
+            return "human_pi_or_irb"
         return "human_pi_or_study_team"
     if status == STATUS_BLOCKED:
         return "human_pi_or_study_team"

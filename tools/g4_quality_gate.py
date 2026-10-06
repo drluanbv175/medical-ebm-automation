@@ -16,7 +16,7 @@ mã nguồn, không suy đoán):
    ngay sau ``generate()`` trong ``main()`` — không nơi nào khác (kể cả
    ``approve_gate.py``) gọi lại nó trên nội dung mà bác sĩ vừa chỉnh sửa.
 2. ``_g4_sections_still_draft()`` trong ``approve_gate.py`` — chốt gác THẬT
-   duy nhất ngay trước chữ ký — chỉ từ chối ký khi §1/§2/§5/§10 còn "[CẦN".
+   duy nhất ngay trước chữ ký — chỉ từ chối ký khi §1/§2/§4/§5/§9/§10 còn "[CẦN" (§4/§9 thêm 04/10/2026).
    Nó KHÔNG kiểm bất kỳ nội dung phương pháp luận nào mà
    ``thiet-ke-nghien-cuu.md`` đòi hỏi (EPV/VIF ở §5, phân loại MCAR/MAR/MNAR ở
    §6, đa so sánh khớp alpha ở §8): thay mỗi "[CẦN...]" bằng "OK" vẫn ký được.
@@ -99,6 +99,8 @@ STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT = "DRAFT_NEEDS_HUMAN_CONTENT"
 STATUS_READY = "READY_FOR_SIGNATURE"
 STATUS_LOCKED = "PASS_G4_SAP_LOCKED"
+# Mục SAP thành bắt buộc từ 04/10/2026 (soát từng cổng) — SAP đã ký trước mốc đó không bị hạ cấp vì hai mục này.
+_G4_MUC_BAT_BUOC_TU_20261004 = frozenset({"§4", "§9"})
 
 QUALITY_CONTRACT_VERSION = "G4-2026.1"
 
@@ -648,20 +650,32 @@ def evaluate_g4_quality(
         still_draft = AG._g4_sections_still_draft(artifact_text)
     except ImportError:  # pragma: no cover - lưới an toàn
         still_draft = None
+    # §4/§9 thành bắt buộc từ 04/10/2026. SAP ĐÃ KÝ sổ cái trước mốc đó mà §4/§9 còn «[CẦN» thì dòng này vẫn hiện REVIEW
+    # để bác sĩ đọc, nhưng KHÔNG hạ cấp trạng thái một quyết định người thật đã chốt (cùng nguyên tắc với G4-AUTO-11 ở
+    # dưới) — muốn điền thì đi đường sửa đổi SAP (amendment). Mục bắt buộc cũ (§1/§2/§5/§10) vẫn hạ cấp như trước.
+    auto10_khong_ha_cap = False
     if still_draft is None:
         placeholder_status = "REVIEW"
         placeholder_evidence = "không import được approve_gate._g4_sections_still_draft để kiểm"
+    elif still_draft and ledger_signed and all(m.split()[0] in _G4_MUC_BAT_BUOC_TU_20261004 for m in still_draft):
+        placeholder_status = "REVIEW"
+        auto10_khong_ha_cap = True
+        placeholder_evidence = (
+            f"SAP đã ký sổ cái nhưng còn placeholder '[CẦN' ở: {', '.join(still_draft)} — hai mục này mới thành bắt "
+            "buộc từ 04/10/2026, không hạ cấp quyết định đã ký; điền qua sửa đổi SAP (amendment) nếu cần"
+        )
     elif still_draft:
         placeholder_status = "REVIEW"
         placeholder_evidence = f"còn placeholder '[CẦN' ở: {', '.join(still_draft)}"
     else:
-        placeholder_status, placeholder_evidence = "PASS", "không còn placeholder '[CẦN' ở §1/§2/§5/§10"
+        placeholder_status = "PASS"
+        placeholder_evidence = "không còn placeholder '[CẦN' ở " + "/".join(AG._G4_REQUIRED_SECTIONS)
     automatic.append(_criterion(
         "G4-AUTO-10",
-        "Không còn placeholder '[CẦN' ở mục bắt buộc (§1/§2/§5/§10)",
+        "Không còn placeholder '[CẦN' ở mục bắt buộc (§1/§2/§4/§5/§9/§10)",
         placeholder_status,
         placeholder_evidence,
-        "Điền đủ §1/§2/§5/§10 — approve_gate.py cũng từ chối ký khi còn placeholder ở đây.",
+        "Điền đủ §1/§2/§4/§5/§9/§10 — approve_gate.py cũng từ chối ký khi còn placeholder ở đây.",
     ))
 
     # ── G4-AUTO-11 — kết cục chính §2 khớp câu hỏi nghiên cứu gốc ──────────
@@ -819,6 +833,7 @@ def evaluate_g4_quality(
     _status_driving = [
         row for row in automatic
         if not (row["id"] == "G4-AUTO-11" and ledger_signed)
+        and not (row["id"] == "G4-AUTO-10" and auto10_khong_ha_cap)
     ]
     auto_blocked = any(row["status"] == "BLOCK" for row in _status_driving)
     auto_review = any(row["status"] == "REVIEW" for row in _status_driving)

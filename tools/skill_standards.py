@@ -39,6 +39,9 @@ from typing import Dict, List, Optional, Tuple
 
 import placeholder_contract as PC
 
+# Gốc repo y khoa — một biến để test trỏ sang thư mục tạm (không đọc exports/ thật khi kiểm).
+_GOC_REPO = Path(__file__).resolve().parents[1]
+
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
         _s_r4.reconfigure(encoding="utf-8")
@@ -641,7 +644,8 @@ def canonical_design_code(design_code: Optional[str]) -> Optional[str]:
     """Chuẩn hoá mã thiết kế về key canon (áp bí danh, lowercase)."""
     if not design_code:
         return None
-    key = str(design_code).strip().lower()
+    # «case-control», «Cross sectional» ⇒ case_control / cross_sectional (gạch nối, khoảng trắng ⇒ gạch dưới).
+    key = re.sub(r"[\s\-]+", "_", str(design_code).strip().lower())
     return DESIGN_CODE_ALIASES.get(key, key)
 
 
@@ -920,11 +924,31 @@ def real_world_signals(checkpoints: Dict[str, Dict],
     # Kết quả phân tích thật KHÔNG do pipeline sinh — chỉ bác sĩ xác nhận.
     results = bool(meta.get("results_final"))
 
-    peer = (
-        _guardrail_passed(g8)
-        and g8.get("independent_peer_review_approved") is True
-        and _is_real_value(g8.get("peer_review_approval_date"))
-    ) or bool(meta.get("peer_review_approved"))
+    # VÁ 04/10/2026 (điều phối thống nhất G0–G10): G8 là cổng CỨNG (INDEPENDENT_PEER_REVIEWER) nhưng là cổng DUY NHẤT
+    # trong sáu cổng thiếu nhánh hợp đồng chất lượng ở đây — nhánh cũ đọc `independent_peer_review_approved` /
+    # `peer_review_approval_date` mà KHÔNG mã nào ghi (grep 04/10: chỉ hàm này đọc) ⇒ G8 chỉ «đã duyệt» khi study_meta
+    # TỰ KHAI `peer_review_approved`, trong khi G10 đòi chữ ký sổ cái G8 thật. Nay mirror G9: có
+    # quality_contract_version thì chấm SỐNG bằng g8_quality_gate (có kiểm sổ cái + reviewer_ref), không tin cờ tự khai.
+    # Không chấm được (thiếu thư mục đề tài, mã đề tài lạ, bộ chấm hỏng) ⇒ False: KHÔNG lùi về trạng thái lưu sẵn
+    # `g8_quality_status` (lưu sẵn là đúng lỗi «tin bản lưu» của các cổng mềm — soát 04/10/2026).
+    if g8.get("quality_contract_version"):
+        peer = False
+        study = str(g8.get("study") or "").strip()
+        default_out = _GOC_REPO / "exports" / study
+        if study and re.fullmatch(r"[\w-]+", study) and default_out.is_dir():
+            try:
+                import g8_quality_gate as G8Q  # noqa: PLC0415
+
+                live = G8Q.evaluate_study(study, default_out, repo_root=_GOC_REPO, write=False)
+                peer = live.get("status") == G8Q.STATUS_REVIEWED
+            except Exception:  # noqa: BLE001 — bộ chấm hỏng ⇒ chưa duyệt (bi quan), không làm sập nhạc trưởng
+                peer = False
+    else:
+        peer = (
+            _guardrail_passed(g8)
+            and g8.get("independent_peer_review_approved") is True
+            and _is_real_value(g8.get("peer_review_approval_date"))
+        ) or bool(meta.get("peer_review_approved"))
 
     if g9.get("quality_contract_version"):
         study = str(g9.get("study") or "").strip()

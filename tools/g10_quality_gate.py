@@ -849,6 +849,27 @@ def evaluate_study(
         )
     )
 
+    # G10-AUTO-11 (04/10/2026 — điều phối thống nhất G0–G10): thông số then chốt phải mang CÙNG giá trị ở mọi cổng giữ
+    # bản sao của nó (tools/nhat_quan_xuyen_cong.py). Lệch cứng (N · α · power · thiết kế · loại nghiên cứu đăng ký) ⇒
+    # BLOCK; lệch mềm (kết cục chính khác nhau giữa các cổng — outcome switching) ⇒ REVIEW chờ chủ nhiệm giải trình. Bộ
+    # đối chiếu hỏng ⇒ REVIEW (không đo được ≠ khớp).
+    try:
+        import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
+
+        nq_status, nq_evidence = NQ.tieu_chi_g10(NQ.doi_chieu(out_dir, study))
+    except Exception as exc:  # noqa: BLE001 — bộ đối chiếu hỏng phải hiện ra, không im lặng như «khớp»
+        nq_status, nq_evidence = "REVIEW", f"không chạy được bộ đối chiếu xuyên cổng: {type(exc).__name__}: {exc}"
+    rows.append(
+        _criterion(
+            "G10-AUTO-11",
+            "Thông số then chốt nhất quán xuyên cổng (N · α · power · thiết kế · kết cục chính)",
+            nq_status,
+            nq_evidence,
+            "Chạy python3 tools/nhat_quan_xuyen_cong.py --study <mã>; sửa về MỘT giá trị tại cổng gốc rồi chạy lại "
+            "các cổng sau; đổi kết cục chính phải có chủ nhiệm giải trình công khai.",
+        )
+    )
+
     release_ok, release_evidence = _release_readiness_ok(readiness)
     rows.append(
         _criterion(
