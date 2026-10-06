@@ -50,6 +50,7 @@ BASE = Path(__file__).resolve().parents[1]
 TOOLS = BASE / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import cong_song as CS  # noqa: E402  (chấm sống G3 khi dựng §Cỡ mẫu — 05/10/2026)
 import g8_quality_gate as G8Q  # noqa: E402
 import g9_quality_gate as G9Q  # noqa: E402
 import g10_quality_gate as G10Q  # noqa: E402
@@ -168,6 +169,32 @@ def _text(value, default=TAG_BS) -> str:
     return str(value)
 
 
+def ghi_dau_de_cuong(cp_path: Path, md_path: Path, docx_path: Optional[Path]) -> None:
+    """Ghi SHA-256 của .md/.docx VỪA lắp vào G10_checkpoint.artifacts (05/10/2026, soát từng cổng G10-02).
+
+    g10_quality_gate đòi hai tài liệu cuối ĐÚNG bản đã lắp: sửa tay .md, hoặc sửa .docx trong Word mà không lắp lại,
+    thì .md/.docx/dữ liệu cổng không còn khớp nhau ⇒ REVIEW. Gọi sau MỌI lần ghi lại hai tệp (lắp ráp, chèn biểu
+    ngữ)."""
+    try:
+        cp = json.loads(cp_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return
+    if not isinstance(cp, dict):
+        return
+    art = cp.get("artifacts") if isinstance(cp.get("artifacts"), dict) else {}
+    art["de_cuong_md_sha256"] = G10Q._sha256(md_path)
+    art["de_cuong_docx_sha256"] = G10Q._sha256(docx_path) if docx_path else None
+    cp["artifacts"] = art
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+
+
+def _gp(meta: Optional[dict], gate: str) -> dict:
+    """gate_params.<gate> của study_meta (dict rỗng khi vắng)."""
+    gp = (meta or {}).get("gate_params")
+    v = gp.get(gate) if isinstance(gp, dict) else None
+    return v if isinstance(v, dict) else {}
+
+
 def _design_code(cps: Dict[str, dict]) -> Optional[str]:
     """Lấy mã thiết kế THỐNG NHẤT: ưu tiên G1.internal_code, fallback G3/G5.
 
@@ -243,10 +270,15 @@ def sec_datvande(cps, meta) -> str:
         "Khoảng trống nghiên cứu (tự động từ G0):\n\n"
         f"{gap_txt}\n"
         f"{background_txt}\n"
-        f"> {TAG_BS}: Phần đặt vấn đề dạng VĂN XUÔI HỌC THUẬT (tầm quan trọng lâm "
-        "sàng, bối cảnh Việt Nam/đơn vị, lập luận tính cần thiết) do agent "
-        "`viet-ban-thao`/`tong-quan-y-van` hoặc bác sĩ soạn — G10 không tự viết "
-        "để tránh bịa bối cảnh. Số liệu Việt Nam/đơn vị phải có nguồn thật.\n"
+        # 05/10/2026: nhãn CHỈ khi chưa có văn xuôi — bản cũ in VÔ ĐIỀU KIỆN nên đề cương đã có phần đặt vấn đề vẫn mang
+        # «[CẦN BỔ SUNG]» ⇒ G10-AUTO-09 không bao giờ đạt.
+        + (f"> {TAG_BS}: Phần đặt vấn đề dạng VĂN XUÔI HỌC THUẬT (tầm quan trọng lâm "
+           "sàng, bối cảnh Việt Nam/đơn vị, lập luận tính cần thiết) do agent "
+           "`viet-ban-thao`/`tong-quan-y-van` hoặc bác sĩ soạn — G10 không tự viết "
+           "để tránh bịa bối cảnh. Số liệu Việt Nam/đơn vị phải có nguồn thật.\n"
+           if not RS.is_present(background) else
+           "> Văn xuôi đặt vấn đề do bác sĩ/agent soạn (study_meta) — G10 không tự viết; số liệu Việt Nam/đơn vị "
+           "phải có nguồn thật.\n")
     )
 
 
@@ -297,11 +329,18 @@ def sec_cauhoi(cps, meta) -> str:
     margin = _g(cps.get("G3"), "margin", default=None)
     if hypothesis_type and hypothesis_type != "superiority":
         margin_text = margin if margin is not None else TAG_BS
+        nguon_bien = _gp(meta, "G3").get("margin_source")
+        if (meta.get("_g10") or {}).get("g3_song_pass") and RS.is_present(nguon_bien):
+            # 05/10/2026: G3 chấm sống ĐÃ xác nhận (thống kê viên chốt biên + nguồn) — in biện minh, không còn ô trống.
+            ghi_chu_bien = (f"Biện minh biên (G3, thống kê viên đã xác nhận): {_text(nguon_bien)} — CONSORT-NI "
+                            "extension, Piaggio 2012, JAMA;308(24):2594-2604, doi:10.1001/jama.2012.87802.")
+        else:
+            ghi_chu_bien = ("[CẦN Hội đồng/thống kê viên xác nhận biện minh lâm sàng cho margin "
+                            "này TRƯỚC khi khóa SAP (G4) — xem CONSORT-NI extension, Piaggio 2012, "
+                            "JAMA;308(24):2594-2604, doi:10.1001/jama.2012.87802].")
         lines.append(
             f"**Loại giả thuyết (tự động từ G3):** {hypothesis_type.upper()} — Margin Δ = "
-            f"{margin_text} [CẦN Hội đồng/thống kê viên xác nhận biện minh lâm sàng cho margin "
-            "này TRƯỚC khi khóa SAP (G4) — xem CONSORT-NI extension, Piaggio 2012, "
-            "JAMA;308(24):2594-2604, doi:10.1001/jama.2012.87802].\n"
+            f"{margin_text} {ghi_chu_bien}\n"
         )
     return "\n".join(lines)
 
@@ -526,6 +565,16 @@ def sec_comau(cps, meta) -> str:
     power = _g(g3, "power", default="?")
     dropout = _g(g3, "dropout", default=0)
     formula = _g(g3, "formula_used", default=TAG_BS)
+    # 05/10/2026: công thức G3 kèm GHI CHÚ RÀ cho thống kê viên «[CẦN — --p0 ở đây là …]». G3 chấm SỐNG đã xác nhận
+    # (PASS_G3_CONFIRMED — thống kê viên chốt tham số + nguồn) thì ghi chú đã được xử lý: bỏ khỏi đề cương cuối; bản cũ
+    # chép nguyên ⇒ đề cương của mọi đề tài cohort/case-control mãi còn ô trống.
+    if (meta.get("_g10") or {}).get("g3_song_pass") and isinstance(formula, str):
+        formula = re.sub(r"\s*\[CẦN —[^\]]*\]", "", formula).strip()
+    g3m = _gp(meta, "G3")
+    nguon = [f"{ten}: {g3m[k]}" for k, ten in (("effect_source", "effect size"), ("p0_source", "tỷ lệ nền p0"),
+                                                ("sd_source", "độ lệch chuẩn"), ("prevalence_source", "tỷ lệ hiện mắc"),
+                                                ("margin_source", "biên"), ("dropout_source", "bỏ cuộc"))
+             if RS.is_present(g3m.get(k))]
     try:
         dropout_pct = f"{float(dropout) * 100:.0f}%"
     except (TypeError, ValueError):
@@ -559,15 +608,26 @@ def sec_comau(cps, meta) -> str:
         f"- Cỡ mẫu tối thiểu tính được: **{n_total}**{per_group}.\n"
         f"- Dự phòng bỏ cuộc {dropout_pct} → cỡ mẫu cần thu: **{n_adj}**.\n"
         f"{confirmed_block}\n"
-        f"> Lưu ý: nếu effect size/tỷ lệ giả định lấy từ y văn, PHẢI ghi PMID/DOI "
-        f"nguồn ({TAG_BS}). G3 dùng quy ước thận trọng khi chưa có ước tính từ "
-        "khảo sát tương tự tại cơ sở.\n"
+        + (f"> **Nguồn giả định (G3 — thống kê viên/chủ nhiệm khai):** {'; '.join(nguon)}.\n" if nguon else
+           f"> Lưu ý: nếu effect size/tỷ lệ giả định lấy từ y văn, PHẢI ghi PMID/DOI "
+           f"nguồn ({TAG_BS}). G3 dùng quy ước thận trọng khi chưa có ước tính từ "
+           "khảo sát tương tự tại cơ sở.\n")
     )
 
 
 def sec_congcu(cps, meta) -> str:
     scripts = _g(cps["G5"], "scripts_generated", default=[]) or []
-    sc_txt = "\n".join(f"- `{Path(s).name}`" for s in scripts) if scripts else f"- {TAG_BS}"
+    # 05/10/2026: G5 lập bằng chuỗi nạp→làm sạch→khoá (không qua run_g5_auto) không ghi scripts_generated — liệt kê
+    # script làm sạch thật trên đĩa; CHƯA tới G5 (gói trước dữ liệu) thì nói đúng là chưa có, không gắn nhãn thiếu.
+    out_dir_g10 = (meta.get("_g10") or {}).get("out_dir")
+    if not scripts and cps["G5"] and out_dir_g10 and (Path(out_dir_g10) / "03_cleaning_scripts").is_dir():
+        scripts = sorted(str(x) for x in (Path(out_dir_g10) / "03_cleaning_scripts").iterdir() if x.is_file())
+    if scripts:
+        sc_txt = "\n".join(f"- `{Path(s).name}`" for s in scripts)
+    elif not cps["G5"]:
+        sc_txt = "- Chưa có — sinh ở G5 (quản trị dữ liệu) khi chuẩn bị thu thập dữ liệu thật, sau phê duyệt đạo đức."
+    else:
+        sc_txt = f"- {TAG_BS}"
     instrument = meta.get("instrument") or {}
     if instrument.get("name"):
         note = instrument.get("note")
@@ -601,8 +661,27 @@ def sec_congcu(cps, meta) -> str:
     )
 
 
+def _dmp_txt(meta: dict) -> str:
+    """Dòng DMP: lấy từ study_meta.data_governance khi chủ nhiệm đã khai nơi lưu, phân quyền và thời hạn lưu
+    (05/10/2026) — bản cũ gắn «[CẦN XÁC NHẬN TẠI ĐƠN VỊ]» vô điều kiện."""
+    dg = (meta or {}).get("data_governance") or (meta or {}).get("data_management") or {}
+    dg = dg if isinstance(dg, dict) else {}
+    phan = [f"{ten}: {_text(dg.get(k))}" for k, ten in (("plan", "kế hoạch"), ("storage", "nơi lưu trữ"),
+                                                        ("access", "phân quyền"), ("retention", "thời hạn lưu"))
+            if RS.is_present(dg.get(k))]
+    if all(RS.is_present(dg.get(k)) for k in ("storage", "access", "retention")):
+        return f"**Kế hoạch quản trị dữ liệu chi tiết (DMP):** {'; '.join(phan)} (bản nháp ở G2 — TL6).\n"
+    return (f"**Kế hoạch quản trị dữ liệu chi tiết (DMP):** {TAG_DV} — đã có bản nháp "
+            "ở G2 (TL6). Bác sĩ xác nhận nơi lưu trữ, thời hạn, phân quyền tại đơn vị.\n")
+
+
 def sec_quantri_dulieu(cps, meta) -> str:
-    lock = _g(cps["G5"], "database_lock_status", default=TAG_BS)
+    # 05/10/2026 (G10-09): G5 CHƯA bắt đầu (hồ sơ trình Hội đồng, trước dữ liệu) là trạng thái ĐÚNG, không phải ô
+    # thiếu — bản cũ in «[CẦN BỔ SUNG]» cho khoá CSDL/nhập/khoá dữ liệu ⇒ gói trình Hội đồng không bao giờ qua
+    # G10-AUTO-09.
+    chua_g5 = not cps.get("G5")
+    chua_co = "chưa có — dữ liệu thật chỉ thu thập SAU phê duyệt đạo đức (G5)"
+    lock = _g(cps["G5"], "database_lock_status", default=chua_co if chua_g5 else TAG_BS)
     pseudo = (meta or {}).get("real_data_pseudonymization") or {}
     deid = (meta or {}).get("real_data_deidentification") or {}
     intake = (meta or {}).get("real_data_intake") or {}
@@ -650,6 +729,8 @@ def sec_quantri_dulieu(cps, meta) -> str:
             f"`{intake.get('manifest', 'DATA_INTAKE_manifest.json')}`. "
             "Đây mới là bước intake, chưa đồng nghĩa khóa DB.\n\n"
         )
+    elif chua_g5:
+        intake_txt = f"**Dữ liệu thật đã nhập:** {chua_co}.\n\n"
     else:
         intake_txt = (
             f"**Dữ liệu thật đã nhập:** {TAG_BS} — dùng "
@@ -690,6 +771,8 @@ def sec_quantri_dulieu(cps, meta) -> str:
             f"{', '.join(data_lock.get('blockers') or [TAG_BS])}; xem "
             f"`{data_lock.get('memo', 'DATA_LOCK_memo.md')}`.\n\n"
         )
+    elif chua_g5:
+        data_lock_txt = f"**Dữ liệu phân tích đã khóa:** {chua_co}.\n\n"
     else:
         data_lock_txt = (
             f"**Dữ liệu phân tích đã khóa:** {TAG_BS} — sau khi làm sạch trên bản "
@@ -707,12 +790,13 @@ def sec_quantri_dulieu(cps, meta) -> str:
         f"{intake_txt}"
         f"{cleaning_txt}"
         f"{data_lock_txt}"
+        # 05/10/2026: tham chiếu pháp lý cố định của khuôn mang nhãn XÁC NHẬN THỦ CÔNG (như build_legal_refs — vá
+        # 31/07) — bản cũ gắn «[CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC]» VÔ ĐIỀU KIỆN ⇒ không đề cương nào qua G10-AUTO-09.
         "**Nguyên tắc:** khử định danh, không lưu PII, tuân thủ Luật Bảo vệ dữ "
-        f"liệu cá nhân 91/2025/QH15 {S.TAG_CAN_KIEM_CHUNG_NGUON}; nhật ký truy vấn "
+        f"liệu cá nhân 91/2025/QH15 {TAG_MANUAL}; nhật ký truy vấn "
         "dữ liệu; làm sạch trên BẢN SAO, không sửa dữ liệu gốc; kế hoạch dữ liệu "
         "thiếu; quy trình khoá DB trước phân tích chính (ALCOA+).\n\n"
-        f"**Kế hoạch quản trị dữ liệu chi tiết (DMP):** {TAG_DV} — đã có bản nháp "
-        "ở G2 (TL6). Bác sĩ xác nhận nơi lưu trữ, thời hạn, phân quyền tại đơn vị.\n"
+        + _dmp_txt(meta)
     )
 
 
@@ -839,15 +923,54 @@ def sec_daoduc(cps, meta) -> str:
     irb_num = _g(g2, "g2_irb_number", default=None)
     docs = _g(g2, "documents_generated", default=[]) or []
     doc_txt = "\n".join(f"- {d}" for d in docs) if docs else f"- {TAG_BS}"
-    irb_line = (f"Số phê duyệt IRB: **{irb_num}**." if irb_num
-                else f"Số phê duyệt IRB: {TAG_DV} — CHƯA có, phải nộp Hội đồng "
-                     "Đạo đức và nhận số thật trước khi thu thập dữ liệu.")
+    muc_dich = (meta.get("_g10") or {}).get("muc_dich")
+    reg_id = _g(g2, "g2_registration", default=None) or _gp(meta, "G8").get("registration_id")
+    if irb_num:
+        irb_line = f"Số phê duyệt IRB: **{irb_num}**."
+    elif muc_dich in G10Q.MUC_DICH_TRUOC_DU_LIEU:
+        # 05/10/2026 (G10-09): gói TRÌNH Hội đồng — chưa có số là đúng trạng thái, không phải ô thiếu.
+        irb_line = (f"Số phê duyệt IRB: chưa có — tài liệu này là bản TRÌNH Hội đồng Đạo đức (mục đích {muc_dich}); "
+                    "số/ngày/hiệu lực ghi sau khi Hội đồng duyệt, trước khi thu thập dữ liệu.")
+    else:
+        irb_line = (f"Số phê duyệt IRB: {TAG_DV} — CHƯA có, phải nộp Hội đồng "
+                    "Đạo đức và nhận số thật trước khi thu thập dữ liệu.")
     ethics = meta.get("ethics") if isinstance(meta.get("ethics"), dict) else {}
+    # SỬA 05/10/2026 (soát từng cổng G10-08): câu tuân thủ/đồng thuận cuối mục từng in CỐ ĐỊNH cho mọi thiết kế
+    # («ICH-GCP … ICF đồng thuận tham gia; tự nguyện; ẩn danh») — sai với tổng quan hệ thống (không có người tham gia),
+    # với nghiên cứu được MIỄN ICF và mâu thuẫn ma trận tuân thủ cùng tài liệu (GCP chỉ bắt buộc cho thử nghiệm can
+    # thiệp); «ẩn danh» sai khi dữ liệu chỉ giả danh hoá. Nay sinh theo thiết kế + quyết định/khai báo G2.
+    design = _design_code(cps)
+    g2m = (meta.get("gate_params") or {}).get("G2") if isinstance(meta.get("gate_params"), dict) else None
+    g2m = g2m if isinstance(g2m, dict) else {}
+    if design == "sr_ma":
+        dong_thuan = "Đồng thuận: không áp dụng — tổng quan hệ thống/phân tích gộp không có người tham gia trực tiếp."
+    elif _g(g2, "g2_icf_waiver_approved", default=False) is True:
+        dong_thuan = "Đồng thuận: Hội đồng Đạo đức đã MIỄN đồng thuận (ICF waiver) theo quyết định ở G2."
+    elif _g(g2, "g2_icf_version", default=None):
+        dong_thuan = (f"Đồng thuận: ICF phiên bản {_g(g2, 'g2_icf_version')} đã được Hội đồng duyệt; tham gia tự "
+                      "nguyện, được rút lui bất kỳ lúc nào.")
+    elif g2m.get("icf_waiver_requested") is True:
+        dong_thuan = "Đồng thuận: đề nghị Hội đồng MIỄN đồng thuận (ICF waiver) — chờ quyết định của Hội đồng."
+    elif RS.is_present(g2m.get("icf_version")):
+        dong_thuan = (f"Đồng thuận: ICF phiên bản {g2m.get('icf_version')} trình Hội đồng cùng đề cương; tham gia tự "
+                      "nguyện, được rút lui bất kỳ lúc nào.")
+    else:
+        dong_thuan = f"Đồng thuận/miễn đồng thuận: {TAG_DV}."
+    tuan_thu = S.TUYEN_NGON_HELSINKI + (", ICH-GCP E6(R3)" if design == "rct" else "")
+    # 05/10/2026: có mã đăng ký THẬT (G2 duyệt ghi g2_registration; G8 khai registration_id đã đối chiếu attestation)
+    # thì in mã — chuỗi hồ sơ nguy cơ chung của G2 mang ô «loại hình thu thập [CẦN BỔ SUNG]» cho mọi thiết kế quan sát.
+    ke_hoach_dk = (meta.get("registration") or {}).get("plan") if isinstance(meta.get("registration"), dict) else None
+    if RS.is_present(reg_id):
+        reg_line = f"**Đăng ký nghiên cứu:** {reg_id} — {reg_where}."
+    elif RS.is_present(ke_hoach_dk):
+        reg_line = f"**Đăng ký nghiên cứu:** {_text(ke_hoach_dk)} ({reg_where})."
+    else:
+        reg_line = f"**Đăng ký nghiên cứu:** {reg} ({reg_where})."
     return (
         f"{S.de_cuong_heading('daoduc')}\n\n"
         f"**Phân loại nguy cơ (tự động từ G2):** {risk}.  \n"
         f"**Lộ trình thẩm định:** {route}.  \n"
-        f"**Đăng ký nghiên cứu:** {reg} ({reg_where}).\n\n"
+        f"{reg_line}\n\n"
         f"{irb_line}\n\n"
         f"**Đánh giá lợi ích–nguy cơ:** {_text(ethics.get('benefit_risk'))}.  \n"
         f"**Đồng thuận/waiver rationale:** {_text(ethics.get('consent') or meta.get('consent_plan'))}.  \n"
@@ -855,9 +978,9 @@ def sec_daoduc(cps, meta) -> str:
         f"**An toàn và xử lý sự cố/biến cố:** {_text(ethics.get('safety'))}.\n\n"
         "**Hồ sơ đạo đức đã sinh tự động (G2):**\n\n"
         f"{doc_txt}\n\n"
-        f"Tuân thủ {S.TUYEN_NGON_HELSINKI}, ICH-GCP, Thông tư 43/2024/TT-BYT "
-        f"{S.TAG_CAN_KIEM_CHUNG_NGUON}. ICF đồng thuận tham gia; tự nguyện; ẩn "
-        "danh; bảo mật.\n"
+        f"Tuân thủ {tuan_thu}, Thông tư 43/2024/TT-BYT {TAG_MANUAL}.  \n"
+        f"{dong_thuan}  \n"
+        "Bảo mật: theo mục «Bảo mật dữ liệu» ở trên.\n"
     )
 
 
@@ -895,29 +1018,74 @@ def sec_tiendo(cps, meta) -> str:
     )
 
 
+def _vancouver(pid: str, md: dict) -> Optional[str]:
+    """Một dòng Vancouver từ metadata PubMed ĐÃ PHÂN GIẢI (A12_METADATA_RECEIPT) — None khi chưa phân giải."""
+    if not isinstance(md, dict) or md.get("status") != "resolved" or not RS.is_present(md.get("title")):
+        return None
+    tac_gia = md.get("authors")
+    tac_gia = list(tac_gia) if isinstance(tac_gia, (list, tuple)) else ([tac_gia] if tac_gia else [])
+    ten = ", ".join(str(a) for a in tac_gia[:6]) + (", et al" if len(tac_gia) > 6 else "")
+    phan = [ten, str(md["title"]).rstrip("."), md.get("journal"), md.get("year")]
+    dong = ". ".join(str(x) for x in phan if RS.is_present(x)) + "."
+    if RS.is_present(md.get("doi")):
+        dong += f" doi:{md['doi']}."
+    return f"{dong} PMID: {pid}."
+
+
 def sec_tltk(cps, meta) -> str:
-    # Gộp PMID từ G0 (seed) + G7 (seed dùng trong bản thảo), khử trùng.
+    # Gộp PMID từ G0 (seed) + G7 (seed dùng trong bản thảo) + PMID chủ nhiệm khai (study_meta.pmids), khử trùng.
     pmids: List[str] = []
-    for g in ("G7", "G0"):
-        for pid in (_g(cps[g], "pmids_used_as_seed", default=[]) or []):
-            if pid not in pmids:
+    for nguon in [_g(cps[g], "pmids_used_as_seed", default=[]) or [] for g in ("G7", "G0")] + [
+            meta.get("pmids") if isinstance(meta.get("pmids"), list) else []]:
+        for pid in nguon:
+            if str(pid) not in pmids:
                 pmids.append(str(pid))
-    # G0 có thể lưu PMID trong pubmed_results — nhưng schema hiện chỉ đếm số.
+    # 05/10/2026 (soát từng cổng G10 — chuỗi thật): metadata Vancouver lấy từ biên nhận A12 ĐÃ PHÂN GIẢI PubMed
+    # (check_citation_metadata) khi A12 đạt — bản cũ gắn «[CẦN BỔ SUNG]» VÔ ĐIỀU KIỆN cho mọi PMID và cho cả dòng tài
+    # liệu tiếng Việt ⇒ đề cương không bao giờ qua G10-AUTO-09 dù trích dẫn đã được A12 xác minh.
+    out_dir_g10 = (meta.get("_g10") or {}).get("out_dir")
+    metadata: dict = {}
+    a12_ok = False
+    if out_dir_g10:
+        try:
+            nhan = json.loads((Path(out_dir_g10) / "A12_METADATA_RECEIPT.json").read_text(encoding="utf-8"))
+            metadata = nhan.get("metadata") if isinstance(nhan.get("metadata"), dict) else {}
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, AttributeError):
+            metadata = {}
+        study_g10 = Path(out_dir_g10).name
+        try:
+            a12_ok = citation_verification_ok(study_g10, Path(out_dir_g10))[0]
+        except Exception:  # noqa: BLE001 — không xác minh được ⇒ coi như chưa đạt
+            a12_ok = False
     lines = [f"{S.de_cuong_heading('tltk')}\n"]
     if pmids:
-        lines.append(
-            "Danh sách PMID hạt giống (tự động từ G0/G7). Đây là ĐỊNH DANH THẬT "
-            "nhưng METADATA đầy đủ (tác giả–năm–tạp chí–trang) phải được KIỂM CHỨNG "
-            f"và định dạng Vancouver trước khi nộp ({S.TAG_CAN_KIEM_CHUNG_NGUON}, "
-            "nối agent `kiem-chung-trich-dan`):\n")
-        for i, pid in enumerate(pmids, 1):
-            lines.append(f"{i}. PMID: {pid} — {TAG_BS} (định dạng Vancouver đầy đủ).")
+        dong_vc = [(pid, _vancouver(pid, metadata.get(pid)) if a12_ok else None) for pid in pmids]
+        if a12_ok and all(v for _p, v in dong_vc):
+            lines.append("Danh mục PMID (G0/G7/chủ nhiệm khai) — metadata Vancouver lấy từ PubMed qua cổng A12 "
+                         "(`check_citation_metadata.py`, `check_citation_retraction.py`), đã kiểm rút bài:\n")
+        else:
+            lines.append(
+                "Danh sách PMID hạt giống (tự động từ G0/G7). Đây là ĐỊNH DANH THẬT "
+                "nhưng METADATA đầy đủ (tác giả–năm–tạp chí–trang) phải được KIỂM CHỨNG "
+                f"và định dạng Vancouver trước khi nộp ({S.TAG_CAN_KIEM_CHUNG_NGUON}, "
+                "nối agent `kiem-chung-trich-dan`):\n")
+        for i, (pid, vc) in enumerate(dong_vc, 1):
+            lines.append(f"{i}. {vc}" if vc else f"{i}. PMID: {pid} — {TAG_BS} (định dạng Vancouver đầy đủ).")
         lines.append("")
     else:
         lines.append(f"{TAG_BS} — chưa có PMID hạt giống trong checkpoint.\n")
-    lines.append(
-        f"> {TAG_BS}: Tài liệu tham khảo TIẾNG VIỆT (luận văn/tạp chí trong nước) "
-        "hệ thống tra cứu tự động (PubMed) không tiếp cận đủ — bác sĩ bổ sung.\n")
+    tv = meta.get("vietnamese_references") or meta.get("tai_lieu_tieng_viet")
+    tv_khong = meta.get("vietnamese_references_not_applicable") or meta.get("tai_lieu_tieng_viet_khong_ap_dung")
+    if isinstance(tv, list) and any(RS.is_present(x) for x in tv):
+        lines.append("**Tài liệu tham khảo tiếng Việt (chủ nhiệm khai):**\n")
+        lines.extend(f"- {_text(x)}" for x in tv if RS.is_present(x))
+        lines.append("")
+    elif RS.is_present(tv_khong):
+        lines.append(f"> Tài liệu tham khảo tiếng Việt: không áp dụng — {_text(tv_khong)}\n")
+    else:
+        lines.append(
+            f"> {TAG_BS}: Tài liệu tham khảo TIẾNG VIỆT (luận văn/tạp chí trong nước) "
+            "hệ thống tra cứu tự động (PubMed) không tiếp cận đủ — bác sĩ bổ sung.\n")
     return "\n".join(lines)
 
 
@@ -971,7 +1139,9 @@ def sec_tongquan(cps, meta) -> str:
         f"**Điểm bất đồng/mâu thuẫn và lý giải khả dĩ:** {_text(lit.get('disagreements'))}\n\n"
         "**Khoảng trống nghiên cứu:** xem mục 2 (không lặp lại).\n\n"
         f"**Điểm khác biệt/tính mới của đề tài so với nghiên cứu gần nhất:** "
-        f"{_text(lit.get('novelty'))}\n\n"
+        # 05/10/2026: PI đã viết lý do tính mới ở G0 (novelty_justification, xác nhận gắn dấu) — dùng khi chưa khai
+        # riêng.
+        f"{_text(lit.get('novelty') or _gp(meta, 'G0').get('novelty_justification'))}\n\n"
         f"**Khung lý thuyết / mô hình khái niệm:** {framework_txt}\n\n"
         "> Quy tắc: mọi khẳng định về một bài phải truy được PMID/DOI đã xác minh "
         "(`kiem-chung-trich-dan`) và đã tra rút bài bằng `check_citation_retraction.py`; "
@@ -1223,14 +1393,33 @@ def build_traceability_matrix(cps, meta=None) -> str:
         f"CRF/REDCap G5 ({len(crf)} biến; chuyên khoa `{specialty}`)"
         if crf else TAG_BS
     )
+    # 05/10/2026: G5 lập qua chuỗi nạp→làm sạch→khoá (không qua run_g5_auto) không ghi crf_columns — đếm biến từ từ
+    # điển dữ liệu REDCap THẬT trên đĩa (tệp G5_REDCap_dictionary_<mã>.csv mà G5 chấm/băm).
+    out_dir_g10 = (meta.get("_g10") or {}).get("out_dir")
+    if not crf and cps.get("G5") and out_dir_g10:
+        tu_dien = sorted(Path(out_dir_g10).glob("G5_REDCap_dictionary_*.csv"))
+        if tu_dien:
+            try:
+                import csv  # noqa: PLC0415
+
+                with tu_dien[0].open(encoding="utf-8", newline="") as fh:
+                    so_bien = sum(1 for dong in csv.DictReader(fh) if any((v or "").strip() for v in dong.values()))
+            except (OSError, UnicodeDecodeError, csv.Error):
+                so_bien = 0
+            if so_bien:
+                crf_source = f"Từ điển dữ liệu REDCap G5 `{tu_dien[0].name}` ({so_bien} biến)"
+    bien = meta.get("variables")
+    if not crf and not cps.get("G5") and isinstance(bien, list) and bien:
+        crf_source = f"Biến định trước ({len(bien)} biến — mục Biến số); CRF/REDCap dựng ở G5 sau phê duyệt"
     primary_outcome = meta.get("primary_outcome")
     if not primary_outcome and "primary_outcome" in crf:
         primary_outcome = "`primary_outcome`"
-    primary_outcome = primary_outcome or TAG_BS
+    # 05/10/2026: StudySpec trả kết cục/phơi nhiễm dạng dict — bản cũ in thẳng repr Python («{'name': …}») vào đề cương.
+    primary_outcome = _text(primary_outcome) if primary_outcome else TAG_BS
     exposure = meta.get("exposure") or meta.get("main_predictor")
     if not exposure and "exposure_var" in crf:
         exposure = "`exposure_var`"
-    exposure = exposure or TAG_BS
+    exposure = _text(exposure) if exposure else TAG_BS
     aim = meta.get("aim") or TAG_BS
     research_question = meta.get("research_question") or f"Loại câu hỏi: {question_type}"
     objectives = meta.get("objectives") or []
@@ -1448,7 +1637,7 @@ def build_final_technical_completion(cps, meta=None) -> str:
         ("Mục tiêu", meta.get("aim", TAG_BS)),
         ("Câu hỏi nghiên cứu/giả thuyết", meta.get("research_question", TAG_BS)),
         ("Thiết kế nghiên cứu", _g(cps.get("G1"), "design", "primary", default=TAG_BS)),
-        ("Kết cục chính", meta.get("primary_outcome", TAG_BS)),
+        ("Kết cục chính", _text(meta.get("primary_outcome"))),
     ]
     for item, value in locked_items:
         lines.append(
@@ -1533,7 +1722,7 @@ def build_missing_information(cps, meta=None, evaluation=None) -> str:
         "results_final": (
             "Kết quả phân tích thật đã được bác sĩ xác nhận",
             "Không được viết kết quả/kết luận cuối hoặc bài báo hoàn chỉnh.",
-            "Giữ phần Results/Discussion ở nhãn [CẦN BỔ SUNG]; chỉ dùng dummy tables.",
+            "Giữ phần Results/Discussion ở nhãn CẦN BỔ SUNG; chỉ dùng dummy tables.",
             "Chủ nhiệm đề tài + nhóm phân tích",
         ),
         "peer_review_approved": (
@@ -1838,6 +2027,15 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     study_spec = RS.build_study_spec(study, cps, raw_meta)
     spec_evaluation = RS.evaluate_study_spec(study_spec, cps, raw_meta)
     meta = RS.meta_for_render(raw_meta, study_spec)
+    # 05/10/2026 (soát từng cổng G10 — lộ khi chạy chuỗi THẬT G0→G9 khoá tới G10): ngữ cảnh lắp ráp cho các mục — mục
+    # đích phát hành (gói trước dữ liệu), G3 chấm SỐNG đã xác nhận, thư mục đề tài (biên nhận A12, script). Chỉ dùng khi
+    # dựng văn bản; KHÔNG ghi vào study_meta.json.
+    meta["_g10"] = {
+        "out_dir": str(out_dir),
+        "muc_dich": G10Q.muc_dich_phat_hanh(G10Q._read_json(out_dir / G10Q.READINESS_JSON)),
+        "g3_song_pass": bool(cps.get("G3"))
+        and CS.trang_thai_song("G3", study, out_dir, repo_root=BASE).get("muc") == "PASS",
+    }
     now = datetime.now()
     generated_display = now.strftime("%Y-%m-%d %H:%M")
     generated_iso = now.isoformat()
@@ -2006,6 +2204,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     cp_path = out_dir / "G10_checkpoint.json"
     cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2),
                        encoding="utf-8", newline="\n")
+    ghi_dau_de_cuong(cp_path, md_path, docx_path)
 
     return {
         "md": md_path,
@@ -2553,6 +2752,8 @@ def main() -> int:
                         result["docx"],
                         title_page=result.get("title_page"),
                     )
+                # 05/10/2026 (G10-02): .md/.docx vừa ghi lại là bản đã lắp hợp lệ — cập nhật dấu.
+                ghi_dau_de_cuong(result["checkpoint"], md_path, result.get("docx"))
         except OSError:
             pass
 
@@ -2567,6 +2768,50 @@ def main() -> int:
         )
         result["checkpoint"].write_text(
             json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+
+    def _cham_va_bao_g10() -> int:
+        """Chấm G10 (ghi manifest trước ký) rồi báo/trả mã thoát — dùng chung cho gói đầy đủ và gói trước dữ liệu."""
+        g10_report = G10Q.evaluate_study(
+            study,
+            out_dir,
+            repo_root=BASE,
+            write=True,
+        )
+        g10_status = g10_report.get("status")
+        print(f"\n🔍 G10 quality status: {g10_status}")
+        if g10_status == G10Q.STATUS_LOCKED:
+            print("🔒 Gói G10 đã khóa hợp lệ. G10 không tự nộp hồ sơ.")
+            print("Cần bác sĩ kiểm chứng.")
+            return GC.EXIT_OK
+        if g10_status == G10Q.STATUS_READY:
+            _mark_g10_blocked(
+                GC.REASON_MISSING_RELEASE_APPROVAL,
+                "Gói G10 đã đủ tiêu chí kỹ thuật nhưng chưa có phê duyệt PI trên đúng manifest.",
+                f"python tools/approve_gate.py --study {study} --gate G10 "
+                f"--artifact {result['checkpoint']} --reviewer-role PI "
+                "--reviewer-ref <MA_THAM_CHIEU_KHONG_PII>",
+            )
+            print("🚧 Gói đã sẵn sàng để PI rà và khóa, nhưng CHƯA được phát hành.")
+            print("   PI phải tự tay ký đúng G10_checkpoint.json; agent không được ký hộ.")
+            print("   Việc nộp bên ngoài vẫn chưa được G10 thực hiện hoặc chứng minh.")
+            print("   Cần bác sĩ kiểm chứng.")
+            return GC.EXIT_BLOCKED
+
+        _mark_g10_blocked(
+            GC.REASON_MISSING_RELEASE_READINESS,
+            "Gói G10 chưa đạt hợp đồng release-readiness/nhất quán/toàn vẹn.",
+            f"Hoàn tất exports/{study}/{G10Q.READINESS_JSON} rồi chạy "
+            f"python tools/g10_quality_gate.py --study {study}",
+        )
+        for action in g10_report.get("actions", [])[:8]:
+            print(f"   - {action}")
+        if g10_status == G10Q.STATUS_BLOCKED:
+            print("⛔ G10 có lỗi chặn/an toàn hoặc gói đã bị thay đổi.")
+            print("   Cần bác sĩ kiểm chứng.")
+            return GC.EXIT_GUARDRAIL_FAIL
+        print("🚧 G10 mới là bản lắp ráp; còn mục cần hoàn tất trước khi PI ký.")
+        print("   Cần bác sĩ kiểm chứng.")
+        return GC.EXIT_BLOCKED
 
     # Vá 2026-07-15 (Ngày 1 lộ trình 7 ngày — reports/LO_TRINH_7_NGAY_NGHIEN_CUU_Y_KHOA
     # _2026-07-14.md): trích dẫn (cổng A12, agent `kiem-chung-trich-dan`) trước đây
@@ -2607,6 +2852,26 @@ def main() -> int:
               "đề tài THẬT sắp nộp hội đồng, chạy `python tools/check_citations.py --study "
               f"{study} --pmids <...>` để có bằng chứng phân giải metadata gốc, và cân nhắc "
               "thêm mã đề tài vào gate_contract.REAL_STUDY_DENYLIST.")
+
+    # THÊM 05/10/2026 (soát từng cổng G10-09): mục đích phát hành TRƯỚC dữ liệu (trình Hội đồng Đạo đức / cập nhật đăng
+    # ký) — G8/G9 chỉ có SAU khi Hội đồng duyệt nên KHÔNG áp dụng; g10_quality_gate đòi G0–G4 cho mục đích này. Bản cũ
+    # chặn mọi gói vì thiếu G8/G9 ⇒ đề cương trình Hội đồng luôn mang biểu ngữ «KHÔNG dùng để nộp Hội đồng».
+    muc_dich = G10Q.muc_dich_phat_hanh(G10Q._read_json(out_dir / G10Q.READINESS_JSON))
+    if muc_dich in G10Q.MUC_DICH_TRUOC_DU_LIEU:
+        print(f"\nℹ️  Mục đích phát hành {muc_dich}: hồ sơ TRƯỚC dữ liệu — G8/G9 không áp dụng; G10 đòi G0–G4 "
+              "(G2 hồ sơ sẵn sàng nộp hoặc đã duyệt, G4 SAP đủ nội dung hoặc đã khoá).")
+        if bypass_notes:
+            _apply_submission_status_banner(
+                ["> 🚧 **BẢN NHÁP — MỘT HOẶC NHIỀU CỔNG ĐÃ BỊ BỎ QUA BẰNG CỜ XEM-TRƯỚC. "
+                 "KHÔNG dùng tài liệu này để nộp Hội đồng:**"] + [f"> - {note}" for note in bypass_notes])
+            print("   → Mã thoát 3 (có cổng bị bỏ qua). Gói vẫn nằm trên đĩa để xem trước.")
+            return GC.EXIT_GUARDRAIL_FAIL
+        _apply_submission_status_banner([
+            f"> ℹ️ **GÓI {muc_dich} (trước dữ liệu):** A12 đạt tại thời điểm lắp ráp; G10 chỉ đòi G0–G4. Trạng thái "
+            "khoá phải xác minh bằng G10_QUALITY_REPORT.json/approval_ledger — tệp này không phải bằng chứng đã khoá, "
+            "đã nộp hay đã được Hội đồng/cơ quan đăng ký chấp nhận.",
+        ])
+        return _cham_va_bao_g10()
 
     # Vá 2026-07-14 (nâng cấp kiểm soát PI/IRB/thống kê viên/phản biện): G8 (bình
     # duyệt độc lập) trước đây KHÔNG có cổng cứng nào — không nằm trong --gate choices
@@ -2849,47 +3114,7 @@ def main() -> int:
     _apply_submission_status_banner(banner)
 
     if g9_has_quality_contract:
-        g10_report = G10Q.evaluate_study(
-            study,
-            out_dir,
-            repo_root=BASE,
-            write=True,
-        )
-        g10_status = g10_report.get("status")
-        print(f"\n🔍 G10 quality status: {g10_status}")
-        if g10_status == G10Q.STATUS_LOCKED:
-            print("🔒 Gói G10 đã khóa hợp lệ. G10 không tự nộp hồ sơ.")
-            print("Cần bác sĩ kiểm chứng.")
-            return GC.EXIT_OK
-        if g10_status == G10Q.STATUS_READY:
-            _mark_g10_blocked(
-                GC.REASON_MISSING_RELEASE_APPROVAL,
-                "Gói G10 đã đủ tiêu chí kỹ thuật nhưng chưa có phê duyệt PI trên đúng manifest.",
-                f"python tools/approve_gate.py --study {study} --gate G10 "
-                f"--artifact {result['checkpoint']} --reviewer-role PI "
-                "--reviewer-ref <MA_THAM_CHIEU_KHONG_PII>",
-            )
-            print("🚧 Gói đã sẵn sàng để PI rà và khóa, nhưng CHƯA được phát hành.")
-            print("   PI phải tự tay ký đúng G10_checkpoint.json; agent không được ký hộ.")
-            print("   Việc nộp bên ngoài vẫn chưa được G10 thực hiện hoặc chứng minh.")
-            print("   Cần bác sĩ kiểm chứng.")
-            return GC.EXIT_BLOCKED
-
-        _mark_g10_blocked(
-            GC.REASON_MISSING_RELEASE_READINESS,
-            "Gói G10 chưa đạt hợp đồng release-readiness/nhất quán/toàn vẹn.",
-            f"Hoàn tất exports/{study}/{G10Q.READINESS_JSON} rồi chạy "
-            f"python tools/g10_quality_gate.py --study {study}",
-        )
-        for action in g10_report.get("actions", [])[:8]:
-            print(f"   - {action}")
-        if g10_status == G10Q.STATUS_BLOCKED:
-            print("⛔ G10 có lỗi chặn/an toàn hoặc gói đã bị thay đổi.")
-            print("   Cần bác sĩ kiểm chứng.")
-            return GC.EXIT_GUARDRAIL_FAIL
-        print("🚧 G10 mới là bản lắp ráp; còn mục cần hoàn tất trước khi PI ký.")
-        print("   Cần bác sĩ kiểm chứng.")
-        return GC.EXIT_BLOCKED
+        return _cham_va_bao_g10()
 
     print("\n✅ Xong. Cần bác sĩ kiểm chứng.")
     if unknown_gates:

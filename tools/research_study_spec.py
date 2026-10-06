@@ -1101,6 +1101,16 @@ def meta_for_render(meta: Optional[dict], spec: dict) -> dict:
         out["exposure_intervention"] = spec["exposure_intervention"]
     if is_present(spec.get("design_specific")):
         out["design_specific"] = spec["design_specific"]
+    # THÊM 05/10/2026 (soát từng cổng G10 — lộ khi chạy chuỗi THẬT tới G10): các KHỐI mà section builder đọc như dict
+    # (expected_results, literature, theory, analysis, bias, ethics, registration, resources) — study_meta thô hay ghi
+    # dạng phẳng (vd "expected_results": "<chuỗi>" + "table_shells": [...] ở cấp cao nhất). StudySpec gom đúng vào khối
+    # dict (D18 đạt) nhưng luật «chỉ điền khi thiếu» giữ CHUỖI thô ⇒ builder thấy không phải dict ⇒ in «[CẦN BỔ SUNG]»
+    # dù dữ kiện đã có: đề cương và StudySpec nói hai chuyện. Bản thô không phải dict ⇒ dùng khối của StudySpec.
+    for key in ("expected_results", "literature", "theory", "analysis", "bias", "ethics", "registration",
+                "resources"):
+        value = defaults.get(key)
+        if isinstance(value, dict) and is_present(value) and not isinstance(out.get(key), dict):
+            out[key] = value
     return out
 
 

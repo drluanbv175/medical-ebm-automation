@@ -100,7 +100,24 @@ def dung_g0_g1_da_chot(out_dir: Path, study: str, *, them_meta: Optional[Dict[st
     loai_cau_hoi, loai_kiem_dinh = _CAU_HOI_THEO_THIET_KE[thiet_ke]
     if (loai_cau_hoi, loai_kiem_dinh) != ("therapy", "superiority") or thiet_ke in _G0_THEO_THIET_KE:
         g0.update({"question_type": loai_cau_hoi, "test_type": loai_kiem_dinh, **_G0_THEO_THIET_KE.get(thiet_ke, {})})
-        g0["dau_van_tay_chot"] = G0Q.dau_van_tay_g0(cp0, {"gate_params": {"G0": g0}})
+    # 05/10/2026 (CHUNG-H đầu–cuối tới G10): G0 và G1 phải mô tả CÙNG một đề tài — đồ gá cũ ghép PICO của test G0
+    # (dapagliflozin · suy tim EF bảo tồn · kết cục gộp) với G1 («X» so chăm sóc chuẩn · thay đổi điểm số Y) ⇒ đối chiếu
+    # xuyên cổng (G10-AUTO-11) báo LỆCH kết cục chính: đúng luật, sai đồ gá. PICO G0 lấy theo G1 rồi chốt lại dấu vân
+    # tay.
+    g1m = meta["gate_params"]["G1"]
+    kc = g1m.get("primary_outcome") if isinstance(g1m.get("primary_outcome"), dict) else {}
+    g0.update({
+        "population": g1m.get("population") or g0["population"],
+        "intervention": "Can thiệp X theo đề cương", "comparison": "Chăm sóc chuẩn",
+        "outcomes": [kc.get("name") or g0["primary_outcome"]],
+        "primary_outcome": kc.get("name") or g0["primary_outcome"],
+        "primary_outcome_measure": kc.get("measure") or g0["primary_outcome_measure"],
+        "primary_outcome_timepoint": kc.get("timepoint") or g0["primary_outcome_timepoint"],
+        "hypothesis_h0": "Không khác biệt điểm số Y giữa can thiệp X và chăm sóc chuẩn",
+        "hypothesis_h1": "Can thiệp X cải thiện điểm số Y so với chăm sóc chuẩn",
+        "expected_direction": "tăng",
+    })
+    g0["dau_van_tay_chot"] = G0Q.dau_van_tay_g0(cp0, {"gate_params": {"G0": g0}})
     meta["gate_params"]["G0"] = g0
     for khoa, gia_tri in (them_meta or {}).items():
         if khoa.startswith("G") and khoa[1:].isdigit():

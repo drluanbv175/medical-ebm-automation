@@ -244,6 +244,24 @@ def _receipt_pmids(out_dir: Path):
     return valid, expired, invalid
 
 
+def _a12_pmids(out_dir: Path) -> Set[str]:
+    """PMID đã PHÂN GIẢI metadata gốc qua cổng A12 — `check_citation_metadata.py` tra PubMed EFetch và ghi
+    A12_METADATA_RECEIPT.json (có chữ ký; G7/G8/G9/G10 kiểm chữ ký + độ phủ qua citation_verification_ok).
+
+    THÊM 05/10/2026 (soát từng cổng G10 — lộ khi chạy chuỗi THẬT tới G10): nguồn THẬT ngang raw G0 (cùng PubMed, máy
+    tra). R4 cũ chỉ biết raw G0 + seed checkpoint + biên nhận tự khai ⇒ PMID chủ nhiệm thêm vào đề cương và ĐÃ được
+    A12 xác minh vẫn bị gắn «nghi bịa» — đề cương đúng không bao giờ qua guardrail."""
+    try:
+        data = json.loads((out_dir / "A12_METADATA_RECEIPT.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return set()
+    md = data.get("metadata") if isinstance(data, dict) else None
+    if not isinstance(md, dict):
+        return set()
+    return {str(k) for k, v in md.items()
+            if isinstance(v, dict) and v.get("status") == "resolved" and re.fullmatch(r"\d{5,9}", str(k))}
+
+
 def _harvest_pmids_from_obj(obj) -> Set[str]:
     """Đệ quy gom mọi chuỗi số 5-9 chữ số nằm ở key/giá trị liên quan 'pmid'."""
     out: Set[str] = set()
@@ -334,6 +352,8 @@ def validate(md_path, out_dir) -> Dict:
     # trích dẫn phương pháp luận đã xác minh sống qua kênh MCP vẫn bị gắn
     # "nghi bịa" chỉ vì kênh đó không để lại dấu vết mà R4 đọc được).
     raw = _raw_pmids(out_dir)          # nguồn THẬT (đã truy hồi PubMed)
+    # 05/10/2026: PMID đã phân giải metadata qua A12 (máy tra PubMed, có chữ ký) cũng là nguồn THẬT.
+    raw = raw | _a12_pmids(out_dir)
     seed = _seed_pmids(out_dir)        # chỉ có trong checkpoint (chưa chắc đối chiếu raw)
     receipt, receipt_expired, receipt_invalid = _receipt_pmids(out_dir)
     doc_pmids = {m.group(1) for m in _PMID_RE.finditer(text)}

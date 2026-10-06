@@ -90,10 +90,16 @@ def _dien_nhu_nguoi_that(text: str) -> str:
     return re.sub(r"_{3,}", "đã điền", text)
 
 
-def _de_tai_g9_that(tmp_path: Path, monkeypatch, thiet_ke: str = "cohort") -> tuple[str, Path, Path]:
+_METADATA_THU = {"title": "Nguồn thử nghiệm tổng hợp", "authors": ["Tác giả A", "Tác giả B"],
+                 "journal": "Tạp chí thử nghiệm", "year": "2018"}
+
+
+def _de_tai_g9_that(tmp_path: Path, monkeypatch, thiet_ke: str = "cohort",
+                    pmid_a12: tuple = ("12345678",)) -> tuple[str, Path, Path]:
     """G0→G7 PASS → G8 PASS_G8_REVIEW_RECORDED (người phản biện ký bằng khoá giả riêng nhóm) → run_g9_auto (2 tác giả)
     → tác giả/PI hoàn tất A10, cover letter, checklist chuẩn báo cáo, hồ sơ readiness (khớp khai báo G8) → chấm G9
-    ghi manifest."""
+    ghi manifest. `pmid_a12`: toàn bộ PMID gói sẽ trích (vd thêm PMID nguồn giả định G3 mà đề cương G10 in) — chạy A12
+    (rút bài + metadata) trên ĐỦ danh sách TRƯỚC khi PI ký G9, như người thật."""
     study, out, goc = _de_tai_g8_that(tmp_path, monkeypatch, thiet_ke)
     _ky_g8(study, out, goc)
     assert _cham8(study, out, goc)["status"] == G8Q.STATUS_REVIEWED
@@ -103,9 +109,14 @@ def _de_tai_g9_that(tmp_path: Path, monkeypatch, thiet_ke: str = "cohort") -> tu
         p = out / ten
         _ghi(p, _dien_nhu_nguoi_that(p.read_text(encoding="utf-8")))
     ghi_checklist_bao_cao(out, study)
-    # A12 metadata: chạy check_citation_metadata như bước thật (chuỗi G7 đã có receipt rút bài cho cùng PMID).
+    # A12 metadata: chạy check_citation_metadata như bước thật (chuỗi G7 đã có receipt rút bài cho PMID gốc).
     monkeypatch.setattr(CCM, "REPO_ROOT", goc)
-    CCM.write_metadata_receipt(study, ["12345678"], {"12345678": {"status": "resolved"}})
+    if tuple(pmid_a12) != ("12345678",):
+        import check_citation_retraction as CCR  # noqa: PLC0415
+
+        monkeypatch.setattr(CCR, "REPO_ROOT", goc)
+        CCR.write_retraction_receipt(study, list(pmid_a12), {p: {"status": "ok"} for p in pmid_a12})
+    CCM.write_metadata_receipt(study, list(pmid_a12), {p: {"status": "resolved", **_METADATA_THU} for p in pmid_a12})
     readiness = _complete_readiness(study, 2)
     readiness["ai_disclosure"].update({"ai_used": True, "tools": ["Claude (Anthropic)"],
                                        "purposes": ["hỗ trợ soạn khung bản thảo"]})  # khớp gate_params.G8 (G8-08)

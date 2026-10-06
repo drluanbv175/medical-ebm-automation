@@ -1144,15 +1144,11 @@ def real_world_signals(checkpoints: Dict[str, Dict],
                 except (ImportError, OSError, RuntimeError, ValueError):
                     release = False
             else:
-                release = (
-                    meta.get("g10_quality_status")
-                    == "PASS_G10_RELEASE_PACKAGE_LOCKED"
-                )
+                # SỬA 05/10/2026 (G10, cùng lỗi G9-10): không chấm sống được ⇒ CHƯA khoá — meta["g10_quality_status"]
+                # không bao giờ được g10_quality_gate lưu (dòng gán đã bỏ), chỉ có thể là giá trị gõ tay/cũ.
+                release = False
         else:
-            release = (
-                meta.get("g10_quality_status")
-                == "PASS_G10_RELEASE_PACKAGE_LOCKED"
-            )
+            release = False
     else:
         release = (
             g10.get("release_package_locked") is True

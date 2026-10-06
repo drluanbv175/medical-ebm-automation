@@ -5,10 +5,12 @@ G10 là cổng capstone nằm ngoài trục khoa học G0-G9. Nó không thay th
 duyệt đạo đức, khóa SAP, khóa dữ liệu, bình duyệt độc lập hoặc liêm chính tác
 giả. G10 chỉ được xem là đạt khi:
 
-1. mọi cổng tiền đề còn hợp lệ khi chấm trực tiếp;
-2. đề cương/StudySpec/gói quyết định hoàn chỉnh và nhất quán;
+1. mọi cổng tiền đề THEO MỤC ĐÍCH phát hành còn đạt khi CHẤM SỐNG (G0–G9 cho gói nộp tạp chí/hồ sơ nghiên cứu/lưu
+   trữ/bàn giao; G0–G4 cho gói trình Hội đồng Đạo đức/cập nhật đăng ký — trước khi có dữ liệu);
+2. đề cương/StudySpec/gói quyết định hoàn chỉnh, CHẤM LẠI trên tệp và dữ liệu hiện hành, .md/.docx đúng bản đã lắp;
 3. hồ sơ phát hành, bảo mật, lưu trữ và trách nhiệm đã được xác nhận;
-4. manifest SHA-256 khớp toàn bộ gói cuối; và
+4. manifest SHA-256 khớp gói cuối — đề cương, gói quyết định, readiness, A12, checkpoint và artifact của các cổng
+   tiền đề (bắt buộc theo mục đích; tuỳ chọn khi có) cùng additional_artifacts người khai; và
 5. PI tự tay phê duyệt đúng ``G10_checkpoint.json`` chứa manifest đó.
 
 Bốn trạng thái fail-closed:
@@ -39,6 +41,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
+import cong_song as CS
 import gate_contract as GC
 import pipeline_freshness as PF
 import placeholder_contract as PC
@@ -68,6 +71,82 @@ RELEASE_PURPOSES = {
     "INTERNAL_HANDOFF",
     "RESEARCH_DOSSIER",
 }
+
+# 05/10/2026 (soát từng cổng G10-09): tiền đề theo MỤC ĐÍCH phát hành. Gói trình Hội đồng Đạo đức / cập nhật đăng ký
+# được khoá TRƯỚC khi có dữ liệu ⇒ chỉ đòi G0–G4 (G2: hồ sơ sẵn sàng nộp hoặc đã duyệt; G4: SAP đủ nội dung hoặc đã
+# khoá). Bản cũ đòi đủ G0–G9 và G5/G8/G9 đã khoá cho MỌI mục đích ⇒ hai mục đích này có trong RELEASE_PURPOSES mà không
+# bao giờ khoá được (các cổng đó chỉ có SAU khi Hội đồng duyệt). Mục đích chưa chọn/không hợp lệ ⇒ đòi ĐỦ (bi quan).
+MUC_DICH_TRUOC_DU_LIEU = frozenset({"ETHICS_SUBMISSION", "REGISTRY_UPDATE"})
+CONG_DAY_DU = tuple(f"G{i}" for i in range(10))
+CONG_TRUOC_DU_LIEU = ("G0", "G1", "G2", "G3", "G4")
+
+
+def muc_dich_phat_hanh(readiness: Mapping[str, Any]) -> Optional[str]:
+    """Mục đích phát hành đã chọn (chuẩn hoá chữ HOA) hoặc None khi chưa chọn/không hợp lệ."""
+    release = readiness.get("release") if isinstance(readiness, Mapping) else None
+    purpose = str(release.get("purpose") or "").strip().upper() if isinstance(release, Mapping) else ""
+    return purpose if purpose in RELEASE_PURPOSES else None
+
+
+def yeu_cau_tien_de(purpose: Optional[str]) -> Dict[str, Any]:
+    """{cong: cổng phải đạt, chap_nhan_san_sang: cổng được ở mức READY, khoa: cổng cứng phải đã khoá}."""
+    if purpose in MUC_DICH_TRUOC_DU_LIEU:
+        return {"cong": CONG_TRUOC_DU_LIEU, "chap_nhan_san_sang": frozenset({"G2", "G4"}), "khoa": ()}
+    return {"cong": CONG_DAY_DU, "chap_nhan_san_sang": frozenset(), "khoa": ("G2", "G4", "G5", "G8", "G9")}
+
+
+def tien_de_song(study: str, out_dir: Path, repo_root: Optional[Path] = None) -> Dict[str, Dict[str, Any]]:
+    """{cổng: {status PASS|REVIEW|BLOCK, muc, evidence}} — G0–G6 qua g7_quality_gate.tien_de_song (G2 = g2_da_duyet dùng
+    chung G5/G6/G7/G8/G9), G7–G9 qua cong_song; `muc` là mức SỐNG thô (READY/DRAFT/…) để xét mục đích trước dữ liệu.
+
+    THÊM 05/10/2026 (soát từng cổng G10-01/G10-03): bản cũ đọc trạng thái LƯU SẴN của G0/G1/G3/G8 và không đòi G6/G7 ⇒
+    script G6 lệch SAP, bản thảo G7 BLOCKED, bản thảo sửa sau khi G8 ký vẫn được PI khoá gói phát hành."""
+    import g7_quality_gate as G7Q  # noqa: PLC0415 — import lười (G7 import G8/G10 lười, không vòng)
+
+    ket: Dict[str, Dict[str, Any]] = {}
+    for g, v in G7Q.tien_de_song(study, out_dir, repo_root).items():
+        ket[g] = dict(v, muc=CS.trang_thai_song(g, study, out_dir, repo_root=repo_root).get("muc"))
+    for g in ("G7", "G8", "G9"):
+        song = CS.trang_thai_song(g, study, out_dir, repo_root=repo_root)
+        muc = song.get("muc")
+        ket[g] = {"status": "PASS" if muc == "PASS" else "BLOCK" if muc == "BLOCKED" else "REVIEW", "muc": muc,
+                  "evidence": f"{g}={song.get('status')}"}
+    return ket
+
+
+def _guardrail_de_cuong_song(study: str, out_dir: Path) -> tuple[bool, str]:
+    """check_de_cuong.validate CHẠY LẠI trên DE_CUONG_THONG_NHAT_<mã>.md hiện hành (chỉ đọc) — G10-02: bản cũ tin khối
+    guardrail ghi lúc lắp ráp; đề cương sửa tay sau lắp (xoá §Đạo đức, đổi số) vẫn được chấm theo bản cũ."""
+    md = Path(out_dir) / f"DE_CUONG_THONG_NHAT_{study}.md"
+    if not md.is_file():
+        return False, "chưa có DE_CUONG_THONG_NHAT (.md) — chạy run_g10_assemble.py"
+    try:
+        import check_de_cuong  # noqa: PLC0415
+
+        rep = check_de_cuong.validate(md, out_dir)
+    except Exception as exc:  # noqa: BLE001 — không chấm được ≠ đạt
+        return False, f"không chạy được check_de_cuong: {type(exc).__name__}: {exc}"
+    loi = rep.get("errors") or []
+    return bool(rep.get("passed")), f"check_de_cuong sống: passed={rep.get('passed')}; lỗi={loi[:2]}"
+
+
+def _study_spec_song(study: str, out_dir: Path) -> tuple[Dict[str, Any], Optional[str]]:
+    """(đánh giá StudySpec TÍNH LẠI từ checkpoint/study_meta hiện hành, lệch so với STUDY_SPEC đã lắp | None) — G10-02.
+    Bản cũ đọc checkpoint['study_spec'] (bản sao lúc lắp ráp)."""
+    import research_study_spec as RS  # noqa: PLC0415
+    import run_g10_assemble as G10A  # noqa: PLC0415
+
+    cps = G10A.load_checkpoints(out_dir)
+    meta = G10A.load_meta(out_dir)
+    spec = RS.build_study_spec(study, cps, meta)
+    danh_gia = RS.evaluate_study_spec(spec, cps, meta)
+    luu = _read_json(Path(out_dir) / f"STUDY_SPEC_{study}.json")
+    luu = {k: v for k, v in luu.items() if k != "_evaluation"}
+    lech = None if luu == json.loads(json.dumps(spec, ensure_ascii=False, default=str)) else (
+        "StudySpec tính lại từ checkpoint/study_meta HIỆN TẠI khác STUDY_SPEC đã lắp — dữ liệu cổng đổi sau khi lắp, "
+        "chạy lại run_g10_assemble.py")
+    return danh_gia, lech
+
 
 STANDARDS_BASIS = (
     {
@@ -405,7 +484,7 @@ def _all_true_section(
     return not missing, "missing=" + (",".join(missing) if missing else "none")
 
 
-def _archive_ok(payload: Mapping[str, Any]) -> tuple[bool, str]:
+def _archive_ok(payload: Mapping[str, Any], purpose: Optional[str] = None) -> tuple[bool, str]:
     value = payload.get("archive_and_reproducibility")
     value = value if isinstance(value, Mapping) else {}
     boolean_keys = (
@@ -413,6 +492,9 @@ def _archive_ok(payload: Mapping[str, Any]) -> tuple[bool, str]:
         "data_dictionary_included_or_not_applicable",
         "audit_trail_preserved",
     )
+    if purpose in MUC_DICH_TRUOC_DU_LIEU:
+        # 05/10/2026 (G10-09): gói trình Hội đồng/đăng ký có TRƯỚC dữ liệu — chưa có môi trường phân tích để ghi lại.
+        boolean_keys = tuple(k for k in boolean_keys if k != "software_environment_captured")
     missing = [key for key in boolean_keys if value.get(key) is not True]
     text_missing = [
         key
@@ -439,21 +521,59 @@ def _package_files(
     out_dir: Path,
     readiness: Mapping[str, Any],
 ) -> tuple[Dict[str, Optional[Path]], list[str]]:
+    """Tệp của gói cuối (bắt buộc phải có) + artifact cổng tuỳ chọn khi có.
+
+    SỬA 05/10/2026 (soát từng cổng G10-04/G10-09): manifest bản cũ không ràng buộc SAP/gói đạo đức/bản đăng ký/script và
+    kết quả G6/bản thảo — đổi sau khoá mà G10 vẫn LOCKED. Nay gồm artifact HỢP ĐỒNG của các cổng tiền đề theo mục đích
+    (bắt buộc khi cổng thuộc yêu cầu) và các tệp phụ khi có (artifact G1/G3, script + kết quả G6, gói G9…)."""
+    purpose = muc_dich_phat_hanh(readiness)
+    day_du = purpose not in MUC_DICH_TRUOC_DU_LIEU
     files: Dict[str, Optional[Path]] = {
         "final_protocol_md": out_dir / f"DE_CUONG_THONG_NHAT_{study}.md",
         "final_protocol_docx": out_dir / f"DE_CUONG_THONG_NHAT_{study}.docx",
         "study_spec": out_dir / f"STUDY_SPEC_{study}.json",
         "decision_package": out_dir / f"GOI_QUYET_DINH_{study}.md",
         "release_readiness": out_dir / READINESS_JSON,
-        "g8_peer_review": out_dir / f"G8_A9_PRESUBMISSION_{study}.md",
-        "g9_checkpoint": out_dir / "G9_checkpoint.json",
-        "g9_publication_readiness": out_dir / "G9_PUBLICATION_READINESS.json",
         "citation_verification": out_dir / f"A12_CITATION_VERIFICATION_{study}.md",
         "citation_retraction_receipt": out_dir / "A12_RETRACTION_RECEIPT.json",
         "citation_metadata_receipt": out_dir / "A12_METADATA_RECEIPT.json",
+        "g2_ethics_package": out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md",
+        "g4_sap_final": out_dir / f"G4_A5_SAP_FINAL_{study}.md",
     }
-    for index in range(10):
-        files[f"checkpoint_g{index}"] = out_dir / f"G{index}_checkpoint.json"
+    if day_du:
+        files.update({
+            "g7_manuscript": out_dir / f"G7_A8_MANUSCRIPT_{study}.md",
+            "g8_peer_review": out_dir / f"G8_A9_PRESUBMISSION_{study}.md",
+            "g8_peer_review_report": out_dir / f"G8_PEER_REVIEW_REPORT_{study}.md",
+            "g9_checkpoint": out_dir / "G9_checkpoint.json",
+            "g9_publication_readiness": out_dir / "G9_PUBLICATION_READINESS.json",
+        })
+    for gate in yeu_cau_tien_de(purpose)["cong"]:
+        files[f"checkpoint_{gate.lower()}"] = out_dir / f"{gate}_checkpoint.json"
+    tuy_chon = {
+        "g1_protocol_design": out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md",
+        "g2_registration_draft": out_dir / f"G2_REGISTRATION_DRAFT_{study}.json",
+        "g3_sample_size": out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md",
+    }
+    if day_du:
+        tuy_chon.update({
+            "g5_data_management": out_dir / f"G5_A6_DATA_MGMT_{study}.md",
+            "g5_data_dictionary": out_dir / f"G5_REDCap_dictionary_{study}.csv",
+            "g5_data_lock_manifest": out_dir / "DATA_LOCK_manifest.json",
+            "g6_analysis_scripts": out_dir / f"G6_A7_ANALYSIS_SCRIPTS_{study}.md",
+            "g6_analysis_summary": out_dir / "G6_analysis_summary.json",
+            "g6_analysis_summary_cli": out_dir / "06_ket_qua" / "G6_analysis_summary.json",
+            "g6_analysis_summary_r": out_dir / "06_phan_tich_R" / "output" / "G6_analysis_summary.json",
+            "g9_author_integrity": out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md",
+            "g9_cover_letter": out_dir / f"G9_COVER_LETTER_{study}.md",
+        })
+        # Script phân tích R (G6) và script Python của luồng CLI (làm sạch G5, run_analysis_cli G6, độ nhạy) — đổi sau
+        # khoá là đổi cách ra kết quả đã công bố.
+        for script in sorted((out_dir / "scripts").glob("*.R")) if (out_dir / "scripts").is_dir() else ():
+            tuy_chon[f"g6_script_{script.stem}"] = script
+        for script in sorted((out_dir / "scripts").glob("*.py")) if (out_dir / "scripts").is_dir() else ():
+            tuy_chon[f"g6_script_{script.stem}_py"] = script
+    files.update({khoa: path for khoa, path in tuy_chon.items() if path.is_file()})
 
     invalid: list[str] = []
     additional = readiness.get("additional_artifacts")
@@ -666,7 +786,11 @@ def evaluate_study(
     repo_root: Optional[Path] = None,
     write: bool = False,
 ) -> Dict[str, Any]:
-    """Chấm G10 từ artifact hiện hành; không tin report hoặc cờ tự khai."""
+    """Chấm G10 từ artifact hiện hành; không tin report hoặc cờ tự khai.
+
+    05/10/2026 (soát từng cổng G10): tiền đề CHẤM SỐNG theo mục đích (G10-01/03/09); guardrail đề cương và StudySpec
+    chấm LẠI trên tệp/dữ liệu hiện hành, .md/.docx phải đúng bản đã lắp (G10-02); manifest gồm artifact cổng (G10-04);
+    biên nhận rút bài A12 còn hạn 30 ngày lúc ký (G10-05)."""
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
     out_dir = Path(out_dir)
     checkpoint_path = out_dir / CHECKPOINT_JSON
@@ -696,54 +820,47 @@ def evaluate_study(
         )
     )
 
-    checkpoints = {
-        f"G{index}": _read_json(out_dir / f"G{index}_checkpoint.json")
-        for index in range(10)
-    }
-    missing_checkpoints = [gate for gate, value in checkpoints.items() if not value]
-    bad_guardrails = [
-        gate for gate, value in checkpoints.items() if value and not _guardrail_ok(value)
-    ]
-    chain_ok = not missing_checkpoints and not bad_guardrails and _guardrail_ok(checkpoint)
+    purpose = muc_dich_phat_hanh(readiness)
+    yeu_cau = yeu_cau_tien_de(purpose)
+    cong_can = yeu_cau["cong"]
+    checkpoints = {gate: _read_json(out_dir / f"{gate}_checkpoint.json") for gate in CONG_DAY_DU}
+    missing_checkpoints = [gate for gate in cong_can if not checkpoints.get(gate)]
+    # G10-02: guardrail đề cương CHẤM LẠI trên tệp hiện hành (bản cũ: _guardrail_ok(checkpoint) — khối ghi lúc lắp ráp).
+    # 05/10/2026: bỏ phép đọc khối guardrail LƯU SẴN của từng checkpoint G0–G9 — ảnh chụp lúc sinh artifact, cũ ngay khi
+    # artifact được sửa (một G2 đã DUYỆT mang guardrail cũ False thì G10 không bao giờ qua, mà sinh lại gói G2 sau khi
+    # duyệt thì làm hỏng chữ ký); chất lượng từng cổng do bộ chấm SỐNG của chính cổng đó phán ở G10-AUTO-02B.
+    de_cuong_ok, de_cuong_evidence = _guardrail_de_cuong_song(study, out_dir)
+    chain_ok = not missing_checkpoints and de_cuong_ok
     rows.append(
         _criterion(
             "G10-AUTO-02",
-            "Đủ G0-G9 và mọi guardrail kỹ thuật còn đạt",
+            "Đủ checkpoint các cổng tiền đề theo mục đích và guardrail đề cương (chấm lại) còn đạt",
             "PASS" if chain_ok else "BLOCK",
             (
-                f"missing={missing_checkpoints}; bad_guardrails={bad_guardrails}; "
-                f"g10_guardrail={_guardrail_ok(checkpoint)}"
+                f"purpose={purpose}; cần={list(cong_can)}; missing={missing_checkpoints}; {de_cuong_evidence}"
             ),
-            "Sửa hoặc chạy lại cổng thiếu/lỗi trước khi lắp gói cuối.",
+            "Sửa hoặc chạy lại cổng thiếu/lỗi rồi chạy lại run_g10_assemble.py trước khi lắp gói cuối.",
         )
     )
 
-    expected_quality_status = {
-        "G0": "PASS_G0_CONFIRMED",
-        "G1": "PASS_G1_CONFIRMED",
-        "G3": "PASS_G3_CONFIRMED",
-        "G8": "PASS_G8_REVIEW_RECORDED",
-    }
-    legacy_quality = []
-    bad_quality = []
-    for gate, expected in expected_quality_status.items():
-        gate_checkpoint = checkpoints.get(gate) or {}
-        quality = gate_checkpoint.get("quality_gate")
-        quality_status = quality.get("status") if isinstance(quality, Mapping) else None
-        if not gate_checkpoint.get("quality_contract_version"):
-            legacy_quality.append(gate)
-        elif quality_status != expected:
-            bad_quality.append(f"{gate}:{quality_status or 'missing'}")
-    modern_quality_ok = not legacy_quality and not bad_quality
+    # G10-01/G10-03: mọi cổng tiền đề theo mục đích CHẤM SỐNG (không tin trạng thái lưu sẵn).
+    td = tien_de_song(study, out_dir, root)
+    cho_qua = {"PASS"}
+    chua_dat, bi_chan = [], []
+    for gate in cong_can:
+        v = td.get(gate) or {"status": "REVIEW", "muc": None, "evidence": f"{gate}: không chấm được"}
+        if v["status"] == "PASS" or (gate in yeu_cau["chap_nhan_san_sang"] and v.get("muc") in cho_qua | {"READY"}):
+            continue
+        (bi_chan if v["status"] == "BLOCK" else chua_dat).append(f"{gate}: {v['evidence']}")
     rows.append(
         _criterion(
             "G10-AUTO-02B",
-            "Các hợp đồng chất lượng G0/G1/G3/G8 đều ở trạng thái xác nhận cuối",
-            "PASS" if modern_quality_ok else "REVIEW",
-            f"legacy={legacy_quality}; not_confirmed={bad_quality}",
+            "Các cổng tiền đề theo mục đích đạt khi CHẤM SỐNG (G2 theo g2_da_duyet dùng chung)",
+            "BLOCK" if bi_chan else ("PASS" if not chua_dat else "REVIEW"),
+            "; ".join(bi_chan + chua_dat) or f"{len(cong_can)} cổng tiền đề đạt (mục đích {purpose})",
             (
-                "Nâng checkpoint lịch sử lên hợp đồng chất lượng hiện hành và hoàn tất "
-                "xác nhận con người đúng vai trò trước G10."
+                "Hoàn tất từng cổng còn thiếu bằng bộ chấm của chính cổng đó (đúng vai trò ký) rồi chạy lại "
+                "run_g10_assemble.py; gói trình Hội đồng/đăng ký chỉ đòi G0–G4."
             ),
         )
     )
@@ -752,9 +869,18 @@ def evaluate_study(
         import pipeline_freshness as freshness  # noqa: PLC0415
 
         fresh_report = freshness.stale_report(out_dir)
+        issues = list(fresh_report.get("issues") or [])
         freshness_ok = bool(fresh_report.get("fresh"))
+        if purpose in MUC_DICH_TRUOC_DU_LIEU and not freshness_ok:
+            # 05/10/2026 (G10-09): gói TRƯỚC dữ liệu — G5–G9 CHƯA có là đúng trạng thái; bộ đo độ tươi xếp G10 «mồ côi»
+            # vì thượng nguồn G5–G9 vắng. Chỉ bỏ đúng loại vấn đề đó; mọi vấn đề khác (cổng cũ hơn thượng nguồn…) giữ.
+            sau_du_lieu = {f"G{i}" for i in range(5, 10)}
+            issues = [i for i in issues if not (
+                isinstance(i, Mapping) and i.get("gate") == "G10" and i.get("kind") == "orphan_downstream"
+                and set(i.get("offending_upstream") or []) <= sau_du_lieu)]
+            freshness_ok = not issues
         freshness_evidence = (
-            f"fresh={freshness_ok}; issues={fresh_report.get('issues', [])}"
+            f"fresh={freshness_ok}; issues={issues}"
         )
     except (ImportError, OSError, RuntimeError, ValueError) as exc:
         freshness_ok = False
@@ -769,8 +895,6 @@ def evaluate_study(
         )
     )
 
-    g2 = checkpoints.get("G2") or {}
-    g8_artifact = out_dir / f"G8_A9_PRESUBMISSION_{study}.md"
     # SỬA 2026-07-30 (audit toàn diện G0-G10, G10-01 — CRITICAL): g2_ok/g4_ok trước
     # đây AND thêm `_status_locked(g*.get("g*_status"))` — một kiểm text tìm chuỗi
     # "LOCKED" trong g2_status/g4_status. Nhưng run_g2_auto.py/run_g4_auto.py CHỈ BAO
@@ -785,65 +909,79 @@ def evaluate_study(
     # g2_quality_contract_satisfied (đã có, chỉ bỏ điều kiện chết); g4_ok đổi sang
     # cùng khuôn g5_ok/g9_ok — gọi thẳng g4_quality_contract_satisfied() (mới xây,
     # tự bao gồm cả ledger_approved qua tiêu chí G4-HUMAN-01 bên trong).
-    g2_ok = bool(
-        GC.ledger_approved(
-            "G2",
-            study,
-            out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md",
-            repo_root=root,
-        )
-        and GC.g2_quality_contract_satisfied(
-            g2, GC.load_study_meta(out_dir), study=study, out_dir=out_dir)
-    )
-    g4_ok = GC.g4_quality_contract_satisfied(study, repo_root=root)
-    g5_ok = GC.g5_quality_contract_satisfied(study, repo_root=root)
-    g8_ok = GC.ledger_approved("G8", study, g8_artifact, repo_root=root)
-    g9_ok = GC.g9_quality_contract_satisfied(study, repo_root=root)
-    upstream_ok = all((g2_ok, g4_ok, g5_ok, g8_ok, g9_ok))
+    # 05/10/2026: G2 = g2_da_duyet dùng chung (qua tien_de_song); G8 = CHẤM SỐNG PASS_G8_REVIEW_RECORDED (gồm băm bản
+    # thảo/bản nhận xét trong A9 — G10-03; bản cũ chỉ hỏi sổ cái G8 trên A9); G4/G5/G9 qua hợp đồng (vốn chấm sống).
+    khoa_ok: Dict[str, bool] = {}
+    for gate in yeu_cau["khoa"]:
+        if gate == "G4":
+            khoa_ok[gate] = GC.g4_quality_contract_satisfied(study, repo_root=root)
+        elif gate == "G5":
+            khoa_ok[gate] = GC.g5_quality_contract_satisfied(study, repo_root=root)
+        elif gate == "G9":
+            khoa_ok[gate] = GC.g9_quality_contract_satisfied(study, repo_root=root)
+        else:
+            khoa_ok[gate] = (td.get(gate) or {}).get("status") == "PASS"
+    upstream_ok = all(khoa_ok.values())
     rows.append(
         _criterion(
             "G10-AUTO-04",
-            "G2, G4, G5, G8 và G9 còn khóa hợp lệ khi chấm trực tiếp",
+            "Các cổng cứng mục đích đòi (G2/G4/G5/G8/G9) còn khóa hợp lệ khi chấm trực tiếp",
             "PASS" if upstream_ok else "REVIEW",
-            f"G2={g2_ok}; G4={g4_ok}; G5={g5_ok}; G8={g8_ok}; G9={g9_ok}",
+            ("; ".join(f"{g}={ok}" for g, ok in khoa_ok.items())
+             or f"mục đích {purpose}: hồ sơ trước dữ liệu — chưa đòi cổng cứng đã khoá (G2/G4 xét ở G10-AUTO-02B)"),
             "Khôi phục đúng cổng tiền đề; G10 không được hợp thức hóa khóa đã mất hiệu lực.",
         )
     )
 
+    g10_approved = bool(
+        checkpoint_path.exists()
+        and GC.ledger_approved("G10", study, checkpoint_path, repo_root=root)
+    )
+    het_han = None
     try:
         import run_g10_assemble as G10  # noqa: PLC0415
 
         citation_ok, citation_reason = G10.citation_verification_ok(study, out_dir)
+        # G10-05: trạng thái rút bài phải còn hạn 30 ngày lúc PI khoá gói; đã khoá thì chỉ cảnh báo (chạy lại A12 đổi
+        # manifest ⇒ ghi quyết định G10 mới có chủ ý), không tự huỷ khoá.
+        if citation_ok:
+            het_han, _tuoi = G10.han_bien_nhan_rut_bai(out_dir)
     except (ImportError, OSError, RuntimeError, ValueError) as exc:
         citation_ok, citation_reason = False, str(exc)
     rows.append(
         _criterion(
             "G10-AUTO-05",
-            "A12 phủ toàn bộ trích dẫn của chính gói G10 cuối",
-            "PASS" if citation_ok else "REVIEW",
-            citation_reason or "A12 current receipts valid",
-            "Chạy lại check_citations.py trên toàn bộ PMID/DOI của gói cuối.",
+            "A12 phủ toàn bộ trích dẫn của chính gói G10 cuối (rút bài còn hạn 30 ngày lúc ký)",
+            "PASS" if citation_ok and (not het_han or g10_approved) else "REVIEW",
+            citation_reason or (f"⚠ {het_han} (đã khoá — chỉ cảnh báo, không huỷ khoá)" if het_han and g10_approved
+                                else het_han or "A12 current receipts valid"),
+            "Chạy lại check_citations.py trên toàn bộ PMID/DOI của gói cuối trước khi PI ký G10.",
         )
     )
 
-    spec = checkpoint.get("study_spec")
-    spec = spec if isinstance(spec, Mapping) else {}
+    # G10-02: StudySpec TÍNH LẠI từ checkpoint/study_meta hiện hành (bản cũ: checkpoint['study_spec'] lúc lắp ráp).
+    try:
+        spec, spec_lech = _study_spec_song(study, out_dir)
+    except Exception as exc:  # noqa: BLE001 — không tính được ≠ hoàn chỉnh
+        spec, spec_lech = {}, f"không tính lại được StudySpec: {type(exc).__name__}: {exc}"
+    thieu_ids = [row.get("id") for row in spec.get("missing_requirements") or [] if isinstance(row, Mapping)]
+    loi_ngu_nghia = [row.get("code") for row in spec.get("semantic_issues") or []
+                     if isinstance(row, Mapping) and row.get("severity") == "ERROR"]
     spec_ok = bool(
         spec.get("scientific_content_complete") is True
         and spec.get("protocol_content_complete") is True
-        and not spec.get("missing_requirement_ids")
-        and not spec.get("semantic_error_codes")
+        and not thieu_ids and not loi_ngu_nghia and not spec_lech
     )
     rows.append(
         _criterion(
             "G10-AUTO-06",
-            "StudySpec hoàn chỉnh về nội dung và không có mâu thuẫn ngữ nghĩa",
+            "StudySpec (tính lại) hoàn chỉnh, không mâu thuẫn ngữ nghĩa và khớp bản đã lắp",
             "PASS" if spec_ok else "REVIEW",
             (
                 f"scientific={spec.get('scientific_content_complete')}; "
                 f"protocol={spec.get('protocol_content_complete')}; "
-                f"missing={spec.get('missing_requirement_ids')}; "
-                f"semantic={spec.get('semantic_error_codes')}"
+                f"missing={thieu_ids}; semantic={loi_ngu_nghia}"
+                + (f"; {spec_lech}" if spec_lech else "")
             ),
             "Điền dữ kiện thật và xử lý mọi lỗi StudySpec; không dùng placeholder để phát hành.",
         )
@@ -881,19 +1019,20 @@ def evaluate_study(
         )
     )
 
-    consistency_ok, consistency_evidence = _all_true_section(
-        readiness,
-        "cross_document_consistency",
-        (
-            "protocol_sap_consistent",
-            "registry_protocol_consistent_or_not_applicable",
-            "manuscript_results_consistent",
-            "ethics_consent_consistent",
-            "reporting_checklist_complete",
-            "analysis_deviations_disclosed_or_none",
-            "data_code_statements_consistent",
-        ),
+    khoa_nhat_quan = (
+        "protocol_sap_consistent",
+        "registry_protocol_consistent_or_not_applicable",
+        "manuscript_results_consistent",
+        "ethics_consent_consistent",
+        "reporting_checklist_complete",
+        "analysis_deviations_disclosed_or_none",
+        "data_code_statements_consistent",
     )
+    if purpose in MUC_DICH_TRUOC_DU_LIEU:
+        # G10-09: trước dữ liệu chưa có bản thảo/kết quả/tuyên bố dữ liệu-mã để đối chiếu.
+        khoa_nhat_quan = tuple(k for k in khoa_nhat_quan
+                               if k not in ("manuscript_results_consistent", "data_code_statements_consistent"))
+    consistency_ok, consistency_evidence = _all_true_section(readiness, "cross_document_consistency", khoa_nhat_quan)
     rows.append(
         _criterion(
             "G10-HUMAN-02",
@@ -924,7 +1063,7 @@ def evaluate_study(
         )
     )
 
-    archive_ok, archive_evidence = _archive_ok(readiness)
+    archive_ok, archive_evidence = _archive_ok(readiness, purpose)
     rows.append(
         _criterion(
             "G10-HUMAN-04",
@@ -959,6 +1098,18 @@ def evaluate_study(
 
     files, invalid_paths = _package_files(study, out_dir, readiness)
     docs_ok, docs_evidence, internal_trace = _documents_clean(files)
+    # G10-02: .md/.docx phải ĐÚNG bản đã lắp (dấu ghi lúc lắp ráp) — sửa tay .md hoặc sửa .docx trong Word mà không lắp
+    # lại thì hai bản không còn khớp nhau/khớp dữ liệu cổng.
+    dau_lap = (checkpoint.get("artifacts") or {}) if isinstance(checkpoint.get("artifacts"), Mapping) else {}
+    lech_lap = [
+        ten for ten, khoa, path in (("đề cương .md", "de_cuong_md_sha256", files.get("final_protocol_md")),
+                                    ("đề cương .docx", "de_cuong_docx_sha256", files.get("final_protocol_docx")))
+        if path is not None and path.is_file() and dau_lap.get(khoa) != _sha256(path)
+    ]
+    if lech_lap:
+        docs_ok = False
+        docs_evidence += (f"; {', '.join(lech_lap)} KHÁC bản đã lắp (hoặc chưa ghi dấu lắp ráp) — sửa dữ kiện ở cổng "
+                          "gốc/study_meta rồi chạy lại run_g10_assemble.py, không sửa tay tài liệu cuối")
     document_status = (
         "BLOCK"
         if invalid_paths or internal_trace
@@ -976,10 +1127,6 @@ def evaluate_study(
 
     current_manifest = _manifest(out_dir, files)
     saved_manifest = checkpoint.get("release_manifest")
-    g10_approved = bool(
-        checkpoint_path.exists()
-        and GC.ledger_approved("G10", study, checkpoint_path, repo_root=root)
-    )
     manifest_ok = _manifest_matches(saved_manifest, current_manifest)
     manifest_status = (
         "PASS"
@@ -1068,8 +1215,7 @@ def evaluate_study(
             encoding="utf-8", newline="\n"
         )
         _write_markdown(out_dir / REPORT_MD, report)
-        meta = GC.ensure_study_meta(out_dir)
-        meta["g10_quality_status"] = status
+        # SỬA 05/10/2026 (G10, cùng lỗi G9-10): bỏ dòng gán meta["g10_quality_status"] không bao giờ được lưu (mã chết).
         if checkpoint and not g10_approved:
             checkpoint["quality_contract_version"] = QUALITY_CONTRACT_VERSION
             checkpoint["release_manifest"] = current_manifest
