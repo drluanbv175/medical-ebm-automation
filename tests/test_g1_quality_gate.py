@@ -581,7 +581,12 @@ def test_main_checkpoint_reports_draft_instead_of_false_pass(tmp_path, monkeypat
     assert "## PHẦN 0 — ĐỀ CƯƠNG LÕI" in a2_text
 
 
-def test_system_audit_respects_g1_quality_status(tmp_path):
+def test_system_audit_respects_g1_quality_status(tmp_path, monkeypatch):
+    # 06/10/2026 (NGANG): đài kiểm soát phân loại theo CHẤM SỐNG — giả lập kết quả chấm sống = trạng thái checkpoint giả
+    # để kiểm LOGIC phân loại (tests/_gia_lap_cham_song.py).
+    from tests._gia_lap_cham_song import gia_lap_cham_song
+
+    gia_lap_cham_song(monkeypatch)
     (tmp_path / "G1_checkpoint.json").write_text(
         json.dumps({
             "gate": "G1",

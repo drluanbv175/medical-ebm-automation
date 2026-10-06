@@ -15,8 +15,9 @@ HÀM CÔNG KHAI (chỉ thư viện chuẩn; import lười bộ chấm nên khô
   • trang_thai_song(gate, study, out_dir, repo_root=None) → dict: chấm SỐNG cổng `gate` bằng chính
     gN_quality_gate.evaluate_study(write=False) — KHÔNG ghi gì. Lỗi/crash/SystemExit/vòng lặp ⇒ «KHÔNG ĐO ĐƯỢC»,
     `dat=False` (không bao giờ PASS vì lỗi). Bản lưu chỉ để hiển thị (`trang_thai_luu`), không bao giờ cho `dat=True`.
-    Cổng chưa có evaluate_study (G1 tới khi có) ⇒ đọc bản lưu NHƯNG đánh dấu nguon="luu" và `dat` chỉ True khi bản lưu
-    PASS và checkpoint không mang `design.pin_bi_tu_choi` — người gọi phải coi nguon="luu" là kém tin cậy.
+    Cổng chưa có evaluate_study (G0–G10 nay ĐỀU có; nhánh này chỉ còn cho cổng mới thêm) ⇒ đọc bản lưu NHƯNG đánh dấu
+    nguon="luu" và `dat` chỉ True khi bản lưu PASS và checkpoint không mang `design.pin_bi_tu_choi` — người gọi phải coi
+    nguon="luu" là kém tin cậy.
   • iso_khong_tuong_lai(v) → bool: ISO-8601 thật (có hoặc không múi giờ), KHÔNG ở tương lai. «04/10/2026» ⇒ False.
   • dau_van_tay(*phan) → str: 16 ký tự hex SHA-256 của JSON chuẩn tắc (sắp khoá, NFC, gọn khoảng trắng chuỗi) — dấu
     của NỘI DUNG mà một xác nhận chứng cho.
@@ -135,8 +136,8 @@ def _cham(gate: str, study: str, out_dir: Path, repo_root: Optional[Path], luu: 
         return _ket(gate, None, NGUON_LOI, f"không nạp được bộ chấm: {type(exc).__name__}: {exc}", luu)
     fn = getattr(mod, "evaluate_study", None)
     if fn is None:
-        # Cổng chưa có hàm chấm lại từ tệp (G1 tới khi có): đọc bản lưu, đánh dấu kém tin cậy; pin thiết kế bị từ chối
-        # trong checkpoint thì luôn coi là BỊ CHẶN dù bản lưu nói gì.
+        # Cổng chưa có hàm chấm lại từ tệp (G0–G10 nay đều có): đọc bản lưu, đánh dấu kém tin cậy; pin thiết kế bị từ
+        # chối trong checkpoint thì luôn coi là BỊ CHẶN dù bản lưu nói gì.
         design = cp.get("design") if isinstance(cp.get("design"), dict) else {}
         if design.get("pin_bi_tu_choi"):
             return _ket(gate, "BLOCKED", NGUON_LUU,

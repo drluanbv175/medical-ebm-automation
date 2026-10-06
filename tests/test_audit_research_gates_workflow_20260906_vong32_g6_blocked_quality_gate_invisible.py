@@ -47,6 +47,8 @@ if str(TOOLS_DIR) not in sys.path:
 
 import audit_research_gates as ARG  # noqa: E402
 
+from tests._gia_lap_cham_song import gia_lap_cham_song  # noqa: E402
+
 
 def _write_json(path: Path, payload: dict) -> Path:
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8", newline="\n")
@@ -92,8 +94,9 @@ class TestG6BlockedQualityGateKhongDuocLoDi:
 
 
 class TestDoiChungKhongHoiToCheckpointCu:
-    """Đối chứng — checkpoint G6 CŨ (không có khối quality_gate) không bị hồi
-    tố; hành vi cũ (dựa tín hiệu db_locked của G5) giữ nguyên."""
+    """Đối chứng — G6 không BLOCKED thì nhánh tín hiệu db_locked của G5 giữ nguyên. ĐỔI LUẬT 06/10/2026 (NGANG,
+    CHUNG-A): checkpoint G6 CŨ không còn được miễn chấm — một G6 chỉ có checkpoint trơn được chấm SỐNG theo luật hiện
+    hành, không còn «LOCKED» chỉ nhờ trường database_lock_status cũ của G5."""
 
     def test_g6_checkpoint_cu_khong_co_quality_gate_van_dung_tin_hieu_g5(self, tmp_path):
         _cp(tmp_path, "G5", {"database_lock_status": "LOCKED_FOR_ANALYSIS"})
@@ -104,12 +107,14 @@ class TestDoiChungKhongHoiToCheckpointCu:
         report = ARG.audit_gates("AUTO-G6-LEGACY", out_dir=tmp_path, write=False)
         g6 = next(row for row in report["pipeline_gates"] if row["gate"] == "G6")
 
-        assert g6["status"] == ARG.STATUS_LOCKED, g6
+        assert g6["status"] != ARG.STATUS_LOCKED, g6
+        assert g6["trang_thai_song"]["muc"] != "PASS", g6
 
-    def test_g6_khong_blocked_van_dung_tin_hieu_g5_nhu_cu(self, tmp_path):
+    def test_g6_khong_blocked_van_dung_tin_hieu_g5_nhu_cu(self, tmp_path, monkeypatch):
         """quality_gate có mặt nhưng KHÔNG phải BLOCKED (vd
         PASS_G6_SCRIPTS_CONFIRMED) — vẫn rơi vào nhánh REAL_SIGNAL_BY_PIPELINE_GATE
         như cũ, bản vá không đổi hành vi phần này."""
+        gia_lap_cham_song(monkeypatch)  # 06/10/2026: kiểm LOGIC phân loại — chấm sống giả lập = trạng thái checkpoint
         _cp(tmp_path, "G5", {"database_lock_status": "LOCKED_FOR_ANALYSIS"})
         _cp(tmp_path, "G6", {
             "quality_gate": {"status": "PASS_G6_SCRIPTS_CONFIRMED", "checks": []},
@@ -122,7 +127,8 @@ class TestDoiChungKhongHoiToCheckpointCu:
 
         assert g6["status"] == ARG.STATUS_LOCKED, g6
 
-    def test_g6_chua_khoa_g5_van_bao_needs_real_nhu_cu(self, tmp_path):
+    def test_g6_chua_khoa_g5_van_bao_needs_real_nhu_cu(self, tmp_path, monkeypatch):
+        gia_lap_cham_song(monkeypatch)  # 06/10/2026: kiểm LOGIC phân loại — G6 «không đo được» nhưng không BLOCKED
         _cp(tmp_path, "G6", {})
         (tmp_path / "G6_A7_ANALYSIS_SCRIPTS_AUTO-G6-NOLOCK.md").write_text(
             "script phân tích", encoding="utf-8", newline="\n")

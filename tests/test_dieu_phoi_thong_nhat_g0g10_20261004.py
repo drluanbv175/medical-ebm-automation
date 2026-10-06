@@ -34,6 +34,7 @@ if str(TOOLS) not in sys.path:
 
 import approve_gate as AG  # noqa: E402
 import audit_research_gates as ARG  # noqa: E402
+import cong_song as CS  # noqa: E402
 import g1_quality_gate as G1Q  # noqa: E402
 import g4_quality_gate as G4Q  # noqa: E402
 import g10_quality_gate as G10Q  # noqa: E402
@@ -309,16 +310,20 @@ def test_g8_khong_tin_co_tu_khai_khi_co_hop_dong_chat_luong(tmp_path, monkeypatc
     (tmp_path / "exports" / STUDY).mkdir(parents=True)
     goi = []
 
-    def cham(study, out_dir, **kw):
-        goi.append((study, Path(out_dir), kw.get("write")))
+    # 06/10/2026 (NGANG): real_world_signals chấm qua cong_song — bộ chấm giả phải mang ĐÚNG chữ ký hàm thật
+    # (cong_song chỉ truyền write/repo_root khi bộ chấm khai báo) và xoá bộ nhớ đệm khi đổi bộ chấm giữa chừng.
+    def cham(study, out_dir, *, repo_root=None, write=True):  # noqa: ARG001 — cùng chữ ký evaluate_study thật
+        goi.append((study, Path(out_dir), write))
         return {"status": G8Q.STATUS_REVIEWED}
     monkeypatch.setattr(G8Q, "evaluate_study", cham)
+    CS.xoa_dem()
     assert SK.real_world_signals({"G8": g8}, {})["peer_review_approved"] is True
     assert goi == [(STUDY, tmp_path / "exports" / STUDY, False)], "chấm SỐNG, chỉ đọc (write=False)"
 
     def hong(*_a, **_k):
         raise KeyError("x")
     monkeypatch.setattr(G8Q, "evaluate_study", hong)
+    CS.xoa_dem()
     assert SK.real_world_signals({"G8": g8}, {})["peer_review_approved"] is False, "bộ chấm hỏng ⇒ bi quan, không sập"
     assert SK.real_world_signals({"G8": {}}, {"peer_review_approved": True})["peer_review_approved"] is True, \
         "checkpoint cũ (chưa có hợp đồng chất lượng) giữ hành vi cũ"

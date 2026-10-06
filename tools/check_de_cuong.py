@@ -515,7 +515,7 @@ def validate(md_path, out_dir) -> Dict:
     completion_claims = [m.group(0).strip() for m in _COMPLETION_CLAIM_RE.finditer(text)]
     cps = _load_checkpoints(out_dir)
     meta = _load_json(out_dir / "study_meta.json")
-    signals = S.real_world_signals(cps, meta)
+    signals = S.real_world_signals(cps, meta, out_dir=out_dir)  # 06/10/2026: chấm đúng thư mục đề tài đang kiểm
     missing_signals = [s for s in _COMPLETION_REQUIRED_SIGNALS if not signals.get(s)]
     if completion_claims and missing_signals:
         errors.append(

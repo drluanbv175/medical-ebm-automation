@@ -24,7 +24,6 @@ Dùng:
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
 
@@ -42,6 +41,7 @@ BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / "tools"))
 
+import cong_song as CS  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import placeholder_contract as PC  # noqa: E402
 
@@ -90,61 +90,72 @@ def _study_dir(study: str) -> Path:
     return BASE / "exports" / study
 
 
-_G0_QUALITY_LABELS = {
-    "PASS_G0_CONFIRMED": "✅ ĐÃ CHỐT (PASS_G0_CONFIRMED — PICO/kết cục chính đã do bác sĩ xác nhận)",
-    "BLOCKED": "🔴 BỊ CHẶN (guardrail/liêm chính) — xem G0_QUALITY_REPORT.md",
-    "DRAFT_READY_NEEDS_HUMAN_REVIEW": "🟡 DỰ THẢO — PICO/kết cục chính CHƯA được bác sĩ chốt",
+# SỬA 06/10/2026 (soát từng cổng — NGANG, CHUNG-A): mọi cổng hiển thị theo CHẤM SỐNG (cong_song.trang_thai_song —
+# chính bộ chấm gN_quality_gate.evaluate_study(write=False) của cổng đó), không theo trạng thái LƯU trong checkpoint.
+# Bản cũ: cổng mềm G1/G3/G6/G7/G10 chỉ «✅ có checkpoint»; G0 đọc quality_gate.status LƯU (C1a: lưu PASS_G0_CONFIRMED
+# 02/09 trong khi chấm sống ra DRAFT vì study_meta sửa 04/10); cổng cứng «🔒 ĐÃ KÝ» khi sổ cái có chữ ký dù hợp đồng của
+# cổng đã mất hiệu lực (vd G3 đổi sau khi SAP đã ký). Nay 🔒 chỉ khi CÓ chữ ký sổ cái VÀ cổng còn khoá khi chấm sống —
+# G2 theo g7_quality_gate.g2_da_duyet (chữ ký khớp gói hiện tại + hợp đồng; CÙNG nghĩa «G2 đã duyệt» ở G5–G10).
+_NHAN_MUC = {
+    "PASS": "✅ ĐÃ CHỐT — chấm sống đạt",
+    "READY": "🟢 SẴN SÀNG — chờ người có thẩm quyền ký/xác nhận",
+    "DRAFT": "🟡 DỰ THẢO — còn việc của người",
+    "BLOCKED": "🔴 BỊ CHẶN — xem báo cáo chất lượng của cổng",
+    CS.KHONG_DO_DUOC: "⚪ KHÔNG ĐO ĐƯỢC — không phải «đạt»",
+}
+# Gợi ý riêng cho DỰ THẢO của từng cổng. Repo gốc tools/tu_de_xuat_viec.py dò «CHƯA được bác sĩ chốt» (G0 chờ cờ FINER).
+_GOI_Y_DU_THAO = {
+    "G0": "PICO/kết cục chính CHƯA được bác sĩ chốt",
+    "G1": "thiết kế CHƯA được PI xác nhận",
+    "G3": "tham số cỡ mẫu CHƯA được thống kê viên chốt",
 }
 
 
-def _g0_quality_status(cp: Path) -> str | None:
-    """quality_gate.status THẬT trong G0_checkpoint.json, None nếu không đọc được
-    (file hỏng, hoặc checkpoint CŨ trước 2026-07-28 chưa có khối này)."""
+def _con_khoa(study: str, d: Path, gate: str, muc: str) -> bool:
+    """Cổng cứng còn khoá khi chấm sống: G2 theo g2_da_duyet (định nghĩa dùng chung), cổng khác theo mức PASS của bộ
+    chấm (bộ chấm G4/G5/G8/G9/G10 đã gồm kiểm sổ cái)."""
+    if gate != "G2":
+        return muc == "PASS"
     try:
-        data = json.loads(cp.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-        return None
-    quality = data.get("quality_gate") if isinstance(data, dict) else None
-    return quality.get("status") if isinstance(quality, dict) else None
+        import g7_quality_gate as G7Q  # noqa: PLC0415 — import lười
+
+        return G7Q.g2_da_duyet(study, d, repo_root=d.parent.parent)[0] is True
+    except Exception:  # noqa: BLE001 — không đo được ≠ đã khoá
+        return False
+
+
+def _trang_thai_cong(study: str, d: Path, gate: str, hard: bool) -> str:
+    """Một dòng người đọc hiểu ngay: mức CHẤM SỐNG (+ chữ ký sổ cái với cổng cứng)."""
+    song = CS.trang_thai_song(gate, study, d)
+    muc = song.get("muc") or CS.KHONG_DO_DUOC
+    chi_tiet = song.get("status") if muc != CS.KHONG_DO_DUOC else song.get("ly_do")
+    nhan = _NHAN_MUC.get(muc, _NHAN_MUC[CS.KHONG_DO_DUOC])
+    if muc == "DRAFT" and gate in _GOI_Y_DU_THAO:
+        nhan = f"🟡 DỰ THẢO — {_GOI_Y_DU_THAO[gate]}"
+    if not hard:
+        return f"{nhan} ({chi_tiet})"
+    artifacts = list(d.glob(f"{gate}_*")) + list(d.glob(f"{gate.lower()}_*"))
+    # repo_root suy từ thư mục đề tài (<repo>/exports/<mã>) — trùng BASE với đề tài thật; đúng cả khi chấm một thư
+    # mục đề tài nằm ngoài repo (bản sao, kiểm thử), cùng quy ước cong_song.
+    signed = any(art.is_file() and GC.ledger_approved(gate, study, art, repo_root=d.parent.parent)
+                 for art in artifacts)
+    if signed and _con_khoa(study, d, gate, muc):
+        return f"🔒 ĐÃ KHOÁ — chữ ký sổ cái + chấm sống còn đạt ({chi_tiet})"
+    if signed:
+        return f"⚠️ CÓ CHỮ KÝ nhưng KHÔNG còn hiệu lực khi chấm sống — {nhan} ({chi_tiet})"
+    return f"📝 CHƯA AI KÝ — {nhan} ({chi_tiet})"
 
 
 def _gate_state(study: str, d: Path) -> list[tuple[str, str, str]]:
-    """[(gate, nhãn, trạng thái)] — trạng thái là chuỗi người đọc hiểu ngay."""
+    """[(gate, nhãn, trạng thái)] — trạng thái là chuỗi người đọc hiểu ngay (chấm SỐNG, không đọc bản lưu)."""
     rows = []
     for gate, label, hard in _GATES:
         cp = d / f"{gate}_checkpoint.json"
         artifacts = list(d.glob(f"{gate}_*")) + list(d.glob(f"{gate.lower()}_*"))
-        if hard:
-            # Cổng cứng: chỉ "ĐÃ KÝ" khi ledger xác nhận thật.
-            signed = False
-            for art in artifacts:
-                if art.is_file() and GC.ledger_approved(gate, study, art, repo_root=BASE):
-                    signed = True
-                    break
-            if signed:
-                state = "🔒 ĐÃ KÝ (ledger xác nhận)"
-            elif cp.exists() or artifacts:
-                state = "📝 có hồ sơ, CHƯA AI KÝ"
-            else:
-                state = "— chưa chạy"
-        elif gate == "G0" and cp.exists():
-            # SỬA 2026-07-30 (audit toàn diện G0-G10, G0-02 — HIGH): trước đây
-            # G0 chỉ được đánh giá bằng "checkpoint tồn tại hay không" — một
-            # checkpoint với quality_gate.status == DRAFT_READY_NEEDS_HUMAN_
-            # REVIEW (PICO còn placeholder) và một checkpoint PASS_G0_CONFIRMED
-            # hiển thị Y HỆT NHAU: dấu "✅". Đây đúng là công cụ được xây RIÊNG
-            # để chống ảo giác "trông như sắp xong" (xem docstring module),
-            # nên khoảng trống này đặc biệt đáng chú ý. Đọc quality_gate.status
-            # THẬT; checkpoint CŨ (không có khối này) giữ nguyên hành vi cũ.
-            quality_status = _g0_quality_status(cp)
-            if quality_status is None:
-                state = "✅ có checkpoint (chưa có lớp chất lượng — checkpoint cũ)"
-            else:
-                state = _G0_QUALITY_LABELS.get(quality_status, f"🟡 {quality_status}")
-        else:
-            state = "✅ có checkpoint" if cp.exists() else (
-                "📄 có artifact, chưa có checkpoint" if artifacts else "— chưa chạy")
-        rows.append((gate, label, state))
+        if not cp.exists() and not artifacts:
+            rows.append((gate, label, "— chưa chạy"))
+            continue
+        rows.append((gate, label, _trang_thai_cong(study, d, gate, hard)))
     return rows
 
 
@@ -198,12 +209,19 @@ def report(study: str) -> int:
 
     print("\n📍 CHUỖI CỔNG G0–G10")
     signed_hard = 0
+    mat_hieu_luc: list[str] = []
     for gate, label, state in _gate_state(study, d):
         print(f"   {gate:4} {label:24} {state}")
         if state.startswith("🔒"):
             signed_hard += 1
-    # Repo gốc tools/tu_de_xuat_viec.py dò chuỗi «chữ ký thật: 0/<n>» để biết «chưa cổng cứng nào có chữ ký».
+        elif state.startswith("⚠️ CÓ CHỮ KÝ"):
+            mat_hieu_luc.append(gate)
+    # Repo gốc tools/tu_de_xuat_viec.py dò chuỗi «chữ ký thật: 0/<n>» để biết «chưa cổng cứng nào có chữ ký». Từ
+    # 06/10/2026 chỉ đếm cổng có chữ ký VÀ còn khoá khi chấm sống (chữ ký đã mất hiệu lực không phải khoá).
     print(f"\n   → Cổng CỨNG đã có chữ ký thật: {signed_hard}/{len(_CONG_CUNG)} ({' · '.join(_CONG_CUNG)})")
+    if mat_hieu_luc:
+        print(f"     ⚠️  Có chữ ký nhưng KHÔNG còn hiệu lực khi chấm sống: {', '.join(mat_hieu_luc)} — điều tra thay "
+              "đổi sau ký; không tính là đã khoá.")
     if signed_hard == 0:
         print("     ⚠️  CHƯA CỔNG CỨNG NÀO ĐƯỢC KÝ. Mọi hồ sơ hiện có là DỰ THẢO.")
 
@@ -244,7 +262,7 @@ def report(study: str) -> int:
     try:
         import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
         ket_xc = NQ.doi_chieu(d, study)
-        print("\n🔗 NHẤT QUÁN XUYÊN CỔNG (N · α · power · thiết kế · kết cục chính · quần thể)")
+        print("\n🔗 NHẤT QUÁN XUYÊN CỔNG (N · α · power · thiết kế · kết cục chính · quần thể · giả thuyết · sai số d)")
         for k in ket_xc["thong_so"]:
             print(f"   {NQ.BIEU_TUONG[k['muc']]} {k['ten']}: {k['ghi_chu']}")
             if k["muc"] in (NQ.MUC_LECH_CUNG, NQ.MUC_LECH_MEM):

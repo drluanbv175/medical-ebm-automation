@@ -41,8 +41,6 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import importlib
-import inspect
 import io
 import json
 import re
@@ -51,7 +49,7 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 for _s in (sys.stdout, sys.stderr):
     try:
@@ -66,6 +64,7 @@ sys.path.insert(0, str(BASE))
 
 import audit_research_gates as ARG  # noqa: E402
 import chuan_trinh_bay as CTB  # noqa: E402
+import cong_song as CS  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import list_studies as LS  # noqa: E402
 import pipeline_freshness as PF  # noqa: E402
@@ -220,44 +219,19 @@ def phan_loai_tieu_chi(report: dict[str, Any]) -> dict[str, list[str]]:
 
 
 def _cham_song(gate: str, study: str, out_dir: Path) -> tuple[dict[str, Any] | None, str]:
-    """Chấm SỐNG qua gN_quality_gate.evaluate_study(write=False) — không ghi gì.
+    """Chấm SỐNG qua cong_song.trang_thai_song — chính gN_quality_gate.evaluate_study(write=False), không ghi gì.
 
-    G1 không có hàm chấm độc lập (evaluate_g1_quality cần bộ input chỉ run_g1_auto có) →
-    đọc báo cáo ĐÃ LƯU và nói rõ. Cổng chết khi chấm → trả (None, 'chết: …') để caller
-    xếp ĐỎ (fail-closed, họ BH27) chứ không im lặng.
+    SỬA 06/10/2026 (soát từng cổng — NGANG, G1-10): bản cũ đọc BÁO CÁO ĐÃ LƯU cho G1 («không có hàm chấm độc lập» — G1
+    nay đã có evaluate_study) và rơi về bản lưu khi bộ chấm thoát SystemExit — đúng lỗi «tin bản lưu» (CHUNG-A). Nay một
+    định nghĩa chấm sống chung với G2–G10 (repo_root suy từ out_dir như cũ). Không đo được (bộ chấm hỏng/thoát/vòng lặp)
+    ⇒ (None, 'chết: …') để caller xếp ĐỎ (fail-closed, họ BH27) chứ không im lặng.
     """
-    da_luu = out_dir / f"{gate}_QUALITY_REPORT.json"
-    if gate == "G1":
-        rep = _doc_json(da_luu)
-        return (rep or None), ("bản đã lưu — chấm lại = chạy run_g1_auto" if rep else "chưa có báo cáo")
-    try:
-        mod = importlib.import_module(f"{gate.lower()}_quality_gate")
-        fn: Callable[..., Any] = getattr(mod, "evaluate_study")
-        params = inspect.signature(fn).parameters
-        kw: dict[str, Any] = {}
-        if "out_dir" in params:
-            kw["out_dir"] = out_dir
-        if "write" in params:
-            kw["write"] = False
-        if "repo_root" in params:
-            # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2, HIGH): trước đây
-            # hardcode BASE (repo THẬT) — khi --exports-root trỏ ra thư mục khác
-            # (chính cờ --help ghi "cho kiểm thử"), G4/G8's ledger_records() nội bộ
-            # (đối chiếu reviewer_ref chéo cổng) vẫn đọc sổ cái/checkpoint ở
-            # BASE/exports/<study> THẬT thay vì cạnh out_dir đang được kiểm. Suy
-            # repo_root từ out_dir — đúng quy ước out_dir=<repo>/exports/<study> mà
-            # chính --exports-root dùng (root=<đường dẫn>, out_dir=root/study), và
-            # khớp cách g4/g8/g9_quality_gate.py tự suy repo_root khi không được
-            # truyền (out_dir.parent.parent).
-            kw["repo_root"] = out_dir.parent.parent
-        with contextlib.redirect_stdout(io.StringIO()):
-            rep = fn(study, **kw)
-        return (rep if isinstance(rep, dict) else None), "chấm sống"
-    except SystemExit as e:  # một số cổng thoát thay vì trả về
-        rep = _doc_json(da_luu)
-        return (rep or None), f"chấm sống thoát mã {e.code}; dùng bản đã lưu" if rep else f"chết: SystemExit {e.code}"
-    except Exception as e:  # noqa: BLE001 — cổng chết phải hiện ra, không nuốt
-        return None, f"chết: {type(e).__name__}: {_rut_gon(str(e), 80)}"
+    song = CS.trang_thai_song(gate, study, out_dir, repo_root=out_dir.parent.parent)
+    if song.get("nguon") == CS.NGUON_SONG and isinstance(song.get("bao_cao"), dict):
+        return song["bao_cao"], "chấm sống"
+    if song.get("nguon") == CS.NGUON_LUU:
+        return {"status": song.get("status")}, f"bản LƯU (kém tin cậy) — {song.get('ly_do')}"
+    return None, f"chết: {song.get('ly_do')}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────

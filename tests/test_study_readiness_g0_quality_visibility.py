@@ -45,34 +45,41 @@ def test_khong_co_checkpoint_bao_chua_chay(tmp_path):
     assert state == "— chưa chạy"
 
 
-def test_checkpoint_cu_khong_co_quality_gate_giu_hanh_vi_cu(tmp_path):
-    """Checkpoint TRƯỚC 2026-07-28 (không có khối quality_gate) không bị hồi tố."""
+def test_checkpoint_tron_khong_lop_chat_luong_khong_con_hien_xanh(tmp_path):
+    """ĐỔI LUẬT 06/10/2026 (soát từng cổng — NGANG, CHUNG-A): bản cũ «không hồi tố» checkpoint TRƯỚC 2026-07-28 (in
+    «✅ có checkpoint (chưa có lớp chất lượng)»). Nay mọi cổng có checkpoint hiển thị theo CHẤM SỐNG (luật hiện hành,
+    cùng định nghĩa G7–G10): checkpoint trơn không còn được tô xanh."""
     _write_g0_checkpoint(tmp_path, {"gate": "G0", "topic": "x"})
     _, _, state = _g0_row(tmp_path)
-    assert "chưa có lớp chất lượng" in state
+    assert "✅" not in state and "ĐÃ CHỐT" not in state, state
 
 
 def test_pass_g0_confirmed_khac_han_draft_ve_mat_hien_thi(tmp_path):
-    """Đúng lỗi trung tâm G0-02: PASS_G0_CONFIRMED và DRAFT phải hiển thị KHÁC
-    NHAU — trước vá này cả hai đều chỉ là '✅ có checkpoint'."""
-    d_pass = tmp_path / "pass"
-    _write_g0_checkpoint(d_pass, {
-        "gate": "G0",
-        "quality_gate": {"status": "PASS_G0_CONFIRMED"},
-    })
-    _, _, state_pass = _g0_row(d_pass)
+    """Đúng lỗi trung tâm G0-02: PASS và DRAFT phải hiển thị KHÁC NHAU — trước vá G0-02 cả hai đều chỉ là «✅ có
+    checkpoint». Từ 06/10/2026 so trên chuỗi THẬT (G0 chốt thật ⇒ chấm sống PASS) và CHUNG-A: checkpoint vẫn LƯU
+    PASS_G0_CONFIRMED nhưng PICO sửa SAU khi chốt (dấu vân tay lệch) ⇒ chấm sống DỰ THẢO ⇒ hiển thị DỰ THẢO, không tin
+    bản lưu (C1a 04/10/2026)."""
+    import cong_song as CS
 
-    d_draft = tmp_path / "draft"
-    _write_g0_checkpoint(d_draft, {
-        "gate": "G0",
-        "quality_gate": {"status": "DRAFT_READY_NEEDS_HUMAN_REVIEW"},
-    })
-    _, _, state_draft = _g0_row(d_draft)
+    from tests._chuoi_da_chot import dung_g0_g1_da_chot
+
+    d = tmp_path / "exports" / "S-G0"
+    meta = dung_g0_g1_da_chot(d, "S-G0")
+    CS.xoa_dem()
+    _, _, state_pass = next(r for r in SR._gate_state("S-G0", d) if r[0] == "G0")
+    assert "ĐÃ CHỐT" in state_pass and "✅" in state_pass, state_pass
+
+    cp = json.loads((d / "G0_checkpoint.json").read_text(encoding="utf-8"))
+    cp["quality_gate"] = {"status": "PASS_G0_CONFIRMED"}  # bản LƯU nói đã chốt
+    (d / "G0_checkpoint.json").write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
+    meta["gate_params"]["G0"]["population"] = "Quần thể đã sửa SAU khi bác sĩ chốt PICO"
+    (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
+    CS.xoa_dem()
+    _, _, state_draft = next(r for r in SR._gate_state("S-G0", d) if r[0] == "G0")
 
     assert state_pass != state_draft
-    assert "ĐÃ CHỐT" in state_pass
-    assert "DỰ THẢO" in state_draft
-    assert "PICO" in state_draft
+    assert "DỰ THẢO" in state_draft and "PICO" in state_draft and "CHƯA được bác sĩ chốt" in state_draft, state_draft
+    assert "ĐÃ CHỐT" not in state_draft
 
 
 def test_blocked_hien_thi_ro_khong_phai_dau_xanh(tmp_path):
@@ -91,4 +98,4 @@ def test_checkpoint_json_hong_khong_lam_crash_toan_bo_lenh(tmp_path):
     tmp_path.mkdir(parents=True, exist_ok=True)
     (tmp_path / "G0_checkpoint.json").write_text("{ khong phai json hop le", encoding="utf-8", newline="\n")
     _, _, state = _g0_row(tmp_path)
-    assert "chưa có lớp chất lượng" in state
+    assert "✅" not in state  # không đo được/bị chặn — KHÔNG bao giờ xanh (06/10/2026: chấm sống, không đọc bản lưu)

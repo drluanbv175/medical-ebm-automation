@@ -1000,7 +1000,7 @@ def evaluate_study(
     rows.append(
         _criterion(
             "G10-AUTO-11",
-            "Thông số then chốt nhất quán xuyên cổng (N · α · power · thiết kế · kết cục chính)",
+            "Thông số then chốt nhất quán xuyên cổng (N · α · power · thiết kế · kết cục chính · giả thuyết · d)",
             nq_status,
             nq_evidence,
             "Chạy python3 tools/nhat_quan_xuyen_cong.py --study <mã>; sửa về MỘT giá trị tại cổng gốc rồi chạy lại "

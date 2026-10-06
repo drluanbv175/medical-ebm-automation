@@ -2132,7 +2132,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     # Checkpoint G10.
     gate_states = {sg: S.skill_gate_state(sg, cps, meta) for sg in S.SKILL_GATES}
     readiness = S.readiness_report(cps, meta)
-    signals = S.real_world_signals(cps, meta)
+    signals = S.real_world_signals(cps, meta, out_dir=out_dir)
     checkpoint = {
         "gate": "G10",
         "study": study,
