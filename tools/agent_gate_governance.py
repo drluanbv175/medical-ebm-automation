@@ -81,6 +81,13 @@ EXPECTED_RESEARCH_AGENTS = frozenset({
     "tong-quan-y-van",
     "trich-xuat-y-van",
     "viet-ban-thao",
+}) | frozenset({
+    # 06/10/2026 — hội đồng cổng G0–G10 (_HOI-DONG-CONG.md; danh mục máy-kiểm-được tools/hoi_dong_cong.py): 11 điều phối
+    # cổng + giám khảo đánh giá chéo + phản biện + trọng tài tranh biện. Đặt TƯỜNG MINH (không suy từ danh mục) để
+    # tripwire vẫn bắt agent thêm/bớt «chui».
+    "dieu-phoi-g0", "dieu-phoi-g1", "dieu-phoi-g2", "dieu-phoi-g3", "dieu-phoi-g4", "dieu-phoi-g5", "dieu-phoi-g6",
+    "dieu-phoi-g7", "dieu-phoi-g8", "dieu-phoi-g9", "dieu-phoi-g10",
+    "giam-khao-cong", "phan-bien-tranh-bien", "trong-tai-tranh-bien",
 })
 
 EXPECTED_GUARDRAIL_AGENTS = frozenset({"tham-dinh-dau-ra"})

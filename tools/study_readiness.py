@@ -271,8 +271,27 @@ def report(study: str) -> int:
         print(f"\n🔗 NHẤT QUÁN XUYÊN CỔNG: ⚪ KHÔNG ĐO ĐƯỢC ({type(exc).__name__}) — không phải «khớp»")
         lech_xc.append("nhất quán xuyên cổng (không đo được)")  # cố ý bi quan: không đo được vẫn là việc còn treo
 
+    # 06/10/2026 — hội đồng cổng (đánh giá chéo + tranh biện giữa các agent, tools/hoi_dong_cong.py): TƯ VẤN, không
+    # mở và không chặn cổng. Chỉ trạng thái cần xử lý mới là việc còn treo; «chưa họp» chỉ hiện để bác sĩ cân nhắc
+    # triệu tập.
+    lech_hd: list[str] = []
+    try:
+        import hoi_dong_cong as HD  # noqa: PLC0415
+        tt_hd = HD.tom_tat(d, d.parent.parent)
+        co_hop = {g: t for g, t in tt_hd.items() if t["trang_thai"] != "CHƯA HỌP"}
+        print("\n🏛️ HỘI ĐỒNG CỔNG (đánh giá chéo + tranh biện giữa các agent — TƯ VẤN, không mở/chặn cổng)")
+        if not co_hop:
+            print("   Chưa họp cổng nào — triệu tập theo _HOI-DONG-CONG.md §5 (hỏi bác sĩ trước: chi phí).")
+        for g, t_hd in co_hop.items():
+            print(f"   {g}: {t_hd['trang_thai']}" + (f" — {'; '.join(t_hd['ly_do'][:2])}" if t_hd["ly_do"] else ""))
+            if t_hd["trang_thai"] in HD.TRANG_THAI_CAN_XU_LY:
+                lech_hd.append(f"hội đồng {g}: {t_hd['trang_thai']}")
+    except Exception as exc:  # noqa: BLE001 — không đo được ≠ đồng thuận
+        print(f"\n🏛️ HỘI ĐỒNG CỔNG: ⚪ KHÔNG ĐO ĐƯỢC ({type(exc).__name__}) — không phải «đồng thuận»")
+        lech_hd.append("hội đồng cổng (không đo được)")
+
     print("\n" + "-" * 78)
-    total = len(todo) + len(pending) + len(lech_xc)
+    total = len(todo) + len(pending) + len(lech_xc) + len(lech_hd)
     if signed_hard == len(_CONG_CUNG) and total == 0:
         if so_con_trong:
             # 03/10/2026: đủ chữ ký + hết việc nội bộ mà tài liệu vẫn còn ô chưa điền thì KHÔNG in câu «không còn

@@ -63,6 +63,24 @@ Map từng chặng tới agent con phù hợp:
 5. **G9 — Liêm chính tác giả:** mọi khai báo COI/tài trợ/đóng góp/AI và quyền truy cập dữ liệu ICMJE 1/2026 do nhà nghiên cứu xác nhận; PI tự ký sau khi hợp đồng chất lượng báo READY.
 6. **G10 — Khóa phát hành:** PI rà đúng manifest cuối và tự ký; PASS chỉ là sẵn sàng phát hành thủ công, không đồng nghĩa đã nộp/được chấp nhận.
 
+## 🏛️ HỘI ĐỒNG CỔNG — bạn là ĐIỀU PHỐI TỔNG (06/10/2026, `_HOI-DONG-CONG.md`)
+Mỗi cổng có MỘT điều phối cổng làm đại diện của bạn — `dieu-phoi-g0` · `dieu-phoi-g1` · `dieu-phoi-g2` · `dieu-phoi-g3` · `dieu-phoi-g4` · `dieu-phoi-g5` · `dieu-phoi-g6` · `dieu-phoi-g7` · `dieu-phoi-g8` · `dieu-phoi-g9` · `dieu-phoi-g10`: giao từng nhiệm vụ cho agent
+chuyên trách, tổ chức **đánh giá chéo** đầu ra (người chấm chuyên môn theo ma trận + giám khảo độc lập `giam-khao-cong`,
+rubric RQ1–RQ8) và **tranh biện** các điểm quyết định trước khi kết luận cổng (đề xuất = điều phối cổng · phản biện
+`phan-bien-tranh-bien` · trọng tài `trong-tai-tranh-bien`, tối đa 2 vòng). Danh mục nhiệm vụ/ma trận/điểm quyết định:
+`python3 tools/hoi_dong_cong.py danh-muc [--gate G<N>]` (nguồn sự thật — không chép tay danh mục khác).
+- **Bạn vẫn là owner DUY NHẤT** của G0–G10: điều phối cổng không phải owner, plugin không vào hội đồng.
+- **Triệu tập = hỏi bác sĩ trước** (CLAUDE.md §0.6): hội đồng `subagent` ≈ 1–3 triệu token/cổng (mỗi subagent ~250
+  nghìn token nền). Đề xuất kèm ước lượng và chế độ: `subagent` (khuyến nghị cho điểm quyết định BẮT BUỘC ở 6 cổng cứng
+  G2/G4/G5/G8/G9/G10 và mọi bất đồng) · `codex` (trọng tài khác họ mô hình) · `cung_phien` (tiết kiệm, chỉ độc lập VAI)
+  · bỏ qua. Claude Code có workflow `.claude/workflows/hoi-dong-cong.js` chạy đúng 8 bước với trần vòng/trần agent.
+- **Đọc kết quả:** `python3 tools/hoi_dong_cong.py tom-tat --study <mã>` — CHƯA HỌP · HỎNG · CŨ (tài liệu đã đổi sau
+  biên bản) · BẤT ĐỒNG — CẦN TRANH BIỆN · CHUYỂN BÁC SĨ · CẦN SỬA · THIẾU TRANH BIỆN BẮT BUỘC · ĐỒNG THUẬN. Đây là
+  TƯ VẤN: «ĐỒNG THUẬN» KHÔNG phải «đạt cổng» — cổng chỉ qua khi bộ chấm của cổng nói qua và người có thẩm quyền ký.
+- **Bàn giao:** gom khối «KẾT LUẬN HỘI ĐỒNG CỔNG G<N>» của từng điều phối cổng vào mẫu bàn giao; mục «CHUYỂN BÁC SĨ»
+  đưa lên ĐẦU danh sách việc của bác sĩ kèm vai thẩm quyền (PI · IRB · STATISTICIAN · DATA_MANAGER ·
+  INDEPENDENT_PEER_REVIEWER).
+
 ## 3. Quy trình & 🔍 KIỂM TOÁN ĐẦY ĐỦ (BƯỚC 0 = kiểm tiền đề bắt buộc)
 **BƯỚC 0 — Kiểm tiền đề (đạo đức · dữ liệu · đồng bộ · đối chiếu sổ cái):** TRƯỚC khi march cổng — (a) **đối chiếu sổ cái** (`so-cai-ghi-nho`/`_SO-TRANG-THAI-CHECKPOINT.md` — 2026-07-12: sửa "EBM_MASTER/MEMORY.md" không tồn tại + hồ sơ đề tài) để RESUME đúng chỗ, chống làm lại; (b) xác nhận chưa chạm dữ liệu thật khi chưa qua G2; (c) xác nhận KHÔNG PII + làm trên bản sao; (d) suy loại thiết kế (nêu giả định 1 dòng để bác sĩ bác bỏ).
 
